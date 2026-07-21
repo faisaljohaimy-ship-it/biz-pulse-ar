@@ -92,6 +92,22 @@ export function AgenticFlowCanvas({
     return { positions, sources, agents, aria, gate, height: maxY + 40 };
   }, [data]);
 
+  // Chain highlight — compute upstream + downstream sets for the selected agent.
+  // Must sit BEFORE any early-return so hook order stays stable.
+  const chain = useMemo(() => {
+    if (!selectedAgentId || !data) return null;
+    const upstream = new Set<string>();
+    const downstream = new Set<string>();
+    for (const e of data.edges) {
+      if (e.to === selectedAgentId) upstream.add(e.from);
+      if (e.from === selectedAgentId) downstream.add(e.to);
+    }
+    for (const e of data.edges) {
+      if (downstream.has(e.from)) downstream.add(e.to);
+    }
+    return { upstream, downstream };
+  }, [selectedAgentId, data]);
+
   if (isLoading) {
     return (
       <div className="flex h-[420px] items-center justify-center rounded-2xl border border-[#3AE8FF]/20 bg-[#04101F]/70">
@@ -112,21 +128,6 @@ export function AgenticFlowCanvas({
     );
   }
 
-  // Chain highlight — compute upstream + downstream sets for the selected agent.
-  const chain = useMemo(() => {
-    if (!selectedAgentId) return null;
-    const upstream = new Set<string>();
-    const downstream = new Set<string>();
-    for (const e of data.edges) {
-      if (e.to === selectedAgentId) upstream.add(e.from);
-      if (e.from === selectedAgentId) downstream.add(e.to);
-    }
-    // Downstream 2nd hop (agent → aria → gate)
-    for (const e of data.edges) {
-      if (downstream.has(e.from)) downstream.add(e.to);
-    }
-    return { upstream, downstream };
-  }, [selectedAgentId, data.edges]);
 
   const edges = data.edges.filter(
     (e) => layout.positions.has(e.from) && layout.positions.has(e.to),
