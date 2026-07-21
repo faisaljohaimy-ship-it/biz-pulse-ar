@@ -65,7 +65,7 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/ptw", ar: "تصاريح العمل الرقمية", en: "Digital PTW", icon: FileCheck },
   { to: "/urgent-ops", ar: "العاجل", en: "Urgent Ops", icon: Siren },
   { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Building2 },
-  
+
   { to: "/aria", ar: "آريا التنفيذية", en: "ARIA Engine", icon: Sparkles },
   { to: "/aria-analytics", ar: "تحليلات آريا", en: "ARIA Analytics", icon: LineChart },
   { to: "/intelligence", ar: "الذكاء والتطوّر", en: "Intelligence", icon: BrainCircuit },

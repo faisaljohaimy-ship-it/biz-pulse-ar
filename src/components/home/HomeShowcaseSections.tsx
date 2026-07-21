@@ -207,7 +207,6 @@ export function HomeShowcaseSections() {
           directive — kept the capabilities grid above and technology strip
           below. */}
 
-
       {/* ── 3. Technology strip ─────────────────────────────────────── */}
       <div className="mt-4 rounded-2xl border border-white/10 bg-[#061A2E]/40 p-4 backdrop-blur-md">
         <div className="mb-3 text-center text-[10px] font-semibold uppercase tracking-[0.28em] text-white/45">
