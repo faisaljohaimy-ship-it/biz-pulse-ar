@@ -200,7 +200,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         // consecutive unfinished boots the shell enters safe-mode: skip the
         // intro video and mark <html> so heavy scenes can opt out. A clean
         // React mount resets the counter (see RootComponent effect below).
-        children: `(function(){try{var ss=window.sessionStorage;var k='nexios-boot-attempts';var n=parseInt(ss.getItem(k)||'0',10);if(!isFinite(n)||n<0)n=0;n++;ss.setItem(k,String(n));if(n>=2){ss.setItem('nexios-welcome','complete:v4');ss.setItem('nexios-safe-mode','1');document.documentElement.classList.add('safe-mode');}}catch(e){}})();`,
+        children: `(function(){try{var ss=window.sessionStorage;var k='nexios-boot-attempts';var n=parseInt(ss.getItem(k)||'0',10);if(!isFinite(n)||n<0)n=0;n++;ss.setItem(k,String(n));if(n>=2){ss.setItem('nexios-welcome','complete:v4');ss.setItem('nexios-safe-mode','1');document.documentElement.classList.add('safe-mode');}if(n>=3){try{if('caches' in window){caches.keys().then(function(ks){ks.forEach(function(c){caches.delete(c);});});}if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});});}}catch(_){}}}catch(e){}})();`,
       },
 
       {
@@ -286,6 +286,15 @@ function RootComponent() {
     import("@/lib/aria/self-healing/watchdog").then((m) => {
       if (cancelled) return;
       cleanup = m.installAriaWatchdog();
+    });
+    // Permanent background self-healing agent (Article III, always-on).
+    void import("@/lib/aria/self-healing/permanent-agent").then((m) => {
+      if (cancelled) return;
+      try {
+        m.installPermanentHealer();
+      } catch {
+        /* healer must never break the app */
+      }
     });
     // Fire-and-forget: dynamic import keeps SSR bundle unchanged.
     void import("@/lib/user-interaction").then((m) => {
