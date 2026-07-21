@@ -279,6 +279,7 @@ export type Database = {
           id: string
           latency_ms: number | null
           model: string
+          org_id: string | null
           prompt_tokens: number
           total_tokens: number
           user_id: string
@@ -291,6 +292,7 @@ export type Database = {
           id?: string
           latency_ms?: number | null
           model: string
+          org_id?: string | null
           prompt_tokens?: number
           total_tokens?: number
           user_id: string
@@ -303,11 +305,20 @@ export type Database = {
           id?: string
           latency_ms?: number | null
           model?: string
+          org_id?: string | null
           prompt_tokens?: number
           total_tokens?: number
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       aria_actions_log: {
         Row: {
