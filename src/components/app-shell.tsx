@@ -164,7 +164,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/sec/cctv", icon: Camera, label: ar("CCTV", "CCTV") },
         { to: "/sec/kpi", icon: BarChart3, label: ar("مؤشرات الأداء", "KPIs") },
         { to: "/sec/twin", icon: Network, label: ar("التوأم الرقمي", "Digital Twin") },
-        { to: "/hajj", icon: MapPin, label: ar("عمليات الحج", "Hajj Ops") },
+        
       ],
     },
     {

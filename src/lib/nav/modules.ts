@@ -10,7 +10,7 @@
  * Every `to` is a REAL existing route under src/routes/_authenticated
  * (constitution art. 6: no dead/placeholder icons).
  */
-import { hajjPlatformUrl } from "@/config/platforms";
+
 import {
   Activity,
   BarChart3,
@@ -65,7 +65,7 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/ptw", ar: "تصاريح العمل الرقمية", en: "Digital PTW", icon: FileCheck },
   { to: "/urgent-ops", ar: "العاجل", en: "Urgent Ops", icon: Siren },
   { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Building2 },
-  { to: "/hajj", ar: "منصة نُسك الحج", en: "Hajj Platform", icon: Moon, external: true },
+  
   { to: "/aria", ar: "آريا التنفيذية", en: "ARIA Engine", icon: Sparkles },
   { to: "/aria-analytics", ar: "تحليلات آريا", en: "ARIA Analytics", icon: LineChart },
   { to: "/intelligence", ar: "الذكاء والتطوّر", en: "Intelligence", icon: BrainCircuit },
@@ -147,10 +147,6 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     ar: "قاعة المجلس — العرض التنفيذي للقيادة.",
     en: "The boardroom — the executive briefing for leadership.",
   },
-  "/hajj": {
-    ar: "منصة نُسك للحج — تُفتح خارجيًا في نافذة جديدة.",
-    en: "The Nusuk Hajj platform — opens externally in a new tab.",
-  },
   "/aria": {
     ar: "آريا التنفيذية — المساعد الذكي الصوتي والنصي.",
     en: "ARIA Executive — the voice and text AI assistant.",
@@ -193,11 +189,10 @@ export function moduleLabel(to: string, ar: boolean): string | undefined {
 }
 
 /**
- * Resolved external URL for an external module (currently only Nusuk),
- * or null → consumers fall back to the internal route. Single source:
- * src/config/platforms.ts.
+ * Resolved external URL for an external module. Currently no modules are
+ * external — Nusuk Hajj was retired.
  */
 export function moduleExternalUrl(entry: ModuleEntry): string | null {
   if (!entry.external) return null;
-  return hajjPlatformUrl();
+  return null;
 }

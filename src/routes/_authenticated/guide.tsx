@@ -45,7 +45,7 @@ const GROUPS: Array<{ ar: string; en: string; routes: string[] }> = [
   {
     ar: "الوصول الخارجي والتعلّم",
     en: "External & Learning",
-    routes: ["/hajj", "/learn"],
+    routes: ["/learn"],
   },
 ];
 

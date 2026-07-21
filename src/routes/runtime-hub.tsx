@@ -49,14 +49,6 @@ const STAGES = [
   },
   { key: "ops", label_ar: "العمليات", label_en: "Operations", icon: Activity, to: "/operations" },
   {
-    key: "hajj",
-    label_ar: "نظام الحج",
-    label_en: "Hajj 1447",
-    icon: Moon,
-    to: "/hajj",
-    featured: true,
-  },
-  {
     key: "kpi",
     label_ar: "مؤشرات الأداء",
     label_en: "Executive KPIs",
