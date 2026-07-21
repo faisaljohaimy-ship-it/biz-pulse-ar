@@ -120,17 +120,8 @@ const PILLARS = [
     desc_ar: "مؤشرات أداء، RAG وذاكرة إنتاجية مع تسليم Outlook.",
     desc_en: "Production-grade KPIs, RAG memory, and Outlook delivery.",
   },
-  {
-    anchor: "tour-pillar-hajj",
-    // URL comes exclusively from VITE_HAJJ_EMBED_URL; unset → internal route.
-    to: HAJJ_EMBED_URL ?? HAJJ_INTERNAL_ROUTE,
-    external: HAJJ_EMBED_URL != null,
-    icon: Moon,
-    title_ar: "منصة نُسك الحج",
-    title_en: "Hajj Nusuk Platform",
-    desc_ar: "منصة مستقلة لعمليات الحج · مشاعر 1447 (تفتح في نافذة جديدة).",
-    desc_en: "Standalone Hajj operations platform · Mashaer 1447 (opens in new tab).",
-  },
+
+
   {
     anchor: "tour-pillar-aria",
     to: "/aria",
