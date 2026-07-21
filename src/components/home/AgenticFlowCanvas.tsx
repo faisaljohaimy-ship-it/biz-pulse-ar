@@ -107,10 +107,11 @@ export function AgenticFlowCanvas({ ar }: { ar: boolean }) {
         </span>
       </div>
 
-      <div className="relative w-full overflow-x-auto">
+      <div className="relative w-full">
         <svg
           viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
-          className="block h-[520px] w-[1200px] sm:w-full"
+          preserveAspectRatio="xMidYMid meet"
+          className="block h-auto w-full"
           aria-label={ar ? "لوحة تنسيق الوكلاء" : "Agent coordination canvas"}
         >
           <defs>
