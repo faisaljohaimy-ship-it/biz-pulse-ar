@@ -1,4 +1,4 @@
-const CACHE_NAME = "nexios-static-v1";
+const CACHE_NAME = "nexios-static-v2";
 const PRECACHE = ["/nexus-icon.png", "/aria-icon.jpeg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

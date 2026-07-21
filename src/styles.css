@@ -14,6 +14,30 @@
   animation-play-state: paused !important;
 }
 
+/* ══ SAFE MODE — the crash-loop breaker's recovery shell (constitution art. 13).
+   The pre-hydration script in __root.tsx adds `html.safe-mode` after 2 unfinished
+   boots. Until now NOTHING honoured it, so the "recovered" page rendered
+   identically and crashed again → iOS Safari's fatal "A problem repeatedly
+   occurred". Safe mode must therefore strip EVERY GPU-heavy effect so the shell
+   becomes a static, un-crashable page: no animation, no transition, no filter,
+   no backdrop-filter, no box-shadow, no video. Content stays fully readable. */
+html.safe-mode *,
+html.safe-mode *::before,
+html.safe-mode *::after {
+  animation: none !important;
+  transition: none !important;
+  filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  will-change: auto !important;
+  mix-blend-mode: normal !important;
+}
+html.safe-mode video,
+html.safe-mode canvas {
+  display: none !important;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
