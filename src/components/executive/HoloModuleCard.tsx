@@ -9,9 +9,10 @@
  * reserved for CRITICAL modules only. All motion is transform/opacity
  * and fully disabled under prefers-reduced-motion.
  */
+import { useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
-import { moduleExternalUrl, type ModuleEntry } from "@/lib/nav/modules";
+import { moduleExternalUrl, modulePurpose, type ModuleEntry } from "@/lib/nav/modules";
 
 /** Functional distinction, not decoration: modules with live obligations. */
 const CRITICAL_ROUTES = new Set(["/hcis", "/ptw", "/urgent-ops"]);
@@ -21,18 +22,58 @@ export function HoloModuleCard({
   index,
   ar,
   badge,
+  onLongPress,
 }: {
   module: ModuleEntry;
   index: number;
   ar: boolean;
   badge?: { text: string; title?: string } | null;
+  /** Touch long-press reveals the module's one-line purpose (art. 21). */
+  onLongPress?: (m: ModuleEntry) => void;
 }) {
   const Icon = m.icon;
   const label = ar ? m.ar : m.en;
+  const purpose = modulePurpose(m.to, ar);
   const externalUrl = moduleExternalUrl(m);
   const critical = CRITICAL_ROUTES.has(m.to);
   const tileClass = `holo-card holo-enter group flex min-h-[88px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl p-3 text-center transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--holo-glow),0.6)] active:scale-[0.97]${critical ? " holo-critical" : ""}`;
   const style = { animationDelay: `${index * 60}ms` };
+
+  // Long-press (touch): after 450ms show the purpose card and swallow the
+  // click that follows so the hold explains instead of navigating. A quick
+  // tap clears the timer and navigates normally. Desktop uses the native
+  // title tooltip on hover (also read by screen readers).
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longFiredRef = useRef(false);
+  const clearTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+  const onTouchStart = () => {
+    if (!onLongPress || !purpose) return;
+    longFiredRef.current = false;
+    clearTimer();
+    timerRef.current = setTimeout(() => {
+      longFiredRef.current = true;
+      onLongPress(m);
+    }, 450);
+  };
+  const onClickCapture = (e: React.MouseEvent) => {
+    if (longFiredRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      longFiredRef.current = false;
+    }
+  };
+  const pressHandlers = {
+    onTouchStart,
+    onTouchEnd: clearTimer,
+    onTouchMove: clearTimer,
+    onTouchCancel: clearTimer,
+    onClickCapture,
+  };
 
   const inner = (
     <>
@@ -65,16 +106,28 @@ export function HoloModuleCard({
         target="_blank"
         rel="noopener noreferrer"
         aria-label={label}
-        title={ar ? "يُفتح في نافذة جديدة" : "Opens in a new tab"}
+        title={
+          purpose
+            ? `${purpose}${ar ? " (يُفتح في نافذة جديدة)" : " (opens in a new tab)"}`
+            : undefined
+        }
         style={style}
         className={tileClass}
+        {...pressHandlers}
       >
         {inner}
       </a>
     );
   }
   return (
-    <Link to={m.to as "/"} aria-label={label} style={style} className={tileClass}>
+    <Link
+      to={m.to as "/"}
+      aria-label={label}
+      title={purpose}
+      style={style}
+      className={tileClass}
+      {...pressHandlers}
+    >
       {inner}
     </Link>
   );

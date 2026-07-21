@@ -8,7 +8,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import { useI18n } from "@/lib/i18n";
-import { MODULES, moduleExternalUrl, type ModuleEntry } from "@/lib/nav/modules";
+import { MODULES, MODULE_PURPOSE, moduleExternalUrl, type ModuleEntry } from "@/lib/nav/modules";
 import { PageHeader, Section } from "@/components/page-header";
 import { PageBriefing } from "@/components/clarity/PageBriefing";
 import { Map as MapIcon, GraduationCap } from "lucide-react";
@@ -19,33 +19,6 @@ export const Route = createFileRoute("/_authenticated/guide")({
     <RouteErrorBoundary error={error} reset={reset} routeLabel="/guide" />
   ),
 });
-
-/** One-line Arabic purpose per module route (art. 21: self-explaining). */
-const PURPOSE: Record<string, string> = {
-  "/sec": "المظلة التشغيلية للأمن الصناعي — المواقع والبلاغات والحوادث.",
-  "/mission-control": "مركز القيادة الموحّد لكل المناطق في شاشة واحدة.",
-  "/situation-room": "غرفة العمليات الحيّة — المتابعة اللحظية والتصعيد.",
-  "/executive-map": "الخريطة الجغرافية التنفيذية للأصول والمناطق.",
-  "/agents": "تشغيل ومراقبة الوكلاء الأذكياء تحت قيادة آريا.",
-  "/digital-twin": "التوأم الرقمي — مطابقة الميدان بالنموذج الرقمي.",
-  "/executive-reports": "توليد التقارير التنفيذية بصيغة PDF عربية.",
-  "/analytics": "الإحصائيات التشغيلية والاتجاهات الزمنية.",
-  "/bi": "لوحات تحليلية تفاعلية بنمط Power BI مع تصدير.",
-  "/governance": "الحوكمة والسياسات ومسارات الاعتماد.",
-  "/risk": "سجل المخاطر وتقييم الأثر والتخفيف.",
-  "/sec/maintenance": "أوامر الصيانة الوقائية والتصحيحية.",
-  "/sec/permits": "إدارة تصاريح العمل السارية والمنتهية.",
-  "/hcis": "مصفوفة الامتثال للهيئة العليا للأمن الصناعي.",
-  "/ptw": "تصاريح العمل الرقمية بدورة حياة كاملة وQR.",
-  "/urgent-ops": "الأعمال العاجلة واتفاقيات الخدمة (SLA).",
-  "/boardroom": "قاعة المجلس — العرض التنفيذي للقيادة.",
-  "/hajj": "منصة نُسك للحج — تُفتح خارجيًا في نافذة جديدة.",
-  "/aria": "آريا التنفيذية — المساعد الذكي الصوتي والنصي.",
-  "/aria-analytics": "تحليلات أداء آريا واستخدامها.",
-  "/intelligence": "منظومة الذكاء ذاتية التطور تحت اعتماد بشري.",
-  "/observability": "الرصد التقني والتكاليف وصحة المنظومة.",
-  "/learn": "مركز التعلّم — مسارات ودروس واختبارات.",
-};
 
 /** Functional clusters — the map's rows. */
 const GROUPS: Array<{ ar: string; en: string; routes: string[] }> = [
@@ -196,7 +169,7 @@ function GuidePage() {
                   <div>
                     <div className="text-sm font-semibold text-white">{ar ? m.ar : m.en}</div>
                     <div className="mt-0.5 text-xs leading-relaxed text-white/60">
-                      {PURPOSE[to]}
+                      {ar ? MODULE_PURPOSE[to]?.ar : MODULE_PURPOSE[to]?.en}
                     </div>
                   </div>
                 </div>

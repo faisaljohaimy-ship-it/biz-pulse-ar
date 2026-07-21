@@ -7,16 +7,20 @@
  * width, no crop/stretch), flowing into a wrapped multi-column grid on larger
  * screens. Full RTL, ≥44px touch targets, works on phone/laptop/desktop.
  */
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useI18n } from "@/lib/i18n";
-import { MODULES } from "@/lib/nav/modules";
+import { MODULES, modulePurpose, type ModuleEntry } from "@/lib/nav/modules";
 import { getModuleBadges } from "@/lib/exec/module-badges.functions";
 import { HoloModuleCard } from "./HoloModuleCard";
 
 export function SystemModulesDashboard() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  // Long-press on any tile surfaces its one-line purpose here (art. 21) —
+  // one shared card, so a hold explains the module before you open it.
+  const [info, setInfo] = useState<ModuleEntry | null>(null);
 
   // Live badges — tiles breathe before they're opened. Resilient source:
   // reference figures fill in whenever the database is silent.
@@ -76,10 +80,43 @@ export function SystemModulesDashboard() {
       >
         {MODULES.map((m, i) => (
           <li key={m.to} className="w-[38%] shrink-0 snap-start sm:w-auto">
-            <HoloModuleCard module={m} index={i} ar={ar} badge={badgeFor(m.to)} />
+            <HoloModuleCard
+              module={m}
+              index={i}
+              ar={ar}
+              badge={badgeFor(m.to)}
+              onLongPress={setInfo}
+            />
           </li>
         ))}
       </ul>
+
+      {/* Long-press purpose card (touch). Desktop reveals the same line via
+          the tile's native title tooltip on hover. */}
+      {info && (
+        <div
+          role="dialog"
+          aria-label={ar ? info.ar : info.en}
+          className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[110] mx-auto max-w-md rounded-2xl border border-[rgba(var(--holo-glow),0.4)] bg-[#061A2E]/95 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.5)] backdrop-blur"
+          onClick={() => setInfo(null)}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <info.icon className="h-5 w-5 text-[#3AE8FF]" aria-hidden />
+              <span className="text-sm font-bold text-white">{ar ? info.ar : info.en}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setInfo(null)}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-white/60 hover:text-white"
+              aria-label={ar ? "إغلاق" : "Close"}
+            >
+              ✕
+            </button>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-white/70">{modulePurpose(info.to, ar)}</p>
+        </div>
+      )}
     </section>
   );
 }
