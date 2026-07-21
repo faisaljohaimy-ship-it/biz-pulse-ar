@@ -159,10 +159,10 @@ function IntroLanding() {
     capabilities: ar ? "مكوّنات النظام" : "Platform Capabilities",
     cta_title: ar ? "جاهز للدخول إلى مركز القيادة؟" : "Ready to enter the Command Center?",
     cta_body: ar
-      ? "شاهد التجربة التنفيذية كاملة بلا حساب، ثم انتقل إلى الدخول الآمن فقط بعد قبول العرض."
-      : "View the complete executive experience without an account, then continue to secure access only after accepting the presentation.",
-    cta_enter: ar ? "مشاهدة العرض المفتوح" : "View the open presentation",
-    cta_accept: ar ? "قبول العرض وبدء التفعيل" : "Accept and begin activation",
+      ? "الدخول مفتوح دائماً — كل الصفحات متاحة بلا بريد ولا رمز سري."
+      : "Access is always open — every page is available without email or password.",
+    cta_enter: ar ? "مشاهدة العرض التنفيذي" : "View the executive presentation",
+    cta_accept: ar ? "الدخول إلى النظام" : "Enter the system",
   };
 
   const Arrow = ar ? ArrowLeft : ArrowRight;
@@ -527,8 +527,7 @@ function IntroLanding() {
               <Arrow className="h-4 w-4" />
             </Link>
             <Link
-              to="/auth"
-              search={{ redirect: undefined }}
+              to="/aria"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-300 px-6 py-3 text-sm font-black text-[#03131f] shadow-[0_12px_36px_-18px_rgba(52,211,153,.9)] transition hover:brightness-110 sm:w-auto"
             >
               <CheckCircle2 className="h-4 w-4" />
