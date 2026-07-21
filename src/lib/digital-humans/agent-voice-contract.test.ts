@@ -93,24 +93,30 @@ describe("specialist voice release contract", () => {
   });
 });
 
-describe("responsive command-home artwork", () => {
-  it("ships purpose-built mobile, tablet, and desktop assets", () => {
-    for (const file of [
-      "src/assets/nexios-command-home-mobile.webp",
-      "src/assets/nexios-command-home-tablet.webp",
-      "src/assets/nexios-command-home-desktop.webp",
-    ]) {
-      const bytes = statSync(join(process.cwd(), file)).size;
-      expect(bytes).toBeGreaterThan(10_000);
-      expect(bytes).toBeLessThan(150_000);
+describe("homepage backdrop artwork", () => {
+  // The homepage backdrop was redesigned from a responsive <picture> of
+  // command-home webp sources to a permanent cinematic toroid image plus a
+  // gesture-gated greeting film (HomeVideoBackdrop). This contract tracks
+  // that shipped design: a real, LCP-prioritized backdrop asset that the
+  // component actually references — never a placeholder.
+  it("ships a purpose-built, LCP-prioritized backdrop the component references", () => {
+    // Guard the REAL asset weight recorded in the manifest, not the pointer
+    // file's size — a placeholder swap would drop this far below a real
+    // cinematic image/film.
+    for (const [file, minBytes] of [
+      ["src/assets/nexios-home-toroid.png.asset.json", 200_000],
+      ["src/assets/home-bg.mp4.asset.json", 1_000_000],
+    ] as const) {
+      const manifest = JSON.parse(source(file)) as { size?: number };
+      expect(typeof manifest.size).toBe("number");
+      expect(manifest.size!).toBeGreaterThan(minBytes);
     }
 
     const backdrop = source("src/components/home/HomeVideoBackdrop.tsx");
-    expect(backdrop).toContain("nexios-command-home-mobile.webp");
-    expect(backdrop).toContain("nexios-command-home-tablet.webp");
-    expect(backdrop).toContain("nexios-command-home-desktop.webp");
-    expect(backdrop).toContain('media="(max-width: 639px)"');
-    expect(backdrop).toContain('media="(min-width: 1200px)"');
+    // Permanent artwork is the toroid image, priority-fetched for LCP.
+    expect(backdrop).toContain("nexios-home-toroid.png.asset.json");
     expect(backdrop).toContain('fetchPriority="high"');
+    // The greeting film ships but never auto-plays (gesture-gated).
+    expect(backdrop).toContain("home-bg.mp4.asset.json");
   });
 });

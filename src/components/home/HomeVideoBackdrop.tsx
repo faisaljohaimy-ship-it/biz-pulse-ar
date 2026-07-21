@@ -116,7 +116,6 @@ export function HomeVideoBackdrop() {
         className="absolute inset-0 h-full w-full object-cover object-center"
       />
 
-
       {/* ARIA's greeting film temporarily cross-fades above the artwork only
           after an explicit user gesture, then yields back to the image. */}
       <video

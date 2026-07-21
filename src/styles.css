@@ -2904,3 +2904,25 @@ html.nx-scrolling *::before,
 html.nx-scrolling *::after {
   animation-play-state: paused !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRESENTATION MODE — html.nx-presenting turns any operational dashboard
+   into a room-readable executive display: navigation chrome is hidden and
+   the type scale grows (rem-based, so every element scales together) so a
+   phone or laptop can drive a live briefing on an external screen. The
+   toggle (PresentationToggle) also requests native fullscreen when the
+   platform allows; on iOS Safari — where element fullscreen is blocked —
+   this class-only mode still delivers the same clean, enlarged display.
+   ═══════════════════════════════════════════════════════════════════ */
+html.nx-presenting .nexus-sidebar,
+html.nx-presenting .nexus-mobile-header,
+html.nx-presenting [aria-label="Beta preview banner"],
+html.nx-presenting [data-nx-presentation-hide] {
+  display: none !important;
+}
+html.nx-presenting {
+  font-size: 112%;
+}
+html.nx-presenting .nexus-app-shell {
+  background: #02060d;
+}

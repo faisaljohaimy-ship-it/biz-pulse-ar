@@ -22,6 +22,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
+import { PresentationToggle } from "@/components/executive/PresentationToggle";
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -430,19 +431,23 @@ function CommandCenterPage() {
             <h1 className="text-lg font-bold tracking-tight sm:text-xl">مركز القيادة الذكي</h1>
             <p className="mt-1 text-xs text-white/50">{dateLabel}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => void speakSummary()}
-            disabled={summarizing || !state}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-emerald-400/50 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/20 disabled:opacity-60"
-          >
-            {summarizing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Sparkles className="h-4 w-4" />
-            )}
-            ملخص آريا
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void speakSummary()}
+              disabled={summarizing || !state}
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-emerald-400/50 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/20 disabled:opacity-60"
+            >
+              {summarizing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              ملخص آريا
+            </button>
+            {/* Drive a live briefing from this device or an external screen. */}
+            <PresentationToggle ar />
+          </div>
         </div>
         {state?.simulation && (
           <div className="mx-auto mt-2 max-w-[1600px] text-[10px] text-amber-300/90">
