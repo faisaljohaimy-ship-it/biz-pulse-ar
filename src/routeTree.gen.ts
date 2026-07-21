@@ -28,7 +28,6 @@ import { Route as OsRouteImport } from './routes/os'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HcisComplianceRouteImport } from './routes/hcis-compliance'
-import { Route as HajjPrimeRouteImport } from './routes/hajj-prime'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveShowcaseRouteImport } from './routes/executive-showcase'
@@ -104,7 +103,6 @@ import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authent
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedHealthRouteImport } from './routes/_authenticated/health'
 import { Route as AuthenticatedHcisRouteImport } from './routes/_authenticated/hcis'
-import { Route as AuthenticatedHajjRouteImport } from './routes/_authenticated/hajj'
 import { Route as AuthenticatedGuideRouteImport } from './routes/_authenticated/guide'
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
@@ -310,11 +308,6 @@ const LoginRoute = LoginRouteImport.update({
 const HcisComplianceRoute = HcisComplianceRouteImport.update({
   id: '/hcis-compliance',
   path: '/hcis-compliance',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HajjPrimeRoute = HajjPrimeRouteImport.update({
-  id: '/hajj-prime',
-  path: '/hajj-prime',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GovernmentBriefRoute = GovernmentBriefRouteImport.update({
@@ -702,11 +695,6 @@ const AuthenticatedHealthRoute = AuthenticatedHealthRouteImport.update({
 const AuthenticatedHcisRoute = AuthenticatedHcisRouteImport.update({
   id: '/hcis',
   path: '/hcis',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedHajjRoute = AuthenticatedHajjRouteImport.update({
-  id: '/hajj',
-  path: '/hajj',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedGuideRoute = AuthenticatedGuideRouteImport.update({
@@ -1329,7 +1317,6 @@ export interface FileRoutesByFullPath {
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
-  '/hajj-prime': typeof HajjPrimeRoute
   '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -1384,7 +1371,6 @@ export interface FileRoutesByFullPath {
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/guide': typeof AuthenticatedGuideRoute
-  '/hajj': typeof AuthenticatedHajjRoute
   '/hcis': typeof AuthenticatedHcisRoute
   '/health': typeof AuthenticatedHealthRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
@@ -1537,7 +1523,6 @@ export interface FileRoutesByTo {
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
-  '/hajj-prime': typeof HajjPrimeRoute
   '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -1592,7 +1577,6 @@ export interface FileRoutesByTo {
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/guide': typeof AuthenticatedGuideRoute
-  '/hajj': typeof AuthenticatedHajjRoute
   '/hcis': typeof AuthenticatedHcisRoute
   '/health': typeof AuthenticatedHealthRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
@@ -1745,7 +1729,6 @@ export interface FileRoutesById {
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
-  '/hajj-prime': typeof HajjPrimeRoute
   '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -1800,7 +1783,6 @@ export interface FileRoutesById {
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
   '/_authenticated/guide': typeof AuthenticatedGuideRoute
-  '/_authenticated/hajj': typeof AuthenticatedHajjRoute
   '/_authenticated/hcis': typeof AuthenticatedHcisRoute
   '/_authenticated/health': typeof AuthenticatedHealthRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
@@ -1955,7 +1937,6 @@ export interface FileRouteTypes {
     | '/executive-showcase'
     | '/films'
     | '/government-brief'
-    | '/hajj-prime'
     | '/hcis-compliance'
     | '/login'
     | '/mcp'
@@ -2010,7 +1991,6 @@ export interface FileRouteTypes {
     | '/forgotten'
     | '/governance'
     | '/guide'
-    | '/hajj'
     | '/hcis'
     | '/health'
     | '/integrations'
@@ -2163,7 +2143,6 @@ export interface FileRouteTypes {
     | '/executive-showcase'
     | '/films'
     | '/government-brief'
-    | '/hajj-prime'
     | '/hcis-compliance'
     | '/login'
     | '/mcp'
@@ -2218,7 +2197,6 @@ export interface FileRouteTypes {
     | '/forgotten'
     | '/governance'
     | '/guide'
-    | '/hajj'
     | '/hcis'
     | '/health'
     | '/integrations'
@@ -2370,7 +2348,6 @@ export interface FileRouteTypes {
     | '/executive-showcase'
     | '/films'
     | '/government-brief'
-    | '/hajj-prime'
     | '/hcis-compliance'
     | '/login'
     | '/mcp'
@@ -2425,7 +2402,6 @@ export interface FileRouteTypes {
     | '/_authenticated/forgotten'
     | '/_authenticated/governance'
     | '/_authenticated/guide'
-    | '/_authenticated/hajj'
     | '/_authenticated/hcis'
     | '/_authenticated/health'
     | '/_authenticated/integrations'
@@ -2580,7 +2556,6 @@ export interface RootRouteChildren {
   ExecutiveShowcaseRoute: typeof ExecutiveShowcaseRoute
   FilmsRoute: typeof FilmsRoute
   GovernmentBriefRoute: typeof GovernmentBriefRoute
-  HajjPrimeRoute: typeof HajjPrimeRoute
   HcisComplianceRoute: typeof HcisComplianceRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
@@ -2791,13 +2766,6 @@ declare module '@tanstack/react-router' {
       path: '/hcis-compliance'
       fullPath: '/hcis-compliance'
       preLoaderRoute: typeof HcisComplianceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hajj-prime': {
-      id: '/hajj-prime'
-      path: '/hajj-prime'
-      fullPath: '/hajj-prime'
-      preLoaderRoute: typeof HajjPrimeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/government-brief': {
@@ -3323,13 +3291,6 @@ declare module '@tanstack/react-router' {
       path: '/hcis'
       fullPath: '/hcis'
       preLoaderRoute: typeof AuthenticatedHcisRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/hajj': {
-      id: '/_authenticated/hajj'
-      path: '/hajj'
-      fullPath: '/hajj'
-      preLoaderRoute: typeof AuthenticatedHajjRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/guide': {
@@ -4248,7 +4209,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
   AuthenticatedGuideRoute: typeof AuthenticatedGuideRoute
-  AuthenticatedHajjRoute: typeof AuthenticatedHajjRoute
   AuthenticatedHcisRoute: typeof AuthenticatedHcisRoute
   AuthenticatedHealthRoute: typeof AuthenticatedHealthRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
@@ -4327,7 +4287,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
   AuthenticatedGuideRoute: AuthenticatedGuideRoute,
-  AuthenticatedHajjRoute: AuthenticatedHajjRoute,
   AuthenticatedHcisRoute: AuthenticatedHcisRoute,
   AuthenticatedHealthRoute: AuthenticatedHealthRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
@@ -4410,7 +4369,6 @@ const rootRouteChildren: RootRouteChildren = {
   ExecutiveShowcaseRoute: ExecutiveShowcaseRoute,
   FilmsRoute: FilmsRoute,
   GovernmentBriefRoute: GovernmentBriefRoute,
-  HajjPrimeRoute: HajjPrimeRoute,
   HcisComplianceRoute: HcisComplianceRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
