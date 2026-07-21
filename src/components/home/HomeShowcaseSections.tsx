@@ -203,73 +203,10 @@ export function HomeShowcaseSections() {
         })}
       </ul>
 
-      {/* ── 2. Value props + live sim figure ────────────────────────── */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="rounded-2xl border border-[#3AE8FF]/15 bg-[#061A2E]/45 p-5 backdrop-blur-md">
-          <ul className="grid gap-2.5 sm:grid-cols-2">
-            {VALUE_PROPS.map((v) => (
-              <li
-                key={v.en}
-                className="flex items-start gap-2 text-[12px] leading-relaxed text-white/80"
-              >
-                <span
-                  className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full"
-                  style={{ background: `${accent}22`, color: accent }}
-                >
-                  <Check className="h-2.5 w-2.5" aria-hidden />
-                </span>
-                {ar ? v.ar : v.en}
-              </li>
-            ))}
-          </ul>
-        </div>
+      {/* Value-props + "Enterprise now" simulation card removed per owner
+          directive — kept the capabilities grid above and technology strip
+          below. */}
 
-        <div className="relative flex flex-col justify-center gap-4 overflow-hidden rounded-2xl border border-[color:var(--acc)]/25 bg-[#061A2E]/55 p-5 backdrop-blur-md">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background: `radial-gradient(ellipse 80% 60% at 80% 0%, ${accent}18, transparent 70%)`,
-            }}
-          />
-          <div className="relative flex items-center justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/55">
-              {ar ? "المؤسسة الآن" : "Enterprise now"}
-            </span>
-            <span className={SIM_CHIP}>{ar ? "محاكاة" : "Simulation"}</span>
-          </div>
-          <div className="relative grid grid-cols-2 gap-3">
-            <div>
-              <div
-                className="text-3xl font-black"
-                style={{ color: accent, fontVariantNumeric: "tabular-nums" }}
-              >
-                {avgReadiness}%
-              </div>
-              <div className="mt-1 text-[10px] text-white/60">
-                {ar ? "متوسط الجاهزية" : "Avg readiness"}
-              </div>
-            </div>
-            <div>
-              <div
-                className="text-3xl font-black text-white"
-                style={{ fontVariantNumeric: "tabular-nums" }}
-              >
-                {monitored}
-              </div>
-              <div className="mt-1 text-[10px] text-white/60">
-                {ar ? "فرداً في الميدان" : "field personnel"}
-              </div>
-            </div>
-          </div>
-          <div className="relative flex items-center gap-2 text-[11px] text-white/70">
-            <Bot className="h-3.5 w-3.5" style={{ color: accent }} aria-hidden />
-            {ar
-              ? "آريا تراقب المؤسسة على مدار الساعة"
-              : "ARIA watches the enterprise around the clock"}
-          </div>
-        </div>
-      </div>
 
       {/* ── 3. Technology strip ─────────────────────────────────────── */}
       <div className="mt-4 rounded-2xl border border-white/10 bg-[#061A2E]/40 p-4 backdrop-blur-md">
