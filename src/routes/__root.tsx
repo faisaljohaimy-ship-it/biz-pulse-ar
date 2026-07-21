@@ -287,6 +287,15 @@ function RootComponent() {
       if (cancelled) return;
       cleanup = m.installAriaWatchdog();
     });
+    // Permanent background self-healing agent (Article III, always-on).
+    void import("@/lib/aria/self-healing/permanent-agent").then((m) => {
+      if (cancelled) return;
+      try {
+        m.installPermanentHealer();
+      } catch {
+        /* healer must never break the app */
+      }
+    });
     // Fire-and-forget: dynamic import keeps SSR bundle unchanged.
     void import("@/lib/user-interaction").then((m) => {
       if (cancelled) return;
