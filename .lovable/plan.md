@@ -1,83 +1,95 @@
-# الخطة — جزءان متتاليان في جلستين
+# لوحة قيادة الوكلاء — /agents-flow
 
-## الجزء الأول — الوكلاء الخمسة الجدد (migration واحدة idempotent)
+## الجزء صفر — إصلاح الرسم العربي (يسبق كل شيء)
 
-ملف: `supabase/migrations/<ts>_agents_fleet_expansion.sql`
+**السبب الجذري:** النصوص العربية داخل `<text>` SVG لا تُشكّل حروفها ولا تحترم اتجاه bidi، فتظهر مفككة/معكوسة («ي رآ» بدل «آريا»).
 
-1. جدول `agent_connections` جديد (idempotent):
-   - `id, from_node, from_kind, to_node, to_kind, link_type` (enum: `command|result|data|approval_suggestion`), `status, is_simulation, org_id, created_at`.
-   - GRANT + RLS بنفس نمط `command_agents` (قراءة عرضية مفتوحة، كتابة خلف auth).
-2. إدراج 5 صفوف في `command_agents` (idempotent عبر `on conflict do nothing` بمفتاح `slug`):
-   - `predictor` مُنبئ / Activity / تنبؤ
-   - `investigator` مُحقِّق / Search / تحقيق
-   - `readiness` مُدقِّق / ClipboardCheck / امتثال
-   - `identity-guard` حارس الهوية / UserCheck / دخول
-   - `ot-eye` عين OT / ShieldHalf / سيبراني
-   - كل صف يحمل عربي/إنجليزي، أيقونة lucide، تخصص، حالة، حدّة، مهمة حالية.
-3. `agent_capabilities`: مشغّل + مدخلات[] + مخرجات[] لكل من الخمسة.
-4. `agent_connections`: روابط من مصادر (SAP/Power BI/M365/Nafath/sensors/incidents/permits) ← الوكلاء ← ARIA ← بوابة الاعتماد. تُغطي الـ13 لا الخمسة فقط.
-5. `agent_runs`: ≥12 تشغيلًا لكل وكيل جديد (≥60 إجمالًا) خلال 14 يومًا، مهام عربية واقعية مربوطة بأصول/بلاغات/توجيهات حقيقية من `twin_assets` / `sec_incidents` / `hcis_*`.
-6. `approval_pipeline`: ≥6 مقترحات جديدة (أوامر عمل وقائية، تعليق بطاقات، خطط إغلاق فجوات).
-7. `aria_knowledge`: 5 صفوف — سطر ملخّص لكل وكيل جديد.
-8. كل الصفوف `is_simulation = true`. لا تعديل على بيانات قائمة.
+**الإصلاح:**
+1. في `AgenticFlowCanvas.tsx` وأي مخطط SVG آخر: استبدال كل `<text>` يحمل نصًا عربيًا بـ `<foreignObject>` يحتضن `<div dir="rtl" style="unicode-bidi:isolate">` — الحروف تُشكَّل بمحرك المتصفح الطبيعي.
+2. مكوّن مشترك `<SvgLabel>` في `src/components/flow/SvgLabel.tsx` لإعادة الاستخدام (يقبل ar/en/description ويرسم البطاقة كاملة داخل foreignObject).
+3. استخدام `command_agents.name_ar` كسطر رئيسي، والاسم الإنجليزي كسطر ثانوي رمادي صغير.
+4. حذف كل عقدة بلا `name_ar` أو `description` من الاستعلام.
+5. حساب `viewBox height` من عدد العقد + هامش سفلي كافٍ ⇒ لا قص.
 
-بوابة الجزء الأول: `agents` تعرض 13 · صفحة الوكلاء تعرض 12 تشغيلًا لكل جديد · ARIA تجيب بسطر واحد لكل واحد منهم.
+## الجزء الأول — صفحة `/agents-flow`
 
-## الجزء الثاني — Agentic Flow Canvas (SVG واحد على الرئيسية)
-
-مكوّن جديد: `src/components/home/AgenticFlowCanvas.tsx` (lazy).
-
-- قراءة عبر server fn جديدة `flow.functions.ts`:
-  - `getFlowGraph()`: يجمع (المصادر الثابتة + `command_agents` + بوابة) كعقد، و`agent_connections` كحواف، وآخر تشغيلات من `agent_runs` لعدّ النبضات لكل حافة. `resilient()` بسقف 4ث.
-- التخطيط:
-  - أربعة أعمدة RTL: `sources → agents → aria → gate`.
-  - داخل عمود الوكلاء: تجميع بالتخصص (امتثال · عمليات · تنبؤ · أمن · معرفة) بشبكة هندسية موحّدة.
-  - إحداثيات تُحسب من الحواف/العقد بدون تخطيط ثابت في الكود.
-- الرسم: SVG واحد. عقدة = `<g>` بـ `<rect rx>` زجاجية + أيقونة lucide كـ `foreignObject` صغير + نص. ports دائرتان يمين/يسار. مكوّن `FlowNode` موحّد.
-- الحواف: `<path d="M... C ...">` bezier ناعم. لون حسب `link_type`. نبضات = `<circle>` صغيرة مع `<animateMotion>` أو `transform` عبر rAF مضبوط. حد أقصى 24 عنصرًا متحركًا مع pool معاد التدوير.
-- التفاعل:
-  - onFocus عقدة ← يعتم البقية عبر `opacity` على مجموعات SVG (فئة CSS واحدة).
-  - بطاقة جانبية `<aside>` HTML عادية بجانب SVG.
-  - زر «تشغيل السيناريو»: يبث نبضات من آخر 24س تسلسليًا.
-  - زر «شرح الدورة»: يضيء كل عمود مع سطر عربي قصير.
-  - `IntersectionObserver` يوقف rAF خارج الشاشة.
-  - `prefers-reduced-motion`: بلا نبضات، الشبكة كاملة المعلومة ساكنة.
-- الجوال (≤430px): تخطيط بديل — 4 مراحل رأسية مطوية + زر «العرض الكامل» يفتح SVG بتمرير أفقي snap داخل حاوية `overflow-x-auto`. البوابة تبقى الختام.
-- الأداء: لا مكتبات جديدة (لا reactflow). حركة على `transform/opacity` فقط. تحميل كسول عبر `React.lazy` مع `<ClientOnly>` — SSR يُخرج نسخة ساكنة.
-
-## اندماج الرئيسية
-
-- `src/routes/index.tsx`: القسم القائم لشجرة `AgentHierarchyGraph` يصبح Tabs بتبويبين:
-  1. «الحلقة الحية» ← `AgentHierarchyGraph` الحالي.
-  2. «شبكة التنسيق» ← `AgenticFlowCanvas` (افتراضي مُختار).
-- عدّاد الوكلاء في كل الشاشات يقرأ من `command_agents` (مصدر واحد).
-
-## التقنيات
-
+### الملفات الجديدة
 ```text
-DB: command_agents (existing) + agent_capabilities (existing) + agent_connections (new) + agent_runs (existing) + approval_pipeline (existing)
-Server: src/lib/flow.functions.ts (getFlowGraph)
-Client: src/components/home/AgenticFlowCanvas.tsx (SVG-only, lazy, ClientOnly)
-       + src/components/home/FlowNode.tsx
-       + src/components/home/flow-layout.ts (pure layout math)
-Tabs UI: shadcn Tabs في index.tsx حول AgentHierarchyGraph
+src/routes/agents-flow.tsx                      — الصفحة العامة (خارج _authenticated)
+src/lib/agents-flow.functions.ts                — server fns:
+  ├─ getFlowTopology()      : nodes + edges + groups
+  ├─ getAgentDetail(slug)   : capabilities + last 10 runs + queue + pending approvals + upstream/downstream slugs
+  └─ getFleetSummary()      : counts (total/running/queued/pending-approval/avg-duration)
+src/components/agents-flow/
+  ├─ FlowHeader.tsx         — الترويسة التنفيذية + PageBriefing
+  ├─ FlowChainStrip.tsx     — شريط «السابق ← الوكيل ← التالي» (RTL)
+  ├─ FlowCanvasFull.tsx     — نسخة موسّعة من AgenticFlowCanvas بمجموعات تخصص + focus mode
+  ├─ SvgLabel.tsx           — bidi-safe label داخل foreignObject (مشترك)
+  ├─ AgentDrawer.tsx        — Sheet جانبي بتبويبات (نظرة/مهام/سجل/مخرجات معلّقة/ربط آريا)
+  ├─ FlowTimelineStrip.tsx  — تدفق 24س + زر «تشغيل السيناريو»
+  ├─ AgentListView.tsx      — جدول تنفيذي بديل
+  ├─ FleetQueueView.tsx     — الطابور الشامل
+  └─ view-mode-toggle.tsx   — الشبكة/القائمة/الطابور + وضع العرض
 ```
 
+### الترويسة التنفيذية
+شريط علوي مباشرة من `getFleetSummary()`:
+`13 وكيلًا · N قيد التشغيل · M في الطابور · K بانتظار اعتمادك · متوسط زمن التشغيل`. شارة المحاكاة + `PageBriefing`.
+
+### المخطط الحي (البطل)
+- أربعة أعمدة RTL: مصادر ← وكلاء ← آريا ← بوابة الاعتماد.
+- عمود الوكلاء مجمّع بصريًا حسب `specialty`: امتثال · عمليات · تنبؤ · أمن · معرفة (عناوين مجموعات خفيفة أعلى كل تجميعة).
+- روابط bezier بألوان `link_type` (بيانات cyan · أمر amber · نتيجة emerald · مقترح اعتماد rose) + مفتاح ألوان صحيح الاتجاه.
+- نبضات من `agent_runs.completed_at` الأخيرة، إعادة تدوير، ≤24 عنصر متحرك.
+- لمسة ذهبية دقيقة على بوابة الاعتماد فقط.
+- لا خط يعبر البوابة (يتوقف عند حافتها اليسرى).
+
+### التركيز على وكيل
+- نقر عقدة ⇒ CSS class على `<svg>` تعتم كل ما ليس في `data-agent-chain="<slug>"` (opacity 0.15) وتبرز السلسلة كاملة.
+- `FlowChainStrip` أعلى الكانفاس يعرض ثلاث بطاقات مرقّمة مع أسهم RTL: **السابق ← الوكيل ← التالي**. مصادر السابق/التالي من `agent_connections`.
+- `AgentDrawer` (Sheet من shadcn) بخمسة تبويبات:
+  1. نظرة (من `agent_capabilities` + metadata).
+  2. مهامه الحالية (`agent_runs` قيد التشغيل + طابور).
+  3. سجل تشغيل — آخر 10.
+  4. مخرجات معلّقة من `approval_pipeline` — أزرار اعتماد/رفض معطلة بأناقة مع tooltip «يتطلب تفويض المدير».
+  5. ارتباط آريا — جملة واحدة من `aria_knowledge`.
+
+### شريط التدفق الزمني السفلي
+نقاط لآخر 24س من `agent_runs`. زر «تشغيل السيناريو» يبث النبضات تسلسليًا حتى البوابة عبر rAF (نفس pool النبضات).
+
+### أوضاع العرض
+Toggle: شبكة (افتراضي) · قائمة · طابور. زر «وضع العرض» يخفي التنقل ويكبّر الكانفاس (fullscreen div).
+
+### الجوال (390–430)
+- تدفق رأسي بأربع مراحل مطوية (`<details>`).
+- اختيار وكيل يفتح `AgentDrawer` كصفحة كاملة (`side="bottom"` مع full-height).
+- `FlowChainStrip` ثابت أعلى الصفحة (`sticky top-0`).
+
+### الأداء (قيد الإنتاج)
+- SVG + CSS فقط. لا reactflow/d3/canvas.
+- حركة على `transform`/`opacity` فقط.
+- `IntersectionObserver` يوقف rAF خارج الشاشة.
+- `prefers-reduced-motion`: كل شيء ساكن.
+- الصفحة lazy عبر `React.lazy` + `<ClientOnly>`.
+- SSR: نسخة ساكنة كاملة المعلومة.
+
+### الربط
+- `/agents-flow` عام (خارج `_authenticated`) لأن الصفحة الرئيسية عامة أيضًا.
+- في الرئيسية: أيقونة/بطاقة «شبكة التنسيق الحية» تصبح `<Link to="/agents-flow">` + اللوحة المصغّرة تحته تحتفظ بـ onClick يفتح الصفحة الكاملة.
+- `aria_knowledge`: التأكد من وجود سطر لكل وكيل + رابط `/agents-flow?agent=<slug>`.
+
+### الجمالية
+- Navy عميق (`--nx-bg`) · خطوط cyan/emerald رفيعة (`stroke-width: 1.25`) · ذهبي حصريًا على البوابة.
+- IBM Plex Sans Arabic (مُحمّل بالفعل).
+- بطاقات زجاجية موحّدة الحجم `160×64` (وكلاء) و`140×48` (مصادر).
+
 ## بوابة التحقق قبل الدفع
+- لقطات 390 + 1280 لعقدة آريا مكبّرة تُظهر «آريا» صحيحة.
+- 3 وكلاء مختلفين مع سلسلتهم.
+- الأرقام العلوية = SQL count.
+- iOS Safari: 10 تحميلات + ≥55fps.
+- vitest + typecheck + performance budget + qa-guardian.
+- commit واحد: `feat(agents-flow): agent operations dashboard with upstream/downstream chain & Arabic SVG rendering fix`.
 
-- عدّاد الوكلاء 13 موحّد.
-- ≥60 تشغيلًا جديدًا مبذورًا.
-- الشبكة تُبنى من `agent_connections` (لا ثابت).
-- فحص بصري: لا حافة تعبر البوابة.
-- iOS Safari: 10 تحميلات متتالية بلا انهيار + ≥55fps.
-- لقطات 390 و1280.
-- ARIA تجيب عن كل وكيل جديد بسطر واحد.
-- tsc + vitest + الميزانية + tصريح qa-guardian.
-- commit واحد: `feat(agents+flow): five industrial agents & holographic agentic flow canvas on home`.
-
-## إخراج الجلسات
-
-- **الجلسة 1 (هذه)**: الـmigration + اعتماد الأسطول عبر الشاشات + تحديث ARIA knowledge → توقّف عند بوابة السماح بتنفيذ الـmigration.
-- **الجلسة 2**: بناء `AgenticFlowCanvas` كامل + التبويبات في الرئيسية + QA البصري والأداء + دفع commit.
-
-هل أبدأ بالجلسة الأولى (migration الأسطول) الآن؟
+## سؤال واحد قبل التنفيذ
+هل تريدين `/agents-flow` **عامًا** (يفتحه الزائر مباشرة، كما الرئيسية) أم داخل `_authenticated` (يفتح بدون بريد لأن البوابة مفتوحة أصلًا)؟
