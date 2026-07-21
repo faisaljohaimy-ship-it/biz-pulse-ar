@@ -159,10 +159,10 @@ function IntroLanding() {
     capabilities: ar ? "مكوّنات النظام" : "Platform Capabilities",
     cta_title: ar ? "جاهز للدخول إلى مركز القيادة؟" : "Ready to enter the Command Center?",
     cta_body: ar
-      ? "شاهد التجربة التنفيذية كاملة بلا حساب، ثم انتقل إلى الدخول الآمن فقط بعد قبول العرض."
-      : "View the complete executive experience without an account, then continue to secure access only after accepting the presentation.",
-    cta_enter: ar ? "مشاهدة العرض المفتوح" : "View the open presentation",
-    cta_accept: ar ? "قبول العرض وبدء التفعيل" : "Accept and begin activation",
+      ? "الدخول مفتوح دائماً — كل الصفحات متاحة بلا بريد ولا رمز سري."
+      : "Access is always open — every page is available without email or password.",
+    cta_enter: ar ? "مشاهدة العرض التنفيذي" : "View the executive presentation",
+    cta_accept: ar ? "الدخول إلى النظام" : "Enter the system",
   };
 
   const Arrow = ar ? ArrowLeft : ArrowRight;
