@@ -1,3 +1,5 @@
+import { applyAriaPronunciation } from "./pronunciation";
+
 /**
  * ARIA reply-channel contract.
  *
@@ -18,9 +20,11 @@ export function shouldSpeakAriaReply({
 
 /** Convert a model reply into safe, natural speech without leaking visual
  * markup into ElevenLabs. This is a final client-side guard; the server also
- * asks the model for spoken prose when replyMode="voice". */
+ * asks the model for spoken prose when replyMode="voice". Article 22 §5:
+ * Latin acronyms and directive codes are spoken as correct Arabic (SEC-18 →
+ * «سِك ثمانية عشر», PTW → «تصريح العمل») instead of letter-spelled. */
 export function toAriaSpeechText(value: string): string {
-  return value
+  const cleaned = value
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[([^\]]+)\]\((?:https?:\/\/|mailto:|tel:)[^)]*\)/gi, "$1")
@@ -32,4 +36,5 @@ export function toAriaSpeechText(value: string): string {
     .replace(/[ \t]+/g, " ")
     .replace(/\s*\n\s*/g, " ")
     .trim();
+  return applyAriaPronunciation(cleaned);
 }

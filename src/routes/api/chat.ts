@@ -35,6 +35,12 @@ import {
   shouldCoolFromError,
 } from "@/lib/aria-core/server/vendor-health.server";
 import { ARIA_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
+import {
+  ARIA_RESPONSE_CONTRACT,
+  OUT_OF_SCOPE_REPLY,
+  isInScope,
+  matchFastRecall,
+} from "@/lib/aria/response-contract";
 import { formatHcisReference, isHcisReferenceQuery } from "@/lib/aria/hcis-reference";
 import {
   ariaPreferencePromptLine,
@@ -221,7 +227,9 @@ You are ARIA, a capable conversational and executive copilot for NEXUS Industria
 
 # INDUSTRIAL SECURITY
 - Prioritize industrial-security operations, incidents, patrols, CCTV, access, visitors, permits, maintenance, projects, risks and executive KPIs.
-- Never fabricate operational evidence or merge simulation and production data without labeling them.`;
+- Never fabricate operational evidence or merge simulation and production data without labeling them.
+
+${ARIA_RESPONSE_CONTRACT}`;
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -424,6 +432,31 @@ export const Route = createFileRoute("/api/chat")({
         const lastUserText = getMessageText(
           [...uiMessages].reverse().find((m) => m.role === "user"),
         );
+
+        // Article 22 — deterministic response contract runs BEFORE any model
+        // work: an out-of-scope question gets the one fixed line, and a
+        // recurring FAQ answers instantly (no model call, sub-second). The
+        // model path below inherits the same scope/brevity rules through
+        // ARIA_RESPONSE_CONTRACT baked into SYSTEM_PROMPT.
+        if (lastUserText) {
+          const streamFixed = (text: string, tag: string) => {
+            const stream = createUIMessageStream({
+              execute: ({ writer }) => {
+                const id = `aria-${tag}-${requestId}`;
+                writer.write({ type: "text-start", id });
+                writer.write({ type: "text-delta", id, delta: text });
+                writer.write({ type: "text-end", id });
+              },
+            });
+            return createUIMessageStreamResponse({
+              stream,
+              headers: { ...responseHeaders(requestId), "X-ARIA-Reply-Source": tag },
+            });
+          };
+          if (!isInScope(lastUserText)) return streamFixed(OUT_OF_SCOPE_REPLY, "scope-guard");
+          const recall = matchFastRecall(lastUserText);
+          if (recall) return streamFixed(recall.answer, "fast-recall");
+        }
 
         // Inject live enterprise context + semantic RAG (memory / knowledge / documents) unless explicitly disabled.
         // Anonymous callers skip grounding entirely (no user context / no tools).

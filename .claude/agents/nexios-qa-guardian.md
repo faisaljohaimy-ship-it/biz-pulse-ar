@@ -34,6 +34,12 @@ grep -rn "enabled: !!user" src/routes/ | grep -vE "knowledge|admin" # قراءا
 - اختبارا العقد يمران ضمن vitest:
   `aria-service.test.ts` (مصادَق أولًا ← بديل عام) و
   `platforms.test.ts` (رابط نُسك الكانوني).
+- **عقد آريا (المادة ٢٢)**: `response-contract.test.ts` و
+  `pronunciation.test.ts` خضراء؛ وإن مسّ الـ diff منطق ردود آريا
+  (`response-contract.ts` · `pronunciation.ts` · `reply-modality.ts` ·
+  `routes/api/chat.ts`) استدعِ وكيل `nexios-aria-response-auditor`. تحقق
+  أن نقطتي القصر في `chat.ts` تسبقان النموذج (النطاق ثم المسار الفوري)،
+  وأن نص TTS يمرّ `applyAriaPronunciation`. أي خرق = نقض بذكر المادة ٢٢.
 - أي دالة خادم قراءة عرض جديدة: `optionalSupabaseAuth` + `resilient()`.
 - راجع الصفحات المتغيرة في diff ضد قائمة `nexios-standards`:
   RTL بلا قص أفقي · الحالات الثلاث (skeleton بمهلة/فارغ/خطأ عربي) ·

@@ -251,9 +251,40 @@ infinite loading state.
 
 ---
 
+## الباب الثامن — عقيدة آريا
+## Chapter VIII — ARIA Doctrine
+
+### المادة ٢٢ — عقد رد آريا
+آريا مساعد أمن صناعي؛ لا تتحدث خارج نطاقه ولا تقول أكثر مما سُئلت عنه.
+النطاق المسموح حصرًا: توجيهات HCIS (SEC/SAF) · الامتثال وحالته · تصاريح
+العمل PTW · العمليات والبلاغات · السلامة والحريق · التقارير التشغيلية ·
+وحدات نكسيوس نفسها. خارجه سطرٌ واحد ثابت. عقد الاختصار: مباشر → جملة
+≤٢٥ كلمة؛ نطاق توجيه → ٣ نقاط؛ معقّد → ٥ أسطر ثم «أفصّل أكثر؟»؛ لا
+مقدمات ولا حشو، والكلمة الأولى معلومة. مسارٌ فوري (<٤٠٠ms) يجيب المتكرر
+قبل النموذج. حارس هلوسة: البيان غير المحفوظ يُقابَل بسطر «غير متوفر
+لدي». النطق عبر ليان حصرًا يحوّل الرموز إلى عربية صحيحة (SEC-18 → «سِك
+ثمانية عشر»). العقد مثبَّت باختبارات (`response-contract.test.ts` ·
+`pronunciation.test.ts`) ومصونٌ بوكيل `nexios-aria-response-auditor`.
+**Article 22 — ARIA Response Contract.** ARIA is an industrial-security
+assistant: it never speaks outside that domain, nor says more than asked.
+Scope is exclusively HCIS SEC/SAF directives · compliance & its status ·
+PTW permits · operations & incidents · safety & fire · operational
+reports · the NEXIOS modules themselves; anything else gets one fixed
+line. Brevity contract: direct → one sentence ≤25 words; directive scope
+→ 3 bullets; complex → 5 lines then "أفصّل أكثر؟"; no preamble or filler,
+the first word is the answer. A sub-400ms fast path answers recurring
+questions before the model. A hallucination guard answers an unheld datum
+with "غير متوفر لدي". Pronunciation (Layan only) speaks codes as correct
+Arabic (SEC-18 → «سِك ثمانية عشر»). The contract is pinned by unit tests
+(`response-contract.test.ts` · `pronunciation.test.ts`) and safeguarded by
+the `nexios-aria-response-auditor` agent.
+
+---
+
 ## سجل المواد المعدّلة — Amendment Record
 
 | التاريخ Date | المادة Article | التغيير Change | المعتمِد Approver |
 |---|---|---|---|
 | 2026-07-20 | — | التأسيس: إقرار الدستور بمواده العشرين · Founding: constitution enacted with all twenty articles | مالك المنتج Product Owner |
 | 2026-07-21 | ٢١ | إضافة مبدأ الوضوح المطلق · Added the Absolute-Clarity Principle | مالك المنتج Product Owner |
+| 2026-07-21 | ٢٢ | عقد رد آريا: حصر النطاق · الاختصار · المسار الفوري · حارس الهلوسة · النطق · Article 22 ARIA Response Contract: scope lock, brevity, fast recall, hallucination guard, pronunciation | مالك المنتج Product Owner |
