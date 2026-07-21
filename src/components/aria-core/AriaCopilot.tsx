@@ -1634,7 +1634,12 @@ export function AriaCopilot() {
       r.continuous = false;
       finalTranscriptRef.current = "";
       let recognitionFailed = false;
-      const silenceMs = convModeRef.current ? 6000 : 2500;
+      // SpeechRecognition fallback (browsers without MediaRecorder). This
+      // timer only re-arms on each recognised word as a safety net — the API
+      // fires its own end-of-speech first — so the old 6s/2.5s made ARIA feel
+      // frozen after the user stopped talking. 1.5s (conv) / 2s keeps the reply
+      // prompt without truncating a brief pause.
+      const silenceMs = convModeRef.current ? 1500 : 2000;
       const armSilence = () => {
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         silenceTimerRef.current = setTimeout(() => {
