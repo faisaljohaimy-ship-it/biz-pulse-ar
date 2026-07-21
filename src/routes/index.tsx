@@ -429,8 +429,14 @@ function IntroLanding() {
             <AgentHierarchyGraph agents={HOME_HOLO_AGENTS} runs={[]} ar={ar} />
           </div>
           <div>
-            <div className="mb-2 text-center text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
-              {ar ? "شبكة التنسيق الحية" : "Live Coordination Network"}
+            <div className="mb-2 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
+              <span>{ar ? "شبكة التنسيق الحية" : "Live Coordination Network"}</span>
+              <Link
+                to="/agents-flow"
+                className="rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold tracking-wider text-[#3AE8FF] hover:bg-[#3AE8FF]/20"
+              >
+                {ar ? "لوحة القيادة الكاملة ↗" : "Open dashboard ↗"}
+              </Link>
             </div>
             <AgenticFlowCanvas ar={ar} />
           </div>

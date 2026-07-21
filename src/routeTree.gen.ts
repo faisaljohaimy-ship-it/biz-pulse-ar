@@ -47,6 +47,7 @@ import { Route as CinematicDemoRouteImport } from './routes/cinematic-demo'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AupRouteImport } from './routes/aup'
+import { Route as AgentsFlowRouteImport } from './routes/agents-flow'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -403,6 +404,11 @@ const AuthRoute = AuthRouteImport.update({
 const AupRoute = AupRouteImport.update({
   id: '/aup',
   path: '/aup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsFlowRoute = AgentsFlowRouteImport.update({
+  id: '/agents-flow',
+  path: '/agents-flow',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -1298,6 +1304,7 @@ const AuthenticatedHcisDirectiveCodeRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/agents-flow': typeof AgentsFlowRoute
   '/aup': typeof AupRoute
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
@@ -1504,6 +1511,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/agents-flow': typeof AgentsFlowRoute
   '/aup': typeof AupRoute
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
@@ -1710,6 +1718,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
+  '/agents-flow': typeof AgentsFlowRoute
   '/aup': typeof AupRoute
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
@@ -1918,6 +1927,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/agents-flow'
     | '/aup'
     | '/auth'
     | '/book'
@@ -2124,6 +2134,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/agents-flow'
     | '/aup'
     | '/auth'
     | '/book'
@@ -2329,6 +2340,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/about'
+    | '/agents-flow'
     | '/aup'
     | '/auth'
     | '/book'
@@ -2537,6 +2549,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
+  AgentsFlowRoute: typeof AgentsFlowRoute
   AupRoute: typeof AupRoute
   AuthRoute: typeof AuthRoute
   BookRoute: typeof BookRoute
@@ -2899,6 +2912,13 @@ declare module '@tanstack/react-router' {
       path: '/aup'
       fullPath: '/aup'
       preLoaderRoute: typeof AupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents-flow': {
+      id: '/agents-flow'
+      path: '/agents-flow'
+      fullPath: '/agents-flow'
+      preLoaderRoute: typeof AgentsFlowRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -4350,6 +4370,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
+  AgentsFlowRoute: AgentsFlowRoute,
   AupRoute: AupRoute,
   AuthRoute: AuthRoute,
   BookRoute: BookRoute,
