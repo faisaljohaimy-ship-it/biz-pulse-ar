@@ -1,4 +1,5 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -43,24 +44,8 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/exec")({
   component: ExecConsole,
-  errorComponent: function ExecErrorComponent({ error, reset }) {
-    const router = useRouter();
-    return (
-      <div className="p-8 text-center space-y-3">
-        <p className="text-destructive">{error?.message ?? "Error"}</p>
-        <Button
-          variant="outline"
-          onClick={() => {
-            reset();
-            router.invalidate();
-          }}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  },
-  notFoundComponent: () => <div className="p-8">Not found.</div>,
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
 });
 
 type ToolRow = {

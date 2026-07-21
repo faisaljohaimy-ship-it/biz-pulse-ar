@@ -222,7 +222,8 @@ export function AgentRing() {
         @keyframes ring-bloom { 0%,100% { opacity: .35; transform: translate(-50%,-50%) scale(1); } 50% { opacity: .65; transform: translate(-50%,-50%) scale(1.08); } }
         @keyframes ring-energy-flow { to { stroke-dashoffset: -40; } }
         @keyframes ring-particle { 0% { opacity: 0; transform: translate(-50%,-50%) translateY(0) scale(.6); } 25% { opacity: .9; } 100% { opacity: 0; transform: translate(-50%,-50%) translateY(-22px) scale(1); } }
-        @keyframes ring-core-breathe { 0%,100% { transform: translate(-50%,-50%) scale(1); box-shadow: 0 0 60px rgba(0,212,255,0.40), 0 0 120px rgba(0,212,255,0.15); } 50% { transform: translate(-50%,-50%) scale(1.035); box-shadow: 0 0 80px rgba(0,212,255,0.60), 0 0 160px rgba(58,232,255,0.25); } }
+        /* transform-only breathe; the glow is a STATIC box-shadow on the core (never animate box-shadow). */
+        @keyframes ring-core-breathe { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.035); } }
         @media (prefers-reduced-motion: reduce) {
           .ring-anim, .ring-anim * { animation: none !important; }
         }
@@ -343,6 +344,7 @@ export function AgentRing() {
           style={{
             animation: "ring-core-breathe 5.2s ease-in-out infinite",
             transform: "translate(-50%,-50%)",
+            boxShadow: "0 0 70px rgba(0,212,255,0.5), 0 0 140px rgba(58,232,255,0.2)",
           }}
         >
           {/* Scan ray */}

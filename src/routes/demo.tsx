@@ -169,7 +169,7 @@ function DemoCenter() {
         <div className="mt-6 grid gap-3 md:grid-cols-2">
           <button
             onClick={() => navigate({ to: "/request-demo", search: { mode: "enterprise" } })}
-            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-left transition hover:border-emerald-400/40 disabled:opacity-50"
+            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-start transition hover:border-emerald-400/40 disabled:opacity-50"
           >
             <Database className="h-5 w-5 text-emerald-400" />
             <div className="flex-1">
@@ -185,7 +185,7 @@ function DemoCenter() {
 
           <button
             onClick={() => navigate({ to: "/book" })}
-            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-left transition hover:border-amber-400/40 disabled:opacity-50"
+            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-start transition hover:border-amber-400/40 disabled:opacity-50"
           >
             <RotateCcw className="h-5 w-5 text-amber-400" />
             <div className="flex-1">

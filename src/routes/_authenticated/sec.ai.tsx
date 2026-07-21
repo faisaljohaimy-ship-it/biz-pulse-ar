@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
-import { SecPageHeader } from "@/components/sec/sec-shell";
+import { SecPageHeader, SecLoading, SecError } from "@/components/sec/sec-shell";
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 import { Sparkles, ArrowRight } from "lucide-react";
 
@@ -17,12 +17,13 @@ export const Route = createFileRoute("/_authenticated/sec/ai")({
 function AIRec() {
   const { user, loading: authLoading } = useAuth();
   const fetchOverview = useServerFn(getSecOverview);
-  const { data, dataUpdatedAt, isFetching } = useQuery({
+  const { data, dataUpdatedAt, isFetching, isError, refetch } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
     enabled: !authLoading,
   });
-  if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
+  if (isError) return <SecError onRetry={() => refetch()} />;
+  if (!data) return <SecLoading />;
 
   const recs: {
     title: string;

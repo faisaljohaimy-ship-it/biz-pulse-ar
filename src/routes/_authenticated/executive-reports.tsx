@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
@@ -64,18 +65,8 @@ function parsePublishError(e: unknown): PublishErrorEnvelope | null {
 
 export const Route = createFileRoute("/_authenticated/executive-reports")({
   component: ExecutiveReportsPage,
-  errorComponent: ({ error, reset }) => (
-    <div className="p-6">
-      <Card className="p-6">
-        <div className="text-destructive font-semibold">Reports error</div>
-        <div className="text-sm text-muted-foreground mt-1">{error.message}</div>
-        <Button className="mt-3" onClick={reset}>
-          Retry
-        </Button>
-      </Card>
-    </div>
-  ),
-  notFoundComponent: () => <div className="p-6">Not found</div>,
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
 });
 
 type SiteOpt = { id: string; displayName: string };

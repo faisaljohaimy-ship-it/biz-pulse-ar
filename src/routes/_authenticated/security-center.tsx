@@ -124,7 +124,7 @@ function SecurityCenterPage() {
         ) : (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-[12px]">
-              <thead className="text-left text-[10px] uppercase tracking-widest text-slate-500">
+              <thead className="text-start text-[10px] uppercase tracking-widest text-slate-500">
                 <tr className="border-b border-white/5">
                   <th className="py-2 pe-3">{ar ? "المستخدم" : "User"}</th>
                   <th className="py-2 pe-3">{ar ? "الدور" : "Role"}</th>

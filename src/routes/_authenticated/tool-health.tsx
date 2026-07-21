@@ -214,7 +214,7 @@ function ToolHealthPage() {
         <CardContent>
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-slate-500 border-b border-cyan-500/10">
+              <tr className="text-start text-xs text-slate-500 border-b border-cyan-500/10">
                 <th className="py-2">Tool</th>
                 <th className="py-2 text-right">Calls</th>
                 <th className="py-2 text-right">Failed</th>

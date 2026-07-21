@@ -216,11 +216,11 @@ function Diagnostics() {
           {fEvents.length === 0 ? (
             <EmptyState
               reason={filter ? "filtered" : "waiting"}
-              title="No events"
+              title="لا أحداث"
               description={
                 filter
-                  ? "Adjust the filter to see more."
-                  : "No events received yet. Triggers will appear here in real time."
+                  ? "عدّل عامل التصفية لعرض المزيد."
+                  : "لا أحداث بعد. ستظهر المشغّلات هنا فور ورودها."
               }
               compact
             />

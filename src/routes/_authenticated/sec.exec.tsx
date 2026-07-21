@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getExecKpis } from "@/lib/sec.functions";
-import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
+import { SecPageHeader, StatCard, SecLoading, SecError } from "@/components/sec/sec-shell";
 
 export const Route = createFileRoute("/_authenticated/sec/exec")({
   errorComponent: RouteError,
@@ -13,12 +13,18 @@ export const Route = createFileRoute("/_authenticated/sec/exec")({
 
 function ExecDashboard() {
   const fetch = useServerFn(getExecKpis);
-  const { data: k } = useQuery({
+  const {
+    data: k,
+    isError,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["sec-exec-kpis"],
     queryFn: () => fetch(),
     refetchInterval: 30_000,
   });
-  if (!k) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
+  if (isError) return <SecError onRetry={() => refetch()} />;
+  if (isLoading || !k) return <SecLoading />;
 
   const fmt = (n: number) => n.toLocaleString("ar-SA");
   const pct = (n: number) => `${n}%`;

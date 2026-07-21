@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,8 @@ import {
 
 export const Route = createFileRoute("/_authenticated/observability")({
   component: ObservabilityPage,
-  errorComponent: ({ error }) => <div className="p-6 text-destructive">Error: {error.message}</div>,
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
 });
 
 function ObservabilityPage() {
@@ -152,9 +154,9 @@ function ObservabilityPage() {
             <table className="w-full text-sm">
               <thead className="text-muted-foreground">
                 <tr>
-                  <th className="text-left py-2">Secret</th>
-                  <th className="text-left">Last rotated</th>
-                  <th className="text-left">Next due</th>
+                  <th className="text-start py-2">Secret</th>
+                  <th className="text-start">Last rotated</th>
+                  <th className="text-start">Next due</th>
                   <th className="text-right">Status</th>
                 </tr>
               </thead>
@@ -194,7 +196,7 @@ function ObservabilityPage() {
             <table className="w-full text-sm">
               <thead className="text-muted-foreground">
                 <tr>
-                  <th className="text-left py-2">Model</th>
+                  <th className="text-start py-2">Model</th>
                   <th className="text-right">Calls</th>
                   <th className="text-right">Tokens</th>
                   <th className="text-right">Cost</th>

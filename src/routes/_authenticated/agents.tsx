@@ -1,4 +1,5 @@
-import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -66,24 +67,8 @@ import { stopActiveAriaVoice } from "@/lib/digital-humans/aria-voice";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsOps,
-  errorComponent: function AgentsErrorComponent({ error, reset }) {
-    const router = useRouter();
-    return (
-      <div className="p-8 text-center space-y-3">
-        <p className="text-destructive">{error?.message ?? "Error"}</p>
-        <Button
-          variant="outline"
-          onClick={() => {
-            reset();
-            router.invalidate();
-          }}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  },
-  notFoundComponent: () => <div className="p-8">Not found.</div>,
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
 });
 
 type RunRow = {
@@ -779,7 +764,7 @@ function AgentsOps() {
             <ScrollArea className="h-[560px]">
               <div className="divide-y divide-border/40">
                 {runsQ.isLoading ? (
-                  <div className="p-6 text-center text-sm text-muted-foreground">Loading…</div>
+                  <div className="p-6 text-center text-sm text-muted-foreground">جارٍ التحميل…</div>
                 ) : runs.length === 0 ? (
                   <div className="p-8 text-center text-sm text-muted-foreground">
                     {locale === "ar" ? "لا توجد تشغيلات بعد." : "No agent runs yet."}

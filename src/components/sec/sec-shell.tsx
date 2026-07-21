@@ -176,6 +176,38 @@ export function SampleBadge() {
   );
 }
 
+export function SecLoading({ rows = 12 }: { rows?: number }) {
+  return (
+    <div className="space-y-4" aria-busy="true" aria-live="polite">
+      <div className="holo-card h-16 animate-pulse rounded-2xl" />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="h-24 animate-pulse rounded-xl border border-border bg-card" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function SecError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="holo-card flex min-h-[40vh] flex-col items-center justify-center gap-3 rounded-2xl p-8 text-center">
+      <AlertTriangle className="h-9 w-9 text-amber-500" />
+      <div className="text-base font-semibold text-foreground">تعذّر تحميل المؤشرات</div>
+      <p className="max-w-sm text-sm text-muted-foreground">
+        حدث تأخّر مؤقّت في جلب البيانات. أعد المحاولة.
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20"
+      >
+        إعادة المحاولة
+      </button>
+    </div>
+  );
+}
+
 export function severityClass(sev: string) {
   switch (sev) {
     case "critical":

@@ -5,6 +5,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Off-screen animation freeze (see src/hooks/use-freeze-offscreen.ts). A
+   section marked frozen — and everything inside it — stops animating, so
+   standing home animations never accumulate GPU/paint load while scrolled
+   past. This is the systemic guard against the iOS crash pattern. */
+[data-nx-frozen="true"],
+[data-nx-frozen="true"] * {
+  animation-play-state: paused !important;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -496,14 +505,10 @@
   @keyframes pulse-cyan {
     0%,
     100% {
-      box-shadow:
-        0 0 24px rgba(0, 212, 255, 0.15),
-        0 0 0 1px rgba(58, 232, 255, 0.15) inset;
+      opacity: 0.35;
     }
     50% {
-      box-shadow:
-        0 0 48px rgba(0, 212, 255, 0.35),
-        0 0 0 1px rgba(58, 232, 255, 0.35) inset;
+      opacity: 1;
     }
   }
   @keyframes sec-stream {
@@ -523,6 +528,17 @@
     }
   }
   .animate-pulse-cyan {
+    position: relative;
+  }
+  .animate-pulse-cyan::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      0 0 48px rgba(0, 212, 255, 0.35),
+      0 0 0 1px rgba(58, 232, 255, 0.35) inset;
     animation: pulse-cyan 3.2s ease-in-out infinite;
   }
   .animate-sec-stream {
@@ -1472,19 +1488,10 @@ body {
   100% {
     border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.28);
     background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.018);
-    box-shadow:
-      inset 0 0 0 1px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.06),
-      inset 0 0 10px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.045),
-      0 0 7px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.18);
   }
   50% {
     border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.62);
     background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.045);
-    box-shadow:
-      inset 0 0 0 1px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.16),
-      inset 0 0 16px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.11),
-      0 0 13px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.4),
-      0 0 28px -10px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.72);
   }
 }
 
@@ -1521,40 +1528,25 @@ body {
   100% {
     border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.58);
     background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.045);
-    box-shadow:
-      inset 0 0 0 1px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.16),
-      inset 0 0 16px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.1),
-      0 0 14px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.38),
-      0 0 30px -9px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.72);
   }
   50% {
     border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 1);
     background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.095);
-    box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.24),
-      inset 0 0 24px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.22),
-      0 0 22px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.82),
-      0 0 48px -7px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 1);
   }
 }
 
 @keyframes nx-hotspot-activation-bloom {
   0% {
     transform: scale(0.95);
-    filter: brightness(1);
+    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.62);
   }
   38% {
     transform: scale(1.055);
-    filter: brightness(1.55);
     border-color: rgba(255, 255, 255, 0.98);
-    box-shadow:
-      inset 0 0 28px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.34),
-      0 0 26px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 1),
-      0 0 58px -2px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 1);
   }
   100% {
     transform: scale(1);
-    filter: brightness(1.12);
+    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.62);
   }
 }
 
@@ -1565,9 +1557,13 @@ body {
 .nx-hotspot-frame {
   border: 1px solid rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.34);
   background: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.025);
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.12),
+    inset 0 0 13px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.08),
+    0 0 11px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.3);
   animation: nx-hotspot-live-edge 4.4s ease-in-out infinite;
   animation-delay: var(--hotspot-delay, 0s);
-  will-change: border-color, box-shadow, background-color;
+  will-change: border-color, background-color;
 }
 
 .nx-hotspot-frame::before {
@@ -1719,16 +1715,9 @@ body {
   0%,
   100% {
     border-color: rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.26);
-    box-shadow:
-      inset 0 0 10px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.05),
-      0 0 9px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.18);
   }
   50% {
     border-color: rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.68);
-    box-shadow:
-      inset 0 0 16px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.14),
-      0 0 17px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.48),
-      0 0 34px -10px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.78);
   }
 }
 
@@ -1736,9 +1725,12 @@ body {
   position: relative;
   isolation: isolate;
   border-color: rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.3);
+  box-shadow:
+    inset 0 0 13px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.1),
+    0 0 13px rgba(var(--region-control-rgb, var(--nx-region-rgb)), 0.33);
   animation: nx-region-control-breathe 4s ease-in-out infinite;
   animation-delay: var(--region-control-delay, 0s);
-  will-change: border-color, box-shadow;
+  will-change: border-color;
 }
 
 .nx-region-control::after {
@@ -1814,16 +1806,14 @@ body {
 @keyframes nx-icon-soft-breathe {
   0%,
   100% {
-    opacity: 0.85;
-    filter: drop-shadow(0 0 3px rgba(var(--nx-region-rgb, 34, 211, 238), 0.45));
+    opacity: 0.82;
   }
   50% {
     opacity: 1;
-    filter: drop-shadow(0 0 10px rgba(var(--nx-region-rgb, 34, 211, 238), 0.95))
-      drop-shadow(0 0 20px rgba(var(--nx-region-rgb, 34, 211, 238), 0.5));
   }
 }
 .nx-icon-soft {
+  filter: drop-shadow(0 0 8px rgba(var(--nx-region-rgb, 34, 211, 238), 0.75));
   animation: nx-icon-soft-breathe 5.6s ease-in-out infinite;
 }
 /* Strong static region-colour halo when motion is reduced — the glow must be
@@ -2303,11 +2293,9 @@ body {
   0%,
   100% {
     border-color: rgba(0, 212, 255, 0.2);
-    box-shadow: 0 0 0 rgba(0, 212, 255, 0);
   }
   50% {
     border-color: rgba(58, 232, 255, 0.42);
-    box-shadow: 0 0 24px -14px rgba(0, 212, 255, 0.72);
   }
 }
 

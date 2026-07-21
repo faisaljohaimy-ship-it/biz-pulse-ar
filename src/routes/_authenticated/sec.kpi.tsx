@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
-import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
+import { SecPageHeader, StatCard, SecLoading, SecError } from "@/components/sec/sec-shell";
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 
 export const Route = createFileRoute("/_authenticated/sec/kpi")({
@@ -16,13 +16,14 @@ export const Route = createFileRoute("/_authenticated/sec/kpi")({
 function KPI() {
   const { user, loading: authLoading } = useAuth();
   const fetchOverview = useServerFn(getSecOverview);
-  const { data, dataUpdatedAt, isFetching } = useQuery({
+  const { data, dataUpdatedAt, isFetching, isError, refetch } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
     // Public showcase: guests fetch too (anon RLS / built-in simulation).
     enabled: !authLoading,
   });
-  if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
+  if (isError) return <SecError onRetry={() => refetch()} />;
+  if (!data) return <SecLoading />;
 
   const total = data.incidents.length || 1;
   const resolved = data.incidents.filter(

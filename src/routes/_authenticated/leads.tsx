@@ -78,12 +78,12 @@ function LeadsAdmin() {
         <div className="text-sm text-muted-foreground">Loading…</div>
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-white/10 p-8 text-center text-sm text-muted-foreground">
-          No leads yet. (Requires admin role to view.)
+          لا عملاء محتملون بعد. (تتطلب صلاحية المشرف للعرض.)
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-sm">
-            <thead className="bg-white/[0.03] text-left text-xs uppercase tracking-wider text-muted-foreground">
+            <thead className="bg-white/[0.03] text-start text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="p-3">When</th>
                 <th className="p-3">Kind</th>

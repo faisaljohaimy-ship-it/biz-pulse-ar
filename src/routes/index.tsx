@@ -33,6 +33,7 @@ import { SystemModulesDashboard } from "@/components/executive/SystemModulesDash
 import { ExecutiveShowcaseHub } from "@/components/executive/ExecutiveShowcaseHub";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
+import { useFreezeOffscreen } from "@/hooks/use-freeze-offscreen";
 import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
 import { AriaResumeVoiceButton } from "@/components/aria/AriaResumeVoiceButton";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
@@ -144,6 +145,14 @@ function IntroLanding() {
   // __root.tsx (single ARIA welcome video, once per session).
 
   const [deptsOpen, setDeptsOpen] = useState(false);
+
+  // Freeze each heavy animated section's motion while it is scrolled off-screen
+  // (guards against the cumulative-animation load that crashed iOS Safari).
+  const posterRef = useFreezeOffscreen<HTMLDivElement>();
+  const deckRef = useFreezeOffscreen<HTMLElement>();
+  const modulesRef = useFreezeOffscreen<HTMLDivElement>();
+  const hologramRef = useFreezeOffscreen<HTMLElement>();
+  const agentsRef = useFreezeOffscreen<HTMLDivElement>();
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -364,7 +373,7 @@ function IntroLanding() {
       {/* ══ NEXIOS Command Center (poster) — the PRIMARY dashboard: all four
           regions around a central split Saudi map, ARIA console, system status
           and smart alerts. One horizontal canvas on every device. ══ */}
-      <div className="relative z-10 mt-2 sm:mt-4">
+      <div ref={posterRef} data-nx-frozen="false" className="relative z-10 mt-2 sm:mt-4">
         <NexiosCommandCenter />
       </div>
 
@@ -372,6 +381,8 @@ function IntroLanding() {
           Floats over the ARIA hologram as translucent glass instruments so
           she remains visible as the living backdrop of the whole system. */}
       <section
+        ref={deckRef}
+        data-nx-frozen="false"
         id="hero-dashboard"
         aria-label={ar ? "لوحة القيادة السيادية الحية" : "Sovereign live command deck"}
         className="relative z-10 mx-auto flex w-full max-w-none flex-col gap-6 px-4 pb-6 pt-4 sm:gap-8 sm:px-6 sm:pt-8"
@@ -390,7 +401,7 @@ function IntroLanding() {
 
       {/* Horizontal system-modules dashboard — every icon links to a real
           module route (activated), responsive across all devices. */}
-      <div className="mt-4 sm:mt-6">
+      <div ref={modulesRef} data-nx-frozen="false" className="mt-4 sm:mt-6">
         <SystemModulesDashboard />
       </div>
 
@@ -403,6 +414,8 @@ function IntroLanding() {
           beneath, converging on the human-approval gate. Full-bleed on mobile
           and desktop. */}
       <section
+        ref={hologramRef}
+        data-nx-frozen="false"
         id="tour-hologram"
         dir={ar ? "rtl" : "ltr"}
         aria-label={ar ? "شجرة القيادة الهولوغرامية" : "Holographic command tree"}
@@ -450,7 +463,7 @@ function IntroLanding() {
         <MissionControlStrip />
       </div>
 
-      <div id="tour-agents">
+      <div ref={agentsRef} data-nx-frozen="false" id="tour-agents">
         <AgentRing />
       </div>
 

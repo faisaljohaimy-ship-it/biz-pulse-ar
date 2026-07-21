@@ -168,14 +168,14 @@ function SelfEvolutionPage() {
 
       <section className="space-y-2">
         <h2 className="text-sm font-semibold text-slate-300 flex items-center gap-1.5">
-          <History className="h-3.5 w-3.5" /> Cycle history / سجل الدورات
+          <History className="h-3.5 w-3.5" /> سجل الدورات
         </h2>
         <Card className="glass-card p-4">
           {cycles.isLoading ? (
-            <div className="text-xs text-slate-400">Loading history…</div>
+            <div className="text-xs text-slate-400">جارٍ تحميل السجل…</div>
           ) : (cycles.data?.length ?? 0) === 0 ? (
             <div className="text-xs text-slate-400">
-              No cycles yet. Run one above or wait for the cron tick. / لا توجد دورات بعد.
+              لا توجد دورات بعد. شغّل واحدة بالأعلى أو انتظر الدورة المجدولة.
             </div>
           ) : (
             <ul className="space-y-1.5">

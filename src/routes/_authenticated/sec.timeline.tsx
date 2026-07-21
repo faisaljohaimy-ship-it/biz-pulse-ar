@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
-import { SecPageHeader, severityClass } from "@/components/sec/sec-shell";
+import { SecPageHeader, severityClass, SecLoading, SecError } from "@/components/sec/sec-shell";
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 import { AlertTriangle, Radar, UserCheck, Camera, FileBadge } from "lucide-react";
 
@@ -25,12 +25,13 @@ type Ev = {
 function Timeline() {
   const { user, loading: authLoading } = useAuth();
   const fetchOverview = useServerFn(getSecOverview);
-  const { data, dataUpdatedAt, isFetching } = useQuery({
+  const { data, dataUpdatedAt, isFetching, isError, refetch } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
     enabled: !authLoading,
   });
-  if (!data) return <div className="text-sm text-muted-foreground">جاري التحميل…</div>;
+  if (isError) return <SecError onRetry={() => refetch()} />;
+  if (!data) return <SecLoading />;
 
   const events: Ev[] = [
     ...data.incidents.map((i) => ({

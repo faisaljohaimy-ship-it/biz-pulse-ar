@@ -319,7 +319,7 @@ function KnowledgeUploadCenter() {
           </div>
         ) : docs.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No documents yet. Upload your first SOP to make it citation-ready.
+            لا مستندات بعد. ارفع أول إجراء تشغيلي (SOP) ليصبح جاهزًا للاستشهاد.
           </p>
         ) : (
           <div className="divide-y divide-border/40">

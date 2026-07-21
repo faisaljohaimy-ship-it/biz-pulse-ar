@@ -12,6 +12,7 @@
  * one-click 60s briefing.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useMemo, useState } from "react";
@@ -67,19 +68,8 @@ export const Route = createFileRoute("/_authenticated/theater")({
     ],
   }),
   component: TheaterPage,
-  errorComponent: ({ error, reset }) => (
-    <div className="grid min-h-[60vh] place-items-center p-8 text-center">
-      <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-rose-400" />
-      <div className="text-lg font-semibold text-white">{error.message}</div>
-      <button
-        onClick={reset}
-        className="mt-4 rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10"
-      >
-        Retry
-      </button>
-    </div>
-  ),
-  notFoundComponent: () => <div className="p-8">Not found</div>,
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
 });
 
 function HealthChip({
