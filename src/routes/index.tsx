@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -40,14 +40,6 @@ import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
 import { NexiosCommandCenter } from "@/components/executive/command/NexiosCommandCenter";
 // Pre-hero intros retired — the single ARIA welcome video mounts globally
 // from __root.tsx via <WelcomeThenGenesis />. Auto-greeting voice removed per directive.
-
-// The system hero (Operating Orbit + Architecture board) is code-split so it
-// never delays the home page's first paint.
-const OperatingOrbit = lazy(() =>
-  import("@/components/executive/orbit/OperatingOrbit").then((m) => ({
-    default: m.OperatingOrbit,
-  })),
-);
 
 // Static holographic-tree fleet mirrors the Agent Operations Platform view.
 const HOME_HOLO_AGENTS = [
@@ -405,25 +397,6 @@ function IntroLanding() {
       {/* Executive pitch band — capabilities, value-props, tech stack and the
           vision, every pulsing icon breathing in the active region's colour. */}
       <HomeShowcaseSections />
-
-      {/* System hero — Operating Orbit + Architecture board (arts. 8/13/14/21).
-          Placed directly above the holographic tree as the page's system
-          statement: ARIA coordinates, agents execute, and every path stops at
-          the human-approval gate. Lazy + full-bleed. */}
-      <section
-        id="tour-operating-orbit"
-        dir={ar ? "rtl" : "ltr"}
-        aria-label={ar ? "مركز سيطرة النظام" : "System control center"}
-        className="relative left-1/2 right-1/2 z-10 -ml-[50vw] -mr-[50vw] mt-8 w-screen max-w-[100vw] px-2 sm:mt-12 sm:px-4 lg:px-6"
-      >
-        <Suspense
-          fallback={
-            <div className="mx-auto h-64 max-w-5xl animate-pulse rounded-2xl border border-white/5 bg-white/[0.02]" />
-          }
-        >
-          <OperatingOrbit ar={ar} />
-        </Suspense>
-      </section>
 
       {/* Holographic command tree — replaces the retired Hajj Nusuk section.
           Same visual as /agents: ARIA at the apex, the specialist fleet
