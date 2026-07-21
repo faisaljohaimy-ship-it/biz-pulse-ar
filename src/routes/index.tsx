@@ -16,8 +16,7 @@ import { MissionControlStrip } from "@/components/executive/MissionControlStrip"
 import { AgentRing } from "@/components/executive/AgentRing";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
-import { LiveSystemShowcase } from "@/components/executive/LiveSystemShowcase";
-import { HajjExecutiveStage } from "@/components/executive/HajjExecutiveStage";
+import { AgentHierarchyGraph } from "@/components/executive/AgentHierarchyGraph";
 
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
@@ -35,21 +34,23 @@ import { useI18n } from "@/lib/i18n";
 import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
 import { AriaResumeVoiceButton } from "@/components/aria/AriaResumeVoiceButton";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
-import { HajjEmbedFrame } from "@/components/executive/HajjEmbedFrame";
-import { HajjCommandDashboard } from "@/components/executive/HajjCommandDashboard";
 import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
 import { NexiosCommandCenter } from "@/components/executive/command/NexiosCommandCenter";
-import {
-  HAJJ_INTERNAL_ROUTE,
-  HAJJ_PLATFORM_LABEL_AR,
-  HAJJ_PLATFORM_LABEL_EN,
-  hajjOpenUrl,
-} from "@/lib/hajj-embed";
 // Pre-hero intros retired — the single ARIA welcome video mounts globally
 // from __root.tsx via <WelcomeThenGenesis />. Auto-greeting voice removed per directive.
 
-// Resolved once — the raw URL never appears as text anywhere in this file.
-const HAJJ_EMBED_URL = hajjOpenUrl();
+// Static holographic-tree fleet mirrors the Agent Operations Platform view.
+const HOME_HOLO_AGENTS = [
+  { id: "commander-1", name: "قائد", state: "queued" },
+  { id: "analyst", name: "محلل", state: "ready" },
+  { id: "auditor", name: "مدقّق", state: "ready" },
+  { id: "intel-1", name: "ذكاء", state: "ready" },
+  { id: "commander-2", name: "قائد", state: "queued" },
+  { id: "monshi", name: "منشئ", state: "ready" },
+  { id: "intel-2", name: "ذكاء", state: "ready" },
+  { id: "messenger", name: "المراسل", state: "ready" },
+];
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
