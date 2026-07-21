@@ -35,6 +35,119 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_approval_proposals: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          is_simulation: boolean
+          kind: string
+          org_id: string
+          payload: Json
+          severity: string
+          status: string
+          title_ar: string
+          title_en: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          is_simulation?: boolean
+          kind: string
+          org_id?: string
+          payload?: Json
+          severity?: string
+          status?: string
+          title_ar: string
+          title_en?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          is_simulation?: boolean
+          kind?: string
+          org_id?: string
+          payload?: Json
+          severity?: string
+          status?: string
+          title_ar?: string
+          title_en?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_approval_proposals_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agent_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_approval_proposals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_connections: {
+        Row: {
+          created_at: string
+          from_kind: string
+          from_node: string
+          id: string
+          is_simulation: boolean
+          link_type: string
+          org_id: string
+          status: string
+          to_kind: string
+          to_node: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          from_kind: string
+          from_node: string
+          id?: string
+          is_simulation?: boolean
+          link_type: string
+          org_id?: string
+          status?: string
+          to_kind: string
+          to_node: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          from_kind?: string
+          from_node?: string
+          id?: string
+          is_simulation?: boolean
+          link_type?: string
+          org_id?: string
+          status?: string
+          to_kind?: string
+          to_node?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_connections_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_definitions: {
         Row: {
           created_at: string
