@@ -423,7 +423,22 @@ function IntroLanding() {
               : "Lifecycle, monitoring, audit & control — under ARIA with human approval."}
           </p>
         </div>
-        <AgentHierarchyGraph agents={HOME_HOLO_AGENTS} runs={[]} ar={ar} />
+        <Tabs defaultValue="tree" className="w-full">
+          <TabsList className="mx-auto mb-4 grid w-fit grid-cols-2 border border-[#3AE8FF]/25 bg-[#04101F]/70">
+            <TabsTrigger value="tree" className="data-[state=active]:bg-[#3AE8FF]/15 data-[state=active]:text-[#3AE8FF]">
+              {ar ? "شجرة القيادة" : "Command Tree"}
+            </TabsTrigger>
+            <TabsTrigger value="flow" className="data-[state=active]:bg-[#3AE8FF]/15 data-[state=active]:text-[#3AE8FF]">
+              {ar ? "شبكة التنسيق الحية" : "Live Coordination Network"}
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="tree" className="mt-0">
+            <AgentHierarchyGraph agents={HOME_HOLO_AGENTS} runs={[]} ar={ar} />
+          </TabsContent>
+          <TabsContent value="flow" className="mt-0">
+            <AgenticFlowCanvas ar={ar} />
+          </TabsContent>
+        </Tabs>
       </section>
 
 
