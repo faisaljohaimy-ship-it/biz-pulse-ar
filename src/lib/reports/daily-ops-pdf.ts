@@ -382,11 +382,13 @@ export async function buildDailyOpsPdf(
     [0.2, 0.42, 0.38],
   );
 
-  /* ── Constitutional footer on every page ── */
+  /* ── Constitutional footer on every page — reflects real data source ── */
   const pages = pdf.getPages();
-  const footerSegs = layoutArabicLine(
-    "بيانات محاكاة مرجعية — is_simulation = true · منصة إنجاز الأعمال التنفيذية NEXIOS",
-  );
+  const footerText =
+    data.source === "database"
+      ? "بيانات حية من قاعدة البيانات — is_simulation = false · منصة إنجاز الأعمال التنفيذية NEXIOS"
+      : "بيانات محاكاة مرجعية — is_simulation = true · منصة إنجاز الأعمال التنفيذية NEXIOS";
+  const footerSegs = layoutArabicLine(footerText);
   pages.forEach((p, i) => {
     p.drawRectangle({ x: 0, y: 30, width: W, height: 0.5, color: emerald, opacity: 0.6 });
     const total = footerSegs.reduce((s, seg) => s + segWidth(seg, 7.5, false), 0);
