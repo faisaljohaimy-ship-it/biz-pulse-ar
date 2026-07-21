@@ -17,6 +17,8 @@ import { AgentRing } from "@/components/executive/AgentRing";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { AgentHierarchyGraph } from "@/components/executive/AgentHierarchyGraph";
+import { AgenticFlowCanvas } from "@/components/home/AgenticFlowCanvas";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
