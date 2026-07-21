@@ -1,16 +1,23 @@
 /**
- * Arabic text shaping + lightweight bidi for PDF drawing.
+ * Arabic text shaping + run layout for PDF drawing.
  *
- * pdf-lib embeds TrueType fonts but performs NO complex-script shaping, so
- * Arabic must be pre-shaped into Unicode Presentation Forms-B (U+FE70–FEFF)
- * and emitted in VISUAL order (left-to-right) before drawing. The bundled
- * font subset (public/fonts/nexios-arabic.ttf — Amiri, SIL OFL) maps every
- * presentation form + lam-alef ligature we produce here.
+ * pdf-lib performs NO complex-script shaping, so Arabic is pre-shaped into
+ * Unicode Presentation Forms-B (U+FE70–FEFF) here. Ordering, however, is
+ * NOT ours to do inside a run: fontkit applies its own bidi reversal to
+ * every RTL run it receives, so Arabic content must be handed over in
+ * LOGICAL order — pre-reversing it produces double-reversed (backwards)
+ * text. That double reversal was the exact defect seen in generated
+ * reports («ةيموي تايلمعلا ريرقت»).
  *
- * Scope: full Arabic letter block used in Saudi operational text, lam-alef
- * ligatures, Arabic-Indic digits passthrough, and run-level bidi (RTL base
- * direction with embedded LTR runs for Latin/digits). Harakat are stripped —
- * combining-mark placement is unreliable in flat PDF drawing.
+ * What we DO own is the placement of runs across the line (the drawing
+ * code positions each segment at an explicit x): layoutArabicLine()
+ * returns draw-ready segments in VISUAL order — RTL base direction, with
+ * embedded Latin/digit runs kept LTR and drawn by a Latin-capable font so
+ * they never pass through fontkit's bidi. The bundled font subsets
+ * (public/fonts/nexios-arabic{,-bold}.ttf — IBM Plex Sans Arabic, SIL
+ * OFL) map every presentation form + lam-alef ligature produced here.
+ * Harakat are stripped — combining-mark placement is unreliable in flat
+ * PDF drawing.
  */
 
 type Forms = { isolated: number; final: number; initial?: number; medial?: number };
@@ -109,21 +116,31 @@ function shapeWord(word: string): string {
   return String.fromCodePoint(...out);
 }
 
-const AR_RUN = /[ء-يـ]+/g;
+const AR_RUN = /[\u0621-\u064A\u0640]+/g;
 const RTL_CHAR = /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
-const NEUTRAL = /^[\s،؛؟.,:;!?()%«»\-–—•/]+$/;
+const NEUTRAL = /^[\s\u060C\u061B\u061F.,:;!?()%\u00AB\u00BB\-\u2013\u2014\u00B7\u2022/]+$/;
+const AR_SCRIPT_SPLIT =
+  /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]+|[^\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]+/g;
+
+/** One draw-ready piece of a line: `ar` picks the Arabic font (fontkit
+ *  path — content in LOGICAL order, fontkit's bidi flips it) vs the Latin
+ *  font (digits/ASCII — drawn verbatim, immune to fontkit's bidi). */
+export type ArabicSegment = { ar: boolean; text: string };
 
 /**
- * Shape + visually order a mixed Arabic/Latin/digit line for LTR drawing.
- * Returns the string to draw left-to-right (right-align its x yourself).
+ * Shape + lay out a mixed Arabic/Latin/digit line for manual placement.
+ * Returns segments in VISUAL order (place them left-to-right; right-align
+ * the total yourself). Arabic segment CONTENT stays in logical order on
+ * purpose — fontkit applies its own bidi reversal per RTL run, so
+ * pre-reversed content would come out backwards (the exact defect this
+ * replaces; see header comment).
  */
-export function shapeArabic(input: string): string {
+export function layoutArabicLine(input: string): ArabicSegment[] {
   const stripped = input.replace(HARAKAT, "");
-  // Shape every Arabic letter-run in logical order first.
+  // Shape every Arabic letter-run into presentation forms, logical order.
   const shaped = stripped.replace(AR_RUN, (w) => shapeWord(w));
 
-  // Split into tokens, classify, group into direction runs, then emit the
-  // runs in reverse (RTL base direction) with RTL tokens' glyphs reversed.
+  // Tokenize, classify, group into direction runs.
   const tokens = shaped.split(/(\s+)/).filter((t) => t.length > 0);
   type Run = { rtl: boolean; parts: string[] };
   const runs: Run[] = [];
@@ -138,27 +155,39 @@ export function shapeArabic(input: string): string {
       current.parts.push(tok);
     }
   }
-  return runs
-    .reverse()
-    .map((run) =>
-      run.rtl
-        ? run.parts
-            .reverse()
-            .map((t) => reverseProtectingNumbers(t))
-            .join("")
-            // Mirror paired punctuation that got reversed.
-            .replace(/[()]/g, (c) => (c === "(" ? ")" : "("))
-        : run.parts.join(""),
-    )
-    .join("");
+
+  // Emit runs in reverse (RTL base direction). Inside an RTL run the
+  // script sub-segments are ALSO emitted in reverse so their left-to-right
+  // placement reads right-to-left — while each sub-segment's content stays
+  // logical (Arabic → fontkit flips it; digits/ASCII → drawn verbatim, so
+  // numbers keep most-significant-first without any digit protection).
+  const segments: ArabicSegment[] = [];
+  const push = (ar: boolean, text: string) => {
+    const last = segments[segments.length - 1];
+    if (last && last.ar === ar) last.text += text;
+    else segments.push({ ar, text });
+  };
+  for (const run of runs.reverse()) {
+    if (!run.rtl) {
+      push(false, run.parts.join(""));
+      continue;
+    }
+    // Mirror paired punctuation: fontkit's reversal flips positions but
+    // not glyphs, so a logical "(" must be handed over as ")".
+    const text = run.parts.join("").replace(/[()]/g, (c) => (c === "(" ? ")" : "("));
+    const subs = text.match(AR_SCRIPT_SPLIT);
+    if (!subs) continue;
+    for (const sub of subs.reverse()) push(RTL_CHAR.test(sub), sub);
+  }
+  return segments;
 }
 
-/** Reverse a token's glyphs while keeping digit groups (western or
- *  Arabic-Indic) in most-significant-first order — numbers always read
- *  left-to-right, even inside RTL text. */
-function reverseProtectingNumbers(token: string): string {
-  const reversed = Array.from(token).reverse().join("");
-  return reversed.replace(/[0-9٠-٩]+/g, (num) => Array.from(num).reverse().join(""));
+/** Flat convenience: the visual line as one string (segment order only —
+ *  Arabic content logical). Prefer layoutArabicLine() for drawing. */
+export function shapeArabic(input: string): string {
+  return layoutArabicLine(input)
+    .map((s) => s.text)
+    .join("");
 }
 
 /** Convert Western digits to Arabic-Indic (optional nicety for headers). */

@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { SecPageHeader } from "@/components/sec/sec-shell";
+import { PageBriefing } from "@/components/clarity/PageBriefing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FileText, FileSpreadsheet, Download, RefreshCw, Eye } from "lucide-react";
@@ -87,16 +88,19 @@ function Reports() {
     setPdfPhase("data");
     const ops = await fetchOps({ data: { date: dateKey } });
     setPdfPhase("font");
-    // pdf-lib + fontkit + the Arabic font subset load on demand only —
+    // pdf-lib + fontkit + the Arabic font subsets load on demand only —
     // they never touch the initial bundle (performance budget).
-    const [{ buildDailyOpsPdf }, fontRes] = await Promise.all([
+    const [{ buildDailyOpsPdf }, fontRes, fontBoldRes] = await Promise.all([
       import("@/lib/reports/daily-ops-pdf"),
       fetch("/fonts/nexios-arabic.ttf"),
+      fetch("/fonts/nexios-arabic-bold.ttf"),
     ]);
     if (!fontRes.ok) throw new Error("تعذّر تحميل الخط العربي للتقرير");
-    const fontBytes = await fontRes.arrayBuffer();
+    const regular = await fontRes.arrayBuffer();
+    // Bold is a typographic upgrade, not a dependency — fall back silently.
+    const bold = fontBoldRes.ok ? await fontBoldRes.arrayBuffer() : undefined;
     setPdfPhase("render");
-    const bytes = await buildDailyOpsPdf(ops, fontBytes);
+    const bytes = await buildDailyOpsPdf(ops, { regular, bold });
     const ab = new ArrayBuffer(bytes.byteLength);
     new Uint8Array(ab).set(bytes);
     return {
@@ -206,6 +210,17 @@ function Reports() {
           </span>
         )}
       </SecPageHeader>
+
+      <PageBriefing
+        routeKey="sec-reports"
+        what="توليد التقارير التنفيذية بصيغة PDF عربية بخط أنيق وهوية داكنة هولوغرامية، أو Excel."
+        dataSource="عمليات اليوم من showcase-simulation (بلاغات · أوامر عمل · تصاريح · أحداث)"
+        actions={[
+          "ولّد تقرير العمليات اليومي ثم نزّله PDF أو Excel",
+          "عايِن التقرير قبل التنزيل",
+          "التقارير الجاهزة محفوظة في السجل أسفل الصفحة",
+        ]}
+      />
 
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="mb-3 text-sm font-medium text-foreground">توليد تقرير عمليات يومي</div>

@@ -3,6 +3,7 @@ import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Brain,
   ShieldCheck,
@@ -20,7 +21,9 @@ import {
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { getEvolutionState } from "@/lib/exec/evolution.functions";
 import { PageHeader, Section } from "@/components/page-header";
+import { PageBriefing } from "@/components/clarity/PageBriefing";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -77,42 +80,28 @@ function IntelligencePage() {
   const ar = locale === "ar";
   const qc = useQueryClient();
 
-  const { data: agents = [] } = useQuery({
-    queryKey: ["intel-agents"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("intelligence_agents")
-        .select("*")
-        .order("created_at");
-      if (error) throw error;
-      return data as Agent[];
-    },
+  // One resilient source (doctrine «بيانات لا تفرغ»): live rows win, the
+  // reference simulation fills silence — never three empty placeholders.
+  const fetchEvolution = useServerFn(getEvolutionState);
+  const { data: state } = useQuery({
+    queryKey: ["evolution-state"],
+    queryFn: () =>
+      Promise.race([
+        fetchEvolution(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("evolution timeout")), 9000),
+        ),
+      ]),
+    retry: 1,
+    refetchInterval: 60_000,
   });
-
-  const { data: proposals = [] } = useQuery({
-    queryKey: ["intel-proposals"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("evolution_proposals")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as Proposal[];
-    },
-  });
-
-  const { data: logs = [] } = useQuery({
-    queryKey: ["intel-log"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("evolution_log")
-        .select("*")
-        .order("applied_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data as LogEntry[];
-    },
-  });
+  const agents: Agent[] = (state?.agents ?? []) as Agent[];
+  const proposals: Proposal[] = (state?.proposals ?? []) as Proposal[];
+  const logs: LogEntry[] = (state?.logs ?? []) as LogEntry[];
+  // The decision write is only real against live rows — on reference data
+  // (or a signed-out visitor) the buttons show the human-gate label instead
+  // of writing to an id that does not exist (constitution art. 8).
+  const decisionsLocked = !user || state?.simulation !== false;
 
   useEffect(() => {
     const ch = supabase
@@ -121,11 +110,11 @@ function IntelligencePage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "evolution_proposals" },
         () => {
-          qc.invalidateQueries({ queryKey: ["intel-proposals"] });
+          qc.invalidateQueries({ queryKey: ["evolution-state"] });
         },
       )
       .on("postgres_changes", { event: "*", schema: "public", table: "evolution_log" }, () => {
-        qc.invalidateQueries({ queryKey: ["intel-log"] });
+        qc.invalidateQueries({ queryKey: ["evolution-state"] });
       })
       .subscribe();
     return () => {
@@ -146,7 +135,7 @@ function IntelligencePage() {
       if (error) throw error;
     },
     onSuccess: (_d, vars) => {
-      qc.invalidateQueries({ queryKey: ["intel-proposals"] });
+      qc.invalidateQueries({ queryKey: ["evolution-state"] });
       toast.success(
         vars.status === "approved"
           ? ar
@@ -174,6 +163,18 @@ function IntelligencePage() {
             : "Proposes, evolves, human-approved"
         }
         badge={ar ? "داخلي" : "Internal"}
+      />
+
+      <PageBriefing
+        routeKey="intelligence"
+        what="منظومة ذكاء تقترح تحسينات المنصة وتتطوّر تحت اعتماد بشري."
+        dataSource="intelligence_agents · evolution_proposals · evolution_log"
+        simulation={state?.simulation !== false}
+        actions={[
+          "اطّلع على مجلس الوكلاء ومقترحات التطوّر في مراحلها الثلاث",
+          "راجع سجلّ التحسينات المطبّقة وأثرها المقاس",
+          "الاعتماد والرفض بيد المدير المفوّض حصرًا (المادة ٨)",
+        ]}
       />
 
       <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-200">
@@ -234,27 +235,43 @@ function IntelligencePage() {
             proposals={byStatus("proposed")}
             agentById={agentById}
             ar={ar}
-            actions={(p) => (
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => decide.mutate({ id: p.id, status: "approved" })}
-                  disabled={decide.isPending}
-                  className="bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
-                >
-                  <CheckCircle2 className="me-1 h-3.5 w-3.5" /> {ar ? "اعتماد" : "Approve"}
-                </Button>
+            actions={(p) =>
+              decisionsLocked ? (
+                // Human gate made visible (art. 8): the visitor/reference
+                // view shows the manager-authorization requirement, not a
+                // write that would target a non-existent row.
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => decide.mutate({ id: p.id, status: "rejected" })}
-                  disabled={decide.isPending}
-                  className="border-rose-500/40 text-rose-200 hover:bg-rose-500/10"
+                  disabled
+                  title={ar ? "يتطلب تفويض المدير" : "Requires manager authorization"}
+                  className="w-full cursor-not-allowed border-white/15 text-white/50"
                 >
-                  <XCircle className="me-1 h-3.5 w-3.5" /> {ar ? "رفض" : "Reject"}
+                  <CheckCircle2 className="me-1 h-3.5 w-3.5" />{" "}
+                  {ar ? "يتطلب تفويض المدير" : "Requires manager authorization"}
                 </Button>
-              </div>
-            )}
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => decide.mutate({ id: p.id, status: "approved" })}
+                    disabled={decide.isPending}
+                    className="bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
+                  >
+                    <CheckCircle2 className="me-1 h-3.5 w-3.5" /> {ar ? "اعتماد" : "Approve"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => decide.mutate({ id: p.id, status: "rejected" })}
+                    disabled={decide.isPending}
+                    className="border-rose-500/40 text-rose-200 hover:bg-rose-500/10"
+                  >
+                    <XCircle className="me-1 h-3.5 w-3.5" /> {ar ? "رفض" : "Reject"}
+                  </Button>
+                </div>
+              )
+            }
           />
           <ProposalColumn
             title={ar ? "معتمد — بانتظار التنفيذ" : "Approved — Awaiting Execution"}

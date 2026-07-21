@@ -105,6 +105,7 @@ import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authent
 import { Route as AuthenticatedHealthRouteImport } from './routes/_authenticated/health'
 import { Route as AuthenticatedHcisRouteImport } from './routes/_authenticated/hcis'
 import { Route as AuthenticatedHajjRouteImport } from './routes/_authenticated/hajj'
+import { Route as AuthenticatedGuideRouteImport } from './routes/_authenticated/guide'
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
@@ -128,6 +129,7 @@ import { Route as AuthenticatedChiefOfStaffRouteImport } from './routes/_authent
 import { Route as AuthenticatedBriefingRouteImport } from './routes/_authenticated/briefing'
 import { Route as AuthenticatedBridgeRouteImport } from './routes/_authenticated/bridge'
 import { Route as AuthenticatedBoardroomRouteImport } from './routes/_authenticated/boardroom'
+import { Route as AuthenticatedBiRouteImport } from './routes/_authenticated/bi'
 import { Route as AuthenticatedAriaDocumentsRouteImport } from './routes/_authenticated/aria-documents'
 import { Route as AuthenticatedAriaAnalyticsRouteImport } from './routes/_authenticated/aria-analytics'
 import { Route as AuthenticatedAriaRouteImport } from './routes/_authenticated/aria'
@@ -707,6 +709,11 @@ const AuthenticatedHajjRoute = AuthenticatedHajjRouteImport.update({
   path: '/hajj',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedGuideRoute = AuthenticatedGuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedGovernanceRoute = AuthenticatedGovernanceRouteImport.update({
   id: '/governance',
   path: '/governance',
@@ -828,6 +835,11 @@ const AuthenticatedBridgeRoute = AuthenticatedBridgeRouteImport.update({
 const AuthenticatedBoardroomRoute = AuthenticatedBoardroomRouteImport.update({
   id: '/boardroom',
   path: '/boardroom',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedBiRoute = AuthenticatedBiRouteImport.update({
+  id: '/bi',
+  path: '/bi',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAriaDocumentsRoute =
@@ -1347,6 +1359,7 @@ export interface FileRoutesByFullPath {
   '/aria': typeof AuthenticatedAriaRouteWithChildren
   '/aria-analytics': typeof AuthenticatedAriaAnalyticsRoute
   '/aria-documents': typeof AuthenticatedAriaDocumentsRoute
+  '/bi': typeof AuthenticatedBiRoute
   '/boardroom': typeof AuthenticatedBoardroomRoute
   '/bridge': typeof AuthenticatedBridgeRoute
   '/briefing': typeof AuthenticatedBriefingRoute
@@ -1370,6 +1383,7 @@ export interface FileRoutesByFullPath {
   '/files': typeof AuthenticatedFilesRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
+  '/guide': typeof AuthenticatedGuideRoute
   '/hajj': typeof AuthenticatedHajjRoute
   '/hcis': typeof AuthenticatedHcisRoute
   '/health': typeof AuthenticatedHealthRoute
@@ -1553,6 +1567,7 @@ export interface FileRoutesByTo {
   '/aria': typeof AuthenticatedAriaRouteWithChildren
   '/aria-analytics': typeof AuthenticatedAriaAnalyticsRoute
   '/aria-documents': typeof AuthenticatedAriaDocumentsRoute
+  '/bi': typeof AuthenticatedBiRoute
   '/boardroom': typeof AuthenticatedBoardroomRoute
   '/bridge': typeof AuthenticatedBridgeRoute
   '/briefing': typeof AuthenticatedBriefingRoute
@@ -1576,6 +1591,7 @@ export interface FileRoutesByTo {
   '/files': typeof AuthenticatedFilesRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
+  '/guide': typeof AuthenticatedGuideRoute
   '/hajj': typeof AuthenticatedHajjRoute
   '/hcis': typeof AuthenticatedHcisRoute
   '/health': typeof AuthenticatedHealthRoute
@@ -1759,6 +1775,7 @@ export interface FileRoutesById {
   '/_authenticated/aria': typeof AuthenticatedAriaRouteWithChildren
   '/_authenticated/aria-analytics': typeof AuthenticatedAriaAnalyticsRoute
   '/_authenticated/aria-documents': typeof AuthenticatedAriaDocumentsRoute
+  '/_authenticated/bi': typeof AuthenticatedBiRoute
   '/_authenticated/boardroom': typeof AuthenticatedBoardroomRoute
   '/_authenticated/bridge': typeof AuthenticatedBridgeRoute
   '/_authenticated/briefing': typeof AuthenticatedBriefingRoute
@@ -1782,6 +1799,7 @@ export interface FileRoutesById {
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
+  '/_authenticated/guide': typeof AuthenticatedGuideRoute
   '/_authenticated/hajj': typeof AuthenticatedHajjRoute
   '/_authenticated/hcis': typeof AuthenticatedHcisRoute
   '/_authenticated/health': typeof AuthenticatedHealthRoute
@@ -1967,6 +1985,7 @@ export interface FileRouteTypes {
     | '/aria'
     | '/aria-analytics'
     | '/aria-documents'
+    | '/bi'
     | '/boardroom'
     | '/bridge'
     | '/briefing'
@@ -1990,6 +2009,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/forgotten'
     | '/governance'
+    | '/guide'
     | '/hajj'
     | '/hcis'
     | '/health'
@@ -2173,6 +2193,7 @@ export interface FileRouteTypes {
     | '/aria'
     | '/aria-analytics'
     | '/aria-documents'
+    | '/bi'
     | '/boardroom'
     | '/bridge'
     | '/briefing'
@@ -2196,6 +2217,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/forgotten'
     | '/governance'
+    | '/guide'
     | '/hajj'
     | '/hcis'
     | '/health'
@@ -2378,6 +2400,7 @@ export interface FileRouteTypes {
     | '/_authenticated/aria'
     | '/_authenticated/aria-analytics'
     | '/_authenticated/aria-documents'
+    | '/_authenticated/bi'
     | '/_authenticated/boardroom'
     | '/_authenticated/bridge'
     | '/_authenticated/briefing'
@@ -2401,6 +2424,7 @@ export interface FileRouteTypes {
     | '/_authenticated/files'
     | '/_authenticated/forgotten'
     | '/_authenticated/governance'
+    | '/_authenticated/guide'
     | '/_authenticated/hajj'
     | '/_authenticated/hcis'
     | '/_authenticated/health'
@@ -3308,6 +3332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHajjRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/guide': {
+      id: '/_authenticated/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof AuthenticatedGuideRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/governance': {
       id: '/_authenticated/governance'
       path: '/governance'
@@ -3467,6 +3498,13 @@ declare module '@tanstack/react-router' {
       path: '/boardroom'
       fullPath: '/boardroom'
       preLoaderRoute: typeof AuthenticatedBoardroomRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/bi': {
+      id: '/_authenticated/bi'
+      path: '/bi'
+      fullPath: '/bi'
+      preLoaderRoute: typeof AuthenticatedBiRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/aria-documents': {
@@ -4185,6 +4223,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAriaRoute: typeof AuthenticatedAriaRouteWithChildren
   AuthenticatedAriaAnalyticsRoute: typeof AuthenticatedAriaAnalyticsRoute
   AuthenticatedAriaDocumentsRoute: typeof AuthenticatedAriaDocumentsRoute
+  AuthenticatedBiRoute: typeof AuthenticatedBiRoute
   AuthenticatedBoardroomRoute: typeof AuthenticatedBoardroomRoute
   AuthenticatedBridgeRoute: typeof AuthenticatedBridgeRoute
   AuthenticatedBriefingRoute: typeof AuthenticatedBriefingRoute
@@ -4208,6 +4247,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
+  AuthenticatedGuideRoute: typeof AuthenticatedGuideRoute
   AuthenticatedHajjRoute: typeof AuthenticatedHajjRoute
   AuthenticatedHcisRoute: typeof AuthenticatedHcisRoute
   AuthenticatedHealthRoute: typeof AuthenticatedHealthRoute
@@ -4262,6 +4302,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAriaRoute: AuthenticatedAriaRouteWithChildren,
   AuthenticatedAriaAnalyticsRoute: AuthenticatedAriaAnalyticsRoute,
   AuthenticatedAriaDocumentsRoute: AuthenticatedAriaDocumentsRoute,
+  AuthenticatedBiRoute: AuthenticatedBiRoute,
   AuthenticatedBoardroomRoute: AuthenticatedBoardroomRoute,
   AuthenticatedBridgeRoute: AuthenticatedBridgeRoute,
   AuthenticatedBriefingRoute: AuthenticatedBriefingRoute,
@@ -4285,6 +4326,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
+  AuthenticatedGuideRoute: AuthenticatedGuideRoute,
   AuthenticatedHajjRoute: AuthenticatedHajjRoute,
   AuthenticatedHcisRoute: AuthenticatedHcisRoute,
   AuthenticatedHealthRoute: AuthenticatedHealthRoute,
