@@ -206,6 +206,7 @@ function RegionCard({
         className="pointer-events-none absolute inset-0 h-full w-full"
       >
         <polygon
+          className="nx-panel-frame"
           points={OCTAGON}
           fill={`${color}14`}
           stroke={color}
@@ -315,6 +316,33 @@ const SPOKES: { id: RegionId; x2: number; y2: number }[] = [
   { id: "southern", x2: 500, y2: 850 },
 ];
 
+/** Holographic power-transmission grid over the Kingdom — stylised substation
+ *  nodes (approx. major-city positions in the 1000×900 map space) linked by
+ *  interconnect lines. Decorative; glows + pulses only via opacity. */
+const POWER_NODES: { x: number; y: number }[] = [
+  { x: 560, y: 460 }, // 0 Riyadh (central)
+  { x: 340, y: 560 }, // 1 Jeddah/Makkah (west)
+  { x: 690, y: 380 }, // 2 Dammam (east)
+  { x: 380, y: 260 }, // 3 Tabuk (north-west)
+  { x: 500, y: 340 }, // 4 Qassim (central-north)
+  { x: 410, y: 700 }, // 5 Abha (south)
+  { x: 400, y: 430 }, // 6 Madinah (west-centre)
+  { x: 620, y: 620 }, // 7 southern interconnect
+];
+const POWER_EDGES: [number, number][] = [
+  [0, 4],
+  [4, 3],
+  [3, 6],
+  [6, 1],
+  [1, 0],
+  [0, 2],
+  [2, 4],
+  [0, 7],
+  [7, 5],
+  [5, 1],
+  [0, 6],
+];
+
 function CentralMap({
   ar,
   sectors,
@@ -411,8 +439,9 @@ function CentralMap({
         />
         <g clipPath="url(#ksa-clip)">
           <rect x="0" y="0" width="1000" height="900" fill="url(#ksa-mesh)" />
-          {/* Region territories tinted by regions.ts, clipped inside the map */}
-          {sectors.map((s) => {
+          {/* Region territories tinted by regions.ts, clipped inside the map.
+              ALL four radiate + pulse (staggered) — the active one brighter. */}
+          {sectors.map((s, i) => {
             const active = s.id === regionId;
             const color = REGION_ACCENT_HEX[s.id];
             const sev = severityByRegion[s.id];
@@ -422,12 +451,17 @@ function CentralMap({
                 key={s.id}
                 d={s.d}
                 fill={color}
-                fillOpacity={active ? base + 0.28 : base}
+                fillOpacity={active ? base + 0.3 : base}
                 stroke={color}
                 strokeWidth={active ? 4 : 1.5}
-                strokeOpacity={active ? 1 : 0.55}
-                className={active ? "nx-territory-active" : undefined}
-                style={{ cursor: "pointer", transformBox: "fill-box", transformOrigin: "center" }}
+                strokeOpacity={active ? 1 : 0.6}
+                className={active ? "nx-territory nx-territory-active" : "nx-territory"}
+                style={{
+                  cursor: "pointer",
+                  transformBox: "fill-box",
+                  transformOrigin: "center",
+                  animationDelay: `${i * 0.6}s`,
+                }}
                 onClick={() => setRegion(s.id)}
                 role="button"
                 aria-label={REGIONS.find((r) => r.id === s.id)?.[ar ? "shortAr" : "shortEn"]}
@@ -436,22 +470,55 @@ function CentralMap({
           })}
         </g>
 
+        {/* Holographic power-transmission grid over the Kingdom (glow + pulse) */}
+        <g clipPath="url(#ksa-clip)">
+          <g className="nx-power-lines" filter="url(#ksa-glow)" stroke="#7EF9FF" strokeWidth="1.6">
+            {POWER_EDGES.map(([a, b], i) => (
+              <line
+                key={i}
+                x1={POWER_NODES[a].x}
+                y1={POWER_NODES[a].y}
+                x2={POWER_NODES[b].x}
+                y2={POWER_NODES[b].y}
+              />
+            ))}
+          </g>
+          <g className="nx-power-nodes">
+            {POWER_NODES.map((n, i) => (
+              <g key={i}>
+                <circle cx={n.x} cy={n.y} r="9" fill="#00D4FF" opacity="0.25" />
+                <circle cx={n.x} cy={n.y} r="4" fill="#BFFcff" />
+              </g>
+            ))}
+          </g>
+        </g>
+
         <style>{`
           .nx-stage-pulse { transform-box: view-box; transform-origin: 500px 470px; animation: nxStagePulse 6.5s ease-in-out infinite; }
           .nx-dais { animation: nxDaisSpin 46s linear infinite; }
           .nx-spokes { animation: nxSpokes 4s steps(16, jump-none) infinite; }
-          .nx-territory-active { animation: nxTerritory 2.6s steps(14, jump-none) infinite; }
+          .nx-territory { animation: nxTerritory 3.4s steps(16, jump-none) infinite; }
+          .nx-territory-active { animation: nxTerritoryActive 2.6s steps(14, jump-none) infinite; }
+          .nx-power-lines { animation: nxPower 3.2s ease-in-out infinite; }
+          .nx-power-nodes { animation: nxNodes 2.2s ease-in-out infinite; }
           @keyframes nxStagePulse { 0%,100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
           @keyframes nxDaisSpin { to { transform: rotate(360deg); } }
           @keyframes nxSpokes { 0%,100% { stroke-opacity: 0.18; } 50% { stroke-opacity: 0.5; } }
-          @keyframes nxTerritory { 0%,100% { fill-opacity: 0.45; } 50% { fill-opacity: 0.7; } }
+          @keyframes nxTerritory { 0%,100% { fill-opacity: 0.28; } 50% { fill-opacity: 0.5; } }
+          @keyframes nxTerritoryActive { 0%,100% { fill-opacity: 0.5; } 50% { fill-opacity: 0.72; } }
+          @keyframes nxPower { 0%,100% { stroke-opacity: 0.28; } 50% { stroke-opacity: 0.85; } }
+          @keyframes nxNodes { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
           @media (prefers-reduced-motion: reduce) {
-            .nx-stage-pulse, .nx-dais, .nx-spokes, .nx-territory-active { animation: none !important; }
+            .nx-stage-pulse, .nx-dais, .nx-spokes, .nx-territory, .nx-territory-active,
+            .nx-power-lines, .nx-power-nodes { animation: none !important; }
           }
           [data-nx-frozen="true"] .nx-stage-pulse,
           [data-nx-frozen="true"] .nx-dais,
           [data-nx-frozen="true"] .nx-spokes,
-          [data-nx-frozen="true"] .nx-territory-active { animation-play-state: paused !important; }
+          [data-nx-frozen="true"] .nx-territory,
+          [data-nx-frozen="true"] .nx-territory-active,
+          [data-nx-frozen="true"] .nx-power-lines,
+          [data-nx-frozen="true"] .nx-power-nodes { animation-play-state: paused !important; }
         `}</style>
       </svg>
     </div>
@@ -568,6 +635,14 @@ export function FourRegionHub() {
         boxShadow: "0 40px 120px -40px rgba(0,212,255,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
       }}
     >
+      {/* Live radiance for every sector panel frame (opacity only) */}
+      <style>{`
+        .nx-panel-frame { animation: nxPanelFrame 3.6s ease-in-out infinite; }
+        @keyframes nxPanelFrame { 0%,100% { stroke-opacity: 0.55; } 50% { stroke-opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .nx-panel-frame { animation: none !important; } }
+        [data-nx-frozen="true"] .nx-panel-frame { animation-play-state: paused !important; }
+      `}</style>
+
       {/* Ambient background grid */}
       <div
         aria-hidden
