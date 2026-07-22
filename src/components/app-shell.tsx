@@ -115,14 +115,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="nexus-main min-w-0 flex-1">
           <div className="relative mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
-            {/* Cinematic sector globe — physically pinned to the TOP-LEFT of
-                the workspace in both Arabic and English. Sticky so it persists
-                while windows scroll without flipping sides under RTL. */}
-            <div className="pointer-events-none sticky top-0 z-30 h-0">
-              <div className="absolute left-3 top-16 md:left-4 md:top-3">
-                <SectorGlobeCorner />
-              </div>
-            </div>
+
+
             {children}
           </div>
         </main>
