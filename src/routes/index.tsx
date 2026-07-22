@@ -39,8 +39,8 @@ import { AriaResumeVoiceButton } from "@/components/aria/AriaResumeVoiceButton";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
 import { NexiosCommandCenter } from "@/components/executive/command/NexiosCommandCenter";
-// Pre-hero intros retired — the single ARIA welcome video mounts globally
-// from __root.tsx via <WelcomeThenGenesis />. Auto-greeting voice removed per directive.
+// Pre-hero intros retired — the homepage renders directly with no cinematic
+// welcome overlay. Auto-greeting voice removed per directive.
 
 // Static holographic-tree fleet mirrors the Agent Operations Platform view.
 const HOME_HOLO_AGENTS = [
@@ -141,8 +141,6 @@ function IntroLanding() {
   // route only owns the executive hero content. No canvas, no boot
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
-  // The pre-hero intro is owned globally by <WelcomeThenGenesis /> in
-  // __root.tsx (single ARIA welcome video, once per session).
 
   const [deptsOpen, setDeptsOpen] = useState(false);
 
@@ -181,10 +179,9 @@ function IntroLanding() {
       dir={ar ? "rtl" : "ltr"}
       className="relative min-h-screen overflow-x-hidden bg-transparent text-white"
     >
-      {/* Beta marquee is mounted globally in __root.tsx (hidden while intro plays). */}
+      {/* Beta marquee is mounted globally in __root.tsx. */}
 
-      {/* Pre-hero intros retired. The single ARIA welcome video is mounted
-          globally in __root.tsx via <WelcomeThenGenesis />. */}
+      {/* Pre-hero intros retired — no cinematic welcome overlay. */}
 
       {/* Homepage video backdrop — plays with sound once per system session,
           silent on every subsequent mount (including returns from inner

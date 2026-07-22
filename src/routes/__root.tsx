@@ -27,7 +27,6 @@ import { InstallAppBar } from "@/components/aria/InstallAppBar";
 // AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
 import { GlobalPageBackdrop } from "@/components/aria/GlobalPageBackdrop";
 import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsulaBackdrop";
-import { WelcomeThenGenesis } from "@/components/cinematic/WelcomeThenGenesis";
 import { AriaWatermark } from "@/components/executive/AriaWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
@@ -378,12 +377,8 @@ function RootComponent() {
                   <InstallAppBar />
                   {/* ARIA speaks ONLY inside Conversation Mode («مخاطبة») in the
                       copilot panel, and via the homepage greeting button. No
-                      route auto-narration, no page greeters. The cinematic
-                      welcome plays on the HOMEPAGE only — otherwise its
-                      full-screen overlay (up to 52s) covered every route
-                      (bridge, showcase…), making them look empty when landed on
-                      directly (constitution art. 10: no auto motion off-home). */}
-                  {isHero && <WelcomeThenGenesis />}
+                      route auto-narration, no page greeters, and no cinematic
+                      welcome overlay — the homepage renders directly. */}
                   <Toaster />
                 </AriaProvider>
               </RegionProvider>

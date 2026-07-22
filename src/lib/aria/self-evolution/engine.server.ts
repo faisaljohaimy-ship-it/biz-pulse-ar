@@ -54,8 +54,6 @@ const INVARIANTS: EvolutionInvariants = {
  * INVARIANTs / Forbidden Regressions, or it is auto-deferred.
  */
 export const PROTECTED_PATHS: readonly string[] = [
-  "src/components/cinematic/AriaWelcomeVideo.tsx",
-  "src/components/cinematic/WelcomeThenGenesis.tsx",
   "src/components/intro/AriaCinematicIntro.tsx",
   "src/routes/__root.tsx",
   "src/routes/index.tsx",
