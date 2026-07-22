@@ -22,10 +22,9 @@ export const ARIA_GEMINI_TTS_DIRECTION =
 // still contain older public-voice imports outside this focused overlay.
 // The authenticated FINN chat no longer calls ElevenLabs.
 
-/** @deprecated Legacy compatibility only; `/api/aria/tts` uses Gemini.
- *  Warm, smooth male voice (ElevenLabs "Antoni") — calm, not booming, to
- *  match FINN on any legacy/guest path. */
-export const ARIA_ELEVENLABS_VOICE_ID = "ErXwobaYiN019PkySvjV";
+/** Canonical FINN voice — the audible voice spoken by `/api/aria/tts`
+ *  (ElevenLabs, server-side). Owner-selected male voice. */
+export const ARIA_ELEVENLABS_VOICE_ID = "izhopdR43PRI5gAmjXTj";
 
 /** @deprecated Legacy compatibility only. Calmer, smoother settings: higher
  *  stability + lower style for a steady, gentle delivery. */
