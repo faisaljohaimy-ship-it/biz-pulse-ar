@@ -22,7 +22,6 @@ import {
   Settings,
   Wifi,
   TrendingUp,
-  CheckCircle2,
   Home,
   BarChart3,
   FolderKanban,
@@ -122,53 +121,56 @@ function Ring({ pct, color, size = 46 }: { pct: number; color: string; size?: nu
   );
 }
 
-/** Deterministic mini sparkline (seed from KPI label). */
-function Sparkline({ color, seed }: { color: string; seed: number }) {
-  const points = useMemo(() => {
-    let s = seed;
-    const rnd = () => {
-      s = (s * 9301 + 49297) % 233280;
-      return s / 233280;
-    };
-    const n = 20;
-    const arr: number[] = [];
-    let v = 0.4 + rnd() * 0.2;
-    for (let i = 0; i < n; i++) {
-      v += (rnd() - 0.4) * 0.15;
-      v = Math.max(0.05, Math.min(0.95, v));
-      arr.push(v);
-    }
-    // final tilt up for that "growth" look
-    for (let i = n - 4; i < n; i++) arr[i] = Math.min(1, arr[i] + (i - (n - 5)) * 0.05);
-    return arr;
-  }, [seed]);
-  const w = 68;
-  const h = 22;
-  const path = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${(i / (points.length - 1)) * w} ${h - p * h}`)
-    .join(" ");
-  const area = `${path} L ${w} ${h} L 0 ${h} Z`;
-  const gid = `spark-${color.replace("#", "")}-${seed}`;
+// ── Region panel — octagonal cinematic frame ────────────────────────────────
+/** Chamfered-octagon outline in the 0-100 space (non-scaling stroke). */
+const OCTAGON = "13,1 87,1 99,13 99,87 87,99 13,99 1,87 1,13";
+
+/** Small Islamic 8-point star motif for the panel's top-centre. */
+function StarMotif({ color }: { color: string }) {
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="mt-0.5 shrink-0">
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.45" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={area} fill={`url(#${gid})`} />
-      <path d={path} fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+    <svg viewBox="0 0 40 40" className="h-6 w-6" aria-hidden>
+      <g fill="none" stroke={color} strokeWidth="1.4" opacity="0.85">
+        <rect x="9" y="9" width="22" height="22" transform="rotate(45 20 20)" />
+        <rect x="9" y="9" width="22" height="22" />
+      </g>
     </svg>
   );
 }
 
-function initiativeStatus(pct: number, ar: boolean): { label: string; done: boolean } {
-  const done = pct >= 88;
-  return { label: done ? (ar ? "مكتمل" : "Done") : ar ? "جارٍ" : "Active", done };
+/** Outlined stat badge (decorative ring + centred value/label). */
+function StatRing({ value, label, color }: { value: string; label: string; color: string }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative grid size-14 place-items-center">
+        <svg viewBox="0 0 56 56" className="absolute inset-0 h-full w-full -rotate-90">
+          <circle
+            cx="28"
+            cy="28"
+            r="24"
+            fill="none"
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth="3"
+          />
+          <circle
+            cx="28"
+            cy="28"
+            r="24"
+            fill="none"
+            stroke={color}
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray={2 * Math.PI * 24}
+            strokeDashoffset={2 * Math.PI * 24 * 0.28}
+            opacity="0.9"
+          />
+        </svg>
+        <span className="relative text-[13px] font-black tabular-nums text-white">{value}</span>
+      </div>
+      <span className="max-w-[72px] truncate text-center text-[9px] text-white/55">{label}</span>
+    </div>
+  );
 }
 
-// ── Region panel ────────────────────────────────────────────────────────────
 function RegionCard({
   panel,
   color,
@@ -187,27 +189,33 @@ function RegionCard({
   const region = REGIONS.find((r) => r.id === panel.id)!;
   const perfKpi = panel.kpis.find((k) => k.ringPct != null);
   const perfPct = livePerformance ?? perfKpi?.ringPct ?? 0;
-  const hex = color.replace("#", "");
+  const projects = panel.kpis[0];
+  const resource = panel.kpis[2];
   return (
     <button
       type="button"
       onClick={onSelect}
       aria-pressed={active}
-      className="group/region relative flex h-full w-full flex-col gap-3 overflow-hidden rounded-2xl border p-3.5 text-start transition"
-      style={{
-        borderColor: active ? color : `${color}55`,
-        background: `linear-gradient(155deg, ${color}18 0%, rgba(4,17,31,0.75) 55%, rgba(4,7,15,0.9) 100%)`,
-        boxShadow: active
-          ? `0 0 0 1px ${color}88, 0 22px 60px -25px ${color}90, inset 0 1px 0 ${color}44`
-          : `0 12px 40px -25px ${color}66, inset 0 1px 0 ${color}22`,
-      }}
+      className="group/region relative flex h-full w-full flex-col gap-3 p-4 text-start"
     >
-      {/* Corner glow */}
-      <div
+      {/* Octagonal frame (fill + glowing edge) */}
+      <svg
         aria-hidden
-        className="pointer-events-none absolute -end-8 -top-10 h-32 w-32 rounded-full opacity-40 blur-3xl"
-        style={{ background: color }}
-      />
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        className="pointer-events-none absolute inset-0 h-full w-full"
+      >
+        <polygon
+          points={OCTAGON}
+          fill={`${color}14`}
+          stroke={color}
+          strokeWidth={active ? 2.4 : 1.3}
+          strokeOpacity={active ? 1 : 0.6}
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+
+      {/* Ornamental corner star + title */}
       <div className="relative flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div
@@ -219,104 +227,27 @@ function RegionCard({
               {ar ? "المنطقة" : "Region"}
             </span>
           </div>
-          <div className="mt-0.5 text-[11px] text-white/55">
+          <div className="mt-0.5 truncate text-[11px] text-white/55">
             {ar ? panel.subtitleAr : panel.subtitleEn}
           </div>
         </div>
-        <span
-          className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
-          style={{ background: color, boxShadow: `0 0 12px ${color}` }}
-          aria-hidden
-        />
+        <StarMotif color={color} />
       </div>
 
-      {/* KPI row */}
-      <div className="relative grid grid-cols-3 gap-1.5">
-        {panel.kpis.map((k, i) => (
-          <div
-            key={k.en}
-            className="rounded-xl border border-white/10 bg-white/[0.03] p-2 backdrop-blur-sm"
-          >
-            <div className="mb-0.5 truncate text-[9.5px] uppercase tracking-wider text-white/50">
-              {ar ? k.ar : k.en}
-            </div>
-            {k.ringPct != null ? (
-              <div className="flex items-center justify-between gap-1">
-                <div className="flex flex-col">
-                  <span className="text-[15px] font-black tabular-nums text-white">{k.value}</span>
-                  {k.delta && (
-                    <span className="text-[9px] font-semibold text-emerald-300">{k.delta}</span>
-                  )}
-                </div>
-                <Ring
-                  pct={k.ringPct === perfKpi?.ringPct ? perfPct : k.ringPct}
-                  color={color}
-                  size={38}
-                />
-              </div>
-            ) : (
-              <>
-                <div className="text-[15px] font-black leading-tight tabular-nums text-white">
-                  {k.value}
-                </div>
-                <div className="flex items-end justify-between gap-1">
-                  {k.delta && (
-                    <span className="text-[9px] font-semibold text-emerald-300">{k.delta}</span>
-                  )}
-                  <Sparkline color={color} seed={i * 37 + hex.charCodeAt(0)} />
-                </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Top initiatives */}
-      {panel.initiatives.length > 0 && (
-        <div className="relative rounded-xl border border-white/10 bg-white/[0.02] p-2.5">
-          <div className="mb-1.5 flex items-center justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">
-              {ar ? "أهم المبادرات" : "Top initiatives"}
-            </span>
-          </div>
-          <ul className="grid gap-1.5">
-            {panel.initiatives.slice(0, 4).map((it) => {
-              const st = initiativeStatus(it.pct, ar);
-              return (
-                <li key={it.en} className="text-[11px]">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="flex min-w-0 items-center gap-1.5 truncate text-white/80">
-                      <CheckCircle2 className="size-3 shrink-0" style={{ color }} aria-hidden />
-                      <span className="truncate">{ar ? it.ar : it.en}</span>
-                    </span>
-                    <span
-                      className={
-                        "shrink-0 text-[10px] font-semibold " +
-                        (st.done ? "text-emerald-300" : "text-amber-300")
-                      }
-                    >
-                      {st.label} · {it.pct}%
-                    </span>
-                  </div>
-                  <div className="mt-1 h-[3px] overflow-hidden rounded-full bg-white/8">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${it.pct}%`,
-                        background: `linear-gradient(90deg, ${color}, ${color}cc)`,
-                        boxShadow: `0 0 8px ${color}88`,
-                      }}
-                    />
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+      {/* Three-ring cluster: projects · performance · resource */}
+      <div className="relative flex items-center justify-between gap-2">
+        <StatRing value={projects.value} label={ar ? projects.ar : projects.en} color={color} />
+        <div className="relative grid place-items-center">
+          <Ring pct={perfPct} color={color} size={92} />
+          <span className="pointer-events-none absolute -bottom-1 text-[9px] font-semibold text-white/55">
+            {ar ? "الأداء" : "Perf."}
+          </span>
         </div>
-      )}
+        <StatRing value={resource.value} label={ar ? resource.ar : resource.en} color={color} />
+      </div>
 
-      {/* Module icons */}
-      <div className="relative mt-auto flex flex-wrap gap-1.5">
+      {/* Module icons — activated links, ≥44px touch targets */}
+      <div className="relative mt-auto flex flex-wrap justify-center gap-1.5">
         {panel.modules.map((m) => {
           const Icon = m.icon;
           return (
