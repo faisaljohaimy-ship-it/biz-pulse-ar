@@ -6,30 +6,35 @@ export const ARIA_GEMINI_FLASH_MODEL = "gemini-3.5-flash";
 /** Low-latency Gemini speech model. Google currently marks it Preview. */
 export const ARIA_GEMINI_TTS_MODEL = "gemini-3.1-flash-tts-preview";
 
-/** FINN's Gemini prebuilt voice — a firm male timbre. Deployments may override. */
-export const ARIA_GEMINI_TTS_VOICE = "Charon";
+/** FINN's Gemini prebuilt voice — "Algieba" (Smooth): a warm, calm, deep male
+ *  timbre. Chosen over the firmer "Charon" so FINN sounds gentle and natural,
+ *  never booming or robotic. Deployments may override. */
+export const ARIA_GEMINI_TTS_VOICE = "Algieba";
 
 export const ARIA_GEMINI_TTS_SAMPLE_RATE = 24_000;
 
-/** Natural-language direction preserves FINN's Arabic speaking persona. */
+/** Natural-language direction — a beautiful, calm Saudi male voice: soft,
+ *  warm, deep without booming, unhurried and refined (not formal/robotic). */
 export const ARIA_GEMINI_TTS_DIRECTION =
-  "اقرأ بصوت مساعد رجل عربي دافئ وواثق واحترافي، بلهجة سعودية طبيعية وسرعة محادثة هادئة. انطق النص التالي فقط كما هو، من دون إضافة مقدمة أو تعليق:";
+  "اقرأ بصوتِ رجلٍ سعوديٍّ هادئ ودافئ وجميل، ناعمِ النبرة، عميقٍ دون جهورية أو نبرة آلية، بإيقاعٍ متمهّلٍ مطمئن ولمسةٍ احترافية راقية. انطق النص التالي فقط كما هو، من دون إضافة مقدمة أو تعليق:";
 
 // Compatibility exports retained because the full NEXIOS repository may
 // still contain older public-voice imports outside this focused overlay.
 // The authenticated FINN chat no longer calls ElevenLabs.
 
 /** @deprecated Legacy compatibility only; `/api/aria/tts` uses Gemini.
- *  Male voice (ElevenLabs "Adam") to match FINN on any legacy/guest path. */
-export const ARIA_ELEVENLABS_VOICE_ID = "pNInz6obpgDQGcFmaJgB";
+ *  Warm, smooth male voice (ElevenLabs "Antoni") — calm, not booming, to
+ *  match FINN on any legacy/guest path. */
+export const ARIA_ELEVENLABS_VOICE_ID = "ErXwobaYiN019PkySvjV";
 
-/** @deprecated Legacy compatibility only. */
+/** @deprecated Legacy compatibility only. Calmer, smoother settings: higher
+ *  stability + lower style for a steady, gentle delivery. */
 export const ARIA_ELEVENLABS_VOICE_SETTINGS = {
-  stability: 0.5,
-  similarity_boost: 0.8,
-  style: 0.45,
+  stability: 0.62,
+  similarity_boost: 0.85,
+  style: 0.2,
   use_speaker_boost: true,
-  speed: 1.0,
+  speed: 0.96,
 } as const;
 
 /** @deprecated Legacy compatibility only. */

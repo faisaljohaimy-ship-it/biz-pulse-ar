@@ -50,7 +50,7 @@ describe("specialist voice release contract", () => {
     expect(tts).toContain("ARIA_ELEVENLABS_VOICE_ID");
     expect(tts).not.toMatch(/GEMINI_TTS|generativelanguage/);
     const config = source("src/lib/aria/voice-config.ts");
-    expect(config).toContain('"pNInz6obpgDQGcFmaJgB"');
+    expect(config).toContain('"ErXwobaYiN019PkySvjV"');
     // The key never appears client-side.
     for (const file of [
       "src/lib/digital-humans/free-agent-speech.ts",
