@@ -129,19 +129,17 @@ export function installPermanentHealer(): (() => void) | undefined {
   };
 
   // ── Offline / online recovery ─────────────────────────────────────
-  let wentOfflineAt = 0;
+  // Note: we intentionally do NOT auto-reload when the network returns.
+  // A surprise reload would discard in-progress form input (permits,
+  // incident reports, etc.) on common mobile connectivity gaps
+  // (elevators, tunnels, sleep/wake, weak Wi-Fi). Loaders and realtime
+  // channels re-sync on their own; if a hard refresh is ever needed the
+  // user can trigger it manually.
   const onOffline = () => {
-    wentOfflineAt = Date.now();
+    /* no-op: observed for future telemetry only */
   };
   const onOnline = () => {
-    // If we were offline for >60s and the page has been alive, soft-reload
-    // once to re-sync loaders and realtime channels. Skip if already healed.
-    if (!wentOfflineAt) return;
-    const gap = Date.now() - wentOfflineAt;
-    wentOfflineAt = 0;
-    if (gap > 60_000 && safe(() => sessionStorage.getItem(HEAL_FLAG)) !== "1") {
-      reloadWithHeal("recover_online");
-    }
+    /* no-op: see comment above */
   };
 
   // ── Heartbeat ─────────────────────────────────────────────────────
