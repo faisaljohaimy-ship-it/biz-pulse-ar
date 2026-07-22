@@ -27,14 +27,22 @@ export function FinnPersonaCard({ ar }: { ar: boolean }) {
   return (
     <div className="relative flex h-full flex-col gap-3 rounded-2xl border border-[#00D4FF]/25 bg-[#04111f]/55 p-4 backdrop-blur-md">
       <div className="flex items-start gap-3">
-        {/* Portrait + holographic halo */}
-        <div className="relative shrink-0">
+        {/* Circular portrait with cinematic halo — mirrors the executive poster */}
+        <div className="relative shrink-0 pb-3">
           <span
             aria-hidden
-            className="finn-halo pointer-events-none absolute -inset-1 rounded-2xl"
+            className="finn-halo pointer-events-none absolute -inset-2 rounded-full"
             style={{
               background:
-                "radial-gradient(closest-side, rgba(0,212,255,0.45), rgba(0,212,255,0) 72%)",
+                "radial-gradient(closest-side, rgba(0,212,255,0.55), rgba(58,232,255,0.18) 55%, rgba(0,212,255,0) 78%)",
+            }}
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute -inset-[3px] rounded-full opacity-45"
+            style={{
+              background:
+                "conic-gradient(from 180deg, #3AE8FF, #00D4FF, #22C55E, #3AE8FF)",
             }}
           />
           <img
@@ -45,8 +53,11 @@ export function FinnPersonaCard({ ar }: { ar: boolean }) {
             decoding="async"
             draggable={false}
             alt={ar ? BRAND_ASSISTANT.nameAr : BRAND_ASSISTANT.nameEn}
-            className="relative h-24 w-20 rounded-xl object-cover object-top ring-1 ring-[#3AE8FF]/40"
+            className="relative h-24 w-24 rounded-full object-cover object-top ring-2 ring-[#3AE8FF]/70"
           />
+          <span className="pointer-events-none absolute -bottom-0.5 start-1/2 -translate-x-1/2 rounded-full border border-[#00D4FF]/40 bg-[#04070F]/90 px-2 py-0.5 text-[10px] font-black tracking-[0.25em] text-[#3AE8FF]">
+            FINN
+          </span>
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-2xl font-bold tracking-wide text-white">
