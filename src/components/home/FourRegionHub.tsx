@@ -734,7 +734,7 @@ export function FourRegionHub() {
           <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
             <CentralMap
               ar={ar}
-              sectors={sectors as never}
+              sectors={sectors}
               regionId={regionId}
               setRegion={setRegion}
               severityByRegion={severityByRegion}
