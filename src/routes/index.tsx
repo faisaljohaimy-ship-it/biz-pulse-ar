@@ -56,27 +56,27 @@ const HOME_HOLO_AGENTS = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "NEXIOS AI  · Executive Delivery Platform" },
+      { title: "NEXIOS AI  -  FINN" },
       {
         name: "description",
-        content: "Executive Delivery Platform",
+        content: "N",
       },
       {
         property: "og:title",
-        content: "NEXIOS AI  · Executive Delivery Platform",
+        content: "NEXIOS AI  -  FINN",
       },
       {
         property: "og:description",
-        content: "Executive Delivery Platform",
+        content: "N",
       },
       { property: "og:url", content: "https://neexios.com/" },
       {
         name: "twitter:title",
-        content: "NEXIOS AI  · Executive Delivery Platform",
+        content: "NEXIOS AI  -  FINN",
       },
       {
         name: "twitter:description",
-        content: "Executive Delivery Platform",
+        content: "N",
       },
     ],
     links: [{ rel: "canonical", href: "https://neexios.com/" }],

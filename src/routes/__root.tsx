@@ -130,12 +130,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: SITE_NAME },
       {
         name: "description",
-        content: "Executive Delivery Platform",
+        content: "N",
       },
       { property: "og:title", content: SITE_NAME },
       {
         property: "og:description",
-        content: "Executive Delivery Platform",
+        content: "N",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
@@ -147,28 +147,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:title",
-        content: "NEXIOS AI  · Executive Delivery Platform",
+        content: "NEXIOS AI  -  FINN",
       },
       {
         name: "twitter:description",
-        content: "Executive Delivery Platform",
+        content: "N",
       },
       { name: "twitter:image", content: `${DOMAIN_URL}/finn-portrait.png` },
       { name: "twitter:image:alt", content: "FINN · NEXIOS AI OS" },
-      { title: "NEXIOS AI  · Executive Delivery Platform" },
+      { title: "NEXIOS AI  -  FINN" },
       {
         property: "og:title",
-        content: "NEXIOS AI  · Executive Delivery Platform",
+        content: "NEXIOS AI  -  FINN",
       },
       {
         property: "og:image",
         content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/c34d0de6-2073-4eaf-8331-d99b68cec8b1",
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/d113c6a3-3bac-46e4-bf53-293d05655ab1",
       },
       {
         name: "twitter:image",
         content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/c34d0de6-2073-4eaf-8331-d99b68cec8b1",
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/d113c6a3-3bac-46e4-bf53-293d05655ab1",
       },
     ],
     links: [
@@ -179,9 +179,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/x-icon", href: "/finn-portrait.png" },
+      { rel: "icon", type: "image/png", href: "/finn-portrait.png" },
       { rel: "apple-touch-icon", href: "/finn-portrait.png" },
-      { rel: "shortcut icon", type: "image/x-icon", href: "/finn-portrait.png" },
+      { rel: "shortcut icon", type: "image/png", href: "/finn-portrait.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
     ],
     scripts: [
