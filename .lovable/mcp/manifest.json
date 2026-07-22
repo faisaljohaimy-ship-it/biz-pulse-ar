@@ -13,7 +13,7 @@
     "server": {
       "name": "nexus-aria-mcp",
       "version": "0.1.0",
-      "title": "NEXUS AI OS — ARIA"
+      "title": "NEXUS AI OS — FINN"
     },
     "tools": [
       {
@@ -34,8 +34,8 @@
       },
       {
         "name": "ask_aria",
-        "title": "Ask ARIA",
-        "description": "Send a natural-language question to ARIA, the NEXUS Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
+        "title": "Ask FINN",
+        "description": "Send a natural-language question to FINN, the NEXUS Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
         "annotations": {
           "readOnlyHint": true,
           "openWorldHint": false
