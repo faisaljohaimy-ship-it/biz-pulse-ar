@@ -35,7 +35,7 @@ const GROUPS: Array<{ ar: string; en: string; routes: string[] }> = [
   {
     ar: "الذكاء والوكلاء",
     en: "Intelligence & Agents",
-    routes: ["/aria", "/agents", "/intelligence", "/aria-analytics", "/digital-twin"],
+    routes: ["/finn", "/agents", "/intelligence", "/finn-analytics", "/digital-twin"],
   },
   {
     ar: "التحليل والتقارير",

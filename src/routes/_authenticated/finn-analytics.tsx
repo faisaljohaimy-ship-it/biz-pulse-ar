@@ -4,7 +4,7 @@ import { AriaUsageAnalytics } from "@/components/aria/AriaUsageAnalytics";
 import { AriaAnomalyStrip } from "@/components/aria/AriaAnomalyStrip";
 import { AriaDailySummary } from "@/components/aria/AriaDailySummary";
 
-export const Route = createFileRoute("/_authenticated/aria-analytics")({
+export const Route = createFileRoute("/_authenticated/finn-analytics")({
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: AriaAnalyticsPage,

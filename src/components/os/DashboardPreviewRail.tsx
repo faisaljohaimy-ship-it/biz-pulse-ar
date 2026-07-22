@@ -60,7 +60,7 @@ const PREVIEWS: readonly Preview[] = [
     img: "/smart-city-bg.jpeg",
   },
   {
-    to: "/aria",
+    to: "/finn",
     ar: "FINN التنفيذية",
     en: "FINN Executive",
     descAr: "تحكّم كامل بالمساعدة الذكية أينما كنت",

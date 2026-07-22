@@ -338,7 +338,7 @@ export function AgentRing() {
 
         {/* Central FINN core — breathing, scan ray, only interactive AI. */}
         <Link
-          to="/aria"
+          to="/finn"
           aria-label="افتح FINN — المساعد التنفيذي الوحيد"
           className="group absolute left-1/2 top-1/2 flex h-28 w-28 items-center justify-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#00D4FF]/35 via-[#0a2a44] to-[#061A2E] text-white sm:h-32 sm:w-32"
           style={{
@@ -525,7 +525,7 @@ function Inspector({ vm }: { vm: AgentVM }) {
         )}
         <div className="mt-3 flex flex-wrap justify-end gap-2 sm:justify-start">
           <Link
-            to="/aria"
+            to="/finn"
             className="inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[11px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
           >
             <MessageSquare className="h-3 w-3" />
@@ -542,7 +542,7 @@ function EmptyState() {
     <div className="text-center">
       <p className="text-xs text-white/65">سجلّ تشغيل الوكلاء فارغ حاليًا.</p>
       <Link
-        to="/aria"
+        to="/finn"
         className="mt-3 inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[11px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
       >
         <Sparkles className="h-3 w-3" />

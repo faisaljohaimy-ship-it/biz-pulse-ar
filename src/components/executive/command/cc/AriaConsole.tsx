@@ -95,7 +95,7 @@ export function AriaConsole({ ar, accent }: { ar: boolean; accent: string }) {
 
       {/* mic CTA */}
       <Link
-        to="/aria"
+        to="/finn"
         aria-label={ar ? "تحدّث إلى FINN" : "Talk to FINN"}
         className="group mx-auto grid h-12 w-12 place-items-center rounded-full border transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2"
         style={{

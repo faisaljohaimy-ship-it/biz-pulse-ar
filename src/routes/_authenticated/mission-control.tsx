@@ -868,7 +868,7 @@ const ACTIONS = [
   { to: "/sec", icon: AlertTriangle, ar: "الحوادث", en: "Incidents" },
   { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل", en: "Work Orders" },
   { to: "/executive-reports", icon: FileBarChart2, ar: "التقارير", en: "Reports" },
-  { to: "/aria", icon: MessageSquare, ar: "اسأل FINN", en: "Ask FINN" },
+  { to: "/finn", icon: MessageSquare, ar: "اسأل FINN", en: "Ask FINN" },
 ] as const;
 
 /* ────────────────────────────────────────────────────────────
@@ -1240,7 +1240,7 @@ function MissionControl() {
                 ))}
               </ul>
               <Link
-                to="/aria"
+                to="/finn"
                 className="mt-5 inline-flex items-center justify-between gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100 hover:bg-cyan-400/20 transition"
               >
                 <span>{ar ? "متابعة مع FINN" : "Continue with FINN"}</span>

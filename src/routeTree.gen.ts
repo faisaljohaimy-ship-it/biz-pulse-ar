@@ -107,6 +107,9 @@ import { Route as AuthenticatedHcisRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedGuideRouteImport } from './routes/_authenticated/guide'
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
+import { Route as AuthenticatedFinnDocumentsRouteImport } from './routes/_authenticated/finn-documents'
+import { Route as AuthenticatedFinnAnalyticsRouteImport } from './routes/_authenticated/finn-analytics'
+import { Route as AuthenticatedFinnRouteImport } from './routes/_authenticated/finn'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
 import { Route as AuthenticatedFabricRouteImport } from './routes/_authenticated/fabric'
 import { Route as AuthenticatedExecutiveReportsRouteImport } from './routes/_authenticated/executive-reports'
@@ -129,9 +132,6 @@ import { Route as AuthenticatedBriefingRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedBridgeRouteImport } from './routes/_authenticated/bridge'
 import { Route as AuthenticatedBoardroomRouteImport } from './routes/_authenticated/boardroom'
 import { Route as AuthenticatedBiRouteImport } from './routes/_authenticated/bi'
-import { Route as AuthenticatedAriaDocumentsRouteImport } from './routes/_authenticated/aria-documents'
-import { Route as AuthenticatedAriaAnalyticsRouteImport } from './routes/_authenticated/aria-analytics'
-import { Route as AuthenticatedAriaRouteImport } from './routes/_authenticated/aria'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAnalystRouteImport } from './routes/_authenticated/analyst'
 import { Route as AuthenticatedAiOpsRouteImport } from './routes/_authenticated/ai-ops'
@@ -193,9 +193,9 @@ import { Route as AuthenticatedSecAssetsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSecAiRouteImport } from './routes/_authenticated/sec.ai'
 import { Route as AuthenticatedSecAccessRouteImport } from './routes/_authenticated/sec.access'
 import { Route as AuthenticatedLearnSlugRouteImport } from './routes/_authenticated/learn.$slug'
+import { Route as AuthenticatedFinnDirectiveRouteImport } from './routes/_authenticated/finn.directive'
+import { Route as AuthenticatedFinnDemoRouteImport } from './routes/_authenticated/finn.demo'
 import { Route as AuthenticatedAssistantThreadIdRouteImport } from './routes/_authenticated/assistant.$threadId'
-import { Route as AuthenticatedAriaDirectiveRouteImport } from './routes/_authenticated/aria.directive'
-import { Route as AuthenticatedAriaDemoRouteImport } from './routes/_authenticated/aria.demo'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -718,6 +718,23 @@ const AuthenticatedForgottenRoute = AuthenticatedForgottenRouteImport.update({
   path: '/forgotten',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedFinnDocumentsRoute =
+  AuthenticatedFinnDocumentsRouteImport.update({
+    id: '/finn-documents',
+    path: '/finn-documents',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedFinnAnalyticsRoute =
+  AuthenticatedFinnAnalyticsRouteImport.update({
+    id: '/finn-analytics',
+    path: '/finn-analytics',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedFinnRoute = AuthenticatedFinnRouteImport.update({
+  id: '/finn',
+  path: '/finn',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
   id: '/files',
   path: '/files',
@@ -834,23 +851,6 @@ const AuthenticatedBoardroomRoute = AuthenticatedBoardroomRouteImport.update({
 const AuthenticatedBiRoute = AuthenticatedBiRouteImport.update({
   id: '/bi',
   path: '/bi',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAriaDocumentsRoute =
-  AuthenticatedAriaDocumentsRouteImport.update({
-    id: '/aria-documents',
-    path: '/aria-documents',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedAriaAnalyticsRoute =
-  AuthenticatedAriaAnalyticsRouteImport.update({
-    id: '/aria-analytics',
-    path: '/aria-analytics',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedAriaRoute = AuthenticatedAriaRouteImport.update({
-  id: '/aria',
-  path: '/aria',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
@@ -1174,23 +1174,23 @@ const AuthenticatedLearnSlugRoute = AuthenticatedLearnSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => AuthenticatedLearnRoute,
 } as any)
+const AuthenticatedFinnDirectiveRoute =
+  AuthenticatedFinnDirectiveRouteImport.update({
+    id: '/directive',
+    path: '/directive',
+    getParentRoute: () => AuthenticatedFinnRoute,
+  } as any)
+const AuthenticatedFinnDemoRoute = AuthenticatedFinnDemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => AuthenticatedFinnRoute,
+} as any)
 const AuthenticatedAssistantThreadIdRoute =
   AuthenticatedAssistantThreadIdRouteImport.update({
     id: '/assistant/$threadId',
     path: '/assistant/$threadId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedAriaDirectiveRoute =
-  AuthenticatedAriaDirectiveRouteImport.update({
-    id: '/directive',
-    path: '/directive',
-    getParentRoute: () => AuthenticatedAriaRoute,
-  } as any)
-const AuthenticatedAriaDemoRoute = AuthenticatedAriaDemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => AuthenticatedAriaRoute,
-} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -1350,9 +1350,6 @@ export interface FileRoutesByFullPath {
   '/ai-ops': typeof AuthenticatedAiOpsRoute
   '/analyst': typeof AuthenticatedAnalystRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
-  '/aria': typeof AuthenticatedAriaRouteWithChildren
-  '/aria-analytics': typeof AuthenticatedAriaAnalyticsRoute
-  '/aria-documents': typeof AuthenticatedAriaDocumentsRoute
   '/bi': typeof AuthenticatedBiRoute
   '/boardroom': typeof AuthenticatedBoardroomRoute
   '/bridge': typeof AuthenticatedBridgeRoute
@@ -1375,6 +1372,9 @@ export interface FileRoutesByFullPath {
   '/executive-reports': typeof AuthenticatedExecutiveReportsRoute
   '/fabric': typeof AuthenticatedFabricRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/finn': typeof AuthenticatedFinnRouteWithChildren
+  '/finn-analytics': typeof AuthenticatedFinnAnalyticsRoute
+  '/finn-documents': typeof AuthenticatedFinnDocumentsRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/guide': typeof AuthenticatedGuideRoute
@@ -1433,9 +1433,9 @@ export interface FileRoutesByFullPath {
   '/promo/': typeof PromoIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/aria/demo': typeof AuthenticatedAriaDemoRoute
-  '/aria/directive': typeof AuthenticatedAriaDirectiveRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
+  '/finn/demo': typeof AuthenticatedFinnDemoRoute
+  '/finn/directive': typeof AuthenticatedFinnDirectiveRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
   '/sec/ai': typeof AuthenticatedSecAiRoute
@@ -1557,9 +1557,6 @@ export interface FileRoutesByTo {
   '/ai-ops': typeof AuthenticatedAiOpsRoute
   '/analyst': typeof AuthenticatedAnalystRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
-  '/aria': typeof AuthenticatedAriaRouteWithChildren
-  '/aria-analytics': typeof AuthenticatedAriaAnalyticsRoute
-  '/aria-documents': typeof AuthenticatedAriaDocumentsRoute
   '/bi': typeof AuthenticatedBiRoute
   '/boardroom': typeof AuthenticatedBoardroomRoute
   '/bridge': typeof AuthenticatedBridgeRoute
@@ -1582,6 +1579,9 @@ export interface FileRoutesByTo {
   '/executive-reports': typeof AuthenticatedExecutiveReportsRoute
   '/fabric': typeof AuthenticatedFabricRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/finn': typeof AuthenticatedFinnRouteWithChildren
+  '/finn-analytics': typeof AuthenticatedFinnAnalyticsRoute
+  '/finn-documents': typeof AuthenticatedFinnDocumentsRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/guide': typeof AuthenticatedGuideRoute
@@ -1638,9 +1638,9 @@ export interface FileRoutesByTo {
   '/promo': typeof PromoIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/aria/demo': typeof AuthenticatedAriaDemoRoute
-  '/aria/directive': typeof AuthenticatedAriaDirectiveRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
+  '/finn/demo': typeof AuthenticatedFinnDemoRoute
+  '/finn/directive': typeof AuthenticatedFinnDirectiveRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sec/access': typeof AuthenticatedSecAccessRoute
   '/sec/ai': typeof AuthenticatedSecAiRoute
@@ -1764,9 +1764,6 @@ export interface FileRoutesById {
   '/_authenticated/ai-ops': typeof AuthenticatedAiOpsRoute
   '/_authenticated/analyst': typeof AuthenticatedAnalystRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
-  '/_authenticated/aria': typeof AuthenticatedAriaRouteWithChildren
-  '/_authenticated/aria-analytics': typeof AuthenticatedAriaAnalyticsRoute
-  '/_authenticated/aria-documents': typeof AuthenticatedAriaDocumentsRoute
   '/_authenticated/bi': typeof AuthenticatedBiRoute
   '/_authenticated/boardroom': typeof AuthenticatedBoardroomRoute
   '/_authenticated/bridge': typeof AuthenticatedBridgeRoute
@@ -1789,6 +1786,9 @@ export interface FileRoutesById {
   '/_authenticated/executive-reports': typeof AuthenticatedExecutiveReportsRoute
   '/_authenticated/fabric': typeof AuthenticatedFabricRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
+  '/_authenticated/finn': typeof AuthenticatedFinnRouteWithChildren
+  '/_authenticated/finn-analytics': typeof AuthenticatedFinnAnalyticsRoute
+  '/_authenticated/finn-documents': typeof AuthenticatedFinnDocumentsRoute
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
   '/_authenticated/guide': typeof AuthenticatedGuideRoute
@@ -1847,9 +1847,9 @@ export interface FileRoutesById {
   '/promo/': typeof PromoIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/_authenticated/aria/demo': typeof AuthenticatedAriaDemoRoute
-  '/_authenticated/aria/directive': typeof AuthenticatedAriaDirectiveRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
+  '/_authenticated/finn/demo': typeof AuthenticatedFinnDemoRoute
+  '/_authenticated/finn/directive': typeof AuthenticatedFinnDirectiveRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/sec/access': typeof AuthenticatedSecAccessRoute
   '/_authenticated/sec/ai': typeof AuthenticatedSecAiRoute
@@ -1973,9 +1973,6 @@ export interface FileRouteTypes {
     | '/ai-ops'
     | '/analyst'
     | '/analytics'
-    | '/aria'
-    | '/aria-analytics'
-    | '/aria-documents'
     | '/bi'
     | '/boardroom'
     | '/bridge'
@@ -1998,6 +1995,9 @@ export interface FileRouteTypes {
     | '/executive-reports'
     | '/fabric'
     | '/files'
+    | '/finn'
+    | '/finn-analytics'
+    | '/finn-documents'
     | '/forgotten'
     | '/governance'
     | '/guide'
@@ -2056,9 +2056,9 @@ export interface FileRouteTypes {
     | '/promo/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
-    | '/aria/demo'
-    | '/aria/directive'
     | '/assistant/$threadId'
+    | '/finn/demo'
+    | '/finn/directive'
     | '/learn/$slug'
     | '/sec/access'
     | '/sec/ai'
@@ -2180,9 +2180,6 @@ export interface FileRouteTypes {
     | '/ai-ops'
     | '/analyst'
     | '/analytics'
-    | '/aria'
-    | '/aria-analytics'
-    | '/aria-documents'
     | '/bi'
     | '/boardroom'
     | '/bridge'
@@ -2205,6 +2202,9 @@ export interface FileRouteTypes {
     | '/executive-reports'
     | '/fabric'
     | '/files'
+    | '/finn'
+    | '/finn-analytics'
+    | '/finn-documents'
     | '/forgotten'
     | '/governance'
     | '/guide'
@@ -2261,9 +2261,9 @@ export interface FileRouteTypes {
     | '/promo'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
-    | '/aria/demo'
-    | '/aria/directive'
     | '/assistant/$threadId'
+    | '/finn/demo'
+    | '/finn/directive'
     | '/learn/$slug'
     | '/sec/access'
     | '/sec/ai'
@@ -2386,9 +2386,6 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-ops'
     | '/_authenticated/analyst'
     | '/_authenticated/analytics'
-    | '/_authenticated/aria'
-    | '/_authenticated/aria-analytics'
-    | '/_authenticated/aria-documents'
     | '/_authenticated/bi'
     | '/_authenticated/boardroom'
     | '/_authenticated/bridge'
@@ -2411,6 +2408,9 @@ export interface FileRouteTypes {
     | '/_authenticated/executive-reports'
     | '/_authenticated/fabric'
     | '/_authenticated/files'
+    | '/_authenticated/finn'
+    | '/_authenticated/finn-analytics'
+    | '/_authenticated/finn-documents'
     | '/_authenticated/forgotten'
     | '/_authenticated/governance'
     | '/_authenticated/guide'
@@ -2469,9 +2469,9 @@ export interface FileRouteTypes {
     | '/promo/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
-    | '/_authenticated/aria/demo'
-    | '/_authenticated/aria/directive'
     | '/_authenticated/assistant/$threadId'
+    | '/_authenticated/finn/demo'
+    | '/_authenticated/finn/directive'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/sec/access'
     | '/_authenticated/sec/ai'
@@ -3334,6 +3334,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedForgottenRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/finn-documents': {
+      id: '/_authenticated/finn-documents'
+      path: '/finn-documents'
+      fullPath: '/finn-documents'
+      preLoaderRoute: typeof AuthenticatedFinnDocumentsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/finn-analytics': {
+      id: '/_authenticated/finn-analytics'
+      path: '/finn-analytics'
+      fullPath: '/finn-analytics'
+      preLoaderRoute: typeof AuthenticatedFinnAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/finn': {
+      id: '/_authenticated/finn'
+      path: '/finn'
+      fullPath: '/finn'
+      preLoaderRoute: typeof AuthenticatedFinnRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/files': {
       id: '/_authenticated/files'
       path: '/files'
@@ -3486,27 +3507,6 @@ declare module '@tanstack/react-router' {
       path: '/bi'
       fullPath: '/bi'
       preLoaderRoute: typeof AuthenticatedBiRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/aria-documents': {
-      id: '/_authenticated/aria-documents'
-      path: '/aria-documents'
-      fullPath: '/aria-documents'
-      preLoaderRoute: typeof AuthenticatedAriaDocumentsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/aria-analytics': {
-      id: '/_authenticated/aria-analytics'
-      path: '/aria-analytics'
-      fullPath: '/aria-analytics'
-      preLoaderRoute: typeof AuthenticatedAriaAnalyticsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/aria': {
-      id: '/_authenticated/aria'
-      path: '/aria'
-      fullPath: '/aria'
-      preLoaderRoute: typeof AuthenticatedAriaRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/analytics': {
@@ -3936,26 +3936,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLearnSlugRouteImport
       parentRoute: typeof AuthenticatedLearnRoute
     }
+    '/_authenticated/finn/directive': {
+      id: '/_authenticated/finn/directive'
+      path: '/directive'
+      fullPath: '/finn/directive'
+      preLoaderRoute: typeof AuthenticatedFinnDirectiveRouteImport
+      parentRoute: typeof AuthenticatedFinnRoute
+    }
+    '/_authenticated/finn/demo': {
+      id: '/_authenticated/finn/demo'
+      path: '/demo'
+      fullPath: '/finn/demo'
+      preLoaderRoute: typeof AuthenticatedFinnDemoRouteImport
+      parentRoute: typeof AuthenticatedFinnRoute
+    }
     '/_authenticated/assistant/$threadId': {
       id: '/_authenticated/assistant/$threadId'
       path: '/assistant/$threadId'
       fullPath: '/assistant/$threadId'
       preLoaderRoute: typeof AuthenticatedAssistantThreadIdRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/aria/directive': {
-      id: '/_authenticated/aria/directive'
-      path: '/directive'
-      fullPath: '/aria/directive'
-      preLoaderRoute: typeof AuthenticatedAriaDirectiveRouteImport
-      parentRoute: typeof AuthenticatedAriaRoute
-    }
-    '/_authenticated/aria/demo': {
-      id: '/_authenticated/aria/demo'
-      path: '/demo'
-      fullPath: '/aria/demo'
-      preLoaderRoute: typeof AuthenticatedAriaDemoRouteImport
-      parentRoute: typeof AuthenticatedAriaRoute
     }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
@@ -4093,18 +4093,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedAriaRouteChildren {
-  AuthenticatedAriaDemoRoute: typeof AuthenticatedAriaDemoRoute
-  AuthenticatedAriaDirectiveRoute: typeof AuthenticatedAriaDirectiveRoute
+interface AuthenticatedFinnRouteChildren {
+  AuthenticatedFinnDemoRoute: typeof AuthenticatedFinnDemoRoute
+  AuthenticatedFinnDirectiveRoute: typeof AuthenticatedFinnDirectiveRoute
 }
 
-const AuthenticatedAriaRouteChildren: AuthenticatedAriaRouteChildren = {
-  AuthenticatedAriaDemoRoute: AuthenticatedAriaDemoRoute,
-  AuthenticatedAriaDirectiveRoute: AuthenticatedAriaDirectiveRoute,
+const AuthenticatedFinnRouteChildren: AuthenticatedFinnRouteChildren = {
+  AuthenticatedFinnDemoRoute: AuthenticatedFinnDemoRoute,
+  AuthenticatedFinnDirectiveRoute: AuthenticatedFinnDirectiveRoute,
 }
 
-const AuthenticatedAriaRouteWithChildren =
-  AuthenticatedAriaRoute._addFileChildren(AuthenticatedAriaRouteChildren)
+const AuthenticatedFinnRouteWithChildren =
+  AuthenticatedFinnRoute._addFileChildren(AuthenticatedFinnRouteChildren)
 
 interface AuthenticatedLearnRouteChildren {
   AuthenticatedLearnSlugRoute: typeof AuthenticatedLearnSlugRoute
@@ -4201,9 +4201,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAiOpsRoute: typeof AuthenticatedAiOpsRoute
   AuthenticatedAnalystRoute: typeof AuthenticatedAnalystRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
-  AuthenticatedAriaRoute: typeof AuthenticatedAriaRouteWithChildren
-  AuthenticatedAriaAnalyticsRoute: typeof AuthenticatedAriaAnalyticsRoute
-  AuthenticatedAriaDocumentsRoute: typeof AuthenticatedAriaDocumentsRoute
   AuthenticatedBiRoute: typeof AuthenticatedBiRoute
   AuthenticatedBoardroomRoute: typeof AuthenticatedBoardroomRoute
   AuthenticatedBridgeRoute: typeof AuthenticatedBridgeRoute
@@ -4226,6 +4223,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedExecutiveReportsRoute: typeof AuthenticatedExecutiveReportsRoute
   AuthenticatedFabricRoute: typeof AuthenticatedFabricRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
+  AuthenticatedFinnRoute: typeof AuthenticatedFinnRouteWithChildren
+  AuthenticatedFinnAnalyticsRoute: typeof AuthenticatedFinnAnalyticsRoute
+  AuthenticatedFinnDocumentsRoute: typeof AuthenticatedFinnDocumentsRoute
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
   AuthenticatedGuideRoute: typeof AuthenticatedGuideRoute
@@ -4279,9 +4279,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAiOpsRoute: AuthenticatedAiOpsRoute,
   AuthenticatedAnalystRoute: AuthenticatedAnalystRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
-  AuthenticatedAriaRoute: AuthenticatedAriaRouteWithChildren,
-  AuthenticatedAriaAnalyticsRoute: AuthenticatedAriaAnalyticsRoute,
-  AuthenticatedAriaDocumentsRoute: AuthenticatedAriaDocumentsRoute,
   AuthenticatedBiRoute: AuthenticatedBiRoute,
   AuthenticatedBoardroomRoute: AuthenticatedBoardroomRoute,
   AuthenticatedBridgeRoute: AuthenticatedBridgeRoute,
@@ -4304,6 +4301,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedExecutiveReportsRoute: AuthenticatedExecutiveReportsRoute,
   AuthenticatedFabricRoute: AuthenticatedFabricRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
+  AuthenticatedFinnRoute: AuthenticatedFinnRouteWithChildren,
+  AuthenticatedFinnAnalyticsRoute: AuthenticatedFinnAnalyticsRoute,
+  AuthenticatedFinnDocumentsRoute: AuthenticatedFinnDocumentsRoute,
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
   AuthenticatedGuideRoute: AuthenticatedGuideRoute,

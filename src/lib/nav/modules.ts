@@ -66,8 +66,8 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/urgent-ops", ar: "العاجل", en: "Urgent Ops", icon: Siren },
   { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Building2 },
 
-  { to: "/aria", ar: "FINN التنفيذية", en: "FINN Engine", icon: Sparkles },
-  { to: "/aria-analytics", ar: "تحليلات FINN", en: "FINN Analytics", icon: LineChart },
+  { to: "/finn", ar: "FINN التنفيذية", en: "FINN Engine", icon: Sparkles },
+  { to: "/finn-analytics", ar: "تحليلات FINN", en: "FINN Analytics", icon: LineChart },
   { to: "/intelligence", ar: "الذكاء والتطوّر", en: "Intelligence", icon: BrainCircuit },
   { to: "/observability", ar: "الرصد والتكاليف", en: "Observability", icon: Telescope },
   { to: "/learn", ar: "التعلّم", en: "Learn", icon: GraduationCap },
@@ -147,11 +147,11 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     ar: "قاعة المجلس — العرض التنفيذي للقيادة.",
     en: "The boardroom — the executive briefing for leadership.",
   },
-  "/aria": {
+  "/finn": {
     ar: "FINN التنفيذية — المساعد الذكي الصوتي والنصي.",
     en: "FINN Executive — the voice and text AI assistant.",
   },
-  "/aria-analytics": {
+  "/finn-analytics": {
     ar: "تحليلات أداء FINN واستخدامها.",
     en: "FINN performance and usage analytics.",
   },

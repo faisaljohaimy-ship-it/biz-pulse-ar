@@ -292,7 +292,7 @@ export const HOTSPOTS = [
   // FINN console.
   {
     id: "aria-console",
-    to: "/aria",
+    to: "/finn",
     labelAr: "فتح FINN التنفيذية",
     labelEn: "Open FINN executive",
     x: 1.8,
@@ -303,7 +303,7 @@ export const HOTSPOTS = [
   },
   {
     id: "aria-microphone",
-    to: "/aria",
+    to: "/finn",
     labelAr: "التحدث مع FINN",
     labelEn: "Talk to FINN",
     x: 5,

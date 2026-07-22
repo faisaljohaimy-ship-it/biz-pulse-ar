@@ -13,7 +13,7 @@ import { useAria } from "@/lib/aria-core";
 import { ExecutiveCard } from "@/components/aria-core/ExecutiveCard";
 import { Sparkles, PlayCircle } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/aria/demo")({
+export const Route = createFileRoute("/_authenticated/finn/demo")({
   component: AriaDemoPage,
   head: () => ({
     meta: [
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/aria/demo")({
     ],
   }),
   errorComponent: ({ error, reset }) => (
-    <RouteErrorBoundary error={error} reset={reset} routeLabel="/aria/demo" />
+    <RouteErrorBoundary error={error} reset={reset} routeLabel="/finn/demo" />
   ),
   notFoundComponent: () => (
     <div dir="rtl" className="p-6">

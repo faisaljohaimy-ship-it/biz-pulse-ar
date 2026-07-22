@@ -25,7 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/aria-documents")({
+export const Route = createFileRoute("/_authenticated/finn-documents")({
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: AriaDocumentsConsole,

@@ -13,7 +13,7 @@ describe("FINN singleton release contract", () => {
 
   it("keeps historical assistant routes on the singleton surface", () => {
     for (const route of [
-      "src/routes/_authenticated/aria.tsx",
+      "src/routes/_authenticated/finn.tsx",
       "src/routes/_authenticated/assistant.index.tsx",
       "src/routes/_authenticated/assistant.$threadId.tsx",
       "src/routes/_authenticated/voice.tsx",

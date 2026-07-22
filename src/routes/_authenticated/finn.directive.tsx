@@ -10,7 +10,7 @@ const auditQuery = queryOptions({
   staleTime: 15_000,
 });
 
-export const Route = createFileRoute("/_authenticated/aria/directive")({
+export const Route = createFileRoute("/_authenticated/finn/directive")({
   loader: ({ context }) => context.queryClient.ensureQueryData(auditQuery),
   head: () => ({
     meta: [
