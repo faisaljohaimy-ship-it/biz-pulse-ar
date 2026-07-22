@@ -455,7 +455,7 @@ function CentralMap({
           </radialGradient>
         </defs>
         <circle cx="500" cy="510" r="430" fill="url(#map-glow)" />
-        {(sectors as (typeof SECTORS)[number][] & { d: string }[]).map((s) => {
+        {sectors.map((s) => {
           const active = s.id === regionId;
           const color = REGION_ACCENT_HEX[s.id];
           const sev = severityByRegion[s.id];
