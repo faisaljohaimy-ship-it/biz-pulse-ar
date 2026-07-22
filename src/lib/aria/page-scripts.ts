@@ -18,6 +18,8 @@
  * and page-narrator entries), not from a template.
  */
 
+import { stripTashkeel } from "./tashkeel";
+
 export interface PageScript {
   readonly titleAr: string;
   readonly titleEn: string;
@@ -576,14 +578,6 @@ function genericSpeakable(pathname: string, locale: SpeechLocale): string {
 // of truth is the diacritized `*Ar` string: `tts` keeps it verbatim, and
 // `display` is derived by stripping the tashkeel so the UI stays clean while
 // the spoken output keeps full Arabic diacritics.
-
-/** Arabic diacritics (tashkeel) + tatweel — stripped for on-screen display. */
-const TASHKEEL_RE = /[ً-ْٰـ]/g;
-
-/** Remove tashkeel for clean UI display; letters are left intact. */
-export function stripTashkeel(input: string): string {
-  return input.replace(TASHKEEL_RE, "");
-}
 
 /** A display/TTS pair. `tts` retains full tashkeel; `display` is clean text. */
 export interface DisplayTts {

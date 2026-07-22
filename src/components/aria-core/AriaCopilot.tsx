@@ -53,6 +53,7 @@ import { AriaSignatureBackdrop } from "@/components/aria/AriaSignatureBackdrop";
 import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/aria/quick-commands";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
 import { shouldSpeakAriaReply, toAriaSpeechText } from "@/lib/aria/reply-modality";
+import { stripTashkeel } from "@/lib/aria/tashkeel";
 import { chooseAriaRecorderMime, recorderFileExtension } from "@/lib/aria/media-recorder";
 import { advanceAriaVoiceActivity, createAriaVoiceActivityState } from "@/lib/aria/voice-activity";
 import {
@@ -2216,7 +2217,10 @@ export function AriaCopilot() {
                 {chat.messages.map((m) => {
                   const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
                   const mine = m.role === "user";
-                  const text = mine ? raw : sanitiseAssistantText(raw);
+                  // ARIA's on-screen text stays clean: tashkeel is stripped for
+                  // display while the spoken path (toAriaSpeechText → /api/aria/tts,
+                  // diacritized server-side) keeps full diacritics for pronunciation.
+                  const text = mine ? raw : stripTashkeel(sanitiseAssistantText(raw));
                   const fileParts = m.parts.filter((part) => part.type === "file");
                   const hasNonTextWork = m.parts.some((p) => p.type !== "text");
                   const toolParts = !mine
