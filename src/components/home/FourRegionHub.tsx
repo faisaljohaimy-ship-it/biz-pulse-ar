@@ -424,6 +424,8 @@ function AriaPersonaPanel({ ar }: { ar: boolean }) {
 }
 
 // ── Central map + southern column ───────────────────────────────────────────
+type SectorWithPath = (typeof SECTORS)[number] & { d: string };
+
 function CentralMap({
   ar,
   sectors,
@@ -432,7 +434,7 @@ function CentralMap({
   severityByRegion,
 }: {
   ar: boolean;
-  sectors: (typeof SECTORS)[number][] & { d?: string }[];
+  sectors: SectorWithPath[];
   regionId: RegionId;
   setRegion: (id: RegionId) => void;
   severityByRegion: Partial<Record<RegionId, string>>;
