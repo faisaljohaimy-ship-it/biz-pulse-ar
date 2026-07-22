@@ -37,7 +37,7 @@ import { useFreezeOffscreen } from "@/hooks/use-freeze-offscreen";
 import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
-import { NexiosCommandCenter } from "@/components/executive/command/NexiosCommandCenter";
+import { FourRegionHub } from "@/components/home/FourRegionHub";
 // Pre-hero intros retired — the homepage renders directly with no cinematic
 // welcome overlay. Auto-greeting voice removed per directive.
 
@@ -365,11 +365,12 @@ function IntroLanding() {
         `}</style>
       </section>
 
-      {/* ══ NEXIOS Command Center (poster) — the PRIMARY dashboard: all four
-          regions around a central split Saudi map, FINN console, system status
-          and smart alerts. One horizontal canvas on every device. ══ */}
+      {/* ══ NEXIOS Four-Region Executive Hub — the PRIMARY dashboard: all four
+          regions around a central interactive Saudi map, live per-region KPIs
+          and alerts from Supabase (resilient), system status, and the FINN
+          assistant persona. Live data, not a static poster. ══ */}
       <div ref={posterRef} data-nx-frozen="false" className="relative z-10 mt-2 sm:mt-4">
-        <NexiosCommandCenter />
+        <FourRegionHub />
       </div>
 
       {/* ══ Sovereign Cinematic Command Deck — world-class executive dashboard ══
