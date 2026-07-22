@@ -44,13 +44,13 @@ describe("specialist voice release contract", () => {
     expect(local).not.toMatch(/OPENAI_API_KEY|gpt-4o-mini-tts/);
   });
 
-  it("keeps the audible voice exclusively ElevenLabs Layan, key server-side only", () => {
+  it("keeps the audible voice a single canonical FINN voice, key server-side only", () => {
     const tts = source("src/routes/api/aria/tts.ts");
     expect(tts).toContain("ELEVENLABS_API_KEY");
     expect(tts).toContain("ARIA_ELEVENLABS_VOICE_ID");
     expect(tts).not.toMatch(/GEMINI_TTS|generativelanguage/);
     const config = source("src/lib/aria/voice-config.ts");
-    expect(config).toContain('"gVzwmdZzRgBrNjXaTmi5"');
+    expect(config).toContain('"pNInz6obpgDQGcFmaJgB"');
     // The key never appears client-side.
     for (const file of [
       "src/lib/digital-humans/free-agent-speech.ts",

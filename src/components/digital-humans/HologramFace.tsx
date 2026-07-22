@@ -14,7 +14,6 @@
  */
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
-import ariaHologram from "@/assets/aria-hologram.png.asset.json";
 import type { DigitalHumanState } from "@/lib/digital-humans/registry";
 import {
   emotionForSentence,
@@ -302,7 +301,7 @@ export function HologramFace({
         }}
       >
         <img
-          src={ariaHologram.url}
+          src={"/finn-portrait.png"}
           alt={ar ? "آريا" : "ARIA"}
           draggable={false}
           className="absolute inset-0 h-full w-full object-contain object-top"

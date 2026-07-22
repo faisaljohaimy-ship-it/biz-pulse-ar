@@ -4,7 +4,6 @@
  * behind all content. Cropped exactly like the reference: face high-in-frame,
  * body fading into the dark deck.
  */
-import ariaBg from "@/assets/aria-global-bg.jpeg.asset.json";
 
 export function GlobalPageBackdrop() {
   return (
@@ -14,7 +13,7 @@ export function GlobalPageBackdrop() {
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#04070F]"
     >
       <img
-        src={ariaBg.url}
+        src={"/finn-portrait.png"}
         alt=""
         draggable={false}
         className="absolute inset-0 h-full w-full object-cover object-[center_top] opacity-70 md:opacity-75"

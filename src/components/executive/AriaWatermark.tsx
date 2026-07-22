@@ -1,4 +1,3 @@
-import ariaHologram from "@/assets/aria-hologram-bg.png.asset.json";
 
 /**
  * AriaWatermark — global ARIA presence rendered behind every route.
@@ -22,7 +21,7 @@ export function AriaWatermark() {
       }}
     >
       <img
-        src={ariaHologram.url}
+        src={"/finn-portrait.png"}
         alt=""
         loading="lazy"
         decoding="async"

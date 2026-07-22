@@ -7,7 +7,6 @@
  */
 import { Link } from "@tanstack/react-router";
 import { useState, type CSSProperties } from "react";
-import commandCenterAria from "@/assets/nexios-command-center-aria.webp";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGION_ACCENT_HEX, REGION_ACCENT_RGB, type RegionId } from "@/lib/regions";
@@ -590,7 +589,7 @@ export function NexiosCommandCenter() {
       <div className="overflow-x-auto rounded-[clamp(12px,1.6vw,24px)] border border-[#22D3EE]/25 bg-[#020817] shadow-[0_24px_90px_rgba(0,0,0,0.55),0_0_42px_rgba(34,211,238,0.10)] [scrollbar-color:#22D3EE55_transparent] [scrollbar-width:thin]">
         <div className="relative min-w-[760px] sm:min-w-0">
           <img
-            src={commandCenterAria}
+            src="/finn-portrait.png"
             alt={
               ar
                 ? "لوحة NEXIOS AI OS للمناطق الأربع مع المساعدة التنفيذية آريا"

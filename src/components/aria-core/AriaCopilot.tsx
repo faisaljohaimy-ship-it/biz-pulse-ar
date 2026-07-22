@@ -282,9 +282,8 @@ const ACCEPTED_ATTACHMENT_TYPES = new Set([
   "text/plain",
 ]);
 
-import ariaHologramPortrait from "@/assets/aria-global-bg.jpeg.asset.json";
 
-const STILL_SRC = ariaHologramPortrait.url;
+const STILL_SRC = "/finn-portrait.png";
 
 // Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,
 // and provider re-renders. Any second speak(replyId) for the same id is dropped
@@ -372,7 +371,7 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
           default text chat keeps the clean signature backdrop. */}
       {convMode && (
         <img
-          src={ariaHologramPortrait.url}
+          src={"/finn-portrait.png"}
           alt=""
           draggable={false}
           className="absolute inset-0 h-full w-full object-cover object-[center_top] opacity-60"
