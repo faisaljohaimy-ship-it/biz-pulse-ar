@@ -22,7 +22,6 @@ import {
   Settings,
   Wifi,
   TrendingUp,
-  Mic,
   CheckCircle2,
   Home,
   BarChart3,
@@ -34,10 +33,10 @@ import {
   Cog,
 } from "lucide-react";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
+import { FinnPersonaCard } from "@/components/home/FinnPersonaCard";
 import {
   CC_REGIONS,
   CC_SYSTEM_RINGS,
-  CC_ARIA_CAPS,
   type CCRegionPanel,
 } from "@/components/executive/command/commandCenterData";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
@@ -287,11 +286,7 @@ function RegionCard({
                 <li key={it.en} className="text-[11px]">
                   <div className="flex items-center justify-between gap-2">
                     <span className="flex min-w-0 items-center gap-1.5 truncate text-white/80">
-                      <CheckCircle2
-                        className="size-3 shrink-0"
-                        style={{ color }}
-                        aria-hidden
-                      />
+                      <CheckCircle2 className="size-3 shrink-0" style={{ color }} aria-hidden />
                       <span className="truncate">{ar ? it.ar : it.en}</span>
                     </span>
                     <span
@@ -368,61 +363,6 @@ function LiveClock({ ar }: { ar: boolean }) {
   );
 }
 
-// ── ARIA persona (bottom-left) ──────────────────────────────────────────────
-function AriaPersonaPanel({ ar }: { ar: boolean }) {
-  return (
-    <div className="relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#0B2545]/80 via-[#04111f]/70 to-[#04070F]/85 p-4 backdrop-blur-md">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -end-16 -top-16 h-48 w-48 rounded-full bg-[#00D4FF]/20 blur-3xl"
-      />
-      <div className="relative flex items-start gap-3">
-        <div className="relative shrink-0">
-          <div className="grid size-16 place-items-center rounded-2xl border border-[#00D4FF]/40 bg-gradient-to-br from-[#00D4FF]/25 to-[#3AE8FF]/10 shadow-[0_0_30px_rgba(0,212,255,0.35)]">
-            <span className="text-2xl font-black tracking-widest text-[#3AE8FF]">A</span>
-          </div>
-          <span
-            aria-hidden
-            className="absolute -bottom-1 -end-1 grid size-5 place-items-center rounded-full border border-[#04070F] bg-emerald-400"
-          >
-            <span className="size-2 rounded-full bg-white" />
-          </span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-lg font-black tracking-widest text-white">ARIA</div>
-          <div className="text-[11px] text-white/60">
-            {ar ? "المساعد الذكي التنفيذي" : "Executive AI assistant"}
-          </div>
-          <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
-            <span className="size-1.5 rounded-full bg-emerald-300" />
-            {ar ? "جاهزة للمساعدة" : "Ready to assist"}
-          </div>
-        </div>
-      </div>
-
-      <ul className="relative grid gap-1">
-        {CC_ARIA_CAPS.map((c) => (
-          <li
-            key={c.en}
-            className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] px-2.5 py-1.5 text-[11.5px]"
-          >
-            <span className="text-white/80">{ar ? c.ar : c.en}</span>
-            <CheckCircle2 className="size-3.5 text-[#3AE8FF]" aria-hidden />
-          </li>
-        ))}
-      </ul>
-
-      <Link
-        to="/aria"
-        className="relative mt-auto flex items-center justify-center gap-2 rounded-xl border border-[#00D4FF]/40 bg-gradient-to-r from-[#00D4FF]/20 to-[#3AE8FF]/10 px-3 py-2.5 text-sm font-semibold text-[#3AE8FF] transition hover:from-[#00D4FF]/30 hover:to-[#3AE8FF]/20"
-      >
-        <Mic className="size-4" aria-hidden />
-        {ar ? "اضغط للتحدث" : "Press to talk"}
-      </Link>
-    </div>
-  );
-}
-
 // ── Central map + southern column ───────────────────────────────────────────
 type SectorWithPath = (typeof SECTORS)[number] & { d: string };
 
@@ -474,7 +414,9 @@ function CentralMap({
                 cursor: "pointer",
                 transformBox: "fill-box",
                 transformOrigin: "center",
-                filter: active ? `drop-shadow(0 0 22px ${color})` : `drop-shadow(0 0 8px ${color}88)`,
+                filter: active
+                  ? `drop-shadow(0 0 22px ${color})`
+                  : `drop-shadow(0 0 8px ${color}88)`,
               }}
               onClick={() => setRegion(s.id)}
               role="button"
@@ -591,10 +533,19 @@ export function FourRegionHub() {
   ];
   const alerts = data?.urgent ?? [];
 
-  const western = CC_REGIONS.western;
-  const central = CC_REGIONS.central;
-  const eastern = CC_REGIONS.eastern;
-  const southern = CC_REGIONS.southern;
+  // Region view-models sourced from regions.ts (the single geographic
+  // source of truth) — every region in REGIONS is covered, colour and live
+  // performance keyed by its id. No hardcoded region list.
+  const regionVM = Object.fromEntries(
+    REGIONS.map((r) => [
+      r.id,
+      {
+        panel: CC_REGIONS[r.id],
+        color: REGION_ACCENT_HEX[r.id],
+        livePerformance: livePerf[r.id] ?? null,
+      },
+    ]),
+  ) as Record<RegionId, { panel: CCRegionPanel; color: string; livePerformance: number | null }>;
 
   return (
     <section
@@ -602,8 +553,7 @@ export function FourRegionHub() {
       dir={ar ? "rtl" : "ltr"}
       className="relative overflow-hidden rounded-3xl border border-[#00D4FF]/25 bg-gradient-to-br from-[#04070F] via-[#050F1E] to-[#04070F] p-3 sm:p-5"
       style={{
-        boxShadow:
-          "0 40px 120px -40px rgba(0,212,255,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
+        boxShadow: "0 40px 120px -40px rgba(0,212,255,0.35), inset 0 1px 0 rgba(255,255,255,0.05)",
       }}
     >
       {/* Ambient background grid */}
@@ -684,9 +634,7 @@ export function FourRegionHub() {
               <div className="text-[11px] font-semibold text-white">
                 {ar ? "أطلال بك" : "Executive"}
               </div>
-              <div className="text-[9px] text-white/50">
-                {ar ? "المدير التنفيذي" : "Director"}
-              </div>
+              <div className="text-[9px] text-white/50">{ar ? "المدير التنفيذي" : "Director"}</div>
             </div>
           </div>
         </div>
@@ -703,32 +651,26 @@ export function FourRegionHub() {
       <div className="relative grid gap-3 lg:grid-cols-[1.05fr_1.2fr_1.05fr]">
         {/* Row 1 */}
         <RegionCard
-          panel={western}
-          color={REGION_ACCENT_HEX.western}
-          livePerformance={livePerf.western ?? null}
+          {...regionVM.western}
           active={regionId === "western"}
           ar={ar}
           onSelect={() => setRegion("western")}
         />
         <RegionCard
-          panel={central}
-          color={REGION_ACCENT_HEX.central}
-          livePerformance={livePerf.central ?? null}
+          {...regionVM.central}
           active={regionId === "central"}
           ar={ar}
           onSelect={() => setRegion("central")}
         />
         <RegionCard
-          panel={eastern}
-          color={REGION_ACCENT_HEX.eastern}
-          livePerformance={livePerf.eastern ?? null}
+          {...regionVM.eastern}
           active={regionId === "eastern"}
           ar={ar}
           onSelect={() => setRegion("eastern")}
         />
 
-        {/* Row 2 — ARIA · MAP · System+Alerts */}
-        <AriaPersonaPanel ar={ar} />
+        {/* Row 2 — FINN · MAP · System+Alerts */}
+        <FinnPersonaCard ar={ar} />
 
         <div className="relative flex flex-col gap-3">
           <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
@@ -742,9 +684,7 @@ export function FourRegionHub() {
           </div>
           {/* Southern region under the map (matches poster) */}
           <RegionCard
-            panel={southern}
-            color={REGION_ACCENT_HEX.southern}
-            livePerformance={livePerf.southern ?? null}
+            {...regionVM.southern}
             active={regionId === "southern"}
             ar={ar}
             onSelect={() => setRegion("southern")}
@@ -791,10 +731,7 @@ export function FourRegionHub() {
                   className="flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-2 py-1.5 text-[12px]"
                 >
                   <span className="flex min-w-0 items-center gap-2 truncate text-white/80">
-                    <TrendingUp
-                      className="size-3.5 shrink-0 text-[#3AE8FF]"
-                      aria-hidden
-                    />
+                    <TrendingUp className="size-3.5 shrink-0 text-[#3AE8FF]" aria-hidden />
                     <span className="truncate">{a.title_ar}</span>
                   </span>
                   <span className="shrink-0 tabular-nums text-white/45">{a.department}</span>
