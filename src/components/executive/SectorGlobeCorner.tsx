@@ -1,180 +1,56 @@
 /**
- * SectorGlobeCorner — transparent, living 3D region controller.
+ * SectorGlobeCorner — transparent, living region controller.
  *
- * The controller is physically mounted at the workspace's top-left by
- * AppShell. It keeps the active region bound to the shared RegionContext,
- * colours every halo from the canonical regional palette, and offers both
- * direct region selection and one-tap cycling.
+ * Mounted at the workspace's top-left by AppShell. Keeps the active region
+ * bound to the shared RegionContext, colours every halo from the canonical
+ * regional palette, and offers both direct region selection and one-tap
+ * cycling. The visual centrepiece is the official NEXIOS command-stage
+ * artwork (Saudi map + four regional panels), replacing the previous 3D
+ * globe halo.
  */
-import { useEffect, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { ChevronDown, Globe2, Layers } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGION_ACCENT_HEX, REGION_ACCENT_RGB, type RegionId } from "@/lib/regions";
 import { cn } from "@/lib/utils";
-import { REGION_MARKERS } from "./region-markers";
 import commandStageAsset from "@/assets/nexios-command-stage.png.asset.json";
 
-
-function hasWebGL(): boolean {
-  try {
-    const canvas = document.createElement("canvas");
-    return !!(canvas.getContext("webgl") || canvas.getContext("experimental-webgl"));
-  } catch {
-    return false;
-  }
-}
-
-/** Transparent holographic fallback with no Three.js cost. */
-function StaticSectorGlobe({
-  activeIndex,
+/** Circular thumbnail of the official command-stage artwork. */
+function CommandStageThumb({
   activeColor,
+  ar,
+  className,
 }: {
-  readonly activeIndex: number;
   readonly activeColor: string;
+  readonly ar: boolean;
+  readonly className?: string;
 }) {
-  const dots = [
-    { cx: 100, cy: 82 },
-    { cx: 72, cy: 107 },
-    { cx: 130, cy: 96 },
-    { cx: 91, cy: 133 },
-  ];
-
   return (
-    <svg
-      viewBox="0 0 200 200"
-      className="h-full w-full overflow-visible"
+    <span
+      aria-hidden={false}
       role="img"
-      aria-label="كرة المناطق الشفافة"
-    >
-      <defs>
-        <radialGradient id="nx-glass-sphere" cx="38%" cy="32%" r="72%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.14" />
-          <stop offset="36%" stopColor={activeColor} stopOpacity="0.07" />
-          <stop offset="78%" stopColor={activeColor} stopOpacity="0.025" />
-          <stop offset="100%" stopColor="#020817" stopOpacity="0.12" />
-        </radialGradient>
-        <linearGradient id="nx-glass-rim" x1="15%" y1="10%" x2="85%" y2="90%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.7" />
-          <stop offset="34%" stopColor={activeColor} stopOpacity="0.86" />
-          <stop offset="72%" stopColor={activeColor} stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.35" />
-        </linearGradient>
-        <filter id="nx-glass-glow" x="-70%" y="-70%" width="240%" height="240%">
-          <feGaussianBlur stdDeviation="3.2" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      <circle
-        cx="100"
-        cy="100"
-        r="82"
-        fill="none"
-        stroke={activeColor}
-        strokeOpacity="0.14"
-        strokeWidth="8"
-        filter="url(#nx-glass-glow)"
-      />
-      <circle
-        cx="100"
-        cy="100"
-        r="78"
-        fill="url(#nx-glass-sphere)"
-        stroke="url(#nx-glass-rim)"
-        strokeWidth="1.1"
-      />
-
-      {/* Longitude and latitude glass lines create convincing depth. */}
-      {[28, 52, 75].map((radius) => (
-        <ellipse
-          key={`longitude-${radius}`}
-          cx="100"
-          cy="100"
-          rx={radius}
-          ry="78"
-          fill="none"
-          stroke={activeColor}
-          strokeOpacity="0.18"
-          strokeWidth="0.65"
-        />
-      ))}
-      {[36, 58].map((radius) => (
-        <ellipse
-          key={`latitude-${radius}`}
-          cx="100"
-          cy="100"
-          rx="76"
-          ry={radius}
-          fill="none"
-          stroke={activeColor}
-          strokeOpacity="0.14"
-          strokeWidth="0.65"
-        />
-      ))}
-      <ellipse
-        cx="100"
-        cy="100"
-        rx="94"
-        ry="36"
-        fill="none"
-        stroke={activeColor}
-        strokeDasharray="3 5"
-        strokeOpacity="0.42"
-        strokeWidth="0.8"
-        transform="rotate(-24 100 100)"
-      />
-
-      {dots.map((a, index) =>
-        dots
-          .slice(index + 1)
-          .map((b, connectionIndex) => (
-            <line
-              key={`${index}-${connectionIndex}`}
-              x1={a.cx}
-              y1={a.cy}
-              x2={b.cx}
-              y2={b.cy}
-              stroke={activeColor}
-              strokeOpacity="0.28"
-              strokeWidth="0.7"
-            />
-          )),
+      aria-label={ar ? "مسرح القيادة نيكسيوس" : "NEXIOS command stage"}
+      className={cn(
+        "relative block h-full w-full overflow-hidden rounded-full ring-1 ring-inset",
+        className,
       )}
-
-      {dots.map((dot, index) => {
-        const marker = REGION_MARKERS[index];
-        const markerColor = REGION_ACCENT_HEX[marker.id];
-        const active = index === activeIndex;
-        return (
-          <g key={marker.id}>
-            {active && (
-              <circle
-                className="nx-hub-ping"
-                cx={dot.cx}
-                cy={dot.cy}
-                r="10"
-                fill="none"
-                stroke={markerColor}
-                strokeWidth="1.2"
-              />
-            )}
-            <circle
-              cx={dot.cx}
-              cy={dot.cy}
-              r={active ? 8.5 : 5.5}
-              fill={markerColor}
-              opacity={active ? 0.28 : 0.14}
-              filter={active ? "url(#nx-glass-glow)" : undefined}
-            />
-            <circle cx={dot.cx} cy={dot.cy} r={active ? 3.6 : 2.5} fill={markerColor} />
-          </g>
-        );
-      })}
-    </svg>
+      style={{
+        backgroundImage: `url(${commandStageAsset.url})`,
+        backgroundSize: "165%",
+        backgroundPosition: "center 42%",
+        boxShadow: `inset 0 0 22px ${activeColor}55, 0 0 18px ${activeColor}44`,
+      }}
+    >
+      {/* soft brand tint keeps the artwork readable at any regional accent */}
+      <span
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at 50% 45%, transparent 45%, ${activeColor}22 78%, ${activeColor}55 100%)`,
+        }}
+      />
+    </span>
   );
 }
 
@@ -182,26 +58,8 @@ export function SectorGlobeCorner() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const { regionId, region, setRegion, regions } = useRegion();
-  const [mode, setMode] = useState<"static" | "scene">("static");
-  const [animate, setAnimate] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const cores = navigator.hardwareConcurrency ?? 8;
-    const small = window.matchMedia("(max-width: 640px)").matches;
-    const weak = !hasWebGL() || (cores <= 4 && small);
-    if (!weak) {
-      setAnimate(!reduced);
-      setMode("scene");
-    }
-  }, []);
-
-  const activeIndex = Math.max(
-    0,
-    REGION_MARKERS.findIndex((marker) => marker.id === regionId),
-  );
   const activeColor = REGION_ACCENT_HEX[regionId];
 
   const cycleRegion = () => {
@@ -215,7 +73,7 @@ export function SectorGlobeCorner() {
       <button
         type="button"
         onClick={() => setCollapsed(false)}
-        aria-label={ar ? "إظهار محدد المناطق ثلاثي الأبعاد" : "Show 3D region selector"}
+        aria-label={ar ? "إظهار محدد المناطق" : "Show region selector"}
         className="nx-region-control nx-region-control-active group pointer-events-auto relative grid size-14 place-items-center rounded-full border bg-[#020817]/35 backdrop-blur-xl transition duration-300 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 active:scale-95"
         style={
           {
@@ -228,8 +86,8 @@ export function SectorGlobeCorner() {
           className="nx-holo-globe-pulse pointer-events-none absolute inset-1 rounded-full border"
           style={{ borderColor: `${activeColor}55` }}
         />
-        <span className="relative size-12 transition-transform duration-500 group-hover:rotate-6">
-          <StaticSectorGlobe activeIndex={activeIndex} activeColor={activeColor} />
+        <span className="relative size-12 transition-transform duration-500 group-hover:rotate-3">
+          <CommandStageThumb activeColor={activeColor} ar={ar} />
         </span>
         <span
           aria-hidden
@@ -269,7 +127,7 @@ export function SectorGlobeCorner() {
         </button>
       </div>
 
-      {/* The globe itself is a large control: tapping it cycles the region. */}
+      {/* The stage itself is a large control: tapping it cycles the region. */}
       <button
         type="button"
         onClick={cycleRegion}
@@ -293,19 +151,7 @@ export function SectorGlobeCorner() {
           style={{ borderColor: activeColor }}
         />
         <span className="pointer-events-none absolute inset-[4%]">
-          {mode === "static" ? (
-            <StaticSectorGlobe activeIndex={activeIndex} activeColor={activeColor} />
-          ) : (
-            <Suspense
-              fallback={<StaticSectorGlobe activeIndex={activeIndex} activeColor={activeColor} />}
-            >
-              <SectorGlobeScene
-                animate={animate}
-                activeIndex={activeIndex}
-                activeColor={activeColor}
-              />
-            </Suspense>
-          )}
+          <CommandStageThumb activeColor={activeColor} ar={ar} />
         </span>
       </button>
 
