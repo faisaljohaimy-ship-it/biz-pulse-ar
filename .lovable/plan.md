@@ -1,95 +1,103 @@
-# لوحة قيادة الوكلاء — /agents-flow
 
-## الجزء صفر — إصلاح الرسم العربي (يسبق كل شيء)
+# مسرح القيادة التنفيذي السينمائي — خطة التنفيذ
 
-**السبب الجذري:** النصوص العربية داخل `<text>` SVG لا تُشكّل حروفها ولا تحترم اتجاه bidi، فتظهر مفككة/معكوسة («ي رآ» بدل «FINN»).
+**النطاق:** إعادة بناء `src/components/home/FourRegionHub.tsx` كمجسّم واحد سينمائي مطابق للمرجع البصري، بأداء صارم (SVG+CSS فقط، لا انهيار على iOS Safari).
 
-**الإصلاح:**
-1. في `AgenticFlowCanvas.tsx` وأي مخطط SVG آخر: استبدال كل `<text>` يحمل نصًا عربيًا بـ `<foreignObject>` يحتضن `<div dir="rtl" style="unicode-bidi:isolate">` — الحروف تُشكَّل بمحرك المتصفح الطبيعي.
-2. مكوّن مشترك `<SvgLabel>` في `src/components/flow/SvgLabel.tsx` لإعادة الاستخدام (يقبل ar/en/description ويرسم البطاقة كاملة داخل foreignObject).
-3. استخدام `command_agents.name_ar` كسطر رئيسي، والاسم الإنجليزي كسطر ثانوي رمادي صغير.
-4. حذف كل عقدة بلا `name_ar` أو `description` من الاستعلام.
-5. حساب `viewBox height` من عدد العقد + هامش سفلي كافٍ ⇒ لا قص.
+## البنية النهائية (ملف واحد رئيسي + أصول)
 
-## الجزء الأول — صفحة `/agents-flow`
-
-### الملفات الجديدة
-```text
-src/routes/agents-flow.tsx                      — الصفحة العامة (خارج _authenticated)
-src/lib/agents-flow.functions.ts                — server fns:
-  ├─ getFlowTopology()      : nodes + edges + groups
-  ├─ getAgentDetail(slug)   : capabilities + last 10 runs + queue + pending approvals + upstream/downstream slugs
-  └─ getFleetSummary()      : counts (total/running/queued/pending-approval/avg-duration)
-src/components/agents-flow/
-  ├─ FlowHeader.tsx         — الترويسة التنفيذية + PageBriefing
-  ├─ FlowChainStrip.tsx     — شريط «السابق ← الوكيل ← التالي» (RTL)
-  ├─ FlowCanvasFull.tsx     — نسخة موسّعة من AgenticFlowCanvas بمجموعات تخصص + focus mode
-  ├─ SvgLabel.tsx           — bidi-safe label داخل foreignObject (مشترك)
-  ├─ AgentDrawer.tsx        — Sheet جانبي بتبويبات (نظرة/مهام/سجل/مخرجات معلّقة/ربط FINN)
-  ├─ FlowTimelineStrip.tsx  — تدفق 24س + زر «تشغيل السيناريو»
-  ├─ AgentListView.tsx      — جدول تنفيذي بديل
-  ├─ FleetQueueView.tsx     — الطابور الشامل
-  └─ view-mode-toggle.tsx   — الشبكة/القائمة/الطابور + وضع العرض
+```
+src/components/home/
+├── FourRegionHub.tsx              (المجسم الكامل — إعادة بناء)
+├── stage/
+│   ├── SaudiMapSVG.tsx            (خريطة متجهة 4 مناطق + mesh + hover)
+│   ├── RegionPanel.tsx            (لوحة مثمّنة + حلقات SVG + أيقونات)
+│   ├── HoloGrid.tsx               (شبكة نقاط + نبضة إشعاعية واحدة)
+│   ├── ConnectionLines.tsx        (4 خطوط bezier خريطة↔لوحات + نبضة)
+│   ├── FinnPortal.tsx             (صورة FINN دائرية + هالة + فتح المخاطبة)
+│   └── stage-icons.ts             (خريطة الأيقونة→المسار الموحّدة lucide)
+src/lib/branding/assistant.ts       (BRAND_ASSISTANT: {display:"FINN", engine:"aria"})
+public/finn.webp                    (تحويل من finn.png إن لزم — lazy)
 ```
 
-### الترويسة التنفيذية
-شريط علوي مباشرة من `getFleetSummary()`:
-`13 وكيلًا · N قيد التشغيل · M في الطابور · K بانتظار اعتمادك · متوسط زمن التشغيل`. شارة المحاكاة + `PageBriefing`.
+## المراحل
 
-### المخطط الحي (البطل)
-- أربعة أعمدة RTL: مصادر ← وكلاء ← FINN ← بوابة الاعتماد.
-- عمود الوكلاء مجمّع بصريًا حسب `specialty`: امتثال · عمليات · تنبؤ · أمن · معرفة (عناوين مجموعات خفيفة أعلى كل تجميعة).
-- روابط bezier بألوان `link_type` (بيانات cyan · أمر amber · نتيجة emerald · مقترح اعتماد rose) + مفتاح ألوان صحيح الاتجاه.
-- نبضات من `agent_runs.completed_at` الأخيرة، إعادة تدوير، ≤24 عنصر متحرك.
-- لمسة ذهبية دقيقة على بوابة الاعتماد فقط.
-- لا خط يعبر البوابة (يتوقف عند حافتها اليسرى).
+### 1. الخريطة الحية (SaudiMapSVG)
+- SVG viewBox مطابق للحدود الفعلية، 4 `<path>` منفصلة (central/western/eastern/southern) بألوان `REGION_ACCENT_HEX`.
+- طبقة داخلية `<pattern>` مثلثات خفيفة (mesh هولوغرامي) — ثابتة.
+- حافة متوهجة عبر `<filter>` SVG **ثابت** (لا تحريك filter).
+- نبض المناطق: `animate opacity` فقط، مدة ≥3ث، من `region_pulse` (1–5).
+- لمس منطقة → state → إبراز + بطاقة عائمة بأرقامها الأربعة من `CC_REGIONS`.
+- منصة أسفل: 3 حلقات `<circle>` — عنصر واحد يدور `transform: rotate` دورة 45ث.
 
-### التركيز على وكيل
-- نقر عقدة ⇒ CSS class على `<svg>` تعتم كل ما ليس في `data-agent-chain="<slug>"` (opacity 0.15) وتبرز السلسلة كاملة.
-- `FlowChainStrip` أعلى الكانفاس يعرض ثلاث بطاقات مرقّمة مع أسهم RTL: **السابق ← الوكيل ← التالي**. مصادر السابق/التالي من `agent_connections`.
-- `AgentDrawer` (Sheet من shadcn) بخمسة تبويبات:
-  1. نظرة (من `agent_capabilities` + metadata).
-  2. مهامه الحالية (`agent_runs` قيد التشغيل + طابور).
-  3. سجل تشغيل — آخر 10.
-  4. مخرجات معلّقة من `approval_pipeline` — أزرار اعتماد/رفض معطلة بأناقة مع tooltip «يتطلب تفويض المدير».
-  5. ارتباط FINN — جملة واحدة من `aria_knowledge`.
+### 2. لوحات القطاعات (RegionPanel × 4)
+- إطار مثمّن `<polygon>` بلون المنطقة + زخرفة زاوية SVG خفيفة.
+- حلقة رئيسية + حلقتان جانبيتان: `stroke-dashoffset` بحركة دخول مرة واحدة (`@keyframes` تعمل عند mount فقط).
+- صف الأيقونات السفلي: `<Link>` من `stage-icons.ts` — كلها فعّالة (≥44px touch).
+- كل الأرقام من `getCommandCenterState()` — صفر hardcoded. شارة المحاكاة تبقى.
 
-### شريط التدفق الزمني السفلي
-نقاط لآخر 24س من `agent_runs`. زر «تشغيل السيناريو» يبث النبضات تسلسليًا حتى البوابة عبر rAF (نفس pool النبضات).
+### 3. تفعيل الأيقونات (stage-icons.ts)
+جدول موحّد `Icon → route → lucide component`:
+| رمز | مسار | أيقونة |
+|---|---|---|
+| cyber | /sec/ai | ShieldCheck |
+| analytics | /analytics | BarChart3 |
+| projects | /sec/projects | FolderKanban |
+| energy | /sec/facilities | Zap |
+| facilities | /sec/facilities | Building2 |
+| safety | /sec/safety | HardHat |
+| sustainability | /outcomes | Leaf |
+| air | /sec/kpi | Wind |
+| community | /team | Users |
+| education | /learn | GraduationCap |
+| health | /sec/emergency | HeartPulse |
+| infra | /sec/assets | Network |
+| transport | /sec/patrols | Truck |
 
-### أوضاع العرض
-Toggle: شبكة (افتراضي) · قائمة · طابور. زر «وضع العرض» يخفي التنقل ويكبّر الكانفاس (fullscreen div).
+أي أيقونة بلا وجهة → `/roadmap` (صفحة «قيد التطوير» موجودة أو تُضاف بسيطة).
 
-### الجوال (390–430)
-- تدفق رأسي بأربع مراحل مطوية (`<details>`).
-- اختيار وكيل يفتح `AgentDrawer` كصفحة كاملة (`side="bottom"` مع full-height).
-- `FlowChainStrip` ثابت أعلى الصفحة (`sticky top-0`).
+### 4. الشبكة الهولوغرامية (HoloGrid + ConnectionLines)
+- `HoloGrid`: SVG `<pattern>` نقاط، طبقة توهج إشعاعية واحدة تتنفس `transform: scale + opacity` دورة 6ث (عنصر واحد).
+- `ConnectionLines`: 4 خطوط `<path>` bezier من مركز الخريطة لكل لوحة، عليها `<circle>` صغيرة تتحرك على المسار عبر `animateMotion` (نبضة ضوئية).
 
-### الأداء (قيد الإنتاج)
-- SVG + CSS فقط. لا reactflow/d3/canvas.
-- حركة على `transform`/`opacity` فقط.
-- `IntersectionObserver` يوقف rAF خارج الشاشة.
-- `prefers-reduced-motion`: كل شيء ساكن.
-- الصفحة lazy عبر `React.lazy` + `<ClientOnly>`.
-- SSR: نسخة ساكنة كاملة المعلومة.
+### 5. FINN Portal
+- `<img src="/finn.webp" loading="lazy">` داخل حاوية دائرية بهالة (box-shadow ثابت، لا تحريك).
+- الاسم "FINN" من `BRAND_ASSISTANT.display`.
+- النقر: يستدعي `useAria().open()` — لا تعديل على محرك آريا/aria_knowledge/Layan.
 
-### الربط
-- `/agents-flow` عام (خارج `_authenticated`) لأن الصفحة الرئيسية عامة أيضًا.
-- في الرئيسية: أيقونة/بطاقة «شبكة التنسيق الحية» تصبح `<Link to="/agents-flow">` + اللوحة المصغّرة تحته تحتفظ بـ onClick يفتح الصفحة الكاملة.
-- `aria_knowledge`: التأكد من وجود سطر لكل وكيل + رابط `/agents-flow?agent=<slug>`.
+## قيود الأداء (حاكمة)
 
-### الجمالية
-- Navy عميق (`--nx-bg`) · خطوط cyan/emerald رفيعة (`stroke-width: 1.25`) · ذهبي حصريًا على البوابة.
-- IBM Plex Sans Arabic (مُحمّل بالفعل).
-- بطاقات زجاجية موحّدة الحجم `160×64` (وكلاء) و`140×48` (مصادر).
+- SVG + CSS فقط · صفر مكتبات جديدة · صفر canvas/WebGL.
+- التحريك على `transform/opacity` حصرًا. `filter/box-shadow/blur` كلها **ثابتة**.
+- عدّاد عناصر متحركة: ≤24 (4 نبضات مناطق + 4 نبضات خطوط + 1 حلقة منصة + 1 شبكة تنفس + ≤14 هامش).
+- `IntersectionObserver` يضيف/يزيل class `.is-live` على الحاوية → CSS يعطّل الحركة خارج الشاشة.
+- `@media (prefers-reduced-motion: reduce)` → كل شيء ساكن، المشهد كامل يبقى مرئيًا.
+- `React.lazy` للمجسم + skeleton خفيف.
+- بطاقات القطاعات على الجوال (≤430px): تكديس رأسي، الخريطة أولًا.
 
-## بوابة التحقق قبل الدفع
-- لقطات 390 + 1280 لعقدة FINN مكبّرة تُظهر «FINN» صحيحة.
-- 3 وكلاء مختلفين مع سلسلتهم.
-- الأرقام العلوية = SQL count.
-- iOS Safari: 10 تحميلات + ≥55fps.
-- vitest + typecheck + performance budget + qa-guardian.
-- commit واحد: `feat(agents-flow): agent operations dashboard with upstream/downstream chain & Arabic SVG rendering fix`.
+## الاستجابة (الجوال 390–430)
 
-## سؤال واحد قبل التنفيذ
-هل تريدين `/agents-flow` **عامًا** (يفتحه الزائر مباشرة، كما الرئيسية) أم داخل `_authenticated` (يفتح بدون بريد لأن البوابة مفتوحة أصلًا)؟
+- Grid: mobile = column stack (map → 4 panels → FINN). desktop ≥1280 = grid المرجع.
+- الخريطة تدعم pinch-zoom عبر `touch-action: pan-x pan-y pinch-zoom`.
+- أيقونات ≥44×44px دائمًا.
+- صفر قص RTL: كل النصوص العربية في `<foreignObject dir="rtl">` لا نص SVG خام.
+
+## المحرّمات
+لا تعديل: `regions.ts` · `vite.config.ts` · جداول aria_* · نُسك · `identity/system-prompt.ts`.
+
+## التحقق قبل الدفع
+
+1. `tsc --noEmit` + `eslint` نظيفان.
+2. Playwright: 15 تحميلًا متتاليًا على iOS Safari emu بلا انهيار، لقطات 390 و1280.
+3. قياس fps عبر `performance.now()` in dev overlay ≥55.
+4. `git diff` على `src/lib/aria/**` = فارغ.
+5. جدول الأيقونات↔المسارات موثّق في تعليق أعلى `stage-icons.ts`.
+6. Commit واحد: `feat(home): cinematic four-region command stage with live map, radiant holo-grid & activated icons`.
+
+## ملاحظات صريحة قبل البدء
+
+- **الخريطة SVG:** أحتاج مصدر paths للمناطق الأربعة. الخيارات: (أ) استخراج مبسّط من مصدر مفتوح Natural Earth admin-1، (ب) رسم مبسّط هندسي متعدد الأضلاع مطابق تقريبيًا للحدود. سأستخدم (ب) للحفاظ على وزن SVG < 8KB وضمان أداء الجوال — نفس الشكل العام للمملكة بحدود مبسطة، 4 مناطق متجاورة بحدود واضحة. إن أردت حدودًا دقيقة سياسيًا سأحتاج ملف GeoJSON مرجعي.
+- **صورة FINN:** ذكرتَ `public/finn.png` — لم أجدها في المشروع. إن لم تُرفق سأستخدم صورة ذكر بخوذة موجودة في `src/assets` أو placeholder دائري بشعار NEXIOS لحين رفع الصورة الرسمية.
+- **اختبار 15 تحميلًا على iOS Safari:** سأشغّله عبر Playwright webkit في السandbox — نتائج المحاكاة توثَّق، لكن iOS حقيقي مسؤولية النشر النهائي.
+- **qa-guardian:** سيُستدعى بعد اكتمال البناء عبر subagent مخصص للبوابة.
+
+**هل أبدأ التنفيذ بهذه الخطة؟** أو تريد تعديل نقاط قبل البدء (خصوصًا مصدر الخريطة وصورة FINN)؟
