@@ -9,7 +9,7 @@ const COMPLETE = {
   ELEVENLABS_API_KEY: "elevenlabs-key-with-enough-len",
   ARIA_FORCE_GEMINI_FLASH: "true",
   RESEND_API_KEY: "resend-key-with-enough-length",
-  RESEND_FROM_EMAIL: "ARIA <aria@nexios.com>",
+  RESEND_FROM_EMAIL: "FINN <aria@nexios.com>",
   RESEND_WEBHOOK_SECRET: "whsec_resend-secret-with-enough-length",
   TWILIO_ACCOUNT_SID: "AC00000000000000000000000000000000",
   TWILIO_AUTH_TOKEN: "twilio-token-with-enough-length",
@@ -18,7 +18,7 @@ const COMPLETE = {
   ARIA_MESSAGE_APPROVAL_SECRET: "a".repeat(48),
 };
 
-describe("ARIA provider readiness", () => {
+describe("FINN provider readiness", () => {
   it("reports a fully configured provider set without exposing values", () => {
     const status = inspectAriaProviderReadiness(COMPLETE);
     expect(status.ready).toBe(true);
@@ -31,7 +31,7 @@ describe("ARIA provider readiness", () => {
   it("rejects placeholders and reports exact missing variable names", () => {
     const status = inspectAriaProviderReadiness({
       GEMINI_API_KEY: "replace_me",
-      RESEND_FROM_EMAIL: "ARIA <aria@your-verified-domain.example>",
+      RESEND_FROM_EMAIL: "FINN <aria@your-verified-domain.example>",
     });
     expect(status.ready).toBe(false);
     expect(status.intelligence.missing).toContain("GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY");

@@ -1,4 +1,4 @@
-// Auto-split from oms.functions.ts — timeline, activity, KPIs, ARIA analysis,
+// Auto-split from oms.functions.ts — timeline, activity, KPIs, FINN analysis,
 // executive review, attachments, and list queries. Re-exported by oms.functions.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -116,7 +116,7 @@ export const getOmsKpis = createServerFn({ method: "GET" })
   });
 
 // ============================================================================
-// ARIA — operational analysis stub (calls existing AI Gateway later;
+// FINN — operational analysis stub (calls existing AI Gateway later;
 // here we return a heuristic recommendation built from incident state)
 // ============================================================================
 
@@ -159,7 +159,7 @@ export const ariaAnalyzeIncident = createServerFn({ method: "POST" })
       entity_ref: inc.ref,
       event: "aria_analyzed",
       actor_id: context.userId,
-      actor_name: `ARIA (${analysis.source})`,
+      actor_name: `FINN (${analysis.source})`,
       payload: {
         risk_score: analysis.risk_score,
         recommendations: analysis.recommendations,

@@ -52,8 +52,8 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     n(
       "تركيب الكلام",
       "Text-to-Speech",
-      "أصوات آريا وإعدادات النطق",
-      "ARIA's voices and pronunciation settings",
+      "أصوات FINN وإعدادات النطق",
+      "FINN's voices and pronunciation settings",
       "صوت طبيعي راقٍ يليق بحضور تنفيذي",
       "a natural, refined voice worthy of executive presence",
     ),
@@ -72,12 +72,12 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/_authenticated/voice",
     n(
-      "الصوت التنفيذي لآريا",
-      "ARIA Voice",
+      "الصوت التنفيذي لFINN",
+      "FINN Voice",
       "إعدادات الصوت، المعاينة، وسجل التشغيل",
       "voice settings, preview, and playback log",
-      "حضور صوتي احترافي لآريا",
-      "professional voice presence for ARIA",
+      "حضور صوتي احترافي لFINN",
+      "professional voice presence for FINN",
     ),
   ],
   [
@@ -338,8 +338,8 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/executive-bridge",
     n(
-      "جسر القيادة التنفيذي بصوت آريا",
-      "ARIA Executive Command Bridge",
+      "جسر القيادة التنفيذي بصوت FINN",
+      "FINN Executive Command Bridge",
       "تحويل الإشارات التشغيلية إلى موقف تنفيذي وقرار محكوم",
       "turning operational signals into an executive posture and governed decision",
       "قيادة أسرع، أوضح، وقابلة للتفسير",

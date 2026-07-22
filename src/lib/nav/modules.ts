@@ -66,8 +66,8 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/urgent-ops", ar: "العاجل", en: "Urgent Ops", icon: Siren },
   { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Building2 },
 
-  { to: "/aria", ar: "آريا التنفيذية", en: "ARIA Engine", icon: Sparkles },
-  { to: "/aria-analytics", ar: "تحليلات آريا", en: "ARIA Analytics", icon: LineChart },
+  { to: "/aria", ar: "FINN التنفيذية", en: "FINN Engine", icon: Sparkles },
+  { to: "/aria-analytics", ar: "تحليلات FINN", en: "FINN Analytics", icon: LineChart },
   { to: "/intelligence", ar: "الذكاء والتطوّر", en: "Intelligence", icon: BrainCircuit },
   { to: "/observability", ar: "الرصد والتكاليف", en: "Observability", icon: Telescope },
   { to: "/learn", ar: "التعلّم", en: "Learn", icon: GraduationCap },
@@ -96,8 +96,8 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     en: "The executive geographic map of assets and regions.",
   },
   "/agents": {
-    ar: "تشغيل ومراقبة الوكلاء الأذكياء تحت قيادة آريا.",
-    en: "Run and monitor the AI agent fleet under ARIA.",
+    ar: "تشغيل ومراقبة الوكلاء الأذكياء تحت قيادة FINN.",
+    en: "Run and monitor the AI agent fleet under FINN.",
   },
   "/digital-twin": {
     ar: "التوأم الرقمي — مطابقة الميدان بالنموذج الرقمي.",
@@ -148,12 +148,12 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     en: "The boardroom — the executive briefing for leadership.",
   },
   "/aria": {
-    ar: "آريا التنفيذية — المساعد الذكي الصوتي والنصي.",
-    en: "ARIA Executive — the voice and text AI assistant.",
+    ar: "FINN التنفيذية — المساعد الذكي الصوتي والنصي.",
+    en: "FINN Executive — the voice and text AI assistant.",
   },
   "/aria-analytics": {
-    ar: "تحليلات أداء آريا واستخدامها.",
-    en: "ARIA performance and usage analytics.",
+    ar: "تحليلات أداء FINN واستخدامها.",
+    en: "FINN performance and usage analytics.",
   },
   "/intelligence": {
     ar: "منظومة الذكاء ذاتية التطور تحت اعتماد بشري.",

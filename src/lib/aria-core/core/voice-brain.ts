@@ -1,5 +1,5 @@
 /**
- * VoiceBrain — Phase 11 bridge between the ARIA voice pipeline (Phase 1)
+ * VoiceBrain — Phase 11 bridge between the FINN voice pipeline (Phase 1)
  * and the Avatar Brain (Phase 10). Owns:
  *
  *   • Voice state → avatar state transitions (listening / thinking / speak)

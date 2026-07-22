@@ -1,4 +1,4 @@
-/** Lesson adapter for the singleton ARIA conversation. */
+/** Lesson adapter for the singleton FINN conversation. */
 import { useState } from "react";
 import { Send, Sparkles, ShieldCheck } from "lucide-react";
 import { useAria } from "@/lib/aria-core/hooks/useAria";
@@ -21,8 +21,8 @@ export function LessonARIAChat({ slug, lang, suggested }: Props) {
     if (!value || busy) return;
     setInput("");
     const context = ar
-      ? `[سياق تعليمي موثوق — الدرس: ${slug}] أجب عن سؤال المتعلم مع الحفاظ على ذاكرة آريا الرسمية: ${value}`
-      : `[Trusted learning context — lesson: ${slug}] Answer the learner using ARIA's official memory: ${value}`;
+      ? `[سياق تعليمي موثوق — الدرس: ${slug}] أجب عن سؤال المتعلم مع الحفاظ على ذاكرة FINN الرسمية: ${value}`
+      : `[Trusted learning context — lesson: ${slug}] Answer the learner using FINN's official memory: ${value}`;
     open({ send: context, focus: false });
   }
 
@@ -31,12 +31,12 @@ export function LessonARIAChat({ slug, lang, suggested }: Props) {
       <div className="rounded-2xl border border-cyan-400/20 bg-[#04111F]/65 p-5 backdrop-blur">
         <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-cyan-200/80">
           <Sparkles className="h-4 w-4" />
-          {ar ? "آريا الرسمية · سياق الدرس" : "Official ARIA · lesson context"}
+          {ar ? "FINN الرسمية · سياق الدرس" : "Official FINN · lesson context"}
         </div>
         <p className="mt-3 text-sm leading-6 text-white/70">
           {ar
-            ? "تُفتح المحادثة الرسمية الوحيدة لآريا هنا، بنفس الذاكرة والصوت والصلاحيات في بقية النظام."
-            : "This opens ARIA's one official conversation, with the same memory, voice, and permissions used throughout NEXIOS."}
+            ? "تُفتح المحادثة الرسمية الوحيدة لFINN هنا، بنفس الذاكرة والصوت والصلاحيات في بقية النظام."
+            : "This opens FINN's one official conversation, with the same memory, voice, and permissions used throughout NEXIOS."}
         </p>
         <div className="mt-3 flex items-center gap-2 text-xs text-emerald-300/80">
           <ShieldCheck className="h-4 w-4" />
@@ -73,8 +73,8 @@ export function LessonARIAChat({ slug, lang, suggested }: Props) {
         <input
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder={ar ? "اكتب سؤالك لآريا…" : "Type your question to ARIA…"}
-          aria-label={ar ? "اكتب سؤالك لآريا" : "Type your question to ARIA"}
+          placeholder={ar ? "اكتب سؤالك لFINN…" : "Type your question to FINN…"}
+          aria-label={ar ? "اكتب سؤالك لFINN" : "Type your question to FINN"}
           className="flex-1 rounded-xl border border-cyan-400/20 bg-[#04111F]/60 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-cyan-400/60 focus:outline-none"
         />
         <button

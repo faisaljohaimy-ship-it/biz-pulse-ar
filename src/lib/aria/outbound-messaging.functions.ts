@@ -8,7 +8,7 @@ const ApprovalInput = z.object({
 });
 
 /**
- * Human approval boundary for ARIA email/SMS.
+ * Human approval boundary for FINN email/SMS.
  *
  * The handler validates the authenticated actor, signed short-lived token,
  * content hash, expiry, role, rate limit and one-time ledger transition before

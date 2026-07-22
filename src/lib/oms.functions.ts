@@ -109,7 +109,7 @@ export const createIncident = createServerFn({ method: "POST" })
       console.error("[createIncident] event publish", err);
     }
 
-    // ── Auto ARIA analysis (gpt-5 with timeout + heuristic fallback) ──
+    // ── Auto FINN analysis (gpt-5 with timeout + heuristic fallback) ──
     try {
       const { ariaAnalyseIncident } = await import("./oms-aria.server");
       const analysis = await ariaAnalyseIncident({
@@ -138,7 +138,7 @@ export const createIncident = createServerFn({ method: "POST" })
         entity_ref: ref,
         event: "aria_auto_analyzed",
         actor_id: userId,
-        actor_name: `ARIA (${analysis.source})`,
+        actor_name: `FINN (${analysis.source})`,
         payload: {
           risk_score: analysis.risk_score,
           recommendations: analysis.recommendations,
@@ -471,7 +471,7 @@ export const completeWorkOrder = createServerFn({ method: "POST" })
         entity_ref: null,
         event: "auto_contained_by_work_order",
         actor_id: userId,
-        actor_name: "ARIA Workflow",
+        actor_name: "FINN Workflow",
         payload: { work_order_ref: row.ref },
       });
     }

@@ -10,7 +10,7 @@ const CAPABILITIES = [
   { icon: Sparkles, title: "عقل تنفيذي", desc: "RAG فوق المعرفة والذاكرة، وتعلّم أسبوعي ذاتي." },
   { icon: Bot, title: "وكلاء أذكياء", desc: "تنفيذ مهام الأمن الصناعي باقتراح واعتماد بشري." },
   { icon: Shield, title: "أمن صناعي", desc: "مؤشرات، حوادث، دوريات، وامتثال عبر أربع مناطق." },
-  { icon: FileText, title: "تقارير ومستندات", desc: "PDF عربي فاخر ببصمة آريا، وتصدير Excel." },
+  { icon: FileText, title: "تقارير ومستندات", desc: "PDF عربي فاخر ببصمة FINN، وتصدير Excel." },
   { icon: Radar, title: "توصيات استباقية", desc: "ملخص يومي وتوصيات مشتقّة من البيانات الحيّة." },
   {
     icon: Smartphone,
@@ -22,12 +22,12 @@ const CAPABILITIES = [
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "حول آريا · About ARIA — NEXIOS AI OS" },
+      { title: "حول FINN · About FINN — NEXIOS AI OS" },
       {
         name: "description",
-        content: "آريا — الوكيلة التنفيذية لإدارة الأمن الصناعي في NEXIOS.",
+        content: "FINN — الوكيلة التنفيذية لإدارة الأمن الصناعي في NEXIOS.",
       },
-      { property: "og:title", content: "حول آريا · About ARIA" },
+      { property: "og:title", content: "حول FINN · About FINN" },
       { property: "og:url", content: `${DOMAIN_URL}/about` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/about` }],
@@ -48,13 +48,13 @@ function AboutPage() {
             <Sparkles className="h-6 w-6" aria-hidden />
           </span>
           <div>
-            <h1 className="text-2xl font-black sm:text-3xl">حول آريا</h1>
+            <h1 className="text-2xl font-black sm:text-3xl">حول FINN</h1>
             <p className="text-sm text-white/55">الوكيلة التنفيذية لإدارة الأمن الصناعي — NEXIOS</p>
           </div>
         </div>
 
         <p className="mt-6 text-[15px] leading-relaxed text-white/80">
-          آريا مساعِدة ذكية تنفيذية تعمل بالعربية الفصحى، بصوت رسمي واحد مقفل، وذاكرة تمتدّ عبر
+          FINN مساعِدة ذكية تنفيذية تعمل بالعربية الفصحى، بصوت رسمي واحد مقفل، وذاكرة تمتدّ عبر
           الجلسات، وتحسّن نفسها أسبوعيّاً من الأسئلة الضعيفة. تعمل على جميع الأجهزة، بهوية بصرية
           واحدة عبر كل نقاط اللمس.
         </p>

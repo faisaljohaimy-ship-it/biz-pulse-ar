@@ -1,5 +1,5 @@
-// Phase 11.2 — ARIA Avatar Identity public barrel.
-// Strictly additive. Single source of truth for the ARIA visual identity.
+// Phase 11.2 — FINN Avatar Identity public barrel.
+// Strictly additive. Single source of truth for the FINN visual identity.
 
 export * from "./types";
 export * from "./contracts";

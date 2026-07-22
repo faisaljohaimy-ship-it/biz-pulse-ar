@@ -50,8 +50,8 @@ export const responsePipeline = {
     }
     if (/429/.test(raw)) {
       return locale === "ar"
-        ? "آريا مشغولة حالياً. حاول مرة أخرى بعد لحظات."
-        : "ARIA is temporarily rate limited. Please retry in a moment.";
+        ? "FINN مشغولة حالياً. حاول مرة أخرى بعد لحظات."
+        : "FINN is temporarily rate limited. Please retry in a moment.";
     }
     if (/401|403/i.test(raw)) {
       return locale === "ar"
@@ -61,10 +61,10 @@ export const responsePipeline = {
     if (/AbortError|timeout/i.test(raw)) {
       return locale === "ar"
         ? "استغرقت الاستجابة وقتاً طويلاً. سنعيد المحاولة تلقائياً."
-        : "ARIA took too long to respond. Please retry.";
+        : "FINN took too long to respond. Please retry.";
     }
     return locale === "ar"
       ? "تعذّر إتمام الطلب. حاول مرة أخرى."
-      : "ARIA could not complete this response. Please retry.";
+      : "FINN could not complete this response. Please retry.";
   },
 };

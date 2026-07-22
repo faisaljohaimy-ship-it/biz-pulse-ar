@@ -86,8 +86,8 @@ const CAPS: Cap[] = [
     icon: Mic,
     ar: "الأوامر الصوتية",
     en: "Voice Commands",
-    descAr: "تحكّم صوتي تنفيذي طبيعي مع آريا.",
-    descEn: "Natural executive voice control with ARIA.",
+    descAr: "تحكّم صوتي تنفيذي طبيعي مع FINN.",
+    descEn: "Natural executive voice control with FINN.",
   },
   {
     to: "/governance",
@@ -109,8 +109,8 @@ const VALUE_PROPS: { ar: string; en: string }[] = [
     en: "A real-time 3D executive command center",
   },
   {
-    ar: "مساعد ذكي واقعي (آريا) يتحدّث ويفهم",
-    en: "A lifelike AI assistant (ARIA) that speaks and understands",
+    ar: "مساعد ذكي واقعي (FINN) يتحدّث ويفهم",
+    en: "A lifelike AI assistant (FINN) that speaks and understands",
   },
   { ar: "ذكاء اصطناعي بتوصيات قابلة للتنفيذ", en: "AI with actionable recommendations" },
   { ar: "توأم رقمي شامل للمؤسسة بكل تفاصيلها", en: "A full enterprise digital twin" },

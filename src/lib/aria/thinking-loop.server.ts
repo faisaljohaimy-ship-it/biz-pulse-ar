@@ -1,5 +1,5 @@
 /**
- * ARIA Executive Thinking Loop (server-only, additive).
+ * FINN Executive Thinking Loop (server-only, additive).
  *
  * Composes the autonomous executive cycle:
  *   Observe → Understand → Analyze → Predict → Recommend → Verify → Learn

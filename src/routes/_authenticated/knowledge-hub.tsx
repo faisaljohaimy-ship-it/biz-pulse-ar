@@ -44,8 +44,8 @@ const SOURCE_META: Record<
   kb_article: { icon: BookOpen, label_en: "KB Article", label_ar: "مقالة معرفة", tone: "cyan" },
   aria_document: {
     icon: FileStack,
-    label_en: "ARIA Document",
-    label_ar: "وثيقة ARIA",
+    label_en: "FINN Document",
+    label_ar: "وثيقة FINN",
     tone: "emerald",
   },
   knowledge_doc: { icon: FileText, label_en: "Note", label_ar: "ملاحظة", tone: "slate" },
@@ -102,8 +102,8 @@ function KnowledgeHubPage() {
       title={ar ? "مركز المعرفة المؤسسي" : "Enterprise Knowledge Center"}
       subtitle={
         ar
-          ? "بحث موحد عبر الحوادث، أوامر العمل، قاعدة المعرفة، ومستندات ARIA."
-          : "Unified search across incidents, work orders, KB, and ARIA documents."
+          ? "بحث موحد عبر الحوادث، أوامر العمل، قاعدة المعرفة، ومستندات FINN."
+          : "Unified search across incidents, work orders, KB, and FINN documents."
       }
       actions={
         <Link
@@ -132,7 +132,7 @@ function KnowledgeHubPage() {
           tone="cyan"
         />
         <NexusStat
-          label={ar ? "مستندات ARIA" : "ARIA docs"}
+          label={ar ? "مستندات FINN" : "FINN docs"}
           value={String(stats.data?.aria_documents ?? "—")}
           tone="emerald"
         />

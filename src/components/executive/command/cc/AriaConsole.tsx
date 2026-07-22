@@ -1,7 +1,7 @@
 /**
- * AriaConsole — the command center's ARIA assistant: a holographic avatar
+ * AriaConsole — the command center's FINN assistant: a holographic avatar
  * frame, the singleton runtime status + waveform, the capability checklist,
- * and a CTA to the one official ARIA surface. It never simulates a second
+ * and a CTA to the one official FINN surface. It never simulates a second
  * listening/speaking state.
  */
 import { Link } from "@tanstack/react-router";
@@ -11,7 +11,7 @@ import { useAria } from "@/lib/aria-core/hooks/useAria";
 
 const BARS = Array.from({ length: 26 }, (_, i) => 26 + Math.abs(Math.sin(i * 0.9)) * 74);
 const STATES = {
-  idle: { ar: "جاهزة للمساعدة", en: "Ready to assist" },
+  idle: { ar: "جاهز للمساعدة", en: "Ready to assist" },
   listening: { ar: "تستمع…", en: "Listening…" },
   processing: { ar: "تُفكّر…", en: "Thinking…" },
   speaking: { ar: "تتحدّث…", en: "Speaking…" },
@@ -27,7 +27,7 @@ export function AriaConsole({ ar, accent }: { ar: boolean; accent: string }) {
     <section
       className="nx-cmd-surface nx-living-border flex flex-col gap-3 rounded-2xl p-3"
       style={{ ["--acc" as string]: accent }}
-      aria-label="ARIA"
+      aria-label="FINN"
     >
       <div className="flex items-start gap-3">
         {/* holographic avatar frame */}
@@ -48,7 +48,7 @@ export function AriaConsole({ ar, accent }: { ar: boolean; accent: string }) {
 
         <div className="min-w-0 flex-1">
           <div className="text-lg font-black tracking-wide" style={{ color: accent }}>
-            ARIA
+            FINN
           </div>
           <div className="text-[10px] text-white/55">
             {ar ? "مساعدك الذكي التنفيذي" : "Your executive AI assistant"}
@@ -96,7 +96,7 @@ export function AriaConsole({ ar, accent }: { ar: boolean; accent: string }) {
       {/* mic CTA */}
       <Link
         to="/aria"
-        aria-label={ar ? "تحدّث إلى آريا" : "Talk to ARIA"}
+        aria-label={ar ? "تحدّث إلى FINN" : "Talk to FINN"}
         className="group mx-auto grid h-12 w-12 place-items-center rounded-full border transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2"
         style={{
           borderColor: `${accent}66`,

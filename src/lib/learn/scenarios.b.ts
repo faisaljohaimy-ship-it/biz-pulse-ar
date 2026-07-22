@@ -17,8 +17,8 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
           en: "Executive briefing 1 hour before board meeting",
         },
         briefing: {
-          ar: "المجلس سيسأل عن حادث الأمس. لديك 6 مصادر بيانات، 3 روايات متضاربة، و60 دقيقة. ARIA اقترحت ثلاث طرق للإحاطة.",
-          en: "Board will ask about yesterday's incident. You have 6 data sources, 3 conflicting narratives, and 60 minutes. ARIA proposes three briefing paths.",
+          ar: "المجلس سيسأل عن حادث الأمس. لديك 6 مصادر بيانات، 3 روايات متضاربة، و60 دقيقة. FINN اقترحت ثلاث طرق للإحاطة.",
+          en: "Board will ask about yesterday's incident. You have 6 data sources, 3 conflicting narratives, and 60 minutes. FINN proposes three briefing paths.",
         },
         metrics: [
           { label: { ar: "مصادر البيانات", en: "Data sources" }, value: "6", tone: "warn" },
@@ -37,8 +37,8 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
             },
             correct: false,
             feedback: {
-              ar: "ستستنفد الساعة كاملة، وستقدّم إحاطة نصف مطبوخة. هذا هو بالضبط ما بُنيت ARIA لإلغائه.",
-              en: "You'll burn the full hour and still present half-baked. This is exactly what ARIA was built to remove.",
+              ar: "ستستنفد الساعة كاملة، وستقدّم إحاطة نصف مطبوخة. هذا هو بالضبط ما بُنيت FINN لإلغائه.",
+              en: "You'll burn the full hour and still present half-baked. This is exactly what FINN was built to remove.",
             },
             kpiChanges: [
               { key: "speed", label: { ar: "سرعة", en: "Speed" }, delta: -18 },
@@ -47,8 +47,8 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
           },
           {
             label: {
-              ar: "طلب إحاطة موحّدة من ARIA مع الاستشهادات + مراجعتها 15 دقيقة",
-              en: "Ask ARIA for a unified brief with citations + 15 min review",
+              ar: "طلب إحاطة موحّدة من FINN مع الاستشهادات + مراجعتها 15 دقيقة",
+              en: "Ask FINN for a unified brief with citations + 15 min review",
             },
             correct: true,
             feedback: {
@@ -87,13 +87,13 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
         metrics: [
           { label: { ar: "طبيعة السؤال", en: "Question type" }, value: "Forecast", tone: "warn" },
           { label: { ar: "الوقت المتاح", en: "Time to answer" }, value: "40 sec", tone: "bad" },
-          { label: { ar: "ذاكرة ARIA", en: "ARIA memory" }, value: "Live", tone: "good" },
+          { label: { ar: "ذاكرة FINN", en: "FINN memory" }, value: "Live", tone: "good" },
         ],
         options: [
           {
             label: {
-              ar: "طلب سيناريو الأسبوع القادم مع نسبة الاحتمال من ARIA لحظياً",
-              en: "Ask ARIA live: 'next-week scenario with probability'",
+              ar: "طلب سيناريو الأسبوع القادم مع نسبة الاحتمال من FINN لحظياً",
+              en: "Ask FINN live: 'next-week scenario with probability'",
             },
             correct: true,
             feedback: {
@@ -133,8 +133,8 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
       },
     ],
     debrief: {
-      ar: "الإحاطة التنفيذية العظيمة ليست خطاباً — إنها قرار مدعوم بالبيانات في أقلّ وقت ممكن. ARIA تحوّل ساعات إلى دقائق.",
-      en: "Great executive briefing isn't a speech — it's a decision backed by data in the least time possible. ARIA collapses hours into minutes.",
+      ar: "الإحاطة التنفيذية العظيمة ليست خطاباً — إنها قرار مدعوم بالبيانات في أقلّ وقت ممكن. FINN تحوّل ساعات إلى دقائق.",
+      en: "Great executive briefing isn't a speech — it's a decision backed by data in the least time possible. FINN collapses hours into minutes.",
     },
   },
 
@@ -183,8 +183,8 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
           },
           {
             label: {
-              ar: "رفض التصريح + اقتراح ARIA لموقع بديل بمسافة 22م",
-              en: "Deny permit + accept ARIA's alt-location suggestion at 22m",
+              ar: "رفض التصريح + اقتراح FINN لموقع بديل بمسافة 22م",
+              en: "Deny permit + accept FINN's alt-location suggestion at 22m",
             },
             correct: true,
             feedback: {
@@ -213,8 +213,8 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
       },
     ],
     debrief: {
-      ar: "الامتثال ليس عائقاً — إنه رخصة العمل. ARIA تحوّل الامتثال من احتكاك إلى مسار.",
-      en: "Compliance isn't a blocker — it's your license to operate. ARIA turns compliance from friction into a path.",
+      ar: "الامتثال ليس عائقاً — إنه رخصة العمل. FINN تحوّل الامتثال من احتكاك إلى مسار.",
+      en: "Compliance isn't a blocker — it's your license to operate. FINN turns compliance from friction into a path.",
     },
   },
 
@@ -238,7 +238,7 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
         },
         metrics: [
           {
-            label: { ar: "أولوية ARIA", en: "ARIA priority ranking" },
+            label: { ar: "أولوية FINN", en: "FINN priority ranking" },
             value: "B > A > C",
             tone: "warn",
           },
@@ -293,8 +293,8 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
       },
     ],
     debrief: {
-      ar: "الدوريات الذكية ليست أكثر عدداً — إنها أكثر توجّهاً. ARIA تحوّل التنبيه إلى أولوية، والأولوية إلى دقيقة موفّرة.",
-      en: "Smart patrols aren't more people — they're more targeted people. ARIA turns alerts into priority, and priority into minutes saved.",
+      ar: "الدوريات الذكية ليست أكثر عدداً — إنها أكثر توجّهاً. FINN تحوّل التنبيه إلى أولوية، والأولوية إلى دقيقة موفّرة.",
+      en: "Smart patrols aren't more people — they're more targeted people. FINN turns alerts into priority, and priority into minutes saved.",
     },
   },
 
@@ -340,13 +340,13 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
           },
           {
             label: {
-              ar: "التحقّق من ARIA للمضيف الداخلي + بدء تصاريح سريعة موقّعة رقمياً",
-              en: "Ask ARIA to locate internal host + start fast-track e-permits",
+              ar: "التحقّق من FINN للمضيف الداخلي + بدء تصاريح سريعة موقّعة رقمياً",
+              en: "Ask FINN to locate internal host + start fast-track e-permits",
             },
             correct: true,
             feedback: {
-              ar: "قرار تنفيذي مصقول. ARIA حدّدت المضيف، والوفد دخل خلال 8 دقائق بمعرفات صحيحة.",
-              en: "Polished executive move. ARIA found the host, delegation entered in 8 min with valid IDs.",
+              ar: "قرار تنفيذي مصقول. FINN حدّدت المضيف، والوفد دخل خلال 8 دقائق بمعرفات صحيحة.",
+              en: "Polished executive move. FINN found the host, delegation entered in 8 min with valid IDs.",
             },
             kpiChanges: [
               { key: "experience", label: { ar: "تجربة", en: "Experience" }, delta: +10 },
@@ -369,8 +369,8 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
       },
     ],
     debrief: {
-      ar: "إدارة الوصول هي المحل الأمامي للمؤسسة. ARIA تدمج التحقّق، الاحترام، والسرعة في تجربة واحدة.",
-      en: "Access management is the enterprise's front-of-house. ARIA fuses verification, respect, and speed into one experience.",
+      ar: "إدارة الوصول هي المحل الأمامي للمؤسسة. FINN تدمج التحقّق، الاحترام، والسرعة في تجربة واحدة.",
+      en: "Access management is the enterprise's front-of-house. FINN fuses verification, respect, and speed into one experience.",
     },
   },
 };

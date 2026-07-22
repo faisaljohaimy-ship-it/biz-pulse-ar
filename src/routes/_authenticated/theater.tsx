@@ -1,7 +1,7 @@
 /**
  * Executive Theater — `/theater`
  *
- * The flagship Executive AI surface of NEXUS AI OS. ARIA is permanently
+ * The flagship Executive AI surface of NEXUS AI OS. FINN is permanently
  * centered on the stage, surrounded by the live AI agent ring. Every
  * story card, every spoken turn, every confidence reading comes from
  * real runtime tables (`enterprise_events`, `agent_runs`,
@@ -63,7 +63,7 @@ export const Route = createFileRoute("/_authenticated/theater")({
       {
         name: "description",
         content:
-          "Living executive command theater with ARIA Digital Human, specialist AI agent orchestra and one-click 60-second briefings — powered exclusively by real runtime data.",
+          "Living executive command theater with FINN Digital Human, specialist AI agent orchestra and one-click 60-second briefings — powered exclusively by real runtime data.",
       },
     ],
   }),
@@ -159,7 +159,7 @@ function TheaterPage() {
     return agents.find((a) => a.name.toLowerCase().includes(first))?.id ?? null;
   }, [agents, conductor.currentSpeaker]);
 
-  // ARIA gaze — looks toward the active speaking agent's position on the ring,
+  // FINN gaze — looks toward the active speaking agent's position on the ring,
   // or softly toward the camera when she is speaking herself.
   const ariaGaze = useMemo<{ x: number; y: number } | null>(() => {
     if (!speakerAgentId) return conductor.state === "speaking" ? { x: 0, y: -0.05 } : null;
@@ -226,8 +226,8 @@ function TheaterPage() {
             </h1>
             <p className="mt-1 text-sm text-white/55 max-w-2xl">
               {ar
-                ? "آريا والمنظومة المتخصصة تراقب العمليات الحية وتقدم التوصيات التنفيذية ضمن 60 ثانية."
-                : "ARIA and the specialist orchestra monitor live operations and deliver executive recommendations in under 60 seconds."}
+                ? "FINN والمنظومة المتخصصة تراقب العمليات الحية وتقدم التوصيات التنفيذية ضمن 60 ثانية."
+                : "FINN and the specialist orchestra monitor live operations and deliver executive recommendations in under 60 seconds."}
             </p>
           </div>
 
@@ -350,7 +350,7 @@ function TheaterPage() {
               </div>
             )}
 
-            {/* Animated collaboration beams — each agent → ARIA (ring mode only) */}
+            {/* Animated collaboration beams — each agent → FINN (ring mode only) */}
             <div className="hidden sm:block">
               <ConnectionLines agents={agents} radius={240} speakerId={speakerAgentId} size={640} />
             </div>
@@ -412,8 +412,8 @@ function TheaterPage() {
             {recentLines.length === 0 && (
               <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-sm text-white/55 backdrop-blur">
                 {ar
-                  ? "لا توجد أحداث تشغيلية حديثة. آريا في وضع المراقبة."
-                  : "No recent operational events. ARIA is monitoring in standby."}
+                  ? "لا توجد أحداث تشغيلية حديثة. FINN في وضع المراقبة."
+                  : "No recent operational events. FINN is monitoring in standby."}
               </div>
             )}
             {recentLines.map((line) =>
@@ -431,7 +431,7 @@ function TheaterPage() {
         </section>
       </div>
 
-      {/* Mobile breathing room for the global ARIA launcher. */}
+      {/* Mobile breathing room for the global FINN launcher. */}
       <div className="h-32 sm:h-0" aria-hidden />
 
       <ExplainPanel

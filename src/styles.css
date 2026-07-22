@@ -847,7 +847,7 @@ body {
   }
 }
 
-/* ── ARIA cinematic orb ───────────────────────────────────── */
+/* ── FINN cinematic orb ───────────────────────────────────── */
 @keyframes aria-orb-halo {
   0%,
   100% {
@@ -909,7 +909,7 @@ body {
   }
 }
 
-/* ============ ARIA Executive Hero (Scene 01) ============ */
+/* ============ FINN Executive Hero (Scene 01) ============ */
 :root {
   --aria-bg: #061a2e;
   --aria-bg-2: #0b2742;
@@ -1206,7 +1206,7 @@ body {
   }
 }
 
-/* ═══ ARIA presence — state-driven CSS (no video, no audio, no canvas) ═══ */
+/* ═══ FINN presence — state-driven CSS (no video, no audio, no canvas) ═══ */
 .aria-presence .aria-figure {
   transform-origin: 50% 50%;
   animation: aria-idle-breathe 8s ease-in-out infinite;
@@ -1942,7 +1942,7 @@ body {
   animation: nx-hub-ping 2.6s ease-out infinite;
 }
 
-/* ARIA — animated voice waveform (staggered bars) + a slow orbiting ring. */
+/* FINN — animated voice waveform (staggered bars) + a slow orbiting ring. */
 @keyframes nx-wave {
   0%,
   100% {
@@ -2564,7 +2564,7 @@ h3,
   text-shadow: 0 0 14px rgba(var(--nx-region-rgb, 0, 212, 255), 0.25);
 }
 
-/* 5) ARIA launcher — amp its halo in the current region colour. */
+/* 5) FINN launcher — amp its halo in the current region colour. */
 .nexus-aria-launcher {
   box-shadow:
     0 0 0 1px rgba(var(--nx-region-rgb, 0, 212, 255), 0.55),

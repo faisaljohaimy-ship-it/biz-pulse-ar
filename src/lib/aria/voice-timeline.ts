@@ -1,5 +1,5 @@
 /**
- * ARIA Voice Timeline — a single append-only ring buffer for every
+ * FINN Voice Timeline — a single append-only ring buffer for every
  * event in the audio pipeline. Populated from audio-bus, useAriaSpeech,
  * AriaCopilot, aria-voice, and the voice-policy assertion.
  *

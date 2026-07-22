@@ -211,7 +211,7 @@ function ExecutiveCommandCenter() {
             onClick={() => navigate({ to: "/assistant" })}
             className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-200 hover:bg-cyan-400/20"
           >
-            <Sparkles className="h-3 w-3" /> {ar ? "اسأل ARIA" : "Ask ARIA"}
+            <Sparkles className="h-3 w-3" /> {ar ? "اسأل FINN" : "Ask FINN"}
           </button>
         </div>
       }
@@ -474,7 +474,7 @@ function ExecutiveCommandCenter() {
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4 text-violet-300" />
               <h3 className="text-sm font-semibold text-slate-100">
-                {ar ? "توصيات ARIA الذكية" : "ARIA Recommendations"}
+                {ar ? "توصيات FINN الذكية" : "FINN Recommendations"}
               </h3>
             </div>
             <NexusPill tone="violet">AI</NexusPill>
@@ -701,7 +701,7 @@ function ExecutiveCommandCenter() {
               to="/assistant"
               className="inline-flex items-center gap-1.5 rounded-lg border border-violet-400/30 bg-violet-400/10 px-3 py-2 text-xs font-semibold text-violet-200 hover:bg-violet-400/20"
             >
-              <Sparkles className="h-3.5 w-3.5" /> {ar ? "اسأل ARIA" : "Ask ARIA"}
+              <Sparkles className="h-3.5 w-3.5" /> {ar ? "اسأل FINN" : "Ask FINN"}
             </Link>
             <Link
               to="/voice"

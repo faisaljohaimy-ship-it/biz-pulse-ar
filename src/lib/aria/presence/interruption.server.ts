@@ -1,5 +1,5 @@
 /**
- * ARIA Presence — Interruption detector.
+ * FINN Presence — Interruption detector.
  *
  * Detects critical incidents/alerts newer than the presence cursor and
  * returns a compact bilingual interjection the client can surface

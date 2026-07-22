@@ -1,5 +1,5 @@
 /**
- * POST /api/aria/chat — ARIA answered DIRECTLY by the OpenAI Responses API.
+ * POST /api/aria/chat — FINN answered DIRECTLY by the OpenAI Responses API.
  *
  * A privacy-hardened, streaming endpoint (adapted from the mandated spec to
  * this project's stack: TanStack Start server route, not Next.js — nitro runs
@@ -11,10 +11,10 @@
  *  - Request body / message / history / answer are NEVER logged.
  *  - `no-store` on every response.
  *
- * Auth posture: bound to the project's ACTUAL ARIA posture — anonymous demo
+ * Auth posture: bound to the project's ACTUAL FINN posture — anonymous demo
  * visitors are allowed (see `-chat-guard.ts`), protected by same-origin
  * enforcement + the shared sliding-window rate limiter. A bearer token, when
- * present, is honoured but never required (ARIA is a public product surface).
+ * present, is honoured but never required (FINN is a public product surface).
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { DEFAULT_OPENAI_MODEL, resolveOpenAiModel } from "@/lib/ai-gateway.server";
@@ -29,10 +29,10 @@ type AriaMessage = { role: "user" | "assistant"; content: string };
 
 const ARIA_INSTRUCTIONS = `${ARIA_IDENTITY_PREAMBLE}
 
-أنت ARIA، المساعد التنفيذي الذكي الرسمي داخل NEXIOS AI OS.
+أنت FINN، المساعد التنفيذي الذكي الرسمي داخل NEXIOS AI OS.
 
 الهوية:
-- عرّف نفسك دائماً باسم ARIA، ولا تقل إنك ChatGPT أو نموذج OpenAI.
+- عرّف نفسك دائماً باسم FINN، ولا تقل إنك ChatGPT أو نموذج OpenAI.
 - تحدث بالعربية افتراضياً، وانتقل للإنجليزية بحسب لغة المستخدم.
 - استخدم أسلوباً تنفيذياً دقيقاً، واضحاً، مختصراً واحترافياً.
 - استخدم فقط البيانات والسياق المصرح بهما من النظام.
@@ -94,8 +94,8 @@ function sanitizeHistory(value: unknown): AriaMessage[] {
 }
 
 async function handlePost(request: Request): Promise<Response> {
-  // Bind to the project's actual ARIA posture: anonymous allowed, but only
-  // from the same origin, and always rate limited. (No hard 401 — ARIA is a
+  // Bind to the project's actual FINN posture: anonymous allowed, but only
+  // from the same origin, and always rate limited. (No hard 401 — FINN is a
   // public product surface; a login gate here would break the public demo.)
   if (!isSameOrigin(request)) {
     return jsonError("الطلب غير مسموح من هذا المصدر.", 403);
@@ -103,7 +103,7 @@ async function handlePost(request: Request): Promise<Response> {
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return jsonError("خدمة ARIA غير مهيأة حالياً.", 503);
+    return jsonError("خدمة FINN غير مهيأة حالياً.", 503);
   }
 
   const contentLength = Number(request.headers.get("content-length") || "0");
@@ -126,7 +126,7 @@ async function handlePost(request: Request): Promise<Response> {
   }
   if (rate.unavailable) return rateLimitUnavailableResponse();
   if (!rate.allowed) {
-    return jsonError("ARIA مشغولة حالياً. حاول بعد قليل.", 429);
+    return jsonError("FINN مشغولة حالياً. حاول بعد قليل.", 429);
   }
 
   let body: unknown;
@@ -178,14 +178,14 @@ async function handlePost(request: Request): Promise<Response> {
 
     if (!openAIResponse.ok || !openAIResponse.body) {
       // Never log body/message/history/answer — only the upstream status.
-      console.error("ARIA OpenAI request failed", { status: openAIResponse.status });
+      console.error("FINN OpenAI request failed", { status: openAIResponse.status });
       if (openAIResponse.status === 401) {
-        return jsonError("إعداد مفتاح ARIA غير صالح.", 502);
+        return jsonError("إعداد مفتاح FINN غير صالح.", 502);
       }
       if (openAIResponse.status === 429) {
-        return jsonError("ARIA مشغولة حالياً. حاول بعد قليل.", 429);
+        return jsonError("FINN مشغولة حالياً. حاول بعد قليل.", 429);
       }
-      return jsonError("تعذر الحصول على رد من ARIA حالياً.", 502);
+      return jsonError("تعذر الحصول على رد من FINN حالياً.", 502);
     }
 
     return new Response(openAIResponse.body, {
@@ -200,8 +200,8 @@ async function handlePost(request: Request): Promise<Response> {
     if (request.signal.aborted) {
       return jsonError("تم إلغاء الطلب.", 408);
     }
-    console.error("ARIA provider failure", { code: "OPENAI_REQUEST_FAILED" });
-    return jsonError("حدث خطأ مؤقت في خدمة ARIA.", 502);
+    console.error("FINN provider failure", { code: "OPENAI_REQUEST_FAILED" });
+    return jsonError("حدث خطأ مؤقت في خدمة FINN.", 502);
   }
 }
 

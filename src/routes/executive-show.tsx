@@ -1,5 +1,5 @@
 // /executive-show — Executive Show player.
-// Left: the self-hosted ARIA executive film, full face, RTL.
+// Left: the self-hosted FINN executive film, full face, RTL.
 // Right: window preview that auto-switches per cues, driven by video
 // `timeupdate`. When the video ends, a closing screen replaces the preview.
 // Audio starts only after the first user interaction (browser autoplay policy).
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/executive-show")({
       { title: "مشغّل العرض التنفيذي — نيكسيوس · Executive Show" },
       {
         name: "description",
-        content: "مشغّل عرض تنفيذي: رواية آريا مع معاينة نوافذ النظام تتغيّر تلقائيًا.",
+        content: "مشغّل عرض تنفيذي: رواية FINN مع معاينة نوافذ النظام تتغيّر تلقائيًا.",
       },
       { name: "robots", content: "noindex" },
       { name: "color-scheme", content: "dark" },
@@ -82,8 +82,8 @@ const CUES: Cue[] = [
   {
     id: "agents",
     at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[3],
-    ar: "وكلاء آريا",
-    en: "ARIA Agents",
+    ar: "وكلاء FINN",
+    en: "FINN Agents",
     icon: Bot,
     accent: CYAN,
     render: () => <PreviewAgents />,
@@ -210,7 +210,7 @@ function ExecutiveShowPage() {
           <div className="min-w-0">
             <div className="truncate text-sm font-bold text-emerald-200">مشغّل العرض التنفيذي</div>
             <div className="truncate text-[11px] text-slate-400">
-              رواية آريا · معاينة النوافذ التلقائية
+              رواية FINN · معاينة النوافذ التلقائية
             </div>
           </div>
         </div>
@@ -228,7 +228,7 @@ function ExecutiveShowPage() {
       </header>
 
       <section className="mx-auto grid max-w-[1600px] gap-4 px-4 pb-6 md:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-6">
-        {/* LEFT — ARIA narrator */}
+        {/* LEFT — FINN narrator */}
         <div className="relative overflow-hidden rounded-3xl border border-cyan-400/20 bg-black/60 shadow-[0_20px_60px_-20px_rgba(58,232,255,0.35)]">
           <div className="relative aspect-[9/16] max-h-[78dvh] w-full">
             <video
@@ -243,7 +243,7 @@ function ExecutiveShowPage() {
               disablePictureInPicture
               onLoadedData={() => setVideoFailed(false)}
               onError={() => setVideoFailed(true)}
-              aria-label="آريا · الراوية التنفيذية"
+              aria-label="FINN · الراوية التنفيذية"
             >
               <track
                 kind="chapters"
@@ -336,7 +336,7 @@ function ExecutiveShowPage() {
                     اضغط للبدء · مع الصوت
                   </span>
                   <span className="font-mono text-[10px] tracking-[0.18em] text-cyan-100/60">
-                    ARIA FILM · {EXECUTIVE_PRESENTATION_MEDIA.durationLabel}
+                    FINN FILM · {EXECUTIVE_PRESENTATION_MEDIA.durationLabel}
                   </span>
                 </span>
               </button>
@@ -530,7 +530,7 @@ function PreviewRegions() {
 
 function PreviewAgents() {
   const agents = [
-    { ar: "آريا التنفيذي", role: "قرارات القيادة", status: "نشط" },
+    { ar: "FINN التنفيذي", role: "قرارات القيادة", status: "نشط" },
     { ar: "وكيل الأمن الصناعي", role: "حوادث وتنبيهات", status: "نشط" },
     { ar: "وكيل الصيانة", role: "أوامر عمل", status: "نشط" },
     { ar: "وكيل التقارير", role: "توليد ذكي", status: "استعداد" },
@@ -539,7 +539,7 @@ function PreviewAgents() {
     <div className="space-y-3">
       <div className="flex items-center gap-2 text-cyan-300">
         <Bot className="h-4 w-4" />
-        <div className="text-sm font-semibold">شبكة وكلاء آريا متعدّدة الأنماط</div>
+        <div className="text-sm font-semibold">شبكة وكلاء FINN متعدّدة الأنماط</div>
       </div>
       <ul className="space-y-2">
         {agents.map((a) => (
@@ -600,7 +600,7 @@ function ClosingScreen() {
         <div className="space-y-1">
           <div className="text-2xl font-black text-slate-50">شكراً لمشاهدتك</div>
           <div className="text-sm text-slate-400">
-            نيكسيوس · نظام تشغيل المؤسسة المدعوم بذكاء آريا التنفيذي.
+            نيكسيوس · نظام تشغيل المؤسسة المدعوم بذكاء FINN التنفيذي.
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2 pt-2">

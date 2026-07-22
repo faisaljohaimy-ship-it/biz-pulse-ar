@@ -161,14 +161,14 @@ const PAL = {
   },
 } as const;
 
-/** Canonical 11 Digital Humans. ARIA is always index 0 (primary). */
+/** Canonical 11 Digital Humans. FINN is always index 0 (primary). */
 export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
   {
     id: "aria",
     role: "primary",
     personality: "executive",
-    name_ar: "آريا",
-    name_en: "ARIA",
+    name_ar: "FINN",
+    name_en: "FINN",
     department_ar: "الذكاء التنفيذي",
     department_en: "Executive Intelligence",
     title_ar: "المساعد التنفيذي الرئيسي",
@@ -418,7 +418,7 @@ export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
   },
 ];
 
-export const ARIA: DigitalHumanSpec = DIGITAL_HUMANS[0];
+export const FINN: DigitalHumanSpec = DIGITAL_HUMANS[0];
 
 export const SPECIALISTS: DigitalHumanSpec[] = DIGITAL_HUMANS.slice(1);
 

@@ -1,6 +1,6 @@
 /**
  * OsCommandDeck — cinematic mission-control ribbon for /os.
- * Aggregates live health score, ARIA readiness, and directional posture
+ * Aggregates live health score, FINN readiness, and directional posture
  * from the public os-overview endpoint. Every claim goes through
  * <EvidenceBadge> (FR-19). Additive; token-safe; RTL-perfect.
  */
@@ -105,8 +105,8 @@ export function OsCommandDeck({ ar }: { readonly ar: boolean }) {
     {
       key: "aria",
       icon: Sparkles,
-      labelAr: "آريا — المحرّك التنفيذي",
-      labelEn: "ARIA Executive Core",
+      labelAr: "FINN — المحرّك التنفيذي",
+      labelEn: "FINN Executive Core",
       value: ar ? "جاهزة" : "Ready",
       tone: "cyan" as const,
       evidence: ariaEvidence,

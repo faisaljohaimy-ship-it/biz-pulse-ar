@@ -65,8 +65,8 @@ const STAGES = [
   },
   {
     key: "aria",
-    label_ar: "ARIA",
-    label_en: "ARIA Runtime",
+    label_ar: "FINN",
+    label_en: "FINN Runtime",
     icon: Sparkles,
     to: "/command-center",
   },

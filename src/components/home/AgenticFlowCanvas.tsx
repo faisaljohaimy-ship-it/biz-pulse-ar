@@ -1,5 +1,5 @@
 // Agentic Flow Canvas — n8n-style holographic topology.
-// 4 columns: Sources → Agents → ARIA → Human Approval Gate.
+// 4 columns: Sources → Agents → FINN → Human Approval Gate.
 // All Arabic labels rendered via <foreignObject> + dir="rtl" for correct
 // shaping and bidi — never as raw SVG <text>.
 
@@ -79,7 +79,7 @@ export function AgenticFlowCanvas({
     const positions = new Map<string, Positioned>();
     for (const p of layoutColumn(sources, COL_X.source, NODE_H.source, HEADER_H)) positions.set(p.node.id, p);
     for (const p of layoutColumn(agents, COL_X.agent, NODE_H.agent, HEADER_H)) positions.set(p.node.id, p);
-    // Center ARIA vertically against agent column
+    // Center FINN vertically against agent column
     const agentColHeight = agents.length * (NODE_H.agent + ROW_GAP);
     const ariaStart = HEADER_H + Math.max(0, agentColHeight / 2 - NODE_H.aria / 2);
     for (const p of layoutColumn(aria, COL_X.aria, NODE_H.aria, ariaStart)) positions.set(p.node.id, p);
@@ -136,7 +136,7 @@ export function AgenticFlowCanvas({
   const columnHeaders = [
     { x: COL_X.source, w: NODE_W.source, label: ar ? "المصادر" : "Sources", sub: ar ? "SAP · IoT · M365 · نفاذ" : "SAP · IoT · M365 · Nafath" },
     { x: COL_X.agent, w: NODE_W.agent, label: ar ? "الوكلاء" : "Agents", sub: ar ? "13 وكيلًا متخصصًا" : "13 specialist agents" },
-    { x: COL_X.aria, w: NODE_W.aria, label: "ARIA", sub: ar ? "الذكاء المركزي" : "Executive Brain" },
+    { x: COL_X.aria, w: NODE_W.aria, label: "FINN", sub: ar ? "الذكاء المركزي" : "Executive Brain" },
     { x: COL_X.gate, w: NODE_W.gate, label: ar ? "الاعتماد" : "Approval", sub: ar ? "بوابة بشرية" : "Human gate" },
   ];
 
@@ -272,7 +272,7 @@ export function AgenticFlowCanvas({
                     <div dir={ar ? "rtl" : "ltr"} style={{ unicodeBidi: "isolate" }}
                       className="flex h-full w-full flex-col items-center justify-center text-center leading-tight">
                       <div className="text-[22px] font-bold tracking-[0.15em] text-white">
-                        {ar ? "آريا" : "ARIA"}
+                        {ar ? "FINN" : "FINN"}
                       </div>
                       <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#3AE8FF]">
                         {ar ? "الذكاء التنفيذي" : "Executive Brain"}

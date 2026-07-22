@@ -1,4 +1,4 @@
-// ARIA Report Engine — generates Markdown report bodies grounded in real data
+// FINN Report Engine — generates Markdown report bodies grounded in real data
 // and persists them to aria_reports.
 
 import type { SupabaseClient } from "@supabase/supabase-js";

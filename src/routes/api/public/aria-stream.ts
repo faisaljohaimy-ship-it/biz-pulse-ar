@@ -1,5 +1,5 @@
 /**
- * Public ARIA streaming endpoint — bilingual streaming answer for the
+ * Public FINN streaming endpoint — bilingual streaming answer for the
  * landing hero. Streams plain text as Server-Sent Events so the client
  * can render tokens as they arrive and start TTS on the first sentence.
  *
@@ -55,7 +55,7 @@ function clientIp(req: Request): string {
 function buildSystem(lang: "ar" | "en"): string {
   if (lang === "ar") {
     return [
-      "أنتِ آريا — المساعدة التنفيذية للنكسيوس (NEXIOS).",
+      "أنتِ FINN — المساعدة التنفيذية للنكسيوس (NEXIOS).",
       "أجيبي بإيجاز تنفيذي واضح ومباشر. استخدمي فقرات قصيرة أو نقاط عند اللزوم.",
       "التزمي بالعربية الفصحى المُشكَّلة قدر الإمكان لأجل النطق الصحيح.",
       "لا تختلقي أرقاماً أو مصادر. إن لم تتوفر البيانات قولي: بيانات غير متوفرة.",
@@ -63,7 +63,7 @@ function buildSystem(lang: "ar" | "en"): string {
     ].join("\n");
   }
   return [
-    "You are ARIA — the executive AI assistant for NEXIOS.",
+    "You are FINN — the executive AI assistant for NEXIOS.",
     "Answer concisely and executively. Short paragraphs or bullet points when useful.",
     "Do not invent numbers or sources. If data is unavailable, say so once.",
     "Start the answer immediately with no preamble.",

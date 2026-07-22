@@ -54,8 +54,8 @@ function DpaPage() {
       titleAr: "2 · النطاق والمدة والغرض",
       items: [
         {
-          en: "Subject matter: provision of the NEXIOS AI OS platform and ARIA agent services.",
-          ar: "الموضوع: تقديم منصة NEXIOS AI OS وخدمات وكلاء ARIA.",
+          en: "Subject matter: provision of the NEXIOS AI OS platform and FINN agent services.",
+          ar: "الموضوع: تقديم منصة NEXIOS AI OS وخدمات وكلاء FINN.",
         },
         {
           en: "Duration: the term of the underlying Master Services Agreement, plus any data-return / deletion window.",

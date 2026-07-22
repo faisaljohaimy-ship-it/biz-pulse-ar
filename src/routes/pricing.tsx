@@ -54,13 +54,13 @@ const TIERS: Tier[] = [
     blurbAr: "لفِرَق القيادة التي تختبر تدفقات القرار المدعومة بالذكاء.",
     features: [
       "Up to 10 executive seats",
-      "ARIA executive assistant",
+      "FINN executive assistant",
       "Live KPIs & briefings",
       "Email + chat support",
     ],
     featuresAr: [
       "حتى ١٠ مقاعد تنفيذية",
-      "مساعد ARIA التنفيذي",
+      "مساعد FINN التنفيذي",
       "مؤشرات حية وملخصات يومية",
       "دعم عبر البريد والمحادثة",
     ],
@@ -146,8 +146,8 @@ function PricingPage() {
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
             {isAr
-              ? "ادفع مقابل القيمة الاستراتيجية، لا مقابل المقاعد فقط. جميع الخطط تشمل ARIA والبنية الكاملة."
-              : "Pay for strategic outcomes, not just seats. Every tier includes ARIA and the full intelligence fabric."}
+              ? "ادفع مقابل القيمة الاستراتيجية، لا مقابل المقاعد فقط. جميع الخطط تشمل FINN والبنية الكاملة."
+              : "Pay for strategic outcomes, not just seats. Every tier includes FINN and the full intelligence fabric."}
           </p>
         </header>
 

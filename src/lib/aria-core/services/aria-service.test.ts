@@ -6,7 +6,7 @@
  * when the authenticated request is rejected 401/403, the transport retries
  * the same request once WITHOUT the Authorization header so /api/chat's
  * guest demo path answers. Documented in CLAUDE.md; breaking this test
- * means breaking the platform's always-on ARIA doctrine.
+ * means breaking the platform's always-on FINN doctrine.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

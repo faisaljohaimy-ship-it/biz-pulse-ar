@@ -25,10 +25,10 @@ export function CanonicalAriaRoute() {
           <Sparkles className="h-9 w-9 text-cyan-200" />
         </div>
         <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.42em] text-cyan-300">
-          NEXIOS · ONE ARIA
+          NEXIOS · ONE FINN
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
-          {ar ? "آريا الموحّدة" : "The unified ARIA"}
+          {ar ? "FINN الموحّدة" : "The unified FINN"}
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
           {ar
@@ -72,11 +72,11 @@ export function CanonicalAriaRoute() {
           <Sparkles className="h-4 w-4 text-cyan-200" />
           {mode === "collapsed"
             ? ar
-              ? "افتح آريا"
-              : "Open ARIA"
+              ? "افتح FINN"
+              : "Open FINN"
             : ar
-              ? "آريا جاهزة الآن"
-              : "ARIA is ready"}
+              ? "FINN جاهزة الآن"
+              : "FINN is ready"}
         </button>
       </section>
     </main>

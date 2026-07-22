@@ -1,5 +1,5 @@
 /**
- * ARIA global presence state — subscribed by the backdrop for CSS-only
+ * FINN global presence state — subscribed by the backdrop for CSS-only
  * motion states. No React context; a tiny module-scoped store lets any
  * component push a state without prop-drilling.
  *

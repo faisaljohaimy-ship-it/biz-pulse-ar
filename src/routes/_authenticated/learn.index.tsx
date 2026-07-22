@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/learn/")({
       {
         name: "description",
         content:
-          "The executive learning surface of NEXIOS. Cinematic lessons, live simulations, ARIA as your instructor.",
+          "The executive learning surface of NEXIOS. Cinematic lessons, live simulations, FINN as your instructor.",
       },
     ],
   }),
@@ -104,8 +104,8 @@ function CatalogPage() {
         <div className="flex items-center gap-2 text-sm text-cyan-100/80">
           <Sparkles className="h-4 w-4" />
           {ar
-            ? "كل حصة تتضمّن فيديو تنفيذياً، سرداً صوتياً، محاكاة مباشرة، محادثة مع آريا، واختباراً."
-            : "Every lesson includes an executive film, voice narration, a live simulation, an ARIA dialogue, and a quiz."}
+            ? "كل حصة تتضمّن فيديو تنفيذياً، سرداً صوتياً، محاكاة مباشرة، محادثة مع FINN، واختباراً."
+            : "Every lesson includes an executive film, voice narration, a live simulation, an FINN dialogue, and a quiz."}
         </div>
       </div>
 

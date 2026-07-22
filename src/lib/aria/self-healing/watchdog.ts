@@ -1,5 +1,5 @@
 /**
- * ARIA Self-Healing Watchdog — client-side.
+ * FINN Self-Healing Watchdog — client-side.
  * Enforces Article III of docs/NEXUS_ENGINEERING_CONSTITUTION.md.
  *
  * Detects failures on the client (unhandled errors, unhandled promise

@@ -1,4 +1,4 @@
-// ARIA RAG context assembler — server only.
+// FINN RAG context assembler — server only.
 // Aggregates persistent memory + knowledge base + user documents into a
 // single grounded context block for the streaming chat route, and returns
 // citation metadata so the model can reference sources.

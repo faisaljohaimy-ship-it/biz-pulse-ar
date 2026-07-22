@@ -1,11 +1,11 @@
 /**
- * AriaStage — the permanent ARIA Digital Human anchor. Speaks the
+ * AriaStage — the permanent FINN Digital Human anchor. Speaks the
  * current executive narrative line driven by real overview data, with
  * idle breathing/blinking when nothing is happening. Replaces the
  * previous Sparkles-only welcome glyph.
  */
 import { useEffect } from "react";
-import { ARIA } from "@/lib/digital-humans/registry";
+import { FINN } from "@/lib/digital-humans/registry";
 import { useDigitalHuman } from "@/lib/digital-humans/engine";
 import { DigitalHumanAvatar } from "./DigitalHumanAvatar";
 import { cn } from "@/lib/utils";
@@ -16,12 +16,12 @@ interface Props {
   line_en?: string;
   size?: number;
   className?: string;
-  /** When true, place ARIA in a heroic glass card. */
+  /** When true, place FINN in a heroic glass card. */
   framed?: boolean;
 }
 
 export function AriaStage({ ar, line_ar, line_en, size = 120, className, framed = true }: Props) {
-  const dh = useDigitalHuman(ARIA);
+  const dh = useDigitalHuman(FINN);
 
   useEffect(() => {
     if (line_ar || line_en) {
@@ -38,13 +38,13 @@ export function AriaStage({ ar, line_ar, line_en, size = 120, className, framed 
 
   const body = (
     <div className="flex items-center gap-4">
-      <DigitalHumanAvatar spec={ARIA} state={dh.state} size={size} ar={ar} ambient />
+      <DigitalHumanAvatar spec={FINN} state={dh.state} size={size} ar={ar} ambient />
       <div className="min-w-0">
         <div className="text-[11px] uppercase tracking-[0.3em] text-cyan-300/80">
-          {ar ? ARIA.title_ar : ARIA.title_en}
+          {ar ? FINN.title_ar : FINN.title_en}
         </div>
         <div className="mt-1 text-lg md:text-xl text-white font-light">
-          {ar ? ARIA.name_ar : ARIA.name_en}
+          {ar ? FINN.name_ar : FINN.name_en}
         </div>
         {dh.currentTurn ? (
           <div className="mt-2 text-sm text-white/85 leading-relaxed max-w-xl">

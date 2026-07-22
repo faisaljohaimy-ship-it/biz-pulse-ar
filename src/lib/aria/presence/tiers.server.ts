@@ -1,7 +1,7 @@
 /**
- * ARIA Executive Presence — Memory tiers.
+ * FINN Executive Presence — Memory tiers.
  *
- * Five separated tiers, each with its own TTL, so ARIA can distinguish
+ * Five separated tiers, each with its own TTL, so FINN can distinguish
  * short-term conversational state from long-lived organizational memory
  * without letting one bleed into another.
  *

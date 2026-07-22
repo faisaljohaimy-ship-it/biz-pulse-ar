@@ -1,5 +1,5 @@
 /**
- * AvatarStateManager — canonical state machine for the ARIA Avatar Brain.
+ * AvatarStateManager — canonical state machine for the FINN Avatar Brain.
  *
  * Owns the current AvatarState + Emotion and the list of allowed transitions.
  * Pure, deterministic, no side effects, no LLM calls, no business logic.

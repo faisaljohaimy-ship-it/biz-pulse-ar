@@ -1,4 +1,4 @@
-// Conversation Animation Engine — orchestrates gesture accents while ARIA
+// Conversation Animation Engine — orchestrates gesture accents while FINN
 // speaks. Fires small accents on natural boundaries reported by the
 // speech driver (word/sentence). No fake speech: fully driver-owned.
 

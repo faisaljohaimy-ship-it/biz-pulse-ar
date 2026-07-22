@@ -1,6 +1,6 @@
 /**
  * AgentHierarchyGraph — the holographic command tree (constitution art. 13):
- * ARIA at the apex, the specialist fleet beneath her, each agent's current
+ * FINN at the apex, the specialist fleet beneath her, each agent's current
  * task as a child node, and a single emerald HUMAN-APPROVAL node at the
  * foot that every path flows into (art. 8 made visual). Light pulses run
  * DOWN the connectors — command intent descending, results converging on
@@ -87,7 +87,7 @@ export function AgentHierarchyGraph({
   }, [runs]);
 
   const W = 1000;
-  const ARIA = { x: W / 2, y: 66 };
+  const FINN = { x: W / 2, y: 66 };
   const rowY = 250;
   const taskY = 402;
   const GATE = { x: W / 2, y: 556 };
@@ -123,15 +123,15 @@ export function AgentHierarchyGraph({
         role="img"
         aria-label={ar ? "شجرة الوكلاء الهرمية" : "Agent hierarchy"}
       >
-        {/* Connectors: ARIA → agent → gate, all flowing downward. */}
+        {/* Connectors: FINN → agent → gate, all flowing downward. */}
         {nodes.map((nd) => {
           const sev = stateToSev(nd.run?.status ?? nd.state);
           const rgb = SEV_RGB[sev];
           return (
             <g key={`c-${nd.id}`}>
-              <path d={link(ARIA.x, ARIA.y + 34, nd.x, nd.y - 26)} className="agraph-base" />
+              <path d={link(FINN.x, FINN.y + 34, nd.x, nd.y - 26)} className="agraph-base" />
               <path
-                d={link(ARIA.x, ARIA.y + 34, nd.x, nd.y - 26)}
+                d={link(FINN.x, FINN.y + 34, nd.x, nd.y - 26)}
                 className="agraph-flow"
                 style={{ stroke: `rgb(${rgb})` }}
               />
@@ -149,29 +149,29 @@ export function AgentHierarchyGraph({
           );
         })}
 
-        {/* ARIA apex */}
-        <g onClick={() => setSel(null)} style={{ cursor: "pointer" }} aria-label="ARIA">
+        {/* FINN apex */}
+        <g onClick={() => setSel(null)} style={{ cursor: "pointer" }} aria-label="FINN">
           <circle
-            cx={ARIA.x}
-            cy={ARIA.y}
+            cx={FINN.x}
+            cy={FINN.y}
             r={44}
             className="agraph-halo"
             style={{ fill: "rgba(58,232,255,0.10)" }}
           />
           <circle
-            cx={ARIA.x}
-            cy={ARIA.y}
+            cx={FINN.x}
+            cy={FINN.y}
             r={34}
             style={{ fill: "rgba(6,22,40,0.95)", stroke: "rgba(58,232,255,0.9)", strokeWidth: 2 }}
           />
           <text
-            x={ARIA.x}
-            y={ARIA.y + 6}
+            x={FINN.x}
+            y={FINN.y + 6}
             textAnchor="middle"
             className="agraph-label"
             style={{ fontSize: 18, fill: "#8ff0ff", fontWeight: 700 }}
           >
-            آريا
+            FINN
           </text>
         </g>
 

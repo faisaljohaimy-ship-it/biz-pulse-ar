@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-// ARIA Document Intelligence — Wave 1 console.
+// FINN Document Intelligence — Wave 1 console.
 // Upload PDFs / Word / Excel / text, then ask grounded questions across them.
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -162,10 +162,10 @@ function AriaDocumentsConsole() {
       <header className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
           <FileSearch className="h-8 w-8 text-primary" />
-          ذكاء المستندات — ARIA Document Intelligence
+          ذكاء المستندات — FINN Document Intelligence
         </h1>
         <p className="text-muted-foreground text-sm">
-          ارفع تقاريرك (PDF / Word / Excel / نص) — تُقطَّع وتُفهرس دلالياً لتجيب ARIA عليها بدقة.
+          ارفع تقاريرك (PDF / Word / Excel / نص) — تُقطَّع وتُفهرس دلالياً لتجيب FINN عليها بدقة.
         </p>
       </header>
 
@@ -289,7 +289,7 @@ function AriaDocumentsConsole() {
           </div>
         ) : docs.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            لا توجد مستندات بعد. ارفع أول ملف لتبدأ ARIA بفهرسته دلالياً.
+            لا توجد مستندات بعد. ارفع أول ملف لتبدأ FINN بفهرسته دلالياً.
           </p>
         ) : (
           <div className="divide-y divide-border/40">

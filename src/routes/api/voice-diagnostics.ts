@@ -1,9 +1,9 @@
 /**
- * Canonical ARIA voice diagnostics.
+ * Canonical FINN voice diagnostics.
  *
  * This endpoint verifies the single server-side ElevenLabs TTS identity used
- * by ARIA. It intentionally does not mint realtime, Scribe, or Conversational
- * AI tokens: conversation ownership stays in the root-mounted ARIA copilot.
+ * by FINN. It intentionally does not mint realtime, Scribe, or Conversational
+ * AI tokens: conversation ownership stays in the root-mounted FINN copilot.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
@@ -75,7 +75,7 @@ async function probeCanonicalVoice(apiKey: string | undefined): Promise<Check> {
   if (!apiKey) {
     return {
       id: "canonical_voice",
-      label: "ARIA canonical voice",
+      label: "FINN canonical voice",
       status: "skipped",
       detail: "API key missing — identity could not be verified.",
     };
@@ -92,30 +92,30 @@ async function probeCanonicalVoice(apiKey: string | undefined): Promise<Check> {
     if (!response.ok) {
       return {
         id: "canonical_voice",
-        label: "ARIA canonical voice",
+        label: "FINN canonical voice",
         status: "failed",
         detail:
           response.status === 404
-            ? "The locked ARIA voice is not available to this ElevenLabs account."
+            ? "The locked FINN voice is not available to this ElevenLabs account."
             : `ElevenLabs returned HTTP ${response.status}.`,
-        fix: "Grant this account access to the locked ARIA voice; do not substitute another voice.",
+        fix: "Grant this account access to the locked FINN voice; do not substitute another voice.",
       };
     }
 
     const payload = (await response.json()) as { name?: string };
     return {
       id: "canonical_voice",
-      label: "ARIA canonical voice",
+      label: "FINN canonical voice",
       status: "ok",
       detail: payload.name ? `${payload.name} · identity locked` : "Identity locked and reachable.",
     };
   } catch (error) {
     return {
       id: "canonical_voice",
-      label: "ARIA canonical voice",
+      label: "FINN canonical voice",
       status: "failed",
       detail: error instanceof Error ? error.message : "Network error.",
-      fix: "Verify provider availability and retry without changing ARIA's voice identity.",
+      fix: "Verify provider availability and retry without changing FINN's voice identity.",
     };
   }
 }
@@ -140,7 +140,7 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
         const ready = apiKeyCheck.status === "ok" && voiceCheck.status === "ok";
         const runtimeCheck: Check = {
           id: "canonical_runtime",
-          label: "Governed ARIA TTS runtime",
+          label: "Governed FINN TTS runtime",
           status: ready ? "ok" : "skipped",
           detail: ready
             ? `/api/aria/tts · ${ARIA_ELEVENLABS_MODEL} · authenticated · rate-limited`
@@ -155,11 +155,11 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
             present: Boolean(apiKey),
             auth_type: "api_key",
             scopes_note:
-              "The server secret is used only by the governed ARIA TTS endpoint and is never exposed to the browser.",
+              "The server secret is used only by the governed FINN TTS endpoint and is never exposed to the browser.",
           },
           voice: {
             configured: true,
-            identity: "ARIA · Layan",
+            identity: "FINN · Layan",
             model: ARIA_ELEVENLABS_MODEL,
             id_masked: `${ARIA_ELEVENLABS_VOICE_ID.slice(0, 3)}…${ARIA_ELEVENLABS_VOICE_ID.slice(-3)}`,
           },

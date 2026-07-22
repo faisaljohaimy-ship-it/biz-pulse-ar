@@ -1,5 +1,5 @@
 // Executive Command Bridge — seven-chapter, bilingual board-room experience.
-// Arabic-first RTL, English simultaneous secondary. ARIA narration is always
+// Arabic-first RTL, English simultaneous secondary. FINN narration is always
 // user-initiated and uses the same canonical ElevenLabs identity as the copilot.
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import * as React from "react";
@@ -169,7 +169,7 @@ function SceneEnterprisePulse() {
           <Sparkles className="h-4 w-4" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-black text-[#BEEBFF]">إشارة آريا التنفيذية</div>
+          <div className="text-[10px] font-black text-[#BEEBFF]">إشارة FINN التنفيذية</div>
           <div className="mt-0.5 text-[9.5px] leading-relaxed text-white/60 sm:text-[10.5px]">
             الأولوية الآن: خفض زمن إغلاق البلاغات الحرجة مع الحفاظ على مستوى الجاهزية.
           </div>
@@ -376,7 +376,7 @@ function SceneRegions() {
   );
 }
 
-// Scene 4 — ARIA executive agents at work.
+// Scene 4 — FINN executive agents at work.
 function SceneAgents() {
   const agents = [
     { ar: "وكيل المخاطر", en: "Risk", icon: ShieldAlert, task: "فرز الإشارات" },
@@ -388,7 +388,7 @@ function SceneAgents() {
     <GlassPanel>
       <div className="mb-3 flex items-center justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
-          مجلس الوكلاء التنفيذي · ARIA agent council
+          مجلس الوكلاء التنفيذي · FINN agent council
         </span>
         <span className={SIM_CHIP}>محاكاة</span>
       </div>
@@ -423,7 +423,7 @@ function SceneAgents() {
           <div className="absolute inset-5 rounded-full bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.92),rgba(58,232,255,0.55)_14%,rgba(11,47,85,0.92)_52%,rgba(3,17,31,0.96)_75%)] shadow-[0_0_38px_rgba(58,232,255,0.34)]" />
           <div className="relative text-center">
             <Bot className="mx-auto h-5 w-5 text-white" aria-hidden />
-            <div className="mt-1 text-[11px] font-black text-white">آريا</div>
+            <div className="mt-1 text-[11px] font-black text-white">FINN</div>
             <div className="text-[7px] font-bold uppercase tracking-[0.18em] text-[#3AE8FF]">
               Orchestrator
             </div>
@@ -577,7 +577,7 @@ function SceneTwinReports() {
       </div>
       <div className="mt-3 flex items-center gap-2 rounded-xl border border-[#F5C560]/18 bg-[#F5C560]/[0.045] px-3 py-2 text-[9px] text-white/55">
         <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#F5C560]" aria-hidden />
-        آريا تربط كل خلاصة بمصدرها وتفصل الحقائق عن المحاكاة والتقدير.
+        FINN تربط كل خلاصة بمصدرها وتفصل الحقائق عن المحاكاة والتقدير.
       </div>
     </GlassPanel>
   );
@@ -644,7 +644,7 @@ function SceneSovereignTrust() {
           <ShieldAlert className="h-5 w-5" aria-hidden />
         </span>
         <div className="text-center sm:text-right">
-          <div className="text-[10px] font-black text-white">قاعدة آريا غير القابلة للتجاوز</div>
+          <div className="text-[10px] font-black text-white">قاعدة FINN غير القابلة للتجاوز</div>
           <div className="mt-0.5 text-[9px] leading-relaxed text-white/52">
             لا إرسال، ولا تنفيذ، ولا تغيير حساس دون أمر صريح وصلاحية قابلة للتحقق.
           </div>
@@ -671,12 +671,12 @@ export const Route = createFileRoute("/executive-bridge")({
       {
         name: "description",
         content:
-          "إيجاز قيادي تفاعلي من سبعة فصول بصوت آريا — من نبض المؤسسة إلى قرار التفعيل. Seven-chapter ARIA-voiced executive command experience.",
+          "إيجاز قيادي تفاعلي من سبعة فصول بصوت FINN — من نبض المؤسسة إلى قرار التفعيل. Seven-chapter FINN-voiced executive command experience.",
       },
       { property: "og:title", content: "جسر القيادة التنفيذي — Executive Command Bridge" },
       {
         property: "og:description",
-        content: "A board-room-grade, bilingual NEXIOS command experience narrated by ARIA.",
+        content: "A board-room-grade, bilingual NEXIOS command experience narrated by FINN.",
       },
     ],
   }),
@@ -753,7 +753,7 @@ function ExecutiveBridgePage() {
     beginNarration();
   }, [beginNarration, narrating]);
 
-  // Continuous narration: ARIA reads the dedicated script for this chapter,
+  // Continuous narration: FINN reads the dedicated script for this chapter,
   // advances only after real audio ends, and never fakes voice with a timer.
   React.useEffect(() => {
     if (!narrating) {
@@ -872,15 +872,15 @@ function ExecutiveBridgePage() {
           advance();
         };
         a.onerror = () => {
-          fail(primary === "ar" ? "تعذّر تشغيل صوت آريا" : "ARIA voice playback failed");
+          fail(primary === "ar" ? "تعذّر تشغيل صوت FINN" : "FINN voice playback failed");
         };
         await a.play();
       } catch (error) {
-        console.error("[executive-bridge] ARIA narration", error);
+        console.error("[executive-bridge] FINN narration", error);
         fail(
           primary === "ar"
-            ? "صوت آريا غير متاح الآن — تحقق من إعداد ElevenLabs"
-            : "ARIA voice is unavailable — check ElevenLabs configuration",
+            ? "صوت FINN غير متاح الآن — تحقق من إعداد ElevenLabs"
+            : "FINN voice is unavailable — check ElevenLabs configuration",
         );
       }
     })();
@@ -1105,10 +1105,10 @@ function ExecutiveBridgePage() {
             </span>
             <span>
               <span className="block text-[10px] font-black text-white sm:text-[11px]">
-                ابدأ الإيجاز التنفيذي بصوت آريا
+                ابدأ الإيجاز التنفيذي بصوت FINN
               </span>
               <span className="mt-0.5 hidden text-[8px] font-bold uppercase tracking-[0.16em] text-[#3AE8FF]/70 sm:block">
-                Begin ARIA voice briefing
+                Begin FINN voice briefing
               </span>
             </span>
             <AriaWaveform active={false} />
@@ -1153,7 +1153,7 @@ function ExecutiveBridgePage() {
           </ControlBtn>
           <ControlBtn
             onClick={toggleNarration}
-            label={narrating ? "إيقاف صوت آريا | Stop ARIA" : "تشغيل صوت آريا | Play ARIA"}
+            label={narrating ? "إيقاف صوت FINN | Stop FINN" : "تشغيل صوت FINN | Play FINN"}
             active={narrating}
           >
             {voiceState === "loading" ? (
@@ -1389,7 +1389,7 @@ function LanguageToggle({
   );
 }
 
-/* ─────────── ARIA voice presence — one shared narration path ─────────── */
+/* ─────────── FINN voice presence — one shared narration path ─────────── */
 
 function AriaWaveform({ active }: { active: boolean }) {
   const bars = [7, 13, 9, 17, 11, 15, 8];
@@ -1433,19 +1433,19 @@ function AriaVoiceBadge({
   const label =
     state === "loading"
       ? language === "ar"
-        ? "آريا تُحضّر الإيجاز"
-        : "ARIA is preparing"
+        ? "FINN تُحضّر الإيجاز"
+        : "FINN is preparing"
       : state === "playing"
         ? language === "ar"
-          ? "آريا تتحدث الآن"
-          : "ARIA is speaking"
+          ? "FINN تتحدث الآن"
+          : "FINN is speaking"
         : state === "error"
           ? language === "ar"
             ? "قناة الصوت تحتاج إعداداً"
             : "Voice channel needs setup"
           : language === "ar"
-            ? "قناة آريا الصوتية"
-            : "ARIA voice channel";
+            ? "قناة FINN الصوتية"
+            : "FINN voice channel";
 
   return (
     <div
@@ -1494,15 +1494,15 @@ function ListenButton({
         : "Preparing…"
       : active
         ? lang === "ar"
-          ? "إيقاف صوت آريا"
-          : "Stop ARIA voice"
+          ? "إيقاف صوت FINN"
+          : "Stop FINN voice"
         : state === "error"
           ? lang === "ar"
             ? "تعذّر التشغيل"
             : "Unavailable"
           : lang === "ar"
-            ? "استمع بصوت آريا"
-            : "Listen with ARIA";
+            ? "استمع بصوت FINN"
+            : "Listen with FINN";
 
   return (
     <button

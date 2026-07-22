@@ -9,7 +9,7 @@ export function buildReleaseNotes(
   decision: Decision,
 ): ReleaseNotesDraft {
   const highlights: string[] = [
-    "ARIA Enterprise AI OS Release Candidate 1.",
+    "FINN Enterprise AI OS Release Candidate 1.",
     "Governance-first execution across planning, tools, and runtime.",
     "Evidence-linked release readiness assessment.",
   ];

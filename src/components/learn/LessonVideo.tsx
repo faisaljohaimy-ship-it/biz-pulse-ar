@@ -19,7 +19,7 @@ export function LessonVideo({ poster }: Props) {
         />
       ) : null}
       <div className="absolute inset-0 grid place-items-center bg-black/40 text-xs text-white/80">
-        الفيديو معطّل — استخدم أريا للشرح المباشر
+        الفيديو معطّل — استخدم FINN للشرح المباشر
       </div>
     </div>
   );

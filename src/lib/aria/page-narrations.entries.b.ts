@@ -43,14 +43,14 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
 
-  // ── Executive / ARIA surfaces ───────────────────────────────────────
+  // ── Executive / FINN surfaces ───────────────────────────────────────
   [
     "/_authenticated/aria.demo",
     n(
-      "عرض آريا التنفيذي",
-      "ARIA Executive Demo",
-      "مشاهد حيّة تُظهر كفاءة آريا في اتخاذ القرار",
-      "live scenes that showcase ARIA's decision throughput",
+      "عرض FINN التنفيذي",
+      "FINN Executive Demo",
+      "مشاهد حيّة تُظهر كفاءة FINN في اتخاذ القرار",
+      "live scenes that showcase FINN's decision throughput",
       "تجربة مباشرة لقدرات النظام دون بيئة اختبار منفصلة",
       "hands-on capability experience with no separate sandbox",
     ),
@@ -58,21 +58,21 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/_authenticated/aria.directive",
     n(
-      "لوحة الميثاق التنفيذي لآريا",
-      "ARIA Executive Directive",
+      "لوحة الميثاق التنفيذي لFINN",
+      "FINN Executive Directive",
       "المواثيق، الحوكمة، ومسارات التطوّر",
       "the charter, governance, and evolution paths",
-      "شفافية كاملة لسلطة آريا وقيودها",
-      "full transparency of ARIA's authority and boundaries",
+      "شفافية كاملة لسلطة FINN وقيودها",
+      "full transparency of FINN's authority and boundaries",
     ),
   ],
   [
     "/_authenticated/aria-documents",
     n(
-      "وثائق آريا",
-      "ARIA Documents",
-      "المستندات المُغذّية لذاكرة آريا",
-      "documents that feed ARIA's memory",
+      "وثائق FINN",
+      "FINN Documents",
+      "المستندات المُغذّية لذاكرة FINN",
+      "documents that feed FINN's memory",
       "قرارات مبنية على مصادر معرفة موثّقة",
       "decisions grounded in cited knowledge sources",
     ),
@@ -80,8 +80,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/_authenticated/aria",
     n(
-      "واجهة آريا",
-      "ARIA Console",
+      "واجهة FINN",
+      "FINN Console",
       "محادثة تنفيذية مباشرة مع المحرّك",
       "a direct executive conversation with the engine",
       "استشارة فورية بلغة القرار",
@@ -91,8 +91,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/_authenticated/assistant.index",
     n(
-      "مساعد آريا التنفيذي",
-      "ARIA Executive Assistant",
+      "مساعد FINN التنفيذي",
+      "FINN Executive Assistant",
       "المحادثات، السياق، والإجراءات المُنجَزة",
       "conversations, context, and completed actions",
       "تنفيذ مهام بدلاً من مجرّد الإجابة عليها",
@@ -102,8 +102,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/_authenticated/assistant",
     n(
-      "مساعد آريا",
-      "ARIA Assistant",
+      "مساعد FINN",
+      "FINN Assistant",
       "خيط محادثة مركّز مع سياق كامل",
       "a focused thread with the full context loaded",
       "استمرارية معرفية بين الجلسات",
@@ -377,7 +377,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
 
-  // ── ARIA operations / runtime ───────────────────────────────────────
+  // ── FINN operations / runtime ───────────────────────────────────────
   [
     "/_authenticated/orchestration",
     n(
@@ -436,8 +436,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/_authenticated/memory",
     n(
-      "ذاكرة آريا",
-      "ARIA Memory",
+      "ذاكرة FINN",
+      "FINN Memory",
       "السياق طويل الأمد والحقائق المؤسسية",
       "long-term context and enterprise facts",
       "استمرارية معرفية عبر كل تفاعل",
@@ -471,8 +471,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     n(
       "رفع المعرفة",
       "Knowledge Upload",
-      "استيراد مستندات جديدة لذاكرة آريا",
-      "ingest new documents into ARIA's memory",
+      "استيراد مستندات جديدة لذاكرة FINN",
+      "ingest new documents into FINN's memory",
       "توسيع نطاق ذكاء المؤسسة بسرعة",
       "expand enterprise intelligence quickly",
     ),

@@ -1,5 +1,5 @@
 /**
- * ARIA Presence — "Since your last visit" delta engine.
+ * FINN Presence — "Since your last visit" delta engine.
  *
  * Reads the executive tier cursor for the given session and computes a
  * bilingual delta from live tables:

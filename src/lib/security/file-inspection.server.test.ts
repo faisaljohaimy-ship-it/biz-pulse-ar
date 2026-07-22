@@ -42,7 +42,7 @@ function expectBlocked(run: () => unknown, code: string) {
   }
 }
 
-describe("ARIA attachment structural inspection", () => {
+describe("FINN attachment structural inspection", () => {
   it("accepts a PNG only when filename, MIME, and magic agree", () => {
     const result = inspectAriaAttachment({
       bytes: bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1),

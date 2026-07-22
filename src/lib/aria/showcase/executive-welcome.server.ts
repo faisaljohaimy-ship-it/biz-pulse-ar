@@ -10,11 +10,11 @@ export function composeWelcome(profile: ExecutiveProfile): VoiceCue {
   if (isAr) {
     const salutation = nameAr ? `مرحباً ${nameAr}` : "مرحباً بكم";
     const orgPart = org ? ` من ${org}` : "";
-    text = `${salutation}${orgPart}. أنا أريا، مساعدتكم التنفيذية على منصة نيكسوس.`;
+    text = `${salutation}${orgPart}. أنا FINN، مساعدكم التنفيذي على منصة نيكسوس.`;
   } else {
     const salutation = nameEn ? `Welcome, ${nameEn}` : "Welcome";
     const orgPart = org ? ` from ${org}` : "";
-    text = `${salutation}${orgPart}. I'm ARIA, your executive assistant on NEXIOS.`;
+    text = `${salutation}${orgPart}. I'm FINN, your executive assistant on NEXIOS.`;
   }
   const cue: VoiceCue = {
     text,

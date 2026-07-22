@@ -36,7 +36,7 @@ export function routeCommand(input: {
 }
 
 /** Command router NEVER auto-executes. This helper only marks executed once an
- * external caller has performed the action outside ARIA. */
+ * external caller has performed the action outside FINN. */
 export function markExecuted(cmd: CommandRecord, at: string, note: string): CommandRecord {
   if (cmd.status !== "authorized") {
     return { ...cmd, status: "blocked", detail: `cannot_execute:${cmd.status}`, at };

@@ -16,9 +16,9 @@ export function getStyleGuide(): StyleGuide {
   return {
     identity: id.id,
     summary_en:
-      "ARIA is a premium executive AI presence. Same face, same holographic cyan glow, same warm confident expression, same welcoming pose. Never a different woman.",
+      "FINN is a premium executive AI presence. Same face, same holographic cyan glow, same warm confident expression, same welcoming pose. Never a different woman.",
     summary_ar:
-      "آريا حضور تنفيذي راقٍ. نفس الوجه، ونفس التوهج الهولوغرافي السماوي، ونفس الابتسامة الواثقة، ونفس الوضعية الترحيبية. لا تُستبدل بامرأة أخرى.",
+      "FINN حضور تنفيذي راقٍ. نفس الوجه، ونفس التوهج الهولوغرافي السماوي، ونفس الابتسامة الواثقة، ونفس الوضعية الترحيبية. لا تُستبدل بامرأة أخرى.",
     do: [
       "Use the canonical reference asset for every hero surface.",
       "Preserve cyan rim + warm key lighting.",

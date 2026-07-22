@@ -1,11 +1,11 @@
 /**
  * Arabic tashkeel (diacritics) — single source of truth.
  *
- * NEXIOS doctrine: ARIA's spoken output keeps full Arabic diacritics so the
+ * NEXIOS doctrine: FINN's spoken output keeps full Arabic diacritics so the
  * TTS layer (ElevenLabs Layan) pronounces Modern Standard Arabic correctly,
  * while the on-screen text stays clean and undiacritized. The diacritized
  * form is authoritative; the display form is derived by stripping the marks.
- * Shared by the page-script narrations and the ARIA chat renderer so both
+ * Shared by the page-script narrations and the FINN chat renderer so both
  * strip identically. Base letters are never touched — only combining harakat,
  * the dagger alef, and tatweel are removed.
  */

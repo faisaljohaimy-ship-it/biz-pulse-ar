@@ -1,5 +1,5 @@
 /**
- * ARIA Global Audio Arbiter — the ONE channel every ARIA voice source must
+ * FINN Global Audio Arbiter — the ONE channel every FINN voice source must
  * pass through. Guarantees zero overlap: acquiring the channel hard-stops
  * whatever is currently playing (unless the caller has a lower priority
  * than the current owner).
@@ -7,12 +7,12 @@
 import { VoiceTimeline } from "./voice-timeline";
 
 // The four live voice sources: homepage greeting, specialist-agent speech,
-// the conversation greeting, and reply TTS. ARIA chat always wins;
-// specialist narration may preempt the homepage but never ARIA.
+// the conversation greeting, and reply TTS. FINN chat always wins;
+// specialist narration may preempt the homepage but never FINN.
 type Source = "hero-soundtrack" | "agent-tts" | "conversation-greeting" | "chat-tts";
 
 // Contract (agent-voice-contract.test.ts): "agent-tts": 2 and "chat-tts": 3
-// are pinned. The conversation greeting shares the agent tier — ARIA reply
+// are pinned. The conversation greeting shares the agent tier — FINN reply
 // TTS (chat-tts) always outranks everything.
 const PRIORITY: Record<Source, number> = {
   "hero-soundtrack": 1,
@@ -23,7 +23,7 @@ const PRIORITY: Record<Source, number> = {
 
 // Owners allowed to bypass the "no gesture yet" guard when they pass
 // { bypassGesture: true }. Only the hero soundtrack's optimistic first
-// autoplay may do this — every ARIA / tour owner MUST wait for a real
+// autoplay may do this — every FINN / tour owner MUST wait for a real
 // user gesture (via AriaAudioBus.unlock()).
 const BYPASS_ALLOWED: ReadonlySet<Source> = new Set<Source>(["hero-soundtrack"]);
 
@@ -69,7 +69,7 @@ export const AriaAudioBus = {
     // called from inside a click / tap / keydown handler. This blocks all
     // on-mount / on-load / on-scroll audio, no matter which component tries.
     // EXEMPTION: the hero soundtrack's ONE optimistic mount-time attempt may
-    // pass { bypassGesture: true }. No ARIA / tour source is ever exempt.
+    // pass { bypassGesture: true }. No FINN / tour source is ever exempt.
     const bypass = opts?.bypassGesture === true && BYPASS_ALLOWED.has(source);
     if (!unlocked && !bypass) {
       console.warn("[aria-audio-bus] acquire REFUSED — no user gesture yet", {

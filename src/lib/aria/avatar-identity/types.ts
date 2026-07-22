@@ -1,4 +1,4 @@
-// Phase 11.2 — ARIA Avatar Identity types.
+// Phase 11.2 — FINN Avatar Identity types.
 // Strictly additive. No dependency on prior layers.
 
 export type AvatarPose = "welcoming_hand" | "listening" | "explaining" | "reassuring";
@@ -20,7 +20,7 @@ export interface ColorSwatch {
 }
 
 export interface FaceSignature {
-  readonly gender_presentation: "feminine";
+  readonly gender_presentation: "masculine";
   readonly ethnicity_presentation: "Saudi / Arab executive";
   readonly age_band: "30-40";
   readonly hairstyle: string;
@@ -70,7 +70,7 @@ export interface LipSyncRule {
 }
 
 export interface VoicePersonalityRule {
-  readonly persona: "executive_female";
+  readonly persona: "executive_male";
   readonly pitch_hz_range: { readonly low: number; readonly high: number };
   readonly speaking_rate_wpm: { readonly ar: number; readonly en: number };
   readonly tone: "warm_confident";

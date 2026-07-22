@@ -191,7 +191,7 @@ function KnowledgeUploadCenter() {
         </h1>
         <p className="text-muted-foreground text-sm">
           Upload SOPs, policies, and operations manuals (PDF / DOCX / TXT). Each file is chunked
-          bilingually (AR / EN), embedded, and made citation-ready for ARIA via{" "}
+          bilingually (AR / EN), embedded, and made citation-ready for FINN via{" "}
           <code className="text-xs bg-muted/50 px-1.5 py-0.5 rounded">
             /api/public/hooks/aria-docs-ingest
           </code>
@@ -300,7 +300,7 @@ function KnowledgeUploadCenter() {
           {job.phase === "done" && (
             <div className="flex items-center gap-2 text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3">
               <Sparkles className="h-4 w-4" />
-              Ingested · ARIA can now cite this document.
+              Ingested · FINN can now cite this document.
             </div>
           )}
         </section>

@@ -111,7 +111,7 @@ export function DigitalHumanAvatar({
   const lip = useLipFrame(speaking && mouthAmplitude === undefined);
   const p = spec.palette;
   const f = spec.features;
-  // Every specialist agent (everyone except ARIA, the primary) wears an
+  // Every specialist agent (everyone except FINN, the primary) wears an
   // industrial safety hard-hat and renders with a stronger holographic,
   // transparent treatment — a 3D-digital field-operative identity.
   const showHelmet = spec.role !== "primary";

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ariaPreferencePromptLine, extractAriaAdaptivePreferences } from "./adaptive-preferences";
 
-describe("ARIA adaptive preferences", () => {
+describe("FINN adaptive preferences", () => {
   it("learns only explicit durable presentation preferences", () => {
     expect(
       extractAriaAdaptivePreferences("من الآن فصاعداً اجعل ردودك بالعربية وباختصار وعلى شكل نقاط"),

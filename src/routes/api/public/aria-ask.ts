@@ -1,10 +1,10 @@
 /**
- * Public ARIA ask endpoint — bilingual one-shot Q&A for the landing
- * hero. No authentication (this powers the marketing-page ARIA badge);
+ * Public FINN ask endpoint — bilingual one-shot Q&A for the landing
+ * hero. No authentication (this powers the marketing-page FINN badge);
  * protected by a strict per-IP rate limit and short input cap.
  *
  * Routes through Lovable AI Gateway with `openai/gpt-5` to match the
- * ARIA Engineering Charter ("ARIA = GPT-5"). Returns strict JSON:
+ * FINN Engineering Charter ("FINN = GPT-5"). Returns strict JSON:
  *   { text_ar: string, text_en: string, mode: "concise" }
  */
 import { createFileRoute } from "@tanstack/react-router";
@@ -71,23 +71,23 @@ type PublicAskErrorCode =
 
 function errorPayload(error: PublicAskErrorCode, status?: number) {
   const message_ar: Record<PublicAskErrorCode, string> = {
-    missing_provider_key: "إعداد آريا غير مكتمل: مفتاح مزوّد الذكاء غير مفعّل.",
+    missing_provider_key: "إعداد FINN غير مكتمل: مفتاح مزوّد الذكاء غير مفعّل.",
     quota_exceeded: "رصيد الذكاء الاصطناعي مستنفد مؤقتًا.",
     rate_limited: "تم تجاوز حد الطلبات مؤقتًا. أعد المحاولة بعد قليل.",
-    provider_auth_failed: "تعذّر توثيق آريا مع مزوّد الذكاء.",
+    provider_auth_failed: "تعذّر توثيق FINN مع مزوّد الذكاء.",
     provider_error: "مزوّد الذكاء أعاد خطأ مؤقتًا.",
     network_error: "انقطع الاتصال بمزوّد الذكاء مؤقتًا.",
-    timeout: "استغرقت آريا وقتًا أطول من المتوقع.",
+    timeout: "استغرقت FINN وقتًا أطول من المتوقع.",
     empty_response: "وصل رد فارغ من مزوّد الذكاء.",
   };
   const message_en: Record<PublicAskErrorCode, string> = {
-    missing_provider_key: "ARIA is not fully configured: the AI provider key is missing.",
+    missing_provider_key: "FINN is not fully configured: the AI provider key is missing.",
     quota_exceeded: "AI credits are temporarily exhausted.",
     rate_limited: "The request limit was reached temporarily. Please retry shortly.",
-    provider_auth_failed: "ARIA could not authenticate with the AI provider.",
+    provider_auth_failed: "FINN could not authenticate with the AI provider.",
     provider_error: "The AI provider returned a temporary error.",
     network_error: "The connection to the AI provider was interrupted.",
-    timeout: "ARIA took longer than expected to respond.",
+    timeout: "FINN took longer than expected to respond.",
     empty_response: "The AI provider returned an empty response.",
   };
   return { error, message_ar: message_ar[error], message_en: message_en[error], status };
@@ -154,7 +154,7 @@ export const Route = createFileRoute("/api/public/aria-ask")({
         if (!rate.allowed) return rateLimitResponse();
 
         // Build a compact, model-friendly context block from what the
-        // current page registered with the ARIA Global Context Engine.
+        // current page registered with the FINN Global Context Engine.
         function buildContextBlock(): string {
           const c = data.context;
           const h = data.history ?? [];

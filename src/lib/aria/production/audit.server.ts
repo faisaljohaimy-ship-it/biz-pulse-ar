@@ -2,7 +2,7 @@
  * Phase 9.0 — Local production audit trail.
  *
  * Additive to the existing enterprise audit_logs table. This in-process
- * buffer captures fine-grained decisions (user action, ARIA decision,
+ * buffer captures fine-grained decisions (user action, FINN decision,
  * mission, task, security, approval) that don't warrant a DB write but
  * are needed for release verification and post-incident review.
  */

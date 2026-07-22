@@ -1,10 +1,10 @@
 /**
- * ARIA Voice — bilingual client-side speech for the Executive Digital
- * Human. ARIA uses her authenticated ElevenLabs MP3 route; specialist agents
+ * FINN Voice — bilingual client-side speech for the Executive Digital
+ * Human. FINN uses her authenticated ElevenLabs MP3 route; specialist agents
  * use free browser/OS voices through the governed audio bus. Both paths emit
  * 0..1 amplitude samples so the avatar can drive lip-sync.
  *
- * Voice routing is fully automatic. ARIA always uses her locked ElevenLabs
+ * Voice routing is fully automatic. FINN always uses her locked ElevenLabs
  * endpoint; specialists use curated device-voice preferences with automatic
  * same-language fallbacks. Callers can never inject a provider voice id.
  *
@@ -32,7 +32,7 @@ export interface SpeakOptions {
   lang?: VoiceLang;
   /** Optional persona — picks voice + instructions for that Digital Human. */
   voiceProfileId?: string;
-  /** Registry identity. Omitted means the canonical ARIA identity. */
+  /** Registry identity. Omitted means the canonical FINN identity. */
   speakerId?: string;
   /** Called continuously with 0..1 mouth amplitude. */
   onAmplitude?: (a: number) => void;
@@ -72,7 +72,7 @@ function getAudioContext(): AudioContext {
 }
 
 /** Pending and active Digital Human speech handles. Audible ownership itself
- * stays with AriaAudioBus so a lower-priority specialist can never cancel ARIA.
+ * stays with AriaAudioBus so a lower-priority specialist can never cancel FINN.
  */
 const activeHandles = new Set<SpeakHandle>();
 
@@ -97,7 +97,7 @@ export function stopActiveAriaVoice(): void {
 }
 
 /**
- * Speak `text` using the ARIA voice. Returns a handle whose `promise`
+ * Speak `text` using the FINN voice. Returns a handle whose `promise`
  * resolves after playback completes or is stopped. Pure client runtime
  * (no localStorage / no cookies).
  */
@@ -145,7 +145,7 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
   const promise = (async () => {
     try {
-      // Do not spend ARIA provider quota before the first real gesture.
+      // Do not spend FINN provider quota before the first real gesture.
       // The global interaction tracker unlocks this synchronously on pointer,
       // keyboard, or touch input across desktop and mobile.
       if (!AriaAudioBus.isUnlocked()) return;
@@ -221,9 +221,9 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
     } catch (err) {
       cancelAnimationFrame(raf);
       opts.onAmplitude?.(0);
-      // ARIA never falls back to a specialist/system voice: identity over
+      // FINN never falls back to a specialist/system voice: identity over
       // substitution. Her failed segment remains silent.
-      console.warn("[aria-voice] ARIA TTS failed — segment skipped", err);
+      console.warn("[aria-voice] FINN TTS failed — segment skipped", err);
       if (!stopped) throw err;
     } finally {
       if (ownsBus) {

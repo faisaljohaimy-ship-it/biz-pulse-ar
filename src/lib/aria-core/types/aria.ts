@@ -1,7 +1,7 @@
 /**
- * ARIA Brain Core — canonical types (Phase 1).
+ * FINN Brain Core — canonical types (Phase 1).
  *
- * These describe the public surface every ARIA manager, hook, and page adapter
+ * These describe the public surface every FINN manager, hook, and page adapter
  * must speak. Anything outside `src/lib/aria-core/` must import from here — not
  * from legacy `src/lib/aria/**` or from managers directly.
  */
@@ -19,7 +19,7 @@ export interface AriaPageContext {
   label: string;
   /** Locale at the moment of context capture. */
   locale: "ar" | "en";
-  /** Optional structured facts the page wants ARIA to know about. */
+  /** Optional structured facts the page wants FINN to know about. */
   facts?: Record<string, unknown>;
 }
 

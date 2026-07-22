@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Build a compact, executive-grounded context block from live data for ARIA —
+ * Build a compact, executive-grounded context block from live data for FINN —
  * the Executive AI for Western Region Industrial Security. Read-only;
  * uses the request-scoped Supabase client so RLS is enforced as the calling user.
  */

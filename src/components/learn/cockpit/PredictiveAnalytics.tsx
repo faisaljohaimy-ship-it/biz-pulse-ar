@@ -1,5 +1,5 @@
 /**
- * PredictiveAnalytics — forecast strip with confidence band and ARIA insight.
+ * PredictiveAnalytics — forecast strip with confidence band and FINN insight.
  *
  * Pure SVG (no chart library). Renders actuals as a solid line + dots,
  * forecast as a dashed line, and lower/upper bounds as a translucent
@@ -147,7 +147,7 @@ export function PredictiveAnalytics({ title, unit, series, insight, lang }: Prop
 
       <div className="rounded-xl border border-cyan-400/30 bg-cyan-400/[0.06] p-3 text-xs leading-relaxed text-cyan-100">
         <span className="me-2 font-semibold text-cyan-200">
-          {ar ? "استنتاج آريا:" : "ARIA insight:"}
+          {ar ? "استنتاج FINN:" : "FINN insight:"}
         </span>
         {insight}
       </div>

@@ -21,7 +21,7 @@ describe("ARIA_SUPREME_LAW", () => {
 
   it("declares its version and identity preamble", () => {
     expect(ARIA_SUPREME_LAW).toContain(`v${ARIA_SUPREME_LAW_VERSION}`);
-    expect(ARIA_SUPREME_LAW).toMatch(/ARIA.*Executive AI Engine of NEXIOS AI OS/i);
+    expect(ARIA_SUPREME_LAW).toMatch(/FINN.*Executive AI Engine of NEXIOS AI OS/i);
   });
 
   it("includes the Article 21 CI-enforced security gate directive", () => {
@@ -37,7 +37,7 @@ describe("ARIA_SUPREME_LAW", () => {
 
   it("withAriaSupremeLaw prepends the law and appends operational body", () => {
     const composed = withAriaSupremeLaw("OPERATIONAL_BODY_XYZ");
-    expect(composed.startsWith("# ARIA SUPREME LAW")).toBe(true);
+    expect(composed.startsWith("# FINN SUPREME LAW")).toBe(true);
     expect(composed).toContain("OPERATIONAL_BODY_XYZ");
     expect(composed.indexOf("OPERATIONAL_BODY_XYZ")).toBeGreaterThan(
       composed.indexOf("PROMPT INJECTION DEFENCE"),

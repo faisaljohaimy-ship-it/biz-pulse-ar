@@ -16,7 +16,7 @@ function seedIfEmpty(): void {
     {
       id: "unit.aria-singleton",
       kind: "unit",
-      label: "ARIA singleton contract",
+      label: "FINN singleton contract",
       target: "src/lib/aria-core/singleton-contract.test.ts",
       status: "unknown",
     },
@@ -79,7 +79,7 @@ function seedIfEmpty(): void {
     {
       id: "smoke.aria-ask",
       kind: "smoke",
-      label: "ARIA ask endpoint",
+      label: "FINN ask endpoint",
       target: "src/routes/api/public/aria-ask.ts",
       status: "unknown",
     },

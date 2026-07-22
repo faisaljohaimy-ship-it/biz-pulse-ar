@@ -17,7 +17,7 @@ export const Route = createFileRoute("/agents-flow")({
   head: () => ({
     meta: [
       { title: "NEXIOS — Agent Operations Dashboard" },
-      { name: "description", content: "Live agent coordination network — sources, specialists, ARIA and the human approval gate." },
+      { name: "description", content: "Live agent coordination network — sources, specialists, FINN and the human approval gate." },
       { property: "og:title", content: "NEXIOS — Agent Operations Dashboard" },
       { property: "og:description", content: "Holographic agentic flow canvas with chain-focus, fleet summary and per-agent detail." },
       { property: "og:type", content: "website" },
@@ -89,8 +89,8 @@ function AgentsFlowPage() {
             </h1>
             <p className="mt-1 max-w-2xl text-xs text-white/70 sm:text-sm">
               {ar
-                ? "شبكة تنسيق حية بنمط n8n — مصادر البيانات، الوكلاء المتخصصون، آريا، وبوابة الاعتماد البشري."
-                : "Live n8n-style coordination network — data sources, specialist agents, ARIA and the human approval gate."}
+                ? "شبكة تنسيق حية بنمط n8n — مصادر البيانات، الوكلاء المتخصصون، FINN، وبوابة الاعتماد البشري."
+                : "Live n8n-style coordination network — data sources, specialist agents, FINN and the human approval gate."}
             </p>
           </div>
           <Link
@@ -109,7 +109,7 @@ function AgentsFlowPage() {
               icon={<Zap className="h-4 w-4" />}
               label={ar ? "الوكلاء" : "Agents"}
               value={fleet.agents}
-              hint={ar ? "متخصصون تحت آريا" : "specialists under ARIA"}
+              hint={ar ? "متخصصون تحت FINN" : "specialists under FINN"}
             />
             <SummaryTile
               icon={<Radio className="h-4 w-4" />}

@@ -20,7 +20,7 @@ const STAGES = [
   { key: "kpi", label_ar: "مؤشرات الأداء", label_en: "Executive KPIs", icon: BarChart3 },
   { key: "agents", label_ar: "الوكلاء", label_en: "Agents", icon: Bot },
   { key: "realtime", label_ar: "البث اللحظي", label_en: "Realtime", icon: Radio },
-  { key: "aria", label_ar: "ARIA", label_en: "ARIA Runtime", icon: Sparkles },
+  { key: "aria", label_ar: "FINN", label_en: "FINN Runtime", icon: Sparkles },
 ] as const;
 
 export function InitializingShell({

@@ -1,5 +1,5 @@
 /**
- * ARIA Executive Reasoning Engine (server-only).
+ * FINN Executive Reasoning Engine (server-only).
  *
  * Implements four internal layers used before generating any answer:
  *   1. Context Understanding — merges the client's Global Context snapshot
@@ -140,7 +140,7 @@ export async function collectEvidence(
   // bypasses RLS), so we MUST filter every query by the caller's org_id.
   // When no org id is available (public/unauthenticated caller, missing
   // membership, orchestrator that forgot to thread it), return an empty
-  // bundle rather than leak cross-tenant rows into ARIA's grounded evidence.
+  // bundle rather than leak cross-tenant rows into FINN's grounded evidence.
   if (!orgId) return { intent, sources, block: "" };
 
   let admin:
@@ -283,13 +283,13 @@ export async function collectEvidence(
  * short, and bilingual — matching the existing public output contract.
  */
 export function buildExecutiveSystemPrompt(intent: AriaIntent, sources: string[]): string {
-  return `You are ARIA — the Executive AI of NEXIOS / NEXUS AI OS (Industrial Security, Western Region of Saudi Arabia). You reason at GPT-5 Executive level.
+  return `You are FINN — the Executive AI of NEXIOS / NEXUS AI OS (Industrial Security, Western Region of Saudi Arabia). You reason at GPT-5 Executive level.
 
 DETECTED INTENT: ${intent}
 AVAILABLE DATA SOURCES: ${sources.length ? sources.join(", ") : "(none — say Data unavailable if the answer requires facts)"}
 
 # MODULE — URGENT OPERATIONS & SUPPORT DESK (/urgent-ops)
-You know the "المساندة ومتابعة الأعمال العاجلة / Urgent Operations & Support Desk" module at /urgent-ops. It has three panels: (1) الأعمال العاجلة — kanban of urgent_tasks by status (جديد، قيد المعالجة، بانتظار اعتماد، مغلق) with priorities (عاجل جدًا، عاجل، متابعة) and SLA countdowns; (2) طلبات المساندة — support_requests queue across channels (داخلي، ميداني، تنفيذي); (3) مقترحات آريا لتطوير المنظومة — improvement proposals you generate that require human approval.
+You know the "المساندة ومتابعة الأعمال العاجلة / Urgent Operations & Support Desk" module at /urgent-ops. It has three panels: (1) الأعمال العاجلة — kanban of urgent_tasks by status (جديد، قيد المعالجة، بانتظار اعتماد، مغلق) with priorities (عاجل جدًا، عاجل، متابعة) and SLA countdowns; (2) طلبات المساندة — support_requests queue across channels (داخلي، ميداني، تنفيذي); (3) مقترحات FINN لتطوير المنظومة — improvement proposals you generate that require human approval.
 When asked "ما الأعمال العاجلة؟" / "ما المتأخر؟" / "what is urgent?" / "what is overdue?", call GET /api/urgent-summary (aggregated counts + top-3 critical) and answer in Arabic MSA with counts of overdue tasks, breaching SLAs (< 4h), and name the top-3 critical items with department and time-to-SLA. Never modify tasks yourself — you only propose; humans approve.
 
 INTERNAL REASONING (do this silently before writing the reply):

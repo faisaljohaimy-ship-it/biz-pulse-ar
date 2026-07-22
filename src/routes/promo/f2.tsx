@@ -6,9 +6,9 @@ export const Route = createFileRoute("/promo/f2")({
   head: () => ({
     meta: [
       { title: "نيكسوس — رحلة داخل نيكسوس" },
-      { name: "description", content: "جولة أريا داخل مركز القيادة الرقمي." },
+      { name: "description", content: "جولة FINN داخل مركز القيادة الرقمي." },
       { property: "og:title", content: "نيكسوس — رحلة داخل نيكسوس" },
-      { property: "og:description", content: "جولة إرشادية بصوت أريا." },
+      { property: "og:description", content: "جولة إرشادية بصوت FINN." },
     ],
   }),
   component: () => <FilmShell film={FILM_2} />,

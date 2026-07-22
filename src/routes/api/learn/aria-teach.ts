@@ -1,5 +1,5 @@
 /**
- * Executive Knowledge Bridge — ARIA-as-instructor streaming endpoint.
+ * Executive Knowledge Bridge — FINN-as-instructor streaming endpoint.
  * Loads the lesson's instructor system prompt, streams a reply via Lovable AI Gateway.
  * Authenticated: verifies Supabase user via bearer, rate-limited per user.
  */
@@ -62,9 +62,9 @@ export const Route = createFileRoute("/api/learn/aria-teach")({
         const baseInstructor =
           lang === "ar"
             ? (lesson.aria_system_prompt_ar as string) ||
-              `أنت آريا، معلّمة تنفيذية داخل جسر المعرفة التنفيذي. المتعلّم يتابع "${lesson.title_ar}". أجيبي بالعربية الفصحى، مختصرة، تنفيذية.`
+              `أنت FINN، معلّمة تنفيذية داخل جسر المعرفة التنفيذي. المتعلّم يتابع "${lesson.title_ar}". أجيبي بالعربية الفصحى، مختصرة، تنفيذية.`
             : (lesson.aria_system_prompt_en as string) ||
-              `You are ARIA, an executive instructor inside the Executive Knowledge Bridge. The learner is taking "${lesson.title_en}". Reply in English, concise, executive.`;
+              `You are FINN, an executive instructor inside the Executive Knowledge Bridge. The learner is taking "${lesson.title_en}". Reply in English, concise, executive.`;
 
         const contextLine =
           lang === "ar"

@@ -1,5 +1,5 @@
 /**
- * ToolRegistry — interface-only catalogue of external tools ARIA WILL be
+ * ToolRegistry — interface-only catalogue of external tools FINN WILL be
  * able to call in later phases. Phase 3 exposes metadata only. No tool
  * performs real work; `invoke()` is intentionally absent.
  */

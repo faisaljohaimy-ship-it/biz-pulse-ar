@@ -1,5 +1,5 @@
 /**
- * ARIA daily executive summary — a 3-line narrative derived from the SAME
+ * FINN daily executive summary — a 3-line narrative derived from the SAME
  * simulation fixtures the dashboard reads (Phase 5). Deterministic, no network,
  * no external key. Every figure traces to `regionSim`, so the card is honestly
  * badged «محاكاة» and stays mathematically consistent with the rest of the deck

@@ -1,6 +1,6 @@
 /**
  * ContextAwareness — inspects the executive context snapshot and reports
- * what ARIA can see and what is missing. Never fabricates.
+ * what FINN can see and what is missing. Never fabricates.
  */
 import type { AriaContextSnapshot, AriaIntent } from "../types/aria";
 import type { ContextAwarenessReport } from "../types/executive";

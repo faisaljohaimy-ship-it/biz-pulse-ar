@@ -109,9 +109,9 @@ export const ARTICLES_A: KbSeedArticle[] = [
     procedure_en:
       "1) Request national ID / Iqama. 2) Verify host in system. 3) Bag screening. 4) Issue visitor badge. 5) Create `sec_visitors` record with status `checked_in`. 6) Notify host.",
     responsibilities_ar:
-      "ضابط البوابة: التحقق. مشرف الزوار: الموافقة. ARIA: التنبيه إذا انتهت المدة.",
+      "ضابط البوابة: التحقق. مشرف الزوار: الموافقة. FINN: التنبيه إذا انتهت المدة.",
     responsibilities_en:
-      "Gate officer: verification. Visitor supervisor: approval. ARIA: alert on overstay.",
+      "Gate officer: verification. Visitor supervisor: approval. FINN: alert on overstay.",
     requirements_ar: "هوية سارية + مضيف مسجل + تصريح أمني للمناطق الحساسة.",
     requirements_en: "Valid ID + registered host + security clearance for sensitive areas.",
     risk_level: "medium",

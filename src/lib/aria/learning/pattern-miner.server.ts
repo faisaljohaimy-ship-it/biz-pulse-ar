@@ -1,5 +1,5 @@
 /**
- * ARIA Learning — Pattern Miner (nightly).
+ * FINN Learning — Pattern Miner (nightly).
  * Article IV §2 of docs/NEXUS_ENGINEERING_CONSTITUTION.md.
  *
  * Reads the last 24h of `aria_interactions` + `aria_incidents`, extracts

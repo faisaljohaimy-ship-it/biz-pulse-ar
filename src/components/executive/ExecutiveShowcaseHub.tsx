@@ -32,8 +32,8 @@ const CARDS: Card[] = [
     kickerEn: "Cinematic · seven scenes",
     titleAr: "جسر القيادة التنفيذي",
     titleEn: "Executive Command Bridge",
-    descAr: "عرض تنفيذي ثنائي اللغة بمشاهد سينمائية وسرد صوتي عند الطلب من آريا.",
-    descEn: "Bilingual, board-room-grade showcase with on-demand ARIA narration.",
+    descAr: "عرض تنفيذي ثنائي اللغة بمشاهد سينمائية وسرد صوتي عند الطلب من FINN.",
+    descEn: "Bilingual, board-room-grade showcase with on-demand FINN narration.",
   },
   {
     to: "/executive-showcase",

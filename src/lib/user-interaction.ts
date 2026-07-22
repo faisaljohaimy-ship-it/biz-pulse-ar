@@ -3,13 +3,13 @@
  *
  * Tracks whether the user has interacted with the document in this session
  * AND — on that very first interaction — primes a shared `AudioContext` and
- * plays a silent buffer so that any subsequent audio (ARIA intro, TTS, etc.)
+ * plays a silent buffer so that any subsequent audio (FINN intro, TTS, etc.)
  * can start with sound on ALL devices (mobile / laptop / desktop) without a
  * fresh user gesture.
  *
  * Honest scope: the WHATWG/Chrome/WebKit autoplay policy requires a first
  * gesture per navigation. This module makes that gesture "count for the whole
- * session" so ARIA is effectively hands-free from second interaction onward.
+ * session" so FINN is effectively hands-free from second interaction onward.
  * Constitution: FR-17 / FR-18.
  */
 const KEY = "nexios-user-interacted";
@@ -81,7 +81,7 @@ export function installInteractionTracker(): void {
     // iOS refuses subsequent audio.play() calls.
     //   (1) mark session interacted
     //   (2) prime the shared AudioContext (silent buffer → iOS unlock)
-    //   (3) unlock the ARIA audio bus (SYNC static import, no await)
+    //   (3) unlock the FINN audio bus (SYNC static import, no await)
     markInteracted();
     primeAudio();
     try {

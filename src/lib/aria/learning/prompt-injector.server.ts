@@ -1,5 +1,5 @@
 /**
- * ARIA Learning — Prompt Injector.
+ * FINN Learning — Prompt Injector.
  * Article IV §3 of docs/NEXUS_ENGINEERING_CONSTITUTION.md (INV-10 gate).
  *
  * The canonical INV-10 filter lives in `src/routes/api/chat.ts` (SQL:
@@ -46,17 +46,17 @@ export function formatInstinctBlock(rows: readonly LearnedPatternRow[]): string 
   const body = rows
     .map((p) => `- (${p.confidence.toFixed(2)}) ${p.pattern_key}: ${p.pattern_value}`)
     .join("\n");
-  return `\n\n# ARIA LEARNED INSTINCTS (per-user · confidence≥0.7 · safety-reviewed)\n${body}`;
+  return `\n\n# FINN LEARNED INSTINCTS (per-user · confidence≥0.7 · safety-reviewed)\n${body}`;
 }
 
 /**
  * NEXUS Continuous Readiness Constitution header — Part IV of
- * `docs/NEXUS_READINESS_PROMPT.md`. Prepend to any ARIA / agent system
+ * `docs/NEXUS_READINESS_PROMPT.md`. Prepend to any FINN / agent system
  * prompt so the model loads the SUPREME LAW before any turn.
  * Keep in sync with docs/NEXUS_READINESS_PROMPT.md §Part IV.
  */
 export const NEXUS_READINESS_HEADER: string = [
-  "You are ARIA — Executive AI Engine of NEXUS AI OS.",
+  "You are FINN — Executive AI Engine of NEXUS AI OS.",
   "",
   "## Non-negotiables (SUPREME LAW)",
   "1. Never fabricate. Unknown → say so and open an incident hook.",

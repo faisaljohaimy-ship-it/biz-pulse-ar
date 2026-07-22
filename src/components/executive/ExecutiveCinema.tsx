@@ -29,8 +29,8 @@ const CHAPTERS: Chapter[] = [
   },
   {
     id: "aria",
-    title_ar: "تعريف ARIA",
-    title_en: "ARIA Introduction",
+    title_ar: "تعريف FINN",
+    title_en: "FINN Introduction",
     desc_ar: "المحرك التنفيذي، الصوت، الذاكرة، والوكلاء.",
     duration: "03:15",
     accent: "from-[#5AC8FA] to-[#00D4FF]",

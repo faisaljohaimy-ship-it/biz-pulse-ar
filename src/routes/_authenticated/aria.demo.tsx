@@ -1,7 +1,7 @@
 /**
  * /aria/demo — سيناريو تنفيذي مباشر
  *
- * يعرض قائمة أسئلة تنفيذية جاهزة يمكن دفعها إلى ARIA (المسار المفرد)
+ * يعرض قائمة أسئلة تنفيذية جاهزة يمكن دفعها إلى FINN (المسار المفرد)
  * ويعرض بجانبها بطاقة `ExecutiveCard` الحية من `activeExecution` في المتجر
  * حتى يتضح مسار: سؤال → تفكير → قرار → توصية → موافقة → خطوة تالية.
  *
@@ -17,10 +17,10 @@ export const Route = createFileRoute("/_authenticated/aria/demo")({
   component: AriaDemoPage,
   head: () => ({
     meta: [
-      { title: "ARIA — سيناريو تنفيذي مباشر" },
+      { title: "FINN — سيناريو تنفيذي مباشر" },
       {
         name: "description",
-        content: "سيناريو حي لعرض قدرات ARIA التنفيذية: قرار، توصية، موافقة.",
+        content: "سيناريو حي لعرض قدرات FINN التنفيذية: قرار، توصية، موافقة.",
       },
     ],
   }),
@@ -72,9 +72,9 @@ function AriaDemoPage() {
           <Sparkles className="h-3.5 w-3.5" aria-hidden />
           سيناريو تنفيذي حي
         </div>
-        <h1 className="text-2xl font-semibold text-foreground">تجربة ARIA التنفيذية</h1>
+        <h1 className="text-2xl font-semibold text-foreground">تجربة FINN التنفيذية</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          اختر سيناريو تنفيذي وسيتم إرساله إلى ARIA عبر القناة المفردة. ستظهر بطاقة الملخص التنفيذي
+          اختر سيناريو تنفيذي وسيتم إرساله إلى FINN عبر القناة المفردة. ستظهر بطاقة الملخص التنفيذي
           أدناه فور اكتمال التحليل.
         </p>
       </header>
@@ -99,7 +99,7 @@ function AriaDemoPage() {
       </section>
 
       <section
-        aria-label="ملخص ARIA التنفيذي الحالي"
+        aria-label="ملخص FINN التنفيذي الحالي"
         className="rounded-xl border border-border/40 bg-background/40 p-1"
       >
         <ExecutiveCard />

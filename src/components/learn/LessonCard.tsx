@@ -1,6 +1,6 @@
 /**
  * LessonCard — catalog card for a single lesson.
- * Uses semantic tokens sparingly; primary surface uses the ARIA HUD palette
+ * Uses semantic tokens sparingly; primary surface uses the FINN HUD palette
  * (bg #04111F / cyan #00D4FF) to remain visually consistent with the platform.
  */
 import { Link } from "@tanstack/react-router";
@@ -74,7 +74,7 @@ export function LessonCard({ lesson, lang }: Props) {
             </span>
           )}
           <span className="inline-flex items-center gap-1">
-            <Sparkles className="h-3.5 w-3.5" /> ARIA
+            <Sparkles className="h-3.5 w-3.5" /> FINN
           </span>
         </div>
         {lesson.published ? (

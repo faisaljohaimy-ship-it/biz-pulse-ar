@@ -1,5 +1,5 @@
 /**
- * ExecutiveCard — compact, arabic-first render of ARIA's current
+ * ExecutiveCard — compact, arabic-first render of FINN's current
  * ExecutionEnvelope. Consumes `useAriaStore().activeExecution` and shows
  * only executive-facing fields: summary, risk, priority, confidence,
  * recommended action, approval requirement, next step.
@@ -47,7 +47,7 @@ export function ExecutiveCard() {
   return (
     <section
       dir="rtl"
-      aria-label="ملخص ARIA التنفيذي"
+      aria-label="ملخص FINN التنفيذي"
       className="mx-4 mb-3 mt-1 rounded-xl border border-primary/25 bg-card/70 p-3 shadow-sm backdrop-blur-md"
     >
       <header className="mb-2 flex items-center justify-between gap-2">

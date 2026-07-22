@@ -9,8 +9,8 @@ function resolvePublicSiteUrl() {
   );
 }
 
-// Canonical ARIA provider: Lovable AI Gateway is the permanent default for
-// in-app AI so third-party billing/auth outages cannot take ARIA offline.
+// Canonical FINN provider: Lovable AI Gateway is the permanent default for
+// in-app AI so third-party billing/auth outages cannot take FINN offline.
 export const createLovableAiGatewayProvider = (lovableApiKey: string) =>
   createOpenAICompatible({
     name: "lovable",
@@ -39,7 +39,7 @@ export const createOpenRouterProvider = (apiKey: string, siteUrl = resolvePublic
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "HTTP-Referer": siteUrl,
-      "X-Title": "NEXUS AI OS — ARIA",
+      "X-Title": "NEXUS AI OS — FINN",
     },
   });
 
@@ -76,7 +76,7 @@ export const DEFAULT_ANTHROPIC_MODEL = "claude-3-5-sonnet-latest";
 // Native Google Gemini — via Google's OpenAI-compatible endpoint, so it reuses
 // the same createOpenAICompatible pipeline (no extra package). The key is a
 // FREE Google AI Studio key (aistudio.google.com/apikey) with a generous free
-// tier for Gemini Flash — so ARIA runs on Gemini Flash WITHOUT the credit-gated
+// tier for Gemini Flash — so FINN runs on Gemini Flash WITHOUT the credit-gated
 // Lovable gateway. Set GEMINI_API_KEY (or GOOGLE_GENERATIVE_AI_API_KEY) to use.
 export const createGoogleGeminiProvider = (apiKey: string) =>
   createOpenAICompatible({
@@ -97,7 +97,7 @@ export const DEFAULT_GOOGLE_MODEL = "gemini-2.5-flash";
 
 // Native OpenAI — via OpenAI's own API, reusing the same createOpenAICompatible
 // pipeline (OpenAI's /v1/chat/completions is the reference implementation). Set
-// OPENAI_API_KEY to make ARIA answer directly on OpenAI. This is the PRIMARY
+// OPENAI_API_KEY to make FINN answer directly on OpenAI. This is the PRIMARY
 // provider when the key is present.
 export const createOpenAiProvider = (apiKey: string) =>
   createOpenAICompatible({

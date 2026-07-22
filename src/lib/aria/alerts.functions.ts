@@ -1,5 +1,5 @@
 /**
- * ARIA emergency broadcast — server functions (Phase 4).
+ * FINN emergency broadcast — server functions (Phase 4).
  *
  * `broadcastAlert` records an alert to `aria_alerts` (the tamper-evident
  * accountability log) under the authenticated creator, then reports how many

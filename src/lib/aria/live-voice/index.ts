@@ -1,4 +1,4 @@
-// Phase 11.4 — ARIA Live Voice public barrel.
+// Phase 11.4 — FINN Live Voice public barrel.
 // Strictly additive. Consumes Phase 11.1 conversation + Phase 11.3 motion.
 
 export * from "./types";

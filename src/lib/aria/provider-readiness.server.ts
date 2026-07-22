@@ -63,7 +63,7 @@ export function inspectAriaProviderReadiness(
     ],
   ]);
 
-  // Owner voice policy: the audible ARIA voice is exclusively ElevenLabs Layan.
+  // Owner voice policy: the audible FINN voice is exclusively ElevenLabs Layan.
   const elevenReady = configured(env.ELEVENLABS_API_KEY, 20);
   const voice = capability("elevenlabs", [["ELEVENLABS_API_KEY", elevenReady]]);
 

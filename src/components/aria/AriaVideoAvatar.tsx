@@ -1,7 +1,7 @@
 /**
- * AriaVideoAvatar — ARIA's avatar image.
+ * AriaVideoAvatar — FINN's avatar image.
  *
- * The legacy hero-motion clip (an outdated ARIA render) was removed, so this
+ * The legacy hero-motion clip (an outdated FINN render) was removed, so this
  * now renders the static poster only. The `poster` / styling props are kept
  * so existing call sites stay unchanged; `active` is accepted but no longer
  * drives any motion.

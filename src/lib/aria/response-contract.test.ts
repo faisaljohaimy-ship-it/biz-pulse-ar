@@ -10,7 +10,7 @@ import {
 } from "./response-contract";
 
 /**
- * Contract tests — constitution Article 22. These pin the ARIA response
+ * Contract tests — constitution Article 22. These pin the FINN response
  * contract so it can't silently regress:
  *   out-of-scope → the ONE fixed line · direct/recurring → fast recall ·
  *   unavailable → the honest line · zero forbidden filler anywhere.

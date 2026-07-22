@@ -1,5 +1,5 @@
 /**
- * Executive lesson page — cinematic video, narration, ARIA dialogue,
+ * Executive lesson page — cinematic video, narration, FINN dialogue,
  * live simulation, executive summary, learning objectives, quiz, and nav.
  * Fully responsive, RTL/LTR safe, and progress-aware.
  */
@@ -176,10 +176,10 @@ function LessonPage() {
               <LessonAskAria
                 prompt={
                   ar
-                    ? `آريا، وضّحي لي بإيجاز أهمّ ما يجب أن أفهمه من حصّة «${title}» بصفتي مديراً تنفيذياً.`
-                    : `ARIA, give me the executive one-pager on what I must understand from the lesson "${title}".`
+                    ? `FINN، وضّحي لي بإيجاز أهمّ ما يجب أن أفهمه من حصّة «${title}» بصفتي مديراً تنفيذياً.`
+                    : `FINN, give me the executive one-pager on what I must understand from the lesson "${title}".`
                 }
-                label={ar ? "اسأل آريا حول هذه الحصة" : "Ask ARIA about this lesson"}
+                label={ar ? "اسأل FINN حول هذه الحصة" : "Ask FINN about this lesson"}
               />
             </div>
           </SectionCard>
@@ -255,7 +255,7 @@ function LessonPage() {
           />
         </main>
 
-        {/* ARIA sidecar (desktop) */}
+        {/* FINN sidecar (desktop) */}
         <aside className="lg:sticky lg:top-4 lg:h-fit">
           <div className="rounded-3xl border border-cyan-400/15 bg-[#0A1E33]/70 p-5 backdrop-blur-xl">
             <div className="mb-3 flex items-center gap-3">
@@ -263,7 +263,7 @@ function LessonPage() {
                 <MessageSquare className="h-5 w-5 text-cyan-200" />
               </div>
               <div>
-                <div className="text-sm font-semibold text-white">ARIA</div>
+                <div className="text-sm font-semibold text-white">FINN</div>
                 <div className="text-[11px] text-white/60">
                   {ar
                     ? "معلّمتك التنفيذية لهذه الحصة"

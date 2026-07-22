@@ -1,5 +1,5 @@
 /**
- * Client-side pub/sub for the CURRENT ARIA voice source. Powers the
+ * Client-side pub/sub for the CURRENT FINN voice source. Powers the
  * VOICE_DEBUG corner badge so we can SEE (not guess) which engine is
  * speaking at any instant: Gemini, browser fallback, or greeting. Amber
  * flashes indicate a failure/fallback. `elevenlabs` remains in the union only

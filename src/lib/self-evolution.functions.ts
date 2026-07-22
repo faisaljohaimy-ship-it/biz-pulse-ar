@@ -1,5 +1,5 @@
 /**
- * Server-function wrappers for the ARIA Self-Evolution Engine.
+ * Server-function wrappers for the FINN Self-Evolution Engine.
  *
  * - `runSelfEvolutionFn`: runs one analyze-only cycle and persists it to
  *   `aria_evolution_cycles` (unless `persist:false`).

@@ -1,7 +1,7 @@
 /**
  * Free specialist voice profiles.
  *
- * ARIA is deliberately absent: she keeps her locked ElevenLabs identity.
+ * FINN is deliberately absent: she keeps her locked ElevenLabs identity.
  * Every specialist instead uses the browser/operating-system Web Speech
  * catalogue, so NEXIOS does not need a paid agent-TTS key. Names are ranked
  * preferences rather than assumptions because the catalogue differs across

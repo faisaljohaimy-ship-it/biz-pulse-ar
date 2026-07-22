@@ -5,7 +5,7 @@ const M = new Map<string, Map<string, MemoryAnchor>>();
 export function rememberAnchor(scope: string, anchor: Omit<MemoryAnchor, "addedAt">): MemoryAnchor {
   const bucket = M.get(scope) ?? new Map<string, MemoryAnchor>();
   const cur = bucket.get(anchor.key);
-  // User corrections override prior ARIA anchors.
+  // User corrections override prior FINN anchors.
   if (cur && cur.source === "user" && anchor.source === "aria") return cur;
   const entry: MemoryAnchor = { ...anchor, addedAt: Date.now() };
   bucket.set(anchor.key, entry);

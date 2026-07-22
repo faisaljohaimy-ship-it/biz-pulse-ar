@@ -22,7 +22,7 @@ export function noteEngagement(
     if (gap > DISENGAGED_MS) cur.level = "disengaged";
     else if (gap > IDLE_MS) cur.level = downgrade(cur.level);
   } else if (kind === "ariaSpoke") {
-    // no upgrade; ARIA speaking alone does not imply user engagement
+    // no upgrade; FINN speaking alone does not imply user engagement
   } else {
     cur.lastActivity = now;
     cur.turns += 1;

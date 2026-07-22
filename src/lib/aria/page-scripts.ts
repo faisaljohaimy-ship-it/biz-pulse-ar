@@ -1,8 +1,8 @@
 /**
- * ARIA Page Scripts — panel-open, page-aware announcements.
+ * FINN Page Scripts — panel-open, page-aware announcements.
  *
- * When a user opens the ARIA panel on any of the 31 shipping surfaces,
- * ARIA speaks a DISTINCT three-part script instead of the generic
+ * When a user opens the FINN panel on any of the 31 shipping surfaces,
+ * FINN speaks a DISTINCT three-part script instead of the generic
  * greeting:
  *   (a) a 3–5 word page title,
  *   (b) one sentence describing the page's PURPOSE,
@@ -518,7 +518,7 @@ function normalizePath(pathname: string): string {
 }
 
 /**
- * Render a page script as the actual sentence ARIA speaks/displays.
+ * Render a page script as the actual sentence FINN speaks/displays.
  * Returns `null` when the route has no dedicated script yet — the caller
  * is expected to fall back to the generic greeting.
  */

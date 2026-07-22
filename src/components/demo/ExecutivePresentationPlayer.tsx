@@ -1,6 +1,6 @@
 /**
  * ExecutivePresentationPlayer — the guided executive presentation on the
- * demo page. ARIA's self-hosted executive film plays on
+ * demo page. FINN's self-hosted executive film plays on
  * the LEFT in a dark #04111f frame, full face visible; on the RIGHT a
  * cinematic scene panel (kicker · title · body) switches automatically in
  * sync with the narration cues, ending on a closing CTA.
@@ -11,7 +11,7 @@
  * Rules: audio starts ONLY after the first user interaction (the start
  * button); full RTL; responsive mobile + laptop; clean stop on exit
  * (pause + release on unmount). While playing it owns the AriaAudioBus
- * "hero-soundtrack" channel so any ARIA chat voice preempts it instantly.
+ * "hero-soundtrack" channel so any FINN chat voice preempts it instantly.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -132,8 +132,8 @@ const SCENES: readonly Scene[] = [
     id: "agents",
     at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[3],
     icon: Bot,
-    kicker_ar: "وكلاء آريا",
-    kicker_en: "ARIA Agents",
+    kicker_ar: "وكلاء FINN",
+    kicker_en: "FINN Agents",
     title_ar: "وكلاء تنفيذيون يعملون معك.",
     title_en: "Executive agents that work alongside you.",
     body_ar: "يفهمون، ويحلّلون، وينفّذون بموافقة بشرية — لا قرار دون إذن.",
@@ -366,7 +366,7 @@ export function ExecutivePresentationPlayer() {
       {/* LTR grid so the video is physically LEFT and the scene panel RIGHT
           on every locale; inner content is RTL. Mobile stacks: video then panel. */}
       <div dir="ltr" className="grid gap-3 md:grid-cols-[minmax(220px,300px)_1fr]">
-        {/* LEFT — ARIA narrator video, full face, dark #04111f frame */}
+        {/* LEFT — FINN narrator video, full face, dark #04111f frame */}
         <div className="relative mx-auto w-full max-w-[300px] overflow-hidden rounded-2xl bg-[#04111f] shadow-[0_24px_80px_-28px_rgba(34,182,255,0.8)] ring-1 ring-cyan-300/35 md:mx-0 md:max-w-none">
           <div className="aspect-[9/16] max-h-[62vh] w-full">
             <video
@@ -384,7 +384,7 @@ export function ExecutivePresentationPlayer() {
                 setPhase("idle");
                 setVideoFailed(true);
               }}
-              aria-label={ar ? "فيلم آريا للعرض التنفيذي" : "ARIA executive presentation film"}
+              aria-label={ar ? "فيلم FINN للعرض التنفيذي" : "FINN executive presentation film"}
               disablePictureInPicture
               className="h-full w-full object-cover object-top"
             >
@@ -407,7 +407,7 @@ export function ExecutivePresentationPlayer() {
             <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between gap-2 p-3">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-200/30 bg-[#04111f]/65 px-2.5 py-1 text-[9px] font-bold tracking-[0.2em] text-cyan-100 backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_10px_#22d3ee]" />
-                ARIA · FILM
+                FINN · FILM
               </span>
               <span className="rounded-full border border-white/15 bg-black/45 px-2 py-1 font-mono text-[9px] text-white/70 backdrop-blur-xl">
                 {EXECUTIVE_PRESENTATION_MEDIA.durationLabel}
@@ -465,7 +465,7 @@ export function ExecutivePresentationPlayer() {
                     : "ابدأ العرض التنفيذي"}
               </span>
               <span dir="rtl" className="text-[10px] text-cyan-200/80">
-                آريا ترافقك صوتياً خلال جولة المنصة
+                FINN ترافقك صوتياً خلال جولة المنصة
               </span>
             </button>
           )}

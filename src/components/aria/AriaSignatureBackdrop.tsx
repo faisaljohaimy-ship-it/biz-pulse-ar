@@ -1,7 +1,7 @@
 /**
- * AriaSignatureBackdrop — ARIA's cinematic visual signature (Phase 0).
+ * AriaSignatureBackdrop — FINN's cinematic visual signature (Phase 0).
  *
- * The wordmark «ARIA@nexios.com» rendered as huge, near-transparent 3D text
+ * The wordmark «FINN@nexios.com» rendered as huge, near-transparent 3D text
  * over a deep navy gradient, with a faint emerald edge glow and a very slow
  * "breathing" opacity wave. Pure CSS/SVG — no raster assets — so it stays
  * razor-sharp and cheap to paint on mobile.

@@ -34,13 +34,13 @@ export const Route = createFileRoute("/os")({
       {
         name: "description",
         content:
-          "NEXIOS AI OS — the world-class enterprise operating system for industrial security, Hajj operations, and executive intelligence. Live KPIs, ARIA runtime, Digital Twin. Aligned with Saudi Vision 2030.",
+          "NEXIOS AI OS — the world-class enterprise operating system for industrial security, Hajj operations, and executive intelligence. Live KPIs, FINN runtime, Digital Twin. Aligned with Saudi Vision 2030.",
       },
       { property: "og:title", content: "Enterprise Operating System — NEXIOS AI OS" },
       {
         property: "og:description",
         content:
-          "Unified runtime: Digital Twin, Operations, Executive KPIs, Hajj 1447, ARIA Runtime, Realtime, Agents.",
+          "Unified runtime: Digital Twin, Operations, Executive KPIs, Hajj 1447, FINN Runtime, Realtime, Agents.",
       },
       { property: "og:url", content: "https://neexios.com/os" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -92,7 +92,7 @@ const STAGES: readonly Stage[] = [
   {
     key: "aria",
     ar: "آرِيَا — المُحَرِّكُ التَّنْفِيذِيّ",
-    en: "ARIA Runtime",
+    en: "FINN Runtime",
     icon: Sparkles,
     to: "/command-center",
   },

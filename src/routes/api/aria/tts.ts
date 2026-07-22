@@ -1,7 +1,7 @@
 /**
- * POST /api/aria/tts — ARIA's ONLY spoken-voice endpoint.
+ * POST /api/aria/tts — FINN's ONLY spoken-voice endpoint.
  *
- * Non-negotiable voice policy (owner directive): the audible ARIA voice is
+ * Non-negotiable voice policy (owner directive): the audible FINN voice is
  * EXCLUSIVELY ElevenLabs "Layan" (ARIA_ELEVENLABS_VOICE_ID), generated here
  * server-side and streamed straight through. The ELEVENLABS_API_KEY secret
  * lives only in the server environment — it never reaches the client bundle
@@ -48,7 +48,7 @@ export const Route = createFileRoute("/api/aria/tts")({
         const supabaseUrl = process.env.SUPABASE_URL?.trim();
         const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
         if (!supabaseUrl || !supabaseKey) {
-          return jsonError("ARIA data service is not configured.", 503);
+          return jsonError("FINN data service is not configured.", 503);
         }
         const supabase = createClient(supabaseUrl, supabaseKey, {
           global: { headers: { Authorization: authorization } },
@@ -59,7 +59,7 @@ export const Route = createFileRoute("/api/aria/tts")({
 
         const rate = await enforceRateLimit(`aria-tts:${userData.user.id}`, 40, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
-        if (!rate.allowed) return jsonError("ARIA voice rate limit exceeded.", 429);
+        if (!rate.allowed) return jsonError("FINN voice rate limit exceeded.", 429);
 
         let body: unknown;
         try {
@@ -79,7 +79,7 @@ export const Route = createFileRoute("/api/aria/tts")({
         }
         // Optional specialist-agent voice: honored ONLY when whitelisted
         // (ElevenLabs premade voices from voice-config). Anything else —
-        // including ARIA's own speech, which never sends voiceId — uses
+        // including FINN's own speech, which never sends voiceId — uses
         // Layan exclusively.
         const requestedVoice =
           body &&
@@ -92,7 +92,7 @@ export const Route = createFileRoute("/api/aria/tts")({
           : ARIA_ELEVENLABS_VOICE_ID;
 
         const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
-        if (!apiKey) return jsonError("ARIA voice (ElevenLabs) is not configured.", 503);
+        if (!apiKey) return jsonError("FINN voice (ElevenLabs) is not configured.", 503);
 
         let upstream: Response;
         try {
@@ -118,7 +118,7 @@ export const Route = createFileRoute("/api/aria/tts")({
           console.error("[api/aria/tts] ElevenLabs request failed", {
             error: error instanceof Error ? error.message : String(error),
           });
-          return jsonError("ARIA voice service is unavailable.", 502);
+          return jsonError("FINN voice service is unavailable.", 502);
         }
 
         if (!upstream.ok || !upstream.body) {
@@ -127,7 +127,7 @@ export const Route = createFileRoute("/api/aria/tts")({
             status: upstream.status,
             detail: detail.slice(0, 200),
           });
-          return jsonError("ARIA voice generation failed.", 502, {
+          return jsonError("FINN voice generation failed.", 502, {
             providerStatus: upstream.status,
           });
         }
@@ -139,9 +139,9 @@ export const Route = createFileRoute("/api/aria/tts")({
           headers: {
             "Cache-Control": "no-store",
             "Content-Type": upstream.headers.get("content-type") || "audio/mpeg",
-            "X-ARIA-Voice-ID": voiceId,
-            "X-ARIA-Voice-Model": ARIA_ELEVENLABS_MODEL,
-            "X-ARIA-Voice-Provider": "elevenlabs",
+            "X-FINN-Voice-ID": voiceId,
+            "X-FINN-Voice-Model": ARIA_ELEVENLABS_MODEL,
+            "X-FINN-Voice-Provider": "elevenlabs",
             "X-Content-Type-Options": "nosniff",
           },
         });

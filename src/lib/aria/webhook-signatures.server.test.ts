@@ -2,7 +2,7 @@ import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { verifyResendWebhook, verifyTwilioWebhook } from "./webhook-signatures.server";
 
-describe("ARIA provider webhook signatures", () => {
+describe("FINN provider webhook signatures", () => {
   it("verifies a fresh Resend/Svix signature over the raw body", async () => {
     const secretBytes = Buffer.from("0123456789abcdef0123456789abcdef");
     const secret = `whsec_${secretBytes.toString("base64")}`;

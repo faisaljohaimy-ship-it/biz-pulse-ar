@@ -1,5 +1,5 @@
 /**
- * ARIA Executive Explanation endpoint.
+ * FINN Executive Explanation endpoint.
  *
  * POST /api/public/aria-explain
  *   Body: ExplanationRequest — a prior recommendation the executive

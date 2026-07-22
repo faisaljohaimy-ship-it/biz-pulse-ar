@@ -1,13 +1,13 @@
 /**
- * ARIA Brain Core — canonical hook.
+ * FINN Brain Core — canonical hook.
  *
- * The ONE hook every route/component uses to talk to ARIA. Delegates to the
+ * The ONE hook every route/component uses to talk to FINN. Delegates to the
  * store for reactive state and to the Brain for imperative submits.
  *
  * Forbidden alternatives (do not create):
  *   - direct `fetch("/api/chat", ...)` from components
  *   - direct OpenAI / Claude / OpenRouter SDK calls from components
- *   - a second ARIA store, provider, or conversation
+ *   - a second FINN store, provider, or conversation
  */
 import { useCallback } from "react";
 import type { AriaOpenOptions, AriaPageContext } from "../types/aria";
@@ -48,7 +48,7 @@ export function useAria() {
 }
 
 /**
- * Register the current page as ARIA's active context. Call this once per
+ * Register the current page as FINN's active context. Call this once per
  * route from a `useEffect`. Safe to call with the same value repeatedly.
  */
 export function setAriaPageContext(ctx: AriaPageContext) {

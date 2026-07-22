@@ -1,15 +1,15 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { ARIA, DIGITAL_HUMANS, SPECIALISTS } from "./registry";
+import { FINN, DIGITAL_HUMANS, SPECIALISTS } from "./registry";
 import { resolveVoice } from "./voice-profiles";
 
 const source = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
 describe("specialist voice release contract", () => {
-  it("keeps one ARIA and ten voice-ready specialist identities", () => {
+  it("keeps one FINN and ten voice-ready specialist identities", () => {
     expect(DIGITAL_HUMANS).toHaveLength(11);
-    expect(ARIA.id).toBe("aria");
+    expect(FINN.id).toBe("aria");
     expect(SPECIALISTS).toHaveLength(10);
     expect(new Set(DIGITAL_HUMANS.map((human) => human.id)).size).toBe(11);
     expect(SPECIALISTS.every((human) => human.voiceProfileId !== "aria")).toBe(true);
@@ -81,7 +81,7 @@ describe("specialist voice release contract", () => {
     expect(client).toContain("speakFreeAgent");
     expect(client).not.toContain("/api/agents/tts");
     // Specialist playback is bus-governed: it must own agent-tts first, so
-    // ARIA (chat-tts, higher priority) always preempts and never overlaps.
+    // FINN (chat-tts, higher priority) always preempts and never overlaps.
     expect(local).toContain('AriaAudioBus.acquire("agent-tts"');
     expect(local).toContain('AriaAudioBus.release("agent-tts"');
     // Saved repair method (CLAUDE.md): the public endpoint is allowed ONLY

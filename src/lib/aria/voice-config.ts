@@ -1,6 +1,6 @@
-/** Shared ARIA Gemini voice and reasoning defaults. */
+/** Shared FINN Gemini voice and reasoning defaults. */
 
-/** Stable Gemini Flash model used for ARIA reasoning and audio understanding. */
+/** Stable Gemini Flash model used for FINN reasoning and audio understanding. */
 export const ARIA_GEMINI_FLASH_MODEL = "gemini-3.5-flash";
 
 /** Low-latency Gemini speech model. Google currently marks it Preview. */
@@ -17,7 +17,7 @@ export const ARIA_GEMINI_TTS_DIRECTION =
 
 // Compatibility exports retained because the full NEXIOS repository may
 // still contain older public-voice imports outside this focused overlay.
-// The authenticated ARIA chat no longer calls ElevenLabs.
+// The authenticated FINN chat no longer calls ElevenLabs.
 
 /** @deprecated Legacy compatibility only; `/api/aria/tts` uses Gemini.
  *  Male voice (ElevenLabs "Adam") to match FINN on any legacy/guest path. */
@@ -38,10 +38,10 @@ export const ARIA_ELEVENLABS_MODEL = "eleven_multilingual_v2";
 /**
  * Specialist agent voices — ElevenLabs PREMADE (stock) voices, free within
  * the existing subscription. Keyed by the digital-humans registry
- * `voiceProfileId`. ARIA herself is deliberately ABSENT: her audible voice
- * is exclusively Layan (ARIA_ELEVENLABS_VOICE_ID) — non-negotiable doctrine.
- * The server TTS routes accept a `voiceId` ONLY when it appears in this
- * map's values; anything else falls back to Layan.
+ * `voiceProfileId`. FINN himself is deliberately ABSENT: his audible voice
+ * is the single canonical FINN voice (ARIA_ELEVENLABS_VOICE_ID) —
+ * non-negotiable doctrine. The server TTS routes accept a `voiceId` ONLY
+ * when it appears in this map's values; anything else falls back to FINN's.
  */
 export const AGENT_ELEVEN_VOICES: Record<string, string> = {
   incident: "pNInz6obpgDQGcFmaJgB", // Adam — authoritative command voice

@@ -56,7 +56,7 @@ export const Route = createFileRoute("/_authenticated/situation-room")({
       {
         name: "description",
         content:
-          "Living executive situation room with ARIA, specialist AI agents, decision engine, predictive risks and one-touch 60-second briefings.",
+          "Living executive situation room with FINN, specialist AI agents, decision engine, predictive risks and one-touch 60-second briefings.",
       },
     ],
   }),
@@ -188,7 +188,7 @@ function SituationRoomPage() {
       <div className="relative grid grid-cols-1 gap-5 px-5 pb-5 lg:grid-cols-[280px_minmax(0,1fr)_380px]">
         <OperationalHealthColumn ar={ar} health={health} loading={state.isLoading} />
 
-        {/* CENTER — ARIA + Agent Command Table */}
+        {/* CENTER — FINN + Agent Command Table */}
         <div className="relative flex min-h-[660px] flex-col items-center justify-center gap-6">
           <AgentRing
             agents={agents}
@@ -509,7 +509,7 @@ function HealthRow({
 }
 
 // ----------------------------------------------------------------------
-// CENTER — ARIA stage
+// CENTER — FINN stage
 // ----------------------------------------------------------------------
 
 function CenterStage({
@@ -533,7 +533,7 @@ function CenterStage({
       <DigitalHumanAvatar spec={aria!} state={speaking ? "speaking" : "idle"} size={240} ambient />
       <div className="absolute -bottom-6 text-center">
         <div className="text-xs uppercase tracking-[0.22em] text-cyan-200/90">
-          {ar ? "آريا · الذكاء التنفيذي" : "ARIA · Executive AI"}
+          {ar ? "FINN · الذكاء التنفيذي" : "FINN · Executive AI"}
         </div>
       </div>
     </div>

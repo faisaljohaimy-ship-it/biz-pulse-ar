@@ -202,14 +202,14 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
           : undefined,
     });
 
-    // ARIA Knowledge
+    // FINN Knowledge
     const { count: kCount } = await supabaseAdmin
       .from("aria_knowledge")
       .select("id", { count: "exact", head: true })
       .eq("org_id", orgId);
     subs.push({
       id: "aria_rag",
-      label: "ARIA Knowledge / RAG",
+      label: "FINN Knowledge / RAG",
       status: (kCount ?? 0) > 0 ? "healthy" : "warning",
       evidence: { documents: kCount ?? 0 },
       reason: (kCount ?? 0) === 0 ? "No indexed enterprise knowledge." : undefined,

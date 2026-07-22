@@ -24,7 +24,7 @@ export const GATE_SPECS: ReadonlyArray<GateSpec> = [
   { gate: "typecheck", severity: "critical", description: "npm run typecheck passes" },
   { gate: "lint", severity: "high", description: "lint passes without errors" },
   { gate: "core_runtime", severity: "critical", description: "Core runtime boots" },
-  { gate: "aria_os", severity: "critical", description: "ARIA OS kernel available" },
+  { gate: "aria_os", severity: "critical", description: "FINN OS kernel available" },
   { gate: "planning", severity: "high", description: "Planning layer available" },
   { gate: "execution", severity: "high", description: "Execution engine available" },
   { gate: "marketplace", severity: "medium", description: "Marketplace registry available" },

@@ -1,11 +1,11 @@
 import { applyAriaPronunciation } from "./pronunciation";
 
 /**
- * ARIA reply-channel contract.
+ * FINN reply-channel contract.
  *
- * Rule: when Conversation Mode ("المخاطبة") is ON, every ARIA reply is
+ * Rule: when Conversation Mode ("المخاطبة") is ON, every FINN reply is
  * spoken — voice turn OR typed turn — so mobile users who type still hear
- * ARIA speak. When Conversation Mode is OFF, replies stay silent (visual
+ * FINN speak. When Conversation Mode is OFF, replies stay silent (visual
  * only), so opening the copilot or typing never causes surprise audio.
  */
 export function shouldSpeakAriaReply({

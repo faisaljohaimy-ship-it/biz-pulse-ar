@@ -1,4 +1,4 @@
-// Idle Motion Engine — very small head + gesture drift so ARIA is never frozen.
+// Idle Motion Engine — very small head + gesture drift so FINN is never frozen.
 // Layered on top of Eye Contact / Gesture channels through additive nudges.
 
 import type { HeroTick } from "./types";

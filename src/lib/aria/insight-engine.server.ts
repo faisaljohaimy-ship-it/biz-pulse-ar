@@ -1,5 +1,5 @@
 /**
- * ARIA Executive Insight Engine (server-only, additive).
+ * FINN Executive Insight Engine (server-only, additive).
  *
  * Proactively scans live operational data to surface risks, bottlenecks,
  * repeated incidents, KPI degradations, and overdue work — before the user

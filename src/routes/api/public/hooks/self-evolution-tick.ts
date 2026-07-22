@@ -1,5 +1,5 @@
 // Cron-triggered self-evolution tick. Runs one analyze-only cycle of the
-// ARIA Self-Evolution Engine and persists the report to
+// FINN Self-Evolution Engine and persists the report to
 // `aria_evolution_cycles`. Guarded by CRON_HOOK_SECRET. Never applies code.
 
 import { createFileRoute } from "@tanstack/react-router";

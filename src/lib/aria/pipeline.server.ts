@@ -1,4 +1,4 @@
-// ARIA Executive Intelligence — deterministic pipeline orchestrator.
+// FINN Executive Intelligence — deterministic pipeline orchestrator.
 // Each stage is a pure async function; the orchestrator composes them and
 // returns a full trace alongside the final answer.
 
@@ -23,7 +23,7 @@ const FAST_MODEL = "google/gemini-3-flash-preview";
 
 function provider() {
   const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("LOVABLE_API_KEY missing — ARIA gateway unavailable.");
+  if (!key) throw new Error("LOVABLE_API_KEY missing — FINN gateway unavailable.");
   return createOpenAICompatible({
     name: "lovable",
     baseURL: "https://ai.gateway.lovable.dev/v1",
@@ -435,7 +435,7 @@ export async function runReasoner(args: {
   knowledge: { title: string; source: string; content: string }[];
 }): Promise<{ text: string; tokens?: number }> {
   const p = provider();
-  const system = `You are ARIA — Executive AI for إدارة الأمن الصناعي بالمنطقة الغربية (Western Region Industrial Security). Respond in ${args.language === "ar" ? "Arabic (MSA)" : "English"}. Render the executive structure with H3 sections in this order: 🎯 Executive Summary, 📊 Related KPIs (table), 🔍 Root Cause Analysis, ⚠️ Risks, 💡 Opportunities, ✅ Recommended Actions, 📈 Confidence, ➡️ Next Executive Decision. Ground EVERY number in the supplied context. If a datum is missing, say "بيانات غير متوفرة" / "Data unavailable". Never fabricate.`;
+  const system = `You are FINN — Executive AI for إدارة الأمن الصناعي بالمنطقة الغربية (Western Region Industrial Security). Respond in ${args.language === "ar" ? "Arabic (MSA)" : "English"}. Render the executive structure with H3 sections in this order: 🎯 Executive Summary, 📊 Related KPIs (table), 🔍 Root Cause Analysis, ⚠️ Risks, 💡 Opportunities, ✅ Recommended Actions, 📈 Confidence, ➡️ Next Executive Decision. Ground EVERY number in the supplied context. If a datum is missing, say "بيانات غير متوفرة" / "Data unavailable". Never fabricate.`;
 
   const ctx = [
     `# LIVE KPIs\n${JSON.stringify(args.kpis, null, 2)}`,

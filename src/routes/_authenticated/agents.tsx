@@ -500,8 +500,8 @@ function AgentsOps() {
         routeKey="agents"
         what={
           locale === "ar"
-            ? "منصة تشغيل ومراقبة الوكلاء الأذكياء تحت قيادة آريا واعتماد بشري."
-            : "Runtime operations for the intelligent agent fleet under ARIA, human-approved."
+            ? "منصة تشغيل ومراقبة الوكلاء الأذكياء تحت قيادة FINN واعتماد بشري."
+            : "Runtime operations for the intelligent agent fleet under FINN, human-approved."
         }
         dataSource="agent_definitions · agent_runs"
         actions={
@@ -519,11 +519,11 @@ function AgentsOps() {
         }
       />
 
-      {/* Holographic command tree — ARIA apex, fleet, live task nodes, and
+      {/* Holographic command tree — FINN apex, fleet, live task nodes, and
           the single human-approval terminal every path flows into (art. 8). */}
       <AgentHierarchyGraph agents={agents} runs={runs} ar={locale === "ar"} />
 
-      {/* Cinematic agents network — ARIA core with the specialist fleet
+      {/* Cinematic agents network — FINN core with the specialist fleet
           orbiting it (neural mesh). Display-only; delightful on all sizes. */}
       <AgentRing />
 

@@ -1,4 +1,4 @@
-// Phase 11.4 — ARIA Live Voice types.
+// Phase 11.4 — FINN Live Voice types.
 // Strictly additive. Consumes Phase 11.1 conversation + Phase 11.3 motion.
 
 export type VoiceLang = "ar" | "en" | "unknown";

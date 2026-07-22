@@ -1,4 +1,4 @@
-// Server-only ARIA corpus seeding helper. Used by the runtime pulse to
+// Server-only FINN corpus seeding helper. Used by the runtime pulse to
 // auto-seed an org's knowledge base on first activation. Idempotent.
 import { embedText, toPgVector } from "./embeddings.server";
 
@@ -11,7 +11,7 @@ type Entry = { title: string; source: string; tags: string[]; content: string };
 // For now we re-declare a minimal corpus reference; the canonical full
 // corpus lives in seed-corpus.functions.ts and is still inserted via the
 // admin button. This auto-seed path inserts a compact "starter" pack so
-// ARIA has grounding immediately after first login.
+// FINN has grounding immediately after first login.
 const STARTER_CORPUS: Entry[] = [
   {
     title: "ميثاق إدارة الأمن الصناعي — المنطقة الغربية",

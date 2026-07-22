@@ -126,8 +126,8 @@ const PILLARS = [
     anchor: "tour-pillar-aria",
     to: "/aria",
     icon: Sparkles,
-    title_ar: "ARIA التنفيذية",
-    title_en: "ARIA Engine",
+    title_ar: "FINN التنفيذية",
+    title_en: "FINN Engine",
     desc_ar: "محرك تنفيذي ثنائي اللغة مع صوت طبيعي وذاكرة حية.",
     desc_en: "Bilingual executive engine with natural voice and live executive memory.",
   },
@@ -136,7 +136,7 @@ const PILLARS = [
 function IntroLanding() {
   const { locale } = useI18n();
   const ar = locale === "ar";
-  // The single global ARIA backdrop is rendered from __root.tsx; this
+  // The single global FINN backdrop is rendered from __root.tsx; this
   // route only owns the executive hero content. No canvas, no boot
   // animation, no AudioContext.
   const [cinemaOpen, setCinemaOpen] = useState(false);
@@ -205,7 +205,7 @@ function IntroLanding() {
         className="relative z-10 flex w-full flex-col px-5 pb-6"
         style={{ paddingTop: "clamp(14dvh, 16dvh, 20dvh)" }}
       >
-        {/* Face-safe scrim — starts BELOW the top 34dvh so ARIA's face stays
+        {/* Face-safe scrim — starts BELOW the top 34dvh so FINN's face stays
             unobstructed while buttons below remain readable. */}
         <div
           aria-hidden
@@ -297,7 +297,7 @@ function IntroLanding() {
             dir="ltr"
             className="relative mt-10 flex w-full flex-col items-center text-center sm:mt-14"
           >
-            {/* Soft dark halo scrim so the crest lifts off the ARIA backdrop */}
+            {/* Soft dark halo scrim so the crest lifts off the FINN backdrop */}
             <div
               aria-hidden
               className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[220%] w-[130%] -translate-x-1/2 -translate-y-1/2 rounded-full"
@@ -366,14 +366,14 @@ function IntroLanding() {
       </section>
 
       {/* ══ NEXIOS Command Center (poster) — the PRIMARY dashboard: all four
-          regions around a central split Saudi map, ARIA console, system status
+          regions around a central split Saudi map, FINN console, system status
           and smart alerts. One horizontal canvas on every device. ══ */}
       <div ref={posterRef} data-nx-frozen="false" className="relative z-10 mt-2 sm:mt-4">
         <NexiosCommandCenter />
       </div>
 
       {/* ══ Sovereign Cinematic Command Deck — world-class executive dashboard ══
-          Floats over the ARIA hologram as translucent glass instruments so
+          Floats over the FINN hologram as translucent glass instruments so
           she remains visible as the living backdrop of the whole system. */}
       <section
         ref={deckRef}
@@ -405,7 +405,7 @@ function IntroLanding() {
       <HomeShowcaseSections />
 
       {/* Holographic command tree — replaces the retired Hajj Nusuk section.
-          Same visual as /agents: ARIA at the apex, the specialist fleet
+          Same visual as /agents: FINN at the apex, the specialist fleet
           beneath, converging on the human-approval gate. Full-bleed on mobile
           and desktop. */}
       <section
@@ -425,8 +425,8 @@ function IntroLanding() {
           </h2>
           <p className="mx-auto mt-1 max-w-2xl text-xs text-white/70 sm:text-sm">
             {ar
-              ? "تشغيل، مراقبة، تدقيق، وتحكم — تحت قيادة آريا واعتماد بشري."
-              : "Lifecycle, monitoring, audit & control — under ARIA with human approval."}
+              ? "تشغيل، مراقبة، تدقيق، وتحكم — تحت قيادة FINN واعتماد بشري."
+              : "Lifecycle, monitoring, audit & control — under FINN with human approval."}
           </p>
         </div>
         <div className="space-y-6">

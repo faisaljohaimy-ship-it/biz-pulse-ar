@@ -1,5 +1,5 @@
 /**
- * ARIA KPI anomaly detection — deterministic, fixture-derived (Phase 5).
+ * FINN KPI anomaly detection — deterministic, fixture-derived (Phase 5).
  *
  * Scans the SAME simulation snapshot the dashboard reads (`regionSim`) and
  * flags any region whose metric deviates from the four-region peer baseline

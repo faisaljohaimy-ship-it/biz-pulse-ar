@@ -299,7 +299,7 @@ function simKeywordSearch(
 
 export const kbSemanticSearch = createServerFn({ method: "POST" })
   // Open showcase read; unreachable database/embedding ⇒ keyword search
-  // over the built-in reference articles so ARIA search never dies.
+  // over the built-in reference articles so FINN search never dies.
   .middleware([optionalSupabaseAuth])
   .inputValidator((data: unknown) => SemanticInput.parse(data))
   .handler(async ({ data, context }) => {

@@ -25,7 +25,7 @@ async function hmac(algorithm: "SHA-1" | "SHA-256", secret: Uint8Array, body: st
   return btoa(String.fromCharCode(...new Uint8Array(result)));
 }
 
-describe("ARIA outbound approval boundary", () => {
+describe("FINN outbound approval boundary", () => {
   beforeEach(() => {
     process.env.ARIA_MESSAGE_APPROVAL_SECRET =
       "test-secret-that-is-longer-than-thirty-two-characters";

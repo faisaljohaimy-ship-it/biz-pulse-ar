@@ -94,8 +94,8 @@ describe("specialist speech runtime (server Layan)", () => {
     expect(bus.acquire).not.toHaveBeenCalled();
   });
 
-  it("does not start or consume a specialist voice while ARIA owns audio", async () => {
-    // ARIA (chat-tts) owns the bus → acquire("agent-tts") is denied.
+  it("does not start or consume a specialist voice while FINN owns audio", async () => {
+    // FINN (chat-tts) owns the bus → acquire("agent-tts") is denied.
     bus.acquire.mockReturnValue(false);
     const handle = speakFreeAgent({ text: "تجربة أخرى", lang: "ar" });
     await handle.promise;

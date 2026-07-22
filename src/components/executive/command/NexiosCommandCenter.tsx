@@ -1,5 +1,5 @@
 /**
- * NexiosCommandCenter — interactive ARIA executive dashboard artwork.
+ * NexiosCommandCenter — interactive FINN executive dashboard artwork.
  *
  * The approved 3:2 artwork remains pixel-perfect while percentage-positioned
  * hotspots turn its visible controls into real NEXIOS navigation. Coordinates
@@ -289,12 +289,12 @@ export const HOTSPOTS = [
     color: "#22C55E",
   },
 
-  // ARIA console.
+  // FINN console.
   {
     id: "aria-console",
     to: "/aria",
-    labelAr: "فتح آريا التنفيذية",
-    labelEn: "Open ARIA executive",
+    labelAr: "فتح FINN التنفيذية",
+    labelEn: "Open FINN executive",
     x: 1.8,
     y: 53.1,
     width: 25.8,
@@ -304,8 +304,8 @@ export const HOTSPOTS = [
   {
     id: "aria-microphone",
     to: "/aria",
-    labelAr: "التحدث مع آريا",
-    labelEn: "Talk to ARIA",
+    labelAr: "التحدث مع FINN",
+    labelEn: "Talk to FINN",
     x: 5,
     y: 80.8,
     width: 5.9,
@@ -556,7 +556,7 @@ export function NexiosCommandCenter() {
     <section
       dir={ar ? "rtl" : "ltr"}
       aria-label={
-        ar ? "مركز القيادة التنفيذي التفاعلي مع آريا" : "Interactive ARIA executive command center"
+        ar ? "مركز القيادة التنفيذي التفاعلي مع FINN" : "Interactive FINN executive command center"
       }
       aria-describedby="nexios-command-center-hint"
       className="relative z-10 mx-auto w-full max-w-[1536px] px-2 sm:px-4"
@@ -592,8 +592,8 @@ export function NexiosCommandCenter() {
             src="/finn-portrait.png"
             alt={
               ar
-                ? "لوحة NEXIOS AI OS للمناطق الأربع مع المساعدة التنفيذية آريا"
-                : "NEXIOS AI OS four-region dashboard with ARIA executive assistant"
+                ? "لوحة NEXIOS AI OS للمناطق الأربع مع المساعدة التنفيذية FINN"
+                : "NEXIOS AI OS four-region dashboard with FINN executive assistant"
             }
             width={1536}
             height={1024}

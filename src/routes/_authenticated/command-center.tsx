@@ -15,7 +15,7 @@
  *   4) مجلس الوكلاء — 8 geometric avatars glowing by status
  *   5) الأعمال العاجلة وSLA — countdown strips; overdue leads, red pulse
  *
- * ملخص آريا is generated locally from the SAME state (guaranteed-reply
+ * ملخص FINN is generated locally from the SAME state (guaranteed-reply
  * doctrine) and spoken via Layan ONLY on click. Motion discipline: every
  * halo/pulse comes from the .holo-sev-* scale (transform/opacity only,
  * frozen under prefers-reduced-motion).
@@ -350,9 +350,9 @@ function CommandCenterPage() {
     setSummarizing(true);
     try {
       await speak(summaryText);
-      toast.success("ملخص آريا", { description: summaryText });
+      toast.success("ملخص FINN", { description: summaryText });
     } catch {
-      toast.message("ملخص آريا", { description: summaryText });
+      toast.message("ملخص FINN", { description: summaryText });
     } finally {
       setSummarizing(false);
     }
@@ -443,7 +443,7 @@ function CommandCenterPage() {
               ) : (
                 <Sparkles className="h-4 w-4" />
               )}
-              ملخص آريا
+              ملخص FINN
             </button>
             {/* Drive a live briefing from this device or an external screen. */}
             <PresentationToggle ar />

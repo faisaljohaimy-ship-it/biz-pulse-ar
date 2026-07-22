@@ -4,7 +4,7 @@
  * In-memory, per-Worker instance. Not persistent, not distributed — that's OK:
  * the goal is to react FAST when one AI vendor starts returning a fatal
  * quota/auth error, and re-prefer another configured vendor on the very next
- * request so ARIA stays online continuously. Keeps ARIA "permanently on" as
+ * request so FINN stays online continuously. Keeps FINN "permanently on" as
  * long as ANY configured provider still has credit.
  *
  * Cool-down TTL is deliberately short (10 minutes) so a temporary top-up or

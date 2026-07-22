@@ -12,7 +12,7 @@ export function buildCinematicIntro(): readonly CinematicBeat[] {
   const beats: CinematicBeat[] = [
     { at: 0, kind: "fade_in" },
     { at: 900, kind: "logo", label_ar: "نيكسوس", label_en: "NEXIOS" },
-    { at: 2200, kind: "aria_reveal", label_ar: "أريا", label_en: "ARIA" },
+    { at: 2200, kind: "aria_reveal", label_ar: "FINN", label_en: "FINN" },
     {
       at: 3600,
       kind: "tagline",

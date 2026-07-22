@@ -1,5 +1,5 @@
 /**
- * HologramFace — ARIA's living holographic portrait.
+ * HologramFace — FINN's living holographic portrait.
  *
  * "Balanced" cinematic preset: pure CSS/SVG, GPU-accelerated transforms,
  * 60fps on mobile. Provides:
@@ -241,7 +241,7 @@ export function HologramFace({
           animation: "aria-breathe 5.5s ease-in-out infinite",
         } as React.CSSProperties
       }
-      aria-label={ar ? "آريا — مساعدة تنفيذية" : "ARIA — Executive AI"}
+      aria-label={ar ? "FINN — مساعدة تنفيذية" : "FINN — Executive AI"}
       role="img"
     >
       {/* ambient aura — pulse, no enclosing face circle */}
@@ -302,7 +302,7 @@ export function HologramFace({
       >
         <img
           src={"/finn-portrait.png"}
-          alt={ar ? "آريا" : "ARIA"}
+          alt={ar ? "FINN" : "FINN"}
           draggable={false}
           className="absolute inset-0 h-full w-full object-contain object-top"
           style={{
@@ -385,8 +385,8 @@ export function HologramFace({
         @keyframes aria-mote    { 0%,100% { transform: translate(-50%,-50%) scale(1); opacity:.55 } 50% { transform: translate(-50%,-50%) scale(1.6); opacity:1 } }
         @keyframes aria-shimmer { 0% { background-position: 0 0 } 100% { background-position: 80px 0 } }
         @media (prefers-reduced-motion: reduce) {
-          :where([role="img"][aria-label*="ARIA"], [role="img"][aria-label*="آريا"]) *,
-          :where([role="img"][aria-label*="ARIA"], [role="img"][aria-label*="آريا"]) {
+          :where([role="img"][aria-label*="FINN"], [role="img"][aria-label*="FINN"]) *,
+          :where([role="img"][aria-label*="FINN"], [role="img"][aria-label*="FINN"]) {
             animation: none !important;
           }
         }

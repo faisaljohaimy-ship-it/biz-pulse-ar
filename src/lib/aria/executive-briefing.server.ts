@@ -1,5 +1,5 @@
 /**
- * ARIA Executive Briefing.
+ * FINN Executive Briefing.
  *
  * Server-side aggregator that runs a full proactive scan and produces
  * a structured briefing suitable for greeting the executive on open

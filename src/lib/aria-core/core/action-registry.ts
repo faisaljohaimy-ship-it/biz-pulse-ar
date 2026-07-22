@@ -1,5 +1,5 @@
 /**
- * ActionRegistry — canonical catalogue of safe action types ARIA can plan.
+ * ActionRegistry — canonical catalogue of safe action types FINN can plan.
  * Phase 3: preparation only. No action performs real external work.
  */
 

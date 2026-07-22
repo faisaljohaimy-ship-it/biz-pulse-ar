@@ -1,5 +1,5 @@
 // Phase 11.5 — Hero Integration types.
-// Strictly additive orchestration between Hero UI and existing ARIA engines.
+// Strictly additive orchestration between Hero UI and existing FINN engines.
 
 import type { AudioState, VoiceLang } from "../live-voice/types";
 

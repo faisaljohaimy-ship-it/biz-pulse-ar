@@ -105,7 +105,7 @@ export const listShowcaseFlow = createServerFn({ method: "GET" }).handler(
         return;
       }
       if (kind === "aria") {
-        nodes.set(id, { id, kind, name_ar: "آريا", name_en: "ARIA" });
+        nodes.set(id, { id, kind, name_ar: "FINN", name_en: "FINN" });
         return;
       }
       nodes.set(id, {

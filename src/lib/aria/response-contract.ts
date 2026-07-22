@@ -1,10 +1,10 @@
 /**
- * ARIA Response Contract — constitution Article 22.
+ * FINN Response Contract — constitution Article 22.
  *
- * «آريا مساعد أمن صناعي. لا تتحدث خارج نطاقه، ولا تقول أكثر مما سئلت عنه.
+ * «FINN مساعد أمن صناعي. لا تتحدث خارج نطاقه، ولا تقول أكثر مما سئلت عنه.
  *  الإطالة عيب دستوري.»
  *
- * Deterministic, model-free primitives that gate and shape every ARIA reply:
+ * Deterministic, model-free primitives that gate and shape every FINN reply:
  *   1. Scope lock      — off-domain questions get ONE fixed refusal line.
  *   2. Fast recall     — recurring FAQs answer instantly (< ~400ms, no model).
  *   3. Brevity         — the forbidden-filler list + the system-prompt contract.
@@ -22,7 +22,7 @@ export const OUT_OF_SCOPE_REPLY = "خارج نطاقي — أنا مساعد ا�
 /** The ONLY reply when a datum genuinely isn't held. No invented value. */
 export const UNAVAILABLE_REPLY = "غير متوفر لدي — المصدر الرسمي: hcis.gov.sa";
 
-/** Filler that must never open or pad an ARIA reply (brevity contract). */
+/** Filler that must never open or pad an FINN reply (brevity contract). */
 export const FORBIDDEN_FILLER: readonly string[] = [
   "سؤال ممتاز",
   "سؤال رائع",
@@ -57,7 +57,7 @@ export function hasForbiddenFiller(text: string): boolean {
 
 /* ── Scope lock ─────────────────────────────────────────────────────────── */
 
-/** Anything that signals the industrial-security executive domain, ARIA/NEXIOS
+/** Anything that signals the industrial-security executive domain, FINN/NEXIOS
  *  itself, or a bare session opener — these are ALWAYS in scope. */
 const IN_SCOPE = [
   // Regulator & directives
@@ -115,7 +115,7 @@ const IN_SCOPE = [
   "operation",
   "نكسيوس",
   "nexios",
-  "آريا",
+  "FINN",
   "aria",
   "الحوكمة",
   "governance",
@@ -238,9 +238,9 @@ const FAST_RECALL: Array<{ test: (t: string) => boolean; answer: string; source:
     source: "hcis-approval-cycle",
   },
   {
-    // Who is ARIA
-    test: (t) => /(من|ما).*(انت|آريا|اريا)|who are you/.test(t),
-    answer: "أنا آريا — مساعد الأمن الصناعي التنفيذي في نكسيوس.",
+    // Who is FINN
+    test: (t) => /(من|ما).*(انت|FINN|FINN)|who are you/.test(t),
+    answer: "أنا FINN — مساعد الأمن الصناعي التنفيذي في نكسيوس.",
     source: "aria-identity",
   },
 ];
@@ -256,10 +256,10 @@ export function matchFastRecall(message: string): FastRecallHit | null {
 
 /* ── System-prompt contract (the model path obeys the same rules) ────────── */
 
-/** Appended to ARIA's system prompt so the model honours Article 22 when the
+/** Appended to FINN's system prompt so the model honours Article 22 when the
  *  fast paths don't fire. */
 export const ARIA_RESPONSE_CONTRACT = `
-# ARIA RESPONSE CONTRACT (constitution Article 22 — MANDATORY)
+# FINN RESPONSE CONTRACT (constitution Article 22 — MANDATORY)
 You are an industrial-security assistant. Do not speak outside that domain, and never say more than you were asked. Length is a constitutional defect.
 
 SCOPE: Answer ONLY industrial-security executive topics (HCIS SEC/SAF directives, compliance & its status, PTW work permits, security operations & incidents, safety & fire, operational reports, and the NEXIOS modules themselves). For anything else reply with EXACTLY this one line and nothing more:

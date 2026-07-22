@@ -55,7 +55,7 @@ const TERMS: Array<[RegExp, string]> = [
   [/\bPDPL\b/gi, "نظام حماية البيانات الشخصية"],
   [/\bMCP\b/gi, "ربط الوكلاء"],
   [/\bNEXIOS\b/gi, "نكسيوس"],
-  [/\bARIA\b/gi, "آريا"],
+  [/\bFINN\b/gi, "فِن"],
 ];
 
 /** Rewrite a reply into speech-ready Arabic for the TTS pipeline. */

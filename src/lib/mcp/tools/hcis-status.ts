@@ -3,7 +3,7 @@ import { z } from "zod";
 
 /**
  * Read-only HCIS compliance status over MCP: overall + per-region compliance
- * percentage, plus the open critical/overdue findings. Mirrors ARIA's
+ * percentage, plus the open critical/overdue findings. Mirrors FINN's
  * `hcis_compliance_status` / `hcis_critical_findings` tools — same safe column
  * subset, service-role read, per-caller rate limit.
  */

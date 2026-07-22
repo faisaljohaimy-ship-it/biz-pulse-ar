@@ -1,5 +1,5 @@
 /**
- * AriaService — the ONLY client-side transport to the ARIA backend.
+ * AriaService — the ONLY client-side transport to the FINN backend.
  *
  * No page, hook, or component may call OpenAI/Claude/OpenRouter directly. All
  * requests flow through this service, which currently wraps the AI SDK

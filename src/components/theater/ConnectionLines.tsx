@@ -1,6 +1,6 @@
 /**
  * ConnectionLines — animated SVG beams from each ring-positioned agent
- * to the central ARIA stage. Highlights the active speaker and tints
+ * to the central FINN stage. Highlights the active speaker and tints
  * lines by status (speaking=cyan, thinking=amber, working=violet).
  *
  * Positions are recomputed with the same trig used by AgentRing
@@ -12,7 +12,7 @@ import type { BridgeAgent, BridgeAgentStatus } from "@/lib/exec/bridge.functions
 interface Props {
   agents: BridgeAgent[];
   radius: number;
-  /** id of the agent currently speaking; null when ARIA holds the floor. */
+  /** id of the agent currently speaking; null when FINN holds the floor. */
   speakerId: string | null;
   /** container size in px (square). */
   size: number;
@@ -91,7 +91,7 @@ export function ConnectionLines({ agents, radius, speakerId, size }: Props) {
         </radialGradient>
       </defs>
 
-      {/* core halo behind ARIA */}
+      {/* core halo behind FINN */}
       <circle cx={size / 2} cy={size / 2} r={radius * 0.55} fill="url(#theaterCoreGlow)" />
 
       {beams.map((b) => (

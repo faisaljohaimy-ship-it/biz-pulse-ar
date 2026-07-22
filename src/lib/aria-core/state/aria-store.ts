@@ -1,5 +1,5 @@
 /**
- * ARIA Brain Core — global state store (Zustand).
+ * FINN Brain Core — global state store (Zustand).
  *
  * Single source of truth for UI mode, voice state, page context, active turn,
  * and pending imperative commands. Conversation messages themselves live in

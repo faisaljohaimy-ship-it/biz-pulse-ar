@@ -1,5 +1,5 @@
 /**
- * ARIA Self-Evolution Engine — public types (server-only).
+ * FINN Self-Evolution Engine — public types (server-only).
  *
  * The Self-Evolution Engine is a THIN orchestrator that composes the existing
  * `evolution/`, `self-improvement/`, and `production/` engines behind a single

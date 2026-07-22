@@ -232,7 +232,7 @@ function KbPage() {
       <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-4">
         <label className="mb-2 flex items-center gap-2 text-sm font-medium">
           <Sparkles className="h-4 w-4 text-cyan-500" />
-          البحث الدلالي عبر ARIA (يفهم اللغة الطبيعية ar/en)
+          البحث الدلالي عبر FINN (يفهم اللغة الطبيعية ar/en)
         </label>
         <Input
           dir="auto"

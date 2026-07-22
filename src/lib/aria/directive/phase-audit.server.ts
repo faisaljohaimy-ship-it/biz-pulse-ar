@@ -1,5 +1,5 @@
 /**
- * ARIA IMPACT DIRECTIVE — Phase Audit
+ * FINN IMPACT DIRECTIVE — Phase Audit
  *
  * Server-only, evidence-grounded probe of each of the 9 phases. Only invokes
  * verifiers whose signatures accept no-args or optional inputs so this remains
@@ -64,7 +64,7 @@ function safeProbe(module: string, fn: () => PhaseProbe): PhaseProbe {
 }
 
 export function runDirectiveAudit(): DirectiveAuditReport {
-  // ── PHASE 1 · ARIA CORE ──────────────────────────────────────────────
+  // ── PHASE 1 · FINN CORE ──────────────────────────────────────────────
   const p1: PhaseProbe[] = [
     safeProbe("avatar-identity", () => {
       const v = verifyIdentity();
@@ -288,8 +288,8 @@ export function runDirectiveAudit(): DirectiveAuditReport {
     {
       n: 1,
       key: "aria-core",
-      title_en: "ARIA Core",
-      title_ar: "نواة أريا",
+      title_en: "FINN Core",
+      title_ar: "نواة FINN",
       status: rollUp(p1),
       probes: p1,
     },

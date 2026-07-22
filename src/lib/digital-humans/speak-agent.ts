@@ -6,7 +6,7 @@
  * only narrate verified state or the real summary returned by an agent run.
  */
 import type { BridgeAgent } from "@/lib/exec/bridge.functions";
-import { ARIA, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
+import { FINN, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import { speakAs, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
 
 type RuntimeAgentIdentity = {
@@ -16,7 +16,7 @@ type RuntimeAgentIdentity = {
 };
 
 function human(id: string): DigitalHumanSpec {
-  return findHuman(id) ?? ARIA;
+  return findHuman(id) ?? FINN;
 }
 
 /** Maps every runtime definition — including legacy ids — to a voice persona. */
@@ -30,7 +30,7 @@ export function resolveAgentSpeaker(agent: RuntimeAgentIdentity): DigitalHumanSp
     .join(" ")
     .toLowerCase();
 
-  if (/\baria\b/.test(haystack)) return ARIA;
+  if (/\baria\b/.test(haystack)) return FINN;
   if (/incident|triage/.test(haystack)) return human("incident_commander");
   if (/emergency|crisis/.test(haystack)) return human("emergency_coordinator");
   if (/compliance|audit|governance/.test(haystack)) return human("compliance_auditor");

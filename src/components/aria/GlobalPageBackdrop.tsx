@@ -1,5 +1,5 @@
 /**
- * GlobalPageBackdrop — cinematic ARIA hologram backdrop for every page
+ * GlobalPageBackdrop — cinematic FINN hologram backdrop for every page
  * EXCEPT the homepage (which uses HomeVideoBackdrop). Fixed, non-interactive,
  * behind all content. Cropped exactly like the reference: face high-in-frame,
  * body fading into the dark deck.

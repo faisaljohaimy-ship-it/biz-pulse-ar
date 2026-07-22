@@ -2200,7 +2200,7 @@ export function buildConnectorsSimulation(now: number) {
     ],
     [
       "elevenlabs",
-      "ElevenLabs — صوت آريا",
+      "ElevenLabs — صوت FINN",
       "ai",
       "configured",
       "نشط — صوت ليان الحصري عبر الخادم.",
@@ -2471,7 +2471,7 @@ export function buildCommandCenterSimulation(now: number): CommandCenterState {
   const AGENTS: Array<
     [string, string, "active" | "processing" | "idle", string | null, number, CommandSeverity]
   > = [
-    ["آريا التنفيذية", "التنسيق العام", "active", "توليد موجز القيادة الصباحي", 14, "healthy"],
+    ["FINN التنفيذية", "التنسيق العام", "active", "توليد موجز القيادة الصباحي", 14, "healthy"],
     ["وكيل الامتثال HCIS", "الامتثال", "processing", "تدقيق SEC-18 لمحطات التحويل", 9, "medium"],
     ["وكيل الصيانة", "الصيانة", "active", "جدولة أوامر العمل الوقائية", 11, "healthy"],
     ["وكيل التقارير", "التقارير", "processing", "إعداد تقرير العمليات اليومي", 6, "medium"],
@@ -2499,7 +2499,7 @@ export function buildCommandCenterSimulation(now: number): CommandCenterState {
     ["رفع تصنيف إنذار المحيط الشرقي", "proposed", "critical", "وكيل المخاطر", 15],
     ["تحديث قائمة تفتيش SEC-18", "approved", "medium", "وكيل الامتثال HCIS", 200],
     ["تعزيز دورية القطاع الجنوبي", "proposed", "high", "وكيل الرصد", 95],
-    ["أرشفة بلاغات الأسبوع المغلقة", "approved", "healthy", "آريا التنفيذية", 260],
+    ["أرشفة بلاغات الأسبوع المغلقة", "approved", "healthy", "FINN التنفيذية", 260],
   ];
   const pipeline = PIPELINE.map(([title_ar, stage, severity, agent_ar, minAgo], i) => ({
     id: `sim-cp-${i + 1}`,
@@ -2711,7 +2711,7 @@ export function buildEvolutionSimulation(now: number): EvolutionState {
   const iso = (agoH: number) => new Date(now - agoH * 3_600_000).toISOString();
   const agents = (
     [
-      ["آريا التنفيذية", "ARIA Executive", "التنسيق العام", "توليد موجز القيادة الصباحي", "active"],
+      ["FINN التنفيذية", "FINN Executive", "التنسيق العام", "توليد موجز القيادة الصباحي", "active"],
       [
         "وكيل الامتثال HCIS",
         "HCIS Compliance Agent",
@@ -2794,9 +2794,9 @@ export function buildEvolutionSimulation(now: number): EvolutionState {
       2,
     ),
     P(
-      "آريا التنفيذية",
-      "تحسين صياغة رد آريا عن متطلبات SEC-13",
-      "Refine ARIA answers on SEC-13 requirements",
+      "FINN التنفيذية",
+      "تحسين صياغة رد FINN عن متطلبات SEC-13",
+      "Refine FINN answers on SEC-13 requirements",
       "إثراء سياق الإجابة بمراجع البنود التنظيمية ونطاق التطبيق",
       "medium",
       "proposed",
@@ -2850,8 +2850,8 @@ export function buildEvolutionSimulation(now: number): EvolutionState {
     ),
     P(
       "وكيل الامتثال HCIS",
-      "فهرسة أدلة HCIS لتسريع بحث آريا",
-      "Index HCIS manuals for faster ARIA retrieval",
+      "فهرسة أدلة HCIS لتسريع بحث FINN",
+      "Index HCIS manuals for faster FINN retrieval",
       "فهرسة دلالية للأدلة التنظيمية ترفع دقة الاسترجاع وسرعته",
       "high",
       "approved",
@@ -2882,7 +2882,7 @@ export function buildEvolutionSimulation(now: number): EvolutionState {
       10,
     ),
     P(
-      "آريا التنفيذية",
+      "FINN التنفيذية",
       "تشغيل دوريات آلية إضافية في القطاع الشمالي",
       "Add automated patrols in the north sector",
       "توسعة الدوريات الآلية شمالًا. رُفض: يتطلب اعتمادًا ميدانيًا مسبقًا من إدارة العمليات قبل أي توسعة",
@@ -2932,8 +2932,8 @@ export function buildEvolutionSimulation(now: number): EvolutionState {
       3,
     ),
     L(
-      "فهرسة أدلة HCIS لتسريع بحث آريا",
-      "فهرسة أدلة HCIS — رفع دقة استرجاع آريا للمواد التنظيمية إلى 96%",
+      "فهرسة أدلة HCIS لتسريع بحث FINN",
+      "فهرسة أدلة HCIS — رفع دقة استرجاع FINN للمواد التنظيمية إلى 96%",
       7,
       4,
     ),

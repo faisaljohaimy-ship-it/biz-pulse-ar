@@ -1,6 +1,6 @@
 // Executive Demonstration Scenario — one complete operational day (06:00–18:00 Riyadh).
 // Builds a single coherent story across sites/employees/inspections/risks/incidents/
-// work-orders/notifications/meetings/daily-ops/KPIs so ARIA can trace cause → effect.
+// work-orders/notifications/meetings/daily-ops/KPIs so FINN can trace cause → effect.
 //
 // Idempotent: every row tagged metadata.scenario_tag; re-running purges & rebuilds.
 // Requires base simulation seed (departments/employees/sites) — auto-runs if missing.
@@ -441,7 +441,7 @@ export async function runExecutiveScenario(
     event: "Day shift closed — compliance 74% (↓), response 6 min (↑), 1 contained incident",
   });
 
-  // ---- ARIA executive briefing (report) -------------------------------------
+  // ---- FINN executive briefing (report) -------------------------------------
   if (opts.userId) {
     await admin.from("aria_reports").insert({
       user_id: opts.userId,
@@ -491,7 +491,7 @@ export async function runExecutiveScenario(
         `_Confidence: 0.92 — grounded in system data; no fabrication._`,
       ].join("\n"),
     });
-    narrative.push({ time: "18:15", event: "ARIA executive briefing generated (confidence 0.92)" });
+    narrative.push({ time: "18:15", event: "FINN executive briefing generated (confidence 0.92)" });
   }
 
   return {

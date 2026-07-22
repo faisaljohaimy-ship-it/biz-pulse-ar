@@ -71,7 +71,7 @@ async function logEvent(
     entity_ref,
     event,
     actor_id: userId,
-    actor_name: "ARIA",
+    actor_name: "FINN",
     payload: payload as Json,
   });
   if (error) {
@@ -107,7 +107,7 @@ export type AriaToolRuntimeContext = {
 };
 
 /**
- * Build the ARIA executive toolbelt. All tools are RLS-scoped via the
+ * Build the FINN executive toolbelt. All tools are RLS-scoped via the
  * request supabase client and gated by connector availability.
  */
 export function buildAriaTools(
@@ -317,7 +317,7 @@ export function buildAriaTools(
 
     send_executive_email: tool({
       description:
-        "Send an HTML executive email. Direct send is allowed only when the recipient is the registered ARIA owner AND the current user message explicitly asks to send an email; otherwise the message is routed to the reviewed approval flow so it is not silently dropped.",
+        "Send an HTML executive email. Direct send is allowed only when the recipient is the registered FINN owner AND the current user message explicitly asks to send an email; otherwise the message is routed to the reviewed approval flow so it is not silently dropped.",
       inputSchema: z.object({
         to: z.string().email().optional(),
         cc: z.string().email().optional(),
@@ -361,7 +361,7 @@ export function buildAriaTools(
 
     send_executive_sms: tool({
       description:
-        "Send an executive SMS/MMS. Direct send is allowed only when the recipient is the registered ARIA owner AND the current user message explicitly asks to send an SMS; otherwise the message is routed to the reviewed approval flow so it is not silently dropped.",
+        "Send an executive SMS/MMS. Direct send is allowed only when the recipient is the registered FINN owner AND the current user message explicitly asks to send an SMS; otherwise the message is routed to the reviewed approval flow so it is not silently dropped.",
       inputSchema: z.object({
         to: z.string().min(8).max(24).optional().describe("Optional E.164 recipient"),
         body: z.string().min(1).max(1600),
@@ -426,8 +426,8 @@ export function buildAriaTools(
             department: args.department,
             impact: args.impact,
             due_at: args.due_at ?? null,
-            source: "ARIA",
-            source_en: "ARIA",
+            source: "FINN",
+            source_en: "FINN",
             status: "open",
           })
           .select("id,key,title,kind,impact")
@@ -560,7 +560,7 @@ export function buildAriaTools(
             owner: args.owner ?? null,
             business_impact_score: args.business_impact_score,
             detail: args.summary ?? null,
-            source: "ARIA",
+            source: "FINN",
           })
           .select("id,title,severity,business_impact_score")
           .single();
@@ -1105,7 +1105,7 @@ export function buildAriaTools(
           .update({
             status,
             notes: notes ?? null,
-            acknowledged_by: acknowledged_by ?? "ARIA",
+            acknowledged_by: acknowledged_by ?? "FINN",
           })
           .eq("id", id)
           .select("ref,camera_code")

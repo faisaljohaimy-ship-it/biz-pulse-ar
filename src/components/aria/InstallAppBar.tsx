@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * InstallAppBar — "📱 حمّل آريا كتطبيق" (Phase 6).
+ * InstallAppBar — "📱 حمّل FINN كتطبيق" (Phase 6).
  *
  * Android/Desktop: captures `beforeinstallprompt` and installs in one tap.
  * iOS/Safari (which never fires that event): shows the Add-to-Home-Screen
@@ -94,7 +94,7 @@ export function InstallAppBar() {
             <Download className="h-5 w-5" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-bold text-white">📱 حمّل آريا كتطبيق</div>
+            <div className="text-sm font-bold text-white">📱 حمّل FINN كتطبيق</div>
             <div className="truncate text-[11px] text-white/60">
               ثبّتها على جهازك واعمل بسرعة ودون اتصال.
             </div>
@@ -137,7 +137,7 @@ export function InstallAppBar() {
               اختر <span className="font-semibold">«إضافة إلى الشاشة الرئيسية»</span>.
             </li>
             <li>
-              ثم <span className="font-semibold">«إضافة»</span> — وتظهر آريا كتطبيق.
+              ثم <span className="font-semibold">«إضافة»</span> — وتظهر FINN كتطبيق.
             </li>
           </ol>
         )}

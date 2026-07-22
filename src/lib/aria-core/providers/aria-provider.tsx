@@ -1,5 +1,5 @@
 /**
- * ARIA Singleton Provider — mounted ONCE in `src/routes/__root.tsx`.
+ * FINN Singleton Provider — mounted ONCE in `src/routes/__root.tsx`.
  *
  * Phase 1 Brain Core wiring:
  *   - Owns the ONE `useChat` transport (via AriaService).
@@ -134,7 +134,7 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     if (!last || last.role !== "assistant") return;
     const text =
       last.parts.map((p) => (p.type === "text" ? p.text : "")).join("") ||
-      "ARIA completed a non-text tool step.";
+      "FINN completed a non-text tool step.";
     reportedRef.current.add(active.id);
     ariaBrain.reportCompletion(active.id, text);
   }, [chat.status, chat.messages]);

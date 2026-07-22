@@ -1,5 +1,5 @@
 /**
- * AriaUsageAnalytics — Phase 5 usage & satisfaction dashboard for ARIA.
+ * AriaUsageAnalytics — Phase 5 usage & satisfaction dashboard for FINN.
  *
  * Reads the deterministic, fixture-derived analytics (`getUsageAnalytics`) — no
  * network, no external key — so it renders identically everywhere and is
@@ -27,7 +27,7 @@ export function AriaUsageAnalytics({ className = "" }: { readonly className?: st
   return (
     <section
       dir="rtl"
-      aria-label="تحليلات استخدام آريا"
+      aria-label="تحليلات استخدام FINN"
       className={`relative w-full rounded-2xl border border-[#3AE8FF]/18 bg-gradient-to-b from-[#061A2E]/55 to-[#04101C]/70 p-4 backdrop-blur-md sm:p-5 ${className}`}
     >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">

@@ -1,5 +1,5 @@
 /**
- * ARIA Presence endpoint — welcome + interruption + heartbeat.
+ * FINN Presence endpoint — welcome + interruption + heartbeat.
  *
  * GET  /api/public/aria-presence?sid=<session>
  *   Returns { greeting, delta, interruption } for the given session and
@@ -7,7 +7,7 @@
  *
  * POST /api/public/aria-presence
  *   Body: { sessionId, kind: "heartbeat"|"seen_incident"|"seen_alert", ref? }
- *   Updates the presence cursor so ARIA does not interrupt again.
+ *   Updates the presence cursor so FINN does not interrupt again.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";

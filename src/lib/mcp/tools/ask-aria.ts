@@ -3,9 +3,9 @@ import { z } from "zod";
 
 export default defineTool({
   name: "ask_aria",
-  title: "Ask ARIA",
+  title: "Ask FINN",
   description:
-    "Send a natural-language question to ARIA, the NEXUS Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
+    "Send a natural-language question to FINN, the NEXUS Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
   inputSchema: {
     question: z
       .string()
@@ -56,15 +56,15 @@ export default defineTool({
     if (!apiKey) {
       return {
         content: [
-          { type: "text", text: "ARIA is unavailable: LOVABLE_API_KEY is not configured." },
+          { type: "text", text: "FINN is unavailable: LOVABLE_API_KEY is not configured." },
         ],
         isError: true,
       };
     }
     const sys =
       language === "en"
-        ? "You are ARIA, the Executive AI Engine of NEXUS AI OS. Reply concisely in English."
-        : "أنت آريا، المحرك التنفيذي لنظام NEXUS AI OS. أجب باختصار تنفيذي.";
+        ? "You are FINN, the Executive AI Engine of NEXUS AI OS. Reply concisely in English."
+        : "أنت FINN، المحرك التنفيذي لنظام NEXUS AI OS. أجب باختصار تنفيذي.";
     try {
       const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",

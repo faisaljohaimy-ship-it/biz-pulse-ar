@@ -1,5 +1,5 @@
 /**
- * ARIA Self-Evolution Engine — orchestrator (server-only).
+ * FINN Self-Evolution Engine — orchestrator (server-only).
  *
  * Pipeline: analyze → detect_issues → generate_plan → estimate_risk →
  *           apply_safe_changes → validate → benchmark → report.

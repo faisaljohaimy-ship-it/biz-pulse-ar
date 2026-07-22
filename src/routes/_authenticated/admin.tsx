@@ -234,8 +234,8 @@ function SimulationPanel({ locale }: { locale: string }) {
 
       <p className="mt-2 text-[11px] text-muted-foreground">
         {locale === "ar"
-          ? "«اليوم التنفيذي» ينشئ قصة تشغيلية مترابطة: دورية → تفتيش → مخاطرة → إشعارات → إجراءات تصحيحية → حادثة → أمر عمل → اجتماع تنفيذي → تقرير ARIA — كلها مترابطة بالمعرّفات."
-          : '"Executive Day" builds a fully connected story: patrol → inspection → risk → notifications → CARs → incident → work order → executive meeting → ARIA briefing — all linked by refs.'}
+          ? "«اليوم التنفيذي» ينشئ قصة تشغيلية مترابطة: دورية → تفتيش → مخاطرة → إشعارات → إجراءات تصحيحية → حادثة → أمر عمل → اجتماع تنفيذي → تقرير FINN — كلها مترابطة بالمعرّفات."
+          : '"Executive Day" builds a fully connected story: patrol → inspection → risk → notifications → CARs → incident → work order → executive meeting → FINN briefing — all linked by refs.'}
       </p>
 
       {status.data && (

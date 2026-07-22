@@ -1,7 +1,7 @@
 /**
  * Server-only helpers for embedding text via Lovable AI Gateway.
  * Uses openai/text-embedding-3-small projected to 768 dims to match the
- * ARIA/sec_knowledge pgvector indexes used by the production search RPCs.
+ * FINN/sec_knowledge pgvector indexes used by the production search RPCs.
  */
 
 const ENDPOINT = "https://ai.gateway.lovable.dev/v1/embeddings";

@@ -75,7 +75,7 @@ const PROVIDERS: IntegrationStatus[] = [
     status: "not_configured",
     scopes: ["chat.completions", "image.generate", "tts"],
     doc: "LOVABLE_API_KEY (مُدار)",
-    note: "متصل — المحرك الافتراضي لـ ARIA.",
+    note: "متصل — المحرك الافتراضي لـ FINN.",
   },
   {
     id: "supabase",

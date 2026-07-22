@@ -2,7 +2,7 @@
  * Executive Memory (server-side, session-scoped, in-process).
  *
  * Persists the last N conversation turns, recommendations, incidents and
- * decisions per sessionId so ARIA can resolve cross-question references
+ * decisions per sessionId so FINN can resolve cross-question references
  * ("what happened today?" → "why?" → "who caused it?" → "what next?").
  *
  * This layer is intentionally in-memory. The Worker keeps state per

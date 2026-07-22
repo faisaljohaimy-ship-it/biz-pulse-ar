@@ -1,9 +1,9 @@
 /**
- * ARIA quick commands — the single source of truth for the composer's
+ * FINN quick commands — the single source of truth for the composer's
  * slash-commands and quick-action chips (Phase 2 §4).
  *
  * Each command is a well-formed Arabic (or English) prompt that is sent to
- * ARIA as a normal turn, so it works today with zero external keys: ARIA
+ * FINN as a normal turn, so it works today with zero external keys: FINN
  * answers from the system's own RAG/fixtures. `slash` is the Arabic trigger
  * typed after "/"; `needsInput` commands append the user's follow-up text.
  */
@@ -25,7 +25,7 @@ export interface QuickCommand {
   readonly ar: string;
   readonly en: string;
   readonly icon: LucideIcon;
-  /** The prompt sent to ARIA (Arabic). */
+  /** The prompt sent to FINN (Arabic). */
   readonly prompt: string;
   /** If true, the chip focuses the composer with a prefix instead of sending. */
   readonly needsInput?: boolean;

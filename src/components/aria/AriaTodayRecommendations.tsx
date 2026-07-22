@@ -1,5 +1,5 @@
 /**
- * AriaTodayRecommendations — proactive "توصيات آريا اليوم" strip (Phase 2 §3).
+ * AriaTodayRecommendations — proactive "توصيات FINN اليوم" strip (Phase 2 §3).
  *
  * Renders the three prioritized recommendations from `getTodayRecommendations`
  * (derived from the dashboard's own simulation fixtures) as tappable rows that
@@ -30,7 +30,7 @@ export function AriaTodayRecommendations({ className }: { className?: string }) 
   return (
     <section
       dir="rtl"
-      aria-label="توصيات آريا اليوم"
+      aria-label="توصيات FINN اليوم"
       className={cn(
         "relative overflow-hidden rounded-2xl border border-[#3AE8FF]/18 bg-gradient-to-b from-[#0A1B33]/70 to-[#06101F]/70 p-4 backdrop-blur-md",
         className,
@@ -41,7 +41,7 @@ export function AriaTodayRecommendations({ className }: { className?: string }) 
           <span className="grid h-8 w-8 place-items-center rounded-full bg-[#3AE8FF]/12 text-[#3AE8FF]">
             <Sparkles className="h-4 w-4" aria-hidden />
           </span>
-          <h2 className="text-sm font-bold text-white">توصيات آريا اليوم</h2>
+          <h2 className="text-sm font-bold text-white">توصيات FINN اليوم</h2>
         </div>
         <ExecutiveSourceBadge source={source} ar className="text-[9px]" />
       </div>

@@ -1,5 +1,5 @@
 /**
- * ARIA Presence — Greeting composer.
+ * FINN Presence — Greeting composer.
  *
  * Combines the ExecutiveBriefing (live health + priorities) with the
  * PresenceDelta ("since your last visit") into a natural bilingual

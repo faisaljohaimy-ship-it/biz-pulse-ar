@@ -1,5 +1,5 @@
 /**
- * ARIA Presence — public surface.
+ * FINN Presence — public surface.
  */
 export { ARIA_VOICE_CONTRACT, sanitizeVoice } from "./voice";
 export {

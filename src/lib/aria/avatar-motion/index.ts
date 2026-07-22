@@ -1,4 +1,4 @@
-// Phase 11.3 — ARIA Avatar Motion public barrel.
+// Phase 11.3 — FINN Avatar Motion public barrel.
 // Strictly additive. Consumes Phase 11.2 identity profiles.
 
 export * from "./types";

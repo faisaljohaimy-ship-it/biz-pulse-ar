@@ -1,7 +1,7 @@
 /**
  * Deprecated compatibility route.
  *
- * ARIA has one authenticated voice runtime at `/api/aria/tts`. A permanent
+ * FINN has one authenticated voice runtime at `/api/aria/tts`. A permanent
  * method-preserving redirect keeps older clients functional without owning a
  * second voice, rate-limit, or provider implementation.
  */

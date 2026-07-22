@@ -23,7 +23,7 @@ export const Route = createFileRoute("/films")({
       {
         name: "description",
         content:
-          "Eight cinematic films showcasing NEXIOS AI OS: investor story, full walkthrough, ARIA intelligence, digital twin, boardroom, live analytics, and ROI — Arabic and English.",
+          "Eight cinematic films showcasing NEXIOS AI OS: investor story, full walkthrough, FINN intelligence, digital twin, boardroom, live analytics, and ROI — Arabic and English.",
       },
       { property: "og:title", content: "Film Center — NEXIOS AI OS" },
       { property: "og:url", content: `${DOMAIN_URL}/films` },
@@ -90,8 +90,8 @@ const FILMS: Film[] = [
   },
   {
     id: "aria",
-    titleAr: "ARIA — الذكاء التنفيذي",
-    titleEn: "ARIA — Executive Intelligence",
+    titleAr: "FINN — الذكاء التنفيذي",
+    titleEn: "FINN — Executive Intelligence",
     descAr: "كيف يتحول كل سؤال تنفيذي إلى قرار مُسنَد بالبيانات.",
     descEn: "How every executive question becomes a data-grounded decision.",
     duration: "3:05",
@@ -118,8 +118,8 @@ const FILMS: Film[] = [
     id: "boardroom",
     titleAr: "تجربة قاعة المجلس",
     titleEn: "Boardroom Experience",
-    descAr: "موجزات مجلس الإدارة، السيناريوهات، توصيات ARIA.",
-    descEn: "Board briefings, scenarios, and ARIA recommendations.",
+    descAr: "موجزات مجلس الإدارة، السيناريوهات، توصيات FINN.",
+    descEn: "Board briefings, scenarios, and FINN recommendations.",
     duration: "3:50",
     poster: cinematicBoardroom,
     badgeAr: "تنفيذي",
@@ -345,8 +345,8 @@ function PlayerModal({ film, isAr, onClose }: { film: Film; isAr: boolean; onClo
           )}
           <div className="px-4 py-3 text-center text-xs text-white/60">
             {isAr
-              ? "تشغيل الفيديو معطّل — استخدم أريا للشرح المباشر"
-              : "Video playback disabled — ask ARIA for a live walkthrough"}
+              ? "تشغيل الفيديو معطّل — استخدم FINN للشرح المباشر"
+              : "Video playback disabled — ask FINN for a live walkthrough"}
           </div>
         </div>
       </div>

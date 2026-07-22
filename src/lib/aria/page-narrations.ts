@@ -1,5 +1,5 @@
 /**
- * ARIA page narrations — public API. The large entry list is split across
+ * FINN page narrations — public API. The large entry list is split across
  * page-narrations.entries.a/b/c.ts (pure data); this module keeps the matcher
  * and helpers so `narrationFor`/`isSilentRoute` stay the single import surface.
  */
@@ -9,7 +9,7 @@ import { ENTRIES_A } from "./page-narrations.entries.a";
 import { ENTRIES_B } from "./page-narrations.entries.b";
 import { ENTRIES_C } from "./page-narrations.entries.c";
 
-// Prefixes where ARIA MUST stay silent (intros, cinematic promos, sinks).
+// Prefixes where FINN MUST stay silent (intros, cinematic promos, sinks).
 const SILENT_PREFIXES = ["/promo", "/lovable", "/.well-known", "/.mcp", "/mcp", "/api"] as const;
 
 export function isSilentRoute(pathname: string): boolean {

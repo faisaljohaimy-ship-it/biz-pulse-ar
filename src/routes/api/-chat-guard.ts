@@ -38,7 +38,7 @@ export function chatResponseHeaders(requestId: string): Record<string, string> {
   return {
     "Cache-Control": "no-store",
     "Referrer-Policy": "no-referrer",
-    "X-ARIA-Request-ID": requestId,
+    "X-FINN-Request-ID": requestId,
     "X-Content-Type-Options": "nosniff",
   };
 }

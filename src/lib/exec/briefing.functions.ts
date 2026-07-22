@@ -1,7 +1,7 @@
 /**
  * Executive Briefing — composes a 60-second operational presentation
  * from real runtime data: latest agent runs, open incidents/patrols,
- * recent events. ARIA merges findings into one recommendation via the
+ * recent events. FINN merges findings into one recommendation via the
  * Lovable AI Gateway (gpt-5). Persists each briefing in
  * `executive_briefings`.
  */
@@ -105,11 +105,11 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
 
     const segments: BriefingSegment[] = [];
 
-    // 0–5s: ARIA welcome
+    // 0–5s: FINN welcome
     segments.push({
       at: 0,
       speaker_id: "aria",
-      speaker_name: "ARIA",
+      speaker_name: "FINN",
       text_ar: "السلام عليكم. هذا الموجز التنفيذي الحي من إدارة الأمن الصناعي بالمنطقة الغربية.",
       text_en:
         "Good day. This is the live executive briefing from Industrial Security, Western Region.",
@@ -119,7 +119,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
     segments.push({
       at: 5,
       speaker_id: "aria",
-      speaker_name: "ARIA",
+      speaker_name: "FINN",
       text_ar: `الحالة التشغيلية مستقرة. لدينا ${open.length} بلاغًا مفتوحًا منها ${critical.length} حرج، و${activePatrols} دورية نشطة، و${openHighRiskPermits} تصاريح عالية الخطورة.`,
       text_en: `Operations are stable. ${open.length} open incidents (${critical.length} critical), ${activePatrols} active patrols, ${openHighRiskPermits} high-risk permits in effect.`,
       badges: [
@@ -147,7 +147,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
       });
     });
 
-    // 45–55s: ARIA merge — recommendation via gpt-5
+    // 45–55s: FINN merge — recommendation via gpt-5
     let recommendation: ExecutiveBriefing["recommendation"];
     try {
       const key = process.env.LOVABLE_API_KEY;
@@ -160,7 +160,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
         .join("\n");
 
       const prompt =
-        `You are ARIA, executive AI for Industrial Security. Read these agent findings and the operational snapshot. ` +
+        `You are FINN, executive AI for Industrial Security. Read these agent findings and the operational snapshot. ` +
         `Return STRICT JSON with keys title_ar, title_en, rationale_ar, rationale_en, confidence (0..1), horizon_hours (integer). ` +
         `Be specific, non-technical, executive-tone. No tables, no markdown.\n\n` +
         `Snapshot: open=${open.length} critical=${critical.length} patrols=${activePatrols} permits_high=${openHighRiskPermits}.\n\n` +
@@ -216,7 +216,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
     segments.push({
       at: 55,
       speaker_id: "aria",
-      speaker_name: "ARIA",
+      speaker_name: "FINN",
       text_ar: `التوصية: ${recommendation.title_ar}. مستوى الثقة ${Math.round(recommendation.confidence * 100)}٪.`,
       text_en: `Recommendation: ${recommendation.title_en}. Confidence ${Math.round(recommendation.confidence * 100)}%.`,
     });

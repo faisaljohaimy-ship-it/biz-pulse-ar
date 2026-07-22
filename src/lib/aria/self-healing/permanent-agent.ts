@@ -1,5 +1,5 @@
 /**
- * ARIA Permanent Self-Healing Agent (client-side, always-on).
+ * FINN Permanent Self-Healing Agent (client-side, always-on).
  *
  * Runs continuously in the background from the moment the shell hydrates
  * and never stops. It complements the pre-hydration Crash-Loop Breaker

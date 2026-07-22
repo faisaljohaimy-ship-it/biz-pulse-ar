@@ -1,5 +1,5 @@
 /**
- * Executive Brain — the deterministic pipeline every ARIA question flows
+ * Executive Brain — the deterministic pipeline every FINN question flows
  * through in Phase 6:
  *
  *   User Question

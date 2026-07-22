@@ -3,7 +3,7 @@
  *
  * Reads the LIVE record of work the AI organization has done from
  * `agent_runs` + `agent_definitions`, projects each completed run as a
- * single bilingual "statement" by that specialist agent, then asks ARIA
+ * single bilingual "statement" by that specialist agent, then asks FINN
  * (gpt-5 via Lovable AI Gateway) to synthesize one executive
  * recommendation across all statements. The synthesis is persisted to
  * `aria_reports` (kind=`conversation`) so follow-up loads are instant
@@ -57,7 +57,7 @@ export type AgentConversation = {
   generated_at: string;
   /** Conversation transcript — newest-first. */
   turns: ConversationTurn[];
-  /** ARIA's executive synthesis across the transcript. */
+  /** FINN's executive synthesis across the transcript. */
   synthesis: ConversationSynthesis | null;
   /** Whether the synthesis was loaded from cache. */
   cached: boolean;
@@ -134,7 +134,7 @@ function cacheTitle(anchor: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Server function — get live conversation + ARIA synthesis
+// Server function — get live conversation + FINN synthesis
 // ---------------------------------------------------------------------------
 
 export const getAgentConversation = createServerFn({ method: "GET" })
@@ -261,7 +261,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         .join("\n");
 
       const prompt =
-        `You are ARIA, Chief Executive Intelligence Officer for an Industrial Security operation in Saudi Arabia (Western Region). ` +
+        `You are FINN, Chief Executive Intelligence Officer for an Industrial Security operation in Saudi Arabia (Western Region). ` +
         `Read the LIVE statements from your specialist agents below and synthesize ONE executive recommendation. ` +
         `Speak as an executive to executives — no SQL, no table names, no markdown, no schemas, no UUIDs. ` +
         `Return STRICT JSON with these keys exactly:\n` +
@@ -312,7 +312,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         source: "gpt-5",
       };
 
-      // Persist as ARIA's short-term executive memory.
+      // Persist as FINN's short-term executive memory.
       try {
         const { data: orgRow } = await sb
           .from("org_members")
@@ -328,7 +328,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
             kind: "conversation",
             title: cacheKey,
             payload: synthesis,
-            markdown: `ARIA · ${synthesis.priority.toUpperCase()}\n\n${synthesis.recommendation_en}`,
+            markdown: `FINN · ${synthesis.priority.toUpperCase()}\n\n${synthesis.recommendation_en}`,
             confidence: synthesis.confidence,
             period_start: turns[turns.length - 1]?.occurred_at ?? generated_at,
             period_end: generated_at,

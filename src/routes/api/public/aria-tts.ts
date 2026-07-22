@@ -1,12 +1,12 @@
 /**
- * Public ARIA voice endpoint — powers the landing hero AND the Executive
+ * Public FINN voice endpoint — powers the landing hero AND the Executive
  * Voice Tour. Same voice identity as the authenticated chatbot: reads
  * `ARIA_ELEVENLABS_VOICE_ID` from the shared voice config so tour audio
- * is acoustically identical to the ARIA chatbot.
+ * is acoustically identical to the FINN chatbot.
  *
  * ONE voice, always: there is deliberately NO fallback provider. If
  * ElevenLabs is unavailable the endpoint returns 502 and the client stays
- * silent — a different voice would break ARIA's identity mid-session.
+ * silent — a different voice would break FINN's identity mid-session.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
@@ -117,7 +117,7 @@ export const Route = createFileRoute("/api/public/aria-tts")({
                     "Content-Type": "audio/mpeg",
                     "Content-Length": String(audio.byteLength),
                     "Cache-Control": "no-store",
-                    "X-ARIA-Voice-Provider": "elevenlabs",
+                    "X-FINN-Voice-Provider": "elevenlabs",
                   },
                 });
               }

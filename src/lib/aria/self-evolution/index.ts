@@ -1,5 +1,5 @@
 /**
- * ARIA Self-Evolution Engine — public surface.
+ * FINN Self-Evolution Engine — public surface.
  *
  * Server-only. Import from callers:
  *   import { runSelfEvolution } from "@/lib/aria/self-evolution";

@@ -106,7 +106,7 @@ export function NewIncidentDialog() {
       <DialogContent className="max-w-lg" dir="rtl">
         <DialogHeader>
           <DialogTitle>تسجيل بلاغ أمني</DialogTitle>
-          <DialogDescription>سيُسجَّل البلاغ وتُشغَّل ARIA لتحليل المخاطر فوراً.</DialogDescription>
+          <DialogDescription>سيُسجَّل البلاغ وتُشغَّل FINN لتحليل المخاطر فوراً.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
           <div className="grid gap-1.5">
@@ -206,7 +206,7 @@ export function NewIncidentDialog() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INCIDENT — Detail Drawer (timeline, actions, ARIA, work order, close)
+// INCIDENT — Detail Drawer (timeline, actions, FINN, work order, close)
 // ─────────────────────────────────────────────────────────────────────────────
 type IncRow = {
   id: string;
@@ -247,7 +247,7 @@ export function IncidentDrawer({
   const mAria = useMutation({
     mutationFn: () => aria({ data: { incident_id: incident!.id } }),
     onSuccess: () => {
-      toast.success("اكتمل تحليل ARIA");
+      toast.success("اكتمل تحليل FINN");
       qc.invalidateQueries({ queryKey: ["oms-incidents"] });
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
     },
@@ -453,7 +453,7 @@ export function IncidentDrawer({
     onError: (e: Error) => toast.error(e.message),
   });
 
-  // Latest ARIA event for recommendations
+  // Latest FINN event for recommendations
   const latestAria = (timeline ?? []).find(
     (e) => e.event === "aria_analyzed" || e.event === "aria_auto_analyzed",
   );
@@ -534,11 +534,11 @@ export function IncidentDrawer({
                 </div>
               </div>
 
-              {/* ARIA summary + recommendations */}
+              {/* FINN summary + recommendations */}
               <div className="rounded-lg border border-violet-500/30 bg-violet-500/5 p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-medium text-violet-700 dark:text-violet-400">
-                    <Sparkles className="h-3.5 w-3.5" /> تحليل ARIA
+                    <Sparkles className="h-3.5 w-3.5" /> تحليل FINN
                   </div>
                   <Button
                     size="sm"

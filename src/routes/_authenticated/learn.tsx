@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/learn")({
       {
         name: "description",
         content:
-          "The executive learning surface of NEXIOS AI OS. Cinematic lessons, live simulations, and ARIA as your instructor.",
+          "The executive learning surface of NEXIOS AI OS. Cinematic lessons, live simulations, and FINN as your instructor.",
       },
     ],
   }),

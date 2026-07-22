@@ -1,6 +1,6 @@
 // Eye Contact Engine — maintains gentle gaze on the interaction target with
 // occasional natural glance-away. Deterministic sinusoidal drift + a slow
-// low-frequency wander so ARIA never stares.
+// low-frequency wander so FINN never stares.
 
 import type { HeroTick, Vec2 } from "./types";
 import type { HeroStateSynchronizer } from "./state-synchronizer";

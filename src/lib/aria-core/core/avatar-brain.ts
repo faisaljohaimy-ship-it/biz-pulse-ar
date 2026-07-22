@@ -1,7 +1,7 @@
 /**
  * AvatarBrain — the SINGLE avatar coordinator.
  *
- * Sits under the ARIA Brain and translates conversation/voice/navigation/
+ * Sits under the FINN Brain and translates conversation/voice/navigation/
  * system signals into avatar state transitions. It owns nothing visual —
  * it only tells the state manager where to go and pushes events onto the
  * one animation queue. All rendering happens in AvatarRenderer.

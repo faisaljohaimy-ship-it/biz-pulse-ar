@@ -1,11 +1,11 @@
-# ARIA Brain Core — Architecture
+# FINN Brain Core — Architecture
 
-> The ONE ARIA. Every request routes through the Brain. Do not create a second one.
+> The ONE FINN. Every request routes through the Brain. Do not create a second one.
 
 ## Phase 1 — Foundation (this document)
 
 Phase 1 introduces the permanent **Brain Core** — the architecture every future
-ARIA capability (RAG, tools, persistent memory, voice, digital twin, avatar
+FINN capability (RAG, tools, persistent memory, voice, digital twin, avatar
 motion) will plug into. Phase 1 explicitly does NOT implement any of those
 features; it only builds the seams.
 
@@ -64,8 +64,8 @@ UI
 
 | Concern                  | Owner (exactly one)                                    |
 | ------------------------ | ------------------------------------------------------ |
-| ARIA Provider            | `<AriaProvider>` mounted in `src/routes/__root.tsx`    |
-| ARIA Brain               | `ariaBrain` (module singleton)                         |
+| FINN Provider            | `<AriaProvider>` mounted in `src/routes/__root.tsx`    |
+| FINN Brain               | `ariaBrain` (module singleton)                         |
 | Executive AI Orchestrator| `executiveAiOrchestrator` (module singleton)           |
 | AI Router (client hint)  | `aiRouter` (module singleton)                          |
 | AI Router (server select)| `resolveModel()` in `server/ai-router.server.ts`       |

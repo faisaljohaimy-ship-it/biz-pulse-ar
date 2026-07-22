@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 
 const source = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
-describe("ARIA singleton release contract", () => {
-  it("mounts one official ARIA UI at the application root", () => {
+describe("FINN singleton release contract", () => {
+  it("mounts one official FINN UI at the application root", () => {
     const root = source("src/routes/__root.tsx");
     expect(root.match(/<AriaCopilot\b/g)).toHaveLength(1);
     expect(root).not.toContain("AriaDock");
@@ -24,7 +24,7 @@ describe("ARIA singleton release contract", () => {
     }
   });
 
-  it("does not mount a second ARIA dock in Digital Twin", () => {
+  it("does not mount a second FINN dock in Digital Twin", () => {
     const twin = source("src/routes/_authenticated/digital-twin.tsx");
     expect(twin).not.toMatch(/AriaDock|useAriaVoice|DefaultChatTransport/);
   });
@@ -69,7 +69,7 @@ describe("ARIA singleton release contract", () => {
     }
   });
 
-  it("routes learning conversations through the same ARIA brain", () => {
+  it("routes learning conversations through the same FINN brain", () => {
     for (const component of [
       "src/components/learn/LessonARIAChat.tsx",
       "src/components/learn/simulations/MeetAriaSimulation.tsx",
@@ -80,7 +80,7 @@ describe("ARIA singleton release contract", () => {
     }
   });
 
-  it("derives command-center ARIA status from the singleton runtime", () => {
+  it("derives command-center FINN status from the singleton runtime", () => {
     const preview = source("src/components/executive/command/cc/AriaConsole.tsx");
     expect(preview).toContain("useAria");
     expect(preview).not.toMatch(/setInterval|useChat|useAriaVoice/);

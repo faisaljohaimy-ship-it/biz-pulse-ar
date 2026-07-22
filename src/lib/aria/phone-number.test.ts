@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { normalizeE164 } from "./phone-number";
 
-describe("ARIA E.164 phone normalization", () => {
+describe("FINN E.164 phone normalization", () => {
   it("normalizes the registered Saudi owner number from 00 notation", () => {
     expect(normalizeE164("00966500888778")).toBe("+966500888778");
   });

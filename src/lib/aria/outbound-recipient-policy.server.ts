@@ -4,7 +4,7 @@ import { normalizeE164 } from "./phone-number";
  * Direct-send owner policy.
  *
  * These are destinations, not provider credentials. Deployments can override
- * them without changing source code. Direct ARIA sends are deliberately
+ * them without changing source code. Direct FINN sends are deliberately
  * restricted to the registered owner; other recipients use the reviewed
  * approval flow.
  */
@@ -32,7 +32,7 @@ export function isAriaOwnerDirectSendEnabled(
 function normalizeEmail(value: string): string {
   const email = value.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error("ARIA owner email is invalid.");
+    throw new Error("FINN owner email is invalid.");
   }
   return email;
 }
@@ -51,7 +51,7 @@ export function resolveOwnerEmail(requested?: string): string {
   if (!requested) return owner;
   if (normalizeEmail(requested) !== owner) {
     throw new Error(
-      "Direct email is restricted to the registered ARIA owner. Use the reviewed approval flow for another recipient.",
+      "Direct email is restricted to the registered FINN owner. Use the reviewed approval flow for another recipient.",
     );
   }
   return owner;
@@ -62,7 +62,7 @@ export function resolveOwnerSms(requested?: string): string {
   if (!requested) return owner;
   if (normalizeE164(requested) !== owner) {
     throw new Error(
-      "Direct SMS is restricted to the registered ARIA owner. Use the reviewed approval flow for another recipient.",
+      "Direct SMS is restricted to the registered FINN owner. Use the reviewed approval flow for another recipient.",
     );
   }
   return owner;

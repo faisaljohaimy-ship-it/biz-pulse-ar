@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PlayCircle, StopCircle, Sparkles, Volume2, VolumeX } from "lucide-react";
 import {
-  ARIA,
+  FINN,
   DIGITAL_HUMANS,
   findHuman,
   type DigitalHumanSpec,
@@ -162,7 +162,7 @@ function buildScript(ov: PresentationOverview, ar: boolean, displayName: string)
       text_en: "Executive report is composed and ready for delivery.",
     },
 
-    // ARIA recommendation
+    // FINN recommendation
     {
       speakerId: "aria",
       preState: "thinking",
@@ -208,7 +208,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
   const [, forceTick] = useState(0);
 
   // All 11 canonical Digital Humans are present — no specialist silently
-  // falls back to ARIA when its turn begins.
+  // falls back to FINN when its turn begins.
   const stageSpecs = useMemo<DigitalHumanSpec[]>(() => DIGITAL_HUMANS, []);
 
   // Build one engine per stage human

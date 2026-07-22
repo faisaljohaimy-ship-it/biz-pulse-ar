@@ -32,7 +32,7 @@ export const runHcisPtwSeedFn = createServerFn({ method: "POST" })
     return await runHcisPtwSeed(supabaseAdmin, { orgId, seed: data.seed, userId: context.userId });
   });
 
-/* ── HCIS overview (page + ARIA) ────────────────────────────────────────── */
+/* ── HCIS overview (page + FINN) ────────────────────────────────────────── */
 export type HcisOverview = {
   overallPct: number;
   byRegion: Record<string, number>;
@@ -144,7 +144,7 @@ export const getHcisOverview = createServerFn({ method: "GET" })
     };
   });
 
-/* ── PTW overview (page + ARIA) ─────────────────────────────────────────── */
+/* ── PTW overview (page + FINN) ─────────────────────────────────────────── */
 export type PtwOverview = {
   counts: { active: number; pending: number; endingSoon: number; expiredToday: number };
   types: Array<{

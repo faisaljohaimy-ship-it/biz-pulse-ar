@@ -1,8 +1,8 @@
 /**
- * ARIA Voice — natural executive register.
+ * FINN Voice — natural executive register.
  *
  * Constants + tiny helpers used across greeting, explanation, and
- * ask endpoints to keep ARIA sounding like an executive partner, not a
+ * ask endpoints to keep FINN sounding like an executive partner, not a
  * chatbot. Injected into the model system prompt as a *voice contract*.
  */
 

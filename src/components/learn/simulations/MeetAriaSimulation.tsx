@@ -1,4 +1,4 @@
-/** Guided learning simulation backed by the singleton ARIA conversation. */
+/** Guided learning simulation backed by the singleton FINN conversation. */
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2, PlayCircle, ShieldCheck, Sparkles } from "lucide-react";
@@ -58,8 +58,8 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
         <div className="space-y-4">
           <div className="text-sm text-white/70">
             {ar
-              ? "اختر سؤالاً تنفيذياً؛ ستفتحه آريا في محادثتها الرسمية مع الاحتفاظ بذاكرتها وصوتها الواحد."
-              : "Choose an executive question; ARIA will open it in her official conversation with one persistent memory and voice."}
+              ? "اختر سؤالاً تنفيذياً؛ ستفتحه FINN في محادثتها الرسمية مع الاحتفاظ بذاكرتها وصوتها الواحد."
+              : "Choose an executive question; FINN will open it in her official conversation with one persistent memory and voice."}
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             {suggested.map((suggestion, index) => {
@@ -95,11 +95,11 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
             )}
             {step === 2
               ? ar
-                ? "آريا تعالج السؤال في نافذتها الموحدة…"
-                : "ARIA is processing in her unified panel…"
+                ? "FINN تعالج السؤال في نافذتها الموحدة…"
+                : "FINN is processing in her unified panel…"
               : ar
-                ? "اكتملت الجولة عبر ذاكرة آريا وصوتها الرسمي."
-                : "The turn completed through ARIA's official memory and voice."}
+                ? "اكتملت الجولة عبر ذاكرة FINN وصوتها الرسمي."
+                : "The turn completed through FINN's official memory and voice."}
           </div>
         </div>
       )}
@@ -108,8 +108,8 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
         <div className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-400/30 bg-emerald-400/[0.06] p-4">
           <div className="text-sm text-white/90">
             {ar
-              ? "اكتملت تجربة آريا الموحّدة. سجّل تقدمك في الحصة."
-              : "You completed the unified ARIA experience. Record your lesson progress."}
+              ? "اكتملت تجربة FINN الموحّدة. سجّل تقدمك في الحصة."
+              : "You completed the unified FINN experience. Record your lesson progress."}
           </div>
           <button
             type="button"
@@ -130,8 +130,8 @@ export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props
 
 function ExecutiveStepper({ step, ar }: { step: 1 | 2 | 3; ar: boolean }) {
   const labels = ar
-    ? ["اختر سؤالاً", "شاهد آريا الرسمية", "أكمل المحاكاة"]
-    : ["Choose a question", "Watch official ARIA", "Complete"];
+    ? ["اختر سؤالاً", "شاهد FINN الرسمية", "أكمل المحاكاة"]
+    : ["Choose a question", "Watch official FINN", "Complete"];
 
   return (
     <ol className="flex flex-wrap items-center gap-2 text-xs">

@@ -188,7 +188,7 @@ export const runtimePulse = createServerFn({ method: "POST" })
       workflowsAdvanced++;
     }
 
-    // 4) Auto-seed ARIA corpus on first activation (once per org).
+    // 4) Auto-seed FINN corpus on first activation (once per org).
     //    Cheap probe: skip if any knowledge already exists for this org.
     let corpusInserted = 0;
     try {

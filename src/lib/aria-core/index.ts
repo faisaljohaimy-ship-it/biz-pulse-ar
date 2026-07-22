@@ -1,7 +1,7 @@
 /**
- * ARIA Singleton — public barrel.
+ * FINN Singleton — public barrel.
  *
- * Every route/component/hook talks to ARIA through these exports. Do NOT
+ * Every route/component/hook talks to FINN through these exports. Do NOT
  * import from `src/lib/aria/**` or from the internal `core/`, `state/`,
  * `services/`, `providers/`, `hooks/`, `types/` directories — go through
  * this file.

@@ -1,5 +1,5 @@
 /**
- * ARIA Learning — Interaction Log (server helper).
+ * FINN Learning — Interaction Log (server helper).
  * Article IV §1 of docs/NEXUS_ENGINEERING_CONSTITUTION.md (INV-9).
  *
  * Thin, typed accessor over `aria_interactions`. The chat handler writes

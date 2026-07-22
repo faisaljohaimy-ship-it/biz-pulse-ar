@@ -1,4 +1,4 @@
-// Phase 11.3 — ARIA Avatar Motion types.
+// Phase 11.3 — FINN Avatar Motion types.
 // Strictly additive. Consumes Phase 11.2 identity, never modifies it.
 
 export type MotionState =

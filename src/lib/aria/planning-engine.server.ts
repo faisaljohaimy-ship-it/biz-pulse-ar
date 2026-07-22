@@ -1,8 +1,8 @@
 /**
- * ARIA Planning Engine (server-only, additive).
+ * FINN Planning Engine (server-only, additive).
  *
  * Turns a raw executive question + detected intent into an ordered,
- * dependency-aware plan of internal steps ARIA will run before it speaks.
+ * dependency-aware plan of internal steps FINN will run before it speaks.
  * Deterministic and cheap — no extra LLM hop. The output is injected into
  * the system prompt so the model can align its reasoning with the plan.
  */

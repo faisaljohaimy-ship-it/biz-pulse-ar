@@ -1,5 +1,5 @@
 /**
- * ARIA "Today's recommendations" — proactive, deterministic insights derived
+ * FINN "Today's recommendations" — proactive, deterministic insights derived
  * from the SAME simulation fixtures the dashboard reads (Phase 2 §3). No live
  * network, no external key. Every figure traces to `regionSim` counts, so the
  * card is honestly badged «محاكاة» and stays mathematically consistent with the

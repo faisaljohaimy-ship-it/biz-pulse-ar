@@ -1,9 +1,9 @@
 /**
- * AriaCopilot — the ONE ARIA UI. Renders both the floating launcher and
+ * AriaCopilot — the ONE FINN UI. Renders both the floating launcher and
  * the dockable copilot panel. Consumes the singleton `useChat` from the
  * `<AriaProvider>` so state persists across every route change.
  *
- * Panel layout (Objective 1): ARIA fills the entire panel as a cinematic
+ * Panel layout (Objective 1): FINN fills the entire panel as a cinematic
  * background layer (video → still, object-contain top-center, full figure
  * always visible). Chat floats above her with backdrop blur and readability
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
@@ -267,7 +267,7 @@ function rmsLevel(samples: Float32Array): number {
 const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
-const THINKING_AR = "آريا تفكّر…";
+const THINKING_AR = "FINN تفكّر…";
 const MAX_ATTACHMENTS = 5;
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 const MAX_ATTACHMENTS_TOTAL_BYTES = 20 * 1024 * 1024;
@@ -365,9 +365,9 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
       className="aria-presence absolute inset-0 overflow-hidden pointer-events-none"
       style={{ background: "#04070F" }}
     >
-      {/* Phase 0 — ARIA cinematic signature (the visual brand of the window). */}
+      {/* Phase 0 — FINN cinematic signature (the visual brand of the window). */}
       <AriaSignatureBackdrop />
-      {/* ARIA hologram portrait — shown only in voice-conversation mode so the
+      {/* FINN hologram portrait — shown only in voice-conversation mode so the
           default text chat keeps the clean signature backdrop. */}
       {convMode && (
         <img
@@ -424,7 +424,7 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
   );
 }
 
-/** Unified ARIA top-circle avatar — identical on mobile and desktop.
+/** Unified FINN top-circle avatar — identical on mobile and desktop.
  *  A 96px circular figure pinned to the top-center of the chat panel.
  *  Emerald ring pulses while speaking; static under prefers-reduced-motion. */
 function AriaTopAvatar() {
@@ -514,7 +514,7 @@ export function AriaCopilot() {
     [chat.messages],
   );
 
-  // Drive ARIA presence state from chat lifecycle.
+  // Drive FINN presence state from chat lifecycle.
   // thinking > listening > idle (speaking is driven by audio events below).
   useEffect(() => {
     if (isBusy || transcribing) {
@@ -1036,7 +1036,7 @@ export function AriaCopilot() {
         AriaAudioBus.release("chat-tts");
         streamStateRef.current.delete(messageId);
         if (convModeRef.current && s.playbackFailed) {
-          setConvNotice("تعذّر تشغيل صوت آريا — تحقق من صوت الجهاز ثم اضغط للمتابعة.");
+          setConvNotice("تعذّر تشغيل صوت FINN — تحقق من صوت الجهاز ثم اضغط للمتابعة.");
           setConvPaused(true);
         } else if (convModeRef.current) {
           if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
@@ -1051,7 +1051,7 @@ export function AriaCopilot() {
 
   // Streaming TTS pipeline — voice replies are EXCLUSIVE to Conversation
   // Mode («مخاطبة») on every device: a reply is spoken aloud only when it
-  // answers a voice turn captured by the conversation mic; ARIA then
+  // answers a voice turn captured by the conversation mic; FINN then
   // re-opens the mic to continue the exchange. Anything the user TYPES is
   // answered in text only — no TTS call is made at all.
   useEffect(() => {
@@ -1255,7 +1255,7 @@ export function AriaCopilot() {
   );
 
   // Quick commands (Phase 2 §4). A search-style command focuses the composer
-  // with a prefix; the rest send a ready-made prompt to ARIA immediately.
+  // with a prefix; the rest send a ready-made prompt to FINN immediately.
   const runQuickCommand = useCallback(
     (cmd: QuickCommand) => {
       if (cmd.needsInput) {
@@ -1609,7 +1609,7 @@ export function AriaCopilot() {
 
   const startListening = useCallback(() => {
     primeIOSAudio();
-    // Barge-in: silence and release every pending ARIA speech resource.
+    // Barge-in: silence and release every pending FINN speech resource.
     stopVoicePlayback();
     if (relistenTimerRef.current) {
       clearTimeout(relistenTimerRef.current);
@@ -1636,7 +1636,7 @@ export function AriaCopilot() {
       let recognitionFailed = false;
       // SpeechRecognition fallback (browsers without MediaRecorder). This
       // timer only re-arms on each recognised word as a safety net — the API
-      // fires its own end-of-speech first — so the old 6s/2.5s made ARIA feel
+      // fires its own end-of-speech first — so the old 6s/2.5s made FINN feel
       // frozen after the user stopped talking. 1.5s (conv) / 2s keeps the reply
       // prompt without truncating a brief pause.
       const silenceMs = convModeRef.current ? 1500 : 2000;
@@ -1720,7 +1720,7 @@ export function AriaCopilot() {
   /* Always-on resilience: a failed reply auto-retries (up to 2×, backed
      off) in BOTH text and voice conversation; server-side vendor cooling
      rotates the retry onto another configured provider. In voice mode the
-     conversation NEVER dies: after exhausted retries ARIA speaks a short
+     conversation NEVER dies: after exhausted retries FINN speaks a short
      status line and keeps listening, with a fresh retry budget for the
      next utterance. */
   const autoRetryRef = useRef(0);
@@ -1779,7 +1779,7 @@ export function AriaCopilot() {
       if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
       setGreeting(false);
       if (convModeRef.current && !controller.signal.aborted) {
-        setConvNotice("تعذّر تشغيل تحية آريا، يمكنك البدء بالتحدث مباشرة.");
+        setConvNotice("تعذّر تشغيل تحية FINN، يمكنك البدء بالتحدث مباشرة.");
         scheduleConversationRelisten(180);
       }
       return;
@@ -1824,7 +1824,7 @@ export function AriaCopilot() {
     if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
     setGreeting(false);
     if (!wasAborted && (!playbackStarted || !playedGreeting) && convModeRef.current) {
-      setConvNotice("تعذّر تشغيل التحية، ابدأ بالتحدث وسأجيبك بصوت آريا.");
+      setConvNotice("تعذّر تشغيل التحية، ابدأ بالتحدث وسأجيبك بصوت FINN.");
     }
     if (
       shouldContinueAfterAriaGreeting({
@@ -1856,7 +1856,7 @@ export function AriaCopilot() {
       // No speech input on this browser → Conversation Mode cannot work.
       // Stay in the text chat (typed turns are text-only by rule) and show
       // a transient notice instead of a half-broken voice mode.
-      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسترد آريا نصياً.");
+      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسترد FINN نصياً.");
       if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
       noticeTimerRef.current = setTimeout(() => setConvNotice(null), 5000);
       try {
@@ -1933,7 +1933,7 @@ export function AriaCopilot() {
       case "processing":
         return THINKING_AR;
       case "speaking":
-        return "آريا تتحدث…";
+        return "FINN تتحدث…";
       case "listening":
         return "تستمع…";
       default:
@@ -1955,8 +1955,8 @@ export function AriaCopilot() {
             dismissBlockingIntro();
             setMode("docked");
           }}
-          aria-label="Open ARIA — المخاطبة"
-          title="المخاطبة مع آريا"
+          aria-label="Open FINN — المخاطبة"
+          title="المخاطبة مع FINN"
           className={cn(
             "fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] end-6 z-50 flex h-14 w-14 items-center justify-center",
             "nexus-aria-launcher rounded-full border border-primary/45 bg-card/80 text-primary backdrop-blur-xl",
@@ -1983,7 +1983,7 @@ export function AriaCopilot() {
       {isOpen && (
         <aside
           role="complementary"
-          aria-label="ARIA executive copilot"
+          aria-label="FINN executive copilot"
           dir="rtl"
           className={cn(
             // Mobile: dock sits BELOW the marquee/date-time strip so the header
@@ -1995,7 +1995,7 @@ export function AriaCopilot() {
             "sm:top-1/2 sm:-translate-y-1/2 sm:h-[min(92vh,760px)]",
           )}
         >
-          {/* LAYER 0 — ARIA cinematic backdrop */}
+          {/* LAYER 0 — FINN cinematic backdrop */}
           <AriaPanelBackdrop convMode={convMode} caption={convCaption} />
           <AriaVoiceDebugBadge />
 
@@ -2013,7 +2013,7 @@ export function AriaCopilot() {
             </div>
             <div className="flex min-w-0 flex-1 flex-col leading-tight">
               <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                ARIA
+                FINN
                 <span
                   className="inline-flex items-center"
                   aria-label={health === "unknown" ? "checking" : undefined}
@@ -2039,7 +2039,7 @@ export function AriaCopilot() {
               type="button"
               onClick={toggleConversationMode}
               aria-pressed={convMode}
-              aria-label={convMode ? "إنهاء المخاطبة الصوتية" : "بدء المخاطبة مع آريا"}
+              aria-label={convMode ? "إنهاء المخاطبة الصوتية" : "بدء المخاطبة مع FINN"}
               className={cn(
                 // ≥44px touch target (mobile mandate) + pulse while the
                 // voice conversation is live so the state is unmistakable.
@@ -2068,7 +2068,7 @@ export function AriaCopilot() {
             <button
               type="button"
               onClick={closePanel}
-              aria-label="Close ARIA"
+              aria-label="Close FINN"
               className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
             >
               <X className="h-4 w-4" aria-hidden />
@@ -2095,14 +2095,14 @@ export function AriaCopilot() {
             </div>
           )}
 
-          {/* Mobile-only compact ARIA top avatar */}
+          {/* Mobile-only compact FINN top avatar */}
           <AriaTopAvatar />
 
           {/* LAYER 3 — Messages (transparent so backdrop shows through) */}
 
           {convMode ? (
             <section
-              aria-label="المخاطبة الصوتية مع آريا"
+              aria-label="المخاطبة الصوتية مع FINN"
               className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-7 overflow-hidden px-6 py-8 text-center"
             >
               <div className="relative grid h-40 w-40 place-items-center sm:h-48 sm:w-48">
@@ -2136,15 +2136,15 @@ export function AriaCopilot() {
               <div aria-live="polite" className="space-y-2">
                 <h2 className="text-xl font-semibold text-white sm:text-2xl">
                   {transcribing
-                    ? "آريا تحلّل صوتك"
+                    ? "FINN تحلّل صوتك"
                     : greeting
-                      ? "آريا ترحّب بك"
+                      ? "FINN ترحّب بك"
                       : listening
-                        ? "آريا تستمع"
+                        ? "FINN تستمع"
                         : isBusy
-                          ? "آريا تفكّر وتنفّذ"
+                          ? "FINN تفكّر وتنفّذ"
                           : state === "speaking"
-                            ? "آريا تتحدث"
+                            ? "FINN تتحدث"
                             : "المخاطبة الصوتية"}
                 </h2>
                 <p className="text-xs text-white/60 sm:text-sm">
@@ -2216,7 +2216,7 @@ export function AriaCopilot() {
                 {chat.messages.map((m) => {
                   const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
                   const mine = m.role === "user";
-                  // ARIA's on-screen text stays clean: tashkeel is stripped for
+                  // FINN's on-screen text stays clean: tashkeel is stripped for
                   // display while the spoken path (toAriaSpeechText → /api/aria/tts,
                   // diacritized server-side) keeps full diacritics for pronunciation.
                   const text = mine ? raw : stripTashkeel(sanitiseAssistantText(raw));
@@ -2528,12 +2528,12 @@ export function AriaCopilot() {
                   aria-label={
                     convMode
                       ? "إيقاف المخاطبة الصوتية"
-                      : "بدء المخاطبة الصوتية (تحدّث وستردّ آريا صوتاً)"
+                      : "بدء المخاطبة الصوتية (تحدّث وستردّ FINN صوتاً)"
                   }
                   title={
                     convMode
                       ? "إيقاف المخاطبة الصوتية"
-                      : "المخاطبة الصوتية — تحدّث وستردّ آريا صوتاً دون كتابة"
+                      : "المخاطبة الصوتية — تحدّث وستردّ FINN صوتاً دون كتابة"
                   }
                   className={cn(
                     "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all",
@@ -2559,8 +2559,8 @@ export function AriaCopilot() {
                     }
                   }}
                   rows={1}
-                  placeholder="اسأل آريا…"
-                  aria-label="Ask ARIA"
+                  placeholder="اسأل FINN…"
+                  aria-label="Ask FINN"
                   className={cn(
                     "nexus-field min-h-[40px] max-h-32 flex-1 resize-none rounded-xl border border-primary/20",
                     "bg-background/70 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",

@@ -7,7 +7,7 @@ import {
   isAriaOwnerDirectSendEnabled,
 } from "./outbound-recipient-policy.server";
 
-describe("ARIA owner recipient policy", () => {
+describe("FINN owner recipient policy", () => {
   it("uses the registered owner destinations by default", () => {
     expect(getAriaOwnerRecipients({})).toEqual({
       email: DEFAULT_ARIA_OWNER_EMAIL.toLowerCase(),

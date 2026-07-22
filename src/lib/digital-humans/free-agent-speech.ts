@@ -5,7 +5,7 @@
  * synthesized server-side by /api/aria/tts (the key never reaches the
  * client). Browser TTS is banned in all paths. Specialist narration flows
  * through the SAME governed channel model as before: it must own the
- * "agent-tts" source on AriaAudioBus before any audio starts, so ARIA
+ * "agent-tts" source on AriaAudioBus before any audio starts, so FINN
  * (chat-tts) can always preempt it and no two voices ever overlap.
  */
 import { AriaAudioBus } from "@/lib/aria/audio-bus";
@@ -120,7 +120,7 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
     let started = false;
     try {
       // Distinct ElevenLabs premade voice per specialist persona (server
-      // whitelists the id; ARIA herself never goes through this path).
+      // whitelists the id; FINN herself never goes through this path).
       const { AGENT_ELEVEN_VOICES } = await import("@/lib/aria/voice-config");
       const voiceId = opts.voiceProfileId ? AGENT_ELEVEN_VOICES[opts.voiceProfileId] : undefined;
       for (const segment of segments) {

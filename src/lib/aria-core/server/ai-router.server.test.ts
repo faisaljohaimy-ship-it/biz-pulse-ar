@@ -5,7 +5,7 @@ import { resolveModel, parseIntent } from "./ai-router.server";
  * Locks in the provider priority: Google(Gemini) → Lovable → OpenAI →
  * Anthropic → OpenRouter.
  *
- * ARIA PERMANENT-ON policy: LOVABLE_API_KEY is auto-provisioned and backed by
+ * FINN PERMANENT-ON policy: LOVABLE_API_KEY is auto-provisioned and backed by
  * workspace credits, so it is the reliable default whenever third-party
  * billing (Anthropic) or third-party auth (OpenRouter) is failing. Only
  * native Google Gemini's free tier outranks it.

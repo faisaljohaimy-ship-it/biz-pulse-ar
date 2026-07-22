@@ -60,7 +60,7 @@ export const Route = createFileRoute("/api/aria/transcribe")({
         const supabaseUrl = process.env.SUPABASE_URL?.trim();
         const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
         if (!supabaseUrl || !supabaseKey) {
-          return errorResponse("ARIA data service is not configured.", 503);
+          return errorResponse("FINN data service is not configured.", 503);
         }
         const supabase = createClient(supabaseUrl, supabaseKey, {
           global: { headers: { Authorization: authorization } },
@@ -92,7 +92,7 @@ export const Route = createFileRoute("/api/aria/transcribe")({
         }
 
         // STT provider chain (owner directive): ElevenLabs Scribe first — it
-        // shares the ELEVENLABS_API_KEY already required for ARIA's Layan
+        // shares the ELEVENLABS_API_KEY already required for FINN's Layan
         // voice — then the project's existing Gemini path as fallback. Keys
         // stay server-side only.
         const elevenKey = process.env.ELEVENLABS_API_KEY?.trim();
@@ -119,8 +119,8 @@ export const Route = createFileRoute("/api/aria/transcribe")({
                     status: 200,
                     headers: {
                       ...HEADERS,
-                      "X-ARIA-Transcription-Model": "scribe_v2",
-                      "X-ARIA-Transcription-Provider": "elevenlabs",
+                      "X-FINN-Transcription-Model": "scribe_v2",
+                      "X-FINN-Transcription-Provider": "elevenlabs",
                     },
                   },
                 );
@@ -212,8 +212,8 @@ export const Route = createFileRoute("/api/aria/transcribe")({
             status: 200,
             headers: {
               ...HEADERS,
-              "X-ARIA-Transcription-Model": model,
-              "X-ARIA-Transcription-Provider": "gemini",
+              "X-FINN-Transcription-Model": model,
+              "X-FINN-Transcription-Provider": "gemini",
             },
           },
         );

@@ -61,8 +61,8 @@ const PREVIEWS: readonly Preview[] = [
   },
   {
     to: "/aria",
-    ar: "آريا التنفيذية",
-    en: "ARIA Executive",
+    ar: "FINN التنفيذية",
+    en: "FINN Executive",
     descAr: "تحكّم كامل بالمساعدة الذكية أينما كنت",
     img: "/ai-assistant-bg.webp",
   },

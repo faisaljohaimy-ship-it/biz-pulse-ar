@@ -1,5 +1,5 @@
 /**
- * Server-only, dependency-free inspection for ARIA attachments.
+ * Server-only, dependency-free inspection for FINN attachments.
  *
  * This is a structural safety gate, not a replacement for an enterprise AV
  * engine. It verifies the real file signature, blocks executable/active

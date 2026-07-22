@@ -1,4 +1,4 @@
-// Phase 11.1 — ARIA Human Conversation Engine public barrel.
+// Phase 11.1 — FINN Human Conversation Engine public barrel.
 // Strictly additive. Server-only orchestration; no UI here.
 
 export * from "./types";

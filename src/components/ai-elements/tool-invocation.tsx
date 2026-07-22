@@ -315,7 +315,7 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
 
   return (
     <section
-      aria-label="معاينة واعتماد رسالة آريا"
+      aria-label="معاينة واعتماد رسالة FINN"
       className="nexus-card my-2 overflow-hidden rounded-2xl border border-amber-300/28 bg-[#061a2e]/88 text-right shadow-[0_18px_55px_-32px_rgba(245,197,96,.7)]"
       dir="rtl"
     >
@@ -390,7 +390,7 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
             role="alert"
             className="rounded-lg border border-rose-400/25 bg-rose-400/8 px-2.5 py-2 text-[10px] text-rose-200"
           >
-            {expired ? "انتهت صلاحية هذه المسودة. اطلب من آريا إنشاء معاينة جديدة." : detail}
+            {expired ? "انتهت صلاحية هذه المسودة. اطلب من FINN إنشاء معاينة جديدة." : detail}
           </p>
         )}
 

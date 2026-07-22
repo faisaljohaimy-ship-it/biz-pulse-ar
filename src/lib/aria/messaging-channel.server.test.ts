@@ -5,7 +5,7 @@ import {
   resolveTwilioConfig,
 } from "./messaging-channel.server";
 
-describe("ARIA messaging channels", () => {
+describe("FINN messaging channels", () => {
   it("normalizes a formatted E.164 phone number", () => {
     expect(normalizeE164("+966 55 123 4567")).toBe("+966551234567");
   });

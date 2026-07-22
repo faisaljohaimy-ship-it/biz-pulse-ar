@@ -6,12 +6,12 @@ import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 const MUTE_KEY = "aria-voice-muted";
 
 /**
- * useAriaSpeech — routes ARIA voice through the global AriaAudioBus
+ * useAriaSpeech — routes FINN voice through the global AriaAudioBus
  * (zero overlap guarantee) on the "chat-tts" channel.
  *
  * authenticated → ElevenLabs via /api/aria/tts (MP3 blob).
  * anonymous / failure → SILENCE. There is no fallback voice of any kind:
- * ARIA speaks with her one canonical voice or not at all.
+ * FINN speaks with her one canonical voice or not at all.
  */
 export function useAriaSpeech() {
   const [muted, setMutedState] = useState<boolean>(() => {
@@ -145,7 +145,7 @@ export function useAriaSpeech() {
         }
         await playBlob(blob, t0);
       } catch (err) {
-        // Silence over any substitute voice — per the ARIA voice policy.
+        // Silence over any substitute voice — per the FINN voice policy.
         VoiceTimeline.push("FALLBACK", "chat-tts silent (no elevenlabs)", {
           err: (err as Error).message,
         });

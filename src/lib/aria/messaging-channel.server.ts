@@ -102,7 +102,7 @@ export async function sendTwilioSms(
       body: form.toString(),
       retries: 0,
       timeoutMs: 15_000,
-      label: "ARIA Twilio Messages API",
+      label: "FINN Twilio Messages API",
     },
   );
 }
@@ -127,6 +127,6 @@ export async function sendResendEmail(
     }),
     retries: 0,
     timeoutMs: 15_000,
-    label: "ARIA Resend Emails API",
+    label: "FINN Resend Emails API",
   });
 }

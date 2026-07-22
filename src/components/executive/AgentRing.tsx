@@ -10,14 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
  * AgentRing — Executive AI Command Center surface.
  *
  * Cinematic neural ring of production agents (`agent_definitions`) orbiting
- * the ARIA core. Every node is alive: heartbeat pulse, status halo,
- * orbital sway, and SVG energy lines that flow toward ARIA when the agent
+ * the FINN core. Every node is alive: heartbeat pulse, status halo,
+ * orbital sway, and SVG energy lines that flow toward FINN when the agent
  * is actively running. Status is derived from the latest `agent_runs` rows.
  *
  * EXECUTIVE CONTRACT (silent agents): the surrounding agents are background
- * workers — they NEVER converse with the user. Only ARIA replies. Hover/focus
+ * workers — they NEVER converse with the user. Only FINN replies. Hover/focus
  * reveals read-only telemetry; the action CTA always routes the executive
- * back to ARIA, who orchestrates the rest of the swarm.
+ * back to FINN, who orchestrates the rest of the swarm.
  *
  * Charter v10.0: no fabricated names/metrics. RLS-gated; unauthenticated
  * mounts render skeleton pips, never demo agents.
@@ -212,7 +212,7 @@ export function AgentRing() {
 
   return (
     <section
-      aria-label="مركز قيادة الذكاء التنفيذي — حلقة الوكلاء الصامتين حول آريا"
+      aria-label="مركز قيادة الذكاء التنفيذي — حلقة الوكلاء الصامتين حول FINN"
       className="relative mx-auto mt-10 w-full max-w-5xl px-4 sm:mt-16 sm:px-6"
     >
       {/* Local cinematic keyframes — scoped to the ring so they don't leak. */}
@@ -234,10 +234,10 @@ export function AgentRing() {
           Executive AI Command Center
         </div>
         <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
-          آريا — العقل التنفيذي
+          FINN — العقل التنفيذي
         </h2>
         <p className="mx-auto mt-1 max-w-xl text-xs text-white/55 sm:text-sm">
-          الوكلاء يعملون بصمت في الخلفية. آريا وحدها تتحدّث إليك.
+          الوكلاء يعملون بصمت في الخلفية. FINN وحدها تتحدّث إليك.
         </p>
       </div>
 
@@ -267,7 +267,7 @@ export function AgentRing() {
           />
         ))}
 
-        {/* Connector network — energy lines from ARIA core to each pip. */}
+        {/* Connector network — energy lines from FINN core to each pip. */}
         <svg
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
@@ -282,7 +282,7 @@ export function AgentRing() {
             </radialGradient>
           </defs>
           <circle cx="50" cy="50" r="44" fill="url(#ring-core-glow)" />
-          {/* Spoke lines: each agent → ARIA core */}
+          {/* Spoke lines: each agent → FINN core */}
           {pips.map(({ i, x, y }) => {
             const a = agents[i];
             const tone = a ? TONE[a.status] : TONE.unknown;
@@ -336,10 +336,10 @@ export function AgentRing() {
           )}
         </svg>
 
-        {/* Central ARIA core — breathing, scan ray, only interactive AI. */}
+        {/* Central FINN core — breathing, scan ray, only interactive AI. */}
         <Link
           to="/aria"
-          aria-label="افتح آريا — المساعد التنفيذي الوحيد"
+          aria-label="افتح FINN — المساعد التنفيذي الوحيد"
           className="group absolute left-1/2 top-1/2 flex h-28 w-28 items-center justify-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#00D4FF]/35 via-[#0a2a44] to-[#061A2E] text-white sm:h-32 sm:w-32"
           style={{
             animation: "ring-core-breathe 5.2s ease-in-out infinite",
@@ -373,7 +373,7 @@ export function AgentRing() {
           <div className="relative text-center transition-transform group-hover:scale-105">
             <Sparkles className="mx-auto h-7 w-7 text-[#3AE8FF] drop-shadow-[0_0_8px_rgba(58,232,255,0.8)]" />
             <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.32em] text-white/85">
-              ARIA
+              FINN
             </div>
           </div>
           {/* Particle emission (3 staggered motes) */}
@@ -457,7 +457,7 @@ export function AgentRing() {
         })}
       </div>
 
-      {/* Inspector — telemetry only. The CTA always defers to ARIA. */}
+      {/* Inspector — telemetry only. The CTA always defers to FINN. */}
       <div
         role="status"
         aria-live="polite"
@@ -471,7 +471,7 @@ export function AgentRing() {
           <p className="text-center text-xs text-white/55">جارٍ تحميل حلقة الوكلاء…</p>
         ) : (
           <p className="text-center text-xs text-white/55">
-            مرّر فوق أي وكيل لعرض حالته. التواصل والقرارات تمرّ عبر آريا فقط.
+            مرّر فوق أي وكيل لعرض حالته. التواصل والقرارات تمرّ عبر FINN فقط.
           </p>
         )}
       </div>
@@ -529,7 +529,7 @@ function Inspector({ vm }: { vm: AgentVM }) {
             className="inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[11px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
           >
             <MessageSquare className="h-3 w-3" />
-            <span>اطلب من آريا تنسيق هذا الوكيل</span>
+            <span>اطلب من FINN تنسيق هذا الوكيل</span>
           </Link>
         </div>
       </div>
@@ -546,7 +546,7 @@ function EmptyState() {
         className="mt-3 inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[11px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
       >
         <Sparkles className="h-3 w-3" />
-        <span>تحدّث مع آريا</span>
+        <span>تحدّث مع FINN</span>
       </Link>
     </div>
   );

@@ -138,7 +138,7 @@ export const FILM_2 = buildFilm({
   slug: "f2",
   cinematicTitle: "رِحْلَةٌ دَاخِلَ نِيكْسُوس",
   titleAr: "رِحْلَةٌ دَاخِلَ نِيكْسُوس",
-  subtitleAr: "جولة مع أريا في مركز القيادة الرقمي.",
+  subtitleAr: "جولة مع FINN في مركز القيادة الرقمي.",
   accent: "#22d3ee",
   duration: 82,
   narrations: [

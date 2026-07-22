@@ -83,7 +83,7 @@ function AIRec() {
       <SecPageHeader
         title="التوصيات الذكية"
         subtitle="مولّدة من بيانات العمليات لحظياً"
-        badge="ARIA Insights"
+        badge="FINN Insights"
       >
         <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_overview" />
       </SecPageHeader>

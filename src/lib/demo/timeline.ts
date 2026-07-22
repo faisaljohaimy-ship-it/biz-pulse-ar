@@ -6,7 +6,7 @@
 // scenario already produced server-side by `runExecutiveScenario`
 // (src/lib/simulation/exec-scenario.server.ts). It is NOT a second source of
 // truth for data — it is a projection of that scenario into presentation steps
-// so the Demo Controller can drive UI focus, camera targets, and ARIA
+// so the Demo Controller can drive UI focus, camera targets, and FINN
 // narration in sync with the real records the scenario inserts.
 //
 // No fake KPIs. Every step references entities the scenario actually creates
@@ -48,7 +48,7 @@ export interface DemoStep {
   cameraTarget?: string;
   /** UI action the controller will emit. Renderers may listen and react. */
   uiAction: DemoUiAction;
-  /** ARIA narration script (spoken via existing TTS pipeline downstream). */
+  /** FINN narration script (spoken via existing TTS pipeline downstream). */
   ariaNarration_en: string;
   ariaNarration_ar: string;
   /** Optional back-reference to a scenario ref (INS-, RSK-, INC-, ...). */
@@ -233,9 +233,9 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     title_en: "Day close — briefing generated",
     title_ar: "إغلاق اليوم — إصدار التقرير التنفيذي",
     description_en:
-      "Compliance closed at 74% (baseline 92%). Response time strong at 6 minutes. ARIA briefing generated at confidence 0.92.",
+      "Compliance closed at 74% (baseline 92%). Response time strong at 6 minutes. FINN briefing generated at confidence 0.92.",
     description_ar:
-      "أُغلق الالتزام عند 74% (المستوى المرجعي 92%). زمن الاستجابة قوي عند 6 دقائق. تم إنشاء تقرير أريا بثقة 0.92.",
+      "أُغلق الالتزام عند 74% (المستوى المرجعي 92%). زمن الاستجابة قوي عند 6 دقائق. تم إنشاء تقرير FINN بثقة 0.92.",
     affectedModules: ["executive-reports", "aria"],
     executiveMessage_en:
       "A prevented catastrophe — with a full evidence chain and a policy fix in flight.",

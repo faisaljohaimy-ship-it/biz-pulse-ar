@@ -2,7 +2,7 @@ import { defineTool, type ToolContext } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 
 /**
- * Read-only active work permits (Digital PTW) over MCP. Mirrors ARIA's
+ * Read-only active work permits (Digital PTW) over MCP. Mirrors FINN's
  * `ptw_active_permits` tool — same safe column subset, service-role read,
  * per-caller rate limit. Never exposes approval chains or internal IDs.
  */

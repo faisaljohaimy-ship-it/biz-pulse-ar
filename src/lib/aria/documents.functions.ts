@@ -1,4 +1,4 @@
-// ARIA Document Intelligence — ingest uploaded files, chunk + embed, semantic search.
+// FINN Document Intelligence — ingest uploaded files, chunk + embed, semantic search.
 // Server-only. All operations are scoped to the authenticated user via RLS.
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";

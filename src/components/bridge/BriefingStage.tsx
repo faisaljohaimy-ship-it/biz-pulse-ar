@@ -1,7 +1,7 @@
 /**
  * Executive Briefing Stage — full-screen takeover that plays the
  * generated briefing in sequence with a spotlight on the current speaker.
- * ≤60s end-to-end, text-only narration (ARIA speaks ONLY in the copilot's
+ * ≤60s end-to-end, text-only narration (FINN speaks ONLY in the copilot's
  * Conversation Mode). All segments come from `generateExecutiveBriefing()`
  * — never fabricated.
  */

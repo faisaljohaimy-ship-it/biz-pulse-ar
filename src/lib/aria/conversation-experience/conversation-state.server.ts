@@ -1,4 +1,4 @@
-// Deterministic FSM for ARIA conversation lifecycle.
+// Deterministic FSM for FINN conversation lifecycle.
 import type { ConversationState } from "./types";
 
 const TRANSITIONS: Record<ConversationState, readonly ConversationState[]> = {

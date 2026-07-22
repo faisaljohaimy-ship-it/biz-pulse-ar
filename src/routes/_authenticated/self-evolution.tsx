@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-// ARIA Self-Evolution — Operator UI (analyze-only report renderer).
+// FINN Self-Evolution — Operator UI (analyze-only report renderer).
 // Bilingual AR/EN. No autonomous mutations. Full-sweep readout.
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/self-evolution")({
   component: SelfEvolutionPage,
   head: () => ({
     meta: [
-      { title: "ARIA Self-Evolution — Engineering Report" },
+      { title: "FINN Self-Evolution — Engineering Report" },
       {
         name: "description",
         content: "Continuous engineering loop: analyze, plan, validate, benchmark, report.",
@@ -134,7 +134,7 @@ function SelfEvolutionPage() {
   return (
     <div className="space-y-6 p-4 md:p-6" dir="ltr">
       <PageHeader
-        title="ARIA Self-Evolution / محرك التطور الذاتي"
+        title="FINN Self-Evolution / محرك التطور الذاتي"
         subtitle="Continuous engineering loop — analyze → plan → validate → benchmark → report. Analyze-only mode."
         icon={ShieldCheck}
         actions={

@@ -1,5 +1,5 @@
 /**
- * Nightly ARIA pattern miner cron target.
+ * Nightly FINN pattern miner cron target.
  * Article IV §2 of docs/NEXUS_ENGINEERING_CONSTITUTION.md.
  *
  * Called by pg_cron once per day. Authenticated via CRON_HOOK_SECRET

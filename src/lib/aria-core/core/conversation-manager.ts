@@ -1,5 +1,5 @@
 /**
- * ConversationManager — turn lifecycle for the ONE ARIA conversation.
+ * ConversationManager — turn lifecycle for the ONE FINN conversation.
  *
  * Messages themselves live inside the singleton `useChat` — this manager only
  * owns per-turn metadata (id, status, abort controller, dedupe guard). It

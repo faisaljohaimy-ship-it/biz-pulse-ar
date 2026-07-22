@@ -1,7 +1,7 @@
 /**
- * ARIA Brain — the single request entry point for the entire NEXIOS OS.
+ * FINN Brain — the single request entry point for the entire NEXIOS OS.
  *
- * Every page, hook, and component that wants to talk to ARIA MUST go through
+ * Every page, hook, and component that wants to talk to FINN MUST go through
  * `ariaBrain.submit(...)` (via `useAria().ask(...)`). No component may call
  * OpenAI, Claude, OpenRouter, or `/api/chat` directly.
  *

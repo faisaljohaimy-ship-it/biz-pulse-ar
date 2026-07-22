@@ -11,7 +11,7 @@
  *
  * On a breach, a warning is emitted via `beacon('aria_voice_latency_regression')`
  * so the operational incident stream (Article 21 / Article 27 (e)) sees the
- * regression and ARIA opens a fix session on the next turn.
+ * regression and FINN opens a fix session on the next turn.
  *
  * Usage:
  *   const flusher = createSentenceFlusher({ onSentence, onLatencyBreach });

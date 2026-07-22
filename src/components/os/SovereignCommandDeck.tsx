@@ -12,7 +12,7 @@
  * from region-sim-data). Every value is explicitly badged
  * «محاكاة · لقطة عامة» — no unlabeled numbers, no network dependency, so
  * the instruments are populated in the SSR HTML itself and can never
- * render empty. Panels are translucent so the ARIA hologram remains the
+ * render empty. Panels are translucent so the FINN hologram remains the
  * living backdrop of the whole system.
  */
 import { useEffect, useState } from "react";
@@ -367,7 +367,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
               <span className="text-[#3AE8FF]/30">◆</span>
               <span>INDUSTRIAL SECURITY COMMAND</span>
               <span className="text-[#3AE8FF]/30">◆</span>
-              <span dir="rtl">آريا · الذكاء التنفيذي الحيّ</span>
+              <span dir="rtl">FINN · الذكاء التنفيذي الحيّ</span>
               <span className="text-[#3AE8FF]/30">◆</span>
               <span>SOVEREIGN OPS DECK</span>
               <span className="text-[#3AE8FF]/30">◆</span>
@@ -467,7 +467,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
           <span className="hidden text-white/20 sm:inline">|</span>
           <span className="flex items-center gap-1.5">
             <CircuitBoard className="h-3 w-3" strokeWidth={2} />
-            <span>ARIA</span>
+            <span>FINN</span>
             <span className="text-[#3AE8FF]">PROTOCOL&nbsp;v2.4</span>
           </span>
         </div>
@@ -701,7 +701,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
             <span className="h-1 w-1 rounded-full bg-[#3AE8FF] shadow-[0_0_6px_#3AE8FF]" />
-            SYS&nbsp;v1.5.1 · ARIA
+            SYS&nbsp;v1.5.1 · FINN
           </span>
           <span className="hidden sm:inline">TLS&nbsp;1.3 · AES-256</span>
           <span className="hidden md:inline">SCHEMA · SEC-OVR&nbsp;R7</span>

@@ -45,7 +45,7 @@ export const Route = createFileRoute("/_authenticated/mission-control")({
       {
         name: "description",
         content:
-          "Executive AI Operations Center — live, bilingual mission control conducted by ARIA and specialist agents using real operational data.",
+          "Executive AI Operations Center — live, bilingual mission control conducted by FINN and specialist agents using real operational data.",
       },
     ],
   }),
@@ -129,8 +129,8 @@ function buildAgentScript(
   const greet = greeting();
   const opener: AgentLine = {
     id: "aria-open",
-    name_ar: "آريا التنفيذية",
-    name_en: "ARIA Executive",
+    name_ar: "FINN التنفيذية",
+    name_en: "FINN Executive",
     initials: "AI",
     icon: Brain,
     tone: "cyan",
@@ -160,8 +160,8 @@ function buildAgentScript(
       agents: empty,
       closer: {
         id: "aria-close",
-        name_ar: "آريا التنفيذية",
-        name_en: "ARIA Executive",
+        name_ar: "FINN التنفيذية",
+        name_en: "FINN Executive",
         initials: "AI",
         icon: Brain,
         tone: "cyan",
@@ -263,13 +263,13 @@ function buildAgentScript(
 
   const closer: AgentLine = {
     id: "aria-close",
-    name_ar: "آريا التنفيذية",
-    name_en: "ARIA Executive",
+    name_ar: "FINN التنفيذية",
+    name_en: "FINN Executive",
     initials: "AI",
     icon: Brain,
     tone: "cyan",
-    status_ar: "خلاصة آريا",
-    status_en: "ARIA conclusion",
+    status_ar: "خلاصة FINN",
+    status_en: "FINN conclusion",
     finding_ar:
       c.incidents_critical > 0
         ? `يلزم تدخل تنفيذي: ${c.incidents_critical} حادث حرج بانتظار القرار.`
@@ -559,7 +559,7 @@ function CollaborationStream({
           </div>
           <div>
             <div className="text-sm text-white font-medium">
-              {ar ? "تعاون آريا والوكلاء" : "ARIA & Agents Collaboration"}
+              {ar ? "تعاون FINN والوكلاء" : "FINN & Agents Collaboration"}
             </div>
             <div className="text-[11px] text-cyan-200/70">
               {ar ? "بث مباشر للتقييم التشغيلي" : "Live operational assessment stream"}
@@ -853,7 +853,7 @@ function WelcomeOverlay({ onDone, ar, name }: { onDone: () => void; ar: boolean;
             phase >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
           )}
         >
-          {ar ? "تبدأ آريا التقييم التشغيلي…" : "ARIA is starting the operational assessment…"}
+          {ar ? "تبدأ FINN التقييم التشغيلي…" : "FINN is starting the operational assessment…"}
         </div>
       </div>
     </div>
@@ -868,7 +868,7 @@ const ACTIONS = [
   { to: "/sec", icon: AlertTriangle, ar: "الحوادث", en: "Incidents" },
   { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل", en: "Work Orders" },
   { to: "/executive-reports", icon: FileBarChart2, ar: "التقارير", en: "Reports" },
-  { to: "/aria", icon: MessageSquare, ar: "اسأل آريا", en: "Ask ARIA" },
+  { to: "/aria", icon: MessageSquare, ar: "اسأل FINN", en: "Ask FINN" },
 ] as const;
 
 /* ────────────────────────────────────────────────────────────
@@ -1121,8 +1121,8 @@ function MissionControl() {
             </h1>
             <p className="mt-2 text-white/60 max-w-2xl text-sm md:text-base">
               {ar
-                ? "بث لحظي للوضع التشغيلي تقدّمه آريا بدعم من وكلاء التحليل المتخصصين، باستخدام البيانات الحية فقط."
-                : "Live operational stream conducted by ARIA and specialist agents, powered strictly by real data."}
+                ? "بث لحظي للوضع التشغيلي تقدّمه FINN بدعم من وكلاء التحليل المتخصصين، باستخدام البيانات الحية فقط."
+                : "Live operational stream conducted by FINN and specialist agents, powered strictly by real data."}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -1141,7 +1141,7 @@ function MissionControl() {
           </div>
         </div>
 
-        {/* ARIA — permanent Digital Human */}
+        {/* FINN — permanent Digital Human */}
         <div className="mt-6">
           <AriaStage ar={ar} line_ar={ariaLine.ar} line_en={ariaLine.en} />
         </div>
@@ -1202,7 +1202,7 @@ function MissionControl() {
           />
         </div>
 
-        {/* Collaboration + Timeline + ARIA Summary */}
+        {/* Collaboration + Timeline + FINN Summary */}
         <div className="mt-6 grid lg:grid-cols-3 gap-4 md:gap-6">
           <div className="lg:col-span-2">
             <CollaborationStream
@@ -1222,7 +1222,7 @@ function MissionControl() {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-white">
-                    {ar ? "ملخص آريا" : "ARIA Summary"}
+                    {ar ? "ملخص FINN" : "FINN Summary"}
                   </div>
                   <div className="text-[11px] text-white/50">
                     {ar ? "توصيات تنفيذية" : "Executive recommendations"}
@@ -1243,7 +1243,7 @@ function MissionControl() {
                 to="/aria"
                 className="mt-5 inline-flex items-center justify-between gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100 hover:bg-cyan-400/20 transition"
               >
-                <span>{ar ? "متابعة مع آريا" : "Continue with ARIA"}</span>
+                <span>{ar ? "متابعة مع FINN" : "Continue with FINN"}</span>
                 <ArrowRight className={cn("h-4 w-4", ar && "rotate-180")} />
               </Link>
             </div>
@@ -1304,7 +1304,7 @@ function MissionControl() {
             <Mic className="h-3.5 w-3.5" />
             <span>
               {ar
-                ? `الصوت جاهز معمارياً لـ ${runtimeProfiles.length} وكيل — لم يُفعّل بعد.`
+                ? `الصوت جاهز معمFINNً لـ ${runtimeProfiles.length} وكيل — لم يُفعّل بعد.`
                 : `Voice architecture prepared for ${runtimeProfiles.length} agents — not enabled yet.`}
             </span>
           </div>

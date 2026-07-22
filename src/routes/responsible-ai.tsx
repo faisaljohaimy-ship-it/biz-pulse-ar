@@ -36,8 +36,8 @@ function RaiPage() {
       titleAr: "1 · المبادئ",
       items: [
         {
-          en: "Human oversight — executive decisions stay with humans; ARIA recommends, never auto-executes irreversible actions.",
-          ar: "إشراف بشري — تبقى القرارات التنفيذية بيد الإنسان؛ يقترح ARIA ولا ينفّذ القرارات غير القابلة للتراجع تلقائيًا.",
+          en: "Human oversight — executive decisions stay with humans; FINN recommends, never auto-executes irreversible actions.",
+          ar: "إشراف بشري — تبقى القرارات التنفيذية بيد الإنسان؛ يقترح FINN ولا ينفّذ القرارات غير القابلة للتراجع تلقائيًا.",
         },
         {
           en: "Transparency — every AI output carries provenance, model, and confidence metadata.",

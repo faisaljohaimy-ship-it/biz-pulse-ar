@@ -1,7 +1,7 @@
 /**
  * Arabic diacritization for TTS payloads (server-only).
  *
- * Goal: improve ARIA's Arabic pronunciation by adding harakat before the
+ * Goal: improve FINN's Arabic pronunciation by adding harakat before the
  * text is sent to ElevenLabs. Never mutates displayed text — this runs
  * inside the TTS route only.
  *

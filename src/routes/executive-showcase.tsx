@@ -1,4 +1,4 @@
-// Executive Showcase — split-screen: ARIA video (left) explaining the system,
+// Executive Showcase — split-screen: FINN video (left) explaining the system,
 // synchronized content cards (right). Video-driven scene timing. RTL-first,
 // bilingual, sim-tagged, respects prefers-reduced-motion.
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/executive-showcase")({
   head: () => ({
     meta: [
       { title: "العرض التنفيذي — نيكسيوس | Executive Showcase" },
-      { name: "description", content: "عرض سينمائي تنفيذي لمنصة نيكسيوس بصوت آريا وشاشة منقسمة." },
+      { name: "description", content: "عرض سينمائي تنفيذي لمنصة نيكسيوس بصوت FINN وشاشة منقسمة." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -41,7 +41,7 @@ type Scene = {
   value_ar: string;
   value_en: string;
   accent: string;
-  /** Start time in the ARIA video (seconds). */
+  /** Start time in the FINN video (seconds). */
   startAt: number;
   visual: () => React.ReactNode;
 };
@@ -49,7 +49,7 @@ type Scene = {
 const ACCENT_NAVY = "#3AE8FF";
 const ACCENT_EMERALD = "#34D399";
 
-// The supplied 46.85-second ARIA film is divided into six concise chapters.
+// The supplied 46.85-second FINN film is divided into six concise chapters.
 // Content on the right advances from the video clock, never from an unsynced timer.
 const SCENES: Scene[] = [
   {
@@ -110,8 +110,8 @@ const SCENES: Scene[] = [
   {
     id: "aria",
     icon: Sparkles,
-    title_ar: "ARIA — الذكاء التنفيذي",
-    title_en: "ARIA — Executive Intelligence",
+    title_ar: "FINN — الذكاء التنفيذي",
+    title_en: "FINN — Executive Intelligence",
     value_ar: "محرك تنفيذي ثنائي اللغة بصوت طبيعي وذاكرة حيّة.",
     value_en: "Bilingual executive engine with natural voice and live memory.",
     accent: ACCENT_EMERALD,
@@ -481,7 +481,7 @@ function ExecutiveShowcasePage() {
 
       {/* Body: split-screen (video left, content right). Mobile: stacked. */}
       <main className="relative z-20 flex flex-1 flex-col gap-4 overflow-hidden px-3 py-3 sm:px-6 md:flex-row md:gap-6 md:px-8 md:py-4">
-        {/* Left: ARIA video */}
+        {/* Left: FINN video */}
         <div className="relative order-1 flex w-full shrink-0 items-center justify-center md:h-full md:w-[42%]">
           <div
             className="relative h-[48vh] w-auto max-w-full overflow-hidden rounded-[1.4rem] border border-cyan-300/30 bg-[#04111f] md:h-full md:w-auto"
@@ -491,7 +491,7 @@ function ExecutiveShowcasePage() {
               transition: "box-shadow 700ms ease",
             }}
           >
-            {/* Soft emerald glow that draws attention to Aria's face */}
+            {/* Soft emerald glow that draws attention to Finn's face */}
             <div
               aria-hidden
               className="pointer-events-none absolute inset-x-0 top-0 z-10 h-1/2"
@@ -509,7 +509,7 @@ function ExecutiveShowcasePage() {
               preload="metadata"
               controls={false}
               disablePictureInPicture
-              aria-label="فيلم آريا للعرض التنفيذي · ARIA executive presentation film"
+              aria-label="فيلم FINN للعرض التنفيذي · FINN executive presentation film"
               onLoadedData={() => setVideoFailed(false)}
               onError={() => setVideoFailed(true)}
             >
@@ -532,7 +532,7 @@ function ExecutiveShowcasePage() {
                 style={{ animation: "showcase-video-scan 4.8s ease-in-out infinite" }}
               />
             )}
-            {/* Graceful fallback when the narration video can't load: an ARIA
+            {/* Graceful fallback when the narration video can't load: an FINN
                 stage that mirrors the current scene, so the panel is never
                 empty and the visual tour still plays. */}
             {videoFailed && !isFinale && (
@@ -552,7 +552,7 @@ function ExecutiveShowcasePage() {
                 >
                   <scene.icon className="h-9 w-9" />
                 </span>
-                <div className="text-lg font-black text-white">آريا · ARIA</div>
+                <div className="text-lg font-black text-white">FINN · FINN</div>
                 <div className="text-sm font-semibold text-white/85">{scene.title_ar}</div>
                 <div className="max-w-xs text-[12px] leading-relaxed text-white/60">
                   {scene.value_ar}
@@ -562,7 +562,7 @@ function ExecutiveShowcasePage() {
                 </div>
               </div>
             )}
-            {/* ARIA · LIVE badge */}
+            {/* FINN · LIVE badge */}
             <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-full border border-emerald-300/50 bg-black/60 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.32em] text-emerald-200 backdrop-blur">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inset-0 animate-ping rounded-full bg-emerald-300 opacity-70" />
@@ -571,7 +571,7 @@ function ExecutiveShowcasePage() {
                   style={{ boxShadow: "0 0 8px #34D399" }}
                 />
               </span>
-              ARIA · LIVE
+              FINN · LIVE
             </div>
             {!needsStart && !isFinale && !videoFailed && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-between gap-3 p-3.5">
@@ -1008,7 +1008,7 @@ function AriaHUD() {
         <style>{`@keyframes orb{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}`}</style>
       </div>
       <div className="text-center">
-        <div className="text-[10px] uppercase tracking-[0.4em] text-[#3AE8FF]">ARIA · آريا</div>
+        <div className="text-[10px] uppercase tracking-[0.4em] text-[#3AE8FF]">FINN · FINN</div>
         <div className="mt-1 font-mono text-[10px] text-white/60">bilingual · voice · memory</div>
       </div>
     </div>

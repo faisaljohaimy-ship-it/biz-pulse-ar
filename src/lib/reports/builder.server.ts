@@ -27,7 +27,7 @@ function newPage(ctx: Ctx): void {
   drawHeader(ctx);
 }
 
-// Faint tiled «ARIA@nexios.com» wordmark behind every page — the same visual
+// Faint tiled «FINN@nexios.com» wordmark behind every page — the same visual
 // signature as the chat backdrop and loading screen (unified identity). The
 // wordmark is Latin, so it encodes cleanly in pdf-lib's WinAnsi fonts.
 function drawSignatureWatermark(page: PDFPage, font: PDFFont): void {

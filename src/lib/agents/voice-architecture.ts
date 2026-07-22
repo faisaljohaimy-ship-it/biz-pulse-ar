@@ -65,14 +65,14 @@ export const DEFAULT_VOICE_PROFILES: Record<string, { ar: VoiceProfile; en: Voic
   aria: {
     ar: {
       voiceId: ARIA_ELEVENLABS_VOICE_ID,
-      displayName: "آريا التنفيذية",
+      displayName: "FINN التنفيذية",
       rate: 1.0,
       pitch: 0,
       language: "ar",
     },
     en: {
       voiceId: ARIA_ELEVENLABS_VOICE_ID,
-      displayName: "ARIA Executive",
+      displayName: "FINN Executive",
       rate: 1.0,
       pitch: 0,
       language: "en",

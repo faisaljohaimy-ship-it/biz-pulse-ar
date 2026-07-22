@@ -101,7 +101,7 @@ export function DecisionCenter() {
             Decision Center · مركز القرار
           </div>
           <div className="text-sm text-foreground/60 mt-0.5">
-            توصيات ARIA بانتظار اعتماد الإدارة
+            توصيات FINN بانتظار اعتماد الإدارة
           </div>
         </div>
         <span className="text-xs font-mono text-foreground/50">{items.length} pending</span>

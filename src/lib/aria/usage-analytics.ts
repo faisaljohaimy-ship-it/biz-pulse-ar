@@ -1,5 +1,5 @@
 /**
- * ARIA usage analytics — deterministic, fixture-derived metrics (Phase 5).
+ * FINN usage analytics — deterministic, fixture-derived metrics (Phase 5).
  *
  * No network, no external key: every figure is derived from the SAME simulation
  * fixtures the rest of the deck reads (`regionSim`), so the analytics stay

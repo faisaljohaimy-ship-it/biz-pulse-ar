@@ -14,10 +14,10 @@ export const Route = createFileRoute("/_authenticated/aria/directive")({
   loader: ({ context }) => context.queryClient.ensureQueryData(auditQuery),
   head: () => ({
     meta: [
-      { title: "ARIA Directive Ledger — NEXIOS" },
+      { title: "FINN Directive Ledger — NEXIOS" },
       {
         name: "description",
-        content: "Live phase-by-phase audit of the ARIA Impact Priority Directive.",
+        content: "Live phase-by-phase audit of the FINN Impact Priority Directive.",
       },
     ],
   }),
@@ -47,10 +47,10 @@ function DirectivePage() {
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
-            ARIA Impact Directive — Phase Ledger
+            FINN Impact Directive — Phase Ledger
           </h1>
           <p className="text-sm text-slate-400" dir="rtl">
-            سجل التنفيذ الحي لمراحل توجيه أريا التنفيذي (v{data.version}). آخر تحديث:{" "}
+            سجل التنفيذ الحي لمراحل توجيه FINN التنفيذي (v{data.version}). آخر تحديث:{" "}
             {new Date(data.generated_at).toLocaleString("ar-SA")}
           </p>
           <div

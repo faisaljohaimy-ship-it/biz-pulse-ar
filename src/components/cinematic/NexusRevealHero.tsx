@@ -13,7 +13,7 @@ import { useI18n } from "@/lib/i18n";
  *   1. Canvas particle field — Neural Streams (GPU-friendly, rAF-throttled,
  *      DPR-clamped, pauses when off-screen, respects reduced motion).
  *   2. Volumetric light rays — SVG filter + soft blur, motion-safe only.
- *   3. ARIA energy core — layered conic + radial SVG rings, no boxes, no
+ *   3. FINN energy core — layered conic + radial SVG rings, no boxes, no
  *      generic circles. Reads as living intelligence, not UI chrome.
  *   4. Voice pulse ribbon — deterministic waveform driven by requestAnimationFrame.
  *   5. Cinematic copy stack — headline, lede, CTAs, trust, subordinate NEXIOS.
@@ -107,7 +107,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       ctx.globalCompositeOperation = "lighter";
 
       const cx = width * 0.5;
-      const cy = height * 0.42; // ARIA core sits slightly above center
+      const cy = height * 0.42; // FINN core sits slightly above center
 
       for (const p of particles) {
         // gentle attraction to core + slight cursor pull
@@ -297,17 +297,17 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
     line1: ar ? "الذكاء يقود." : "Intelligence, in command.",
     line2: ar ? "نكسيوس ينفّذ." : "NEXIOS executes.",
     lede: ar
-      ? "منظومة تشغيل ذكية للمؤسسات · ARIA في القلب · إدارة الأمن الصناعي · المنطقة الغربية."
-      : "Enterprise AI operating system · ARIA at the core · Industrial Security · Western Region.",
+      ? "منظومة تشغيل ذكية للمؤسسات · FINN في القلب · إدارة الأمن الصناعي · المنطقة الغربية."
+      : "Enterprise AI operating system · FINN at the core · Industrial Security · Western Region.",
     ctaPrimary: ar ? "ابدأ التشغيل" : "Start Operation",
     ctaSecondary: ar ? "غرفة القيادة التنفيذية" : "Executive Bridge",
-    ctaAria: ar ? "اسأل ARIA" : "Ask ARIA",
+    ctaAria: ar ? "اسأل FINN" : "Ask FINN",
     boot: ar ? "تهيئة بيئة التشغيل…" : "Booting operating environment…",
     booting: ar ? "جارٍ تشغيل النظام…" : "Launching platform…",
     trust: ar
       ? ["المؤسسات", "الحكومات", "الأمن الصناعي", "Fortune 500"]
       : ["Enterprises", "Governments", "Industrial Security", "Fortune 500"],
-    ariaName: ar ? "آريا" : "ARIA",
+    ariaName: ar ? "FINN" : "FINN",
     ariaRole: ar ? "الذكاء التنفيذي" : "Executive Intelligence",
     scroll: ar ? "اسحب للأسفل" : "Scroll to explore",
   };
@@ -317,7 +317,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       ref={stageRef}
       dir={ar ? "rtl" : "ltr"}
       data-scene="nexus-reveal"
-      aria-label={ar ? "المشهد التنفيذي — آريا" : "Executive reveal — ARIA"}
+      aria-label={ar ? "المشهد التنفيذي — FINN" : "Executive reveal — FINN"}
       className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#02060F] text-white [--nxh-mx:0] [--nxh-my:0]"
     >
       {/* ============================================================
@@ -417,7 +417,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       ============================================================ */}
       <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center px-5 py-16 text-center sm:py-20">
         {/* ============================================================
-            ARIA ENERGY CORE — no boxes, no cards, no generic circles
+            FINN ENERGY CORE — no boxes, no cards, no generic circles
             Pure layered light: SVG conic rings + waveform ribbon + wordmark
         ============================================================ */}
         <div
@@ -626,7 +626,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
             <div className="pointer-events-none absolute bottom-[22%] hidden h-px w-[62%] bg-gradient-to-r from-transparent via-[#3AE8FF]/70 to-transparent motion-reduce:block" />
           </div>
 
-          {/* ARIA nameplate */}
+          {/* FINN nameplate */}
           <div className="-mt-2 flex flex-col items-center sm:-mt-4">
             <h2 className="bg-gradient-to-b from-white via-[#E6F9FF] to-[#3AE8FF] bg-clip-text text-4xl font-extralight uppercase tracking-[0.42em] text-transparent sm:text-6xl sm:tracking-[0.5em]">
               {t.ariaName}

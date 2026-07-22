@@ -1,5 +1,5 @@
 /**
- * a11y tests for HologramFace — ARIA region semantics, state-driven
+ * a11y tests for HologramFace — FINN region semantics, state-driven
  * labelling, and axe compliance across locales and visual states.
  */
 import { render } from "@testing-library/react";
@@ -7,18 +7,18 @@ import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
 import { HologramFace } from "./HologramFace";
 
-describe("HologramFace — ARIA semantics", () => {
+describe("HologramFace — FINN semantics", () => {
   it("exposes a labelled image role in English", () => {
     const { getAllByRole } = render(<HologramFace state="idle" />);
     // wrapper (role=img + aria-label) + inner portrait <img>; the wrapper is first.
     const region = getAllByRole("img")[0];
-    expect(region).toHaveAttribute("aria-label", expect.stringMatching(/ARIA/i));
+    expect(region).toHaveAttribute("aria-label", expect.stringMatching(/FINN/i));
   });
 
   it("uses the Arabic accessible name when ar=true", () => {
     const { getAllByRole } = render(<HologramFace state="idle" ar />);
     const region = getAllByRole("img")[0];
-    expect(region.getAttribute("aria-label") ?? "").toMatch(/آريا/);
+    expect(region.getAttribute("aria-label") ?? "").toMatch(/FINN/);
   });
 
   it("renders a portrait <img> with non-empty alt text", () => {

@@ -16,8 +16,8 @@ export function composeStory(input: StoryInput = {}): readonly StoryBeat[] {
     id: "story-situation",
     headline_ar: "الموقف الراهن",
     headline_en: "Current Situation",
-    body_ar: `الحوادث المفتوحة: ${oi.ar}. تقدم أريا صورة موحّدة للحالة.`,
-    body_en: `Open incidents: ${oi.en}. ARIA maintains a single operational picture.`,
+    body_ar: `الحوادث المفتوحة: ${oi.ar}. تقدم FINN صورة موحّدة للحالة.`,
+    body_en: `Open incidents: ${oi.en}. FINN maintains a single operational picture.`,
     evidenceRefs: refs,
   });
   const hr = fmt(input.highRisks);

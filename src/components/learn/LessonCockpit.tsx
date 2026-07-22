@@ -65,10 +65,10 @@ export function LessonCockpit({ slug, lang, lessonTitle }: Props) {
             <LessonAskAria
               prompt={
                 ar
-                  ? `آريا، اشرحي لي منطق كلّ قرار في الجدول الزمني لحصّة «${lessonTitle}»، وأيّها كنتِ ستأخذينه بشكل مختلف ولماذا.`
-                  : `ARIA, walk me through the reasoning behind each decision in the "${lessonTitle}" timeline — and which you would have made differently, and why.`
+                  ? `FINN، اشرحي لي منطق كلّ قرار في الجدول الزمني لحصّة «${lessonTitle}»، وأيّها كنتِ ستأخذينه بشكل مختلف ولماذا.`
+                  : `FINN, walk me through the reasoning behind each decision in the "${lessonTitle}" timeline — and which you would have made differently, and why.`
               }
-              label={ar ? "اسأل آريا عن هذه القرارات" : "Ask ARIA about these decisions"}
+              label={ar ? "اسأل FINN عن هذه القرارات" : "Ask FINN about these decisions"}
             />
           </div>
         </Panel>

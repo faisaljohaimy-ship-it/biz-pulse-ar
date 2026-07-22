@@ -31,13 +31,13 @@ export const Route = createFileRoute("/cinematic-demo")({
       {
         name: "description",
         content:
-          "A Hollywood-grade cinematic walkthrough of NEXUS AI OS — 3D digital twin, ARIA voice, predictive intelligence, boardroom command.",
+          "A Hollywood-grade cinematic walkthrough of NEXUS AI OS — 3D digital twin, FINN voice, predictive intelligence, boardroom command.",
       },
       { property: "og:title", content: "NEXUS AI OS — Cinematic Showcase" },
       {
         property: "og:description",
         content:
-          "Investor-ready cinematic experience: digital twin, live telemetry, ARIA voice, global network.",
+          "Investor-ready cinematic experience: digital twin, live telemetry, FINN voice, global network.",
       },
     ],
   }),
@@ -126,11 +126,11 @@ const SCENES: Scene[] = [
   {
     id: "aria",
     duration: 20,
-    titleAr: "آريا — مساعدتك الصوتية التنفيذية",
-    titleEn: "ARIA — Your Executive Voice",
+    titleAr: "FINN — مساعدتك الصوتية التنفيذية",
+    titleEn: "FINN — Your Executive Voice",
     subtitleAr: "تتحدث. تستمع. تنفذ",
     subtitleEn: "She speaks. She listens. She executes.",
-    kicker: "VII. ARIA",
+    kicker: "VII. FINN",
     Icon: Mic,
     bg: "radial-gradient(120% 90% at 50% 30%, oklch(0.30 0.16 195) 0%, oklch(0.06 0.04 240) 70%, #000 100%)",
   },
@@ -168,7 +168,7 @@ function CinematicDemo() {
   const [muted, setMuted] = useState(true);
   const rafRef = useRef<number | null>(null);
   const lastRef = useRef<number | null>(null);
-  // Audio/AudioContext removed site-wide. ARIA chat is the only voice.
+  // Audio/AudioContext removed site-wide. FINN chat is the only voice.
 
   // RAF clock
   useEffect(() => {
@@ -747,7 +747,7 @@ function AriaStage({ t }: { t: number }) {
         </div>
       </div>
       <div className="absolute bottom-[22vh] left-1/2 -translate-x-1/2 text-[10px] tracking-[0.4em] uppercase text-cyan-200/80 flex items-center gap-2">
-        <Eye className="w-3 h-3" /> ARIA · LISTENING
+        <Eye className="w-3 h-3" /> FINN · LISTENING
       </div>
     </div>
   );

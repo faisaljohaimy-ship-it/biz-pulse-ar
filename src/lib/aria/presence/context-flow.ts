@@ -1,10 +1,10 @@
 /**
- * ARIA Presence — Context flow (client-safe).
+ * FINN Presence — Context flow (client-safe).
  *
  * Single source of truth for the executive's "mental frame". The
  * copilot feeds it whenever the page / dashboard / filters / selected
  * object change; it only emits `true` when the frame has actually
- * moved AND a debounce interval has elapsed, so ARIA never re-runs on
+ * moved AND a debounce interval has elapsed, so FINN never re-runs on
  * a no-op re-render or widget flood.
  */
 

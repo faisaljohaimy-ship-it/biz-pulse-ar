@@ -162,8 +162,8 @@ function SecurityPage() {
           ar: "لا تُستخدم بيانات العملاء لتدريب نماذج مشتركة.",
         },
         {
-          en: "Prompt-injection defences, output filtering, and tool-use sandboxing for ARIA agents.",
-          ar: "حماية من حقن الموجّهات وتصفية المخرجات وعزل الأدوات لوكلاء ARIA.",
+          en: "Prompt-injection defences, output filtering, and tool-use sandboxing for FINN agents.",
+          ar: "حماية من حقن الموجّهات وتصفية المخرجات وعزل الأدوات لوكلاء FINN.",
         },
         {
           en: "Human-in-the-loop approval gates for high-impact autonomous actions.",

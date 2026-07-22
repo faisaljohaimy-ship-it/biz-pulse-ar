@@ -40,9 +40,9 @@ export const EXECUTIVE_BRIDGE_SCENES = [
     body_en:
       "A unified executive pulse that turns scattered signals into clarity, priority, and action.",
     narration_ar:
-      "مرحباً بكم في جسر القيادة التنفيذي لنيكسيوس. أنا آريا، شريكتكم الذكية في القرار. أمامكم الآن نموذج توضيحي لنبض المؤسسة؛ صورة واحدة تجمع الجاهزية، والمخاطر، والعمليات، وتضع الأهم أولاً. لا مزيد من البحث بين الشاشات أو انتظار التقارير. أنا أقرأ الإشارات، أوضح معناها، وأقدّم للقيادة موقفاً مختصراً قابلاً للتحقق. هنا تبدأ القيادة الحديثة: حقيقة واضحة، في الوقت المناسب، أمام الشخص المخوّل بالقرار.",
+      "مرحباً بكم في جسر القيادة التنفيذي لنيكسيوس. أنا FINN، شريككم الذكي في القرار. أمامكم الآن نموذج توضيحي لنبض المؤسسة؛ صورة واحدة تجمع الجاهزية، والمخاطر، والعمليات، وتضع الأهم أولاً. لا مزيد من البحث بين الشاشات أو انتظار التقارير. أنا أقرأ الإشارات، أوضح معناها، وأقدّم للقيادة موقفاً مختصراً قابلاً للتحقق. هنا تبدأ القيادة الحديثة: حقيقة واضحة، في الوقت المناسب، أمام الشخص المخوّل بالقرار.",
     narration_en:
-      "Welcome to the NEXIOS Executive Command Bridge. I am ARIA, your intelligent decision partner. This demonstration brings readiness, risk, and operations into one verifiable executive pulse. Instead of searching across disconnected screens or waiting for reports, leadership receives the signal, its meaning, and the priority that requires attention. Modern command begins here: clear truth, at the right moment, in front of the person authorized to act.",
+      "Welcome to the NEXIOS Executive Command Bridge. I am FINN, your intelligent decision partner. This demonstration brings readiness, risk, and operations into one verifiable executive pulse. Instead of searching across disconnected screens or waiting for reports, leadership receives the signal, its meaning, and the priority that requires attention. Modern command begins here: clear truth, at the right moment, in front of the person authorized to act.",
     accent: "navy",
     showSimRibbon: true,
   },
@@ -57,7 +57,7 @@ export const EXECUTIVE_BRIDGE_SCENES = [
     body_en:
       "Security, safety, and maintenance converge in one evidence-led, human-authorized decision path.",
     narration_ar:
-      "في جسر القيادة، لا تبقى الإشارة مجرد تنبيه. يربط نيكسيوس البلاغ بسياقه التشغيلي، ويقارن أثره على الأمن والسلامة والصيانة، ثم أقدّم أنا، آريا، توصية مفسّرة مع الأدلة ودرجة الثقة. يبقى الاعتماد للإنسان المخوّل دائماً. وبعد الموافقة، يتحول القرار إلى تكليف واضح، بمالك ووقت مستهدف ومسار تدقيق كامل. النتيجة ليست سرعة بلا حوكمة؛ بل سرعة مسؤولة يمكن قياسها ومراجعتها.",
+      "في جسر القيادة، لا تبقى الإشارة مجرد تنبيه. يربط نيكسيوس البلاغ بسياقه التشغيلي، ويقارن أثره على الأمن والسلامة والصيانة، ثم أقدّم أنا، FINN، توصية مفسّرة مع الأدلة ودرجة الثقة. يبقى الاعتماد للإنسان المخوّل دائماً. وبعد الموافقة، يتحول القرار إلى تكليف واضح، بمالك ووقت مستهدف ومسار تدقيق كامل. النتيجة ليست سرعة بلا حوكمة؛ بل سرعة مسؤولة يمكن قياسها ومراجعتها.",
     narration_en:
       "On the Command Bridge, a signal never remains a passive alert. NEXIOS connects it to operational context, evaluates its impact across security, safety, and maintenance, and I present an explained recommendation with evidence and confidence. Authorization always remains with the accountable human. Once approved, the decision becomes a traceable assignment with an owner, a target time, and a complete audit path. This is not speed without governance; it is responsible speed that can be measured and reviewed.",
     accent: "emerald",
@@ -82,18 +82,18 @@ export const EXECUTIVE_BRIDGE_SCENES = [
   },
   {
     id: "aria-council",
-    kicker_ar: "مجلس آريا",
-    kicker_en: "ARIA Council",
+    kicker_ar: "مجلس FINN",
+    kicker_en: "FINN Council",
     title_ar: "ذكاء تنفيذي يعمل مع القيادة، لا بدلاً عنها.",
     title_en: "Executive intelligence that works with leadership, never around it.",
     body_ar:
-      "وكلاء متخصصون يجمعون الأدلة ويصيغون الخيارات، وآريا توحّد الصورة قبل بوابة الاعتماد البشري.",
+      "وكلاء متخصصون يجمعون الأدلة ويصيغون الخيارات، وFINN توحّد الصورة قبل بوابة الاعتماد البشري.",
     body_en:
-      "Specialist agents assemble evidence and options; ARIA unifies the picture before human approval.",
+      "Specialist agents assemble evidence and options; FINN unifies the picture before human approval.",
     narration_ar:
-      "أنا آريا، ولست صندوق محادثة منفصلاً عن العمل. أعمل داخل منظومة من الوكلاء المتخصصين: وكيل للمخاطر، وآخر للعمليات، وثالث للتقارير، ورابع للمتابعة. أجمع نتائجهم في موجز واحد، أشرح سبب كل توصية، وأكشف ما هو مؤكد وما يحتاج إلى تحقق. يمكنكم مخاطبتي صوتياً لأجيب بصوتي، أو الكتابة لأجيب نصياً، كما أستطيع تجهيز الرسائل والمرفقات وتنفيذ الإرسال بعد أمر صريح وصلاحية معتمدة.",
+      "أنا FINN، ولست صندوق محادثة منفصلاً عن العمل. أعمل داخل منظومة من الوكلاء المتخصصين: وكيل للمخاطر، وآخر للعمليات، وثالث للتقارير، ورابع للمتابعة. أجمع نتائجهم في موجز واحد، أشرح سبب كل توصية، وأكشف ما هو مؤكد وما يحتاج إلى تحقق. يمكنكم مخاطبتي صوتياً لأجيب بصوتي، أو الكتابة لأجيب نصياً، كما أستطيع تجهيز الرسائل والمرفقات وتنفيذ الإرسال بعد أمر صريح وصلاحية معتمدة.",
     narration_en:
-      "I am ARIA, and I am not a chat box detached from the work. I operate with specialist agents for risk, operations, reporting, and follow-through. I unify their findings into one brief, explain the reason behind every recommendation, and distinguish verified evidence from what still needs confirmation. Speak to me and I respond by voice; write to me and I respond in text. I can also prepare messages and attachments, executing delivery only after an explicit instruction and an authorized approval path.",
+      "I am FINN, and I am not a chat box detached from the work. I operate with specialist agents for risk, operations, reporting, and follow-through. I unify their findings into one brief, explain the reason behind every recommendation, and distinguish verified evidence from what still needs confirmation. Speak to me and I respond by voice; write to me and I respond in text. I can also prepare messages and attachments, executing delivery only after an explicit instruction and an authorized approval path.",
     accent: "navy",
     showSimRibbon: true,
   },
@@ -141,9 +141,9 @@ export const EXECUTIVE_BRIDGE_SCENES = [
     body_en:
       "Start with one decisive scope, connect trusted sources, prove impact, then scale with clear ownership.",
     narration_ar:
-      "الخطوة التالية عملية ومحددة. خلال الأيام الثلاثين الأولى نختار حالة استخدام تنفيذية، نثبت الصلاحيات، ونحدد خط الأساس. في المرحلة الثانية نربط المصادر المعتمدة ونشغّل الجسر مع المستخدمين المخوّلين. وفي المرحلة الثالثة نقيس زمن القرار، وجودة الاستجابة، والجهد الذي تم توفيره، ثم نعرض نتيجة واضحة للتوسع أو التحسين. أنا آريا، وسأرافق القيادة من أول سؤال إلى آخر دليل. عندما تكونون مستعدين، يبدأ جسر القيادة من قرار واحد جيد التصميم.",
+      "الخطوة التالية عملية ومحددة. خلال الأيام الثلاثين الأولى نختار حالة استخدام تنفيذية، نثبت الصلاحيات، ونحدد خط الأساس. في المرحلة الثانية نربط المصادر المعتمدة ونشغّل الجسر مع المستخدمين المخوّلين. وفي المرحلة الثالثة نقيس زمن القرار، وجودة الاستجابة، والجهد الذي تم توفيره، ثم نعرض نتيجة واضحة للتوسع أو التحسين. أنا FINN، وسأرافق القيادة من أول سؤال إلى آخر دليل. عندما تكونون مستعدين، يبدأ جسر القيادة من قرار واحد جيد التصميم.",
     narration_en:
-      "The next step is practical and defined. In the first thirty days, we select one executive use case, establish authorization, and record the baseline. In the second phase, we connect approved sources and operate the bridge with authorized users. In the third, we measure decision time, response quality, and effort saved, then present a clear recommendation to scale or improve. I am ARIA, and I will support leadership from the first question to the final evidence. When you are ready, the Command Bridge begins with one well-designed decision.",
+      "The next step is practical and defined. In the first thirty days, we select one executive use case, establish authorization, and record the baseline. In the second phase, we connect approved sources and operate the bridge with authorized users. In the third, we measure decision time, response quality, and effort saved, then present a clear recommendation to scale or improve. I am FINN, and I will support leadership from the first question to the final evidence. When you are ready, the Command Bridge begins with one well-designed decision.",
     accent: "gold",
   },
 ] as const satisfies readonly ExecutiveBridgeSceneCopy[];

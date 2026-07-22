@@ -21,7 +21,7 @@ export const Route = createFileRoute("/api/aria/providers/status")({
         if (!authorization?.startsWith("Bearer ")) return fail("Authentication is required.", 401);
         const url = process.env.SUPABASE_URL?.trim();
         const key = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
-        if (!url || !key) return fail("ARIA data service is not configured.", 503);
+        if (!url || !key) return fail("FINN data service is not configured.", 503);
         const supabase = createClient(url, key, {
           global: { headers: { Authorization: authorization } },
           auth: { persistSession: false, autoRefreshToken: false },

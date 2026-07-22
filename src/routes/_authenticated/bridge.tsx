@@ -2,7 +2,7 @@
  * Executive War Room — `/bridge`
  *
  * Full-screen command center. Top: mission status strip. Left:
- * operational health column. Center: ARIA + circular AI agent table +
+ * operational health column. Center: FINN + circular AI agent table +
  * Begin Briefing CTA. Right: live executive brief (predicted risks +
  * recommendation). Bottom: animated mission timeline.
  *
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/_authenticated/bridge")({
       {
         name: "description",
         content:
-          "Live executive war room with ARIA, specialist AI agents, predictive risks, and 60-second executive briefings.",
+          "Live executive war room with FINN, specialist AI agents, predictive risks, and 60-second executive briefings.",
       },
     ],
   }),
@@ -149,7 +149,7 @@ function WarRoomPage() {
         {/* LEFT — Operational Health */}
         <OperationalHealthColumn ar={ar} health={health} loading={state.isLoading} />
 
-        {/* CENTER — Agent table around ARIA */}
+        {/* CENTER — Agent table around FINN */}
         <div className="relative flex min-h-[640px] flex-col items-center justify-center gap-5">
           <AgentRing
             agents={agents}
@@ -467,7 +467,7 @@ function HealthRow({
 }
 
 // ----------------------------------------------------------------------
-// CENTER — ARIA
+// CENTER — FINN
 // ----------------------------------------------------------------------
 
 function CenterStage({
@@ -491,7 +491,7 @@ function CenterStage({
       <DigitalHumanAvatar spec={aria!} state={speaking ? "speaking" : "idle"} size={220} ambient />
       <div className="absolute -bottom-4 text-center">
         <div className="text-xs uppercase tracking-[0.22em] text-cyan-200/90">
-          {ar ? "آريا · ذكاء تنفيذي" : "ARIA · Executive AI"}
+          {ar ? "FINN · ذكاء تنفيذي" : "FINN · Executive AI"}
         </div>
       </div>
     </div>

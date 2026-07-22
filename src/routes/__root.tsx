@@ -18,13 +18,13 @@ import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 
-// ── ARIA Singleton ────────────────────────────────────────────────────
-// ONE ARIA. Do not add a second copilot at the root. See
+// ── FINN Singleton ────────────────────────────────────────────────────
+// ONE FINN. Do not add a second copilot at the root. See
 // `src/lib/aria-core/README.md` for the migration kill-list.
 import { AriaProvider } from "@/lib/aria-core";
 import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
 import { InstallAppBar } from "@/components/aria/InstallAppBar";
-// AriaGlobalBackdrop removed — ARIA renders only via AriaCopilot top-circle
+// AriaGlobalBackdrop removed — FINN renders only via AriaCopilot top-circle
 import { GlobalPageBackdrop } from "@/components/aria/GlobalPageBackdrop";
 import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsulaBackdrop";
 import { AriaWatermark } from "@/components/executive/AriaWatermark";
@@ -124,8 +124,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "ARIA" },
-      { name: "application-name", content: "ARIA · NEXIOS" },
+      { name: "apple-mobile-web-app-title", content: "FINN" },
+      { name: "application-name", content: "FINN · NEXIOS" },
       { name: "google-site-verification", content: "ZMjRDSJhOrvRVKAbg8VWNjP8CICjLONLC3Jk6nKpsUQ" },
       { title: SITE_NAME },
       {
@@ -142,7 +142,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image", content: `${DOMAIN_URL}/finn-portrait.png` },
       { property: "og:image:width", content: "1128" },
       { property: "og:image:height", content: "1920" },
-      { property: "og:image:alt", content: "ARIA · NEXIOS AI OS" },
+      { property: "og:image:alt", content: "FINN · NEXIOS AI OS" },
       { property: "og:site_name", content: COMPANY_NAME },
       { name: "twitter:card", content: "summary_large_image" },
       {
@@ -154,7 +154,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Executive Delivery Platform",
       },
       { name: "twitter:image", content: `${DOMAIN_URL}/finn-portrait.png` },
-      { name: "twitter:image:alt", content: "ARIA · NEXIOS AI OS" },
+      { name: "twitter:image:alt", content: "FINN · NEXIOS AI OS" },
       { title: "NEXIOS AI  · Executive Delivery Platform" },
       {
         property: "og:title",
@@ -364,7 +364,7 @@ function RootComponent() {
                       Arabian Peninsula, light-green pulse, four sector borders
                       in sky-blue, the active sector's border pulsing. */}
                   {!introActive && !isAccessGate && <ArabianPeninsulaBackdrop />}
-                  {/* Global ARIA hologram backdrop for every non-home page.
+                  {/* Global FINN hologram backdrop for every non-home page.
                       Homepage owns its own HomeVideoBackdrop. */}
                   {!isHero && !isPromo && !isAccessGate && !introActive && <GlobalPageBackdrop />}
                   {/* Unified header: LIVE clock is embedded inside the marquee bar (single strip, no ghost row). */}
@@ -375,7 +375,7 @@ function RootComponent() {
                   </div>
                   {!isAccessGate && <AriaCopilot />}
                   <InstallAppBar />
-                  {/* ARIA speaks ONLY inside Conversation Mode («مخاطبة») in the
+                  {/* FINN speaks ONLY inside Conversation Mode («مخاطبة») in the
                       copilot panel, and via the homepage greeting button. No
                       route auto-narration, no page greeters, and no cinematic
                       welcome overlay — the homepage renders directly. */}

@@ -1,6 +1,6 @@
 
 /**
- * AriaWatermark — global ARIA presence rendered behind every route.
+ * AriaWatermark — global FINN presence rendered behind every route.
  * Mounted once in the app shell (src/routes/__root.tsx). Sits at z-index 0
  * so all page content (wrapped at z-index ≥ 1) renders above it. Uses the
  * user-provided hologram portrait as the system-wide backdrop across every

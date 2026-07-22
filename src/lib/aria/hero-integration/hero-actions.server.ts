@@ -1,6 +1,6 @@
 // Hero action catalog — one row per hero button.
 // Actions are deterministic descriptors; execution runs through the
-// conversation bridge so every button is a real ARIA turn.
+// conversation bridge so every button is a real FINN turn.
 import type { HeroButtonId } from "./types";
 
 export interface HeroActionSpec {
@@ -16,8 +16,8 @@ export interface HeroActionSpec {
 export const HERO_ACTIONS: Readonly<Record<HeroButtonId, HeroActionSpec>> = {
   talk_to_aria: {
     id: "talk_to_aria",
-    label_ar: "تحدّث مع أريا",
-    label_en: "Talk to ARIA",
+    label_ar: "تحدّث مع FINN",
+    label_en: "Talk to FINN",
     prompt_ar: "ابدأي المحادثة التنفيذية. استمعي إلى المستخدم ثم أجيبي باحترافية.",
     prompt_en: "Start the executive conversation. Listen, then respond concisely.",
     requiresVoice: true,

@@ -44,7 +44,7 @@ const STATUS_META: Record<
   skipped: { color: "text-slate-500", Icon: MinusCircle, label: "متوقف" },
 };
 
-/** Read-only health surface for the one official ARIA voice runtime. */
+/** Read-only health surface for the one official FINN voice runtime. */
 export function CanonicalVoiceStatus() {
   const query = useQuery<Diagnostics>({
     queryKey: ["aria-canonical-voice-diagnostics"],
@@ -71,10 +71,10 @@ export function CanonicalVoiceStatus() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-300">
-                NEXIOS · ONE ARIA
+                NEXIOS · ONE FINN
               </p>
               <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">
-                حالة صوت آريا الرسمي
+                حالة صوت FINN الرسمي
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                 فحص للهوية الصوتية الواحدة والمسار الخادمي المحكوم. لا تنشئ هذه الصفحة مساعداً أو
@@ -184,7 +184,7 @@ export function CanonicalVoiceStatus() {
                         : "border-amber-500/30 bg-amber-500/15 text-amber-300"
                     }
                   >
-                    {diagnostics.live_voice_ready ? "ARIA VOICE READY" : "SAFE CLOSED"}
+                    {diagnostics.live_voice_ready ? "FINN VOICE READY" : "SAFE CLOSED"}
                   </Badge>
                   <p className="mt-2 text-xs text-slate-400">
                     آخر فحص: {new Date(diagnostics.generated_at).toLocaleString("ar-SA")}
@@ -193,14 +193,14 @@ export function CanonicalVoiceStatus() {
                 <Button asChild className="bg-cyan-400 text-[#061A2E] hover:bg-cyan-300">
                   <Link to="/assistant">
                     <Sparkles className="ml-2 h-4 w-4" />
-                    افتح آريا الرسمية
+                    افتح FINN الرسمية
                   </Link>
                 </Button>
               </CardContent>
             </Card>
 
             <p className="px-2 text-xs leading-5 text-slate-500">
-              الإعداد الوحيد المطلوب للصوت هو المفتاح الخادمي. هوية آريا وصوتها ونموذجها مقفلة
+              الإعداد الوحيد المطلوب للصوت هو المفتاح الخادمي. هوية FINN وصوتها ونموذجها مقفلة
               مركزياً، وأي فشل يؤدي إلى الصمت الآمن بدلاً من تشغيل صوت بديل.
             </p>
           </>

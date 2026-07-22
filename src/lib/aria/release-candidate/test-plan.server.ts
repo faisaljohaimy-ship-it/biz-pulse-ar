@@ -8,7 +8,7 @@ const CASES: ReadonlyArray<TestCase> = [
     id: "smk-001",
     gate: "aria_os",
     kind: "smoke",
-    title: "ARIA OS kernel initializes",
+    title: "FINN OS kernel initializes",
     required: true,
   },
   {

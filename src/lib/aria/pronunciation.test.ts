@@ -37,7 +37,7 @@ describe("applyAriaPronunciation — acronym dictionary", () => {
     expect(applyAriaPronunciation("HCIS")).toBe("الهيئة العليا للأمن الصناعي");
     expect(applyAriaPronunciation("راجع CCTV")).toBe("راجع كاميرات المراقبة");
     expect(applyAriaPronunciation("NEXIOS")).toBe("نكسيوس");
-    expect(applyAriaPronunciation("ARIA")).toBe("آريا");
+    expect(applyAriaPronunciation("FINN")).toBe("فِن");
   });
 
   it("leaves plain Arabic prose untouched", () => {

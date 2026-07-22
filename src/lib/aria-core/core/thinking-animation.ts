@@ -1,7 +1,7 @@
 /**
  * ThinkingAnimation — Phase 11 subtle micro-motion while state === "thinking".
  *
- * Adds a slow attention "look-away" oscillation so ARIA never freezes while
+ * Adds a slow attention "look-away" oscillation so FINN never freezes while
  * reasoning. Does not change state or emotion; only nudges the attention
  * engine on a fixed cadence.
  */

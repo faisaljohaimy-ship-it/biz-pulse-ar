@@ -1,6 +1,6 @@
 /**
  * AriaScene — R3F canvas hosting the Executive Digital Human. Provider-
- * abstracted: renders any registered DigitalHumanSpec (ARIA + 10 specialists)
+ * abstracted: renders any registered DigitalHumanSpec (FINN + 10 specialists)
  * using the procedural bust, with HDR-style lighting and a soft halo that
  * tracks the live AliveState.
  *
@@ -23,7 +23,7 @@ interface Props {
   mouthAmplitude?: number;
   size: number;
   severity?: "low" | "medium" | "high" | "critical" | null;
-  /** When set, ARIA gazes toward this normalised target (-1..1) instead of the pointer. */
+  /** When set, FINN gazes toward this normalised target (-1..1) instead of the pointer. */
   gaze?: { x: number; y: number } | null;
 }
 

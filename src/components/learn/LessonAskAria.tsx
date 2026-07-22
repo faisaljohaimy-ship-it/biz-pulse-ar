@@ -1,5 +1,5 @@
 /**
- * LessonAskAria — bridge from a lesson into the ARIA Singleton.
+ * LessonAskAria — bridge from a lesson into the FINN Singleton.
  *
  * Sends the prompt into the global copilot (see `src/lib/aria-core/`).
  * Because the singleton lives at the root, the conversation persists
@@ -29,7 +29,7 @@ export function LessonAskAria({ prompt, label, className }: Props) {
       )}
     >
       <Sparkles className="h-4 w-4" aria-hidden />
-      {label ?? "Ask ARIA"}
+      {label ?? "Ask FINN"}
     </button>
   );
 }

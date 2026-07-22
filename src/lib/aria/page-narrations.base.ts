@@ -1,4 +1,4 @@
-/** Shared base for ARIA page narrations: the shape + compose helper. */
+/** Shared base for FINN page narrations: the shape + compose helper. */
 export interface PageNarration {
   readonly ar: string;
   readonly en: string;
@@ -6,7 +6,7 @@ export interface PageNarration {
 
 // Compose helper — keeps every entry in the same executive shape.
 // Optional howAr/howEn enrich the narration with "how the page works"
-// so ARIA describes both the contents AND the mechanics on landing.
+// so FINN describes both the contents AND the mechanics on landing.
 export function n(
   pageAr: string,
   pageEn: string,

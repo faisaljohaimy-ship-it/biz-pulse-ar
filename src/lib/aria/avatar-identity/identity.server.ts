@@ -1,17 +1,17 @@
-// Canonical, frozen ARIA identity. This is the single source of truth
+// Canonical, frozen FINN identity. This is the single source of truth
 // referenced by every future avatar surface. Do NOT mutate at runtime.
 import { AvatarIdentitySchema } from "./contracts";
 import type { AvatarIdentity } from "./types";
 
 const RAW: AvatarIdentity = {
   id: "aria.executive.v1",
-  display_name: { en: "ARIA", ar: "آريا" },
-  reference_asset: "public/finn-portrait.png",
+  display_name: { en: "FINN", ar: "FINN" },
+  reference_asset: "src/assets/finn-portrait.png",
   // Deterministic identifier for the canonical reference asset.
   // The hash locks the identity to the committed reference file.
   reference_hash: "sha256:aria-holo-executive-v1",
   face: {
-    gender_presentation: "feminine",
+    gender_presentation: "masculine",
     ethnicity_presentation: "Saudi / Arab executive",
     age_band: "30-40",
     hairstyle: "Shoulder-length, softly waved, center-parted, natural volume",
@@ -28,7 +28,7 @@ const RAW: AvatarIdentity = {
   },
   palette: [
     { name: "Deep Midnight Cyan", hex: "#061A2E", role: "background" },
-    { name: "ARIA Cyan", hex: "#00D4FF", role: "primary" },
+    { name: "FINN Cyan", hex: "#00D4FF", role: "primary" },
     { name: "Holographic Glow", hex: "#3AE8FF", role: "glow" },
     { name: "Executive Onyx", hex: "#0B2436", role: "attire" },
     { name: "Warm Skin", hex: "#D9B08C", role: "skin" },
@@ -69,8 +69,8 @@ const RAW: AvatarIdentity = {
     overshoot_max: 0.1,
   },
   voice: {
-    persona: "executive_female",
-    pitch_hz_range: { low: 165, high: 230 },
+    persona: "executive_male",
+    pitch_hz_range: { low: 95, high: 155 },
     speaking_rate_wpm: { ar: 135, en: 155 },
     tone: "warm_confident",
     disallow: [
@@ -117,7 +117,7 @@ const RAW: AvatarIdentity = {
     "randomly generated avatar",
     "cartoon or anime style",
     "child or teen depiction",
-    "male presentation",
+    "female presentation",
     "non-holographic realism swap",
     "warm sunset / non-cyan palette",
     "outfit changes outside executive onyx family",

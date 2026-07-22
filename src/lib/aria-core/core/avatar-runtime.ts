@@ -9,7 +9,7 @@
  * Rules:
  *   • No LLM calls, no business logic, no UI code.
  *   • Purely wires singletons — never instantiates a second brain/renderer.
- *   • Reads only from the ARIA store; writes only through avatarBrain.
+ *   • Reads only from the FINN store; writes only through avatarBrain.
  */
 import { avatarBrain } from "./avatar-brain";
 import { avatarHealthMonitor } from "./avatar-health-monitor";

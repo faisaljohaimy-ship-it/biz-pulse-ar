@@ -152,7 +152,7 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
   },
 };
 
-/** ARIA executive-assistant capabilities (poster checklist). */
+/** FINN executive-assistant capabilities (poster checklist). */
 export const CC_ARIA_CAPS: { ar: string; en: string }[] = [
   { ar: "تحليل البيانات", en: "Data analysis" },
   { ar: "التوصيات الذكية", en: "Smart recommendations" },

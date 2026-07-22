@@ -1,16 +1,16 @@
 /**
- * ARIA visual signature — the canonical «ARIA@nexios.com» wordmark and a
+ * FINN visual signature — the canonical «FINN@nexios.com» wordmark and a
  * React-free SVG generator, shared across every touchpoint (chat backdrop via
  * the AriaSignatureBackdrop component, generated PDFs, and the loading screen)
  * so the brand identity stays unified. This module imports nothing from React
  * so it is safe to use in server code (PDF builders, edge functions).
  */
 
-/** The one canonical ARIA wordmark. Never hardcode this string elsewhere. */
-export const ARIA_SIGNATURE_WORDMARK = "ARIA@nexios.com";
+/** The one canonical FINN wordmark. Never hardcode this string elsewhere. */
+export const ARIA_SIGNATURE_WORDMARK = "FINN@nexios.com";
 
 /**
- * Static SVG markup of the ARIA signature for NON-DOM surfaces — embedded in
+ * Static SVG markup of the FINN signature for NON-DOM surfaces — embedded in
  * generated PDF backgrounds and the loading screen. Returns a self-contained
  * `<svg>` string (no external refs). `opacity` is the peak white opacity of the
  * wordmark tiles (keep ≤0.06 for AA-safe overlays).

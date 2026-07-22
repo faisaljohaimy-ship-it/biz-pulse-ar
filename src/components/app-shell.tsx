@@ -127,7 +127,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </main>
       </div>
-      {/* Legacy ExecutiveOverlay removed — ARIA singleton lives at root. */}
+      {/* Legacy ExecutiveOverlay removed — FINN singleton lives at root. */}
     </div>
   );
 }
@@ -169,10 +169,10 @@ function useNavGroups(): NavGroup[] {
     {
       label: ar("الذكاء", "Intelligence"),
       items: [
-        { to: "/aria", icon: Sparkles, label: ar("ARIA", "ARIA") },
+        { to: "/aria", icon: Sparkles, label: ar("FINN", "FINN") },
         { to: "/voice", icon: Mic, label: ar("المساعد الصوتي", "Voice Assistant") },
         { to: "/agents", icon: Bot, label: ar("الوكلاء", "Agents") },
-        { to: "/sec/ai", icon: Brain, label: ar("توصيات ARIA", "ARIA Recos") },
+        { to: "/sec/ai", icon: Brain, label: ar("توصيات FINN", "FINN Recos") },
       ],
     },
     {

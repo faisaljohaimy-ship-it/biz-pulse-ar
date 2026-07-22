@@ -1,5 +1,5 @@
 /**
- * ARIA Brain — SERVER-side AI Router.
+ * FINN Brain — SERVER-side AI Router.
  *
  * Called ONLY from `src/routes/api/chat.ts`. Never exposes model names to
  * the client.
@@ -56,7 +56,7 @@ export interface AvailableProviders {
 }
 
 export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
-  // Highest-quality route requested for ARIA: native GPT-5.6 first. Remaining
+  // Highest-quality route requested for FINN: native GPT-5.6 first. Remaining
   // providers are continuity fallbacks and never masquerade as GPT-5.6.
 
   if (providers.openai) {

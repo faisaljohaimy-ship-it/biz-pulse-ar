@@ -1,4 +1,4 @@
-// ARIA Corpus Seeder — populates aria_knowledge with the Industrial Security
+// FINN Corpus Seeder — populates aria_knowledge with the Industrial Security
 // Department (Western Region) operational corpus. Admin-only. Idempotent:
 // re-running skips titles already present for the active org.
 import { createServerFn } from "@tanstack/react-start";
@@ -93,13 +93,13 @@ const CORPUS: Entry[] = [
     title: "Workflow — Incident Response Lifecycle",
     source: "workflow/incident-response",
     tags: ["workflow", "incident"],
-    content: `Trigger: new row in sec_incidents. Steps: (1) ARIA risk scoring → assigns severity confidence; (2) dispatch nearest patrol via sec_patrol_teams.proximity; (3) if P1/P2 → page Shift Supervisor + open work order; (4) collect evidence (CCTV clips, photos, witness statements); (5) root-cause analysis using 5-Whys; (6) corrective actions tracked in sec_work_orders; (7) closure review by Manager; (8) publish post-incident summary to executive dashboard.`,
+    content: `Trigger: new row in sec_incidents. Steps: (1) FINN risk scoring → assigns severity confidence; (2) dispatch nearest patrol via sec_patrol_teams.proximity; (3) if P1/P2 → page Shift Supervisor + open work order; (4) collect evidence (CCTV clips, photos, witness statements); (5) root-cause analysis using 5-Whys; (6) corrective actions tracked in sec_work_orders; (7) closure review by Manager; (8) publish post-incident summary to executive dashboard.`,
   },
   {
     title: "Workflow — Permit Approval",
     source: "workflow/permit-approval",
     tags: ["workflow", "permits"],
-    content: `Permit applicant submits form → auto-validation (PPE checklist, JSA attached, requester certified) → Permit Coordinator review → Site Authority approval → ARIA risk flag if high-hazard → activation. Any rejection routes back to applicant with reason. Approved permits push notification to Shift Supervisor and create timer for expiry.`,
+    content: `Permit applicant submits form → auto-validation (PPE checklist, JSA attached, requester certified) → Permit Coordinator review → Site Authority approval → FINN risk flag if high-hazard → activation. Any rejection routes back to applicant with reason. Approved permits push notification to Shift Supervisor and create timer for expiry.`,
   },
   {
     title: "Workflow — Visitor Check-in",
@@ -120,21 +120,21 @@ const CORPUS: Entry[] = [
     content: `Cron 06:00 local → compute incidents (open/closed/by severity), patrol compliance %, CCTV uptime, permits pending, work orders SLA → write to hajj_kpi_snapshots and aria_reports → render PDF + Excel via report builder → email distribution list configured in report_schedules.`,
   },
 
-  // ---- ARIA Guidance ----
+  // ---- FINN Guidance ----
   {
-    title: "ARIA Operating Principles",
+    title: "FINN Operating Principles",
     source: "aria/principles",
     tags: ["aria", "principles"],
-    content: `ARIA is the executive AI engine of NEXUS AI OS. It must: (1) ground every answer in cited records from sec_*/hajj_*/audit_logs; (2) prefer Arabic when user writes Arabic; (3) never fabricate incident IDs or KPI values; (4) flag uncertainty explicitly; (5) recommend next-best-actions tied to existing workflows; (6) escalate P1/P2 risk findings to Shift Supervisor automatically. Refuse to mutate data without explicit user confirmation.`,
+    content: `FINN is the executive AI engine of NEXUS AI OS. It must: (1) ground every answer in cited records from sec_*/hajj_*/audit_logs; (2) prefer Arabic when user writes Arabic; (3) never fabricate incident IDs or KPI values; (4) flag uncertainty explicitly; (5) recommend next-best-actions tied to existing workflows; (6) escalate P1/P2 risk findings to Shift Supervisor automatically. Refuse to mutate data without explicit user confirmation.`,
   },
   {
-    title: "ARIA Tone & Bilingual Style",
+    title: "FINN Tone & Bilingual Style",
     source: "aria/style",
     tags: ["aria", "style"],
     content: `Executive tone: concise, evidence-led, no marketing fluff. Arabic responses use formal MSA with security/HSE terminology (الحادث، التصريح، الدورية، أمر العمل). English responses prefer active voice and operational verbs (dispatch, escalate, close, mitigate). Always include a one-line "Recommendation" at the end of analytical answers.`,
   },
   {
-    title: "ARIA Escalation Matrix",
+    title: "FINN Escalation Matrix",
     source: "aria/escalation",
     tags: ["aria", "escalation"],
     content: `P1 → page Shift Supervisor + Operations Manager + open executive briefing item. P2 → Shift Supervisor + manager notification. P3 → log + supervisor email digest. Patrol non-compliance > 20% → Manager. CCTV outage > 30 min → Engineering + Manager. Permit backlog > 10 pending → Permit Coordinator + Manager. Any data integrity anomaly → Engineering on-call.`,
@@ -151,7 +151,7 @@ const CORPUS: Entry[] = [
     title: "Data Retention & Audit Trail",
     source: "compliance/retention",
     tags: ["compliance", "audit", "retention"],
-    content: `audit_logs retained 7 years (immutable). CCTV footage 90 days standard, 1 year for incident-linked clips. sec_incidents records retained 10 years. Access logs (sec_visitors, sec_vehicles) retained 2 years. ARIA conversation logs retained 1 year, anonymized after 90 days. All retention enforced via scheduled jobs and DB triggers.`,
+    content: `audit_logs retained 7 years (immutable). CCTV footage 90 days standard, 1 year for incident-linked clips. sec_incidents records retained 10 years. Access logs (sec_visitors, sec_vehicles) retained 2 years. FINN conversation logs retained 1 year, anonymized after 90 days. All retention enforced via scheduled jobs and DB triggers.`,
   },
 
   // ---- Sites ----

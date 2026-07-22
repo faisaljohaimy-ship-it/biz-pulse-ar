@@ -1,7 +1,7 @@
 /**
- * ARIA Audit Trail — Article 26 of the ARIA Master Constitution.
+ * FINN Audit Trail — Article 26 of the FINN Master Constitution.
  *
- * Every ARIA-authored action (decision, tool call, generation, denial)
+ * Every FINN-authored action (decision, tool call, generation, denial)
  * SHOULD be persisted here with:
  *   - `article_refs`: which constitution articles governed the action
  *   - `citations`: sources / evidence used (RAG doc IDs, sec_* rows, URLs)

@@ -1,7 +1,7 @@
 /**
- * ARIA Executive Intelligence — Phase 2 canonical types.
+ * FINN Executive Intelligence — Phase 2 canonical types.
  *
- * These describe the internal envelope every ARIA turn produces. Only
+ * These describe the internal envelope every FINN turn produces. Only
  * `finalAnswer` (and the streamed assistant text) is rendered to end users;
  * everything else is consumed by executive UI panels, telemetry, and the
  * audit trail.

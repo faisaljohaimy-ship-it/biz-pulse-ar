@@ -3,7 +3,7 @@
  *
  * Renders the LIVE multi-agent transcript produced by
  * `getAgentConversation`: each specialist agent appears as a speaker
- * bubble, ARIA's executive synthesis closes the conversation with the
+ * bubble, FINN's executive synthesis closes the conversation with the
  * recommended action and next steps. Pure presentation; no fabrication.
  */
 import { useQuery } from "@tanstack/react-query";
@@ -158,7 +158,7 @@ export function AgentConversation({ ar }: { ar: boolean }) {
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-cyan-100">
               <Sparkles className="h-3.5 w-3.5" />
-              {ar ? "خلاصة أريا التنفيذية" : "ARIA Executive Synthesis"}
+              {ar ? "خلاصة FINN التنفيذية" : "FINN Executive Synthesis"}
             </div>
             <span
               className={cn(
@@ -219,7 +219,7 @@ export function AgentConversation({ ar }: { ar: boolean }) {
               {ar ? "ثقة الخلاصة" : "Synthesis confidence"}: {Math.round(synth.confidence * 100)}%
             </span>
             <span>
-              {synth.source === "gpt-5" ? "ARIA" : ar ? "وضع احتياطي" : "Fallback"}
+              {synth.source === "gpt-5" ? "FINN" : ar ? "وضع احتياطي" : "Fallback"}
               {data?.cached ? ` · ${ar ? "ذاكرة" : "memory"}` : ""}
             </span>
           </div>

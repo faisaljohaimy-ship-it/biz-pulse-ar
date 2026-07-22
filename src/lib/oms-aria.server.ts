@@ -1,5 +1,5 @@
 // ============================================================================
-// ARIA — Incident Analysis (server-only, calls Lovable AI Gateway / gpt-5)
+// FINN — Incident Analysis (server-only, calls Lovable AI Gateway / gpt-5)
 // Returns bilingual summary + risk score + concrete operational recommendations.
 // Falls back to a deterministic heuristic on failure so the workflow never
 // blocks incident registration.
@@ -82,7 +82,7 @@ function heuristic(inc: AriaIncidentInput): AriaIncidentAnalysis {
   };
 }
 
-const SYSTEM_PROMPT = `You are ARIA, the Executive AI for an Industrial Security Operations Center (Western Region, Saudi Arabia).
+const SYSTEM_PROMPT = `You are FINN, the Executive AI for an Industrial Security Operations Center (Western Region, Saudi Arabia).
 You analyse incoming security incidents and return ONLY a JSON object — no prose, no markdown fences.
 The JSON shape MUST be:
 {

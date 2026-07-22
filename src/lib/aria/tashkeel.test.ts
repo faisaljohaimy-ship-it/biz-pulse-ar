@@ -4,7 +4,7 @@ import { stripTashkeel } from "./tashkeel";
 describe("stripTashkeel", () => {
   it("removes harakat (fatha/damma/kasra/shadda/sukun) but keeps base letters", () => {
     expect(stripTashkeel("مُشَكَّل")).toBe("مشكل");
-    expect(stripTashkeel("تُنَفِّذُ آرِيَا الخُطْوَةَ الآنَ")).toBe("تنفذ آريا الخطوة الآن");
+    expect(stripTashkeel("تُنَفِّذُ الخُطْوَةَ الآنَ")).toBe("تنفذ الخطوة الآن");
   });
 
   it("removes tanwin, dagger alef, and tatweel", () => {

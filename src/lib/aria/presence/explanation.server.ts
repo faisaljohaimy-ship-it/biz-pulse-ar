@@ -1,5 +1,5 @@
 /**
- * ARIA Presence — Executive Explanation Mode.
+ * FINN Presence — Executive Explanation Mode.
  *
  * Expands a prior recommendation into a full executive rationale:
  * Why, Evidence, Alternatives, Risks, Expected Outcome, Business Value,

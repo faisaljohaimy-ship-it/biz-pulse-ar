@@ -388,7 +388,7 @@ async function appendLedgerEvent(input: {
 
 async function requireSenderRole(userId: string): Promise<void> {
   if (!(await hasAnyPlatformRole(userId, ["admin", "manager"]))) {
-    throw new Error("Forbidden: ARIA outbound messaging requires admin or manager role.");
+    throw new Error("Forbidden: FINN outbound messaging requires admin or manager role.");
   }
 }
 
@@ -404,7 +404,7 @@ export async function prepareAriaOutboundMessage(
     const draftRate = await enforceRateLimit(`aria-outbound-draft:${userId}`, 30, 600);
     if (draftRate.unavailable)
       throw new Error("Messaging approval service is temporarily unavailable.");
-    if (!draftRate.allowed) throw new Error("Rate limit exceeded for ARIA message drafts.");
+    if (!draftRate.allowed) throw new Error("Rate limit exceeded for FINN message drafts.");
 
     const payload = normalizeOutboundPayload(rawPayload);
     if (!configuredChannel(payload)) {
@@ -527,7 +527,7 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
       headers,
       body: JSON.stringify({ message, saveToSentItems: true }),
       retries: 0,
-      label: "ARIA Outlook sendMail",
+      label: "FINN Outlook sendMail",
     });
     if (!response.ok) {
       const detail = (await response.text().catch(() => "")).slice(0, 180);
@@ -667,7 +667,7 @@ export async function approveAriaOutboundMessageInternal(input: {
   const sendRate = await enforceRateLimit(`aria-outbound-send:${input.userId}`, 10, 600);
   if (sendRate.unavailable)
     throw new Error("Messaging rate-limit service is temporarily unavailable.");
-  if (!sendRate.allowed) throw new Error("Rate limit exceeded for ARIA outbound sends.");
+  if (!sendRate.allowed) throw new Error("Rate limit exceeded for FINN outbound sends.");
 
   // Atomic one-time claim. Exactly one concurrent approver can transition the
   // row; every other request receives zero rows and therefore cannot call a
@@ -818,7 +818,7 @@ export async function approveAriaOutboundMessageInternal(input: {
 }
 
 /**
- * Auto-send switch. ARIA sends email/SMS directly on request WITHOUT a
+ * Auto-send switch. FINN sends email/SMS directly on request WITHOUT a
  * per-message human approval step (owner directive). Every other safety
  * control stays in force: admin/manager role, rate limits, provider-config
  * gate, payload encryption, content-hash integrity, atomic one-time claim,
@@ -834,14 +834,14 @@ export function ariaAutoApproveEnabled(): boolean {
 }
 
 /**
- * Send an ARIA outbound message directly, skipping the human approval gate.
+ * Send an FINN outbound message directly, skipping the human approval gate.
  * Reuses the full prepare→approve pipeline and simply consumes the signed
  * approval token server-side, so the entire integrity/audit machinery still
  * runs — only the human confirmation is removed.
  *
  * Auto-approved sends are marked in the immutable ledger with a distinct
  * `approval.auto_approved` event BEFORE dispatch, so an auditor can always
- * tell an ARIA-bypassed send apart from a human-confirmed one. Consistent with
+ * tell an FINN-bypassed send apart from a human-confirmed one. Consistent with
  * the rest of this module, the send does not proceed if that audit marker
  * cannot be written (no auto-send may exist without its bypass record).
  */

@@ -372,7 +372,7 @@ function UrgentOpsPage() {
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-cyan-100">المساندة ومتابعة الأعمال العاجلة</h1>
         <p className="text-sm text-cyan-200/70">
-          Urgent Operations & Support Desk — مركز تنفيذي متكامل مع محرك آريا للتحسين المستمر.
+          Urgent Operations & Support Desk — مركز تنفيذي متكامل مع محرك FINN للتحسين المستمر.
         </p>
       </header>
 
@@ -502,14 +502,14 @@ function UrgentOpsPage() {
           </CardContent>
         </Card>
 
-        {/* Panel 3 — ARIA proposals */}
+        {/* Panel 3 — FINN proposals */}
         <Card className="border-cyan-500/20 bg-[#061A2E]/60">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-cyan-100">
-              <Sparkles className="h-4 w-4" /> مقترحات آريا لتطوير المنظومة
+              <Sparkles className="h-4 w-4" /> مقترحات FINN لتطوير المنظومة
             </CardTitle>
             <p className="text-[11px] text-amber-200/80 mt-1">
-              آريا تقترح وتجهّز — الاعتماد النهائي بشري.
+              FINN تقترح وتجهّز — الاعتماد النهائي بشري.
             </p>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -570,7 +570,7 @@ function UrgentOpsPage() {
             ))}
             {proposals.length === 0 && (
               <p className="text-xs text-cyan-200/50 text-center py-4">
-                لا توجد مقترحات حالياً. سيقوم محرك آريا بتحليل المؤشرات واقتراح تحسينات عند رصد
+                لا توجد مقترحات حالياً. سيقوم محرك FINN بتحليل المؤشرات واقتراح تحسينات عند رصد
                 إشارات تشغيلية.
               </p>
             )}

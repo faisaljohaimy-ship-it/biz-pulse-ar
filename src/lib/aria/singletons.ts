@@ -1,5 +1,5 @@
 /**
- * ARIA Singleton Registry — runtime hard-assert that critical ARIA
+ * FINN Singleton Registry — runtime hard-assert that critical FINN
  * subsystems are instantiated exactly once per browser session.
  *
  * Registers: BRAIN, PROVIDER, VOICE, AVATAR, MEMORY.

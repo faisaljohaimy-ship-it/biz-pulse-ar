@@ -93,7 +93,7 @@ function CockpitPage() {
           tone="amber"
         />
         <NexusStat
-          label={ar ? "محادثات ARIA" : "ARIA conversations"}
+          label={ar ? "محادثات FINN" : "FINN conversations"}
           value={String(pulse.counts.conversations)}
           tone="violet"
         />

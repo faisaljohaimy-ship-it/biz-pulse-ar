@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { shouldSpeakAriaReply, toAriaSpeechText } from "./reply-modality";
 
-describe("ARIA reply modality", () => {
+describe("FINN reply modality", () => {
   it("speaks every reply while conversation mode is on (voice OR typed)", () => {
     expect(shouldSpeakAriaReply({ conversationMode: true, fromVoice: true })).toBe(true);
     expect(shouldSpeakAriaReply({ conversationMode: true, fromVoice: false })).toBe(true);

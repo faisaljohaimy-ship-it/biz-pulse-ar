@@ -1,10 +1,10 @@
 /**
- * ExecutiveAiOrchestrator — the single pipeline every ARIA request follows.
+ * ExecutiveAiOrchestrator — the single pipeline every FINN request follows.
  *
  * Phase 2 sequence:
  *   1. ConversationManager.beginTurn        (dedupe + cancel guards)
  *   2. ContextManager.snapshot              (route/module/screen/locale)
- *   3. ContextAwareness.assess              (what ARIA sees / is missing)
+ *   3. ContextAwareness.assess              (what FINN sees / is missing)
  *   4. ConversationIntelligence.observePrompt (ephemeral session memory)
  *   5. ExecutiveReasoning.build             (intent, summary, evidence)
  *   6. RiskEngine.assess                    (risk level + probability/impact)

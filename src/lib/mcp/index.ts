@@ -12,10 +12,10 @@ const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unse
 
 export default defineMcp({
   name: "nexus-aria-mcp",
-  title: "NEXUS AI OS — ARIA",
+  title: "NEXUS AI OS — FINN",
   version: "0.1.0",
   instructions:
-    "MCP server for NEXUS AI OS. Use `ping` to verify connectivity, `ask_aria` to query ARIA (the Executive AI Engine) for bilingual (AR/EN) executive briefings, `hcis_status` for HCIS industrial-security compliance (overall/per-region % + critical findings), and `ptw_active_permits` for currently active digital work permits by region/type.",
+    "MCP server for NEXUS AI OS. Use `ping` to verify connectivity, `ask_aria` to query FINN (the Executive AI Engine) for bilingual (AR/EN) executive briefings, `hcis_status` for HCIS industrial-security compliance (overall/per-region % + critical findings), and `ptw_active_permits` for currently active digital work permits by region/type.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",

@@ -1,4 +1,4 @@
-// Zod contracts for the ARIA Avatar Identity.
+// Zod contracts for the FINN Avatar Identity.
 import { z } from "zod";
 
 export const ColorSwatchSchema = z.object({
@@ -8,7 +8,7 @@ export const ColorSwatchSchema = z.object({
 });
 
 export const FaceSignatureSchema = z.object({
-  gender_presentation: z.literal("feminine"),
+  gender_presentation: z.literal("masculine"),
   ethnicity_presentation: z.string().min(1),
   age_band: z.string().min(1),
   hairstyle: z.string().min(1),
@@ -58,7 +58,7 @@ export const LipSyncRuleSchema = z.object({
 });
 
 export const VoicePersonalityRuleSchema = z.object({
-  persona: z.literal("executive_female"),
+  persona: z.literal("executive_male"),
   pitch_hz_range: z.object({ low: z.number().positive(), high: z.number().positive() }),
   speaking_rate_wpm: z.object({ ar: z.number().positive(), en: z.number().positive() }),
   tone: z.literal("warm_confident"),

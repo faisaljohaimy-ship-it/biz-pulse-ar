@@ -7,7 +7,7 @@ describe("executive bridge story", () => {
     expect(new Set(EXECUTIVE_BRIDGE_SCENES.map((scene) => scene.id)).size).toBe(7);
   });
 
-  it("keeps every ARIA narration bilingual and inside the public TTS limit", () => {
+  it("keeps every FINN narration bilingual and inside the public TTS limit", () => {
     for (const scene of EXECUTIVE_BRIDGE_SCENES) {
       for (const language of ["ar", "en"] as const) {
         const narration = executiveBridgeNarration(scene, language);

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * EmergencyBroadcast — ARIA red-alert broadcaster (Phase 4).
+ * EmergencyBroadcast — FINN red-alert broadcaster (Phase 4).
  *
  * Compose a critical alert, choose a region (or all), then a MANDATORY human
  * confirmation gate must be cleared before anything is sent — no accidental
