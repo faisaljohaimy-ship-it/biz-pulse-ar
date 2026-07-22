@@ -6,7 +6,7 @@ import {
 
 describe("FINN conversation greeting", () => {
   it("welcomes the user and asks how FINN can help", () => {
-    expect(ARIA_CONVERSATION_GREETING_AR).toContain("أنا FINN");
+    expect(ARIA_CONVERSATION_GREETING_AR).toContain("أنا فِن");
     expect(ARIA_CONVERSATION_GREETING_AR).toContain("كيف يمكنني مساعدتك");
   });
 
