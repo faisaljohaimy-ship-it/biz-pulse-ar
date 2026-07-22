@@ -17,9 +17,17 @@ export const Route = createFileRoute("/agents-flow")({
   head: () => ({
     meta: [
       { title: "NEXIOS — Agent Operations Dashboard" },
-      { name: "description", content: "Live agent coordination network — sources, specialists, FINN and the human approval gate." },
+      {
+        name: "description",
+        content:
+          "Live agent coordination network — sources, specialists, FINN and the human approval gate.",
+      },
       { property: "og:title", content: "NEXIOS — Agent Operations Dashboard" },
-      { property: "og:description", content: "Holographic agentic flow canvas with chain-focus, fleet summary and per-agent detail." },
+      {
+        property: "og:description",
+        content:
+          "Holographic agentic flow canvas with chain-focus, fleet summary and per-agent detail.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -151,7 +159,9 @@ function AgentsFlowPage() {
                 {ar ? "الوكيل المُختار" : "Selected agent"}
               </div>
               <div className="mt-2 text-lg font-bold text-white">
-                {ar ? detail.node.name_ar || detail.node.name_en : detail.node.name_en || detail.node.name_ar}
+                {ar
+                  ? detail.node.name_ar || detail.node.name_en
+                  : detail.node.name_en || detail.node.name_ar}
               </div>
               {detail.node.specialty && (
                 <div className="mt-1 text-[11px] text-white/60">

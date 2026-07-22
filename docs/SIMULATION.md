@@ -84,8 +84,8 @@ shifts = 360 daily-ops rows · ~250 history rows.
    (Microsoft Graph, SAP, Oracle) rather than `sim_*`/`sec_*` tables.
 3. No consumer code changes.
 
-## ARIA integration
+## FINN integration
 
 The seeded rows populate `sec_incidents`, `sec_permits`, and the new
-`sim_*` tables that ARIA already queries via its data tools. See
+`sim_*` tables that FINN already queries via its data tools. See
 `src/lib/aria-tools.server.ts`.

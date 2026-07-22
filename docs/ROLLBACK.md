@@ -46,7 +46,7 @@ git push origin main --force-with-lease
 - سجّل الدخول → يعمل.
 - لا رسالة «Missing Supabase environment variable(s)».
 
-## التراجع عن هجرة ARIA Phase 1 (aria_conversations/preferences/learning_log)
+## التراجع عن هجرة FINN Phase 1 (aria_conversations/preferences/learning_log)
 الهجرة `20260712100000_aria_conversations_preferences_learning.sql` **إضافية
 بالكامل** ولا تمسّ أي جدول قائم. للتراجع (نادراً ما يلزم) نفّذ في SQL Editor:
 ```sql

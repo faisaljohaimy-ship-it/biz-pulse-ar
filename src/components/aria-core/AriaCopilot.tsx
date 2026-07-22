@@ -282,7 +282,6 @@ const ACCEPTED_ATTACHMENT_TYPES = new Set([
   "text/plain",
 ]);
 
-
 const STILL_SRC = "/finn-portrait.png";
 
 // Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,

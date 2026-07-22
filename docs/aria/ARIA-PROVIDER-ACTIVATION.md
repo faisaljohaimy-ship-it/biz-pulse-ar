@@ -1,4 +1,4 @@
-# تفعيل مزوّدي ARIA
+# تفعيل مزوّدي FINN
 
 الفحص الحالي لهذه الجلسة: جميع أسرار الإنتاج غير موجودة. لا تحفظ المفاتيح في Git أو داخل ملف الاستبدال؛ ضعها في خزنة أسرار NEXIOS ثم أعد النشر.
 
@@ -26,7 +26,7 @@ ARIA_MESSAGE_APPROVAL_SECRET
 ARIA_DIRECT_SEND_ENABLED=true
 
 RESEND_API_KEY
-RESEND_FROM_EMAIL=ARIA <aria@YOUR_VERIFIED_DOMAIN>
+RESEND_FROM_EMAIL=FINN <aria@YOUR_VERIFIED_DOMAIN>
 RESEND_WEBHOOK_SECRET
 
 TWILIO_ACCOUNT_SID
@@ -37,7 +37,7 @@ TWILIO_MESSAGING_SERVICE_SID
 TWILIO_STATUS_CALLBACK_URL=https://YOUR_PUBLIC_DOMAIN/api/webhooks/twilio
 ```
 
-أنشئ سر آريا الداخلي محليًا ثم انقله مباشرة إلى خزنة الأسرار:
+أنشئ سر FINN الداخلي محليًا ثم انقله مباشرة إلى خزنة الأسرار:
 
 ```bash
 node scripts/generate-aria-internal-secret.mjs

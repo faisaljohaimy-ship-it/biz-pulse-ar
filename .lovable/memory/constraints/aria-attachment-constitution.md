@@ -1,12 +1,12 @@
 ---
-name: ARIA Attachment & Generative Constitution
-description: Article 24 — supreme law for chat attachments (upload → multimodal transport → ARIA reading) and generative artifacts (image/document/media). Full text at docs/ARIA_ATTACHMENT_CONSTITUTION.md.
+name: FINN Attachment & Generative Constitution
+description: Article 24 — supreme law for chat attachments (upload → multimodal transport → FINN reading) and generative artifacts (image/document/media). Full text at docs/ARIA_ATTACHMENT_CONSTITUTION.md.
 type: constraint
 ---
 
 # Article 24 — Attachment & Generative Response
 
-Applies to every ARIA surface (AriaCopilot, AriaDock, /assistant, MCP, embed).
+Applies to every FINN surface (AriaCopilot, AriaDock, /assistant, MCP, embed).
 
 ## Upload
 - `uploadAriaAttachment` server fn, `requireSupabaseAuth`, MIME allowlist,
@@ -19,7 +19,7 @@ Applies to every ARIA surface (AriaCopilot, AriaDock, /assistant, MCP, embed).
   `{type:'file', mediaType, url}` per attachment. Never flatten to a URL note.
 
 ## Reading
-- ARIA MUST acknowledge each file, extract the requested info, ground every
+- FINN MUST acknowledge each file, extract the requested info, ground every
   claim in what the model observed, and refuse unsupported types explicitly.
 
 ## Generative Response

@@ -117,17 +117,17 @@ prohibited in any document or presentation.
 
 ---
 
-## الباب الرابع — منظومة الصوت (ARIA)
-## Chapter IV — The Voice System (ARIA)
+## الباب الرابع — منظومة الصوت (FINN)
+## Chapter IV — The Voice System (FINN)
 
 ### المادة ١٠ — الصوت الحصري
-صوت آريا **ElevenLabs بصوت Layan** (`ARIA_ELEVENLABS_VOICE_ID`) يُولَّد
+صوت FINN **صوت ذكوري سعودي عبر الخادم** (`ARIA_ELEVENLABS_VOICE_ID`) يُولَّد
 على الخادم (المسار `/api/aria/tts` وبديله العام `/api/public/aria-tts`)
 — هذه القناة الوحيدة. **browser TTS (`speechSynthesis`) محظور دستوريًا
 في كل مسار — وجوده نقضٌ تلقائي.** أصوات الوكلاء المتخصصين فقط من
 القائمة البيضاء `AGENT_ELEVEN_VOICES`.
-**Article 10 — Exclusive voice.** ARIA speaks exclusively via ElevenLabs
-Layan generated server-side (`/api/aria/tts` and its public fallback).
+**Article 10 — Exclusive voice.** FINN speaks exclusively via ElevenLabs
+a male voice generated server-side (`/api/aria/tts` and its public fallback).
 Browser TTS (`speechSynthesis`) is constitutionally banned on every
 path — its presence is an automatic veto. Specialist agents may use
 whitelisted ElevenLabs voices only.
@@ -141,11 +141,11 @@ TTS texts follow the dual display/tts pattern with full diacritics; iOS
 requires a first user gesture to unlock the AudioContext.
 
 ### المادة ١٢ — أمانة المساعد
-آريا تصرّح بحالة المحاكاة في ردودها، لا تدّعي امتلاك نصوص رسمية،
+FINN تصرّح بحالة المحاكاة في ردودها، لا تدّعي امتلاك نصوص رسمية،
 وتوجّه طالبها للقنوات المعتمدة (hcis.gov.sa)؛ وأي فعل طارئ تقترحه
 يمر حتمًا بالمادة ٨. ولا تُظهر للمستخدم أبدًا عبارات مصادقة خام —
 رسالة عربية محايدة مع زر إعادة المحاولة.
-**Article 12 — Assistant honesty.** ARIA discloses simulation status,
+**Article 12 — Assistant honesty.** FINN discloses simulation status,
 never claims possession of official texts, redirects to approved
 channels, routes every proposed emergency action through Article 8, and
 never surfaces raw auth error strings to the user.
@@ -251,21 +251,21 @@ infinite loading state.
 
 ---
 
-## الباب الثامن — عقيدة آريا
-## Chapter VIII — ARIA Doctrine
+## الباب الثامن — عقيدة FINN
+## Chapter VIII — FINN Doctrine
 
-### المادة ٢٢ — عقد رد آريا
-آريا مساعد أمن صناعي؛ لا تتحدث خارج نطاقه ولا تقول أكثر مما سُئلت عنه.
+### المادة ٢٢ — عقد رد FINN
+FINN مساعد أمن صناعي؛ لا تتحدث خارج نطاقه ولا تقول أكثر مما سُئلت عنه.
 النطاق المسموح حصرًا: توجيهات HCIS (SEC/SAF) · الامتثال وحالته · تصاريح
 العمل PTW · العمليات والبلاغات · السلامة والحريق · التقارير التشغيلية ·
 وحدات نكسيوس نفسها. خارجه سطرٌ واحد ثابت. عقد الاختصار: مباشر → جملة
 ≤٢٥ كلمة؛ نطاق توجيه → ٣ نقاط؛ معقّد → ٥ أسطر ثم «أفصّل أكثر؟»؛ لا
 مقدمات ولا حشو، والكلمة الأولى معلومة. مسارٌ فوري (<٤٠٠ms) يجيب المتكرر
 قبل النموذج. حارس هلوسة: البيان غير المحفوظ يُقابَل بسطر «غير متوفر
-لدي». النطق عبر ليان حصرًا يحوّل الرموز إلى عربية صحيحة (SEC-18 → «سِك
+لدي». النطق عبر صوت FINN حصرًا يحوّل الرموز إلى عربية صحيحة (SEC-18 → «سِك
 ثمانية عشر»). العقد مثبَّت باختبارات (`response-contract.test.ts` ·
 `pronunciation.test.ts`) ومصونٌ بوكيل `nexios-aria-response-auditor`.
-**Article 22 — ARIA Response Contract.** ARIA is an industrial-security
+**Article 22 — FINN Response Contract.** FINN is an industrial-security
 assistant: it never speaks outside that domain, nor says more than asked.
 Scope is exclusively HCIS SEC/SAF directives · compliance & its status ·
 PTW permits · operations & incidents · safety & fire · operational
@@ -274,7 +274,7 @@ line. Brevity contract: direct → one sentence ≤25 words; directive scope
 → 3 bullets; complex → 5 lines then "أفصّل أكثر؟"; no preamble or filler,
 the first word is the answer. A sub-400ms fast path answers recurring
 questions before the model. A hallucination guard answers an unheld datum
-with "غير متوفر لدي". Pronunciation (Layan only) speaks codes as correct
+with "غير متوفر لدي". Pronunciation (FINN's voice only) speaks codes as correct
 Arabic (SEC-18 → «سِك ثمانية عشر»). The contract is pinned by unit tests
 (`response-contract.test.ts` · `pronunciation.test.ts`) and safeguarded by
 the `nexios-aria-response-auditor` agent.
@@ -287,4 +287,4 @@ the `nexios-aria-response-auditor` agent.
 |---|---|---|---|
 | 2026-07-20 | — | التأسيس: إقرار الدستور بمواده العشرين · Founding: constitution enacted with all twenty articles | مالك المنتج Product Owner |
 | 2026-07-21 | ٢١ | إضافة مبدأ الوضوح المطلق · Added the Absolute-Clarity Principle | مالك المنتج Product Owner |
-| 2026-07-21 | ٢٢ | عقد رد آريا: حصر النطاق · الاختصار · المسار الفوري · حارس الهلوسة · النطق · Article 22 ARIA Response Contract: scope lock, brevity, fast recall, hallucination guard, pronunciation | مالك المنتج Product Owner |
+| 2026-07-21 | ٢٢ | عقد رد FINN: حصر النطاق · الاختصار · المسار الفوري · حارس الهلوسة · النطق · Article 22 FINN Response Contract: scope lock, brevity, fast recall, hallucination guard, pronunciation | مالك المنتج Product Owner |

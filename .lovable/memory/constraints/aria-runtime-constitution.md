@@ -1,5 +1,5 @@
 ---
-name: ARIA Runtime Constitution
+name: FINN Runtime Constitution
 description: Speed + self-learning + self-healing invariants (INVARIANT-9..12) for the chat pipeline, learning pipeline, and incident ledger. Full text in docs/ARIA_INTRO_CONSTITUTION.md.
 type: constraint
 ---
@@ -30,10 +30,10 @@ rate-limit).
 5. Composer refocuses after every send.
 6. `abortSignal: request.signal` wired into `streamText`.
 
-**Why:** ARIA is the executive AI face of NEXUS AI OS. Every ms of latency
+**Why:** FINN is the executive AI face of NEXUS AI OS. Every ms of latency
 degrades executive trust; every uncalibrated instinct risks propagating a
 bad answer forever. Measuring on every turn, gating injection behind
-safety+confidence+hits, and renewing weekly turns ARIA into a self-
+safety+confidence+hits, and renewing weekly turns FINN into a self-
 improving agent WITHOUT introducing drift.
 
 **How to apply:** Before editing any file under jurisdiction, cite this

@@ -1,9 +1,9 @@
-# ARIA Attachment & Generative Response Constitution
+# FINN Attachment & Generative Response Constitution
 **Article 24 — supreme, additive to Articles I–IX and FR-1..23**
 Version 1.0.0 · Effective 2026-07-08
 
-> This charter governs every attachment sent to ARIA and every generative
-> artifact ARIA returns (image, document, chart, or media). It is programmatic
+> This charter governs every attachment sent to FINN and every generative
+> artifact FINN returns (image, document, chart, or media). It is programmatic
 > law: violations MUST fail closed. No placeholders, no fake previews, no
 > mocked pipelines.
 
@@ -11,7 +11,7 @@ Version 1.0.0 · Effective 2026-07-08
 
 ## §1 · Scope
 
-Applies to every ARIA surface where a user attaches media or asks ARIA to
+Applies to every FINN surface where a user attaches media or asks FINN to
 produce media: `AriaCopilot`, `AriaDock`, `/assistant`, MCP tool calls,
 public embed. Signed-out visitors MAY NOT upload; generative tools are
 gated by `requireSupabaseAuth`.
@@ -49,9 +49,9 @@ gated by `requireSupabaseAuth`.
 - Anonymous callers cannot attach — the composer plus button MUST be
   hidden or disabled outside authenticated context.
 
-## §4 · Reading Contract (ARIA's obligations)
+## §4 · Reading Contract (FINN's obligations)
 
-When any turn contains one or more `file` parts, ARIA MUST:
+When any turn contains one or more `file` parts, FINN MUST:
 
 1. Acknowledge each attachment (filename + role) in the first line.
 2. Extract the concrete information required by the user's request
@@ -64,7 +64,7 @@ When any turn contains one or more `file` parts, ARIA MUST:
 
 ## §5 · Generative Response Contract
 
-ARIA is authorized — and expected — to produce artifacts, not just prose,
+FINN is authorized — and expected — to produce artifacts, not just prose,
 when the user asks for one.
 
 | Ask | Tool | Output shape |
@@ -109,7 +109,7 @@ reports attachment counts or generation availability.
 - ✅ AI SDK file parts flow end-to-end (composer → transport → model).
 - ✅ At least one generative tool (`generate_image`) live and
       returning owned, signed URLs.
-- ✅ System prompt teaches ARIA the acknowledgement + grounding rule.
+- ✅ System prompt teaches FINN the acknowledgement + grounding rule.
 - ✅ Tests: `tsc --noEmit` clean; upload rejects a `.exe`; a
       user-uploaded image returns a description that references the file.
 

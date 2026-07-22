@@ -8,7 +8,7 @@
 Claude Code → git push origin main → GitHub Actions → Verify → Cloudflare Workers → neexios.com
 ```
 
-يبقى Vercel هدفاً يدوياً اختيارياً فقط؛ `vercel.json` يعطّل نشر `main`
+يبقى Vercel هدفاً يدوياً اختيFINNً فقط؛ `vercel.json` يعطّل نشر `main`
 التلقائي لمنع نشر الفرع الإنتاجي نفسه إلى مزودين في الوقت ذاته.
 
 ---

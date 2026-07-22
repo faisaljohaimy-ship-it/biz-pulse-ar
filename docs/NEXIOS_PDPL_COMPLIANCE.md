@@ -14,7 +14,7 @@
 
 ## 2. النطاق
 
-تغطي هذه الوثيقة المنصة الأساسية: الحسابات والمصادقة، لوحات القيادة، الأعمال التشغيلية، آريا، التقارير، المرفقات، وسجل البريد وSMS. بيانات العرض العام اصطناعية وموسومة «محاكاة» ولا تمثل أشخاصاً حقيقيين.
+تغطي هذه الوثيقة المنصة الأساسية: الحسابات والمصادقة، لوحات القيادة، الأعمال التشغيلية، FINN، التقارير، المرفقات، وسجل البريد وSMS. بيانات العرض العام اصطناعية وموسومة «محاكاة» ولا تمثل أشخاصاً حقيقيين.
 
 **منصة الحج خارج نطاق هذا الإصدار ولم تُعدَّل.** يلزم لها تقييم أثر مستقل، جدول احتفاظ مستقل، واعتماد قانوني وتشغيلي خاص قبل إدخال بيانات شخصية حقيقية.
 
@@ -24,7 +24,7 @@
 | ---------------- | ---------------------------------- | ----------------------------- | ------------------------------------ |
 | الحساب والهوية   | الاسم، البريد، الدور، المؤسسة      | المصادقة والصلاحيات           | محمية بالمصادقة وRLS                 |
 | التشغيل          | حوادث، أوامر عمل، مشاريع، مؤشرات   | تشغيل الخدمة ودعم القرار      | معزولة حسب المؤسسة                   |
-| محادثات آريا     | السؤال النصي، المخرجات، سجل الأداة | تنفيذ الطلب والتدقيق          | أقل قدر لازم                         |
+| محادثات FINN     | السؤال النصي، المخرجات، سجل الأداة | تنفيذ الطلب والتدقيق          | أقل قدر لازم                         |
 | الصوت            | صوت الميكروفون والنص المستخرج      | التعرف على الأمر والرد الصوتي | عابر؛ لا حفظ للتسجيل الخام افتراضياً |
 | المرفقات         | صور، فيديو، صوت، مستندات           | تحليل يطلبه المستخدم          | خاص بالمستخدم والمؤسسة               |
 | الرسائل الخارجية | بريد وSMS ومرفقاتها                | تنفيذ إرسال معتمد بشرياً      | مشفرة؛ المستلم مقنّع في السجل        |
@@ -81,7 +81,7 @@
 | النسخ الاحتياطية           |                   حسب جدول البيئة المعتمد | تقادم آلي موثق في سجل التفعيل                            |
 | بيانات المحاكاة            |               لا تنطبق عليها بيانات شخصية | قابلة للاستبدال أو الحذف في أي وقت                       |
 
-تتضمن ترحيلة قاعدة البيانات دالة إتلاف لسجل رسائل آريا. تُسجل مهمة الجدولة ونتيجة آخر تشغيل ضمن دليل تفعيل الإنتاج.
+تتضمن ترحيلة قاعدة البيانات دالة إتلاف لسجل رسائل FINN. تُسجل مهمة الجدولة ونتيجة آخر تشغيل ضمن دليل تفعيل الإنتاج.
 
 ## 9. حقوق أصحاب البيانات
 
@@ -126,4 +126,4 @@
 
 ### English executive summary
 
-This operational baseline covers the NEXIOS core platform only. It establishes controller/processor roles through the signed Order Form and DPA; activation gates for residency, subprocessors and transfers; 30-day maximum rights handling; a documented retention schedule; and a 72-hour authority-notification workflow where the statutory harm threshold is met. ARIA email/SMS requires content-bound human approval, one-time dispatch and signed delivery webhooks. The Hajj module is excluded from this release and requires its own DPIA and retention annex before processing real personal data.
+This operational baseline covers the NEXIOS core platform only. It establishes controller/processor roles through the signed Order Form and DPA; activation gates for residency, subprocessors and transfers; 30-day maximum rights handling; a documented retention schedule; and a 72-hour authority-notification workflow where the statutory harm threshold is met. FINN email/SMS requires content-bound human approval, one-time dispatch and signed delivery webhooks. The Hajj module is excluded from this release and requires its own DPIA and retention annex before processing real personal data.

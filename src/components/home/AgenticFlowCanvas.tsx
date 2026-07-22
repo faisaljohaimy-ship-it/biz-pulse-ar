@@ -30,7 +30,12 @@ const SEVERITY_GLOW: Record<string, string> = {
 
 type Positioned = { node: FlowNode; x: number; y: number; w: number; h: number };
 
-function layoutColumn(nodes: FlowNode[], columnX: number, nodeH: number, startY: number): Positioned[] {
+function layoutColumn(
+  nodes: FlowNode[],
+  columnX: number,
+  nodeH: number,
+  startY: number,
+): Positioned[] {
   return nodes.map((n, i) => ({
     node: n,
     x: columnX,
@@ -77,18 +82,19 @@ export function AgenticFlowCanvas({
     const gate = filtered.filter((n) => n.kind === "gate");
 
     const positions = new Map<string, Positioned>();
-    for (const p of layoutColumn(sources, COL_X.source, NODE_H.source, HEADER_H)) positions.set(p.node.id, p);
-    for (const p of layoutColumn(agents, COL_X.agent, NODE_H.agent, HEADER_H)) positions.set(p.node.id, p);
+    for (const p of layoutColumn(sources, COL_X.source, NODE_H.source, HEADER_H))
+      positions.set(p.node.id, p);
+    for (const p of layoutColumn(agents, COL_X.agent, NODE_H.agent, HEADER_H))
+      positions.set(p.node.id, p);
     // Center FINN vertically against agent column
     const agentColHeight = agents.length * (NODE_H.agent + ROW_GAP);
     const ariaStart = HEADER_H + Math.max(0, agentColHeight / 2 - NODE_H.aria / 2);
-    for (const p of layoutColumn(aria, COL_X.aria, NODE_H.aria, ariaStart)) positions.set(p.node.id, p);
-    for (const p of layoutColumn(gate, COL_X.gate, NODE_H.gate, ariaStart + 20)) positions.set(p.node.id, p);
+    for (const p of layoutColumn(aria, COL_X.aria, NODE_H.aria, ariaStart))
+      positions.set(p.node.id, p);
+    for (const p of layoutColumn(gate, COL_X.gate, NODE_H.gate, ariaStart + 20))
+      positions.set(p.node.id, p);
 
-    const maxY = Math.max(
-      ...Array.from(positions.values()).map((p) => p.y + p.h),
-      HEADER_H + 200,
-    );
+    const maxY = Math.max(...Array.from(positions.values()).map((p) => p.y + p.h), HEADER_H + 200);
     return { positions, sources, agents, aria, gate, height: maxY + 40 };
   }, [data]);
 
@@ -128,16 +134,35 @@ export function AgenticFlowCanvas({
     );
   }
 
-
   const edges = data.edges.filter(
     (e) => layout.positions.has(e.from) && layout.positions.has(e.to),
   );
 
   const columnHeaders = [
-    { x: COL_X.source, w: NODE_W.source, label: ar ? "المصادر" : "Sources", sub: ar ? "SAP · IoT · M365 · نفاذ" : "SAP · IoT · M365 · Nafath" },
-    { x: COL_X.agent, w: NODE_W.agent, label: ar ? "الوكلاء" : "Agents", sub: ar ? "13 وكيلًا متخصصًا" : "13 specialist agents" },
-    { x: COL_X.aria, w: NODE_W.aria, label: "FINN", sub: ar ? "الذكاء المركزي" : "Executive Brain" },
-    { x: COL_X.gate, w: NODE_W.gate, label: ar ? "الاعتماد" : "Approval", sub: ar ? "بوابة بشرية" : "Human gate" },
+    {
+      x: COL_X.source,
+      w: NODE_W.source,
+      label: ar ? "المصادر" : "Sources",
+      sub: ar ? "SAP · IoT · M365 · نفاذ" : "SAP · IoT · M365 · Nafath",
+    },
+    {
+      x: COL_X.agent,
+      w: NODE_W.agent,
+      label: ar ? "الوكلاء" : "Agents",
+      sub: ar ? "13 وكيلًا متخصصًا" : "13 specialist agents",
+    },
+    {
+      x: COL_X.aria,
+      w: NODE_W.aria,
+      label: "FINN",
+      sub: ar ? "الذكاء المركزي" : "Executive Brain",
+    },
+    {
+      x: COL_X.gate,
+      w: NODE_W.gate,
+      label: ar ? "الاعتماد" : "Approval",
+      sub: ar ? "بوابة بشرية" : "Human gate",
+    },
   ];
 
   const CANVAS_H = Math.max(layout.height, variant === "full" ? 900 : 720);
@@ -160,7 +185,10 @@ export function AgenticFlowCanvas({
   return (
     <div className="relative overflow-hidden rounded-2xl border border-[#3AE8FF]/25 bg-gradient-to-br from-[#04101F] via-[#061A2E] to-[#03080F] shadow-[0_0_60px_-20px_rgba(58,232,255,0.35)]">
       <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_10%,rgba(58,232,255,0.15),transparent_50%),radial-gradient(circle_at_80%_90%,rgba(255,122,154,0.10),transparent_55%)]" />
-      <div dir={ar ? "rtl" : "ltr"} className="relative flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70 sm:px-6">
+      <div
+        dir={ar ? "rtl" : "ltr"}
+        className="relative flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70 sm:px-6"
+      >
         <span>NEXIOS · Agentic Flow Canvas</span>
         <span className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] text-[#3AE8FF]">
           {ar ? "محاكاة مرجعية · بدون تنفيذ" : "Reference simulation · no execution"}
@@ -223,7 +251,13 @@ export function AgenticFlowCanvas({
             const pulseId = `pulse-${i}`;
             return (
               <g key={`${e.from}-${e.to}-${e.link_type}-${i}`}>
-                <path d={path} fill="none" stroke={color} strokeOpacity={opacity} strokeWidth={1 + e.weight * 0.1} />
+                <path
+                  d={path}
+                  fill="none"
+                  stroke={color}
+                  strokeOpacity={opacity}
+                  strokeWidth={1 + e.weight * 0.1}
+                />
                 <path id={pulseId} d={path} fill="none" stroke="transparent" />
                 {!dimmed && i < 24 && (
                   <circle r={2.5} fill={color} opacity={0.9}>
@@ -243,10 +277,10 @@ export function AgenticFlowCanvas({
           {/* Nodes */}
           {Array.from(layout.positions.values()).map((p) => {
             const { node, x, y, w, h } = p;
-            const label = ar ? (node.name_ar || node.name_en) : (node.name_en || node.name_ar);
+            const label = ar ? node.name_ar || node.name_en : node.name_en || node.name_ar;
             const enSub = ar && node.name_en && node.name_en !== node.name_ar ? node.name_en : null;
             const sub = node.current_mission ?? node.specialty ?? "";
-            const glow = node.severity ? SEVERITY_GLOW[node.severity] ?? "#3AE8FF" : "#3AE8FF";
+            const glow = node.severity ? (SEVERITY_GLOW[node.severity] ?? "#3AE8FF") : "#3AE8FF";
             const dimmed = isDimmed(node.id);
             const selected = selectedAgentId === node.id;
             const clickable = node.kind === "agent" && !!onSelectAgent;
@@ -265,12 +299,23 @@ export function AgenticFlowCanvas({
             if (node.kind === "aria") {
               return (
                 <g key={node.id} filter="url(#node-glow)" {...commonG}>
-                  <rect x={x} y={y} width={w} height={h} rx={16}
-                    fill="url(#aria-gradient)" fillOpacity={0.18}
-                    stroke="#3AE8FF" strokeWidth={selected ? 2.5 : 1.5} />
+                  <rect
+                    x={x}
+                    y={y}
+                    width={w}
+                    height={h}
+                    rx={16}
+                    fill="url(#aria-gradient)"
+                    fillOpacity={0.18}
+                    stroke="#3AE8FF"
+                    strokeWidth={selected ? 2.5 : 1.5}
+                  />
                   <foreignObject x={x} y={y} width={w} height={h}>
-                    <div dir={ar ? "rtl" : "ltr"} style={{ unicodeBidi: "isolate" }}
-                      className="flex h-full w-full flex-col items-center justify-center text-center leading-tight">
+                    <div
+                      dir={ar ? "rtl" : "ltr"}
+                      style={{ unicodeBidi: "isolate" }}
+                      className="flex h-full w-full flex-col items-center justify-center text-center leading-tight"
+                    >
                       <div className="text-[22px] font-bold tracking-[0.15em] text-white">
                         {ar ? "FINN" : "FINN"}
                       </div>
@@ -289,12 +334,24 @@ export function AgenticFlowCanvas({
             if (node.kind === "gate") {
               return (
                 <g key={node.id} filter="url(#node-glow)" {...commonG}>
-                  <rect x={x} y={y} width={w} height={h} rx={14}
-                    fill="url(#gate-gradient)" fillOpacity={0.15}
-                    stroke="#FFD166" strokeWidth={1.5} strokeDasharray="6 4" />
+                  <rect
+                    x={x}
+                    y={y}
+                    width={w}
+                    height={h}
+                    rx={14}
+                    fill="url(#gate-gradient)"
+                    fillOpacity={0.15}
+                    stroke="#FFD166"
+                    strokeWidth={1.5}
+                    strokeDasharray="6 4"
+                  />
                   <foreignObject x={x} y={y} width={w} height={h}>
-                    <div dir={ar ? "rtl" : "ltr"} style={{ unicodeBidi: "isolate" }}
-                      className="flex h-full w-full flex-col items-center justify-center px-2 text-center leading-tight">
+                    <div
+                      dir={ar ? "rtl" : "ltr"}
+                      style={{ unicodeBidi: "isolate" }}
+                      className="flex h-full w-full flex-col items-center justify-center px-2 text-center leading-tight"
+                    >
                       <div className="text-[13px] font-bold text-white">
                         {ar ? "بوابة الاعتماد البشري" : "Human Approval Gate"}
                       </div>
@@ -313,12 +370,23 @@ export function AgenticFlowCanvas({
             if (node.kind === "source") {
               return (
                 <g key={node.id} {...commonG}>
-                  <rect x={x} y={y} width={w} height={h} rx={10}
-                    fill="#0a1f36" stroke="#3AE8FF" strokeOpacity={0.35} />
+                  <rect
+                    x={x}
+                    y={y}
+                    width={w}
+                    height={h}
+                    rx={10}
+                    fill="#0a1f36"
+                    stroke="#3AE8FF"
+                    strokeOpacity={0.35}
+                  />
                   <circle cx={ar ? x + w - 14 : x + 14} cy={y + h / 2} r={4} fill="#3AE8FF" />
                   <foreignObject x={x + 24} y={y} width={w - 48} height={h}>
-                    <div dir={ar ? "rtl" : "ltr"} style={{ unicodeBidi: "isolate" }}
-                      className="flex h-full w-full items-center text-[12px] text-white/85">
+                    <div
+                      dir={ar ? "rtl" : "ltr"}
+                      style={{ unicodeBidi: "isolate" }}
+                      className="flex h-full w-full items-center text-[12px] text-white/85"
+                    >
                       {label}
                     </div>
                   </foreignObject>
@@ -329,29 +397,39 @@ export function AgenticFlowCanvas({
             // agent
             return (
               <g key={node.id} {...commonG}>
-                <rect x={x} y={y} width={w} height={h} rx={12}
+                <rect
+                  x={x}
+                  y={y}
+                  width={w}
+                  height={h}
+                  rx={12}
                   fill={selected ? "#0a2438" : "#071627"}
                   stroke={glow}
                   strokeOpacity={selected ? 1 : 0.55}
-                  strokeWidth={selected ? 2 : 1} />
+                  strokeWidth={selected ? 2 : 1}
+                />
                 <circle cx={ar ? x + w - 14 : x + 14} cy={y + 18} r={4} fill={glow}>
-                  <animate attributeName="opacity" values="1;0.35;1" dur="2.4s" repeatCount="indefinite" />
+                  <animate
+                    attributeName="opacity"
+                    values="1;0.35;1"
+                    dur="2.4s"
+                    repeatCount="indefinite"
+                  />
                 </circle>
                 <foreignObject x={x + 12} y={y + 6} width={w - 24} height={h - 12}>
-                  <div dir={ar ? "rtl" : "ltr"} style={{ unicodeBidi: "isolate" }}
-                    className="flex h-full w-full flex-col justify-center leading-tight">
-                    <div className="text-[13px] font-semibold text-white truncate">
-                      {label}
-                    </div>
+                  <div
+                    dir={ar ? "rtl" : "ltr"}
+                    style={{ unicodeBidi: "isolate" }}
+                    className="flex h-full w-full flex-col justify-center leading-tight"
+                  >
+                    <div className="text-[13px] font-semibold text-white truncate">{label}</div>
                     {enSub && (
                       <div className="mt-0.5 text-[9px] uppercase tracking-wide text-white/40 truncate">
                         {enSub}
                       </div>
                     )}
                     {sub && (
-                      <div className="mt-1 text-[10px] text-white/60 line-clamp-2">
-                        {sub}
-                      </div>
+                      <div className="mt-1 text-[10px] text-white/60 line-clamp-2">{sub}</div>
                     )}
                   </div>
                 </foreignObject>
@@ -362,7 +440,10 @@ export function AgenticFlowCanvas({
       </div>
 
       {/* Legend */}
-      <div dir={ar ? "rtl" : "ltr"} className="relative flex flex-wrap items-center gap-3 border-t border-white/5 px-4 py-3 text-[10px] text-white/70 sm:px-6">
+      <div
+        dir={ar ? "rtl" : "ltr"}
+        className="relative flex flex-wrap items-center gap-3 border-t border-white/5 px-4 py-3 text-[10px] text-white/70 sm:px-6"
+      >
         {[
           { c: LINK_COLOR.data, l: ar ? "بيانات" : "Data" },
           { c: LINK_COLOR.result, l: ar ? "نتيجة" : "Result" },
@@ -375,7 +456,8 @@ export function AgenticFlowCanvas({
           </span>
         ))}
         <span className={ar ? "mr-auto text-white/40" : "ml-auto text-white/40"}>
-          {data.nodes.length} {ar ? "عقدة" : "nodes"} · {data.edges.length} {ar ? "رابطًا" : "links"}
+          {data.nodes.length} {ar ? "عقدة" : "nodes"} · {data.edges.length}{" "}
+          {ar ? "رابطًا" : "links"}
         </span>
       </div>
     </div>

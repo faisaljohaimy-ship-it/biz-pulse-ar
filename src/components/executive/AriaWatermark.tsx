@@ -1,4 +1,3 @@
-
 /**
  * AriaWatermark — global FINN presence rendered behind every route.
  * Mounted once in the app shell (src/routes/__root.tsx). Sits at z-index 0

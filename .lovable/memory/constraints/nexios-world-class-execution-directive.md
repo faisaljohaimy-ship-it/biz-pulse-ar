@@ -28,8 +28,8 @@ SRP, Open/Closed, DI, composition over inheritance, feature isolation, server-fi
 ## UI/UX Target
 Executive AI command center: premium, minimal, elegant, futuristic, fast, responsive, accessible. Every screen presentation-ready. Every animation intentional. Every transition cinematic.
 
-## ARIA Requirements
-ARIA is the operating intelligence of NEXIOS. Continuously improve: reasoning, orchestration, planning, executive reporting, multilingual support, voice, avatar, memory, context awareness, recommendations, decision support, workflow automation. Never regress.
+## FINN Requirements
+FINN is the operating intelligence of NEXIOS. Continuously improve: reasoning, orchestration, planning, executive reporting, multilingual support, voice, avatar, memory, context awareness, recommendations, decision support, workflow automation. Never regress.
 
 ## Performance Targets
 Cold load <2s, interaction <100ms, smooth scrolling, 60 FPS animations, lazy routes, optimized bundle, optimized images, efficient rendering, no unnecessary re-renders, no runtime leaks.

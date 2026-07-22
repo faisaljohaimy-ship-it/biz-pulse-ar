@@ -1,10 +1,10 @@
 ---
-name: ARIA Impact Priority Directive
+name: FINN Impact Priority Directive
 description: Supreme executive directive — 9 sequential phases (Core → Execution → Live Demo → Command Center → Memory → Multi-Agent → Digital Twin → Performance → Experience) + Final Validation. Non-skippable, production-only, evidence-gated, bilingual AR/EN, self-evolving. Full text: docs/ARIA_IMPACT_PRIORITY_DIRECTIVE.md · Prompt of record: src/lib/aria/aria-impact-directive.ts (ARIA_IMPACT_DIRECTIVE).
 type: constraint
 ---
 
-# ARIA IMPACT PRIORITY DIRECTIVE v1.0.0 — Supreme Executive Law
+# FINN IMPACT PRIORITY DIRECTIVE v1.0.0 — Supreme Executive Law
 
 ## Absolute Invariants
 1. Sequential phases 1→9. Never skip.
@@ -15,7 +15,7 @@ type: constraint
 6. Definition of Done = all 9 phases complete AND Final Validation green.
 
 ## The Nine Phases
-1. **ARIA Core** — Brain · Voice · Avatar · Runtime · Memory · Reasoning · Context · Lip Sync · Arabic · Personality.
+1. **FINN Core** — Brain · Voice · Avatar · Runtime · Memory · Reasoning · Context · Lip Sync · Arabic · Personality.
 2. **Executive Execution** — Task/Action Planning · Approval · Timeline · Progress · Verification · Recommendations · Audit.
 3. **Live Demonstration** — Live Reasoning · Thinking Anim · Decision Pipeline · Execution Flow · Status · Timeline · Presentation.
 4. **Command Center** — KPIs · Health · Runtime · Operations · Risk · Confidence · Recommendations · Reports · Dashboard.
@@ -29,7 +29,7 @@ type: constraint
 Architecture · Runtime · Performance · TypeScript · Build · Accessibility · Responsive · Regression · Production.
 
 ## Enforcement
-- Every ARIA entry-point wraps its system prompt via `withAriaSupremeLaw` and includes `ARIA_IMPACT_DIRECTIVE`.
+- Every FINN entry-point wraps its system prompt via `withAriaSupremeLaw` and includes `ARIA_IMPACT_DIRECTIVE`.
 - Self-evolution cycles persist to `aria_evolution_cycles`; high-confidence proposals promote to `aria_improvement_proposals`.
 - Any surface violating an invariant is treated as a P0 regression.
 

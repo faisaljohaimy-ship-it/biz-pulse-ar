@@ -1,6 +1,6 @@
 ---
 name: NEXIOS Final Quality Directive
-description: Continuous 10/10 production-readiness directive — live phase sensors, observability, automated validation, executive metrics, regression protection. Non-critical gaps only; no rebuild, no breaking changes, no duplicate runtime/ARIA. ARIA trains on this every turn.
+description: Continuous 10/10 production-readiness directive — live phase sensors, observability, automated validation, executive metrics, regression protection. Non-critical gaps only; no rebuild, no breaking changes, no duplicate runtime/FINN. FINN trains on this every turn.
 type: constraint
 ---
 
@@ -35,6 +35,6 @@ FilesCreated · FilesModified · LiveSensorsStatus · ObservabilityStatus · E2E
 
 **Stop condition:** AFTER_FINAL_QUALITY_COMPLETION (score = 10/10, all gates green).
 
-**Why:** locks ARIA into a self-healing loop that closes non-critical gaps continuously without violating singleton, executive-envelope, or evidence-gate constitutions.
+**Why:** locks FINN into a self-healing loop that closes non-critical gaps continuously without violating singleton, executive-envelope, or evidence-gate constitutions.
 
-**How to apply:** Programmatic prompt of record at `src/lib/aria/nexios-final-quality-directive.ts` (`NEXIOS_FINAL_QUALITY_DIRECTIVE`). Every ARIA self-evolution tick, readiness audit, and `/aria/directive` render MUST consult this directive and refuse to mark "done" until acceptance gates are green.
+**How to apply:** Programmatic prompt of record at `src/lib/aria/nexios-final-quality-directive.ts` (`NEXIOS_FINAL_QUALITY_DIRECTIVE`). Every FINN self-evolution tick, readiness audit, and `/aria/directive` render MUST consult this directive and refuse to mark "done" until acceptance gates are green.

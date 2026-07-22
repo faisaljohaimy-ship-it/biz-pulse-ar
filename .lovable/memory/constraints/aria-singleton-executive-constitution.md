@@ -1,6 +1,6 @@
 ---
-name: ARIA Singleton & Executive Envelope Constitution
-description: Permanent, always-on invariants (INVARIANT-13..17) locking ARIA to a single Brain/Provider/Voice/Avatar/Memory instance, routing every request through ariaBrain, mounting ExecutiveCard from activeExecution, and keeping /aria/demo as the executive-grade validation surface. Enforced at runtime via src/lib/aria/singletons.ts.
+name: FINN Singleton & Executive Envelope Constitution
+description: Permanent, always-on invariants (INVARIANT-13..17) locking FINN to a single Brain/Provider/Voice/Avatar/Memory instance, routing every request through ariaBrain, mounting ExecutiveCard from activeExecution, and keeping /aria/demo as the executive-grade validation surface. Enforced at runtime via src/lib/aria/singletons.ts.
 type: constraint
 ---
 
@@ -9,9 +9,9 @@ Governs: `src/lib/aria/singletons.ts`, `src/lib/aria-core/core/*`,
 `src/components/aria-core/AriaCopilot.tsx`,
 `src/components/aria-core/ExecutiveCard.tsx`,
 `src/routes/_authenticated/aria.demo.tsx`, and every hook/component that
-calls ARIA (`useAria`, `ariaBrain`).
+calls FINN (`useAria`, `ariaBrain`).
 
-**INVARIANT-13 — One Brain, One Provider.** The following ARIA subsystems
+**INVARIANT-13 — One Brain, One Provider.** The following FINN subsystems
 MUST exist exactly once per browser session and are registered at module
 load via `assertOne(...)` / `trackMount(...)` in `src/lib/aria/singletons.ts`:
 - `BRAIN`  → `ariaBrain@aria-core/core/aria-brain`
@@ -21,17 +21,17 @@ load via `assertOne(...)` / `trackMount(...)` in `src/lib/aria/singletons.ts`:
 - `PROVIDER` → `AriaProvider@__root` (via `trackMount` in `useEffect`)
 
 A duplicate registration logs a loud `[aria-singleton] duplicate …` error in
-dev and warns in prod. Never bypass this registry when adding a new ARIA
+dev and warns in prod. Never bypass this registry when adding a new FINN
 subsystem — extend `AriaSingletonKey` and register the owner instead.
 
-**INVARIANT-14 — Single Request Entrypoint (General ARIA).** Every
-general ARIA reply (executive Q&A, dock/copilot, page narration, cross-
+**INVARIANT-14 — Single Request Entrypoint (General FINN).** Every
+general FINN reply (executive Q&A, dock/copilot, page narration, cross-
 route assistant) MUST route through `ariaBrain.submit(...)` (via
 `useAria().ask(...)`). The ONE `useChat` transport for the singleton
 lives inside `<AriaProvider>` (chat id `"aria-singleton"`) and is bound
 into the Brain via `ariaBrain.bindSender(...)`. No component may call
 OpenAI/Claude/OpenRouter SDKs or `fetch("/api/chat")` directly for
-general ARIA.
+general FINN.
 
 **INVARIANT-14b — Purpose-Scoped Chat Surfaces (Documented Exceptions).**
 Feature-specific chat surfaces are allowed ONLY when ALL apply:
@@ -76,7 +76,7 @@ production surface, not a scratch page. It MUST:
 2. Trigger them exclusively via `useAria().open() + ask(prompt)` (no
    direct LLM calls, no bypass of the Brain).
 3. Render the live `ExecutiveCard` from `activeExecution`.
-Any regression here fails the ARIA Impact Directive Phase 3 (Live
+Any regression here fails the FINN Impact Directive Phase 3 (Live
 Demonstration) audit at `/aria/directive`.
 
 **Why:** These five invariants are the load-bearing wall of the NEXIOS AI
@@ -90,6 +90,6 @@ readiness is proven on every deploy.
 **How to apply:** Before editing any file under jurisdiction, cite this
 constraint in commit rationale, confirm INVARIANT-13..17 still hold,
 and run `bunx tsgo --noEmit` plus a browser check for
-`[aria-singleton] duplicate` warnings. When adding a new ARIA
+`[aria-singleton] duplicate` warnings. When adding a new FINN
 subsystem, extend `AriaSingletonKey` in `src/lib/aria/singletons.ts`
 and register the owner at module load.
