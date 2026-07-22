@@ -37,7 +37,6 @@ import { useFreezeOffscreen } from "@/hooks/use-freeze-offscreen";
 import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
-import { FourRegionHub } from "@/components/home/FourRegionHub";
 // Pre-hero intros retired — the homepage renders directly with no cinematic
 // welcome overlay. Auto-greeting voice removed per directive.
 
@@ -145,7 +144,6 @@ function IntroLanding() {
 
   // Freeze each heavy animated section's motion while it is scrolled off-screen
   // (guards against the cumulative-animation load that crashed iOS Safari).
-  const posterRef = useFreezeOffscreen<HTMLDivElement>();
   const deckRef = useFreezeOffscreen<HTMLElement>();
   const modulesRef = useFreezeOffscreen<HTMLDivElement>();
   const hologramRef = useFreezeOffscreen<HTMLElement>();
@@ -365,12 +363,19 @@ function IntroLanding() {
         `}</style>
       </section>
 
-      {/* ══ NEXIOS Four-Region Executive Hub — the PRIMARY dashboard: all four
-          regions around a central interactive Saudi map, live per-region KPIs
-          and alerts from Supabase (resilient), system status, and the FINN
-          assistant persona. Live data, not a static poster. ══ */}
-      <div ref={posterRef} data-nx-frozen="false" className="relative z-10 mt-2 sm:mt-4">
-        <FourRegionHub />
+      {/* ══ NEXIOS Executive Command Stage — the approved cinematic poster,
+          shown as a single static image per directive (replaces the live
+          four-region panels). ══ */}
+      <div className="relative z-10 mt-2 sm:mt-4">
+        <img
+          src="/nexios-hub-poster.webp"
+          width={1600}
+          height={900}
+          loading="lazy"
+          decoding="async"
+          alt={ar ? "مركز القيادة التنفيذي — نكسيوس" : "NEXIOS Executive Command Center"}
+          className="mx-auto block h-auto w-full max-w-[1400px] rounded-2xl border border-[#00D4FF]/15 shadow-[0_20px_80px_-30px_rgba(0,212,255,0.4)]"
+        />
       </div>
 
       {/* ══ Sovereign Cinematic Command Deck — world-class executive dashboard ══
