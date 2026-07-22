@@ -436,23 +436,6 @@ function CentralMap({
           })}
         </g>
 
-        {/* Core hex mark on the dais */}
-        <g transform="translate(500 470)">
-          <polygon
-            points="0,-46 40,-23 40,23 0,46 -40,23 -40,-23"
-            fill="#04070F"
-            stroke="#00D4FF"
-            strokeWidth="2.5"
-          />
-          <polygon
-            points="0,-26 22,-13 22,13 0,26 -22,13 -22,-13"
-            fill="none"
-            stroke="#7EF9FF"
-            strokeWidth="1.5"
-            opacity="0.75"
-          />
-        </g>
-
         <style>{`
           .nx-stage-pulse { transform-box: view-box; transform-origin: 500px 470px; animation: nxStagePulse 6.5s ease-in-out infinite; }
           .nx-dais { animation: nxDaisSpin 46s linear infinite; }
