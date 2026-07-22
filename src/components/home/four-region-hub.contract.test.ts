@@ -37,14 +37,16 @@ describe("FourRegionHub — live executive hub", () => {
   });
 
   it("animates transform/opacity only — no box-shadow/filter keyframes", () => {
+    // The central animated map stage was removed per directive; the hub panels
+    // are now static SVG. Any remaining keyframes (the FINN persona halo) must
+    // still animate transform/opacity only, and the persona card must honour
+    // reduced-motion + the off-screen freeze contract.
     const keyframeBlocks = HUB.match(/@keyframes[\s\S]*?\}\s*\}/g) ?? [];
     for (const block of [...keyframeBlocks, ...(CARD.match(/@keyframes[\s\S]*?\}\s*\}/g) ?? [])]) {
       expect(block).not.toMatch(/box-shadow|filter:|blur\(/);
     }
-    expect(HUB).toContain("prefers-reduced-motion");
     expect(CARD).toContain("prefers-reduced-motion");
-    // freezes off-screen with the parent's data-nx-frozen contract
-    expect(HUB).toContain("data-nx-frozen");
+    expect(CARD).toContain("data-nx-frozen");
   });
 });
 

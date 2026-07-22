@@ -1,14 +1,11 @@
 /**
  * FourRegionHub — the official NEXIOS executive command surface.
  *
- * Layout mirrors the approved executive poster: four corner region panels
- * around a central interactive Saudi map, with ARIA persona bottom-left and
- * system-status + smart-alerts bottom-right, plus a module tab-bar. Live
- * figures come from getCommandCenterState (open read wrapped in resilient());
- * reference simulation is labelled with the amber محاكاة badge.
- *
- * Motion is transform/opacity only, frozen when off-screen and disabled under
- * prefers-reduced-motion (const. Art. 13).
+ * Four octagonal region panels with the FINN persona and system-status +
+ * smart-alerts, plus a module tab-bar. The central animated map stage was
+ * removed per directive; the panels are static SVG. Live figures come from
+ * getCommandCenterState (open read wrapped in resilient()); reference
+ * simulation is labelled with the amber محاكاة badge.
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
@@ -43,33 +40,6 @@ import { useRegion } from "@/lib/region-context";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
-
-// ── Map geometry ────────────────────────────────────────────────────────────
-const SECTORS: { id: RegionId; cx: number; cy: number; radii: number[] }[] = [
-  { id: "western", cx: 310, cy: 584, radii: [112, 132, 120, 142, 116, 136, 124, 146] },
-  { id: "central", cx: 551, cy: 445, radii: [150, 138, 162, 144, 156, 140, 150, 160] },
-  { id: "eastern", cx: 660, cy: 372, radii: [120, 136, 114, 140, 126, 130, 120, 138] },
-  { id: "southern", cx: 417, cy: 723, radii: [142, 120, 150, 130, 146, 124, 140, 132] },
-];
-
-function blobPath(cx: number, cy: number, radii: number[]): string {
-  const n = radii.length;
-  const pts: [number, number][] = radii.map((r, i) => {
-    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
-    return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
-  });
-  const mid = (p: [number, number], q: [number, number]): [number, number] => [
-    (p[0] + q[0]) / 2,
-    (p[1] + q[1]) / 2,
-  ];
-  let d = `M ${mid(pts[n - 1], pts[0]).join(" ")} `;
-  for (let i = 0; i < n; i++) {
-    const cur = pts[i];
-    const m = mid(cur, pts[(i + 1) % n]);
-    d += `Q ${cur[0]} ${cur[1]} ${m[0]} ${m[1]} `;
-  }
-  return d + "Z";
-}
 
 // ── Small visual primitives ─────────────────────────────────────────────────
 
@@ -295,169 +265,6 @@ function LiveClock({ ar }: { ar: boolean }) {
   );
 }
 
-// ── Central cinematic map + southern column ─────────────────────────────────
-type SectorWithPath = (typeof SECTORS)[number] & { d: string };
-
-/** Stylised Arabian-Peninsula silhouette (recognisable, not a survey map) —
- *  the crystalline core of the command stage. Shared geometry with the
- *  ambient ArabianPeninsulaBackdrop. */
-const PENINSULA =
-  "M 360 150 C 470 112, 590 120, 662 170 C 702 150, 744 176, 730 222 " +
-  "C 802 272, 838 362, 800 452 C 776 542, 720 642, 620 722 " +
-  "C 520 784, 398 772, 330 700 C 270 640, 246 540, 252 452 " +
-  "C 236 372, 252 282, 302 222 C 316 186, 336 166, 360 150 Z";
-
-/** Four radial connection spokes from the core toward each panel corner. */
-const SPOKES: { id: RegionId; x2: number; y2: number }[] = [
-  { id: "central", x2: 500, y2: 70 },
-  { id: "western", x2: 120, y2: 300 },
-  { id: "eastern", x2: 880, y2: 300 },
-  { id: "southern", x2: 500, y2: 850 },
-];
-
-function CentralMap({
-  ar,
-  sectors,
-  regionId,
-  setRegion,
-  severityByRegion,
-}: {
-  ar: boolean;
-  sectors: SectorWithPath[];
-  regionId: RegionId;
-  setRegion: (id: RegionId) => void;
-  severityByRegion: Partial<Record<RegionId, string>>;
-}) {
-  return (
-    <div className="nx-stage relative mx-auto w-full max-w-[560px]">
-      <svg
-        viewBox="0 0 1000 900"
-        className="h-auto w-full"
-        role="img"
-        aria-label={ar ? "خريطة المملكة والمناطق الأربع" : "Kingdom map — four regions"}
-      >
-        <defs>
-          <radialGradient id="stage-glow" cx="50%" cy="46%" r="60%">
-            <stop offset="0%" stopColor="#00D4FF" stopOpacity="0.22" />
-            <stop offset="55%" stopColor="#00D4FF" stopOpacity="0.05" />
-            <stop offset="100%" stopColor="#00D4FF" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="ksa-fill" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#22D3EE" stopOpacity="0.42" />
-            <stop offset="55%" stopColor="#0891b2" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#04111f" stopOpacity="0.5" />
-          </linearGradient>
-          {/* Low-poly holographic mesh, clipped to the peninsula. */}
-          <pattern id="ksa-mesh" width="30" height="26" patternUnits="userSpaceOnUse">
-            <path
-              d="M0 26 L15 0 L30 26 M15 0 L15 26 M0 13 L30 13"
-              stroke="#7EF9FF"
-              strokeWidth="0.7"
-              fill="none"
-              opacity="0.45"
-            />
-          </pattern>
-          {/* Faint holo dot-grid backdrop. */}
-          <pattern id="holo-grid" width="46" height="46" patternUnits="userSpaceOnUse">
-            <circle cx="1.4" cy="1.4" r="1.4" fill="#1e6f8c" opacity="0.5" />
-          </pattern>
-          <clipPath id="ksa-clip">
-            <path d={PENINSULA} />
-          </clipPath>
-          {/* Static soft glow rendered ONCE — never animated (const. Art. 13). */}
-          <filter id="ksa-glow" x="-25%" y="-25%" width="150%" height="150%">
-            <feGaussianBlur stdDeviation="7" />
-          </filter>
-        </defs>
-
-        {/* Radiant holo-grid + pulse (single animated layer) */}
-        <rect x="0" y="0" width="1000" height="900" fill="url(#holo-grid)" opacity="0.35" />
-        <circle cx="500" cy="470" r="440" fill="url(#stage-glow)" className="nx-stage-pulse" />
-
-        {/* Connection spokes linking the core to the four regions (gentle
-            opacity pulse — transform/opacity only, iOS-safe). */}
-        <g className="nx-spokes" stroke="#00D4FF" strokeWidth="1.4" strokeOpacity="0.3">
-          {SPOKES.map((s) => (
-            <line key={s.id} x1="500" y1="470" x2={s.x2} y2={s.y2} />
-          ))}
-        </g>
-
-        {/* Rotating command dais under the map (one element) */}
-        <g className="nx-dais" style={{ transformOrigin: "500px 700px" }}>
-          {[210, 168, 126].map((rr, i) => (
-            <ellipse
-              key={rr}
-              cx="500"
-              cy="700"
-              rx={rr}
-              ry={rr * 0.34}
-              fill="none"
-              stroke="#00D4FF"
-              strokeWidth={i === 0 ? 2 : 1}
-              strokeOpacity={0.22 - i * 0.04}
-              strokeDasharray={i === 1 ? "5 12" : undefined}
-            />
-          ))}
-        </g>
-
-        {/* Peninsula — static blurred glow, then crisp crystalline body */}
-        <path d={PENINSULA} fill="#22D3EE" opacity="0.28" filter="url(#ksa-glow)" />
-        <path
-          d={PENINSULA}
-          fill="url(#ksa-fill)"
-          stroke="#7EF9FF"
-          strokeWidth="2"
-          strokeOpacity="0.85"
-        />
-        <g clipPath="url(#ksa-clip)">
-          <rect x="0" y="0" width="1000" height="900" fill="url(#ksa-mesh)" />
-          {/* Region territories tinted by regions.ts, clipped inside the map */}
-          {sectors.map((s) => {
-            const active = s.id === regionId;
-            const color = REGION_ACCENT_HEX[s.id];
-            const sev = severityByRegion[s.id];
-            const base = sev === "critical" ? 0.42 : sev === "medium" ? 0.3 : 0.2;
-            return (
-              <path
-                key={s.id}
-                d={s.d}
-                fill={color}
-                fillOpacity={active ? base + 0.28 : base}
-                stroke={color}
-                strokeWidth={active ? 4 : 1.5}
-                strokeOpacity={active ? 1 : 0.55}
-                className={active ? "nx-territory-active" : undefined}
-                style={{ cursor: "pointer", transformBox: "fill-box", transformOrigin: "center" }}
-                onClick={() => setRegion(s.id)}
-                role="button"
-                aria-label={REGIONS.find((r) => r.id === s.id)?.[ar ? "shortAr" : "shortEn"]}
-              />
-            );
-          })}
-        </g>
-
-        <style>{`
-          .nx-stage-pulse { transform-box: view-box; transform-origin: 500px 470px; animation: nxStagePulse 6.5s ease-in-out infinite; }
-          .nx-dais { animation: nxDaisSpin 46s linear infinite; }
-          .nx-spokes { animation: nxSpokes 4s steps(16, jump-none) infinite; }
-          .nx-territory-active { animation: nxTerritory 2.6s steps(14, jump-none) infinite; }
-          @keyframes nxStagePulse { 0%,100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
-          @keyframes nxDaisSpin { to { transform: rotate(360deg); } }
-          @keyframes nxSpokes { 0%,100% { stroke-opacity: 0.18; } 50% { stroke-opacity: 0.5; } }
-          @keyframes nxTerritory { 0%,100% { fill-opacity: 0.45; } 50% { fill-opacity: 0.7; } }
-          @media (prefers-reduced-motion: reduce) {
-            .nx-stage-pulse, .nx-dais, .nx-spokes, .nx-territory-active { animation: none !important; }
-          }
-          [data-nx-frozen="true"] .nx-stage-pulse,
-          [data-nx-frozen="true"] .nx-dais,
-          [data-nx-frozen="true"] .nx-spokes,
-          [data-nx-frozen="true"] .nx-territory-active { animation-play-state: paused !important; }
-        `}</style>
-      </svg>
-    </div>
-  );
-}
-
 // ── Bottom tab bar (module launchpad) ───────────────────────────────────────
 const TABS: { ar: string; en: string; to: string; icon: typeof Home; active?: boolean }[] = [
   { ar: "الرئيسية", en: "Home", to: "/", icon: Home, active: true },
@@ -517,22 +324,11 @@ export function FourRegionHub() {
     refetchInterval: 30_000,
   });
 
-  const sectors = useMemo(
-    () => SECTORS.map((s) => ({ ...s, d: blobPath(s.cx, s.cy, s.radii) })),
-    [],
-  );
-
   const livePerf = useMemo(() => {
     const map: Partial<Record<RegionId, number>> = {};
     for (const r of data?.regions ?? []) {
       if (r.compliance_pct > 0) map[r.region_id] = r.compliance_pct;
     }
-    return map;
-  }, [data]);
-
-  const severityByRegion = useMemo(() => {
-    const map: Partial<Record<RegionId, string>> = {};
-    for (const r of data?.regions ?? []) map[r.region_id] = r.severity;
     return map;
   }, [data]);
 
@@ -684,24 +480,13 @@ export function FourRegionHub() {
         {/* Row 2 — FINN · MAP · System+Alerts */}
         <FinnPersonaCard ar={ar} />
 
-        <div className="relative flex flex-col gap-3">
-          <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
-            <CentralMap
-              ar={ar}
-              sectors={sectors}
-              regionId={regionId}
-              setRegion={setRegion}
-              severityByRegion={severityByRegion}
-            />
-          </div>
-          {/* Southern region under the map (matches poster) */}
-          <RegionCard
-            {...regionVM.southern}
-            active={regionId === "southern"}
-            ar={ar}
-            onSelect={() => setRegion("southern")}
-          />
-        </div>
+        {/* Southern region (central column; map stage removed per directive) */}
+        <RegionCard
+          {...regionVM.southern}
+          active={regionId === "southern"}
+          ar={ar}
+          onSelect={() => setRegion("southern")}
+        />
 
         <div className="flex h-full flex-col gap-3">
           {/* System status */}
