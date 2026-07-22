@@ -6,23 +6,15 @@
  * colours every halo from the canonical regional palette, and offers both
  * direct region selection and one-tap cycling.
  */
-import { Suspense, lazy, useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { ChevronDown, Globe2, Layers } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGION_ACCENT_HEX, REGION_ACCENT_RGB, type RegionId } from "@/lib/regions";
 import { cn } from "@/lib/utils";
 import { REGION_MARKERS } from "./region-markers";
-import type SectorGlobeSceneT from "./SectorGlobeScene";
+import commandStageAsset from "@/assets/nexios-command-stage.png.asset.json";
 
-// Client-only: SSR keeps the transparent SVG fallback and excludes the heavy
-// Three.js chunk. Capable clients lazy-load the real glass globe.
-const SectorGlobeScene = lazy(
-  (): Promise<{ default: typeof SectorGlobeSceneT }> =>
-    import.meta.env.SSR
-      ? Promise.resolve({ default: (() => null) as unknown as typeof SectorGlobeSceneT })
-      : import("./SectorGlobeScene"),
-);
 
 function hasWebGL(): boolean {
   try {
