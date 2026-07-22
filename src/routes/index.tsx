@@ -35,7 +35,6 @@ import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { useFreezeOffscreen } from "@/hooks/use-freeze-offscreen";
 import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
-import { AriaResumeVoiceButton } from "@/components/aria/AriaResumeVoiceButton";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
 import { NexiosCommandCenter } from "@/components/executive/command/NexiosCommandCenter";
@@ -274,7 +273,6 @@ function IntroLanding() {
               <Menu className="h-3.5 w-3.5" />
               <span>{t.cta_depts}</span>
             </button>
-            <AriaResumeVoiceButton />
           </div>
 
           {/* Telemetry footer — tabular numerals, executive signal */}

@@ -94,29 +94,26 @@ describe("specialist voice release contract", () => {
 });
 
 describe("homepage backdrop artwork", () => {
-  // The homepage backdrop was redesigned from a responsive <picture> of
-  // command-home webp sources to a permanent cinematic toroid image plus a
-  // gesture-gated greeting film (HomeVideoBackdrop). This contract tracks
-  // that shipped design: a real, LCP-prioritized backdrop asset that the
-  // component actually references — never a placeholder.
+  // The homepage backdrop is a permanent cinematic toroid image
+  // (HomeVideoBackdrop). The former gesture-gated greeting film was retired
+  // per directive; this contract tracks the shipped design: a real,
+  // LCP-prioritized backdrop asset the component actually references —
+  // never a placeholder.
   it("ships a purpose-built, LCP-prioritized backdrop the component references", () => {
     // Guard the REAL asset weight recorded in the manifest, not the pointer
     // file's size — a placeholder swap would drop this far below a real
-    // cinematic image/film.
-    for (const [file, minBytes] of [
-      ["src/assets/nexios-home-toroid.png.asset.json", 200_000],
-      ["src/assets/home-bg.mp4.asset.json", 1_000_000],
-    ] as const) {
-      const manifest = JSON.parse(source(file)) as { size?: number };
-      expect(typeof manifest.size).toBe("number");
-      expect(manifest.size!).toBeGreaterThan(minBytes);
-    }
+    // cinematic image.
+    const manifest = JSON.parse(source("src/assets/nexios-home-toroid.png.asset.json")) as {
+      size?: number;
+    };
+    expect(typeof manifest.size).toBe("number");
+    expect(manifest.size!).toBeGreaterThan(200_000);
 
     const backdrop = source("src/components/home/HomeVideoBackdrop.tsx");
     // Permanent artwork is the toroid image, priority-fetched for LCP.
     expect(backdrop).toContain("nexios-home-toroid.png.asset.json");
     expect(backdrop).toContain('fetchPriority="high"');
-    // The greeting film ships but never auto-plays (gesture-gated).
-    expect(backdrop).toContain("home-bg.mp4.asset.json");
+    // The greeting film was retired — the backdrop must not reference it.
+    expect(backdrop).not.toContain("home-bg.mp4.asset.json");
   });
 });
