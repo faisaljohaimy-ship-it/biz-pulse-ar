@@ -9,7 +9,7 @@ const RAW: AvatarIdentity = {
   reference_asset: "src/assets/finn-portrait.png",
   // Deterministic identifier for the canonical reference asset.
   // The hash locks the identity to the committed reference file.
-  reference_hash: "sha256:aria-holo-executive-v1",
+  reference_hash: "sha256:finn-portrait-v1",
   face: {
     gender_presentation: "masculine",
     ethnicity_presentation: "Saudi / Arab executive",

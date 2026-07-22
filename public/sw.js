@@ -1,5 +1,5 @@
-const CACHE_NAME = "nexios-static-v2";
-const PRECACHE = ["/nexus-icon.png", "/aria-icon.jpeg", "/manifest.webmanifest"];
+const CACHE_NAME = "nexios-static-v3";
+const PRECACHE = ["/nexus-icon.png", "/finn-portrait.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)));
