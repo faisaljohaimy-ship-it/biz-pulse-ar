@@ -735,13 +735,18 @@ export function FourRegionHub() {
       )}
 
       {/* ── Executive grid ─────────────────────────────────────────────── */}
+      {/* Panels sit in their TRUE geographic positions (matches the approved
+          poster + the live map territories). Under RTL the first DOM child
+          lands in the rightmost column, so each row is authored right→left:
+          Row 1 → الشرقية (يمين) · الوسطى (وسط) · الغربية (يسار)
+          Row 2 → حالة النظام (يمين) · الخريطة+الجنوبية (وسط) · FINN (يسار) */}
       <div className="relative grid gap-3 lg:grid-cols-[1.05fr_1.2fr_1.05fr]">
-        {/* Row 1 */}
+        {/* Row 1 — Eastern (right) · Central (center) · Western (left) */}
         <RegionCard
-          {...regionVM.western}
-          active={regionId === "western"}
+          {...regionVM.eastern}
+          active={regionId === "eastern"}
           ar={ar}
-          onSelect={() => setRegion("western")}
+          onSelect={() => setRegion("eastern")}
         />
         <RegionCard
           {...regionVM.central}
@@ -750,34 +755,13 @@ export function FourRegionHub() {
           onSelect={() => setRegion("central")}
         />
         <RegionCard
-          {...regionVM.eastern}
-          active={regionId === "eastern"}
+          {...regionVM.western}
+          active={regionId === "western"}
           ar={ar}
-          onSelect={() => setRegion("eastern")}
+          onSelect={() => setRegion("western")}
         />
 
-        {/* Row 2 — FINN · MAP · System+Alerts */}
-        <FinnPersonaCard ar={ar} />
-
-        <div className="relative flex flex-col gap-3">
-          <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
-            <CentralMap
-              ar={ar}
-              sectors={sectors}
-              regionId={regionId}
-              setRegion={setRegion}
-              severityByRegion={severityByRegion}
-            />
-          </div>
-          {/* Southern region under the map (matches poster) */}
-          <RegionCard
-            {...regionVM.southern}
-            active={regionId === "southern"}
-            ar={ar}
-            onSelect={() => setRegion("southern")}
-          />
-        </div>
-
+        {/* Row 2 — System+Alerts (right) · MAP+Southern (center) · FINN (left) */}
         <div className="flex h-full flex-col gap-3">
           {/* System status */}
           <div className="rounded-2xl border border-emerald-400/25 bg-gradient-to-br from-emerald-500/10 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
@@ -832,6 +816,28 @@ export function FourRegionHub() {
             </ul>
           </div>
         </div>
+
+        <div className="relative flex flex-col gap-3">
+          <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
+            <CentralMap
+              ar={ar}
+              sectors={sectors}
+              regionId={regionId}
+              setRegion={setRegion}
+              severityByRegion={severityByRegion}
+            />
+          </div>
+          {/* Southern region under the map (matches poster) */}
+          <RegionCard
+            {...regionVM.southern}
+            active={regionId === "southern"}
+            ar={ar}
+            onSelect={() => setRegion("southern")}
+          />
+        </div>
+
+        {/* FINN persona — bottom-left column (matches the approved poster) */}
+        <FinnPersonaCard ar={ar} />
       </div>
 
       {/* ── Bottom module tab bar ──────────────────────────────────────── */}
