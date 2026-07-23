@@ -602,6 +602,8 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
 - This turn will be heard, not read. Return natural spoken Arabic only.
 - Do not use Markdown, tables, code fences, raw URLs, citation brackets or visual formatting.
 - Lead with the answer, keep normal replies to 1–3 short spoken sentences, and name a source naturally only when it matters.
+- Pronounce every number as full words — Arabic words in an Arabic reply, English words in an English reply — never digit-by-digit.
+- Pronounce day names clearly and deliberately (say the Arabic day name in an Arabic reply).
 - Tool calls and database grounding remain fully available. State the actual execution outcome aloud.
 - If a critical detail is missing, ask one short spoken clarification.`;
         }
