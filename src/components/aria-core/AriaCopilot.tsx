@@ -267,7 +267,7 @@ function rmsLevel(samples: Float32Array): number {
 const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
-const THINKING_AR = "FINN تفكّر…";
+const THINKING_AR = "FINN يفكّر…";
 const MAX_ATTACHMENTS = 5;
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 const MAX_ATTACHMENTS_TOTAL_BYTES = 20 * 1024 * 1024;
@@ -1855,7 +1855,7 @@ export function AriaCopilot() {
       // No speech input on this browser → Conversation Mode cannot work.
       // Stay in the text chat (typed turns are text-only by rule) and show
       // a transient notice instead of a half-broken voice mode.
-      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسترد FINN نصياً.");
+      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسيردّ FINN نصياً.");
       if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
       noticeTimerRef.current = setTimeout(() => setConvNotice(null), 5000);
       try {
@@ -1927,16 +1927,16 @@ export function AriaCopilot() {
   );
 
   const statusLabel = useMemo(() => {
-    if (listening) return "تستمع…";
+    if (listening) return "يستمع…";
     switch (voice) {
       case "processing":
         return THINKING_AR;
       case "speaking":
-        return "FINN تتحدث…";
+        return "FINN يتحدث…";
       case "listening":
-        return "تستمع…";
+        return "يستمع…";
       default:
-        return pageContext ? `السياق · ${pageContext.label}` : "جاهزة";
+        return pageContext ? `السياق · ${pageContext.label}` : "جاهز";
     }
   }, [voice, pageContext, listening]);
 
@@ -2135,15 +2135,15 @@ export function AriaCopilot() {
               <div aria-live="polite" className="space-y-2">
                 <h2 className="text-xl font-semibold text-white sm:text-2xl">
                   {transcribing
-                    ? "FINN تحلّل صوتك"
+                    ? "FINN يحلّل صوتك"
                     : greeting
-                      ? "FINN ترحّب بك"
+                      ? "FINN يرحّب بك"
                       : listening
-                        ? "FINN تستمع"
+                        ? "FINN يستمع"
                         : isBusy
-                          ? "FINN تفكّر وتنفّذ"
+                          ? "FINN يفكّر وينفّذ"
                           : state === "speaking"
-                            ? "FINN تتحدث"
+                            ? "FINN يتحدث"
                             : "المخاطبة الصوتية"}
                 </h2>
                 <p className="text-xs text-white/60 sm:text-sm">

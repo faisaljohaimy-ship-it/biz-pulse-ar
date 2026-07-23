@@ -59,7 +59,8 @@ export const Route = createFileRoute("/")({
       { title: "NEXIOS AI  -  FINN" },
       {
         name: "description",
-        content: "N",
+        content:
+          "NEXIOS AI OS — منصة القيادة التنفيذية بشبكة الذكاء العصبي السريعة FINN: قرارات فورية، أرقام حية، وتحكّم موحّد لكل القطاعات.",
       },
       {
         property: "og:title",
@@ -67,7 +68,8 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:description",
-        content: "N",
+        content:
+          "منصة القيادة التنفيذية NEXIOS AI مع FINN — شبكة الذكاء العصبي السريعة: رؤية حية، تحليل فوري، وقرار موثوق للقادة.",
       },
       { property: "og:url", content: "https://neexios.com/" },
       {
@@ -76,7 +78,8 @@ export const Route = createFileRoute("/")({
       },
       {
         name: "twitter:description",
-        content: "N",
+        content:
+          "منصة القيادة التنفيذية NEXIOS AI مع FINN — شبكة الذكاء العصبي السريعة: رؤية حية، تحليل فوري، وقرار موثوق للقادة.",
       },
     ],
     links: [{ rel: "canonical", href: "https://neexios.com/" }],
