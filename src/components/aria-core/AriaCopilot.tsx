@@ -1855,7 +1855,7 @@ export function AriaCopilot() {
       // No speech input on this browser → Conversation Mode cannot work.
       // Stay in the text chat (typed turns are text-only by rule) and show
       // a transient notice instead of a half-broken voice mode.
-      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسترد FINN نصياً.");
+      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسيردّ FINN نصياً.");
       if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
       noticeTimerRef.current = setTimeout(() => setConvNotice(null), 5000);
       try {
