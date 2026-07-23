@@ -2135,15 +2135,15 @@ export function AriaCopilot() {
               <div aria-live="polite" className="space-y-2">
                 <h2 className="text-xl font-semibold text-white sm:text-2xl">
                   {transcribing
-                    ? "FINN تحلّل صوتك"
+                    ? "FINN يحلّل صوتك"
                     : greeting
-                      ? "FINN ترحّب بك"
+                      ? "FINN يرحّب بك"
                       : listening
-                        ? "FINN تستمع"
+                        ? "FINN يستمع"
                         : isBusy
-                          ? "FINN تفكّر وتنفّذ"
+                          ? "FINN يفكّر وينفّذ"
                           : state === "speaking"
-                            ? "FINN تتحدث"
+                            ? "FINN يتحدث"
                             : "المخاطبة الصوتية"}
                 </h2>
                 <p className="text-xs text-white/60 sm:text-sm">
