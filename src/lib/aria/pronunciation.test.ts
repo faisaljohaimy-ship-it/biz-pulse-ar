@@ -90,9 +90,19 @@ describe("applyFinnPronunciation — numbers spoken as words", () => {
     );
   });
 
-  it("protects clock times and decimals from being split", () => {
+  it("speaks decimals in full — integer part, «فاصلة», then digit-by-digit", () => {
+    expect(applyFinnPronunciation("النسبة 3.67 تقريبًا")).toBe(
+      "النسبة ثلاثة فاصلة ستة سبعة تقريبًا",
+    );
+    expect(applyFinnPronunciation("الإنتاج 125.6 مليون")).toBe(
+      "الإنتاج مئة وخمسة وعشرون فاصلة ستة مليون",
+    );
+    expect(applyFinnPronunciation("accuracy 3.5%")).toBe("accuracy three point five percent");
+  });
+
+  it("still protects clock times and dotted version strings", () => {
     expect(applyFinnPronunciation("الوقت 14:07:33 الآن")).toBe("الوقت 14:07:33 الآن");
-    expect(applyFinnPronunciation("النسبة 3.67 تقريبًا")).toBe("النسبة 3.67 تقريبًا");
+    expect(applyFinnPronunciation("الإصدار 1.2.0 جاهز")).toBe("الإصدار 1.2.0 جاهز");
   });
 });
 

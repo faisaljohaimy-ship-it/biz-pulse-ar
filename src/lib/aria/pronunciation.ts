@@ -189,34 +189,69 @@ const TERMS: Array<[RegExp, string]> = [
   [/\bFINN\b/gi, "فِن"],
 ];
 
-const toInt = (digits: string): number => Number(digits.replace(/,/g, ""));
+const AR_DIGIT = [
+  "صفر",
+  "واحد",
+  "اثنان",
+  "ثلاثة",
+  "أربعة",
+  "خمسة",
+  "ستة",
+  "سبعة",
+  "ثمانية",
+  "تسعة",
+];
+const EN_DIGIT = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
 /**
- * Speak every number as full words. Clock times (HH:MM[:SS]) and decimals are
- * protected so they are not split, then percentages and bare integers are
- * expanded. `lang` chooses Arabic or English number words + "percent" wording.
+ * Speak a full numeric token as words, including thousands separators and a
+ * decimal part. The integer part is a grouped cardinal; the fractional part is
+ * read digit-by-digit after a spoken point («فاصلة» / "point"), the correct
+ * convention for reading a decimal aloud. `"3.67"` → «ثلاثة فاصلة ستة سبعة».
+ */
+function spokenNumber(raw: string, lang: "ar" | "en"): string {
+  const [intPart, fracPart] = raw.replace(/,/g, "").split(".");
+  const words = lang === "ar" ? arabicNumberWords : englishNumberWords;
+  const head = words(Number(intPart || "0"));
+  if (fracPart == null || fracPart.length === 0) return head;
+  const digits = lang === "ar" ? AR_DIGIT : EN_DIGIT;
+  const point = lang === "ar" ? "فاصلة" : "point";
+  const tail = fracPart
+    .split("")
+    .map((c) => digits[Number(c)] ?? c)
+    .join(" ");
+  return `${head} ${point} ${tail}`;
+}
+
+/**
+ * Speak EVERY number as complete, correct words — integers, thousands,
+ * millions, percentages AND decimals. Clock times (HH:MM[:SS]) and dotted
+ * version strings (1.2.0) are protected so they are not mangled. `lang` picks
+ * Arabic or English number words + the "percent" wording. Only simple regexes
+ * are used — no lookbehind / lookahead, which older iOS Safari (< 16.4)
+ * rejects at parse time.
  */
 function expandNumbers(text: string, lang: "ar" | "en"): string {
-  // Protect clock times and decimals from the integer pass by swapping each
-  // for a single digit-free Private-Use-Area placeholder char, so the integer
-  // regex can't touch it. Only simple regexes are used here — no lookbehind /
-  // lookahead, which older iOS Safari (< 16.4) rejects at parse time.
   const stashed: string[] = [];
   const stash = (m: string): string => {
     const ch = String.fromCharCode(0xe000 + stashed.length);
     stashed.push(m);
     return ch;
   };
-  let out = text.replace(/\d{1,2}:\d{2}(?::\d{2})?/g, stash).replace(/\d+\.\d+/g, stash);
+  let out = text.replace(/\d{1,2}:\d{2}(?::\d{2})?/g, stash).replace(/\d+\.\d+\.\d+/g, stash);
 
-  const words = lang === "ar" ? arabicNumberWords : englishNumberWords;
   const percent = lang === "ar" ? "بالمئة" : "percent";
 
-  // Percentages first (consume the % sign), then any remaining integer runs.
-  out = out.replace(/(\d[\d,]*)\s*%/g, (_m, d: string) => `${words(toInt(d))} ${percent}`);
-  out = out.replace(/\d[\d,]*/g, (m) => words(toInt(m)));
+  // Percentages first (integer OR decimal, consuming the % sign), then decimal
+  // numbers, then any remaining integer runs. Each becomes full spoken words.
+  out = out.replace(
+    /(\d[\d,]*(?:\.\d+)?)\s*%/g,
+    (_m, n: string) => `${spokenNumber(n, lang)} ${percent}`,
+  );
+  out = out.replace(/\d[\d,]*\.\d+/g, (m) => spokenNumber(m, lang));
+  out = out.replace(/\d[\d,]*/g, (m) => spokenNumber(m, lang));
 
-  // Restore the protected times/decimals from their placeholder chars.
+  // Restore the protected times/version strings from their placeholder chars.
   return out.replace(/[-]/g, (ch) => stashed[ch.charCodeAt(0) - 0xe000] ?? ch);
 }
 

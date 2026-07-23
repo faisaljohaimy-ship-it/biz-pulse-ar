@@ -111,6 +111,7 @@ describe("FINN live-intelligence doctrine", () => {
     expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("معالجة الأخطاء لحظيًا");
     expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("تطوير مستمر منضبط");
     expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("الدقة المطلقة");
+    expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("النطق الكامل ١٠٠٪ للأرقام والأيام");
     expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("تأنٍّ في النطق");
   });
 });
