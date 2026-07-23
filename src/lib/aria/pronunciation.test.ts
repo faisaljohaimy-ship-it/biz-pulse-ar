@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyAriaPronunciation,
+  applyFinnPronunciation,
   arabicCardinal,
   arabicNumberWords,
   englishNumberWords,
@@ -45,64 +45,64 @@ describe("englishNumberWords (hundreds → millions)", () => {
   });
 });
 
-describe("applyAriaPronunciation — directive codes", () => {
+describe("applyFinnPronunciation — directive codes", () => {
   it("speaks SEC-18 as «سِك ثمانية عشر» (not letter-spelled, digit read)", () => {
-    expect(applyAriaPronunciation("راجع توجيه SEC-18 الآن")).toBe("راجع توجيه سِك ثمانية عشر الآن");
+    expect(applyFinnPronunciation("راجع توجيه SEC-18 الآن")).toBe("راجع توجيه سِك ثمانية عشر الآن");
   });
 
   it("handles zero-padding and spacing variants (SAF-07, SEC 3)", () => {
-    expect(applyAriaPronunciation("SAF-07")).toBe("ساف سبعة");
-    expect(applyAriaPronunciation("SEC 3")).toBe("سِك ثلاثة");
+    expect(applyFinnPronunciation("SAF-07")).toBe("ساف سبعة");
+    expect(applyFinnPronunciation("SEC 3")).toBe("سِك ثلاثة");
   });
 
   it("speaks a bare SEC / SAF with no code", () => {
-    expect(applyAriaPronunciation("توجيهات SEC وSAF")).toBe("توجيهات سِك وساف");
+    expect(applyFinnPronunciation("توجيهات SEC وSAF")).toBe("توجيهات سِك وساف");
   });
 });
 
-describe("applyAriaPronunciation — acronym dictionary", () => {
+describe("applyFinnPronunciation — acronym dictionary", () => {
   it("expands the domain acronyms to their spoken Arabic", () => {
-    expect(applyAriaPronunciation("PTW")).toBe("تصريح العمل");
-    expect(applyAriaPronunciation("HCIS")).toBe("الهيئة العليا للأمن الصناعي");
-    expect(applyAriaPronunciation("راجع CCTV")).toBe("راجع كاميرات المراقبة");
-    expect(applyAriaPronunciation("NEXIOS")).toBe("نكسيوس");
-    expect(applyAriaPronunciation("FINN")).toBe("فِن");
+    expect(applyFinnPronunciation("PTW")).toBe("تصريح العمل");
+    expect(applyFinnPronunciation("HCIS")).toBe("الهيئة العليا للأمن الصناعي");
+    expect(applyFinnPronunciation("راجع CCTV")).toBe("راجع كاميرات المراقبة");
+    expect(applyFinnPronunciation("NEXIOS")).toBe("نكسيوس");
+    expect(applyFinnPronunciation("FINN")).toBe("فِن");
   });
 
   it("leaves plain Arabic prose untouched", () => {
     const s = "حالة الامتثال مطابقة والتقرير جاهز.";
-    expect(applyAriaPronunciation(s)).toBe(s);
+    expect(applyFinnPronunciation(s)).toBe(s);
   });
 });
 
-describe("applyAriaPronunciation — numbers spoken as words", () => {
+describe("applyFinnPronunciation — numbers spoken as words", () => {
   it("speaks bare Arabic-context numbers, percentages and thousands as words", () => {
-    expect(applyAriaPronunciation("بلغ الامتثال 94%")).toBe("بلغ الامتثال أربعة وتسعون بالمئة");
-    expect(applyAriaPronunciation("لدينا 142 مشروعًا")).toBe("لدينا مئة واثنان وأربعون مشروعًا");
-    expect(applyAriaPronunciation("الموارد 1,248 وحدة")).toBe(
+    expect(applyFinnPronunciation("بلغ الامتثال 94%")).toBe("بلغ الامتثال أربعة وتسعون بالمئة");
+    expect(applyFinnPronunciation("لدينا 142 مشروعًا")).toBe("لدينا مئة واثنان وأربعون مشروعًا");
+    expect(applyFinnPronunciation("الموارد 1,248 وحدة")).toBe(
       "الموارد ألف ومئتان وثمانية وأربعون وحدة",
     );
   });
 
   it("speaks numbers in English inside an English reply", () => {
-    expect(applyAriaPronunciation("Compliance reached 94%")).toBe(
+    expect(applyFinnPronunciation("Compliance reached 94%")).toBe(
       "Compliance reached ninety-four percent",
     );
   });
 
   it("protects clock times and decimals from being split", () => {
-    expect(applyAriaPronunciation("الوقت 14:07:33 الآن")).toBe("الوقت 14:07:33 الآن");
-    expect(applyAriaPronunciation("النسبة 3.67 تقريبًا")).toBe("النسبة 3.67 تقريبًا");
+    expect(applyFinnPronunciation("الوقت 14:07:33 الآن")).toBe("الوقت 14:07:33 الآن");
+    expect(applyFinnPronunciation("النسبة 3.67 تقريبًا")).toBe("النسبة 3.67 تقريبًا");
   });
 });
 
-describe("applyAriaPronunciation — day names spoken clearly", () => {
+describe("applyFinnPronunciation — day names spoken clearly", () => {
   it("speaks an English day name in Arabic within an Arabic reply", () => {
-    expect(applyAriaPronunciation("التقرير جاهز يوم Thursday")).toBe("التقرير جاهز يوم الخميس");
+    expect(applyFinnPronunciation("التقرير جاهز يوم Thursday")).toBe("التقرير جاهز يوم الخميس");
   });
 
   it("leaves Arabic day names as clear full words", () => {
     const s = "يصدر التقرير يوم الخميس القادم.";
-    expect(applyAriaPronunciation(s)).toBe(s);
+    expect(applyFinnPronunciation(s)).toBe(s);
   });
 });

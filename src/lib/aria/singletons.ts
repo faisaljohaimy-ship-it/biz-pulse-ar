@@ -12,15 +12,15 @@
  * not fool the check, and every method no-ops if `window` is absent.
  */
 
-export type AriaSingletonKey = "BRAIN" | "PROVIDER" | "VOICE" | "AVATAR" | "MEMORY";
+export type FinnSingletonKey = "BRAIN" | "PROVIDER" | "VOICE" | "AVATAR" | "MEMORY";
 
 interface Registry {
-  owners: Partial<Record<AriaSingletonKey, string>>;
-  warned: Partial<Record<AriaSingletonKey, boolean>>;
-  mounts: Partial<Record<AriaSingletonKey, number>>;
+  owners: Partial<Record<FinnSingletonKey, string>>;
+  warned: Partial<Record<FinnSingletonKey, boolean>>;
+  mounts: Partial<Record<FinnSingletonKey, number>>;
 }
 
-const GLOBAL_KEY = "__ARIA_SINGLETONS__";
+const GLOBAL_KEY = "__FINN_SINGLETONS__";
 
 function registry(): Registry {
   if (typeof globalThis === "undefined") return { owners: {}, warned: {}, mounts: {} };
@@ -44,7 +44,7 @@ function isDev(): boolean {
  * Callers should short-circuit (skip side-effect setup) when this
  * returns false, so the second instance stays inert.
  */
-export function assertOne(key: AriaSingletonKey, owner: string): boolean {
+export function assertOne(key: FinnSingletonKey, owner: string): boolean {
   if (typeof window === "undefined") return true; // SSR pass-through
   const reg = registry();
   const existing = reg.owners[key];
@@ -69,7 +69,7 @@ export function assertOne(key: AriaSingletonKey, owner: string): boolean {
 }
 
 /** Release a singleton (e.g. on unmount / teardown). */
-export function releaseOne(key: AriaSingletonKey, owner: string): void {
+export function releaseOne(key: FinnSingletonKey, owner: string): void {
   if (typeof window === "undefined") return;
   const reg = registry();
   if (reg.owners[key] === owner) {
@@ -79,12 +79,12 @@ export function releaseOne(key: AriaSingletonKey, owner: string): void {
 }
 
 /**
- * Track a live React mount (e.g. AriaProvider). Increments an active
+ * Track a live React mount (e.g. FinnProvider). Increments an active
  * mount counter; warns once when count exceeds 1 (true duplication —
  * distinct from StrictMode double-invoke which is same-instance).
  * Returns an unmount fn that decrements the counter.
  */
-export function trackMount(key: AriaSingletonKey, owner: string): () => void {
+export function trackMount(key: FinnSingletonKey, owner: string): () => void {
   if (typeof window === "undefined") return () => {};
   const reg = registry();
   const next = (reg.mounts[key] ?? 0) + 1;
@@ -103,11 +103,11 @@ export function trackMount(key: AriaSingletonKey, owner: string): () => void {
 }
 
 /** Introspect current owners (for /aria/directive audit + tests). */
-export function currentSingletons(): Readonly<Partial<Record<AriaSingletonKey, string>>> {
+export function currentSingletons(): Readonly<Partial<Record<FinnSingletonKey, string>>> {
   return { ...registry().owners };
 }
 
 /** Introspect current mount counts. */
-export function currentMounts(): Readonly<Partial<Record<AriaSingletonKey, number>>> {
+export function currentMounts(): Readonly<Partial<Record<FinnSingletonKey, number>>> {
   return { ...registry().mounts };
 }

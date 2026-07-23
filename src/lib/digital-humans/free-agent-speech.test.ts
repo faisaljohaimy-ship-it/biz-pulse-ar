@@ -18,7 +18,7 @@ const { bus, fetchMock } = vi.hoisted(() => ({
   },
   fetchMock: vi.fn(),
 }));
-vi.mock("@/lib/aria/audio-bus", () => ({ AriaAudioBus: bus }));
+vi.mock("@/lib/aria/audio-bus", () => ({ FinnAudioBus: bus }));
 vi.mock("@/lib/auth-fetch", () => ({
   authenticatedFetch: (...args: unknown[]) => fetchMock(...args),
 }));

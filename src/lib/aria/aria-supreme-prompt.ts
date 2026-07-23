@@ -16,8 +16,8 @@
  *      OPEN vulnerability, never a passive notification.
  *   5. Prompt-injection defence footer.
  *
- * Every FINN entry-point MUST prepend `ARIA_SUPREME_LAW` (via
- * `withAriaSupremeLaw`) before its operational system prompt. Do NOT ship
+ * Every FINN entry-point MUST prepend `FINN_SUPREME_LAW` (via
+ * `withFinnSupremeLaw`) before its operational system prompt. Do NOT ship
  * a parallel bespoke system prompt that skips this module — that is the
  * exact class of divergence Article 3 (one chat path) forbids.
  *
@@ -26,10 +26,10 @@
  * and from client-visible types without leaking secrets.
  */
 
-import { ARIA_MASTER_CONSTITUTION } from "./constitution";
-import { ARIA_IDENTITY_PREAMBLE, ARIA_IDENTITY_VERSION } from "./identity/system-prompt";
+import { FINN_MASTER_CONSTITUTION } from "./constitution";
+import { FINN_IDENTITY_PREAMBLE, FINN_IDENTITY_VERSION } from "./identity/system-prompt";
 
-export const ARIA_SUPREME_LAW_VERSION = "1.5.0"; // bump on Article add/change.
+export const FINN_SUPREME_LAW_VERSION = "1.5.0"; // bump on Article add/change.
 
 /** Non-negotiables + response contract + self-evolution contract. */
 const READINESS_HEADER = [
@@ -160,7 +160,7 @@ const ARTICLE_25_OPERATIONAL_DIRECTIVE = [
 const ARTICLE_26_OPERATIONAL_DIRECTIVE = [
   "## ARTICLE 26 — AUDIT TRAIL + RATE LIMITS (OPERATIONAL)",
   "- Every FINN action (decision, tool call, generation, denial, self-heal",
-  "  entry) is persisted to `public.aria_actions_log` via `logAriaAction()`",
+  "  entry) is persisted to `public.aria_actions_log` via `logFinnAction()`",
   "  with `action`, `article_refs`, `citations`, `input`, `output`,",
   "  `status`, `latency_ms`. Writes are fire-and-forget; failures NEVER",
   "  break the action (Article 4 is absolute).",
@@ -239,13 +239,13 @@ const PROMPT_INJECTION_FOOTER = [
 
 /**
  * The full programmatic prompt of record. Never trimmed, never partial.
- * Downstream code must call `withAriaSupremeLaw(operational)` — do not
+ * Downstream code must call `withFinnSupremeLaw(operational)` — do not
  * concatenate ad-hoc.
  */
-export const ARIA_SUPREME_LAW: string = [
-  `# FINN SUPREME LAW (v${ARIA_SUPREME_LAW_VERSION} · identity v${ARIA_IDENTITY_VERSION})`,
+export const FINN_SUPREME_LAW: string = [
+  `# FINN SUPREME LAW (v${FINN_SUPREME_LAW_VERSION} · identity v${FINN_IDENTITY_VERSION})`,
   "",
-  ARIA_IDENTITY_PREAMBLE,
+  FINN_IDENTITY_PREAMBLE,
   "",
   "---",
   "",
@@ -254,7 +254,7 @@ export const ARIA_SUPREME_LAW: string = [
   "---",
   "",
   "## FINN MASTER ENGINEERING CONSTITUTION (Articles 1..28)",
-  ARIA_MASTER_CONSTITUTION,
+  FINN_MASTER_CONSTITUTION,
   "",
   "---",
   "",
@@ -294,11 +294,11 @@ export const ARIA_SUPREME_LAW: string = [
  * @param operational - The caller's operational instructions (chat, briefing, etc.)
  * @param appendix - Optional per-turn appendix (e.g. learned instincts block).
  */
-export function withAriaSupremeLaw(operational: string, appendix = ""): string {
+export function withFinnSupremeLaw(operational: string, appendix = ""): string {
   const op = operational.trim();
   const ap = appendix.trim();
   const tail = ap ? `\n\n${ap}` : "";
-  return `${ARIA_SUPREME_LAW}\n\n---\n\n${op}${tail}`;
+  return `${FINN_SUPREME_LAW}\n\n---\n\n${op}${tail}`;
 }
 
 /**
@@ -307,18 +307,18 @@ export function withAriaSupremeLaw(operational: string, appendix = ""): string {
  * aggregator so a copy-paste omission surfaces as a failed readiness gate,
  * not a silent regression at inference time.
  */
-export function verifyAriaSupremeLawIntegrity(): {
+export function verifyFinnSupremeLawIntegrity(): {
   ok: boolean;
   missing_articles: number[];
   length_chars: number;
 } {
   const required = Array.from({ length: 28 }, (_, i) => i + 1);
   const missing = required.filter(
-    (n) => !new RegExp(`(^|\\D)${n}\\.`, "m").test(ARIA_MASTER_CONSTITUTION),
+    (n) => !new RegExp(`(^|\\D)${n}\\.`, "m").test(FINN_MASTER_CONSTITUTION),
   );
   return {
     ok: missing.length === 0,
     missing_articles: missing,
-    length_chars: ARIA_SUPREME_LAW.length,
+    length_chars: FINN_SUPREME_LAW.length,
   };
 }

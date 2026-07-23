@@ -1,7 +1,7 @@
 /**
- * AriaCopilot — the ONE FINN UI. Renders both the floating launcher and
+ * FinnCopilot — the ONE FINN UI. Renders both the floating launcher and
  * the dockable copilot panel. Consumes the singleton `useChat` from the
- * `<AriaProvider>` so state persists across every route change.
+ * `<FinnProvider>` so state persists across every route change.
  *
  * Panel layout (Objective 1): FINN fills the entire panel as a cinematic
  * background layer (video → still, object-contain top-center, full figure
@@ -28,8 +28,8 @@ import {
   X,
 } from "lucide-react";
 import type { FileUIPart } from "ai";
-import { useAriaChat } from "@/lib/aria-core/provider";
-import { useAriaStore } from "@/lib/aria-core/store";
+import { useFinnChat } from "@/lib/aria-core/provider";
+import { useFinnStore } from "@/lib/aria-core/store";
 import { pingChat, setPendingReplyMode } from "@/lib/aria-core/services/aria-service";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { cn } from "@/lib/utils";
@@ -39,30 +39,30 @@ import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ExecutiveCard } from "./ExecutiveCard";
-import { useAriaPresenceState, ariaState } from "@/lib/aria/aria-state";
-import { AriaAudioBus } from "@/lib/aria/audio-bus";
-import { AriaVideoAvatar } from "@/components/aria/AriaVideoAvatar";
-import { AriaVoiceDebug } from "@/lib/aria/voice-debug";
-import { ARIA_GEMINI_TTS_VOICE } from "@/lib/aria/voice-config";
-import { AriaVoiceDebugBadge } from "@/components/aria/AriaVoiceDebugBadge";
+import { useFinnPresenceState, ariaState } from "@/lib/aria/aria-state";
+import { FinnAudioBus } from "@/lib/aria/audio-bus";
+import { FinnVideoAvatar } from "@/components/aria/FinnVideoAvatar";
+import { FinnVoiceDebug } from "@/lib/aria/voice-debug";
+import { FINN_GEMINI_TTS_VOICE } from "@/lib/aria/voice-config";
+import { FinnVoiceDebugBadge } from "@/components/aria/FinnVoiceDebugBadge";
 import { setIntroActive } from "@/lib/intro-store";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
-import { AriaSignatureBackdrop } from "@/components/aria/AriaSignatureBackdrop";
+import { FinnSignatureBackdrop } from "@/components/aria/FinnSignatureBackdrop";
 import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/aria/quick-commands";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
-import { shouldSpeakAriaReply, toAriaSpeechText } from "@/lib/aria/reply-modality";
+import { shouldSpeakFinnReply, toFinnSpeechText } from "@/lib/aria/reply-modality";
 import { stripTashkeel } from "@/lib/aria/tashkeel";
-import { chooseAriaRecorderMime, recorderFileExtension } from "@/lib/aria/media-recorder";
-import { advanceAriaVoiceActivity, createAriaVoiceActivityState } from "@/lib/aria/voice-activity";
+import { chooseFinnRecorderMime, recorderFileExtension } from "@/lib/aria/media-recorder";
+import { advanceFinnVoiceActivity, createFinnVoiceActivityState } from "@/lib/aria/voice-activity";
 import {
-  ARIA_CONVERSATION_GREETING_AR,
-  ARIA_CONVERSATION_GREETING_AR_TTS,
-  shouldContinueAfterAriaGreeting,
+  FINN_CONVERSATION_GREETING_AR,
+  FINN_CONVERSATION_GREETING_AR_TTS,
+  shouldContinueAfterFinnGreeting,
 } from "@/lib/aria/conversation-greeting";
 import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
-// speakAria / speakablePageScript intentionally NOT imported — the panel-open
+// speakFinn / speakablePageScript intentionally NOT imported — the panel-open
 // page intro stays silent; reply speech runs through the streaming TTS
 // pipeline below (Gemini Flash TTS via /api/aria/tts, gated on voice mode).
 
@@ -85,7 +85,7 @@ function createSilentUnlockAudio(): HTMLAudioElement {
 function primeIOSAudio(): void {
   if (typeof window === "undefined") return;
   try {
-    AriaAudioBus.unlock();
+    FinnAudioBus.unlock();
     const AC: typeof AudioContext | undefined =
       (
         window as unknown as {
@@ -124,9 +124,9 @@ function primeIOSAudio(): void {
   }
 }
 
-const ARIA_AUDIO_BLOBS = new WeakMap<HTMLAudioElement, Blob>();
+const FINN_AUDIO_BLOBS = new WeakMap<HTMLAudioElement, Blob>();
 
-function getAriaAudioContext(): AudioContext | null {
+function getFinnAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   const AC: typeof AudioContext | undefined =
     (
@@ -236,7 +236,7 @@ function getSpeechRecognitionCtor(): (new () => SR) | null {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
-async function requestAriaMicrophone(): Promise<MediaStream> {
+async function requestFinnMicrophone(): Promise<MediaStream> {
   const mediaDevices = navigator.mediaDevices;
   if (!mediaDevices?.getUserMedia)
     throw new DOMException("Microphone capture is unavailable.", "NotFoundError");
@@ -354,8 +354,8 @@ function sanitiseAssistantText(raw: string): string {
 /** Panel backdrop — dark surface with an optional emerald aurora when in
  *  conversation mode. The figure lives ONLY in the top-circle avatar; no
  *  full-panel video variant, so placement stays identical across breakpoints. */
-function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: string | null }) {
-  const state = useAriaPresenceState();
+function FinnPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: string | null }) {
+  const state = useFinnPresenceState();
   return (
     <div
       aria-hidden
@@ -365,7 +365,7 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
       style={{ background: "#04070F" }}
     >
       {/* Phase 0 — FINN cinematic signature (the visual brand of the window). */}
-      <AriaSignatureBackdrop />
+      <FinnSignatureBackdrop />
       {/* FINN hologram portrait — shown only in voice-conversation mode so the
           default text chat keeps the clean signature backdrop. */}
       {convMode && (
@@ -426,8 +426,8 @@ function AriaPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
 /** Unified FINN top-circle avatar — identical on mobile and desktop.
  *  A 96px circular figure pinned to the top-center of the chat panel.
  *  Emerald ring pulses while speaking; static under prefers-reduced-motion. */
-function AriaTopAvatar() {
-  const state = useAriaPresenceState();
+function FinnTopAvatar() {
+  const state = useFinnPresenceState();
   const speaking = state === "speaking";
   return (
     <div className="relative z-10 flex justify-center pt-3 pb-2">
@@ -439,7 +439,7 @@ function AriaTopAvatar() {
             : "border-emerald-400/40",
         )}
       >
-        <AriaVideoAvatar
+        <FinnVideoAvatar
           poster={STILL_SRC}
           className="absolute inset-0"
           mediaStyle={{ objectFit: "cover", objectPosition: "center top" }}
@@ -450,12 +450,12 @@ function AriaTopAvatar() {
   );
 }
 
-export function AriaCopilot() {
-  const { chat, composerRef } = useAriaChat();
-  const mode = useAriaStore((s) => s.mode);
-  const voice = useAriaStore((s) => s.voice);
-  const pageContext = useAriaStore((s) => s.pageContext);
-  const setMode = useAriaStore((s) => s.setMode);
+export function FinnCopilot() {
+  const { chat, composerRef } = useFinnChat();
+  const mode = useFinnStore((s) => s.mode);
+  const voice = useFinnStore((s) => s.voice);
+  const pageContext = useFinnStore((s) => s.pageContext);
+  const setMode = useFinnStore((s) => s.setMode);
 
   const [draft, setDraft] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -596,7 +596,7 @@ export function AriaCopilot() {
     convModeRef.current = convMode;
   }, [convMode]);
 
-  const state = useAriaPresenceState();
+  const state = useFinnPresenceState();
   const convCaption = useMemo(() => {
     if (!convMode) return null;
     if (convPaused) return "اضغط للمتابعة 🎙";
@@ -614,7 +614,7 @@ export function AriaCopilot() {
   //
   // Logs (5 samples each expected):
   //   [aria-latency] send→first-token Xms | first-token→sentence1 Yms | tts Zms | TOTAL Tms
-  //   [aria-motion]  Δ=Xms  (see AriaVideoAvatar — audio 'playing' → video 'playing')
+  //   [aria-motion]  Δ=Xms  (see FinnVideoAvatar — audio 'playing' → video 'playing')
   interface StreamState {
     sendAt: number | null;
     firstTokenAt: number | null;
@@ -663,7 +663,7 @@ export function AriaCopilot() {
     objectUrlsRef.current.clear();
     pendingSendAtRef.current = null;
     speakNextReplyRef.current = false;
-    AriaAudioBus.stopAll();
+    FinnAudioBus.stopAll();
     ariaState.set("idle");
   }, []);
 
@@ -813,7 +813,7 @@ export function AriaCopilot() {
           } catch {
             /* non-JSON */
           }
-          AriaVoiceDebug.emit({
+          FinnVoiceDebug.emit({
             source: "browser",
             reason: `tts_http_${r.status}_seg_${idx}:${reason}`,
             status: r.status,
@@ -825,7 +825,7 @@ export function AriaCopilot() {
         const url = URL.createObjectURL(blob);
         objectUrlsRef.current.add(url);
         const audio = new Audio(url);
-        ARIA_AUDIO_BLOBS.set(audio, blob);
+        FINN_AUDIO_BLOBS.set(audio, blob);
         audio.preload = "auto";
         audio.crossOrigin = "anonymous";
         audio.setAttribute("playsinline", "");
@@ -835,16 +835,16 @@ export function AriaCopilot() {
           /* noop */
         }
         if (idx === 0) {
-          AriaVoiceDebug.emit({
+          FinnVoiceDebug.emit({
             source: "gemini",
             reason: "authenticated",
-            voiceId: r.headers.get("x-aria-voice-id") || ARIA_GEMINI_TTS_VOICE,
+            voiceId: r.headers.get("x-aria-voice-id") || FINN_GEMINI_TTS_VOICE,
           });
         }
         return audio;
       } catch (err) {
         if ((err as { name?: string }).name === "AbortError") return null;
-        AriaVoiceDebug.emit({
+        FinnVoiceDebug.emit({
           source: "browser",
           reason: `network_seg_${idx}:${(err as Error).message ?? "unknown"}`,
           failed: true,
@@ -878,8 +878,8 @@ export function AriaCopilot() {
       };
 
       const playViaWebAudio = async (resolve: (value: boolean) => void) => {
-        const blob = ARIA_AUDIO_BLOBS.get(audio);
-        const context = getAriaAudioContext();
+        const blob = FINN_AUDIO_BLOBS.get(audio);
+        const context = getFinnAudioContext();
         if (!blob || !context) {
           settle(false, resolve);
           return;
@@ -1011,7 +1011,7 @@ export function AriaCopilot() {
             // speaking session (no motion reset between segments).
             if (idx === 0) {
               ariaState.set("speaking");
-              AriaAudioBus.notifyPlaying("chat-tts", audio);
+              FinnAudioBus.notifyPlaying("chat-tts", audio);
             }
           };
           const played = await playAudioClip(audio, started);
@@ -1031,8 +1031,8 @@ export function AriaCopilot() {
       if (s.finalized && s.playingIdx >= s.audios.length && s.busAcquired) {
         s.busAcquired = false;
         ariaState.set("idle");
-        AriaAudioBus.notifyStopped("chat-tts");
-        AriaAudioBus.release("chat-tts");
+        FinnAudioBus.notifyStopped("chat-tts");
+        FinnAudioBus.release("chat-tts");
         streamStateRef.current.delete(messageId);
         if (convModeRef.current && s.playbackFailed) {
           setConvNotice("تعذّر تشغيل صوت FINN — تحقق من صوت الجهاز ثم اضغط للمتابعة.");
@@ -1057,7 +1057,7 @@ export function AriaCopilot() {
     const last = chat.messages[chat.messages.length - 1];
     if (!last || last.role !== "assistant") return;
 
-    const fullText = toAriaSpeechText(
+    const fullText = toFinnSpeechText(
       sanitiseAssistantText(last.parts.map((p) => (p.type === "text" ? p.text : "")).join("")),
     );
     if (!fullText || fullText.length < 2) return;
@@ -1117,7 +1117,7 @@ export function AriaCopilot() {
     }
 
     if (toDispatch.length > 0 && !s.busAcquired) {
-      const ok = AriaAudioBus.acquire("chat-tts", () => {
+      const ok = FinnAudioBus.acquire("chat-tts", () => {
         const cur = streamStateRef.current.get(last.id);
         if (!cur) return;
         for (const c of cur.aborts) {
@@ -1227,7 +1227,7 @@ export function AriaCopilot() {
       primeIOSAudio();
       // Voice replies only for voice turns in Conversation Mode; typed
       // messages (anywhere, any device) always get a text-only reply.
-      speakNextReplyRef.current = shouldSpeakAriaReply({
+      speakNextReplyRef.current = shouldSpeakFinnReply({
         conversationMode: convModeRef.current,
         fromVoice: opts?.fromVoice,
       });
@@ -1445,13 +1445,13 @@ export function AriaCopilot() {
     let acquiredStream: MediaStream | null = null;
     try {
       stopMediaAnalysis();
-      const stream = await requestAriaMicrophone();
+      const stream = await requestFinnMicrophone();
       acquiredStream = stream;
       if (!convModeRef.current) {
         stream.getTracks().forEach((track) => track.stop());
         return;
       }
-      const mimeType = chooseAriaRecorderMime((candidate) =>
+      const mimeType = chooseFinnRecorderMime((candidate) =>
         MediaRecorder.isTypeSupported(candidate),
       );
       const recorder = mimeType
@@ -1539,11 +1539,11 @@ export function AriaCopilot() {
           mediaAnalysisSourceRef.current = source;
           source.connect(analyser);
           const samples = new Float32Array(analyser.fftSize);
-          let activity = createAriaVoiceActivityState(performance.now());
+          let activity = createFinnVoiceActivityState(performance.now());
           const analyse = () => {
             if (recorder.state === "inactive") return;
             analyser.getFloatTimeDomainData(samples);
-            const next = advanceAriaVoiceActivity({
+            const next = advanceFinnVoiceActivity({
               state: activity,
               rms: rmsLevel(samples),
               now: performance.now(),
@@ -1773,7 +1773,7 @@ export function AriaCopilot() {
     setConvPaused(false);
     ariaState.set("speaking");
 
-    const audio = await fetchTTS(ARIA_CONVERSATION_GREETING_AR_TTS, 0, controller);
+    const audio = await fetchTTS(FINN_CONVERSATION_GREETING_AR_TTS, 0, controller);
     if (!audio || controller.signal.aborted || !convModeRef.current) {
       if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
       setGreeting(false);
@@ -1784,7 +1784,7 @@ export function AriaCopilot() {
       return;
     }
 
-    const acquired = AriaAudioBus.acquire("conversation-greeting", () => {
+    const acquired = FinnAudioBus.acquire("conversation-greeting", () => {
       controller.abort();
       try {
         audio.pause();
@@ -1806,7 +1806,7 @@ export function AriaCopilot() {
     const playedGreeting = await playAudioClip(audio, () => {
       playbackStarted = true;
       ariaState.set("speaking");
-      AriaAudioBus.notifyPlaying("conversation-greeting", audio);
+      FinnAudioBus.notifyPlaying("conversation-greeting", audio);
     });
 
     const wasAborted = controller.signal.aborted;
@@ -1818,15 +1818,15 @@ export function AriaCopilot() {
       /* noop */
     }
     if (audioRef.current === audio) audioRef.current = null;
-    AriaAudioBus.notifyStopped("conversation-greeting");
-    AriaAudioBus.release("conversation-greeting");
+    FinnAudioBus.notifyStopped("conversation-greeting");
+    FinnAudioBus.release("conversation-greeting");
     if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
     setGreeting(false);
     if (!wasAborted && (!playbackStarted || !playedGreeting) && convModeRef.current) {
       setConvNotice("تعذّر تشغيل التحية، ابدأ بالتحدث وسأجيبك بصوت FINN.");
     }
     if (
-      shouldContinueAfterAriaGreeting({
+      shouldContinueAfterFinnGreeting({
         aborted: wasAborted,
         conversationModeActive: convModeRef.current,
       })
@@ -1995,8 +1995,8 @@ export function AriaCopilot() {
           )}
         >
           {/* LAYER 0 — FINN cinematic backdrop */}
-          <AriaPanelBackdrop convMode={convMode} caption={convCaption} />
-          <AriaVoiceDebugBadge />
+          <FinnPanelBackdrop convMode={convMode} caption={convCaption} />
+          <FinnVoiceDebugBadge />
 
           {/* LAYER 2 — Header */}
           <header className="relative z-10 flex items-center gap-2 border-b border-primary/15 bg-[linear-gradient(180deg,rgba(6,26,46,.76),rgba(3,15,29,.42))] px-3 py-3 backdrop-blur-xl sm:gap-3 sm:px-4">
@@ -2095,7 +2095,7 @@ export function AriaCopilot() {
           )}
 
           {/* Mobile-only compact FINN top avatar */}
-          <AriaTopAvatar />
+          <FinnTopAvatar />
 
           {/* LAYER 3 — Messages (transparent so backdrop shows through) */}
 
@@ -2216,7 +2216,7 @@ export function AriaCopilot() {
                   const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
                   const mine = m.role === "user";
                   // FINN's on-screen text stays clean: tashkeel is stripped for
-                  // display while the spoken path (toAriaSpeechText → /api/aria/tts,
+                  // display while the spoken path (toFinnSpeechText → /api/aria/tts,
                   // diacritized server-side) keeps full diacritics for pronunciation.
                   const text = mine ? raw : stripTashkeel(sanitiseAssistantText(raw));
                   const fileParts = m.parts.filter((part) => part.type === "file");

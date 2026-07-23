@@ -2,7 +2,7 @@
  * FINN Singleton Provider — mounted ONCE in `src/routes/__root.tsx`.
  *
  * Phase 1 Brain Core wiring:
- *   - Owns the ONE `useChat` transport (via AriaService).
+ *   - Owns the ONE `useChat` transport (via FinnService).
  *   - Binds the singleton chat sender into the Brain.
  *   - Updates ContextManager with each route change.
  *   - Reports stream completions/failures back to the Brain.
@@ -13,20 +13,20 @@ import { useChat } from "@ai-sdk/react";
 import { type UIMessage } from "ai";
 import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { useAriaStore } from "../state/aria-store";
-import { createAriaTransport } from "../services/aria-service";
+import { useFinnStore } from "../state/aria-store";
+import { createFinnTransport } from "../services/aria-service";
 import { ariaBrain } from "../core/aria-brain";
 import { voiceManager } from "../core/voice-manager";
 import { avatarLifecycle } from "../core/avatar-lifecycle";
 import { avatarBrain } from "../core/avatar-brain";
 import { trackMount } from "@/lib/aria/singletons";
 
-interface AriaProviderValue {
+interface FinnProviderValue {
   chat: ReturnType<typeof useChat>;
   composerRef: React.MutableRefObject<HTMLTextAreaElement | null>;
 }
 
-const AriaContext = createContext<AriaProviderValue | null>(null);
+const FinnContext = createContext<FinnProviderValue | null>(null);
 
 const WELCOME_AR: UIMessage = {
   id: "aria-welcome",
@@ -39,14 +39,14 @@ const WELCOME_AR: UIMessage = {
   ],
 };
 
-export function AriaProvider({ children }: { children: React.ReactNode }) {
+export function FinnProvider({ children }: { children: React.ReactNode }) {
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
-  const setMode = useAriaStore((s) => s.setMode);
-  const setPageContext = useAriaStore((s) => s.setPageContext);
-  const drainCommands = useAriaStore((s) => s.drainCommands);
-  const pendingCommands = useAriaStore((s) => s.pendingCommands);
+  const setMode = useFinnStore((s) => s.setMode);
+  const setPageContext = useFinnStore((s) => s.setPageContext);
+  const drainCommands = useFinnStore((s) => s.drainCommands);
+  const pendingCommands = useFinnStore((s) => s.pendingCommands);
 
-  const transport = useMemo(() => createAriaTransport(), []);
+  const transport = useMemo(() => createFinnTransport(), []);
 
   const chat = useChat({
     id: "aria-singleton",
@@ -62,8 +62,8 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     return unbind;
   }, [chat]);
 
-  // ── Singleton mount guard: warn loudly if a 2nd AriaProvider mounts ────
-  useEffect(() => trackMount("PROVIDER", "AriaProvider@__root"), []);
+  // ── Singleton mount guard: warn loudly if a 2nd FinnProvider mounts ────
+  useEffect(() => trackMount("PROVIDER", "FinnProvider@__root"), []);
 
   // ── Avatar Runtime lifecycle (mount once; dispose on unmount) ─────────
   useEffect(() => {
@@ -127,7 +127,7 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
   const reportedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (chat.status !== "ready") return;
-    const active = useAriaStore.getState().activeTurn;
+    const active = useFinnStore.getState().activeTurn;
     if (!active || active.status === "completed" || active.status === "failed") return;
     if (reportedRef.current.has(active.id)) return;
     const last = chat.messages[chat.messages.length - 1];
@@ -139,20 +139,20 @@ export function AriaProvider({ children }: { children: React.ReactNode }) {
     ariaBrain.reportCompletion(active.id, text);
   }, [chat.status, chat.messages]);
 
-  // ── TTS is owned EXCLUSIVELY by <AriaCopilot> (sentence-queued ElevenLabs
-  // ── pipeline via /api/aria/tts on a single AriaAudioBus "chat-tts" token).
+  // ── TTS is owned EXCLUSIVELY by <FinnCopilot> (sentence-queued ElevenLabs
+  // ── pipeline via /api/aria/tts on a single FinnAudioBus "chat-tts" token).
   // ── A second speak() path here caused the "first sentence clean, rest
-  // ── robotic" bug: both pipelines called AriaAudioBus.acquire("chat-tts"),
+  // ── robotic" bug: both pipelines called FinnAudioBus.acquire("chat-tts"),
   // ── stomped each other, and the loser dropped into browser
   // ── legacy browser-voice fallback mid-reply (removed). Do NOT re-add speak here.
 
   const value = useMemo(() => ({ chat, composerRef }), [chat]);
-  return <AriaContext.Provider value={value}>{children}</AriaContext.Provider>;
+  return <FinnContext.Provider value={value}>{children}</FinnContext.Provider>;
 }
 
-export function useAriaChat() {
-  const ctx = useContext(AriaContext);
-  if (!ctx) throw new Error("useAriaChat must be used inside <AriaProvider>");
+export function useFinnChat() {
+  const ctx = useContext(FinnContext);
+  if (!ctx) throw new Error("useFinnChat must be used inside <FinnProvider>");
   return ctx;
 }
 

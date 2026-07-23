@@ -63,7 +63,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { speakRuntimeAgent } from "@/lib/digital-humans/speak-agent";
-import { stopActiveAriaVoice } from "@/lib/digital-humans/aria-voice";
+import { stopActiveFinnVoice } from "@/lib/digital-humans/aria-voice";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsOps,
@@ -261,7 +261,7 @@ function AgentsOps() {
     } catch {
       /* storage is optional */
     }
-    if (!agentVoiceEnabled) stopActiveAriaVoice();
+    if (!agentVoiceEnabled) stopActiveFinnVoice();
   }, [agentVoiceEnabled]);
 
   const narrateAgentRun = useCallback(

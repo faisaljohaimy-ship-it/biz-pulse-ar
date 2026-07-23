@@ -29,7 +29,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Bot, CheckCircle2, Loader2, Lock, Radio, Sparkles, Timer } from "lucide-react";
 import { toast } from "sonner";
-import { useAriaSpeech } from "@/hooks/useAriaSpeech";
+import { useFinnSpeech } from "@/hooks/useFinnSpeech";
 import { REGIONS, REGION_ACCENT_RGB, type RegionId } from "@/lib/regions";
 import {
   getCommandCenterState,
@@ -326,7 +326,7 @@ function CommandCenterPage() {
   const [selectedRegion, setSelectedRegion] = useState<RegionId | null>(null);
   const [selectedProposal, setSelectedProposal] = useState<string | null>(null);
   const [summarizing, setSummarizing] = useState(false);
-  const { speak } = useAriaSpeech();
+  const { speak } = useFinnSpeech();
   const dateLabel = useMemo(hijriGregorian, []);
 
   const summaryText = useMemo(() => {

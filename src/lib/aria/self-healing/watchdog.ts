@@ -100,7 +100,7 @@ let installed = false;
  * Install the watchdog once, at app root. Idempotent + SSR-safe.
  * Returns a cleanup function that removes all listeners.
  */
-export function installAriaWatchdog(): (() => void) | undefined {
+export function installFinnWatchdog(): (() => void) | undefined {
   if (typeof window === "undefined") return undefined;
   if (installed) return undefined;
   installed = true;
@@ -144,6 +144,6 @@ export function installAriaWatchdog(): (() => void) | undefined {
 }
 
 /** Public helper for components to report a domain-specific failure. */
-export function reportAriaIncident(kind: Kind, detail: string): void {
+export function reportFinnIncident(kind: Kind, detail: string): void {
   report(kind, detail);
 }

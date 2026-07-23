@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * the Executive AI for Western Region Industrial Security. Read-only;
  * uses the request-scoped Supabase client so RLS is enforced as the calling user.
  */
-export async function buildAriaContext(supabase: SupabaseClient): Promise<string> {
+export async function buildFinnContext(supabase: SupabaseClient): Promise<string> {
   try {
     const [
       sectionsQ,

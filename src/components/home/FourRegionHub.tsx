@@ -2,7 +2,7 @@
  * FourRegionHub — the official NEXIOS executive command surface.
  *
  * Layout mirrors the approved executive poster: four corner region panels
- * around a central interactive Saudi map, with ARIA persona bottom-left and
+ * around a central interactive Saudi map, with FINN persona bottom-left and
  * system-status + smart-alerts bottom-right, plus a module tab-bar. Live
  * figures come from getCommandCenterState (open read wrapped in resilient());
  * reference simulation is labelled with the amber محاكاة badge.

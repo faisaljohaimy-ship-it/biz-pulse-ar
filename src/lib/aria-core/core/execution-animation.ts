@@ -8,7 +8,7 @@
  */
 import { avatarBrain } from "./avatar-brain";
 import { avatarStateManager } from "./avatar-state-manager";
-import { useAriaStore } from "../state/aria-store";
+import { useFinnStore } from "../state/aria-store";
 import type { ExecutionEnvelope } from "./execution-envelope";
 
 class ExecutionAnimation {
@@ -17,7 +17,7 @@ class ExecutionAnimation {
 
   start(): () => void {
     if (this.unsub) return () => this.stop();
-    this.unsub = useAriaStore.subscribe((s, prev) => {
+    this.unsub = useFinnStore.subscribe((s, prev) => {
       if (s.activeExecution !== prev.activeExecution) this.handle(s.activeExecution);
     });
     return () => this.stop();

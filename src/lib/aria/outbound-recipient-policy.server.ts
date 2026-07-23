@@ -8,8 +8,8 @@ import { normalizeE164 } from "./phone-number";
  * restricted to the registered owner; other recipients use the reviewed
  * approval flow.
  */
-export const DEFAULT_ARIA_OWNER_EMAIL = "Faisaljohaimy@gmail.com";
-export const DEFAULT_ARIA_OWNER_SMS = "+966500888778";
+export const DEFAULT_FINN_OWNER_EMAIL = "Faisaljohaimy@gmail.com";
+export const DEFAULT_FINN_OWNER_SMS = "+966500888778";
 
 export type OwnerRecipients = {
   email: string;
@@ -19,10 +19,10 @@ export type OwnerRecipients = {
 /** Owner-only direct send is the product default. Operators retain a hard
  * kill switch, and invalid values fail closed. The legacy variable is read so
  * existing NEXIOS deployments keep their intended behavior. */
-export function isAriaOwnerDirectSendEnabled(
+export function isFinnOwnerDirectSendEnabled(
   env: Record<string, string | undefined> = process.env,
 ): boolean {
-  const configured = env.ARIA_DIRECT_SEND_ENABLED ?? env.ARIA_OUTBOUND_AUTO_APPROVE;
+  const configured = env.FINN_DIRECT_SEND_ENABLED ?? env.FINN_OUTBOUND_AUTO_APPROVE;
   if (configured === undefined || configured.trim() === "") return true;
   const normalized = configured.trim().toLowerCase();
   if (normalized === "true") return true;
@@ -37,17 +37,17 @@ function normalizeEmail(value: string): string {
   return email;
 }
 
-export function getAriaOwnerRecipients(
+export function getFinnOwnerRecipients(
   env: Record<string, string | undefined> = process.env,
 ): OwnerRecipients {
   return {
-    email: normalizeEmail(env.ARIA_OWNER_EMAIL?.trim() || DEFAULT_ARIA_OWNER_EMAIL),
-    sms: normalizeE164(env.ARIA_OWNER_SMS?.trim() || DEFAULT_ARIA_OWNER_SMS),
+    email: normalizeEmail(env.FINN_OWNER_EMAIL?.trim() || DEFAULT_FINN_OWNER_EMAIL),
+    sms: normalizeE164(env.FINN_OWNER_SMS?.trim() || DEFAULT_FINN_OWNER_SMS),
   };
 }
 
 export function resolveOwnerEmail(requested?: string): string {
-  const owner = getAriaOwnerRecipients().email;
+  const owner = getFinnOwnerRecipients().email;
   if (!requested) return owner;
   if (normalizeEmail(requested) !== owner) {
     throw new Error(
@@ -58,7 +58,7 @@ export function resolveOwnerEmail(requested?: string): string {
 }
 
 export function resolveOwnerSms(requested?: string): string {
-  const owner = getAriaOwnerRecipients().sms;
+  const owner = getFinnOwnerRecipients().sms;
   if (!requested) return owner;
   if (normalizeE164(requested) !== owner) {
     throw new Error(
@@ -73,7 +73,7 @@ export function resolveOwnerSms(requested?: string): string {
  * reviewed approval flow. Invalid or unrecognized input returns false. */
 export function isOwnerEmail(requested?: string): boolean {
   try {
-    const owner = getAriaOwnerRecipients().email;
+    const owner = getFinnOwnerRecipients().email;
     if (!requested) return true;
     return normalizeEmail(requested) === owner;
   } catch {
@@ -83,7 +83,7 @@ export function isOwnerEmail(requested?: string): boolean {
 
 export function isOwnerSms(requested?: string): boolean {
   try {
-    const owner = getAriaOwnerRecipients().sms;
+    const owner = getFinnOwnerRecipients().sms;
     if (!requested) return true;
     return normalizeE164(requested) === owner;
   } catch {

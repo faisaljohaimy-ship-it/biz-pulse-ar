@@ -17,12 +17,12 @@
  * derived from the same model call (JSON output) — additive only.
  */
 
-import { buildExecutiveBrief, type AriaIntent } from "./executive-reasoning.server";
+import { buildExecutiveBrief, type FinnIntent } from "./executive-reasoning.server";
 import { runInsightScan, type Insight } from "./insight-engine.server";
 import { buildPlan, type PlanStep } from "./planning-engine.server";
 
 export interface ThinkingBundle {
-  intent: AriaIntent;
+  intent: FinnIntent;
   system: string;
   sources: string[];
   plan: PlanStep[];

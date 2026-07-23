@@ -133,6 +133,6 @@ const RAW: AvatarIdentity = {
 AvatarIdentitySchema.parse(RAW);
 const IDENTITY: Readonly<AvatarIdentity> = Object.freeze(RAW);
 
-export function getAriaIdentity(): Readonly<AvatarIdentity> {
+export function getFinnIdentity(): Readonly<AvatarIdentity> {
   return IDENTITY;
 }

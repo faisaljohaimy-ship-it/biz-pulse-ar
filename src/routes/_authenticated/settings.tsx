@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { seedAriaCorpus } from "@/lib/aria/seed-corpus.functions";
+import { seedFinnCorpus } from "@/lib/aria/seed-corpus.functions";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   errorComponent: RouteError,
@@ -52,7 +52,7 @@ function SettingsPage() {
   const [pushAlerts, setPushAlerts] = useState(false);
   const [criticalOnly, setCriticalOnly] = useState(false);
 
-  const runSeedCorpus = useServerFn(seedAriaCorpus);
+  const runSeedCorpus = useServerFn(seedFinnCorpus);
   const [seedingCorpus, setSeedingCorpus] = useState(false);
 
   async function handleSeedCorpus() {

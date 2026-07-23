@@ -50,7 +50,7 @@ export const template = {
 
 const main: React.CSSProperties = {
   backgroundColor: "#ffffff",
-  fontFamily: "system-ui, -apple-system, Segoe UI, Arial, sans-serif",
+  fontFamily: "system-ui, -apple-system, Segoe UI, Finnl, sans-serif",
   padding: "24px 0",
 };
 const container: React.CSSProperties = {

@@ -2,11 +2,11 @@
  * PriorityEngine — combines risk, urgency, impact, intent and confidence
  * into a P0/P1/P2/P3/INFO band. Pure function.
  */
-import type { AriaIntent } from "../types/aria";
+import type { FinnIntent } from "../types/aria";
 import type { PriorityAssessment, RiskSignal } from "../types/executive";
 
 export const priorityEngine = {
-  assess(risk: RiskSignal, intent: AriaIntent): PriorityAssessment {
+  assess(risk: RiskSignal, intent: FinnIntent): PriorityAssessment {
     const intentBoost = intent === "executive" ? 8 : intent === "engineering" ? 4 : 0;
     const raw =
       risk.probability * 30 +

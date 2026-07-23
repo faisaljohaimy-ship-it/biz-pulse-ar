@@ -1,6 +1,6 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import pingTool from "./tools/ping";
-import askAriaTool from "./tools/ask-aria";
+import askFinnTool from "./tools/ask-aria";
 import hcisStatusTool from "./tools/hcis-status";
 import ptwActiveTool from "./tools/ptw-active";
 
@@ -20,5 +20,5 @@ export default defineMcp({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [pingTool, askAriaTool, hcisStatusTool, ptwActiveTool],
+  tools: [pingTool, askFinnTool, hcisStatusTool, ptwActiveTool],
 });

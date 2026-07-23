@@ -1,13 +1,13 @@
 /**
  * FINN visual signature — the canonical «FINN@nexios.com» wordmark and a
  * React-free SVG generator, shared across every touchpoint (chat backdrop via
- * the AriaSignatureBackdrop component, generated PDFs, and the loading screen)
+ * the FinnSignatureBackdrop component, generated PDFs, and the loading screen)
  * so the brand identity stays unified. This module imports nothing from React
  * so it is safe to use in server code (PDF builders, edge functions).
  */
 
 /** The one canonical FINN wordmark. Never hardcode this string elsewhere. */
-export const ARIA_SIGNATURE_WORDMARK = "FINN@nexios.com";
+export const FINN_SIGNATURE_WORDMARK = "FINN@nexios.com";
 
 /**
  * Static SVG markup of the FINN signature for NON-DOM surfaces — embedded in
@@ -26,7 +26,7 @@ export function ariaSignatureSvgMarkup(opts?: {
   const h = opts?.height ?? 1754; // A4 portrait @150dpi-ish
   const op = opts?.opacity ?? 0.05;
   const plate = opts?.plate ?? true;
-  const word = ARIA_SIGNATURE_WORDMARK;
+  const word = FINN_SIGNATURE_WORDMARK;
   const rows: string[] = [];
   const stepY = Math.round(h / 7);
   for (let i = 0, y = -20; y < h + stepY; y += stepY, i++) {

@@ -1,5 +1,5 @@
 /**
- * AriaStage — the permanent FINN Digital Human anchor. Speaks the
+ * FinnStage — the permanent FINN Digital Human anchor. Speaks the
  * current executive narrative line driven by real overview data, with
  * idle breathing/blinking when nothing is happening. Replaces the
  * previous Sparkles-only welcome glyph.
@@ -20,7 +20,7 @@ interface Props {
   framed?: boolean;
 }
 
-export function AriaStage({ ar, line_ar, line_en, size = 120, className, framed = true }: Props) {
+export function FinnStage({ ar, line_ar, line_en, size = 120, className, framed = true }: Props) {
   const dh = useDigitalHuman(FINN);
 
   useEffect(() => {

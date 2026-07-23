@@ -23,14 +23,14 @@ import {
   enforceRateLimit,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
-import { ARIA_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
+import { FINN_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
 import { buildFinnRuntimeBlock, MAKKAH_TIME_DIRECTIVE } from "@/lib/aria/makkah-clock";
 import { FINN_LIVE_INTELLIGENCE_DOCTRINE } from "@/lib/aria/response-contract";
 import { REGIONS, DEFAULT_REGION_ID } from "@/lib/regions";
 
-type AriaMessage = { role: "user" | "assistant"; content: string };
+type FinnMessage = { role: "user" | "assistant"; content: string };
 
-const ARIA_INSTRUCTIONS = `${ARIA_IDENTITY_PREAMBLE}
+const FINN_INSTRUCTIONS = `${FINN_IDENTITY_PREAMBLE}
 
 أنت FINN، المساعد التنفيذي الذكي الرسمي داخل NEXIOS AI OS.
 
@@ -78,13 +78,13 @@ function isSameOrigin(request: Request): boolean {
   }
 }
 
-function sanitizeHistory(value: unknown): AriaMessage[] {
+function sanitizeHistory(value: unknown): FinnMessage[] {
   if (!Array.isArray(value)) return [];
   return value
-    .filter((item): item is AriaMessage => {
+    .filter((item): item is FinnMessage => {
       if (!item || typeof item !== "object") return false;
-      const role = (item as AriaMessage).role;
-      const content = (item as AriaMessage).content;
+      const role = (item as FinnMessage).role;
+      const content = (item as FinnMessage).content;
       return (
         (role === "user" || role === "assistant") &&
         typeof content === "string" &&
@@ -165,7 +165,7 @@ async function handlePost(request: Request): Promise<Response> {
     region: REGIONS.find((r) => r.id === DEFAULT_REGION_ID)?.shortAr ?? "الغربية",
     isSimulation: true,
   });
-  const instructions = `${finnRuntimeBlock}\n\n${MAKKAH_TIME_DIRECTIVE}\n\n${ARIA_INSTRUCTIONS}\n\n${FINN_LIVE_INTELLIGENCE_DOCTRINE}`;
+  const instructions = `${finnRuntimeBlock}\n\n${MAKKAH_TIME_DIRECTIVE}\n\n${FINN_INSTRUCTIONS}\n\n${FINN_LIVE_INTELLIGENCE_DOCTRINE}`;
 
   const configuredTokens = Number(process.env.ARIA_MAX_OUTPUT_TOKENS || "1500");
   const maxOutputTokens = Math.min(Math.max(configuredTokens || 1500, 256), 4000);

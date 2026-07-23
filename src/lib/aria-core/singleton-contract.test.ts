@@ -7,8 +7,8 @@ const source = (path: string) => readFileSync(join(process.cwd(), path), "utf8")
 describe("FINN singleton release contract", () => {
   it("mounts one official FINN UI at the application root", () => {
     const root = source("src/routes/__root.tsx");
-    expect(root.match(/<AriaCopilot\b/g)).toHaveLength(1);
-    expect(root).not.toContain("AriaDock");
+    expect(root.match(/<FinnCopilot\b/g)).toHaveLength(1);
+    expect(root).not.toContain("FinnDock");
   });
 
   it("keeps historical assistant routes on the singleton surface", () => {
@@ -19,20 +19,20 @@ describe("FINN singleton release contract", () => {
       "src/routes/_authenticated/voice.tsx",
     ]) {
       const contents = source(route);
-      expect(contents).toContain("CanonicalAriaRoute");
-      expect(contents).not.toMatch(/useChat|useAriaVoice|DefaultChatTransport/);
+      expect(contents).toContain("CanonicalFinnRoute");
+      expect(contents).not.toMatch(/useChat|useFinnVoice|DefaultChatTransport/);
     }
   });
 
   it("does not mount a second FINN dock in Digital Twin", () => {
     const twin = source("src/routes/_authenticated/digital-twin.tsx");
-    expect(twin).not.toMatch(/AriaDock|useAriaVoice|DefaultChatTransport/);
+    expect(twin).not.toMatch(/FinnDock|useFinnVoice|DefaultChatTransport/);
   });
 
   it("routes every authenticated voice caller to the canonical endpoint", () => {
     for (const caller of [
-      "src/components/aria-core/AriaCopilot.tsx",
-      "src/hooks/useAriaSpeech.ts",
+      "src/components/aria-core/FinnCopilot.tsx",
+      "src/hooks/useFinnSpeech.ts",
       "src/routes/_authenticated/tts.tsx",
     ]) {
       const contents = source(caller);
@@ -56,7 +56,7 @@ describe("FINN singleton release contract", () => {
 
   it("keeps voice setup read-only and free of parallel conversation providers", () => {
     const diagnostics = source("src/routes/api/voice-diagnostics.ts");
-    expect(diagnostics).toContain("ARIA_ELEVENLABS_VOICE_ID");
+    expect(diagnostics).toContain("FINN_ELEVENLABS_VOICE_ID");
     expect(diagnostics).not.toMatch(/ELEVENLABS_AGENT_ID|convai|realtime_scribe|single-use-token/);
 
     for (const route of [
@@ -65,25 +65,25 @@ describe("FINN singleton release contract", () => {
     ]) {
       const contents = source(route);
       expect(contents).toContain("CanonicalVoiceStatus");
-      expect(contents).not.toMatch(/useChat|useAriaVoice|DefaultChatTransport/);
+      expect(contents).not.toMatch(/useChat|useFinnVoice|DefaultChatTransport/);
     }
   });
 
   it("routes learning conversations through the same FINN brain", () => {
     for (const component of [
-      "src/components/learn/LessonARIAChat.tsx",
-      "src/components/learn/simulations/MeetAriaSimulation.tsx",
+      "src/components/learn/LessonFINNChat.tsx",
+      "src/components/learn/simulations/MeetFinnSimulation.tsx",
     ]) {
       const contents = source(component);
-      expect(contents).toContain("useAria");
+      expect(contents).toContain("useFinn");
       expect(contents).not.toMatch(/useChat|DefaultChatTransport|\/api\/learn\/aria-teach/);
     }
   });
 
   it("derives command-center FINN status from the singleton runtime", () => {
-    const preview = source("src/components/executive/command/cc/AriaConsole.tsx");
-    expect(preview).toContain("useAria");
-    expect(preview).not.toMatch(/setInterval|useChat|useAriaVoice/);
+    const preview = source("src/components/executive/command/cc/FinnConsole.tsx");
+    expect(preview).toContain("useFinn");
+    expect(preview).not.toMatch(/setInterval|useChat|useFinnVoice/);
   });
 
   it("keeps every audible voice on the server Layan route (no browser TTS)", () => {

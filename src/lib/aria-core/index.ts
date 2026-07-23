@@ -6,9 +6,9 @@
  * `services/`, `providers/`, `hooks/`, `types/` directories — go through
  * this file.
  */
-export { AriaProvider, useAriaChat } from "./providers/aria-provider";
-export { useAria, setAriaPageContext } from "./hooks/useAria";
-export { useAriaStore } from "./state/aria-store";
+export { FinnProvider, useFinnChat } from "./providers/aria-provider";
+export { useFinn, setFinnPageContext } from "./hooks/useFinn";
+export { useFinnStore } from "./state/aria-store";
 export { ariaBrain } from "./core/aria-brain";
 export { aiRouter } from "./core/ai-router";
 export { conversationManager } from "./core/conversation-manager";
@@ -97,17 +97,17 @@ export type { HealthSnapshot, HealthLevel } from "./core/avatar-health-monitor";
 export type { PresenceSnapshot, PresenceLevel, PresenceGlow } from "./core/executive-presence";
 
 export type {
-  AriaMode,
-  AriaVoiceState,
-  AriaPageContext,
-  AriaContextSnapshot,
-  AriaOpenOptions,
-  AriaIntent,
-  AriaRouteHint,
-  AriaTurn,
-  AriaTurnStatus,
-  AriaMemoryRecall,
-  AriaVoiceCapabilities,
+  FinnMode,
+  FinnVoiceState,
+  FinnPageContext,
+  FinnContextSnapshot,
+  FinnOpenOptions,
+  FinnIntent,
+  FinnRouteHint,
+  FinnTurn,
+  FinnTurnStatus,
+  FinnMemoryRecall,
+  FinnVoiceCapabilities,
 } from "./types/aria";
 export type {
   RiskLevel,

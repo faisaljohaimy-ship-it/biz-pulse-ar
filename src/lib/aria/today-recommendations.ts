@@ -12,7 +12,7 @@ import type { ExecKpis } from "@/lib/sec-exec-kpis.functions";
 
 export type RecoTone = "rose" | "amber" | "cyan";
 
-export interface AriaRecommendation {
+export interface FinnRecommendation {
   readonly id: string;
   readonly textAr: string;
   readonly tone: RecoTone;
@@ -26,7 +26,7 @@ const shortName = (id: string): string => REGION_MARKERS.find((m) => m.id === id
  * Three prioritized recommendations, computed from the region fixtures:
  * most open incidents, lowest compliance, and total pending CCTV alerts.
  */
-export function getTodayRecommendations(live?: ExecKpis): readonly AriaRecommendation[] {
+export function getTodayRecommendations(live?: ExecKpis): readonly FinnRecommendation[] {
   if (live) {
     return [
       {

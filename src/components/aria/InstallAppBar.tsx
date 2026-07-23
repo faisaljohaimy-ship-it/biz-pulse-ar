@@ -10,7 +10,7 @@
  */
 import { useEffect, useState } from "react";
 import { Download, Share, Plus, X } from "lucide-react";
-import { useAriaStore } from "@/lib/aria-core/state/aria-store";
+import { useFinnStore } from "@/lib/aria-core/state/aria-store";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -37,7 +37,7 @@ export function InstallAppBar() {
   const [visible, setVisible] = useState(false);
   const [iosHelp, setIosHelp] = useState(false);
   const ios = isIOS();
-  const ariaMode = useAriaStore((s) => s.mode);
+  const ariaMode = useFinnStore((s) => s.mode);
   const ariaOpen = ariaMode !== "collapsed";
 
   useEffect(() => {

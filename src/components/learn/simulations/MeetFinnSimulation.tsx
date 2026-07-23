@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2, PlayCircle, ShieldCheck, Sparkles } from "lucide-react";
-import { useAria } from "@/lib/aria-core/hooks/useAria";
+import { useFinn } from "@/lib/aria-core/hooks/useFinn";
 import { updateProgress } from "@/lib/learn/lessons.functions";
 import type { Bilingual } from "@/lib/learn/types";
 import { cn } from "@/lib/utils";
@@ -14,13 +14,13 @@ interface Props {
   onCompleted?: () => void;
 }
 
-export function MeetAriaSimulation({ slug, lang, suggested, onCompleted }: Props) {
+export function MeetFinnSimulation({ slug, lang, suggested, onCompleted }: Props) {
   const ar = lang === "ar";
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [chosen, setChosen] = useState<string | null>(null);
   const requestedAt = useRef(0);
   const persist = useServerFn(updateProgress);
-  const { open, activeTurn } = useAria();
+  const { open, activeTurn } = useFinn();
 
   useEffect(() => {
     if (step !== 2 || !activeTurn || requestedAt.current === 0) return;

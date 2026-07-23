@@ -8,7 +8,7 @@
  *
  * Model names never appear on the client.
  */
-import type { AriaContextSnapshot, AriaIntent, AriaRouteHint } from "../types/aria";
+import type { FinnContextSnapshot, FinnIntent, FinnRouteHint } from "../types/aria";
 
 const CODE_HINTS = /```|\bfunction\b|\bclass\b|=>|\bimport\s+\{|\btypescript\b|\bsql\b/i;
 const WRITING_HINTS =
@@ -16,11 +16,11 @@ const WRITING_HINTS =
 const LONG_CONTEXT_THRESHOLD = 4000;
 
 export const aiRouter = {
-  selectHint(prompt: string, context: AriaContextSnapshot): AriaRouteHint {
+  selectHint(prompt: string, context: FinnContextSnapshot): FinnRouteHint {
     const trimmed = prompt.trim();
     const longContext = trimmed.length > LONG_CONTEXT_THRESHOLD;
 
-    let intent: AriaIntent;
+    let intent: FinnIntent;
     if (!trimmed) {
       intent = "unknown";
     } else if (CODE_HINTS.test(trimmed)) {

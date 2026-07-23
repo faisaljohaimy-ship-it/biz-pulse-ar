@@ -11,7 +11,7 @@
  * or split those, never invent new facts.
  */
 import { z } from "zod";
-import { ARIA_VOICE_CONTRACT, sanitizeVoice } from "./voice";
+import { FINN_VOICE_CONTRACT, sanitizeVoice } from "./voice";
 
 export const ExplanationRequestSchema = z.object({
   recommendation_en: z.string().min(1).max(800),
@@ -56,16 +56,16 @@ const ExplanationEnvelope = z.object({
   steps_ar: z.array(z.string()).default([]),
 });
 
-import { ARIA_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
+import { FINN_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
 
-const SYSTEM = `${ARIA_IDENTITY_PREAMBLE}
+const SYSTEM = `${FINN_IDENTITY_PREAMBLE}
 
 ---
 
 # TASK — EXECUTIVE EXPLANATION
 Expand a director's recommendation into an executive rationale.
 
-${ARIA_VOICE_CONTRACT}
+${FINN_VOICE_CONTRACT}
 
 RULES:
 - Do not invent new evidence, sites, dates, names or numbers. Only rephrase or split the evidence rows provided.

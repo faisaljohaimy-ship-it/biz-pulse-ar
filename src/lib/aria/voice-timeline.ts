@@ -1,11 +1,11 @@
 /**
  * FINN Voice Timeline — a single append-only ring buffer for every
- * event in the audio pipeline. Populated from audio-bus, useAriaSpeech,
- * AriaCopilot, aria-voice, and the voice-policy assertion.
+ * event in the audio pipeline. Populated from audio-bus, useFinnSpeech,
+ * FinnCopilot, aria-voice, and the voice-policy assertion.
  *
  * In the browser console:
- *   __dumpAriaTimeline()          → console.table + copy JSON to clipboard
- *   __clearAriaTimeline()         → reset the buffer
+ *   __dumpFinnTimeline()          → console.table + copy JSON to clipboard
+ *   __clearFinnTimeline()         → reset the buffer
  *   __ariaTimeline                → raw array
  */
 export type VoiceTag =
@@ -83,11 +83,11 @@ export const VoiceTimeline = {
 if (typeof window !== "undefined") {
   const w = window as unknown as {
     __ariaTimeline?: VoiceEvent[];
-    __dumpAriaTimeline?: () => void;
-    __clearAriaTimeline?: () => void;
+    __dumpFinnTimeline?: () => void;
+    __clearFinnTimeline?: () => void;
   };
   w.__ariaTimeline = buf;
-  w.__dumpAriaTimeline = () => {
+  w.__dumpFinnTimeline = () => {
     console.table(buf.map((e) => ({ t: e.t, dt: e.dt, tag: e.tag, msg: e.msg })));
     const json = JSON.stringify(buf, null, 2);
     try {
@@ -99,7 +99,7 @@ if (typeof window !== "undefined") {
       console.log(json);
     }
   };
-  w.__clearAriaTimeline = () => {
+  w.__clearFinnTimeline = () => {
     VoiceTimeline.clear();
     console.log("[timeline] cleared");
   };

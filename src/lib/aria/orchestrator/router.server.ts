@@ -5,12 +5,12 @@
  */
 import { listAgents, hasAgent } from "./registry";
 import type { AgentId, MissionPlan, MissionPlanNode } from "./types";
-import type { AriaIntent } from "../executive-reasoning.server";
+import type { FinnIntent } from "../executive-reasoning.server";
 import { classifyIntent } from "../executive-reasoning.server";
 
 const CHIEF: AgentId = "executive_brain";
 
-function selectAgents(intent: AriaIntent, forced?: AgentId[]): AgentId[] {
+function selectAgents(intent: FinnIntent, forced?: AgentId[]): AgentId[] {
   if (forced && forced.length) {
     return Array.from(new Set<AgentId>([CHIEF, ...forced.filter(hasAgent)]));
   }

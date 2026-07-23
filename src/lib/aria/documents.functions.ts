@@ -51,7 +51,7 @@ function chunkText(input: string, target = 900, overlap = 120): string[] {
 
 // ----- list / get -------------------------------------------------------------
 
-export const listAriaDocuments = createServerFn({ method: "GET" })
+export const listFinnDocuments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
@@ -65,7 +65,7 @@ export const listAriaDocuments = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
-export const deleteAriaDocument = createServerFn({ method: "POST" })
+export const deleteFinnDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
@@ -96,7 +96,7 @@ const IngestInput = z.object({
   tags: z.array(z.string().min(1).max(40)).max(20).optional(),
 });
 
-export const ingestAriaDocument = createServerFn({ method: "POST" })
+export const ingestFinnDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => IngestInput.parse(i))
   .handler(async ({ data, context }) => {
@@ -181,7 +181,7 @@ const SearchInput = z.object({
   limit: z.number().int().min(1).max(20).optional(),
 });
 
-export const searchAriaDocuments = createServerFn({ method: "POST" })
+export const searchFinnDocuments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => SearchInput.parse(i))
   .handler(async ({ data, context }) => {
@@ -215,7 +215,7 @@ export const searchAriaDocuments = createServerFn({ method: "POST" })
 
 // ----- signed URL for the source file ----------------------------------------
 
-export const getAriaDocumentUrl = createServerFn({ method: "POST" })
+export const getFinnDocumentUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {

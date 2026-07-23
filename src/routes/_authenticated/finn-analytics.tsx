@@ -1,16 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { AriaUsageAnalytics } from "@/components/aria/AriaUsageAnalytics";
-import { AriaAnomalyStrip } from "@/components/aria/AriaAnomalyStrip";
-import { AriaDailySummary } from "@/components/aria/AriaDailySummary";
+import { FinnUsageAnalytics } from "@/components/aria/FinnUsageAnalytics";
+import { FinnAnomalyStrip } from "@/components/aria/FinnAnomalyStrip";
+import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
 
 export const Route = createFileRoute("/_authenticated/finn-analytics")({
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
-  component: AriaAnalyticsPage,
+  component: FinnAnalyticsPage,
 });
 
-function AriaAnalyticsPage() {
+function FinnAnalyticsPage() {
   return (
     <div dir="rtl" className="space-y-4 px-4 py-4 md:px-6">
       <div>
@@ -22,9 +22,9 @@ function AriaAnalyticsPage() {
           الاستخدام، أكثر الأسئلة، زمن الاستجابة، ورضا المستخدمين — مشتقّة من لقطة المحاكاة.
         </p>
       </div>
-      <AriaDailySummary />
-      <AriaAnomalyStrip />
-      <AriaUsageAnalytics />
+      <FinnDailySummary />
+      <FinnAnomalyStrip />
+      <FinnUsageAnalytics />
     </div>
   );
 }

@@ -1,12 +1,12 @@
-export const ARIA_RECORDER_MIME_CANDIDATES = [
+export const FINN_RECORDER_MIME_CANDIDATES = [
   "audio/webm;codecs=opus",
   "audio/mp4;codecs=mp4a.40.2",
   "audio/mp4",
   "audio/ogg;codecs=opus",
 ] as const;
 
-export function chooseAriaRecorderMime(supports: (mime: string) => boolean): string | undefined {
-  return ARIA_RECORDER_MIME_CANDIDATES.find((mime) => supports(mime));
+export function chooseFinnRecorderMime(supports: (mime: string) => boolean): string | undefined {
+  return FINN_RECORDER_MIME_CANDIDATES.find((mime) => supports(mime));
 }
 
 export function recorderFileExtension(mime: string): string {

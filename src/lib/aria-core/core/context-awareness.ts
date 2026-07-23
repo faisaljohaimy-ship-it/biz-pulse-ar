@@ -2,7 +2,7 @@
  * ContextAwareness — inspects the executive context snapshot and reports
  * what FINN can see and what is missing. Never fabricates.
  */
-import type { AriaContextSnapshot, AriaIntent } from "../types/aria";
+import type { FinnContextSnapshot, FinnIntent } from "../types/aria";
 import type { ContextAwarenessReport } from "../types/executive";
 
 const KNOWN_FACT_KEYS = [
@@ -18,7 +18,7 @@ const KNOWN_FACT_KEYS = [
 ];
 
 export const contextAwareness = {
-  assess(snapshot: AriaContextSnapshot, intent: AriaIntent): ContextAwarenessReport {
+  assess(snapshot: FinnContextSnapshot, intent: FinnIntent): ContextAwarenessReport {
     const meta = snapshot.pageMeta ?? {};
     const metaKeys = Object.keys(meta);
     const widgets = Array.isArray(meta.widgets)

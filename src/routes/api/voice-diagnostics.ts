@@ -12,7 +12,7 @@ import {
   rateLimitResponse,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
-import { ARIA_ELEVENLABS_MODEL, ARIA_ELEVENLABS_VOICE_ID } from "@/lib/aria/voice-config";
+import { FINN_ELEVENLABS_MODEL, FINN_ELEVENLABS_VOICE_ID } from "@/lib/aria/voice-config";
 
 type Check = {
   id: "api_key" | "canonical_voice" | "canonical_runtime";
@@ -83,7 +83,7 @@ async function probeCanonicalVoice(apiKey: string | undefined): Promise<Check> {
 
   try {
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/voices/${encodeURIComponent(ARIA_ELEVENLABS_VOICE_ID)}`,
+      `https://api.elevenlabs.io/v1/voices/${encodeURIComponent(FINN_ELEVENLABS_VOICE_ID)}`,
       {
         headers: { "xi-api-key": apiKey },
         signal: AbortSignal.timeout(8_000),
@@ -143,7 +143,7 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
           label: "Governed FINN TTS runtime",
           status: ready ? "ok" : "skipped",
           detail: ready
-            ? `/api/aria/tts · ${ARIA_ELEVENLABS_MODEL} · authenticated · rate-limited`
+            ? `/api/aria/tts · ${FINN_ELEVENLABS_MODEL} · authenticated · rate-limited`
             : "Runtime remains closed until the provider key and locked voice pass verification.",
         };
 
@@ -160,8 +160,8 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
           voice: {
             configured: true,
             identity: "FINN · Layan",
-            model: ARIA_ELEVENLABS_MODEL,
-            id_masked: `${ARIA_ELEVENLABS_VOICE_ID.slice(0, 3)}…${ARIA_ELEVENLABS_VOICE_ID.slice(-3)}`,
+            model: FINN_ELEVENLABS_MODEL,
+            id_masked: `${FINN_ELEVENLABS_VOICE_ID.slice(0, 3)}…${FINN_ELEVENLABS_VOICE_ID.slice(-3)}`,
           },
           live_voice_ready: ready,
           generated_at: new Date().toISOString(),

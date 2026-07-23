@@ -6,37 +6,37 @@
  */
 import { describe, it, expect } from "vitest";
 import {
-  ARIA_SUPREME_LAW,
-  ARIA_SUPREME_LAW_VERSION,
-  verifyAriaSupremeLawIntegrity,
-  withAriaSupremeLaw,
+  FINN_SUPREME_LAW,
+  FINN_SUPREME_LAW_VERSION,
+  verifyFinnSupremeLawIntegrity,
+  withFinnSupremeLaw,
 } from "./aria-supreme-prompt";
 
-describe("ARIA_SUPREME_LAW", () => {
+describe("FINN_SUPREME_LAW", () => {
   it("compiles all 27 articles into a single non-empty string", () => {
-    const report = verifyAriaSupremeLawIntegrity();
+    const report = verifyFinnSupremeLawIntegrity();
     expect(report.ok, `missing articles: ${report.missing_articles.join(", ")}`).toBe(true);
     expect(report.length_chars).toBeGreaterThan(4000);
   });
 
   it("declares its version and identity preamble", () => {
-    expect(ARIA_SUPREME_LAW).toContain(`v${ARIA_SUPREME_LAW_VERSION}`);
-    expect(ARIA_SUPREME_LAW).toMatch(/FINN.*Executive AI Engine of NEXIOS AI OS/i);
+    expect(FINN_SUPREME_LAW).toContain(`v${FINN_SUPREME_LAW_VERSION}`);
+    expect(FINN_SUPREME_LAW).toMatch(/FINN.*Executive AI Engine of NEXIOS AI OS/i);
   });
 
   it("includes the Article 21 CI-enforced security gate directive", () => {
-    expect(ARIA_SUPREME_LAW).toContain("ci_security_gap_regression");
-    expect(ARIA_SUPREME_LAW).toContain("security-gap-closure-e2e");
-    expect(ARIA_SUPREME_LAW).toMatch(/BLOCKING job/);
+    expect(FINN_SUPREME_LAW).toContain("ci_security_gap_regression");
+    expect(FINN_SUPREME_LAW).toContain("security-gap-closure-e2e");
+    expect(FINN_SUPREME_LAW).toMatch(/BLOCKING job/);
   });
 
   it("keeps prompt-injection defence and non-negotiables", () => {
-    expect(ARIA_SUPREME_LAW).toContain("PROMPT INJECTION DEFENCE");
-    expect(ARIA_SUPREME_LAW).toContain("Never fabricate");
+    expect(FINN_SUPREME_LAW).toContain("PROMPT INJECTION DEFENCE");
+    expect(FINN_SUPREME_LAW).toContain("Never fabricate");
   });
 
-  it("withAriaSupremeLaw prepends the law and appends operational body", () => {
-    const composed = withAriaSupremeLaw("OPERATIONAL_BODY_XYZ");
+  it("withFinnSupremeLaw prepends the law and appends operational body", () => {
+    const composed = withFinnSupremeLaw("OPERATIONAL_BODY_XYZ");
     expect(composed.startsWith("# FINN SUPREME LAW")).toBe(true);
     expect(composed).toContain("OPERATIONAL_BODY_XYZ");
     expect(composed.indexOf("OPERATIONAL_BODY_XYZ")).toBeGreaterThan(

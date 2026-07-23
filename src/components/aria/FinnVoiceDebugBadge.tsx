@@ -9,7 +9,7 @@
  * in the tooltip). Ends the guessing about which engine is on.
  */
 import { useEffect, useState } from "react";
-import { AriaVoiceDebug, type VoiceEvent } from "@/lib/aria/voice-debug";
+import { FinnVoiceDebug, type VoiceEvent } from "@/lib/aria/voice-debug";
 import { cn } from "@/lib/utils";
 
 const LABELS: Record<VoiceEvent["source"], string> = {
@@ -19,12 +19,12 @@ const LABELS: Record<VoiceEvent["source"], string> = {
   greeting: "GRT",
 };
 
-export function AriaVoiceDebugBadge() {
-  const [enabled] = useState(() => AriaVoiceDebug.isDebugOn());
+export function FinnVoiceDebugBadge() {
+  const [enabled] = useState(() => FinnVoiceDebug.isDebugOn());
   const [evt, setEvt] = useState<VoiceEvent | null>(null);
   useEffect(() => {
     if (!enabled) return;
-    return AriaVoiceDebug.subscribe(setEvt);
+    return FinnVoiceDebug.subscribe(setEvt);
   }, [enabled]);
   if (!enabled || !evt) return null;
   const color =
@@ -49,4 +49,4 @@ export function AriaVoiceDebugBadge() {
   );
 }
 
-export default AriaVoiceDebugBadge;
+export default FinnVoiceDebugBadge;

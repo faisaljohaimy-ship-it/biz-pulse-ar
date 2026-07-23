@@ -5,27 +5,27 @@
  * (thinking → speaking → success/error). This module handles the
  * lightweight lifecycle around them:
  *
- *   • Avatar open/close mirrors AriaMode changes
+ *   • Avatar open/close mirrors FinnMode changes
  *   • Turn cancelled / failed → return to idle cleanly
  *   • Duplicate signals are suppressed
  */
 import { avatarBrain } from "./avatar-brain";
-import { useAriaStore } from "../state/aria-store";
-import type { AriaMode, AriaTurn } from "../types/aria";
+import { useFinnStore } from "../state/aria-store";
+import type { FinnMode, FinnTurn } from "../types/aria";
 
 class ConversationAnimation {
   private unsub: (() => void) | null = null;
-  private lastMode: AriaMode | null = null;
-  private lastTurnStatus: AriaTurn["status"] | null = null;
+  private lastMode: FinnMode | null = null;
+  private lastTurnStatus: FinnTurn["status"] | null = null;
 
   start(): () => void {
     if (this.unsub) return () => this.stop();
-    this.unsub = useAriaStore.subscribe((s) => {
+    this.unsub = useFinnStore.subscribe((s) => {
       this.handleMode(s.mode);
       this.handleTurn(s.activeTurn);
     });
     // Prime lastMode without triggering onOpen at mount.
-    this.lastMode = useAriaStore.getState().mode;
+    this.lastMode = useFinnStore.getState().mode;
     return () => this.stop();
   }
 
@@ -38,7 +38,7 @@ class ConversationAnimation {
     this.lastTurnStatus = null;
   }
 
-  private handleMode(mode: AriaMode): void {
+  private handleMode(mode: FinnMode): void {
     if (mode === this.lastMode) return;
     const prev = this.lastMode;
     this.lastMode = mode;
@@ -49,7 +49,7 @@ class ConversationAnimation {
     }
   }
 
-  private handleTurn(turn: AriaTurn | null): void {
+  private handleTurn(turn: FinnTurn | null): void {
     const status = turn?.status ?? null;
     if (status === this.lastTurnStatus) return;
     this.lastTurnStatus = status;

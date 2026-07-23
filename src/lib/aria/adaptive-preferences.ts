@@ -1,4 +1,4 @@
-export type AriaAdaptivePreference = {
+export type FinnAdaptivePreference = {
   key: "response_length" | "response_language" | "response_format";
   value: "concise" | "detailed" | "ar" | "en" | "bullets" | "no_tables";
   confidence: number;
@@ -14,12 +14,12 @@ const DURABLE_EN =
  * fixed enum: user text, recipients, credentials, permissions and action
  * instructions can never enter the preference store.
  */
-export function extractAriaAdaptivePreferences(input: string): AriaAdaptivePreference[] {
+export function extractFinnAdaptivePreferences(input: string): FinnAdaptivePreference[] {
   const text = input.replace(/\s+/g, " ").trim().slice(0, 2_000);
   if (!text || (!DURABLE_AR.test(text) && !DURABLE_EN.test(text))) return [];
 
-  const results = new Map<AriaAdaptivePreference["key"], AriaAdaptivePreference>();
-  const add = (key: AriaAdaptivePreference["key"], value: AriaAdaptivePreference["value"]) =>
+  const results = new Map<FinnAdaptivePreference["key"], FinnAdaptivePreference>();
+  const add = (key: FinnAdaptivePreference["key"], value: FinnAdaptivePreference["value"]) =>
     results.set(key, { key, value, confidence: 0.95 });
 
   if (

@@ -1,30 +1,30 @@
 import { describe, expect, it } from "vitest";
 import {
-  ARIA_CONVERSATION_GREETING_AR,
-  shouldContinueAfterAriaGreeting,
+  FINN_CONVERSATION_GREETING_AR,
+  shouldContinueAfterFinnGreeting,
 } from "./conversation-greeting";
 
 describe("FINN conversation greeting", () => {
   it("welcomes the user and asks how FINN can help", () => {
-    expect(ARIA_CONVERSATION_GREETING_AR).toContain("أنا فِن");
-    expect(ARIA_CONVERSATION_GREETING_AR).toContain("الأرقام حاضرة");
+    expect(FINN_CONVERSATION_GREETING_AR).toContain("أنا فِن");
+    expect(FINN_CONVERSATION_GREETING_AR).toContain("الأرقام حاضرة");
   });
 
   it("opens the microphone only after a completed active greeting", () => {
     expect(
-      shouldContinueAfterAriaGreeting({
+      shouldContinueAfterFinnGreeting({
         aborted: false,
         conversationModeActive: true,
       }),
     ).toBe(true);
     expect(
-      shouldContinueAfterAriaGreeting({
+      shouldContinueAfterFinnGreeting({
         aborted: true,
         conversationModeActive: true,
       }),
     ).toBe(false);
     expect(
-      shouldContinueAfterAriaGreeting({
+      shouldContinueAfterFinnGreeting({
         aborted: false,
         conversationModeActive: false,
       }),

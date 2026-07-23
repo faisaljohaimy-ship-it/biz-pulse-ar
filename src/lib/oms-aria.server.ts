@@ -9,7 +9,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 const MODEL = "openai/gpt-5";
 
-export type AriaIncidentInput = {
+export type FinnIncidentInput = {
   ref: string;
   category: string;
   title_ar: string;
@@ -23,7 +23,7 @@ export type AriaIncidentInput = {
   site_name?: string | null;
 };
 
-export type AriaIncidentAnalysis = {
+export type FinnIncidentAnalysis = {
   summary_ar: string;
   summary_en: string;
   risk_score: number;
@@ -45,7 +45,7 @@ function provider() {
   });
 }
 
-function heuristic(inc: AriaIncidentInput): AriaIncidentAnalysis {
+function heuristic(inc: FinnIncidentInput): FinnIncidentAnalysis {
   const sev: Record<string, number> = { low: 20, medium: 45, high: 70, critical: 90 };
   const prio: Record<string, number> = { low: 0, medium: 5, high: 10, critical: 15 };
   const cat = (inc.category || "").toLowerCase();
@@ -103,9 +103,9 @@ Rules:
 Return RAW JSON only.`;
 
 export async function ariaAnalyseIncident(
-  inc: AriaIncidentInput,
+  inc: FinnIncidentInput,
   opts: { timeoutMs?: number } = {},
-): Promise<AriaIncidentAnalysis> {
+): Promise<FinnIncidentAnalysis> {
   const timeoutMs = opts.timeoutMs ?? 12_000;
   try {
     const p = provider();
@@ -133,7 +133,7 @@ export async function ariaAnalyseIncident(
     );
     const { text } = await Promise.race([aiPromise, timeout]);
     const cleaned = text.replace(/```json\s*|\s*```/g, "").trim();
-    const parsed = JSON.parse(cleaned) as Partial<AriaIncidentAnalysis>;
+    const parsed = JSON.parse(cleaned) as Partial<FinnIncidentAnalysis>;
     const risk = Math.max(0, Math.min(100, Math.round(Number(parsed.risk_score) || 0)));
     const recs = Array.isArray(parsed.recommendations)
       ? parsed.recommendations.filter((r): r is string => typeof r === "string").slice(0, 6)

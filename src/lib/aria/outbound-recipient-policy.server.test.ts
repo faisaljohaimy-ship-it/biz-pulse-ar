@@ -1,34 +1,34 @@
 import { describe, expect, it } from "vitest";
 import {
-  DEFAULT_ARIA_OWNER_EMAIL,
-  DEFAULT_ARIA_OWNER_SMS,
-  getAriaOwnerRecipients,
+  DEFAULT_FINN_OWNER_EMAIL,
+  DEFAULT_FINN_OWNER_SMS,
+  getFinnOwnerRecipients,
   hasExplicitOutboundIntent,
-  isAriaOwnerDirectSendEnabled,
+  isFinnOwnerDirectSendEnabled,
 } from "./outbound-recipient-policy.server";
 
 describe("FINN owner recipient policy", () => {
   it("uses the registered owner destinations by default", () => {
-    expect(getAriaOwnerRecipients({})).toEqual({
-      email: DEFAULT_ARIA_OWNER_EMAIL.toLowerCase(),
-      sms: DEFAULT_ARIA_OWNER_SMS,
+    expect(getFinnOwnerRecipients({})).toEqual({
+      email: DEFAULT_FINN_OWNER_EMAIL.toLowerCase(),
+      sms: DEFAULT_FINN_OWNER_SMS,
     });
   });
 
   it("normalizes deployment overrides", () => {
     expect(
-      getAriaOwnerRecipients({
-        ARIA_OWNER_EMAIL: " Owner@Example.COM ",
-        ARIA_OWNER_SMS: "00966500888778",
+      getFinnOwnerRecipients({
+        FINN_OWNER_EMAIL: " Owner@Example.COM ",
+        FINN_OWNER_SMS: "00966500888778",
       }),
     ).toEqual({ email: "owner@example.com", sms: "+966500888778" });
   });
 
   it("enables owner-only direct send by default and supports a kill switch", () => {
-    expect(isAriaOwnerDirectSendEnabled({})).toBe(true);
-    expect(isAriaOwnerDirectSendEnabled({ ARIA_DIRECT_SEND_ENABLED: "false" })).toBe(false);
-    expect(isAriaOwnerDirectSendEnabled({ ARIA_DIRECT_SEND_ENABLED: "invalid" })).toBe(false);
-    expect(isAriaOwnerDirectSendEnabled({ ARIA_OUTBOUND_AUTO_APPROVE: "true" })).toBe(true);
+    expect(isFinnOwnerDirectSendEnabled({})).toBe(true);
+    expect(isFinnOwnerDirectSendEnabled({ FINN_DIRECT_SEND_ENABLED: "false" })).toBe(false);
+    expect(isFinnOwnerDirectSendEnabled({ FINN_DIRECT_SEND_ENABLED: "invalid" })).toBe(false);
+    expect(isFinnOwnerDirectSendEnabled({ FINN_OUTBOUND_AUTO_APPROVE: "true" })).toBe(true);
   });
 
   it.each([

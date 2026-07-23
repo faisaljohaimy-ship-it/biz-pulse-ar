@@ -7,12 +7,12 @@
  */
 
 // ─── UI mode / voice state ──────────────────────────────────────────────
-export type AriaMode = "collapsed" | "docked" | "fullscreen";
+export type FinnMode = "collapsed" | "docked" | "fullscreen";
 
-export type AriaVoiceState = "idle" | "listening" | "processing" | "speaking" | "unavailable";
+export type FinnVoiceState = "idle" | "listening" | "processing" | "speaking" | "unavailable";
 
 // ─── Page context (executive context surface) ───────────────────────────
-export interface AriaPageContext {
+export interface FinnPageContext {
   /** Current pathname (from TanStack router). */
   pathname: string;
   /** Human label for the page (e.g. "Sec — CCTV"). */
@@ -24,7 +24,7 @@ export interface AriaPageContext {
 }
 
 /** Full context snapshot as produced by ContextManager. */
-export interface AriaContextSnapshot extends AriaPageContext {
+export interface FinnContextSnapshot extends FinnPageContext {
   /** Coarse route group (first path segment). */
   module: string;
   /** Last path segment (screen name). */
@@ -38,7 +38,7 @@ export interface AriaContextSnapshot extends AriaPageContext {
 }
 
 // ─── Imperative open/ask options ────────────────────────────────────────
-export interface AriaOpenOptions {
+export interface FinnOpenOptions {
   /** Focus composer after opening. */
   focus?: boolean;
   /** Pre-seed the composer with a draft prompt. */
@@ -48,7 +48,7 @@ export interface AriaOpenOptions {
 }
 
 // ─── AI Router ──────────────────────────────────────────────────────────
-export type AriaIntent =
+export type FinnIntent =
   | "general"
   | "executive"
   | "long-context"
@@ -56,8 +56,8 @@ export type AriaIntent =
   | "engineering"
   | "unknown";
 
-export interface AriaRouteHint {
-  intent: AriaIntent;
+export interface FinnRouteHint {
+  intent: FinnIntent;
   /** True when the client suspects a long/complex prompt (>~4000 chars). */
   longContext: boolean;
   /** Sent as a header so the server router can score decisions. */
@@ -65,13 +65,13 @@ export interface AriaRouteHint {
 }
 
 // ─── Conversation lifecycle ─────────────────────────────────────────────
-export type AriaTurnStatus = "idle" | "queued" | "streaming" | "completed" | "cancelled" | "failed";
+export type FinnTurnStatus = "idle" | "queued" | "streaming" | "completed" | "cancelled" | "failed";
 
-export interface AriaTurn {
+export interface FinnTurn {
   id: string;
   startedAt: string;
-  status: AriaTurnStatus;
-  intent: AriaIntent;
+  status: FinnTurnStatus;
+  intent: FinnIntent;
   /** Set once the response has fully finished. */
   endedAt?: string;
   /** Human-safe error message (already scrubbed of raw provider text). */
@@ -79,14 +79,14 @@ export interface AriaTurn {
 }
 
 // ─── Memory (interface only — Phase 2 will implement) ───────────────────
-export interface AriaMemoryRecall {
+export interface FinnMemoryRecall {
   key: string;
   value: string;
   score?: number;
 }
 
 // ─── Voice (interface only — Phase 2 will implement) ────────────────────
-export interface AriaVoiceCapabilities {
+export interface FinnVoiceCapabilities {
   stt: boolean;
   tts: boolean;
 }

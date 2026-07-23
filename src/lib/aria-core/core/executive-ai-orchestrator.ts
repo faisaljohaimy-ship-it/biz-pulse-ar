@@ -13,12 +13,12 @@
  *   9. ConfidenceEngine.assess              (evidence-backed confidence)
  *  10. PlanningEngine.plan                  (next actions)
  *  11. MemoryManager.recall                 (no-op stub — Phase 3 wires this)
- *  12. AiRouter.selectHint                  (published to AriaService header)
- *  13. AriaService transport                (the actual /api/chat call)
+ *  12. AiRouter.selectHint                  (published to FinnService header)
+ *  13. FinnService transport                (the actual /api/chat call)
  *  14. ResponsePipeline.finalize + ResponseValidator (on stream completion)
  *
  * The orchestrator does NOT own the streaming socket — that stays with the
- * singleton `useChat` inside <AriaProvider>. The Executive Envelope produced
+ * singleton `useChat` inside <FinnProvider>. The Executive Envelope produced
  * pre-submit is exposed via the store so executive UI panels can read it.
  */
 import { aiRouter } from "./ai-router";
@@ -38,14 +38,14 @@ import { responsePipeline } from "./response-pipeline";
 import { responseValidator } from "./response-validator";
 import { riskEngine } from "./risk-engine";
 import { setPendingRouteHint } from "../services/aria-service";
-import { useAriaStore } from "../state/aria-store";
-import type { AriaTurn } from "../types/aria";
+import { useFinnStore } from "../state/aria-store";
+import type { FinnTurn } from "../types/aria";
 import type { ExecutiveEnvelope } from "../types/executive";
 import type { ExecutionEnvelope } from "./execution-envelope";
 
 export interface OrchestratedSubmission {
   text: string;
-  turn: AriaTurn;
+  turn: FinnTurn;
   envelope: ExecutiveEnvelope;
   execution: ExecutionEnvelope;
 }
@@ -99,7 +99,7 @@ export const executiveAiOrchestrator = {
       contextSnapshot: context,
       createdAt: new Date().toISOString(),
     };
-    useAriaStore.getState().setActiveEnvelope(envelope);
+    useFinnStore.getState().setActiveEnvelope(envelope);
 
     // ── Phase 3: Executive Execution Envelope ─────────────────────────
     const executionEnvelope = executionPlanner.plan({
@@ -113,7 +113,7 @@ export const executiveAiOrchestrator = {
       confidence,
       nextActions,
     });
-    useAriaStore.getState().setActiveExecution(executionEnvelope);
+    useFinnStore.getState().setActiveExecution(executionEnvelope);
 
     setPendingRouteHint(hint);
     avatarBrain.onThinking(envelope);
@@ -121,11 +121,11 @@ export const executiveAiOrchestrator = {
   },
   markStreaming(turnId: string) {
     conversationManager.markStreaming(turnId);
-    avatarBrain.onSpeakingStart(turnId, useAriaStore.getState().activeEnvelope);
+    avatarBrain.onSpeakingStart(turnId, useFinnStore.getState().activeEnvelope);
   },
   completeTurn(turnId: string, finalText: string) {
     const scrubbed = responsePipeline.finalize(finalText);
-    const store = useAriaStore.getState();
+    const store = useFinnStore.getState();
     const envelope = store.activeEnvelope;
     const locale = envelope?.context.locale ?? "en";
 
@@ -150,6 +150,6 @@ export const executiveAiOrchestrator = {
   },
   /** Read-only accessor for the current executive envelope. */
   currentEnvelope(): ExecutiveEnvelope | null {
-    return useAriaStore.getState().activeEnvelope;
+    return useFinnStore.getState().activeEnvelope;
   },
 };

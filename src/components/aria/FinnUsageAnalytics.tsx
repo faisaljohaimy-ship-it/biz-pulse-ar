@@ -1,5 +1,5 @@
 /**
- * AriaUsageAnalytics — Phase 5 usage & satisfaction dashboard for FINN.
+ * FinnUsageAnalytics — Phase 5 usage & satisfaction dashboard for FINN.
  *
  * Reads the deterministic, fixture-derived analytics (`getUsageAnalytics`) — no
  * network, no external key — so it renders identically everywhere and is
@@ -20,7 +20,7 @@ const KPI_ICON: Record<string, typeof MessageSquare> = {
 
 const WEEK_DAYS = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
-export function AriaUsageAnalytics({ className = "" }: { readonly className?: string }) {
+export function FinnUsageAnalytics({ className = "" }: { readonly className?: string }) {
   const { kpis, topQuestions, weekly } = getUsageAnalytics();
   const peak = Math.max(...weekly, 1);
 
@@ -113,4 +113,4 @@ export function AriaUsageAnalytics({ className = "" }: { readonly className?: st
   );
 }
 
-export default AriaUsageAnalytics;
+export default FinnUsageAnalytics;

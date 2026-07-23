@@ -1,7 +1,7 @@
 /**
  * FINN Presence — public surface.
  */
-export { ARIA_VOICE_CONTRACT, sanitizeVoice } from "./voice";
+export { FINN_VOICE_CONTRACT, sanitizeVoice } from "./voice";
 export {
   remember,
   recall,

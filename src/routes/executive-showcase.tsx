@@ -116,7 +116,7 @@ const SCENES: Scene[] = [
     value_en: "Bilingual executive engine with natural voice and live memory.",
     accent: ACCENT_EMERALD,
     startAt: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[5],
-    visual: () => <AriaHUD />,
+    visual: () => <FinnHUD />,
   },
 ];
 
@@ -993,7 +993,7 @@ function HajjHUD() {
   );
 }
 
-function AriaHUD() {
+function FinnHUD() {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3">
       <div className="relative">

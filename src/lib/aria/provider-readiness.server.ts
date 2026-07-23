@@ -1,18 +1,18 @@
-export type AriaProviderCapability = {
+export type FinnProviderCapability = {
   ready: boolean;
   provider: string | null;
   missing: string[];
 };
 
-export type AriaProviderReadiness = {
+export type FinnProviderReadiness = {
   ready: boolean;
-  database: AriaProviderCapability;
-  intelligence: AriaProviderCapability;
-  voice: AriaProviderCapability;
-  email: AriaProviderCapability;
-  sms: AriaProviderCapability;
-  outboundSecurity: AriaProviderCapability;
-  deliveryTracking: AriaProviderCapability;
+  database: FinnProviderCapability;
+  intelligence: FinnProviderCapability;
+  voice: FinnProviderCapability;
+  email: FinnProviderCapability;
+  sms: FinnProviderCapability;
+  outboundSecurity: FinnProviderCapability;
+  deliveryTracking: FinnProviderCapability;
 };
 
 function configured(value: string | undefined, minLength = 1): boolean {
@@ -28,14 +28,14 @@ function configured(value: string | undefined, minLength = 1): boolean {
 function capability(
   provider: string | null,
   required: Array<[name: string, valid: boolean]>,
-): AriaProviderCapability {
+): FinnProviderCapability {
   const missing = required.filter(([, valid]) => !valid).map(([name]) => name);
   return { ready: missing.length === 0, provider, missing };
 }
 
-export function inspectAriaProviderReadiness(
+export function inspectFinnProviderReadiness(
   env: Record<string, string | undefined> = process.env,
-): AriaProviderReadiness {
+): FinnProviderReadiness {
   const database = capability("supabase", [
     ["SUPABASE_URL", /^https:\/\//i.test(env.SUPABASE_URL?.trim() ?? "")],
     ["SUPABASE_PUBLISHABLE_KEY", configured(env.SUPABASE_PUBLISHABLE_KEY, 20)],
@@ -44,7 +44,7 @@ export function inspectAriaProviderReadiness(
 
   const geminiReady =
     configured(env.GEMINI_API_KEY, 20) || configured(env.GOOGLE_GENERATIVE_AI_API_KEY, 20);
-  const forceGemini = env.ARIA_FORCE_GEMINI_FLASH?.trim().toLowerCase() !== "false";
+  const forceGemini = env.FINN_FORCE_GEMINI_FLASH?.trim().toLowerCase() !== "false";
   const intelligenceProvider = geminiReady
     ? "google-gemini"
     : !forceGemini && configured(env.OPENAI_API_KEY, 20)
@@ -83,7 +83,7 @@ export function inspectAriaProviderReadiness(
   ]);
 
   const outboundSecurity = capability("internal", [
-    ["ARIA_MESSAGE_APPROVAL_SECRET", configured(env.ARIA_MESSAGE_APPROVAL_SECRET, 32)],
+    ["FINN_MESSAGE_APPROVAL_SECRET", configured(env.FINN_MESSAGE_APPROVAL_SECRET, 32)],
   ]);
 
   const deliveryTracking = capability("resend+twilio", [

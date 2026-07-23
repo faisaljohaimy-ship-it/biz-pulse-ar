@@ -1,9 +1,9 @@
 // Voice profile — locks vocal persona metadata for every TTS surface.
-import { getAriaIdentity } from "./identity.server";
+import { getFinnIdentity } from "./identity.server";
 import type { VoicePersonalityRule } from "./types";
 
 export function getVoiceProfile(): VoicePersonalityRule {
-  return getAriaIdentity().voice;
+  return getFinnIdentity().voice;
 }
 
 export function isVoiceCompliant(input: {

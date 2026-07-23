@@ -5,16 +5,16 @@
  * ويعرض بجانبها بطاقة `ExecutiveCard` الحية من `activeExecution` في المتجر
  * حتى يتضح مسار: سؤال → تفكير → قرار → توصية → موافقة → خطوة تالية.
  *
- * لا يستدعي أي LLM مباشرة — فقط `useAria().ask()` عبر Brain المفرد.
+ * لا يستدعي أي LLM مباشرة — فقط `useFinn().ask()` عبر Brain المفرد.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
-import { useAria } from "@/lib/aria-core";
+import { useFinn } from "@/lib/aria-core";
 import { ExecutiveCard } from "@/components/aria-core/ExecutiveCard";
 import { Sparkles, PlayCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/finn/demo")({
-  component: AriaDemoPage,
+  component: FinnDemoPage,
   head: () => ({
     meta: [
       { title: "FINN — سيناريو تنفيذي مباشر" },
@@ -57,8 +57,8 @@ const SCENARIOS: ReadonlyArray<{ id: string; label_ar: string; prompt: string }>
   },
 ];
 
-function AriaDemoPage() {
-  const { ask, open } = useAria();
+function FinnDemoPage() {
+  const { ask, open } = useFinn();
 
   const run = (prompt: string) => {
     open();

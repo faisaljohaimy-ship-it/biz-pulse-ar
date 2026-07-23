@@ -221,7 +221,7 @@ function expandNumbers(text: string, lang: "ar" | "en"): string {
 }
 
 /** Rewrite a reply into speech-ready text for the TTS pipeline. */
-export function applyAriaPronunciation(text: string): string {
+export function applyFinnPronunciation(text: string): string {
   let out = text;
   // Directive codes first: SEC-18 → «سِك ثمانية عشر», SAF-07 → «ساف سبعة».
   out = out.replace(/\bSEC[-\s]?0*(\d{1,2})\b/gi, (_m, d) => `سِك ${arabicCardinal(Number(d))}`);

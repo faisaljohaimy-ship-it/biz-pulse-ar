@@ -1,7 +1,7 @@
 /**
  * Public FINN voice endpoint — powers the landing hero AND the Executive
  * Voice Tour. Same voice identity as the authenticated chatbot: reads
- * `ARIA_ELEVENLABS_VOICE_ID` from the shared voice config so tour audio
+ * `FINN_ELEVENLABS_VOICE_ID` from the shared voice config so tour audio
  * is acoustically identical to the FINN chatbot.
  *
  * ONE voice, always: there is deliberately NO fallback provider. If
@@ -18,9 +18,9 @@ import {
 import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
 import {
   ALLOWED_ELEVEN_VOICE_IDS,
-  ARIA_ELEVENLABS_VOICE_ID,
-  ARIA_ELEVENLABS_VOICE_SETTINGS,
-  ARIA_ELEVENLABS_MODEL,
+  FINN_ELEVENLABS_VOICE_ID,
+  FINN_ELEVENLABS_VOICE_SETTINGS,
+  FINN_ELEVENLABS_MODEL,
 } from "@/lib/aria/voice-config";
 
 const Input = z.object({
@@ -51,15 +51,15 @@ async function synthesizeWithElevenLabs(
   const voiceId =
     requestedVoice && ALLOWED_ELEVEN_VOICE_IDS.has(requestedVoice)
       ? requestedVoice
-      : ARIA_ELEVENLABS_VOICE_ID;
+      : FINN_ELEVENLABS_VOICE_ID;
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`;
   const r = await fetch(url, {
     method: "POST",
     headers: { "xi-api-key": apiKey, "Content-Type": "application/json" },
     body: JSON.stringify({
       text,
-      model_id: ARIA_ELEVENLABS_MODEL,
-      voice_settings: ARIA_ELEVENLABS_VOICE_SETTINGS,
+      model_id: FINN_ELEVENLABS_MODEL,
+      voice_settings: FINN_ELEVENLABS_VOICE_SETTINGS,
     }),
     signal,
   });

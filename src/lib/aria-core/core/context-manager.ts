@@ -5,8 +5,8 @@
  * decomposition (module/screen) and a permissions placeholder. Phase 2 will
  * wire real RBAC + module metadata.
  */
-import type { AriaContextSnapshot, AriaPageContext } from "../types/aria";
-import { useAriaStore } from "../state/aria-store";
+import type { FinnContextSnapshot, FinnPageContext } from "../types/aria";
+import { useFinnStore } from "../state/aria-store";
 
 function decomposePath(pathname: string): { module: string; screen: string } {
   const clean = pathname.replace(/^\/+/, "").replace(/\/+$/, "");
@@ -19,8 +19,8 @@ function decomposePath(pathname: string): { module: string; screen: string } {
 }
 
 export const contextManager = {
-  snapshot(): AriaContextSnapshot {
-    const page: AriaPageContext = useAriaStore.getState().pageContext ?? {
+  snapshot(): FinnContextSnapshot {
+    const page: FinnPageContext = useFinnStore.getState().pageContext ?? {
       pathname: typeof window !== "undefined" ? window.location.pathname : "/",
       label: "UNKNOWN",
       locale: "en",

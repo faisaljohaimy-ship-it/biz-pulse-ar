@@ -15,26 +15,26 @@ const ApprovalInput = z.object({
  * the provider is ever called. Server implementation is loaded only inside the
  * handler so no provider or crypto code is included in the browser bundle.
  */
-export const approveAriaOutboundMessage = createServerFn({ method: "POST" })
+export const approveFinnOutboundMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => ApprovalInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { approveAriaOutboundMessageInternal } =
+    const { approveFinnOutboundMessageInternal } =
       await import("@/lib/aria/outbound-messaging.server");
-    return approveAriaOutboundMessageInternal({
+    return approveFinnOutboundMessageInternal({
       userId: context.userId,
       ledgerId: data.ledgerId,
       approvalToken: data.approvalToken,
     });
   });
 
-export const cancelAriaOutboundMessage = createServerFn({ method: "POST" })
+export const cancelFinnOutboundMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => ApprovalInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { cancelAriaOutboundMessageInternal } =
+    const { cancelFinnOutboundMessageInternal } =
       await import("@/lib/aria/outbound-messaging.server");
-    return cancelAriaOutboundMessageInternal({
+    return cancelFinnOutboundMessageInternal({
       userId: context.userId,
       ledgerId: data.ledgerId,
       approvalToken: data.approvalToken,

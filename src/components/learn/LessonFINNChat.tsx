@@ -1,7 +1,7 @@
 /** Lesson adapter for the singleton FINN conversation. */
 import { useState } from "react";
 import { Send, Sparkles, ShieldCheck } from "lucide-react";
-import { useAria } from "@/lib/aria-core/hooks/useAria";
+import { useFinn } from "@/lib/aria-core/hooks/useFinn";
 import type { Bilingual } from "@/lib/learn/types";
 
 interface Props {
@@ -10,9 +10,9 @@ interface Props {
   suggested: Bilingual[];
 }
 
-export function LessonARIAChat({ slug, lang, suggested }: Props) {
+export function LessonFINNChat({ slug, lang, suggested }: Props) {
   const [input, setInput] = useState("");
-  const { open, activeTurn } = useAria();
+  const { open, activeTurn } = useFinn();
   const ar = lang === "ar";
   const busy = activeTurn?.status === "queued" || activeTurn?.status === "streaming";
 

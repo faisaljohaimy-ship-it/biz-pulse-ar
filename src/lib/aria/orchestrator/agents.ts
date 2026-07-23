@@ -10,7 +10,7 @@
 import { registerAgent } from "./registry";
 import type { ExecutiveAgent, AgentRunContext } from "./agent.interface";
 import type { AgentContract, AgentResult, AgentId } from "./types";
-import type { AriaIntent } from "../executive-reasoning.server";
+import type { FinnIntent } from "../executive-reasoning.server";
 import { runExecutiveBrain } from "../executive-brain/brain.server";
 import { toBrainRequest } from "./context.server";
 
@@ -22,7 +22,7 @@ function baseContract(
   id: AgentId,
   name_en: string,
   name_ar: string,
-  intents: AriaIntent[],
+  intents: FinnIntent[],
   overrides: Partial<AgentContract> = {},
 ): AgentContract {
   return {
@@ -149,7 +149,7 @@ function passiveAgent(
   id: AgentId,
   name_en: string,
   name_ar: string,
-  intents: AriaIntent[],
+  intents: FinnIntent[],
   extract: (
     answer: import("../executive-brain/types").ExecutiveBrainAnswer,
   ) => AgentResult["contribution"],

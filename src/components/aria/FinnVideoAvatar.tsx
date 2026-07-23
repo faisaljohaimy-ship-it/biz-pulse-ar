@@ -1,12 +1,12 @@
 /**
- * AriaVideoAvatar — FINN's avatar image.
+ * FinnVideoAvatar — FINN's avatar image.
  *
  * The legacy hero-motion clip (an outdated FINN render) was removed, so this
  * now renders the static poster only. The `poster` / styling props are kept
  * so existing call sites stay unchanged; `active` is accepted but no longer
  * drives any motion.
  */
-export interface AriaVideoAvatarProps {
+export interface FinnVideoAvatarProps {
   poster: string;
   className?: string;
   style?: React.CSSProperties;
@@ -16,13 +16,13 @@ export interface AriaVideoAvatarProps {
   active?: boolean;
 }
 
-export function AriaVideoAvatar({
+export function FinnVideoAvatar({
   poster,
   className,
   style,
   mediaStyle,
   mediaClassName,
-}: AriaVideoAvatarProps) {
+}: FinnVideoAvatarProps) {
   const defaultMediaClass = "absolute inset-0 h-full w-full select-none pointer-events-none";
   const mediaCls = mediaClassName ? `${defaultMediaClass} ${mediaClassName}` : defaultMediaClass;
   const combinedMediaStyle: React.CSSProperties = mediaClassName
@@ -47,4 +47,4 @@ export function AriaVideoAvatar({
   );
 }
 
-export default AriaVideoAvatar;
+export default FinnVideoAvatar;

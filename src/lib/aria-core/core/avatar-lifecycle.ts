@@ -1,7 +1,7 @@
 /**
  * AvatarLifecycle — the ONE mount/unmount seam for the Avatar Brain.
  *
- * AriaProvider calls `avatarLifecycle.mount()` on mount and the returned
+ * FinnProvider calls `avatarLifecycle.mount()` on mount and the returned
  * disposer on unmount. Idempotent and HMR-safe: repeated mounts never
  * start a second runtime, and disposing while another mount is still
  * active does not tear down the shared runtime.

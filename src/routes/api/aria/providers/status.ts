@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { hasAnyPlatformRole } from "@/lib/authz.server";
-import { inspectAriaProviderReadiness } from "@/lib/aria/provider-readiness.server";
+import { inspectFinnProviderReadiness } from "@/lib/aria/provider-readiness.server";
 
 const HEADERS = {
   "Cache-Control": "no-store",
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/api/aria/providers/status")({
         if (!(await hasAnyPlatformRole(data.user.id, ["admin", "manager"])))
           return fail("Provider status requires admin or manager role.", 403);
         return Response.json(
-          { ok: true, ...inspectAriaProviderReadiness() },
+          { ok: true, ...inspectFinnProviderReadiness() },
           { status: 200, headers: HEADERS },
         );
       },

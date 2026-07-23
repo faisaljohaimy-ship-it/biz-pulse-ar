@@ -3,46 +3,46 @@
  *
  * Single source of truth for UI mode, voice state, page context, active turn,
  * and pending imperative commands. Conversation messages themselves live in
- * the AI SDK `useChat` instance owned by <AriaProvider> — never duplicated.
+ * the AI SDK `useChat` instance owned by <FinnProvider> — never duplicated.
  */
 import { create } from "zustand";
 import type {
-  AriaMode,
-  AriaOpenOptions,
-  AriaPageContext,
-  AriaTurn,
-  AriaVoiceState,
+  FinnMode,
+  FinnOpenOptions,
+  FinnPageContext,
+  FinnTurn,
+  FinnVoiceState,
 } from "../types/aria";
 import type { ExecutiveEnvelope } from "../types/executive";
 import type { ExecutionEnvelope } from "../core/execution-envelope";
 
 export type PendingCommand =
-  | { kind: "open"; options?: AriaOpenOptions }
+  | { kind: "open"; options?: FinnOpenOptions }
   | { kind: "close" }
   | { kind: "focus" }
   | { kind: "send"; text: string };
 
-interface AriaState {
-  mode: AriaMode;
-  voice: AriaVoiceState;
-  pageContext: AriaPageContext | null;
-  activeTurn: AriaTurn | null;
+interface FinnState {
+  mode: FinnMode;
+  voice: FinnVoiceState;
+  pageContext: FinnPageContext | null;
+  activeTurn: FinnTurn | null;
   activeEnvelope: ExecutiveEnvelope | null;
   activeExecution: ExecutionEnvelope | null;
   pendingCommands: PendingCommand[];
 
   // Actions
-  setMode: (mode: AriaMode) => void;
-  setVoice: (state: AriaVoiceState) => void;
-  setPageContext: (ctx: AriaPageContext) => void;
-  setActiveTurn: (turn: AriaTurn | null) => void;
+  setMode: (mode: FinnMode) => void;
+  setVoice: (state: FinnVoiceState) => void;
+  setPageContext: (ctx: FinnPageContext) => void;
+  setActiveTurn: (turn: FinnTurn | null) => void;
   setActiveEnvelope: (envelope: ExecutiveEnvelope | null) => void;
   setActiveExecution: (execution: ExecutionEnvelope | null) => void;
   enqueue: (cmd: PendingCommand) => void;
   drainCommands: () => PendingCommand[];
 }
 
-export const useAriaStore = create<AriaState>((set, get) => ({
+export const useFinnStore = create<FinnState>((set, get) => ({
   mode: "collapsed",
   voice: "idle",
   pageContext: null,

@@ -19,7 +19,7 @@ import { Link } from "@tanstack/react-router";
 import type { ElementType } from "react";
 
 const WORD = "NEXIOS";
-const ARIA_LABEL = "NEXIOS AI · نكسيوس — Enterprise AI Operating System";
+const FINN_LABEL = "NEXIOS AI · نكسيوس — Enterprise AI Operating System";
 
 type NexiosWordmarkProps = {
   /** Semantic tag for the visible wordmark (default: span). Use "h1" only
@@ -34,7 +34,7 @@ type NexiosWordmarkProps = {
 export function NexiosWordmark({
   as: Tag = "span",
   href,
-  ariaLabel = ARIA_LABEL,
+  ariaLabel = FINN_LABEL,
 }: NexiosWordmarkProps = {}) {
   const inner = (
     <Tag className="nx-wm">

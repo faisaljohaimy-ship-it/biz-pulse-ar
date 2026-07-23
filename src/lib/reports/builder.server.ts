@@ -4,7 +4,7 @@
 import { PDFDocument, StandardFonts, degrees, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import * as XLSX from "xlsx";
 import type { ExecutiveSnapshot } from "./snapshot.server";
-import { ARIA_SIGNATURE_WORDMARK } from "@/lib/aria/signature";
+import { FINN_SIGNATURE_WORDMARK } from "@/lib/aria/signature";
 
 const PAGE = { width: 612, height: 792 }; // US Letter
 const MARGIN = 40;
@@ -31,7 +31,7 @@ function newPage(ctx: Ctx): void {
 // signature as the chat backdrop and loading screen (unified identity). The
 // wordmark is Latin, so it encodes cleanly in pdf-lib's WinAnsi fonts.
 function drawSignatureWatermark(page: PDFPage, font: PDFFont): void {
-  const line = `${ARIA_SIGNATURE_WORDMARK}   ${ARIA_SIGNATURE_WORDMARK}   ${ARIA_SIGNATURE_WORDMARK}`;
+  const line = `${FINN_SIGNATURE_WORDMARK}   ${FINN_SIGNATURE_WORDMARK}   ${FINN_SIGNATURE_WORDMARK}`;
   const ink = rgb(0.55, 0.63, 0.73);
   for (let i = 0; i < 11; i++) {
     page.drawText(line, {

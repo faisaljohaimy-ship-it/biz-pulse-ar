@@ -7,7 +7,7 @@
  * the system prompt so the model can align its reasoning with the plan.
  */
 
-import type { AriaIntent } from "./executive-reasoning.server";
+import type { FinnIntent } from "./executive-reasoning.server";
 
 export interface PlanStep {
   id: string;
@@ -28,7 +28,7 @@ export interface PlanStep {
 }
 
 export interface ExecutionPlan {
-  intent: AriaIntent;
+  intent: FinnIntent;
   steps: PlanStep[];
   block: string;
 }
@@ -51,7 +51,7 @@ function baseSteps(): PlanStep[] {
   ];
 }
 
-export function buildPlan(intent: AriaIntent): ExecutionPlan {
+export function buildPlan(intent: FinnIntent): ExecutionPlan {
   const steps: PlanStep[] = baseSteps();
   const add = (s: Omit<PlanStep, "depends_on"> & { depends_on?: string[] }) => steps.push(s);
 

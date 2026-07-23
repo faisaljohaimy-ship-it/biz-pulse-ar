@@ -3,10 +3,10 @@
  *
  * Messages themselves live inside the singleton `useChat` — this manager only
  * owns per-turn metadata (id, status, abort controller, dedupe guard). It
- * mirrors status into the store so any component can read via useAria().
+ * mirrors status into the store so any component can read via useFinn().
  */
-import type { AriaIntent, AriaTurn } from "../types/aria";
-import { useAriaStore } from "../state/aria-store";
+import type { FinnIntent, FinnTurn } from "../types/aria";
+import { useFinnStore } from "../state/aria-store";
 
 let activeController: AbortController | null = null;
 let activeTurnId: string | null = null;
@@ -24,7 +24,7 @@ function newId() {
 
 export const conversationManager = {
   /** Returns null when the request is a duplicate inside the dedupe window. */
-  beginTurn(text: string, intent: AriaIntent): AriaTurn | null {
+  beginTurn(text: string, intent: FinnIntent): FinnTurn | null {
     const now = Date.now();
     if (lastSubmittedText === text && now - lastSubmittedAt < DEDUPE_WINDOW_MS) {
       return null;
@@ -39,27 +39,27 @@ export const conversationManager = {
     }
     activeController = new AbortController();
 
-    const turn: AriaTurn = {
+    const turn: FinnTurn = {
       id: newId(),
       startedAt: new Date(now).toISOString(),
       status: "queued",
       intent,
     };
     activeTurnId = turn.id;
-    useAriaStore.getState().setActiveTurn(turn);
+    useFinnStore.getState().setActiveTurn(turn);
     return turn;
   },
   markStreaming(turnId: string) {
     if (turnId !== activeTurnId) return;
-    const current = useAriaStore.getState().activeTurn;
+    const current = useFinnStore.getState().activeTurn;
     if (!current) return;
-    useAriaStore.getState().setActiveTurn({ ...current, status: "streaming" });
+    useFinnStore.getState().setActiveTurn({ ...current, status: "streaming" });
   },
   completeTurn(turnId: string) {
     if (turnId !== activeTurnId) return;
-    const current = useAriaStore.getState().activeTurn;
+    const current = useFinnStore.getState().activeTurn;
     if (!current) return;
-    useAriaStore.getState().setActiveTurn({
+    useFinnStore.getState().setActiveTurn({
       ...current,
       status: "completed",
       endedAt: new Date().toISOString(),
@@ -69,9 +69,9 @@ export const conversationManager = {
   },
   failTurn(turnId: string, error: string) {
     if (turnId !== activeTurnId) return;
-    const current = useAriaStore.getState().activeTurn;
+    const current = useFinnStore.getState().activeTurn;
     if (!current) return;
-    useAriaStore.getState().setActiveTurn({
+    useFinnStore.getState().setActiveTurn({
       ...current,
       status: "failed",
       error,
@@ -83,9 +83,9 @@ export const conversationManager = {
   cancel() {
     if (!activeController) return;
     activeController.abort();
-    const current = useAriaStore.getState().activeTurn;
+    const current = useFinnStore.getState().activeTurn;
     if (current) {
-      useAriaStore.getState().setActiveTurn({
+      useFinnStore.getState().setActiveTurn({
         ...current,
         status: "cancelled",
         endedAt: new Date().toISOString(),

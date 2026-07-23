@@ -6,7 +6,7 @@
  * `executive` payload for downstream (Evidence Panel, Decision Card, etc.).
  */
 
-import type { AriaIntent } from "../executive-reasoning.server";
+import type { FinnIntent } from "../executive-reasoning.server";
 import type { PlanStep } from "../planning-engine.server";
 import type { Insight } from "../insight-engine.server";
 
@@ -146,7 +146,7 @@ export interface ExecutiveBrainAnswer {
 
   // Internal envelope (never rendered verbatim)
   question: string;
-  intent: AriaIntent;
+  intent: FinnIntent;
   reasoning_type: ReasoningType;
   required_data: string[];
   evidence: string[];

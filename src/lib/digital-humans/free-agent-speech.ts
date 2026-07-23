@@ -5,10 +5,10 @@
  * synthesized server-side by /api/aria/tts (the key never reaches the
  * client). Browser TTS is banned in all paths. Specialist narration flows
  * through the SAME governed channel model as before: it must own the
- * "agent-tts" source on AriaAudioBus before any audio starts, so FINN
+ * "agent-tts" source on FinnAudioBus before any audio starts, so FINN
  * (chat-tts) can always preempt it and no two voices ever overlap.
  */
-import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { FinnAudioBus } from "@/lib/aria/audio-bus";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { getPrimedAudioContext } from "@/lib/user-interaction";
 import type { VoiceLang } from "./voice-profiles";
@@ -98,7 +98,7 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
     opts.onAmplitude?.(0);
     if (ownsBus) {
       ownsBus = false;
-      AriaAudioBus.release("agent-tts");
+      FinnAudioBus.release("agent-tts");
     }
   };
 
@@ -112,9 +112,9 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
     if (segments.length === 0) return;
     // iOS/gesture policy: never start (or spend provider quota) before the
     // bus has been unlocked by a real user gesture.
-    if (!AriaAudioBus.isUnlocked()) return;
+    if (!FinnAudioBus.isUnlocked()) return;
 
-    ownsBus = AriaAudioBus.acquire("agent-tts", stop);
+    ownsBus = FinnAudioBus.acquire("agent-tts", stop);
     if (!ownsBus) return;
 
     let started = false;
@@ -187,7 +187,7 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
           opts.onStart?.();
         }
         source.start();
-        AriaAudioBus.notifyPlaying("agent-tts");
+        FinnAudioBus.notifyPlaying("agent-tts");
         sampleAmp();
         await done;
       }
@@ -199,9 +199,9 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
       if (!stopped) throw err;
     } finally {
       if (ownsBus) {
-        AriaAudioBus.notifyStopped("agent-tts");
+        FinnAudioBus.notifyStopped("agent-tts");
         ownsBus = false;
-        AriaAudioBus.release("agent-tts");
+        FinnAudioBus.release("agent-tts");
       }
     }
   })();

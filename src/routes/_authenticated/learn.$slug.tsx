@@ -23,10 +23,10 @@ import { LessonVideo } from "@/components/learn/LessonVideo";
 import { LessonCinematicHero } from "@/components/learn/LessonCinematicHero";
 import { DigitalTwinHero } from "@/components/learn/heroes/DigitalTwinHero";
 import { LessonLiveKpis, type LiveKpi } from "@/components/learn/LessonLiveKpis";
-import { LessonAskAria } from "@/components/learn/LessonAskAria";
+import { LessonAskFinn } from "@/components/learn/LessonAskFinn";
 import { LessonNarration } from "@/components/learn/LessonNarration";
 import { LessonSimulation } from "@/components/learn/LessonSimulation";
-import { LessonARIAChat } from "@/components/learn/LessonARIAChat";
+import { LessonFINNChat } from "@/components/learn/LessonFINNChat";
 import { LessonQuiz } from "@/components/learn/LessonQuiz";
 import { LessonNav } from "@/components/learn/LessonNav";
 import { LessonCockpit } from "@/components/learn/LessonCockpit";
@@ -173,7 +173,7 @@ function LessonPage() {
             <p className="text-base leading-relaxed text-white/85">{summary}</p>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               {narration && <LessonNarration text={narration} lang={ar ? "ar" : "en"} />}
-              <LessonAskAria
+              <LessonAskFinn
                 prompt={
                   ar
                     ? `FINN، وضّحي لي بإيجاز أهمّ ما يجب أن أفهمه من حصّة «${title}» بصفتي مديراً تنفيذياً.`
@@ -271,7 +271,7 @@ function LessonPage() {
                 </div>
               </div>
             </div>
-            <LessonARIAChat
+            <LessonFINNChat
               slug={lesson.slug}
               lang={ar ? "ar" : "en"}
               suggested={lesson.aria_suggested_prompts}

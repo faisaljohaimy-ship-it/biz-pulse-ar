@@ -11,21 +11,21 @@
  */
 import { useEffect, useState } from "react";
 
-export type AriaPresenceState = "idle" | "listening" | "thinking" | "speaking";
+export type FinnPresenceState = "idle" | "listening" | "thinking" | "speaking";
 
-let current: AriaPresenceState = "idle";
-const listeners = new Set<(s: AriaPresenceState) => void>();
+let current: FinnPresenceState = "idle";
+const listeners = new Set<(s: FinnPresenceState) => void>();
 
 export const ariaState = {
-  get(): AriaPresenceState {
+  get(): FinnPresenceState {
     return current;
   },
-  set(next: AriaPresenceState) {
+  set(next: FinnPresenceState) {
     if (next === current) return;
     current = next;
     for (const l of listeners) l(next);
   },
-  subscribe(fn: (s: AriaPresenceState) => void): () => void {
+  subscribe(fn: (s: FinnPresenceState) => void): () => void {
     listeners.add(fn);
     return () => {
       listeners.delete(fn);
@@ -33,8 +33,8 @@ export const ariaState = {
   },
 };
 
-export function useAriaPresenceState(): AriaPresenceState {
-  const [s, setS] = useState<AriaPresenceState>(() => ariaState.get());
+export function useFinnPresenceState(): FinnPresenceState {
+  const [s, setS] = useState<FinnPresenceState>(() => ariaState.get());
   useEffect(() => ariaState.subscribe(setS), []);
   return s;
 }

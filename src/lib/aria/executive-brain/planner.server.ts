@@ -4,9 +4,9 @@
  * thin wrapper to preserve a clean brain/*.server surface for callers.
  */
 import { buildPlan, type ExecutionPlan } from "../planning-engine.server";
-import type { AriaIntent } from "../executive-reasoning.server";
+import type { FinnIntent } from "../executive-reasoning.server";
 
-export function planForIntent(intent: AriaIntent): ExecutionPlan {
+export function planForIntent(intent: FinnIntent): ExecutionPlan {
   return buildPlan(intent);
 }
 

@@ -24,7 +24,7 @@ const PRIORITY: Record<Source, number> = {
 // Owners allowed to bypass the "no gesture yet" guard when they pass
 // { bypassGesture: true }. Only the hero soundtrack's optimistic first
 // autoplay may do this — every FINN / tour owner MUST wait for a real
-// user gesture (via AriaAudioBus.unlock()).
+// user gesture (via FinnAudioBus.unlock()).
 const BYPASS_ALLOWED: ReadonlySet<Source> = new Set<Source>(["hero-soundtrack"]);
 
 type StopFn = () => void;
@@ -49,7 +49,7 @@ function emit(e: BusEvent) {
   }
 }
 
-export const AriaAudioBus = {
+export const FinnAudioBus = {
   /** Call from the FIRST user gesture (any tap). Unlocks autoplay on iOS. */
   unlock() {
     unlocked = true;
@@ -65,7 +65,7 @@ export const AriaAudioBus = {
   acquire(source: Source, stop: StopFn, opts?: { bypassGesture?: boolean }): boolean {
     const stack = new Error().stack?.split("\n").slice(2, 5).join(" | ");
     // Global no-autoplay guard: refuse any AUDIBLE source unless the bus has
-    // been unlocked by a real user gesture. AriaAudioBus.unlock() MUST be
+    // been unlocked by a real user gesture. FinnAudioBus.unlock() MUST be
     // called from inside a click / tap / keydown handler. This blocks all
     // on-mount / on-load / on-scroll audio, no matter which component tries.
     // EXEMPTION: the hero soundtrack's ONE optimistic mount-time attempt may
@@ -190,8 +190,8 @@ export const AriaAudioBus = {
 };
 
 if (typeof window !== "undefined") {
-  window.addEventListener("pagehide", () => AriaAudioBus.stopAll());
+  window.addEventListener("pagehide", () => FinnAudioBus.stopAll());
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") AriaAudioBus.stopAll();
+    if (document.visibilityState === "hidden") FinnAudioBus.stopAll();
   });
 }

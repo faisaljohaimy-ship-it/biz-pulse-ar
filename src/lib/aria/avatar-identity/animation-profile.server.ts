@@ -1,5 +1,5 @@
 // Animation profile — deterministic clamps for every animated channel.
-import { getAriaIdentity } from "./identity.server";
+import { getFinnIdentity } from "./identity.server";
 import type { AnimationRule } from "./types";
 
 export interface AnimationProfile {
@@ -9,7 +9,7 @@ export interface AnimationProfile {
 }
 
 export function getAnimationProfile(): AnimationProfile {
-  const id = getAriaIdentity();
+  const id = getFinnIdentity();
   const channels = {} as Record<AnimationRule["channel"], AnimationRule>;
   for (const r of id.animation) channels[r.channel] = r;
   return { channels, target_fps: 60, reduced_motion_scale: 0.35 };

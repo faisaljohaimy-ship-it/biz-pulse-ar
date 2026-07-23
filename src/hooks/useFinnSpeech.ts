@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { FinnAudioBus } from "@/lib/aria/audio-bus";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { VoiceTimeline } from "@/lib/aria/voice-timeline";
 
 const MUTE_KEY = "aria-voice-muted";
 
 /**
- * useAriaSpeech — routes FINN voice through the global AriaAudioBus
+ * useFinnSpeech — routes FINN voice through the global FinnAudioBus
  * (zero overlap guarantee) on the "chat-tts" channel.
  *
  * authenticated → ElevenLabs via /api/aria/tts (MP3 blob).
  * anonymous / failure → SILENCE. There is no fallback voice of any kind:
  * FINN speaks with her one canonical voice or not at all.
  */
-export function useAriaSpeech() {
+export function useFinnSpeech() {
   const [muted, setMutedState] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     try {
@@ -64,7 +64,7 @@ export function useAriaSpeech() {
       }
       audioRef.current = null;
     }
-    AriaAudioBus.release("chat-tts");
+    FinnAudioBus.release("chat-tts");
     setSpeaking(false);
   }, []);
 
@@ -83,13 +83,13 @@ export function useAriaSpeech() {
       } catch {
         /* ignore */
       }
-      AriaAudioBus.notifyStopped("chat-tts");
-      AriaAudioBus.release("chat-tts");
+      FinnAudioBus.notifyStopped("chat-tts");
+      FinnAudioBus.release("chat-tts");
       setSpeaking(false);
     };
     audio.onended = finish;
     audio.onpause = () => {
-      AriaAudioBus.notifyStopped("chat-tts");
+      FinnAudioBus.notifyStopped("chat-tts");
     };
     audio.onerror = () => {
       console.warn("[aria-voice] audio playback error");
@@ -97,7 +97,7 @@ export function useAriaSpeech() {
     };
     audio.onplaying = () => {
       console.log(`[aria-voice] t=${Math.round(performance.now() - t0)}ms (elevenlabs)`);
-      AriaAudioBus.notifyPlaying("chat-tts", audio);
+      FinnAudioBus.notifyPlaying("chat-tts", audio);
     };
 
     await audio.play();
@@ -106,15 +106,15 @@ export function useAriaSpeech() {
   const speak = useCallback(
     async (text: string) => {
       const clean = (text ?? "").toString().trim();
-      VoiceTimeline.push("VOICE", "useAriaSpeech.speak", {
+      VoiceTimeline.push("VOICE", "useFinnSpeech.speak", {
         chars: clean.length,
         muted: mutedRef.current,
         stack: new Error().stack?.split("\n").slice(2, 5).join(" | "),
       });
       if (!clean || mutedRef.current) return;
-      AriaAudioBus.unlock();
+      FinnAudioBus.unlock();
 
-      const granted = AriaAudioBus.acquire("chat-tts", stop);
+      const granted = FinnAudioBus.acquire("chat-tts", stop);
       if (!granted) {
         VoiceTimeline.push("VOICE", "acquire not granted");
         return;
@@ -123,14 +123,14 @@ export function useAriaSpeech() {
       setSpeaking(true);
       const t0 = performance.now();
 
-      VoiceTimeline.push("TTS_REQ", "useAriaSpeech → /api/aria/tts", { chars: clean.length });
+      VoiceTimeline.push("TTS_REQ", "useFinnSpeech → /api/aria/tts", { chars: clean.length });
       try {
         const res = await authenticatedFetch("/api/aria/tts", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ text: clean }),
         });
-        VoiceTimeline.push("TTS_RES", `useAriaSpeech ${res.status}`, {
+        VoiceTimeline.push("TTS_RES", `useFinnSpeech ${res.status}`, {
           status: res.status,
           ct: res.headers.get("content-type"),
         });
@@ -139,7 +139,7 @@ export function useAriaSpeech() {
         if (!ct.includes("audio/")) throw new Error("tts_not_audio");
         const blob = await res.blob();
         if (mutedRef.current) {
-          AriaAudioBus.release("chat-tts");
+          FinnAudioBus.release("chat-tts");
           setSpeaking(false);
           return;
         }
@@ -153,7 +153,7 @@ export function useAriaSpeech() {
           "[aria-voice] elevenlabs unavailable — reply stays silent:",
           (err as Error).message,
         );
-        AriaAudioBus.release("chat-tts");
+        FinnAudioBus.release("chat-tts");
         setSpeaking(false);
       }
     },
@@ -170,7 +170,7 @@ export function useAriaSpeech() {
           /* ignore */
         }
       }
-      AriaAudioBus.release("chat-tts");
+      FinnAudioBus.release("chat-tts");
     };
   }, []);
 

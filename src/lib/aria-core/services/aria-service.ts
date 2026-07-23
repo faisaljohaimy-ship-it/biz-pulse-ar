@@ -1,5 +1,5 @@
 /**
- * AriaService — the ONLY client-side transport to the FINN backend.
+ * FinnService — the ONLY client-side transport to the FINN backend.
  *
  * No page, hook, or component may call OpenAI/Claude/OpenRouter directly. All
  * requests flow through this service, which currently wraps the AI SDK
@@ -10,14 +10,14 @@
  * touching call sites.
  */
 import { DefaultChatTransport } from "ai";
-import type { AriaRouteHint } from "../types/aria";
+import type { FinnRouteHint } from "../types/aria";
 import { supabase } from "@/integrations/supabase/client";
 
-let cachedHint: AriaRouteHint | null = null;
+let cachedHint: FinnRouteHint | null = null;
 let cachedReplyMode: "text" | "voice" = "text";
 
-/** Publish the current route hint. AriaService attaches it as a request header. */
-export function setPendingRouteHint(hint: AriaRouteHint | null) {
+/** Publish the current route hint. FinnService attaches it as a request header. */
+export function setPendingRouteHint(hint: FinnRouteHint | null) {
   cachedHint = hint;
 }
 
@@ -95,7 +95,7 @@ export async function pingChat(): Promise<{
   }
 }
 
-export function createAriaTransport() {
+export function createFinnTransport() {
   return new DefaultChatTransport({
     api: "/api/chat",
     fetch: ariaAuthedFetch,

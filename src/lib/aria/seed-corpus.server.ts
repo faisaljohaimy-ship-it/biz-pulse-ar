@@ -71,7 +71,7 @@ type AdminClient = {
   };
 };
 
-export async function autoSeedAriaCorpusForOrg(
+export async function autoSeedFinnCorpusForOrg(
   supabaseAdmin: AdminClient,
   orgId: string,
 ): Promise<{ inserted: number; skipped: number }> {

@@ -20,7 +20,7 @@
  * returned by `buildExecutiveBrief`.
  */
 
-export type AriaIntent =
+export type FinnIntent =
   | "question"
   | "command"
   | "comparison"
@@ -39,7 +39,7 @@ export type AriaIntent =
   | "meeting_brief";
 
 interface IntentRule {
-  intent: AriaIntent;
+  intent: FinnIntent;
   patterns: RegExp[];
 }
 
@@ -68,7 +68,7 @@ const RULES: IntentRule[] = [
   },
 ];
 
-export function classifyIntent(question: string): AriaIntent {
+export function classifyIntent(question: string): FinnIntent {
   const q = question.trim();
   for (const rule of RULES) {
     if (rule.patterns.some((p) => p.test(q))) return rule.intent;
@@ -77,7 +77,7 @@ export function classifyIntent(question: string): AriaIntent {
 }
 
 /** Which retrieval buckets to hydrate for each intent. */
-function retrievalPlan(intent: AriaIntent): {
+function retrievalPlan(intent: FinnIntent): {
   incidents: boolean;
   kpis: boolean;
   notifications: boolean;
@@ -116,7 +116,7 @@ function retrievalPlan(intent: AriaIntent): {
 }
 
 interface EvidenceBundle {
-  intent: AriaIntent;
+  intent: FinnIntent;
   sources: string[];
   block: string;
 }
@@ -129,7 +129,7 @@ interface EvidenceBundle {
  * rather than fabricate).
  */
 export async function collectEvidence(
-  intent: AriaIntent,
+  intent: FinnIntent,
   orgId?: string | null,
 ): Promise<EvidenceBundle> {
   const sources: string[] = [];
@@ -282,7 +282,7 @@ export async function collectEvidence(
  * Next Actions → Confidence, but keep the visible answer executive,
  * short, and bilingual — matching the existing public output contract.
  */
-export function buildExecutiveSystemPrompt(intent: AriaIntent, sources: string[]): string {
+export function buildExecutiveSystemPrompt(intent: FinnIntent, sources: string[]): string {
   return `You are FINN — the Executive AI of NEXIOS / NEXUS AI OS (Industrial Security, Western Region of Saudi Arabia). You reason at GPT-5 Executive level.
 
 DETECTED INTENT: ${intent}
@@ -318,7 +318,7 @@ VISIBLE FORMAT (unchanged public contract):
 }
 
 export interface ExecutiveBrief {
-  intent: AriaIntent;
+  intent: FinnIntent;
   system: string;
   evidenceBlock: string;
   sources: string[];

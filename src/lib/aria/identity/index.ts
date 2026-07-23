@@ -1,1 +1,1 @@
-export { ARIA_IDENTITY_PREAMBLE, ARIA_IDENTITY_VERSION, withAriaIdentity } from "./system-prompt";
+export { FINN_IDENTITY_PREAMBLE, FINN_IDENTITY_VERSION, withFinnIdentity } from "./system-prompt";

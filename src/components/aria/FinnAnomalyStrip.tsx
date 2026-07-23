@@ -1,5 +1,5 @@
 /**
- * AriaAnomalyStrip — Phase 5 KPI anomaly detection surface.
+ * FinnAnomalyStrip — Phase 5 KPI anomaly detection surface.
  *
  * Renders the deterministic findings from `detectAnomalies()` (fixture-derived,
  * no key, honestly «محاكاة»-badged) as a horizontal card rail — a snap-scroll
@@ -27,7 +27,7 @@ const TONE: Record<AnomalySeverity, { ring: string; text: string; chip: string; 
   },
 };
 
-export function AriaAnomalyStrip({ className = "" }: { readonly className?: string }) {
+export function FinnAnomalyStrip({ className = "" }: { readonly className?: string }) {
   const anomalies = detectAnomalies();
 
   return (
@@ -96,4 +96,4 @@ export function AriaAnomalyStrip({ className = "" }: { readonly className?: stri
   );
 }
 
-export default AriaAnomalyStrip;
+export default FinnAnomalyStrip;

@@ -7,7 +7,7 @@
  * real runtime tables (`enterprise_events`, `agent_runs`,
  * `executive_briefings`). No mock data, no random talking.
  *
- * Reuses: AgentRing, AriaScene (R3F), bridge.functions, briefing.functions,
+ * Reuses: AgentRing, FinnScene (R3F), bridge.functions, briefing.functions,
  * narrator, conductor, voice profiles. Adds: StoryCard, conductor wiring,
  * one-click 60s briefing.
  */
@@ -37,17 +37,17 @@ import { getBridgeState } from "@/lib/exec/bridge.functions";
 import { generateExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { AgentRing } from "@/components/bridge/AgentRing";
 import { speakAgent } from "@/lib/digital-humans/speak-agent";
-import type { AriaScene as AriaSceneT } from "@/components/digital-humans/r3f/AriaScene";
+import type { FinnScene as FinnSceneT } from "@/components/digital-humans/r3f/FinnScene";
 
 // Lazy + client-only: react-three-fiber + three.js only loads when Theater
 // renders in the browser. The SSR branch makes the `import()` dead code so
 // Vite excludes the Three.js chunk from the server bundle (Vercel build-memory
 // guard); the server renders nothing for the WebGL scene.
-const AriaScene = lazy(
-  (): Promise<{ default: typeof AriaSceneT }> =>
+const FinnScene = lazy(
+  (): Promise<{ default: typeof FinnSceneT }> =>
     import.meta.env.SSR
-      ? Promise.resolve({ default: (() => null) as unknown as typeof AriaSceneT })
-      : import("@/components/digital-humans/r3f/AriaScene").then((m) => ({ default: m.AriaScene })),
+      ? Promise.resolve({ default: (() => null) as unknown as typeof FinnSceneT })
+      : import("@/components/digital-humans/r3f/FinnScene").then((m) => ({ default: m.FinnScene })),
 );
 import { StoryCard } from "@/components/theater/StoryCard";
 import { ConnectionLines } from "@/components/theater/ConnectionLines";
@@ -371,7 +371,7 @@ function TheaterPage() {
                   />
                 }
               >
-                <AriaScene
+                <FinnScene
                   spec={conductor.currentSpeaker}
                   state={aliveState}
                   mouthAmplitude={conductor.mouthAmplitude}

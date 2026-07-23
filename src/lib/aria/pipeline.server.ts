@@ -15,7 +15,7 @@ import {
   type ReportKind,
 } from "./types";
 import { fetchExecKpiSources, computeExecKpis, type ExecKpis } from "@/lib/sec.functions";
-import { buildAriaContext } from "@/lib/aria-context.server";
+import { buildFinnContext } from "@/lib/aria-context.server";
 import { embedText, toPgVector } from "./embeddings.server";
 
 const REASONING_MODEL = "google/gemini-3-flash-preview";
@@ -174,7 +174,7 @@ export async function retrieveKnowledge(
 
 // ============ Stage 4: Enterprise context ============
 export async function loadEnterpriseContext(supabase: SupabaseClient): Promise<string> {
-  return buildAriaContext(supabase);
+  return buildFinnContext(supabase);
 }
 
 // ============ Stage 5: KPI ============

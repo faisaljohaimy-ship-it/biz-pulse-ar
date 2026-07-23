@@ -244,7 +244,7 @@ export function IncidentDrawer({
   });
 
   const aria = useServerFn(ariaAnalyzeIncident);
-  const mAria = useMutation({
+  const mFinn = useMutation({
     mutationFn: () => aria({ data: { incident_id: incident!.id } }),
     onSuccess: () => {
       toast.success("اكتمل تحليل FINN");
@@ -454,11 +454,11 @@ export function IncidentDrawer({
   });
 
   // Latest FINN event for recommendations
-  const latestAria = (timeline ?? []).find(
+  const latestFinn = (timeline ?? []).find(
     (e) => e.event === "aria_analyzed" || e.event === "aria_auto_analyzed",
   );
   const ariaRecs =
-    (latestAria?.payload as
+    (latestFinn?.payload as
       | { recommendations?: string[]; immediate_actions?: string[] }
       | undefined) ?? {};
 
@@ -543,10 +543,10 @@ export function IncidentDrawer({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => mAria.mutate()}
-                    disabled={mAria.isPending}
+                    onClick={() => mFinn.mutate()}
+                    disabled={mFinn.isPending}
                   >
-                    {mAria.isPending ? "جارٍ التحليل…" : "إعادة التحليل"}
+                    {mFinn.isPending ? "جارٍ التحليل…" : "إعادة التحليل"}
                   </Button>
                 </div>
                 <p className="text-xs text-foreground">

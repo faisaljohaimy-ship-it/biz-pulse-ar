@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Copy, Check, Bot, RefreshCw, Sparkles } from "lucide-react";
-import { AriaSignatureBackdrop } from "@/components/aria/AriaSignatureBackdrop";
+import { FinnSignatureBackdrop } from "@/components/aria/FinnSignatureBackdrop";
 import { DOMAIN_URL } from "@/lib/domain";
 import { useI18n } from "@/lib/i18n";
 
@@ -54,7 +54,7 @@ function ConnectPage() {
       dir={ar ? "rtl" : "ltr"}
       className="relative isolate min-h-screen overflow-hidden bg-[#04070F] text-white"
     >
-      <AriaSignatureBackdrop intensity={1.2} />
+      <FinnSignatureBackdrop intensity={1.2} />
       <main className="relative z-10 mx-auto w-full max-w-3xl px-4 py-14 sm:py-20">
         <div className="mb-8 flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#3AE8FF]/12 text-[#3AE8FF]">

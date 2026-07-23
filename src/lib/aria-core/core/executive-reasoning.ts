@@ -4,7 +4,7 @@
  * stream. This engine produces the *internal reasoning frame* that other
  * engines (risk/priority/decision/confidence) score against.
  */
-import type { AriaContextSnapshot, AriaIntent } from "../types/aria";
+import type { FinnContextSnapshot, FinnIntent } from "../types/aria";
 import type { ReasoningTrace } from "../types/executive";
 
 function firstSentence(text: string): string {
@@ -12,7 +12,7 @@ function firstSentence(text: string): string {
   return (m ? m[0] : text).trim().slice(0, 240);
 }
 
-function detectEvidence(prompt: string, context: AriaContextSnapshot): string[] {
+function detectEvidence(prompt: string, context: FinnContextSnapshot): string[] {
   const evidence: string[] = [];
   const meta = context.pageMeta ?? {};
   for (const [k, v] of Object.entries(meta)) {
@@ -25,7 +25,7 @@ function detectEvidence(prompt: string, context: AriaContextSnapshot): string[] 
   return evidence.slice(0, 8);
 }
 
-function detectMissing(prompt: string, context: AriaContextSnapshot): string[] {
+function detectMissing(prompt: string, context: FinnContextSnapshot): string[] {
   const missing: string[] = [];
   if (!(context.pageMeta && "kpis" in context.pageMeta)) missing.push("kpis");
   if (!(context.pageMeta && "incidents" in context.pageMeta)) missing.push("incidents");
@@ -35,7 +35,7 @@ function detectMissing(prompt: string, context: AriaContextSnapshot): string[] {
 }
 
 export const executiveReasoning = {
-  build(prompt: string, context: AriaContextSnapshot, intent: AriaIntent): ReasoningTrace {
+  build(prompt: string, context: FinnContextSnapshot, intent: FinnIntent): ReasoningTrace {
     const summary = firstSentence(prompt);
     const evidence = detectEvidence(prompt, context);
     const missing = detectMissing(prompt, context);

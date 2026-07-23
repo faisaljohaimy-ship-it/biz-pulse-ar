@@ -1,12 +1,12 @@
 /**
- * AriaWatermark — global FINN presence rendered behind every route.
+ * FinnWatermark — global FINN presence rendered behind every route.
  * Mounted once in the app shell (src/routes/__root.tsx). Sits at z-index 0
  * so all page content (wrapped at z-index ≥ 1) renders above it. Uses the
  * user-provided hologram portrait as the system-wide backdrop across every
  * page, sub-page, and window. Ghosted enough to keep content readable.
  * RTL-aware via `inset-inline-end`. Never rendered inside intro overlays.
  */
-export function AriaWatermark() {
+export function FinnWatermark() {
   return (
     <div
       aria-hidden="true"

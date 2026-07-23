@@ -1,5 +1,5 @@
 /**
- * AriaDailySummary — the 3-line executive summary atop the dashboard (Phase 5).
+ * FinnDailySummary — the 3-line executive summary atop the dashboard (Phase 5).
  * A concise, FINN-voiced status read derived from the dashboard's own fixtures.
  * Navy/emerald glassmorphism, full RTL, badged «محاكاة».
  */
@@ -8,7 +8,7 @@ import { getDailySummary } from "@/lib/aria/today-summary";
 import { SimBadge } from "@/components/os/SimBadge";
 import { cn } from "@/lib/utils";
 
-export function AriaDailySummary({ className }: { className?: string }) {
+export function FinnDailySummary({ className }: { className?: string }) {
   const lines = getDailySummary();
   return (
     <section
@@ -40,4 +40,4 @@ export function AriaDailySummary({ className }: { className?: string }) {
   );
 }
 
-export default AriaDailySummary;
+export default FinnDailySummary;

@@ -7,7 +7,7 @@
  * never assembles ExecutiveBrainAnswer (the Orchestrator owns that).
  */
 import type { MissionOutcome, MissionRequest } from "../orchestrator/types";
-import type { AriaIntent } from "../executive-reasoning.server";
+import type { FinnIntent } from "../executive-reasoning.server";
 
 export type ExecutionState =
   | "created"
@@ -128,7 +128,7 @@ export interface ExecutionApproval {
 export interface ExecutionSession {
   session_id: string;
   mission_id: string;
-  intent: AriaIntent | "question";
+  intent: FinnIntent | "question";
   state: ExecutionState;
   health: ExecutionHealth;
   request: MissionRequest;

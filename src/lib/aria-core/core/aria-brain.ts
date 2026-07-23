@@ -2,7 +2,7 @@
  * FINN Brain — the single request entry point for the entire NEXIOS OS.
  *
  * Every page, hook, and component that wants to talk to FINN MUST go through
- * `ariaBrain.submit(...)` (via `useAria().ask(...)`). No component may call
+ * `ariaBrain.submit(...)` (via `useFinn().ask(...)`). No component may call
  * OpenAI, Claude, OpenRouter, or `/api/chat` directly.
  *
  * The Brain is a pure orchestration façade — it does not own the streaming
@@ -28,7 +28,7 @@ export interface BrainEvent {
 }
 
 export const ariaBrain = {
-  /** Called ONCE by <AriaProvider> to bind the singleton chat sender. */
+  /** Called ONCE by <FinnProvider> to bind the singleton chat sender. */
   bindSender(send: BrainSender) {
     boundSender = send;
     return () => {

@@ -11,8 +11,8 @@
  */
 import { avatarBrain } from "./avatar-brain";
 import { lipSyncEngine } from "./lip-sync-engine";
-import { useAriaStore } from "../state/aria-store";
-import type { AriaVoiceState } from "../types/aria";
+import { useFinnStore } from "../state/aria-store";
+import type { FinnVoiceState } from "../types/aria";
 
 type Unsub = () => void;
 
@@ -21,11 +21,11 @@ class VoiceBrain {
   private analyser: AnalyserNode | null = null;
   private ampRaf: number | null = null;
   private ctx: AudioContext | null = null;
-  private lastVoice: AriaVoiceState = "idle";
+  private lastVoice: FinnVoiceState = "idle";
 
   start(): Unsub {
     if (this.unsub) return this.unsub;
-    this.unsub = useAriaStore.subscribe((s, prev) => {
+    this.unsub = useFinnStore.subscribe((s, prev) => {
       if (s.voice !== prev.voice) this.handleVoiceChange(s.voice);
     });
     return () => this.stop();
@@ -42,14 +42,14 @@ class VoiceBrain {
   /** Attach an audio stream (mic or TTS output) for real lip amplitudes. */
   attachStream(_stream: MediaStream): void {
     // AudioContext removed site-wide — lip-sync analyser disabled.
-    // The AriaBackdrop reads presence state directly from `ariaState`.
+    // The FinnBackdrop reads presence state directly from `ariaState`.
   }
 
   detachStream(): void {
     // no-op — nothing to detach.
   }
 
-  private handleVoiceChange(next: AriaVoiceState): void {
+  private handleVoiceChange(next: FinnVoiceState): void {
     if (next === this.lastVoice) return;
     this.lastVoice = next;
     switch (next) {
@@ -57,7 +57,7 @@ class VoiceBrain {
         avatarBrain.onListeningStart();
         break;
       case "processing":
-        avatarBrain.onThinking(useAriaStore.getState().activeEnvelope);
+        avatarBrain.onThinking(useFinnStore.getState().activeEnvelope);
         break;
       case "speaking":
         /* handled by orchestrator.markStreaming */ break;

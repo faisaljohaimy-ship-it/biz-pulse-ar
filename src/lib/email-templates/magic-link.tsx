@@ -39,7 +39,7 @@ export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProp
 
 export default MagicLinkEmail;
 
-const main = { backgroundColor: "#ffffff", fontFamily: "Arial, sans-serif" };
+const main = { backgroundColor: "#ffffff", fontFamily: "Finnl, sans-serif" };
 const container = { padding: "20px 25px" };
 const h1 = {
   fontSize: "22px",

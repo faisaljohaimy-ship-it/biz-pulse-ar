@@ -1,5 +1,5 @@
 // Human-readable style guide derived from the frozen identity.
-import { getAriaIdentity } from "./identity.server";
+import { getFinnIdentity } from "./identity.server";
 import type { AvatarIdentity } from "./types";
 
 export interface StyleGuide {
@@ -12,7 +12,7 @@ export interface StyleGuide {
 }
 
 export function getStyleGuide(): StyleGuide {
-  const id = getAriaIdentity();
+  const id = getFinnIdentity();
   return {
     identity: id.id,
     summary_en:

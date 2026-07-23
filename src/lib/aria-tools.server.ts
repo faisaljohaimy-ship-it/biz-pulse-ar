@@ -4,8 +4,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Json } from "@/integrations/supabase/types";
 import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
 import {
-  prepareAriaOutboundMessage,
-  sendAriaOutboundMessageDirectInternal,
+  prepareFinnOutboundMessage,
+  sendFinnOutboundMessageDirectInternal,
   ariaAutoApproveEnabled,
 } from "@/lib/aria/outbound-messaging.server";
 import {
@@ -101,7 +101,7 @@ function safePostgrestSearchTerm(value: string): string {
     .trim();
 }
 
-export type AriaToolRuntimeContext = {
+export type FinnToolRuntimeContext = {
   /** Current, authentic user turn. Never populate from RAG or tool output. */
   lastUserText?: string;
 };
@@ -110,10 +110,10 @@ export type AriaToolRuntimeContext = {
  * Build the FINN executive toolbelt. All tools are RLS-scoped via the
  * request supabase client and gated by connector availability.
  */
-export function buildAriaTools(
+export function buildFinnTools(
   supabase: SupabaseClient,
   userId: string,
-  runtime: AriaToolRuntimeContext = {},
+  runtime: FinnToolRuntimeContext = {},
 ) {
   return {
     create_task: tool({
@@ -335,7 +335,7 @@ export function buildAriaTools(
               ...args,
               to: resolveOwnerEmail(args.to),
             };
-            return await sendAriaOutboundMessageDirectInternal({
+            return await sendFinnOutboundMessageDirectInternal({
               userId,
               payload,
               explicitIntentText: intentText,
@@ -349,7 +349,7 @@ export function buildAriaTools(
             ...args,
             to: args.to ?? resolveOwnerEmail(undefined),
           };
-          return await prepareAriaOutboundMessage(supabase, userId, payload);
+          return await prepareFinnOutboundMessage(supabase, userId, payload);
         } catch (error) {
           return {
             ok: false,
@@ -379,7 +379,7 @@ export function buildAriaTools(
               body: args.body,
               mediaUrls: args.media_urls,
             };
-            return await sendAriaOutboundMessageDirectInternal({
+            return await sendFinnOutboundMessageDirectInternal({
               userId,
               payload,
               explicitIntentText: intentText,
@@ -391,7 +391,7 @@ export function buildAriaTools(
             body: args.body,
             mediaUrls: args.media_urls,
           };
-          return await prepareAriaOutboundMessage(supabase, userId, payload);
+          return await prepareFinnOutboundMessage(supabase, userId, payload);
         } catch (error) {
           return {
             ok: false,
@@ -1264,4 +1264,4 @@ export function buildAriaTools(
   };
 }
 
-export type AriaToolset = ReturnType<typeof buildAriaTools>;
+export type FinnToolset = ReturnType<typeof buildFinnTools>;

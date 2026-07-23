@@ -10,21 +10,21 @@
  *   - a second FINN store, provider, or conversation
  */
 import { useCallback } from "react";
-import type { AriaOpenOptions, AriaPageContext } from "../types/aria";
-import { useAriaStore } from "../state/aria-store";
+import type { FinnOpenOptions, FinnPageContext } from "../types/aria";
+import { useFinnStore } from "../state/aria-store";
 import { ariaBrain } from "../core/aria-brain";
 
-export function useAria() {
-  const mode = useAriaStore((s) => s.mode);
-  const voice = useAriaStore((s) => s.voice);
-  const pageContext = useAriaStore((s) => s.pageContext);
-  const activeTurn = useAriaStore((s) => s.activeTurn);
-  const enqueue = useAriaStore((s) => s.enqueue);
-  const setMode = useAriaStore((s) => s.setMode);
-  const setPageContext = useAriaStore((s) => s.setPageContext);
+export function useFinn() {
+  const mode = useFinnStore((s) => s.mode);
+  const voice = useFinnStore((s) => s.voice);
+  const pageContext = useFinnStore((s) => s.pageContext);
+  const activeTurn = useFinnStore((s) => s.activeTurn);
+  const enqueue = useFinnStore((s) => s.enqueue);
+  const setMode = useFinnStore((s) => s.setMode);
+  const setPageContext = useFinnStore((s) => s.setPageContext);
 
   const open = useCallback(
-    (options?: AriaOpenOptions) => enqueue({ kind: "open", options }),
+    (options?: FinnOpenOptions) => enqueue({ kind: "open", options }),
     [enqueue],
   );
   const close = useCallback(() => enqueue({ kind: "close" }), [enqueue]);
@@ -51,6 +51,6 @@ export function useAria() {
  * Register the current page as FINN's active context. Call this once per
  * route from a `useEffect`. Safe to call with the same value repeatedly.
  */
-export function setAriaPageContext(ctx: AriaPageContext) {
-  useAriaStore.getState().setPageContext(ctx);
+export function setFinnPageContext(ctx: FinnPageContext) {
+  useFinnStore.getState().setPageContext(ctx);
 }

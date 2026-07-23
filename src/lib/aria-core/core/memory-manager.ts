@@ -5,13 +5,13 @@
  * This module defines the contract Phase 2 will fulfil. `recall` returns an
  * empty array; `remember` is a no-op.
  */
-import type { AriaMemoryRecall } from "../types/aria";
+import type { FinnMemoryRecall } from "../types/aria";
 import { assertOne } from "@/lib/aria/singletons";
 
 assertOne("MEMORY", "memoryManager@aria-core/core/memory-manager");
 
 export interface MemoryManager {
-  recall(query: string): Promise<readonly AriaMemoryRecall[]>;
+  recall(query: string): Promise<readonly FinnMemoryRecall[]>;
   remember(key: string, value: string): Promise<void>;
 }
 

@@ -1,6 +1,6 @@
 // Verification — end-to-end sanity check for the frozen identity.
 import { AvatarIdentitySchema } from "./contracts";
-import { getAriaIdentity } from "./identity.server";
+import { getFinnIdentity } from "./identity.server";
 
 export interface IdentityVerification {
   readonly ok: boolean;
@@ -11,7 +11,7 @@ export interface IdentityVerification {
 }
 
 export function verifyIdentity(): IdentityVerification {
-  const id = getAriaIdentity();
+  const id = getFinnIdentity();
   const parsed = AvatarIdentitySchema.safeParse(id);
   const issues: string[] = [];
   if (!parsed.success) {

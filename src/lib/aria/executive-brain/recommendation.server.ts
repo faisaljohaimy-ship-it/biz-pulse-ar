@@ -5,9 +5,9 @@
  */
 import type { Priority, Recommendation } from "./types";
 import type { ModelEnvelope } from "./contracts";
-import type { AriaIntent } from "../executive-reasoning.server";
+import type { FinnIntent } from "../executive-reasoning.server";
 
-function defaultDepartment(intent: AriaIntent): string {
+function defaultDepartment(intent: FinnIntent): string {
   switch (intent) {
     case "incident_review":
     case "root_cause":
@@ -40,7 +40,7 @@ function priorityFromRisk(topRiskScore: number): Priority {
 
 export function normalizeRecommendation(
   raw: ModelEnvelope["recommendation"],
-  intent: AriaIntent,
+  intent: FinnIntent,
   topRiskScore: number,
 ): Recommendation | null {
   if (!raw) return null;

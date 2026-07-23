@@ -34,11 +34,11 @@ import {
   markVendorFatal,
   shouldCoolFromError,
 } from "@/lib/aria-core/server/vendor-health.server";
-import { ARIA_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
+import { FINN_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
 import { buildFinnRuntimeBlock, MAKKAH_TIME_DIRECTIVE } from "@/lib/aria/makkah-clock";
 import { REGIONS, DEFAULT_REGION_ID } from "@/lib/regions";
 import {
-  ARIA_RESPONSE_CONTRACT,
+  FINN_RESPONSE_CONTRACT,
   FINN_LIVE_INTELLIGENCE_DOCTRINE,
   OUT_OF_SCOPE_REPLY,
   isInScope,
@@ -47,7 +47,7 @@ import {
 import { formatHcisReference, isHcisReferenceQuery } from "@/lib/aria/hcis-reference";
 import {
   ariaPreferencePromptLine,
-  extractAriaAdaptivePreferences,
+  extractFinnAdaptivePreferences,
 } from "@/lib/aria/adaptive-preferences";
 
 const OPENAI_MODEL_IDS = new Set<string>(OPENAI_MODELS.map((m) => m.id));
@@ -168,7 +168,7 @@ async function persistAdaptivePreferences(
   userId: string,
   authenticUserText: string,
 ): Promise<void> {
-  const preferences = extractAriaAdaptivePreferences(authenticUserText);
+  const preferences = extractFinnAdaptivePreferences(authenticUserText);
   for (const preference of preferences) {
     const { data: current, error: readError } = await supabase
       .from("aria_adaptive_preferences")
@@ -197,7 +197,7 @@ async function persistAdaptivePreferences(
 
 // Agentic mode: tools are ALWAYS enabled for authenticated users.
 
-const SYSTEM_PROMPT = `${ARIA_IDENTITY_PREAMBLE}
+const SYSTEM_PROMPT = `${FINN_IDENTITY_PREAMBLE}
 
 ---
 
@@ -232,7 +232,7 @@ You are FINN, a capable conversational and executive copilot for NEXUS Industria
 - Prioritize industrial-security operations, incidents, patrols, CCTV, access, visitors, permits, maintenance, projects, risks and executive KPIs.
 - Never fabricate operational evidence or merge simulation and production data without labeling them.
 
-${ARIA_RESPONSE_CONTRACT}
+${FINN_RESPONSE_CONTRACT}
 
 ${FINN_LIVE_INTELLIGENCE_DOCTRINE}`;
 
@@ -442,7 +442,7 @@ export const Route = createFileRoute("/api/chat")({
         // work: an out-of-scope question gets the one fixed line, and a
         // recurring FAQ answers instantly (no model call, sub-second). The
         // model path below inherits the same scope/brevity rules through
-        // ARIA_RESPONSE_CONTRACT baked into SYSTEM_PROMPT.
+        // FINN_RESPONSE_CONTRACT baked into SYSTEM_PROMPT.
         if (lastUserText) {
           const streamFixed = (text: string, tag: string) => {
             const stream = createUIMessageStream({
@@ -469,12 +469,12 @@ export const Route = createFileRoute("/api/chat")({
         let ragCounts = { memories: 0, knowledge: 0, documents: 0 };
         let ragCitations: import("@/lib/aria/rag.server").RagCitation[] = [];
         if (userId && grounded !== false) {
-          const [{ buildAriaContext }, { gatherRagContext }] = await Promise.all([
+          const [{ buildFinnContext }, { gatherRagContext }] = await Promise.all([
             import("@/lib/aria-context.server"),
             import("@/lib/aria/rag.server"),
           ]);
           const [ctx, rag] = await Promise.all([
-            buildAriaContext(supabase),
+            buildFinnContext(supabase),
             lastUserText
               ? gatherRagContext(supabase, userId, lastUserText)
               : Promise.resolve({
@@ -548,7 +548,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
         }
 
         const tools = userId
-          ? (await import("@/lib/aria-tools.server")).buildAriaTools(supabase, userId, {
+          ? (await import("@/lib/aria-tools.server")).buildFinnTools(supabase, userId, {
               lastUserText,
             })
           : undefined;

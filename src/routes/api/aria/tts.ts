@@ -2,7 +2,7 @@
  * POST /api/aria/tts — FINN's ONLY spoken-voice endpoint.
  *
  * Non-negotiable voice policy (owner directive): the audible FINN voice is
- * EXCLUSIVELY ElevenLabs "Layan" (ARIA_ELEVENLABS_VOICE_ID), generated here
+ * EXCLUSIVELY ElevenLabs "Layan" (FINN_ELEVENLABS_VOICE_ID), generated here
  * server-side and streamed straight through. The ELEVENLABS_API_KEY secret
  * lives only in the server environment — it never reaches the client bundle
  * or the repository — and there is NO fallback to any other voice provider:
@@ -13,9 +13,9 @@ import { createClient } from "@supabase/supabase-js";
 import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
 import {
   ALLOWED_ELEVEN_VOICE_IDS,
-  ARIA_ELEVENLABS_MODEL,
-  ARIA_ELEVENLABS_VOICE_ID,
-  ARIA_ELEVENLABS_VOICE_SETTINGS,
+  FINN_ELEVENLABS_MODEL,
+  FINN_ELEVENLABS_VOICE_ID,
+  FINN_ELEVENLABS_VOICE_SETTINGS,
 } from "@/lib/aria/voice-config";
 
 const JSON_HEADERS = {
@@ -89,7 +89,7 @@ export const Route = createFileRoute("/api/aria/tts")({
             : "";
         const voiceId = ALLOWED_ELEVEN_VOICE_IDS.has(requestedVoice)
           ? requestedVoice
-          : ARIA_ELEVENLABS_VOICE_ID;
+          : FINN_ELEVENLABS_VOICE_ID;
 
         const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
         if (!apiKey) return jsonError("FINN voice (ElevenLabs) is not configured.", 503);
@@ -107,8 +107,8 @@ export const Route = createFileRoute("/api/aria/tts")({
               },
               body: JSON.stringify({
                 text,
-                model_id: ARIA_ELEVENLABS_MODEL,
-                voice_settings: ARIA_ELEVENLABS_VOICE_SETTINGS,
+                model_id: FINN_ELEVENLABS_MODEL,
+                voice_settings: FINN_ELEVENLABS_VOICE_SETTINGS,
               }),
               signal: request.signal,
             },
@@ -140,7 +140,7 @@ export const Route = createFileRoute("/api/aria/tts")({
             "Cache-Control": "no-store",
             "Content-Type": upstream.headers.get("content-type") || "audio/mpeg",
             "X-FINN-Voice-ID": voiceId,
-            "X-FINN-Voice-Model": ARIA_ELEVENLABS_MODEL,
+            "X-FINN-Voice-Model": FINN_ELEVENLABS_MODEL,
             "X-FINN-Voice-Provider": "elevenlabs",
             "X-Content-Type-Options": "nosniff",
           },

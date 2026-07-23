@@ -1,5 +1,5 @@
 /**
- * AriaTodayRecommendations — proactive "توصيات FINN اليوم" strip (Phase 2 §3).
+ * FinnTodayRecommendations — proactive "توصيات FINN اليوم" strip (Phase 2 §3).
  *
  * Renders the three prioritized recommendations from `getTodayRecommendations`
  * (derived from the dashboard's own simulation fixtures) as tappable rows that
@@ -24,7 +24,7 @@ const TONE_ICON = {
   cyan: Camera,
 } as const;
 
-export function AriaTodayRecommendations({ className }: { className?: string }) {
+export function FinnTodayRecommendations({ className }: { className?: string }) {
   const source = useExecutiveKpiSource();
   const recos = getTodayRecommendations(source.data);
   return (
@@ -69,4 +69,4 @@ export function AriaTodayRecommendations({ className }: { className?: string }) 
   );
 }
 
-export default AriaTodayRecommendations;
+export default FinnTodayRecommendations;

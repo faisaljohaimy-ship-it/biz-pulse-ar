@@ -5,7 +5,7 @@
  * operation flows through the bus as a Task. No UI fields.
  */
 import type { AgentId, AgentResult, MissionRequest } from "../orchestrator/types";
-import type { AriaIntent } from "../executive-reasoning.server";
+import type { FinnIntent } from "../executive-reasoning.server";
 import type { Priority } from "../executive-brain/types";
 
 export type TaskStatus =
@@ -35,7 +35,7 @@ export interface Task {
   missionId: string;
   parentTaskId: string | null;
   agentId: AgentId;
-  intent: AriaIntent;
+  intent: FinnIntent;
   priority: TaskPriority;
   status: TaskStatus;
   deadline: string | null;
@@ -68,7 +68,7 @@ export interface Task {
 export interface EnqueueTaskInput {
   missionId: string;
   agentId: AgentId;
-  intent: AriaIntent;
+  intent: FinnIntent;
   priority?: TaskPriority;
   dependencies?: string[];
   parentTaskId?: string | null;

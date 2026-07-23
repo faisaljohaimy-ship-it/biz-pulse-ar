@@ -16,10 +16,10 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import {
-  listAriaDocuments,
-  ingestAriaDocument,
-  deleteAriaDocument,
-  searchAriaDocuments,
+  listFinnDocuments,
+  ingestFinnDocument,
+  deleteFinnDocument,
+  searchFinnDocuments,
 } from "@/lib/aria/documents.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/finn-documents")({
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
-  component: AriaDocumentsConsole,
+  component: FinnDocumentsConsole,
 });
 
 const BUCKET = "aria-documents";
@@ -82,20 +82,20 @@ async function extractText(file: File): Promise<{ text: string; pages: number }>
   throw new Error("نوع الملف غير مدعوم. ارفع PDF أو Word أو Excel أو نص.");
 }
 
-function AriaDocumentsConsole() {
+function FinnDocumentsConsole() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploadState, setUploadState] = useState<{ name: string; phase: string } | null>(null);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
-  const ingestFn = useServerFn(ingestAriaDocument);
-  const deleteFn = useServerFn(deleteAriaDocument);
-  const searchFn = useServerFn(searchAriaDocuments);
+  const ingestFn = useServerFn(ingestFinnDocument);
+  const deleteFn = useServerFn(deleteFinnDocument);
+  const searchFn = useServerFn(searchFinnDocuments);
 
   const docsQ = useQuery({
     queryKey: ["aria-documents"],
-    queryFn: () => listAriaDocuments(),
+    queryFn: () => listFinnDocuments(),
     refetchInterval: 30_000,
     refetchIntervalInBackground: false,
     staleTime: 20_000,

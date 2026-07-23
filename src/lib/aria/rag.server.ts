@@ -208,7 +208,7 @@ export async function rememberConversationTurn(
   userText: string,
   assistantText: string,
 ): Promise<void> {
-  const content = `User: ${userText.slice(0, 600)}\nARIA: ${assistantText.slice(0, 1400)}`;
+  const content = `User: ${userText.slice(0, 600)}\nFINN: ${assistantText.slice(0, 1400)}`;
   const suffix =
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()

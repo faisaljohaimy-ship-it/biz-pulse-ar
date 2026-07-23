@@ -1,16 +1,16 @@
 // Rendering profile — resolves the right quality preset for a surface.
-import { getAriaIdentity } from "./identity.server";
+import { getFinnIdentity } from "./identity.server";
 import type { RenderQuality, RenderingRule } from "./types";
 
 export function getRenderingProfile(quality: RenderQuality): RenderingRule {
-  const id = getAriaIdentity();
+  const id = getFinnIdentity();
   const found = id.rendering.find((r) => r.quality === quality);
   if (found) return found;
   return id.rendering[0];
 }
 
 export function listRenderingProfiles(): readonly RenderingRule[] {
-  return getAriaIdentity().rendering;
+  return getFinnIdentity().rendering;
 }
 
 export function assertRenderingCompliant(

@@ -1,5 +1,5 @@
 // Avatar profile — projection of the identity for renderer consumers.
-import { getAriaIdentity } from "./identity.server";
+import { getFinnIdentity } from "./identity.server";
 import type { ColorSwatch, FaceSignature, LightingRule } from "./types";
 
 export interface AvatarProfile {
@@ -13,7 +13,7 @@ export interface AvatarProfile {
 }
 
 export function getAvatarProfile(): AvatarProfile {
-  const id = getAriaIdentity();
+  const id = getFinnIdentity();
   return {
     id: id.id,
     display_name_en: id.display_name.en,

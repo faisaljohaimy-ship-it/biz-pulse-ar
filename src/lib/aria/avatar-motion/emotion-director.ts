@@ -1,16 +1,16 @@
 /**
  * Emotion Director — meaning-driven emotion + semantic head gesture selection.
  *
- * Pure logic module (no DOM). Consumed by HologramFace / AriaCopilot.
- * Sprite generation degraded to procedural-only mode (no AriaAvatarV3 layered
+ * Pure logic module (no DOM). Consumed by HologramFace / FinnCopilot.
+ * Sprite generation degraded to procedural-only mode (no FinnAvatarV3 layered
  * rig with pre-baked viseme/emotion sprites exists in the repo); this module
  * still drives the full emotion + head-motion contract via procedural tints
  * and CSS transforms applied by the consumer.
  */
 
-export type AriaEmotion = "warm" | "joy" | "attentive" | "thoughtful" | "concern";
+export type FinnEmotion = "warm" | "joy" | "attentive" | "thoughtful" | "concern";
 
-export type AriaHeadGesture =
+export type FinnHeadGesture =
   | "none"
   | "nod-start" // sentence start subtle 1.5° down-up (350ms)
   | "nod-emphasis" // 1° quick nod on numbers/exclamations
@@ -18,7 +18,7 @@ export type AriaHeadGesture =
   | "shake" // negations (لا، لم، ليس)
   | "question-tilt"; // 3° tilt for the whole question sentence
 
-export type AriaConversationalState = "idle" | "listening" | "thinking" | "speaking";
+export type FinnConversationalState = "idle" | "listening" | "thinking" | "speaking";
 
 // ---- Lexicons (Arabic + English) --------------------------------------------
 
@@ -72,7 +72,7 @@ function hit(text: string, list: string[]): boolean {
  * Derive emotion for a single spoken sentence.
  * Anomaly / risk sections ALWAYS render concern.
  */
-export function emotionForSentence(sentence: string): AriaEmotion {
+export function emotionForSentence(sentence: string): FinnEmotion {
   const s = sentence.trim();
   if (!s) return "warm";
   if (hit(s, RISK)) return "concern";
@@ -86,9 +86,9 @@ export function emotionForSentence(sentence: string): AriaEmotion {
  * Speaking is modulated per-sentence; caller should re-invoke emotionForSentence.
  */
 export function emotionForState(
-  state: AriaConversationalState,
+  state: FinnConversationalState,
   opts?: { greeting?: boolean; anomaly?: boolean },
-): AriaEmotion {
+): FinnEmotion {
   if (opts?.anomaly) return "concern";
   switch (state) {
     case "listening":
@@ -108,7 +108,7 @@ export function emotionForState(
  * At most one semantic gesture per sentence.
  * Priority: question > affirmation/negation > emphasis > sentence-start nod.
  */
-export function gestureForSentence(sentence: string): AriaHeadGesture {
+export function gestureForSentence(sentence: string): FinnHeadGesture {
   const s = sentence.trim();
   if (!s) return "none";
   if (QUESTION_RE.test(s)) return "question-tilt";
@@ -134,7 +134,7 @@ export function splitSentences(text: string): string[] {
  * CSS transform for a head gesture at progress p ∈ [0..1].
  * Damped springs, no snaps. Reduced-motion callers should skip.
  */
-export function gestureTransform(g: AriaHeadGesture, p: number): string {
+export function gestureTransform(g: FinnHeadGesture, p: number): string {
   const clamp = Math.max(0, Math.min(1, p));
   switch (g) {
     case "nod-start": {
@@ -167,7 +167,7 @@ export function gestureTransform(g: AriaHeadGesture, p: number): string {
  * Emotion overlay tint (procedural fallback for missing sprite set).
  * Sits above the base portrait, below any viseme layer.
  */
-export function emotionOverlay(e: AriaEmotion): {
+export function emotionOverlay(e: FinnEmotion): {
   filter: string;
   glow: string;
   browLift: number; // px, applied to brow band

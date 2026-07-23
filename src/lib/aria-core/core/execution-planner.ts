@@ -25,9 +25,9 @@ import type {
   PriorityAssessment,
   RiskSignal,
 } from "../types/executive";
-import type { AriaIntent } from "../types/aria";
+import type { FinnIntent } from "../types/aria";
 
-function decisionToActionType(mode: DecisionProposal["mode"], intent: AriaIntent): ActionType {
+function decisionToActionType(mode: DecisionProposal["mode"], intent: FinnIntent): ActionType {
   switch (mode) {
     case "escalate":
       return "escalate";
@@ -114,7 +114,7 @@ function initialQueueState(
 
 interface PlanInput {
   turnId: string;
-  intent: AriaIntent;
+  intent: FinnIntent;
   objective_ar: string;
   objective_en: string;
   decision: DecisionProposal;

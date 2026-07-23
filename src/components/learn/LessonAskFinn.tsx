@@ -1,12 +1,12 @@
 /**
- * LessonAskAria — bridge from a lesson into the FINN Singleton.
+ * LessonAskFinn — bridge from a lesson into the FINN Singleton.
  *
  * Sends the prompt into the global copilot (see `src/lib/aria-core/`).
  * Because the singleton lives at the root, the conversation persists
  * even if the learner navigates to another route mid-answer.
  */
 import { Sparkles } from "lucide-react";
-import { useAria } from "@/lib/aria-core";
+import { useFinn } from "@/lib/aria-core";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -15,8 +15,8 @@ interface Props {
   className?: string;
 }
 
-export function LessonAskAria({ prompt, label, className }: Props) {
-  const { ask } = useAria();
+export function LessonAskFinn({ prompt, label, className }: Props) {
+  const { ask } = useFinn();
   return (
     <button
       type="button"

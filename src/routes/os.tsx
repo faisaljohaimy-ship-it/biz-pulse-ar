@@ -25,7 +25,7 @@ import { OsExecutiveStrip } from "@/components/os/OsExecutiveStrip";
 import { OsLivePulse } from "@/components/os/OsLivePulse";
 import { OsCommandDeck } from "@/components/os/OsCommandDeck";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
-import { AriaCinematicIntro } from "@/components/intro/AriaCinematicIntro";
+import { FinnCinematicIntro } from "@/components/intro/FinnCinematicIntro";
 
 export const Route = createFileRoute("/os")({
   head: () => ({
@@ -143,7 +143,7 @@ function OsHub() {
           "radial-gradient(1200px 600px at 50% -10%, rgba(0,212,255,0.10), transparent 60%), linear-gradient(180deg, #0a0e1a 0%, #0f1729 100%)",
       }}
     >
-      <AriaCinematicIntro surface="os" />
+      <FinnCinematicIntro surface="os" />
 
       {/* Ambient layers */}
       <div

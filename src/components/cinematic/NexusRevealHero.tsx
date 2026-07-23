@@ -285,7 +285,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
     }, 700);
   };
 
-  const scrollToAria = () => {
+  const scrollToFinn = () => {
     if (typeof document === "undefined") return;
     const el = document.getElementById("aria-quick-ask");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -301,7 +301,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       : "Enterprise AI operating system · FINN at the core · Industrial Security · Western Region.",
     ctaPrimary: ar ? "ابدأ التشغيل" : "Start Operation",
     ctaSecondary: ar ? "غرفة القيادة التنفيذية" : "Executive Bridge",
-    ctaAria: ar ? "اسأل FINN" : "Ask FINN",
+    ctaFinn: ar ? "اسأل FINN" : "Ask FINN",
     boot: ar ? "تهيئة بيئة التشغيل…" : "Booting operating environment…",
     booting: ar ? "جارٍ تشغيل النظام…" : "Launching platform…",
     trust: ar
@@ -697,11 +697,11 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
 
           <button
             type="button"
-            onClick={scrollToAria}
+            onClick={scrollToFinn}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/[0.06] px-6 py-3.5 text-sm font-semibold text-[#DFF6FF] transition hover:bg-[#3AE8FF]/[0.14] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3AE8FF]"
           >
             <MessageSquare className="h-4 w-4" />
-            <span>{t.ctaAria}</span>
+            <span>{t.ctaFinn}</span>
           </button>
         </div>
 
@@ -743,7 +743,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       {/* Scroll affordance */}
       <button
         type="button"
-        onClick={scrollToAria}
+        onClick={scrollToFinn}
         aria-label={t.scroll}
         className="group absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-1.5 text-[10px] uppercase tracking-[0.36em] text-white/45 transition hover:text-[#3AE8FF] sm:flex"
       >

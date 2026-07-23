@@ -8,7 +8,7 @@
  */
 import { avatarStateManager } from "./avatar-state-manager";
 import { emotionEngine } from "./emotion-engine";
-import { useAriaStore } from "../state/aria-store";
+import { useFinnStore } from "../state/aria-store";
 import type { ExecutiveEnvelope } from "../types/executive";
 
 class LiveEmotion {
@@ -17,7 +17,7 @@ class LiveEmotion {
 
   start(): () => void {
     if (this.unsub) return () => this.stop();
-    this.unsub = useAriaStore.subscribe((s, prev) => {
+    this.unsub = useFinnStore.subscribe((s, prev) => {
       if (s.activeEnvelope !== prev.activeEnvelope) this.handle(s.activeEnvelope);
     });
     return () => this.stop();

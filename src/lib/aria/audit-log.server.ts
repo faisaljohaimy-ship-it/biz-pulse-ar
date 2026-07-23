@@ -11,7 +11,7 @@
  * `aria_actions_log_org_read` policy so members only see their org.
  */
 
-export interface AriaActionLogEntry {
+export interface FinnActionLogEntry {
   action: string;
   orgId?: string | null;
   userId?: string | null;
@@ -28,7 +28,7 @@ export interface AriaActionLogEntry {
 
 const DEFAULT_ORG = "00000000-0000-0000-0000-000000000001";
 
-export async function logAriaAction(entry: AriaActionLogEntry): Promise<void> {
+export async function logFinnAction(entry: FinnActionLogEntry): Promise<void> {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("aria_actions_log").insert({

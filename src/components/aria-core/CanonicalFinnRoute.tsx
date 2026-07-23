@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { AudioWaveform, BrainCircuit, ShieldCheck, Sparkles } from "lucide-react";
-import { useAria } from "@/lib/aria-core/hooks/useAria";
+import { useFinn } from "@/lib/aria-core/hooks/useFinn";
 import { useI18n } from "@/lib/i18n";
 
 /**
@@ -8,10 +8,10 @@ import { useI18n } from "@/lib/i18n";
  * It opens the singleton root-mounted copilot and never creates another chat,
  * transport, memory, microphone, or TTS owner.
  */
-export function CanonicalAriaRoute() {
+export function CanonicalFinnRoute() {
   const { locale } = useI18n();
   const ar = locale === "ar";
-  const { open, mode } = useAria();
+  const { open, mode } = useFinn();
 
   useEffect(() => {
     open({ focus: true });

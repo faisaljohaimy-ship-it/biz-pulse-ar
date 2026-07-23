@@ -1,13 +1,13 @@
 /**
- * AriaConsole — the command center's FINN assistant: a holographic avatar
+ * FinnConsole — the command center's FINN assistant: a holographic avatar
  * frame, the singleton runtime status + waveform, the capability checklist,
  * and a CTA to the one official FINN surface. It never simulates a second
  * listening/speaking state.
  */
 import { Link } from "@tanstack/react-router";
 import { Check, Mic, User } from "lucide-react";
-import { CC_ARIA_CAPS } from "../commandCenterData";
-import { useAria } from "@/lib/aria-core/hooks/useAria";
+import { CC_FINN_CAPS } from "../commandCenterData";
+import { useFinn } from "@/lib/aria-core/hooks/useFinn";
 
 const BARS = Array.from({ length: 26 }, (_, i) => 26 + Math.abs(Math.sin(i * 0.9)) * 74);
 const STATES = {
@@ -18,8 +18,8 @@ const STATES = {
   unavailable: { ar: "الصوت غير متاح", en: "Voice unavailable" },
 } as const;
 
-export function AriaConsole({ ar, accent }: { ar: boolean; accent: string }) {
-  const { voice } = useAria();
+export function FinnConsole({ ar, accent }: { ar: boolean; accent: string }) {
+  const { voice } = useFinn();
   const active = voice === "listening" || voice === "processing" || voice === "speaking";
   const status = STATES[voice];
 
@@ -82,7 +82,7 @@ export function AriaConsole({ ar, accent }: { ar: boolean; accent: string }) {
 
       {/* capability checklist */}
       <ul className="grid gap-1.5">
-        {CC_ARIA_CAPS.map((c) => (
+        {CC_FINN_CAPS.map((c) => (
           <li
             key={c.en}
             className="flex items-center justify-between rounded-lg border border-white/8 bg-black/20 px-2 py-1 text-[10px] text-white/75"
@@ -117,4 +117,4 @@ export function AriaConsole({ ar, accent }: { ar: boolean; accent: string }) {
   );
 }
 
-export default AriaConsole;
+export default FinnConsole;

@@ -1,4 +1,4 @@
-import { applyAriaPronunciation } from "./pronunciation";
+import { applyFinnPronunciation } from "./pronunciation";
 
 /**
  * FINN reply-channel contract.
@@ -8,7 +8,7 @@ import { applyAriaPronunciation } from "./pronunciation";
  * FINN speak. When Conversation Mode is OFF, replies stay silent (visual
  * only), so opening the copilot or typing never causes surprise audio.
  */
-export function shouldSpeakAriaReply({
+export function shouldSpeakFinnReply({
   conversationMode,
   fromVoice: _fromVoice,
 }: {
@@ -23,7 +23,7 @@ export function shouldSpeakAriaReply({
  * asks the model for spoken prose when replyMode="voice". Article 22 §5:
  * Latin acronyms and directive codes are spoken as correct Arabic (SEC-18 →
  * «سِك ثمانية عشر», PTW → «تصريح العمل») instead of letter-spelled. */
-export function toAriaSpeechText(value: string): string {
+export function toFinnSpeechText(value: string): string {
   const cleaned = value
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
@@ -36,5 +36,5 @@ export function toAriaSpeechText(value: string): string {
     .replace(/[ \t]+/g, " ")
     .replace(/\s*\n\s*/g, " ")
     .trim();
-  return applyAriaPronunciation(cleaned);
+  return applyFinnPronunciation(cleaned);
 }

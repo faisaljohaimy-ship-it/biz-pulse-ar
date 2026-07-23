@@ -23,7 +23,7 @@ import {
 } from "./avatar-state-manager";
 import { emotionEngine } from "./emotion-engine";
 import { lipSyncEngine } from "./lip-sync-engine";
-import type { AriaIntent } from "../types/aria";
+import type { FinnIntent } from "../types/aria";
 import type { ExecutiveEnvelope } from "../types/executive";
 
 type Source = AvatarEvent["source"];
@@ -63,7 +63,7 @@ class AvatarBrain {
     this.started = false;
   }
 
-  // ── Public signal handlers (called by AriaProvider / orchestrator) ──
+  // ── Public signal handlers (called by FinnProvider / orchestrator) ──
 
   onOpen(): void {
     this.init();
@@ -123,7 +123,7 @@ class AvatarBrain {
     attentionEngine.focusCamera();
   }
 
-  onWarning(intent?: AriaIntent): void {
+  onWarning(intent?: FinnIntent): void {
     const emotion = emotionEngine.fromSignals({ risk: "high", intent });
     this.dispatch("warning", emotion, "system", "critical");
   }

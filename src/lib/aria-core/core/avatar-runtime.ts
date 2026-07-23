@@ -4,7 +4,7 @@
  * Single entry point that boots every Phase 11 subsystem (voice brain,
  * realtime animation, live emotion, conversation/thinking/execution
  * animators, executive presence). Idempotent; safe to call from
- * <AriaProvider> mount and from HMR.
+ * <FinnProvider> mount and from HMR.
  *
  * Rules:
  *   • No LLM calls, no business logic, no UI code.

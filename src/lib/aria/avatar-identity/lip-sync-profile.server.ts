@@ -1,9 +1,9 @@
 // Lip-sync profile — declarative constraints for the mouth channel.
-import { getAriaIdentity } from "./identity.server";
+import { getFinnIdentity } from "./identity.server";
 import type { LipSyncRule } from "./types";
 
 export function getLipSyncProfile(): LipSyncRule {
-  return getAriaIdentity().lip_sync;
+  return getFinnIdentity().lip_sync;
 }
 
 export function isLipSyncCompliant(input: {

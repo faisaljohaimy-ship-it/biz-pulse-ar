@@ -13,7 +13,7 @@ import { IncidentReplay } from "./cockpit/IncidentReplay";
 import { PredictiveAnalytics } from "./cockpit/PredictiveAnalytics";
 import { RiskHeatmap } from "./cockpit/RiskHeatmap";
 import { CommandCenterLinks } from "./cockpit/CommandCenterLinks";
-import { LessonAskAria } from "./LessonAskAria";
+import { LessonAskFinn } from "./LessonAskFinn";
 
 interface Props {
   slug: string;
@@ -62,7 +62,7 @@ export function LessonCockpit({ slug, lang, lessonTitle }: Props) {
         >
           <DecisionTimeline events={c.timeline} lang={lang} />
           <div className="mt-4">
-            <LessonAskAria
+            <LessonAskFinn
               prompt={
                 ar
                   ? `FINN، اشرحي لي منطق كلّ قرار في الجدول الزمني لحصّة «${lessonTitle}»، وأيّها كنتِ ستأخذينه بشكل مختلف ولماذا.`

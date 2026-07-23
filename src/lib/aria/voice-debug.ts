@@ -36,7 +36,7 @@ function shortVoiceId(id?: string): string {
   return id ? id.slice(0, 6) : "?";
 }
 
-export const AriaVoiceDebug = {
+export const FinnVoiceDebug = {
   isDebugOn: isDebugFlagOn,
 
   /** Announce the voice engine that is (about to) speak this utterance. */

@@ -655,7 +655,7 @@ function DigitalTwinPage() {
             : "Predictions"}
       </button>
 
-      {/* The single global AriaCopilot is mounted by __root.tsx. */}
+      {/* The single global FinnCopilot is mounted by __root.tsx. */}
 
       {/* Keyframes */}
       <style>{`

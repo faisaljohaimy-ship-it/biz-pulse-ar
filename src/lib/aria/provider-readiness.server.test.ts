@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { inspectAriaProviderReadiness } from "./provider-readiness.server";
+import { inspectFinnProviderReadiness } from "./provider-readiness.server";
 
 const COMPLETE = {
   SUPABASE_URL: "https://project.supabase.co",
@@ -7,7 +7,7 @@ const COMPLETE = {
   SUPABASE_SERVICE_ROLE_KEY: "service-role-key-with-enough-length",
   GEMINI_API_KEY: "gemini-key-with-enough-length",
   ELEVENLABS_API_KEY: "elevenlabs-key-with-enough-len",
-  ARIA_FORCE_GEMINI_FLASH: "true",
+  FINN_FORCE_GEMINI_FLASH: "true",
   RESEND_API_KEY: "resend-key-with-enough-length",
   RESEND_FROM_EMAIL: "FINN <aria@nexios.com>",
   RESEND_WEBHOOK_SECRET: "whsec_resend-secret-with-enough-length",
@@ -15,12 +15,12 @@ const COMPLETE = {
   TWILIO_AUTH_TOKEN: "twilio-token-with-enough-length",
   TWILIO_MESSAGING_SERVICE_SID: "MG00000000000000000000000000000000",
   TWILIO_STATUS_CALLBACK_URL: "https://neexios.com/api/webhooks/twilio",
-  ARIA_MESSAGE_APPROVAL_SECRET: "a".repeat(48),
+  FINN_MESSAGE_APPROVAL_SECRET: "a".repeat(48),
 };
 
 describe("FINN provider readiness", () => {
   it("reports a fully configured provider set without exposing values", () => {
-    const status = inspectAriaProviderReadiness(COMPLETE);
+    const status = inspectFinnProviderReadiness(COMPLETE);
     expect(status.ready).toBe(true);
     expect(status.email.provider).toBe("resend");
     expect(status.intelligence.provider).toBe("google-gemini");
@@ -29,17 +29,17 @@ describe("FINN provider readiness", () => {
   });
 
   it("rejects placeholders and reports exact missing variable names", () => {
-    const status = inspectAriaProviderReadiness({
+    const status = inspectFinnProviderReadiness({
       GEMINI_API_KEY: "replace_me",
       RESEND_FROM_EMAIL: "FINN <aria@your-verified-domain.example>",
     });
     expect(status.ready).toBe(false);
     expect(status.intelligence.missing).toContain("GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY");
-    expect(status.outboundSecurity.missing).toContain("ARIA_MESSAGE_APPROVAL_SECRET");
+    expect(status.outboundSecurity.missing).toContain("FINN_MESSAGE_APPROVAL_SECRET");
   });
 
   it("keeps chat/transcription on Gemini and the audible voice on ElevenLabs", () => {
-    const status = inspectAriaProviderReadiness({
+    const status = inspectFinnProviderReadiness({
       ...COMPLETE,
       GEMINI_API_KEY: undefined,
       GOOGLE_GENERATIVE_AI_API_KEY: "google-key-with-enough-length",
@@ -48,7 +48,7 @@ describe("FINN provider readiness", () => {
     expect(status.voice.ready).toBe(true);
     expect(status.voice.missing).toEqual([]);
 
-    const noVoice = inspectAriaProviderReadiness({
+    const noVoice = inspectFinnProviderReadiness({
       ...COMPLETE,
       ELEVENLABS_API_KEY: undefined,
     });
@@ -57,10 +57,10 @@ describe("FINN provider readiness", () => {
   });
 
   it("allows a legacy intelligence fallback only when explicitly enabled", () => {
-    const status = inspectAriaProviderReadiness({
+    const status = inspectFinnProviderReadiness({
       ...COMPLETE,
       GEMINI_API_KEY: undefined,
-      ARIA_FORCE_GEMINI_FLASH: "false",
+      FINN_FORCE_GEMINI_FLASH: "false",
       OPENAI_API_KEY: "openai-key-with-enough-length",
     });
     expect(status.intelligence.provider).toBe("openai");

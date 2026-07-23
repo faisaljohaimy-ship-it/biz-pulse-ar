@@ -1,10 +1,10 @@
 /**
- * AriaScene — R3F canvas hosting the Executive Digital Human. Provider-
+ * FinnScene — R3F canvas hosting the Executive Digital Human. Provider-
  * abstracted: renders any registered DigitalHumanSpec (FINN + 10 specialists)
  * using the procedural bust, with HDR-style lighting and a soft halo that
  * tracks the live AliveState.
  *
- * SSR-safe: only ever rendered inside AriaDock, which mounts client-side.
+ * SSR-safe: only ever rendered inside FinnDock, which mounts client-side.
  */
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
@@ -42,7 +42,7 @@ function HaloRing({ color, intensity }: { color: string; intensity: number }) {
   );
 }
 
-export function AriaScene({ spec, state, mouthAmplitude = 0, size, severity, gaze }: Props) {
+export function FinnScene({ spec, state, mouthAmplitude = 0, size, severity, gaze }: Props) {
   const alive: AliveState = useMemo(() => toAliveState(state, severity), [state, severity]);
   const preset = ALIVE_PRESETS[alive];
   const [pointer, setPointer] = useState({ x: 0, y: 0 });

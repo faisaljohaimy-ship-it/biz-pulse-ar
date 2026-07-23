@@ -1,6 +1,6 @@
 /**
  * ExecutiveCard — compact, arabic-first render of FINN's current
- * ExecutionEnvelope. Consumes `useAriaStore().activeExecution` and shows
+ * ExecutionEnvelope. Consumes `useFinnStore().activeExecution` and shows
  * only executive-facing fields: summary, risk, priority, confidence,
  * recommended action, approval requirement, next step.
  *
@@ -8,7 +8,7 @@
  * queue states surfaced to the user.
  */
 import { ShieldAlert, Gauge, CheckCircle2, ArrowRight, Lock } from "lucide-react";
-import { useAriaStore } from "@/lib/aria-core/store";
+import { useFinnStore } from "@/lib/aria-core/store";
 import { cn } from "@/lib/utils";
 import type { RiskLevel, PriorityLevel } from "@/lib/aria-core/types/executive";
 
@@ -37,7 +37,7 @@ const RISK_TONE: Record<RiskLevel, string> = {
 };
 
 export function ExecutiveCard() {
-  const env = useAriaStore((s) => s.activeExecution);
+  const env = useFinnStore((s) => s.activeExecution);
   if (!env) return null;
 
   const nextStep = env.steps[0];

@@ -38,7 +38,7 @@ describe("specialist voice release contract", () => {
     const local = source("src/lib/digital-humans/free-agent-speech.ts");
     expect(existsSync(join(process.cwd(), "src/routes/api/agents/tts.ts"))).toBe(false);
     expect(local).toContain('authenticatedFetch("/api/aria/tts"');
-    expect(local).toContain('AriaAudioBus.acquire("agent-tts"');
+    expect(local).toContain('FinnAudioBus.acquire("agent-tts"');
     // Owner voice policy: browser TTS is banned in every path.
     expect(local).not.toMatch(/speechSynthesis|SpeechSynthesisUtterance/);
     expect(local).not.toMatch(/OPENAI_API_KEY|gpt-4o-mini-tts/);
@@ -47,7 +47,7 @@ describe("specialist voice release contract", () => {
   it("keeps the audible voice a single canonical FINN voice, key server-side only", () => {
     const tts = source("src/routes/api/aria/tts.ts");
     expect(tts).toContain("ELEVENLABS_API_KEY");
-    expect(tts).toContain("ARIA_ELEVENLABS_VOICE_ID");
+    expect(tts).toContain("FINN_ELEVENLABS_VOICE_ID");
     expect(tts).not.toMatch(/GEMINI_TTS|generativelanguage/);
     const config = source("src/lib/aria/voice-config.ts");
     expect(config).toContain('"izhopdR43PRI5gAmjXTj"');
@@ -55,7 +55,7 @@ describe("specialist voice release contract", () => {
     for (const file of [
       "src/lib/digital-humans/free-agent-speech.ts",
       "src/lib/digital-humans/aria-voice.ts",
-      "src/components/aria-core/AriaCopilot.tsx",
+      "src/components/aria-core/FinnCopilot.tsx",
     ]) {
       expect(source(file)).not.toContain("ELEVENLABS_API_KEY");
     }
@@ -82,8 +82,8 @@ describe("specialist voice release contract", () => {
     expect(client).not.toContain("/api/agents/tts");
     // Specialist playback is bus-governed: it must own agent-tts first, so
     // FINN (chat-tts, higher priority) always preempts and never overlaps.
-    expect(local).toContain('AriaAudioBus.acquire("agent-tts"');
-    expect(local).toContain('AriaAudioBus.release("agent-tts"');
+    expect(local).toContain('FinnAudioBus.acquire("agent-tts"');
+    expect(local).toContain('FinnAudioBus.release("agent-tts"');
     // Saved repair method (CLAUDE.md): the public endpoint is allowed ONLY
     // as the 401/403 guest fallback of the SAME server voice pipeline —
     // auth-first must remain the primary path in both clients.

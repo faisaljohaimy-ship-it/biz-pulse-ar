@@ -4,7 +4,7 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import * as React from "react";
 import { z } from "zod";
-import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { FinnAudioBus } from "@/lib/aria/audio-bus";
 import { SimulationRibbon } from "@/components/SimulationRibbon";
 import { ExecutiveSourceBadge } from "@/components/evidence/ExecutiveSourceBadge";
 import { REGIONS, REGION_ACCENT_HEX } from "@/lib/regions";
@@ -736,7 +736,7 @@ function ExecutiveBridgePage() {
   const beginNarration = React.useCallback(() => {
     // This function is only called from click/tap/keydown handlers so audio
     // remains behind a real user gesture on iOS and Chromium.
-    AriaAudioBus.unlock();
+    FinnAudioBus.unlock();
     setCompleted(false);
     setHasStarted(true);
     setVoiceError(null);
@@ -812,8 +812,8 @@ function ExecutiveBridgePage() {
     const fail = (message: string) => {
       if (cancelled) return;
       if (ownsBus) {
-        AriaAudioBus.notifyStopped("chat-tts");
-        AriaAudioBus.release("chat-tts");
+        FinnAudioBus.notifyStopped("chat-tts");
+        FinnAudioBus.release("chat-tts");
         ownsBus = false;
       }
       // Keep the briefing running silently instead of hard-stopping —
@@ -847,13 +847,13 @@ function ExecutiveBridgePage() {
           }
         };
 
-        ownsBus = AriaAudioBus.acquire("chat-tts", stopForPreemption);
+        ownsBus = FinnAudioBus.acquire("chat-tts", stopForPreemption);
         if (!ownsBus) throw new Error("voice channel unavailable");
 
         a.onplaying = () => {
           if (cancelled) return;
           setVoiceState("playing");
-          AriaAudioBus.notifyPlaying("chat-tts", a);
+          FinnAudioBus.notifyPlaying("chat-tts", a);
         };
         a.ontimeupdate = () => {
           if (!cancelled && Number.isFinite(a.duration) && a.duration > 0) {
@@ -865,8 +865,8 @@ function ExecutiveBridgePage() {
           setProgress(1);
           setVoiceState("idle");
           if (ownsBus) {
-            AriaAudioBus.notifyStopped("chat-tts");
-            AriaAudioBus.release("chat-tts");
+            FinnAudioBus.notifyStopped("chat-tts");
+            FinnAudioBus.release("chat-tts");
             ownsBus = false;
           }
           advance();
@@ -898,8 +898,8 @@ function ExecutiveBridgePage() {
       }
       if (narrationAudioRef.current === audio) narrationAudioRef.current = null;
       if (ownsBus) {
-        AriaAudioBus.notifyStopped("chat-tts");
-        AriaAudioBus.release("chat-tts");
+        FinnAudioBus.notifyStopped("chat-tts");
+        FinnAudioBus.release("chat-tts");
       }
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
@@ -925,7 +925,7 @@ function ExecutiveBridgePage() {
         setNarrating(false);
         setVoiceState("idle");
         try {
-          AriaAudioBus.stopAll();
+          FinnAudioBus.stopAll();
         } catch {
           /* noop */
         }
@@ -956,7 +956,7 @@ function ExecutiveBridgePage() {
       setNarrating(false);
       setVoiceState("idle");
       try {
-        AriaAudioBus.stopAll();
+        FinnAudioBus.stopAll();
       } catch {
         /* noop */
       }
@@ -1013,7 +1013,7 @@ function ExecutiveBridgePage() {
           <DateStamp />
         </div>
         <div className="pointer-events-auto absolute left-1/2 top-3 hidden -translate-x-1/2 sm:top-4 sm:block">
-          <AriaVoiceBadge state={voiceState} language={primary} error={voiceError} />
+          <FinnVoiceBadge state={voiceState} language={primary} error={voiceError} />
         </div>
         <div className="pointer-events-auto flex items-center gap-2">
           <LanguageToggle primary={primary} onChange={setPrimary} />
@@ -1111,7 +1111,7 @@ function ExecutiveBridgePage() {
                 Begin FINN voice briefing
               </span>
             </span>
-            <AriaWaveform active={false} />
+            <FinnWaveform active={false} />
             <span
               aria-hidden
               className="absolute inset-x-[18%] top-0 h-px bg-gradient-to-r from-transparent via-[#3AE8FF] to-transparent"
@@ -1176,7 +1176,7 @@ function ExecutiveBridgePage() {
           </ControlBtn>
           <ControlBtn
             onClick={() => {
-              AriaAudioBus.unlock();
+              FinnAudioBus.unlock();
               setCompleted(false);
               setHasStarted(true);
               setVoiceError(null);
@@ -1391,7 +1391,7 @@ function LanguageToggle({
 
 /* ─────────── FINN voice presence — one shared narration path ─────────── */
 
-function AriaWaveform({ active }: { active: boolean }) {
+function FinnWaveform({ active }: { active: boolean }) {
   const bars = [7, 13, 9, 17, 11, 15, 8];
   return (
     <span className="inline-flex h-5 items-center gap-[2px]" aria-hidden>
@@ -1421,7 +1421,7 @@ function AriaWaveform({ active }: { active: boolean }) {
   );
 }
 
-function AriaVoiceBadge({
+function FinnVoiceBadge({
   state,
   language,
   error,
@@ -1471,7 +1471,7 @@ function AriaVoiceBadge({
           Canonical ElevenLabs voice
         </span>
       </span>
-      <AriaWaveform active={state === "playing"} />
+      <FinnWaveform active={state === "playing"} />
     </div>
   );
 }
@@ -1524,7 +1524,7 @@ function ListenButton({
         <Volume2 className="h-3.5 w-3.5" aria-hidden />
       )}
       {label}
-      <AriaWaveform active={state === "playing"} />
+      <FinnWaveform active={state === "playing"} />
     </button>
   );
 }

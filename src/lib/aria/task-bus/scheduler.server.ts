@@ -14,7 +14,7 @@
  */
 import type { AgentResult, MissionRequest } from "../orchestrator/types";
 import type { ExecutiveBrainMemory } from "../executive-brain/types";
-import type { AriaIntent } from "../executive-reasoning.server";
+import type { FinnIntent } from "../executive-reasoning.server";
 import type { EnqueueTaskInput, Task, TaskPriority, TaskRetryPolicy } from "./types";
 import {
   depths,
@@ -310,4 +310,4 @@ export async function runScheduledMission(
 }
 
 /** Re-export for external convenience — the intent type used in tasks. */
-export type { AriaIntent };
+export type { FinnIntent };

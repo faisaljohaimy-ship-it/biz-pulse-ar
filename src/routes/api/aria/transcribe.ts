@@ -6,7 +6,7 @@ import {
   extractGeminiText,
   normalizeGeminiTranscript,
 } from "@/lib/aria/gemini-audio";
-import { ARIA_GEMINI_FLASH_MODEL } from "@/lib/aria/voice-config";
+import { FINN_GEMINI_FLASH_MODEL } from "@/lib/aria/voice-config";
 
 const MAX_AUDIO_BYTES = 12 * 1024 * 1024;
 const MAX_MULTIPART_BYTES = MAX_AUDIO_BYTES + 1024 * 1024;
@@ -38,7 +38,7 @@ function errorResponse(
 
 function safeModel(value: string | undefined): string {
   const normalized = value?.trim() ?? "";
-  return /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(normalized) ? normalized : ARIA_GEMINI_FLASH_MODEL;
+  return /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(normalized) ? normalized : FINN_GEMINI_FLASH_MODEL;
 }
 
 export const Route = createFileRoute("/api/aria/transcribe")({

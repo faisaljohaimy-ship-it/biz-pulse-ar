@@ -1,5 +1,5 @@
 // Reference asset resolver. Points every consumer to the canonical file.
-import { getAriaIdentity } from "./identity.server";
+import { getFinnIdentity } from "./identity.server";
 
 export interface ReferenceAsset {
   readonly path: string;
@@ -8,7 +8,7 @@ export interface ReferenceAsset {
 }
 
 export function getReferenceAsset(): ReferenceAsset {
-  const id = getAriaIdentity();
+  const id = getFinnIdentity();
   return {
     path: id.reference_asset,
     hash: id.reference_hash,

@@ -81,7 +81,7 @@ export const NEXUS_READINESS_HEADER: string = [
 ].join("\n");
 
 /** Assemble the full system prompt: readiness header + learned instincts. */
-export function buildAriaSystemPrompt(
+export function buildFinnSystemPrompt(
   base: string,
   patterns: readonly LearnedPatternRow[] = [],
 ): string {

@@ -23,8 +23,8 @@ import {
   gestureTransform,
   attentionYaw,
   splitSentences,
-  type AriaEmotion,
-  type AriaHeadGesture,
+  type FinnEmotion,
+  type FinnHeadGesture,
 } from "@/lib/aria/avatar-motion/emotion-director";
 
 interface Props {
@@ -36,7 +36,7 @@ interface Props {
   /** Current spoken text chunk — drives emotion director + semantic gestures. */
   text?: string;
   /** Explicit emotion override. When absent, derived from state + text. */
-  emotion?: AriaEmotion;
+  emotion?: FinnEmotion;
   /** UI region she should attend to. Adds 2–3° yaw. */
   attentionSide?: "left" | "right" | null;
   /** Force greeting joy pulse for the current speaking chunk. */
@@ -99,8 +99,8 @@ export function HologramFace({
   // ---- Emotion director ----------------------------------------------------
   // If speaking with text, resolve per-sentence emotion + gesture; otherwise
   // fall back to state-driven emotion.
-  const [activeEmotion, setActiveEmotion] = useState<AriaEmotion>("warm");
-  const [activeGesture, setActiveGesture] = useState<AriaHeadGesture>("none");
+  const [activeEmotion, setActiveEmotion] = useState<FinnEmotion>("warm");
+  const [activeGesture, setActiveGesture] = useState<FinnHeadGesture>("none");
   const [gestureP, setGestureP] = useState(0);
   useEffect(() => {
     if (emotion) {

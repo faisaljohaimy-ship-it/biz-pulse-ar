@@ -1,5 +1,5 @@
 /**
- * AriaSignatureBackdrop — FINN's cinematic visual signature (Phase 0).
+ * FinnSignatureBackdrop — FINN's cinematic visual signature (Phase 0).
  *
  * The wordmark «FINN@nexios.com» rendered as huge, near-transparent 3D text
  * over a deep navy gradient, with a faint emerald edge glow and a very slow
@@ -22,9 +22,9 @@
  */
 import { useId } from "react";
 import { cn } from "@/lib/utils";
-import { ARIA_SIGNATURE_WORDMARK } from "@/lib/aria/signature";
+import { FINN_SIGNATURE_WORDMARK } from "@/lib/aria/signature";
 
-type AriaSignatureBackdropProps = {
+type FinnSignatureBackdropProps = {
   className?: string;
   /** Multiplies the base opacity (1 = default 3–6% range). Use <1 for very
    *  subtle surfaces (e.g. behind dense dashboards). */
@@ -37,15 +37,15 @@ type AriaSignatureBackdropProps = {
  * Full-bleed cinematic backdrop. Render it as the first child of a
  * `relative overflow-hidden` container; it is decorative and inert.
  */
-export function AriaSignatureBackdrop({
+export function FinnSignatureBackdrop({
   className,
   intensity = 1,
   glow = true,
-}: AriaSignatureBackdropProps) {
+}: FinnSignatureBackdropProps) {
   const uid = useId().replace(/[:]/g, "");
   const back = 0.045 * intensity; // rear layer base opacity (~4.5%)
   const front = 0.06 * intensity; // front layer base opacity (~6%)
-  const row = `${ARIA_SIGNATURE_WORDMARK}  `;
+  const row = `${FINN_SIGNATURE_WORDMARK}  `;
 
   return (
     <div
@@ -151,4 +151,4 @@ export function AriaSignatureBackdrop({
   );
 }
 
-export default AriaSignatureBackdrop;
+export default FinnSignatureBackdrop;

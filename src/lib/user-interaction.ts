@@ -67,7 +67,7 @@ function primeAudio(): void {
   }
 }
 
-import { AriaAudioBus } from "./aria/audio-bus";
+import { FinnAudioBus } from "./aria/audio-bus";
 
 let installed = false;
 export function installInteractionTracker(): void {
@@ -85,7 +85,7 @@ export function installInteractionTracker(): void {
     markInteracted();
     primeAudio();
     try {
-      AriaAudioBus.unlock();
+      FinnAudioBus.unlock();
     } catch {
       /* bus unavailable — audio prime alone still helps */
     }

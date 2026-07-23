@@ -55,7 +55,7 @@ export interface EvolutionInvariants {
   readonly preservePublicApi: true;
   readonly preserveSingletons: true;
   readonly preserveSecurity: true;
-  readonly preserveAriaIdentity: true;
+  readonly preserveFinnIdentity: true;
   readonly zeroBreakingChanges: true;
   readonly zeroPlaceholders: true;
   readonly zeroDuplicateEngines: true;

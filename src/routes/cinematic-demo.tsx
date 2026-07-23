@@ -507,7 +507,7 @@ function SceneStage({ scene, sceneT, isAr }: { scene: Scene; sceneT: number; isA
     case "predict":
       return <PredictStage t={sceneT} isAr={isAr} />;
     case "aria":
-      return <AriaStage t={sceneT} />;
+      return <FinnStage t={sceneT} />;
     case "global":
       return <GlobalStage t={sceneT} />;
     case "finale":
@@ -715,7 +715,7 @@ function PredictStage({ t, isAr }: { t: number; isAr: boolean }) {
   );
 }
 
-function AriaStage({ t }: { t: number }) {
+function FinnStage({ t }: { t: number }) {
   const rings = 5;
   return (
     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">

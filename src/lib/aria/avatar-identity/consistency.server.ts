@@ -1,6 +1,6 @@
 // Consistency checker — validates any candidate avatar descriptor against
 // the frozen identity. Never mutates; returns issues + verdict.
-import { getAriaIdentity } from "./identity.server";
+import { getFinnIdentity } from "./identity.server";
 
 export interface CandidateAvatarDescriptor {
   readonly asset_path?: string;
@@ -23,7 +23,7 @@ export interface ConsistencyResult {
 const REQUIRED_FEATURES = ["holographic", "cyan"];
 
 export function checkConsistency(input: CandidateAvatarDescriptor): ConsistencyResult {
-  const id = getAriaIdentity();
+  const id = getFinnIdentity();
   const issues: string[] = [];
   const matched: string[] = [];
 

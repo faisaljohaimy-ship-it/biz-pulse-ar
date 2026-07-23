@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Sparkles, Shield, Bot, FileText, Smartphone, Radar } from "lucide-react";
-import { AriaSignatureBackdrop } from "@/components/aria/AriaSignatureBackdrop";
+import { FinnSignatureBackdrop } from "@/components/aria/FinnSignatureBackdrop";
 import { DOMAIN_URL } from "@/lib/domain";
 
 const APP_VERSION = "1.5.1";
@@ -41,7 +41,7 @@ function AboutPage() {
       dir="rtl"
       className="relative isolate min-h-screen overflow-hidden bg-[#04070F] text-white"
     >
-      <AriaSignatureBackdrop intensity={1.4} />
+      <FinnSignatureBackdrop intensity={1.4} />
       <main className="relative z-10 mx-auto w-full max-w-3xl px-4 py-14 sm:py-20">
         <div className="mb-2 flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#3AE8FF]/12 text-[#3AE8FF]">

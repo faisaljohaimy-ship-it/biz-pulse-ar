@@ -39,7 +39,7 @@ const INVARIANTS: EvolutionInvariants = {
   preservePublicApi: true,
   preserveSingletons: true,
   preserveSecurity: true,
-  preserveAriaIdentity: true,
+  preserveFinnIdentity: true,
   zeroBreakingChanges: true,
   zeroPlaceholders: true,
   zeroDuplicateEngines: true,
@@ -48,13 +48,13 @@ const INVARIANTS: EvolutionInvariants = {
 /**
  * Protected paths — enforced by the NEXUS Master Engineering Constitution
  * (docs/NEXUS_ENGINEERING_CONSTITUTION.md) which subsumes the intro
- * constitution (docs/ARIA_INTRO_CONSTITUTION.md). Any self-evolution
+ * constitution (docs/FINN_INTRO_CONSTITUTION.md). Any self-evolution
  * proposal that touches these files MUST cite one of those documents in
  * its `rationale` AND explicitly promise to preserve the listed
  * INVARIANTs / Forbidden Regressions, or it is auto-deferred.
  */
 export const PROTECTED_PATHS: readonly string[] = [
-  "src/components/intro/AriaCinematicIntro.tsx",
+  "src/components/intro/FinnCinematicIntro.tsx",
   "src/routes/__root.tsx",
   "src/routes/index.tsx",
   "src/lib/aria/learning/interaction-log.server.ts",
@@ -65,7 +65,7 @@ export const PROTECTED_PATHS: readonly string[] = [
   "src/lib/user-interaction.ts",
   "src/lib/evidence/gate.ts",
   "src/components/evidence/EvidenceBadge.tsx",
-  "docs/ARIA_INTRO_CONSTITUTION.md",
+  "docs/FINN_INTRO_CONSTITUTION.md",
   "docs/NEXUS_ENGINEERING_CONSTITUTION.md",
   "docs/NEXUS_READINESS_PROMPT.md",
 ];

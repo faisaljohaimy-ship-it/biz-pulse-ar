@@ -3,7 +3,7 @@
 
 export * from "./types";
 export * from "./contracts";
-export { getAriaIdentity } from "./identity.server";
+export { getFinnIdentity } from "./identity.server";
 export { getReferenceAsset, type ReferenceAsset } from "./reference.server";
 export { getStyleGuide, type StyleGuide } from "./style-guide.server";
 export {

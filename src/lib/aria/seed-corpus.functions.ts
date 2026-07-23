@@ -207,7 +207,7 @@ const CORPUS: Entry[] = [
   },
 ];
 
-export const seedAriaCorpus = createServerFn({ method: "POST" })
+export const seedFinnCorpus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth, requireOrgContext])
   .handler(async ({ context }) => {
     const { supabase, userId, orgId } = context;

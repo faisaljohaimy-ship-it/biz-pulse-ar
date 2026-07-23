@@ -6,7 +6,7 @@
  * everything else is consumed by executive UI panels, telemetry, and the
  * audit trail.
  */
-import type { AriaContextSnapshot, AriaIntent } from "./aria";
+import type { FinnContextSnapshot, FinnIntent } from "./aria";
 
 export type RiskLevel = "critical" | "high" | "medium" | "low" | "info";
 export type PriorityLevel = "P0" | "P1" | "P2" | "P3" | "INFO";
@@ -76,13 +76,13 @@ export interface ContextAwarenessReport {
   locale: "ar" | "en";
   visible_widgets: readonly string[];
   page_meta_keys: readonly string[];
-  user_intent: AriaIntent;
+  user_intent: FinnIntent;
   available_context: readonly string[];
   missing_context: readonly string[];
 }
 
 export interface ReasoningTrace {
-  intent: AriaIntent;
+  intent: FinnIntent;
   executive_summary_ar: string;
   executive_summary_en: string;
   operational_interpretation_ar: string;
@@ -104,7 +104,7 @@ export interface NextAction {
 
 export interface ExecutiveEnvelope {
   turnId: string;
-  intent: AriaIntent;
+  intent: FinnIntent;
   context: ContextAwarenessReport;
   reasoning: ReasoningTrace;
   risk: RiskSignal;
@@ -115,7 +115,7 @@ export interface ExecutiveEnvelope {
   /** Populated only after streamed answer completes and is validated. */
   finalAnswer: string | null;
   /** Snapshot of the context used for reasoning. */
-  contextSnapshot: AriaContextSnapshot;
+  contextSnapshot: FinnContextSnapshot;
   createdAt: string;
 }
 

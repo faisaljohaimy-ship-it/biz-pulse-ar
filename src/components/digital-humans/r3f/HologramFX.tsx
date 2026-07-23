@@ -1,5 +1,5 @@
 /**
- * HologramFX — premium R3F building blocks used by AriaScene:
+ * HologramFX — premium R3F building blocks used by FinnScene:
  *
  *  - HologramShell:   semi-transparent Fresnel sphere around the head,
  *                     gives the "neural crystal" rim glow.

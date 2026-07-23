@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  ARIA_RESPONSE_CONTRACT,
+  FINN_RESPONSE_CONTRACT,
   FINN_LIVE_INTELLIGENCE_DOCTRINE,
   FORBIDDEN_FILLER,
   hasForbiddenFiller,
@@ -100,9 +100,9 @@ describe("Article 22 — forbidden filler", () => {
 
 describe("Article 22 — system-prompt contract text", () => {
   it("carries the scope, brevity and truth clauses the model path must obey", () => {
-    expect(ARIA_RESPONSE_CONTRACT).toContain(OUT_OF_SCOPE_REPLY);
-    expect(ARIA_RESPONSE_CONTRACT).toContain(UNAVAILABLE_REPLY);
-    expect(ARIA_RESPONSE_CONTRACT).toMatch(/max 25 words/i);
+    expect(FINN_RESPONSE_CONTRACT).toContain(OUT_OF_SCOPE_REPLY);
+    expect(FINN_RESPONSE_CONTRACT).toContain(UNAVAILABLE_REPLY);
+    expect(FINN_RESPONSE_CONTRACT).toMatch(/max 25 words/i);
   });
 });
 

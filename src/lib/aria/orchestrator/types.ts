@@ -6,7 +6,7 @@
  * policies, and orchestration events. NO existing types are modified.
  */
 
-import type { AriaIntent } from "../executive-reasoning.server";
+import type { FinnIntent } from "../executive-reasoning.server";
 import type {
   BrainRequest,
   ExecutiveBrainAnswer,
@@ -60,7 +60,7 @@ export interface AgentContract {
   name_ar: string;
   description: string;
   capabilities: AgentCapability[];
-  intents: AriaIntent[];
+  intents: FinnIntent[];
   input_contract: string;
   output_contract: string;
   priority: Priority;
@@ -125,7 +125,7 @@ export interface MissionPlanNode {
 
 export interface MissionPlan {
   mission_id: string;
-  intent: AriaIntent;
+  intent: FinnIntent;
   nodes: MissionPlanNode[];
   /** Topologically-ordered execution layers (agents in the same layer run in parallel). */
   layers: AgentId[][];

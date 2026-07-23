@@ -11,7 +11,7 @@ import type {
   PriorityAssessment,
   RiskSignal,
 } from "../types/executive";
-import type { AriaIntent } from "../types/aria";
+import type { FinnIntent } from "../types/aria";
 
 export type QueueState =
   | "draft"
@@ -64,7 +64,7 @@ export interface SimulationReport {
 
 export interface AuditRecord {
   readonly requestId: string;
-  readonly intent: AriaIntent;
+  readonly intent: FinnIntent;
   readonly actionType: ActionType;
   readonly priority: PriorityAssessment["level"];
   readonly risk: RiskSignal["level"];
@@ -77,7 +77,7 @@ export interface AuditRecord {
 export interface ExecutionEnvelope {
   readonly id: string;
   readonly turnId: string;
-  readonly intent: AriaIntent;
+  readonly intent: FinnIntent;
   readonly objective_ar: string;
   readonly objective_en: string;
   readonly recommendedAction_ar: string;

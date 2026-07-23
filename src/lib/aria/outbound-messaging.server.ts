@@ -11,7 +11,7 @@ import {
 } from "@/lib/aria/messaging-channel.server";
 import {
   assertExplicitOwnerDirectSend,
-  isAriaOwnerDirectSendEnabled,
+  isFinnOwnerDirectSendEnabled,
 } from "@/lib/aria/outbound-recipient-policy.server";
 import { normalizeE164 } from "@/lib/aria/phone-number";
 
@@ -100,7 +100,7 @@ function approvalSecret(): string {
   const value = process.env.ARIA_MESSAGE_APPROVAL_SECRET?.trim();
   if (!value || value.length < 32) {
     throw new Error(
-      "Outbound approval is not configured. Set ARIA_MESSAGE_APPROVAL_SECRET to at least 32 characters.",
+      "Outbound approval is not configured. Set FINN_MESSAGE_APPROVAL_SECRET to at least 32 characters.",
     );
   }
   return value;
@@ -392,7 +392,7 @@ async function requireSenderRole(userId: string): Promise<void> {
   }
 }
 
-export async function prepareAriaOutboundMessage(
+export async function prepareFinnOutboundMessage(
   _supabase: SupabaseClient,
   userId: string,
   rawPayload: OutboundPayload,
@@ -608,7 +608,7 @@ function safeFailure(error: unknown): { code: string; detail: string } {
   return { code: "provider_dispatch_failed", detail };
 }
 
-export async function approveAriaOutboundMessageInternal(input: {
+export async function approveFinnOutboundMessageInternal(input: {
   userId: string;
   ledgerId: string;
   approvalToken: string;
@@ -825,12 +825,12 @@ export async function approveAriaOutboundMessageInternal(input: {
  * the full audit ledger, and the immutable `approval.auto_approved` bypass
  * marker per send. Live sends still require provider credentials
  * (Resend/Twilio/Outlook), so this alone can never dispatch anything.
- * Default is ON for this owner-only path. ARIA_DIRECT_SEND_ENABLED=false is
- * the deployment kill switch; ARIA_OUTBOUND_AUTO_APPROVE remains a supported
+ * Default is ON for this owner-only path. FINN_DIRECT_SEND_ENABLED=false is
+ * the deployment kill switch; FINN_OUTBOUND_AUTO_APPROVE remains a supported
  * legacy alias.
  */
 export function ariaAutoApproveEnabled(): boolean {
-  return isAriaOwnerDirectSendEnabled();
+  return isFinnOwnerDirectSendEnabled();
 }
 
 /**
@@ -845,7 +845,7 @@ export function ariaAutoApproveEnabled(): boolean {
  * the rest of this module, the send does not proceed if that audit marker
  * cannot be written (no auto-send may exist without its bypass record).
  */
-export async function sendAriaOutboundMessageDirectInternal(input: {
+export async function sendFinnOutboundMessageDirectInternal(input: {
   userId: string;
   payload: OutboundPayload;
   /** Current authentic user message; never RAG, memory or generated text. */
@@ -880,11 +880,11 @@ export async function sendAriaOutboundMessageDirectInternal(input: {
     throw new Error("Direct owner email does not support CC recipients.");
   }
 
-  const prepared = await prepareAriaOutboundMessage(supabaseAdmin, input.userId, payload);
+  const prepared = await prepareFinnOutboundMessage(supabaseAdmin, input.userId, payload);
   if ("error" in prepared) return { ok: false, error: prepared.error };
 
   // Immutable bypass marker: record that the human approval step was skipped
-  // (ARIA_DIRECT_SEND_ENABLED) before any dispatch. The token claims carry
+  // (FINN_DIRECT_SEND_ENABLED) before any dispatch. The token claims carry
   // the org + content hash the ledger event needs. If this cannot be written,
   // fail closed — never dispatch an auto-approved send without its audit trail.
   try {
@@ -908,7 +908,7 @@ export async function sendAriaOutboundMessageDirectInternal(input: {
     };
   }
 
-  const result = await approveAriaOutboundMessageInternal({
+  const result = await approveFinnOutboundMessageInternal({
     userId: input.userId,
     ledgerId: prepared.approval.ledgerId,
     approvalToken: prepared.approval.approvalToken,
@@ -925,7 +925,7 @@ export async function sendAriaOutboundMessageDirectInternal(input: {
   };
 }
 
-export async function cancelAriaOutboundMessageInternal(input: {
+export async function cancelFinnOutboundMessageInternal(input: {
   userId: string;
   ledgerId: string;
   approvalToken: string;

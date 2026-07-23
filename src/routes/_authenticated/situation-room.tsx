@@ -4,7 +4,7 @@
  * Phase 5 — calmer, more cinematic redesign over the existing War Room
  * runtime. Reuses `getBridgeState`, `getMissionTimeline`,
  * `getPredictedRisks`, `generateExecutiveBriefing`, `AgentRing`,
- * `MissionTimeline`, `BriefingStage` and the 3D AriaScene. Adds an
+ * `MissionTimeline`, `BriefingStage` and the 3D FinnScene. Adds an
  * Executive Decision Engine column (Risks / Opportunities / Actions).
  *
  * No DB schema, no workflow, no agent logic changes.

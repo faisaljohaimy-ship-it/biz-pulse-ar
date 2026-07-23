@@ -17,7 +17,7 @@ import type { VoiceLang } from "./voice-profiles";
 import type { DigitalHumanSpec } from "./registry";
 import { speakFreeAgent } from "./free-agent-speech";
 import { authenticatedFetch } from "@/lib/auth-fetch";
-import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { FinnAudioBus } from "@/lib/aria/audio-bus";
 import { getPrimedAudioContext } from "@/lib/user-interaction";
 
 export type { VoiceLang } from "./voice-profiles";
@@ -72,7 +72,7 @@ function getAudioContext(): AudioContext {
 }
 
 /** Pending and active Digital Human speech handles. Audible ownership itself
- * stays with AriaAudioBus so a lower-priority specialist can never cancel FINN.
+ * stays with FinnAudioBus so a lower-priority specialist can never cancel FINN.
  */
 const activeHandles = new Set<SpeakHandle>();
 
@@ -85,7 +85,7 @@ function trackHandle<T extends SpeakHandle>(handle: T): T {
   return handle;
 }
 
-export function stopActiveAriaVoice(): void {
+export function stopActiveFinnVoice(): void {
   for (const handle of activeHandles) {
     try {
       handle.stop();
@@ -101,7 +101,7 @@ export function stopActiveAriaVoice(): void {
  * resolves after playback completes or is stopped. Pure client runtime
  * (no localStorage / no cookies).
  */
-export function speakAria(opts: SpeakOptions): SpeakHandle {
+export function speakFinn(opts: SpeakOptions): SpeakHandle {
   const lang = opts.lang ?? detectLang(opts.text);
   const speakerId = opts.speakerId ?? "aria";
 
@@ -134,7 +134,7 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
     opts.onAmplitude?.(0);
     if (ownsBus) {
       ownsBus = false;
-      AriaAudioBus.release("chat-tts");
+      FinnAudioBus.release("chat-tts");
     }
   };
 
@@ -148,7 +148,7 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
       // Do not spend FINN provider quota before the first real gesture.
       // The global interaction tracker unlocks this synchronously on pointer,
       // keyboard, or touch input across desktop and mobile.
-      if (!AriaAudioBus.isUnlocked()) return;
+      if (!FinnAudioBus.isUnlocked()) return;
       let res = await authenticatedFetch("/api/aria/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -172,7 +172,7 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
       const audio = await ctx.decodeAudioData(buf);
       if (stopped) return;
 
-      ownsBus = AriaAudioBus.acquire("chat-tts", stop);
+      ownsBus = FinnAudioBus.acquire("chat-tts", stop);
       if (!ownsBus) return;
 
       source = ctx.createBufferSource();
@@ -215,7 +215,7 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
       opts.onStart?.();
       source.start();
-      AriaAudioBus.notifyPlaying("chat-tts");
+      FinnAudioBus.notifyPlaying("chat-tts");
       sampleAmp();
       await done;
     } catch (err) {
@@ -227,9 +227,9 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
       if (!stopped) throw err;
     } finally {
       if (ownsBus) {
-        AriaAudioBus.notifyStopped("chat-tts");
+        FinnAudioBus.notifyStopped("chat-tts");
         ownsBus = false;
-        AriaAudioBus.release("chat-tts");
+        FinnAudioBus.release("chat-tts");
       }
     }
   })();
@@ -240,12 +240,12 @@ export function speakAria(opts: SpeakOptions): SpeakHandle {
 
 /**
  * Speak `text` in the voice of a specific Digital Human persona.
- * Thin convenience over `speakAria` — picks the persona's voice and
+ * Thin convenience over `speakFinn` — picks the persona's voice and
  * tone instructions. The lip-sync amplitude contract is identical.
  */
 export function speakAs(
   spec: Pick<DigitalHumanSpec, "id" | "voiceProfileId">,
   opts: Omit<SpeakOptions, "voiceProfileId">,
 ): SpeakHandle {
-  return speakAria({ ...opts, speakerId: spec.id, voiceProfileId: spec.voiceProfileId });
+  return speakFinn({ ...opts, speakerId: spec.id, voiceProfileId: spec.voiceProfileId });
 }

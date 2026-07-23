@@ -2,7 +2,7 @@
  * Public incident sink for the client watchdog.
  * Articles 19, 21, 26 of src/lib/aria/constitution.ts.
  *
- * Called by `installAriaWatchdog()` via sendBeacon. Anonymous — no auth.
+ * Called by `installFinnWatchdog()` via sendBeacon. Anonymous — no auth.
  * MUST be defensive: rate-limited, size-capped, kind-whitelisted,
  * and every request is logged into the executive audit trail (Article 26).
  */
@@ -52,11 +52,11 @@ export const Route = createFileRoute("/api/public/hooks/aria-incident")({
         if (cl > 4096) return new Response("payload too large", { status: 413 });
 
         // Article 26 (c): rate-limit BEFORE parsing the body.
-        const { checkRateLimit, logAriaAction } = await import("@/lib/aria/audit-log.server");
+        const { checkRateLimit, logFinnAction } = await import("@/lib/aria/audit-log.server");
         const bucket = clientBucketKey(request);
         const allowed = await checkRateLimit(bucket, 60, 60);
         if (!allowed) {
-          void logAriaAction({
+          void logFinnAction({
             action: "public.aria-incident.throttled",
             actor: "public-webhook",
             surface: "api/public/hooks/aria-incident",
@@ -98,7 +98,7 @@ export const Route = createFileRoute("/api/public/hooks/aria-incident")({
           console.error("[aria-incident] sink insert failed", err);
         }
 
-        void logAriaAction({
+        void logFinnAction({
           action: "public.aria-incident.received",
           actor: "public-webhook",
           surface: "api/public/hooks/aria-incident",

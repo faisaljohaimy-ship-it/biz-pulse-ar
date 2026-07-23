@@ -23,7 +23,7 @@ import {
   enqueueKnowledgeIngest,
   getKnowledgeChunkStats,
 } from "@/lib/aria/knowledge-upload.functions";
-import { listAriaDocuments, deleteAriaDocument } from "@/lib/aria/documents.functions";
+import { listFinnDocuments, deleteFinnDocument } from "@/lib/aria/documents.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -101,11 +101,11 @@ function KnowledgeUploadCenter() {
 
   const enqueueFn = useServerFn(enqueueKnowledgeIngest);
   const statsFn = useServerFn(getKnowledgeChunkStats);
-  const deleteFn = useServerFn(deleteAriaDocument);
+  const deleteFn = useServerFn(deleteFinnDocument);
 
   const docsQ = useQuery({
     queryKey: ["knowledge-upload", "docs"],
-    queryFn: () => listAriaDocuments(),
+    queryFn: () => listFinnDocuments(),
     refetchInterval: 20_000,
     refetchIntervalInBackground: false,
     staleTime: 15_000,

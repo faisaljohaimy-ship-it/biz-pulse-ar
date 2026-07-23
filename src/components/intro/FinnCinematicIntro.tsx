@@ -12,12 +12,12 @@ type Props = {
 };
 
 /**
- * AriaCinematicIntro
+ * FinnCinematicIntro
  * Full-screen cinematic pre-hero video. Plays once per device
  * (localStorage flag `aria_intro_seen_v1`). Respects
  * prefers-reduced-motion. Silent-fails on error; never blocks the page.
  */
-export function AriaCinematicIntro({ surface = "global" }: Props) {
+export function FinnCinematicIntro({ surface = "global" }: Props) {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -181,7 +181,7 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
         }}
         onEnded={finish}
         onError={() => {
-          console.warn("[AriaCinematicIntro] video failed to load");
+          console.warn("[FinnCinematicIntro] video failed to load");
           finish();
         }}
         className="relative h-full w-full"
@@ -270,7 +270,7 @@ export function AriaCinematicIntro({ surface = "global" }: Props) {
  * Small footer utility button — restores the intro for the current device
  * (clears the seen flag and re-mounts). Import and place inside a footer.
  */
-export function AriaIntroReplayButton() {
+export function FinnIntroReplayButton() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   return (
@@ -288,4 +288,4 @@ export function AriaIntroReplayButton() {
   );
 }
 
-export default AriaCinematicIntro;
+export default FinnCinematicIntro;

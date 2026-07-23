@@ -26,9 +26,9 @@ import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher"
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
 import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
 import { DashboardPreviewRail } from "@/components/os/DashboardPreviewRail";
-import { AriaTodayRecommendations } from "@/components/aria/AriaTodayRecommendations";
-import { AriaAnomalyStrip } from "@/components/aria/AriaAnomalyStrip";
-import { AriaDailySummary } from "@/components/aria/AriaDailySummary";
+import { FinnTodayRecommendations } from "@/components/aria/FinnTodayRecommendations";
+import { FinnAnomalyStrip } from "@/components/aria/FinnAnomalyStrip";
+import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
 import { SystemModulesDashboard } from "@/components/executive/SystemModulesDashboard";
 import { ExecutiveShowcaseHub } from "@/components/executive/ExecutiveShowcaseHub";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
@@ -187,7 +187,7 @@ function IntroLanding() {
 
       {/* Homepage video backdrop — plays with sound once per system session,
           silent on every subsequent mount (including returns from inner
-          windows). Replaces the retired AriaGlobalBackdrop. */}
+          windows). Replaces the retired FinnGlobalBackdrop. */}
       <HomeVideoBackdrop />
 
       {/* Lightweight gradient hero glow layered above her, still behind content. */}
@@ -386,11 +386,11 @@ function IntroLanding() {
         aria-label={ar ? "لوحة القيادة السيادية الحية" : "Sovereign live command deck"}
         className="relative z-10 mx-auto flex w-full max-w-none flex-col gap-6 px-4 pb-6 pt-4 sm:gap-8 sm:px-6 sm:pt-8"
       >
-        <AriaDailySummary />
+        <FinnDailySummary />
         <SovereignCommandDeck ar={ar} />
         <DashboardPreviewRail ar={ar} />
-        <AriaAnomalyStrip />
-        <AriaTodayRecommendations />
+        <FinnAnomalyStrip />
+        <FinnTodayRecommendations />
         <OsDecisionQueue ar={ar} />
       </section>
 

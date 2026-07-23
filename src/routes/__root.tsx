@@ -21,13 +21,13 @@ import { Toaster } from "@/components/ui/sonner";
 // ── FINN Singleton ────────────────────────────────────────────────────
 // ONE FINN. Do not add a second copilot at the root. See
 // `src/lib/aria-core/README.md` for the migration kill-list.
-import { AriaProvider } from "@/lib/aria-core";
-import { AriaCopilot } from "@/components/aria-core/AriaCopilot";
+import { FinnProvider } from "@/lib/aria-core";
+import { FinnCopilot } from "@/components/aria-core/FinnCopilot";
 import { InstallAppBar } from "@/components/aria/InstallAppBar";
-// AriaGlobalBackdrop removed — FINN renders only via AriaCopilot top-circle
+// FinnGlobalBackdrop removed — FINN renders only via FinnCopilot top-circle
 import { GlobalPageBackdrop } from "@/components/aria/GlobalPageBackdrop";
 import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsulaBackdrop";
-import { AriaWatermark } from "@/components/executive/AriaWatermark";
+import { FinnWatermark } from "@/components/executive/FinnWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
 import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
@@ -269,7 +269,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   // Article III (self-healing): install the client watchdog once at root.
   // FR-20: also install the universal first-gesture audio unlock so that
-  // ANY tap anywhere on the app primes AudioContext + unlocks AriaAudioBus
+  // ANY tap anywhere on the app primes AudioContext + unlocks FinnAudioBus
   // in the same synchronous tick — required for iOS/Android autoplay policy.
   useEffect(() => {
     let cleanup: (() => void) | undefined;
@@ -284,7 +284,7 @@ function RootComponent() {
     }
     import("@/lib/aria/self-healing/watchdog").then((m) => {
       if (cancelled) return;
-      cleanup = m.installAriaWatchdog();
+      cleanup = m.installFinnWatchdog();
     });
     // Permanent background self-healing agent (Article III, always-on).
     void import("@/lib/aria/self-healing/permanent-agent").then((m) => {
@@ -359,7 +359,7 @@ function RootComponent() {
           <I18nProvider>
             <DemoModeProvider>
               <RegionProvider>
-                <AriaProvider>
+                <FinnProvider>
                   {/* Deepest ambient layer on EVERY page (incl. home): the
                       Arabian Peninsula, light-green pulse, four sector borders
                       in sky-blue, the active sector's border pulsing. */}
@@ -369,18 +369,18 @@ function RootComponent() {
                   {!isHero && !isPromo && !isAccessGate && !introActive && <GlobalPageBackdrop />}
                   {/* Unified header: LIVE clock is embedded inside the marquee bar (single strip, no ghost row). */}
                   {!suppressMarquee && <BetaMarqueeBar showClock={!suppressClock} />}
-                  {!suppressOverlays && <AriaWatermark />}
+                  {!suppressOverlays && <FinnWatermark />}
                   <div className="relative z-10">
                     <Outlet />
                   </div>
-                  {!isAccessGate && <AriaCopilot />}
+                  {!isAccessGate && <FinnCopilot />}
                   <InstallAppBar />
                   {/* FINN speaks ONLY inside Conversation Mode («مخاطبة») in the
                       copilot panel, and via the homepage greeting button. No
                       route auto-narration, no page greeters, and no cinematic
                       welcome overlay — the homepage renders directly. */}
                   <Toaster />
-                </AriaProvider>
+                </FinnProvider>
               </RegionProvider>
             </DemoModeProvider>
           </I18nProvider>

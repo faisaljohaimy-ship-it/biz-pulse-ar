@@ -1,13 +1,13 @@
-export type AriaVoiceActivityDecision = "continue" | "complete" | "no-speech";
+export type FinnVoiceActivityDecision = "continue" | "complete" | "no-speech";
 
-export type AriaVoiceActivityState = {
+export type FinnVoiceActivityState = {
   startedAt: number;
   candidateVoiceAt: number | null;
   lastVoiceAt: number | null;
   heardVoice: boolean;
 };
 
-export type AriaVoiceActivityConfig = {
+export type FinnVoiceActivityConfig = {
   rmsThreshold: number;
   minimumVoiceMs: number;
   silenceMs: number;
@@ -15,7 +15,7 @@ export type AriaVoiceActivityConfig = {
   maximumCaptureMs: number;
 };
 
-export const ARIA_VOICE_ACTIVITY_DEFAULTS: AriaVoiceActivityConfig = {
+export const FINN_VOICE_ACTIVITY_DEFAULTS: FinnVoiceActivityConfig = {
   // Tuned for fast mobile conversation turns: accept softer phone mics,
   // submit shortly after speech stops, and avoid long "silent listening" waits.
   // silenceMs 650: end-of-speech fires ~150ms sooner than the old 800 so the
@@ -28,7 +28,7 @@ export const ARIA_VOICE_ACTIVITY_DEFAULTS: AriaVoiceActivityConfig = {
   maximumCaptureMs: 18_000,
 };
 
-export function createAriaVoiceActivityState(startedAt: number): AriaVoiceActivityState {
+export function createFinnVoiceActivityState(startedAt: number): FinnVoiceActivityState {
   return {
     startedAt,
     candidateVoiceAt: null,
@@ -44,16 +44,16 @@ export function createAriaVoiceActivityState(startedAt: number): AriaVoiceActivi
  * biometric data leaves this function. Sustained energy is required before
  * speech is accepted so a tap/click spike does not submit an empty turn.
  */
-export function advanceAriaVoiceActivity(input: {
-  state: AriaVoiceActivityState;
+export function advanceFinnVoiceActivity(input: {
+  state: FinnVoiceActivityState;
   rms: number;
   now: number;
-  config?: AriaVoiceActivityConfig;
+  config?: FinnVoiceActivityConfig;
 }): {
-  state: AriaVoiceActivityState;
-  decision: AriaVoiceActivityDecision;
+  state: FinnVoiceActivityState;
+  decision: FinnVoiceActivityDecision;
 } {
-  const config = input.config ?? ARIA_VOICE_ACTIVITY_DEFAULTS;
+  const config = input.config ?? FINN_VOICE_ACTIVITY_DEFAULTS;
   const now = Math.max(input.state.startedAt, input.now);
   const rms = Number.isFinite(input.rms) ? Math.max(0, input.rms) : 0;
   let candidateVoiceAt = input.state.candidateVoiceAt;

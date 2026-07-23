@@ -14,8 +14,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import {
-  approveAriaOutboundMessage,
-  cancelAriaOutboundMessage,
+  approveFinnOutboundMessage,
+  cancelFinnOutboundMessage,
 } from "@/lib/aria/outbound-messaging.functions";
 
 /**
@@ -231,8 +231,8 @@ function approvalPreview(output: unknown): ApprovalPreview | null {
 }
 
 function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
-  const approveFn = useServerFn(approveAriaOutboundMessage);
-  const cancelFn = useServerFn(cancelAriaOutboundMessage);
+  const approveFn = useServerFn(approveFinnOutboundMessage);
+  const cancelFn = useServerFn(cancelFinnOutboundMessage);
   const [reviewed, setReviewed] = useState(false);
   const [phase, setPhase] = useState<
     "idle" | "approving" | "cancelling" | "sent" | "cancelled" | "error"

@@ -5,16 +5,16 @@
  * streaming TTS) will implement. Phase 1 only exposes the state channel so the
  * provider's legacy TTS seam can route through a single seam.
  */
-import type { AriaVoiceCapabilities, AriaVoiceState } from "../types/aria";
-import { useAriaStore } from "../state/aria-store";
+import type { FinnVoiceCapabilities, FinnVoiceState } from "../types/aria";
+import { useFinnStore } from "../state/aria-store";
 import { assertOne } from "@/lib/aria/singletons";
 
 assertOne("VOICE", "voiceManager@aria-core/core/voice-manager");
 
 export interface VoiceManager {
-  readonly capabilities: AriaVoiceCapabilities;
-  getState(): AriaVoiceState;
-  setState(state: AriaVoiceState): void;
+  readonly capabilities: FinnVoiceCapabilities;
+  getState(): FinnVoiceState;
+  setState(state: FinnVoiceState): void;
   /** Phase 2: start streaming STT. */
   startListening(): Promise<void>;
   /** Phase 2: stop STT + flush transcript. */
@@ -26,10 +26,10 @@ export interface VoiceManager {
 export const voiceManager: VoiceManager = {
   capabilities: { stt: false, tts: true },
   getState() {
-    return useAriaStore.getState().voice;
+    return useFinnStore.getState().voice;
   },
   setState(state) {
-    useAriaStore.getState().setVoice(state);
+    useFinnStore.getState().setVoice(state);
   },
   async startListening() {
     // Phase 2 will implement real STT.

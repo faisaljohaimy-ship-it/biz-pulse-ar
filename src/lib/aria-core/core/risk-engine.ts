@@ -3,7 +3,7 @@
  * Pure function. Never invents facts; when signals are absent, returns "info".
  */
 import type { RiskLevel, RiskSignal } from "../types/executive";
-import type { AriaContextSnapshot } from "../types/aria";
+import type { FinnContextSnapshot } from "../types/aria";
 
 const CRITICAL =
   /(breach|attack|fire|explosion|casualt|fatal|outage|down|إخلاء|حريق|هجوم|اختراق|وفاة|انفجار|توقف)/i;
@@ -22,7 +22,7 @@ function classify(text: string): { level: RiskLevel; probability: number; impact
 const URGENCY_KEYWORDS = /(now|immediat|today|asap|الآن|عاجل|فوراً|اليوم)/i;
 
 export const riskEngine = {
-  assess(prompt: string, context: AriaContextSnapshot): RiskSignal {
+  assess(prompt: string, context: FinnContextSnapshot): RiskSignal {
     const c = classify(prompt);
     const urgency = URGENCY_KEYWORDS.test(prompt) ? 0.9 : c.probability * 0.7;
     // Confidence in the risk classification itself — depends on evidence density.

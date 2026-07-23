@@ -10,7 +10,7 @@
  *
  * Rules: audio starts ONLY after the first user interaction (the start
  * button); full RTL; responsive mobile + laptop; clean stop on exit
- * (pause + release on unmount). While playing it owns the AriaAudioBus
+ * (pause + release on unmount). While playing it owns the FinnAudioBus
  * "hero-soundtrack" channel so any FINN chat voice preempts it instantly.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { AriaAudioBus } from "@/lib/aria/audio-bus";
+import { FinnAudioBus } from "@/lib/aria/audio-bus";
 import { useI18n } from "@/lib/i18n";
 import { EXECUTIVE_PRESENTATION_MEDIA } from "@/lib/executive-presentation.media";
 
@@ -233,7 +233,7 @@ export function ExecutivePresentationPlayer() {
         /* ignore */
       }
     }
-    AriaAudioBus.release("hero-soundtrack");
+    FinnAudioBus.release("hero-soundtrack");
     setPhase(nextPhase);
   }, []);
 
@@ -242,8 +242,8 @@ export function ExecutivePresentationPlayer() {
     (fromBeginning: boolean) => {
       const v = videoRef.current;
       if (!v || videoFailed) return;
-      AriaAudioBus.unlock();
-      const granted = AriaAudioBus.acquire("hero-soundtrack", () => {
+      FinnAudioBus.unlock();
+      const granted = FinnAudioBus.acquire("hero-soundtrack", () => {
         const el = videoRef.current;
         if (el) {
           try {
@@ -268,7 +268,7 @@ export function ExecutivePresentationPlayer() {
       v.play()
         .then(() => setPhase("playing"))
         .catch(() => {
-          AriaAudioBus.release("hero-soundtrack");
+          FinnAudioBus.release("hero-soundtrack");
           setPhase("idle");
         });
     },
@@ -329,7 +329,7 @@ export function ExecutivePresentationPlayer() {
           /* ignore */
         }
       }
-      AriaAudioBus.release("hero-soundtrack");
+      FinnAudioBus.release("hero-soundtrack");
     };
   }, []);
 
@@ -380,7 +380,7 @@ export function ExecutivePresentationPlayer() {
               onLoadedData={() => setVideoFailed(false)}
               onEnded={onEnded}
               onError={() => {
-                AriaAudioBus.release("hero-soundtrack");
+                FinnAudioBus.release("hero-soundtrack");
                 setPhase("idle");
                 setVideoFailed(true);
               }}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FileInspectionError, inspectAriaAttachment } from "./file-inspection.server";
+import { FileInspectionError, inspectFinnAttachment } from "./file-inspection.server";
 
 const bytes = (...values: number[]) => new Uint8Array(values);
 
@@ -44,7 +44,7 @@ function expectBlocked(run: () => unknown, code: string) {
 
 describe("FINN attachment structural inspection", () => {
   it("accepts a PNG only when filename, MIME, and magic agree", () => {
-    const result = inspectAriaAttachment({
+    const result = inspectFinnAttachment({
       bytes: bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1),
       filename: "evidence.png",
       claimedMime: "image/png",
@@ -55,7 +55,7 @@ describe("FINN attachment structural inspection", () => {
   it("blocks executable signatures even when renamed", () => {
     expectBlocked(
       () =>
-        inspectAriaAttachment({
+        inspectFinnAttachment({
           bytes: bytes(0x4d, 0x5a, 0x90, 0),
           filename: "invoice.pdf",
           claimedMime: "application/pdf",
@@ -67,7 +67,7 @@ describe("FINN attachment structural inspection", () => {
   it("blocks dangerous double extensions", () => {
     expectBlocked(
       () =>
-        inspectAriaAttachment({
+        inspectFinnAttachment({
           bytes: bytes(0x25, 0x50, 0x44, 0x46, 0x2d),
           filename: "invoice.exe.pdf",
           claimedMime: "application/pdf",
@@ -79,7 +79,7 @@ describe("FINN attachment structural inspection", () => {
   it("blocks active PDF actions", () => {
     expectBlocked(
       () =>
-        inspectAriaAttachment({
+        inspectFinnAttachment({
           bytes: new TextEncoder().encode("%PDF-1.7\n1 0 obj <</OpenAction 2 0 R>>"),
           filename: "brief.pdf",
           claimedMime: "application/pdf",
@@ -91,7 +91,7 @@ describe("FINN attachment structural inspection", () => {
   it("blocks active HTML disguised as text", () => {
     expectBlocked(
       () =>
-        inspectAriaAttachment({
+        inspectFinnAttachment({
           bytes: new TextEncoder().encode('<script src="https://attacker.test/x.js"></script>'),
           filename: "notes.txt",
           claimedMime: "text/plain",
@@ -103,7 +103,7 @@ describe("FINN attachment structural inspection", () => {
   it("validates JSON rather than trusting the browser MIME", () => {
     expectBlocked(
       () =>
-        inspectAriaAttachment({
+        inspectFinnAttachment({
           bytes: new TextEncoder().encode("{invalid}"),
           filename: "data.json",
           claimedMime: "application/json",
@@ -116,7 +116,7 @@ describe("FINN attachment structural inspection", () => {
     const eicar = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
     expectBlocked(
       () =>
-        inspectAriaAttachment({
+        inspectFinnAttachment({
           bytes: new TextEncoder().encode(eicar),
           filename: "diagnostic.txt",
           claimedMime: "text/plain",
@@ -126,7 +126,7 @@ describe("FINN attachment structural inspection", () => {
   });
 
   it("accepts a structurally matching macro-free DOCX container", () => {
-    const result = inspectAriaAttachment({
+    const result = inspectFinnAttachment({
       bytes: fakeOfficeZip(["[Content_Types].xml", "word/document.xml"]),
       filename: "brief.docx",
       claimedMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -138,7 +138,7 @@ describe("FINN attachment structural inspection", () => {
   it("blocks macros embedded in an Office container", () => {
     expectBlocked(
       () =>
-        inspectAriaAttachment({
+        inspectFinnAttachment({
           bytes: fakeOfficeZip(["[Content_Types].xml", "word/document.xml", "word/vbaProject.bin"]),
           filename: "brief.docx",
           claimedMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

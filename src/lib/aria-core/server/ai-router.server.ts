@@ -8,7 +8,7 @@
  * with Google/Lovable/Anthropic/OpenRouter retained as availability fallbacks.
  */
 
-export type AriaIntent =
+export type FinnIntent =
   | "general"
   | "executive"
   | "long-context"
@@ -33,7 +33,7 @@ const LOVABLE_GPT_5_MINI = "openai/gpt-5-mini";
 const OPENROUTER_CLAUDE = "anthropic/claude-3.5-sonnet";
 const ANTHROPIC_SONNET = "claude-3-5-sonnet-latest";
 
-export function parseIntent(header: string | null | undefined): AriaIntent {
+export function parseIntent(header: string | null | undefined): FinnIntent {
   const v = (header ?? "").toLowerCase().trim();
   switch (v) {
     case "general":
@@ -55,7 +55,7 @@ export interface AvailableProviders {
   anthropic?: boolean;
 }
 
-export function resolveModel(_intent: AriaIntent, providers: AvailableProviders): ResolvedModel {
+export function resolveModel(_intent: FinnIntent, providers: AvailableProviders): ResolvedModel {
   // Highest-quality route requested for FINN: native GPT-5.6 first. Remaining
   // providers are continuity fallbacks and never masquerade as GPT-5.6.
 

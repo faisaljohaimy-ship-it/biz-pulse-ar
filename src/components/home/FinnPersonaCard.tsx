@@ -41,8 +41,7 @@ export function FinnPersonaCard({ ar }: { ar: boolean }) {
             aria-hidden
             className="pointer-events-none absolute -inset-[3px] rounded-full opacity-45"
             style={{
-              background:
-                "conic-gradient(from 180deg, #3AE8FF, #00D4FF, #22C55E, #3AE8FF)",
+              background: "conic-gradient(from 180deg, #3AE8FF, #00D4FF, #22C55E, #3AE8FF)",
             }}
           />
           <img
