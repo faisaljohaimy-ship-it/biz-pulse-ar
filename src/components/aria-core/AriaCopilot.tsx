@@ -1927,16 +1927,16 @@ export function AriaCopilot() {
   );
 
   const statusLabel = useMemo(() => {
-    if (listening) return "تستمع…";
+    if (listening) return "يستمع…";
     switch (voice) {
       case "processing":
         return THINKING_AR;
       case "speaking":
-        return "FINN تتحدث…";
+        return "FINN يتحدث…";
       case "listening":
-        return "تستمع…";
+        return "يستمع…";
       default:
-        return pageContext ? `السياق · ${pageContext.label}` : "جاهزة";
+        return pageContext ? `السياق · ${pageContext.label}` : "جاهز";
     }
   }, [voice, pageContext, listening]);
 
