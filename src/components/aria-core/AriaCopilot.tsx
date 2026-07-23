@@ -267,7 +267,7 @@ function rmsLevel(samples: Float32Array): number {
 const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
-const THINKING_AR = "FINN تفكّر…";
+const THINKING_AR = "FINN يفكّر…";
 const MAX_ATTACHMENTS = 5;
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 const MAX_ATTACHMENTS_TOTAL_BYTES = 20 * 1024 * 1024;
