@@ -24,6 +24,8 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 import { ARIA_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
+import { buildFinnRuntimeBlock, MAKKAH_TIME_DIRECTIVE } from "@/lib/aria/makkah-clock";
+import { REGIONS, DEFAULT_REGION_ID } from "@/lib/regions";
 
 type AriaMessage = { role: "user" | "assistant"; content: string };
 
@@ -154,6 +156,16 @@ async function handlePost(request: Request): Promise<Response> {
   }
 
   const history = sanitizeHistory(rawHistory);
+
+  // Article 2 (hard) — prepend the LIVE server-derived Makkah-time block as
+  // FINN's sole time source at the start of the instructions every turn.
+  const finnRuntimeBlock = buildFinnRuntimeBlock({
+    userRole: "employee",
+    region: REGIONS.find((r) => r.id === DEFAULT_REGION_ID)?.shortAr ?? "الغربية",
+    isSimulation: true,
+  });
+  const instructions = `${finnRuntimeBlock}\n\n${MAKKAH_TIME_DIRECTIVE}\n\n${ARIA_INSTRUCTIONS}`;
+
   const configuredTokens = Number(process.env.ARIA_MAX_OUTPUT_TOKENS || "1500");
   const maxOutputTokens = Math.min(Math.max(configuredTokens || 1500, 256), 4000);
   const model = resolveOpenAiModel() || DEFAULT_OPENAI_MODEL;
@@ -170,7 +182,7 @@ async function handlePost(request: Request): Promise<Response> {
         model,
         store: false,
         stream: true,
-        instructions: ARIA_INSTRUCTIONS,
+        instructions,
         input: [...history, { role: "user", content: message }],
         max_output_tokens: maxOutputTokens,
       }),

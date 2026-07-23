@@ -35,6 +35,8 @@ import {
   shouldCoolFromError,
 } from "@/lib/aria-core/server/vendor-health.server";
 import { ARIA_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
+import { buildFinnRuntimeBlock, MAKKAH_TIME_DIRECTIVE } from "@/lib/aria/makkah-clock";
+import { REGIONS, DEFAULT_REGION_ID } from "@/lib/regions";
 import {
   ARIA_RESPONSE_CONTRACT,
   OUT_OF_SCOPE_REPLY,
@@ -603,6 +605,20 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
 - Tool calls and database grounding remain fully available. State the actual execution outcome aloud.
 - If a critical detail is missing, ask one short spoken clarification.`;
         }
+
+        // ── Article 2 (hard) — live Makkah-time injection ──────────────
+        // FINN's SOLE time source is this server-derived <FINN_RUNTIME> block,
+        // injected at the very start of the system prompt every turn (browser
+        // clocks are never trusted). Prepended LAST so it survives all the
+        // grounding/preference/voice augmentations above and truly leads the
+        // turn — present for anonymous and authenticated turns alike.
+        const finnRegionAr = REGIONS.find((r) => r.id === DEFAULT_REGION_ID)?.shortAr ?? "الغربية";
+        const finnRuntimeBlock = buildFinnRuntimeBlock({
+          userRole: userId ? "manager" : "employee",
+          region: finnRegionAr,
+          isSimulation: true,
+        });
+        systemPrompt = `${finnRuntimeBlock}\n\n${MAKKAH_TIME_DIRECTIVE}\n\n${systemPrompt}`;
 
         let finalAssistantText = "";
         const result = streamText({
