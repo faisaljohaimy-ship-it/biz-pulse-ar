@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ARIA_RESPONSE_CONTRACT,
+  FINN_LIVE_INTELLIGENCE_DOCTRINE,
   FORBIDDEN_FILLER,
   hasForbiddenFiller,
   isInScope,
@@ -102,5 +103,14 @@ describe("Article 22 — system-prompt contract text", () => {
     expect(ARIA_RESPONSE_CONTRACT).toContain(OUT_OF_SCOPE_REPLY);
     expect(ARIA_RESPONSE_CONTRACT).toContain(UNAVAILABLE_REPLY);
     expect(ARIA_RESPONSE_CONTRACT).toMatch(/max 25 words/i);
+  });
+});
+
+describe("FINN live-intelligence doctrine", () => {
+  it("codifies live error recovery, governed self-improvement, accuracy and a measured pace", () => {
+    expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("معالجة الأخطاء لحظيًا");
+    expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("تطوير مستمر منضبط");
+    expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("الدقة المطلقة");
+    expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("تأنٍّ في النطق");
   });
 });

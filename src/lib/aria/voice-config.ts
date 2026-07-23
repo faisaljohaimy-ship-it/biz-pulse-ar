@@ -26,14 +26,17 @@ export const ARIA_GEMINI_TTS_DIRECTION =
  *  (ElevenLabs, server-side). Owner-selected male voice. */
 export const ARIA_ELEVENLABS_VOICE_ID = "izhopdR43PRI5gAmjXTj";
 
-/** @deprecated Legacy compatibility only. Calmer, smoother settings: higher
- *  stability + lower style for a steady, gentle delivery. */
+/** Calmer, smoother, DELIBERATE delivery: steady stability, low style, and a
+ *  measured pace (speed 0.9, below the 1.0 default) so FINN enunciates every
+ *  word clearly and is never rushed — per the constitution's spoken-clarity
+ *  clause («عدم السرعة في النطق»). Used by /api/aria/tts and
+ *  /api/public/aria-tts. */
 export const ARIA_ELEVENLABS_VOICE_SETTINGS = {
   stability: 0.62,
   similarity_boost: 0.85,
   style: 0.2,
   use_speaker_boost: true,
-  speed: 0.96,
+  speed: 0.9,
 } as const;
 
 /** @deprecated Legacy compatibility only. */

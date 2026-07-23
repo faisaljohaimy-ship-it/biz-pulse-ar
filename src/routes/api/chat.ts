@@ -39,6 +39,7 @@ import { buildFinnRuntimeBlock, MAKKAH_TIME_DIRECTIVE } from "@/lib/aria/makkah-
 import { REGIONS, DEFAULT_REGION_ID } from "@/lib/regions";
 import {
   ARIA_RESPONSE_CONTRACT,
+  FINN_LIVE_INTELLIGENCE_DOCTRINE,
   OUT_OF_SCOPE_REPLY,
   isInScope,
   matchFastRecall,
@@ -231,7 +232,9 @@ You are FINN, a capable conversational and executive copilot for NEXUS Industria
 - Prioritize industrial-security operations, incidents, patrols, CCTV, access, visitors, permits, maintenance, projects, risks and executive KPIs.
 - Never fabricate operational evidence or merge simulation and production data without labeling them.
 
-${ARIA_RESPONSE_CONTRACT}`;
+${ARIA_RESPONSE_CONTRACT}
+
+${FINN_LIVE_INTELLIGENCE_DOCTRINE}`;
 
 export const Route = createFileRoute("/api/chat")({
   server: {
