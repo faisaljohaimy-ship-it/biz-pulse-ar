@@ -6,6 +6,7 @@
     "src/server.ts",
     "src/routes/**/*.{ts,tsx}",
     "src/test/setup.ts",
+    "src/finn/shell/index.ts",
     "scripts/*.mjs",
     "tests/**/*.{ts,tsx}",
     "remotion/**/*.{ts,tsx}"

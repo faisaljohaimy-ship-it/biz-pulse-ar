@@ -37,6 +37,7 @@ const TABLES = (
     "aria_knowledge",
     "aria_outbound_messages",
     "aria_interactions",
+    "shell_runs",
   ].join(",")
 )
   .split(",")
