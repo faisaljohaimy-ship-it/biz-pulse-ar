@@ -53,6 +53,10 @@ import { FinnSignatureBackdrop } from "@/components/aria/FinnSignatureBackdrop";
 import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/aria/quick-commands";
 import { reportVoiceLatencyRegression } from "@/lib/aria/stream-sentence-flusher";
 import { shouldSpeakFinnReply, toFinnSpeechText } from "@/lib/aria/reply-modality";
+import {
+  finnDisplayFromMessage,
+  speakableTextFromEnvelope,
+} from "@/lib/aria/output/client-consumer";
 import { stripTashkeel } from "@/lib/aria/tashkeel";
 import { chooseFinnRecorderMime, recorderFileExtension } from "@/lib/aria/media-recorder";
 import { advanceFinnVoiceActivity, createFinnVoiceActivityState } from "@/lib/aria/voice-activity";
@@ -1057,9 +1061,20 @@ export function FinnCopilot() {
     const last = chat.messages[chat.messages.length - 1];
     if (!last || last.role !== "assistant") return;
 
-    const fullText = toFinnSpeechText(
-      sanitiseAssistantText(last.parts.map((p) => (p.type === "text" ? p.text : "")).join("")),
-    );
+    // Safe-output consumption: the server emits only guarded text and attaches
+    // a validated envelope. Prefer the envelope's (already normalized)
+    // speakableText; otherwise derive speech from the safe display text. A raw
+    // model string is never spoken.
+    const meta = (last as { metadata?: { envelope?: unknown } }).metadata;
+    const envelopeSpeakable =
+      meta?.envelope !== undefined ? speakableTextFromEnvelope(meta.envelope) : "";
+    const fullText =
+      envelopeSpeakable ||
+      toFinnSpeechText(
+        sanitiseAssistantText(
+          finnDisplayFromMessage(last as { parts?: Array<{ type: string; text?: string }> }),
+        ),
+      );
     if (!fullText || fullText.length < 2) return;
 
     // First sight of this reply: speak it ONLY if it answers a voice turn.

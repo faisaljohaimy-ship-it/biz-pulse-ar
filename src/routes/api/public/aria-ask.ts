@@ -15,6 +15,7 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 import { runThinkingLoop } from "@/lib/aria/thinking-loop.server";
+import { revalidateSpeakableText } from "@/lib/aria/output/finalize";
 
 const AnchorSchema = z.object({
   kind: z.string().max(40),
@@ -336,16 +337,22 @@ export const Route = createFileRoute("/api/public/aria-ask")({
             console.error("[public/aria-ask] empty model response");
             return Response.json(errorPayload("empty_response"), { status: 502 });
           }
+          // Output-gateway safe projection: block secret/protected leakage and
+          // redact PII from every model-authored string before it leaves.
+          const safe = (s?: string): string => {
+            const r = revalidateSpeakableText(s ?? "");
+            return r.ok ? r.text : "";
+          };
           return Response.json({
-            text_ar: parsed.ar || parsed.en,
-            text_en: parsed.en || parsed.ar,
+            text_ar: safe(parsed.ar || parsed.en),
+            text_en: safe(parsed.en || parsed.ar),
             mode: "concise" as const,
             executive: {
               intent: brief.intent,
-              summary: parsed.summary,
+              summary: safe(parsed.summary),
               evidence: parsed.evidence,
-              reasoning: parsed.reasoning,
-              recommendation: parsed.recommendation,
+              reasoning: safe(parsed.reasoning),
+              recommendation: safe(parsed.recommendation),
               next_action: parsed.next_action,
               confidence: parsed.confidence,
               sources: brief.sources,

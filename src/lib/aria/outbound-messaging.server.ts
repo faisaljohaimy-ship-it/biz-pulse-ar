@@ -1,3 +1,4 @@
+import { containsUnsafeLeakage } from "@/lib/aria/output/finalize";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -302,6 +303,11 @@ function sanitizeEmailHtml(value: string): string {
 function normalizeOutboundPayload(rawPayload: OutboundPayload): OutboundPayload {
   const payload = OutboundPayloadSchema.parse(rawPayload);
   if (payload.channel === "email") {
+    // Output-gateway boundary: outbound may carry PII under explicit approval,
+    // but a secret or protected-system leak must NEVER be sent.
+    if (containsUnsafeLeakage(`${payload.subject}\n${payload.html}`)) {
+      throw new Error("Outbound content blocked: secret or protected-system leakage.");
+    }
     return OutboundPayloadSchema.parse({
       ...payload,
       to: payload.to.trim().toLowerCase(),
@@ -309,6 +315,9 @@ function normalizeOutboundPayload(rawPayload: OutboundPayload): OutboundPayload 
       subject: payload.subject.trim(),
       html: sanitizeEmailHtml(payload.html),
     });
+  }
+  if (containsUnsafeLeakage(payload.body)) {
+    throw new Error("Outbound content blocked: secret or protected-system leakage.");
   }
   return OutboundPayloadSchema.parse({
     ...payload,

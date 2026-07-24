@@ -124,8 +124,13 @@ const RE_SECRET_LEAK =
   /\bsk-[A-Za-z0-9]{12,}\b|\b(api[_-]?key|secret|password|token)\s*[:=]\s*\S+|BEGIN (RSA |EC )?PRIVATE KEY|xi-api-key/i;
 const RE_EXEC_CLAIM =
   /(تم|تمّ)\s*(الإرسال|الاعتماد|التنفيذ|الإخلاء|البثّ|الدفع)|has been (sent|approved|executed|dispatched|broadcast)|successfully (sent|approved|executed|dispatched)/i;
-const RE_REGULATORY =
-  /hcis|الهيئة|توجيه|directive|\bsec\b|\bsaf\b|لائحة|نطاق التوجيه|امتثال|compliance/i;
+// A regulatory CLAIM needs a citation only when it is specific and citable —
+// a bare mention of "الامتثال/compliance/توجيه" is a normal domain answer and
+// must NOT be forced into insufficient_evidence (avoids over-refusal, §11).
+const RE_REG_QUERY =
+  /نطاق التوجيه|رقم التوجيه|نص التوجيه|لائحة الهيئة|directive (scope|number|text)|\bSEC-?\d|\bSAF-?\d/i;
+const RE_REG_CLAIM =
+  /\bSEC-\d+\b|\bSAF-\d+\b|\[(?:KB|DOC|HCIS)[:-][^\]]*\]|رقم التوجيه|نطاق التوجيه/i;
 const RE_NEEDS_TIME =
   /كم\s*(بقي|تبقّى|تبقى|المتبقّي|المتبقي)|متى\s*(ينتهي|تنتهي)|الوقت المتبقّي|remaining time|how long until|expires?\s*(in|at)/i;
 const RE_KPI = /\bkpi\b|مؤشر|المؤشرات|نسبة الامتثال|النسبة|metric|الأداء/i;
@@ -284,8 +289,8 @@ export function finalizeFinnOutput(req: FinnOutputRequest): SafeFinnOutput {
       return make("simulation", SIMULATION_LINE, "no-live-data", { isSimulation: true, orgId });
     }
 
-    // (c) Evidence — a regulatory/live claim needs a real citation.
-    if (RE_REGULATORY.test(req.userText) || RE_REGULATORY.test(model)) {
+    // (c) Evidence — a SPECIFIC regulatory claim/query needs a real citation.
+    if (RE_REG_QUERY.test(req.userText) || RE_REG_CLAIM.test(model)) {
       const cited = (model.match(RE_CITED_TAG) ?? []).map((t) => t.trim());
       const known = new Set(req.evidence.available.map((e) => e.tag));
       const hasRealEvidence = req.evidence.available.length > 0;
@@ -324,4 +329,31 @@ export function renderForUI(safe: SafeFinnOutput): string {
 /** The ONLY way to get TTS text — accepts the brand, never a raw string. */
 export function finnTtsTextFrom(safe: SafeFinnOutput): string {
   return safe.ttsText;
+}
+
+/**
+ * Deterministic content-safety re-validation for text arriving at an HTTP sink
+ * (e.g. the TTS endpoint) where the in-process brand cannot be trusted. Blocks
+ * any protected-marker or secret leakage and redacts PII. Returns ok=false when
+ * the text must NOT be spoken (caller uses a safe fixed line, never raw).
+ */
+export function revalidateSpeakableText(text: string): {
+  ok: boolean;
+  text: string;
+  pii: PiiClass;
+} {
+  if (RE_SECRET_LEAK.test(text) || outputLeaksSystem(text)) {
+    return { ok: false, text: "", pii: "blocked" };
+  }
+  const { text: redacted, pii } = redactPii(text);
+  return { ok: true, text: redacted, pii };
+}
+
+/**
+ * True if text leaks a secret or protected system content. Used by boundaries
+ * (outbound email/SMS, exports) that may legitimately carry PII under an
+ * explicit human-approval policy but must NEVER carry secrets or system prompt.
+ */
+export function containsUnsafeLeakage(text: string): boolean {
+  return RE_SECRET_LEAK.test(text) || outputLeaksSystem(text);
 }

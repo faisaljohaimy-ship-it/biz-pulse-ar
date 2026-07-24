@@ -17,6 +17,7 @@ import {
   FINN_ELEVENLABS_VOICE_ID,
   FINN_ELEVENLABS_VOICE_SETTINGS,
 } from "@/lib/aria/voice-config";
+import { synthesizeSafeSpeech, type SpeakExecutor } from "@/lib/aria/output/tts-adapter.server";
 
 const JSON_HEADERS = {
   "Cache-Control": "no-store",
@@ -94,51 +95,58 @@ export const Route = createFileRoute("/api/aria/tts")({
         const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
         if (!apiKey) return jsonError("FINN voice (ElevenLabs) is not configured.", 503);
 
-        let upstream: Response;
-        try {
-          upstream = await fetch(
-            `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/stream?output_format=mp3_44100_128`,
-            {
-              method: "POST",
-              headers: {
-                "xi-api-key": apiKey,
-                "Content-Type": "application/json",
-                Accept: "audio/mpeg",
+        // The TTS HTTP boundary cannot trust a raw `text` field: the output
+        // gateway re-validates (blocks secret/protected leakage, redacts PII)
+        // and only the sanitized text reaches ElevenLabs.
+        const speak: SpeakExecutor = async (safeText, vId, signal) => {
+          try {
+            const up = await fetch(
+              `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(vId)}/stream?output_format=mp3_44100_128`,
+              {
+                method: "POST",
+                headers: {
+                  "xi-api-key": apiKey,
+                  "Content-Type": "application/json",
+                  Accept: "audio/mpeg",
+                },
+                body: JSON.stringify({
+                  text: safeText,
+                  model_id: FINN_ELEVENLABS_MODEL,
+                  voice_settings: FINN_ELEVENLABS_VOICE_SETTINGS,
+                }),
+                signal,
               },
-              body: JSON.stringify({
-                text,
-                model_id: FINN_ELEVENLABS_MODEL,
-                voice_settings: FINN_ELEVENLABS_VOICE_SETTINGS,
-              }),
-              signal: request.signal,
-            },
-          );
-        } catch (error) {
+            );
+            if (!up.ok || !up.body) return { ok: false, status: up.status };
+            return {
+              ok: true,
+              status: 200,
+              audio: up.body,
+              contentType: up.headers.get("content-type") || "audio/mpeg",
+            };
+          } catch {
+            return { ok: false, status: 502 };
+          }
+        };
+
+        const outcome = await synthesizeSafeSpeech({ text, voiceId }, { speak }, request.signal);
+        if (!outcome.spoken) {
           if (request.signal.aborted) return jsonError("TTS request was cancelled.", 499);
-          console.error("[api/aria/tts] ElevenLabs request failed", {
-            error: error instanceof Error ? error.message : String(error),
-          });
-          return jsonError("FINN voice service is unavailable.", 502);
+          if (outcome.reason === "blocked_content")
+            return jsonError("تعذّر توليد صوت آمن لهذا المحتوى.", 422);
+          if (outcome.reason === "empty") return jsonError("لا يوجد نص صالح للنطق.", 400);
+          return jsonError("FINN voice generation failed.", 502);
+        }
+        const { result } = outcome;
+        if (!result.ok || !result.audio) {
+          return jsonError("FINN voice generation failed.", 502, { providerStatus: result.status });
         }
 
-        if (!upstream.ok || !upstream.body) {
-          const detail = await upstream.text().catch(() => "");
-          console.warn("[api/aria/tts] ElevenLabs rejected request", {
-            status: upstream.status,
-            detail: detail.slice(0, 200),
-          });
-          return jsonError("FINN voice generation failed.", 502, {
-            providerStatus: upstream.status,
-          });
-        }
-
-        // Stream the MP3 straight through — first audible byte as early as
-        // the provider emits it.
-        return new Response(upstream.body, {
+        return new Response(result.audio, {
           status: 200,
           headers: {
             "Cache-Control": "no-store",
-            "Content-Type": upstream.headers.get("content-type") || "audio/mpeg",
+            "Content-Type": result.contentType || "audio/mpeg",
             "X-FINN-Voice-ID": voiceId,
             "X-FINN-Voice-Model": FINN_ELEVENLABS_MODEL,
             "X-FINN-Voice-Provider": "elevenlabs",

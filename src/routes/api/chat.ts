@@ -3,7 +3,7 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
-  streamText,
+  generateText,
   stepCountIs,
   type UIMessage,
 } from "ai";
@@ -45,6 +45,8 @@ import {
   matchFastRecall,
 } from "@/lib/aria/response-contract";
 import { finalizeFinnOutput, renderForUI } from "@/lib/aria/output/finalize";
+import { sealEnvelope } from "@/lib/aria/output/envelope";
+import { normalizeFinnSpeechText } from "@/lib/aria/finn-speech-normalize";
 import { formatHcisReference, isHcisReferenceQuery } from "@/lib/aria/hcis-reference";
 import {
   ariaPreferencePromptLine,
@@ -583,7 +585,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
         // INVARIANT-9 (measure every reply): capture start / first-token /
         // finish times to persist into aria_interactions.
         const startAt = Date.now();
-        let firstTokenAt: number | null = null;
+        const firstTokenAt: number | null = null;
 
         // Fast mode: gpt-5 family (except nano variants) supports the
         // OpenAI priority serving tier — halves p50 latency for a small
@@ -640,318 +642,235 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
         });
         systemPrompt = `${finnRuntimeBlock}\n\n${MAKKAH_TIME_DIRECTIVE}\n\n${systemPrompt}`;
 
-        let finalAssistantText = "";
-        const result = streamText({
-          model,
-          system: systemPrompt,
-          messages: await convertToModelMessages(uiMessages, {
+        // ── GLOBAL SAFE OUTPUT ────────────────────────────────────────────
+        // Buffer the FULL model turn on the server (tools still run), finalize
+        // it through the output gateway, and emit ONLY the safe display text.
+        // No raw model token is ever piped to the browser (Option A).
+        const mapProviderError = (error: unknown): string => {
+          const msg = error instanceof Error ? error.message : String(error);
+          const status = (msg.match(/\b(4\d\d|5\d\d)\b/) ?? [])[1];
+          const lower = msg.toLowerCase();
+          if (status === "401" || status === "403" || lower.includes("authenticat"))
+            return "تعذّر توثيق FINN مع مزوّد الذكاء — تحقّق من صحة مفتاح المزوّد في إعدادات النشر.";
+          if (status === "402" || lower.includes("credit") || lower.includes("quota"))
+            return "رصيد الذكاء غير كافٍ لدى المزوّد — أضف رصيداً ثم أعد المحاولة.";
+          if (status === "429") return "الطلبات كثيرة الآن — أعد المحاولة بعد لحظات.";
+          if (status === "404" || lower.includes("not found") || lower.includes("no such model"))
+            return "النموذج غير متاح لمفتاحك لدى المزوّد — راجع الخطة أو النموذج في إعدادات النشر.";
+          if (status === "400")
+            return "رفض المزوّد الطلب (400) — غالبًا النموذج غير مدعوم بمفتاحك الحالي؛ جرّب مزوّدًا آخر.";
+          if (lower.includes("aborterror") || lower.includes("timeout"))
+            return "استغرقت FINN وقتًا طويلًا — أعد المحاولة، وستُعيد الاتصال تلقائيًا.";
+          return `تعذّر إكمال الرد${status ? ` (رمز ${status})` : ""} — أعد المحاولة أو راجع إعدادات المزوّد. المعرّف: ${requestId}`;
+        };
+
+        let rawModelText = "";
+        let generationErrorText: string | null = null;
+        try {
+          const gen = await generateText({
+            model,
+            system: systemPrompt,
+            messages: await convertToModelMessages(uiMessages, {
+              tools,
+              ignoreIncompleteToolCalls: true,
+            }),
             tools,
-            ignoreIncompleteToolCalls: true,
-          }),
-          tools,
-          toolChoice: "auto",
-          stopWhen: stepCountIs(12),
-          maxRetries: 2,
-          abortSignal: request.signal,
-          // Reasoning models (gpt-5*) count reasoning tokens toward output; keep headroom.
-          maxOutputTokens: replyMode === "voice" ? 700 : isGpt5Model ? 16_000 : 8_000,
-          // GPT-5 only accepts the default temperature (1); omit for that family.
-          ...(isGpt5Model ? {} : { temperature: 0.3 }),
-          // Priority serving tier (Fast mode) — reaches the gateway as a
-          // top-level `service_tier` field. Silently ignored on models that
-          // do not support it, but we already gated with PRIORITY_MODELS.
-          ...(vendor === "openai" && isGpt5Model
-            ? {
-                providerOptions: {
-                  openai: {
-                    reasoningEffort: replyMode === "voice" ? "low" : "high",
-                    ...(process.env.OPENAI_SERVICE_TIER?.trim() === "priority"
-                      ? { serviceTier: "priority" as const }
-                      : {}),
-                  },
-                },
-              }
-            : usePriority
+            toolChoice: "auto",
+            stopWhen: stepCountIs(12),
+            maxRetries: 2,
+            abortSignal: request.signal,
+            maxOutputTokens: replyMode === "voice" ? 700 : isGpt5Model ? 16_000 : 8_000,
+            ...(isGpt5Model ? {} : { temperature: 0.3 }),
+            ...(vendor === "openai" && isGpt5Model
               ? {
                   providerOptions: {
-                    lovable: { service_tier: "priority" as const },
+                    openai: {
+                      reasoningEffort: replyMode === "voice" ? "low" : "high",
+                      ...(process.env.OPENAI_SERVICE_TIER?.trim() === "priority"
+                        ? { serviceTier: "priority" as const }
+                        : {}),
+                    },
                   },
                 }
-              : {}),
+              : usePriority
+                ? { providerOptions: { lovable: { service_tier: "priority" as const } } }
+                : {}),
+          });
+          rawModelText = gen.text;
+          console.log("[api/chat] buffered finish", {
+            requestId,
+            textChars: rawModelText.length,
+            latencyMs: Date.now() - startAt,
+          });
+        } catch (error) {
+          const errMsg = error instanceof Error ? error.message : String(error);
+          if (shouldCoolFromError(errMsg)) markVendorFatal(vendor, errMsg.slice(0, 200));
+          generationErrorText = mapProviderError(error);
+          console.error("[api/chat] generateText error", { requestId, vendor, error: errMsg });
+          if (userId) {
+            void supabase
+              .from("aria_incidents")
+              .insert({
+                user_id: userId,
+                kind: "model_error",
+                detail: errMsg.slice(0, 500),
+                model: selectedModelId,
+              })
+              .then(({ error: insErr }) => {
+                if (insErr)
+                  console.error("[api/chat] aria_incidents insert failed:", insErr.message);
+              });
+          }
+        }
 
-          onChunk: ({ chunk }) => {
-            if (firstTokenAt === null && chunk.type === "text-delta") firstTokenAt = Date.now();
-          },
-
-          onError: ({ error }) => {
-            const errMsg = error instanceof Error ? error.message : String(error);
-            if (shouldCoolFromError(errMsg)) {
-              markVendorFatal(vendor, errMsg.slice(0, 200));
-            }
-            console.error("[api/chat] streamText error", {
-              requestId,
-              vendor,
-              error: errMsg,
-            });
-            // INVARIANT-11 (self-healing ledger): record model errors so the
-            // evolution engine can react.
-            if (userId) {
-              void supabase
-                .from("aria_incidents")
-                .insert({
-                  user_id: userId,
-                  kind: "model_error",
-                  detail: (error instanceof Error ? error.message : String(error)).slice(0, 500),
-                  model: selectedModelId,
-                })
-                .then(({ error: insErr }) => {
-                  if (insErr)
-                    console.error("[api/chat] aria_incidents insert failed:", insErr.message);
-                });
-            }
-          },
-          onStepFinish: ({ text, toolCalls, toolResults, finishReason }) => {
-            console.log("[api/chat] step", {
-              requestId,
-              finishReason,
-              textChars: text.length,
-              toolCalls: toolCalls.length,
-              toolResults: toolResults.length,
-            });
-          },
-          onFinish: ({ text, finishReason, usage }) => {
-            finalAssistantText = text;
-            console.log("[api/chat] upstream finished", {
-              requestId,
-              finishReason,
-              textChars: text.length,
-              usage,
-              latencyMs: Date.now() - startAt,
-              firstTokenMs: firstTokenAt ? firstTokenAt - startAt : null,
-              priority: usePriority,
-            });
-          },
+        // Finalize through the output gateway → SafeFinnOutput (never raw).
+        const trustedClockISO = new Date().toISOString();
+        const safe = finalizeFinnOutput({
+          userText: lastUserText ?? "",
+          modelText: generationErrorText ? "" : rawModelText,
+          actor: { userId, appRoles: [], orgRole: null, orgId: null },
+          evidence: { available: ragCitations.map((c) => ({ id: c.id, tag: c.tag })) },
+          liveDataAvailable: !!userId && grounded !== false,
+          trustedClockISO,
+          isSimulationEnv: true,
         });
+        // On a provider error, show the mapped safe line (still a safe fixed string).
+        const safeDisplayText = generationErrorText ?? renderForUI(safe);
+        const speakableText = normalizeFinnSpeechText(safeDisplayText, { lang: "ar" }).speech;
+        const safeEnvelope = sealEnvelope(safe, {
+          requestId,
+          locale: "ar",
+          createdAt: trustedClockISO,
+          speakableText,
+        });
+        const coverage = evaluateRagCoverage(safeDisplayText, ragCitations);
 
-        return result.toUIMessageStreamResponse({
-          headers: responseHeaders(requestId),
-          originalMessages: messages as UIMessage[],
-          sendReasoning: false,
-          messageMetadata: ({ part }) => {
-            if (part.type === "start") {
-              return {
+        // Persist ONLY the safe text (never raw model output).
+        if (userId) {
+          if (lastUserText) {
+            try {
+              await persistAdaptivePreferences(supabase, userId, lastUserText);
+            } catch (preferenceError) {
+              console.warn("[api/chat] adaptive preference persistence skipped", preferenceError);
+            }
+          }
+          const q = (lastUserText ?? "").trim();
+          const a = safeDisplayText.trim();
+          if (q && a) {
+            const ua = request.headers.get("user-agent") ?? "";
+            const deviceClass = /Mobi|Android|iPhone/i.test(ua)
+              ? "mobile"
+              : /iPad|Tablet/i.test(ua)
+                ? "tablet"
+                : "desktop";
+            void supabase
+              .from("aria_interactions")
+              .insert({
+                user_id: userId,
+                thread_id: threadId ?? null,
+                question: redactTelemetryText(q).slice(0, 4000),
+                answer: redactTelemetryText(a).slice(0, 8000),
+                model: selectedModelId,
+                latency_ms: Date.now() - startAt,
+                first_token_ms: firstTokenAt ? firstTokenAt - startAt : null,
+                device_class: deviceClass,
+              })
+              .then(({ error: insErr }) => {
+                if (insErr)
+                  console.error("[api/chat] aria_interactions insert failed:", insErr.message);
+              });
+          }
+          void (async () => {
+            try {
+              const userText = (lastUserText ?? "").trim();
+              const assistantText = safeDisplayText.trim();
+              if (threadId) {
+                const { data: thread } = await supabase
+                  .from("threads")
+                  .select("id")
+                  .eq("id", threadId)
+                  .eq("user_id", userId)
+                  .maybeSingle();
+                if (!thread) return;
+                const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
+                const rows: { thread_id: string; user_id: string; role: string; parts: unknown }[] =
+                  [];
+                if (lastUser)
+                  rows.push({
+                    thread_id: threadId,
+                    user_id: userId,
+                    role: "user",
+                    parts: persistenceSafeParts(lastUser),
+                  });
+                if (assistantText)
+                  rows.push({
+                    thread_id: threadId,
+                    user_id: userId,
+                    role: "assistant",
+                    parts: [{ type: "text", text: assistantText }],
+                  });
+                if (rows.length) {
+                  const { error: insertErr } = await supabase.from("messages").insert(rows);
+                  if (insertErr) console.error("messages insert failed", insertErr);
+                }
+                const firstText = userText.slice(0, 60) || null;
+                const { data: t } = await supabase
+                  .from("threads")
+                  .select("title")
+                  .eq("id", threadId)
+                  .maybeSingle();
+                const isDefault = t?.title === "محادثة جديدة" || t?.title === "New chat";
+                await supabase
+                  .from("threads")
+                  .update({
+                    updated_at: new Date().toISOString(),
+                    ...(isDefault && firstText ? { title: firstText } : {}),
+                  })
+                  .eq("id", threadId);
+              }
+              if (userText && assistantText) {
+                const { rememberConversationTurn } = await import("@/lib/aria/rag.server");
+                await rememberConversationTurn(
+                  supabase,
+                  userId,
+                  threadId ?? null,
+                  userText,
+                  assistantText,
+                );
+              }
+            } catch (persistErr) {
+              console.error("[api/chat] safe persistence error", persistErr);
+            }
+          })();
+        }
+
+        // Emit ONLY the safe display text as a UIMessage text stream (the client
+        // protocol is preserved; the validated envelope rides along as message
+        // metadata). No raw token is ever written.
+        const safeStream = createUIMessageStream({
+          execute: ({ writer }) => {
+            const id = `finn-safe-${requestId}`;
+            writer.write({ type: "text-start", id });
+            writer.write({ type: "text-delta", id, delta: safeDisplayText });
+            writer.write({ type: "text-end", id });
+            writer.write({
+              type: "message-metadata",
+              messageMetadata: {
                 requestId,
                 citations: ragCitations,
                 ragCounts,
                 replyMode,
-              };
-            }
-            if (part.type === "finish") {
-              const coverage = evaluateRagCoverage(finalAssistantText, ragCitations);
-
-              if (coverage.status === "uncited" && coverage.available > 0) {
-                console.warn("[api/chat] uncited answer", {
-                  requestId,
-                  available: coverage.available,
-                });
-              }
-              return { coverage };
-            }
-            return undefined;
-          },
-
-          onError: (error) => {
-            const msg = error instanceof Error ? error.message : String(error);
-            if (shouldCoolFromError(msg)) {
-              markVendorFatal(vendor, msg.slice(0, 200));
-            }
-            console.error("[api/chat] stream response error", {
-              requestId,
-              vendor,
-              model: selectedModelId,
-              error: msg,
+                coverage,
+                envelope: safeEnvelope,
+              },
             });
-            const status = (msg.match(/\b(4\d\d|5\d\d)\b/) ?? [])[1];
-            const lower = msg.toLowerCase();
-            if (status === "401" || status === "403" || lower.includes("authenticat"))
-              return "تعذّر توثيق FINN مع مزوّد الذكاء — تحقّق من صحة مفتاح المزوّد في إعدادات النشر.";
-            if (status === "402" || lower.includes("credit") || lower.includes("quota"))
-              return "رصيد الذكاء غير كافٍ لدى المزوّد — أضف رصيداً ثم أعد المحاولة.";
-            if (status === "429") return "الطلبات كثيرة الآن — أعد المحاولة بعد لحظات.";
-            if (status === "404" || lower.includes("not found") || lower.includes("no such model"))
-              return "النموذج غير متاح لمفتاحك لدى المزوّد — راجع الخطة أو النموذج في إعدادات النشر.";
-            if (status === "400")
-              return "رفض المزوّد الطلب (400) — غالبًا النموذج غير مدعوم بمفتاحك الحالي؛ جرّب مزوّدًا آخر.";
-            if (lower.includes("aborterror") || lower.includes("timeout"))
-              return "استغرقت FINN وقتًا طويلًا — أعد المحاولة، وستُعيد الاتصال تلقائيًا.";
-            return `تعذّر إكمال الرد${status ? ` (رمز ${status})` : ""} — أعد المحاولة أو راجع إعدادات المزوّد. المعرّف: ${requestId}`;
           },
-          onFinish: async ({ messages: finalMessages }) => {
-            // Anonymous visitors: no persistence, no memory writes.
-            if (!userId) return;
-
-            // Self-improvement is deliberately bounded to explicit durable
-            // presentation preferences. It cannot edit code or grant itself
-            // new authority, recipients, tools, or database privileges.
-            if (lastUserText) {
-              try {
-                await persistAdaptivePreferences(supabase, userId, lastUserText);
-              } catch (preferenceError) {
-                console.warn("[api/chat] adaptive preference persistence skipped", preferenceError);
-              }
-            }
-
-            // ── INVARIANT-9: log every interaction (latency, model, device) ──
-            try {
-              const lastUserForLog = [...uiMessages].reverse().find((m) => m.role === "user");
-              const newAssistantForLog = finalMessages[finalMessages.length - 1];
-              const q = (lastUserForLog?.parts ?? [])
-                .map((p) => (p.type === "text" ? p.text : ""))
-                .join("")
-                .trim();
-              const a = (
-                newAssistantForLog?.role === "assistant"
-                  ? (newAssistantForLog.parts ?? [])
-                      .map((p) => (p.type === "text" ? p.text : ""))
-                      .join("")
-                  : ""
-              ).trim();
-              if (q && a) {
-                const ua = request.headers.get("user-agent") ?? "";
-                const deviceClass = /Mobi|Android|iPhone/i.test(ua)
-                  ? "mobile"
-                  : /iPad|Tablet/i.test(ua)
-                    ? "tablet"
-                    : "desktop";
-                void supabase
-                  .from("aria_interactions")
-                  .insert({
-                    user_id: userId,
-                    thread_id: threadId ?? null,
-                    question: redactTelemetryText(q).slice(0, 4000),
-                    answer: redactTelemetryText(a).slice(0, 8000),
-                    model: selectedModelId,
-                    latency_ms: Date.now() - startAt,
-                    first_token_ms: firstTokenAt ? firstTokenAt - startAt : null,
-                    device_class: deviceClass,
-                  })
-                  .then(({ error: insErr }) => {
-                    if (insErr)
-                      console.error("[api/chat] aria_interactions insert failed:", insErr.message);
-                  });
-              }
-            } catch (logErr) {
-              console.warn("[api/chat] interaction log skipped", logErr);
-            }
-
-            if (!threadId) {
-              try {
-                const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
-                const newAssistant = finalMessages[finalMessages.length - 1];
-                const userText = (lastUser?.parts ?? [])
-                  .map((p) => (p.type === "text" ? p.text : ""))
-                  .join("")
-                  .trim();
-                const assistantText =
-                  newAssistant && newAssistant.role === "assistant"
-                    ? (newAssistant.parts ?? [])
-                        .map((p) => (p.type === "text" ? p.text : ""))
-                        .join("")
-                        .trim()
-                    : "";
-                if (userText && assistantText) {
-                  const { rememberConversationTurn } = await import("@/lib/aria/rag.server");
-                  await rememberConversationTurn(supabase, userId, null, userText, assistantText);
-                }
-              } catch (memErr) {
-                console.warn("[api/chat] ad-hoc memory persistence skipped", memErr);
-              }
-              return;
-            }
-            try {
-              const { data: thread } = await supabase
-                .from("threads")
-                .select("id")
-                .eq("id", threadId)
-                .eq("user_id", userId)
-                .maybeSingle();
-              if (!thread) return;
-
-              const lastUser = [...uiMessages].reverse().find((m) => m.role === "user");
-              const newAssistant = finalMessages[finalMessages.length - 1];
-
-              const rows: {
-                thread_id: string;
-                user_id: string;
-                role: string;
-                parts: unknown;
-              }[] = [];
-              if (lastUser) {
-                rows.push({
-                  thread_id: threadId,
-                  user_id: userId,
-                  role: "user",
-                  parts: persistenceSafeParts(lastUser),
-                });
-              }
-              if (newAssistant && newAssistant.role === "assistant") {
-                rows.push({
-                  thread_id: threadId,
-                  user_id: userId,
-                  role: "assistant",
-                  parts: persistenceSafeParts(newAssistant),
-                });
-              }
-              if (rows.length) {
-                const { error: insertErr } = await supabase.from("messages").insert(rows);
-                if (insertErr) console.error("messages insert failed", insertErr);
-              }
-
-              const firstText =
-                lastUser?.parts.find((p) => p.type === "text")?.text?.slice(0, 60) ?? null;
-              const { data: t } = await supabase
-                .from("threads")
-                .select("title")
-                .eq("id", threadId)
-                .maybeSingle();
-              const isDefault = t?.title === "محادثة جديدة" || t?.title === "New chat";
-              await supabase
-                .from("threads")
-                .update({
-                  updated_at: new Date().toISOString(),
-                  ...(isDefault && firstText ? { title: firstText } : {}),
-                })
-                .eq("id", threadId);
-
-              // Persist conversation memory for future RAG recall (best-effort).
-              try {
-                const userText = (lastUser?.parts ?? [])
-                  .map((p) => (p.type === "text" ? p.text : ""))
-                  .join("")
-                  .trim();
-                const assistantText =
-                  newAssistant && newAssistant.role === "assistant"
-                    ? (newAssistant.parts ?? [])
-                        .map((p) => (p.type === "text" ? p.text : ""))
-                        .join("")
-                        .trim()
-                    : "";
-                if (userText && assistantText) {
-                  const { rememberConversationTurn } = await import("@/lib/aria/rag.server");
-                  await rememberConversationTurn(
-                    supabase,
-                    userId,
-                    threadId,
-                    userText,
-                    assistantText,
-                  );
-                }
-              } catch (memErr) {
-                console.warn("[api/chat] memory persistence skipped", memErr);
-              }
-            } catch (e) {
-              console.error("onFinish persistence error", e);
-            }
+        });
+        return createUIMessageStreamResponse({
+          stream: safeStream,
+          headers: {
+            ...responseHeaders(requestId),
+            "X-FINN-Reply-Source": "safe-gateway",
           },
         });
       },

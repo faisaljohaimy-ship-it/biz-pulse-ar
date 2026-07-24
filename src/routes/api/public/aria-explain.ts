@@ -7,6 +7,7 @@
  *         Expected Outcome / Business Value / Implementation Steps.
  *   Returns: ExecutiveExplanation (bilingual).
  */
+import { revalidateSpeakableText } from "@/lib/aria/output/finalize";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   enforceRateLimit,
@@ -56,7 +57,22 @@ export const Route = createFileRoute("/api/public/aria-explain")({
 
         try {
           const explanation = await explainRecommendation(parsed.data, key);
-          return Response.json(explanation);
+          // Output-gateway safe projection: block secret/protected leakage and
+          // redact PII from every model-authored string before it leaves.
+          const safe = (s: string): string => {
+            const r = revalidateSpeakableText(s);
+            return r.ok ? r.text : "";
+          };
+          const safeArr = (xs: string[]): string[] => xs.map(safe).filter(Boolean);
+          return Response.json({
+            ...explanation,
+            why_en: safe(explanation.why_en),
+            why_ar: safe(explanation.why_ar),
+            alternatives_en: safeArr(explanation.alternatives_en),
+            alternatives_ar: safeArr(explanation.alternatives_ar),
+            risks_en: safeArr(explanation.risks_en),
+            risks_ar: safeArr(explanation.risks_ar),
+          });
         } catch (e) {
           console.error("[aria-explain]", e instanceof Error ? e.message : e);
           return Response.json({ error: "explanation_failed" }, { status: 502 });

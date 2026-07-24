@@ -4,7 +4,14 @@
  * Authenticated: verifies Supabase user via bearer, rate-limited per user.
  */
 import { createFileRoute } from "@tanstack/react-router";
-import { streamText, convertToModelMessages, type UIMessage } from "ai";
+import {
+  generateText,
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  type UIMessage,
+} from "ai";
+import { revalidateSpeakableText } from "@/lib/aria/output/finalize";
 import { createClient } from "@supabase/supabase-js";
 import { createLovableAiGatewayProvider, DEFAULT_LOVABLE_MODEL } from "@/lib/ai-gateway.server";
 import {
@@ -75,12 +82,24 @@ export const Route = createFileRoute("/api/learn/aria-teach")({
         const model = provider(DEFAULT_LOVABLE_MODEL);
 
         const { FINN_IDENTITY_PREAMBLE } = await import("@/lib/aria/identity");
-        const result = streamText({
+        // Output gateway: BUFFER the full lesson reply on the server, re-validate
+        // it (block secret/protected leakage, redact PII), emit ONLY safe text.
+        const gen = await generateText({
           model,
           system: `${FINN_IDENTITY_PREAMBLE}\n\n---\n\n# LESSON INSTRUCTOR ROLE\n${baseInstructor}${contextLine}`,
           messages: await convertToModelMessages(body.messages),
         });
-        return result.toUIMessageStreamResponse({ originalMessages: body.messages });
+        const rev = revalidateSpeakableText(gen.text);
+        const safeText = rev.ok ? rev.text : "";
+        const safeStream = createUIMessageStream({
+          execute: ({ writer }) => {
+            const id = `finn-teach-${userId}`;
+            writer.write({ type: "text-start", id });
+            writer.write({ type: "text-delta", id, delta: safeText });
+            writer.write({ type: "text-end", id });
+          },
+        });
+        return createUIMessageStreamResponse({ stream: safeStream });
       },
     },
   },

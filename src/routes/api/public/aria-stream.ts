@@ -10,6 +10,7 @@
  *
  * Public / unauthenticated. Protected by strict per-IP rate limit.
  */
+import { revalidateSpeakableText } from "@/lib/aria/output/finalize";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import {
@@ -148,7 +149,7 @@ export const Route = createFileRoute("/api/public/aria-stream")({
         const stream = new ReadableStream({
           async start(controller) {
             let buf = "";
-            let emitted = false;
+            let full = "";
             const send = (obj: Record<string, unknown>) => {
               controller.enqueue(enc.encode(`data: ${JSON.stringify(obj)}\n\n`));
             };
@@ -169,16 +170,19 @@ export const Route = createFileRoute("/api/public/aria-stream")({
                       choices?: { delta?: { content?: string } }[];
                     };
                     const delta = j.choices?.[0]?.delta?.content;
-                    if (typeof delta === "string" && delta.length > 0) {
-                      emitted = true;
-                      send({ delta });
-                    }
+                    // BUFFER on the server — never forward a raw model token.
+                    if (typeof delta === "string" && delta.length > 0) full += delta;
                   } catch {
                     /* ignore malformed line */
                   }
                 }
               }
-              if (!emitted) send({ error: "empty_response" });
+              // Output gateway: re-validate the FULL buffered text (block
+              // secret/protected leakage, redact PII), emit ONLY the safe text.
+              const rev = revalidateSpeakableText(full);
+              const safeText = rev.ok ? rev.text.trim() : "";
+              if (safeText) send({ delta: safeText });
+              else send({ error: "empty_response" });
               send({ done: true });
             } catch (err) {
               console.error(

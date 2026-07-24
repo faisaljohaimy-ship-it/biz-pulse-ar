@@ -16,6 +16,7 @@ import {
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
 import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
+import { revalidateSpeakableText } from "@/lib/aria/output/finalize";
 import {
   ALLOWED_ELEVEN_VOICE_IDS,
   FINN_ELEVENLABS_VOICE_ID,
@@ -100,6 +101,14 @@ export const Route = createFileRoute("/api/public/aria-tts")({
           } catch (e) {
             console.error("[public/aria-tts] diacritize", e instanceof Error ? e.message : e);
           }
+
+          // Output-gateway revalidation at the HTTP boundary: block any
+          // secret/protected leakage, redact PII, before synthesis.
+          const rev = revalidateSpeakableText(text);
+          if (!rev.ok || !rev.text.trim()) {
+            return Response.json({ error: "unsafe_content" }, { status: 422 });
+          }
+          text = rev.text;
 
           if (elevenKey) {
             try {

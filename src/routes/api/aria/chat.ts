@@ -16,6 +16,7 @@
  * enforcement + the shared sliding-window rate limiter. A bearer token, when
  * present, is honoured but never required (FINN is a public product surface).
  */
+import { revalidateSpeakableText } from "@/lib/aria/output/finalize";
 import { createFileRoute } from "@tanstack/react-router";
 import { DEFAULT_OPENAI_MODEL, resolveOpenAiModel } from "@/lib/ai-gateway.server";
 import {
@@ -201,7 +202,43 @@ async function handlePost(request: Request): Promise<Response> {
       return jsonError("تعذر الحصول على رد من FINN حالياً.", 502);
     }
 
-    return new Response(openAIResponse.body, {
+    // Output gateway: BUFFER the provider SSE on the server (never forward a
+    // raw model token), extract the text, re-validate it (block secret/protected
+    // leakage, redact PII), then emit ONLY the safe text as a single SSE event.
+    const rawSse = await openAIResponse.text();
+    let full = "";
+    for (const line of rawSse.split("\n")) {
+      const t = line.trim();
+      if (!t.startsWith("data:")) continue;
+      const payload = t.slice(5).trim();
+      if (!payload || payload === "[DONE]") continue;
+      try {
+        const j = JSON.parse(payload) as {
+          type?: string;
+          delta?: unknown;
+          response?: { output_text?: unknown };
+        };
+        if (typeof j.delta === "string" && (j.type ?? "").includes("output_text")) full += j.delta;
+        else if (typeof j.response?.output_text === "string") full = j.response.output_text;
+      } catch {
+        /* ignore malformed line */
+      }
+    }
+    const rev = revalidateSpeakableText(full);
+    const safeText = rev.ok ? rev.text.trim() : "";
+    const enc = new TextEncoder();
+    const safeStream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(
+          enc.encode(
+            `data: ${JSON.stringify({ type: "response.output_text.delta", delta: safeText })}\n\n`,
+          ),
+        );
+        controller.enqueue(enc.encode("data: [DONE]\n\n"));
+        controller.close();
+      },
+    });
+    return new Response(safeStream, {
       status: 200,
       headers: {
         ...NO_STORE_HEADERS,
