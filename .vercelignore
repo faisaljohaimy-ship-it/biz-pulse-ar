@@ -1,0 +1,10 @@
+# Never upload secrets, dumps, or non-runtime material to the deploy build
+.env
+.env.*
+!.env.example
+*.dump
+*.sql.gz
+*dump*.sql
+*backup*.sql
+tests/
+docs/
