@@ -26,7 +26,28 @@ export {
   SHELL_TABLES,
   type DbOp,
 } from "./shell";
-export { buildRun, recordRun, hashTask, type RunInput, type ShellWriter } from "./telemetry";
+export {
+  assertRuntimeWrite,
+  assertNoPayloadOrg,
+  assertParamWithinBounds,
+  runtimeWrite,
+  SHELL_RUNTIME_WRITE_ALLOWLIST,
+  SHELL_PROTECTED_TABLES,
+  WriteGatewayError,
+  type WriteOp,
+  type ShellSession,
+  type ShellWriter,
+} from "./gateway";
+export {
+  canDecideProposal,
+  canCreateProposal,
+  assertCanDecideProposal,
+  type Actor,
+  type AppRole,
+  type OrgRole,
+  type ProposalDecision,
+} from "./authz";
+export { buildRun, recordRun, hashTask, type RunInput } from "./telemetry";
 export {
   decideAdaptation,
   clampParam,

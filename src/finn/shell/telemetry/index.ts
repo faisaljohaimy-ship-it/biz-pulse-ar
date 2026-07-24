@@ -2,11 +2,14 @@
  * NEXIOS FINN Shell — telemetry.
  *
  * Builds `shell_runs` rows for every selection/execution. Persistence goes
- * through the boundary guard (shell table only) and is always simulation-marked
- * until real production data flows. Row construction is pure and testable.
+ * through the single runtime write gateway (allowlist + session-derived org_id)
+ * and is always simulation-marked until real production data flows. Row
+ * construction is pure and testable; this module performs NO direct DB write.
  */
-import { assertShellWrite, type DbOp } from "../shell";
+import { runtimeWrite, type ShellSession, type ShellWriter } from "../gateway";
 import type { RequiredRole, ShellRun } from "../types";
+
+export type { ShellSession, ShellWriter } from "../gateway";
 
 /** Stable, dependency-free task hash (djb2) — groups runs of the same task. */
 export function hashTask(task: string): string {
@@ -39,21 +42,15 @@ export function buildRun(input: RunInput): ShellRun {
   };
 }
 
-/** Minimal shape of a Supabase-like client the shell may use (write path). */
-export interface ShellWriter {
-  from(table: string): { insert(rows: unknown): Promise<{ error: { message: string } | null }> };
-}
-
 /**
- * Persist a run to `shell_runs` — guarded so it can never touch a core table.
- * No-op-safe: returns the row it would write when no writer is supplied.
+ * Persist a run to `shell_runs` through the runtime write gateway — the org_id
+ * is injected from the session, never from the row. No-op-safe: with no writer
+ * it returns the row unchanged (the gateway derives org_id only when writing).
  */
-export async function recordRun(run: ShellRun, writer?: ShellWriter): Promise<ShellRun> {
-  const table = "shell_runs";
-  assertShellWrite(table, "insert" satisfies DbOp);
-  if (writer) {
-    const { error } = await writer.from(table).insert(run);
-    if (error) throw new Error(`shell telemetry insert failed: ${error.message}`);
-  }
+export async function recordRun(
+  run: ShellRun,
+  ctx: { session?: ShellSession; writer?: ShellWriter } = {},
+): Promise<ShellRun> {
+  await runtimeWrite("shell_runs", "insert", run as unknown as Record<string, unknown>, ctx);
   return run;
 }
