@@ -44,6 +44,7 @@ import {
   isInScope,
   matchFastRecall,
 } from "@/lib/aria/response-contract";
+import { finalizeFinnOutput, renderForUI } from "@/lib/aria/output/finalize";
 import { formatHcisReference, isHcisReferenceQuery } from "@/lib/aria/hcis-reference";
 import {
   ariaPreferencePromptLine,
@@ -458,7 +459,21 @@ export const Route = createFileRoute("/api/chat")({
               headers: { ...responseHeaders(requestId), "X-FINN-Reply-Source": tag },
             });
           };
-          if (!isInScope(lastUserText)) return streamFixed(OUT_OF_SCOPE_REPLY, "scope-guard");
+          if (!isInScope(lastUserText)) {
+            // Out-of-scope is a policy decision owned by the output gateway —
+            // route it through finalizeFinnOutput so the public exit is guarded
+            // by the same funnel as every other output (never a raw string).
+            const safe = finalizeFinnOutput({
+              userText: lastUserText,
+              modelText: "",
+              actor: { userId, appRoles: [], orgRole: null, orgId: null },
+              evidence: { available: [] },
+              liveDataAvailable: false,
+              trustedClockISO: null,
+              isSimulationEnv: true,
+            });
+            return streamFixed(renderForUI(safe), "scope-guard");
+          }
           const recall = matchFastRecall(lastUserText);
           if (recall) return streamFixed(recall.answer, "fast-recall");
         }
