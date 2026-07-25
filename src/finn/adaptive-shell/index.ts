@@ -33,3 +33,5 @@ export {
 export * from "./population";
 /* Agent Runtime Foundation Phase 6 — additive hosting runtime. */
 export * from "./agent-runtime";
+/* Pack integration — vendored content packs through the admission doors. */
+export * from "./pack-integration";
