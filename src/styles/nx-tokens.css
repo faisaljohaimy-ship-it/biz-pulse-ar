@@ -1,0 +1,288 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEXIOS Design Tokens — implementation of the Design Constitution
+   (docs/design/) and Component Token ladders (docs/components/14-tokens.md,
+   docs/motion/03-animation-tokens.md).
+
+   ADDITIVE ONLY: nothing here restyles existing screens; these tokens and
+   utilities are consumed by the Nx component library (src/components/nx/)
+   and by future constitution-compliant screens. Closed ladders — adding a
+   step is a constitutional amendment.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Spacing ladder (Ch. 05) ─────────────────────────────────────────── */
+  --nx-space-4: 4px;
+  --nx-space-8: 8px;
+  --nx-space-12: 12px;
+  --nx-space-16: 16px;
+  --nx-space-24: 24px;
+  --nx-space-32: 32px;
+  --nx-space-48: 48px;
+  --nx-space-64: 64px;
+  --nx-space-96: 96px;
+  --nx-panel-padding: var(--nx-space-24);
+  --nx-grid-gap: var(--nx-space-24);
+  --nx-touch-min: 44px;
+
+  /* ── Radius ladder ───────────────────────────────────────────────────── */
+  --nx-radius-8: 8px;
+  --nx-radius-12: 12px;
+  --nx-radius-16: 16px;
+  --nx-radius-20: 20px;
+
+  /* ── Layer palette (Ch. 03 §5) ───────────────────────────────────────── */
+  --nx-layer-runtime: #00b8d9;
+  --nx-layer-shell: #8b7cf6;
+  --nx-layer-agent: #00d4ff;
+  --nx-layer-knowledge: #4cc9f0;
+  --nx-layer-twin: #22d3ee;
+  --nx-layer-analytics: #3b82f6;
+
+  /* ── Opacity ladder (Ch. 03 §7) ──────────────────────────────────────── */
+  --nx-opacity-72: 0.72;
+  --nx-opacity-56: 0.56;
+  --nx-opacity-38: 0.38;
+  --nx-opacity-24: 0.24;
+  --nx-opacity-14: 0.14;
+  --nx-opacity-8: 0.08;
+  --nx-opacity-6: 0.06;
+  --nx-opacity-4: 0.04;
+
+  /* ── Shadow ladder (Ch. 06) ──────────────────────────────────────────── */
+  --nx-shadow-e1: 0 8px 24px rgb(2 8 17 / 0.45);
+  --nx-shadow-e2: 0 12px 32px rgb(2 8 17 / 0.5);
+  --nx-shadow-e3: 0 16px 40px rgb(2 8 17 / 0.55);
+  --nx-shadow-e4: 0 24px 64px rgb(2 8 17 / 0.6);
+
+  /* ── Glow recipes (Ch. 06 licensing) ─────────────────────────────────── */
+  --nx-glow-focus: 0 0 24px rgb(0 212 255 / 0.35);
+  --nx-glow-agent: 0 0 24px rgb(0 212 255 / 0.25);
+  --nx-glow-authority: 0 0 24px rgb(245 197 96 / 0.3);
+  --nx-glow-critical: 0 0 16px rgb(255 77 109 / 0.4);
+  --nx-glow-sector: 0 0 32px rgb(var(--nx-region-rgb) / 0.3);
+
+  /* ── Blur ladder (Ch. 06 caps) ───────────────────────────────────────── */
+  --nx-blur-12: 12px;
+  --nx-blur-16: 16px;
+  --nx-blur-20: 20px;
+  --nx-blur-24: 24px;
+
+  /* ── Motion: durations (motion doc 02/03) ────────────────────────────── */
+  --nx-anim-micro: 100ms;
+  --nx-anim-fast: 150ms;
+  --nx-anim-base: 200ms;
+  --nx-anim-slow: 300ms;
+  --nx-anim-cinematic: 600ms;
+  --nx-anim-count: 400ms;
+  --nx-anim-stagger: 30ms;
+
+  /* ── Motion: easing ──────────────────────────────────────────────────── */
+  --nx-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --nx-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ── Motion: loops ───────────────────────────────────────────────────── */
+  --nx-loop-breathe: 2s;
+  --nx-loop-pulse-sector: 4s;
+  --nx-loop-shimmer: 2s;
+  --nx-loop-ambient: 8s;
+
+  /* ── Motion: amplitude ───────────────────────────────────────────────── */
+  --nx-move-1: 1px;
+  --nx-move-4: 4px;
+  --nx-move-8: 8px;
+  --nx-move-16: 16px;
+  --nx-move-24: 24px;
+
+  /* ── Z ladder (Ch. 06) ───────────────────────────────────────────────── */
+  --nx-z-canvas: 0;
+  --nx-z-panel: 10;
+  --nx-z-raised: 20;
+  --nx-z-chrome: 30;
+  --nx-z-overlay: 40;
+  --nx-z-modal: 50;
+  --nx-z-toast: 60;
+  --nx-z-voice: 70;
+}
+
+/* ── Tailwind theme bridge (docs/components/15) — utilities from tokens ── */
+@theme inline {
+  --color-nx-cyan: var(--nx-cyan);
+  --color-nx-exec: var(--nx-exec);
+  --color-nx-gold: var(--nx-gold);
+  --color-nx-pearl: var(--nx-pearl);
+  --color-nx-obsidian: var(--nx-obsidian);
+  --color-nx-ink: var(--nx-ink);
+  --color-nx-surface: var(--nx-surface);
+  --color-nx-card: var(--nx-card);
+  --color-nx-success: var(--nx-success);
+  --color-nx-warning: var(--nx-warning);
+  --color-nx-critical: var(--nx-critical);
+  --color-nx-info: var(--nx-info);
+  --color-nx-layer-runtime: var(--nx-layer-runtime);
+  --color-nx-layer-shell: var(--nx-layer-shell);
+  --color-nx-layer-agent: var(--nx-layer-agent);
+  --color-nx-layer-knowledge: var(--nx-layer-knowledge);
+  --color-nx-layer-twin: var(--nx-layer-twin);
+  --color-nx-layer-analytics: var(--nx-layer-analytics);
+  --shadow-e1: var(--nx-shadow-e1);
+  --shadow-e2: var(--nx-shadow-e2);
+  --shadow-e3: var(--nx-shadow-e3);
+  --shadow-e4: var(--nx-shadow-e4);
+  --radius-nx-8: var(--nx-radius-8);
+  --radius-nx-12: var(--nx-radius-12);
+  --radius-nx-16: var(--nx-radius-16);
+  --radius-nx-20: var(--nx-radius-20);
+}
+
+/* ── Glass composites (Ch. 06 elevation recipes) ────────────────────────── */
+@utility nx-glass-e1 {
+  background-color: color-mix(in srgb, var(--nx-surface) 65%, transparent);
+  backdrop-filter: blur(var(--nx-blur-12));
+  border: 1px solid rgb(255 255 255 / var(--nx-opacity-8));
+  box-shadow: var(--nx-shadow-e1);
+}
+@utility nx-glass-e2 {
+  background-color: color-mix(in srgb, var(--nx-surface) 72%, transparent);
+  backdrop-filter: blur(var(--nx-blur-16));
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: var(--nx-shadow-e2);
+}
+@utility nx-glass-e3 {
+  background-color: color-mix(in srgb, var(--nx-card) 78%, transparent);
+  backdrop-filter: blur(var(--nx-blur-20));
+  border: 1px solid rgb(255 255 255 / 0.12);
+  box-shadow: var(--nx-shadow-e3);
+}
+@utility nx-glass-e4 {
+  background-color: color-mix(in srgb, var(--nx-card) 88%, transparent);
+  backdrop-filter: blur(var(--nx-blur-24));
+  border: 1px solid rgb(255 255 255 / var(--nx-opacity-14));
+  box-shadow: var(--nx-shadow-e4);
+}
+
+/* ── The closed keyframe vocabulary (motion doc 03) ─────────────────────── */
+@keyframes nx-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes nx-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--nx-move-4));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes nx-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes nx-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes nx-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+@keyframes nx-shimmer {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes nx-dot-wave {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+@keyframes nx-sweep {
+  from {
+    transform: translateX(120%);
+  }
+  to {
+    transform: translateX(-120%);
+  }
+}
+@keyframes nx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes nx-indeterminate {
+  from {
+    inset-inline-start: 100%;
+  }
+  to {
+    inset-inline-start: -30%;
+  }
+}
+
+/* ── Motion utility classes (licensed loops + entrances) ────────────────── */
+@utility nx-anim-rise {
+  animation: nx-rise-in var(--nx-anim-base) var(--nx-ease-out) both;
+}
+@utility nx-anim-fade {
+  animation: nx-fade-in var(--nx-anim-base) var(--nx-ease-out) both;
+}
+@utility nx-anim-scale {
+  animation: nx-scale-in var(--nx-anim-base) var(--nx-ease-out) both;
+}
+@utility nx-anim-breathe {
+  animation: nx-breathe var(--nx-loop-breathe) var(--nx-ease-inout) infinite;
+}
+@utility nx-anim-spin {
+  animation: nx-spin 900ms linear infinite;
+}
+
+/* ── Reduced motion: token-level remap (motion doc 03) ──────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --nx-anim-micro: 1ms;
+    --nx-anim-fast: 1ms;
+    --nx-anim-base: 1ms;
+    --nx-anim-slow: 1ms;
+    --nx-anim-cinematic: 1ms;
+    --nx-anim-count: 1ms;
+    --nx-move-1: 0px;
+    --nx-move-4: 0px;
+    --nx-move-8: 0px;
+    --nx-move-16: 0px;
+    --nx-move-24: 0px;
+  }
+  .nx-anim-breathe,
+  .nx-anim-spin,
+  [class*="nx-loop"] {
+    animation-play-state: paused;
+  }
+}

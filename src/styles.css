@@ -2,6 +2,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./styles/nx-tokens.css";
 
 @custom-variant dark (&:is(.dark *));
 
