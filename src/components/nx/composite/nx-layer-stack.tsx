@@ -45,10 +45,12 @@ const CHIP_ACCENT: Record<NxStackLayerId, string> = {
 export interface NxLayerStackProps extends React.HTMLAttributes<HTMLDivElement> {
   /** The stratum currently carrying work — the only chip allowed to breathe. */
   activeLayer?: NxStackLayerId | null;
+  /** When provided, chips become real buttons and clicking selects a layer. */
+  onSelectLayer?: (id: NxStackLayerId) => void;
 }
 
 export const NxLayerStack = React.forwardRef<HTMLDivElement, NxLayerStackProps>(
-  ({ className, activeLayer = null, ...props }, ref) => (
+  ({ className, activeLayer = null, onSelectLayer, ...props }, ref) => (
     <div
       ref={ref}
       role="list"
@@ -58,21 +60,42 @@ export const NxLayerStack = React.forwardRef<HTMLDivElement, NxLayerStackProps>(
     >
       {STACK_LAYER_ORDER.map((id) => {
         const active = id === activeLayer;
-        return (
+        const chipClass = cn(
+          "nx-glass-e1 rounded-nx-8 inline-flex items-center gap-2 border px-3 py-1.5 text-xs font-medium",
+          CHIP_ACCENT[id],
+          active && "nx-anim-breathe shadow-[var(--nx-glow-focus)]",
+          onSelectLayer &&
+            "min-h-11 cursor-pointer transition-[border-color,box-shadow] duration-[var(--nx-anim-fast)] ease-[var(--nx-ease-out)] hover:border-current/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan",
+        );
+        const content = (
+          <>
+            <span aria-hidden className="size-1.5 rounded-full bg-current" />
+            {STACK_LAYER_LABEL[id]}
+            {active ? <span className="sr-only">— نشطة الآن</span> : null}
+          </>
+        );
+        return onSelectLayer ? (
+          <span key={id} role="listitem" className="inline-flex">
+            <button
+              type="button"
+              data-layer={id}
+              data-active={active || undefined}
+              aria-pressed={active}
+              onClick={() => onSelectLayer(id)}
+              className={chipClass}
+            >
+              {content}
+            </button>
+          </span>
+        ) : (
           <span
             key={id}
             role="listitem"
             data-layer={id}
             data-active={active || undefined}
-            className={cn(
-              "nx-glass-e1 rounded-nx-8 inline-flex items-center gap-2 border px-3 py-1.5 text-xs font-medium",
-              CHIP_ACCENT[id],
-              active && "nx-anim-breathe shadow-[var(--nx-glow-focus)]",
-            )}
+            className={chipClass}
           >
-            <span aria-hidden className="size-1.5 rounded-full bg-current" />
-            {STACK_LAYER_LABEL[id]}
-            {active ? <span className="sr-only">— نشطة الآن</span> : null}
+            {content}
           </span>
         );
       })}

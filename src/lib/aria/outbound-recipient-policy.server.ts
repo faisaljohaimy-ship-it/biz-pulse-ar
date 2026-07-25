@@ -55,7 +55,6 @@ export function getFinnOwnerRecipients(
   };
 }
 
-
 export function resolveOwnerEmail(requested?: string): string {
   const owner = getFinnOwnerRecipients().email;
   if (!requested) return owner;
