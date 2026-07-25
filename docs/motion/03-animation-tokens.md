@@ -85,6 +85,7 @@ interruptible mid-flight (drags, dismissable sheets); otherwise use duration tok
 | `nx-dot-wave` | 3 dots stagger-bounce (opacity only) | FINN thinking |
 | `nx-sweep` | light band traverse | holographic (doc 05) |
 | `nx-count` | numeric interpolation | KPI (JS-driven) |
+| `nx-ticker-track` | seamless track translate (−50%) | event ticker (v1.0.1 amendment) |
 
 New keyframes require a motion-system amendment — the vocabulary is closed so every
 screen *moves* recognizably NEXIOS.

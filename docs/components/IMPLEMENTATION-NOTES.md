@@ -5,6 +5,36 @@ where, and what remains. Updated every implementation phase.**
 
 ---
 
+## Implemented (Phase 6 — cockpit composites + showcase route)
+
+### Composites (`src/components/nx/composite/`)
+
+| Component | Spec | Notes |
+|---|---|---|
+| `NxLayerStack` (closed five-stratum chip row) | design 03 §5 / components 07 | pulse licensed only on the active layer; sr-only «نشطة الآن» co-signal |
+| `NxPipelineFlow` (request→…→result, seven stages) | motion 05 §Pipeline | gold approval gate breathes ONLY while pending (single-gold law); execution stage never carries a standing animation (advisory law); CSS-only |
+| `NxEventTicker` (decision/alert/approval/execution/audit) | motion 04 §Ticker | duplicated track + `nx-ticker-track` (0→−50%, leftward); duration from measured width at 24px/s (`--nx-loop-ticker`); pauses on hover/focus; a critical item revokes the loop → static emphasis; reduced motion → static list |
+
+Motion doc 03 amended (v1.0.1): `nx-ticker-track` joined the closed keyframe
+vocabulary; implemented in `nx-tokens.css`.
+
+### Showcase route (`src/routes/nx-cockpit.tsx`)
+
+Additive-only assembly of the executive cockpit reference: layer stack → KPI row
+(5 × `NxKpiCard`, simulation-badged) → pipeline (approval pending) → twin zone
+(4 region pulses + 4 twin nodes) → FINN panel (presence + voice + quick actions,
+«لا تنفيذ دون اعتماد بشري») → event ticker. **Not wired into any navigation**
+(`noindex`); zero changes to existing pages or chrome.
+
+### Tests (`src/components/nx/composite/composite.test.tsx`)
+
+11 tests: closed sets + order, active-only pulse with Arabic co-signals, gate
+breathe gating, advisory-law assertion on the execution stage, ticker scroll/
+duplication/pause/critical-override/reduced-motion/empty behaviors, and a
+composed-RTL axe pass (0 violations).
+
+---
+
 ## Implemented (Phase 4 — Phase A foundation + core)
 
 ### Tokens & theme (`src/styles/nx-tokens.css`, imported by `src/styles.css`)

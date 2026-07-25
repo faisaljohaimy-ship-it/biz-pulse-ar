@@ -25,6 +25,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PermitsRouteImport } from './routes/permits'
 import { Route as OsRouteImport } from './routes/os'
+import { Route as NxCockpitRouteImport } from './routes/nx-cockpit'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HcisComplianceRouteImport } from './routes/hcis-compliance'
@@ -294,6 +295,11 @@ const PermitsRoute = PermitsRouteImport.update({
 const OsRoute = OsRouteImport.update({
   id: '/os',
   path: '/os',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NxCockpitRoute = NxCockpitRouteImport.update({
+  id: '/nx-cockpit',
+  path: '/nx-cockpit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -1327,6 +1333,7 @@ export interface FileRoutesByFullPath {
   '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/nx-cockpit': typeof NxCockpitRoute
   '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
@@ -1534,6 +1541,7 @@ export interface FileRoutesByTo {
   '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/nx-cockpit': typeof NxCockpitRoute
   '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
@@ -1741,6 +1749,7 @@ export interface FileRoutesById {
   '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/nx-cockpit': typeof NxCockpitRoute
   '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
@@ -1950,6 +1959,7 @@ export interface FileRouteTypes {
     | '/hcis-compliance'
     | '/login'
     | '/mcp'
+    | '/nx-cockpit'
     | '/os'
     | '/permits'
     | '/pricing'
@@ -2157,6 +2167,7 @@ export interface FileRouteTypes {
     | '/hcis-compliance'
     | '/login'
     | '/mcp'
+    | '/nx-cockpit'
     | '/os'
     | '/permits'
     | '/pricing'
@@ -2363,6 +2374,7 @@ export interface FileRouteTypes {
     | '/hcis-compliance'
     | '/login'
     | '/mcp'
+    | '/nx-cockpit'
     | '/os'
     | '/permits'
     | '/pricing'
@@ -2572,6 +2584,7 @@ export interface RootRouteChildren {
   HcisComplianceRoute: typeof HcisComplianceRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
+  NxCockpitRoute: typeof NxCockpitRoute
   OsRoute: typeof OsRoute
   PermitsRoute: typeof PermitsRoute
   PricingRoute: typeof PricingRoute
@@ -2758,6 +2771,13 @@ declare module '@tanstack/react-router' {
       path: '/os'
       fullPath: '/os'
       preLoaderRoute: typeof OsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nx-cockpit': {
+      id: '/nx-cockpit'
+      path: '/nx-cockpit'
+      fullPath: '/nx-cockpit'
+      preLoaderRoute: typeof NxCockpitRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -4393,6 +4413,7 @@ const rootRouteChildren: RootRouteChildren = {
   HcisComplianceRoute: HcisComplianceRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
+  NxCockpitRoute: NxCockpitRoute,
   OsRoute: OsRoute,
   PermitsRoute: PermitsRoute,
   PricingRoute: PricingRoute,

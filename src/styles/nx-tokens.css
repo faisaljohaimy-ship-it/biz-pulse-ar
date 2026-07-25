@@ -246,6 +246,11 @@
     stroke-dashoffset: -12;
   }
 }
+@keyframes nx-ticker-track {
+  to {
+    transform: translateX(-50%);
+  }
+}
 @keyframes nx-indeterminate {
   from {
     inset-inline-start: 100%;
@@ -272,6 +277,20 @@
   animation: nx-spin 900ms linear infinite;
 }
 
+/* ── Loop pause hook: interaction-paused loops (hover/focus licenses) ───── */
+[data-nx-loop][data-paused] {
+  animation-play-state: paused;
+}
+
+/* Ticker track: static animation parts live in the sheet so the pause rules
+   above/below can win the cascade; ONLY the duration is set inline (computed
+   from the measured track width at the --nx-loop-ticker speed, 24px/s). */
+[data-nx-ticker-track] {
+  animation-name: nx-ticker-track;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
 /* ── Reduced motion: token-level remap (motion doc 03) ──────────────────── */
 @media (prefers-reduced-motion: reduce) {
   :root {
@@ -291,6 +310,8 @@
   .nx-anim-spin,
   [data-nx-loop],
   [class*="nx-loop"] {
-    animation-play-state: paused;
+    /* !important: inline `animation` shorthands implicitly reset play-state
+       at inline priority — without it this parity hook can never win. */
+    animation-play-state: paused !important;
   }
 }

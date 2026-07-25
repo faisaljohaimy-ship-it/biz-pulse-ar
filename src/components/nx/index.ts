@@ -62,3 +62,24 @@ export {
   type NxTwinLinkProps,
   type NxTwinNodeProps,
 } from "./twin/nx-twin";
+export {
+  NxLayerStack,
+  STACK_LAYER_LABEL,
+  STACK_LAYER_ORDER,
+  type NxLayerStackProps,
+  type NxStackLayerId,
+} from "./composite/nx-layer-stack";
+export {
+  NxPipelineFlow,
+  PIPELINE_STAGE_LABEL,
+  PIPELINE_STAGE_ORDER,
+  type NxPipelineFlowProps,
+  type NxPipelineStage,
+} from "./composite/nx-pipeline-flow";
+export {
+  NxEventTicker,
+  EVENT_KIND_LABEL,
+  type NxEventTickerProps,
+  type NxTickerEvent,
+  type NxEventKind,
+} from "./composite/nx-event-ticker";
