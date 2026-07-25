@@ -29,3 +29,5 @@ export {
   populateRegistry,
   type DiscoveryReport,
 } from "./registry/discovery";
+/* Shell Population Phase 5 — additive registry infrastructure. */
+export * from "./population";
