@@ -34,6 +34,8 @@ block in `src/styles.css`.**
 --nx-loop-pulse-sector: 4s;    /* region halos */
 --nx-loop-shimmer:      2s;    /* skeleton sweep */
 --nx-loop-ambient:      8s;    /* holographic drift */
+--nx-loop-dots:         1.2s;  /* FINN thinking dot wave (v1.0.1 amendment) */
+--nx-loop-dash:         3s;    /* twin energy-flow dash drift (v1.0.1 amendment) */
 --nx-loop-ticker:       linear, speed 24px/s;  /* event ticker */
 ```
 

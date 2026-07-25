@@ -85,6 +85,8 @@
   --nx-loop-pulse-sector: 4s;
   --nx-loop-shimmer: 2s;
   --nx-loop-ambient: 8s;
+  --nx-loop-dots: 1.2s;
+  --nx-loop-dash: 3s;
 
   /* ── Motion: amplitude ───────────────────────────────────────────────── */
   --nx-move-1: 1px;
@@ -239,6 +241,11 @@
     transform: rotate(360deg);
   }
 }
+@keyframes nx-dash-drift {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
 @keyframes nx-indeterminate {
   from {
     inset-inline-start: 100%;
@@ -282,6 +289,7 @@
   }
   .nx-anim-breathe,
   .nx-anim-spin,
+  [data-nx-loop],
   [class*="nx-loop"] {
     animation-play-state: paused;
   }

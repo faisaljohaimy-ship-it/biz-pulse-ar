@@ -219,6 +219,26 @@ describe("Digital twin — motion doc 05", () => {
   });
 });
 
+describe("Accessibility — axe sweep over states (audit cat 07)", () => {
+  it("loading, empty, error and voice states have no axe violations", async () => {
+    const { container } = render(
+      <div dir="rtl">
+        <NxSpinner size={20} label="يحمّل" />
+        <NxProgress value={60} label="التقدم" />
+        <NxProgress label="غير محدد" />
+        <NxSkeleton bar="title" />
+        <NxEmptyState icon={<svg />} title="فارغ" description="لا عناصر بعد" />
+        <NxErrorState title="تعذّر" description="انقطاع" onRetry={() => undefined} traceId="t-1" />
+        <NxVoiceButton state="listening" />
+        <NxFinnPresence state="reasoning" mode="gated" />
+        <NxRegionPulse regionId="central" live />
+        <NxTwinNode name="محطة" status="critical" />
+      </div>,
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
 describe("Accessibility — axe over a composed surface", () => {
   it("a composed panel of nx components has no axe violations", async () => {
     const { container } = render(

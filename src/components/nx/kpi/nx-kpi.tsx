@@ -144,7 +144,10 @@ export function NxAnimatedKpi({ value, fractionDigits = 0, ...rest }: NxAnimated
       setDisplay(value);
       return;
     }
-    const durationMs = 400; // --nx-anim-count
+    const tokenValue = getComputedStyle(document.documentElement)
+      .getPropertyValue("--nx-anim-count")
+      .trim();
+    const durationMs = tokenValue.endsWith("ms") ? parseFloat(tokenValue) : 400;
     const start = performance.now();
     let frame = 0;
     const tick = (now: number) => {

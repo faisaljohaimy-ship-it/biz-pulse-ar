@@ -84,6 +84,7 @@ export function NxTwinLink({
       {...props}
     >
       <line
+        data-nx-loop=""
         x1={from.x}
         y1={from.y}
         x2={to.x}
@@ -91,10 +92,10 @@ export function NxTwinLink({
         stroke="currentColor"
         strokeWidth={1.5}
         strokeDasharray={active ? "6 6" : undefined}
-        style={active ? { animation: "nx-dash-drift 3s linear infinite" } : undefined}
+        style={
+          active ? { animation: "nx-dash-drift var(--nx-loop-dash) linear infinite" } : undefined
+        }
       />
-      {/* keyframes nx-dash-drift are local to this component's usage */}
-      <style>{`@keyframes nx-dash-drift { to { stroke-dashoffset: -12; } }`}</style>
     </svg>
   );
 }

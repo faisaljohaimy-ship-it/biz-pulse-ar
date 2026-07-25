@@ -100,9 +100,10 @@ export const NxFinnPresence = React.forwardRef<HTMLDivElement, NxFinnPresencePro
             {[0, 1, 2].map((i) => (
               <span
                 key={i}
+                data-nx-loop=""
                 className="size-1.5 rounded-full bg-nx-layer-agent"
                 style={{
-                  animation: "nx-dot-wave 1.2s var(--nx-ease-inout) infinite",
+                  animation: "nx-dot-wave var(--nx-loop-dots) var(--nx-ease-inout) infinite",
                   animationDelay: `${i * 200}ms`,
                 }}
               />
