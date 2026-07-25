@@ -1,0 +1,203 @@
+{
+  "protocolVersion": "1.0",
+  "name": "Decision Quality Challenger",
+  "description": "Expose weak assumptions, missing alternatives, bias, and evidence that could reverse a decision.",
+  "url": "https://nexios.invalid/a2a/nx_decision_quality_challenger",
+  "preferredTransport": "JSONRPC",
+  "version": "1",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "application/json",
+    "text/markdown"
+  ],
+  "skills": [
+    {
+      "id": "nx-build-executive-brief",
+      "name": "Build Executive Brief",
+      "description": "Execute build executive brief for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to condense live operating evidence into a decision-ready one-page brief.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-cascade-enterprise-strategy",
+      "name": "Cascade Enterprise Strategy",
+      "description": "Execute cascade enterprise strategy for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to translate enterprise intent into measurable outcomes, initiatives, owners, and dependencies.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-model-strategic-scenarios",
+      "name": "Model Strategic Scenarios",
+      "description": "Execute model strategic scenarios for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to build base, upside, downside, and disruption scenarios with leading indicators.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-review-okr-health",
+      "name": "Review Okr Health",
+      "description": "Execute review okr health for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to test objective quality, key-result integrity, progress confidence, and gaming risk.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-synthesize-crisis-command-brief",
+      "name": "Synthesize Crisis Command Brief",
+      "description": "Execute synthesize crisis command brief for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to turn fragmented crisis evidence into priorities, decisions, and a common operating picture.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-prepare-executive-meeting",
+      "name": "Prepare Executive Meeting",
+      "description": "Execute prepare executive meeting for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to prepare the agenda, decisions required, evidence pack, objections, and follow-through.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-analyze-budget-variance",
+      "name": "Analyze Budget Variance",
+      "description": "Execute analyze budget variance for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to explain material budget deviations and distinguish structural issues from timing effects.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-evaluate-procurement-bids",
+      "name": "Evaluate Procurement Bids",
+      "description": "Execute evaluate procurement bids for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to score bids consistently across compliance, technical merit, total cost, risk, and delivery.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-extract-contract-obligations",
+      "name": "Extract Contract Obligations",
+      "description": "Execute extract contract obligations for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to identify duties, dates, thresholds, remedies, dependencies, and evidence requirements.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-forecast-enterprise-cashflow",
+      "name": "Forecast Enterprise Cashflow",
+      "description": "Execute forecast enterprise cashflow for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to forecast cash inflows, outflows, liquidity buffers, and uncertainty bands.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    }
+  ],
+  "securitySchemes": {
+    "nexiosOAuth": {
+      "type": "oauth2",
+      "description": "Replace the .invalid endpoint and configure least-privileged NEXIOS authorization."
+    }
+  },
+  "security": [
+    {
+      "nexiosOAuth": []
+    }
+  ],
+  "x-nexios": {
+    "id": "nx_decision_quality_challenger",
+    "nameAr": "وكيل تحدي جودة القرار",
+    "implementationStatus": "descriptor_only",
+    "enabled": false,
+    "toolAllowlist": [
+      "nx.data.query-catalog",
+      "nx.data.inspect-schema",
+      "nx.data.profile-dataset",
+      "nx.data.validate-quality",
+      "nx.data.trace-lineage",
+      "nx.knowledge.search-corpus",
+      "nx.knowledge.fetch-source",
+      "nx.knowledge.verify-citation",
+      "nx.knowledge.chunk-document",
+      "nx.knowledge.embed-content",
+      "nx.governance.list-controls",
+      "nx.governance.map-evidence",
+      "nx.governance.assess-control",
+      "nx.governance.register-risk",
+      "nx.governance.open-finding"
+    ],
+    "approvalPolicy": {
+      "reads": "no_human_approval_unless_source_policy_requires",
+      "writes": "human_before_execution",
+      "privilegedActions": "accountable_owner_and_admin",
+      "emergencyActions": "follow_approved_emergency_authority_matrix"
+    }
+  }
+}

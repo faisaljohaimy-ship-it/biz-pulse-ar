@@ -1,0 +1,203 @@
+{
+  "protocolVersion": "1.0",
+  "name": "Semantic Layer Architect",
+  "description": "Maintain governed metrics, dimensions, grain, joins, and certification.",
+  "url": "https://nexios.invalid/a2a/nx_semantic_layer_architect",
+  "preferredTransport": "JSONRPC",
+  "version": "1",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "application/json",
+    "text/markdown"
+  ],
+  "skills": [
+    {
+      "id": "nx-audit-data-quality",
+      "name": "Audit Data Quality",
+      "description": "Execute audit data quality for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to profile and test data against explicit contracts, thresholds, lineage, and business rules.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-design-semantic-layer",
+      "name": "Design Semantic Layer",
+      "description": "Execute design semantic layer for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to define governed dimensions, measures, grain, joins, ownership, and certification.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-reconcile-kpi-definitions",
+      "name": "Reconcile Kpi Definitions",
+      "description": "Execute reconcile kpi definitions for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to detect conflicting KPI logic and establish one governed, testable definition.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-detect-time-series-anomalies",
+      "name": "Detect Time Series Anomalies",
+      "description": "Execute detect time series anomalies for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to detect material anomalies while accounting for trend, seasonality, events, and data defects.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-validate-executive-dashboard",
+      "name": "Validate Executive Dashboard",
+      "description": "Execute validate executive dashboard for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to verify KPI meaning, calculation, freshness, hierarchy, thresholds, and decision utility.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-profile-sensitive-data",
+      "name": "Profile Sensitive Data",
+      "description": "Execute profile sensitive data for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to discover likely sensitive fields with controlled sampling, confidence, and stewardship routing.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-evaluate-rag-quality",
+      "name": "Evaluate Rag Quality",
+      "description": "Execute evaluate rag quality for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to measure retrieval relevance, coverage, citation correctness, answer quality, and abstention.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-defend-prompt-injection",
+      "name": "Defend Prompt Injection",
+      "description": "Execute defend prompt injection for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to detect direct and indirect instruction attacks and enforce trust boundaries.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-red-team-agent-workflows",
+      "name": "Red Team Agent Workflows",
+      "description": "Execute red team agent workflows for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to test goal hijack, tool misuse, identity abuse, memory poisoning, and cascading failure.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-enforce-tool-selection-policy",
+      "name": "Enforce Tool Selection Policy",
+      "description": "Execute enforce tool selection policy for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to constrain tool discovery and invocation by capability, least privilege, risk, and context.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    }
+  ],
+  "securitySchemes": {
+    "nexiosOAuth": {
+      "type": "oauth2",
+      "description": "Replace the .invalid endpoint and configure least-privileged NEXIOS authorization."
+    }
+  },
+  "security": [
+    {
+      "nexiosOAuth": []
+    }
+  ],
+  "x-nexios": {
+    "id": "nx_semantic_layer_architect",
+    "nameAr": "معماري الطبقة الدلالية",
+    "implementationStatus": "descriptor_only",
+    "enabled": false,
+    "toolAllowlist": [
+      "nx.data.query-catalog",
+      "nx.data.inspect-schema",
+      "nx.data.profile-dataset",
+      "nx.data.validate-quality",
+      "nx.data.trace-lineage",
+      "nx.knowledge.search-corpus",
+      "nx.knowledge.fetch-source",
+      "nx.knowledge.verify-citation",
+      "nx.knowledge.chunk-document",
+      "nx.knowledge.embed-content",
+      "nx.ai.model-route",
+      "nx.ai.classify-intent",
+      "nx.ai.generate-structured",
+      "nx.ai.extract-entities",
+      "nx.ai.summarize-grounded"
+    ],
+    "approvalPolicy": {
+      "reads": "no_human_approval_unless_source_policy_requires",
+      "writes": "human_before_execution",
+      "privilegedActions": "accountable_owner_and_admin",
+      "emergencyActions": "follow_approved_emergency_authority_matrix"
+    }
+  }
+}

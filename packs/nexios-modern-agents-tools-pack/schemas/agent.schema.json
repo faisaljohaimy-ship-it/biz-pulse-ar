@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nexios.invalid/schemas/agent.schema.json",
+  "title": "NEXIOS Agent Descriptor",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "nameEn",
+    "nameAr",
+    "category",
+    "mission",
+    "systemPrompt",
+    "skills",
+    "toolAllowlist",
+    "permissions",
+    "authority",
+    "memoryPolicy",
+    "approvalPolicy",
+    "model",
+    "implementationStatus",
+    "enabled",
+    "version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^nx_[a-z0-9_]+$"
+    },
+    "nameEn": {
+      "type": "string",
+      "minLength": 3
+    },
+    "nameAr": {
+      "type": "string",
+      "minLength": 3
+    },
+    "category": {
+      "type": "string"
+    },
+    "mission": {
+      "type": "string",
+      "minLength": 20
+    },
+    "goal": {
+      "type": "string"
+    },
+    "systemPrompt": {
+      "type": "string",
+      "minLength": 300
+    },
+    "skills": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "toolAllowlist": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority": {
+      "enum": [
+        "advisory",
+        "bounded_action",
+        "control"
+      ]
+    },
+    "memoryScope": {
+      "type": "string"
+    },
+    "memoryPolicy": {
+      "type": "object"
+    },
+    "approvalPolicy": {
+      "type": "object"
+    },
+    "handoffTargets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "model": {
+      "type": "string"
+    },
+    "modelPolicy": {
+      "type": "string"
+    },
+    "kpis": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "failureBehavior": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "implementationStatus": {
+      "const": "descriptor_only"
+    },
+    "enabled": {
+      "const": false
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "pack": {
+      "const": "nexios-modern-agents-tools-pack"
+    }
+  }
+}

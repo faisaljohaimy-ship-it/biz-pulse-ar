@@ -1,0 +1,3602 @@
+[
+  {
+    "agentId": "nx_chief_executive_advisor",
+    "skillId": "nx-build-executive-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_executive_advisor",
+    "skillId": "nx-cascade-enterprise-strategy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_executive_advisor",
+    "skillId": "nx-model-strategic-scenarios",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_executive_advisor",
+    "skillId": "nx-review-okr-health",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_executive_advisor",
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_executive_advisor",
+    "skillId": "nx-prepare-executive-meeting",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_executive_advisor",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_executive_advisor",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_executive_advisor",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_executive_advisor",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_strategy_portfolio_director",
+    "skillId": "nx-build-executive-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_strategy_portfolio_director",
+    "skillId": "nx-cascade-enterprise-strategy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_strategy_portfolio_director",
+    "skillId": "nx-model-strategic-scenarios",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_strategy_portfolio_director",
+    "skillId": "nx-review-okr-health",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_strategy_portfolio_director",
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_strategy_portfolio_director",
+    "skillId": "nx-prepare-executive-meeting",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_strategy_portfolio_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_strategy_portfolio_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_strategy_portfolio_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_strategy_portfolio_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_board_briefing_director",
+    "skillId": "nx-build-executive-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_board_briefing_director",
+    "skillId": "nx-cascade-enterprise-strategy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_board_briefing_director",
+    "skillId": "nx-model-strategic-scenarios",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_board_briefing_director",
+    "skillId": "nx-review-okr-health",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_board_briefing_director",
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_board_briefing_director",
+    "skillId": "nx-prepare-executive-meeting",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_board_briefing_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_board_briefing_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_board_briefing_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_board_briefing_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_risk_director",
+    "skillId": "nx-build-executive-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_risk_director",
+    "skillId": "nx-cascade-enterprise-strategy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_risk_director",
+    "skillId": "nx-model-strategic-scenarios",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_risk_director",
+    "skillId": "nx-review-okr-health",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_risk_director",
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_risk_director",
+    "skillId": "nx-prepare-executive-meeting",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_risk_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_risk_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_risk_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_risk_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_finance_value_director",
+    "skillId": "nx-build-executive-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_finance_value_director",
+    "skillId": "nx-cascade-enterprise-strategy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_finance_value_director",
+    "skillId": "nx-model-strategic-scenarios",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_finance_value_director",
+    "skillId": "nx-review-okr-health",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_finance_value_director",
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_finance_value_director",
+    "skillId": "nx-prepare-executive-meeting",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_finance_value_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_finance_value_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_finance_value_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_finance_value_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_governance_assurance_director",
+    "skillId": "nx-build-executive-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_governance_assurance_director",
+    "skillId": "nx-cascade-enterprise-strategy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_governance_assurance_director",
+    "skillId": "nx-model-strategic-scenarios",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_governance_assurance_director",
+    "skillId": "nx-review-okr-health",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_governance_assurance_director",
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_governance_assurance_director",
+    "skillId": "nx-prepare-executive-meeting",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_governance_assurance_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_governance_assurance_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_governance_assurance_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_governance_assurance_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_legal_policy_advisor",
+    "skillId": "nx-build-executive-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_legal_policy_advisor",
+    "skillId": "nx-cascade-enterprise-strategy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_legal_policy_advisor",
+    "skillId": "nx-model-strategic-scenarios",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_legal_policy_advisor",
+    "skillId": "nx-review-okr-health",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_legal_policy_advisor",
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_legal_policy_advisor",
+    "skillId": "nx-prepare-executive-meeting",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_legal_policy_advisor",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_legal_policy_advisor",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_legal_policy_advisor",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_legal_policy_advisor",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_transformation_office_director",
+    "skillId": "nx-build-executive-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_transformation_office_director",
+    "skillId": "nx-cascade-enterprise-strategy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_transformation_office_director",
+    "skillId": "nx-model-strategic-scenarios",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_transformation_office_director",
+    "skillId": "nx-review-okr-health",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_transformation_office_director",
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_transformation_office_director",
+    "skillId": "nx-prepare-executive-meeting",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_transformation_office_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_transformation_office_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_transformation_office_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_transformation_office_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_decision_quality_challenger",
+    "skillId": "nx-build-executive-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_decision_quality_challenger",
+    "skillId": "nx-cascade-enterprise-strategy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_decision_quality_challenger",
+    "skillId": "nx-model-strategic-scenarios",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_decision_quality_challenger",
+    "skillId": "nx-review-okr-health",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_decision_quality_challenger",
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_decision_quality_challenger",
+    "skillId": "nx-prepare-executive-meeting",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_decision_quality_challenger",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_decision_quality_challenger",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_decision_quality_challenger",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_decision_quality_challenger",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_operations_command_director",
+    "skillId": "nx-predict-asset-failure",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_operations_command_director",
+    "skillId": "nx-prioritize-work-orders",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_operations_command_director",
+    "skillId": "nx-optimize-spare-parts",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_operations_command_director",
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_operations_command_director",
+    "skillId": "nx-estimate-outage-impact",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_operations_command_director",
+    "skillId": "nx-detect-process-bottlenecks",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_operations_command_director",
+    "skillId": "nx-detect-energy-loss",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_operations_command_director",
+    "skillId": "nx-optimize-load-profile",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_operations_command_director",
+    "skillId": "nx-calculate-carbon-inventory",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_operations_command_director",
+    "skillId": "nx-assess-renewable-integration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_asset_performance_director",
+    "skillId": "nx-predict-asset-failure",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_asset_performance_director",
+    "skillId": "nx-prioritize-work-orders",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_asset_performance_director",
+    "skillId": "nx-optimize-spare-parts",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_asset_performance_director",
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_asset_performance_director",
+    "skillId": "nx-estimate-outage-impact",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_asset_performance_director",
+    "skillId": "nx-detect-process-bottlenecks",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_asset_performance_director",
+    "skillId": "nx-detect-energy-loss",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_asset_performance_director",
+    "skillId": "nx-optimize-load-profile",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_asset_performance_director",
+    "skillId": "nx-calculate-carbon-inventory",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_asset_performance_director",
+    "skillId": "nx-assess-renewable-integration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_reliability_engineering_lead",
+    "skillId": "nx-predict-asset-failure",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_reliability_engineering_lead",
+    "skillId": "nx-prioritize-work-orders",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_reliability_engineering_lead",
+    "skillId": "nx-optimize-spare-parts",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_reliability_engineering_lead",
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_reliability_engineering_lead",
+    "skillId": "nx-estimate-outage-impact",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_reliability_engineering_lead",
+    "skillId": "nx-detect-process-bottlenecks",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_reliability_engineering_lead",
+    "skillId": "nx-detect-energy-loss",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_reliability_engineering_lead",
+    "skillId": "nx-optimize-load-profile",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_reliability_engineering_lead",
+    "skillId": "nx-calculate-carbon-inventory",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_reliability_engineering_lead",
+    "skillId": "nx-assess-renewable-integration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_maintenance_planning_lead",
+    "skillId": "nx-predict-asset-failure",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_maintenance_planning_lead",
+    "skillId": "nx-prioritize-work-orders",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_maintenance_planning_lead",
+    "skillId": "nx-optimize-spare-parts",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_maintenance_planning_lead",
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_maintenance_planning_lead",
+    "skillId": "nx-estimate-outage-impact",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_maintenance_planning_lead",
+    "skillId": "nx-detect-process-bottlenecks",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_maintenance_planning_lead",
+    "skillId": "nx-detect-energy-loss",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_maintenance_planning_lead",
+    "skillId": "nx-optimize-load-profile",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_maintenance_planning_lead",
+    "skillId": "nx-calculate-carbon-inventory",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_maintenance_planning_lead",
+    "skillId": "nx-assess-renewable-integration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_digital_twin_director",
+    "skillId": "nx-predict-asset-failure",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_digital_twin_director",
+    "skillId": "nx-prioritize-work-orders",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_digital_twin_director",
+    "skillId": "nx-optimize-spare-parts",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_digital_twin_director",
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_digital_twin_director",
+    "skillId": "nx-estimate-outage-impact",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_digital_twin_director",
+    "skillId": "nx-detect-process-bottlenecks",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_digital_twin_director",
+    "skillId": "nx-detect-energy-loss",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_digital_twin_director",
+    "skillId": "nx-optimize-load-profile",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_digital_twin_director",
+    "skillId": "nx-calculate-carbon-inventory",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_digital_twin_director",
+    "skillId": "nx-assess-renewable-integration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_field_service_director",
+    "skillId": "nx-predict-asset-failure",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_field_service_director",
+    "skillId": "nx-prioritize-work-orders",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_field_service_director",
+    "skillId": "nx-optimize-spare-parts",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_field_service_director",
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_field_service_director",
+    "skillId": "nx-estimate-outage-impact",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_field_service_director",
+    "skillId": "nx-detect-process-bottlenecks",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_field_service_director",
+    "skillId": "nx-detect-energy-loss",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_field_service_director",
+    "skillId": "nx-optimize-load-profile",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_field_service_director",
+    "skillId": "nx-calculate-carbon-inventory",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_field_service_director",
+    "skillId": "nx-assess-renewable-integration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_outage_response_director",
+    "skillId": "nx-predict-asset-failure",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_outage_response_director",
+    "skillId": "nx-prioritize-work-orders",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_outage_response_director",
+    "skillId": "nx-optimize-spare-parts",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_outage_response_director",
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_outage_response_director",
+    "skillId": "nx-estimate-outage-impact",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_outage_response_director",
+    "skillId": "nx-detect-process-bottlenecks",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_outage_response_director",
+    "skillId": "nx-detect-energy-loss",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_outage_response_director",
+    "skillId": "nx-optimize-load-profile",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_outage_response_director",
+    "skillId": "nx-calculate-carbon-inventory",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_outage_response_director",
+    "skillId": "nx-assess-renewable-integration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_excellence_director",
+    "skillId": "nx-predict-asset-failure",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_excellence_director",
+    "skillId": "nx-prioritize-work-orders",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_excellence_director",
+    "skillId": "nx-optimize-spare-parts",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_excellence_director",
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_excellence_director",
+    "skillId": "nx-estimate-outage-impact",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_excellence_director",
+    "skillId": "nx-detect-process-bottlenecks",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_excellence_director",
+    "skillId": "nx-detect-energy-loss",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_excellence_director",
+    "skillId": "nx-optimize-load-profile",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_excellence_director",
+    "skillId": "nx-calculate-carbon-inventory",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_excellence_director",
+    "skillId": "nx-assess-renewable-integration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_supply_chain_control_director",
+    "skillId": "nx-predict-asset-failure",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_supply_chain_control_director",
+    "skillId": "nx-prioritize-work-orders",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_supply_chain_control_director",
+    "skillId": "nx-optimize-spare-parts",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_supply_chain_control_director",
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_supply_chain_control_director",
+    "skillId": "nx-estimate-outage-impact",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_supply_chain_control_director",
+    "skillId": "nx-detect-process-bottlenecks",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_supply_chain_control_director",
+    "skillId": "nx-detect-energy-loss",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_supply_chain_control_director",
+    "skillId": "nx-optimize-load-profile",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_supply_chain_control_director",
+    "skillId": "nx-calculate-carbon-inventory",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_supply_chain_control_director",
+    "skillId": "nx-assess-renewable-integration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_industrial_security_commander",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_industrial_security_commander",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_industrial_security_commander",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_industrial_security_commander",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_industrial_security_commander",
+    "skillId": "nx-map-ot-attack-techniques",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_industrial_security_commander",
+    "skillId": "nx-plan-security-shift",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_industrial_security_commander",
+    "skillId": "nx-orchestrate-emergency-response",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_industrial_security_commander",
+    "skillId": "nx-analyze-job-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_industrial_security_commander",
+    "skillId": "nx-verify-contractor-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_industrial_security_commander",
+    "skillId": "nx-assess-process-safety-barriers",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_physical_security_director",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_physical_security_director",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_physical_security_director",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_physical_security_director",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_physical_security_director",
+    "skillId": "nx-map-ot-attack-techniques",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_physical_security_director",
+    "skillId": "nx-plan-security-shift",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_physical_security_director",
+    "skillId": "nx-orchestrate-emergency-response",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_physical_security_director",
+    "skillId": "nx-analyze-job-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_physical_security_director",
+    "skillId": "nx-verify-contractor-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_physical_security_director",
+    "skillId": "nx-assess-process-safety-barriers",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_soc_ot_fusion_director",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_soc_ot_fusion_director",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_soc_ot_fusion_director",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_soc_ot_fusion_director",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_soc_ot_fusion_director",
+    "skillId": "nx-map-ot-attack-techniques",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_soc_ot_fusion_director",
+    "skillId": "nx-plan-security-shift",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_soc_ot_fusion_director",
+    "skillId": "nx-orchestrate-emergency-response",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_soc_ot_fusion_director",
+    "skillId": "nx-analyze-job-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_soc_ot_fusion_director",
+    "skillId": "nx-verify-contractor-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_soc_ot_fusion_director",
+    "skillId": "nx-assess-process-safety-barriers",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_access_intelligence_lead",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_access_intelligence_lead",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_access_intelligence_lead",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_access_intelligence_lead",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_access_intelligence_lead",
+    "skillId": "nx-map-ot-attack-techniques",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_access_intelligence_lead",
+    "skillId": "nx-plan-security-shift",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_access_intelligence_lead",
+    "skillId": "nx-orchestrate-emergency-response",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_access_intelligence_lead",
+    "skillId": "nx-analyze-job-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_access_intelligence_lead",
+    "skillId": "nx-verify-contractor-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_access_intelligence_lead",
+    "skillId": "nx-assess-process-safety-barriers",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_cctv_intelligence_lead",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_cctv_intelligence_lead",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_cctv_intelligence_lead",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_cctv_intelligence_lead",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_cctv_intelligence_lead",
+    "skillId": "nx-map-ot-attack-techniques",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_cctv_intelligence_lead",
+    "skillId": "nx-plan-security-shift",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_cctv_intelligence_lead",
+    "skillId": "nx-orchestrate-emergency-response",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_cctv_intelligence_lead",
+    "skillId": "nx-analyze-job-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_cctv_intelligence_lead",
+    "skillId": "nx-verify-contractor-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_cctv_intelligence_lead",
+    "skillId": "nx-assess-process-safety-barriers",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_crisis_response_commander",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_crisis_response_commander",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_crisis_response_commander",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_crisis_response_commander",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_crisis_response_commander",
+    "skillId": "nx-map-ot-attack-techniques",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_crisis_response_commander",
+    "skillId": "nx-plan-security-shift",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_crisis_response_commander",
+    "skillId": "nx-orchestrate-emergency-response",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_crisis_response_commander",
+    "skillId": "nx-analyze-job-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_crisis_response_commander",
+    "skillId": "nx-verify-contractor-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_crisis_response_commander",
+    "skillId": "nx-assess-process-safety-barriers",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_emergency_management_director",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_emergency_management_director",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_emergency_management_director",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_emergency_management_director",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_emergency_management_director",
+    "skillId": "nx-map-ot-attack-techniques",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_emergency_management_director",
+    "skillId": "nx-plan-security-shift",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_emergency_management_director",
+    "skillId": "nx-orchestrate-emergency-response",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_emergency_management_director",
+    "skillId": "nx-analyze-job-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_emergency_management_director",
+    "skillId": "nx-verify-contractor-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_emergency_management_director",
+    "skillId": "nx-assess-process-safety-barriers",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hse_assurance_director",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hse_assurance_director",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hse_assurance_director",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hse_assurance_director",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hse_assurance_director",
+    "skillId": "nx-map-ot-attack-techniques",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hse_assurance_director",
+    "skillId": "nx-plan-security-shift",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hse_assurance_director",
+    "skillId": "nx-orchestrate-emergency-response",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hse_assurance_director",
+    "skillId": "nx-analyze-job-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hse_assurance_director",
+    "skillId": "nx-verify-contractor-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hse_assurance_director",
+    "skillId": "nx-assess-process-safety-barriers",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_investigations_evidence_lead",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_investigations_evidence_lead",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_investigations_evidence_lead",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_investigations_evidence_lead",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_investigations_evidence_lead",
+    "skillId": "nx-map-ot-attack-techniques",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_investigations_evidence_lead",
+    "skillId": "nx-plan-security-shift",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_investigations_evidence_lead",
+    "skillId": "nx-orchestrate-emergency-response",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_investigations_evidence_lead",
+    "skillId": "nx-analyze-job-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_investigations_evidence_lead",
+    "skillId": "nx-verify-contractor-safety",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_investigations_evidence_lead",
+    "skillId": "nx-assess-process-safety-barriers",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_data_steward",
+    "skillId": "nx-audit-data-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_data_steward",
+    "skillId": "nx-design-semantic-layer",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_data_steward",
+    "skillId": "nx-reconcile-kpi-definitions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_data_steward",
+    "skillId": "nx-detect-time-series-anomalies",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_data_steward",
+    "skillId": "nx-validate-executive-dashboard",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_data_steward",
+    "skillId": "nx-profile-sensitive-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_data_steward",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_data_steward",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_data_steward",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_chief_data_steward",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_analytics_insight_director",
+    "skillId": "nx-audit-data-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_analytics_insight_director",
+    "skillId": "nx-design-semantic-layer",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_analytics_insight_director",
+    "skillId": "nx-reconcile-kpi-definitions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_analytics_insight_director",
+    "skillId": "nx-detect-time-series-anomalies",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_analytics_insight_director",
+    "skillId": "nx-validate-executive-dashboard",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_analytics_insight_director",
+    "skillId": "nx-profile-sensitive-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_analytics_insight_director",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_analytics_insight_director",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_analytics_insight_director",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_analytics_insight_director",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_semantic_layer_architect",
+    "skillId": "nx-audit-data-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_semantic_layer_architect",
+    "skillId": "nx-design-semantic-layer",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_semantic_layer_architect",
+    "skillId": "nx-reconcile-kpi-definitions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_semantic_layer_architect",
+    "skillId": "nx-detect-time-series-anomalies",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_semantic_layer_architect",
+    "skillId": "nx-validate-executive-dashboard",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_semantic_layer_architect",
+    "skillId": "nx-profile-sensitive-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_semantic_layer_architect",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_semantic_layer_architect",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_semantic_layer_architect",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_semantic_layer_architect",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_rag_knowledge_director",
+    "skillId": "nx-audit-data-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_rag_knowledge_director",
+    "skillId": "nx-design-semantic-layer",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_rag_knowledge_director",
+    "skillId": "nx-reconcile-kpi-definitions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_rag_knowledge_director",
+    "skillId": "nx-detect-time-series-anomalies",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_rag_knowledge_director",
+    "skillId": "nx-validate-executive-dashboard",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_rag_knowledge_director",
+    "skillId": "nx-profile-sensitive-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_rag_knowledge_director",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_rag_knowledge_director",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_rag_knowledge_director",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_rag_knowledge_director",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_model_router",
+    "skillId": "nx-audit-data-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_model_router",
+    "skillId": "nx-design-semantic-layer",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_model_router",
+    "skillId": "nx-reconcile-kpi-definitions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_model_router",
+    "skillId": "nx-detect-time-series-anomalies",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_model_router",
+    "skillId": "nx-validate-executive-dashboard",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_model_router",
+    "skillId": "nx-profile-sensitive-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_model_router",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_model_router",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_model_router",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_model_router",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_evaluation_director",
+    "skillId": "nx-audit-data-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_evaluation_director",
+    "skillId": "nx-design-semantic-layer",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_evaluation_director",
+    "skillId": "nx-reconcile-kpi-definitions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_evaluation_director",
+    "skillId": "nx-detect-time-series-anomalies",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_evaluation_director",
+    "skillId": "nx-validate-executive-dashboard",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_evaluation_director",
+    "skillId": "nx-profile-sensitive-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_evaluation_director",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_evaluation_director",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_evaluation_director",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_evaluation_director",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_safety_red_team_lead",
+    "skillId": "nx-audit-data-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_safety_red_team_lead",
+    "skillId": "nx-design-semantic-layer",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_safety_red_team_lead",
+    "skillId": "nx-reconcile-kpi-definitions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_safety_red_team_lead",
+    "skillId": "nx-detect-time-series-anomalies",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_safety_red_team_lead",
+    "skillId": "nx-validate-executive-dashboard",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_safety_red_team_lead",
+    "skillId": "nx-profile-sensitive-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_safety_red_team_lead",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_safety_red_team_lead",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_safety_red_team_lead",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_ai_safety_red_team_lead",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_memory_governor",
+    "skillId": "nx-audit-data-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_memory_governor",
+    "skillId": "nx-design-semantic-layer",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_memory_governor",
+    "skillId": "nx-reconcile-kpi-definitions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_memory_governor",
+    "skillId": "nx-detect-time-series-anomalies",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_memory_governor",
+    "skillId": "nx-validate-executive-dashboard",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_memory_governor",
+    "skillId": "nx-profile-sensitive-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_memory_governor",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_memory_governor",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_memory_governor",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_agent_memory_governor",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_forecasting_science_lead",
+    "skillId": "nx-audit-data-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_forecasting_science_lead",
+    "skillId": "nx-design-semantic-layer",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_forecasting_science_lead",
+    "skillId": "nx-reconcile-kpi-definitions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_forecasting_science_lead",
+    "skillId": "nx-detect-time-series-anomalies",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_forecasting_science_lead",
+    "skillId": "nx-validate-executive-dashboard",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_forecasting_science_lead",
+    "skillId": "nx-profile-sensitive-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_forecasting_science_lead",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_forecasting_science_lead",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_forecasting_science_lead",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_forecasting_science_lead",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_architecture_director",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_architecture_director",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_architecture_director",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_architecture_director",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_architecture_director",
+    "skillId": "nx-design-end-to-end-tests",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_architecture_director",
+    "skillId": "nx-enforce-performance-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_architecture_director",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_architecture_director",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_architecture_director",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_enterprise_architecture_director",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_platform_engineering_lead",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_platform_engineering_lead",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_platform_engineering_lead",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_platform_engineering_lead",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_platform_engineering_lead",
+    "skillId": "nx-design-end-to-end-tests",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_platform_engineering_lead",
+    "skillId": "nx-enforce-performance-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_platform_engineering_lead",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_platform_engineering_lead",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_platform_engineering_lead",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_platform_engineering_lead",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sre_operations_lead",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sre_operations_lead",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sre_operations_lead",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sre_operations_lead",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sre_operations_lead",
+    "skillId": "nx-design-end-to-end-tests",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sre_operations_lead",
+    "skillId": "nx-enforce-performance-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sre_operations_lead",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sre_operations_lead",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sre_operations_lead",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sre_operations_lead",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_devsecops_release_director",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_devsecops_release_director",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_devsecops_release_director",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_devsecops_release_director",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_devsecops_release_director",
+    "skillId": "nx-design-end-to-end-tests",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_devsecops_release_director",
+    "skillId": "nx-enforce-performance-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_devsecops_release_director",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_devsecops_release_director",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_devsecops_release_director",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_devsecops_release_director",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_engineering_lead",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_engineering_lead",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_engineering_lead",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_engineering_lead",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_engineering_lead",
+    "skillId": "nx-design-end-to-end-tests",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_engineering_lead",
+    "skillId": "nx-enforce-performance-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_engineering_lead",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_engineering_lead",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_engineering_lead",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_quality_engineering_lead",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_accessibility_quality_lead",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_accessibility_quality_lead",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_accessibility_quality_lead",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_accessibility_quality_lead",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_accessibility_quality_lead",
+    "skillId": "nx-design-end-to-end-tests",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_accessibility_quality_lead",
+    "skillId": "nx-enforce-performance-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_accessibility_quality_lead",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_accessibility_quality_lead",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_accessibility_quality_lead",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_accessibility_quality_lead",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_performance_engineering_lead",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_performance_engineering_lead",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_performance_engineering_lead",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_performance_engineering_lead",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_performance_engineering_lead",
+    "skillId": "nx-design-end-to-end-tests",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_performance_engineering_lead",
+    "skillId": "nx-enforce-performance-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_performance_engineering_lead",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_performance_engineering_lead",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_performance_engineering_lead",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_performance_engineering_lead",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_database_reliability_lead",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_database_reliability_lead",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_database_reliability_lead",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_database_reliability_lead",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_database_reliability_lead",
+    "skillId": "nx-design-end-to-end-tests",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_database_reliability_lead",
+    "skillId": "nx-enforce-performance-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_database_reliability_lead",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_database_reliability_lead",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_database_reliability_lead",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_database_reliability_lead",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_integration_architecture_lead",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_integration_architecture_lead",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_integration_architecture_lead",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_integration_architecture_lead",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_integration_architecture_lead",
+    "skillId": "nx-design-end-to-end-tests",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_integration_architecture_lead",
+    "skillId": "nx-enforce-performance-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_integration_architecture_lead",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_integration_architecture_lead",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_integration_architecture_lead",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_integration_architecture_lead",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_pdpl_privacy_officer",
+    "skillId": "nx-classify-pdpl-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_pdpl_privacy_officer",
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_pdpl_privacy_officer",
+    "skillId": "nx-collect-iso27001-evidence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_pdpl_privacy_officer",
+    "skillId": "nx-assess-iso55001-governance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_pdpl_privacy_officer",
+    "skillId": "nx-test-control-effectiveness",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_pdpl_privacy_officer",
+    "skillId": "nx-analyze-policy-gaps",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_pdpl_privacy_officer",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_pdpl_privacy_officer",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_pdpl_privacy_officer",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_pdpl_privacy_officer",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_nca_ecc_assurance_lead",
+    "skillId": "nx-classify-pdpl-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_nca_ecc_assurance_lead",
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_nca_ecc_assurance_lead",
+    "skillId": "nx-collect-iso27001-evidence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_nca_ecc_assurance_lead",
+    "skillId": "nx-assess-iso55001-governance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_nca_ecc_assurance_lead",
+    "skillId": "nx-test-control-effectiveness",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_nca_ecc_assurance_lead",
+    "skillId": "nx-analyze-policy-gaps",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_nca_ecc_assurance_lead",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_nca_ecc_assurance_lead",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_nca_ecc_assurance_lead",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_nca_ecc_assurance_lead",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso27001_auditor",
+    "skillId": "nx-classify-pdpl-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso27001_auditor",
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso27001_auditor",
+    "skillId": "nx-collect-iso27001-evidence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso27001_auditor",
+    "skillId": "nx-assess-iso55001-governance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso27001_auditor",
+    "skillId": "nx-test-control-effectiveness",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso27001_auditor",
+    "skillId": "nx-analyze-policy-gaps",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso27001_auditor",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso27001_auditor",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso27001_auditor",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso27001_auditor",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso45001_auditor",
+    "skillId": "nx-classify-pdpl-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso45001_auditor",
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso45001_auditor",
+    "skillId": "nx-collect-iso27001-evidence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso45001_auditor",
+    "skillId": "nx-assess-iso55001-governance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso45001_auditor",
+    "skillId": "nx-test-control-effectiveness",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso45001_auditor",
+    "skillId": "nx-analyze-policy-gaps",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso45001_auditor",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso45001_auditor",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso45001_auditor",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso45001_auditor",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso55001_auditor",
+    "skillId": "nx-classify-pdpl-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso55001_auditor",
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso55001_auditor",
+    "skillId": "nx-collect-iso27001-evidence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso55001_auditor",
+    "skillId": "nx-assess-iso55001-governance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso55001_auditor",
+    "skillId": "nx-test-control-effectiveness",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso55001_auditor",
+    "skillId": "nx-analyze-policy-gaps",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso55001_auditor",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso55001_auditor",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso55001_auditor",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_iso55001_auditor",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hcis_compliance_lead",
+    "skillId": "nx-classify-pdpl-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hcis_compliance_lead",
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hcis_compliance_lead",
+    "skillId": "nx-collect-iso27001-evidence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hcis_compliance_lead",
+    "skillId": "nx-assess-iso55001-governance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hcis_compliance_lead",
+    "skillId": "nx-test-control-effectiveness",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hcis_compliance_lead",
+    "skillId": "nx-analyze-policy-gaps",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hcis_compliance_lead",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hcis_compliance_lead",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hcis_compliance_lead",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_hcis_compliance_lead",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_third_party_risk_director",
+    "skillId": "nx-classify-pdpl-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_third_party_risk_director",
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_third_party_risk_director",
+    "skillId": "nx-collect-iso27001-evidence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_third_party_risk_director",
+    "skillId": "nx-assess-iso55001-governance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_third_party_risk_director",
+    "skillId": "nx-test-control-effectiveness",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_third_party_risk_director",
+    "skillId": "nx-analyze-policy-gaps",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_third_party_risk_director",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_third_party_risk_director",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_third_party_risk_director",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_third_party_risk_director",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_records_governance_lead",
+    "skillId": "nx-classify-pdpl-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_records_governance_lead",
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_records_governance_lead",
+    "skillId": "nx-collect-iso27001-evidence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_records_governance_lead",
+    "skillId": "nx-assess-iso55001-governance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_records_governance_lead",
+    "skillId": "nx-test-control-effectiveness",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_records_governance_lead",
+    "skillId": "nx-analyze-policy-gaps",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_records_governance_lead",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_records_governance_lead",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_records_governance_lead",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_records_governance_lead",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_internal_audit_director",
+    "skillId": "nx-classify-pdpl-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_internal_audit_director",
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_internal_audit_director",
+    "skillId": "nx-collect-iso27001-evidence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_internal_audit_director",
+    "skillId": "nx-assess-iso55001-governance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_internal_audit_director",
+    "skillId": "nx-test-control-effectiveness",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_internal_audit_director",
+    "skillId": "nx-analyze-policy-gaps",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_internal_audit_director",
+    "skillId": "nx-fuse-threat-intelligence",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_internal_audit_director",
+    "skillId": "nx-optimize-patrol-coverage",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_internal_audit_director",
+    "skillId": "nx-verify-vehicle-access",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_internal_audit_director",
+    "skillId": "nx-respond-perimeter-breach",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workforce_planning_director",
+    "skillId": "nx-plan-workforce-capacity",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workforce_planning_director",
+    "skillId": "nx-identify-training-needs",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workforce_planning_director",
+    "skillId": "nx-analyze-customer-voice",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workforce_planning_director",
+    "skillId": "nx-prioritize-talent-actions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workforce_planning_director",
+    "skillId": "nx-review-employee-experience",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workforce_planning_director",
+    "skillId": "nx-detect-conduct-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workforce_planning_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workforce_planning_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workforce_planning_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workforce_planning_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_talent_intelligence_lead",
+    "skillId": "nx-plan-workforce-capacity",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_talent_intelligence_lead",
+    "skillId": "nx-identify-training-needs",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_talent_intelligence_lead",
+    "skillId": "nx-analyze-customer-voice",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_talent_intelligence_lead",
+    "skillId": "nx-prioritize-talent-actions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_talent_intelligence_lead",
+    "skillId": "nx-review-employee-experience",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_talent_intelligence_lead",
+    "skillId": "nx-detect-conduct-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_talent_intelligence_lead",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_talent_intelligence_lead",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_talent_intelligence_lead",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_talent_intelligence_lead",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_employee_experience_lead",
+    "skillId": "nx-plan-workforce-capacity",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_employee_experience_lead",
+    "skillId": "nx-identify-training-needs",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_employee_experience_lead",
+    "skillId": "nx-analyze-customer-voice",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_employee_experience_lead",
+    "skillId": "nx-prioritize-talent-actions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_employee_experience_lead",
+    "skillId": "nx-review-employee-experience",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_employee_experience_lead",
+    "skillId": "nx-detect-conduct-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_employee_experience_lead",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_employee_experience_lead",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_employee_experience_lead",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_employee_experience_lead",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_customer_experience_director",
+    "skillId": "nx-plan-workforce-capacity",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_customer_experience_director",
+    "skillId": "nx-identify-training-needs",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_customer_experience_director",
+    "skillId": "nx-analyze-customer-voice",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_customer_experience_director",
+    "skillId": "nx-prioritize-talent-actions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_customer_experience_director",
+    "skillId": "nx-review-employee-experience",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_customer_experience_director",
+    "skillId": "nx-detect-conduct-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_customer_experience_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_customer_experience_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_customer_experience_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_customer_experience_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_service_recovery_lead",
+    "skillId": "nx-plan-workforce-capacity",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_service_recovery_lead",
+    "skillId": "nx-identify-training-needs",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_service_recovery_lead",
+    "skillId": "nx-analyze-customer-voice",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_service_recovery_lead",
+    "skillId": "nx-prioritize-talent-actions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_service_recovery_lead",
+    "skillId": "nx-review-employee-experience",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_service_recovery_lead",
+    "skillId": "nx-detect-conduct-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_service_recovery_lead",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_service_recovery_lead",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_service_recovery_lead",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_service_recovery_lead",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_communications_director",
+    "skillId": "nx-plan-workforce-capacity",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_communications_director",
+    "skillId": "nx-identify-training-needs",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_communications_director",
+    "skillId": "nx-analyze-customer-voice",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_communications_director",
+    "skillId": "nx-prioritize-talent-actions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_communications_director",
+    "skillId": "nx-review-employee-experience",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_communications_director",
+    "skillId": "nx-detect-conduct-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_communications_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_communications_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_communications_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_communications_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sustainability_director",
+    "skillId": "nx-plan-workforce-capacity",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sustainability_director",
+    "skillId": "nx-identify-training-needs",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sustainability_director",
+    "skillId": "nx-analyze-customer-voice",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sustainability_director",
+    "skillId": "nx-prioritize-talent-actions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sustainability_director",
+    "skillId": "nx-review-employee-experience",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sustainability_director",
+    "skillId": "nx-detect-conduct-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sustainability_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sustainability_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sustainability_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_sustainability_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_procurement_value_director",
+    "skillId": "nx-plan-workforce-capacity",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_procurement_value_director",
+    "skillId": "nx-identify-training-needs",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_procurement_value_director",
+    "skillId": "nx-analyze-customer-voice",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_procurement_value_director",
+    "skillId": "nx-prioritize-talent-actions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_procurement_value_director",
+    "skillId": "nx-review-employee-experience",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_procurement_value_director",
+    "skillId": "nx-detect-conduct-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_procurement_value_director",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_procurement_value_director",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_procurement_value_director",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_procurement_value_director",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_contract_intelligence_lead",
+    "skillId": "nx-plan-workforce-capacity",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_contract_intelligence_lead",
+    "skillId": "nx-identify-training-needs",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_contract_intelligence_lead",
+    "skillId": "nx-analyze-customer-voice",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_contract_intelligence_lead",
+    "skillId": "nx-prioritize-talent-actions",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_contract_intelligence_lead",
+    "skillId": "nx-review-employee-experience",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_contract_intelligence_lead",
+    "skillId": "nx-detect-conduct-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_contract_intelligence_lead",
+    "skillId": "nx-analyze-budget-variance",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_contract_intelligence_lead",
+    "skillId": "nx-evaluate-procurement-bids",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_contract_intelligence_lead",
+    "skillId": "nx-extract-contract-obligations",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_contract_intelligence_lead",
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_multi_agent_orchestrator",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_multi_agent_orchestrator",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_multi_agent_orchestrator",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_multi_agent_orchestrator",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_multi_agent_orchestrator",
+    "skillId": "nx-optimize-context-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_multi_agent_orchestrator",
+    "skillId": "nx-govern-synthetic-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_multi_agent_orchestrator",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_multi_agent_orchestrator",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_multi_agent_orchestrator",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_multi_agent_orchestrator",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_a2a_interoperability_gateway",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_a2a_interoperability_gateway",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_a2a_interoperability_gateway",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_a2a_interoperability_gateway",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_a2a_interoperability_gateway",
+    "skillId": "nx-optimize-context-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_a2a_interoperability_gateway",
+    "skillId": "nx-govern-synthetic-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_a2a_interoperability_gateway",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_a2a_interoperability_gateway",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_a2a_interoperability_gateway",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_a2a_interoperability_gateway",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_mcp_capability_broker",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_mcp_capability_broker",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_mcp_capability_broker",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_mcp_capability_broker",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_mcp_capability_broker",
+    "skillId": "nx-optimize-context-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_mcp_capability_broker",
+    "skillId": "nx-govern-synthetic-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_mcp_capability_broker",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_mcp_capability_broker",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_mcp_capability_broker",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_mcp_capability_broker",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_tool_risk_controller",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_tool_risk_controller",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_tool_risk_controller",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_tool_risk_controller",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_tool_risk_controller",
+    "skillId": "nx-optimize-context-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_tool_risk_controller",
+    "skillId": "nx-govern-synthetic-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_tool_risk_controller",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_tool_risk_controller",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_tool_risk_controller",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_tool_risk_controller",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_human_approval_coordinator",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_human_approval_coordinator",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_human_approval_coordinator",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_human_approval_coordinator",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_human_approval_coordinator",
+    "skillId": "nx-optimize-context-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_human_approval_coordinator",
+    "skillId": "nx-govern-synthetic-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_human_approval_coordinator",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_human_approval_coordinator",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_human_approval_coordinator",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_human_approval_coordinator",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workflow_recovery_director",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workflow_recovery_director",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workflow_recovery_director",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workflow_recovery_director",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workflow_recovery_director",
+    "skillId": "nx-optimize-context-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workflow_recovery_director",
+    "skillId": "nx-govern-synthetic-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workflow_recovery_director",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workflow_recovery_director",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workflow_recovery_director",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_workflow_recovery_director",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_evidence_provenance_agent",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_evidence_provenance_agent",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_evidence_provenance_agent",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_evidence_provenance_agent",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_evidence_provenance_agent",
+    "skillId": "nx-optimize-context-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_evidence_provenance_agent",
+    "skillId": "nx-govern-synthetic-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_evidence_provenance_agent",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_evidence_provenance_agent",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_evidence_provenance_agent",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_evidence_provenance_agent",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_observability_trace_agent",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_observability_trace_agent",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_observability_trace_agent",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_observability_trace_agent",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_observability_trace_agent",
+    "skillId": "nx-optimize-context-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_observability_trace_agent",
+    "skillId": "nx-govern-synthetic-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_observability_trace_agent",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_observability_trace_agent",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_observability_trace_agent",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_observability_trace_agent",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_continuous_improvement_agent",
+    "skillId": "nx-evaluate-rag-quality",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_continuous_improvement_agent",
+    "skillId": "nx-defend-prompt-injection",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_continuous_improvement_agent",
+    "skillId": "nx-red-team-agent-workflows",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_continuous_improvement_agent",
+    "skillId": "nx-enforce-tool-selection-policy",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_continuous_improvement_agent",
+    "skillId": "nx-optimize-context-budget",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_continuous_improvement_agent",
+    "skillId": "nx-govern-synthetic-data",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_continuous_improvement_agent",
+    "skillId": "nx-record-architecture-decision",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_continuous_improvement_agent",
+    "skillId": "nx-validate-database-migration",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_continuous_improvement_agent",
+    "skillId": "nx-build-application-threat-model",
+    "priority": 100
+  },
+  {
+    "agentId": "nx_continuous_improvement_agent",
+    "skillId": "nx-audit-dependency-risk",
+    "priority": 100
+  }
+]

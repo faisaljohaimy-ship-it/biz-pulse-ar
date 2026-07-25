@@ -1,0 +1,203 @@
+{
+  "protocolVersion": "1.0",
+  "name": "Procurement Value Director",
+  "description": "Protect competition, compliance, total value, supplier quality, and delivery.",
+  "url": "https://nexios.invalid/a2a/nx_procurement_value_director",
+  "preferredTransport": "JSONRPC",
+  "version": "1",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "application/json",
+    "text/markdown"
+  ],
+  "skills": [
+    {
+      "id": "nx-plan-workforce-capacity",
+      "name": "Plan Workforce Capacity",
+      "description": "Execute plan workforce capacity for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to forecast demand and supply by skill, shift, location, productivity, and scenario.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-identify-training-needs",
+      "name": "Identify Training Needs",
+      "description": "Execute identify training needs for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to map capability gaps to role outcomes, evidence, learning paths, and verification.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-analyze-customer-voice",
+      "name": "Analyze Customer Voice",
+      "description": "Execute analyze customer voice for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to synthesize themes, severity, root causes, journey moments, and quantified opportunity.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-prioritize-talent-actions",
+      "name": "Prioritize Talent Actions",
+      "description": "Execute prioritize talent actions for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to rank hiring, mobility, development, retention, and redesign actions by evidence.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-review-employee-experience",
+      "name": "Review Employee Experience",
+      "description": "Execute review employee experience for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to evaluate critical moments, friction, inclusion, service levels, and improvement evidence.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-detect-conduct-risk",
+      "name": "Detect Conduct Risk",
+      "description": "Execute detect conduct risk for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to identify behavior and control patterns requiring fair, confidential human review.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-analyze-budget-variance",
+      "name": "Analyze Budget Variance",
+      "description": "Execute analyze budget variance for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to explain material budget deviations and distinguish structural issues from timing effects.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-evaluate-procurement-bids",
+      "name": "Evaluate Procurement Bids",
+      "description": "Execute evaluate procurement bids for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to score bids consistently across compliance, technical merit, total cost, risk, and delivery.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-extract-contract-obligations",
+      "name": "Extract Contract Obligations",
+      "description": "Execute extract contract obligations for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to identify duties, dates, thresholds, remedies, dependencies, and evidence requirements.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-forecast-enterprise-cashflow",
+      "name": "Forecast Enterprise Cashflow",
+      "description": "Execute forecast enterprise cashflow for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to forecast cash inflows, outflows, liquidity buffers, and uncertainty bands.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    }
+  ],
+  "securitySchemes": {
+    "nexiosOAuth": {
+      "type": "oauth2",
+      "description": "Replace the .invalid endpoint and configure least-privileged NEXIOS authorization."
+    }
+  },
+  "security": [
+    {
+      "nexiosOAuth": []
+    }
+  ],
+  "x-nexios": {
+    "id": "nx_procurement_value_director",
+    "nameAr": "مدير قيمة المشتريات",
+    "implementationStatus": "descriptor_only",
+    "enabled": false,
+    "toolAllowlist": [
+      "nx.communications.search-mail",
+      "nx.communications.read-thread",
+      "nx.communications.draft-mail",
+      "nx.communications.send-mail",
+      "nx.communications.schedule-meeting",
+      "nx.documents.search-sharepoint",
+      "nx.documents.read-drive-file",
+      "nx.documents.list-permissions",
+      "nx.documents.extract-document",
+      "nx.documents.classify-document",
+      "nx.data.query-catalog",
+      "nx.data.inspect-schema",
+      "nx.data.profile-dataset",
+      "nx.data.validate-quality",
+      "nx.data.trace-lineage"
+    ],
+    "approvalPolicy": {
+      "reads": "no_human_approval_unless_source_policy_requires",
+      "writes": "human_before_execution",
+      "privilegedActions": "accountable_owner_and_admin",
+      "emergencyActions": "follow_approved_emergency_authority_matrix"
+    }
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nexios.invalid/schemas/tool.schema.json",
+  "title": "NEXIOS Tool Descriptor",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "nameEn",
+    "nameAr",
+    "description",
+    "logicalCategory",
+    "registryCategory",
+    "provider",
+    "operation",
+    "sideEffect",
+    "risk",
+    "approvalRequired",
+    "permissions",
+    "authType",
+    "inputSchema",
+    "outputSchema",
+    "implementationStatus",
+    "enabled",
+    "connectorRequirements",
+    "version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^nx\\.[a-z0-9-]+\\.[a-z0-9-]+$"
+    },
+    "nameEn": {
+      "type": "string"
+    },
+    "nameAr": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 30
+    },
+    "logicalCategory": {
+      "type": "string"
+    },
+    "registryCategory": {
+      "enum": [
+        "sap",
+        "m365",
+        "outlook",
+        "teams",
+        "sharepoint",
+        "azure_ad",
+        "oracle",
+        "rest",
+        "graph",
+        "n8n",
+        "webhook",
+        "sql",
+        "edge",
+        "internal",
+        "twin"
+      ]
+    },
+    "provider": {
+      "type": "string"
+    },
+    "operation": {
+      "enum": [
+        "read",
+        "analyze",
+        "write",
+        "action",
+        "admin"
+      ]
+    },
+    "sideEffect": {
+      "type": "boolean"
+    },
+    "risk": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "approvalRequired": {
+      "type": "boolean"
+    },
+    "approvalPolicy": {
+      "type": "object"
+    },
+    "permissions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "authType": {
+      "type": "string"
+    },
+    "idempotent": {
+      "type": "boolean"
+    },
+    "rollbackKind": {
+      "enum": [
+        "none",
+        "inverse",
+        "compensating"
+      ]
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object"
+    },
+    "timeoutMs": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "maxRetries": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "dataClassification": {
+      "enum": [
+        "public",
+        "internal",
+        "confidential",
+        "restricted"
+      ]
+    },
+    "implementationStatus": {
+      "const": "descriptor_only"
+    },
+    "enabled": {
+      "const": false
+    },
+    "connectorRequirements": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "string"
+      }
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "pack": {
+      "const": "nexios-modern-agents-tools-pack"
+    }
+  }
+}

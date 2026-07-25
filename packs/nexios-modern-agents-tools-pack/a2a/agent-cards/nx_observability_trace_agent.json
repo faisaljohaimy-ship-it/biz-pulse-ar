@@ -1,0 +1,203 @@
+{
+  "protocolVersion": "1.0",
+  "name": "Observability Trace Agent",
+  "description": "Correlate agent, tool, workflow, application, and infrastructure telemetry.",
+  "url": "https://nexios.invalid/a2a/nx_observability_trace_agent",
+  "preferredTransport": "JSONRPC",
+  "version": "1",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "application/json",
+    "text/markdown"
+  ],
+  "skills": [
+    {
+      "id": "nx-evaluate-rag-quality",
+      "name": "Evaluate Rag Quality",
+      "description": "Execute evaluate rag quality for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to measure retrieval relevance, coverage, citation correctness, answer quality, and abstention.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-defend-prompt-injection",
+      "name": "Defend Prompt Injection",
+      "description": "Execute defend prompt injection for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to detect direct and indirect instruction attacks and enforce trust boundaries.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-red-team-agent-workflows",
+      "name": "Red Team Agent Workflows",
+      "description": "Execute red team agent workflows for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to test goal hijack, tool misuse, identity abuse, memory poisoning, and cascading failure.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-enforce-tool-selection-policy",
+      "name": "Enforce Tool Selection Policy",
+      "description": "Execute enforce tool selection policy for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to constrain tool discovery and invocation by capability, least privilege, risk, and context.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-optimize-context-budget",
+      "name": "Optimize Context Budget",
+      "description": "Execute optimize context budget for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to allocate context to instructions, evidence, memory, and outputs while preserving critical facts.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-govern-synthetic-data",
+      "name": "Govern Synthetic Data",
+      "description": "Execute govern synthetic data for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to control provenance, privacy, representativeness, labeling, leakage, and allowed use.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-record-architecture-decision",
+      "name": "Record Architecture Decision",
+      "description": "Execute record architecture decision for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to record context, options, decision, consequences, assumptions, and review triggers.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-validate-database-migration",
+      "name": "Validate Database Migration",
+      "description": "Execute validate database migration for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to test locking, data preservation, reversibility, RLS, indexes, and deployment order.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-build-application-threat-model",
+      "name": "Build Application Threat Model",
+      "description": "Execute build application threat model for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to identify assets, trust boundaries, abuse cases, controls, and residual risk.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-audit-dependency-risk",
+      "name": "Audit Dependency Risk",
+      "description": "Execute audit dependency risk for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to evaluate vulnerabilities, provenance, maintenance, licenses, transitive risk, and upgrade path.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    }
+  ],
+  "securitySchemes": {
+    "nexiosOAuth": {
+      "type": "oauth2",
+      "description": "Replace the .invalid endpoint and configure least-privileged NEXIOS authorization."
+    }
+  },
+  "security": [
+    {
+      "nexiosOAuth": []
+    }
+  ],
+  "x-nexios": {
+    "id": "nx_observability_trace_agent",
+    "nameAr": "وكيل تتبع الرصد",
+    "implementationStatus": "descriptor_only",
+    "enabled": false,
+    "toolAllowlist": [
+      "nx.agents.discover-agent",
+      "nx.agents.read-agent-card",
+      "nx.agents.delegate-task",
+      "nx.agents.get-task-status",
+      "nx.agents.cancel-task",
+      "nx.workflow.list-workflows",
+      "nx.workflow.inspect-workflow",
+      "nx.workflow.validate-arazzo",
+      "nx.workflow.simulate-workflow",
+      "nx.workflow.start-workflow",
+      "nx.observability.query-traces",
+      "nx.observability.query-metrics",
+      "nx.observability.query-logs",
+      "nx.observability.get-service-health",
+      "nx.observability.correlate-telemetry"
+    ],
+    "approvalPolicy": {
+      "reads": "no_human_approval_unless_source_policy_requires",
+      "writes": "human_before_execution",
+      "privilegedActions": "accountable_owner_and_admin",
+      "emergencyActions": "follow_approved_emergency_authority_matrix"
+    }
+  }
+}

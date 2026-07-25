@@ -1,0 +1,2162 @@
+[
+  {
+    "skillId": "nx-build-executive-brief",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-executive-brief",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-executive-brief",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-board-decision",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-board-decision",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-board-decision",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-cascade-enterprise-strategy",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-cascade-enterprise-strategy",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-cascade-enterprise-strategy",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-investment-portfolio",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-investment-portfolio",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-investment-portfolio",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-model-strategic-scenarios",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-model-strategic-scenarios",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-model-strategic-scenarios",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-track-benefit-realization",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-track-benefit-realization",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-track-benefit-realization",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-okr-health",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-okr-health",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-okr-health",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-operating-model",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-operating-model",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-operating-model",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-synthesize-crisis-command-brief",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-policy-impact",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-policy-impact",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-policy-impact",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-executive-meeting",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-executive-meeting",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-executive-meeting",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-challenge-decision-assumptions",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-challenge-decision-assumptions",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-challenge-decision-assumptions",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-budget-variance",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-budget-variance",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-budget-variance",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-cloud-finops",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-cloud-finops",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-cloud-finops",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-procurement-bids",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-procurement-bids",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-procurement-bids",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-score-vendor-risk",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-score-vendor-risk",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-score-vendor-risk",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-extract-contract-obligations",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-extract-contract-obligations",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-extract-contract-obligations",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-invoice-anomalies",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-invoice-anomalies",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-invoice-anomalies",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-forecast-enterprise-cashflow",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-capex",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-capex",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-capex",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-opex",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-opex",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-opex",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-fraud-red-flags",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-fraud-red-flags",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-fraud-red-flags",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-classify-enterprise-spend",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-classify-enterprise-spend",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-classify-enterprise-spend",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-investment-case",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-investment-case",
+    "toolId": "nx.sap.read-purchase-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-investment-case",
+    "toolId": "nx.governance.register-risk",
+    "required": false
+  },
+  {
+    "skillId": "nx-fuse-threat-intelligence",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-fuse-threat-intelligence",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-fuse-threat-intelligence",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-correlate-physical-events",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-correlate-physical-events",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-correlate-physical-events",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-patrol-coverage",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-patrol-coverage",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-patrol-coverage",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-screen-visitor-risk",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-screen-visitor-risk",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-screen-visitor-risk",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-verify-vehicle-access",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-verify-vehicle-access",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-verify-vehicle-access",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-access-anomalies",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-access-anomalies",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-access-anomalies",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-respond-perimeter-breach",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-respond-perimeter-breach",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-respond-perimeter-breach",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-preserve-evidence-chain",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-preserve-evidence-chain",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-preserve-evidence-chain",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-map-ot-attack-techniques",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-map-ot-attack-techniques",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-map-ot-attack-techniques",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-ot-cyber-risk",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-ot-cyber-risk",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-ot-cyber-risk",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-security-shift",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-security-shift",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-security-shift",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-test-security-readiness",
+    "toolId": "nx.secops.correlate-alerts",
+    "required": false
+  },
+  {
+    "skillId": "nx-test-security-readiness",
+    "toolId": "nx.physical.search-cctv-events",
+    "required": false
+  },
+  {
+    "skillId": "nx-test-security-readiness",
+    "toolId": "nx.physical.dispatch-patrol",
+    "required": false
+  },
+  {
+    "skillId": "nx-orchestrate-emergency-response",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-orchestrate-emergency-response",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-orchestrate-emergency-response",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-bowtie-analysis",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-bowtie-analysis",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-bowtie-analysis",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-job-safety",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-job-safety",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-job-safety",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-permit-work",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-permit-work",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-permit-work",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-verify-contractor-safety",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-verify-contractor-safety",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-verify-contractor-safety",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-investigate-near-miss",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-investigate-near-miss",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-investigate-near-miss",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-process-safety-barriers",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-process-safety-barriers",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-process-safety-barriers",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-evacuation",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-evacuation",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-evacuation",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-triage-medical-event",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-triage-medical-event",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-triage-medical-event",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-safety-observations",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-safety-observations",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-safety-observations",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-lockout-tagout",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-lockout-tagout",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-lockout-tagout",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-simulate-crisis-tabletop",
+    "toolId": "nx.safety.validate-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-simulate-crisis-tabletop",
+    "toolId": "nx.safety.inspect-permit",
+    "required": false
+  },
+  {
+    "skillId": "nx-simulate-crisis-tabletop",
+    "toolId": "nx.safety.dispatch-emergency",
+    "required": false
+  },
+  {
+    "skillId": "nx-predict-asset-failure",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-predict-asset-failure",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-predict-asset-failure",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-rank-asset-criticality",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-rank-asset-criticality",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-rank-asset-criticality",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-work-orders",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-work-orders",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-work-orders",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-perform-root-cause-analysis",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-perform-root-cause-analysis",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-perform-root-cause-analysis",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-spare-parts",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-spare-parts",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-spare-parts",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-maintenance-backlog",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-maintenance-backlog",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-maintenance-backlog",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-reliability-centered-maintenance",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-reconcile-digital-twin",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-reconcile-digital-twin",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-reconcile-digital-twin",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-estimate-outage-impact",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-estimate-outage-impact",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-estimate-outage-impact",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-field-dispatch",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-field-dispatch",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-field-dispatch",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-process-bottlenecks",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-process-bottlenecks",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-process-bottlenecks",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-manage-quality-nonconformance",
+    "toolId": "nx.asset.get-asset-health",
+    "required": false
+  },
+  {
+    "skillId": "nx-manage-quality-nonconformance",
+    "toolId": "nx.asset.query-work-orders",
+    "required": false
+  },
+  {
+    "skillId": "nx-manage-quality-nonconformance",
+    "toolId": "nx.asset.create-work-order",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-energy-loss",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-energy-loss",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-energy-loss",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-forecast-energy-demand",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-forecast-energy-demand",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-forecast-energy-demand",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-load-profile",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-load-profile",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-load-profile",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-monitor-emissions",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-monitor-emissions",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-monitor-emissions",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-calculate-carbon-inventory",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-calculate-carbon-inventory",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-calculate-carbon-inventory",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-efficiency-projects",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-efficiency-projects",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-efficiency-projects",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-renewable-integration",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-renewable-integration",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-renewable-integration",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-esg-evidence",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-esg-evidence",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-esg-evidence",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-water-efficiency",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-water-efficiency",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-water-efficiency",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-waste-streams",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-waste-streams",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-waste-streams",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-climate-risk",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-climate-risk",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-climate-risk",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-sustainability-brief",
+    "toolId": "nx.data.profile-dataset",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-sustainability-brief",
+    "toolId": "nx.observability.query-metrics",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-sustainability-brief",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-classify-pdpl-data",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-classify-pdpl-data",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-classify-pdpl-data",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-orchestrate-data-subject-request",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-orchestrate-data-subject-request",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-orchestrate-data-subject-request",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-perform-privacy-impact-assessment",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-map-nca-ecc-controls",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-map-nca-ecc-controls",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-map-nca-ecc-controls",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-collect-iso27001-evidence",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-collect-iso27001-evidence",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-collect-iso27001-evidence",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-iso45001-controls",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-iso45001-controls",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-iso45001-controls",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-iso55001-governance",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-iso55001-governance",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-iso55001-governance",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-hcis-compliance",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-hcis-compliance",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-hcis-compliance",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-test-control-effectiveness",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-test-control-effectiveness",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-test-control-effectiveness",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-assemble-audit-evidence",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-assemble-audit-evidence",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-assemble-audit-evidence",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-policy-gaps",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-policy-gaps",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-policy-gaps",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-records-retention",
+    "toolId": "nx.governance.list-controls",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-records-retention",
+    "toolId": "nx.governance.map-evidence",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-records-retention",
+    "toolId": "nx.governance.open-finding",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-data-quality",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-data-quality",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-data-quality",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-map-data-lineage",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-map-data-lineage",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-map-data-lineage",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-semantic-layer",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-semantic-layer",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-semantic-layer",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-master-data",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-master-data",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-master-data",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-reconcile-kpi-definitions",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-reconcile-kpi-definitions",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-reconcile-kpi-definitions",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-forecast-quality",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-forecast-quality",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-forecast-quality",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-time-series-anomalies",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-time-series-anomalies",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-time-series-anomalies",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-causal-analysis",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-causal-analysis",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-causal-analysis",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-validate-executive-dashboard",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-validate-executive-dashboard",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-validate-executive-dashboard",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-query-performance",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-query-performance",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-query-performance",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-profile-sensitive-data",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-profile-sensitive-data",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-profile-sensitive-data",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-data-products",
+    "toolId": "nx.data.inspect-schema",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-data-products",
+    "toolId": "nx.data.validate-quality",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-data-products",
+    "toolId": "nx.data.trace-lineage",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-rag-quality",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-rag-quality",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-evaluate-rag-quality",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-verify-retrieval-grounding",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-verify-retrieval-grounding",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-verify-retrieval-grounding",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-defend-prompt-injection",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-defend-prompt-injection",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-defend-prompt-injection",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-benchmark-agent-quality",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-benchmark-agent-quality",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-benchmark-agent-quality",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-red-team-agent-workflows",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-red-team-agent-workflows",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-red-team-agent-workflows",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-route-model-by-risk",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-route-model-by-risk",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-route-model-by-risk",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-enforce-tool-selection-policy",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-enforce-tool-selection-policy",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-enforce-tool-selection-policy",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-agent-memory",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-agent-memory",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-agent-memory",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-context-budget",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-context-budget",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-context-budget",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-model-hallucination",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-model-hallucination",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-model-hallucination",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-synthetic-data",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-synthetic-data",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-govern-synthetic-data",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-control-ai-cost",
+    "toolId": "nx.ai.evaluate-response",
+    "required": false
+  },
+  {
+    "skillId": "nx-control-ai-cost",
+    "toolId": "nx.ai.detect-prompt-injection",
+    "required": false
+  },
+  {
+    "skillId": "nx-control-ai-cost",
+    "toolId": "nx.agents.evaluate-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-record-architecture-decision",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-record-architecture-decision",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-record-architecture-decision",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-api-contract",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-api-contract",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-api-contract",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-validate-database-migration",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-validate-database-migration",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-validate-database-migration",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-row-level-security",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-row-level-security",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-row-level-security",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-application-threat-model",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-application-threat-model",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-build-application-threat-model",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-secure-code",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-secure-code",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-secure-code",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-dependency-risk",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-dependency-risk",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-dependency-risk",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-enforce-release-gate",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-enforce-release-gate",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-enforce-release-gate",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-end-to-end-tests",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-end-to-end-tests",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-end-to-end-tests",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-accessibility",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-accessibility",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-audit-accessibility",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-enforce-performance-budget",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-enforce-performance-budget",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-enforce-performance-budget",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-observability",
+    "toolId": "nx.devsecops.inspect-ci-run",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-observability",
+    "toolId": "nx.devsecops.scan-dependencies",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-observability",
+    "toolId": "nx.observability.query-traces",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-workforce-capacity",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-workforce-capacity",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-workforce-capacity",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-succession-risk",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-succession-risk",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-succession-risk",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-identify-training-needs",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-identify-training-needs",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-identify-training-needs",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-synthesize-employee-sentiment",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-synthesize-employee-sentiment",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-synthesize-employee-sentiment",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-customer-voice",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-customer-voice",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-analyze-customer-voice",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-recover-service-failure",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-recover-service-failure",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-recover-service-failure",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-talent-actions",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-talent-actions",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-prioritize-talent-actions",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-change-readiness",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-change-readiness",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-plan-change-readiness",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-employee-experience",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-employee-experience",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-employee-experience",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-contact-center",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-contact-center",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-optimize-contact-center",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-conduct-risk",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-conduct-risk",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-detect-conduct-risk",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-curate-enterprise-knowledge",
+    "toolId": "nx.data.query-catalog",
+    "required": false
+  },
+  {
+    "skillId": "nx-curate-enterprise-knowledge",
+    "toolId": "nx.knowledge.search-corpus",
+    "required": false
+  },
+  {
+    "skillId": "nx-curate-enterprise-knowledge",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-write-bilingual-executive",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-write-bilingual-executive",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-write-bilingual-executive",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-arabic-rtl",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-arabic-rtl",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-review-arabic-rtl",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-mobile-executive-ux",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-mobile-executive-ux",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-mobile-executive-ux",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-structure-dashboard-information",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-structure-dashboard-information",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-structure-dashboard-information",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-voice-conversation",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-voice-conversation",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-assess-voice-conversation",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-cinematic-demo",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-cinematic-demo",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-prepare-cinematic-demo",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-extract-meeting-actions",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-extract-meeting-actions",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-extract-meeting-actions",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-draft-stakeholder-brief",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-draft-stakeholder-brief",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-draft-stakeholder-brief",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-localize-enterprise-content",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-localize-enterprise-content",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-localize-enterprise-content",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-create-incident-communication",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-create-incident-communication",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-create-incident-communication",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-summarize-long-documents",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-summarize-long-documents",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-summarize-long-documents",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-decision-story",
+    "toolId": "nx.knowledge.verify-citation",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-decision-story",
+    "toolId": "nx.communications.draft-mail",
+    "required": false
+  },
+  {
+    "skillId": "nx-design-decision-story",
+    "toolId": "nx.documents.classify-document",
+    "required": false
+  }
+]

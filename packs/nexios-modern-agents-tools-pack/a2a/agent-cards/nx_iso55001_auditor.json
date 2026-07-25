@@ -1,0 +1,203 @@
+{
+  "protocolVersion": "1.0",
+  "name": "Iso55001 Auditor",
+  "description": "Assess asset-management governance, lifecycle decisions, value, and assurance.",
+  "url": "https://nexios.invalid/a2a/nx_iso55001_auditor",
+  "preferredTransport": "JSONRPC",
+  "version": "1",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "application/json",
+    "text/markdown"
+  ],
+  "skills": [
+    {
+      "id": "nx-classify-pdpl-data",
+      "name": "Classify Pdpl Data",
+      "description": "Execute classify pdpl data for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to classify personal and sensitive data, processing purpose, ownership, and handling controls.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-perform-privacy-impact-assessment",
+      "name": "Perform Privacy Impact Assessment",
+      "description": "Execute perform privacy impact assessment for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to assess necessity, proportionality, data flows, threats, controls, and residual privacy risk.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-collect-iso27001-evidence",
+      "name": "Collect Iso27001 Evidence",
+      "description": "Execute collect iso27001 evidence for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to assemble controlled evidence for information-security management and control effectiveness.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-assess-iso55001-governance",
+      "name": "Assess Iso55001 Governance",
+      "description": "Execute assess iso55001 governance for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to assess asset-management policy, objectives, decision criteria, lifecycle, and assurance.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-test-control-effectiveness",
+      "name": "Test Control Effectiveness",
+      "description": "Execute test control effectiveness for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to design samples, test control operation, quantify exceptions, and determine effectiveness.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-analyze-policy-gaps",
+      "name": "Analyze Policy Gaps",
+      "description": "Execute analyze policy gaps for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to compare policy obligations with process, system behavior, ownership, and evidence.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-fuse-threat-intelligence",
+      "name": "Fuse Threat Intelligence",
+      "description": "Execute fuse threat intelligence for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to combine internal events and trusted external indicators into prioritized threat hypotheses.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-optimize-patrol-coverage",
+      "name": "Optimize Patrol Coverage",
+      "description": "Execute optimize patrol coverage for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to allocate patrol coverage by threat, criticality, response time, and staffing constraints.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-verify-vehicle-access",
+      "name": "Verify Vehicle Access",
+      "description": "Execute verify vehicle access for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to verify vehicle identity, authorization, cargo context, driver, and zone restrictions.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-respond-perimeter-breach",
+      "name": "Respond Perimeter Breach",
+      "description": "Execute respond perimeter breach for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to triage perimeter signals and coordinate safe containment, verification, and escalation.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    }
+  ],
+  "securitySchemes": {
+    "nexiosOAuth": {
+      "type": "oauth2",
+      "description": "Replace the .invalid endpoint and configure least-privileged NEXIOS authorization."
+    }
+  },
+  "security": [
+    {
+      "nexiosOAuth": []
+    }
+  ],
+  "x-nexios": {
+    "id": "nx_iso55001_auditor",
+    "nameAr": "مدقق ISO 55001",
+    "implementationStatus": "descriptor_only",
+    "enabled": false,
+    "toolAllowlist": [
+      "nx.governance.list-controls",
+      "nx.governance.map-evidence",
+      "nx.governance.assess-control",
+      "nx.governance.register-risk",
+      "nx.governance.open-finding",
+      "nx.knowledge.search-corpus",
+      "nx.knowledge.fetch-source",
+      "nx.knowledge.verify-citation",
+      "nx.knowledge.chunk-document",
+      "nx.knowledge.embed-content",
+      "nx.data.query-catalog",
+      "nx.data.inspect-schema",
+      "nx.data.profile-dataset",
+      "nx.data.validate-quality",
+      "nx.data.trace-lineage"
+    ],
+    "approvalPolicy": {
+      "reads": "no_human_approval_unless_source_policy_requires",
+      "writes": "human_before_execution",
+      "privilegedActions": "accountable_owner_and_admin",
+      "emergencyActions": "follow_approved_emergency_authority_matrix"
+    }
+  }
+}

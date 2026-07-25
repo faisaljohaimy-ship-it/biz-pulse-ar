@@ -1,0 +1,51 @@
+arazzo: 1.1.0
+info:
+  title: NEXIOS Safe Tool Invocation
+  version: 1.0.0
+  description: Descriptor-only workflow for policy validation, approval, execution, verification, and audit.
+sourceDescriptions:
+  - name: nexiosTools
+    type: openapi
+    url: ../openapi/nexios-modern-tools.openapi.json
+workflows:
+  - workflowId: safeToolInvocation
+    summary: Invoke one NEXIOS tool through mandatory policy gates
+    inputs:
+      type: object
+      required: [toolId, orgId, actorId, requestId, payload]
+      properties:
+        toolId:
+          type: string
+        orgId:
+          type: string
+          format: uuid
+        actorId:
+          type: string
+        requestId:
+          type: string
+        payload:
+          type: object
+    steps:
+      - stepId: validateIdentityTenantAndSchema
+        description: Fail closed unless identity, tenant, registry state, and schema are valid.
+        operationId: nx_governance_assess_control
+        successCriteria:
+          - condition: $statusCode == 200
+      - stepId: obtainHumanApprovalWhenRequired
+        description: Route side-effecting work to the accountable human approval ledger.
+        operationId: nx_governance_attest_control
+        dependsOn: [validateIdentityTenantAndSchema]
+        successCriteria:
+          - condition: $statusCode == 200 || $statusCode == 202
+      - stepId: executeVerifiedAdapter
+        description: Execute only an implemented, verified, and enabled adapter.
+        operationId: nx_workflow_start_workflow
+        dependsOn: [obtainHumanApprovalWhenRequired]
+        successCriteria:
+          - condition: $statusCode == 200
+      - stepId: verifyOutcomeAndAudit
+        description: Verify the expected effect, capture evidence, and write the audit trace.
+        operationId: nx_observability_annotate_incident
+        dependsOn: [executeVerifiedAdapter]
+        successCriteria:
+          - condition: $statusCode == 200

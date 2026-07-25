@@ -1,0 +1,22 @@
+{
+  "pack": "nexios-modern-agents-tools-pack",
+  "counts": {
+    "agents": 72,
+    "tools": 180,
+    "agentSkillBindings": 720,
+    "skillToolBindings": 432,
+    "a2aAgentCards": 72,
+    "mcpToolDescriptors": 180,
+    "openApiOperations": 180,
+    "arazzoWorkflows": 1
+  },
+  "prefixes": {
+    "agents": "nx_",
+    "tools": "nx."
+  },
+  "version": "1.0.0",
+  "generatedAt": "2026-07-24T12:00:00+03:00",
+  "originality": "Original NEXIOS definitions informed by public standards. No proprietary website content is copied.",
+  "productionStatus": "Installation assets only. External connectors require implementation, credentials, tests, approval, and explicit activation.",
+  "license": "MIT"
+}

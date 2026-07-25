@@ -1,0 +1,203 @@
+{
+  "protocolVersion": "1.0",
+  "name": "Soc Ot Fusion Director",
+  "description": "Fuse cyber and operational signals while protecting safety and availability.",
+  "url": "https://nexios.invalid/a2a/nx_soc_ot_fusion_director",
+  "preferredTransport": "JSONRPC",
+  "version": "1",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "application/json",
+    "text/markdown"
+  ],
+  "skills": [
+    {
+      "id": "nx-fuse-threat-intelligence",
+      "name": "Fuse Threat Intelligence",
+      "description": "Execute fuse threat intelligence for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to combine internal events and trusted external indicators into prioritized threat hypotheses.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-optimize-patrol-coverage",
+      "name": "Optimize Patrol Coverage",
+      "description": "Execute optimize patrol coverage for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to allocate patrol coverage by threat, criticality, response time, and staffing constraints.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-verify-vehicle-access",
+      "name": "Verify Vehicle Access",
+      "description": "Execute verify vehicle access for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to verify vehicle identity, authorization, cargo context, driver, and zone restrictions.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-respond-perimeter-breach",
+      "name": "Respond Perimeter Breach",
+      "description": "Execute respond perimeter breach for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to triage perimeter signals and coordinate safe containment, verification, and escalation.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-map-ot-attack-techniques",
+      "name": "Map Ot Attack Techniques",
+      "description": "Execute map ot attack techniques for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to map observed industrial-control behavior to MITRE ATT&CK for ICS hypotheses and detections.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-plan-security-shift",
+      "name": "Plan Security Shift",
+      "description": "Execute plan security shift for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to build a risk-based shift plan with posts, patrols, handover items, and contingencies.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-orchestrate-emergency-response",
+      "name": "Orchestrate Emergency Response",
+      "description": "Execute orchestrate emergency response for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to coordinate command, life safety, communications, resources, and transition to recovery.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-analyze-job-safety",
+      "name": "Analyze Job Safety",
+      "description": "Execute analyze job safety for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to decompose work steps, identify hazards, and verify effective task-level controls.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-verify-contractor-safety",
+      "name": "Verify Contractor Safety",
+      "description": "Execute verify contractor safety for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to assess contractor competency, documentation, supervision, behavior, and corrective actions.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-assess-process-safety-barriers",
+      "name": "Assess Process Safety Barriers",
+      "description": "Execute assess process safety barriers for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to test the independence, performance standard, degradation, and assurance evidence of barriers.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    }
+  ],
+  "securitySchemes": {
+    "nexiosOAuth": {
+      "type": "oauth2",
+      "description": "Replace the .invalid endpoint and configure least-privileged NEXIOS authorization."
+    }
+  },
+  "security": [
+    {
+      "nexiosOAuth": []
+    }
+  ],
+  "x-nexios": {
+    "id": "nx_soc_ot_fusion_director",
+    "nameAr": "مدير دمج SOC وOT",
+    "implementationStatus": "descriptor_only",
+    "enabled": false,
+    "toolAllowlist": [
+      "nx.secops.list-incidents",
+      "nx.secops.get-incident",
+      "nx.secops.correlate-alerts",
+      "nx.secops.score-severity",
+      "nx.secops.create-incident",
+      "nx.physical.query-access-events",
+      "nx.physical.search-cctv-events",
+      "nx.physical.locate-patrol",
+      "nx.physical.check-visitor",
+      "nx.physical.check-vehicle",
+      "nx.safety.list-permits",
+      "nx.safety.inspect-permit",
+      "nx.safety.validate-controls",
+      "nx.safety.record-safety-observation",
+      "nx.safety.create-near-miss"
+    ],
+    "approvalPolicy": {
+      "reads": "no_human_approval_unless_source_policy_requires",
+      "writes": "human_before_execution",
+      "privilegedActions": "accountable_owner_and_admin",
+      "emergencyActions": "follow_approved_emergency_authority_matrix"
+    }
+  }
+}

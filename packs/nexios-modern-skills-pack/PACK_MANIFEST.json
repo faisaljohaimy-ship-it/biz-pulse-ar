@@ -1,0 +1,17 @@
+{
+  "pack": "nexios-modern-skills-pack",
+  "counts": {
+    "skills": 144,
+    "categories": 12,
+    "databaseMigrations": 1,
+    "runtimeLoaders": 1
+  },
+  "prefixes": {
+    "skills": "nx-"
+  },
+  "version": "1.0.0",
+  "generatedAt": "2026-07-24T12:00:00+03:00",
+  "originality": "Original NEXIOS definitions informed by public standards. No proprietary website content is copied.",
+  "productionStatus": "Installation assets only. External connectors require implementation, credentials, tests, approval, and explicit activation.",
+  "license": "MIT"
+}

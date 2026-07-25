@@ -1,0 +1,203 @@
+{
+  "protocolVersion": "1.0",
+  "name": "Outage Response Director",
+  "description": "Assess outage impact and coordinate restoration, communication, and learning.",
+  "url": "https://nexios.invalid/a2a/nx_outage_response_director",
+  "preferredTransport": "JSONRPC",
+  "version": "1",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "application/json",
+    "text/markdown"
+  ],
+  "skills": [
+    {
+      "id": "nx-predict-asset-failure",
+      "name": "Predict Asset Failure",
+      "description": "Execute predict asset failure for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to estimate failure modes, probability windows, evidence strength, and intervention thresholds.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-prioritize-work-orders",
+      "name": "Prioritize Work Orders",
+      "description": "Execute prioritize work orders for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to rank backlog by risk, due date, dependency, resource, and operational opportunity.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-optimize-spare-parts",
+      "name": "Optimize Spare Parts",
+      "description": "Execute optimize spare parts for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to balance service level, criticality, lead time, obsolescence, and working capital.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-plan-reliability-centered-maintenance",
+      "name": "Plan Reliability Centered Maintenance",
+      "description": "Execute plan reliability centered maintenance for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to select maintenance tasks from functions, failures, consequences, and task effectiveness.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-estimate-outage-impact",
+      "name": "Estimate Outage Impact",
+      "description": "Execute estimate outage impact for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to estimate operational, safety, customer, financial, and recovery consequences.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-detect-process-bottlenecks",
+      "name": "Detect Process Bottlenecks",
+      "description": "Execute detect process bottlenecks for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to identify flow constraints, queue drivers, variability, and sustainable interventions.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-detect-energy-loss",
+      "name": "Detect Energy Loss",
+      "description": "Execute detect energy loss for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to detect abnormal consumption, technical loss, data error, and controllable waste.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-optimize-load-profile",
+      "name": "Optimize Load Profile",
+      "description": "Execute optimize load profile for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to reduce peaks and cost while respecting operating and reliability constraints.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-calculate-carbon-inventory",
+      "name": "Calculate Carbon Inventory",
+      "description": "Execute calculate carbon inventory for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to calculate a traceable scope-based inventory with boundary and factor governance.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    },
+    {
+      "id": "nx-assess-renewable-integration",
+      "name": "Assess Renewable Integration",
+      "description": "Execute assess renewable integration for NEXIOS with evidence, tenant isolation, explicit uncertainty, and governed actions. Use when the user or an agent needs to evaluate generation profile, grid constraints, storage, curtailment, and reliability.",
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json",
+        "text/markdown"
+      ],
+      "examples": []
+    }
+  ],
+  "securitySchemes": {
+    "nexiosOAuth": {
+      "type": "oauth2",
+      "description": "Replace the .invalid endpoint and configure least-privileged NEXIOS authorization."
+    }
+  },
+  "security": [
+    {
+      "nexiosOAuth": []
+    }
+  ],
+  "x-nexios": {
+    "id": "nx_outage_response_director",
+    "nameAr": "مدير الاستجابة للانقطاعات",
+    "implementationStatus": "descriptor_only",
+    "enabled": false,
+    "toolAllowlist": [
+      "nx.asset.get-asset-health",
+      "nx.asset.query-work-orders",
+      "nx.asset.predict-failure",
+      "nx.asset.rank-criticality",
+      "nx.asset.create-work-order",
+      "nx.twin.geocode-site",
+      "nx.twin.route-patrol",
+      "nx.twin.query-geofence",
+      "nx.twin.get-weather-risk",
+      "nx.twin.read-iot-signal",
+      "nx.data.query-catalog",
+      "nx.data.inspect-schema",
+      "nx.data.profile-dataset",
+      "nx.data.validate-quality",
+      "nx.data.trace-lineage"
+    ],
+    "approvalPolicy": {
+      "reads": "no_human_approval_unless_source_policy_requires",
+      "writes": "human_before_execution",
+      "privilegedActions": "accountable_owner_and_admin",
+      "emergencyActions": "follow_approved_emergency_authority_matrix"
+    }
+  }
+}

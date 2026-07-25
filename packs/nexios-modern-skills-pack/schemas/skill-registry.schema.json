@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nexios.invalid/schemas/skill-registry.schema.json",
+  "title": "NEXIOS Skill Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pack",
+    "version",
+    "format",
+    "counts",
+    "skills"
+  ],
+  "properties": {
+    "pack": {
+      "const": "nexios-modern-skills-pack"
+    },
+    "version": {
+      "type": "string"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "format": {
+      "const": "nexios-skill-registry/v1"
+    },
+    "defaults": {
+      "type": "object"
+    },
+    "counts": {
+      "type": "object",
+      "required": [
+        "skills",
+        "categories"
+      ],
+      "properties": {
+        "skills": {
+          "const": 144
+        },
+        "categories": {
+          "const": 12
+        }
+      },
+      "additionalProperties": false
+    },
+    "skills": {
+      "type": "array",
+      "minItems": 144,
+      "maxItems": 144,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "titleEn",
+          "titleAr",
+          "category",
+          "description",
+          "risk",
+          "recommendedTools",
+          "inputContract",
+          "outputContract",
+          "path",
+          "version",
+          "enabled"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^nx-[a-z0-9-]{1,60}$",
+            "maxLength": 64
+          },
+          "titleEn": {
+            "type": "string",
+            "minLength": 3
+          },
+          "titleAr": {
+            "type": "string",
+            "minLength": 3
+          },
+          "category": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 40
+          },
+          "risk": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "recommendedTools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recommendedAgents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "inputContract": {
+            "type": "object"
+          },
+          "outputContract": {
+            "type": "object"
+          },
+          "path": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "enabled": {
+            "const": false
+          }
+        }
+      }
+    }
+  }
+}
