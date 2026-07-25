@@ -31,3 +31,5 @@ export {
 } from "./registry/discovery";
 /* Shell Population Phase 5 — additive registry infrastructure. */
 export * from "./population";
+/* Agent Runtime Foundation Phase 6 — additive hosting runtime. */
+export * from "./agent-runtime";
