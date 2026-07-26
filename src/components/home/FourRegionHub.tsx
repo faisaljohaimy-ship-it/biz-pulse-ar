@@ -45,7 +45,6 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 
-
 // ── Map geometry ────────────────────────────────────────────────────────────
 const SECTORS: { id: RegionId; cx: number; cy: number; radii: number[] }[] = [
   { id: "western", cx: 310, cy: 584, radii: [112, 132, 120, 142, 116, 136, 124, 146] },
@@ -988,8 +987,6 @@ export function FourRegionHub() {
           </ul>
         </div>
       </div>
-
-
 
       {/* ── Bottom module tab bar ──────────────────────────────────────── */}
       <div className="relative mt-4">
