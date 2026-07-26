@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { NxCockpitPage } from "./-nx-cockpit-page";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: () => {
+    throw redirect({ to: "/nx-cockpit" });
+  },
   head: () => ({
     meta: [
       { title: "NEXIOS AI  -  FINN" },
@@ -26,7 +28,7 @@ export const Route = createFileRoute("/")({
           "منصة القيادة التنفيذية NEXIOS AI مع FINN — شبكة الذكاء العصبي السريعة: رؤية حية، تحليل فوري، وقرار موثوق للقادة.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://neexios.com/" }],
+    links: [{ rel: "canonical", href: "https://neexios.com/nx-cockpit" }],
   }),
-  component: NxCockpitPage,
+  component: () => null,
 });
