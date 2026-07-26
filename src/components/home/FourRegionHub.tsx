@@ -763,26 +763,8 @@ export function FourRegionHub() {
 
         {/* Row 2 — System+Alerts (right) · MAP+Southern (center) · FINN (left) */}
         <div className="flex h-full flex-col gap-3">
-          {/* System status */}
-          <div className="rounded-2xl border border-emerald-400/25 bg-gradient-to-br from-emerald-500/10 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-300">
-              <Activity className="size-4" aria-hidden />
-              {ar ? "حالة النظام" : "System status"}
-              <span className="ms-auto text-[10px] font-normal text-white/50">
-                {ar ? "جميع الأنظمة بكفاءة" : "All systems nominal"}
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              {systemRings.map((s) => (
-                <div key={s.en} className="flex flex-col items-center gap-1.5">
-                  <Ring pct={s.pct} color="#22C55E" size={62} />
-                  <span className="text-[10px] leading-tight text-white/65">
-                    {ar ? s.ar : s.en}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* System status — HIDDEN per owner directive (2026-07-26). */}
+
 
           {/* Smart alerts */}
           <div className="relative flex-1 rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
