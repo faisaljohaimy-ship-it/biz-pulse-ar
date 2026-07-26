@@ -331,6 +331,20 @@ const ACTIONS = [
     permission: "finn.use",
   },
   {
+    id: "finn.chat.send",
+    surface: "finn",
+    labelAr: "إرسال رسالة إلى FINN",
+    effect: "open-finn-chat",
+    permission: "finn.use",
+  },
+  {
+    id: "toast.dismiss",
+    surface: "overlay",
+    labelAr: "إغلاق الإشعار المنبثق",
+    effect: "close-drawer",
+    permission: "cockpit.view",
+  },
+  {
     id: "finn.voice.toggle",
     surface: "finn",
     labelAr: "بدء أو إيقاف التحدث مع FINN",
