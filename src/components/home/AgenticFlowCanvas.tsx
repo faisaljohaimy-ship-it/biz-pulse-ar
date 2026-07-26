@@ -5,6 +5,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { Link } from "@tanstack/react-router";
 import { listShowcaseFlow, type FlowGraph, type FlowNode } from "@/lib/flow.functions";
 
 const COL_X = { source: 60, agent: 380, aria: 760, gate: 1020 } as const;
