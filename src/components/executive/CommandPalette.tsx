@@ -13,7 +13,7 @@ type Cmd = {
   group: "Navigate" | "Agents" | "Reports" | "System";
 };
 
-export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
+export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } = {}) {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const Arrow = ar ? ArrowLeft : ArrowRight;
@@ -32,8 +32,13 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
         setOpen(false);
       }
     };
+    const onOpenEvt = () => setOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("nx:open-command-palette", onOpenEvt);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("nx:open-command-palette", onOpenEvt);
+    };
   }, []);
 
   useEffect(() => {
@@ -135,12 +140,12 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema: () => void }) {
         id: "cinema",
         title_ar: "التجربة التنفيذية",
         title_en: "Executive Experience",
-        action: onOpenCinema,
+        action: onOpenCinema ?? (() => navigate({ to: "/cinematic-demo" })),
         group: "System",
         hint: "Cinema",
       },
     ],
-    [onOpenCinema],
+    [onOpenCinema, navigate],
   );
 
   const filtered = useMemo(() => {
