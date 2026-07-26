@@ -84,7 +84,23 @@ export const Route = createFileRoute("/")({
     ],
     links: [{ rel: "canonical", href: "https://neexios.com/" }],
   }),
-  component: IntroLanding,
+  component: NxCockpitPage,
+});
+
+import { NxCockpitPage } from "./-nx-cockpit-page";
+
+const _unusedRouteMarker = createFileRoute;
+const _IntroLandingUnused = ({
+  __placeholder,
+}: { __placeholder?: never } = {}) => {
+  void __placeholder;
+  return null;
+};
+
+const _OriginalIntroLandingBind = createFileRoute("/__intro-landing-unused" as never);
+void _OriginalIntroLandingBind;
+void _IntroLandingUnused;
+void ({
 });
 
 const PILLARS = [
