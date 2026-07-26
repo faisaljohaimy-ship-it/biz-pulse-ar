@@ -197,6 +197,7 @@ function IntroLanding() {
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#04070F] to-transparent" />
       </div>
 
+      {/* CommandPalette is mounted globally in AppShell (Ctrl/Cmd+K everywhere). */}
       <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
