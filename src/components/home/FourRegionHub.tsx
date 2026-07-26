@@ -814,14 +814,118 @@ export function FourRegionHub() {
       )}
 
       {/* ── Executive grid ─────────────────────────────────────────────── */}
-      {/* Owner directive (image, 2026-07-26): three columns —
-          Right (RTL first) → stacked rectangular region cards with the
-          region name centered as the hero text.
-          Center → FINN as the holographic persona filling the column,
-          with the Kingdom map anchored beneath as her command stage.
-          Left → FINN daily summary on top, smart alerts below. */}
-      <div className="relative grid gap-3 lg:grid-cols-[1fr_1.25fr_1fr]">
-        {/* Right column — 4 stacked rectangular region cards */}
+      {/* Owner directive (image, 2026-07-27) — HYBRID:
+          • lg+ (desktop): reference-image cardinal layout — four octagonal
+            panels around the central Kingdom map (Central top-centre,
+            Western mid-left, Eastern mid-right, Southern bottom-centre),
+            with FINN persona in the bottom-left corner as the reference.
+          • < lg (mobile/tablet): previous 3-column stack (rect cards right,
+            FINN+map centre, summary+alerts left) collapses vertically. */}
+
+      {/* — Desktop cardinal layout (reference image) — */}
+      <div className="relative hidden lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)] lg:grid-rows-[auto_auto_auto] lg:gap-4">
+        {/* Row 1 — Summary · Central · Alerts */}
+        <div className="min-w-0">
+          <FinnDailySummary />
+        </div>
+        <div className="min-w-0">
+          <RegionCard
+            {...regionVM.central}
+            active={regionId === "central"}
+            ar={ar}
+            onSelect={() => setRegion("central")}
+          />
+        </div>
+        <div className="relative min-w-0 rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
+              <Bell className="size-4 text-rose-300" aria-hidden />
+              {ar ? "التنبيهات الذكية" : "Smart alerts"}
+            </span>
+            <span className="rounded-full border border-rose-400/30 bg-rose-400/10 px-2 py-0.5 text-[10px] font-semibold text-rose-300">
+              {alerts.length} {ar ? "جديد" : "new"}
+            </span>
+          </div>
+          <ul className="grid gap-1.5">
+            {(alerts.length ? alerts.slice(0, 4) : []).map((a) => (
+              <li
+                key={a.id}
+                className="flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-2 py-1.5 text-[12px]"
+              >
+                <span className="flex min-w-0 items-center gap-2 truncate text-white/80">
+                  <TrendingUp className="size-3.5 shrink-0 text-[#3AE8FF]" aria-hidden />
+                  <span className="truncate">{a.title_ar}</span>
+                </span>
+                <span className="shrink-0 tabular-nums text-white/45">{a.department}</span>
+              </li>
+            ))}
+            {alerts.length === 0 && (
+              <li className="rounded-lg border border-white/5 bg-white/[0.02] px-2 py-3 text-center text-[12px] text-white/50">
+                {ar ? "لا تنبيهات نشطة" : "No active alerts"}
+              </li>
+            )}
+          </ul>
+        </div>
+
+        {/* Row 2 — Western · MAP · Eastern */}
+        <div className="min-w-0">
+          <RegionCard
+            {...regionVM.western}
+            active={regionId === "western"}
+            ar={ar}
+            onSelect={() => setRegion("western")}
+          />
+        </div>
+        <div className="relative min-w-0 rounded-2xl border border-[#00D4FF]/20 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
+          <CentralMap
+            ar={ar}
+            sectors={sectors}
+            regionId={regionId}
+            setRegion={setRegion}
+            severityByRegion={severityByRegion}
+          />
+        </div>
+        <div className="min-w-0">
+          <RegionCard
+            {...regionVM.eastern}
+            active={regionId === "eastern"}
+            ar={ar}
+            onSelect={() => setRegion("eastern")}
+          />
+        </div>
+
+        {/* Row 3 — FINN persona · Southern · (breathing room) */}
+        <div className="min-w-0">
+          <FinnPersonaCard ar={ar} />
+        </div>
+        <div className="min-w-0">
+          <RegionCard
+            {...regionVM.southern}
+            active={regionId === "southern"}
+            ar={ar}
+            onSelect={() => setRegion("southern")}
+          />
+        </div>
+        <div aria-hidden />
+      </div>
+
+      {/* — Mobile / tablet stacked layout (current) — */}
+      <div className="relative grid gap-3 lg:hidden">
+        {/* Map + FINN together */}
+        <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
+          <CentralMap
+            ar={ar}
+            sectors={sectors}
+            regionId={regionId}
+            setRegion={setRegion}
+            severityByRegion={severityByRegion}
+          />
+        </div>
+        <div>
+          <FinnPersonaCard ar={ar} />
+        </div>
+
+        {/* Region cards stacked */}
         <div className="flex flex-col gap-3">
           <RegionCardRect
             {...regionVM.eastern}
@@ -849,59 +953,42 @@ export function FourRegionHub() {
           />
         </div>
 
-        {/* Center column — FINN holographic persona + Kingdom map stage */}
-        <div className="relative flex flex-col gap-3">
-          <div className="min-h-[280px] flex-1">
-            <FinnPersonaCard ar={ar} />
-          </div>
-          <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
-            <CentralMap
-              ar={ar}
-              sectors={sectors}
-              regionId={regionId}
-              setRegion={setRegion}
-              severityByRegion={severityByRegion}
-            />
-          </div>
+        {/* Summary + alerts */}
+        <div>
+          <FinnDailySummary />
         </div>
-
-        {/* Left column — FINN daily summary + smart alerts */}
-        <div className="flex flex-col gap-3">
-          <div className="min-w-0">
-            <FinnDailySummary />
+        <div className="relative rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
+              <Bell className="size-4 text-rose-300" aria-hidden />
+              {ar ? "التنبيهات الذكية" : "Smart alerts"}
+            </span>
+            <span className="rounded-full border border-rose-400/30 bg-rose-400/10 px-2 py-0.5 text-[10px] font-semibold text-rose-300">
+              {alerts.length} {ar ? "جديد" : "new"}
+            </span>
           </div>
-          <div className="relative flex-1 rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
-                <Bell className="size-4 text-rose-300" aria-hidden />
-                {ar ? "التنبيهات الذكية" : "Smart alerts"}
-              </span>
-              <span className="rounded-full border border-rose-400/30 bg-rose-400/10 px-2 py-0.5 text-[10px] font-semibold text-rose-300">
-                {alerts.length} {ar ? "جديد" : "new"}
-              </span>
-            </div>
-            <ul className="grid gap-1.5">
-              {(alerts.length ? alerts.slice(0, 4) : []).map((a) => (
-                <li
-                  key={a.id}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-2 py-1.5 text-[12px]"
-                >
-                  <span className="flex min-w-0 items-center gap-2 truncate text-white/80">
-                    <TrendingUp className="size-3.5 shrink-0 text-[#3AE8FF]" aria-hidden />
-                    <span className="truncate">{a.title_ar}</span>
-                  </span>
-                  <span className="shrink-0 tabular-nums text-white/45">{a.department}</span>
-                </li>
-              ))}
-              {alerts.length === 0 && (
-                <li className="rounded-lg border border-white/5 bg-white/[0.02] px-2 py-3 text-center text-[12px] text-white/50">
-                  {ar ? "لا تنبيهات نشطة" : "No active alerts"}
-                </li>
-              )}
-            </ul>
-          </div>
+          <ul className="grid gap-1.5">
+            {(alerts.length ? alerts.slice(0, 4) : []).map((a) => (
+              <li
+                key={a.id}
+                className="flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-2 py-1.5 text-[12px]"
+              >
+                <span className="flex min-w-0 items-center gap-2 truncate text-white/80">
+                  <TrendingUp className="size-3.5 shrink-0 text-[#3AE8FF]" aria-hidden />
+                  <span className="truncate">{a.title_ar}</span>
+                </span>
+                <span className="shrink-0 tabular-nums text-white/45">{a.department}</span>
+              </li>
+            ))}
+            {alerts.length === 0 && (
+              <li className="rounded-lg border border-white/5 bg-white/[0.02] px-2 py-3 text-center text-[12px] text-white/50">
+                {ar ? "لا تنبيهات نشطة" : "No active alerts"}
+              </li>
+            )}
+          </ul>
         </div>
       </div>
+
 
 
       {/* ── Bottom module tab bar ──────────────────────────────────────── */}
