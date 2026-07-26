@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { FinnPersonaCard } from "@/components/home/FinnPersonaCard";
+import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
 import {
   CC_REGIONS,
   CC_SYSTEM_RINGS,
@@ -43,6 +44,7 @@ import { useRegion } from "@/lib/region-context";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
+
 
 // ── Map geometry ────────────────────────────────────────────────────────────
 const SECTORS: { id: RegionId; cx: number; cy: number; radii: number[] }[] = [
