@@ -482,7 +482,6 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       {/* Section chrome header — HIDDEN per owner directive (image, 2026-07-26):
           remove descriptive text preceding «انتقل إلى مراكز القيادة». */}
 
-
       {/* ── Horizontal command band: console rail + KPI instruments ──
          Executive layout: «وحدة القيادة» console on the side, KPI
          instruments flowing horizontally beside it on ALL viewports.
@@ -492,7 +491,6 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       <div className="relative">
         {/* Command Console rail — HIDDEN per owner directive (2026-07-26).
             Grid collapsed to single-column so KPI instruments span the deck. */}
-
 
         {/* KPI instruments — horizontal snap-scroll rail on mobile/tablet,
            promoted to a 6-across grid on lg+. min-w-0 lets the rail actually

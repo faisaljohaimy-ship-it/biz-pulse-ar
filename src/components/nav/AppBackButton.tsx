@@ -24,8 +24,7 @@ export function AppBackButton({
   const Arrow = ar ? ArrowRight : ArrowLeft;
 
   const onClick = () => {
-    const hasHistory =
-      typeof window !== "undefined" && window.history.length > 1;
+    const hasHistory = typeof window !== "undefined" && window.history.length > 1;
     if (hasHistory) {
       window.history.back();
     } else {

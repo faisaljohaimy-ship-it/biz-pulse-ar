@@ -139,7 +139,11 @@ function AgentsReferencePage() {
               </div>
             </Section>
 
-            <Section title={ar ? "مصادر البيانات" : "Data Sources"} count={grouped.sources.length} ar={ar}>
+            <Section
+              title={ar ? "مصادر البيانات" : "Data Sources"}
+              count={grouped.sources.length}
+              ar={ar}
+            >
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {grouped.sources.map((n) => (
                   <NodeMiniCard
@@ -152,7 +156,11 @@ function AgentsReferencePage() {
               </div>
             </Section>
 
-            <Section title={ar ? "الذكاء المركزي والاعتماد" : "Central Brain & Approval"} count={grouped.aria.length + grouped.gate.length} ar={ar}>
+            <Section
+              title={ar ? "الذكاء المركزي والاعتماد" : "Central Brain & Approval"}
+              count={grouped.aria.length + grouped.gate.length}
+              ar={ar}
+            >
               <div className="grid gap-4 sm:grid-cols-2">
                 {[...grouped.aria, ...grouped.gate].map((n) => (
                   <AgentCard
@@ -223,7 +231,9 @@ function AgentCard({
     <div className="rounded-2xl border border-[#3AE8FF]/25 bg-[#04101F]/70 p-4 shadow-[0_0_40px_-24px_rgba(58,232,255,0.6)]">
       <div className="mb-2 flex items-start justify-between gap-2">
         <div>
-          <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">{kindLabel}</div>
+          <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
+            {kindLabel}
+          </div>
           <div className="mt-1 text-base font-semibold text-white">{name}</div>
           {node.name_en && node.name_ar && ar && (
             <div className="text-[11px] text-white/40">{node.name_en}</div>

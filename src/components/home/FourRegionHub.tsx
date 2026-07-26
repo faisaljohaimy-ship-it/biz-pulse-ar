@@ -46,7 +46,6 @@ import { useAuth } from "@/lib/auth-context";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import commandRefAsset from "@/assets/nexios-command-reference.png.asset.json";
 
-
 // ── Map geometry ────────────────────────────────────────────────────────────
 const SECTORS: { id: RegionId; cx: number; cy: number; radii: number[] }[] = [
   { id: "western", cx: 310, cy: 584, radii: [112, 132, 120, 142, 116, 136, 124, 146] },
@@ -311,7 +310,6 @@ function RegionCardRect({
           : `0 12px 32px -22px ${color}55`,
       }}
     >
-
       {/* Performance ring — trailing edge (leading in RTL) */}
       <div className="shrink-0">
         <Ring pct={perfPct} color={color} size={54} />
@@ -350,7 +348,6 @@ function RegionCardRect({
       </div>
     </Link>
   );
-
 }
 
 function LiveClock({ ar }: { ar: boolean }) {
@@ -864,12 +861,48 @@ export function FourRegionHub() {
               className="block h-auto w-full object-cover"
             />
             {/* Interactive hotspots — regions + FINN, in image % coords */}
-            {([
-              { id: "central" as RegionId, top: "6%", left: "34%", width: "32%", height: "22%", label_ar: "المنطقة الوسطى", label_en: "Central Region", to: "/hcis" as const },
-              { id: "western" as RegionId, top: "22%", left: "2%",  width: "28%", height: "36%", label_ar: "المنطقة الغربية", label_en: "Western Region", to: "/hcis" as const },
-              { id: "eastern" as RegionId, top: "22%", left: "70%", width: "28%", height: "36%", label_ar: "المنطقة الشرقية", label_en: "Eastern Region", to: "/hcis" as const },
-              { id: "southern" as RegionId, top: "70%", left: "28%", width: "40%", height: "26%", label_ar: "المنطقة الجنوبية", label_en: "Southern Region", to: "/hcis" as const },
-            ]).map((hs) => (
+            {[
+              {
+                id: "central" as RegionId,
+                top: "6%",
+                left: "34%",
+                width: "32%",
+                height: "22%",
+                label_ar: "المنطقة الوسطى",
+                label_en: "Central Region",
+                to: "/hcis" as const,
+              },
+              {
+                id: "western" as RegionId,
+                top: "22%",
+                left: "2%",
+                width: "28%",
+                height: "36%",
+                label_ar: "المنطقة الغربية",
+                label_en: "Western Region",
+                to: "/hcis" as const,
+              },
+              {
+                id: "eastern" as RegionId,
+                top: "22%",
+                left: "70%",
+                width: "28%",
+                height: "36%",
+                label_ar: "المنطقة الشرقية",
+                label_en: "Eastern Region",
+                to: "/hcis" as const,
+              },
+              {
+                id: "southern" as RegionId,
+                top: "70%",
+                left: "28%",
+                width: "40%",
+                height: "26%",
+                label_ar: "المنطقة الجنوبية",
+                label_en: "Southern Region",
+                to: "/hcis" as const,
+              },
+            ].map((hs) => (
               <Link
                 key={hs.id}
                 to={hs.to}
@@ -895,9 +928,6 @@ export function FourRegionHub() {
               style={{ top: "60%", left: "3%", width: "18%", height: "38%" }}
             />
           </div>
-
-
-
         </div>
 
         {/* Left column — FINN daily summary + smart alerts */}
@@ -937,8 +967,6 @@ export function FourRegionHub() {
           </div>
         </div>
       </div>
-
-
 
       {/* ── Bottom module tab bar ──────────────────────────────────────── */}
       <div className="relative mt-4">

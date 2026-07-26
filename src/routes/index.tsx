@@ -248,7 +248,6 @@ function IntroLanding() {
 
       {/* Holographic command tree — HIDDEN per owner directive (2026-07-26). */}
 
-
       <div
         id="tour-positioning"
         className="relative z-10 mx-auto mt-6 w-full max-w-none px-4 sm:mt-10 sm:px-6"
@@ -279,9 +278,7 @@ function IntroLanding() {
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-none px-4 py-10 sm:px-6 sm:py-16">
-
         {/* Capabilities section — HIDDEN per owner directive (2026-07-26). */}
-
 
         <section
           id="tour-closing"
