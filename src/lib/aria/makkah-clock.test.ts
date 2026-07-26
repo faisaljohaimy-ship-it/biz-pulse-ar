@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   MAKKAH_TZ,
   MAKKAH_UTC_OFFSET_MIN,
+  buildFinnGreetingClockSpeech,
   buildFinnRuntimeBlock,
   buildMakkahMoment,
   MAKKAH_TIME_DIRECTIVE,
 } from "./makkah-clock";
+import { arabicNumberWords } from "./pronunciation";
 
 // A fixed instant: 2026-07-23T11:07:33Z → 14:07:33 in Makkah (UTC+3).
 const FIXED = new Date("2026-07-23T11:07:33.000Z");
@@ -55,5 +57,31 @@ describe("makkah-clock — the single time source (FINN constitution Art. 2)", (
     expect(MAKKAH_TIME_DIRECTIVE).toContain("<FINN_RUNTIME>");
     expect(MAKKAH_TIME_DIRECTIVE).toContain("مصدرك الوحيد");
     expect(MAKKAH_TIME_DIRECTIVE).toContain("UTC+03:00");
+  });
+
+  it("greeting opener speaks the Gregorian date then Makkah time once — never Hijri", () => {
+    const speech = buildFinnGreetingClockSpeech(FIXED, arabicNumberWords);
+    // 2026-07-23 14:07 Makkah → 23 يوليو 2026 · 2:07 مساءً
+    expect(speech).toContain("التاريخ ثلاثة وعشرون يوليو ألفان وستة وعشرون ميلادي");
+    expect(speech).toContain("والساعة الآن اثنان وسبعة دقائق مساءً بتوقيت مكة المكرمة.");
+    // Hijri must never leak into speech (display-only per the directive).
+    expect(speech).not.toContain("هـ");
+    expect(speech).not.toContain("صفر 1448");
+    expect(speech).not.toMatch(/[0-9]/);
+  });
+
+  it("greeting opener handles the exact hour and morning period", () => {
+    // 2026-07-23T06:00:00Z → 09:00 Makkah.
+    const speech = buildFinnGreetingClockSpeech(
+      new Date("2026-07-23T06:00:00.000Z"),
+      arabicNumberWords,
+    );
+    expect(speech).toContain("والساعة الآن تسعة تمامًا صباحًا بتوقيت مكة المكرمة.");
+  });
+
+  it("directive orders the once-only opener and bans spoken Hijri", () => {
+    expect(MAKKAH_TIME_DIRECTIVE).toContain("افتتاح الجلسة");
+    expect(MAKKAH_TIME_DIRECTIVE).toContain("لا يُنطق في القناة الصوتية أبدًا");
+    expect(MAKKAH_TIME_DIRECTIVE).toContain("لا يُكرَّر الوقت");
   });
 });

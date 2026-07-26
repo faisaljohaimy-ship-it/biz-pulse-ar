@@ -18,6 +18,9 @@ import {
   FINN_ELEVENLABS_VOICE_SETTINGS,
 } from "@/lib/aria/voice-config";
 import { synthesizeSafeSpeech, type SpeakExecutor } from "@/lib/aria/output/tts-adapter.server";
+import { buildFinnGreetingClockSpeech } from "@/lib/aria/makkah-clock";
+import { arabicNumberWords } from "@/lib/aria/pronunciation";
+import { FINN_CONVERSATION_GREETING_AR_TTS } from "@/lib/aria/conversation-greeting";
 
 const JSON_HEADERS = {
   "Cache-Control": "no-store",
@@ -129,7 +132,20 @@ export const Route = createFileRoute("/api/aria/tts")({
           }
         };
 
-        const outcome = await synthesizeSafeSpeech({ text, voiceId }, { speak }, request.signal);
+        // Greeting opener (Article 2): the canned conversation greeting gets
+        // the LIVE Makkah clock sentence prepended SERVER-side — Gregorian
+        // date then the time, once. Same clock source as <FINN_RUNTIME>;
+        // browser time is never consulted. Hijri is display-only, not spoken.
+        const speechText =
+          text === FINN_CONVERSATION_GREETING_AR_TTS
+            ? `${buildFinnGreetingClockSpeech(new Date(), arabicNumberWords)} ${text}`
+            : text;
+
+        const outcome = await synthesizeSafeSpeech(
+          { text: speechText, voiceId },
+          { speak },
+          request.signal,
+        );
         if (!outcome.spoken) {
           if (request.signal.aborted) return jsonError("TTS request was cancelled.", 499);
           if (outcome.reason === "blocked_content")

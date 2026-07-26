@@ -120,6 +120,69 @@ export function buildFinnRuntimeBlock(ctx: {
   ].join("\n");
 }
 
+/* ───────────────────── نطق الافتتاح (تاريخ ثم ساعة) ───────────────────── */
+
+const monthPartFmt = new Intl.DateTimeFormat("ar-u-ca-gregory", {
+  timeZone: MAKKAH_TZ,
+  month: "long",
+});
+
+const clockPartsFmt = new Intl.DateTimeFormat("en-GB", {
+  timeZone: MAKKAH_TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
+function makkahClockParts(d: Date): {
+  day: number;
+  month: string;
+  year: number;
+  h: number;
+  min: number;
+} {
+  const parts = Object.fromEntries(
+    clockPartsFmt.formatToParts(d).map((p) => [p.type, p.value]),
+  ) as Record<string, string>;
+  return {
+    day: Number(parts.day),
+    month: monthPartFmt.format(d),
+    year: Number(parts.year),
+    h: Number(parts.hour),
+    min: Number(parts.minute),
+  };
+}
+
+/**
+ * جملة الافتتاح المنطوقة — تُبنى على الخادم من ساعة مكة الحيّة نفسها
+ * المحقونة في <FINN_RUNTIME> (لا وقت متصفح إطلاقًا). التاريخ ميلادي فقط —
+ * الهجري يبقى للعرض النصي ولا يُنطق. تُنطق مرة واحدة عند التحية.
+ * الأرقام كلمات عربية كاملة (المادة ٢٢ §٥) عبر مساعدات النطق المعتمدة.
+ */
+export function buildFinnGreetingClockSpeech(
+  d: Date = new Date(),
+  toWords: (n: number) => string = (n) => String(n),
+): string {
+  const { day, month, year, h, min } = makkahClockParts(d);
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  const period = h < 12 ? "صباحًا" : "مساءً";
+  const minutes =
+    min === 0
+      ? "تمامًا"
+      : min === 1
+        ? "ودقيقة واحدة"
+        : min === 2
+          ? "ودقيقتان"
+          : `و${toWords(min)} ${min <= 10 ? "دقائق" : "دقيقة"}`;
+  return (
+    `التاريخ ${toWords(day)} ${month} ${toWords(year)} ميلادي، ` +
+    `والساعة الآن ${toWords(hour12)} ${minutes} ${period} بتوقيت مكة المكرمة.`
+  );
+}
+
 /**
  * توجيه المادة ٢ — يُرفق مع الكتلة في مقدّمة كل System Prompt كي يعرف فِنّ
  * أن مصدره الزمني الوحيد هو <FINN_RUNTIME>، وكيف يعرض الترويسة الزمنية.
@@ -127,8 +190,11 @@ export function buildFinnRuntimeBlock(ctx: {
 export const MAKKAH_TIME_DIRECTIVE = `# المادة ٢ — الزمن الحيّ بتوقيت مكة المكرمة (مادة صلبة)
 - كتلة <FINN_RUNTIME> أعلاه هي **مصدرك الوحيد** للوقت والتاريخ. يُحظر مطلقًا تقدير الوقت أو حسابه ذهنيًا أو استرجاعه من ذاكرة التدريب.
 - المنطقة الزمنية: Asia/Riyadh = UTC+03:00 (توقيت مكة المكرمة، بلا توقيت صيفي إطلاقًا).
+- **افتتاح الجلسة (التحية)**: في أول رد منطوق فقط، اذكر التاريخ الميلادي ثم الساعة مرة واحدة بالصيغة: «التاريخ [date_g] ميلادي، والساعة الآن [time] بتوقيت مكة المكرمة.» — الحقلان \`date_g\` و\`time\` من الكتلة حصريًا.
+- **التاريخ الهجري (\`date_h\`) للعرض النصي فقط — لا يُنطق في القناة الصوتية أبدًا.**
+- بعد نطق الافتتاح لا يُكرَّر الوقت في بقية الجلسة إلا إذا سأل المستخدم عنه صراحة أو عند إجراء زمنيّ الأثر.
 - في الردود النصّية التشغيلية، وعند أي سؤال عن الوقت أو أي إجراء زمنيّ الأثر (سريان تصريح، انتهاء نافذة عمل، عمر بلاغ)، صدّر ردّك بالترويسة حرفيًا:
   ⏱ [time] · [day] [date_g] · توقيت مكة المكرمة (UTC+3)
-- في القناة الصوتية: تُنطق الترويسة **فقط** عند السؤال عن الوقت أو عند إجراء زمنيّ الأثر.
+- في القناة الصوتية: عدا افتتاح الجلسة، تُنطق الترويسة **فقط** عند السؤال عن الوقت أو عند إجراء زمنيّ الأثر.
 - كل حساب زمني (مدة تصريح، تأخّر مرحلة اعتماد، عمر بلاغ) يُشتقّ حصريًا من الحقل \`iso\` داخل الكتلة.
 - إن غابت كتلة <FINN_RUNTIME> أو كانت تالفة، قل حرفيًا: «تعذّر تحديد الوقت الحيّ من مصدر النظام. لن أذكر وقتًا غير موثّق.» ولا تُكمل أي إجراء يعتمد على الزمن.`;

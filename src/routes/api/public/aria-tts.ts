@@ -17,6 +17,9 @@ import {
 } from "@/lib/governance/rate-limit.server";
 import { diacritizeForTts } from "@/lib/aria/tts-diacritize.server";
 import { revalidateSpeakableText } from "@/lib/aria/output/finalize";
+import { buildFinnGreetingClockSpeech } from "@/lib/aria/makkah-clock";
+import { arabicNumberWords } from "@/lib/aria/pronunciation";
+import { FINN_CONVERSATION_GREETING_AR_TTS } from "@/lib/aria/conversation-greeting";
 import {
   ALLOWED_ELEVEN_VOICE_IDS,
   FINN_ELEVENLABS_VOICE_ID,
@@ -96,6 +99,12 @@ export const Route = createFileRoute("/api/public/aria-tts")({
           if (!rate.allowed) return rateLimitResponse();
 
           let text = parsed.data.text;
+          // Greeting opener (Article 2): same server-side Makkah-clock
+          // sentence as the authenticated route — the guest fallback speaks
+          // the identical Gregorian date + time, once. No browser time.
+          if (text === FINN_CONVERSATION_GREETING_AR_TTS) {
+            text = `${buildFinnGreetingClockSpeech(new Date(), arabicNumberWords)} ${text}`;
+          }
           try {
             text = await diacritizeForTts(text);
           } catch (e) {
