@@ -44,6 +44,8 @@ import { useRegion } from "@/lib/region-context";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
+import commandRefAsset from "@/assets/nexios-command-reference.png.asset.json";
+
 
 // ── Map geometry ────────────────────────────────────────────────────────────
 const SECTORS: { id: RegionId; cx: number; cy: number; radii: number[] }[] = [
