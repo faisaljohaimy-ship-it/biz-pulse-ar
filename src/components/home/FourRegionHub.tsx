@@ -863,7 +863,39 @@ export function FourRegionHub() {
               decoding="async"
               className="block h-auto w-full object-cover"
             />
+            {/* Interactive hotspots — regions + FINN, in image % coords */}
+            {([
+              { id: "central" as RegionId, top: "6%", left: "34%", width: "32%", height: "22%", label_ar: "المنطقة الوسطى", label_en: "Central Region", to: "/hcis" as const },
+              { id: "western" as RegionId, top: "22%", left: "2%",  width: "28%", height: "36%", label_ar: "المنطقة الغربية", label_en: "Western Region", to: "/hcis" as const },
+              { id: "eastern" as RegionId, top: "22%", left: "70%", width: "28%", height: "36%", label_ar: "المنطقة الشرقية", label_en: "Eastern Region", to: "/hcis" as const },
+              { id: "southern" as RegionId, top: "70%", left: "28%", width: "40%", height: "26%", label_ar: "المنطقة الجنوبية", label_en: "Southern Region", to: "/hcis" as const },
+            ]).map((hs) => (
+              <Link
+                key={hs.id}
+                to={hs.to}
+                onClick={() => setRegion(hs.id)}
+                aria-label={ar ? hs.label_ar : hs.label_en}
+                title={ar ? hs.label_ar : hs.label_en}
+                className="absolute rounded-2xl border border-transparent transition hover:border-[color:var(--nx-region,#00D4FF)] hover:bg-white/[0.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]"
+                style={{
+                  top: hs.top,
+                  left: hs.left,
+                  width: hs.width,
+                  height: hs.height,
+                  ["--nx-region" as never]: REGION_ACCENT_HEX[hs.id],
+                }}
+              />
+            ))}
+            {/* FINN hotspot — bottom-left of the poster */}
+            <Link
+              to="/finn"
+              aria-label={ar ? "التحدث مع فِن" : "Talk to FINN"}
+              title={ar ? "فِن" : "FINN"}
+              className="absolute rounded-full border border-transparent transition hover:border-[#3AE8FF] hover:bg-[#00D4FF]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]"
+              style={{ top: "60%", left: "3%", width: "18%", height: "38%" }}
+            />
           </div>
+
 
 
         </div>
