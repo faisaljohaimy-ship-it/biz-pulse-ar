@@ -130,8 +130,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </main>
       </div>
-      {/* Global command palette (Cmd/Ctrl+K, or window event nx:open-command-palette). */}
-      <CommandPalette />
+      {/* Global command palette on non-home routes (home mounts its own with cinema handler). */}
+      {loc.pathname !== "/" && <CommandPalette />}
       {/* Legacy ExecutiveOverlay removed — FINN singleton lives at root. */}
     </div>
   );
