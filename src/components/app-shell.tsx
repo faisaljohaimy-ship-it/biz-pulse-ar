@@ -48,6 +48,8 @@ import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
 import { AppBackButton } from "@/components/nav/AppBackButton";
+import { TopUtilityBar } from "@/components/nav/TopUtilityBar";
+import { CommandPalette } from "@/components/executive/CommandPalette";
 
 type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
 type NavGroup = { label: string; items: NavItem[] };
@@ -109,6 +111,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="text-sm font-bold tracking-tight">Nexus</span>
           </div>
           <div className="flex items-center gap-2">
+            <TopUtilityBar />
             <OrgSwitcher compact />
             <ThemeToggle />
           </div>
@@ -116,14 +119,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="nexus-main min-w-0 flex-1">
           <div className="relative mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
             {loc.pathname !== "/" && (
-              <div className="sticky top-14 z-30 flex w-full justify-start px-3 pt-3 md:top-3 md:px-4">
+              <div className="sticky top-14 z-30 flex w-full items-center justify-between gap-3 px-3 pt-3 md:top-3 md:px-4">
                 <AppBackButton fallback="/" />
+                <div className="hidden md:flex">
+                  <TopUtilityBar />
+                </div>
               </div>
             )}
             {children}
           </div>
         </main>
       </div>
+      {/* Global command palette (Cmd/Ctrl+K, or window event nx:open-command-palette). */}
+      <CommandPalette />
       {/* Legacy ExecutiveOverlay removed — FINN singleton lives at root. */}
     </div>
   );

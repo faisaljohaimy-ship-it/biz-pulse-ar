@@ -32,6 +32,19 @@ function isIOS(): boolean {
   return /iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
+const EXEC_ROUTE_PATTERNS = [
+  "/executive-show",
+  "/executive-showcase",
+  "/executive-bridge",
+  "/cinematic-demo",
+  "/promo",
+];
+
+function isExecutiveRoute(): boolean {
+  if (typeof window === "undefined") return false;
+  return EXEC_ROUTE_PATTERNS.some((p) => window.location.pathname.startsWith(p));
+}
+
 export function InstallAppBar() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
@@ -47,20 +60,58 @@ export function InstallAppBar() {
     } catch {
       /* ignore */
     }
+
+    // Phase 3 rules: never appear on first paint. Show only after:
+    //   • real beforeinstallprompt event (Android/desktop), OR
+    //   • the user has already interacted with the page AND 30s elapsed
+    //     (or on the second visit — tracked via localStorage).
+    let interacted = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let iosTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const secondVisit = (() => {
+      try {
+        const seen = localStorage.getItem("nx-install-visits");
+        const n = seen ? parseInt(seen, 10) : 0;
+        localStorage.setItem("nx-install-visits", String(n + 1));
+        return n >= 1;
+      } catch {
+        return false;
+      }
+    })();
+
+    const maybeShow = () => {
+      if (isExecutiveRoute()) return;
+      if (deferred || ios) setVisible(true);
+    };
+
     const onPrompt = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
-      setVisible(true);
+      if (secondVisit || interacted) maybeShow();
     };
+    const onInteract = () => {
+      interacted = true;
+      timer = setTimeout(maybeShow, secondVisit ? 0 : 30_000);
+      window.removeEventListener("pointerdown", onInteract);
+      window.removeEventListener("keydown", onInteract);
+    };
+
     window.addEventListener("beforeinstallprompt", onPrompt);
-    // iOS never fires the event — surface the bar after a short delay.
-    let t: ReturnType<typeof setTimeout> | undefined;
-    if (ios) t = setTimeout(() => setVisible(true), 1500);
+    window.addEventListener("pointerdown", onInteract, { once: true });
+    window.addEventListener("keydown", onInteract, { once: true });
+
+    // iOS: after interaction + 30s (or immediately on second visit).
+    if (ios && secondVisit) iosTimer = setTimeout(() => setVisible(true), 1500);
+
     return () => {
       window.removeEventListener("beforeinstallprompt", onPrompt);
-      if (t) clearTimeout(t);
+      window.removeEventListener("pointerdown", onInteract);
+      window.removeEventListener("keydown", onInteract);
+      if (timer) clearTimeout(timer);
+      if (iosTimer) clearTimeout(iosTimer);
     };
-  }, [ios]);
+  }, [ios, deferred]);
 
   const dismiss = () => {
     setVisible(false);
@@ -79,7 +130,7 @@ export function InstallAppBar() {
     setVisible(false);
   };
 
-  if (!visible || ariaOpen) return null;
+  if (!visible || ariaOpen || isExecutiveRoute()) return null;
 
   return (
     <div
