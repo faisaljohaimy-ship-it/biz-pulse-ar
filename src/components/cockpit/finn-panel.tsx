@@ -81,14 +81,6 @@ export function FinnExecutivePanel({ finn }: { finn: FinnSnapshot }) {
   const { regionDetail, regionLoading, openDrawer } = cockpit;
 
   const recommendation = regionDetail?.recommendationAr ?? finn.recommendationAr;
-  const presenceState: NxFinnState =
-    storeVoice === "listening"
-      ? "listening"
-      : storeVoice === "speaking"
-        ? "speaking"
-        : finn.status === "busy"
-          ? "thinking"
-          : "idle";
 
   const openFinnChat = React.useCallback(() => {
     emitCockpitAction("finn.chat.open");
