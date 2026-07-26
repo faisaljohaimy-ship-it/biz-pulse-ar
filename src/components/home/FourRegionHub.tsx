@@ -295,11 +295,12 @@ function RegionCardRect({
   const perfKpi = panel.kpis.find((k) => k.ringPct != null);
   const perfPct = livePerformance ?? perfKpi?.ringPct ?? 0;
   return (
-    <button
-      type="button"
+    <Link
+      to="/hcis"
       onClick={onSelect}
       aria-pressed={active}
-      className="group/region relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border p-3 text-start transition"
+      aria-label={ar ? region.shortAr : region.shortEn}
+      className="group/region relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border p-3 text-start transition hover:scale-[1.01] active:scale-[0.99]"
       style={{
         borderColor: active ? color : `${color}55`,
         background: `linear-gradient(135deg, ${color}18 0%, rgba(4,17,31,0.65) 55%, rgba(4,7,15,0.85) 100%)`,
@@ -308,6 +309,7 @@ function RegionCardRect({
           : `0 12px 32px -22px ${color}55`,
       }}
     >
+
       {/* Performance ring — trailing edge (leading in RTL) */}
       <div className="shrink-0">
         <Ring pct={perfPct} color={color} size={54} />
