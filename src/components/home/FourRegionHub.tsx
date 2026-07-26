@@ -271,7 +271,84 @@ function RegionCard({
   );
 }
 
-// ── Header clock ────────────────────────────────────────────────────────────
+/**
+ * RegionCardRect — compact rectangular variant used in the right-column
+ * stack. Region name is centered as the hero text of the card, with the
+ * live performance ring on the trailing edge and the module glyphs as a
+ * single row of touch targets underneath.
+ */
+function RegionCardRect({
+  panel,
+  color,
+  livePerformance,
+  active,
+  ar,
+  onSelect,
+}: {
+  panel: CCRegionPanel;
+  color: string;
+  livePerformance: number | null;
+  active: boolean;
+  ar: boolean;
+  onSelect: () => void;
+}) {
+  const region = REGIONS.find((r) => r.id === panel.id)!;
+  const perfKpi = panel.kpis.find((k) => k.ringPct != null);
+  const perfPct = livePerformance ?? perfKpi?.ringPct ?? 0;
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={active}
+      className="group/region relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border p-3 text-start transition"
+      style={{
+        borderColor: active ? color : `${color}55`,
+        background: `linear-gradient(135deg, ${color}18 0%, rgba(4,17,31,0.65) 55%, rgba(4,7,15,0.85) 100%)`,
+        boxShadow: active
+          ? `0 0 0 1px ${color}66, 0 18px 44px -22px ${color}80`
+          : `0 12px 32px -22px ${color}55`,
+      }}
+    >
+      {/* Performance ring — trailing edge (leading in RTL) */}
+      <div className="shrink-0">
+        <Ring pct={perfPct} color={color} size={54} />
+      </div>
+
+      {/* Region name — the hero text, centered vertically, filling the card */}
+      <div className="min-w-0 flex-1 text-center">
+        <div
+          className="truncate text-[15px] font-black tracking-tight sm:text-base"
+          style={{ color, textShadow: `0 0 18px ${color}66` }}
+        >
+          {ar ? region.shortAr : region.shortEn}
+        </div>
+        <div className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.22em] text-white/55">
+          {ar ? "المنطقة" : "Region"}
+        </div>
+      </div>
+
+      {/* Compact module strip */}
+      <div className="hidden shrink-0 items-center gap-1 sm:flex">
+        {panel.modules.slice(0, 3).map((m) => {
+          const Icon = m.icon;
+          return (
+            <Link
+              key={m.en}
+              to={m.to}
+              onClick={(e) => e.stopPropagation()}
+              title={ar ? m.ar : m.en}
+              aria-label={ar ? m.ar : m.en}
+              className="grid size-8 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-white/30 hover:bg-white/[0.09] hover:text-white"
+            >
+              <Icon className="size-3.5" aria-hidden />
+            </Link>
+          );
+        })}
+      </div>
+    </button>
+  );
+}
+
 function LiveClock({ ar }: { ar: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
