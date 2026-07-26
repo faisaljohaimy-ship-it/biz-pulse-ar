@@ -408,52 +408,8 @@ function IntroLanding() {
           vision, every pulsing icon breathing in the active region's colour. */}
       <HomeShowcaseSections />
 
-      {/* Holographic command tree — replaces the retired Hajj Nusuk section.
-          Same visual as /agents: FINN at the apex, the specialist fleet
-          beneath, converging on the human-approval gate. Full-bleed on mobile
-          and desktop. */}
-      <section
-        ref={hologramRef}
-        data-nx-frozen="false"
-        id="tour-hologram"
-        dir={ar ? "rtl" : "ltr"}
-        aria-label={ar ? "شجرة القيادة الهولوغرامية" : "Holographic command tree"}
-        className="relative left-1/2 right-1/2 z-10 -ml-[50vw] -mr-[50vw] mt-8 w-screen max-w-[100vw] px-2 sm:mt-12 sm:px-4 lg:px-6"
-      >
-        <div className="mb-4 text-center">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
-            NEXIOS · Agent Operations Platform
-          </div>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
-            {ar ? "منصة عمليات الوكلاء" : "Agent Operations Platform"}
-          </h2>
-          <p className="mx-auto mt-1 max-w-2xl text-xs text-white/70 sm:text-sm">
-            {ar
-              ? "تشغيل، مراقبة، تدقيق، وتحكم — تحت قيادة FINN واعتماد بشري."
-              : "Lifecycle, monitoring, audit & control — under FINN with human approval."}
-          </p>
-        </div>
-        <div className="space-y-6">
-          <div>
-            <div className="mb-2 text-center text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
-              {ar ? "شجرة القيادة" : "Command Tree"}
-            </div>
-            <AgentHierarchyGraph agents={HOME_HOLO_AGENTS} runs={[]} ar={ar} />
-          </div>
-          <div>
-            <div className="mb-2 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
-              <span>{ar ? "شبكة التنسيق الحية" : "Live Coordination Network"}</span>
-              <Link
-                to="/agents-flow"
-                className="rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold tracking-wider text-[#3AE8FF] hover:bg-[#3AE8FF]/20"
-              >
-                {ar ? "لوحة القيادة الكاملة ↗" : "Open dashboard ↗"}
-              </Link>
-            </div>
-            <AgenticFlowCanvas ar={ar} />
-          </div>
-        </div>
-      </section>
+      {/* Holographic command tree — HIDDEN per owner directive (2026-07-26). */}
+
 
       <div
         id="tour-positioning"
