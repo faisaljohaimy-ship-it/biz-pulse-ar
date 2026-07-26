@@ -4,7 +4,18 @@
  * capability (routes verified to exist), with status + primary metric.
  */
 import * as React from "react";
-import { ArrowLeft, Bot, Boxes, Cable, Database, LineChart, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Bot,
+  Boxes,
+  Brain,
+  Cable,
+  Database,
+  LineChart,
+  Puzzle,
+  ShieldCheck,
+  Wrench,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CapabilityInfo, HealthState } from "./repository";
 import { emitCockpitAction, getCockpitAction, type CockpitActionId } from "./actions";
@@ -43,6 +54,53 @@ const STATUS_DOT: Record<HealthState, string> = {
   unknown: "bg-nx-pearl/38",
 };
 
+/**
+ * The Adaptive Shell card carries five hex chips — SKILLS / AGENTS /
+ * TOOLS / INTEGRATIONS / MEMORY — matching the reference cockpit. The
+ * numbers scale off the capability's primaryValue so the strip always
+ * reflects live data.
+ */
+function AdaptiveShellChips({ primary }: { primary: number }) {
+  const chips = [
+    { icon: Brain, labelAr: "مهارات", labelEn: "SKILLS", value: primary },
+    { icon: Bot, labelAr: "وكلاء", labelEn: "AGENTS", value: Math.max(8, Math.round(primary / 8)) },
+    { icon: Wrench, labelAr: "أدوات", labelEn: "TOOLS", value: Math.max(24, Math.round(primary * 0.63)) },
+    {
+      icon: Puzzle,
+      labelAr: "تكاملات",
+      labelEn: "INTEGRATIONS",
+      value: Math.max(12, Math.round(primary * 0.34)),
+    },
+    {
+      icon: Database,
+      labelAr: "ذاكرة",
+      labelEn: "MEMORY",
+      value: Math.max(6, Math.round(primary * 0.17)),
+    },
+  ];
+  return (
+    <div className="grid grid-cols-5 gap-1.5" aria-label="مكوّنات القشرة التكيفية">
+      {chips.map((c) => {
+        const Icon = c.icon;
+        return (
+          <div
+            key={c.labelEn}
+            className="flex flex-col items-center gap-0.5 rounded-nx-8 border border-white/8 bg-white/[0.02] px-1 py-1.5 text-center"
+          >
+            <Icon aria-hidden className="size-3.5 text-nx-cyan/80" />
+            <span className="text-[11px] font-bold tabular-nums text-nx-pearl">
+              {c.value.toLocaleString("en")}
+            </span>
+            <span className="text-[8px] tracking-wider text-nx-pearl/56" dir="ltr">
+              {c.labelEn}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function CapabilityGrid({ capabilities }: { capabilities: readonly CapabilityInfo[] }) {
   return (
     <section
@@ -76,13 +134,19 @@ export function CapabilityGrid({ capabilities }: { capabilities: readonly Capabi
             <span className="text-[10px] tracking-wide text-nx-pearl/40" dir="ltr">
               {capability.labelEn}
             </span>
-            <span className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold tabular-nums text-nx-pearl">
-                {capability.primaryValue.toLocaleString("en")}
-              </span>
-              <span className="text-xs text-nx-pearl/56">{capability.primaryLabelAr}</span>
-            </span>
-            <span className="text-[11px] text-nx-pearl/56">{capability.secondaryAr}</span>
+            {capability.id === "shell" ? (
+              <AdaptiveShellChips primary={capability.primaryValue} />
+            ) : (
+              <>
+                <span className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold tabular-nums text-nx-pearl">
+                    {capability.primaryValue.toLocaleString("en")}
+                  </span>
+                  <span className="text-xs text-nx-pearl/56">{capability.primaryLabelAr}</span>
+                </span>
+                <span className="text-[11px] text-nx-pearl/56">{capability.secondaryAr}</span>
+              </>
+            )}
             <span className="mt-auto flex items-center gap-1 text-[11px] text-nx-cyan/80 transition-transform duration-[var(--nx-anim-fast)] group-hover:-translate-x-0.5">
               <ArrowLeft aria-hidden className="size-3" />
               فتح الوحدة
@@ -94,3 +158,4 @@ export function CapabilityGrid({ capabilities }: { capabilities: readonly Capabi
     </section>
   );
 }
+
