@@ -48,6 +48,7 @@ import { Route as CinematicDemoRouteImport } from './routes/cinematic-demo'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AupRouteImport } from './routes/aup'
+import { Route as AgentsReferenceRouteImport } from './routes/agents-reference'
 import { Route as AgentsFlowRouteImport } from './routes/agents-flow'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -410,6 +411,11 @@ const AuthRoute = AuthRouteImport.update({
 const AupRoute = AupRouteImport.update({
   id: '/aup',
   path: '/aup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsReferenceRoute = AgentsReferenceRouteImport.update({
+  id: '/agents-reference',
+  path: '/agents-reference',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgentsFlowRoute = AgentsFlowRouteImport.update({
@@ -1311,6 +1317,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agents-flow': typeof AgentsFlowRoute
+  '/agents-reference': typeof AgentsReferenceRoute
   '/aup': typeof AupRoute
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
@@ -1519,6 +1526,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agents-flow': typeof AgentsFlowRoute
+  '/agents-reference': typeof AgentsReferenceRoute
   '/aup': typeof AupRoute
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
@@ -1727,6 +1735,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
   '/agents-flow': typeof AgentsFlowRoute
+  '/agents-reference': typeof AgentsReferenceRoute
   '/aup': typeof AupRoute
   '/auth': typeof AuthRoute
   '/book': typeof BookRoute
@@ -1937,6 +1946,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/agents-flow'
+    | '/agents-reference'
     | '/aup'
     | '/auth'
     | '/book'
@@ -2145,6 +2155,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/agents-flow'
+    | '/agents-reference'
     | '/aup'
     | '/auth'
     | '/book'
@@ -2352,6 +2363,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/about'
     | '/agents-flow'
+    | '/agents-reference'
     | '/aup'
     | '/auth'
     | '/book'
@@ -2562,6 +2574,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
   AgentsFlowRoute: typeof AgentsFlowRoute
+  AgentsReferenceRoute: typeof AgentsReferenceRoute
   AupRoute: typeof AupRoute
   AuthRoute: typeof AuthRoute
   BookRoute: typeof BookRoute
@@ -2932,6 +2945,13 @@ declare module '@tanstack/react-router' {
       path: '/aup'
       fullPath: '/aup'
       preLoaderRoute: typeof AupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents-reference': {
+      id: '/agents-reference'
+      path: '/agents-reference'
+      fullPath: '/agents-reference'
+      preLoaderRoute: typeof AgentsReferenceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agents-flow': {
@@ -4391,6 +4411,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
   AgentsFlowRoute: AgentsFlowRoute,
+  AgentsReferenceRoute: AgentsReferenceRoute,
   AupRoute: AupRoute,
   AuthRoute: AuthRoute,
   BookRoute: BookRoute,

@@ -5,6 +5,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { Link } from "@tanstack/react-router";
 import { listShowcaseFlow, type FlowGraph, type FlowNode } from "@/lib/flow.functions";
 
 const COL_X = { source: 60, agent: 380, aria: 760, gate: 1020 } as const;
@@ -190,9 +191,13 @@ export function AgenticFlowCanvas({
         className="relative flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70 sm:px-6"
       >
         <span>NEXIOS · Agentic Flow Canvas</span>
-        <span className="rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] text-[#3AE8FF]">
+        <Link
+          to="/agents-reference"
+          className="rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-3 py-1 text-[9px] text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20 hover:text-white"
+          title={ar ? "افتح مرجع الوكلاء" : "Open agents reference"}
+        >
           {ar ? "محاكاة مرجعية · بدون تنفيذ" : "Reference simulation · no execution"}
-        </span>
+        </Link>
       </div>
 
       <div className="relative w-full">
