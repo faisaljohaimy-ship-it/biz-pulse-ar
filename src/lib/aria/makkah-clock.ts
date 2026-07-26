@@ -101,6 +101,14 @@ export function buildFinnRuntimeBlock(ctx: {
   userRole: FinnUserRole;
   region: string;
   isSimulation: boolean;
+  /**
+   * True once FINN has already spoken the opening date/time this session
+   * (derived server-side from the conversation history — the turn already
+   * carries an assistant reply). Gates the no-repetition rule in the
+   * directive: the clock is announced ONCE at the opener, never again unless
+   * the user explicitly asks.
+   */
+  datetimeSpoken?: boolean;
 }): string {
   const m = buildMakkahMoment(ctx.now ?? new Date());
   return [
@@ -116,6 +124,7 @@ export function buildFinnRuntimeBlock(ctx: {
     `user_role:  ${ctx.userRole}`,
     `region:     ${ctx.region}`,
     `is_simulation: ${ctx.isSimulation}`,
+    `datetime_spoken: ${ctx.datetimeSpoken ? "true" : "false"}`,
     "</FINN_RUNTIME>",
   ].join("\n");
 }
@@ -190,9 +199,9 @@ export function buildFinnGreetingClockSpeech(
 export const MAKKAH_TIME_DIRECTIVE = `# المادة ٢ — الزمن الحيّ بتوقيت مكة المكرمة (مادة صلبة)
 - كتلة <FINN_RUNTIME> أعلاه هي **مصدرك الوحيد** للوقت والتاريخ. يُحظر مطلقًا تقدير الوقت أو حسابه ذهنيًا أو استرجاعه من ذاكرة التدريب.
 - المنطقة الزمنية: Asia/Riyadh = UTC+03:00 (توقيت مكة المكرمة، بلا توقيت صيفي إطلاقًا).
-- **افتتاح الجلسة (التحية)**: في أول رد منطوق فقط، اذكر التاريخ الميلادي ثم الساعة مرة واحدة بالصيغة: «التاريخ [date_g] ميلادي، والساعة الآن [time] بتوقيت مكة المكرمة.» — الحقلان \`date_g\` و\`time\` من الكتلة حصريًا.
+- **افتتاح الجلسة (التحية)**: عندما يكون \`datetime_spoken: false\` فقط، اذكر في أول رد منطوق التاريخ الميلادي ثم الساعة مرة واحدة بالصيغة: «التاريخ [date_g] ميلادي، والساعة الآن [time] بتوقيت مكة المكرمة.» — الحقلان \`date_g\` و\`time\` من الكتلة حصريًا.
 - **التاريخ الهجري (\`date_h\`) للعرض النصي فقط — لا يُنطق في القناة الصوتية أبدًا.**
-- بعد نطق الافتتاح لا يُكرَّر الوقت في بقية الجلسة إلا إذا سأل المستخدم عنه صراحة أو عند إجراء زمنيّ الأثر.
+- عندما يكون \`datetime_spoken: true\` لا تذكر التاريخ ولا الساعة مطلقًا، ولا تبدأ بعبارات مثل «اليوم هو…» أو «الساعة الآن…» — ابدأ ردّك بالمحتوى مباشرة. الاستثناء الوحيد: سؤال صريح من المستخدم عن الوقت أو التاريخ، فتجيب مرة واحدة دون إعادة الافتتاحية.
 - في الردود النصّية التشغيلية، وعند أي سؤال عن الوقت أو أي إجراء زمنيّ الأثر (سريان تصريح، انتهاء نافذة عمل، عمر بلاغ)، صدّر ردّك بالترويسة حرفيًا:
   ⏱ [time] · [day] [date_g] · توقيت مكة المكرمة (UTC+3)
 - في القناة الصوتية: عدا افتتاح الجلسة، تُنطق الترويسة **فقط** عند السؤال عن الوقت أو عند إجراء زمنيّ الأثر.

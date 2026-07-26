@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   applyFinnPronunciation,
   arabicCardinal,
+  arabicClock,
   arabicNumberWords,
+  arabicYear,
   englishNumberWords,
+  toArabicSpokenNumber,
 } from "./pronunciation";
 
 /**
@@ -100,9 +103,65 @@ describe("applyFinnPronunciation — numbers spoken as words", () => {
     expect(applyFinnPronunciation("accuracy 3.5%")).toBe("accuracy three point five percent");
   });
 
-  it("still protects clock times and dotted version strings", () => {
-    expect(applyFinnPronunciation("الوقت 14:07:33 الآن")).toBe("الوقت 14:07:33 الآن");
+  it("speaks Arabic-reply clock times as words; protects dotted versions", () => {
+    // Times are now SPOKEN in an Arabic reply (24h hour read as 12h ordinal).
+    expect(applyFinnPronunciation("الوقت 14:07:33 الآن")).toBe("الوقت الثانية وسبع دقائق الآن");
+    expect(applyFinnPronunciation("الاجتماع 12:35")).toBe(
+      "الاجتماع الثانية عشرة وخمس وثلاثون دقيقة",
+    );
+    // Version strings are quantities-that-aren't — still protected.
     expect(applyFinnPronunciation("الإصدار 1.2.0 جاهز")).toBe("الإصدار 1.2.0 جاهز");
+    // English-reply times stay protected (spoken correctly by the voice as-is).
+    expect(applyFinnPronunciation("the time is 14:07")).toBe("the time is 14:07");
+  });
+
+  it("speaks riyal amounts and magnitude suffixes in an Arabic reply", () => {
+    expect(applyFinnPronunciation("التأثير المالي 18.7M SAR")).toBe(
+      "التأثير المالي ثمانية عشر مليون وسبعمئة ألف ريال",
+    );
+    expect(applyFinnPronunciation("العائد 3.67M هذا الربع")).toBe(
+      "العائد ثلاثة ملايين وستمئة وسبعون ألف هذا الربع",
+    );
+  });
+});
+
+describe("toArabicSpokenNumber — the one isolated converter", () => {
+  it("percentages", () => {
+    expect(toArabicSpokenNumber("97", "percent")).toBe("سبعة وتسعون بالمئة");
+    expect(toArabicSpokenNumber("97%", "auto")).toBe("سبعة وتسعون بالمئة");
+  });
+
+  it("millions / magnitude (scaled)", () => {
+    expect(toArabicSpokenNumber("3.67M", "scaled")).toBe("ثلاثة ملايين وستمئة وسبعون ألف");
+    expect(toArabicSpokenNumber("3.67M", "auto")).toBe("ثلاثة ملايين وستمئة وسبعون ألف");
+  });
+
+  it("clock times (12-hour ordinal + feminine minutes)", () => {
+    expect(toArabicSpokenNumber("12:35", "time")).toBe("الثانية عشرة وخمس وثلاثون دقيقة");
+    expect(arabicClock(9, 5)).toBe("التاسعة وخمس دقائق");
+    expect(arabicClock(1, 0)).toBe("الواحدة تمامًا");
+    expect(toArabicSpokenNumber("14:07", "auto")).toBe("الثانية وسبع دقائق");
+  });
+
+  it("riyal amounts (with magnitude suffix and currency word)", () => {
+    expect(toArabicSpokenNumber("18.7M SAR", "riyal")).toBe("ثمانية عشر مليون وسبعمئة ألف ريال");
+    expect(toArabicSpokenNumber("1,248 ريال", "riyal")).toBe("ألف ومئتان وثمانية وأربعون ريال");
+  });
+
+  it("years in the spoken genitive", () => {
+    expect(toArabicSpokenNumber("2026", "year")).toBe("ألفين وستة وعشرين");
+    expect(arabicYear(2000)).toBe("ألفين");
+    expect(arabicYear(2030)).toBe("ألفين وثلاثين");
+  });
+
+  it("decimals read with a spoken point", () => {
+    expect(toArabicSpokenNumber("3.67", "decimal")).toBe("ثلاثة فاصلة ستة سبعة");
+    expect(toArabicSpokenNumber("3.67", "auto")).toBe("ثلاثة فاصلة ستة سبعة");
+  });
+
+  it("plain cardinals", () => {
+    expect(toArabicSpokenNumber("142", "cardinal")).toBe("مئة واثنان وأربعون");
+    expect(toArabicSpokenNumber(248, "auto")).toBe("مئتان وثمانية وأربعون");
   });
 });
 

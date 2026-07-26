@@ -82,6 +82,35 @@ describe("makkah-clock — the single time source (FINN constitution Art. 2)", (
   it("directive orders the once-only opener and bans spoken Hijri", () => {
     expect(MAKKAH_TIME_DIRECTIVE).toContain("افتتاح الجلسة");
     expect(MAKKAH_TIME_DIRECTIVE).toContain("لا يُنطق في القناة الصوتية أبدًا");
-    expect(MAKKAH_TIME_DIRECTIVE).toContain("لا يُكرَّر الوقت");
+    expect(MAKKAH_TIME_DIRECTIVE).toContain("datetime_spoken");
+  });
+
+  it("runtime block carries the datetime_spoken guard flag", () => {
+    const first = buildFinnRuntimeBlock({
+      now: FIXED,
+      userRole: "manager",
+      region: "الغربية",
+      isSimulation: true,
+      datetimeSpoken: false,
+    });
+    expect(first).toContain("datetime_spoken: false");
+
+    const later = buildFinnRuntimeBlock({
+      now: FIXED,
+      userRole: "manager",
+      region: "الغربية",
+      isSimulation: true,
+      datetimeSpoken: true,
+    });
+    expect(later).toContain("datetime_spoken: true");
+
+    // Defaults to false (first turn) when omitted.
+    const dflt = buildFinnRuntimeBlock({
+      now: FIXED,
+      userRole: "manager",
+      region: "الغربية",
+      isSimulation: true,
+    });
+    expect(dflt).toContain("datetime_spoken: false");
   });
 });

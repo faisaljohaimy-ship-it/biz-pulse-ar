@@ -98,6 +98,157 @@ export function arabicNumberWords(n: number): string {
   return parts.join(" و");
 }
 
+/* ─────────────── toArabicSpokenNumber — the one isolated entry ─────────────
+ * Every numeric token bound for the Layan voice is rendered to clear Modern
+ * Standard Arabic words by THIS function — percentages, magnitudes (M/K/B),
+ * clock times, riyal amounts, years and decimals — so nothing reaches TTS as
+ * raw digits. The on-screen text keeps its tabular numerals; this is spoken
+ * form only. Unit-tested per category in pronunciation.test.ts.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+export type ArabicNumberKind =
+  | "auto"
+  | "cardinal"
+  | "decimal"
+  | "percent"
+  | "time"
+  | "riyal"
+  | "scaled"
+  | "year";
+
+/** Feminine ones (minutes/hours agree in the feminine when counting دقيقة). */
+const ONES_F = ["", "واحدة", "اثنتان", "ثلاث", "أربع", "خمس", "ست", "سبع", "ثمان", "تسع"];
+/** Genitive tens (for years: «وعشرين» not «وعشرون»). */
+const TENS_GEN = ["", "", "عشرين", "ثلاثين", "أربعين", "خمسين", "ستين", "سبعين", "ثمانين", "تسعين"];
+/** Ordinal feminine hours 1–12 (clock reading). */
+const HOUR_ORDINAL_F = [
+  "الثانية عشرة", // index 0 stands in for 12 (00:xx / 12:xx)
+  "الواحدة",
+  "الثانية",
+  "الثالثة",
+  "الرابعة",
+  "الخامسة",
+  "السادسة",
+  "السابعة",
+  "الثامنة",
+  "التاسعة",
+  "العاشرة",
+  "الحادية عشرة",
+  "الثانية عشرة",
+];
+
+/** Feminine 0–59 cardinal (minutes): «خمس وثلاثون», «خمس عشرة», «عشرون». */
+function arabicTwoDigitFeminine(n: number): string {
+  if (n <= 0) return "";
+  if (n < 10) return ONES_F[n];
+  if (n === 10) return "عشر";
+  if (n === 11) return "إحدى عشرة";
+  if (n === 12) return "اثنتا عشرة";
+  if (n < 20) return `${ONES_F[n - 10]} عشرة`;
+  const t = Math.floor(n / 10);
+  const o = n % 10;
+  return o === 0 ? TENS[t] : `${ONES_F[o]} و${TENS[t]}`;
+}
+
+/** Genitive 0–99 (year tail): «ستة وعشرين». */
+function arabicTwoDigitGenitive(n: number): string {
+  if (n <= 0) return "";
+  if (n < 20) return ONES[n];
+  const t = Math.floor(n / 10);
+  const o = n % 10;
+  return o === 0 ? TENS_GEN[t] : `${ONES[o]} و${TENS_GEN[t]}`;
+}
+
+/** Clock reading: «الثانية عشرة وخمس وثلاثون دقيقة». Seconds are dropped
+ *  (spoken seconds are noise); the hour is read as a 12-hour ordinal. */
+export function arabicClock(hh: number, mm: number): string {
+  const hour12 = hh % 12;
+  const hourWord = HOUR_ORDINAL_F[hour12];
+  if (mm <= 0) return `${hourWord} تمامًا`;
+  const minWord = arabicTwoDigitFeminine(mm);
+  const minNoun = mm >= 3 && mm <= 10 ? "دقائق" : "دقيقة";
+  return `${hourWord} و${minWord} ${minNoun}`;
+}
+
+/** Year in the spoken genitive: 2026 → «ألفين وستة وعشرين». 2000–2099 get
+ *  the natural «ألفين» head; anything else falls back to the cardinal. */
+export function arabicYear(y: number): string {
+  if (!Number.isInteger(y) || y < 2000 || y > 2099) return arabicNumberWords(y);
+  const tail = y - 2000;
+  return tail === 0 ? "ألفين" : `ألفين و${arabicTwoDigitGenitive(tail)}`;
+}
+
+/** Split a magnitude suffix (M/K/B or م/ألف) into its multiplier. */
+function magnitudeFactor(suffix: string): number {
+  const s = suffix.trim().toLowerCase();
+  if (s === "b" || s === "بليون" || s === "مليار") return 1_000_000_000;
+  if (s === "m" || s === "مليون" || s === "م") return 1_000_000;
+  if (s === "k" || s === "ألف" || s === "الف" || s === "ك") return 1000;
+  return 1;
+}
+
+const CURRENCY_RE = /(sar|ر\.?\s*س|ريال|م\.?\s*ر)/i;
+const MAGNITUDE_RE = /([kmbكمب])\b|(مليون|مليار|بليون|ألف|الف)/i;
+
+/**
+ * The single isolated converter. `kind` forces a category; `"auto"` sniffs it
+ * from the token. Returns clear Arabic words — never raw digits.
+ */
+export function toArabicSpokenNumber(
+  value: string | number,
+  kind: ArabicNumberKind = "auto",
+): string {
+  const raw = String(value).trim();
+
+  // Resolve auto → concrete kind.
+  let k = kind;
+  if (k === "auto") {
+    if (/^\d{1,2}:\d{2}(?::\d{2})?$/.test(raw)) k = "time";
+    else if (CURRENCY_RE.test(raw)) k = "riyal";
+    else if (/%\s*$/.test(raw) || /بالمئة/.test(raw)) k = "percent";
+    else if (MAGNITUDE_RE.test(raw)) k = "scaled";
+    else if (raw.includes(".")) k = "decimal";
+    else k = "cardinal";
+  }
+
+  switch (k) {
+    case "time": {
+      const [hh, mm] = raw.split(":");
+      return arabicClock(Number(hh), Number(mm));
+    }
+    case "year":
+      return arabicYear(Number(raw.replace(/[^\d]/g, "")));
+    case "percent": {
+      const num = raw.replace(/[%\s]|بالمئة/g, "");
+      return `${spokenNumber(num, "ar")} بالمئة`;
+    }
+    case "riyal": {
+      const stripped = raw.replace(CURRENCY_RE, "").trim();
+      return `${scaledToWords(stripped)} ريال`;
+    }
+    case "scaled":
+      return scaledToWords(raw);
+    case "decimal":
+      return spokenNumber(raw.replace(/[^\d.]/g, ""), "ar");
+    case "cardinal":
+    default:
+      return arabicNumberWords(Number(raw.replace(/[^\d]/g, "")));
+  }
+}
+
+/** Fold an optional magnitude suffix into the value, then speak it. A whole
+ *  result is a grouped cardinal («ثلاثة ملايين وستمئة وسبعون ألفًا»); a value
+ *  that stays fractional is read with a spoken point. */
+function scaledToWords(raw: string): string {
+  const match = raw.match(/^([\d,]*\.?\d+)\s*([kmbكمب]|مليون|مليار|بليون|ألف|الف)?/i);
+  if (!match) return spokenNumber(raw.replace(/[^\d.]/g, ""), "ar");
+  const base = Number(match[1].replace(/,/g, ""));
+  const factor = match[2] ? magnitudeFactor(match[2]) : 1;
+  const scaled = base * factor;
+  if (Number.isInteger(scaled)) return arabicNumberWords(scaled);
+  return spokenNumber(String(scaled), "ar");
+}
+
 const EN_ONES = [
   "zero",
   "one",
@@ -238,9 +389,28 @@ function expandNumbers(text: string, lang: "ar" | "en"): string {
     stashed.push(m);
     return ch;
   };
-  let out = text.replace(/\d{1,2}:\d{2}(?::\d{2})?/g, stash).replace(/\d+\.\d+\.\d+/g, stash);
+  // Dotted version strings (1.2.0) stay protected — they are not quantities.
+  let out = text.replace(/\d+\.\d+\.\d+/g, stash);
 
   const percent = lang === "ar" ? "بالمئة" : "percent";
+
+  if (lang === "ar") {
+    // Arabic replies route quantities through the one isolated converter so
+    // currency, magnitudes and clock times speak as clear words. Order:
+    // currency (may carry M/K) → bare magnitude → clock → generic passes.
+    out = out.replace(/\d[\d,]*(?:\.\d+)?(?:[KMB])?\s*(?:SAR|ر\.?\s*س|ريال|م\.?\s*ر)/gi, (m) =>
+      toArabicSpokenNumber(m, "riyal"),
+    );
+    out = out.replace(/\d[\d,]*(?:\.\d+)?[KMB](?![A-Za-z])/g, (m) =>
+      toArabicSpokenNumber(m, "scaled"),
+    );
+    out = out.replace(/\b(\d{1,2}):(\d{2})(?::\d{2})?\b/g, (_m, hh: string, mm: string) =>
+      arabicClock(Number(hh), Number(mm)),
+    );
+  } else {
+    // English replies keep clock times protected (spoken correctly as-is).
+    out = out.replace(/\d{1,2}:\d{2}(?::\d{2})?/g, stash);
+  }
 
   // Percentages first (integer OR decimal, consuming the % sign), then decimal
   // numbers, then any remaining integer runs. Each becomes full spoken words.

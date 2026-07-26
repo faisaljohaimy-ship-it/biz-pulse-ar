@@ -635,10 +635,15 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
         // grounding/preference/voice augmentations above and truly leads the
         // turn — present for anonymous and authenticated turns alike.
         const finnRegionAr = REGIONS.find((r) => r.id === DEFAULT_REGION_ID)?.shortAr ?? "الغربية";
+        // No-repetition guard: FINN speaks the opening date/time only on the
+        // first turn. A prior assistant reply in the (sanitized) history means
+        // the opener already happened, so datetime_spoken flips true.
+        const datetimeSpoken = uiMessages.some((m) => m.role === "assistant");
         const finnRuntimeBlock = buildFinnRuntimeBlock({
           userRole: userId ? "manager" : "employee",
           region: finnRegionAr,
           isSimulation: true,
+          datetimeSpoken,
         });
         systemPrompt = `${finnRuntimeBlock}\n\n${MAKKAH_TIME_DIRECTIVE}\n\n${systemPrompt}`;
 
