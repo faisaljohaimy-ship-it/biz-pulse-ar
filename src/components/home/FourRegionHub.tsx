@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { FinnPersonaCard } from "@/components/home/FinnPersonaCard";
+import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
 import {
   CC_REGIONS,
   CC_SYSTEM_RINGS,
@@ -43,6 +44,7 @@ import { useRegion } from "@/lib/region-context";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
+
 
 // ── Map geometry ────────────────────────────────────────────────────────────
 const SECTORS: { id: RegionId; cx: number; cy: number; radii: number[] }[] = [
@@ -269,7 +271,84 @@ function RegionCard({
   );
 }
 
-// ── Header clock ────────────────────────────────────────────────────────────
+/**
+ * RegionCardRect — compact rectangular variant used in the right-column
+ * stack. Region name is centered as the hero text of the card, with the
+ * live performance ring on the trailing edge and the module glyphs as a
+ * single row of touch targets underneath.
+ */
+function RegionCardRect({
+  panel,
+  color,
+  livePerformance,
+  active,
+  ar,
+  onSelect,
+}: {
+  panel: CCRegionPanel;
+  color: string;
+  livePerformance: number | null;
+  active: boolean;
+  ar: boolean;
+  onSelect: () => void;
+}) {
+  const region = REGIONS.find((r) => r.id === panel.id)!;
+  const perfKpi = panel.kpis.find((k) => k.ringPct != null);
+  const perfPct = livePerformance ?? perfKpi?.ringPct ?? 0;
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={active}
+      className="group/region relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border p-3 text-start transition"
+      style={{
+        borderColor: active ? color : `${color}55`,
+        background: `linear-gradient(135deg, ${color}18 0%, rgba(4,17,31,0.65) 55%, rgba(4,7,15,0.85) 100%)`,
+        boxShadow: active
+          ? `0 0 0 1px ${color}66, 0 18px 44px -22px ${color}80`
+          : `0 12px 32px -22px ${color}55`,
+      }}
+    >
+      {/* Performance ring — trailing edge (leading in RTL) */}
+      <div className="shrink-0">
+        <Ring pct={perfPct} color={color} size={54} />
+      </div>
+
+      {/* Region name — the hero text, centered vertically, filling the card */}
+      <div className="min-w-0 flex-1 text-center">
+        <div
+          className="truncate text-[15px] font-black tracking-tight sm:text-base"
+          style={{ color, textShadow: `0 0 18px ${color}66` }}
+        >
+          {ar ? region.shortAr : region.shortEn}
+        </div>
+        <div className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.22em] text-white/55">
+          {ar ? "المنطقة" : "Region"}
+        </div>
+      </div>
+
+      {/* Compact module strip */}
+      <div className="hidden shrink-0 items-center gap-1 sm:flex">
+        {panel.modules.slice(0, 3).map((m) => {
+          const Icon = m.icon;
+          return (
+            <Link
+              key={m.en}
+              to={m.to}
+              onClick={(e) => e.stopPropagation()}
+              title={ar ? m.ar : m.en}
+              aria-label={ar ? m.ar : m.en}
+              className="grid size-8 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-white/30 hover:bg-white/[0.09] hover:text-white"
+            >
+              <Icon className="size-3.5" aria-hidden />
+            </Link>
+          );
+        })}
+      </div>
+    </button>
+  );
+}
+
 function LiveClock({ ar }: { ar: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
@@ -735,38 +814,62 @@ export function FourRegionHub() {
       )}
 
       {/* ── Executive grid ─────────────────────────────────────────────── */}
-      {/* Panels sit in their TRUE geographic positions (matches the approved
-          poster + the live map territories). Under RTL the first DOM child
-          lands in the rightmost column, so each row is authored right→left:
-          Row 1 → الشرقية (يمين) · الوسطى (وسط) · الغربية (يسار)
-          Row 2 → حالة النظام (يمين) · الخريطة+الجنوبية (وسط) · FINN (يسار) */}
-      <div className="relative grid gap-3 lg:grid-cols-[1.05fr_1.2fr_1.05fr]">
-        {/* Row 1 — Eastern (right) · Central (center) · Western (left) */}
-        <RegionCard
-          {...regionVM.eastern}
-          active={regionId === "eastern"}
-          ar={ar}
-          onSelect={() => setRegion("eastern")}
-        />
-        <RegionCard
-          {...regionVM.central}
-          active={regionId === "central"}
-          ar={ar}
-          onSelect={() => setRegion("central")}
-        />
-        <RegionCard
-          {...regionVM.western}
-          active={regionId === "western"}
-          ar={ar}
-          onSelect={() => setRegion("western")}
-        />
+      {/* Owner directive (image, 2026-07-26): three columns —
+          Right (RTL first) → stacked rectangular region cards with the
+          region name centered as the hero text.
+          Center → FINN as the holographic persona filling the column,
+          with the Kingdom map anchored beneath as her command stage.
+          Left → FINN daily summary on top, smart alerts below. */}
+      <div className="relative grid gap-3 lg:grid-cols-[1fr_1.25fr_1fr]">
+        {/* Right column — 4 stacked rectangular region cards */}
+        <div className="flex flex-col gap-3">
+          <RegionCardRect
+            {...regionVM.eastern}
+            active={regionId === "eastern"}
+            ar={ar}
+            onSelect={() => setRegion("eastern")}
+          />
+          <RegionCardRect
+            {...regionVM.central}
+            active={regionId === "central"}
+            ar={ar}
+            onSelect={() => setRegion("central")}
+          />
+          <RegionCardRect
+            {...regionVM.western}
+            active={regionId === "western"}
+            ar={ar}
+            onSelect={() => setRegion("western")}
+          />
+          <RegionCardRect
+            {...regionVM.southern}
+            active={regionId === "southern"}
+            ar={ar}
+            onSelect={() => setRegion("southern")}
+          />
+        </div>
 
-        {/* Row 2 — System+Alerts (right) · MAP+Southern (center) · FINN (left) */}
-        <div className="flex h-full flex-col gap-3">
-          {/* System status — HIDDEN per owner directive (2026-07-26). */}
+        {/* Center column — FINN holographic persona + Kingdom map stage */}
+        <div className="relative flex flex-col gap-3">
+          <div className="min-h-[280px] flex-1">
+            <FinnPersonaCard ar={ar} />
+          </div>
+          <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
+            <CentralMap
+              ar={ar}
+              sectors={sectors}
+              regionId={regionId}
+              setRegion={setRegion}
+              severityByRegion={severityByRegion}
+            />
+          </div>
+        </div>
 
-
-          {/* Smart alerts */}
+        {/* Left column — FINN daily summary + smart alerts */}
+        <div className="flex flex-col gap-3">
+          <div className="min-w-0">
+            <FinnDailySummary />
+          </div>
           <div className="relative flex-1 rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
             <div className="mb-2 flex items-center justify-between">
               <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
@@ -778,7 +881,7 @@ export function FourRegionHub() {
               </span>
             </div>
             <ul className="grid gap-1.5">
-              {(alerts.length ? alerts.slice(0, 3) : []).map((a) => (
+              {(alerts.length ? alerts.slice(0, 4) : []).map((a) => (
                 <li
                   key={a.id}
                   className="flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-2 py-1.5 text-[12px]"
@@ -798,29 +901,8 @@ export function FourRegionHub() {
             </ul>
           </div>
         </div>
-
-        <div className="relative flex flex-col gap-3">
-          <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
-            <CentralMap
-              ar={ar}
-              sectors={sectors}
-              regionId={regionId}
-              setRegion={setRegion}
-              severityByRegion={severityByRegion}
-            />
-          </div>
-          {/* Southern region under the map (matches poster) */}
-          <RegionCard
-            {...regionVM.southern}
-            active={regionId === "southern"}
-            ar={ar}
-            onSelect={() => setRegion("southern")}
-          />
-        </div>
-
-        {/* FINN persona — bottom-left column (matches the approved poster) */}
-        <FinnPersonaCard ar={ar} />
       </div>
+
 
       {/* ── Bottom module tab bar ──────────────────────────────────────── */}
       <div className="relative mt-4">
