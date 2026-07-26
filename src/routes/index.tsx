@@ -267,13 +267,13 @@ function IntroLanding() {
         <AgentHierarchyGraph
           agents={HOME_HOLO_AGENTS.map((a) => ({
             id: a.id,
-            name_ar: a.name,
-            name_en: a.name,
+            name: a.name,
             state: a.state,
           }))}
           runs={[]}
           ar={ar}
         />
+
         <AgenticFlowCanvas ar={ar} variant="full" />
       </div>
 
