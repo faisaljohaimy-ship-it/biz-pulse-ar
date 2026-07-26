@@ -52,10 +52,12 @@ export interface NxPipelineFlowProps extends React.HTMLAttributes<HTMLOListEleme
   activeStage?: NxPipelineStage | null;
   /** A recommendation awaits the human gate — the gold chip breathes. */
   approvalPending?: boolean;
+  /** When provided, stage chips become real buttons (inspect a stage). */
+  onSelectStage?: (stage: NxPipelineStage) => void;
 }
 
 export const NxPipelineFlow = React.forwardRef<HTMLOListElement, NxPipelineFlowProps>(
-  ({ className, activeStage = null, approvalPending = false, ...props }, ref) => {
+  ({ className, activeStage = null, approvalPending = false, onSelectStage, ...props }, ref) => {
     const activeIndex = activeStage ? PIPELINE_STAGE_ORDER.indexOf(activeStage) : -1;
     return (
       <ol
@@ -76,37 +78,59 @@ export const NxPipelineFlow = React.forwardRef<HTMLOListElement, NxPipelineFlowP
                   : "pending";
           const isGate = stage === "approval";
           const gateBreathing = isGate && approvalPending;
+          const chipClass = cn(
+            "rounded-nx-8 inline-flex items-center gap-1.5 border px-2.5 py-1 text-xs transition-[border-color,box-shadow,opacity] duration-[var(--nx-anim-base)] ease-[var(--nx-ease-out)]",
+            phase === "done" && "border-nx-success/40 text-nx-pearl/72",
+            phase === "active" &&
+              !isGate &&
+              "border-nx-layer-agent/70 text-nx-pearl shadow-[var(--nx-glow-agent)]",
+            phase === "pending" && !gateBreathing && "border-white/10 text-nx-pearl/38",
+            isGate &&
+              (gateBreathing || phase === "active") &&
+              "border-nx-gold/70 text-nx-gold shadow-[var(--nx-glow-authority)]",
+            gateBreathing && "nx-anim-breathe",
+            onSelectStage &&
+              "min-h-11 cursor-pointer hover:border-current/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan",
+          );
+          const content = (
+            <>
+              {phase === "done" ? (
+                <span aria-hidden className="text-nx-success">
+                  ✓
+                </span>
+              ) : null}
+              {isGate ? <span aria-hidden>🔒</span> : null}
+              {PIPELINE_STAGE_LABEL[stage]}
+              <span className="sr-only">
+                — {gateBreathing ? "بانتظار الاعتماد البشري" : PHASE_WORD[phase]}
+              </span>
+            </>
+          );
           return (
             <li key={stage} className="flex items-center gap-1">
               {i > 0 ? <span aria-hidden className="h-px w-3 shrink-0 bg-nx-pearl/24" /> : null}
-              <span
-                data-stage={stage}
-                data-phase={phase}
-                aria-current={phase === "active" ? "step" : undefined}
-                className={cn(
-                  "rounded-nx-8 inline-flex items-center gap-1.5 border px-2.5 py-1 text-xs transition-[border-color,box-shadow,opacity] duration-[var(--nx-anim-base)] ease-[var(--nx-ease-out)]",
-                  phase === "done" && "border-nx-success/40 text-nx-pearl/72",
-                  phase === "active" &&
-                    !isGate &&
-                    "border-nx-layer-agent/70 text-nx-pearl shadow-[var(--nx-glow-agent)]",
-                  phase === "pending" && !gateBreathing && "border-white/10 text-nx-pearl/38",
-                  isGate &&
-                    (gateBreathing || phase === "active") &&
-                    "border-nx-gold/70 text-nx-gold shadow-[var(--nx-glow-authority)]",
-                  gateBreathing && "nx-anim-breathe",
-                )}
-              >
-                {phase === "done" ? (
-                  <span aria-hidden className="text-nx-success">
-                    ✓
-                  </span>
-                ) : null}
-                {isGate ? <span aria-hidden>🔒</span> : null}
-                {PIPELINE_STAGE_LABEL[stage]}
-                <span className="sr-only">
-                  — {gateBreathing ? "بانتظار الاعتماد البشري" : PHASE_WORD[phase]}
+              {onSelectStage ? (
+                <button
+                  type="button"
+                  data-stage={stage}
+                  data-phase={phase}
+                  data-action={`flow.${stage}.inspect`}
+                  aria-current={phase === "active" ? "step" : undefined}
+                  onClick={() => onSelectStage(stage)}
+                  className={chipClass}
+                >
+                  {content}
+                </button>
+              ) : (
+                <span
+                  data-stage={stage}
+                  data-phase={phase}
+                  aria-current={phase === "active" ? "step" : undefined}
+                  className={chipClass}
+                >
+                  {content}
                 </span>
-              </span>
+              )}
             </li>
           );
         })}

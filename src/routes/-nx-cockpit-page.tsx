@@ -1,301 +1,210 @@
 /**
- * NxCockpitPage — the cockpit page implementation, colocated as a
- * non-route helper (dash prefix) so the router auto-code-splits the
- * route: the entry bundle no longer carries this page, and hydration
- * on every route gets lighter. Logic unchanged.
+ * ExecutiveCockpitPage (exported as NxCockpitPage) — the NEXIOS executive
+ * cockpit, colocated as a non-route helper (dash prefix) so the router
+ * auto-code-splits the route out of the entry bundle.
+ *
+ * Composition (package 01 §معمارية الصفحة):
+ *   SystemHeader (brand · layer rail 01..05 · clock · notifications)
+ *   DesktopSideNavigation | RuntimeDataFlow + KPI + StrategicMap | FINN
+ *   CapabilityGrid → LiveEventStream → ExperienceLevelBar
+ *
+ * Every interactive control carries a registered data-action; the dev
+ * build audits the DOM for dead controls on mount. Data is the explicit
+ * reference-simulation repository (amber badge) — the four regions come
+ * from the frozen src/lib/regions.ts single source.
  */
 import * as React from "react";
-import { REGIONS } from "@/lib/regions";
-import {
-  NxLayerStack,
-  NxPipelineFlow,
-  NxEventTicker,
-  NxPanel,
-  NxKpiCard,
-  NxFinnPresence,
-  NxVoiceButton,
-  NxButton,
-  NxRegionPulse,
-  NxTwinNode,
-  NxStatusIndicator,
-  type NxFinnState,
-  type NxPipelineStage,
-  type NxStackLayerId,
-  type NxTickerEvent,
-} from "@/components/nx";
+import { getRouteApi } from "@tanstack/react-router";
+import { REGIONS, type RegionId } from "@/lib/regions";
+import { NxErrorState, NxSkeleton } from "@/components/nx";
+import { auditCockpitActions } from "@/components/cockpit/actions";
+import { CockpitProvider, useCockpit } from "@/components/cockpit/use-cockpit";
+import { CockpitHeader } from "@/components/cockpit/header";
+import { DesktopSideNavigation, MobileNavigationDrawer } from "@/components/cockpit/navigation";
+import { PrimaryKpiStrip, RuntimeFlowPanel } from "@/components/cockpit/panels";
+import { StrategicMapPanel } from "@/components/cockpit/map";
+import { FinnExecutivePanel } from "@/components/cockpit/finn-panel";
+import { CapabilityGrid } from "@/components/cockpit/capabilities";
+import { LiveEventStream } from "@/components/cockpit/events";
+import { CockpitOverlays, CockpitSectionBoundary } from "@/components/cockpit/overlays";
+import { ExperienceLevelBar } from "@/components/cockpit/experience-bar";
 
-const SIM_UPDATED = "قبل دقيقتين · محاكاة";
+const routeApi = getRouteApi("/nx-cockpit");
 
-const KPIS = [
-  {
-    label: "جاهزية المنشآت",
-    value: 97.2,
-    unit: "٪",
-    delta: { value: 1.4, goodDirection: "up" as const },
-  },
-  { label: "تصاريح نشطة", value: 128, delta: { value: 6, goodDirection: "up" as const } },
-  { label: "بلاغات مفتوحة", value: 9, delta: { value: -3, goodDirection: "down" as const } },
-  {
-    label: "امتثال HCIS",
-    value: 94.6,
-    unit: "٪",
-    delta: { value: 0.8, goodDirection: "up" as const },
-  },
-  {
-    label: "زمن استجابة الوكلاء",
-    value: 1.8,
-    unit: "ث",
-    delta: { value: -0.2, goodDirection: "down" as const },
-  },
-];
+function isRegionId(value: unknown): value is RegionId {
+  return typeof value === "string" && REGIONS.some((r) => r.id === value);
+}
 
-const SEED_EVENTS: readonly NxTickerEvent[] = [
-  {
-    id: "t1",
-    kind: "decision",
-    text: "اعتُمدت خطة الاستجابة الموسمية للمنطقة الشرقية",
-    time: "09:41",
-  },
-  { id: "t2", kind: "approval", text: "تصريح عمل ساخن بانتظار اعتماد مدير المنطقة", time: "09:38" },
-  {
-    id: "t3",
-    kind: "execution",
-    text: "أُنجزت جولة التفتيش الدورية — محطة التحلية الغربية",
-    time: "09:27",
-  },
-  { id: "t4", kind: "alert", text: "ارتفاع حرارة المحول رقم 4 ضمن النطاق المراقب", time: "09:15" },
-  { id: "t5", kind: "audit", text: "اكتمل تدقيق صلاحيات الوصول للربع الحالي", time: "08:52" },
-];
-
-const TWIN_NODES = [
-  { name: "محطة التوليد", status: "success" as const },
-  { name: "شبكة النقل", status: "success" as const },
-  { name: "المحول 4", status: "warning" as const },
-  { name: "مركز التحكم", status: "info" as const },
-];
-
-/** Quick actions: each drives FINN to a new advisory recommendation. */
-const QUICK_ACTIONS: readonly { label: string; recommendation: string }[] = [
-  {
-    label: "ملخص الوردية",
-    recommendation:
-      "ملخص الوردية: 128 تصريحًا نشطًا، 9 بلاغات مفتوحة، لا أحداث حرجة — يُوصى بمراجعة بلاغَي المحول 4 قبل التسليم.",
-  },
-  {
-    label: "حالة التصاريح",
-    recommendation:
-      "حالة التصاريح: 3 تصاريح عمل ساخن تنتظر اعتماد مدير المنطقة — يُوصى بالبت قبل ذروة الظهيرة.",
-  },
-  {
-    label: "خريطة المخاطر",
-    recommendation:
-      "خريطة المخاطر: تركّز المخاطر في محيط المحول 4 — يُوصى بتقديم موعد الصيانة قبل ذروة الحمل.",
-  },
-];
-
-const DEFAULT_RECOMMENDATION =
-  "التوصية الحالية: تقديم موعد صيانة المحول رقم 4 قبل ذروة الحمل — بانتظار الاعتماد.";
-
-export function NxCockpitPage() {
-  const [activeLayer, setActiveLayer] = React.useState<NxStackLayerId>("intelligence");
-  const [activeStage, setActiveStage] = React.useState<NxPipelineStage>("approval");
-  const [approvalPending, setApprovalPending] = React.useState(true);
-  const [finnState, setFinnState] = React.useState<NxFinnState>("idle");
-  const [recommendation, setRecommendation] = React.useState(DEFAULT_RECOMMENDATION);
-  const [voice, setVoice] = React.useState<"idle" | "listening">("idle");
-  const [events, setEvents] = React.useState<readonly NxTickerEvent[]>(SEED_EVENTS);
-  const timers = React.useRef<ReturnType<typeof setTimeout>[]>([]);
+/**
+ * URL ⇄ state sync, isolated so the page stays renderable outside a
+ * router (component tests). Deep links ?region=…&level=… apply once on
+ * mount; afterwards state drives the URL via replace navigation.
+ */
+function CockpitUrlSync() {
+  const cockpit = useCockpit();
+  const navigate = routeApi.useNavigate();
+  const search = routeApi.useSearch();
+  const urlAppliedRef = React.useRef(false);
 
   React.useEffect(() => {
-    const pending = timers.current;
-    return () => pending.forEach(clearTimeout);
+    if (urlAppliedRef.current) return;
+    urlAppliedRef.current = true;
+    if (isRegionId(search.region) && search.region !== cockpit.selectedRegion) {
+      cockpit.selectRegion(search.region);
+    }
+    if (
+      (search.level === "executive" ||
+        search.level === "operational" ||
+        search.level === "technical") &&
+      search.level !== cockpit.level
+    ) {
+      cockpit.setLevel(search.level);
+    }
+    // Intentionally once — afterwards state drives the URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const later = (ms: number, fn: () => void) => {
-    timers.current.push(setTimeout(fn, ms));
-  };
-
-  const pushEvent = (kind: NxTickerEvent["kind"], text: string) => {
-    setEvents((current) => [
-      { id: `live-${current.length + 1}`, kind, text, time: "الآن" },
-      ...current,
-    ]);
-  };
-
-  /** Quick action: FINN thinks, then speaks a new advisory recommendation. */
-  const runQuickAction = (action: (typeof QUICK_ACTIONS)[number]) => {
-    setActiveLayer("intelligence");
-    setFinnState("thinking");
-    pushEvent("decision", `طُلبت توصية: ${action.label}`);
-    later(900, () => {
-      setRecommendation(action.recommendation);
-      setFinnState("speaking");
-      later(2200, () => setFinnState("idle"));
+  React.useEffect(() => {
+    if (!urlAppliedRef.current) return;
+    void navigate({
+      search: { region: cockpit.selectedRegion, level: cockpit.level },
+      replace: true,
     });
-  };
+  }, [cockpit.selectedRegion, cockpit.level, navigate]);
 
-  /** The gold gate — the ONLY road across approval (explicit human click). */
-  const approveExecution = () => {
-    if (!approvalPending) return;
-    setApprovalPending(false);
-    setActiveStage("execution");
-    setActiveLayer("agents");
-    setFinnState("executing");
-    pushEvent("approval", "اعتمد الإنسان التوصية — بدأ التنفيذ المُشرف");
-    later(1800, () => {
-      setActiveStage("result");
-      setActiveLayer("output-gateway");
-      setFinnState("completed");
-      pushEvent("execution", "اكتمل التنفيذ المعتمد — النتيجة في بوابة المخرجات");
-      later(2000, () => setFinnState("idle"));
-    });
-  };
+  return null;
+}
 
-  /** New advisory round: back to recommendation + pending gate. */
-  const newRound = () => {
-    setActiveStage("approval");
-    setApprovalPending(true);
-    setActiveLayer("intelligence");
-    setFinnState("thinking");
-    setRecommendation(DEFAULT_RECOMMENDATION);
-    pushEvent("audit", "بدأت جولة استشارية جديدة");
-    later(900, () => setFinnState("idle"));
-  };
+function CockpitSkeleton() {
+  return (
+    <div aria-label="جارٍ تحميل القمرة" className="flex flex-col gap-4">
+      <NxSkeleton className="h-24 w-full" />
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+        {Array.from({ length: 5 }, (_, i) => (
+          <NxSkeleton key={i} className="h-32 w-full" />
+        ))}
+      </div>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <NxSkeleton className="h-96 w-full" />
+        <NxSkeleton className="h-96 w-full" />
+      </div>
+    </div>
+  );
+}
 
-  const toggleVoice = () => {
-    setVoice((v) => {
-      const next = v === "idle" ? "listening" : "idle";
-      setFinnState(next === "listening" ? "listening" : "idle");
-      return next;
-    });
-  };
+function CockpitContent() {
+  const cockpit = useCockpit();
+  const [navOpen, setNavOpen] = React.useState(false);
+  const rootRef = React.useRef<HTMLDivElement>(null);
+
+  // Dev-mode dead-control audit (package: automatic actionId enforcement).
+  React.useEffect(() => {
+    if (!import.meta.env.DEV || !rootRef.current) return;
+    const offenders = auditCockpitActions(rootRef.current);
+    if (offenders.length > 0) {
+      console.error("[cockpit] عناصر تفاعلية بلا إجراء مسجل:", offenders);
+    }
+  }, [cockpit.snapshot.state]);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-nx-obsidian text-nx-pearl">
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-8">
-        {/* Header: identity + working navigation + live status */}
-        <header className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold">قمرة القيادة التنفيذية</h1>
-            <p className="text-sm text-nx-pearl/56">
-              نظام نكسيوس التشغيلي — عرض مرجعي بلغة التصميم الموحّدة
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <NxStatusIndicator status="success" label="بث مباشر" live />
-            <span className="rounded-nx-8 border border-nx-warning/40 px-2 py-0.5 text-[11px] text-nx-warning">
-              محاكاة مرجعية
-            </span>
-            <a
-              href="/"
-              className="inline-flex min-h-11 items-center rounded-nx-8 border border-white/14 px-3 py-1.5 text-xs text-nx-pearl/72 transition-[border-color,color] duration-[var(--nx-anim-fast)] ease-[var(--nx-ease-out)] hover:border-nx-cyan hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
-            >
-              العودة للرئيسية
-            </a>
-          </div>
-        </header>
+    <div ref={rootRef} dir="rtl" className="min-h-dvh bg-nx-obsidian text-nx-pearl">
+      <main className="mx-auto flex w-full max-w-[2200px] flex-col gap-4 px-3 py-4 md:px-5 md:py-5">
+        {cockpit.snapshot.state === "loading" ? <CockpitSkeleton /> : null}
 
-        <NxLayerStack activeLayer={activeLayer} onSelectLayer={setActiveLayer} />
-
-        {/* KPI row */}
-        <section
-          aria-label="مؤشرات الأداء"
-          className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5"
-        >
-          {KPIS.map((kpi) => (
-            <NxKpiCard
-              key={kpi.label}
-              label={kpi.label}
-              value={kpi.value}
-              unit={kpi.unit}
-              delta={kpi.delta}
-              updatedAt={SIM_UPDATED}
-              simulation
+        {cockpit.snapshot.state === "error" ? (
+          <div data-audit-exempt>
+            <NxErrorState
+              title="تعذر تحميل القمرة"
+              description={cockpit.snapshot.messageAr}
+              onRetry={cockpit.reloadSnapshot}
             />
-          ))}
-        </section>
+          </div>
+        ) : null}
 
-        {/* Runtime pipeline + the human gate */}
-        <NxPanel
-          title="مسار التشغيل"
-          layer="runtime"
-          density="operations"
-          headerSlot={
-            approvalPending ? (
-              <NxButton variant="executive" size="lg" onClick={approveExecution}>
-                اعتماد التنفيذ
-              </NxButton>
-            ) : (
-              <NxButton variant="ghost" size="lg" onClick={newRound}>
-                جولة جديدة
-              </NxButton>
-            )
-          }
-        >
-          <NxPipelineFlow activeStage={activeStage} approvalPending={approvalPending} />
-        </NxPanel>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Digital twin zone */}
-          <NxPanel
-            title="التوأم الرقمي"
-            layer="twin"
-            density="command"
-            className="lg:col-span-2"
-            footer={<span>{SIM_UPDATED}</span>}
-          >
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-wrap items-center justify-around gap-4">
-                {REGIONS.map((region) => (
-                  <div key={region.id} className="flex flex-col items-center gap-2">
-                    <NxRegionPulse regionId={region.id} live size={56} />
-                    <span className="text-xs text-nx-pearl/72">{region.shortAr}</span>
-                  </div>
-                ))}
+        {cockpit.snapshot.state === "ready" ? (
+          <>
+            {cockpit.snapshot.stale ? (
+              <div className="flex items-center justify-between gap-3 rounded-nx-12 border border-nx-warning/40 px-3 py-2 text-xs text-nx-warning">
+                البيانات المعروضة قديمة نسبيًا — حدّث اللقطة.
+                <button
+                  type="button"
+                  data-action="snapshot.retry"
+                  onClick={cockpit.reloadSnapshot}
+                  className="rounded-nx-8 border border-nx-warning/50 px-3 py-1.5 min-h-11 transition-colors duration-[var(--nx-anim-fast)] hover:bg-nx-warning/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
+                >
+                  تحديث الآن
+                </button>
               </div>
-              <div className="flex flex-wrap items-center justify-around gap-4 border-t border-white/10 pt-4">
-                {TWIN_NODES.map((node) => (
-                  <NxTwinNode key={node.name} name={node.name} status={node.status} />
-                ))}
-              </div>
-            </div>
-          </NxPanel>
+            ) : null}
 
-          {/* FINN advisory panel */}
-          <NxPanel
-            title="FINN"
-            layer="agent"
-            density="command"
-            headerSlot={<NxStatusIndicator status="info" label="استشاري" />}
-            footer={<span>لا تنفيذ دون اعتماد بشري</span>}
-          >
-            <div className="flex flex-col items-center gap-4">
-              <NxFinnPresence state={finnState} mode="advisory" size="lg" />
-              <p aria-live="polite" className="text-center text-sm text-nx-pearl/72">
-                {recommendation}
-              </p>
-              <NxVoiceButton state={voice} onClick={toggleVoice} aria-label="تحدث إلى FINN" />
-              <div className="flex flex-wrap justify-center gap-2">
-                {QUICK_ACTIONS.map((action) => (
-                  <NxButton
-                    key={action.label}
-                    variant="ghost"
-                    size="lg"
-                    onClick={() => runQuickAction(action)}
-                  >
-                    {action.label}
-                  </NxButton>
-                ))}
+            <CockpitHeader
+              layers={cockpit.snapshot.data.layers}
+              onToggleNav={() => setNavOpen((v) => !v)}
+            />
+
+            <div className="flex items-start gap-4">
+              <DesktopSideNavigation />
+
+              <div className="flex min-w-0 flex-1 flex-col gap-4">
+                <CockpitSectionBoundary sectionAr="تدفق البيانات">
+                  <RuntimeFlowPanel snapshot={cockpit.snapshot.data} />
+                </CockpitSectionBoundary>
+
+                <CockpitSectionBoundary sectionAr="المؤشرات">
+                  <PrimaryKpiStrip metrics={cockpit.snapshot.data.metrics} />
+                </CockpitSectionBoundary>
+
+                {/* Base track MUST be minmax(0,1fr): an implicit auto column
+                    would size to the region-card row's max-content and push
+                    the whole grid past small viewports. */}
+                <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 min-[1200px]:grid-cols-[minmax(0,1fr)_19.5rem]">
+                  <CockpitSectionBoundary sectionAr="الخريطة الاستراتيجية">
+                    <StrategicMapPanel regions={cockpit.snapshot.data.regions} />
+                  </CockpitSectionBoundary>
+
+                  <CockpitSectionBoundary sectionAr="لوحة FINN">
+                    <FinnExecutivePanel finn={cockpit.snapshot.data.finn} />
+                  </CockpitSectionBoundary>
+                </div>
+
+                <CockpitSectionBoundary sectionAr="القدرات المؤسسية">
+                  <CapabilityGrid capabilities={cockpit.snapshot.data.capabilities} />
+                </CockpitSectionBoundary>
+
+                <CockpitSectionBoundary sectionAr="سجل الأحداث">
+                  <LiveEventStream />
+                </CockpitSectionBoundary>
+
+                <ExperienceLevelBar />
               </div>
             </div>
-          </NxPanel>
-        </div>
 
-        {/* Live event ticker — grows as the cockpit is used */}
-        <NxPanel title="الأحداث" layer="analytics" density="operations">
-          <NxEventTicker events={events} />
-        </NxPanel>
+            <CockpitOverlays snapshot={cockpit.snapshot.data} />
+          </>
+        ) : null}
+
+        <p aria-live="polite" role="status" data-testid="cockpit-live-region" className="sr-only">
+          {cockpit.liveMessage}
+        </p>
       </main>
+
+      <MobileNavigationDrawer open={navOpen} onOpenChange={setNavOpen} />
     </div>
+  );
+}
+
+export interface NxCockpitPageProps {
+  /** Test injection: replace the demo repository. */
+  repository?: import("@/components/cockpit/repository").ExecutiveCockpitRepository;
+  /** Disable router URL sync when rendered outside a RouterProvider. */
+  urlSync?: boolean;
+}
+
+export function NxCockpitPage({ repository, urlSync = true }: NxCockpitPageProps = {}) {
+  return (
+    <CockpitProvider repository={repository}>
+      {urlSync ? <CockpitUrlSync /> : null}
+      <CockpitContent />
+    </CockpitProvider>
   );
 }

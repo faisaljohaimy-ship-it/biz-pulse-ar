@@ -8,7 +8,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { DOMAIN_URL } from "@/lib/domain";
 import { NxCockpitPage } from "./-nx-cockpit-page";
 
+export interface NxCockpitSearch {
+  region?: string;
+  level?: string;
+}
+
 export const Route = createFileRoute("/nx-cockpit")({
+  validateSearch: (search: Record<string, unknown>): NxCockpitSearch => ({
+    region: typeof search.region === "string" ? search.region : undefined,
+    level: typeof search.level === "string" ? search.level : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "قمرة القيادة التنفيذية · NX Cockpit — NEXIOS AI OS" },

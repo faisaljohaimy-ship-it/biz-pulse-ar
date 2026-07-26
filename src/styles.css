@@ -2941,3 +2941,22 @@ html.nx-presenting {
 html.nx-presenting .nexus-app-shell {
   background: #02060d;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   EXECUTIVE COCKPIT — live-tracking flow along the schematic map links
+   (package 02: one calm line, no particle storms). Reduced motion stops
+   the loop entirely.
+   ═══════════════════════════════════════════════════════════════════ */
+@keyframes nx-map-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+.nx-map-flow {
+  animation: nx-map-flow 2.6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-map-flow {
+    animation: none;
+  }
+}
