@@ -134,7 +134,7 @@ export interface CockpitHeaderProps {
 export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
   const { openDrawer, unreadCount } = useCockpit();
   return (
-    <header data-testid="system-header" className="flex flex-col gap-2">
+    <header data-testid="system-header" className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
@@ -156,10 +156,6 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
               AI OPERATING SYSTEM
             </span>
           </div>
-        </div>
-        {/* Rail in the middle — matches reference cockpit hero band */}
-        <div className="hidden flex-1 justify-center xl:flex">
-          <ArchitectureLayerRail layers={layers} />
         </div>
         <div className="flex items-center gap-3">
           <NxStatusIndicator status="success" label="بث مباشر" live />
@@ -186,19 +182,21 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
           <VisionClock />
         </div>
       </div>
-      {/* Mobile/tablet: rail wraps below the brand row when the center slot is hidden */}
-      <div className="xl:hidden">
-        <ArchitectureLayerRail layers={layers} />
-      </div>
-      {/* Compact page identity line — kept minimal so it doesn't compete with the rail */}
+      {/* Absolute-clarity law (Article 21): the page introduces itself in
+          one visible sentence on EVERY viewport, simulation badge included. */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <h1 className="text-sm font-semibold leading-tight text-nx-pearl/80">
+        <h1 className="text-xl font-bold leading-tight text-nx-pearl md:text-2xl">
           قمرة القيادة التنفيذية
         </h1>
-        <span className="rounded-nx-8 border border-nx-warning/40 px-2 py-0.5 text-[10px] text-nx-warning">
+        <span className="rounded-nx-8 border border-nx-warning/40 px-2 py-0.5 text-[11px] text-nx-warning">
           محاكاة مرجعية
         </span>
+        <p className="w-full text-xs text-nx-pearl/56 md:w-auto md:flex-1">
+          لوحة القيادة العليا لنظام نكسيوس — صحة النظام والمناطق والقرارات وFINN في شاشة واحدة،
+          ببيانات محاكاة مرجعية موسومة.
+        </p>
       </div>
+      <ArchitectureLayerRail layers={layers} />
     </header>
   );
 }

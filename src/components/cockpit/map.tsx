@@ -1,14 +1,15 @@
 /**
- * StrategicMapPanel — Saudi Arabia dot-mesh silhouette with region
- * nodes projected from real lat/lng, and four floating regional
- * metric cards anchored around the map (western/eastern/central/
- * southern). Mode controls (3D / layers / heat / live) sit under
- * the map on a dedicated bar to match the reference cockpit layout.
+ * StrategicMapPanel — SaudiMapVisualization + RegionMetricCards +
+ * MapModeControls. The map is an ORIGINAL stylized SVG (representative
+ * schematic, explicitly labeled as non-official geometry — package 02
+ * placeholder law), never the reference image. The four region nodes are
+ * real HTML buttons projected from REGION_MARKERS coordinates, so
+ * keyboard, focus and 44px touch targets come for free.
  *
- * The map SVG is an ORIGINAL stylized silhouette (representative
- * schematic, explicitly labeled as non-official geometry); the four
- * region nodes are real HTML buttons so keyboard, focus and 44px
- * touch targets come for free.
+ * The four modes are functional, not cosmetic: 3d tilts the scene with
+ * depth rings; layers draws the data-grid and inter-region links; heat
+ * paints readiness-derived intensity; live animates flow pulses (silenced
+ * under prefers-reduced-motion).
  */
 import * as React from "react";
 import { Expand, Flame, Layers, Radar, Rotate3d, Shrink } from "lucide-react";
@@ -46,15 +47,7 @@ const STATUS_WORD: Record<RegionSnapshot["status"], string> = {
   unknown: "غير معروفة",
 };
 
-/**
- * Stylized Saudi Arabia silhouette filled with a dot pattern (dot-mesh look).
- * The path is a rough representative outline in the 400x300 viewport, aligned
- * with lat 16–32 / lng 34–56 so region markers projected from real coords
- * fall inside the shape.
- */
-const SAUDI_PATH =
-  "M60,48 L118,32 L172,26 L214,32 L252,52 L282,86 L292,112 L272,120 L286,132 L280,158 L296,172 L328,196 L322,240 L262,262 L188,258 L118,252 L92,232 L82,198 L96,168 L74,138 L86,108 L64,78 Z";
-
+/** Stylized schematic landmass + data grid (decorative; buttons carry a11y). */
 function SchematicBackdrop({ mode, reduced }: { mode: MapMode; reduced: boolean }) {
   const nodes = REGION_MARKERS.map((m) => {
     const p = project(m.lat, m.lng);
@@ -71,74 +64,42 @@ function SchematicBackdrop({ mode, reduced }: { mode: MapMode; reduced: boolean 
       viewBox="0 0 400 300"
       aria-hidden
       className="absolute inset-0 size-full"
-      preserveAspectRatio="xMidYMid meet"
+      preserveAspectRatio="none"
     >
-      <defs>
-        <pattern
-          id="nx-map-dots"
-          width="6"
-          height="6"
-          patternUnits="userSpaceOnUse"
-        >
-          <circle cx="3" cy="3" r="1" fill="rgba(56,189,248,0.55)" />
-        </pattern>
-        <pattern
-          id="nx-map-dots-dense"
-          width="4.5"
-          height="4.5"
-          patternUnits="userSpaceOnUse"
-        >
-          <circle cx="2.25" cy="2.25" r="0.8" fill="rgba(56,189,248,0.72)" />
-        </pattern>
-        <radialGradient id="nx-map-glow" cx="50%" cy="45%" r="60%">
-          <stop offset="0%" stopColor="rgba(56,189,248,0.22)" />
-          <stop offset="60%" stopColor="rgba(30,139,255,0.06)" />
-          <stop offset="100%" stopColor="rgba(0,0,0,0)" />
-        </radialGradient>
-        <filter id="nx-map-soft" x="-10%" y="-10%" width="120%" height="120%">
-          <feGaussianBlur stdDeviation="0.6" />
-        </filter>
-      </defs>
-
-      {/* soft glow behind the peninsula */}
-      <rect x="0" y="0" width="400" height="300" fill="url(#nx-map-glow)" />
-
-      {/* silhouette outline */}
+      {/* representative landmass silhouette — schematic, not official borders */}
       <path
-        d={SAUDI_PATH}
-        fill="rgba(15,42,74,0.35)"
-        stroke="rgba(56,189,248,0.55)"
-        strokeWidth="1.1"
+        d="M70 40 L210 28 L268 60 L332 96 L348 150 L306 214 L238 262 L166 250 L118 208 L64 150 Z"
+        fill="rgba(30,139,255,0.07)"
+        stroke="rgba(71,169,255,0.30)"
+        strokeWidth="1.5"
         strokeLinejoin="round"
       />
-      {/* dot-mesh fill (clipped by same path via a second fill) */}
-      <path d={SAUDI_PATH} fill={mode === "heat" ? "url(#nx-map-dots-dense)" : "url(#nx-map-dots)"} />
-
       {mode === "layers" ? (
-        <g stroke="rgba(22,217,255,0.14)" strokeWidth="0.6">
-          {Array.from({ length: 11 }, (_, i) => (
-            <line key={`v${i}`} x1={30 + i * 34} y1={20} x2={30 + i * 34} y2={280} />
+        <g stroke="rgba(22,217,255,0.14)" strokeWidth="0.75">
+          {Array.from({ length: 9 }, (_, i) => (
+            <line key={`v${i}`} x1={40 + i * 40} y1={20} x2={40 + i * 40} y2={280} />
           ))}
-          {Array.from({ length: 8 }, (_, i) => (
-            <line key={`h${i}`} x1={20} y1={35 + i * 32} x2={380} y2={35 + i * 32} />
+          {Array.from({ length: 7 }, (_, i) => (
+            <line key={`h${i}`} x1={20} y1={40 + i * 36} x2={380} y2={40 + i * 36} />
           ))}
         </g>
       ) : null}
-
       {mode === "heat"
-        ? nodes.map((n) => (
-            <circle
-              key={`heat-${n.id}`}
-              cx={n.x}
-              cy={n.y}
-              r={42}
-              fill={REGION_ACCENT_HEX[n.id]}
-              opacity={0.22}
-              filter="url(#nx-map-soft)"
-            />
-          ))
+        ? nodes.map((n) => {
+            const region = REGION_MARKERS.find((m) => m.id === n.id);
+            if (!region) return null;
+            return (
+              <circle
+                key={`heat-${n.id}`}
+                cx={n.x}
+                cy={n.y}
+                r={46}
+                fill={REGION_ACCENT_HEX[n.id]}
+                opacity={0.22}
+              />
+            );
+          })
         : null}
-
       {(mode === "layers" || mode === "live") &&
         links.map(([a, b]) => (
           <line
@@ -147,17 +108,16 @@ function SchematicBackdrop({ mode, reduced }: { mode: MapMode; reduced: boolean 
             y1={nodes[a].y}
             x2={nodes[b].x}
             y2={nodes[b].y}
-            stroke="rgba(22,217,255,0.45)"
-            strokeWidth="1"
-            strokeDasharray="4 5"
+            stroke="rgba(22,217,255,0.35)"
+            strokeWidth="1.25"
+            strokeDasharray="6 6"
             className={mode === "live" && !reduced ? "nx-map-flow" : undefined}
           />
         ))}
-
       {mode === "3d" ? (
         <g stroke="rgba(30,139,255,0.22)" fill="none">
-          <ellipse cx={200} cy={258} rx={168} ry={22} />
-          <ellipse cx={200} cy={258} rx={118} ry={14} opacity={0.6} />
+          <ellipse cx={200} cy={252} rx={168} ry={26} />
+          <ellipse cx={200} cy={252} rx={118} ry={17} opacity={0.6} />
         </g>
       ) : null}
     </svg>
@@ -193,7 +153,7 @@ function RegionNodeButton({
       }}
       style={{ left: `${p.left}%`, top: `${p.top}%`, color: region.accentHex }}
       className={cn(
-        "absolute z-10 flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition-transform duration-[var(--nx-anim-fast)] ease-[var(--nx-ease-out)] hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan",
+        "absolute z-10 flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition-transform duration-[var(--nx-anim-fast)] ease-[var(--nx-ease-out)] hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan",
       )}
     >
       <span
@@ -203,7 +163,7 @@ function RegionNodeButton({
           selected ? "border-current opacity-90" : "border-current opacity-40",
           mode === "live" && !reduced && "nx-anim-breathe",
         )}
-        style={{ boxShadow: selected ? `0 0 22px ${region.accentHex}80` : `0 0 10px ${region.accentHex}40` }}
+        style={{ boxShadow: selected ? `0 0 18px ${region.accentHex}66` : undefined }}
       />
       <svg viewBox="0 0 24 24" aria-hidden className="size-5">
         <polygon
@@ -219,72 +179,7 @@ function RegionNodeButton({
   );
 }
 
-/** Which corner each region hovers over the map on desktop. */
-const REGION_ANCHOR: Record<RegionId, string> = {
-  western: "top-2 start-2",
-  eastern: "top-2 end-2",
-  central: "bottom-1/3 end-2",
-  southern: "bottom-2 start-2",
-};
-
-function FloatingRegionCard({
-  region,
-  selected,
-  onSelect,
-  anchor,
-}: {
-  region: RegionSnapshot;
-  selected: boolean;
-  onSelect: (id: RegionId) => void;
-  anchor: string;
-}) {
-  return (
-    <button
-      type="button"
-      data-action="map.region.select"
-      data-region-card={region.regionId}
-      aria-pressed={selected}
-      onClick={() => {
-        emitCockpitAction("map.region.select");
-        onSelect(region.regionId);
-      }}
-      style={{ color: region.accentHex }}
-      className={cn(
-        "nx-glass-e1 rounded-nx-12 absolute z-20 flex w-40 flex-col gap-1 border p-2.5 text-start backdrop-blur transition-[border-color,box-shadow] duration-[var(--nx-anim-fast)] ease-[var(--nx-ease-out)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan",
-        anchor,
-        selected
-          ? "border-current shadow-[0_0_24px_-6px_currentColor]"
-          : "border-white/10 hover:border-current/60",
-      )}
-    >
-      <span className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-semibold text-nx-pearl">{region.labelAr}</span>
-        <span aria-hidden className="size-1.5 rounded-full bg-current" />
-      </span>
-      <span className="flex items-baseline gap-1.5">
-        <span className="text-xl font-bold tabular-nums text-nx-pearl">
-          {region.readiness}
-          <span className="text-[10px] font-medium text-nx-pearl/56">٪</span>
-        </span>
-        <span className="text-[10px] tabular-nums text-nx-success" dir="ltr">
-          ▲ {region.trend}%
-        </span>
-      </span>
-      <NxSparkline
-        points={region.history}
-        width={130}
-        height={18}
-        label={`اتجاه جاهزية ${region.labelAr}`}
-        className="text-current opacity-70"
-      />
-      <span className="text-[10px] text-nx-pearl/56">
-        {STATUS_WORD[region.status]} · بلاغات: {region.openIncidents}
-      </span>
-    </button>
-  );
-}
-
-function RegionMetricCardsMobile({
+function RegionMetricCards({
   regions,
   selected,
   onSelect,
@@ -296,7 +191,7 @@ function RegionMetricCardsMobile({
   return (
     <div
       data-testid="region-metric-cards"
-      className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 md:hidden"
+      className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 md:grid md:grid-cols-4 md:overflow-visible"
     >
       {regions.map((region) => {
         const isSelected = region.regionId === selected;
@@ -312,8 +207,8 @@ function RegionMetricCardsMobile({
               onSelect(region.regionId);
             }}
             className={cn(
-              "nx-glass-e1 rounded-nx-12 flex min-h-11 min-w-40 shrink-0 snap-start flex-col gap-1 border p-3 text-start",
-              isSelected ? "border-current" : "border-white/10",
+              "nx-glass-e1 rounded-nx-12 flex min-h-11 min-w-40 shrink-0 snap-start flex-col gap-1 border p-3 text-start transition-[border-color,box-shadow] duration-[var(--nx-anim-fast)] ease-[var(--nx-ease-out)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan md:min-w-0",
+              isSelected ? "border-current" : "border-white/10 hover:border-current/50",
             )}
             style={{ color: region.accentHex }}
           >
@@ -334,11 +229,11 @@ function RegionMetricCardsMobile({
               points={region.history}
               width={110}
               height={22}
-              label={`اتجاه جاهزية ${region.labelAr}`}
+              label={`اتجاه جاهزية ${region.labelAr}: صاعد`}
               className="text-current opacity-70"
             />
             <span className="text-[11px] text-nx-pearl/56">
-              {STATUS_WORD[region.status]} · بلاغات: {region.openIncidents}
+              الحالة: {STATUS_WORD[region.status]} · بلاغات مفتوحة: {region.openIncidents}
             </span>
           </button>
         );
@@ -414,9 +309,9 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
     <div
       data-testid="saudi-map-visualization"
       data-map-mode={mapMode}
-      className="relative w-full overflow-hidden rounded-nx-12 border border-white/8 bg-[radial-gradient(circle_at_50%_20%,rgba(19,80,130,0.30),transparent_60%)]"
+      className="relative w-full overflow-hidden rounded-nx-12 border border-white/8 bg-[radial-gradient(circle_at_50%_20%,rgba(19,80,130,0.20),transparent_55%)]"
       style={{
-        aspectRatio: expanded ? undefined : "4 / 2.4",
+        aspectRatio: expanded ? undefined : "4 / 2.6",
         minHeight: expanded ? "60dvh" : undefined,
       }}
     >
@@ -425,7 +320,7 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
           "absolute inset-0 transition-transform duration-[var(--nx-anim-slow)] ease-[var(--nx-ease-out)]",
           mapMode === "3d" &&
             !reduced &&
-            "[transform:perspective(900px)_rotateX(22deg)_scale(1.03)]",
+            "[transform:perspective(900px)_rotateX(24deg)_scale(1.04)]",
         )}
       >
         <SchematicBackdrop mode={mapMode} reduced={reduced} />
@@ -440,25 +335,8 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
           />
         ))}
       </div>
-
-      {/* Floating regional cards (desktop / tablet only). Anchored to the
-          four corners of the map to mirror the reference cockpit. Mobile
-          gets a scrollable strip below the map instead. */}
-      <div className="pointer-events-none absolute inset-0 hidden md:block">
-        {regions.map((region) => (
-          <div key={region.regionId} className="pointer-events-auto contents">
-            <FloatingRegionCard
-              region={region}
-              selected={region.regionId === selectedRegion}
-              onSelect={selectRegion}
-              anchor={REGION_ANCHOR[region.regionId]}
-            />
-          </div>
-        ))}
-      </div>
-
-      <span className="absolute bottom-2 start-1/2 -translate-x-1/2 rounded-nx-8 border border-white/10 bg-nx-obsidian/70 px-2 py-0.5 text-[10px] text-nx-pearl/56">
-        مخطط تمثيلي — ليس حدودًا جغرافية رسمية
+      <span className="absolute bottom-2 start-2 rounded-nx-8 border border-white/10 bg-nx-obsidian/70 px-2 py-0.5 text-[10px] text-nx-pearl/56">
+        مخطط تمثيلي للعرض — ليس حدودًا جغرافية رسمية
       </span>
       {regionLoading ? (
         <span className="absolute top-2 end-2">
@@ -478,21 +356,16 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
         footer={<span>أداء المناطق الأربع في الوقت الفعلي · محاكاة مرجعية</span>}
       >
         <div className="flex flex-col gap-4">
-          <p className="text-xs text-nx-pearl/56">
-            المملكة العربية السعودية — أداء الإدارات الإقليمية الأربع للأمن الصناعي
-          </p>
-          {scene}
-          {/* Mode controls now live UNDER the map on their own bar, to
-              match the reference cockpit ergonomics. */}
+          {/* Controls live in the flowing content, not the fixed-height
+              panel header — five 44px buttons must WRAP on 360-430px. */}
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-[11px] text-nx-pearl/56">وضع العرض</span>
+            <p className="text-xs text-nx-pearl/56">
+              المملكة العربية السعودية — أداء الإدارات الإقليمية الأربع للأمن الصناعي
+            </p>
             {modeControls}
           </div>
-          <RegionMetricCardsMobile
-            regions={regions}
-            selected={selectedRegion}
-            onSelect={selectRegion}
-          />
+          {scene}
+          <RegionMetricCards regions={regions} selected={selectedRegion} onSelect={selectRegion} />
         </div>
       </NxPanel>
       {expanded ? (
@@ -507,11 +380,7 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
             {modeControls}
           </div>
           <div className="min-h-0 flex-1">{scene}</div>
-          <RegionMetricCardsMobile
-            regions={regions}
-            selected={selectedRegion}
-            onSelect={selectRegion}
-          />
+          <RegionMetricCards regions={regions} selected={selectedRegion} onSelect={selectRegion} />
         </div>
       ) : null}
     </>
