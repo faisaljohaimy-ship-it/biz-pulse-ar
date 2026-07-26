@@ -54,8 +54,8 @@ const LINK_LABEL_EN: Record<string, string> = {
 };
 
 function AgentsReferencePage() {
-  const { lang } = useI18n();
-  const ar = lang === "ar";
+  const { locale } = useI18n();
+  const ar = locale === "ar";
   const { data, isLoading, isError } = useQuery<FlowGraph>({
     queryKey: ["agentic-flow-graph"],
     queryFn: () => listShowcaseFlow(),
