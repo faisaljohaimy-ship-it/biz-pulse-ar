@@ -1,4 +1,4 @@
-const CACHE_NAME = "nexios-static-v4-hero-removed";
+const CACHE_NAME = "nexios-static-v5-deck-header-removed";
 const PRECACHE = ["/nexus-icon.png", "/finn-portrait.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

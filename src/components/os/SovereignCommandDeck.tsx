@@ -479,34 +479,9 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
         </div>
       </div>
 
-      {/* ── Section chrome header ── */}
-      <div className="mb-3 flex items-end justify-between px-1">
-        <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.32em] text-[#3AE8FF]/70">
-            {ar ? "لوحة القيادة السيادية" : "Sovereign Command Deck"}
-          </div>
-          <div
-            className="mt-1 flex flex-wrap items-center gap-2 text-lg font-semibold tracking-tight text-white sm:text-xl"
-            style={{ fontVariantNumeric: "tabular-nums" }}
-          >
-            {allLive
-              ? ar
-                ? "نبض المؤسسة — بيانات حية"
-                : "Enterprise Pulse — Live"
-              : ar
-                ? "نبض المؤسسة — عرض توضيحي"
-                : "Enterprise Pulse — Demo"}
-            <ExecutiveSourceBadge source={source} ar={ar} className="text-[9px]" />
-          </div>
-        </div>
-        <div className="hidden items-center gap-2 font-mono text-[9px] uppercase tracking-[0.28em] text-[#3AE8FF]/55 sm:flex">
-          <span>SECTOR</span>
-          <span className="text-[#3AE8FF]/85">INDUSTRIAL&nbsp;SECURITY</span>
-          <ChevronRight className="h-3 w-3" strokeWidth={2} />
-          <span>MODE</span>
-          <span className="text-emerald-300">AUTO&nbsp;OPS</span>
-        </div>
-      </div>
+      {/* Section chrome header — HIDDEN per owner directive (image, 2026-07-26):
+          remove descriptive text preceding «انتقل إلى مراكز القيادة». */}
+
 
       {/* ── Horizontal command band: console rail + KPI instruments ──
          Executive layout: «وحدة القيادة» console on the side, KPI
