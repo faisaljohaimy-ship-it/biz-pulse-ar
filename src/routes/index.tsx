@@ -1,22 +1,36 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import cockpitReference from "@/assets/nexios-cockpit-reference.png.asset.json";
+
+function HomeCockpitImage() {
+  return (
+    <main
+      dir="rtl"
+      className="min-h-screen w-full bg-[#040814] flex items-center justify-center overflow-x-auto"
+    >
+      <img
+        src={cockpitReference.url}
+        alt="NEXIOS AI OS — قمرة القيادة التنفيذية FINN"
+        className="w-full h-auto max-w-[1600px] block select-none"
+        draggable={false}
+      />
+    </main>
+  );
+}
 
 export const Route = createFileRoute("/")({
-  beforeLoad: () => {
-    throw redirect({ to: "/nx-cockpit" });
-  },
   head: () => ({
     meta: [
       { title: "NEXIOS AI  -  FINN" },
       {
         name: "description",
         content:
-          "NEXIOS AI OS — منصة القيادة التنفيذية بشبكة الذكاء العصبي السريعة FINN: قرارات فورية، أرقام حية، وتحكّم موحّد لكل القطاعات.",
+          "NEXIOS AI OS — قمرة القيادة التنفيذية FINN: مؤشرات حية، خريطة استراتيجية للمملكة، وقرارات فورية موحّدة لكل القطاعات.",
       },
       { property: "og:title", content: "NEXIOS AI  -  FINN" },
       {
         property: "og:description",
         content:
-          "منصة القيادة التنفيذية NEXIOS AI مع FINN — شبكة الذكاء العصبي السريعة: رؤية حية، تحليل فوري، وقرار موثوق للقادة.",
+          "قمرة القيادة التنفيذية NEXIOS AI مع FINN — رؤية حية، تحليل فوري، وقرار موثوق للقادة.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://neexios.com/" },
@@ -25,10 +39,10 @@ export const Route = createFileRoute("/")({
       {
         name: "twitter:description",
         content:
-          "منصة القيادة التنفيذية NEXIOS AI مع FINN — شبكة الذكاء العصبي السريعة: رؤية حية، تحليل فوري، وقرار موثوق للقادة.",
+          "قمرة القيادة التنفيذية NEXIOS AI مع FINN — رؤية حية، تحليل فوري، وقرار موثوق للقادة.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://neexios.com/nx-cockpit" }],
+    links: [{ rel: "canonical", href: "https://neexios.com/" }],
   }),
-  component: () => null,
+  component: HomeCockpitImage,
 });
