@@ -223,7 +223,7 @@ function IntroLanding() {
         aria-label={ar ? "لوحة القيادة السيادية الحية" : "Sovereign live command deck"}
         className="relative z-10 mx-auto flex w-full max-w-none flex-col gap-6 px-4 pb-6 pt-4 sm:gap-8 sm:px-6 sm:pt-8"
       >
-        <FinnDailySummary />
+        {/* FinnDailySummary moved into FourRegionHub left column. */}
         <SovereignCommandDeck ar={ar} />
         <DashboardPreviewRail ar={ar} />
         <FinnAnomalyStrip />
