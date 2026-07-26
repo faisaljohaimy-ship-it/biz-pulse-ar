@@ -346,8 +346,9 @@ function RegionCardRect({
           );
         })}
       </div>
-    </button>
+    </Link>
   );
+
 }
 
 function LiveClock({ ar }: { ar: boolean }) {
