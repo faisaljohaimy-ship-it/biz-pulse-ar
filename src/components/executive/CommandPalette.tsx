@@ -140,12 +140,12 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
         id: "cinema",
         title_ar: "التجربة التنفيذية",
         title_en: "Executive Experience",
-        action: onOpenCinema,
+        action: onOpenCinema ?? (() => navigate({ to: "/cinematic-demo" })),
         group: "System",
         hint: "Cinema",
       },
     ],
-    [onOpenCinema],
+    [onOpenCinema, navigate],
   );
 
   const filtered = useMemo(() => {
