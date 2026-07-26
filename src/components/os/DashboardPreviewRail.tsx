@@ -77,11 +77,8 @@ export function DashboardPreviewRail({ ar = true }: { readonly ar?: boolean }) {
     >
       <div className="mb-3 flex items-end justify-between px-1">
         <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.32em] text-[#3AE8FF]/70">
-            {ar ? "لوحات النظام" : "System Decks"}
-          </div>
-          <h2 className="mt-1 text-lg font-semibold tracking-tight text-white sm:text-xl">
-            {ar ? "ادخل إلى مراكز القيادة" : "Enter the command surfaces"}
+          <h2 className="text-lg font-semibold tracking-tight text-white sm:text-xl">
+            {ar ? "انتقل إلى مراكز القيادة" : "Enter the command surfaces"}
           </h2>
         </div>
       </div>
