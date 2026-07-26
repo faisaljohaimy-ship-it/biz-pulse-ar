@@ -7735,6 +7735,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_org_invitation: { Args: { _token: string }; Returns: string }
       aria_actions_log_retention: { Args: never; Returns: undefined }
       aria_match_documents: {
         Args: { _limit?: number; _query: string; _user_id: string }
