@@ -902,7 +902,6 @@ export function FourRegionHub() {
         </div>
       </div>
 
-
       {/* ── Bottom module tab bar ──────────────────────────────────────── */}
       <div className="relative mt-4">
         <ModuleTabBar ar={ar} />
