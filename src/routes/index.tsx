@@ -259,7 +259,26 @@ function IntroLanding() {
         <AgentRing />
       </div>
 
+      {/* ══ نهاية الصفحة — البطاقتان الهولوغراميتان مكدّستان تحت بعضهما ══
+          الأولى: شجرة القيادة الهولوغرامية (FINN فوق فريق الوكلاء فوق بوابة
+          الاعتماد البشري). الثانية: NEXIOS · Agentic Flow Canvas (شبكة
+          التنسيق الحية بنمط n8n). كلاهما بعرض كامل مسؤول. */}
+      <div className="relative z-10 mx-auto mt-6 flex w-full max-w-none flex-col gap-6 px-4 sm:mt-10 sm:gap-8 sm:px-6">
+        <AgentHierarchyGraph
+          agents={HOME_HOLO_AGENTS.map((a) => ({
+            id: a.id,
+            name_ar: a.name,
+            name_en: a.name,
+            state: a.state,
+          }))}
+          runs={[]}
+          ar={ar}
+        />
+        <AgenticFlowCanvas ar={ar} variant="full" />
+      </div>
+
       <div className="relative z-10 mx-auto w-full max-w-none px-4 py-10 sm:px-6 sm:py-16">
+
         {/* Capabilities section — HIDDEN per owner directive (2026-07-26). */}
 
 
