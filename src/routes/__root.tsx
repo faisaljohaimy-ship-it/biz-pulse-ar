@@ -352,6 +352,7 @@ function RootComponent() {
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
   const isBridge = pathname.startsWith("/executive-bridge");
+  const isCockpit = pathname.startsWith("/nx-cockpit");
   const isAccessGate = pathname.startsWith("/auth");
   // Copilot mounts only after the page is hydrated AND the main thread is
   // idle — false on the server and at first client render (no mismatch).
@@ -366,8 +367,10 @@ function RootComponent() {
     return () => clearTimeout(t);
   }, []);
   const introActive = useIntroActive();
-  const suppressOverlays = isPromo || isAccessGate || introActive;
-  const suppressMarquee = isAccessGate || introActive;
+  const suppressOverlays = isPromo || isAccessGate || introActive || isCockpit;
+  // Cockpit ships its own full header (brand · layer rail · clock · vision badge);
+  // the global marquee would double up on the top of the reference layout.
+  const suppressMarquee = isAccessGate || introActive || isCockpit;
   const suppressClock = isPromo || isBridge;
 
   return (
