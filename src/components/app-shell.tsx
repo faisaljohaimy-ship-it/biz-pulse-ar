@@ -114,6 +114,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="nexus-main min-w-0 flex-1">
           <div className="relative mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
+            {loc.pathname !== "/" && (
+              <div className="sticky top-14 z-30 flex w-full justify-start px-3 pt-3 md:top-3 md:px-4">
+                <AppBackButton fallback="/" />
+              </div>
+            )}
             {children}
           </div>
         </main>
