@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import {
   Outlet,
   Link,
@@ -22,7 +22,13 @@ import { Toaster } from "@/components/ui/sonner";
 // ONE FINN. Do not add a second copilot at the root. See
 // `src/lib/aria-core/README.md` for the migration kill-list.
 import { FinnProvider } from "@/lib/aria-core";
-import { FinnCopilot } from "@/components/aria-core/FinnCopilot";
+// Deferred off the hydration critical path: the copilot is the heaviest
+// root widget and nothing above the fold needs it at first input. It
+// lazy-loads after the first idle moment post-hydration, so every route
+// becomes interactive immediately after paint. ONE FINN law unchanged.
+const FinnCopilot = lazy(() =>
+  import("@/components/aria-core/FinnCopilot").then((m) => ({ default: m.FinnCopilot })),
+);
 import { InstallAppBar } from "@/components/aria/InstallAppBar";
 // FinnGlobalBackdrop removed — FINN renders only via FinnCopilot top-circle
 import { GlobalPageBackdrop } from "@/components/aria/GlobalPageBackdrop";
@@ -347,6 +353,18 @@ function RootComponent() {
   const isHero = pathname === "/" || pathname === "";
   const isBridge = pathname.startsWith("/executive-bridge");
   const isAccessGate = pathname.startsWith("/auth");
+  // Copilot mounts only after the page is hydrated AND the main thread is
+  // idle — false on the server and at first client render (no mismatch).
+  const [copilotReady, setCopilotReady] = useState(false);
+  useEffect(() => {
+    const ready = () => setCopilotReady(true);
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(ready, { timeout: 2000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = setTimeout(ready, 350);
+    return () => clearTimeout(t);
+  }, []);
   const introActive = useIntroActive();
   const suppressOverlays = isPromo || isAccessGate || introActive;
   const suppressMarquee = isAccessGate || introActive;
@@ -373,7 +391,11 @@ function RootComponent() {
                   <div className="relative z-10">
                     <Outlet />
                   </div>
-                  {!isAccessGate && <FinnCopilot />}
+                  {!isAccessGate && copilotReady && (
+                    <Suspense fallback={null}>
+                      <FinnCopilot />
+                    </Suspense>
+                  )}
                   <InstallAppBar />
                   {/* FINN speaks ONLY inside Conversation Mode («مخاطبة») in the
                       copilot panel, and via the homepage greeting button. No

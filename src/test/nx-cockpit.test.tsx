@@ -5,7 +5,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, act } from "@testing-library/react";
-import { NxCockpitPage } from "@/routes/nx-cockpit";
+import { NxCockpitPage } from "@/routes/-nx-cockpit-page";
 
 beforeEach(() => {
   vi.useFakeTimers();
