@@ -67,7 +67,8 @@ function CockpitUrlSync() {
   React.useEffect(() => {
     if (!urlAppliedRef.current) return;
     void navigate({
-      search: { region: cockpit.selectedRegion, level: cockpit.level },
+      to: "/nx-cockpit",
+      search: (prev: Record<string, unknown>) => ({ ...prev, region: cockpit.selectedRegion, level: cockpit.level }),
       replace: true,
     });
   }, [cockpit.selectedRegion, cockpit.level, navigate]);
