@@ -11,16 +11,15 @@
  */
 import * as React from "react";
 import { ClipboardList, FileBarChart2, MessageCircle, PlusCircle, ShieldAlert } from "lucide-react";
+import finnPortrait from "@/assets/finn-portrait.jpg";
 import { useFinn } from "@/lib/aria-core/hooks/useFinn";
 import { useFinnStore } from "@/lib/aria-core/store";
 import {
   NxButton,
-  NxFinnPresence,
   NxStatusIndicator,
   NxPanel,
   NxSkeleton,
   NxVoiceButton,
-  type NxFinnState,
 } from "@/components/nx";
 import type { FinnSnapshot } from "./repository";
 import { useCockpit } from "./use-cockpit";
@@ -82,14 +81,6 @@ export function FinnExecutivePanel({ finn }: { finn: FinnSnapshot }) {
   const { regionDetail, regionLoading, openDrawer } = cockpit;
 
   const recommendation = regionDetail?.recommendationAr ?? finn.recommendationAr;
-  const presenceState: NxFinnState =
-    storeVoice === "listening"
-      ? "listening"
-      : storeVoice === "speaking"
-        ? "speaking"
-        : finn.status === "busy"
-          ? "thinking"
-          : "idle";
 
   const openFinnChat = React.useCallback(() => {
     emitCockpitAction("finn.chat.open");
@@ -132,8 +123,25 @@ export function FinnExecutivePanel({ finn }: { finn: FinnSnapshot }) {
       }
     >
       <div className="flex flex-col items-center gap-4">
-        <NxFinnPresence state={presenceState} mode="advisory" size="lg" />
-        <p className="text-center text-xs font-semibold text-nx-pearl/56">المساعد التنفيذي</p>
+        <div className="relative w-full overflow-hidden rounded-nx-16 border border-nx-cyan/30 bg-gradient-to-b from-nx-cyan/10 to-transparent">
+          <img
+            src={finnPortrait}
+            alt="FINN — المساعد التنفيذي"
+            width={512}
+            height={768}
+            loading="lazy"
+            className="mx-auto block h-52 w-full object-cover object-top opacity-95"
+          />
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-nx-obsidian via-nx-obsidian/70 to-transparent p-3">
+            <div>
+              <p className="text-base font-bold text-nx-pearl">FINN</p>
+              <p className="text-[11px] text-nx-pearl/64">المساعد التنفيذي</p>
+            </div>
+            <span className="rounded-full border border-nx-success/40 bg-nx-success/10 px-2 py-0.5 text-[10px] font-semibold text-nx-success">
+              متصل
+            </span>
+          </div>
+        </div>
 
         <section aria-label="التوصية الرئيسية" className="w-full">
           <h4 className="mb-1 text-sm font-semibold text-nx-cyan">التوصية الرئيسية</h4>
