@@ -817,25 +817,13 @@ export function FourRegionHub() {
         </div>
       )}
 
-      {/* ── Executive grid ─────────────────────────────────────────────── */}
-      {/* Hybrid layout:
-          • Mobile / tablet (< lg): three stacked columns —
-            Right = rectangular region cards, Center = FINN + map,
-            Left = FINN daily summary + smart alerts.
-          • Desktop (lg+): cardinal cockpit — octagonal region panels on the
-            four corners around a central FINN + Kingdom map, with FINN daily
-            summary + smart alerts stacked bottom-left/right corridors. */}
-
-      {/* Mobile / tablet — stacked 3-column layout */}
-      <div className="relative grid gap-3 lg:hidden lg:grid-cols-[1fr_1.25fr_1fr]">
+      {/* Hybrid layout (mobile → desktop): three columns —
+          Right = rectangular region cards (clickable, navigate to /hcis),
+          Center = FINN persona + reference command image + Kingdom map,
+          Left  = FINN daily summary + smart alerts. */}
+      <div className="relative grid grid-cols-1 gap-3 md:grid-cols-[1fr_1.3fr_1fr]">
         {/* Right column — 4 stacked rectangular region cards */}
-        <div className="flex flex-col gap-3">
-          <RegionCardRect
-            {...regionVM.eastern}
-            active={regionId === "eastern"}
-            ar={ar}
-            onSelect={() => setRegion("eastern")}
-          />
+        <div className="order-1 flex flex-col gap-3 md:order-none">
           <RegionCardRect
             {...regionVM.central}
             active={regionId === "central"}
@@ -849,6 +837,12 @@ export function FourRegionHub() {
             onSelect={() => setRegion("western")}
           />
           <RegionCardRect
+            {...regionVM.eastern}
+            active={regionId === "eastern"}
+            ar={ar}
+            onSelect={() => setRegion("eastern")}
+          />
+          <RegionCardRect
             {...regionVM.southern}
             active={regionId === "southern"}
             ar={ar}
@@ -856,10 +850,19 @@ export function FourRegionHub() {
           />
         </div>
 
-        {/* Center column — FINN holographic persona + Kingdom map stage */}
-        <div className="relative flex flex-col gap-3">
-          <div className="min-h-[280px] flex-1">
+        {/* Center column — FINN persona, reference command image, then map */}
+        <div className="order-2 relative flex flex-col gap-3 md:order-none">
+          <div>
             <FinnPersonaCard ar={ar} />
+          </div>
+          <div className="relative overflow-hidden rounded-2xl border border-[#00D4FF]/25 bg-[#04070F]">
+            <img
+              src={commandRefAsset.url}
+              alt={ar ? "قمرة القيادة التنفيذية" : "Executive command reference"}
+              loading="lazy"
+              decoding="async"
+              className="block h-auto w-full object-cover"
+            />
           </div>
           <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
             <CentralMap
@@ -873,7 +876,7 @@ export function FourRegionHub() {
         </div>
 
         {/* Left column — FINN daily summary + smart alerts */}
-        <div className="flex flex-col gap-3">
+        <div className="order-3 flex flex-col gap-3 md:order-none">
           <div className="min-w-0">
             <FinnDailySummary />
           </div>
@@ -910,93 +913,6 @@ export function FourRegionHub() {
         </div>
       </div>
 
-      {/* Desktop cockpit — cardinal octagon panels around FINN + Kingdom map */}
-      <div className="relative hidden lg:grid lg:grid-cols-[1.05fr_1.4fr_1.05fr] lg:grid-rows-[auto_auto_auto] lg:gap-4">
-        {/* Row 1 — Central (top) region spans the middle column */}
-        <div className="lg:col-start-2 lg:row-start-1">
-          <RegionCard
-            {...regionVM.central}
-            active={regionId === "central"}
-            ar={ar}
-            onSelect={() => setRegion("central")}
-          />
-        </div>
-
-        {/* Row 2 — Western (left) · FINN + Map (center) · Eastern (right) */}
-        <div className="lg:col-start-1 lg:row-start-2">
-          <RegionCard
-            {...regionVM.western}
-            active={regionId === "western"}
-            ar={ar}
-            onSelect={() => setRegion("western")}
-          />
-        </div>
-        <div className="relative flex flex-col gap-3 lg:col-start-2 lg:row-start-2">
-          <div className="min-h-[260px]">
-            <FinnPersonaCard ar={ar} />
-          </div>
-          <div className="relative rounded-2xl border border-[#00D4FF]/15 bg-gradient-to-b from-[#04111f]/50 to-[#04070F]/70 p-3">
-            <CentralMap
-              ar={ar}
-              sectors={sectors}
-              regionId={regionId}
-              setRegion={setRegion}
-              severityByRegion={severityByRegion}
-            />
-          </div>
-        </div>
-        <div className="lg:col-start-3 lg:row-start-2">
-          <RegionCard
-            {...regionVM.eastern}
-            active={regionId === "eastern"}
-            ar={ar}
-            onSelect={() => setRegion("eastern")}
-          />
-        </div>
-
-        {/* Row 3 — FINN summary (left) · Southern region (center) · Smart alerts (right) */}
-        <div className="lg:col-start-1 lg:row-start-3">
-          <FinnDailySummary />
-        </div>
-        <div className="lg:col-start-2 lg:row-start-3">
-          <RegionCard
-            {...regionVM.southern}
-            active={regionId === "southern"}
-            ar={ar}
-            onSelect={() => setRegion("southern")}
-          />
-        </div>
-        <div className="relative rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md lg:col-start-3 lg:row-start-3">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
-              <Bell className="size-4 text-rose-300" aria-hidden />
-              {ar ? "التنبيهات الذكية" : "Smart alerts"}
-            </span>
-            <span className="rounded-full border border-rose-400/30 bg-rose-400/10 px-2 py-0.5 text-[10px] font-semibold text-rose-300">
-              {alerts.length} {ar ? "جديد" : "new"}
-            </span>
-          </div>
-          <ul className="grid gap-1.5">
-            {(alerts.length ? alerts.slice(0, 4) : []).map((a) => (
-              <li
-                key={a.id}
-                className="flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-2 py-1.5 text-[12px]"
-              >
-                <span className="flex min-w-0 items-center gap-2 truncate text-white/80">
-                  <TrendingUp className="size-3.5 shrink-0 text-[#3AE8FF]" aria-hidden />
-                  <span className="truncate">{a.title_ar}</span>
-                </span>
-                <span className="shrink-0 tabular-nums text-white/45">{a.department}</span>
-              </li>
-            ))}
-            {alerts.length === 0 && (
-              <li className="rounded-lg border border-white/5 bg-white/[0.02] px-2 py-3 text-center text-[12px] text-white/50">
-                {ar ? "لا تنبيهات نشطة" : "No active alerts"}
-              </li>
-            )}
-          </ul>
-        </div>
-      </div>
 
 
       {/* ── Bottom module tab bar ──────────────────────────────────────── */}
