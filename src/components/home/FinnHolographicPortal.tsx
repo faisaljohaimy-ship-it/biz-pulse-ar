@@ -40,7 +40,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
     >
       {/* Portrait — face-first, fully visible, centred */}
       <img
-        src={BRAND_ASSISTANT.portrait}
+        src={finnHoloPortrait.url}
         alt={ar ? BRAND_ASSISTANT.nameAr : BRAND_ASSISTANT.nameEn}
         aria-hidden
         draggable={false}
