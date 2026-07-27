@@ -46,7 +46,7 @@ export function ExecutiveShowcaseHub() {
     <section
       dir="rtl"
       aria-label={ar ? "العرض التنفيذي" : "Executive Showcase"}
-      className="mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-10 sm:px-6"
+      className="mx-auto mt-6 w-full max-w-3xl px-4 sm:mt-10 sm:px-6"
     >
       {/* Section header */}
       <div className="mb-4 flex items-center gap-3 sm:mb-6">
