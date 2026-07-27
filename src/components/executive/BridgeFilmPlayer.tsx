@@ -83,7 +83,7 @@ export function BridgeFilmPlayer({ lang, onLaunchLive, className }: BridgeFilmPl
 
   if (state === "success") {
     return (
-      <div dir={dir} lang={lang} className={shell} role="status">
+      <div dir={dir} lang={lang} className={shell}>
         <video
           ref={videoRef}
           className="aspect-video w-full bg-black"
@@ -107,6 +107,11 @@ export function BridgeFilmPlayer({ lang, onLaunchLive, className }: BridgeFilmPl
             default
           />
         </video>
+        {/* A real (text-bearing) live region announces the async result —
+            role=status on the player wrapper itself has no text to read. */}
+        <span className="sr-only" role="status">
+          {ar ? "الفيلم جاهز للتشغيل" : "Film ready to play"}
+        </span>
       </div>
     );
   }

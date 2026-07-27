@@ -384,26 +384,38 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
 
   return (
     <>
-      <NxPanel
-        data-testid="strategic-map"
-        title="الخريطة الاستراتيجية"
-        layer="twin"
-        density="operations"
-        footer={<span>أداء المناطق الأربع في الوقت الفعلي · محاكاة مرجعية</span>}
-      >
-        <div className="flex flex-col gap-4">
-          {/* Controls live in the flowing content, not the fixed-height
+      {/* While the fullscreen dialog is open, the in-flow panel is a duplicate
+          of the same map + controls. aria-modal alone doesn't inert it, so SR
+          browse-mode (VoiceOver rotor) could still reach the background copy
+          and its duplicated heading. `inert` + aria-hidden removes it from BOTH
+          tab order and the accessibility tree. `contents` avoids any layout
+          shift. */}
+      <div className="contents" inert={expanded || undefined} aria-hidden={expanded || undefined}>
+        <NxPanel
+          data-testid="strategic-map"
+          title="الخريطة الاستراتيجية"
+          layer="twin"
+          density="operations"
+          footer={<span>أداء المناطق الأربع في الوقت الفعلي · محاكاة مرجعية</span>}
+        >
+          <div className="flex flex-col gap-4">
+            {/* Controls live in the flowing content, not the fixed-height
               panel header — five 44px buttons must WRAP on 360-430px. */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-nx-pearl/56">
-              المملكة العربية السعودية — أداء الإدارات الإقليمية الأربع للأمن الصناعي
-            </p>
-            {modeControls}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-nx-pearl/56">
+                المملكة العربية السعودية — أداء الإدارات الإقليمية الأربع للأمن الصناعي
+              </p>
+              {modeControls}
+            </div>
+            {scene}
+            <RegionMetricCards
+              regions={regions}
+              selected={selectedRegion}
+              onSelect={selectRegion}
+            />
           </div>
-          {scene}
-          <RegionMetricCards regions={regions} selected={selectedRegion} onSelect={selectRegion} />
-        </div>
-      </NxPanel>
+        </NxPanel>
+      </div>
       {expanded ? (
         <div
           ref={dialogRef}

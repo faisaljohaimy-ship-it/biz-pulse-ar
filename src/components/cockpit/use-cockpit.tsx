@@ -171,7 +171,10 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
     snapshotAbortRef.current = controller;
     loadSnapshot(controller.signal);
     return () => {
-      controller.abort();
+      // Abort whatever is CURRENT in the ref — reloadSnapshot may have replaced
+      // this mount-time controller, and aborting the stale closure would leak
+      // the live request (setState after unmount). Mirrors the region cleanup.
+      snapshotAbortRef.current?.abort();
       if (staleTimerRef.current) clearTimeout(staleTimerRef.current);
     };
   }, [loadSnapshot]);
@@ -258,9 +261,16 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
     [setRegion, loadRegion],
   );
 
-  // Load the initial region detail once the snapshot is ready.
+  // Load the initial region detail EXACTLY once, when the snapshot first
+  // becomes ready. A one-shot ref stops this effect from re-firing when
+  // selectedRegion changes while regionDetail is still null — otherwise a
+  // user tap during that window would be clobbered by an un-announced reload
+  // (and lose its aria-live announcement). Every later switch is owned by
+  // selectRegion, which announces.
+  const initialRegionRef = React.useRef(false);
   React.useEffect(() => {
-    if (snapshot.state !== "ready" || regionDetail) return;
+    if (initialRegionRef.current || snapshot.state !== "ready" || regionDetail) return;
+    initialRegionRef.current = true;
     loadRegion(selectedRegion);
   }, [snapshot.state, regionDetail, selectedRegion, loadRegion]);
 

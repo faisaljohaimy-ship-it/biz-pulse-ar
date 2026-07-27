@@ -39,13 +39,26 @@ const HEYGEN_AVATAR_ID = process.env.HEYGEN_FINN_AVATAR_ID?.trim() || "finn_exec
 const HEYGEN_BASE = "https://api.heygen.com";
 
 /* SSRF guard: the render URL comes back from HeyGen's API — only ever fetch it
- * over https and from HeyGen's own hosts / their object-store CDN, never an
- * arbitrary host a tampered response could point us at. */
-const ALLOWED_DOWNLOAD_HOSTS = [
-  /(^|\.)heygen\.com$/i,
-  /(^|\.)heygen\.ai$/i,
-  /(^|\.)amazonaws\.com$/i,
-];
+ * over https and from HeyGen's own hosts / their scoped object-store buckets,
+ * never an arbitrary host a tampered response could point us at.
+ *
+ * amazonaws.com is a shared multi-tenant domain, so we DON'T allow it wholesale
+ * (any AWS account could own a bucket there). We allow only HeyGen's known
+ * bucket-name prefixes on S3; override via HEYGEN_ALLOWED_HOST_SUFFIXES (comma
+ * list) if HeyGen serves from a different CDN in your account. */
+const EXTRA_HOST_SUFFIXES = (process.env.HEYGEN_ALLOWED_HOST_SUFFIXES ?? "")
+  .split(",")
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+
+function hostAllowed(hostname) {
+  const h = hostname.toLowerCase();
+  if (/(^|\.)heygen\.com$/.test(h) || /(^|\.)heygen\.ai$/.test(h)) return true;
+  // HeyGen's own S3 buckets are named "heygen…"; a random tenant bucket is not.
+  if (/(^|\.)heygen[\w-]*\.s3[.-][\w-]+\.amazonaws\.com$/.test(h)) return true;
+  if (/(^|\.)resource[\w-]*\.heygen\.(ai|com)$/.test(h)) return true;
+  return EXTRA_HOST_SUFFIXES.some((suf) => h === suf || h.endsWith(`.${suf}`));
+}
 
 function assertHttps(rawUrl, label) {
   let u;
@@ -60,9 +73,30 @@ function assertHttps(rawUrl, label) {
 
 function assertAllowedDownload(rawUrl) {
   const u = assertHttps(rawUrl, "HeyGen download URL");
-  if (!ALLOWED_DOWNLOAD_HOSTS.some((re) => re.test(u.hostname)))
-    throw new Error(`Refusing to download from an unexpected host: ${u.hostname}`);
+  if (!hostAllowed(u.hostname))
+    throw new Error(
+      `Refusing to download from an unexpected host: ${u.hostname}. ` +
+        `If HeyGen serves your renders from a different host, set HEYGEN_ALLOWED_HOST_SUFFIXES.`,
+    );
   return u;
+}
+
+/** Fetch with NO automatic redirect following: a 3xx to a private/internal
+ * host would bypass the host allow-list (which only vetted the initial URL).
+ * Every hop is re-validated against assertAllowedDownload before we follow. */
+async function safeDownload(rawUrl, maxHops = 3) {
+  let current = assertAllowedDownload(rawUrl).href;
+  for (let hop = 0; hop <= maxHops; hop += 1) {
+    const res = await fetch(current, { redirect: "manual" });
+    if (res.status >= 300 && res.status < 400) {
+      const location = res.headers.get("location");
+      if (!location) throw new Error(`Redirect with no Location from ${current}`);
+      current = assertAllowedDownload(new URL(location, current).href).href;
+      continue;
+    }
+    return res;
+  }
+  throw new Error(`Too many redirects while downloading (> ${maxHops})`);
 }
 
 function parseArgs(argv) {
@@ -178,8 +212,7 @@ async function main() {
     process.stdout.write(`→ HeyGen · ${clip.scene} … `);
     const videoId = await heygenRequest(apiKey, `${audioBase}/${clip.file}`, clip.scene);
     const url = await heygenPoll(apiKey, videoId);
-    const download = assertAllowedDownload(url);
-    const res = await fetch(download);
+    const res = await safeDownload(url);
     if (!res.ok) throw new Error(`Download failed ${res.status} for scene ${clip.scene}`);
     const contentType = res.headers.get("content-type") ?? "";
     if (!/^(video\/|application\/octet-stream)/i.test(contentType))
