@@ -510,9 +510,10 @@ function StaticFallback({ ariaLabel }: { ariaLabel: string }) {
 }
 
 export function FinnLiveHologram(props: FinnLiveHologramProps) {
+  const state = props.state ?? "idle";
   return (
     <ClientOnly fallback={<StaticFallback ariaLabel={props.ariaLabel} />}>
-      <InnerLive {...props} />
+      <InnerLive state={state} ariaLabel={props.ariaLabel} />
     </ClientOnly>
   );
 }
