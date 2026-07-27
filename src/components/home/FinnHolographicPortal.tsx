@@ -88,12 +88,8 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         >
           FINN
         </h2>
-        <span
-          className="mt-1 text-[9px] font-semibold uppercase tracking-[0.45em] text-cyan-200/85 sm:text-[10px]"
-          style={{ textShadow: "0 1px 8px rgba(0,0,0,0.9)" }}
-        >
-          {ar ? "المساعد التنفيذي" : "Executive Assistant"}
-        </span>
+
+
       </div>
 
 
