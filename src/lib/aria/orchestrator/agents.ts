@@ -319,3 +319,61 @@ registerAgent(
     }),
   ),
 );
+
+// ---------------------------------------------------------------------------
+// Reports Agent — وكيل التقارير
+// Active specialist: always produces a fresh executive report record and
+// contributes it as evidence + a compact Arabic summary line. Linked to
+// FINN through the orchestrator; the persistent live dashboard lives at
+// /reports-agent.
+// ---------------------------------------------------------------------------
+
+const reportsAgent: ExecutiveAgent = {
+  contract: baseContract(
+    "reports",
+    "Reports Agent",
+    "وكيل التقارير",
+    [
+      "executive_summary",
+      "meeting_brief",
+      "operational_status",
+      "kpi_explanation",
+      "analysis",
+      "trend_analysis",
+      "recommendation",
+    ],
+    {
+      description:
+        "Always-on reports agent — generates periodic executive reports and exposes them as evidence for FINN.",
+      priority: "medium",
+      estimated_cost: "low",
+      estimated_latency_ms: 200,
+      execution_policy: "parallel",
+      dependencies: [],
+    },
+  ),
+  async run(ctx): Promise<AgentResult> {
+    const startedMs = Date.now();
+    const report = buildReport();
+    const metrics = report.metrics.map((m) => `${m.label}: ${m.value}`).join(" · ");
+    const line = `${report.titleAr} (${report.id}) — ${metrics}`;
+    return done(
+      "reports",
+      {
+        text_ar: `تقرير مُصدر من وكيل التقارير · ${report.titleAr} — ${report.summaryAr}`,
+        evidence: [line, `مسار العرض المستمر: /reports-agent`],
+        sources: [
+          `reports-agent:${KIND_LABEL_AR_MAP[report.kind]}`,
+          `reports-agent:${report.regionAr}`,
+        ],
+      },
+      startedMs,
+    );
+    // ctx unused: report generation is deterministic and independent of the
+    // chief brain's answer, so the agent runs in parallel from turn zero.
+    void ctx;
+  },
+};
+
+registerAgent(reportsAgent);
+
