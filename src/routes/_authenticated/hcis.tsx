@@ -311,7 +311,7 @@ function HcisPage() {
                 {(
                   [
                     ["all", ar ? "الكل" : "All"],
-                    ["SEC", "SE"],
+                    ["SEC", "SEC"],
                     ["SAF", "SAF"],
                   ] as const
                 ).map(([key, label]) => (
