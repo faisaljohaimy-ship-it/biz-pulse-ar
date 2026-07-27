@@ -635,9 +635,12 @@ export type Database = {
           content: string
           created_at: string
           document_id: string
+          embedded_at: string | null
           embedding: string | null
+          embedding_v2: string | null
           id: string
           metadata: Json
+          model_version: string | null
           org_id: string
           user_id: string
         }
@@ -646,9 +649,12 @@ export type Database = {
           content: string
           created_at?: string
           document_id: string
+          embedded_at?: string | null
           embedding?: string | null
+          embedding_v2?: string | null
           id?: string
           metadata?: Json
+          model_version?: string | null
           org_id?: string
           user_id: string
         }
@@ -657,9 +663,12 @@ export type Database = {
           content?: string
           created_at?: string
           document_id?: string
+          embedded_at?: string | null
           embedding?: string | null
+          embedding_v2?: string | null
           id?: string
           metadata?: Json
+          model_version?: string | null
           org_id?: string
           user_id?: string
         }
@@ -926,8 +935,11 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          embedded_at: string | null
           embedding: string | null
+          embedding_v2: string | null
           id: string
+          model_version: string | null
           org_id: string
           source: string
           tags: string[]
@@ -937,8 +949,11 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          embedded_at?: string | null
           embedding?: string | null
+          embedding_v2?: string | null
           id?: string
+          model_version?: string | null
           org_id?: string
           source: string
           tags?: string[]
@@ -948,8 +963,11 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          embedded_at?: string | null
           embedding?: string | null
+          embedding_v2?: string | null
           id?: string
+          model_version?: string | null
           org_id?: string
           source?: string
           tags?: string[]
@@ -1045,11 +1063,14 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          embedded_at: string | null
           embedding: string | null
+          embedding_v2: string | null
           id: string
           importance: number
           key: string
           last_used_at: string
+          model_version: string | null
           org_id: string
           scope: string
           user_id: string
@@ -1057,11 +1078,14 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          embedded_at?: string | null
           embedding?: string | null
+          embedding_v2?: string | null
           id?: string
           importance?: number
           key: string
           last_used_at?: string
+          model_version?: string | null
           org_id?: string
           scope?: string
           user_id: string
@@ -1069,11 +1093,14 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          embedded_at?: string | null
           embedding?: string | null
+          embedding_v2?: string | null
           id?: string
           importance?: number
           key?: string
           last_used_at?: string
+          model_version?: string | null
           org_id?: string
           scope?: string
           user_id?: string
@@ -4459,6 +4486,54 @@ export type Database = {
           },
         ]
       }
+      rag_query_log: {
+        Row: {
+          correlation_id: string | null
+          created_at: string
+          gate_result: string
+          hits_count: number
+          id: string
+          latency_ms: number | null
+          max_similarity: number | null
+          model_version: string | null
+          org_id: string | null
+          query_norm: string | null
+          query_text: string
+          route: string | null
+          user_id: string | null
+        }
+        Insert: {
+          correlation_id?: string | null
+          created_at?: string
+          gate_result?: string
+          hits_count?: number
+          id?: string
+          latency_ms?: number | null
+          max_similarity?: number | null
+          model_version?: string | null
+          org_id?: string | null
+          query_norm?: string | null
+          query_text: string
+          route?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          correlation_id?: string | null
+          created_at?: string
+          gate_result?: string
+          hits_count?: number
+          id?: string
+          latency_ms?: number | null
+          max_similarity?: number | null
+          model_version?: string | null
+          org_id?: string | null
+          query_norm?: string | null
+          query_text?: string
+          route?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       rate_limit_buckets: {
         Row: {
           bucket_key: string
@@ -5340,6 +5415,7 @@ export type Database = {
           description_ar: string | null
           description_en: string | null
           doc_code: string
+          embedded_at: string | null
           embedding: string | null
           embedding_model: string | null
           escalation_level: string | null
@@ -5347,6 +5423,7 @@ export type Database = {
           keywords_ar: string[]
           keywords_en: string[]
           metadata: Json
+          model_version: string | null
           org_id: string | null
           owner: string | null
           priority: string | null
@@ -5383,6 +5460,7 @@ export type Database = {
           description_ar?: string | null
           description_en?: string | null
           doc_code: string
+          embedded_at?: string | null
           embedding?: string | null
           embedding_model?: string | null
           escalation_level?: string | null
@@ -5390,6 +5468,7 @@ export type Database = {
           keywords_ar?: string[]
           keywords_en?: string[]
           metadata?: Json
+          model_version?: string | null
           org_id?: string | null
           owner?: string | null
           priority?: string | null
@@ -5426,6 +5505,7 @@ export type Database = {
           description_ar?: string | null
           description_en?: string | null
           doc_code?: string
+          embedded_at?: string | null
           embedding?: string | null
           embedding_model?: string | null
           escalation_level?: string | null
@@ -5433,6 +5513,7 @@ export type Database = {
           keywords_ar?: string[]
           keywords_en?: string[]
           metadata?: Json
+          model_version?: string | null
           org_id?: string | null
           owner?: string | null
           priority?: string | null
@@ -7819,6 +7900,7 @@ export type Database = {
         }
         Returns: number
       }
+      normalize_ar: { Args: { _input: string }; Returns: string }
       purge_aria_outbound_retention: {
         Args: never
         Returns: {
@@ -7855,6 +7937,9 @@ export type Database = {
         Args: { _secret: string }
         Returns: undefined
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      unaccent: { Args: { "": string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "manager" | "member"
