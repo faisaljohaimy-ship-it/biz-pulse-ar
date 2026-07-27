@@ -35,19 +35,8 @@ const CARDS: Card[] = [
     descAr: "عرض تنفيذي ثنائي اللغة بمشاهد سينمائية وسرد صوتي عند الطلب من FINN.",
     descEn: "Bilingual, board-room-grade showcase with on-demand FINN narration.",
   },
-  {
-    to: "/executive-showcase",
-    icon: Presentation,
-    accent: "#34D399",
-    glow: "rgba(52,211,153,0.32)",
-    kickerAr: "جولة كاملة · كل الوحدات",
-    kickerEn: "Full tour · every module",
-    titleAr: "العرض التنفيذي",
-    titleEn: "Executive Showcase",
-    descAr: "جولة سينمائية على مكوّنات النظام كاملةً بتدفّق واحد متصل.",
-    descEn: "A cinematic sweep across the entire platform in one continuous flow.",
-  },
 ];
+
 
 export function ExecutiveShowcaseHub() {
   const { locale } = useI18n();
