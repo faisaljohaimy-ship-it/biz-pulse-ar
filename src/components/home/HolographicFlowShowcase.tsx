@@ -194,8 +194,9 @@ export function HolographicFlowShowcase({
           }
         >
           <div className="min-h-[360px] p-3 sm:min-h-[420px] sm:p-5">
-            <AgentHierarchyGraph agents={agents as never} />
+            <AgentHierarchyGraph agents={agents as never} runs={[]} ar={ar} />
           </div>
+
         </OrbitalFrame>
 
         {/* Agentic Flow Canvas */}
