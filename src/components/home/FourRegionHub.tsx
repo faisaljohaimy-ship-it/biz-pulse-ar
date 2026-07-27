@@ -778,6 +778,11 @@ export function FourRegionHub() {
           </button>
           <button
             type="button"
+            onClick={() => {
+              if (typeof document !== "undefined") {
+                document.getElementById("smart-alerts")?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }
+            }}
             className="relative grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] hover:text-white"
             aria-label={ar ? "التنبيهات" : "Alerts"}
           >
@@ -790,11 +795,15 @@ export function FourRegionHub() {
           </button>
           <button
             type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") window.location.href = "/settings";
+            }}
             className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] hover:text-white"
             aria-label={ar ? "الإعدادات" : "Settings"}
           >
             <Settings className="size-4" aria-hidden />
           </button>
+
           <div className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] py-1 ps-2 pe-3 md:flex">
             <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#00D4FF] to-[#3AE8FF] text-[11px] font-black text-[#04070F]">
               MD
@@ -937,7 +946,7 @@ export function FourRegionHub() {
           <div className="min-w-0">
             <FinnDailySummary />
           </div>
-          <div className="relative flex-1 rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
+          <div id="smart-alerts" className="relative flex-1 rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
             <div className="mb-2 flex items-center justify-between">
               <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
                 <Bell className="size-4 text-rose-300" aria-hidden />
