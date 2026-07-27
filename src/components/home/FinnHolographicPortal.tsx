@@ -42,111 +42,99 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
     <section
       aria-label={ar ? "بوابة FINN التنفيذية" : "FINN executive portal"}
       className="finn-portal relative flex h-full min-h-[420px] flex-col items-center overflow-hidden rounded-3xl border border-cyan-300/25 bg-[rgba(3,15,27,0.84)] p-5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:min-h-[520px] sm:p-8"
-      style={{
-        background:
-          "radial-gradient(120% 80% at 50% 0%, rgba(34,211,238,0.10), rgba(3,11,24,0.86) 55%, rgba(2,7,15,0.94) 100%)",
-      }}
     >
+      {/* Full-bleed FINN portrait as card background */}
+      <img
+        src={BRAND_ASSISTANT.portrait}
+        alt={ar ? BRAND_ASSISTANT.nameAr : BRAND_ASSISTANT.nameEn}
+        aria-hidden
+        draggable={false}
+        loading="eager"
+        decoding="async"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-top"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(to bottom, black 0%, black 78%, rgba(0,0,0,0.55) 92%, transparent 100%)",
+          maskImage:
+            "linear-gradient(to bottom, black 0%, black 78%, rgba(0,0,0,0.55) 92%, transparent 100%)",
+        }}
+      />
+      {/* Holographic tint + vignette over portrait */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 50% 0%, rgba(34,211,238,0.28), rgba(3,11,24,0.55) 55%, rgba(2,7,15,0.9) 100%)",
+        }}
+      />
+      {/* Digital grid overlay across the whole card */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0 opacity-25"
+        style={{
+          background:
+            "repeating-linear-gradient(0deg, rgba(103,232,249,0.10) 0 1px, transparent 1px 16px), repeating-linear-gradient(90deg, rgba(103,232,249,0.08) 0 1px, transparent 1px 16px)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 55%, transparent 90%)",
+          maskImage: "radial-gradient(ellipse at center, black 55%, transparent 90%)",
+        }}
+      />
+      {/* Full-card scanline */}
+      <span aria-hidden className="finn-scan pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <span
+          className="absolute inset-x-0 h-[6%] opacity-60"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent, rgba(103,232,249,0.55), transparent)",
+          }}
+        />
+      </span>
+
       {/* Header */}
       <header className="relative z-10 flex w-full flex-col items-center">
-        <div className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-300/80">
+        <div className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-300/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
           NEXIOS AI · Executive Intelligence OS
         </div>
-        <h2 className="mt-1 text-3xl font-black tracking-wider text-white sm:text-4xl">FINN</h2>
-        <p className="mt-1 text-center text-xs text-white/70 sm:text-sm">
+        <h2 className="mt-1 text-3xl font-black tracking-wider text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] sm:text-4xl">
+          FINN
+        </h2>
+        <p className="mt-1 text-center text-xs text-white/85 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] sm:text-sm">
           {ar
             ? "المساعد التنفيذي الذكي — الأمن الصناعي"
             : "Executive AI Assistant — Industrial Security"}
         </p>
-        <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-3 py-1 text-[11px] text-white/85">
+        <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/50 px-3 py-1 text-[11px] text-white backdrop-blur-md">
           <span className={`finn-live h-2 w-2 rounded-full ${label.dot}`} aria-hidden />
           <span>{ar ? label.ar : label.en}</span>
         </div>
       </header>
 
-      {/* Holographic stage */}
-      <div className="relative z-10 mt-4 flex w-full flex-1 items-end justify-center sm:mt-6">
-        <div className="relative flex aspect-square w-full max-w-[430px] items-end justify-center">
-          {/* Wide halo */}
+      {/* Decorative holographic rings, floating over the portrait */}
+      <div className="relative z-10 mt-4 flex w-full flex-1 items-center justify-center sm:mt-6">
+        <div className="relative aspect-square w-full max-w-[430px]">
           <span
             aria-hidden
             className="finn-halo pointer-events-none absolute inset-0 rounded-full"
             style={{
               background:
-                "radial-gradient(closest-side, rgba(34,211,238,0.45), rgba(103,232,249,0.15) 55%, rgba(8,145,178,0) 78%)",
+                "radial-gradient(closest-side, rgba(34,211,238,0.35), rgba(103,232,249,0.10) 55%, rgba(8,145,178,0) 78%)",
               filter: "blur(2px)",
             }}
           />
-          {/* Outer rotating ring */}
           <span
             aria-hidden
-            className="finn-ring-outer pointer-events-none absolute inset-[6%] rounded-full border border-cyan-300/35"
+            className="finn-ring-outer pointer-events-none absolute inset-[6%] rounded-full border border-cyan-300/40"
             style={{
-              boxShadow: "0 0 40px rgba(34,211,238,0.18), inset 0 0 30px rgba(34,211,238,0.12)",
+              boxShadow: "0 0 40px rgba(34,211,238,0.22), inset 0 0 30px rgba(34,211,238,0.14)",
             }}
           />
-          {/* Inner dashed ring */}
           <span
             aria-hidden
-            className="finn-ring-inner pointer-events-none absolute inset-[16%] rounded-full border border-dashed border-cyan-200/25"
+            className="finn-ring-inner pointer-events-none absolute inset-[16%] rounded-full border border-dashed border-cyan-200/30"
           />
-          {/* Digital grid */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-[12%] rounded-full opacity-30"
-            style={{
-              background:
-                "repeating-linear-gradient(0deg, rgba(103,232,249,0.10) 0 1px, transparent 1px 14px), repeating-linear-gradient(90deg, rgba(103,232,249,0.08) 0 1px, transparent 1px 14px)",
-              WebkitMask: "radial-gradient(circle, black 55%, transparent 78%)",
-              mask: "radial-gradient(circle, black 55%, transparent 78%)",
-            }}
-          />
-          {/* Scanline */}
-          <span
-            aria-hidden
-            className="finn-scan pointer-events-none absolute inset-[10%] rounded-full overflow-hidden"
-          >
-            <span
-              className="absolute inset-x-0 h-[8%] opacity-70"
-              style={{
-                background:
-                  "linear-gradient(to bottom, transparent, rgba(103,232,249,0.55), transparent)",
-              }}
-            />
-          </span>
-          {/* Pulse */}
-          <span
-            aria-hidden
-            className="finn-pulse pointer-events-none absolute inset-[4%] rounded-full border border-cyan-300/40"
-          />
-
-          {/* Portrait — object-contain so helmet/face are never cropped */}
-          <img
-            src={BRAND_ASSISTANT.portrait}
-            width={860}
-            height={1290}
-            draggable={false}
-            alt={ar ? BRAND_ASSISTANT.nameAr : BRAND_ASSISTANT.nameEn}
-            loading="eager"
-            decoding="async"
-            className="relative z-10 h-full w-auto max-w-[86%] object-contain object-bottom drop-shadow-[0_18px_40px_rgba(34,211,238,0.35)]"
-            style={{
-              WebkitMaskImage:
-                "linear-gradient(to bottom, black 0%, black 82%, rgba(0,0,0,0.6) 94%, transparent 100%)",
-              maskImage:
-                "linear-gradient(to bottom, black 0%, black 82%, rgba(0,0,0,0.6) 94%, transparent 100%)",
-            }}
-          />
-
-          {/* Base reflection */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-x-[10%] bottom-[2%] h-[6%] rounded-[50%]"
-            style={{
-              background:
-                "radial-gradient(50% 100% at 50% 50%, rgba(34,211,238,0.55), transparent 70%)",
-              filter: "blur(6px)",
-            }}
+            className="finn-pulse pointer-events-none absolute inset-[4%] rounded-full border border-cyan-300/45"
           />
         </div>
       </div>
