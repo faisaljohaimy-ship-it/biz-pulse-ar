@@ -12,7 +12,7 @@
 import { Link } from "@tanstack/react-router";
 import { Mic, ArrowLeft, ArrowRight } from "lucide-react";
 import { BRAND_ASSISTANT } from "@/lib/domain";
-import finnHoloPortrait from "@/assets/finn-holo-portrait-v2.png.asset.json";
+import { FinnLiveHologram } from "./FinnLiveHologram";
 
 export type FinnVisualState = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
@@ -39,14 +39,14 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       className="finn-portal relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl border border-cyan-300/25 bg-[rgba(3,15,27,0.9)] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:min-h-[620px]"
     >
       {/* Portrait — face-first, fully visible, centred */}
-      <img
-        src={finnHoloPortrait.url}
-        alt={ar ? BRAND_ASSISTANT.nameAr : BRAND_ASSISTANT.nameEn}
-        aria-hidden
-        draggable={false}
-        loading="eager"
-        decoding="async"
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-bottom"
+      {/* Live holographic FINN — WebGL scene, not a static image */}
+      <FinnLiveHologram
+        state={state === "offline" ? "offline" : state}
+        ariaLabel={
+          ar
+            ? `${BRAND_ASSISTANT.nameAr}، المساعد التنفيذي الذكي للأمن الصناعي، ${label.ar}`
+            : `${BRAND_ASSISTANT.nameEn}, executive industrial security AI assistant, ${label.en}`
+        }
       />
       {/* Very light top vignette — keep headroom clear for the wordmark */}
       <span
