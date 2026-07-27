@@ -19,6 +19,9 @@ export default tseslint.config(
       // Vendored content packs — checksum-pinned assets (CHECKSUMS.sha256);
       // reformatting would break integrity verification.
       "packs",
+      // Remotion film sub-project — its own Bun package.json + deps, rendered
+      // ephemerally (never in the app bundle or the app's node_modules).
+      "remotion",
       "src/routes/mcp.ts",
       "src/routes/\\[.mcp\\]/**",
       "src/routes/\\[.well-known\\]/**",

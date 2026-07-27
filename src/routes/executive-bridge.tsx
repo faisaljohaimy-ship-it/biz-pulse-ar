@@ -7,6 +7,7 @@ import { z } from "zod";
 import { FinnAudioBus } from "@/lib/aria/audio-bus";
 import { SimulationRibbon } from "@/components/SimulationRibbon";
 import { ExecutiveSourceBadge } from "@/components/evidence/ExecutiveSourceBadge";
+import { BridgeFilmPlayer } from "@/components/executive/BridgeFilmPlayer";
 import { REGIONS, REGION_ACCENT_HEX } from "@/lib/regions";
 import { regionSim } from "@/lib/sec/region-sim-data";
 import { useExecutiveKpiSource } from "@/lib/sec/use-executive-kpi-source";
@@ -1094,6 +1095,13 @@ function ExecutiveBridgePage() {
 
       {/* Bottom controls */}
       <div className="absolute inset-x-0 bottom-0 z-40 flex flex-col items-center gap-2 pb-3 sm:gap-3 sm:pb-6">
+        {/* Rendered FINN film (when produced); else a graceful empty state
+            whose CTA launches the live narrated scenes. No browser TTS. */}
+        {!hasStarted && !completed && (
+          <div className="pointer-events-auto w-full max-w-md px-4">
+            <BridgeFilmPlayer lang={primary} onLaunchLive={beginNarration} />
+          </div>
+        )}
         {!hasStarted && !completed && (
           <button
             type="button"
