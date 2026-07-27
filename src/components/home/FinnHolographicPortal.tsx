@@ -159,16 +159,20 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
 
 
 
-      {/* Portrait — face-first, fully visible, centred */}
-      {/* Live holographic FINN — WebGL scene, not a static image */}
-      <FinnLiveHologram
-        state={state === "offline" ? "offline" : state}
-        ariaLabel={
+      {/* Portrait — dark, sharp, fully visible FINN */}
+      <img
+        src={finnDarkPortrait.url}
+        alt={
           ar
             ? `${BRAND_ASSISTANT.nameAr}، المساعد التنفيذي الذكي للأمن الصناعي، ${label.ar}`
             : `${BRAND_ASSISTANT.nameEn}, executive industrial security AI assistant, ${label.en}`
         }
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] mx-auto h-[92%] w-auto max-w-none object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.9)]"
       />
+
 
       {/* Very light top vignette — keep headroom clear for the wordmark */}
       <span
