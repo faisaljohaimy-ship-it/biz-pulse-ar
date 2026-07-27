@@ -34,6 +34,7 @@ export type AgentId =
   | "presence"
   | "simulation"
   | "reports"
+  | "knowledge"
   | (string & { readonly __agentId?: unique symbol });
 
 export type ExecutionPolicy =

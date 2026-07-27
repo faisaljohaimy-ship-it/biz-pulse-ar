@@ -377,3 +377,79 @@ const reportsAgent: ExecutiveAgent = {
 
 registerAgent(reportsAgent);
 
+// ---------------------------------------------------------------------------
+// Knowledge Agent — وكيل المعرفة (RAG retrieval specialist)
+// Runs Arabic-aware hybrid retrieval (Dense + FTS + Trigram, RRF-fused)
+// through the Evidence Gate and contributes cited passages as evidence.
+// Never fabricates: on gate rejection returns `unavailable: true`.
+// Governed by FINN_MASTER_CONSTITUTION Articles 30–31.
+// ---------------------------------------------------------------------------
+
+const knowledgeAgent: ExecutiveAgent = {
+  contract: baseContract(
+    "knowledge",
+    "Knowledge Agent",
+    "وكيل المعرفة",
+    [
+      "executive_summary",
+      "operational_status",
+      "kpi_explanation",
+      "analysis",
+      "recommendation",
+      "meeting_brief",
+    ],
+    {
+      description:
+        "Arabic-first RAG retrieval specialist — hybrid search (dense+FTS+trigram RRF) with Evidence Gate (min sim 0.35, ≥2 citations).",
+      priority: "high",
+      estimated_cost: "medium",
+      estimated_latency_ms: 900,
+      execution_policy: "parallel",
+      dependencies: [],
+    },
+  ),
+  async run(ctx): Promise<AgentResult> {
+    const startedMs = Date.now();
+    const question = (ctx.request.question ?? "").trim();
+    if (!question) {
+      return unavailable("knowledge", "empty_question", startedMs);
+    }
+    try {
+      const { retrieveWithEvidenceGate } = await import("@/lib/aria/rag/retrieve.server");
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const outcome = await retrieveWithEvidenceGate(supabaseAdmin as never, {
+        query: question,
+        orgId: ctx.request.orgId ?? null,
+        limit: 8,
+        route: "orchestrator:knowledge",
+        correlationId: ctx.mission_id,
+      });
+      if (outcome.gate_result !== "passed" || outcome.hits.length === 0) {
+        return unavailable("knowledge", `gate:${outcome.gate_result}`, startedMs);
+      }
+      const evidence = outcome.hits.slice(0, 6).map((h) => {
+        const title = h.title_ar || h.title_en || h.doc_code || h.id;
+        const summary = h.summary_ar || h.summary_en || "";
+        const score = (h.similarity * 100).toFixed(0);
+        return `${title} — ${summary} [مرجع ${h.doc_code ?? h.id} · تطابق ${score}%]`;
+      });
+      const sources = outcome.hits.slice(0, 6).map((h) => `kb:${h.doc_code ?? h.id}`);
+      const textAr = `استرجع وكيل المعرفة ${outcome.hits.length} مقاطع مرجعية (أعلى تطابق ${(outcome.max_similarity * 100).toFixed(0)}%).`;
+      return done(
+        "knowledge",
+        { text_ar: textAr, evidence, sources },
+        startedMs,
+      );
+    } catch (err) {
+      return unavailable(
+        "knowledge",
+        err instanceof Error ? err.message : "retrieval_error",
+        startedMs,
+      );
+    }
+  },
+};
+
+registerAgent(knowledgeAgent);
+
+
