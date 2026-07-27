@@ -33,6 +33,7 @@ export type AgentId =
   | "context"
   | "presence"
   | "simulation"
+  | "reports"
   | (string & { readonly __agentId?: unique symbol });
 
 export type ExecutionPolicy =
