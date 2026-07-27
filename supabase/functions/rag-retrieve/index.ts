@@ -1,0 +1,125 @@
+/**
+ * rag-retrieve — Edge Function (Deno). Hybrid retrieval, citations only.
+ *
+ * Flow: validate body (org-ish keys → 400) → embed the query (Gemini
+ * gemini-embedding-001, RETRIEVAL_QUERY, 1536 + L2; failure degrades to the
+ * two lexical paths) → rpc rag_hybrid_search under the CALLER's JWT (RLS
+ * derives the org — this function holds no service_role at all) → return
+ * chunks + citations + insufficient_evidence. NO text generation, NO streaming.
+ *
+ * Secrets: GEMINI_API_KEY from the function's environment only — never in code.
+ * SUPABASE_URL / SUPABASE_ANON_KEY are injected by the platform.
+ */
+import { createClient } from "jsr:@supabase/supabase-js@2";
+import {
+  hasSufficientEvidence,
+  parseRetrieveRequest,
+  truncateAndNormalize,
+} from "../_shared/rag-core.ts";
+
+const EMBED_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent";
+
+function json(payload: unknown, status = 200): Response {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
+  });
+}
+
+async function embedQuery(query: string): Promise<number[]> {
+  const apiKey = Deno.env.get("GEMINI_API_KEY")?.trim();
+  if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
+  const res = await fetch(EMBED_URL, {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
+    body: JSON.stringify({
+      content: { parts: [{ text: query }] },
+      taskType: "RETRIEVAL_QUERY",
+      outputDimensionality: 1536,
+    }),
+  });
+  if (!res.ok) throw new Error(`embed ${res.status}`);
+  const data = await res.json();
+  const values: number[] | undefined = data?.embedding?.values;
+  if (!Array.isArray(values)) throw new Error("embed response missing values");
+  // Sub-3072 MRL outputs are NOT pre-normalized — L2 is mandatory (runbook).
+  return truncateAndNormalize(values);
+}
+
+Deno.serve(async (req) => {
+  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+  const auth = req.headers.get("Authorization") ?? "";
+  if (!auth.startsWith("Bearer ")) {
+    return json({ error: "authentication_required", message_ar: "المصادقة مطلوبة." }, 401);
+  }
+
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: "invalid_body", message_ar: "جسم JSON صالح مطلوب." }, 400);
+  }
+  const parsed = parseRetrieveRequest(body);
+  if (!parsed.ok) return json({ error: parsed.code, message_ar: parsed.messageAr }, parsed.status);
+
+  let embedding: number[] | null = null;
+  let degraded: string | null = null;
+  try {
+    embedding = await embedQuery(parsed.value.query);
+  } catch (err) {
+    console.error("[rag-retrieve] query embedding unavailable:", err);
+    degraded = "no_vector_path"; // FTS + trgm still serve — never a dead end.
+  }
+
+  // The caller's JWT travels to Postgres; RLS decides what rows exist.
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    { global: { headers: { Authorization: auth } } },
+  );
+  const { data, error } = await supabase.rpc("rag_hybrid_search", {
+    _query: parsed.value.query,
+    _query_embedding: embedding ? JSON.stringify(embedding) : null,
+    _match_count: parsed.value.match_count,
+  });
+  if (error) {
+    console.error("[rag-retrieve] rpc failed:", error);
+    return json({ error: "retrieval_failed", message_ar: "تعذّر الاسترجاع — أعد المحاولة." }, 500);
+  }
+
+  const rows = (data ?? []) as Array<{
+    chunk_id: string;
+    document_id: string;
+    doc_code: string | null;
+    doc_title: string;
+    doc_source: string;
+    chunk_index: number;
+    content: string;
+    is_simulation: boolean;
+    rrf_score: number;
+    matched_paths: number;
+    vec_rank: number | null;
+    fts_rank: number | null;
+    trgm_rank: number | null;
+  }>;
+
+  return json({
+    results: rows.map((r) => ({
+      chunk_id: r.chunk_id,
+      content: r.content,
+      score: r.rrf_score,
+      matched_paths: r.matched_paths,
+      is_simulation: r.is_simulation,
+      citation: {
+        document_id: r.document_id,
+        code: r.doc_code,
+        title: r.doc_title,
+        source: r.doc_source,
+        chunk_index: r.chunk_index,
+      },
+    })),
+    insufficient_evidence: !hasSufficientEvidence(rows),
+    degraded,
+  });
+});

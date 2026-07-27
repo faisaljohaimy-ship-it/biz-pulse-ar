@@ -113,3 +113,52 @@ DROP EXTENSION IF EXISTS pg_trgm;   -- safe once rag_chunks_trgm_gin is gone; er
 
 > `DROP EXTENSION` without `CASCADE` refuses when another object still depends on
 > it — that refusal is the guardrail; do not add `CASCADE` to force it.
+
+---
+
+# Session 2 — hybrid search + Edge Functions (STAGED · not deployed)
+
+## 5) `20260728110000_rag_hybrid_search.sql` (apply AFTER files 1–4)
+```sql
+SELECT p.prosecdef AS is_definer,          -- expect f (SECURITY INVOKER)
+       pg_get_function_identity_arguments(p.oid) AS args
+FROM pg_proc p WHERE p.proname = 'rag_hybrid_search';
+```
+**Expect:** one row, `is_definer = f`, and `args` contains NO org parameter —
+`(_query text, _query_embedding vector, _match_count integer)` only. That is the
+isolation proof at the DB layer: there is nothing org-shaped to pass.
+
+**Rollback 5:**
+```sql
+DROP FUNCTION IF EXISTS public.rag_hybrid_search(text, extensions.vector, int);
+DROP INDEX IF EXISTS public.rag_documents_org_code_uq;
+DROP INDEX IF EXISTS public.rag_documents_org_source_title_uq;
+```
+
+## Edge Functions (deploy ONLY after approval)
+```bash
+# secrets first (values from your vault — never from the repo):
+supabase secrets set GEMINI_API_KEY=*** --project-ref khytdwgyrnztqabhfgbb
+# deploy:
+supabase functions deploy rag-retrieve --project-ref khytdwgyrnztqabhfgbb
+supabase functions deploy rag-ingest   --project-ref khytdwgyrnztqabhfgbb
+```
+Neither function ever uses `service_role` — both forward the CALLER's JWT so
+RLS enforces org isolation (read: viewer، write: admin — مطابق aria_knowledge).
+
+**Verification (positive):**
+```bash
+curl -sX POST "https://khytdwgyrnztqabhfgbb.supabase.co/functions/v1/rag-retrieve" \
+  -H "Authorization: Bearer <USER_JWT>" -H "Content-Type: application/json" \
+  -d '{"query":"ما نطاق SEC-18؟"}'
+# expect: {"results":[…],"insufficient_evidence":…,"degraded":null}
+```
+**Verification (NEGATIVE — org from body must be refused):**
+```bash
+curl -sX POST ".../functions/v1/rag-retrieve" \
+  -H "Authorization: Bearer <USER_JWT>" -H "Content-Type: application/json" \
+  -d '{"query":"x","org_id":"00000000-0000-0000-0000-00000000bbbb"}'
+# expect: HTTP 400 {"error":"org_id_forbidden", …}
+```
+**Rollback (edge):** `supabase functions delete rag-retrieve --project-ref …`
+(وكذلك `rag-ingest`)؛ حذف الدالة لا يمسّ البيانات.
