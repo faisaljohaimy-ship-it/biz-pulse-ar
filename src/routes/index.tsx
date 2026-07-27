@@ -21,7 +21,7 @@ import { AgenticFlowCanvas } from "@/components/home/AgenticFlowCanvas";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
-import { TopUtilityBar } from "@/components/nav/TopUtilityBar";
+
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
