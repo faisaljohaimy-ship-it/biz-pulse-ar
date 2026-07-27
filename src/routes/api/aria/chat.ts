@@ -161,10 +161,12 @@ async function handlePost(request: Request): Promise<Response> {
 
   // Article 2 (hard) — prepend the LIVE server-derived Makkah-time block as
   // FINN's sole time source at the start of the instructions every turn.
+  const datetimeSpoken = history.some((m) => m.role === "assistant");
   const finnRuntimeBlock = buildFinnRuntimeBlock({
     userRole: "employee",
     region: REGIONS.find((r) => r.id === DEFAULT_REGION_ID)?.shortAr ?? "الغربية",
     isSimulation: true,
+    datetimeSpoken,
   });
   const instructions = `${finnRuntimeBlock}\n\n${MAKKAH_TIME_DIRECTIVE}\n\n${FINN_INSTRUCTIONS}\n\n${FINN_LIVE_INTELLIGENCE_DOCTRINE}`;
 
