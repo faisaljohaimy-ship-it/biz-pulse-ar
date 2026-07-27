@@ -281,6 +281,64 @@ the `nexios-aria-response-auditor` agent.
 
 ---
 
+## الباب التاسع — منظومة الوكلاء
+## Chapter IX — The Agent System
+
+> هذا الباب مضاف ضمن المواد المرنة ولا يمسّ أيًّا من المواد السابقة
+> (١–٢٢). المواد الصلبة — الهوية (١)، اللغة (٣)، مصادر الحقيقة (٤)،
+> حرمة الأصول (٥)، الأسرار (٧)، البوابة البشرية (٨)، الصوت الحصري (١٠) —
+> تبقى فوق أي بند هنا عند أي تعارض.
+
+### المادة ٢٣ — منظومة الوكلاء الثلاثة عشر
+تُشغّل نكسيوس منظومة من ثلاثة عشر وكيلًا متخصصًا بأسمائهم في السجل الرسمي
+(`packs/nexios-modern-agents-tools-pack/registry/agents.registry.json`):
+قائد امتثال HCIS، مدير المعرفة وRAG، منسّق الموافقات البشرية، مدقّق
+ISO 27001 (تدقيق أمن الصفوف/RLS)، وكيل تتبّع الرصد، مدير إحاطات مجلس
+الإدارة، مدير المخاطر المؤسسية، مدير ضمان الحوكمة، قائد جودة إمكانية
+الوصول (العربية/RTL)، مدير ضمان الصحة والسلامة (تصاريح العمل PTW)، قائد
+معمارية التكامل، مدير قيادة العمليات، وقائد حوكمة السجلات (التقارير
+التشغيلية والامتثالية).
+حدودهم: **قراءة فقط**. لا يكتب أي وكيل ولا ينفّذ إجراءً؛ كل ترقية تمرّ
+بالمادة ٢٤ وبالبوابة البشرية (المادة ٨). أدواتهم `descriptor_only` تبقى
+معطّلة كموصّلات حيّة.
+**التمييز الإلزامي محاكاة/حقيقي:** كل مخرج يحمل وسمًا صريحًا — «عرض
+توضيحي · محاكاة مرجعية» أو «حقيقي · قراءة». يُمنع منعًا باتًّا تقديم
+المحاكاة كتنفيذ فعلي أو خلط الوسمين في شاشة واحدة. لا يُفعَّل أي وكيل على
+بيانات حيّة إلا بعد اجتياز فحوص العزل (RLS) اجتيازًا فعليًا — التخطّي ليس
+نجاحًا.
+**Article 23 — The Thirteen-Agent System.** NEXIOS runs a fleet of
+thirteen specialist agents, named in the official registry: HCIS
+compliance lead, RAG/knowledge director, human-approval coordinator,
+ISO 27001 auditor (row-level/RLS security audit), observability-trace
+agent, board-briefing director, enterprise-risk director,
+governance-assurance director, accessibility-quality lead (Arabic/RTL),
+HSE-assurance director (PTW permits), integration-architecture lead,
+operations-command director, and records-governance lead (operational &
+compliance reporting). Their bound is **read-only**: no agent writes or
+executes; every promotion passes through Article 24 and the human gate
+(Article 8), and `descriptor_only` tools stay disabled as live
+connectors. Mandatory simulation/real distinction: every output is
+explicitly tagged — "demonstration · reference simulation" or "real ·
+read" — and presenting simulation as actual execution, or mixing the two
+badges on one screen, is forbidden. No agent runs on live data until the
+isolation (RLS) checks pass for real — a skip is not a pass.
+
+### المادة ٢٤ — التدرّج في الصلاحية
+أي ترقية لوكيل من القراءة إلى الكتابة أو التنفيذ تمرّ حصرًا عبر المسار
+الخمسي المتدرّج، ولا تُقفز مرحلة: **قراءة فقط ← استشاري ← كتابة ← إجراء ←
+صلاحية مرتفعة** (`read-only → advisory → write → action → privileged`).
+كل انتقال بين مرحلتين يتطلّب اعتمادًا بشريًا صريحًا عبر بوابة المادة ٨،
+ويُسجَّل في مسار تدقيق. لا كتابة على جداول HCIS تحت أي مرحلة. الوضع
+الافتراضي لكل وكيل جديد هو المرحلة الأولى (قراءة فقط).
+**Article 24 — Gradual Escalation.** Any promotion of an agent from read
+to write or execution passes exclusively through the five-step ladder,
+skipping no stage: **read-only → advisory → write → action →
+privileged**. Each transition requires an explicit human approval through
+the Article 8 gate and is written to an audit trail. No writes to HCIS
+tables at any stage. Every new agent defaults to stage one (read-only).
+
+---
+
 ## سجل المواد المعدّلة — Amendment Record
 
 | التاريخ Date | المادة Article | التغيير Change | المعتمِد Approver |
@@ -288,3 +346,5 @@ the `nexios-aria-response-auditor` agent.
 | 2026-07-20 | — | التأسيس: إقرار الدستور بمواده العشرين · Founding: constitution enacted with all twenty articles | مالك المنتج Product Owner |
 | 2026-07-21 | ٢١ | إضافة مبدأ الوضوح المطلق · Added the Absolute-Clarity Principle | مالك المنتج Product Owner |
 | 2026-07-21 | ٢٢ | عقد رد FINN: حصر النطاق · الاختصار · المسار الفوري · حارس الهلوسة · النطق · Article 22 FINN Response Contract: scope lock, brevity, fast recall, hallucination guard, pronunciation | مالك المنتج Product Owner |
+| 2026-07-27 | ٢٣ | منظومة الوكلاء الثلاثة عشر: أدوارهم · حدّهم القرائي · التمييز محاكاة/حقيقي · Article 23 thirteen-agent system: roles, read-only bound, simulation/real distinction | مالك المنتج Product Owner |
+| 2026-07-27 | ٢٤ | التدرّج الخماسي في الصلاحية عبر البوابة البشرية · Article 24 five-step escalation ladder through the human gate | مالك المنتج Product Owner |
