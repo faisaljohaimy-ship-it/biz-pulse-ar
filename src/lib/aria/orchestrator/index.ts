@@ -12,6 +12,19 @@
 import { bootMarketplace } from "../marketplace";
 bootMarketplace();
 
+// Ensure the nine specialist agents linked to FINN are always registered
+// (Constitution, Article 30 — FINN Council of Nine).
+import "./agents";
+import { assertCouncilOfNine } from "./council";
+assertCouncilOfNine();
+
+export {
+  FINN_COUNCIL_OF_NINE,
+  FINN_COUNCIL_LABELS_AR,
+  assertCouncilOfNine,
+} from "./council";
+
+
 export { runAgentMission } from "./orchestrator.server";
 export type { RunAgentMissionOptions } from "./orchestrator.server";
 export { planMission } from "./router.server";
