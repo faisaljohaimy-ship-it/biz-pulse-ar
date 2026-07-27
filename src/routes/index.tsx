@@ -239,8 +239,12 @@ function IntroLanding() {
         <OsDecisionQueue ar={ar} />
       </section>
 
-      {/* ══ ZONE 5 · العرض التنفيذي — بطاقتان فقط: جسر القيادة + العرض الكامل ══ */}
+      {/* ══ ZONE 5 · العرض التنفيذي — بطاقة جسر القيادة ══ */}
       <ExecutiveShowcaseHub />
+
+      {/* ══ ZONE 6 · التدفقات الهولوغرامية — شجرة القيادة + مدار الوكلاء ══ */}
+      <HolographicFlowShowcase ar={ar} agents={HOME_HOLO_AGENTS} />
+
 
       {/*
         Overflow moved off the homepage per the Executive Command View
