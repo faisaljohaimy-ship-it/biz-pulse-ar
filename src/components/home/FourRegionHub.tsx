@@ -937,7 +937,7 @@ export function FourRegionHub() {
           <div className="min-w-0">
             <FinnDailySummary />
           </div>
-          <div className="relative flex-1 rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
+          <div id="smart-alerts" className="relative flex-1 rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
             <div className="mb-2 flex items-center justify-between">
               <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
                 <Bell className="size-4 text-rose-300" aria-hidden />
