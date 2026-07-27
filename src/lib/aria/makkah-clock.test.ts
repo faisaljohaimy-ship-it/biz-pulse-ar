@@ -79,10 +79,11 @@ describe("makkah-clock — the single time source (FINN constitution Art. 2)", (
     expect(speech).toContain("والساعة الآن تسعة تمامًا صباحًا بتوقيت مكة المكرمة.");
   });
 
-  it("directive orders the once-only opener and bans spoken Hijri", () => {
-    expect(MAKKAH_TIME_DIRECTIVE).toContain("افتتاح الجلسة");
+  it("directive forbids repeating date and mandates complete in-scope answers", () => {
+    expect(MAKKAH_TIME_DIRECTIVE).toContain("قاعدة عدم تكرار التاريخ");
     expect(MAKKAH_TIME_DIRECTIVE).toContain("لا يُنطق في القناة الصوتية أبدًا");
-    expect(MAKKAH_TIME_DIRECTIVE).toContain("datetime_spoken");
+    expect(MAKKAH_TIME_DIRECTIVE).toContain("اكتمال الإجابة داخل إطار النظام");
+    expect(MAKKAH_TIME_DIRECTIVE).toContain("داخل إطار النظام حصريًا");
   });
 
   it("runtime block carries the datetime_spoken guard flag", () => {
