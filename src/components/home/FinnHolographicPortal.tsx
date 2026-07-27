@@ -77,24 +77,25 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         />
       </span>
 
-      {/* FINN wordmark — fills the empty top space above the head */}
-      <div className="relative z-10 flex flex-col items-center px-4 pt-5 sm:pt-7">
+      {/* FINN wordmark — sits in the headroom above the head, compact size */}
+      <div className="relative z-10 flex flex-col items-center px-4 pt-2 sm:pt-3">
         <h2
-          className="text-7xl font-black leading-none tracking-[0.32em] text-white sm:text-8xl md:text-[9rem]"
+          className="text-2xl font-black leading-none tracking-[0.32em] text-white sm:text-3xl md:text-4xl"
           style={{
             textShadow:
-              "0 2px 20px rgba(0,0,0,0.95), 0 0 32px rgba(34,211,238,0.7), 0 0 80px rgba(34,211,238,0.45)",
+              "0 2px 12px rgba(0,0,0,0.95), 0 0 20px rgba(34,211,238,0.7), 0 0 40px rgba(34,211,238,0.45)",
           }}
         >
           FINN
         </h2>
         <span
-          className="mt-2 text-[10px] font-semibold uppercase tracking-[0.5em] text-cyan-200/85 sm:text-xs"
+          className="mt-1 text-[9px] font-semibold uppercase tracking-[0.45em] text-cyan-200/85 sm:text-[10px]"
           style={{ textShadow: "0 1px 8px rgba(0,0,0,0.9)" }}
         >
           {ar ? "المساعد التنفيذي" : "Executive Assistant"}
         </span>
       </div>
+
 
       {/* Center — holographic ring around the face with mic CTA inside */}
       <div className="relative z-10 flex flex-1 items-center justify-center px-4">
