@@ -32,6 +32,8 @@ const KIND_LABEL_AR: Record<ReportKind, string> = {
   audit: "تدقيق",
 };
 
+export const KIND_LABEL_AR_MAP = KIND_LABEL_AR;
+
 const REGIONS_AR = ["الوسطى", "الغربية", "الشرقية", "الجنوبية"] as const;
 const KINDS: ReportKind[] = ["compliance", "safety", "operations", "permits", "incidents", "audit"];
 
