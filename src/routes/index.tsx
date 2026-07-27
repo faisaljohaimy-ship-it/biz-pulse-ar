@@ -32,6 +32,8 @@ import { FinnAnomalyStrip } from "@/components/aria/FinnAnomalyStrip";
 import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
 import { SystemModulesDashboard } from "@/components/executive/SystemModulesDashboard";
 import { ExecutiveShowcaseHub } from "@/components/executive/ExecutiveShowcaseHub";
+import { HolographicFlowShowcase } from "@/components/home/HolographicFlowShowcase";
+
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { useFreezeOffscreen } from "@/hooks/use-freeze-offscreen";
