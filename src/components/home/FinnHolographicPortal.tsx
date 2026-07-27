@@ -36,10 +36,12 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
   return (
     <section
       aria-label={ar ? "بوابة FINN التنفيذية" : "FINN executive portal"}
-      className="finn-portal relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl border border-cyan-300/25 bg-[#04101c] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.04)] sm:min-h-[620px]"
+      className="finn-portal relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl border border-cyan-300/30 bg-white/5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:min-h-[620px]"
+      style={{ backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(34,211,238,0.04) 60%, rgba(255,255,255,0.02))" }}
     >
       {/* Live digital board background — circuits, chips, data packets, code rain */}
-      <span aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#04101c]">
+      <span aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+
         {/* Circuit board SVG — traces, chips, nodes, animated data packets */}
         <svg
           className="absolute inset-0 h-full w-full opacity-70"
