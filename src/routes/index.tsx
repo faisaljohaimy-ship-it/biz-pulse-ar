@@ -21,6 +21,7 @@ import { AgenticFlowCanvas } from "@/components/home/AgenticFlowCanvas";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
+import { TopUtilityBar } from "@/components/nav/TopUtilityBar";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
@@ -189,6 +190,16 @@ function IntroLanding() {
           silent on every subsequent mount (including returns from inner
           windows). Replaces the retired FinnGlobalBackdrop. */}
       <HomeVideoBackdrop />
+
+      {/* Floating utility bar — activates Notifications + Settings on the home
+          route (which is not under AppShell). RTL-aware, ≥44px targets. */}
+      <div
+        className={`pointer-events-none absolute top-3 z-40 flex sm:top-4 ${ar ? "left-3 sm:left-6" : "right-3 sm:right-6"}`}
+      >
+        <div className="pointer-events-auto">
+          <TopUtilityBar />
+        </div>
+      </div>
 
       {/* Lightweight gradient hero glow layered above her, still behind content. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
