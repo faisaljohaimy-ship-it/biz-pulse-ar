@@ -237,117 +237,37 @@ function IntroLanding() {
         <OsDecisionQueue ar={ar} />
       </section>
 
-      {/* ══ Executive Showcase hub — premium entry to the Command Bridge and
-          the Executive Presentation. ══ */}
+      {/* ══ ZONE 5 · العرض التنفيذي — بطاقتان فقط: جسر القيادة + العرض الكامل ══ */}
       <ExecutiveShowcaseHub />
 
-      {/* Horizontal system-modules dashboard — every icon links to a real
-          module route (activated), responsive across all devices. */}
-      <div ref={modulesRef} data-nx-frozen="false" className="mt-4 sm:mt-6">
-        <SystemModulesDashboard />
+      {/*
+        Overflow moved off the homepage per the Executive Command View
+        directive — every destination remains reachable via its own route:
+        - SystemModulesDashboard  → /modules  &  /nx-cockpit
+        - HomeShowcaseSections    → /system-overview
+        - MissionControlStrip     → /mission-control
+        - AgentRing / AgentHierarchyGraph / AgenticFlowCanvas → /agents-reference
+        - Reports-Agent live card → /reports-agent
+        The oversized closing CTA + giant NEXIOS footermark are removed to
+        keep the homepage inside the three-screen budget.
+      */}
+
+      <div className="sr-only" aria-hidden>
+        {t.cta_title} {t.cta_body}
       </div>
 
-      {/* Executive pitch band — capabilities, value-props, tech stack and the
-          vision, every pulsing icon breathing in the active region's colour. */}
-      <HomeShowcaseSections />
+      {/* Preserve ids referenced by the guided tour so anchor links still
+          resolve (empty targets, no visual weight). */}
+      <div id="tour-positioning" className="sr-only" aria-hidden />
+      <div id="tour-agents" className="sr-only" aria-hidden />
+      <div id="tour-closing" className="sr-only" aria-hidden />
+      <div id="tour-compliance" className="sr-only" aria-hidden />
 
-      {/* Holographic command tree — HIDDEN per owner directive (2026-07-26). */}
+      {/* Refs kept for the freeze-offscreen hook contract but no longer
+          attached to real DOM sections that were moved off the homepage. */}
+      <div ref={modulesRef} className="hidden" aria-hidden />
+      <div ref={agentsRef} className="hidden" aria-hidden />
 
-      <div
-        id="tour-positioning"
-        className="relative z-10 mx-auto mt-6 w-full max-w-none px-4 sm:mt-10 sm:px-6"
-      >
-        <MissionControlStrip />
-      </div>
-
-      <div ref={agentsRef} data-nx-frozen="false" id="tour-agents">
-        <AgentRing />
-      </div>
-
-      {/* ══ نهاية الصفحة — البطاقتان الهولوغراميتان مكدّستان تحت بعضهما ══
-          الأولى: شجرة القيادة الهولوغرامية (FINN فوق فريق الوكلاء فوق بوابة
-          الاعتماد البشري). الثانية: NEXIOS · Agentic Flow Canvas (شبكة
-          التنسيق الحية بنمط n8n). كلاهما بعرض كامل مسؤول. */}
-      <div className="relative z-10 mx-auto mt-6 flex w-full max-w-none flex-col gap-6 px-4 sm:mt-10 sm:gap-8 sm:px-6">
-        <AgentHierarchyGraph
-          agents={HOME_HOLO_AGENTS.map((a) => ({
-            id: a.id,
-            name: a.name,
-            state: a.state,
-          }))}
-          runs={[]}
-          ar={ar}
-        />
-
-        <AgenticFlowCanvas ar={ar} variant="full" />
-
-        {/* بطاقة وكيل التقارير — دخول مباشر لصفحة الوكيل الحيّة. */}
-        <a
-          href="/reports-agent"
-          className="group relative block overflow-hidden rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-500/10 via-transparent to-cyan-500/5 p-5 shadow-[0_0_40px_rgba(0,212,255,0.15)] transition hover:border-cyan-300/60 hover:shadow-[0_0_60px_rgba(0,212,255,0.35)] sm:p-6"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div className="text-[10px] tracking-[0.3em] text-cyan-300/70">NEXIOS · AGENT</div>
-              <h3 className="mt-1 text-lg font-bold text-cyan-100 sm:text-xl">
-                {ar ? "وكيل التقارير — يعمل باستمرار" : "Reports Agent — always on"}
-              </h3>
-              <p className="mt-1 text-xs text-cyan-100/70 sm:text-sm">
-                {ar
-                  ? "توليد التقارير التشغيلية والامتثالية عبر المناطق والقطاعات، وتصديرها CSV/PDF."
-                  : "Continuous generation of operational & compliance reports with CSV/PDF export."}
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-200">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              {ar ? "يعمل الآن" : "Live"}
-            </span>
-          </div>
-        </a>
-      </div>
-
-      <div className="relative z-10 mx-auto w-full max-w-none px-4 py-10 sm:px-6 sm:py-16">
-        {/* Capabilities section — HIDDEN per owner directive (2026-07-26). */}
-
-        <section
-          id="tour-closing"
-          className="mt-10 rounded-2xl border border-[#00D4FF]/30 bg-gradient-to-br from-[#00D4FF]/10 to-transparent p-6 text-center shadow-[0_0_40px_rgba(0,212,255,0.2)] sm:mt-16 sm:p-8"
-        >
-          <h3 className="text-lg font-semibold sm:text-xl">{t.cta_title}</h3>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-white/65">{t.cta_body}</p>
-          <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
-            <Link
-              to="/executive-showcase"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#3AE8FF]/60 bg-[#3AE8FF]/10 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_rgba(58,232,255,0.4)] transition hover:bg-[#3AE8FF]/20 sm:w-auto"
-            >
-              <span>{t.cta_enter}</span>
-              <Arrow className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/finn"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-300 px-6 py-3 text-sm font-black text-[#03131f] shadow-[0_12px_36px_-18px_rgba(52,211,153,.9)] transition hover:brightness-110 sm:w-auto"
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              <span>{t.cta_accept}</span>
-            </Link>
-          </div>
-          <p
-            id="tour-compliance"
-            className="mx-auto mt-4 max-w-xl text-[10px] uppercase tracking-[0.24em] text-[#3AE8FF]/70 sm:text-[11px]"
-          >
-            {ar
-              ? "متوائم مع NEXIOS AI · التحول الرقمي والريادة الصناعية · نظام حماية البيانات الشخصية"
-              : "Aligned with NEXIOS AI · Digital transformation · KSA Personal Data Protection Law"}
-          </p>
-        </section>
-
-        <p className="mt-8 text-center text-[10px] uppercase tracking-[0.25em] text-white/30 sm:mt-10 sm:text-[11px] sm:tracking-[0.3em]">
-          {ar ? "NEXIOS AI OS · نسخة تنفيذية" : "NEXIOS AI OS · Executive Preview"}
-        </p>
-      </div>
-
-      {/* Grand closing wordmark */}
-      <NexiosFootermark caption={ar ? "منصة الذكاء التنفيذي" : "Enterprise AI Operating System"} />
     </div>
   );
 }
