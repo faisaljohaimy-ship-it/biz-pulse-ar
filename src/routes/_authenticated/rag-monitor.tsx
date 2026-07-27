@@ -126,12 +126,19 @@ function RagMonitor() {
         />
       </div>
 
-      <Section title="آخر الاستعلامات" description="حتى 50 استعلامًا مع نتيجة بوابة الأدلة">
+      <Section>
+        <div className="mb-2">
+          <div className="text-sm font-semibold">آخر الاستعلامات</div>
+          <div className="text-xs text-muted-foreground">
+            حتى 50 استعلامًا مع نتيجة بوابة الأدلة
+          </div>
+        </div>
         <Card className="overflow-hidden">
           {isLoading ? (
             <div className="p-6 text-sm text-muted-foreground">جارٍ التحميل…</div>
           ) : (data?.recent ?? []).length === 0 ? (
             <EmptyState
+              reason="waiting"
               title="لا توجد استعلامات بعد"
               description="ستظهر هنا كل استعلامات RAG خلال آخر 24 ساعة."
             />
