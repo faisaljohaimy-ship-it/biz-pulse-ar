@@ -342,6 +342,8 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         @keyframes finnBgGrid { 0%{background-position:0 0,0 0} 100%{background-position:36px 36px,36px 36px} }
         @keyframes finnBgSweep { 0%{transform:translateX(-30%)} 100%{transform:translateX(30%)} }
         @keyframes finnBgHalo { to { transform: translate(-50%,-50%) rotate(360deg) } }
+        @keyframes finnRain { 0%{transform:translateY(-40%)} 100%{transform:translateY(110%)} }
+        .finn-rain-col { animation-name: finnRain; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; }
         .finn-halo { animation: finnHaloBreathe 6s ease-in-out infinite; will-change: transform,opacity; }
         .finn-ring-outer { animation: finnRotate 22s linear infinite; will-change: transform; }
         .finn-scan > span { animation: finnScan 7s linear infinite; will-change: transform; }
