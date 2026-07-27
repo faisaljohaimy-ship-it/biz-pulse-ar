@@ -26,6 +26,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PermitsRouteImport } from './routes/permits'
 import { Route as OsRouteImport } from './routes/os'
 import { Route as NxCockpitRouteImport } from './routes/nx-cockpit'
+import { Route as NxAgentsRouteImport } from './routes/nx-agents'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HcisComplianceRouteImport } from './routes/hcis-compliance'
@@ -167,6 +168,7 @@ import { Route as ApiChatHealthRouteImport } from './routes/api/chat.health'
 import { Route as ApiAriaTtsRouteImport } from './routes/api/aria/tts'
 import { Route as ApiAriaTranscribeRouteImport } from './routes/api/aria/transcribe'
 import { Route as ApiAriaChatRouteImport } from './routes/api/aria/chat'
+import { Route as ApiAgentsFleetRouteImport } from './routes/api/agents/fleet'
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
 import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
@@ -301,6 +303,11 @@ const OsRoute = OsRouteImport.update({
 const NxCockpitRoute = NxCockpitRouteImport.update({
   id: '/nx-cockpit',
   path: '/nx-cockpit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NxAgentsRoute = NxAgentsRouteImport.update({
+  id: '/nx-agents',
+  path: '/nx-agents',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -1033,6 +1040,11 @@ const ApiAriaChatRoute = ApiAriaChatRouteImport.update({
   path: '/api/aria/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentsFleetRoute = ApiAgentsFleetRouteImport.update({
+  id: '/api/agents/fleet',
+  path: '/api/agents/fleet',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSettingsMicrosoftRoute =
   AuthenticatedSettingsMicrosoftRouteImport.update({
     id: '/microsoft',
@@ -1340,6 +1352,7 @@ export interface FileRoutesByFullPath {
   '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/nx-agents': typeof NxAgentsRoute
   '/nx-cockpit': typeof NxCockpitRoute
   '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
@@ -1478,6 +1491,7 @@ export interface FileRoutesByFullPath {
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/aria/chat': typeof ApiAriaChatRoute
   '/api/aria/transcribe': typeof ApiAriaTranscribeRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
@@ -1549,6 +1563,7 @@ export interface FileRoutesByTo {
   '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/nx-agents': typeof NxAgentsRoute
   '/nx-cockpit': typeof NxCockpitRoute
   '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
@@ -1685,6 +1700,7 @@ export interface FileRoutesByTo {
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/aria/chat': typeof ApiAriaChatRoute
   '/api/aria/transcribe': typeof ApiAriaTranscribeRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
@@ -1758,6 +1774,7 @@ export interface FileRoutesById {
   '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/nx-agents': typeof NxAgentsRoute
   '/nx-cockpit': typeof NxCockpitRoute
   '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
@@ -1896,6 +1913,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
+  '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/aria/chat': typeof ApiAriaChatRoute
   '/api/aria/transcribe': typeof ApiAriaTranscribeRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
@@ -1969,6 +1987,7 @@ export interface FileRouteTypes {
     | '/hcis-compliance'
     | '/login'
     | '/mcp'
+    | '/nx-agents'
     | '/nx-cockpit'
     | '/os'
     | '/permits'
@@ -2107,6 +2126,7 @@ export interface FileRouteTypes {
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
+    | '/api/agents/fleet'
     | '/api/aria/chat'
     | '/api/aria/transcribe'
     | '/api/aria/tts'
@@ -2178,6 +2198,7 @@ export interface FileRouteTypes {
     | '/hcis-compliance'
     | '/login'
     | '/mcp'
+    | '/nx-agents'
     | '/nx-cockpit'
     | '/os'
     | '/permits'
@@ -2314,6 +2335,7 @@ export interface FileRouteTypes {
     | '/sec/vehicles'
     | '/sec/visitors'
     | '/settings/microsoft'
+    | '/api/agents/fleet'
     | '/api/aria/chat'
     | '/api/aria/transcribe'
     | '/api/aria/tts'
@@ -2386,6 +2408,7 @@ export interface FileRouteTypes {
     | '/hcis-compliance'
     | '/login'
     | '/mcp'
+    | '/nx-agents'
     | '/nx-cockpit'
     | '/os'
     | '/permits'
@@ -2524,6 +2547,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/vehicles'
     | '/_authenticated/sec/visitors'
     | '/_authenticated/settings/microsoft'
+    | '/api/agents/fleet'
     | '/api/aria/chat'
     | '/api/aria/transcribe'
     | '/api/aria/tts'
@@ -2597,6 +2621,7 @@ export interface RootRouteChildren {
   HcisComplianceRoute: typeof HcisComplianceRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
+  NxAgentsRoute: typeof NxAgentsRoute
   NxCockpitRoute: typeof NxCockpitRoute
   OsRoute: typeof OsRoute
   PermitsRoute: typeof PermitsRoute
@@ -2632,6 +2657,7 @@ export interface RootRouteChildren {
   PromoIndexRoute: typeof PromoIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiAgentsFleetRoute: typeof ApiAgentsFleetRoute
   ApiAriaChatRoute: typeof ApiAriaChatRoute
   ApiAriaTranscribeRoute: typeof ApiAriaTranscribeRoute
   ApiAriaTtsRoute: typeof ApiAriaTtsRoute
@@ -2791,6 +2817,13 @@ declare module '@tanstack/react-router' {
       path: '/nx-cockpit'
       fullPath: '/nx-cockpit'
       preLoaderRoute: typeof NxCockpitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nx-agents': {
+      id: '/nx-agents'
+      path: '/nx-agents'
+      fullPath: '/nx-agents'
+      preLoaderRoute: typeof NxAgentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -3780,6 +3813,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAriaChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agents/fleet': {
+      id: '/api/agents/fleet'
+      path: '/api/agents/fleet'
+      fullPath: '/api/agents/fleet'
+      preLoaderRoute: typeof ApiAgentsFleetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/settings/microsoft': {
       id: '/_authenticated/settings/microsoft'
       path: '/microsoft'
@@ -4434,6 +4474,7 @@ const rootRouteChildren: RootRouteChildren = {
   HcisComplianceRoute: HcisComplianceRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
+  NxAgentsRoute: NxAgentsRoute,
   NxCockpitRoute: NxCockpitRoute,
   OsRoute: OsRoute,
   PermitsRoute: PermitsRoute,
@@ -4470,6 +4511,7 @@ const rootRouteChildren: RootRouteChildren = {
   PromoIndexRoute: PromoIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiAgentsFleetRoute: ApiAgentsFleetRoute,
   ApiAriaChatRoute: ApiAriaChatRoute,
   ApiAriaTranscribeRoute: ApiAriaTranscribeRoute,
   ApiAriaTtsRoute: ApiAriaTtsRoute,
