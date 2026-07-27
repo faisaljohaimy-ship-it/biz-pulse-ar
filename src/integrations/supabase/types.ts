@@ -5443,6 +5443,7 @@ export type Database = {
           risk_level: string | null
           scope_ar: string | null
           scope_en: string | null
+          search_text_ar: string | null
           status: string
           summary_ar: string | null
           summary_en: string | null
@@ -5488,6 +5489,7 @@ export type Database = {
           risk_level?: string | null
           scope_ar?: string | null
           scope_en?: string | null
+          search_text_ar?: string | null
           status?: string
           summary_ar?: string | null
           summary_en?: string | null
@@ -5533,6 +5535,7 @@ export type Database = {
           risk_level?: string | null
           scope_ar?: string | null
           scope_en?: string | null
+          search_text_ar?: string | null
           status?: string
           summary_ar?: string | null
           summary_en?: string | null
@@ -7918,6 +7921,30 @@ export type Database = {
       }
       runtime_cleanup_stale_executions: { Args: never; Returns: Json }
       runtime_retention_sweep: { Args: never; Returns: Json }
+      sec_kb_hybrid_search: {
+        Args: {
+          _category?: string
+          _limit?: number
+          _org_id?: string
+          _query_text: string
+          _query_vec: string
+        }
+        Returns: {
+          category_code: string
+          dense_score: number
+          doc_code: string
+          fts_score: number
+          id: string
+          priority: string
+          risk_level: string
+          rrf_score: number
+          summary_ar: string
+          summary_en: string
+          title_ar: string
+          title_en: string
+          trgm_score: number
+        }[]
+      }
       sec_kb_search: {
         Args: { _category_code?: string; _limit?: number; _query: string }
         Returns: {
