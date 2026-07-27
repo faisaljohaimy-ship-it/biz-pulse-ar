@@ -32,7 +32,7 @@ import {
   Cog,
 } from "lucide-react";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
-import { FinnPersonaCard } from "@/components/home/FinnPersonaCard";
+import { FinnHolographicPortal } from "@/components/home/FinnHolographicPortal";
 import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
 import {
   CC_REGIONS,
