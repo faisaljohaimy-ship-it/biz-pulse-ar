@@ -40,7 +40,20 @@ export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
     const textCol = TEXT_COLUMN[table];
 
     // Pull one batch of unmigrated rows for this tenant scope.
-    const { data: rows, error } = await supabaseAdmin
+    // Dynamic column select — cast rows to a plain shape since generated
+    // types don't know embedding_v2 yet (regenerated after migration approval).
+    const { data: rowsRaw, error } = await (supabaseAdmin as unknown as {
+      from: (t: string) => {
+        select: (cols: string) => {
+          is: (col: string, v: null) => {
+            limit: (n: number) => Promise<{
+              data: Array<Record<string, unknown>> | null;
+              error: { message: string } | null;
+            }>;
+          };
+        };
+      };
+    })
       .from(table)
       .select(`id, ${textCol}`)
       .is("embedding_v2", null)
@@ -49,12 +62,13 @@ export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
     if (error) {
       throw new Response(`[rag/backfill] read failed: ${error.message}`, { status: 500 });
     }
-    if (!rows || rows.length === 0) {
+    const rows = rowsRaw ?? [];
+    if (rows.length === 0) {
       return { table, processed: 0, remaining: 0, done: true, model_version: RAG_MODEL_VERSION };
     }
 
     // Embed the batch.
-    const inputs = rows.map((r: Record<string, unknown>) => String(r[textCol] ?? ""));
+    const inputs = rows.map((r) => String(r[textCol] ?? ""));
     const { vectors, usage } = await embedBatch(inputs);
 
     // Write vectors row-by-row (Supabase JS lacks a pgvector-typed bulk upsert).
