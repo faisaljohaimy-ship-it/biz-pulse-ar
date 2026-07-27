@@ -778,6 +778,11 @@ export function FourRegionHub() {
           </button>
           <button
             type="button"
+            onClick={() => {
+              if (typeof document !== "undefined") {
+                document.getElementById("smart-alerts")?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }
+            }}
             className="relative grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] hover:text-white"
             aria-label={ar ? "التنبيهات" : "Alerts"}
           >
@@ -790,11 +795,15 @@ export function FourRegionHub() {
           </button>
           <button
             type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") window.location.href = "/settings";
+            }}
             className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] hover:text-white"
             aria-label={ar ? "الإعدادات" : "Settings"}
           >
             <Settings className="size-4" aria-hidden />
           </button>
+
           <div className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] py-1 ps-2 pe-3 md:flex">
             <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#00D4FF] to-[#3AE8FF] text-[11px] font-black text-[#04070F]">
               MD
