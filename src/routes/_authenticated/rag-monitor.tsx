@@ -2,7 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 // NEXIOS RAG — WS-8. لوحة مراقبة استعلامات RAG (بوابة الأدلة، زمن الاستجابة،
 // أفضل الاستعلامات، آخر السجلات). قراءة فقط عبر rag_query_log مع عزل المستأجر.
 
-import { createFileRoute, useServerFn } from "@tanstack/react-start";
+import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { PageHeader, Section } from "@/components/page-header";
