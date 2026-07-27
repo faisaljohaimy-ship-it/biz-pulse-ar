@@ -204,25 +204,32 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       <style>{`
         @keyframes finnHaloBreathe { 0%,100%{opacity:.55;transform:scale(1)} 50%{opacity:.95;transform:scale(1.04)} }
         @keyframes finnRotate { to { transform: rotate(360deg) } }
-        @keyframes finnRotateRev { to { transform: rotate(-360deg) } }
         @keyframes finnScan { 0%{transform:translateY(-20%)} 100%{transform:translateY(1200%)} }
         @keyframes finnPulseRing { 0%{opacity:.55;transform:scale(1)} 100%{opacity:0;transform:scale(1.15)} }
         @keyframes finnLive { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.55;transform:scale(.82)} }
+        @keyframes finnBgGrid { 0%{background-position:0 0,0 0} 100%{background-position:36px 36px,36px 36px} }
+        @keyframes finnBgSweep { 0%{transform:translateX(-30%)} 100%{transform:translateX(30%)} }
+        @keyframes finnBgHalo { to { transform: translate(-50%,-50%) rotate(360deg) } }
         .finn-halo { animation: finnHaloBreathe 6s ease-in-out infinite; will-change: transform,opacity; }
         .finn-ring-outer { animation: finnRotate 22s linear infinite; will-change: transform; }
-        .finn-ring-inner { animation: finnRotateRev 30s linear infinite; will-change: transform; }
         .finn-scan > span { animation: finnScan 7s linear infinite; will-change: transform; }
         .finn-pulse { animation: finnPulseRing 4.5s ease-out infinite; will-change: transform,opacity; }
         .finn-live { animation: finnLive 1.8s ease-in-out infinite; will-change: transform,opacity; }
+        .finn-bg-grid { animation: finnBgGrid 14s linear infinite; will-change: background-position; }
+        .finn-bg-sweep { animation: finnBgSweep 9s ease-in-out infinite alternate; will-change: transform; }
+        .finn-bg-halo { animation: finnBgHalo 40s linear infinite; will-change: transform; }
         @media (prefers-reduced-motion: reduce) {
-          .finn-halo,.finn-ring-outer,.finn-ring-inner,.finn-scan > span,.finn-pulse,.finn-live { animation: none !important; }
+          .finn-halo,.finn-ring-outer,.finn-scan > span,.finn-pulse,.finn-live,.finn-bg-grid,.finn-bg-sweep,.finn-bg-halo { animation: none !important; }
         }
         [data-nx-frozen="true"] .finn-halo,
         [data-nx-frozen="true"] .finn-ring-outer,
-        [data-nx-frozen="true"] .finn-ring-inner,
         [data-nx-frozen="true"] .finn-scan > span,
         [data-nx-frozen="true"] .finn-pulse,
-        [data-nx-frozen="true"] .finn-live { animation-play-state: paused !important; }
+        [data-nx-frozen="true"] .finn-live,
+        [data-nx-frozen="true"] .finn-bg-grid,
+        [data-nx-frozen="true"] .finn-bg-sweep,
+        [data-nx-frozen="true"] .finn-bg-halo { animation-play-state: paused !important; }
+
       `}</style>
     </section>
   );
