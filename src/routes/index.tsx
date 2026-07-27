@@ -191,6 +191,16 @@ function IntroLanding() {
           windows). Replaces the retired FinnGlobalBackdrop. */}
       <HomeVideoBackdrop />
 
+      {/* Floating utility bar — activates Notifications + Settings on the home
+          route (which is not under AppShell). RTL-aware, ≥44px targets. */}
+      <div
+        className={`pointer-events-none absolute top-3 z-40 flex sm:top-4 ${ar ? "left-3 sm:left-6" : "right-3 sm:right-6"}`}
+      >
+        <div className="pointer-events-auto">
+          <TopUtilityBar />
+        </div>
+      </div>
+
       {/* Lightweight gradient hero glow layered above her, still behind content. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(80%_55%_at_50%_0%,rgba(0,212,255,0.18),transparent_70%)]" />
