@@ -10,7 +10,7 @@
 --   D. sha256 content_hash is present and correct
 --   E. RLS org isolation — user in org A cannot see org B rows
 --
--- The vector(768)/HNSW column is pgvector-dependent; pgvector is NOT installed
+-- The vector(1536)/HNSW column is pgvector-dependent; pgvector is NOT installed
 -- in this sandbox, so the chunk PROBE below mirrors rag_chunks MINUS the vector
 -- column. HNSW/vector search is exercised only on Supabase (which has pgvector).
 -- Each check RAISES on failure (psql ON_ERROR_STOP → non-zero exit = real fail).

@@ -14,12 +14,22 @@
 -- rag_documents(id, org_id) makes it IMPOSSIBLE for a chunk's org to differ
 -- from its document's. Same is_org_member() read/write gates as documents.
 --
--- Embedding: FIXED vector(768) — pgvector needs a fixed dimension to HNSW-index.
---   [افتراض] 768 = Gemini `text-embedding-004` (production embedder) and it
---   matches the existing aria_knowledge vector(768). embedding_dim records it
---   explicitly; the CHECK keeps column and metadata from drifting. If the prod
---   model's dimension differs, THIS column + the HNSW opclass change — that is
---   approval item #1 before apply.
+-- Embedding: FIXED vector(1536) — APPROVED dimension. Reason: pgvector's HNSW
+--   index supports the `vector` type up to 2000 dimensions; 1536 ≤ 2000, so a
+--   plain `vector` (NOT halfvec) is used. The project already runs an applied
+--   vector(1536)+HNSW index (sec_knowledge_articles, 20260629), proving this
+--   dimension works here. embedding_dim + its CHECK keep column and metadata
+--   from drifting.
+--
+--   [MRL / L2 CONTRACT — read before ingesting]  The production embedder
+--   (Gemini gemini-embedding-001) returns a 3072-dim Matryoshka (MRL) vector.
+--   To store 1536, you TRUNCATE to the first 1536 components — and a truncated
+--   MRL vector is NO LONGER unit-length, so cosine distance (`<=>`) would be
+--   WRONG. Therefore ingestion MUST re-normalize each truncated vector to unit
+--   L2 norm before writing:  v_1536 := v[1:1536];  store v_1536 / l2_norm(v_1536)
+--   (skip the divide only if l2_norm = 0). The HNSW cosine index below assumes
+--   every stored embedding is already L2-normalized. This is enforced by the
+--   ingestion path (later session), not by DDL — documented here + in the runbook.
 -- Similarity: cosine (vector_cosine_ops, `<=>`) — text embeddings are direction-
 --   semantic; matches the existing sec_knowledge_articles choice.
 -- Index: HNSW (m=16, ef_construction=64) — better than IVFFlat for a corpus
@@ -43,10 +53,11 @@ create table if not exists public.rag_chunks (
 
   token_count     int  check (token_count is null or token_count > 0),
 
-  -- provenance (brief: every chunk carries model + dims + hash):
-  embedding       extensions.vector(768),
-  embedding_model text not null default 'gemini/text-embedding-004',
-  embedding_dim   int  not null default 768 check (embedding_dim = 768),
+  -- provenance (brief: every chunk carries model + dims + hash).
+  -- embedding MUST be L2-normalized AFTER MRL truncation to 1536 (see header).
+  embedding       extensions.vector(1536),
+  embedding_model text not null default 'gemini/gemini-embedding-001',
+  embedding_dim   int  not null default 1536 check (embedding_dim = 1536),
 
   is_simulation   boolean not null default false,
   created_at      timestamptz not null default now(),
