@@ -38,6 +38,33 @@ const VIDEO_DIR = join(ROOT, "public", "media", "bridge", "video");
 const HEYGEN_AVATAR_ID = process.env.HEYGEN_FINN_AVATAR_ID?.trim() || "finn_executive_avatar";
 const HEYGEN_BASE = "https://api.heygen.com";
 
+/* SSRF guard: the render URL comes back from HeyGen's API — only ever fetch it
+ * over https and from HeyGen's own hosts / their object-store CDN, never an
+ * arbitrary host a tampered response could point us at. */
+const ALLOWED_DOWNLOAD_HOSTS = [
+  /(^|\.)heygen\.com$/i,
+  /(^|\.)heygen\.ai$/i,
+  /(^|\.)amazonaws\.com$/i,
+];
+
+function assertHttps(rawUrl, label) {
+  let u;
+  try {
+    u = new URL(rawUrl);
+  } catch {
+    throw new Error(`${label} is not a valid URL`);
+  }
+  if (u.protocol !== "https:") throw new Error(`${label} must use https (got ${u.protocol})`);
+  return u;
+}
+
+function assertAllowedDownload(rawUrl) {
+  const u = assertHttps(rawUrl, "HeyGen download URL");
+  if (!ALLOWED_DOWNLOAD_HOSTS.some((re) => re.test(u.hostname)))
+    throw new Error(`Refusing to download from an unexpected host: ${u.hostname}`);
+  return u;
+}
+
 function parseArgs(argv) {
   const args = { lang: "ar" };
   for (let i = 2; i < argv.length; i += 1) {
@@ -49,8 +76,12 @@ function parseArgs(argv) {
 async function loadManifest() {
   try {
     return JSON.parse(await readFile(join(AUDIO_DIR, "manifest.json"), "utf8"));
-  } catch {
-    return null;
+  } catch (err) {
+    // A missing manifest is the expected "audio not generated yet" case → null.
+    // A present-but-unreadable/corrupt manifest is a real fault → surface it,
+    // don't silently treat it as "not generated".
+    if (err && err.code === "ENOENT") return null;
+    throw new Error(`Audio manifest is unreadable or corrupt: ${err?.message ?? err}`);
   }
 }
 
@@ -87,7 +118,9 @@ async function heygenRequest(apiKey, audioUrlOrText, sceneId) {
   if (!res.ok)
     throw new Error(`HeyGen generate ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json();
-  return data?.data?.video_id ?? data?.video_id;
+  const videoId = data?.data?.video_id ?? data?.video_id;
+  if (!videoId) throw new Error(`HeyGen returned no video_id for scene ${sceneId}`);
+  return videoId;
 }
 
 async function heygenPoll(apiKey, videoId) {
@@ -136,13 +169,28 @@ async function main() {
     console.error("✗ Set BRIDGE_AUDIO_BASE_URL to the public base URL of the audio clips.");
     process.exit(1);
   }
+  // HeyGen must fetch each clip over https; a plain-http base can't be reached
+  // by the service and would also be an insecure origin to hand it.
+  assertHttps(audioBase, "BRIDGE_AUDIO_BASE_URL");
 
   const rendered = [];
   for (const clip of clips) {
     process.stdout.write(`→ HeyGen · ${clip.scene} … `);
     const videoId = await heygenRequest(apiKey, `${audioBase}/${clip.file}`, clip.scene);
     const url = await heygenPoll(apiKey, videoId);
-    const bin = Buffer.from(await (await fetch(url)).arrayBuffer());
+    const download = assertAllowedDownload(url);
+    const res = await fetch(download);
+    if (!res.ok) throw new Error(`Download failed ${res.status} for scene ${clip.scene}`);
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!/^(video\/|application\/octet-stream)/i.test(contentType))
+      throw new Error(`Unexpected content-type "${contentType}" for scene ${clip.scene}`);
+    const bin = Buffer.from(await res.arrayBuffer());
+    // A valid MP4 is never a few bytes — reject a truncated/empty body instead
+    // of writing a corrupt file and reporting "ok".
+    if (bin.byteLength < 1024)
+      throw new Error(
+        `Downloaded clip for scene ${clip.scene} is only ${bin.byteLength} bytes — not a valid MP4`,
+      );
     const file = `${clip.file.replace(/\.mp3$/, "")}.mp4`;
     await writeFile(join(VIDEO_DIR, file), bin);
     rendered.push({ scene: clip.scene, file });

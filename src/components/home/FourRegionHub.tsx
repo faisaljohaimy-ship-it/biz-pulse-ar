@@ -352,7 +352,6 @@ function RegionCardRect({
   );
 }
 
-
 function LiveClock({ ar }: { ar: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {

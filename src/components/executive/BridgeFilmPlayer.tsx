@@ -16,7 +16,7 @@
  */
 import * as React from "react";
 import { Play, Film, RefreshCw, AlertTriangle } from "lucide-react";
-import { BRIDGE_FILM_POSTER, bridgeFilmSrc } from "@/lib/bridge-film";
+import { BRIDGE_FILM_POSTER, bridgeCaptionsSrc, bridgeFilmSrc } from "@/lib/bridge-film";
 
 type MediaState = "loading" | "success" | "empty" | "error";
 
@@ -29,28 +29,42 @@ export interface BridgeFilmPlayerProps {
 
 export function BridgeFilmPlayer({ lang, onLaunchLive, className }: BridgeFilmPlayerProps) {
   const ar = lang === "ar";
+  const dir = ar ? "rtl" : "ltr";
   const src = bridgeFilmSrc(lang);
+  const captions = bridgeCaptionsSrc(lang);
   const [state, setState] = React.useState<MediaState>("loading");
   const videoRef = React.useRef<HTMLVideoElement | null>(null);
+  const abortRef = React.useRef<AbortController | null>(null);
 
-  // Probe availability with a HEAD request; a 200 means the film was rendered.
+  // Probe availability with a HEAD request; a real AbortController lets a
+  // retry (or unmount) cancel an in-flight probe so a stale response can't
+  // overwrite a newer state.
   const probe = React.useCallback(() => {
-    let cancelled = false;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setState("loading");
-    fetch(src, { method: "HEAD" })
+    fetch(src, { method: "HEAD", signal: controller.signal })
       .then((r) => {
-        if (cancelled) return;
+        if (controller.signal.aborted) return;
+        // 200 → the film was rendered. Any other status (404 = not produced
+        // yet) is the legitimate EMPTY state, not a failure.
         setState(r.ok ? "success" : "empty");
       })
-      .catch(() => {
-        if (!cancelled) setState("empty");
+      .catch((err: unknown) => {
+        if (controller.signal.aborted || (err instanceof DOMException && err.name === "AbortError"))
+          return;
+        // A genuine network/decode failure is an ERROR (retryable) — distinct
+        // from "film not produced yet" so we never hide a real fault behind
+        // the in-production placeholder.
+        setState("error");
       });
-    return () => {
-      cancelled = true;
-    };
   }, [src]);
 
-  React.useEffect(() => probe(), [probe]);
+  React.useEffect(() => {
+    probe();
+    return () => abortRef.current?.abort();
+  }, [probe]);
 
   const shell =
     "relative w-full overflow-hidden rounded-3xl border border-white/10 bg-[#04101c]/80 " +
@@ -58,9 +72,9 @@ export function BridgeFilmPlayer({ lang, onLaunchLive, className }: BridgeFilmPl
 
   if (state === "loading") {
     return (
-      <div dir="rtl" className={shell} aria-busy="true">
+      <div dir={dir} lang={lang} className={shell} aria-busy="true">
         <div className="flex aspect-video w-full items-center justify-center">
-          <span className="h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-[#3AE8FF]" />
+          <span className="h-10 w-10 nx-anim-spin rounded-full border-2 border-white/20 border-t-[#3AE8FF]" />
           <span className="sr-only">{ar ? "جارٍ التحقق من الفيلم…" : "Checking film…"}</span>
         </div>
       </div>
@@ -69,7 +83,7 @@ export function BridgeFilmPlayer({ lang, onLaunchLive, className }: BridgeFilmPl
 
   if (state === "success") {
     return (
-      <div dir="rtl" className={shell}>
+      <div dir={dir} lang={lang} className={shell} role="status">
         <video
           ref={videoRef}
           className="aspect-video w-full bg-black"
@@ -84,14 +98,22 @@ export function BridgeFilmPlayer({ lang, onLaunchLive, className }: BridgeFilmPl
               : "Executive Command Bridge film — FINN voice"
           }
           onError={() => setState("error")}
-        />
+        >
+          <track
+            kind="captions"
+            src={captions}
+            srcLang={lang}
+            label={ar ? "العربية" : "English"}
+            default
+          />
+        </video>
       </div>
     );
   }
 
   if (state === "error") {
     return (
-      <div dir="rtl" className={shell} role="alert">
+      <div dir={dir} lang={lang} className={shell} role="alert">
         <div className="flex aspect-video w-full flex-col items-center justify-center gap-4 p-6 text-center">
           <AlertTriangle className="h-8 w-8 text-[#F5A524]" aria-hidden />
           <p className="text-sm text-white/75">
@@ -99,7 +121,7 @@ export function BridgeFilmPlayer({ lang, onLaunchLive, className }: BridgeFilmPl
           </p>
           <button
             type="button"
-            onClick={probe}
+            onClick={() => probe()}
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/15 px-4 text-sm font-semibold text-white transition-colors hover:border-[#3AE8FF]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3AE8FF]"
           >
             <RefreshCw className="h-4 w-4" aria-hidden />
@@ -112,7 +134,7 @@ export function BridgeFilmPlayer({ lang, onLaunchLive, className }: BridgeFilmPl
 
   // empty — the film has not been rendered yet.
   return (
-    <div dir="rtl" className={shell}>
+    <div dir={dir} lang={lang} className={shell} role="status">
       <div
         className="flex aspect-video w-full flex-col items-center justify-center gap-4 p-6 text-center"
         style={{

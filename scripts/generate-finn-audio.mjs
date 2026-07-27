@@ -97,7 +97,10 @@ async function synthesize(apiKey, text) {
     }),
   });
   if (!res.ok) {
-    const detail = await res.text().catch(() => "");
+    const detail = await res.text().catch((e) => {
+      console.warn(`  ⚠ could not read ElevenLabs error body: ${e?.message ?? e}`);
+      return "";
+    });
     throw new Error(`ElevenLabs ${res.status}: ${detail.slice(0, 200)}`);
   }
   return Buffer.from(await res.arrayBuffer());
@@ -120,7 +123,11 @@ async function main() {
   const manifest = { voiceId: VOICE_ID, model: MODEL_ID, format: OUTPUT_FORMAT, files: [] };
   for (const lg of langs) {
     const narration = await parseNarration(lg);
-    const ids = (scene ? [scene] : SCENES_ORDER).filter((id) => narration[id]);
+    const requested = scene ? [scene] : SCENES_ORDER;
+    const ids = requested.filter((id) => narration[id]);
+    const missing = requested.filter((id) => !narration[id]);
+    if (missing.length > 0)
+      console.warn(`⚠ ${lg}: no narration found for scene(s): ${missing.join(", ")}`);
     for (const id of ids) {
       const idx = SCENES_ORDER.indexOf(id) + 1;
       const file = `${String(idx).padStart(2, "0")}-${id}.${lg}.mp3`;
@@ -130,6 +137,15 @@ async function main() {
       manifest.files.push({ scene: id, lang: lg, file, bytes: audio.length });
       console.log(`ok (${(audio.length / 1024).toFixed(0)} KB)`);
     }
+  }
+
+  // Nothing resolved (bad --scene, empty/renamed narration) must be a hard
+  // error — not a silent success that leaves a stale/empty manifest behind.
+  if (manifest.files.length === 0) {
+    console.error(
+      "✗ No audio was generated — check --scene / --lang and that the narration files contain the expected scene markers.",
+    );
+    process.exit(1);
   }
 
   await writeFile(join(OUT_DIR, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);

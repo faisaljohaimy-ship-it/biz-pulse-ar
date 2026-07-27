@@ -130,6 +130,7 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
   const [liveMessage, setLiveMessage] = React.useState("");
 
   const regionAbortRef = React.useRef<AbortController | null>(null);
+  const snapshotAbortRef = React.useRef<AbortController | null>(null);
   const pausedRef = React.useRef(false);
   const commandKeysRef = React.useRef<Set<string>>(new Set());
   const staleTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -155,6 +156,7 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
         .catch((error: unknown) => {
           if (signal?.aborted || (error instanceof DOMException && error.name === "AbortError"))
             return;
+          console.error("[cockpit] snapshot load failed", error);
           setSnapshot({
             state: "error",
             messageAr: "تعذر تحميل لقطة القمرة — أعد المحاولة.",
@@ -166,6 +168,7 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
 
   React.useEffect(() => {
     const controller = new AbortController();
+    snapshotAbortRef.current = controller;
     loadSnapshot(controller.signal);
     return () => {
       controller.abort();
@@ -173,7 +176,14 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
     };
   }, [loadSnapshot]);
 
-  const reloadSnapshot = React.useCallback(() => loadSnapshot(), [loadSnapshot]);
+  // Manual reload is cancellable too: abort any in-flight load first so a
+  // stale response can never overwrite a fresher one (or a torn-down page).
+  const reloadSnapshot = React.useCallback(() => {
+    snapshotAbortRef.current?.abort();
+    const controller = new AbortController();
+    snapshotAbortRef.current = controller;
+    loadSnapshot(controller.signal);
+  }, [loadSnapshot]);
 
   // ── Persisted experience level (non-sensitive preference only) ────────
   React.useEffect(() => {
@@ -207,10 +217,14 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
     [announce],
   );
 
-  // ── Region selection (abort previous, announce) ───────────────────────
-  const selectRegion = React.useCallback(
-    (id: RegionId) => {
-      setRegion(id);
+  // ── Region selection ──────────────────────────────────────────────────
+  // Both the initial detail load and every user switch go through ONE shared
+  // AbortController ref, so a slow earlier request can never land after a
+  // newer one (last write wins). We abort the previous request at the START
+  // of a new load rather than in an effect cleanup — cleanup-abort would
+  // cancel a switch that the very same render just kicked off.
+  const loadRegion = React.useCallback(
+    (id: RegionId, opts?: { announce?: boolean }) => {
       regionAbortRef.current?.abort();
       const controller = new AbortController();
       regionAbortRef.current = controller;
@@ -221,7 +235,7 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
           if (controller.signal.aborted) return;
           setRegionDetail(data);
           setRegionLoading(false);
-          announce(`اختيرت ${data.labelAr} — الجاهزية ${data.readiness}٪`);
+          if (opts?.announce) announce(`اختيرت ${data.labelAr} — الجاهزية ${data.readiness}٪`);
         })
         .catch((error: unknown) => {
           if (
@@ -229,27 +243,29 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
             (error instanceof DOMException && error.name === "AbortError")
           )
             return;
+          console.error("[cockpit] region load failed", error);
           setRegionLoading(false);
         });
     },
-    [repo, setRegion, announce],
+    [repo, announce],
+  );
+
+  const selectRegion = React.useCallback(
+    (id: RegionId) => {
+      setRegion(id);
+      loadRegion(id, { announce: true });
+    },
+    [setRegion, loadRegion],
   );
 
   // Load the initial region detail once the snapshot is ready.
   React.useEffect(() => {
     if (snapshot.state !== "ready" || regionDetail) return;
-    const controller = new AbortController();
-    setRegionLoading(true);
-    repo
-      .getRegion(selectedRegion, controller.signal)
-      .then((data) => {
-        if (controller.signal.aborted) return;
-        setRegionDetail(data);
-        setRegionLoading(false);
-      })
-      .catch(() => setRegionLoading(false));
-    return () => controller.abort();
-  }, [snapshot.state, regionDetail, repo, selectedRegion]);
+    loadRegion(selectedRegion);
+  }, [snapshot.state, regionDetail, selectedRegion, loadRegion]);
+
+  // Abort any in-flight region request only on unmount.
+  React.useEffect(() => () => regionAbortRef.current?.abort(), []);
 
   const setMapMode = React.useCallback(
     (mode: MapMode) => {
@@ -281,8 +297,16 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
             setEvents((current) => [event, ...current].slice(0, EVENT_CAP));
           }
         }
-      } catch {
-        /* stream ended — the cockpit keeps its last events */
+      } catch (error) {
+        // A deliberate abort (unmount / repo swap) is a clean end. Anything
+        // else is a real stream failure — surface it instead of masking it
+        // as a normal completion. Either way the last events are kept.
+        if (
+          controller.signal.aborted ||
+          (error instanceof DOMException && error.name === "AbortError")
+        )
+          return;
+        console.error("[cockpit] event stream error", error);
       }
     })();
     return () => controller.abort();
@@ -363,7 +387,8 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
           ].slice(0, EVENT_CAP),
         );
         return result;
-      } catch {
+      } catch (error) {
+        console.error(`[cockpit] action ${actionId} failed`, error);
         toast.error("تعذر تنفيذ الإجراء — أعد المحاولة");
         return null;
       } finally {
@@ -374,35 +399,69 @@ export function CockpitProvider({ children, repository, initialLevel }: CockpitP
     [repo],
   );
 
-  const value: CockpitContextValue = {
-    repository: repo,
-    snapshot,
-    reloadSnapshot,
-    selectedRegion,
-    selectRegion,
-    regionDetail,
-    regionLoading,
-    mapMode,
-    setMapMode,
-    level,
-    setLevel,
-    events: visibleEvents,
-    eventsPaused,
-    bufferedCount: buffered.length,
-    toggleEventsPaused,
-    dismissEvent,
-    notifications,
-    unreadCount,
-    markNotificationsRead,
-    overlay,
-    openDrawer,
-    openWorkflow,
-    closeOverlay,
-    runCommand,
-    commandBusy,
-    announce,
-    liveMessage,
-  };
+  // Memoized so a consumer subscribing to only part of the value doesn't
+  // re-render on every unrelated tick (e.g. the ~14s event stream). The
+  // identity changes only when a field it actually depends on changes.
+  const value = React.useMemo<CockpitContextValue>(
+    () => ({
+      repository: repo,
+      snapshot,
+      reloadSnapshot,
+      selectedRegion,
+      selectRegion,
+      regionDetail,
+      regionLoading,
+      mapMode,
+      setMapMode,
+      level,
+      setLevel,
+      events: visibleEvents,
+      eventsPaused,
+      bufferedCount: buffered.length,
+      toggleEventsPaused,
+      dismissEvent,
+      notifications,
+      unreadCount,
+      markNotificationsRead,
+      overlay,
+      openDrawer,
+      openWorkflow,
+      closeOverlay,
+      runCommand,
+      commandBusy,
+      announce,
+      liveMessage,
+    }),
+    [
+      repo,
+      snapshot,
+      reloadSnapshot,
+      selectedRegion,
+      selectRegion,
+      regionDetail,
+      regionLoading,
+      mapMode,
+      setMapMode,
+      level,
+      setLevel,
+      visibleEvents,
+      eventsPaused,
+      buffered.length,
+      toggleEventsPaused,
+      dismissEvent,
+      notifications,
+      unreadCount,
+      markNotificationsRead,
+      overlay,
+      openDrawer,
+      openWorkflow,
+      closeOverlay,
+      runCommand,
+      commandBusy,
+      announce,
+      liveMessage,
+    ],
+  );
 
   return <CockpitContext.Provider value={value}>{children}</CockpitContext.Provider>;
 }

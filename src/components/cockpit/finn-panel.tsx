@@ -147,7 +147,7 @@ export function FinnExecutivePanel({ finn }: { finn: FinnSnapshot }) {
               {recommendation}
             </p>
           )}
-          <p className="mt-1 text-[11px] text-nx-pearl/48">
+          <p className="mt-1 text-[11px] text-nx-pearl/64">
             مبنية على {finn.sourceCount} مصدرًا · محاكاة مرجعية
           </p>
           <NxButton

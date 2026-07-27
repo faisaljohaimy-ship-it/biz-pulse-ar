@@ -246,14 +246,50 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
   const { selectedRegion, selectRegion, mapMode, setMapMode, regionLoading } = useCockpit();
   const reduced = usePrefersReducedMotion();
   const [expanded, setExpanded] = React.useState(false);
+  const dialogRef = React.useRef<HTMLDivElement>(null);
+  const restoreFocusRef = React.useRef<HTMLElement | null>(null);
 
+  // Fullscreen map is a modal dialog: Escape closes, Tab is trapped inside,
+  // focus enters on open and returns to the trigger on close (WCAG 2.4.3 /
+  // 2.1.2). aria-modal marks the rest of the page inert for assistive tech.
   React.useEffect(() => {
     if (!expanded) return;
+    restoreFocusRef.current = document.activeElement as HTMLElement | null;
+    const node = dialogRef.current;
+    const focusablesIn = () =>
+      node
+        ? Array.from(
+            node.querySelectorAll<HTMLElement>(
+              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+            ),
+          ).filter((el) => !el.hasAttribute("disabled") && el.offsetParent !== null)
+        : [];
+    focusablesIn()[0]?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setExpanded(false);
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setExpanded(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = focusablesIn();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const target = node ?? window;
+    target.addEventListener("keydown", onKey as EventListener);
+    return () => {
+      target.removeEventListener("keydown", onKey as EventListener);
+      restoreFocusRef.current?.focus();
+    };
   }, [expanded]);
 
   const modeControls = (
@@ -370,6 +406,7 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
       </NxPanel>
       {expanded ? (
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-label="الخريطة الاستراتيجية — ملء الشاشة"

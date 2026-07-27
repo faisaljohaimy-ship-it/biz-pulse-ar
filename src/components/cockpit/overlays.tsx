@@ -7,7 +7,7 @@
  * lands in the simulated audit log (executeAction → correlationId).
  */
 import * as React from "react";
-import { Search } from "lucide-react";
+import { Check, Search } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { REGIONS } from "@/lib/regions";
@@ -222,7 +222,7 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
             >
               <span className="flex items-center justify-between text-sm font-semibold text-nx-pearl">
                 {n.titleAr}
-                <bdi className="text-[11px] font-normal text-nx-pearl/48" dir="ltr">
+                <bdi className="text-[11px] font-normal text-nx-pearl/64" dir="ltr">
                   {n.time}
                 </bdi>
               </span>
@@ -296,7 +296,7 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
                   className="flex min-h-11 w-full items-center justify-between gap-2 rounded-nx-8 px-2 text-start text-sm text-nx-pearl/80 hover:bg-white/6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
                 >
                   {r.labelAr}
-                  <span className="text-[10px] text-nx-pearl/48">{r.kind}</span>
+                  <span className="text-[10px] text-nx-pearl/64">{r.kind}</span>
                 </button>
               </li>
             ))}
@@ -457,31 +457,38 @@ function InitiativeCreateForm({ onDone }: { onDone: () => void }) {
       <fieldset className="flex flex-col gap-1 text-sm text-nx-pearl/72">
         <legend className="mb-1">المنطقة المستهدفة</legend>
         <div className="flex flex-wrap gap-2">
-          {REGIONS.map((region) => (
-            <label
-              key={region.id}
-              className={cn(
-                "rounded-nx-8 inline-flex min-h-11 cursor-pointer items-center gap-1.5 border px-3 py-1.5 text-xs",
-                regionId === region.id
-                  ? "border-nx-cyan/60 text-nx-cyan"
-                  : "border-white/14 text-nx-pearl/64",
-              )}
-            >
-              <input
-                type="radio"
-                name="region"
-                value={region.id}
-                checked={regionId === region.id}
-                onChange={() => setRegionId(region.id)}
-                className="sr-only"
-              />
-              {region.shortAr}
-            </label>
-          ))}
+          {REGIONS.map((region) => {
+            const selected = regionId === region.id;
+            return (
+              <label
+                key={region.id}
+                className={cn(
+                  "rounded-nx-8 inline-flex min-h-11 cursor-pointer items-center gap-1.5 border px-3 py-1.5 text-xs",
+                  selected ? "border-nx-cyan/60 text-nx-cyan" : "border-white/14 text-nx-pearl/64",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="region"
+                  value={region.id}
+                  checked={selected}
+                  onChange={() => setRegionId(region.id)}
+                  className="sr-only"
+                />
+                {/* Non-color selection cue (WCAG 1.4.1): a check icon, not
+                    colour alone, marks the chosen region. */}
+                <Check
+                  aria-hidden
+                  className={cn("size-3.5 shrink-0", selected ? "opacity-100" : "opacity-0")}
+                />
+                {region.shortAr}
+              </label>
+            );
+          })}
         </div>
       </fieldset>
       {error ? <p className="text-xs text-nx-critical">{error}</p> : null}
-      <p className="text-[11px] text-nx-pearl/48">
+      <p className="text-[11px] text-nx-pearl/64">
         الإنشاء يسجَّل في بيئة المحاكاة المرجعية فقط، ويمر عبر بوابة الاعتماد قبل أي تنفيذ.
       </p>
       <NxButton
@@ -525,7 +532,7 @@ function SectorReportBody({ snapshot }: { snapshot: CockpitSnapshot }) {
           ))}
         </tbody>
       </table>
-      <p className="text-[11px] text-nx-pearl/48">
+      <p className="text-[11px] text-nx-pearl/64">
         محاكاة مرجعية موسومة — التقرير الرسمي يصدر من وحدة التقارير.
       </p>
       <a

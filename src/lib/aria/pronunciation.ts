@@ -160,8 +160,13 @@ function arabicTwoDigitGenitive(n: number): string {
 }
 
 /** Clock reading: «الثانية عشرة وخمس وثلاثون دقيقة». Seconds are dropped
- *  (spoken seconds are noise); the hour is read as a 12-hour ordinal. */
+ *  (spoken seconds are noise); the hour is read as a 12-hour ordinal.
+ *  Returns "" on invalid input (non-integer or out of range) so the caller
+ *  keeps the original text instead of voicing «undefined» or a wrong hour. */
 export function arabicClock(hh: number, mm: number): string {
+  if (!Number.isInteger(hh) || !Number.isInteger(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) {
+    return "";
+  }
   const hour12 = hh % 12;
   const hourWord = HOUR_ORDINAL_F[hour12];
   if (mm <= 0) return `${hourWord} تمامًا`;
@@ -198,7 +203,11 @@ export function toArabicSpokenNumber(
   value: string | number,
   kind: ArabicNumberKind = "auto",
 ): string {
-  const raw = String(value).trim();
+  const input = String(value).trim();
+  // Split off a genuine leading minus so it is SPOKEN («ناقص») instead of
+  // being dropped by the digit-only strips below or voiced as a bare dash.
+  const negative = input.startsWith("-");
+  const raw = negative ? input.slice(1).trim() : input;
 
   // Resolve auto → concrete kind.
   let k = kind;
@@ -211,29 +220,39 @@ export function toArabicSpokenNumber(
     else k = "cardinal";
   }
 
+  let spoken: string;
   switch (k) {
     case "time": {
       const [hh, mm] = raw.split(":");
-      return arabicClock(Number(hh), Number(mm));
+      // Invalid clock → keep the original token rather than voice «undefined».
+      spoken = arabicClock(Number(hh), Number(mm)) || raw;
+      break;
     }
     case "year":
-      return arabicYear(Number(raw.replace(/[^\d]/g, "")));
+      spoken = arabicYear(Number(raw.replace(/[^\d]/g, "")));
+      break;
     case "percent": {
       const num = raw.replace(/[%\s]|بالمئة/g, "");
-      return `${spokenNumber(num, "ar")} بالمئة`;
+      spoken = `${spokenNumber(num, "ar")} بالمئة`;
+      break;
     }
     case "riyal": {
       const stripped = raw.replace(CURRENCY_RE, "").trim();
-      return `${scaledToWords(stripped)} ريال`;
+      spoken = `${scaledToWords(stripped)} ريال`;
+      break;
     }
     case "scaled":
-      return scaledToWords(raw);
+      spoken = scaledToWords(raw);
+      break;
     case "decimal":
-      return spokenNumber(raw.replace(/[^\d.]/g, ""), "ar");
+      spoken = spokenNumber(raw.replace(/[^\d.]/g, ""), "ar");
+      break;
     case "cardinal":
     default:
-      return arabicNumberWords(Number(raw.replace(/[^\d]/g, "")));
+      spoken = arabicNumberWords(Number(raw.replace(/[^\d]/g, "")));
+      break;
   }
+  return negative ? `ناقص ${spoken}` : spoken;
 }
 
 /** Fold an optional magnitude suffix into the value, then speak it. A whole
@@ -394,6 +413,13 @@ function expandNumbers(text: string, lang: "ar" | "en"): string {
 
   const percent = lang === "ar" ? "بالمئة" : "percent";
 
+  // A genuine minus SIGN — start of string, or after whitespace / an opener /
+  // an Arabic comma, immediately before a digit — is spoken as a word so
+  // negatives are never dropped. A hyphen BETWEEN digits (a range like 5-10)
+  // is left untouched. No lookbehind/lookahead (older iOS Safari rejects them).
+  const neg = lang === "ar" ? "ناقص " : "minus ";
+  out = out.replace(/(^|[\s([،])-(\d)/g, `$1${neg}$2`);
+
   if (lang === "ar") {
     // Arabic replies route quantities through the one isolated converter so
     // currency, magnitudes and clock times speak as clear words. Order:
@@ -404,8 +430,11 @@ function expandNumbers(text: string, lang: "ar" | "en"): string {
     out = out.replace(/\d[\d,]*(?:\.\d+)?[KMB](?![A-Za-z])/g, (m) =>
       toArabicSpokenNumber(m, "scaled"),
     );
-    out = out.replace(/\b(\d{1,2}):(\d{2})(?::\d{2})?\b/g, (_m, hh: string, mm: string) =>
-      arabicClock(Number(hh), Number(mm)),
+    out = out.replace(
+      /\b(\d{1,2}):(\d{2})(?::\d{2})?\b/g,
+      (m, hh: string, mm: string) =>
+        // Invalid clock (e.g. 45:99) → keep the token, don't voice a wrong hour.
+        arabicClock(Number(hh), Number(mm)) || m,
     );
   } else {
     // English replies keep clock times protected (spoken correctly as-is).

@@ -165,6 +165,39 @@ describe("toArabicSpokenNumber — the one isolated converter", () => {
   });
 });
 
+describe("negative values are SPOKEN, not dropped or voiced as a dash", () => {
+  it("speaks a leading minus as «ناقص» in an Arabic reply", () => {
+    expect(applyFinnPronunciation("الفارق -5 نقاط")).toBe("الفارق ناقص خمسة نقاط");
+    expect(applyFinnPronunciation("انخفض بمقدار -12%")).toBe("انخفض بمقدار ناقص اثنا عشر بالمئة");
+  });
+
+  it("speaks «minus» in an English reply", () => {
+    expect(applyFinnPronunciation("delta of -12%")).toBe("delta of minus twelve percent");
+  });
+
+  it("leaves a hyphen BETWEEN digits (a range) untouched — not «ناقص»", () => {
+    expect(applyFinnPronunciation("النطاق 5-10")).not.toContain("ناقص");
+  });
+
+  it("prefixes «ناقص» via the isolated converter for every kind", () => {
+    expect(toArabicSpokenNumber("-5", "cardinal")).toBe("ناقص خمسة");
+    expect(toArabicSpokenNumber("-12%", "percent")).toBe("ناقص اثنا عشر بالمئة");
+    expect(toArabicSpokenNumber("-3.5", "auto")).toBe("ناقص ثلاثة فاصلة خمسة");
+  });
+});
+
+describe("invalid clock input never voices «undefined» or a wrong hour", () => {
+  it("returns empty for out-of-range or non-integer input", () => {
+    expect(arabicClock(45, 99)).toBe("");
+    expect(arabicClock(Number.NaN, 5)).toBe("");
+    expect(arabicClock(9, 5)).toBe("التاسعة وخمس دقائق");
+  });
+
+  it("keeps the original token when the time is invalid", () => {
+    expect(toArabicSpokenNumber("45:99", "time")).toBe("45:99");
+  });
+});
+
 describe("applyFinnPronunciation — day names spoken clearly", () => {
   it("speaks an English day name in Arabic within an Arabic reply", () => {
     expect(applyFinnPronunciation("التقرير جاهز يوم Thursday")).toBe("التقرير جاهز يوم الخميس");

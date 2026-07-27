@@ -226,9 +226,9 @@ describe("executive cockpit — interactions", () => {
   it("experience levels change density (technical exposes stage timings)", async () => {
     await renderCockpit();
     expect(screen.queryByText(/310ms/)).not.toBeInTheDocument();
-    const technical = screen.getByRole("tab", { name: /المستوى التقني/ });
+    const technical = screen.getByRole("button", { name: /المستوى التقني/ });
     fireEvent.click(technical);
-    expect(technical).toHaveAttribute("aria-selected", "true");
+    expect(technical).toHaveAttribute("aria-pressed", "true");
     expect(await screen.findByText(/310ms/)).toBeInTheDocument();
     // Preference persists (allowed non-sensitive storage).
     expect(window.localStorage.getItem("nexios.cockpit.level")).toBe("technical");

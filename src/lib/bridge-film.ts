@@ -21,3 +21,12 @@ export const BRIDGE_FILM_POSTER = "/finn-portrait.png";
 export function bridgeFilmSrc(lang: "ar" | "en"): string {
   return lang === "en" ? "/media/bridge/bridge-final.en.mp4" : BRIDGE_FILM_SRC;
 }
+
+/**
+ * WebVTT captions for the film, emitted alongside it by the pipeline. Absent
+ * until the film is rendered — the <track> degrades silently (no captions),
+ * the same graceful-absence contract as the film asset itself.
+ */
+export function bridgeCaptionsSrc(lang: "ar" | "en"): string {
+  return lang === "en" ? "/media/bridge/bridge-final.en.vtt" : "/media/bridge/bridge-final.vtt";
+}

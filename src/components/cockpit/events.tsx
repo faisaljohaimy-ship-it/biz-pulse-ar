@@ -23,7 +23,11 @@ export function LiveEventStream() {
   const { events, eventsPaused, bufferedCount, toggleEventsPaused, dismissEvent, openDrawer } =
     useCockpit();
   const listRef = React.useRef<HTMLUListElement>(null);
+  const pauseRef = React.useRef<HTMLButtonElement>(null);
   const [focusIndex, setFocusIndex] = React.useState(0);
+  // Index to restore focus to after a dismiss removes the focused card, so
+  // keyboard/SR focus never drops to <body>. null = no pending move.
+  const pendingFocusRef = React.useRef<number | null>(null);
 
   const moveFocus = (delta: number) => {
     const next = Math.min(Math.max(focusIndex + delta, 0), Math.max(events.length - 1, 0));
@@ -33,6 +37,22 @@ export function LiveEventStream() {
     // scrollIntoView is absent in jsdom — optional-call keeps tests real.
     items?.[next]?.scrollIntoView?.({ inline: "nearest", block: "nearest", behavior: "smooth" });
   };
+
+  // After a dismiss shrinks the list, land focus on the card now occupying
+  // that slot (clamped), or the pause control if the stream emptied.
+  React.useEffect(() => {
+    if (pendingFocusRef.current == null) return;
+    const target = pendingFocusRef.current;
+    pendingFocusRef.current = null;
+    const items = listRef.current?.querySelectorAll<HTMLElement>("[data-event-open]");
+    if (items && items.length > 0) {
+      const idx = Math.min(target, items.length - 1);
+      setFocusIndex(idx);
+      items[idx]?.focus();
+    } else {
+      pauseRef.current?.focus();
+    }
+  }, [events]);
 
   return (
     <NxPanel
@@ -79,6 +99,7 @@ export function LiveEventStream() {
             <ChevronLeft aria-hidden className="size-4" />
           </button>
           <button
+            ref={pauseRef}
             type="button"
             data-action="events.pause.toggle"
             aria-pressed={eventsPaused}
@@ -133,6 +154,7 @@ export function LiveEventStream() {
                     aria-label={`إخفاء الحدث: ${event.titleAr}`}
                     onClick={() => {
                       emitCockpitAction("events.dismiss");
+                      pendingFocusRef.current = events.findIndex((e) => e.id === event.id);
                       dismissEvent(event.id);
                     }}
                     className="inline-flex size-11 items-center justify-center rounded-nx-8 text-nx-pearl/48 transition-colors duration-[var(--nx-anim-fast)] hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
@@ -152,7 +174,7 @@ export function LiveEventStream() {
                 >
                   <span className="text-sm font-semibold text-nx-pearl">{event.titleAr}</span>
                   <span className="text-xs text-nx-pearl/64">{event.detailAr}</span>
-                  <span className="text-[10px] text-nx-pearl/40">المصدر: {event.source}</span>
+                  <span className="text-[10px] text-nx-pearl/60">المصدر: {event.source}</span>
                 </button>
               </li>
             );

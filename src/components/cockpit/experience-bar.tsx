@@ -60,15 +60,17 @@ export function ExperienceLevelBar() {
         <span dir="ltr">v2 · Enterprise</span>
       </div>
 
-      <div role="tablist" aria-label="مستوى العرض" className="flex items-center gap-1">
+      {/* A density switch, not tabs revealing panels: a labeled group of
+          toggle buttons (aria-pressed) is the correct, keyboard-native
+          pattern — each button sits in natural tab order. */}
+      <div role="group" aria-label="مستوى العرض" className="flex items-center gap-1">
         {LEVELS.map((entry) => {
           const active = level === entry.id;
           return (
             <button
               key={entry.id}
               type="button"
-              role="tab"
-              aria-selected={active}
+              aria-pressed={active}
               data-action={entry.actionId}
               data-level={entry.id}
               onClick={() => {

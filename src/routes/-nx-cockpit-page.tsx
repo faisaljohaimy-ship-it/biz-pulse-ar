@@ -45,6 +45,7 @@ function CockpitUrlSync() {
   const navigate = routeApi.useNavigate();
   const search = routeApi.useSearch();
   const urlAppliedRef = React.useRef(false);
+  const firstWriteRef = React.useRef(true);
 
   React.useEffect(() => {
     if (urlAppliedRef.current) return;
@@ -66,6 +67,14 @@ function CockpitUrlSync() {
 
   React.useEffect(() => {
     if (!urlAppliedRef.current) return;
+    // On mount the URL is the source of truth (the apply-once effect just read
+    // from it). Skip the first write so a deep link like ?region=west is never
+    // momentarily overwritten by the still-default state before selectRegion
+    // settles; the deep-link-driven state change triggers the real write next.
+    if (firstWriteRef.current) {
+      firstWriteRef.current = false;
+      return;
+    }
     void navigate({
       to: "/nx-cockpit",
       search: (prev: Record<string, unknown>) => ({
