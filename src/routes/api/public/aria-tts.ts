@@ -75,6 +75,13 @@ async function synthesizeWithElevenLabs(
   return r;
 }
 
+function isAbort(e: unknown): boolean {
+  return (
+    (e instanceof Error && (e.name === "AbortError" || /aborted/i.test(e.message))) ||
+    false
+  );
+}
+
 export const Route = createFileRoute("/api/public/aria-tts")({
   server: {
     handlers: {
