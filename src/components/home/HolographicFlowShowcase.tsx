@@ -211,8 +211,9 @@ export function HolographicFlowShowcase({
           }
         >
           <div className="min-h-[360px] p-3 sm:min-h-[420px] sm:p-5">
-            <AgenticFlowCanvas />
+            <AgenticFlowCanvas ar={ar} />
           </div>
+
         </OrbitalFrame>
       </div>
 
