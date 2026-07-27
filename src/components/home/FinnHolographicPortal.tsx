@@ -12,7 +12,7 @@
 import { Link } from "@tanstack/react-router";
 import { Mic, ArrowLeft, ArrowRight } from "lucide-react";
 import { BRAND_ASSISTANT } from "@/lib/domain";
-import finnHoloPortrait from "@/assets/finn-holo-portrait.png.asset.json";
+import finnHoloPortrait from "@/assets/finn-holo-portrait-v2.png.asset.json";
 
 export type FinnVisualState = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
@@ -46,15 +46,15 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         draggable={false}
         loading="eager"
         decoding="async"
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-center"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-bottom"
       />
-      {/* Subtle top vignette only — keep portrait crisp and clear */}
+      {/* Very light top vignette — keep headroom clear for the wordmark */}
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-40"
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-32"
         style={{
           background:
-            "linear-gradient(to bottom, rgba(2,7,15,0.75), rgba(2,7,15,0.25) 60%, transparent)",
+            "linear-gradient(to bottom, rgba(2,7,15,0.55), rgba(2,7,15,0.15) 70%, transparent)",
         }}
       />
       {/* Subtle bottom vignette for footer legibility */}
@@ -77,17 +77,23 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         />
       </span>
 
-      {/* FINN wordmark ABOVE the head */}
-      <div className="relative z-10 flex flex-col items-center pt-4 sm:pt-6">
+      {/* FINN wordmark — fills the empty top space above the head */}
+      <div className="relative z-10 flex flex-col items-center px-4 pt-5 sm:pt-7">
         <h2
-          className="text-7xl font-black tracking-[0.35em] text-white sm:text-8xl md:text-9xl"
+          className="text-7xl font-black leading-none tracking-[0.32em] text-white sm:text-8xl md:text-[9rem]"
           style={{
             textShadow:
-              "0 2px 18px rgba(0,0,0,0.95), 0 0 28px rgba(34,211,238,0.65), 0 0 70px rgba(34,211,238,0.4)",
+              "0 2px 20px rgba(0,0,0,0.95), 0 0 32px rgba(34,211,238,0.7), 0 0 80px rgba(34,211,238,0.45)",
           }}
         >
           FINN
         </h2>
+        <span
+          className="mt-2 text-[10px] font-semibold uppercase tracking-[0.5em] text-cyan-200/85 sm:text-xs"
+          style={{ textShadow: "0 1px 8px rgba(0,0,0,0.9)" }}
+        >
+          {ar ? "المساعد التنفيذي" : "Executive Assistant"}
+        </span>
       </div>
 
       {/* Center — holographic ring around the face with mic CTA inside */}
