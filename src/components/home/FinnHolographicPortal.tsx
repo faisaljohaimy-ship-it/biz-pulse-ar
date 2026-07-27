@@ -78,15 +78,12 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       </span>
 
       {/* FINN wordmark ABOVE the head */}
-      <div className="relative z-10 flex flex-col items-center pt-5 sm:pt-7">
-        <div className="text-[10px] font-black uppercase tracking-[0.4em] text-cyan-300/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
-          NEXIOS AI
-        </div>
+      <div className="relative z-10 flex flex-col items-center pt-4 sm:pt-6">
         <h2
-          className="mt-1 text-5xl font-black tracking-[0.25em] text-white sm:text-6xl"
+          className="text-7xl font-black tracking-[0.35em] text-white sm:text-8xl md:text-9xl"
           style={{
             textShadow:
-              "0 2px 18px rgba(0,0,0,0.95), 0 0 24px rgba(34,211,238,0.55), 0 0 60px rgba(34,211,238,0.35)",
+              "0 2px 18px rgba(0,0,0,0.95), 0 0 28px rgba(34,211,238,0.65), 0 0 70px rgba(34,211,238,0.4)",
           }}
         >
           FINN
