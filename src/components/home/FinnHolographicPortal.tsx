@@ -353,7 +353,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         .finn-bg-sweep { animation: finnBgSweep 9s ease-in-out infinite alternate; will-change: transform; }
         .finn-bg-halo { animation: finnBgHalo 40s linear infinite; will-change: transform; }
         @media (prefers-reduced-motion: reduce) {
-          .finn-halo,.finn-ring-outer,.finn-scan > span,.finn-pulse,.finn-live,.finn-bg-grid,.finn-bg-sweep,.finn-bg-halo { animation: none !important; }
+          .finn-halo,.finn-ring-outer,.finn-scan > span,.finn-pulse,.finn-live,.finn-bg-grid,.finn-bg-sweep,.finn-bg-halo,.finn-rain-col { animation: none !important; }
         }
         [data-nx-frozen="true"] .finn-halo,
         [data-nx-frozen="true"] .finn-ring-outer,
@@ -362,7 +362,8 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         [data-nx-frozen="true"] .finn-live,
         [data-nx-frozen="true"] .finn-bg-grid,
         [data-nx-frozen="true"] .finn-bg-sweep,
-        [data-nx-frozen="true"] .finn-bg-halo { animation-play-state: paused !important; }
+        [data-nx-frozen="true"] .finn-bg-halo,
+        [data-nx-frozen="true"] .finn-rain-col { animation-play-state: paused !important; }
 
       `}</style>
     </section>
