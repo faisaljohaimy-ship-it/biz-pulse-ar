@@ -57,7 +57,7 @@ export function ExecutiveShowcaseHub() {
         <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#3AE8FF]/40 to-transparent" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6">
         {CARDS.map((c) => {
           const Icon = c.icon;
           return (
