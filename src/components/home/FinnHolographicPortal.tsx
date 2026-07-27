@@ -12,6 +12,7 @@
 import { Link } from "@tanstack/react-router";
 import { Mic, ArrowLeft, ArrowRight } from "lucide-react";
 import { BRAND_ASSISTANT } from "@/lib/domain";
+import finnHoloPortrait from "@/assets/finn-holo-portrait.png.asset.json";
 
 export type FinnVisualState = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
@@ -39,38 +40,30 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
     >
       {/* Portrait — face-first, fully visible, centred */}
       <img
-        src={BRAND_ASSISTANT.portrait}
+        src={finnHoloPortrait.url}
         alt={ar ? BRAND_ASSISTANT.nameAr : BRAND_ASSISTANT.nameEn}
         aria-hidden
         draggable={false}
         loading="eager"
         decoding="async"
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-contain object-top"
-        style={{
-          WebkitMaskImage:
-            "linear-gradient(to bottom, black 0%, black 72%, rgba(0,0,0,0.45) 90%, transparent 100%)",
-          maskImage:
-            "linear-gradient(to bottom, black 0%, black 72%, rgba(0,0,0,0.45) 90%, transparent 100%)",
-        }}
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-center"
       />
-      {/* Holographic tint + vignette */}
+      {/* Subtle top vignette only — keep portrait crisp and clear */}
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0"
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-40"
         style={{
           background:
-            "radial-gradient(120% 80% at 50% 0%, rgba(34,211,238,0.22), rgba(3,11,24,0.45) 55%, rgba(2,7,15,0.92) 100%)",
+            "linear-gradient(to bottom, rgba(2,7,15,0.75), rgba(2,7,15,0.25) 60%, transparent)",
         }}
       />
-      {/* Digital grid overlay */}
+      {/* Subtle bottom vignette for footer legibility */}
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 opacity-20"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-48"
         style={{
           background:
-            "repeating-linear-gradient(0deg, rgba(103,232,249,0.10) 0 1px, transparent 1px 16px), repeating-linear-gradient(90deg, rgba(103,232,249,0.08) 0 1px, transparent 1px 16px)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 55%, transparent 90%)",
-          maskImage: "radial-gradient(ellipse at center, black 55%, transparent 90%)",
+            "linear-gradient(to top, rgba(2,7,15,0.9), rgba(2,7,15,0.4) 60%, transparent)",
         }}
       />
       {/* Full-card scanline */}
