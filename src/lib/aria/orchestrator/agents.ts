@@ -13,6 +13,7 @@ import type { AgentContract, AgentResult, AgentId } from "./types";
 import type { FinnIntent } from "../executive-reasoning.server";
 import { runExecutiveBrain } from "../executive-brain/brain.server";
 import { toBrainRequest } from "./context.server";
+import { buildReport, KIND_LABEL_AR_MAP } from "@/lib/reports-agent/engine";
 
 // ---------------------------------------------------------------------------
 // Helpers
