@@ -38,6 +38,52 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       aria-label={ar ? "بوابة FINN التنفيذية" : "FINN executive portal"}
       className="finn-portal relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl border border-cyan-300/25 bg-[rgba(3,15,27,0.9)] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:min-h-[620px]"
     >
+      {/* Live holographic digital background — full card */}
+      <span aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {/* Deep radial glow */}
+        <span
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 40%, rgba(34,211,238,0.28), rgba(8,47,73,0.55) 55%, rgba(2,7,15,0.95) 100%)",
+          }}
+        />
+        {/* Animated digital grid */}
+        <span
+          className="finn-bg-grid absolute inset-0 opacity-40"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(103,232,249,0.22) 1px, transparent 1px), linear-gradient(90deg, rgba(103,232,249,0.22) 1px, transparent 1px)",
+            backgroundSize: "36px 36px",
+            maskImage:
+              "radial-gradient(ellipse at center, black 40%, transparent 85%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse at center, black 40%, transparent 85%)",
+          }}
+        />
+        {/* Diagonal data sweep */}
+        <span
+          className="finn-bg-sweep absolute -inset-x-1/3 top-1/3 h-40 opacity-50"
+          style={{
+            background:
+              "linear-gradient(115deg, transparent 30%, rgba(103,232,249,0.35) 50%, transparent 70%)",
+            filter: "blur(6px)",
+          }}
+        />
+        {/* Slow rotating hologram halo */}
+        <span
+          className="finn-bg-halo absolute left-1/2 top-1/2 h-[140%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40"
+          style={{
+            background:
+              "conic-gradient(from 0deg, rgba(34,211,238,0.0), rgba(34,211,238,0.35), rgba(34,211,238,0.0) 40%, rgba(103,232,249,0.28) 60%, rgba(34,211,238,0.0))",
+            maskImage:
+              "radial-gradient(circle, transparent 45%, black 55%, transparent 80%)",
+            WebkitMaskImage:
+              "radial-gradient(circle, transparent 45%, black 55%, transparent 80%)",
+          }}
+        />
+      </span>
+
       {/* Portrait — face-first, fully visible, centred */}
       {/* Live holographic FINN — WebGL scene, not a static image */}
       <FinnLiveHologram
@@ -48,6 +94,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
             : `${BRAND_ASSISTANT.nameEn}, executive industrial security AI assistant, ${label.en}`
         }
       />
+
       {/* Very light top vignette — keep headroom clear for the wordmark */}
       <span
         aria-hidden
