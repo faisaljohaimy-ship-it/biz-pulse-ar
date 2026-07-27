@@ -32,6 +32,8 @@ import { FinnAnomalyStrip } from "@/components/aria/FinnAnomalyStrip";
 import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
 import { SystemModulesDashboard } from "@/components/executive/SystemModulesDashboard";
 import { ExecutiveShowcaseHub } from "@/components/executive/ExecutiveShowcaseHub";
+import { HolographicFlowShowcase } from "@/components/home/HolographicFlowShowcase";
+
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { useFreezeOffscreen } from "@/hooks/use-freeze-offscreen";
@@ -237,8 +239,12 @@ function IntroLanding() {
         <OsDecisionQueue ar={ar} />
       </section>
 
-      {/* ══ ZONE 5 · العرض التنفيذي — بطاقتان فقط: جسر القيادة + العرض الكامل ══ */}
+      {/* ══ ZONE 5 · العرض التنفيذي — بطاقة جسر القيادة ══ */}
       <ExecutiveShowcaseHub />
+
+      {/* ══ ZONE 6 · التدفقات الهولوغرامية — شجرة القيادة + مدار الوكلاء ══ */}
+      <HolographicFlowShowcase ar={ar} agents={HOME_HOLO_AGENTS} />
+
 
       {/*
         Overflow moved off the homepage per the Executive Command View
