@@ -428,7 +428,7 @@ function Scene({ state, mobile }: { state: FinnLiveState; mobile: boolean }) {
 
 // ---------- Public component ----------
 
-function InnerLive({ state, ariaLabel }: FinnLiveHologramProps) {
+function InnerLive({ state, ariaLabel }: { state: FinnLiveState; ariaLabel: string }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
