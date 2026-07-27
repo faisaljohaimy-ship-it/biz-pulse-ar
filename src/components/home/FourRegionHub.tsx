@@ -861,7 +861,7 @@ export function FourRegionHub() {
         {/* Center column — FINN persona, reference command image, then map */}
         <div className="order-2 relative flex flex-col gap-3 md:order-none">
           <div>
-            <FinnPersonaCard ar={ar} />
+            <FinnHolographicPortal ar={ar} />
           </div>
           <div className="relative overflow-hidden rounded-2xl border border-[#00D4FF]/25 bg-[#04070F]">
             <img
