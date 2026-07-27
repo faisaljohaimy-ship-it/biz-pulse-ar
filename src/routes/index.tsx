@@ -275,6 +275,30 @@ function IntroLanding() {
         />
 
         <AgenticFlowCanvas ar={ar} variant="full" />
+
+        {/* بطاقة وكيل التقارير — دخول مباشر لصفحة الوكيل الحيّة. */}
+        <a
+          href="/reports-agent"
+          className="group relative block overflow-hidden rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-500/10 via-transparent to-cyan-500/5 p-5 shadow-[0_0_40px_rgba(0,212,255,0.15)] transition hover:border-cyan-300/60 hover:shadow-[0_0_60px_rgba(0,212,255,0.35)] sm:p-6"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-[10px] tracking-[0.3em] text-cyan-300/70">NEXIOS · AGENT</div>
+              <h3 className="mt-1 text-lg font-bold text-cyan-100 sm:text-xl">
+                {ar ? "وكيل التقارير — يعمل باستمرار" : "Reports Agent — always on"}
+              </h3>
+              <p className="mt-1 text-xs text-cyan-100/70 sm:text-sm">
+                {ar
+                  ? "توليد التقارير التشغيلية والامتثالية عبر المناطق والقطاعات، وتصديرها CSV/PDF."
+                  : "Continuous generation of operational & compliance reports with CSV/PDF export."}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-200">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+              {ar ? "يعمل الآن" : "Live"}
+            </span>
+          </div>
+        </a>
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-none px-4 py-10 sm:px-6 sm:py-16">
