@@ -296,9 +296,7 @@ function RegionCardRect({
   const perfKpi = panel.kpis.find((k) => k.ringPct != null);
   const perfPct = livePerformance ?? perfKpi?.ringPct ?? 0;
   return (
-    <Link
-      to="/hcis"
-      onClick={onSelect}
+    <div
       aria-pressed={active}
       aria-label={ar ? region.shortAr : region.shortEn}
       className="group/region relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border p-3 text-start transition hover:scale-[1.01] active:scale-[0.99]"
@@ -310,25 +308,30 @@ function RegionCardRect({
           : `0 12px 32px -22px ${color}55`,
       }}
     >
-      {/* Performance ring — trailing edge (leading in RTL) */}
-      <div className="shrink-0">
-        <Ring pct={perfPct} color={color} size={54} />
-      </div>
-
-      {/* Region name — the hero text, centered vertically, filling the card */}
-      <div className="min-w-0 flex-1 text-center">
-        <div
-          className="truncate text-[15px] font-black tracking-tight sm:text-base"
-          style={{ color, textShadow: `0 0 18px ${color}66` }}
-        >
-          {ar ? region.shortAr : region.shortEn}
+      {/* Region link — ring + hero name; sibling to module links to avoid nested anchors */}
+      <Link
+        to="/hcis"
+        onClick={onSelect}
+        aria-label={ar ? region.shortAr : region.shortEn}
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+      >
+        <div className="shrink-0">
+          <Ring pct={perfPct} color={color} size={54} />
         </div>
-        <div className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.22em] text-white/55">
-          {ar ? "المنطقة" : "Region"}
+        <div className="min-w-0 flex-1 text-center">
+          <div
+            className="truncate text-[15px] font-black tracking-tight sm:text-base"
+            style={{ color, textShadow: `0 0 18px ${color}66` }}
+          >
+            {ar ? region.shortAr : region.shortEn}
+          </div>
+          <div className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.22em] text-white/55">
+            {ar ? "المنطقة" : "Region"}
+          </div>
         </div>
-      </div>
+      </Link>
 
-      {/* Compact module strip */}
+      {/* Compact module strip — separate siblings, no nested anchors */}
       <div className="hidden shrink-0 items-center gap-1 sm:flex">
         {panel.modules.slice(0, 3).map((m) => {
           const Icon = m.icon;
@@ -336,7 +339,6 @@ function RegionCardRect({
             <Link
               key={m.en}
               to={m.to}
-              onClick={(e) => e.stopPropagation()}
               title={ar ? m.ar : m.en}
               aria-label={ar ? m.ar : m.en}
               className="grid size-8 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-white/30 hover:bg-white/[0.09] hover:text-white"
@@ -346,9 +348,10 @@ function RegionCardRect({
           );
         })}
       </div>
-    </Link>
+    </div>
   );
 }
+
 
 function LiveClock({ ar }: { ar: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
