@@ -38,6 +38,52 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       aria-label={ar ? "بوابة FINN التنفيذية" : "FINN executive portal"}
       className="finn-portal relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl border border-cyan-300/25 bg-[rgba(3,15,27,0.9)] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl sm:min-h-[620px]"
     >
+      {/* Live holographic digital background — full card */}
+      <span aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {/* Deep radial glow */}
+        <span
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 40%, rgba(34,211,238,0.28), rgba(8,47,73,0.55) 55%, rgba(2,7,15,0.95) 100%)",
+          }}
+        />
+        {/* Animated digital grid */}
+        <span
+          className="finn-bg-grid absolute inset-0 opacity-40"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(103,232,249,0.22) 1px, transparent 1px), linear-gradient(90deg, rgba(103,232,249,0.22) 1px, transparent 1px)",
+            backgroundSize: "36px 36px",
+            maskImage:
+              "radial-gradient(ellipse at center, black 40%, transparent 85%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse at center, black 40%, transparent 85%)",
+          }}
+        />
+        {/* Diagonal data sweep */}
+        <span
+          className="finn-bg-sweep absolute -inset-x-1/3 top-1/3 h-40 opacity-50"
+          style={{
+            background:
+              "linear-gradient(115deg, transparent 30%, rgba(103,232,249,0.35) 50%, transparent 70%)",
+            filter: "blur(6px)",
+          }}
+        />
+        {/* Slow rotating hologram halo */}
+        <span
+          className="finn-bg-halo absolute left-1/2 top-1/2 h-[140%] w-[140%] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40"
+          style={{
+            background:
+              "conic-gradient(from 0deg, rgba(34,211,238,0.0), rgba(34,211,238,0.35), rgba(34,211,238,0.0) 40%, rgba(103,232,249,0.28) 60%, rgba(34,211,238,0.0))",
+            maskImage:
+              "radial-gradient(circle, transparent 45%, black 55%, transparent 80%)",
+            WebkitMaskImage:
+              "radial-gradient(circle, transparent 45%, black 55%, transparent 80%)",
+          }}
+        />
+      </span>
+
       {/* Portrait — face-first, fully visible, centred */}
       {/* Live holographic FINN — WebGL scene, not a static image */}
       <FinnLiveHologram
@@ -48,6 +94,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
             : `${BRAND_ASSISTANT.nameEn}, executive industrial security AI assistant, ${label.en}`
         }
       />
+
       {/* Very light top vignette — keep headroom clear for the wordmark */}
       <span
         aria-hidden
@@ -114,12 +161,9 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
           />
           <span
             aria-hidden
-            className="finn-ring-inner pointer-events-none absolute inset-[14%] rounded-full border border-dashed border-cyan-200/35"
-          />
-          <span
-            aria-hidden
             className="finn-pulse pointer-events-none absolute inset-0 rounded-full border border-cyan-300/45"
           />
+
 
           {/* Mic "Talk now" CTA — sits inside the ring, over the face */}
           <Link
@@ -160,25 +204,32 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       <style>{`
         @keyframes finnHaloBreathe { 0%,100%{opacity:.55;transform:scale(1)} 50%{opacity:.95;transform:scale(1.04)} }
         @keyframes finnRotate { to { transform: rotate(360deg) } }
-        @keyframes finnRotateRev { to { transform: rotate(-360deg) } }
         @keyframes finnScan { 0%{transform:translateY(-20%)} 100%{transform:translateY(1200%)} }
         @keyframes finnPulseRing { 0%{opacity:.55;transform:scale(1)} 100%{opacity:0;transform:scale(1.15)} }
         @keyframes finnLive { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.55;transform:scale(.82)} }
+        @keyframes finnBgGrid { 0%{background-position:0 0,0 0} 100%{background-position:36px 36px,36px 36px} }
+        @keyframes finnBgSweep { 0%{transform:translateX(-30%)} 100%{transform:translateX(30%)} }
+        @keyframes finnBgHalo { to { transform: translate(-50%,-50%) rotate(360deg) } }
         .finn-halo { animation: finnHaloBreathe 6s ease-in-out infinite; will-change: transform,opacity; }
         .finn-ring-outer { animation: finnRotate 22s linear infinite; will-change: transform; }
-        .finn-ring-inner { animation: finnRotateRev 30s linear infinite; will-change: transform; }
         .finn-scan > span { animation: finnScan 7s linear infinite; will-change: transform; }
         .finn-pulse { animation: finnPulseRing 4.5s ease-out infinite; will-change: transform,opacity; }
         .finn-live { animation: finnLive 1.8s ease-in-out infinite; will-change: transform,opacity; }
+        .finn-bg-grid { animation: finnBgGrid 14s linear infinite; will-change: background-position; }
+        .finn-bg-sweep { animation: finnBgSweep 9s ease-in-out infinite alternate; will-change: transform; }
+        .finn-bg-halo { animation: finnBgHalo 40s linear infinite; will-change: transform; }
         @media (prefers-reduced-motion: reduce) {
-          .finn-halo,.finn-ring-outer,.finn-ring-inner,.finn-scan > span,.finn-pulse,.finn-live { animation: none !important; }
+          .finn-halo,.finn-ring-outer,.finn-scan > span,.finn-pulse,.finn-live,.finn-bg-grid,.finn-bg-sweep,.finn-bg-halo { animation: none !important; }
         }
         [data-nx-frozen="true"] .finn-halo,
         [data-nx-frozen="true"] .finn-ring-outer,
-        [data-nx-frozen="true"] .finn-ring-inner,
         [data-nx-frozen="true"] .finn-scan > span,
         [data-nx-frozen="true"] .finn-pulse,
-        [data-nx-frozen="true"] .finn-live { animation-play-state: paused !important; }
+        [data-nx-frozen="true"] .finn-live,
+        [data-nx-frozen="true"] .finn-bg-grid,
+        [data-nx-frozen="true"] .finn-bg-sweep,
+        [data-nx-frozen="true"] .finn-bg-halo { animation-play-state: paused !important; }
+
       `}</style>
     </section>
   );
