@@ -75,6 +75,13 @@ async function synthesizeWithElevenLabs(
   return r;
 }
 
+function isAbort(e: unknown): boolean {
+  return (
+    (e instanceof Error && (e.name === "AbortError" || /aborted/i.test(e.message))) ||
+    false
+  );
+}
+
 export const Route = createFileRoute("/api/public/aria-tts")({
   server: {
     handlers: {
@@ -140,6 +147,9 @@ export const Route = createFileRoute("/api/public/aria-tts")({
                 });
               }
             } catch (e) {
+              if (isAbort(e) || request.signal.aborted) {
+                return new Response(null, { status: 499 });
+              }
               console.error("[public/aria-tts] elevenlabs", e instanceof Error ? e.message : e);
             }
           }
@@ -148,6 +158,9 @@ export const Route = createFileRoute("/api/public/aria-tts")({
           // exclusively ElevenLabs Layan. A failed segment stays silent.
           return Response.json({ error: "tts_failed" }, { status: 502 });
         } catch (e) {
+          if (isAbort(e) || request.signal.aborted) {
+            return new Response(null, { status: 499 });
+          }
           console.error("[public/aria-tts] unhandled", e instanceof Error ? e.message : e);
           return Response.json({ error: "tts_failed" }, { status: 502 });
         }
