@@ -81,14 +81,20 @@ export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
         failed += 1;
         continue;
       }
-      const { error: upErr } = await supabaseAdmin
+      const { error: upErr } = await (supabaseAdmin as unknown as {
+        from: (t: string) => {
+          update: (v: Record<string, unknown>) => {
+            eq: (col: string, val: string) => Promise<{ error: { message: string } | null }>;
+          };
+        };
+      })
         .from(table)
         .update({
           embedding_v2: toPgVector(vec),
           model_version: RAG_MODEL_VERSION,
           embedded_at: now,
         })
-        .eq("id", (rows[i] as { id: string }).id);
+        .eq("id", String(rows[i].id));
       if (upErr) {
         failed += 1;
         console.error(`[rag/backfill] update ${table} failed`, upErr);
@@ -98,7 +104,13 @@ export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
     }
 
     // Count how many rows still need backfilling.
-    const { count: remaining } = await supabaseAdmin
+    const { count: remaining } = await (supabaseAdmin as unknown as {
+      from: (t: string) => {
+        select: (cols: string, opts: { count: "exact"; head: true }) => {
+          is: (col: string, v: null) => Promise<{ count: number | null }>;
+        };
+      };
+    })
       .from(table)
       .select("id", { count: "exact", head: true })
       .is("embedding_v2", null);
