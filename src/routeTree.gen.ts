@@ -87,6 +87,7 @@ import { Route as AuthenticatedSecurityCenterRouteImport } from './routes/_authe
 import { Route as AuthenticatedSecRouteImport } from './routes/_authenticated/sec'
 import { Route as AuthenticatedRiskRouteImport } from './routes/_authenticated/risk'
 import { Route as AuthenticatedReadinessRouteImport } from './routes/_authenticated/readiness'
+import { Route as AuthenticatedRagMonitorRouteImport } from './routes/_authenticated/rag-monitor'
 import { Route as AuthenticatedPtwRouteImport } from './routes/_authenticated/ptw'
 import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticated/prompts'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
@@ -612,6 +613,11 @@ const AuthenticatedRiskRoute = AuthenticatedRiskRouteImport.update({
 const AuthenticatedReadinessRoute = AuthenticatedReadinessRouteImport.update({
   id: '/readiness',
   path: '/readiness',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRagMonitorRoute = AuthenticatedRagMonitorRouteImport.update({
+  id: '/rag-monitor',
+  path: '/rag-monitor',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPtwRoute = AuthenticatedPtwRouteImport.update({
@@ -1433,6 +1439,7 @@ export interface FileRoutesByFullPath {
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/prompts': typeof AuthenticatedPromptsRoute
   '/ptw': typeof AuthenticatedPtwRoute
+  '/rag-monitor': typeof AuthenticatedRagMonitorRoute
   '/readiness': typeof AuthenticatedReadinessRoute
   '/risk': typeof AuthenticatedRiskRoute
   '/sec': typeof AuthenticatedSecRouteWithChildren
@@ -1644,6 +1651,7 @@ export interface FileRoutesByTo {
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/prompts': typeof AuthenticatedPromptsRoute
   '/ptw': typeof AuthenticatedPtwRoute
+  '/rag-monitor': typeof AuthenticatedRagMonitorRoute
   '/readiness': typeof AuthenticatedReadinessRoute
   '/risk': typeof AuthenticatedRiskRoute
   '/security-center': typeof AuthenticatedSecurityCenterRoute
@@ -1857,6 +1865,7 @@ export interface FileRoutesById {
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
   '/_authenticated/ptw': typeof AuthenticatedPtwRoute
+  '/_authenticated/rag-monitor': typeof AuthenticatedRagMonitorRoute
   '/_authenticated/readiness': typeof AuthenticatedReadinessRoute
   '/_authenticated/risk': typeof AuthenticatedRiskRoute
   '/_authenticated/sec': typeof AuthenticatedSecRouteWithChildren
@@ -2071,6 +2080,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/prompts'
     | '/ptw'
+    | '/rag-monitor'
     | '/readiness'
     | '/risk'
     | '/sec'
@@ -2282,6 +2292,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/prompts'
     | '/ptw'
+    | '/rag-monitor'
     | '/readiness'
     | '/risk'
     | '/security-center'
@@ -2494,6 +2505,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portfolio'
     | '/_authenticated/prompts'
     | '/_authenticated/ptw'
+    | '/_authenticated/rag-monitor'
     | '/_authenticated/readiness'
     | '/_authenticated/risk'
     | '/_authenticated/sec'
@@ -3257,6 +3269,13 @@ declare module '@tanstack/react-router' {
       path: '/readiness'
       fullPath: '/readiness'
       preLoaderRoute: typeof AuthenticatedReadinessRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/rag-monitor': {
+      id: '/_authenticated/rag-monitor'
+      path: '/rag-monitor'
+      fullPath: '/rag-monitor'
+      preLoaderRoute: typeof AuthenticatedRagMonitorRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/ptw': {
@@ -4350,6 +4369,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
   AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
   AuthenticatedPtwRoute: typeof AuthenticatedPtwRoute
+  AuthenticatedRagMonitorRoute: typeof AuthenticatedRagMonitorRoute
   AuthenticatedReadinessRoute: typeof AuthenticatedReadinessRoute
   AuthenticatedRiskRoute: typeof AuthenticatedRiskRoute
   AuthenticatedSecRoute: typeof AuthenticatedSecRouteWithChildren
@@ -4428,6 +4448,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
   AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
   AuthenticatedPtwRoute: AuthenticatedPtwRoute,
+  AuthenticatedRagMonitorRoute: AuthenticatedRagMonitorRoute,
   AuthenticatedReadinessRoute: AuthenticatedReadinessRoute,
   AuthenticatedRiskRoute: AuthenticatedRiskRoute,
   AuthenticatedSecRoute: AuthenticatedSecRouteWithChildren,
