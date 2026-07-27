@@ -161,12 +161,9 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
           />
           <span
             aria-hidden
-            className="finn-ring-inner pointer-events-none absolute inset-[14%] rounded-full border border-dashed border-cyan-200/35"
-          />
-          <span
-            aria-hidden
             className="finn-pulse pointer-events-none absolute inset-0 rounded-full border border-cyan-300/45"
           />
+
 
           {/* Mic "Talk now" CTA — sits inside the ring, over the face */}
           <Link
