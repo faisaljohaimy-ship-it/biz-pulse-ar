@@ -2462,17 +2462,21 @@ body {
      1) --icon-glow  (explicit override on the icon or its parent)
      2) currentColor (the icon's own stroke — lucide default)
    Region tiles keep their sweep via `.nx-icon-glow-region` below. */
+/* Executive-Bridge-style icon edge glow: a soft edge halo + rotating
+   conic sweep, mirroring `.ehub-ring` motion on the Bridge card. */
+@keyframes nx-icon-edge-sweep {
+  to { transform: rotate(360deg); }
+}
 @keyframes nx-icon-edge-glow {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 6px color-mix(in oklab, var(--icon-glow, currentColor) 60%, transparent))
-      drop-shadow(0 0 16px color-mix(in oklab, var(--icon-glow, currentColor) 38%, transparent))
-      drop-shadow(0 0 28px color-mix(in oklab, var(--icon-glow, currentColor) 22%, transparent));
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 4px color-mix(in oklab, var(--icon-glow, currentColor) 55%, transparent))
+      drop-shadow(0 0 10px color-mix(in oklab, var(--icon-glow, currentColor) 32%, transparent));
   }
   50% {
-    filter: drop-shadow(0 0 10px color-mix(in oklab, var(--icon-glow, currentColor) 85%, transparent))
-      drop-shadow(0 0 22px color-mix(in oklab, var(--icon-glow, currentColor) 58%, transparent))
-      drop-shadow(0 0 38px color-mix(in oklab, var(--icon-glow, currentColor) 34%, transparent));
+    filter:
+      drop-shadow(0 0 7px color-mix(in oklab, var(--icon-glow, currentColor) 80%, transparent))
+      drop-shadow(0 0 16px color-mix(in oklab, var(--icon-glow, currentColor) 48%, transparent));
   }
 }
 
@@ -2481,39 +2485,60 @@ a svg,
 [role="button"] svg,
 .nx-icon-glow svg,
 svg.nx-icon-glow {
-  filter: drop-shadow(0 0 5px color-mix(in oklab, var(--icon-glow, currentColor) 55%, transparent))
-    drop-shadow(0 0 14px color-mix(in oklab, var(--icon-glow, currentColor) 34%, transparent))
-    drop-shadow(0 0 26px color-mix(in oklab, var(--icon-glow, currentColor) 20%, transparent));
+  filter:
+    drop-shadow(0 0 4px color-mix(in oklab, var(--icon-glow, currentColor) 55%, transparent))
+    drop-shadow(0 0 12px color-mix(in oklab, var(--icon-glow, currentColor) 32%, transparent));
   animation: nx-icon-edge-glow 6s ease-in-out infinite;
-  transition:
-    filter 220ms ease-out,
-    transform 220ms ease-out;
+  transition: filter 220ms ease-out, transform 220ms ease-out;
 }
 
 button:hover svg,
 a:hover svg,
 [role="button"]:hover svg,
 .nx-icon-glow:hover svg {
-  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--icon-glow, currentColor) 82%, transparent))
-    drop-shadow(0 0 22px color-mix(in oklab, var(--icon-glow, currentColor) 55%, transparent))
-    drop-shadow(0 0 38px color-mix(in oklab, var(--icon-glow, currentColor) 32%, transparent));
+  filter:
+    drop-shadow(0 0 8px color-mix(in oklab, var(--icon-glow, currentColor) 82%, transparent))
+    drop-shadow(0 0 20px color-mix(in oklab, var(--icon-glow, currentColor) 52%, transparent));
   transform: translateZ(0) scale(1.04);
 }
 
 button:active svg,
 a:active svg,
 [role="button"]:active svg {
-  filter: drop-shadow(0 0 4px color-mix(in oklab, var(--icon-glow, currentColor) 60%, transparent));
   transform: translateZ(0) scale(0.96);
   transition-duration: 120ms;
 }
 
-button:focus-visible svg,
-a:focus-visible svg,
-.nx-icon-glow-pulse svg,
-svg.nx-icon-glow-pulse {
-  animation: nx-icon-edge-glow 2.4s ease-in-out infinite;
+/* Rotating conic edge sweep — same motion language as the Executive
+   Bridge card's `.ehub-ring`. Applied around any element carrying
+   `.nx-icon-edge` (or `<Icon class="nx-icon-edge">`). */
+.nx-icon-edge {
+  position: relative;
+  isolation: isolate;
 }
+.nx-icon-edge::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in oklab, var(--icon-glow, currentColor) 90%, transparent) 60deg,
+    transparent 150deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: nx-icon-edge-sweep 6s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.nx-icon-edge > * { position: relative; z-index: 1; }
 
 /* Region tiles opt in: glow uses --nx-region-rgb instead of currentColor. */
 .nx-icon-glow-region svg,
@@ -2529,13 +2554,15 @@ svg.nx-icon-glow-pulse {
   [role="button"] svg,
   .nx-icon-glow svg,
   svg.nx-icon-glow,
-  .nx-icon-glow-pulse svg {
+  .nx-icon-glow-pulse svg,
+  .nx-icon-edge::before {
     animation: none !important;
     transition: none !important;
   }
 }
 
-[data-nx-frozen="true"] svg {
+[data-nx-frozen="true"] svg,
+[data-nx-frozen="true"] .nx-icon-edge::before {
   animation-play-state: paused !important;
 }
 
@@ -2547,115 +2574,38 @@ svg.nx-icon-glow-pulse {
   animation: none !important;
 }
 
-/* FINN glass edge — REMOVED per owner directive (glass background banned on
-   FINN surfaces). Class kept as a no-op so any stale references don't 404. */
+/* FINN glass edge — REMOVED per owner directive. No-op stub. */
 .finn-glass-edge { background-color: #061525; }
 
-
-
-/* 2) Page-level halo — big soft aura painted behind primary
-      surfaces (cards, sections). Uses region colour, mobile-safe. */
+/* ────────────────────────────────────────────────────────────────
+   CARD RADIATION — REMOVED per owner directive. The regional halo
+   used to bleed onto every card, panel and heading; the visual
+   language is now: icons carry the light, cards stay quiet.
+   ──────────────────────────────────────────────────────────────── */
 .nx-page-halo,
 [data-page-glow="on"],
-main[data-region] {
-  position: relative;
-}
-
+main[data-region] { position: relative; }
 .nx-page-halo::before,
 [data-page-glow="on"]::before,
-main[data-region]::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  pointer-events: none;
-  z-index: 0;
-  border-radius: inherit;
-  background:
-    radial-gradient(
-      60% 45% at 50% 0%,
-      rgba(var(--nx-region-rgb, 0, 212, 255), 0.14),
-      transparent 70%
-    ),
-    radial-gradient(
-      45% 35% at 100% 100%,
-      rgba(var(--nx-region-rgb, 0, 212, 255), 0.09),
-      transparent 75%
-    );
-  filter: blur(4px);
-}
+main[data-region]::before { content: none !important; }
 
-.nx-page-halo > *,
-[data-page-glow="on"] > *,
-main[data-region] > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* 3) Card & primary-button halo — subtle but present at rest,
-      strong on hover/focus. Repaints in region colour. */
 .nx-region-card,
 button[data-region-glow],
 a[data-region-glow] {
-  box-shadow:
-    0 0 0 1px rgba(var(--nx-region-rgb, 0, 212, 255), 0.18),
-    0 6px 22px -14px rgba(var(--nx-region-rgb, 0, 212, 255), 0.55),
-    0 0 24px -8px rgba(var(--nx-region-rgb, 0, 212, 255), 0.35);
-  transition:
-    box-shadow 240ms ease-out,
-    transform 240ms ease-out;
+  box-shadow: none;
+  transition: box-shadow 240ms ease-out, transform 240ms ease-out;
 }
-
 .nx-region-card:hover,
 button[data-region-glow]:hover,
-a[data-region-glow]:hover {
-  box-shadow:
-    0 0 0 1px rgba(var(--nx-region-rgb, 0, 212, 255), 0.5),
-    0 10px 30px -12px rgba(var(--nx-region-rgb, 0, 212, 255), 0.85),
-    0 0 40px -6px rgba(var(--nx-region-rgb, 0, 212, 255), 0.6);
-}
+a[data-region-glow]:hover { box-shadow: none; }
 
-/* 4) Primary text tint — headings and primary text pick up a soft
-      region glow so pages FEEL like they belong to the region. */
-h1,
-h2,
-h3,
+h1, h2, h3,
 .text-primary,
-[data-slot="card-title"] {
-  text-shadow: 0 0 14px rgba(var(--nx-region-rgb, 0, 212, 255), 0.25);
-}
+[data-slot="card-title"] { text-shadow: none; }
 
-/* 5) FINN launcher — amp its halo in the current region colour. */
-.nexus-aria-launcher {
-  box-shadow:
-    0 0 0 1px rgba(var(--nx-region-rgb, 0, 212, 255), 0.55),
-    0 8px 26px -8px rgba(var(--nx-region-rgb, 0, 212, 255), 0.7),
-    0 0 34px -4px rgba(var(--nx-region-rgb, 0, 212, 255), 0.55);
-}
-.nexus-aria-launcher:hover {
-  box-shadow:
-    0 0 0 2px rgba(var(--nx-region-rgb, 0, 212, 255), 0.85),
-    0 12px 34px -8px rgba(var(--nx-region-rgb, 0, 212, 255), 0.95),
-    0 0 52px -2px rgba(var(--nx-region-rgb, 0, 212, 255), 0.85);
-}
-
-/* 6) Respect reduced-motion — keep the glow, drop the animation. */
-@media (prefers-reduced-motion: reduce) {
-  button:focus-visible svg,
-  a:focus-visible svg {
-    animation: none !important;
-  }
-}
-
-/* 7) Mobile tuning — glow radii scale down slightly on small
-      screens so it reads punchy without bloom overwhelming
-      the smaller viewport. */
+/* Mobile tuning — trim edge radii so the icon halo stays crisp. */
 @media (max-width: 640px) {
-  button svg,
-  a svg,
-  [role="button"] svg {
-    filter: drop-shadow(0 0 4px rgba(var(--nx-region-rgb, 0, 212, 255), 0.5))
-      drop-shadow(0 0 10px rgba(var(--nx-region-rgb, 0, 212, 255), 0.3));
-  }
+  .nx-icon-edge::before { inset: -4px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
