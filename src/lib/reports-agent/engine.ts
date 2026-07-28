@@ -2,13 +2,7 @@
 // وكيل يعمل باستمرار في الخلفية لتوليد تقارير مؤسسية موجزة عبر المناطق
 // والقطاعات، ويكشف عنها للواجهة للعرض والتصدير (CSV/HTML/PDF عبر الطباعة).
 
-export type ReportKind =
-  | "compliance"
-  | "safety"
-  | "operations"
-  | "permits"
-  | "incidents"
-  | "audit";
+export type ReportKind = "compliance" | "safety" | "operations" | "permits" | "incidents" | "audit";
 
 export type ReportStatus = "generating" | "ready" | "archived";
 

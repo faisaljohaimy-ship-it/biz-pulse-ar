@@ -109,11 +109,13 @@ export async function retrieveWithEvidenceGate(
   const finish = async (outcome: RagRetrievalOutcome) => {
     // Fire-and-log; a logging failure must never break retrieval.
     try {
-      await (supabase as unknown as {
-        from: (t: string) => {
-          insert: (row: Record<string, unknown>) => Promise<{ error: unknown }>;
-        };
-      })
+      await (
+        supabase as unknown as {
+          from: (t: string) => {
+            insert: (row: Record<string, unknown>) => Promise<{ error: unknown }>;
+          };
+        }
+      )
         .from("rag_query_log")
         .insert({
           ...baseLog,
@@ -174,12 +176,14 @@ export async function retrieveWithEvidenceGate(
   }
 
   // Call the hybrid RRF search RPC. Cast because rpc() typing is generated.
-  const { data: rows, error } = await (supabase as unknown as {
-    rpc: (
-      name: string,
-      args: Record<string, unknown>,
-    ) => Promise<{ data: RagHit[] | null; error: { message: string } | null }>;
-  }).rpc("sec_kb_hybrid_search", {
+  const { data: rows, error } = await (
+    supabase as unknown as {
+      rpc: (
+        name: string,
+        args: Record<string, unknown>,
+      ) => Promise<{ data: RagHit[] | null; error: { message: string } | null }>;
+    }
+  ).rpc("sec_kb_hybrid_search", {
     _query_text: query,
     _query_vec: toPgVector(queryVec),
     _org_id: input.orgId ?? null,

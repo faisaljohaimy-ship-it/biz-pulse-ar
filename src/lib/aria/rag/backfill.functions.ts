@@ -42,18 +42,23 @@ export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
     // Pull one batch of unmigrated rows for this tenant scope.
     // Dynamic column select — cast rows to a plain shape since generated
     // types don't know embedding_v2 yet (regenerated after migration approval).
-    const { data: rowsRaw, error } = await (supabaseAdmin as unknown as {
-      from: (t: string) => {
-        select: (cols: string) => {
-          is: (col: string, v: null) => {
-            limit: (n: number) => Promise<{
-              data: Array<Record<string, unknown>> | null;
-              error: { message: string } | null;
-            }>;
+    const { data: rowsRaw, error } = await (
+      supabaseAdmin as unknown as {
+        from: (t: string) => {
+          select: (cols: string) => {
+            is: (
+              col: string,
+              v: null,
+            ) => {
+              limit: (n: number) => Promise<{
+                data: Array<Record<string, unknown>> | null;
+                error: { message: string } | null;
+              }>;
+            };
           };
         };
-      };
-    })
+      }
+    )
       .from(table)
       .select(`id, ${textCol}`)
       .is("embedding_v2", null)
@@ -81,13 +86,15 @@ export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
         failed += 1;
         continue;
       }
-      const { error: upErr } = await (supabaseAdmin as unknown as {
-        from: (t: string) => {
-          update: (v: Record<string, unknown>) => {
-            eq: (col: string, val: string) => Promise<{ error: { message: string } | null }>;
+      const { error: upErr } = await (
+        supabaseAdmin as unknown as {
+          from: (t: string) => {
+            update: (v: Record<string, unknown>) => {
+              eq: (col: string, val: string) => Promise<{ error: { message: string } | null }>;
+            };
           };
-        };
-      })
+        }
+      )
         .from(table)
         .update({
           embedding_v2: toPgVector(vec),
@@ -104,13 +111,18 @@ export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
     }
 
     // Count how many rows still need backfilling.
-    const { count: remaining } = await (supabaseAdmin as unknown as {
-      from: (t: string) => {
-        select: (cols: string, opts: { count: "exact"; head: true }) => {
-          is: (col: string, v: null) => Promise<{ count: number | null }>;
+    const { count: remaining } = await (
+      supabaseAdmin as unknown as {
+        from: (t: string) => {
+          select: (
+            cols: string,
+            opts: { count: "exact"; head: true },
+          ) => {
+            is: (col: string, v: null) => Promise<{ count: number | null }>;
+          };
         };
-      };
-    })
+      }
+    )
       .from(table)
       .select("id", { count: "exact", head: true })
       .is("embedding_v2", null);

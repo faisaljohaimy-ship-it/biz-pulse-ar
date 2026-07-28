@@ -29,8 +29,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
-const GEMINI_EMBED_MODEL =
-  Deno.env.get("GEMINI_EMBED_MODEL") ?? "text-embedding-004";
+const GEMINI_EMBED_MODEL = Deno.env.get("GEMINI_EMBED_MODEL") ?? "text-embedding-004";
 
 const EVIDENCE_MIN_SCORE = 0.35;
 const EVIDENCE_MIN_CITATIONS = 2;
@@ -63,8 +62,7 @@ function truncateAndRenormalize(v: number[], targetDim: number): number[] {
 }
 
 async function embedQuery(text: string): Promise<number[]> {
-  const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_EMBED_MODEL}:embedContent?key=${GEMINI_API_KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_EMBED_MODEL}:embedContent?key=${GEMINI_API_KEY}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -131,10 +129,10 @@ Deno.serve(async (req) => {
   try {
     qEmbedding = await embedQuery(query);
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: "embed_failed", detail: String(err) }),
-      { status: 502, headers: { "content-type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: "embed_failed", detail: String(err) }), {
+      status: 502,
+      headers: { "content-type": "application/json" },
+    });
   }
 
   const { data, error } = await supaUser.rpc("sec_kb_hybrid_search", {
@@ -144,25 +142,25 @@ Deno.serve(async (req) => {
   });
 
   if (error) {
-    return new Response(
-      JSON.stringify({ error: "retrieval_failed", detail: error.message }),
-      { status: 500, headers: { "content-type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: "retrieval_failed", detail: error.message }), {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
   }
 
   const rows = (data ?? []) as HybridRow[];
   const topScore = rows[0]?.rrf_score ?? 0;
 
-  const insufficient =
-    rows.length < EVIDENCE_MIN_CITATIONS || topScore < EVIDENCE_MIN_SCORE;
+  const insufficient = rows.length < EVIDENCE_MIN_CITATIONS || topScore < EVIDENCE_MIN_SCORE;
 
   if (insufficient) {
     return new Response(
       JSON.stringify({
         status: "insufficient_evidence",
-        reason: rows.length < EVIDENCE_MIN_CITATIONS
-          ? "not_enough_citations"
-          : "top_score_below_threshold",
+        reason:
+          rows.length < EVIDENCE_MIN_CITATIONS
+            ? "not_enough_citations"
+            : "top_score_below_threshold",
         top_score: topScore,
         candidates: rows.slice(0, 3).map((r) => ({
           chunk_id: r.chunk_id,

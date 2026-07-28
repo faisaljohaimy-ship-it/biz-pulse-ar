@@ -339,6 +339,108 @@ tables at any stage. Every new agent defaults to stage one (read-only).
 
 ---
 
+## الباب العاشر — طبقة المعرفة والتشغيل الذاتي
+## Chapter X — The Knowledge Layer and Self-Operation
+
+> مضاف ضمن المواد المرنة. المواد الصلبة السبع تبقى فوقه، وأخصّها هنا
+> البوابة البشرية (٨) وحرمة الأصول (٥) والأسرار (٧).
+
+### المادة ٢٥ — حاجز منع التسمّم
+مخرَج النموذج لا يدخل المتن أبدًا بذاته. الترقية إلى `verified` بوابة
+أحادية الاتجاه **مفروضة في القاعدة** (trigger) لا في كود التطبيق، ولها
+مساران فقط: **استشهاد مُسنَد** إلى مقطع حقيقي في **نفس المؤسسة**، أو
+**اعتماد صريح من مسؤول تلك المؤسسة**. الاستشهاد العابر للمؤسسات يُرفض
+رفضًا مطلقًا ولا يُنقذه اعتماد — **العزل يعلو الاعتماد**. المحتوى غير
+الموثّق يُخزَّن ويُعدّ ويُحلَّل، ولا يُقرأ من أي مسار إجابة: الامتياز
+نفسه منزوع، لا مُرشَّح فقط.
+**Article 25 — The Poisoning Barrier.** Model output never enters the
+corpus on its own authority. Promotion to `verified` is a one-way gate
+enforced **in the database** (a trigger), not in application code, with
+exactly two routes: a **grounded citation** to a real chunk in the **same
+organisation**, or an **explicit admin approval** from that organisation.
+A cross-organisation citation is refused outright and no approval rescues
+it — **isolation outranks approval**. Unverified content is stored,
+counted and analysed, and is readable from no answer path: the privilege
+itself is revoked, not merely filtered.
+
+### المادة ٢٦ — الالتقاط من جهة القراءة
+تعلُّم النظام من محادثاته يجري **من جهة القراءة حصرًا**: مهمة مجدولة
+تقرأ جداول المحادثات القائمة بعد وقوعها. **صفر تعديل على مسار FINN /
+Gemini**، ولا استدعاء التقاط داخل مسار طلب مستخدم إطلاقًا — والمنع
+مفروض بالامتياز (التنفيذ محجوب عن `anon` و`authenticated`)، لا بالتوصية.
+الالتقاط يكتب في سجل الفجوات وحده؛ ولا يكتب في المتن ولا في المقاطع ولا
+في المرشّحين. وإذا تعذّر تحديد المؤسسة تحديدًا قاطعًا يُتخطّى الصف ولا
+يُخمَّن — **العزل يعلو اكتمال الالتقاط**.
+**Article 26 — Read-Side Capture.** The system learns from its own
+conversations **from the read side only**: a scheduled job reads the
+existing conversation tables after the fact. **Zero modification to the
+FINN/Gemini path**, and never a capture call inside a user request path —
+enforced by privilege (EXECUTE revoked from `anon` and `authenticated`),
+not by convention. Capture writes to the gap ledger alone; never to the
+corpus, the chunks, or the candidates. Where the organisation cannot be
+resolved unambiguously the row is skipped, never guessed — **isolation
+outranks capture completeness**.
+
+### المادة ٢٧ — الصدق العددي
+ما لم يُقَس لا يُعرض رقمًا. كل مقياس غير مقيس يعود `NULL` من القاعدة
+ويُعرض «لم يُقَس» في الواجهة — لا صفرًا، ولا خطًّا، ولا خطَّ أساس
+مفترضًا. نظام لم يُشغَّل قط يجب أن يُقرأ كذلك، لا كنظام سليم خاملٍ.
+ويُمنع ذكر أي رقم استدعاء (recall) أو دقة استشهاد ما دامت القاعدة غير
+مطبَّقة؛ التصريح الواجب حرفيًّا: **«لم يُشغَّل — القاعدة غير مطبَّقة»**.
+راية `rag_enabled` لا تُرفع إلا بقياس فعلي على **٣٠ سؤالًا فأكثر** فوق
+عتبتَي **٠٫٨٥ استدعاء@5** و**٠٫٩٥ دقة استشهاد** على متن موثّق — وصفّ
+التقييم لا يُكتب إلا من المهمة المجدولة.
+**Article 27 — Numerical Honesty.** What was not measured is not shown as
+a number. Every unmeasured metric returns `NULL` from the database and
+renders as «لم يُقَس» — not zero, not a dash, not an assumed baseline. A
+system that never ran must read as such, not as a healthy idle one. No
+recall or citation-accuracy figure may be stated while the database is
+unapplied; the required declaration is verbatim: **"لم يُشغَّل — القاعدة
+غير مطبَّقة"**. The `rag_enabled` flag rises only on a real measurement
+over **≥ 30 questions** clearing both **0.85 hit@5** and **0.95 citation
+accuracy** on a verified corpus — and the evaluation row is writable by
+the scheduled job alone.
+
+### المادة ٢٨ — ميزانية النشر واحتياطي الطوارئ
+لكل دورة ميزانية نشر محدودة، ويُحجز منها **نشرتان** احتياطَ طوارئ لا
+يمسّه العمل الاعتيادي: واحدة لإطلاق الإصلاح، وواحدة إن كان الإصلاح
+خاطئًا. الاحتياطي يُصرف للتراجع والإصلاح العاجل فقط. اختيار الوجهة
+يفشل مغلقًا: ما يمسّ المخطط أو سطح الخادم أو الرايات يذهب إلى المعاينة
+أولًا، والإنتاج لا يُبلَغ إلا ببوابة جودة خضراء ونطاق أثرٍ ضيّق. وما
+يمسّ مسار الإجابة لا وجهة له إطلاقًا. وكل نشر يخضع لفحص صحة خلال
+**٩٠ ثانية**؛ وغياب العيّنات ليس نجاحًا بل **نتيجة غير حاسمة** تُعامل
+معاملة الفشل.
+**Article 28 — Deployment Budget and Emergency Reserve.** Each cycle has
+a bounded deployment budget, of which **two deployments** are reserved as
+an emergency reserve routine work may not touch: one to ship the fix, one
+in case the fix is wrong. The reserve is spent on rollback and hotfix
+only. Destination selection fails closed: anything touching the schema,
+the server surface or a flag goes to preview first, and production is
+reached only with a green quality gate and a narrow blast radius.
+Anything touching the answer path has no destination at all. Every
+deployment faces a health check within **90 seconds**; an absence of
+samples is not a pass but an **inconclusive** verdict, treated as failure.
+
+### المادة ٢٩ — نوعا التراجع
+التراجع نوعان لا يُخلطان. **تراجع النشر** سببه سقوط فحص الصحة: يُعاد
+الأثر، ولا علاقة له بجودة الاسترجاع. **تراجع الراية** سببه انحدار
+القياس: تُطفأ `rag_enabled` ويبقى الأثر المنشور كما هو. صحة الأثر
+تُقيَّم أولًا: أرقام الجودة الآتية من نشرٍ معطوب ليست دليلًا بل ضجيج،
+والتصرّف بها يُخفي عطلًا خلف تغيير راية لن يبحث فيه أحد. ويُقيَّد كل
+نشر في سجل: **وقت · وجهة · بصمة · سبب · نتيجة الصحة · المتبقي من
+الميزانية**.
+**Article 29 — The Two Rollbacks.** Rollback comes in two kinds that are
+never conflated. A **deployment rollback** answers a failed health check:
+revert the artifact; it says nothing about retrieval quality. A **flag
+rollback** answers a measurement regression: set `rag_enabled` to false
+and leave the deployed artifact in place. Artifact health is judged
+first: quality numbers from a broken deploy are noise, not evidence, and
+acting on them hides an outage behind a flag change nobody will think to
+look at. Every deployment is recorded: **time · destination · hash ·
+reason · health result · budget remaining**.
+
+---
+
 ## سجل المواد المعدّلة — Amendment Record
 
 | التاريخ Date | المادة Article | التغيير Change | المعتمِد Approver |
@@ -348,3 +450,8 @@ tables at any stage. Every new agent defaults to stage one (read-only).
 | 2026-07-21 | ٢٢ | عقد رد FINN: حصر النطاق · الاختصار · المسار الفوري · حارس الهلوسة · النطق · Article 22 FINN Response Contract: scope lock, brevity, fast recall, hallucination guard, pronunciation | مالك المنتج Product Owner |
 | 2026-07-27 | ٢٣ | منظومة الوكلاء الثلاثة عشر: أدوارهم · حدّهم القرائي · التمييز محاكاة/حقيقي · Article 23 thirteen-agent system: roles, read-only bound, simulation/real distinction | مالك المنتج Product Owner |
 | 2026-07-27 | ٢٤ | التدرّج الخماسي في الصلاحية عبر البوابة البشرية · Article 24 five-step escalation ladder through the human gate | مالك المنتج Product Owner |
+| 2026-07-28 | ٢٥ | حاجز منع التسمّم: بوابة أحادية في القاعدة · العزل يعلو الاعتماد · Article 25 poisoning barrier: one-way DB gate, isolation outranks approval | مالك المنتج Product Owner |
+| 2026-07-28 | ٢٦ | الالتقاط من جهة القراءة حصرًا · صفر تعديل على مسار FINN/Gemini · Article 26 read-side-only capture, zero modification to the FINN/Gemini path | مالك المنتج Product Owner |
+| 2026-07-28 | ٢٧ | الصدق العددي: NULL لما لم يُقَس · شرطا رفع الراية · Article 27 numerical honesty: NULL when unmeasured, the two flag thresholds | مالك المنتج Product Owner |
+| 2026-07-28 | ٢٨ | ميزانية النشر واحتياطي النشرتين · فحص صحة ٩٠ ثانية · Article 28 deployment budget, two-deploy reserve, 90-second health check | مالك المنتج Product Owner |
+| 2026-07-28 | ٢٩ | نوعا التراجع المتمايزان وسجل النشر · Article 29 the two distinct rollbacks and the deployment log | مالك المنتج Product Owner |

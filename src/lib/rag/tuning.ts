@@ -89,8 +89,9 @@ export const AUTO_ENABLE = {
 } as const;
 
 export interface AutoEnableInput {
-  hitAt5: number;
-  citationAccuracy: number;
+  /** NULL until measured — a score of 0 is a result, absence is not. */
+  hitAt5: number | null;
+  citationAccuracy: number | null;
   /** Questions ACTUALLY measured against a live, ingested corpus. */
   measuredQuestions: number;
   /** False whenever the corpus behind the measurement isn't verified. */
@@ -103,20 +104,29 @@ export interface AutoEnableDecision {
 }
 
 /**
- * Decide whether rag_enabled may flip to true. Every threshold must hold on a
- * genuinely measured, verified corpus — an unmeasured system scores nothing
- * and therefore can never satisfy this.
+ * Decide whether rag_enabled may flip to true.
+ *
+ * `null` means NO EVALUATION HAS EVER RUN — which is the project's actual
+ * state while the migrations are staged and unapplied. That case yields
+ * exactly one blocker, `not_measured`, and no threshold blockers: NULL scores
+ * would trip those too, and a gate whose SQL and TypeScript halves disagree
+ * about WHY it refused is a gate nobody can reason about. This mirrors
+ * public.rag_should_enable() blocker-for-blocker; the harness at
+ * supabase/preflight/rag_operations_check.sql asserts the SQL side, and
+ * tuning.test.ts asserts this side against the same expected sets.
  */
-export function decideAutoEnable(input: AutoEnableInput): AutoEnableDecision {
+export function decideAutoEnable(input: AutoEnableInput | null): AutoEnableDecision {
+  if (input === null) return { enable: false, blockers: ["not_measured"] };
+
   const blockers: string[] = [];
   if (!input.corpusVerified) blockers.push("corpus_not_verified");
   if (input.measuredQuestions < AUTO_ENABLE.minMeasuredQuestions) {
-    blockers.push(
-      `measured_questions_${input.measuredQuestions}_below_${AUTO_ENABLE.minMeasuredQuestions}`,
-    );
+    blockers.push("measured_questions_below_30");
   }
-  if (input.hitAt5 < AUTO_ENABLE.minHitAt5) blockers.push("hit_at_5_below_threshold");
-  if (input.citationAccuracy < AUTO_ENABLE.minCitationAccuracy) {
+  if (input.hitAt5 === null || input.hitAt5 < AUTO_ENABLE.minHitAt5) {
+    blockers.push("hit_at_5_below_threshold");
+  }
+  if (input.citationAccuracy === null || input.citationAccuracy < AUTO_ENABLE.minCitationAccuracy) {
     blockers.push("citation_accuracy_below_threshold");
   }
   return { enable: blockers.length === 0, blockers };

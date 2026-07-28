@@ -166,7 +166,7 @@ describe("auto-enable gate — an unmeasured system can never flip the flag", ()
       corpusVerified: true,
     });
     expect(d.enable).toBe(false);
-    expect(d.blockers.some((b) => b.startsWith("measured_questions_"))).toBe(true);
+    expect(d.blockers).toEqual(["measured_questions_below_30"]);
   });
 
   it("refuses when either quality threshold is missed", () => {
@@ -199,14 +199,63 @@ describe("auto-enable gate — an unmeasured system can never flip the flag", ()
     expect(d.blockers).toEqual([]);
   });
 
-  it("TODAY the gate is shut — nothing is measured, so nothing can enable", () => {
-    const today = decideAutoEnable({
-      hitAt5: 0,
-      citationAccuracy: 0,
-      measuredQuestions: 0,
-      corpusVerified: false,
-    });
+  it("TODAY the gate is shut — no evaluation has ever run", () => {
+    // null is the project's ACTUAL state: the migrations are staged, the
+    // database is unapplied, so rag_eval_runs has no row to read.
+    const today = decideAutoEnable(null);
     expect(today.enable).toBe(false);
+    expect(today.blockers).toEqual(["not_measured"]);
+  });
+
+  it("a null score is an absence, not a zero — and never enables", () => {
+    const d = decideAutoEnable({
+      hitAt5: null,
+      citationAccuracy: null,
+      measuredQuestions: 40,
+      corpusVerified: true,
+    });
+    expect(d.enable).toBe(false);
+    expect(d.blockers).toEqual(["hit_at_5_below_threshold", "citation_accuracy_below_threshold"]);
+  });
+});
+
+// The bug this guards against actually happened once in this layer: the SQL
+// trigger and its TypeScript mirror disagreed about cross-org citations, and
+// a text-only assertion could not see it. These cases pin the blocker STRINGS
+// that public.rag_should_enable() emits, so a future edit to either side that
+// renames or re-orders a reason fails here instead of drifting silently.
+// The SQL side is executed in supabase/preflight/rag_operations_check.sql.
+describe("the auto-enable gate mirrors public.rag_should_enable() reason-for-reason", () => {
+  const gateSql = readFileSync(
+    join(__dirname, "..", "..", "..", "supabase/migrations/20260728170000_rag_operations.sql"),
+    "utf8",
+  );
+
+  it("emits exactly the blocker vocabulary the SQL gate emits", () => {
+    for (const reason of [
+      "not_measured",
+      "corpus_not_verified",
+      "measured_questions_below_30",
+      "hit_at_5_below_threshold",
+      "citation_accuracy_below_threshold",
+    ]) {
+      expect(gateSql).toContain(`'${reason}'`);
+    }
+  });
+
+  it("uses the same 0.85 / 0.95 / 30 thresholds on both sides", () => {
+    expect(gateSql).toContain("0.85");
+    expect(gateSql).toContain("0.95");
+    expect(gateSql).toContain("< 30");
+    expect(AUTO_ENABLE.minHitAt5).toBe(0.85);
+    expect(AUTO_ENABLE.minCitationAccuracy).toBe(0.95);
+    expect(AUTO_ENABLE.minMeasuredQuestions).toBe(30);
+  });
+
+  it("refuses an absent measurement with ONE reason on both sides", () => {
+    expect(decideAutoEnable(null).blockers).toEqual(["not_measured"]);
+    // SQL: `case when not exists (...) then array['not_measured']`
+    expect(gateSql).toContain("then array['not_measured']");
   });
 });
 

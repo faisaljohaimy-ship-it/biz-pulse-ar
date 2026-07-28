@@ -11,7 +11,7 @@ export const RAG_MODEL_VERSION = "te3s-1536-v1";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/embeddings";
 const MAX_INPUT_CHARS = 8000; // ~2k tokens, well under te3s 8192 cap
-const MAX_BATCH = 96;         // stay under Gemini 100 cap for future portability
+const MAX_BATCH = 96; // stay under Gemini 100 cap for future portability
 
 export type EmbedResult = {
   vector: number[];

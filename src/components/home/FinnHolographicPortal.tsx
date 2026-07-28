@@ -43,7 +43,6 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       {/* Unified FINN backdrop — single source of truth (see FinnUnifiedBackground) */}
       <FinnUnifiedBackground />
 
-
       {/* Portrait — face-first, fully visible, centred */}
       {/* Live holographic FINN — WebGL scene, not a static image */}
       <FinnLiveHologram

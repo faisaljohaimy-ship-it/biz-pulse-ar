@@ -74,12 +74,14 @@ export async function rateLimitRag(
   windowSeconds = 60,
 ): Promise<boolean> {
   try {
-    const { data, error } = await (supabase as unknown as {
-      rpc: (
-        name: string,
-        args: Record<string, unknown>,
-      ) => Promise<{ data: boolean | null; error: { message: string } | null }>;
-    }).rpc("check_rate_limit", {
+    const { data, error } = await (
+      supabase as unknown as {
+        rpc: (
+          name: string,
+          args: Record<string, unknown>,
+        ) => Promise<{ data: boolean | null; error: { message: string } | null }>;
+      }
+    ).rpc("check_rate_limit", {
       _bucket_key: `rag:${bucketKey}`,
       _max_requests: maxRequests,
       _window_seconds: windowSeconds,

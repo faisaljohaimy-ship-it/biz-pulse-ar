@@ -435,11 +435,7 @@ const knowledgeAgent: ExecutiveAgent = {
       });
       const sources = outcome.hits.slice(0, 6).map((h) => `kb:${h.doc_code ?? h.id}`);
       const textAr = `استرجع وكيل المعرفة ${outcome.hits.length} مقاطع مرجعية (أعلى تطابق ${(outcome.max_similarity * 100).toFixed(0)}%).`;
-      return done(
-        "knowledge",
-        { text_ar: textAr, evidence, sources },
-        startedMs,
-      );
+      return done("knowledge", { text_ar: textAr, evidence, sources }, startedMs);
     } catch (err) {
       return unavailable(
         "knowledge",
@@ -451,5 +447,3 @@ const knowledgeAgent: ExecutiveAgent = {
 };
 
 registerAgent(knowledgeAgent);
-
-

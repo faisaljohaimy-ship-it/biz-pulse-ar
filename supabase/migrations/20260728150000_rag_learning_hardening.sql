@@ -38,8 +38,13 @@ grant  update on public.rag_candidates to authenticated;  -- gated by the trigge
 grant  all    on public.rag_candidates to service_role;
 
 -- Counts only. No question, no answer — nothing quotable leaks through here.
+--
+-- DEFINER for the same reason as rag_verified_candidates: the revoke two
+-- lines above would otherwise deny members their own counters. The
+-- is_org_member predicate is what preserves isolation once owner rights
+-- bypass RLS — removing it would expose every tenant's counts to everyone.
 create or replace view public.rag_candidate_stats
-with (security_invoker = true) as
+with (security_invoker = false) as
   select
     org_id,
     count(*)::int                                             as candidates,
@@ -56,6 +61,11 @@ with (security_invoker = true) as
                                                                as by_admin_approved,
     max(created_at)                                            as last_candidate_at
   from public.rag_candidates
+  -- LOAD-BEARING. Owner rights bypass RLS on the base table, so this WHERE is
+  -- the only thing standing between a member and every other tenant's
+  -- counters. It is filtered BEFORE the aggregate, so a foreign org produces
+  -- no group at all rather than a zeroed one.
+  where public.is_org_member(org_id, 'viewer')
   group by org_id;
 
 grant select on public.rag_candidate_stats to authenticated, service_role;

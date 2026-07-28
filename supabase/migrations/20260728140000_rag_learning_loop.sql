@@ -154,11 +154,19 @@ grant update              on public.rag_candidates to authenticated;
 grant all                 on public.rag_candidates to service_role;
 
 -- The ONLY surface retrieval may ever read. Verified rows, nothing else.
+--
+-- DEFINER, deliberately. Migration 7 revokes plain SELECT on rag_candidates
+-- from `authenticated`, so a security_invoker view over it would be denied to
+-- exactly the members it exists to serve — the barrier would take the answer
+-- surface down with it. Running as owner restores the read; the org predicate
+-- below is therefore LOAD-BEARING, because owner rights bypass the base
+-- table's RLS. Isolation lives in this WHERE clause, not in a policy.
 create or replace view public.rag_verified_candidates
-with (security_invoker = true) as
+with (security_invoker = false) as
   select id, org_id, question, answer, citation_chunk_id, verified_reason, created_at
   from public.rag_candidates
-  where verified = true;
+  where verified = true
+    and public.is_org_member(org_id, 'viewer');
 
 grant select on public.rag_verified_candidates to authenticated, service_role;
 

@@ -85,14 +85,22 @@ export interface RetrievalRun {
   insufficient: boolean;
 }
 
+/**
+ * Scores are `number | null`. NULL means NOTHING WAS SCORED — it is not the
+ * same fact as "scored, and got zero", and collapsing the two is how an
+ * unmeasured system starts reporting a 0% hit rate as though it had been
+ * tested. `public.rag_eval_runs` enforces the identical distinction with a
+ * CHECK constraint, and `decideAutoEnable` refuses both — but for different
+ * stated reasons.
+ */
 export interface RetrievalMetrics {
   total: number;
   scored: number;
-  hitAt1: number;
-  hitAt5: number;
-  mrr: number;
-  coverage: number;
-  insufficientRate: number;
+  hitAt1: number | null;
+  hitAt5: number | null;
+  mrr: number | null;
+  coverage: number | null;
+  insufficientRate: number | null;
   misses: string[];
 }
 
@@ -132,15 +140,60 @@ export function evaluateRetrieval(runs: readonly RetrievalRun[]): RetrievalMetri
       misses.push(run.code);
     }
   }
-  const denom = scored || 1;
+  if (scored === 0) {
+    // Deliberately NOT `x / 1`. Dividing by a phantom denominator would turn
+    // "no anchor was ever run" into a clean set of zeros that reads exactly
+    // like a measured, catastrophic result — and today, with the migrations
+    // staged and the database unapplied, this is the branch that runs.
+    return {
+      total: runs.length,
+      scored: 0,
+      hitAt1: null,
+      hitAt5: null,
+      mrr: null,
+      coverage: null,
+      insufficientRate: null,
+      misses,
+    };
+  }
   return {
     total: runs.length,
     scored,
-    hitAt1: hit1 / denom,
-    hitAt5: hit5 / denom,
-    mrr: rrSum / denom,
-    coverage: covered / denom,
-    insufficientRate: insufficient / denom,
+    hitAt1: hit1 / scored,
+    hitAt5: hit5 / scored,
+    mrr: rrSum / scored,
+    coverage: covered / scored,
+    insufficientRate: insufficient / scored,
     misses,
+  };
+}
+
+/**
+ * Shape a scored run for `public.rag_eval_runs`. The bridge exists so the
+ * ledger can never be written by hand-assembling fields: `measuredQuestions`
+ * comes from `scored` (anchors actually run), never from the size of the
+ * golden set, and the scores travel as NULL when nothing was scored — which
+ * is precisely what the table's CHECK constraint requires.
+ */
+export interface EvalRunRow {
+  anchorsAvailable: number;
+  measuredQuestions: number;
+  hitAt5: number | null;
+  citationAccuracy: number | null;
+  corpusVerified: boolean;
+}
+
+export function toEvalRunRow(
+  metrics: RetrievalMetrics,
+  opts: { corpusVerified: boolean },
+): EvalRunRow {
+  return {
+    anchorsAvailable: GOLDEN_ANCHORS.length,
+    measuredQuestions: metrics.scored,
+    hitAt5: metrics.hitAt5,
+    // Citation accuracy is hit@1 against the anchor's own document code: the
+    // top citation is either the right directive or it is not.
+    citationAccuracy: metrics.hitAt1,
+    corpusVerified: opts.corpusVerified,
   };
 }

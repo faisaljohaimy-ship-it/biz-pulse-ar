@@ -9,7 +9,14 @@
 import { describe, expect, it } from "vitest";
 import { parseRagFlag } from "./flags";
 import { parseRetrieveResponse } from "./client";
-import { evaluateRetrieval, firstHitRank, GOLDEN_ANCHORS, SEED_INVENTORY } from "./evaluation";
+import {
+  evaluateRetrieval,
+  firstHitRank,
+  toEvalRunRow,
+  GOLDEN_ANCHORS,
+  SEED_INVENTORY,
+} from "./evaluation";
+import { decideAutoEnable } from "./tuning";
 
 describe("feature flag — default OFF (rag_enabled = false)", () => {
   it("enables only on explicit true/1 (case/space tolerant)", () => {
@@ -103,12 +110,50 @@ describe("rank metrics — arithmetic on hand-written fixtures (no retrieval)", 
     expect(metrics.misses).toEqual(["SEC-02"]);
   });
 
-  it("no runs → all-zero metrics (an unmeasured system scores nothing)", () => {
+  it("no runs → NULL metrics, not zeros (absence is not a score of 0%)", () => {
     const metrics = evaluateRetrieval([]);
     expect(metrics.scored).toBe(0);
-    expect(metrics.hitAt1).toBe(0);
-    expect(metrics.coverage).toBe(0);
-    expect(metrics.mrr).toBe(0);
+    // Zeros here would be indistinguishable from a measured, total failure,
+    // and would flow into rag_eval_runs as a real score. This is the branch
+    // that runs TODAY: the migrations are staged and the database unapplied.
+    expect(metrics.hitAt1).toBeNull();
+    expect(metrics.hitAt5).toBeNull();
+    expect(metrics.coverage).toBeNull();
+    expect(metrics.mrr).toBeNull();
+    expect(metrics.insufficientRate).toBeNull();
+  });
+
+  it("the eval-run bridge carries the absence through to the ledger", () => {
+    const row = toEvalRunRow(evaluateRetrieval([]), { corpusVerified: false });
+    expect(row.measuredQuestions).toBe(0);
+    expect(row.hitAt5).toBeNull();
+    expect(row.citationAccuracy).toBeNull();
+    // anchors_available is the golden-set size; measured_questions is what
+    // actually ran. rag_eval_runs constrains measured <= available.
+    expect(row.anchorsAvailable).toBe(GOLDEN_ANCHORS.length);
+    expect(row.measuredQuestions).toBeLessThanOrEqual(row.anchorsAvailable);
+    // And such a row can never open the gate.
+    expect(
+      decideAutoEnable({
+        hitAt5: row.hitAt5,
+        citationAccuracy: row.citationAccuracy,
+        measuredQuestions: row.measuredQuestions,
+        corpusVerified: row.corpusVerified,
+      }).enable,
+    ).toBe(false);
+  });
+
+  it("reports measured_questions from anchors RUN, not the golden-set size", () => {
+    const row = toEvalRunRow(
+      evaluateRetrieval([{ code: "SEC-01", rankedCodes: ["SEC-01"], insufficient: false }]),
+      { corpusVerified: true },
+    );
+    expect(row.measuredQuestions).toBe(1);
+    expect(row.anchorsAvailable).toBe(21);
+    // 21 anchors exist but only 1 ran — the 30-question floor is nowhere near.
+    expect(decideAutoEnable({ ...row, corpusVerified: true }).blockers).toContain(
+      "measured_questions_below_30",
+    );
   });
 
   it("unknown codes are ignored and lower `scored`", () => {

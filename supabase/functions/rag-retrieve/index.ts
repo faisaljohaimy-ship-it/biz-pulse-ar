@@ -78,11 +78,13 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     { global: { headers: { Authorization: auth } } },
   );
+  const startedAt = Date.now();
   const { data, error } = await supabase.rpc("rag_hybrid_search", {
     _query: parsed.value.query,
     _query_embedding: embedding ? JSON.stringify(embedding) : null,
     _match_count: parsed.value.match_count,
   });
+  const latencyMs = Date.now() - startedAt;
   if (error) {
     console.error("[rag-retrieve] rpc failed:", error);
     return json({ error: "retrieval_failed", message_ar: "تعذّر الاسترجاع — أعد المحاولة." }, 500);
@@ -104,6 +106,31 @@ Deno.serve(async (req) => {
     trgm_rank: number | null;
   }>;
 
+  const insufficient = !hasSufficientEvidence(rows);
+
+  // Health telemetry for public.rag_health(). Deliberately NOT awaited into
+  // the response path: a metrics write must never add latency to, or fail,
+  // the retrieval it is measuring. waitUntil keeps the task alive past the
+  // response where the runtime supports it; the catch makes a logging
+  // outage invisible to the caller. Numbers only — no answer text is stored.
+  const logTask = supabase
+    .from("rag_retrieval_log")
+    .insert({
+      query: parsed.value.query,
+      latency_ms: latencyMs,
+      results_count: rows.length,
+      insufficient_evidence: insufficient,
+      top_matched_paths: rows[0]?.matched_paths ?? null,
+    })
+    .then(({ error: logError }) => {
+      if (logError) console.error("[rag-retrieve] telemetry insert failed:", logError);
+    })
+    .catch((err: unknown) => console.error("[rag-retrieve] telemetry threw:", err));
+
+  const runtime = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } })
+    .EdgeRuntime;
+  runtime?.waitUntil?.(logTask);
+
   return json({
     results: rows.map((r) => ({
       chunk_id: r.chunk_id,
@@ -119,7 +146,7 @@ Deno.serve(async (req) => {
         chunk_index: r.chunk_index,
       },
     })),
-    insufficient_evidence: !hasSufficientEvidence(rows),
+    insufficient_evidence: insufficient,
     degraded,
   });
 });

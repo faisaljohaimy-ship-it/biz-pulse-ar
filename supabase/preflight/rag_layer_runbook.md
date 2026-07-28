@@ -201,3 +201,98 @@ npx vitest run src/test/rag-live-eval.test.ts
 
 الاختبار **لا يفرض أي عتبة جودة** — يجمع النتائج ويطبع بطاقة القياس فقط.
 تحديد عتبة المعايرة قرارك بعد أول قياس حقيقي؛ افتراض عتبة الآن اختلاق.
+
+---
+
+## Phase ④ closing — read-side capture (migration 8)
+
+`20260728160000_rag_capture_readside.sql` — **staged, not applied.**
+
+Capture reads the EXISTING conversation tables after the fact; it is not a
+hook on the answer path. The constitutional guarantee «لا استدعاء التقاط
+داخل مسار طلب المستخدم» is a privilege, not a convention:
+
+```sql
+revoke all on function public.rag_capture_readside(int) from public, anon, authenticated;
+grant execute on function public.rag_capture_readside(int) to service_role;
+```
+
+Sources and what each contributes:
+
+| المصدر | يُقرأ | يُنتج |
+|---|---|---|
+| `aria_learning_log` (unresolved) | السؤال + وقت التسجيل | صفوف في `rag_gaps` |
+| `aria_conversations` (غير محاكاة) | عدّ الطلب وحدّ المسح | **صفر** صفوف فجوات |
+
+The second row is a deliberate refusal, not an omission: a conversation
+title is evidence a question was ASKED, not that it went UNANSWERED, and
+minting titles into the failure ledger would inflate every coverage figure
+computed from it.
+
+**Org resolution fails closed.** A user in two orgs (or none) is SKIPPED and
+counted in `skipped_no_org` — never filed under a guessed tenant.
+
+**Run the harness (real Postgres, no production access):**
+
+```bash
+psql -v ON_ERROR_STOP=1 \
+  -v normalize_file=supabase/migrations/20260728093100_rag_ar_normalize.sql \
+  -v documents_file=supabase/migrations/20260728093200_rag_documents.sql \
+  -v loop_file=supabase/migrations/20260728140000_rag_learning_loop.sql \
+  -v hardening_file=supabase/migrations/20260728150000_rag_learning_hardening.sql \
+  -v capture_file=supabase/migrations/20260728160000_rag_capture_readside.sql \
+  -f supabase/preflight/rag_capture_check.sql
+```
+
+Checks I–VIII, all executed: capture denied to `authenticated`/`anon`;
+resolved questions excluded; ambiguous org skipped and filed nowhere;
+**`rag_chunks`/`rag_documents`/`rag_candidates` UNCHANGED** (negative test);
+two spellings merged into one gap; a second run scans zero rows; conversations
+scanned with zero gaps minted; simulation rows excluded.
+
+## Phase ⑤ — continuous operation (migration 9)
+
+`20260728170000_rag_operations.sql` — **staged, not applied.**
+
+Adds `embedded_hash`/`embedded_at` to `rag_chunks` (the staleness signal the
+re-embed queue needs — content_hash alone tells you the text changed, not that
+the vector is behind it), `rag_retrieval_log`, `rag_eval_runs`, `rag_health()`
+and `rag_should_enable()`, plus three guarded `pg_cron` schedules.
+
+**The honesty rule is in SQL, not prose.** Every unmeasured metric returns
+`NULL`; a CHECK constraint (`rag_eval_scores_require_measurement`) forbids a
+row that claims a score with `measured_questions = 0`; and members cannot
+INSERT into `rag_eval_runs` at all, so the auto-enable gate cannot be hand-fed
+a passing row.
+
+```bash
+psql -v ON_ERROR_STOP=1 \
+  -v normalize_file=supabase/migrations/20260728093100_rag_ar_normalize.sql \
+  -v documents_file=supabase/migrations/20260728093200_rag_documents.sql \
+  -v loop_file=supabase/migrations/20260728140000_rag_learning_loop.sql \
+  -v hardening_file=supabase/migrations/20260728150000_rag_learning_hardening.sql \
+  -v operations_file=supabase/migrations/20260728170000_rag_operations.sql \
+  -f supabase/preflight/rag_operations_check.sql
+```
+
+Checks I–IX, all executed.
+
+### حالة القياس اليوم
+
+**لم يُشغَّل — القاعدة غير مطبَّقة.** `rag_eval_runs` فارغ، فـ
+`rag_should_enable()` يعيد `{not_measured}` و`rag_enabled` تبقى مطفأة.
+لا يوجد رقم recall ولا دقة استشهاد.
+
+**عائق قائم على العتبة:** المرساة 21 بندًا من البذرة، والعتبة 30 سؤالًا
+مقيسًا. حتى لو طُبِّقت القاعدة وابتُلع المحتوى اليوم، **الحد الأقصى الممكن
+21 < 30** — فالبوابة تبقى مغلقة بنيويًا حتى ينمو المتن المبذور نفسه إلى
+30 مرساة فأكثر. لا يُسدّ هذا الفارق بتأليف تسعة أسئلة.
+
+## §2/§3 — deployment governance
+
+Pure decision logic in `src/lib/rag/deployment.ts`; nothing there deploys.
+`EMERGENCY_RESERVE = 2` is enforced by `checkBudget()` refusing `routine`
+work once only the reserve remains. `evaluatePostDeployHealth()` returns
+`inconclusive` — never `healthy` — for an unrun check. `decideRollback()`
+judges artifact health FIRST, so a broken deploy can never be mistaken for a
+quality regression and papered over with a flag flip.

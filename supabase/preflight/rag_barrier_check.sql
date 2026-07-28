@@ -217,5 +217,51 @@ do $$ declare top record; begin
   raise notice 'X.   gap report ................. top hit_count=% (normalised merge works)', top.hit_count;
 end $$;
 
-do $$ begin raise notice '──── BARRIER + LOOP CHECKS PASSED (I–X) ────'; end $$;
+-- ── Org B gets its OWN candidates, or XI/XII prove nothing ────────────────
+-- Without these rows, "assert other-org rows = 0" passes vacuously: there is
+-- no foreign group to leak in the first place. A green assertion over an
+-- empty set is the false negative that let a missing is_org_member predicate
+-- ship once already.
+do $$ begin
+  perform set_config('request.jwt.claims','{"sub":"00000000-0000-0000-0000-0000000b0001"}',true);
+  insert into public.rag_candidates (org_id,question,answer,citation_chunk_id,verified,content_sha256)
+  values ('00000000-0000-0000-0000-00000000bbbb','سؤال مؤسسة ب','نص مُسند',
+          '00000000-0000-0000-0000-0000000000c2',true,repeat('7',64));
+  insert into public.rag_candidates (org_id,question,answer,verified,content_sha256)
+  values ('00000000-0000-0000-0000-00000000bbbb','سؤال آخر لمؤسسة ب','نص بلا سند',false,repeat('8',64));
+end $$;
+
+-- ── XI. the answer surface is READABLE BY A MEMBER, and org-scoped ────────
+-- The regression this catches: migration 7 revokes SELECT on the base table,
+-- so a security_invoker view over it is denied to the very members it serves
+-- — the barrier would take the answer surface down with it. Checks VI–VIII
+-- ran as superuser and could not see that. This one runs as the member.
+do $$ declare mine int; theirs int; begin
+  perform set_config('request.jwt.claims','{"sub":"00000000-0000-0000-0000-0000000a0002"}',true);
+  execute 'set local role authenticated';
+  select count(*) into mine from public.rag_verified_candidates
+   where org_id='00000000-0000-0000-0000-00000000aaaa';
+  select count(*) into theirs from public.rag_verified_candidates
+   where org_id='00000000-0000-0000-0000-00000000bbbb';
+  execute 'reset role';
+  assert mine = 2, format('XI. member sees %s verified rows of its own org, expected 2', mine);
+  assert theirs = 0, 'XI. ANOTHER ORG''s verified rows were visible through the view';
+  raise notice 'XI.  member reads answer surface  OK (own=% other=%)', mine, theirs;
+end $$;
+
+-- ── XII. counters likewise readable by a member, and org-scoped ───────────
+do $$ declare n int; other int; begin
+  perform set_config('request.jwt.claims','{"sub":"00000000-0000-0000-0000-0000000a0002"}',true);
+  execute 'set local role authenticated';
+  select candidates into n from public.rag_candidate_stats
+   where org_id='00000000-0000-0000-0000-00000000aaaa';
+  select count(*) into other from public.rag_candidate_stats
+   where org_id='00000000-0000-0000-0000-00000000bbbb';
+  execute 'reset role';
+  assert n = 5, format('XII. member sees candidates=%s, expected 5', n);
+  assert other = 0, 'XII. another org''s counters were visible';
+  raise notice 'XII. member reads counters ...... OK (own=% other-org rows=%)', n, other;
+end $$;
+
+do $$ begin raise notice '──── BARRIER + LOOP CHECKS PASSED (I–XII) ────'; end $$;
 rollback;
