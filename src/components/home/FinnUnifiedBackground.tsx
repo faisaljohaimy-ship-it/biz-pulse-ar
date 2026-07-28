@@ -157,8 +157,8 @@ export function FinnUnifiedBackground() {
                 height="80"
                 rx="6"
                 fill="url(#finnBgCpu)"
-                stroke="rgba(103,232,249,0.9)"
-                strokeWidth="1.1"
+                stroke="rgba(140,190,210,0.55)"
+                strokeWidth="0.9"
                 filter="url(#finnBgGlow)"
               />
               {/* CPU die */}
@@ -169,11 +169,11 @@ export function FinnUnifiedBackground() {
                 height="40"
                 rx="2"
                 fill="rgba(6,26,46,1)"
-                stroke="rgba(186,254,255,0.85)"
-                strokeWidth="0.6"
+                stroke="rgba(180,210,225,0.5)"
+                strokeWidth="0.5"
               />
               {/* CPU inner circuitry */}
-              <g stroke="rgba(103,232,249,0.55)" strokeWidth="0.4" fill="none">
+              <g stroke="rgba(140,190,210,0.35)" strokeWidth="0.4" fill="none">
                 <path d="M185,285 H215 M185,290 H215 M185,295 H215 M185,300 H215 M185,305 H215 M185,310 H215 M185,315 H215" />
                 <path d="M190,282 V318 M195,282 V318 M200,282 V318 M205,282 V318 M210,282 V318" />
               </g>
@@ -184,12 +184,12 @@ export function FinnUnifiedBackground() {
                 textAnchor="middle"
                 fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
                 fontSize="6"
-                fill="rgba(186,254,255,0.9)"
+                fill="rgba(180,210,225,0.6)"
               >
                 FINN-CORE
               </text>
               {/* CPU pins (4 sides) */}
-              <g stroke="rgba(103,232,249,0.7)" strokeWidth="0.6">
+              <g stroke="rgba(140,190,210,0.45)" strokeWidth="0.5">
                 {Array.from({ length: 10 }).map((_, i) => {
                   const t = 164 + i * ((80 - 8) / 9);
                   return (
@@ -208,13 +208,14 @@ export function FinnUnifiedBackground() {
                 cy="300"
                 r="46"
                 fill="none"
-                stroke="rgba(103,232,249,0.35)"
-                strokeWidth="0.6"
+                stroke="rgba(140,190,210,0.22)"
+                strokeWidth="0.5"
                 strokeDasharray="2 3"
               >
-                <animate attributeName="opacity" values="0.2;0.7;0.2" dur="3.2s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.15;0.45;0.15" dur="3.2s" repeatCount="indefinite" />
               </circle>
             </g>
+
 
             {/* Bus solder nodes */}
             <g fill="url(#finnBgNode)">
