@@ -62,3 +62,39 @@ For every viewport it asserts:
    `z-index` stays inside `[10, 80]`. Nothing climbs above the shell itself.
 
 Current baseline: **25 checks passing across 5 viewports**.
+
+---
+
+## FINN card — `finn_card_visual.py`
+
+Guards `mem://design/finn-visual-constitution.md` on the FINN portal card at
+the two viewports the product must ship correctly on:
+
+| viewport      | width × height |
+| ------------- | -------------- |
+| `mobile-390`  | 390 × 844      |
+| `laptop-1280` | 1280 × 800     |
+
+Targets `data-testid="finn-portal-card"` (the `.finn-glass-edge` wrapper).
+
+Per viewport it asserts:
+
+1. **Dark digital tone** — full-card mean luma ≤ 70 and cool-blue tone
+   (blue channel ≥ red + 4). A glass/white regression (backdrop-blur,
+   light overlay) trips this immediately.
+2. **Pixel stability** — element screenshot matches the committed baseline
+   with mean per-channel Δ ≤ 6.0 / 255. This is the actual guard on the
+   `.finn-glass-edge` luminous ring, PCB traces, code rain and digital grid
+   — remove or drift any of them and the diff PNG lands in `diffs/`.
+
+Determinism: all CSS animations/transitions are frozen via an `add_init_script`
+style tag before the page loads, so the 6-second glass-edge breathing halo
+never contributes flake.
+
+Run:
+
+```bash
+npm run test:visual:finn                  # regression check (part of npm run test:visual)
+npm run test:visual:finn:update           # refresh after an intentional visual change
+```
+
