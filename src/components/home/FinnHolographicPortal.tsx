@@ -82,7 +82,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
             to="/finn"
             search={{ mode: "voice" } as never}
             aria-label={ar ? "تحدث الآن مع FINN" : "Talk to FINN now"}
-            className="group absolute left-1/2 top-1/2 z-20 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border border-cyan-300/70 bg-cyan-500/25 text-white shadow-[0_0_40px_rgba(34,211,238,0.55),inset_0_0_18px_rgba(34,211,238,0.35)] backdrop-blur-md transition hover:scale-105 hover:bg-cyan-400/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200 active:scale-95 sm:h-24 sm:w-24"
+            className="group absolute left-1/2 top-1/2 z-20 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border border-cyan-300/70 bg-[#061525] text-white shadow-[0_0_40px_rgba(34,211,238,0.55),inset_0_0_18px_rgba(34,211,238,0.35)] transition hover:scale-105 hover:bg-cyan-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200 active:scale-95 sm:h-24 sm:w-24"
           >
             <Mic className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
             <span className="text-[10px] font-bold tracking-wider sm:text-[11px]">
