@@ -207,9 +207,9 @@ function IntroLanding() {
       <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
-      {/* ══ Executive Hero — HIDDEN per owner directive (see
-          src/config/hidden-ui.ts → "home-hero"). Kept intentionally empty
-          so the dashboard renders immediately at the top of the route. ══ */}
+      {/* ══ Executive Hero — HIDDEN per owner directive. Kept intentionally
+          empty so the dashboard renders immediately at the top of the route. ══ */}
+
 
       {/* ══ NEXIOS Four-Region Executive Hub — the PRIMARY dashboard: all four
           regions around a central interactive Saudi map, live per-region KPIs
