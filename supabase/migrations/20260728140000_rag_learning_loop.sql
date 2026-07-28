@@ -84,6 +84,20 @@ BEGIN
       WHERE c.id = NEW.citation_chunk_id
         AND c.org_id = NEW.org_id
     ) INTO grounded;
+
+    -- CROSS-ORG CITATION: the chunk exists but belongs to another tenant.
+    -- Refuse OUTRIGHT — do not fall through to the admin route. A stored row
+    -- whose citation points into another org is an isolation defect no
+    -- approval can cure, so isolation outranks approval here.
+    IF NOT grounded AND EXISTS (
+      SELECT 1 FROM public.rag_chunks c WHERE c.id = NEW.citation_chunk_id
+    ) THEN
+      NEW.verified        := false;
+      NEW.verified_by     := NULL;
+      NEW.verified_at     := NULL;
+      NEW.verified_reason := NULL;
+      RETURN NEW;
+    END IF;
   END IF;
 
   -- ② Admin of THIS org explicitly approving.
