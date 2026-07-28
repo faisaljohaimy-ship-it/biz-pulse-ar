@@ -170,6 +170,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
             {"01\n11\n00\n10\nAB\n3C\n7E\n01\n10\nF0\n2D\n01\n11\n00\n10\n8B\n4C\n01\n10\n11"}
           </span>
         </span>
+        </span>
       </span>
 
 
