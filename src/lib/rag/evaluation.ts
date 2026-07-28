@@ -1,106 +1,86 @@
 /**
- * RAG retrieval evaluation — golden set + pure rank metrics.
+ * RAG retrieval evaluation — seed-verbatim anchors + pure rank metrics.
  *
- * GOLDEN SET: one Arabic query per real SEC directive (codes/titles taken
- * verbatim from the hcis_directives seed — nothing invented), plus three PTW
- * queries. Several queries deliberately carry tashkeel / hamza / ta-marbuta
- * variance to exercise the normalization path end-to-end. This targets the
- * declared risk «استرجاع ضعيف للرموز»: every SEC code must be retrievable
- * from a natural Arabic question about its topic.
+ * 🛑 CONSTRAINT THAT SHAPED THIS FILE: authoring evaluation questions is
+ * FORBIDDEN. The HCIS seed
+ * (supabase/migrations/20260719200000_hcis_framework_tables_seed_anon.sql)
+ * contains NO question field at all — hcis_directives is
+ * (code, category, name_ar, name_en, scope_ar, issue_note_ar, sort_order).
+ * Therefore ZERO questions are available from the seed, and a 30-question
+ * golden set cannot exist without invention. See the session report.
  *
- * METRICS (pure, unit-tested): hit@1, hit@5, MRR, coverage, insufficient
- * rate. Rank metrics fit citation retrieval (the right document cited, high).
- * Rejected: nDCG (needs graded relevance judgments we don't have yet) and
- * LLM-as-judge (nondeterministic, costs quota on the production Gemini path).
+ * What IS available verbatim, and what this file uses: the 21 directive
+ * NAMES (name_ar) with their real codes, copied character-for-character from
+ * the seed. Each anchor's probe text IS the seed's own label — it is a
+ * retrieval probe, NOT an authored question. Nothing here is composed.
  *
- * The runner that feeds real responses into these metrics lives in
- * src/test/rag-live-eval.test.ts and only runs when the operator provides
- * RAG_EVAL_JWT — this module itself never touches the network.
+ * METRICS are pure and DB-free: hit@1, hit@5, MRR, coverage. Rank metrics fit
+ * citation retrieval (right document cited, ranked high). Rejected: nDCG
+ * (needs graded relevance judgments that do not exist yet) and LLM-as-judge
+ * (nondeterministic and would consume the production Gemini path).
+ *
+ * NOTHING in this module has been measured. The rag_* tables are NOT applied
+ * to khytdwgyrnztqabhfgbb, so no retrieval run exists — any score would be
+ * fabricated. The runner (src/test/rag-live-eval.test.ts) stays skipped until
+ * the operator applies the migrations and supplies a session JWT.
  */
 
-export interface GoldenExpectation {
-  /** Exact citation codes that count as a hit (SEC directives). */
-  codes?: readonly string[];
-  /** OR a code prefix (PTW docs — codes are operator-assigned at ingest). */
-  prefix?: string;
+/** One retrieval anchor, sourced verbatim from the hcis_directives seed. */
+export interface GoldenAnchor {
+  /** Real directive code (primary key in hcis_directives). */
+  code: string;
+  /** VERBATIM name_ar from the seed — used as the retrieval probe. */
+  probeAr: string;
 }
 
-export interface GoldenQuery {
-  id: string;
-  queryAr: string;
-  expect: GoldenExpectation;
-}
-
-/** 19 SEC (real seed titles) + 3 PTW = 22 queries. */
-export const GOLDEN_SET: readonly GoldenQuery[] = [
-  {
-    id: "sec-01",
-    queryAr: "ما المتطلبات العامة للتوجيهات الأمنية وتصنيف المنشآت؟",
-    expect: { codes: ["SEC-01"] },
-  },
-  { id: "sec-02", queryAr: "اشتراطات الأسوار الأمنيّة حول المنشأة", expect: { codes: ["SEC-02"] } },
-  { id: "sec-03", queryAr: "ما ضوابط البوابات الأمنية؟", expect: { codes: ["SEC-03"] } },
-  { id: "sec-04", queryAr: "متطلبات الإنارة الأمنية في المواقع", expect: { codes: ["SEC-04"] } },
-  {
-    id: "sec-05",
-    queryAr: "ما هي الأنظمة الأمنيّة المتكاملة المطلوبة؟",
-    expect: { codes: ["SEC-05"] },
-  },
-  { id: "sec-06", queryAr: "اشتراطات الأجهزة الأمنية المعتمدة", expect: { codes: ["SEC-06"] } },
-  {
-    id: "sec-07",
-    queryAr: "متطلبات التغذية الكهربائية للأنظمة الأمنية",
-    expect: { codes: ["SEC-07"] },
-  },
-  {
-    id: "sec-08",
-    queryAr: "ضوابط الاتصالات الأمنية وشبكات البيانات",
-    expect: { codes: ["SEC-08"] },
-  },
-  {
-    id: "sec-09",
-    queryAr: "اشتراطات المباني الحاضنة للمعدات الأمنية",
-    expect: { codes: ["SEC-09"] },
-  },
-  {
-    id: "sec-10",
-    queryAr: "عمليات السكك الحديدية داخل المنشآت الصناعية",
-    expect: { codes: ["SEC-10"] },
-  },
-  {
-    id: "sec-11",
-    queryAr: "كيف يتم التحقق من الهوية الشخصية للداخلين؟",
-    expect: { codes: ["SEC-11"] },
-  },
-  { id: "sec-12", queryAr: "ما ضوابط بطاقات التعريف؟", expect: { codes: ["SEC-12"] } },
-  {
-    id: "sec-13",
-    queryAr: "متطلبات الأمن السيبراني للأنظمة الصناعية",
-    expect: { codes: ["SEC-13"] },
-  },
-  { id: "sec-14", queryAr: "اشتراطات المنشآت ذات الواجهة البحرية", expect: { codes: ["SEC-14"] } },
-  { id: "sec-15", queryAr: "ضوابط إدارة المشاريع الأمنية", expect: { codes: ["SEC-15"] } },
-  {
-    id: "sec-16",
-    queryAr: "العمليات الأمنية في المنشآت الصناعية ومتطلباتها",
-    expect: { codes: ["SEC-16"] },
-  },
-  { id: "sec-17", queryAr: "حماية خطوط الأنابيب وممرّاتها", expect: { codes: ["SEC-17"] } },
-  {
-    id: "sec-18",
-    queryAr: "ما نطاق توجيه محطات التحويل الكهربائية؟",
-    expect: { codes: ["SEC-18"] },
-  },
-  { id: "sec-19", queryAr: "متطلبات أمن المدن الصناعية", expect: { codes: ["SEC-19"] } },
-  { id: "ptw-chain", queryAr: "ما سلسلة اعتماد تصريح العمل؟", expect: { prefix: "PTW" } },
-  { id: "ptw-types", queryAr: "ما أنواع تصاريح العمل المعتمدة؟", expect: { prefix: "PTW" } },
-  { id: "ptw-suspend", queryAr: "متى يُعلَّق تصريح العمل طارئًا؟", expect: { prefix: "PTW" } },
+/**
+ * The 21 seeded directives — the complete, non-invented anchor set.
+ * 19 SEC + SEC-RC + SAF-GEN. Any expansion beyond 21 requires either new
+ * seed rows or operator-approved question authoring; neither is assumed.
+ */
+export const GOLDEN_ANCHORS: readonly GoldenAnchor[] = [
+  { code: "SEC-01", probeAr: "المتطلبات العامة للتوجيهات الأمنية" },
+  { code: "SEC-02", probeAr: "الأسوار الأمنية" },
+  { code: "SEC-03", probeAr: "البوابات الأمنية" },
+  { code: "SEC-04", probeAr: "الإنارة الأمنية" },
+  { code: "SEC-05", probeAr: "الأنظمة الأمنية المتكاملة" },
+  { code: "SEC-06", probeAr: "الأجهزة الأمنية" },
+  { code: "SEC-07", probeAr: "التغذية الكهربائية" },
+  { code: "SEC-08", probeAr: "الاتصالات الأمنية وشبكات البيانات" },
+  { code: "SEC-09", probeAr: "المباني الحاضنة للمعدات الأمنية" },
+  { code: "SEC-10", probeAr: "عمليات السكك الحديدية داخل المنشآت الصناعية" },
+  { code: "SEC-11", probeAr: "التحقق من الهوية الشخصية" },
+  { code: "SEC-12", probeAr: "بطاقات التعريف" },
+  { code: "SEC-13", probeAr: "الأمن السيبراني" },
+  { code: "SEC-14", probeAr: "المنشآت ذات الواجهة البحرية" },
+  { code: "SEC-15", probeAr: "إدارة المشاريع الأمنية" },
+  { code: "SEC-16", probeAr: "العمليات الأمنية في المنشآت الصناعية" },
+  { code: "SEC-17", probeAr: "خطوط الأنابيب وممراتها" },
+  { code: "SEC-18", probeAr: "محطات التحويل الكهربائية" },
+  { code: "SEC-19", probeAr: "أمن المدن الصناعية" },
+  { code: "SEC-RC", probeAr: "المجمعات السكنية التابعة للمنشآت الصناعية" },
+  { code: "SAF-GEN", probeAr: "توجيهات السلامة والحماية من الحريق — نظرة عامة" },
 ];
 
-/** One retrieval run to score: the ranked citation codes for a golden query. */
+/** Honest inventory of what the seed can and cannot supply. */
+export const SEED_INVENTORY = {
+  /** Directive rows in hcis_directives (verified by reading the seed). */
+  directives: 21,
+  /** Seeded permit_types names (PTW demo seed) — labels, not documents. */
+  permitTypes: 4,
+  /** Seeded approval stages. */
+  approvalStages: 7,
+  /** Seeded sectors. */
+  sectors: 13,
+  /** Questions present anywhere in the seed. There is no question column. */
+  questions: 0,
+} as const;
+
+/** One retrieval run to score: ranked citation codes for one anchor. */
 export interface RetrievalRun {
-  queryId: string;
-  /** Citation codes in rank order (null codes filtered by the caller). */
+  /** Must match a GOLDEN_ANCHORS code. */
+  code: string;
+  /** Citation codes in rank order (null = chunk had no document code). */
   rankedCodes: readonly (string | null)[];
   insufficient: boolean;
 }
@@ -116,25 +96,21 @@ export interface RetrievalMetrics {
   misses: string[];
 }
 
-function matches(exp: GoldenExpectation, code: string | null): boolean {
-  if (code == null) return false;
-  if (exp.codes && exp.codes.includes(code)) return true;
-  if (exp.prefix && code.startsWith(exp.prefix)) return true;
-  return false;
-}
-
-/** First 1-based rank at which the expectation is satisfied; 0 = no hit. */
-export function firstHitRank(exp: GoldenExpectation, ranked: readonly (string | null)[]): number {
+/** First 1-based rank where the expected code appears; 0 = no hit. */
+export function firstHitRank(code: string, ranked: readonly (string | null)[]): number {
   for (let i = 0; i < ranked.length; i += 1) {
-    if (matches(exp, ranked[i])) return i + 1;
+    if (ranked[i] === code) return i + 1;
   }
   return 0;
 }
 
-/** Pure aggregation. Runs referencing unknown query ids are ignored (and
- *  reduce `scored`) — the caller sees the discrepancy via total vs scored. */
+/**
+ * Pure aggregation over runs. Runs whose code is not a known anchor are
+ * ignored and lower `scored` — the caller sees the gap via total vs scored.
+ * This computes nothing on its own: without real runs it returns zeros.
+ */
 export function evaluateRetrieval(runs: readonly RetrievalRun[]): RetrievalMetrics {
-  const byId = new Map(GOLDEN_SET.map((g) => [g.id, g]));
+  const known = new Set(GOLDEN_ANCHORS.map((a) => a.code));
   let scored = 0;
   let hit1 = 0;
   let hit5 = 0;
@@ -143,18 +119,17 @@ export function evaluateRetrieval(runs: readonly RetrievalRun[]): RetrievalMetri
   let insufficient = 0;
   const misses: string[] = [];
   for (const run of runs) {
-    const golden = byId.get(run.queryId);
-    if (!golden) continue;
+    if (!known.has(run.code)) continue;
     scored += 1;
     if (run.insufficient) insufficient += 1;
-    const rank = firstHitRank(golden.expect, run.rankedCodes);
+    const rank = firstHitRank(run.code, run.rankedCodes);
     if (rank === 1) hit1 += 1;
     if (rank >= 1 && rank <= 5) hit5 += 1;
     if (rank >= 1) {
       covered += 1;
       rrSum += 1 / rank;
     } else {
-      misses.push(golden.id);
+      misses.push(run.code);
     }
   }
   const denom = scored || 1;

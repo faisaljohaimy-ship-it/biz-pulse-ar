@@ -1,15 +1,17 @@
 /**
- * Phase-③ wiring tests: feature flag semantics, strict response-shape
- * validation (insufficient_evidence flows as SUCCESS data), rank-metric math
- * with hand-computed fixtures, and golden-set integrity (all 19 real SEC
- * codes present exactly once).
+ * Phase-③ wiring tests — DB-FREE by construction.
+ *
+ * These exercise pure logic only: flag semantics, response-shape validation,
+ * rank-metric arithmetic on hand-written fixtures, and the integrity of the
+ * seed-verbatim anchor set. They prove NOTHING about retrieval quality — the
+ * rag_* tables are not applied, so no retrieval has ever run.
  */
 import { describe, expect, it } from "vitest";
 import { parseRagFlag } from "./flags";
 import { parseRetrieveResponse } from "./client";
-import { evaluateRetrieval, firstHitRank, GOLDEN_SET } from "./evaluation";
+import { evaluateRetrieval, firstHitRank, GOLDEN_ANCHORS, SEED_INVENTORY } from "./evaluation";
 
-describe("feature flag — NOT_GLOBAL, default OFF", () => {
+describe("feature flag — default OFF (rag_enabled = false)", () => {
   it("enables only on explicit true/1 (case/space tolerant)", () => {
     expect(parseRagFlag("true")).toBe(true);
     expect(parseRagFlag(" TRUE ")).toBe(true);
@@ -35,13 +37,13 @@ describe("retrieve response validation — strict shape, honest outcomes", () =>
     citation: {
       document_id: "d1",
       code: "SEC-18",
-      title: "محطات التحويل",
+      title: "محطات التحويل الكهربائية",
       source: "hcis.gov.sa",
       chunk_index: 0,
     },
   };
 
-  it("accepts a valid payload — and insufficient_evidence passes AS DATA", () => {
+  it("accepts a valid payload — insufficient_evidence passes AS DATA", () => {
     const parsed = parseRetrieveResponse({
       results: [validResult],
       insufficient_evidence: true,
@@ -52,7 +54,7 @@ describe("retrieve response validation — strict shape, honest outcomes", () =>
     expect(parsed?.results[0].citation.code).toBe("SEC-18");
   });
 
-  it("accepts a null citation code (PTW docs may omit code)", () => {
+  it("accepts a null citation code and a degraded marker", () => {
     const parsed = parseRetrieveResponse({
       results: [{ ...validResult, citation: { ...validResult.citation, code: null } }],
       insufficient_evidence: false,
@@ -85,12 +87,12 @@ describe("retrieve response validation — strict shape, honest outcomes", () =>
   });
 });
 
-describe("rank metrics — hand-computed fixture", () => {
+describe("rank metrics — arithmetic on hand-written fixtures (no retrieval)", () => {
   it("hit@1, hit@5, MRR, coverage match exact arithmetic", () => {
     const metrics = evaluateRetrieval([
-      { queryId: "sec-18", rankedCodes: ["SEC-18", "SEC-01"], insufficient: false }, // rank 1
-      { queryId: "sec-13", rankedCodes: ["SEC-01", "SEC-13"], insufficient: false }, // rank 2
-      { queryId: "sec-02", rankedCodes: ["SEC-09", null], insufficient: true }, // miss
+      { code: "SEC-18", rankedCodes: ["SEC-18", "SEC-01"], insufficient: false }, // rank 1
+      { code: "SEC-13", rankedCodes: ["SEC-01", "SEC-13"], insufficient: false }, // rank 2
+      { code: "SEC-02", rankedCodes: ["SEC-09", null], insufficient: true }, // miss
     ]);
     expect(metrics.scored).toBe(3);
     expect(metrics.hitAt1).toBeCloseTo(1 / 3, 12);
@@ -98,36 +100,49 @@ describe("rank metrics — hand-computed fixture", () => {
     expect(metrics.mrr).toBeCloseTo((1 + 0.5 + 0) / 3, 12);
     expect(metrics.coverage).toBeCloseTo(2 / 3, 12);
     expect(metrics.insufficientRate).toBeCloseTo(1 / 3, 12);
-    expect(metrics.misses).toEqual(["sec-02"]);
+    expect(metrics.misses).toEqual(["SEC-02"]);
   });
 
-  it("prefix expectation matches PTW-style codes; unknown ids are ignored", () => {
-    expect(firstHitRank({ prefix: "PTW" }, ["SEC-01", "PTW-SIM-3"])).toBe(2);
+  it("no runs → all-zero metrics (an unmeasured system scores nothing)", () => {
+    const metrics = evaluateRetrieval([]);
+    expect(metrics.scored).toBe(0);
+    expect(metrics.hitAt1).toBe(0);
+    expect(metrics.coverage).toBe(0);
+    expect(metrics.mrr).toBe(0);
+  });
+
+  it("unknown codes are ignored and lower `scored`", () => {
+    expect(firstHitRank("SEC-18", ["SEC-01", "SEC-18"])).toBe(2);
     const metrics = evaluateRetrieval([
-      { queryId: "ptw-chain", rankedCodes: ["PTW-01"], insufficient: false },
-      { queryId: "not-a-golden-id", rankedCodes: ["SEC-01"], insufficient: false },
+      { code: "SEC-01", rankedCodes: ["SEC-01"], insufficient: false },
+      { code: "NOT-A-REAL-CODE", rankedCodes: ["NOT-A-REAL-CODE"], insufficient: false },
     ]);
     expect(metrics.total).toBe(2);
     expect(metrics.scored).toBe(1);
-    expect(metrics.hitAt1).toBe(1);
   });
 });
 
-describe("golden set integrity — real seed codes, no inventions", () => {
-  it("holds all 19 SEC codes exactly once + 3 PTW queries = 22", () => {
-    expect(GOLDEN_SET).toHaveLength(22);
-    const secCodes = GOLDEN_SET.flatMap((g) => g.expect.codes ?? []);
-    const expected = Array.from({ length: 19 }, (_, i) => `SEC-${String(i + 1).padStart(2, "0")}`);
-    expect([...secCodes].sort()).toEqual([...expected].sort());
-    expect(new Set(secCodes).size).toBe(19);
-    expect(GOLDEN_SET.filter((g) => g.expect.prefix === "PTW")).toHaveLength(3);
+describe("anchor set integrity — seed-verbatim only, zero authored questions", () => {
+  it("holds exactly the 21 seeded directive codes, each once", () => {
+    expect(GOLDEN_ANCHORS).toHaveLength(21);
+    const codes = GOLDEN_ANCHORS.map((a) => a.code);
+    expect(new Set(codes).size).toBe(21);
+    const sec = Array.from({ length: 19 }, (_, i) => `SEC-${String(i + 1).padStart(2, "0")}`);
+    expect(codes).toEqual([...sec, "SEC-RC", "SAF-GEN"]);
   });
 
-  it("every query is non-empty Arabic with a unique id", () => {
-    expect(new Set(GOLDEN_SET.map((g) => g.id)).size).toBe(GOLDEN_SET.length);
-    for (const g of GOLDEN_SET) {
-      expect(g.queryAr.trim().length).toBeGreaterThan(5);
-      expect(/[؀-ۿ]/.test(g.queryAr)).toBe(true);
+  it("records that the seed supplies ZERO questions (30 not possible)", () => {
+    expect(SEED_INVENTORY.questions).toBe(0);
+    expect(SEED_INVENTORY.directives).toBe(21);
+    expect(GOLDEN_ANCHORS.length).toBeLessThan(30);
+  });
+
+  it("every probe is non-empty Arabic (a seed label, not a question)", () => {
+    for (const a of GOLDEN_ANCHORS) {
+      expect(a.probeAr.trim().length).toBeGreaterThan(3);
+      expect(/[؀-ۿ]/.test(a.probeAr)).toBe(true);
+      // Seed labels are noun phrases — none is an interrogative.
+      expect(a.probeAr).not.toContain("؟");
     }
   });
 });

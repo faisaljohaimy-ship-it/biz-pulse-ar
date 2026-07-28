@@ -178,13 +178,26 @@ changes nothing user-visible.
 **Rollback:** unset the env var (instant, no deploy), or revert the phase-③
 commit — no DB objects are involved in this phase.
 
-## Live golden-set evaluation (operator-run, after functions deploy)
+## Live evaluation (operator-run) — NOT RUNNABLE YET
+
+**حالة مؤكَّدة: القاعدة غير مطبَّقة.** لم يُنفَّذ أي migration على
+`khytdwgyrnztqabhfgbb`؛ لا `rag_documents` ولا `rag_chunks` ولا
+`rag_hybrid_search`، والدالتان غير منشورتين. **لم يُشغَّل أي استرجاع، ولا
+يوجد أي رقم recall أو دقة استشهاد — أي رقم يُذكر سيكون مُختلقًا.**
+
+الشروط الأربعة لتشغيله: (1) تطبيق migrations 1–5، (2) نشر الدالتين،
+(3) ابتلاع المحتوى للمؤسسة الهدف، (4) توفير المتغيّرين أدناه.
+
 ```bash
 VITE_SUPABASE_URL=https://khytdwgyrnztqabhfgbb.supabase.co \
-RAG_EVAL_JWT=<real user session JWT of an org with the corpus ingested> \
+RAG_EVAL_JWT=<JWT جلسة مستخدم حقيقي في مؤسسة مبتلَع محتواها> \
 npx vitest run src/test/rag-live-eval.test.ts
 ```
-Prints the scorecard (hit@1 · hit@5 · MRR · coverage · insufficient-rate ·
-misses) over the 22 golden queries (19 real SEC titles + 3 PTW). Without the
-env vars the suite SKIPS — the skip itself is the honest not-run record.
-Initial calibration floor: coverage ≥ 0.7 [افتراض — يُشدَّد بعد أول ابتلاع].
+
+**المرساة المستخدمة:** أسماء التوجيهات الـ21 من بذرة `hcis_directives`
+حرفيًا (SEC-01..19 + SEC-RC + SAF-GEN) — **صفر سؤال مؤلَّف**. البذرة لا
+تحتوي أي حقل أسئلة، فمجموعة من 30 سؤالًا غير ممكنة بلا تأليف (🛑 عائق
+موثّق في تقرير الجلسة).
+
+الاختبار **لا يفرض أي عتبة جودة** — يجمع النتائج ويطبع بطاقة القياس فقط.
+تحديد عتبة المعايرة قرارك بعد أول قياس حقيقي؛ افتراض عتبة الآن اختلاق.
