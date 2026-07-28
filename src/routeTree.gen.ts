@@ -22,6 +22,7 @@ import { Route as RoiRouteImport } from './routes/roi'
 import { Route as ResponsibleAiRouteImport } from './routes/responsible-ai'
 import { Route as RequestDemoRouteImport } from './routes/request-demo'
 import { Route as ReportsAgentRouteImport } from './routes/reports-agent'
+import { Route as RagSearchRouteImport } from './routes/rag-search'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PermitsRouteImport } from './routes/permits'
@@ -285,6 +286,11 @@ const RequestDemoRoute = RequestDemoRouteImport.update({
 const ReportsAgentRoute = ReportsAgentRouteImport.update({
   id: '/reports-agent',
   path: '/reports-agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RagSearchRoute = RagSearchRouteImport.update({
+  id: '/rag-search',
+  path: '/rag-search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -1370,6 +1376,7 @@ export interface FileRoutesByFullPath {
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/rag-search': typeof RagSearchRoute
   '/reports-agent': typeof ReportsAgentRoute
   '/request-demo': typeof RequestDemoRoute
   '/responsible-ai': typeof ResponsibleAiRoute
@@ -1583,6 +1590,7 @@ export interface FileRoutesByTo {
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/rag-search': typeof RagSearchRoute
   '/reports-agent': typeof ReportsAgentRoute
   '/request-demo': typeof RequestDemoRoute
   '/responsible-ai': typeof ResponsibleAiRoute
@@ -1796,6 +1804,7 @@ export interface FileRoutesById {
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/rag-search': typeof RagSearchRoute
   '/reports-agent': typeof ReportsAgentRoute
   '/request-demo': typeof RequestDemoRoute
   '/responsible-ai': typeof ResponsibleAiRoute
@@ -2011,6 +2020,7 @@ export interface FileRouteTypes {
     | '/permits'
     | '/pricing'
     | '/privacy'
+    | '/rag-search'
     | '/reports-agent'
     | '/request-demo'
     | '/responsible-ai'
@@ -2224,6 +2234,7 @@ export interface FileRouteTypes {
     | '/permits'
     | '/pricing'
     | '/privacy'
+    | '/rag-search'
     | '/reports-agent'
     | '/request-demo'
     | '/responsible-ai'
@@ -2436,6 +2447,7 @@ export interface FileRouteTypes {
     | '/permits'
     | '/pricing'
     | '/privacy'
+    | '/rag-search'
     | '/reports-agent'
     | '/request-demo'
     | '/responsible-ai'
@@ -2651,6 +2663,7 @@ export interface RootRouteChildren {
   PermitsRoute: typeof PermitsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  RagSearchRoute: typeof RagSearchRoute
   ReportsAgentRoute: typeof ReportsAgentRoute
   RequestDemoRoute: typeof RequestDemoRoute
   ResponsibleAiRoute: typeof ResponsibleAiRoute
@@ -2814,6 +2827,13 @@ declare module '@tanstack/react-router' {
       path: '/reports-agent'
       fullPath: '/reports-agent'
       preLoaderRoute: typeof ReportsAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rag-search': {
+      id: '/rag-search'
+      path: '/rag-search'
+      fullPath: '/rag-search'
+      preLoaderRoute: typeof RagSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -4521,6 +4541,7 @@ const rootRouteChildren: RootRouteChildren = {
   PermitsRoute: PermitsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  RagSearchRoute: RagSearchRoute,
   ReportsAgentRoute: ReportsAgentRoute,
   RequestDemoRoute: RequestDemoRoute,
   ResponsibleAiRoute: ResponsibleAiRoute,

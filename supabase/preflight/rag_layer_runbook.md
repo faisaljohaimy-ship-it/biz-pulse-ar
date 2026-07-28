@@ -162,3 +162,29 @@ curl -sX POST ".../functions/v1/rag-retrieve" \
 ```
 **Rollback (edge):** `supabase functions delete rag-retrieve --project-ref …`
 (وكذلك `rag-ingest`)؛ حذف الدالة لا يمسّ البيانات.
+
+---
+
+# Session 3 — wiring + evaluation + flag (STAGED · dark by default)
+
+## Feature flag (NOT_GLOBAL)
+The `/rag-search` surface renders ONLY when the environment sets
+`VITE_RAG_RETRIEVAL_ENABLED=true` (Vercel → Environment Variables, per
+environment). Default everywhere: **OFF** — merging/deploying the code alone
+changes nothing user-visible.
+
+**Verify (flag off):** open `/rag-search` → "الميزة غير مفعّلة في هذه البيئة".
+**Verify (flag on + guest):** sign-in gate state — never an Unauthorized error.
+**Rollback:** unset the env var (instant, no deploy), or revert the phase-③
+commit — no DB objects are involved in this phase.
+
+## Live golden-set evaluation (operator-run, after functions deploy)
+```bash
+VITE_SUPABASE_URL=https://khytdwgyrnztqabhfgbb.supabase.co \
+RAG_EVAL_JWT=<real user session JWT of an org with the corpus ingested> \
+npx vitest run src/test/rag-live-eval.test.ts
+```
+Prints the scorecard (hit@1 · hit@5 · MRR · coverage · insufficient-rate ·
+misses) over the 22 golden queries (19 real SEC titles + 3 PTW). Without the
+env vars the suite SKIPS — the skip itself is the honest not-run record.
+Initial calibration floor: coverage ≥ 0.7 [افتراض — يُشدَّد بعد أول ابتلاع].
