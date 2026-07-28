@@ -81,8 +81,8 @@ export function FinnScene({ spec, state, mouthAmplitude = 0, size, severity, gaz
         camera={{ position: [0, 0.05, preset.cameraZ], fov: 28 }}
         frameloop="always"
       >
-        <color attach="background" args={["#04111f"]} />
-        <fog attach="fog" args={["#04111f", 3, 6]} />
+        <color attach="background" args={["#061525"]} />
+        <fog attach="fog" args={["#061525", 3, 6]} />
         {/* 3-point executive lighting */}
         <ambientLight intensity={0.4} />
         <directionalLight position={[2, 3, 3]} intensity={1.2} color="#ffffff" castShadow />
