@@ -100,7 +100,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
             ? "المساعد التنفيذي الذكي — الأمن الصناعي"
             : "Executive AI Assistant — Industrial Security"}
         </p>
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-[11px] text-white backdrop-blur-md">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#061525] px-3 py-1 text-[11px] text-white">
           <span className={`finn-live h-2 w-2 rounded-full ${label.dot}`} aria-hidden />
           <span>{ar ? label.ar : label.en}</span>
         </div>
