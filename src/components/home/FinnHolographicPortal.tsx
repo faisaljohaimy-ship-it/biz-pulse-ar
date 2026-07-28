@@ -12,7 +12,7 @@
 import { Link } from "@tanstack/react-router";
 import { Mic, ArrowLeft, ArrowRight } from "lucide-react";
 import { BRAND_ASSISTANT } from "@/lib/domain";
-import finnDarkPortrait from "@/assets/finn-dark-portrait.png.asset.json";
+import { FinnLiveHologram } from "./FinnLiveHologram";
 
 export type FinnVisualState = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
@@ -36,12 +36,10 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
   return (
     <section
       aria-label={ar ? "بوابة FINN التنفيذية" : "FINN executive portal"}
-      className="finn-portal relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl border border-cyan-300/30 bg-white/5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.10)] backdrop-blur-2xl sm:min-h-[620px]"
-      style={{ backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(34,211,238,0.04) 60%, rgba(255,255,255,0.02))" }}
+      className="finn-portal relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl border border-cyan-300/25 bg-[#04101c] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.04)] sm:min-h-[620px]"
     >
       {/* Live digital board background — circuits, chips, data packets, code rain */}
-      <span aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-
+      <span aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#04101c]">
         {/* Circuit board SVG — traces, chips, nodes, animated data packets */}
         <svg
           className="absolute inset-0 h-full w-full opacity-70"
@@ -159,20 +157,16 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
 
 
 
-      {/* Portrait — dark, sharp, fully visible FINN */}
-      <img
-        src={finnDarkPortrait.url}
-        alt={
+      {/* Portrait — face-first, fully visible, centred */}
+      {/* Live holographic FINN — WebGL scene, not a static image */}
+      <FinnLiveHologram
+        state={state === "offline" ? "offline" : state}
+        ariaLabel={
           ar
             ? `${BRAND_ASSISTANT.nameAr}، المساعد التنفيذي الذكي للأمن الصناعي، ${label.ar}`
             : `${BRAND_ASSISTANT.nameEn}, executive industrial security AI assistant, ${label.en}`
         }
-        loading="lazy"
-        decoding="async"
-        draggable={false}
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] mx-auto h-[92%] w-auto max-w-none object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.9)]"
       />
-
 
       {/* Very light top vignette — keep headroom clear for the wordmark */}
       <span
