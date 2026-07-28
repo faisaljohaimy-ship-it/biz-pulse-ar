@@ -411,9 +411,7 @@ function useIsMobile() {
 function Scene({ state, mobile }: { state: FinnLiveState; mobile: boolean }) {
   return (
     <>
-      {/* Back arcs */}
-      <VerticalArc side={-1} />
-      <VerticalArc side={1} />
+      {/* Back arcs removed per request — keep the scene clean around the head */}
       {/* Vertical light column behind figure */}
       <LightBeam state={state} />
       {/* Character */}

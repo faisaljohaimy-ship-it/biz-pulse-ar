@@ -2568,6 +2568,7 @@ svg.nx-icon-glow-pulse {
 }
 .finn-glass-edge {
   animation: nx-finn-glass-breathe 6s ease-in-out infinite;
+  background-color: #04101c;
 }
 .finn-glass-edge::before {
   content: "";
@@ -2577,13 +2578,14 @@ svg.nx-icon-glow-pulse {
   pointer-events: none;
   border-radius: inherit;
   padding: 1px;
+  /* Dark glass edge — deep navy with a cool cyan sheen, no white highlights */
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(180, 220, 255, 0.28) 22%,
-    rgba(120, 190, 240, 0.10) 48%,
-    rgba(180, 220, 255, 0.30) 78%,
-    rgba(255, 255, 255, 0.55) 100%
+    rgba(58, 232, 255, 0.35) 0%,
+    rgba(20, 60, 90, 0.55) 24%,
+    rgba(10, 30, 50, 0.75) 50%,
+    rgba(20, 60, 90, 0.55) 76%,
+    rgba(58, 232, 255, 0.35) 100%
   );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
@@ -2593,7 +2595,7 @@ svg.nx-icon-glow-pulse {
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 @media (prefers-reduced-motion: reduce) {
   .finn-glass-edge { animation: none; }
