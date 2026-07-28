@@ -88,27 +88,27 @@ export function FinnUnifiedBackground() {
           }}
         >
           <svg
-            className="absolute inset-0 h-full w-full opacity-75"
+            className="absolute inset-0 h-full w-full opacity-45"
             viewBox="0 0 400 600"
             preserveAspectRatio="xMidYMid slice"
             xmlns="http://www.w3.org/2000/svg"
           >
             <defs>
               <linearGradient id="finnBgTrace" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="rgba(34,211,238,0.9)" />
-                <stop offset="100%" stopColor="rgba(103,232,249,0.35)" />
+                <stop offset="0%" stopColor="rgba(120,180,205,0.55)" />
+                <stop offset="100%" stopColor="rgba(140,190,210,0.22)" />
               </linearGradient>
               <radialGradient id="finnBgNode" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="rgba(186,254,255,1)" />
-                <stop offset="60%" stopColor="rgba(34,211,238,0.6)" />
-                <stop offset="100%" stopColor="rgba(34,211,238,0)" />
+                <stop offset="0%" stopColor="rgba(190,220,235,0.85)" />
+                <stop offset="60%" stopColor="rgba(120,180,205,0.35)" />
+                <stop offset="100%" stopColor="rgba(120,180,205,0)" />
               </radialGradient>
               <radialGradient id="finnBgCpu" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stopColor="rgba(9,32,56,1)" />
                 <stop offset="100%" stopColor="rgba(2,12,24,1)" />
               </radialGradient>
               <filter id="finnBgGlow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="1.4" result="b" />
+                <feGaussianBlur stdDeviation="1.1" result="b" />
                 <feMerge>
                   <feMergeNode in="b" />
                   <feMergeNode in="SourceGraphic" />
@@ -117,26 +117,27 @@ export function FinnUnifiedBackground() {
             </defs>
 
             {/* Bus traces */}
-            <g stroke="url(#finnBgTrace)" strokeWidth="0.9" fill="none" filter="url(#finnBgGlow)" opacity="0.85">
+            <g stroke="url(#finnBgTrace)" strokeWidth="0.8" fill="none" filter="url(#finnBgGlow)" opacity="0.65">
               {BUS_PATHS.map((p, i) => (
                 <path key={i} d={p.d} />
               ))}
             </g>
 
             {/* Peripheral chips */}
-            <g fill="rgba(2,15,28,0.92)" stroke="rgba(103,232,249,0.75)" strokeWidth="0.8">
+            <g fill="rgba(2,15,28,0.92)" stroke="rgba(140,190,210,0.5)" strokeWidth="0.7">
               {CHIPS.map((c, i) => (
                 <rect key={i} x={c.x} y={c.y} width={c.w} height={c.h} rx="2" />
               ))}
             </g>
             {/* Chip pins */}
-            <g stroke="rgba(103,232,249,0.65)" strokeWidth="0.6">
+            <g stroke="rgba(140,190,210,0.42)" strokeWidth="0.5">
               {CHIPS.map((c, i) => (
                 <path key={i} d={chipPins(c)} />
               ))}
             </g>
             {/* Chip inner detail — dot arrays */}
-            <g fill="rgba(103,232,249,0.35)">
+            <g fill="rgba(140,190,210,0.25)">
+
               {CHIPS.map((c, i) => (
                 <g key={i}>
                   <circle cx={c.x + 4} cy={c.y + 4} r="0.9" />
