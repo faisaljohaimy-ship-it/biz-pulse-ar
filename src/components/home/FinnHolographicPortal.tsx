@@ -55,34 +55,8 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         }
       />
 
-      {/* Very light top vignette — keep headroom clear for the wordmark */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-32"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(2,7,15,0.55), rgba(2,7,15,0.15) 70%, transparent)",
-        }}
-      />
-      {/* Subtle bottom vignette for footer legibility */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-48"
-        style={{
-          background:
-            "linear-gradient(to top, rgba(2,7,15,0.9), rgba(2,7,15,0.4) 60%, transparent)",
-        }}
-      />
-      {/* Full-card scanline */}
-      <span aria-hidden className="finn-scan pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <span
-          className="absolute inset-x-0 h-[6%] opacity-60"
-          style={{
-            background:
-              "linear-gradient(to bottom, transparent, rgba(103,232,249,0.55), transparent)",
-          }}
-        />
-      </span>
+      {/* Glass vignettes/scanlines removed per request — keep the backdrop clean */}
+
 
       {/* FINN wordmark — sits in the headroom above the head, compact size */}
       <div className="relative z-10 flex flex-col items-center px-4 pt-2 sm:pt-3">
@@ -108,7 +82,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
             to="/finn"
             search={{ mode: "voice" } as never}
             aria-label={ar ? "تحدث الآن مع FINN" : "Talk to FINN now"}
-            className="group absolute left-1/2 top-1/2 z-20 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border border-cyan-300/70 bg-cyan-500/25 text-white shadow-[0_0_40px_rgba(34,211,238,0.55),inset_0_0_18px_rgba(34,211,238,0.35)] backdrop-blur-md transition hover:scale-105 hover:bg-cyan-400/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200 active:scale-95 sm:h-24 sm:w-24"
+            className="group absolute left-1/2 top-1/2 z-20 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border border-cyan-300/70 bg-[#061525] text-white shadow-[0_0_40px_rgba(34,211,238,0.55),inset_0_0_18px_rgba(34,211,238,0.35)] transition hover:scale-105 hover:bg-cyan-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200 active:scale-95 sm:h-24 sm:w-24"
           >
             <Mic className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
             <span className="text-[10px] font-bold tracking-wider sm:text-[11px]">
@@ -126,7 +100,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
             ? "المساعد التنفيذي الذكي — الأمن الصناعي"
             : "Executive AI Assistant — Industrial Security"}
         </p>
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-[11px] text-white backdrop-blur-md">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#061525] px-3 py-1 text-[11px] text-white">
           <span className={`finn-live h-2 w-2 rounded-full ${label.dot}`} aria-hidden />
           <span>{ar ? label.ar : label.en}</span>
         </div>
