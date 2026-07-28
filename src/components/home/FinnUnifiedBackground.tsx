@@ -10,9 +10,9 @@
  * Pure decorative layer: `aria-hidden`, `pointer-events-none`, absolutely
  * positioned to fill its nearest positioned ancestor.
  */
-export const FINN_BG_BASE = "#061525";
-export const FINN_BG_CORE = "#0a2036";
-export const FINN_BG_EDGE = "#030c17";
+export const FINN_BG_BASE = "#02080f";
+export const FINN_BG_CORE = "#04121f";
+export const FINN_BG_EDGE = "#01060b";
 
 /** Bus paths — reused for both stroke rendering and packet motion. */
 const BUS_PATHS: { d: string; dur: number; delay?: number }[] = [
