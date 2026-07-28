@@ -13,6 +13,7 @@ import { Link } from "@tanstack/react-router";
 import { Mic, ArrowLeft, ArrowRight } from "lucide-react";
 import { BRAND_ASSISTANT } from "@/lib/domain";
 import { FinnLiveHologram } from "./FinnLiveHologram";
+import { FinnUnifiedBackground } from "./FinnUnifiedBackground";
 
 export type FinnVisualState = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
