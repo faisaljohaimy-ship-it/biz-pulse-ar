@@ -307,7 +307,7 @@ export function FinnUnifiedBackground() {
 
           {/* Binary / hex code rain */}
           <span
-            className="absolute inset-0 opacity-25 font-mono text-[10px] leading-[12px] text-cyan-200"
+            className="absolute inset-0 opacity-[0.12] font-mono text-[10px] leading-[12px] text-cyan-200/70"
             style={{
               maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
               WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
