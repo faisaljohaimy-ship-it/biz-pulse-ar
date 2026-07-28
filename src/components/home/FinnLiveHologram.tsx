@@ -411,16 +411,11 @@ function useIsMobile() {
 function Scene({ state, mobile }: { state: FinnLiveState; mobile: boolean }) {
   return (
     <>
-      {/* Back arcs removed per request — keep the scene clean around the head */}
-      {/* Vertical light column behind figure */}
-      <LightBeam state={state} />
-      {/* Character */}
+      {/* LightBeam removed — was leaving a translucent glass column behind FINN */}
       <Suspense fallback={null}>
         <CharacterPlane state={state} />
       </Suspense>
-      {/* Pedestal */}
       <Pedestal state={state} />
-      {/* Particles */}
       <Particles count={mobile ? 32 : 70} />
     </>
   );
@@ -478,7 +473,7 @@ function InnerLive({ state, ariaLabel }: { state: FinnLiveState; ariaLabel: stri
       <Canvas
         dpr={mobile ? [1, 1.5] : [1, 2]}
         frameloop={visible ? "always" : "never"}
-        camera={{ position: [0, 0, 4.4], fov: 42 }}
+        camera={{ position: [0, 0.35, 3.6], fov: 38 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         onCreated={({ gl }) => {
           gl.setClearColor(0x000000, 0);
