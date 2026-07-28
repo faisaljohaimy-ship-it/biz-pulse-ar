@@ -100,32 +100,10 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       </div>
 
 
-      {/* Center — holographic ring around the face with mic CTA inside */}
+      {/* Center — mic CTA over the live hologram; old holographic brackets removed */}
       <div className="relative z-10 flex flex-1 items-center justify-center px-4">
         <div className="relative aspect-square w-full max-w-[360px] sm:max-w-[420px]">
-          <span
-            aria-hidden
-            className="finn-halo pointer-events-none absolute inset-0 rounded-full"
-            style={{
-              background:
-                "radial-gradient(closest-side, rgba(34,211,238,0.35), rgba(103,232,249,0.10) 55%, rgba(8,145,178,0) 78%)",
-              filter: "blur(2px)",
-            }}
-          />
-          <span
-            aria-hidden
-            className="finn-ring-outer pointer-events-none absolute inset-[4%] rounded-full border border-cyan-300/45"
-            style={{
-              boxShadow: "0 0 40px rgba(34,211,238,0.22), inset 0 0 30px rgba(34,211,238,0.14)",
-            }}
-          />
-          <span
-            aria-hidden
-            className="finn-pulse pointer-events-none absolute inset-0 rounded-full border border-cyan-300/45"
-          />
-
-
-          {/* Mic "Talk now" CTA — sits inside the ring, over the face */}
+          {/* Mic "Talk now" CTA — sits over the face */}
           <Link
             to="/finn"
             search={{ mode: "voice" } as never}
@@ -139,6 +117,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
           </Link>
         </div>
       </div>
+
 
       {/* Bottom — subtitle, status, secondary CTA */}
       <footer className="relative z-10 flex flex-col items-center gap-2 px-5 pb-5 sm:px-8 sm:pb-7">
