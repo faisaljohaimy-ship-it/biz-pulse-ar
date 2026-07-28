@@ -37,10 +37,11 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
   return (
     <section
       aria-label={ar ? "بوابة FINN التنفيذية" : "FINN executive portal"}
-      className="finn-portal relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl border border-cyan-300/15 bg-[#061525] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.04)] sm:min-h-[620px]"
+      className="finn-portal finn-glass-edge relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl bg-[#061525] sm:min-h-[620px]"
     >
       {/* Unified FINN backdrop — single source of truth (see FinnUnifiedBackground) */}
       <FinnUnifiedBackground />
+
 
       {/* Portrait — face-first, fully visible, centred */}
       {/* Live holographic FINN — WebGL scene, not a static image */}
