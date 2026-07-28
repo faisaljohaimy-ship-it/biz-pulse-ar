@@ -2465,12 +2465,14 @@ body {
 @keyframes nx-icon-edge-glow {
   0%,
   100% {
-    filter: drop-shadow(0 0 5px color-mix(in oklab, var(--icon-glow, currentColor) 50%, transparent))
-      drop-shadow(0 0 12px color-mix(in oklab, var(--icon-glow, currentColor) 28%, transparent));
+    filter: drop-shadow(0 0 6px color-mix(in oklab, var(--icon-glow, currentColor) 60%, transparent))
+      drop-shadow(0 0 16px color-mix(in oklab, var(--icon-glow, currentColor) 38%, transparent))
+      drop-shadow(0 0 28px color-mix(in oklab, var(--icon-glow, currentColor) 22%, transparent));
   }
   50% {
-    filter: drop-shadow(0 0 9px color-mix(in oklab, var(--icon-glow, currentColor) 78%, transparent))
-      drop-shadow(0 0 20px color-mix(in oklab, var(--icon-glow, currentColor) 48%, transparent));
+    filter: drop-shadow(0 0 10px color-mix(in oklab, var(--icon-glow, currentColor) 85%, transparent))
+      drop-shadow(0 0 22px color-mix(in oklab, var(--icon-glow, currentColor) 58%, transparent))
+      drop-shadow(0 0 38px color-mix(in oklab, var(--icon-glow, currentColor) 34%, transparent));
   }
 }
 
@@ -2479,8 +2481,10 @@ a svg,
 [role="button"] svg,
 .nx-icon-glow svg,
 svg.nx-icon-glow {
-  filter: drop-shadow(0 0 4px color-mix(in oklab, var(--icon-glow, currentColor) 45%, transparent))
-    drop-shadow(0 0 10px color-mix(in oklab, var(--icon-glow, currentColor) 26%, transparent));
+  filter: drop-shadow(0 0 5px color-mix(in oklab, var(--icon-glow, currentColor) 55%, transparent))
+    drop-shadow(0 0 14px color-mix(in oklab, var(--icon-glow, currentColor) 34%, transparent))
+    drop-shadow(0 0 26px color-mix(in oklab, var(--icon-glow, currentColor) 20%, transparent));
+  animation: nx-icon-edge-glow 6s ease-in-out infinite;
   transition:
     filter 220ms ease-out,
     transform 220ms ease-out;
@@ -2490,15 +2494,16 @@ button:hover svg,
 a:hover svg,
 [role="button"]:hover svg,
 .nx-icon-glow:hover svg {
-  filter: drop-shadow(0 0 8px color-mix(in oklab, var(--icon-glow, currentColor) 72%, transparent))
-    drop-shadow(0 0 18px color-mix(in oklab, var(--icon-glow, currentColor) 46%, transparent));
+  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--icon-glow, currentColor) 82%, transparent))
+    drop-shadow(0 0 22px color-mix(in oklab, var(--icon-glow, currentColor) 55%, transparent))
+    drop-shadow(0 0 38px color-mix(in oklab, var(--icon-glow, currentColor) 32%, transparent));
   transform: translateZ(0) scale(1.04);
 }
 
 button:active svg,
 a:active svg,
 [role="button"]:active svg {
-  filter: drop-shadow(0 0 3px color-mix(in oklab, var(--icon-glow, currentColor) 55%, transparent));
+  filter: drop-shadow(0 0 4px color-mix(in oklab, var(--icon-glow, currentColor) 60%, transparent));
   transform: translateZ(0) scale(0.96);
   transition-duration: 120ms;
 }
