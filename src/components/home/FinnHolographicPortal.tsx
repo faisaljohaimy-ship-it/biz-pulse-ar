@@ -38,8 +38,25 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       aria-label={ar ? "بوابة FINN التنفيذية" : "FINN executive portal"}
       className="finn-portal relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl border border-cyan-300/25 bg-[#04101c] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.04)] sm:min-h-[620px]"
     >
-      {/* Live digital board background — circuits, chips, data packets, code rain */}
-      <span aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#04101c]">
+      {/* Live digital board background — merged into a unified dark gradient */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 45%, #0a2036 0%, #061525 45%, #030c17 100%)",
+        }}
+      >
+        {/* Board layer — softened with a radial mask so circuits dissolve into the dark backdrop */}
+        <span
+          className="absolute inset-0"
+          style={{
+            maskImage:
+              "radial-gradient(ellipse at 50% 50%, black 35%, rgba(0,0,0,0.5) 70%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse at 50% 50%, black 35%, rgba(0,0,0,0.5) 70%, transparent 100%)",
+          }}
+        >
         {/* Circuit board SVG — traces, chips, nodes, animated data packets */}
         <svg
           className="absolute inset-0 h-full w-full opacity-70"
@@ -152,6 +169,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
           <span className="absolute right-[6%] top-0 whitespace-pre finn-rain-col" style={{ animationDuration: "10s", animationDelay: "-6s" }}>
             {"01\n11\n00\n10\nAB\n3C\n7E\n01\n10\nF0\n2D\n01\n11\n00\n10\n8B\n4C\n01\n10\n11"}
           </span>
+        </span>
         </span>
       </span>
 
