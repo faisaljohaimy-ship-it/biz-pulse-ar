@@ -188,7 +188,7 @@ function CharacterPlane({ state }: { state: FinnLiveState }) {
     }
   });
 
-  const height = 3.4;
+  const height = 2.8;
   const width = height * aspect;
 
   return (
