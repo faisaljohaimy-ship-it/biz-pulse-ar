@@ -118,7 +118,13 @@ export function FinnUnifiedBackground() {
             </defs>
 
             {/* Bus traces */}
-            <g stroke="url(#finnBgTrace)" strokeWidth="0.8" fill="none" filter="url(#finnBgGlow)" opacity="0.65">
+            <g
+              stroke="url(#finnBgTrace)"
+              strokeWidth="0.8"
+              fill="none"
+              filter="url(#finnBgGlow)"
+              opacity="0.65"
+            >
               {BUS_PATHS.map((p, i) => (
                 <path key={i} d={p.d} />
               ))}
@@ -138,7 +144,6 @@ export function FinnUnifiedBackground() {
             </g>
             {/* Chip inner detail — dot arrays */}
             <g fill="rgba(140,190,210,0.25)">
-
               {CHIPS.map((c, i) => (
                 <g key={i}>
                   <circle cx={c.x + 4} cy={c.y + 4} r="0.9" />
@@ -197,8 +202,12 @@ export function FinnUnifiedBackground() {
                     <g key={i}>
                       <path d={`M${t},260 L${t},254`} />
                       <path d={`M${t},340 L${t},346`} />
-                      <path d={`M160,${264 + i * ((80 - 8) / 9)} L154,${264 + i * ((80 - 8) / 9)}`} />
-                      <path d={`M240,${264 + i * ((80 - 8) / 9)} L246,${264 + i * ((80 - 8) / 9)}`} />
+                      <path
+                        d={`M160,${264 + i * ((80 - 8) / 9)} L154,${264 + i * ((80 - 8) / 9)}`}
+                      />
+                      <path
+                        d={`M240,${264 + i * ((80 - 8) / 9)} L246,${264 + i * ((80 - 8) / 9)}`}
+                      />
                     </g>
                   );
                 })}
@@ -213,10 +222,14 @@ export function FinnUnifiedBackground() {
                 strokeWidth="0.5"
                 strokeDasharray="2 3"
               >
-                <animate attributeName="opacity" values="0.15;0.45;0.15" dur="3.2s" repeatCount="indefinite" />
+                <animate
+                  attributeName="opacity"
+                  values="0.15;0.45;0.15"
+                  dur="3.2s"
+                  repeatCount="indefinite"
+                />
               </circle>
             </g>
-
 
             {/* Bus solder nodes */}
             <g fill="url(#finnBgNode)">
@@ -258,11 +271,26 @@ export function FinnUnifiedBackground() {
               ].map((led, i) => (
                 <g key={i}>
                   <circle cx={led.cx} cy={led.cy} r="1.5" fill={led.c} opacity="0.7">
-                    <animate attributeName="opacity" values="0.2;0.75;0.2" dur={led.d} repeatCount="indefinite" />
+                    <animate
+                      attributeName="opacity"
+                      values="0.2;0.75;0.2"
+                      dur={led.d}
+                      repeatCount="indefinite"
+                    />
                   </circle>
                   <circle cx={led.cx} cy={led.cy} r="4" fill={led.c} opacity="0.1">
-                    <animate attributeName="r" values="3;5.5;3" dur={led.d} repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.03;0.22;0.03" dur={led.d} repeatCount="indefinite" />
+                    <animate
+                      attributeName="r"
+                      values="3;5.5;3"
+                      dur={led.d}
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="opacity"
+                      values="0.03;0.22;0.03"
+                      dur={led.d}
+                      repeatCount="indefinite"
+                    />
                   </circle>
                 </g>
               ))}
@@ -271,9 +299,16 @@ export function FinnUnifiedBackground() {
             {/* Vias — through-hole markers scattered on the board */}
             <g fill="none" stroke="rgba(140,190,210,0.25)" strokeWidth="0.5">
               {[
-                [70, 60], [70, 200], [70, 380], [70, 520],
-                [330, 60], [330, 200], [330, 380], [330, 520],
-                [200, 40], [200, 560],
+                [70, 60],
+                [70, 200],
+                [70, 380],
+                [70, 520],
+                [330, 60],
+                [330, 200],
+                [330, 380],
+                [330, 520],
+                [200, 40],
+                [200, 560],
               ].map(([x, y], i) => (
                 <g key={i}>
                   <circle cx={x} cy={y} r="2.2" />
@@ -299,37 +334,55 @@ export function FinnUnifiedBackground() {
           <span
             className="absolute inset-0"
             style={{
-              background:
-                `radial-gradient(ellipse at 50% 45%, rgba(10,32,56,0.35) 0%, rgba(6,21,37,0.55) 60%, rgba(3,12,23,0.75) 100%)`,
+              background: `radial-gradient(ellipse at 50% 45%, rgba(10,32,56,0.35) 0%, rgba(6,21,37,0.55) 60%, rgba(3,12,23,0.75) 100%)`,
               mixBlendMode: "multiply",
             }}
           />
-
 
           {/* Binary / hex code rain */}
           <span
             className="absolute inset-0 opacity-[0.12] font-mono text-[10px] leading-[12px] text-cyan-200/70"
             style={{
-              maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
-              WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
+              maskImage:
+                "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
             }}
           >
-            <span className="absolute left-[4%] top-0 whitespace-pre finn-rain-col" style={{ animationDuration: "9s" }}>
+            <span
+              className="absolute left-[4%] top-0 whitespace-pre finn-rain-col"
+              style={{ animationDuration: "9s" }}
+            >
               {"01\n10\n11\n00\nA3\nF1\n7C\n0E\n01\n10\nB4\n2D\n01\n10\n11\n00\nA3\nF1\n7C\n0E"}
             </span>
-            <span className="absolute left-[16%] top-0 whitespace-pre finn-rain-col" style={{ animationDuration: "11s", animationDelay: "-2s" }}>
+            <span
+              className="absolute left-[16%] top-0 whitespace-pre finn-rain-col"
+              style={{ animationDuration: "11s", animationDelay: "-2s" }}
+            >
               {"F2\n0A\n1B\n7C\n01\n10\n55\nAE\n01\n00\n11\n10\nD4\n3F\n01\n10\n11\n00\nB8\n21"}
             </span>
-            <span className="absolute left-[30%] top-0 whitespace-pre finn-rain-col" style={{ animationDuration: "12s", animationDelay: "-5s" }}>
+            <span
+              className="absolute left-[30%] top-0 whitespace-pre finn-rain-col"
+              style={{ animationDuration: "12s", animationDelay: "-5s" }}
+            >
               {"3A\n7F\n01\n11\n00\n10\nC2\n88\n01\n10\n11\n5E\n9F\n01\n00\n11\n10\nD1\n42\n0A"}
             </span>
-            <span className="absolute right-[30%] top-0 whitespace-pre finn-rain-col" style={{ animationDuration: "14s", animationDelay: "-1s" }}>
+            <span
+              className="absolute right-[30%] top-0 whitespace-pre finn-rain-col"
+              style={{ animationDuration: "14s", animationDelay: "-1s" }}
+            >
               {"01\n00\n11\n10\nB7\n2E\n5C\n01\n10\n11\n00\nF3\n88\n01\n10\n11\n7A\n2D\n01\nEE"}
             </span>
-            <span className="absolute right-[16%] top-0 whitespace-pre finn-rain-col" style={{ animationDuration: "13s", animationDelay: "-4s" }}>
+            <span
+              className="absolute right-[16%] top-0 whitespace-pre finn-rain-col"
+              style={{ animationDuration: "13s", animationDelay: "-4s" }}
+            >
               {"9C\n01\n10\n11\n4E\nA1\n00\n11\n10\n01\n7B\n2E\n01\n10\nC3\n5F\n01\n10\n11\n00"}
             </span>
-            <span className="absolute right-[4%] top-0 whitespace-pre finn-rain-col" style={{ animationDuration: "10s", animationDelay: "-6s" }}>
+            <span
+              className="absolute right-[4%] top-0 whitespace-pre finn-rain-col"
+              style={{ animationDuration: "10s", animationDelay: "-6s" }}
+            >
               {"01\n11\n00\n10\nAB\n3C\n7E\n01\n10\nF0\n2D\n01\n11\n00\n10\n8B\n4C\n01\n10\n11"}
             </span>
           </span>

@@ -42,8 +42,6 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       {/* Unified FINN backdrop — single source of truth (see FinnUnifiedBackground) */}
       <FinnUnifiedBackground />
 
-
-
       {/* Portrait — face-first, fully visible, centred */}
       {/* Live holographic FINN — WebGL scene, not a static image */}
       <FinnLiveHologram
@@ -57,7 +55,6 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
 
       {/* Glass vignettes/scanlines removed per request — keep the backdrop clean */}
 
-
       {/* FINN wordmark — sits in the headroom above the head, compact size */}
       <div className="relative z-10 flex flex-col items-center px-4 pt-2 sm:pt-3">
         <h2
@@ -69,10 +66,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         >
           FINN
         </h2>
-
-
       </div>
-
 
       {/* Center — mic CTA over the live hologram; old holographic brackets removed */}
       <div className="relative z-10 flex flex-1 items-center justify-center px-4">
@@ -82,7 +76,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
             to="/finn"
             search={{ mode: "voice" } as never}
             aria-label={ar ? "تحدث الآن مع FINN" : "Talk to FINN now"}
-            className="group absolute left-1/2 top-1/2 z-20 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full border border-cyan-300/70 bg-[#061525] text-white shadow-[0_0_40px_rgba(34,211,238,0.55),inset_0_0_18px_rgba(34,211,238,0.35)] transition hover:scale-105 hover:bg-cyan-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200 active:scale-95 sm:h-24 sm:w-24"
+            className="nx-holo-icon group absolute left-1/2 top-1/2 z-20 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200 sm:h-24 sm:w-24"
           >
             <Mic className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
             <span className="text-[10px] font-bold tracking-wider sm:text-[11px]">
@@ -91,7 +85,6 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
           </Link>
         </div>
       </div>
-
 
       {/* Bottom — subtitle, status, secondary CTA */}
       <footer className="relative z-10 flex flex-col items-center gap-2 px-5 pb-5 sm:px-8 sm:pb-7">

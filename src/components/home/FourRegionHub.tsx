@@ -260,7 +260,7 @@ function RegionCard({
               onClick={(e) => e.stopPropagation()}
               title={ar ? m.ar : m.en}
               aria-label={ar ? m.ar : m.en}
-              className="grid size-11 min-h-11 min-w-11 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-white/30 hover:bg-white/[0.09] hover:text-white"
+              className="grid size-11 min-h-11 min-w-11 place-items-center rounded-lg nx-holo-icon text-white/70 transition hover:text-white"
             >
               <Icon className="size-4" aria-hidden />
             </Link>
@@ -341,7 +341,7 @@ function RegionCardRect({
               to={m.to}
               title={ar ? m.ar : m.en}
               aria-label={ar ? m.ar : m.en}
-              className="grid size-8 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-white/30 hover:bg-white/[0.09] hover:text-white"
+              className="grid size-8 place-items-center rounded-lg nx-holo-icon text-white/70 transition hover:text-white"
             >
               <Icon className="size-3.5" aria-hidden />
             </Link>
@@ -771,7 +771,7 @@ export function FourRegionHub() {
         <div className="flex items-center justify-end gap-2 text-white/60">
           <button
             type="button"
-            className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] hover:text-white"
+            className="grid size-9 place-items-center rounded-xl nx-holo-icon hover:text-white"
             aria-label={ar ? "بحث" : "Search"}
           >
             <Search className="size-4" aria-hidden />
@@ -780,10 +780,12 @@ export function FourRegionHub() {
             type="button"
             onClick={() => {
               if (typeof document !== "undefined") {
-                document.getElementById("smart-alerts")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                document
+                  .getElementById("smart-alerts")
+                  ?.scrollIntoView({ behavior: "smooth", block: "center" });
               }
             }}
-            className="relative grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] hover:text-white"
+            className="relative grid size-9 place-items-center rounded-xl nx-holo-icon hover:text-white"
             aria-label={ar ? "التنبيهات" : "Alerts"}
           >
             <Bell className="size-4" aria-hidden />
@@ -798,12 +800,14 @@ export function FourRegionHub() {
             onClick={() => {
               if (typeof window !== "undefined") window.location.href = "/settings";
             }}
-            className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] hover:text-white"
+            className="grid size-9 place-items-center rounded-xl nx-holo-icon hover:text-white"
             aria-label={ar ? "الإعدادات" : "Settings"}
           >
             <Settings className="size-4" aria-hidden />
           </button>
 
+          {/* Profile chip, not an icon control — keeps the neutral border;
+              the holographic edge is reserved for icon affordances. */}
           <div className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] py-1 ps-2 pe-3 md:flex">
             <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#00D4FF] to-[#3AE8FF] text-[11px] font-black text-[#04070F]">
               MD
@@ -946,7 +950,10 @@ export function FourRegionHub() {
           <div className="min-w-0">
             <FinnDailySummary />
           </div>
-          <div id="smart-alerts" className="relative flex-1 rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md">
+          <div
+            id="smart-alerts"
+            className="relative flex-1 rounded-2xl border border-rose-400/20 bg-gradient-to-br from-rose-500/8 via-[#04111f]/70 to-[#04070F]/80 p-4 backdrop-blur-md"
+          >
             <div className="mb-2 flex items-center justify-between">
               <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
                 <Bell className="size-4 text-rose-300" aria-hidden />

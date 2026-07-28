@@ -61,6 +61,20 @@
   --nx-glow-critical: 0 0 16px rgb(255 77 109 / 0.4);
   --nx-glow-sector: 0 0 32px rgb(var(--nx-region-rgb) / 0.3);
 
+  /* ── Holographic icon edge (replaces the glass fill on icon controls) ──
+     One tint drives edge + halo + icon-stroke glow. Any scope may re-tint by
+     overriding --nx-holo-rgb alone (region cards, gold authority, etc.). */
+  --nx-holo-rgb: 0 212 255; /* nx-cyan #00d4ff — «اللون الزجاجي» */
+  --nx-holo-edge: rgb(var(--nx-holo-rgb) / 0.5);
+  --nx-holo-edge-hover: rgb(var(--nx-holo-rgb) / 0.78);
+  --nx-holo-edge-press: rgb(var(--nx-holo-rgb) / 1);
+  --nx-holo-rest: 0 0 10px rgb(var(--nx-holo-rgb) / 0.26),
+    inset 0 0 8px rgb(var(--nx-holo-rgb) / 0.1);
+  --nx-holo-hover: 0 0 18px rgb(var(--nx-holo-rgb) / 0.44),
+    inset 0 0 12px rgb(var(--nx-holo-rgb) / 0.18);
+  --nx-holo-press: 0 0 28px rgb(var(--nx-holo-rgb) / 0.62),
+    inset 0 0 16px rgb(var(--nx-holo-rgb) / 0.3);
+
   /* ── Blur ladder (Ch. 06 caps) ───────────────────────────────────────── */
   --nx-blur-12: 12px;
   --nx-blur-16: 16px;
@@ -160,6 +174,68 @@
   backdrop-filter: blur(var(--nx-blur-24));
   border: 1px solid rgb(255 255 255 / var(--nx-opacity-14));
   box-shadow: var(--nx-shadow-e4);
+}
+
+/* ── Holographic icon control (NO glass fill) ───────────────────────────────
+   The icon-button treatment across NEXIOS: the frosted panel behind an icon is
+   REMOVED (transparent, no backdrop blur) and identity moves to a glowing
+   holographic EDGE plus a matching glow on the icon's own strokes. Press is a
+   real, felt response — the edge saturates, the halo blooms, the control dips.
+   Re-tint any scope by overriding --nx-holo-rgb only.                       */
+@utility nx-holo-icon {
+  background-color: transparent;
+  backdrop-filter: none;
+  border: 1px solid var(--nx-holo-edge);
+  box-shadow: var(--nx-holo-rest);
+  /* NOTE: the press dip uses the standalone `scale` property, NOT
+     `transform: scale()`. Many of these controls are centred with
+     `transform: translate(-50%,-50%)`; writing to `transform` here would
+     erase that translate and fling the control off-centre. `scale`
+     composes with an existing transform instead of replacing it. */
+  transition:
+    border-color var(--nx-anim-fast) var(--nx-ease-out),
+    box-shadow var(--nx-anim-fast) var(--nx-ease-out),
+    scale var(--nx-anim-fast) var(--nx-ease-out);
+
+  /* the icon glyph itself glows in the same tint — a holographic stroke */
+  & svg {
+    filter: drop-shadow(0 0 4px rgb(var(--nx-holo-rgb) / 0.45));
+    transition: filter var(--nx-anim-fast) var(--nx-ease-out);
+  }
+
+  &:hover {
+    border-color: var(--nx-holo-edge-hover);
+    box-shadow: var(--nx-holo-hover);
+  }
+  &:hover svg {
+    filter: drop-shadow(0 0 7px rgb(var(--nx-holo-rgb) / 0.7));
+  }
+
+  /* PRESS — the interaction the brief asks for: bloom + tactile dip */
+  &:active {
+    border-color: var(--nx-holo-edge-press);
+    box-shadow: var(--nx-holo-press);
+    scale: 0.94;
+  }
+  &:active svg {
+    filter: drop-shadow(0 0 10px rgb(var(--nx-holo-rgb) / 0.95));
+  }
+
+  /* a pressed toggle keeps the bloom so state is readable at rest */
+  &[aria-pressed="true"],
+  &[data-state="open"] {
+    border-color: var(--nx-holo-edge-hover);
+    box-shadow: var(--nx-holo-hover);
+  }
+
+  &:disabled {
+    border-color: rgb(255 255 255 / 0.12);
+    box-shadow: none;
+    scale: 1;
+  }
+  &:disabled svg {
+    filter: none;
+  }
 }
 
 /* ── The closed keyframe vocabulary (motion doc 03) ─────────────────────── */
@@ -313,5 +389,10 @@
     /* !important: inline `animation` shorthands implicitly reset play-state
        at inline priority — without it this parity hook can never win. */
     animation-play-state: paused !important;
+  }
+  /* Holographic icons keep their GLOW (colour, not motion) but drop the
+     press dip — scale is movement and movement is what was opted out of. */
+  .nx-holo-icon:active {
+    scale: 1;
   }
 }

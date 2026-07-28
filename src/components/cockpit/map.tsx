@@ -330,7 +330,7 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
           emitCockpitAction("map.fullscreen");
           setExpanded((v) => !v);
         }}
-        className="nx-glass-e1 rounded-nx-8 inline-flex size-11 items-center justify-center border border-white/10 text-nx-pearl/72 transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
+        className="nx-holo-icon rounded-nx-8 inline-flex size-11 items-center justify-center border border-white/10 text-nx-pearl/72 transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
       >
         {expanded ? (
           <Shrink aria-hidden className="size-4" />

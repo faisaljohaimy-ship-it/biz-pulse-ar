@@ -145,7 +145,7 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
               emitCockpitAction("nav.menu.toggle");
               onToggleNav();
             }}
-            className="nx-glass-e1 rounded-nx-12 inline-flex size-11 items-center justify-center text-nx-pearl transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan xl:hidden"
+            className="nx-holo-icon rounded-nx-12 inline-flex size-11 items-center justify-center text-nx-pearl transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan xl:hidden"
           >
             <Menu aria-hidden className="size-5" />
           </button>
@@ -167,7 +167,7 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
               emitCockpitAction("notifications.open");
               openDrawer({ type: "notifications" });
             }}
-            className="nx-glass-e1 rounded-nx-12 relative inline-flex size-11 items-center justify-center text-nx-pearl transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
+            className="nx-holo-icon rounded-nx-12 relative inline-flex size-11 items-center justify-center text-nx-pearl transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
           >
             <Bell aria-hidden className="size-5" />
             {unreadCount > 0 ? (

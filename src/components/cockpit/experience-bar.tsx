@@ -102,7 +102,7 @@ export function ExperienceLevelBar() {
             emitCockpitAction("search.open");
             openDrawer({ type: "search" });
           }}
-          className="nx-glass-e1 rounded-nx-12 inline-flex size-11 items-center justify-center text-nx-pearl/72 transition-[border-color,color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
+          className="nx-holo-icon rounded-nx-12 inline-flex size-11 items-center justify-center text-nx-pearl/72 transition-[border-color,color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
         >
           <Search aria-hidden className="size-4" />
         </button>
@@ -111,7 +111,7 @@ export function ExperienceLevelBar() {
           data-action="dashboards.open"
           aria-label="فتح لوحات المعلومات"
           onClick={() => emitCockpitAction("dashboards.open")}
-          className="nx-glass-e1 rounded-nx-12 inline-flex size-11 items-center justify-center text-nx-pearl/72 transition-[border-color,color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
+          className="nx-holo-icon rounded-nx-12 inline-flex size-11 items-center justify-center text-nx-pearl/72 transition-[border-color,color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
         >
           <LayoutDashboard aria-hidden className="size-4" />
         </a>
@@ -120,7 +120,7 @@ export function ExperienceLevelBar() {
           data-action="settings.open"
           aria-label="فتح الإعدادات"
           onClick={() => emitCockpitAction("settings.open")}
-          className="nx-glass-e1 rounded-nx-12 inline-flex size-11 items-center justify-center text-nx-pearl/72 transition-[border-color,color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
+          className="nx-holo-icon rounded-nx-12 inline-flex size-11 items-center justify-center text-nx-pearl/72 transition-[border-color,color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
         >
           <Settings aria-hidden className="size-4" />
         </a>

@@ -82,7 +82,7 @@ export function LiveEventStream() {
               emitCockpitAction("events.previous");
               moveFocus(1);
             }}
-            className="nx-glass-e1 rounded-nx-8 inline-flex size-11 items-center justify-center text-nx-pearl/72 transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
+            className="nx-holo-icon rounded-nx-8 inline-flex size-11 items-center justify-center text-nx-pearl/72 transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
           >
             <ChevronRight aria-hidden className="size-4" />
           </button>
@@ -94,7 +94,7 @@ export function LiveEventStream() {
               emitCockpitAction("events.next");
               moveFocus(-1);
             }}
-            className="nx-glass-e1 rounded-nx-8 inline-flex size-11 items-center justify-center text-nx-pearl/72 transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
+            className="nx-holo-icon rounded-nx-8 inline-flex size-11 items-center justify-center text-nx-pearl/72 transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 hover:text-nx-pearl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
           >
             <ChevronLeft aria-hidden className="size-4" />
           </button>
@@ -108,7 +108,7 @@ export function LiveEventStream() {
               emitCockpitAction("events.pause.toggle");
               toggleEventsPaused();
             }}
-            className="nx-glass-e1 rounded-nx-8 inline-flex size-11 items-center justify-center text-nx-pearl transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
+            className="nx-holo-icon rounded-nx-8 inline-flex size-11 items-center justify-center text-nx-pearl transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
           >
             {eventsPaused ? (
               <Play aria-hidden className="size-4" />

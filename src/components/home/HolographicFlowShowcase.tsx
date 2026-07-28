@@ -47,12 +47,18 @@ function OrbitalFrame({
         <span
           aria-hidden
           className="pointer-events-none absolute -top-24 end-[-8%] h-64 w-64 rounded-full blur-3xl"
-          style={{ background: `radial-gradient(circle, ${accent}55, transparent 70%)`, opacity: 0.6 }}
+          style={{
+            background: `radial-gradient(circle, ${accent}55, transparent 70%)`,
+            opacity: 0.6,
+          }}
         />
         <span
           aria-hidden
           className="pointer-events-none absolute -bottom-24 start-[-8%] h-64 w-64 rounded-full blur-3xl"
-          style={{ background: `radial-gradient(circle, ${accent}33, transparent 70%)`, opacity: 0.6 }}
+          style={{
+            background: `radial-gradient(circle, ${accent}33, transparent 70%)`,
+            opacity: 0.6,
+          }}
         />
 
         {/* Digital grid backdrop */}
@@ -81,13 +87,37 @@ function OrbitalFrame({
             </linearGradient>
           </defs>
           <g className="hfx-orbit-a">
-            <ellipse cx="200" cy="200" rx="190" ry="120" fill="none" stroke={`url(#hfx-orb-${label})`} strokeWidth="0.6" />
+            <ellipse
+              cx="200"
+              cy="200"
+              rx="190"
+              ry="120"
+              fill="none"
+              stroke={`url(#hfx-orb-${label})`}
+              strokeWidth="0.6"
+            />
           </g>
           <g className="hfx-orbit-b">
-            <ellipse cx="200" cy="200" rx="150" ry="80" fill="none" stroke={`url(#hfx-orb-${label})`} strokeWidth="0.5" />
+            <ellipse
+              cx="200"
+              cy="200"
+              rx="150"
+              ry="80"
+              fill="none"
+              stroke={`url(#hfx-orb-${label})`}
+              strokeWidth="0.5"
+            />
           </g>
           <g className="hfx-orbit-c">
-            <ellipse cx="200" cy="200" rx="110" ry="55" fill="none" stroke={`url(#hfx-orb-${label})`} strokeWidth="0.4" />
+            <ellipse
+              cx="200"
+              cy="200"
+              rx="110"
+              ry="55"
+              fill="none"
+              stroke={`url(#hfx-orb-${label})`}
+              strokeWidth="0.4"
+            />
           </g>
         </svg>
 
@@ -95,12 +125,18 @@ function OrbitalFrame({
         <span
           aria-hidden
           className="hfx-sweep pointer-events-none absolute inset-x-0 top-0 h-px"
-          style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)`, boxShadow: `0 0 12px ${accent}` }}
+          style={{
+            background: `linear-gradient(90deg, transparent, ${accent}, transparent)`,
+            boxShadow: `0 0 12px ${accent}`,
+          }}
         />
         <span
           aria-hidden
           className="hfx-sweep-b pointer-events-none absolute inset-y-0 end-0 w-px"
-          style={{ background: `linear-gradient(180deg, transparent, ${accent}, transparent)`, boxShadow: `0 0 12px ${accent}` }}
+          style={{
+            background: `linear-gradient(180deg, transparent, ${accent}, transparent)`,
+            boxShadow: `0 0 12px ${accent}`,
+          }}
         />
 
         {/* Corner brackets */}
@@ -123,7 +159,12 @@ function OrbitalFrame({
           <div className="flex min-w-0 items-center gap-2">
             <span
               className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border"
-              style={{ borderColor: `${accent}66`, background: `${accent}1A`, color: accent, boxShadow: `0 0 22px ${accent}55` }}
+              style={{
+                borderColor: `${accent}66`,
+                background: `${accent}1A`,
+                color: accent,
+                boxShadow: `0 0 22px ${accent}55`,
+              }}
             >
               <Icon className="h-4 w-4" strokeWidth={1.75} />
             </span>
@@ -144,13 +185,7 @@ function OrbitalFrame({
   );
 }
 
-export function HolographicFlowShowcase({
-  ar,
-  agents,
-}: {
-  ar: boolean;
-  agents: Agent[];
-}) {
+export function HolographicFlowShowcase({ ar, agents }: { ar: boolean; agents: Agent[] }) {
   const { locale: _locale } = useI18n();
   const ref = useFreezeOffscreen<HTMLElement>();
 
@@ -196,7 +231,6 @@ export function HolographicFlowShowcase({
           <div className="min-h-[360px] p-3 sm:min-h-[420px] sm:p-5">
             <AgentHierarchyGraph agents={agents as never} runs={[]} ar={ar} />
           </div>
-
         </OrbitalFrame>
 
         {/* Agentic Flow Canvas */}
@@ -213,7 +247,6 @@ export function HolographicFlowShowcase({
           <div className="min-h-[360px] p-3 sm:min-h-[420px] sm:p-5">
             <AgenticFlowCanvas ar={ar} />
           </div>
-
         </OrbitalFrame>
       </div>
 

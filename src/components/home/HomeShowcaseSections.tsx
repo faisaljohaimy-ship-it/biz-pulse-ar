@@ -176,13 +176,15 @@ export function HomeShowcaseSections() {
                 className="group flex h-full min-h-[132px] flex-col gap-2 rounded-2xl border border-[#3AE8FF]/15 bg-[#061A2E]/50 p-4 backdrop-blur-md transition hover:-translate-y-0.5 hover:border-[color:var(--acc)]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--acc)]/60"
                 style={{ boxShadow: "0 0 0 0 transparent" }}
               >
+                {/* No fill — the sector accent lives in the holographic EDGE
+                    and halo, matching the system-wide icon treatment. */}
                 <span
-                  className="grid h-11 w-11 place-items-center rounded-xl border"
+                  className="grid h-11 w-11 place-items-center rounded-xl border transition-[border-color,box-shadow] duration-[var(--nx-anim-fast)] group-hover:border-[color:var(--acc)]"
                   style={{
-                    borderColor: `${accent}55`,
-                    background: `${accent}14`,
+                    borderColor: `${accent}88`,
+                    background: "transparent",
                     color: accent,
-                    boxShadow: `0 0 20px -6px ${accent}`,
+                    boxShadow: `0 0 12px -2px ${accent}66, inset 0 0 8px -4px ${accent}`,
                   }}
                 >
                   <Icon className="nx-icon-soft h-5 w-5" aria-hidden />

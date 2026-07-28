@@ -19,12 +19,7 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import finnCharacter from "@/assets/finn-character.png.asset.json";
 
-export type FinnLiveState =
-  | "idle"
-  | "listening"
-  | "thinking"
-  | "speaking"
-  | "offline";
+export type FinnLiveState = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
 export interface FinnLiveHologramProps {
   state?: FinnLiveState;
@@ -144,11 +139,11 @@ function CharacterPlane({ state }: { state: FinnLiveState }) {
   // target values per state
   const targets = useMemo(
     () => ({
-      idle:      { listen: 0.0, think: 0.0, speak: 0.0, offline: 0.0 },
+      idle: { listen: 0.0, think: 0.0, speak: 0.0, offline: 0.0 },
       listening: { listen: 1.0, think: 0.0, speak: 0.0, offline: 0.0 },
-      thinking:  { listen: 0.2, think: 1.0, speak: 0.0, offline: 0.0 },
-      speaking:  { listen: 0.4, think: 0.0, speak: 1.0, offline: 0.0 },
-      offline:   { listen: 0.0, think: 0.0, speak: 0.0, offline: 1.0 },
+      thinking: { listen: 0.2, think: 1.0, speak: 0.0, offline: 0.0 },
+      speaking: { listen: 0.4, think: 0.0, speak: 1.0, offline: 0.0 },
+      offline: { listen: 0.0, think: 0.0, speak: 0.0, offline: 1.0 },
     }),
     [],
   );
@@ -308,8 +303,7 @@ function Pedestal({ state }: { state: FinnLiveState }) {
   useFrame((_, dt) => {
     if (!ref.current) return;
     const t = performance.now() * 0.001;
-    const target =
-      state === "listening" ? 1.15 : state === "speaking" ? 1.08 : 1.0;
+    const target = state === "listening" ? 1.15 : state === "speaking" ? 1.08 : 1.0;
     const pulse = reduce ? target : target + Math.sin(t * 2.4) * 0.02;
     ref.current.scale.x += (pulse - ref.current.scale.x) * Math.min(1, dt * 3);
     ref.current.scale.z = ref.current.scale.x;
@@ -329,7 +323,15 @@ function Pedestal({ state }: { state: FinnLiveState }) {
       </mesh>
       <HoloRing radius={1.1} y={0} color="#67E8F9" speed={0.35} opacity={0.4} />
       <HoloRing radius={1.3} y={0} color="#0891B2" speed={-0.22} thickness={0.015} opacity={0.35} />
-      <HoloRing radius={0.75} y={0.02} color="#67E8F9" speed={0.6} thickness={0.008} dashed opacity={0.5} />
+      <HoloRing
+        radius={0.75}
+        y={0.02}
+        color="#67E8F9"
+        speed={0.6}
+        thickness={0.008}
+        dashed
+        opacity={0.5}
+      />
     </group>
   );
 }
@@ -439,10 +441,9 @@ function InnerLive({ state, ariaLabel }: { state: FinnLiveState; ariaLabel: stri
   useEffect(() => {
     const el = wrapRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
-    const io = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
-      { threshold: 0.05 },
-    );
+    const io = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
+      threshold: 0.05,
+    });
     io.observe(el);
     return () => io.disconnect();
   }, []);
