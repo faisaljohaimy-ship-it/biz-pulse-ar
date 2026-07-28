@@ -2547,64 +2547,10 @@ svg.nx-icon-glow-pulse {
   animation: none !important;
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   FINN GLASS EDGE — luminous frosted-glass ring around FINN's card.
-   Locked with FinnUnifiedBackground (#061525 dark backdrop) per the
-   FINN Visual Constitution. Do not add tinted borders elsewhere on
-   the portal.
-   ───────────────────────────────────────────────────────────────── */
-@keyframes nx-finn-glass-breathe {
-  0%, 100% {
-    box-shadow:
-      0 0 0 1px rgba(190, 230, 255, 0.18),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-      0 0 28px 2px rgba(120, 200, 255, 0.22),
-      0 0 60px 6px rgba(80, 170, 230, 0.14),
-      0 24px 70px -22px rgba(0, 0, 0, 0.9);
-  }
-  50% {
-    box-shadow:
-      0 0 0 1px rgba(210, 240, 255, 0.28),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.09),
-      0 0 42px 4px rgba(150, 220, 255, 0.34),
-      0 0 90px 12px rgba(90, 190, 255, 0.22),
-      0 24px 70px -22px rgba(0, 0, 0, 0.9);
-  }
-}
-.finn-glass-edge {
-  animation: nx-finn-glass-breathe 6s ease-in-out infinite;
-  background-color: #04101c;
-}
-.finn-glass-edge::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  border-radius: inherit;
-  padding: 1px;
-  /* Dark glass edge — deep navy with a cool cyan sheen, no white highlights */
-  background: linear-gradient(
-    135deg,
-    rgba(58, 232, 255, 0.35) 0%,
-    rgba(20, 60, 90, 0.55) 24%,
-    rgba(10, 30, 50, 0.75) 50%,
-    rgba(20, 60, 90, 0.55) 76%,
-    rgba(58, 232, 255, 0.35) 100%
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0.95;
-}
-@media (prefers-reduced-motion: reduce) {
-  .finn-glass-edge { animation: none; }
-}
+/* FINN glass edge — REMOVED per owner directive (glass background banned on
+   FINN surfaces). Class kept as a no-op so any stale references don't 404. */
+.finn-glass-edge { background-color: #061525; }
+
 
 
 /* 2) Page-level halo — big soft aura painted behind primary
