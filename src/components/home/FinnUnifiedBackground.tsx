@@ -232,9 +232,9 @@ export function FinnUnifiedBackground() {
             </g>
 
             {/* Data packets — one per bus */}
-            <g fill="rgba(186,254,255,1)" filter="url(#finnBgGlow)">
+            <g fill="rgba(190,220,235,0.75)" filter="url(#finnBgGlow)">
               {BUS_PATHS.map((p, i) => (
-                <circle key={i} r="1.8">
+                <circle key={i} r="1.4">
                   <animateMotion
                     dur={`${p.dur}s`}
                     repeatCount="indefinite"
@@ -245,30 +245,30 @@ export function FinnUnifiedBackground() {
               ))}
             </g>
 
-            {/* Automation status LEDs — pulse on independent tempos */}
-            <g>
+            {/* Automation status LEDs — pulse on independent tempos (muted palette) */}
+            <g opacity="0.55">
               {[
-                { cx: 34, cy: 100, c: "rgba(74,222,128,1)", d: "1.6s" },
-                { cx: 34, cy: 240, c: "rgba(103,232,249,1)", d: "2.2s" },
-                { cx: 34, cy: 440, c: "rgba(250,204,21,1)", d: "1.9s" },
-                { cx: 366, cy: 120, c: "rgba(74,222,128,1)", d: "1.4s" },
-                { cx: 366, cy: 260, c: "rgba(103,232,249,1)", d: "2.6s" },
-                { cx: 366, cy: 460, c: "rgba(248,113,113,1)", d: "1.7s" },
+                { cx: 34, cy: 100, c: "rgba(120,180,150,1)", d: "1.6s" },
+                { cx: 34, cy: 240, c: "rgba(140,190,210,1)", d: "2.2s" },
+                { cx: 34, cy: 440, c: "rgba(200,180,130,1)", d: "1.9s" },
+                { cx: 366, cy: 120, c: "rgba(120,180,150,1)", d: "1.4s" },
+                { cx: 366, cy: 260, c: "rgba(140,190,210,1)", d: "2.6s" },
+                { cx: 366, cy: 460, c: "rgba(200,140,140,1)", d: "1.7s" },
               ].map((led, i) => (
                 <g key={i}>
-                  <circle cx={led.cx} cy={led.cy} r="1.8" fill={led.c} opacity="0.9">
-                    <animate attributeName="opacity" values="0.25;1;0.25" dur={led.d} repeatCount="indefinite" />
+                  <circle cx={led.cx} cy={led.cy} r="1.5" fill={led.c} opacity="0.7">
+                    <animate attributeName="opacity" values="0.2;0.75;0.2" dur={led.d} repeatCount="indefinite" />
                   </circle>
-                  <circle cx={led.cx} cy={led.cy} r="4" fill={led.c} opacity="0.15">
-                    <animate attributeName="r" values="3;6;3" dur={led.d} repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.05;0.35;0.05" dur={led.d} repeatCount="indefinite" />
+                  <circle cx={led.cx} cy={led.cy} r="4" fill={led.c} opacity="0.1">
+                    <animate attributeName="r" values="3;5.5;3" dur={led.d} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.03;0.22;0.03" dur={led.d} repeatCount="indefinite" />
                   </circle>
                 </g>
               ))}
             </g>
 
             {/* Vias — through-hole markers scattered on the board */}
-            <g fill="none" stroke="rgba(103,232,249,0.4)" strokeWidth="0.5">
+            <g fill="none" stroke="rgba(140,190,210,0.25)" strokeWidth="0.5">
               {[
                 [70, 60], [70, 200], [70, 380], [70, 520],
                 [330, 60], [330, 200], [330, 380], [330, 520],
@@ -276,7 +276,7 @@ export function FinnUnifiedBackground() {
               ].map(([x, y], i) => (
                 <g key={i}>
                   <circle cx={x} cy={y} r="2.2" />
-                  <circle cx={x} cy={y} r="0.7" fill="rgba(103,232,249,0.6)" />
+                  <circle cx={x} cy={y} r="0.7" fill="rgba(140,190,210,0.35)" />
                 </g>
               ))}
             </g>
@@ -284,15 +284,26 @@ export function FinnUnifiedBackground() {
 
           {/* Fine digital grid */}
           <span
-            className="absolute inset-0 opacity-20"
+            className="absolute inset-0 opacity-[0.09]"
             style={{
               backgroundImage:
-                "linear-gradient(rgba(103,232,249,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(103,232,249,0.18) 1px, transparent 1px)",
+                "linear-gradient(rgba(140,190,210,0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(140,190,210,0.16) 1px, transparent 1px)",
               backgroundSize: "24px 24px",
               maskImage: "radial-gradient(ellipse at center, black 40%, transparent 90%)",
               WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 90%)",
             }}
           />
+
+          {/* Unifying tint — blends every layer into a single tonal wash */}
+          <span
+            className="absolute inset-0"
+            style={{
+              background:
+                `radial-gradient(ellipse at 50% 45%, rgba(10,32,56,0.35) 0%, rgba(6,21,37,0.55) 60%, rgba(3,12,23,0.75) 100%)`,
+              mixBlendMode: "multiply",
+            }}
+          />
+
 
           {/* Binary / hex code rain */}
           <span
