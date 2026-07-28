@@ -188,7 +188,7 @@ function CharacterPlane({ state }: { state: FinnLiveState }) {
     }
   });
 
-  const height = 3.4;
+  const height = 2.8;
   const width = height * aspect;
 
   return (
@@ -473,7 +473,7 @@ function InnerLive({ state, ariaLabel }: { state: FinnLiveState; ariaLabel: stri
       <Canvas
         dpr={mobile ? [1, 1.5] : [1, 2]}
         frameloop={visible ? "always" : "never"}
-        camera={{ position: [0, 0.35, 3.6], fov: 38 }}
+        camera={{ position: [0, 0, 5.6], fov: 34 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         onCreated={({ gl }) => {
           gl.setClearColor(0x000000, 0);
