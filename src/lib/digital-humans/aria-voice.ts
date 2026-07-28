@@ -1,18 +1,23 @@
 /**
- * FINN Voice — bilingual client-side speech for the Executive Digital
- * Human. FINN uses her authenticated ElevenLabs MP3 route; specialist agents
- * use free browser/OS voices through the governed audio bus. Both paths emit
- * 0..1 amplitude samples so the avatar can drive lip-sync.
+ * FINN Voice — bilingual server-side speech for the Executive Digital
+ * Human. FINN uses her authenticated ElevenLabs MP3 route; specialist
+ * agents route through `speakFreeAgent` which enforces the project-wide
+ * policy: **browser TTS (`speechSynthesis`) is banned in all paths** —
+ * every audible voice, FINN or specialist, is server-synthesized via
+ * ElevenLabs and gated through the shared `FinnAudioBus` for exclusivity.
+ * Both paths emit 0..1 amplitude samples so the avatar can drive lip-sync.
  *
  * Voice routing is fully automatic. FINN always uses her locked ElevenLabs
- * endpoint; specialists use curated device-voice preferences with automatic
- * same-language fallbacks. Callers can never inject a provider voice id.
+ * endpoint; specialists use curated ElevenLabs voice IDs from the
+ * project whitelist (`AGENT_ELEVEN_VOICES`). Callers can never inject an
+ * arbitrary provider voice id.
  *
  * Designed to be replaceable: when an external avatar provider (Azure
  * AI Avatar, HeyGen, D-ID) is wired in, that provider can either consume
  * the same amplitude callback to drive its own lip-sync or take over
  * audio synthesis entirely — only this file changes.
  */
+
 import type { VoiceLang } from "./voice-profiles";
 import type { DigitalHumanSpec } from "./registry";
 import { speakFreeAgent } from "./free-agent-speech";
