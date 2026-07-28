@@ -37,6 +37,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
   return (
     <section
       aria-label={ar ? "بوابة FINN التنفيذية" : "FINN executive portal"}
+      data-testid="finn-portal-card"
       className="finn-portal finn-glass-edge relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl bg-[#061525] sm:min-h-[620px]"
     >
       {/* Unified FINN backdrop — single source of truth (see FinnUnifiedBackground) */}
