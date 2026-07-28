@@ -55,34 +55,8 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         }
       />
 
-      {/* Very light top vignette — keep headroom clear for the wordmark */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-32"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(2,7,15,0.55), rgba(2,7,15,0.15) 70%, transparent)",
-        }}
-      />
-      {/* Subtle bottom vignette for footer legibility */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-48"
-        style={{
-          background:
-            "linear-gradient(to top, rgba(2,7,15,0.9), rgba(2,7,15,0.4) 60%, transparent)",
-        }}
-      />
-      {/* Full-card scanline */}
-      <span aria-hidden className="finn-scan pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <span
-          className="absolute inset-x-0 h-[6%] opacity-60"
-          style={{
-            background:
-              "linear-gradient(to bottom, transparent, rgba(103,232,249,0.55), transparent)",
-          }}
-        />
-      </span>
+      {/* Glass vignettes/scanlines removed per request — keep the backdrop clean */}
+
 
       {/* FINN wordmark — sits in the headroom above the head, compact size */}
       <div className="relative z-10 flex flex-col items-center px-4 pt-2 sm:pt-3">
