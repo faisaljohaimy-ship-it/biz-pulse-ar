@@ -2457,15 +2457,20 @@ body {
 
 /* 1) Global icon glow — every lucide/svg icon inside interactive
       chrome breathes in the region colour. Filter is GPU-friendly. */
-@keyframes nx-region-icon-glow {
+/* Per-icon edge glow — each icon breathes in ITS OWN stroke colour.
+   Colour source order:
+     1) --icon-glow  (explicit override on the icon or its parent)
+     2) currentColor (the icon's own stroke — lucide default)
+   Region tiles keep their sweep via `.nx-icon-glow-region` below. */
+@keyframes nx-icon-edge-glow {
   0%,
   100% {
-    filter: drop-shadow(0 0 6px rgba(var(--nx-region-rgb, 0, 212, 255), 0.55))
-      drop-shadow(0 0 14px rgba(var(--nx-region-rgb, 0, 212, 255), 0.35));
+    filter: drop-shadow(0 0 5px color-mix(in oklab, var(--icon-glow, currentColor) 50%, transparent))
+      drop-shadow(0 0 12px color-mix(in oklab, var(--icon-glow, currentColor) 28%, transparent));
   }
   50% {
-    filter: drop-shadow(0 0 10px rgba(var(--nx-region-rgb, 0, 212, 255), 0.85))
-      drop-shadow(0 0 22px rgba(var(--nx-region-rgb, 0, 212, 255), 0.55));
+    filter: drop-shadow(0 0 9px color-mix(in oklab, var(--icon-glow, currentColor) 78%, transparent))
+      drop-shadow(0 0 20px color-mix(in oklab, var(--icon-glow, currentColor) 48%, transparent));
   }
 }
 
@@ -2474,8 +2479,8 @@ a svg,
 [role="button"] svg,
 .nx-icon-glow svg,
 svg.nx-icon-glow {
-  filter: drop-shadow(0 0 5px rgba(var(--nx-region-rgb, 0, 212, 255), 0.45))
-    drop-shadow(0 0 12px rgba(var(--nx-region-rgb, 0, 212, 255), 0.28));
+  filter: drop-shadow(0 0 4px color-mix(in oklab, var(--icon-glow, currentColor) 45%, transparent))
+    drop-shadow(0 0 10px color-mix(in oklab, var(--icon-glow, currentColor) 26%, transparent));
   transition:
     filter 220ms ease-out,
     transform 220ms ease-out;
@@ -2483,15 +2488,58 @@ svg.nx-icon-glow {
 
 button:hover svg,
 a:hover svg,
-[role="button"]:hover svg {
-  filter: drop-shadow(0 0 9px rgba(var(--nx-region-rgb, 0, 212, 255), 0.75))
-    drop-shadow(0 0 20px rgba(var(--nx-region-rgb, 0, 212, 255), 0.5));
+[role="button"]:hover svg,
+.nx-icon-glow:hover svg {
+  filter: drop-shadow(0 0 8px color-mix(in oklab, var(--icon-glow, currentColor) 72%, transparent))
+    drop-shadow(0 0 18px color-mix(in oklab, var(--icon-glow, currentColor) 46%, transparent));
   transform: translateZ(0) scale(1.04);
 }
 
+button:active svg,
+a:active svg,
+[role="button"]:active svg {
+  filter: drop-shadow(0 0 3px color-mix(in oklab, var(--icon-glow, currentColor) 55%, transparent));
+  transform: translateZ(0) scale(0.96);
+  transition-duration: 120ms;
+}
+
 button:focus-visible svg,
-a:focus-visible svg {
-  animation: nx-region-icon-glow 2.4s ease-in-out infinite;
+a:focus-visible svg,
+.nx-icon-glow-pulse svg,
+svg.nx-icon-glow-pulse {
+  animation: nx-icon-edge-glow 2.4s ease-in-out infinite;
+}
+
+/* Region tiles opt in: glow uses --nx-region-rgb instead of currentColor. */
+.nx-icon-glow-region svg,
+[data-region] .nx-icon-glow-region svg {
+  filter: drop-shadow(0 0 5px rgba(var(--nx-region-rgb, 0, 212, 255), 0.5))
+    drop-shadow(0 0 12px rgba(var(--nx-region-rgb, 0, 212, 255), 0.3));
+}
+
+/* Accessibility & perf — reduced motion + frozen state */
+@media (prefers-reduced-motion: reduce) {
+  button svg,
+  a svg,
+  [role="button"] svg,
+  .nx-icon-glow svg,
+  svg.nx-icon-glow,
+  .nx-icon-glow-pulse svg {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+[data-nx-frozen="true"] svg {
+  animation-play-state: paused !important;
+}
+
+/* Decorative background SVGs (PCB traces, code rain, grid) must not glow */
+[data-icon-glow="off"] svg,
+.nx-no-glow svg,
+.nx-no-glow.svg {
+  filter: none !important;
+  animation: none !important;
 }
 
 /* 2) Page-level halo — big soft aura painted behind primary

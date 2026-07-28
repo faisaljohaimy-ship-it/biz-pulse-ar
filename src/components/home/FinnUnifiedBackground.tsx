@@ -72,7 +72,8 @@ export function FinnUnifiedBackground() {
     <>
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+        data-icon-glow="off"
+        className="nx-no-glow pointer-events-none absolute inset-0 z-0 overflow-hidden"
         style={{
           background: `radial-gradient(ellipse at 50% 45%, ${FINN_BG_CORE} 0%, ${FINN_BG_BASE} 45%, ${FINN_BG_EDGE} 100%)`,
         }}
