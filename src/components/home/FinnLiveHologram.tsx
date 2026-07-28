@@ -473,7 +473,7 @@ function InnerLive({ state, ariaLabel }: { state: FinnLiveState; ariaLabel: stri
       <Canvas
         dpr={mobile ? [1, 1.5] : [1, 2]}
         frameloop={visible ? "always" : "never"}
-        camera={{ position: [0, 0, 4.4], fov: 42 }}
+        camera={{ position: [0, 0.35, 3.6], fov: 38 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         onCreated={({ gl }) => {
           gl.setClearColor(0x000000, 0);
