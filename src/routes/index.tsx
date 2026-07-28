@@ -22,7 +22,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
-
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
 import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
@@ -196,7 +195,6 @@ function IntroLanding() {
       {/* Notifications + Settings are activated inline in FourRegionHub's
           header (Bell + Settings buttons). No floating utility bar here. */}
 
-
       {/* Lightweight gradient hero glow layered above her, still behind content. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(80%_55%_at_50%_0%,rgba(0,212,255,0.18),transparent_70%)]" />
@@ -245,7 +243,6 @@ function IntroLanding() {
       {/* ══ ZONE 6 · التدفقات الهولوغرامية — شجرة القيادة + مدار الوكلاء ══ */}
       <HolographicFlowShowcase ar={ar} agents={HOME_HOLO_AGENTS} />
 
-
       {/*
         Overflow moved off the homepage per the Executive Command View
         directive — every destination remains reachable via its own route:
@@ -273,7 +270,6 @@ function IntroLanding() {
           attached to real DOM sections that were moved off the homepage. */}
       <div ref={modulesRef} className="hidden" aria-hidden />
       <div ref={agentsRef} className="hidden" aria-hidden />
-
     </div>
   );
 }

@@ -301,7 +301,7 @@ function TopStatusBar({
   return (
     <header className="relative z-10 flex flex-wrap items-center justify-between gap-4 px-6 pt-6 pb-4">
       <div className="flex min-w-0 items-center gap-4">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-400/10 ring-1 ring-cyan-400/30">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl nx-holo-icon [--nx-holo-rgb:34_211_238]">
           <ShieldCheck className="h-6 w-6 text-cyan-300" />
         </div>
         <div className="min-w-0">

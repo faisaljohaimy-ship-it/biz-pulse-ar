@@ -51,8 +51,10 @@ describe("nx-holo-icon utility — the token contract", () => {
     expect(body).not.toMatch(/transform:\s*scale/);
   });
 
-  it("keeps the glow but drops the dip under reduced motion", () => {
-    expect(tokens).toMatch(/\.nx-holo-icon:active\s*\{\s*scale:\s*1;/);
+  it("keeps the glow but drops the dip under reduced motion — both variants", () => {
+    expect(tokens).toMatch(
+      /\.nx-holo-icon:active,\s*\.nx-holo-icon-scrim:active\s*\{\s*scale:\s*1;/,
+    );
   });
 });
 
@@ -88,5 +90,74 @@ describe("adoption — icon controls carry no glass fill", () => {
     const cls = talk.slice(0, talk.indexOf(">"));
     expect(cls).toContain("nx-holo-icon");
     expect(cls).not.toContain("bg-[#061525]");
+  });
+});
+
+describe("agent nodes — glass removed, status colour preserved", () => {
+  const ring = read("src/components/executive/AgentRing.tsx");
+
+  it("the agent pip no longer carries a frosted disc", () => {
+    expect(ring).not.toContain("bg-[#061A2E]/75 backdrop-blur-md");
+  });
+
+  it("keeps the per-status edge + halo (tone), so status is still readable", () => {
+    expect(ring).toContain("tone.ring");
+    expect(ring).toContain("tone.glow");
+  });
+
+  it("the glyph glows in the agent's OWN status colour, and the node dips", () => {
+    expect(ring).toContain("drop-shadow(0 0 6px ${tone.stroke})");
+    expect(ring).toContain("active:scale-95");
+  });
+});
+
+describe("internal pages — icon chips carry the holographic edge", () => {
+  const pages = [
+    "src/routes/trust.tsx",
+    "src/routes/security.tsx",
+    "src/routes/aup.tsx",
+    "src/routes/dpa.tsx",
+    "src/routes/cookie-policy.tsx",
+    "src/routes/subprocessors.tsx",
+    "src/routes/responsible-ai.tsx",
+    "src/routes/_authenticated/situation-room.tsx",
+    "src/routes/_authenticated/bridge.tsx",
+    "src/routes/_authenticated/learn.index.tsx",
+  ];
+
+  it("every internal page adopted the treatment", () => {
+    for (const p of pages) {
+      expect(read(p), `${p} should adopt nx-holo-icon`).toContain("nx-holo-icon");
+    }
+  });
+
+  it("semantic tint is preserved by re-tinting, not overwritten with cyan", () => {
+    // Amber compliance chips stay amber; cyan learning chips stay cyan.
+    expect(read("src/routes/trust.tsx")).toContain("[--nx-holo-rgb:251_191_36]");
+    expect(read("src/routes/_authenticated/situation-room.tsx")).toContain(
+      "[--nx-holo-rgb:34_211_238]",
+    );
+  });
+
+  it("no icon chip kept its filled background", () => {
+    expect(read("src/routes/trust.tsx")).not.toContain("rounded-lg bg-amber-400/10 text-amber-200");
+    expect(read("src/routes/_authenticated/bridge.tsx")).not.toContain(
+      "rounded-2xl bg-cyan-400/10 ring-1",
+    );
+  });
+});
+
+describe("media-overlay variant keeps a legibility scrim", () => {
+  it("video controls use the scrim variant, not the transparent one", () => {
+    const show = read("src/routes/executive-showcase.tsx");
+    expect(show).toContain("nx-holo-icon-scrim");
+    expect(show).not.toContain("bg-black/40 text-white/80 backdrop-blur");
+  });
+
+  it("the scrim variant retains a background (contrast over bright frames)", () => {
+    const block = tokens.slice(tokens.indexOf("@utility nx-holo-icon-scrim"));
+    const body = block.slice(0, block.indexOf("\n}\n"));
+    expect(body).toMatch(/background-color:\s*rgb\(2 8 17/);
+    expect(body).toContain("var(--nx-holo-press)");
   });
 });

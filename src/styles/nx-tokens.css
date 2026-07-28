@@ -238,6 +238,41 @@
   }
 }
 
+/* Media-overlay variant: identical holographic edge, glow and press response,
+   but KEEPS a minimal dark scrim. These controls sit on top of video, where a
+   fully transparent chip would lose all contrast against a bright frame — the
+   scrim is a legibility requirement (non-text contrast), not decoration. */
+@utility nx-holo-icon-scrim {
+  background-color: rgb(2 8 17 / 0.45);
+  backdrop-filter: blur(var(--nx-blur-12));
+  border: 1px solid var(--nx-holo-edge);
+  box-shadow: var(--nx-holo-rest);
+  transition:
+    border-color var(--nx-anim-fast) var(--nx-ease-out),
+    box-shadow var(--nx-anim-fast) var(--nx-ease-out),
+    scale var(--nx-anim-fast) var(--nx-ease-out);
+
+  & svg {
+    filter: drop-shadow(0 0 4px rgb(var(--nx-holo-rgb) / 0.45));
+    transition: filter var(--nx-anim-fast) var(--nx-ease-out);
+  }
+  &:hover {
+    border-color: var(--nx-holo-edge-hover);
+    box-shadow: var(--nx-holo-hover);
+  }
+  &:hover svg {
+    filter: drop-shadow(0 0 7px rgb(var(--nx-holo-rgb) / 0.7));
+  }
+  &:active {
+    border-color: var(--nx-holo-edge-press);
+    box-shadow: var(--nx-holo-press);
+    scale: 0.94;
+  }
+  &:active svg {
+    filter: drop-shadow(0 0 10px rgb(var(--nx-holo-rgb) / 0.95));
+  }
+}
+
 /* ── The closed keyframe vocabulary (motion doc 03) ─────────────────────── */
 @keyframes nx-fade-in {
   from {
@@ -392,7 +427,8 @@
   }
   /* Holographic icons keep their GLOW (colour, not motion) but drop the
      press dip — scale is movement and movement is what was opted out of. */
-  .nx-holo-icon:active {
+  .nx-holo-icon:active,
+  .nx-holo-icon-scrim:active {
     scale: 1;
   }
 }

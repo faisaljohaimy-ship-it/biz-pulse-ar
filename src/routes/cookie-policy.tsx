@@ -115,7 +115,7 @@ function CookiePage() {
           { icon: <Settings2 className="h-4 w-4" />, en: "User control", ar: "تحكّم المستخدم" },
         ].map((b, i) => (
           <Card key={i} className="flex items-center gap-3">
-            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg nx-holo-icon [--nx-holo-rgb:251_191_36] text-amber-200">
               {b.icon}
             </span>
             <span className="truncate text-xs uppercase tracking-[0.18em] text-foreground/90">

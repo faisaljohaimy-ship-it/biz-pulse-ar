@@ -426,7 +426,11 @@ export function AgentRing() {
               aria-label={`${a.name} — ${tone.label} (وكيل خلفي صامت)`}
               aria-pressed={isActive}
               className={[
-                "absolute flex h-11 w-11 items-center justify-center rounded-full border bg-[#061A2E]/75 backdrop-blur-md transition-transform duration-300 will-change-transform",
+                // No glass fill: the status tone already supplies a coloured
+                // holographic edge + halo, so the frosted disc only muddied
+                // it. The glyph glows in the node's OWN status colour
+                // (currentColor) and the node dips on press.
+                "absolute flex h-11 w-11 items-center justify-center rounded-full border transition-[scale,border-color,box-shadow] duration-300 will-change-transform active:scale-95",
                 tone.ring,
                 tone.glow,
                 isActive ? "z-10 scale-110 ring-2 ring-[#3AE8FF]/70" : "hover:scale-110",
@@ -447,7 +451,12 @@ export function AgentRing() {
                   }}
                 />
               )}
-              <Bot className="relative h-4 w-4 text-white/90" />
+              {/* Glyph glows in this agent's OWN status colour, so the ring
+                  still reads as active / idle / alert at a glance. */}
+              <Bot
+                className="relative h-4 w-4 text-white/90"
+                style={{ filter: `drop-shadow(0 0 6px ${tone.stroke})` }}
+              />
               <span
                 className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ${tone.dot} ring-2 ring-[#061A2E]`}
                 style={isRunning ? { boxShadow: `0 0 8px ${tone.stroke}` } : undefined}

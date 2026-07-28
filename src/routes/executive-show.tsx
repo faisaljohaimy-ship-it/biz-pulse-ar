@@ -275,7 +275,7 @@ function ExecutiveShowPage() {
                 <button
                   type="button"
                   onClick={toggleMute}
-                  className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/60 text-slate-100 backdrop-blur hover:bg-black/80"
+                  className="grid h-9 w-9 place-items-center rounded-full nx-holo-icon-scrim text-slate-100"
                   aria-label={muted ? "تشغيل الصوت" : "كتم الصوت"}
                 >
                   {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -283,7 +283,7 @@ function ExecutiveShowPage() {
                 <button
                   type="button"
                   onClick={restart}
-                  className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/60 text-slate-100 backdrop-blur hover:bg-black/80"
+                  className="grid h-9 w-9 place-items-center rounded-full nx-holo-icon-scrim text-slate-100"
                   aria-label="إعادة التشغيل"
                 >
                   <RotateCcw className="h-4 w-4" />

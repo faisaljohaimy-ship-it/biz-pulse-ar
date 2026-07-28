@@ -452,7 +452,7 @@ function TrustPage() {
                 className="rounded-xl border border-white/10 bg-white/[0.02] p-6"
               >
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200">
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg nx-holo-icon [--nx-holo-rgb:251_191_36] text-amber-200">
                     {c.icon}
                   </span>
                   <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-foreground/90">
@@ -713,7 +713,7 @@ function ContactCard({
       className="group block rounded-xl border border-white/10 bg-white/[0.02] p-6 transition hover:border-amber-400/25 hover:bg-white/[0.04]"
     >
       <div className="flex items-center gap-3">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg nx-holo-icon [--nx-holo-rgb:251_191_36] text-amber-200">
           {icon}
         </span>
         <h3 className="text-sm font-medium uppercase tracking-[0.18em] text-foreground/90">

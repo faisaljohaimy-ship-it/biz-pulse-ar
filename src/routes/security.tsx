@@ -311,7 +311,7 @@ function SecurityPage() {
           {controls.map((c) => (
             <Card key={c.titleEn}>
               <div className="flex items-center gap-3">
-                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg nx-holo-icon [--nx-holo-rgb:251_191_36] text-amber-200">
                   {c.icon}
                 </span>
                 <h3 className="truncate text-sm font-medium uppercase tracking-[0.16em] text-foreground/90 sm:tracking-[0.18em]">

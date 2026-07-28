@@ -199,7 +199,7 @@ function SubprocessorsPage() {
     >
       <section className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Card className="flex items-start gap-3">
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg nx-holo-icon [--nx-holo-rgb:251_191_36] text-amber-200">
             <Globe2 className="h-4 w-4" />
           </span>
           <div className="min-w-0">
@@ -212,7 +212,7 @@ function SubprocessorsPage() {
           </div>
         </Card>
         <Card className="flex items-start gap-3">
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg nx-holo-icon [--nx-holo-rgb:251_191_36] text-amber-200">
             <Bell className="h-4 w-4" />
           </span>
           <div className="min-w-0">
@@ -225,7 +225,7 @@ function SubprocessorsPage() {
           </div>
         </Card>
         <Card className="flex items-start gap-3">
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-200">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg nx-holo-icon [--nx-holo-rgb:251_191_36] text-amber-200">
             <Building2 className="h-4 w-4" />
           </span>
           <div className="min-w-0">

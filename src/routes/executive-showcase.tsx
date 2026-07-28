@@ -438,7 +438,7 @@ function ExecutiveShowcasePage() {
             type="button"
             onClick={toggleMute}
             aria-label={muted ? "تشغيل الصوت · Unmute" : "كتم الصوت · Mute"}
-            className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/40 text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white"
+            className="grid h-11 w-11 place-items-center rounded-full nx-holo-icon-scrim text-white/80 hover:text-white"
           >
             {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
@@ -459,7 +459,7 @@ function ExecutiveShowcasePage() {
                 }
               }
             }}
-            className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/40 text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white"
+            className="grid h-11 w-11 place-items-center rounded-full nx-holo-icon-scrim text-white/80 hover:text-white"
           >
             <X className="h-4 w-4" />
           </Link>

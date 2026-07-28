@@ -30,7 +30,11 @@ const MAX_KEEP = 100;
 
 function ReportsAgentPage() {
   const [running, setRunning] = useState(true);
-  const [reports, setReports] = useState<ReportRecord[]>(() => [buildReport(), buildReport(), buildReport()]);
+  const [reports, setReports] = useState<ReportRecord[]>(() => [
+    buildReport(),
+    buildReport(),
+    buildReport(),
+  ]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -77,7 +81,8 @@ function ReportsAgentPage() {
             <div className="text-xs tracking-[0.3em] text-cyan-300/70">NEXIOS · AGENT</div>
             <h1 className="mt-1 text-3xl font-bold text-cyan-100 lg:text-4xl">وكيل التقارير</h1>
             <p className="mt-2 max-w-2xl text-sm text-cyan-100/70">
-              وكيل حيّ يعمل باستمرار داخل منظومة NEXIOS لتوليد التقارير التشغيلية والامتثالية عبر المناطق والقطاعات، ويتيح تصديرها فورًا.
+              وكيل حيّ يعمل باستمرار داخل منظومة NEXIOS لتوليد التقارير التشغيلية والامتثالية عبر
+              المناطق والقطاعات، ويتيح تصديرها فورًا.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -88,7 +93,9 @@ function ReportsAgentPage() {
                   : "border-amber-400/40 bg-amber-500/10 text-amber-200"
               }`}
             >
-              <span className={`h-2 w-2 rounded-full ${running ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
+              <span
+                className={`h-2 w-2 rounded-full ${running ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`}
+              />
               {running ? "يعمل الآن" : "متوقّف"}
             </span>
           </div>
@@ -166,10 +173,15 @@ function ReportsAgentPage() {
                 <div className="mt-1 text-xs text-cyan-100/60">
                   {new Date(selected.createdAt).toLocaleString("ar-SA")} · {selected.regionAr}
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-cyan-100/80">{selected.summaryAr}</p>
+                <p className="mt-4 text-sm leading-relaxed text-cyan-100/80">
+                  {selected.summaryAr}
+                </p>
                 <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {selected.metrics.map((m) => (
-                    <div key={m.label} className="rounded-lg border border-white/10 bg-black/30 p-3 text-center">
+                    <div
+                      key={m.label}
+                      className="rounded-lg border border-white/10 bg-black/30 p-3 text-center"
+                    >
                       <div className="text-[11px] text-cyan-100/60">{m.label}</div>
                       <div className="mt-1 text-lg font-bold text-cyan-200">{m.value}</div>
                     </div>
