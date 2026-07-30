@@ -13,10 +13,10 @@ type Cmd = {
   group: "Navigate" | "Agents" | "Reports" | "System";
 };
 
-// «التجربة السينمائية — الجولة الكاملة» was removed from the homepage and the
-// cinematic show routes are hidden, so this palette no longer offers a cinema
-// entry and no longer takes an onOpenCinema handler.
-export function CommandPalette() {
+// The cinema entry opens the ExecutiveCinema MODAL via this handler — it does
+// not navigate to /cinematic-demo, which is hidden. Without a handler the
+// entry is omitted entirely rather than dead-ending on a hidden route.
+export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } = {}) {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const Arrow = ar ? ArrowLeft : ArrowRight;
@@ -132,8 +132,20 @@ export function CommandPalette() {
         to: "/diagnostics",
         group: "System",
       },
+      ...(onOpenCinema
+        ? [
+            {
+              id: "cinema",
+              title_ar: "التجربة التنفيذية",
+              title_en: "Executive Experience",
+              action: onOpenCinema,
+              group: "System" as const,
+              hint: "Cinema",
+            },
+          ]
+        : []),
     ],
-    [navigate],
+    [navigate, onOpenCinema],
   );
 
   const filtered = useMemo(() => {

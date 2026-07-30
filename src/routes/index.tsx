@@ -13,6 +13,12 @@ import {
   Menu,
 } from "lucide-react";
 import { CommandPalette } from "@/components/executive/CommandPalette";
+import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
+import { ExecutiveShowcaseHub } from "@/components/executive/ExecutiveShowcaseHub";
+import { FinnAnomalyStrip } from "@/components/aria/FinnAnomalyStrip";
+import { FinnTodayRecommendations } from "@/components/aria/FinnTodayRecommendations";
+import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
+import { HolographicFlowShowcase } from "@/components/home/HolographicFlowShowcase";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
@@ -28,6 +34,17 @@ import { HomeTopNav } from "@/components/nav/HomeTopNav";
 // Pre-hero intros retired — the homepage renders directly with no cinematic
 // welcome overlay. Auto-greeting voice removed per directive.
 // Static holographic-tree fleet mirrors the Agent Operations Platform view.
+
+const HOME_HOLO_AGENTS = [
+  { id: "commander-1", name: "قائد", state: "queued" },
+  { id: "analyst", name: "محلل", state: "ready" },
+  { id: "auditor", name: "مدقّق", state: "ready" },
+  { id: "intel-1", name: "ذكاء", state: "ready" },
+  { id: "commander-2", name: "قائد", state: "queued" },
+  { id: "monshi", name: "منشئ", state: "ready" },
+  { id: "intel-2", name: "ذكاء", state: "ready" },
+  { id: "messenger", name: "المراسل", state: "ready" },
+];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -62,6 +79,7 @@ function IntroLanding() {
 
   // Freeze each heavy animated section's motion while it is scrolled off-screen
   // (guards against the cumulative-animation load that crashed iOS Safari).
+  const [cinemaOpen, setCinemaOpen] = useState(false);
   const posterRef = useFreezeOffscreen<HTMLDivElement>();
   const deckRef = useFreezeOffscreen<HTMLElement>();
   const modulesRef = useFreezeOffscreen<HTMLDivElement>();
@@ -115,26 +133,13 @@ function IntroLanding() {
       </div>
 
       {/* CommandPalette is mounted globally in AppShell (Ctrl/Cmd+K everywhere). */}
-      <CommandPalette />
+      <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
+      <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
       {/* ══ Primary navigation — moved to the TOP (items 6 + 7). Settings is
           deliberately absent: it lives in the right rail only. ══ */}
       <HomeTopNav />
-
-      {/* ══ الجزء الأول: المؤشرات الست. Moved UP here from between the (now
-          deleted) ticker and the command centres — items 9 + 10 are one move,
-          not a delete plus a rebuild: SovereignCommandDeck already defines
-          exactly these six instruments, so nothing was invented. ══ */}
-      <section
-        ref={deckRef}
-        data-nx-frozen="false"
-        id="home-kpis"
-        aria-label={ar ? "المؤشرات التنفيذية الست" : "The six executive indicators"}
-        className="relative z-10 mx-auto w-full max-w-none px-4 pt-3 sm:px-6 sm:pt-4"
-      >
-        <SovereignCommandDeck ar={ar} />
-      </section>
 
       {/* ══ NEXIOS Four-Region Executive Hub — the PRIMARY dashboard: all four
           regions around a central interactive Saudi map, live per-region KPIs
@@ -144,19 +149,29 @@ function IntroLanding() {
         <FourRegionHub />
       </div>
 
-      {/* Dashboard preview rail — the KPI deck moved to the top of the page. */}
+      {/* ══ Sovereign Cinematic Command Deck — the executive dashboard, back in
+          its original position below the four-region hub, with the FINN
+          anomaly strip, today's recommendations and the decision queue
+          restored alongside it. ══ */}
       <section
+        ref={deckRef}
         data-nx-frozen="false"
         id="hero-dashboard"
-        aria-label={ar ? "معاينات اللوحات" : "Dashboard previews"}
+        aria-label={ar ? "لوحة القيادة السيادية الحية" : "Sovereign live command deck"}
         className="relative z-10 mx-auto flex w-full max-w-none flex-col gap-6 px-4 pb-6 pt-4 sm:gap-8 sm:px-6 sm:pt-8"
       >
+        <SovereignCommandDeck ar={ar} />
         <DashboardPreviewRail ar={ar} />
+        <FinnAnomalyStrip />
+        <FinnTodayRecommendations />
+        <OsDecisionQueue ar={ar} />
       </section>
 
-      {/* item 26: «شجرة القيادة الهولوغرامية» removed from the homepage — the
-          HolographicFlowShowcase rendered exactly that tree (plus the agent
-          orbit) via AgentHierarchyGraph. Item 63 points the same way. */}
+      {/* ══ ZONE 5 · العرض التنفيذي — بطاقة جسر القيادة ══ */}
+      <ExecutiveShowcaseHub />
+
+      {/* ══ ZONE 6 · التدفقات الهولوغرامية — شجرة القيادة + مدار الوكلاء ══ */}
+      <HolographicFlowShowcase ar={ar} agents={HOME_HOLO_AGENTS} />
 
       {/*
         Overflow moved off the homepage per the Executive Command View
