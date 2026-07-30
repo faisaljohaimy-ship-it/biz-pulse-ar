@@ -89,7 +89,13 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
         to: "/bridge",
         group: "Navigate",
       },
-      { id: "agents", title_ar: "الوكلاء", title_en: "Agents", to: "/agents", group: "Agents" },
+      {
+        id: "agents",
+        title_ar: "منصة عمليات الوكلاء",
+        title_en: "Agent Operations Platform",
+        to: "/agents",
+        group: "Agents",
+      },
       {
         id: "agent-run",
         title_ar: "تشغيل وكيل",

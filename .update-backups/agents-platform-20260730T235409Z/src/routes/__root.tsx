@@ -1,0 +1,414 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { lazy, Suspense, useEffect, useState } from "react";
+import {
+  Outlet,
+  Link,
+  createRootRouteWithContext,
+  useRouter,
+  useNavigate,
+  HeadContent,
+  Scripts,
+} from "@tanstack/react-router";
+// watchdog.client is loaded dynamically inside useEffect (client-only module)
+
+import appCss from "../styles.css?url";
+import { COMPANY_NAME, DOMAIN_URL, PRODUCT_NAME, SITE_NAME } from "@/lib/domain";
+import { I18nProvider } from "@/lib/i18n";
+import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider } from "@/lib/theme";
+import { Toaster } from "@/components/ui/sonner";
+
+// ── FINN Singleton ────────────────────────────────────────────────────
+// ONE FINN. Do not add a second copilot at the root. See
+// `src/lib/finn-core/README.md` for the migration kill-list.
+import { FinnProvider } from "@/lib/finn-core";
+// Deferred off the hydration critical path: the copilot is the heaviest
+// root widget and nothing above the fold needs it at first input. It
+// lazy-loads after the first idle moment post-hydration, so every route
+// becomes interactive immediately after paint. ONE FINN law unchanged.
+const FinnCopilot = lazy(() =>
+  import("@/components/finn-core/FinnCopilot").then((m) => ({ default: m.FinnCopilot })),
+);
+import { InstallAppBar } from "@/components/finn/InstallAppBar";
+// FinnGlobalBackdrop removed — FINN renders only via FinnCopilot top-circle
+import { GlobalPageBackdrop } from "@/components/finn/GlobalPageBackdrop";
+import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsulaBackdrop";
+import { FinnWatermark } from "@/components/executive/FinnWatermark";
+import { useRouterState } from "@tanstack/react-router";
+import { useIntroActive } from "@/lib/intro-store";
+import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
+
+import { DemoModeProvider } from "@/lib/demo/demo-controller";
+import { RegionProvider } from "@/lib/region-context";
+
+function NotFoundComponent() {
+  const router = useRouter();
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.pathname === "/index") {
+      window.history.replaceState(null, "", "/");
+      void router.invalidate();
+    }
+  }, [router]);
+
+  if (typeof window !== "undefined" && window.location.pathname === "/index") return null;
+
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-7xl font-bold text-gradient">404</h1>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        <div className="mt-6">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Go home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  const router = useRouter();
+  return (
+    <div
+      dir="rtl"
+      className="flex min-h-dvh items-center justify-center bg-[#04070F] px-4 text-right"
+    >
+      <div className="max-w-md">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/30 bg-[#00D4FF]/5 px-3 py-1 text-xs font-medium text-[#00D4FF]">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00D4FF]" />
+          منصة إدارة الأمن الصناعي
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-white">حدث خطأ — جارٍ الاستعادة</h1>
+        <p className="mt-2 text-sm leading-relaxed text-white/60">
+          واجهت المنصة عائقًا مؤقتًا. يمكنك المحاولة مجددًا الآن، ولن تُفقد بياناتك. تم تسجيل الحدث
+          في سجل التدقيق تلقائيًا.
+        </p>
+        {import.meta.env.DEV && error?.message && (
+          <p
+            dir="ltr"
+            className="mt-3 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-left font-mono text-[11px] text-white/40"
+          >
+            {error.message}
+          </p>
+        )}
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+            className="inline-flex items-center justify-center rounded-md bg-[#00D4FF] px-4 py-2 text-sm font-semibold text-[#04070F] transition-colors hover:bg-[#3AE8FF]"
+          >
+            المحاولة مجددًا
+          </button>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-md border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10"
+          >
+            العودة للصفحة الرئيسية
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  head: () => ({
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      // PWA — installable on iPhone/Android/Windows/Mac from one link.
+      { name: "theme-color", content: "#04070F" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "FINN" },
+      { name: "application-name", content: "FINN" },
+      { name: "google-site-verification", content: "ZMjRDSJhOrvRVKAbg8VWNjP8CICjLONLC3Jk6nKpsUQ" },
+      { title: SITE_NAME },
+      {
+        name: "description",
+        content: "N",
+      },
+      { property: "og:title", content: SITE_NAME },
+      {
+        property: "og:description",
+        content: "N",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: DOMAIN_URL },
+      { property: "og:image", content: `${DOMAIN_URL}/finn-portrait.png` },
+      { property: "og:image:width", content: "1128" },
+      { property: "og:image:height", content: "1920" },
+      { property: "og:image:alt", content: "FINN · منصة إدارة الأمن الصناعي" },
+      { property: "og:site_name", content: COMPANY_NAME },
+      { name: "twitter:card", content: "summary_large_image" },
+      {
+        name: "twitter:title",
+        content: "FINN · منصة إدارة الأمن الصناعي",
+      },
+      {
+        name: "twitter:description",
+        content: "N",
+      },
+      { name: "twitter:image", content: `${DOMAIN_URL}/finn-portrait.png` },
+      { name: "twitter:image:alt", content: "FINN · منصة إدارة الأمن الصناعي" },
+      { title: "FINN · منصة إدارة الأمن الصناعي" },
+      {
+        property: "og:title",
+        content: "FINN · منصة إدارة الأمن الصناعي",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/d113c6a3-3bac-46e4-bf53-293d05655ab1",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/d113c6a3-3bac-46e4-bf53-293d05655ab1",
+      },
+    ],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap",
+      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/finn-portrait.png" },
+      { rel: "apple-touch-icon", href: "/finn-portrait.png" },
+      { rel: "shortcut icon", type: "image/png", href: "/finn-portrait.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+    ],
+    scripts: [
+      {
+        children: `(function(){try{var s=localStorage.getItem('locale');var l=(s==='ar'||s==='en')?s:'ar';document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';}catch(e){}})();`,
+      },
+      {
+        // PWA service-worker registration (offline shell + faster loads). Runs
+        // after load so it never blocks first paint; failures are swallowed.
+        children: `(function(){if('serviceWorker'in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}})();`,
+      },
+      {
+        // Article XIII — Crash-Loop Breaker (iOS Safari OOM recovery).
+        // Increments a boot-attempt counter before hydration; on 2+
+        // consecutive unfinished boots the shell enters safe-mode: skip the
+        // intro video and mark <html> so heavy scenes can opt out. A clean
+        // React mount resets the counter (see RootComponent effect below).
+        children: `(function(){try{var ss=window.sessionStorage;var k='nexios-boot-attempts';var n=parseInt(ss.getItem(k)||'0',10);if(!isFinite(n)||n<0)n=0;n++;ss.setItem(k,String(n));if(n>=2){ss.setItem('nexios-welcome','complete:v4');ss.setItem('nexios-safe-mode','1');document.documentElement.classList.add('safe-mode');}if(n>=3){try{if('caches' in window){caches.keys().then(function(ks){ks.forEach(function(c){caches.delete(c);});});}if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});});}}catch(_){}}}catch(e){}})();`,
+      },
+
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: COMPANY_NAME,
+          legalName: COMPANY_NAME,
+          url: DOMAIN_URL,
+          logo: `${DOMAIN_URL}/nexus-icon.png`,
+          description:
+            "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation.",
+          areaServed: ["SA", "AE", "KW", "QA", "BH", "OM"],
+          sameAs: [],
+          contactPoint: [
+            {
+              "@type": "ContactPoint",
+              email: "info@neexios.com",
+              contactType: "sales",
+              areaServed: "SA",
+              availableLanguage: ["Arabic", "English"],
+            },
+          ],
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: PRODUCT_NAME,
+          applicationCategory: "BusinessApplication",
+          operatingSystem: "Web",
+          url: DOMAIN_URL,
+          publisher: { "@type": "Organization", name: COMPANY_NAME },
+          offers: { "@type": "Offer", priceCurrency: "USD" },
+        }),
+      },
+    ],
+  }),
+  shellComponent: RootShell,
+  component: RootComponent,
+  notFoundComponent: NotFoundComponent,
+  errorComponent: ErrorComponent,
+});
+
+function RootShell({ children }: { children: React.ReactNode }) {
+  // The i18n default locale is "ar" (see src/lib/i18n.tsx). Rendering the
+  // SSR shell with lang="ar" dir="rtl" matches that default and eliminates
+  // the LTR→RTL flash for Arabic visitors. The inline ScriptOnce below
+  // still upgrades to "en" when the user's localStorage says so.
+  return (
+    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+      </head>
+      <body className="bg-[#04070F]">
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+  // Article III (self-healing): install the client watchdog once at root.
+  // FR-20: also install the universal first-gesture audio unlock so that
+  // ANY tap anywhere on the app primes AudioContext + unlocks FinnAudioBus
+  // in the same synchronous tick — required for iOS/Android autoplay policy.
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    let cancelled = false;
+    // Article XIII — Crash-Loop Breaker: React reached commit, so this boot
+    // is healthy. Reset the pre-hydration attempt counter so a future crash
+    // gets its own fresh 2-strike budget.
+    try {
+      window.sessionStorage.removeItem("nexios-boot-attempts");
+    } catch {
+      /* ignore */
+    }
+    import("@/lib/finn/self-healing/watchdog").then((m) => {
+      if (cancelled) return;
+      cleanup = m.installFinnWatchdog();
+    });
+    // Permanent background self-healing agent (Article III, always-on).
+    void import("@/lib/finn/self-healing/permanent-agent").then((m) => {
+      if (cancelled) return;
+      try {
+        m.installPermanentHealer();
+      } catch {
+        /* healer must never break the app */
+      }
+    });
+    // Fire-and-forget: dynamic import keeps SSR bundle unchanged.
+    void import("@/lib/user-interaction").then((m) => {
+      if (cancelled) return;
+      try {
+        m.installInteractionTracker();
+      } catch {
+        /* ignore */
+      }
+    });
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
+  }, []);
+
+  // Scroll frame budget: while the user actively scrolls, EVERY ambient
+  // animation pauses (html.nx-scrolling in styles.css) so the whole frame
+  // goes to scrolling itself; pulses resume ~0.2s after the scroll rests.
+  // Dozens of live halos/pulses are free at rest but were measured to eat
+  // half the scroll budget on GPU-less devices.
+  useEffect(() => {
+    const root = document.documentElement;
+    let timer: number | undefined;
+    const onScroll = () => {
+      if (timer === undefined) root.classList.add("nx-scrolling");
+      else window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        root.classList.remove("nx-scrolling");
+        timer = undefined;
+      }, 180);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      if (timer !== undefined) window.clearTimeout(timer);
+      root.classList.remove("nx-scrolling");
+    };
+  }, []);
+
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (pathname === "/index") {
+      void navigate({ to: "/", replace: true });
+    }
+  }, [pathname, navigate]);
+
+  const isPromo = pathname.startsWith("/promo");
+  const isHero = pathname === "/" || pathname === "";
+  const isBridge = pathname.startsWith("/executive-bridge");
+  const isAccessGate = pathname.startsWith("/auth");
+  // Copilot mounts only after the page is hydrated AND the main thread is
+  // idle — false on the server and at first client render (no mismatch).
+  const [copilotReady, setCopilotReady] = useState(false);
+  useEffect(() => {
+    const ready = () => setCopilotReady(true);
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(ready, { timeout: 2000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = setTimeout(ready, 350);
+    return () => clearTimeout(t);
+  }, []);
+  const introActive = useIntroActive();
+  const suppressOverlays = isPromo || isAccessGate || introActive;
+  const suppressMarquee = isAccessGate || introActive;
+  const suppressClock = isPromo || isBridge;
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider>
+          <I18nProvider>
+            <DemoModeProvider>
+              <RegionProvider>
+                <FinnProvider>
+                  {/* Deepest ambient layer on EVERY page (incl. home): the
+                      Arabian Peninsula, light-green pulse, four sector borders
+                      in sky-blue, the active sector's border pulsing. */}
+                  {!isHero && !introActive && !isAccessGate && <ArabianPeninsulaBackdrop />}
+                  {/* Global FINN hologram backdrop for every non-home page.
+                      Homepage owns its own HomeVideoBackdrop. */}
+                  {!isHero && !isPromo && !isAccessGate && !introActive && <GlobalPageBackdrop />}
+                  {/* Unified header: the scrolling marquee is removed (G3); the
+                      LIVE clock remains as this strip's only content. */}
+                  {!suppressMarquee && <HeaderClockBar showClock={!suppressClock} />}
+                  {!suppressOverlays && <FinnWatermark />}
+                  <div className="relative z-10">
+                    <Outlet />
+                  </div>
+                  {!isAccessGate && copilotReady && (
+                    <Suspense fallback={null}>
+                      <FinnCopilot />
+                    </Suspense>
+                  )}
+                  <InstallAppBar />
+                  {/* FINN speaks ONLY inside Conversation Mode («مخاطبة») in the
+                      copilot panel, and via the homepage greeting button. No
+                      route auto-narration, no page greeters, and no cinematic
+                      welcome overlay — the homepage renders directly. */}
+                  <Toaster />
+                </FinnProvider>
+              </RegionProvider>
+            </DemoModeProvider>
+          </I18nProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
