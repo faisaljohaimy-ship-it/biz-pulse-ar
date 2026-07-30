@@ -366,8 +366,10 @@ export function finnTtsTextFrom(safe: SafeFinnOutput): string {
 /**
  * Deterministic content-safety re-validation for text arriving at an HTTP sink
  * (e.g. the TTS endpoint) where the in-process brand cannot be trusted. Blocks
- * any protected-marker or secret leakage and redacts PII. Returns ok=false when
- * the text must NOT be spoken (caller uses a safe fixed line, never raw).
+ * any protected-marker or secret leakage, redacts PII, and enforces the FINN
+ * identity so the retired name can never be SPOKEN even when the caller posts
+ * raw text straight to the voice API. Returns ok=false when the text must NOT
+ * be spoken (caller uses a safe fixed line, never raw).
  */
 export function revalidateSpeakableText(text: string): {
   ok: boolean;
@@ -378,8 +380,9 @@ export function revalidateSpeakableText(text: string): {
     return { ok: false, text: "", pii: "blocked" };
   }
   const { text: redacted, pii } = redactPii(text);
-  return { ok: true, text: redacted, pii };
+  return { ok: true, text: enforceFinnIdentity(redacted), pii };
 }
+
 
 /**
  * True if text leaks a secret or protected system content. Used by boundaries
