@@ -306,29 +306,30 @@ export function FourRegionHub() {
         ))}
       </div>
 
-      <div className="relative mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
-        {REGIONS.map((region) => {
-          const panel = CC_REGIONS[region.id];
-          return (
-            <RegionCard
-              key={region.id}
-              panel={panel}
-              color={REGION_ACCENT_HEX[region.id]}
-              performance={
-                livePerformance[region.id] ??
-                panel.kpis.find((item) => item.ringPct != null)?.ringPct ??
-                0
-              }
-              active={regionId === region.id}
-              ar={ar}
-              onSelect={() => setRegion(region.id)}
-            />
-          );
-        })}
-      </div>
+      <div className="relative mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          {REGIONS.map((region) => {
+            const panel = CC_REGIONS[region.id];
+            return (
+              <RegionCard
+                key={region.id}
+                panel={panel}
+                color={REGION_ACCENT_HEX[region.id]}
+                performance={
+                  livePerformance[region.id] ??
+                  panel.kpis.find((item) => item.ringPct != null)?.ringPct ??
+                  0
+                }
+                active={regionId === region.id}
+                ar={ar}
+                onSelect={() => setRegion(region.id)}
+              />
+            );
+          })}
+        </div>
 
-      <div className="relative mt-4 grid gap-3 lg:grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)]">
         <FinnHolographicPortal ar={ar} />
+
         <div
           id="smart-alerts"
           className="rounded-2xl border border-rose-400/20 bg-rose-500/[0.05] p-4"
@@ -346,7 +347,7 @@ export function FourRegionHub() {
             </Link>
           </div>
           <ul className="grid gap-2">
-            {alerts.slice(0, 4).map((alert) => (
+            {alerts.slice(0, 6).map((alert) => (
               <li
                 key={alert.id}
                 className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-3 py-2 text-xs"
@@ -363,6 +364,7 @@ export function FourRegionHub() {
           </ul>
         </div>
       </div>
+
     </section>
   );
 }
