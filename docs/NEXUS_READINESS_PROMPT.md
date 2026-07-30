@@ -3,7 +3,7 @@
 
 > **Status:** LOCKED — SUPREME LAW  
 > **Version:** 1.0.0  
-> **Complement to:** `NEXUS_ENGINEERING_CONSTITUTION.md`, `ARIA_INTRO_CONSTITUTION.md`  
+> **Complement to:** `NEXUS_ENGINEERING_CONSTITUTION.md`, `FINN_INTRO_CONSTITUTION.md`  
 > **Purpose:** A permanent prompt-as-law that any AI agent (FINN, self-evolution engine, watchdog, reviewer) MUST load and obey on every turn to keep NEXUS in a state of **continuously rising** readiness, productivity, and accuracy — without regression, ever.
 
 ---

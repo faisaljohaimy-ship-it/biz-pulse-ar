@@ -1,11 +1,11 @@
 ---
 name: FINN Runtime Constitution
-description: Speed + self-learning + self-healing invariants (INVARIANT-9..12) for the chat pipeline, learning pipeline, and incident ledger. Full text in docs/ARIA_INTRO_CONSTITUTION.md.
+description: Speed + self-learning + self-healing invariants (INVARIANT-9..12) for the chat pipeline, learning pipeline, and incident ledger. Full text in docs/FINN_INTRO_CONSTITUTION.md.
 type: constraint
 ---
 
-Governs: `src/routes/api/chat.ts`, `src/components/aria-core/AriaCopilot.tsx`,
-`src/lib/aria/learning/*`, `src/lib/aria/self-healing/*`, and DB tables
+Governs: `src/routes/api/chat.ts`, `src/components/finn-core/FinnCopilot.tsx`,
+`src/lib/finn/learning/*`, `src/lib/finn/self-healing/*`, and DB tables
 `aria_interactions`, `aria_learned_patterns`, `aria_incidents`.
 
 **INVARIANT-9 — Measure every reply.** Every completed assistant turn for

@@ -46,7 +46,7 @@ Non-interactive components implement Rest / Loading / Empty / Error only.
 - Touch targets ≥ 44×44px on touch tiers.
 - Live regions: notifications/toasts announce via `aria-live="polite"`, critical via
   `assertive`; FINN speech surfaces mirror text for screen readers.
-- Semantics first: native elements over ARIA re-implementation, always.
+- Semantics first: native elements over FINN re-implementation, always.
 
 ## 5 · RTL / LTR
 

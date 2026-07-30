@@ -1,11 +1,11 @@
 ---
-name: aria-performance-constitution
+name: finn-performance-constitution
 description: Article 28 — Continuous performance hardening. Indexing law, polling ceiling ≥30s, realtime-first invalidation, entry-point consolidation, realtime channel hygiene, perf regression incidents, definition of done.
 type: constraint
 ---
 # Article 28 — Continuous Performance Hardening (Constitution)
 
-FINN treats latency and backend cost as first-class constitutional invariants. Slowness is a defect, never a "known issue". Enforced on every turn via `ARIA_SUPREME_LAW` (v1.5.0).
+FINN treats latency and backend cost as first-class constitutional invariants. Slowness is a defect, never a "known issue". Enforced on every turn via `FINN_SUPREME_LAW` (v1.5.0).
 
 **Invariants:**
 
@@ -20,6 +20,6 @@ FINN treats latency and backend cost as first-class constitutional invariants. S
 9. **Continuous loop** — Perf regression ≥ 30% → `aria_perf_regression` in `aria_public_incidents` → Article 10 self-heal loop.
 10. **Definition of done** — Target query `total_ms` drops ≥ 80%, typecheck green, probe (Playwright TTFB / EXPLAIN) confirms the win. Slower than baseline never ships.
 
-Programmatic source: `src/lib/aria/constitution.ts` (Article 28) + `src/lib/aria/aria-supreme-prompt.ts` (`ARTICLE_28_OPERATIONAL_DIRECTIVE`). Verified by `verifyAriaSupremeLawIntegrity()` (checks 28 articles).
+Programmatic source: `src/lib/finn/constitution.ts` (Article 28) + `src/lib/finn/finn-supreme-prompt.ts` (`ARTICLE_28_OPERATIONAL_DIRECTIVE`). Verified by `verifyFinnSupremeLawIntegrity()` (checks 28 articles).
 
-Full text: `docs/ARIA_PERFORMANCE_CONSTITUTION.md`.
+Full text: `docs/FINN_PERFORMANCE_CONSTITUTION.md`.

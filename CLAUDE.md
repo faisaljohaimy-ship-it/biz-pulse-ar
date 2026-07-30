@@ -19,10 +19,10 @@
    `/api/chat/health`)، لا مفتاحًا واحدًا بعينه.
 
 ### المواضع المطبَّق عليها النمط
-- الدردشة: `ariaAuthedFetch` في `src/lib/aria-core/services/aria-service.ts`
+- الدردشة: `finnAuthedFetch` في `src/lib/finn-core/services/finn-service.ts`
   (سقوط لمسار الضيف في `/api/chat`).
-- النسخ الصوتي: `/api/aria/transcribe` ← `/api/public/aria-transcribe`.
-- الصوت: `/api/aria/tts` ← `/api/public/aria-tts` (صوت FINN الذكوري حصرًا، لا
+- النسخ الصوتي: `/api/finn/transcribe` ← `/api/public/finn-transcribe`.
+- الصوت: `/api/finn/tts` ← `/api/public/finn-tts` (صوت FINN الذكوري حصرًا، لا
   استبدال مزوّد).
 
 ## طبقات «FINN لا تتعطل» (تُصان معًا، لا تُفكك)
@@ -111,7 +111,7 @@
 |---|---|---|
 | `nexios-standards` | الدستور: عربي/RTL، الهوية، regions.ts، بوابة التحقق | بداية كل جلسة تنفيذية |
 | `nexios-supabase` | المخطط الفعلي، RLS، migrations idempotent، نمط resilient | قبل أي migration/استعلام/دالة خادم |
-| `nexios-aria` | حصرية صوت FINN، حظر browser TTS، الطريقة المحفوظة 401/403 | قبل لمس أي مسار صوت/دردشة |
+| `nexios-finn` | حصرية صوت FINN، حظر browser TTS، الطريقة المحفوظة 401/403 | قبل لمس أي مسار صوت/دردشة |
 | `nexios-hcis-domain` | المرجع التنظيمي المعتمد: SEC/SAF كاملة بأسمائها وأيقوناتها، دورة الاعتماد السبع، نُسك فتح خارجي | أي عمل تنظيمي/امتثال أو نص يذكر HCIS/الهيئة/SEC/SAF |
 | `nexios-demo-master` | السيناريو الذهبي للعرض التنفيذي، بنك الأسئلة الصعبة، جاهزية العرض | قبل أي عرض/ديمو — وتصريح `nexios-qa-guardian` شرط مسبق لاعتماد الجاهزية |
 | `nexios-deploy-safety` | خط النشر الفعلي، فحوص المحظورات، التراجع | قبل أي commit/push أو سؤال نشر |
@@ -151,7 +151,7 @@
   فتح خارجي فقط من `src/config/platforms.ts`.
 - كل بيانات العرض محاكاة موسومة `is_simulation=true`؛ أي إجراء كتابة أو
   طوارئ خلف بوابة تأكيد بشري.
-- `MessageResponse` (streamdown/shiki/mermaid) ممنوع في AriaCopilot —
+- `MessageResponse` (streamdown/shiki/mermaid) ممنوع في FinnCopilot —
   يكسر ميزانية الأداء؛ يبقى `react-markdown + remark-gfm`.
 - البوابة قبل أي دفع: tsc ثم lint ثم الاختبارات ثم `npm run build` مع
   `scripts/check-performance-budget.mjs`.

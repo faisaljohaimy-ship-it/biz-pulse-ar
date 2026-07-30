@@ -5,7 +5,7 @@
 > **Status:** BINDING · Prompt-as-Law · Loaded by every agent turn
 > **Scope:** Governs every FINN runtime, every NEXIOS surface, every AI decision
 > **Enforcement:** Non-skippable · Sequential · Production-only
-> **Related law:** `NEXUS_ENGINEERING_CONSTITUTION.md` · `ARIA_MASTER_CONSTITUTION.md` · `NEXUS_READINESS_PROMPT.md`
+> **Related law:** `NEXUS_ENGINEERING_CONSTITUTION.md` · `FINN_MASTER_CONSTITUTION.md` · `NEXUS_READINESS_PROMPT.md`
 
 ---
 

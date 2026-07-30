@@ -44,7 +44,9 @@ export function inspectFinnProviderReadiness(
 
   const geminiReady =
     configured(env.GEMINI_API_KEY, 20) || configured(env.GOOGLE_GENERATIVE_AI_API_KEY, 20);
-  const forceGemini = env.FINN_FORCE_GEMINI_FLASH?.trim().toLowerCase() !== "false";
+  // FINN_* is the canonical name; ARIA_* stays readable as a legacy alias only.
+  const forceGeminiFlag = env.FINN_FORCE_GEMINI_FLASH ?? env.ARIA_FORCE_GEMINI_FLASH;
+  const forceGemini = forceGeminiFlag?.trim().toLowerCase() !== "false";
   const intelligenceProvider = geminiReady
     ? "google-gemini"
     : !forceGemini && configured(env.OPENAI_API_KEY, 20)

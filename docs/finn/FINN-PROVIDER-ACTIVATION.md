@@ -22,11 +22,11 @@ OPENAI_TRANSCRIBE_MODEL=gpt-4o-transcribe
 
 ELEVENLABS_API_KEY
 
-ARIA_MESSAGE_APPROVAL_SECRET
-ARIA_DIRECT_SEND_ENABLED=true
+FINN_MESSAGE_APPROVAL_SECRET
+FINN_DIRECT_SEND_ENABLED=true
 
 RESEND_API_KEY
-RESEND_FROM_EMAIL=FINN <aria@YOUR_VERIFIED_DOMAIN>
+RESEND_FROM_EMAIL=FINN <finn@YOUR_VERIFIED_DOMAIN>
 RESEND_WEBHOOK_SECRET
 
 TWILIO_ACCOUNT_SID
@@ -40,7 +40,7 @@ TWILIO_STATUS_CALLBACK_URL=https://YOUR_PUBLIC_DOMAIN/api/webhooks/twilio
 أنشئ سر FINN الداخلي محليًا ثم انقله مباشرة إلى خزنة الأسرار:
 
 ```bash
-node scripts/generate-aria-internal-secret.mjs
+node scripts/generate-finn-internal-secret.mjs
 ```
 
 لا يستطيع هذا السكربت إنشاء مفاتيح OpenAI أو ElevenLabs أو Resend أو Twilio؛ هذه المفاتيح مرتبطة بحساب وفوترة وتحقق، ويجب إصدارها من لوحات المزوّدين.
@@ -66,7 +66,7 @@ node scripts/generate-aria-internal-secret.mjs
 شغّل في بيئة تحمل الأسرار:
 
 ```bash
-node scripts/check-aria-providers.mjs
+node scripts/check-finn-providers.mjs
 ```
 
 أو استدعِ `GET /api/finn/providers/status` بحساب `admin` أو `manager`. الاستجابة تعرض حالة كل مزوّد وأسماء المتغيرات الناقصة فقط ولا تعرض قيم الأسرار.

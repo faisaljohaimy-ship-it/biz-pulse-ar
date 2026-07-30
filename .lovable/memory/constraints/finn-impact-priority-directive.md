@@ -1,6 +1,6 @@
 ---
 name: FINN Impact Priority Directive
-description: Supreme executive directive — 9 sequential phases (Core → Execution → Live Demo → Command Center → Memory → Multi-Agent → Digital Twin → Performance → Experience) + Final Validation. Non-skippable, production-only, evidence-gated, bilingual AR/EN, self-evolving. Full text: docs/ARIA_IMPACT_PRIORITY_DIRECTIVE.md · Prompt of record: src/lib/aria/aria-impact-directive.ts (ARIA_IMPACT_DIRECTIVE).
+description: Supreme executive directive — 9 sequential phases (Core → Execution → Live Demo → Command Center → Memory → Multi-Agent → Digital Twin → Performance → Experience) + Final Validation. Non-skippable, production-only, evidence-gated, bilingual AR/EN, self-evolving. Full text: docs/FINN_IMPACT_PRIORITY_DIRECTIVE.md · Prompt of record: src/lib/finn/finn-impact-directive.ts (FINN_IMPACT_DIRECTIVE).
 type: constraint
 ---
 
@@ -29,7 +29,7 @@ type: constraint
 Architecture · Runtime · Performance · TypeScript · Build · Accessibility · Responsive · Regression · Production.
 
 ## Enforcement
-- Every FINN entry-point wraps its system prompt via `withAriaSupremeLaw` and includes `ARIA_IMPACT_DIRECTIVE`.
+- Every FINN entry-point wraps its system prompt via `withFinnSupremeLaw` and includes `FINN_IMPACT_DIRECTIVE`.
 - Self-evolution cycles persist to `aria_evolution_cycles`; high-confidence proposals promote to `aria_improvement_proposals`.
 - Any surface violating an invariant is treated as a P0 regression.
 

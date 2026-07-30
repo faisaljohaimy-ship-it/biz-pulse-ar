@@ -81,4 +81,4 @@ Trivial chit-chat may skip the structure and reply briefly.
 
 ## 10. Change management · إدارة التغيير
 
-Any change to FINN's identity, tone, boundaries, or safety posture MUST update this file AND `src/lib/finn/identity/system-prompt.ts` in the same commit. Bump `ARIA_IDENTITY_VERSION` on every substantive change.
+Any change to FINN's identity, tone, boundaries, or safety posture MUST update this file AND `src/lib/finn/identity/system-prompt.ts` in the same commit. Bump `FINN_IDENTITY_VERSION` on every substantive change.

@@ -13,9 +13,9 @@ loaded voice catalogues and splits long summaries at natural sentence boundaries
 to avoid clipping.
 
 Browser speech remains locked behind the NEXIOS audio arbiter rather than being
-globally available to arbitrary components. A specialist cannot interrupt ARIA;
-ARIA can preempt any specialist, direct ungoverned calls are blocked, and the
-first audible turn still requires a real user gesture. ARIA remains exclusively
+globally available to arbitrary components. A specialist cannot interrupt FINN;
+FINN can preempt any specialist, direct ungoverned calls are blocked, and the
+first audible turn still requires a real user gesture. FINN remains exclusively
 on her canonical ElevenLabs voice.
 
 ## Retained v1.5 responsive environment and working narration
@@ -30,26 +30,26 @@ All eleven Digital Humans are voice-capable in addition to their existing work.
 Agent runs narrate their actual completion state and returned summary, including
 realtime completions; they do not replace execution or fabricate activity. A
 shared audio arbiter prevents overlap and ensures specialist speech cannot
-interrupt ARIA. Audio waits for a real browser gesture, and users have a
+interrupt FINN. Audio waits for a real browser gesture, and users have a
 persistent mute control.
 
 ## Retained v1.4 security and release integrity
 
-Version 1.4 closes three production-grade boundaries. ARIA file uploads now
+Version 1.4 closes three production-grade boundaries. FINN file uploads now
 enter a service-role-only quarantine space, undergo server-side signature,
 extension, active-content, Office archive, macro, traversal, expansion-ratio,
 and known test-signature inspection, and are promoted only after approval. The
 rate-limit dependency fails closed. An optional enterprise malware scanner can
-be configured with `ARIA_FILE_SCAN_URL`; once configured, any scanner timeout
+be configured with `FINN_FILE_SCAN_URL`; once configured, any scanner timeout
 or invalid response also fails closed. The audit ledger stores only hashes,
 verdicts, and technical metadata—not file contents or raw filenames.
 
-ARIA now has one authenticated TTS endpoint, one root-mounted interface, one
+FINN now has one authenticated TTS endpoint, one root-mounted interface, one
 conversation owner, and one voice owner. The former `/api/tts` endpoint is only
 a permanent compatibility redirect. The duplicate Digital Twin dock and the
 legacy assistant conversation runtime no longer mount; historical assistant
 URLs, the former `/aria` console, and lesson conversations open the canonical
-ARIA surface instead. Integration status pages are read-only health probes and
+FINN surface instead. Integration status pages are read-only health probes and
 cannot mint a parallel conversation token.
 
 Cloudflare deployment is no longer an independent push workflow. It can run
@@ -69,11 +69,11 @@ tenant-scoped RLS.
 
 Identity System 4.0 introduces an obsidian/cyan/emerald/gold spatial language,
 living but restrained auroras, precision grids, glass edge-light, stronger
-focus states, and coherent sidebar/mobile/ARIA surfaces. All motion has a
+focus states, and coherent sidebar/mobile/FINN surfaces. All motion has a
 static reduced-motion counterpart and the access gate suppresses unrelated
 global overlays so the presentation remains visually focused.
 
-ARIA email and SMS are no longer direct side effects. An administrator or
+FINN email and SMS are no longer direct side effects. An administrator or
 manager creates an encrypted durable draft, sees the exact recipient and
 content, checks an explicit acknowledgement, and consumes a content-bound
 ten-minute approval token. The database transition permits one dispatcher;
@@ -94,7 +94,7 @@ not changed.
 Executive surfaces outside Hajj use one truthful source selector. Authenticated
 users receive only their organisation's live RLS-scoped KPIs; anonymous visitors
 receive clearly labelled simulation values. This applies to the sovereign
-command deck, decision queue, ARIA daily recommendations, and the first two
+command deck, decision queue, FINN daily recommendations, and the first two
 Executive Command Bridge chapters. The protected operations room, sections,
 and circles screens now also read their tenant-scoped Supabase records instead
 of regional demo fixtures. Public marketing cards are explicitly labelled demo
@@ -104,14 +104,14 @@ and no longer poll a fixed snapshot as if it were live.
 
 The Executive Command Bridge remains a complete seven-chapter, Arabic-first
 board-room experience. It moves from the enterprise command pulse through the
-governed decision engine, four-color regional grid, ARIA agent council,
+governed decision engine, four-color regional grid, FINN agent council,
 operational twin, sovereign trust architecture, and a concrete 90-day
 activation path. Any chapter that still uses simulated operational values is
 explicitly labelled.
 
 Each chapter has a purpose-written Arabic and English executive script delivered
-through ARIA's canonical ElevenLabs voice after an explicit user gesture. The
-tour uses the global ARIA audio arbiter, real playback progress, safe
+through FINN's canonical ElevenLabs voice after an explicit user gesture. The
+tour uses the global FINN audio arbiter, real playback progress, safe
 preemption, a living waveform, bilingual voice state, and an honest setup error
 instead of substituting a robotic browser voice or silently advancing.
 
@@ -121,25 +121,25 @@ executive glass, precise focus states, subtle living light, and static
 reduced-motion fallbacks. The design is CSS-native and adds no animation runtime
 to the JavaScript bundle.
 
-ARIA exposes voice, governed email/SMS, and file channels directly in the
+FINN exposes voice, governed email/SMS, and file channels directly in the
 copilot. Real delivery activates only after the provider, approval secret, and
 signed delivery callback are configured.
 
 The reply contract is explicit and covered by tests: a voice question captured
-inside Conversation Mode receives ARIA's ElevenLabs voice response and reopens
+inside Conversation Mode receives FINN's ElevenLabs voice response and reopens
 the microphone, while a keyboard question streams text without surprise audio.
 Images, video, audio, PDFs, office documents, and text files can be attached from
 the same composer. A migration now creates the private 25 MB attachment bucket
 idempotently on fresh deployments.
 
-The single global pre-system welcome now plays the supplied 64.62-second ARIA
+The single global pre-system welcome now plays the supplied 64.62-second FINN
 film. It is self-hosted as a fast-start H.264/AAC asset with a matching WebP
 poster, responsive portrait framing, a cinematic blurred backdrop, sound
 recovery, mute and skip controls, and a reduced-motion entry path. Its measured
 72-second safety cap allows the full greeting and exit fade to complete, while
 the versioned session guard presents the new film once per browser session.
 
-The supplied ARIA film is now the canonical executive-presentation media on the
+The supplied FINN film is now the canonical executive-presentation media on the
 showcase, guided demo, and standalone player. It is self-hosted, optimized for
 progressive web playback, paired with a poster and bilingual chapters, and
 synchronized to the six presentation scenes. The UI keeps sound behind an
