@@ -87,13 +87,39 @@ update public.evolution_log
 
 -- ── 5) Knowledge base — the policy row FINN can quote back at the user.
 --    Only the identity words move; the five numbered rules are unchanged.
-update public.aria_knowledge
-   set title = 'سياسة FINN في إجابات HCIS | FINN HCIS Policy',
-       content = replace(content,
-         'عند الإجابة عن أسئلة HCIS تلتزم ARIA بما يلي:',
-         'عند الإجابة عن أسئلة HCIS يلتزم FINN بما يلي:')
- where source = 'hcis/aria-policy'
-   and title = 'سياسة ARIA في إجابات HCIS | ARIA HCIS Policy';
+--
+--    NAME-AGNOSTIC ON PURPOSE. This file was written while the corpus table was
+--    still `aria_knowledge`; it has since been renamed to `finn_knowledge` on
+--    the live project, with no compatibility view left behind. A hard-coded
+--    `update public.aria_knowledge` would now abort the whole migration with
+--    "relation does not exist" the moment anyone runs `db push` — an unapplied
+--    migration referring to a name that no longer exists is a tripwire, not a
+--    record. Resolving the name at run time makes this correct before AND after
+--    the rename, in either order.
+do $$
+declare tbl text;
+begin
+  select c.relname into tbl
+  from pg_class c join pg_namespace n on n.oid = c.relnamespace
+  where n.nspname = 'public' and c.relname in ('finn_knowledge', 'aria_knowledge')
+  order by (c.relname = 'finn_knowledge') desc     -- prefer the new name
+  limit 1;
+
+  if tbl is null then
+    raise notice 'skipping knowledge-base text fix: neither finn_knowledge nor aria_knowledge exists';
+    return;
+  end if;
+
+  execute format($q$
+    update public.%I
+       set title = 'سياسة FINN في إجابات HCIS | FINN HCIS Policy',
+           content = replace(content,
+             'عند الإجابة عن أسئلة HCIS تلتزم ARIA بما يلي:',
+             'عند الإجابة عن أسئلة HCIS يلتزم FINN بما يلي:')
+     where source = 'hcis/aria-policy'
+       and title = 'سياسة ARIA في إجابات HCIS | ARIA HCIS Policy'
+  $q$, tbl);
+end $$;
 
 -- ── 6) Lesson «فهم نكسيوس في 10 دقائق» — narration, summary and objectives
 update public.learn_lessons

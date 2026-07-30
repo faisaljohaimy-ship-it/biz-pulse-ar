@@ -66,6 +66,16 @@ const EXEMPT: ReadonlyMap<string, string> = new Map([
     "src/lib/finn/finn-speech-normalize.test.ts",
     "feeds the literal token ARIA in as INPUT to assert the mapping fires",
   ],
+  [
+    // Runtime last line of defence: enforceFinnIdentity() strips the legacy
+    // self-name (and the «أنا … الذكاء التنفيذي لـ NEXIOS» clause) out of every
+    // assistant turn before it can reach a screen or the voice path. Its
+    // patterns have to spell out what they match, so the token appearing here
+    // is the cure, not the disease. Deleting it would let stale model output
+    // and stale knowledge rows say "ARIA" again with nothing to catch them.
+    "src/lib/finn/output/finalize.ts",
+    "enforceFinnIdentity strips the legacy name; its patterns must name it",
+  ],
   ["src/lib/brand/finn-identity.contract.test.ts", "this file — it must name what it bans"],
 ]);
 
