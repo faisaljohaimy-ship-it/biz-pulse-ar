@@ -1,5 +1,7 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 import { SecPageHeader, SampleBadge, StatCard } from "@/components/sec/sec-shell";
 import { Siren, Flame, Wind, Droplets, Phone } from "lucide-react";
 import { EmergencyBroadcast } from "@/components/aria/EmergencyBroadcast";
@@ -22,6 +24,70 @@ const SCENARIOS = [
   { icon: Wind, label: "تسرب غاز", color: "text-orange-500" },
   { icon: Siren, label: "اختراق محيط", color: "text-blue-500" },
 ];
+
+/**
+ * «تنشيط سيناريو» had NO onClick — it rendered as a live control and did
+ * nothing. Activating an emergency scenario is exactly the class of action
+ * constitution Article 8 puts behind an explicit human gate (it names
+ * emergency broadcast by name), so it is a two-step confirm, not a one-click
+ * trigger. The gate mirrors components/aria/EmergencyBroadcast.tsx.
+ *
+ * There is no dispatch endpoint behind SCENARIOS — it is reference data — so
+ * the toast says the activation was not dispatched. A button that claims to
+ * have scrambled a fire crew when nothing was sent is far worse than a dead one.
+ */
+function ScenarioButton({
+  icon: Icon,
+  color,
+  label,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  label: string;
+}) {
+  const [confirming, setConfirming] = useState(false);
+
+  if (confirming) {
+    return (
+      <div className="col-span-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3">
+        <div className="text-xs font-bold text-amber-600">تأكيد بشري إلزامي</div>
+        <div className="mt-1 text-sm text-foreground">تنشيط سيناريو «{label}»؟</div>
+        <div className="mt-2 flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setConfirming(false);
+              toast.warning("سيناريو الطوارئ — عرض توضيحي", {
+                description: `«${label}» لم يُرسَل إلى أي فرقة؛ لا توجد قناة إرسال مربوطة.`,
+              });
+            }}
+            className="min-h-11 rounded-md border border-amber-500/50 bg-amber-500/20 px-3 text-xs font-bold text-amber-700 hover:bg-amber-500/30"
+          >
+            تأكيد التنشيط
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirming(false)}
+            className="min-h-11 rounded-md border border-border px-3 text-xs font-bold text-muted-foreground hover:bg-muted"
+          >
+            إلغاء
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setConfirming(true)}
+      className="flex min-h-11 items-center gap-2 rounded-lg border border-border bg-background/40 p-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+    >
+      <Icon className={`h-4 w-4 ${color}`} />
+      {label}
+    </button>
+  );
+}
 
 function Emergency() {
   return (
@@ -69,13 +135,7 @@ function Emergency() {
           <h2 className="mb-3 text-sm font-semibold text-foreground">تنشيط سيناريو</h2>
           <div className="grid grid-cols-2 gap-2">
             {SCENARIOS.map((s, i) => (
-              <button
-                key={i}
-                className="flex items-center gap-2 rounded-lg border border-border bg-background/40 p-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-              >
-                <s.icon className={`h-4 w-4 ${s.color}`} />
-                {s.label}
-              </button>
+              <ScenarioButton key={i} icon={s.icon} color={s.color} label={s.label} />
             ))}
           </div>
           <p className="mt-3 text-[11px] text-muted-foreground">

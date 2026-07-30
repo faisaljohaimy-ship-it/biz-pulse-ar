@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
@@ -163,8 +164,24 @@ function DemoVideosPage() {
                 className="absolute inset-0 [background-image:linear-gradient(rgba(245,158,11,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(245,158,11,0.05)_1px,transparent_1px)] [background-size:48px_48px] opacity-40"
               />
               <div className="relative z-10 flex h-full flex-col items-center justify-center text-center">
+                {/* The play control had NO onClick. It still cannot "play":
+                    there is no video source anywhere in this data — only an
+                    optional PDF brief. So it opens the brief when one exists
+                    and otherwise says the recording is not published yet.
+                    Faking playback would be worse than the dead button. */}
                 <button
                   type="button"
+                  onClick={() => {
+                    if (current.pdf) {
+                      window.open(current.pdf, "_blank", "noopener,noreferrer");
+                      return;
+                    }
+                    toast(isAr ? "التسجيل غير منشور بعد" : "Recording not published yet", {
+                      description: isAr
+                        ? "لا يوجد ملف فيديو مرفوع لهذا العرض حتى الآن."
+                        : "No video file has been published for this showcase yet.",
+                    });
+                  }}
                   className="group grid h-20 w-20 place-items-center rounded-full border border-amber-400/40 bg-amber-400/10 backdrop-blur transition hover:scale-105 hover:bg-amber-400/20"
                   aria-label={isAr ? "تشغيل" : "Play"}
                 >

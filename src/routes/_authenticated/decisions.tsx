@@ -1,5 +1,7 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { Gavel, CheckCircle2, Clock, AlertOctagon } from "lucide-react";
@@ -113,6 +115,135 @@ const RECS = [
     conf: 86,
   },
 ];
+
+/**
+ * The three recommendation actions, previously rendered with NO onClick at all
+ * — they looked live and did nothing.
+ *
+ * «اعتماد» and «رفض» are governance decisions on an AI recommendation, so they
+ * clear a two-step human gate first (constitution Article 8: automation
+ * proposes, humans approve). The pattern deliberately mirrors
+ * components/aria/EmergencyBroadcast.tsx rather than inventing a second one.
+ * «مراجعة» only flags for review, changes nothing, and needs no gate.
+ *
+ * RECS is reference-simulation data with no write endpoint behind it, so the
+ * decision is held in local state and the toast says so plainly. Claiming a
+ * recorded approval that no table received would be worse than the dead button.
+ */
+function RecommendationActions({ ar, title }: { ar: boolean; title: string }) {
+  const [decision, setDecision] = useState<"approved" | "review" | "rejected" | null>(null);
+  const [pending, setPending] = useState<"approved" | "rejected" | null>(null);
+
+  if (decision) {
+    const label =
+      decision === "approved"
+        ? ar
+          ? "معتمَد"
+          : "Approved"
+        : decision === "rejected"
+          ? ar
+            ? "مرفوض"
+            : "Rejected"
+          : ar
+            ? "قيد المراجعة"
+            : "Under review";
+    const tone =
+      decision === "approved"
+        ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+        : decision === "rejected"
+          ? "border-rose-400/30 bg-rose-400/10 text-rose-300"
+          : "border-white/15 bg-white/[0.04] text-slate-300";
+    return (
+      <div className="mt-3 flex items-center gap-2">
+        <span className={`rounded-md border px-3 py-1 text-[11px] font-bold ${tone}`}>{label}</span>
+        <button
+          type="button"
+          onClick={() => setDecision(null)}
+          className="min-h-11 rounded-md px-2 text-[11px] font-bold text-slate-400 hover:text-white"
+        >
+          {ar ? "تراجع" : "Undo"}
+        </button>
+      </div>
+    );
+  }
+
+  if (pending) {
+    return (
+      <div className="mt-3 rounded-lg border border-amber-400/30 bg-amber-400/[0.06] p-2">
+        <div className="text-[11px] font-bold text-amber-200">
+          {ar ? "تأكيد بشري إلزامي" : "Human confirmation required"}
+        </div>
+        <div className="mt-1 text-[11px] text-white/70">
+          {pending === "approved"
+            ? ar
+              ? "اعتماد هذه التوصية؟"
+              : "Approve this recommendation?"
+            : ar
+              ? "رفض هذه التوصية؟"
+              : "Reject this recommendation?"}
+        </div>
+        <div className="mt-2 flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setDecision(pending);
+              setPending(null);
+              toast.success(
+                pending === "approved"
+                  ? ar
+                    ? "اعتُمدت التوصية — عرض توضيحي، لم تُسجَّل في القاعدة"
+                    : "Recommendation approved — demo only, not persisted"
+                  : ar
+                    ? "رُفضت التوصية — عرض توضيحي، لم تُسجَّل في القاعدة"
+                    : "Recommendation rejected — demo only, not persisted",
+                { description: title },
+              );
+            }}
+            className="min-h-11 rounded-md border border-amber-400/40 bg-amber-400/15 px-3 text-[11px] font-bold text-amber-100 hover:bg-amber-400/25"
+          >
+            {ar ? "تأكيد" : "Confirm"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setPending(null)}
+            className="min-h-11 rounded-md border border-white/10 px-3 text-[11px] font-bold text-slate-300 hover:bg-white/[0.06]"
+          >
+            {ar ? "إلغاء" : "Cancel"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={() => setPending("approved")}
+        className="min-h-11 rounded-md border border-emerald-400/40 bg-emerald-400/10 px-3 text-[11px] font-bold text-emerald-300 hover:bg-emerald-400/20"
+      >
+        {ar ? "اعتماد" : "Approve"}
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setDecision("review");
+          toast(ar ? "أُضيفت إلى قائمة المراجعة" : "Flagged for review", { description: title });
+        }}
+        className="min-h-11 rounded-md border border-white/10 bg-white/[0.03] px-3 text-[11px] font-bold text-slate-300 hover:bg-white/[0.06]"
+      >
+        {ar ? "مراجعة" : "Review"}
+      </button>
+      <button
+        type="button"
+        onClick={() => setPending("rejected")}
+        className="min-h-11 rounded-md border border-rose-400/30 bg-rose-400/5 px-3 text-[11px] font-bold text-rose-300 hover:bg-rose-400/15"
+      >
+        {ar ? "رفض" : "Reject"}
+      </button>
+    </div>
+  );
+}
 
 function statusTone(s: string) {
   return s === "executed"
@@ -232,17 +363,7 @@ function DecisionsPage() {
               <div className="mt-2 text-[11px] text-emerald-300">
                 {ar ? "أثر متوقع:" : "Expected impact:"} {r.impact}
               </div>
-              <div className="mt-3 flex gap-2">
-                <button className="rounded-md border border-emerald-400/40 bg-emerald-400/10 px-3 py-1 text-[11px] font-bold text-emerald-300 hover:bg-emerald-400/20">
-                  {ar ? "اعتماد" : "Approve"}
-                </button>
-                <button className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-bold text-slate-300 hover:bg-white/[0.06]">
-                  {ar ? "مراجعة" : "Review"}
-                </button>
-                <button className="rounded-md border border-rose-400/30 bg-rose-400/5 px-3 py-1 text-[11px] font-bold text-rose-300 hover:bg-rose-400/15">
-                  {ar ? "رفض" : "Reject"}
-                </button>
-              </div>
+              <RecommendationActions ar={ar} title={ar ? r.t_ar : r.t_en} />
             </div>
           ))}
         </div>
