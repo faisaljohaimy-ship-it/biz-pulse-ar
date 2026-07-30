@@ -151,7 +151,7 @@
   فتح خارجي فقط من `src/config/platforms.ts`.
 - كل بيانات العرض محاكاة موسومة `is_simulation=true`؛ أي إجراء كتابة أو
   طوارئ خلف بوابة تأكيد بشري.
-- `MessageResponse` (streamdown/shiki/mermaid) ممنوع في AriaCopilot —
+- `MessageResponse` (streamdown/shiki/mermaid) ممنوع في FinnCopilot —
   يكسر ميزانية الأداء؛ يبقى `react-markdown + remark-gfm`.
 - البوابة قبل أي دفع: tsc ثم lint ثم الاختبارات ثم `npm run build` مع
   `scripts/check-performance-budget.mjs`.

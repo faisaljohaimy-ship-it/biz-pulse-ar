@@ -48,7 +48,7 @@
 - **STT**: ElevenLabs via `/api/voice-token` + browser SDK.
 
 ## Avatar
-- **Default**: R3F procedural bust (`AriaScene.tsx`) — gaze tracking, audio-driven lip-sync, hijab + executive identity. No external credentials.
+- **Default**: R3F procedural bust (`HologramFace.tsx`) — gaze tracking, audio-driven lip-sync, executive identity. No external credentials.
 - **Optional**: HeyGen LiveAvatar (`HeygenAvatarProvider.tsx`) — gated on `HEYGEN_API_KEY`. Currently returns 401/410 against legacy endpoints; see `KNOWN_EXTERNAL_DEPENDENCIES.md`.
 
 ## Anti-Patterns Explicitly Banned
