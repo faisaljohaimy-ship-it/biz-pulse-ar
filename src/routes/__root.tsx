@@ -353,6 +353,8 @@ function RootComponent() {
   const isHero = pathname === "/" || pathname === "";
   const isBridge = pathname.startsWith("/executive-bridge");
   const isAccessGate = pathname.startsWith("/auth");
+  const isAgentOperations =
+    pathname === "/agents" || pathname === "/agents-flow" || pathname === "/agents-reference";
   // Copilot mounts only after the page is hydrated AND the main thread is
   // idle — false on the server and at first client render (no mismatch).
   const [copilotReady, setCopilotReady] = useState(false);
@@ -366,7 +368,7 @@ function RootComponent() {
     return () => clearTimeout(t);
   }, []);
   const introActive = useIntroActive();
-  const suppressOverlays = isPromo || isAccessGate || introActive;
+  const suppressOverlays = isPromo || isAccessGate || isAgentOperations || introActive;
   const suppressMarquee = isAccessGate || introActive;
   const suppressClock = isPromo || isBridge;
 
@@ -381,10 +383,15 @@ function RootComponent() {
                   {/* Deepest ambient layer on EVERY page (incl. home): the
                       Arabian Peninsula, light-green pulse, four sector borders
                       in sky-blue, the active sector's border pulsing. */}
-                  {!isHero && !introActive && !isAccessGate && <ArabianPeninsulaBackdrop />}
+                  {!isHero && !introActive && !isAccessGate && !isAgentOperations && (
+                    <ArabianPeninsulaBackdrop />
+                  )}
                   {/* Global FINN hologram backdrop for every non-home page.
-                      Homepage owns its own HomeVideoBackdrop. */}
-                  {!isHero && !isPromo && !isAccessGate && !introActive && <GlobalPageBackdrop />}
+                      Homepage owns its own HomeVideoBackdrop; the agent
+                      operations platform deliberately uses a clean background. */}
+                  {!isHero && !isPromo && !isAccessGate && !isAgentOperations && !introActive && (
+                    <GlobalPageBackdrop />
+                  )}
                   {/* Unified header: the scrolling marquee is removed (G3); the
                       LIVE clock remains as this strip's only content. */}
                   {!suppressMarquee && <HeaderClockBar showClock={!suppressClock} />}

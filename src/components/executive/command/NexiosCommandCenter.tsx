@@ -132,8 +132,8 @@ export const HOTSPOTS = [
   {
     id: "west-smart-services",
     to: "/agents",
-    labelAr: "الخدمات الذكية",
-    labelEn: "Smart services",
+    labelAr: "منصة عمليات الوكلاء",
+    labelEn: "Agent Operations Platform",
     x: 12.8,
     y: 41,
     width: 5.3,

@@ -104,7 +104,12 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
     modules: [
       { ar: "إدارة البيانات", en: "Data management", to: "/knowledge", icon: Database },
       { ar: "الفني", en: "Technical", to: "/sec/maintenance", icon: Wrench },
-      { ar: "الخدمات الذكية", en: "Smart services", to: "/agents", icon: Sparkles },
+      {
+        ar: "منصة عمليات الوكلاء",
+        en: "Agent Operations Platform",
+        to: "/agents",
+        icon: Sparkles,
+      },
       { ar: "النقل والخدمات", en: "Transport & services", to: "/sec", icon: Truck },
       { ar: "العقارات", en: "Real estate", to: "/digital-twin", icon: Building2 },
     ],
@@ -122,7 +127,12 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
     metrics: { production: "0.96M", revenue: "125.6M", resources: "2,104", community: "3.1M" },
     initiatives: [],
     modules: [
-      { ar: "الذكاء الاصطناعي", en: "AI", to: "/agents", icon: Brain },
+      {
+        ar: "منصة عمليات الوكلاء",
+        en: "Agent Operations Platform",
+        to: "/agents",
+        icon: Brain,
+      },
       { ar: "تحليل البيانات", en: "Data analytics", to: "/sec/kpi", icon: BarChart3 },
       { ar: "الأمن السيبراني", en: "Cybersecurity", to: "/sec", icon: ShieldCheck },
       {
