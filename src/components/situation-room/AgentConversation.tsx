@@ -72,7 +72,9 @@ export function AgentConversation({ ar }: { ar: boolean }) {
       <header className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-cyan-200/80">
           <Sparkles className="h-4 w-4" />
-          {ar ? "غرفة العمل · تعاون فوري بين الوكلاء" : "War Room · Live Agent Collaboration"}
+          {/* G7: «غرفة العمليات» is the canonical Arabic name — «غرفة العمل»
+              was a stray variant of the same room. */}
+          {ar ? "غرفة العمليات · تعاون فوري بين الوكلاء" : "War Room · Live Agent Collaboration"}
         </div>
         <button
           type="button"

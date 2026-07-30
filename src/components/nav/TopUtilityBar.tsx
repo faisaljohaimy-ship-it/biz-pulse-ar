@@ -1,14 +1,20 @@
 /**
  * TopUtilityBar — global top-right utilities:
- *   • Search (Cmd/Ctrl+K) → opens CommandPalette via window event
  *   • Notifications → dropdown with empty/live state
- *   • Settings shortcut → /settings
  *
  * Mounted once in AppShell. Fully RTL, ≥44px targets, keyboard accessible.
+ *
+ * OWNER DIRECTIVE (G1 · G2) — two utilities were REMOVED from this bar:
+ *   • The search field. The CommandPalette itself is untouched and still
+ *     opens on Ctrl/Cmd+K from AppShell; only the visible trigger is gone.
+ *   • The settings icon, which duplicated the right rail's own entry
+ *     (app-shell.tsx → "/settings"). The rail is now the single way in.
+ * Both were removed HERE, in the one shared bar, rather than per screen —
+ * that is why غرفة العمليات and الأمن الصناعي both lose them at once.
  */
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Bell, Search, Settings as SettingsIcon } from "lucide-react";
+import { Bell } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -54,29 +60,8 @@ export function TopUtilityBar({ className }: { className?: string }) {
     };
   }, [notifOpen]);
 
-  const openPalette = () => {
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("nx:open-command-palette"));
-    }
-  };
-
   return (
     <div className={cn("flex items-center gap-1.5", className)}>
-      {/* Search / Command Palette trigger */}
-      <button
-        type="button"
-        onClick={openPalette}
-        aria-label={ar ? "البحث الشامل (Ctrl+K)" : "Universal search (Ctrl+K)"}
-        title={ar ? "البحث الشامل" : "Search"}
-        className="group flex h-11 items-center gap-2 rounded-xl border border-sidebar-border bg-card/60 px-3 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
-      >
-        <Search className="size-4" aria-hidden />
-        <span className="hidden md:inline">{ar ? "بحث…" : "Search…"}</span>
-        <kbd className="hidden rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground md:inline">
-          ⌘K
-        </kbd>
-      </button>
-
       {/* Notifications */}
       <div className="relative" ref={notifRef}>
         <button
@@ -139,16 +124,6 @@ export function TopUtilityBar({ className }: { className?: string }) {
           </div>
         )}
       </div>
-
-      {/* Settings shortcut */}
-      <Link
-        to="/settings"
-        aria-label={ar ? "الإعدادات" : "Settings"}
-        title={ar ? "الإعدادات" : "Settings"}
-        className="grid size-11 place-items-center rounded-xl border border-sidebar-border bg-card/60 text-muted-foreground transition hover:border-primary/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-      >
-        <SettingsIcon className="size-4" aria-hidden />
-      </Link>
     </div>
   );
 }

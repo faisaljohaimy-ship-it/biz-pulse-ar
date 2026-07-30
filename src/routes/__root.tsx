@@ -36,7 +36,7 @@ import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsul
 import { FinnWatermark } from "@/components/executive/FinnWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
-import { BetaMarqueeBar } from "@/components/executive/BetaMarqueeBar";
+import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 import { RegionProvider } from "@/lib/region-context";
@@ -385,8 +385,9 @@ function RootComponent() {
                   {/* Global FINN hologram backdrop for every non-home page.
                       Homepage owns its own HomeVideoBackdrop. */}
                   {!isHero && !isPromo && !isAccessGate && !introActive && <GlobalPageBackdrop />}
-                  {/* Unified header: LIVE clock is embedded inside the marquee bar (single strip, no ghost row). */}
-                  {!suppressMarquee && <BetaMarqueeBar showClock={!suppressClock} />}
+                  {/* Unified header: the scrolling marquee is removed (G3); the
+                      LIVE clock remains as this strip's only content. */}
+                  {!suppressMarquee && <HeaderClockBar showClock={!suppressClock} />}
                   {!suppressOverlays && <FinnWatermark />}
                   <div className="relative z-10">
                     <Outlet />

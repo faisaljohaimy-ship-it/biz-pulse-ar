@@ -52,7 +52,8 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/mission-control", ar: "مركز القيادة", en: "Mission Control", icon: Gauge },
   { to: "/situation-room", ar: "غرفة العمليات", en: "Situation Room", icon: Radar },
   { to: "/executive-map", ar: "الخريطة التنفيذية", en: "Executive Map", icon: MapIcon },
-  { to: "/agents", ar: "الوكلاء الأذكياء", en: "AI Agents", icon: Bot },
+  // G7: the canonical name is «منصة عمليات الوكلاء» in every surface.
+  { to: "/agents", ar: "منصة عمليات الوكلاء", en: "Agent Operations Platform", icon: Bot },
   { to: "/digital-twin", ar: "التوأم الرقمي", en: "Digital Twin", icon: Boxes },
   { to: "/executive-reports", ar: "التقارير التنفيذية", en: "Executive Reports", icon: BarChart3 },
   { to: "/analytics", ar: "الإحصائيات", en: "Analytics", icon: Activity },
@@ -96,8 +97,8 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     en: "The executive geographic map of assets and regions.",
   },
   "/agents": {
-    ar: "تشغيل ومراقبة الوكلاء الأذكياء تحت قيادة FINN.",
-    en: "Run and monitor the AI agent fleet under FINN.",
+    ar: "منصة عمليات الوكلاء — تشغيل ومراقبة تحت قيادة FINN.",
+    en: "Agent operations platform — run and monitor under FINN.",
   },
   "/digital-twin": {
     ar: "التوأم الرقمي — مطابقة الميدان بالنموذج الرقمي.",
