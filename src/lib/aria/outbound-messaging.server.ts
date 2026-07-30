@@ -98,7 +98,13 @@ export type ApprovalPreview = {
 };
 
 function approvalSecret(): string {
-  const value = process.env.ARIA_MESSAGE_APPROVAL_SECRET?.trim();
+  // FINN_* first, legacy ARIA_* as fallback: the server still has the old
+  // names set, so reading FINN_* alone would silently lose the value and
+  // change behaviour at deploy time. The fallback is removed only after
+  // the operator has renamed the variables.
+  const value = (
+    process.env.FINN_MESSAGE_APPROVAL_SECRET ?? process.env.ARIA_MESSAGE_APPROVAL_SECRET
+  )?.trim();
   if (!value || value.length < 32) {
     throw new Error(
       "Outbound approval is not configured. Set FINN_MESSAGE_APPROVAL_SECRET to at least 32 characters.",
@@ -356,7 +362,11 @@ function configuredChannel(payload: OutboundPayload): boolean {
 }
 
 function managedEmailQueueEnabled(): boolean {
-  return process.env.ARIA_ENABLE_MANAGED_EMAIL_QUEUE?.trim().toLowerCase() === "true";
+  return (
+    (process.env.FINN_ENABLE_MANAGED_EMAIL_QUEUE ?? process.env.ARIA_ENABLE_MANAGED_EMAIL_QUEUE)
+      ?.trim()
+      .toLowerCase() === "true"
+  );
 }
 
 function outlookHeaders(): Record<string, string> | null {

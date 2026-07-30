@@ -170,7 +170,9 @@ async function handlePost(request: Request): Promise<Response> {
   });
   const instructions = `${finnRuntimeBlock}\n\n${MAKKAH_TIME_DIRECTIVE}\n\n${FINN_INSTRUCTIONS}\n\n${FINN_LIVE_INTELLIGENCE_DOCTRINE}`;
 
-  const configuredTokens = Number(process.env.ARIA_MAX_OUTPUT_TOKENS || "1500");
+  const configuredTokens = Number(
+    process.env.FINN_MAX_OUTPUT_TOKENS || process.env.ARIA_MAX_OUTPUT_TOKENS || "1500",
+  );
   const maxOutputTokens = Math.min(Math.max(configuredTokens || 1500, 256), 4000);
   const model = resolveOpenAiModel() || DEFAULT_OPENAI_MODEL;
 

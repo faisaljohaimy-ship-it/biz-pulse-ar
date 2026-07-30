@@ -21,7 +21,13 @@ export interface ReceiptClaims {
 
 /** The default signing secret — an EXISTING server secret, never a new one. */
 export function defaultProvenanceSecret(): string | null {
-  const s = process.env.ARIA_MESSAGE_APPROVAL_SECRET?.trim();
+  // FINN_* first, legacy ARIA_* as fallback: the server still has the old
+  // names set, so reading FINN_* alone would silently lose the value and
+  // change behaviour at deploy time. The fallback is removed only after
+  // the operator has renamed the variables.
+  const s = (
+    process.env.FINN_MESSAGE_APPROVAL_SECRET ?? process.env.ARIA_MESSAGE_APPROVAL_SECRET
+  )?.trim();
   return s && s.length >= 32 ? s : null;
 }
 

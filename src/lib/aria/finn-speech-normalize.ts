@@ -45,7 +45,12 @@ export interface FinnSpeech {
 export const FINN_SPEECH_DICTIONARY: Readonly<Record<string, string>> = {
   FINN: "فِنّ",
   NEXIOS: "نِكْسِيُوس",
-  ARIA: "آريا",
+  // The assistant is FINN. This entry used to map the legacy token to its own
+  // spoken form «آريا», which meant any stale text containing "ARIA" would be
+  // SPOKEN as ARIA even though nothing on screen says it any more. Mapping it
+  // to «فِنّ» closes the last channel the old name could still reach a user
+  // through — the voice.
+  ARIA: "فِنّ",
   HCIS: "إتش سي آي إس",
   PTW: "بي تي دبليو",
   KPI: "كي بي آي",

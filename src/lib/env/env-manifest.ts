@@ -118,7 +118,10 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     key: "message-approval",
     labelAr: "توقيع اعتماد الرسائل (≥32 حرفًا)",
     requirement: "all",
-    vars: [S("ARIA_MESSAGE_APPROVAL_SECRET", "Signs approval tokens; encrypts payloads")],
+    vars: [
+      S("FINN_MESSAGE_APPROVAL_SECRET", "Signs approval tokens; encrypts payloads"),
+      S("ARIA_MESSAGE_APPROVAL_SECRET", "Legacy alias of FINN_MESSAGE_APPROVAL_SECRET"),
+    ],
   },
 ];
 
