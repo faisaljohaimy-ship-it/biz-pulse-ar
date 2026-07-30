@@ -7,7 +7,7 @@
  * it exists the UI shows a graceful empty state — never a broken element —
  * and the live seven-scene experience remains the primary path.
  *
- * ARIA appears ONLY in internal system names (e.g. the /api/public/aria-tts
+ * ARIA appears ONLY in internal system names (e.g. the /api/public/finn-tts
  * endpoint); the user-facing identity is FINN exclusively.
  */
 

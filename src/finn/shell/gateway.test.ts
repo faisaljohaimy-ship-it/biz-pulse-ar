@@ -50,7 +50,7 @@ describe("FINN shell — runtime write gateway", () => {
   });
 
   it("REJECTS an unknown / future table by default-deny", () => {
-    for (const t of ["shell_secrets", "aria_documents", "profiles", "some_future_table"]) {
+    for (const t of ["shell_secrets", "finn_documents", "profiles", "some_future_table"]) {
       expect(() => assertRuntimeWrite(t, "insert")).toThrow(WriteGatewayError);
     }
   });

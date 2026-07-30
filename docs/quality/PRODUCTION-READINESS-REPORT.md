@@ -41,7 +41,7 @@ intelligence imports no execution surface; Adaptive Shell + NDK import zero Core
 modules; no engine→kernel cycles in orchestration/OS; Nx components import no runtime
 (presentation-only). Full runtime chain boots in tests (OS seven-stage sequence → four
 layers → READY). 294 runtime/shell tests + 22 OS tests green. No drift: frozen layers
-byte-identical this phase (`git diff src/finn src/lib/aria/output` empty).
+byte-identical this phase (`git diff src/finn src/lib/finn/output` empty).
 
 **02 · Design Constitution compliance — 10/10** (implemented surface). Zero raw hex,
 zero physical-direction utilities, zero `dark:` variants, zero TODO/placeholder in

@@ -59,11 +59,11 @@ const stripComments = (s: string) =>
  */
 const EXEMPT: ReadonlyMap<string, string> = new Map([
   [
-    "src/lib/aria/finn-speech-normalize.ts",
+    "src/lib/finn/finn-speech-normalize.ts",
     "maps the literal token ARIA to its spoken form; the token is the input",
   ],
   [
-    "src/lib/aria/finn-speech-normalize.test.ts",
+    "src/lib/finn/finn-speech-normalize.test.ts",
     "feeds the literal token ARIA in as INPUT to assert the mapping fires",
   ],
   ["src/lib/brand/finn-identity.contract.test.ts", "this file — it must name what it bans"],
@@ -88,7 +88,7 @@ describe("FINN identity — the old name stays off every visible surface", () =>
     // ...and that the allowed identifier shapes are NOT flagged.
     expect('<div aria-label="x" />').not.toMatch(EN_OLD);
     expect("process.env.ARIA_ELEVENLABS_VOICE_ID").not.toMatch(EN_OLD);
-    expect("from('aria_knowledge')").not.toMatch(EN_OLD);
+    expect("from('finn_knowledge')").not.toMatch(EN_OLD);
   });
 
   it("has no «آريا» in application source", () => {

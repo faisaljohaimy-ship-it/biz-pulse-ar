@@ -18,7 +18,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { ThemeProvider } from "@/lib/theme";
 import { RegionProvider } from "@/lib/region-context";
 import { REGIONS } from "@/lib/regions";
-import { useFinnStore } from "@/lib/aria-core/store";
+import { useFinnStore } from "@/lib/finn-core/store";
 import { NxCockpitPage } from "@/routes/-nx-cockpit-page";
 import { auditCockpitActions, COCKPIT_ACTIONS } from "@/components/cockpit/actions";
 import {

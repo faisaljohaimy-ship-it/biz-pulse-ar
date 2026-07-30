@@ -71,7 +71,7 @@ export function OsCommandDeck({ ar }: { readonly ar: boolean }) {
       }
     : null;
 
-  const ariaEvidence: Evidence | null = observedAt
+  const finnEvidence: Evidence | null = observedAt
     ? { kind: "runtime.probe", source: "aria_runtime", observedAt, value: "ready" }
     : null;
 
@@ -109,7 +109,7 @@ export function OsCommandDeck({ ar }: { readonly ar: boolean }) {
       labelEn: "FINN Executive Core",
       value: ar ? "جاهزة" : "Ready",
       tone: "cyan" as const,
-      evidence: ariaEvidence,
+      evidence: finnEvidence,
       caption: ar ? "استماع تنفيذي" : "Executive listening",
     },
     {

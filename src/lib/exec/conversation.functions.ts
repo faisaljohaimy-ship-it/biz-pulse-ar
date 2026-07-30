@@ -6,7 +6,7 @@
  * single bilingual "statement" by that specialist agent, then asks FINN
  * (gpt-5 via Lovable AI Gateway) to synthesize one executive
  * recommendation across all statements. The synthesis is persisted to
- * `aria_reports` (kind=`conversation`) so follow-up loads are instant
+ * `finn_reports` (kind=`conversation`) so follow-up loads are instant
  * and the executive memory survives across sessions.
  *
  * No schema changes. No mocks. Every line traces back to a real
@@ -214,10 +214,10 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         .sort()
         .slice(-1)[0] ?? generated_at;
 
-    // Try cache first — `aria_reports.kind = 'conversation'`, title carries the anchor.
+    // Try cache first — `finn_reports.kind = 'conversation'`, title carries the anchor.
     const cacheKey = cacheTitle(anchor);
     const { data: cachedRow } = await sb
-      .from("aria_reports")
+      .from("finn_reports")
       .select("payload, confidence")
       .eq("kind", "conversation")
       .eq("title", cacheKey)
@@ -322,7 +322,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
           .maybeSingle();
         const org_id = orgRow?.org_id ?? null;
         if (org_id) {
-          await sb.from("aria_reports").insert({
+          await sb.from("finn_reports").insert({
             org_id,
             user_id: context.userId,
             kind: "conversation",

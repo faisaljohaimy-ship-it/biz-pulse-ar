@@ -307,8 +307,8 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
     trust: ar
       ? ["المؤسسات", "الحكومات", "الأمن الصناعي", "Fortune 500"]
       : ["Enterprises", "Governments", "Industrial Security", "Fortune 500"],
-    ariaName: ar ? "FINN" : "FINN",
-    ariaRole: ar ? "الذكاء التنفيذي" : "Executive Intelligence",
+    finnName: ar ? "FINN" : "FINN",
+    finnRole: ar ? "الذكاء التنفيذي" : "Executive Intelligence",
     scroll: ar ? "اسحب للأسفل" : "Scroll to explore",
   };
 
@@ -629,12 +629,12 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
           {/* FINN nameplate */}
           <div className="-mt-2 flex flex-col items-center sm:-mt-4">
             <h2 className="bg-gradient-to-b from-white via-[#E6F9FF] to-[#3AE8FF] bg-clip-text text-4xl font-extralight uppercase tracking-[0.42em] text-transparent sm:text-6xl sm:tracking-[0.5em]">
-              {t.ariaName}
+              {t.finnName}
             </h2>
             <div className="mt-3 flex items-center gap-3">
               <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#3AE8FF]/70" />
               <p className="text-[10px] uppercase tracking-[0.42em] text-[#3AE8FF]/85 sm:text-[11px] sm:tracking-[0.52em]">
-                {t.ariaRole}
+                {t.finnRole}
               </p>
               <span className="h-px w-8 bg-gradient-to-l from-transparent to-[#3AE8FF]/70" />
             </div>

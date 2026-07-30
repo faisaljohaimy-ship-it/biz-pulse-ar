@@ -22,7 +22,7 @@ description: المسار الفوري لـFINN (المادة ٢٢ §٣) — ت�
 
 ## التنفيذ
 - `matchFastRecall(message)` + مصفوفة `FAST_RECALL` في
-  `src/lib/aria/response-contract.ts`.
+  `src/lib/finn/response-contract.ts`.
 - يُطبَّق في `src/routes/api/chat.ts` **بعد** حارس النطاق و**قبل** النموذج،
   ويبثّ عبر `streamFixed(...)` مع ترويسة `X-FINN-Reply-Source`.
 

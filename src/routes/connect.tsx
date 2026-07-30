@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Copy, Check, Bot, RefreshCw, Sparkles } from "lucide-react";
-import { FinnSignatureBackdrop } from "@/components/aria/FinnSignatureBackdrop";
+import { FinnSignatureBackdrop } from "@/components/finn/FinnSignatureBackdrop";
 import { DOMAIN_URL } from "@/lib/domain";
 import { useI18n } from "@/lib/i18n";
 

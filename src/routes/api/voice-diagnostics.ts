@@ -12,7 +12,7 @@ import {
   rateLimitResponse,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
-import { FINN_ELEVENLABS_MODEL, FINN_ELEVENLABS_VOICE_ID } from "@/lib/aria/voice-config";
+import { FINN_ELEVENLABS_MODEL, FINN_ELEVENLABS_VOICE_ID } from "@/lib/finn/voice-config";
 
 type Check = {
   id: "api_key" | "canonical_voice" | "canonical_runtime";
@@ -143,7 +143,7 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
           label: "Governed FINN TTS runtime",
           status: ready ? "ok" : "skipped",
           detail: ready
-            ? `/api/aria/tts · ${FINN_ELEVENLABS_MODEL} · authenticated · rate-limited`
+            ? `/api/finn/tts · ${FINN_ELEVENLABS_MODEL} · authenticated · rate-limited`
             : "Runtime remains closed until the provider key and locked voice pass verification.",
         };
 

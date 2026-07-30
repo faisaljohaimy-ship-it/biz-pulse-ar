@@ -18,7 +18,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEventStream } from "@/lib/events/useEventStream";
 import { narrateEvent, type NarratorLine } from "@/lib/narrator/event-narrator";
-import { speakAs, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
+import { speakAs, type SpeakHandle } from "@/lib/digital-humans/finn-voice";
 import { FINN, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import { narratorAgentToHumanId } from "@/lib/digital-humans/voice-profiles";
 import type { BriefingSegment, ExecutiveBriefing } from "@/lib/exec/briefing.functions";

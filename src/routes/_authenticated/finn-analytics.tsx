@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { FinnUsageAnalytics } from "@/components/aria/FinnUsageAnalytics";
-import { FinnAnomalyStrip } from "@/components/aria/FinnAnomalyStrip";
-import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
+import { FinnUsageAnalytics } from "@/components/finn/FinnUsageAnalytics";
+import { FinnAnomalyStrip } from "@/components/finn/FinnAnomalyStrip";
+import { FinnDailySummary } from "@/components/finn/FinnDailySummary";
 
 export const Route = createFileRoute("/_authenticated/finn-analytics")({
   errorComponent: RouteError,

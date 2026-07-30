@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { seedFinnCorpus } from "@/lib/aria/seed-corpus.functions";
+import { seedFinnCorpus } from "@/lib/finn/seed-corpus.functions";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   errorComponent: RouteError,

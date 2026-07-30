@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FinnAudioBus } from "@/lib/aria/audio-bus";
+import { FinnAudioBus } from "@/lib/finn/audio-bus";
 import { authenticatedFetch } from "@/lib/auth-fetch";
-import { VoiceTimeline } from "@/lib/aria/voice-timeline";
+import { VoiceTimeline } from "@/lib/finn/voice-timeline";
 
 const MUTE_KEY = "aria-voice-muted";
 
@@ -9,7 +9,7 @@ const MUTE_KEY = "aria-voice-muted";
  * useFinnSpeech — routes FINN voice through the global FinnAudioBus
  * (zero overlap guarantee) on the "chat-tts" channel.
  *
- * authenticated → ElevenLabs via /api/aria/tts (MP3 blob).
+ * authenticated → ElevenLabs via /api/finn/tts (MP3 blob).
  * anonymous / failure → SILENCE. There is no fallback voice of any kind:
  * FINN speaks with her one canonical voice or not at all.
  */
@@ -123,9 +123,9 @@ export function useFinnSpeech() {
       setSpeaking(true);
       const t0 = performance.now();
 
-      VoiceTimeline.push("TTS_REQ", "useFinnSpeech → /api/aria/tts", { chars: clean.length });
+      VoiceTimeline.push("TTS_REQ", "useFinnSpeech → /api/finn/tts", { chars: clean.length });
       try {
-        const res = await authenticatedFetch("/api/aria/tts", {
+        const res = await authenticatedFetch("/api/finn/tts", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ text: clean }),

@@ -20,7 +20,7 @@ import {
   ingestFinnDocument,
   deleteFinnDocument,
   searchFinnDocuments,
-} from "@/lib/aria/documents.functions";
+} from "@/lib/finn/documents.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

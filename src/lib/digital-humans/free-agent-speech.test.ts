@@ -3,7 +3,7 @@
  *
  * The runtime must: never call any browser TTS, never start before the bus
  * is gesture-unlocked, never play without owning the "agent-tts" channel,
- * fetch audio exclusively from /api/aria/tts, and release the channel when
+ * fetch audio exclusively from /api/finn/tts, and release the channel when
  * playback ends or stop() is called.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -18,7 +18,7 @@ const { bus, fetchMock } = vi.hoisted(() => ({
   },
   fetchMock: vi.fn(),
 }));
-vi.mock("@/lib/aria/audio-bus", () => ({ FinnAudioBus: bus }));
+vi.mock("@/lib/finn/audio-bus", () => ({ FinnAudioBus: bus }));
 vi.mock("@/lib/auth-fetch", () => ({
   authenticatedFetch: (...args: unknown[]) => fetchMock(...args),
 }));
@@ -72,13 +72,13 @@ describe("specialist speech runtime (server FINN voice)", () => {
     expect(splitSpeechText("   ")).toHaveLength(0);
   });
 
-  it("plays through the governed agent-tts channel via /api/aria/tts", async () => {
+  it("plays through the governed agent-tts channel via /api/finn/tts", async () => {
     const onStart = vi.fn();
     const handle = speakFreeAgent({ text: "تقرير الحالة الأمنية.", lang: "ar", onStart });
     await handle.promise;
     expect(bus.acquire).toHaveBeenCalledWith("agent-tts", expect.any(Function));
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/aria/tts",
+      "/api/finn/tts",
       expect.objectContaining({ method: "POST" }),
     );
     expect(onStart).toHaveBeenCalledTimes(1);

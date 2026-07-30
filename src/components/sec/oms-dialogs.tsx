@@ -35,7 +35,7 @@ import {
   closeIncident,
   addCorrectiveAction,
   escalateIncident,
-  ariaAnalyzeIncident,
+  finnAnalyzeIncident,
   getEntityTimeline,
   createWorkOrder,
   approveWorkOrder,
@@ -243,7 +243,7 @@ export function IncidentDrawer({
     enabled: open,
   });
 
-  const aria = useServerFn(ariaAnalyzeIncident);
+  const aria = useServerFn(finnAnalyzeIncident);
   const mFinn = useMutation({
     mutationFn: () => aria({ data: { incident_id: incident!.id } }),
     onSuccess: () => {
@@ -457,7 +457,7 @@ export function IncidentDrawer({
   const latestFinn = (timeline ?? []).find(
     (e) => e.event === "aria_analyzed" || e.event === "aria_auto_analyzed",
   );
-  const ariaRecs =
+  const finnRecs =
     (latestFinn?.payload as
       | { recommendations?: string[]; immediate_actions?: string[] }
       | undefined) ?? {};
@@ -552,26 +552,26 @@ export function IncidentDrawer({
                 <p className="text-xs text-foreground">
                   {incident.ai_summary ?? "لم يُشغَّل التحليل بعد."}
                 </p>
-                {Array.isArray(ariaRecs.immediate_actions) &&
-                  ariaRecs.immediate_actions.length > 0 && (
+                {Array.isArray(finnRecs.immediate_actions) &&
+                  finnRecs.immediate_actions.length > 0 && (
                     <div className="mt-2">
                       <div className="text-[10px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">
                         إجراءات فورية
                       </div>
                       <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[11px] text-foreground">
-                        {ariaRecs.immediate_actions.map((a, i) => (
+                        {finnRecs.immediate_actions.map((a, i) => (
                           <li key={i}>{a}</li>
                         ))}
                       </ul>
                     </div>
                   )}
-                {Array.isArray(ariaRecs.recommendations) && ariaRecs.recommendations.length > 0 && (
+                {Array.isArray(finnRecs.recommendations) && finnRecs.recommendations.length > 0 && (
                   <div className="mt-2">
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">
                       توصيات
                     </div>
                     <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[11px] text-foreground">
-                      {ariaRecs.recommendations.map((a, i) => (
+                      {finnRecs.recommendations.map((a, i) => (
                         <li key={i}>{a}</li>
                       ))}
                     </ul>

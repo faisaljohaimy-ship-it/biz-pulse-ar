@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import ariaIntro from "@/assets/aria-intro.mp4.asset.json";
+import finnIntro from "@/assets/aria-intro.mp4.asset.json";
 import { installInteractionTracker, markInteracted } from "@/lib/user-interaction";
 
 const STORAGE_KEY = "aria_intro_seen_v1";
@@ -121,7 +121,7 @@ export function FinnCinematicIntro({ surface = "global" }: Props) {
       {/* Cinematic blurred backdrop */}
       <video
         ref={bgVideoRef}
-        src={ariaIntro.url}
+        src={finnIntro.url}
         autoPlay
         muted
         playsInline
@@ -136,7 +136,7 @@ export function FinnCinematicIntro({ surface = "global" }: Props) {
       />
       <video
         ref={videoRef}
-        src={ariaIntro.url}
+        src={finnIntro.url}
         autoPlay
         muted={muted}
         playsInline

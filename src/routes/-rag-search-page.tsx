@@ -3,7 +3,7 @@
  * a non-route helper so the router code-splits it out.
  *
  * Ships DARK behind VITE_RAG_RETRIEVAL_ENABLED (NOT_GLOBAL, default OFF).
- * Auth-gated by design (same posture as aria_knowledge): a guest sees a
+ * Auth-gated by design (same posture as finn_knowledge): a guest sees a
  * sign-in gate state, never an Unauthorized error. Renders chunks +
  * citations ONLY — no generation, no streaming, and the Gemini/FINN path
  * is untouched by this surface.

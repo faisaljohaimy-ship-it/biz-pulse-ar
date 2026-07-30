@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import {
   approveFinnOutboundMessage,
   cancelFinnOutboundMessage,
-} from "@/lib/aria/outbound-messaging.functions";
+} from "@/lib/finn/outbound-messaging.functions";
 
 /**
  * Renders an inline tool invocation from an AI SDK UIMessage part of type

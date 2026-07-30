@@ -1,6 +1,6 @@
 // Cron-triggered self-evolution tick. Runs one analyze-only cycle of the
 // FINN Self-Evolution Engine and persists the report to
-// `aria_evolution_cycles`. Guarded by CRON_HOOK_SECRET. Never applies code.
+// `finn_evolution_cycles`. Guarded by CRON_HOOK_SECRET. Never applies code.
 
 import { createFileRoute } from "@tanstack/react-router";
 import { verifyCronHookSecret } from "@/lib/hook-auth.server";
@@ -12,8 +12,8 @@ export const Route = createFileRoute("/api/public/hooks/self-evolution-tick")({
         const denied = verifyCronHookSecret(request);
         if (denied) return denied;
 
-        const { runSelfEvolution } = await import("@/lib/aria/self-evolution");
-        const { persistEvolutionCycle } = await import("@/lib/aria/self-evolution/persist.server");
+        const { runSelfEvolution } = await import("@/lib/finn/self-evolution");
+        const { persistEvolutionCycle } = await import("@/lib/finn/self-evolution/persist.server");
 
         try {
           const report = await runSelfEvolution({ enableApply: false });

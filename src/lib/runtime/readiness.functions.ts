@@ -245,7 +245,7 @@ export const getProductionReadiness = createServerFn({ method: "GET" })
     );
     if (orgId) {
       const { count: kb } = await supabaseAdmin
-        .from("aria_knowledge")
+        .from("finn_knowledge")
         .select("id", { count: "exact", head: true })
         .eq("org_id", orgId);
       maintSignals.push({ key: "knowledge_documents", value: kb ?? 0, ok: (kb ?? 0) > 0 });

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Sparkles, Shield, Bot, FileText, Smartphone, Radar } from "lucide-react";
-import { FinnSignatureBackdrop } from "@/components/aria/FinnSignatureBackdrop";
+import { FinnSignatureBackdrop } from "@/components/finn/FinnSignatureBackdrop";
 import { DOMAIN_URL } from "@/lib/domain";
 
 const APP_VERSION = "1.5.1";

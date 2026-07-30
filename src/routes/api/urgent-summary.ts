@@ -7,7 +7,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { requireBearerUser } from "@/lib/aria/require-bearer.server";
+import { requireBearerUser } from "@/lib/finn/require-bearer.server";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -47,7 +47,7 @@ export const Route = createFileRoute("/api/urgent-summary")({
             .order("due_at", { ascending: true })
             .limit(200),
           supabase.from("support_requests").select("id, status, channel").limit(200),
-          supabase.from("aria_improvement_proposals").select("id, status").limit(200),
+          supabase.from("finn_improvement_proposals").select("id, status").limit(200),
         ]);
 
         const queryError = taskResult.error ?? requestResult.error ?? proposalResult.error;

@@ -25,8 +25,8 @@ import {
   finalizeFinnOutput,
   type EvidenceRef,
   type ExecutionReceipt,
-} from "@/lib/aria/output/finalize";
-import { sealEnvelope, type SafeFinnOutputEnvelopeV1 } from "@/lib/aria/output/envelope";
+} from "@/lib/finn/output/finalize";
+import { sealEnvelope, type SafeFinnOutputEnvelopeV1 } from "@/lib/finn/output/envelope";
 import type { ShellContext } from "./managers";
 import type { Diagnostics } from "./diagnostics";
 

@@ -56,7 +56,7 @@ Constitution file.
 
 ### Law 4 — Learn Once, Never Repeat
 Every incident, every user correction, every failed attempt MUST be:
-- Logged via `/api/public/hooks/aria-incident`.
+- Logged via `/api/public/hooks/finn-incident`.
 - Mined by the pattern miner into a durable rule.
 - Injected into future agent prompts via `prompt-injector.server.ts`.
 - Encoded as an invariant if the pattern is Constitution-level.
@@ -124,7 +124,7 @@ Skipping any step is a Constitution violation.
 ## PART IV — Prompt-as-Law (FINN agent header — load first)
 
 The following block is injected into every FINN / agent prompt via
-`src/lib/aria/learning/prompt-injector.server.ts`. It is the operational
+`src/lib/finn/learning/prompt-injector.server.ts`. It is the operational
 constitution the model reads before any user turn:
 
 ```text
@@ -163,15 +163,15 @@ You are FINN — Executive AI Engine of NEXUS AI OS.
 
 | Component                                              | Role                                                |
 |--------------------------------------------------------|-----------------------------------------------------|
-| `src/lib/aria/self-evolution/engine.server.ts`         | Guards `PROTECTED_PATHS`; rejects unsafe diffs      |
-| `src/lib/aria/self-healing/watchdog.ts`                | Client watchdog → logs runtime incidents            |
-| `src/lib/aria/learning/interaction-log.server.ts`      | Persists every turn outcome                         |
-| `src/lib/aria/learning/pattern-miner.server.ts`        | Mines repeat failures into durable rules            |
-| `src/lib/aria/learning/prompt-injector.server.ts`      | Injects Part IV into every agent prompt             |
-| `/api/public/hooks/aria-incident`                      | External incident intake                            |
-| `/api/public/hooks/aria-pattern-miner`                 | Cron-driven miner (pg_cron every 15 min)            |
+| `src/lib/finn/self-evolution/engine.server.ts`         | Guards `PROTECTED_PATHS`; rejects unsafe diffs      |
+| `src/lib/finn/self-healing/watchdog.ts`                | Client watchdog → logs runtime incidents            |
+| `src/lib/finn/learning/interaction-log.server.ts`      | Persists every turn outcome                         |
+| `src/lib/finn/learning/pattern-miner.server.ts`        | Mines repeat failures into durable rules            |
+| `src/lib/finn/learning/prompt-injector.server.ts`      | Injects Part IV into every agent prompt             |
+| `/api/public/hooks/finn-incident`                      | External incident intake                            |
+| `/api/public/hooks/finn-pattern-miner`                 | Cron-driven miner (pg_cron every 15 min)            |
 | `docs/NEXUS_ENGINEERING_CONSTITUTION.md`               | Articles I–IX, FR-1..18 — the SUPREME LAW           |
-| `docs/ARIA_INTRO_CONSTITUTION.md`                      | INVARIANT-1..14 — intro-surface law                 |
+| `docs/FINN_INTRO_CONSTITUTION.md`                      | INVARIANT-1..14 — intro-surface law                 |
 | `docs/NEXUS_READINESS_PROMPT.md` **(this file)**       | Continuous readiness prompt-as-law                  |
 
 Every one of the above is listed in `PROTECTED_PATHS`. No agent may edit

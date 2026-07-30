@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { sha256Hex, recordOutboundProviderEvent } from "@/lib/aria/outbound-messaging.server";
-import { verifyResendSignature } from "@/lib/aria/provider-webhook-signatures.server";
+import { sha256Hex, recordOutboundProviderEvent } from "@/lib/finn/outbound-messaging.server";
+import { verifyResendSignature } from "@/lib/finn/provider-webhook-signatures.server";
 
 const MAX_BODY_BYTES = 64 * 1024;
 

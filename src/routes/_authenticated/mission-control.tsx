@@ -1080,7 +1080,7 @@ function MissionControl() {
     ];
   }, [ov, hasData]);
 
-  const ariaLine = useMemo(() => {
+  const finnLine = useMemo(() => {
     if (!ov || !hasData) return { ar: "", en: "" };
     return { ar: narrative, en: narrative };
   }, [ov, hasData, narrative]);
@@ -1143,7 +1143,7 @@ function MissionControl() {
 
         {/* FINN — permanent Digital Human */}
         <div className="mt-6">
-          <FinnStage ar={ar} line_ar={ariaLine.ar} line_en={ariaLine.en} />
+          <FinnStage ar={ar} line_ar={finnLine.ar} line_en={finnLine.en} />
         </div>
 
         {/* Status */}

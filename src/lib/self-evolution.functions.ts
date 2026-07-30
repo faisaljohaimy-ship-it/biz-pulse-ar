@@ -2,7 +2,7 @@
  * Server-function wrappers for the FINN Self-Evolution Engine.
  *
  * - `runSelfEvolutionFn`: runs one analyze-only cycle and persists it to
- *   `aria_evolution_cycles` (unless `persist:false`).
+ *   `finn_evolution_cycles` (unless `persist:false`).
  * - `listEvolutionCyclesFn`: paginated cycle history for the operator UI.
  *
  * Both are auth-gated. The engine itself never mutates production code.
@@ -11,7 +11,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requirePlatformAdmin } from "@/lib/authz.server";
-import { runSelfEvolution } from "@/lib/aria/self-evolution";
+import { runSelfEvolution } from "@/lib/finn/self-evolution";
 
 const RunInput = z
   .object({
@@ -31,7 +31,7 @@ export const runSelfEvolutionFn = createServerFn({ method: "POST" })
     let persistedId: string | null = null;
     let persistError: string | null = null;
     if (data?.persist !== false) {
-      const { persistEvolutionCycle } = await import("@/lib/aria/self-evolution/persist.server");
+      const { persistEvolutionCycle } = await import("@/lib/finn/self-evolution/persist.server");
       const out = await persistEvolutionCycle(report, "manual");
       if ("error" in out) persistError = out.error;
       else persistedId = out.id;
@@ -56,7 +56,7 @@ export const listEvolutionCyclesFn = createServerFn({ method: "GET" })
     await requirePlatformAdmin(context.userId);
     const limit = data?.limit ?? 25;
     const { data: rows, error } = await context.supabase
-      .from("aria_evolution_cycles")
+      .from("finn_evolution_cycles")
       .select(
         "id, started_at, finished_at, trigger, decision, readiness_score, issues_count, critical_count, applied_count, deferred_count, reasons",
       )

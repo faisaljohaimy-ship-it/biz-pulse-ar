@@ -49,8 +49,8 @@ export interface DemoStep {
   /** UI action the controller will emit. Renderers may listen and react. */
   uiAction: DemoUiAction;
   /** FINN narration script (spoken via existing TTS pipeline downstream). */
-  ariaNarration_en: string;
-  ariaNarration_ar: string;
+  finnNarration_en: string;
+  finnNarration_ar: string;
   /** Optional back-reference to a scenario ref (INS-, RSK-, INC-, ...). */
   scenarioRef?: string;
 }
@@ -73,8 +73,8 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "يبدأ اليوم التشغيلي.",
     cameraTarget: "os.grid",
     uiAction: { kind: "navigate", to: "/os" },
-    ariaNarration_en: "Good morning. Shift open at Jeddah Industrial Site. All systems nominal.",
-    ariaNarration_ar:
+    finnNarration_en: "Good morning. Shift open at Jeddah Industrial Site. All systems nominal.",
+    finnNarration_ar:
       "صباح الخير. بدأت الوردية في موقع جدة الصناعي، وجميع الأنظمة تعمل بشكل طبيعي.",
   },
   {
@@ -89,9 +89,9 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "أول انحراف في اليوم — رصدته الدورية قبل وقوع الحادث.",
     cameraTarget: "site.jed-p1.tank-farm-a",
     uiAction: { kind: "highlight", module: "operations" },
-    ariaNarration_en:
+    finnNarration_en:
       "Patrol Alpha reports hot-work without a permit near Tank Farm A. Flagging for inspection.",
-    ariaNarration_ar:
+    finnNarration_ar:
       "دورية ألفا تُبلّغ عن أعمال ساخنة بدون تصريح قرب حوض التخزين أ. سأرفعها للتفتيش.",
   },
   {
@@ -106,8 +106,8 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "حالة وشك الآن — أو حريق حقيقي لاحقًا.",
     scenarioRef: "NM-*-01",
     uiAction: { kind: "highlight", module: "incidents" },
-    ariaNarration_en: "Near-miss recorded with high potential severity. Escalation path opened.",
-    ariaNarration_ar: "تم تسجيل حالة وشك حدوث بشدة محتملة مرتفعة، وفُتح مسار التصعيد.",
+    finnNarration_en: "Near-miss recorded with high potential severity. Escalation path opened.",
+    finnNarration_ar: "تم تسجيل حالة وشك حدوث بشدة محتملة مرتفعة، وفُتح مسار التصعيد.",
   },
   {
     id: "step-03-inspection",
@@ -123,8 +123,8 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "التدقيق يؤكد وجود فجوة إجرائية وليس خطأ فرديًا.",
     scenarioRef: "INS-*-01",
     uiAction: { kind: "highlight", module: "inspections" },
-    ariaNarration_en: "Inspection complete. Four findings, all traceable to a single SOP gap.",
-    ariaNarration_ar: "اكتمل التفتيش. أربع ملاحظات، جميعها ترجع إلى فجوة واحدة في الإجراء.",
+    finnNarration_en: "Inspection complete. Four findings, all traceable to a single SOP gap.",
+    finnNarration_ar: "اكتمل التفتيش. أربع ملاحظات، جميعها ترجع إلى فجوة واحدة في الإجراء.",
   },
   {
     id: "step-04-risk",
@@ -138,9 +138,9 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "الإشارة التنبؤية تُطلق — نتوقع حادثًا خلال الوردية.",
     scenarioRef: "RSK-*-01",
     uiAction: { kind: "highlight", module: "risks" },
-    ariaNarration_en:
+    finnNarration_en:
       "Risk elevated to critical. I recommend suspending hot-work permits immediately.",
-    ariaNarration_ar: "تم رفع الخطر إلى حرج. أوصي بتعليق تصاريح الأعمال الساخنة فورًا.",
+    finnNarration_ar: "تم رفع الخطر إلى حرج. أوصي بتعليق تصاريح الأعمال الساخنة فورًا.",
   },
   {
     id: "step-05-car",
@@ -156,9 +156,9 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "تم تحديد المسؤولية وبدأت الساعة.",
     scenarioRef: "CAR-*-01",
     uiAction: { kind: "highlight", module: "work-orders" },
-    ariaNarration_en:
+    finnNarration_en:
       "Corrective action assigned with an end-of-day due time. I will track compliance.",
-    ariaNarration_ar: "تم تعيين الإجراء التصحيحي بموعد نهاية اليوم. سأتتبع الالتزام.",
+    finnNarration_ar: "تم تعيين الإجراء التصحيحي بموعد نهاية اليوم. سأتتبع الالتزام.",
   },
   {
     id: "step-06-incident",
@@ -173,9 +173,9 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "أصبح التنبؤ دليلًا — وقت الاستجابة هو ما حدّد النتيجة.",
     scenarioRef: "INC-*-01",
     uiAction: { kind: "highlight", module: "incidents" },
-    ariaNarration_en:
+    finnNarration_en:
       "Fire contained in six minutes. No injuries. Root cause matches the morning audit.",
-    ariaNarration_ar:
+    finnNarration_ar:
       "تم احتواء الحريق خلال ست دقائق. لا إصابات. السبب الجذري مطابق لتدقيق الصباح.",
   },
   {
@@ -190,8 +190,8 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "كل سجل مرتبط بالآخر. لا توجد بيانات معزولة.",
     scenarioRef: "WO-*-01",
     uiAction: { kind: "highlight", module: "work-orders" },
-    ariaNarration_en: "Work order opened and linked into the full evidence chain.",
-    ariaNarration_ar: "تم فتح أمر العمل وربطه بسلسلة الأدلة الكاملة.",
+    finnNarration_en: "Work order opened and linked into the full evidence chain.",
+    finnNarration_ar: "تم فتح أمر العمل وربطه بسلسلة الأدلة الكاملة.",
   },
   {
     id: "step-08-policy",
@@ -207,8 +207,8 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "معالجة السبب الجذري على مستوى السياسة، لا الموقع فقط.",
     scenarioRef: "CAR-*-02",
     uiAction: { kind: "highlight", module: "executive-reports" },
-    ariaNarration_en: "Policy fix drafted. Publishing tomorrow noon.",
-    ariaNarration_ar: "تمت صياغة تعديل السياسة، وسيُنشر غدًا ظهرًا.",
+    finnNarration_en: "Policy fix drafted. Publishing tomorrow noon.",
+    finnNarration_ar: "تمت صياغة تعديل السياسة، وسيُنشر غدًا ظهرًا.",
   },
   {
     id: "step-09-meeting",
@@ -224,8 +224,8 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "ثلاثة قرارات مسجّلة وقابلة للتتبع حتى المصادر.",
     scenarioRef: "MTG-*-01",
     uiAction: { kind: "highlight", module: "meetings" },
-    ariaNarration_en: "Executive review closed with three ratified decisions and clear owners.",
-    ariaNarration_ar: "أُغلقت المراجعة التنفيذية بثلاثة قرارات معتمدة ومسؤوليات واضحة.",
+    finnNarration_en: "Executive review closed with three ratified decisions and clear owners.",
+    finnNarration_ar: "أُغلقت المراجعة التنفيذية بثلاثة قرارات معتمدة ومسؤوليات واضحة.",
   },
   {
     id: "step-10-close",
@@ -242,9 +242,9 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_ar: "كارثة تم منعها — مع سلسلة أدلة كاملة وتعديل سياسة قيد التنفيذ.",
     cameraTarget: "reports.executive-briefing",
     uiAction: { kind: "navigate", to: "/_authenticated/executive-reports" },
-    ariaNarration_en:
+    finnNarration_en:
       "Day closed. Compliance dropped to 74 percent from findings, but response time stayed at six minutes. I have generated the executive briefing.",
-    ariaNarration_ar:
+    finnNarration_ar:
       "أُغلق اليوم. انخفض الالتزام إلى 74 بالمئة بسبب الملاحظات، لكن زمن الاستجابة بقي عند ست دقائق. لقد أعددت التقرير التنفيذي.",
   },
 ] as const;

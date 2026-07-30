@@ -25,7 +25,7 @@ import {
   splitSentences,
   type FinnEmotion,
   type FinnHeadGesture,
-} from "@/lib/aria/avatar-motion/emotion-director";
+} from "@/lib/finn/avatar-motion/emotion-director";
 
 interface Props {
   state: DigitalHumanState;

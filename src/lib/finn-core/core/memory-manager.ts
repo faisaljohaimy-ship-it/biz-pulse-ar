@@ -1,0 +1,25 @@
+/**
+ * MemoryManager — INTERFACE ONLY (Phase 1).
+ *
+ * Persistent memory lives server-side and is not implemented in Phase 1.
+ * This module defines the contract Phase 2 will fulfil. `recall` returns an
+ * empty array; `remember` is a no-op.
+ */
+import type { FinnMemoryRecall } from "../types/finn";
+import { assertOne } from "@/lib/finn/singletons";
+
+assertOne("MEMORY", "memoryManager@aria-core/core/memory-manager");
+
+export interface MemoryManager {
+  recall(query: string): Promise<readonly FinnMemoryRecall[]>;
+  remember(key: string, value: string): Promise<void>;
+}
+
+export const memoryManager: MemoryManager = {
+  async recall() {
+    return [];
+  },
+  async remember() {
+    // no-op in Phase 1
+  },
+};

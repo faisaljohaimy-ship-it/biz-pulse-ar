@@ -16,7 +16,7 @@ describe("FINN shell — boundary guard", () => {
   });
 
   it("THROWS on any core-table write", () => {
-    for (const t of ["aria_documents", "aria_outbound_messages", "sec_reports", "profiles"]) {
+    for (const t of ["finn_documents", "finn_outbound_messages", "sec_reports", "profiles"]) {
       expect(isShellTable(t)).toBe(false);
       expect(() => assertShellWrite(t, "update")).toThrow(CoreWriteForbiddenError);
     }

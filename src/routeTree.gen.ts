@@ -155,6 +155,13 @@ import { Route as ApiPublicVersionRouteImport } from './routes/api/public/versio
 import { Route as ApiPublicPermitVerifyRouteImport } from './routes/api/public/permit-verify'
 import { Route as ApiPublicOsOverviewRouteImport } from './routes/api/public/os-overview'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
+import { Route as ApiPublicFinnTtsRouteImport } from './routes/api/public/finn-tts'
+import { Route as ApiPublicFinnTranscribeRouteImport } from './routes/api/public/finn-transcribe'
+import { Route as ApiPublicFinnStreamRouteImport } from './routes/api/public/finn-stream'
+import { Route as ApiPublicFinnPresenceRouteImport } from './routes/api/public/finn-presence'
+import { Route as ApiPublicFinnExplainRouteImport } from './routes/api/public/finn-explain'
+import { Route as ApiPublicFinnBriefingRouteImport } from './routes/api/public/finn-briefing'
+import { Route as ApiPublicFinnAskRouteImport } from './routes/api/public/finn-ask'
 import { Route as ApiPublicAriaTtsRouteImport } from './routes/api/public/aria-tts'
 import { Route as ApiPublicAriaTranscribeRouteImport } from './routes/api/public/aria-transcribe'
 import { Route as ApiPublicAriaStreamRouteImport } from './routes/api/public/aria-stream'
@@ -162,10 +169,14 @@ import { Route as ApiPublicAriaPresenceRouteImport } from './routes/api/public/a
 import { Route as ApiPublicAriaExplainRouteImport } from './routes/api/public/aria-explain'
 import { Route as ApiPublicAriaBriefingRouteImport } from './routes/api/public/aria-briefing'
 import { Route as ApiPublicAriaAskRouteImport } from './routes/api/public/aria-ask'
+import { Route as ApiLearnFinnTeachRouteImport } from './routes/api/learn/finn-teach'
 import { Route as ApiLearnAriaTeachRouteImport } from './routes/api/learn/aria-teach'
 import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
 import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
 import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
+import { Route as ApiFinnTtsRouteImport } from './routes/api/finn/tts'
+import { Route as ApiFinnTranscribeRouteImport } from './routes/api/finn/transcribe'
+import { Route as ApiFinnChatRouteImport } from './routes/api/finn/chat'
 import { Route as ApiChatHealthRouteImport } from './routes/api/chat.health'
 import { Route as ApiAriaTtsRouteImport } from './routes/api/aria/tts'
 import { Route as ApiAriaTranscribeRouteImport } from './routes/api/aria/transcribe'
@@ -215,10 +226,14 @@ import { Route as ApiPublicHooksRuntimeBootstrapRouteImport } from './routes/api
 import { Route as ApiPublicHooksRunAgentRouteImport } from './routes/api/public/hooks/run-agent'
 import { Route as ApiPublicHooksResendMessageStatusRouteImport } from './routes/api/public/hooks/resend-message-status'
 import { Route as ApiPublicHooksMicrosoftSyncRouteImport } from './routes/api/public/hooks/microsoft-sync'
+import { Route as ApiPublicHooksFinnPatternMinerRouteImport } from './routes/api/public/hooks/finn-pattern-miner'
+import { Route as ApiPublicHooksFinnIncidentRouteImport } from './routes/api/public/hooks/finn-incident'
+import { Route as ApiPublicHooksFinnDocsIngestRouteImport } from './routes/api/public/hooks/finn-docs-ingest'
 import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/api/public/hooks/executive-reports-run'
 import { Route as ApiPublicHooksAriaPatternMinerRouteImport } from './routes/api/public/hooks/aria-pattern-miner'
 import { Route as ApiPublicHooksAriaIncidentRouteImport } from './routes/api/public/hooks/aria-incident'
 import { Route as ApiPublicHooksAriaDocsIngestRouteImport } from './routes/api/public/hooks/aria-docs-ingest'
+import { Route as ApiFinnProvidersStatusRouteImport } from './routes/api/finn/providers/status'
 import { Route as ApiAriaProvidersStatusRouteImport } from './routes/api/aria/providers/status'
 import { Route as AuthenticatedHcisDirectiveCodeRouteImport } from './routes/_authenticated/hcis_.directive.$code'
 
@@ -977,6 +992,41 @@ const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicFinnTtsRoute = ApiPublicFinnTtsRouteImport.update({
+  id: '/api/public/finn-tts',
+  path: '/api/public/finn-tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicFinnTranscribeRoute = ApiPublicFinnTranscribeRouteImport.update({
+  id: '/api/public/finn-transcribe',
+  path: '/api/public/finn-transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicFinnStreamRoute = ApiPublicFinnStreamRouteImport.update({
+  id: '/api/public/finn-stream',
+  path: '/api/public/finn-stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicFinnPresenceRoute = ApiPublicFinnPresenceRouteImport.update({
+  id: '/api/public/finn-presence',
+  path: '/api/public/finn-presence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicFinnExplainRoute = ApiPublicFinnExplainRouteImport.update({
+  id: '/api/public/finn-explain',
+  path: '/api/public/finn-explain',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicFinnBriefingRoute = ApiPublicFinnBriefingRouteImport.update({
+  id: '/api/public/finn-briefing',
+  path: '/api/public/finn-briefing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicFinnAskRoute = ApiPublicFinnAskRouteImport.update({
+  id: '/api/public/finn-ask',
+  path: '/api/public/finn-ask',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAriaTtsRoute = ApiPublicAriaTtsRouteImport.update({
   id: '/api/public/aria-tts',
   path: '/api/public/aria-tts',
@@ -1012,6 +1062,11 @@ const ApiPublicAriaAskRoute = ApiPublicAriaAskRouteImport.update({
   path: '/api/public/aria-ask',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLearnFinnTeachRoute = ApiLearnFinnTeachRouteImport.update({
+  id: '/api/learn/finn-teach',
+  path: '/api/learn/finn-teach',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLearnAriaTeachRoute = ApiLearnAriaTeachRouteImport.update({
   id: '/api/learn/aria-teach',
   path: '/api/learn/aria-teach',
@@ -1030,6 +1085,21 @@ const ApiHeygenStopRoute = ApiHeygenStopRouteImport.update({
 const ApiHeygenStatusRoute = ApiHeygenStatusRouteImport.update({
   id: '/api/heygen/status',
   path: '/api/heygen/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFinnTtsRoute = ApiFinnTtsRouteImport.update({
+  id: '/api/finn/tts',
+  path: '/api/finn/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFinnTranscribeRoute = ApiFinnTranscribeRouteImport.update({
+  id: '/api/finn/transcribe',
+  path: '/api/finn/transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFinnChatRoute = ApiFinnChatRouteImport.update({
+  id: '/api/finn/chat',
+  path: '/api/finn/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatHealthRoute = ApiChatHealthRouteImport.update({
@@ -1301,6 +1371,24 @@ const ApiPublicHooksMicrosoftSyncRoute =
     path: '/api/public/hooks/microsoft-sync',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksFinnPatternMinerRoute =
+  ApiPublicHooksFinnPatternMinerRouteImport.update({
+    id: '/api/public/hooks/finn-pattern-miner',
+    path: '/api/public/hooks/finn-pattern-miner',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksFinnIncidentRoute =
+  ApiPublicHooksFinnIncidentRouteImport.update({
+    id: '/api/public/hooks/finn-incident',
+    path: '/api/public/hooks/finn-incident',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksFinnDocsIngestRoute =
+  ApiPublicHooksFinnDocsIngestRouteImport.update({
+    id: '/api/public/hooks/finn-docs-ingest',
+    path: '/api/public/hooks/finn-docs-ingest',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksExecutiveReportsRunRoute =
   ApiPublicHooksExecutiveReportsRunRouteImport.update({
     id: '/api/public/hooks/executive-reports-run',
@@ -1325,6 +1413,11 @@ const ApiPublicHooksAriaDocsIngestRoute =
     path: '/api/public/hooks/aria-docs-ingest',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiFinnProvidersStatusRoute = ApiFinnProvidersStatusRouteImport.update({
+  id: '/api/finn/providers/status',
+  path: '/api/finn/providers/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAriaProvidersStatusRoute = ApiAriaProvidersStatusRouteImport.update({
   id: '/api/aria/providers/status',
   path: '/api/aria/providers/status',
@@ -1510,10 +1603,14 @@ export interface FileRoutesByFullPath {
   '/api/aria/transcribe': typeof ApiAriaTranscribeRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
+  '/api/finn/chat': typeof ApiFinnChatRoute
+  '/api/finn/transcribe': typeof ApiFinnTranscribeRoute
+  '/api/finn/tts': typeof ApiFinnTtsRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/learn/aria-teach': typeof ApiLearnAriaTeachRoute
+  '/api/learn/finn-teach': typeof ApiLearnFinnTeachRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
@@ -1521,6 +1618,13 @@ export interface FileRoutesByFullPath {
   '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
   '/api/public/aria-transcribe': typeof ApiPublicAriaTranscribeRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
+  '/api/public/finn-ask': typeof ApiPublicFinnAskRoute
+  '/api/public/finn-briefing': typeof ApiPublicFinnBriefingRoute
+  '/api/public/finn-explain': typeof ApiPublicFinnExplainRoute
+  '/api/public/finn-presence': typeof ApiPublicFinnPresenceRoute
+  '/api/public/finn-stream': typeof ApiPublicFinnStreamRoute
+  '/api/public/finn-transcribe': typeof ApiPublicFinnTranscribeRoute
+  '/api/public/finn-tts': typeof ApiPublicFinnTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
@@ -1534,10 +1638,14 @@ export interface FileRoutesByFullPath {
   '/sec/': typeof AuthenticatedSecIndexRoute
   '/hcis/directive/$code': typeof AuthenticatedHcisDirectiveCodeRoute
   '/api/aria/providers/status': typeof ApiAriaProvidersStatusRoute
+  '/api/finn/providers/status': typeof ApiFinnProvidersStatusRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
   '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
+  '/api/public/hooks/finn-docs-ingest': typeof ApiPublicHooksFinnDocsIngestRoute
+  '/api/public/hooks/finn-incident': typeof ApiPublicHooksFinnIncidentRoute
+  '/api/public/hooks/finn-pattern-miner': typeof ApiPublicHooksFinnPatternMinerRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/resend-message-status': typeof ApiPublicHooksResendMessageStatusRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
@@ -1721,10 +1829,14 @@ export interface FileRoutesByTo {
   '/api/aria/transcribe': typeof ApiAriaTranscribeRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
+  '/api/finn/chat': typeof ApiFinnChatRoute
+  '/api/finn/transcribe': typeof ApiFinnTranscribeRoute
+  '/api/finn/tts': typeof ApiFinnTtsRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/learn/aria-teach': typeof ApiLearnAriaTeachRoute
+  '/api/learn/finn-teach': typeof ApiLearnFinnTeachRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
@@ -1732,6 +1844,13 @@ export interface FileRoutesByTo {
   '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
   '/api/public/aria-transcribe': typeof ApiPublicAriaTranscribeRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
+  '/api/public/finn-ask': typeof ApiPublicFinnAskRoute
+  '/api/public/finn-briefing': typeof ApiPublicFinnBriefingRoute
+  '/api/public/finn-explain': typeof ApiPublicFinnExplainRoute
+  '/api/public/finn-presence': typeof ApiPublicFinnPresenceRoute
+  '/api/public/finn-stream': typeof ApiPublicFinnStreamRoute
+  '/api/public/finn-transcribe': typeof ApiPublicFinnTranscribeRoute
+  '/api/public/finn-tts': typeof ApiPublicFinnTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
@@ -1745,10 +1864,14 @@ export interface FileRoutesByTo {
   '/sec': typeof AuthenticatedSecIndexRoute
   '/hcis/directive/$code': typeof AuthenticatedHcisDirectiveCodeRoute
   '/api/aria/providers/status': typeof ApiAriaProvidersStatusRoute
+  '/api/finn/providers/status': typeof ApiFinnProvidersStatusRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
   '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
+  '/api/public/hooks/finn-docs-ingest': typeof ApiPublicHooksFinnDocsIngestRoute
+  '/api/public/hooks/finn-incident': typeof ApiPublicHooksFinnIncidentRoute
+  '/api/public/hooks/finn-pattern-miner': typeof ApiPublicHooksFinnPatternMinerRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/resend-message-status': typeof ApiPublicHooksResendMessageStatusRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
@@ -1936,10 +2059,14 @@ export interface FileRoutesById {
   '/api/aria/transcribe': typeof ApiAriaTranscribeRoute
   '/api/aria/tts': typeof ApiAriaTtsRoute
   '/api/chat/health': typeof ApiChatHealthRoute
+  '/api/finn/chat': typeof ApiFinnChatRoute
+  '/api/finn/transcribe': typeof ApiFinnTranscribeRoute
+  '/api/finn/tts': typeof ApiFinnTtsRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/learn/aria-teach': typeof ApiLearnAriaTeachRoute
+  '/api/learn/finn-teach': typeof ApiLearnFinnTeachRoute
   '/api/public/aria-ask': typeof ApiPublicAriaAskRoute
   '/api/public/aria-briefing': typeof ApiPublicAriaBriefingRoute
   '/api/public/aria-explain': typeof ApiPublicAriaExplainRoute
@@ -1947,6 +2074,13 @@ export interface FileRoutesById {
   '/api/public/aria-stream': typeof ApiPublicAriaStreamRoute
   '/api/public/aria-transcribe': typeof ApiPublicAriaTranscribeRoute
   '/api/public/aria-tts': typeof ApiPublicAriaTtsRoute
+  '/api/public/finn-ask': typeof ApiPublicFinnAskRoute
+  '/api/public/finn-briefing': typeof ApiPublicFinnBriefingRoute
+  '/api/public/finn-explain': typeof ApiPublicFinnExplainRoute
+  '/api/public/finn-presence': typeof ApiPublicFinnPresenceRoute
+  '/api/public/finn-stream': typeof ApiPublicFinnStreamRoute
+  '/api/public/finn-transcribe': typeof ApiPublicFinnTranscribeRoute
+  '/api/public/finn-tts': typeof ApiPublicFinnTtsRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
@@ -1960,10 +2094,14 @@ export interface FileRoutesById {
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
   '/_authenticated/hcis_/directive/$code': typeof AuthenticatedHcisDirectiveCodeRoute
   '/api/aria/providers/status': typeof ApiAriaProvidersStatusRoute
+  '/api/finn/providers/status': typeof ApiFinnProvidersStatusRoute
   '/api/public/hooks/aria-docs-ingest': typeof ApiPublicHooksAriaDocsIngestRoute
   '/api/public/hooks/aria-incident': typeof ApiPublicHooksAriaIncidentRoute
   '/api/public/hooks/aria-pattern-miner': typeof ApiPublicHooksAriaPatternMinerRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
+  '/api/public/hooks/finn-docs-ingest': typeof ApiPublicHooksFinnDocsIngestRoute
+  '/api/public/hooks/finn-incident': typeof ApiPublicHooksFinnIncidentRoute
+  '/api/public/hooks/finn-pattern-miner': typeof ApiPublicHooksFinnPatternMinerRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/resend-message-status': typeof ApiPublicHooksResendMessageStatusRoute
   '/api/public/hooks/run-agent': typeof ApiPublicHooksRunAgentRoute
@@ -2151,10 +2289,14 @@ export interface FileRouteTypes {
     | '/api/aria/transcribe'
     | '/api/aria/tts'
     | '/api/chat/health'
+    | '/api/finn/chat'
+    | '/api/finn/transcribe'
+    | '/api/finn/tts'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
     | '/api/learn/aria-teach'
+    | '/api/learn/finn-teach'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
     | '/api/public/aria-explain'
@@ -2162,6 +2304,13 @@ export interface FileRouteTypes {
     | '/api/public/aria-stream'
     | '/api/public/aria-transcribe'
     | '/api/public/aria-tts'
+    | '/api/public/finn-ask'
+    | '/api/public/finn-briefing'
+    | '/api/public/finn-explain'
+    | '/api/public/finn-presence'
+    | '/api/public/finn-stream'
+    | '/api/public/finn-transcribe'
+    | '/api/public/finn-tts'
     | '/api/public/health'
     | '/api/public/os-overview'
     | '/api/public/permit-verify'
@@ -2175,10 +2324,14 @@ export interface FileRouteTypes {
     | '/sec/'
     | '/hcis/directive/$code'
     | '/api/aria/providers/status'
+    | '/api/finn/providers/status'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
     | '/api/public/hooks/aria-pattern-miner'
     | '/api/public/hooks/executive-reports-run'
+    | '/api/public/hooks/finn-docs-ingest'
+    | '/api/public/hooks/finn-incident'
+    | '/api/public/hooks/finn-pattern-miner'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/resend-message-status'
     | '/api/public/hooks/run-agent'
@@ -2362,10 +2515,14 @@ export interface FileRouteTypes {
     | '/api/aria/transcribe'
     | '/api/aria/tts'
     | '/api/chat/health'
+    | '/api/finn/chat'
+    | '/api/finn/transcribe'
+    | '/api/finn/tts'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
     | '/api/learn/aria-teach'
+    | '/api/learn/finn-teach'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
     | '/api/public/aria-explain'
@@ -2373,6 +2530,13 @@ export interface FileRouteTypes {
     | '/api/public/aria-stream'
     | '/api/public/aria-transcribe'
     | '/api/public/aria-tts'
+    | '/api/public/finn-ask'
+    | '/api/public/finn-briefing'
+    | '/api/public/finn-explain'
+    | '/api/public/finn-presence'
+    | '/api/public/finn-stream'
+    | '/api/public/finn-transcribe'
+    | '/api/public/finn-tts'
     | '/api/public/health'
     | '/api/public/os-overview'
     | '/api/public/permit-verify'
@@ -2386,10 +2550,14 @@ export interface FileRouteTypes {
     | '/sec'
     | '/hcis/directive/$code'
     | '/api/aria/providers/status'
+    | '/api/finn/providers/status'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
     | '/api/public/hooks/aria-pattern-miner'
     | '/api/public/hooks/executive-reports-run'
+    | '/api/public/hooks/finn-docs-ingest'
+    | '/api/public/hooks/finn-incident'
+    | '/api/public/hooks/finn-pattern-miner'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/resend-message-status'
     | '/api/public/hooks/run-agent'
@@ -2576,10 +2744,14 @@ export interface FileRouteTypes {
     | '/api/aria/transcribe'
     | '/api/aria/tts'
     | '/api/chat/health'
+    | '/api/finn/chat'
+    | '/api/finn/transcribe'
+    | '/api/finn/tts'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
     | '/api/learn/aria-teach'
+    | '/api/learn/finn-teach'
     | '/api/public/aria-ask'
     | '/api/public/aria-briefing'
     | '/api/public/aria-explain'
@@ -2587,6 +2759,13 @@ export interface FileRouteTypes {
     | '/api/public/aria-stream'
     | '/api/public/aria-transcribe'
     | '/api/public/aria-tts'
+    | '/api/public/finn-ask'
+    | '/api/public/finn-briefing'
+    | '/api/public/finn-explain'
+    | '/api/public/finn-presence'
+    | '/api/public/finn-stream'
+    | '/api/public/finn-transcribe'
+    | '/api/public/finn-tts'
     | '/api/public/health'
     | '/api/public/os-overview'
     | '/api/public/permit-verify'
@@ -2600,10 +2779,14 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/'
     | '/_authenticated/hcis_/directive/$code'
     | '/api/aria/providers/status'
+    | '/api/finn/providers/status'
     | '/api/public/hooks/aria-docs-ingest'
     | '/api/public/hooks/aria-incident'
     | '/api/public/hooks/aria-pattern-miner'
     | '/api/public/hooks/executive-reports-run'
+    | '/api/public/hooks/finn-docs-ingest'
+    | '/api/public/hooks/finn-incident'
+    | '/api/public/hooks/finn-pattern-miner'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/resend-message-status'
     | '/api/public/hooks/run-agent'
@@ -2686,10 +2869,14 @@ export interface RootRouteChildren {
   ApiAriaChatRoute: typeof ApiAriaChatRoute
   ApiAriaTranscribeRoute: typeof ApiAriaTranscribeRoute
   ApiAriaTtsRoute: typeof ApiAriaTtsRoute
+  ApiFinnChatRoute: typeof ApiFinnChatRoute
+  ApiFinnTranscribeRoute: typeof ApiFinnTranscribeRoute
+  ApiFinnTtsRoute: typeof ApiFinnTtsRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
   ApiLearnAriaTeachRoute: typeof ApiLearnAriaTeachRoute
+  ApiLearnFinnTeachRoute: typeof ApiLearnFinnTeachRoute
   ApiPublicAriaAskRoute: typeof ApiPublicAriaAskRoute
   ApiPublicAriaBriefingRoute: typeof ApiPublicAriaBriefingRoute
   ApiPublicAriaExplainRoute: typeof ApiPublicAriaExplainRoute
@@ -2697,6 +2884,13 @@ export interface RootRouteChildren {
   ApiPublicAriaStreamRoute: typeof ApiPublicAriaStreamRoute
   ApiPublicAriaTranscribeRoute: typeof ApiPublicAriaTranscribeRoute
   ApiPublicAriaTtsRoute: typeof ApiPublicAriaTtsRoute
+  ApiPublicFinnAskRoute: typeof ApiPublicFinnAskRoute
+  ApiPublicFinnBriefingRoute: typeof ApiPublicFinnBriefingRoute
+  ApiPublicFinnExplainRoute: typeof ApiPublicFinnExplainRoute
+  ApiPublicFinnPresenceRoute: typeof ApiPublicFinnPresenceRoute
+  ApiPublicFinnStreamRoute: typeof ApiPublicFinnStreamRoute
+  ApiPublicFinnTranscribeRoute: typeof ApiPublicFinnTranscribeRoute
+  ApiPublicFinnTtsRoute: typeof ApiPublicFinnTtsRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicOsOverviewRoute: typeof ApiPublicOsOverviewRoute
   ApiPublicPermitVerifyRoute: typeof ApiPublicPermitVerifyRoute
@@ -2706,10 +2900,14 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   VerifyPermitPermitIdRoute: typeof VerifyPermitPermitIdRoute
   ApiAriaProvidersStatusRoute: typeof ApiAriaProvidersStatusRoute
+  ApiFinnProvidersStatusRoute: typeof ApiFinnProvidersStatusRoute
   ApiPublicHooksAriaDocsIngestRoute: typeof ApiPublicHooksAriaDocsIngestRoute
   ApiPublicHooksAriaIncidentRoute: typeof ApiPublicHooksAriaIncidentRoute
   ApiPublicHooksAriaPatternMinerRoute: typeof ApiPublicHooksAriaPatternMinerRoute
   ApiPublicHooksExecutiveReportsRunRoute: typeof ApiPublicHooksExecutiveReportsRunRoute
+  ApiPublicHooksFinnDocsIngestRoute: typeof ApiPublicHooksFinnDocsIngestRoute
+  ApiPublicHooksFinnIncidentRoute: typeof ApiPublicHooksFinnIncidentRoute
+  ApiPublicHooksFinnPatternMinerRoute: typeof ApiPublicHooksFinnPatternMinerRoute
   ApiPublicHooksMicrosoftSyncRoute: typeof ApiPublicHooksMicrosoftSyncRoute
   ApiPublicHooksResendMessageStatusRoute: typeof ApiPublicHooksResendMessageStatusRoute
   ApiPublicHooksRunAgentRoute: typeof ApiPublicHooksRunAgentRoute
@@ -3747,6 +3945,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/finn-tts': {
+      id: '/api/public/finn-tts'
+      path: '/api/public/finn-tts'
+      fullPath: '/api/public/finn-tts'
+      preLoaderRoute: typeof ApiPublicFinnTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/finn-transcribe': {
+      id: '/api/public/finn-transcribe'
+      path: '/api/public/finn-transcribe'
+      fullPath: '/api/public/finn-transcribe'
+      preLoaderRoute: typeof ApiPublicFinnTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/finn-stream': {
+      id: '/api/public/finn-stream'
+      path: '/api/public/finn-stream'
+      fullPath: '/api/public/finn-stream'
+      preLoaderRoute: typeof ApiPublicFinnStreamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/finn-presence': {
+      id: '/api/public/finn-presence'
+      path: '/api/public/finn-presence'
+      fullPath: '/api/public/finn-presence'
+      preLoaderRoute: typeof ApiPublicFinnPresenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/finn-explain': {
+      id: '/api/public/finn-explain'
+      path: '/api/public/finn-explain'
+      fullPath: '/api/public/finn-explain'
+      preLoaderRoute: typeof ApiPublicFinnExplainRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/finn-briefing': {
+      id: '/api/public/finn-briefing'
+      path: '/api/public/finn-briefing'
+      fullPath: '/api/public/finn-briefing'
+      preLoaderRoute: typeof ApiPublicFinnBriefingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/finn-ask': {
+      id: '/api/public/finn-ask'
+      path: '/api/public/finn-ask'
+      fullPath: '/api/public/finn-ask'
+      preLoaderRoute: typeof ApiPublicFinnAskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/aria-tts': {
       id: '/api/public/aria-tts'
       path: '/api/public/aria-tts'
@@ -3796,6 +4043,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAriaAskRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/learn/finn-teach': {
+      id: '/api/learn/finn-teach'
+      path: '/api/learn/finn-teach'
+      fullPath: '/api/learn/finn-teach'
+      preLoaderRoute: typeof ApiLearnFinnTeachRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/learn/aria-teach': {
       id: '/api/learn/aria-teach'
       path: '/api/learn/aria-teach'
@@ -3822,6 +4076,27 @@ declare module '@tanstack/react-router' {
       path: '/api/heygen/status'
       fullPath: '/api/heygen/status'
       preLoaderRoute: typeof ApiHeygenStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/finn/tts': {
+      id: '/api/finn/tts'
+      path: '/api/finn/tts'
+      fullPath: '/api/finn/tts'
+      preLoaderRoute: typeof ApiFinnTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/finn/transcribe': {
+      id: '/api/finn/transcribe'
+      path: '/api/finn/transcribe'
+      fullPath: '/api/finn/transcribe'
+      preLoaderRoute: typeof ApiFinnTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/finn/chat': {
+      id: '/api/finn/chat'
+      path: '/api/finn/chat'
+      fullPath: '/api/finn/chat'
+      preLoaderRoute: typeof ApiFinnChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat/health': {
@@ -4167,6 +4442,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksMicrosoftSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/finn-pattern-miner': {
+      id: '/api/public/hooks/finn-pattern-miner'
+      path: '/api/public/hooks/finn-pattern-miner'
+      fullPath: '/api/public/hooks/finn-pattern-miner'
+      preLoaderRoute: typeof ApiPublicHooksFinnPatternMinerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/finn-incident': {
+      id: '/api/public/hooks/finn-incident'
+      path: '/api/public/hooks/finn-incident'
+      fullPath: '/api/public/hooks/finn-incident'
+      preLoaderRoute: typeof ApiPublicHooksFinnIncidentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/finn-docs-ingest': {
+      id: '/api/public/hooks/finn-docs-ingest'
+      path: '/api/public/hooks/finn-docs-ingest'
+      fullPath: '/api/public/hooks/finn-docs-ingest'
+      preLoaderRoute: typeof ApiPublicHooksFinnDocsIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/executive-reports-run': {
       id: '/api/public/hooks/executive-reports-run'
       path: '/api/public/hooks/executive-reports-run'
@@ -4193,6 +4489,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/aria-docs-ingest'
       fullPath: '/api/public/hooks/aria-docs-ingest'
       preLoaderRoute: typeof ApiPublicHooksAriaDocsIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/finn/providers/status': {
+      id: '/api/finn/providers/status'
+      path: '/api/finn/providers/status'
+      fullPath: '/api/finn/providers/status'
+      preLoaderRoute: typeof ApiFinnProvidersStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/aria/providers/status': {
@@ -4557,10 +4860,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAriaChatRoute: ApiAriaChatRoute,
   ApiAriaTranscribeRoute: ApiAriaTranscribeRoute,
   ApiAriaTtsRoute: ApiAriaTtsRoute,
+  ApiFinnChatRoute: ApiFinnChatRoute,
+  ApiFinnTranscribeRoute: ApiFinnTranscribeRoute,
+  ApiFinnTtsRoute: ApiFinnTtsRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
   ApiLearnAriaTeachRoute: ApiLearnAriaTeachRoute,
+  ApiLearnFinnTeachRoute: ApiLearnFinnTeachRoute,
   ApiPublicAriaAskRoute: ApiPublicAriaAskRoute,
   ApiPublicAriaBriefingRoute: ApiPublicAriaBriefingRoute,
   ApiPublicAriaExplainRoute: ApiPublicAriaExplainRoute,
@@ -4568,6 +4875,13 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAriaStreamRoute: ApiPublicAriaStreamRoute,
   ApiPublicAriaTranscribeRoute: ApiPublicAriaTranscribeRoute,
   ApiPublicAriaTtsRoute: ApiPublicAriaTtsRoute,
+  ApiPublicFinnAskRoute: ApiPublicFinnAskRoute,
+  ApiPublicFinnBriefingRoute: ApiPublicFinnBriefingRoute,
+  ApiPublicFinnExplainRoute: ApiPublicFinnExplainRoute,
+  ApiPublicFinnPresenceRoute: ApiPublicFinnPresenceRoute,
+  ApiPublicFinnStreamRoute: ApiPublicFinnStreamRoute,
+  ApiPublicFinnTranscribeRoute: ApiPublicFinnTranscribeRoute,
+  ApiPublicFinnTtsRoute: ApiPublicFinnTtsRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicOsOverviewRoute: ApiPublicOsOverviewRoute,
   ApiPublicPermitVerifyRoute: ApiPublicPermitVerifyRoute,
@@ -4577,11 +4891,15 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   VerifyPermitPermitIdRoute: VerifyPermitPermitIdRoute,
   ApiAriaProvidersStatusRoute: ApiAriaProvidersStatusRoute,
+  ApiFinnProvidersStatusRoute: ApiFinnProvidersStatusRoute,
   ApiPublicHooksAriaDocsIngestRoute: ApiPublicHooksAriaDocsIngestRoute,
   ApiPublicHooksAriaIncidentRoute: ApiPublicHooksAriaIncidentRoute,
   ApiPublicHooksAriaPatternMinerRoute: ApiPublicHooksAriaPatternMinerRoute,
   ApiPublicHooksExecutiveReportsRunRoute:
     ApiPublicHooksExecutiveReportsRunRoute,
+  ApiPublicHooksFinnDocsIngestRoute: ApiPublicHooksFinnDocsIngestRoute,
+  ApiPublicHooksFinnIncidentRoute: ApiPublicHooksFinnIncidentRoute,
+  ApiPublicHooksFinnPatternMinerRoute: ApiPublicHooksFinnPatternMinerRoute,
   ApiPublicHooksMicrosoftSyncRoute: ApiPublicHooksMicrosoftSyncRoute,
   ApiPublicHooksResendMessageStatusRoute:
     ApiPublicHooksResendMessageStatusRoute,

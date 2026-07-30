@@ -111,8 +111,8 @@ export const createIncident = createServerFn({ method: "POST" })
 
     // ── Auto FINN analysis (gpt-5 with timeout + heuristic fallback) ──
     try {
-      const { ariaAnalyseIncident } = await import("./oms-aria.server");
-      const analysis = await ariaAnalyseIncident({
+      const { finnAnalyseIncident } = await import("./oms-finn.server");
+      const analysis = await finnAnalyseIncident({
         ref,
         category: data.category,
         title_ar: data.title_ar,
@@ -604,7 +604,7 @@ export {
   getEntityTimeline,
   getRecentActivity,
   getOmsKpis,
-  ariaAnalyzeIncident,
+  finnAnalyzeIncident,
   setExecutiveReview,
   addIncidentAttachment,
   removeIncidentAttachment,

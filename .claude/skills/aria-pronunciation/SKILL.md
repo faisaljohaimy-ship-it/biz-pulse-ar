@@ -20,9 +20,9 @@ description: نطق FINN الصوتي (المادة ٢٢ §٥) — تُستدع�
 
 ## التنفيذ (مصدر واحد)
 - `applyFinnPronunciation(text)` + `arabicCardinal(n)` في
-  `src/lib/aria/pronunciation.ts`.
+  `src/lib/finn/pronunciation.ts`.
 - يُطبَّق داخل `toFinnSpeechText` في `reply-modality.ts` — الحارس النهائي
-  للعميل قبل إرسال النص إلى `/api/aria/tts`.
+  للعميل قبل إرسال النص إلى `/api/finn/tts`.
 - التوسيع بسطر واحد: أضِف زوجًا إلى `TERMS`، أو وسّع نمط SEC/SAF.
   `arabicCardinal` يغطي ٠–٩٩ (كل رموز التوجيهات).
 

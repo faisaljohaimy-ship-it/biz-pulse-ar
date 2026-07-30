@@ -20,18 +20,18 @@ import { Toaster } from "@/components/ui/sonner";
 
 // ── FINN Singleton ────────────────────────────────────────────────────
 // ONE FINN. Do not add a second copilot at the root. See
-// `src/lib/aria-core/README.md` for the migration kill-list.
-import { FinnProvider } from "@/lib/aria-core";
+// `src/lib/finn-core/README.md` for the migration kill-list.
+import { FinnProvider } from "@/lib/finn-core";
 // Deferred off the hydration critical path: the copilot is the heaviest
 // root widget and nothing above the fold needs it at first input. It
 // lazy-loads after the first idle moment post-hydration, so every route
 // becomes interactive immediately after paint. ONE FINN law unchanged.
 const FinnCopilot = lazy(() =>
-  import("@/components/aria-core/FinnCopilot").then((m) => ({ default: m.FinnCopilot })),
+  import("@/components/finn-core/FinnCopilot").then((m) => ({ default: m.FinnCopilot })),
 );
-import { InstallAppBar } from "@/components/aria/InstallAppBar";
+import { InstallAppBar } from "@/components/finn/InstallAppBar";
 // FinnGlobalBackdrop removed — FINN renders only via FinnCopilot top-circle
-import { GlobalPageBackdrop } from "@/components/aria/GlobalPageBackdrop";
+import { GlobalPageBackdrop } from "@/components/finn/GlobalPageBackdrop";
 import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsulaBackdrop";
 import { FinnWatermark } from "@/components/executive/FinnWatermark";
 import { useRouterState } from "@tanstack/react-router";
@@ -288,12 +288,12 @@ function RootComponent() {
     } catch {
       /* ignore */
     }
-    import("@/lib/aria/self-healing/watchdog").then((m) => {
+    import("@/lib/finn/self-healing/watchdog").then((m) => {
       if (cancelled) return;
       cleanup = m.installFinnWatchdog();
     });
     // Permanent background self-healing agent (Article III, always-on).
-    void import("@/lib/aria/self-healing/permanent-agent").then((m) => {
+    void import("@/lib/finn/self-healing/permanent-agent").then((m) => {
       if (cancelled) return;
       try {
         m.installPermanentHealer();

@@ -166,7 +166,7 @@ function TheaterPage() {
 
   // FINN gaze — looks toward the active speaking agent's position on the ring,
   // or softly toward the camera when she is speaking herself.
-  const ariaGaze = useMemo<{ x: number; y: number } | null>(() => {
+  const finnGaze = useMemo<{ x: number; y: number } | null>(() => {
     if (!speakerAgentId) return conductor.state === "speaking" ? { x: 0, y: -0.05 } : null;
     const idx = agents.findIndex((a) => a.id === speakerAgentId);
     if (idx < 0 || agents.length === 0) return null;
@@ -381,7 +381,7 @@ function TheaterPage() {
                   state={aliveState}
                   mouthAmplitude={conductor.mouthAmplitude}
                   size={300}
-                  gaze={ariaGaze}
+                  gaze={finnGaze}
                 />
               </Suspense>
             </AgentRing>

@@ -204,7 +204,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
 
     // FINN Knowledge
     const { count: kCount } = await supabaseAdmin
-      .from("aria_knowledge")
+      .from("finn_knowledge")
       .select("id", { count: "exact", head: true })
       .eq("org_id", orgId);
     subs.push({

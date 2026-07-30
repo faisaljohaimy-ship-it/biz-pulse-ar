@@ -35,7 +35,7 @@ export const PRODUCT_NAME = "مِرْقَب — MIRQAB";
  * Single source of truth for the assistant's PUBLIC display persona.
  * FINN is the front-facing presentation identity (name + portrait). Change
  * it here in one line and every surface updates. The engine, knowledge base
- * (aria_knowledge), and server voice path stay on their internal names.
+ * (finn_knowledge), and server voice path stay on their internal names.
  */
 export const BRAND_ASSISTANT = {
   /** Latin display name (headings, English UI). */

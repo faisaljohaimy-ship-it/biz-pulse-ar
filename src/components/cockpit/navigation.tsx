@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/lib/theme";
-import { useFinn } from "@/lib/aria-core/hooks/useFinn";
+import { useFinn } from "@/lib/finn-core/hooks/useFinn";
 import { NxFinnPresence } from "@/components/nx";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { emitCockpitAction, getCockpitAction, type CockpitActionId } from "./actions";

@@ -1,7 +1,7 @@
 /**
  * ARIA Cinematic Intro — Cross-Device Rendering Constitution enforcement.
  *
- * Guards FR-1..FR-8 in docs/ARIA_INTRO_CONSTITUTION.md. Any regression here
+ * Guards FR-1..FR-8 in docs/FINN_INTRO_CONSTITUTION.md. Any regression here
  * MUST fail CI and block merge. Do NOT weaken these assertions without a
  * documented constitutional amendment.
  */

@@ -1,0 +1,15 @@
+// Shim: preserves the historic import path. Real types live at
+// ./types/finn.ts (Phase 1 Brain Core).
+export type {
+  FinnMode,
+  FinnVoiceState,
+  FinnPageContext,
+  FinnContextSnapshot,
+  FinnOpenOptions,
+  FinnIntent,
+  FinnRouteHint,
+  FinnTurn,
+  FinnTurnStatus,
+  FinnMemoryRecall,
+  FinnVoiceCapabilities,
+} from "./types/finn";

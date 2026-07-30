@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/EmptyState";
 import { Search, ShieldCheck, TimerReset, Gauge } from "lucide-react";
-import { getRagStats, type RagStatsRow } from "@/lib/aria/rag/stats.functions";
+import { getRagStats, type RagStatsRow } from "@/lib/finn/rag/stats.functions";
 
 export const Route = createFileRoute("/_authenticated/rag-monitor")({
   errorComponent: RouteError,

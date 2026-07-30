@@ -68,7 +68,7 @@ type TableName =
   | "agent_runs"
   | "workflow_runs"
   | "audit_logs"
-  | "aria_decisions"
+  | "finn_decisions"
   | "sec_cctv_alerts"
   | "sec_incidents"
   | "enterprise_events";
@@ -523,7 +523,7 @@ type DecisionRow = {
 };
 
 function DecisionFeedPanel() {
-  const { rows, loading } = useLiveRows<DecisionRow>("aria_decisions", (q) =>
+  const { rows, loading } = useLiveRows<DecisionRow>("finn_decisions", (q) =>
     q
       .select("id, recommendation, confidence, status, created_at")
       .order("created_at", { ascending: false })

@@ -89,10 +89,10 @@ export function AgenticFlowCanvas({
       positions.set(p.node.id, p);
     // Center FINN vertically against agent column
     const agentColHeight = agents.length * (NODE_H.agent + ROW_GAP);
-    const ariaStart = HEADER_H + Math.max(0, agentColHeight / 2 - NODE_H.aria / 2);
-    for (const p of layoutColumn(aria, COL_X.aria, NODE_H.aria, ariaStart))
+    const finnStart = HEADER_H + Math.max(0, agentColHeight / 2 - NODE_H.aria / 2);
+    for (const p of layoutColumn(aria, COL_X.aria, NODE_H.aria, finnStart))
       positions.set(p.node.id, p);
-    for (const p of layoutColumn(gate, COL_X.gate, NODE_H.gate, ariaStart + 20))
+    for (const p of layoutColumn(gate, COL_X.gate, NODE_H.gate, finnStart + 20))
       positions.set(p.node.id, p);
 
     const maxY = Math.max(...Array.from(positions.values()).map((p) => p.y + p.h), HEADER_H + 200);

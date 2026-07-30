@@ -11,8 +11,8 @@
  */
 import * as React from "react";
 import { ClipboardList, FileBarChart2, MessageCircle, PlusCircle, ShieldAlert } from "lucide-react";
-import { useFinn } from "@/lib/aria-core/hooks/useFinn";
-import { useFinnStore } from "@/lib/aria-core/store";
+import { useFinn } from "@/lib/finn-core/hooks/useFinn";
+import { useFinnStore } from "@/lib/finn-core/store";
 import {
   NxButton,
   NxFinnPresence,

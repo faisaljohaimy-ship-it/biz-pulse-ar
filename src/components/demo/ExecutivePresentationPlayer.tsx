@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { FinnAudioBus } from "@/lib/aria/audio-bus";
+import { FinnAudioBus } from "@/lib/finn/audio-bus";
 import { useI18n } from "@/lib/i18n";
 import { EXECUTIVE_PRESENTATION_MEDIA } from "@/lib/executive-presentation.media";
 

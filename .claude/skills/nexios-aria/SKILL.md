@@ -1,14 +1,14 @@
 ---
 name: nexios-aria
-description: منظومة FINN الصوتية والدردشة — تُستدعى قبل لمس أي مسار صوت/دردشة (FinnCopilot، /api/chat، /api/aria/tts، voice-config، digital-humans). تغطي حصرية صوت FINN الذكوري، حظر browser TTS، طريقة الإصلاح المحفوظة 401/403، وطبقات «FINN لا تتعطل».
+description: منظومة FINN الصوتية والدردشة — تُستدعى قبل لمس أي مسار صوت/دردشة (FinnCopilot، /api/chat، /api/finn/tts، voice-config، digital-humans). تغطي حصرية صوت FINN الذكوري، حظر browser TTS، طريقة الإصلاح المحفوظة 401/403، وطبقات «FINN لا تتعطل».
 ---
 
 # NEXIOS FINN — المساعد الصوتي الدائم
 
 ## الصوت (ثوابت غير قابلة للتفاوض)
 - صوت FINN **حصريًا صوت ذكوري عبر ElevenLabs** (`FINN_ELEVENLABS_VOICE_ID =
-  "izhopdR43PRI5gAmjXTj"` في `src/lib/aria/voice-config.ts`)، يُولَّد على
-  الخادم عبر `/api/aria/tts` (السر `ELEVENLABS_API_KEY` بيئي فقط).
+  "izhopdR43PRI5gAmjXTj"` في `src/lib/finn/voice-config.ts`)، يُولَّد على
+  الخادم عبر `/api/finn/tts` (السر `ELEVENLABS_API_KEY` بيئي فقط).
 - **`speechSynthesis` محظور نهائيًا في كل المسارات** — وجوده خطأ فادح
   يُرفض في المراجعة. افحص قبل الدفع:
   `grep -rn "speechSynthesis" src/ → صفر نتائج`.
@@ -22,7 +22,7 @@ description: منظومة FINN الصوتية والدردشة — تُستدع�
 
 ## طريقة الإصلاح المحفوظة «مصادَق أولًا ← بديل عام عند 401/403»
 (المصدر Lovable `f413ffa` — موثقة في CLAUDE.md، مثبّتة باختبار عقد
-`src/lib/aria-core/services/aria-service.test.ts`):
+`src/lib/finn-core/services/finn-service.test.ts`):
 1. جرّب النقطة المصادَقة أولًا (Bearer من جلسة Supabase).
 2. عند 401/403 أعد نفس الطلب بلا Authorization (مسار الضيف في
    `/api/chat`) أو عبر `/api/public/...` المكافئ

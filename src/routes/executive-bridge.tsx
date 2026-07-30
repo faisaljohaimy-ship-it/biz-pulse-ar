@@ -4,7 +4,7 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import * as React from "react";
 import { z } from "zod";
-import { FinnAudioBus } from "@/lib/aria/audio-bus";
+import { FinnAudioBus } from "@/lib/finn/audio-bus";
 import { SimulationRibbon } from "@/components/SimulationRibbon";
 import { ExecutiveSourceBadge } from "@/components/evidence/ExecutiveSourceBadge";
 import { BridgeFilmPlayer } from "@/components/executive/BridgeFilmPlayer";
@@ -825,7 +825,7 @@ function ExecutiveBridgePage() {
 
     (async () => {
       try {
-        const r = await fetch("/api/public/aria-tts", {
+        const r = await fetch("/api/public/finn-tts", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ text }),

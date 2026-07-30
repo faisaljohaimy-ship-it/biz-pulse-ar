@@ -140,7 +140,7 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
     if (wanted.has("aria_document")) {
       tasks.push(
         supabase
-          .from("aria_documents")
+          .from("finn_documents")
           .select("id,title,summary,status,mime_type,tags,updated_at")
           .or(`title.ilike.${like},summary.ilike.${like}`)
           .order("updated_at", { ascending: false })
@@ -211,7 +211,7 @@ export type KnowledgeStats = {
   incidents: number;
   work_orders: number;
   kb_articles: number;
-  aria_documents: number;
+  finn_documents: number;
   knowledge_docs: number;
 };
 
@@ -219,18 +219,18 @@ export const getKnowledgeStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<KnowledgeStats> => {
     const supabase = context.supabase;
-    const [inc, wo, kb, ariaDocs, kd] = await Promise.all([
+    const [inc, wo, kb, finnDocs, kd] = await Promise.all([
       supabase.from("sec_incidents").select("*", { count: "exact", head: true }),
       supabase.from("sec_work_orders").select("*", { count: "exact", head: true }),
       supabase.from("sec_knowledge_articles").select("*", { count: "exact", head: true }),
-      supabase.from("aria_documents").select("*", { count: "exact", head: true }),
+      supabase.from("finn_documents").select("*", { count: "exact", head: true }),
       supabase.from("knowledge_docs").select("*", { count: "exact", head: true }),
     ]);
     return {
       incidents: inc.count ?? 0,
       work_orders: wo.count ?? 0,
       kb_articles: kb.count ?? 0,
-      aria_documents: ariaDocs.count ?? 0,
+      finn_documents: finnDocs.count ?? 0,
       knowledge_docs: kd.count ?? 0,
     };
   });

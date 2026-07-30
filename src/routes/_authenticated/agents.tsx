@@ -63,7 +63,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { speakRuntimeAgent } from "@/lib/digital-humans/speak-agent";
-import { stopActiveFinnVoice } from "@/lib/digital-humans/aria-voice";
+import { stopActiveFinnVoice } from "@/lib/digital-humans/finn-voice";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsOps,

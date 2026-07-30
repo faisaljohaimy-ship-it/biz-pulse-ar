@@ -1,17 +1,17 @@
 /**
  * Article 19 — Continuous security gap-closure E2E.
  *
- * Locks in the migrations shipped for the aria_incidents tightening and the
- * anonymous crash beacon → aria_public_incidents split.
+ * Locks in the migrations shipped for the finn_incidents tightening and the
+ * anonymous crash beacon → finn_public_incidents split.
  *
  * Two invariants are asserted, and if either breaks the failure is treated
  * as a constitution regression (Art. 19), not a flaky test:
  *
- *   1. The public incident sink (POST /api/public/hooks/aria-incident) is a
+ *   1. The public incident sink (POST /api/public/hooks/finn-incident) is a
  *      defensive write-only surface: accepts a well-formed beacon (202),
  *      rejects unknown kinds (400), bad JSON (400), and oversized bodies
- *      (413). It MUST land the row in `aria_public_incidents` — never in
- *      the user-owned `aria_incidents` table.
+ *      (413). It MUST land the row in `finn_public_incidents` — never in
+ *      the user-owned `finn_incidents` table.
  *
  *   2. Anonymous callers using only the publishable key CANNOT read
  *      user-owned or admin-only tables via the Supabase Data API. This
@@ -31,7 +31,7 @@ const SUPABASE_ANON =
 
 test.describe("Constitution Art. 19 · security gap-closure", () => {
   test("public incident sink accepts a well-formed beacon (202)", async ({ request }) => {
-    const res = await request.post("/api/public/hooks/aria-incident", {
+    const res = await request.post("/api/public/hooks/finn-incident", {
       data: {
         kind: "unhandled_error",
         detail: "art19 e2e probe",
@@ -44,14 +44,14 @@ test.describe("Constitution Art. 19 · security gap-closure", () => {
   });
 
   test("public incident sink rejects unknown kind (400)", async ({ request }) => {
-    const res = await request.post("/api/public/hooks/aria-incident", {
+    const res = await request.post("/api/public/hooks/finn-incident", {
       data: { kind: "not_a_real_kind", detail: "x" },
     });
     expect(res.status()).toBe(400);
   });
 
   test("public incident sink rejects malformed JSON (400)", async ({ request }) => {
-    const res = await request.post("/api/public/hooks/aria-incident", {
+    const res = await request.post("/api/public/hooks/finn-incident", {
       headers: { "content-type": "application/json" },
       data: "{not json",
     });
@@ -61,7 +61,7 @@ test.describe("Constitution Art. 19 · security gap-closure", () => {
   test("public incident sink rejects oversized payload (413)", async ({ request }) => {
     // > 4096 byte body is refused by Content-Length gate before parsing.
     const bigDetail = "x".repeat(5000);
-    const res = await request.post("/api/public/hooks/aria-incident", {
+    const res = await request.post("/api/public/hooks/finn-incident", {
       data: { kind: "unhandled_error", detail: bigDetail },
     });
     expect(res.status()).toBe(413);
@@ -82,12 +82,12 @@ test.describe("Constitution Art. 19 · security gap-closure", () => {
     });
 
     // Tables that MUST be invisible to anon:
-    //   - aria_incidents: user-owned; Art. 19 dropped the "user_id IS NULL"
+    //   - finn_incidents: user-owned; Art. 19 dropped the "user_id IS NULL"
     //     policy and scoped reads to auth.uid() = user_id.
-    //   - aria_public_incidents: service-role-only sink for anonymous
+    //   - finn_public_incidents: service-role-only sink for anonymous
     //     crash beacons. Even the row we just wrote must not be readable.
     //   - user_roles: privilege table. Never anon-readable.
-    for (const table of ["aria_incidents", "aria_public_incidents", "user_roles"]) {
+    for (const table of ["finn_incidents", "finn_public_incidents", "user_roles"]) {
       const res = await api.get(`/rest/v1/${table}?select=*&limit=1`);
       // 401/403 (blocked) OR 200 with an empty array (RLS-filtered) are both
       // acceptable — a populated array means anon can read the table, which
@@ -105,13 +105,13 @@ test.describe("Constitution Art. 19 · security gap-closure", () => {
 
     // Anonymous INSERT into the user-owned incident table must also fail —
     // Art. 19 forbids anonymous inserts on user-owned tables.
-    const insertRes = await api.post("/rest/v1/aria_incidents", {
+    const insertRes = await api.post("/rest/v1/finn_incidents", {
       headers: { "content-type": "application/json", Prefer: "return=minimal" },
       data: { kind: "art19_probe", detail: "must be rejected" },
     });
     expect(
       insertRes.status(),
-      "anon insert into aria_incidents must be blocked by RLS",
+      "anon insert into finn_incidents must be blocked by RLS",
     ).toBeGreaterThanOrEqual(400);
 
     await api.dispose();

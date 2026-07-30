@@ -4,7 +4,7 @@
 import { PDFDocument, StandardFonts, degrees, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import * as XLSX from "xlsx";
 import type { ExecutiveSnapshot } from "./snapshot.server";
-import { FINN_SIGNATURE_WORDMARK } from "@/lib/aria/signature";
+import { FINN_SIGNATURE_WORDMARK } from "@/lib/finn/signature";
 
 const PAGE = { width: 612, height: 792 }; // US Letter
 const MARGIN = 40;

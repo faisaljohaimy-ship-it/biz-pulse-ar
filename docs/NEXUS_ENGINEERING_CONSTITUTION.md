@@ -18,8 +18,8 @@ while forbidding drift, silent degradation, and re-litigation of solved
 problems.
 
 Companion documents (subordinate, must not contradict):
-- `docs/ARIA_INTRO_CONSTITUTION.md` — INVARIANT-1..12 + FR-1..8
-- `docs/ARIA_IDENTITY_CHARTER.md` — persona, voice, bilingual behavior
+- `docs/FINN_INTRO_CONSTITUTION.md` — INVARIANT-1..12 + FR-1..8
+- `docs/FINN_IDENTITY_CHARTER.md` — persona, voice, bilingual behavior
 - `docs/EVOLUTION_FRAMEWORK.md` — proposal lifecycle
 - `.lovable/memory/constraints/aria-runtime-constitution.md` — runtime mirror
 
@@ -115,7 +115,7 @@ The system MUST detect, isolate, and recover from its own failures without
 human intervention, within bounded time budgets.
 
 ### §1. Failure detection
-- **Client watchdog** (`src/lib/aria/self-healing/watchdog.ts`) monitors
+- **Client watchdog** (`src/lib/finn/self-healing/watchdog.ts`) monitors
   `chat.status`, video events, TTS pipeline, AudioContext state, and gateway
   responses. Every anomaly → `aria_incidents` row with:
   `severity`, `device_class`, `viewport`, `user_agent`, `network`, `failure_mode`.
@@ -155,7 +155,7 @@ Every assistant turn, every tool call, every failure → durable row with
 latency, outcome, model, device class. **No learning without measurement.**
 
 ### §2. Pattern mining
-Nightly worker (`src/lib/aria/learning/pattern-miner.server.ts`) reads
+Nightly worker (`src/lib/finn/learning/pattern-miner.server.ts`) reads
 `aria_interactions` + `aria_incidents` from the last 24h, extracts
 recurring signals:
 - Repeated question shapes with high user satisfaction → candidate patterns.
@@ -187,7 +187,7 @@ another unless explicitly promoted after multi-context validation.
 
 ## Article V — Self-Evolution Compliance
 
-`src/lib/aria/self-evolution/engine.server.ts` is the sole autonomous
+`src/lib/finn/self-evolution/engine.server.ts` is the sole autonomous
 mutation surface. It MUST:
 
 1. Respect `PROTECTED_PATHS`. Any proposal touching a protected file that
@@ -207,11 +207,11 @@ src/components/cinematic/WelcomeThenGenesis.tsx
 src/components/intro/AriaCinematicIntro.tsx
 src/routes/__root.tsx
 src/routes/index.tsx
-src/lib/aria/learning/interaction-log.server.ts
-src/lib/aria/learning/pattern-miner.server.ts
-src/lib/aria/learning/prompt-injector.server.ts
-src/lib/aria/self-healing/watchdog.ts
-docs/ARIA_INTRO_CONSTITUTION.md
+src/lib/finn/learning/interaction-log.server.ts
+src/lib/finn/learning/pattern-miner.server.ts
+src/lib/finn/learning/prompt-injector.server.ts
+src/lib/finn/self-healing/watchdog.ts
+docs/FINN_INTRO_CONSTITUTION.md
 docs/NEXUS_ENGINEERING_CONSTITUTION.md
 ```
 
@@ -226,7 +226,7 @@ A change is complete **only when** all pass:
 3. ✅ Relevant E2E specs pass:
    - `tests/e2e/02-genesis-intro.spec.ts`
    - `tests/e2e/09-intro-multi-device.spec.ts` (6 viewports)
-   - `tests/e2e/03-aria-no-autoplay.spec.ts`
+   - `tests/e2e/03-finn-no-autoplay.spec.ts`
    - `tests/e2e/07-health-endpoint.spec.ts`
 4. ✅ Zero new console errors, zero 4xx/5xx on happy path.
 5. ✅ Every new `public.*` table has RLS + GRANT in the same migration.
@@ -348,7 +348,7 @@ repository operates under this constitution. There is no exception clause.
 
 ## FR-17 — Mobile Audio Gesture Contract (permanent)
 
-Extends INVARIANT-14 in `docs/ARIA_INTRO_CONSTITUTION.md`. Every video/audio
+Extends INVARIANT-14 in `docs/FINN_INTRO_CONSTITUTION.md`. Every video/audio
 surface in the product MUST:
 
 1. Never call `AudioContext.createMediaElementSource()` before verified
@@ -414,7 +414,7 @@ browser; it cannot be bypassed and MUST NOT be simulated with fake voices.
    - Hard reloads reset it — same policy applies to any new document.
 
 5. **Constitution self-healing**
-   - `PROTECTED_PATHS` in `src/lib/aria/self-evolution/engine.server.ts`
+   - `PROTECTED_PATHS` in `src/lib/finn/self-evolution/engine.server.ts`
      covers `src/lib/user-interaction.ts` and every media surface using it.
    - The watchdog logs `audio_autoplay_failed` when unmuted `play()` is
      rejected on a session where `isAudioPrimed()` is true — pattern miner
@@ -587,7 +587,7 @@ Mandatory pattern on touch devices:
   the mobile path shows the time-based fallback bars.
 - `VoiceTimeline` never shows `acquire REFUSED — no user gesture yet` after
   any tap.
-- No async `import("@/lib/aria/audio-bus")` exists in any audio-critical
+- No async `import("@/lib/finn/audio-bus")` exists in any audio-critical
   code path — `rg "import\(.*audio-bus" src` returns zero matches in
   handlers.
 

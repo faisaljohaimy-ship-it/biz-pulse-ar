@@ -37,7 +37,7 @@ describe("specialist voice release contract", () => {
   it("speaks specialists through the server FINN voice route with zero browser TTS", () => {
     const local = source("src/lib/digital-humans/free-agent-speech.ts");
     expect(existsSync(join(process.cwd(), "src/routes/api/agents/tts.ts"))).toBe(false);
-    expect(local).toContain('authenticatedFetch("/api/aria/tts"');
+    expect(local).toContain('authenticatedFetch("/api/finn/tts"');
     expect(local).toContain('FinnAudioBus.acquire("agent-tts"');
     // Owner voice policy: browser TTS is banned in every path.
     expect(local).not.toMatch(/speechSynthesis|SpeechSynthesisUtterance/);
@@ -45,17 +45,17 @@ describe("specialist voice release contract", () => {
   });
 
   it("keeps the audible voice a single canonical FINN voice, key server-side only", () => {
-    const tts = source("src/routes/api/aria/tts.ts");
+    const tts = source("src/routes/api/finn/tts.ts");
     expect(tts).toContain("ELEVENLABS_API_KEY");
     expect(tts).toContain("FINN_ELEVENLABS_VOICE_ID");
     expect(tts).not.toMatch(/GEMINI_TTS|generativelanguage/);
-    const config = source("src/lib/aria/voice-config.ts");
+    const config = source("src/lib/finn/voice-config.ts");
     expect(config).toContain('"izhopdR43PRI5gAmjXTj"');
     // The key never appears client-side.
     for (const file of [
       "src/lib/digital-humans/free-agent-speech.ts",
-      "src/lib/digital-humans/aria-voice.ts",
-      "src/components/aria-core/FinnCopilot.tsx",
+      "src/lib/digital-humans/finn-voice.ts",
+      "src/components/finn-core/FinnCopilot.tsx",
     ]) {
       expect(source(file)).not.toContain("ELEVENLABS_API_KEY");
     }
@@ -70,14 +70,14 @@ describe("specialist voice release contract", () => {
   });
 
   it("uses one priority-controlled audio channel for specialist speech", () => {
-    const bus = source("src/lib/aria/audio-bus.ts");
-    const client = source("src/lib/digital-humans/aria-voice.ts");
+    const bus = source("src/lib/finn/audio-bus.ts");
+    const client = source("src/lib/digital-humans/finn-voice.ts");
     const local = source("src/lib/digital-humans/free-agent-speech.ts");
     expect(bus).toContain('"agent-tts": 2');
     expect(bus).toContain('"chat-tts": 3');
     // The bus itself is a pure arbitration channel — no speech engine inside.
     expect(bus).not.toMatch(/speechSynthesis|SpeechSynthesisUtterance/);
-    expect(client).toContain('authenticatedFetch("/api/aria/tts"');
+    expect(client).toContain('authenticatedFetch("/api/finn/tts"');
     expect(client).toContain("speakFreeAgent");
     expect(client).not.toContain("/api/agents/tts");
     // Specialist playback is bus-governed: it must own agent-tts first, so
@@ -87,8 +87,8 @@ describe("specialist voice release contract", () => {
     // Saved repair method (CLAUDE.md): the public endpoint is allowed ONLY
     // as the 401/403 guest fallback of the SAME server voice pipeline —
     // auth-first must remain the primary path in both clients.
-    expect(client).toContain('authenticatedFetch("/api/aria/tts"');
-    expect(local).toContain('authenticatedFetch("/api/aria/tts"');
+    expect(client).toContain('authenticatedFetch("/api/finn/tts"');
+    expect(local).toContain('authenticatedFetch("/api/finn/tts"');
     expect(client).toMatch(/status === 401 \|\| res\.status === 403/);
   });
 });

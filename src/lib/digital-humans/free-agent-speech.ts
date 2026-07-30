@@ -2,13 +2,13 @@
  * Governed specialist speech — server-generated ElevenLabs audio only.
  *
  * Owner voice policy: every audible voice in NEXIOS is ElevenLabs "Layan",
- * synthesized server-side by /api/aria/tts (the key never reaches the
+ * synthesized server-side by /api/finn/tts (the key never reaches the
  * client). Browser TTS is banned in all paths. Specialist narration flows
  * through the SAME governed channel model as before: it must own the
  * "agent-tts" source on FinnAudioBus before any audio starts, so FINN
  * (chat-tts) can always preempt it and no two voices ever overlap.
  */
-import { FinnAudioBus } from "@/lib/aria/audio-bus";
+import { FinnAudioBus } from "@/lib/finn/audio-bus";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { getPrimedAudioContext } from "@/lib/user-interaction";
 import type { VoiceLang } from "./voice-profiles";
@@ -121,12 +121,12 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
     try {
       // Distinct ElevenLabs premade voice per specialist persona (server
       // whitelists the id; FINN herself never goes through this path).
-      const { AGENT_ELEVEN_VOICES } = await import("@/lib/aria/voice-config");
+      const { AGENT_ELEVEN_VOICES } = await import("@/lib/finn/voice-config");
       const voiceId = opts.voiceProfileId ? AGENT_ELEVEN_VOICES[opts.voiceProfileId] : undefined;
       for (const segment of segments) {
         if (stopped) return;
         const payload = JSON.stringify({ text: segment, ...(voiceId ? { voiceId } : {}) });
-        let res = await authenticatedFetch("/api/aria/tts", {
+        let res = await authenticatedFetch("/api/finn/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: payload,
@@ -135,7 +135,7 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
         // Saved repair method (CLAUDE.md): auth-first → public fallback
         // on 401/403 so guest sessions hear the agents too.
         if (!res.ok && (res.status === 401 || res.status === 403)) {
-          res = await fetch("/api/public/aria-tts", {
+          res = await fetch("/api/public/finn-tts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: payload,

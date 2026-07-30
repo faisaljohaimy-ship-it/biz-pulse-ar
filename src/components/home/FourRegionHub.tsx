@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { FinnHolographicPortal } from "@/components/home/FinnHolographicPortal";
-import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
+import { FinnDailySummary } from "@/components/finn/FinnDailySummary";
 import {
   CC_REGIONS,
   CC_REGION_METRICS,

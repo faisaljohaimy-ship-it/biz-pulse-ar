@@ -29,14 +29,14 @@ const LIVE = Boolean(URL && ANON && A_EMAIL && A_PASS && A_ORG && B_EMAIL && B_P
 const TABLES = (
   process.env.RLS_TEST_TABLES ??
   [
-    "aria_documents",
-    "aria_document_chunks",
-    "aria_decisions",
-    "aria_reports",
-    "aria_memory",
-    "aria_knowledge",
-    "aria_outbound_messages",
-    "aria_interactions",
+    "finn_documents",
+    "finn_document_chunks",
+    "finn_decisions",
+    "finn_reports",
+    "finn_memory",
+    "finn_knowledge",
+    "finn_outbound_messages",
+    "finn_interactions",
     "shell_runs",
   ].join(",")
 )

@@ -9,8 +9,8 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
-import { useFinn } from "@/lib/aria-core";
-import { ExecutiveCard } from "@/components/aria-core/ExecutiveCard";
+import { useFinn } from "@/lib/finn-core";
+import { ExecutiveCard } from "@/components/finn-core/ExecutiveCard";
 import { Sparkles, PlayCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/finn/demo")({

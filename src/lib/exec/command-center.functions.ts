@@ -28,7 +28,7 @@ async function fetchCommandCenterLive(supabase: {
         .order("created_at", { ascending: false })
         .limit(30),
       supabase
-        .from("aria_improvement_proposals")
+        .from("finn_improvement_proposals")
         .select("id,area,proposal_ar,impact,status,created_at")
         .order("created_at", { ascending: false })
         .limit(30),

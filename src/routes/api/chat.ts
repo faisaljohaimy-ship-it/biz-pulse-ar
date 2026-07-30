@@ -27,15 +27,15 @@ import {
   validateChatRequest,
 } from "./-chat-guard";
 import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
-import { evaluateRagCoverage } from "@/lib/aria/rag.server";
-import { parseIntent, resolveModel } from "@/lib/aria-core/server/ai-router.server";
+import { evaluateRagCoverage } from "@/lib/finn/rag.server";
+import { parseIntent, resolveModel } from "@/lib/finn-core/server/ai-router.server";
 import {
   isCooling,
   markVendorFatal,
   shouldCoolFromError,
-} from "@/lib/aria-core/server/vendor-health.server";
-import { FINN_IDENTITY_PREAMBLE } from "@/lib/aria/identity";
-import { buildFinnRuntimeBlock, MAKKAH_TIME_DIRECTIVE } from "@/lib/aria/makkah-clock";
+} from "@/lib/finn-core/server/vendor-health.server";
+import { FINN_IDENTITY_PREAMBLE } from "@/lib/finn/identity";
+import { buildFinnRuntimeBlock, MAKKAH_TIME_DIRECTIVE } from "@/lib/finn/makkah-clock";
 import { REGIONS, DEFAULT_REGION_ID } from "@/lib/regions";
 import {
   FINN_RESPONSE_CONTRACT,
@@ -43,15 +43,15 @@ import {
   OUT_OF_SCOPE_REPLY,
   isInScope,
   matchFastRecall,
-} from "@/lib/aria/response-contract";
-import { finalizeFinnOutput, renderForUI } from "@/lib/aria/output/finalize";
-import { sealEnvelope } from "@/lib/aria/output/envelope";
-import { normalizeFinnSpeechText } from "@/lib/aria/finn-speech-normalize";
-import { formatHcisReference, isHcisReferenceQuery } from "@/lib/aria/hcis-reference";
+} from "@/lib/finn/response-contract";
+import { finalizeFinnOutput, renderForUI } from "@/lib/finn/output/finalize";
+import { sealEnvelope } from "@/lib/finn/output/envelope";
+import { normalizeFinnSpeechText } from "@/lib/finn/finn-speech-normalize";
+import { formatHcisReference, isHcisReferenceQuery } from "@/lib/finn/hcis-reference";
 import {
-  ariaPreferencePromptLine,
+  finnPreferencePromptLine,
   extractFinnAdaptivePreferences,
-} from "@/lib/aria/adaptive-preferences";
+} from "@/lib/finn/adaptive-preferences";
 
 const OPENAI_MODEL_IDS = new Set<string>(OPENAI_MODELS.map((m) => m.id));
 const OPENROUTER_MODEL_IDS = new Set<string>(OPENROUTER_MODELS.map((m) => m.id));
@@ -149,7 +149,7 @@ async function loadAdaptivePreferenceBlock(
   userId: string,
 ): Promise<string> {
   const { data, error } = await supabase
-    .from("aria_adaptive_preferences")
+    .from("finn_adaptive_preferences")
     .select("preference_key,preference_value,confidence")
     .eq("user_id", userId)
     .eq("safety_passed", true)
@@ -159,7 +159,7 @@ async function loadAdaptivePreferenceBlock(
   if (error) throw error;
   return (data ?? [])
     .map((row) =>
-      ariaPreferencePromptLine(String(row.preference_key), String(row.preference_value)),
+      finnPreferencePromptLine(String(row.preference_key), String(row.preference_value)),
     )
     .filter((line): line is string => Boolean(line))
     .map((line) => `- ${line}`)
@@ -174,7 +174,7 @@ async function persistAdaptivePreferences(
   const preferences = extractFinnAdaptivePreferences(authenticUserText);
   for (const preference of preferences) {
     const { data: current, error: readError } = await supabase
-      .from("aria_adaptive_preferences")
+      .from("finn_adaptive_preferences")
       .select("confidence,evidence_count")
       .eq("user_id", userId)
       .eq("preference_key", preference.key)
@@ -182,7 +182,7 @@ async function persistAdaptivePreferences(
     if (readError) throw readError;
     const previousConfidence = Number(current?.confidence ?? 0);
     const previousEvidence = Number(current?.evidence_count ?? 0);
-    const { error: writeError } = await supabase.from("aria_adaptive_preferences").upsert(
+    const { error: writeError } = await supabase.from("finn_adaptive_preferences").upsert(
       {
         user_id: userId,
         preference_key: preference.key,
@@ -484,11 +484,11 @@ export const Route = createFileRoute("/api/chat")({
         // Anonymous callers skip grounding entirely (no user context / no tools).
         let systemPrompt = SYSTEM_PROMPT;
         let ragCounts = { memories: 0, knowledge: 0, documents: 0 };
-        let ragCitations: import("@/lib/aria/rag.server").RagCitation[] = [];
+        let ragCitations: import("@/lib/finn/rag.server").RagCitation[] = [];
         if (userId && grounded !== false) {
           const [{ buildFinnContext }, { gatherRagContext }] = await Promise.all([
-            import("@/lib/aria-context.server"),
-            import("@/lib/aria/rag.server"),
+            import("@/lib/finn-context.server"),
+            import("@/lib/finn/rag.server"),
           ]);
           const [ctx, rag] = await Promise.all([
             buildFinnContext(supabase),
@@ -527,10 +527,10 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- loose cast for reference read
                 from: (table: string) => any;
               };
-              // NEXIOS aria_knowledge schema is (title, source, content, tags);
+              // NEXIOS finn_knowledge schema is (title, source, content, tags);
               // HCIS reference chunks are seeded with source like 'hcis/%'.
               const { data: hcisRows, error: hcisError } = await db
-                .from("aria_knowledge")
+                .from("finn_knowledge")
                 .select("title,content,source")
                 .like("source", "hcis/%")
                 .order("source", { ascending: true })
@@ -565,7 +565,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
         }
 
         const tools = userId
-          ? (await import("@/lib/aria-tools.server")).buildFinnTools(supabase, userId, {
+          ? (await import("@/lib/finn-tools.server")).buildFinnTools(supabase, userId, {
               lastUserText,
             })
           : undefined;
@@ -583,7 +583,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
 
         // ─── Latency + priority tier ────────────────────────────────────
         // INVARIANT-9 (measure every reply): capture start / first-token /
-        // finish times to persist into aria_interactions.
+        // finish times to persist into finn_interactions.
         const startAt = Date.now();
         const firstTokenAt: number | null = null;
 
@@ -714,7 +714,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
           console.error("[api/chat] generateText error", { requestId, vendor, error: errMsg });
           if (userId) {
             void supabase
-              .from("aria_incidents")
+              .from("finn_incidents")
               .insert({
                 user_id: userId,
                 kind: "model_error",
@@ -723,7 +723,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
               })
               .then(({ error: insErr }) => {
                 if (insErr)
-                  console.error("[api/chat] aria_incidents insert failed:", insErr.message);
+                  console.error("[api/chat] finn_incidents insert failed:", insErr.message);
               });
           }
         }
@@ -769,7 +769,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
                 ? "tablet"
                 : "desktop";
             void supabase
-              .from("aria_interactions")
+              .from("finn_interactions")
               .insert({
                 user_id: userId,
                 thread_id: threadId ?? null,
@@ -782,7 +782,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
               })
               .then(({ error: insErr }) => {
                 if (insErr)
-                  console.error("[api/chat] aria_interactions insert failed:", insErr.message);
+                  console.error("[api/chat] finn_interactions insert failed:", insErr.message);
               });
           }
           void (async () => {
@@ -834,7 +834,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
                   .eq("id", threadId);
               }
               if (userText && assistantText) {
-                const { rememberConversationTurn } = await import("@/lib/aria/rag.server");
+                const { rememberConversationTurn } = await import("@/lib/finn/rag.server");
                 await rememberConversationTurn(
                   supabase,
                   userId,

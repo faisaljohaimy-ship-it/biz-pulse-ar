@@ -2,11 +2,11 @@
  * Article 26 — Rate limiting + audit trail E2E lock.
  *
  * Verifies:
- *   1. `/api/public/hooks/aria-incident` returns 429 after > 60 requests in
+ *   1. `/api/public/hooks/finn-incident` returns 429 after > 60 requests in
  *      60 s from the same client IP (rate-limit bucket keyed by IP).
  *   2. A well-formed beacon still returns 202 in a fresh bucket.
  *
- * The `aria_actions_log` audit visibility is org-scoped and cannot be
+ * The `finn_actions_log` audit visibility is org-scoped and cannot be
  * probed anonymously — that is asserted indirectly: a probing anon caller
  * MUST NOT be able to SELECT the log, which we verify via the Supabase
  * Data API just like Article 19's anon-read probes.
@@ -32,7 +32,7 @@ test.describe("Article 26 — audit trail + rate limiting", () => {
     let lastRetryAfter: string | null = null;
 
     for (let i = 0; i < 65; i += 1) {
-      const res = await ctx.post("/api/public/hooks/aria-incident", {
+      const res = await ctx.post("/api/public/hooks/finn-incident", {
         data: {
           kind: "unhandled_error",
           detail: `article-26 lock ${i}`,
@@ -59,7 +59,7 @@ test.describe("Article 26 — audit trail + rate limiting", () => {
     expect(lastRetryAfter).toBeTruthy();
   });
 
-  test("aria_actions_log is not readable by anonymous callers", async () => {
+  test("finn_actions_log is not readable by anonymous callers", async () => {
     test.skip(!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY, "missing SUPABASE env");
 
     const ctx = await pwRequest.newContext({
@@ -69,7 +69,7 @@ test.describe("Article 26 — audit trail + rate limiting", () => {
         Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
       },
     });
-    const res = await ctx.get("/rest/v1/aria_actions_log?select=id&limit=1");
+    const res = await ctx.get("/rest/v1/finn_actions_log?select=id&limit=1");
     await ctx.dispose();
 
     // Either 401/403 outright, or 200 with an empty array (RLS filters all rows).

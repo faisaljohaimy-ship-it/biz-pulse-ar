@@ -492,7 +492,7 @@ export async function runAgent(
         goal,
       ].join("\n");
 
-      await admin.from("aria_reports").insert({
+      await admin.from("finn_reports").insert({
         user_id: actorId,
         org_id: orgId,
         kind: "executive",

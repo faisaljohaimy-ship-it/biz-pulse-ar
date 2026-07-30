@@ -1,7 +1,7 @@
 /** Lesson adapter for the singleton FINN conversation. */
 import { useState } from "react";
 import { Send, Sparkles, ShieldCheck } from "lucide-react";
-import { useFinn } from "@/lib/aria-core/hooks/useFinn";
+import { useFinn } from "@/lib/finn-core/hooks/useFinn";
 import type { Bilingual } from "@/lib/learn/types";
 
 interface Props {

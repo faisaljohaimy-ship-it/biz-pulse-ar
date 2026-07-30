@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { recordOutboundProviderEvent } from "@/lib/aria/outbound-messaging.server";
-import { verifyTwilioWebhook } from "@/lib/aria/webhook-signatures.server";
+import { recordOutboundProviderEvent } from "@/lib/finn/outbound-messaging.server";
+import { verifyTwilioWebhook } from "@/lib/finn/webhook-signatures.server";
 
 const MAX_BODY_BYTES = 32 * 1024;
 const HEADERS = {

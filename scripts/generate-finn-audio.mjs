@@ -9,7 +9,7 @@
  *
  * SECURITY: the API key comes ONLY from the ELEVENLABS_API_KEY environment
  * variable. No key is ever read from, or written to, the repository. The
- * voice id / model / settings mirror src/lib/aria/voice-config.ts (the voice
+ * voice id / model / settings mirror src/lib/finn/voice-config.ts (the voice
  * id is a public ElevenLabs identifier, not a secret).
  *
  * Output: public/media/bridge/audio/<scene>.<lang>.mp3 + a manifest.json.
@@ -27,7 +27,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
 const OUT_DIR = join(ROOT, "public", "media", "bridge", "audio");
 
-/* ── Voice identity — mirrors src/lib/aria/voice-config.ts ─────────────────
+/* ── Voice identity — mirrors src/lib/finn/voice-config.ts ─────────────────
  * FINN = ElevenLabs "Layan", multilingual v2, executive-narration settings.
  * Max-quality delivery for a board-room film: steady stability, high
  * similarity, deliberate style. */

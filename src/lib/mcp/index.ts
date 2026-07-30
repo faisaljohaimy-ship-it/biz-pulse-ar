@@ -1,6 +1,6 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import pingTool from "./tools/ping";
-import askFinnTool from "./tools/ask-aria";
+import askFinnTool from "./tools/ask-finn";
 import hcisStatusTool from "./tools/hcis-status";
 import ptwActiveTool from "./tools/ptw-active";
 

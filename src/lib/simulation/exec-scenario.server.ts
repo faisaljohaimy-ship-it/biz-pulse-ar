@@ -76,7 +76,7 @@ export async function runExecutiveScenario(
   await admin.from("sec_work_orders").delete().eq("org_id", org_id).eq("assigned_to", scenario_tag);
   await admin.from("sec_patrols").delete().eq("org_id", org_id).eq("team", scenario_tag);
   await admin
-    .from("aria_reports")
+    .from("finn_reports")
     .delete()
     .eq("org_id", org_id)
     .contains("payload", { scenario_tag });
@@ -443,7 +443,7 @@ export async function runExecutiveScenario(
 
   // ---- FINN executive briefing (report) -------------------------------------
   if (opts.userId) {
-    await admin.from("aria_reports").insert({
+    await admin.from("finn_reports").insert({
       user_id: opts.userId,
       org_id,
       kind: "executive_briefing",
@@ -511,7 +511,7 @@ export async function runExecutiveScenario(
       notifications: 2,
       meetings: 1,
       daily_ops: 1,
-      aria_reports: opts.userId ? 1 : 0,
+      finn_reports: opts.userId ? 1 : 0,
     },
     narrative,
   };

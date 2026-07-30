@@ -15,8 +15,8 @@ import {
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { ExecutiveShowcaseHub } from "@/components/executive/ExecutiveShowcaseHub";
-import { FinnAnomalyStrip } from "@/components/aria/FinnAnomalyStrip";
-import { FinnTodayRecommendations } from "@/components/aria/FinnTodayRecommendations";
+import { FinnAnomalyStrip } from "@/components/finn/FinnAnomalyStrip";
+import { FinnTodayRecommendations } from "@/components/finn/FinnTodayRecommendations";
 import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { HolographicFlowShowcase } from "@/components/home/HolographicFlowShowcase";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

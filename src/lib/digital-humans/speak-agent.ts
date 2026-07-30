@@ -7,7 +7,7 @@
  */
 import type { BridgeAgent } from "@/lib/exec/bridge.functions";
 import { FINN, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
-import { speakAs, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
+import { speakAs, type SpeakHandle } from "@/lib/digital-humans/finn-voice";
 
 type RuntimeAgentIdentity = {
   id: string;

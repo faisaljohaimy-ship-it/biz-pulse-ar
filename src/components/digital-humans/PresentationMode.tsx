@@ -17,7 +17,7 @@ import {
   type DigitalHumanSpec,
 } from "@/lib/digital-humans/registry";
 import { useDigitalHuman, type SpokenTurn } from "@/lib/digital-humans/engine";
-import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/aria-voice";
+import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/finn-voice";
 import { DigitalHumanAvatar } from "./DigitalHumanAvatar";
 import { cn } from "@/lib/utils";
 

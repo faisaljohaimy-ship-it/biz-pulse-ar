@@ -88,4 +88,4 @@ shifts = 360 daily-ops rows · ~250 history rows.
 
 The seeded rows populate `sec_incidents`, `sec_permits`, and the new
 `sim_*` tables that FINN already queries via its data tools. See
-`src/lib/aria-tools.server.ts`.
+`src/lib/finn-tools.server.ts`.

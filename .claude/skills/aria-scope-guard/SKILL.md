@@ -22,7 +22,7 @@ FINN مساعد أمن صناعي. لا يتحدث خارج نطاقه. النط
 
 ## التنفيذ (مصدر واحد للحقيقة)
 - `isInScope(message)` و`OUT_OF_SCOPE_REPLY` في
-  `src/lib/aria/response-contract.ts` هما المرجع الوحيد.
+  `src/lib/finn/response-contract.ts` هما المرجع الوحيد.
 - تُطبَّق **قبل النموذج** في `src/routes/api/chat.ts` (short‑circuit)
   فلا يدفع السؤال الخارج زمن النموذج.
 - **حجب عالي الدقة**: يُحجب فقط ما فيه إشارة خارجية واضحة بلا إشارة

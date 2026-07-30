@@ -83,7 +83,7 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         .gte("occurred_at", sinceDay)
         .limit(2000),
       supabase
-        .from("aria_memory")
+        .from("finn_memory")
         .select("id,importance,updated_at")
         .gte("updated_at", sinceDay)
         .limit(2000),
@@ -590,7 +590,7 @@ export const listPendingDecisions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<ExecutiveDecision[]> => {
     const { data, error } = await context.supabase
-      .from("aria_decisions")
+      .from("finn_decisions")
       .select(
         "id,recommendation,rationale,recommended_action,next_step,confidence,status,executed_tool,tool_payload,created_at",
       )
@@ -626,7 +626,7 @@ export const approveDecision = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     // Load the decision (RLS enforces ownership + org).
     const { data: decision, error: loadErr } = await supabase
-      .from("aria_decisions")
+      .from("finn_decisions")
       .select("id,tool_payload,executed_tool,status,org_id")
       .eq("id", data.id)
       .maybeSingle();
@@ -643,7 +643,7 @@ export const approveDecision = createServerFn({ method: "POST" })
     // Mark approved before triggering — audit trail sees intent even if the run
     // fails downstream, and the executor picks up the correct state.
     const { error: updErr } = await supabase
-      .from("aria_decisions")
+      .from("finn_decisions")
       .update({ status: "approved", updated_at: new Date().toISOString() })
       .eq("id", data.id);
     if (updErr) throw new Error(updErr.message);
@@ -663,7 +663,7 @@ export const approveDecision = createServerFn({ method: "POST" })
         runId = run.runId;
         runStatus = run.status;
         await supabase
-          .from("aria_decisions")
+          .from("finn_decisions")
           .update({
             status: run.status === "failed" ? "failed" : "executed",
             updated_at: new Date().toISOString(),
@@ -671,7 +671,7 @@ export const approveDecision = createServerFn({ method: "POST" })
           .eq("id", data.id);
       } catch (err) {
         await supabase
-          .from("aria_decisions")
+          .from("finn_decisions")
           .update({ status: "failed", updated_at: new Date().toISOString() })
           .eq("id", data.id);
         throw err instanceof Error ? err : new Error(String(err));
@@ -705,7 +705,7 @@ export const dismissDecision = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => DecisionActionSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("aria_decisions")
+      .from("finn_decisions")
       .update({ status: "dismissed", updated_at: new Date().toISOString() })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
@@ -734,7 +734,7 @@ export const getExecutiveTimeline = createServerFn({ method: "GET" })
         .order("occurred_at", { ascending: false })
         .limit(20),
       supabase
-        .from("aria_decisions")
+        .from("finn_decisions")
         .select("id,recommendation,status,confidence,created_at")
         .order("created_at", { ascending: false })
         .limit(20),

@@ -120,7 +120,7 @@ export const getOmsKpis = createServerFn({ method: "GET" })
 // here we return a heuristic recommendation built from incident state)
 // ============================================================================
 
-export const ariaAnalyzeIncident = createServerFn({ method: "POST" })
+export const finnAnalyzeIncident = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ incident_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
@@ -131,8 +131,8 @@ export const ariaAnalyzeIncident = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    const { ariaAnalyseIncident } = await import("./oms-aria.server");
-    const analysis = await ariaAnalyseIncident({
+    const { finnAnalyseIncident } = await import("./oms-finn.server");
+    const analysis = await finnAnalyseIncident({
       ref: inc.ref,
       category: inc.category,
       title_ar: inc.title_ar,

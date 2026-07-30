@@ -67,7 +67,7 @@ function primeAudio(): void {
   }
 }
 
-import { FinnAudioBus } from "./aria/audio-bus";
+import { FinnAudioBus } from "./finn/audio-bus";
 
 let installed = false;
 export function installInteractionTracker(): void {

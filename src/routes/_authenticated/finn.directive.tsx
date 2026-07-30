@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { queryOptions } from "@tanstack/react-query";
-import { getDirectiveAudit } from "@/lib/aria/directive/directive.functions";
-import type { PhaseStatus } from "@/lib/aria/directive/phase-audit.server";
+import { getDirectiveAudit } from "@/lib/finn/directive/directive.functions";
+import type { PhaseStatus } from "@/lib/finn/directive/phase-audit.server";
 
 const auditQuery = queryOptions({
   queryKey: ["aria-directive-audit"],

@@ -230,7 +230,7 @@ function UrgentOpsPage() {
       supabase.from("urgent_tasks").select("*").order("due_at", { ascending: true }),
       supabase.from("support_requests").select("*").order("created_at", { ascending: false }),
       supabase
-        .from("aria_improvement_proposals")
+        .from("finn_improvement_proposals")
         .select("*")
         .order("created_at", { ascending: false }),
     ]);
@@ -267,7 +267,7 @@ function UrgentOpsPage() {
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "aria_improvement_proposals" },
+        { event: "*", schema: "public", table: "finn_improvement_proposals" },
         () => void loadAll(),
       )
       .subscribe();
@@ -292,13 +292,13 @@ function UrgentOpsPage() {
 
     const propose = async (area: string, proposal_ar: string, impact: Proposal["impact"]) => {
       const { data: existing } = await supabase
-        .from("aria_improvement_proposals")
+        .from("finn_improvement_proposals")
         .select("id")
         .eq("proposal_ar", proposal_ar)
         .eq("status", "مقترح")
         .limit(1);
       if (existing && existing.length > 0) return;
-      await supabase.from("aria_improvement_proposals").insert({ area, proposal_ar, impact });
+      await supabase.from("finn_improvement_proposals").insert({ area, proposal_ar, impact });
     };
 
     (async () => {
@@ -351,7 +351,7 @@ function UrgentOpsPage() {
 
   const decide = async (id: string, status: "معتمد" | "مرفوض") => {
     await supabase
-      .from("aria_improvement_proposals")
+      .from("finn_improvement_proposals")
       .update({ status, decided_by: "المسؤول التنفيذي" })
       .eq("id", id);
   };

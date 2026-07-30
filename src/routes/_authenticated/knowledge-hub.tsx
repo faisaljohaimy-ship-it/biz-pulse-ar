@@ -133,7 +133,7 @@ function KnowledgeHubPage() {
         />
         <NexusStat
           label={ar ? "مستندات FINN" : "FINN docs"}
-          value={String(stats.data?.aria_documents ?? "—")}
+          value={String(stats.data?.finn_documents ?? "—")}
           tone="emerald"
         />
         <NexusStat

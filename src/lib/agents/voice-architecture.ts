@@ -2,7 +2,7 @@
  * Voice-Ready Agent Architecture (types only — no runtime).
  * Prepared for future TTS/voice integration. Do not implement speech here.
  */
-import { FINN_ELEVENLABS_VOICE_ID } from "@/lib/aria/voice-config";
+import { FINN_ELEVENLABS_VOICE_ID } from "@/lib/finn/voice-config";
 
 export type AgentLocale = "ar" | "en";
 

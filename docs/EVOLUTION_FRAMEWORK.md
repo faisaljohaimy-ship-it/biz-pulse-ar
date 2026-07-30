@@ -12,15 +12,15 @@ Continuously **analyze → plan → validate → benchmark → report** without 
 ## 2. Architecture / المعمارية
 
 ```
-src/lib/aria/self-evolution/     ← THIN orchestrator (this framework)
+src/lib/finn/self-evolution/     ← THIN orchestrator (this framework)
 ├── engine.server.ts             ← runSelfEvolution()
 ├── types.ts                     ← EvolutionReport, EvolutionIssue, invariants
 └── index.ts                     ← public barrel
 
 Composes (never duplicates):
-├── src/lib/aria/production/      ← readiness + release gate
-├── src/lib/aria/self-improvement/← evidence → gaps → proposals
-└── src/lib/aria/evolution/       ← reflection, benchmarks, trends
+├── src/lib/finn/production/      ← readiness + release gate
+├── src/lib/finn/self-improvement/← evidence → gaps → proposals
+└── src/lib/finn/evolution/       ← reflection, benchmarks, trends
 
 Entry points:
 ├── src/lib/self-evolution.functions.ts  ← auth-gated createServerFn

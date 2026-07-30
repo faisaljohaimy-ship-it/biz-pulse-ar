@@ -7,7 +7,7 @@
 import { Link } from "@tanstack/react-router";
 import { Check, Mic, User } from "lucide-react";
 import { CC_FINN_CAPS } from "../commandCenterData";
-import { useFinn } from "@/lib/aria-core/hooks/useFinn";
+import { useFinn } from "@/lib/finn-core/hooks/useFinn";
 
 const BARS = Array.from({ length: 26 }, (_, i) => 26 + Math.abs(Math.sin(i * 0.9)) * 74);
 const STATES = {

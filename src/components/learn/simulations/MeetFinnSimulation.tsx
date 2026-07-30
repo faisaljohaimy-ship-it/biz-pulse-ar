@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2, PlayCircle, ShieldCheck, Sparkles } from "lucide-react";
-import { useFinn } from "@/lib/aria-core/hooks/useFinn";
+import { useFinn } from "@/lib/finn-core/hooks/useFinn";
 import { updateProgress } from "@/lib/learn/lessons.functions";
 import type { Bilingual } from "@/lib/learn/types";
 import { cn } from "@/lib/utils";

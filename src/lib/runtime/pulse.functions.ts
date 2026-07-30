@@ -23,7 +23,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publishEvent } from "@/lib/exec/event-bus.server";
 import { consumePendingEvents } from "@/lib/runtime/consume-events.server";
-import { autoSeedFinnCorpusForOrg } from "@/lib/aria/seed-corpus.server";
+import { autoSeedFinnCorpusForOrg } from "@/lib/finn/seed-corpus.server";
 
 // Real long-running LLM agents (knowledge/exec/ops) genuinely take 60-80min
 // for multi-tool deep reasoning. Killing them at 5min produced fake "timeout"
@@ -193,7 +193,7 @@ export const runtimePulse = createServerFn({ method: "POST" })
     let corpusInserted = 0;
     try {
       const { count } = await supabaseAdmin
-        .from("aria_knowledge")
+        .from("finn_knowledge")
         .select("id", { count: "exact", head: true })
         .eq("org_id", orgId);
       if ((count ?? 0) === 0) {
@@ -206,7 +206,7 @@ export const runtimePulse = createServerFn({ method: "POST" })
             severity: "notice",
             org_id: orgId,
             actor_id: userId,
-            subject_type: "aria_knowledge",
+            subject_type: "finn_knowledge",
             payload: { inserted: r.inserted, mode: "auto" },
           });
           eventsPublished++;
