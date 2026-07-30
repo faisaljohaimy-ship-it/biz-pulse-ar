@@ -11,7 +11,7 @@
  * narrator, conductor, voice profiles. Adds: StoryCard, conductor wiring,
  * one-click 60s briefing.
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -57,6 +57,11 @@ import type { NarratorLine } from "@/lib/narrator/event-narrator";
 import { useConductor } from "@/lib/exec/conductor";
 
 export const Route = createFileRoute("/_authenticated/theater")({
+  // OWNER DIRECTIVE — screen HIDDEN (src/lib/nav/hidden-routes.ts). Component
+  // kept intact; hiding is one line, deleting is irreversible.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   head: () => ({
     meta: [
       { title: "Executive Theater — NEXUS AI OS" },

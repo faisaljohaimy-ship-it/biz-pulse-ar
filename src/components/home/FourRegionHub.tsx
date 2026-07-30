@@ -225,10 +225,8 @@ function RegionCard({
             className="truncate text-[15px] font-bold tracking-tight"
             style={{ color, textShadow: `0 0 22px ${color}66` }}
           >
+            {/* item 4: «المنطقة» removed — the region's own name is enough. */}
             {ar ? region.shortAr : region.shortEn}
-            <span className="ms-1.5 text-[11px] font-medium text-white/55">
-              {ar ? "المنطقة" : "Region"}
-            </span>
           </div>
           <div className="mt-0.5 truncate text-[11px] text-white/55">
             {ar ? panel.subtitleAr : panel.subtitleEn}
@@ -324,9 +322,6 @@ function RegionCardRect({
             style={{ color, textShadow: `0 0 18px ${color}66` }}
           >
             {ar ? region.shortAr : region.shortEn}
-          </div>
-          <div className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.22em] text-white/55">
-            {ar ? "المنطقة" : "Region"}
           </div>
         </div>
       </Link>

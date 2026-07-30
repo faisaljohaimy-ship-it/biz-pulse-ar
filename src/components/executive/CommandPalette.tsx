@@ -13,7 +13,10 @@ type Cmd = {
   group: "Navigate" | "Agents" | "Reports" | "System";
 };
 
-export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } = {}) {
+// «التجربة السينمائية — الجولة الكاملة» was removed from the homepage and the
+// cinematic show routes are hidden, so this palette no longer offers a cinema
+// entry and no longer takes an onOpenCinema handler.
+export function CommandPalette() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const Arrow = ar ? ArrowLeft : ArrowRight;
@@ -136,16 +139,8 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
         to: "/diagnostics",
         group: "System",
       },
-      {
-        id: "cinema",
-        title_ar: "التجربة التنفيذية",
-        title_en: "Executive Experience",
-        action: onOpenCinema ?? (() => navigate({ to: "/cinematic-demo" })),
-        group: "System",
-        hint: "Cinema",
-      },
     ],
-    [onOpenCinema, navigate],
+    [navigate],
   );
 
   const filtered = useMemo(() => {

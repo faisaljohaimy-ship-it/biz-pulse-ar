@@ -1,7 +1,7 @@
 // Executive Showcase — split-screen: FINN video (left) explaining the system,
 // synchronized content cards (right). Video-driven scene timing. RTL-first,
 // bilingual, sim-tagged, respects prefers-reduced-motion.
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import * as React from "react";
 import {
   Shield,
@@ -23,6 +23,11 @@ import { SimulationRibbon } from "@/components/SimulationRibbon";
 import { EXECUTIVE_PRESENTATION_MEDIA } from "@/lib/executive-presentation.media";
 
 export const Route = createFileRoute("/executive-showcase")({
+  // OWNER DIRECTIVE — screen HIDDEN (src/lib/nav/hidden-routes.ts). Component
+  // kept intact; hiding is one line, deleting is irreversible.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   head: () => ({
     meta: [
       { title: "العرض التنفيذي — نيكسيوس | Executive Showcase" },

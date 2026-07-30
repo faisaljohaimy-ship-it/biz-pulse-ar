@@ -12,34 +12,20 @@ import {
   Moon,
   Menu,
 } from "lucide-react";
-import { MissionControlStrip } from "@/components/executive/MissionControlStrip";
-import { AgentRing } from "@/components/executive/AgentRing";
-import { ExecutiveCinema } from "@/components/executive/ExecutiveCinema";
 import { CommandPalette } from "@/components/executive/CommandPalette";
-import { AgentHierarchyGraph } from "@/components/executive/AgentHierarchyGraph";
-import { AgenticFlowCanvas } from "@/components/home/AgenticFlowCanvas";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { NexiosFootermark } from "@/components/cinematic/NexiosFootermark";
 
 import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher";
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
 import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
 import { DashboardPreviewRail } from "@/components/os/DashboardPreviewRail";
-import { FinnTodayRecommendations } from "@/components/aria/FinnTodayRecommendations";
-import { FinnAnomalyStrip } from "@/components/aria/FinnAnomalyStrip";
-import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
-import { SystemModulesDashboard } from "@/components/executive/SystemModulesDashboard";
-import { ExecutiveShowcaseHub } from "@/components/executive/ExecutiveShowcaseHub";
 import { HolographicFlowShowcase } from "@/components/home/HolographicFlowShowcase";
 
-import { OsDecisionQueue } from "@/components/os/OsDecisionQueue";
 import { useI18n } from "@/lib/i18n";
 import { useFreezeOffscreen } from "@/hooks/use-freeze-offscreen";
 import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
-import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
-import { HomeShowcaseSections } from "@/components/home/HomeShowcaseSections";
 import { FourRegionHub } from "@/components/home/FourRegionHub";
+import { HomeTopNav } from "@/components/nav/HomeTopNav";
 // Pre-hero intros retired — the homepage renders directly with no cinematic
 // welcome overlay. Auto-greeting voice removed per directive.
 
@@ -144,7 +130,6 @@ function IntroLanding() {
   // The single global FINN backdrop is rendered from __root.tsx; this
   // route only owns the executive hero content. No canvas, no boot
   // animation, no AudioContext.
-  const [cinemaOpen, setCinemaOpen] = useState(false);
 
   const [deptsOpen, setDeptsOpen] = useState(false);
 
@@ -203,12 +188,26 @@ function IntroLanding() {
       </div>
 
       {/* CommandPalette is mounted globally in AppShell (Ctrl/Cmd+K everywhere). */}
-      <CommandPalette onOpenCinema={() => setCinemaOpen(true)} />
-      <ExecutiveCinema open={cinemaOpen} onClose={() => setCinemaOpen(false)} />
+      <CommandPalette />
       <DepartmentsLauncher open={deptsOpen} onClose={() => setDeptsOpen(false)} />
 
-      {/* ══ Executive Hero — HIDDEN per owner directive. Kept intentionally
-          empty so the dashboard renders immediately at the top of the route. ══ */}
+      {/* ══ Primary navigation — moved to the TOP (items 6 + 7). Settings is
+          deliberately absent: it lives in the right rail only. ══ */}
+      <HomeTopNav />
+
+      {/* ══ الجزء الأول: المؤشرات الست. Moved UP here from between the (now
+          deleted) ticker and the command centres — items 9 + 10 are one move,
+          not a delete plus a rebuild: SovereignCommandDeck already defines
+          exactly these six instruments, so nothing was invented. ══ */}
+      <section
+        ref={deckRef}
+        data-nx-frozen="false"
+        id="home-kpis"
+        aria-label={ar ? "المؤشرات التنفيذية الست" : "The six executive indicators"}
+        className="relative z-10 mx-auto w-full max-w-none px-4 pt-3 sm:px-6 sm:pt-4"
+      >
+        <SovereignCommandDeck ar={ar} />
+      </section>
 
       {/* ══ NEXIOS Four-Region Executive Hub — the PRIMARY dashboard: all four
           regions around a central interactive Saudi map, live per-region KPIs
@@ -218,26 +217,15 @@ function IntroLanding() {
         <FourRegionHub />
       </div>
 
-      {/* ══ Sovereign Cinematic Command Deck — world-class executive dashboard ══
-          Floats over the FINN hologram as translucent glass instruments so
-          she remains visible as the living backdrop of the whole system. */}
+      {/* Dashboard preview rail — the KPI deck moved to the top of the page. */}
       <section
-        ref={deckRef}
         data-nx-frozen="false"
         id="hero-dashboard"
-        aria-label={ar ? "لوحة القيادة السيادية الحية" : "Sovereign live command deck"}
+        aria-label={ar ? "معاينات اللوحات" : "Dashboard previews"}
         className="relative z-10 mx-auto flex w-full max-w-none flex-col gap-6 px-4 pb-6 pt-4 sm:gap-8 sm:px-6 sm:pt-8"
       >
-        {/* FinnDailySummary moved into FourRegionHub left column. */}
-        <SovereignCommandDeck ar={ar} />
         <DashboardPreviewRail ar={ar} />
-        <FinnAnomalyStrip />
-        <FinnTodayRecommendations />
-        <OsDecisionQueue ar={ar} />
       </section>
-
-      {/* ══ ZONE 5 · العرض التنفيذي — بطاقة جسر القيادة ══ */}
-      <ExecutiveShowcaseHub />
 
       {/* ══ ZONE 6 · التدفقات الهولوغرامية — شجرة القيادة + مدار الوكلاء ══ */}
       <HolographicFlowShowcase ar={ar} agents={HOME_HOLO_AGENTS} />

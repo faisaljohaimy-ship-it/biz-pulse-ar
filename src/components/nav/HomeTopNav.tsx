@@ -1,0 +1,72 @@
+/**
+ * HomeTopNav — the primary navigation, moved to the TOP of the homepage.
+ *
+ * OWNER DIRECTIVE (items 6 + 7). Two lines of the review contradicted each
+ * other: "التنقّل في الأعلى ويشمل الإعدادات" وَ"حذف الإعدادات من قائمة التنقل".
+ * Resolution applied: navigation at the top, WITHOUT الإعدادات. [افتراض]
+ * Settings stays reachable from the right rail alone (app-shell.tsx), which is
+ * also what G2 asked for — so the two directives agree once Settings is
+ * treated as a rail-only entry.
+ *
+ * Every `to` below is a REAL existing route (constitution art. 6: no dead
+ * icons) and none of them is hidden — the labels were mapped to the closest
+ * live screen rather than inventing destinations:
+ *   الأداء    → /sec/kpi          مؤشرات الأداء
+ *   المشاريع  → /sec/projects
+ *   الموارد   → /sec/assets       الأصول والموارد
+ *   المخاطر   → /risk
+ *   التقارير  → /executive-reports
+ *   الذكاء الاصطناعي → /finn      FINN التنفيذية
+ */
+import { Link } from "@tanstack/react-router";
+import { useI18n } from "@/lib/i18n";
+import { isRouteHidden } from "@/lib/nav/hidden-routes";
+
+interface TopNavItem {
+  readonly to: string;
+  readonly ar: string;
+  readonly en: string;
+}
+
+const ITEMS: readonly TopNavItem[] = [
+  { to: "/", ar: "الرئيسية", en: "Home" },
+  { to: "/sec/kpi", ar: "الأداء", en: "Performance" },
+  { to: "/sec/projects", ar: "المشاريع", en: "Projects" },
+  { to: "/sec/assets", ar: "الموارد", en: "Resources" },
+  { to: "/risk", ar: "المخاطر", en: "Risk" },
+  { to: "/executive-reports", ar: "التقارير", en: "Reports" },
+  { to: "/finn", ar: "الذكاء الاصطناعي", en: "AI" },
+];
+
+export function HomeTopNav() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+  // A hidden screen must never appear here — the same guard the command map
+  // uses, so hiding a route in one file removes it from every surface.
+  const items = ITEMS.filter((i) => !isRouteHidden(i.to));
+
+  return (
+    <nav
+      aria-label={ar ? "التنقّل الرئيسي" : "Primary navigation"}
+      dir={ar ? "rtl" : "ltr"}
+      className="relative z-20 w-full border-b border-white/10 bg-[#04070F]/70 backdrop-blur-sm"
+    >
+      {/* Scrolls horizontally on narrow screens so the row never wraps into a
+          ragged block and never forces the PAGE to scroll sideways. */}
+      <ul className="mx-auto flex w-full max-w-[1400px] items-center gap-1 overflow-x-auto px-3 py-1.5 sm:gap-2 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {items.map((item) => (
+          <li key={item.to} className="shrink-0">
+            <Link
+              to={item.to}
+              activeOptions={{ exact: item.to === "/" }}
+              // ≥44px touch target via min-h-11, per the accessibility floor.
+              className="inline-flex min-h-11 items-center rounded-lg px-3 text-[13px] font-semibold text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 aria-[current=page]:bg-cyan-400/15 aria-[current=page]:text-white sm:text-sm"
+            >
+              {ar ? item.ar : item.en}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}

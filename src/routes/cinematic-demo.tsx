@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -24,6 +24,11 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/cinematic-demo")({
+  // OWNER DIRECTIVE — screen HIDDEN (src/lib/nav/hidden-routes.ts). Component
+  // kept intact; hiding is one line, deleting is irreversible.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   component: CinematicDemo,
   head: () => ({
     meta: [

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
@@ -17,6 +17,11 @@ import analyticsSrc from "@/assets/films/analytics.mp4.asset.json";
 import roiSrc from "@/assets/films/roi.mp4.asset.json";
 
 export const Route = createFileRoute("/films")({
+  // OWNER DIRECTIVE — screen HIDDEN (src/lib/nav/hidden-routes.ts). Component
+  // kept intact; hiding is one line, deleting is irreversible.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   head: () => ({
     meta: [
       { title: "Film Center — NEXIOS AI OS" },

@@ -21,6 +21,21 @@ export const HIDDEN_ROUTES: ReadonlySet<string> = new Set([
   "/intelligence", // الذكاء والتطوّر
   "/learn", // التعلّم
   "/ptw", // تصاريح العمل الرقمية — غير قابلة للتطبيق حالياً
+
+  // «العروض التنفيذية السينمائية» — حذف الواجهة بالكامل.
+  // [افتراض] The owner named one screen; the repo has a FAMILY of cinematic
+  // show routes with no single canonical one. Resolved by TITLE, not by guess:
+  //   /executive-showcase  "العرض التنفيذي — نيكسيوس | Executive Showcase"
+  //   /cinematic-demo      "NEXUS AI OS — Cinematic Showcase"
+  //   /films               "Film Center — NEXIOS AI OS"
+  //   /theater             — same family, a cinematic playback surface
+  // DELIBERATELY NOT HIDDEN: /executive-bridge "جسر القيادة التنفيذي" — a real
+  // command feature, not a cinematic show, and never named in the review.
+  // (/executive-show was checked and does not exist — no phantom entry here.)
+  "/executive-showcase",
+  "/cinematic-demo",
+  "/films",
+  "/theater",
 ]);
 
 export function isRouteHidden(path: string): boolean {
