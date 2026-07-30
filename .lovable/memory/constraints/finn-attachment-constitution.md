@@ -6,13 +6,13 @@ type: constraint
 
 # Article 24 — Attachment & Generative Response
 
-Applies to every FINN surface (FinnCopilot, AriaDock, /assistant, MCP, embed).
+Applies to every FINN surface (FinnCopilot, FinnDock, /assistant, MCP, embed).
 
 ## Upload
-- `uploadAriaAttachment` server fn, `requireSupabaseAuth`, MIME allowlist,
+- `uploadFinnAttachment` server fn, `requireSupabaseAuth`, MIME allowlist,
   25 MB cap, 10 files/turn, 30 uploads/60 s rate limit.
 - Private bucket `finn-attachments/<user_id>/<uuid>-<name>`. Owner-only RLS.
-- 1 h signed URLs, audited via `logAriaAction` with `["Article 24"]`.
+- 1 h signed URLs, audited via `logFinnAction` with `["Article 24"]`.
 
 ## Transport
 - Client MUST send AI-SDK-v5 typed parts: `{type:'text'}` + one
