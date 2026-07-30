@@ -31,7 +31,7 @@
 - **Short-term**: `aria_memory` (per-user, RLS-scoped) — last N turns, JSON facts.
 - **Long-term**: `pulse_memory` — operational state cache refreshed by Pulse Engine.
 - **RAG**: `aria_documents` + `aria_document_chunks` (1536-dim embeddings, HNSW) for SOP/policy retrieval; `sec_knowledge_articles` for the Industrial Security Repository.
-- **Ingest hook**: `POST /api/public/hooks/aria-docs-ingest` — bilingual chunking with overlap, embedding via gateway.
+- **Ingest hook**: `POST /api/public/hooks/finn-docs-ingest` — bilingual chunking with overlap, embedding via gateway.
 
 ## Multi-Agent Orchestration
 14 seeded agents in `agent_definitions` (Executive Briefer, CCTV Analyst, Compliance Officer, Asset Health Inspector, Emergency Coordinator, etc.). Each agent:
