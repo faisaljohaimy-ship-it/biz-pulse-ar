@@ -18,7 +18,6 @@ import {
   MessageCircle,
   Mic,
   MicOff,
-  Paperclip,
   Plus,
   RefreshCcw,
   Send,
@@ -27,7 +26,6 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import type { FileUIPart } from "ai";
 import { useFinnChat } from "@/lib/aria-core/provider";
 import { useFinnStore } from "@/lib/aria-core/store";
 import { pingChat, setPendingReplyMode } from "@/lib/aria-core/services/aria-service";
@@ -272,19 +270,7 @@ const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "FINN يفكّر…";
-const MAX_ATTACHMENTS = 5;
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
-const MAX_ATTACHMENTS_TOTAL_BYTES = 20 * 1024 * 1024;
-const ACCEPTED_ATTACHMENT_TYPES = new Set([
-  "application/json",
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "text/csv",
-  "text/markdown",
-  "text/plain",
-]);
 
 const STILL_SRC = "/finn-portrait.png";
 
@@ -309,35 +295,6 @@ function markSpokenOrDrop(replyId: string): boolean {
   }
   rememberBounded(SPOKEN_REPLY_IDS, replyId);
   return true;
-}
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error(`تعذّرت قراءة الملف: ${file.name}`));
-    reader.onload = () => resolve(String(reader.result));
-    reader.readAsDataURL(file);
-  });
-}
-
-function attachmentMediaType(file: File): string {
-  if (file.type) return file.type;
-  const extension = file.name.split(".").pop()?.toLowerCase();
-  if (extension === "md") return "text/markdown";
-  if (extension === "txt") return "text/plain";
-  if (extension === "csv") return "text/csv";
-  if (extension === "json") return "application/json";
-  if (extension === "pdf") return "application/pdf";
-  return "application/octet-stream";
-}
-
-async function toFileUIPart(file: File): Promise<FileUIPart> {
-  return {
-    type: "file",
-    filename: file.name,
-    mediaType: attachmentMediaType(file),
-    url: await fileToDataUrl(file),
-  };
 }
 
 function sanitiseAssistantText(raw: string): string {
@@ -462,8 +419,6 @@ export function FinnCopilot() {
   const setMode = useFinnStore((s) => s.setMode);
 
   const [draft, setDraft] = useState("");
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
   const [healthEvidence, setHealthEvidence] = useState<Evidence | null>(null);
@@ -478,7 +433,6 @@ export function FinnCopilot() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
   const objectUrlsRef = useRef<Set<string>>(new Set());
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // STT (mic) state
   const sttSupported = useMemo(() => getSpeechRecognitionCtor() !== null, []);
@@ -1199,44 +1153,10 @@ export function FinnCopilot() {
     textarea.style.height = `${Math.min(textarea.scrollHeight, 128)}px`;
   }, [draft, composerRef]);
 
-  const addAttachments = useCallback(
-    (files: FileList | null) => {
-      if (!files?.length) return;
-      const next = [...attachments];
-      const errors: string[] = [];
-      for (const file of Array.from(files)) {
-        const key = `${file.name}:${file.size}:${file.lastModified}`;
-        if (next.some((item) => `${item.name}:${item.size}:${item.lastModified}` === key)) continue;
-        if (next.length >= MAX_ATTACHMENTS) {
-          errors.push(`الحد الأقصى ${MAX_ATTACHMENTS} ملفات.`);
-          break;
-        }
-        if (!ACCEPTED_ATTACHMENT_TYPES.has(attachmentMediaType(file))) {
-          errors.push(`نوع الملف غير مدعوم: ${file.name}`);
-          continue;
-        }
-        if (file.size > MAX_ATTACHMENT_BYTES) {
-          errors.push(`حجم ${file.name} يتجاوز 10 م.ب.`);
-          continue;
-        }
-        const total = next.reduce((sum, item) => sum + item.size, 0) + file.size;
-        if (total > MAX_ATTACHMENTS_TOTAL_BYTES) {
-          errors.push("إجمالي المرفقات يتجاوز 20 م.ب.");
-          break;
-        }
-        next.push(file);
-      }
-      setAttachments(next);
-      setAttachmentError(errors[0] ?? null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    },
-    [attachments],
-  );
-
   const submit = useCallback(
     async (textOverride?: string, opts?: { fromVoice?: boolean }) => {
       const promptText = (textOverride ?? draft).trim();
-      if ((!promptText && attachments.length === 0) || isBusy) return;
+      if (!promptText || isBusy) return;
       const messageText = promptText || "حلّل المرفقات المضافة وأعطني خلاصة واضحة.";
 
       primeIOSAudio();
@@ -1250,22 +1170,16 @@ export function FinnCopilot() {
       setDraft("");
       pendingSendAtRef.current = performance.now();
       try {
-        const files = await Promise.all(attachments.map(toFileUIPart));
-        await chat.sendMessage({
-          text: messageText,
-          ...(files.length ? { files } : {}),
-        });
-        setAttachments([]);
-        setAttachmentError(null);
+        await chat.sendMessage({ text: messageText });
       } catch (error) {
-        setAttachmentError(error instanceof Error ? error.message : "تعذّر إرفاق الملفات.");
+        console.error("[FinnCopilot] sendMessage failed:", error);
       }
 
       requestAnimationFrame(() => {
         composerRef.current?.focus({ preventScroll: true });
       });
     },
-    [draft, attachments, isBusy, chat, composerRef],
+    [draft, isBusy, chat, composerRef],
   );
 
   // Quick commands (Phase 2 §4). A search-style command focuses the composer
@@ -1355,8 +1269,6 @@ export function FinnCopilot() {
     stopVoicePlayback();
     chat.setMessages([]);
     setDraft("");
-    setAttachments([]);
-    setAttachmentError(null);
     requestAnimationFrame(() => composerRef.current?.focus({ preventScroll: true }));
   }, [chat, composerRef, stopListening, stopVoicePlayback]);
 
@@ -2045,8 +1957,13 @@ export function FinnCopilot() {
                   )}
                 </span>
               </span>
+              {/* item 18: connection state is shown ONCE, by the badge above —
+                  this line used to repeat «غير متصل» beside it. It now carries
+                  only what the badge does not: the activity label and the
+                  input mode. The badge was kept rather than this line because
+                  it also carries freshness evidence (maxAgeMs). */}
               <span className="max-w-[235px] truncate text-[11px] text-muted-foreground">
-                {health === "down" ? "غير متصل" : `${statusLabel} · ${convMode ? "صوت" : "نص"}`}
+                {`${statusLabel} · ${convMode ? "صوت" : "نص"}`}
               </span>
             </div>
             <button
@@ -2420,44 +2337,6 @@ export function FinnCopilot() {
                 paddingBottom: "calc(0.9rem + env(safe-area-inset-bottom))",
               }}
             >
-              {attachmentError && (
-                <div
-                  role="alert"
-                  className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-destructive/35 bg-destructive/10 px-3 py-2 text-xs text-destructive-foreground"
-                >
-                  <span>{attachmentError}</span>
-                  <button type="button" onClick={() => setAttachmentError(null)} aria-label="إغلاق">
-                    <X className="h-3.5 w-3.5" aria-hidden />
-                  </button>
-                </div>
-              )}
-              {attachments.length > 0 && (
-                <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
-                  {attachments.map((file, index) => (
-                    <div
-                      key={`${file.name}:${file.size}:${file.lastModified}`}
-                      className="inline-flex max-w-56 shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-background/70 px-2.5 py-2 text-xs"
-                    >
-                      {attachmentMediaType(file).startsWith("image/") ? (
-                        <ImageIcon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                      ) : (
-                        <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                      )}
-                      <span className="truncate">{file.name}</span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setAttachments((current) => current.filter((_, i) => i !== index))
-                        }
-                        aria-label={`حذف ${file.name}`}
-                        className="text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
               {/* Slash-command menu — appears while the draft starts with "/". */}
               {draft.startsWith("/") && matchQuickCommands(draft.slice(1)).length > 0 && (
                 <div
@@ -2517,24 +2396,6 @@ export function FinnCopilot() {
                   submit();
                 }}
               >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  hidden
-                  accept="image/png,image/jpeg,image/webp,application/pdf,text/plain,text/markdown,text/csv,application/json,.md,.txt,.csv,.json,.pdf"
-                  onChange={(event) => addAttachments(event.currentTarget.files)}
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isBusy || attachments.length >= MAX_ATTACHMENTS}
-                  aria-label="إرفاق ملفات"
-                  title="إرفاق ملفات"
-                  className="nexus-field grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/25 bg-background/70 text-foreground transition-all hover:border-primary/50 hover:bg-primary/10 disabled:opacity-40"
-                >
-                  <Paperclip className="h-4 w-4" aria-hidden />
-                </button>
                 <button
                   type="button"
                   onClick={toggleConversationMode}
@@ -2584,7 +2445,7 @@ export function FinnCopilot() {
                 <button
                   type={isBusy ? "button" : "submit"}
                   onClick={isBusy ? stopResponse : undefined}
-                  disabled={!isBusy && !draft.trim() && attachments.length === 0}
+                  disabled={!isBusy && !draft.trim()}
                   aria-label={isBusy ? "إيقاف الرد" : "إرسال"}
                   className={cn(
                     "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",

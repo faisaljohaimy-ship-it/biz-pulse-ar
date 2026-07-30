@@ -392,7 +392,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/_authenticated/agents",
     n(
-      "الوكلاء الأذكياء",
+      "منصة عمليات الوكلاء",
       "AI Agents",
       "قائمة الوكلاء، صلاحياتهم، وأدائهم",
       "the agent roster, permissions, and performance",

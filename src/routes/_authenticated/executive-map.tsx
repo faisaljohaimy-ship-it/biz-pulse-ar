@@ -6,12 +6,10 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { Activity, AlertTriangle, Building2, Globe2, MapPin, Radio, Shield } from "lucide-react";
+import { Activity, AlertTriangle, Building2, MapPin, Radio, Shield } from "lucide-react";
 import { ExecutiveMapClient, type MapSite } from "@/components/executive-map-client";
 import { CommandBackdrop } from "@/components/executive/CommandBackdrop";
-import { RegionGlobe } from "@/components/executive/RegionGlobe";
 import { REGION_MARKERS } from "@/components/executive/region-markers";
-import { SimBadge } from "@/components/os/SimBadge";
 
 export const Route = createFileRoute("/_authenticated/executive-map")({
   component: ExecutiveMapPage,
@@ -292,38 +290,27 @@ function ExecutiveMapPage() {
         />
       </div>
 
-      {/* 3D region globe — the four Saudi regions, lazy-loaded & reduced-motion
-          aware. Data is the deterministic regional snapshot (labelled sim). */}
-      <Card className="overflow-hidden border-border/60 bg-transparent">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 bg-muted/20 px-4 py-2">
-          <div className="flex items-center gap-2 text-sm">
-            <Globe2 className="h-4 w-4 text-emerald-400" />
-            <span className="font-medium">{isAr ? "القطاعات الأربعة" : "Four Regions"}</span>
-          </div>
-          <SimBadge ar={isAr} className="text-[9px]" />
-        </div>
-        <div className="grid grid-cols-1 items-center gap-4 p-4 sm:grid-cols-[minmax(0,360px)_1fr]">
-          <div className="mx-auto w-full">
-            <RegionGlobe />
-          </div>
-          <ul className="grid grid-cols-2 gap-2">
-            {REGION_MARKERS.map((m) => (
-              <li
-                key={m.id}
-                className="flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-2.5"
-              >
-                <span className="relative flex h-2.5 w-2.5 shrink-0">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/60" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
-                </span>
-                <span className="truncate text-[13px] font-semibold text-foreground">
-                  {isAr ? `المنطقة ${m.ar}` : m.id}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </Card>
+      {/* items 31 + 32: the 3D globe is REMOVED, and with it the wrapping
+          "four sectors" box — what remains is the four region cards on their
+          own, which is what the review asked for. Note item 30 wants the
+          simulated distribution to stay inside Saudi Arabia; these four cards
+          are Saudi regions from regions.ts, so they satisfy that by source. */}
+      <ul className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+        {REGION_MARKERS.map((m) => (
+          <li
+            key={m.id}
+            className="flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-2.5"
+          >
+            <span className="relative flex h-2.5 w-2.5 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
+            </span>
+            <span className="truncate text-[13px] font-semibold text-foreground">
+              {isAr ? `المنطقة ${m.ar}` : m.id}
+            </span>
+          </li>
+        ))}
+      </ul>
 
       <Card className="overflow-hidden border-border/60">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 bg-muted/30 px-4 py-2">
