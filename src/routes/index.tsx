@@ -19,7 +19,6 @@ import { DepartmentsLauncher } from "@/components/executive/DepartmentsLauncher"
 import { SecCommandLiveCard } from "@/components/executive/SecCommandLiveCard";
 import { SovereignCommandDeck } from "@/components/os/SovereignCommandDeck";
 import { DashboardPreviewRail } from "@/components/os/DashboardPreviewRail";
-import { HolographicFlowShowcase } from "@/components/home/HolographicFlowShowcase";
 
 import { useI18n } from "@/lib/i18n";
 import { useFreezeOffscreen } from "@/hooks/use-freeze-offscreen";
@@ -30,99 +29,6 @@ import { HomeTopNav } from "@/components/nav/HomeTopNav";
 // welcome overlay. Auto-greeting voice removed per directive.
 
 // Static holographic-tree fleet mirrors the Agent Operations Platform view.
-const HOME_HOLO_AGENTS = [
-  { id: "commander-1", name: "قائد", state: "queued" },
-  { id: "analyst", name: "محلل", state: "ready" },
-  { id: "auditor", name: "مدقّق", state: "ready" },
-  { id: "intel-1", name: "ذكاء", state: "ready" },
-  { id: "commander-2", name: "قائد", state: "queued" },
-  { id: "monshi", name: "منشئ", state: "ready" },
-  { id: "intel-2", name: "ذكاء", state: "ready" },
-  { id: "messenger", name: "المراسل", state: "ready" },
-];
-
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "NEXIOS AI  -  FINN" },
-      {
-        name: "description",
-        content:
-          "NEXIOS AI OS — منصة القيادة التنفيذية بشبكة الذكاء العصبي السريعة FINN: قرارات فورية، أرقام حية، وتحكّم موحّد لكل القطاعات.",
-      },
-      {
-        property: "og:title",
-        content: "NEXIOS AI  -  FINN",
-      },
-      {
-        property: "og:description",
-        content:
-          "منصة القيادة التنفيذية NEXIOS AI مع FINN — شبكة الذكاء العصبي السريعة: رؤية حية، تحليل فوري، وقرار موثوق للقادة.",
-      },
-      { property: "og:url", content: "https://neexios.com/" },
-      {
-        name: "twitter:title",
-        content: "NEXIOS AI  -  FINN",
-      },
-      {
-        name: "twitter:description",
-        content:
-          "منصة القيادة التنفيذية NEXIOS AI مع FINN — شبكة الذكاء العصبي السريعة: رؤية حية، تحليل فوري، وقرار موثوق للقادة.",
-      },
-    ],
-    links: [{ rel: "canonical", href: "https://neexios.com/" }],
-  }),
-  component: IntroLanding,
-});
-
-const PILLARS = [
-  {
-    anchor: "tour-pillar-security",
-    to: "/sec",
-    icon: Shield,
-    title_ar: "أمن صناعي",
-    title_en: "Industrial Security",
-    desc_ar: "حوادث، دوريات، تصاريح، زوار ومركبات في منصة موحّدة.",
-    desc_en: "Incidents, patrols, permits, visitors, and vehicles on a unified surface.",
-  },
-  {
-    anchor: "tour-pillar-agents",
-    to: "/agents",
-    icon: Bot,
-    title_ar: "وكلاء ذكاء",
-    title_en: "AI Agents",
-    desc_ar: "11 وكيلاً تنفيذياً مع تنسيق أدوات وسجل شرعي للأحداث.",
-    desc_en: "11 executive agents with tool orchestration and an immutable event ledger.",
-  },
-  {
-    anchor: "tour-pillar-twin",
-    to: "/digital-twin",
-    icon: Radar,
-    title_ar: "توأم رقمي حي",
-    title_en: "Live Digital Twin",
-    desc_ar: "تحديث لحظي للأصول والمواقع والعمليات عبر نبض المؤسسة.",
-    desc_en: "Real-time pulse of assets, sites, and operations across the enterprise.",
-  },
-  {
-    anchor: "tour-pillar-reports",
-    to: "/executive-reports",
-    icon: BarChart3,
-    title_ar: "تقارير تنفيذية",
-    title_en: "Executive Reports",
-    desc_ar: "مؤشرات أداء، RAG وذاكرة إنتاجية مع تسليم Outlook.",
-    desc_en: "Production-grade KPIs, RAG memory, and Outlook delivery.",
-  },
-
-  {
-    anchor: "tour-pillar-aria",
-    to: "/finn",
-    icon: Sparkles,
-    title_ar: "FINN التنفيذية",
-    title_en: "FINN Engine",
-    desc_ar: "محرك تنفيذي ثنائي اللغة مع صوت طبيعي وذاكرة حية.",
-    desc_en: "Bilingual executive engine with natural voice and live executive memory.",
-  },
-] as const;
 
 function IntroLanding() {
   const { locale } = useI18n();
@@ -227,8 +133,9 @@ function IntroLanding() {
         <DashboardPreviewRail ar={ar} />
       </section>
 
-      {/* ══ ZONE 6 · التدفقات الهولوغرامية — شجرة القيادة + مدار الوكلاء ══ */}
-      <HolographicFlowShowcase ar={ar} agents={HOME_HOLO_AGENTS} />
+      {/* item 26: «شجرة القيادة الهولوغرامية» removed from the homepage — the
+          HolographicFlowShowcase rendered exactly that tree (plus the agent
+          orbit) via AgentHierarchyGraph. Item 63 points the same way. */}
 
       {/*
         Overflow moved off the homepage per the Executive Command View

@@ -346,36 +346,13 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
         ))}
       </div>
 
-      {/* ── Marquee ticker ── */}
-      <div className="relative mb-4 overflow-hidden rounded-sm border-y border-[#3AE8FF]/20 bg-[#061A2E]/45 py-1.5 backdrop-blur-sm">
-        <div
-          dir="ltr"
-          className="flex whitespace-nowrap"
-          style={{ animation: "sov-marquee 42s linear infinite" }}
-        >
-          {Array.from({ length: 2 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex shrink-0 items-center gap-8 px-6 font-mono text-[10px] uppercase tracking-[0.32em] text-[#3AE8FF]/75"
-            >
-              <span className="flex items-center gap-2">
-                <span className="h-1 w-1 rounded-full bg-[#3AE8FF] shadow-[0_0_8px_#3AE8FF]" />
-                NEXIOS AI
-              </span>
-              <span className="text-[#3AE8FF]/30">◆</span>
-              <span dir="rtl">منصة إنجاز الأعمال التنفيذية</span>
-              <span className="text-[#3AE8FF]/30">◆</span>
-              <span>INDUSTRIAL SECURITY COMMAND</span>
-              <span className="text-[#3AE8FF]/30">◆</span>
-              <span dir="rtl">FINN · الذكاء التنفيذي الحيّ</span>
-              <span className="text-[#3AE8FF]/30">◆</span>
-              <span>SOVEREIGN OPS DECK</span>
-              <span className="text-[#3AE8FF]/30">◆</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
+      {/* ── Marquee ticker REMOVED (G3) ────────────────────────────────
+          A second scrolling strip lived here, carrying the same wording as the
+          header bar that G3 deleted ("منصة إنجاز الأعمال التنفيذية"). Removing
+          only the header bar left this one running — and because items 9+10
+          moved this deck to the TOP of the homepage, it would have put the very
+          element the owner asked to delete at the top of the page. Gone now,
+          with its sov-marquee keyframes. ── */}
       {/* ── Schematic title block ── */}
       <div className="relative mb-4 overflow-hidden rounded-sm border border-[#3AE8FF]/25 bg-gradient-to-br from-[#061A2E]/60 via-[#08243F]/55 to-[#04101C]/70 backdrop-blur-xl">
         <span className="pointer-events-none absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-[#3AE8FF]/70" />
@@ -677,8 +654,6 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
           from { opacity: 0; transform: translateY(10px) scale(0.985); filter: blur(2px); }
           to   { opacity: 1; transform: translateY(0)    scale(1);     filter: blur(0); }
         }
-        @keyframes sov-marquee {
-          from { transform: translateX(0); }
           to   { transform: translateX(-50%); }
         }
         @keyframes sov-live-pulse {
@@ -687,7 +662,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
         }
         @media (prefers-reduced-motion: reduce) {
           [style*="sov-deck-rise"], [style*="sov-tile-in"] { animation: none !important; }
-          [style*="sov-marquee"], [style*="sov-live-pulse"] { animation: none !important; }
+          [style*="sov-live-pulse"] { animation: none !important; }
         }
       `}</style>
     </div>

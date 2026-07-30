@@ -18,8 +18,6 @@ import {
   Activity,
   Bell,
   FlaskConical,
-  Search,
-  Settings,
   Wifi,
   TrendingUp,
   Home,
@@ -43,7 +41,6 @@ import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 import { useRegion } from "@/lib/region-context";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
-import { NexiosWordmark } from "@/components/executive/NexiosWordmark";
 import commandRefAsset from "@/assets/nexios-command-reference.png.asset.json";
 
 // ── Map geometry ────────────────────────────────────────────────────────────
@@ -255,7 +252,11 @@ function RegionCard({
             <Link
               key={m.en}
               to={m.to}
-              onClick={(e) => e.stopPropagation()}
+              // Typed explicitly: this Link's `to` is a widened string, so
+              // TanStack can't infer the handler's event type. tsc flags only
+              // the implicit any here — never the `to` — so the destination
+              // itself still type-checks; only inference degraded.
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
               title={ar ? m.ar : m.en}
               aria-label={ar ? m.ar : m.en}
               className="grid size-11 min-h-11 min-w-11 place-items-center rounded-lg nx-holo-icon text-white/70 transition hover:text-white"
@@ -374,16 +375,6 @@ function LiveClock({ ar }: { ar: boolean }) {
 }
 
 // ── Central cinematic map + southern column ─────────────────────────────────
-type SectorWithPath = (typeof SECTORS)[number] & { d: string };
-
-/** Stylised Arabian-Peninsula silhouette (recognisable, not a survey map) —
- *  the crystalline core of the command stage. Shared geometry with the
- *  ambient ArabianPeninsulaBackdrop. */
-const PENINSULA =
-  "M 360 150 C 470 112, 590 120, 662 170 C 702 150, 744 176, 730 222 " +
-  "C 802 272, 838 362, 800 452 C 776 542, 720 642, 620 722 " +
-  "C 520 784, 398 772, 330 700 C 270 640, 246 540, 252 452 " +
-  "C 236 372, 252 282, 302 222 C 316 186, 336 166, 360 150 Z";
 
 /** Four radial connection spokes from the core toward each panel corner. */
 const SPOKES: { id: RegionId; x2: number; y2: number }[] = [
@@ -393,19 +384,6 @@ const SPOKES: { id: RegionId; x2: number; y2: number }[] = [
   { id: "southern", x2: 500, y2: 850 },
 ];
 
-/** Holographic power-transmission grid over the Kingdom — stylised substation
- *  nodes (approx. major-city positions in the 1000×900 map space) linked by
- *  interconnect lines. Decorative; glows + pulses only via opacity. */
-const POWER_NODES: { x: number; y: number }[] = [
-  { x: 560, y: 460 }, // 0 Riyadh (central)
-  { x: 340, y: 560 }, // 1 Jeddah/Makkah (west)
-  { x: 690, y: 380 }, // 2 Dammam (east)
-  { x: 380, y: 260 }, // 3 Tabuk (north-west)
-  { x: 500, y: 340 }, // 4 Qassim (central-north)
-  { x: 410, y: 700 }, // 5 Abha (south)
-  { x: 400, y: 430 }, // 6 Madinah (west-centre)
-  { x: 620, y: 620 }, // 7 southern interconnect
-];
 const POWER_EDGES: [number, number][] = [
   [0, 4],
   [4, 3],
@@ -420,189 +398,19 @@ const POWER_EDGES: [number, number][] = [
   [0, 6],
 ];
 
-function CentralMap({
-  ar,
-  sectors,
-  regionId,
-  setRegion,
-  severityByRegion,
-}: {
-  ar: boolean;
-  sectors: SectorWithPath[];
-  regionId: RegionId;
-  setRegion: (id: RegionId) => void;
-  severityByRegion: Partial<Record<RegionId, string>>;
-}) {
-  return (
-    <div className="nx-stage relative mx-auto w-full max-w-[560px]">
-      <svg
-        viewBox="0 0 1000 900"
-        className="h-auto w-full"
-        role="img"
-        aria-label={ar ? "خريطة المملكة والمناطق الأربع" : "Kingdom map — four regions"}
-      >
-        <defs>
-          <radialGradient id="stage-glow" cx="50%" cy="46%" r="60%">
-            <stop offset="0%" stopColor="#00D4FF" stopOpacity="0.22" />
-            <stop offset="55%" stopColor="#00D4FF" stopOpacity="0.05" />
-            <stop offset="100%" stopColor="#00D4FF" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="ksa-fill" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#22D3EE" stopOpacity="0.42" />
-            <stop offset="55%" stopColor="#0891b2" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#04111f" stopOpacity="0.5" />
-          </linearGradient>
-          {/* Low-poly holographic mesh, clipped to the peninsula. */}
-          <pattern id="ksa-mesh" width="30" height="26" patternUnits="userSpaceOnUse">
-            <path
-              d="M0 26 L15 0 L30 26 M15 0 L15 26 M0 13 L30 13"
-              stroke="#7EF9FF"
-              strokeWidth="0.7"
-              fill="none"
-              opacity="0.45"
-            />
-          </pattern>
-          {/* Faint holo dot-grid backdrop. */}
-          <pattern id="holo-grid" width="46" height="46" patternUnits="userSpaceOnUse">
-            <circle cx="1.4" cy="1.4" r="1.4" fill="#1e6f8c" opacity="0.5" />
-          </pattern>
-          <clipPath id="ksa-clip">
-            <path d={PENINSULA} />
-          </clipPath>
-          {/* Static soft glow rendered ONCE — never animated (const. Art. 13). */}
-          <filter id="ksa-glow" x="-25%" y="-25%" width="150%" height="150%">
-            <feGaussianBlur stdDeviation="7" />
-          </filter>
-        </defs>
+/* ── item 5 «حذف خريطة المملكة» ────────────────────────────────────────────
+ * CentralMap and its geometry (PENINSULA path, SECTOR_CENTROIDS, POWER_NODES)
+ * used to draw the Kingdom map here. It was ALREADY unreachable — defined but
+ * never rendered — so the map the owner saw on the homepage was not this one.
+ * Removing the dead code is the honest half of this item.
+ *
+ * The peninsula still VISIBLE on the homepage is <ArabianPeninsulaBackdrop />,
+ * mounted in __root.tsx as the ambient layer of EVERY page. It is deliberately
+ * left alone: this is a homepage-scoped item, and unmounting a global backdrop
+ * would strip all 26 screens and leave flat dark voids the shell exists to
+ * prevent. Say the word and it goes — but that is a global change, not this one.
+ * ── */
 
-        {/* Radiant holo-grid + pulse (single animated layer) */}
-        <rect x="0" y="0" width="1000" height="900" fill="url(#holo-grid)" opacity="0.35" />
-        <circle cx="500" cy="470" r="440" fill="url(#stage-glow)" className="nx-stage-pulse" />
-
-        {/* Connection spokes linking the core to the four regions (gentle
-            opacity pulse — transform/opacity only, iOS-safe). */}
-        <g className="nx-spokes" stroke="#00D4FF" strokeWidth="1.4" strokeOpacity="0.3">
-          {SPOKES.map((s) => (
-            <line key={s.id} x1="500" y1="470" x2={s.x2} y2={s.y2} />
-          ))}
-        </g>
-
-        {/* Rotating command dais under the map (one element) */}
-        <g className="nx-dais" style={{ transformOrigin: "500px 700px" }}>
-          {[210, 168, 126].map((rr, i) => (
-            <ellipse
-              key={rr}
-              cx="500"
-              cy="700"
-              rx={rr}
-              ry={rr * 0.34}
-              fill="none"
-              stroke="#00D4FF"
-              strokeWidth={i === 0 ? 2 : 1}
-              strokeOpacity={0.22 - i * 0.04}
-              strokeDasharray={i === 1 ? "5 12" : undefined}
-            />
-          ))}
-        </g>
-
-        {/* Peninsula — static blurred glow, then crisp crystalline body */}
-        <path d={PENINSULA} fill="#22D3EE" opacity="0.28" filter="url(#ksa-glow)" />
-        <path
-          d={PENINSULA}
-          fill="url(#ksa-fill)"
-          stroke="#7EF9FF"
-          strokeWidth="2"
-          strokeOpacity="0.85"
-        />
-        <g clipPath="url(#ksa-clip)">
-          <rect x="0" y="0" width="1000" height="900" fill="url(#ksa-mesh)" />
-          {/* Region territories tinted by regions.ts, clipped inside the map.
-              ALL four radiate + pulse (staggered) — the active one brighter. */}
-          {sectors.map((s, i) => {
-            const active = s.id === regionId;
-            const color = REGION_ACCENT_HEX[s.id];
-            const sev = severityByRegion[s.id];
-            const base = sev === "critical" ? 0.42 : sev === "medium" ? 0.3 : 0.2;
-            return (
-              <path
-                key={s.id}
-                d={s.d}
-                fill={color}
-                fillOpacity={active ? base + 0.3 : base}
-                stroke={color}
-                strokeWidth={active ? 4 : 1.5}
-                strokeOpacity={active ? 1 : 0.6}
-                className={active ? "nx-territory nx-territory-active" : "nx-territory"}
-                style={{
-                  cursor: "pointer",
-                  transformBox: "fill-box",
-                  transformOrigin: "center",
-                  animationDelay: `${i * 0.6}s`,
-                }}
-                onClick={() => setRegion(s.id)}
-                role="button"
-                aria-label={REGIONS.find((r) => r.id === s.id)?.[ar ? "shortAr" : "shortEn"]}
-              />
-            );
-          })}
-        </g>
-
-        {/* Holographic power-transmission grid over the Kingdom (glow + pulse) */}
-        <g clipPath="url(#ksa-clip)">
-          <g className="nx-power-lines" filter="url(#ksa-glow)" stroke="#7EF9FF" strokeWidth="1.6">
-            {POWER_EDGES.map(([a, b], i) => (
-              <line
-                key={i}
-                x1={POWER_NODES[a].x}
-                y1={POWER_NODES[a].y}
-                x2={POWER_NODES[b].x}
-                y2={POWER_NODES[b].y}
-              />
-            ))}
-          </g>
-          <g className="nx-power-nodes">
-            {POWER_NODES.map((n, i) => (
-              <g key={i}>
-                <circle cx={n.x} cy={n.y} r="9" fill="#00D4FF" opacity="0.25" />
-                <circle cx={n.x} cy={n.y} r="4" fill="#BFFcff" />
-              </g>
-            ))}
-          </g>
-        </g>
-
-        <style>{`
-          .nx-stage-pulse { transform-box: view-box; transform-origin: 500px 470px; animation: nxStagePulse 6.5s ease-in-out infinite; }
-          .nx-dais { animation: nxDaisSpin 46s linear infinite; }
-          .nx-spokes { animation: nxSpokes 4s steps(16, jump-none) infinite; }
-          .nx-territory { animation: nxTerritory 3.4s steps(16, jump-none) infinite; }
-          .nx-territory-active { animation: nxTerritoryActive 2.6s steps(14, jump-none) infinite; }
-          .nx-power-lines { animation: nxPower 3.2s ease-in-out infinite; }
-          .nx-power-nodes { animation: nxNodes 2.2s ease-in-out infinite; }
-          @keyframes nxStagePulse { 0%,100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
-          @keyframes nxDaisSpin { to { transform: rotate(360deg); } }
-          @keyframes nxSpokes { 0%,100% { stroke-opacity: 0.18; } 50% { stroke-opacity: 0.5; } }
-          @keyframes nxTerritory { 0%,100% { fill-opacity: 0.28; } 50% { fill-opacity: 0.5; } }
-          @keyframes nxTerritoryActive { 0%,100% { fill-opacity: 0.5; } 50% { fill-opacity: 0.72; } }
-          @keyframes nxPower { 0%,100% { stroke-opacity: 0.28; } 50% { stroke-opacity: 0.85; } }
-          @keyframes nxNodes { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
-          @media (prefers-reduced-motion: reduce) {
-            .nx-stage-pulse, .nx-dais, .nx-spokes, .nx-territory, .nx-territory-active,
-            .nx-power-lines, .nx-power-nodes { animation: none !important; }
-          }
-          [data-nx-frozen="true"] .nx-stage-pulse,
-          [data-nx-frozen="true"] .nx-dais,
-          [data-nx-frozen="true"] .nx-spokes,
-          [data-nx-frozen="true"] .nx-territory,
-          [data-nx-frozen="true"] .nx-territory-active,
-          [data-nx-frozen="true"] .nx-power-lines,
-          [data-nx-frozen="true"] .nx-power-nodes { animation-play-state: paused !important; }
-        `}</style>
-      </svg>
-    </div>
-  );
-}
-
-// ── Bottom tab bar (module launchpad) ───────────────────────────────────────
 const TABS: { ar: string; en: string; to: string; icon: typeof Home; active?: boolean }[] = [
   { ar: "الرئيسية", en: "Home", to: "/", icon: Home, active: true },
   { ar: "الأداء", en: "Performance", to: "/analytics", icon: BarChart3 },
@@ -757,20 +565,11 @@ export function FourRegionHub() {
             </span>
           </span>
         </div>
-        <div className="flex flex-col items-center">
-          <NexiosWordmark />
-          <div className="mt-0.5 text-[10px] uppercase tracking-[0.35em] text-white/50">
-            Executive Intelligence OS
-          </div>
-        </div>
+        {/* item 1: NEXIOS wordmark + «Executive Intelligence OS» descriptor
+            removed. The centre column stays in the grid so the clock (start)
+            and the profile chip (end) keep their positions. */}
+        <div aria-hidden />
         <div className="flex items-center justify-end gap-2 text-white/60">
-          <button
-            type="button"
-            className="grid size-9 place-items-center rounded-xl nx-holo-icon hover:text-white"
-            aria-label={ar ? "بحث" : "Search"}
-          >
-            <Search className="size-4" aria-hidden />
-          </button>
           <button
             type="button"
             onClick={() => {
@@ -789,16 +588,6 @@ export function FourRegionHub() {
                 {alerts.length}
               </span>
             )}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof window !== "undefined") window.location.href = "/settings";
-            }}
-            className="grid size-9 place-items-center rounded-xl nx-holo-icon hover:text-white"
-            aria-label={ar ? "الإعدادات" : "Settings"}
-          >
-            <Settings className="size-4" aria-hidden />
           </button>
 
           {/* Profile chip, not an icon control — keeps the neutral border;
