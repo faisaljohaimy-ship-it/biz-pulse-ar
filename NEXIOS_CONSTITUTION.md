@@ -92,13 +92,13 @@ be touched without an explicit human decision.
 بشارة ظاهرة دائمًا (عقيدة «بيانات لا تفرغ» في CLAUDE.md)، والصفوف
 الحية تفوز متى وصلت. migrations دائمًا idempotent ولا تمس بيانات
 قائمة. RLS مفعّل على كل جدول: القراءة العامة لجداول العرض فقط،
-و`aria_knowledge` خلف المصادقة **بلا استثناء**.
+و`finn_knowledge` (الاسم المادي القديم `aria_knowledge` بقي في القاعدة توافقًا فقط) خلف المصادقة **بلا استثناء**.
 **Article 6 — Data.** Every displayed number originates from Supabase —
 never hardcoded; when unreachable or empty, the built-in reference
 simulation (`is_simulation = true`, always badged) serves the page and
 live rows win on arrival. Migrations are always idempotent and never
 touch existing data. RLS on every table: public read for showcase
-tables only; `aria_knowledge` behind authentication without exception.
+tables only; `finn_knowledge` (legacy physical name `aria_knowledge`, compatibility only) behind authentication without exception.
 
 ---
 
@@ -135,13 +135,13 @@ prohibited in any document or presentation.
 ## Chapter IV — The Voice System (FINN)
 
 ### المادة ١٠ — الصوت الحصري
-صوت FINN **صوت ذكوري سعودي عبر الخادم** (`ARIA_ELEVENLABS_VOICE_ID`) يُولَّد
-على الخادم (المسار `/api/aria/tts` وبديله العام `/api/public/aria-tts`)
+صوت FINN **صوت ذكوري سعودي عبر الخادم** (`FINN_ELEVENLABS_VOICE_ID`) يُولَّد
+على الخادم (المسار `/api/finn/tts` وبديله العام `/api/public/finn-tts`)
 — هذه القناة الوحيدة. **browser TTS (`speechSynthesis`) محظور دستوريًا
 في كل مسار — وجوده نقضٌ تلقائي.** أصوات الوكلاء المتخصصين فقط من
 القائمة البيضاء `AGENT_ELEVEN_VOICES`.
 **Article 10 — Exclusive voice.** FINN speaks exclusively via ElevenLabs
-a male voice generated server-side (`/api/aria/tts` and its public fallback).
+a male voice generated server-side (`/api/finn/tts` and its public fallback).
 Browser TTS (`speechSynthesis`) is constitutionally banned on every
 path — its presence is an automatic veto. Specialist agents may use
 whitelisted ElevenLabs voices only.
@@ -278,7 +278,7 @@ FINN مساعد أمن صناعي؛ لا تتحدث خارج نطاقه ولا �
 قبل النموذج. حارس هلوسة: البيان غير المحفوظ يُقابَل بسطر «غير متوفر
 لدي». النطق عبر صوت FINN حصرًا يحوّل الرموز إلى عربية صحيحة (SEC-18 → «سِك
 ثمانية عشر»). العقد مثبَّت باختبارات (`response-contract.test.ts` ·
-`pronunciation.test.ts`) ومصونٌ بوكيل `nexios-aria-response-auditor`.
+`pronunciation.test.ts`) ومصونٌ بوكيل `nexios-finn-response-auditor`.
 **Article 22 — FINN Response Contract.** FINN is an industrial-security
 assistant: it never speaks outside that domain, nor says more than asked.
 Scope is exclusively HCIS SEC/SAF directives · compliance & its status ·
@@ -291,7 +291,7 @@ questions before the model. A hallucination guard answers an unheld datum
 with "غير متوفر لدي". Pronunciation (FINN's voice only) speaks codes as correct
 Arabic (SEC-18 → «سِك ثمانية عشر»). The contract is pinned by unit tests
 (`response-contract.test.ts` · `pronunciation.test.ts`) and safeguarded by
-the `nexios-aria-response-auditor` agent.
+the `nexios-finn-response-auditor` agent.
 
 ---
 
