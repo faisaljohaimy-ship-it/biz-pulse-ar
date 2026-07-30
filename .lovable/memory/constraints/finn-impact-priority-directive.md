@@ -1,6 +1,6 @@
 ---
 name: FINN Impact Priority Directive
-description: Supreme executive directive — 9 sequential phases (Core → Execution → Live Demo → Command Center → Memory → Multi-Agent → Digital Twin → Performance → Experience) + Final Validation. Non-skippable, production-only, evidence-gated, bilingual AR/EN, self-evolving. Full text: docs/FINN_IMPACT_PRIORITY_DIRECTIVE.md · Prompt of record: src/lib/aria/finn-impact-directive.ts (FINN_IMPACT_DIRECTIVE).
+description: Supreme executive directive — 9 sequential phases (Core → Execution → Live Demo → Command Center → Memory → Multi-Agent → Digital Twin → Performance → Experience) + Final Validation. Non-skippable, production-only, evidence-gated, bilingual AR/EN, self-evolving. Full text: docs/FINN_IMPACT_PRIORITY_DIRECTIVE.md · Prompt of record: src/lib/finn/finn-impact-directive.ts (FINN_IMPACT_DIRECTIVE).
 type: constraint
 ---
 

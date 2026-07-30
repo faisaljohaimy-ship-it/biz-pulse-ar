@@ -6,7 +6,7 @@ type: constraint
 
 # Article 24 — Attachment & Generative Response
 
-Applies to every FINN surface (AriaCopilot, AriaDock, /assistant, MCP, embed).
+Applies to every FINN surface (FinnCopilot, AriaDock, /assistant, MCP, embed).
 
 ## Upload
 - `uploadAriaAttachment` server fn, `requireSupabaseAuth`, MIME allowlist,
