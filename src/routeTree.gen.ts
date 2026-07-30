@@ -54,6 +54,7 @@ import { Route as AgentsReferenceRouteImport } from './routes/agents-reference'
 import { Route as AgentsFlowRouteImport } from './routes/agents-flow'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as PromoIndexRouteImport } from './routes/promo/index'
 import { Route as PromoImpactRouteImport } from './routes/promo/impact'
 import { Route as PromoF5RouteImport } from './routes/promo/f5'
@@ -443,6 +444,11 @@ const AboutRoute = AboutRouteImport.update({
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PromoIndexRoute = PromoIndexRouteImport.update({
@@ -1332,7 +1338,7 @@ const AuthenticatedHcisDirectiveCodeRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedRouteWithChildren
+  '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agents-flow': typeof AgentsFlowRoute
   '/agents-reference': typeof AgentsReferenceRoute
@@ -1545,7 +1551,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AuthenticatedRouteWithChildren
+  '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/agents-flow': typeof AgentsFlowRoute
   '/agents-reference': typeof AgentsReferenceRoute
@@ -1757,6 +1763,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
   '/agents-flow': typeof AgentsFlowRoute
@@ -2396,6 +2403,7 @@ export interface FileRouteTypes {
     | '/lovable/email/transactional/send'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated'
     | '/about'
     | '/agents-flow'
@@ -2610,6 +2618,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
   AgentsFlowRoute: typeof AgentsFlowRoute
@@ -3029,6 +3038,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/promo/': {
@@ -4472,6 +4488,7 @@ const ApiChatRouteWithChildren =
   ApiChatRoute._addFileChildren(ApiChatRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
   AgentsFlowRoute: AgentsFlowRoute,

@@ -27,10 +27,32 @@ import { FourRegionHub } from "@/components/home/FourRegionHub";
 import { HomeTopNav } from "@/components/nav/HomeTopNav";
 // Pre-hero intros retired — the homepage renders directly with no cinematic
 // welcome overlay. Auto-greeting voice removed per directive.
-
 // Static holographic-tree fleet mirrors the Agent Operations Platform view.
 
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "NEXIOS — نظام القيادة التنفيذي للأمن الصناعي" },
+      {
+        name: "description",
+        content:
+          "منصة NEXIOS: مركز قيادة تنفيذي للأمن الصناعي والامتثال مع المساعد الذكي FINN ومؤشرات حيّة للمناطق الأربع.",
+      },
+      { property: "og:title", content: "NEXIOS — نظام القيادة التنفيذي للأمن الصناعي" },
+      {
+        property: "og:description",
+        content:
+          "مركز قيادة تنفيذي للأمن الصناعي والامتثال مع المساعد الذكي FINN ومؤشرات حيّة للمناطق الأربع.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: IntroLanding,
+});
+
 function IntroLanding() {
+
   const { locale } = useI18n();
   const ar = locale === "ar";
   // The single global FINN backdrop is rendered from __root.tsx; this
