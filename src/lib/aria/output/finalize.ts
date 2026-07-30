@@ -190,10 +190,11 @@ function make(
   // The brand is a compile-time phantom only (a `unique symbol` with no runtime
   // value); it exists to stop any module outside this file from constructing a
   // SafeFinnOutput. We build the plain object and assert the brand here.
+  const safeText = enforceFinnIdentity(displayText);
   return {
     status,
-    displayText,
-    ttsText: extra.ttsText ?? displayText,
+    displayText: safeText,
+    ttsText: extra.ttsText ? enforceFinnIdentity(extra.ttsText) : safeText,
     citations: extra.citations ?? [],
     observedAt: extra.observedAt ?? null,
     isSimulation: extra.isSimulation ?? false,
