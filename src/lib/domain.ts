@@ -28,7 +28,7 @@ export const PRODUCT_NAME_AR_PLAIN = "مرقب";
 export const PRODUCT_NAME_EN = "MIRQAB";
 
 export const SITE_NAME = "مِرْقَب — منصة إنجاز الأعمال التنفيذية · MIRQAB Executive Platform";
-export const COMPANY_NAME = "NEXIOS Technologies";
+export const COMPANY_NAME = "منصة إدارة الأمن الصناعي";
 export const PRODUCT_NAME = "مِرْقَب — MIRQAB";
 
 /**

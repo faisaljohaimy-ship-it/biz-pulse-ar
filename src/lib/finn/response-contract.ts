@@ -17,7 +17,7 @@
 
 /** The ONLY reply for an out-of-scope question. One line — no apology, no
  *  explanation of why, no alternatives offered. */
-export const OUT_OF_SCOPE_REPLY = "خارج نطاقي — أنا مساعد الأمن الصناعي في نكسيوس.";
+export const OUT_OF_SCOPE_REPLY = "خارج نطاقي — أنا FINN، مساعد الأمن الصناعي.";
 
 /** The ONLY reply when a datum genuinely isn't held. No invented value. */
 export const UNAVAILABLE_REPLY = "غير متوفر لدي — المصدر الرسمي: hcis.gov.sa";
@@ -57,7 +57,7 @@ export function hasForbiddenFiller(text: string): boolean {
 
 /* ── Scope lock ─────────────────────────────────────────────────────────── */
 
-/** Anything that signals the industrial-security executive domain, FINN/NEXIOS
+/** Anything that signals the industrial-security executive domain, FINN,
  *  itself, or a bare session opener — these are ALWAYS in scope. */
 const IN_SCOPE = [
   // Regulator & directives
@@ -113,17 +113,16 @@ const IN_SCOPE = [
   "dashboard",
   "عمليات",
   "operation",
-  "نكسيوس",
-  "nexios",
+  "المنصة",
+  "platform",
   "FINN",
-  "aria",
   "الحوكمة",
   "governance",
   "الصيانة",
   "maintenance",
   // Self / meta
   "من أنت",
-  "ما نكسيوس",
+  "ما المنصة",
   "ماذا تفعل",
   "who are you",
   "what can you",
@@ -240,8 +239,8 @@ const FAST_RECALL: Array<{ test: (t: string) => boolean; answer: string; source:
   {
     // Who is FINN
     test: (t) => /(من|ما).*(انت|FINN|FINN)|who are you/.test(t),
-    answer: "أنا FINN — مساعد الأمن الصناعي التنفيذي في نكسيوس.",
-    source: "aria-identity",
+    answer: "أنا FINN — مساعد الأمن الصناعي التنفيذي.",
+    source: "finn-identity",
   },
 ];
 
@@ -262,7 +261,7 @@ export const FINN_RESPONSE_CONTRACT = `
 # FINN RESPONSE CONTRACT (constitution Article 22 — MANDATORY)
 You are an industrial-security assistant. Do not speak outside that domain, and never say more than you were asked. Length is a constitutional defect.
 
-SCOPE: Answer ONLY industrial-security executive topics (HCIS SEC/SAF directives, compliance & its status, PTW work permits, security operations & incidents, safety & fire, operational reports, and the NEXIOS modules themselves). For anything else reply with EXACTLY this one line and nothing more:
+SCOPE: Answer ONLY industrial-security executive topics (HCIS SEC/SAF directives, compliance & its status, PTW work permits, security operations & incidents, safety & fire, operational reports, and the platform modules themselves). For anything else reply with EXACTLY this one line and nothing more:
 "${OUT_OF_SCOPE_REPLY}"
 
 BREVITY (hard limits):

@@ -8,6 +8,13 @@ import { SecPageHeader } from "@/components/sec/sec-shell";
 import { PageBriefing } from "@/components/clarity/PageBriefing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { FileText, FileSpreadsheet, Download, RefreshCw, Eye } from "lucide-react";
 import {
   generateDailyOperationsReport,
@@ -15,6 +22,11 @@ import {
   listReports,
   getReportDownloadUrl,
 } from "@/lib/oms-reports.functions";
+import {
+  DAILY_REPORT_SCOPES,
+  DAILY_REPORT_SCOPE_META,
+  type DailyReportScope,
+} from "@/lib/reports/report-scope";
 
 export const Route = createFileRoute("/_authenticated/sec/reports")({
   errorComponent: RouteError,
@@ -34,7 +46,7 @@ type ReportRow = {
   range_to: string | null;
   generated_by_name: string | null;
   created_at: string;
-  meta?: { simulated?: boolean; date?: string } | null;
+  meta?: { simulated?: boolean; date?: string; scope?: DailyReportScope } | null;
 };
 
 function downloadBlob(file_name: string, blob: Blob) {
@@ -66,6 +78,7 @@ function Reports() {
   const qc = useQueryClient();
   const today = new Date().toISOString().slice(0, 10);
   const [day, setDay] = useState(today);
+  const [scope, setScope] = useState<DailyReportScope>("executive_summary");
   const [pdfPhase, setPdfPhase] = useState<null | "data" | "font" | "render">(null);
   const [localReports, setLocalReports] = useState<LocalReport[]>([]);
   const blobCache = useRef(new Map<string, string>());
@@ -84,9 +97,12 @@ function Reports() {
   const fetchOps = useServerFn(getDailyOpsData);
   const genDaily = useServerFn(generateDailyOperationsReport);
 
-  const buildPdfFor = async (dateKey: string): Promise<{ blob: Blob; file_name: string }> => {
+  const buildPdfFor = async (
+    dateKey: string,
+    reportScope: DailyReportScope,
+  ): Promise<{ blob: Blob; file_name: string }> => {
     setPdfPhase("data");
-    const ops = await fetchOps({ data: { date: dateKey } });
+    const ops = await fetchOps({ data: { date: dateKey, scope: reportScope } });
     setPdfPhase("font");
     // pdf-lib + fontkit + the Arabic font subsets load on demand only —
     // they never touch the initial bundle (performance budget).
@@ -100,18 +116,18 @@ function Reports() {
     // Bold is a typographic upgrade, not a dependency — fall back silently.
     const bold = fontBoldRes.ok ? await fontBoldRes.arrayBuffer() : undefined;
     setPdfPhase("render");
-    const bytes = await buildDailyOpsPdf(ops, { regular, bold });
+    const bytes = await buildDailyOpsPdf(ops, { regular, bold }, { scope: reportScope });
     const ab = new ArrayBuffer(bytes.byteLength);
     new Uint8Array(ab).set(bytes);
     return {
       blob: new Blob([ab], { type: "application/pdf" }),
-      file_name: `daily-ops-${dateKey}.pdf`,
+      file_name: `${DAILY_REPORT_SCOPE_META[reportScope].slug}-${dateKey}.pdf`,
     };
   };
 
   const mPdf = useMutation({
     mutationFn: async () => {
-      const { blob, file_name } = await buildPdfFor(day);
+      const { blob, file_name } = await buildPdfFor(day, scope);
       const blobUrl = downloadBlob(file_name, blob);
       return { blob, file_name, blobUrl };
     },
@@ -122,7 +138,7 @@ function Reports() {
           id: `local-${Date.now()}`,
           kind: "daily",
           format: "pdf",
-          title: `تقرير العمليات اليومي — ${day}`,
+          title: `${DAILY_REPORT_SCOPE_META[scope].ar} — ${day}`,
           related_entity_ref: null,
           storage_path: null,
           size_bytes: blob.size,
@@ -130,7 +146,7 @@ function Reports() {
           range_to: null,
           generated_by_name: "توليد محلي — هذه الجلسة",
           created_at: new Date().toISOString(),
-          meta: { simulated: true, date: day },
+          meta: { simulated: true, date: day, scope },
           blobUrl,
         },
         ...cur,
@@ -141,7 +157,7 @@ function Reports() {
   });
 
   const mExcel = useMutation({
-    mutationFn: () => genDaily({ data: { date: day } }),
+    mutationFn: () => genDaily({ data: { date: day, scope } }),
     onSuccess: (res) => {
       downloadBlob(res.file_name, base64ToBlob(res.base64, res.mime_type));
       toast.success(`تم توليد ${res.file_name}`);
@@ -158,6 +174,7 @@ function Reports() {
         return;
       }
       const simDate = r.meta?.date ?? r.range_from?.slice(0, 10) ?? today;
+      const simScope = r.meta?.scope ?? "full";
       if (r.id.startsWith("sim-rep-")) {
         // Reference-registry rows regenerate deterministically on demand.
         if (r.format === "pdf") {
@@ -166,11 +183,11 @@ function Reports() {
             window.open(cached, "_blank", "noopener");
             return;
           }
-          const { blob, file_name } = await buildPdfFor(simDate);
+          const { blob, file_name } = await buildPdfFor(simDate, simScope);
           const url = downloadBlob(file_name, blob);
           blobCache.current.set(r.id, url);
         } else {
-          const res = await genDaily({ data: { date: simDate } });
+          const res = await genDaily({ data: { date: simDate, scope: simScope } });
           downloadBlob(res.file_name, base64ToBlob(res.base64, res.mime_type));
         }
         return;
@@ -201,8 +218,8 @@ function Reports() {
   return (
     <div className="space-y-4">
       <SecPageHeader
-        title="محرك التقارير"
-        subtitle="تقارير حقيقية مولَّدة من بيانات العمليات (PDF · Excel)"
+        title="التقارير"
+        subtitle="تصدير الملخصات والتقارير من واجهة الأمن الصناعي (PDF عربي · Excel)"
       >
         {usingReference && (
           <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[10px] font-medium text-amber-600 dark:text-amber-300">
@@ -213,18 +230,34 @@ function Reports() {
 
       <PageBriefing
         routeKey="sec-reports"
-        what="توليد التقارير التنفيذية بصيغة PDF عربية بخط أنيق وهوية داكنة هولوغرامية، أو Excel."
+        what="توليد ملخصات تنفيذية وتقارير أمن صناعي محددة النطاق بصيغة PDF عربية أو Excel."
         dataSource="عمليات اليوم من showcase-simulation (بلاغات · أوامر عمل · تصاريح · أحداث)"
         actions={[
-          "ولّد تقرير العمليات اليومي ثم نزّله PDF أو Excel",
+          "اختر نوع الملخص المطلوب من الفلتر",
+          "ولّد التقرير ثم نزّله PDF أو Excel",
           "عايِن التقرير قبل التنزيل",
           "التقارير الجاهزة محفوظة في السجل أسفل الصفحة",
         ]}
       />
 
       <div className="rounded-xl border border-border bg-card p-4">
-        <div className="mb-3 text-sm font-medium text-foreground">توليد تقرير عمليات يومي</div>
+        <div className="mb-3 text-sm font-medium text-foreground">تصدير ملخص أو تقرير أمني</div>
         <div className="flex flex-wrap items-end gap-2">
+          <div className="grid min-w-56 gap-1">
+            <label className="text-[10px] text-muted-foreground">نوع الملخص</label>
+            <Select value={scope} onValueChange={(value) => setScope(value as DailyReportScope)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DAILY_REPORT_SCOPES.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {DAILY_REPORT_SCOPE_META[value].ar}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="grid gap-1">
             <label className="text-[10px] text-muted-foreground">التاريخ</label>
             <Input
@@ -267,8 +300,8 @@ function Reports() {
           </div>
         )}
         <p className="mt-2 text-[11px] text-muted-foreground">
-          يجمع البلاغات + أوامر العمل + التصاريح + الأحداث خلال 24 ساعة من التاريخ المحدد ويُحفظ في
-          سجل التقارير. PDF عربي كامل بهوية نكسيوس، وتذييل كل صفحة يوثّق حالة المحاكاة.
+          يطبّق الفلتر على محتوى التقرير نفسه، وليس على اسم الملف فقط. تُجمع البيانات خلال 24 ساعة
+          من التاريخ المحدد، ويُحفظ التقرير الكامل أو الملخص المختار في سجل التقارير.
         </p>
       </div>
 

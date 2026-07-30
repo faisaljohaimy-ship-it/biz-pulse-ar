@@ -1,5 +1,5 @@
 /**
- * FINN visual signature — the canonical «FINN@nexios.com» wordmark and a
+ * FINN visual signature — the canonical «FINN» wordmark and a
  * React-free SVG generator, shared across every touchpoint (chat backdrop via
  * the FinnSignatureBackdrop component, generated PDFs, and the loading screen)
  * so the brand identity stays unified. This module imports nothing from React
@@ -7,7 +7,7 @@
  */
 
 /** The one canonical FINN wordmark. Never hardcode this string elsewhere. */
-export const FINN_SIGNATURE_WORDMARK = "FINN@nexios.com";
+export const FINN_SIGNATURE_WORDMARK = "FINN";
 
 /**
  * Static SVG markup of the FINN signature for NON-DOM surfaces — embedded in

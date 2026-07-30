@@ -867,7 +867,7 @@ const ACTIONS = [
   { to: "/sec", icon: Activity, ar: "العمليات", en: "Operations" },
   { to: "/sec", icon: AlertTriangle, ar: "الحوادث", en: "Incidents" },
   { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل", en: "Work Orders" },
-  { to: "/executive-reports", icon: FileBarChart2, ar: "التقارير", en: "Reports" },
+  { to: "/sec/reports", icon: FileBarChart2, ar: "التقارير", en: "Reports" },
   { to: "/finn", icon: MessageSquare, ar: "اسأل FINN", en: "Ask FINN" },
 ] as const;
 

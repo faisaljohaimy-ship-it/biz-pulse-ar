@@ -31,7 +31,7 @@ export function buildExecutiveTour(): readonly ShowcaseStep[] {
       title_en: "Executive Reports",
       narration_ar: "التقارير التنفيذية موقوفة على الأدلة، وقابلة للإرسال عبر Outlook.",
       narration_en: "Executive reports are evidence-linked and can be delivered via Outlook.",
-      targetRoute: "/executive-reports",
+      targetRoute: "/sec/reports",
       durationMs: 14_000,
     },
   ];

@@ -1,10 +1,10 @@
 /**
- * Executive Situation Room — `/situation-room`
+ * Operations Room — `/situation-room`
  *
  * Phase 5 — calmer, more cinematic redesign over the existing War Room
  * runtime. Reuses `getBridgeState`, `getMissionTimeline`,
  * `getPredictedRisks`, `generateExecutiveBriefing`, `AgentRing`,
- * `MissionTimeline`, `BriefingStage` and the 3D FinnScene. Adds an
+ * `MissionTimeline` and `BriefingStage`. Adds an
  * Executive Decision Engine column (Risks / Opportunities / Actions).
  *
  * No DB schema, no workflow, no agent logic changes.
@@ -29,34 +29,37 @@ import {
   Sparkles,
   Map as MapIcon,
   Presentation,
+  Eye,
+  ClipboardList,
+  FileBarChart,
+  ShieldAlert,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { getBridgeState, getMissionTimeline, type BridgeHealth } from "@/lib/exec/bridge.functions";
+import {
+  getBridgeState,
+  getMissionTimeline,
+  type BridgeAgent,
+  type BridgeHealth,
+} from "@/lib/exec/bridge.functions";
 import {
   generateExecutiveBriefing,
   type BriefingSegment,
   type ExecutiveBriefing,
 } from "@/lib/exec/briefing.functions";
 import { getPredictedRisks } from "@/lib/exec/predictive.functions";
-import { AgentRing } from "@/components/bridge/AgentRing";
-import { speakAgent } from "@/lib/digital-humans/speak-agent";
-
 import { BriefingStage } from "@/components/bridge/BriefingStage";
 import { MissionTimeline } from "@/components/bridge/MissionTimeline";
 import { DecisionEngine } from "@/components/situation-room/DecisionEngine";
 import { AgentConversation } from "@/components/situation-room/AgentConversation";
-import { findHuman } from "@/lib/digital-humans/registry";
-import { DigitalHumanAvatar } from "@/components/digital-humans/DigitalHumanAvatar";
 
 export const Route = createFileRoute("/_authenticated/situation-room")({
   head: () => ({
     meta: [
-      { title: "Executive Situation Room — NEXUS" },
+      { title: "غرفة العمليات — إدارة الأمن الصناعي" },
       {
         name: "description",
-        content:
-          "Living executive situation room with FINN, specialist AI agents, decision engine, predictive risks and one-touch 60-second briefings.",
+        content: "غرفة عمليات حية لمتابعة الحوادث والتنبيهات والتصعيد وأدوار وكلاء الأمن الصناعي.",
       },
     ],
   }),
@@ -156,20 +159,9 @@ function SituationRoomPage() {
     onSuccess: (data) => setBriefing(data),
   });
 
-  const aria = findHuman("aria")!;
   const agents = useMemo(() => state.data?.agents ?? [], [state.data?.agents]);
   const health = state.data?.health;
   const threat = threatLevel(health?.score ?? 0);
-
-  const spotlightAgentId = useMemo(() => {
-    if (!spotlightSegment) return null;
-    if (spotlightSegment.speaker_id === "aria") return null;
-    return (
-      agents.find(
-        (a) => a.id === spotlightSegment.speaker_id || a.name === spotlightSegment.speaker_name,
-      )?.id ?? null
-    );
-  }, [spotlightSegment, agents]);
 
   return (
     <main
@@ -188,18 +180,9 @@ function SituationRoomPage() {
       <div className="relative grid grid-cols-1 gap-5 px-5 pb-5 lg:grid-cols-[280px_minmax(0,1fr)_380px]">
         <OperationalHealthColumn ar={ar} health={health} loading={state.isLoading} />
 
-        {/* CENTER — FINN + Agent Command Table */}
-        <div className="relative flex min-h-[660px] flex-col items-center justify-center gap-6">
-          <AgentRing
-            agents={agents}
-            ar={ar}
-            radius={270}
-            centerSize={260}
-            spotlightId={spotlightAgentId}
-            onAgentClick={(a) => speakAgent(a, ar)}
-          >
-            <CenterStage ar={ar} speaking={spotlightSegment?.speaker_id === "aria"} aria={aria} />
-          </AgentRing>
+        {/* CENTER — role dashboard. No electronic characters or avatars. */}
+        <div className="relative flex min-h-[660px] flex-col justify-center gap-6">
+          <AgentRoleDashboard agents={agents} ar={ar} spotlight={spotlightSegment} />
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
@@ -306,12 +289,16 @@ function TopStatusBar({
         </div>
         <div className="min-w-0">
           <div className="truncate text-xs uppercase tracking-[0.22em] text-cyan-300/80">
-            NEXUS ·{" "}
-            {ar ? "إدارة الأمن الصناعي · المنطقة الغربية" : "Industrial Security · Western Region"}
+            {ar ? "إدارة الأمن الصناعي · متابعة لحظية" : "Industrial Security · Live Operations"}
           </div>
           <div className="truncate text-2xl font-light text-white sm:text-3xl">
-            {ar ? "غرفة الموقف التنفيذية" : "Executive Situation Room"}
+            {ar ? "غرفة العمليات" : "Operations Room"}
           </div>
+          <p className="mt-1 max-w-2xl text-xs leading-5 text-white/55">
+            {ar
+              ? "متابعة الحوادث والتنبيهات فور حدوثها، وتصنيفها حسب الخطورة، وتصعيد الحالات الحرجة وربطها بقنوات المراقبة."
+              : "Track incidents and alerts as they occur, classify severity, escalate critical cases, and connect monitoring channels."}
+          </p>
         </div>
       </div>
 
@@ -509,34 +496,203 @@ function HealthRow({
 }
 
 // ----------------------------------------------------------------------
-// CENTER — FINN stage
+// CENTER — industrial-security agent roles
 // ----------------------------------------------------------------------
 
-function CenterStage({
+const ROLE_META: Array<{
+  match: RegExp;
+  ar: string;
+  en: string;
+  descriptionAr: string;
+  descriptionEn: string;
+  Icon: typeof Activity;
+}> = [
+  {
+    match: /monitor|watch|cctv|camera|رصد|مراقب/i,
+    ar: "المراقبة الميدانية",
+    en: "Field monitoring",
+    descriptionAr: "رصد الكاميرات والحساسات والتنبيهات الحية.",
+    descriptionEn: "Monitors cameras, sensors, and live alerts.",
+    Icon: Eye,
+  },
+  {
+    match: /analy|intel|risk|تحلي|ذكاء|مخاطر/i,
+    ar: "تحليل المخاطر",
+    en: "Risk analysis",
+    descriptionAr: "تحليل الأنماط وتقدير درجة الخطورة والأثر.",
+    descriptionEn: "Analyzes patterns, severity, and impact.",
+    Icon: Brain,
+  },
+  {
+    match: /incident|response|escalat|بلاغ|حادث|تصعيد/i,
+    ar: "الحوادث والتصعيد",
+    en: "Incident escalation",
+    descriptionAr: "تنسيق الاستجابة وتصعيد الحالات الحرجة فوراً.",
+    descriptionEn: "Coordinates response and critical escalation.",
+    Icon: ShieldAlert,
+  },
+  {
+    match: /maintenance|work.?order|صيانة|أمر عمل/i,
+    ar: "الصيانة",
+    en: "Maintenance",
+    descriptionAr: "متابعة الأعطال وأوامر العمل الوقائية والتصحيحية.",
+    descriptionEn: "Tracks faults and preventive/corrective work.",
+    Icon: Wrench,
+  },
+  {
+    match: /compliance|audit|hcis|امتثال|تدقيق/i,
+    ar: "الامتثال والتدقيق",
+    en: "Compliance and audit",
+    descriptionAr: "مراجعة متطلبات HCIS والأدلة والإجراءات التصحيحية.",
+    descriptionEn: "Reviews HCIS controls, evidence, and actions.",
+    Icon: FileCheck2,
+  },
+  {
+    match: /report|brief|تقرير|موجز/i,
+    ar: "التقارير الأمنية",
+    en: "Security reporting",
+    descriptionAr: "إعداد الملخصات التنفيذية وتقارير العمليات.",
+    descriptionEn: "Prepares executive summaries and operations reports.",
+    Icon: FileBarChart,
+  },
+  {
+    match: /permit|access|identity|تصريح|دخول|هوية/i,
+    ar: "التصاريح والدخول",
+    en: "Permits and access",
+    descriptionAr: "مراجعة التصاريح وحركة الدخول والوصول للأصول.",
+    descriptionEn: "Reviews permits, access events, and asset entry.",
+    Icon: ClipboardList,
+  },
+];
+
+function roleFor(agent: BridgeAgent) {
+  const haystack = `${agent.id} ${agent.name} ${agent.goal ?? ""}`;
+  return (
+    ROLE_META.find((role) => role.match.test(haystack)) ?? {
+      match: /.*/,
+      ar: "دعم العمليات",
+      en: "Operations support",
+      descriptionAr: "تنسيق المهام ودعم فرق غرفة العمليات.",
+      descriptionEn: "Coordinates tasks and supports operations teams.",
+      Icon: Activity,
+    }
+  );
+}
+
+function statusText(status: BridgeAgent["status"], ar: boolean) {
+  const labels: Record<BridgeAgent["status"], [string, string]> = {
+    offline: ["غير متصل", "Offline"],
+    idle: ["جاهز", "Ready"],
+    monitoring: ["مراقبة", "Monitoring"],
+    waiting: ["بانتظار إجراء", "Waiting"],
+    thinking: ["تحليل", "Analyzing"],
+    searching: ["بحث", "Searching"],
+    analyzing: ["تحليل", "Analyzing"],
+    consulting: ["تنسيق", "Coordinating"],
+    executing: ["قيد التنفيذ", "Executing"],
+    speaking: ["تحديث مباشر", "Live update"],
+    completed: ["مكتمل", "Completed"],
+    escalated: ["مصعّد", "Escalated"],
+    warning: ["تحذير", "Warning"],
+    error: ["خطأ", "Error"],
+    recovery: ["استعادة", "Recovery"],
+  };
+  return labels[status][ar ? 0 : 1];
+}
+
+function AgentRoleDashboard({
+  agents,
   ar,
-  speaking,
-  aria,
+  spotlight,
 }: {
+  agents: BridgeAgent[];
   ar: boolean;
-  speaking: boolean;
-  aria: ReturnType<typeof findHuman>;
+  spotlight: BriefingSegment | null;
 }) {
   return (
-    <div className="relative grid h-full w-full place-items-center">
-      <div
-        aria-hidden
-        className={cn(
-          "absolute h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl transition-opacity duration-700",
-          speaking ? "opacity-100" : "opacity-60",
-        )}
-      />
-      <DigitalHumanAvatar spec={aria!} state={speaking ? "speaking" : "idle"} size={240} ambient />
-      <div className="absolute -bottom-6 text-center">
-        <div className="text-xs uppercase tracking-[0.22em] text-cyan-200/90">
-          {ar ? "FINN · الذكاء التنفيذي" : "FINN · Executive AI"}
+    <section
+      aria-label={ar ? "لوحة أدوار وكلاء غرفة العمليات" : "Operations agent role dashboard"}
+      className="rounded-3xl border border-cyan-400/20 bg-[#071A2E]/75 p-4 backdrop-blur-xl"
+    >
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-base font-semibold text-white">
+            {ar ? "أدوار فريق غرفة العمليات" : "Operations Room roles"}
+          </h2>
+          <p className="mt-1 text-xs text-white/50">
+            {ar
+              ? "كل بطاقة توضّح مسؤولية الوكيل وحالته والمهمة الجارية."
+              : "Each card identifies the agent responsibility, state, and current task."}
+          </p>
         </div>
+        <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-200">
+          {agents.filter((agent) => agent.enabled).length}/{agents.length} {ar ? "نشط" : "active"}
+        </span>
       </div>
-    </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        {agents.slice(0, 8).map((agent) => {
+          const role = roleFor(agent);
+          const Icon = role.Icon;
+          const active =
+            spotlight?.speaker_id === agent.id || spotlight?.speaker_name === agent.name;
+          const warning = ["error", "warning", "escalated", "offline"].includes(agent.status);
+          return (
+            <article
+              key={agent.id}
+              className={cn(
+                "rounded-2xl border p-3 transition",
+                active
+                  ? "border-cyan-300/65 bg-cyan-400/10 shadow-[0_0_30px_rgba(34,211,238,.18)]"
+                  : warning
+                    ? "border-amber-400/25 bg-amber-400/[0.05]"
+                    : "border-white/10 bg-white/[0.025]",
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
+                  <Icon className="h-5 w-5" aria-hidden />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-sm font-semibold text-white">{ar ? role.ar : role.en}</h3>
+                      <p className="mt-0.5 text-[11px] leading-4 text-white/50">
+                        {ar ? role.descriptionAr : role.descriptionEn}
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full border px-2 py-0.5 text-[9px]",
+                        warning
+                          ? "border-amber-400/30 bg-amber-400/10 text-amber-200"
+                          : "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
+                      )}
+                    >
+                      {statusText(agent.status, ar)}
+                    </span>
+                  </div>
+                  <div className="mt-2 truncate text-[10px] text-white/45">
+                    {agent.current_task ?? (ar ? "مراقبة مستمرة" : "Continuous monitoring")}
+                  </div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400"
+                      style={{ width: `${Math.round(agent.confidence * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+        {agents.length === 0 && (
+          <div className="col-span-full rounded-2xl border border-dashed border-white/15 px-4 py-10 text-center text-sm text-white/45">
+            {ar ? "جاري تحميل أدوار فريق العمليات…" : "Loading operations roles…"}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 

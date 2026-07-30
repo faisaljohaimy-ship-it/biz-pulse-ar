@@ -173,7 +173,7 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
                 onClick={onClose}
                 className="ml-auto inline-flex items-center gap-2 rounded-xl bg-cyan-400/90 px-5 py-3 text-sm font-semibold text-[#04111F] hover:bg-cyan-300"
               >
-                {ar ? "العودة إلى الجسر" : "Return to Bridge"}
+                {ar ? "العودة إلى غرفة العمليات" : "Return to Operations Room"}
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>

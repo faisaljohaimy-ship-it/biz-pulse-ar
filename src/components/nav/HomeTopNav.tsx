@@ -15,7 +15,7 @@
  *   المشاريع  → /sec/projects
  *   الموارد   → /sec/assets       الأصول والموارد
  *   المخاطر   → /risk
- *   التقارير  → /executive-reports
+ *   التقارير  → /sec/reports
  *   الذكاء الاصطناعي → /finn      FINN التنفيذية
  */
 import { Link } from "@tanstack/react-router";
@@ -34,7 +34,7 @@ const ITEMS: readonly TopNavItem[] = [
   { to: "/sec/projects", ar: "المشاريع", en: "Projects" },
   { to: "/sec/assets", ar: "الموارد", en: "Resources" },
   { to: "/risk", ar: "المخاطر", en: "Risk" },
-  { to: "/executive-reports", ar: "التقارير", en: "Reports" },
+  { to: "/sec/reports", ar: "التقارير", en: "Reports" },
   { to: "/finn", ar: "الذكاء الاصطناعي", en: "AI" },
 ];
 

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -64,6 +64,9 @@ function parsePublishError(e: unknown): PublishErrorEnvelope | null {
 }
 
 export const Route = createFileRoute("/_authenticated/executive-reports")({
+  beforeLoad: () => {
+    throw redirect({ to: "/sec/reports" });
+  },
   component: ExecutiveReportsPage,
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,

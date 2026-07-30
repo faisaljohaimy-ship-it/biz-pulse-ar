@@ -270,7 +270,7 @@ function MissionStatusStrip({
             {ar ? "إدارة الأمن الصناعي · المنطقة الغربية" : "Industrial Security · Western Region"}
           </div>
           <div className="truncate text-2xl font-light text-white sm:text-3xl">
-            {ar ? "غرفة العمليات التنفيذية" : "Executive War Room"}
+            {ar ? "غرفة العمليات" : "Operations Room"}
           </div>
         </div>
       </div>

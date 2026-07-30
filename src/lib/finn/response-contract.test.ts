@@ -42,7 +42,7 @@ describe("Article 22 — scope lock", () => {
   });
 
   it("out-of-scope reply is a single line with no apology or alternative", () => {
-    expect(OUT_OF_SCOPE_REPLY).toBe("خارج نطاقي — أنا مساعد الأمن الصناعي في نكسيوس.");
+    expect(OUT_OF_SCOPE_REPLY).toBe("خارج نطاقي — أنا FINN، مساعد الأمن الصناعي.");
     expect(OUT_OF_SCOPE_REPLY.split("\n")).toHaveLength(1);
     expect(hasForbiddenFiller(OUT_OF_SCOPE_REPLY)).toBe(false);
   });
@@ -53,7 +53,7 @@ describe("Article 22 — fast recall (recurring FAQs answer with no model)", () 
     expect(matchFastRecall("كم عدد التوجيهات؟")?.source).toBe("hcis-directives");
     expect(matchFastRecall("ما هي الهيئة؟")?.source).toBe("hcis-authority");
     expect(matchFastRecall("ما مراحل دورة الاعتماد؟")?.source).toBe("hcis-approval-cycle");
-    expect(matchFastRecall("من أنت؟")?.source).toBe("aria-identity");
+    expect(matchFastRecall("من أنت؟")?.source).toBe("finn-identity");
   });
 
   it("returns null for a non-recurring question (falls through to the model)", () => {

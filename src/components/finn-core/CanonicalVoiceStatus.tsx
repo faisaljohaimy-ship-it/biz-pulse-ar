@@ -71,7 +71,7 @@ export function CanonicalVoiceStatus() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-300">
-                NEXIOS · ONE FINN
+                FINN · صوت موحّد
               </p>
               <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">
                 حالة صوت FINN الرسمي

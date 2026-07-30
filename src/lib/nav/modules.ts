@@ -49,7 +49,7 @@ export const MODULES: readonly ModuleEntry[] = [
   // G7: the canonical name is «منصة عمليات الوكلاء» in every surface.
   { to: "/agents", ar: "منصة عمليات الوكلاء", en: "Agent Operations Platform", icon: Bot },
   { to: "/digital-twin", ar: "التوأم الرقمي", en: "Digital Twin", icon: Boxes },
-  { to: "/executive-reports", ar: "التقارير التنفيذية", en: "Executive Reports", icon: BarChart3 },
+  { to: "/sec/reports", ar: "التقارير", en: "Reports", icon: BarChart3 },
   { to: "/governance", ar: "الحوكمة", en: "Governance", icon: ClipboardCheck },
   { to: "/risk", ar: "المخاطر", en: "Risk", icon: ShieldAlert },
   { to: "/sec/maintenance", ar: "الصيانة", en: "Maintenance", icon: Wrench },
@@ -93,9 +93,9 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     ar: "التوأم الرقمي — مطابقة الميدان بالنموذج الرقمي.",
     en: "The digital twin — reconcile field state with the model.",
   },
-  "/executive-reports": {
-    ar: "توليد التقارير التنفيذية بصيغة PDF عربية.",
-    en: "Generate executive reports as Arabic PDFs.",
+  "/sec/reports": {
+    ar: "تصدير الملخصات وتقارير الأمن الصناعي بصيغة PDF عربية أو Excel.",
+    en: "Export industrial-security summaries and reports as Arabic PDF or Excel.",
   },
   "/analytics": {
     ar: "الإحصائيات التشغيلية والاتجاهات الزمنية.",

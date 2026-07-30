@@ -83,7 +83,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       <div className="max-w-md">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/30 bg-[#00D4FF]/5 px-3 py-1 text-xs font-medium text-[#00D4FF]">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00D4FF]" />
-          NEXIOS AI OS
+          منصة إدارة الأمن الصناعي
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-white">حدث خطأ — جارٍ الاستعادة</h1>
         <p className="mt-2 text-sm leading-relaxed text-white/60">
@@ -131,7 +131,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "FINN" },
-      { name: "application-name", content: "FINN · NEXIOS" },
+      { name: "application-name", content: "FINN" },
       { name: "google-site-verification", content: "ZMjRDSJhOrvRVKAbg8VWNjP8CICjLONLC3Jk6nKpsUQ" },
       { title: SITE_NAME },
       {
@@ -148,23 +148,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image", content: `${DOMAIN_URL}/finn-portrait.png` },
       { property: "og:image:width", content: "1128" },
       { property: "og:image:height", content: "1920" },
-      { property: "og:image:alt", content: "FINN · NEXIOS AI OS" },
+      { property: "og:image:alt", content: "FINN · منصة إدارة الأمن الصناعي" },
       { property: "og:site_name", content: COMPANY_NAME },
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:title",
-        content: "NEXIOS AI  -  FINN",
+        content: "FINN · منصة إدارة الأمن الصناعي",
       },
       {
         name: "twitter:description",
         content: "N",
       },
       { name: "twitter:image", content: `${DOMAIN_URL}/finn-portrait.png` },
-      { name: "twitter:image:alt", content: "FINN · NEXIOS AI OS" },
-      { title: "NEXIOS AI  -  FINN" },
+      { name: "twitter:image:alt", content: "FINN · منصة إدارة الأمن الصناعي" },
+      { title: "FINN · منصة إدارة الأمن الصناعي" },
       {
         property: "og:title",
-        content: "NEXIOS AI  -  FINN",
+        content: "FINN · منصة إدارة الأمن الصناعي",
       },
       {
         property: "og:image",
@@ -381,7 +381,7 @@ function RootComponent() {
                   {/* Deepest ambient layer on EVERY page (incl. home): the
                       Arabian Peninsula, light-green pulse, four sector borders
                       in sky-blue, the active sector's border pulsing. */}
-                  {!introActive && !isAccessGate && <ArabianPeninsulaBackdrop />}
+                  {!isHero && !introActive && !isAccessGate && <ArabianPeninsulaBackdrop />}
                   {/* Global FINN hologram backdrop for every non-home page.
                       Homepage owns its own HomeVideoBackdrop. */}
                   {!isHero && !isPromo && !isAccessGate && !introActive && <GlobalPageBackdrop />}

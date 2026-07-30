@@ -13,8 +13,6 @@ import {
   AudioWaveform,
   Check,
   Copy,
-  FileText,
-  Image as ImageIcon,
   MessageCircle,
   Mic,
   MicOff,
@@ -45,8 +43,6 @@ import { FINN_GEMINI_TTS_VOICE } from "@/lib/finn/voice-config";
 import { FinnVoiceDebugBadge } from "@/components/finn/FinnVoiceDebugBadge";
 import { setIntroActive } from "@/lib/intro-store";
 import { VoiceTimeline } from "@/lib/finn/voice-timeline";
-import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
-import { probeEvidence, type Evidence } from "@/lib/evidence/gate";
 import { FinnSignatureBackdrop } from "@/components/finn/FinnSignatureBackdrop";
 import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/finn/quick-commands";
 import { reportVoiceLatencyRegression } from "@/lib/finn/stream-sentence-flusher";
@@ -270,8 +266,6 @@ const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "FINN يفكّر…";
-const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
-
 const STILL_SRC = "/finn-portrait.png";
 
 // Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,
@@ -421,7 +415,6 @@ export function FinnCopilot() {
   const [draft, setDraft] = useState("");
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
-  const [healthEvidence, setHealthEvidence] = useState<Evidence | null>(null);
   // null = unknown; false = endpoint reachable but no AI provider key on this
   // deployment → show an elegant "not activated yet" notice instead of errors.
   const [providerReady, setProviderReady] = useState<boolean | null>(null);
@@ -502,7 +495,6 @@ export function FinnCopilot() {
       if (!cancelled) {
         const next = r.ok ? "ok" : "down";
         setHealth(next);
-        setHealthEvidence(probeEvidence("GET /api/chat/health", next));
         setProviderReady(r.ok ? (r.key_present ?? null) : null);
         setVoiceProviderReady(r.ok ? (r.voice_configured ?? null) : null);
         setTranscriptionProviderReady(r.ok ? (r.transcription_configured ?? null) : null);
@@ -1157,7 +1149,7 @@ export function FinnCopilot() {
     async (textOverride?: string, opts?: { fromVoice?: boolean }) => {
       const promptText = (textOverride ?? draft).trim();
       if (!promptText || isBusy) return;
-      const messageText = promptText || "حلّل المرفقات المضافة وأعطني خلاصة واضحة.";
+      const messageText = promptText;
 
       primeIOSAudio();
       // Voice replies only for voice turns in Conversation Mode; typed
@@ -1938,55 +1930,11 @@ export function FinnCopilot() {
               />
             </div>
             <div className="flex min-w-0 flex-1 flex-col leading-tight">
-              <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                FINN
-                <span
-                  className="inline-flex items-center"
-                  aria-label={health === "unknown" ? "checking" : undefined}
-                >
-                  {health === "unknown" ? (
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
-                  ) : (
-                    <EvidenceBadge
-                      evidence={healthEvidence}
-                      label={health === "ok" ? "متصلة" : "غير متصل"}
-                      tone={health === "ok" ? "emerald" : "rose"}
-                      className="px-1.5 py-0 text-[8px] tracking-normal"
-                      maxAgeMs={60_000}
-                    />
-                  )}
-                </span>
-              </span>
-              {/* item 18: connection state is shown ONCE, by the badge above —
-                  this line used to repeat «غير متصل» beside it. It now carries
-                  only what the badge does not: the activity label and the
-                  input mode. The badge was kept rather than this line because
-                  it also carries freshness evidence (maxAgeMs). */}
+              <span className="text-sm font-semibold text-foreground">FINN</span>
               <span className="max-w-[235px] truncate text-[11px] text-muted-foreground">
                 {`${statusLabel} · ${convMode ? "صوت" : "نص"}`}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={toggleConversationMode}
-              aria-pressed={convMode}
-              aria-label={convMode ? "إنهاء المخاطبة الصوتية" : "بدء المخاطبة مع FINN"}
-              className={cn(
-                // ≥44px touch target (mobile mandate) + pulse while the
-                // voice conversation is live so the state is unmistakable.
-                "inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-[11px] font-semibold transition-all active:scale-[0.96] sm:px-3.5",
-                convMode
-                  ? "animate-pulse border-rose-300/45 bg-rose-500/15 text-rose-100 hover:bg-rose-500/25"
-                  : "border-emerald-300/45 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25",
-              )}
-            >
-              {convMode ? (
-                <MicOff className="h-4 w-4" aria-hidden />
-              ) : (
-                <Mic className="h-4 w-4" aria-hidden />
-              )}
-              <span className="hidden min-[390px]:inline">{convMode ? "إنهاء" : "مخاطبة"}</span>
-            </button>
             <button
               type="button"
               onClick={startNewChat}
@@ -2151,8 +2099,9 @@ export function FinnCopilot() {
                   // display while the spoken path (toFinnSpeechText → /api/finn/tts,
                   // diacritized server-side) keeps full diacritics for pronunciation.
                   const text = mine ? raw : stripTashkeel(sanitiseAssistantText(raw));
-                  const fileParts = m.parts.filter((part) => part.type === "file");
-                  const hasNonTextWork = m.parts.some((p) => p.type !== "text");
+                  const hasNonTextWork = m.parts.some(
+                    (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
+                  );
                   const toolParts = !mine
                     ? m.parts.filter(
                         (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
@@ -2169,37 +2118,6 @@ export function FinnCopilot() {
                             : "bg-background/75 text-foreground ring-1 ring-primary/20 shadow-[0_0_24px_rgba(0,212,255,0.08)]",
                         )}
                       >
-                        {fileParts.length > 0 && (
-                          <div className="mb-2 flex flex-wrap gap-2">
-                            {fileParts.map((part, index) =>
-                              part.mediaType.startsWith("image/") ? (
-                                <a
-                                  key={`${m.id}-file-${index}`}
-                                  href={part.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="block overflow-hidden rounded-xl ring-1 ring-white/15"
-                                >
-                                  <img
-                                    src={part.url}
-                                    alt={part.filename ?? "صورة مرفقة"}
-                                    className="max-h-48 max-w-56 object-cover"
-                                  />
-                                </a>
-                              ) : (
-                                <a
-                                  key={`${m.id}-file-${index}`}
-                                  href={part.url}
-                                  download={part.filename}
-                                  className="inline-flex max-w-64 items-center gap-2 rounded-xl bg-background/50 px-3 py-2 text-xs ring-1 ring-white/15 hover:bg-background/70"
-                                >
-                                  <FileText className="h-4 w-4 shrink-0" aria-hidden />
-                                  <span className="truncate">{part.filename ?? "مرفق"}</span>
-                                </a>
-                              ),
-                            )}
-                          </div>
-                        )}
                         {text ? (
                           <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
@@ -2207,7 +2125,7 @@ export function FinnCopilot() {
                         ) : toolParts.length === 0 ? (
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-                            تُنَفِّذُ آرِيَا الخُطْوَةَ الآنَ…
+                            يُنَفِّذُ FINN الخُطْوَةَ الآنَ…
                           </div>
                         ) : null}
                         {toolParts.map((part, index) => (

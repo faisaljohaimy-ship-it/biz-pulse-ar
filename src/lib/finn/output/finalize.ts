@@ -174,6 +174,10 @@ function redactPii(text: string): { text: string; pii: PiiClass } {
  */
 const RE_LEGACY_NAME_AR = /\u0622\u0631\u064A\u0627|\u0627\u0631\u064A\u0627/g;
 const RE_LEGACY_NAME_EN = /\bA\u0052IA\b/gi;
+const RE_LEGACY_PLATFORM_AR = /(?:ال)?(?:نِكْسِيُوس|نكسيوس|نيكسيوس|نيكسوس|نكسوس)/g;
+const RE_LEGACY_PLATFORM_WITH_PREFIX_AR =
+  /منصة\s+(?:ال)?(?:نِكْسِيُوس|نكسيوس|نيكسيوس|نيكسوس|نكسوس)/g;
+const RE_LEGACY_PLATFORM_EN = /\bNEXIOS(?:\s+AI\s+OS)?\b/gi;
 
 /**
  * Self-introduction clause ban — «أنا FINN، الذكاء التنفيذي لـ NEXIOS» (and its
@@ -189,11 +193,15 @@ const RE_SELF_INTRO_EN = new RegExp(
 );
 
 export function enforceFinnIdentity(text: string): string {
+  const platformReplacement = /[\u0600-\u06ff]/.test(text) ? "المنصة" : "the platform";
   return text
     .replace(RE_SELF_INTRO_AR, " ")
     .replace(RE_SELF_INTRO_EN, " ")
     .replace(RE_LEGACY_NAME_AR, "FINN")
     .replace(RE_LEGACY_NAME_EN, "FINN")
+    .replace(RE_LEGACY_PLATFORM_WITH_PREFIX_AR, "المنصة")
+    .replace(RE_LEGACY_PLATFORM_AR, "المنصة")
+    .replace(RE_LEGACY_PLATFORM_EN, platformReplacement)
     .replace(/\s{2,}/g, " ")
     .trim();
 }
@@ -378,7 +386,7 @@ export function revalidateSpeakableText(text: string): {
     return { ok: false, text: "", pii: "blocked" };
   }
   const { text: redacted, pii } = redactPii(text);
-  return { ok: true, text: redacted, pii };
+  return { ok: true, text: enforceFinnIdentity(redacted), pii };
 }
 
 /**

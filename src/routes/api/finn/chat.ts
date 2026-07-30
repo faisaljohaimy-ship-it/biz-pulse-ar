@@ -33,7 +33,7 @@ type FinnMessage = { role: "user" | "assistant"; content: string };
 
 const FINN_INSTRUCTIONS = `${FINN_IDENTITY_PREAMBLE}
 
-أنت FINN، المساعد التنفيذي الذكي الرسمي داخل NEXIOS AI OS.
+أنت FINN، المساعد التنفيذي الذكي الرسمي لمنصة إدارة الأمن الصناعي.
 
 الهوية:
 - عرّف نفسك دائماً باسم FINN، ولا تقل إنك ChatGPT أو نموذج OpenAI.

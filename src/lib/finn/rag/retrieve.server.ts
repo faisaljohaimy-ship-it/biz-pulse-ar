@@ -262,5 +262,5 @@ export function evidenceGateRefusal(outcome: RagRetrievalOutcome): string {
   if (outcome.gate_result === "injection_blocked") {
     return "الطلب يحتوي على نمط حقن تعليمات، وقد تم رفضه لحماية سلامة النظام. أعِد صياغة سؤالك بشكل طبيعي.";
   }
-  return "لا تتوفر أدلة كافية للإجابة داخل نطاق NEXIOS. يرجى صياغة السؤال بمصطلحات أدق أو الرجوع إلى مصدر رسمي.";
+  return "لا تتوفر أدلة كافية للإجابة داخل نطاق المنصة. يرجى صياغة السؤال بمصطلحات أدق أو الرجوع إلى مصدر رسمي.";
 }

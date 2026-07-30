@@ -28,13 +28,13 @@ interface FinnProviderValue {
 
 const FinnContext = createContext<FinnProviderValue | null>(null);
 
-const WELCOME_AR: UIMessage = {
-  id: "aria-welcome",
+const FINN_WELCOME_AR: UIMessage = {
+  id: "finn-welcome",
   role: "assistant",
   parts: [
     {
       type: "text",
-      text: "أَهْلًا بِك — أَنَا آرِيَا، الذَّكَاءُ التَّنْفِيذِيُّ لِـ NEXIOS. أَنَا مَعَكَ عَلَى كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِد. اسْأَلْنِي أَي شَيْءٍ عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِرَات، أَوِ القَرَارَاتِ التَّنْفِيذِيَّة.",
+      text: "أَهْلًا بِكَ — أَنَا فِنّ، مُسَاعِدُكَ التَّنْفِيذِيُّ الذَّكِيُّ. أَنَا مَعَكَ فِي كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِدٍ. اسْأَلْنِي عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِّرَاتِ، أَوِ القَرَارَاتِ التَّنْفِيذِيَّةِ.",
     },
   ],
 };
@@ -49,8 +49,8 @@ export function FinnProvider({ children }: { children: React.ReactNode }) {
   const transport = useMemo(() => createFinnTransport(), []);
 
   const chat = useChat({
-    id: "aria-singleton",
-    messages: [WELCOME_AR],
+    id: "finn-singleton",
+    messages: [FINN_WELCOME_AR],
     transport,
   });
 

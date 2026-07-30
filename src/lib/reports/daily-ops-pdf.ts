@@ -17,6 +17,7 @@
  * disclosure + page numbers.
  */
 import type { DailyOpsData } from "@/lib/exec/showcase-simulation.server";
+import { DAILY_REPORT_SCOPE_META, type DailyReportScope } from "@/lib/reports/report-scope";
 import { layoutArabicLine, type ArabicSegment } from "./arabic-text";
 
 const A4: [number, number] = [595.28, 841.89];
@@ -47,6 +48,10 @@ export type DailyOpsFonts = {
   bold?: ArrayBuffer | Uint8Array;
 };
 
+export type DailyOpsPdfOptions = {
+  scope?: DailyReportScope;
+};
+
 /** Simple geometric icon paths (24×24 viewbox, drawn with drawSvgPath). */
 const ICONS = {
   shield: "M12 2 L20 6 L20 12 C20 17 16.5 21 12 22 C7.5 21 4 17 4 12 L4 6 Z",
@@ -59,7 +64,9 @@ const ICONS = {
 export async function buildDailyOpsPdf(
   data: DailyOpsData,
   fonts: DailyOpsFonts | ArrayBuffer | Uint8Array,
+  options: DailyOpsPdfOptions = {},
 ): Promise<Uint8Array> {
+  const scope = options.scope ?? "full";
   const [{ PDFDocument, rgb, StandardFonts }, fontkitModule] = await Promise.all([
     import("pdf-lib"),
     import("@pdf-lib/fontkit"),
@@ -192,7 +199,7 @@ export async function buildDailyOpsPdf(
   icon("M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z", MARGIN + 12, H - 52, 1.15, emerald);
   enText("NEXIOS AI OS", MARGIN + 30, H - 58, 21, emerald, true);
   enText("Executive Business Platform — Industrial Security", MARGIN + 30, H - 74, 8.5, muted);
-  arText("تقرير العمليات اليومي", W - MARGIN, H - 70, 25, ink, true);
+  arText(DAILY_REPORT_SCOPE_META[scope].ar, W - MARGIN, H - 70, 25, ink, true);
   arText("إدارة الأمن الصناعي — المنطقة الغربية", W - MARGIN, H - 95, 12, cyan);
   const hijri = hijriDate(data.date);
   // Intl's islamic-umalqura output already carries the «هـ» era suffix.
@@ -209,13 +216,18 @@ export async function buildDailyOpsPdf(
   y = H - 158;
 
   /* ── Executive summary — 4 KPI tiles with icons ── */
-  const kpis: Array<[string, number, string]> = [
-    ["البلاغات", data.incidents.length, ICONS.shield],
-    ["أوامر العمل", data.work_orders.length, ICONS.wrench],
-    ["التصاريح", data.permits.length, ICONS.permit],
-    ["أحداث التشغيل", data.activity.length, ICONS.pulse],
+  const allKpis: Array<[DailyReportScope, string, number, string]> = [
+    ["incidents", "البلاغات", data.incidents.length, ICONS.shield],
+    ["maintenance", "أوامر العمل", data.work_orders.length, ICONS.wrench],
+    ["permits", "التصاريح", data.permits.length, ICONS.permit],
+    ["activity", "أحداث التشغيل", data.activity.length, ICONS.pulse],
   ];
-  const bw = (W - MARGIN * 2 - 3 * 12) / 4;
+  const kpis = allKpis
+    .filter(
+      ([itemScope]) => scope === "full" || scope === "executive_summary" || scope === itemScope,
+    )
+    .map(([, label, value, iconPath]) => [label, value, iconPath] as [string, number, string]);
+  const bw = (W - MARGIN * 2 - Math.max(0, kpis.length - 1) * 12) / Math.max(1, kpis.length);
   kpis.forEach(([label, value, glyph], i) => {
     const x = MARGIN + i * (bw + 12);
     // Tile: panel fill + soft outer echo + emerald hairline.
@@ -352,35 +364,45 @@ export async function buildDailyOpsPdf(
   const sev = (s: string) =>
     ({ critical: "حرج", high: "عالٍ", medium: "متوسط", low: "منخفض", normal: "عادي" })[s] ?? s;
 
-  table(
-    "البلاغات الأمنية",
-    ["المرجع", "العنوان", "الشدة", "الحالة"],
-    data.incidents.map((i) => [i.ref, i.title_ar, sev(i.severity), st(i.status)]),
-    [0.18, 0.5, 0.16, 0.16],
-  );
-  table(
-    "أوامر العمل",
-    ["المرجع", "العنوان", "النوع", "الحالة"],
-    data.work_orders.map((w) => [
-      w.ref,
-      w.title_ar,
-      w.kind === "preventive" ? "وقائي" : "تصحيحي",
-      st(w.status),
-    ]),
-    [0.18, 0.5, 0.16, 0.16],
-  );
-  table(
-    "تصاريح العمل",
-    ["المرجع", "نوع العمل", "المقاول", "الخطورة"],
-    data.permits.map((p) => [p.ref, p.work_type, p.contractor, sev(p.risk_level)]),
-    [0.18, 0.34, 0.32, 0.16],
-  );
-  table(
-    "أحداث الامتثال والتشغيل",
-    ["المرجع", "الحدث", "المنفذ"],
-    data.activity.slice(0, 10).map((a) => [a.entity_ref, a.event.replace(/_/g, " "), a.actor_name]),
-    [0.2, 0.42, 0.38],
-  );
+  if (scope === "full" || scope === "incidents") {
+    table(
+      "البلاغات الأمنية",
+      ["المرجع", "العنوان", "الشدة", "الحالة"],
+      data.incidents.map((i) => [i.ref, i.title_ar, sev(i.severity), st(i.status)]),
+      [0.18, 0.5, 0.16, 0.16],
+    );
+  }
+  if (scope === "full" || scope === "maintenance") {
+    table(
+      "أوامر العمل",
+      ["المرجع", "العنوان", "النوع", "الحالة"],
+      data.work_orders.map((w) => [
+        w.ref,
+        w.title_ar,
+        w.kind === "preventive" ? "وقائي" : "تصحيحي",
+        st(w.status),
+      ]),
+      [0.18, 0.5, 0.16, 0.16],
+    );
+  }
+  if (scope === "full" || scope === "permits") {
+    table(
+      "تصاريح العمل",
+      ["المرجع", "نوع العمل", "المقاول", "الخطورة"],
+      data.permits.map((p) => [p.ref, p.work_type, p.contractor, sev(p.risk_level)]),
+      [0.18, 0.34, 0.32, 0.16],
+    );
+  }
+  if (scope === "full" || scope === "activity") {
+    table(
+      "أحداث الامتثال والتشغيل",
+      ["المرجع", "الحدث", "المنفذ"],
+      data.activity
+        .slice(0, 10)
+        .map((a) => [a.entity_ref, a.event.replace(/_/g, " "), a.actor_name]),
+      [0.2, 0.42, 0.38],
+    );
+  }
 
   /* ── Constitutional footer on every page — reflects real data source ── */
   const pages = pdf.getPages();

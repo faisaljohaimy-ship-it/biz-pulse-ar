@@ -71,7 +71,7 @@ function getMessageText(message?: UIMessage) {
 
 /**
  * Sanitize incoming chat history before handing to the model:
- *  - Strip the hardcoded UI welcome message (id = "aria-welcome"). Gemini
+ *  - Strip the hardcoded UI welcome message. Gemini
  *    requires the conversation to START with a `user` turn, and prepending
  *    an assistant greeting was silently killing every 2nd+ reply.
  *  - Trim any leading assistant turns so history starts with `user`.
@@ -80,7 +80,12 @@ function getMessageText(message?: UIMessage) {
  */
 function sanitizeHistory(msgs: UIMessage[]): UIMessage[] {
   const filtered = msgs
-    .filter((m) => m.id !== "aria-welcome" && (m.role === "user" || m.role === "assistant"))
+    .filter(
+      (m) =>
+        m.id !== "finn-welcome" &&
+        m.id !== "aria-welcome" &&
+        (m.role === "user" || m.role === "assistant"),
+    )
     .map((message) => ({
       ...message,
       // Only user-visible content crosses turns. Tool calls/results are

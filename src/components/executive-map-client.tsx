@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import type { RegionId } from "@/lib/regions";
 
 export type MapSite = {
   id: string;
@@ -9,8 +10,10 @@ export type MapSite = {
   lat: number;
   lng: number;
   status: "ok" | "warn" | "critical";
+  region: RegionId;
   metric?: string;
   detail?: string;
+  operations?: number;
 };
 
 const STATUS_COLOR: Record<MapSite["status"], string> = {
@@ -75,8 +78,14 @@ export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: bo
 
   return (
     <MapContainer
-      center={[24.7136, 46.6753]}
-      zoom={4}
+      center={[23.8859, 45.0792]}
+      zoom={5}
+      minZoom={5}
+      maxBounds={[
+        [16, 34],
+        [33, 56],
+      ]}
+      maxBoundsViscosity={1}
       scrollWheelZoom
       className="h-full w-full"
       style={{ background: "hsl(var(--background))" }}
@@ -117,7 +126,17 @@ export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: bo
           <Popup>
             <div className="space-y-1 min-w-[180px]">
               <div className="font-semibold text-sm">{isAr && s.name_ar ? s.name_ar : s.name}</div>
-              <div className="text-xs opacity-70 capitalize">{s.type}</div>
+              <div className="text-xs opacity-70">
+                {isAr
+                  ? {
+                      hq: "مقر قيادة",
+                      branch: "فرع",
+                      site: "موقع أمني",
+                      asset: "أصل",
+                      incident: "حادث/بلاغ",
+                    }[s.type]
+                  : s.type}
+              </div>
               {s.metric && <div className="text-xs">{s.metric}</div>}
               {s.detail && <div className="text-xs opacity-80">{s.detail}</div>}
               <Badge
@@ -130,7 +149,9 @@ export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: bo
                 }
                 className="text-[10px]"
               >
-                {s.status.toUpperCase()}
+                {isAr
+                  ? { ok: "سليم", warn: "تحذير", critical: "حرج" }[s.status]
+                  : s.status.toUpperCase()}
               </Badge>
             </div>
           </Popup>

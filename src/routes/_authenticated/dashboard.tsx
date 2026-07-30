@@ -102,7 +102,7 @@ const TONE = {
 // Tier 1 — Command & Intelligence
 const TIER_COMMAND: Node[] = [
   {
-    to: "/executive-reports",
+    to: "/sec/reports",
     icon: FileBarChart2,
     ar: "التقارير التنفيذية",
     en: "Executive Reports",

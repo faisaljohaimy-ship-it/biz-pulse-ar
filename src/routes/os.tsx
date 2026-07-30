@@ -86,7 +86,7 @@ const STAGES: readonly Stage[] = [
     ar: "مُؤَشِّرَاتُ الأَدَاءِ التَّنْفِيذِيَّة",
     en: "Executive KPIs",
     icon: BarChart3,
-    to: "/executive-reports",
+    to: "/sec/reports",
   },
   { key: "ops", ar: "العَمَلِيَّات", en: "Operations", icon: Activity, to: "/operations" },
   {

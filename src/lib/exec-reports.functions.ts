@@ -488,7 +488,7 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
         action: "executive_report.publish",
         entity: "sharepoint_item",
         entity_id: item.id,
-        route: "/executive-reports",
+        route: "/sec/reports",
         metadata: {
           title: data.title,
           filename,
