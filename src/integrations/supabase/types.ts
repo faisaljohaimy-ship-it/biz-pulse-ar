@@ -2723,6 +2723,7 @@ export type Database = {
           id: string
           is_simulation: boolean
           notes_ar: string | null
+          org_id: string | null
           priority: string
           region_code: string
           status: string
@@ -2733,6 +2734,7 @@ export type Database = {
           id?: string
           is_simulation?: boolean
           notes_ar?: string | null
+          org_id?: string | null
           priority?: string
           region_code: string
           status?: string
@@ -2743,6 +2745,7 @@ export type Database = {
           id?: string
           is_simulation?: boolean
           notes_ar?: string | null
+          org_id?: string | null
           priority?: string
           region_code?: string
           status?: string
@@ -2755,6 +2758,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "hcis_directives"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "hcis_compliance_status_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
