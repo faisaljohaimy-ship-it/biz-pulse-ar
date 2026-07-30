@@ -38,13 +38,13 @@ Feature-specific chat surfaces are allowed ONLY when ALL apply:
 1. Distinct `useChat` id (never `"finn-singleton"`).
 2. Purpose-scoped server endpoint (NOT `/api/chat`) — e.g. lesson
    teaching, threaded assistant persistence, digital-twin scenario.
-3. Do NOT acquire `AriaAudioBus` `"chat-tts"` (no chat TTS collision).
+3. Do NOT acquire `FinnAudioBus` `"chat-tts"` (no chat TTS collision).
 4. Do NOT mutate `useFinnStore` `activeTurn` / `activeExecution`.
 5. Registered here as an approved exception.
 
 Approved exceptions (as of this turn):
-- `src/components/learn/simulations/MeetAriaSimulation.tsx` — lesson
-  teach flow, id `sim-meet-aria-${slug}`, endpoint `/api/learn/aria-teach`.
+- `src/components/learn/simulations/MeetFinnSimulation.tsx` — lesson
+  teach flow, id `sim-meet-finn-${slug}`, endpoint `/api/learn/finn-teach`.
 - `src/components/learn/LessonARIAChat.tsx` — lesson chat surface.
 - `src/routes/_authenticated/digital-twin.tsx` — twin scenario,
   id `aria-digital-twin`.
@@ -64,10 +64,10 @@ next-step) come only from the orchestrator's structured envelope, never
 from freeform assistant prose.
 
 **INVARIANT-16 — TTS Discipline.** Chat TTS is owned EXCLUSIVELY by
-`FinnCopilot` through `/api/tts` on the single `AriaAudioBus`
+`FinnCopilot` through `/api/tts` on the single `FinnAudioBus`
 `"chat-tts"` token. Browser `SpeechSynthesis.speak` is FORBIDDEN during
 chat replies. The provider must NOT re-add a second `speak()` path —
-two pipelines competing for `AriaAudioBus.acquire("chat-tts")` reproduce
+two pipelines competing for `FinnAudioBus.acquire("chat-tts")` reproduce
 the "first sentence clean, rest robotic" regression.
 
 **INVARIANT-17 — Executive Demo Surface.** `/finn/demo` is a permanent
@@ -77,7 +77,7 @@ production surface, not a scratch page. It MUST:
    direct LLM calls, no bypass of the Brain).
 3. Render the live `ExecutiveCard` from `activeExecution`.
 Any regression here fails the FINN Impact Directive Phase 3 (Live
-Demonstration) audit at `/aria/directive`.
+Demonstration) audit at `/finn/directive`.
 
 **Why:** These five invariants are the load-bearing wall of the NEXIOS AI
 OS. A duplicate Brain fragments memory. A second `useChat` breaks

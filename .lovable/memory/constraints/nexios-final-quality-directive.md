@@ -10,7 +10,7 @@ type: constraint
 
 ## Immutable Rules
 - `rebuild: false` · `breakingChanges: false`
-- `duplicateRuntime: false` · `duplicateARIA: false` (INVARIANT-13..17 stand)
+- `duplicateRuntime: false` · `duplicateFINN: false` (INVARIANT-13..17 stand)
 - Preserve routes · architecture · public API surface.
 
 ## Continuous Tasks (executed every turn)
@@ -37,4 +37,4 @@ FilesCreated · FilesModified · LiveSensorsStatus · ObservabilityStatus · E2E
 
 **Why:** locks FINN into a self-healing loop that closes non-critical gaps continuously without violating singleton, executive-envelope, or evidence-gate constitutions.
 
-**How to apply:** Programmatic prompt of record at `src/lib/finn/nexios-final-quality-directive.ts` (`NEXIOS_FINAL_QUALITY_DIRECTIVE`). Every FINN self-evolution tick, readiness audit, and `/aria/directive` render MUST consult this directive and refuse to mark "done" until acceptance gates are green.
+**How to apply:** Programmatic prompt of record at `src/lib/finn/nexios-final-quality-directive.ts` (`NEXIOS_FINAL_QUALITY_DIRECTIVE`). Every FINN self-evolution tick, readiness audit, and `/finn/directive` render MUST consult this directive and refuse to mark "done" until acceptance gates are green.
