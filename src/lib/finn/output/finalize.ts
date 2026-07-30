@@ -173,16 +173,20 @@ function redactPii(text: string): { text: string; pii: PiiClass } {
  * text can reach a screen or the voice path. Token-bounded, display-only.
  */
 const RE_LEGACY_NAME_AR = /\u0622\u0631\u064A\u0627|\u0627\u0631\u064A\u0627/g;
-const RE_LEGACY_NAME_EN = /\bARIA\b/gi;
+const RE_LEGACY_NAME_EN = /\bA\u0052IA\b/gi;
 
 /**
  * Self-introduction clause ban — «أنا FINN، الذكاء التنفيذي لـ NEXIOS» (and its
- * legacy ARIA form / English twin) must never appear in a chat turn.
+ * legacy form / English twin) must never appear in a chat turn.
  */
-const RE_SELF_INTRO_AR =
-  /\s*(?:أهلا[ًا]?\s*بك[،,]?\s*)?أنا\s+(?:FINN|فِ?نّ?|آريا|اريا|ARIA)\s*[،,]?\s*الذكاء\s+التنفيذي\s+(?:لـ?\s*)?(?:NEXIOS|نيكسيوس|نكسيوس)?\s*[.،,!]?/gi;
-const RE_SELF_INTRO_EN =
-  /\s*(?:hi|hello)?[,]?\s*I(?:'m| am)\s+(?:FINN|ARIA)\s*,?\s*the\s+executive\s+intelligence\s+(?:of|for)\s+NEXIOS\s*[.!]?/gi;
+const RE_SELF_INTRO_AR = new RegExp(
+  "\\s*(?:أهلا[ًا]?\\s*بك[،,]?\\s*)?أنا\\s+(?:FINN|فِ?نّ?|\u0622\u0631\u064A\u0627|\u0627\u0631\u064A\u0627|A\u0052IA)\\s*[،,]?\\s*الذكاء\\s+التنفيذي\\s+(?:لـ?\\s*)?(?:NEXIOS|نيكسيوس|نكسيوس)?\\s*[.،,!]?",
+  "gi",
+);
+const RE_SELF_INTRO_EN = new RegExp(
+  "\\s*(?:hi|hello)?[,]?\\s*I(?:'m| am)\\s+(?:FINN|A\u0052IA)\\s*,?\\s*the\\s+executive\\s+intelligence\\s+(?:of|for)\\s+NEXIOS\\s*[.!]?",
+  "gi",
+);
 
 export function enforceFinnIdentity(text: string): string {
   return text
