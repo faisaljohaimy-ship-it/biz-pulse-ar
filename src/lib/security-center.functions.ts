@@ -164,6 +164,16 @@ export const updateMemberRole = createServerFn({ method: "POST" })
       if (!myRow || (myRow.role !== "owner" && myRow.role !== "admin")) {
         throw new Error("Forbidden: only org owners/admins or platform admins can change roles");
       }
+      // Mirror the RESTRICTIVE RLS invariant for admin-driven updates:
+      // admins may never grant 'owner' and may never edit their own membership.
+      if (myRow.role !== "owner") {
+        if (data.role === "owner") {
+          throw new Error("Forbidden: only an owner or platform admin can grant the owner role");
+        }
+        if (data.user_id === context.userId) {
+          throw new Error("Forbidden: admins cannot change their own membership role");
+        }
+      }
     }
 
     // Prevent demoting the last owner
