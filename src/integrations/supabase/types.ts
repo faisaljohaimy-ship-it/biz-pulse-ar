@@ -320,179 +320,6 @@ export type Database = {
           },
         ]
       }
-      aria_actions_log: {
-        Row: {
-          action: string
-          actor: string
-          article_refs: string[]
-          citations: Json
-          created_at: string
-          id: string
-          input: Json
-          latency_ms: number | null
-          org_id: string
-          output: Json
-          route: string | null
-          status: string
-          surface: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          actor?: string
-          article_refs?: string[]
-          citations?: Json
-          created_at?: string
-          id?: string
-          input?: Json
-          latency_ms?: number | null
-          org_id?: string
-          output?: Json
-          route?: string | null
-          status?: string
-          surface?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          actor?: string
-          article_refs?: string[]
-          citations?: Json
-          created_at?: string
-          id?: string
-          input?: Json
-          latency_ms?: number | null
-          org_id?: string
-          output?: Json
-          route?: string | null
-          status?: string
-          surface?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_actions_log_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      aria_adaptive_preferences: {
-        Row: {
-          confidence: number
-          created_at: string
-          evidence_count: number
-          id: string
-          preference_key: string
-          preference_value: string
-          safety_passed: boolean
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          confidence?: number
-          created_at?: string
-          evidence_count?: number
-          id?: string
-          preference_key: string
-          preference_value: string
-          safety_passed?: boolean
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          confidence?: number
-          created_at?: string
-          evidence_count?: number
-          id?: string
-          preference_key?: string
-          preference_value?: string
-          safety_passed?: boolean
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      aria_alert_acks: {
-        Row: {
-          alert_id: string
-          org_id: string
-          read_at: string
-          user_id: string
-        }
-        Insert: {
-          alert_id: string
-          org_id: string
-          read_at?: string
-          user_id: string
-        }
-        Update: {
-          alert_id?: string
-          org_id?: string
-          read_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_alert_acks_alert_id_fkey"
-            columns: ["alert_id"]
-            isOneToOne: false
-            referencedRelation: "aria_alerts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "aria_alert_acks_alert_id_fkey"
-            columns: ["alert_id"]
-            isOneToOne: false
-            referencedRelation: "finn_alerts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      aria_alerts: {
-        Row: {
-          body: string
-          channels: Json
-          created_at: string
-          created_by: string
-          dispatched: number
-          id: string
-          is_simulation: boolean
-          org_id: string
-          severity: string
-          target: string
-          title: string
-        }
-        Insert: {
-          body: string
-          channels?: Json
-          created_at?: string
-          created_by: string
-          dispatched?: number
-          id?: string
-          is_simulation?: boolean
-          org_id: string
-          severity?: string
-          target?: string
-          title: string
-        }
-        Update: {
-          body?: string
-          channels?: Json
-          created_at?: string
-          created_by?: string
-          dispatched?: number
-          id?: string
-          is_simulation?: boolean
-          org_id?: string
-          severity?: string
-          target?: string
-          title?: string
-        }
-        Relationships: []
-      }
       aria_attachment_scans: {
         Row: {
           claimed_mime: string
@@ -577,466 +404,6 @@ export type Database = {
         }
         Relationships: []
       }
-      aria_decisions: {
-        Row: {
-          confidence: number | null
-          created_at: string
-          executed_tool: string | null
-          id: string
-          next_step: string | null
-          org_id: string
-          rationale: string | null
-          recommendation: string
-          recommended_action: string | null
-          status: string
-          thread_id: string | null
-          tool_payload: Json | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          confidence?: number | null
-          created_at?: string
-          executed_tool?: string | null
-          id?: string
-          next_step?: string | null
-          org_id?: string
-          rationale?: string | null
-          recommendation: string
-          recommended_action?: string | null
-          status?: string
-          thread_id?: string | null
-          tool_payload?: Json | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          confidence?: number | null
-          created_at?: string
-          executed_tool?: string | null
-          id?: string
-          next_step?: string | null
-          org_id?: string
-          rationale?: string | null
-          recommendation?: string
-          recommended_action?: string | null
-          status?: string
-          thread_id?: string | null
-          tool_payload?: Json | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aria_decisions_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      aria_document_chunks: {
-        Row: {
-          chunk_index: number
-          content: string
-          created_at: string
-          document_id: string
-          embedded_at: string | null
-          embedding: string | null
-          embedding_v2: string | null
-          id: string
-          metadata: Json
-          model_version: string | null
-          org_id: string
-          user_id: string
-        }
-        Insert: {
-          chunk_index: number
-          content: string
-          created_at?: string
-          document_id: string
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string
-          metadata?: Json
-          model_version?: string | null
-          org_id?: string
-          user_id: string
-        }
-        Update: {
-          chunk_index?: number
-          content?: string
-          created_at?: string
-          document_id?: string
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string
-          metadata?: Json
-          model_version?: string | null
-          org_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_document_chunks_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: false
-            referencedRelation: "aria_documents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "aria_document_chunks_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: false
-            referencedRelation: "finn_documents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_aria_document_chunks_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      aria_documents: {
-        Row: {
-          chunk_count: number | null
-          created_at: string
-          error: string | null
-          id: string
-          is_official: boolean
-          mime_type: string | null
-          org_id: string
-          page_count: number | null
-          revision_hash: string | null
-          size_bytes: number | null
-          source: string
-          source_kind: string
-          status: string
-          storage_path: string | null
-          summary: string | null
-          tags: string[]
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          chunk_count?: number | null
-          created_at?: string
-          error?: string | null
-          id?: string
-          is_official?: boolean
-          mime_type?: string | null
-          org_id?: string
-          page_count?: number | null
-          revision_hash?: string | null
-          size_bytes?: number | null
-          source?: string
-          source_kind?: string
-          status?: string
-          storage_path?: string | null
-          summary?: string | null
-          tags?: string[]
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          chunk_count?: number | null
-          created_at?: string
-          error?: string | null
-          id?: string
-          is_official?: boolean
-          mime_type?: string | null
-          org_id?: string
-          page_count?: number | null
-          revision_hash?: string | null
-          size_bytes?: number | null
-          source?: string
-          source_kind?: string
-          status?: string
-          storage_path?: string | null
-          summary?: string | null
-          tags?: string[]
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aria_documents_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      aria_evolution_cycles: {
-        Row: {
-          applied_count: number
-          created_at: string
-          critical_count: number
-          decision: string
-          deferred_count: number
-          finished_at: string
-          id: string
-          issues_count: number
-          readiness_score: number
-          reasons: string[]
-          report: Json
-          started_at: string
-          trigger: string
-        }
-        Insert: {
-          applied_count?: number
-          created_at?: string
-          critical_count?: number
-          decision: string
-          deferred_count?: number
-          finished_at: string
-          id?: string
-          issues_count?: number
-          readiness_score?: number
-          reasons?: string[]
-          report: Json
-          started_at: string
-          trigger: string
-        }
-        Update: {
-          applied_count?: number
-          created_at?: string
-          critical_count?: number
-          decision?: string
-          deferred_count?: number
-          finished_at?: string
-          id?: string
-          issues_count?: number
-          readiness_score?: number
-          reasons?: string[]
-          report?: Json
-          started_at?: string
-          trigger?: string
-        }
-        Relationships: []
-      }
-      aria_improvement_proposals: {
-        Row: {
-          area: string
-          created_at: string
-          decided_by: string | null
-          id: string
-          impact: string
-          org_id: string
-          proposal_ar: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          area: string
-          created_at?: string
-          decided_by?: string | null
-          id?: string
-          impact: string
-          org_id?: string
-          proposal_ar: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          area?: string
-          created_at?: string
-          decided_by?: string | null
-          id?: string
-          impact?: string
-          org_id?: string
-          proposal_ar?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      aria_incidents: {
-        Row: {
-          detail: string
-          device_class: string | null
-          id: string
-          kind: string
-          model: string | null
-          occurred_at: string
-          resolved: boolean
-          user_id: string
-        }
-        Insert: {
-          detail: string
-          device_class?: string | null
-          id?: string
-          kind: string
-          model?: string | null
-          occurred_at?: string
-          resolved?: boolean
-          user_id: string
-        }
-        Update: {
-          detail?: string
-          device_class?: string | null
-          id?: string
-          kind?: string
-          model?: string | null
-          occurred_at?: string
-          resolved?: boolean
-          user_id?: string
-        }
-        Relationships: []
-      }
-      aria_interactions: {
-        Row: {
-          answer: string
-          created_at: string
-          device_class: string | null
-          first_token_ms: number | null
-          id: string
-          latency_ms: number
-          model: string
-          question: string
-          retried: boolean
-          satisfied: boolean | null
-          thread_id: string | null
-          tokens_in: number | null
-          tokens_out: number | null
-          user_id: string
-        }
-        Insert: {
-          answer: string
-          created_at?: string
-          device_class?: string | null
-          first_token_ms?: number | null
-          id?: string
-          latency_ms?: number
-          model: string
-          question: string
-          retried?: boolean
-          satisfied?: boolean | null
-          thread_id?: string | null
-          tokens_in?: number | null
-          tokens_out?: number | null
-          user_id: string
-        }
-        Update: {
-          answer?: string
-          created_at?: string
-          device_class?: string | null
-          first_token_ms?: number | null
-          id?: string
-          latency_ms?: number
-          model?: string
-          question?: string
-          retried?: boolean
-          satisfied?: boolean | null
-          thread_id?: string | null
-          tokens_in?: number | null
-          tokens_out?: number | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      aria_knowledge: {
-        Row: {
-          content: string
-          created_at: string
-          embedded_at: string | null
-          embedding: string | null
-          embedding_v2: string | null
-          id: string
-          model_version: string | null
-          org_id: string
-          source: string
-          tags: string[]
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string
-          model_version?: string | null
-          org_id?: string
-          source: string
-          tags?: string[]
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string
-          model_version?: string | null
-          org_id?: string
-          source?: string
-          tags?: string[]
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aria_knowledge_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      aria_learned_patterns: {
-        Row: {
-          confidence: number
-          created_at: string
-          domain: string
-          hits: number
-          id: string
-          last_seen: string
-          pattern_key: string
-          pattern_value: string
-          safety_passed: boolean
-          user_id: string
-        }
-        Insert: {
-          confidence?: number
-          created_at?: string
-          domain?: string
-          hits?: number
-          id?: string
-          last_seen?: string
-          pattern_key: string
-          pattern_value: string
-          safety_passed?: boolean
-          user_id: string
-        }
-        Update: {
-          confidence?: number
-          created_at?: string
-          domain?: string
-          hits?: number
-          id?: string
-          last_seen?: string
-          pattern_key?: string
-          pattern_value?: string
-          safety_passed?: boolean
-          user_id?: string
-        }
-        Relationships: []
-      }
       aria_learning_log: {
         Row: {
           created_at: string
@@ -1073,212 +440,6 @@ export type Database = {
         }
         Relationships: []
       }
-      aria_memory: {
-        Row: {
-          content: string
-          created_at: string
-          embedded_at: string | null
-          embedding: string | null
-          embedding_v2: string | null
-          id: string
-          importance: number
-          key: string
-          last_used_at: string
-          model_version: string | null
-          org_id: string
-          scope: string
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string
-          importance?: number
-          key: string
-          last_used_at?: string
-          model_version?: string | null
-          org_id?: string
-          scope?: string
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string
-          importance?: number
-          key?: string
-          last_used_at?: string
-          model_version?: string | null
-          org_id?: string
-          scope?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aria_memory_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      aria_outbound_message_events: {
-        Row: {
-          delivery_status: string | null
-          event_type: string
-          id: string
-          message_id: string
-          occurred_at: string | null
-          org_id: string
-          payload_hash: string
-          provider: string
-          provider_event_id: string
-          received_at: string
-        }
-        Insert: {
-          delivery_status?: string | null
-          event_type: string
-          id?: string
-          message_id: string
-          occurred_at?: string | null
-          org_id: string
-          payload_hash: string
-          provider: string
-          provider_event_id: string
-          received_at?: string
-        }
-        Update: {
-          delivery_status?: string | null
-          event_type?: string
-          id?: string
-          message_id?: string
-          occurred_at?: string | null
-          org_id?: string
-          payload_hash?: string
-          provider?: string
-          provider_event_id?: string
-          received_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_outbound_message_events_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "aria_outbound_messages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "aria_outbound_message_events_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "finn_outbound_messages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "aria_outbound_message_events_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      aria_outbound_messages: {
-        Row: {
-          actor_id: string
-          approval_expires_at: string
-          approved_at: string | null
-          approved_by: string | null
-          channel: string
-          content_hash: string
-          created_at: string
-          delivered_at: string | null
-          dispatched_at: string | null
-          failure_code: string | null
-          failure_detail: string | null
-          id: string
-          idempotency_key: string
-          metadata_purge_at: string
-          org_id: string
-          payload_ciphertext: string | null
-          payload_iv: string | null
-          payload_purge_at: string
-          provider: string | null
-          provider_message_id: string | null
-          provider_status: string | null
-          recipient_hint: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          actor_id: string
-          approval_expires_at: string
-          approved_at?: string | null
-          approved_by?: string | null
-          channel: string
-          content_hash: string
-          created_at?: string
-          delivered_at?: string | null
-          dispatched_at?: string | null
-          failure_code?: string | null
-          failure_detail?: string | null
-          id?: string
-          idempotency_key: string
-          metadata_purge_at?: string
-          org_id: string
-          payload_ciphertext?: string | null
-          payload_iv?: string | null
-          payload_purge_at?: string
-          provider?: string | null
-          provider_message_id?: string | null
-          provider_status?: string | null
-          recipient_hint: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          actor_id?: string
-          approval_expires_at?: string
-          approved_at?: string | null
-          approved_by?: string | null
-          channel?: string
-          content_hash?: string
-          created_at?: string
-          delivered_at?: string | null
-          dispatched_at?: string | null
-          failure_code?: string | null
-          failure_detail?: string | null
-          id?: string
-          idempotency_key?: string
-          metadata_purge_at?: string
-          org_id?: string
-          payload_ciphertext?: string | null
-          payload_iv?: string | null
-          payload_purge_at?: string
-          provider?: string | null
-          provider_message_id?: string | null
-          provider_status?: string | null
-          recipient_hint?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_outbound_messages_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       aria_preferences: {
         Row: {
           daily_brief_enabled: boolean
@@ -1308,83 +469,6 @@ export type Database = {
           voice_enabled?: boolean
         }
         Relationships: []
-      }
-      aria_public_incidents: {
-        Row: {
-          created_at: string
-          detail: string | null
-          device_class: string | null
-          id: string
-          kind: string
-          url: string | null
-        }
-        Insert: {
-          created_at?: string
-          detail?: string | null
-          device_class?: string | null
-          id?: string
-          kind: string
-          url?: string | null
-        }
-        Update: {
-          created_at?: string
-          detail?: string | null
-          device_class?: string | null
-          id?: string
-          kind?: string
-          url?: string | null
-        }
-        Relationships: []
-      }
-      aria_reports: {
-        Row: {
-          confidence: number | null
-          created_at: string
-          id: string
-          kind: string
-          markdown: string
-          org_id: string
-          payload: Json
-          period_end: string | null
-          period_start: string | null
-          title: string
-          user_id: string
-        }
-        Insert: {
-          confidence?: number | null
-          created_at?: string
-          id?: string
-          kind: string
-          markdown?: string
-          org_id?: string
-          payload?: Json
-          period_end?: string | null
-          period_start?: string | null
-          title: string
-          user_id: string
-        }
-        Update: {
-          confidence?: number | null
-          created_at?: string
-          id?: string
-          kind?: string
-          markdown?: string
-          org_id?: string
-          payload?: Json
-          period_end?: string | null
-          period_start?: string | null
-          title?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aria_reports_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       audit_logs: {
         Row: {
@@ -2346,6 +1430,901 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_executive_briefings_org"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finn_actions_log: {
+        Row: {
+          action: string
+          actor: string
+          article_refs: string[]
+          citations: Json
+          created_at: string
+          id: string
+          input: Json
+          latency_ms: number | null
+          org_id: string
+          output: Json
+          route: string | null
+          status: string
+          surface: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor?: string
+          article_refs?: string[]
+          citations?: Json
+          created_at?: string
+          id?: string
+          input?: Json
+          latency_ms?: number | null
+          org_id?: string
+          output?: Json
+          route?: string | null
+          status?: string
+          surface?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor?: string
+          article_refs?: string[]
+          citations?: Json
+          created_at?: string
+          id?: string
+          input?: Json
+          latency_ms?: number | null
+          org_id?: string
+          output?: Json
+          route?: string | null
+          status?: string
+          surface?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_actions_log_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finn_adaptive_preferences: {
+        Row: {
+          confidence: number
+          created_at: string
+          evidence_count: number
+          id: string
+          preference_key: string
+          preference_value: string
+          safety_passed: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          evidence_count?: number
+          id?: string
+          preference_key: string
+          preference_value: string
+          safety_passed?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          evidence_count?: number
+          id?: string
+          preference_key?: string
+          preference_value?: string
+          safety_passed?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      finn_alert_acks: {
+        Row: {
+          alert_id: string
+          org_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          org_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          org_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_alert_acks_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "finn_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finn_alerts: {
+        Row: {
+          body: string
+          channels: Json
+          created_at: string
+          created_by: string
+          dispatched: number
+          id: string
+          is_simulation: boolean
+          org_id: string
+          severity: string
+          target: string
+          title: string
+        }
+        Insert: {
+          body: string
+          channels?: Json
+          created_at?: string
+          created_by: string
+          dispatched?: number
+          id?: string
+          is_simulation?: boolean
+          org_id: string
+          severity?: string
+          target?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          channels?: Json
+          created_at?: string
+          created_by?: string
+          dispatched?: number
+          id?: string
+          is_simulation?: boolean
+          org_id?: string
+          severity?: string
+          target?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      finn_decisions: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          executed_tool: string | null
+          id: string
+          next_step: string | null
+          org_id: string
+          rationale: string | null
+          recommendation: string
+          recommended_action: string | null
+          status: string
+          thread_id: string | null
+          tool_payload: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          executed_tool?: string | null
+          id?: string
+          next_step?: string | null
+          org_id?: string
+          rationale?: string | null
+          recommendation: string
+          recommended_action?: string | null
+          status?: string
+          thread_id?: string | null
+          tool_payload?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          executed_tool?: string | null
+          id?: string
+          next_step?: string | null
+          org_id?: string
+          rationale?: string | null
+          recommendation?: string
+          recommended_action?: string | null
+          status?: string
+          thread_id?: string | null
+          tool_payload?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_aria_decisions_org"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finn_document_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string
+          document_id: string
+          embedded_at: string | null
+          embedding: string | null
+          embedding_v2: string | null
+          id: string
+          metadata: Json
+          model_version: string | null
+          org_id: string
+          user_id: string
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          created_at?: string
+          document_id: string
+          embedded_at?: string | null
+          embedding?: string | null
+          embedding_v2?: string | null
+          id?: string
+          metadata?: Json
+          model_version?: string | null
+          org_id?: string
+          user_id: string
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          document_id?: string
+          embedded_at?: string | null
+          embedding?: string | null
+          embedding_v2?: string | null
+          id?: string
+          metadata?: Json
+          model_version?: string | null
+          org_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_document_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "finn_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_aria_document_chunks_org"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finn_documents: {
+        Row: {
+          chunk_count: number | null
+          created_at: string
+          error: string | null
+          id: string
+          is_official: boolean
+          mime_type: string | null
+          org_id: string
+          page_count: number | null
+          revision_hash: string | null
+          size_bytes: number | null
+          source: string
+          source_kind: string
+          status: string
+          storage_path: string | null
+          summary: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chunk_count?: number | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          is_official?: boolean
+          mime_type?: string | null
+          org_id?: string
+          page_count?: number | null
+          revision_hash?: string | null
+          size_bytes?: number | null
+          source?: string
+          source_kind?: string
+          status?: string
+          storage_path?: string | null
+          summary?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chunk_count?: number | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          is_official?: boolean
+          mime_type?: string | null
+          org_id?: string
+          page_count?: number | null
+          revision_hash?: string | null
+          size_bytes?: number | null
+          source?: string
+          source_kind?: string
+          status?: string
+          storage_path?: string | null
+          summary?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_aria_documents_org"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finn_evolution_cycles: {
+        Row: {
+          applied_count: number
+          created_at: string
+          critical_count: number
+          decision: string
+          deferred_count: number
+          finished_at: string
+          id: string
+          issues_count: number
+          readiness_score: number
+          reasons: string[]
+          report: Json
+          started_at: string
+          trigger: string
+        }
+        Insert: {
+          applied_count?: number
+          created_at?: string
+          critical_count?: number
+          decision: string
+          deferred_count?: number
+          finished_at: string
+          id?: string
+          issues_count?: number
+          readiness_score?: number
+          reasons?: string[]
+          report: Json
+          started_at: string
+          trigger: string
+        }
+        Update: {
+          applied_count?: number
+          created_at?: string
+          critical_count?: number
+          decision?: string
+          deferred_count?: number
+          finished_at?: string
+          id?: string
+          issues_count?: number
+          readiness_score?: number
+          reasons?: string[]
+          report?: Json
+          started_at?: string
+          trigger?: string
+        }
+        Relationships: []
+      }
+      finn_improvement_proposals: {
+        Row: {
+          area: string
+          created_at: string
+          decided_by: string | null
+          id: string
+          impact: string
+          org_id: string
+          proposal_ar: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          created_at?: string
+          decided_by?: string | null
+          id?: string
+          impact: string
+          org_id?: string
+          proposal_ar: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          created_at?: string
+          decided_by?: string | null
+          id?: string
+          impact?: string
+          org_id?: string
+          proposal_ar?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      finn_incidents: {
+        Row: {
+          detail: string
+          device_class: string | null
+          id: string
+          kind: string
+          model: string | null
+          occurred_at: string
+          resolved: boolean
+          user_id: string
+        }
+        Insert: {
+          detail: string
+          device_class?: string | null
+          id?: string
+          kind: string
+          model?: string | null
+          occurred_at?: string
+          resolved?: boolean
+          user_id: string
+        }
+        Update: {
+          detail?: string
+          device_class?: string | null
+          id?: string
+          kind?: string
+          model?: string | null
+          occurred_at?: string
+          resolved?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      finn_interactions: {
+        Row: {
+          answer: string
+          created_at: string
+          device_class: string | null
+          first_token_ms: number | null
+          id: string
+          latency_ms: number
+          model: string
+          question: string
+          retried: boolean
+          satisfied: boolean | null
+          thread_id: string | null
+          tokens_in: number | null
+          tokens_out: number | null
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          device_class?: string | null
+          first_token_ms?: number | null
+          id?: string
+          latency_ms?: number
+          model: string
+          question: string
+          retried?: boolean
+          satisfied?: boolean | null
+          thread_id?: string | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          device_class?: string | null
+          first_token_ms?: number | null
+          id?: string
+          latency_ms?: number
+          model?: string
+          question?: string
+          retried?: boolean
+          satisfied?: boolean | null
+          thread_id?: string | null
+          tokens_in?: number | null
+          tokens_out?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      finn_knowledge: {
+        Row: {
+          content: string
+          created_at: string
+          embedded_at: string | null
+          embedding: string | null
+          embedding_v2: string | null
+          id: string
+          model_version: string | null
+          org_id: string
+          source: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedded_at?: string | null
+          embedding?: string | null
+          embedding_v2?: string | null
+          id?: string
+          model_version?: string | null
+          org_id?: string
+          source: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedded_at?: string | null
+          embedding?: string | null
+          embedding_v2?: string | null
+          id?: string
+          model_version?: string | null
+          org_id?: string
+          source?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_aria_knowledge_org"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finn_learned_patterns: {
+        Row: {
+          confidence: number
+          created_at: string
+          domain: string
+          hits: number
+          id: string
+          last_seen: string
+          pattern_key: string
+          pattern_value: string
+          safety_passed: boolean
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          domain?: string
+          hits?: number
+          id?: string
+          last_seen?: string
+          pattern_key: string
+          pattern_value: string
+          safety_passed?: boolean
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          domain?: string
+          hits?: number
+          id?: string
+          last_seen?: string
+          pattern_key?: string
+          pattern_value?: string
+          safety_passed?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      finn_memory: {
+        Row: {
+          content: string
+          created_at: string
+          embedded_at: string | null
+          embedding: string | null
+          embedding_v2: string | null
+          id: string
+          importance: number
+          key: string
+          last_used_at: string
+          model_version: string | null
+          org_id: string
+          scope: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedded_at?: string | null
+          embedding?: string | null
+          embedding_v2?: string | null
+          id?: string
+          importance?: number
+          key: string
+          last_used_at?: string
+          model_version?: string | null
+          org_id?: string
+          scope?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedded_at?: string | null
+          embedding?: string | null
+          embedding_v2?: string | null
+          id?: string
+          importance?: number
+          key?: string
+          last_used_at?: string
+          model_version?: string | null
+          org_id?: string
+          scope?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_aria_memory_org"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finn_outbound_message_events: {
+        Row: {
+          delivery_status: string | null
+          event_type: string
+          id: string
+          message_id: string
+          occurred_at: string | null
+          org_id: string
+          payload_hash: string
+          provider: string
+          provider_event_id: string
+          received_at: string
+        }
+        Insert: {
+          delivery_status?: string | null
+          event_type: string
+          id?: string
+          message_id: string
+          occurred_at?: string | null
+          org_id: string
+          payload_hash: string
+          provider: string
+          provider_event_id: string
+          received_at?: string
+        }
+        Update: {
+          delivery_status?: string | null
+          event_type?: string
+          id?: string
+          message_id?: string
+          occurred_at?: string | null
+          org_id?: string
+          payload_hash?: string
+          provider?: string
+          provider_event_id?: string
+          received_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_outbound_message_events_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "finn_outbound_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aria_outbound_message_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finn_outbound_messages: {
+        Row: {
+          actor_id: string
+          approval_expires_at: string
+          approved_at: string | null
+          approved_by: string | null
+          channel: string
+          content_hash: string
+          created_at: string
+          delivered_at: string | null
+          dispatched_at: string | null
+          failure_code: string | null
+          failure_detail: string | null
+          id: string
+          idempotency_key: string
+          metadata_purge_at: string
+          org_id: string
+          payload_ciphertext: string | null
+          payload_iv: string | null
+          payload_purge_at: string
+          provider: string | null
+          provider_message_id: string | null
+          provider_status: string | null
+          recipient_hint: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actor_id: string
+          approval_expires_at: string
+          approved_at?: string | null
+          approved_by?: string | null
+          channel: string
+          content_hash: string
+          created_at?: string
+          delivered_at?: string | null
+          dispatched_at?: string | null
+          failure_code?: string | null
+          failure_detail?: string | null
+          id?: string
+          idempotency_key: string
+          metadata_purge_at?: string
+          org_id: string
+          payload_ciphertext?: string | null
+          payload_iv?: string | null
+          payload_purge_at?: string
+          provider?: string | null
+          provider_message_id?: string | null
+          provider_status?: string | null
+          recipient_hint: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actor_id?: string
+          approval_expires_at?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          channel?: string
+          content_hash?: string
+          created_at?: string
+          delivered_at?: string | null
+          dispatched_at?: string | null
+          failure_code?: string | null
+          failure_detail?: string | null
+          id?: string
+          idempotency_key?: string
+          metadata_purge_at?: string
+          org_id?: string
+          payload_ciphertext?: string | null
+          payload_iv?: string | null
+          payload_purge_at?: string
+          provider?: string | null
+          provider_message_id?: string | null
+          provider_status?: string | null
+          recipient_hint?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aria_outbound_messages_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finn_public_incidents: {
+        Row: {
+          created_at: string
+          detail: string | null
+          device_class: string | null
+          id: string
+          kind: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          device_class?: string | null
+          id?: string
+          kind: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          device_class?: string | null
+          id?: string
+          kind?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      finn_reports: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          id: string
+          kind: string
+          markdown: string
+          org_id: string
+          payload: Json
+          period_end: string | null
+          period_start: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          kind: string
+          markdown?: string
+          org_id?: string
+          payload?: Json
+          period_end?: string | null
+          period_start?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          kind?: string
+          markdown?: string
+          org_id?: string
+          payload?: Json
+          period_end?: string | null
+          period_start?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_aria_reports_org"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -7837,922 +7816,7 @@ export type Database = {
       }
     }
     Views: {
-      finn_actions_log: {
-        Row: {
-          action: string | null
-          actor: string | null
-          article_refs: string[] | null
-          citations: Json | null
-          created_at: string | null
-          id: string | null
-          input: Json | null
-          latency_ms: number | null
-          org_id: string | null
-          output: Json | null
-          route: string | null
-          status: string | null
-          surface: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action?: string | null
-          actor?: string | null
-          article_refs?: string[] | null
-          citations?: Json | null
-          created_at?: string | null
-          id?: string | null
-          input?: Json | null
-          latency_ms?: number | null
-          org_id?: string | null
-          output?: Json | null
-          route?: string | null
-          status?: string | null
-          surface?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string | null
-          actor?: string | null
-          article_refs?: string[] | null
-          citations?: Json | null
-          created_at?: string | null
-          id?: string | null
-          input?: Json | null
-          latency_ms?: number | null
-          org_id?: string | null
-          output?: Json | null
-          route?: string | null
-          status?: string | null
-          surface?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_actions_log_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      finn_adaptive_preferences: {
-        Row: {
-          confidence: number | null
-          created_at: string | null
-          evidence_count: number | null
-          id: string | null
-          preference_key: string | null
-          preference_value: string | null
-          safety_passed: boolean | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          confidence?: number | null
-          created_at?: string | null
-          evidence_count?: number | null
-          id?: string | null
-          preference_key?: string | null
-          preference_value?: string | null
-          safety_passed?: boolean | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          confidence?: number | null
-          created_at?: string | null
-          evidence_count?: number | null
-          id?: string | null
-          preference_key?: string | null
-          preference_value?: string | null
-          safety_passed?: boolean | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      finn_alert_acks: {
-        Row: {
-          alert_id: string | null
-          org_id: string | null
-          read_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          alert_id?: string | null
-          org_id?: string | null
-          read_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          alert_id?: string | null
-          org_id?: string | null
-          read_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_alert_acks_alert_id_fkey"
-            columns: ["alert_id"]
-            isOneToOne: false
-            referencedRelation: "aria_alerts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "aria_alert_acks_alert_id_fkey"
-            columns: ["alert_id"]
-            isOneToOne: false
-            referencedRelation: "finn_alerts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      finn_alerts: {
-        Row: {
-          body: string | null
-          channels: Json | null
-          created_at: string | null
-          created_by: string | null
-          dispatched: number | null
-          id: string | null
-          is_simulation: boolean | null
-          org_id: string | null
-          severity: string | null
-          target: string | null
-          title: string | null
-        }
-        Insert: {
-          body?: string | null
-          channels?: Json | null
-          created_at?: string | null
-          created_by?: string | null
-          dispatched?: number | null
-          id?: string | null
-          is_simulation?: boolean | null
-          org_id?: string | null
-          severity?: string | null
-          target?: string | null
-          title?: string | null
-        }
-        Update: {
-          body?: string | null
-          channels?: Json | null
-          created_at?: string | null
-          created_by?: string | null
-          dispatched?: number | null
-          id?: string | null
-          is_simulation?: boolean | null
-          org_id?: string | null
-          severity?: string | null
-          target?: string | null
-          title?: string | null
-        }
-        Relationships: []
-      }
-      finn_decisions: {
-        Row: {
-          confidence: number | null
-          created_at: string | null
-          executed_tool: string | null
-          id: string | null
-          next_step: string | null
-          org_id: string | null
-          rationale: string | null
-          recommendation: string | null
-          recommended_action: string | null
-          status: string | null
-          thread_id: string | null
-          tool_payload: Json | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          confidence?: number | null
-          created_at?: string | null
-          executed_tool?: string | null
-          id?: string | null
-          next_step?: string | null
-          org_id?: string | null
-          rationale?: string | null
-          recommendation?: string | null
-          recommended_action?: string | null
-          status?: string | null
-          thread_id?: string | null
-          tool_payload?: Json | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          confidence?: number | null
-          created_at?: string | null
-          executed_tool?: string | null
-          id?: string | null
-          next_step?: string | null
-          org_id?: string | null
-          rationale?: string | null
-          recommendation?: string | null
-          recommended_action?: string | null
-          status?: string | null
-          thread_id?: string | null
-          tool_payload?: Json | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aria_decisions_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      finn_document_chunks: {
-        Row: {
-          chunk_index: number | null
-          content: string | null
-          created_at: string | null
-          document_id: string | null
-          embedded_at: string | null
-          embedding: string | null
-          embedding_v2: string | null
-          id: string | null
-          metadata: Json | null
-          model_version: string | null
-          org_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          chunk_index?: number | null
-          content?: string | null
-          created_at?: string | null
-          document_id?: string | null
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string | null
-          metadata?: Json | null
-          model_version?: string | null
-          org_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          chunk_index?: number | null
-          content?: string | null
-          created_at?: string | null
-          document_id?: string | null
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string | null
-          metadata?: Json | null
-          model_version?: string | null
-          org_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_document_chunks_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: false
-            referencedRelation: "aria_documents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "aria_document_chunks_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: false
-            referencedRelation: "finn_documents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_aria_document_chunks_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      finn_documents: {
-        Row: {
-          chunk_count: number | null
-          created_at: string | null
-          error: string | null
-          id: string | null
-          is_official: boolean | null
-          mime_type: string | null
-          org_id: string | null
-          page_count: number | null
-          revision_hash: string | null
-          size_bytes: number | null
-          source: string | null
-          source_kind: string | null
-          status: string | null
-          storage_path: string | null
-          summary: string | null
-          tags: string[] | null
-          title: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          chunk_count?: number | null
-          created_at?: string | null
-          error?: string | null
-          id?: string | null
-          is_official?: boolean | null
-          mime_type?: string | null
-          org_id?: string | null
-          page_count?: number | null
-          revision_hash?: string | null
-          size_bytes?: number | null
-          source?: string | null
-          source_kind?: string | null
-          status?: string | null
-          storage_path?: string | null
-          summary?: string | null
-          tags?: string[] | null
-          title?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          chunk_count?: number | null
-          created_at?: string | null
-          error?: string | null
-          id?: string | null
-          is_official?: boolean | null
-          mime_type?: string | null
-          org_id?: string | null
-          page_count?: number | null
-          revision_hash?: string | null
-          size_bytes?: number | null
-          source?: string | null
-          source_kind?: string | null
-          status?: string | null
-          storage_path?: string | null
-          summary?: string | null
-          tags?: string[] | null
-          title?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aria_documents_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      finn_evolution_cycles: {
-        Row: {
-          applied_count: number | null
-          created_at: string | null
-          critical_count: number | null
-          decision: string | null
-          deferred_count: number | null
-          finished_at: string | null
-          id: string | null
-          issues_count: number | null
-          readiness_score: number | null
-          reasons: string[] | null
-          report: Json | null
-          started_at: string | null
-          trigger: string | null
-        }
-        Insert: {
-          applied_count?: number | null
-          created_at?: string | null
-          critical_count?: number | null
-          decision?: string | null
-          deferred_count?: number | null
-          finished_at?: string | null
-          id?: string | null
-          issues_count?: number | null
-          readiness_score?: number | null
-          reasons?: string[] | null
-          report?: Json | null
-          started_at?: string | null
-          trigger?: string | null
-        }
-        Update: {
-          applied_count?: number | null
-          created_at?: string | null
-          critical_count?: number | null
-          decision?: string | null
-          deferred_count?: number | null
-          finished_at?: string | null
-          id?: string | null
-          issues_count?: number | null
-          readiness_score?: number | null
-          reasons?: string[] | null
-          report?: Json | null
-          started_at?: string | null
-          trigger?: string | null
-        }
-        Relationships: []
-      }
-      finn_improvement_proposals: {
-        Row: {
-          area: string | null
-          created_at: string | null
-          decided_by: string | null
-          id: string | null
-          impact: string | null
-          org_id: string | null
-          proposal_ar: string | null
-          status: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          area?: string | null
-          created_at?: string | null
-          decided_by?: string | null
-          id?: string | null
-          impact?: string | null
-          org_id?: string | null
-          proposal_ar?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          area?: string | null
-          created_at?: string | null
-          decided_by?: string | null
-          id?: string | null
-          impact?: string | null
-          org_id?: string | null
-          proposal_ar?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      finn_incidents: {
-        Row: {
-          detail: string | null
-          device_class: string | null
-          id: string | null
-          kind: string | null
-          model: string | null
-          occurred_at: string | null
-          resolved: boolean | null
-          user_id: string | null
-        }
-        Insert: {
-          detail?: string | null
-          device_class?: string | null
-          id?: string | null
-          kind?: string | null
-          model?: string | null
-          occurred_at?: string | null
-          resolved?: boolean | null
-          user_id?: string | null
-        }
-        Update: {
-          detail?: string | null
-          device_class?: string | null
-          id?: string | null
-          kind?: string | null
-          model?: string | null
-          occurred_at?: string | null
-          resolved?: boolean | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      finn_interactions: {
-        Row: {
-          answer: string | null
-          created_at: string | null
-          device_class: string | null
-          first_token_ms: number | null
-          id: string | null
-          latency_ms: number | null
-          model: string | null
-          question: string | null
-          retried: boolean | null
-          satisfied: boolean | null
-          thread_id: string | null
-          tokens_in: number | null
-          tokens_out: number | null
-          user_id: string | null
-        }
-        Insert: {
-          answer?: string | null
-          created_at?: string | null
-          device_class?: string | null
-          first_token_ms?: number | null
-          id?: string | null
-          latency_ms?: number | null
-          model?: string | null
-          question?: string | null
-          retried?: boolean | null
-          satisfied?: boolean | null
-          thread_id?: string | null
-          tokens_in?: number | null
-          tokens_out?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          answer?: string | null
-          created_at?: string | null
-          device_class?: string | null
-          first_token_ms?: number | null
-          id?: string | null
-          latency_ms?: number | null
-          model?: string | null
-          question?: string | null
-          retried?: boolean | null
-          satisfied?: boolean | null
-          thread_id?: string | null
-          tokens_in?: number | null
-          tokens_out?: number | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      finn_knowledge: {
-        Row: {
-          content: string | null
-          created_at: string | null
-          embedded_at: string | null
-          embedding: string | null
-          embedding_v2: string | null
-          id: string | null
-          model_version: string | null
-          org_id: string | null
-          source: string | null
-          tags: string[] | null
-          title: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          content?: string | null
-          created_at?: string | null
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string | null
-          model_version?: string | null
-          org_id?: string | null
-          source?: string | null
-          tags?: string[] | null
-          title?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          content?: string | null
-          created_at?: string | null
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string | null
-          model_version?: string | null
-          org_id?: string | null
-          source?: string | null
-          tags?: string[] | null
-          title?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aria_knowledge_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      finn_learned_patterns: {
-        Row: {
-          confidence: number | null
-          created_at: string | null
-          domain: string | null
-          hits: number | null
-          id: string | null
-          last_seen: string | null
-          pattern_key: string | null
-          pattern_value: string | null
-          safety_passed: boolean | null
-          user_id: string | null
-        }
-        Insert: {
-          confidence?: number | null
-          created_at?: string | null
-          domain?: string | null
-          hits?: number | null
-          id?: string | null
-          last_seen?: string | null
-          pattern_key?: string | null
-          pattern_value?: string | null
-          safety_passed?: boolean | null
-          user_id?: string | null
-        }
-        Update: {
-          confidence?: number | null
-          created_at?: string | null
-          domain?: string | null
-          hits?: number | null
-          id?: string | null
-          last_seen?: string | null
-          pattern_key?: string | null
-          pattern_value?: string | null
-          safety_passed?: boolean | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      finn_memory: {
-        Row: {
-          content: string | null
-          created_at: string | null
-          embedded_at: string | null
-          embedding: string | null
-          embedding_v2: string | null
-          id: string | null
-          importance: number | null
-          key: string | null
-          last_used_at: string | null
-          model_version: string | null
-          org_id: string | null
-          scope: string | null
-          user_id: string | null
-        }
-        Insert: {
-          content?: string | null
-          created_at?: string | null
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string | null
-          importance?: number | null
-          key?: string | null
-          last_used_at?: string | null
-          model_version?: string | null
-          org_id?: string | null
-          scope?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          content?: string | null
-          created_at?: string | null
-          embedded_at?: string | null
-          embedding?: string | null
-          embedding_v2?: string | null
-          id?: string | null
-          importance?: number | null
-          key?: string | null
-          last_used_at?: string | null
-          model_version?: string | null
-          org_id?: string | null
-          scope?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aria_memory_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      finn_outbound_message_events: {
-        Row: {
-          delivery_status: string | null
-          event_type: string | null
-          id: string | null
-          message_id: string | null
-          occurred_at: string | null
-          org_id: string | null
-          payload_hash: string | null
-          provider: string | null
-          provider_event_id: string | null
-          received_at: string | null
-        }
-        Insert: {
-          delivery_status?: string | null
-          event_type?: string | null
-          id?: string | null
-          message_id?: string | null
-          occurred_at?: string | null
-          org_id?: string | null
-          payload_hash?: string | null
-          provider?: string | null
-          provider_event_id?: string | null
-          received_at?: string | null
-        }
-        Update: {
-          delivery_status?: string | null
-          event_type?: string | null
-          id?: string | null
-          message_id?: string | null
-          occurred_at?: string | null
-          org_id?: string | null
-          payload_hash?: string | null
-          provider?: string | null
-          provider_event_id?: string | null
-          received_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_outbound_message_events_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "aria_outbound_messages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "aria_outbound_message_events_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "finn_outbound_messages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "aria_outbound_message_events_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      finn_outbound_messages: {
-        Row: {
-          actor_id: string | null
-          approval_expires_at: string | null
-          approved_at: string | null
-          approved_by: string | null
-          channel: string | null
-          content_hash: string | null
-          created_at: string | null
-          delivered_at: string | null
-          dispatched_at: string | null
-          failure_code: string | null
-          failure_detail: string | null
-          id: string | null
-          idempotency_key: string | null
-          metadata_purge_at: string | null
-          org_id: string | null
-          payload_ciphertext: string | null
-          payload_iv: string | null
-          payload_purge_at: string | null
-          provider: string | null
-          provider_message_id: string | null
-          provider_status: string | null
-          recipient_hint: string | null
-          status: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          actor_id?: string | null
-          approval_expires_at?: string | null
-          approved_at?: string | null
-          approved_by?: string | null
-          channel?: string | null
-          content_hash?: string | null
-          created_at?: string | null
-          delivered_at?: string | null
-          dispatched_at?: string | null
-          failure_code?: string | null
-          failure_detail?: string | null
-          id?: string | null
-          idempotency_key?: string | null
-          metadata_purge_at?: string | null
-          org_id?: string | null
-          payload_ciphertext?: string | null
-          payload_iv?: string | null
-          payload_purge_at?: string | null
-          provider?: string | null
-          provider_message_id?: string | null
-          provider_status?: string | null
-          recipient_hint?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          actor_id?: string | null
-          approval_expires_at?: string | null
-          approved_at?: string | null
-          approved_by?: string | null
-          channel?: string | null
-          content_hash?: string | null
-          created_at?: string | null
-          delivered_at?: string | null
-          dispatched_at?: string | null
-          failure_code?: string | null
-          failure_detail?: string | null
-          id?: string | null
-          idempotency_key?: string | null
-          metadata_purge_at?: string | null
-          org_id?: string | null
-          payload_ciphertext?: string | null
-          payload_iv?: string | null
-          payload_purge_at?: string | null
-          provider?: string | null
-          provider_message_id?: string | null
-          provider_status?: string | null
-          recipient_hint?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "aria_outbound_messages_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      finn_public_incidents: {
-        Row: {
-          created_at: string | null
-          detail: string | null
-          device_class: string | null
-          id: string | null
-          kind: string | null
-          url: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          detail?: string | null
-          device_class?: string | null
-          id?: string | null
-          kind?: string | null
-          url?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          detail?: string | null
-          device_class?: string | null
-          id?: string | null
-          kind?: string | null
-          url?: string | null
-        }
-        Relationships: []
-      }
-      finn_reports: {
-        Row: {
-          confidence: number | null
-          created_at: string | null
-          id: string | null
-          kind: string | null
-          markdown: string | null
-          org_id: string | null
-          payload: Json | null
-          period_end: string | null
-          period_start: string | null
-          title: string | null
-          user_id: string | null
-        }
-        Insert: {
-          confidence?: number | null
-          created_at?: string | null
-          id?: string | null
-          kind?: string | null
-          markdown?: string | null
-          org_id?: string | null
-          payload?: Json | null
-          period_end?: string | null
-          period_start?: string | null
-          title?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          confidence?: number | null
-          created_at?: string | null
-          id?: string | null
-          kind?: string | null
-          markdown?: string | null
-          org_id?: string | null
-          payload?: Json | null
-          period_end?: string | null
-          period_start?: string | null
-          title?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aria_reports_org"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       accept_org_invitation: { Args: { _token: string }; Returns: string }
