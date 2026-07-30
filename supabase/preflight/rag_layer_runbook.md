@@ -1,7 +1,8 @@
 # RAG layer — apply runbook (STAGED · not yet applied)
 
-Project: **`khytdwgyrnztqabhfgbb`** (the owner-declared active project — NOT the
-stale `jhutlofapjfjjeajawie` in `config.toml`).
+Project: **`khytdwgyrnztqabhfgbb`** (owner-declared, and now the value in
+`config.toml` — the two agree since 2026-07-30; before that config.toml
+carried a stale ref, which is why several files still explain the mismatch).
 
 **Approved decisions**
 - Embedding dimension: **`vector(1536)`** (plain `vector`, not `halfvec`).

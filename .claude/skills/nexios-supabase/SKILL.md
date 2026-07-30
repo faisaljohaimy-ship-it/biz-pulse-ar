@@ -7,8 +7,9 @@ description: طبقة بيانات NEXIOS على Supabase — تُستدعى ق�
 
 ## المشروع
 - المشروع النشط الذي صرّح به المالك: `khytdwgyrnztqabhfgbb`.
-- تنبيه: `supabase/config.toml` ما زال يحمل `jhutlofapjfjjeajawie` القديم —
-  لا تستنتج المشروع من config.toml؛ `VITE_SUPABASE_URL` البيئي هو الفيصل.
+- `supabase/config.toml` صار يحمل المعرّف نفسه (صُحّح 2026-07-30 بعد أن
+  ظلّ يحمل `jhutlofapjfjjeajawie` القديم). ومع ذلك يبقى `VITE_SUPABASE_URL`
+  البيئي هو الفيصل وقت التشغيل — config.toml يوجّه أدوات CLI لا التطبيق.
 - **عميل واحد موحّد** `src/integrations/supabase/client.ts` — لا تنشئ
   عملاء جددًا. على الخادم: `supabaseAdmin` من `client.server.ts` للكتابات
   الإدارية فقط.
