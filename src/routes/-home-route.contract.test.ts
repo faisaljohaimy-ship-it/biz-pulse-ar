@@ -1,5 +1,5 @@
 /**
- * Home route — contract guard.
+ * Home route — contract guard (ignored by the file-route generator).
  *
  * WHY THIS EXISTS
  * A refactor deleted `export const Route = createFileRoute("/")` from
@@ -13,7 +13,7 @@
  * error. It is a 404 at runtime, and only at runtime.
  *
  * So the gate gets an assertion it did not have: the homepage must export its
- * route, and must still render its sections.
+ * route, and must render the approved compact command surface.
  */
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -25,21 +25,20 @@ describe("homepage route contract", () => {
     expect(INDEX).toMatch(/export const Route\s*=\s*createFileRoute\("\/"\)/);
   });
 
-  it("still renders the sections the homepage is made of", () => {
-    // Each of these was removed and restored at least once. Listing them by
-    // name means a future deletion has to be deliberate, not incidental.
-    for (const section of [
-      "<FourRegionHub />",
+  it("renders the approved compact homepage and keeps retired sections removed", () => {
+    for (const section of ["<FourRegionHub />", "<HomeTopNav />"]) {
+      expect(INDEX).toContain(section);
+    }
+    for (const retired of [
       "<SovereignCommandDeck",
       "<DashboardPreviewRail",
-      "<FinnAnomalyStrip />",
-      "<FinnTodayRecommendations />",
+      "<FinnAnomalyStrip",
+      "<FinnTodayRecommendations",
       "<OsDecisionQueue",
-      "<ExecutiveShowcaseHub />",
+      "<ExecutiveShowcaseHub",
       "<HolographicFlowShowcase",
-      "<HomeTopNav />",
     ]) {
-      expect(INDEX).toContain(section);
+      expect(INDEX).not.toContain(retired);
     }
   });
 

@@ -160,7 +160,7 @@ function useNavGroups(): NavGroup[] {
         { to: "/sec/circles", icon: Building2, label: ar("الدوائر", "Circles") },
         { to: "/sec/sections", icon: Grid3x3, label: ar("الأقسام", "Sections") },
         { to: "/sec/projects", icon: Rocket, label: ar("المشاريع", "Projects") },
-        { to: "/sec/maintenance", icon: Wrench, label: ar("أوامر العمل", "Work Orders") },
+        { to: "/sec/maintenance", icon: Wrench, label: ar("الصيانة", "Maintenance") },
         { to: "/hcis", icon: Shield, label: ar("الامتثال HCIS", "HCIS Compliance") },
         // «تصاريح العمل الرقمية» (/ptw) HIDDEN by owner directive — غير قابلة
         // للتطبيق حالياً. See src/lib/nav/hidden-routes.ts. Note /sec/permits
@@ -177,7 +177,7 @@ function useNavGroups(): NavGroup[] {
       items: [
         { to: "/finn", icon: Sparkles, label: ar("FINN", "FINN") },
         { to: "/voice", icon: Mic, label: ar("المساعد الصوتي", "Voice Assistant") },
-        { to: "/agents", icon: Bot, label: ar("الوكلاء", "Agents") },
+        { to: "/agents", icon: Bot, label: ar("منصة عمليات الوكلاء", "Agent Operations Platform") },
         { to: "/sec/ai", icon: Brain, label: ar("توصيات FINN", "FINN Recos") },
       ],
     },
@@ -197,7 +197,7 @@ function useNavGroups(): NavGroup[] {
     {
       label: ar("المعرفة", "Knowledge"),
       items: [
-        { to: "/executive-reports", icon: FileText, label: ar("التقارير", "Reports") },
+        { to: "/sec/reports", icon: FileText, label: ar("التقارير", "Reports") },
         { to: "/integrations", icon: Plug, label: ar("التكاملات", "Integrations") },
         { to: "/connect", icon: Bot, label: ar("ربط الوكلاء (MCP)", "Agent Connect (MCP)") },
         { to: "/files", icon: FolderOpen, label: ar("الملفات", "Files") },

@@ -2,6 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import type { DailyOpsData } from "@/lib/exec/showcase-simulation.server";
+import {
+  DAILY_REPORT_SCOPES,
+  DAILY_REPORT_SCOPE_META,
+  type DailyReportScope,
+} from "@/lib/reports/report-scope";
 import { z } from "zod";
 
 // ============================================================================
@@ -476,6 +481,7 @@ const DayInput = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional(),
+  scope: z.enum(DAILY_REPORT_SCOPES).optional(),
 });
 
 /** Guest-capable data source: live rows win, otherwise the deterministic
@@ -511,6 +517,7 @@ export const generateDailyOperationsReport = createServerFn({ method: "POST" })
       .claims;
     const actorName = claims?.user_metadata?.name ?? claims?.email ?? "زائر العرض";
     const day = data.date ?? new Date().toISOString().slice(0, 10);
+    const scope: DailyReportScope = data.scope ?? "full";
     const { buildDailyOpsSimulation, resilient } =
       await import("@/lib/exec/showcase-simulation.server");
     const ops = await resilient(
@@ -539,11 +546,21 @@ export const generateDailyOperationsReport = createServerFn({ method: "POST" })
       ["Activity Events", ops.activity.length],
     ]);
     XLSX.utils.book_append_sheet(wb, overview, "Overview");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.incidents), "Incidents");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.work_orders), "Work Orders");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.permits), "Permits");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.activity), "Activity");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.trend7), "Trend 7d");
+    if (scope === "full" || scope === "incidents") {
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.incidents), "Incidents");
+    }
+    if (scope === "full" || scope === "maintenance") {
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.work_orders), "Work Orders");
+    }
+    if (scope === "full" || scope === "permits") {
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.permits), "Permits");
+    }
+    if (scope === "full" || scope === "activity") {
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.activity), "Activity");
+    }
+    if (scope !== "activity") {
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ops.trend7), "Trend 7d");
+    }
 
     const bytes = new Uint8Array(
       XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer,
@@ -551,7 +568,7 @@ export const generateDailyOperationsReport = createServerFn({ method: "POST" })
 
     let report_id: string | null = null;
     if (userId) {
-      const storage_path = `daily-reports/${day}-${Date.now()}.xlsx`;
+      const storage_path = `daily-reports/${DAILY_REPORT_SCOPE_META[scope].slug}-${day}-${Date.now()}.xlsx`;
       const { error: upErr } = await supabase.storage
         .from(REPORT_BUCKET)
         .upload(storage_path, bytes, {
@@ -564,7 +581,7 @@ export const generateDailyOperationsReport = createServerFn({ method: "POST" })
         .insert({
           kind: "daily",
           format: "xlsx",
-          title: `تقرير العمليات اليومي — ${day}`,
+          title: `${DAILY_REPORT_SCOPE_META[scope].ar} — ${day}`,
           storage_path: upErr ? null : storage_path,
           size_bytes: bytes.length,
           range_from: `${day}T00:00:00.000Z`,
@@ -575,6 +592,7 @@ export const generateDailyOperationsReport = createServerFn({ method: "POST" })
             incidents: ops.incidents.length,
             work_orders: ops.work_orders.length,
             permits: ops.permits.length,
+            scope,
           },
         })
         .select("id")
@@ -583,7 +601,7 @@ export const generateDailyOperationsReport = createServerFn({ method: "POST" })
     }
 
     return {
-      file_name: `daily-ops-${day}.xlsx`,
+      file_name: `${DAILY_REPORT_SCOPE_META[scope].slug}-${day}.xlsx`,
       mime_type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       base64: u8ToBase64(bytes),
       size_bytes: bytes.length,

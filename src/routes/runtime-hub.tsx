@@ -53,7 +53,7 @@ const STAGES = [
     label_ar: "مؤشرات الأداء",
     label_en: "Executive KPIs",
     icon: BarChart3,
-    to: "/executive-reports",
+    to: "/sec/reports",
   },
   { key: "agents", label_ar: "الوكلاء", label_en: "Agents", icon: Bot, to: "/exec" },
   {

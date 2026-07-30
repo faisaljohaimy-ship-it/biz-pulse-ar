@@ -53,8 +53,8 @@ function Maintenance() {
   return (
     <div className="space-y-4">
       <SecPageHeader
-        title="أوامر العمل — الصيانة"
-        subtitle="وقائية وتصحيحية · معتمدة من قسم الصيانة"
+        title="الصيانة"
+        subtitle="أوامر العمل الوقائية والتصحيحية المرتبطة بالأصول المسجّلة"
       >
         <NewWorkOrderDialog />
       </SecPageHeader>
@@ -100,6 +100,7 @@ function Maintenance() {
             <tr>
               <th className="px-3 py-2 text-start">المرجع</th>
               <th className="px-3 py-2 text-start">العنوان</th>
+              <th className="px-3 py-2 text-start">الأصل</th>
               <th className="px-3 py-2 text-start">النوع</th>
               <th className="px-3 py-2 text-start">الأولوية</th>
               <th className="px-3 py-2 text-start">الحالة</th>
@@ -117,6 +118,12 @@ function Maintenance() {
                   {w.source_incident_id && (
                     <div className="text-[10px] text-violet-600">↩ من بلاغ</div>
                   )}
+                </td>
+                <td className="px-3 py-2">
+                  <div className="text-xs">{w.asset_kind || "—"}</div>
+                  <div className="font-mono text-[10px] text-muted-foreground">
+                    {w.asset_code ?? "—"}
+                  </div>
                 </td>
                 <td className="px-3 py-2">
                   <span
@@ -150,7 +157,7 @@ function Maintenance() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-8 text-center">
+                <td colSpan={9} className="py-8 text-center">
                   <LiveStatus
                     variant="monitoring"
                     hint="قائمة الصيانة محدثة — لا أوامر معلقة"

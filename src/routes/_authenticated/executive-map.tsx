@@ -1,33 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Card } from "@/components/ui/card";
+import { Activity, AlertTriangle, Building2, MapPin, Radio, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { useI18n } from "@/lib/i18n";
-import { supabase } from "@/integrations/supabase/client";
-import { Activity, AlertTriangle, Building2, MapPin, Radio, Shield } from "lucide-react";
-import { ExecutiveMapClient, type MapSite } from "@/components/executive-map-client";
 import { CommandBackdrop } from "@/components/executive/CommandBackdrop";
 import { REGION_MARKERS } from "@/components/executive/region-markers";
+import { ExecutiveMapClient, type MapSite } from "@/components/executive-map-client";
+import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 
 export const Route = createFileRoute("/_authenticated/executive-map")({
   component: ExecutiveMapPage,
   errorComponent: ({ error, reset }) => (
     <div className="p-6">
       <Card className="p-6">
-        <div className="text-destructive font-semibold">Map error</div>
-        <div className="text-sm text-muted-foreground mt-1">{error.message}</div>
+        <div className="font-semibold text-destructive">تعذّر تحميل الخريطة</div>
+        <div className="mt-1 text-sm text-muted-foreground">{error.message}</div>
         <Button className="mt-3" onClick={reset}>
-          Retry
+          إعادة المحاولة
         </Button>
       </Card>
     </div>
   ),
-  notFoundComponent: () => <div className="p-6">Not found</div>,
+  notFoundComponent: () => <div className="p-6">الصفحة غير موجودة</div>,
 });
 
-type Site = MapSite;
 type IncidentGeoRow = {
   id: string;
   title: string | null;
@@ -36,6 +36,7 @@ type IncidentGeoRow = {
   location_lng: number | null;
   status: string | null;
 };
+
 type CrisisGeoRow = {
   id: string;
   title: string | null;
@@ -45,148 +46,131 @@ type CrisisGeoRow = {
   status: string | null;
 };
 
-// Seed of strategic locations in MENA + key global hubs. Augmented at runtime
-// by sec_incidents / pulse_crises so the map reflects real signals.
-const SEED_SITES: Site[] = [
+const SEED_SITES: MapSite[] = [
   {
-    id: "hq-riyadh",
-    name: "HQ Riyadh",
-    name_ar: "المقر الرئيسي - الرياض",
+    id: "central-hq",
+    name: "Riyadh Operations HQ",
+    name_ar: "مقر عمليات الرياض",
     type: "hq",
+    region: "central",
     lat: 24.7136,
     lng: 46.6753,
     status: "ok",
-    metric: "Health 94",
-    detail: "Executive HQ",
+    metric: "امتثال 96%",
+    detail: "مركز القيادة التنفيذي",
+    operations: 38,
   },
   {
-    id: "br-jeddah",
-    name: "Jeddah Hub",
-    name_ar: "مركز جدة",
-    type: "branch",
+    id: "central-asset",
+    name: "Al Kharj Security Site",
+    name_ar: "موقع أمن الخرج",
+    type: "asset",
+    region: "central",
+    lat: 24.1556,
+    lng: 47.312,
+    status: "warn",
+    metric: "صيانة مجدولة",
+    operations: 14,
+  },
+  {
+    id: "western-site-jeddah",
+    name: "Jeddah Industrial Security",
+    name_ar: "مركز الأمن الصناعي بجدة",
+    type: "site",
+    region: "western",
     lat: 21.4858,
     lng: 39.1925,
     status: "ok",
-    metric: "Health 88",
+    metric: "امتثال 94%",
+    operations: 31,
   },
   {
-    id: "br-dammam",
-    name: "Dammam Ops",
+    id: "western-asset-yanbu",
+    name: "Yanbu Asset Cluster",
+    name_ar: "مجمع أصول ينبع",
+    type: "asset",
+    region: "western",
+    lat: 24.0232,
+    lng: 38.1901,
+    status: "warn",
+    metric: "تصريح قيد المراجعة",
+    operations: 18,
+  },
+  {
+    id: "eastern-site-dammam",
+    name: "Dammam Operations",
     name_ar: "عمليات الدمام",
     type: "site",
+    region: "eastern",
     lat: 26.4207,
     lng: 50.0888,
-    status: "warn",
-    metric: "Throughput -7%",
-  },
-  {
-    id: "br-dubai",
-    name: "Dubai",
-    name_ar: "دبي",
-    type: "branch",
-    lat: 25.2048,
-    lng: 55.2708,
     status: "ok",
-    metric: "Health 91",
+    metric: "امتثال 97%",
+    operations: 44,
   },
   {
-    id: "br-abudhabi",
-    name: "Abu Dhabi",
-    name_ar: "أبوظبي",
-    type: "branch",
-    lat: 24.4539,
-    lng: 54.3773,
-    status: "ok",
-    metric: "Health 90",
-  },
-  {
-    id: "br-cairo",
-    name: "Cairo",
-    name_ar: "القاهرة",
-    type: "branch",
-    lat: 30.0444,
-    lng: 31.2357,
-    status: "warn",
-    metric: "FX risk",
-  },
-  {
-    id: "br-doha",
-    name: "Doha",
-    name_ar: "الدوحة",
-    type: "branch",
-    lat: 25.276987,
-    lng: 51.520008,
-    status: "ok",
-  },
-  {
-    id: "br-kuwait",
-    name: "Kuwait City",
-    name_ar: "الكويت",
-    type: "branch",
-    lat: 29.3759,
-    lng: 47.9774,
-    status: "ok",
-  },
-  {
-    id: "br-manama",
-    name: "Manama",
-    name_ar: "المنامة",
-    type: "branch",
-    lat: 26.2285,
-    lng: 50.586,
-    status: "ok",
-  },
-  {
-    id: "br-muscat",
-    name: "Muscat",
-    name_ar: "مسقط",
-    type: "branch",
-    lat: 23.588,
-    lng: 58.3829,
-    status: "ok",
-  },
-  { id: "br-london", name: "London", type: "branch", lat: 51.5074, lng: -0.1278, status: "ok" },
-  {
-    id: "br-singapore",
-    name: "Singapore",
-    type: "branch",
-    lat: 1.3521,
-    lng: 103.8198,
-    status: "ok",
-  },
-  {
-    id: "asset-neom",
-    name: "NEOM Site",
-    name_ar: "موقع نيوم",
+    id: "eastern-asset-jubail",
+    name: "Jubail Industrial Asset",
+    name_ar: "أصل الجبيل الصناعي",
     type: "asset",
-    lat: 27.9654,
-    lng: 35.2733,
-    status: "warn",
-    metric: "Permit pending",
+    region: "eastern",
+    lat: 27.0174,
+    lng: 49.6225,
+    status: "critical",
+    metric: "بلاغ عالي الخطورة",
+    operations: 22,
   },
   {
-    id: "asset-redsea",
-    name: "Red Sea Project",
-    name_ar: "مشروع البحر الأحمر",
-    type: "asset",
-    lat: 25.5,
-    lng: 36.5,
+    id: "southern-site-abha",
+    name: "Abha Security Center",
+    name_ar: "مركز أمن أبها",
+    type: "site",
+    region: "southern",
+    lat: 18.2465,
+    lng: 42.5117,
     status: "ok",
+    metric: "امتثال 93%",
+    operations: 19,
+  },
+  {
+    id: "southern-asset-jazan",
+    name: "Jazan Asset Cluster",
+    name_ar: "مجمع أصول جازان",
+    type: "asset",
+    region: "southern",
+    lat: 16.8892,
+    lng: 42.5511,
+    status: "warn",
+    metric: "فحص وقائي",
+    operations: 12,
   },
 ];
+
+function isSaudiCoordinate(lat: number, lng: number) {
+  return lat >= 16 && lat <= 33 && lng >= 34 && lng <= 56;
+}
+
+function closestRegion(lat: number, lng: number): RegionId {
+  return REGION_MARKERS.reduce(
+    (best, marker) => {
+      const distance = (lat - marker.lat) ** 2 + (lng - marker.lng) ** 2;
+      return distance < best.distance ? { id: marker.id, distance } : best;
+    },
+    { id: "central" as RegionId, distance: Number.POSITIVE_INFINITY },
+  ).id;
+}
 
 function ExecutiveMapPage() {
   const { locale } = useI18n();
   const isAr = locale === "ar";
-  const [sites, setSites] = useState<Site[]>(SEED_SITES);
-  const [filter, setFilter] = useState<"all" | Site["status"]>("all");
+  const [sites, setSites] = useState<MapSite[]>(SEED_SITES);
+  const [statusFilter, setStatusFilter] = useState<"all" | MapSite["status"]>("all");
+  const [regionFilter, setRegionFilter] = useState<"all" | RegionId>("all");
   const [loading, setLoading] = useState(true);
-
-  // Leaflet init moved into ExecutiveMapClient (client-only)
 
   useEffect(() => {
     let alive = true;
-    (async () => {
+    void (async () => {
       try {
         const [{ data: incidents }, { data: crises }] = await Promise.all([
           supabase
@@ -196,38 +180,54 @@ function ExecutiveMapPage() {
           supabase.from("pulse_crises").select("id,title,severity,lat,lng,status").limit(50),
         ]);
         if (!alive) return;
-        const extra: Site[] = [];
-        for (const i of (incidents ?? []) as unknown as IncidentGeoRow[]) {
-          if (typeof i.location_lat === "number" && typeof i.location_lng === "number") {
-            extra.push({
-              id: `inc-${i.id}`,
-              name: i.title ?? "Incident",
-              type: "incident",
-              lat: i.location_lat,
-              lng: i.location_lng,
-              status: i.severity === "high" || i.severity === "critical" ? "critical" : "warn",
-              metric: `Severity: ${i.severity ?? "n/a"}`,
-              detail: i.status ?? undefined,
-            });
+
+        const extras: MapSite[] = [];
+        for (const incident of (incidents ?? []) as unknown as IncidentGeoRow[]) {
+          const lat = incident.location_lat;
+          const lng = incident.location_lng;
+          if (typeof lat !== "number" || typeof lng !== "number" || !isSaudiCoordinate(lat, lng)) {
+            continue;
           }
+          extras.push({
+            id: `incident-${incident.id}`,
+            name: incident.title ?? "Security incident",
+            name_ar: incident.title ?? "بلاغ أمني",
+            type: "incident",
+            region: closestRegion(lat, lng),
+            lat,
+            lng,
+            status:
+              incident.severity === "high" || incident.severity === "critical"
+                ? "critical"
+                : "warn",
+            metric: `الخطورة: ${incident.severity ?? "غير محددة"}`,
+            detail: incident.status ?? undefined,
+            operations: 1,
+          });
         }
-        for (const c of (crises ?? []) as unknown as CrisisGeoRow[]) {
-          if (typeof c.lat === "number" && typeof c.lng === "number") {
-            extra.push({
-              id: `cri-${c.id}`,
-              name: c.title ?? "Crisis",
-              type: "incident",
-              lat: c.lat,
-              lng: c.lng,
-              status: "critical",
-              metric: `Severity: ${c.severity ?? "n/a"}`,
-              detail: c.status ?? undefined,
-            });
+        for (const crisis of (crises ?? []) as unknown as CrisisGeoRow[]) {
+          const lat = crisis.lat;
+          const lng = crisis.lng;
+          if (typeof lat !== "number" || typeof lng !== "number" || !isSaudiCoordinate(lat, lng)) {
+            continue;
           }
+          extras.push({
+            id: `crisis-${crisis.id}`,
+            name: crisis.title ?? "Critical event",
+            name_ar: crisis.title ?? "حالة حرجة",
+            type: "incident",
+            region: closestRegion(lat, lng),
+            lat,
+            lng,
+            status: "critical",
+            metric: `الخطورة: ${crisis.severity ?? "حرجة"}`,
+            detail: crisis.status ?? undefined,
+            operations: 1,
+          });
         }
-        if (extra.length) setSites((prev) => [...prev, ...extra]);
+        if (extras.length > 0) setSites((current) => [...current, ...extras]);
       } catch {
-        // tables may not have geo columns; ignore silently
+        // The reference Saudi distribution remains available when geo tables are absent.
       } finally {
         if (alive) setLoading(false);
       }
@@ -238,40 +238,64 @@ function ExecutiveMapPage() {
   }, []);
 
   const visible = useMemo(
-    () => (filter === "all" ? sites : sites.filter((s) => s.status === filter)),
-    [sites, filter],
+    () =>
+      sites.filter(
+        (site) =>
+          (statusFilter === "all" || site.status === statusFilter) &&
+          (regionFilter === "all" || site.region === regionFilter),
+      ),
+    [sites, statusFilter, regionFilter],
   );
 
   const counts = useMemo(
     () => ({
       total: sites.length,
-      ok: sites.filter((s) => s.status === "ok").length,
-      warn: sites.filter((s) => s.status === "warn").length,
-      critical: sites.filter((s) => s.status === "critical").length,
+      ok: sites.filter((site) => site.status === "ok").length,
+      warn: sites.filter((site) => site.status === "warn").length,
+      critical: sites.filter((site) => site.status === "critical").length,
     }),
+    [sites],
+  );
+
+  const regionSummary = useMemo(
+    () =>
+      Object.fromEntries(
+        REGIONS.map((region) => {
+          const rows = sites.filter((site) => site.region === region.id);
+          return [
+            region.id,
+            {
+              sites: rows.filter((site) => ["hq", "branch", "site"].includes(site.type)).length,
+              assets: rows.filter((site) => site.type === "asset").length,
+              incidents: rows.filter((site) => site.type === "incident").length,
+              operations: rows.reduce((sum, site) => sum + (site.operations ?? 0), 0),
+            },
+          ];
+        }),
+      ) as Record<
+        RegionId,
+        { sites: number; assets: number; incidents: number; operations: number }
+      >,
     [sites],
   );
 
   return (
     <div dir={isAr ? "rtl" : "ltr"} className="relative space-y-4 p-4 md:p-6">
       <CommandBackdrop />
-
       <PageHeader
         icon={MapPin}
         title={isAr ? "الخريطة التنفيذية" : "Executive Map"}
         subtitle={
           isAr
-            ? "خريطة حية لمواقع المؤسسة وأصولها وحوادثها — مدعومة بـ OpenStreetMap"
-            : "Live map of organizational sites, assets and incidents — powered by OpenStreetMap"
+            ? "توزيع تفاعلي لمواقع الأمن الصناعي والأصول والعمليات والحوادث داخل المملكة العربية السعودية."
+            : "Interactive distribution of industrial-security sites, assets, operations, and incidents across Saudi Arabia."
         }
       />
 
-      {/* Command row: responsive horizontal stat cards — a clean horizontal
-          scroll on mobile (each card snaps), a 4-across grid on md+ screens. */}
-      <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0 md:pb-0">
+      <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
         <StatCard
           icon={Building2}
-          label={isAr ? "إجمالي المواقع" : "Total Sites"}
+          label={isAr ? "المكونات" : "Components"}
           value={counts.total}
           tone="default"
         />
@@ -290,59 +314,80 @@ function ExecutiveMapPage() {
         />
       </div>
 
-      {/* items 31 + 32: the 3D globe is REMOVED, and with it the wrapping
-          "four sectors" box — what remains is the four region cards on their
-          own, which is what the review asked for. Note item 30 wants the
-          simulated distribution to stay inside Saudi Arabia; these four cards
-          are Saudi regions from regions.ts, so they satisfy that by source. */}
-      <ul className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-        {REGION_MARKERS.map((m) => (
-          <li
-            key={m.id}
-            className="flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-2.5"
-          >
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/60" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
-            </span>
-            <span className="truncate text-[13px] font-semibold text-foreground">
-              {isAr ? `المنطقة ${m.ar}` : m.id}
-            </span>
-          </li>
-        ))}
+      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        {REGIONS.map((region) => {
+          const summary = regionSummary[region.id];
+          const active = regionFilter === region.id;
+          return (
+            <li key={region.id}>
+              <button
+                type="button"
+                onClick={() => setRegionFilter(active ? "all" : region.id)}
+                aria-pressed={active}
+                className="w-full rounded-2xl border p-3 text-start transition hover:bg-muted/40"
+                style={{
+                  borderColor: active
+                    ? REGION_ACCENT_HEX[region.id]
+                    : `${REGION_ACCENT_HEX[region.id]}44`,
+                  backgroundColor: active ? `${REGION_ACCENT_HEX[region.id]}14` : undefined,
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{
+                      backgroundColor: REGION_ACCENT_HEX[region.id],
+                      boxShadow: `0 0 12px ${REGION_ACCENT_HEX[region.id]}`,
+                    }}
+                  />
+                  <span className="font-semibold">{isAr ? region.shortAr : region.shortEn}</span>
+                </div>
+                <div className="mt-3 grid grid-cols-4 gap-1 text-center">
+                  {[
+                    [isAr ? "مواقع" : "Sites", summary.sites],
+                    [isAr ? "أصول" : "Assets", summary.assets],
+                    [isAr ? "عمليات" : "Ops", summary.operations],
+                    [isAr ? "حوادث" : "Inc.", summary.incidents],
+                  ].map(([label, value]) => (
+                    <div key={String(label)}>
+                      <div className="text-sm font-bold tabular-nums">{value}</div>
+                      <div className="text-[9px] text-muted-foreground">{label}</div>
+                    </div>
+                  ))}
+                </div>
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
       <Card className="overflow-hidden border-border/60">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 bg-muted/30 px-4 py-2">
+        <div className="flex flex-col gap-3 border-b border-border/60 bg-muted/30 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-2 text-sm">
             <Radio className="h-4 w-4 text-primary" />
-            <span className="font-medium">{isAr ? "البث المباشر" : "Live Feed"}</span>
-            {loading && (
-              <Badge variant="outline" className="text-xs">
-                {isAr ? "تحميل..." : "Loading..."}
-              </Badge>
-            )}
+            <span className="font-medium">{isAr ? "التوزيع الحي" : "Live distribution"}</span>
+            {loading && <Badge variant="outline">{isAr ? "تحميل…" : "Loading…"}</Badge>}
           </div>
-          <div className="flex gap-1">
-            {(["all", "ok", "warn", "critical"] as const).map((k) => (
+          <div className="flex flex-wrap gap-1">
+            {(["all", "ok", "warn", "critical"] as const).map((value) => (
               <Button
-                key={k}
+                key={value}
                 size="sm"
-                variant={filter === k ? "default" : "outline"}
-                onClick={() => setFilter(k)}
+                variant={statusFilter === value ? "default" : "outline"}
+                onClick={() => setStatusFilter(value)}
               >
-                {k === "all"
+                {value === "all"
                   ? isAr
-                    ? "الكل"
-                    : "All"
-                  : k === "ok"
+                    ? "كل الحالات"
+                    : "All status"
+                  : value === "ok"
                     ? isAr
                       ? "سليم"
-                      : "OK"
-                    : k === "warn"
+                      : "Healthy"
+                    : value === "warn"
                       ? isAr
                         ? "تحذير"
-                        : "Warn"
+                        : "Warning"
                       : isAr
                         ? "حرج"
                         : "Critical"}
@@ -351,7 +396,27 @@ function ExecutiveMapPage() {
           </div>
         </div>
 
-        <div className="h-[70vh] w-full">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-b border-border/60 px-4 py-3 text-[11px] text-muted-foreground sm:grid-cols-4">
+          {[
+            ["hq", isAr ? "مقر قيادة" : "Headquarters"],
+            ["site", isAr ? "موقع أمني" : "Security site"],
+            ["asset", isAr ? "أصل" : "Asset"],
+            ["incident", isAr ? "حادث/بلاغ" : "Incident"],
+          ].map(([type, label]) => (
+            <div key={type} className="flex items-center gap-2">
+              <span
+                className="rounded-full bg-primary/50"
+                style={{
+                  width: type === "hq" ? 14 : type === "incident" ? 11 : type === "site" ? 9 : 8,
+                  height: type === "hq" ? 14 : type === "incident" ? 11 : type === "site" ? 9 : 8,
+                }}
+              />
+              {label}
+            </div>
+          ))}
+        </div>
+
+        <div className="h-[68vh] w-full">
           <ExecutiveMapClient sites={visible} isAr={isAr} />
         </div>
       </Card>

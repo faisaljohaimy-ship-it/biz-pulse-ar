@@ -65,7 +65,7 @@ export interface CCModule {
  */
 export const CC_REGION_METRICS = [
   { key: "production", ar: "إنتاج", en: "Production", to: "/operations" },
-  { key: "revenue", ar: "إيرادات", en: "Revenue", to: "/executive-reports" },
+  { key: "revenue", ar: "إيرادات", en: "Revenue", to: "/sec/reports" },
   { key: "resources", ar: "موارد", en: "Resources", to: "/sec/assets" },
   { key: "community", ar: "مجتمع", en: "Community", to: "/team" },
 ] as const;

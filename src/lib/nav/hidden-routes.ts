@@ -21,6 +21,7 @@ export const HIDDEN_ROUTES: ReadonlySet<string> = new Set([
   "/intelligence", // الذكاء والتطوّر
   "/learn", // التعلّم
   "/ptw", // تصاريح العمل الرقمية — غير قابلة للتطبيق حالياً
+  "/executive-reports", // دُمجت داخل واجهة تقارير الأمن الصناعي
 
   // «العروض التنفيذية السينمائية» — حذف الواجهة بالكامل.
   // [افتراض] The owner named one screen; the repo has a FAMILY of cinematic

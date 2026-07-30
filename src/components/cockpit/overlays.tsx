@@ -536,7 +536,7 @@ function SectorReportBody({ snapshot }: { snapshot: CockpitSnapshot }) {
         محاكاة مرجعية موسومة — التقرير الرسمي يصدر من وحدة التقارير.
       </p>
       <a
-        href="/executive-reports"
+        href="/sec/reports"
         data-action="nav.reports"
         onClick={() => emitCockpitAction("nav.reports")}
         className="text-sm text-nx-cyan underline-offset-4 hover:underline"

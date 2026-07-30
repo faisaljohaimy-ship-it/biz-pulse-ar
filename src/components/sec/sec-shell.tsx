@@ -38,7 +38,7 @@ const ITEMS: Item[] = [
   { to: "/sec/circles", label: "الدوائر", icon: Building },
   { to: "/sec/sections", label: "الأقسام", icon: ShieldCheck },
   { to: "/sec/projects", label: "المشاريع", icon: Rocket },
-  { to: "/sec/maintenance", label: "أوامر العمل", icon: Wrench },
+  { to: "/sec/maintenance", label: "الصيانة", icon: Wrench },
   { to: "/sec/incidents", label: "البلاغات", icon: AlertTriangle },
   { to: "/sec/patrols", label: "الدوريات", icon: Radar },
   { to: "/sec/access", label: "التحكم بالدخول", icon: KeyRound },

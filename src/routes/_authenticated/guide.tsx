@@ -40,7 +40,7 @@ const GROUPS: Array<{ ar: string; en: string; routes: string[] }> = [
   {
     ar: "التحليل والتقارير",
     en: "Analytics & Reporting",
-    routes: ["/bi", "/analytics", "/executive-reports", "/observability"],
+    routes: ["/bi", "/analytics", "/sec/reports", "/observability"],
   },
   {
     ar: "الوصول الخارجي والتعلّم",

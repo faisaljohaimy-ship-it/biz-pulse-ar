@@ -25,7 +25,7 @@ export function CanonicalFinnRoute() {
           <Sparkles className="h-9 w-9 text-cyan-200" />
         </div>
         <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.42em] text-cyan-300">
-          NEXIOS · ONE FINN
+          FINN · المساعد التنفيذي
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
           {ar ? "FINN الموحّدة" : "The unified FINN"}

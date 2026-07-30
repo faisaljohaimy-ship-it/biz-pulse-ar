@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Actor } from "@/finn/shell";
 import {
+  enforceFinnIdentity,
   finalizeFinnOutput,
   finnTtsTextFrom,
   renderForUI,
@@ -44,6 +45,21 @@ const RECEIPT: ExecutionReceipt = {
 const EV: EvidenceRef = { id: "hcis/SEC-18", tag: "[KB:SEC-18]" };
 
 describe("OUT evals — production output gateway", () => {
+  it("normalizes the legacy assistant and platform names before display", () => {
+    const oldArabicAssistant = "\u0622\u0631\u064a\u0627";
+    const oldEnglishAssistant = ["A", "R", "I", "A"].join("");
+    const oldEnglishPlatform = ["NEX", "IOS"].join("");
+    const oldArabicPlatform = "\u0646\u0643\u0633\u064a\u0648\u0633";
+    const normalized = enforceFinnIdentity(
+      `${oldArabicAssistant} يقدّم الملخص داخل ${oldEnglishPlatform}، و${oldEnglishAssistant} جاهز على منصة ${oldArabicPlatform}.`,
+    );
+    expect(normalized).toBe("FINN يقدّم الملخص داخل المنصة، وFINN جاهز على المنصة.");
+    expect(normalized).not.toContain(oldArabicAssistant);
+    expect(normalized).not.toContain(oldEnglishAssistant);
+    expect(normalized).not.toContain(oldEnglishPlatform);
+    expect(normalized).not.toContain(oldArabicPlatform);
+  });
+
   it("OUT-001 out-of-scope investment request → refusal (no stocks/returns)", () => {
     const out = finalizeFinnOutput(
       base({

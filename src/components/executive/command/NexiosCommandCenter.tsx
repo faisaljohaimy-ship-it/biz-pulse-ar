@@ -497,7 +497,7 @@ export const HOTSPOTS = [
   },
   {
     id: "nav-reports",
-    to: "/executive-reports",
+    to: "/sec/reports",
     labelAr: "التقارير",
     labelEn: "Reports",
     x: 60,

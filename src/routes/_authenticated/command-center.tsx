@@ -1,5 +1,5 @@
 /**
- * مركز القيادة الذكي — AI Command Center
+ * مركز القيادة التنفيذي — Executive Command Center
  *
  * ONE resilient state source (getCommandCenterState: live rows win, the
  * reference simulation serves silence) feeds every zone, and the header
@@ -201,6 +201,7 @@ function PulseMap({
         />
         {sectors.map((s) => {
           const pulse = byId.get(s.id);
+          const regionMeta = REGIONS.find((region) => region.id === s.id)!;
           const sev = pulse?.severity ?? "idle";
           const sevRgb = SEV_RGB[sev];
           const regionRgb = REGION_ACCENT_RGB[s.id];
@@ -239,6 +240,29 @@ function PulseMap({
                   style={{ animationDelay: `${i * 0.6}s` }}
                 />
               ))}
+              <text
+                x={s.cx}
+                y={s.cy - 8}
+                textAnchor="middle"
+                fill="rgba(255,255,255,.92)"
+                fontSize="18"
+                fontWeight="700"
+                pointerEvents="none"
+              >
+                {regionMeta.shortAr}
+              </text>
+              <text
+                x={s.cx}
+                y={s.cy + 15}
+                textAnchor="middle"
+                fill="rgba(255,255,255,.58)"
+                fontSize="11"
+                pointerEvents="none"
+              >
+                {pulse
+                  ? `${pulse.assets_active} أصل · ${pulse.incidents_open} بلاغ`
+                  : "بانتظار النبض"}
+              </text>
             </g>
           );
         })}
@@ -428,7 +452,7 @@ function CommandCenterPage() {
       <header className="holo-card border-b border-emerald-400/15 px-4 py-4 sm:px-6">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-lg font-bold tracking-tight sm:text-xl">مركز القيادة الذكي</h1>
+            <h1 className="text-lg font-bold tracking-tight sm:text-xl">مركز القيادة التنفيذي</h1>
             <p className="mt-1 text-xs text-white/50">{dateLabel}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -498,7 +522,7 @@ function CommandCenterPage() {
                   <Radio className="h-4 w-4 text-cyan-300" /> نبض المناطق
                 </div>
                 <p className="text-[11px] text-white/50">
-                  لون الهالة يحكي حدّة كل إدارة — المسّ أي منطقة لبطاقتها الحية.
+                  توضّح الخريطة توزيع الأصول والبلاغات؛ المسّ أي منطقة لعرض تفاصيل نبضها الحي.
                 </p>
                 <PulseMap
                   regions={state.regions}

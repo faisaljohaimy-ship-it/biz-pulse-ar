@@ -50,6 +50,7 @@ import {
   getIncidentDetail,
 } from "@/lib/oms.functions";
 import { generateIncidentReport } from "@/lib/oms-reports.functions";
+import { getSecOverview } from "@/lib/sec.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { severityClass, statusClass } from "./sec-shell";
 import {
@@ -806,7 +807,7 @@ export function NewWorkOrderDialog() {
     title_ar: "",
     kind: "corrective" as "preventive" | "corrective",
     priority: "medium" as (typeof SEV)[number],
-    asset_kind: "cctv",
+    asset_kind: "",
     asset_code: "",
     assigned_to: "",
     contractor: "",
@@ -814,6 +815,15 @@ export function NewWorkOrderDialog() {
     notes: "",
   });
   const qc = useQueryClient();
+  const getOverview = useServerFn(getSecOverview);
+  const { data: overview, isLoading: assetsLoading } = useQuery({
+    queryKey: ["sec-overview-assets"],
+    queryFn: () => getOverview(),
+    enabled: open,
+    staleTime: 60_000,
+  });
+  const assets = overview?.assets ?? [];
+  const selectedAsset = assets.find((asset) => asset.code === form.asset_code);
   const fn = useServerFn(createWorkOrder);
   const m = useMutation({
     mutationFn: () => fn({ data: form }),
@@ -823,6 +833,13 @@ export function NewWorkOrderDialog() {
       qc.invalidateQueries({ queryKey: ["sec-work-orders"] });
       qc.invalidateQueries({ queryKey: ["oms-kpis"] });
       setOpen(false);
+      setForm((current) => ({
+        ...current,
+        title_ar: "",
+        asset_kind: "",
+        asset_code: "",
+        notes: "",
+      }));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -836,7 +853,9 @@ export function NewWorkOrderDialog() {
       <DialogContent className="max-w-lg" dir="rtl">
         <DialogHeader>
           <DialogTitle>إنشاء أمر عمل</DialogTitle>
-          <DialogDescription>سيُسجَّل في سجل أوامر العمل وينتظر الاعتماد.</DialogDescription>
+          <DialogDescription>
+            اختر الأصل من السجل؛ سيُربط نوع الأصل وكوده بأمر العمل تلقائياً ثم ينتظر الاعتماد.
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
           <div className="grid gap-1.5">
@@ -880,20 +899,48 @@ export function NewWorkOrderDialog() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-1.5">
-              <Label>نوع الأصل</Label>
-              <Input
-                value={form.asset_kind}
-                onChange={(e) => setForm({ ...form, asset_kind: e.target.value })}
-                placeholder="cctv / gate / sensor"
-              />
-            </div>
-            <div className="grid gap-1.5">
-              <Label>كود الأصل</Label>
-              <Input
+            <div className="col-span-2 grid gap-1.5">
+              <Label>الأصل *</Label>
+              <Select
                 value={form.asset_code}
-                onChange={(e) => setForm({ ...form, asset_code: e.target.value })}
-              />
+                onValueChange={(code) => {
+                  const asset = assets.find((item) => item.code === code);
+                  setForm({
+                    ...form,
+                    asset_code: code,
+                    asset_kind: asset?.kind ?? "",
+                  });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={assetsLoading ? "جاري تحميل الأصول…" : "اختر الأصل وكوده"}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {assets.map((asset) => (
+                    <SelectItem key={asset.id} value={asset.code}>
+                      {asset.name_ar} — {asset.code}
+                    </SelectItem>
+                  ))}
+                  {!assetsLoading && assets.length === 0 && (
+                    <SelectItem value="__no_assets__" disabled>
+                      لا توجد أصول مسجّلة
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              {selectedAsset && (
+                <div className="flex flex-wrap gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
+                  <span>
+                    النوع: <strong className="text-foreground">{selectedAsset.kind}</strong>
+                  </span>
+                  <span>
+                    الكود:{" "}
+                    <strong className="font-mono text-foreground">{selectedAsset.code}</strong>
+                  </span>
+                </div>
+              )}
             </div>
             <div className="grid gap-1.5">
               <Label>الموكَّل</Label>
@@ -931,7 +978,15 @@ export function NewWorkOrderDialog() {
           <Button variant="outline" onClick={() => setOpen(false)}>
             إلغاء
           </Button>
-          <Button onClick={() => m.mutate()} disabled={m.isPending || form.title_ar.length < 3}>
+          <Button
+            onClick={() => m.mutate()}
+            disabled={
+              m.isPending ||
+              form.title_ar.length < 3 ||
+              form.asset_code.length === 0 ||
+              form.asset_kind.length === 0
+            }
+          >
             {m.isPending ? "جارٍ الحفظ…" : "إنشاء"}
           </Button>
         </DialogFooter>

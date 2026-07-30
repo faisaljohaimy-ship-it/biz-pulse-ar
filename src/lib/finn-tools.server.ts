@@ -1142,7 +1142,7 @@ export function buildFinnTools(
           "/tasks",
           "/intelligence",
           "/executive",
-          "/executive-reports",
+          "/sec/reports",
           "/briefing",
           "/integrations",
         ]),

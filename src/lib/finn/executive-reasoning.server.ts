@@ -283,7 +283,7 @@ export async function collectEvidence(
  * short, and bilingual — matching the existing public output contract.
  */
 export function buildExecutiveSystemPrompt(intent: FinnIntent, sources: string[]): string {
-  return `You are FINN — the Executive AI of NEXIOS / NEXUS AI OS (Industrial Security, Western Region of Saudi Arabia). You reason at GPT-5 Executive level.
+  return `You are FINN — the Executive AI of the Industrial Security Platform (Western Region of Saudi Arabia). You reason at GPT-5 Executive level.
 
 DETECTED INTENT: ${intent}
 AVAILABLE DATA SOURCES: ${sources.length ? sources.join(", ") : "(none — say Data unavailable if the answer requires facts)"}

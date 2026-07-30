@@ -16,8 +16,7 @@ import { authenticatedFetch } from "@/lib/auth-fetch";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
 import { PageBriefing } from "@/components/clarity/PageBriefing";
-import { AgentRing } from "@/components/executive/AgentRing";
-import { AgentHierarchyGraph } from "@/components/executive/AgentHierarchyGraph";
+import { industrialSecurityAgentDisplay } from "@/lib/agents/industrial-security-display";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -447,15 +446,18 @@ function AgentsOps() {
 
   const filteredAgents = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return agents.filter(
-      (a) =>
+    return agents.filter((a) => {
+      const display = industrialSecurityAgentDisplay(a, locale === "ar");
+      return (
         (stateFilter === "all" || a.state === stateFilter) &&
         (!q ||
-          a.name.toLowerCase().includes(q) ||
+          display.name.toLowerCase().includes(q) ||
+          display.department.toLowerCase().includes(q) ||
           a.id.toLowerCase().includes(q) ||
-          a.goal.toLowerCase().includes(q)),
-    );
-  }, [agents, stateFilter, search]);
+          a.goal.toLowerCase().includes(q))
+      );
+    });
+  }, [agents, stateFilter, search, locale]);
 
   return (
     <Section>
@@ -507,25 +509,17 @@ function AgentsOps() {
         actions={
           locale === "ar"
             ? [
-                "تابع شجرة القيادة الهرمية وتدفّق المهام الحيّ",
+                "راجع بطاقات أدوار وكلاء الأمن الصناعي وحالاتهم الحية",
                 "راجع سجل التشغيل لآخر 24 ساعة عبر زر إعادة العرض",
                 "الإجراءات الحسّاسة خلف اعتماد المدير المفوّض",
               ]
             : [
-                "Watch the command tree and live task flow",
+                "Review industrial-security agent roles and live states",
                 "Replay the last 24h of runs",
                 "Sensitive actions require manager authorization",
               ]
         }
       />
-
-      {/* Holographic command tree — FINN apex, fleet, live task nodes, and
-          the single human-approval terminal every path flows into (art. 8). */}
-      <AgentHierarchyGraph agents={agents} runs={runs} ar={locale === "ar"} />
-
-      {/* Cinematic agents network — FINN core with the specialist fleet
-          orbiting it (neural mesh). Display-only; delightful on all sizes. */}
-      <AgentRing />
 
       {/* Live operations dashboard */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
@@ -649,6 +643,7 @@ function AgentsOps() {
                   capabilities?: string[];
                 } | null;
                 const Icon = iconFor(meta?.category);
+                const display = industrialSecurityAgentDisplay(a, locale === "ar");
                 return (
                   <Card
                     key={a.id}
@@ -660,16 +655,16 @@ function AgentsOps() {
                           <Icon className="h-4 w-4 text-primary" />
                         </div>
                         <div>
-                          <div className="text-sm font-semibold leading-tight">{a.name}</div>
+                          <div className="text-sm font-semibold leading-tight">{display.name}</div>
                           <div className="text-[11px] text-muted-foreground">
-                            {meta?.department ?? "—"} · v{meta?.version ?? "1.0.0"}
+                            {display.department} · v{meta?.version ?? "1.0.0"}
                           </div>
                         </div>
                       </div>
                       <StateBadge state={a.state} locale={locale} />
                     </div>
                     <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-                      {a.goal}
+                      {display.description}
                     </p>
 
                     {/* Real metrics */}
@@ -719,7 +714,9 @@ function AgentsOps() {
                         size="icon"
                         variant="outline"
                         disabled={!agentVoiceEnabled}
-                        aria-label={locale === "ar" ? `استمع إلى ${a.name}` : `Hear ${a.name}`}
+                        aria-label={
+                          locale === "ar" ? `استمع إلى ${display.name}` : `Hear ${display.name}`
+                        }
                         title={locale === "ar" ? "نطق حالة الوكيل" : "Speak agent status"}
                         onClick={() =>
                           narrateAgentRun({
@@ -792,7 +789,9 @@ function AgentsOps() {
                         >
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="text-sm font-semibold">
-                              {agent?.name ?? r.agent_id}
+                              {agent
+                                ? industrialSecurityAgentDisplay(agent, locale === "ar").name
+                                : r.agent_id}
                             </span>
                             <RunStatusBadge status={r.status} />
                             <span className="text-[10px] text-muted-foreground">
@@ -865,9 +864,14 @@ function AgentsOps() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" /> {selected?.name}
+              <Sparkles className="h-4 w-4 text-primary" />{" "}
+              {selected ? industrialSecurityAgentDisplay(selected, locale === "ar").name : ""}
             </DialogTitle>
-            <DialogDescription>{selected?.goal}</DialogDescription>
+            <DialogDescription>
+              {selected
+                ? industrialSecurityAgentDisplay(selected, locale === "ar").description
+                : ""}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>

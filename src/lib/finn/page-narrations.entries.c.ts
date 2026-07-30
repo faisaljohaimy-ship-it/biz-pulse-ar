@@ -657,8 +657,8 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/",
     n(
-      "الصفحة الرئيسية لنيكسيوس",
-      "NEXIOS Home",
+      "الصفحة الرئيسية لمنصة إدارة الأمن الصناعي",
+      "Industrial Security Platform Home",
       "التعريف الأوّل بالمنصّة وقدراتها التنفيذية",
       "the first introduction to the platform and its executive capability",
       "قراءة سريعة لقيمة النظام",

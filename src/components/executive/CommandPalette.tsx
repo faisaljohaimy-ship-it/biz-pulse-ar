@@ -101,7 +101,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
         id: "reports",
         title_ar: "التقارير التنفيذية",
         title_en: "Executive Reports",
-        to: "/executive-reports",
+        to: "/sec/reports",
         group: "Reports",
       },
       {

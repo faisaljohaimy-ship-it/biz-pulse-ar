@@ -5,15 +5,18 @@ export type Locale = "ar" | "en";
 type Dict = Record<string, { ar: string; en: string }>;
 
 const dict: Dict = {
-  "app.name": { ar: "نكسس — نظام التشغيل الذكي", en: "Nexus AI OS" },
+  "app.name": {
+    ar: "منصة إدارة الأمن الصناعي",
+    en: "Industrial Security Management Platform",
+  },
   "app.tagline": {
-    ar: "مركز القيادة الذكية للمؤسسات",
-    en: "Intelligent command for enterprises",
+    ar: "مركز القيادة التنفيذي",
+    en: "Executive Command Center",
   },
   "nav.dashboard": { ar: "مركز القيادة", en: "Command Center" },
   "nav.analytics": { ar: "التحليلات", en: "Analytics" },
   "nav.assistant": { ar: "المساعد الذكي", en: "AI Assistant" },
-  "nav.agents": { ar: "الوكلاء الذكيون", en: "AI Agents" },
+  "nav.agents": { ar: "منصة عمليات الوكلاء", en: "Agent Operations Platform" },
   "nav.tasks": { ar: "مدير المهام", en: "Task Manager" },
   "nav.files": { ar: "مركز الملفات", en: "File Center" },
   "nav.voice": { ar: "المساعد الصوتي", en: "Voice Assistant" },
@@ -55,7 +58,7 @@ const dict: Dict = {
   "auth.no_account": { ar: "ليس لديك حساب؟", en: "No account?" },
   "auth.welcome": { ar: "مرحباً بعودتك", en: "Welcome back" },
   "auth.create_account": { ar: "أنشئ حسابك", en: "Create your account" },
-  "dashboard.title": { ar: "مركز القيادة الذكي", en: "AI Command Center" },
+  "dashboard.title": { ar: "مركز القيادة التنفيذي", en: "Executive Command Center" },
   "dashboard.subtitle": {
     ar: "نظرة شاملة على أداء المؤسسة مدعومة بالذكاء الاصطناعي",
     en: "AI-driven view of your enterprise in real time",

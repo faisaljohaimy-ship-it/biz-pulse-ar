@@ -338,7 +338,7 @@ export const publishExecutiveReportBinary = createServerFn({ method: "POST" })
         action: "executive_report.publish_binary",
         entity: "sharepoint_item",
         entity_id: pdfItem.id,
-        route: "/executive-reports",
+        route: "/sec/reports",
         metadata: {
           title: data.title,
           siteId: data.siteId,

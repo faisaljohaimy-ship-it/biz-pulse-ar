@@ -137,7 +137,7 @@ const ACTIONS = [
     surface: "navigation",
     labelAr: "التقارير",
     effect: "navigate",
-    target: "/executive-reports",
+    target: "/sec/reports",
     permission: "reports.view",
   },
   {
