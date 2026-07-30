@@ -37,6 +37,17 @@ import { describe, expect, it } from "vitest";
 const AR_OLD = "آريا";
 /** Old name in Latin script, as a standalone word: `ARIA`, never `aria-`/`ARIA_`. */
 const EN_OLD = /(?<![A-Za-z_-])ARIA(?![A-Za-z_-])/;
+/**
+ * The retired VOICE name. Distinct from the assistant name and missed by the
+ * two checks above — which is how «صوت ليان الحصري» survived on the integrations
+ * card and `identity: "FINN · Layan"` survived in the voice-diagnostics payload
+ * long after the voice itself became a male one with a different id. A stale
+ * voice label is a visible identity leak too, so it gets its own check.
+ * Scanned in STRING LITERALS only: ~28 code comments still narrate the old
+ * voice, and rewriting comments is a separate cleanup, not an identity fix.
+ */
+const VOICE_OLD_AR = "ليان";
+const VOICE_OLD_EN = /(?<![A-Za-z])Layan(?![A-Za-z])/;
 
 const stripComments = (s: string) =>
   s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "");
@@ -87,6 +98,16 @@ describe("FINN identity — the old name stays off every visible surface", () =>
 
   it("has no standalone ARIA in application source", () => {
     const hits = scanned.filter((f) => EN_OLD.test(stripComments(readFileSync(f, "utf8"))));
+    expect(hits).toEqual([]);
+  });
+
+  it("has no retired VOICE name in any string literal", () => {
+    // Comments are stripped AND quoted strings are isolated: the point is what
+    // reaches a screen or an API payload, not what a comment reminisces about.
+    const hits = scanned.filter((f) => {
+      const literals = stripComments(readFileSync(f, "utf8")).match(/"[^"\n]*"|'[^'\n]*'/g) ?? [];
+      return literals.some((s) => s.includes(VOICE_OLD_AR) || VOICE_OLD_EN.test(s));
+    });
     expect(hits).toEqual([]);
   });
 

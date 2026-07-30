@@ -86,7 +86,7 @@ describe("FINN singleton release contract", () => {
     expect(preview).not.toMatch(/setInterval|useChat|useFinnVoice/);
   });
 
-  it("keeps every audible voice on the server Layan route (no browser TTS)", () => {
+  it("keeps every audible voice on the server FINN voice route (no browser TTS)", () => {
     const client = source("src/lib/digital-humans/aria-voice.ts");
     const specialists = source("src/lib/digital-humans/free-agent-speech.ts");
     expect(client).toContain('authenticatedFetch("/api/aria/tts"');

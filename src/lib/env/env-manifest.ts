@@ -93,7 +93,7 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     requirement: "all",
     vars: [
       S("HEYGEN_API_KEY", "HeyGen avatar video API"),
-      S("BRIDGE_AUDIO_BASE_URL", "https base URL hosting the Layan clips", false),
+      S("BRIDGE_AUDIO_BASE_URL", "https base URL hosting the FINN voice clips", false),
     ],
   },
   {

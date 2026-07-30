@@ -2,7 +2,7 @@
  * Tiny corner chip that shows the LIVE voice engine speaking. Only
  * mounts when VOICE_DEBUG=true (VITE_VOICE_DEBUG or localStorage
  * aria-voice-debug=1). Colors:
- *   EL  emerald — ElevenLabs (Layan gVzwmdZ…)
+ *   EL  emerald — ElevenLabs (FINN izhopdR…)
  *   BR  amber   — legacy browser-voice fallback (removed)
  *   GRT cyan    — static greeting file
  * Amber PULSE means the last ElevenLabs call FAILED (with status/reason

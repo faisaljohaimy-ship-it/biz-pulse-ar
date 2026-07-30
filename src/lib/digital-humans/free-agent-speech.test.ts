@@ -65,7 +65,7 @@ beforeEach(() => {
   (window as unknown as { AudioContext?: unknown }).AudioContext = FakeAudioContext;
 });
 
-describe("specialist speech runtime (server Layan)", () => {
+describe("specialist speech runtime (server FINN voice)", () => {
   it("splits long Arabic text into speakable segments", () => {
     const chunks = splitSpeechText("الجملة الأولى. الجملة الثانية؟ الجملة الثالثة!");
     expect(chunks).toHaveLength(3);

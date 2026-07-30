@@ -2203,7 +2203,7 @@ export function buildConnectorsSimulation(now: number) {
       "ElevenLabs — صوت FINN",
       "ai",
       "configured",
-      "نشط — صوت ليان الحصري عبر الخادم.",
+      "نشط — صوت FINN الحصري عبر الخادم.",
       ["tts.stream"],
       "Server-side API key",
       3,

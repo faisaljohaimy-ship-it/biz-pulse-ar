@@ -34,8 +34,8 @@ grep -rn "enabled: !!user" src/routes/ | grep -vE "knowledge|admin" # قراءا
 - اختبارا العقد يمران ضمن vitest:
   `aria-service.test.ts` (مصادَق أولًا ← بديل عام) و
   `platforms.test.ts` (رابط نُسك الكانوني).
-- **عقد آريا (المادة ٢٢)**: `response-contract.test.ts` و
-  `pronunciation.test.ts` خضراء؛ وإن مسّ الـ diff منطق ردود آريا
+- **عقد FINN (المادة ٢٢)**: `response-contract.test.ts` و
+  `pronunciation.test.ts` خضراء؛ وإن مسّ الـ diff منطق ردود FINN
   (`response-contract.ts` · `pronunciation.ts` · `reply-modality.ts` ·
   `routes/api/chat.ts`) استدعِ وكيل `nexios-aria-response-auditor`. تحقق
   أن نقطتي القصر في `chat.ts` تسبقان النموذج (النطاق ثم المسار الفوري)،

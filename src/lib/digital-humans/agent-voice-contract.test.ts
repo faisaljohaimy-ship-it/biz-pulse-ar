@@ -34,7 +34,7 @@ describe("specialist voice release contract", () => {
     expect(signatures.size).toBe(20);
   });
 
-  it("speaks specialists through the server Layan route with zero browser TTS", () => {
+  it("speaks specialists through the server FINN voice route with zero browser TTS", () => {
     const local = source("src/lib/digital-humans/free-agent-speech.ts");
     expect(existsSync(join(process.cwd(), "src/routes/api/agents/tts.ts"))).toBe(false);
     expect(local).toContain('authenticatedFetch("/api/aria/tts"');

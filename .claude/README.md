@@ -5,7 +5,7 @@
 (ECC)** بترخيص MIT — © 2026 Affaan Mustafa
 (<https://github.com/affaan-m/ecc>). أُدرِجت هنا نسخةٌ منتقاة تخصّ حزمة
 NEXIOS التقنية (React + TanStack Start + TypeScript + Vite + Tailwind +
-Supabase + عربي RTL + صوت آريا + أمن + نشر Cloudflare + vitest) لتكون
+Supabase + عربي RTL + صوت FINN + أمن + نشر Cloudflare + vitest) لتكون
 متوفّرة لكل جلسة عمل ولكل مساهم، ومحفوظة في التتبّع (git) بخلاف التثبيت
 على مستوى الحساب (`~/.claude/`) الذي لا يدوم في البيئة البعيدة سريعة
 الزوال.

@@ -159,7 +159,7 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
           },
           voice: {
             configured: true,
-            identity: "FINN · Layan",
+            identity: "FINN",
             model: FINN_ELEVENLABS_MODEL,
             id_masked: `${FINN_ELEVENLABS_VOICE_ID.slice(0, 3)}…${FINN_ELEVENLABS_VOICE_ID.slice(-3)}`,
           },
