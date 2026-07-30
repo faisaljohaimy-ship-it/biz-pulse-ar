@@ -29,7 +29,7 @@ type: constraint
 Architecture · Runtime · Performance · TypeScript · Build · Accessibility · Responsive · Regression · Production.
 
 ## Enforcement
-- Every FINN entry-point wraps its system prompt via `withAriaSupremeLaw` and includes `FINN_IMPACT_DIRECTIVE`.
+- Every FINN entry-point wraps its system prompt via `withFinnSupremeLaw` and includes `FINN_IMPACT_DIRECTIVE`.
 - Self-evolution cycles persist to `aria_evolution_cycles`; high-confidence proposals promote to `aria_improvement_proposals`.
 - Any surface violating an invariant is treated as a P0 regression.
 
