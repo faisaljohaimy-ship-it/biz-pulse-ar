@@ -52,7 +52,6 @@ export const Route = createFileRoute("/")({
 });
 
 function IntroLanding() {
-
   const { locale } = useI18n();
   const ar = locale === "ar";
   // The single global FINN backdrop is rendered from __root.tsx; this
