@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import {
   CartesianGrid,
@@ -16,6 +16,13 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
+  // OWNER DIRECTIVE — screen HIDDEN (see src/lib/nav/hidden-routes.ts).
+  // The component below is deliberately left intact: hiding is one line,
+  // deleting is irreversible. beforeLoad runs before any loader or render,
+  // so the screen never paints and its queries never fire.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: Analytics,

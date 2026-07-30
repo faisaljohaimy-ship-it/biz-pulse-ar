@@ -8,7 +8,7 @@
  * Honest embed gate: PowerBIEmbed shows the internal board until the
  * facility's license provides a real embed URL (no fake integration).
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -32,6 +32,13 @@ import { PowerBIEmbed } from "@/components/analytics/PowerBIEmbed";
 import { getBiDashboard, type BiDashboardData } from "@/lib/exec/bi-dashboard.functions";
 
 export const Route = createFileRoute("/_authenticated/bi")({
+  // OWNER DIRECTIVE — screen HIDDEN (see src/lib/nav/hidden-routes.ts).
+  // The component below is deliberately left intact: hiding is one line,
+  // deleting is irreversible. beforeLoad runs before any loader or render,
+  // so the screen never paints and its queries never fire.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   component: BiPage,
   errorComponent: RouteErrorBoundary,
 });

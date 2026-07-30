@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
 import { useEffect } from "react";
@@ -29,6 +29,13 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/intelligence")({
+  // OWNER DIRECTIVE — screen HIDDEN (see src/lib/nav/hidden-routes.ts).
+  // The component below is deliberately left intact: hiding is one line,
+  // deleting is irreversible. beforeLoad runs before any loader or render,
+  // so the screen never paints and its queries never fire.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   component: IntelligencePage,
   errorComponent: ({ error, reset }) => (
     <RouteErrorBoundary error={error} reset={reset} routeLabel="/intelligence" />

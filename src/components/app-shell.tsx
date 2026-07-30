@@ -163,7 +163,9 @@ function useNavGroups(): NavGroup[] {
         { to: "/sec/projects", icon: Rocket, label: ar("المشاريع", "Projects") },
         { to: "/sec/maintenance", icon: Wrench, label: ar("أوامر العمل", "Work Orders") },
         { to: "/hcis", icon: Shield, label: ar("الامتثال HCIS", "HCIS Compliance") },
-        { to: "/ptw", icon: FileText, label: ar("تصاريح العمل الرقمية", "Digital PTW") },
+        // «تصاريح العمل الرقمية» (/ptw) HIDDEN by owner directive — غير قابلة
+        // للتطبيق حالياً. See src/lib/nav/hidden-routes.ts. Note /sec/permits
+        // («التصاريح») is a DIFFERENT screen and stays visible.
         { to: "/sec/incidents", icon: ShieldAlert, label: ar("البلاغات", "Incidents") },
         { to: "/sec/patrols", icon: Radar, label: ar("الدوريات", "Patrols") },
         { to: "/sec/cctv", icon: Camera, label: ar("CCTV", "CCTV") },

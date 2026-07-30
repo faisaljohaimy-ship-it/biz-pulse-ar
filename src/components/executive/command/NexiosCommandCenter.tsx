@@ -8,6 +8,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type CSSProperties } from "react";
 import { useI18n } from "@/lib/i18n";
+import { isRouteHidden } from "@/lib/nav/hidden-routes";
 import { useRegion } from "@/lib/region-context";
 import { REGION_ACCENT_HEX, REGION_ACCENT_RGB, type RegionId } from "@/lib/regions";
 import { cn } from "@/lib/utils";
@@ -605,7 +606,13 @@ export function NexiosCommandCenter() {
           />
 
           <nav aria-label={ar ? "روابط لوحة القيادة التفاعلية" : "Interactive dashboard links"}>
-            {HOTSPOTS.map((hotspot, index) => {
+            {/* Hidden screens must not be reachable from this map (hide policy
+                ①: remove the link from every navigation surface). Filtering
+                here covers all eight hotspots that pointed at hidden routes in
+                one place. `index` only feeds an animation phase offset and
+                each hotspot is positioned from its own data, so re-indexing is
+                cosmetic — no hotspot moves. */}
+            {HOTSPOTS.filter((h) => !isRouteHidden(h.to)).map((hotspot, index) => {
               const label = ar ? hotspot.labelAr : hotspot.labelEn;
               const ownerRegion = regionForHotspot(hotspot.id);
               const isActiveRegionIcon = ownerRegion === regionId;

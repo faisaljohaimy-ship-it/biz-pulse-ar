@@ -39,13 +39,6 @@ const PREVIEWS: readonly Preview[] = [
     img: "/enterprise-erp-bg.jpeg",
   },
   {
-    to: "/intelligence",
-    ar: "الذكاء الاصطناعي",
-    en: "AI Intelligence",
-    descAr: "تحليل وتوصيات فورية",
-    img: "/ai-analytics-bg.jpeg",
-  },
-  {
     to: "/executive-map",
     ar: "الخريطة التنفيذية",
     en: "Executive Map",

@@ -3,7 +3,7 @@
  * Today board, permit cards, create form, QR verification, emergency suspend.
  * Data from the simulation-seeded permit_* tables (is_simulation=true).
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -24,6 +24,13 @@ import {
 } from "@/lib/compliance/hcis-ptw.functions";
 
 export const Route = createFileRoute("/_authenticated/ptw")({
+  // OWNER DIRECTIVE — screen HIDDEN (see src/lib/nav/hidden-routes.ts).
+  // The component below is deliberately left intact: hiding is one line,
+  // deleting is irreversible. beforeLoad runs before any loader or render,
+  // so the screen never paints and its queries never fire.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: PtwPage,
