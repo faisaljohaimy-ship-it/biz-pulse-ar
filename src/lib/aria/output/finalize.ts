@@ -167,6 +167,17 @@ function redactPii(text: string): { text: string; pii: PiiClass } {
   return { text: out, pii };
 }
 
+/**
+ * Identity guard — the assistant is FINN. Any legacy self-name («آريا»/ARIA)
+ * that leaks from a model turn or stale knowledge row is rewritten before the
+ * text can reach a screen or the voice path. Token-bounded, display-only.
+ */
+const RE_LEGACY_NAME_AR = /\u0622\u0631\u064A\u0627|\u0627\u0631\u064A\u0627/g;
+const RE_LEGACY_NAME_EN = /\bARIA\b/gi;
+export function enforceFinnIdentity(text: string): string {
+  return text.replace(RE_LEGACY_NAME_AR, "FINN").replace(RE_LEGACY_NAME_EN, "FINN");
+}
+
 // ── The branded constructor (module-private) ────────────────────────────────
 function make(
   status: FinnOutputStatus,
@@ -179,10 +190,11 @@ function make(
   // The brand is a compile-time phantom only (a `unique symbol` with no runtime
   // value); it exists to stop any module outside this file from constructing a
   // SafeFinnOutput. We build the plain object and assert the brand here.
+  const safeText = enforceFinnIdentity(displayText);
   return {
     status,
-    displayText,
-    ttsText: extra.ttsText ?? displayText,
+    displayText: safeText,
+    ttsText: extra.ttsText ? enforceFinnIdentity(extra.ttsText) : safeText,
     citations: extra.citations ?? [],
     observedAt: extra.observedAt ?? null,
     isSimulation: extra.isSimulation ?? false,
