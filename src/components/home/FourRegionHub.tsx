@@ -34,6 +34,7 @@ import { FinnHolographicPortal } from "@/components/home/FinnHolographicPortal";
 import { FinnDailySummary } from "@/components/aria/FinnDailySummary";
 import {
   CC_REGIONS,
+  CC_REGION_METRICS,
   CC_SYSTEM_RINGS,
   type CCRegionPanel,
 } from "@/components/executive/command/commandCenterData";
@@ -136,40 +137,6 @@ function StarMotif({ color }: { color: string }) {
   );
 }
 
-/** Outlined stat badge (decorative ring + centred value/label). */
-function StatRing({ value, label, color }: { value: string; label: string; color: string }) {
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <div className="relative grid size-14 place-items-center">
-        <svg viewBox="0 0 56 56" className="absolute inset-0 h-full w-full -rotate-90">
-          <circle
-            cx="28"
-            cy="28"
-            r="24"
-            fill="none"
-            stroke="rgba(255,255,255,0.08)"
-            strokeWidth="3"
-          />
-          <circle
-            cx="28"
-            cy="28"
-            r="24"
-            fill="none"
-            stroke={color}
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeDasharray={2 * Math.PI * 24}
-            strokeDashoffset={2 * Math.PI * 24 * 0.28}
-            opacity="0.9"
-          />
-        </svg>
-        <span className="relative text-[13px] font-black tabular-nums text-white">{value}</span>
-      </div>
-      <span className="max-w-[72px] truncate text-center text-[9px] text-white/55">{label}</span>
-    </div>
-  );
-}
-
 function RegionCard({
   panel,
   color,
@@ -188,8 +155,6 @@ function RegionCard({
   const region = REGIONS.find((r) => r.id === panel.id)!;
   const perfKpi = panel.kpis.find((k) => k.ringPct != null);
   const perfPct = livePerformance ?? perfKpi?.ringPct ?? 0;
-  const projects = panel.kpis[0];
-  const resource = panel.kpis[2];
   return (
     <button
       type="button"
@@ -232,16 +197,35 @@ function RegionCard({
         <StarMotif color={color} />
       </div>
 
-      {/* Three-ring cluster: projects · performance · resource */}
-      <div className="relative flex items-center justify-between gap-2">
-        <StatRing value={projects.value} label={ar ? projects.ar : projects.en} color={color} />
+      {/* Performance ring — the region's headline figure. */}
+      <div className="relative flex items-center justify-center">
         <div className="relative grid place-items-center">
           <Ring pct={perfPct} color={color} size={92} />
           <span className="pointer-events-none absolute -bottom-1 text-[9px] font-semibold text-white/55">
             {ar ? "الأداء" : "Perf."}
           </span>
         </div>
-        <StatRing value={resource.value} label={ar ? resource.ar : resource.en} color={color} />
+      </div>
+
+      {/* item 3: the FOUR unified indicators — identical set and identical
+          destinations on all four region cards, so the cards read against each
+          other. Rendered from CC_REGION_METRICS, never from per-region ad-hoc
+          fields, which is what let them drift apart in the first place. */}
+      <div className="relative grid grid-cols-4 gap-1">
+        {CC_REGION_METRICS.map((m) => (
+          <Link
+            key={m.key}
+            to={m.to}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            title={ar ? m.ar : m.en}
+            className="flex min-h-11 flex-col items-center justify-center rounded-lg px-1 py-1 transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+          >
+            <span className="text-[12px] font-black tabular-nums text-white">
+              {panel.metrics[m.key]}
+            </span>
+            <span className="max-w-full truncate text-[9px] text-white/55">{ar ? m.ar : m.en}</span>
+          </Link>
+        ))}
       </div>
 
       {/* Module icons — activated links, ≥44px touch targets */}

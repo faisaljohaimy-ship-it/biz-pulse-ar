@@ -455,6 +455,58 @@ reason · health result · budget remaining**.
 
 ---
 
+## الباب الحادي عشر — الإثبات والسطوح
+## Chapter XI — Proof and Surfaces
+
+> مضاف ضمن المواد المرنة. مادتان استُخلصتا من أعطال وقعت فعلًا في هذا
+> المشروع، لا من مبادئ عامة — ولذلك تُذكر أمثلتها بالاسم.
+
+### المادة ٣٠ — الاختبار الذي لا يُثبت شيئًا
+الفحص الأخضر ليس دليلًا حتى يُثبت أنه **يحمر عند وقوع العطل**. ثلاثة
+أنماط أوقعت هذا المشروع فعلًا، وكلها مرّت خضراء وهي جوفاء:
+1. **الفحص فوق مجموعة فارغة** — «تأكّد أن مؤسسة أخرى لا ترى شيئًا» يمرّ
+   دائمًا إن لم تُبذر لتلك المؤسسة صفوف أصلًا. (وقع في
+   `rag_barrier_check` فمرّ تسرّب عدّادات عابر للمؤسسات.)
+2. **الفحص بصلاحية أعلى من المستهدَف** — العزل يُفحص تحت
+   `set local role authenticated`؛ الفحص بصلاحية superuser يمرّ دائمًا
+   ولا يُثبت شيئًا.
+3. **الفحص يطابق تعليقه لا كوده** — ملف يوثّق محظورًا في ترويسته يسقط
+   فحصه السلبي بسبب الجملة الشارحة نفسها. (وقع في
+   `four-region-hub.contract.test.ts` مع `speechSynthesis`.)
+**القاعدة:** كل فحص سلبي أو فحص عزل يُرافقه إثبات أنه يفشل على انتهاك
+حقيقي مُدخَل عمدًا ثم يُزال. وكل حلقة تأكيد فوق قائمة تُسبق بتأكيد أن
+القائمة ليست فارغة.
+**Article 30 — The Test That Proves Nothing.** A green check is not
+evidence until it is shown to go red on the real defect. Three patterns
+have actually bitten this project: an assertion over an empty set; a
+check run with higher privilege than its target; and a check matching its
+own explanatory comment rather than the code. Rule: every negative or
+isolation check ships with a demonstration that it fails on a deliberately
+injected violation; every assertion loop over a list first asserts the
+list is non-empty.
+
+### المادة ٣١ — السطح الثاني
+«أصلحه في الطبقة المشتركة» صحيح ولا يكفي: الواجب إثبات أن تلك الطبقة هي
+**الوحيدة**. عنصر يُحذف من مكوّن مشترك قد يبقى حيًّا في نسخة ثانية داخل
+شاشة أخرى — وقع ذلك في هذه الجلسة ثلاث مرات: البحث والإعدادات لهما نسخة
+مستقلة داخل `FourRegionHub`، والشريط المتحرك له نسخة ثانية داخل
+`SovereignCommandDeck` حملت النصّ نفسه. **والأخطر:** نقل تلك اللوحة إلى
+أعلى الصفحة رفع العنصر المطلوب حذفُه إلى أبرز موضع فيها.
+**القاعدة:** بعد أي حذف عالمي يُمسح الريبو على **الأثر** (نصّ الواجهة،
+الحركة، الأيقونة) لا على اسم المكوّن وحده. وبعد أي إخفاء مسار يُمسح على
+كل رابط وارد إليه — الإخفاء لا يكتمل ورابطٌ يشير إليه، وبطاقة تهبط بك
+على الصفحة التي نقرتَ منها أسوأ من غياب البطاقة.
+**Article 31 — The Second Surface.** "Fix it in the shared layer" is
+right but insufficient: you must prove that layer is the ONLY one. A
+removed element can survive in a second copy elsewhere — search, settings
+and the marquee each had one in this session, and moving the deck to the
+top of the page promoted the very element the owner asked to delete. Rule:
+after a global deletion, sweep the repo by EFFECT (visible text, animation,
+icon), not by component name; after hiding a route, sweep every inbound
+link — a hide is not done while a link still points at it.
+
+---
+
 ## سجل المواد المعدّلة — Amendment Record
 
 | التاريخ Date | المادة Article | التغيير Change | المعتمِد Approver |
@@ -469,4 +521,5 @@ reason · health result · budget remaining**.
 | 2026-07-28 | ٢٧ | الصدق العددي: NULL لما لم يُقَس · شرطا رفع الراية · Article 27 numerical honesty: NULL when unmeasured, the two flag thresholds | مالك المنتج Product Owner |
 | 2026-07-28 | ٢٨ | ميزانية النشر واحتياطي النشرتين · فحص صحة ٩٠ ثانية · Article 28 deployment budget, two-deploy reserve, 90-second health check | مالك المنتج Product Owner |
 | 2026-07-28 | ٢٩ | نوعا التراجع المتمايزان وسجل النشر · Article 29 the two distinct rollbacks and the deployment log | مالك المنتج Product Owner |
+| 2026-07-30 | ٣٠·٣١ | **الإثبات والسطوح**: الفحص الأخضر ليس دليلًا حتى يحمرّ على العطل · «أصلحه في الطبقة المشتركة» يوجب إثبات أنها الوحيدة · Articles 30–31: proof-of-failure for every negative check; sweep by effect, not by component name | مالك المنتج Product Owner |
 | 2026-07-30 | ١ | **اسم المنتج: نكسيوس ← مِرْقَب (MIRQAB)** — بقرار صريح من مالك المنتج مع تفويض اختيار اسم عربي. السبب: عربي أولًا (المادة ٣) واسم يصف عمل المنصة (ر-ق-ب = المراقبة والإشراف). الكيان الاعتباري `NEXIOS Technologies` لم يُمسّ · **Product name: NEXIOS → MIRQAB**, by explicit product-owner decision delegating the choice of an Arabic name; legal entity unchanged | مالك المنتج Product Owner |

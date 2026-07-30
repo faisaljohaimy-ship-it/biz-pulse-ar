@@ -49,11 +49,36 @@ export interface CCModule {
   icon: LucideIcon;
 }
 
+/**
+ * The FOUR canonical region indicators (owner item 3).
+ *
+ * Before this, every region card showed a DIFFERENT third metric — western
+ * «الموارد», central «إجمالي الإيرادات», eastern «الإنتاج اليومي», southern
+ * «المجتمع» — so the four cards could not be read against each other, which is
+ * the whole point of putting them side by side. Now all four carry the same
+ * four indicators, and each indicator has ONE unified destination across every
+ * region, so «إيرادات» always goes to the same place no matter which card you
+ * clicked.
+ *
+ * Values are reference simulation, shown under the existing amber محاكاة badge
+ * (Article 12) — they are not presented as live figures.
+ */
+export const CC_REGION_METRICS = [
+  { key: "production", ar: "إنتاج", en: "Production", to: "/operations" },
+  { key: "revenue", ar: "إيرادات", en: "Revenue", to: "/executive-reports" },
+  { key: "resources", ar: "موارد", en: "Resources", to: "/sec/assets" },
+  { key: "community", ar: "مجتمع", en: "Community", to: "/team" },
+] as const;
+
+export type CCMetricKey = (typeof CC_REGION_METRICS)[number]["key"];
+
 export interface CCRegionPanel {
   id: RegionId;
   subtitleAr: string;
   subtitleEn: string;
   kpis: CCKpi[];
+  /** The four unified indicators — same keys on every region (item 3). */
+  metrics: Record<CCMetricKey, string>;
   initiatives: CCInitiative[];
   modules: CCModule[];
 }
@@ -68,6 +93,8 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
       { ar: "مؤشر الأداء", en: "Performance", value: "94%", delta: "+8.7%", ringPct: 94 },
       { ar: "الموارد", en: "Resources", value: "1,248", delta: "منتج" },
     ],
+    // «موارد» keeps western's own existing 1,248 figure.
+    metrics: { production: "1.24M", revenue: "84.2M", resources: "1,248", community: "1.9M" },
     initiatives: [
       { ar: "تطوير البنية التحتية", en: "Infrastructure development", pct: 68 },
       { ar: "مشروع التحول الرقمي", en: "Digital transformation", pct: 90 },
@@ -91,6 +118,8 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
       { ar: "مؤشر الأداء", en: "Performance", value: "96%", delta: "+8.7%", ringPct: 96 },
       { ar: "إجمالي الإيرادات", en: "Total revenue", value: "125.6M", delta: "+12.5%" },
     ],
+    // «إيرادات» keeps central's own existing 125.6M figure.
+    metrics: { production: "0.96M", revenue: "125.6M", resources: "2,104", community: "3.1M" },
     initiatives: [],
     modules: [
       { ar: "الذكاء الاصطناعي", en: "AI", to: "/agents", icon: Brain },
@@ -113,6 +142,8 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
       { ar: "مؤشر الأداء", en: "Performance", value: "97%", delta: "+9.2%", ringPct: 97 },
       { ar: "الإنتاج اليومي", en: "Daily output", value: "3.67M", delta: "برميل" },
     ],
+    // «إنتاج» keeps eastern's own existing 3.67M figure.
+    metrics: { production: "3.67M", revenue: "142.8M", resources: "1,876", community: "1.4M" },
     initiatives: [
       { ar: "تحسين كفاءة الإنتاج", en: "Production efficiency", pct: 92 },
       { ar: "مشاريع الطاقة المتجددة", en: "Renewable energy", pct: 75 },
@@ -136,6 +167,8 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
       { ar: "مؤشر الأداء", en: "Performance", value: "93%", delta: "+7.9%", ringPct: 93 },
       { ar: "المجتمع", en: "Community", value: "2.4M", delta: "مستفيد" },
     ],
+    // «مجتمع» keeps southern's own existing 2.4M figure.
+    metrics: { production: "0.58M", revenue: "46.3M", resources: "934", community: "2.4M" },
     initiatives: [
       { ar: "مبادرات تنمية المجتمعات", en: "Community development", pct: 72 },
       { ar: "التعليم والتدريب", en: "Education & training", pct: 85 },
