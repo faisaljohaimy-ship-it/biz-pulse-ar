@@ -210,7 +210,6 @@ function IntroLanding() {
       {/* ══ Executive Hero — HIDDEN per owner directive. Kept intentionally
           empty so the dashboard renders immediately at the top of the route. ══ */}
 
-
       {/* ══ NEXIOS Four-Region Executive Hub — the PRIMARY dashboard: all four
           regions around a central interactive Saudi map, live per-region KPIs
           and alerts from Supabase (resilient), system status, and the FINN

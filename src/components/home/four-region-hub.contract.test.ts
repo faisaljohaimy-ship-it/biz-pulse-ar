@@ -11,10 +11,26 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const src = (p: string) => readFileSync(p, "utf8");
+
+/**
+ * Strip block and line comments before asserting a banned pattern is ABSENT.
+ *
+ * Without this, a file that documents its own contract fails it: FinnPersonaCard's
+ * header says "speechSynthesis banned" and "no box-shadow/filter/blur", and a
+ * raw `not.toMatch` sees those words and reports a violation that does not
+ * exist. The invariant was never broken — the sentence describing the
+ * invariant was matching. Positive assertions still read the raw source, since
+ * a comment cannot satisfy "must contain".
+ */
+const stripComments = (s: string) =>
+  s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "");
+
 const HUB = src("src/components/home/FourRegionHub.tsx");
 const CARD = src("src/components/home/FinnPersonaCard.tsx");
 const INDEX = src("src/routes/index.tsx");
 const DOMAIN = src("src/lib/domain.ts");
+const HUB_CODE = stripComments(HUB);
+const CARD_CODE = stripComments(CARD);
 
 describe("FourRegionHub — live executive hub", () => {
   it("is the home centerpiece and the static poster is gone", () => {
@@ -37,8 +53,12 @@ describe("FourRegionHub — live executive hub", () => {
   });
 
   it("animates transform/opacity only — no box-shadow/filter keyframes", () => {
-    const keyframeBlocks = HUB.match(/@keyframes[\s\S]*?\}\s*\}/g) ?? [];
-    for (const block of [...keyframeBlocks, ...(CARD.match(/@keyframes[\s\S]*?\}\s*\}/g) ?? [])]) {
+    const kf = (s: string) => s.match(/@keyframes[\s\S]*?\}\s*\}/g) ?? [];
+    const blocks = [...kf(HUB_CODE), ...kf(CARD_CODE)];
+    // Guard the guard: if the regex ever stops finding real keyframes, this
+    // loop would pass over an empty list and prove nothing.
+    expect(blocks.length).toBeGreaterThan(0);
+    for (const block of blocks) {
       expect(block).not.toMatch(/box-shadow|filter:|blur\(/);
     }
     expect(HUB).toContain("prefers-reduced-motion");
@@ -60,6 +80,6 @@ describe("FINN persona — single-source display identity", () => {
   });
 
   it("never introduces browser TTS on the display card", () => {
-    expect(CARD).not.toMatch(/speechSynthesis|SpeechSynthesisUtterance/);
+    expect(CARD_CODE).not.toMatch(/speechSynthesis|SpeechSynthesisUtterance/);
   });
 });
