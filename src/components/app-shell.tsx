@@ -19,7 +19,6 @@ import {
   Moon,
   Network,
   Plug,
-  Presentation,
   Radar,
   RadioTower,
   Rocket,
@@ -190,11 +189,9 @@ function useNavGroups(): NavGroup[] {
           icon: RadioTower,
           label: ar("جسر القيادة التنفيذي", "Command Bridge"),
         },
-        {
-          to: "/executive-showcase",
-          icon: Presentation,
-          label: ar("العرض التنفيذي", "Executive Showcase"),
-        },
+        // «العرض التنفيذي» (/executive-showcase) HIDDEN by owner directive —
+        // see src/lib/nav/hidden-routes.ts. «جسر القيادة التنفيذي» above is a
+        // different, still-live screen and deliberately stays.
       ],
     },
     {

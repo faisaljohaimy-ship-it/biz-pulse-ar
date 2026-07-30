@@ -89,13 +89,6 @@ export function CommandPalette() {
         to: "/bridge",
         group: "Navigate",
       },
-      {
-        id: "theater",
-        title_ar: "المسرح التنفيذي",
-        title_en: "Executive Theater",
-        to: "/theater",
-        group: "Navigate",
-      },
       { id: "agents", title_ar: "الوكلاء", title_en: "Agents", to: "/agents", group: "Agents" },
       {
         id: "agent-run",

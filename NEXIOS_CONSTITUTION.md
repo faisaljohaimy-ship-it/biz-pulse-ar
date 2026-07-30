@@ -15,11 +15,25 @@
 ## Chapter I — Identity & Sovereignty
 
 ### المادة ١ — التعريف
-نكسيوس **منصة إنجاز الأعمال التنفيذية** — نظام تشغيل ذكي عربي أولًا
-لقطاع المرافق والصناعة السعودي، متوافق مع رؤية السعودية 2030.
-**Article 1 — Definition.** NEXIOS is the Executive Business Platform —
-an Arabic-first intelligent operating system for the Saudi utilities and
-industrial sector, aligned with Saudi Vision 2030.
+**مِرْقَب** (MIRQAB) **منصة إنجاز الأعمال التنفيذية** — نظام تشغيل ذكي
+عربي أولًا لقطاع المرافق والصناعة السعودي، متوافق مع رؤية السعودية 2030.
+
+**تسمية الاسم:** جذر «مِرْقَب» هو ر-ق-ب — المراقبة والإشراف، وهو عمل
+المنصة نفسه: غرفة العمليات والدوريات والكاميرات والبلاغات والإشراف على
+الامتثال. والمِرْقَب هو البرج الذي يُرى منه كل شيء، وذلك تعريف منصة قيادة
+تنفيذية. عربي أولًا وفق المادة ٣، وينقل لاتينيًّا `MIRQAB`.
+
+**نطاق التسمية:** «مِرْقَب» اسم **المنتج**. أما `NEXIOS Technologies` فهو
+اسم **الكيان الاعتباري** ولم يُمسّ — تغييره قرار مؤسسي لا سلسلة عرض.
+المصدر الوحيد للاسم: `PRODUCT_NAME_AR` في `src/lib/domain.ts`.
+
+**Article 1 — Definition.** MIRQAB («مِرْقَب») is the Executive Business
+Platform — an Arabic-first intelligent operating system for the Saudi
+utilities and industrial sector, aligned with Saudi Vision 2030. The root
+ر-ق-ب means to watch and oversee — precisely what the platform does; a
+مِرْقَب is the watchtower one sees everything from. Naming scope: MIRQAB is
+the PRODUCT name; `NEXIOS Technologies` remains the legal entity and is
+untouched. Single source: `PRODUCT_NAME_AR` in `src/lib/domain.ts`.
 
 ### المادة ٢ — سيادة الدستور
 هذه الوثيقة أعلى مرجعية هندسية في المشروع؛ لا يعدّلها إلا **قرار بشري
@@ -455,3 +469,4 @@ reason · health result · budget remaining**.
 | 2026-07-28 | ٢٧ | الصدق العددي: NULL لما لم يُقَس · شرطا رفع الراية · Article 27 numerical honesty: NULL when unmeasured, the two flag thresholds | مالك المنتج Product Owner |
 | 2026-07-28 | ٢٨ | ميزانية النشر واحتياطي النشرتين · فحص صحة ٩٠ ثانية · Article 28 deployment budget, two-deploy reserve, 90-second health check | مالك المنتج Product Owner |
 | 2026-07-28 | ٢٩ | نوعا التراجع المتمايزان وسجل النشر · Article 29 the two distinct rollbacks and the deployment log | مالك المنتج Product Owner |
+| 2026-07-30 | ١ | **اسم المنتج: نكسيوس ← مِرْقَب (MIRQAB)** — بقرار صريح من مالك المنتج مع تفويض اختيار اسم عربي. السبب: عربي أولًا (المادة ٣) واسم يصف عمل المنصة (ر-ق-ب = المراقبة والإشراف). الكيان الاعتباري `NEXIOS Technologies` لم يُمسّ · **Product name: NEXIOS → MIRQAB**, by explicit product-owner decision delegating the choice of an Arabic name; legal entity unchanged | مالك المنتج Product Owner |

@@ -413,11 +413,11 @@ const POWER_EDGES: [number, number][] = [
 
 const TABS: { ar: string; en: string; to: string; icon: typeof Home; active?: boolean }[] = [
   { ar: "الرئيسية", en: "Home", to: "/", icon: Home, active: true },
-  { ar: "الأداء", en: "Performance", to: "/analytics", icon: BarChart3 },
+  { ar: "الأداء", en: "Performance", to: "/sec/kpi", icon: BarChart3 },
   { ar: "المشاريع", en: "Projects", to: "/mission-control", icon: FolderKanban },
   { ar: "الموارد", en: "Resources", to: "/boardroom", icon: Users },
   { ar: "المخاطر", en: "Risks", to: "/risk", icon: ShieldAlert },
-  { ar: "التقارير", en: "Reports", to: "/analytics", icon: FileText },
+  { ar: "التقارير", en: "Reports", to: "/executive-reports", icon: FileText },
   { ar: "الذكاء الاصطناعي", en: "AI", to: "/agents", icon: Brain },
   { ar: "الإعدادات", en: "Settings", to: "/settings", icon: Cog },
 ];

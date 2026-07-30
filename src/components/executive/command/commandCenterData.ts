@@ -75,7 +75,7 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
       { ar: "رفع الكفاءة التشغيلية", en: "Operational efficiency", pct: 85 },
     ],
     modules: [
-      { ar: "إدارة البيانات", en: "Data management", to: "/analytics", icon: Database },
+      { ar: "إدارة البيانات", en: "Data management", to: "/knowledge", icon: Database },
       { ar: "الفني", en: "Technical", to: "/sec/maintenance", icon: Wrench },
       { ar: "الخدمات الذكية", en: "Smart services", to: "/agents", icon: Sparkles },
       { ar: "النقل والخدمات", en: "Transport & services", to: "/sec", icon: Truck },
@@ -94,7 +94,7 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
     initiatives: [],
     modules: [
       { ar: "الذكاء الاصطناعي", en: "AI", to: "/agents", icon: Brain },
-      { ar: "تحليل البيانات", en: "Data analytics", to: "/analytics", icon: BarChart3 },
+      { ar: "تحليل البيانات", en: "Data analytics", to: "/sec/kpi", icon: BarChart3 },
       { ar: "الأمن السيبراني", en: "Cybersecurity", to: "/sec", icon: ShieldCheck },
       {
         ar: "إدارة المشاريع",
@@ -120,7 +120,7 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
       { ar: "خفض الانبعاثات", en: "Emissions reduction", pct: 67 },
     ],
     modules: [
-      { ar: "إنتاج الطاقة", en: "Energy production", to: "/analytics", icon: Zap },
+      { ar: "إنتاج الطاقة", en: "Energy production", to: "/operations", icon: Zap },
       { ar: "المرافق", en: "Utilities", to: "/sec", icon: Factory },
       { ar: "السلامة", en: "Safety", to: "/risk", icon: ShieldAlert },
       { ar: "الاستدامة", en: "Sustainability", to: "/governance", icon: Leaf },
@@ -144,7 +144,7 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
     ],
     modules: [
       { ar: "المجتمع", en: "Community", to: "/boardroom", icon: Users },
-      { ar: "التعليم", en: "Education", to: "/analytics", icon: GraduationCap },
+      { ar: "التعليم", en: "Education", to: "/knowledge", icon: GraduationCap },
       { ar: "الصحة", en: "Health", to: "/risk", icon: HeartPulse },
       { ar: "البنية التحتية", en: "Infrastructure", to: "/digital-twin", icon: Building },
       { ar: "النقل الذكي", en: "Smart transport", to: "/executive-map", icon: Bus },

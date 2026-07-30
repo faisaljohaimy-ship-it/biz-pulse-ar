@@ -12,7 +12,10 @@ import * as React from "react";
 import { render } from "react-email";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 
-const SITE_NAME = "NEXUS AI OS";
+// Product name comes from the single source (lib/domain) — this file used to
+// hardcode "NEXUS AI OS", which is how the misspelling reached real emails.
+import { PRODUCT_NAME } from "@/lib/domain";
+const SITE_NAME = PRODUCT_NAME;
 const SENDER_DOMAIN = "notify.neexios.com";
 const FROM_DOMAIN = "notify.neexios.com";
 
