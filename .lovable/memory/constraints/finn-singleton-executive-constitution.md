@@ -45,9 +45,9 @@ Feature-specific chat surfaces are allowed ONLY when ALL apply:
 Approved exceptions (as of this turn):
 - `src/components/learn/simulations/MeetFinnSimulation.tsx` — lesson
   teach flow, id `sim-meet-finn-${slug}`, endpoint `/api/learn/finn-teach`.
-- `src/components/learn/LessonARIAChat.tsx` — lesson chat surface.
+- `src/components/learn/LessonFinnChat.tsx` — lesson chat surface.
 - `src/routes/_authenticated/digital-twin.tsx` — twin scenario,
-  id `aria-digital-twin`.
+  id `finn-digital-twin`.
 - `src/routes/_authenticated/assistant.$threadId.tsx` — threaded
   assistant with per-thread persistence.
 
