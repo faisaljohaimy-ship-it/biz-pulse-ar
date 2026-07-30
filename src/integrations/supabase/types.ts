@@ -320,7 +320,7 @@ export type Database = {
           },
         ]
       }
-      finn_actions_log: {
+      aria_actions_log: {
         Row: {
           action: string
           actor: string
@@ -371,7 +371,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "finn_actions_log_org_id_fkey"
+            foreignKeyName: "aria_actions_log_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -379,7 +379,7 @@ export type Database = {
           },
         ]
       }
-      finn_adaptive_preferences: {
+      aria_adaptive_preferences: {
         Row: {
           confidence: number
           created_at: string
@@ -415,7 +415,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_alert_acks: {
+      aria_alert_acks: {
         Row: {
           alert_id: string
           org_id: string
@@ -436,15 +436,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "finn_alert_acks_alert_id_fkey"
+            foreignKeyName: "aria_alert_acks_alert_id_fkey"
             columns: ["alert_id"]
             isOneToOne: false
-            referencedRelation: "finn_alerts"
+            referencedRelation: "aria_alerts"
             referencedColumns: ["id"]
           },
         ]
       }
-      finn_alerts: {
+      aria_alerts: {
         Row: {
           body: string
           channels: Json
@@ -486,7 +486,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_attachment_scans: {
+      aria_attachment_scans: {
         Row: {
           claimed_mime: string
           content_sha256: string
@@ -534,7 +534,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_conversations: {
+      aria_conversations: {
         Row: {
           created_at: string
           id: string
@@ -570,7 +570,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_decisions: {
+      aria_decisions: {
         Row: {
           confidence: number | null
           created_at: string
@@ -629,7 +629,7 @@ export type Database = {
           },
         ]
       }
-      finn_document_chunks: {
+      aria_document_chunks: {
         Row: {
           chunk_index: number
           content: string
@@ -674,10 +674,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "finn_document_chunks_document_id_fkey"
+            foreignKeyName: "aria_document_chunks_document_id_fkey"
             columns: ["document_id"]
             isOneToOne: false
-            referencedRelation: "finn_documents"
+            referencedRelation: "aria_documents"
             referencedColumns: ["id"]
           },
           {
@@ -689,7 +689,7 @@ export type Database = {
           },
         ]
       }
-      finn_documents: {
+      aria_documents: {
         Row: {
           chunk_count: number | null
           created_at: string
@@ -763,7 +763,7 @@ export type Database = {
           },
         ]
       }
-      finn_evolution_cycles: {
+      aria_evolution_cycles: {
         Row: {
           applied_count: number
           created_at: string
@@ -811,7 +811,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_improvement_proposals: {
+      aria_improvement_proposals: {
         Row: {
           area: string
           created_at: string
@@ -847,7 +847,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_incidents: {
+      aria_incidents: {
         Row: {
           detail: string
           device_class: string | null
@@ -880,7 +880,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_interactions: {
+      aria_interactions: {
         Row: {
           answer: string
           created_at: string
@@ -931,7 +931,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_knowledge: {
+      aria_knowledge: {
         Row: {
           content: string
           created_at: string
@@ -984,7 +984,7 @@ export type Database = {
           },
         ]
       }
-      finn_learned_patterns: {
+      aria_learned_patterns: {
         Row: {
           confidence: number
           created_at: string
@@ -1023,7 +1023,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_learning_log: {
+      aria_learning_log: {
         Row: {
           created_at: string
           failure_reason: string
@@ -1059,7 +1059,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_memory: {
+      aria_memory: {
         Row: {
           content: string
           created_at: string
@@ -1115,7 +1115,7 @@ export type Database = {
           },
         ]
       }
-      finn_outbound_message_events: {
+      aria_outbound_message_events: {
         Row: {
           delivery_status: string | null
           event_type: string
@@ -1154,14 +1154,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "finn_outbound_message_events_message_id_fkey"
+            foreignKeyName: "aria_outbound_message_events_message_id_fkey"
             columns: ["message_id"]
             isOneToOne: false
-            referencedRelation: "finn_outbound_messages"
+            referencedRelation: "aria_outbound_messages"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "finn_outbound_message_events_org_id_fkey"
+            foreignKeyName: "aria_outbound_message_events_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1169,7 +1169,7 @@ export type Database = {
           },
         ]
       }
-      finn_outbound_messages: {
+      aria_outbound_messages: {
         Row: {
           actor_id: string
           approval_expires_at: string
@@ -1250,7 +1250,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "finn_outbound_messages_org_id_fkey"
+            foreignKeyName: "aria_outbound_messages_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1258,7 +1258,7 @@ export type Database = {
           },
         ]
       }
-      finn_preferences: {
+      aria_preferences: {
         Row: {
           daily_brief_enabled: boolean
           language: string
@@ -1288,7 +1288,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_public_incidents: {
+      aria_public_incidents: {
         Row: {
           created_at: string
           detail: string | null
@@ -1315,7 +1315,7 @@ export type Database = {
         }
         Relationships: []
       }
-      finn_reports: {
+      aria_reports: {
         Row: {
           confidence: number | null
           created_at: string
