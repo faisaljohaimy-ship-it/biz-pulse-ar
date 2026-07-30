@@ -1,12 +1,12 @@
 {
-  "name": "ARIA NEXIOS Complete Replacement",
+  "name": "FINN NEXIOS Complete Replacement",
   "version": "2026.07.18.4",
   "target": "NEXIOS full repository overlay",
   "entrypoint": "src/components/finn-core/AriaCopilot.tsx",
   "voice": {
     "provider": "ElevenLabs",
     "voiceId": "gVzwmdZzRgBrNjXaTmi5",
-    "greeting": "مرحباً بك، أنا آريا. كيف يمكنني مساعدتك اليوم؟"
+    "greeting": "مرحباً بك، أنا فِن. كيف يمكنني مساعدتك اليوم؟"
   },
   "features": {
     "visibleConversationButton": true,

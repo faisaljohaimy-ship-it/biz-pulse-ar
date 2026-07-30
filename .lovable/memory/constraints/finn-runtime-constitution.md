@@ -1,6 +1,6 @@
 ---
 name: FINN Runtime Constitution
-description: Speed + self-learning + self-healing invariants (INVARIANT-9..12) for the chat pipeline, learning pipeline, and incident ledger. Full text in docs/ARIA_INTRO_CONSTITUTION.md.
+description: Speed + self-learning + self-healing invariants (INVARIANT-9..12) for the chat pipeline, learning pipeline, and incident ledger. Full text in docs/FINN_INTRO_CONSTITUTION.md.
 type: constraint
 ---
 

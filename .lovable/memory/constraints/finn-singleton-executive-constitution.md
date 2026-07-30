@@ -20,7 +20,7 @@ load via `assertOne(...)` / `trackMount(...)` in `src/lib/aria/singletons.ts`:
 - `MEMORY` → `memoryManager@aria-core/core/memory-manager`
 - `PROVIDER` → `AriaProvider@__root` (via `trackMount` in `useEffect`)
 
-A duplicate registration logs a loud `[aria-singleton] duplicate …` error in
+A duplicate registration logs a loud `[finn-singleton] duplicate …` error in
 dev and warns in prod. Never bypass this registry when adding a new FINN
 subsystem — extend `AriaSingletonKey` and register the owner instead.
 
@@ -28,14 +28,14 @@ subsystem — extend `AriaSingletonKey` and register the owner instead.
 general FINN reply (executive Q&A, dock/copilot, page narration, cross-
 route assistant) MUST route through `ariaBrain.submit(...)` (via
 `useAria().ask(...)`). The ONE `useChat` transport for the singleton
-lives inside `<AriaProvider>` (chat id `"aria-singleton"`) and is bound
+lives inside `<AriaProvider>` (chat id `"finn-singleton"`) and is bound
 into the Brain via `ariaBrain.bindSender(...)`. No component may call
 OpenAI/Claude/OpenRouter SDKs or `fetch("/api/chat")` directly for
 general FINN.
 
 **INVARIANT-14b — Purpose-Scoped Chat Surfaces (Documented Exceptions).**
 Feature-specific chat surfaces are allowed ONLY when ALL apply:
-1. Distinct `useChat` id (never `"aria-singleton"`).
+1. Distinct `useChat` id (never `"finn-singleton"`).
 2. Purpose-scoped server endpoint (NOT `/api/chat`) — e.g. lesson
    teaching, threaded assistant persistence, digital-twin scenario.
 3. Do NOT acquire `AriaAudioBus` `"chat-tts"` (no chat TTS collision).
@@ -90,6 +90,6 @@ readiness is proven on every deploy.
 **How to apply:** Before editing any file under jurisdiction, cite this
 constraint in commit rationale, confirm INVARIANT-13..17 still hold,
 and run `bunx tsgo --noEmit` plus a browser check for
-`[aria-singleton] duplicate` warnings. When adding a new FINN
+`[finn-singleton] duplicate` warnings. When adding a new FINN
 subsystem, extend `AriaSingletonKey` in `src/lib/aria/singletons.ts`
 and register the owner at module load.

@@ -25,8 +25,8 @@
 - Supabase URL ومفتاح العميل ومفتاح service role للخادم فقط.
 - OpenAI API key، والنموذج `gpt-5.6`، ونموذج التحويل `gpt-4o-transcribe`.
 - ElevenLabs API key لصوت FINN.
-- `ARIA_OWNER_EMAIL` و`ARIA_OWNER_SMS` كما في ملف البيئة.
-- `ARIA_DIRECT_SEND_ENABLED=true`، مع تجهيز مفتاح إيقاف تشغيلي سريع.
+- `FINN_OWNER_EMAIL` و`FINN_OWNER_SMS` كما في ملف البيئة.
+- `FINN_DIRECT_SEND_ENABLED=true`، مع تجهيز مفتاح إيقاف تشغيلي سريع.
 - أسرار سلامة/تشفير سجل الإرسال.
 - Resend أو Outlook للبريد، وTwilio للـSMS.
 - `RESEND_WEBHOOK_SECRET` ومسارا callback العامان لتوثيق حالات التسليم.

@@ -1,6 +1,6 @@
 # FINN Performance Constitution — Article 28
 
-**Status:** Ratified · **Version:** ARIA_SUPREME_LAW v1.5.0 · **Enforcement:** every FINN turn, every session, permanently.
+**Status:** Ratified · **Version:** FINN_SUPREME_LAW v1.5.0 · **Enforcement:** every FINN turn, every session, permanently.
 
 Article 28 of the FINN Master Engineering Constitution codifies **continuous performance hardening** as a first-class self-evolving invariant. Slowness is a defect; FINN autonomously discovers, prioritises, and closes latency + cost gaps without operator prompting.
 
@@ -13,7 +13,7 @@ Article 28 of the FINN Master Engineering Constitution codifies **continuous per
 
 ## The ten invariants (recap)
 
-See `.lovable/memory/constraints/aria-performance-constitution.md`. The article body in `constitution.ts` is the legal source of truth.
+See `.lovable/memory/constraints/finn-performance-constitution.md`. The article body in `constitution.ts` is the legal source of truth.
 
 ## Continuous execution loop
 
