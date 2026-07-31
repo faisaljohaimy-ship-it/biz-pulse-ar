@@ -180,6 +180,7 @@ export function FourRegionHub() {
       value: counters?.agents_active ?? 0,
       Icon: Bot,
       tone: "text-emerald-300",
+      accent: "52, 211, 153",
       to: "/nx-agents",
     },
     {
@@ -188,6 +189,7 @@ export function FourRegionHub() {
       value: counters?.proposals_pending ?? 0,
       Icon: ShieldCheck,
       tone: "text-cyan-300",
+      accent: "34, 211, 238",
       to: "/decisions",
     },
     {
@@ -196,6 +198,7 @@ export function FourRegionHub() {
       value: counters?.urgent_open ?? 0,
       Icon: Siren,
       tone: "text-rose-300",
+      accent: "251, 113, 133",
       to: "/urgent-ops",
     },
     {
@@ -204,6 +207,7 @@ export function FourRegionHub() {
       value: counters?.support_processing ?? 0,
       Icon: Clock3,
       tone: "text-amber-300",
+      accent: "245, 158, 11",
       to: "/operations",
     },
     {
@@ -212,6 +216,7 @@ export function FourRegionHub() {
       value: counters?.done_today ?? 0,
       Icon: CheckCircle2,
       tone: "text-emerald-300",
+      accent: "52, 211, 153",
       to: "/execution",
     },
     {
@@ -220,6 +225,7 @@ export function FourRegionHub() {
       value: `${counters?.compliance_avg ?? 0}%`,
       Icon: Activity,
       tone: "text-cyan-300",
+      accent: "34, 211, 238",
       to: "/hcis-compliance",
     },
   ] as const;
