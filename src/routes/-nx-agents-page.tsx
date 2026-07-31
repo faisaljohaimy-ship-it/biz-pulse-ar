@@ -114,6 +114,8 @@ export function NxAgentsPage() {
     (isSimulation && live ? live.flowStage : data?.flowStage) ?? "request";
   const events = isSimulation && live ? live.events : [];
   const activeCount = agents.filter((a) => a.phase !== "idle").length;
+  const [selectedFlowAgent, setSelectedFlowAgent] = React.useState<string | null>(null);
+
 
   return (
     <div dir="rtl" className="min-h-dvh bg-nx-obsidian text-nx-pearl">
