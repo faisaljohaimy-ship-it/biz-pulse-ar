@@ -13,6 +13,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 
 interface Preview {
   readonly to: string;
@@ -26,8 +27,8 @@ interface Preview {
 const PREVIEWS: readonly Preview[] = [
   {
     to: "/command-center",
-    ar: "مركز القيادة التنفيذي",
-    en: "Executive Command Center",
+    ar: screenNameAr("/command-center"),
+    en: screenNameEn("/command-center"),
     descAr: "رؤية شاملة حيّة عبر المناطق الأربع",
     img: "/command-center-bg.webp",
   },
@@ -47,8 +48,8 @@ const PREVIEWS: readonly Preview[] = [
   },
   {
     to: "/situation-room",
-    ar: "غرفة العمليات",
-    en: "Situation Room",
+    ar: screenNameAr("/situation-room"),
+    en: screenNameEn("/situation-room"),
     descAr: "المتابعة اللحظية للأحداث",
     img: "/smart-city-bg.jpeg",
   },

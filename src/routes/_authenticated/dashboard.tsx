@@ -27,6 +27,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { getExecKpis } from "@/lib/sec.functions";
+import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { queryEvidence } from "@/lib/evidence/gate";
 import { AlertsPanel } from "@/components/sec/alerts-panel";
@@ -122,10 +123,12 @@ const TIER_COMMAND: Node[] = [
 // Tier 2 — Core Operations
 const TIER_OPERATIONS: Node[] = [
   {
+    // This tile said «مركز العمليات» — a third name for a route the sidebar
+    // called «الأمن الصناعي» and the app shell called «غرفة العمليات».
     to: "/sec",
     icon: Network,
-    ar: "مركز العمليات",
-    en: "Operations Hub",
+    ar: screenNameAr("/sec"),
+    en: screenNameEn("/sec"),
     tone: "primary",
     hint: (k) => `${k?.sites_operational ?? 0}/${k?.sites_total ?? 0} sites`,
   },

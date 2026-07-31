@@ -10,6 +10,7 @@ import { AlertTriangle, Radar, UserCheck, Camera } from "lucide-react";
 import { RefreshCw } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useRegion } from "@/lib/region-context";
+import { screenNameAr } from "@/lib/nav/screen-names";
 
 export const Route = createFileRoute("/_authenticated/sec/")({
   errorComponent: RouteError,
@@ -32,7 +33,7 @@ function OpsRoom() {
   return (
     <div className="space-y-4">
       <SecPageHeader
-        title={`غرفة العمليات — ${region.labelAr}`}
+        title={`${screenNameAr("/sec")} — ${region.labelAr}`}
         subtitle="بيانات تشغيلية حية ومقيّدة بالمؤسسة؛ لا تُعرض أرقام محاكاة في هذه الصفحة"
       >
         <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_overview" />

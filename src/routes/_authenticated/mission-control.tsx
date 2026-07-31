@@ -27,6 +27,7 @@ import {
 import { getSecOverview } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
+import { screenName, screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { cn } from "@/lib/utils";
 import { DEFAULT_VOICE_PROFILES, type AgentRuntimeProfile } from "@/lib/agents/voice-architecture";
 import { ExecutiveNarrator } from "@/components/mission-control/ExecutiveNarrator";
@@ -864,8 +865,16 @@ function WelcomeOverlay({ onDone, ar, name }: { onDone: () => void; ar: boolean;
    EXECUTIVE ACTIONS
    ──────────────────────────────────────────────────────────── */
 const ACTIONS = [
-  { to: "/sec", icon: Activity, ar: "العمليات", en: "Operations" },
-  { to: "/sec", icon: AlertTriangle, ar: "الحوادث", en: "Incidents" },
+  { to: "/sec", icon: Activity, ar: screenNameAr("/sec"), en: screenNameEn("/sec") },
+  // Was `to: "/sec"` — «الحوادث» landed on the operations page, not on the
+  // incident list. A card that drops you somewhere other than its own label
+  // is worse than no card.
+  {
+    to: "/sec/incidents",
+    icon: AlertTriangle,
+    ar: screenNameAr("/sec/incidents"),
+    en: screenNameEn("/sec/incidents"),
+  },
   { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل", en: "Work Orders" },
   { to: "/sec/reports", icon: FileBarChart2, ar: "التقارير", en: "Reports" },
   { to: "/finn", icon: MessageSquare, ar: "اسأل FINN", en: "Ask FINN" },
@@ -1117,7 +1126,9 @@ function MissionControl() {
                 : "Industrial Security — Western Region"}
             </div>
             <h1 className="mt-2 text-3xl md:text-5xl font-light tracking-tight">
-              {ar ? "مركز القيادة التنفيذي" : "Executive Mission Control"}
+              {/* البند ٢٢: the heading now matches the sidebar entry that
+                  leads here — «مركز القيادة التنفيذي» is /command-center. */}
+              {screenName("/mission-control", ar)}
             </h1>
             <p className="mt-2 text-white/60 max-w-2xl text-sm md:text-base">
               {ar

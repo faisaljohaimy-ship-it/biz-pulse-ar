@@ -9,6 +9,7 @@ import { Link } from "@tanstack/react-router";
 import { useState, type CSSProperties } from "react";
 import { useI18n } from "@/lib/i18n";
 import { isRouteHidden } from "@/lib/nav/hidden-routes";
+import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { useRegion } from "@/lib/region-context";
 import { REGION_ACCENT_HEX, REGION_ACCENT_RGB, type RegionId } from "@/lib/regions";
 import { cn } from "@/lib/utils";
@@ -224,8 +225,8 @@ export const HOTSPOTS = [
   {
     id: "map-command",
     to: "/command-center",
-    labelAr: "مركز القيادة",
-    labelEn: "Command center",
+    labelAr: screenNameAr("/command-center"),
+    labelEn: screenNameEn("/command-center"),
     x: 46.7,
     y: 43.4,
     width: 5.9,

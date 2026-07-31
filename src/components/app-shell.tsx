@@ -34,6 +34,7 @@ import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { moduleByRoute, moduleExternalUrl } from "@/lib/nav/modules";
+import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { pageBackdropFor } from "@/lib/nav/page-backdrops";
 import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 import { AuroraFantasyBackdrop } from "@/components/backdrops/AuroraFantasyBackdrop";
@@ -155,7 +156,10 @@ function useNavGroups(): NavGroup[] {
     {
       label: ar("العمليات", "Operations"),
       items: [
-        { to: "/sec", icon: Activity, label: ar("غرفة العمليات", "Ops Room") },
+        // The name comes from the registry: this row used to say «غرفة
+        // العمليات», which is /situation-room's name, so two sidebar entries
+        // read the same and landed elsewhere. See lib/nav/screen-names.ts.
+        { to: "/sec", icon: Activity, label: ar(screenNameAr("/sec"), screenNameEn("/sec")) },
         { to: "/sec/exec", icon: Crown, label: ar("اللوحة التنفيذية", "Exec Dashboard") },
         { to: "/sec/circles", icon: Building2, label: ar("الدوائر", "Circles") },
         { to: "/sec/sections", icon: Grid3x3, label: ar("الأقسام", "Sections") },

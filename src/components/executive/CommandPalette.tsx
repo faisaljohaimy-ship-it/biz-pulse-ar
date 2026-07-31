@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Search, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 
 type Cmd = {
   id: string;
@@ -63,8 +64,8 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
       },
       {
         id: "command",
-        title_ar: "مركز القيادة",
-        title_en: "Command Center",
+        title_ar: screenNameAr("/command-center"),
+        title_en: screenNameEn("/command-center"),
         to: "/command-center",
         group: "Navigate",
       },

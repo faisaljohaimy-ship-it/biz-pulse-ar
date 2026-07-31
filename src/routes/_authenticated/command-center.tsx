@@ -16,7 +16,7 @@
  *   5) الأعمال العاجلة وSLA — countdown strips; overdue leads, red pulse
  *
  * ملخص FINN is generated locally from the SAME state (guaranteed-reply
- * doctrine) and spoken via Layan ONLY on click. Motion discipline: every
+ * doctrine) and spoken in FINN's own voice ONLY on click. Motion discipline: every
  * halo/pulse comes from the .holo-sev-* scale (transform/opacity only,
  * frozen under prefers-reduced-motion).
  */

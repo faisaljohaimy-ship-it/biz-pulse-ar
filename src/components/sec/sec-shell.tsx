@@ -32,7 +32,9 @@ import {
 
 type Item = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
 const ITEMS: Item[] = [
-  { to: "/sec", label: "غرفة العمليات", icon: Activity },
+  // The section index is the section's OVERVIEW. It used to be labelled «غرفة
+  // العمليات» — the name /situation-room already owns. See screen-names.ts.
+  { to: "/sec", label: "نظرة عامة", icon: Activity },
   { to: "/sec/exec", label: "اللوحة التنفيذية", icon: Crown },
   { to: "/sec/twin", label: "التوأم الرقمي", icon: Network },
   { to: "/sec/circles", label: "الدوائر", icon: Building },
