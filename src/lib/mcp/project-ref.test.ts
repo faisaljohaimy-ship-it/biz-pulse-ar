@@ -15,6 +15,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  BUILTIN_PROJECT_REF,
   UNRESOLVED_PROJECT_REF,
   isIssuerResolved,
   resolveIssuer,
