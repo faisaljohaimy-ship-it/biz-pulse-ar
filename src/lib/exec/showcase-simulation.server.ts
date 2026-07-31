@@ -2479,6 +2479,9 @@ export function buildCommandCenterSimulation(now: number): CommandCenterState {
     ["وكيل التصاريح", "PTW", "active", "مطابقة تصاريح العمل السارية", 8, "healthy"],
     ["وكيل الطوارئ", "الاستجابة", "idle", null, 3, "idle"],
     ["وكيل المخاطر", "التنبؤ", "processing", "تحليل نمط إنذارات المحيط", 5, "high"],
+    ["وكيل المقاولين", "الوصول", "active", "تدقيق تصاريح دخول المقاولين", 7, "healthy"],
+    ["وكيل الدوريات", "الميدان", "active", "متابعة جولات الدوريات الليلية", 10, "healthy"],
+    ["وكيل التكاملات", "المنصات", "processing", "مزامنة قنوات البيانات التشغيلية", 4, "medium"],
   ];
   const agents = AGENTS.map(([name_ar, role, status, task_ar, done_today, severity], i) => ({
     id: `sim-ca-${i + 1}`,
