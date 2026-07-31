@@ -367,7 +367,7 @@ export function FourRegionHub() {
 
 
       <div className="relative mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+        <div className="order-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:order-none lg:grid-cols-1">
           {REGIONS.map((region) => {
             const panel = CC_REGIONS[region.id];
             return (
@@ -388,12 +388,15 @@ export function FourRegionHub() {
           })}
         </div>
 
-        <FinnHolographicPortal ar={ar} />
+        <div className="order-1 lg:order-none">
+          <FinnHolographicPortal ar={ar} />
+        </div>
 
         <div
           id="smart-alerts"
+          data-order="3"
           style={{ ["--accent-rgb" as string]: "251, 113, 133" }}
-          className="holo-card rounded-2xl bg-rose-500/[0.05] p-4"
+          className="holo-card order-3 rounded-2xl bg-rose-500/[0.05] p-4 lg:order-none"
         >
           <div className="mb-3 flex items-center justify-between gap-2">
             <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
