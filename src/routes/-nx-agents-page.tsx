@@ -243,12 +243,7 @@ export function NxAgentsPage() {
               ))}
             </ul>
 
-            {/* لوحة التدفق: المصادر ← الوكلاء ← FINN ← بوابة الاعتماد البشري */}
-            <NxPanel title="لوحة تدفّق الوكلاء · من أين تُستمد البيانات" density="operations">
-              <div className="w-full overflow-x-auto">
-                <AgenticFlowCanvas ar variant="full" />
-              </div>
-            </NxPanel>
+
 
 
             {isSimulation ? (
