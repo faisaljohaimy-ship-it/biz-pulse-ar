@@ -3075,3 +3075,108 @@ html.nx-presenting .nexus-app-shell {
     animation: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   HOLOGRAPHIC EDGE SYSTEM — executive card frames.
+   `.holo-card`  : standard panel edge (accent via --accent-rgb)
+   `.finn-portal`: the focal FINN card, one notch more luminous.
+   ───────────────────────────────────────────────────────────────── */
+.holo-card {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(var(--accent-rgb, 34, 211, 238), 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    inset 0 0 24px rgba(var(--accent-rgb, 34, 211, 238), 0.025),
+    0 0 18px rgba(var(--accent-rgb, 34, 211, 238), 0.1),
+    0 18px 42px rgba(0, 0, 0, 0.24);
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out,
+    border-color 200ms ease-out;
+}
+.holo-card::before {
+  content: "";
+  position: absolute;
+  inset-inline: 12%;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--accent-rgb, 34, 211, 238), 0.55),
+    transparent
+  );
+}
+.holo-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--accent-rgb, 34, 211, 238), 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 26px rgba(var(--accent-rgb, 34, 211, 238), 0.18),
+    0 22px 50px rgba(0, 0, 0, 0.3);
+}
+.holo-card:focus-visible,
+.holo-card:has(:focus-visible) {
+  outline: 2px solid rgba(103, 232, 249, 0.9);
+  outline-offset: 2px;
+}
+
+/* Focal FINN card frame */
+.finn-portal {
+  --finn-edge: 34, 211, 238;
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(var(--finn-edge), 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 0 34px rgba(var(--finn-edge), 0.035),
+    0 0 22px rgba(var(--finn-edge), 0.13),
+    0 24px 58px rgba(0, 0, 0, 0.32);
+}
+.finn-portal::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    rgba(96, 225, 255, 0.82),
+    rgba(34, 211, 238, 0.24) 34%,
+    rgba(59, 130, 246, 0.46) 70%,
+    rgba(34, 211, 238, 0.72)
+  );
+  filter: blur(5px);
+  opacity: 0.38;
+  animation: finn-edge-breathe 5.5s ease-in-out infinite;
+}
+.finn-portal::after {
+  content: "";
+  position: absolute;
+  inset-inline: 8%;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(190, 245, 255, 0.7), transparent);
+}
+.finn-portal:hover::before,
+.finn-portal:focus-within::before {
+  opacity: 0.52;
+}
+@keyframes finn-edge-breathe {
+  0%,
+  100% {
+    opacity: 0.32;
+  }
+  50% {
+    opacity: 0.46;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .finn-portal::before {
+    animation: none !important;
+  }
+}

@@ -25,6 +25,30 @@ import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 
+/** "#22D3EE" → "34, 211, 238" for the `--accent-rgb` edge-glow token. */
+function hexToRgbTriplet(hex: string): string {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? [...h].map((c) => c + c).join("") : h;
+  const n = Number.parseInt(full, 16);
+  return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
+}
+
+type Severity = "critical" | "high" | "medium" | "low";
+
+const SEVERITY_RANK: Record<Severity, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+const SEVERITY_DOT: Record<Severity, string> = {
+  critical: "bg-rose-400",
+  high: "bg-amber-400",
+  medium: "bg-cyan-300",
+  low: "bg-emerald-400",
+};
+const SEVERITY_LABEL_AR: Record<Severity, string> = {
+  critical: "حرج",
+  high: "عالٍ",
+  medium: "متوسط",
+  low: "منخفض",
+};
+
 function LiveClock({ ar }: { ar: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
 
@@ -107,11 +131,11 @@ function RegionCard({
 
   return (
     <article
-      className="relative overflow-hidden rounded-2xl border p-3 transition"
+      className="holo-card relative overflow-hidden rounded-2xl p-3"
       style={{
+        ["--accent-rgb" as string]: hexToRgbTriplet(color),
         borderColor: active ? color : `${color}55`,
         background: `linear-gradient(135deg, ${color}18, rgba(4,17,31,.76) 58%, rgba(4,7,15,.92))`,
-        boxShadow: active ? `0 0 0 1px ${color}55, 0 20px 44px -28px ${color}` : undefined,
       }}
     >
       <button
@@ -122,10 +146,17 @@ function RegionCard({
       >
         <Ring pct={performance} color={color} />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-base font-black" style={{ color }}>
-            {ar ? region.shortAr : region.shortEn}
+          <div className="flex items-center gap-2">
+            <span className="truncate text-base font-black" style={{ color }}>
+              {ar ? region.shortAr : region.shortEn}
+            </span>
+            {active && (
+              <span className="shrink-0 rounded-md border border-white/25 bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                {ar ? "المنطقة الحالية" : "Current"}
+              </span>
+            )}
           </div>
-          <div className="mt-1 truncate text-[11px] text-white/55">
+          <div className="mt-1 truncate text-xs text-white/65">
             {ar ? panel.subtitleAr : panel.subtitleEn}
           </div>
         </div>
@@ -138,15 +169,16 @@ function RegionCard({
             to={metric.to}
             className="flex min-h-12 flex-col items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.025] px-1 py-1.5 text-center transition hover:border-white/20 hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
           >
-            <span className="text-xs font-black tabular-nums text-white">
+            <span className="text-sm font-black tabular-nums text-white">
               {panel.metrics[metric.key]}
             </span>
-            <span className="mt-0.5 text-[9px] text-white/55">{ar ? metric.ar : metric.en}</span>
+            <span className="mt-0.5 text-[11px] text-white/65">{ar ? metric.ar : metric.en}</span>
           </Link>
         ))}
       </div>
     </article>
   );
+
 }
 
 export function FourRegionHub() {
@@ -180,6 +212,7 @@ export function FourRegionHub() {
       value: counters?.agents_active ?? 0,
       Icon: Bot,
       tone: "text-emerald-300",
+      accent: "52, 211, 153",
       to: "/nx-agents",
     },
     {
@@ -188,6 +221,7 @@ export function FourRegionHub() {
       value: counters?.proposals_pending ?? 0,
       Icon: ShieldCheck,
       tone: "text-cyan-300",
+      accent: "34, 211, 238",
       to: "/decisions",
     },
     {
@@ -196,6 +230,7 @@ export function FourRegionHub() {
       value: counters?.urgent_open ?? 0,
       Icon: Siren,
       tone: "text-rose-300",
+      accent: "251, 113, 133",
       to: "/urgent-ops",
     },
     {
@@ -204,6 +239,7 @@ export function FourRegionHub() {
       value: counters?.support_processing ?? 0,
       Icon: Clock3,
       tone: "text-amber-300",
+      accent: "245, 158, 11",
       to: "/operations",
     },
     {
@@ -212,6 +248,7 @@ export function FourRegionHub() {
       value: counters?.done_today ?? 0,
       Icon: CheckCircle2,
       tone: "text-emerald-300",
+      accent: "52, 211, 153",
       to: "/execution",
     },
     {
@@ -220,12 +257,25 @@ export function FourRegionHub() {
       value: `${counters?.compliance_avg ?? 0}%`,
       Icon: Activity,
       tone: "text-cyan-300",
+      accent: "34, 211, 238",
       to: "/hcis-compliance",
     },
   ] as const;
 
   const alerts = data?.urgent ?? [];
   const simulation = data?.simulation ?? true;
+
+  // Severity derived from the live SLA window (no invented values).
+  const sortedAlerts = alerts
+    .map((alert) => {
+      const dueMs = new Date(alert.due_at).getTime();
+      const hoursLeft = (dueMs - Date.now()) / 3_600_000;
+      const severity: Severity =
+        hoursLeft <= 0 ? "critical" : hoursLeft <= 6 ? "high" : hoursLeft <= 24 ? "medium" : "low";
+      return { alert, severity, dueMs };
+    })
+    .sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || a.dueMs - b.dueMs);
+
 
   return (
     <section
@@ -298,15 +348,16 @@ export function FourRegionHub() {
       )}
 
       <div className="relative mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-        {kpis.map(({ labelAr, labelEn, value, Icon, tone, to }) => (
+        {kpis.map(({ labelAr, labelEn, value, Icon, tone, accent, to }) => (
           <Link
             key={labelEn}
             to={to}
             aria-label={ar ? labelAr : labelEn}
-            className="nx-icon-edge-glow block min-h-11 rounded-2xl border border-white/[0.08] bg-white/[0.035] p-3 transition-colors hover:border-cyan-400/35 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
+            style={{ ["--accent-rgb" as string]: accent }}
+            className="holo-card nx-icon-edge-glow block min-h-11 rounded-2xl bg-white/[0.035] p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] text-white/55">{ar ? labelAr : labelEn}</span>
+              <span className="text-xs text-white/70">{ar ? labelAr : labelEn}</span>
               <Icon className={`h-4 w-4 ${tone}`} aria-hidden />
             </div>
             <div className={`mt-2 text-2xl font-black tabular-nums ${tone}`}>{value}</div>
@@ -314,8 +365,9 @@ export function FourRegionHub() {
         ))}
       </div>
 
+
       <div className="relative mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+        <div className="order-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:order-none lg:grid-cols-1">
           {REGIONS.map((region) => {
             const panel = CC_REGIONS[region.id];
             return (
@@ -336,11 +388,15 @@ export function FourRegionHub() {
           })}
         </div>
 
-        <FinnHolographicPortal ar={ar} />
+        <div className="order-1 lg:order-none">
+          <FinnHolographicPortal ar={ar} />
+        </div>
 
         <div
           id="smart-alerts"
-          className="rounded-2xl border border-rose-400/20 bg-rose-500/[0.05] p-4"
+          data-order="3"
+          style={{ ["--accent-rgb" as string]: "251, 113, 133" }}
+          className="holo-card order-3 rounded-2xl bg-rose-500/[0.05] p-4 lg:order-none"
         >
           <div className="mb-3 flex items-center justify-between gap-2">
             <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
@@ -349,27 +405,42 @@ export function FourRegionHub() {
             </span>
             <Link
               to="/situation-room"
-              className="text-[11px] font-semibold text-cyan-300 hover:text-cyan-200"
+              className="text-xs font-semibold text-cyan-300 hover:text-cyan-200"
             >
               {ar ? "فتح غرفة العمليات" : "Open room"}
             </Link>
           </div>
           <ul className="grid gap-2">
-            {alerts.slice(0, 6).map((alert) => (
-              <li
-                key={alert.id}
-                className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-3 py-2 text-xs"
-              >
-                <span className="truncate text-white/80">{alert.title_ar}</span>
-                <span className="shrink-0 text-white/45">{alert.department}</span>
+            {sortedAlerts.slice(0, 6).map(({ alert, severity }) => (
+              <li key={alert.id}>
+                <Link
+                  to="/situation-room"
+                  aria-label={`${alert.title_ar} — ${alert.department}`}
+                  className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-3 py-2 text-xs transition hover:border-white/20 hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      className={`h-2 w-2 shrink-0 rounded-full ${SEVERITY_DOT[severity]}`}
+                      aria-hidden
+                    />
+                    <span className="truncate text-white/85">{alert.title_ar}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2 text-white/50">
+                    <span>{alert.department}</span>
+                    <span className="rounded-md border border-white/10 px-1.5 py-0.5 text-[11px]">
+                      {ar ? SEVERITY_LABEL_AR[severity] : severity}
+                    </span>
+                  </span>
+                </Link>
               </li>
             ))}
-            {alerts.length === 0 && (
+            {sortedAlerts.length === 0 && (
               <li className="rounded-xl border border-emerald-400/15 bg-emerald-400/[0.04] px-3 py-4 text-center text-xs text-emerald-200">
                 {ar ? "لا توجد تنبيهات عاجلة حالياً" : "No urgent alerts"}
               </li>
             )}
           </ul>
+
         </div>
       </div>
     </section>

@@ -336,49 +336,9 @@ function Pedestal({ state }: { state: FinnLiveState }) {
   );
 }
 
-function Particles({ count = 60 }: { count?: number }) {
-  const ref = useRef<THREE.Points>(null);
-  const reduce = usePrefersReducedMotion();
-  const { geometry, speeds } = useMemo(() => {
-    const g = new THREE.BufferGeometry();
-    const pos = new Float32Array(count * 3);
-    const spd = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      const a = Math.random() * Math.PI * 2;
-      const r = 0.6 + Math.random() * 1.3;
-      pos[i * 3] = Math.cos(a) * r;
-      pos[i * 3 + 1] = -1.7 + Math.random() * 3.4;
-      pos[i * 3 + 2] = Math.sin(a) * r * 0.6;
-      spd[i] = 0.15 + Math.random() * 0.35;
-    }
-    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    return { geometry: g, speeds: spd };
-  }, [count]);
+/* Rising particle field removed by design directive: the floor area under
+   FINN must stay clean and static (a steady holo ring + soft glow only). */
 
-  useFrame((_, dt) => {
-    if (!ref.current || reduce) return;
-    const attr = ref.current.geometry.getAttribute("position") as THREE.BufferAttribute;
-    for (let i = 0; i < count; i++) {
-      let y = attr.getY(i) + dt * speeds[i];
-      if (y > 1.8) y = -1.75;
-      attr.setY(i, y);
-    }
-    attr.needsUpdate = true;
-  });
-
-  return (
-    <points ref={ref} geometry={geometry}>
-      <pointsMaterial
-        color="#67E8F9"
-        size={0.03}
-        transparent
-        opacity={0.75}
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
-  );
-}
 
 // ---------- Utilities ----------
 
@@ -408,7 +368,7 @@ function useIsMobile() {
 
 // ---------- Scene ----------
 
-function Scene({ state, mobile }: { state: FinnLiveState; mobile: boolean }) {
+function Scene({ state }: { state: FinnLiveState; mobile: boolean }) {
   return (
     <>
       {/* LightBeam removed — was leaving a translucent glass column behind FINN */}
@@ -416,7 +376,6 @@ function Scene({ state, mobile }: { state: FinnLiveState; mobile: boolean }) {
         <CharacterPlane state={state} />
       </Suspense>
       <Pedestal state={state} />
-      <Particles count={mobile ? 32 : 70} />
     </>
   );
 }
