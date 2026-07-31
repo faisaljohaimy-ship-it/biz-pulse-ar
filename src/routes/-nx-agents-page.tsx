@@ -165,8 +165,32 @@ export function NxAgentsPage() {
           />
         ) : null}
 
+        {/* لوحة التدفق الرئيسية: المصادر ← الوكلاء ← FINN ← بوابة الاعتماد البشري */}
+        <section
+          aria-label="لوحة تدفّق الوكلاء"
+          className="rounded-nx-12 border border-[#3AE8FF]/18 bg-[#04101F]/70 p-2 md:p-3"
+        >
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 px-1">
+            <h2 className="text-sm font-black tracking-[0.18em] text-[#3AE8FF] md:text-base">
+              NEXIOS · AGENTIC FLOW CANVAS
+            </h2>
+            <p className="text-[11px] text-nx-pearl/60">
+              المصادر ← الوكلاء ← FINN ← بوابة الاعتماد البشري
+            </p>
+          </div>
+          <div className="w-full overflow-x-auto">
+            <AgenticFlowCanvas
+              ar
+              variant="full"
+              selectedAgentId={selectedFlowAgent}
+              onSelectAgent={setSelectedFlowAgent}
+            />
+          </div>
+        </section>
+
         {!isLoading && !isError && agents.length > 0 ? (
           <>
+
             {/* Seven-stage data flow — advances with each simulated event. */}
             <NxPanel title="تدفّق البيانات" density="operations">
               <ol className="flex flex-wrap items-center gap-1.5 text-[11px]">
