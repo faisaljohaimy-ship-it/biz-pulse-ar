@@ -74,6 +74,8 @@ export function NxAgentsPage() {
     refetchInterval: 60_000,
   });
 
+  const navigate = useNavigate();
+
   // Live client animation ONLY when the source is the reference simulation —
   // a real (live) source is shown statically so the two are never conflated.
   const [live, setLive] = React.useState<SimSnapshot | null>(null);
