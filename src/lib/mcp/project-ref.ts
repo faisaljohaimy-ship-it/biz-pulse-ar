@@ -34,6 +34,16 @@
  *  build ship a working MCP endpoint?" without deploying it. */
 export const UNRESOLVED_PROJECT_REF = "project-ref-unset";
 
+/**
+ * Last-resort literal. The published Workers build has shipped an issuer of
+ * `project-ref-unset.supabase.co` — i.e. NEITHER env var reached the bundle at
+ * build time — which makes `claude mcp add --transport http nexios
+ * https://neexios.com/mcp` fail at OAuth discovery. Baking the ref in as a
+ * final fallback removes the dependency on build-time env injection entirely;
+ * the env vars still win when present.
+ */
+export const BUILTIN_PROJECT_REF = "jhutlofapjfjjeajawie";
+
 /** A Supabase project ref is a 20-character lowercase alphanumeric label. */
 const SUPABASE_HOST = /^https?:\/\/([a-z0-9]{20})\.supabase\.co\/?$/i;
 
