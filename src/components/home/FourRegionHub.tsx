@@ -25,6 +25,22 @@ import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 
+type Severity = "critical" | "high" | "medium" | "low";
+
+const SEVERITY_RANK: Record<Severity, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+const SEVERITY_DOT: Record<Severity, string> = {
+  critical: "bg-rose-400",
+  high: "bg-amber-400",
+  medium: "bg-cyan-300",
+  low: "bg-emerald-400",
+};
+const SEVERITY_LABEL_AR: Record<Severity, string> = {
+  critical: "حرج",
+  high: "عالٍ",
+  medium: "متوسط",
+  low: "منخفض",
+};
+
 function LiveClock({ ar }: { ar: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
 
