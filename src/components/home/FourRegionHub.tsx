@@ -298,21 +298,23 @@ export function FourRegionHub() {
       )}
 
       <div className="relative mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-        {kpis.map(({ labelAr, labelEn, value, Icon, tone, to }) => (
+        {kpis.map(({ labelAr, labelEn, value, Icon, tone, accent, to }) => (
           <Link
             key={labelEn}
             to={to}
             aria-label={ar ? labelAr : labelEn}
-            className="nx-icon-edge-glow block min-h-11 rounded-2xl border border-white/[0.08] bg-white/[0.035] p-3 transition-colors hover:border-cyan-400/35 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
+            style={{ ["--accent-rgb" as string]: accent }}
+            className="holo-card nx-icon-edge-glow block min-h-11 rounded-2xl bg-white/[0.035] p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] text-white/55">{ar ? labelAr : labelEn}</span>
+              <span className="text-xs text-white/70">{ar ? labelAr : labelEn}</span>
               <Icon className={`h-4 w-4 ${tone}`} aria-hidden />
             </div>
             <div className={`mt-2 text-2xl font-black tabular-nums ${tone}`}>{value}</div>
           </Link>
         ))}
       </div>
+
 
       <div className="relative mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
