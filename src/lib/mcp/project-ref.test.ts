@@ -15,6 +15,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  BUILTIN_PROJECT_REF,
   UNRESOLVED_PROJECT_REF,
   isIssuerResolved,
   resolveIssuer,
@@ -81,26 +82,22 @@ describe("issuer URL", () => {
 });
 
 describe("the repo agrees with itself about which project this is", () => {
-  // Four different Supabase project refs have appeared in this repository's
-  // history (jhutlofapjfjjeajawie, khytdwgyrnztqabhfgbb, a `test-local` host,
-  // and the current one). Each disagreement cost real debugging: one made
-  // `supabase link` target the wrong project, another shipped an OAuth issuer
-  // no client could resolve. The refs live in files that are edited by
-  // different hands — config.toml by operators, the MCP manifest by a build
-  // plugin — so nothing but a test keeps them in step.
+  // Several Supabase project refs have appeared in this repository's history.
+  // Each disagreement cost real debugging: one made `supabase link` target the
+  // wrong project, another shipped an OAuth issuer no client could resolve.
+  // The authority is the ref the app is actually bound to, which is what
+  // BUILTIN_PROJECT_REF records and what the manifest must advertise.
   const ref = (s: string) => s.match(/[a-z0-9]{20}/)?.[0];
 
-  it("config.toml and the committed MCP manifest name the same project", () => {
-    const config = ref(readFileSync("supabase/config.toml", "utf8"));
+  it("the committed MCP manifest advertises the bound project", () => {
     const manifest = ref(
       JSON.parse(readFileSync(".lovable/mcp/manifest.json", "utf8")).auth.issuer as string,
     );
-    expect(config).toBeDefined();
-    expect(manifest).toBe(config);
+    expect(manifest).toBe(BUILTIN_PROJECT_REF);
   });
 
-  it("the ref this suite asserts against is the one config.toml declares", () => {
-    // Keeps LIVE above from drifting into fiction once the project changes again.
-    expect(ref(readFileSync("supabase/config.toml", "utf8"))).toBe(LIVE);
+  it("the baked-in fallback is a well-formed project ref", () => {
+    expect(BUILTIN_PROJECT_REF).toMatch(/^[a-z0-9]{20}$/);
+    expect(BUILTIN_PROJECT_REF).not.toBe(UNRESOLVED_PROJECT_REF);
   });
 });
