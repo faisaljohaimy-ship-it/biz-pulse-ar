@@ -41,8 +41,17 @@ export const UNRESOLVED_PROJECT_REF = "project-ref-unset";
  * https://neexios.com/mcp` fail at OAuth discovery. Baking the ref in as a
  * final fallback removes the dependency on build-time env injection entirely;
  * the env vars still win when present.
+ *
+ * THE VALUE IS NOT FREE TO CHOOSE. It must equal `project_id` in
+ * supabase/config.toml — the declared project — and the test below enforces
+ * that. An earlier revision baked in `jhutlofapjfjjeajawie`, a ref this repo
+ * had already retired twice. That is worse than no fallback: it replaces a
+ * LOUD failure (`project-ref-unset`, unmistakable in the discovery document —
+ * it is how this whole bug was spotted from one screenshot) with a SILENT one,
+ * a plausible-looking host whose tokens are simply never accepted, and no way
+ * to tell from the outside why.
  */
-export const BUILTIN_PROJECT_REF = "jhutlofapjfjjeajawie";
+export const BUILTIN_PROJECT_REF = "adhhxmmgfatkmzpokvil";
 
 /** A Supabase project ref is a 20-character lowercase alphanumeric label. */
 const SUPABASE_HOST = /^https?:\/\/([a-z0-9]{20})\.supabase\.co\/?$/i;
