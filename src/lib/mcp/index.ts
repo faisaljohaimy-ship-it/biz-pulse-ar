@@ -21,6 +21,15 @@ const issuer = resolveIssuer({
   VITE_SUPABASE_PROJECT_ID: import.meta.env.VITE_SUPABASE_PROJECT_ID,
   VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
 });
+// The published build has shipped with neither variable inlined, producing an
+// unresolvable issuer and a /mcp endpoint no client could authorise against.
+// Fall back to the baked-in ref so discovery always points at a real host.
+const oauthIssuer = isIssuerResolved({
+  VITE_SUPABASE_PROJECT_ID: import.meta.env.VITE_SUPABASE_PROJECT_ID,
+  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+})
+  ? issuer
+  : `https://${BUILTIN_PROJECT_REF}.supabase.co/auth/v1`;
 
 export default defineMcp({
   name: "nexus-aria-mcp",
