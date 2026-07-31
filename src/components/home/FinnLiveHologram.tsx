@@ -368,7 +368,7 @@ function useIsMobile() {
 
 // ---------- Scene ----------
 
-function Scene({ state, mobile }: { state: FinnLiveState; mobile: boolean }) {
+function Scene({ state }: { state: FinnLiveState; mobile: boolean }) {
   return (
     <>
       {/* LightBeam removed — was leaving a translucent glass column behind FINN */}
@@ -376,7 +376,6 @@ function Scene({ state, mobile }: { state: FinnLiveState; mobile: boolean }) {
         <CharacterPlane state={state} />
       </Suspense>
       <Pedestal state={state} />
-      <Particles count={mobile ? 32 : 70} />
     </>
   );
 }
