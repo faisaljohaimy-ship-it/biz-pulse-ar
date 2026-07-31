@@ -38,7 +38,7 @@ export default defineMcp({
   instructions:
     "MCP server for NEXUS AI OS. Use `ping` to verify connectivity, `ask_aria` to query FINN (the Executive AI Engine) for bilingual (AR/EN) executive briefings, `hcis_status` for HCIS industrial-security compliance (overall/per-region % + critical findings), and `ptw_active_permits` for currently active digital work permits by region/type.",
   auth: auth.oauth.issuer({
-    issuer,
+    issuer: oauthIssuer,
     acceptedAudiences: "authenticated",
   }),
   tools: [pingTool, askFinnTool, hcisStatusTool, ptwActiveTool],
