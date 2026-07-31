@@ -70,7 +70,7 @@ export function CanonicalVoiceStatus() {
               <AudioWaveform className="h-6 w-6 text-cyan-200" />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-300">
+              <p className="text-[12px] font-bold uppercase tracking-[0.35em] text-cyan-300">
                 FINN · صوت موحّد
               </p>
               <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">

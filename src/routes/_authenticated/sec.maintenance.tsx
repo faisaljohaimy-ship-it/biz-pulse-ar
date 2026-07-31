@@ -116,32 +116,32 @@ function Maintenance() {
                 <td className="px-3 py-2">
                   <div>{w.title_ar}</div>
                   {w.source_incident_id && (
-                    <div className="text-[10px] text-violet-600">↩ من بلاغ</div>
+                    <div className="text-[12px] text-violet-600">↩ من بلاغ</div>
                   )}
                 </td>
                 <td className="px-3 py-2">
                   <div className="text-xs">{w.asset_kind || "—"}</div>
-                  <div className="font-mono text-[10px] text-muted-foreground">
+                  <div className="font-mono text-[12px] text-muted-foreground">
                     {w.asset_code ?? "—"}
                   </div>
                 </td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${w.kind === "preventive" ? "border-blue-500/40 bg-blue-500/10 text-blue-600" : "border-orange-500/40 bg-orange-500/10 text-orange-600"}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${w.kind === "preventive" ? "border-blue-500/40 bg-blue-500/10 text-blue-600" : "border-orange-500/40 bg-orange-500/10 text-orange-600"}`}
                   >
                     {w.kind === "preventive" ? "وقائية" : "تصحيحية"}
                   </span>
                 </td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${severityClass(w.priority)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${severityClass(w.priority)}`}
                   >
                     {w.priority}
                   </span>
                 </td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(w.status)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(w.status)}`}
                   >
                     {w.status}
                   </span>

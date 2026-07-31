@@ -93,7 +93,7 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
       className="flex flex-col gap-3 sm:gap-4"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/50 sm:text-xs">
+        <h2 className="text-[12px] font-semibold uppercase tracking-[0.28em] text-white/50 sm:text-xs">
           {ar ? "قائمة القرارات" : "Decision Queue"}
         </h2>
         <span
@@ -138,7 +138,7 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
                     </div>
                   </div>
                 </div>
-                <ExecutiveSourceBadge source={source} ar={ar} className="text-[9px]" />
+                <ExecutiveSourceBadge source={source} ar={ar} className="text-[12px]" />
               </div>
               <div className="mt-auto flex items-end justify-between gap-3">
                 <span
@@ -147,7 +147,7 @@ export function OsDecisionQueue({ ar }: { readonly ar: boolean }) {
                 >
                   {d.value}
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70 transition-colors group-hover:text-white">
+                <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.22em] text-white/70 transition-colors group-hover:text-white">
                   {ar ? "افتح" : "Open"}
                   <Arrow
                     className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5"

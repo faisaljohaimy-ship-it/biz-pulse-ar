@@ -135,7 +135,7 @@ function DecisionGroup({
                     {ar ? it.detail_ar : it.detail_en}
                   </div>
                 )}
-                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-white/55">
+                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[12px] text-white/55">
                   <span className="rounded-full bg-white/[0.04] px-2 py-0.5 uppercase tracking-wider">
                     {ar ? PRIORITY_LABEL[it.priority].ar : PRIORITY_LABEL[it.priority].en}
                   </span>

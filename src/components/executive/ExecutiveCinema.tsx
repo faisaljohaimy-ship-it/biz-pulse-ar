@@ -184,7 +184,7 @@ export function ExecutiveCinema({ open, onClose }: { open: boolean; onClose: () 
             <Film className="h-4 w-4" />
           </span>
           <div>
-            <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
+            <div className="text-[12px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
               Executive Experience
             </div>
             <h2 className="text-base font-semibold sm:text-lg">مركز التجربة التنفيذية</h2>
@@ -203,7 +203,7 @@ export function ExecutiveCinema({ open, onClose }: { open: boolean; onClose: () 
       <div className="flex-1 overflow-y-auto px-5 py-6 sm:px-8 sm:py-8">
         {continueWatching.length > 0 && (
           <section className="mb-8">
-            <div className="mb-3 text-[10px] uppercase tracking-[0.3em] text-white/50">
+            <div className="mb-3 text-[12px] uppercase tracking-[0.3em] text-white/50">
               متابعة المشاهدة · Continue Watching
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -220,7 +220,7 @@ export function ExecutiveCinema({ open, onClose }: { open: boolean; onClose: () 
           </section>
         )}
 
-        <div className="mb-3 text-[10px] uppercase tracking-[0.3em] text-white/50">
+        <div className="mb-3 text-[12px] uppercase tracking-[0.3em] text-white/50">
           جميع الفصول · All Chapters
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -268,7 +268,7 @@ function ChapterCard({
       />
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[10px] uppercase tracking-[0.25em] text-white/40">
+          <div className="text-[12px] uppercase tracking-[0.25em] text-white/40">
             {chapter.title_en}
           </div>
           <div className={`mt-1 truncate font-semibold ${compact ? "text-sm" : "text-base"}`}>
@@ -284,7 +284,7 @@ function ChapterCard({
           {chapter.desc_ar}
         </p>
       )}
-      <div className="relative mt-4 flex items-center justify-between text-[10px] text-white/45">
+      <div className="relative mt-4 flex items-center justify-between text-[12px] text-white/45">
         <span className="font-mono">{chapter.duration}</span>
         <span>
           {progress >= 100 ? "✓ مكتمل" : progress > 0 ? `${Math.round(progress)}%` : "جديد"}
@@ -318,7 +318,7 @@ function ChapterPlayer({
           <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_50%,rgba(255,255,255,0.25),transparent_70%)]" />
           <div className="absolute inset-0 grid place-items-center text-center">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.4em] text-white/80">
+              <div className="text-[12px] uppercase tracking-[0.4em] text-white/80">
                 NEXIOS · {chapter.title_en}
               </div>
               <div className="mt-3 text-3xl font-semibold text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] sm:text-5xl">

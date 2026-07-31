@@ -96,7 +96,7 @@ function DirectivePage() {
                     <div className="flex items-center justify-between gap-2">
                       <code className="text-cyan-200">{probe.module}</code>
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full border ${STATUS_TONE[probe.status]}`}
+                        className={`text-[12px] px-2 py-0.5 rounded-full border ${STATUS_TONE[probe.status]}`}
                       >
                         {probe.status}
                       </span>

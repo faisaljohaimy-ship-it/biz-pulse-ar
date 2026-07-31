@@ -12,6 +12,7 @@ import { Line } from "@react-three/drei";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { REGION_MARKERS } from "./region-markers";
+import { canUseWebGL } from "@/lib/graphics/webgl-capability";
 
 const EMERALD = "#34D399";
 const R = 1;
@@ -100,6 +101,12 @@ function GlobeGroup({ animate }: { animate: boolean }) {
 }
 
 export default function RegionGlobeScene({ animate }: { animate: boolean }) {
+  // No WebGL ⇒ never construct a renderer. A mounted <Canvas> retries on
+  // every render, which is what fills the console with the same three.js
+  // error; not mounting is the only fix that actually stops it. The CSS
+  // fallback beneath this component keeps the panel looking intentional.
+  if (!canUseWebGL()) return null;
+
   return (
     <Canvas
       dpr={[1, 1.5]}

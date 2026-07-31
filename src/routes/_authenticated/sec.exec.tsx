@@ -52,11 +52,11 @@ function ExecDashboard() {
           </div>
           <div className="grid grid-cols-2 gap-2 text-center">
             <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
-              <div className="text-[10px] text-emerald-600">مؤشر السلامة</div>
+              <div className="text-[12px] text-emerald-600">مؤشر السلامة</div>
               <div className="text-lg font-bold text-emerald-600">{pct(k.safety_index)}</div>
             </div>
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
-              <div className="text-[10px] text-red-600">مؤشر المخاطر</div>
+              <div className="text-[12px] text-red-600">مؤشر المخاطر</div>
               <div className="text-lg font-bold text-red-600">{pct(k.risk_index)}</div>
             </div>
           </div>

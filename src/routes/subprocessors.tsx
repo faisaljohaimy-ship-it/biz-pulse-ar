@@ -152,7 +152,7 @@ function Table({ rows, isAr }: { rows: Sub[]; isAr: boolean }) {
       {/* Desktop — table */}
       <div className="hidden overflow-hidden rounded-xl border border-white/10 md:block">
         <table className="w-full table-fixed text-sm">
-          <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.18em] text-amber-300/80">
+          <thead className="bg-white/[0.03] text-[12px] uppercase tracking-[0.18em] text-amber-300/80">
             <tr>
               <th className="w-[28%] px-4 py-3 text-start">
                 {isAr ? "المورّد / الخدمة" : "Subprocessor / Service"}

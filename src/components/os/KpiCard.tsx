@@ -82,7 +82,7 @@ export function KpiCard({
             <div className="truncate text-[13px] font-semibold text-white sm:text-sm">
               {labelPrimary}
             </div>
-            <div className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.22em] text-white/45">
+            <div className="mt-0.5 truncate text-[12px] font-medium uppercase tracking-[0.22em] text-white/45">
               {labelSecondary}
             </div>
           </div>
@@ -97,7 +97,7 @@ export function KpiCard({
           {display}
         </span>
         {hint ? (
-          <span className="truncate text-[11px] font-medium text-white/50">{hint}</span>
+          <span className="truncate text-[12px] font-medium text-white/50">{hint}</span>
         ) : null}
       </div>
     </div>

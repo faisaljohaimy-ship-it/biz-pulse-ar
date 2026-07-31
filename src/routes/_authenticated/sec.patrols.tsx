@@ -38,7 +38,7 @@ function Patrols() {
               <div className="flex items-center justify-between">
                 <div className="text-sm font-semibold text-foreground">{p.team}</div>
                 <span
-                  className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(p.status)}`}
+                  className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(p.status)}`}
                 >
                   {p.status}
                 </span>
@@ -49,7 +49,7 @@ function Patrols() {
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
                 <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
               </div>
-              <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
+              <div className="mt-1 flex justify-between text-[12px] text-muted-foreground">
                 <span>
                   {p.checkpoints_done}/{p.checkpoints_total} نقاط
                 </span>

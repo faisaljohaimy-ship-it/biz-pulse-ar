@@ -24,7 +24,7 @@ export function CanonicalFinnRoute() {
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.7rem] border border-cyan-300/30 bg-cyan-400/10 shadow-[0_0_55px_rgba(34,211,238,0.22)]">
           <Sparkles className="h-9 w-9 text-cyan-200" />
         </div>
-        <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.42em] text-cyan-300">
+        <p className="mt-7 text-[12px] font-bold uppercase tracking-[0.42em] text-cyan-300">
           FINN · المساعد التنفيذي
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">

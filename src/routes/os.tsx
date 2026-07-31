@@ -165,7 +165,7 @@ function OsHub() {
 
       {/* Top strip */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-3 sm:px-6">
-        <span className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60 backdrop-blur">
+        <span className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.22em] text-white/60 backdrop-blur">
           <Command className="h-3.5 w-3.5 text-[#3AE8FF]" strokeWidth={2} />
           NEXIOS · OS
         </span>
@@ -185,7 +185,7 @@ function OsHub() {
             {t.title}
           </h1>
           <p className="mt-2 text-sm text-white/65 sm:text-base">{t.subtitle}</p>
-          <p className="mx-auto mt-3 max-w-2xl text-[11px] uppercase tracking-[0.24em] text-[#3AE8FF]/80 sm:text-xs">
+          <p className="mx-auto mt-3 max-w-2xl text-[12px] uppercase tracking-[0.24em] text-[#3AE8FF]/80 sm:text-xs">
             {t.vision}
           </p>
         </header>
@@ -201,7 +201,7 @@ function OsHub() {
           <div className="flex items-center justify-between">
             <h2
               id="os-kpi-heading"
-              className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/50 sm:text-xs"
+              className="text-[12px] font-semibold uppercase tracking-[0.28em] text-white/50 sm:text-xs"
             >
               {t.executive}
             </h2>
@@ -221,7 +221,7 @@ function OsHub() {
           <div className="flex items-center justify-between">
             <h2
               id="os-modules-heading"
-              className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/50 sm:text-xs"
+              className="text-[12px] font-semibold uppercase tracking-[0.28em] text-white/50 sm:text-xs"
             >
               {t.modules}
             </h2>
@@ -246,7 +246,7 @@ function OsHub() {
           </ul>
         </section>
 
-        <p className="mt-2 text-center text-[10px] uppercase tracking-[0.28em] text-white/30 sm:text-[11px]">
+        <p className="mt-2 text-center text-[12px] uppercase tracking-[0.28em] text-white/30 sm:text-[12px]">
           {t.footer}
         </p>
       </main>

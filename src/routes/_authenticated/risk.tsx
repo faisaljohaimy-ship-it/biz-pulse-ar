@@ -221,14 +221,14 @@ function RiskPage() {
       <NexusCard glow>
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-rose-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-rose-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-rose-300/80">
             {ar ? "سجل المخاطر" : "RISK REGISTER"}
           </div>
         </div>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-[10px] uppercase tracking-widest text-slate-500">
+              <tr className="text-[12px] uppercase tracking-widest text-slate-500">
                 <th className="py-2 text-start">ID</th>
                 <th className="py-2 text-start">{ar ? "المخاطر" : "Risk"}</th>
                 <th className="py-2 text-start">{ar ? "الفئة" : "Category"}</th>
@@ -241,7 +241,7 @@ function RiskPage() {
             <tbody className="divide-y divide-white/5">
               {RISKS.map((r) => (
                 <tr key={r.id}>
-                  <td className="py-3 font-mono text-[11px] text-slate-500">{r.id}</td>
+                  <td className="py-3 font-mono text-[12px] text-slate-500">{r.id}</td>
                   <td className="py-3 font-semibold text-white">{ar ? r.t_ar : r.t_en}</td>
                   <td className="py-3 text-slate-400">{r.cat}</td>
                   <td className="py-3">
@@ -275,7 +275,7 @@ function RiskPage() {
         <NexusCard>
           <div className="flex items-center gap-2">
             <FileCheck className="h-4 w-4 text-emerald-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-emerald-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-emerald-300/80">
               {ar ? "الضوابط والامتثال" : "CONTROLS & COMPLIANCE"}
             </div>
           </div>
@@ -289,7 +289,7 @@ function RiskPage() {
                   <div className="truncate text-sm font-semibold text-white">
                     {ar ? c.name_ar : c.name_en}
                   </div>
-                  <div className="text-[10px] text-slate-500">
+                  <div className="text-[12px] text-slate-500">
                     {ar ? "آخر اختبار" : "Last tested"} {c.last}
                   </div>
                 </div>
@@ -310,7 +310,7 @@ function RiskPage() {
         <NexusCard>
           <div className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4 text-amber-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-amber-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-amber-300/80">
               {ar ? "نتائج التدقيق وتتبع التخفيف" : "AUDIT FINDINGS & MITIGATION"}
             </div>
           </div>
@@ -319,7 +319,7 @@ function RiskPage() {
               <div key={a.id} className="rounded-lg border border-white/5 bg-white/[0.02] p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="text-[10px] font-mono text-slate-500">
+                    <div className="text-[12px] font-mono text-slate-500">
                       {a.id} · {ar ? "استحقاق" : "Due"} {a.due}
                     </div>
                     <div className="mt-0.5 text-sm font-semibold text-white">

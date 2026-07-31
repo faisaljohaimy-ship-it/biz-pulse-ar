@@ -210,7 +210,7 @@ export function AlertsPanel() {
               <span className="absolute -top-1 -left-1 w-2 h-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_currentColor]" />
             )}
           </div>
-          <span className="text-[10px] tracking-[0.3em] uppercase text-foreground/60 font-mono">
+          <span className="text-[12px] tracking-[0.3em] uppercase text-foreground/60 font-mono">
             Live Alerts
           </span>
           <span className="text-xs text-foreground/40 font-mono">· {items.length}</span>
@@ -244,7 +244,7 @@ export function AlertsPanel() {
             <button
               key={p}
               onClick={() => setPrio(p)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-mono border transition-colors ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[12px] font-mono border transition-colors ${
                 active
                   ? style
                     ? `${style.bg} ${style.text} ${style.border}`
@@ -264,7 +264,7 @@ export function AlertsPanel() {
       <div className="flex flex-wrap items-center gap-1.5 px-4 py-2 border-b border-white/5">
         <button
           onClick={() => setSource("all")}
-          className={`rounded-md px-2 py-0.5 text-[10px] font-mono border transition-colors ${
+          className={`rounded-md px-2 py-0.5 text-[12px] font-mono border transition-colors ${
             source === "all"
               ? "border-primary/40 text-primary bg-primary/10"
               : "border-white/5 text-foreground/50 hover:text-foreground/80"
@@ -280,7 +280,7 @@ export function AlertsPanel() {
             <button
               key={s}
               onClick={() => setSource(s)}
-              className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-mono border transition-colors ${
+              className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[12px] font-mono border transition-colors ${
                 active
                   ? "border-secondary/40 text-secondary bg-secondary/10"
                   : "border-white/5 text-foreground/50 hover:text-foreground/80"
@@ -316,21 +316,21 @@ export function AlertsPanel() {
                   <div className="flex items-center gap-2 mb-0.5">
                     <Icon className={`w-3 h-3 ${style.text} shrink-0`} />
                     <span
-                      className={`text-[9px] font-mono uppercase tracking-widest px-1.5 py-px rounded border ${style.border} ${style.text}`}
+                      className={`text-[12px] font-mono uppercase tracking-widest px-1.5 py-px rounded border ${style.border} ${style.text}`}
                     >
                       {style.label}
                     </span>
-                    <span className="text-[10px] font-mono text-foreground/40 truncate">
+                    <span className="text-[12px] font-mono text-foreground/40 truncate">
                       {a.ref}
                     </span>
                   </div>
                   <div className="text-xs text-foreground/90 truncate">{a.title}</div>
-                  <div className="text-[10px] text-foreground/40 font-mono mt-0.5 truncate">
+                  <div className="text-[12px] text-foreground/40 font-mono mt-0.5 truncate">
                     {a.meta}
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
-                  <span className="text-[10px] font-mono text-foreground/40">{timeAgo(a.ts)}</span>
+                  <span className="text-[12px] font-mono text-foreground/40">{timeAgo(a.ts)}</span>
                   <ArrowUpRight className="w-3 h-3 text-foreground/30 group-hover:text-primary transition-colors" />
                 </div>
               </Link>

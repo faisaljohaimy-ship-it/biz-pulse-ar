@@ -143,7 +143,7 @@ export function LiveEventStream() {
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-1.5 text-[11px] text-nx-pearl/56">
+                  <span className="flex items-center gap-1.5 text-[12px] text-nx-pearl/56">
                     <span aria-hidden className={cn("size-1.5 rounded-full", meta.dot)} />
                     {meta.word}
                     <bdi dir="ltr">{event.time}</bdi>
@@ -174,7 +174,7 @@ export function LiveEventStream() {
                 >
                   <span className="text-sm font-semibold text-nx-pearl">{event.titleAr}</span>
                   <span className="text-xs text-nx-pearl/64">{event.detailAr}</span>
-                  <span className="text-[10px] text-nx-pearl/60">المصدر: {event.source}</span>
+                  <span className="text-[12px] text-nx-pearl/60">المصدر: {event.source}</span>
                 </button>
               </li>
             );

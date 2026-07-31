@@ -316,7 +316,7 @@ function TreeNode({
           {tone && <span className={cn("h-1.5 w-1.5 rounded-full", toneDot[tone])} />}
           <span className="truncate flex-1">{label}</span>
           {count != null && (
-            <span className="text-[10px] text-muted-foreground shrink-0">
+            <span className="text-[12px] text-muted-foreground shrink-0">
               {count} {countLabel}
             </span>
           )}
@@ -338,7 +338,7 @@ function GroupNode({
   return (
     <div className="mt-1">
       <div
-        className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground py-1"
+        className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground py-1"
         style={{ paddingInlineStart: `${depth * 12 + 16}px` }}
       >
         {label}
@@ -376,7 +376,7 @@ function LeafNode({
       <Icon className="h-3 w-3 shrink-0" />
       {tone && <span className={cn("h-1.5 w-1.5 rounded-full", toneDot[tone])} />}
       <span className="truncate flex-1 text-start">{label}</span>
-      {meta && <span className="text-[10px] shrink-0">{meta}</span>}
+      {meta && <span className="text-[12px] shrink-0">{meta}</span>}
     </button>
   );
 }
@@ -387,7 +387,7 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
       <div className="flex h-full flex-col items-center justify-center text-center">
         <Network className="h-12 w-12 text-muted-foreground/70" aria-hidden />
         <p className="mt-3 text-sm text-muted-foreground">اختر أي عنصر من الشجرة لعرض تفاصيله</p>
-        <p className="mt-1 text-[11px] text-muted-foreground">
+        <p className="mt-1 text-[12px] text-muted-foreground">
           المنطقة ← الدائرة ← الموقع ← المبنى ← الأصل
         </p>
       </div>
@@ -659,7 +659,7 @@ function Grid({ children }: { children: React.ReactNode }) {
 function Cell({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-lg border border-border bg-background/40 p-2">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-[12px] uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className="mt-1 text-sm font-bold text-foreground">{value}</div>
     </div>
   );

@@ -135,7 +135,7 @@ function ChiefOfStaffPage() {
               </div>
               <div>
                 <div className="text-sm font-semibold text-white">Nexus Chief</div>
-                <div className="text-[10px] tracking-widest text-violet-300/70">
+                <div className="text-[12px] tracking-widest text-violet-300/70">
                   STRATEGIC ADVISOR
                 </div>
               </div>
@@ -187,7 +187,7 @@ function ChiefOfStaffPage() {
         <NexusCard>
           <div className="flex items-center gap-2">
             <Target className="h-4 w-4 text-cyan-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
               {ar ? "محرك الأولويات · مباشر" : "PRIORITY ENGINE · LIVE"}
             </div>
           </div>
@@ -219,7 +219,7 @@ function ChiefOfStaffPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <Compass className="h-4 w-4 text-violet-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-violet-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
             {ar
               ? "توصيات تنفيذية · من المحرك التنبؤي"
               : "EXECUTIVE RECOMMENDATIONS · PREDICTIVE ENGINE"}
@@ -240,17 +240,17 @@ function ChiefOfStaffPage() {
               >
                 <div className="flex items-center justify-between">
                   <NexusPill tone="violet">#{i + 1}</NexusPill>
-                  <span className="text-[10px] font-bold tracking-widest text-violet-300/80">
+                  <span className="text-[12px] font-bold tracking-widest text-violet-300/80">
                     {r.confidence}% {ar ? "ثقة" : "CONF"}
                   </span>
                 </div>
                 <div className="mt-2 text-sm font-medium text-white line-clamp-3">
                   {ar ? r.title_ar : r.title_en}
                 </div>
-                <div className="mt-1 text-[11px] text-slate-400 line-clamp-2">
+                <div className="mt-1 text-[12px] text-slate-400 line-clamp-2">
                   {ar ? r.detail_ar : r.detail_en}
                 </div>
-                <div className="mt-3 flex items-center gap-2 text-[11px] text-emerald-300">
+                <div className="mt-3 flex items-center gap-2 text-[12px] text-emerald-300">
                   <Scale className="h-3 w-3" /> {r.impact} · {r.horizonDays}d
                 </div>
                 {r.route && (
@@ -274,7 +274,7 @@ function ChiefOfStaffPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <MessageSquare className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "إشارات مباشرة من النسيج الذكي" : "LIVE INTELLIGENCE FABRIC SIGNALS"}
           </div>
         </div>

@@ -135,7 +135,7 @@ const TECH: { icon: IconType; label: string }[] = [
 ];
 
 const SIM_CHIP =
-  "inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold text-[#3AE8FF]";
+  "inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-2 py-0.5 text-[12px] font-semibold text-[#3AE8FF]";
 
 export function HomeShowcaseSections() {
   const { locale } = useI18n();
@@ -157,7 +157,7 @@ export function HomeShowcaseSections() {
     >
       {/* ── 1. Capabilities ─────────────────────────────────────────── */}
       <header className="mb-5 text-center">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#3AE8FF]/75">
+        <div className="text-[12px] font-semibold uppercase tracking-[0.3em] text-[#3AE8FF]/75">
           {ar ? "قدرات تنفيذية" : "Executive Capabilities"}
         </div>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
@@ -192,10 +192,10 @@ export function HomeShowcaseSections() {
                 <div className="text-[13px] font-bold text-white sm:text-sm">
                   {ar ? c.ar : c.en}
                 </div>
-                <div className="text-[11px] leading-relaxed text-white/60">
+                <div className="text-[12px] leading-relaxed text-white/60">
                   {ar ? c.descAr : c.descEn}
                 </div>
-                <span className="mt-auto inline-flex items-center gap-1 text-[10px] font-semibold text-[color:var(--acc)] transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100">
+                <span className="mt-auto inline-flex items-center gap-1 text-[12px] font-semibold text-[color:var(--acc)] transition [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100">
                   {ar ? "افتح" : "Open"}
                   <ArrowLeft className="h-3 w-3 rtl:rotate-0 ltr:rotate-180" aria-hidden />
                 </span>
@@ -211,7 +211,7 @@ export function HomeShowcaseSections() {
 
       {/* ── 3. Technology strip ─────────────────────────────────────── */}
       <div className="mt-4 rounded-2xl border border-white/10 bg-[#061A2E]/40 p-4 backdrop-blur-md">
-        <div className="mb-3 text-center text-[10px] font-semibold uppercase tracking-[0.28em] text-white/45">
+        <div className="mb-3 text-center text-[12px] font-semibold uppercase tracking-[0.28em] text-white/45">
           {ar ? "التقنيات المستخدمة" : "Powered by"}
         </div>
         <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3">
@@ -220,7 +220,7 @@ export function HomeShowcaseSections() {
             return (
               <li
                 key={t.label}
-                className="flex items-center gap-1.5 text-[11px] font-medium text-white/70"
+                className="flex items-center gap-1.5 text-[12px] font-medium text-white/70"
               >
                 <Icon className="nx-icon-soft h-4 w-4" style={{ color: accent }} aria-hidden />
                 {t.label}
@@ -240,7 +240,7 @@ export function HomeShowcaseSections() {
           }}
         />
         <div className="relative">
-          <div className="flex items-center justify-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#3AE8FF]/75">
+          <div className="flex items-center justify-center gap-2 text-[12px] font-semibold uppercase tracking-[0.3em] text-[#3AE8FF]/75">
             <Zap className="h-3.5 w-3.5" style={{ color: accent }} aria-hidden />
             {ar ? "رؤيتنا" : "Our vision"}
           </div>
@@ -252,7 +252,7 @@ export function HomeShowcaseSections() {
           <div className="mt-4 text-lg font-black tracking-[0.12em] text-white">
             NE<span style={{ color: accent }}>X</span>IOS
           </div>
-          <div className="text-[9px] uppercase tracking-[0.32em] text-white/45">
+          <div className="text-[12px] uppercase tracking-[0.32em] text-white/45">
             Executive Intelligence OS
           </div>
         </div>

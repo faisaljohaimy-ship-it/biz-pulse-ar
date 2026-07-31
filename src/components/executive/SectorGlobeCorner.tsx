@@ -110,7 +110,7 @@ export function SectorGlobeCorner() {
     >
       <div className="mb-1 flex items-center justify-between gap-1">
         <span
-          className="flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.16em]"
+          className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.16em]"
           style={{ color: activeColor }}
         >
           <Globe2 className="size-3.5" />
@@ -156,7 +156,7 @@ export function SectorGlobeCorner() {
       </button>
 
       <div className="-mt-1 text-center">
-        <div className="text-[8px] uppercase tracking-[0.2em] text-white/45">
+        <div className="text-[12px] uppercase tracking-[0.2em] text-white/45">
           {ar ? "المنطقة النشطة" : "ACTIVE REGION"}
         </div>
         <div className="mt-0.5 flex items-center justify-center gap-1.5">
@@ -187,7 +187,7 @@ export function SectorGlobeCorner() {
               onClick={() => setRegion(item.id)}
               aria-pressed={selected}
               className={cn(
-                "nx-region-control relative flex min-h-11 items-center justify-center gap-1.5 overflow-hidden rounded-xl border px-2 text-[10px] font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.97]",
+                "nx-region-control relative flex min-h-11 items-center justify-center gap-1.5 overflow-hidden rounded-xl border px-2 text-[12px] font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.97]",
                 selected && "nx-region-control-active",
                 selected ? "text-white" : "border-white/10 text-white/58 hover:text-white",
               )}
@@ -220,7 +220,7 @@ export function SectorGlobeCorner() {
         type="button"
         onClick={cycleRegion}
         aria-label={ar ? "التبديل إلى المنطقة التالية" : "Switch to the next region"}
-        className="nx-region-control nx-region-control-active mt-2 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border px-2 text-[11px] font-semibold transition duration-200 hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98]"
+        className="nx-region-control nx-region-control-active mt-2 inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border px-2 text-[12px] font-semibold transition duration-200 hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98]"
         style={
           {
             "--region-control-rgb": REGION_ACCENT_RGB[regionId],

@@ -42,21 +42,21 @@ export function LessonCard({ lesson, lang }: Props) {
 
       <div className="relative">
         <div className="mb-3 flex items-center gap-2">
-          <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] uppercase tracking-[0.18em] text-cyan-200">
+          <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-0.5 text-[12px] uppercase tracking-[0.18em] text-cyan-200">
             {String(lesson.order_index).padStart(2, "0")} · {lesson.category}
           </span>
           {completed && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-emerald-200">
+            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 text-[12px] uppercase tracking-[0.14em] text-emerald-200">
               <CheckCircle2 className="h-3 w-3" /> {ar ? "مكتملة" : "Completed"}
             </span>
           )}
           {inProgress && !completed && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-amber-200">
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[12px] uppercase tracking-[0.14em] text-amber-200">
               <PlayCircle className="h-3 w-3" /> {ar ? "قيد التقدّم" : "In progress"}
             </span>
           )}
           {!lesson.published && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.03] px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-white/50">
+            <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.03] px-2 py-0.5 text-[12px] uppercase tracking-[0.14em] text-white/50">
               <Lock className="h-3 w-3" /> {ar ? "قيد الإصدار" : "In production"}
             </span>
           )}

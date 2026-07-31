@@ -326,18 +326,18 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-bold text-white">معاينة قبل الإرسال</h3>
-            <span className="rounded-full border border-amber-300/25 bg-amber-300/8 px-2 py-0.5 text-[9px] font-bold text-amber-200">
+            <span className="rounded-full border border-amber-300/25 bg-amber-300/8 px-2 py-0.5 text-[12px] font-bold text-amber-200">
               اعتماد بشري إلزامي
             </span>
           </div>
-          <p className="mt-1 text-[10px] leading-relaxed text-white/55">
+          <p className="mt-1 text-[12px] leading-relaxed text-white/55">
             لم تُرسل الرسالة. راجع المستلم والمحتوى ثم اعتمدها مرة واحدة.
           </p>
         </div>
       </header>
 
       <div className="space-y-2.5 p-3">
-        <dl className="grid gap-2 text-[11px]">
+        <dl className="grid gap-2 text-[12px]">
           <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
             <dt className="text-white/45">المستلم</dt>
             <dd
@@ -364,18 +364,18 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
           )}
         </dl>
 
-        <div className="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/8 bg-black/20 p-3 text-[11px] leading-6 text-white/78">
+        <div className="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/8 bg-black/20 p-3 text-[12px] leading-6 text-white/78">
           {approval.body}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-white/45">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[12px] text-white/45">
           <span className="inline-flex items-center gap-1.5">
             <Clock3 className="h-3 w-3" /> ينتهي الاعتماد {expiryLabel}
           </span>
           {approval.mediaCount > 0 && <span>{approval.mediaCount} مرفق وسائط</span>}
         </div>
 
-        <label className="flex min-h-11 cursor-pointer items-start gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-2.5 text-[11px] leading-relaxed text-white/75">
+        <label className="flex min-h-11 cursor-pointer items-start gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-2.5 text-[12px] leading-relaxed text-white/75">
           <input
             type="checkbox"
             checked={reviewed}
@@ -388,7 +388,7 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
         {(detail || expired) && (
           <p
             role="alert"
-            className="rounded-lg border border-rose-400/25 bg-rose-400/8 px-2.5 py-2 text-[10px] text-rose-200"
+            className="rounded-lg border border-rose-400/25 bg-rose-400/8 px-2.5 py-2 text-[12px] text-rose-200"
           >
             {expired ? "انتهت صلاحية هذه المسودة. اطلب من FINN إنشاء معاينة جديدة." : detail}
           </p>
@@ -399,7 +399,7 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
             type="button"
             onClick={() => void cancel()}
             disabled={busy}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[0.035] px-3 text-[11px] font-bold text-white/70 transition hover:border-white/25 hover:text-white disabled:opacity-45"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[0.035] px-3 text-[12px] font-bold text-white/70 transition hover:border-white/25 hover:text-white disabled:opacity-45"
           >
             {phase === "cancelling" ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -412,7 +412,7 @@ function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
             type="button"
             onClick={() => void approve()}
             disabled={!reviewed || busy || expired}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-300 px-3 text-[11px] font-black text-[#03131f] shadow-[0_10px_30px_-16px_rgba(52,211,153,.9)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-300/40 bg-emerald-300 px-3 text-[12px] font-black text-[#03131f] shadow-[0_10px_30px_-16px_rgba(52,211,153,.9)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {phase === "approving" ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -476,7 +476,7 @@ export function ToolInvocation({ part }: { part: ToolPart }) {
       <span className="text-muted-foreground">·</span>
       <span className="text-muted-foreground">{label.ar}</span>
       <div className="ms-auto flex items-center gap-1.5">
-        {summary && <span className="font-mono text-[11px] opacity-80">{summary}</span>}
+        {summary && <span className="font-mono text-[12px] opacity-80">{summary}</span>}
         {isRunning && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         {displayDone && <CheckCircle2 className="h-3.5 w-3.5" />}
         {displayError && <XCircle className="h-3.5 w-3.5" />}

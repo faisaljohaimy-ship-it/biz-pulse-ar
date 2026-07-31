@@ -339,7 +339,7 @@ function SecurityPage() {
               <div className="bg-gradient-to-b from-amber-200 to-amber-400 bg-clip-text text-2xl font-semibold text-transparent sm:text-3xl">
                 {m.v}
               </div>
-              <div className="mt-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:text-xs">
+              <div className="mt-1 text-[12px] uppercase tracking-[0.18em] text-muted-foreground sm:text-xs">
                 {isAr ? m.ar : m.en}
               </div>
             </Card>

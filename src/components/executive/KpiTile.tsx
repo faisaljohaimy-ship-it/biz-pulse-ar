@@ -64,10 +64,10 @@ export function KpiTile({
     >
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className="truncate text-[11px] font-medium text-[color:var(--nx-text-soft)]/85">
+          <div className="truncate text-[12px] font-medium text-[color:var(--nx-text-soft)]/85">
             {primary}
           </div>
-          <div className="truncate text-[9px] uppercase tracking-[0.18em] text-[color:var(--nx-text-muted)]">
+          <div className="truncate text-[12px] uppercase tracking-[0.18em] text-[color:var(--nx-text-muted)]">
             {secondary}
           </div>
         </div>
@@ -89,11 +89,11 @@ export function KpiTile({
           {displayValue}
         </div>
         {delta ? (
-          <div className="text-[10px] font-medium text-[color:var(--nx-text-muted)]">{delta}</div>
+          <div className="text-[12px] font-medium text-[color:var(--nx-text-muted)]">{delta}</div>
         ) : null}
       </div>
       {hint ? (
-        <div className="mt-1 truncate text-[10px] text-[color:var(--nx-text-muted)]">{hint}</div>
+        <div className="mt-1 truncate text-[12px] text-[color:var(--nx-text-muted)]">{hint}</div>
       ) : null}
     </div>
   );

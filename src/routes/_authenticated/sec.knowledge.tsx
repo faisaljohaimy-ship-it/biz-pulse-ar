@@ -245,7 +245,7 @@ function KbPage() {
             {semQ.isFetching && <div className="text-xs text-muted-foreground">جاري البحث…</div>}
             {semQ.data && (
               <>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-[12px] text-muted-foreground">
                   {semQ.data.mode === "semantic" ? "🧠 بحث دلالي" : "🔤 بحث نصي احتياطي"}
                   {semQ.data.reason && <span className="ms-2">({semQ.data.reason})</span>}
                 </div>
@@ -258,7 +258,7 @@ function KbPage() {
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-sm font-semibold">{h.title_ar}</div>
                       {h.similarity != null && (
-                        <span className="text-[10px] text-cyan-500">
+                        <span className="text-[12px] text-cyan-500">
                           {(h.similarity * 100).toFixed(0)}%
                         </span>
                       )}
@@ -266,7 +266,7 @@ function KbPage() {
                     <div className="mt-1 text-xs text-muted-foreground line-clamp-2">
                       {h.summary_ar}
                     </div>
-                    <div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground">
+                    <div className="mt-1 flex items-center gap-2 text-[12px] text-muted-foreground">
                       <span className="font-mono">{h.doc_code}</span>
                       {h.category_code && <span>• {h.category_code}</span>}
                       {h.risk_level && (
@@ -320,7 +320,7 @@ function KbPage() {
                   <span className="truncate">{c.name_ar}</span>
                 </span>
                 {counts[c.code] != null && counts[c.code] > 0 && (
-                  <span className="text-[10px] opacity-60">{counts[c.code]}</span>
+                  <span className="text-[12px] opacity-60">{counts[c.code]}</span>
                 )}
               </button>
             );
@@ -384,7 +384,7 @@ function KbPage() {
 function StatTile({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3">
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-[12px] uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className="mt-1 text-2xl font-bold">{value}</div>
     </div>
   );
@@ -410,12 +410,12 @@ function ArticleCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           <div className="text-sm font-semibold">{a.title_ar}</div>
-          <div className="text-[11px] text-muted-foreground">{a.title_en}</div>
+          <div className="text-[12px] text-muted-foreground">{a.title_en}</div>
         </div>
         <ChevronRight className="mt-1 h-3.5 w-3.5 text-muted-foreground" />
       </div>
       <div className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">{a.summary_ar}</div>
-      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px]">
+      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[12px]">
         <span className="rounded border border-border bg-background px-1.5 py-0.5 font-mono">
           {a.doc_code}
         </span>
@@ -438,14 +438,14 @@ function ArticleDetail({ a }: { a: NonNullable<Awaited<ReturnType<typeof kbGetAr
   return (
     <div className="space-y-3 text-sm">
       <div>
-        <div className="font-mono text-[10px] text-muted-foreground">
+        <div className="font-mono text-[12px] text-muted-foreground">
           {a.doc_code} • v{a.version}
         </div>
         <h2 className="mt-1 text-lg font-bold">{a.title_ar}</h2>
         <div className="text-xs text-muted-foreground">{a.title_en}</div>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 text-[10px]">
+      <div className="flex flex-wrap gap-1.5 text-[12px]">
         {a.category_code && <Badge variant="outline">{a.category_code}</Badge>}
         {a.risk_level && (
           <span className={cn("rounded-full border px-2 py-0.5", RISK_COLORS[a.risk_level])}>
@@ -483,12 +483,12 @@ function ArticleDetail({ a }: { a: NonNullable<Awaited<ReturnType<typeof kbGetAr
 
       {(a.keywords_ar.length > 0 || a.keywords_en.length > 0) && (
         <div>
-          <div className="mb-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          <div className="mb-1 text-[12px] uppercase tracking-wide text-muted-foreground">
             كلمات مفتاحية
           </div>
           <div className="flex flex-wrap gap-1">
             {[...a.keywords_ar, ...a.keywords_en].map((k) => (
-              <span key={k} className="rounded bg-muted px-1.5 py-0.5 text-[10px]">
+              <span key={k} className="rounded bg-muted px-1.5 py-0.5 text-[12px]">
                 {k}
               </span>
             ))}
@@ -499,7 +499,7 @@ function ArticleDetail({ a }: { a: NonNullable<Awaited<ReturnType<typeof kbGetAr
       {(a.related_workflows.length > 0 ||
         a.related_agents.length > 0 ||
         a.related_forms.length > 0) && (
-        <div className="rounded-lg border border-border bg-background/60 p-2 text-[11px]">
+        <div className="rounded-lg border border-border bg-background/60 p-2 text-[12px]">
           {a.related_workflows.length > 0 && (
             <div>
               🔁 <strong>Workflows:</strong> {a.related_workflows.join(" • ")}
@@ -526,7 +526,7 @@ function ArticleDetail({ a }: { a: NonNullable<Awaited<ReturnType<typeof kbGetAr
         </div>
       )}
 
-      {a.owner && <div className="text-[11px] text-muted-foreground">المالك: {a.owner}</div>}
+      {a.owner && <div className="text-[12px] text-muted-foreground">المالك: {a.owner}</div>}
     </div>
   );
 }
@@ -544,14 +544,14 @@ function Field({
 }) {
   return (
     <div>
-      <div className="mb-1 text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mb-1 text-[12px] uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className={cn("whitespace-pre-wrap text-xs leading-relaxed", mono && "font-mono")}>
         {value}
       </div>
       {valueEn && valueEn !== value && (
         <div
           dir="ltr"
-          className="mt-1 whitespace-pre-wrap text-[11px] leading-relaxed text-muted-foreground"
+          className="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed text-muted-foreground"
         >
           {valueEn}
         </div>

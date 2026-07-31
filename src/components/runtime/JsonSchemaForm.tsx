@@ -163,9 +163,9 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
           </SelectContent>
         </Select>
         {schema.description && (
-          <p className="text-[10px] text-muted-foreground">{schema.description}</p>
+          <p className="text-[12px] text-muted-foreground">{schema.description}</p>
         )}
-        {err && <p className="text-[10px] text-rose-400">{err}</p>}
+        {err && <p className="text-[12px] text-rose-400">{err}</p>}
       </div>
     );
   }
@@ -178,7 +178,7 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
             {title}
           </Label>
           {schema.description && (
-            <p className="truncate text-[10px] text-muted-foreground">{schema.description}</p>
+            <p className="truncate text-[12px] text-muted-foreground">{schema.description}</p>
           )}
         </div>
         <Switch id={fieldId} checked={Boolean(value)} onCheckedChange={onChange} />
@@ -206,9 +206,9 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
           }}
         />
         {schema.description && (
-          <p className="text-[10px] text-muted-foreground">{schema.description}</p>
+          <p className="text-[12px] text-muted-foreground">{schema.description}</p>
         )}
-        {err && <p className="text-[10px] text-rose-400">{err}</p>}
+        {err && <p className="text-[12px] text-rose-400">{err}</p>}
       </div>
     );
   }
@@ -229,14 +229,14 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
             className="h-7"
             onClick={() => onChange([...arr, getDefault(itemSchema) ?? ""])}
           >
-            <Plus className="h-3 w-3" /> <span className="ms-1 text-[10px]">Add</span>
+            <Plus className="h-3 w-3" /> <span className="ms-1 text-[12px]">Add</span>
           </Button>
         </div>
         {schema.description && (
-          <p className="text-[10px] text-muted-foreground">{schema.description}</p>
+          <p className="text-[12px] text-muted-foreground">{schema.description}</p>
         )}
         {arr.length === 0 ? (
-          <p className="text-[10px] italic text-muted-foreground">No items. Click Add.</p>
+          <p className="text-[12px] italic text-muted-foreground">No items. Click Add.</p>
         ) : (
           <div className="space-y-2">
             {arr.map((item, i) => (
@@ -269,7 +269,7 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
             ))}
           </div>
         )}
-        {err && <p className="text-[10px] text-rose-400">{err}</p>}
+        {err && <p className="text-[12px] text-rose-400">{err}</p>}
       </div>
     );
   }
@@ -279,7 +279,7 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
       <div className="space-y-2 rounded-md border border-border/40 p-2.5">
         <Label className="text-xs">{title}</Label>
         {schema.description && (
-          <p className="text-[10px] text-muted-foreground">{schema.description}</p>
+          <p className="text-[12px] text-muted-foreground">{schema.description}</p>
         )}
         <ObjectFields
           schema={schema}
@@ -319,9 +319,9 @@ function Field({ name, schema, value, onChange, required, errors, path }: FieldP
         }
       />
       {schema.description && (
-        <p className="text-[10px] text-muted-foreground">{schema.description}</p>
+        <p className="text-[12px] text-muted-foreground">{schema.description}</p>
       )}
-      {err && <p className="text-[10px] text-rose-400">{err}</p>}
+      {err && <p className="text-[12px] text-rose-400">{err}</p>}
     </div>
   );
 }
@@ -341,7 +341,7 @@ function ObjectFields({
 }) {
   const props = Object.entries(schema.properties ?? {});
   if (props.length === 0) {
-    return <p className="text-[10px] italic text-muted-foreground">No parameters required.</p>;
+    return <p className="text-[12px] italic text-muted-foreground">No parameters required.</p>;
   }
   const setKey = (key: string, v: unknown) => {
     const next = { ...value };

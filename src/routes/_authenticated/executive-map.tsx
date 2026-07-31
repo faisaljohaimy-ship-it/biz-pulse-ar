@@ -351,7 +351,7 @@ function ExecutiveMapPage() {
                   ].map(([label, value]) => (
                     <div key={String(label)}>
                       <div className="text-sm font-bold tabular-nums">{value}</div>
-                      <div className="text-[9px] text-muted-foreground">{label}</div>
+                      <div className="text-[12px] text-muted-foreground">{label}</div>
                     </div>
                   ))}
                 </div>
@@ -396,7 +396,7 @@ function ExecutiveMapPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-b border-border/60 px-4 py-3 text-[11px] text-muted-foreground sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-b border-border/60 px-4 py-3 text-[12px] text-muted-foreground sm:grid-cols-4">
           {[
             ["hq", isAr ? "مقر قيادة" : "Headquarters"],
             ["site", isAr ? "موقع أمني" : "Security site"],

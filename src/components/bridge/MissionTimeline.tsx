@@ -56,7 +56,7 @@ export function MissionTimeline({ entries, ar, loading, onRefresh, paused, onTog
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1 text-[11px]">
+          <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1 text-[12px]">
             <Filter className="ml-1 h-3 w-3 text-white/40" />
             {(["all", "info", "warn", "critical"] as Severity[]).map((s) => (
               <button
@@ -120,7 +120,7 @@ export function MissionTimeline({ entries, ar, loading, onRefresh, paused, onTog
                   TONE_DOT[e.tone],
                 )}
               />
-              <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-cyan-200/80">
+              <div className="flex items-center gap-2 text-[12px] uppercase tracking-wider text-cyan-200/80">
                 <span className="truncate">{ar ? e.agent_name_ar : e.agent_name_en}</span>
                 <span className="text-white/30">·</span>
                 <span className="truncate text-white/50">{ar ? e.action_ar : e.action_en}</span>

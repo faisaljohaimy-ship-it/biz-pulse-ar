@@ -378,17 +378,17 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
               <div className="truncate text-[13px] font-bold text-white sm:text-sm">
                 {ar ? "الشركة السعودية للطاقة" : "Saudi Energy Company"}
               </div>
-              <div className="mt-0.5 truncate font-mono text-[9px] uppercase tracking-[0.24em] text-[#3AE8FF]/80">
+              <div className="mt-0.5 truncate font-mono text-[12px] uppercase tracking-[0.24em] text-[#3AE8FF]/80">
                 Saudi Energy · Industrial Security
               </div>
-              <div className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.28em] text-[#3AE8FF]/55">
+              <div className="mt-0.5 font-mono text-[12px] uppercase tracking-[0.28em] text-[#3AE8FF]/55">
                 {ar ? "منصة قيادة الأمن الصناعي" : "Industrial Security Command"}
               </div>
             </div>
           </div>
           {/* Center cell: LIVE clock */}
           <div className="flex flex-col items-center justify-center px-4 py-3">
-            <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.34em] text-[#3AE8FF]">
+            <div className="flex items-center gap-2 font-mono text-[12px] font-bold uppercase tracking-[0.34em] text-[#3AE8FF]">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#4ade80]" />
@@ -405,13 +405,13 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
               <span suppressHydrationWarning>{fmtClock(now)}</span>
               <span className="text-white/35">]</span>
             </div>
-            <div className="mt-1.5 font-mono text-[9.5px] uppercase tracking-[0.28em] text-[#3AE8FF]/70">
+            <div className="mt-1.5 font-mono text-[12px] uppercase tracking-[0.28em] text-[#3AE8FF]/70">
               STARDATE · <span suppressHydrationWarning>{fmtStardate(now)}</span>
             </div>
           </div>
           {/* Right cell: coordinates */}
           <div className="px-4 py-3 text-end">
-            <div className="font-mono text-[9px] uppercase tracking-[0.32em] text-[#3AE8FF]/60">
+            <div className="font-mono text-[12px] uppercase tracking-[0.32em] text-[#3AE8FF]/60">
               {ar ? "الإحداثيات" : "COORDINATES"}
             </div>
             <div
@@ -420,7 +420,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
             >
               N&nbsp;24°42′38″&nbsp;·&nbsp;E&nbsp;46°43′09″
             </div>
-            <div className="mt-0.5 font-mono text-[9.5px] uppercase tracking-[0.28em] text-[#3AE8FF]/70">
+            <div className="mt-0.5 font-mono text-[12px] uppercase tracking-[0.28em] text-[#3AE8FF]/70">
               ALT&nbsp;612m · GRID&nbsp;MK-24
             </div>
           </div>
@@ -429,7 +429,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
 
       {/* ── Status ribbon ── */}
       <div className="relative mb-5 grid grid-cols-1 gap-2 rounded-sm border border-[#3AE8FF]/18 bg-gradient-to-r from-[#061A2E]/40 via-[#0A2D4E]/45 to-[#061A2E]/40 px-3 py-2 backdrop-blur-md sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4">
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1 font-mono text-[9px] uppercase tracking-[0.24em] text-[#3AE8FF]/80 sm:text-[10px]">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1 font-mono text-[12px] uppercase tracking-[0.24em] text-[#3AE8FF]/80 sm:text-[12px]">
           <span className="flex items-center gap-1.5">
             <Signal className="h-3 w-3" strokeWidth={2} />
             <span>NETWORK</span>
@@ -449,10 +449,10 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
           </span>
         </div>
         <div className="flex items-center justify-end gap-2">
-          <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-emerald-200/90">
+          <span className="font-mono text-[12px] uppercase tracking-[0.28em] text-emerald-200/90">
             {allLive ? "RLS SOURCE CONNECTED" : "PUBLIC DEMO READY"}
           </span>
-          <ExecutiveSourceBadge source={source} ar={ar} className="text-[9px]" />
+          <ExecutiveSourceBadge source={source} ar={ar} className="text-[12px]" />
         </div>
       </div>
 
@@ -508,7 +508,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                   >
                     <div className="relative">
                       <Hexagon className="h-8 w-8 text-[#3AE8FF]/25" strokeWidth={1.5} />
-                      <span className="absolute inset-0 grid place-items-center font-mono text-[7.5px] font-bold uppercase tracking-[0.16em] text-[#3AE8FF]/70">
+                      <span className="absolute inset-0 grid place-items-center font-mono text-[12px] font-bold uppercase tracking-[0.16em] text-[#3AE8FF]/70">
                         K{String(idx + 1).padStart(2, "0")}
                       </span>
                     </div>
@@ -529,12 +529,12 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                   <div className="flex items-start justify-between gap-1 sm:gap-2 sm:pe-6">
                     <div className="min-w-0 flex-1">
                       <div
-                        className="truncate text-[10px] font-semibold leading-tight text-white/95 sm:text-[11px]"
+                        className="truncate text-[12px] font-semibold leading-tight text-white/95 sm:text-[12px]"
                         title={label}
                       >
                         {label}
                       </div>
-                      <div className="mt-0.5 hidden font-mono text-[8.5px] uppercase tracking-[0.24em] text-[#3AE8FF]/60 sm:block">
+                      <div className="mt-0.5 hidden font-mono text-[12px] uppercase tracking-[0.24em] text-[#3AE8FF]/60 sm:block">
                         {sub}
                       </div>
                     </div>
@@ -558,14 +558,14 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                       >
                         {displayValue}
                       </span>
-                      <span className="hidden font-mono text-[8.5px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]/60 sm:inline">
+                      <span className="hidden font-mono text-[12px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]/60 sm:inline">
                         {k.unit}
                       </span>
                     </div>
                     <div className="relative hidden shrink-0 sm:block">
                       <RadialGauge value={k.gauge} color={stroke} size={40} />
                       <span
-                        className="absolute inset-0 grid place-items-center font-mono text-[8.5px] font-bold tabular-nums"
+                        className="absolute inset-0 grid place-items-center font-mono text-[12px] font-bold tabular-nums"
                         style={{ color: stroke }}
                       >
                         {pct}%
@@ -576,12 +576,12 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                   {/* Delta / hint + simulation tag — desktop only */}
                   <div className="mt-3 hidden items-center justify-between gap-2 sm:flex">
                     <span
-                      className={`font-mono text-[9px] uppercase tracking-[0.22em] ${TONE_DELTA[k.tone]}`}
+                      className={`font-mono text-[12px] uppercase tracking-[0.22em] ${TONE_DELTA[k.tone]}`}
                     >
                       {hint}
                     </span>
                     {k.live ? (
-                      <span className="inline-flex items-center gap-1 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-emerald-300/90">
+                      <span className="inline-flex items-center gap-1 font-mono text-[12px] font-bold uppercase tracking-[0.18em] text-emerald-300/90">
                         <span
                           className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400"
                           style={{ animation: "sov-live-pulse 1.8s ease-in-out infinite" }}
@@ -589,7 +589,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
                         {ar ? "حيّ" : "LIVE"}
                       </span>
                     ) : (
-                      <ExecutiveSourceBadge source={source} ar={ar} className="text-[8px]" />
+                      <ExecutiveSourceBadge source={source} ar={ar} className="text-[12px]" />
                     )}
                   </div>
 
@@ -626,7 +626,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
       </div>
 
       {/* ── Bottom telemetry rail ── */}
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[#3AE8FF]/15 pt-3 font-mono text-[9px] uppercase tracking-[0.24em] text-[#3AE8FF]/55">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[#3AE8FF]/15 pt-3 font-mono text-[12px] uppercase tracking-[0.24em] text-[#3AE8FF]/55">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
             <span className="h-1 w-1 rounded-full bg-[#3AE8FF] shadow-[0_0_6px_#3AE8FF]" />
@@ -636,7 +636,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
           <span className="hidden md:inline">SCHEMA · SEC-OVR&nbsp;R7</span>
         </div>
         <div className="flex items-center gap-4">
-          <ExecutiveSourceBadge source={source} ar={ar} className="text-[8px]" />
+          <ExecutiveSourceBadge source={source} ar={ar} className="text-[12px]" />
           <span>{allLive ? "SOURCE · SEC_EXEC_KPIS" : "SOURCE · DEMO_SNAPSHOT"}</span>
           <span className="hidden sm:inline">
             TERMINAL <span className="text-[#3AE8FF]/85">HQS-01-SEC</span>

@@ -121,7 +121,7 @@ function Incidents() {
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-1.5">
                     {i.escalated && (
-                      <span className="rounded-full border border-red-500/40 bg-red-500/15 px-1.5 py-0.5 text-[9px] text-red-600">
+                      <span className="rounded-full border border-red-500/40 bg-red-500/15 px-1.5 py-0.5 text-[12px] text-red-600">
                         مُصعَّد
                       </span>
                     )}
@@ -131,14 +131,14 @@ function Incidents() {
                 <td className="px-3 py-2 text-xs text-muted-foreground">{i.category}</td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${severityClass(i.severity)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${severityClass(i.severity)}`}
                   >
                     {i.severity}
                   </span>
                 </td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(i.status)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(i.status)}`}
                   >
                     {i.status}
                   </span>

@@ -88,7 +88,7 @@ export function OsLivePulse({ ar }: { readonly ar: boolean }) {
       className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur-xl sm:p-4"
     >
       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]">
+        <span className="inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/5 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.22em] text-[#3AE8FF]">
           <Cpu className="h-3.5 w-3.5" strokeWidth={2} />
           {ar ? "منظومة التشغيل" : "Runtime"}
         </span>
@@ -101,8 +101,8 @@ export function OsLivePulse({ ar }: { readonly ar: boolean }) {
               title={`${c.label}: ${c.value ?? "—"}`}
             >
               <c.icon className="h-3.5 w-3.5 text-[#3AE8FF]" strokeWidth={2} />
-              <span className="text-[11px] font-medium text-white/70">{c.label}</span>
-              <span className="text-[11px] font-semibold tabular-nums text-white">
+              <span className="text-[12px] font-medium text-white/70">{c.label}</span>
+              <span className="text-[12px] font-semibold tabular-nums text-white">
                 {c.value ?? "—"}
               </span>
               <EvidenceBadge evidence={c.evidence} label={liveLabel} tone={c.tone} />

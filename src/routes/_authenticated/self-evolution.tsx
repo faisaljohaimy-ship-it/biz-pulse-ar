@@ -183,7 +183,7 @@ function SelfEvolutionPage() {
                 <li key={c.id} className="flex items-center gap-2 text-xs">
                   <Badge
                     variant="outline"
-                    className={`text-[10px] uppercase ${decisionTone(c.decision)}`}
+                    className={`text-[12px] uppercase ${decisionTone(c.decision)}`}
                   >
                     {c.decision}
                   </Badge>
@@ -230,7 +230,7 @@ function SelfEvolutionPage() {
               <Progress value={report.readinessScore * 100} className="h-1.5 mt-3" />
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {report.reasons.map((r) => (
-                  <Badge key={r} variant="outline" className="text-[11px]">
+                  <Badge key={r} variant="outline" className="text-[12px]">
                     {r}
                   </Badge>
                 ))}
@@ -251,7 +251,7 @@ function SelfEvolutionPage() {
                       <div className="font-medium capitalize">{s.stage.replace(/_/g, " ")}</div>
                       <div className="text-xs text-slate-400">{s.detail}</div>
                     </div>
-                    <Badge variant="outline" className="text-[10px] uppercase">
+                    <Badge variant="outline" className="text-[12px] uppercase">
                       {s.status}
                     </Badge>
                   </li>
@@ -275,7 +275,7 @@ function SelfEvolutionPage() {
                     <li key={i.id} className="flex items-start gap-2 text-sm">
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${severityTone(i.severity)}`}
+                        className={`text-[12px] ${severityTone(i.severity)}`}
                       >
                         {i.severity}
                       </Badge>
@@ -361,7 +361,7 @@ function SelfEvolutionPage() {
             </Card>
           </section>
 
-          <div className="text-[11px] text-slate-500">
+          <div className="text-[12px] text-slate-500">
             Cycle {new Date(report.startedAt).toLocaleString()} →{" "}
             {new Date(report.finishedAt).toLocaleString()} · Applied: {report.applied.length} ·
             Deferred: {report.deferred.length}

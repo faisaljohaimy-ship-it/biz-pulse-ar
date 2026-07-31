@@ -165,7 +165,7 @@ function ExecutionRuntime() {
       <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {STATUS_BUCKETS.map((s) => (
           <Card key={s} className="p-3 glass-card">
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{s}</div>
+            <div className="text-[12px] uppercase tracking-widest text-muted-foreground">{s}</div>
             <div className="mt-1 text-2xl font-bold tabular-nums">{buckets[s] ?? 0}</div>
           </Card>
         ))}
@@ -236,12 +236,12 @@ function ExecRow({ u, ar }: { u: Unified; ar: boolean }) {
           <Icon className={`h-4 w-4 shrink-0 ${iconColor}`} />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px] uppercase">
+              <Badge variant="outline" className="text-[12px] uppercase">
                 {u.kind}
               </Badge>
               <span className="truncate text-sm font-medium">{u.ref}</span>
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[12px] text-muted-foreground">
               {fmtRel(u.started)} · {fmtDuration(u.started, u.finished)}
               {u.durationMs != null && <> · {Math.round(u.durationMs)}ms</>}
             </div>
@@ -263,7 +263,7 @@ function ExecRow({ u, ar }: { u: Unified; ar: boolean }) {
           )}
         </div>
       </div>
-      {u.error && <div className="mt-1 truncate text-[11px] text-rose-300">{u.error}</div>}
+      {u.error && <div className="mt-1 truncate text-[12px] text-rose-300">{u.error}</div>}
     </div>
   );
 }

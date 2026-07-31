@@ -257,20 +257,20 @@ export function WorkflowRunDetail({
                         <div className="flex items-center justify-between gap-2">
                           <div className="text-sm font-medium font-mono">
                             {s.step_id}
-                            <span className="ms-2 text-[10px] text-muted-foreground uppercase">
+                            <span className="ms-2 text-[12px] text-muted-foreground uppercase">
                               {s.kind}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             {s.attempt > 1 && (
-                              <span className="text-[10px] text-amber-300">
+                              <span className="text-[12px] text-amber-300">
                                 attempt {s.attempt}
                               </span>
                             )}
                             {statusBadge(s.status)}
                           </div>
                         </div>
-                        <div className="mt-1 text-[11px] text-muted-foreground font-mono">
+                        <div className="mt-1 text-[12px] text-muted-foreground font-mono">
                           {fmtDuration(s.started_at, s.finished_at)}
                           {s.tool_execution_id && (
                             <>
@@ -286,10 +286,10 @@ export function WorkflowRunDetail({
                         )}
                         {s.status === "succeeded" && s.output_json != null && (
                           <details className="mt-1">
-                            <summary className="text-[11px] text-muted-foreground cursor-pointer">
+                            <summary className="text-[12px] text-muted-foreground cursor-pointer">
                               output
                             </summary>
-                            <pre className="mt-1 text-[10px] bg-muted/30 p-2 rounded overflow-x-auto max-h-40">
+                            <pre className="mt-1 text-[12px] bg-muted/30 p-2 rounded overflow-x-auto max-h-40">
                               {JSON.stringify(s.output_json, null, 2)}
                             </pre>
                           </details>

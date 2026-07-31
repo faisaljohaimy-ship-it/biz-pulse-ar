@@ -62,17 +62,17 @@ export function LessonCinematicHero({ title, subtitle, order, lang }: Props) {
       {/* Content */}
       <div className="relative z-10 flex h-full flex-col justify-between p-8">
         <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-black/30 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-cyan-200 backdrop-blur">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-black/30 px-3 py-1 text-[12px] uppercase tracking-[0.24em] text-cyan-200 backdrop-blur">
             <Radio className="h-3 w-3 animate-pulse" />
             NEXIOS · {ar ? "بث تنفيذي مباشر" : "Executive Live"}
           </div>
-          <div className="text-right font-mono text-[10px] tracking-widest text-cyan-200/70">
+          <div className="text-right font-mono text-[12px] tracking-widest text-cyan-200/70">
             LESSON · {String(order).padStart(2, "0")}
           </div>
         </div>
 
         <div className="max-w-2xl space-y-2">
-          <div className="inline-flex items-center gap-2 rounded-md bg-cyan-400/15 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-cyan-200">
+          <div className="inline-flex items-center gap-2 rounded-md bg-cyan-400/15 px-2 py-1 text-[12px] uppercase tracking-[0.2em] text-cyan-200">
             <GraduationCap className="h-3 w-3" />
             {ar ? "جسر المعرفة" : "Knowledge Bridge"}
           </div>

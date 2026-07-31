@@ -78,7 +78,7 @@ function TransformationPage() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-cyan-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
               {ar ? "برامج التحول" : "TRANSFORMATION PROGRAMS"}
             </div>
           </div>
@@ -149,7 +149,7 @@ function TransformationPage() {
                     />
                   </div>
                 </div>
-                <div className="mt-2 grid grid-cols-3 gap-2 text-[11px]">
+                <div className="mt-2 grid grid-cols-3 gap-2 text-[12px]">
                   <div>
                     <div className="text-slate-500">{ar ? "التقدم" : "Progress"}</div>
                     <div className="font-bold text-cyan-300">{p.progress}%</div>
@@ -179,7 +179,7 @@ function TransformationPage() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <GitBranch className="h-4 w-4 text-violet-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-violet-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
               {ar ? "المعالم" : "MILESTONES"}
             </div>
           </div>

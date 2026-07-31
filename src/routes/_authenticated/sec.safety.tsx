@@ -91,7 +91,7 @@ function Safety() {
                 <td className="px-3 py-2 text-muted-foreground">{o.category}</td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${severityClass(o.severity)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${severityClass(o.severity)}`}
                   >
                     {o.severity}
                   </span>

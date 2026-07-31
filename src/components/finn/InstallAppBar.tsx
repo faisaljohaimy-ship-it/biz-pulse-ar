@@ -146,7 +146,7 @@ export function InstallAppBar() {
           </span>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-bold text-white">📱 حمّل FINN كتطبيق</div>
-            <div className="truncate text-[11px] text-white/60">
+            <div className="truncate text-[12px] text-white/60">
               ثبّتها على جهازك واعمل بسرعة ودون اتصال.
             </div>
           </div>

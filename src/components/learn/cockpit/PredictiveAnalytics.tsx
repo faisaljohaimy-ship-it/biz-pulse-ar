@@ -64,7 +64,7 @@ export function PredictiveAnalytics({ title, unit, series, insight, lang }: Prop
     <div className="space-y-3" dir={ar ? "rtl" : "ltr"}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div className="text-xs uppercase tracking-[0.18em] text-cyan-200/80">{title}</div>
-        <div className="text-[11px] text-white/50">{unit}</div>
+        <div className="text-[12px] text-white/50">{unit}</div>
       </div>
 
       <div className="overflow-x-auto">

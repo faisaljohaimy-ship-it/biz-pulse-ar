@@ -251,7 +251,7 @@ function DemoVideosPage() {
                       <div className="truncate text-sm font-medium text-foreground">
                         {isAr ? v.titleAr : v.titleEn}
                       </div>
-                      <div className="truncate text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                      <div className="truncate text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
                         {v.audience} · {v.duration}
                       </div>
                     </div>

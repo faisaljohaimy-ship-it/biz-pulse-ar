@@ -329,7 +329,7 @@ function LiveClock({ ar }: { ar: boolean }) {
   }, []);
   return (
     <div className="rounded-2xl border border-cyan-400/15 bg-white/[0.02] px-4 py-2 backdrop-blur">
-      <div className="text-[10px] uppercase tracking-[0.16em] text-white/50">
+      <div className="text-[12px] uppercase tracking-[0.16em] text-white/50">
         {ar ? "البث المباشر" : "Live"}
       </div>
       <div className="text-2xl font-light tabular-nums text-white">
@@ -373,7 +373,7 @@ function OperationalHealthColumn({
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-center">
-        <div className="text-[10px] uppercase tracking-[0.16em] text-white/50">
+        <div className="text-[12px] uppercase tracking-[0.16em] text-white/50">
           {ar ? "المؤشر العام" : "Composite Score"}
         </div>
         <div className={cn("mt-1 text-5xl font-light tabular-nums", tone)}>
@@ -625,7 +625,7 @@ function AgentRoleDashboard({
               : "Each card identifies the agent responsibility, state, and current task."}
           </p>
         </div>
-        <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-200">
+        <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-[12px] text-emerald-200">
           {agents.filter((agent) => agent.enabled).length}/{agents.length} {ar ? "نشط" : "active"}
         </span>
       </div>
@@ -657,13 +657,13 @@ function AgentRoleDashboard({
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <h3 className="text-sm font-semibold text-white">{ar ? role.ar : role.en}</h3>
-                      <p className="mt-0.5 text-[11px] leading-4 text-white/50">
+                      <p className="mt-0.5 text-[12px] leading-4 text-white/50">
                         {ar ? role.descriptionAr : role.descriptionEn}
                       </p>
                     </div>
                     <span
                       className={cn(
-                        "shrink-0 rounded-full border px-2 py-0.5 text-[9px]",
+                        "shrink-0 rounded-full border px-2 py-0.5 text-[12px]",
                         warning
                           ? "border-amber-400/30 bg-amber-400/10 text-amber-200"
                           : "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
@@ -672,7 +672,7 @@ function AgentRoleDashboard({
                       {statusText(agent.status, ar)}
                     </span>
                   </div>
-                  <div className="mt-2 truncate text-[10px] text-white/45">
+                  <div className="mt-2 truncate text-[12px] text-white/45">
                     {agent.current_task ?? (ar ? "مراقبة مستمرة" : "Continuous monitoring")}
                   </div>
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
@@ -761,7 +761,7 @@ function PredictedRiskRail({
                   >
                     {ar ? r.recommendation_ar : r.recommendation_en}
                   </div>
-                  <div className="mt-1 text-[11px] text-white/45 tabular-nums">
+                  <div className="mt-1 text-[12px] text-white/45 tabular-nums">
                     {ar ? "ثقة" : "Conf."} {Math.round(r.confidence * 100)}%{" · "}
                     {r.horizon_hours}h
                   </div>

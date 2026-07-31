@@ -149,8 +149,8 @@ export function NxAgentsPage() {
             <span
               className={
                 data.is_simulation
-                  ? "rounded-full border border-nx-gold/50 px-3 py-1 text-[11px] font-semibold text-nx-gold"
-                  : "rounded-full border border-nx-success/50 px-3 py-1 text-[11px] font-semibold text-nx-success"
+                  ? "rounded-full border border-nx-gold/50 px-3 py-1 text-[12px] font-semibold text-nx-gold"
+                  : "rounded-full border border-nx-success/50 px-3 py-1 text-[12px] font-semibold text-nx-success"
               }
             >
               {data.is_simulation ? "عرض توضيحي · محاكاة مرجعية" : "حقيقي · قراءة"}
@@ -194,7 +194,7 @@ export function NxAgentsPage() {
             <h2 className="text-sm font-black tracking-[0.18em] text-[#3AE8FF] md:text-base">
               NEXIOS · AGENTIC FLOW CANVAS
             </h2>
-            <p className="text-[11px] text-nx-pearl/60">
+            <p className="text-[12px] text-nx-pearl/60">
               المصادر ← الوكلاء ← FINN ← بوابة الاعتماد البشري
             </p>
           </div>
@@ -213,7 +213,7 @@ export function NxAgentsPage() {
 
             {/* Seven-stage data flow — advances with each simulated event. */}
             <NxPanel title="تدفّق البيانات" density="operations">
-              <ol className="flex flex-wrap items-center gap-1.5 text-[11px]">
+              <ol className="flex flex-wrap items-center gap-1.5 text-[12px]">
                 {FLOW_STAGES.map((stage, i) => {
                   const on = stage === flowStage;
                   return (
@@ -256,7 +256,7 @@ export function NxAgentsPage() {
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-nx-pearl">{agent.nameAr}</span>
                     <span
-                      className={`rounded-full border px-2 py-0.5 text-[10px] ${PHASE_TONE[agent.phase]}`}
+                      className={`rounded-full border px-2 py-0.5 text-[12px] ${PHASE_TONE[agent.phase]}`}
                     >
                       {PHASE_AR[agent.phase]}
                     </span>
@@ -265,14 +265,14 @@ export function NxAgentsPage() {
 
                   {/* التغذية الراجعة — من أين يستمد هذا الوكيل بياناته */}
                   <div className="mt-1 flex flex-col gap-1 border-t border-white/8 pt-2">
-                    <span className="text-[10px] font-semibold text-nx-pearl/56">
+                    <span className="text-[12px] font-semibold text-nx-pearl/56">
                       التغذية الراجعة · المصادر
                     </span>
                     <ul className="flex flex-wrap gap-1">
                       {feedSourcesFor(agent.id, agent.category).map((s) => (
                         <li
                           key={s.id}
-                          className="rounded-full border border-nx-cyan/30 bg-nx-cyan/5 px-2 py-0.5 text-[10px] text-nx-cyan/85"
+                          className="rounded-full border border-nx-cyan/30 bg-nx-cyan/5 px-2 py-0.5 text-[12px] text-nx-cyan/85"
                         >
                           {s.labelAr}
                         </li>
@@ -280,7 +280,7 @@ export function NxAgentsPage() {
                     </ul>
                   </div>
 
-                  <span className="text-[10px] uppercase tracking-wide text-nx-pearl/48" dir="ltr">
+                  <span className="text-[12px] uppercase tracking-wide text-nx-pearl/48" dir="ltr">
                     {agent.category}
                   </span>
                 </li>

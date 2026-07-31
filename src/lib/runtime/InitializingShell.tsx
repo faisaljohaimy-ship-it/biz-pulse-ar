@@ -111,12 +111,12 @@ export function InitializingShell({
                     </span>
                     <div className="text-right">
                       <div className="text-sm font-medium">{stage.label_ar}</div>
-                      <div className="text-[11px] uppercase tracking-wider text-white/40">
+                      <div className="text-[12px] uppercase tracking-wider text-white/40">
                         {stage.label_en}
                       </div>
                     </div>
                   </div>
-                  <span className="text-[11px] font-medium uppercase tracking-wider">
+                  <span className="text-[12px] font-medium uppercase tracking-wider">
                     {done ? (
                       <span className="text-[#3AE8FF]">Ready</span>
                     ) : active ? (
@@ -131,7 +131,7 @@ export function InitializingShell({
           </ol>
         )}
 
-        <p className="mt-6 text-center text-[11px] uppercase tracking-[0.3em] text-white/30">
+        <p className="mt-6 text-center text-[12px] uppercase tracking-[0.3em] text-white/30">
           Enterprise Runtime · v1.0
         </p>
       </div>

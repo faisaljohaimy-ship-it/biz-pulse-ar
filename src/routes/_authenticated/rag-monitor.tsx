@@ -52,7 +52,7 @@ function StatCard({
       <div className="min-w-0">
         <div className="text-xs text-muted-foreground">{label}</div>
         <div className="text-lg font-semibold">{value}</div>
-        {hint ? <div className="text-[10px] text-muted-foreground">{hint}</div> : null}
+        {hint ? <div className="text-[12px] text-muted-foreground">{hint}</div> : null}
       </div>
     </Card>
   );

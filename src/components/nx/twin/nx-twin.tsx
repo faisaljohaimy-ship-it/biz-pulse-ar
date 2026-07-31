@@ -136,7 +136,7 @@ export const NxTwinNode = React.forwardRef<HTMLDivElement, NxTwinNodeProps>(
         )}
         aria-hidden
       />
-      <span className="text-[11px] text-nx-pearl/72">{name}</span>
+      <span className="text-[12px] text-nx-pearl/72">{name}</span>
       <span className="sr-only">{NODE_WORD[status]}</span>
     </div>
   ),

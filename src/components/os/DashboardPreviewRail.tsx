@@ -113,7 +113,7 @@ export function DashboardPreviewRail({ ar = true }: { readonly ar?: boolean }) {
                 <div className="truncate text-sm font-bold text-white sm:text-[15px]">
                   {ar ? p.ar : p.en}
                 </div>
-                <div className="mt-0.5 truncate text-[11px] leading-relaxed text-white/70">
+                <div className="mt-0.5 truncate text-[12px] leading-relaxed text-white/70">
                   {p.descAr}
                 </div>
               </div>

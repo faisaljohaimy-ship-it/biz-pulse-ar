@@ -143,7 +143,7 @@ export function LessonQuiz({ slug, lang, passScore, onPassed }: Props) {
                       ) : (
                         <span
                           className={cn(
-                            "mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border text-[10px]",
+                            "mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border text-[12px]",
                             selected
                               ? "border-cyan-400 bg-cyan-400/20 text-cyan-100"
                               : "border-white/30 text-white/50",

@@ -112,7 +112,7 @@ function SecurityCenterPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "مصفوفة الأدوار" : "ROLE MATRIX"}
           </div>
         </div>
@@ -124,7 +124,7 @@ function SecurityCenterPage() {
         ) : (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-[12px]">
-              <thead className="text-start text-[10px] uppercase tracking-widest text-slate-500">
+              <thead className="text-start text-[12px] uppercase tracking-widest text-slate-500">
                 <tr className="border-b border-white/5">
                   <th className="py-2 pe-3">{ar ? "المستخدم" : "User"}</th>
                   <th className="py-2 pe-3">{ar ? "الدور" : "Role"}</th>
@@ -138,12 +138,12 @@ function SecurityCenterPage() {
                       <div className="font-medium text-white">
                         {m.display_name ?? m.user_id.slice(0, 8)}
                         {m.user_id === overview.data?.current_user_id && (
-                          <span className="ms-2 text-[10px] text-cyan-300">
+                          <span className="ms-2 text-[12px] text-cyan-300">
                             ({ar ? "أنت" : "you"})
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] font-mono text-slate-500">
+                      <div className="text-[12px] font-mono text-slate-500">
                         {m.user_id.slice(0, 8)}…
                       </div>
                     </td>
@@ -207,7 +207,7 @@ function SecurityCenterPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <Activity className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "سجل التدقيق" : "AUDIT TRAIL"}
           </div>
         </div>
@@ -221,7 +221,7 @@ function SecurityCenterPage() {
             {ar ? "لا توجد سجلات" : "No audit entries"}
           </div>
         ) : (
-          <ul className="mt-3 divide-y divide-white/5 font-mono text-[11px] max-h-[420px] overflow-auto">
+          <ul className="mt-3 divide-y divide-white/5 font-mono text-[12px] max-h-[420px] overflow-auto">
             {(audit.data ?? []).map((row) => (
               <li key={row.id} className="flex items-start gap-3 py-2 text-slate-300">
                 <span className="w-24 shrink-0 text-slate-500">
@@ -259,11 +259,11 @@ function SecurityCenterPage() {
         <NexusCard>
           <div className="flex items-center gap-2">
             <Key className="h-4 w-4 text-cyan-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
               {ar ? "جرد الأسرار (أسماء فقط)" : "SECRET INVENTORY (names only)"}
             </div>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500">
+          <div className="mt-2 text-[12px] text-slate-500">
             {ar
               ? "قيم الأسرار لا تُعرض أبداً. تُدار في إعدادات المنصة."
               : "Secret values are never shown. Manage them in platform settings."}
@@ -278,11 +278,11 @@ function SecurityCenterPage() {
               {(secrets.data ?? []).map((s) => (
                 <div
                   key={s.name}
-                  className="flex items-center justify-between rounded-md border border-white/5 bg-white/[0.02] p-2 text-[11px]"
+                  className="flex items-center justify-between rounded-md border border-white/5 bg-white/[0.02] p-2 text-[12px]"
                 >
                   <div>
                     <div className="font-mono font-semibold text-white">{s.name}</div>
-                    <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                    <div className="text-[12px] uppercase tracking-widest text-slate-500">
                       {s.category}
                     </div>
                   </div>

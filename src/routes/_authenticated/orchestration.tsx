@@ -85,7 +85,7 @@ function OrchestrationPage() {
       <NexusCard glow>
         <div className="flex items-center gap-2">
           <GitMerge className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "خط أنابيب لحظي" : "LIVE PIPELINE"}
           </div>
         </div>
@@ -103,7 +103,7 @@ function OrchestrationPage() {
                   {ar ? s.l_ar : s.l_en}
                 </NexusPill>
                 <div className="mt-2 text-2xl font-bold text-white">{s.n.toLocaleString()}</div>
-                <div className="text-[10px] text-slate-500">{ar ? "اليوم" : "today"}</div>
+                <div className="text-[12px] text-slate-500">{ar ? "اليوم" : "today"}</div>
               </div>
               {i < arr.length - 1 && (
                 <div className="absolute end-[-12px] top-1/2 hidden -translate-y-1/2 text-cyan-400/60 lg:block">
@@ -119,7 +119,7 @@ function OrchestrationPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <Workflow className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "سير عمل المؤسسة" : "ENTERPRISE WORKFLOWS"}
           </div>
         </div>
@@ -132,7 +132,7 @@ function OrchestrationPage() {
                   {f.success}%
                 </NexusPill>
               </div>
-              <div className="mt-2 text-[11px] text-slate-500">
+              <div className="mt-2 text-[12px] text-slate-500">
                 {f.runs.toLocaleString()} {ar ? "تشغيل/شهر" : "runs/mo"}
               </div>
               <div className="mt-3 flex flex-wrap gap-1">
@@ -142,7 +142,7 @@ function OrchestrationPage() {
                   </NexusPill>
                 ))}
               </div>
-              <div className="mt-3 flex items-center gap-2 text-[11px]">
+              <div className="mt-3 flex items-center gap-2 text-[12px]">
                 <div className="flex-1 h-1.5 overflow-hidden rounded-full bg-white/5">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-cyan-400/80 to-emerald-400/80"
@@ -158,7 +158,7 @@ function OrchestrationPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <Activity className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "ذكاء العمليات" : "PROCESS INTELLIGENCE"}
           </div>
         </div>

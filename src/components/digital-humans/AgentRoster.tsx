@@ -76,11 +76,11 @@ function AgentCard({
         <DigitalHumanAvatar spec={spec} state={dh.state} size={64} ar={ar} />
         <div className="min-w-0 flex-1">
           <div className="text-sm text-white truncate">{ar ? spec.name_ar : spec.name_en}</div>
-          <div className="text-[11px] text-white/55 truncate">
+          <div className="text-[12px] text-white/55 truncate">
             {ar ? spec.title_ar : spec.title_en}
           </div>
           <div className="mt-1 flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-[0.18em] text-white/45">
+            <span className="text-[12px] uppercase tracking-[0.18em] text-white/45">
               {ar ? "ثقة" : "Confidence"}
             </span>
             <div className="flex-1 h-1 rounded-full bg-white/10 overflow-hidden">
@@ -92,7 +92,7 @@ function AgentCard({
                 }}
               />
             </div>
-            <span className="text-[10px] tabular-nums text-white/70">
+            <span className="text-[12px] tabular-nums text-white/70">
               {Math.round(dh.confidence * 100)}%
             </span>
           </div>
@@ -121,7 +121,7 @@ export function AgentRoster({ ar, signals }: Props) {
           <div className="text-sm text-white font-medium">
             {ar ? "كادر الذكاء التنفيذي" : "Executive AI Roster"}
           </div>
-          <div className="text-[11px] text-cyan-200/70">
+          <div className="text-[12px] text-cyan-200/70">
             {ar
               ? `${SPECIALISTS.length} وكيل ذكاء صناعي متخصص — حالة حية`
               : `${SPECIALISTS.length} specialist digital humans — live state`}

@@ -230,7 +230,7 @@ export function AgentRing() {
       `}</style>
 
       <div className="mb-5 text-center sm:mb-7">
-        <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70 sm:text-[11px]">
+        <div className="text-[12px] uppercase tracking-[0.3em] text-[#3AE8FF]/70 sm:text-[12px]">
           Executive AI Command Center
         </div>
         <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
@@ -372,7 +372,7 @@ export function AgentRing() {
           />
           <div className="relative text-center transition-transform group-hover:scale-105">
             <Sparkles className="mx-auto h-7 w-7 text-[#3AE8FF] drop-shadow-[0_0_8px_rgba(58,232,255,0.8)]" />
-            <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.32em] text-white/85">
+            <div className="mt-1 text-[12px] font-semibold uppercase tracking-[0.32em] text-white/85">
               FINN
             </div>
           </div>
@@ -501,17 +501,17 @@ function Inspector({ vm }: { vm: AgentVM }) {
         <div className="flex flex-wrap items-center justify-end gap-2 sm:justify-start">
           <h3 className="truncate text-sm font-semibold text-white">{vm.name}</h3>
           <span
-            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] ${tone.ring}`}
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12px] uppercase tracking-[0.18em] ${tone.ring}`}
           >
             <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
             {tone.label}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-white/55">
+          <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[12px] uppercase tracking-[0.18em] text-white/55">
             وكيل خلفي صامت
           </span>
         </div>
         {vm.goal && <p className="mt-1 line-clamp-2 text-xs text-white/65">{vm.goal}</p>}
-        <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-white/55 sm:grid-cols-3">
+        <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[12px] text-white/55 sm:grid-cols-3">
           <div className="flex items-center gap-1">
             <Cpu className="h-3 w-3" />
             <span className="truncate" title={vm.model}>
@@ -528,14 +528,14 @@ function Inspector({ vm }: { vm: AgentVM }) {
           </div>
         </dl>
         {vm.lastSummary && (
-          <p className="mt-2 line-clamp-2 rounded-lg border border-white/10 bg-white/[0.03] p-2 text-[11px] text-white/65">
+          <p className="mt-2 line-clamp-2 rounded-lg border border-white/10 bg-white/[0.03] p-2 text-[12px] text-white/65">
             {vm.lastSummary}
           </p>
         )}
         <div className="mt-3 flex flex-wrap justify-end gap-2 sm:justify-start">
           <Link
             to="/finn"
-            className="inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[11px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
+            className="inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[12px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
           >
             <MessageSquare className="h-3 w-3" />
             <span>اطلب من FINN تنسيق هذا الوكيل</span>
@@ -552,7 +552,7 @@ function EmptyState() {
       <p className="text-xs text-white/65">سجلّ تشغيل الوكلاء فارغ حاليًا.</p>
       <Link
         to="/finn"
-        className="mt-3 inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[11px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
+        className="mt-3 inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[12px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
       >
         <Sparkles className="h-3 w-3" />
         <span>تحدّث مع FINN</span>

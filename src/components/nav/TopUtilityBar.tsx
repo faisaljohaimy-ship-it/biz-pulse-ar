@@ -75,7 +75,7 @@ export function TopUtilityBar({ className }: { className?: string }) {
           {unread > 0 && (
             <span
               aria-label={`${unread} ${ar ? "غير مقروءة" : "unread"}`}
-              className="absolute -top-1 -end-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground"
+              className="absolute -top-1 -end-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[12px] font-bold text-destructive-foreground"
             >
               {unread > 9 ? "9+" : unread}
             </span>
@@ -93,7 +93,7 @@ export function TopUtilityBar({ className }: { className?: string }) {
                 {ar ? "التنبيهات" : "Notifications"}
               </div>
               {simulated && (
-                <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[10px] font-semibold text-amber-200">
+                <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[12px] font-semibold text-amber-200">
                   {ar ? "محاكاة" : "Simulated"}
                 </span>
               )}
@@ -105,7 +105,7 @@ export function TopUtilityBar({ className }: { className?: string }) {
                   <p className="text-sm text-white/70">
                     {ar ? "لا توجد تنبيهات حالياً" : "No notifications right now"}
                   </p>
-                  <p className="text-[11px] text-white/40">
+                  <p className="text-[12px] text-white/40">
                     {ar
                       ? "سيظهر أي حدث حرج فور وصوله."
                       : "New critical events will appear here instantly."}
@@ -139,7 +139,7 @@ function NotifRow({ n, ar, onNav }: { n: Notif; ar: boolean; onNav: () => void }
     <div className="flex items-start gap-3 px-4 py-3 transition hover:bg-white/5">
       <span
         className={cn(
-          "mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border text-[10px] font-bold",
+          "mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border text-[12px] font-bold",
           sev,
         )}
         aria-hidden
@@ -150,7 +150,7 @@ function NotifRow({ n, ar, onNav }: { n: Notif; ar: boolean; onNav: () => void }
         <div className="truncate text-sm font-medium text-white">
           {ar ? n.title_ar : n.title_en}
         </div>
-        <div className="mt-0.5 flex items-center gap-2 text-[11px] text-white/50">
+        <div className="mt-0.5 flex items-center gap-2 text-[12px] text-white/50">
           <span>{n.source}</span>
           <span aria-hidden>·</span>
           <span>{n.time}</span>

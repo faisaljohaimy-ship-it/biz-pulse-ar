@@ -189,7 +189,7 @@ export function FormShell({
         ) : (
           <>
             <div className="text-center">
-              <div className="inline-block rounded-full border border-primary/40 bg-primary/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+              <div className="inline-block rounded-full border border-primary/40 bg-primary/5 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.2em] text-primary">
                 {eyebrow}
               </div>
               <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
@@ -206,7 +206,7 @@ export function FormShell({
                 <div key={f.name}>
                   <label
                     htmlFor={f.name}
-                    className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground"
+                    className="mb-1 block text-[12px] font-medium uppercase tracking-wider text-muted-foreground"
                   >
                     {f.label}
                     {f.required && <span className="text-primary"> *</span>}
@@ -287,7 +287,7 @@ function SuccessCard({
         </p>
 
         <div className="mx-auto mt-6 inline-flex flex-col items-center gap-1 rounded-2xl border border-primary/30 bg-black/40 px-5 py-3">
-          <span className="text-[10px] uppercase tracking-[0.2em] text-primary/80">
+          <span className="text-[12px] uppercase tracking-[0.2em] text-primary/80">
             {isAr ? "رقم الطلب" : "Request ID"}
           </span>
           <div className="flex items-center gap-2">
@@ -306,12 +306,12 @@ function SuccessCard({
             </button>
           </div>
           {copied && (
-            <span className="text-[10px] text-primary">{isAr ? "تم النسخ" : "Copied"}</span>
+            <span className="text-[12px] text-primary">{isAr ? "تم النسخ" : "Copied"}</span>
           )}
         </div>
 
         {!state.email_delivered && (
-          <p className="mt-4 text-[11px] text-muted-foreground/80">
+          <p className="mt-4 text-[12px] text-muted-foreground/80">
             {isAr
               ? "تم حفظ الطلب. سنتولى التواصل معك حتى لو تأخّر بريد التأكيد."
               : "Your request is safely stored. We'll reach out even if the confirmation email is delayed."}

@@ -431,7 +431,7 @@ function ExecutiveShowcasePage() {
 
       {/* Top bar */}
       <header className="relative z-30 flex items-center justify-between gap-3 px-4 pt-3 sm:px-8 sm:pt-4">
-        <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.28em] text-white/80">
+        <div className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.28em] text-white/80">
           <span
             className="h-2 w-2 rounded-full"
             style={{ background: scene.accent, boxShadow: `0 0 12px ${scene.accent}` }}
@@ -447,7 +447,7 @@ function ExecutiveShowcasePage() {
           >
             {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
-          <span className="hidden font-mono text-[11px] text-white/60 sm:inline">
+          <span className="hidden font-mono text-[12px] text-white/60 sm:inline">
             {String(Math.min(idx + 1, SCENES.length)).padStart(2, "0")} /{" "}
             {String(SCENES.length).padStart(2, "0")}
           </span>
@@ -562,13 +562,13 @@ function ExecutiveShowcasePage() {
                 <div className="max-w-xs text-[12px] leading-relaxed text-white/60">
                   {scene.value_ar}
                 </div>
-                <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.32em] text-emerald-200/80">
+                <div className="mt-1 text-[12px] font-bold uppercase tracking-[0.32em] text-emerald-200/80">
                   العرض التلقائي · Auto-play
                 </div>
               </div>
             )}
             {/* FINN · LIVE badge */}
-            <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-full border border-emerald-300/50 bg-black/60 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.32em] text-emerald-200 backdrop-blur">
+            <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-full border border-emerald-300/50 bg-black/60 px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.32em] text-emerald-200 backdrop-blur">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inset-0 animate-ping rounded-full bg-emerald-300 opacity-70" />
                 <span
@@ -581,12 +581,12 @@ function ExecutiveShowcasePage() {
             {!needsStart && !isFinale && !videoFailed && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-between gap-3 p-3.5">
                 <div className="min-w-0">
-                  <div className="truncate text-[11px] font-black text-white">العرض التنفيذي</div>
-                  <div className="truncate text-[9px] tracking-[0.18em] text-cyan-100/65">
+                  <div className="truncate text-[12px] font-black text-white">العرض التنفيذي</div>
+                  <div className="truncate text-[12px] tracking-[0.18em] text-cyan-100/65">
                     NEXIOS EXECUTIVE FILM
                   </div>
                 </div>
-                <span className="rounded-full border border-white/15 bg-black/40 px-2 py-1 font-mono text-[9px] text-white/70 backdrop-blur-xl">
+                <span className="rounded-full border border-white/15 bg-black/40 px-2 py-1 font-mono text-[12px] text-white/70 backdrop-blur-xl">
                   {EXECUTIVE_PRESENTATION_MEDIA.durationLabel}
                 </span>
               </div>
@@ -605,7 +605,7 @@ function ExecutiveShowcasePage() {
                 >
                   <Play className="h-6 w-6 text-emerald-200" />
                 </span>
-                <span className="text-[11px] font-bold uppercase tracking-[0.32em] text-emerald-200">
+                <span className="text-[12px] font-bold uppercase tracking-[0.32em] text-emerald-200">
                   ابدأ العرض · Start Show
                 </span>
               </button>
@@ -679,7 +679,7 @@ function ExecutiveShowcasePage() {
                 }
               }
             }}
-            className="mr-1 rounded-full border border-white/20 bg-black/40 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white sm:px-4 sm:text-[11px]"
+            className="mr-1 rounded-full border border-white/20 bg-black/40 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur transition hover:border-[#3AE8FF]/60 hover:text-white sm:px-4 sm:text-[12px]"
           >
             خروج · Exit
           </Link>
@@ -723,7 +723,7 @@ function SceneView({ scene, reduced }: { scene: Scene; reduced: boolean }) {
     >
       <div>
         <div
-          className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.32em]"
+          className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[12px] font-bold uppercase tracking-[0.32em]"
           style={{
             borderColor: `${scene.accent}66`,
             color: scene.accent,
@@ -746,7 +746,7 @@ function SceneView({ scene, reduced }: { scene: Scene; reduced: boolean }) {
         <p dir="ltr" className="mt-1 max-w-xl text-xs leading-relaxed text-white/50 sm:text-sm">
           {scene.value_en}
         </p>
-        <span className="mt-3 inline-flex items-center gap-1 rounded-full border border-amber-300/40 bg-amber-300/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.28em] text-amber-200">
+        <span className="mt-3 inline-flex items-center gap-1 rounded-full border border-amber-300/40 bg-amber-300/10 px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.28em] text-amber-200">
           عرض توضيحي · محاكاة
         </span>
       </div>
@@ -779,7 +779,7 @@ function Finale({ onRestart }: { onRestart: () => void }) {
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
       <div
-        className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#3AE8FF]"
+        className="text-[12px] font-bold uppercase tracking-[0.4em] text-[#3AE8FF]"
         style={{ textShadow: "0 0 18px rgba(58,232,255,0.6)" }}
       >
         NEXIOS · AI OPERATING SYSTEM
@@ -817,7 +817,7 @@ function Finale({ onRestart }: { onRestart: () => void }) {
 
 function HudFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid h-full w-full grid-cols-6 grid-rows-6 gap-2 font-mono text-[10px] text-white/70">
+    <div className="grid h-full w-full grid-cols-6 grid-rows-6 gap-2 font-mono text-[12px] text-white/70">
       {children}
     </div>
   );
@@ -827,7 +827,7 @@ function SecurityHUD() {
   return (
     <HudFrame>
       <div className="col-span-4 row-span-4 rounded-lg border border-[#3AE8FF]/25 bg-[#3AE8FF]/[0.04] p-3">
-        <div className="text-[9px] uppercase tracking-[0.3em] text-[#3AE8FF]/80">
+        <div className="text-[12px] uppercase tracking-[0.3em] text-[#3AE8FF]/80">
           Incidents · حوادث
         </div>
         <div className="mt-2 space-y-1.5">
@@ -848,15 +848,15 @@ function SecurityHUD() {
         </div>
       </div>
       <div className="col-span-2 row-span-2 rounded-lg border border-white/10 bg-white/[0.03] p-2 text-center">
-        <div className="text-[8px] uppercase tracking-[0.25em] text-white/50">Open</div>
+        <div className="text-[12px] uppercase tracking-[0.25em] text-white/50">Open</div>
         <div className="mt-1 text-2xl font-black text-[#3AE8FF]">14</div>
       </div>
       <div className="col-span-2 row-span-2 rounded-lg border border-white/10 bg-white/[0.03] p-2 text-center">
-        <div className="text-[8px] uppercase tracking-[0.25em] text-white/50">SLA</div>
+        <div className="text-[12px] uppercase tracking-[0.25em] text-white/50">SLA</div>
         <div className="mt-1 text-2xl font-black text-emerald-300">98%</div>
       </div>
       <div className="col-span-6 row-span-2 rounded-lg border border-white/10 bg-white/[0.03] p-2">
-        <div className="text-[9px] uppercase tracking-[0.25em] text-white/50">Patrol Coverage</div>
+        <div className="text-[12px] uppercase tracking-[0.25em] text-white/50">Patrol Coverage</div>
         <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
           <div className="h-full w-[82%] bg-gradient-to-r from-[#3AE8FF] to-emerald-400" />
         </div>
@@ -876,8 +876,8 @@ function AgentsHUD() {
           style={{ animation: `pulse 2.4s ease-in-out ${i * 0.15}s infinite` }}
         >
           <Bot className="h-4 w-4 text-[#3AE8FF]" />
-          <div className="mt-1 text-[10px] font-semibold text-white/80">{a}</div>
-          <div className="text-[8px] text-white/40">agent</div>
+          <div className="mt-1 text-[12px] font-semibold text-white/80">{a}</div>
+          <div className="text-[12px] text-white/40">agent</div>
         </div>
       ))}
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}`}</style>
@@ -925,7 +925,7 @@ function TwinHUD() {
         </g>
       ))}
       <circle cx="150" cy="120" r="6" fill="#34D399" />
-      <text x="150" y="230" textAnchor="middle" fill="#94A3B8" fontSize="10" fontFamily="monospace">
+      <text x="150" y="230" textAnchor="middle" fill="#94A3B8" fontSize="12" fontFamily="monospace">
         LIVE · digital twin · sim
       </text>
     </svg>
@@ -937,7 +937,7 @@ function ReportsHUD() {
   return (
     <div className="flex h-full w-full flex-col gap-3">
       <div className="flex items-baseline justify-between">
-        <div className="text-[9px] uppercase tracking-[0.3em] text-white/60">KPIs · Q3</div>
+        <div className="text-[12px] uppercase tracking-[0.3em] text-white/60">KPIs · Q3</div>
         <div className="font-mono text-emerald-300">+12.4%</div>
       </div>
       <div className="flex flex-1 items-end gap-1.5">
@@ -949,14 +949,14 @@ function ReportsHUD() {
           />
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-2 text-center font-mono text-[10px]">
+      <div className="grid grid-cols-3 gap-2 text-center font-mono text-[12px]">
         {[
           ["Revenue", "$4.2M"],
           ["OpEx", "-6.1%"],
           ["NPS", "72"],
         ].map(([k, v]) => (
           <div key={k} className="rounded border border-white/10 bg-white/[0.03] p-1.5">
-            <div className="text-[8px] uppercase tracking-[0.25em] text-white/40">{k}</div>
+            <div className="text-[12px] uppercase tracking-[0.25em] text-white/40">{k}</div>
             <div className="text-white">{v}</div>
           </div>
         ))}
@@ -967,7 +967,7 @@ function ReportsHUD() {
 
 function HajjHUD() {
   return (
-    <div className="grid h-full w-full grid-cols-2 gap-2 font-mono text-[10px]">
+    <div className="grid h-full w-full grid-cols-2 gap-2 font-mono text-[12px]">
       {[
         ["مِنى · Mina", "Zone A", "#3AE8FF"],
         ["عرفة · Arafat", "Zone B", "#F5C560"],
@@ -979,7 +979,7 @@ function HajjHUD() {
           className="flex flex-col justify-between rounded-lg border p-2"
           style={{ borderColor: `${c}55`, background: `${c}0d` }}
         >
-          <div className="text-[9px] uppercase tracking-[0.25em]" style={{ color: c }}>
+          <div className="text-[12px] uppercase tracking-[0.25em]" style={{ color: c }}>
             {en}
           </div>
           <div className="text-sm font-bold text-white" dir="rtl">
@@ -1013,8 +1013,8 @@ function FinnHUD() {
         <style>{`@keyframes orb{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}`}</style>
       </div>
       <div className="text-center">
-        <div className="text-[10px] uppercase tracking-[0.4em] text-[#3AE8FF]">FINN · FINN</div>
-        <div className="mt-1 font-mono text-[10px] text-white/60">bilingual · voice · memory</div>
+        <div className="text-[12px] uppercase tracking-[0.4em] text-[#3AE8FF]">FINN · FINN</div>
+        <div className="mt-1 font-mono text-[12px] text-white/60">bilingual · voice · memory</div>
       </div>
     </div>
   );

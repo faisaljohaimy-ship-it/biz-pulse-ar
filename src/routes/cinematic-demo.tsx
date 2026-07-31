@@ -297,7 +297,7 @@ function CinematicDemo() {
       </div>
 
       {/* Top HUD */}
-      <div className="absolute top-[8vh] inset-x-0 z-40 flex items-center justify-between px-6 py-4 text-[10px] md:text-xs tracking-[0.3em] text-white/60 uppercase">
+      <div className="absolute top-[8vh] inset-x-0 z-40 flex items-center justify-between px-6 py-4 text-[12px] md:text-xs tracking-[0.3em] text-white/60 uppercase">
         <div className="flex items-center gap-3">
           <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
           <span>REC · NEXUS AI OS · 4K</span>
@@ -323,7 +323,7 @@ function CinematicDemo() {
 
       {/* Bottom controls + progress */}
       <div className="absolute bottom-[8vh] inset-x-0 z-40 px-6 py-4">
-        <div className="flex items-center justify-between gap-4 mb-3 text-[10px] tracking-[0.3em] text-white/60 uppercase">
+        <div className="flex items-center justify-between gap-4 mb-3 text-[12px] tracking-[0.3em] text-white/60 uppercase">
           <span>{fmt(t)}</span>
           <span className="max-w-[45vw] truncate md:max-w-none">
             {isAr ? scene.titleAr : scene.titleEn}
@@ -609,7 +609,7 @@ function StreamsStage({ t, isAr }: { t: number; isAr: boolean }) {
         );
       })}
       <div
-        className={`absolute ${isAr ? "right-8" : "left-8"} top-1/3 text-[10px] tracking-[0.3em] text-emerald-300/70 uppercase`}
+        className={`absolute ${isAr ? "right-8" : "left-8"} top-1/3 text-[12px] tracking-[0.3em] text-emerald-300/70 uppercase`}
       >
         <Radio className="inline w-3 h-3 mr-2" /> 12,847,302 events/sec
       </div>
@@ -636,9 +636,9 @@ function CommandStage({ t, isAr }: { t: number; isAr: boolean }) {
             className="border border-white/15 bg-white/[0.03] backdrop-blur-sm p-4 min-w-[150px]"
             style={{ animation: `riseIn 1.2s ease-out ${i * 0.2}s both` }}
           >
-            <div className="text-[9px] tracking-[0.3em] uppercase text-white/50">{k.label}</div>
+            <div className="text-[12px] tracking-[0.3em] uppercase text-white/50">{k.label}</div>
             <div className="text-2xl md:text-3xl mt-2 font-light">{k.v}</div>
-            <div className="text-[10px] mt-1 text-emerald-300/80">{k.d}</div>
+            <div className="text-[12px] mt-1 text-emerald-300/80">{k.d}</div>
           </div>
         ))}
       </div>
@@ -712,7 +712,7 @@ function PredictStage({ t, isAr }: { t: number; isAr: boolean }) {
           );
         })}
       </svg>
-      <div className="absolute bottom-[22vh] left-1/2 -translate-x-1/2 text-[10px] tracking-[0.3em] uppercase text-amber-300/80 flex items-center gap-2">
+      <div className="absolute bottom-[22vh] left-1/2 -translate-x-1/2 text-[12px] tracking-[0.3em] uppercase text-amber-300/80 flex items-center gap-2">
         <AlertTriangle className="w-3 h-3" />{" "}
         {isAr ? "توقع: نمو +18.4% خلال 90 يوماً" : "Forecast: +18.4% growth in 90 days"}
       </div>
@@ -751,7 +751,7 @@ function FinnStage({ t }: { t: number }) {
           <Mic className="w-8 h-8 text-white" />
         </div>
       </div>
-      <div className="absolute bottom-[22vh] left-1/2 -translate-x-1/2 text-[10px] tracking-[0.4em] uppercase text-cyan-200/80 flex items-center gap-2">
+      <div className="absolute bottom-[22vh] left-1/2 -translate-x-1/2 text-[12px] tracking-[0.4em] uppercase text-cyan-200/80 flex items-center gap-2">
         <Eye className="w-3 h-3" /> FINN · LISTENING
       </div>
     </div>

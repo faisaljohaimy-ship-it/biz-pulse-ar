@@ -633,7 +633,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
             </h2>
             <div className="mt-3 flex items-center gap-3">
               <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#3AE8FF]/70" />
-              <p className="text-[10px] uppercase tracking-[0.42em] text-[#3AE8FF]/85 sm:text-[11px] sm:tracking-[0.52em]">
+              <p className="text-[12px] uppercase tracking-[0.42em] text-[#3AE8FF]/85 sm:text-[12px] sm:tracking-[0.52em]">
                 {t.finnRole}
               </p>
               <span className="h-px w-8 bg-gradient-to-l from-transparent to-[#3AE8FF]/70" />
@@ -707,7 +707,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
 
         {/* Trust bar */}
         <div
-          className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[9px] uppercase tracking-[0.28em] text-white/45 sm:mt-12 sm:gap-x-6 sm:text-[10px] sm:tracking-[0.35em]"
+          className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[12px] uppercase tracking-[0.28em] text-white/45 sm:mt-12 sm:gap-x-6 sm:text-[12px] sm:tracking-[0.35em]"
           style={{ animation: "nxh-fade 900ms ease-out 1000ms both" }}
         >
           {t.trust.map((label, i, arr) => (
@@ -734,7 +734,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
           >
             NEXIOS
           </div>
-          <div className="text-[9px] uppercase tracking-[0.5em] text-white/50 sm:text-[10px] sm:tracking-[0.6em]">
+          <div className="text-[12px] uppercase tracking-[0.5em] text-white/50 sm:text-[12px] sm:tracking-[0.6em]">
             AI · OS
           </div>
         </div>
@@ -745,7 +745,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
         type="button"
         onClick={scrollToFinn}
         aria-label={t.scroll}
-        className="group absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-1.5 text-[10px] uppercase tracking-[0.36em] text-white/45 transition hover:text-[#3AE8FF] sm:flex"
+        className="group absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-1.5 text-[12px] uppercase tracking-[0.36em] text-white/45 transition hover:text-[#3AE8FF] sm:flex"
       >
         <span>{t.scroll}</span>
         <ChevronDown className="h-3.5 w-3.5 motion-safe:animate-[nxh-bounce_2.4s_ease-in-out_infinite]" />

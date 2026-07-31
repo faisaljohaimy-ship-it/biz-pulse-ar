@@ -30,7 +30,7 @@ export function PowerBIEmbed({ children }: { children: ReactNode }) {
     <div className="space-y-3">
       <div
         dir="rtl"
-        className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[11px] text-cyan-200"
+        className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[12px] text-cyan-200"
       >
         تضمين Power BI جاهز — يتطلب ترخيص المنشأة
       </div>

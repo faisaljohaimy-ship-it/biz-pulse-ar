@@ -88,24 +88,24 @@ function EventRow({ event, compact }: { event: EnterpriseEventRow; compact: bool
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-mono text-xs text-foreground truncate">{event.topic}</span>
-          <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${sev.cls}`}>
+          <Badge variant="outline" className={`text-[12px] px-1.5 py-0 ${sev.cls}`}>
             {event.severity}
           </Badge>
           {event.subject_type ? (
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+            <Badge variant="secondary" className="text-[12px] px-1.5 py-0">
               {event.subject_type}
             </Badge>
           ) : null}
           {event.duration_ms != null ? (
-            <span className="text-[10px] text-muted-foreground">{event.duration_ms}ms</span>
+            <span className="text-[12px] text-muted-foreground">{event.duration_ms}ms</span>
           ) : null}
         </div>
         {!compact && event.subject_id ? (
-          <div className="text-[11px] text-muted-foreground font-mono mt-0.5 truncate">
+          <div className="text-[12px] text-muted-foreground font-mono mt-0.5 truncate">
             {event.subject_id}
           </div>
         ) : null}
-        <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
+        <div className="flex items-center gap-2 text-[12px] text-muted-foreground mt-1">
           <span>{event.source}</span>
           <span>•</span>
           <span>{relTime(event.occurred_at)}</span>

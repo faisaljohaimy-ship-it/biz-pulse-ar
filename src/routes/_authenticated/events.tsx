@@ -128,7 +128,7 @@ function EventsRuntime() {
               className="shrink-0"
             >
               <span className="capitalize">{c}</span>
-              <Badge variant="secondary" className="ms-2 text-[10px]">
+              <Badge variant="secondary" className="ms-2 text-[12px]">
                 {counts[c] ?? 0}
               </Badge>
             </Button>
@@ -155,16 +155,16 @@ function EventsRuntime() {
                   key={e.id}
                   className="flex items-start gap-3 rounded-md border border-border/30 bg-background/30 p-2 text-sm"
                 >
-                  <div className="w-20 shrink-0 text-[10px] text-muted-foreground tabular-nums">
+                  <div className="w-20 shrink-0 text-[12px] text-muted-foreground tabular-nums">
                     {fmtRel(e.occurred_at)}
                   </div>
-                  <Badge variant="outline" className="shrink-0 text-[10px] uppercase">
+                  <Badge variant="outline" className="shrink-0 text-[12px] uppercase">
                     {categorize(e.topic)}
                   </Badge>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{e.topic}</div>
                     {e.subject_type && (
-                      <div className="truncate text-[11px] text-muted-foreground">
+                      <div className="truncate text-[12px] text-muted-foreground">
                         {e.subject_type}
                         {e.subject_id ? `:${e.subject_id.slice(0, 8)}` : ""}
                         {e.source && <> · {e.source}</>}

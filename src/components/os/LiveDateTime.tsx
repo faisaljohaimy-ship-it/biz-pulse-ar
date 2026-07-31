@@ -62,7 +62,7 @@ export function LiveDateTime({ ar }: { readonly ar: boolean }) {
       className="pointer-events-auto inline-flex flex-col items-end gap-0.5 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-1.5 text-white/85 shadow-[0_0_24px_rgba(0,212,255,0.08)] backdrop-blur-md"
     >
       {/* Row 1 — time AR · EN */}
-      <div className="flex items-center gap-2 text-[11px] font-medium tabular-nums">
+      <div className="flex items-center gap-2 text-[12px] font-medium tabular-nums">
         <Clock aria-hidden className="h-3 w-3 text-[#3AE8FF]" strokeWidth={2.25} />
         <span
           suppressHydrationWarning
@@ -81,7 +81,7 @@ export function LiveDateTime({ ar }: { readonly ar: boolean }) {
         </span>
       </div>
       {/* Row 2 — Hijri · Gregorian */}
-      <div className="flex items-center gap-2 text-[10px] font-medium text-white/60">
+      <div className="flex items-center gap-2 text-[12px] font-medium text-white/60">
         <span
           suppressHydrationWarning
           dir="rtl"

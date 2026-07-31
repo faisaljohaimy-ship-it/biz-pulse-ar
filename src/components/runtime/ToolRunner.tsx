@@ -243,16 +243,16 @@ export function ToolRunner({
           <div className="flex items-center gap-2">
             <FormInput className="h-4 w-4 text-cyan-300" />
             <span className="truncate font-semibold text-sm">{toolName}</span>
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-[12px]">
               {toolId}
             </Badge>
             {requiresApproval && (
-              <Badge variant="secondary" className="text-[10px]">
+              <Badge variant="secondary" className="text-[12px]">
                 {ar ? "اعتماد" : "Approval"}
               </Badge>
             )}
           </div>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
+          <p className="mt-0.5 text-[12px] text-muted-foreground">
             {propCount === 0
               ? ar
                 ? "لا توجد مدخلات مطلوبة."
@@ -279,7 +279,7 @@ export function ToolRunner({
             }
           >
             <Sparkles className="h-3 w-3" />
-            <span className="ms-1 text-[10px]">{ar ? "عيّنة حقيقية" : "Load Sample"}</span>
+            <span className="ms-1 text-[12px]">{ar ? "عيّنة حقيقية" : "Load Sample"}</span>
           </Button>
         </div>
       </div>
@@ -296,13 +296,13 @@ export function ToolRunner({
           <button
             type="button"
             onClick={() => setShowPreview((v) => !v)}
-            className="flex w-full items-center justify-between gap-2 px-3 py-2 text-[11px] text-muted-foreground hover:text-foreground"
+            className="flex w-full items-center justify-between gap-2 px-3 py-2 text-[12px] text-muted-foreground hover:text-foreground"
           >
             <span className="flex items-center gap-1.5">
               {showPreview ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
               {ar ? "معاينة الحمولة (للقراءة فقط)" : "Payload preview (read-only)"}
             </span>
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-[12px]">
               {form.isValid
                 ? ar
                   ? "صالح"
@@ -312,7 +312,7 @@ export function ToolRunner({
           </button>
           {showPreview && (
             <pre
-              className="max-h-40 overflow-auto border-t border-border/40 bg-background/50 px-3 py-2 font-mono text-[11px] text-cyan-200/90"
+              className="max-h-40 overflow-auto border-t border-border/40 bg-background/50 px-3 py-2 font-mono text-[12px] text-cyan-200/90"
               aria-readonly
             >
               {previewJson}
@@ -322,7 +322,7 @@ export function ToolRunner({
       )}
 
       <div className="flex items-center justify-between gap-2 pt-1">
-        <div className="text-[10px] text-muted-foreground">
+        <div className="text-[12px] text-muted-foreground">
           {friendlyErrors.length > 0 && (
             <span className="text-rose-400">
               {friendlyErrors.length}{" "}
@@ -354,17 +354,17 @@ export function ToolRunner({
               {result.ok ? (ar ? "نجاح" : "Success") : ar ? "خطأ" : "Error"}
             </span>
             {result.traceId && (
-              <Badge variant="outline" className="text-[10px] ms-auto">
+              <Badge variant="outline" className="text-[12px] ms-auto">
                 Trace {result.traceId.slice(0, 8)}
               </Badge>
             )}
           </div>
           {result.error ? (
-            <pre className="whitespace-pre-wrap text-[11px] text-rose-300">
+            <pre className="whitespace-pre-wrap text-[12px] text-rose-300">
               {humaniseError(result.error, !!ar)}
             </pre>
           ) : (
-            <pre className="max-h-48 overflow-auto whitespace-pre-wrap text-[11px] text-muted-foreground">
+            <pre className="max-h-48 overflow-auto whitespace-pre-wrap text-[12px] text-muted-foreground">
               {JSON.stringify(result.data, null, 2)}
             </pre>
           )}

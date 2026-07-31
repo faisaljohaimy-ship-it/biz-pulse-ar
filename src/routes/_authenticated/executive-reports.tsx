@@ -376,7 +376,7 @@ function ExecutiveReportsPage() {
                 <div className="text-sm font-medium line-clamp-1">
                   {(isAr ? b.title : b.title_en) ?? b.title ?? "Untitled"}
                 </div>
-                <div className="text-[11px] text-muted-foreground mt-1">
+                <div className="text-[12px] text-muted-foreground mt-1">
                   {b.generated_at ? new Date(b.generated_at).toLocaleString() : ""}
                 </div>
               </button>
@@ -538,16 +538,16 @@ function ExecutiveReportsPage() {
 
                       {/* Diagnostic chips */}
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="text-[10px]">
+                        <Badge variant="secondary" className="text-[12px]">
                           {isAr ? stageLabel.ar : stageLabel.en}
                         </Badge>
                         {lastError.status && (
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-[12px]">
                             HTTP {lastError.status}
                           </Badge>
                         )}
                         {lastError.code && (
-                          <Badge variant="outline" className="text-[10px] font-mono">
+                          <Badge variant="outline" className="text-[12px] font-mono">
                             {lastError.code}
                           </Badge>
                         )}
@@ -556,10 +556,10 @@ function ExecutiveReportsPage() {
                       {/* Request ID bar */}
                       {lastError.requestId && (
                         <div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2">
-                          <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">
+                          <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wide">
                             {isAr ? "معرّف الطلب" : "Request ID"}
                           </span>
-                          <code className="text-[11px] font-mono text-foreground">
+                          <code className="text-[12px] font-mono text-foreground">
                             {lastError.requestId}
                           </code>
                           <Button
@@ -599,7 +599,7 @@ function ExecutiveReportsPage() {
                       )}
 
                       {lastError.raw && lastError.stage !== "teams_post" && (
-                        <details className="text-[11px] text-muted-foreground">
+                        <details className="text-[12px] text-muted-foreground">
                           <summary className="cursor-pointer">
                             {isAr ? "تفاصيل تقنية" : "Technical details"}
                           </summary>

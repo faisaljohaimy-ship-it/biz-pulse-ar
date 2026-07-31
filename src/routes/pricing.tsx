@@ -162,7 +162,7 @@ function PricingPage() {
               }`}
             >
               {t.featured ? (
-                <span className="absolute -top-3 right-6 rounded-full bg-primary px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary-foreground">
+                <span className="absolute -top-3 right-6 rounded-full bg-primary px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-primary-foreground">
                   {isAr ? "الأكثر اختياراً" : "Most popular"}
                 </span>
               ) : null}

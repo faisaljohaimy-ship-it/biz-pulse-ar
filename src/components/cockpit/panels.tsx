@@ -52,7 +52,7 @@ export function RuntimeFlowPanel({ snapshot }: { snapshot: CockpitSnapshot }) {
           onSelectStage={onSelectStage}
         />
         {level !== "executive" ? (
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-nx-pearl/56">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-nx-pearl/56">
             {snapshot.runtimeFlow.map((stage) => (
               <span key={stage.id} className="tabular-nums">
                 {stage.labelAr}: <bdi dir="ltr">{stage.durationMs}ms</bdi>

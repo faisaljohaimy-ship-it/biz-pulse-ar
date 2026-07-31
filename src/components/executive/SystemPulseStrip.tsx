@@ -35,13 +35,13 @@ export function SystemPulseStrip({
     <section className="rounded-xl border border-white/5 bg-background/40 backdrop-blur-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">
+          <div className="text-[12px] font-mono uppercase tracking-widest text-primary/80">
             System Pulse · نبض المنظومة
           </div>
           <div className="text-sm text-foreground/60 mt-0.5">الحالة اللحظية لكل وحدات النظام</div>
         </div>
         <div className="text-right">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-foreground/50">
+          <div className="text-[12px] font-mono uppercase tracking-widest text-foreground/50">
             Confidence
           </div>
           <div
@@ -59,13 +59,13 @@ export function SystemPulseStrip({
             title={c.detail}
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-mono uppercase tracking-wider opacity-80 truncate">
+              <span className="text-[12px] font-mono uppercase tracking-wider opacity-80 truncate">
                 {c.label_en}
               </span>
               <span className={`w-1.5 h-1.5 rounded-full ${DOT_CLASS[c.status]}`} />
             </div>
             <div className="mt-1 text-lg font-bold tabular-nums leading-none">{c.value}</div>
-            <div className="mt-1 text-[10px] font-mono opacity-70 truncate">{c.label_ar}</div>
+            <div className="mt-1 text-[12px] font-mono opacity-70 truncate">{c.label_ar}</div>
           </div>
         ))}
       </div>

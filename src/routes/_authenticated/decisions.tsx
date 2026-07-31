@@ -155,11 +155,11 @@ function RecommendationActions({ ar, title }: { ar: boolean; title: string }) {
           : "border-white/15 bg-white/[0.04] text-slate-300";
     return (
       <div className="mt-3 flex items-center gap-2">
-        <span className={`rounded-md border px-3 py-1 text-[11px] font-bold ${tone}`}>{label}</span>
+        <span className={`rounded-md border px-3 py-1 text-[12px] font-bold ${tone}`}>{label}</span>
         <button
           type="button"
           onClick={() => setDecision(null)}
-          className="min-h-11 rounded-md px-2 text-[11px] font-bold text-slate-400 hover:text-white"
+          className="min-h-11 rounded-md px-2 text-[12px] font-bold text-slate-400 hover:text-white"
         >
           {ar ? "تراجع" : "Undo"}
         </button>
@@ -170,10 +170,10 @@ function RecommendationActions({ ar, title }: { ar: boolean; title: string }) {
   if (pending) {
     return (
       <div className="mt-3 rounded-lg border border-amber-400/30 bg-amber-400/[0.06] p-2">
-        <div className="text-[11px] font-bold text-amber-200">
+        <div className="text-[12px] font-bold text-amber-200">
           {ar ? "تأكيد بشري إلزامي" : "Human confirmation required"}
         </div>
-        <div className="mt-1 text-[11px] text-white/70">
+        <div className="mt-1 text-[12px] text-white/70">
           {pending === "approved"
             ? ar
               ? "اعتماد هذه التوصية؟"
@@ -199,14 +199,14 @@ function RecommendationActions({ ar, title }: { ar: boolean; title: string }) {
                 { description: title },
               );
             }}
-            className="min-h-11 rounded-md border border-amber-400/40 bg-amber-400/15 px-3 text-[11px] font-bold text-amber-100 hover:bg-amber-400/25"
+            className="min-h-11 rounded-md border border-amber-400/40 bg-amber-400/15 px-3 text-[12px] font-bold text-amber-100 hover:bg-amber-400/25"
           >
             {ar ? "تأكيد" : "Confirm"}
           </button>
           <button
             type="button"
             onClick={() => setPending(null)}
-            className="min-h-11 rounded-md border border-white/10 px-3 text-[11px] font-bold text-slate-300 hover:bg-white/[0.06]"
+            className="min-h-11 rounded-md border border-white/10 px-3 text-[12px] font-bold text-slate-300 hover:bg-white/[0.06]"
           >
             {ar ? "إلغاء" : "Cancel"}
           </button>
@@ -220,7 +220,7 @@ function RecommendationActions({ ar, title }: { ar: boolean; title: string }) {
       <button
         type="button"
         onClick={() => setPending("approved")}
-        className="min-h-11 rounded-md border border-emerald-400/40 bg-emerald-400/10 px-3 text-[11px] font-bold text-emerald-300 hover:bg-emerald-400/20"
+        className="min-h-11 rounded-md border border-emerald-400/40 bg-emerald-400/10 px-3 text-[12px] font-bold text-emerald-300 hover:bg-emerald-400/20"
       >
         {ar ? "اعتماد" : "Approve"}
       </button>
@@ -230,14 +230,14 @@ function RecommendationActions({ ar, title }: { ar: boolean; title: string }) {
           setDecision("review");
           toast(ar ? "أُضيفت إلى قائمة المراجعة" : "Flagged for review", { description: title });
         }}
-        className="min-h-11 rounded-md border border-white/10 bg-white/[0.03] px-3 text-[11px] font-bold text-slate-300 hover:bg-white/[0.06]"
+        className="min-h-11 rounded-md border border-white/10 bg-white/[0.03] px-3 text-[12px] font-bold text-slate-300 hover:bg-white/[0.06]"
       >
         {ar ? "مراجعة" : "Review"}
       </button>
       <button
         type="button"
         onClick={() => setPending("rejected")}
-        className="min-h-11 rounded-md border border-rose-400/30 bg-rose-400/5 px-3 text-[11px] font-bold text-rose-300 hover:bg-rose-400/15"
+        className="min-h-11 rounded-md border border-rose-400/30 bg-rose-400/5 px-3 text-[12px] font-bold text-rose-300 hover:bg-rose-400/15"
       >
         {ar ? "رفض" : "Reject"}
       </button>
@@ -306,14 +306,14 @@ function DecisionsPage() {
       <NexusCard glow>
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "سجل القرارات" : "DECISION LEDGER"}
           </div>
         </div>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-[10px] uppercase tracking-widest text-slate-500">
+              <tr className="text-[12px] uppercase tracking-widest text-slate-500">
                 <th className="py-2 text-start">ID</th>
                 <th className="py-2 text-start">{ar ? "القرار" : "Decision"}</th>
                 <th className="py-2 text-start">{ar ? "المالك" : "Owner"}</th>
@@ -325,10 +325,10 @@ function DecisionsPage() {
             <tbody className="divide-y divide-white/5">
               {DECISIONS.map((d) => (
                 <tr key={d.id}>
-                  <td className="py-3 font-mono text-[11px] text-slate-500">{d.id}</td>
+                  <td className="py-3 font-mono text-[12px] text-slate-500">{d.id}</td>
                   <td className="py-3 font-semibold text-white">
                     {ar ? d.t_ar : d.t_en}
-                    <div className="text-[10px] text-slate-500">{d.date}</div>
+                    <div className="text-[12px] text-slate-500">{d.date}</div>
                   </td>
                   <td className="py-3 text-slate-400">{d.owner}</td>
                   <td className="py-3 text-cyan-300">{ar ? d.impact_ar : d.impact_en}</td>
@@ -346,7 +346,7 @@ function DecisionsPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-violet-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-violet-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
             {ar ? "توصيات الذكاء الاصطناعي" : "AI RECOMMENDATIONS PENDING REVIEW"}
           </div>
         </div>
@@ -360,7 +360,7 @@ function DecisionsPage() {
                 <div className="text-sm font-semibold text-white">{ar ? r.t_ar : r.t_en}</div>
                 <NexusPill tone="violet">{r.conf}%</NexusPill>
               </div>
-              <div className="mt-2 text-[11px] text-emerald-300">
+              <div className="mt-2 text-[12px] text-emerald-300">
                 {ar ? "أثر متوقع:" : "Expected impact:"} {r.impact}
               </div>
               <RecommendationActions ar={ar} title={ar ? r.t_ar : r.t_en} />
@@ -372,7 +372,7 @@ function DecisionsPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <AlertOctagon className="h-4 w-4 text-amber-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-amber-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-amber-300/80">
             {ar ? "تحليل الأثر الاستراتيجي" : "STRATEGIC IMPACT ANALYSIS"}
           </div>
         </div>
@@ -386,7 +386,7 @@ function DecisionsPage() {
             { l: ar ? "رضا العملاء" : "CSAT", v: "+6pt", tone: "violet" },
           ].map((s, i) => (
             <div key={i} className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-              <div className="text-[10px] uppercase tracking-widest text-slate-500">{s.l}</div>
+              <div className="text-[12px] uppercase tracking-widest text-slate-500">{s.l}</div>
               <div
                 className={`mt-2 text-2xl font-bold ${s.tone === "emerald" ? "text-emerald-300" : s.tone === "cyan" ? "text-cyan-300" : "text-violet-300"}`}
               >

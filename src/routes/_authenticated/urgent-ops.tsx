@@ -414,7 +414,7 @@ function UrgentOpsPage() {
                       <div className="mb-1 flex items-start justify-between gap-2">
                         <span
                           className={cn(
-                            "rounded border px-1.5 py-0.5 text-[10px]",
+                            "rounded border px-1.5 py-0.5 text-[12px]",
                             PRIORITY_COLOR[t.priority],
                           )}
                         >
@@ -422,7 +422,7 @@ function UrgentOpsPage() {
                         </span>
                         <span
                           className={cn(
-                            "text-[11px]",
+                            "text-[12px]",
                             cd.critical ? "text-red-300 font-bold" : "text-cyan-200/70",
                           )}
                         >
@@ -430,7 +430,7 @@ function UrgentOpsPage() {
                         </span>
                       </div>
                       <p className="font-medium text-cyan-50 leading-snug">{t.title_ar}</p>
-                      <div className="mt-2 flex items-center justify-between text-[11px] text-cyan-200/60">
+                      <div className="mt-2 flex items-center justify-between text-[12px] text-cyan-200/60">
                         <span>{t.department}</span>
                         <span>{t.owner_name ?? "—"}</span>
                       </div>
@@ -460,11 +460,11 @@ function UrgentOpsPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-cyan-50">{r.topic_ar}</p>
-                    <p className="text-[11px] text-cyan-200/60 mt-1">من: {r.requester}</p>
+                    <p className="text-[12px] text-cyan-200/60 mt-1">من: {r.requester}</p>
                   </div>
                   <span
                     className={cn(
-                      "shrink-0 rounded border px-1.5 py-0.5 text-[10px]",
+                      "shrink-0 rounded border px-1.5 py-0.5 text-[12px]",
                       CHANNEL_COLOR[r.channel],
                     )}
                   >
@@ -490,7 +490,7 @@ function UrgentOpsPage() {
                       <SelectItem value="د. ريم القحطاني">د. ريم القحطاني</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Badge variant="outline" className="border-cyan-500/30 text-cyan-200 text-[10px]">
+                  <Badge variant="outline" className="border-cyan-500/30 text-cyan-200 text-[12px]">
                     {r.status}
                   </Badge>
                 </div>
@@ -508,7 +508,7 @@ function UrgentOpsPage() {
             <CardTitle className="flex items-center gap-2 text-cyan-100">
               <Sparkles className="h-4 w-4" /> مقترحات FINN لتطوير المنظومة
             </CardTitle>
-            <p className="text-[11px] text-amber-200/80 mt-1">
+            <p className="text-[12px] text-amber-200/80 mt-1">
               FINN تقترح وتجهّز — الاعتماد النهائي بشري.
             </p>
           </CardHeader>
@@ -520,13 +520,13 @@ function UrgentOpsPage() {
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className="border-cyan-500/40 text-cyan-200 text-[10px]"
+                        className="border-cyan-500/40 text-cyan-200 text-[12px]"
                       >
                         {p.area}
                       </Badge>
                       <Badge
                         className={cn(
-                          "text-[10px] border",
+                          "text-[12px] border",
                           p.impact === "حرج"
                             ? "bg-red-600/20 text-red-200 border-red-500/40"
                             : p.impact === "عالٍ"
@@ -541,7 +541,7 @@ function UrgentOpsPage() {
                   </div>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="text-[11px] text-cyan-200/60">
+                  <span className="text-[12px] text-cyan-200/60">
                     الحالة: {p.status}
                     {p.decided_by ? ` · ${p.decided_by}` : ""}
                   </span>

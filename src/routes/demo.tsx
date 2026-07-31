@@ -75,7 +75,7 @@ function DemoCenter() {
           </div>
           <div className="leading-tight">
             <div className="text-sm font-bold tracking-wide">NEXUS</div>
-            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="text-[12px] uppercase tracking-[0.2em] text-muted-foreground">
               Demo Center
             </div>
           </div>
@@ -92,7 +92,7 @@ function DemoCenter() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-primary">
               {isAr ? "بيئة عرض مباشرة" : "Live Demo Environment"}
             </span>
           </div>
@@ -176,7 +176,7 @@ function DemoCenter() {
               <div className="text-sm font-semibold">
                 {isAr ? "اطلب بيئة مخصصة" : "Request a tailored environment"}
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-[12px] text-muted-foreground">
                 {isAr ? "مهيأة لقطاعك وبياناتك" : "Configured for your sector and data"}
               </div>
             </div>
@@ -192,7 +192,7 @@ function DemoCenter() {
               <div className="text-sm font-semibold">
                 {isAr ? "احجز جلسة تنفيذية" : "Book an executive session"}
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-[12px] text-muted-foreground">
                 {isAr ? "مراجعة مباشرة مع الفريق" : "Live review with the team"}
               </div>
             </div>
@@ -231,17 +231,17 @@ function DemoCenter() {
             ].map((a) => (
               <div key={a.role} className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">
+                  <span className="text-[12px] font-semibold uppercase tracking-widest text-primary">
                     {a.role}
                   </span>
                   <a.icon className="h-3.5 w-3.5 text-muted-foreground" />
                 </div>
                 <div className="mt-1.5 text-sm font-semibold">{a.name}</div>
-                <div className="truncate text-[11px] text-muted-foreground">{a.email}</div>
+                <div className="truncate text-[12px] text-muted-foreground">{a.email}</div>
               </div>
             ))}
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <div className="mt-3 flex items-center gap-1.5 text-[12px] text-muted-foreground">
             <Shield className="h-3 w-3" />
             {isAr
               ? "كل حسابات العرض معزولة عن بيانات العميل الحقيقية"
@@ -362,7 +362,7 @@ function CtaCard({
       <div className="flex-1">
         <div className="text-sm font-semibold">{title}</div>
         <div
-          className={`text-[11px] ${primary ? "text-primary-foreground/80" : "text-muted-foreground"}`}
+          className={`text-[12px] ${primary ? "text-primary-foreground/80" : "text-muted-foreground"}`}
         >
           {desc}
         </div>

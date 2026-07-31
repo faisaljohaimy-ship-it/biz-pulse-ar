@@ -422,7 +422,7 @@ function MicrosoftSettingsPage() {
           <div className="flex items-center justify-between rounded-md border border-border p-3">
             <div>
               <div className="text-sm font-medium">Outlook</div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-[12px] text-muted-foreground">
                 {isAr ? "آخر 25 رسالة في الصندوق" : "Latest 25 inbox messages"}
               </div>
             </div>
@@ -431,7 +431,7 @@ function MicrosoftSettingsPage() {
           <div className="flex items-center justify-between rounded-md border border-border p-3">
             <div>
               <div className="text-sm font-medium">SharePoint</div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-[12px] text-muted-foreground">
                 {isAr ? "أحدث ملفات الموقع الافتراضي" : "Default site recent items"}
               </div>
             </div>

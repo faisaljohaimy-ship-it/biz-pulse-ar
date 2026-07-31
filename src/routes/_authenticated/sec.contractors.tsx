@@ -126,10 +126,10 @@ function ContractorsPage() {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="text-sm font-semibold text-foreground">{c.name}</div>
-                <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">{c.ref}</div>
+                <div className="mt-0.5 font-mono text-[12px] text-muted-foreground">{c.ref}</div>
               </div>
               <span
-                className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(c.status)}`}
+                className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(c.status)}`}
               >
                 {c.status}
               </span>
@@ -156,7 +156,7 @@ function ContractorsPage() {
                 {c.permit_types.map((p) => (
                   <span
                     key={p}
-                    className="rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                    className="rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[12px] text-muted-foreground"
                   >
                     {p}
                   </span>
@@ -164,18 +164,18 @@ function ContractorsPage() {
               </div>
             )}
             {(c.phone || c.email) && (
-              <div className="mt-2 space-y-0.5 text-[11px] text-muted-foreground">
+              <div className="mt-2 space-y-0.5 text-[12px] text-muted-foreground">
                 {c.phone && <div>📞 {c.phone}</div>}
                 {c.email && <div dir="ltr">✉️ {c.email}</div>}
               </div>
             )}
             {c.expires_at && (
-              <div className="mt-2 text-[11px] text-muted-foreground">
+              <div className="mt-2 text-[12px] text-muted-foreground">
                 ينتهي العقد: {new Date(c.expires_at).toLocaleDateString("ar-SA")}
               </div>
             )}
             {c.insurance_expiry && (
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-[12px] text-muted-foreground">
                 انتهاء التأمين: {new Date(c.insurance_expiry).toLocaleDateString("ar-SA")}
               </div>
             )}

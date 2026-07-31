@@ -67,7 +67,7 @@ export function SystemModulesDashboard() {
         <h2 className="text-sm font-semibold tracking-tight text-white sm:text-base">
           {ar ? "وحدات النظام" : "System Modules"}
         </h2>
-        <span className="text-[10px] uppercase tracking-[0.24em] text-[#3AE8FF]/70">
+        <span className="text-[12px] uppercase tracking-[0.24em] text-[#3AE8FF]/70">
           {ar ? "لوحة تنفيذية" : "Executive Dashboard"}
         </span>
       </div>

@@ -148,7 +148,7 @@ export function BridgeFilmPlayer({ lang, onLaunchLive, className }: BridgeFilmPl
           backgroundPosition: "center",
         }}
       >
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
+        <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.24em] text-white/70">
           <Film className="h-3.5 w-3.5 text-[#3AE8FF]" aria-hidden />
           {ar ? "الفيلم قيد التجهيز" : "Film in production"}
         </span>

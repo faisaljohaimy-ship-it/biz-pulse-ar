@@ -88,12 +88,12 @@ function OpsRoom() {
                   <li key={i.id} className="flex items-center justify-between py-2 text-sm">
                     <div className="min-w-0">
                       <div className="truncate font-medium text-foreground">{i.title_ar}</div>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-[12px] text-muted-foreground">
                         {i.ref} · {i.category}
                       </div>
                     </div>
                     <span
-                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${severityClass(i.severity)}`}
+                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[12px] font-medium ${severityClass(i.severity)}`}
                     >
                       {i.severity}
                     </span>
@@ -115,12 +115,12 @@ function OpsRoom() {
                       <div className="truncate font-medium text-foreground">
                         {p.team} — {p.route}
                       </div>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-[12px] text-muted-foreground">
                         {p.ref} · نقاط: {p.checkpoints_done}/{p.checkpoints_total}
                       </div>
                     </div>
                     <span
-                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusClass(p.status)}`}
+                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[12px] font-medium ${statusClass(p.status)}`}
                     >
                       {p.status}
                     </span>
@@ -135,12 +135,12 @@ function OpsRoom() {
                   <li key={c.id} className="flex items-center justify-between py-2 text-sm">
                     <div className="min-w-0">
                       <div className="truncate font-medium text-foreground">{c.alert_type}</div>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-[12px] text-muted-foreground">
                         {c.camera_code} · ثقة {Math.round(c.confidence * 100)}%
                       </div>
                     </div>
                     <span
-                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusClass(c.status)}`}
+                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[12px] font-medium ${statusClass(c.status)}`}
                     >
                       {c.status}
                     </span>
@@ -155,12 +155,12 @@ function OpsRoom() {
                   <li key={v.id} className="flex items-center justify-between py-2 text-sm">
                     <div className="min-w-0">
                       <div className="truncate font-medium text-foreground">{v.full_name}</div>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-[12px] text-muted-foreground">
                         {v.organization ?? "—"} · مضيف: {v.host}
                       </div>
                     </div>
                     <span
-                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusClass(v.status)}`}
+                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[12px] font-medium ${statusClass(v.status)}`}
                     >
                       {v.status}
                     </span>

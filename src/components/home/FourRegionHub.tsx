@@ -67,7 +67,7 @@ function LiveClock({ ar }: { ar: boolean }) {
           second: "2-digit",
         }) ?? "—"}
       </div>
-      <div className="text-[10px] text-white/50">
+      <div className="text-[12px] text-white/50">
         {now?.toLocaleDateString(ar ? "ar-SA" : "en-US", {
           weekday: "long",
           day: "numeric",
@@ -151,7 +151,7 @@ function RegionCard({
               {ar ? region.shortAr : region.shortEn}
             </span>
             {active && (
-              <span className="shrink-0 rounded-md border border-white/25 bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+              <span className="shrink-0 rounded-md border border-white/25 bg-white/10 px-1.5 py-0.5 text-[12px] font-semibold text-white">
                 {ar ? "المنطقة الحالية" : "Current"}
               </span>
             )}
@@ -172,7 +172,7 @@ function RegionCard({
             <span className="text-sm font-black tabular-nums text-white">
               {panel.metrics[metric.key]}
             </span>
-            <span className="mt-0.5 text-[11px] text-white/65">{ar ? metric.ar : metric.en}</span>
+            <span className="mt-0.5 text-[12px] text-white/65">{ar ? metric.ar : metric.en}</span>
           </Link>
         ))}
       </div>
@@ -318,7 +318,7 @@ export function FourRegionHub() {
         </div>
 
         <div className="min-w-[220px] flex-1 text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyan-300/75">
+          <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-cyan-300/75">
             {ar ? "منصة إدارة الأمن الصناعي" : "Industrial Security Management Platform"}
           </p>
           <h1 className="mt-1 text-xl font-black text-white sm:text-2xl">
@@ -333,7 +333,7 @@ export function FourRegionHub() {
         >
           <Bell className="h-4 w-4" aria-hidden />
           {alerts.length > 0 && (
-            <span className="nx-hub-pulse absolute -end-1 -top-1 grid min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">
+            <span className="nx-hub-pulse absolute -end-1 -top-1 grid min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[12px] font-bold text-white">
               {alerts.length}
             </span>
           )}
@@ -341,7 +341,7 @@ export function FourRegionHub() {
       </header>
 
       {simulation && (
-        <div className="relative mt-3 inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-[11px] text-amber-200">
+        <div className="relative mt-3 inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-[12px] text-amber-200">
           <FlaskConical className="h-3.5 w-3.5" aria-hidden />
           {ar ? "بيانات محاكاة مرجعية" : "Reference simulation"}
         </div>
@@ -427,7 +427,7 @@ export function FourRegionHub() {
                   </span>
                   <span className="flex shrink-0 items-center gap-2 text-white/50">
                     <span>{alert.department}</span>
-                    <span className="rounded-md border border-white/10 px-1.5 py-0.5 text-[11px]">
+                    <span className="rounded-md border border-white/10 px-1.5 py-0.5 text-[12px]">
                       {ar ? SEVERITY_LABEL_AR[severity] : severity}
                     </span>
                   </span>

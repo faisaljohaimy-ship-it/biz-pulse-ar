@@ -222,12 +222,12 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
             >
               <span className="flex items-center justify-between text-sm font-semibold text-nx-pearl">
                 {n.titleAr}
-                <bdi className="text-[11px] font-normal text-nx-pearl/64" dir="ltr">
+                <bdi className="text-[12px] font-normal text-nx-pearl/64" dir="ltr">
                   {n.time}
                 </bdi>
               </span>
               <span className="text-xs text-nx-pearl/64">{n.detailAr}</span>
-              {!n.read ? <span className="text-[10px] text-nx-cyan">غير مقروء</span> : null}
+              {!n.read ? <span className="text-[12px] text-nx-cyan">غير مقروء</span> : null}
             </li>
           ))}
         </ul>
@@ -296,7 +296,7 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
                   className="flex min-h-11 w-full items-center justify-between gap-2 rounded-nx-8 px-2 text-start text-sm text-nx-pearl/80 hover:bg-white/6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
                 >
                   {r.labelAr}
-                  <span className="text-[10px] text-nx-pearl/64">{r.kind}</span>
+                  <span className="text-[12px] text-nx-pearl/64">{r.kind}</span>
                 </button>
               </li>
             ))}
@@ -488,7 +488,7 @@ function InitiativeCreateForm({ onDone }: { onDone: () => void }) {
         </div>
       </fieldset>
       {error ? <p className="text-xs text-nx-critical">{error}</p> : null}
-      <p className="text-[11px] text-nx-pearl/64">
+      <p className="text-[12px] text-nx-pearl/64">
         الإنشاء يسجَّل في بيئة المحاكاة المرجعية فقط، ويمر عبر بوابة الاعتماد قبل أي تنفيذ.
       </p>
       <NxButton
@@ -532,7 +532,7 @@ function SectorReportBody({ snapshot }: { snapshot: CockpitSnapshot }) {
           ))}
         </tbody>
       </table>
-      <p className="text-[11px] text-nx-pearl/64">
+      <p className="text-[12px] text-nx-pearl/64">
         محاكاة مرجعية موسومة — التقرير الرسمي يصدر من وحدة التقارير.
       </p>
       <a

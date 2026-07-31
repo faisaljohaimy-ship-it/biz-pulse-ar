@@ -115,7 +115,7 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
                     key={b.label}
                     className="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 px-5 py-3 backdrop-blur"
                   >
-                    <div className="text-[10px] uppercase tracking-wider text-cyan-200/70">
+                    <div className="text-[12px] uppercase tracking-wider text-cyan-200/70">
                       {b.label}
                     </div>
                     <div className="mt-1 text-2xl font-semibold tabular-nums text-white">
@@ -154,7 +154,7 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-4">
               <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2">
-                <div className="text-[10px] uppercase tracking-wider text-white/50">
+                <div className="text-[12px] uppercase tracking-wider text-white/50">
                   {ar ? "الثقة" : "Confidence"}
                 </div>
                 <div className="text-xl font-semibold text-emerald-200 tabular-nums">
@@ -162,7 +162,7 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
                 </div>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2">
-                <div className="text-[10px] uppercase tracking-wider text-white/50">
+                <div className="text-[12px] uppercase tracking-wider text-white/50">
                   {ar ? "الأفق" : "Horizon"}
                 </div>
                 <div className="text-xl font-semibold text-cyan-200 tabular-nums">

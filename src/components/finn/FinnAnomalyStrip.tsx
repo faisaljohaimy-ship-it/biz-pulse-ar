@@ -42,11 +42,11 @@ export function FinnAnomalyStrip({ className = "" }: { readonly className?: stri
             <AlertTriangle className="h-4 w-4" aria-hidden />
           </span>
           <h2 className="text-sm font-bold text-white sm:text-base">كشف شذوذ المؤشرات</h2>
-          <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold text-white/60">
+          <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[12px] font-semibold text-white/60">
             {anomalies.length}
           </span>
         </div>
-        <SimBadge ar className="text-[9px]" />
+        <SimBadge ar className="text-[12px]" />
       </div>
 
       {anomalies.length === 0 ? (
@@ -77,7 +77,7 @@ export function FinnAnomalyStrip({ className = "" }: { readonly className?: stri
                       {a.metricAr} · {a.regionAr}
                     </span>
                     <span
-                      className={`rounded-full border px-1.5 py-0.5 text-[9px] font-bold ${t.chip}`}
+                      className={`rounded-full border px-1.5 py-0.5 text-[12px] font-bold ${t.chip}`}
                     >
                       {t.ar}
                     </span>

@@ -118,7 +118,7 @@ function RuntimeHub() {
                       </span>
                       <div className="relative">
                         <div className="text-sm font-semibold">{stage.label_ar}</div>
-                        <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/80">
+                        <div className="text-[12px] uppercase tracking-[0.3em] text-[#3AE8FF]/80">
                           {stage.label_en}
                         </div>
                       </div>
@@ -134,12 +134,12 @@ function RuntimeHub() {
                         </span>
                         <div className="text-right">
                           <div className="text-sm font-medium">{stage.label_ar}</div>
-                          <div className="text-[11px] uppercase tracking-wider text-white/40">
+                          <div className="text-[12px] uppercase tracking-wider text-white/40">
                             {stage.label_en}
                           </div>
                         </div>
                       </div>
-                      <span className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-[#3AE8FF]">
+                      <span className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider text-[#3AE8FF]">
                         <span className="h-1.5 w-1.5 rounded-full bg-[#3AE8FF] shadow-[0_0_10px_#3AE8FF] animate-pulse" />
                         Ready
                       </span>
@@ -151,7 +151,7 @@ function RuntimeHub() {
           })}
         </ul>
 
-        <p className="mt-6 text-center text-[11px] uppercase tracking-[0.3em] text-white/30">
+        <p className="mt-6 text-center text-[12px] uppercase tracking-[0.3em] text-white/30">
           Enterprise Runtime · v1.0
         </p>
       </div>

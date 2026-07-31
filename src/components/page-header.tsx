@@ -26,7 +26,7 @@ export function PageHeader({
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h1>
             {badge && (
-              <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent">
+              <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[12px] font-semibold uppercase tracking-wider text-accent">
                 {badge}
               </span>
             )}
@@ -68,7 +68,7 @@ export function ModuleCard({
           <div className="text-sm font-semibold">{title}</div>
         </div>
         {tag && (
-          <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
+          <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[12px] font-semibold uppercase text-muted-foreground">
             {tag}
           </span>
         )}

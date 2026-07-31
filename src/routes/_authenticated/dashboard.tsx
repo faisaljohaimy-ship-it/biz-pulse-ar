@@ -232,9 +232,9 @@ function NodeCard({
         >
           {n.ar}
         </div>
-        <div className="text-[10px] text-foreground/40 uppercase tracking-wider mt-0.5">{n.en}</div>
+        <div className="text-[12px] text-foreground/40 uppercase tracking-wider mt-0.5">{n.en}</div>
         {n.hint && (
-          <div className={`text-[10px] font-mono mt-2 ${t.text} opacity-80`}>{n.hint(k)}</div>
+          <div className={`text-[12px] font-mono mt-2 ${t.text} opacity-80`}>{n.hint(k)}</div>
         )}
       </div>
     </Link>
@@ -256,11 +256,11 @@ function KpiStat({
   return (
     <div className="relative p-4 rounded-xl bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-xl border border-white/5 overflow-hidden">
       <div className={`absolute inset-y-0 right-0 w-px ${t.bg} opacity-70`} />
-      <div className="text-[10px] uppercase tracking-[0.25em] text-foreground/50 font-mono">
+      <div className="text-[12px] uppercase tracking-[0.25em] text-foreground/50 font-mono">
         {label}
       </div>
       <div className={`mt-2 text-3xl font-bold tabular-nums ${t.text}`}>{value}</div>
-      {sub && <div className="text-[11px] text-foreground/40 font-mono mt-1">{sub}</div>}
+      {sub && <div className="text-[12px] text-foreground/40 font-mono mt-1">{sub}</div>}
     </div>
   );
 }
@@ -269,7 +269,7 @@ function ProgressBar({ label, value, color }: { label: string; value: number; co
   const v = Math.max(0, Math.min(100, value));
   return (
     <div>
-      <div className="flex justify-between text-[10px] font-mono text-foreground/60 uppercase tracking-widest mb-1.5">
+      <div className="flex justify-between text-[12px] font-mono text-foreground/60 uppercase tracking-widest mb-1.5">
         <span>{label}</span>
         <span className="text-foreground/90">{Math.round(value)}%</span>
       </div>
@@ -299,13 +299,13 @@ function TierLabel({
       <div
         className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${color} bg-background/60 backdrop-blur`}
       >
-        <span className="text-[10px] font-mono tracking-widest text-foreground/70">
+        <span className="text-[12px] font-mono tracking-widest text-foreground/70">
           TIER {index}
         </span>
       </div>
       <div>
         <div className="text-sm font-semibold text-foreground">{ar}</div>
-        <div className="text-[10px] text-foreground/40 uppercase tracking-wider">{en}</div>
+        <div className="text-[12px] text-foreground/40 uppercase tracking-wider">{en}</div>
       </div>
       <div className="flex-1 h-px bg-gradient-to-l from-white/10 to-transparent" />
     </div>
@@ -381,7 +381,7 @@ function OperationsCockpit() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span
-                className={`inline-flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase ${sysTone}`}
+                className={`inline-flex items-center gap-1.5 text-[12px] font-mono tracking-widest uppercase ${sysTone}`}
               >
                 <span
                   className={`w-1.5 h-1.5 rounded-full bg-current ${kpisQ.isFetching ? "animate-pulse" : ""}`}
@@ -398,7 +398,7 @@ function OperationsCockpit() {
                 tone="cyan"
               />
 
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase text-primary/80">
+              <span className="inline-flex items-center gap-1.5 text-[12px] font-mono tracking-widest uppercase text-primary/80">
                 <Cpu className="w-3 h-3" /> NEXUS · AI · OS
               </span>
             </div>
@@ -413,7 +413,7 @@ function OperationsCockpit() {
             <div className="text-3xl font-mono text-primary tracking-widest tabular-nums">
               {time}
             </div>
-            <div className="flex items-center gap-2 justify-end text-[10px] text-foreground/40 uppercase tracking-widest font-mono mt-1">
+            <div className="flex items-center gap-2 justify-end text-[12px] text-foreground/40 uppercase tracking-widest font-mono mt-1">
               <Radio className="w-3 h-3 text-primary animate-pulse" />
               JED · MKK · YBU
             </div>
@@ -509,7 +509,7 @@ function OperationsCockpit() {
             <div className="p-4 rounded-xl bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-xl border border-white/5">
               <div className="flex items-center gap-2 mb-4">
                 <SignalHigh className="w-4 h-4 text-primary" />
-                <span className="text-[10px] tracking-[0.3em] uppercase text-foreground/60 font-mono">
+                <span className="text-[12px] tracking-[0.3em] uppercase text-foreground/60 font-mono">
                   Live Telemetry
                 </span>
               </div>
@@ -534,10 +534,10 @@ function OperationsCockpit() {
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-xl border border-white/5 font-mono text-[11px] leading-relaxed">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-xl border border-white/5 font-mono text-[12px] leading-relaxed">
               <div className="flex items-center gap-2 mb-3">
                 <Activity className="w-4 h-4 text-secondary" />
-                <span className="text-[10px] tracking-[0.3em] uppercase text-foreground/60">
+                <span className="text-[12px] tracking-[0.3em] uppercase text-foreground/60">
                   Edge Nodes
                 </span>
               </div>

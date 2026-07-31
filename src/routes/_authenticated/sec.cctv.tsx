@@ -54,7 +54,7 @@ function CCTV() {
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold text-foreground">{c.alert_type}</div>
               <span
-                className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(c.status)}`}
+                className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(c.status)}`}
               >
                 {c.status}
               </span>
@@ -69,11 +69,11 @@ function CCTV() {
             <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
               <div className="h-full bg-primary" style={{ width: `${c.confidence * 100}%` }} />
             </div>
-            <div className="mt-2 text-[11px] text-muted-foreground">
+            <div className="mt-2 text-[12px] text-muted-foreground">
               {new Date(c.detected_at).toLocaleString("ar-SA")}
             </div>
             {c.acknowledged_by && (
-              <div className="mt-1 text-[11px] text-muted-foreground">
+              <div className="mt-1 text-[12px] text-muted-foreground">
                 استجاب: {c.acknowledged_by}
               </div>
             )}

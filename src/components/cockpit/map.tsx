@@ -221,7 +221,7 @@ function RegionMetricCards({
                 {region.readiness}
                 <span className="text-xs font-medium text-nx-pearl/56">٪</span>
               </span>
-              <span className="text-[11px] tabular-nums text-nx-success" dir="ltr">
+              <span className="text-[12px] tabular-nums text-nx-success" dir="ltr">
                 ▲ {region.trend}%
               </span>
             </span>
@@ -232,7 +232,7 @@ function RegionMetricCards({
               label={`اتجاه جاهزية ${region.labelAr}: صاعد`}
               className="text-current opacity-70"
             />
-            <span className="text-[11px] text-nx-pearl/56">
+            <span className="text-[12px] text-nx-pearl/56">
               الحالة: {STATUS_WORD[region.status]} · بلاغات مفتوحة: {region.openIncidents}
             </span>
           </button>
@@ -371,7 +371,7 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
           />
         ))}
       </div>
-      <span className="absolute bottom-2 start-2 rounded-nx-8 border border-white/10 bg-nx-obsidian/70 px-2 py-0.5 text-[10px] text-nx-pearl/56">
+      <span className="absolute bottom-2 start-2 rounded-nx-8 border border-white/10 bg-nx-obsidian/70 px-2 py-0.5 text-[12px] text-nx-pearl/56">
         مخطط تمثيلي للعرض — ليس حدودًا جغرافية رسمية
       </span>
       {regionLoading ? (

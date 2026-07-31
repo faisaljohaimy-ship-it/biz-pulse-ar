@@ -186,7 +186,7 @@ function SceneView({ scene, ar }: { scene: Scene; ar: boolean }) {
       style={{ backgroundImage: a.glow }}
     >
       <div
-        className={cn("flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em]", a.text)}
+        className={cn("flex items-center gap-2 text-[12px] font-semibold tracking-[0.2em]", a.text)}
       >
         <span className={cn("h-1.5 w-1.5 rounded-full", a.dot)} />
         <span className="uppercase">{ar ? scene.kicker_ar : scene.kicker_en}</span>
@@ -199,7 +199,7 @@ function SceneView({ scene, ar }: { scene: Scene; ar: boolean }) {
       </p>
 
       {scene.showSimRibbon && (
-        <span className="inline-flex w-fit items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-2.5 py-1 text-[10px] font-semibold text-[#3AE8FF]">
+        <span className="inline-flex w-fit items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-2.5 py-1 text-[12px] font-semibold text-[#3AE8FF]">
           {ar ? "محاكاة · لقطة عامة" : "SIM · PUBLIC SNAPSHOT"}
         </span>
       )}
@@ -350,7 +350,7 @@ export function ExecutivePresentationPlayer() {
             <span
               key={s.id}
               className={cn(
-                "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] transition-all",
+                "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] transition-all",
                 i === sceneIdx && (phase === "playing" || phase === "paused" || phase === "done")
                   ? "border-cyan-300/70 bg-cyan-400/15 font-semibold text-cyan-100"
                   : "border-white/10 text-white/45",
@@ -405,11 +405,11 @@ export function ExecutivePresentationPlayer() {
 
           {phase === "playing" && !videoFailed && (
             <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between gap-2 p-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-200/30 bg-[#04111f]/65 px-2.5 py-1 text-[9px] font-bold tracking-[0.2em] text-cyan-100 backdrop-blur-xl">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-200/30 bg-[#04111f]/65 px-2.5 py-1 text-[12px] font-bold tracking-[0.2em] text-cyan-100 backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_10px_#22d3ee]" />
                 FINN · FILM
               </span>
-              <span className="rounded-full border border-white/15 bg-black/45 px-2 py-1 font-mono text-[9px] text-white/70 backdrop-blur-xl">
+              <span className="rounded-full border border-white/15 bg-black/45 px-2 py-1 font-mono text-[12px] text-white/70 backdrop-blur-xl">
                 {EXECUTIVE_PRESENTATION_MEDIA.durationLabel}
               </span>
             </div>
@@ -464,7 +464,7 @@ export function ExecutivePresentationPlayer() {
                     ? "إعادة العرض"
                     : "ابدأ العرض التنفيذي"}
               </span>
-              <span dir="rtl" className="text-[10px] text-cyan-200/80">
+              <span dir="rtl" className="text-[12px] text-cyan-200/80">
                 FINN ترافقك صوتياً خلال جولة المنصة
               </span>
             </button>
@@ -566,7 +566,7 @@ export function ExecutivePresentationPlayer() {
               <SkipForward className="h-5 w-5" data-flip-rtl />
             </button>
           </div>
-          <div className="text-[11px] font-semibold tracking-wide text-white/60">
+          <div className="text-[12px] font-semibold tracking-wide text-white/60">
             {ar ? activeScene.kicker_ar : activeScene.kicker_en}
             <span className="mx-1.5 text-white/25">·</span>
             <span className="font-mono tabular-nums">

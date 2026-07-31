@@ -286,7 +286,7 @@ function ExecutiveBriefingPage() {
                 </div>
                 <h3 className="mt-4 text-base font-medium text-foreground">{k.title}</h3>
                 <p className="mt-1.5 text-sm text-muted-foreground">{k.desc}</p>
-                <div className="mt-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground/70">
+                <div className="mt-4 text-[12px] uppercase tracking-[0.18em] text-muted-foreground/70">
                   {k.duration}
                 </div>
               </button>

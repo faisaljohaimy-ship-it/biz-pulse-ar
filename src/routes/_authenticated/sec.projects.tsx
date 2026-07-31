@@ -72,7 +72,7 @@ function Projects() {
                 </p>
               </div>
               <span
-                className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${HEALTH_CLR[p.health]}`}
+                className={`shrink-0 rounded-full border px-2 py-0.5 text-[12px] font-semibold ${HEALTH_CLR[p.health]}`}
               >
                 صحة {p.health}
               </span>
@@ -105,12 +105,12 @@ function Projects() {
                 <div className="font-medium text-foreground">{p.contractor ?? "—"}</div>
               </div>
             </div>
-            <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+            <div className="mt-2 flex justify-between text-[12px] text-muted-foreground">
               <span>من {p.starts_at ?? "—"}</span>
               <span>إلى {p.ends_at ?? "—"}</span>
             </div>
             <div className="mt-2">
-              <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px]">
+              <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[12px]">
                 {p.status}
               </span>
             </div>

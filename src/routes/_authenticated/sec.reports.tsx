@@ -222,7 +222,7 @@ function Reports() {
         subtitle="تصدير الملخصات والتقارير من واجهة الأمن الصناعي (PDF عربي · Excel)"
       >
         {usingReference && (
-          <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[10px] font-medium text-amber-600 dark:text-amber-300">
+          <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[12px] font-medium text-amber-600 dark:text-amber-300">
             سجل مرجعي · محاكاة
           </span>
         )}
@@ -244,7 +244,7 @@ function Reports() {
         <div className="mb-3 text-sm font-medium text-foreground">تصدير ملخص أو تقرير أمني</div>
         <div className="flex flex-wrap items-end gap-2">
           <div className="grid min-w-56 gap-1">
-            <label className="text-[10px] text-muted-foreground">نوع الملخص</label>
+            <label className="text-[12px] text-muted-foreground">نوع الملخص</label>
             <Select value={scope} onValueChange={(value) => setScope(value as DailyReportScope)}>
               <SelectTrigger>
                 <SelectValue />
@@ -259,7 +259,7 @@ function Reports() {
             </Select>
           </div>
           <div className="grid gap-1">
-            <label className="text-[10px] text-muted-foreground">التاريخ</label>
+            <label className="text-[12px] text-muted-foreground">التاريخ</label>
             <Input
               type="date"
               value={day}
@@ -299,7 +299,7 @@ function Reports() {
             />
           </div>
         )}
-        <p className="mt-2 text-[11px] text-muted-foreground">
+        <p className="mt-2 text-[12px] text-muted-foreground">
           يطبّق الفلتر على محتوى التقرير نفسه، وليس على اسم الملف فقط. تُجمع البيانات خلال 24 ساعة
           من التاريخ المحدد، ويُحفظ التقرير الكامل أو الملخص المختار في سجل التقارير.
         </p>
@@ -321,12 +321,12 @@ function Reports() {
                   )}
                   <span className="truncate">{r.title}</span>
                   {(r.id.startsWith("sim-rep-") || r.meta?.simulated) && (
-                    <span className="shrink-0 rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[9px] text-amber-600 dark:text-amber-300">
+                    <span className="shrink-0 rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[12px] text-amber-600 dark:text-amber-300">
                       محاكاة
                     </span>
                   )}
                 </div>
-                <div className="mt-0.5 text-[11px] text-muted-foreground">
+                <div className="mt-0.5 text-[12px] text-muted-foreground">
                   <span className="uppercase">{r.kind}</span> · {r.format.toUpperCase()}
                   {r.size_bytes != null && (
                     <> · {Math.max(1, Math.round(r.size_bytes / 1024))} KB</>

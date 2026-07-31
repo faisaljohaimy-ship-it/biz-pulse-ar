@@ -208,7 +208,7 @@ export function FilmShell({ film }: Props) {
           </div>
 
           {audioState === "absent" && (
-            <div className="absolute top-3 left-3 z-[110] rounded-full border border-amber-400/50 bg-amber-500/15 px-3 py-1 text-[11px] font-semibold text-amber-200 backdrop-blur">
+            <div className="absolute top-3 left-3 z-[110] rounded-full border border-amber-400/50 bg-amber-500/15 px-3 py-1 text-[12px] font-semibold text-amber-200 backdrop-blur">
               الصوت قيد الإضافة
             </div>
           )}
@@ -254,7 +254,7 @@ function PlayGate({
           ▶ شغّل الفيلم
         </button>
         {audioMissing && (
-          <span className="mt-2 rounded-full border border-amber-400/40 bg-amber-500/10 px-3 py-1 text-[11px] text-amber-200">
+          <span className="mt-2 rounded-full border border-amber-400/40 bg-amber-500/10 px-3 py-1 text-[12px] text-amber-200">
             الصوت قيد الإضافة — سيتم عرض المشاهد والنصوص
           </span>
         )}
@@ -313,7 +313,7 @@ export function TitleCard({
         className="text-center"
       >
         {eyebrow && (
-          <div className="mb-4 text-[10px] uppercase tracking-[0.55em]" style={{ color: accent }}>
+          <div className="mb-4 text-[12px] uppercase tracking-[0.55em]" style={{ color: accent }}>
             {eyebrow}
           </div>
         )}
@@ -351,7 +351,7 @@ export function ClosingLockup({
         }}
       />
       <div style={{ opacity: o }} className="text-center">
-        <div className="mb-3 text-[10px] uppercase tracking-[0.5em]" style={{ color: accent }}>
+        <div className="mb-3 text-[12px] uppercase tracking-[0.5em]" style={{ color: accent }}>
           Nexios
         </div>
         <h2 className="text-3xl font-black text-white md:text-5xl">{title}</h2>
@@ -363,7 +363,7 @@ export function ClosingLockup({
             {cta}
           </div>
         )}
-        {smallPrint && <div className="mt-6 text-[10px] text-white/40">{smallPrint}</div>}
+        {smallPrint && <div className="mt-6 text-[12px] text-white/40">{smallPrint}</div>}
       </div>
     </div>
   );

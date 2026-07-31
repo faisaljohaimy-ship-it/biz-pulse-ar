@@ -161,7 +161,7 @@ function AuthPage() {
               ].map((item) => (
                 <span
                   key={item.en}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-[11px] text-white/70"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-[12px] text-white/70"
                 >
                   <item.icon className="h-3 w-3 text-primary" />
                   {isAr ? item.ar : item.en}
@@ -197,7 +197,7 @@ function AuthPage() {
             {isAr ? "المتابعة عبر Google" : "Continue with Google"}
           </Button>
 
-          <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-white/35">
+          <div className="my-5 flex items-center gap-3 text-[12px] uppercase tracking-[0.22em] text-white/35">
             <span className="h-px flex-1 bg-white/10" />
             {isAr ? "أو" : "or"}
             <span className="h-px flex-1 bg-white/10" />
@@ -259,7 +259,7 @@ function AuthPage() {
                 clearExecutiveAcceptance(window.localStorage);
                 setAccepted(false);
               }}
-              className="text-[11px] text-white/40 transition hover:text-white/75"
+              className="text-[12px] text-white/40 transition hover:text-white/75"
             >
               {isAr ? "إعادة مشاهدة العرض" : "Watch the presentation again"}
             </button>
@@ -286,7 +286,7 @@ function ExecutiveAcceptanceStage({ isAr, onAccept }: { isAr: boolean; onAccept:
           </span>
           <span>
             <span className="block text-sm font-black tracking-[0.18em]">NEXIOS</span>
-            <span className="block text-[9px] uppercase tracking-[0.22em] text-primary/75">
+            <span className="block text-[12px] uppercase tracking-[0.22em] text-primary/75">
               Executive Access
             </span>
           </span>
@@ -325,13 +325,13 @@ function ExecutiveAcceptanceStage({ isAr, onAccept }: { isAr: boolean; onAccept:
               key={step.n}
               className="nexus-card relative flex items-center gap-3 rounded-2xl p-4"
             >
-              <span className="font-mono text-[10px] text-primary/55">{step.n}</span>
+              <span className="font-mono text-[12px] text-primary/55">{step.n}</span>
               <span className="grid h-9 w-9 place-items-center rounded-xl border border-primary/25 bg-primary/8 text-primary">
                 <step.icon className="h-4 w-4" />
               </span>
               <span className="min-w-0">
                 <span className="block text-sm font-bold">{isAr ? step.ar : step.en}</span>
-                <span className="block text-[9px] uppercase tracking-[0.18em] text-white/35">
+                <span className="block text-[12px] uppercase tracking-[0.18em] text-white/35">
                   {index === 0 ? "OPEN" : index === 1 ? "EXPLICIT" : "PROTECTED"}
                 </span>
               </span>
@@ -346,7 +346,7 @@ function ExecutiveAcceptanceStage({ isAr, onAccept }: { isAr: boolean; onAccept:
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-65" />
                 <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-400" />
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">
+              <span className="text-[12px] font-bold uppercase tracking-[0.22em] text-white/60">
                 {isAr ? "العرض التنفيذي بصوت FINN" : "Executive presentation · FINN narration"}
               </span>
             </div>

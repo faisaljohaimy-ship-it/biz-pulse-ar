@@ -608,7 +608,7 @@ function AgentsOps() {
                 ),
               )}
             </div>
-            <div className="ms-auto text-[11px] text-muted-foreground">
+            <div className="ms-auto text-[12px] text-muted-foreground">
               {locale === "ar"
                 ? `نافذة المؤشرات: آخر ${system?.window_days ?? 30} يوم`
                 : `Metrics window: last ${system?.window_days ?? 30}d`}
@@ -656,7 +656,7 @@ function AgentsOps() {
                         </div>
                         <div>
                           <div className="text-sm font-semibold leading-tight">{display.name}</div>
-                          <div className="text-[11px] text-muted-foreground">
+                          <div className="text-[12px] text-muted-foreground">
                             {display.department} · v{meta?.version ?? "1.0.0"}
                           </div>
                         </div>
@@ -687,7 +687,7 @@ function AgentsOps() {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <div className="flex items-center justify-between text-[12px] text-muted-foreground">
                       <span className="inline-flex items-center gap-1">
                         <TimerReset className="h-3 w-3" />
                         {locale === "ar" ? "آخر تشغيل: " : "Last run: "}
@@ -738,7 +738,7 @@ function AgentsOps() {
                           disabled={toggleM.isPending}
                           onCheckedChange={(v) => toggleM.mutate({ agentId: a.id, enabled: v })}
                         />
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[12px] text-muted-foreground">
                           {a.enabled
                             ? locale === "ar"
                               ? "فعّال"
@@ -794,13 +794,13 @@ function AgentsOps() {
                                 : r.agent_id}
                             </span>
                             <RunStatusBadge status={r.status} />
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-[12px] text-muted-foreground">
                               {new Date(r.started_at).toLocaleString()}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-[12px] text-muted-foreground">
                               · {formatDuration(r.started_at, r.finished_at)}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-[12px] text-muted-foreground">
                               · {r.steps} steps
                             </span>
                           </div>
@@ -811,7 +811,7 @@ function AgentsOps() {
                               (r.summary ?? "—")
                             )}
                           </div>
-                          <div className="mt-1 text-[10px] text-muted-foreground/70">
+                          <div className="mt-1 text-[12px] text-muted-foreground/70">
                             id: <code>{r.id.slice(0, 8)}</code>
                           </div>
                         </button>
@@ -820,7 +820,7 @@ function AgentsOps() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-7 text-[10px]"
+                              className="h-7 text-[12px]"
                               disabled={cancelM.isPending}
                               onClick={() => cancelM.mutate(r.id)}
                             >
@@ -831,7 +831,7 @@ function AgentsOps() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-7 text-[10px]"
+                              className="h-7 text-[12px]"
                               disabled={retryM.isPending}
                               onClick={() => retryM.mutate(r.id)}
                             >
@@ -842,7 +842,7 @@ function AgentsOps() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 text-[10px]"
+                            className="h-7 text-[12px]"
                             onClick={() => setRunDetail(r)}
                           >
                             <Eye className="me-1 h-3 w-3" />
@@ -890,7 +890,7 @@ function AgentsOps() {
                 className="mt-1"
               />
             </div>
-            <div className="rounded-lg border border-primary/15 bg-primary/5 p-3 text-[11px] text-muted-foreground">
+            <div className="rounded-lg border border-primary/15 bg-primary/5 p-3 text-[12px] text-muted-foreground">
               <div className="mb-1 font-semibold text-foreground">
                 {locale === "ar" ? "الأدوات المتاحة" : "Allowed tools"}
               </div>
@@ -944,7 +944,7 @@ function AgentsOps() {
                 {runDetail ? (agentById[runDetail.agent_id]?.name ?? runDetail.agent_id) : ""}
               </span>
             </DialogTitle>
-            <DialogDescription className="font-mono text-[10px]">{runDetail?.id}</DialogDescription>
+            <DialogDescription className="font-mono text-[12px]">{runDetail?.id}</DialogDescription>
           </DialogHeader>
           {runDetail && (
             <div className="space-y-3 text-xs">
@@ -967,7 +967,7 @@ function AgentsOps() {
               </div>
               {runDetail.goal_override && (
                 <div>
-                  <div className="text-[10px] uppercase text-muted-foreground">
+                  <div className="text-[12px] uppercase text-muted-foreground">
                     {locale === "ar" ? "الهدف" : "Goal"}
                   </div>
                   <div className="rounded bg-muted/40 p-2">{runDetail.goal_override}</div>
@@ -975,7 +975,7 @@ function AgentsOps() {
               )}
               {runDetail.summary && (
                 <div>
-                  <div className="text-[10px] uppercase text-muted-foreground">
+                  <div className="text-[12px] uppercase text-muted-foreground">
                     {locale === "ar" ? "الملخص" : "Summary"}
                   </div>
                   <ScrollArea className="max-h-64 rounded bg-muted/40 p-2">
@@ -985,7 +985,7 @@ function AgentsOps() {
               )}
               {runDetail.error && (
                 <div>
-                  <div className="text-[10px] uppercase text-red-300">Error</div>
+                  <div className="text-[12px] uppercase text-red-300">Error</div>
                   <div className="rounded bg-red-500/10 p-2 text-red-300">{runDetail.error}</div>
                 </div>
               )}
@@ -1044,7 +1044,7 @@ function SysCard({
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0">
-        <div className="truncate text-[10px] uppercase text-muted-foreground">{label}</div>
+        <div className="truncate text-[12px] uppercase text-muted-foreground">{label}</div>
         <div className="text-lg font-semibold leading-tight">{value}</div>
       </div>
     </Card>
@@ -1054,9 +1054,9 @@ function SysCard({
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div>
-      <div className="text-[9px] uppercase text-muted-foreground">{label}</div>
+      <div className="text-[12px] uppercase text-muted-foreground">{label}</div>
       <div className="text-sm font-semibold">{value}</div>
-      {hint ? <div className="text-[9px] text-muted-foreground/70">{hint}</div> : null}
+      {hint ? <div className="text-[12px] text-muted-foreground/70">{hint}</div> : null}
     </div>
   );
 }
@@ -1064,7 +1064,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-[10px] uppercase text-muted-foreground">{label}</div>
+      <div className="text-[12px] uppercase text-muted-foreground">{label}</div>
       <div className="font-medium">{value}</div>
     </div>
   );

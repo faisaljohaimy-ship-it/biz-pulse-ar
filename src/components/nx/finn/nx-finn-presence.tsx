@@ -90,7 +90,7 @@ export const NxFinnPresence = React.forwardRef<HTMLDivElement, NxFinnPresencePro
           <span
             aria-hidden
             title={mode}
-            className="absolute -bottom-1 -end-1 text-[10px] leading-none"
+            className="absolute -bottom-1 -end-1 text-[12px] leading-none"
           >
             {MODE_GLYPH[mode]}
           </span>

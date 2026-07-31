@@ -46,7 +46,7 @@ export const NxKpiCard = React.forwardRef<HTMLDivElement, NxKpiCardProps>(
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-nx-pearl/56">{label}</span>
         {simulation ? (
-          <span className="rounded-nx-8 border border-nx-warning/40 px-2 py-0.5 text-[11px] text-nx-warning">
+          <span className="rounded-nx-8 border border-nx-warning/40 px-2 py-0.5 text-[12px] text-nx-warning">
             محاكاة
           </span>
         ) : null}
@@ -55,7 +55,7 @@ export const NxKpiCard = React.forwardRef<HTMLDivElement, NxKpiCardProps>(
         <NxKpiNumber value={value} unit={unit} size="lg" />
         {delta ? <NxDelta {...delta} /> : null}
       </div>
-      <span className="text-[11px] text-nx-pearl/38">آخر تحديث: {updatedAt}</span>
+      <span className="text-[12px] text-nx-pearl/38">آخر تحديث: {updatedAt}</span>
     </NxGlassCard>
   ),
 );

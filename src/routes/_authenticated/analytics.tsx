@@ -58,13 +58,13 @@ function Analytics() {
                 <XAxis
                   dataKey="d"
                   stroke="oklch(0.68 0.04 268)"
-                  fontSize={11}
+                  fontSize={12}
                   tickLine={false}
                   axisLine={false}
                 />
                 <YAxis
                   stroke="oklch(0.68 0.04 268)"
-                  fontSize={11}
+                  fontSize={12}
                   tickLine={false}
                   axisLine={false}
                 />

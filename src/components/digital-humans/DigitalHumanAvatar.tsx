@@ -738,7 +738,7 @@ export function DigitalHumanAvatar({
           <div className="text-[12px] text-white/90 leading-tight">
             {ar ? spec.name_ar : spec.name_en}
           </div>
-          <div className="text-[10px] text-white/55 leading-tight">
+          <div className="text-[12px] text-white/55 leading-tight">
             {STATE_LABEL[state][ar ? "ar" : "en"]}
           </div>
         </div>

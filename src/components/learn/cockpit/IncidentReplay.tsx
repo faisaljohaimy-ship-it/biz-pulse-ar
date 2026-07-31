@@ -109,7 +109,7 @@ export function IncidentReplay({ title, frames, lang }: Props) {
           <span className="font-mono text-xs tabular-nums opacity-80">
             {ar ? current.label_ar : current.label_en}
           </span>
-          <span className="text-[10px] uppercase tracking-[0.16em] opacity-70">
+          <span className="text-[12px] uppercase tracking-[0.16em] opacity-70">
             {ar ? "الحالة" : "State"}
           </span>
         </div>

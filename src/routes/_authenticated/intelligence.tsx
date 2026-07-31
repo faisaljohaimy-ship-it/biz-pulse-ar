@@ -208,12 +208,12 @@ function IntelligencePage() {
                     </div>
                     <div>
                       <div className="text-sm font-semibold">{ar ? a.name_ar : a.name_en}</div>
-                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                      <div className="text-[12px] uppercase tracking-wide text-muted-foreground">
                         {a.role}
                       </div>
                     </div>
                   </div>
-                  <span className="flex items-center gap-1 text-[10px] text-emerald-300">
+                  <span className="flex items-center gap-1 text-[12px] text-emerald-300">
                     <span
                       className={cn(
                         "h-2 w-2 rounded-full",
@@ -314,7 +314,7 @@ function IntelligencePage() {
                 <span className="absolute -start-[27px] top-1.5 h-3 w-3 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" />
                 <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
                   <div className="text-sm">{l.summary_ar}</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">
+                  <div className="mt-1 text-[12px] text-muted-foreground">
                     {new Date(l.applied_at).toLocaleString(ar ? "ar-SA" : "en-US")}
                   </div>
                 </div>
@@ -347,7 +347,7 @@ function ProposalColumn({
       <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
         <Icon className="h-4 w-4" />
         {title}
-        <span className="ms-auto rounded-full bg-white/5 px-2 py-0.5 text-[10px]">
+        <span className="ms-auto rounded-full bg-white/5 px-2 py-0.5 text-[12px]">
           {proposals.length}
         </span>
       </div>
@@ -364,7 +364,7 @@ function ProposalColumn({
               className="rounded-xl border border-white/10 bg-white/[0.04] p-3 shadow-sm"
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[12px] font-medium text-primary">
                   {agent ? (ar ? agent.name_ar : agent.name_en) : ar ? "وكيل" : "Agent"}
                 </span>
                 <PriorityChip priority={p.priority} ar={ar} />
@@ -375,7 +375,7 @@ function ProposalColumn({
               )}
               {actions && <div className="mt-3">{actions(p)}</div>}
               {p.decided_at && !actions && (
-                <div className="mt-2 text-[11px] text-muted-foreground">
+                <div className="mt-2 text-[12px] text-muted-foreground">
                   {ar ? "تم القرار: " : "Decided: "}
                   {new Date(p.decided_at).toLocaleString(ar ? "ar-SA" : "en-US")}
                 </div>
@@ -396,7 +396,7 @@ function PriorityChip({ priority, ar }: { priority: Proposal["priority"]; ar: bo
   } as const;
   const c = map[priority];
   return (
-    <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-semibold", c.cls)}>
+    <span className={cn("rounded-full border px-2 py-0.5 text-[12px] font-semibold", c.cls)}>
       {ar ? c.ar : c.en}
     </span>
   );

@@ -100,7 +100,7 @@ export function LiveStatus({
       className={cn(
         "inline-flex items-center gap-2 rounded-full border font-mono",
         v.cls,
-        size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-xs",
+        size === "sm" ? "px-2 py-0.5 text-[12px]" : "px-3 py-1 text-xs",
         className,
       )}
     >
@@ -142,7 +142,7 @@ export function LiveStatusBlock({
         <div className="text-sm text-foreground/80">{title}</div>
         {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
         {ts ? (
-          <div className="text-[10px] text-muted-foreground font-mono">last sync · {ts}</div>
+          <div className="text-[12px] text-muted-foreground font-mono">last sync · {ts}</div>
         ) : null}
       </div>
     </div>

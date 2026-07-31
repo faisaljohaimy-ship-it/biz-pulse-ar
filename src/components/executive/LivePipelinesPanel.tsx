@@ -46,13 +46,13 @@ function PipelineCard({ s }: { s: LivePipelineSeries }) {
         <div className="flex items-center gap-2 min-w-0">
           <Icon className="w-4 h-4 text-primary shrink-0" />
           <div className="min-w-0">
-            <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80 truncate">
+            <div className="text-[12px] font-mono uppercase tracking-widest text-primary/80 truncate">
               {s.label_en}
             </div>
             <div className="text-sm font-semibold text-foreground truncate">{s.label_ar}</div>
           </div>
         </div>
-        <div className={`flex items-center gap-1 text-[10px] font-mono ${label.cls} shrink-0`}>
+        <div className={`flex items-center gap-1 text-[12px] font-mono ${label.cls} shrink-0`}>
           <LabelIcon className="w-3 h-3" />
           <span>{label.text}</span>
         </div>
@@ -127,7 +127,7 @@ function PipelineCard({ s }: { s: LivePipelineSeries }) {
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono text-foreground/50">
+      <div className="mt-1.5 flex items-center justify-between text-[12px] font-mono text-foreground/50">
         <span>{s.avgPerMin.toFixed(2)} evt/min</span>
         <span>{s.ready ? "READY" : "NOT CONFIGURED"}</span>
       </div>
@@ -154,7 +154,7 @@ function Metric({
           : "text-primary";
   return (
     <div className="rounded-md border border-white/5 bg-background/40 px-2 py-1">
-      <div className="text-[9px] font-mono uppercase tracking-widest text-foreground/50">
+      <div className="text-[12px] font-mono uppercase tracking-widest text-foreground/50">
         {label}
       </div>
       <div className={`text-sm font-bold tabular-nums ${cls}`}>{value}</div>
@@ -175,7 +175,7 @@ export function LivePipelinesPanel() {
     <section className="rounded-xl border border-white/5 bg-background/40 backdrop-blur-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">
+          <div className="text-[12px] font-mono uppercase tracking-widest text-primary/80">
             Live Pipelines · مخططات حياة الخدمات
           </div>
           <div className="text-sm text-foreground/60 mt-0.5">
@@ -183,7 +183,7 @@ export function LivePipelinesPanel() {
           </div>
         </div>
         {q.data && (
-          <div className="text-[10px] font-mono text-foreground/40">
+          <div className="text-[12px] font-mono text-foreground/40">
             updated {new Date(q.data.generated_at).toLocaleTimeString()}
           </div>
         )}

@@ -80,7 +80,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
             className="nx-holo-icon group absolute left-1/2 top-1/2 z-20 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200 sm:h-24 sm:w-24"
           >
             <Mic className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
-            <span className="text-[10px] font-bold tracking-wider sm:text-[11px]">
+            <span className="text-[12px] font-bold tracking-wider sm:text-[12px]">
               {ar ? "تحدث الآن" : "TALK NOW"}
             </span>
           </Link>
@@ -94,7 +94,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
             ? "المساعد التنفيذي الذكي — الأمن الصناعي"
             : "Executive AI Assistant — Industrial Security"}
         </p>
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#061525] px-3 py-1 text-[11px] text-white">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#061525] px-3 py-1 text-[12px] text-white">
           <span className={`finn-live h-2 w-2 rounded-full ${label.dot}`} aria-hidden />
           <span>{ar ? label.ar : label.en}</span>
         </div>

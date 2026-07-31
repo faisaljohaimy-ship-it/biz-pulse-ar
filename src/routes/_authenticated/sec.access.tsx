@@ -157,7 +157,7 @@ function AccessControlPage() {
                           {g.health}%
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-muted-foreground">
+                      <td className="px-3 py-2 text-[12px] text-muted-foreground">
                         {g.last_event_at ? new Date(g.last_event_at).toLocaleString("ar-SA") : "—"}
                       </td>
                       <td className="px-3 py-2">
@@ -171,7 +171,7 @@ function AccessControlPage() {
                           }
                         >
                           <SelectTrigger
-                            className={`h-7 w-32 rounded-full border px-2 py-0 text-[10px] ${statusClass(g.status)}`}
+                            className={`h-7 w-32 rounded-full border px-2 py-0 text-[12px] ${statusClass(g.status)}`}
                           >
                             <SelectValue />
                           </SelectTrigger>
@@ -211,7 +211,7 @@ function AccessControlPage() {
                 <div key={d.id} className="px-4 py-2 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="font-mono font-medium">{p.plate ?? d.entity_ref ?? "—"}</span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[12px] text-muted-foreground">
                       {new Date(d.occurred_at).toLocaleString("ar-SA")}
                     </span>
                   </div>

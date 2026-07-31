@@ -195,7 +195,7 @@ function AiOpsPage() {
                 >
                   <Bot className="h-5 w-5 text-white" />
                 </div>
-                <div className="mt-1 whitespace-nowrap text-center text-[10px] font-semibold text-slate-300">
+                <div className="mt-1 whitespace-nowrap text-center text-[12px] font-semibold text-slate-300">
                   {ar ? a.name_ar : a.name_en}
                 </div>
               </div>
@@ -211,7 +211,7 @@ function AiOpsPage() {
         <NexusCard>
           <div className="flex items-center gap-2">
             <Cpu className="h-4 w-4 text-violet-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-violet-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
               {ar ? "أداء الوكلاء" : "AGENT PERFORMANCE"}
             </div>
           </div>
@@ -228,7 +228,7 @@ function AiOpsPage() {
                     style={{ width: `${a.perf}%` }}
                   />
                 </div>
-                <div className="mt-0.5 text-[10px] text-slate-500">
+                <div className="mt-0.5 text-[12px] text-slate-500">
                   {a.tasks} {ar ? "مهمة/يوم" : "tasks/day"}
                 </div>
               </li>
@@ -240,11 +240,11 @@ function AiOpsPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <Network className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "تواصل الوكلاء" : "AGENT COMMUNICATION LOG"}
           </div>
         </div>
-        <ul className="mt-3 space-y-1.5 font-mono text-[11px]">
+        <ul className="mt-3 space-y-1.5 font-mono text-[12px]">
           {[
             [
               "Finance Analyst",

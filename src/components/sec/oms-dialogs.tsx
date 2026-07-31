@@ -486,22 +486,22 @@ export function IncidentDrawer({
               <SheetDescription>
                 <div className="mt-1 flex flex-wrap gap-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${severityClass(incident.severity)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${severityClass(incident.severity)}`}
                   >
                     {incident.severity}
                   </span>
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(incident.status)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(incident.status)}`}
                   >
                     {incident.status}
                   </span>
                   {incident.escalated && (
-                    <span className="rounded-full border border-red-500/40 bg-red-500/15 px-2 py-0.5 text-[10px] text-red-600">
+                    <span className="rounded-full border border-red-500/40 bg-red-500/15 px-2 py-0.5 text-[12px] text-red-600">
                       مُصعَّد
                     </span>
                   )}
                   {incident.ai_risk_score != null && (
-                    <span className="rounded-full border border-violet-500/40 bg-violet-500/10 px-2 py-0.5 text-[10px] text-violet-600">
+                    <span className="rounded-full border border-violet-500/40 bg-violet-500/10 px-2 py-0.5 text-[12px] text-violet-600">
                       مخاطر {incident.ai_risk_score}/100
                     </span>
                   )}
@@ -556,10 +556,10 @@ export function IncidentDrawer({
                 {Array.isArray(finnRecs.immediate_actions) &&
                   finnRecs.immediate_actions.length > 0 && (
                     <div className="mt-2">
-                      <div className="text-[10px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">
+                      <div className="text-[12px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">
                         إجراءات فورية
                       </div>
-                      <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[11px] text-foreground">
+                      <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[12px] text-foreground">
                         {finnRecs.immediate_actions.map((a, i) => (
                           <li key={i}>{a}</li>
                         ))}
@@ -568,10 +568,10 @@ export function IncidentDrawer({
                   )}
                 {Array.isArray(finnRecs.recommendations) && finnRecs.recommendations.length > 0 && (
                   <div className="mt-2">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">
+                    <div className="text-[12px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">
                       توصيات
                     </div>
-                    <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[11px] text-foreground">
+                    <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[12px] text-foreground">
                       {finnRecs.recommendations.map((a, i) => (
                         <li key={i}>{a}</li>
                       ))}
@@ -628,7 +628,7 @@ export function IncidentDrawer({
                   <div className="text-xs font-semibold text-foreground">
                     المرفقات ({liveAttachments.length})
                   </div>
-                  <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-[11px] hover:bg-muted">
+                  <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-[12px] hover:bg-muted">
                     <Paperclip className="h-3 w-3" /> {uploading ? "جارٍ الرفع…" : "إرفاق ملف"}
                     <input
                       type="file"
@@ -656,7 +656,7 @@ export function IncidentDrawer({
                         <Download className="h-3 w-3 shrink-0" />
                         <span className="truncate">{a.file_name}</span>
                         {a.size_bytes != null && (
-                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                          <span className="shrink-0 text-[12px] text-muted-foreground">
                             ({Math.max(1, Math.round(a.size_bytes / 1024))} KB)
                           </span>
                         )}
@@ -672,7 +672,7 @@ export function IncidentDrawer({
                     </li>
                   ))}
                   {liveAttachments.length === 0 && (
-                    <li className="text-[11px] text-muted-foreground">لا توجد مرفقات.</li>
+                    <li className="text-[12px] text-muted-foreground">لا توجد مرفقات.</li>
                   )}
                 </ul>
               </div>
@@ -686,13 +686,13 @@ export function IncidentDrawer({
                   {actions.map((a) => (
                     <li key={a.id} className="rounded-md border border-border bg-card px-2 py-1.5">
                       <div>{a.action}</div>
-                      <div className="text-[10px] text-muted-foreground">
+                      <div className="text-[12px] text-muted-foreground">
                         {a.owner ?? "—"} · {new Date(a.added_at).toLocaleString("ar-SA")}
                       </div>
                     </li>
                   ))}
                   {actions.length === 0 && (
-                    <li className="text-[11px] text-muted-foreground">لا توجد إجراءات بعد.</li>
+                    <li className="text-[12px] text-muted-foreground">لا توجد إجراءات بعد.</li>
                   )}
                 </ul>
                 <div className="mt-2 flex gap-2">
@@ -720,13 +720,13 @@ export function IncidentDrawer({
                   <div className="rounded-md border border-border bg-card p-2 text-xs">
                     <p>{liveExecReview}</p>
                     {liveExecReviewedAt && (
-                      <div className="mt-1 text-[10px] text-muted-foreground">
+                      <div className="mt-1 text-[12px] text-muted-foreground">
                         {new Date(liveExecReviewedAt).toLocaleString("ar-SA")}
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[12px] text-muted-foreground">
                     لم تُسجَّل مراجعة تنفيذية بعد.
                   </p>
                 )}
@@ -778,15 +778,15 @@ export function IncidentDrawer({
                     <li key={e.id} className="rounded-md border border-border bg-card px-2 py-1.5">
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{e.event}</span>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[12px] text-muted-foreground">
                           {new Date(e.occurred_at).toLocaleString("ar-SA")}
                         </span>
                       </div>
-                      <div className="text-[10px] text-muted-foreground">{e.actor_name ?? "—"}</div>
+                      <div className="text-[12px] text-muted-foreground">{e.actor_name ?? "—"}</div>
                     </li>
                   ))}
                   {(!timeline || timeline.length === 0) && (
-                    <li className="text-[11px] text-muted-foreground">لا أحداث.</li>
+                    <li className="text-[12px] text-muted-foreground">لا أحداث.</li>
                   )}
                 </ol>
               </div>
@@ -931,7 +931,7 @@ export function NewWorkOrderDialog() {
                 </SelectContent>
               </Select>
               {selectedAsset && (
-                <div className="flex flex-wrap gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
+                <div className="flex flex-wrap gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-[12px] text-muted-foreground">
                   <span>
                     النوع: <strong className="text-foreground">{selectedAsset.kind}</strong>
                   </span>

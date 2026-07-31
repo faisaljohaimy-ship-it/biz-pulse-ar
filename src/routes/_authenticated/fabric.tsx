@@ -115,7 +115,7 @@ function FabricPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {data.metrics.map((m) => (
           <NexusCard key={m.id} glow={m.id === "enterpriseHealth"}>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+            <div className="text-[12px] font-semibold uppercase tracking-widest text-slate-400">
               {ar ? m.label_ar : m.label_en}
             </div>
             <div className={`mt-2 text-3xl font-bold ${toneClass(m.tone)}`}>
@@ -128,7 +128,7 @@ function FabricPage() {
                 style={{ width: `${m.value}%` }}
               />
             </div>
-            <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+            <p className="mt-2 text-[12px] leading-relaxed text-slate-500">
               {ar ? m.why_ar : m.why_en}
             </p>
           </NexusCard>
@@ -141,7 +141,7 @@ function FabricPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-rose-300" />
-              <div className="text-[11px] font-bold tracking-[0.25em] text-rose-300/80">
+              <div className="text-[12px] font-bold tracking-[0.25em] text-rose-300/80">
                 {ar ? "تنبيهات تنفيذية مرتبة بالأثر" : "EXECUTIVE ALERTS — IMPACT RANKED"}
               </div>
             </div>
@@ -164,7 +164,7 @@ function FabricPage() {
                     <div className="text-sm text-slate-200">
                       {ar ? a.title : (a.title_en ?? a.title)}
                     </div>
-                    <div className="mt-0.5 flex flex-wrap gap-2 text-[10px] text-slate-500">
+                    <div className="mt-0.5 flex flex-wrap gap-2 text-[12px] text-slate-500">
                       {a.owner && (
                         <span>
                           {ar ? "المسؤول:" : "Owner:"} {a.owner}
@@ -180,7 +180,7 @@ function FabricPage() {
                     {a.route && (
                       <button
                         onClick={() => navigate({ to: a.route as string })}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-300 hover:text-cyan-200"
+                        className="inline-flex items-center gap-1 text-[12px] font-semibold text-cyan-300 hover:text-cyan-200"
                       >
                         {ar ? "فتح" : "Open"}
                         <ArrowRight className="h-3 w-3 rtl:rotate-180" />
@@ -189,7 +189,7 @@ function FabricPage() {
                     <button
                       disabled={resolveMutation.isPending}
                       onClick={() => resolveMutation.mutate(a.id)}
-                      className="text-[10px] text-slate-500 hover:text-emerald-300"
+                      className="text-[12px] text-slate-500 hover:text-emerald-300"
                     >
                       {ar ? "إغلاق" : "Resolve"}
                     </button>
@@ -204,7 +204,7 @@ function FabricPage() {
         <NexusCard>
           <div className="flex items-center gap-2">
             <Database className="h-4 w-4 text-cyan-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
               {ar ? "مصادر البيانات" : "DATA SOURCES"}
             </div>
           </div>
@@ -226,7 +226,7 @@ function FabricPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-[10px] leading-relaxed text-slate-500">
+          <p className="mt-3 text-[12px] leading-relaxed text-slate-500">
             {ar
               ? "محوّل موحّد. عند تزويد بيانات اعتماد Power BI تظهر مجموعات البيانات تلقائياً دون تغيير الواجهة."
               : "Unified adapter. Plug in Power BI credentials and datasets surface automatically without UI changes."}
@@ -239,7 +239,7 @@ function FabricPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Ghost className="h-4 w-4 text-violet-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-violet-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
               {ar ? "ذاكرة المؤسسة — البنود المنسية" : "EXECUTIVE MEMORY — FORGOTTEN ITEMS"}
             </div>
           </div>
@@ -264,7 +264,7 @@ function FabricPage() {
                   <div className="text-sm text-slate-200">
                     {ar ? f.title : (f.title_en ?? f.title)}
                   </div>
-                  <div className="mt-0.5 flex flex-wrap gap-2 text-[10px] text-slate-500">
+                  <div className="mt-0.5 flex flex-wrap gap-2 text-[12px] text-slate-500">
                     {f.owner && <span>{f.owner}</span>}
                     {f.department && <span>· {f.department}</span>}
                     <span>· {ar ? `صامت ${f.days_silent} يوم` : `silent ${f.days_silent}d`}</span>

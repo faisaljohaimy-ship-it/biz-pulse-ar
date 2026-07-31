@@ -172,7 +172,7 @@ function OpsHeader({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape })
     <Card className="bg-gradient-to-br from-primary/10 via-card to-card border-primary/30 p-5">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-primary">
+          <div className="text-[12px] font-mono uppercase tracking-[0.25em] text-primary">
             Operational Visualization Layer
           </div>
           <h1 className="mt-1 text-2xl md:text-3xl font-bold text-foreground">
@@ -187,7 +187,7 @@ function OpsHeader({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape })
           <LiveStatus variant="monitoring" label="Realtime" hint={runtime.health.realtime} />
           <LiveStatus variant="syncing" label="Scheduler" hint={runtime.health.scheduler} />
           <div className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-center">
-            <div className="text-[9px] uppercase tracking-wider text-primary">Readiness</div>
+            <div className="text-[12px] uppercase tracking-wider text-primary">Readiness</div>
             <div className="text-lg font-bold text-foreground">
               {kpis?.executive_readiness ?? "—"}%
             </div>
@@ -221,13 +221,13 @@ function HealthCard({
   return (
     <Card className={cn("bg-card/60 backdrop-blur p-3", tones[tone])}>
       <div className="flex items-center justify-between">
-        <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+        <div className="text-[12px] font-mono uppercase tracking-wider text-muted-foreground">
           {label}
         </div>
         <Icon className="size-3.5" />
       </div>
       <div className="mt-1 text-2xl font-bold text-foreground tabular-nums">{value}</div>
-      {hint ? <div className="text-[10px] text-muted-foreground">{hint}</div> : null}
+      {hint ? <div className="text-[12px] text-muted-foreground">{hint}</div> : null}
     </Card>
   );
 }
@@ -404,7 +404,7 @@ function LiveExecutionCenter() {
         <div className="flex items-center gap-2">
           <Zap className="size-4 text-primary" />
           <h3 className="text-sm font-semibold tracking-wide">Live Execution Center</h3>
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-[12px]">
             {totalActive} active
           </Badge>
         </div>
@@ -520,12 +520,12 @@ function ExecutionCard(props: {
           )}
           <span className="font-mono text-xs text-foreground truncate">{title}</span>
         </div>
-        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", statusTone)}>
+        <Badge variant="outline" className={cn("text-[12px] px-1.5 py-0", statusTone)}>
           {status}
         </Badge>
       </div>
       <div className="space-y-1">
-        <div className="flex items-center justify-between text-[10px] font-mono">
+        <div className="flex items-center justify-between text-[12px] font-mono">
           <span className="text-muted-foreground">progress</span>
           <span className="text-foreground tabular-nums">
             {progress}% {stepCounter ? `· ${stepCounter}` : ""}
@@ -533,10 +533,10 @@ function ExecutionCard(props: {
         </div>
         <Progress value={progress} className="h-1.5" />
       </div>
-      <div className="text-[10px] text-muted-foreground truncate">
+      <div className="text-[12px] text-muted-foreground truncate">
         <span className="text-foreground/80 font-mono">step:</span> {currentStep}
       </div>
-      <div className="grid grid-cols-3 gap-1 text-[10px] font-mono">
+      <div className="grid grid-cols-3 gap-1 text-[12px] font-mono">
         <Cell label="started" value={fmtRel(startedAt)} />
         <Cell label="duration" value={duration} />
         <Cell label="eta" value={estCompletion} />
@@ -551,7 +551,7 @@ function ExecutionCard(props: {
 function Cell({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-background/50 border border-border/30 rounded px-1.5 py-1 min-w-0">
-      <div className="uppercase text-[9px] text-muted-foreground tracking-wider">{label}</div>
+      <div className="uppercase text-[12px] text-muted-foreground tracking-wider">{label}</div>
       <div className="text-foreground truncate">{value}</div>
     </div>
   );
@@ -615,13 +615,13 @@ function WorkflowPhaseTimeline() {
           <ClipboardList className="size-4 text-primary" />
           <h3 className="text-sm font-semibold tracking-wide">Workflow Phase Timeline</h3>
         </div>
-        <span className="text-[10px] text-muted-foreground">24h window · {runs.length} runs</span>
+        <span className="text-[12px] text-muted-foreground">24h window · {runs.length} runs</span>
       </div>
       <div className="grid grid-cols-7 gap-2">
         {counts.map((c, i) => (
           <div key={c.key} className="relative">
             <div className={cn("rounded-md border px-2 py-3 text-center", c.tone)}>
-              <div className="text-[9px] uppercase tracking-wider opacity-80">{c.label}</div>
+              <div className="text-[12px] uppercase tracking-wider opacity-80">{c.label}</div>
               <div className="text-xl font-bold tabular-nums">{c.n}</div>
             </div>
             {i < counts.length - 1 ? (
@@ -643,7 +643,7 @@ function AgentRuntimeGrid({ agentOps }: { agentOps: AgentOpsShape }) {
         <div className="flex items-center gap-2">
           <Bot className="size-4 text-primary" />
           <h3 className="text-sm font-semibold tracking-wide">Agent Runtime</h3>
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-[12px]">
             {list.length} registered
           </Badge>
         </div>
@@ -697,12 +697,12 @@ function AgentRuntimeGrid({ agentOps }: { agentOps: AgentOpsShape }) {
                     />
                     <span className="font-mono text-xs text-foreground truncate">{a.name}</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] capitalize">
+                  <Badge variant="outline" className="text-[12px] capitalize">
                     {a.state}
                   </Badge>
                 </div>
-                <div className="text-[10px] text-muted-foreground line-clamp-2">{a.goal}</div>
-                <div className="grid grid-cols-3 gap-1 text-[10px] font-mono">
+                <div className="text-[12px] text-muted-foreground line-clamp-2">{a.goal}</div>
+                <div className="grid grid-cols-3 gap-1 text-[12px] font-mono">
                   <Cell label="health" value={`${health}%`} />
                   <Cell label="queue" value={String(a.running)} />
                   <Cell label="success" value={`${a.success_rate}%`} />
@@ -713,7 +713,7 @@ function AgentRuntimeGrid({ agentOps }: { agentOps: AgentOpsShape }) {
                   />
                   <Cell label="beat" value={fmtRel(heartbeat)} />
                 </div>
-                <div className="text-[10px] text-muted-foreground truncate">
+                <div className="text-[12px] text-muted-foreground truncate">
                   <span className="text-foreground/80">last:</span> {a.last_status ?? "—"} ·{" "}
                   {fmtRel(a.last_finished_at)}
                 </div>
@@ -754,7 +754,7 @@ function AuditCenter() {
         <div className="flex items-center gap-2">
           <Network className="size-4 text-primary" />
           <h3 className="text-sm font-semibold tracking-wide">Audit Center</h3>
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-[12px]">
             immutable
           </Badge>
         </div>
@@ -778,27 +778,27 @@ function AuditCenter() {
             {rows.map((r) => (
               <div
                 key={r.id}
-                className="flex items-start gap-2 text-[11px] font-mono border-b border-border/30 pb-1.5"
+                className="flex items-start gap-2 text-[12px] font-mono border-b border-border/30 pb-1.5"
               >
                 <CheckCircle2 className="size-3 mt-0.5 text-emerald-400 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-foreground truncate">{r.action ?? "event"}</span>
                     {r.resource_type ? (
-                      <Badge variant="secondary" className="text-[9px] px-1 py-0">
+                      <Badge variant="secondary" className="text-[12px] px-1 py-0">
                         {r.resource_type}
                       </Badge>
                     ) : null}
                     {r.status ? (
-                      <Badge variant="outline" className="text-[9px] px-1 py-0">
+                      <Badge variant="outline" className="text-[12px] px-1 py-0">
                         {r.status}
                       </Badge>
                     ) : null}
                     {r.duration_ms != null ? (
-                      <span className="text-[9px] text-muted-foreground">{r.duration_ms}ms</span>
+                      <span className="text-[12px] text-muted-foreground">{r.duration_ms}ms</span>
                     ) : null}
                   </div>
-                  <div className="text-[10px] text-muted-foreground truncate">
+                  <div className="text-[12px] text-muted-foreground truncate">
                     {r.source ?? "system"} · {fmtRel(r.occurred_at ?? r.created_at)}{" "}
                     {r.resource_id ? `· ${r.resource_id.slice(0, 8)}` : ""}
                   </div>
@@ -907,7 +907,7 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="size-4 text-primary" />
         <h3 className="text-sm font-semibold tracking-wide">Realtime KPI Wall</h3>
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-[12px]">
           live
         </Badge>
       </div>
@@ -915,14 +915,14 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
         {items.map((m) => (
           <div key={m.label} className="rounded-md border border-border/40 bg-background/40 p-2.5">
             <div className="flex items-center justify-between">
-              <div className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="text-[12px] font-mono uppercase tracking-wider text-muted-foreground">
                 {m.label}
               </div>
               <m.icon className="size-3 text-primary" />
             </div>
             <div className="mt-1 text-xl font-bold text-foreground tabular-nums">{m.value}</div>
             {m.hint ? (
-              <div className="text-[10px] text-muted-foreground truncate">{m.hint}</div>
+              <div className="text-[12px] text-muted-foreground truncate">{m.hint}</div>
             ) : null}
           </div>
         ))}

@@ -80,7 +80,7 @@ export function AgentConversation({ ar }: { ar: boolean }) {
           type="button"
           onClick={() => q.refetch()}
           disabled={q.isFetching}
-          className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-white/[0.03] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-cyan-100 hover:bg-cyan-400/10 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-white/[0.03] px-3 py-1 text-[12px] uppercase tracking-[0.16em] text-cyan-100 hover:bg-cyan-400/10 disabled:opacity-50"
         >
           {q.isFetching ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -129,12 +129,12 @@ export function AgentConversation({ ar }: { ar: boolean }) {
                       <div className="truncate text-sm font-medium text-white">
                         {ar ? t.role_ar : t.role_en}
                       </div>
-                      <div className="truncate text-[10px] uppercase tracking-[0.14em] text-white/40">
+                      <div className="truncate text-[12px] uppercase tracking-[0.14em] text-white/40">
                         {t.speaker_name}
                       </div>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-white/40">
+                  <div className="flex shrink-0 items-center gap-2 text-[12px] uppercase tracking-[0.14em] text-white/40">
                     <span>
                       {ar ? "ثقة" : "Conf."} {Math.round(t.confidence * 100)}%
                     </span>
@@ -158,13 +158,13 @@ export function AgentConversation({ ar }: { ar: boolean }) {
       {synth && (
         <div className="mt-5 rounded-2xl border border-cyan-400/30 bg-cyan-400/[0.05] p-5 ring-1 ring-cyan-400/20">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-cyan-100">
+            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.2em] text-cyan-100">
               <Sparkles className="h-3.5 w-3.5" />
               {ar ? "خلاصة FINN التنفيذية" : "FINN Executive Synthesis"}
             </div>
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ring-1",
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.18em] ring-1",
                 PRIORITY_TONE[synth.priority] ?? PRIORITY_TONE.medium,
               )}
             >
@@ -190,7 +190,7 @@ export function AgentConversation({ ar }: { ar: boolean }) {
           </div>
 
           <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.02] p-3">
-            <div className="text-[10px] uppercase tracking-[0.16em] text-white/50">
+            <div className="text-[12px] uppercase tracking-[0.16em] text-white/50">
               {ar ? "التوصية" : "Recommendation"}
             </div>
             <p className="mt-1 text-[14px] leading-relaxed text-white">
@@ -200,14 +200,14 @@ export function AgentConversation({ ar }: { ar: boolean }) {
 
           {(ar ? synth.next_actions_ar : synth.next_actions_en).length > 0 && (
             <div className="mt-3">
-              <div className="mb-1.5 text-[10px] uppercase tracking-[0.16em] text-white/50">
+              <div className="mb-1.5 text-[12px] uppercase tracking-[0.16em] text-white/50">
                 {ar ? "الإجراءات التالية" : "Next Actions"}
               </div>
               <ul className="flex flex-wrap gap-2">
                 {(ar ? synth.next_actions_ar : synth.next_actions_en).map((a, i) => (
                   <li
                     key={i}
-                    className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[11px] text-cyan-100"
+                    className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[12px] text-cyan-100"
                   >
                     {a}
                   </li>
@@ -216,7 +216,7 @@ export function AgentConversation({ ar }: { ar: boolean }) {
             </div>
           )}
 
-          <div className="mt-3 flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-white/40">
+          <div className="mt-3 flex items-center justify-between text-[12px] uppercase tracking-[0.14em] text-white/40">
             <span>
               {ar ? "ثقة الخلاصة" : "Synthesis confidence"}: {Math.round(synth.confidence * 100)}%
             </span>
@@ -246,7 +246,7 @@ function Block({
 }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
-      <div className="text-[10px] uppercase tracking-[0.16em] text-white/50">
+      <div className="text-[12px] uppercase tracking-[0.16em] text-white/50">
         {ar ? label_ar : label_en}
       </div>
       <p className="mt-1 text-[13px] leading-relaxed text-white/85">{ar ? text_ar : text_en}</p>

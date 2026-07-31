@@ -278,14 +278,14 @@ export function HoloCommandStage({
               <div className="absolute inset-12 rounded-full border border-cyan-200/30" />
               <div className="absolute inset-[60px] rounded-full border border-cyan-100/40 bg-[radial-gradient(circle,rgba(0,212,255,0.35),rgba(4,18,31,0.6)_70%)] shadow-[inset_0_0_40px_rgba(110,231,255,0.4)]" />
               <div className="relative z-10 text-center leading-none">
-                <div className="text-[9px] tracking-[0.4em] text-cyan-200/70 font-mono">NEXUS</div>
-                <div className={cn("mt-1 text-[11px] tracking-[0.3em] font-mono", statusTone)}>
+                <div className="text-[12px] tracking-[0.4em] text-cyan-200/70 font-mono">NEXUS</div>
+                <div className={cn("mt-1 text-[12px] tracking-[0.3em] font-mono", statusTone)}>
                   {status}
                 </div>
                 <div className="mt-3 text-3xl font-bold tabular-nums text-cyan-100">
                   {pct(k?.executive_readiness)}
                 </div>
-                <div className="mt-1 text-[9px] tracking-[0.3em] text-cyan-200/60 font-mono">
+                <div className="mt-1 text-[12px] tracking-[0.3em] text-cyan-200/60 font-mono">
                   {isAr ? "الجاهزية" : "READINESS"}
                 </div>
               </div>
@@ -320,10 +320,10 @@ export function HoloCommandStage({
                 <div className="flex items-center gap-2 rounded-lg border border-cyan-300/30 bg-[#04121f]/70 px-2.5 py-1.5 backdrop-blur-xl shadow-[0_0_20px_-5px_rgba(58,232,255,0.5)]">
                   <Icon className={cn("h-3.5 w-3.5", t.text)} />
                   <div className="leading-none">
-                    <div className="text-[8px] uppercase tracking-[0.2em] text-white/50 font-mono">
+                    <div className="text-[12px] uppercase tracking-[0.2em] text-white/50 font-mono">
                       {t.label}
                     </div>
-                    <div className={cn("text-[11px] font-semibold tabular-nums", t.text)}>
+                    <div className={cn("text-[12px] font-semibold tabular-nums", t.text)}>
                       {t.value}
                     </div>
                   </div>
@@ -358,7 +358,7 @@ export function HoloCommandStage({
               <div className="min-w-0 leading-tight text-start">
                 <div
                   className={cn(
-                    "truncate text-[9px] text-white/55",
+                    "truncate text-[12px] text-white/55",
                     isAr ? "font-medium" : "uppercase tracking-[0.22em]",
                   )}
                 >
@@ -393,8 +393,8 @@ export function HoloCommandStage({
               >
                 <Icon className={cn("h-3.5 w-3.5 shrink-0", w.text)} />
                 <div className="min-w-0 leading-tight text-start">
-                  <div className="truncate text-[8px] text-white/55">{w.label}</div>
-                  <div className={cn("truncate text-[11px] font-semibold tabular-nums", w.text)}>
+                  <div className="truncate text-[12px] text-white/55">{w.label}</div>
+                  <div className={cn("truncate text-[12px] font-semibold tabular-nums", w.text)}>
                     {w.value}
                   </div>
                 </div>

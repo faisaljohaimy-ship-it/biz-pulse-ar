@@ -82,7 +82,7 @@ export function MeetFinnSimulation({ slug, lang, suggested, onCompleted }: Props
 
       {(step === 2 || step === 3) && chosen && (
         <div className="rounded-2xl border border-cyan-400/20 bg-[#04111F]/70 p-5">
-          <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-cyan-200/70">
+          <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-cyan-200/70">
             <Sparkles className="h-4 w-4" />
             {ar ? "المحادثة الرسمية" : "Official conversation"}
           </div>

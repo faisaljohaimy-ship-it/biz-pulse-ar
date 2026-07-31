@@ -157,7 +157,7 @@ function TasksPage() {
                         <button
                           key={x}
                           onClick={() => updateStatus.mutate({ id: task.id, status: x })}
-                          className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                          className="rounded border border-border px-1.5 py-0.5 text-[12px] text-muted-foreground hover:text-foreground"
                         >
                           →{" "}
                           {locale === "ar"

@@ -209,7 +209,7 @@ function ExecutiveCommandCenter() {
           </NexusPill>
           <button
             onClick={() => navigate({ to: "/assistant" })}
-            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-200 hover:bg-cyan-400/20"
+            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-cyan-200 hover:bg-cyan-400/20"
           >
             <Sparkles className="h-3 w-3" /> {ar ? "اسأل FINN" : "Ask FINN"}
           </button>
@@ -238,7 +238,7 @@ function ExecutiveCommandCenter() {
         <NexusCard glow className="relative overflow-hidden">
           <div className="flex items-start justify-between">
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyan-300/80">
+              <div className="text-[12px] font-bold uppercase tracking-[0.3em] text-cyan-300/80">
                 {ar ? "صحة المؤسسة" : "Enterprise Health Score"}
               </div>
               <div className="mt-3 flex items-end gap-2">
@@ -271,7 +271,7 @@ function ExecutiveCommandCenter() {
               .filter((m) => m.id !== "enterpriseHealth")
               .map((m) => (
                 <div key={m.id}>
-                  <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <div className="flex items-center justify-between text-[12px] text-slate-400">
                     <span>{ar ? m.label_ar : m.label_en}</span>
                     <span className="tabular-nums text-slate-200">{m.value}</span>
                   </div>
@@ -324,7 +324,7 @@ function ExecutiveCommandCenter() {
                 <div className="mt-3 text-sm font-semibold text-slate-100">
                   {ar ? meta.ar : meta.en}
                 </div>
-                <div className="mt-1 text-[11px] text-slate-500 truncate">{sample}</div>
+                <div className="mt-1 text-[12px] text-slate-500 truncate">{sample}</div>
               </NexusCard>
             );
           })}
@@ -382,7 +382,7 @@ function ExecutiveCommandCenter() {
                     <div className="text-xs font-semibold text-slate-100">
                       {ar ? k.label_ar : k.label_en}
                     </div>
-                    <div className="mt-0.5 text-[10px] text-slate-500 truncate">
+                    <div className="mt-0.5 text-[12px] text-slate-500 truncate">
                       {ar ? k.why_ar : k.why_en}
                     </div>
                   </div>
@@ -403,7 +403,7 @@ function ExecutiveCommandCenter() {
                       {k.value}
                     </div>
                     <div
-                      className={`text-[10px] font-semibold ${k.trend === "up" ? "text-emerald-300" : k.trend === "down" ? "text-rose-300" : "text-slate-400"}`}
+                      className={`text-[12px] font-semibold ${k.trend === "up" ? "text-emerald-300" : k.trend === "down" ? "text-rose-300" : "text-slate-400"}`}
                     >
                       {k.trend === "up" ? (
                         <TrendingUp className="inline h-3 w-3" />
@@ -429,7 +429,7 @@ function ExecutiveCommandCenter() {
                 {ar ? "الأزمات والمخاطر الحرجة" : "Critical Crises & Risks"}
               </h3>
             </div>
-            <Link to="/crisis" className="text-[10px] text-cyan-300 hover:underline">
+            <Link to="/crisis" className="text-[12px] text-cyan-300 hover:underline">
               {ar ? "عرض الكل" : "View all"}
             </Link>
           </div>
@@ -451,12 +451,12 @@ function ExecutiveCommandCenter() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <NexusPill tone={tone}>{c.riskScore}</NexusPill>
-                        <span className="text-[10px] text-slate-500 capitalize">{c.category}</span>
+                        <span className="text-[12px] text-slate-500 capitalize">{c.category}</span>
                       </div>
                       <div className="mt-1 text-xs font-semibold text-slate-100">
                         {ar ? c.title_ar : c.title_en}
                       </div>
-                      <div className="mt-1 text-[10px] text-slate-400">👤 {c.owner}</div>
+                      <div className="mt-1 text-[12px] text-slate-400">👤 {c.owner}</div>
                     </div>
                     <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-slate-500" />
                   </div>
@@ -492,20 +492,20 @@ function ExecutiveCommandCenter() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <NexusPill tone={p.tone}>{p.kind}</NexusPill>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[12px] text-slate-400">
                     {ar ? `ثقة ${p.confidence}٪` : `${p.confidence}% conf`}
                   </span>
                 </div>
                 <div className="mt-1.5 text-xs font-semibold text-slate-100">
                   {ar ? p.title_ar : p.title_en}
                 </div>
-                <div className="mt-1 text-[11px] text-slate-400">
+                <div className="mt-1 text-[12px] text-slate-400">
                   {ar ? p.detail_ar : p.detail_en}
                 </div>
                 {p.route && (
                   <Link
                     to={p.route}
-                    className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-semibold text-cyan-300 hover:underline"
+                    className="mt-1.5 inline-flex items-center gap-1 text-[12px] font-semibold text-cyan-300 hover:underline"
                   >
                     {ar ? "افتح" : "Open"} <ArrowRight className="h-3 w-3" />
                   </Link>
@@ -523,7 +523,7 @@ function ExecutiveCommandCenter() {
                 {ar ? "أهم التنبيهات الحية" : "Top Live Alerts"}
               </h3>
             </div>
-            <Link to="/fabric" className="text-[10px] text-cyan-300 hover:underline">
+            <Link to="/fabric" className="text-[12px] text-cyan-300 hover:underline">
               {ar ? "النسيج" : "Fabric"}
             </Link>
           </div>
@@ -549,14 +549,14 @@ function ExecutiveCommandCenter() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <NexusPill tone={tone}>{a.severity}</NexusPill>
-                    <span className="text-[10px] text-slate-500">
+                    <span className="text-[12px] text-slate-500">
                       {ar ? `أثر ${a.business_impact_score}` : `impact ${a.business_impact_score}`}
                     </span>
                   </div>
                   <div className="mt-1 text-xs font-semibold text-slate-100">
                     {ar ? a.title : (a.title_en ?? a.title)}
                   </div>
-                  <div className="mt-1 flex items-center justify-between text-[10px] text-slate-400">
+                  <div className="mt-1 flex items-center justify-between text-[12px] text-slate-400">
                     <span>{a.owner ?? "—"}</span>
                     {a.route && (
                       <Link to={a.route} className="text-cyan-300 hover:underline">
@@ -581,7 +581,7 @@ function ExecutiveCommandCenter() {
                 {ar ? "القرارات والالتزامات التنفيذية" : "Executive Decisions & Commitments"}
               </h3>
             </div>
-            <Link to="/decisions" className="text-[10px] text-cyan-300 hover:underline">
+            <Link to="/decisions" className="text-[12px] text-cyan-300 hover:underline">
               {ar ? "السجل" : "Ledger"}
             </Link>
           </div>
@@ -596,7 +596,7 @@ function ExecutiveCommandCenter() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <NexusPill tone={tone}>{d.kind}</NexusPill>
-                    <span className="text-[10px] text-slate-500">{d.progress}%</span>
+                    <span className="text-[12px] text-slate-500">{d.progress}%</span>
                   </div>
                   <div className="mt-1 text-xs font-semibold text-slate-100">
                     {ar ? d.title_ar : d.title_en}
@@ -615,7 +615,7 @@ function ExecutiveCommandCenter() {
                       style={{ width: `${d.progress}%` }}
                     />
                   </div>
-                  <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400">
+                  <div className="mt-1.5 flex items-center justify-between text-[12px] text-slate-400">
                     <span>
                       👤 {d.owner} · {d.department}
                     </span>
@@ -637,7 +637,7 @@ function ExecutiveCommandCenter() {
                 {ar ? "النتائج الاستراتيجية" : "Strategic Outcomes"}
               </h3>
             </div>
-            <Link to="/outcomes" className="text-[10px] text-cyan-300 hover:underline">
+            <Link to="/outcomes" className="text-[12px] text-cyan-300 hover:underline">
               {ar ? "كل النتائج" : "All outcomes"}
             </Link>
           </div>
@@ -650,7 +650,7 @@ function ExecutiveCommandCenter() {
             {outcomes.map((o) => (
               <div key={o.id} className="rounded-lg border border-slate-700/40 bg-slate-900/40 p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-[10px] uppercase tracking-wider text-emerald-300/80">
+                  <div className="text-[12px] uppercase tracking-wider text-emerald-300/80">
                     {o.category}
                   </div>
                   {o.delta && <NexusPill tone="emerald">{o.delta}</NexusPill>}
@@ -662,7 +662,7 @@ function ExecutiveCommandCenter() {
                   {o.value}
                 </div>
                 {o.period_from && o.period_to && (
-                  <div className="mt-0.5 text-[10px] text-slate-500">
+                  <div className="mt-0.5 text-[12px] text-slate-500">
                     {o.period_from} → {o.period_to}
                   </div>
                 )}
@@ -683,7 +683,7 @@ function ExecutiveCommandCenter() {
               <div className="text-sm font-semibold text-slate-100">
                 {ar ? "إجراءات تنفيذية سريعة" : "Quick Executive Actions"}
               </div>
-              <div className="text-[11px] text-slate-400">
+              <div className="text-[12px] text-slate-400">
                 {ar
                   ? "الجلسة التنفيذية الكاملة بنقرة واحدة."
                   : "Full executive session, one click away."}

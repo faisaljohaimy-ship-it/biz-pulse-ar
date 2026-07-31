@@ -26,7 +26,7 @@ export function FinnDailySummary({ className }: { className?: string }) {
           </span>
           <h2 className="text-sm font-bold text-white">ملخص FINN التنفيذي — اليوم</h2>
         </div>
-        <SimBadge ar className="text-[9px]" />
+        <SimBadge ar className="text-[12px]" />
       </div>
       <ol className="space-y-1.5 pr-1">
         {lines.map((line, i) => (

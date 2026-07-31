@@ -131,7 +131,7 @@ function LessonPage() {
             <GraduationCap className="h-6 w-6 text-cyan-300" />
           </div>
           <div className="min-w-0">
-            <div className="truncate text-[10px] uppercase tracking-[0.22em] text-cyan-300/80">
+            <div className="truncate text-[12px] uppercase tracking-[0.22em] text-cyan-300/80">
               NEXIOS · {ar ? "جسر المعرفة التنفيذي" : "Executive Knowledge Bridge"} ·{" "}
               {String(lesson.order_index).padStart(2, "0")}
             </div>
@@ -264,7 +264,7 @@ function LessonPage() {
               </div>
               <div>
                 <div className="text-sm font-semibold text-white">FINN</div>
-                <div className="text-[11px] text-white/60">
+                <div className="text-[12px] text-white/60">
                   {ar
                     ? "معلّمتك التنفيذية لهذه الحصة"
                     : "Your executive instructor for this lesson"}

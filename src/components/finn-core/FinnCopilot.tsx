@@ -1931,7 +1931,7 @@ export function FinnCopilot() {
             </div>
             <div className="flex min-w-0 flex-1 flex-col leading-tight">
               <span className="text-sm font-semibold text-foreground">FINN</span>
-              <span className="max-w-[235px] truncate text-[11px] text-muted-foreground">
+              <span className="max-w-[235px] truncate text-[12px] text-muted-foreground">
                 {`${statusLabel} · ${convMode ? "صوت" : "نص"}`}
               </span>
             </div>
@@ -1958,7 +1958,7 @@ export function FinnCopilot() {
           {(convNotice || (convMode && convPaused)) && (
             <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-2">
               {convNotice && (
-                <div className="rounded-full bg-amber-500/15 px-3 py-1 text-[11px] text-amber-200 ring-1 ring-amber-400/40 backdrop-blur-md">
+                <div className="rounded-full bg-amber-500/15 px-3 py-1 text-[12px] text-amber-200 ring-1 ring-amber-400/40 backdrop-blur-md">
                   {convNotice}
                 </div>
               )}

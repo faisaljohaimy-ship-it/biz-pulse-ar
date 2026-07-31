@@ -3180,3 +3180,67 @@ html.nx-presenting .nexus-app-shell {
     animation: none !important;
   }
 }
+
+/* ── Readability & touch floors — one layer, not per-page patches ─────────
+   Three invariants the platform kept violating page by page, fixed once at
+   the token layer.
+
+   1. ARABIC LINE HEIGHT. Arabic needs more leading than Latin — ascenders and
+      descenders collide at the 1.2–1.35 that looks fine in English.
+   2. TOUCH TARGETS. 44×44 on coarse pointers, 40×40 on fine. Applied via
+      min-block-size/min-inline-size inside :where(), so specificity stays 0
+      and the rule can only ever GROW a control — nothing that fits today is
+      pushed out, and any component style still wins.
+   3. FOCUS VISIBILITY. The UA default ring is invisible on a dark holographic
+      surface, which made keyboard operation effectively impossible.
+
+   Deliberately NOT changing the root font-size: every Tailwind spacing and
+   type utility is rem-based, so moving the root would silently rescale the
+   whole product — including shrinking `text-xs` back below the 12px floor
+   this pass established. */
+
+body {
+  line-height: 1.6;
+}
+
+:where(h1, h2, h3, h4, h5, h6) {
+  line-height: 1.3;
+}
+
+:where(p, li, dd) {
+  line-height: 1.7;
+}
+
+@media (pointer: coarse) {
+  :where(button, a[href], [role="button"], [role="tab"], [role="menuitem"], summary),
+  :where(input:not([type="hidden"]), select, textarea) {
+    min-block-size: 44px;
+  }
+  :where(button, a[href], [role="button"], [role="tab"], [role="menuitem"], summary) {
+    min-inline-size: 44px;
+  }
+}
+
+@media (pointer: fine) {
+  :where(button, a[href], [role="button"], [role="tab"]) {
+    min-block-size: 40px;
+    min-inline-size: 40px;
+  }
+}
+
+:where(a, button, [role="button"], input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid rgb(56 189 248);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

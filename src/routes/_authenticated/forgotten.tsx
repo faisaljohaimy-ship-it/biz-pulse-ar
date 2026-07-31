@@ -89,7 +89,7 @@ function ForgottenPage() {
                 <h3 className="mt-2 text-sm font-semibold text-slate-100">
                   {ar ? m.title : (m.title_en ?? m.title)}
                 </h3>
-                <div className="mt-1 flex flex-wrap gap-3 text-[11px] text-slate-400">
+                <div className="mt-1 flex flex-wrap gap-3 text-[12px] text-slate-400">
                   {m.owner && (
                     <span>
                       {ar ? "المالك" : "Owner"}: <span className="text-slate-200">{m.owner}</span>

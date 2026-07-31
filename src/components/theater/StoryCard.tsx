@@ -82,7 +82,7 @@ export function StoryCard({ line, ar, active, onClick }: Props) {
         <div className="flex items-center gap-2 min-w-0">
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] uppercase tracking-wider",
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] uppercase tracking-wider",
               tone.chip,
             )}
           >
@@ -93,7 +93,7 @@ export function StoryCard({ line, ar, active, onClick }: Props) {
             {ar ? line.agent_name_ar : line.agent_name_en}
           </span>
         </div>
-        <span className="inline-flex items-center gap-1 text-[11px] text-white/50">
+        <span className="inline-flex items-center gap-1 text-[12px] text-white/50">
           <Clock className="h-3 w-3" />
           {elapsed(line.ts, ar)}
         </span>
@@ -114,10 +114,10 @@ export function StoryCard({ line, ar, active, onClick }: Props) {
       )}
 
       {(line.reason_ar || line.reason_en) && (
-        <p className="mt-1 text-[11px] text-white/45">{ar ? line.reason_ar : line.reason_en}</p>
+        <p className="mt-1 text-[12px] text-white/45">{ar ? line.reason_ar : line.reason_en}</p>
       )}
 
-      <footer className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-white/55">
+      <footer className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] text-white/55">
         {line.duration_ms != null && (
           <span className="inline-flex items-center gap-1">
             <Activity className="h-3 w-3" />

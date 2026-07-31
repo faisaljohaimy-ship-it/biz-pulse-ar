@@ -195,7 +195,7 @@ export function KnowledgeGraphSimulation({ slug, lang, onCompleted }: Props) {
               setRanAt(Date.now());
               if (!completedQueries.includes(s)) setCompletedQueries((c) => [...c, s]);
             }}
-            className="rounded-full border border-white/10 bg-white/[0.02] px-3 py-1 text-[11px] text-white/70 hover:border-cyan-400/40 hover:text-cyan-200"
+            className="rounded-full border border-white/10 bg-white/[0.02] px-3 py-1 text-[12px] text-white/70 hover:border-cyan-400/40 hover:text-cyan-200"
           >
             {s}
           </button>
@@ -253,7 +253,7 @@ export function KnowledgeGraphSimulation({ slug, lang, onCompleted }: Props) {
 
         {/* Results */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
-          <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-white/60">
+          <div className="mb-2 flex items-center justify-between text-[12px] uppercase tracking-[0.2em] text-white/60">
             <span>{ar ? "نتائج FINN" : "FINN results"}</span>
             <span>
               {ar
@@ -288,11 +288,11 @@ export function KnowledgeGraphSimulation({ slug, lang, onCompleted }: Props) {
                       <BookOpen className="h-3.5 w-3.5 text-cyan-300" />
                       {ar ? r.title_ar : r.title_en}
                     </div>
-                    <span className="rounded-full bg-cyan-400/15 px-1.5 text-[10px] text-cyan-200">
+                    <span className="rounded-full bg-cyan-400/15 px-1.5 text-[12px] text-cyan-200">
                       ×{r.score}
                     </span>
                   </div>
-                  <div className="text-[11px] leading-relaxed text-white/70">
+                  <div className="text-[12px] leading-relaxed text-white/70">
                     {ar ? r.body_ar : r.body_en}
                   </div>
                 </li>

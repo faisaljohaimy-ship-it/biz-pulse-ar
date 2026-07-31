@@ -87,7 +87,7 @@ function BriefingPage() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
-              <div className="text-[10px] font-bold tracking-[0.3em] text-cyan-300/80">
+              <div className="text-[12px] font-bold tracking-[0.3em] text-cyan-300/80">
                 {ar ? "الملخص الاستراتيجي · FINN" : "STRATEGIC SUMMARY · FINN"}
               </div>
               <InlineAddForm
@@ -112,7 +112,7 @@ function BriefingPage() {
             </div>
             <p className="mt-2 text-sm leading-relaxed text-slate-200">{summary}</p>
             {latest && (
-              <div className="mt-2 text-[10px] text-slate-500">
+              <div className="mt-2 text-[12px] text-slate-500">
                 {ar ? "تم التوليد:" : "Generated:"} {new Date(latest.generated_at).toLocaleString()}
               </div>
             )}
@@ -347,7 +347,7 @@ function BriefingPage() {
                   className="flex items-start justify-between gap-3 rounded-lg border border-cyan-400/15 bg-cyan-400/[0.04] p-3 text-sm text-slate-200"
                 >
                   <div className="flex items-start gap-3 min-w-0">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-cyan-400/40 text-[10px] font-bold text-cyan-300">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-cyan-400/40 text-[12px] font-bold text-cyan-300">
                       {i + 1}
                     </span>
                     <span className="min-w-0">{ar ? a.title : a.title_en || a.title}</span>
@@ -372,7 +372,7 @@ function BriefingPage() {
             {briefings.map((b) => (
               <div key={b.id} className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="text-[10px] font-bold tracking-widest text-cyan-300/80">
+                  <div className="text-[12px] font-bold tracking-widest text-cyan-300/80">
                     BRIEFING
                   </div>
                   <DeleteButton
@@ -384,7 +384,7 @@ function BriefingPage() {
                 <div className="mt-1.5 text-sm font-semibold text-white">
                   {ar ? b.title : b.title_en || b.title}
                 </div>
-                <div className="mt-1 text-[11px] text-slate-500">
+                <div className="mt-1 text-[12px] text-slate-500">
                   {new Date(b.generated_at).toLocaleString()}
                 </div>
               </div>
@@ -408,7 +408,7 @@ function SectionTitle({
       <div className="flex h-7 w-7 items-center justify-center rounded-md bg-cyan-400/10 text-cyan-300">
         <Icon className="h-3.5 w-3.5" />
       </div>
-      <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">{title}</div>
+      <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">{title}</div>
     </div>
   );
 }

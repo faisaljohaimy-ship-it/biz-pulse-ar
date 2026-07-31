@@ -235,7 +235,7 @@ function PtwPage() {
                           />
                           {ar ? (t?.name_ar ?? p.type_key) : (t?.name_en ?? p.type_key)}
                         </span>
-                        <p className="mt-1 font-mono text-[11px] text-white/50">{p.ref}</p>
+                        <p className="mt-1 font-mono text-[12px] text-white/50">{p.ref}</p>
                       </div>
                       <button
                         onClick={() => setQrPermit(p)}
@@ -246,15 +246,15 @@ function PtwPage() {
                       </button>
                     </div>
                     <p className="mt-2 text-sm text-white/85">{p.location}</p>
-                    <p className="text-[11px] text-white/50">
+                    <p className="text-[12px] text-white/50">
                       {p.contractor} · {p.worker_count} {ar ? "عامل" : "workers"}
                     </p>
                     <div className="mt-2 flex items-center justify-between">
-                      <span className="text-[11px] text-white/50">
+                      <span className="text-[12px] text-white/50">
                         {REGIONS.find((r) => r.id === (p.region as RegionId))?.shortAr}
                       </span>
                       {soon && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-200">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 text-[12px] font-semibold text-amber-200">
                           <Clock3 className="h-3 w-3" /> {ar ? "ينتهي قريبًا" : "ending soon"}
                         </span>
                       )}
@@ -296,10 +296,10 @@ function PtwPage() {
                           />
                           {ar ? (t?.name_ar ?? p.type_key) : (t?.name_en ?? p.type_key)}
                         </span>
-                        <span className="font-mono text-[11px] text-white/50">{p.ref}</span>
+                        <span className="font-mono text-[12px] text-white/50">{p.ref}</span>
                       </div>
                       <p className="mt-2 text-sm text-white/85">{p.location}</p>
-                      <p className="text-[11px] text-white/50">
+                      <p className="text-[12px] text-white/50">
                         {p.contractor} · {p.worker_count} {ar ? "عامل" : "workers"} ·{" "}
                         {fmtTime(p.starts_at)}–{fmtTime(p.ends_at)}
                       </p>
@@ -309,7 +309,7 @@ function PtwPage() {
                         <span className="h-1.5 flex-1 rounded-full bg-white/15" />
                         <span className="h-1.5 flex-1 rounded-full bg-white/15" />
                       </div>
-                      <p className="mt-1.5 text-[10px] text-amber-200/80">
+                      <p className="mt-1.5 text-[12px] text-amber-200/80">
                         {ar
                           ? "الخطوة 1 من 3 — مشرف الموقع ← السلامة ← مدير المنطقة"
                           : "Step 1 of 3 — site supervisor → safety → region manager"}

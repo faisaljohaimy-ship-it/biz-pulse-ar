@@ -147,7 +147,7 @@ export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: bo
                       ? "secondary"
                       : "outline"
                 }
-                className="text-[10px]"
+                className="text-[12px]"
               >
                 {isAr
                   ? { ok: "سليم", warn: "تحذير", critical: "حرج" }[s.status]

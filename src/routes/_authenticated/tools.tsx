@@ -134,25 +134,25 @@ function ToolsRuntime() {
 
       <div className="grid gap-2 sm:grid-cols-4">
         <Card className="p-3 glass-card">
-          <div className="text-[10px] uppercase text-muted-foreground">
+          <div className="text-[12px] uppercase text-muted-foreground">
             {ar ? "إجمالي" : "Total"}
           </div>
           <div className="text-2xl font-bold">{totals.total}</div>
         </Card>
         <Card className="p-3 glass-card">
-          <div className="text-[10px] uppercase text-muted-foreground">
+          <div className="text-[12px] uppercase text-muted-foreground">
             {ar ? "مفعّل" : "Enabled"}
           </div>
           <div className="text-2xl font-bold text-emerald-300">{totals.enabled}</div>
         </Card>
         <Card className="p-3 glass-card">
-          <div className="text-[10px] uppercase text-muted-foreground">
+          <div className="text-[12px] uppercase text-muted-foreground">
             {ar ? "نشِط الآن" : "Running"}
           </div>
           <div className="text-2xl font-bold text-cyan-300">{totals.running}</div>
         </Card>
         <Card className="p-3 glass-card">
-          <div className="text-[10px] uppercase text-muted-foreground">
+          <div className="text-[12px] uppercase text-muted-foreground">
             {ar ? "فشل (24س)" : "Failed (24h)"}
           </div>
           <div className="text-2xl font-bold text-rose-300">{totals.failed24h}</div>
@@ -249,24 +249,24 @@ function ToolCard({ tool, history, ar }: { tool: Tool; history: ToolExec[]; ar: 
             <div className="truncate text-sm font-semibold">{tool.name}</div>
           </div>
           {tool.description && (
-            <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
+            <div className="mt-0.5 truncate text-[12px] text-muted-foreground">
               {tool.description}
             </div>
           )}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <Badge variant={tool.enabled ? "default" : "secondary"} className="text-[10px]">
+          <Badge variant={tool.enabled ? "default" : "secondary"} className="text-[12px]">
             {tool.enabled ? (ar ? "مفعّل" : "On") : ar ? "متوقف" : "Off"}
           </Badge>
           {tool.requires_approval && (
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-[12px]">
               <ShieldCheck className="h-3 w-3 me-1" />
               {ar ? "اعتماد" : "Approval"}
             </Badge>
           )}
         </div>
       </div>
-      <div className="mt-2 grid grid-cols-3 gap-2 text-[10px] text-muted-foreground">
+      <div className="mt-2 grid grid-cols-3 gap-2 text-[12px] text-muted-foreground">
         <div>
           <span className="block uppercase">{ar ? "الطابور" : "Queue"}</span>
           <span className="text-foreground text-xs">{running}</span>

@@ -16,6 +16,7 @@ import { ProceduralBust } from "./ProceduralBust";
 import { HologramShell, NeuralParticles, ScanRing } from "./HologramFX";
 import type { DigitalHumanSpec, DigitalHumanState } from "@/lib/digital-humans/registry";
 import { ALIVE_PRESETS, toAliveState, type AliveState } from "@/lib/digital-humans/alive-states";
+import { useWebGLSupported } from "@/lib/graphics/use-webgl-supported";
 
 interface Props {
   spec: DigitalHumanSpec;
@@ -43,6 +44,7 @@ function HaloRing({ color, intensity }: { color: string; intensity: number }) {
 }
 
 export function FinnScene({ spec, state, mouthAmplitude = 0, size, severity, gaze }: Props) {
+  const webglOk = useWebGLSupported();
   const alive: AliveState = useMemo(() => toAliveState(state, severity), [state, severity]);
   const preset = ALIVE_PRESETS[alive];
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
@@ -66,6 +68,9 @@ export function FinnScene({ spec, state, mouthAmplitude = 0, size, severity, gaz
       style={{ width: size, height: size }}
       className="relative rounded-full overflow-hidden shrink-0"
     >
+      {/* No WebGL ⇒ the Canvas below is never mounted, so three.js never
+          constructs a renderer and cannot retry. The CSS shell still paints,
+          so the panel degrades to a static glow rather than a blank box. */}
       {/* Ambient glow shell — CSS, cheap, no extra draw call */}
       <div
         aria-hidden
@@ -75,68 +80,70 @@ export function FinnScene({ spec, state, mouthAmplitude = 0, size, severity, gaz
           background: `radial-gradient(circle at 50% 35%, ${spec.palette.glow} 0%, rgba(6,26,46,0) 70%)`,
         }}
       />
-      <Canvas
-        dpr={[1, 2]}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-        camera={{ position: [0, 0.05, preset.cameraZ], fov: 28 }}
-        frameloop="always"
-      >
-        <color attach="background" args={["#061525"]} />
-        <fog attach="fog" args={["#061525", 3, 6]} />
-        {/* 3-point executive lighting */}
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[2, 3, 3]} intensity={1.2} color="#ffffff" castShadow />
-        <directionalLight position={[-3, 1, 1]} intensity={0.45} color={spec.palette.accent} />
-        <pointLight position={[0, -2, 2]} intensity={0.3} color={spec.palette.accent} />
+      {webglOk ? (
+        <Canvas
+          dpr={[1, 2]}
+          gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+          camera={{ position: [0, 0.05, preset.cameraZ], fov: 28 }}
+          frameloop="always"
+        >
+          <color attach="background" args={["#061525"]} />
+          <fog attach="fog" args={["#061525", 3, 6]} />
+          {/* 3-point executive lighting */}
+          <ambientLight intensity={0.4} />
+          <directionalLight position={[2, 3, 3]} intensity={1.2} color="#ffffff" castShadow />
+          <directionalLight position={[-3, 1, 1]} intensity={0.45} color={spec.palette.accent} />
+          <pointLight position={[0, -2, 2]} intensity={0.3} color={spec.palette.accent} />
 
-        <Suspense fallback={null}>
-          <Environment preset="city" environmentIntensity={0.55} />
-        </Suspense>
+          <Suspense fallback={null}>
+            <Environment preset="city" environmentIntensity={0.55} />
+          </Suspense>
 
-        <ProceduralBust
-          spec={spec}
-          preset={preset}
-          mouthAmplitude={mouthAmplitude}
-          pointer={effectivePointer}
-        />
-
-        {/* Holographic crystal shell — Fresnel rim glow over the head */}
-        <HologramShell color={spec.palette.accent} intensity={0.6 + preset.ringIntensity * 0.8} />
-
-        {/* GPU neural particles — soft blue motes orbiting the bust */}
-        <NeuralParticles
-          color={spec.palette.accent}
-          count={200}
-          radius={1.0}
-          speed={0.6 + preset.ringIntensity}
-        />
-
-        {/* Pulsing scan ring around the head — louder when listening / speaking */}
-        <ScanRing color={spec.palette.accent} intensity={preset.ringIntensity} />
-
-        <HaloRing color={spec.palette.accent} intensity={preset.ringIntensity} />
-
-        <ContactShadows
-          position={[0, -0.85, 0]}
-          opacity={0.5}
-          scale={3}
-          blur={2.5}
-          far={1.2}
-          color="#000000"
-        />
-
-        {/* Post-processing: bloom + film tone mapping + soft vignette */}
-        <EffectComposer multisampling={0} enableNormalPass={false}>
-          <Bloom intensity={0.85} luminanceThreshold={0.18} luminanceSmoothing={0.6} mipmapBlur />
-          <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
-          <Vignette
-            eskil={false}
-            offset={0.25}
-            darkness={0.7}
-            blendFunction={BlendFunction.NORMAL}
+          <ProceduralBust
+            spec={spec}
+            preset={preset}
+            mouthAmplitude={mouthAmplitude}
+            pointer={effectivePointer}
           />
-        </EffectComposer>
-      </Canvas>
+
+          {/* Holographic crystal shell — Fresnel rim glow over the head */}
+          <HologramShell color={spec.palette.accent} intensity={0.6 + preset.ringIntensity * 0.8} />
+
+          {/* GPU neural particles — soft blue motes orbiting the bust */}
+          <NeuralParticles
+            color={spec.palette.accent}
+            count={200}
+            radius={1.0}
+            speed={0.6 + preset.ringIntensity}
+          />
+
+          {/* Pulsing scan ring around the head — louder when listening / speaking */}
+          <ScanRing color={spec.palette.accent} intensity={preset.ringIntensity} />
+
+          <HaloRing color={spec.palette.accent} intensity={preset.ringIntensity} />
+
+          <ContactShadows
+            position={[0, -0.85, 0]}
+            opacity={0.5}
+            scale={3}
+            blur={2.5}
+            far={1.2}
+            color="#000000"
+          />
+
+          {/* Post-processing: bloom + film tone mapping + soft vignette */}
+          <EffectComposer multisampling={0} enableNormalPass={false}>
+            <Bloom intensity={0.85} luminanceThreshold={0.18} luminanceSmoothing={0.6} mipmapBlur />
+            <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+            <Vignette
+              eskil={false}
+              offset={0.25}
+              darkness={0.7}
+              blendFunction={BlendFunction.NORMAL}
+            />
+          </EffectComposer>
+        </Canvas>
+      ) : null}
     </div>
   );
 }

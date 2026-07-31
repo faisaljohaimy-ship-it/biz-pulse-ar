@@ -11,6 +11,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { REGION_ACCENT_HEX } from "@/lib/regions";
 import { REGION_MARKERS } from "./region-markers";
+import { canUseWebGL } from "@/lib/graphics/webgl-capability";
 
 const RADIUS = 1;
 
@@ -272,6 +273,12 @@ export default function SectorGlobeScene({
   readonly activeIndex: number;
   readonly activeColor: string;
 }) {
+  // No WebGL ⇒ never construct a renderer. A mounted <Canvas> retries on
+  // every render, which is what fills the console with the same three.js
+  // error; not mounting is the only fix that actually stops it. The CSS
+  // fallback beneath this component keeps the panel looking intentional.
+  if (!canUseWebGL()) return null;
+
   return (
     <Canvas
       dpr={[1, 1.6]}

@@ -138,7 +138,7 @@ function VisitorsPage() {
                 </td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusClass(v.status)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] font-medium ${statusClass(v.status)}`}
                   >
                     {v.status}
                   </span>

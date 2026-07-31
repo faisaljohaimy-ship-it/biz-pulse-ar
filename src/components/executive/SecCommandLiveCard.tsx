@@ -120,11 +120,11 @@ export function SecCommandLiveCard() {
       <div className="flex items-center justify-between gap-3 border-b border-white/5 bg-[#04111f]/80 px-4 py-2.5">
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold text-white">{title}</div>
-          <div className="truncate text-[10px] uppercase tracking-[0.22em] text-white/45">
+          <div className="truncate text-[12px] uppercase tracking-[0.22em] text-white/45">
             {subtitle}
           </div>
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8DEEFF]">
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#8DEEFF]">
           <Sparkles className="h-3 w-3" />
           {ar ? "عرض تجريبي" : "DEMO"}
         </span>
@@ -169,7 +169,7 @@ export function SecCommandLiveCard() {
                     <Trend className={`h-3 w-3 shrink-0 ${toneClasses[c.tone]}`} />
                   )}
                 </div>
-                <div className="mt-1 truncate text-[9px] uppercase tracking-[0.18em] text-white/55 sm:text-[10px]">
+                <div className="mt-1 truncate text-[12px] uppercase tracking-[0.18em] text-white/55 sm:text-[12px]">
                   {ar ? c.label_ar : c.label_en}
                 </div>
               </div>
@@ -180,7 +180,7 @@ export function SecCommandLiveCard() {
 
       {/* Footer */}
       <div className="flex items-center justify-between gap-3 border-t border-white/5 bg-[#04111f]/80 px-4 py-2.5">
-        <span className="text-[10px] uppercase tracking-[0.22em] text-white/40">
+        <span className="text-[12px] uppercase tracking-[0.22em] text-white/40">
           {snapshotLabel}
         </span>
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#3AE8FF] transition group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[2px]">

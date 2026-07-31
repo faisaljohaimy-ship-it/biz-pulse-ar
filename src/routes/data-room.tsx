@@ -181,7 +181,7 @@ function DataRoomPage() {
               : "A single confidential workspace for investors, government leaders, and enterprise procurement. Every document under our Privacy Policy and DPA."}
           </p>
 
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-amber-300">
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/5 px-3 py-1 text-[12px] uppercase tracking-[0.24em] text-amber-300">
             <Lock className="h-3 w-3" />
             {isAr ? "للتداول التنفيذي فقط" : "Executive distribution only"}
           </div>
@@ -209,12 +209,12 @@ function DataRoomPage() {
                           {isAr ? d.titleAr : d.title}
                         </div>
                         {(d.note || d.noteAr) && (
-                          <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                          <div className="mt-1 text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
                             {isAr ? (d.noteAr ?? d.note) : d.note}
                           </div>
                         )}
                         {!d.note && (
-                          <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                          <div className="mt-1 text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
                             {d.kind === "pdf" ? "PDF" : isAr ? "صفحة" : "Page"}
                           </div>
                         )}

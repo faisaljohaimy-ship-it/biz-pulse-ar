@@ -143,7 +143,7 @@ export function OsCommandDeck({ ar }: { readonly ar: boolean }) {
             <Waves className="h-5 w-5" strokeWidth={1.75} />
           </span>
           <div className="min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#3AE8FF]/85">
+            <div className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[#3AE8FF]/85">
               {ar ? "قاعة القيادة" : "Command Deck"}
             </div>
             <div className="mt-0.5 truncate text-sm font-medium text-white/80">
@@ -190,7 +190,7 @@ export function OsCommandDeck({ ar }: { readonly ar: boolean }) {
                   <div className="truncate text-[12px] font-semibold text-white">
                     {ar ? t.labelAr : t.labelEn}
                   </div>
-                  <div className="mt-0.5 truncate text-[10px] uppercase tracking-[0.22em] text-white/45">
+                  <div className="mt-0.5 truncate text-[12px] uppercase tracking-[0.22em] text-white/45">
                     {ar ? t.labelEn : t.labelAr}
                   </div>
                 </div>
@@ -201,7 +201,7 @@ export function OsCommandDeck({ ar }: { readonly ar: boolean }) {
               <span className="truncate text-xl font-semibold tabular-nums tracking-tight text-white sm:text-2xl">
                 {t.value}
               </span>
-              <span className="truncate text-[10px] text-white/45">{t.caption}</span>
+              <span className="truncate text-[12px] text-white/45">{t.caption}</span>
             </div>
           </div>
         ))}

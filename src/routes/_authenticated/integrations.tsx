@@ -224,7 +224,7 @@ function IntegrationsHubPage() {
       actions={
         <>
           {usingReference && (
-            <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[10px] font-semibold text-amber-300">
+            <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[12px] font-semibold text-amber-300">
               {ar ? "محاكاة مرجعية" : "Reference simulation"}
             </span>
           )}
@@ -233,7 +233,7 @@ function IntegrationsHubPage() {
               void overview.refetch();
               void events.refetch();
             }}
-            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-200 hover:bg-cyan-400/20"
+            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[12px] font-semibold text-cyan-200 hover:bg-cyan-400/20"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${overview.isFetching ? "animate-spin" : ""}`} />
             {ar ? "تحديث" : "Refresh"}
@@ -267,7 +267,7 @@ function IntegrationsHubPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <Plug className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "شبكة الموصلات الحية" : "LIVE CONNECTORS GRID"}
           </div>
         </div>
@@ -295,7 +295,7 @@ function IntegrationsHubPage() {
                         <div className="truncate text-sm font-semibold text-white">
                           {ar ? p.name_ar : p.name}
                         </div>
-                        <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                        <div className="text-[12px] uppercase tracking-widest text-slate-500">
                           {p.category}
                         </div>
                       </div>
@@ -308,9 +308,9 @@ function IntegrationsHubPage() {
                     </NexusPill>
                   </div>
 
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-[12px]">
                     <div className="rounded-md bg-white/[0.03] p-2">
-                      <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                      <div className="text-[12px] uppercase tracking-widest text-slate-500">
                         {ar ? "آخر اختبار" : "Last test"}
                       </div>
                       <div className="font-semibold text-slate-200">
@@ -318,7 +318,7 @@ function IntegrationsHubPage() {
                       </div>
                     </div>
                     <div className="rounded-md bg-white/[0.03] p-2">
-                      <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                      <div className="text-[12px] uppercase tracking-widest text-slate-500">
                         {ar ? "آخر مزامنة" : "Last sync"}
                       </div>
                       <div className="font-semibold text-slate-200">
@@ -326,13 +326,13 @@ function IntegrationsHubPage() {
                       </div>
                     </div>
                     <div className="rounded-md bg-white/[0.03] p-2">
-                      <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                      <div className="text-[12px] uppercase tracking-widest text-slate-500">
                         {ar ? "أحداث 24س" : "Events 24h"}
                       </div>
                       <div className="font-semibold text-slate-200">{p.events_24h}</div>
                     </div>
                     <div className="rounded-md bg-white/[0.03] p-2">
-                      <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                      <div className="text-[12px] uppercase tracking-widest text-slate-500">
                         {ar ? "أخطاء 24س" : "Errors 24h"}
                       </div>
                       <div
@@ -348,13 +348,13 @@ function IntegrationsHubPage() {
                   )}
 
                   {p.last_test_error && (
-                    <div className="mt-2 rounded-md border border-rose-500/30 bg-rose-500/5 p-2 text-[11px] text-rose-200">
+                    <div className="mt-2 rounded-md border border-rose-500/30 bg-rose-500/5 p-2 text-[12px] text-rose-200">
                       {p.last_test_error.slice(0, 200)}
                     </div>
                   )}
 
                   {!p.configured && (
-                    <div className="mt-2 rounded-md border border-slate-500/30 bg-slate-500/5 p-2 text-[11px] text-slate-300">
+                    <div className="mt-2 rounded-md border border-slate-500/30 bg-slate-500/5 p-2 text-[12px] text-slate-300">
                       {ar ? p.setup_hint_ar : p.setup_hint_en}
                     </div>
                   )}
@@ -363,7 +363,7 @@ function IntegrationsHubPage() {
                     <button
                       onClick={() => (isSim ? runCinematicTest(p) : testMut.mutate(p.id))}
                       disabled={isTesting || (!isSim && !p.configured)}
-                      className={`inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-md border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-100 transition hover:bg-cyan-400/20 disabled:cursor-not-allowed disabled:opacity-40${isTesting ? " animate-pulse" : ""}`}
+                      className={`inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-md border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[12px] font-semibold text-cyan-100 transition hover:bg-cyan-400/20 disabled:cursor-not-allowed disabled:opacity-40${isTesting ? " animate-pulse" : ""}`}
                     >
                       {isTesting ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -375,7 +375,7 @@ function IntegrationsHubPage() {
                     {p.id === "sap" ? (
                       <a
                         href="/admin"
-                        className="inline-flex items-center justify-center gap-1 rounded-md border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-medium text-slate-300 hover:border-cyan-400/40 hover:text-cyan-200"
+                        className="inline-flex items-center justify-center gap-1 rounded-md border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[12px] font-medium text-slate-300 hover:border-cyan-400/40 hover:text-cyan-200"
                       >
                         <ExternalLink className="h-3 w-3" />
                         {ar ? "إعداد" : "Setup"}
@@ -393,11 +393,11 @@ function IntegrationsHubPage() {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-cyan-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
               {ar ? "سجل الأحداث الحية" : "LIVE EVENT STREAM"}
             </div>
           </div>
-          <span className="text-[10px] uppercase tracking-widest text-slate-500">
+          <span className="text-[12px] uppercase tracking-widest text-slate-500">
             {eventsList.length} {ar ? "حدث" : "events"}
           </span>
         </div>
@@ -410,7 +410,7 @@ function IntegrationsHubPage() {
             {ar ? "لا توجد أحداث بعد" : "No events yet"}
           </div>
         ) : (
-          <ul className="mt-3 divide-y divide-white/5 font-mono text-[11px]">
+          <ul className="mt-3 divide-y divide-white/5 font-mono text-[12px]">
             {eventsList.map((ev) => {
               const tone =
                 ev.status === "ok" ? "emerald" : ev.status === "error" ? "rose" : "amber";

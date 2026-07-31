@@ -40,7 +40,7 @@ export function DecisionTimeline({ events, lang }: Props) {
             <span className="h-1.5 w-1.5 rounded-full bg-current" />
           </span>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="font-mono text-[11px] tabular-nums text-cyan-300/80">{e.t}</span>
+            <span className="font-mono text-[12px] tabular-nums text-cyan-300/80">{e.t}</span>
             <span className="text-xs uppercase tracking-[0.14em] text-white/60">
               {ar ? e.actor_ar : e.actor_en}
             </span>

@@ -80,14 +80,14 @@ function Permits() {
                 <td className="px-3 py-2 text-muted-foreground">{p.contractor}</td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${severityClass(p.risk_level)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${severityClass(p.risk_level)}`}
                   >
                     {p.risk_level}
                   </span>
                 </td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(p.status)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(p.status)}`}
                   >
                     {p.status}
                   </span>

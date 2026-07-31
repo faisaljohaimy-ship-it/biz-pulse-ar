@@ -108,7 +108,7 @@ function KnowledgeHubPage() {
       actions={
         <Link
           to="/knowledge-upload"
-          className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-200 hover:bg-cyan-400/20"
+          className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1.5 text-[12px] font-semibold text-cyan-200 hover:bg-cyan-400/20"
         >
           <Upload className="h-3.5 w-3.5" />
           {ar ? "رفع مستند" : "Upload document"}
@@ -146,7 +146,7 @@ function KnowledgeHubPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <Search className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "البحث المؤسسي" : "ENTERPRISE SEARCH"}
           </div>
         </div>
@@ -176,7 +176,7 @@ function KnowledgeHubPage() {
               <button
                 key={s}
                 onClick={() => toggleSource(s)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold transition ${
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-semibold transition ${
                   active
                     ? "border-cyan-400/50 bg-cyan-400/10 text-cyan-100"
                     : "border-white/10 bg-white/[0.02] text-slate-400 hover:border-white/20"
@@ -185,7 +185,7 @@ function KnowledgeHubPage() {
                 <meta.icon className="h-3 w-3" />
                 {ar ? meta.label_ar : meta.label_en}
                 {count > 0 && (
-                  <span className="rounded-full bg-white/10 px-1.5 text-[10px]">{count}</span>
+                  <span className="rounded-full bg-white/10 px-1.5 text-[12px]">{count}</span>
                 )}
               </button>
             );
@@ -210,7 +210,7 @@ function KnowledgeHubPage() {
           )
         ) : (
           <>
-            <div className="mt-3 text-[10px] uppercase tracking-widest text-slate-500">
+            <div className="mt-3 text-[12px] uppercase tracking-widest text-slate-500">
               {results.total} {ar ? "نتيجة" : "results"} · {results.took_ms}ms
             </div>
             <ul className="mt-2 divide-y divide-white/5">
@@ -240,9 +240,9 @@ function SearchHitRow({ hit, ar }: { hit: SearchHit; ar: boolean }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <NexusPill tone={meta.tone}>{ar ? meta.label_ar : meta.label_en}</NexusPill>
-            {hit.ref && <span className="text-[10px] font-mono text-slate-500">{hit.ref}</span>}
-            {hit.meta && <span className="text-[10px] text-slate-500">{hit.meta}</span>}
-            <span className="ms-auto text-[10px] text-slate-500">
+            {hit.ref && <span className="text-[12px] font-mono text-slate-500">{hit.ref}</span>}
+            {hit.meta && <span className="text-[12px] text-slate-500">{hit.meta}</span>}
+            <span className="ms-auto text-[12px] text-slate-500">
               {new Date(hit.at).toLocaleDateString(ar ? "ar" : "en", {
                 year: "numeric",
                 month: "short",

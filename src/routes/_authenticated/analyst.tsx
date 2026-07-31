@@ -150,7 +150,7 @@ function AnalystPage() {
         <NexusCard glow className="flex flex-col">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-violet-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-violet-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
               {ar ? "المحادثة" : "CONVERSATION"}
             </div>
           </div>
@@ -162,10 +162,10 @@ function AnalystPage() {
                 >
                   <div>{m.text}</div>
                   {m.insights && (
-                    <ul className="mt-3 space-y-1 border-t border-white/10 pt-3 text-[11px]">
+                    <ul className="mt-3 space-y-1 border-t border-white/10 pt-3 text-[12px]">
                       {m.insights.map((it, k) => (
                         <li key={k} className="flex items-start gap-2 text-slate-300">
-                          <span className="mt-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-violet-400/40 text-[9px] font-bold text-violet-300">
+                          <span className="mt-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-violet-400/40 text-[12px] font-bold text-violet-300">
                             {k + 1}
                           </span>
                           {it}
@@ -202,7 +202,7 @@ function AnalystPage() {
         </NexusCard>
 
         <NexusCard>
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "أسئلة سريعة" : "QUICK QUESTIONS"}
           </div>
           <div className="mt-3 space-y-2">

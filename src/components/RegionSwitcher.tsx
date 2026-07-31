@@ -104,7 +104,7 @@ export function RegionSwitcher({ onNavigate }: { onNavigate?: () => void }) {
                     }}
                   />
                   <span className="truncate">{ar ? r.shortAr : r.shortEn}</span>
-                  <span className="ms-auto truncate text-[10px] text-muted-foreground">
+                  <span className="ms-auto truncate text-[12px] text-muted-foreground">
                     {ar ? "الأمن الصناعي" : "Industrial Security"}
                   </span>
                 </button>

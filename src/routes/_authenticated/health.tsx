@@ -81,14 +81,14 @@ function SubsystemCard({ s, ar }: { s: SubsystemHealth; ar?: boolean }) {
             <I className={`h-4 w-4 ${m.tone}`} />
             <span className="text-sm font-semibold truncate">{s.label}</span>
           </div>
-          <div className="mt-0.5 text-[10px] text-muted-foreground">{s.id}</div>
+          <div className="mt-0.5 text-[12px] text-muted-foreground">{s.id}</div>
         </div>
-        <Badge variant="outline" className={`text-[10px] ${m.tone} border-current`}>
+        <Badge variant="outline" className={`text-[12px] ${m.tone} border-current`}>
           {m.label}
         </Badge>
       </div>
-      {s.reason && <div className="text-[11px] text-muted-foreground italic">{s.reason}</div>}
-      <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+      {s.reason && <div className="text-[12px] text-muted-foreground italic">{s.reason}</div>}
+      <div className="grid grid-cols-2 gap-1.5 text-[12px]">
         {Object.entries(s.evidence).map(([k, v]) => (
           <div key={k} className="rounded bg-background/40 px-1.5 py-1">
             <div className="text-muted-foreground uppercase">{k.replace(/_/g, " ")}</div>
@@ -99,7 +99,7 @@ function SubsystemCard({ s, ar }: { s: SubsystemHealth; ar?: boolean }) {
       <Link
         to="/diagnostics"
         search={{ subsystem: s.id }}
-        className="inline-flex items-center gap-1 text-[10px] text-cyan-300 hover:underline"
+        className="inline-flex items-center gap-1 text-[12px] text-cyan-300 hover:underline"
       >
         <ExternalLink className="h-3 w-3" /> {ar ? "تشخيص" : "Open diagnostics"}
       </Link>
@@ -179,7 +179,7 @@ function HealthDashboard() {
                 </div>
                 <div className="text-3xl font-bold text-cyan-300">{data.operational_pct}%</div>
               </div>
-              <div className="text-end text-[10px] text-muted-foreground">
+              <div className="text-end text-[12px] text-muted-foreground">
                 {ar ? "آخر تحديث" : "Last probed"}: {new Date(data.at).toLocaleTimeString()}
               </div>
             </div>

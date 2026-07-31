@@ -221,7 +221,7 @@ function FilmsPage() {
                   className="absolute inset-0 h-full w-full scale-105 object-cover opacity-80 transition-transform duration-700 group-hover:scale-110 group-hover:opacity-100"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#04060d] via-[#04060d]/40 to-transparent" />
-                <div className="absolute inset-x-0 top-3 flex items-center justify-between px-4 text-[10px] uppercase tracking-[0.2em]">
+                <div className="absolute inset-x-0 top-3 flex items-center justify-between px-4 text-[12px] uppercase tracking-[0.2em]">
                   <span className="rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-white/90 backdrop-blur-sm">
                     {isAr ? f.badgeAr : f.badgeEn}
                   </span>
@@ -314,7 +314,7 @@ function PlayerModal({ film, isAr, onClose }: { film: Film; isAr: boolean; onClo
             <p className="truncate text-sm font-semibold text-white">
               {isAr ? film.titleAr : film.titleEn}
             </p>
-            <p className="truncate text-[11px] uppercase tracking-[0.2em] text-amber-400/80">
+            <p className="truncate text-[12px] uppercase tracking-[0.2em] text-amber-400/80">
               NEXIOS · Film Center · {film.duration}
             </p>
           </div>

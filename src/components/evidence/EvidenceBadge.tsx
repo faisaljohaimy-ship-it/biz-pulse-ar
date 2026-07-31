@@ -47,7 +47,7 @@ export function EvidenceBadge({
       data-evidence-fresh={fresh ? "1" : "0"}
       className={[
         "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5",
-        "text-[10px] font-semibold uppercase tracking-[0.18em]",
+        "text-[12px] font-semibold uppercase tracking-[0.18em]",
         TONE[tone],
         fresh ? "" : "opacity-60",
         className,
@@ -57,7 +57,7 @@ export function EvidenceBadge({
         className={`h-1.5 w-1.5 rounded-full ${fresh ? "animate-pulse bg-current" : "bg-current"}`}
       />
       {label}
-      {!fresh ? <span className="ms-1 text-[9px] opacity-70">(stale)</span> : null}
+      {!fresh ? <span className="ms-1 text-[12px] opacity-70">(stale)</span> : null}
     </span>
   );
 }

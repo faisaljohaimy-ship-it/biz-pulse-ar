@@ -144,7 +144,7 @@ function FilesPage() {
               <FileText className="h-4 w-4 text-muted-foreground" />
               <div className="min-w-0 flex-1 truncate text-sm">{f.name}</div>
               {"isReference" in f && f.isReference ? (
-                <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-600 dark:text-amber-300">
+                <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[12px] text-amber-600 dark:text-amber-300">
                   {locale === "ar" ? "محاكاة مرجعية" : "Reference demo"}
                 </span>
               ) : (

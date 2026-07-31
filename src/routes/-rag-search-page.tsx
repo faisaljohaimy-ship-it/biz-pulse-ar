@@ -173,7 +173,7 @@ export function RagSearchPage() {
                       key={r.chunk_id}
                       className="nx-glass-e1 rounded-nx-12 flex flex-col gap-2 border border-white/10 p-3"
                     >
-                      <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                      <div className="flex flex-wrap items-center gap-2 text-[12px]">
                         <span className="rounded-full border border-nx-cyan/50 px-2 py-0.5 font-semibold text-nx-cyan">
                           {r.citation.code ?? r.citation.title}
                         </span>

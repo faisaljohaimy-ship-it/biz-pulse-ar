@@ -330,12 +330,12 @@ function KnowledgeUploadCenter() {
                     <span className="font-medium truncate">{d.title}</span>
                     <StatusBadge status={d.status} />
                     {(d.chunk_count ?? 0) > 0 && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[12px] text-muted-foreground">
                         {d.chunk_count} chunks
                       </span>
                     )}
                     {(d.page_count ?? 0) > 0 && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[12px] text-muted-foreground">
                         · {d.page_count} pages
                       </span>
                     )}
@@ -374,7 +374,7 @@ function Stat({
 }) {
   return (
     <div className="rounded-lg border border-border/40 bg-background/40 p-3">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+      <div className="text-[12px] uppercase tracking-wider text-muted-foreground flex items-center gap-1">
         {icon}
         {label}
       </div>
@@ -391,7 +391,7 @@ function BilingualBar({ ar, en, mixed }: { ar: number; en: number; mixed: number
   const mxPct = (mixed / total) * 100;
   return (
     <div>
-      <div className="flex justify-between text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+      <div className="flex justify-between text-[12px] uppercase tracking-wider text-muted-foreground mb-1">
         <span>Bilingual Chunking</span>
         <span>
           {Math.round(arPct)}% AR · {Math.round(enPct)}% EN
@@ -418,7 +418,7 @@ function PhaseStepper({ phase }: { phase: Phase }) {
   const order = ["extracting", "uploading", "enqueuing", "ingesting", "done"];
   const idx = order.indexOf(phase);
   return (
-    <div className="flex items-center gap-1.5 flex-wrap text-[11px]">
+    <div className="flex items-center gap-1.5 flex-wrap text-[12px]">
       {steps.map((s, i) => {
         const active = i === idx;
         const done = i < idx || phase === "done";
@@ -459,7 +459,7 @@ function PhaseBadge({ phase }: { phase: Phase }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12px] font-medium",
         e.cls,
       )}
     >
@@ -480,7 +480,7 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12px] font-medium",
         e.cls,
       )}
     >

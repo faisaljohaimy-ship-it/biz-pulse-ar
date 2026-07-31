@@ -178,7 +178,7 @@ function ExecutiveBookingPage() {
                     </div>
                   </div>
                   <div
-                    className={`mt-3 inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.18em] ${active ? "text-amber-300" : "text-muted-foreground"}`}
+                    className={`mt-3 inline-flex items-center gap-1 text-[12px] uppercase tracking-[0.18em] ${active ? "text-amber-300" : "text-muted-foreground"}`}
                   >
                     <Calendar className="h-3 w-3" /> {t.sla}
                   </div>

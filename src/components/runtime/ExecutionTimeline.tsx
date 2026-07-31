@@ -88,19 +88,19 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
               <ChevronRight className="h-3 w-3 shrink-0" />
             )}
             <span className="truncate text-xs font-medium">{entry.title}</span>
-            <Badge variant="outline" className="text-[10px] shrink-0">
+            <Badge variant="outline" className="text-[12px] shrink-0">
               {meta.label}
             </Badge>
           </div>
-          <div className="flex items-center gap-2 shrink-0 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-2 shrink-0 text-[12px] text-muted-foreground">
             {entry.duration_ms != null && <span>{Math.round(entry.duration_ms)}ms</span>}
             <span>{fmtRel(entry.at)}</span>
           </div>
         </div>
         {open && (
           <div className="mt-2 space-y-2 border-t border-border/30 pt-2">
-            <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
-              <Badge variant="secondary" className="text-[10px]">
+            <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
+              <Badge variant="secondary" className="text-[12px]">
                 {entry.source}
               </Badge>
               <span>
@@ -122,22 +122,22 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
               )}
             </div>
             {entry.error && (
-              <div className="rounded border border-rose-500/30 bg-rose-500/5 p-2 text-[11px] text-rose-300 whitespace-pre-wrap">
+              <div className="rounded border border-rose-500/30 bg-rose-500/5 p-2 text-[12px] text-rose-300 whitespace-pre-wrap">
                 {entry.error}
               </div>
             )}
             {entry.request !== null && entry.request !== undefined && (
-              <details className="text-[11px]">
+              <details className="text-[12px]">
                 <summary className="cursor-pointer text-muted-foreground">Request</summary>
-                <pre className="mt-1 max-h-40 overflow-auto rounded bg-muted/30 p-2 text-[10px]">
+                <pre className="mt-1 max-h-40 overflow-auto rounded bg-muted/30 p-2 text-[12px]">
                   {JSON.stringify(entry.request, null, 2)}
                 </pre>
               </details>
             )}
             {entry.response !== null && entry.response !== undefined && (
-              <details className="text-[11px]" open={entry.phase === "failed"}>
+              <details className="text-[12px]" open={entry.phase === "failed"}>
                 <summary className="cursor-pointer text-muted-foreground">Response</summary>
-                <pre className="mt-1 max-h-40 overflow-auto rounded bg-muted/30 p-2 text-[10px]">
+                <pre className="mt-1 max-h-40 overflow-auto rounded bg-muted/30 p-2 text-[12px]">
                   {JSON.stringify(entry.response, null, 2)}
                 </pre>
               </details>
@@ -220,23 +220,23 @@ export function ExecutionTimeline({
         <div className="flex items-center gap-2">
           <Zap className="h-4 w-4 text-cyan-300" />
           <span className="text-sm font-semibold">Execution Timeline</span>
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-[12px]">
             {data.summary.total} events
           </Badge>
           {data.summary.failed > 0 && (
-            <Badge variant="destructive" className="text-[10px]">
+            <Badge variant="destructive" className="text-[12px]">
               {data.summary.failed} failed
             </Badge>
           )}
           {data.summary.completed && (
-            <Badge className="text-[10px] bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+            <Badge className="text-[12px] bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
               completed
             </Badge>
           )}
         </div>
         <div className="flex items-center gap-2">
           {data.summary.duration_ms != null && (
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[12px] text-muted-foreground">
               total {fmtDuration(data.entries[0]!.at, data.entries[data.entries.length - 1]!.at)}
             </span>
           )}

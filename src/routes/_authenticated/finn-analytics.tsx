@@ -14,7 +14,7 @@ function FinnAnalyticsPage() {
   return (
     <div dir="rtl" className="space-y-4 px-4 py-4 md:px-6">
       <div>
-        <div className="text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
+        <div className="text-[12px] uppercase tracking-[0.3em] text-[#3AE8FF]/70">
           FINN · Usage Analytics
         </div>
         <h1 className="mt-1 text-xl font-black text-white sm:text-2xl">تحليلات FINN</h1>

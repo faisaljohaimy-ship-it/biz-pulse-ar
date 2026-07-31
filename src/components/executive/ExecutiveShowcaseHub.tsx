@@ -49,7 +49,7 @@ export function ExecutiveShowcaseHub() {
     >
       {/* Section header */}
       <div className="mb-4 flex items-center gap-3 sm:mb-6">
-        <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#3AE8FF]/85">
+        <span className="text-[12px] font-bold uppercase tracking-[0.28em] text-[#3AE8FF]/85">
           {ar ? "العرض التنفيذي" : "Executive Showcase"}
         </span>
         <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#3AE8FF]/40 to-transparent" />
@@ -109,7 +109,7 @@ export function ExecutiveShowcaseHub() {
                     <Icon className="h-6 w-6" strokeWidth={1.75} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/50">
+                    <div className="text-[12px] font-semibold uppercase tracking-[0.24em] text-white/50">
                       {ar ? c.kickerAr : c.kickerEn}
                     </div>
                     <h3 className="mt-1 text-lg font-black leading-tight text-white sm:text-xl">

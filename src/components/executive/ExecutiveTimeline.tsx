@@ -38,7 +38,7 @@ export function ExecutiveTimeline() {
     <section className="rounded-xl border border-white/5 bg-background/40 backdrop-blur-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">
+          <div className="text-[12px] font-mono uppercase tracking-widest text-primary/80">
             Timeline · الخط الزمني التنفيذي
           </div>
           <div className="text-sm text-foreground/60 mt-0.5">أحدث الأحداث والقرارات والتشغيلات</div>
@@ -55,7 +55,7 @@ export function ExecutiveTimeline() {
                 <span
                   className={`absolute -start-1.5 mt-1.5 w-3 h-3 rounded-full border-2 bg-background ${SEV[t.severity]}`}
                 />
-                <div className="flex items-center gap-2 text-[10px] font-mono text-foreground/50">
+                <div className="flex items-center gap-2 text-[12px] font-mono text-foreground/50">
                   <Icon className="w-3 h-3" />
                   <span className="uppercase tracking-widest">{t.kind}</span>
                   <span>·</span>

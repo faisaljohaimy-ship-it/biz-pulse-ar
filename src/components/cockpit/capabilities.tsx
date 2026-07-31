@@ -73,7 +73,7 @@ export function CapabilityGrid({ capabilities }: { capabilities: readonly Capabi
                 className={cn("size-1.5 rounded-full", STATUS_DOT[capability.status])}
               />
             </div>
-            <span className="text-[10px] tracking-wide text-nx-pearl/40" dir="ltr">
+            <span className="text-[12px] tracking-wide text-nx-pearl/40" dir="ltr">
               {capability.labelEn}
             </span>
             <span className="flex items-baseline gap-2">
@@ -82,8 +82,8 @@ export function CapabilityGrid({ capabilities }: { capabilities: readonly Capabi
               </span>
               <span className="text-xs text-nx-pearl/56">{capability.primaryLabelAr}</span>
             </span>
-            <span className="text-[11px] text-nx-pearl/56">{capability.secondaryAr}</span>
-            <span className="mt-auto flex items-center gap-1 text-[11px] text-nx-cyan/80 transition-transform duration-[var(--nx-anim-fast)] group-hover:-translate-x-0.5">
+            <span className="text-[12px] text-nx-pearl/56">{capability.secondaryAr}</span>
+            <span className="mt-auto flex items-center gap-1 text-[12px] text-nx-cyan/80 transition-transform duration-[var(--nx-anim-fast)] group-hover:-translate-x-0.5">
               <ArrowLeft aria-hidden className="size-3" />
               فتح الوحدة
               <span className="sr-only">— الحالة {STATUS_WORD[capability.status]}</span>

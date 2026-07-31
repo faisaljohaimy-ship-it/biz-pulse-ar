@@ -130,7 +130,7 @@ function WorkflowsRuntime() {
       <div className="grid gap-2 sm:grid-cols-4 lg:grid-cols-7">
         {STATUS_PHASES.map((p) => (
           <Card key={p} className="p-3 glass-card">
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{p}</div>
+            <div className="text-[12px] uppercase tracking-widest text-muted-foreground">{p}</div>
             <div className="mt-1 text-2xl font-bold tabular-nums">{phaseCounts[p] ?? 0}</div>
           </Card>
         ))}
@@ -227,7 +227,7 @@ function WorkflowDefRow({ wf, liveRuns, ar }: { wf: WfRow; liveRuns: RunRow[]; a
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{wf.name}</div>
           {wf.description && (
-            <div className="truncate text-[11px] text-muted-foreground">{wf.description}</div>
+            <div className="truncate text-[12px] text-muted-foreground">{wf.description}</div>
           )}
         </div>
         <Badge variant={wf.enabled ? "default" : "secondary"} className="shrink-0">
@@ -235,9 +235,9 @@ function WorkflowDefRow({ wf, liveRuns, ar }: { wf: WfRow; liveRuns: RunRow[]; a
         </Badge>
       </div>
       <div className="mt-2 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
           {wf.trigger_topic && (
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-[12px]">
               {wf.trigger_topic}
             </Badge>
           )}
@@ -304,7 +304,7 @@ function RunRowCard({
           />
           <div className="min-w-0">
             <div className="truncate text-sm font-medium">{wfName}</div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[12px] text-muted-foreground">
               {fmtRel(run.started_at)} · {fmtDuration(run.started_at, run.finished_at)}
               {run.current_step && (
                 <>
@@ -325,7 +325,7 @@ function RunRowCard({
           style={{ width: `${progress}%` }}
         />
       </div>
-      {run.error && <div className="mt-2 truncate text-[11px] text-rose-300">{run.error}</div>}
+      {run.error && <div className="mt-2 truncate text-[12px] text-rose-300">{run.error}</div>}
       {(run.status === "running" || run.status === "pending" || run.status === "queued") && (
         <div className="mt-2 flex justify-end">
           <Button size="sm" variant="ghost" onClick={onCancel}>

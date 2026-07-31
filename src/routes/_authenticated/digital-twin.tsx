@@ -396,10 +396,10 @@ function DigitalTwinPage() {
             <Boxes className="h-4 w-4" />
           </div>
           <div className="leading-tight">
-            <div className="text-[9px] font-bold tracking-[0.3em] text-cyan-300/80">
+            <div className="text-[12px] font-bold tracking-[0.3em] text-cyan-300/80">
               NEXUS · DIGITAL TWIN
             </div>
-            <div className="text-[11px] font-semibold text-white">
+            <div className="text-[12px] font-semibold text-white">
               {ar ? "كون المؤسسة المباشر" : "Live Enterprise Universe"}
             </div>
           </div>
@@ -412,7 +412,7 @@ function DigitalTwinPage() {
           >
             <s.icon className="h-3.5 w-3.5" style={{ color: s.tone }} />
             <div className="leading-tight">
-              <div className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-slate-400">
+              <div className="text-[12px] font-bold uppercase tracking-[0.22em] text-slate-400">
                 {ar ? s.label_ar : s.label_en}
               </div>
               <div className="text-[12px] font-bold" style={{ color: s.tone }}>
@@ -423,7 +423,7 @@ function DigitalTwinPage() {
         ))}
         <button
           onClick={toggleFullscreen}
-          className="pointer-events-auto flex items-center gap-1.5 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-[11px] font-bold text-cyan-200 backdrop-blur-xl hover:bg-cyan-400/20"
+          className="pointer-events-auto flex items-center gap-1.5 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-[12px] font-bold text-cyan-200 backdrop-blur-xl hover:bg-cyan-400/20"
           aria-label="fullscreen"
         >
           {isFullscreen ? (
@@ -564,10 +564,10 @@ function DigitalTwinPage() {
                   <Icon className="h-3.5 w-3.5" />
                 </div>
                 <div className="leading-tight">
-                  <div className="text-[10px] font-bold tracking-wide text-white">
+                  <div className="text-[12px] font-bold tracking-wide text-white">
                     {ar ? n.label_ar : n.label_en}
                   </div>
-                  <div className="text-[9px] font-semibold" style={{ color: n.tone }}>
+                  <div className="text-[12px] font-semibold" style={{ color: n.tone }}>
                     {n.value} <span className="text-slate-400">{ar ? n.kpi_ar : n.kpi_en}</span>
                   </div>
                 </div>
@@ -592,7 +592,7 @@ function DigitalTwinPage() {
                 <activeNode.icon className="h-4 w-4" />
               </div>
               <div>
-                <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-slate-400">
+                <div className="text-[12px] font-bold uppercase tracking-[0.3em] text-slate-400">
                   {ar ? "وحدة مؤسسية" : "Enterprise Module"}
                 </div>
                 <div className="text-sm font-bold text-white">
@@ -642,7 +642,7 @@ function DigitalTwinPage() {
       {/* Predictions toggle */}
       <button
         onClick={() => setShowPredictions((v) => !v)}
-        className="absolute bottom-4 start-4 z-30 flex items-center gap-1.5 rounded-full border border-violet-400/30 bg-violet-500/15 px-3 py-2 text-[11px] font-semibold text-violet-200 backdrop-blur-xl hover:bg-violet-500/25"
+        className="absolute bottom-4 start-4 z-30 flex items-center gap-1.5 rounded-full border border-violet-400/30 bg-violet-500/15 px-3 py-2 text-[12px] font-semibold text-violet-200 backdrop-blur-xl hover:bg-violet-500/25"
         aria-label="Toggle predictions"
       >
         <Sparkles className="h-3.5 w-3.5" />
@@ -688,9 +688,7 @@ function DigitalTwinPage() {
 function Mini({ label, value, tone }: { label: string; value: string; tone: string }) {
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.03] px-2 py-2">
-      <div className="text-[8.5px] font-bold uppercase tracking-[0.2em] text-slate-500">
-        {label}
-      </div>
+      <div className="text-[12px] font-bold uppercase tracking-[0.2em] text-slate-500">{label}</div>
       <div className="mt-0.5 text-sm font-bold" style={{ color: tone }}>
         {value}
       </div>
@@ -741,8 +739,8 @@ function HolographicCore({ t }: { t: number }) {
         }}
       >
         <div className="text-center leading-tight">
-          <div className="text-[9px] font-bold tracking-[0.3em] text-cyan-50/90">NEXUS</div>
-          <div className="text-[8px] font-semibold tracking-[0.25em] text-cyan-100/70">CORE</div>
+          <div className="text-[12px] font-bold tracking-[0.3em] text-cyan-50/90">NEXUS</div>
+          <div className="text-[12px] font-semibold tracking-[0.25em] text-cyan-100/70">CORE</div>
         </div>
       </div>
     </div>

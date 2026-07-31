@@ -203,7 +203,7 @@ function GovernancePage() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-cyan-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
               {ar ? "الأنظمة والاتفاقيات" : "SYSTEMS & SERVICE AGREEMENTS"}
             </div>
           </div>
@@ -273,7 +273,7 @@ function GovernancePage() {
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-[10px] uppercase tracking-widest text-slate-500">
+                <tr className="text-[12px] uppercase tracking-widest text-slate-500">
                   <th className="py-2 text-start">{ar ? "النظام" : "System"}</th>
                   <th className="py-2 text-start">{ar ? "النوع" : "Kind"}</th>
                   <th className="py-2 text-start">{ar ? "الأهمية" : "Criticality"}</th>
@@ -314,7 +314,7 @@ function GovernancePage() {
           </div>
         )}
         {expiringSoon > 0 && (
-          <div className="mt-3 text-[11px] text-amber-300">
+          <div className="mt-3 text-[12px] text-amber-300">
             {ar ? `${expiringSoon} عقد ينتهي قريباً` : `${expiringSoon} contract(s) ending soon`}
           </div>
         )}
@@ -324,7 +324,7 @@ function GovernancePage() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-violet-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-violet-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
               {ar ? "السياسات والامتثال" : "POLICIES & ENFORCEMENT"}
             </div>
           </div>
@@ -373,7 +373,7 @@ function GovernancePage() {
                     <div className="text-sm font-semibold text-white truncate">
                       {ar ? p.name : p.name_en || p.name}
                     </div>
-                    <div className="text-[10px] text-slate-500">v{p.version}</div>
+                    <div className="text-[12px] text-slate-500">v{p.version}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <NexusPill
@@ -399,7 +399,7 @@ function GovernancePage() {
           </div>
         )}
         {policies.length > 0 && (
-          <div className="mt-3 text-[11px] text-slate-500">
+          <div className="mt-3 text-[12px] text-slate-500">
             {ar
               ? `متوسط تغطية السياسات: ${avgPolicyCoverage}%`
               : `Avg policy coverage: ${avgPolicyCoverage}%`}

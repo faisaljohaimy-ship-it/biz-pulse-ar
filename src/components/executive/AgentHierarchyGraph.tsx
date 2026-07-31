@@ -303,7 +303,7 @@ export function AgentHierarchyGraph({
               {selRun.summary}
             </div>
           )}
-          <div className="mt-2 text-[10px] text-emerald-300/80">
+          <div className="mt-2 text-[12px] text-emerald-300/80">
             {ar ? "كل مسار ينتهي عند الاعتماد البشري" : "Every path ends at human approval"}
           </div>
         </div>

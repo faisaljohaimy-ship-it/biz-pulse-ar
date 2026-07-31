@@ -158,7 +158,7 @@ function BoardroomPage() {
         className={fs ? "fixed inset-4 z-50 flex flex-col" : "min-h-[520px] flex flex-col"}
       >
         <div className="flex-1">
-          <div className="text-[10px] font-bold tracking-[0.35em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.35em] text-cyan-300/80">
             {s.eyebrow}
           </div>
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-5xl">
@@ -172,7 +172,7 @@ function BoardroomPage() {
                 key={k.l}
                 className="rounded-2xl border border-cyan-400/15 bg-cyan-400/[0.04] p-5"
               >
-                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <div className="text-[12px] font-bold uppercase tracking-widest text-slate-400">
                   {k.l}
                 </div>
                 <div className="mt-2 text-3xl font-bold text-cyan-300">{k.v}</div>
@@ -200,7 +200,7 @@ function BoardroomPage() {
                 aria-label={`Slide ${i + 1}`}
               />
             ))}
-            <span className="ms-2 font-mono text-[10px] text-slate-500">
+            <span className="ms-2 font-mono text-[12px] text-slate-500">
               {String(idx + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
             </span>
           </div>
@@ -217,7 +217,7 @@ function BoardroomPage() {
 
       {!fs && data.topAlerts.length > 0 && (
         <NexusCard>
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "أعلى التنبيهات النشطة" : "TOP LIVE ALERTS"}
           </div>
           <div className="mt-3 grid gap-2">

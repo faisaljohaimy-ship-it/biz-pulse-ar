@@ -169,7 +169,7 @@ function OrbitalFrame({
               <Icon className="h-4 w-4" strokeWidth={1.75} />
             </span>
             <div
-              className="truncate text-[11px] font-bold uppercase tracking-[0.28em]"
+              className="truncate text-[12px] font-bold uppercase tracking-[0.28em]"
               style={{ color: accent }}
             >
               {label}
@@ -199,7 +199,7 @@ export function HolographicFlowShowcase({ ar, agents }: { ar: boolean; agents: A
     >
       {/* Section header */}
       <div className="mb-4 flex items-center gap-3 sm:mb-6">
-        <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#3AE8FF]/85">
+        <span className="text-[12px] font-bold uppercase tracking-[0.28em] text-[#3AE8FF]/85">
           {ar ? "التدفقات الحية · مدارات الذكاء" : "Live Flows · Intelligence Orbits"}
         </span>
         <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#3AE8FF]/40 to-transparent" />
@@ -221,7 +221,7 @@ export function HolographicFlowShowcase({ ar, agents }: { ar: boolean; agents: A
                   window.dispatchEvent(new CustomEvent("nx:agent-graph:refresh"));
                 }
               }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#3AE8FF] transition-colors hover:bg-[#3AE8FF]/20"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#3AE8FF] transition-colors hover:bg-[#3AE8FF]/20"
             >
               <RefreshCw className="h-3 w-3" />
               {ar ? "إعادة عرض" : "Replay"}
@@ -239,7 +239,7 @@ export function HolographicFlowShowcase({ ar, agents }: { ar: boolean; agents: A
           label={ar ? "NEXIOS · مدار الوكلاء" : "NEXIOS · Agentic Orbit"}
           icon={Radio}
           action={
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#34D399]/40 bg-[#34D399]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#34D399]">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#34D399]/40 bg-[#34D399]/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#34D399]">
               {ar ? "محاكاة مرجعية" : "Reference Sim"}
             </span>
           }

@@ -72,7 +72,7 @@ function OutcomesPage() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <DollarSign className="h-4 w-4 text-emerald-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-emerald-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-emerald-300/80">
               {ar ? "النتائج المُحقَّقة" : "REALIZED OUTCOMES"}
             </div>
           </div>
@@ -150,12 +150,12 @@ function OutcomesPage() {
                     />
                   </div>
                 </div>
-                <div className="mt-3 text-[10px] uppercase tracking-widest text-slate-500">
+                <div className="mt-3 text-[12px] uppercase tracking-widest text-slate-500">
                   {ar ? o.label : o.label_en || o.label}
                 </div>
                 <div className="mt-1 text-3xl font-bold text-emerald-300">{o.value}</div>
                 {(o.period_from || o.period_to) && (
-                  <div className="mt-1 text-[10px] text-slate-500">
+                  <div className="mt-1 text-[12px] text-slate-500">
                     {o.period_from || "—"} → {o.period_to || "—"}
                   </div>
                 )}

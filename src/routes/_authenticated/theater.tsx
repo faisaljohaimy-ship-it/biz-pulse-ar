@@ -103,7 +103,7 @@ function HealthChip({
     >
       <Icon className="h-4 w-4 opacity-80" />
       <div className="leading-tight">
-        <div className="text-[10px] uppercase tracking-wider opacity-70">{label}</div>
+        <div className="text-[12px] uppercase tracking-wider opacity-70">{label}</div>
         <div className="text-base font-light">{value}</div>
       </div>
     </div>
@@ -221,7 +221,7 @@ function TheaterPage() {
         {/* Header */}
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="text-[11px] uppercase tracking-[0.4em] text-cyan-300/80">
+            <div className="text-[12px] uppercase tracking-[0.4em] text-cyan-300/80">
               {ar ? "مسرح القيادة التنفيذية" : "Executive Theater"}
             </div>
             <h1 className="mt-2 text-2xl md:text-3xl font-light text-white tracking-tight">
@@ -343,7 +343,7 @@ function TheaterPage() {
             {/* Live caption banner */}
             {conductor.currentLine && (
               <div className="absolute left-1/2 top-3 z-20 -translate-x-1/2 max-w-[92%] rounded-full border border-cyan-300/40 bg-[#04111f]/85 px-3 py-1.5 sm:px-4 sm:py-2 backdrop-blur shadow-[0_0_30px_rgba(0,212,255,0.25)]">
-                <div className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-wider text-cyan-200/85">
+                <div className="flex items-center gap-2 text-[12px] sm:text-[12px] uppercase tracking-wider text-cyan-200/85">
                   <Sparkles className="h-3.5 w-3.5" />
                   <span className="truncate">
                     {ar ? conductor.currentSpeaker.name_ar : conductor.currentSpeaker.name_en}
@@ -387,7 +387,7 @@ function TheaterPage() {
             </AgentRing>
 
             {/* Status footer */}
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] sm:text-[11px] text-white/55">
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[12px] sm:text-[12px] text-white/55">
               <span>
                 {ar
                   ? conductor.presenting
@@ -411,7 +411,7 @@ function TheaterPage() {
 
           {/* Story feed — click any story to open the Explainability Panel */}
           <aside className="space-y-3 xl:max-h-[760px] xl:overflow-y-auto pr-1">
-            <div className="text-[11px] uppercase tracking-[0.3em] text-cyan-300/80 px-1">
+            <div className="text-[12px] uppercase tracking-[0.3em] text-cyan-300/80 px-1">
               {ar ? "سجلّ القصص التنفيذي" : "Executive Story Feed"}
             </div>
             {recentLines.length === 0 && (

@@ -236,7 +236,7 @@ export function DigitalTwinSimulation({ slug, lang, onCompleted }: Props) {
         </svg>
 
         {/* Legend */}
-        <div className="pointer-events-none absolute bottom-3 start-3 flex gap-3 rounded-lg bg-black/40 px-3 py-1.5 text-[10px] text-white/80 backdrop-blur">
+        <div className="pointer-events-none absolute bottom-3 start-3 flex gap-3 rounded-lg bg-black/40 px-3 py-1.5 text-[12px] text-white/80 backdrop-blur">
           <span className="inline-flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-cyan-400" />
             {ar ? "طبيعي" : "OK"}
@@ -255,7 +255,7 @@ export function DigitalTwinSimulation({ slug, lang, onCompleted }: Props) {
       <div className="grid gap-3 md:grid-cols-[1fr_1fr]">
         {/* Detail panel */}
         <div className="rounded-2xl border border-cyan-400/20 bg-[#0A1E33]/70 p-4">
-          <div className="mb-2 text-[10px] uppercase tracking-[0.2em] text-cyan-300/80">
+          <div className="mb-2 text-[12px] uppercase tracking-[0.2em] text-cyan-300/80">
             {ar ? "تفاصيل العنصر" : "Asset detail"}
           </div>
           {selected ? (
@@ -303,7 +303,7 @@ export function DigitalTwinSimulation({ slug, lang, onCompleted }: Props) {
 
         {/* Progress */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-          <div className="mb-2 text-[10px] uppercase tracking-[0.2em] text-white/60">
+          <div className="mb-2 text-[12px] uppercase tracking-[0.2em] text-white/60">
             {ar ? "تقدّم المحاكاة" : "Simulation progress"}
           </div>
           <ul className="space-y-1.5 text-xs text-white/70">

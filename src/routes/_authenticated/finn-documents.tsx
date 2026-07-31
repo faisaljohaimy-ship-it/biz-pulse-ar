@@ -257,7 +257,7 @@ function FinnDocumentsConsole() {
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-medium text-primary text-xs">{m.title}</span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[12px] text-muted-foreground">
                       تطابق {Math.round(m.similarity * 100)}%
                     </span>
                   </div>
@@ -300,12 +300,12 @@ function FinnDocumentsConsole() {
                     <span className="font-medium truncate">{d.title}</span>
                     <StatusBadge status={d.status} />
                     {(d.chunk_count ?? 0) > 0 && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[12px] text-muted-foreground">
                         {d.chunk_count} مقطع
                       </span>
                     )}
                     {(d.page_count ?? 0) > 0 && (
-                      <span className="text-[10px] text-muted-foreground">{d.page_count} صفحة</span>
+                      <span className="text-[12px] text-muted-foreground">{d.page_count} صفحة</span>
                     )}
                   </div>
                   {d.summary && (
@@ -359,7 +359,7 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12px] font-medium",
         e.cls,
       )}
     >

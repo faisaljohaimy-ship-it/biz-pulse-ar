@@ -24,7 +24,7 @@ export function PredictionsPanel({ compact = false }: { compact?: boolean }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-violet-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-violet-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
             {ar ? "الذكاء التنبؤي" : "PREDICTIVE INTELLIGENCE"}
           </div>
         </div>
@@ -59,7 +59,7 @@ export function PredictionsPanel({ compact = false }: { compact?: boolean }) {
                     <div className="text-sm font-semibold text-white line-clamp-2">
                       {ar ? p.title_ar : p.title_en}
                     </div>
-                    <div className="mt-1 text-[11px] text-slate-400 line-clamp-2">
+                    <div className="mt-1 text-[12px] text-slate-400 line-clamp-2">
                       {ar ? p.detail_ar : p.detail_en}
                     </div>
                   </div>
@@ -74,7 +74,7 @@ export function PredictionsPanel({ compact = false }: { compact?: boolean }) {
                 <NexusPill tone={p.impact === "critical" || p.impact === "high" ? "rose" : "amber"}>
                   {p.impact}
                 </NexusPill>
-                <span className="text-[10px] text-slate-500">{p.horizonDays}d</span>
+                <span className="text-[12px] text-slate-500">{p.horizonDays}d</span>
               </div>
             </button>
           );

@@ -32,7 +32,7 @@ export function RiskHeatmap({ title, cols, rows, cells, lang }: Props) {
     <div className="space-y-3" dir={ar ? "rtl" : "ltr"}>
       <div className="flex items-baseline justify-between gap-2">
         <div className="text-xs uppercase tracking-[0.18em] text-cyan-200/80">{title}</div>
-        <div className="inline-flex items-center gap-2 text-[10px] text-white/60">
+        <div className="inline-flex items-center gap-2 text-[12px] text-white/60">
           <span className="inline-flex items-center gap-1">
             <span className="h-2 w-2 rounded-sm bg-cyan-400/60" />
             {ar ? "منخفض" : "Low"}

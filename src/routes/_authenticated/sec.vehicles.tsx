@@ -160,7 +160,7 @@ function VehiclesPage() {
             )}
             {vehicles.map((v) => (
               <tr key={v.id} className="border-t border-border">
-                <td className="px-3 py-2 font-mono text-[11px]">{v.ref}</td>
+                <td className="px-3 py-2 font-mono text-[12px]">{v.ref}</td>
                 <td className="px-3 py-2 font-mono font-medium">{v.plate}</td>
                 <td className="px-3 py-2 text-muted-foreground">
                   {TYPE_LABEL[v.vehicle_type] ?? v.vehicle_type}
@@ -173,7 +173,7 @@ function VehiclesPage() {
                 </td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(v.status)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(v.status)}`}
                   >
                     {v.status}
                   </span>

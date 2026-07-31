@@ -91,7 +91,7 @@ export function HoloModuleCard({
           />
         )}
       </span>
-      <span className="line-clamp-2 text-[11px] font-medium leading-tight text-white/85">
+      <span className="line-clamp-2 text-[12px] font-medium leading-tight text-white/85">
         {label}
       </span>
     </>

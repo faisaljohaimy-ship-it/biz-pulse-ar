@@ -112,7 +112,7 @@ export function SecPageHeader({
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
           {badge && (
-            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[12px] font-medium text-amber-600 dark:text-amber-400">
               {badge}
             </span>
           )}
@@ -152,7 +152,7 @@ export function StatCard({
         {sim && <SimTag />}
       </div>
       <div className="mt-1 text-2xl font-bold text-foreground">{value}</div>
-      {hint && <div className="mt-1 text-[11px] text-muted-foreground">{hint}</div>}
+      {hint && <div className="mt-1 text-[12px] text-muted-foreground">{hint}</div>}
     </div>
   );
 }
@@ -160,7 +160,7 @@ export function StatCard({
 export function SimTag() {
   return (
     <span
-      className="shrink-0 rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-medium leading-none text-amber-600 dark:text-amber-400"
+      className="shrink-0 rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[12px] font-medium leading-none text-amber-600 dark:text-amber-400"
       title="بيانات محاكاة لأغراض العرض التوضيحي"
     >
       عرض توضيحي · محاكاة
@@ -170,7 +170,7 @@ export function SimTag() {
 
 export function SampleBadge() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[12px] font-medium text-amber-600 dark:text-amber-400">
       Sample data — لم يُربط بنظام مباشر بعد
     </span>
   );

@@ -377,7 +377,7 @@ const CASES: Case[] = [
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/25 bg-amber-300/5 px-2.5 py-0.5 text-[10px] uppercase tracking-[0.22em] text-amber-200/90">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/25 bg-amber-300/5 px-2.5 py-0.5 text-[12px] uppercase tracking-[0.22em] text-amber-200/90">
       {children}
     </span>
   );
@@ -385,7 +385,7 @@ function Pill({ children }: { children: React.ReactNode }) {
 
 function SectionLabel({ isAr, en, ar }: { isAr: boolean; en: string; ar: string }) {
   return (
-    <div className="mb-3 text-[10px] uppercase tracking-[0.28em] text-amber-200/70">
+    <div className="mb-3 text-[12px] uppercase tracking-[0.28em] text-amber-200/70">
       {isAr ? ar : en}
     </div>
   );
@@ -436,12 +436,12 @@ function KpiGrid({ c, isAr }: { c: Case; isAr: boolean }) {
         >
           <div className="flex items-center gap-2 text-amber-200/80">
             {k.icon}
-            <span className="text-[10px] uppercase tracking-[0.2em]">
+            <span className="text-[12px] uppercase tracking-[0.2em]">
               {isAr ? k.labelAr : k.labelEn}
             </span>
           </div>
           <div className="mt-2 font-mono text-2xl font-medium text-foreground">{k.value}</div>
-          <div className="mt-0.5 text-[11px] text-muted-foreground">{k.delta}</div>
+          <div className="mt-0.5 text-[12px] text-muted-foreground">{k.delta}</div>
         </div>
       ))}
     </div>
@@ -600,7 +600,7 @@ function CustomersPage() {
             { en: "Production deployments", ar: "عمليات التشغيل الفعلية", v: totals.deployments },
           ].map((s, i) => (
             <div key={i}>
-              <div className="text-[10px] uppercase tracking-[0.22em] text-amber-200/70">
+              <div className="text-[12px] uppercase tracking-[0.22em] text-amber-200/70">
                 {isAr ? s.ar : s.en}
               </div>
               <div className="mt-1 font-mono text-xl text-foreground md:text-2xl">{s.v}</div>
@@ -663,7 +663,7 @@ function CustomersPage() {
           </div>
         </section>
 
-        <footer className="mt-12 text-center text-[11px] uppercase tracking-[0.28em] text-muted-foreground/70">
+        <footer className="mt-12 text-center text-[12px] uppercase tracking-[0.28em] text-muted-foreground/70">
           {isAr
             ? "جميع الأسماء والأرقام التعريفية مُعقّمة بموجب اتفاقيات السرية مع العملاء."
             : "All names and identifying figures anonymized under customer NDAs."}

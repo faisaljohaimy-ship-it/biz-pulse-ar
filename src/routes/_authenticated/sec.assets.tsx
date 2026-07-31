@@ -33,12 +33,12 @@ function Assets() {
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold text-foreground">{a.name_ar}</div>
               <span
-                className={`rounded-full border px-2 py-0.5 text-[10px] ${statusClass(a.status)}`}
+                className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(a.status)}`}
               >
                 {a.status}
               </span>
             </div>
-            <div className="mt-1 text-[11px] text-muted-foreground">
+            <div className="mt-1 text-[12px] text-muted-foreground">
               {a.kind} · {a.code}
             </div>
             <div className="mt-3 flex items-center justify-between text-xs">
@@ -55,7 +55,7 @@ function Assets() {
                 style={{ width: `${a.health}%` }}
               />
             </div>
-            <div className="mt-2 text-[11px] text-muted-foreground">
+            <div className="mt-2 text-[12px] text-muted-foreground">
               آخر اتصال: {new Date(a.last_seen_at).toLocaleString("ar-SA")}
             </div>
           </div>

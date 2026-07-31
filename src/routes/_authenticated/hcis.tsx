@@ -146,7 +146,7 @@ function HcisPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <NexusCard className="py-5">
               <div className="flex flex-col items-center justify-center gap-1 text-center">
-                <span className="text-[11px] font-semibold tracking-wide text-white/60">
+                <span className="text-[12px] font-semibold tracking-wide text-white/60">
                   {ar ? "الامتثال الإجمالي" : "Overall compliance"}
                 </span>
                 <KpiValue pct={overallPct} ar={ar} />
@@ -156,11 +156,11 @@ function HcisPage() {
             {REGIONS.map((r) => (
               <NexusCard key={r.id} className="py-5">
                 <div className="flex flex-col items-center justify-center gap-1 text-center">
-                  <span className="text-[11px] font-semibold tracking-wide text-white/60">
+                  <span className="text-[12px] font-semibold tracking-wide text-white/60">
                     {ar ? r.shortAr : r.shortEn}
                   </span>
                   <KpiValue pct={byRegionPct[r.id] ?? null} ar={ar} />
-                  <span className="text-[10px] text-white/40">
+                  <span className="text-[12px] text-white/40">
                     {(data.compliance ?? []).filter((c) => c.region_code === r.id).length}{" "}
                     {ar ? "توجيهًا" : "directives"}
                   </span>
@@ -188,7 +188,7 @@ function HcisPage() {
                       <span className="text-xs font-semibold leading-tight text-white/85">
                         {ar ? s.name_ar : s.name_en}
                       </span>
-                      <span className="line-clamp-3 text-[10px] leading-snug text-white/50">
+                      <span className="line-clamp-3 text-[12px] leading-snug text-white/50">
                         {s.description_ar}
                       </span>
                     </div>
@@ -210,7 +210,7 @@ function HcisPage() {
                     ? "مصفوفة الامتثال (التوجيه × الإدارة)"
                     : "Compliance matrix (directive × region)"}
                 </h3>
-                <span className="text-[10px] text-white/45">
+                <span className="text-[12px] text-white/45">
                   {ar
                     ? "اضغط أي توجيه لفتح صفحته الإرشادية"
                     : "Tap any directive for its guidance page"}
@@ -244,7 +244,7 @@ function HcisPage() {
                                 <Icon className="nx-icon-soft h-4 w-4" aria-hidden />
                               </span>
                               <span className="min-w-0">
-                                <span className="block text-[10px] font-semibold tracking-wide text-emerald-300/90">
+                                <span className="block text-[12px] font-semibold tracking-wide text-emerald-300/90">
                                   {d.code}
                                 </span>
                                 <span className="block truncate text-xs text-white/85">
@@ -381,11 +381,11 @@ function DirectiveTile({ d }: { d: Directive }) {
         <Icon className="nx-icon-soft h-[18px] w-[18px]" aria-hidden />
       </span>
       <span className="min-w-0">
-        <span className="block text-[11px] font-semibold tracking-wide text-emerald-300/90">
+        <span className="block text-[12px] font-semibold tracking-wide text-emerald-300/90">
           {d.code}
         </span>
         <span className="block truncate text-xs font-semibold text-white/90">{d.name_ar}</span>
-        <span className="block truncate text-[10px] text-white/45">{d.name_en}</span>
+        <span className="block truncate text-[12px] text-white/45">{d.name_en}</span>
       </span>
     </Link>
   );

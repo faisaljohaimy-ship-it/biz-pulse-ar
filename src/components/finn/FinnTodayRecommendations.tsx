@@ -43,7 +43,7 @@ export function FinnTodayRecommendations({ className }: { className?: string }) 
           </span>
           <h2 className="text-sm font-bold text-white">توصيات FINN اليوم</h2>
         </div>
-        <ExecutiveSourceBadge source={source} ar className="text-[9px]" />
+        <ExecutiveSourceBadge source={source} ar className="text-[12px]" />
       </div>
       <ul className="flex flex-col gap-2">
         {recos.map((r) => {

@@ -112,7 +112,7 @@ function CockpitPage() {
                     <Crown className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                    <div className="text-[12px] uppercase tracking-widest text-slate-500">
                       {ar ? "قمرة" : "Cockpit"}
                     </div>
                     <div className="text-sm font-bold text-white">{ar ? p.name_ar : p.name_en}</div>
@@ -129,12 +129,12 @@ function CockpitPage() {
                       key={k.id}
                       className="rounded-xl border border-white/5 bg-white/[0.02] p-3"
                     >
-                      <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                      <div className="text-[12px] uppercase tracking-widest text-slate-500">
                         {ar ? k.label_ar : k.label_en}
                       </div>
                       <div className="mt-1 text-lg font-bold text-cyan-300">{k.value}</div>
                       <div
-                        className={`mt-0.5 flex items-center gap-1 text-[11px] font-bold ${positive ? "text-emerald-300" : "text-rose-300"}`}
+                        className={`mt-0.5 flex items-center gap-1 text-[12px] font-bold ${positive ? "text-emerald-300" : "text-rose-300"}`}
                       >
                         <TrendIcon className="h-3 w-3" />
                         {k.delta}
@@ -152,7 +152,7 @@ function CockpitPage() {
         <NexusCard>
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-rose-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-rose-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-rose-300/80">
               {ar ? "تنبيهات تنفيذية" : "EXECUTIVE ALERTS"}
             </div>
           </div>
@@ -172,7 +172,7 @@ function CockpitPage() {
                   </NexusPill>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm text-slate-200">{ar ? a.title_ar : a.title_en}</div>
-                    <div className="text-[10px] text-slate-500">
+                    <div className="text-[12px] text-slate-500">
                       {ar ? "المسؤول:" : "Owner:"} {a.owner}
                     </div>
                   </div>
@@ -185,7 +185,7 @@ function CockpitPage() {
         <NexusCard>
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-violet-300" />
-            <div className="text-[11px] font-bold tracking-[0.25em] text-violet-300/80">
+            <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
               {ar ? "ذكاء استراتيجي مباشر" : "LIVE STRATEGIC INTELLIGENCE"}
             </div>
           </div>

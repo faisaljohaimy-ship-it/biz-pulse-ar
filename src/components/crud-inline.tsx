@@ -62,7 +62,7 @@ export function InlineAddForm({
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {fields.map((f) => (
           <label key={f.key} className="block">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            <span className="text-[12px] font-bold uppercase tracking-widest text-slate-400">
               {f.label}
             </span>
             {f.type === "select" ? (

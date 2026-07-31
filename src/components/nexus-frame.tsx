@@ -125,7 +125,7 @@ export function NexusPage({
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             {eyebrow && (
-              <div className="inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.35em] text-cyan-300/80">
+              <div className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[0.35em] text-cyan-300/80">
                 <span className="h-1 w-1 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.9)]" />
                 {eyebrow}
               </div>
@@ -184,7 +184,7 @@ export function ExecutiveStatusBar({
           ? "صحي"
           : "HEALTHY";
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.02] px-4 py-2.5 text-[11px] text-slate-400 backdrop-blur-sm">
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.02] px-4 py-2.5 text-[12px] text-slate-400 backdrop-blur-sm">
       {status && (
         <div className="flex items-center gap-2">
           <span
@@ -224,7 +224,7 @@ export function ExecutiveStatusBar({
       {nextAction && (
         <button
           onClick={nextAction.onClick}
-          className="ms-auto inline-flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-400/20"
+          className="ms-auto inline-flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-400/20"
         >
           <Target className="h-3 w-3" />
           {nextAction.label}
@@ -246,7 +246,7 @@ export function WhyWhatNext({ why, whatNext }: { why?: string; whatNext?: string
             <Sparkles className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-violet-300/80">
+            <div className="text-[12px] font-bold uppercase tracking-[0.25em] text-violet-300/80">
               {ar ? "لماذا يحدث ذلك" : "Why this is happening"}
             </div>
             <p className="mt-1 text-sm leading-relaxed text-slate-200">{why}</p>
@@ -259,7 +259,7 @@ export function WhyWhatNext({ why, whatNext }: { why?: string; whatNext?: string
             <Target className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-cyan-300/80">
+            <div className="text-[12px] font-bold uppercase tracking-[0.25em] text-cyan-300/80">
               {ar ? "الإجراء الموصى به" : "Recommended next action"}
             </div>
             <p className="mt-1 text-sm leading-relaxed text-slate-200">{whatNext}</p>
@@ -312,7 +312,7 @@ export function NexusPill({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12px] font-semibold uppercase tracking-wider",
         tones[tone],
       )}
     >
@@ -341,11 +341,11 @@ export function NexusStat({
   };
   return (
     <NexusCard>
-      <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+      <div className="text-[12px] font-semibold uppercase tracking-widest text-slate-400">
         {label}
       </div>
       <div className={cn("mt-2 text-2xl font-bold", colors[tone])}>{value}</div>
-      {hint && <div className="mt-1 text-[11px] text-slate-500">{hint}</div>}
+      {hint && <div className="mt-1 text-[12px] text-slate-500">{hint}</div>}
     </NexusCard>
   );
 }

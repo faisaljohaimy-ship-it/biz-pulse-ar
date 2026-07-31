@@ -170,14 +170,14 @@ function PortfolioPage() {
       <NexusCard glow>
         <div className="flex items-center gap-2">
           <Target className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "المبادرات الاستراتيجية" : "STRATEGIC INITIATIVES"}
           </div>
         </div>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-[10px] uppercase tracking-widest text-slate-500">
+              <tr className="text-[12px] uppercase tracking-widest text-slate-500">
                 <th className="py-2 text-start">{ar ? "المبادرة" : "Initiative"}</th>
                 <th className="py-2 text-start">{ar ? "المالك" : "Owner"}</th>
                 <th className="py-2 text-start">{ar ? "البرامج" : "Programs"}</th>
@@ -202,7 +202,7 @@ function PortfolioPage() {
                           style={{ width: `${i.progress}%` }}
                         />
                       </div>
-                      <span className="text-[11px] text-slate-400">{i.progress}%</span>
+                      <span className="text-[12px] text-slate-400">{i.progress}%</span>
                     </div>
                   </td>
                   <td className="py-3 text-emerald-300">{i.roi}</td>
@@ -219,7 +219,7 @@ function PortfolioPage() {
       <NexusCard>
         <div className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-cyan-300" />
-          <div className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/80">
+          <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "نموذج ملكية مؤشرات الأداء" : "KPI OWNERSHIP MODEL"}
           </div>
         </div>
@@ -231,7 +231,7 @@ function PortfolioPage() {
                   <div className="text-sm font-semibold text-white">
                     {ar ? k.name_ar : k.name_en}
                   </div>
-                  <div className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-500">
+                  <div className="mt-0.5 flex items-center gap-1 text-[12px] text-slate-500">
                     <User className="h-3 w-3" />
                     {k.owner}
                   </div>
@@ -240,7 +240,7 @@ function PortfolioPage() {
                   {ar ? "خطر" : "Risk"} {k.risk}
                 </NexusPill>
               </div>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[11px]">
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[12px]">
                 <div className="rounded-md bg-white/[0.03] p-2">
                   <div className="text-slate-500">{ar ? "الهدف" : "Target"}</div>
                   <div className="font-bold text-slate-200">{k.target}</div>
@@ -254,7 +254,7 @@ function PortfolioPage() {
                   <div className="font-bold text-emerald-300">{k.trend}</div>
                 </div>
               </div>
-              <div className="mt-3 rounded-md border border-violet-400/15 bg-violet-500/[0.04] p-2 text-[11px] text-slate-300">
+              <div className="mt-3 rounded-md border border-violet-400/15 bg-violet-500/[0.04] p-2 text-[12px] text-slate-300">
                 <span className="font-bold text-violet-300">AI:</span> {k.ai}
               </div>
             </div>

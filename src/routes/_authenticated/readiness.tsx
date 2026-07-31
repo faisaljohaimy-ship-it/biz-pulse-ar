@@ -38,7 +38,7 @@ function DimensionCard({ d }: { d: ReadinessDimension }) {
       <Progress value={d.score} className="h-1.5" />
       <div className="space-y-1 mt-1">
         {d.signals.map((s) => (
-          <div key={s.key} className="flex items-center justify-between text-[11px]">
+          <div key={s.key} className="flex items-center justify-between text-[12px]">
             <div className="flex items-center gap-1.5">
               {s.ok ? (
                 <CheckCircle2 className="h-3 w-3 text-emerald-400" />
@@ -54,7 +54,7 @@ function DimensionCard({ d }: { d: ReadinessDimension }) {
       {d.blockers.length > 0 && (
         <div className="space-y-1 mt-1">
           {d.blockers.map((b, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[10px] text-rose-300">
+            <div key={i} className="flex items-start gap-1.5 text-[12px] text-rose-300">
               <AlertOctagon className="h-3 w-3 mt-0.5 shrink-0" /> <span>{b}</span>
             </div>
           ))}
@@ -131,7 +131,7 @@ function ReadinessReportPage() {
                 {data.enterprise_score}
               </div>
               <Progress value={data.enterprise_score} className="h-2 mt-2" />
-              <div className="text-[10px] text-muted-foreground mt-2">
+              <div className="text-[12px] text-muted-foreground mt-2">
                 Weighted across every measured production dimension.
               </div>
             </Card>
@@ -143,7 +143,7 @@ function ReadinessReportPage() {
                 {data.production_score}
               </div>
               <Progress value={data.production_score} className="h-2 mt-2" />
-              <div className="text-[10px] text-muted-foreground mt-2">
+              <div className="text-[12px] text-muted-foreground mt-2">
                 Weights runtime, reliability & security highest.
               </div>
             </Card>
@@ -176,7 +176,7 @@ function ReadinessReportPage() {
             )}
           </Card>
 
-          <Card className="glass-card p-3 text-[10px] text-muted-foreground text-end">
+          <Card className="glass-card p-3 text-[12px] text-muted-foreground text-end">
             {ar ? "وقت التقرير" : "Generated"}: {new Date(data.at).toLocaleString()}
           </Card>
         </>

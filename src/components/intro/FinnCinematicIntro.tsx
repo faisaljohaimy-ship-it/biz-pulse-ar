@@ -257,7 +257,7 @@ export function FinnCinematicIntro({ surface = "global" }: Props) {
           className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-primary/30 bg-background/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary shadow-[0_0_24px_hsl(var(--primary)/0.35)] backdrop-blur transition hover:border-primary/60 hover:bg-background/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <span>{ar ? "تخطّي" : "Skip"}</span>
-          <span aria-hidden className="text-[10px] opacity-70">
+          <span aria-hidden className="text-[12px] opacity-70">
             {ar ? "Skip" : "تخطّي"}
           </span>
         </button>
@@ -280,7 +280,7 @@ export function FinnIntroReplayButton() {
         const fn = (window as unknown as { __ariaReplayIntro?: () => void }).__ariaReplayIntro;
         if (fn) fn();
       }}
-      className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground hover:text-primary"
+      className="text-[12px] uppercase tracking-[0.24em] text-muted-foreground hover:text-primary"
       aria-label={ar ? "إعادة تشغيل المقدّمة" : "Replay cinematic intro"}
     >
       {ar ? "إعادة تشغيل المقدّمة" : "Replay intro"}

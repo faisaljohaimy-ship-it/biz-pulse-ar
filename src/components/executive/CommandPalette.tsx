@@ -205,7 +205,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
               if (e.key === "Enter" && filtered[0]) run(filtered[0]);
             }}
           />
-          <kbd className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/60">
+          <kbd className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[12px] text-white/60">
             ESC
           </kbd>
         </div>
@@ -213,7 +213,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {Object.entries(grouped).map(([group, items]) => (
             <div key={group} className="mb-2">
-              <div className="px-3 py-1.5 text-[10px] uppercase tracking-[0.3em] text-white/40">
+              <div className="px-3 py-1.5 text-[12px] uppercase tracking-[0.3em] text-white/40">
                 {group}
               </div>
               <ul>
@@ -228,7 +228,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
                         <div className="truncate text-sm text-white">
                           {ar ? c.title_ar : c.title_en}
                         </div>
-                        <div className="truncate text-[10px] uppercase tracking-[0.2em] text-white/40">
+                        <div className="truncate text-[12px] uppercase tracking-[0.2em] text-white/40">
                           {ar ? c.title_en : c.title_ar}
                           {c.hint ? ` · ${c.hint}` : ""}
                         </div>
@@ -247,7 +247,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
             </div>
           )}
         </div>
-        <div className="flex items-center justify-between border-t border-white/10 px-4 py-2 text-[10px] text-white/40">
+        <div className="flex items-center justify-between border-t border-white/10 px-4 py-2 text-[12px] text-white/40">
           <span>↵ {ar ? "تنفيذ" : "Enter"}</span>
           <span>⌘/Ctrl + K</span>
         </div>

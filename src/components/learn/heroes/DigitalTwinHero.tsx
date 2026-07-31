@@ -164,7 +164,7 @@ export function DigitalTwinHero({ title, subtitle, lang }: Props) {
 
       {/* Foreground overlay */}
       <div className="absolute inset-0 flex flex-col justify-between p-6 sm:p-8">
-        <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-cyan-200/80">
+        <div className="flex items-center justify-between text-[12px] uppercase tracking-[0.24em] text-cyan-200/80">
           <div className="inline-flex items-center gap-2">
             <Radar
               className="h-3.5 w-3.5"
@@ -182,7 +182,7 @@ export function DigitalTwinHero({ title, subtitle, lang }: Props) {
         </div>
 
         <div className="max-w-3xl">
-          <div className="text-[10px] uppercase tracking-[0.28em] text-cyan-300/70">
+          <div className="text-[12px] uppercase tracking-[0.28em] text-cyan-300/70">
             {ar
               ? "الحصّة السادسة · جسر المعرفة التنفيذي"
               : "Lesson 06 · Executive Knowledge Bridge"}

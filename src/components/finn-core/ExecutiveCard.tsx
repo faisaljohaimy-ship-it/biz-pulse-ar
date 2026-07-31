@@ -51,12 +51,12 @@ export function ExecutiveCard() {
       className="mx-4 mb-3 mt-1 rounded-xl border border-primary/25 bg-card/70 p-3 shadow-sm backdrop-blur-md"
     >
       <header className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-[11px] font-medium uppercase tracking-wider text-primary/80">
+        <span className="text-[12px] font-medium uppercase tracking-wider text-primary/80">
           ملخص تنفيذي
         </span>
         <span
           className={cn(
-            "rounded-md border px-2 py-0.5 text-[10px] font-semibold",
+            "rounded-md border px-2 py-0.5 text-[12px] font-semibold",
             RISK_TONE[env.risk.level],
           )}
         >
@@ -68,7 +68,7 @@ export function ExecutiveCard() {
         {env.objective_ar || env.recommendedAction_ar}
       </p>
 
-      <dl className="mb-3 grid grid-cols-2 gap-2 text-[11px]">
+      <dl className="mb-3 grid grid-cols-2 gap-2 text-[12px]">
         <div className="rounded-md border border-border/40 bg-background/40 px-2 py-1.5">
           <dt className="mb-0.5 flex items-center gap-1 text-muted-foreground">
             <ShieldAlert className="h-3 w-3" aria-hidden />
@@ -86,7 +86,7 @@ export function ExecutiveCard() {
       </dl>
 
       <div className="mb-2 rounded-md border border-primary/20 bg-primary/5 px-2 py-2">
-        <div className="mb-1 flex items-center gap-1 text-[11px] text-primary">
+        <div className="mb-1 flex items-center gap-1 text-[12px] text-primary">
           <CheckCircle2 className="h-3 w-3" aria-hidden />
           الإجراء الموصى به
         </div>
@@ -99,7 +99,7 @@ export function ExecutiveCard() {
         <div className="mb-2 flex items-start gap-2 rounded-md border border-border/40 bg-background/40 px-2 py-2">
           <ArrowRight className="mt-0.5 h-3 w-3 shrink-0 text-primary" aria-hidden />
           <div className="text-xs leading-relaxed text-foreground">
-            <span className="text-[10px] text-muted-foreground">الخطوة التالية</span>
+            <span className="text-[12px] text-muted-foreground">الخطوة التالية</span>
             <br />
             {nextStep.label_ar}
           </div>
@@ -107,7 +107,7 @@ export function ExecutiveCard() {
       ) : null}
 
       {approvalRequired ? (
-        <div className="flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-2 py-1.5 text-[11px] text-amber-400">
+        <div className="flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-2 py-1.5 text-[12px] text-amber-400">
           <Lock className="h-3 w-3" aria-hidden />
           يتطلب موافقة قبل التنفيذ
         </div>

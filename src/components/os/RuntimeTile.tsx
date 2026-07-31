@@ -71,12 +71,12 @@ export function RuntimeTile({
           >
             {labelPrimary}
           </span>
-          <span className="mt-0.5 block truncate text-[10px] font-medium uppercase tracking-[0.22em] text-white/45 sm:text-[11px]">
+          <span className="mt-0.5 block truncate text-[12px] font-medium uppercase tracking-[0.22em] text-white/45 sm:text-[12px]">
             {labelSecondary}
           </span>
         </span>
       </span>
-      <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF] sm:text-[11px]">
+      <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#3AE8FF]/30 bg-[#3AE8FF]/5 px-2 py-1 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF] sm:text-[12px]">
         <span
           aria-hidden
           className="h-1.5 w-1.5 rounded-full bg-[#3AE8FF] shadow-[0_0_8px_#3AE8FF] motion-safe:animate-pulse"

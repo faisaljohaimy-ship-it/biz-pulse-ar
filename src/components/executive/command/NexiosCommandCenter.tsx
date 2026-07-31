@@ -568,7 +568,7 @@ export function NexiosCommandCenter() {
           : "The command center's primary icons are interactive links to NEXIOS modules."}
       </p>
 
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 px-1 text-[10px] sm:text-xs">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 px-1 text-[12px] sm:text-xs">
         <span
           className="inline-flex items-center gap-2 rounded-full border bg-[#020817]/75 px-3 py-1.5 font-semibold text-white backdrop-blur-xl"
           style={{ borderColor: `${activeColor}70`, boxShadow: `0 0 18px -8px ${activeColor}` }}
@@ -666,7 +666,7 @@ export function NexiosCommandCenter() {
           </nav>
         </div>
       </div>
-      <p className="mt-2 px-1 text-center text-[10px] text-white/45 sm:hidden">
+      <p className="mt-2 px-1 text-center text-[12px] text-white/45 sm:hidden">
         {ar ? "اسحب أفقياً لاستعراض اللوحة كاملة" : "Swipe horizontally to explore the full panel"}
       </p>
     </section>

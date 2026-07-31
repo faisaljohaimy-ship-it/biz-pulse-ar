@@ -91,13 +91,13 @@ function Timeline() {
               <div className="flex items-start justify-between gap-3 text-sm">
                 <div className="min-w-0">
                   <div className="truncate font-medium text-foreground">{e.title}</div>
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-[12px] text-muted-foreground">
                     {e.sub} · {new Date(e.t).toLocaleString("ar-SA")}
                   </div>
                 </div>
                 {e.sev && (
                   <span
-                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] ${severityClass(e.sev)}`}
+                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[12px] ${severityClass(e.sev)}`}
                   >
                     {e.sev}
                   </span>

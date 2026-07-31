@@ -173,7 +173,7 @@ function Header({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape }) {
     <Card className="bg-gradient-to-br from-primary/10 via-card to-card border-primary/30 p-5">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-primary">
+          <div className="text-[12px] font-mono uppercase tracking-[0.25em] text-primary">
             Investor Command Center
           </div>
           <h1 className="mt-1 text-2xl md:text-3xl font-bold text-foreground">
@@ -189,7 +189,7 @@ function Header({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape }) {
           <LiveStatus variant="monitoring" label="Realtime" hint={runtime.health.realtime} />
           <LiveStatus variant="syncing" label="Scheduler" hint={runtime.health.scheduler} />
           <div className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-center">
-            <div className="text-[9px] uppercase tracking-wider text-primary">Readiness</div>
+            <div className="text-[12px] uppercase tracking-wider text-primary">Readiness</div>
             <div className="text-lg font-bold text-foreground">{readiness}%</div>
           </div>
         </div>
@@ -259,13 +259,13 @@ function MetricsStrip({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape
       {items.map((m) => (
         <Card key={m.label} className="bg-card/60 border-border/60 p-3 backdrop-blur">
           <div className="flex items-center justify-between">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+            <div className="text-[12px] font-mono uppercase tracking-wider text-muted-foreground">
               {m.label}
             </div>
             <m.icon className="size-3.5 text-primary" />
           </div>
           <div className="mt-1 text-2xl font-bold text-foreground tabular-nums">{m.value}</div>
-          {m.hint ? <div className="text-[10px] text-muted-foreground">{m.hint}</div> : null}
+          {m.hint ? <div className="text-[12px] text-muted-foreground">{m.hint}</div> : null}
         </Card>
       ))}
     </div>
@@ -332,7 +332,7 @@ function AgentRunRow({ run }: { run: AgentRun }) {
     <div className="rounded-md border border-border/40 bg-background/40 p-2.5">
       <div className="flex items-center justify-between gap-2">
         <div className="font-mono text-xs text-foreground truncate">{run.agent_id}</div>
-        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", tone)}>
+        <Badge variant="outline" className={cn("text-[12px] px-1.5 py-0", tone)}>
           {run.status}
           {isRunning && (
             <span className="ml-1 inline-block size-1.5 rounded-full bg-current animate-pulse" />
@@ -340,9 +340,9 @@ function AgentRunRow({ run }: { run: AgentRun }) {
         </Badge>
       </div>
       {run.summary ? (
-        <div className="mt-1 text-[11px] text-muted-foreground truncate">{run.summary}</div>
+        <div className="mt-1 text-[12px] text-muted-foreground truncate">{run.summary}</div>
       ) : null}
-      <div className="mt-1 flex items-center gap-3 text-[10px] text-muted-foreground font-mono">
+      <div className="mt-1 flex items-center gap-3 text-[12px] text-muted-foreground font-mono">
         <span>{relTime(run.started_at)} ago</span>
         <span>·</span>
         <span>{Math.round(duration / 1000)}s</span>
@@ -401,11 +401,11 @@ function WorkflowMonitorPanel() {
             <div key={wf.id} className="rounded-md border border-border/40 bg-background/40 p-2.5">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-mono text-foreground truncate">{wf.id.slice(0, 8)}</span>
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                <Badge variant="outline" className="text-[12px] px-1.5 py-0">
                   {wf.status}
                 </Badge>
               </div>
-              <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+              <div className="mt-1 flex items-center justify-between text-[12px] text-muted-foreground">
                 <span className="uppercase tracking-wider">{wf.current_step ?? "planning"}</span>
                 <span>{done ? 100 : pct}%</span>
               </div>
@@ -496,12 +496,12 @@ function AuditTimelinePanel() {
               className="flex items-center justify-between gap-2 rounded border border-border/30 bg-background/30 px-2 py-1.5"
             >
               <div className="min-w-0 flex-1">
-                <div className="font-mono text-[11px] text-foreground truncate">{r.action}</div>
-                <div className="text-[10px] text-muted-foreground truncate">
+                <div className="font-mono text-[12px] text-foreground truncate">{r.action}</div>
+                <div className="text-[12px] text-muted-foreground truncate">
                   {r.resource_type ?? "system"} · {r.source ?? "—"}
                 </div>
               </div>
-              <div className="text-[10px] text-muted-foreground font-mono whitespace-nowrap">
+              <div className="text-[12px] text-muted-foreground font-mono whitespace-nowrap">
                 {relTime(r.occurred_at ?? r.created_at)}
               </div>
             </div>
@@ -543,16 +543,16 @@ function DecisionFeedPanel() {
         {rows.map((d) => (
           <div key={d.id} className="rounded-md border border-border/40 bg-background/40 p-2">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] text-foreground truncate">
+              <span className="text-[12px] text-foreground truncate">
                 {d.recommendation ?? "—"}
               </span>
               {d.confidence != null ? (
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                <Badge variant="outline" className="text-[12px] px-1.5 py-0">
                   {Math.round(Number(d.confidence) * 100)}%
                 </Badge>
               ) : null}
             </div>
-            <div className="mt-0.5 flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+            <div className="mt-0.5 flex items-center justify-between text-[12px] text-muted-foreground font-mono">
               <span>{d.status ?? "pending"}</span>
               <span>{relTime(d.created_at)} ago</span>
             </div>
@@ -661,11 +661,11 @@ function RiskCenterPanel({ kpis }: { kpis: KpiShape }) {
           >
             <div className="min-w-0">
               <div className="text-xs text-foreground truncate">{r.title_ar ?? "حادثة"}</div>
-              <div className="text-[10px] text-muted-foreground">{relTime(r.created_at)} ago</div>
+              <div className="text-[12px] text-muted-foreground">{relTime(r.created_at)} ago</div>
             </div>
             <Badge
               variant="outline"
-              className="text-[10px] px-1.5 py-0 text-rose-400 border-rose-500/40"
+              className="text-[12px] px-1.5 py-0 text-rose-400 border-rose-500/40"
             >
               {r.severity}
             </Badge>
@@ -685,7 +685,7 @@ function DigitalTwinPanel({ kpis }: { kpis: KpiShape }) {
   return (
     <PanelCard icon={Network} title="Digital Twin" badge={`${op}/${total}`}>
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+        <div className="flex items-center justify-between text-[12px] text-muted-foreground">
           <span>Sites operational</span>
           <span>{pct}%</span>
         </div>
@@ -727,10 +727,10 @@ function NotificationCenterPanel() {
       <div className="space-y-1.5">
         {rows.map((n) => (
           <div key={n.id} className="rounded border border-border/40 bg-background/40 px-2 py-1.5">
-            <div className="text-[11px] text-foreground truncate">
+            <div className="text-[12px] text-foreground truncate">
               {n.alert_type} · {n.camera_code}
             </div>
-            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+            <div className="flex items-center justify-between text-[12px] text-muted-foreground font-mono">
               <span>{n.status ?? "new"}</span>
               <span>{relTime(n.created_at)} ago</span>
             </div>
@@ -846,7 +846,7 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
               !("tone" in m) && "border-border/40",
             )}
           >
-            <div className="text-[9px] uppercase tracking-wider text-muted-foreground truncate">
+            <div className="text-[12px] uppercase tracking-wider text-muted-foreground truncate">
               {m.label}
             </div>
             <div className="text-lg font-bold text-foreground tabular-nums">{m.value}</div>
@@ -886,7 +886,7 @@ function PanelCard({
           <h3 className="text-sm font-semibold tracking-wide">{title}</h3>
         </div>
         {badge ? (
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-[12px]">
             {badge}
           </Badge>
         ) : null}
@@ -920,7 +920,7 @@ function Stat({
         !tone && "border-border/40",
       )}
     >
-      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-[12px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="text-sm font-bold text-foreground tabular-nums">{value}</div>
     </div>
   );

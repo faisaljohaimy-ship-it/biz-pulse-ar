@@ -40,7 +40,7 @@ export function FinnStage({ ar, line_ar, line_en, size = 120, className, framed 
     <div className="flex items-center gap-4">
       <DigitalHumanAvatar spec={FINN} state={dh.state} size={size} ar={ar} ambient />
       <div className="min-w-0">
-        <div className="text-[11px] uppercase tracking-[0.3em] text-cyan-300/80">
+        <div className="text-[12px] uppercase tracking-[0.3em] text-cyan-300/80">
           {ar ? FINN.title_ar : FINN.title_en}
         </div>
         <div className="mt-1 text-lg md:text-xl text-white font-light">

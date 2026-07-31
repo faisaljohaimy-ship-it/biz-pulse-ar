@@ -37,7 +37,7 @@ export function FinnVoiceDebugBadge() {
     <div
       className={cn(
         "pointer-events-none absolute end-2 top-2 z-30 select-none rounded-full px-2 py-0.5",
-        "text-[10px] font-bold tracking-wider backdrop-blur-md ring-1",
+        "text-[12px] font-bold tracking-wider backdrop-blur-md ring-1",
         color,
         evt.failed && "animate-pulse",
       )}

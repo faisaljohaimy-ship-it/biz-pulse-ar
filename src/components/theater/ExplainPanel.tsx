@@ -49,7 +49,7 @@ function Lane({
   };
   return (
     <div className={cn("rounded-xl border bg-white/[0.025] p-3 backdrop-blur", tones[tone])}>
-      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-white/55">
+      <div className="flex items-center gap-2 text-[12px] uppercase tracking-wider text-white/55">
         <Icon className="h-3.5 w-3.5" />
         {label}
       </div>
@@ -139,7 +139,7 @@ export function ExplainPanel({ line, agent, ar, onClose }: Props) {
           <X className="h-4 w-4" />
         </button>
 
-        <div className="text-[11px] uppercase tracking-[0.35em] text-cyan-300/80">
+        <div className="text-[12px] uppercase tracking-[0.35em] text-cyan-300/80">
           {ar ? "تفسير القرار التنفيذي" : "Executive Explainability"}
         </div>
         <h2 className="mt-2 text-xl md:text-2xl font-light text-white">

@@ -18,7 +18,7 @@ function PromoHub() {
     <div dir="rtl" className="min-h-screen bg-[#04070F] text-white">
       <div className="mx-auto max-w-6xl px-5 py-14 md:py-20">
         <header className="mb-10 text-center">
-          <div className="mb-2 text-[10px] uppercase tracking-[0.55em] text-white/50">
+          <div className="mb-2 text-[12px] uppercase tracking-[0.55em] text-white/50">
             Nexios · Cinematic Suite
           </div>
           <h1 className="text-4xl font-black md:text-6xl">سلسلة الأفلام التنفيذية</h1>
@@ -42,7 +42,7 @@ function PromoHub() {
               />
               <div className="relative">
                 <div
-                  className="mb-3 text-[10px] uppercase tracking-[0.4em]"
+                  className="mb-3 text-[12px] uppercase tracking-[0.4em]"
                   style={{ color: f.accent }}
                 >
                   Film {String(i + 1).padStart(2, "0")}

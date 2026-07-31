@@ -561,12 +561,12 @@ function CollaborationStream({
             <div className="text-sm text-white font-medium">
               {ar ? "تعاون FINN والوكلاء" : "FINN & Agents Collaboration"}
             </div>
-            <div className="text-[11px] text-cyan-200/70">
+            <div className="text-[12px] text-cyan-200/70">
               {ar ? "بث مباشر للتقييم التشغيلي" : "Live operational assessment stream"}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-white/50">
+        <div className="flex items-center gap-2 text-[12px] text-white/50">
           <Mic className="h-3.5 w-3.5" />
           {ar ? "الصوت جاهز — غير مفعل" : "Voice ready — not enabled"}
         </div>
@@ -627,7 +627,7 @@ function StatCard({
       <div className="mt-3 text-3xl md:text-4xl font-light text-white tracking-tight tabular-nums">
         {value}
       </div>
-      {hint && <div className="mt-1.5 text-[11px] text-white/50">{hint}</div>}
+      {hint && <div className="mt-1.5 text-[12px] text-white/50">{hint}</div>}
     </div>
   );
 }
@@ -670,7 +670,7 @@ function OverallStatusBanner({
     >
       <ShieldCheck className={cn("h-6 w-6 mt-0.5", t.text)} />
       <div className="min-w-0">
-        <div className="text-[10px] uppercase tracking-[0.3em] text-white/60">
+        <div className="text-[12px] uppercase tracking-[0.3em] text-white/60">
           {ar ? "آخر تحديث الآن" : "Updated just now"}
         </div>
         <div className="text-lg md:text-xl text-white font-light mt-1">{ar ? m.ar : m.en}</div>
@@ -766,7 +766,7 @@ function ActivityTimeline({ items, ar }: { items: TimelineItem[]; ar: boolean })
       <div className="flex items-center gap-3 mb-4">
         <Clock className="h-4 w-4 text-cyan-300" />
         <div className="text-sm text-white/85">{ar ? "النشاط الحي" : "Live Activity"}</div>
-        <span className="ms-auto text-[11px] text-white/40">
+        <span className="ms-auto text-[12px] text-white/40">
           {items.length} {ar ? "حدث" : "events"}
         </span>
       </div>
@@ -795,9 +795,9 @@ function ActivityTimeline({ items, ar }: { items: TimelineItem[]; ar: boolean })
                   <div className="text-sm text-white/90 truncate">
                     {ar ? it.title_ar : it.title_en}
                   </div>
-                  <div className="text-[11px] text-white/50">{ar ? it.meta_ar : it.meta_en}</div>
+                  <div className="text-[12px] text-white/50">{ar ? it.meta_ar : it.meta_en}</div>
                 </div>
-                <div className="text-[11px] text-white/40 tabular-nums whitespace-nowrap">
+                <div className="text-[12px] text-white/40 tabular-nums whitespace-nowrap">
                   {relativeTime(it.ts, ar)}
                 </div>
               </li>
@@ -1111,7 +1111,7 @@ function MissionControl() {
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div className="min-w-0">
-            <div className="text-[11px] uppercase tracking-[0.3em] text-cyan-300/70">
+            <div className="text-[12px] uppercase tracking-[0.3em] text-cyan-300/70">
               {ar
                 ? "إدارة الأمن الصناعي — المنطقة الغربية"
                 : "Industrial Security — Western Region"}
@@ -1126,14 +1126,14 @@ function MissionControl() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 text-[11px] text-white/50 px-3 py-2 rounded-full border border-white/10 bg-white/[0.03]">
+            <div className="flex items-center gap-2 text-[12px] text-white/50 px-3 py-2 rounded-full border border-white/10 bg-white/[0.03]">
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
               {ar ? "متصل مباشرة" : "Live"}
             </div>
             <button
               type="button"
               onClick={() => setLocale(ar ? "en" : "ar")}
-              className="text-[11px] uppercase tracking-[0.2em] px-3 py-2 rounded-full border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/80 transition"
+              className="text-[12px] uppercase tracking-[0.2em] px-3 py-2 rounded-full border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/80 transition"
               aria-label={ar ? "تبديل اللغة" : "Switch language"}
             >
               {ar ? "EN" : "ع"}
@@ -1224,7 +1224,7 @@ function MissionControl() {
                   <div className="text-sm font-medium text-white">
                     {ar ? "ملخص FINN" : "FINN Summary"}
                   </div>
-                  <div className="text-[11px] text-white/50">
+                  <div className="text-[12px] text-white/50">
                     {ar ? "توصيات تنفيذية" : "Executive recommendations"}
                   </div>
                 </div>
@@ -1276,7 +1276,7 @@ function MissionControl() {
 
         {/* Executive Actions */}
         <div className="mt-8">
-          <div className="text-[11px] uppercase tracking-[0.25em] text-white/50 mb-3">
+          <div className="text-[12px] uppercase tracking-[0.25em] text-white/50 mb-3">
             {ar ? "الإجراءات التنفيذية" : "Executive Actions"}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -1299,7 +1299,7 @@ function MissionControl() {
         </div>
 
         {/* Voice-ready footer (architectural) */}
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 text-[11px] text-white/40">
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 text-[12px] text-white/40">
           <div className="flex items-center gap-2">
             <Mic className="h-3.5 w-3.5" />
             <span>

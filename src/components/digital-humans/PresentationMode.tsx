@@ -351,7 +351,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
             <div className="text-sm text-white font-medium">
               {ar ? "وضع العرض التنفيذي" : "Executive Presentation Mode"}
             </div>
-            <div className="text-[11px] text-cyan-200/70">
+            <div className="text-[12px] text-cyan-200/70">
               {ar ? "إحاطة كاملة بنقرة واحدة" : "Full briefing with one click"}
             </div>
           </div>
@@ -445,7 +445,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
       >
         {currentSpeaker?.currentTurn ? (
           <>
-            <div className="text-[11px] uppercase tracking-[0.2em] text-cyan-300/80">
+            <div className="text-[12px] uppercase tracking-[0.2em] text-cyan-300/80">
               {currentSpeakerId
                 ? ar
                   ? findHuman(currentSpeakerId)?.name_ar
@@ -481,7 +481,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
               style={{ width: `${Math.round((stepIdx / Math.max(1, script.length)) * 100)}%` }}
             />
           </div>
-          <div className="mt-1 text-[10px] text-white/45 tabular-nums">
+          <div className="mt-1 text-[12px] text-white/45 tabular-nums">
             {Math.min(stepIdx + 1, script.length)} / {script.length}
           </div>
         </div>

@@ -152,9 +152,9 @@ function ReportsAgentPage() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-sm font-semibold text-cyan-100">{r.titleAr}</div>
-                      <div className="text-[10px] text-cyan-100/60">{r.id}</div>
+                      <div className="text-[12px] text-cyan-100/60">{r.id}</div>
                     </div>
-                    <div className="mt-1 flex items-center gap-2 text-[11px] text-cyan-100/60">
+                    <div className="mt-1 flex items-center gap-2 text-[12px] text-cyan-100/60">
                       <span>{new Date(r.createdAt).toLocaleTimeString("ar-SA")}</span>
                       <span>·</span>
                       <span>{r.regionAr}</span>
@@ -182,7 +182,7 @@ function ReportsAgentPage() {
                       key={m.label}
                       className="rounded-lg border border-white/10 bg-black/30 p-3 text-center"
                     >
-                      <div className="text-[11px] text-cyan-100/60">{m.label}</div>
+                      <div className="text-[12px] text-cyan-100/60">{m.label}</div>
                       <div className="mt-1 text-lg font-bold text-cyan-200">{m.value}</div>
                     </div>
                   ))}
@@ -201,7 +201,7 @@ function ReportsAgentPage() {
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-center">
-      <div className="text-[11px] text-cyan-100/60">{label}</div>
+      <div className="text-[12px] text-cyan-100/60">{label}</div>
       <div className="mt-1 text-2xl font-bold text-cyan-200">{value}</div>
     </div>
   );

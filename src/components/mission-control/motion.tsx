@@ -200,7 +200,7 @@ export function StatusRing({
               : { duration: 0.3 }
         }
       />
-      <div className="relative z-10 grid place-items-center text-[11px] font-semibold text-white/90">
+      <div className="relative z-10 grid place-items-center text-[12px] font-semibold text-white/90">
         {children}
       </div>
     </div>

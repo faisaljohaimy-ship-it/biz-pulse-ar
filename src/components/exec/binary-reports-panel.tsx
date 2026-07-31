@@ -234,7 +234,7 @@ export function BinaryReportsPanel({
           <div className="text-sm font-semibold">
             {isAr ? "إرسال PDF + Excel عبر البريد" : "Send PDF + Excel by Email"}
           </div>
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-[12px]">
             Outlook
           </Badge>
         </div>
@@ -362,7 +362,7 @@ export function BinaryReportsPanel({
           <div className="text-sm font-semibold">
             {isAr ? "الجداول المتكررة" : "Recurring Schedules"}
           </div>
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-[12px]">
             cron · 15min
           </Badge>
         </div>
@@ -450,7 +450,7 @@ export function BinaryReportsPanel({
               <span className="text-xs">{isAr ? "مُفعّل" : "Enabled"}</span>
             </div>
           </div>
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-[12px] text-muted-foreground">
             {isAr ? "يستخدم" : "Uses"} <code>{siteName || "—"}</code> · {recipients.length}{" "}
             {isAr ? "مستلم" : "recipients"}
           </div>
@@ -509,7 +509,7 @@ export function BinaryReportsPanel({
                     ·{" "}
                     <Badge
                       variant={s.last_status === "ok" ? "default" : "destructive"}
-                      className="text-[10px]"
+                      className="text-[12px]"
                     >
                       {s.last_status}
                     </Badge>

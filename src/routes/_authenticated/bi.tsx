@@ -237,7 +237,7 @@ function BiPage() {
         <div>
           <h1 className="text-lg font-bold tracking-tight sm:text-xl">لوحات التحليل التنفيذية</h1>
           {data?.simulation && (
-            <p className="mt-1 text-[10px] text-amber-300/90">
+            <p className="mt-1 text-[12px] text-amber-300/90">
               محاكاة مرجعية — is_simulation = true
             </p>
           )}
@@ -330,7 +330,7 @@ function BiPage() {
               ["أداء SLA", `${sla.pct}%`, sla.pct >= 90 ? "#10b981" : "#fbbf24"],
             ].map(([label, value, color]) => (
               <div key={String(label)} className="holo-card rounded-2xl p-3">
-                <div className="text-[10px] text-white/55">{label}</div>
+                <div className="text-[12px] text-white/55">{label}</div>
                 <div className="mt-1 text-2xl font-bold" style={{ color: String(color) }}>
                   {value}
                 </div>
@@ -455,7 +455,7 @@ function BiPage() {
                 {sevMix.map((s) => (
                   <span
                     key={s.severity}
-                    className="rounded-full border px-3 py-1 text-[11px]"
+                    className="rounded-full border px-3 py-1 text-[12px]"
                     style={{
                       borderColor: `${SEV_COLOR[s.severity]}66`,
                       color: SEV_COLOR[s.severity],
@@ -476,7 +476,9 @@ function BiPage() {
                 <div className="min-w-[520px]">
                   {data.heatmap.map((row, wd) => (
                     <div key={wd} className="mb-1 flex items-center gap-1">
-                      <span className="w-14 shrink-0 text-[9px] text-white/50">{WEEKDAYS[wd]}</span>
+                      <span className="w-14 shrink-0 text-[12px] text-white/50">
+                        {WEEKDAYS[wd]}
+                      </span>
                       {row.map((v, h) => (
                         <span
                           key={h}
@@ -487,7 +489,7 @@ function BiPage() {
                       ))}
                     </div>
                   ))}
-                  <div className="mt-1 flex gap-1 ps-14 text-[8px] text-white/40" dir="ltr">
+                  <div className="mt-1 flex gap-1 ps-14 text-[12px] text-white/40" dir="ltr">
                     {Array.from({ length: 24 }, (_, h) => (
                       <span key={h} className="flex-1 text-center">
                         {h % 4 === 0 ? h : ""}

@@ -449,7 +449,7 @@ function ExecConsole() {
                     >
                       <div className="min-w-0">
                         <div className="text-sm font-medium truncate">{w.name}</div>
-                        <div className="text-[11px] text-muted-foreground font-mono truncate">
+                        <div className="text-[12px] text-muted-foreground font-mono truncate">
                           {w.trigger_topic ?? "manual"} · {w.id.slice(0, 8)}…
                         </div>
                       </div>
@@ -501,7 +501,7 @@ function ExecConsole() {
                             <span className="font-mono text-xs">{r.workflow_id.slice(0, 8)}…</span>
                             {statusBadge(r.status)}
                           </div>
-                          <div className="text-[11px] text-muted-foreground font-mono">
+                          <div className="text-[12px] text-muted-foreground font-mono">
                             {new Date(r.started_at).toLocaleString()}
                           </div>
                           {r.current_step && (
@@ -577,7 +577,7 @@ function ExecConsole() {
                           {(a.tool_allowlist ?? []).map((t) => (
                             <span
                               key={t}
-                              className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50"
+                              className="text-[12px] font-mono px-1.5 py-0.5 rounded bg-muted/50"
                             >
                               {t}
                             </span>
@@ -645,19 +645,19 @@ function ExecConsole() {
                           <div className="flex items-center gap-2">
                             <Bot className="size-3 text-cyan-300" />
                             <span className="text-xs font-medium">{r.agent_id}</span>
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-[12px] text-muted-foreground">
                               {new Date(r.started_at).toLocaleString()}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-[10px]">
+                            <Badge variant="outline" className="text-[12px]">
                               {r.steps ?? 0} steps
                             </Badge>
                             {statusBadge(r.status)}
                           </div>
                         </div>
                         {r.goal_override && (
-                          <div className="text-[11px] text-muted-foreground italic">
+                          <div className="text-[12px] text-muted-foreground italic">
                             goal: {r.goal_override}
                           </div>
                         )}

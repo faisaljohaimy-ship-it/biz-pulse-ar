@@ -76,10 +76,10 @@ function VisionClock() {
       <span className="text-sm font-semibold tabular-nums text-nx-pearl" dir="ltr">
         {now ? now.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" }) : "—"}
       </span>
-      <span className="text-[11px] text-nx-pearl/56" dir="ltr">
+      <span className="text-[12px] text-nx-pearl/56" dir="ltr">
         {now ? now.toLocaleDateString("ar-SA") : ""}
       </span>
-      <span className="text-[10px] font-semibold tracking-wide text-nx-cyan/80">رؤية 2030</span>
+      <span className="text-[12px] font-semibold tracking-wide text-nx-cyan/80">رؤية 2030</span>
     </div>
   );
 }
@@ -111,7 +111,7 @@ export function ArchitectureLayerRail({ layers }: { layers: readonly Architectur
           </span>
           <span className="flex flex-col">
             <span className="text-xs font-semibold text-nx-pearl">{layer.labelAr}</span>
-            <span className="text-[10px] tracking-wide text-nx-pearl/48" dir="ltr">
+            <span className="text-[12px] tracking-wide text-nx-pearl/48" dir="ltr">
               {layer.labelEn}
             </span>
           </span>
@@ -152,7 +152,7 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
           <BrandMark />
           <div className="flex flex-col">
             <span className="text-lg font-bold leading-tight text-nx-pearl">NEXIOS</span>
-            <span className="text-[10px] tracking-widest text-nx-pearl/56" dir="ltr">
+            <span className="text-[12px] tracking-widest text-nx-pearl/56" dir="ltr">
               AI OPERATING SYSTEM
             </span>
           </div>
@@ -173,7 +173,7 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
             {unreadCount > 0 ? (
               <span
                 aria-hidden
-                className="absolute -top-1 -start-1 inline-flex min-w-5 items-center justify-center rounded-full bg-nx-critical px-1 text-[10px] font-bold tabular-nums text-nx-obsidian"
+                className="absolute -top-1 -start-1 inline-flex min-w-5 items-center justify-center rounded-full bg-nx-critical px-1 text-[12px] font-bold tabular-nums text-nx-obsidian"
               >
                 {unreadCount}
               </span>
@@ -188,7 +188,7 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
         <h1 className="text-xl font-bold leading-tight text-nx-pearl md:text-2xl">
           قمرة القيادة التنفيذية
         </h1>
-        <span className="rounded-nx-8 border border-nx-warning/40 px-2 py-0.5 text-[11px] text-nx-warning">
+        <span className="rounded-nx-8 border border-nx-warning/40 px-2 py-0.5 text-[12px] text-nx-warning">
           محاكاة مرجعية
         </span>
         <p className="w-full text-xs text-nx-pearl/56 md:w-auto md:flex-1">

@@ -63,7 +63,7 @@ function StatusPill({ status, isAr }: { status: Status; isAr: boolean }) {
   const v = map[status];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] uppercase tracking-[0.18em] ${v.cls}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[12px] uppercase tracking-[0.18em] ${v.cls}`}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {isAr ? v.ar : v.en}
@@ -351,7 +351,7 @@ function TrustPage() {
           <ArrowLeft className={`h-4 w-4 shrink-0 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة" : "Back"}
         </Link>
-        <div className="text-[10px] uppercase tracking-[0.28em] text-amber-300/70 sm:text-xs sm:tracking-[0.32em]">
+        <div className="text-[12px] uppercase tracking-[0.28em] text-amber-300/70 sm:text-xs sm:tracking-[0.32em]">
           {isAr ? "الثقة والأمان" : "Trust & Security"}
         </div>
       </header>
@@ -368,7 +368,7 @@ function TrustPage() {
             <Link
               key={t.to}
               to={t.to}
-              className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] transition sm:text-xs ${
+              className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-[12px] uppercase tracking-[0.18em] transition sm:text-xs ${
                 t.active
                   ? "border-amber-400/40 bg-amber-400/10 text-amber-200"
                   : "border-white/10 bg-white/[0.02] text-muted-foreground hover:border-amber-400/25 hover:text-foreground"
@@ -383,7 +383,7 @@ function TrustPage() {
       <main className="relative z-10 mx-auto max-w-7xl px-6 pb-24">
         {/* HERO */}
         <section className="mb-12 max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-amber-300/80">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.04] px-3 py-1 text-[12px] uppercase tracking-[0.24em] text-amber-300/80">
             <Shield className="h-3.5 w-3.5" />{" "}
             {isAr
               ? "جاهز للمشتريات المؤسسية والحكومية"

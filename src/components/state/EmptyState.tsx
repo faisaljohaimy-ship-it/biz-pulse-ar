@@ -43,7 +43,7 @@ export function EmptyState({
     >
       <Icon className={`${compact ? "h-6 w-6" : "h-10 w-10"} ${tone} mb-2`} />
       <div className={`${compact ? "text-sm" : "text-base"} font-semibold`}>{title}</div>
-      <div className={`${compact ? "text-[11px]" : "text-xs"} text-muted-foreground mt-1 max-w-md`}>
+      <div className={`${compact ? "text-[12px]" : "text-xs"} text-muted-foreground mt-1 max-w-md`}>
         {description}
       </div>
       {action && <div className="mt-3">{action}</div>}

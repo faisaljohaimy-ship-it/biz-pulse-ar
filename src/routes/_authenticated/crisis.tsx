@@ -81,7 +81,7 @@ function CrisisPage() {
               <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
                 <div className="flex w-full shrink-0 flex-row items-center justify-between gap-3 lg:w-44 lg:flex-col lg:items-start">
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                    <div className="text-[12px] uppercase tracking-widest text-slate-500">
                       {ar ? "درجة الخطورة" : "Risk score"}
                     </div>
                     <div
@@ -89,7 +89,7 @@ function CrisisPage() {
                     >
                       {c.riskScore}
                     </div>
-                    <div className="text-[10px] text-slate-400">
+                    <div className="text-[12px] text-slate-400">
                       {ar ? "احتمال" : "probability"} {c.probability}%
                     </div>
                   </div>
@@ -103,20 +103,20 @@ function CrisisPage() {
                   </h3>
                   <div className="grid gap-2 text-[12px] sm:grid-cols-2">
                     <div className="rounded-md border border-rose-500/15 bg-rose-500/5 p-2">
-                      <div className="text-[10px] uppercase tracking-widest text-rose-300/80">
+                      <div className="text-[12px] uppercase tracking-widest text-rose-300/80">
                         {ar ? "الأثر" : "Impact"}
                       </div>
                       <div className="text-slate-200">{ar ? c.impact_ar : c.impact_en}</div>
                     </div>
                     <div className="rounded-md border border-emerald-500/15 bg-emerald-500/5 p-2">
-                      <div className="text-[10px] uppercase tracking-widest text-emerald-300/80">
+                      <div className="text-[12px] uppercase tracking-widest text-emerald-300/80">
                         {ar ? "إجراء موصى" : "Recommended action"}
                       </div>
                       <div className="text-slate-200">{ar ? c.action_ar : c.action_en}</div>
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                    <div className="text-[11px] text-slate-400">
+                    <div className="text-[12px] text-slate-400">
                       {ar ? "المالك" : "Owner"}: <span className="text-slate-200">{c.owner}</span>
                     </div>
                     <Link

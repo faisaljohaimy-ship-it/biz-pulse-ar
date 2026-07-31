@@ -229,7 +229,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-bold text-sidebar-foreground">Nexus AI OS</div>
-            <div className="truncate text-[11px] text-muted-foreground">{t("app.tagline")}</div>
+            <div className="truncate text-[12px] text-muted-foreground">{t("app.tagline")}</div>
           </div>
         </div>
         <div className="space-y-2 px-3 pb-3">
@@ -242,7 +242,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
       <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
         {groups.map((g) => (
           <div key={g.label} className="mb-5">
-            <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
+            <div className="px-3 pb-2 text-[12px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
               {g.label}
             </div>
             <div className="space-y-1">
@@ -360,7 +360,7 @@ function LangIconToggle() {
   return (
     <button
       onClick={() => setLocale(locale === "ar" ? "en" : "ar")}
-      className="grid size-9 place-items-center rounded-full border border-sidebar-border bg-card text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+      className="grid size-9 place-items-center rounded-full border border-sidebar-border bg-card text-[12px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
       aria-label={t("lang.label")}
     >
       {locale === "ar" ? "EN" : "AR"}

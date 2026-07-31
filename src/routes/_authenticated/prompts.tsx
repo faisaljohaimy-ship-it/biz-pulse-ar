@@ -120,7 +120,7 @@ function PromptsPage() {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h3 className="text-sm font-semibold">{p.title}</h3>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                <span className="text-[12px] uppercase tracking-wider text-muted-foreground">
                   {p.category}
                 </span>
               </div>

@@ -232,7 +232,7 @@ function SimulationPanel({ locale }: { locale: string }) {
         </button>
       </div>
 
-      <p className="mt-2 text-[11px] text-muted-foreground">
+      <p className="mt-2 text-[12px] text-muted-foreground">
         {locale === "ar"
           ? "«اليوم التنفيذي» ينشئ قصة تشغيلية مترابطة: دورية → تفتيش → مخاطرة → إشعارات → إجراءات تصحيحية → حادثة → أمر عمل → اجتماع تنفيذي → تقرير FINN — كلها مترابطة بالمعرّفات."
           : '"Executive Day" builds a fully connected story: patrol → inspection → risk → notifications → CARs → incident → work order → executive meeting → FINN briefing — all linked by refs.'}
@@ -242,7 +242,7 @@ function SimulationPanel({ locale }: { locale: string }) {
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 lg:grid-cols-4">
           {Object.entries(status.data.tables).map(([k, v]) => (
             <div key={k} className="rounded-lg border border-border bg-background/40 p-2">
-              <div className="text-[10px] uppercase text-muted-foreground">
+              <div className="text-[12px] uppercase text-muted-foreground">
                 {k.replace("sim_", "")}
               </div>
               <div className="text-lg font-bold text-primary">{v as number}</div>
@@ -252,7 +252,7 @@ function SimulationPanel({ locale }: { locale: string }) {
       )}
 
       {log && (
-        <pre className="mt-3 max-h-56 overflow-auto rounded-lg bg-background/60 p-3 text-[11px]">
+        <pre className="mt-3 max-h-56 overflow-auto rounded-lg bg-background/60 p-3 text-[12px]">
           {log}
         </pre>
       )}

@@ -55,7 +55,7 @@ export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose:
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.32em] text-[#3AE8FF]/80">
+            <div className="text-[12px] uppercase tracking-[0.32em] text-[#3AE8FF]/80">
               Industrial Security
             </div>
             <h2 className="mt-1 text-lg font-semibold text-white">{heading}</h2>
@@ -70,7 +70,7 @@ export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose:
           </button>
         </div>
 
-        <div className="mb-1.5 text-[10px] uppercase tracking-[0.25em] text-white/50">
+        <div className="mb-1.5 text-[12px] uppercase tracking-[0.25em] text-white/50">
           {ar ? "الدائرة" : "District"}
         </div>
         <div className="mb-4 flex flex-wrap gap-1.5">
@@ -91,7 +91,7 @@ export function DepartmentsLauncher({ open, onClose }: { open: boolean; onClose:
           ))}
         </div>
 
-        <div className="mb-1.5 text-[10px] uppercase tracking-[0.25em] text-white/50">
+        <div className="mb-1.5 text-[12px] uppercase tracking-[0.25em] text-white/50">
           {ar ? "القسم" : "Section"}
         </div>
         <ul className="grid grid-cols-2 gap-2">

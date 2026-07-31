@@ -189,7 +189,7 @@ export function FinnUnifiedBackground() {
                 y="304"
                 textAnchor="middle"
                 fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-                fontSize="6"
+                fontSize="12"
                 fill="rgba(180,210,225,0.6)"
               >
                 FINN-CORE
@@ -341,7 +341,7 @@ export function FinnUnifiedBackground() {
 
           {/* Binary / hex code rain */}
           <span
-            className="absolute inset-0 opacity-[0.12] font-mono text-[10px] leading-[12px] text-cyan-200/70"
+            className="absolute inset-0 opacity-[0.12] font-mono text-[12px] leading-[12px] text-cyan-200/70"
             style={{
               maskImage:
                 "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
@@ -388,12 +388,12 @@ export function FinnUnifiedBackground() {
           </span>
 
           {/* Automation telemetry ticker — subtle top/bottom mono lines */}
-          <span className="pointer-events-none absolute inset-x-0 top-2 flex justify-between px-3 font-mono text-[9px] text-cyan-300/40">
+          <span className="pointer-events-none absolute inset-x-0 top-2 flex justify-between px-3 font-mono text-[12px] text-cyan-300/40">
             <span>SYS://finn-core</span>
             <span>BUS 0x1A · 12.4 Gb/s</span>
             <span>AUTO-LOOP ✓</span>
           </span>
-          <span className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-between px-3 font-mono text-[9px] text-cyan-300/40">
+          <span className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-between px-3 font-mono text-[12px] text-cyan-300/40">
             <span>THREADS 128/128</span>
             <span>PIPE OK · Δ 0.4ms</span>
             <span>NODE 07 · SYNC</span>

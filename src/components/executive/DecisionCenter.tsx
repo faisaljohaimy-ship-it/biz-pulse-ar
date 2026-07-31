@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, Check, Loader2, ShieldCheck, X, Workflow } from "lucide-react";
 
 function ConfidencePill({ c }: { c: number | null }) {
-  if (c == null) return <span className="text-[10px] font-mono text-foreground/40">—</span>;
+  if (c == null) return <span className="text-[12px] font-mono text-foreground/40">—</span>;
   const pct = Math.round(c * 100);
   const tone =
     pct >= 85
@@ -21,7 +21,7 @@ function ConfidencePill({ c }: { c: number | null }) {
         : "text-rose-300 border-rose-400/40 bg-rose-500/10";
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono ${tone}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[12px] font-mono ${tone}`}
     >
       <ShieldCheck className="w-3 h-3" /> {pct}%
     </span>
@@ -45,7 +45,7 @@ function StatusPill({ s }: { s: ExecutiveDecision["status"] }) {
   };
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono ${map[s]}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[12px] font-mono ${map[s]}`}
     >
       {label[s]}
     </span>
@@ -97,7 +97,7 @@ export function DecisionCenter() {
     <section className="rounded-xl border border-white/5 bg-background/40 backdrop-blur-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-primary/80">
+          <div className="text-[12px] font-mono uppercase tracking-widest text-primary/80">
             Decision Center · مركز القرار
           </div>
           <div className="text-sm text-foreground/60 mt-0.5">
@@ -146,12 +146,12 @@ export function DecisionCenter() {
                     <StatusPill s={d.status} />
                     <ConfidencePill c={d.confidence} />
                     {d.has_workflow && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-secondary/40 bg-secondary/10 text-secondary text-[10px] font-mono">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-secondary/40 bg-secondary/10 text-secondary text-[12px] font-mono">
                         <Workflow className="w-3 h-3" /> workflow
                       </span>
                     )}
                     {d.executed_tool && (
-                      <span className="text-[10px] font-mono text-foreground/50">
+                      <span className="text-[12px] font-mono text-foreground/50">
                         → {d.executed_tool}
                       </span>
                     )}
@@ -161,7 +161,7 @@ export function DecisionCenter() {
                   </div>
                   {d.recommended_action && (
                     <div className="mt-1.5 rounded-md border border-primary/30 bg-primary/5 px-2 py-1">
-                      <div className="text-[9px] font-mono uppercase tracking-widest text-primary/80">
+                      <div className="text-[12px] font-mono uppercase tracking-widest text-primary/80">
                         Recommended Action · الإجراء الموصى به
                       </div>
                       <div className="text-xs text-foreground mt-0.5 line-clamp-2">
@@ -171,7 +171,7 @@ export function DecisionCenter() {
                   )}
                   {d.next_step && (
                     <div className="mt-1 rounded-md border border-secondary/30 bg-secondary/5 px-2 py-1">
-                      <div className="text-[9px] font-mono uppercase tracking-widest text-secondary/80">
+                      <div className="text-[12px] font-mono uppercase tracking-widest text-secondary/80">
                         Next Step · الخطوة التالية
                       </div>
                       <div className="text-xs text-foreground mt-0.5 line-clamp-2">
@@ -200,7 +200,7 @@ export function DecisionCenter() {
                           ) : (
                             <Check className="w-3.5 h-3.5" />
                           )}
-                          <span className="ms-1 text-[11px]">تأكيد</span>
+                          <span className="ms-1 text-[12px]">تأكيد</span>
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => setConfirming(null)}>
                           <X className="w-3.5 h-3.5" />

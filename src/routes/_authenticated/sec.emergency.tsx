@@ -115,17 +115,17 @@ function Emergency() {
               >
                 <div>
                   <div className="font-medium text-foreground">{t.name}</div>
-                  <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <div className="text-[12px] text-muted-foreground flex items-center gap-1">
                     <Phone className="h-3 w-3" /> {t.contact}
                   </div>
                 </div>
                 <div className="text-end">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${t.status === "جاهز" ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600" : "border-amber-500/40 bg-amber-500/10 text-amber-600"}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${t.status === "جاهز" ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600" : "border-amber-500/40 bg-amber-500/10 text-amber-600"}`}
                   >
                     {t.status}
                   </span>
-                  <div className="mt-1 text-[11px] text-muted-foreground">وصول: {t.eta}</div>
+                  <div className="mt-1 text-[12px] text-muted-foreground">وصول: {t.eta}</div>
                 </div>
               </li>
             ))}
@@ -138,7 +138,7 @@ function Emergency() {
               <ScenarioButton key={i} icon={s.icon} color={s.color} label={s.label} />
             ))}
           </div>
-          <p className="mt-3 text-[11px] text-muted-foreground">
+          <p className="mt-3 text-[12px] text-muted-foreground">
             الأزرار للعرض — التنشيط الفعلي يتطلب ربط n8n وأنظمة الإنذار.
           </p>
         </div>

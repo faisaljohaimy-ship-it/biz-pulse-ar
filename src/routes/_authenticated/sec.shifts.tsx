@@ -59,7 +59,7 @@ function Shifts() {
           <div key={s.name} className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center justify-between">
               <div className="font-semibold text-foreground">{s.name}</div>
-              <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px]">
+              <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[12px]">
                 {s.status}
               </span>
             </div>

@@ -188,12 +188,12 @@ export function AgenticFlowCanvas({
       <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_10%,rgba(58,232,255,0.15),transparent_50%),radial-gradient(circle_at_80%_90%,rgba(255,122,154,0.10),transparent_55%)]" />
       <div
         dir={ar ? "rtl" : "ltr"}
-        className="relative flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-[0.3em] text-[#3AE8FF]/70 sm:px-6"
+        className="relative flex items-center justify-between px-4 py-3 text-[12px] uppercase tracking-[0.3em] text-[#3AE8FF]/70 sm:px-6"
       >
         <span>NEXIOS · Agentic Flow Canvas</span>
         <Link
           to="/agents-reference"
-          className="rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-3 py-1 text-[9px] text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20 hover:text-white"
+          className="rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-3 py-1 text-[12px] text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20 hover:text-white"
           title={ar ? "افتح مرجع الوكلاء" : "Open agents reference"}
         >
           {ar ? "محاكاة مرجعية · بدون تنفيذ" : "Reference simulation · no execution"}
@@ -233,10 +233,10 @@ export function AgenticFlowCanvas({
                 style={{ unicodeBidi: "isolate" }}
                 className="flex h-full flex-col items-center justify-center text-center leading-tight"
               >
-                <div className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#3AE8FF]">
+                <div className="text-[12px] font-semibold uppercase tracking-[0.35em] text-[#3AE8FF]">
                   {c.label}
                 </div>
-                <div className="mt-0.5 text-[10px] text-white/55">{c.sub}</div>
+                <div className="mt-0.5 text-[12px] text-white/55">{c.sub}</div>
               </div>
             </foreignObject>
           ))}
@@ -324,10 +324,10 @@ export function AgenticFlowCanvas({
                       <div className="text-[22px] font-bold tracking-[0.15em] text-white">
                         {ar ? "FINN" : "FINN"}
                       </div>
-                      <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#3AE8FF]">
+                      <div className="mt-1 text-[12px] font-semibold uppercase tracking-[0.3em] text-[#3AE8FF]">
                         {ar ? "الذكاء التنفيذي" : "Executive Brain"}
                       </div>
-                      <div className="mt-1 text-[10px] text-white/70">
+                      <div className="mt-1 text-[12px] text-white/70">
                         {ar ? "ينسّق · يقرر · يفوّض" : "orchestrate · decide · delegate"}
                       </div>
                     </div>
@@ -360,10 +360,10 @@ export function AgenticFlowCanvas({
                       <div className="text-[13px] font-bold text-white">
                         {ar ? "بوابة الاعتماد البشري" : "Human Approval Gate"}
                       </div>
-                      <div className="mt-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#FFD166]">
+                      <div className="mt-1 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#FFD166]">
                         {ar ? "لا تنفيذ بلا اعتماد" : "No execution without approval"}
                       </div>
-                      <div className="mt-1 text-[9px] text-white/60">
+                      <div className="mt-1 text-[12px] text-white/60">
                         {ar ? "قائد المركز · قائد المنطقة" : "Center chief · Regional chief"}
                       </div>
                     </div>
@@ -429,12 +429,12 @@ export function AgenticFlowCanvas({
                   >
                     <div className="text-[13px] font-semibold text-white truncate">{label}</div>
                     {enSub && (
-                      <div className="mt-0.5 text-[9px] uppercase tracking-wide text-white/40 truncate">
+                      <div className="mt-0.5 text-[12px] uppercase tracking-wide text-white/40 truncate">
                         {enSub}
                       </div>
                     )}
                     {sub && (
-                      <div className="mt-1 text-[10px] text-white/60 line-clamp-2">{sub}</div>
+                      <div className="mt-1 text-[12px] text-white/60 line-clamp-2">{sub}</div>
                     )}
                   </div>
                 </foreignObject>
@@ -447,7 +447,7 @@ export function AgenticFlowCanvas({
       {/* Legend */}
       <div
         dir={ar ? "rtl" : "ltr"}
-        className="relative flex flex-wrap items-center gap-3 border-t border-white/5 px-4 py-3 text-[10px] text-white/70 sm:px-6"
+        className="relative flex flex-wrap items-center gap-3 border-t border-white/5 px-4 py-3 text-[12px] text-white/70 sm:px-6"
       >
         {[
           { c: LINK_COLOR.data, l: ar ? "بيانات" : "Data" },

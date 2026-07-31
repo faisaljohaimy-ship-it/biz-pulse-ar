@@ -69,7 +69,7 @@ export function HologramOverlay() {
 
       {/* top-left telemetry */}
       <div
-        className="absolute left-5 top-5 font-mono text-[10px] tracking-widest text-emerald-300/70"
+        className="absolute left-5 top-5 font-mono text-[12px] tracking-widest text-emerald-300/70"
         style={{ textShadow: "0 0 8px rgba(16,185,129,0.7)" }}
       >
         NEXUS · HOLO-FEED · 60.00s
@@ -83,7 +83,7 @@ export function HologramOverlay() {
             boxShadow: "0 0 10px #10B981",
           }}
         />
-        <span className="font-mono text-[10px] tracking-widest text-emerald-300/70">HOLO</span>
+        <span className="font-mono text-[12px] tracking-widest text-emerald-300/70">HOLO</span>
       </div>
 
       {/* chromatic aberration edge ghost */}

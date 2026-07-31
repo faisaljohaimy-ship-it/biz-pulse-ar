@@ -78,7 +78,7 @@ export function OrgSwitcher({ compact = false }: { compact?: boolean }) {
         >
           <Building2 className="h-3.5 w-3.5 text-primary" />
           <span className="max-w-[180px] truncate">{current.name}</span>
-          <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+          <span className="rounded bg-secondary px-1.5 py-0.5 text-[12px] uppercase text-muted-foreground">
             {current.role}
           </span>
           <ChevronDown className="h-3.5 w-3.5 opacity-70" />
@@ -99,7 +99,7 @@ export function OrgSwitcher({ compact = false }: { compact?: boolean }) {
           >
             <div className="min-w-0">
               <div className="truncate text-sm font-medium">{o.name}</div>
-              <div className="flex items-center gap-2 text-[10px] uppercase text-muted-foreground">
+              <div className="flex items-center gap-2 text-[12px] uppercase text-muted-foreground">
                 <span>{o.plan}</span>
                 <span>·</span>
                 <span>{o.role}</span>

@@ -123,7 +123,7 @@ export function MissionControlStrip() {
     >
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <div className="text-[10px] uppercase tracking-[0.28em] text-[color:var(--nx-cyan-2)]/75">
+          <div className="text-[12px] uppercase tracking-[0.28em] text-[color:var(--nx-cyan-2)]/75">
             Mission Control
           </div>
           <h2 className="text-base font-semibold text-white">
@@ -131,7 +131,7 @@ export function MissionControlStrip() {
           </h2>
         </div>
         <span
-          className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--nx-cyan)]/30 bg-[color:var(--nx-cyan)]/10 px-2.5 py-1 text-[10px] font-medium text-[color:var(--nx-cyan-2)]"
+          className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--nx-cyan)]/30 bg-[color:var(--nx-cyan)]/10 px-2.5 py-1 text-[12px] font-medium text-[color:var(--nx-cyan-2)]"
           aria-live="polite"
         >
           <span
@@ -160,7 +160,7 @@ export function MissionControlStrip() {
                 labelEn={t.labelEn}
                 value={
                   isPending ? (
-                    <span className="inline-flex items-center rounded-full border border-[color:var(--nx-warning)]/40 bg-[color:var(--nx-warning)]/10 px-2 py-0.5 text-[10px] font-semibold text-[color:var(--nx-warning)]">
+                    <span className="inline-flex items-center rounded-full border border-[color:var(--nx-warning)]/40 bg-[color:var(--nx-warning)]/10 px-2 py-0.5 text-[12px] font-semibold text-[color:var(--nx-warning)]">
                       {pendingLabel}
                     </span>
                   ) : (

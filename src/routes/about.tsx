@@ -77,15 +77,15 @@ function AboutPage() {
 
         <dl className="mt-8 flex flex-wrap gap-x-8 gap-y-3 rounded-2xl border border-[#3AE8FF]/15 bg-[#061A2E]/50 p-4 text-sm">
           <div>
-            <dt className="text-[11px] uppercase tracking-widest text-white/45">الإصدار</dt>
+            <dt className="text-[12px] uppercase tracking-widest text-white/45">الإصدار</dt>
             <dd className="font-mono font-semibold text-[#3AE8FF]">v{APP_VERSION}</dd>
           </div>
           <div>
-            <dt className="text-[11px] uppercase tracking-widest text-white/45">آخر تحديث</dt>
+            <dt className="text-[12px] uppercase tracking-widest text-white/45">آخر تحديث</dt>
             <dd className="font-mono font-semibold text-emerald-300">{LAST_UPDATE}</dd>
           </div>
           <div>
-            <dt className="text-[11px] uppercase tracking-widest text-white/45">الحالة</dt>
+            <dt className="text-[12px] uppercase tracking-widest text-white/45">الحالة</dt>
             <dd>
               <Link
                 to="/status"

@@ -164,29 +164,29 @@ export function AgentNode({ agent, ar, size = 96, spotlight, onClick }: Props) {
           {ar ? persona.name_ar : persona.name_en}
         </div>
         <div
-          className="mt-0.5 truncate text-[10px] uppercase tracking-[0.12em]"
+          className="mt-0.5 truncate text-[12px] uppercase tracking-[0.12em]"
           style={{ color: persona.palette.accent }}
         >
           {ar ? persona.title_ar : persona.title_en}
         </div>
-        <div className="truncate text-[10px] text-white/45">
+        <div className="truncate text-[12px] text-white/45">
           {ar ? persona.department_ar : persona.department_en}
         </div>
 
         {/* Live runtime status */}
-        <div className="mt-1.5 flex items-center justify-center gap-1.5 text-[11px] text-cyan-200/90">
+        <div className="mt-1.5 flex items-center justify-center gap-1.5 text-[12px] text-cyan-200/90">
           <status.Icon className="h-3 w-3" />
           <span>{ar ? status.ar : status.en}</span>
           <span className="text-white/30">·</span>
           <span className="tabular-nums">{pct}%</span>
         </div>
         {agent.current_task && (
-          <div className="mt-1 line-clamp-2 text-[10.5px] leading-tight text-white/55">
+          <div className="mt-1 line-clamp-2 text-[12px] leading-tight text-white/55">
             {agent.current_task}
           </div>
         )}
         {!agent.current_task && agent.last_run_status === "completed" && agent.last_run_at && (
-          <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-emerald-300/80">
+          <div className="mt-1 flex items-center justify-center gap-1 text-[12px] text-emerald-300/80">
             <CheckCircle2 className="h-3 w-3" />
             <span>{ar ? "آخر مهمة مكتملة" : "Last task complete"}</span>
           </div>

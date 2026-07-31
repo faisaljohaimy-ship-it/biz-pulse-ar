@@ -184,12 +184,12 @@ function DirectivePage() {
                           {ar ? r.shortAr : r.shortEn}
                         </span>
                         <span
-                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${meta.pill}`}
+                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[12px] font-semibold ${meta.pill}`}
                         >
                           {ar ? meta.ar : meta.en}
                         </span>
                       </div>
-                      <div className="text-[11px] text-white/50">
+                      <div className="text-[12px] text-white/50">
                         {ar ? "الأولوية:" : "Priority:"}{" "}
                         <span
                           className={
@@ -228,7 +228,7 @@ function DirectivePage() {
                       <span className="grid h-8 w-8 place-items-center rounded-full border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 text-xs font-bold text-[#3AE8FF]">
                         {s.stage_no}
                       </span>
-                      <span className="text-[11px] font-semibold leading-tight text-white/80">
+                      <span className="text-[12px] font-semibold leading-tight text-white/80">
                         {ar ? s.name_ar : s.name_en}
                       </span>
                     </div>
@@ -238,7 +238,7 @@ function DirectivePage() {
                   </li>
                 ))}
               </ol>
-              <p className="mt-2 text-[11px] leading-relaxed text-white/45">
+              <p className="mt-2 text-[12px] leading-relaxed text-white/45">
                 {ar
                   ? "كل مشروع أمني خاضع لهذا التوجيه يمر بدورة الاعتماد السبع لدى الهيئة — من تصنيف المنشأة وتقييم SVA حتى اختبارات القبول FAT/SAT."
                   : "Every security project governed by this directive passes the authority's seven approval stages — from classification and SVA to FAT/SAT."}

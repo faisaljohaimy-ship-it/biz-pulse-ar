@@ -81,7 +81,7 @@ function StatusPill({ s }: { s: string }) {
           ? "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
           : "bg-muted/30 text-muted-foreground border-border/40";
   return (
-    <Badge variant="outline" className={`text-[10px] ${cls}`}>
+    <Badge variant="outline" className={`text-[12px] ${cls}`}>
       {s}
     </Badge>
   );
@@ -188,25 +188,25 @@ function Diagnostics() {
         <TabsList className="grid w-full grid-cols-4 max-w-2xl">
           <TabsTrigger value="events">
             Events{" "}
-            <Badge variant="outline" className="ms-1 text-[10px]">
+            <Badge variant="outline" className="ms-1 text-[12px]">
               {fEvents.length}
             </Badge>
           </TabsTrigger>
           <TabsTrigger value="runs">
             Workflows{" "}
-            <Badge variant="outline" className="ms-1 text-[10px]">
+            <Badge variant="outline" className="ms-1 text-[12px]">
               {fRuns.length}
             </Badge>
           </TabsTrigger>
           <TabsTrigger value="tools">
             Tools{" "}
-            <Badge variant="outline" className="ms-1 text-[10px]">
+            <Badge variant="outline" className="ms-1 text-[12px]">
               {fTools.length}
             </Badge>
           </TabsTrigger>
           <TabsTrigger value="audits">
             Audits{" "}
-            <Badge variant="outline" className="ms-1 text-[10px]">
+            <Badge variant="outline" className="ms-1 text-[12px]">
               {fAudits.length}
             </Badge>
           </TabsTrigger>
@@ -235,8 +235,8 @@ function Diagnostics() {
                 >
                   <StatusPill s={e.status} />
                   <span className="text-xs font-medium truncate flex-1">{e.topic}</span>
-                  <span className="text-[10px] text-muted-foreground">{e.source}</span>
-                  <span className="text-[10px] text-muted-foreground">{fmtRel(e.occurred_at)}</span>
+                  <span className="text-[12px] text-muted-foreground">{e.source}</span>
+                  <span className="text-[12px] text-muted-foreground">{fmtRel(e.occurred_at)}</span>
                   <Eye className="h-3 w-3 text-cyan-300" />
                 </button>
               ))}
@@ -270,11 +270,11 @@ function Diagnostics() {
                     {r.workflow_id.slice(0, 8)} · {r.current_step ?? "—"}
                   </span>
                   {r.error && (
-                    <Badge variant="destructive" className="text-[10px]">
+                    <Badge variant="destructive" className="text-[12px]">
                       err
                     </Badge>
                   )}
-                  <span className="text-[10px] text-muted-foreground">{fmtRel(r.started_at)}</span>
+                  <span className="text-[12px] text-muted-foreground">{fmtRel(r.started_at)}</span>
                   <Eye className="h-3 w-3 text-cyan-300" />
                 </button>
               ))}
@@ -304,9 +304,9 @@ function Diagnostics() {
                   <StatusPill s={t.status} />
                   <span className="text-xs truncate flex-1">{t.tool_id}</span>
                   {t.duration_ms != null && (
-                    <span className="text-[10px] text-muted-foreground">{t.duration_ms}ms</span>
+                    <span className="text-[12px] text-muted-foreground">{t.duration_ms}ms</span>
                   )}
-                  <span className="text-[10px] text-muted-foreground">{fmtRel(t.created_at)}</span>
+                  <span className="text-[12px] text-muted-foreground">{fmtRel(t.created_at)}</span>
                   <Eye className="h-3 w-3 text-cyan-300" />
                 </button>
               ))}
@@ -339,10 +339,10 @@ function Diagnostics() {
                 >
                   {a.status && <StatusPill s={a.status} />}
                   <span className="text-xs truncate flex-1">{a.action}</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[12px] text-muted-foreground">
                     {a.resource_type ?? "—"}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">{fmtRel(a.occurred_at)}</span>
+                  <span className="text-[12px] text-muted-foreground">{fmtRel(a.occurred_at)}</span>
                   <Eye className="h-3 w-3 text-cyan-300" />
                 </button>
               ))}

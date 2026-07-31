@@ -37,7 +37,7 @@ export function FinnUsageAnalytics({ className = "" }: { readonly className?: st
           </span>
           <h2 className="text-sm font-bold text-white sm:text-base">تحليلات الاستخدام</h2>
         </div>
-        <SimBadge ar className="text-[9px]" />
+        <SimBadge ar className="text-[12px]" />
       </div>
 
       {/* KPI rail — horizontal snap on mobile → 4-across grid on lg+ */}
@@ -60,7 +60,7 @@ export function FinnUsageAnalytics({ className = "" }: { readonly className?: st
                 {k.value}
               </div>
               <div className="mt-0.5 text-[12px] font-semibold text-white/80">{k.ar}</div>
-              <div className="mt-0.5 text-[10px] leading-relaxed text-white/45">{k.hintAr}</div>
+              <div className="mt-0.5 text-[12px] leading-relaxed text-white/45">{k.hintAr}</div>
             </div>
           );
         })}
@@ -69,7 +69,7 @@ export function FinnUsageAnalytics({ className = "" }: { readonly className?: st
       <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
         {/* Weekly volume bars */}
         <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5">
-          <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]/70">
+          <div className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]/70">
             حجم الرسائل — آخر ٧ أيام
           </div>
           <div className="flex h-32 items-end justify-between gap-1.5">
@@ -80,7 +80,7 @@ export function FinnUsageAnalytics({ className = "" }: { readonly className?: st
                   style={{ height: `${Math.max(6, Math.round((v / peak) * 104))}px` }}
                   title={`${WEEK_DAYS[i]}: ${v}`}
                 />
-                <span className="text-[8.5px] text-white/40">{WEEK_DAYS[i].slice(0, 3)}</span>
+                <span className="text-[12px] text-white/40">{WEEK_DAYS[i].slice(0, 3)}</span>
               </div>
             ))}
           </div>
@@ -88,18 +88,18 @@ export function FinnUsageAnalytics({ className = "" }: { readonly className?: st
 
         {/* Top questions */}
         <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5">
-          <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]/70">
+          <div className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]/70">
             أكثر الأسئلة تكراراً
           </div>
           <ul className="space-y-2">
             {topQuestions.map((q, i) => (
               <li key={i} className="flex items-center gap-2 text-[12px]">
-                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#3AE8FF]/12 text-[10px] font-bold text-[#3AE8FF]">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#3AE8FF]/12 text-[12px] font-bold text-[#3AE8FF]">
                   {i + 1}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-white/80">{q.ar}</span>
                 <span
-                  className="shrink-0 font-mono text-[11px] text-white/45"
+                  className="shrink-0 font-mono text-[12px] text-white/45"
                   style={{ fontVariantNumeric: "tabular-nums" }}
                 >
                   {q.count}

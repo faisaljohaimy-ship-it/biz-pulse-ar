@@ -67,7 +67,7 @@ export function PageBriefing({
               <div className="font-semibold text-white/85">مصدر البيانات</div>
               <div className="mt-0.5 leading-relaxed">{dataSource}</div>
               {simulation && (
-                <div className="mt-1 inline-flex rounded-full border border-amber-300/40 bg-amber-300/10 px-2 py-0.5 text-[10px] text-amber-200">
+                <div className="mt-1 inline-flex rounded-full border border-amber-300/40 bg-amber-300/10 px-2 py-0.5 text-[12px] text-amber-200">
                   محاكاة مرجعية — is_simulation = true
                 </div>
               )}

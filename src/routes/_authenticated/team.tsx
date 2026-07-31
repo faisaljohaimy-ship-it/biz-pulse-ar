@@ -56,7 +56,7 @@ function TeamPage() {
                 {user?.email?.[0]?.toUpperCase()}
               </div>
               <div className="min-w-0 flex-1 truncate text-xs">{user?.email}</div>
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[12px] font-semibold text-primary">
                 Owner
               </span>
             </div>

@@ -154,7 +154,7 @@ function DepartmentsPage() {
                 </div>
                 <div>
                   <div className="text-sm font-bold text-white">{ar ? d.name_ar : d.name_en}</div>
-                  <div className="text-[11px] text-slate-500">
+                  <div className="text-[12px] text-slate-500">
                     {d.head} {ar ? "موظف" : "people"}
                   </div>
                 </div>
@@ -171,16 +171,16 @@ function DepartmentsPage() {
                   key={i}
                   className="rounded-md border border-white/5 bg-white/[0.02] p-2 text-center"
                 >
-                  <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                  <div className="text-[12px] uppercase tracking-widest text-slate-500">
                     {ar ? k.l_ar : k.l_en}
                   </div>
                   <div className="mt-1 text-sm font-bold text-slate-100">{k.v}</div>
-                  <div className="text-[10px] text-slate-500">/ {k.t}</div>
+                  <div className="text-[12px] text-slate-500">/ {k.t}</div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-3 rounded-lg border border-violet-400/15 bg-violet-500/[0.04] p-3 text-[11px] text-slate-300">
+            <div className="mt-3 rounded-lg border border-violet-400/15 bg-violet-500/[0.04] p-3 text-[12px] text-slate-300">
               <span className="font-bold text-violet-300">AI →</span> {ar ? d.ai_ar : d.ai_en}
             </div>
           </NexusCard>

@@ -83,7 +83,7 @@ function CatalogPage() {
         </div>
 
         <div className="rounded-2xl border border-cyan-400/20 bg-white/[0.03] px-4 py-2 backdrop-blur">
-          <div className="text-[10px] uppercase tracking-[0.16em] text-white/50">
+          <div className="text-[12px] uppercase tracking-[0.16em] text-white/50">
             {ar ? "تقدّمي" : "My progress"}
           </div>
           <div className="mt-0.5 flex items-center gap-3">

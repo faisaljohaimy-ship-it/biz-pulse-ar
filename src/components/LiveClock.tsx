@@ -69,7 +69,7 @@ export function LiveClock({ variant = "chip", showArabic = true, className = "" 
     return (
       <span
         dir="ltr"
-        className={`inline-flex items-center gap-2 text-[11px] font-medium tabular-nums text-white/70 ${className}`}
+        className={`inline-flex items-center gap-2 text-[12px] font-medium tabular-nums text-white/70 ${className}`}
         aria-label="Live Gregorian date and time (Asia/Riyadh)"
       >
         <span suppressHydrationWarning className="whitespace-nowrap">
@@ -90,14 +90,14 @@ export function LiveClock({ variant = "chip", showArabic = true, className = "" 
       role="group"
       aria-label="Live platform · Gregorian date and time (Asia/Riyadh)"
       dir="ltr"
-      className={`inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/30 bg-black/50 px-3 py-1 text-[11px] font-medium tabular-nums text-white/85 shadow-[0_0_20px_rgba(0,212,255,0.18)] backdrop-blur-md ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full border border-[#3AE8FF]/30 bg-black/50 px-3 py-1 text-[12px] font-medium tabular-nums text-white/85 shadow-[0_0_20px_rgba(0,212,255,0.18)] backdrop-blur-md ${className}`}
     >
       <span className="inline-flex items-center gap-1.5">
         <span aria-hidden className="relative inline-flex h-2 w-2">
           <span className="absolute inset-0 animate-ping rounded-full bg-[#3AE8FF]/60" />
           <span className="relative inline-block h-2 w-2 rounded-full bg-[#3AE8FF] shadow-[0_0_10px_#3AE8FF]" />
         </span>
-        <span className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-[#3AE8FF]">
+        <span className="text-[12px] font-bold uppercase tracking-[0.22em] text-[#3AE8FF]">
           Live
         </span>
       </span>

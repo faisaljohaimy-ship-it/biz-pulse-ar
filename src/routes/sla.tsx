@@ -178,7 +178,7 @@ function SlaPage() {
           <Card key={i}>
             <div className="flex items-center gap-2 text-amber-300/80">
               {m.icon}
-              <span className="text-[10px] uppercase tracking-[0.18em]">{isAr ? m.ar : m.en}</span>
+              <span className="text-[12px] uppercase tracking-[0.18em]">{isAr ? m.ar : m.en}</span>
             </div>
             <div className="mt-2 bg-gradient-to-b from-amber-200 to-amber-400 bg-clip-text text-2xl font-semibold text-transparent sm:text-3xl">
               {m.v}
@@ -232,7 +232,7 @@ function SlaPage() {
             return (
               <Card key={s.tier}>
                 <div className="flex items-center justify-between">
-                  <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-0.5 text-[10px] uppercase tracking-[0.18em] text-amber-200">
+                  <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-0.5 text-[12px] uppercase tracking-[0.18em] text-amber-200">
                     {s.tier}
                   </span>
                   <span className="text-sm text-foreground/90">{v.name}</span>
@@ -256,7 +256,7 @@ function SlaPage() {
         {/* desktop table */}
         <div className="hidden overflow-hidden rounded-xl border border-white/10 md:block">
           <table className="w-full table-fixed text-sm">
-            <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.18em] text-amber-300/80">
+            <thead className="bg-white/[0.03] text-[12px] uppercase tracking-[0.18em] text-amber-300/80">
               <tr>
                 <th className="w-[10%] px-4 py-3 text-start">{isAr ? "المستوى" : "Tier"}</th>
                 <th className="w-[14%] px-4 py-3 text-start">{isAr ? "الاسم" : "Name"}</th>
@@ -273,7 +273,7 @@ function SlaPage() {
                 return (
                   <tr key={s.tier} className="border-t border-white/5">
                     <td className="px-4 py-3 align-top">
-                      <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-amber-200">
+                      <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[12px] uppercase tracking-[0.18em] text-amber-200">
                         {s.tier}
                       </span>
                     </td>
@@ -299,7 +299,7 @@ function SlaPage() {
         />
         <div className="overflow-hidden rounded-xl border border-white/10">
           <table className="w-full table-fixed text-sm">
-            <thead className="bg-white/[0.03] text-[10px] uppercase tracking-[0.18em] text-amber-300/80">
+            <thead className="bg-white/[0.03] text-[12px] uppercase tracking-[0.18em] text-amber-300/80">
               <tr>
                 <th className="w-1/2 px-4 py-3 text-start">
                   {isAr ? "نسبة التوفر الشهري" : "Monthly Uptime %"}

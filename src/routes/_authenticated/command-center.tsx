@@ -256,7 +256,7 @@ function PulseMap({
                 y={s.cy + 15}
                 textAnchor="middle"
                 fill="rgba(255,255,255,.58)"
-                fontSize="11"
+                fontSize="12"
                 pointerEvents="none"
               >
                 {pulse
@@ -296,7 +296,7 @@ function PulseMap({
           <div className="mt-1 grid grid-cols-3 gap-2 text-center">
             <div>
               <div className="text-lg font-bold text-cyan-300">{sel.assets_active}</div>
-              <div className="text-[10px] text-white/55">أصل نشط</div>
+              <div className="text-[12px] text-white/55">أصل نشط</div>
             </div>
             <div>
               <div
@@ -304,14 +304,14 @@ function PulseMap({
               >
                 {sel.incidents_open}
               </div>
-              <div className="text-[10px] text-white/55">بلاغ مفتوح</div>
+              <div className="text-[12px] text-white/55">بلاغ مفتوح</div>
             </div>
             <div>
               <div className="text-lg font-bold text-emerald-300">{sel.compliance_pct}%</div>
-              <div className="text-[10px] text-white/55">امتثال</div>
+              <div className="text-[12px] text-white/55">امتثال</div>
             </div>
           </div>
-          <div className="mt-2 text-center text-[10px] text-white/45">
+          <div className="mt-2 text-center text-[12px] text-white/45">
             {relMinutes(sel.last_pulse_at)}
           </div>
         </div>
@@ -474,7 +474,7 @@ function CommandCenterPage() {
           </div>
         </div>
         {state?.simulation && (
-          <div className="mx-auto mt-2 max-w-[1600px] text-[10px] text-amber-300/90">
+          <div className="mx-auto mt-2 max-w-[1600px] text-[12px] text-amber-300/90">
             محاكاة مرجعية — is_simulation = true
           </div>
         )}
@@ -497,7 +497,7 @@ function CommandCenterPage() {
                   key={k.label}
                   className={`${SEV_CLASS[k.sev]} rounded-2xl bg-[#061A2E]/70 p-3`}
                 >
-                  <div className="text-[10px] text-white/55">{k.label}</div>
+                  <div className="text-[12px] text-white/55">{k.label}</div>
                   <div
                     className="mt-1 text-2xl font-bold"
                     style={{ color: `rgba(${SEV_RGB[k.sev]},0.95)` }}
@@ -521,7 +521,7 @@ function CommandCenterPage() {
                 <div className="mb-1 flex items-center gap-2 text-sm font-bold">
                   <Radio className="h-4 w-4 text-cyan-300" /> نبض المناطق
                 </div>
-                <p className="text-[11px] text-white/50">
+                <p className="text-[12px] text-white/50">
                   توضّح الخريطة توزيع الأصول والبلاغات؛ المسّ أي منطقة لعرض تفاصيل نبضها الحي.
                 </p>
                 <PulseMap
@@ -539,7 +539,7 @@ function CommandCenterPage() {
                 <div className="mb-1 flex items-center gap-2 text-sm font-bold">
                   <CheckCircle2 className="h-4 w-4 text-emerald-300" /> خط الاعتماد
                 </div>
-                <p className="text-[11px] text-white/50">
+                <p className="text-[12px] text-white/50">
                   الوكلاء يقترحون ويجهّزون — الاعتماد النهائي بشري دائمًا.
                 </p>
 
@@ -563,7 +563,7 @@ function CommandCenterPage() {
                             )}
                           </div>
                           <div
-                            className={`text-[11px] font-semibold ${finale ? "text-emerald-300" : "text-white/70"}`}
+                            className={`text-[12px] font-semibold ${finale ? "text-emerald-300" : "text-white/70"}`}
                           >
                             {st.label}
                             {finale ? ` (${items.length})` : ""}
@@ -600,7 +600,7 @@ function CommandCenterPage() {
                     className={`${SEV_CLASS[proposalCard.severity]} mt-3 rounded-xl bg-[#04101E]/80 p-3`}
                   >
                     <div className="text-sm font-semibold">{proposalCard.title_ar}</div>
-                    <div className="mt-1 text-[11px] text-white/55">
+                    <div className="mt-1 text-[12px] text-white/55">
                       المصدر: {proposalCard.agent_ar} · المرحلة:{" "}
                       {STAGES.find((s) => s.key === proposalCard.stage)?.label}
                     </div>
@@ -648,13 +648,13 @@ function CommandCenterPage() {
                         {a.name_ar.slice(0, 2)}
                       </span>
                     </div>
-                    <div className="mt-2 truncate text-[11px] font-semibold" title={a.name_ar}>
+                    <div className="mt-2 truncate text-[12px] font-semibold" title={a.name_ar}>
                       {a.name_ar}
                     </div>
-                    <div className="mt-0.5 line-clamp-2 min-h-[26px] text-[10px] leading-tight text-white/50">
+                    <div className="mt-0.5 line-clamp-2 min-h-[26px] text-[12px] leading-tight text-white/50">
                       {a.task_ar ?? "بوضع الاستعداد"}
                     </div>
-                    <div className="mt-1 text-[10px] text-emerald-300/80">
+                    <div className="mt-1 text-[12px] text-emerald-300/80">
                       أنجز اليوم: {a.done_today}
                     </div>
                   </div>
@@ -681,13 +681,13 @@ function CommandCenterPage() {
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="min-w-0">
                           <div className="truncate text-sm font-semibold">{u.title_ar}</div>
-                          <div className="text-[10px] text-white/50">
+                          <div className="text-[12px] text-white/50">
                             {u.department} · SLA {u.sla_hours}س · {u.status}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <span
-                            className="rounded-full px-2 py-1 text-[10px] font-bold"
+                            className="rounded-full px-2 py-1 text-[12px] font-bold"
                             style={{
                               background: `rgba(${SEV_RGB[chip.sev]},0.15)`,
                               color: `rgba(${SEV_RGB[chip.sev]},0.95)`,
@@ -698,7 +698,7 @@ function CommandCenterPage() {
                           <button
                             disabled
                             title="يتطلب تفويض المدير"
-                            className="min-h-[44px] cursor-not-allowed rounded-lg border border-white/10 bg-white/[0.03] px-3 text-[11px] text-white/40"
+                            className="min-h-[44px] cursor-not-allowed rounded-lg border border-white/10 bg-white/[0.03] px-3 text-[12px] text-white/40"
                           >
                             تصعيد
                           </button>

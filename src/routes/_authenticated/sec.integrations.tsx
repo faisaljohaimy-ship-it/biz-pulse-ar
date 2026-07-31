@@ -37,7 +37,7 @@ function Integrations() {
         subtitle="حالة المزوّدات الخارجية — كل وحدة جاهزة للربط الفعلي عند تكوين البيانات الصحيحة"
       >
         {usingReference && (
-          <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[10px] font-medium text-amber-600 dark:text-amber-300">
+          <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[12px] font-medium text-amber-600 dark:text-amber-300">
             محاكاة مرجعية
           </span>
         )}
@@ -70,25 +70,25 @@ function Integrations() {
                   <Icon className="h-3.5 w-3.5" /> {label}
                 </span>
               </div>
-              <div className="mt-1 text-[11px] tracking-wide text-muted-foreground">
+              <div className="mt-1 text-[12px] tracking-wide text-muted-foreground">
                 {CATEGORY_AR[p.category] ?? p.category}
               </div>
               <p className="mt-2 text-xs text-muted-foreground">{p.note}</p>
               {p.last_sync_at !== undefined && (
-                <div className="mt-2 text-[11px] text-muted-foreground">
+                <div className="mt-2 text-[12px] text-muted-foreground">
                   آخر مزامنة:{" "}
                   <span className="text-foreground">
                     {p.last_sync_at ? new Date(p.last_sync_at).toLocaleString("ar-SA") : "—"}
                   </span>
                 </div>
               )}
-              <div className="mt-3 text-[11px]">
+              <div className="mt-3 text-[12px]">
                 <div className="text-muted-foreground">Scopes:</div>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {p.scopes.map((s) => (
                     <span
                       key={s}
-                      className="rounded border border-border bg-muted/40 px-1.5 py-0.5 font-mono text-[10px]"
+                      className="rounded border border-border bg-muted/40 px-1.5 py-0.5 font-mono text-[12px]"
                     >
                       {s}
                     </span>
@@ -96,7 +96,7 @@ function Integrations() {
                 </div>
               </div>
               <div className="mt-3 flex items-center justify-between gap-2">
-                <div className="min-w-0 truncate text-[10px] text-muted-foreground">
+                <div className="min-w-0 truncate text-[12px] text-muted-foreground">
                   آلية الربط: {p.doc}
                 </div>
                 <button

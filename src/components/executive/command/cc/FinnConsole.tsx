@@ -50,10 +50,10 @@ export function FinnConsole({ ar, accent }: { ar: boolean; accent: string }) {
           <div className="text-lg font-black tracking-wide" style={{ color: accent }}>
             FINN
           </div>
-          <div className="text-[10px] text-white/55">
+          <div className="text-[12px] text-white/55">
             {ar ? "مساعدك الذكي التنفيذي" : "Your executive AI assistant"}
           </div>
-          <div className="mt-1.5 flex items-center gap-1.5 text-[10px] font-semibold text-white/80">
+          <div className="mt-1.5 flex items-center gap-1.5 text-[12px] font-semibold text-white/80">
             <span
               className="h-1.5 w-1.5 rounded-full motion-safe:animate-pulse"
               style={{ background: accent }}
@@ -85,7 +85,7 @@ export function FinnConsole({ ar, accent }: { ar: boolean; accent: string }) {
         {CC_FINN_CAPS.map((c) => (
           <li
             key={c.en}
-            className="flex items-center justify-between rounded-lg border border-white/8 bg-black/20 px-2 py-1 text-[10px] text-white/75"
+            className="flex items-center justify-between rounded-lg border border-white/8 bg-black/20 px-2 py-1 text-[12px] text-white/75"
           >
             <span>{ar ? c.ar : c.en}</span>
             <Check className="h-3 w-3" style={{ color: accent }} aria-hidden />
@@ -110,7 +110,7 @@ export function FinnConsole({ ar, accent }: { ar: boolean; accent: string }) {
           aria-hidden
         />
       </Link>
-      <div className="text-center text-[9px] text-white/50">
+      <div className="text-center text-[12px] text-white/50">
         {ar ? "اضغط للتحدث" : "Press to talk"}
       </div>
     </section>

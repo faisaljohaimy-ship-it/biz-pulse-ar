@@ -51,7 +51,7 @@ import {
    (constitution art. 11 + 13.5). Compact glass instruments below each scene. */
 
 const SIM_CHIP =
-  "inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-2 py-0.5 text-[9px] font-semibold text-[#3AE8FF]";
+  "inline-flex items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-2 py-0.5 text-[12px] font-semibold text-[#3AE8FF]";
 
 function bridgeAggregate() {
   const per = REGIONS.map((r) => ({ r, c: regionSim(r.id).counts }));
@@ -121,7 +121,7 @@ function SceneEnterprisePulse() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60 sm:text-[11px]">
+          <span className="text-[12px] font-semibold uppercase tracking-[0.22em] text-white/60 sm:text-[12px]">
             نبض المؤسسة · Executive pulse
           </span>
         </div>
@@ -143,7 +143,7 @@ function SceneEnterprisePulse() {
                 >
                   <Icon className="h-3.5 w-3.5" aria-hidden />
                 </span>
-                <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/35">
+                <span className="text-[12px] font-bold uppercase tracking-[0.18em] text-white/35">
                   {s.en}
                 </span>
               </div>
@@ -153,7 +153,7 @@ function SceneEnterprisePulse() {
               >
                 {s.v}
               </div>
-              <div className="mt-1 text-[10px] font-semibold leading-tight text-white/72">
+              <div className="mt-1 text-[12px] font-semibold leading-tight text-white/72">
                 {s.ar}
               </div>
               <span
@@ -170,12 +170,12 @@ function SceneEnterprisePulse() {
           <Sparkles className="h-4 w-4" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-black text-[#BEEBFF]">إشارة FINN التنفيذية</div>
-          <div className="mt-0.5 text-[9.5px] leading-relaxed text-white/60 sm:text-[10.5px]">
+          <div className="text-[12px] font-black text-[#BEEBFF]">إشارة FINN التنفيذية</div>
+          <div className="mt-0.5 text-[12px] leading-relaxed text-white/60 sm:text-[12px]">
             الأولوية الآن: خفض زمن إغلاق البلاغات الحرجة مع الحفاظ على مستوى الجاهزية.
           </div>
         </div>
-        <span className="hidden rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-1 text-[9px] font-bold text-emerald-300 sm:block">
+        <span className="hidden rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-1 text-[12px] font-bold text-emerald-300 sm:block">
           قابل للتحقق
         </span>
       </div>
@@ -221,7 +221,7 @@ function SceneDecisionLink() {
   return (
     <GlassPanel>
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+        <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/55">
           مسار القرار المحكوم · Governed decision path
         </span>
         <ExecutiveSourceBadge source={source} ar />
@@ -238,20 +238,20 @@ function SceneDecisionLink() {
                 <Icon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
               </span>
               <div className="min-w-0">
-                <span className="block text-[10px] font-bold text-white sm:text-[12px]">
+                <span className="block text-[12px] font-bold text-white sm:text-[12px]">
                   {n.ar}
                 </span>
-                <span className="hidden text-[8px] uppercase tracking-wider text-white/35 sm:block">
+                <span className="hidden text-[12px] uppercase tracking-wider text-white/35 sm:block">
                   {n.en}
                 </span>
                 <span
-                  className="mt-0.5 block text-[9px] font-semibold text-[#BEEBFF] sm:text-[10px]"
+                  className="mt-0.5 block text-[12px] font-semibold text-[#BEEBFF] sm:text-[12px]"
                   style={{ fontVariantNumeric: "tabular-nums" }}
                 >
                   {n.v} {n.unit}
                 </span>
               </div>
-              <span className="absolute left-1.5 top-1.5 text-[8px] font-mono text-white/20">
+              <span className="absolute left-1.5 top-1.5 text-[12px] font-mono text-white/20">
                 0{i + 1}
               </span>
             </div>
@@ -267,7 +267,7 @@ function SceneDecisionLink() {
           {decisionRail.map((step, index) => (
             <div key={step.en} className="flex flex-col items-center text-center">
               <span
-                className={`grid h-6 w-6 place-items-center rounded-full border text-[9px] font-black ${
+                className={`grid h-6 w-6 place-items-center rounded-full border text-[12px] font-black ${
                   index === 3
                     ? "border-[#F5C560]/70 bg-[#F5C560]/15 text-[#F5C560] shadow-[0_0_16px_rgba(245,197,96,0.24)]"
                     : "border-[#3AE8FF]/45 bg-[#071C31] text-[#3AE8FF]"
@@ -275,17 +275,17 @@ function SceneDecisionLink() {
               >
                 {index === 3 ? <Crown className="h-3 w-3" aria-hidden /> : index + 1}
               </span>
-              <span className="mt-1.5 text-[9px] font-bold text-white/75 sm:text-[10px]">
+              <span className="mt-1.5 text-[12px] font-bold text-white/75 sm:text-[12px]">
                 {step.ar}
               </span>
-              <span className="hidden text-[7px] uppercase tracking-wider text-white/30 sm:block">
+              <span className="hidden text-[12px] uppercase tracking-wider text-white/30 sm:block">
                 {step.en}
               </span>
             </div>
           ))}
         </div>
       </div>
-      <div className="mt-2 flex items-center justify-center gap-2 text-[9px] font-semibold text-[#F5C560]">
+      <div className="mt-2 flex items-center justify-center gap-2 text-[12px] font-semibold text-[#F5C560]">
         <LockKeyhole className="h-3 w-3" aria-hidden />
         بوابة الاعتماد البشري إلزامية قبل التنفيذ
       </div>
@@ -299,7 +299,7 @@ function SceneRegions() {
   return (
     <GlassPanel>
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+        <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/55">
           الشبكة الوطنية · National operating grid
         </span>
         <span className={SIM_CHIP}>محاكاة</span>
@@ -318,20 +318,22 @@ function SceneRegions() {
               }}
             >
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-[11px] font-black text-white sm:text-[12px]">
+                <span className="flex items-center gap-1.5 text-[12px] font-black text-white sm:text-[12px]">
                   <span
                     className="h-2 w-2 rounded-full"
                     style={{ background: color, boxShadow: `0 0 12px ${color}` }}
                   />
                   {r.shortAr}
                 </span>
-                <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color }}>
+                <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color }}>
                   {r.shortEn}
                 </span>
               </div>
               <div className="mt-3 flex items-end justify-between">
                 <div>
-                  <div className="text-[8px] uppercase tracking-wider text-white/35">Readiness</div>
+                  <div className="text-[12px] uppercase tracking-wider text-white/35">
+                    Readiness
+                  </div>
                   <div
                     className="text-2xl font-black sm:text-[28px]"
                     style={{ color, fontVariantNumeric: "tabular-nums" }}
@@ -351,7 +353,7 @@ function SceneRegions() {
                   }}
                 />
               </div>
-              <div className="mt-2 flex justify-between text-[8.5px] text-white/45">
+              <div className="mt-2 flex justify-between text-[12px] text-white/45">
                 <span>{c.sites} موقع</span>
                 <span>{c.incidents_open} بلاغ</span>
                 <span>{c.patrols_active} دورية</span>
@@ -365,7 +367,7 @@ function SceneRegions() {
           );
         })}
       </div>
-      <div className="mt-3 flex items-center justify-between rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-[9px] text-white/50">
+      <div className="mt-3 flex items-center justify-between rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-[12px] text-white/50">
         <span className="flex items-center gap-1.5">
           <Network className="h-3 w-3 text-[#3AE8FF]" aria-hidden /> سياق موحّد مع استقلال كل منطقة
         </span>
@@ -388,7 +390,7 @@ function SceneAgents() {
   return (
     <GlassPanel>
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+        <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/55">
           مجلس الوكلاء التنفيذي · FINN agent council
         </span>
         <span className={SIM_CHIP}>محاكاة</span>
@@ -406,13 +408,13 @@ function SceneAgents() {
                   <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#3AE8FF]/12 text-[#3AE8FF]">
                     <Icon className="h-3.5 w-3.5" aria-hidden />
                   </span>
-                  <span className="flex items-center gap-1 text-[8px] font-bold text-emerald-300">
+                  <span className="flex items-center gap-1 text-[12px] font-bold text-emerald-300">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> نشط
                   </span>
                 </div>
-                <div className="mt-2 truncate text-[10px] font-bold text-white">{a.ar}</div>
-                <div className="text-[8px] uppercase tracking-wider text-white/30">{a.en}</div>
-                <div className="mt-1 text-[8.5px] text-white/48">{a.task}</div>
+                <div className="mt-2 truncate text-[12px] font-bold text-white">{a.ar}</div>
+                <div className="text-[12px] uppercase tracking-wider text-white/30">{a.en}</div>
+                <div className="mt-1 text-[12px] text-white/48">{a.task}</div>
               </div>
             );
           })}
@@ -424,8 +426,8 @@ function SceneAgents() {
           <div className="absolute inset-5 rounded-full bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.92),rgba(58,232,255,0.55)_14%,rgba(11,47,85,0.92)_52%,rgba(3,17,31,0.96)_75%)] shadow-[0_0_38px_rgba(58,232,255,0.34)]" />
           <div className="relative text-center">
             <Bot className="mx-auto h-5 w-5 text-white" aria-hidden />
-            <div className="mt-1 text-[11px] font-black text-white">FINN</div>
-            <div className="text-[7px] font-bold uppercase tracking-[0.18em] text-[#3AE8FF]">
+            <div className="mt-1 text-[12px] font-black text-white">FINN</div>
+            <div className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#3AE8FF]">
               Orchestrator
             </div>
           </div>
@@ -451,13 +453,13 @@ function SceneAgents() {
                   <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#3AE8FF]/12 text-[#3AE8FF]">
                     <Icon className="h-3.5 w-3.5" aria-hidden />
                   </span>
-                  <span className="flex items-center gap-1 text-[8px] font-bold text-emerald-300">
+                  <span className="flex items-center gap-1 text-[12px] font-bold text-emerald-300">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> نشط
                   </span>
                 </div>
-                <div className="mt-2 truncate text-[10px] font-bold text-white">{a.ar}</div>
-                <div className="text-[8px] uppercase tracking-wider text-white/30">{a.en}</div>
-                <div className="mt-1 text-[8.5px] text-white/48">{a.task}</div>
+                <div className="mt-2 truncate text-[12px] font-bold text-white">{a.ar}</div>
+                <div className="text-[12px] uppercase tracking-wider text-white/30">{a.en}</div>
+                <div className="mt-1 text-[12px] text-white/48">{a.task}</div>
               </div>
             );
           })}
@@ -467,7 +469,7 @@ function SceneAgents() {
         {["دليل موثّق", "توصية مفسّرة", "اعتماد بشري"].map((label, index) => (
           <div
             key={label}
-            className="flex items-center justify-center gap-1 text-[8.5px] font-semibold text-white/62 sm:text-[10px]"
+            className="flex items-center justify-center gap-1 text-[12px] font-semibold text-white/62 sm:text-[12px]"
           >
             <Check
               className={`h-3 w-3 ${index === 2 ? "text-[#F5C560]" : "text-emerald-300"}`}
@@ -488,7 +490,7 @@ function SceneTwinReports() {
   return (
     <GlassPanel>
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+        <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/55">
           التوأم التشغيلي · Operational twin
         </span>
         <span className={SIM_CHIP}>محاكاة</span>
@@ -511,13 +513,13 @@ function SceneTwinReports() {
                 <Boxes className="h-4 w-4" aria-hidden />
               </span>
               <div className="text-right">
-                <div className="text-[11px] font-black text-white">نسيج الميدان الحي</div>
-                <div className="text-[8px] uppercase tracking-[0.16em] text-white/35">
+                <div className="text-[12px] font-black text-white">نسيج الميدان الحي</div>
+                <div className="text-[12px] uppercase tracking-[0.16em] text-white/35">
                   Field context mesh
                 </div>
               </div>
             </div>
-            <span className="flex items-center gap-1 text-[8px] font-bold text-emerald-300">
+            <span className="flex items-center gap-1 text-[12px] font-bold text-emerald-300">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> متصل
             </span>
           </div>
@@ -541,7 +543,7 @@ function SceneTwinReports() {
                 >
                   {metric.value}
                 </div>
-                <div className="text-[8px] text-white/45">
+                <div className="text-[12px] text-white/45">
                   {metric.label} · {metric.unit}
                 </div>
               </div>
@@ -551,8 +553,8 @@ function SceneTwinReports() {
         <div className="rounded-2xl border border-white/[0.09] bg-white/[0.03] p-3 text-right">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-[10px] font-black text-white">غرفة التقارير</div>
-              <div className="text-[8px] uppercase tracking-wider text-white/32">
+              <div className="text-[12px] font-black text-white">غرفة التقارير</div>
+              <div className="text-[12px] uppercase tracking-wider text-white/32">
                 Board-ready outputs
               </div>
             </div>
@@ -564,8 +566,8 @@ function SceneTwinReports() {
                 key={report}
                 className="flex items-center justify-between rounded-xl border border-white/[0.065] bg-black/10 px-2.5 py-2"
               >
-                <span className="flex items-center gap-2 text-[9px] font-semibold text-white/65">
-                  <span className="grid h-5 w-5 place-items-center rounded-md bg-[#3AE8FF]/10 text-[8px] font-mono text-[#3AE8FF]">
+                <span className="flex items-center gap-2 text-[12px] font-semibold text-white/65">
+                  <span className="grid h-5 w-5 place-items-center rounded-md bg-[#3AE8FF]/10 text-[12px] font-mono text-[#3AE8FF]">
                     0{index + 1}
                   </span>
                   {report}
@@ -576,7 +578,7 @@ function SceneTwinReports() {
           </div>
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-2 rounded-xl border border-[#F5C560]/18 bg-[#F5C560]/[0.045] px-3 py-2 text-[9px] text-white/55">
+      <div className="mt-3 flex items-center gap-2 rounded-xl border border-[#F5C560]/18 bg-[#F5C560]/[0.045] px-3 py-2 text-[12px] text-white/55">
         <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#F5C560]" aria-hidden />
         FINN تربط كل خلاصة بمصدرها وتفصل الحقائق عن المحاكاة والتقدير.
       </div>
@@ -594,10 +596,10 @@ function SceneSovereignTrust() {
   return (
     <GlassPanel>
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+        <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/55">
           معمار الثقة · Trust architecture
         </span>
-        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/25 bg-emerald-400/8 px-2 py-0.5 text-[9px] font-bold text-emerald-300">
+        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/25 bg-emerald-400/8 px-2 py-0.5 text-[12px] font-bold text-emerald-300">
           <Shield className="h-3 w-3" aria-hidden /> حوكمة أصلية
         </span>
       </div>
@@ -621,12 +623,12 @@ function SceneSovereignTrust() {
                 >
                   <Icon className="h-4 w-4" aria-hidden />
                 </span>
-                <span className="font-mono text-[8px] text-white/20">0{index + 1}</span>
+                <span className="font-mono text-[12px] text-white/20">0{index + 1}</span>
               </div>
-              <div className="mt-3 text-[10px] font-black text-white sm:text-[11px]">
+              <div className="mt-3 text-[12px] font-black text-white sm:text-[12px]">
                 {pillar.ar}
               </div>
-              <div className="mt-0.5 text-[7.5px] font-bold uppercase tracking-wider text-white/32">
+              <div className="mt-0.5 text-[12px] font-bold uppercase tracking-wider text-white/32">
                 {pillar.en}
               </div>
               <span
@@ -645,12 +647,12 @@ function SceneSovereignTrust() {
           <ShieldAlert className="h-5 w-5" aria-hidden />
         </span>
         <div className="text-center sm:text-right">
-          <div className="text-[10px] font-black text-white">قاعدة FINN غير القابلة للتجاوز</div>
-          <div className="mt-0.5 text-[9px] leading-relaxed text-white/52">
+          <div className="text-[12px] font-black text-white">قاعدة FINN غير القابلة للتجاوز</div>
+          <div className="mt-0.5 text-[12px] leading-relaxed text-white/52">
             لا إرسال، ولا تنفيذ، ولا تغيير حساس دون أمر صريح وصلاحية قابلة للتحقق.
           </div>
         </div>
-        <span className="mx-auto inline-flex items-center gap-1 rounded-full border border-[#F5C560]/30 bg-[#F5C560]/8 px-2.5 py-1 text-[8.5px] font-bold text-[#F5C560] sm:mx-0">
+        <span className="mx-auto inline-flex items-center gap-1 rounded-full border border-[#F5C560]/30 bg-[#F5C560]/8 px-2.5 py-1 text-[12px] font-bold text-[#F5C560] sm:mx-0">
           <Check className="h-3 w-3" aria-hidden /> HUMAN IN COMMAND
         </span>
       </div>
@@ -1007,7 +1009,7 @@ function ExecutiveBridgePage() {
         style={{ marginTop: showSimulationRibbon ? 32 : 0 }}
       >
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.28em] text-white/75">
+          <div className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.28em] text-white/75">
             <span className="h-2 w-2 rounded-full bg-[#F5C560] shadow-[0_0_12px_#F5C560]" />
             نيكسيوس · NEXIOS
           </div>
@@ -1018,7 +1020,7 @@ function ExecutiveBridgePage() {
         </div>
         <div className="pointer-events-auto flex items-center gap-2">
           <LanguageToggle primary={primary} onChange={setPrimary} />
-          <span className="hidden text-[11px] font-mono text-white/60 sm:inline">
+          <span className="hidden text-[12px] font-mono text-white/60 sm:inline">
             {String(idx + 1).padStart(2, "0")} / {String(SCENES.length).padStart(2, "0")}
           </span>
         </div>
@@ -1112,10 +1114,10 @@ function ExecutiveBridgePage() {
               <Volume2 className="h-4 w-4" aria-hidden />
             </span>
             <span>
-              <span className="block text-[10px] font-black text-white sm:text-[11px]">
+              <span className="block text-[12px] font-black text-white sm:text-[12px]">
                 ابدأ الإيجاز التنفيذي بصوت FINN
               </span>
-              <span className="mt-0.5 hidden text-[8px] font-bold uppercase tracking-[0.16em] text-[#3AE8FF]/70 sm:block">
+              <span className="mt-0.5 hidden text-[12px] font-bold uppercase tracking-[0.16em] text-[#3AE8FF]/70 sm:block">
                 Begin FINN voice briefing
               </span>
             </span>
@@ -1144,7 +1146,7 @@ function ExecutiveBridgePage() {
         {completed && (
           <div
             role="status"
-            className="rounded-full border border-[#F5C560]/60 bg-[#F5C560]/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-[#F5C560]"
+            className="rounded-full border border-[#F5C560]/60 bg-[#F5C560]/15 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.3em] text-[#F5C560]"
           >
             انتهت الجولة · Tour ended
           </div>
@@ -1199,7 +1201,7 @@ function ExecutiveBridgePage() {
           </ControlBtn>
           <a
             href="/"
-            className="mr-0.5 rounded-full border border-white/15 bg-white/[0.035] px-3 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:border-[#F5C560]/60 hover:text-white sm:px-4 sm:text-[10px]"
+            className="mr-0.5 rounded-full border border-white/15 bg-white/[0.035] px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:border-[#F5C560]/60 hover:text-white sm:px-4 sm:text-[12px]"
           >
             خروج · Exit
           </a>
@@ -1253,7 +1255,7 @@ function SceneLayer({
     >
       <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col justify-center py-28 pb-36 text-center sm:py-28 sm:pb-36">
         <div
-          className="mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.32em]"
+          className="mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[12px] font-bold uppercase tracking-[0.32em]"
           style={{
             borderColor: `${accentColor}66`,
             color: accentColor,
@@ -1301,7 +1303,7 @@ function SceneLayer({
             <p
               dir="ltr"
               lang="en"
-              className="mx-auto mt-1.5 max-w-2xl text-[10.5px] leading-[1.65] text-white/52 sm:text-[12px]"
+              className="mx-auto mt-1.5 max-w-2xl text-[12px] leading-[1.65] text-white/52 sm:text-[12px]"
               style={{ fontFamily: "'Space Grotesk',ui-sans-serif,system-ui" }}
             >
               {scene.body_en}
@@ -1339,7 +1341,7 @@ function SceneLayer({
             <p
               dir="rtl"
               lang="ar"
-              className="mx-auto mt-1.5 max-w-2xl text-[11px] leading-[1.75] text-white/52 sm:text-[12.5px]"
+              className="mx-auto mt-1.5 max-w-2xl text-[12px] leading-[1.75] text-white/52 sm:text-[12.5px]"
               style={{ fontFamily: "'IBM Plex Sans Arabic','Tajawal',ui-sans-serif,system-ui" }}
             >
               {scene.body_ar}
@@ -1377,7 +1379,7 @@ function LanguageToggle({
         type="button"
         onClick={() => onChange("ar")}
         aria-pressed={primary === "ar"}
-        className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${
+        className={`rounded-full px-3 py-1 text-[12px] font-bold transition ${
           primary === "ar" ? "bg-[#F5C560] text-[#03111f]" : "text-white/75 hover:text-white"
         }`}
       >
@@ -1387,7 +1389,7 @@ function LanguageToggle({
         type="button"
         onClick={() => onChange("en")}
         aria-pressed={primary === "en"}
-        className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider transition ${
+        className={`rounded-full px-3 py-1 text-[12px] font-bold uppercase tracking-wider transition ${
           primary === "en" ? "bg-[#F5C560] text-[#03111f]" : "text-white/75 hover:text-white"
         }`}
       >
@@ -1474,8 +1476,8 @@ function FinnVoiceBadge({
         )}
       </span>
       <span className="text-right">
-        <span className="block text-[9px] font-black text-white/85">{label}</span>
-        <span className="block text-[7px] font-bold uppercase tracking-[0.17em] opacity-60">
+        <span className="block text-[12px] font-black text-white/85">{label}</span>
+        <span className="block text-[12px] font-bold uppercase tracking-[0.17em] opacity-60">
           Canonical ElevenLabs voice
         </span>
       </span>
@@ -1516,7 +1518,7 @@ function ListenButton({
     <button
       type="button"
       onClick={onToggle}
-      className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em] backdrop-blur transition sm:text-[10px] ${
+      className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[12px] font-bold uppercase tracking-[0.16em] backdrop-blur transition sm:text-[12px] ${
         state === "error"
           ? "border-rose-400/35 bg-rose-400/[0.07] text-rose-300 hover:border-rose-300"
           : active
@@ -1564,7 +1566,7 @@ function DateStamp() {
   }).format(now);
   return (
     <div
-      className="flex items-center gap-2 text-[10px] font-medium text-white/55"
+      className="flex items-center gap-2 text-[12px] font-medium text-white/55"
       style={{ fontVariantNumeric: "tabular-nums" }}
     >
       {hijri && <span dir="rtl">{hijri} هـ</span>}
@@ -1583,10 +1585,10 @@ function ClosingCTA() {
   return (
     <GlassPanel>
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+        <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/55">
           خارطة التفعيل · 90-day activation
         </span>
-        <span className="inline-flex items-center gap-1 rounded-full border border-[#F5C560]/30 bg-[#F5C560]/10 px-2 py-0.5 text-[9px] font-bold text-[#F5C560]">
+        <span className="inline-flex items-center gap-1 rounded-full border border-[#F5C560]/30 bg-[#F5C560]/10 px-2 py-0.5 text-[12px] font-bold text-[#F5C560]">
           <Crown className="h-3 w-3" aria-hidden /> بقيادة تنفيذية
         </span>
       </div>
@@ -1597,13 +1599,13 @@ function ClosingCTA() {
             className="relative overflow-hidden rounded-2xl border border-[#F5C560]/18 bg-[#F5C560]/[0.035] p-3 text-right"
           >
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[9px] font-black text-[#F5C560]">{phase.day}</span>
-              <span className="grid h-5 w-5 place-items-center rounded-full border border-[#F5C560]/35 text-[8px] font-black text-[#F5C560]">
+              <span className="font-mono text-[12px] font-black text-[#F5C560]">{phase.day}</span>
+              <span className="grid h-5 w-5 place-items-center rounded-full border border-[#F5C560]/35 text-[12px] font-black text-[#F5C560]">
                 {index + 1}
               </span>
             </div>
-            <div className="mt-3 text-[10px] font-black text-white sm:text-[12px]">{phase.ar}</div>
-            <div className="mt-0.5 text-[7.5px] font-bold uppercase tracking-wider text-white/32 sm:text-[8px]">
+            <div className="mt-3 text-[12px] font-black text-white sm:text-[12px]">{phase.ar}</div>
+            <div className="mt-0.5 text-[12px] font-bold uppercase tracking-wider text-white/32 sm:text-[12px]">
               {phase.en}
             </div>
             <span
@@ -1616,7 +1618,7 @@ function ClosingCTA() {
       <div className="mt-3 flex flex-col items-center justify-center gap-2 sm:flex-row">
         <a
           href="/book"
-          className="group inline-flex items-center gap-2 rounded-full bg-[#F5C560] px-5 py-2.5 text-[10px] font-black text-[#03111f] shadow-[0_10px_34px_rgba(245,197,96,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_42px_rgba(245,197,96,0.42)] sm:text-[11px]"
+          className="group inline-flex items-center gap-2 rounded-full bg-[#F5C560] px-5 py-2.5 text-[12px] font-black text-[#03111f] shadow-[0_10px_34px_rgba(245,197,96,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_42px_rgba(245,197,96,0.42)] sm:text-[12px]"
         >
           احجز جلسة القيادة
           <ArrowUpLeft
@@ -1626,7 +1628,7 @@ function ClosingCTA() {
         </a>
         <a
           href="/contact"
-          className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.035] px-5 py-2.5 text-[10px] font-bold text-white/70 transition hover:border-white/30 hover:text-white sm:text-[11px]"
+          className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.035] px-5 py-2.5 text-[12px] font-bold text-white/70 transition hover:border-white/30 hover:text-white sm:text-[12px]"
         >
           تواصل مع فريق التفعيل · Contact
         </a>

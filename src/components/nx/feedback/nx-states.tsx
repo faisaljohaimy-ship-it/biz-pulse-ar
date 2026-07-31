@@ -132,7 +132,7 @@ export const NxErrorState = React.forwardRef<HTMLDivElement, NxErrorStateProps>(
         </NxButton>
       ) : null}
       {traceId ? (
-        <details className="text-[11px] text-nx-pearl/38">
+        <details className="text-[12px] text-nx-pearl/38">
           <summary className="cursor-pointer">تفاصيل تقنية</summary>
           <bdi className="font-sans tabular-nums select-all">{traceId}</bdi>
         </details>

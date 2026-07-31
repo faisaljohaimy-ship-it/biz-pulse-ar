@@ -94,7 +94,7 @@ function Risks() {
                 <td className="px-3 py-2">{r.title}</td>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] ${severityClass(r.severity)}`}
+                    className={`rounded-full border px-2 py-0.5 text-[12px] ${severityClass(r.severity)}`}
                   >
                     {r.severity}
                   </span>

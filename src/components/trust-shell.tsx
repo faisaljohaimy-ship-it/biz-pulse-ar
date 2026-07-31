@@ -55,7 +55,7 @@ export function TrustShell({
           <ArrowLeft className={`h-4 w-4 shrink-0 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة" : "Back"}
         </Link>
-        <div className="text-[10px] uppercase tracking-[0.28em] text-amber-300/70 sm:text-xs sm:tracking-[0.32em]">
+        <div className="text-[12px] uppercase tracking-[0.28em] text-amber-300/70 sm:text-xs sm:tracking-[0.32em]">
           {isAr ? "الثقة والأمان" : "Trust & Security"}
         </div>
       </header>
@@ -68,7 +68,7 @@ export function TrustShell({
               <Link
                 key={t.to}
                 to={t.to}
-                className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] transition sm:text-xs ${
+                className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-[12px] uppercase tracking-[0.18em] transition sm:text-xs ${
                   isActive
                     ? "border-amber-400/40 bg-amber-400/10 text-amber-200"
                     : "border-white/10 bg-white/[0.02] text-muted-foreground hover:border-amber-400/25 hover:text-foreground"
@@ -83,7 +83,7 @@ export function TrustShell({
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 sm:pt-10">
         <section className="mb-10 max-w-3xl sm:mb-12">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.04] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-amber-300/80 sm:text-[11px] sm:tracking-[0.24em]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/[0.04] px-3 py-1 text-[12px] uppercase tracking-[0.22em] text-amber-300/80 sm:text-[12px] sm:tracking-[0.24em]">
             {isAr ? eyebrowAr : eyebrow}
           </div>
           <h1 className="mt-5 bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-3xl font-semibold leading-tight text-transparent sm:text-5xl">
@@ -117,7 +117,7 @@ export function SectionTitle({
   icon?: ReactNode;
 }) {
   return (
-    <div className="mb-5 flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] text-amber-300/80 sm:text-xs sm:tracking-[0.28em]">
+    <div className="mb-5 flex items-center gap-2 text-[12px] uppercase tracking-[0.24em] text-amber-300/80 sm:text-xs sm:tracking-[0.28em]">
       {icon}
       {isAr ? ar : en}
     </div>

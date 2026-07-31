@@ -158,7 +158,7 @@ export function DecisionScenarioSimulation({ slug, lang, onCompleted }: Props) {
       <KpiBar rows={kpiRows} ar={ar} />
 
       <div className="rounded-2xl border border-cyan-400/25 bg-[#04111F]/70 p-5">
-        <div className="mb-2 text-[10px] uppercase tracking-[0.2em] text-cyan-300/80">
+        <div className="mb-2 text-[12px] uppercase tracking-[0.2em] text-cyan-300/80">
           {ar ? "إحاطة تنفيذية" : "Executive briefing"}
         </div>
         <h3 className="mb-3 text-lg font-semibold text-white">
@@ -179,7 +179,7 @@ export function DecisionScenarioSimulation({ slug, lang, onCompleted }: Props) {
                 !m.tone && "border-white/10 bg-white/[0.02] text-white/85",
               )}
             >
-              <div className="mb-1 text-[10px] uppercase tracking-wider opacity-70">
+              <div className="mb-1 text-[12px] uppercase tracking-wider opacity-70">
                 {ar ? m.label.ar : m.label.en}
               </div>
               <div className="text-base font-semibold tabular-nums">{m.value}</div>
@@ -267,7 +267,7 @@ function OptionButton({
                 <span
                   key={i}
                   className={cn(
-                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-semibold",
                     c.delta > 0
                       ? "bg-emerald-400/15 text-emerald-200"
                       : "bg-rose-400/15 text-rose-200",
@@ -301,7 +301,7 @@ function KpiBar({
     <div className="grid gap-3 sm:grid-cols-3">
       {rows.map((r) => (
         <div key={r.key} className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
-          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wider text-white/50">
+          <div className="mb-1 flex items-center justify-between text-[12px] uppercase tracking-wider text-white/50">
             <span>{r.label}</span>
             <span className="tabular-nums text-white/80">{Math.round(r.value)}</span>
           </div>

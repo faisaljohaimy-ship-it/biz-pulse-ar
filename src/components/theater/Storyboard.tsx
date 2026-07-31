@@ -108,10 +108,10 @@ export function Storyboard({ lines, ar, correlationId }: Props) {
   return (
     <div className="rounded-2xl border border-cyan-400/15 bg-white/[0.02] backdrop-blur-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="text-[11px] uppercase tracking-[0.3em] text-cyan-300/80">
+        <div className="text-[12px] uppercase tracking-[0.3em] text-cyan-300/80">
           {ar ? "مسار القصة التنفيذية" : "Executive Storyboard"}
         </div>
-        <div className="text-[10px] text-white/45 uppercase tracking-wider">
+        <div className="text-[12px] text-white/45 uppercase tracking-wider">
           {ar
             ? `${reached.size}/${STAGES.length} مراحل مكتملة`
             : `${reached.size}/${STAGES.length} stages observed`}
@@ -145,13 +145,13 @@ export function Storyboard({ lines, ar, correlationId }: Props) {
               </div>
               <div
                 className={cn(
-                  "text-[10px] uppercase tracking-wider",
+                  "text-[12px] uppercase tracking-wider",
                   done ? "text-cyan-100/90" : "text-white/45",
                 )}
               >
                 {ar ? stage.ar : stage.en}
               </div>
-              <div className="text-[9px] text-white/35">{i + 1}</div>
+              <div className="text-[12px] text-white/35">{i + 1}</div>
             </li>
           );
         })}

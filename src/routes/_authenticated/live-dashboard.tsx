@@ -97,7 +97,7 @@ function KpiCard({
   return (
     <div className={`rounded-xl border bg-background/40 backdrop-blur-xl p-4 ${toneMap[tone]}`}>
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-foreground/60">
+        <span className="text-[12px] font-mono uppercase tracking-widest text-foreground/60">
           {label}
         </span>
         <Icon className="w-4 h-4 opacity-70" />
@@ -107,7 +107,7 @@ function KpiCard({
       >
         {value}
       </div>
-      {sub && <div className="text-[11px] text-foreground/50 mt-1 font-mono">{sub}</div>}
+      {sub && <div className="text-[12px] text-foreground/50 mt-1 font-mono">{sub}</div>}
     </div>
   );
 }
@@ -126,7 +126,7 @@ function ChartCard({
       <div className="flex items-center justify-between mb-3">
         <div>
           <div className="text-sm font-semibold text-foreground">{title}</div>
-          {hint && <div className="text-[10px] text-foreground/40 font-mono">{hint}</div>}
+          {hint && <div className="text-[12px] text-foreground/40 font-mono">{hint}</div>}
         </div>
       </div>
       <div className="h-56">{children}</div>
@@ -261,7 +261,7 @@ function LiveExecutiveDashboard() {
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-6 pb-4 border-b border-white/5">
         <div>
-          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-primary/80">
+          <div className="flex items-center gap-2 text-[12px] font-mono uppercase tracking-widest text-primary/80">
             <EvidenceBadge
               evidence={queryEvidence(
                 "sec_exec_kpis+timeseries",

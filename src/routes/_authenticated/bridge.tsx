@@ -302,7 +302,7 @@ function LiveClock({ ar }: { ar: boolean }) {
   }, []);
   return (
     <div className="rounded-2xl border border-cyan-400/15 bg-white/[0.02] px-4 py-2 backdrop-blur">
-      <div className="text-[10px] uppercase tracking-[0.16em] text-white/50">
+      <div className="text-[12px] uppercase tracking-[0.16em] text-white/50">
         {ar ? "البث المباشر" : "Live"}
       </div>
       <div className="text-2xl font-light tabular-nums text-white">
@@ -344,7 +344,7 @@ function OperationalHealthColumn({
 
       {/* Score */}
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-center">
-        <div className="text-[10px] uppercase tracking-[0.16em] text-white/50">
+        <div className="text-[12px] uppercase tracking-[0.16em] text-white/50">
           {ar ? "المؤشر العام" : "Composite Score"}
         </div>
         <div className={cn("mt-1 text-5xl font-light tabular-nums", tone)}>
@@ -553,7 +553,7 @@ function PredictedRiskRail({
                   <div className="mt-1 text-[12px] leading-relaxed text-white/70">
                     {ar ? r.why_ar : r.why_en}
                   </div>
-                  <div className="mt-2 flex items-center gap-3 text-[11px] text-white/50">
+                  <div className="mt-2 flex items-center gap-3 text-[12px] text-white/50">
                     <span className="tabular-nums">
                       {ar ? "ثقة" : "Confidence"}:{" "}
                       <span className="text-white/80">{Math.round(r.confidence * 100)}%</span>
@@ -613,13 +613,13 @@ function ExecutiveRecommendation({
       </p>
       {top3.length > 0 && (
         <>
-          <div className="mt-3 text-[11px] uppercase tracking-wider text-white/50">
+          <div className="mt-3 text-[12px] uppercase tracking-wider text-white/50">
             {ar ? "أعلى ثلاث مخاطر" : "Top 3 Risks"}
           </div>
           <ol className={cn("mt-1 space-y-1 text-[13px] text-white/80", ar && "text-right")}>
             {top3.map((r, i) => (
               <li key={r.id} className="flex items-start gap-2">
-                <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-400/15 text-[10px] text-cyan-200 tabular-nums">
+                <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-400/15 text-[12px] text-cyan-200 tabular-nums">
                   {i + 1}
                 </span>
                 <span className="truncate">{ar ? r.title_ar : r.title_en}</span>
@@ -628,7 +628,7 @@ function ExecutiveRecommendation({
           </ol>
         </>
       )}
-      <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
+      <div className="mt-4 grid grid-cols-2 gap-2 text-[12px]">
         <div className="rounded-xl border border-white/10 bg-white/[0.02] p-2 text-center">
           <div className="uppercase tracking-wider text-white/50">
             {ar ? "ثقة الذكاء" : "AI Confidence"}
