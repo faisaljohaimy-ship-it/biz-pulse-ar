@@ -2969,3 +2969,109 @@ html.nx-presenting .nexus-app-shell {
     animation: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HOLO AMBIENCE — الطبقة الهولوغرامية الرقمية العامة (خلف كل المحتوى)
+   حركة على transform/opacity فقط؛ تُطفأ مع prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════════ */
+.nx-holo-ambience {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+
+.nx-holo-ambience > * {
+  position: absolute;
+  inset: 0;
+}
+
+.nx-holo-aurora {
+  background:
+    radial-gradient(60% 42% at 18% 8%, rgba(0, 212, 255, 0.16), transparent 68%),
+    radial-gradient(52% 38% at 84% 14%, rgba(58, 232, 255, 0.12), transparent 70%),
+    radial-gradient(70% 46% at 50% 108%, rgba(16, 185, 129, 0.1), transparent 72%);
+  filter: blur(2px);
+  animation: nx-holo-aurora-drift 22s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+@keyframes nx-holo-aurora-drift {
+  0% {
+    transform: translate3d(-1.5%, -1%, 0) scale(1.04);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(1.5%, 1.5%, 0) scale(1.1);
+    opacity: 1;
+  }
+}
+
+.nx-holo-grid {
+  background-image:
+    linear-gradient(to right, rgba(0, 212, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 212, 255, 0.075) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(78% 62% at 50% 34%, #000 0%, transparent 88%);
+  mask-image: radial-gradient(78% 62% at 50% 34%, #000 0%, transparent 88%);
+  opacity: 0.55;
+  animation: nx-holo-grid-flow 18s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes nx-holo-grid-flow {
+  0% {
+    background-position:
+      0 0,
+      0 0;
+  }
+  100% {
+    background-position:
+      46px 0,
+      0 46px;
+  }
+}
+
+.nx-holo-scan {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.028) 0px,
+    rgba(255, 255, 255, 0.028) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  opacity: 0.5;
+}
+
+.nx-holo-noise {
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0, 212, 255, 0.055) 46%,
+      rgba(0, 212, 255, 0.055) 47%,
+      transparent 52%
+    );
+  opacity: 0.6;
+  animation: nx-holo-sweep 9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  will-change: transform;
+}
+
+@keyframes nx-holo-sweep {
+  0% {
+    transform: translate3d(0, -60%, 0);
+  }
+  100% {
+    transform: translate3d(0, 60%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-holo-aurora,
+  .nx-holo-grid,
+  .nx-holo-noise {
+    animation: none;
+  }
+}
