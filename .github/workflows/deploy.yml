@@ -46,6 +46,9 @@ jobs:
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      # Optional: the MCP OAuth issuer falls back to VITE_SUPABASE_URL when this
+      # is unset (src/lib/mcp/project-ref.ts), so an absent secret is not fatal.
+      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
       SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
     steps:
