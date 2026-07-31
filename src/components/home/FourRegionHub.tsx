@@ -348,7 +348,8 @@ export function FourRegionHub() {
 
         <div
           id="smart-alerts"
-          className="rounded-2xl border border-rose-400/20 bg-rose-500/[0.05] p-4"
+          style={{ ["--accent-rgb" as string]: "251, 113, 133" }}
+          className="holo-card rounded-2xl bg-rose-500/[0.05] p-4"
         >
           <div className="mb-3 flex items-center justify-between gap-2">
             <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
@@ -357,27 +358,42 @@ export function FourRegionHub() {
             </span>
             <Link
               to="/situation-room"
-              className="text-[11px] font-semibold text-cyan-300 hover:text-cyan-200"
+              className="text-xs font-semibold text-cyan-300 hover:text-cyan-200"
             >
               {ar ? "فتح غرفة العمليات" : "Open room"}
             </Link>
           </div>
           <ul className="grid gap-2">
-            {alerts.slice(0, 6).map((alert) => (
-              <li
-                key={alert.id}
-                className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-3 py-2 text-xs"
-              >
-                <span className="truncate text-white/80">{alert.title_ar}</span>
-                <span className="shrink-0 text-white/45">{alert.department}</span>
+            {sortedAlerts.slice(0, 6).map(({ alert, severity }) => (
+              <li key={alert.id}>
+                <Link
+                  to="/situation-room"
+                  aria-label={`${alert.title_ar} — ${alert.department}`}
+                  className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-3 py-2 text-xs transition hover:border-white/20 hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      className={`h-2 w-2 shrink-0 rounded-full ${SEVERITY_DOT[severity]}`}
+                      aria-hidden
+                    />
+                    <span className="truncate text-white/85">{alert.title_ar}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2 text-white/50">
+                    <span>{alert.department}</span>
+                    <span className="rounded-md border border-white/10 px-1.5 py-0.5 text-[11px]">
+                      {ar ? SEVERITY_LABEL_AR[severity] : severity}
+                    </span>
+                  </span>
+                </Link>
               </li>
             ))}
-            {alerts.length === 0 && (
+            {sortedAlerts.length === 0 && (
               <li className="rounded-xl border border-emerald-400/15 bg-emerald-400/[0.04] px-3 py-4 text-center text-xs text-emerald-200">
                 {ar ? "لا توجد تنبيهات عاجلة حالياً" : "No urgent alerts"}
               </li>
             )}
           </ul>
+
         </div>
       </div>
     </section>
