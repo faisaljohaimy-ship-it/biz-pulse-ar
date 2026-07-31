@@ -37,6 +37,7 @@ import { FinnWatermark } from "@/components/executive/FinnWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
 import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
+import { GlobalBackButton } from "@/components/layout/GlobalBackButton";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 import { RegionProvider } from "@/lib/region-context";
@@ -396,6 +397,7 @@ function RootComponent() {
                       LIVE clock remains as this strip's only content. */}
                   {!suppressMarquee && <HeaderClockBar showClock={!suppressClock} />}
                   {!suppressOverlays && <FinnWatermark />}
+                  {!introActive && !isAccessGate && <GlobalBackButton />}
                   <div className="relative z-10">
                     <Outlet />
                   </div>
