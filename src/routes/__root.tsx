@@ -398,6 +398,7 @@ function RootComponent() {
                       LIVE clock remains as this strip's only content. */}
                   {!suppressMarquee && <HeaderClockBar showClock={!suppressClock} />}
                   {!suppressOverlays && <FinnWatermark />}
+                  {!introActive && !isAccessGate && <HoloAmbience />}
                   {!introActive && !isAccessGate && <GlobalBackButton />}
                   <div className="relative z-10">
                     <Outlet />
