@@ -233,6 +233,18 @@ export function FourRegionHub() {
   const alerts = data?.urgent ?? [];
   const simulation = data?.simulation ?? true;
 
+  // Severity derived from the live SLA window (no invented values).
+  const sortedAlerts = alerts
+    .map((alert) => {
+      const dueMs = new Date(alert.due_at).getTime();
+      const hoursLeft = (dueMs - Date.now()) / 3_600_000;
+      const severity: Severity =
+        hoursLeft <= 0 ? "critical" : hoursLeft <= 6 ? "high" : hoursLeft <= 24 ? "medium" : "low";
+      return { alert, severity, dueMs };
+    })
+    .sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || a.dueMs - b.dueMs);
+
+
   return (
     <section
       aria-label={ar ? "منصة إنجاز الأعمال" : "Unified Work Execution Platform"}
