@@ -16,6 +16,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { NxEmptyState, NxErrorState, NxPanel, NxSkeleton } from "@/components/nx";
 import { getAgentFleetState } from "@/lib/agents/fleet.functions";
+import { feedSourcesFor } from "@/lib/agents/feed-sources";
+import { AgenticFlowCanvas } from "@/components/home/AgenticFlowCanvas";
 import {
   FLOW_STAGES,
   SimulationEngine,
