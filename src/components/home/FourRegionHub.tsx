@@ -178,7 +178,6 @@ function RegionCard({
       </div>
     </article>
   );
-
 }
 
 export function FourRegionHub() {
@@ -276,7 +275,6 @@ export function FourRegionHub() {
     })
     .sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || a.dueMs - b.dueMs);
 
-
   return (
     <section
       aria-label={ar ? "منصة إنجاز الأعمال" : "Unified Work Execution Platform"}
@@ -365,7 +363,6 @@ export function FourRegionHub() {
         ))}
       </div>
 
-
       <div className="relative mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">
         <div className="order-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:order-none lg:grid-cols-1">
           {REGIONS.map((region) => {
@@ -440,7 +437,6 @@ export function FourRegionHub() {
               </li>
             )}
           </ul>
-
         </div>
       </div>
     </section>

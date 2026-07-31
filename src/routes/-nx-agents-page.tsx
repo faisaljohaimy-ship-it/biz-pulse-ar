@@ -119,7 +119,6 @@ export function NxAgentsPage() {
   const activeCount = agents.filter((a) => a.phase !== "idle").length;
   const [selectedFlowAgent, setSelectedFlowAgent] = React.useState<string | null>(null);
 
-
   return (
     <div dir="rtl" className="min-h-dvh bg-nx-obsidian text-nx-pearl">
       <main className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 px-3 py-5 md:px-6">
@@ -128,7 +127,8 @@ export function NxAgentsPage() {
             <button
               type="button"
               onClick={() => {
-                if (typeof window !== "undefined" && window.history.length > 1) window.history.back();
+                if (typeof window !== "undefined" && window.history.length > 1)
+                  window.history.back();
                 else void navigate({ to: "/" });
               }}
               aria-label="رجوع"
@@ -210,7 +210,6 @@ export function NxAgentsPage() {
 
         {!isLoading && !isError && agents.length > 0 ? (
           <>
-
             {/* Seven-stage data flow — advances with each simulated event. */}
             <NxPanel title="تدفّق البيانات" density="operations">
               <ol className="flex flex-wrap items-center gap-1.5 text-[12px]">
@@ -286,9 +285,6 @@ export function NxAgentsPage() {
                 </li>
               ))}
             </ul>
-
-
-
 
             {isSimulation ? (
               <NxPanel title="سجل نشاط المحاكاة" density="operations">

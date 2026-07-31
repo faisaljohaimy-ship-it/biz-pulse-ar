@@ -339,7 +339,6 @@ function Pedestal({ state }: { state: FinnLiveState }) {
 /* Rising particle field removed by design directive: the floor area under
    FINN must stay clean and static (a steady holo ring + soft glow only). */
 
-
 // ---------- Utilities ----------
 
 function usePrefersReducedMotion() {
