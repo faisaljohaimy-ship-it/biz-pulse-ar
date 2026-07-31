@@ -85,8 +85,8 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
       },
       {
         id: "bridge",
-        title_ar: "جسر تنفيذي",
-        title_en: "Executive Bridge",
+        title_ar: screenNameAr("/bridge"),
+        title_en: screenNameEn("/bridge"),
         to: "/bridge",
         group: "Navigate",
       },

@@ -30,6 +30,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { screenName, screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { cn } from "@/lib/utils";
 import { getBridgeState, getMissionTimeline } from "@/lib/exec/bridge.functions";
 import {
@@ -212,6 +213,9 @@ function WarRoomPage() {
         <BriefingStage
           briefing={briefing}
           ar={ar}
+          // The takeover closes back onto THIS screen, so this is what the
+          // exit button must name — it used to promise «غرفة العمليات».
+          backTo={{ ar: screenNameAr("/bridge"), en: screenNameEn("/bridge") }}
           onClose={() => {
             setBriefing(null);
             setSpotlightSegment(null);
@@ -270,7 +274,7 @@ function MissionStatusStrip({
             {ar ? "إدارة الأمن الصناعي · المنطقة الغربية" : "Industrial Security · Western Region"}
           </div>
           <div className="truncate text-2xl font-light text-white sm:text-3xl">
-            {ar ? "غرفة العمليات" : "Operations Room"}
+            {screenName("/bridge", ar)}
           </div>
         </div>
       </div>

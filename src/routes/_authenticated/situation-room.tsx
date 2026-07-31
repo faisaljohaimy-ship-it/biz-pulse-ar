@@ -35,6 +35,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { cn } from "@/lib/utils";
 import {
   getBridgeState,
@@ -255,6 +256,7 @@ function SituationRoomPage() {
         <BriefingStage
           briefing={briefing}
           ar={ar}
+          backTo={{ ar: screenNameAr("/situation-room"), en: screenNameEn("/situation-room") }}
           onClose={() => {
             setBriefing(null);
             setSpotlightSegment(null);

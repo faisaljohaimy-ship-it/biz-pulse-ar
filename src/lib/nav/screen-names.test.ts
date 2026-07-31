@@ -35,13 +35,22 @@ const NAV_SURFACES = [
   "src/components/executive/CommandPalette.tsx",
   "src/components/executive/command/NexiosCommandCenter.tsx",
   "src/routes/_authenticated/dashboard.tsx",
+  // Not a list, but its exit button names a destination — and it is rendered
+  // over two different screens, so a hard-coded name is wrong on one of them.
+  "src/components/bridge/BriefingStage.tsx",
 ] as const;
 
 /**
  * The routes whose names collided. Prose elsewhere may still say «غرفة
  * العمليات» inside a sentence — that is language, not a label.
  */
-const GUARDED_ROUTES = ["/sec", "/situation-room", "/mission-control", "/command-center"] as const;
+const GUARDED_ROUTES = [
+  "/sec",
+  "/situation-room",
+  "/mission-control",
+  "/command-center",
+  "/bridge",
+] as const;
 
 /**
  * Names the review retired.

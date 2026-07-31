@@ -14,11 +14,21 @@ interface Props {
   briefing: ExecutiveBriefing;
   ar: boolean;
   onClose: () => void;
+  /**
+   * Where closing actually lands, in the host's own words.
+   *
+   * This is a takeover rendered over TWO different screens. The exit button
+   * used to be hard-coded «العودة إلى غرفة العمليات», so on /bridge it named
+   * a destination it did not go to — the takeover closes back onto whatever
+   * opened it. A back button that names the wrong screen is worse than an
+   * unlabelled X: it teaches the operator a route that does not exist.
+   */
+  backTo: { ar: string; en: string };
   /** Called when a segment becomes active so the bridge can spotlight the speaker. */
   onSegmentChange?: (segment: BriefingSegment | null) => void;
 }
 
-export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props) {
+export function BriefingStage({ briefing, ar, onClose, backTo, onSegmentChange }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -173,7 +183,7 @@ export function BriefingStage({ briefing, ar, onClose, onSegmentChange }: Props)
                 onClick={onClose}
                 className="ml-auto inline-flex items-center gap-2 rounded-xl bg-cyan-400/90 px-5 py-3 text-sm font-semibold text-[#04111F] hover:bg-cyan-300"
               >
-                {ar ? "العودة إلى غرفة العمليات" : "Return to Operations Room"}
+                {ar ? `العودة إلى ${backTo.ar}` : `Return to ${backTo.en}`}
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
