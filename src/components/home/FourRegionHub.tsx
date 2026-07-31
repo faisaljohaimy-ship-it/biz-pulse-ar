@@ -25,6 +25,14 @@ import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 
+/** "#22D3EE" → "34, 211, 238" for the `--accent-rgb` edge-glow token. */
+function hexToRgbTriplet(hex: string): string {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? [...h].map((c) => c + c).join("") : h;
+  const n = Number.parseInt(full, 16);
+  return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
+}
+
 type Severity = "critical" | "high" | "medium" | "low";
 
 const SEVERITY_RANK: Record<Severity, number> = { critical: 0, high: 1, medium: 2, low: 3 };
