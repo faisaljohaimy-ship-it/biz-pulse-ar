@@ -223,7 +223,7 @@ export function FourRegionHub() {
 
   return (
     <section
-      aria-label={ar ? "مركز القيادة التنفيذي" : "Executive Command Center"}
+      aria-label={ar ? "منصة إنجاز الأعمال الموحدة" : "Unified Work Execution Platform"}
       data-nx-frozen="false"
       className="relative overflow-hidden rounded-3xl border border-cyan-400/20 bg-gradient-to-br from-[#04070F] via-[#061526] to-[#04070F] p-3 shadow-[0_36px_110px_-45px_rgba(0,212,255,.45)] sm:p-5"
     >
@@ -266,7 +266,7 @@ export function FourRegionHub() {
             {ar ? "منصة إدارة الأمن الصناعي" : "Industrial Security Management Platform"}
           </p>
           <h1 className="mt-1 text-xl font-black text-white sm:text-2xl">
-            {ar ? "مركز القيادة التنفيذي" : "Executive Command Center"}
+            {ar ? "منصة إنجاز الأعمال الموحدة" : "Unified Work Execution Platform"}
           </h1>
         </div>
 
