@@ -22,7 +22,7 @@ import {
   resolveProjectRef,
 } from "./project-ref";
 
-const LIVE = "adhhxmmgfatkmzpokvil";
+const LIVE = "jhutlofapjfjjeajawie";
 
 describe("project ref resolution", () => {
   it("prefers the explicit variable when it is set", () => {
@@ -86,13 +86,18 @@ describe("the repo agrees with itself about which project this is", () => {
   // every disagreement cost real debugging: one made `supabase link` target the
   // wrong project; another shipped an OAuth issuer no client could resolve.
   //
-  // The AUTHORITY is supabase/config.toml — the file an operator edits and the
-  // file the Supabase CLI obeys. The baked-in MCP fallback and the committed
-  // manifest are downstream copies, and copies drift: a previous revision of
-  // this very test was rewritten to compare the manifest against the baked
-  // constant instead of against config.toml, which made it pass tautologically
-  // while the repo contradicted itself. A guard that is allowed to agree with
-  // whatever it finds is not a guard. config.toml is the fixed point here.
+  // The three copies must agree, and config.toml is the fixed point they are
+  // compared against — but config.toml is NOT the source of truth about which
+  // project this is. That authority lives in production: the deployed
+  // /.well-known/oauth-protected-resource document, and the manifest the build
+  // plugin regenerates from the real Supabase binding. This distinction is not
+  // pedantic. The ref was changed three times in one session from memory and
+  // from the owner's personal Supabase dashboard, and each time this repo's
+  // files were made consistently WRONG — consistency is not correctness. The
+  // live endpoint settled it by advertising the original value.
+  //
+  // So: this test stops the three copies from drifting apart. It cannot tell
+  // you the ref is right. Only production can, and Article 4 says so.
   const ref = (s: string) => s.match(/[a-z0-9]{20}/)?.[0];
   const declared = () => ref(readFileSync("supabase/config.toml", "utf8"));
 

@@ -5,7 +5,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 
 أنت مهندس البيانات لمشروع NEXIOS AI OS (Supabase — المشروع النشط
-`adhhxmmgfatkmzpokvil`).
+`jhutlofapjfjjeajawie`).
 
 قبل أي عمل، حمّل مهارة `nexios-supabase` والتزم بها حرفيًا.
 

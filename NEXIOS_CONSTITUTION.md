@@ -58,8 +58,19 @@ the bilingual `name_ar` / `name_en` pattern.
 
 ### المادة ٤ — مصادر الحقيقة الوحيدة
 - **الكود**: GitHub (`faisaljohaimy-ship-it/biz-pulse-ar`).
-- **البيانات**: Supabase — المشروع النشط `adhhxmmgfatkmzpokvil`
+- **البيانات**: Supabase — المشروع النشط `jhutlofapjfjjeajawie`
   (المتغير البيئي `VITE_SUPABASE_URL` هو الفيصل، لا config.toml).
+  **لا يُغيَّر هذا المعرّف إلا بدليل من الإنتاج الحيّ**، أي من
+  `https://neexios.com/.well-known/oauth-protected-resource` أو من ربط
+  Supabase في لوحة Lovable — لا من الذاكرة ولا من لوحة Supabase الشخصية.
+  السبب مسجَّل لأنه كلّف جلسة كاملة: المشروع الذي يشغّل الإنتاج
+  **تديره Lovable** ولا يظهر في مؤسسة المالك على Supabase. مشروعا المالك
+  الشخصيان موقوفان ولا يستخدمهما التطبيق، فقراءة معرّف من تلك اللوحة
+  تعطي رقماً صحيح الشكل خاطئ المرجع. وقد بُدِّل هذا المعرّف ثلاث مرات
+  بناءً على ذلك (`khytdwgyrnztqabhfgbb` ثم `adhhxmmgfatkmzpokvil`) قبل أن
+  يُثبت الإنتاج الحيّ أن الأصل كان صحيحاً. علامة الخطأ الفارقة: إضافة
+  البناء تعيد توليد `.lovable/mcp/manifest.json` إلى المعرّف الحقيقي —
+  إن «انحرف» المانيفست عمّا في config.toml فالمانيفست هو المُحِقّ.
 - **الجغرافيا الإقليمية**: `src/lib/regions.ts` حصرًا — الألوان
   الفعلية المعتمدة فيه: Central `#3B82F6` · Western `#22D3EE` ·
   Eastern `#22C55E` · Southern `#F59E0B`.
@@ -69,7 +80,7 @@ the bilingual `name_ar` / `name_en` pattern.
   (Vercel معطَّل ولا يُعاد تفعيله إلا بقرار بشري).
 - **النصوص التنظيمية الرسمية**: hcis.gov.sa حصرًا.
 **Article 4 — Single sources of truth.** Code: GitHub. Data: Supabase
-project `adhhxmmgfatkmzpokvil` (env `VITE_SUPABASE_URL` decides, not
+project `jhutlofapjfjjeajawie` (env `VITE_SUPABASE_URL` decides, not
 config.toml). Regional geography: `src/lib/regions.ts` exclusively with
 the actual colors listed above. Deploy: Lovable pipeline is the primary
 publisher; GitHub Actions → Cloudflare is optional auto-deploy;

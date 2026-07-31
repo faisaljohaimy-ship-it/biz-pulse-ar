@@ -51,7 +51,7 @@ export const UNRESOLVED_PROJECT_REF = "project-ref-unset";
  * a plausible-looking host whose tokens are simply never accepted, and no way
  * to tell from the outside why.
  */
-export const BUILTIN_PROJECT_REF = "adhhxmmgfatkmzpokvil";
+export const BUILTIN_PROJECT_REF = "jhutlofapjfjjeajawie";
 
 /** A Supabase project ref is a 20-character lowercase alphanumeric label. */
 const SUPABASE_HOST = /^https?:\/\/([a-z0-9]{20})\.supabase\.co\/?$/i;

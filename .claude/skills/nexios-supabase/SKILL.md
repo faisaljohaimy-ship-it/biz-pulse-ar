@@ -6,7 +6,7 @@ description: طبقة بيانات NEXIOS على Supabase — تُستدعى ق�
 # NEXIOS Supabase — طبقة البيانات
 
 ## المشروع
-- المشروع النشط الذي صرّح به المالك: `adhhxmmgfatkmzpokvil`.
+- المشروع النشط الذي صرّح به المالك: `jhutlofapjfjjeajawie`.
 - `supabase/config.toml` صار يحمل المعرّف نفسه (صُحّح 2026-07-30 بعد أن
   ظلّ يحمل `jhutlofapjfjjeajawie` القديم). ومع ذلك يبقى `VITE_SUPABASE_URL`
   البيئي هو الفيصل وقت التشغيل — config.toml يوجّه أدوات CLI لا التطبيق.

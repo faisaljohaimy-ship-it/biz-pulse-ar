@@ -1,6 +1,6 @@
 # RAG layer — apply runbook (STAGED · not yet applied)
 
-Project: **`adhhxmmgfatkmzpokvil`** (owner-declared, and now the value in
+Project: **`jhutlofapjfjjeajawie`** (owner-declared, and now the value in
 `config.toml` — the two agree since 2026-07-30; before that config.toml
 carried a stale ref, which is why several files still explain the mismatch).
 
@@ -139,17 +139,17 @@ DROP INDEX IF EXISTS public.rag_documents_org_source_title_uq;
 ## Edge Functions (deploy ONLY after approval)
 ```bash
 # secrets first (values from your vault — never from the repo):
-supabase secrets set GEMINI_API_KEY=*** --project-ref adhhxmmgfatkmzpokvil
+supabase secrets set GEMINI_API_KEY=*** --project-ref jhutlofapjfjjeajawie
 # deploy:
-supabase functions deploy rag-retrieve --project-ref adhhxmmgfatkmzpokvil
-supabase functions deploy rag-ingest   --project-ref adhhxmmgfatkmzpokvil
+supabase functions deploy rag-retrieve --project-ref jhutlofapjfjjeajawie
+supabase functions deploy rag-ingest   --project-ref jhutlofapjfjjeajawie
 ```
 Neither function ever uses `service_role` — both forward the CALLER's JWT so
 RLS enforces org isolation (read: viewer، write: admin — مطابق aria_knowledge).
 
 **Verification (positive):**
 ```bash
-curl -sX POST "https://adhhxmmgfatkmzpokvil.supabase.co/functions/v1/rag-retrieve" \
+curl -sX POST "https://jhutlofapjfjjeajawie.supabase.co/functions/v1/rag-retrieve" \
   -H "Authorization: Bearer <USER_JWT>" -H "Content-Type: application/json" \
   -d '{"query":"ما نطاق SEC-18؟"}'
 # expect: {"results":[…],"insufficient_evidence":…,"degraded":null}
@@ -182,7 +182,7 @@ commit — no DB objects are involved in this phase.
 ## Live evaluation (operator-run) — NOT RUNNABLE YET
 
 **حالة مؤكَّدة: القاعدة غير مطبَّقة.** لم يُنفَّذ أي migration على
-`adhhxmmgfatkmzpokvil`؛ لا `rag_documents` ولا `rag_chunks` ولا
+`jhutlofapjfjjeajawie`؛ لا `rag_documents` ولا `rag_chunks` ولا
 `rag_hybrid_search`، والدالتان غير منشورتين. **لم يُشغَّل أي استرجاع، ولا
 يوجد أي رقم recall أو دقة استشهاد — أي رقم يُذكر سيكون مُختلقًا.**
 
@@ -190,7 +190,7 @@ commit — no DB objects are involved in this phase.
 (3) ابتلاع المحتوى للمؤسسة الهدف، (4) توفير المتغيّرين أدناه.
 
 ```bash
-VITE_SUPABASE_URL=https://adhhxmmgfatkmzpokvil.supabase.co \
+VITE_SUPABASE_URL=https://jhutlofapjfjjeajawie.supabase.co \
 RAG_EVAL_JWT=<JWT جلسة مستخدم حقيقي في مؤسسة مبتلَع محتواها> \
 npx vitest run src/test/rag-live-eval.test.ts
 ```
