@@ -103,7 +103,11 @@ describe("FINN greeting regression — the shipped greetings", () => {
   it("the display greeting and its TTS twin are the same greeting", () => {
     // A diacritized twin that drifts from the display form is how a stale
     // spoken identity survives a text-only rename.
-    const bare = (s: string) => s.replace(/[\u064B-\u0652\u0670]/g, "").replace(/\s+/g, " ").trim();
+    const bare = (s: string) =>
+      s
+        .replace(/[\u064B-\u0652\u0670]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
     expect(bare(FINN_CONVERSATION_GREETING_AR_TTS)).toContain("فن");
     expect(bare(FINN_CONVERSATION_GREETING_AR)).toContain("فن");
   });
@@ -196,7 +200,6 @@ describe("FINN greeting regression — every text→voice boundary scrubs the na
       expectFinnClean("env alias", "process.env.A\u0052IA_FORCE_GEMINI_FLASH"),
     ).not.toThrow();
   });
-
 });
 
 describe("FINN greeting regression — every TTS endpoint is wired to a guard", () => {

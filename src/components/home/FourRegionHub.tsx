@@ -364,7 +364,6 @@ export function FourRegionHub() {
           </ul>
         </div>
       </div>
-
     </section>
   );
 }

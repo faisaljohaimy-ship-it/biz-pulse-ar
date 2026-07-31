@@ -12,6 +12,7 @@
  * URL. tsc is happy, the build is happy, the server boots. It only fails at the
  * moment a human tries to link the system — the one path no test exercised.
  */
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   UNRESOLVED_PROJECT_REF,
@@ -20,7 +21,7 @@ import {
   resolveProjectRef,
 } from "./project-ref";
 
-const LIVE = "khytdwgyrnztqabhfgbb";
+const LIVE = "adhhxmmgfatkmzpokvil";
 
 describe("project ref resolution", () => {
   it("prefers the explicit variable when it is set", () => {
@@ -76,5 +77,30 @@ describe("issuer URL", () => {
     // passes, does /mcp come out connectable? If someone removes
     // VITE_SUPABASE_URL from deploy.yml, this is the test that objects.
     expect(isIssuerResolved({ VITE_SUPABASE_URL: `https://${LIVE}.supabase.co` })).toBe(true);
+  });
+});
+
+describe("the repo agrees with itself about which project this is", () => {
+  // Four different Supabase project refs have appeared in this repository's
+  // history (jhutlofapjfjjeajawie, khytdwgyrnztqabhfgbb, a `test-local` host,
+  // and the current one). Each disagreement cost real debugging: one made
+  // `supabase link` target the wrong project, another shipped an OAuth issuer
+  // no client could resolve. The refs live in files that are edited by
+  // different hands — config.toml by operators, the MCP manifest by a build
+  // plugin — so nothing but a test keeps them in step.
+  const ref = (s: string) => s.match(/[a-z0-9]{20}/)?.[0];
+
+  it("config.toml and the committed MCP manifest name the same project", () => {
+    const config = ref(readFileSync("supabase/config.toml", "utf8"));
+    const manifest = ref(
+      JSON.parse(readFileSync(".lovable/mcp/manifest.json", "utf8")).auth.issuer as string,
+    );
+    expect(config).toBeDefined();
+    expect(manifest).toBe(config);
+  });
+
+  it("the ref this suite asserts against is the one config.toml declares", () => {
+    // Keeps LIVE above from drifting into fiction once the project changes again.
+    expect(ref(readFileSync("supabase/config.toml", "utf8"))).toBe(LIVE);
   });
 });

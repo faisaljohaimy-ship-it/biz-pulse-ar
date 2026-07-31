@@ -391,7 +391,6 @@ export function revalidateSpeakableText(text: string): {
   return { ok: true, text: enforceFinnIdentity(redacted), pii };
 }
 
-
 /**
  * True if text leaks a secret or protected system content. Used by boundaries
  * (outbound email/SMS, exports) that may legitimately carry PII under an

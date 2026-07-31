@@ -2,7 +2,7 @@
  * RAG live evaluation — operator-run only. CURRENTLY IMPOSSIBLE TO RUN.
  *
  * STATE OF THE WORLD (verified, not assumed): the rag_* migrations have NOT
- * been applied to khytdwgyrnztqabhfgbb — there is no rag_documents, no
+ * been applied to adhhxmmgfatkmzpokvil — there is no rag_documents, no
  * rag_chunks, no rag_hybrid_search, and the Edge Functions are not deployed.
  * Therefore no retrieval has ever executed and NO quality number exists.
  * Any recall / citation-accuracy figure would be fabricated.

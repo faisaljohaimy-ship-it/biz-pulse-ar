@@ -58,7 +58,7 @@ the bilingual `name_ar` / `name_en` pattern.
 
 ### المادة ٤ — مصادر الحقيقة الوحيدة
 - **الكود**: GitHub (`faisaljohaimy-ship-it/biz-pulse-ar`).
-- **البيانات**: Supabase — المشروع النشط `khytdwgyrnztqabhfgbb`
+- **البيانات**: Supabase — المشروع النشط `adhhxmmgfatkmzpokvil`
   (المتغير البيئي `VITE_SUPABASE_URL` هو الفيصل، لا config.toml).
 - **الجغرافيا الإقليمية**: `src/lib/regions.ts` حصرًا — الألوان
   الفعلية المعتمدة فيه: Central `#3B82F6` · Western `#22D3EE` ·
@@ -69,7 +69,7 @@ the bilingual `name_ar` / `name_en` pattern.
   (Vercel معطَّل ولا يُعاد تفعيله إلا بقرار بشري).
 - **النصوص التنظيمية الرسمية**: hcis.gov.sa حصرًا.
 **Article 4 — Single sources of truth.** Code: GitHub. Data: Supabase
-project `khytdwgyrnztqabhfgbb` (env `VITE_SUPABASE_URL` decides, not
+project `adhhxmmgfatkmzpokvil` (env `VITE_SUPABASE_URL` decides, not
 config.toml). Regional geography: `src/lib/regions.ts` exclusively with
 the actual colors listed above. Deploy: Lovable pipeline is the primary
 publisher; GitHub Actions → Cloudflare is optional auto-deploy;

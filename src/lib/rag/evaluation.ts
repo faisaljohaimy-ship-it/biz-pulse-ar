@@ -20,7 +20,7 @@
  * (nondeterministic and would consume the production Gemini path).
  *
  * NOTHING in this module has been measured. The rag_* tables are NOT applied
- * to khytdwgyrnztqabhfgbb, so no retrieval run exists — any score would be
+ * to adhhxmmgfatkmzpokvil, so no retrieval run exists — any score would be
  * fabricated. The runner (src/test/rag-live-eval.test.ts) stays skipped until
  * the operator applies the migrations and supplies a session JWT.
  */
