@@ -11,8 +11,9 @@
  * Four mandatory states: loading · empty · error · success (art. 14).
  */
 import * as React from "react";
-import { Bot } from "lucide-react";
+import { ArrowRight, Bot } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { NxEmptyState, NxErrorState, NxPanel, NxSkeleton } from "@/components/nx";
 import { getAgentFleetState } from "@/lib/agents/fleet.functions";
@@ -73,6 +74,8 @@ export function NxAgentsPage() {
     refetchInterval: 60_000,
   });
 
+  const navigate = useNavigate();
+
   // Live client animation ONLY when the source is the reference simulation —
   // a real (live) source is shown statically so the two are never conflated.
   const [live, setLive] = React.useState<SimSnapshot | null>(null);
@@ -121,12 +124,27 @@ export function NxAgentsPage() {
     <div dir="rtl" className="min-h-dvh bg-nx-obsidian text-nx-pearl">
       <main className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 px-3 py-5 md:px-6">
         <header className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-black md:text-2xl">منظومة الوكلاء الثلاثة عشر</h1>
-            <p className="mt-1 text-xs text-nx-pearl/64 md:text-sm">
-              وكلاء متخصّصون بأسمائهم من السجل الرسمي — قراءة فقط (المادة ٢٣).
-            </p>
+          <div className="flex items-start gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined" && window.history.length > 1) window.history.back();
+                else void navigate({ to: "/" });
+              }}
+              aria-label="رجوع"
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-primary/30 bg-white/[0.04] px-3 text-xs font-semibold text-nx-pearl transition-colors hover:border-primary/60 hover:bg-primary/10"
+            >
+              <ArrowRight className="h-4 w-4 text-primary" aria-hidden="true" />
+              <span>رجوع</span>
+            </button>
+            <div>
+              <h1 className="text-xl font-black md:text-2xl">منظومة الوكلاء الثلاثة عشر</h1>
+              <p className="mt-1 text-xs text-nx-pearl/64 md:text-sm">
+                وكلاء متخصّصون بأسمائهم من السجل الرسمي — قراءة فقط (المادة ٢٣).
+              </p>
+            </div>
           </div>
+
           {data ? (
             <span
               className={
