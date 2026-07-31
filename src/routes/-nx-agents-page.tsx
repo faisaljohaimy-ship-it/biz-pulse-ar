@@ -218,12 +218,38 @@ export function NxAgentsPage() {
                     </span>
                   </div>
                   <p className="text-xs text-nx-pearl/72">{agent.taskAr}</p>
+
+                  {/* التغذية الراجعة — من أين يستمد هذا الوكيل بياناته */}
+                  <div className="mt-1 flex flex-col gap-1 border-t border-white/8 pt-2">
+                    <span className="text-[10px] font-semibold text-nx-pearl/56">
+                      التغذية الراجعة · المصادر
+                    </span>
+                    <ul className="flex flex-wrap gap-1">
+                      {feedSourcesFor(agent.id, agent.category).map((s) => (
+                        <li
+                          key={s.id}
+                          className="rounded-full border border-nx-cyan/30 bg-nx-cyan/5 px-2 py-0.5 text-[10px] text-nx-cyan/85"
+                        >
+                          {s.labelAr}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
                   <span className="text-[10px] uppercase tracking-wide text-nx-pearl/48" dir="ltr">
                     {agent.category}
                   </span>
                 </li>
               ))}
             </ul>
+
+            {/* لوحة التدفق: المصادر ← الوكلاء ← FINN ← بوابة الاعتماد البشري */}
+            <NxPanel title="لوحة تدفّق الوكلاء · من أين تُستمد البيانات" density="operations">
+              <div className="w-full overflow-x-auto">
+                <AgenticFlowCanvas ar variant="full" />
+              </div>
+            </NxPanel>
+
 
             {isSimulation ? (
               <NxPanel title="سجل نشاط المحاكاة" density="operations">
