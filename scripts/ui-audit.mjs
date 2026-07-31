@@ -158,13 +158,24 @@ const fail = (r) =>
 const broken = rows.filter(fail);
 
 console.log(`\nUI audit — ${BASE}`);
-console.log(`${VIEWPORTS.length} viewports × ${ROUTES.length} routes = ${rows.length} combinations`);
-console.log(`floors: text ≥${MIN_FONT}px · targets ≥${MIN_TARGET_TOUCH}px touch / ≥${MIN_TARGET_MOUSE}px mouse\n`);
+console.log(
+  `${VIEWPORTS.length} viewports × ${ROUTES.length} routes = ${rows.length} combinations`,
+);
+console.log(
+  `floors: text ≥${MIN_FONT}px · targets ≥${MIN_TARGET_TOUCH}px touch / ≥${MIN_TARGET_MOUSE}px mouse\n`,
+);
 
 const head = ["viewport", "route", "minFont", `<${MIN_FONT}px`, "small", "ovf", "err", "webgl"];
-console.log(head[0].padEnd(18) + head[1].padEnd(12) + head[2].padStart(8) +
-            head[3].padStart(8) + head[4].padStart(7) + head[5].padStart(5) +
-            head[6].padStart(5) + head[7].padStart(7));
+console.log(
+  head[0].padEnd(18) +
+    head[1].padEnd(12) +
+    head[2].padStart(8) +
+    head[3].padStart(8) +
+    head[4].padStart(7) +
+    head[5].padStart(5) +
+    head[6].padStart(5) +
+    head[7].padStart(7),
+);
 
 for (const r of rows) {
   if (r.fatal) {
@@ -173,20 +184,25 @@ for (const r of rows) {
   }
   const mark = fail(r) ? " ✗" : "";
   console.log(
-    r.vp.padEnd(18) + r.route.padEnd(12) +
-    String(r.minFont ?? "-").padStart(8) +
-    String(r.smallText.length).padStart(8) +
-    String(r.smallTargets.length).padStart(7) +
-    String(r.overflow).padStart(5) +
-    String(r.errors.length).padStart(5) +
-    String(r.webgl.length).padStart(7) + mark,
+    r.vp.padEnd(18) +
+      r.route.padEnd(12) +
+      String(r.minFont ?? "-").padStart(8) +
+      String(r.smallText.length).padStart(8) +
+      String(r.smallTargets.length).padStart(7) +
+      String(r.overflow).padStart(5) +
+      String(r.errors.length).padStart(5) +
+      String(r.webgl.length).padStart(7) +
+      mark,
   );
 }
 
 if (broken.length) {
   console.log("\n── failures in detail ──");
   for (const r of broken) {
-    if (r.fatal) { console.log(`\n${r.vp} ${r.route}: FATAL ${r.fatal}`); continue; }
+    if (r.fatal) {
+      console.log(`\n${r.vp} ${r.route}: FATAL ${r.fatal}`);
+      continue;
+    }
     console.log(`\n${r.vp} ${r.route}:`);
     if (r.overflow > 0) console.log(`  · horizontal overflow: ${r.overflow}px`);
     for (const s of r.smallText) console.log(`  · text ${s.fs}px <${s.tag}> "${s.text}"`);
@@ -201,10 +217,13 @@ const consoleTotal = rows.reduce((n, r) => n + (r.errors?.length || 0), 0);
 if (!STRICT_CONSOLE && consoleTotal > 0) {
   console.log(
     `\nnote: ${consoleTotal} console error(s) observed but NOT failing the run.` +
-    ` Re-run with STRICT_CONSOLE=1 once the environment's backend is reachable.`,
+      ` Re-run with STRICT_CONSOLE=1 once the environment's backend is reachable.`,
   );
 }
 
-console.log(broken.length ? `\n✗ ${broken.length}/${rows.length} combinations broke a floor`
-                          : `\n✓ all ${rows.length} combinations held every floor`);
+console.log(
+  broken.length
+    ? `\n✗ ${broken.length}/${rows.length} combinations broke a floor`
+    : `\n✓ all ${rows.length} combinations held every floor`,
+);
 process.exit(broken.length ? 1 : 0);
