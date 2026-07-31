@@ -3,7 +3,7 @@ import pingTool from "./tools/ping";
 import askFinnTool from "./tools/ask-finn";
 import hcisStatusTool from "./tools/hcis-status";
 import ptwActiveTool from "./tools/ptw-active";
-import { resolveIssuer } from "./project-ref";
+import { BUILTIN_PROJECT_REF, isIssuerResolved, resolveIssuer } from "./project-ref";
 
 // The OAuth issuer MUST be the direct Supabase host; the .lovable.cloud proxy
 // is rejected by RFC 8414 issuer verification.
