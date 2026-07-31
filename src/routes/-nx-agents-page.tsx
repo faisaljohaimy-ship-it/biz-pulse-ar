@@ -11,8 +11,9 @@
  * Four mandatory states: loading · empty · error · success (art. 14).
  */
 import * as React from "react";
-import { Bot } from "lucide-react";
+import { ArrowRight, Bot } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { NxEmptyState, NxErrorState, NxPanel, NxSkeleton } from "@/components/nx";
 import { getAgentFleetState } from "@/lib/agents/fleet.functions";
