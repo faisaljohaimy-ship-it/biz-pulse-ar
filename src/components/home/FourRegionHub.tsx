@@ -180,6 +180,7 @@ export function FourRegionHub() {
       value: counters?.agents_active ?? 0,
       Icon: Bot,
       tone: "text-emerald-300",
+      to: "/nx-agents",
     },
     {
       labelAr: "بانتظار الاعتماد",
@@ -187,6 +188,7 @@ export function FourRegionHub() {
       value: counters?.proposals_pending ?? 0,
       Icon: ShieldCheck,
       tone: "text-cyan-300",
+      to: "/decisions",
     },
     {
       labelAr: "أعمال عاجلة",
@@ -194,6 +196,7 @@ export function FourRegionHub() {
       value: counters?.urgent_open ?? 0,
       Icon: Siren,
       tone: "text-rose-300",
+      to: "/urgent-ops",
     },
     {
       labelAr: "قيد المعالجة",
@@ -201,6 +204,7 @@ export function FourRegionHub() {
       value: counters?.support_processing ?? 0,
       Icon: Clock3,
       tone: "text-amber-300",
+      to: "/operations",
     },
     {
       labelAr: "منجز اليوم",
@@ -208,6 +212,7 @@ export function FourRegionHub() {
       value: counters?.done_today ?? 0,
       Icon: CheckCircle2,
       tone: "text-emerald-300",
+      to: "/execution",
     },
     {
       labelAr: "متوسط الامتثال",
@@ -215,8 +220,9 @@ export function FourRegionHub() {
       value: `${counters?.compliance_avg ?? 0}%`,
       Icon: Activity,
       tone: "text-cyan-300",
+      to: "/hcis-compliance",
     },
-  ];
+  ] as const;
 
   const alerts = data?.urgent ?? [];
   const simulation = data?.simulation ?? true;
