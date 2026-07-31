@@ -123,11 +123,11 @@ function RegionCard({
 
   return (
     <article
-      className="relative overflow-hidden rounded-2xl border p-3 transition"
+      className="holo-card relative overflow-hidden rounded-2xl p-3"
       style={{
+        ["--accent-rgb" as string]: hexToRgbTriplet(color),
         borderColor: active ? color : `${color}55`,
         background: `linear-gradient(135deg, ${color}18, rgba(4,17,31,.76) 58%, rgba(4,7,15,.92))`,
-        boxShadow: active ? `0 0 0 1px ${color}55, 0 20px 44px -28px ${color}` : undefined,
       }}
     >
       <button
@@ -138,10 +138,17 @@ function RegionCard({
       >
         <Ring pct={performance} color={color} />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-base font-black" style={{ color }}>
-            {ar ? region.shortAr : region.shortEn}
+          <div className="flex items-center gap-2">
+            <span className="truncate text-base font-black" style={{ color }}>
+              {ar ? region.shortAr : region.shortEn}
+            </span>
+            {active && (
+              <span className="shrink-0 rounded-md border border-white/25 bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                {ar ? "المنطقة الحالية" : "Current"}
+              </span>
+            )}
           </div>
-          <div className="mt-1 truncate text-[11px] text-white/55">
+          <div className="mt-1 truncate text-xs text-white/65">
             {ar ? panel.subtitleAr : panel.subtitleEn}
           </div>
         </div>
@@ -154,15 +161,16 @@ function RegionCard({
             to={metric.to}
             className="flex min-h-12 flex-col items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.025] px-1 py-1.5 text-center transition hover:border-white/20 hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
           >
-            <span className="text-xs font-black tabular-nums text-white">
+            <span className="text-sm font-black tabular-nums text-white">
               {panel.metrics[metric.key]}
             </span>
-            <span className="mt-0.5 text-[9px] text-white/55">{ar ? metric.ar : metric.en}</span>
+            <span className="mt-0.5 text-[11px] text-white/65">{ar ? metric.ar : metric.en}</span>
           </Link>
         ))}
       </div>
     </article>
   );
+
 }
 
 export function FourRegionHub() {
