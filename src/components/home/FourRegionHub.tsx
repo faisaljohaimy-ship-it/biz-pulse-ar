@@ -180,6 +180,7 @@ export function FourRegionHub() {
       value: counters?.agents_active ?? 0,
       Icon: Bot,
       tone: "text-emerald-300",
+      to: "/nx-agents",
     },
     {
       labelAr: "بانتظار الاعتماد",
@@ -187,6 +188,7 @@ export function FourRegionHub() {
       value: counters?.proposals_pending ?? 0,
       Icon: ShieldCheck,
       tone: "text-cyan-300",
+      to: "/decisions",
     },
     {
       labelAr: "أعمال عاجلة",
@@ -194,6 +196,7 @@ export function FourRegionHub() {
       value: counters?.urgent_open ?? 0,
       Icon: Siren,
       tone: "text-rose-300",
+      to: "/urgent-ops",
     },
     {
       labelAr: "قيد المعالجة",
@@ -201,6 +204,7 @@ export function FourRegionHub() {
       value: counters?.support_processing ?? 0,
       Icon: Clock3,
       tone: "text-amber-300",
+      to: "/operations",
     },
     {
       labelAr: "منجز اليوم",
@@ -208,6 +212,7 @@ export function FourRegionHub() {
       value: counters?.done_today ?? 0,
       Icon: CheckCircle2,
       tone: "text-emerald-300",
+      to: "/execution",
     },
     {
       labelAr: "متوسط الامتثال",
@@ -215,8 +220,9 @@ export function FourRegionHub() {
       value: `${counters?.compliance_avg ?? 0}%`,
       Icon: Activity,
       tone: "text-cyan-300",
+      to: "/hcis-compliance",
     },
-  ];
+  ] as const;
 
   const alerts = data?.urgent ?? [];
   const simulation = data?.simulation ?? true;
@@ -292,17 +298,19 @@ export function FourRegionHub() {
       )}
 
       <div className="relative mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-        {kpis.map(({ labelAr, labelEn, value, Icon, tone }) => (
-          <div
+        {kpis.map(({ labelAr, labelEn, value, Icon, tone, to }) => (
+          <Link
             key={labelEn}
-            className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-3"
+            to={to}
+            aria-label={ar ? labelAr : labelEn}
+            className="nx-icon-edge-glow block min-h-11 rounded-2xl border border-white/[0.08] bg-white/[0.035] p-3 transition-colors hover:border-cyan-400/35 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
           >
             <div className="flex items-center justify-between gap-2">
               <span className="text-[10px] text-white/55">{ar ? labelAr : labelEn}</span>
               <Icon className={`h-4 w-4 ${tone}`} aria-hidden />
             </div>
             <div className={`mt-2 text-2xl font-black tabular-nums ${tone}`}>{value}</div>
-          </div>
+          </Link>
         ))}
       </div>
 
