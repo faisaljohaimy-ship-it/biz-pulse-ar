@@ -105,7 +105,7 @@ function Ring({ pct, color }: { pct: number; color: string }) {
         strokeDashoffset={offset}
         transform="rotate(-90 28 28)"
       />
-      <text x="28" y="31" textAnchor="middle" fontSize="10" fontWeight="700" fill="white">
+      <text x="28" y="31" textAnchor="middle" fontSize="12" fontWeight="700" fill="white">
         {Math.round(pct)}%
       </text>
     </svg>
