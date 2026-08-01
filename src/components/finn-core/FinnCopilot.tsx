@@ -44,7 +44,7 @@ import { FinnVoiceDebugBadge } from "@/components/finn/FinnVoiceDebugBadge";
 import { setIntroActive } from "@/lib/intro-store";
 import { VoiceTimeline } from "@/lib/finn/voice-timeline";
 import { FinnSignatureBackdrop } from "@/components/finn/FinnSignatureBackdrop";
-import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/finn/quick-commands";
+import { matchQuickCommands, type QuickCommand } from "@/lib/finn/quick-commands";
 import { reportVoiceLatencyRegression } from "@/lib/finn/stream-sentence-flusher";
 import { shouldSpeakFinnReply, toFinnSpeechText } from "@/lib/finn/reply-modality";
 import {
@@ -2283,29 +2283,7 @@ export function FinnCopilot() {
                   })}
                 </div>
               )}
-              {/* Quick-command chips — shown when the composer is empty. */}
-              {!draft.trim() && !isBusy && (
-                <div
-                  dir="rtl"
-                  className="mb-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                >
-                  {QUICK_COMMANDS.map((cmd) => {
-                    const Icon = cmd.icon;
-                    return (
-                      <button
-                        key={cmd.id}
-                        type="button"
-                        onClick={() => runQuickCommand(cmd)}
-                        title={cmd.prompt || cmd.inputPrefix}
-                        className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-primary/25 bg-background/70 px-3 py-1.5 text-xs font-medium text-foreground/90 transition-all hover:border-primary/50 hover:bg-primary/10"
-                      >
-                        <Icon className="h-3.5 w-3.5 text-primary" aria-hidden />
-                        <span>{cmd.ar}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              {/* Quick-command chips removed by request — slash commands remain via "/". */}
               <form
                 className="flex items-end gap-2"
                 onSubmit={(e) => {
