@@ -44,7 +44,7 @@ import { FinnVoiceDebugBadge } from "@/components/finn/FinnVoiceDebugBadge";
 import { setIntroActive } from "@/lib/intro-store";
 import { VoiceTimeline } from "@/lib/finn/voice-timeline";
 import { FinnSignatureBackdrop } from "@/components/finn/FinnSignatureBackdrop";
-import { QUICK_COMMANDS, matchQuickCommands, type QuickCommand } from "@/lib/finn/quick-commands";
+import { matchQuickCommands, type QuickCommand } from "@/lib/finn/quick-commands";
 import { reportVoiceLatencyRegression } from "@/lib/finn/stream-sentence-flusher";
 import { shouldSpeakFinnReply, toFinnSpeechText } from "@/lib/finn/reply-modality";
 import {
