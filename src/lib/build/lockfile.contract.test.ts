@@ -52,6 +52,27 @@ describe("exactly one package manager owns this repo", () => {
     const pkg = read("package.json");
     expect(pkg.packageManager ?? "").toMatch(/^npm@/);
   });
+
+  /**
+   * The check above DETECTS a second lockfile. This one checks that it cannot
+   * be committed in the first place.
+   *
+   * The distinction earned itself: `bun.lock` was deleted once, and a platform
+   * bot restored it within minutes because its tooling regenerates the file and
+   * `git add -A` swept it back in. Detection alone buys a red CI run per cycle;
+   * the ignore rule ends the cycle. Both are kept — the ignore prevents, the
+   * check catches anyone who force-adds past it.
+   */
+  it(".gitignore prevents a second lockfile from being committed at all", () => {
+    const ignored = readFileSync(join(ROOT, ".gitignore"), "utf8")
+      .split("\n")
+      .map((l) => l.trim());
+    for (const f of FOREIGN_LOCKFILES) {
+      expect(ignored, `.gitignore must list ${f} — see this file's header`).toContain(f);
+    }
+    // …and must NOT ignore npm's own lockfile, which has to stay tracked.
+    expect(ignored).not.toContain("package-lock.json");
+  });
 });
 
 describe("the lockfile agrees with the manifest", () => {

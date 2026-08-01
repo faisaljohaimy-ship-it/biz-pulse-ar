@@ -42,3 +42,19 @@ dist-ssr
 *.sql.gz
 *dump*.sql
 *backup*.sql
+
+# ── Package manager: npm ONLY ──
+# Prevention, not preference. This repo runs `npm ci` in ci.yml (twice),
+# deploy.yml and vercel.json, so package-lock.json is the lockfile CI reads.
+# When a second lockfile is also committed, one of the two is always the stale
+# one — and on 2026-08-01 that broke main: a bot bumped two devDependencies,
+# regenerated bun.lock to match, and left package-lock.json behind. `npm ci`
+# then refused to install and every CI step after "Install" was skipped.
+#
+# Ignoring the others means a tool may still generate one locally, but
+# `git add -A` can no longer commit it. The matching assertion lives in
+# src/lib/build/lockfile.contract.test.ts.
+bun.lock
+bun.lockb
+pnpm-lock.yaml
+yarn.lock
