@@ -62,8 +62,8 @@ function RaiPage() {
           ar: "لا تُستخدم بيانات العميل أبدًا لتدريب النماذج. يعمل RAG على فهارس معزولة لكل مستأجر.",
         },
         {
-          en: "Inference providers (OpenAI, Google, Anthropic, ElevenLabs) are bound by zero-retention agreements where available.",
-          ar: "مزوّدو الاستدلال (OpenAI, Google, Anthropic, ElevenLabs) ملتزمون باتفاقيات عدم احتفاظ حيث توفّرت.",
+          en: "Intelligence inference uses Google Gemini only; ElevenLabs is isolated to speech output. Retention controls are applied where the provider supports them.",
+          ar: "يستخدم الاستدلال الذكي Google Gemini فقط، بينما يُعزل ElevenLabs لإخراج الصوت. وتُطبّق ضوابط الاحتفاظ حيث يدعمها المزوّد.",
         },
       ],
     },
@@ -94,8 +94,8 @@ function RaiPage() {
           ar: "تُبلَّغ الحوادث إلى ai-safety@neexios.com وتُسجَّل في سجل التدقيق.",
         },
         {
-          en: "Customers may opt out of any specific model or provider.",
-          ar: "يحق للعميل استبعاد أي نموذج أو مزوّد بعينه.",
+          en: "Customers may disable Gemini intelligence or ElevenLabs speech independently without weakening tenant isolation.",
+          ar: "يمكن للعميل تعطيل ذكاء Gemini أو صوت ElevenLabs بصورة مستقلة من دون إضعاف عزل المستأجرين.",
         },
       ],
     },

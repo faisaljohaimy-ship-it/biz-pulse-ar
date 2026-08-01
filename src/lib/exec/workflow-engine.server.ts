@@ -154,6 +154,7 @@ async function execToolStep(
       toolId: step.toolId,
       input,
       actorId: state.triggeredBy,
+      orgId: state.orgId,
       workflowRunId: state.runId,
     });
     lastExecId = res.executionId;

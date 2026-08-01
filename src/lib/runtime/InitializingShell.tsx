@@ -60,7 +60,7 @@ export function InitializingShell({
           <p className="mt-1 text-sm text-white/60">
             {error
               ? "تحقق من اتصالك وحاول مجدداً"
-              : "منصة إنجاز الأعمال — Industrial Security, Western Region"}
+              : "منصة إنجاز الأعمال — Industrial Security, All Regions"}
           </p>
         </div>
 

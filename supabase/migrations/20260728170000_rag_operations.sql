@@ -68,9 +68,8 @@ comment on view public.rag_reembed_queue is
   'Chunks whose vector is missing or behind their content. The re-embed job drains this; an empty queue is the only proof the corpus is current.';
 
 -- ── ② Retrieval log — latency and insufficient-evidence, measured ────────
--- Written by the retrieval surface (our own dark rag-retrieve function), NOT
--- by the FINN/Gemini path, which is untouched. Stores the query and the
--- metrics; never an answer.
+-- Written by the retrieval surface. Stores the query and measured retrieval
+-- metrics; never an answer or hidden model reasoning.
 
 create table if not exists public.rag_retrieval_log (
   id                    uuid primary key default gen_random_uuid(),

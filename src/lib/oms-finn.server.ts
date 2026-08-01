@@ -1,13 +1,11 @@
 // ============================================================================
-// FINN — Incident Analysis (server-only, calls Lovable AI Gateway / gpt-5)
+// FINN — Incident Analysis (server-only, Gemini-first)
 // Returns bilingual summary + risk score + concrete operational recommendations.
 // Falls back to a deterministic heuristic on failure so the workflow never
 // blocks incident registration.
 // ============================================================================
 import { generateText } from "ai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-
-const MODEL = "openai/gpt-5";
+import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
 
 export type FinnIncidentInput = {
   ref: string;
@@ -29,21 +27,8 @@ export type FinnIncidentAnalysis = {
   risk_score: number;
   recommendations: string[];
   immediate_actions: string[];
-  source: "gpt-5" | "heuristic";
+  source: "gemini" | "heuristic";
 };
-
-function provider() {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("LOVABLE_API_KEY missing");
-  return createOpenAICompatible({
-    name: "lovable",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    headers: {
-      "Lovable-API-Key": key,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-    },
-  });
-}
 
 function heuristic(inc: FinnIncidentInput): FinnIncidentAnalysis {
   const sev: Record<string, number> = { low: 20, medium: 45, high: 70, critical: 90 };
@@ -61,12 +46,13 @@ function heuristic(inc: FinnIncidentInput): FinnIncidentAnalysis {
   const recs: string[] = [];
   const acts: string[] = [];
   if (risk >= 75) {
-    acts.push("تصعيد فوري للقيادة وتفعيل غرفة العمليات");
+    acts.push("التصعيد للقيادة وفق خطة الاستجابة المعتمدة");
   }
   if (inc.severity === "critical" || inc.severity === "high")
     acts.push("إنشاء أمر عمل تصحيحي بأولوية حرجة");
-  if (!inc.assigned_to) acts.push("تعيين مسؤول مباشر خلال 15 دقيقة");
-  if (cat.includes("fire")) acts.push("إخطار الدفاع المدني وفريق السلامة");
+  if (!inc.assigned_to) acts.push("تعيين مسؤول مباشر ضمن زمن الاستجابة المعتمد");
+  if (cat.includes("fire"))
+    acts.push("تفعيل خطة الحريق والتحقق من الإبلاغ الخارجي وفق البروتوكول المعتمد");
   if (cat.includes("intrusion"))
     acts.push("تفعيل البروتوكول الأمني للمحيط ومراجعة كاميرات البوابة");
   recs.push("توثيق جميع الإجراءات في الخط الزمني للبلاغ");
@@ -82,7 +68,7 @@ function heuristic(inc: FinnIncidentInput): FinnIncidentAnalysis {
   };
 }
 
-const SYSTEM_PROMPT = `You are FINN, the Executive AI for an Industrial Security Operations Center (Western Region, Saudi Arabia).
+const SYSTEM_PROMPT = `You are FINN, the executive industrial-security assistant inside منصة إنجاز الأعمال for all authorised regions and facilities. Never assume one region unless the incident evidence selects it.
 You analyse incoming security incidents and return ONLY a JSON object — no prose, no markdown fences.
 The JSON shape MUST be:
 {
@@ -96,7 +82,7 @@ Rules:
 - recommendations: 2-4 short bullet-style items in Arabic, focused on investigation, evidence, and follow-up.
 - immediate_actions: 1-4 short bullet-style items in Arabic, focused on what to DO in the next 15-60 minutes.
 - risk_score: severity weight (low=20, medium=45, high=70, critical=90) + priority weight + category boost (intrusion/fire/weapon/theft = +10). Clamp 0..100.
-- If category mentions fire → must include civil defense notification.
+- If category mentions fire → activate the approved fire plan and verify external notification requirements; never claim a notification was sent.
 - If category mentions intrusion → must include perimeter/CCTV protocol.
 - If no owner assigned → must include "تعيين مسؤول مباشر".
 - Never invent facts; if information is missing, write the action that gathers it.
@@ -108,7 +94,7 @@ export async function finnAnalyseIncident(
 ): Promise<FinnIncidentAnalysis> {
   const timeoutMs = opts.timeoutMs ?? 12_000;
   try {
-    const p = provider();
+    const runtime = resolveFinnGeminiRuntime();
     const userPayload = {
       ref: inc.ref,
       category: inc.category,
@@ -123,13 +109,13 @@ export async function finnAnalyseIncident(
       notes: inc.notes ?? null,
     };
     const aiPromise = generateText({
-      model: p(MODEL),
+      model: runtime.provider(runtime.modelId),
       maxOutputTokens: 600,
       system: SYSTEM_PROMPT,
       prompt: `Analyse this incident and return the JSON object:\n${JSON.stringify(userPayload, null, 2)}`,
     });
     const timeout = new Promise<never>((_, rej) =>
-      setTimeout(() => rej(new Error("aria_timeout")), timeoutMs),
+      setTimeout(() => rej(new Error("finn_timeout")), timeoutMs),
     );
     const { text } = await Promise.race([aiPromise, timeout]);
     const cleaned = text.replace(/```json\s*|\s*```/g, "").trim();
@@ -141,17 +127,17 @@ export async function finnAnalyseIncident(
     const acts = Array.isArray(parsed.immediate_actions)
       ? parsed.immediate_actions.filter((r): r is string => typeof r === "string").slice(0, 6)
       : [];
-    if (!parsed.summary_ar || !recs.length) throw new Error("aria_invalid_response");
+    if (!parsed.summary_ar || !recs.length) throw new Error("finn_invalid_response");
     return {
       summary_ar: String(parsed.summary_ar).slice(0, 600),
       summary_en: String(parsed.summary_en ?? "").slice(0, 600),
       risk_score: risk || heuristic(inc).risk_score,
       recommendations: recs,
       immediate_actions: acts.length ? acts : heuristic(inc).immediate_actions,
-      source: "gpt-5",
+      source: "gemini",
     };
   } catch (err) {
-    console.error("[oms-aria] gpt-5 analysis failed → heuristic fallback", err);
+    console.error("[oms-finn] Gemini analysis failed → heuristic fallback", err);
     return heuristic(inc);
   }
 }

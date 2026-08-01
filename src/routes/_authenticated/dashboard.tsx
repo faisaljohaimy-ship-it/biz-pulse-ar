@@ -44,7 +44,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       {
         name: "description",
         content:
-          "Live executive cockpit: KPIs, incidents, patrols, work orders, and digital twin telemetry for the Western Region Industrial Security operations.",
+          "Executive cockpit: KPIs, incidents, patrols, work orders, and digital-twin telemetry across authorised industrial-security regions.",
       },
       { property: "og:title", content: "AI Command Center — منصة إنجاز الأعمال" },
       { property: "og:description", content: "Live executive cockpit and operations telemetry." },
@@ -409,7 +409,7 @@ function OperationsCockpit() {
               مركز عمليات الأمن الصناعي
             </h1>
             <div className="text-xs text-foreground/50 mt-1">
-              إدارة الأمن الصناعي · المنطقة الغربية · {date}
+              إدارة الأمن الصناعي · جميع المناطق · {date}
             </div>
           </div>
           <div className="text-left">
@@ -447,7 +447,7 @@ function OperationsCockpit() {
           <KpiStat
             label="Sites Online"
             value={`${k?.sites_operational ?? 0}/${k?.sites_total ?? 0}`}
-            sub="Western Region"
+            sub="All authorised regions"
             tone="emerald"
           />
           <KpiStat

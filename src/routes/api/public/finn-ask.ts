@@ -3,12 +3,15 @@
  * hero. No authentication (this powers the marketing-page FINN badge);
  * protected by a strict per-IP rate limit and short input cap.
  *
- * Routes through Lovable AI Gateway with `openai/gpt-5` to match the
- * FINN Engineering Charter ("FINN = GPT-5"). Returns strict JSON:
+ * Routes through Gemini (native Google first, managed Gemini continuity).
+ * Returns strict JSON:
  *   { text_ar: string, text_en: string, mode: "concise" }
  */
+import { generateText } from "ai";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { resolveFinnGeminiRuntimes } from "@/lib/finn/gemini-provider.server";
+import { isInScope, OUT_OF_SCOPE_REPLY } from "@/lib/finn/response-contract";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -101,12 +104,14 @@ function statusToError(status: number): PublicAskErrorCode {
   return "provider_error";
 }
 
-function isRetryableStatus(status: number) {
-  return status === 408 || status === 409 || status === 425 || status === 429 || status >= 500;
-}
-
 function isTimeoutError(error: unknown) {
   return error instanceof DOMException && error.name === "TimeoutError";
+}
+
+function providerStatus(error: unknown): number | undefined {
+  const message = error instanceof Error ? error.message : String(error);
+  const match = message.match(/\b(4\d\d|5\d\d)\b/);
+  return match ? Number(match[1]) : undefined;
 }
 
 function clientIp(req: Request): string {
@@ -127,12 +132,11 @@ export const Route = createFileRoute("/api/public/finn-ask")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) {
-          console.error("[public/aria-ask] missing AI provider key");
+        const runtimes = resolveFinnGeminiRuntimes();
+        if (!runtimes.length) {
+          console.error("[public/finn-ask] missing Gemini provider key");
           return Response.json(errorPayload("missing_provider_key"), { status: 500 });
         }
-        const lovableKey = key;
 
         let body: unknown;
         try {
@@ -150,9 +154,16 @@ export const Route = createFileRoute("/api/public/finn-ask")({
         const data = parsed.data;
 
         const ip = clientIp(request);
-        const rate = await enforceRateLimit(`pub-aria-ask:${ip}`, 12, 60);
+        const rate = await enforceRateLimit(`pub-finn-ask:${ip}`, 12, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
+        if (!isInScope(data.question)) {
+          return Response.json({
+            text_ar: OUT_OF_SCOPE_REPLY,
+            text_en: "FINN is dedicated to industrial-security topics only.",
+            mode: "concise" as const,
+          });
+        }
 
         // Build a compact, model-friendly context block from what the
         // current page registered with the FINN Global Context Engine.
@@ -216,62 +227,22 @@ export const Route = createFileRoute("/api/public/finn-ask")({
         });
         const systemForCall = [brief.system, contextBlock].filter(Boolean).join("\n\n");
 
-        async function callModel(model: string, maxTokens: number) {
-          const payload = JSON.stringify({
-            model,
-            max_completion_tokens: maxTokens,
-            messages: [
-              { role: "system", content: systemForCall },
-              { role: "user", content: data.question },
-            ],
-            response_format: { type: "json_object" },
+        async function callModel(
+          runtime: (typeof runtimes)[number],
+          maxOutputTokens: number,
+        ): Promise<string> {
+          const result = await generateText({
+            model: runtime.provider(runtime.modelId),
+            system: systemForCall,
+            prompt: data.question,
+            maxOutputTokens,
+            maxRetries: 2,
+            abortSignal: AbortSignal.any([request.signal, AbortSignal.timeout(GATEWAY_TIMEOUT_MS)]),
           });
-
-          let lastError: unknown;
-          for (let attempt = 1; attempt <= 2; attempt += 1) {
-            try {
-              const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                  "Lovable-API-Key": lovableKey,
-                  "X-Lovable-AIG-SDK": "nexios-public-aria",
-                  "Content-Type": "application/json",
-                },
-                body: payload,
-                signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
-              });
-              if (attempt === 1 && isRetryableStatus(r.status)) {
-                const detail = (
-                  await r
-                    .clone()
-                    .text()
-                    .catch(() => "")
-                ).slice(0, 240);
-                console.warn("[public/aria-ask] gateway retry", {
-                  model,
-                  status: r.status,
-                  detail,
-                });
-                continue;
-              }
-              return r;
-            } catch (error) {
-              lastError = error;
-              console.warn("[public/aria-ask] gateway attempt failed", {
-                model,
-                attempt,
-                timeout: isTimeoutError(error),
-                error: error instanceof Error ? error.message : String(error),
-              });
-              if (attempt === 2) break;
-            }
-          }
-          throw lastError instanceof Error ? lastError : new Error("gateway_fetch_failed");
+          return result.text;
         }
 
-        async function extract(r: Response) {
-          const j = (await r.json()) as { choices?: { message?: { content?: string } }[] };
-          const raw = j.choices?.[0]?.message?.content ?? "";
+        function extract(raw: string) {
           let p: {
             text_ar?: string;
             text_en?: string;
@@ -283,7 +254,7 @@ export const Route = createFileRoute("/api/public/finn-ask")({
             confidence?: number;
           } = {};
           try {
-            p = JSON.parse(raw);
+            p = JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/gi, "").trim());
           } catch {
             p = {};
           }
@@ -302,79 +273,73 @@ export const Route = createFileRoute("/api/public/finn-ask")({
           };
         }
 
-        try {
-          // Primary: GPT-5 with enough budget for reasoning + JSON output.
-          let r = await callModel("openai/gpt-5", 2400);
-          if (!r.ok) {
-            const detail = (await r.text().catch(() => "")).slice(0, 240);
-            console.error("[public/aria-ask] gateway gpt-5", r.status, detail);
-            if (r.status === 429 || r.status === 402) {
-              return Response.json(errorPayload(statusToError(r.status), r.status), {
-                status: r.status,
-              });
+        let parsedResponse: ReturnType<typeof extract> | null = null;
+        let lastError: unknown;
+        for (const runtime of runtimes) {
+          try {
+            const candidate = extract(await callModel(runtime, 2400));
+            if (candidate.ar || candidate.en) {
+              parsedResponse = candidate;
+              break;
             }
-            r = await callModel("openai/gpt-5-mini", 1200);
-            if (!r.ok) {
-              const d2 = (await r.text().catch(() => "")).slice(0, 240);
-              console.error("[public/aria-ask] gateway gpt-5-mini", r.status, d2);
-              const code = statusToError(r.status);
-              return Response.json(errorPayload(code, r.status), {
-                status:
-                  code === "provider_auth_failed"
-                    ? 502
-                    : r.status === 402 || r.status === 429
-                      ? r.status
-                      : 502,
-              });
-            }
+            console.warn("[public/finn-ask] empty Gemini response", {
+              provider: runtime.vendor,
+            });
+          } catch (error) {
+            lastError = error;
+            console.warn("[public/finn-ask] Gemini attempt failed", {
+              provider: runtime.vendor,
+              timeout: isTimeoutError(error),
+              error: error instanceof Error ? error.message.slice(0, 300) : String(error),
+            });
           }
-          let parsed = await extract(r);
-          if (!parsed.ar && !parsed.en) {
-            const r2 = await callModel("openai/gpt-5-mini", 1200);
-            if (r2.ok) parsed = await extract(r2);
-          }
-          if (!parsed.ar && !parsed.en) {
-            console.error("[public/aria-ask] empty model response");
+        }
+
+        if (!parsedResponse) {
+          if (!lastError) {
             return Response.json(errorPayload("empty_response"), { status: 502 });
           }
-          // Output-gateway safe projection: block secret/protected leakage and
-          // redact PII from every model-authored string before it leaves.
-          const safe = (s?: string): string => {
-            const r = revalidateSpeakableText(s ?? "");
-            return r.ok ? r.text : "";
-          };
-          return Response.json({
-            text_ar: safe(parsed.ar || parsed.en),
-            text_en: safe(parsed.en || parsed.ar),
-            mode: "concise" as const,
-            executive: {
-              intent: brief.intent,
-              summary: safe(parsed.summary),
-              evidence: parsed.evidence,
-              reasoning: safe(parsed.reasoning),
-              recommendation: safe(parsed.recommendation),
-              next_action: parsed.next_action,
-              confidence: parsed.confidence,
-              sources: brief.sources,
-              plan: brief.plan.map((s) => ({ id: s.id, tool: s.tool, goal: s.goal_en })),
-              insights: brief.insights.map((i) => ({
-                kind: i.kind,
-                severity: i.severity,
-                title_en: i.title_en,
-                title_ar: i.title_ar,
-                recommendation_en: i.recommendation_en,
-                confidence: i.confidence,
-              })),
-            },
-          });
-        } catch (e) {
-          const code = isTimeoutError(e) ? "timeout" : "network_error";
-          console.error("[public/aria-ask]", {
-            code,
-            error: e instanceof Error ? e.message : String(e),
-          });
-          return Response.json(errorPayload(code), { status: 502 });
+          const upstreamStatus = providerStatus(lastError);
+          const code: PublicAskErrorCode = isTimeoutError(lastError)
+            ? "timeout"
+            : upstreamStatus
+              ? statusToError(upstreamStatus)
+              : "network_error";
+          const responseStatus =
+            upstreamStatus === 402 || upstreamStatus === 429 ? upstreamStatus : 502;
+          return Response.json(errorPayload(code, upstreamStatus), { status: responseStatus });
         }
+
+        // Output-gateway safe projection: block secret/protected leakage and
+        // redact PII from every model-authored string before it leaves.
+        const safe = (s?: string): string => {
+          const result = revalidateSpeakableText(s ?? "");
+          return result.ok ? result.text : "";
+        };
+        return Response.json({
+          text_ar: safe(parsedResponse.ar || parsedResponse.en),
+          text_en: safe(parsedResponse.en || parsedResponse.ar),
+          mode: "concise" as const,
+          executive: {
+            intent: brief.intent,
+            summary: safe(parsedResponse.summary),
+            evidence: parsedResponse.evidence,
+            reasoning: safe(parsedResponse.reasoning),
+            recommendation: safe(parsedResponse.recommendation),
+            next_action: parsedResponse.next_action,
+            confidence: parsedResponse.confidence,
+            sources: brief.sources,
+            plan: brief.plan.map((s) => ({ id: s.id, tool: s.tool, goal: s.goal_en })),
+            insights: brief.insights.map((i) => ({
+              kind: i.kind,
+              severity: i.severity,
+              title_en: i.title_en,
+              title_ar: i.title_ar,
+              recommendation_en: i.recommendation_en,
+              confidence: i.confidence,
+            })),
+          },
+        });
       },
     },
   },

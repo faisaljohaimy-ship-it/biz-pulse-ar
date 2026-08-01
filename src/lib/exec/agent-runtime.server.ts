@@ -2,11 +2,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { generateText, tool, stepCountIs, type ToolSet } from "ai";
 import { z } from "zod";
-import { createLovableAiGatewayProvider, DEFAULT_LOVABLE_MODEL } from "@/lib/ai-gateway.server";
+import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
 import { getExecutor, listExecutorIds } from "./tool-registry.server";
 import { executeTool } from "./tool-orchestrator.server";
 import { audit } from "./audit.server";
 import { publishEvent } from "./event-bus.server";
+import { hasAnyPlatformRole } from "@/lib/authz.server";
 
 const RunAgentParamsSchema = z.object({
   agentId: z
@@ -88,19 +89,29 @@ export async function runAgent(
   if (defErr || !def) throw new Error(`Agent not found: ${agentId}`);
   const agent = def as AgentDef & { org_id: string };
   if (!agent.enabled) throw new Error(`Agent disabled: ${agentId}`);
+  if (!(await hasAnyPlatformRole(actorId, agent.permissions ?? []))) {
+    throw new Error(`Forbidden: missing role for agent ${agentId}`);
+  }
 
   const goal = (goalOverride?.trim() || agent.goal).trim();
   const correlationId = crypto.randomUUID();
 
-  // Resolve org_id for this actor (first membership).
-  const { data: memb } = await admin
+  // Resolve tenant fail-closed. With multiple memberships the caller must
+  // supply the active organization; never select an arbitrary first row.
+  const { data: memberships, error: membershipsError } = await admin
     .from("org_members")
     .select("org_id")
-    .eq("user_id", actorId)
-    .limit(1)
-    .maybeSingle();
-  const orgId: string = (memb?.org_id as string | undefined) ?? "";
-  if (!orgId) throw new Error("Actor is not assigned to an organization");
+    .eq("user_id", actorId);
+  if (membershipsError) throw new Error("Unable to verify actor organization membership");
+  const actorOrgIds = (memberships ?? []).map((row: { org_id: string }) => row.org_id);
+  const orgId = requiredOrgId ?? (actorOrgIds.length === 1 ? actorOrgIds[0] : "");
+  if (!orgId) throw new Error("An active organization is required to run an agent");
+  if (!actorOrgIds.includes(orgId)) {
+    throw new Error("Actor is not a member of the requested organization");
+  }
+  if (agent.org_id !== orgId) {
+    throw new Error("Agent is not registered for the requested organization");
+  }
 
   // Find or create the system "Agent Execution" workflow per org so every
   // Run Agent press produces a real workflow_runs / workflow_step_runs trail.
@@ -217,7 +228,7 @@ export async function runAgent(
   const tools: ToolSet = Object.fromEntries(
     toolIds.map((toolId) => {
       const exec = getExecutor(toolId);
-      // Sanitize tool name for OpenAI/Anthropic (alphanumeric/underscore only).
+      // Provider-compatible tool names use alphanumerics/underscores only.
       const fnName = toolId.replace(/[^a-zA-Z0-9_]/g, "_");
       return [
         fnName,
@@ -268,6 +279,7 @@ export async function runAgent(
                 toolId,
                 input,
                 actorId,
+                orgId,
                 agentRunId: runId,
                 correlationId,
               });
@@ -366,24 +378,24 @@ export async function runAgent(
   );
 
   // 4) Run the bounded LLM loop.
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  if (!lovableKey) {
-    await failRun(supabase, runId, actorId, "LOVABLE_API_KEY missing");
+  let geminiRuntime: ReturnType<typeof resolveFinnGeminiRuntime>;
+  try {
+    geminiRuntime = resolveFinnGeminiRuntime();
+  } catch {
+    await failRun(supabase, runId, actorId, "FINN Gemini provider missing");
     return {
       runId,
       status: "failed",
-      summary: "Missing LOVABLE_API_KEY",
+      summary: "FINN Gemini provider is not configured",
       steps: 0,
-      error: "LOVABLE_API_KEY missing",
+      error: "GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY missing",
     };
   }
-  const gateway = createLovableAiGatewayProvider(lovableKey);
-  const modelId = agent.model || DEFAULT_LOVABLE_MODEL;
-  const isGpt5Family = modelId.startsWith("openai/gpt-5");
 
   const systemPrompt = [
     agent.system_prompt?.trim() ||
-      `You are ${agent.name}, an autonomous executive agent inside منصة إنجاز الأعمال for the Western Region Industrial Security Department.`,
+      `You are ${agent.name}, an autonomous executive agent inside منصة إنجاز الأعمال for all authorised industrial-security regions and facilities. Never assume one region unless the mission or evidence selects it.`,
+    `CANONICAL PLATFORM SCOPE: Serve industrial security across every authorised region and facility. A legacy regional phrase in this agent definition is context, not a default restriction; narrow the scope only when the current mission or authorised evidence explicitly selects a region.`,
     `Mission: ${agent.goal}`,
     `Allowed tools: ${toolIds.length ? toolIds.join(", ") : "(none — answer with analysis only)"}.`,
     ``,
@@ -396,19 +408,20 @@ export async function runAgent(
     `6. If pending_approval is returned, stop calling that tool and report it as awaiting approval.`,
     `7. Be decisive. Produce a concise executive summary at the end, in the language of the goal (Arabic or English).`,
     `8. If you have no tool evidence to support a claim, do not make the claim. State the gap instead.`,
+    `9. Gemini is a reasoning engine, not a source of organisation-specific truth. General industrial-security knowledge must be labelled as general guidance; live claims require current tool evidence.`,
+    `10. Use rag.search_verified for domain retrieval. When evidence is insufficient, use rag.record_gap. The knowledge agent may store a proposed answer only through rag.propose_candidate; that candidate remains unverified and cannot be retrieved until evidence or an authorised administrator approves it.`,
   ].join("\n");
 
   try {
     const result = await generateText({
-      model: gateway(modelId),
+      model: geminiRuntime.provider(geminiRuntime.modelId),
       system: systemPrompt,
       prompt: ctxData ? `${goal}\n\nContext:\n${JSON.stringify(ctxData, null, 2)}` : goal,
       tools,
       toolChoice: "auto",
       stopWhen: stepCountIs(50),
       maxRetries: 1,
-      // GPT-5 family rejects max_tokens entirely; omit any output-token cap.
-      ...(isGpt5Family ? {} : { maxOutputTokens: 1500, temperature: 0.3 }),
+      maxOutputTokens: 1500,
       onStepFinish: ({ text, finishReason }) => {
         stepRecords.push({
           index: stepRecords.length,

@@ -6,7 +6,7 @@
  *
  * Forbidden alternatives (do not create):
  *   - direct `fetch("/api/chat", ...)` from components
- *   - direct OpenAI / Claude / OpenRouter SDK calls from components
+ *   - direct model-provider SDK calls from components
  *   - a second FINN store, provider, or conversation
  */
 import { useCallback } from "react";

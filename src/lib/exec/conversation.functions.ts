@@ -4,7 +4,7 @@
  * Reads the LIVE record of work the AI organization has done from
  * `agent_runs` + `agent_definitions`, projects each completed run as a
  * single bilingual "statement" by that specialist agent, then asks FINN
- * (gpt-5 via Lovable AI Gateway) to synthesize one executive
+ * (Gemini-first) to synthesize one executive
  * recommendation across all statements. The synthesis is persisted to
  * `finn_reports` (kind=`conversation`) so follow-up loads are instant
  * and the executive memory survives across sessions.
@@ -13,7 +13,9 @@
  * `agent_runs.id` you can inspect under /exec.
  */
 import { createServerFn } from "@tanstack/react-start";
+import { generateText } from "ai";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -50,7 +52,7 @@ export type ConversationSynthesis = {
   next_actions_en: string[];
   confidence: number;
   /** Optional rendered note when synthesis fell back to deterministic. */
-  source: "gpt-5" | "deterministic";
+  source: "gemini" | "deterministic";
 };
 
 export type AgentConversation = {
@@ -242,16 +244,15 @@ export const getAgentConversation = createServerFn({ method: "GET" })
           next_actions_ar: Array.isArray(p.next_actions_ar) ? (p.next_actions_ar as string[]) : [],
           next_actions_en: Array.isArray(p.next_actions_en) ? (p.next_actions_en as string[]) : [],
           confidence: Number(cachedRow.confidence ?? p.confidence ?? 0.8),
-          source: "gpt-5",
+          source: p.source === "deterministic" ? "deterministic" : "gemini",
         },
       };
     }
 
-    // Synthesize via gpt-5.
+    // Synthesize through the canonical Gemini runtime.
     let synthesis: ConversationSynthesis;
     try {
-      const key = process.env.LOVABLE_API_KEY;
-      if (!key) throw new Error("Missing LOVABLE_API_KEY");
+      const runtime = resolveFinnGeminiRuntime();
 
       const findings = turns
         .map(
@@ -261,7 +262,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         .join("\n");
 
       const prompt =
-        `You are FINN, Chief Executive Intelligence Officer for an Industrial Security operation in Saudi Arabia (Western Region). ` +
+        `You are FINN, executive industrial-security assistant inside منصة إنجاز الأعمال for all authorised regions and facilities. Never assume one region unless the evidence selects it. ` +
         `Read the LIVE statements from your specialist agents below and synthesize ONE executive recommendation. ` +
         `Speak as an executive to executives — no SQL, no table names, no markdown, no schemas, no UUIDs. ` +
         `Return STRICT JSON with these keys exactly:\n` +
@@ -273,22 +274,14 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         `  confidence: number 0..1\n\n` +
         `Agent statements (most-recent first):\n${findings}`;
 
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "openai/gpt-5",
-          messages: [
-            { role: "system", content: "Reply with ONLY valid JSON. No prose, no code fences." },
-            { role: "user", content: prompt },
-          ],
-          response_format: { type: "json_object" },
-        }),
+      const { text } = await generateText({
+        model: runtime.provider(runtime.modelId),
+        system: "Reply with ONLY valid JSON. No prose, no code fences.",
+        prompt,
+        maxOutputTokens: 1200,
+        maxRetries: 2,
       });
-      if (!res.ok) throw new Error(`gateway ${res.status}`);
-      const json = await res.json();
-      const text: string = json?.choices?.[0]?.message?.content ?? "{}";
-      const parsed = JSON.parse(text);
+      const parsed = JSON.parse(text.replace(/```json\s*|\s*```/g, "").trim());
 
       const priority = ["low", "medium", "high", "critical"].includes(String(parsed.priority))
         ? (parsed.priority as ConversationSynthesis["priority"])
@@ -309,7 +302,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
           ? parsed.next_actions_en.slice(0, 4).map((s: unknown) => String(s))
           : [],
         confidence: Math.max(0, Math.min(1, Number(parsed.confidence ?? 0.82))),
-        source: "gpt-5",
+        source: "gemini",
       };
 
       // Persist as FINN's short-term executive memory.
@@ -338,7 +331,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         console.warn("[conversation] persistence failed (non-fatal):", err);
       }
     } catch (err) {
-      console.warn("[conversation] gpt-5 unavailable, using deterministic synthesis:", err);
+      console.warn("[conversation] Gemini unavailable, using deterministic synthesis:", err);
       const escalated = turns.some((t) => t.state === "escalated");
       const warning = turns.some((t) => t.state === "warning");
       const priority: ConversationSynthesis["priority"] = escalated

@@ -27,6 +27,7 @@ export interface TrustedOutputContext {
   readonly liveDataAvailable: boolean;
   readonly trustedClockISO: string | null;
   readonly isSimulationEnv: boolean;
+  readonly simulationDataAvailable?: boolean;
   readonly locale: "ar" | "en";
   /** Sensitive-action context (server-derived), if this turn requests one. */
   readonly action?: FinnActionRequest;
@@ -66,6 +67,7 @@ export async function runFinnChatTurn(
     liveDataAvailable: ctx.liveDataAvailable,
     trustedClockISO: ctx.trustedClockISO,
     isSimulationEnv: ctx.isSimulationEnv,
+    simulationDataAvailable: ctx.simulationDataAvailable,
     ...(ctx.action ? { action: ctx.action } : {}),
     ...(ctx.resourceOrgId !== undefined ? { resourceOrgId: ctx.resourceOrgId } : {}),
     ...(ctx.executionReceipt !== undefined ? { executionReceipt: ctx.executionReceipt } : {}),

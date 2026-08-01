@@ -2,7 +2,7 @@
  * rag-core — the PURE, dependency-free core shared by the rag-retrieve and
  * rag-ingest Edge Functions. No Deno globals, no imports: unit-testable from
  * vitest (src/test/rag-edge-core.test.ts) and imported relatively by the Deno
- * entrypoints. All request validation, chunking, MRL/L2 math and the
+ * entrypoints. All request validation, chunking, embedding validation and the
  * evidence-sufficiency rule live HERE so they are provable offline.
  *
  * ISOLATION CONTRACT (session-pinned):
@@ -17,32 +17,21 @@
 /** Approved storage dimension — matches rag_chunks vector(1536). */
 export const EMBED_DIM = 1536;
 /** Production embedder id recorded on every chunk. */
-export const EMBED_MODEL = "gemini/gemini-embedding-001";
+export const EMBED_MODEL = "gemini-embedding-2";
 
 /**
- * MRL truncation + L2 re-normalization (runbook contract): the embedder
- * returns a 3072-dim Matryoshka vector; we keep the first 1536 components,
- * and because a truncated MRL vector is no longer unit-length, we MUST
- * re-normalize to unit L2 norm — otherwise cosine (`<=>`) ranks wrongly.
- * Throws if the source has fewer than EMBED_DIM components (misconfigured
- * embedder is a hard error, never silent). A zero vector is returned as-is
- * (guard against divide-by-zero; HNSW just ranks it last).
+ * Gemini Embedding 2 produces the requested reduced dimension directly and
+ * normalizes it. Reject any other shape rather than truncating or silently
+ * mixing representations from a different model configuration.
  */
-export function truncateAndNormalize(vec: readonly number[]): number[] {
-  if (vec.length < EMBED_DIM) {
-    throw new Error(`embedding has ${vec.length} dims; expected >= ${EMBED_DIM}`);
+export function validateEmbeddingVector(vec: readonly number[]): number[] {
+  if (vec.length !== EMBED_DIM) {
+    throw new Error(`embedding has ${vec.length} dims; expected exactly ${EMBED_DIM}`);
   }
-  const v = vec.slice(0, EMBED_DIM);
-  return l2Normalize(v);
-}
-
-/** Unit-L2 normalization with a zero-vector guard. */
-export function l2Normalize(v: readonly number[]): number[] {
-  let sum = 0;
-  for (const x of v) sum += x * x;
-  const norm = Math.sqrt(sum);
-  if (norm === 0) return [...v];
-  return v.map((x) => x / norm);
+  if (vec.some((value) => !Number.isFinite(value))) {
+    throw new Error("embedding contains a non-finite value");
+  }
+  return [...vec];
 }
 
 // ── Request validation (the org_id firewall) ──────────────────────────────

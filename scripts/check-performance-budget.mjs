@@ -1,8 +1,16 @@
 import { readdir, stat } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { extname, join, relative } from "node:path";
 
-const ROOT = join(process.cwd(), ".output", "public");
+// The Nitro/Cloudflare preset emits the public bundle to dist/client; older
+// builds used .output/public. Accept whichever the current build produced.
+const CANDIDATES = [
+  join(process.cwd(), "dist", "client"),
+  join(process.cwd(), ".output", "public"),
+];
+const ROOT = CANDIDATES.find((candidate) => existsSync(candidate)) ?? CANDIDATES[0];
 const MiB = 1024 * 1024;
+
 
 const budgets = {
   totalOutput: 52 * MiB,
@@ -42,7 +50,7 @@ let files;
 try {
   files = await walk(ROOT);
 } catch (error) {
-  console.error("Performance budget requires a completed production build in .output/public.");
+  console.error("Performance budget requires a completed production build (dist/client or .output/public).");
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 }
@@ -59,7 +67,7 @@ const largestJs = [...js].sort((a, b) => b.size - a.size)[0];
 const largestMedia = [...media].sort((a, b) => b.size - a.size)[0];
 const describe = (file) => `${mib(file.size)} ${relative(ROOT, file.absolute)}`;
 
-console.log("NEXIOS production performance budget");
+console.log("Enjaz Business Platform production performance budget");
 assertBudget("Total public output", total, budgets.totalOutput);
 assertBudget("Total JavaScript", jsTotal, budgets.totalJavaScript);
 assertBudget(

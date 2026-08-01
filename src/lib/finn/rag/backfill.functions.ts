@@ -1,11 +1,11 @@
-// NEXIOS RAG — WS-1 backfill server function.
+// FINN Gemini RAG — WS-1 backfill server function.
 // Admin-only. Populates embedding_v2 (vector 1536) on finn_knowledge,
 // finn_document_chunks, finn_memory in batches without touching the legacy
 // embedding column. Idempotent: only rows WHERE embedding_v2 IS NULL are
 // picked up, so a repeated call safely resumes.
 
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireOrgContext } from "@/lib/org/org-middleware";
 import { z } from "zod";
 import { embedBatch, toPgVector, RAG_MODEL_VERSION } from "./embed.server";
 
@@ -23,7 +23,7 @@ const InputSchema = z.object({
 });
 
 export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireOrgContext])
   .inputValidator((raw: unknown) => InputSchema.parse(raw))
   .handler(async ({ data, context }) => {
     // Authorize: only tenant admin/owner may run backfills.
@@ -46,14 +46,19 @@ export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
       supabaseAdmin as unknown as {
         from: (t: string) => {
           select: (cols: string) => {
-            is: (
+            eq: (
               col: string,
-              v: null,
+              value: string,
             ) => {
-              limit: (n: number) => Promise<{
-                data: Array<Record<string, unknown>> | null;
-                error: { message: string } | null;
-              }>;
+              is: (
+                col: string,
+                v: null,
+              ) => {
+                limit: (n: number) => Promise<{
+                  data: Array<Record<string, unknown>> | null;
+                  error: { message: string } | null;
+                }>;
+              };
             };
           };
         };
@@ -61,6 +66,7 @@ export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
     )
       .from(table)
       .select(`id, ${textCol}`)
+      .eq("org_id", context.orgId)
       .is("embedding_v2", null)
       .limit(data.batchSize);
 
@@ -118,13 +124,19 @@ export const ragBackfillEmbeddingsV2 = createServerFn({ method: "POST" })
             cols: string,
             opts: { count: "exact"; head: true },
           ) => {
-            is: (col: string, v: null) => Promise<{ count: number | null }>;
+            eq: (
+              col: string,
+              value: string,
+            ) => {
+              is: (col: string, v: null) => Promise<{ count: number | null }>;
+            };
           };
         };
       }
     )
       .from(table)
       .select("id", { count: "exact", head: true })
+      .eq("org_id", context.orgId)
       .is("embedding_v2", null);
 
     return {

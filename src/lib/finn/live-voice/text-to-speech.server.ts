@@ -1,13 +1,13 @@
-// Text-to-speech — forwards to Lovable AI Gateway SSE endpoint.
-// Returns UNKNOWN when the provider is unavailable; never fabricates audio.
+// FINN live TTS — governed ElevenLabs voice; no model-compatible gateway.
 import { TtsRequestSchema } from "./contracts";
-import {
-  detectVoiceProvider,
-  VOICE_ENDPOINT,
-  VOICE_MODELS,
-  DEFAULT_VOICES,
-} from "./voice-provider.server";
+import { detectVoiceProvider } from "./voice-provider.server";
 import type { TtsRequest } from "./types";
+import {
+  ALLOWED_ELEVEN_VOICE_IDS,
+  FINN_ELEVENLABS_MODEL,
+  FINN_ELEVENLABS_VOICE_ID,
+  FINN_ELEVENLABS_VOICE_SETTINGS,
+} from "@/lib/finn/voice-config";
 
 export interface TtsResponse {
   readonly ok: boolean;
@@ -24,40 +24,43 @@ export async function synthesizeSpeech(
   if (!caps.tts) return { ok: false, stream: null, reason: caps.reason ?? "TTS unavailable" };
   const parsed = TtsRequestSchema.safeParse(input);
   if (!parsed.success) return { ok: false, stream: null, reason: "invalid tts request" };
-  const key = process.env.LOVABLE_API_KEY!;
-  const lang = parsed.data.lang === "unknown" ? "en" : parsed.data.lang;
-  const voice = parsed.data.voice ?? DEFAULT_VOICES[lang];
-
-  let res: Response;
+  const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
+  if (!apiKey) return { ok: false, stream: null, reason: "TTS unavailable" };
+  const requestedVoice = parsed.data.voice?.trim() ?? "";
+  const voiceId = ALLOWED_ELEVEN_VOICE_IDS.has(requestedVoice)
+    ? requestedVoice
+    : FINN_ELEVENLABS_VOICE_ID;
   try {
-    res = await fetch(VOICE_ENDPOINT.tts, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/stream?output_format=mp3_44100_128`,
+      {
+        method: "POST",
+        headers: {
+          "xi-api-key": apiKey,
+          "Content-Type": "application/json",
+          Accept: "audio/mpeg",
+        },
+        body: JSON.stringify({
+          text: parsed.data.text,
+          model_id: FINN_ELEVENLABS_MODEL,
+          voice_settings: {
+            ...FINN_ELEVENLABS_VOICE_SETTINGS,
+            speed: parsed.data.speed ?? FINN_ELEVENLABS_VOICE_SETTINGS.speed,
+          },
+        }),
+        signal: opts.signal,
       },
-      body: JSON.stringify({
-        model: VOICE_MODELS.tts,
-        input: parsed.data.text,
-        voice,
-        speed: parsed.data.speed ?? 1,
-        stream_format: "sse",
-        response_format: "pcm",
-      }),
-      signal: opts.signal,
-    });
-  } catch (err) {
+    );
+    if (!response.ok || !response.body) {
+      return { ok: false, stream: null, reason: `tts ${response.status}` };
+    }
+    return { ok: true, stream: response.body, contentType: "audio/mpeg" };
+  } catch (error) {
     if (opts.signal?.aborted) return { ok: false, stream: null, reason: "aborted" };
     return {
       ok: false,
       stream: null,
-      reason: err instanceof Error ? err.message : "network error",
+      reason: error instanceof Error ? error.message : "network error",
     };
   }
-
-  if (!res.ok || !res.body) {
-    const detail = await res.text().catch(() => "");
-    return { ok: false, stream: null, reason: `tts ${res.status}: ${detail.slice(0, 160)}` };
-  }
-  return { ok: true, stream: res.body, contentType: "text/event-stream" };
 }

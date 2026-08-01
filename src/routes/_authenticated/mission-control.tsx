@@ -901,7 +901,7 @@ function MissionControl() {
 
   const ov = q.data;
   const hasData = !!ov && ov.counts.sites > 0;
-  const displayName = ar ? "قائد المنطقة الغربية" : "Western Region Commander";
+  const displayName = ar ? "قائد الأمن الصناعي" : "Industrial Security Commander";
 
   const script = useMemo(
     () => buildAgentScript(ov, hasData, displayName),
@@ -1121,9 +1121,7 @@ function MissionControl() {
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div className="min-w-0">
             <div className="text-[12px] uppercase tracking-[0.3em] text-cyan-300/70">
-              {ar
-                ? "إدارة الأمن الصناعي — المنطقة الغربية"
-                : "Industrial Security — Western Region"}
+              {ar ? "إدارة الأمن الصناعي — جميع المناطق" : "Industrial Security — All Regions"}
             </div>
             <h1 className="mt-2 text-3xl md:text-5xl font-light tracking-tight">
               {/* البند ٢٢: the heading now matches the sidebar entry that
@@ -1267,7 +1265,7 @@ function MissionControl() {
             <div className="flex items-center gap-3 mb-4">
               <MapIcon className="h-4 w-4 text-cyan-300" />
               <div className="text-sm text-white/80">
-                {ar ? "المواقع الصناعية — المنطقة الغربية" : "Industrial Sites — Western Region"}
+                {ar ? "المواقع الصناعية — جميع المناطق" : "Industrial Sites — All Regions"}
               </div>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">

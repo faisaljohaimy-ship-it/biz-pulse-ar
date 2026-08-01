@@ -340,8 +340,8 @@ function SlaPage() {
         {isAr
           ? "للحصول على نسخة SLA المؤسسية أو شروط أعلى (99.95% / 99.99%) للنشر السيادي، تواصل مع "
           : "For the enterprise SLA package or higher tiers (99.95% / 99.99%) for sovereign deployments, contact "}
-        <a className="text-amber-200 hover:underline" href="mailto:enterprise@nexus-ai-os.com">
-          enterprise@nexus-ai-os.com
+        <a className="text-amber-200 hover:underline" href="mailto:enterprise@neexios.com">
+          enterprise@neexios.com
         </a>
         .
       </section>

@@ -44,25 +44,9 @@ export function inspectFinnProviderReadiness(
 
   const geminiReady =
     configured(env.GEMINI_API_KEY, 20) || configured(env.GOOGLE_GENERATIVE_AI_API_KEY, 20);
-  // FINN_* is the canonical name; ARIA_* stays readable as a legacy alias only.
-  const forceGeminiFlag = env.FINN_FORCE_GEMINI_FLASH ?? env.ARIA_FORCE_GEMINI_FLASH;
-  const forceGemini = forceGeminiFlag?.trim().toLowerCase() !== "false";
-  const intelligenceProvider = geminiReady
-    ? "google-gemini"
-    : !forceGemini && configured(env.OPENAI_API_KEY, 20)
-      ? "openai"
-      : !forceGemini && configured(env.LOVABLE_API_KEY, 20)
-        ? "lovable"
-        : !forceGemini && configured(env.ANTHROPIC_API_KEY, 20)
-          ? "anthropic"
-          : !forceGemini && configured(env.OPENROUTER_API_KEY, 20)
-            ? "openrouter"
-            : null;
+  const intelligenceProvider = geminiReady ? "google-gemini" : null;
   const intelligence = capability(intelligenceProvider, [
-    [
-      forceGemini ? "GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY" : "AI_PROVIDER_API_KEY",
-      intelligenceProvider !== null,
-    ],
+    ["GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY", intelligenceProvider !== null],
   ]);
 
   // Owner voice policy: the audible FINN voice is exclusively ElevenLabs Layan.

@@ -1,12 +1,14 @@
 /**
  * Predictive Insights — derives forward-looking risks for executives.
  * Computes hourly incident z-scores per site from the last 7 days, then
- * asks gpt-5 to translate the numeric signal into executive-language
+ * asks Gemini to translate the numeric signal into executive-language
  * risks with confidence. Falls back to deterministic top-anomaly cards
  * when the gateway is unavailable.
  */
 import { createServerFn } from "@tanstack/react-start";
+import { generateText } from "ai";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
+import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
 
 export type PredictedRisk = {
   id: string;
@@ -104,10 +106,9 @@ async function fetchPredictedRisks(
       return [];
     }
 
-    // Try gpt-5 for executive language; fall back deterministically.
+    // Try Gemini for executive language; fall back deterministically.
     try {
-      const key = process.env.LOVABLE_API_KEY;
-      if (!key) throw new Error("Missing LOVABLE_API_KEY");
+      const runtime = resolveFinnGeminiRuntime();
       const signal = anomalies
         .map(
           (a, i) =>
@@ -115,29 +116,15 @@ async function fetchPredictedRisks(
         )
         .join("\n");
 
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "openai/gpt-5",
-          messages: [
-            {
-              role: "system",
-              content:
-                'Reply with ONLY valid JSON: {"risks":[{title_ar,title_en,why_ar,why_en,recommendation_ar,recommendation_en,confidence,horizon_hours,severity}]}. No prose.',
-            },
-            {
-              role: "user",
-              content: `Translate this anomaly signal into executive-language predicted risks (1 per line item). Use plain Arabic and English. No table names, no IDs.\n\n${signal}`,
-            },
-          ],
-          response_format: { type: "json_object" },
-        }),
+      const { text } = await generateText({
+        model: runtime.provider(runtime.modelId),
+        system:
+          'Reply with ONLY valid JSON: {"risks":[{title_ar,title_en,why_ar,why_en,recommendation_ar,recommendation_en,confidence,horizon_hours,severity}]}. No prose.',
+        prompt: `Translate this measured anomaly signal into executive-language industrial-security risks (one per line item) across the authorised sites. Use plain Arabic and English. No table names, no IDs. Do not add facts beyond the signal.\n\n${signal}`,
+        maxOutputTokens: 1500,
+        maxRetries: 2,
       });
-      if (!res.ok) throw new Error(`gateway ${res.status}`);
-      const json = await res.json();
-      const text: string = json?.choices?.[0]?.message?.content ?? "{}";
-      const parsed = JSON.parse(text);
+      const parsed = JSON.parse(text.replace(/```json\s*|\s*```/g, "").trim());
       const risks: PredictedRisk[] = (Array.isArray(parsed.risks) ? parsed.risks : []).map(
         (r: Record<string, unknown>, idx: number) => ({
           id: `risk-${anomalies[idx]?.siteId ?? idx}`,

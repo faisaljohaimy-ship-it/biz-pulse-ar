@@ -7921,6 +7921,10 @@ export type Database = {
           payloads_purged: number
         }[]
       }
+      rag_record_gap_for_org: {
+        Args: { _org_id: string; _query: string }
+        Returns: string
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {

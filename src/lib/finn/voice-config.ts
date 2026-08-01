@@ -1,7 +1,7 @@
 /** Shared FINN Gemini voice and reasoning defaults. */
 
 /** Stable Gemini Flash model used for FINN reasoning and audio understanding. */
-export const FINN_GEMINI_FLASH_MODEL = "gemini-3.5-flash";
+export const FINN_GEMINI_FLASH_MODEL = "gemini-3.6-flash";
 
 /** Low-latency Gemini speech model. Google currently marks it Preview. */
 export const FINN_GEMINI_TTS_MODEL = "gemini-3.1-flash-tts-preview";

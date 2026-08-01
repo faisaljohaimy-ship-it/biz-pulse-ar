@@ -24,7 +24,7 @@ function Facilities() {
   const sites = data?.sites ?? [];
   return (
     <div className="space-y-4">
-      <SecPageHeader title="حالة المواقع" subtitle={`${sites.length} موقع في المنطقة الغربية`}>
+      <SecPageHeader title="حالة المواقع" subtitle={`${sites.length} موقعًا ضمن النطاق المصرح`}>
         <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_sites" />
       </SecPageHeader>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">

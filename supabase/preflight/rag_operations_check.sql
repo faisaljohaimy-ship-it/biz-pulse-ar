@@ -79,7 +79,7 @@ create table public.rag_chunks (
   content text not null,
   content_hash text generated always as (encode(extensions.digest(content,'sha256'),'hex')) stored,
   embedding text,                       -- stand-in: pgvector absent in sandbox
-  embedding_model text not null default 'gemini/gemini-embedding-001',
+  embedding_model text not null default 'gemini-embedding-2',
   embedding_dim int not null default 1536,
   is_simulation boolean not null default false,
   created_at timestamptz not null default now(),

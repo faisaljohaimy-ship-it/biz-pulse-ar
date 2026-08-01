@@ -1,40 +1,28 @@
-// Lovable AI Gateway embeddings helper. Server-only.
-// Uses openai/text-embedding-3-small with dimensions:768 to match the
-// project's existing vector(768) columns (finn_knowledge, finn_memory, finn_documents).
-// NOTE: google/gemini-embedding-* rejects the `dimensions` field, so we use OpenAI here.
+// Gemini 768-dim compatibility helper for the legacy FINN vector columns.
+import {
+  embedGeminiText,
+  resolveGeminiApiKey,
+  resolveGeminiEmbeddingModel,
+  type GeminiEmbeddingPurpose,
+} from "./gemini-embeddings.server";
 
-import { httpJson } from "@/lib/api/http.server";
-import { isApiError } from "@/lib/api";
+export const EMBEDDING_DIMS = 768;
+export const EMBEDDING_MODEL = resolveGeminiEmbeddingModel();
 
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/embeddings";
-const MODEL = "openai/text-embedding-3-small";
-
-export async function embedText(input: string): Promise<number[] | null> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) return null;
-  const trimmed = input.trim().slice(0, 8000);
-  if (!trimmed) return null;
+export async function embedText(
+  input: string,
+  options: { purpose?: GeminiEmbeddingPurpose; title?: string } = {},
+): Promise<number[] | null> {
+  if (!resolveGeminiApiKey()) return null;
   try {
-    const json = await httpJson<{ data?: { embedding: number[] }[] }>(GATEWAY, {
-      method: "POST",
-      headers: {
-        "Lovable-API-Key": key,
-        "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ model: MODEL, input: trimmed, dimensions: 768 }),
-      label: "aria/embed",
-      retries: 1,
-      timeoutMs: 12_000,
+    const result = await embedGeminiText(input, {
+      dimensions: EMBEDDING_DIMS,
+      purpose: options.purpose ?? "retrieval-query",
+      title: options.title,
     });
-    const vec = json.data?.[0]?.embedding;
-    return Array.isArray(vec) && vec.length === 768 ? vec : null;
+    return result?.vector ?? null;
   } catch (e) {
-    if (isApiError(e)) {
-      console.error("[aria/embed]", e.code, e.message, e.details);
-    } else {
-      console.error("[aria/embed] fetch failed", e);
-    }
+    console.error("[finn/embed] Gemini embedding failed", e);
     return null;
   }
 }

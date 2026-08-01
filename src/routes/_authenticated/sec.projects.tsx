@@ -37,7 +37,7 @@ function Projects() {
     <div className="space-y-4">
       <SecPageHeader
         title="مشاريع الأنظمة الأمنية"
-        subtitle="قسم مشاريع الأنظمة الأمنية — المنطقة الغربية"
+        subtitle="قسم مشاريع الأنظمة الأمنية — جميع المناطق"
       />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <StatCard label="إجمالي المشاريع" value={rows.length} />

@@ -1,130 +1,50 @@
-# FINN Brain Core — Architecture
+# FINN Brain Core
 
-> The ONE FINN. Every request routes through the Brain. Do not create a second one.
+FINN is the single governed intelligence surface in منصة إنجاز الأعمال. Every UI request passes through the shared provider, brain, orchestrator, response validator, and `/api/chat` transport.
 
-## Phase 1 — Foundation (this document)
+## Runtime flow
 
-Phase 1 introduces the permanent **Brain Core** — the architecture every future
-FINN capability (RAG, tools, persistent memory, voice, digital twin, avatar
-motion) will plug into. Phase 1 explicitly does NOT implement any of those
-features; it only builds the seams.
-
-## Directory Layout
-
-```
-src/lib/finn-core/
-├── core/                              # brain-internal managers
-│   ├── aria-brain.ts                  # single request entry point + lifecycle
-│   ├── executive-ai-orchestrator.ts   # pipeline: intent → context → route → validate
-│   ├── ai-router.ts                   # client-side intent hint selector
-│   ├── conversation-manager.ts        # turn lifecycle, dedupe, cancel
-│   ├── context-manager.ts             # route/module/screen/locale/permissions
-│   ├── memory-manager.ts              # INTERFACE only (Phase 2)
-│   ├── voice-manager.ts               # INTERFACE only (Phase 2)
-│   └── response-pipeline.ts           # validate + normalize + scrub + format
-├── providers/aria-provider.tsx        # ONE provider, mounted in __root.tsx
-├── hooks/useAria.ts                   # the ONE hook
-├── state/aria-store.ts                # zustand — mode, voice, context, turn
-├── services/aria-service.ts           # the ONLY transport to /api/chat
-├── server/ai-router.server.ts         # server-side model selection + fallback
-├── types/aria.ts                      # canonical types
-├── index.ts                           # public barrel
-└── {provider,use-aria,store,types}.ts # legacy import-path shims (keep working)
+```text
+User → useFinn().ask()
+     → finnBrain.submit()
+     → context + intent + conversation governance
+     → /api/chat
+     → native Google Gemini (gemini-3.6-flash)
+     → governed tools / evidence-gated RAG
+     → validated stream → FINN UI
 ```
 
-## Execution Flow
+The intent header changes instructions and permitted tools; it cannot select a different vendor or arbitrary model. The server allowlist resolves every intelligence request to Google Gemini.
 
-```
-User
-  ↓
-useAria().ask(text)
-  ↓
-ariaBrain.submit(text)
-  ↓
-ExecutiveAiOrchestrator.prepare()
-  ├─ ConversationManager.beginTurn()      // dedupe + cancel + status
-  ├─ ContextManager.snapshot()            // route/module/screen/locale
-  ├─ MemoryManager.recall()               // no-op in Phase 1
-  └─ AiRouter.selectHint()                // publishes x-aria-intent
-  ↓
-AriaService (transport → /api/chat)
-  ↓
-server/ai-router.server.ts               // OpenAI or Claude, retry+fallback
-  ↓
-OpenAI (Lovable Gateway) / Claude (OpenRouter)
-  ↓
-Stream → provider → ariaBrain.reportCompletion()
-  ↓
-ResponsePipeline.finalize()
-  ↓
-UI
-```
+## Singleton guarantees
 
-## Singleton Guarantees
+| Concern | Sole owner |
+| --- | --- |
+| UI provider | `FinnProvider` in the app root |
+| Client brain | `finnBrain` |
+| Conversation lifecycle | `conversationManager` |
+| Server model policy | `server/ai-router.server.ts` |
+| Intelligence provider | native `@ai-sdk/google` adapter |
+| Specialist orchestration | FINN Chief + canonical Council of Ten |
+| Knowledge | tenant-scoped hybrid RAG + Evidence Gate |
+| Transport | `/api/chat` |
 
-| Concern                  | Owner (exactly one)                                    |
-| ------------------------ | ------------------------------------------------------ |
-| FINN Provider            | `<AriaProvider>` mounted in `src/routes/__root.tsx`    |
-| FINN Brain               | `ariaBrain` (module singleton)                         |
-| Executive AI Orchestrator| `executiveAiOrchestrator` (module singleton)           |
-| AI Router (client hint)  | `aiRouter` (module singleton)                          |
-| AI Router (server select)| `resolveModel()` in `server/ai-router.server.ts`       |
-| Conversation Manager     | `conversationManager` (module singleton)               |
-| Context Manager          | `contextManager` (module singleton)                    |
-| Memory Interface         | `memoryManager` (Phase 1 no-op)                        |
-| Voice Interface          | `voiceManager` (Phase 1 state-only)                    |
-| Response Pipeline        | `responsePipeline` (module singleton)                  |
-| Transport                | `createAriaTransport()` (one instance per provider)    |
-| Conversation             | `useChat` inside `<AriaProvider>` (one app-wide)       |
-| Store                    | `useAriaStore` (zustand)                               |
-| Event bus                | store command queue + `ariaBrain.onTelemetry`          |
+## Model policy
 
-## AI Router — Routing Table (server)
+- Intelligence and transcription: `gemini-3.6-flash`.
+- Embeddings: `gemini-embedding-2`, normalized to 1536 dimensions for the current index.
+- Speech output: ElevenLabs only; it never performs reasoning or retrieval.
+- No client-controlled model IDs, cross-vendor fallback, or direct provider calls from components.
 
-| Intent hint     | Primary model                           | Fallback                     |
-| --------------- | --------------------------------------- | ---------------------------- |
-| `general`       | `openai/gpt-5-mini` (Lovable)           | `openai/gpt-5-nano`          |
-| `executive`     | `openai/gpt-5` (Lovable)                | `openai/gpt-5-mini`          |
-| `long-context`  | `anthropic/claude-3.5-sonnet` (OpenRtr) | `openai/gpt-5`               |
-| `writing`       | `anthropic/claude-3.5-sonnet` (OpenRtr) | `openai/gpt-5`               |
-| `engineering`   | `anthropic/claude-3.5-sonnet` (OpenRtr) | `openai/gpt-5`               |
-| `unknown`       | `openai/gpt-5` (Lovable)                | `openai/gpt-5-mini`          |
+## Governed learning
 
-Rules:
-- Client never sees model names — only intent + `fallbackUsed` boolean.
-- Client never picks a model. It sends an intent hint via `x-aria-intent`.
-- If OpenRouter is unavailable, Claude intents transparently degrade to OpenAI.
-- Retry once on primary failure, then surface a clean pipeline error.
+FINN does not retrain foundation-model weights. It may remember allowlisted user presentation preferences and propose new RAG candidates. Model-generated candidates stay unverified and are excluded from retrieval until an authorized human approves them. Retrieval is tenant-isolated and fails closed when evidence or organization context is insufficient.
 
 ## Forbidden
 
-- Direct OpenAI / Claude / OpenRouter SDK calls from any component or route.
-- Direct `fetch("/api/chat", ...)` from any component.
-- A second `<AriaProvider>`, `useAriaStore`, `ariaBrain`, or transport.
-- Local per-page conversation, memory, voice, or context state.
-- Exposing raw provider error strings in the UI.
-
-## Adapter Pattern for Routes
-
-```tsx
-import { useAria, setAriaPageContext } from "@/lib/finn-core/use-aria";
-
-function IncidentsPage() {
-  const aria = useAria();
-  useEffect(() => {
-    setAriaPageContext({
-      pathname: "/sec/incidents",
-      label: "Sec · Incidents",
-      locale: "en",
-      facts: { openIncidents },
-    });
-  }, [openIncidents]);
-  // aria.ask("...") | aria.open() | aria.close() | aria.focus()
-}
-```
-
-## Non-Goals (deferred to later phases)
-
-RAG · Tool Calling · SAP · Outlook · Teams · Microsoft 365 · Digital Twin ·
-Holograms · Avatar Motion · Live Monitoring · Executive News · Self Learning ·
-Persistent Memory · Full Voice (STT + streaming TTS).
+- A second FINN provider, brain, transport, or conversation store.
+- Direct provider SDK calls from browser components.
+- Treating model output as verified knowledge.
+- Auto-approving generated RAG content.
+- Executing consequential tools without policy and approval checks.
+- Exposing provider errors, hidden reasoning, secrets, or cross-tenant data to users.

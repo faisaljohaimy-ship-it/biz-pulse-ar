@@ -4,6 +4,9 @@
  * agents advertise their supported intents in their contract.
  */
 import { listAgents, hasAgent } from "./registry";
+// Register the canonical agents before the router validates/selects them.
+import "./agents";
+import { FINN_COUNCIL_OF_TEN, assertCouncilOfTen } from "./council";
 import type { AgentId, MissionPlan, MissionPlanNode } from "./types";
 import type { FinnIntent } from "../executive-reasoning.server";
 import { classifyIntent } from "../executive-reasoning.server";
@@ -14,11 +17,12 @@ function selectAgents(intent: FinnIntent, forced?: AgentId[]): AgentId[] {
   if (forced && forced.length) {
     return Array.from(new Set<AgentId>([CHIEF, ...forced.filter(hasAgent)]));
   }
-  const matches = listAgents()
-    .filter((a) => a.contract.intents.includes(intent))
-    .map((a) => a.contract.id);
-  // Chief always participates — it produces the final natural response.
-  return Array.from(new Set<AgentId>([CHIEF, ...matches]));
+
+  // FINN is the Chief and every normal mission is reviewed by the complete
+  // Council of Ten. Intent matching remains diagnostic metadata only; it must
+  // never silently remove a council specialist from the mission.
+  assertCouncilOfTen();
+  return [CHIEF, ...FINN_COUNCIL_OF_TEN];
 }
 
 /** Kahn's algorithm — returns topological layers (parallel groups). */
@@ -65,7 +69,7 @@ export function planMission(missionId: string, question: string, forced?: AgentI
       agent_id: id,
       policy: agent.contract.execution_policy,
       depends_on: agent.contract.dependencies.filter((d) => selected.includes(d)),
-      reason: `intent=${intent} · matched=${agent.contract.intents.includes(intent)}`,
+      reason: `intent=${intent} · council=${FINN_COUNCIL_OF_TEN.includes(id)} · matched=${agent.contract.intents.includes(intent)}`,
     };
   });
   return {

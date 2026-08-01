@@ -24,6 +24,8 @@
  */
 
 import { composeReasoning } from "./reasoning.server";
+import { generateText } from "ai";
+import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
 import { buildContextBlock } from "./context.server";
 import {
   buildMemoryBlock,
@@ -39,8 +41,6 @@ import { normalizeRecommendation } from "./recommendation.server";
 import { ModelEnvelopeSchema, type ModelEnvelope } from "./contracts";
 import type { BrainRequest, ConfidenceBreakdown, ExecutiveBrainAnswer } from "./types";
 
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-
 interface ModelCallResult {
   ok: boolean;
   status: number;
@@ -49,37 +49,23 @@ interface ModelCallResult {
 }
 
 async function callModel(
-  model: string,
   maxTokens: number,
   system: string,
   question: string,
-  key: string,
 ): Promise<ModelCallResult> {
   try {
-    const r = await fetch(GATEWAY_URL, {
-      method: "POST",
-      headers: {
-        "Lovable-API-Key": key,
-        "X-Lovable-AIG-SDK": "nexios-executive-brain",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        max_completion_tokens: maxTokens,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: question },
-        ],
-        response_format: { type: "json_object" },
-      }),
-      signal: AbortSignal.timeout(45_000),
+    const runtime = resolveFinnGeminiRuntime();
+    const { text: raw } = await generateText({
+      model: runtime.provider(runtime.modelId),
+      system,
+      prompt: question,
+      maxOutputTokens: maxTokens,
+      maxRetries: 2,
+      abortSignal: AbortSignal.timeout(45_000),
     });
-    if (!r.ok) return { ok: false, status: r.status, envelope: null, raw: "" };
-    const j = (await r.json()) as { choices?: { message?: { content?: string } }[] };
-    const raw = j.choices?.[0]?.message?.content ?? "";
     let parsed: unknown = {};
     try {
-      parsed = JSON.parse(raw);
+      parsed = JSON.parse(raw.replace(/```json\s*|\s*```/g, "").trim());
     } catch {
       parsed = {};
     }
@@ -127,13 +113,13 @@ function extractIncidentIds(evidence: string[]): string[] {
 }
 
 export interface RunExecutiveBrainOptions {
-  /** Lovable AI Gateway key (server-side). */
-  apiKey: string;
+  /** Reserved for server-owned Gemini execution policy; no caller API keys. */
+  provider?: "google-gemini";
 }
 
 export async function runExecutiveBrain(
   req: BrainRequest,
-  opts: RunExecutiveBrainOptions,
+  _opts: RunExecutiveBrainOptions = {},
 ): Promise<ExecutiveBrainAnswer> {
   // 1. Intent + retrieval + plan + insights + prompt (scoped by caller org)
   const reasoning = await composeReasoning(req.question, { orgId: req.orgId ?? null });
@@ -146,11 +132,8 @@ export async function runExecutiveBrain(
   const contextBlock = buildContextBlock(req, memoryBlock);
   const system = [reasoning.system, contextBlock].filter(Boolean).join("\n\n");
 
-  // 4. Reasoning call — GPT-5 primary, mini fallback
-  let result = await callModel("openai/gpt-5", 2600, system, req.question, opts.apiKey);
-  if (!result.envelope) {
-    result = await callModel("openai/gpt-5-mini", 1400, system, req.question, opts.apiKey);
-  }
+  // 4. Reasoning call — canonical Gemini runtime with provider retries.
+  const result = await callModel(2600, system, req.question);
   const env = result.envelope ?? ModelEnvelopeSchema.parse({});
 
   // 5. Coercion — decision, risks, recommendation

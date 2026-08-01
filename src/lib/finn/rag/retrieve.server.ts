@@ -1,12 +1,13 @@
-// NEXIOS RAG — unified retriever + Evidence Gate (WS-3 / WS-5 / WS-6).
+// FINN RAG — unified retriever + Evidence Gate (WS-3 / WS-5 / WS-6).
 // Server-only. Every RAG-backed answer in the FINN pipeline flows through
 // this module. It:
-//   1. Normalizes and embeds the query (1536 dims, te3s).
+//   1. Normalizes and embeds the query (Gemini Embedding 2, 1536 dims).
 //   2. Runs the hybrid RRF search (sec_kb_hybrid_search).
 //   3. Enforces the Evidence Gate (Article 31: min_sim, min_citations).
 //   4. Logs every attempt to rag_query_log for observability (Article 32).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isGeminiRagReady } from "../rag.server";
 import { embedOne, toPgVector, RAG_MODEL_VERSION } from "./embed.server";
 
 export const EVIDENCE_MIN_SIMILARITY = 0.35;
@@ -105,6 +106,31 @@ export async function retrieveWithEvidenceGate(
     route: input.route ?? null,
     correlation_id: input.correlationId ?? null,
   };
+
+  // Article 32: missing tenant context is unavailable, never a broad search.
+  if (!input.orgId) {
+    return {
+      hits: [],
+      gate_result: "error",
+      max_similarity: 0,
+      citation_count: 0,
+      reason: "missing_org_context",
+      latency_ms: Date.now() - started,
+      correlation_id: input.correlationId,
+    };
+  }
+
+  if (!isGeminiRagReady()) {
+    return {
+      hits: [],
+      gate_result: "error",
+      max_similarity: 0,
+      citation_count: 0,
+      reason: "gemini_reindex_not_certified",
+      latency_ms: Date.now() - started,
+      correlation_id: input.correlationId,
+    };
+  }
 
   const finish = async (outcome: RagRetrievalOutcome) => {
     // Fire-and-log; a logging failure must never break retrieval.

@@ -271,7 +271,7 @@ function MissionStatusStrip({
         <div className="min-w-0">
           <div className="truncate text-xs uppercase tracking-[0.22em] text-cyan-300/80">
             منصة إنجاز الأعمال ·{" "}
-            {ar ? "إدارة الأمن الصناعي · المنطقة الغربية" : "Industrial Security · Western Region"}
+            {ar ? "إدارة الأمن الصناعي · جميع المناطق" : "Industrial Security · All Regions"}
           </div>
           <div className="truncate text-2xl font-light text-white sm:text-3xl">
             {screenName("/bridge", ar)}

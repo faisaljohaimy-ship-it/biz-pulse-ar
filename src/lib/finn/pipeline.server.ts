@@ -4,7 +4,6 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { generateText } from "ai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import {
   IntentSchema,
   type Intent,
@@ -17,22 +16,8 @@ import {
 import { fetchExecKpiSources, computeExecKpis, type ExecKpis } from "@/lib/sec.functions";
 import { buildFinnContext } from "@/lib/finn-context.server";
 import { embedText, toPgVector } from "./embeddings.server";
-
-const REASONING_MODEL = "google/gemini-3-flash-preview";
-const FAST_MODEL = "google/gemini-3-flash-preview";
-
-function provider() {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("LOVABLE_API_KEY missing — FINN gateway unavailable.");
-  return createOpenAICompatible({
-    name: "lovable",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    headers: {
-      "Lovable-API-Key": key,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-    },
-  });
-}
+import { resolveFinnGeminiRuntime } from "./gemini-provider.server";
+import { isGeminiRagReady } from "./rag.server";
 
 async function timed<T>(stage: string, fn: () => Promise<T>): Promise<{ value: T; ms: number }> {
   const t0 = Date.now();
@@ -40,7 +25,7 @@ async function timed<T>(stage: string, fn: () => Promise<T>): Promise<{ value: T
     const value = await fn();
     return { value, ms: Date.now() - t0 };
   } catch (e) {
-    console.error(`[aria/pipeline] stage ${stage} failed`, e);
+    console.error(`[finn/pipeline] stage ${stage} failed`, e);
     throw e;
   }
 }
@@ -56,9 +41,9 @@ export async function detectIntent(message: string): Promise<Intent> {
     confidence: 0.4,
   };
   try {
-    const p = provider();
+    const runtime = resolveFinnGeminiRuntime();
     const { text } = await generateText({
-      model: p(FAST_MODEL),
+      model: runtime.provider(runtime.modelId),
       maxOutputTokens: 300,
       system:
         "You classify executive industrial-security queries. Reply with ONLY a JSON object matching: {intent: one of kpi_query|risk_query|incident_lookup|report_request|tool_action|conversational, language: ar|en, entities: string[], requires_report: boolean, report_kind?: executive|daily|weekly|monthly|incident|risk|operations|board, requires_tools: boolean, confidence: 0..1}. No prose.",
@@ -76,12 +61,14 @@ export async function detectIntent(message: string): Promise<Intent> {
 export async function recallMemory(
   supabase: SupabaseClient,
   userId: string,
+  orgId: string | null,
   message: string,
 ): Promise<{
   memories: { key: string; content: string; similarity: number }[];
   embedding: number[] | null;
 }> {
-  const embedding = await embedText(message);
+  if (!orgId || !isGeminiRagReady()) return { memories: [], embedding: null };
+  const embedding = await embedText(message, { purpose: "retrieval-query" });
   if (!embedding) return { memories: [], embedding: null };
   const { data, error } = await supabase.rpc("aria_match_memory", {
     _user_id: userId,
@@ -90,7 +77,7 @@ export async function recallMemory(
     _limit: 6,
   });
   if (error) {
-    console.warn("[aria/memory] rpc error", error.message);
+    console.warn("[finn/memory] rpc error", error.message);
     return { memories: [], embedding };
   }
   const rows = (data ?? []) as { key: string; content: string; similarity: number }[];
@@ -114,14 +101,17 @@ export async function recallMemory(
 export async function storeMemory(
   supabase: SupabaseClient,
   userId: string,
+  orgId: string | null,
   scope: string,
   key: string,
   content: string,
   importance = 0.5,
 ): Promise<void> {
-  const embedding = await embedText(content);
+  if (!orgId || !isGeminiRagReady()) return;
+  const embedding = await embedText(content, { purpose: "retrieval-document", title: key });
   const row = {
     user_id: userId,
+    org_id: orgId,
     scope,
     key: key.slice(0, 120),
     content: content.slice(0, 4000),
@@ -132,25 +122,26 @@ export async function storeMemory(
   const { error } = await supabase
     .from("finn_memory")
     .upsert(row, { onConflict: "user_id,scope,key" });
-  if (error) console.warn("[aria/memory] upsert failed", error.message);
+  if (error) console.warn("[finn/memory] upsert failed", error.message);
 }
 
 // ============ Stage 3: RAG (Knowledge) ============
 export async function retrieveKnowledge(
   supabase: SupabaseClient,
+  orgId: string | null,
   embedding: number[] | null,
 ): Promise<{
   chunks: { title: string; source: string; content: string; similarity: number; id: string }[];
   citations: Citation[];
 }> {
-  if (!embedding) return { chunks: [], citations: [] };
+  if (!orgId || !isGeminiRagReady() || !embedding) return { chunks: [], citations: [] };
   const { data, error } = await supabase.rpc("aria_match_knowledge", {
     _query: toPgVector(embedding),
     _tags: null,
     _limit: 5,
   });
   if (error) {
-    console.warn("[aria/rag] rpc error", error.message);
+    console.warn("[finn/rag] rpc error", error.message);
     return { chunks: [], citations: [] };
   }
   const rows = (data ?? []) as {
@@ -434,8 +425,8 @@ export async function runReasoner(args: {
   memories: { key: string; content: string }[];
   knowledge: { title: string; source: string; content: string }[];
 }): Promise<{ text: string; tokens?: number }> {
-  const p = provider();
-  const system = `You are FINN — Executive AI for إدارة الأمن الصناعي بالمنطقة الغربية (Western Region Industrial Security). Respond in ${args.language === "ar" ? "Arabic (MSA)" : "English"}. Render the executive structure with H3 sections in this order: 🎯 Executive Summary, 📊 Related KPIs (table), 🔍 Root Cause Analysis, ⚠️ Risks, 💡 Opportunities, ✅ Recommended Actions, 📈 Confidence, ➡️ Next Executive Decision. Ground EVERY number in the supplied context. If a datum is missing, say "بيانات غير متوفرة" / "Data unavailable". Never fabricate.`;
+  const runtime = resolveFinnGeminiRuntime();
+  const system = `You are FINN — the executive industrial-security assistant inside منصة إنجاز الأعمال for all authorised regions and facilities. Never assume the Western Region unless the request or evidence selects it. Respond in ${args.language === "ar" ? "Arabic (MSA)" : "English"}. Render the executive structure with H3 sections in this order: 🎯 Executive Summary, 📊 Related KPIs (table), 🔍 Root Cause Analysis, ⚠️ Risks, 💡 Opportunities, ✅ Recommended Actions, 📈 Confidence, ➡️ Next Executive Decision. Ground EVERY organisation-specific or current number in the supplied context. If a datum is missing, say "بيانات غير متوفرة" / "Data unavailable". Never fabricate.`;
 
   const ctx = [
     `# LIVE KPIs\n${JSON.stringify(args.kpis, null, 2)}`,
@@ -453,7 +444,7 @@ export async function runReasoner(args: {
     .join("\n\n");
 
   const { text, usage } = await generateText({
-    model: p(REASONING_MODEL),
+    model: runtime.provider(runtime.modelId),
     system: `${system}\n\n${ctx}`,
     prompt: args.message,
     maxOutputTokens: 1800,
@@ -480,6 +471,7 @@ export type PipelineResult = {
 export async function runPipeline(args: {
   supabase: SupabaseClient;
   userId: string;
+  orgId: string | null;
   threadId?: string;
   message: string;
 }): Promise<PipelineResult> {
@@ -496,7 +488,9 @@ export async function runPipeline(args: {
     data_json: JSON.stringify(intent),
   });
 
-  const memR = await timed("memory", () => recallMemory(args.supabase, args.userId, args.message));
+  const memR = await timed("memory", () =>
+    recallMemory(args.supabase, args.userId, args.orgId, args.message),
+  );
   trace.push({
     stage: "memory",
     status: "ok",
@@ -506,7 +500,7 @@ export async function runPipeline(args: {
   });
 
   const ragR = await timed("knowledge", () =>
-    retrieveKnowledge(args.supabase, memR.value.embedding),
+    retrieveKnowledge(args.supabase, args.orgId, memR.value.embedding),
   );
   trace.push({
     stage: "knowledge",
@@ -564,7 +558,7 @@ export async function runPipeline(args: {
       status: "pending" as const,
     }));
     const { error } = await args.supabase.from("finn_decisions").insert(rows);
-    if (error) console.warn("[aria/pipeline] decisions insert failed", error.message);
+    if (error) console.warn("[finn/pipeline] decisions insert failed", error.message);
   }
 
   const reasonR = await timed("reasoning", () =>
@@ -631,9 +625,10 @@ export async function runPipeline(args: {
   await storeMemory(
     args.supabase,
     args.userId,
+    args.orgId,
     "conversation",
     `q:${Date.now()}`,
-    `${args.message}\n→ ${reasonR.value.text.slice(0, 600)}`,
+    `User request: ${args.message}`,
     0.4,
   ).catch(() => {});
 

@@ -13,10 +13,9 @@ import {
   chunkArabicText,
   EMBED_DIM,
   hasSufficientEvidence,
-  l2Normalize,
   parseIngestRequest,
   parseRetrieveRequest,
-  truncateAndNormalize,
+  validateEmbeddingVector,
 } from "../../supabase/functions/_shared/rag-core";
 
 describe("NEGATIVE — org_id from the request body is REJECTED (both endpoints)", () => {
@@ -112,23 +111,20 @@ describe("ingest request validation", () => {
   });
 });
 
-describe("MRL truncation + L2 (the runbook contract)", () => {
-  it("l2Normalize: [3,4] → [0.6,0.8]; zero vector unchanged", () => {
-    expect(l2Normalize([3, 4])).toEqual([0.6, 0.8]);
-    expect(l2Normalize([0, 0, 0])).toEqual([0, 0, 0]);
-  });
-
-  it("truncates a 3072-dim MRL vector to 1536 and re-normalizes to unit L2", () => {
-    const mrl = Array.from({ length: 3072 }, (_, i) => (i < EMBED_DIM ? 2 : 99));
-    const out = truncateAndNormalize(mrl);
+describe("Gemini Embedding 2 vector contract", () => {
+  it("accepts exactly the configured 1536-dimensional representation", () => {
+    const vector = Array.from({ length: EMBED_DIM }, (_, index) => index / EMBED_DIM);
+    const out = validateEmbeddingVector(vector);
     expect(out).toHaveLength(EMBED_DIM);
-    const norm = Math.sqrt(out.reduce((s, x) => s + x * x, 0));
-    expect(norm).toBeCloseTo(1, 10);
-    expect(out.every((x) => x === out[0])).toBe(true); // truncation kept only the 2s
+    expect(out).toEqual(vector);
   });
 
-  it("throws loudly on an under-dimensioned embedder response", () => {
-    expect(() => truncateAndNormalize([1, 2, 3])).toThrowError(/1536/);
+  it("rejects under/over-dimensioned and non-finite responses", () => {
+    expect(() => validateEmbeddingVector([1, 2, 3])).toThrowError(/1536/);
+    expect(() => validateEmbeddingVector(Array(3072).fill(1))).toThrowError(/exactly/);
+    const invalid = Array(EMBED_DIM).fill(0);
+    invalid[7] = Number.NaN;
+    expect(() => validateEmbeddingVector(invalid)).toThrowError(/non-finite/);
   });
 });
 

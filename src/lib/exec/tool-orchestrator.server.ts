@@ -9,6 +9,8 @@ export type ExecuteToolParams = {
   toolId: string;
   input: unknown;
   actorId: string;
+  /** Requested tenant. Membership is verified before any execution row/tool call. */
+  orgId?: string | null;
   workflowRunId?: string | null;
   agentRunId?: string | null;
   correlationId?: string | null;
@@ -64,6 +66,30 @@ async function hasAnyRole(
   return hasAnyPlatformRole(userId, roles);
 }
 
+async function resolveToolOrgId(
+  supabase: SupabaseClient<Database>,
+  actorId: string,
+  requestedOrgId?: string | null,
+): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any)
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", actorId);
+  if (error) throw new Error(`Unable to verify organization membership: ${error.message}`);
+  const memberships = (data ?? []) as Array<{ org_id: string }>;
+  if (requestedOrgId) {
+    if (!memberships.some((membership) => membership.org_id === requestedOrgId)) {
+      throw new Error("Forbidden: actor is not a member of the requested organization");
+    }
+    return requestedOrgId;
+  }
+  if (memberships.length !== 1) {
+    throw new Error("An explicit organization is required for multi-tenant tool execution");
+  }
+  return memberships[0].org_id;
+}
+
 export async function executeTool(
   supabase: SupabaseClient<Database>,
   params: ExecuteToolParams,
@@ -77,6 +103,7 @@ export async function executeTool(
     preApproved = false,
   } = params;
   const retry = params.retry ?? DEFAULT_RETRY;
+  const orgId = await resolveToolOrgId(supabase, actorId, params.orgId);
 
   // 1) Load registry row
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -112,6 +139,7 @@ export async function executeTool(
       .insert({
         tool_id: toolId,
         actor_id: actorId,
+        org_id: orgId,
         workflow_run_id: workflowRunId,
         agent_run_id: agentRunId,
         correlation_id: correlationId,
@@ -125,6 +153,7 @@ export async function executeTool(
       topic: "tool.pending_approval",
       payload: { executionId: pending.id, toolId, actorId },
       actor_id: actorId,
+      org_id: orgId,
       correlation_id: correlationId,
     });
     return { executionId: pending.id, status: "pending_approval" };
@@ -138,6 +167,7 @@ export async function executeTool(
     .insert({
       tool_id: toolId,
       actor_id: actorId,
+      org_id: orgId,
       workflow_run_id: workflowRunId,
       agent_run_id: agentRunId,
       correlation_id: correlationId,
@@ -153,6 +183,7 @@ export async function executeTool(
 
   await audit(supabase, {
     actor_id: actorId,
+    org_id: orgId,
     action: "tool.execute.start",
     resource_type: "tool_execution",
     resource_id: executionId,
@@ -169,6 +200,7 @@ export async function executeTool(
         exec.execute(parsed.data, {
           supabase,
           actorId,
+          orgId,
           correlationId,
           executionId,
         }),
@@ -193,6 +225,7 @@ export async function executeTool(
         .eq("id", executionId);
       await audit(supabase, {
         actor_id: actorId,
+        org_id: orgId,
         action: "tool.execute.success",
         resource_type: "tool_execution",
         resource_id: executionId,
@@ -202,6 +235,7 @@ export async function executeTool(
         topic: `tool.succeeded.${toolId}`,
         payload: { executionId, toolId, output: result.output },
         actor_id: actorId,
+        org_id: orgId,
         correlation_id: correlationId,
       });
       return { executionId, status: "succeeded", output: result.output, attempts: attempt };
@@ -211,6 +245,7 @@ export async function executeTool(
       const backoff = retry.baseMs * Math.pow(2, attempt - 1);
       await audit(supabase, {
         actor_id: actorId,
+        org_id: orgId,
         action: "tool.execute.retry",
         resource_type: "tool_execution",
         resource_id: executionId,
@@ -240,6 +275,7 @@ export async function executeTool(
     .eq("id", executionId);
   await audit(supabase, {
     actor_id: actorId,
+    org_id: orgId,
     action: "tool.execute.fail",
     resource_type: "tool_execution",
     resource_id: executionId,
@@ -249,6 +285,7 @@ export async function executeTool(
     topic: `tool.failed.${toolId}`,
     payload: { executionId, toolId, error: message },
     actor_id: actorId,
+    org_id: orgId,
     correlation_id: correlationId,
   });
   return { executionId, status: "failed", error: message, attempts: attempt };
@@ -264,7 +301,7 @@ export async function decideApproval(
   const { data: pending, error } = await (supabase as any)
     .from("tool_executions")
     .select(
-      "id, tool_id, input_json, actor_id, workflow_run_id, agent_run_id, correlation_id, status",
+      "id, tool_id, input_json, actor_id, org_id, workflow_run_id, agent_run_id, correlation_id, status",
     )
     .eq("id", executionId)
     .maybeSingle();
@@ -272,6 +309,7 @@ export async function decideApproval(
   if (pending.status !== "pending_approval") {
     throw new Error(`Execution is ${pending.status}, not pending`);
   }
+  const orgId = await resolveToolOrgId(supabase, approverId, pending.org_id);
 
   if (decision === "reject") {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -289,6 +327,7 @@ export async function decideApproval(
     }
     await audit(supabase, {
       actor_id: approverId,
+      org_id: orgId,
       action: "tool.approval.rejected",
       resource_type: "tool_execution",
       resource_id: executionId,
@@ -311,6 +350,7 @@ export async function decideApproval(
   }
   await audit(supabase, {
     actor_id: approverId,
+    org_id: orgId,
     action: "tool.approval.approved",
     resource_type: "tool_execution",
     resource_id: executionId,
@@ -320,6 +360,7 @@ export async function decideApproval(
     toolId: pending.tool_id,
     input: pending.input_json,
     actorId: pending.actor_id ?? approverId,
+    orgId,
     workflowRunId: pending.workflow_run_id,
     agentRunId: pending.agent_run_id,
     correlationId: pending.correlation_id,
@@ -337,13 +378,14 @@ export async function rollbackExecution(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: row, error } = await (supabase as any)
     .from("tool_executions")
-    .select("id, tool_id, status, output_json, correlation_id")
+    .select("id, tool_id, status, output_json, correlation_id, org_id")
     .eq("id", executionId)
     .maybeSingle();
   if (error || !row) throw new Error("Execution not found");
   if (row.status !== "succeeded") {
     throw new Error(`Cannot rollback execution in status: ${row.status}`);
   }
+  const orgId = await resolveToolOrgId(supabase, actorId, row.org_id);
   const exec = getExecutor(row.tool_id);
   if (!exec?.rollback) {
     throw new Error(`Tool ${row.tool_id} does not support rollback`);
@@ -356,6 +398,7 @@ export async function rollbackExecution(
     await exec.rollback(payload, {
       supabase,
       actorId,
+      orgId,
       correlationId: row.correlation_id ?? crypto.randomUUID(),
       executionId,
     });
@@ -366,6 +409,7 @@ export async function rollbackExecution(
       .eq("id", executionId);
     await audit(supabase, {
       actor_id: actorId,
+      org_id: orgId,
       action: "tool.rollback.success",
       resource_type: "tool_execution",
       resource_id: executionId,
@@ -375,12 +419,14 @@ export async function rollbackExecution(
       topic: `tool.rolled_back.${row.tool_id}`,
       payload: { executionId, toolId: row.tool_id },
       actor_id: actorId,
+      org_id: orgId,
     });
     return { executionId, status: "rolled_back" };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await audit(supabase, {
       actor_id: actorId,
+      org_id: orgId,
       action: "tool.rollback.fail",
       resource_type: "tool_execution",
       resource_id: executionId,

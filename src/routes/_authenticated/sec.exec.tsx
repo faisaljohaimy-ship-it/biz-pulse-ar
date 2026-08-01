@@ -33,7 +33,7 @@ function ExecDashboard() {
     <div className="space-y-5">
       <SecPageHeader
         title="لوحة القيادة التنفيذية"
-        subtitle="إدارة الأمن الصناعي بالمنطقة الغربية — مؤشرات الأداء التنفيذية الحيّة"
+        subtitle="إدارة الأمن الصناعي — مؤشرات الأداء التنفيذية لجميع المناطق المصرح بها"
       />
 
       {/* Top Score */}

@@ -52,12 +52,12 @@ export default defineTool({
       };
     }
 
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) {
+    const geminiReady = Boolean(
+      process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    );
+    if (!geminiReady) {
       return {
-        content: [
-          { type: "text", text: "FINN is unavailable: LOVABLE_API_KEY is not configured." },
-        ],
+        content: [{ type: "text", text: "FINN is unavailable: Gemini is not configured." }],
         isError: true,
       };
     }
@@ -66,27 +66,25 @@ export default defineTool({
         ? "You are FINN, the Executive AI Engine of منصة إنجاز الأعمال OS. Reply concisely in English."
         : "أنت FINN، المحرك التنفيذي لنظام منصة إنجاز الأعمال OS. أجب باختصار تنفيذي.";
     try {
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Lovable-API-Key": apiKey,
-          "X-Lovable-AIG-SDK": "nexios-mcp-ask-aria",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: sys },
-            { role: "user", content: question },
-          ],
-        }),
+      const [{ generateText }, { resolveFinnGeminiRuntime }, { revalidateSpeakableText }] =
+        await Promise.all([
+          import("ai"),
+          import("@/lib/finn/gemini-provider.server"),
+          import("@/lib/finn/output/finalize"),
+        ]);
+      const runtime = resolveFinnGeminiRuntime();
+      const result = await generateText({
+        model: runtime.provider(runtime.modelId),
+        system: sys,
+        prompt: question,
+        maxOutputTokens: 2_000,
+        maxRetries: 2,
+        abortSignal: AbortSignal.timeout(40_000),
       });
-      if (!res.ok) {
-        const t = await res.text();
-        return { content: [{ type: "text", text: `Gateway ${res.status}: ${t}` }], isError: true };
-      }
-      const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-      const reply = data.choices?.[0]?.message?.content ?? "";
+      const validated = revalidateSpeakableText(result.text);
+      const reply = validated.ok ? validated.text : "";
+      if (!reply)
+        return { content: [{ type: "text", text: "FINN returned no safe text." }], isError: true };
       return { content: [{ type: "text", text: reply }] };
     } catch (err) {
       return {

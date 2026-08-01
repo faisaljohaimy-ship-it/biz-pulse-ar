@@ -60,6 +60,11 @@ describe("OUT evals — production output gateway", () => {
     expect(normalized).not.toContain(oldArabicPlatform);
   });
 
+  it("preserves Markdown structure while normalizing identity", () => {
+    const normalized = enforceFinnIdentity("## الحالة\n\n- بند أول\n- بند ثان");
+    expect(normalized).toBe("## الحالة\n\n- بند أول\n- بند ثان");
+  });
+
   it("OUT-001 out-of-scope investment request → refusal (no stocks/returns)", () => {
     const out = finalizeFinnOutput(
       base({
@@ -220,6 +225,24 @@ describe("OUT evals — production output gateway", () => {
     );
     expect(out.status).toBe("insufficient_evidence");
     expect(renderForUI(out)).not.toMatch(/ثلاث ساعات/);
+  });
+
+  it("OUT-015 labeled reference simulation keeps its grounded report figures", () => {
+    const out = finalizeFinnOutput(
+      base({
+        userText: "أنشئ تقريرًا تنفيذيًا عن المؤشرات ونسبة الامتثال الآن",
+        modelText: "## المؤشرات\n\n- نسبة الامتثال الحية: 95%\n- البلاغات المفتوحة: 8",
+        liveDataAvailable: false,
+        isSimulationEnv: true,
+        simulationDataAvailable: true,
+      }),
+    );
+    expect(out.status).toBe("simulation");
+    expect(renderForUI(out)).toContain("95%");
+    expect(renderForUI(out)).toContain("8");
+    expect(renderForUI(out)).toContain("بيانات محاكاة مرجعية");
+    expect(renderForUI(out)).not.toContain("الامتثال الحية");
+    expect(renderForUI(out)).toContain("\n");
   });
 
   it("OUT-013 employee names + phones → PII redacted (no 05/+966)", () => {

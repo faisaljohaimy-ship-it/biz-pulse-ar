@@ -351,8 +351,8 @@ function SecurityPage() {
         {isAr
           ? "للحصول على استبيانات الأمن المؤسسية (CAIQ / SIG)، أو تقارير الاختراق، أو خطة BCP/DR التفصيلية، تواصل مع "
           : "For enterprise security questionnaires (CAIQ / SIG), penetration-test letters, or the full BCP/DR plan, contact "}
-        <a className="text-amber-200 hover:underline" href="mailto:security@nexus-ai-os.com">
-          security@nexus-ai-os.com
+        <a className="text-amber-200 hover:underline" href="mailto:security@neexios.com">
+          security@neexios.com
         </a>
         .
       </section>

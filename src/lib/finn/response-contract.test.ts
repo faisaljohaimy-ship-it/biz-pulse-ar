@@ -49,11 +49,11 @@ describe("Article 22 — scope lock", () => {
 });
 
 describe("Article 22 — fast recall (recurring FAQs answer with no model)", () => {
-  it("matches the four canonical recurring questions", () => {
-    expect(matchFastRecall("كم عدد التوجيهات؟")?.source).toBe("hcis-directives");
-    expect(matchFastRecall("ما هي الهيئة؟")?.source).toBe("hcis-authority");
-    expect(matchFastRecall("ما مراحل دورة الاعتماد؟")?.source).toBe("hcis-approval-cycle");
+  it("answers identity locally but sends regulatory facts to grounded retrieval", () => {
     expect(matchFastRecall("من أنت؟")?.source).toBe("finn-identity");
+    expect(matchFastRecall("كم عدد التوجيهات؟")).toBeNull();
+    expect(matchFastRecall("ما هي الهيئة؟")).toBeNull();
+    expect(matchFastRecall("ما مراحل دورة الاعتماد؟")).toBeNull();
   });
 
   it("returns null for a non-recurring question (falls through to the model)", () => {
@@ -61,7 +61,7 @@ describe("Article 22 — fast recall (recurring FAQs answer with no model)", () 
   });
 
   it("every fast-recall answer obeys brevity: one line, ≤25 words, zero filler", () => {
-    for (const q of ["كم عدد التوجيهات؟", "ما الهيئة؟", "ما مراحل الاعتماد؟", "من أنت؟"]) {
+    for (const q of ["من أنت؟", "من هو FINN؟"]) {
       const hit = matchFastRecall(q);
       expect(hit).not.toBeNull();
       const a = hit!.answer;
@@ -74,7 +74,7 @@ describe("Article 22 — fast recall (recurring FAQs answer with no model)", () 
 
 describe("Article 22 — unavailability guard", () => {
   it("uses one honest line pointing to the official source", () => {
-    expect(UNAVAILABLE_REPLY).toBe("غير متوفر لدي — المصدر الرسمي: hcis.gov.sa");
+    expect(UNAVAILABLE_REPLY).toBe("غير متوفر في المصادر الموثوقة المتاحة.");
     expect(UNAVAILABLE_REPLY.split("\n")).toHaveLength(1);
     expect(hasForbiddenFiller(UNAVAILABLE_REPLY)).toBe(false);
   });
@@ -102,7 +102,10 @@ describe("Article 22 — system-prompt contract text", () => {
   it("carries the scope, brevity and truth clauses the model path must obey", () => {
     expect(FINN_RESPONSE_CONTRACT).toContain(OUT_OF_SCOPE_REPLY);
     expect(FINN_RESPONSE_CONTRACT).toContain(UNAVAILABLE_REPLY);
-    expect(FINN_RESPONSE_CONTRACT).toMatch(/max 25 words/i);
+    expect(FINN_RESPONSE_CONTRACT).toMatch(/1–3 concise sentences/i);
+    expect(FINN_RESPONSE_CONTRACT).toMatch(/400–900 words/i);
+    expect(FINN_RESPONSE_CONTRACT).toMatch(/explicit report \/ executive brief/i);
+    expect(FINN_RESPONSE_CONTRACT).toContain("REFERENCE_SIMULATION_ONLY");
   });
 });
 

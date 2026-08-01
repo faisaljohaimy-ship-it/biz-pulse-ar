@@ -21,15 +21,11 @@
 --   dimension works here. embedding_dim + its CHECK keep column and metadata
 --   from drifting.
 --
---   [MRL / L2 CONTRACT — read before ingesting]  The production embedder
---   (Gemini gemini-embedding-001) returns a 3072-dim Matryoshka (MRL) vector.
---   To store 1536, you TRUNCATE to the first 1536 components — and a truncated
---   MRL vector is NO LONGER unit-length, so cosine distance (`<=>`) would be
---   WRONG. Therefore ingestion MUST re-normalize each truncated vector to unit
---   L2 norm before writing:  v_1536 := v[1:1536];  store v_1536 / l2_norm(v_1536)
---   (skip the divide only if l2_norm = 0). The HNSW cosine index below assumes
---   every stored embedding is already L2-normalized. This is enforced by the
---   ingestion path (later session), not by DDL — documented here + in the runbook.
+--   [VECTOR-SPACE CONTRACT — read before ingesting] The canonical embedder is
+--   Gemini Embedding 2 with output_dimensionality=1536. The API returns the
+--   requested reduced representation already normalized. Never truncate a
+--   3072-dimensional response locally, and never compare vectors produced by
+--   another model/version; a model change requires a complete re-embed.
 -- Similarity: cosine (vector_cosine_ops, `<=>`) — text embeddings are direction-
 --   semantic; matches the existing sec_knowledge_articles choice.
 -- Index: HNSW (m=16, ef_construction=64) — better than IVFFlat for a corpus
@@ -54,9 +50,9 @@ create table if not exists public.rag_chunks (
   token_count     int  check (token_count is null or token_count > 0),
 
   -- provenance (brief: every chunk carries model + dims + hash).
-  -- embedding MUST be L2-normalized AFTER MRL truncation to 1536 (see header).
+  -- Generated directly at 1536 dimensions by the canonical Gemini endpoint.
   embedding       extensions.vector(1536),
-  embedding_model text not null default 'gemini/gemini-embedding-001',
+  embedding_model text not null default 'gemini-embedding-2',
   embedding_dim   int  not null default 1536 check (embedding_dim = 1536),
 
   is_simulation   boolean not null default false,

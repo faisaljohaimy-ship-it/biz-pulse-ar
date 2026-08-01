@@ -27,7 +27,7 @@ export function redactPii(input: string): string {
 
 // --- Injection neutralization for retrieved content ------------------
 
-// Strip ChatML/OpenAI control tokens and fence-abused system blocks so
+// Strip common model control tokens and fence-abused system blocks so
 // a poisoned KB row cannot pose as a system message.
 const CONTROL_TOKENS = [
   /<\|(?:im_start|im_end|im_sep|system|assistant|user)\|>/gi,

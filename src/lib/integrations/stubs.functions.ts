@@ -60,22 +60,13 @@ const PROVIDERS: IntegrationStatus[] = [
     note: "Disabled — تضمين لوحات بيانات تنفيذية.",
   },
   {
-    id: "openrouter",
-    label: "OpenRouter",
+    id: "gemini",
+    label: "Google Gemini",
     category: "ai",
     status: "not_configured",
-    scopes: ["chat.completions"],
-    doc: "OPENROUTER_API_KEY",
-    note: "متصل — موجّه احتياطي للنماذج.",
-  },
-  {
-    id: "lovable_ai",
-    label: "Lovable AI Gateway",
-    category: "ai",
-    status: "not_configured",
-    scopes: ["chat.completions", "image.generate", "tts"],
-    doc: "LOVABLE_API_KEY (مُدار)",
-    note: "متصل — المحرك الافتراضي لـ FINN.",
+    scopes: ["generateContent", "embedContent", "image.generate", "audio.transcribe"],
+    doc: "GEMINI_API_KEY",
+    note: "متصل — المحرك الوحيد لـFINN ومجلس الوكلاء العشرة.",
   },
   {
     id: "supabase",
@@ -132,10 +123,8 @@ function isProviderConfigured(id: string): boolean {
         "POWERBI_CLIENT_SECRET",
         "POWERBI_WORKSPACE_ID",
       );
-    case "openrouter":
-      return hasEnv("OPENROUTER_API_KEY");
-    case "lovable_ai":
-      return hasEnv("LOVABLE_API_KEY");
+    case "gemini":
+      return Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY);
     case "supabase":
       return Boolean(
         (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) &&
@@ -169,10 +158,10 @@ export const listIntegrations = createServerFn({ method: "GET" })
           : `غير متصل — ${provider.doc}`,
       };
     });
-    // Platform plumbing (supabase/lovable_ai/openrouter) is configured on
+    // Platform plumbing (Supabase + native Gemini) is configured on
     // every deployment — only EXTERNAL enterprise connectors count as real
     // configuration for showcase purposes.
-    const PLUMBING = new Set(["supabase", "lovable_ai", "openrouter"]);
+    const PLUMBING = new Set(["supabase", "gemini"]);
     const hasExternal = live.some((p) => p.status === "configured" && !PLUMBING.has(p.id));
     if (hasExternal) return live;
     const { buildConnectorsSimulation } = await import("@/lib/exec/showcase-simulation.server");

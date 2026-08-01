@@ -3,7 +3,7 @@
  *
  * Expands a prior recommendation into a full executive rationale:
  * Why, Evidence, Alternatives, Risks, Expected Outcome, Business Value,
- * Implementation Steps. Bilingual. Uses the GPT-5 gateway with the
+ * Implementation Steps. Bilingual. Uses the Gemini-first runtime with the
  * Executive Brain voice contract so the output stays in-persona.
  *
  * Never fabricates evidence — the caller passes the original
@@ -11,7 +11,9 @@
  * or split those, never invent new facts.
  */
 import { z } from "zod";
+import { generateText } from "ai";
 import { FINN_VOICE_CONTRACT, sanitizeVoice } from "./voice";
+import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
 
 export const ExplanationRequestSchema = z.object({
   recommendation_en: z.string().min(1).max(800),
@@ -93,7 +95,6 @@ const SCHEMA_HINT = `SCHEMA:
 
 export async function explainRecommendation(
   req: ExplanationRequest,
-  apiKey: string,
 ): Promise<ExecutiveExplanation> {
   const userPayload = JSON.stringify({
     recommendation_en: req.recommendation_en,
@@ -104,36 +105,18 @@ export async function explainRecommendation(
     deadline: req.deadline ?? "this week",
   });
 
-  async function call(model: string, maxTokens: number) {
-    return fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Lovable-API-Key": apiKey,
-        "X-Lovable-AIG-SDK": "nexios-executive-explanation",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        max_completion_tokens: maxTokens,
-        messages: [
-          { role: "system", content: `${SYSTEM}\n\n${SCHEMA_HINT}` },
-          { role: "user", content: userPayload },
-        ],
-        response_format: { type: "json_object" },
-      }),
-      signal: AbortSignal.timeout(40_000),
-    });
-  }
-
-  let r = await call("openai/gpt-5", 1800);
-  if (!r.ok) r = await call("openai/gpt-5-mini", 1200);
-  const j = (await r.json().catch(() => ({}))) as {
-    choices?: { message?: { content?: string } }[];
-  };
-  const raw = j.choices?.[0]?.message?.content ?? "";
+  const runtime = resolveFinnGeminiRuntime();
+  const { text: raw } = await generateText({
+    model: runtime.provider(runtime.modelId),
+    system: `${SYSTEM}\n\n${SCHEMA_HINT}`,
+    prompt: userPayload,
+    maxOutputTokens: 1800,
+    maxRetries: 2,
+    abortSignal: AbortSignal.timeout(40_000),
+  });
   let parsed: unknown = {};
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(raw.replace(/```json\s*|\s*```/g, "").trim());
   } catch {
     parsed = {};
   }

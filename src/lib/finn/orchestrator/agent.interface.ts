@@ -15,7 +15,7 @@ export interface AgentRunContext {
   prior_results: AgentResult[];
   /** Cancellation signal aggregated from mission + per-agent timeouts. */
   signal: AbortSignal;
-  /** Server-side Lovable AI Gateway key (may be undefined for pure agents). */
+  /** Deprecated/ignored transport field; runtime resolves the server-owned Gemini key. */
   apiKey?: string;
 }
 

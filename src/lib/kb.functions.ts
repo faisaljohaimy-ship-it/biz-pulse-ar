@@ -324,7 +324,7 @@ async function performSemanticSearch(
   const { embedText } = await import("@/lib/kb-embed.server");
   let vec: number[];
   try {
-    vec = await embedText(data.query);
+    vec = await embedText(data.query, "retrieval-query");
   } catch (e) {
     // graceful fallback to keyword search if embedding gateway is down
     const s = data.query.replace(/[,()]/g, " ");
@@ -396,6 +396,9 @@ export const kbSeedFoundational = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
+    if (process.env.FINN_ENABLE_LEGACY_REFERENCE_SEED?.trim().toLowerCase() !== "true") {
+      return { upserted: 0, status: "disabled_requires_verified_corpus" as const };
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { ARTICLES } = await import("@/lib/kb-seed.data");
 
@@ -435,7 +438,10 @@ export const kbSeedFoundational = createServerFn({ method: "POST" })
       keywords_en: a.keywords_en ?? [],
       version: a.version ?? "1.0",
       owner: a.owner ?? null,
-      status: "published",
+      // These legacy templates have no external provenance in the repository.
+      // Keep them out of retrieval until an administrator reviews and
+      // explicitly publishes each article against an approved source.
+      status: "draft",
     }));
 
     const { error: upErr } = await supabaseAdmin
@@ -443,7 +449,7 @@ export const kbSeedFoundational = createServerFn({ method: "POST" })
       .upsert(rows, { onConflict: "doc_code" });
     if (upErr) throw new Error(upErr.message);
 
-    return { upserted: rows.length };
+    return { upserted: rows.length, status: "draft_requires_review" as const };
   });
 
 /* -------------------------- Admin: embed missing ------------------------ */
@@ -486,7 +492,7 @@ export const kbEmbedMissing = createServerFn({ method: "POST" })
         .filter(Boolean)
         .join("\n\n");
       try {
-        const vec = await embedText(text);
+        const vec = await embedText(text, "retrieval-document");
         const { error: upErr } = await supabaseAdmin
           .from("sec_knowledge_articles")
           .update({

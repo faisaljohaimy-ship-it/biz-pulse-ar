@@ -134,7 +134,10 @@ export const ingestFinnDocument = createServerFn({ method: "POST" })
       }[] = [];
       // Sequential to stay friendly to gateway rate limits; can be parallelized in batches.
       for (let i = 0; i < chunks.length; i++) {
-        const vec = await embedText(chunks[i]);
+        const vec = await embedText(chunks[i], {
+          purpose: "retrieval-document",
+          title: data.title,
+        });
         rows.push({
           document_id: doc.id,
           user_id: userId,
@@ -185,7 +188,7 @@ export const searchFinnDocuments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => SearchInput.parse(i))
   .handler(async ({ data, context }) => {
-    const vec = await embedText(data.query);
+    const vec = await embedText(data.query, { purpose: "retrieval-query" });
     if (!vec)
       return {
         matches: [] as Array<{

@@ -24,7 +24,8 @@ describe("output architecture — no raw model path may return", () => {
 
   it("aria/chat.ts no longer proxies the raw provider stream body", () => {
     const src = read("src/routes/api/finn/chat.ts");
-    expect(src).toMatch(/revalidateSpeakableText/);
+    expect(src).toMatch(/finalizeFinnOutput/);
+    expect(src).toMatch(/renderForUI/);
     expect(src).not.toMatch(/new Response\(\s*openAIResponse\.body/);
   });
 

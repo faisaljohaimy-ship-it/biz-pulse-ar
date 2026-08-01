@@ -2,10 +2,19 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Build a compact, executive-grounded context block from live data for FINN —
- * the Executive AI for Western Region Industrial Security. Read-only;
+ * the executive assistant for the whole Industrial Security sector. Read-only;
  * uses the request-scoped Supabase client so RLS is enforced as the calling user.
  */
-export async function buildFinnContext(supabase: SupabaseClient): Promise<string> {
+export type FinnContextSnapshot = {
+  contextBlock: string;
+  hasOperationalData: boolean;
+  observedAt: string;
+};
+
+export async function buildFinnContextSnapshot(
+  supabase: SupabaseClient,
+): Promise<FinnContextSnapshot> {
+  const observedAt = new Date().toISOString();
   try {
     const [
       sectionsQ,
@@ -60,10 +69,38 @@ export async function buildFinnContext(supabase: SupabaseClient): Promise<string
         .order("ends_at", { ascending: true }),
     ]);
 
+    const queryResults = [
+      sectionsQ,
+      circlesQ,
+      sitesQ,
+      incidentsQ,
+      patrolsQ,
+      visitorsQ,
+      permitsQ,
+      contractorsQ,
+      assetsQ,
+      cctvQ,
+      camerasQ,
+      gatesQ,
+      sensorsQ,
+      workOrdersQ,
+      projectsQ,
+    ];
+    const hasOperationalData = queryResults.some(
+      (result) => Array.isArray(result.data) && result.data.length > 0,
+    );
+    if (!hasOperationalData) {
+      return {
+        contextBlock: "NO_INDUSTRIAL_SECURITY_DATA_AVAILABLE",
+        hasOperationalData: false,
+        observedAt,
+      };
+    }
+
     const sections: string[] = [];
 
-    sections.push("## الهيكل التنظيمي");
-    sections.push("- إدارة الأمن الصناعي بالمنطقة الغربية");
+    sections.push("## النطاق التشغيلي");
+    sections.push("- قطاع الأمن الصناعي — جميع المناطق والمواقع المصرح بها للمستخدم");
     if (sectionsQ.data?.length) {
       sections.push("### الأقسام");
       sections.push(
@@ -207,9 +244,17 @@ export async function buildFinnContext(supabase: SupabaseClient): Promise<string
       );
     }
 
-    if (sections.length === 0) return "NO_INDUSTRIAL_SECURITY_DATA_AVAILABLE";
-    return sections.join("\n\n");
+    return { contextBlock: sections.join("\n\n"), hasOperationalData: true, observedAt };
   } catch {
-    return "INDUSTRIAL_SECURITY_DATA_FETCH_FAILED";
+    return {
+      contextBlock: "INDUSTRIAL_SECURITY_DATA_FETCH_FAILED",
+      hasOperationalData: false,
+      observedAt,
+    };
   }
+}
+
+/** Backward-compatible string form used by non-chat FINN surfaces. */
+export async function buildFinnContext(supabase: SupabaseClient): Promise<string> {
+  return (await buildFinnContextSnapshot(supabase)).contextBlock;
 }

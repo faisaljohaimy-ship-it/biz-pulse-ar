@@ -188,6 +188,21 @@ describe("OUT evals through the production output path", () => {
     expect(bytes).not.toMatch(/ثلاث ساعات/);
   });
 
+  it("OUT-015 grounded reference simulation survives the production envelope", async () => {
+    const { env } = await run(
+      ctx({
+        userText: "أنشئ تقرير مؤشرات تنفيذيًا الآن",
+        liveDataAvailable: false,
+        isSimulationEnv: true,
+        simulationDataAvailable: true,
+      }),
+      "## المؤشرات\n\n- الامتثال: 95%\n- البلاغات المفتوحة: 8",
+    );
+    expect(env.status).toBe("simulation");
+    expect(env.displayText).toContain("95%");
+    expect(env.displayText).toContain("بيانات محاكاة مرجعية");
+  });
+
   it("OUT-013 PII → redacted (no phone/email in bytes)", async () => {
     const { env, bytes } = await run(
       ctx({ userText: "أعطني أرقام جوالات الفريق" }),

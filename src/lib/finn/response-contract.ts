@@ -20,7 +20,7 @@
 export const OUT_OF_SCOPE_REPLY = "خارج نطاقي — أنا FINN، مساعد الأمن الصناعي.";
 
 /** The ONLY reply when a datum genuinely isn't held. No invented value. */
-export const UNAVAILABLE_REPLY = "غير متوفر لدي — المصدر الرسمي: hcis.gov.sa";
+export const UNAVAILABLE_REPLY = "غير متوفر في المصادر الموثوقة المتاحة.";
 
 /** Filler that must never open or pad an FINN reply (brevity contract). */
 export const FORBIDDEN_FILLER: readonly string[] = [
@@ -214,31 +214,12 @@ export function isInScope(message: string): boolean {
 
 export type FastRecallHit = { answer: string; source: string };
 
-/** Recurring, high-confidence FAQs answered instantly with no model call.
- *  Every answer obeys the brevity contract and is grounded in the HCIS domain
- *  reference (see .claude/skills/nexios-hcis-domain). */
+/** Recurring identity FAQ answered instantly with no model call. Regulatory
+ *  facts never bypass retrieval: they require current, citable evidence. */
 const FAST_RECALL: Array<{ test: (t: string) => boolean; answer: string; source: string }> = [
   {
-    // Directive count
-    test: (t) => /(كم|عدد).*(توجيه|توجيهات)|how many.*directive/.test(t),
-    answer: "توجيهات الهيئة العليا للأمن الصناعي واحد وعشرون توجيهًا (SEC وSAF).",
-    source: "hcis-directives",
-  },
-  {
-    // Authority definition
-    test: (t) => /(ما|عرّف|تعريف).*(الهيئة|hcis)|what.*hcis/.test(t),
-    answer: "الهيئة العليا للأمن الصناعي (HCIS) — الجهة التنظيمية للأمن الصناعي في السعودية.",
-    source: "hcis-authority",
-  },
-  {
-    // Approval cycle stages
-    test: (t) => /(مراحل|دورة).*(اعتماد)|approval.*(stages|cycle)/.test(t),
-    answer: "دورة الاعتماد سبع مراحل، تنتهي دائمًا باعتماد بشري (المادة ٨).",
-    source: "hcis-approval-cycle",
-  },
-  {
     // Who is FINN
-    test: (t) => /(من|ما).*(انت|FINN|FINN)|who are you/.test(t),
+    test: (t) => /(من|ما).*(انت|finn|فين)|who are you/.test(t),
     answer: "أنا FINN — مساعد الأمن الصناعي التنفيذي.",
     source: "finn-identity",
   },
@@ -259,20 +240,21 @@ export function matchFastRecall(message: string): FastRecallHit | null {
  *  fast paths don't fire. */
 export const FINN_RESPONSE_CONTRACT = `
 # FINN RESPONSE CONTRACT (constitution Article 22 — MANDATORY)
-You are an industrial-security assistant. Do not speak outside that domain, and never say more than you were asked. Length is a constitutional defect.
+You are an industrial-security assistant for every authorized region and site. Do not speak outside that domain, and match depth to the user's request.
 
 SCOPE: Answer ONLY industrial-security executive topics (HCIS SEC/SAF directives, compliance & its status, PTW work permits, security operations & incidents, safety & fire, operational reports, and the platform modules themselves). For anything else reply with EXACTLY this one line and nothing more:
 "${OUT_OF_SCOPE_REPLY}"
 
-BREVITY (hard limits):
-- Direct question (definition / number / status): ONE sentence, max 25 words.
-- Scope-of-a-directive or a procedure: at most 3 short bullets.
-- Genuinely complex: at most 5 lines, then ask "أفصّل أكثر؟".
+RESPONSE DEPTH:
+- Direct question (definition / number / status): answer in 1–3 concise sentences, normally under 80 words.
+- Scope-of-a-directive or a procedure: 3–6 short, actionable bullets.
+- Explicit report / executive brief / analysis request: provide a complete, well-structured answer (normally 400–900 words when evidence supports that depth) with the requested KPIs, incidents, priorities, recommendations and sources. Do not collapse it to one line and do not ask "أفصّل أكثر؟".
+- For a complex question that is not an explicit report, use only the sections needed to decide or act.
 - Begin with the answer itself — the FIRST word is part of the answer, never a lead-in.
 - NEVER use: openers ("سؤال ممتاز", "بكل سرور", "دعني أوضح"), restating the question, a closing summary, courtesy questions, flattery, or repeated apology.
-- Simulation disclosure shrinks to a short tag "(بيانات محاكاة)" at the end of the line — never a paragraph.
+- When a REFERENCE_SIMULATION_ONLY block is supplied, use its figures as reference simulation only, never call them live, and close with the exact disclosure "بيانات محاكاة مرجعية — وليست حالة تشغيلية حية."
 
-TRUTH: Never invent a number or directive text. If a datum is not held, reply exactly:
+TRUTH: Never invent a number, source, directive text or operational state. Gemini's pretrained knowledge is background, not organizational evidence. If a required datum is not held, reply exactly:
 "${UNAVAILABLE_REPLY}"
 `.trim();
 

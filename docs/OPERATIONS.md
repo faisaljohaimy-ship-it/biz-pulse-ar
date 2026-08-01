@@ -1,45 +1,30 @@
 # Production Operations Handbook
 
-## 1. System overview
-- Frontend: TanStack Start (React 19 + Vite 7), deployed on Lovable Cloud (Cloudflare Workers).
-- Backend: Lovable Cloud (Supabase) — Postgres, Auth, Realtime, Storage.
-- AI: Lovable AI Gateway (chat) + ElevenLabs (TTS/STT).
-- Server logic: `createServerFn` (`src/lib/*.functions.ts`) and server routes (`src/routes/api/*`).
+## System overview
 
-## 2. Monitoring & observability
-- **In-app dashboard:** `/observability` — live audit log + AI token consumption.
-- **Tables:** `audit_logs`, `ai_usage` (RLS: own rows + admins see all).
-- **Helpers:** `logAudit()`, `logAiUsage()`, `bench()` in `src/lib/observability.ts`.
-- **Realtime health:** every `pulse_*` table is published to Supabase Realtime.
+- Frontend: TanStack Start, React 19, and Vite.
+- Data plane: Supabase Postgres, Auth, Realtime, and Storage with tenant RLS.
+- Intelligence: native Google Gemini only (`gemini-3.6-flash`).
+- Retrieval: Gemini embeddings plus tenant-scoped hybrid retrieval and an Evidence Gate.
+- Speech: Gemini transcription; ElevenLabs speech output.
+- Agent runtime: FINN Chief plus the canonical Council of Ten.
 
-## 3. Backup & recovery
-- Postgres: managed daily backups via Lovable Cloud (point-in-time restore available on paid tiers).
-- Storage bucket `uploads`: lifecycle handled by Supabase Storage.
-- **Restore drill:** quarterly — restore a snapshot to a staging project, run smoke tests on `/dashboard`, `/fabric`, `/observability`.
-- **Export on demand:** `psql "$SUPABASE_DB_URL" -c "\copy public.<table> to '/tmp/<table>.csv' csv header"`.
+## Observability
 
-## 4. Incident response
-| Severity | Trigger | Action |
-|---|---|---|
-| P1 | App down, auth broken | Roll back via Lovable History; page on-call |
-| P2 | Single route broken | Open hotfix; verify on `/observability` |
-| P3 | Slow query / high token spend | Inspect `ai_usage` + `audit_logs.perf.slow` |
+- Use the in-app observability and agent-operation views for latency, failures, approvals, token usage, RAG gaps, and tool audit events.
+- Alert on cross-tenant denials, repeated Evidence Gate failures, tool approval bypass attempts, and provider readiness changes.
+- Never log prompts containing secrets, raw audio, provider keys, or full private documents.
 
-## 5. Deployment
-- Preview: every commit on the dev branch.
-- Production: `Publish` button in Lovable (stable URL `project--<id>.lovable.app`).
-- CI: `.github/workflows/ci.yml` runs typecheck + build on PRs.
+## Backup and recovery
 
-## 6. Secrets
-Stored in Lovable Cloud secrets vault. Never commit `.env`. Rotate quarterly:
-`ELEVENLABS_API_KEY`, `LOVABLE_API_KEY`, `OPENROUTER_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+- Enable managed database backups and test point-in-time recovery quarterly.
+- Restore to an isolated staging project, apply migrations, then run authentication, RAG isolation, agent-council, and core route smoke tests.
+- Preserve knowledge verification history and audit events during recovery.
 
-## 7. Performance benchmarks
-| Surface | Target p95 |
-|---|---|
-| `/dashboard` first paint | < 1.5 s |
-| Fabric snapshot query | < 400 ms |
-| AI chat first token | < 1.2 s |
-| TTS round-trip (≤200 chars) | < 1.8 s |
+## Deployment
 
-Wrap critical paths in `bench("label", fn)` — slow ops auto-log to `audit_logs`.
+CI must pass lint, typecheck, unit tests, production build, performance budget, and secret scanning. Production promotion remains a deliberate human action after staging acceptance.
+
+## Secrets
+
+Store secrets in the deployment vault and rotate them on policy. Core server secrets are the Gemini key, Supabase service role, and optional ElevenLabs/connector credentials. Never commit `.env`, expose server keys through `VITE_*`, or include them in downloadable artifacts.

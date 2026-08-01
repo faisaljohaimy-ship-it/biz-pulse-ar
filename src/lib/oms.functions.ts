@@ -109,7 +109,7 @@ export const createIncident = createServerFn({ method: "POST" })
       console.error("[createIncident] event publish", err);
     }
 
-    // ── Auto FINN analysis (gpt-5 with timeout + heuristic fallback) ──
+    // ── Auto FINN analysis (Gemini with timeout + heuristic fallback) ──
     try {
       const { finnAnalyseIncident } = await import("./oms-finn.server");
       const analysis = await finnAnalyseIncident({
@@ -129,7 +129,7 @@ export const createIncident = createServerFn({ method: "POST" })
         .update({
           ai_summary: analysis.summary_ar,
           ai_risk_score: analysis.risk_score,
-          aria_auto_analyzed: analysis.source === "gpt-5",
+          aria_auto_analyzed: analysis.source === "gemini",
         })
         .eq("id", row.id);
       await supabase.from("sec_activity_events").insert({
@@ -150,7 +150,7 @@ export const createIncident = createServerFn({ method: "POST" })
         ...row,
         ai_summary: analysis.summary_ar,
         ai_risk_score: analysis.risk_score,
-        aria_auto_analyzed: analysis.source === "gpt-5",
+        aria_auto_analyzed: analysis.source === "gemini",
       };
     } catch (err) {
       console.error("[createIncident] auto-aria failed", err);

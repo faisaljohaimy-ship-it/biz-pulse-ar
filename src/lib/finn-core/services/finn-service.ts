@@ -1,7 +1,7 @@
 /**
  * FinnService — the ONLY client-side transport to the FINN backend.
  *
- * No page, hook, or component may call OpenAI/Claude/OpenRouter directly. All
+ * No page, hook, or component may call Gemini directly. All
  * requests flow through this service, which currently wraps the AI SDK
  * `DefaultChatTransport` pointed at `/api/chat`.
  *

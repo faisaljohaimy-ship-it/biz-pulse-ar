@@ -1,6 +1,6 @@
 /**
  * Executive Knowledge Bridge — FINN-as-instructor streaming endpoint.
- * Loads the lesson's instructor system prompt, streams a reply via Lovable AI Gateway.
+ * Loads the lesson's instructor system prompt and answers with native Gemini.
  * Authenticated: verifies Supabase user via bearer, rate-limited per user.
  */
 import { createFileRoute } from "@tanstack/react-router";
@@ -13,7 +13,7 @@ import {
 } from "ai";
 import { revalidateSpeakableText } from "@/lib/finn/output/finalize";
 import { createClient } from "@supabase/supabase-js";
-import { createLovableAiGatewayProvider, DEFAULT_LOVABLE_MODEL } from "@/lib/ai-gateway.server";
+import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -24,8 +24,12 @@ export const Route = createFileRoute("/api/learn/finn-teach")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const lovableKey = process.env.LOVABLE_API_KEY;
-        if (!lovableKey) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        let runtime: ReturnType<typeof resolveFinnGeminiRuntime>;
+        try {
+          runtime = resolveFinnGeminiRuntime();
+        } catch {
+          return new Response("Gemini is not configured", { status: 503 });
+        }
 
         const authHeader = request.headers.get("authorization") || "";
         if (!authHeader.startsWith("Bearer ")) {
@@ -78,8 +82,7 @@ export const Route = createFileRoute("/api/learn/finn-teach")({
             ? `\n\nملخّص الحصة للمرجعية: ${lesson.summary_ar}`
             : `\n\nLesson summary for reference: ${lesson.summary_en}`;
 
-        const provider = createLovableAiGatewayProvider(lovableKey);
-        const model = provider(DEFAULT_LOVABLE_MODEL);
+        const model = runtime.provider(runtime.modelId);
 
         const { FINN_IDENTITY_PREAMBLE } = await import("@/lib/finn/identity");
         // Output gateway: BUFFER the full lesson reply on the server, re-validate
