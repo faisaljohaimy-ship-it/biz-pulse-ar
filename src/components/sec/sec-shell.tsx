@@ -28,6 +28,8 @@ import {
   Crown,
   Building,
   BookOpen,
+  OctagonAlert,
+  CheckCircle2,
 } from "lucide-react";
 
 type Item = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -126,6 +128,73 @@ export function SecPageHeader({
   );
 }
 
+export type StatTone = "default" | "danger" | "warning" | "success";
+
+/**
+ * نغمات بطاقة المؤشر — «خطر» و«تحذير» يفترقان في أكثر من اللون.
+ *
+ * OWNER DIRECTIVE: keep danger red and warning amber, and make the difference
+ * visible in the background, the border, the icon, the text colour, the status
+ * badge, and the hover state — do NOT unify them.
+ *
+ * WHY THE ICON SHAPE CARRIES THE MEANING, NOT THE HUE
+ * The card used to differ by hue alone: a red border over a 5% red wash versus
+ * an amber border over a 5% amber wash, with identical text and no icon. On an
+ * industrial-security board that is a safety defect, not a styling one —
+ * red/amber is the exact pair that protanopia and deuteranopia collapse, so
+ * roughly one man in twelve could not tell a critical card from a caution card.
+ * WCAG 2.2 §1.4.1 says colour may not be the only carrier of information.
+ *
+ * The shapes follow the safety-sign convention the operators already read:
+ *   octagon = stop / critical · triangle = caution · circle = normal
+ * so the card is legible in greyscale, on a sunlit screen, and to a colour-blind
+ * shift supervisor.
+ */
+export const STAT_TONES: Record<
+  StatTone,
+  {
+    card: string;
+    icon: typeof AlertTriangle | null;
+    iconCls: string;
+    value: string;
+    badge: string | null;
+    badgeCls: string;
+  }
+> = {
+  default: {
+    card: "border-border hover:bg-muted/40",
+    icon: null,
+    iconCls: "",
+    value: "text-foreground",
+    badge: null,
+    badgeCls: "",
+  },
+  danger: {
+    card: "border-red-500/50 bg-red-500/10 hover:bg-red-500/15",
+    icon: OctagonAlert,
+    iconCls: "text-red-600 dark:text-red-400",
+    value: "text-red-700 dark:text-red-300",
+    badge: "خطر",
+    badgeCls: "border-red-500/40 bg-red-500/15 text-red-700 dark:text-red-300",
+  },
+  warning: {
+    card: "border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/15",
+    icon: AlertTriangle,
+    iconCls: "text-amber-600 dark:text-amber-400",
+    value: "text-amber-700 dark:text-amber-300",
+    badge: "تحذير",
+    badgeCls: "border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  },
+  success: {
+    card: "border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/15",
+    icon: CheckCircle2,
+    iconCls: "text-emerald-600 dark:text-emerald-400",
+    value: "text-emerald-700 dark:text-emerald-300",
+    badge: "سليم",
+    badgeCls: "border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  },
+};
+
 export function StatCard({
   label,
   value,
@@ -136,24 +205,39 @@ export function StatCard({
   label: string;
   value: string | number;
   hint?: string;
-  tone?: "default" | "danger" | "warning" | "success";
+  tone?: StatTone;
   sim?: boolean;
 }) {
-  const toneCls = {
-    default: "border-border",
-    danger: "border-red-500/40 bg-red-500/5",
-    warning: "border-amber-500/40 bg-amber-500/5",
-    success: "border-emerald-500/40 bg-emerald-500/5",
-  }[tone];
+  const t = STAT_TONES[tone];
+  const Icon = t.icon;
   return (
-    <div className={cn("relative rounded-xl border bg-card p-4 shadow-sm", toneCls)}>
+    <div
+      className={cn("relative rounded-xl border bg-card p-4 shadow-sm transition-colors", t.card)}
+    >
       <div className="flex items-start justify-between gap-2">
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          {label}
+        <div className="flex min-w-0 items-center gap-1.5">
+          {/* aria-hidden: the badge beside it already states the tone in words,
+              so announcing the icon would repeat it to a screen reader. */}
+          {Icon && <Icon aria-hidden className={cn("h-4 w-4 shrink-0", t.iconCls)} />}
+          <div className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            {label}
+          </div>
         </div>
         {sim && <SimTag />}
       </div>
-      <div className="mt-1 text-2xl font-bold text-foreground">{value}</div>
+      <div className="mt-1 flex items-center gap-2">
+        <div className={cn("text-2xl font-bold", t.value)}>{value}</div>
+        {t.badge && (
+          <span
+            className={cn(
+              "rounded-full border px-2 py-0.5 text-[12px] font-semibold leading-none",
+              t.badgeCls,
+            )}
+          >
+            {t.badge}
+          </span>
+        )}
+      </div>
       {hint && <div className="mt-1 text-[12px] text-muted-foreground">{hint}</div>}
     </div>
   );
