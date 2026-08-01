@@ -10,7 +10,7 @@
  *      `sec_*` and `sim_*` tables scoped by intent, so the model reasons
  *      over real data instead of memory.
  *   4. Executive Response — returns an enriched system prompt that
- *      instructs the model to reply as GPT-5 Executive with an internal
+ *      instructs Gemini to apply rigorous executive reasoning with an internal
  *      chain of Summary → Evidence → Findings → Risks → Recommendations →
  *      Next Actions → Confidence, while emitting the same public
  *      {text_ar, text_en} JSON so no UI changes are required.
@@ -283,7 +283,7 @@ export async function collectEvidence(
  * short, and bilingual — matching the existing public output contract.
  */
 export function buildExecutiveSystemPrompt(intent: FinnIntent, sources: string[]): string {
-  return `You are FINN — the Executive AI of the Industrial Security Platform (Western Region of Saudi Arabia). You reason at GPT-5 Executive level.
+  return `You are FINN — the executive assistant of منصة إنجاز الأعمال for the whole authorised industrial-security sector. Use rigorous Gemini executive reasoning. Never assume one region unless the request or evidence selects it.
 
 DETECTED INTENT: ${intent}
 AVAILABLE DATA SOURCES: ${sources.length ? sources.join(", ") : "(none — say Data unavailable if the answer requires facts)"}

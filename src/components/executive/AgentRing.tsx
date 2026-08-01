@@ -5,6 +5,9 @@ import { Link } from "@tanstack/react-router";
 import { Bot, Activity, ShieldCheck, Cpu, Sparkles, MessageSquare } from "lucide-react";
 import { listAgents, listAgentRuns } from "@/lib/exec.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { FINN_COUNCIL_OF_TEN } from "@/lib/finn/orchestrator/council";
+
+const COUNCIL_ORDER = new Map<string, number>(FINN_COUNCIL_OF_TEN.map((id, index) => [id, index]));
 
 /**
  * AgentRing — Executive AI Command Center surface.
@@ -173,15 +176,17 @@ export function AgentRing() {
       if (b > a) latestByAgent.set(r.agent_id, r);
     }
     return rows
-      .filter((a) => a.enabled !== false)
-      .slice(0, 14)
+      .filter((a) => a.enabled !== false && COUNCIL_ORDER.has(a.id))
+      .sort(
+        (left, right) => (COUNCIL_ORDER.get(left.id) ?? 99) - (COUNCIL_ORDER.get(right.id) ?? 99),
+      )
       .map((a) => {
         const run = latestByAgent.get(a.id);
         return {
           id: a.id,
           name: a.name,
           goal: a.goal ?? "",
-          model: a.model ?? "openai/gpt-5",
+          model: a.model ?? "gemini-3.6-flash",
           enabled: a.enabled !== false,
           status: deriveStatus(run),
           lastSummary: run?.summary ?? "",

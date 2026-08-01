@@ -149,7 +149,7 @@ export const finnAnalyzeIncident = createServerFn({ method: "POST" })
       .update({
         ai_summary: analysis.summary_ar,
         ai_risk_score: analysis.risk_score,
-        aria_auto_analyzed: analysis.source === "gpt-5",
+        aria_auto_analyzed: analysis.source === "gemini",
       })
       .eq("id", data.incident_id);
 

@@ -247,8 +247,8 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
       "detection models, event classification, and proactive recommendations",
       "استباق التهديدات بدلاً من الرد المتأخر",
       "anticipate threats instead of reacting late",
-      "النماذج تعمل عبر Lovable AI Gateway، تُنتج توصيات ذات درجة ثقة، ولا تُنفَّذ تلقائيًا بل تُعرض للاعتماد التنفيذي (needsApproval)",
-      "models run over Lovable AI Gateway, produce confidence-scored recommendations, and never auto-execute — every action needs executive approval (needsApproval)",
+      "يعمل الاستدلال حصريًا عبر Google Gemini، ويُنتج توصيات موثّقة بدرجة ثقة، ولا ينفّذ الإجراءات المؤثرة تلقائيًا بل يعرضها للاعتماد التنفيذي (needsApproval)",
+      "intelligence runs exclusively on Google Gemini, produces evidence-backed confidence-scored recommendations, and never auto-executes consequential actions — each requires executive approval (needsApproval)",
     ),
   ],
   [

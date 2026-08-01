@@ -33,8 +33,10 @@ export const Route = createFileRoute("/api/public/finn-explain")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return Response.json({ error: "missing_lovable_api_key" }, { status: 500 });
+        const geminiReady = Boolean(
+          process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+        );
+        if (!geminiReady) return Response.json({ error: "gemini_not_configured" }, { status: 503 });
 
         const ip = clientIp(request);
         const rate = await enforceRateLimit(`pub-aria-explain:${ip}`, 6, 60);
@@ -56,7 +58,7 @@ export const Route = createFileRoute("/api/public/finn-explain")({
         }
 
         try {
-          const explanation = await explainRecommendation(parsed.data, key);
+          const explanation = await explainRecommendation(parsed.data);
           // Output-gateway safe projection: block secret/protected leakage and
           // redact PII from every model-authored string before it leaves.
           const safe = (s: string): string => {

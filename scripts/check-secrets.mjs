@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * NEXIOS secret-leak guard (production-readiness §P3).
+ * Enjaz Platform secret-leak guard (production-readiness §P3).
  *
  * Fails the build if the git-tracked tree contains anything that must never
  * ship: a real `.env` file, a database dump, or a hard-coded credential.
@@ -14,7 +14,8 @@
  *   node scripts/check-secrets.mjs   → exit 0 (clean) or 1 (leak found)
  */
 import { execSync } from "node:child_process";
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
 // Forbidden filenames — real env files and database DUMPS/backups. Legitimate
@@ -67,11 +68,56 @@ export function shouldSkipContent(file) {
   return SKIP.test(file);
 }
 
+// Source archives intentionally do not carry `.git`. In that case, scan the
+// complete distributable source tree while excluding dependencies, generated
+// output and tool caches. Symbolic links are ignored so a ZIP cannot make the
+// scanner follow paths outside the extracted project.
+const EXCLUDED_SCAN_DIRS = new Set([
+  ".git",
+  ".nitro",
+  ".output",
+  ".turbo",
+  ".vite",
+  ".wrangler",
+  "coverage",
+  "dist",
+  "node_modules",
+  "playwright-report",
+  "test-results",
+]);
+
+function listSourceFiles(root, directory = root) {
+  const files = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (entry.isSymbolicLink()) continue;
+    if (entry.isDirectory() && EXCLUDED_SCAN_DIRS.has(entry.name)) continue;
+    const absolute = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...listSourceFiles(root, absolute));
+      continue;
+    }
+    if (!entry.isFile()) continue;
+    files.push(relative(root, absolute).split(sep).join("/"));
+  }
+  return files.sort();
+}
+
+function listFilesToScan() {
+  try {
+    return execSync("git ls-files", {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    })
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  } catch {
+    return listSourceFiles(process.cwd());
+  }
+}
+
 function runCli() {
-  const tracked = execSync("git ls-files", { encoding: "utf8" })
-    .split("\n")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const tracked = listFilesToScan();
   const findings = [];
   for (const file of tracked) {
     if (isForbiddenFile(file)) {

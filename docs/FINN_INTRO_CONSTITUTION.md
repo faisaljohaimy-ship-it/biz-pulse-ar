@@ -102,7 +102,7 @@ Files under jurisdiction:
   switch, TTS failure, timeout, rate-limit).
 - **INVARIANT-12 — Zero-latency baseline.** The chat pipeline MUST ship
   these speed guarantees on every device (mobile / tablet / desktop):
-  1. Priority serving tier (`service_tier: "priority"`) for every gpt-5
+  1. Governed native Gemini serving for every FINN intelligence request
      family model that supports Fast mode.
   2. AudioContext primed on dock open, BEFORE the first user keystroke.
   3. TLS preconnect to gateway + ElevenLabs on dock open.

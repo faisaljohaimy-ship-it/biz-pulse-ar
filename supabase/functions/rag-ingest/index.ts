@@ -4,8 +4,8 @@
  * Flow: validate body (org-ish keys → 400) → sha256 the full content →
  * find the document by its natural identity (org via RLS + code, or
  * source+title) → unchanged hash = no-op → otherwise chunk (clause-
- * preserving), embed each chunk (RETRIEVAL_DOCUMENT, 1536 + L2 after MRL
- * truncation), replace chunks, upsert the document row.
+ * preserving), embed each chunk (Gemini Embedding 2 at 1536 dimensions),
+ * replace chunks, upsert the document row.
  *
  * ISOLATION: runs under the CALLER's JWT — the RLS admin-write policy
  * (is_org_member(org_id,'admin')) is the write gate, and org_id is filled by
@@ -19,12 +19,11 @@ import {
   EMBED_DIM,
   EMBED_MODEL,
   parseIngestRequest,
-  truncateAndNormalize,
+  validateEmbeddingVector,
 } from "../_shared/rag-core.ts";
 
-const EMBED_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:batchEmbedContents";
-/** [افتراض] Gemini batch API accepts ≤100 requests per call — batch at 64. */
+const EMBED_URL = `https://generativelanguage.googleapis.com/v1beta/models/${EMBED_MODEL}:batchEmbedContents`;
+/** Keep each call bounded and preserve deterministic order. */
 const EMBED_BATCH = 64;
 
 function json(payload: unknown, status = 200): Response {
@@ -52,10 +51,15 @@ async function embedChunks(chunks: readonly string[]): Promise<number[][]> {
       headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
       body: JSON.stringify({
         requests: batch.map((text) => ({
-          model: "models/gemini-embedding-001",
-          content: { parts: [{ text }] },
-          taskType: "RETRIEVAL_DOCUMENT",
-          outputDimensionality: 1536,
+          model: `models/${EMBED_MODEL}`,
+          content: {
+            parts: [
+              {
+                text: `task: retrieve relevant industrial security evidence | document: ${text}`,
+              },
+            ],
+          },
+          output_dimensionality: EMBED_DIM,
         })),
       }),
     });
@@ -63,7 +67,7 @@ async function embedChunks(chunks: readonly string[]): Promise<number[][]> {
     const data = await res.json();
     const embeddings: Array<{ values: number[] }> = data?.embeddings ?? [];
     if (embeddings.length !== batch.length) throw new Error("embed batch size mismatch");
-    for (const e of embeddings) out.push(truncateAndNormalize(e.values));
+    for (const e of embeddings) out.push(validateEmbeddingVector(e.values));
   }
   return out;
 }

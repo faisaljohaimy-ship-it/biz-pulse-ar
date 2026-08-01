@@ -9,17 +9,17 @@ export const ARTICLES_A: KbSeedArticle[] = [
     category_code: "IS-POL",
     title_ar: "السياسة العامة للأمن الصناعي",
     title_en: "Industrial Security General Policy",
-    summary_ar: "الإطار الحاكم لحماية المنشآت والأفراد والأصول في المنطقة الغربية.",
+    summary_ar: "قالب مرجعي عام لحماية المنشآت والأفراد والأصول في جميع المناطق المصرح بها.",
     summary_en:
-      "Governing framework for protecting facilities, people, and assets across the Western Region.",
+      "General reference template for protecting facilities, people, and assets across authorised regions.",
     purpose_ar:
       "تأسيس قواعد موحدة لحماية كل عناصر المنشأة من التهديدات الأمنية، السلامة، والكوارث.",
     purpose_en:
       "Establish unified rules to protect facility elements from security, safety, and disaster threats.",
     scope_ar:
-      "تشمل جميع المواقع، الموظفين، المقاولين، الزوار، الأصول، والأنظمة في إدارة الأمن الصناعي بالمنطقة الغربية.",
+      "تشمل المواقع والموظفين والمقاولين والزوار والأصول والأنظمة ضمن نطاق المؤسسة المصرح؛ وتبقى مسودة حتى اعتماد مصدر رسمي.",
     scope_en:
-      "Covers all sites, employees, contractors, visitors, assets, and systems in the Western Region.",
+      "Covers authorised sites, people, contractors, visitors, assets, and systems; remains a draft until tied to an approved source.",
     procedure_ar:
       "1) تطبيق التحكم بالدخول 24/7.\n2) مراقبة محيط المنشآت عبر CCTV.\n3) تشغيل دوريات منتظمة.\n4) توثيق كل الأحداث في `sec_activity_events`.\n5) مراجعة سنوية للسياسة.",
     procedure_en:
@@ -29,8 +29,8 @@ export const ARTICLES_A: KbSeedArticle[] = [
     escalation_level: "Director — Industrial Security",
     related_policies: ["POL-002", "POL-003"],
     related_agents: ["security_commander", "aria_executive"],
-    keywords_ar: ["سياسة", "حماية", "منشآت", "أمن صناعي", "المنطقة الغربية"],
-    keywords_en: ["policy", "protection", "facilities", "industrial security", "western region"],
+    keywords_ar: ["سياسة", "حماية", "منشآت", "أمن صناعي", "جميع المناطق"],
+    keywords_en: ["policy", "protection", "facilities", "industrial security", "all regions"],
     owner: "Director — Industrial Security",
     version: "1.0",
   },

@@ -32,7 +32,7 @@ $$;
 COMMENT ON FUNCTION public.normalize_ar(text) IS
   'Article 31 (RAG): folds alef/teh-marbuta/alef-maksura and strips tashkeel for Arabic search parity.';
 
--- --- Shadow embedding columns (te3s-1536) ----------------------------
+-- --- Shadow embedding columns (Gemini Embedding 2, 1536 dims) --------
 -- aria_knowledge
 ALTER TABLE public.aria_knowledge
   ADD COLUMN IF NOT EXISTS embedding_v2   vector(1536),

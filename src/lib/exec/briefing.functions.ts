@@ -1,12 +1,14 @@
 /**
  * Executive Briefing — composes a 60-second operational presentation
  * from real runtime data: latest agent runs, open incidents/patrols,
- * recent events. FINN merges findings into one recommendation via the
- * Lovable AI Gateway (gpt-5). Persists each briefing in
+ * recent events. FINN merges findings into one recommendation via Gemini.
+ * Persists each briefing in
  * `executive_briefings`.
  */
 import { createServerFn } from "@tanstack/react-start";
+import { generateText } from "ai";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
+import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
 
 export type BriefingSegment = {
   /** Seconds offset from briefing start. */
@@ -105,14 +107,24 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
 
     const segments: BriefingSegment[] = [];
 
+    const postureAr = critical.length
+      ? "الحالة تتطلب متابعة تنفيذية عاجلة"
+      : open.length > 5
+        ? "الحالة تحتاج تكثيف المتابعة"
+        : "الحالة التشغيلية مستقرة ضمن البيانات المتاحة";
+    const postureEn = critical.length
+      ? "The available data requires urgent executive attention"
+      : open.length > 5
+        ? "The available data requires intensified follow-up"
+        : "The operational posture is stable within the available data";
+
     // 0–5s: FINN welcome
     segments.push({
       at: 0,
       speaker_id: "aria",
       speaker_name: "FINN",
-      text_ar: "السلام عليكم. هذا الموجز التنفيذي الحي من إدارة الأمن الصناعي بالمنطقة الغربية.",
-      text_en:
-        "Good day. This is the live executive briefing from Industrial Security, Western Region.",
+      text_ar: "السلام عليكم. هذا الموجز التنفيذي للأمن الصناعي عبر المواقع المصرح بها.",
+      text_en: "Good day. This is the industrial-security brief across authorised sites.",
     });
 
     // 5–10s: Operational health summary
@@ -120,8 +132,8 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
       at: 5,
       speaker_id: "aria",
       speaker_name: "FINN",
-      text_ar: `الحالة التشغيلية مستقرة. لدينا ${open.length} بلاغًا مفتوحًا منها ${critical.length} حرج، و${activePatrols} دورية نشطة، و${openHighRiskPermits} تصاريح عالية الخطورة.`,
-      text_en: `Operations are stable. ${open.length} open incidents (${critical.length} critical), ${activePatrols} active patrols, ${openHighRiskPermits} high-risk permits in effect.`,
+      text_ar: `${postureAr}. لدينا ${open.length} بلاغًا مفتوحًا منها ${critical.length} حرج، و${activePatrols} دورية نشطة، و${openHighRiskPermits} تصاريح عالية الخطورة.`,
+      text_en: `${postureEn}. ${open.length} open incidents (${critical.length} critical), ${activePatrols} active patrols, ${openHighRiskPermits} high-risk permits in effect.`,
       badges: [
         { label: "Open Incidents", value: String(open.length) },
         { label: "Critical", value: String(critical.length) },
@@ -147,11 +159,10 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
       });
     });
 
-    // 45–55s: FINN merge — recommendation via gpt-5
+    // 45–55s: FINN merge — recommendation via Gemini
     let recommendation: ExecutiveBriefing["recommendation"];
     try {
-      const key = process.env.LOVABLE_API_KEY;
-      if (!key) throw new Error("Missing LOVABLE_API_KEY");
+      const runtime = resolveFinnGeminiRuntime();
       const findings = agentsToSpeak
         .map((a) => {
           const latest = runs.find((r) => r.agent_id === a.id);
@@ -160,28 +171,20 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
         .join("\n");
 
       const prompt =
-        `You are FINN, executive AI for Industrial Security. Read these agent findings and the operational snapshot. ` +
+        `You are FINN, executive industrial-security assistant for all authorised regions and sites. Read these agent findings and the operational snapshot. ` +
         `Return STRICT JSON with keys title_ar, title_en, rationale_ar, rationale_en, confidence (0..1), horizon_hours (integer). ` +
         `Be specific, non-technical, executive-tone. No tables, no markdown.\n\n` +
         `Snapshot: open=${open.length} critical=${critical.length} patrols=${activePatrols} permits_high=${openHighRiskPermits}.\n\n` +
         `Findings:\n${findings}`;
 
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "openai/gpt-5",
-          messages: [
-            { role: "system", content: "Reply with ONLY valid JSON. No prose, no code fences." },
-            { role: "user", content: prompt },
-          ],
-          response_format: { type: "json_object" },
-        }),
+      const { text } = await generateText({
+        model: runtime.provider(runtime.modelId),
+        system: "Reply with ONLY valid JSON. No prose, no code fences.",
+        prompt,
+        maxOutputTokens: 900,
+        maxRetries: 2,
       });
-      if (!res.ok) throw new Error(`gateway ${res.status}`);
-      const json = await res.json();
-      const text: string = json?.choices?.[0]?.message?.content ?? "{}";
-      const parsed = JSON.parse(text);
+      const parsed = JSON.parse(text.replace(/```json\s*|\s*```/g, "").trim());
       recommendation = {
         title_ar: String(parsed.title_ar ?? "متابعة الحالة الراهنة"),
         title_en: String(parsed.title_en ?? "Maintain current posture"),
@@ -209,7 +212,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
         confidence: critical.length > 0 ? 0.78 : 0.86,
         horizon_hours: 24,
       };
-      console.warn("[briefing] gpt-5 unavailable, used deterministic recommendation:", err);
+      console.warn("[briefing] Gemini unavailable, used deterministic recommendation:", err);
     }
 
     // 55–60s: closing

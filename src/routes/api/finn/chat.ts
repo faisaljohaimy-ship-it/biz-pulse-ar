@@ -1,45 +1,39 @@
 /**
- * POST /api/finn/chat — FINN answered DIRECTLY by the OpenAI Responses API.
+ * POST /api/finn/chat — compatibility FINN endpoint, Gemini-first.
  *
- * A privacy-hardened, streaming endpoint (adapted from the mandated spec to
- * this project's stack: TanStack Start server route, not Next.js — nitro runs
- * it as a Vercel Node.js serverless function, never Edge).
- *
- * Privacy guarantees (per spec):
- *  - `store: false` on every OpenAI call — nothing is retained upstream.
- *  - No `previous_response_id`, no Conversations/Threads, no DB persistence.
- *  - Request body / message / history / answer are NEVER logged.
- *  - `no-store` on every response.
- *
- * Auth posture: bound to the project's ACTUAL FINN posture — anonymous demo
- * visitors are allowed (see `-chat-guard.ts`), protected by same-origin
- * enforcement + the shared sliding-window rate limiter. A bearer token, when
- * present, is honoured but never required (FINN is a public product surface).
+ * The app does not persist or log message bodies, history, or answers. The
+ * complete provider response is buffered and passed through the FINN output
+ * gateway before one safe SSE event is emitted.
  */
-import { revalidateSpeakableText } from "@/lib/finn/output/finalize";
+import { generateText } from "ai";
 import { createFileRoute } from "@tanstack/react-router";
-import { DEFAULT_OPENAI_MODEL, resolveOpenAiModel } from "@/lib/ai-gateway.server";
 import {
   clientBucketKey,
   enforceRateLimit,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
+import { resolveFinnGeminiRuntimes } from "@/lib/finn/gemini-provider.server";
 import { FINN_IDENTITY_PREAMBLE } from "@/lib/finn/identity";
 import { buildFinnRuntimeBlock, MAKKAH_TIME_DIRECTIVE } from "@/lib/finn/makkah-clock";
-import { FINN_LIVE_INTELLIGENCE_DOCTRINE } from "@/lib/finn/response-contract";
-import { REGIONS, DEFAULT_REGION_ID } from "@/lib/regions";
+import {
+  FINN_LIVE_INTELLIGENCE_DOCTRINE,
+  FINN_RESPONSE_CONTRACT,
+} from "@/lib/finn/response-contract";
+import { buildReferenceSimulationContext } from "@/lib/finn/reference-simulation-context.server";
+import { finalizeFinnOutput, renderForUI } from "@/lib/finn/output/finalize";
 
 type FinnMessage = { role: "user" | "assistant"; content: string };
 
 const FINN_INSTRUCTIONS = `${FINN_IDENTITY_PREAMBLE}
 
-أنت FINN، المساعد التنفيذي الذكي الرسمي لمنصة إدارة الأمن الصناعي.
+أنت FINN، المساعد التنفيذي الذكي الرسمي داخل منصة إنجاز الأعمال، وتغطي قطاع الأمن الصناعي عامة في جميع المناطق والمواقع المصرح بها.
 
 الهوية:
-- عرّف نفسك دائماً باسم FINN، ولا تقل إنك ChatGPT أو نموذج OpenAI.
+- عرّف نفسك دائماً باسم FINN، ولا تنسب هويتك إلى اسم نموذج أو شركة مزوّدة.
 - تحدث بالعربية افتراضياً، وانتقل للإنجليزية بحسب لغة المستخدم.
 - استخدم أسلوباً تنفيذياً دقيقاً، واضحاً، مختصراً واحترافياً.
 - استخدم فقط البيانات والسياق المصرح بهما من النظام.
+- لا تفترض المنطقة الغربية؛ خصص المنطقة فقط عندما يطلبها المستخدم أو يحددها الدليل.
 
 منهج الإجابة:
 1. ماذا يحدث؟
@@ -55,7 +49,9 @@ const FINN_INSTRUCTIONS = `${FINN_IDENTITY_PREAMBLE}
 - لا تدّع امتلاك صلاحيات أو بيانات غير متاحة.
 - لا تنفذ إجراءً حساساً أو حذفاً أو إرسالاً دون تأكيد المستخدم.
 - لا تتذكر المستخدم بعد تحديث الصفحة أو إغلاق الجلسة.
-- لا تدّع أن المحادثة محفوظة.`;
+- لا تدّع أن المحادثة محفوظة.
+
+${FINN_RESPONSE_CONTRACT}`;
 
 const NO_STORE_HEADERS: Record<string, string> = {
   "Cache-Control": "no-store, no-cache, must-revalidate, private",
@@ -105,9 +101,11 @@ async function handlePost(request: Request): Promise<Response> {
     return jsonError("الطلب غير مسموح من هذا المصدر.", 403);
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    return jsonError("خدمة FINN غير مهيأة حالياً.", 503);
+  const googleKey = (
+    process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
+  )?.trim();
+  if (!googleKey) {
+    return jsonError("خدمة FINN تحتاج GEMINI_API_KEY.", 503);
   }
 
   const contentLength = Number(request.headers.get("content-length") || "0");
@@ -124,7 +122,7 @@ async function handlePost(request: Request): Promise<Response> {
   // CLEANLY — a limiter backend outage yields 503, never an uncaught 500.
   let rate: { allowed: boolean; unavailable?: boolean };
   try {
-    rate = await enforceRateLimit(clientBucketKey(request, "aria-chat"), 30, 60);
+    rate = await enforceRateLimit(clientBucketKey(request, "finn-chat"), 30, 60);
   } catch {
     return rateLimitUnavailableResponse();
   }
@@ -164,99 +162,79 @@ async function handlePost(request: Request): Promise<Response> {
   const datetimeSpoken = history.some((m) => m.role === "assistant");
   const finnRuntimeBlock = buildFinnRuntimeBlock({
     userRole: "employee",
-    region: REGIONS.find((r) => r.id === DEFAULT_REGION_ID)?.shortAr ?? "الغربية",
+    region: "جميع المناطق المصرح بها",
     isSimulation: true,
     datetimeSpoken,
   });
-  const instructions = `${finnRuntimeBlock}\n\n${MAKKAH_TIME_DIRECTIVE}\n\n${FINN_INSTRUCTIONS}\n\n${FINN_LIVE_INTELLIGENCE_DOCTRINE}`;
+  const reference = buildReferenceSimulationContext();
+  const instructions = `${finnRuntimeBlock}\n\n${MAKKAH_TIME_DIRECTIVE}\n\n${FINN_INSTRUCTIONS}\n\n${FINN_LIVE_INTELLIGENCE_DOCTRINE}
+
+# UNTRUSTED REFERENCE SIMULATION — NOT LIVE
+Use only for a concrete demonstration. Label every derived figure and never present it as an organisation's live condition.
+<reference-simulation>
+${reference.contextBlock}
+</reference-simulation>`;
 
   const configuredTokens = Number(
     process.env.FINN_MAX_OUTPUT_TOKENS || process.env.ARIA_MAX_OUTPUT_TOKENS || "1500",
   );
   const maxOutputTokens = Math.min(Math.max(configuredTokens || 1500, 256), 4000);
-  const model = resolveOpenAiModel() || DEFAULT_OPENAI_MODEL;
+  const runtimes = resolveFinnGeminiRuntimes();
 
-  try {
-    const openAIResponse = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      signal: request.signal,
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        store: false,
-        stream: true,
-        instructions,
-        input: [...history, { role: "user", content: message }],
-        max_output_tokens: maxOutputTokens,
-      }),
-    });
-
-    if (!openAIResponse.ok || !openAIResponse.body) {
-      // Never log body/message/history/answer — only the upstream status.
-      console.error("FINN OpenAI request failed", { status: openAIResponse.status });
-      if (openAIResponse.status === 401) {
-        return jsonError("إعداد مفتاح FINN غير صالح.", 502);
-      }
-      if (openAIResponse.status === 429) {
-        return jsonError("FINN مشغولة حالياً. حاول بعد قليل.", 429);
-      }
-      return jsonError("تعذر الحصول على رد من FINN حالياً.", 502);
+  for (const [index, runtime] of runtimes.entries()) {
+    try {
+      const result = await generateText({
+        model: runtime.provider(runtime.modelId),
+        system: instructions,
+        messages: [...history, { role: "user" as const, content: message }],
+        maxOutputTokens,
+        maxRetries: 2,
+        abortSignal: request.signal,
+      });
+      const safe = finalizeFinnOutput({
+        userText: message,
+        modelText: result.text,
+        actor: { userId: null, appRoles: [], orgRole: null, orgId: null },
+        evidence: { available: [] },
+        liveDataAvailable: false,
+        trustedClockISO: new Date().toISOString(),
+        isSimulationEnv: true,
+        simulationDataAvailable: true,
+      });
+      const safeText = renderForUI(safe);
+      const enc = new TextEncoder();
+      const safeStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(
+            enc.encode(
+              `data: ${JSON.stringify({ type: "response.output_text.delta", delta: safeText })}\n\n`,
+            ),
+          );
+          controller.enqueue(enc.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+      return new Response(safeStream, {
+        status: 200,
+        headers: {
+          ...NO_STORE_HEADERS,
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "X-Accel-Buffering": "no",
+          "X-FINN-Provider": runtime.vendor,
+        },
+      });
+    } catch (error) {
+      if (request.signal.aborted) return jsonError("تم إلغاء الطلب.", 408);
+      console.error("FINN Gemini provider failure", {
+        code: "GEMINI_REQUEST_FAILED",
+        provider: runtime.vendor,
+        finalAttempt: index === runtimes.length - 1,
+        error: error instanceof Error ? error.message.slice(0, 300) : String(error),
+      });
     }
-
-    // Output gateway: BUFFER the provider SSE on the server (never forward a
-    // raw model token), extract the text, re-validate it (block secret/protected
-    // leakage, redact PII), then emit ONLY the safe text as a single SSE event.
-    const rawSse = await openAIResponse.text();
-    let full = "";
-    for (const line of rawSse.split("\n")) {
-      const t = line.trim();
-      if (!t.startsWith("data:")) continue;
-      const payload = t.slice(5).trim();
-      if (!payload || payload === "[DONE]") continue;
-      try {
-        const j = JSON.parse(payload) as {
-          type?: string;
-          delta?: unknown;
-          response?: { output_text?: unknown };
-        };
-        if (typeof j.delta === "string" && (j.type ?? "").includes("output_text")) full += j.delta;
-        else if (typeof j.response?.output_text === "string") full = j.response.output_text;
-      } catch {
-        /* ignore malformed line */
-      }
-    }
-    const rev = revalidateSpeakableText(full);
-    const safeText = rev.ok ? rev.text.trim() : "";
-    const enc = new TextEncoder();
-    const safeStream = new ReadableStream<Uint8Array>({
-      start(controller) {
-        controller.enqueue(
-          enc.encode(
-            `data: ${JSON.stringify({ type: "response.output_text.delta", delta: safeText })}\n\n`,
-          ),
-        );
-        controller.enqueue(enc.encode("data: [DONE]\n\n"));
-        controller.close();
-      },
-    });
-    return new Response(safeStream, {
-      status: 200,
-      headers: {
-        ...NO_STORE_HEADERS,
-        "Content-Type": "text/event-stream; charset=utf-8",
-        "X-Accel-Buffering": "no",
-      },
-    });
-  } catch {
-    if (request.signal.aborted) {
-      return jsonError("تم إلغاء الطلب.", 408);
-    }
-    console.error("FINN provider failure", { code: "OPENAI_REQUEST_FAILED" });
-    return jsonError("حدث خطأ مؤقت في خدمة FINN.", 502);
   }
+
+  return jsonError("حدث خطأ مؤقت في خدمة FINN.", 502);
 }
 
 export const Route = createFileRoute("/api/finn/chat")({

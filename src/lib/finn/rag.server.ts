@@ -70,9 +70,19 @@ const MIN_SIM_MEMORY = 0.45;
 const MIN_SIM_KNOWLEDGE = 0.4;
 const MIN_SIM_DOCUMENT = 0.4;
 
+/**
+ * Retrieval is enabled only after every stored vector has been re-embedded
+ * with the canonical Gemini model. Mixing embedding spaces corrupts ranking,
+ * so a deployment must opt in after the measured reindex/evaluation run.
+ */
+export function isGeminiRagReady(env: Record<string, string | undefined> = process.env): boolean {
+  return env.FINN_GEMINI_RAG_READY?.trim().toLowerCase() === "true";
+}
+
 export async function gatherRagContext(
   supabase: SupabaseClient,
   userId: string,
+  orgId: string | null,
   query: string,
 ): Promise<RagContext> {
   const empty: RagContext = {
@@ -82,9 +92,10 @@ export async function gatherRagContext(
     counts: { memories: 0, knowledge: 0, documents: 0 },
   };
   const trimmed = query.trim();
-  if (!trimmed) return empty;
+  // Fail closed on tenant ambiguity and during embedding migrations.
+  if (!trimmed || !orgId || !isGeminiRagReady()) return empty;
 
-  const embedding = await embedText(trimmed);
+  const embedding = await embedText(trimmed, { purpose: "retrieval-query" });
   if (!embedding) return empty;
   const qvec = toPgVector(embedding);
 
@@ -94,9 +105,9 @@ export async function gatherRagContext(
     supabase.rpc("aria_match_documents", { _user_id: userId, _query: qvec, _limit: 5 }),
   ]);
 
-  if (memR.error) console.warn("[aria/rag] memory rpc", memR.error.message);
-  if (knowR.error) console.warn("[aria/rag] knowledge rpc", knowR.error.message);
-  if (docR.error) console.warn("[aria/rag] documents rpc", docR.error.message);
+  if (memR.error) console.warn("[finn/rag] memory rpc", memR.error.message);
+  if (knowR.error) console.warn("[finn/rag] knowledge rpc", knowR.error.message);
+  if (docR.error) console.warn("[finn/rag] documents rpc", docR.error.message);
 
   const memories = (
     (memR.data ?? []) as { id: string; key: string; content: string; similarity: number }[]
@@ -206,16 +217,20 @@ export async function rememberConversationTurn(
   userId: string,
   threadId: string | null,
   userText: string,
-  assistantText: string,
+  _assistantText: string,
 ): Promise<void> {
-  const content = `User: ${userText.slice(0, 600)}\nFINN: ${assistantText.slice(0, 1400)}`;
+  if (!isGeminiRagReady()) return;
+
+  // Persist user-authored context only. A model answer is not evidence and must
+  // never become a self-reinforcing pseudo-fact through the memory retriever.
+  const content = `User request: ${userText.slice(0, 1200)}`;
   const suffix =
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const key = `turn:${threadId ?? "ad-hoc"}:${suffix}`;
   const scope = threadId ? `thread:${threadId}` : "conversation";
-  const embedding = await embedText(`${userText}\n${assistantText}`);
+  const embedding = await embedText(userText, { purpose: "retrieval-document" });
   const { error } = await supabase.from("finn_memory").upsert(
     {
       user_id: userId,
@@ -228,5 +243,5 @@ export async function rememberConversationTurn(
     },
     { onConflict: "user_id,scope,key" },
   );
-  if (error) console.warn("[aria/rag] memory upsert failed", error.message);
+  if (error) console.warn("[finn/rag] memory upsert failed", error.message);
 }

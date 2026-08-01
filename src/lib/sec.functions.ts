@@ -432,8 +432,8 @@ async function fetchTwinTree(supabase: { from: (t: string) => any }): Promise<Tw
 
   return {
     region: {
-      name_ar: "إدارة الأمن الصناعي بالمنطقة الغربية",
-      name_en: "Western Region Industrial Security",
+      name_ar: "إدارة الأمن الصناعي — جميع المناطق",
+      name_en: "Industrial Security — All Regions",
     },
     sections: (sections.data ?? []) as SecSection[],
     circles: ((circles.data ?? []) as SecCircle[]).map((c) => ({

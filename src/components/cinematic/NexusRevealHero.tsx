@@ -297,8 +297,8 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
     line1: ar ? "الذكاء يقود." : "Intelligence, in command.",
     line2: ar ? "منصة إنجاز الأعمال ينفّذ." : "منصة إنجاز الأعمال executes.",
     lede: ar
-      ? "منظومة تشغيل ذكية للمؤسسات · FINN في القلب · إدارة الأمن الصناعي · المنطقة الغربية."
-      : "Enterprise AI operating system · FINN at the core · Industrial Security · Western Region.",
+      ? "منصة إنجاز الأعمال · FINN في القلب · الأمن الصناعي · جميع المناطق."
+      : "Enjaz Platform · FINN at the core · Industrial Security · All Regions.",
     ctaPrimary: ar ? "ابدأ التشغيل" : "Start Operation",
     ctaSecondary: ar ? "غرفة القيادة التنفيذية" : "Executive Bridge",
     ctaFinn: ar ? "اسأل FINN" : "Ask FINN",

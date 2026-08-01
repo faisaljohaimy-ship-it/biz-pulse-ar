@@ -90,7 +90,7 @@ making. Every response, animation, KPI, and action must serve one goal:
 
 | Pillar | Deliverable | Contract |
 |---|---|---|
-| Brain | `runExecutiveBrain` on `openai/gpt-5` via Lovable Gateway | `src/lib/finn/executive-brain/` |
+| Brain | `runExecutiveBrain` on native `gemini-3.6-flash` | `src/lib/finn/executive-brain/` |
 | Voice | Bilingual TTS + STT, RTL prosody, executive tone | `src/routes/api/finn/tts.ts` |
 | Avatar | Lifecycle ref-counted, HMR-safe, single runtime | `avatar-lifecycle.ts` |
 | Runtime | Bindings pattern (planner, execution, marketplace, memory, cognition, os) | `runtime/bindings.server.ts` |

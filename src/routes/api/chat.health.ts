@@ -1,4 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { resolveGoogleGeminiModel } from "@/lib/ai-gateway.server";
+import { GEMINI_EMBEDDING_MODEL } from "@/lib/finn/gemini-embeddings.server";
+import { isGeminiRagReady } from "@/lib/finn/rag.server";
 
 export const Route = createFileRoute("/api/chat/health")({
   server: {
@@ -7,40 +10,19 @@ export const Route = createFileRoute("/api/chat/health")({
         const geminiPresent = Boolean(
           process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim(),
         );
-        const openaiPresent = Boolean(process.env.OPENAI_API_KEY?.trim());
-        const anthropicPresent = Boolean(process.env.ANTHROPIC_API_KEY?.trim());
-        const lovablePresent = Boolean(process.env.LOVABLE_API_KEY?.trim());
-        const openrouterPresent = Boolean(process.env.OPENROUTER_API_KEY?.trim());
         const elevenLabsPresent = Boolean(process.env.ELEVENLABS_API_KEY?.trim());
-        const keyPresent = Boolean(
-          geminiPresent || openaiPresent || anthropicPresent || lovablePresent || openrouterPresent,
-        );
-        const provider = geminiPresent
-          ? "gemini"
-          : openaiPresent
-            ? "openai"
-            : lovablePresent
-              ? "lovable"
-              : anthropicPresent
-                ? "anthropic"
-                : openrouterPresent
-                  ? "openrouter"
-                  : null;
-        const configuredModel = process.env.GEMINI_MODEL?.trim() ?? "";
-        const model = /^[a-z0-9][a-z0-9._-]{2,80}$/i.test(configuredModel)
-          ? configuredModel
-          : "gemini-3.5-flash";
+        const provider = geminiPresent ? "google-gemini" : null;
+        const model = geminiPresent ? resolveGoogleGeminiModel() : null;
         return Response.json(
           {
             ok: true,
             provider,
             model,
-            key_present: keyPresent,
-            // Voice is available if Layan/ElevenLabs is configured or the
-            // Lovable Gateway TTS fallback is active; UI must not hard-block
-            // conversation mode on one provider while another can speak.
-            voice_configured: Boolean(elevenLabsPresent || lovablePresent),
-            transcription_configured: Boolean(elevenLabsPresent || geminiPresent || lovablePresent),
+            key_present: geminiPresent,
+            rag_embedding_model: GEMINI_EMBEDDING_MODEL,
+            rag_ready: isGeminiRagReady(),
+            voice_configured: elevenLabsPresent,
+            transcription_configured: geminiPresent,
           },
           {
             headers: {

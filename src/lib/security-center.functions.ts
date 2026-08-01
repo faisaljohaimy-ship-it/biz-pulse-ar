@@ -226,8 +226,9 @@ export const getSecretInventory = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<SecretInventoryItem[]> => {
     await requirePlatformAdmin(context.userId);
     const known: Array<{ name: string; category: string }> = [
-      { name: "LOVABLE_API_KEY", category: "AI Gateway" },
-      { name: "OPENAI_API_KEY", category: "AI Gateway" },
+      { name: "GEMINI_API_KEY", category: "Google Gemini" },
+      { name: "GOOGLE_GENERATIVE_AI_API_KEY", category: "Google Gemini" },
+      { name: "LOVABLE_API_KEY", category: "Managed Connectors" },
       { name: "MICROSOFT_OUTLOOK_API_KEY", category: "Microsoft" },
       { name: "MICROSOFT_ONEDRIVE_API_KEY", category: "Microsoft" },
       { name: "MICROSOFT_SHAREPOINT_API_KEY", category: "Microsoft" },

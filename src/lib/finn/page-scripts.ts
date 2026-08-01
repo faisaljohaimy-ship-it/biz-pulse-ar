@@ -69,7 +69,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       purposeAr:
         "يَعْرِضُ نَمُوذَجًا هَرَمِيًّا تَفَاعُلِيًّا لِلدَّوَائِرِ وَالمَوَاقِعِ وَالمَبَانِي وَالأُصُولِ الأَمْنِيَّةِ فِي المِنْطَقَةِ الغَرْبِيَّة.",
       purposeEn:
-        "An interactive hierarchy of every circle, site, building, and security asset in the Western Region.",
+        "An interactive hierarchy of authorised regions, sites, buildings, and security assets.",
       actionAr:
         "تَنَقَّلْ بَيْنَ العُقَدِ لِرُؤْيَةِ الأَعْدَادِ الحَيَّةِ لِلْأُصُولِ وَحَالَتِهَا التَّشْغِيلِيَّة.",
       actionEn: "Walk the tree to inspect live asset counts and per-node operational status.",

@@ -123,7 +123,7 @@ function OsHub() {
     title: ar ? "نِظَامُ التَّشْغِيلِ المُؤَسَّسِيّ" : "Enterprise Operating System",
     subtitle: ar
       ? "نِكْسِيُوس — الأَمْنُ الصِّنَاعِيّ، المِنْطَقَةُ الغَرْبِيَّة"
-      : "منصة إنجاز الأعمال — Industrial Security, Western Region",
+      : "منصة إنجاز الأعمال — Industrial Security, All Regions",
     vision: ar
       ? "مِنَصَّةٌ اسْتِرَاتِيجِيَّةٌ تَدْعَمُ رُؤْيَةَ المَمْلَكَةِ ٢٠٣٠ · التَّحَوُّلُ الرَّقْمِيُّ وَالرِّيَادَةُ الصِّنَاعِيَّة"
       : "Strategic platform empowering Saudi Vision 2030 · Digital transformation & industrial leadership",

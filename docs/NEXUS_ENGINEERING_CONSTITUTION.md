@@ -55,7 +55,7 @@ All clauses are release-blocking. CI MUST fail if any is violated.
   Filter enforced in SQL, not client-side.
 - **INV-11** Patterns unseen 30d → pruned. Confidence recomputed weekly
   as `hits / (hits + decay)`. Every fallback → `aria_incidents`.
-- **INV-12** Zero-latency baseline: priority tier for gpt-5, AudioContext
+- **INV-12** Low-latency baseline: governed Gemini runtime, AudioContext
   primed on dock open, TLS preconnects to gateway + ElevenLabs, TTS threshold
   ≥8 chars, composer refocus after send, `abortSignal` wired.
 
@@ -123,7 +123,7 @@ human intervention, within bounded time budgets.
 ### §2. Recovery ladder (bounded, deterministic)
 | Failure mode | Tier 1 (auto) | Tier 2 (auto) | Tier 3 (auto) | Tier 4 (defer) |
 |--------------|---------------|---------------|---------------|----------------|
-| Chat stream error | Exponential retry ×3 (500ms) | Model swap `gpt-5` → `gpt-5-mini` | Fallback to non-stream `generateText` | Surface error card |
+| Chat generation error | Bounded Gemini retry | Honest safe error | Record provider incident | Surface recoverable error card |
 | TTS failure | Retry ×2 | Switch voice ID | Text-only reply | Silent |
 | Video load error | Retry preload once | Poster + HUD fallback | HUD-only mode | — |
 | Autoplay blocked | Show "Tap for sound" chip | Continue muted | — | — |

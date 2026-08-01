@@ -119,7 +119,7 @@ async function buildIncidentPdf(
     font: bold,
     color: rgb(1, 1, 1),
   });
-  page.drawText(`Industrial Security · Western Region · ${new Date().toISOString().slice(0, 10)}`, {
+  page.drawText(`Enjaz Platform · Industrial Security · ${new Date().toISOString().slice(0, 10)}`, {
     x: 40,
     y: height - 60,
     size: 9,

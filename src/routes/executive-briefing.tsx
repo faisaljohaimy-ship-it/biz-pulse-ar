@@ -43,8 +43,7 @@ export const Route = createFileRoute("/executive-briefing")({
 type DemoKind = "investor" | "enterprise" | "government";
 
 const CALENDLY_URL =
-  (import.meta.env.VITE_CALENDLY_URL as string | undefined) ||
-  "https://calendly.com/nexus-ai-os/executive-briefing";
+  (import.meta.env.VITE_CALENDLY_URL as string | undefined) || `${DOMAIN_URL}/contact`;
 
 /* ----------------------------- Calendar helpers ---------------------------- */
 

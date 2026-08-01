@@ -56,16 +56,24 @@ describe("FINN provider readiness", () => {
     expect(noVoice.voice.missing).toContain("ELEVENLABS_API_KEY");
   });
 
-  it("allows a legacy intelligence fallback only when explicitly enabled", () => {
+  it("rejects a non-Gemini key as an intelligence fallback", () => {
     const status = inspectFinnProviderReadiness({
       ...COMPLETE,
       GEMINI_API_KEY: undefined,
-      FINN_FORCE_GEMINI_FLASH: "false",
       OPENAI_API_KEY: "openai-key-with-enough-length",
     });
-    expect(status.intelligence.provider).toBe("openai");
-    expect(status.intelligence.ready).toBe(true);
-    // Voice is ElevenLabs-keyed — dropping Gemini must not silence Layan.
+    expect(status.intelligence.provider).toBeNull();
+    expect(status.intelligence.ready).toBe(false);
     expect(status.voice.ready).toBe(true);
+  });
+
+  it("accepts the native Google Generative AI key alias", () => {
+    const status = inspectFinnProviderReadiness({
+      ...COMPLETE,
+      GEMINI_API_KEY: undefined,
+      GOOGLE_GENERATIVE_AI_API_KEY: "google-key-with-enough-length",
+    });
+    expect(status.intelligence.provider).toBe("google-gemini");
+    expect(status.intelligence.ready).toBe(true);
   });
 });

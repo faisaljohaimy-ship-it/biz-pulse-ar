@@ -70,15 +70,11 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
   },
   {
     key: "aria-brain",
-    labelAr: "عقل FINN (أي مزوّد ذكاء واحد يكفي)",
+    labelAr: "عقل FINN ومجلس الوكلاء (Google Gemini فقط)",
     requirement: "one-of",
     vars: [
-      S("OPENAI_API_KEY", "OpenAI — primary chat provider"),
-      S("GEMINI_API_KEY", "Google Gemini — free-tier provider"),
+      S("GEMINI_API_KEY", "Google Gemini native API"),
       S("GOOGLE_GENERATIVE_AI_API_KEY", "Google Generative AI key"),
-      S("ANTHROPIC_API_KEY", "Anthropic provider"),
-      S("OPENROUTER_API_KEY", "OpenRouter aggregator"),
-      S("LOVABLE_API_KEY", "Lovable gateway (credit-gated fallback)"),
     ],
   },
   {

@@ -1784,10 +1784,9 @@ export function FinnCopilot() {
       }
       return;
     }
-    // Voice depends on ElevenLabs (voice_configured), not the LLM key.
-    // Do NOT block Conversation Mode on providerReady — chat may already be
-    // working via Lovable AI Gateway even when the initial health probe was
-    // stale/cached and reported key_present=false.
+    // Voice output depends on ElevenLabs, while transcription and reasoning
+    // depend on Gemini. A stale readiness probe must not break an already
+    // established conversation session.
 
     convModeRef.current = true;
     setConvMode(true);

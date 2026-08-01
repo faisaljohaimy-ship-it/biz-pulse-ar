@@ -1,5 +1,5 @@
 {
-  "name": "nexios-ai-os",
+  "name": "enjaz-business-platform",
   "version": "1.5.1",
   "private": true,
   "packageManager": "npm@11.9.0",
@@ -33,7 +33,7 @@
     "check:ui": "node scripts/ui-audit.mjs"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^2.0.48",
+    "@ai-sdk/google": "^3.0.103",
     "@ai-sdk/react": "^3.0.193",
     "@elevenlabs/react": "^1.6.3",
     "@hookform/resolvers": "^5.2.2",
@@ -162,7 +162,10 @@
     }
   },
   "overrides": {
+    "@hono/node-server": "2.0.12",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "protobufjs": "^7.5.3",
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "undici": "7.28.0"
   }
 }

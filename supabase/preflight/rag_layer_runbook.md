@@ -20,23 +20,14 @@ not improvise a change.
 
 ---
 
-## MRL → L2 re-normalization rule (ingestion contract)
+## Gemini Embedding 2 vector-space rule (ingestion contract)
 
-The production embedder (**Gemini `gemini-embedding-001`**) returns a **3072-dim
-Matryoshka (MRL)** vector. To store 1536 you **truncate to the first 1536
-components** — but a truncated MRL vector is **no longer unit-length**, so cosine
-distance (`<=>`) over it is wrong. Ingestion (later session) MUST therefore
-re-normalize every truncated vector to unit L2 norm before writing:
-
-```
-v1536 = v[0:1536]
-n     = sqrt(sum(x*x for x in v1536))          # L2 norm
-store = v1536 if n == 0 else [x / n for x in v1536]   # unit vector (guard n==0)
-```
-
-The `rag_chunks_embedding_hnsw` (cosine) index **assumes every stored embedding
-is already L2-normalized**. This is enforced by the ingestion path, not by DDL.
-(Same rule is documented in the header of `20260728093300_rag_chunks.sql`.)
+The canonical embedder is **`gemini-embedding-2`** with
+`output_dimensionality=1536`. Request 1536 dimensions from the API directly;
+do not truncate a 3072-dimensional response locally. Reduced representations
+are returned normalized. Any model/version change requires re-embedding the
+entire compared corpus before retrieval is re-enabled; vectors from different
+embedding spaces must never coexist in one ranked search.
 
 ---
 

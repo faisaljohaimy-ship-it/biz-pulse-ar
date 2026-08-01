@@ -593,11 +593,11 @@ function TrustPage() {
             titleEn="Security Contact"
             titleAr="فريق الأمان"
             isAr={isAr}
-            valueEn="security@nexus-ai-os.com"
-            valueAr="security@nexus-ai-os.com"
+            valueEn="security@neexios.com"
+            valueAr="security@neexios.com"
             descEn="Report security concerns, suspected vulnerabilities, or coordinate disclosure."
             descAr="للإبلاغ عن أي ملاحظة أمنية أو ثغرة محتملة أو تنسيق إفصاح."
-            href="mailto:security@nexus-ai-os.com"
+            href="mailto:security@neexios.com"
           />
           <ContactCard
             icon={<ScrollText className="h-5 w-5" />}
@@ -615,11 +615,11 @@ function TrustPage() {
             titleEn="Incident Hotline (24/7)"
             titleAr="خط الحوادث على مدار الساعة"
             isAr={isAr}
-            valueEn="soc@nexus-ai-os.com"
-            valueAr="soc@nexus-ai-os.com"
+            valueEn="soc@neexios.com"
+            valueAr="soc@neexios.com"
             descEn="For confirmed or suspected security incidents involving منصة إنجاز الأعمال services."
             descAr="للحوادث الأمنية المؤكدة أو المشتبه بها المتعلقة بخدمات منصة إنجاز الأعمال."
-            href="mailto:soc@nexus-ai-os.com"
+            href="mailto:soc@neexios.com"
           />
         </section>
 
@@ -637,7 +637,7 @@ function TrustPage() {
               {isAr ? "احجز جلسة تنفيذية" : "Schedule Executive Briefing"}
             </Link>
             <a
-              href="mailto:security@nexus-ai-os.com"
+              href="mailto:security@neexios.com"
               className="rounded-lg border border-amber-400/25 px-4 py-2 text-xs text-amber-200 hover:bg-amber-400/[0.06]"
             >
               {isAr ? "طلب وثائق الامتثال" : "Request Compliance Pack"}

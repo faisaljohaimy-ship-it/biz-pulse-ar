@@ -226,8 +226,8 @@ function TheaterPage() {
             </div>
             <h1 className="mt-2 text-2xl md:text-3xl font-light text-white tracking-tight">
               {ar
-                ? "نيكزس AI · إدارة الأمن الصناعي — المنطقة الغربية"
-                : "منصة إنجاز الأعمال · Industrial Security — Western Region"}
+                ? "منصة إنجاز الأعمال · إدارة الأمن الصناعي — جميع المناطق"
+                : "Enjaz Platform · Industrial Security — All Regions"}
             </h1>
             <p className="mt-1 text-sm text-white/55 max-w-2xl">
               {ar

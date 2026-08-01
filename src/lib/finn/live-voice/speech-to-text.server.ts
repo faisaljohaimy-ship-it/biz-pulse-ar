@@ -1,7 +1,6 @@
-// Speech-to-text — forwards multipart audio to Lovable AI Gateway.
-// Returns UNKNOWN when the provider is unavailable; never fabricates text.
+// FINN live speech-to-text — native Google Gemini only.
 import { SttResultSchema } from "./contracts";
-import { detectVoiceProvider, VOICE_ENDPOINT, VOICE_MODELS } from "./voice-provider.server";
+import { transcribeWithGemini } from "@/lib/finn/gemini-transcription.server";
 import { detectLanguage } from "./language-detection.server";
 import type { SttResult, VoiceLang } from "./types";
 
@@ -18,61 +17,28 @@ export interface SttResponse {
 }
 
 export async function transcribeAudio(input: SttInput): Promise<SttResponse> {
-  const caps = detectVoiceProvider();
-  if (!caps.stt) return { ok: false, result: null, reason: caps.reason ?? "STT unavailable" };
-  const key = process.env.LOVABLE_API_KEY!;
   const started = Date.now();
-  const form = new FormData();
-  form.append("model", VOICE_MODELS.stt);
-  form.append("file", input.audio, "recording.wav");
-  if (input.langHint && input.langHint !== "unknown") form.append("language", input.langHint);
-
-  let res: Response;
   try {
-    res = await fetch(VOICE_ENDPOINT.stt, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}` },
-      body: form,
+    const result = await transcribeWithGemini(input.audio, {
       signal: input.signal,
+      languageHint: input.langHint,
     });
-  } catch (err) {
+    const detected = detectLanguage(result.text);
+    const parsed = SttResultSchema.safeParse({
+      text: result.text,
+      lang: input.langHint && input.langHint !== "unknown" ? input.langHint : detected,
+      // Gemini's text response does not expose calibrated STT confidence.
+      confidence: 0.8,
+      durationMs: Date.now() - started,
+    });
+    if (!parsed.success) return { ok: false, result: null, reason: "stt validation failed" };
+    return { ok: true, result: parsed.data };
+  } catch (error) {
     if (input.signal?.aborted) return { ok: false, result: null, reason: "aborted" };
     return {
       ok: false,
       result: null,
-      reason: err instanceof Error ? err.message : "network error",
+      reason: error instanceof Error ? error.message : "Gemini transcription failed",
     };
   }
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    return { ok: false, result: null, reason: `stt ${res.status}: ${detail.slice(0, 160)}` };
-  }
-
-  let payload: unknown;
-  try {
-    payload = await res.json();
-  } catch {
-    return { ok: false, result: null, reason: "invalid stt response" };
-  }
-  const text = extractText(payload);
-  if (!text) return { ok: false, result: null, reason: "empty transcript" };
-
-  const detected = detectLanguage(text);
-  const parsed = SttResultSchema.safeParse({
-    text,
-    lang: input.langHint && input.langHint !== "unknown" ? input.langHint : detected,
-    confidence: 0.8,
-    durationMs: Date.now() - started,
-  });
-  if (!parsed.success) return { ok: false, result: null, reason: "stt validation failed" };
-  return { ok: true, result: parsed.data };
-}
-
-function extractText(payload: unknown): string {
-  if (payload && typeof payload === "object" && "text" in payload) {
-    const t = (payload as { text?: unknown }).text;
-    return typeof t === "string" ? t.trim() : "";
-  }
-  return "";
 }

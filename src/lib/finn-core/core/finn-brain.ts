@@ -1,9 +1,9 @@
 /**
- * FINN Brain — the single request entry point for the entire NEXIOS OS.
+ * FINN Brain — the single request entry point for منصة إنجاز الأعمال.
  *
  * Every page, hook, and component that wants to talk to FINN MUST go through
  * `finnBrain.submit(...)` (via `useFinn().ask(...)`). No component may call
- * OpenAI, Claude, OpenRouter, or `/api/chat` directly.
+ * a model provider or `/api/chat` directly. Intelligence is server-side Gemini only.
  *
  * The Brain is a pure orchestration façade — it does not own the streaming
  * socket. The provider passes it a `send` callback bound to the singleton

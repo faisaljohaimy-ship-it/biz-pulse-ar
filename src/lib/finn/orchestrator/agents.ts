@@ -118,8 +118,7 @@ const executiveBrainAgent: ExecutiveAgent = {
   ),
   async run(ctx: AgentRunContext): Promise<AgentResult> {
     const startedMs = Date.now();
-    if (!ctx.apiKey) return unavailable("executive_brain", "missing gateway key", startedMs);
-    const answer = await runExecutiveBrain(toBrainRequest(ctx.request), { apiKey: ctx.apiKey });
+    const answer = await runExecutiveBrain(toBrainRequest(ctx.request));
     return done(
       "executive_brain",
       {

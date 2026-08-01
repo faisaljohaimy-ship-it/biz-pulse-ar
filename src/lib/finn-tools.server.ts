@@ -1,4 +1,4 @@
-import { tool } from "ai";
+import { generateImage, tool } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Json } from "@/integrations/supabase/types";
@@ -104,6 +104,8 @@ function safePostgrestSearchTerm(value: string): string {
 export type FinnToolRuntimeContext = {
   /** Current, authentic user turn. Never populate from RAG or tool output. */
   lastUserText?: string;
+  /** Verified active tenant; RAG is unavailable when this is absent. */
+  orgId?: string | null;
 };
 
 /**
@@ -482,61 +484,53 @@ export function buildFinnTools(
 
     search_knowledge: tool({
       description:
-        "Search the executive knowledge base (policies, briefings, documents). Use when the user asks 'what does our policy say about X', 'ابحث عن', 'ما السياسة في'.",
+        "Search the current tenant's verified industrial-security corpus through Gemini embeddings, hybrid retrieval and the FINN evidence gate. Use for policies, procedures and domain references. Never cite a result unless gate_result is passed.",
       inputSchema: z.object({
-        query: z.string().min(2).max(200),
-        limit: z.number().int().min(1).max(10).default(5),
+        query: z.string().trim().min(3).max(2000),
+        limit: z.number().int().min(2).max(12).default(8),
       }),
       execute: async (args) => {
-        const q = safePostgrestSearchTerm(args.query);
-        if (!q) return { ok: true, results: [], count: 0 };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- HCIS reference table ships in its migration
-        const db = supabase as unknown as { from: (t: string) => any };
-        const [general, hcis] = await Promise.all([
-          supabase
-            .from("knowledge_docs")
-            .select("id,title,content")
-            .or(`title.ilike.%${q}%,content.ilike.%${q}%`)
-            .limit(args.limit),
-          // منصة إنجاز الأعمال finn_knowledge schema is (title, source, content, tags).
-          db
-            .from("finn_knowledge")
-            .select("id,title,content,source,tags")
-            .or(`title.ilike.%${q}%,content.ilike.%${q}%`)
-            .limit(args.limit),
+        if (!runtime.orgId) {
+          return { ok: false, gate_result: "error", reason: "missing_org_context" };
+        }
+        const [{ retrieveWithEvidenceGate }, { safeExcerpt }] = await Promise.all([
+          import("@/lib/finn/rag/retrieve.server"),
+          import("@/lib/finn/rag/sanitize.server"),
         ]);
-        if (general.error && hcis.error) {
+        const outcome = await retrieveWithEvidenceGate(supabase, {
+          query: args.query,
+          orgId: runtime.orgId,
+          limit: args.limit,
+          route: "chat-tool:search_knowledge",
+        });
+        if (outcome.gate_result !== "passed") {
+          // Safe learning loop: remember the missing question, never the
+          // model's answer. This backlog cannot enter retrieval by itself.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supabase as any)
+            .rpc("rag_record_gap_for_org", { _org_id: runtime.orgId, _query: args.query })
+            .catch(() => undefined);
           return {
             ok: false,
-            error: `Knowledge search failed: ${general.error.message}; ${hcis.error.message}`,
+            gate_result: outcome.gate_result,
+            reason: outcome.reason ?? "insufficient_evidence",
+            results: [],
           };
         }
-        const results = [
-          ...(
-            (general.data ?? []) as Array<{
-              id: string;
-              title: string;
-              content: string;
-            }>
-          ).map((row) => ({ ...row, source: "knowledge_docs" })),
-          ...(
-            (hcis.data ?? []) as Array<{
-              id: string;
-              title: string;
-              content: string;
-              source: string;
-              tags: string[];
-            }>
-          ).map((row) => ({
-            id: row.id,
-            title: row.title,
-            content: row.content,
-            citation: `[KB:${row.title}]`,
-            source: row.source,
-            tags: row.tags,
-          })),
-        ].slice(0, args.limit);
-        return { ok: true, results, count: results.length };
+        const results = outcome.hits.map((hit) => ({
+          id: hit.id,
+          citation: `[KB:${hit.doc_code ?? hit.id}]`,
+          title: hit.title_ar ?? hit.title_en ?? hit.doc_code ?? hit.id,
+          excerpt: safeExcerpt(hit.summary_ar ?? hit.summary_en ?? "", 900),
+          similarity: hit.similarity,
+        }));
+        return {
+          ok: true,
+          gate_result: outcome.gate_result,
+          max_similarity: outcome.max_similarity,
+          citation_count: outcome.citation_count,
+          results,
+        };
       },
     }),
 
@@ -1156,7 +1150,7 @@ export function buildFinnTools(
     }),
 
     // ─── Article 24 §5 — Generative image tool ───────────────────────────
-    // Calls the Lovable AI Gateway (Gemini image model), stores the result
+    // Calls the native Google Gemini image model, stores the result
     // in the caller's private aria-attachments bucket, and returns a
     // 1-hour signed URL for inline markdown embedding.
     generate_image: tool({
@@ -1174,54 +1168,23 @@ export function buildFinnTools(
         }
         if (!imageRate.allowed) return { ok: false, error: "image_rate_limit_exceeded" };
 
-        const key = process.env.LOVABLE_API_KEY?.trim();
-        if (!key) return { ok: false, error: "missing_lovable_api_key" };
         try {
-          const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Lovable-API-Key": key,
-              "X-Lovable-AIG-SDK": "nexios-aria-generate-image",
-            },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash-image-preview",
-              modalities: ["image", "text"],
-              messages: [
-                {
-                  role: "user",
-                  content: `Generate an image (${aspect_ratio}). ${prompt}`,
-                },
-              ],
-            }),
-            signal: AbortSignal.timeout(60_000),
+          const { resolveFinnGeminiRuntime } = await import("@/lib/finn/gemini-provider.server");
+          const runtimeModel = resolveFinnGeminiRuntime();
+          const generated = await generateImage({
+            model: runtimeModel.provider.image("gemini-3.1-flash-image"),
+            prompt,
+            aspectRatio: aspect_ratio,
+            n: 1,
+            maxRetries: 2,
+            abortSignal: AbortSignal.timeout(60_000),
           });
-          if (!upstream.ok) {
-            const detail = (await upstream.text().catch(() => "")).slice(0, 240);
-            return { ok: false, error: `gateway_${upstream.status}`, detail };
-          }
-          const j = (await upstream.json()) as {
-            choices?: Array<{
-              message?: {
-                images?: Array<{ image_url?: { url?: string } }>;
-                content?: string;
-              };
-            }>;
-          };
-          const dataUrl = j.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-          if (!dataUrl || !dataUrl.startsWith("data:")) {
-            return { ok: false, error: "no_image_in_response" };
-          }
-          const commaIdx = dataUrl.indexOf(",");
-          if (commaIdx < 6) return { ok: false, error: "invalid_image_data_url" };
-          const meta = dataUrl.slice(5, commaIdx); // e.g. image/png;base64
-          const mime = meta.split(";")[0] || "";
-          if (!/^(?:image\/png|image\/jpeg|image\/webp)$/.test(mime) || !/;base64$/i.test(meta)) {
+          const image = generated.image;
+          const mime = image.mediaType;
+          if (!/^(?:image\/png|image\/jpeg|image\/webp)$/.test(mime)) {
             return { ok: false, error: "unsupported_generated_image_type" };
           }
-          const b64 = dataUrl.slice(commaIdx + 1);
-          if (b64.length > 14_000_000) return { ok: false, error: "generated_image_too_large" };
-          const bytes = Buffer.from(b64, "base64");
+          const bytes = Buffer.from(image.uint8Array);
           if (bytes.length === 0 || bytes.length > 10 * 1024 * 1024) {
             return { ok: false, error: "generated_image_too_large" };
           }

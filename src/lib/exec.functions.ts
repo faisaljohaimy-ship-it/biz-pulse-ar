@@ -28,6 +28,12 @@ function toJson<T>(v: T): JsonValue {
   return JSON.parse(JSON.stringify(v)) as JsonValue;
 }
 
+function activeOrgFromClaims(claims: unknown): string | null {
+  const value = (claims as { app_metadata?: { current_org?: unknown } } | null)?.app_metadata
+    ?.current_org;
+  return typeof value === "string" && /^[0-9a-f-]{36}$/i.test(value) ? value : null;
+}
+
 /* ------------------------------- Tool API ------------------------------- */
 
 const RunToolSchema = z.object({
@@ -43,6 +49,7 @@ export const runTool = createServerFn({ method: "POST" })
       toolId: data.toolId,
       input: data.input,
       actorId: context.userId,
+      orgId: activeOrgFromClaims(context.claims),
     });
     return toJson(res);
   });
@@ -405,6 +412,7 @@ export const runAgentFn = createServerFn({ method: "POST" })
     const res = await runAgent(context.supabase, {
       agentId: data.agentId,
       actorId: context.userId,
+      requiredOrgId: activeOrgFromClaims(context.claims),
       goalOverride: data.goalOverride ?? null,
       context: data.context ?? null,
     });

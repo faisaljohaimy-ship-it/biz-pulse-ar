@@ -222,7 +222,7 @@ export async function buildDailyOpsPdf(
   arTextLeft(PRODUCT_BRAND.name, MARGIN + 30, H - 58, 21, emerald, true);
   enText("Executive Business Platform — Industrial Security", MARGIN + 30, H - 74, 8.5, muted);
   arText(DAILY_REPORT_SCOPE_META[scope].ar, W - MARGIN, H - 70, 25, ink, true);
-  arText("إدارة الأمن الصناعي — المنطقة الغربية", W - MARGIN, H - 95, 12, cyan);
+  arText("منصة إنجاز الأعمال — إدارة الأمن الصناعي", W - MARGIN, H - 95, 12, cyan);
   const hijri = hijriDate(data.date);
   // Intl's islamic-umalqura output already carries the «هـ» era suffix.
   arText(`${data.date} م${hijri ? ` — ${hijri}` : ""}`, W - MARGIN, H - 114, 10, muted);

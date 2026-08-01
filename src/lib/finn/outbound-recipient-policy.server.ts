@@ -3,23 +3,18 @@ import { normalizeE164 } from "./phone-number";
 /**
  * Direct-send owner policy.
  *
- * These are destinations, not provider credentials. Deployments can override
- * them without changing source code. Direct FINN sends are deliberately
- * restricted to the registered owner; other recipients use the reviewed
- * approval flow.
+ * Destinations are deployment configuration and must never be embedded in
+ * source code. Direct FINN sends are deliberately restricted to the
+ * registered owner; other recipients use the reviewed approval flow.
  */
-export const DEFAULT_FINN_OWNER_EMAIL = "Faisaljohaimy@gmail.com";
-export const DEFAULT_FINN_OWNER_SMS = "+966500888778";
-
 export type OwnerRecipients = {
   email: string;
   sms: string;
 };
 
 /** Owner-only direct send is the product default. Operators retain a hard
- * kill switch, and invalid values fail closed. Legacy ARIA_* variables are
- * read as aliases so existing NEXIOS deployments keep their intended
- * behavior after the FINN_* rename. */
+ * kill switch, and missing/invalid values fail closed. Legacy ARIA_* variables
+ * remain read-only aliases during migration. */
 export function isFinnOwnerDirectSendEnabled(
   env: Record<string, string | undefined> = process.env,
 ): boolean {
@@ -28,7 +23,7 @@ export function isFinnOwnerDirectSendEnabled(
     env.FINN_OUTBOUND_AUTO_APPROVE ??
     env.ARIA_DIRECT_SEND_ENABLED ??
     env.ARIA_OUTBOUND_AUTO_APPROVE;
-  if (configured === undefined || configured.trim() === "") return true;
+  if (configured === undefined || configured.trim() === "") return false;
   const normalized = configured.trim().toLowerCase();
   if (normalized === "true") return true;
   return false;
@@ -45,13 +40,14 @@ function normalizeEmail(value: string): string {
 export function getFinnOwnerRecipients(
   env: Record<string, string | undefined> = process.env,
 ): OwnerRecipients {
+  const email = env.FINN_OWNER_EMAIL?.trim() || env.ARIA_OWNER_EMAIL?.trim();
+  const sms = env.FINN_OWNER_SMS?.trim() || env.ARIA_OWNER_SMS?.trim();
+  if (!email || !sms) {
+    throw new Error("FINN owner recipients are not configured.");
+  }
   return {
-    email: normalizeEmail(
-      env.FINN_OWNER_EMAIL?.trim() || env.ARIA_OWNER_EMAIL?.trim() || DEFAULT_FINN_OWNER_EMAIL,
-    ),
-    sms: normalizeE164(
-      env.FINN_OWNER_SMS?.trim() || env.ARIA_OWNER_SMS?.trim() || DEFAULT_FINN_OWNER_SMS,
-    ),
+    email: normalizeEmail(email),
+    sms: normalizeE164(sms),
   };
 }
 

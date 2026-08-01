@@ -60,9 +60,10 @@ export const Route = createFileRoute("/api/public/health")({
         const subsystems: Record<string, Subsystem> = {
           web: { status: "ok", latency_ms: Date.now() - startedAt },
           db,
-          ai_gateway: process.env.LOVABLE_API_KEY
-            ? { status: "ok" }
-            : { status: "unknown", detail: "not_configured" },
+          gemini:
+            process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
+              ? { status: "ok" }
+              : { status: "unknown", detail: "not_configured" },
         };
 
         const worst = Object.values(subsystems)

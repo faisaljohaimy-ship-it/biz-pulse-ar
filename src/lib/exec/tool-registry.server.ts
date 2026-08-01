@@ -12,6 +12,8 @@ import { httpFetch, httpJson } from "@/lib/api/http.server";
 export type ToolContext = {
   supabase: SupabaseClient<Database>;
   actorId: string;
+  /** Verified tenant context; never inferred independently inside a tool. */
+  orgId: string;
   correlationId: string;
   executionId: string;
 };
@@ -188,17 +190,8 @@ const ALLOWED_HOSTS = new Set<string>([
 ]);
 
 async function resolveActorOrgId(ctx: ToolContext): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (ctx.supabase as any)
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", ctx.actorId)
-    .limit(1)
-    .maybeSingle();
-  if (error || !data?.org_id) {
-    throw new Error("Actor is not assigned to an organization");
-  }
-  return data.org_id as string;
+  if (!ctx.orgId) throw new Error("Verified organization context is required");
+  return ctx.orgId;
 }
 
 const restHttp: ToolExecutor = {
@@ -917,7 +910,7 @@ const kbSearch: ToolExecutor = {
     const { embedText } = await import("@/lib/kb-embed.server");
     let vec: number[] | null = null;
     try {
-      vec = await embedText(data.query);
+      vec = await embedText(data.query, "retrieval-query");
     } catch {
       vec = null;
     }
@@ -953,6 +946,116 @@ const kbSearch: ToolExecutor = {
     const { data: rows, error } = await q;
     if (error) throw new Error(`kb.search keyword failed: ${error.message}`);
     return { output: { mode: "keyword", hits: rows ?? [] } };
+  },
+};
+
+/* -------------------------- Governed FINN RAG ------------------------- */
+
+const ragSearchVerified: ToolExecutor = {
+  id: "rag.search_verified",
+  description:
+    "Search only the current tenant's verified industrial-security corpus through hybrid retrieval and the FINN evidence gate. A passed result always has at least two citations.",
+  input: z.object({
+    query: z.string().trim().min(3).max(2000),
+    category_code: z.string().trim().max(80).optional(),
+    limit: z.number().int().min(2).max(12).default(8),
+  }),
+  async execute(input, ctx) {
+    const data = input as z.infer<typeof ragSearchVerified.input>;
+    const [{ retrieveWithEvidenceGate }, { safeExcerpt }] = await Promise.all([
+      import("@/lib/finn/rag/retrieve.server"),
+      import("@/lib/finn/rag/sanitize.server"),
+    ]);
+    const outcome = await retrieveWithEvidenceGate(ctx.supabase, {
+      query: data.query,
+      orgId: ctx.orgId,
+      categoryCode: data.category_code ?? null,
+      limit: data.limit,
+      route: "agent-tool:rag.search_verified",
+      correlationId: ctx.correlationId,
+    });
+    return {
+      output: {
+        gate_result: outcome.gate_result,
+        reason: outcome.reason ?? null,
+        max_similarity: outcome.max_similarity,
+        citation_count: outcome.citation_count,
+        citations:
+          outcome.gate_result === "passed"
+            ? outcome.hits.map((hit) => ({
+                id: hit.id,
+                doc_code: hit.doc_code,
+                title_ar: hit.title_ar,
+                title_en: hit.title_en,
+                excerpt_ar: safeExcerpt(hit.summary_ar ?? hit.summary_en ?? "", 900),
+                similarity: hit.similarity,
+              }))
+            : [],
+      },
+    };
+  },
+};
+
+const ragRecordGap: ToolExecutor = {
+  id: "rag.record_gap",
+  description:
+    "Record an unanswered industrial-security question in the current tenant's knowledge backlog. This never creates retrievable knowledge.",
+  input: z.object({ query: z.string().trim().min(3).max(2000) }),
+  async execute(input, ctx) {
+    const data = input as z.infer<typeof ragRecordGap.input>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: gapId, error } = await (ctx.supabase as any).rpc("rag_record_gap_for_org", {
+      _org_id: ctx.orgId,
+      _query: data.query,
+    });
+    if (error) throw new Error(`rag.record_gap failed: ${error.message}`);
+    return { output: { recorded: true, gap_id: gapId } };
+  },
+};
+
+async function sha256(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+const ragProposeCandidate: ToolExecutor = {
+  id: "rag.propose_candidate",
+  description:
+    "Save a proposed Q&A for administrator review. It is always stored unverified and is never returned by retrieval until separately approved or ingested from an authoritative source.",
+  input: z.object({
+    question: z.string().trim().min(3).max(2000),
+    answer: z.string().trim().min(3).max(12000),
+  }),
+  async execute(input, ctx) {
+    const data = input as z.infer<typeof ragProposeCandidate.input>;
+    const contentHash = await sha256(`${ctx.orgId}\n${data.question}\n${data.answer}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: row, error } = await (ctx.supabase as any)
+      .from("rag_candidates")
+      .upsert(
+        {
+          org_id: ctx.orgId,
+          question: data.question,
+          answer: data.answer,
+          source_kind: "model_generated",
+          citation_chunk_id: null,
+          verified: false,
+          content_sha256: contentHash,
+        },
+        { onConflict: "org_id,content_sha256", ignoreDuplicates: true },
+      )
+      .select("id,verified,created_at")
+      .maybeSingle();
+    if (error) throw new Error(`rag.propose_candidate failed: ${error.message}`);
+    return {
+      output: {
+        candidate_id: row?.id ?? null,
+        stored: true,
+        verified: false,
+        retrieval_eligible: false,
+        review_required: true,
+      },
+    };
   },
 };
 
@@ -1029,6 +1132,9 @@ const REGISTRY: Record<string, ToolExecutor> = Object.fromEntries(
     secCreateIncident,
     secUpdateWorkOrder,
     kbSearch,
+    ragSearchVerified,
+    ragRecordGap,
+    ragProposeCandidate,
     disabledExecutor("sap.execute", "SAP connector not linked"),
     disabledExecutor("oracle.execute", "Oracle connector not linked"),
     disabledExecutor("azure_ad.execute", "Azure AD admin grant not configured"),

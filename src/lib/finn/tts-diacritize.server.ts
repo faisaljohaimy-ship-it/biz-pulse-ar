@@ -8,8 +8,7 @@
  * Strategy:
  *   1. Skip when no Arabic present, or when text already carries harakat
  *      (U+064B..U+0652 / U+0670 / U+0671 / shadda U+0651).
- *   2. Best-effort via Lovable AI Gateway (openai/gpt-5-nano) when
- *      LOVABLE_API_KEY is available.
+ *   2. Best-effort via the native Google Gemini runtime.
  *   3. Rule-based fallback (documented best-effort): ة→ة (keep), ال prefix
  *      shadda for sun letters, common word map. This never worsens output.
  *
@@ -50,34 +49,23 @@ function ruleBased(text: string): string {
   );
 }
 
-async function viaLovableAI(
-  text: string,
-  key: string,
-  signal?: AbortSignal,
-): Promise<string | null> {
+async function viaGemini(text: string, signal?: AbortSignal): Promise<string | null> {
   try {
-    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You add Arabic diacritics (tashkeel / harakat) to the given text so a TTS engine pronounces it correctly in Modern Standard Arabic. Preserve every non-Arabic character, punctuation, numbers, emoji and line breaks exactly. Do NOT translate, rephrase, add or remove words. Return ONLY the diacritized text with no prefix, no explanation, no code fences.",
-          },
-          { role: "user", content: text },
-        ],
-      }),
-      signal: signal ?? AbortSignal.timeout(4000),
+    const [{ generateText }, { resolveFinnGeminiRuntime }] = await Promise.all([
+      import("ai"),
+      import("@/lib/finn/gemini-provider.server"),
+    ]);
+    const runtime = resolveFinnGeminiRuntime();
+    const result = await generateText({
+      model: runtime.provider(runtime.modelId),
+      system:
+        "You add Arabic diacritics (tashkeel / harakat) to the given text so a TTS engine pronounces it correctly in Modern Standard Arabic. Preserve every non-Arabic character, punctuation, numbers, emoji and line breaks exactly. Do NOT translate, rephrase, add or remove words. Return ONLY the diacritized text with no prefix, no explanation, no code fences.",
+      prompt: text,
+      maxOutputTokens: 2_048,
+      maxRetries: 1,
+      abortSignal: signal ?? AbortSignal.timeout(4_000),
     });
-    if (!r.ok) return null;
-    const j = (await r.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const out = j.choices?.[0]?.message?.content?.trim();
+    const out = result.text.trim();
     if (!out) return null;
     // Sanity: length shouldn't explode
     if (out.length > text.length * 3) return null;
@@ -89,7 +77,7 @@ async function viaLovableAI(
 
 /**
  * Returns diacritized text for TTS. Falls back to input on any failure.
- * Logs `[aria-tts] diacritized N chars` when a transformation ran.
+ * Logs `[finn-tts] diacritized N chars` when a transformation ran.
  */
 export async function diacritizeForTts(text: string): Promise<string> {
   if (!text) return text;
@@ -98,18 +86,17 @@ export async function diacritizeForTts(text: string): Promise<string> {
 
   const cached = cacheGet(text);
   if (cached !== undefined) {
-    console.log(`[aria-tts] diacritized ${cached.length} chars (cache hit)`);
+    console.log(`[finn-tts] diacritized ${cached.length} chars (cache hit)`);
     return cached;
   }
 
-  const key = process.env.LOVABLE_API_KEY;
-  let out: string | null = null;
-  if (key) out = await viaLovableAI(text, key);
+  const outFromGemini = await viaGemini(text);
+  let out: string | null = outFromGemini;
   if (!out || !HARAKAT_RE.test(out)) {
     // fall back to rule-based (best-effort, documented)
     out = ruleBased(text);
   }
   cacheSet(text, out);
-  console.log(`[aria-tts] diacritized ${out.length} chars`);
+  console.log(`[finn-tts] diacritized ${out.length} chars`);
   return out;
 }

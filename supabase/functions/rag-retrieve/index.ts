@@ -2,7 +2,7 @@
  * rag-retrieve — Edge Function (Deno). Hybrid retrieval, citations only.
  *
  * Flow: validate body (org-ish keys → 400) → embed the query (Gemini
- * gemini-embedding-001, RETRIEVAL_QUERY, 1536 + L2; failure degrades to the
+ * Embedding 2, 1536 dimensions; failure degrades to the
  * two lexical paths) → rpc rag_hybrid_search under the CALLER's JWT (RLS
  * derives the org — this function holds no service_role at all) → return
  * chunks + citations + insufficient_evidence. NO text generation, NO streaming.
@@ -12,13 +12,14 @@
  */
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import {
+  EMBED_DIM,
+  EMBED_MODEL,
   hasSufficientEvidence,
   parseRetrieveRequest,
-  truncateAndNormalize,
+  validateEmbeddingVector,
 } from "../_shared/rag-core.ts";
 
-const EMBED_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent";
+const EMBED_URL = `https://generativelanguage.googleapis.com/v1beta/models/${EMBED_MODEL}:embedContent`;
 
 function json(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), {
@@ -34,17 +35,18 @@ async function embedQuery(query: string): Promise<number[]> {
     method: "POST",
     headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
     body: JSON.stringify({
-      content: { parts: [{ text: query }] },
-      taskType: "RETRIEVAL_QUERY",
-      outputDimensionality: 1536,
+      model: `models/${EMBED_MODEL}`,
+      content: {
+        parts: [{ text: `task: retrieve relevant industrial security evidence | query: ${query}` }],
+      },
+      output_dimensionality: EMBED_DIM,
     }),
   });
   if (!res.ok) throw new Error(`embed ${res.status}`);
   const data = await res.json();
   const values: number[] | undefined = data?.embedding?.values;
   if (!Array.isArray(values)) throw new Error("embed response missing values");
-  // Sub-3072 MRL outputs are NOT pre-normalized — L2 is mandatory (runbook).
-  return truncateAndNormalize(values);
+  return validateEmbeddingVector(values);
 }
 
 Deno.serve(async (req) => {

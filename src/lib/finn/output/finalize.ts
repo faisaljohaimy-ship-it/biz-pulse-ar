@@ -88,6 +88,8 @@ export interface FinnOutputRequest {
   /** Server-derived time; null means no trusted clock is available. */
   readonly trustedClockISO: string | null;
   readonly isSimulationEnv: boolean;
+  /** True only when a labeled reference dataset was actually supplied. */
+  readonly simulationDataAvailable?: boolean;
   /** Present for a sensitive action request. */
   readonly action?: FinnActionRequest;
   /** The proposal/resource's org — approvals must be in-org. */
@@ -105,6 +107,7 @@ const APPROVAL_REQUIRED_LINE = "هذا إجراء حسّاس يتطلب اعتم
 const DENIED_LINE = "صلاحيتك لا تسمح باعتماد هذا الإجراء أو تنفيذه.";
 const SIMULATION_LINE = "البيانات الحية غير متاحة الآن — هذا عرض محاكاة مرجعية (بيانات محاكاة).";
 const SAFE_ERROR_LINE = "تعذّر إكمال الرد بأمان الآن — أعد المحاولة.";
+const SIMULATION_DISCLOSURE = "بيانات محاكاة مرجعية — وليست حالة تشغيلية حية.";
 
 // ── Detectors (textual layer — ADDITIONAL to the policy above) ──────────────
 const RE_EXFIL_INPUT =
@@ -194,16 +197,35 @@ const RE_SELF_INTRO_EN = new RegExp(
 
 export function enforceFinnIdentity(text: string): string {
   const platformReplacement = /[\u0600-\u06ff]/.test(text) ? "المنصة" : "the platform";
-  return text
-    .replace(RE_SELF_INTRO_AR, " ")
-    .replace(RE_SELF_INTRO_EN, " ")
-    .replace(RE_LEGACY_NAME_AR, "FINN")
-    .replace(RE_LEGACY_NAME_EN, "FINN")
-    .replace(RE_LEGACY_PLATFORM_WITH_PREFIX_AR, "المنصة")
-    .replace(RE_LEGACY_PLATFORM_AR, "المنصة")
-    .replace(RE_LEGACY_PLATFORM_EN, platformReplacement)
-    .replace(/\s{2,}/g, " ")
+  return (
+    text
+      .replace(RE_SELF_INTRO_AR, " ")
+      .replace(RE_SELF_INTRO_EN, " ")
+      .replace(RE_LEGACY_NAME_AR, "FINN")
+      .replace(RE_LEGACY_NAME_EN, "FINN")
+      .replace(RE_LEGACY_PLATFORM_WITH_PREFIX_AR, "المنصة")
+      .replace(RE_LEGACY_PLATFORM_AR, "المنصة")
+      .replace(RE_LEGACY_PLATFORM_EN, platformReplacement)
+      // Preserve Markdown paragraphs/lists. Only compact horizontal whitespace;
+      // collapsing all \s previously flattened every executive report to a line.
+      .replace(/[ \t]{2,}/g, " ")
+      .replace(/[ \t]*\n[ \t]*/g, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
+}
+
+function simulationDisplayText(modelText: string): string {
+  const marked = modelText
+    .replace(/البيانات\s+الحية/g, "البيانات المرجعية")
+    .replace(/الحالة\s+الحية/g, "الحالة المرجعية")
+    .replace(/نسبة\s+الامتثال\s+الحية/g, "نسبة الامتثال المرجعية")
+    .replace(/(المؤشرات|الأرقام|الارقام|النسب)\s+الحية/g, "$1 المرجعية")
+    .replace(/\blive\s+(data|status)\b/gi, "reference $1")
     .trim();
+  if (!marked) return SIMULATION_LINE;
+  if (marked.includes(SIMULATION_DISCLOSURE)) return marked;
+  return `${marked}\n\n> ${SIMULATION_DISCLOSURE}`;
 }
 
 // ── The branded constructor (module-private) ────────────────────────────────
@@ -326,6 +348,15 @@ export function finalizeFinnOutput(req: FinnOutputRequest): SafeFinnOutput {
     // before the regulatory branch: "no live data for a live ask" is the more
     // specific rule (a KPI question often also mentions compliance).
     if (RE_KPI.test(req.userText) && !req.liveDataAvailable) {
+      if (req.simulationDataAvailable) {
+        const { text, pii } = redactPii(simulationDisplayText(model));
+        return make("simulation", text, "reference-simulation", {
+          isSimulation: true,
+          observedAt: req.trustedClockISO,
+          pii,
+          orgId,
+        });
+      }
       return make("simulation", SIMULATION_LINE, "no-live-data", { isSimulation: true, orgId });
     }
 
@@ -353,6 +384,7 @@ export function finalizeFinnOutput(req: FinnOutputRequest): SafeFinnOutput {
     }
 
     // Default answer — PII-redacted, simulation flag carried through.
+    if (!model.trim()) return make("refusal", SAFE_ERROR_LINE, "empty-model-output", { orgId });
     const { text, pii } = redactPii(model);
     return make("answer", text, "answer", { pii, isSimulation: req.isSimulationEnv, orgId });
   } catch {
