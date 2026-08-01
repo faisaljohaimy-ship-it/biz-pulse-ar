@@ -829,7 +829,7 @@ function GlobalStage({ t }: { t: number }) {
                 repeatCount="indefinite"
               />
             </circle>
-            <text x={n.x + 1.5} y={n.y + 0.5} fontSize="12" fill="rgba(200,230,255,0.7)">
+            <text x={n.x + 1.5} y={n.y + 0.5} fontSize="1.6" fill="rgba(200,230,255,0.7)">
               {n.label}
             </text>
           </g>
