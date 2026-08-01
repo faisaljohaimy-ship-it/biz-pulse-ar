@@ -45,7 +45,7 @@ import { Input } from "@/components/ui/input";
 export const Route = createFileRoute("/_authenticated/live-dashboard")({
   head: () => ({
     meta: [
-      { title: "Live Executive Dashboard — NEXIOS AI OS" },
+      { title: "Live Executive Dashboard — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
@@ -207,7 +207,7 @@ function LiveExecutiveDashboard() {
     if (!ts) return;
     const doc = new jsPDF({ orientation: "landscape" });
     doc.setFontSize(16);
-    doc.text("NEXIOS AI OS — Executive Dashboard", 14, 16);
+    doc.text("منصة إنجاز الأعمال — Executive Dashboard", 14, 16);
     doc.setFontSize(10);
     doc.text(`Range: last ${range} days   Generated: ${new Date().toISOString()}`, 14, 23);
     if (k) {
@@ -271,7 +271,7 @@ function LiveExecutiveDashboard() {
               label={tsQ.isFetching || kpisQ.isFetching ? "SYNCING" : "LIVE"}
               tone="cyan"
             />
-            <span>· NEXIOS · EXECUTIVE</span>
+            <span>· منصة إنجاز الأعمال · EXECUTIVE</span>
           </div>
 
           <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-l from-primary to-secondary mt-1">

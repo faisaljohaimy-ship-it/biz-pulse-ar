@@ -7,12 +7,12 @@ import { DOMAIN_URL } from "@/lib/domain";
 export const Route = createFileRoute("/book")({
   head: () => ({
     meta: [
-      { title: "Book a Meeting — Nexus AI OS" },
+      { title: "Book a Meeting — منصة إنجاز الأعمال" },
       {
         name: "description",
-        content: "Book a 30-minute strategy session with a Nexus AI OS specialist.",
+        content: "Book a 30-minute strategy session with a منصة إنجاز الأعمال specialist.",
       },
-      { property: "og:title", content: "Book a Meeting — Nexus AI OS" },
+      { property: "og:title", content: "Book a Meeting — منصة إنجاز الأعمال" },
       { property: "og:description", content: "30-minute strategy session with a specialist." },
       { property: "og:url", content: `${DOMAIN_URL}/book` },
     ],

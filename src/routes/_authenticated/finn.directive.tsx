@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/finn/directive")({
   loader: ({ context }) => context.queryClient.ensureQueryData(auditQuery),
   head: () => ({
     meta: [
-      { title: "FINN Directive Ledger — NEXIOS" },
+      { title: "FINN Directive Ledger — منصة إنجاز الأعمال" },
       {
         name: "description",
         content: "Live phase-by-phase audit of the FINN Impact Priority Directive.",

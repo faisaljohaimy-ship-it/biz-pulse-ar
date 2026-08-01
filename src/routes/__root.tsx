@@ -218,7 +218,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: COMPANY_NAME,
           legalName: COMPANY_NAME,
           url: DOMAIN_URL,
-          logo: `${DOMAIN_URL}/nexus-icon.png`,
+          logo: `${DOMAIN_URL}/brand-icon.png`,
           description:
             "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation.",
           areaServed: ["SA", "AE", "KW", "QA", "BH", "OM"],

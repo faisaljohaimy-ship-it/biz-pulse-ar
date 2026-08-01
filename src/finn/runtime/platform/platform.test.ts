@@ -390,7 +390,7 @@ describe("Packages, marketplace, extensions", () => {
     const marketplace = new PluginMarketplaceRuntime(packages);
     marketplace.publish({
       pkg: { id: "safe", version: "1.0.0", dependencies: [] },
-      publisher: "nexios",
+      publisher: "injaz-al-aamal-platform",
       verified: true,
     });
     marketplace.publish({

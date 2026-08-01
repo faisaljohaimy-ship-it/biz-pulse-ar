@@ -6,13 +6,13 @@ import { ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms of Service — Nexus AI OS" },
+      { title: "Terms of Service — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "Terms governing use of Nexus AI OS — the executive intelligence operating system.",
+          "Terms governing use of منصة إنجاز الأعمال — the executive intelligence operating system.",
       },
-      { property: "og:title", content: "Terms of Service — Nexus AI OS" },
+      { property: "og:title", content: "Terms of Service — منصة إنجاز الأعمال" },
       { property: "og:url", content: `${DOMAIN_URL}/terms` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/terms` }],
@@ -44,8 +44,8 @@ function TermsPage() {
         <div className="prose prose-invert mt-10 max-w-none space-y-6 text-sm leading-relaxed text-foreground/90">
           <p>
             {isAr
-              ? "باستخدامك Nexus AI OS، فإنك توافق على هذه الشروط نيابةً عن مؤسستك."
-              : "By using Nexus AI OS, you agree to these terms on behalf of your organization."}
+              ? "باستخدامك منصة إنجاز الأعمال، فإنك توافق على هذه الشروط نيابةً عن مؤسستك."
+              : "By using منصة إنجاز الأعمال, you agree to these terms on behalf of your organization."}
           </p>
 
           <h2 className="text-xl font-semibold">{isAr ? "١. الترخيص" : "1. License"}</h2>

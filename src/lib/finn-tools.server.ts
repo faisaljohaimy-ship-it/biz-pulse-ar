@@ -118,7 +118,7 @@ export function buildFinnTools(
   return {
     create_task: tool({
       description:
-        "Create an executive task in NEXUS for the current user. Use when the user asks to add a to-do, assign work, or schedule a deliverable.",
+        "Create an executive task in منصة إنجاز الأعمال for the current user. Use when the user asks to add a to-do, assign work, or schedule a deliverable.",
       inputSchema: z.object({
         title: z.string().min(2).max(200),
         description: z.string().max(2000).optional(),
@@ -498,7 +498,7 @@ export function buildFinnTools(
             .select("id,title,content")
             .or(`title.ilike.%${q}%,content.ilike.%${q}%`)
             .limit(args.limit),
-          // NEXIOS finn_knowledge schema is (title, source, content, tags).
+          // منصة إنجاز الأعمال finn_knowledge schema is (title, source, content, tags).
           db
             .from("finn_knowledge")
             .select("id,title,content,source,tags")
@@ -1120,7 +1120,7 @@ export function buildFinnTools(
 
     sec_navigate: tool({
       description:
-        "Navigate the user to a specific page in NEXUS. Use when user says 'open X', 'go to', 'افتح', 'انتقل'. Returns a target route the UI will navigate to.",
+        "Navigate the user to a specific page in منصة إنجاز الأعمال. Use when user says 'open X', 'go to', 'افتح', 'انتقل'. Returns a target route the UI will navigate to.",
       inputSchema: z.object({
         target: z.enum([
           "/dashboard",

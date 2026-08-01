@@ -86,12 +86,19 @@ const collect = ({ minFont, minTarget }) => {
       el.matches("button, a[href], [role='button'], [role='tab'], input, select, textarea") &&
       !el.hasAttribute("disabled") &&
       cs.pointerEvents !== "none";
-    if (isControl && (box.width < minTarget || box.height < minTarget)) {
+    // Measure the UNTRANSFORMED layout box. getBoundingClientRect() folds in
+    // CSS transforms, so an entrance animation that opens at scale(0.6) — the
+    // orb's `orb-wake` — reports a compliant 44px button as 31px and fails the
+    // run on a purely decorative effect. offsetWidth/offsetHeight are the hit
+    // area at rest, which is what the touch-target floor is actually about.
+    const tw = el.offsetWidth || box.width;
+    const th = el.offsetHeight || box.height;
+    if (isControl && (tw < minTarget || th < minTarget)) {
       if (smallTargets.length < 8) {
         smallTargets.push({
           tag: el.tagName,
-          w: Math.round(box.width),
-          h: Math.round(box.height),
+          w: Math.round(tw),
+          h: Math.round(th),
           label: (el.getAttribute("aria-label") || el.textContent || "").trim().slice(0, 34),
         });
       }

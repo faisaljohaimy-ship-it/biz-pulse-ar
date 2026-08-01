@@ -6,12 +6,12 @@ import { ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy — NEXIOS AI OS" },
+      { title: "Privacy Policy — منصة إنجاز الأعمال" },
       {
         name: "description",
-        content: "How NEXIOS AI OS collects, processes, and protects enterprise data.",
+        content: "How منصة إنجاز الأعمال collects, processes, and protects enterprise data.",
       },
-      { property: "og:title", content: "Privacy Policy — NEXIOS AI OS" },
+      { property: "og:title", content: "Privacy Policy — منصة إنجاز الأعمال" },
       { property: "og:url", content: `${DOMAIN_URL}/privacy` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/privacy` }],
@@ -43,8 +43,8 @@ function PrivacyPage() {
         <div className="prose prose-invert mt-10 max-w-none space-y-6 text-sm leading-relaxed text-foreground/90">
           <p>
             {isAr
-              ? "تصف هذه السياسة كيف تعالج منصة NEXIOS AI OS الأساسية البيانات التي تختار مؤسستك مشاركتها، وكيف تُحمى وتُحذف. تُحدَّد هوية المتحكم والمعالج في اتفاقية العميل الموقعة."
-              : "This policy describes how the core NEXIOS AI OS platform processes, safeguards, and deletes data your organization chooses to share. The controller and processor are identified in the customer's signed agreement."}
+              ? "تصف هذه السياسة كيف تعالج منصة منصة إنجاز الأعمال الأساسية البيانات التي تختار مؤسستك مشاركتها، وكيف تُحمى وتُحذف. تُحدَّد هوية المتحكم والمعالج في اتفاقية العميل الموقعة."
+              : "This policy describes how the core منصة إنجاز الأعمال platform processes, safeguards, and deletes data your organization chooses to share. The controller and processor are identified in the customer's signed agreement."}
           </p>
 
           <h2 className="text-xl font-semibold">

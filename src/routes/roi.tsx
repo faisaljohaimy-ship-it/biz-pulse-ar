@@ -7,13 +7,13 @@ import { ArrowLeft, TrendingUp, TrendingDown, Clock, Shield, Zap, DollarSign } f
 export const Route = createFileRoute("/roi")({
   head: () => ({
     meta: [
-      { title: "ROI Calculator — Nexus AI OS" },
+      { title: "ROI Calculator — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "Quantify NEXUS AI OS business impact in under 30 seconds. Annual savings, cost reduction, revenue growth, productivity gain, risk reduction, and payback period.",
+          "Quantify منصة إنجاز الأعمال business impact in under 30 seconds. Annual savings, cost reduction, revenue growth, productivity gain, risk reduction, and payback period.",
       },
-      { property: "og:title", content: "ROI Calculator — Nexus AI OS" },
+      { property: "og:title", content: "ROI Calculator — منصة إنجاز الأعمال" },
       {
         property: "og:description",
         content: "Executive-grade ROI model for the autonomous enterprise.",
@@ -117,7 +117,7 @@ function ROIPage() {
 
     const annualSavings = costSavings + revenueUplift + productivityValue + riskValue;
 
-    // NEXUS investment (3 tiers, by employees)
+    // منصة إنجاز الأعمال investment (3 tiers, by employees)
     const investment = employees < 500 ? 1_800_000 : employees < 5000 ? 6_400_000 : 14_800_000;
 
     const paybackMonths = Math.max(0.5, (investment / annualSavings) * 12);
@@ -167,7 +167,9 @@ function ROIPage() {
         {/* Hero */}
         <section className="mb-12 max-w-3xl">
           <h1 className="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-4xl font-semibold leading-tight text-transparent sm:text-5xl">
-            {isAr ? "احسب أثر NEXUS خلال 30 ثانية" : "Quantify NEXUS impact in 30 seconds"}
+            {isAr
+              ? "احسب أثر منصة إنجاز الأعمال خلال 30 ثانية"
+              : "Quantify منصة إنجاز الأعمال impact in 30 seconds"}
           </h1>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
             {isAr

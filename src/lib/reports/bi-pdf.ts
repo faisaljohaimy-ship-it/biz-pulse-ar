@@ -5,6 +5,7 @@
  * only — never in the initial bundle.
  */
 import { layoutArabicLine, type ArabicSegment } from "./arabic-text";
+import { PRODUCT_BRAND } from "@/lib/domain";
 import type { DailyOpsFonts } from "./daily-ops-pdf";
 
 export type BiPdfInput = {
@@ -93,13 +94,15 @@ export async function buildBiPdf(input: BiPdfInput, fonts: DailyOpsFonts): Promi
     borderColor: emerald,
     borderWidth: 1.2,
   });
-  page.drawText("NEXIOS AI OS", {
-    x: MARGIN + 30,
-    y: H - 56,
-    size: 20,
-    font: latinBold,
-    color: emerald,
-  });
+  // The brand is Arabic, so it must go through the embedded Arabic font.
+  // `latinBold` is Helvetica: pdf-lib's WinAnsi encoder throws on Arabic code
+  // points, so this would abort report generation, not merely mis-render.
+  // `arText` right-anchors, hence the measure-then-place.
+  {
+    const segs = layoutArabicLine(PRODUCT_BRAND.name);
+    const width = segs.reduce((s, seg) => s + segWidth(seg, 20, true), 0);
+    arText(PRODUCT_BRAND.name, MARGIN + 30 + width, H - 56, 20, emerald, true);
+  }
   arText("لوحات التحليل التنفيذية", W - MARGIN, H - 62, 22, ink, true);
   arText(
     `الفترة: ${input.period} يومًا — ${input.department === "all" ? "كل الإدارات" : input.department}`,
@@ -215,7 +218,7 @@ export async function buildBiPdf(input: BiPdfInput, fonts: DailyOpsFonts): Promi
   /* Constitutional footer */
   page.drawRectangle({ x: 0, y: 30, width: W, height: 0.5, color: emerald, opacity: 0.6 });
   const footer = layoutArabicLine(
-    "بيانات محاكاة مرجعية — is_simulation = true · منصة إنجاز الأعمال التنفيذية NEXIOS",
+    "بيانات محاكاة مرجعية — is_simulation = true · منصة إنجاز الأعمال",
   );
   const totalF = footer.reduce((s, seg) => s + segWidth(seg, 7.5, false), 0);
   let fx = W - MARGIN - totalF;

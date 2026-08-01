@@ -8,16 +8,17 @@ export const Route = createFileRoute("/reports-agent")({
   component: ReportsAgentPage,
   head: () => ({
     meta: [
-      { title: "وكيل التقارير · NEXIOS Reports Agent" },
+      { title: "وكيل التقارير · منصة إنجاز الأعمال Reports Agent" },
       {
         name: "description",
         content:
-          "وكيل تقارير NEXIOS: يعمل باستمرار على توليد التقارير التشغيلية والامتثالية وتصديرها بصيغ CSV و PDF.",
+          "وكيل تقارير منصة إنجاز الأعمال: يعمل باستمرار على توليد التقارير التشغيلية والامتثالية وتصديرها بصيغ CSV و PDF.",
       },
-      { property: "og:title", content: "وكيل التقارير · NEXIOS Reports Agent" },
+      { property: "og:title", content: "وكيل التقارير · منصة إنجاز الأعمال Reports Agent" },
       {
         property: "og:description",
-        content: "وكيل حي يولّد التقارير باستمرار داخل منظومة NEXIOS ويصدّرها بضغطة زر.",
+        content:
+          "وكيل حي يولّد التقارير باستمرار داخل منظومة منصة إنجاز الأعمال ويصدّرها بضغطة زر.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -78,11 +79,13 @@ function ReportsAgentPage() {
       <div className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
         <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="text-xs tracking-[0.3em] text-cyan-300/70">NEXIOS · AGENT</div>
+            <div className="text-xs tracking-[0.3em] text-cyan-300/70">
+              منصة إنجاز الأعمال · AGENT
+            </div>
             <h1 className="mt-1 text-3xl font-bold text-cyan-100 lg:text-4xl">وكيل التقارير</h1>
             <p className="mt-2 max-w-2xl text-sm text-cyan-100/70">
-              وكيل حيّ يعمل باستمرار داخل منظومة NEXIOS لتوليد التقارير التشغيلية والامتثالية عبر
-              المناطق والقطاعات، ويتيح تصديرها فورًا.
+              وكيل حيّ يعمل باستمرار داخل منظومة منصة إنجاز الأعمال لتوليد التقارير التشغيلية
+              والامتثالية عبر المناطق والقطاعات، ويتيح تصديرها فورًا.
             </p>
           </div>
           <div className="flex items-center gap-2">

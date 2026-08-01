@@ -215,7 +215,7 @@ export const publishExecutiveReportBinary = createServerFn({ method: "POST" })
 
     const generatedAt = new Date().toISOString();
     const ym = generatedAt.slice(0, 7);
-    const folder = `NEXIOS%20Reports/${ym}`;
+    const folder = `منصة إنجاز الأعمال%20Reports/${ym}`;
     const slug = (data.filenamePrefix ?? data.title) + "-" + generatedAt.slice(0, 10);
     const pdfName = safeName(slug, "pdf");
     const xlsxName = safeName(slug, "xlsx");

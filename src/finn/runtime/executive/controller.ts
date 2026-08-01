@@ -90,12 +90,12 @@ export interface ExecutiveShellOptions {
 const DEFAULT_THEMES = [
   {
     id: "nexios-dark",
-    nameAr: "نكسيوس الداكن",
+    nameAr: "منصة إنجاز الأعمال الداكن",
     tokens: { "color.bg": "#050b18", "color.accent": "#22d3ee" },
   },
   {
     id: "nexios-light",
-    nameAr: "نكسيوس الفاتح",
+    nameAr: "منصة إنجاز الأعمال الفاتح",
     tokens: { "color.bg": "#f8fafc", "color.accent": "#0e7490" },
   },
 ] as const;

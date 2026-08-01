@@ -2,7 +2,7 @@
  * NexiosCommandCenter — interactive FINN executive dashboard artwork.
  *
  * The approved 3:2 artwork remains pixel-perfect while percentage-positioned
- * hotspots turn its visible controls into real NEXIOS navigation. Coordinates
+ * hotspots turn its visible controls into real منصة إنجاز الأعمال navigation. Coordinates
  * are relative to the image, so image and controls always scale together.
  */
 import { Link } from "@tanstack/react-router";
@@ -54,8 +54,8 @@ export const HOTSPOTS = [
   {
     id: "nexios-logo",
     to: "/os",
-    labelAr: "نظام NEXIOS AI OS",
-    labelEn: "NEXIOS AI OS",
+    labelAr: "نظام منصة إنجاز الأعمال",
+    labelEn: "منصة إنجاز الأعمال",
     x: 37.5,
     y: 0.7,
     width: 28.5,
@@ -566,7 +566,7 @@ export function NexiosCommandCenter() {
       <p id="nexios-command-center-hint" className="sr-only">
         {ar
           ? "جميع الأيقونات الرئيسية في لوحة القيادة روابط تفاعلية إلى وحدات النظام."
-          : "The command center's primary icons are interactive links to NEXIOS modules."}
+          : "The command center's primary icons are interactive links to منصة إنجاز الأعمال modules."}
       </p>
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 px-1 text-[12px] sm:text-xs">
@@ -594,8 +594,8 @@ export function NexiosCommandCenter() {
             src="/finn-portrait.png"
             alt={
               ar
-                ? "لوحة NEXIOS AI OS للمناطق الأربع مع المساعدة التنفيذية FINN"
-                : "NEXIOS AI OS four-region dashboard with FINN executive assistant"
+                ? "لوحة منصة إنجاز الأعمال للمناطق الأربع مع المساعدة التنفيذية FINN"
+                : "منصة إنجاز الأعمال four-region dashboard with FINN executive assistant"
             }
             width={1536}
             height={1024}

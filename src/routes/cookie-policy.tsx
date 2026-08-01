@@ -7,17 +7,17 @@ import { Cookie, Shield, Settings2 } from "lucide-react";
 export const Route = createFileRoute("/cookie-policy")({
   head: () => ({
     meta: [
-      { title: "Cookie Policy — NEXIOS | NEXUS AI OS" },
+      { title: "Cookie Policy — منصة إنجاز الأعمال | منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "How NEXIOS uses cookies and similar technologies — categories, purposes, retention, and your choices. PDPL & GDPR-aligned.",
+          "How منصة إنجاز الأعمال uses cookies and similar technologies — categories, purposes, retention, and your choices. PDPL & GDPR-aligned.",
       },
-      { property: "og:title", content: "Cookie Policy — NEXIOS" },
+      { property: "og:title", content: "Cookie Policy — منصة إنجاز الأعمال" },
       {
         property: "og:description",
         content:
-          "Cookie categories, retention, and user choices for neexios.com and the NEXUS AI OS platform.",
+          "Cookie categories, retention, and user choices for neexios.com and the منصة إنجاز الأعمال platform.",
       },
       { property: "og:url", content: `${DOMAIN_URL}/cookie-policy` },
       { property: "og:type", content: "article" },
@@ -103,8 +103,8 @@ function CookiePage() {
       eyebrowAr="سياسة"
       title="Cookie Policy"
       titleAr="سياسة ملفات تعريف الارتباط"
-      subtitle="How neexios.com and the NEXUS AI OS platform use cookies and similar storage."
-      subtitleAr="كيف يستخدم موقع neexios.com ومنصة NEXUS AI OS ملفات تعريف الارتباط ووسائل التخزين المماثلة."
+      subtitle="How neexios.com and the منصة إنجاز الأعمال platform use cookies and similar storage."
+      subtitleAr="كيف يستخدم موقع neexios.com ومنصة منصة إنجاز الأعمال ملفات تعريف الارتباط ووسائل التخزين المماثلة."
       qualifier="Effective 2026-06-20. PDPL & GDPR aligned."
       qualifierAr="ساري ابتداءً من 20-06-2026. متوافق مع PDPL وGDPR."
     >

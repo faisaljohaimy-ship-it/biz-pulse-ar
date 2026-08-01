@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/knowledge-upload")({
   component: KnowledgeUploadCenter,
   head: () => ({
     meta: [
-      { title: "Knowledge Upload Center — NEXIOS AI OS" },
+      { title: "Knowledge Upload Center — منصة إنجاز الأعمال" },
       {
         name: "description",
         content: "Enterprise SOP ingestion with bilingual chunking and citation readiness.",

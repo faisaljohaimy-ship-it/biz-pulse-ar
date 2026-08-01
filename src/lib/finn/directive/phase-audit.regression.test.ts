@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINAL QUALITY DIRECTIVE — regression guard.
+ * منصة إنجاز الأعمال FINAL QUALITY DIRECTIVE — regression guard.
  *
  * Enforces `deferredPhaseSensors: 0` from
  * `.lovable/memory/constraints/nexios-final-quality-directive.md`. Any
@@ -9,7 +9,7 @@
 import { describe, expect, it } from "vitest";
 import { runDirectiveAudit } from "@/lib/finn/directive/phase-audit.server";
 
-describe("NEXIOS Final Quality Directive — live phase sensors", () => {
+describe("منصة إنجاز الأعمال Final Quality Directive — live phase sensors", () => {
   const report = runDirectiveAudit();
 
   it.each([4, 6, 7, 8, 9])("phase %i is not deferred", (n) => {

@@ -7,17 +7,17 @@ import { Ban, ShieldAlert, Scale } from "lucide-react";
 export const Route = createFileRoute("/aup")({
   head: () => ({
     meta: [
-      { title: "Acceptable Use Policy — NEXIOS | NEXUS AI OS" },
+      { title: "Acceptable Use Policy — منصة إنجاز الأعمال | منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "Acceptable use rules for the NEXUS AI OS platform — prohibited content, prohibited activities, enforcement and reporting.",
+          "Acceptable use rules for the منصة إنجاز الأعمال platform — prohibited content, prohibited activities, enforcement and reporting.",
       },
-      { property: "og:title", content: "Acceptable Use Policy — NEXIOS" },
+      { property: "og:title", content: "Acceptable Use Policy — منصة إنجاز الأعمال" },
       {
         property: "og:description",
         content:
-          "Prohibited content, prohibited activities, enforcement, and reporting for NEXUS AI OS.",
+          "Prohibited content, prohibited activities, enforcement, and reporting for منصة إنجاز الأعمال.",
       },
       { property: "og:url", content: `${DOMAIN_URL}/aup` },
       { property: "og:type", content: "article" },
@@ -107,8 +107,8 @@ function AupPage() {
       eyebrowAr="سياسة"
       title="Acceptable Use Policy"
       titleAr="سياسة الاستخدام المقبول"
-      subtitle="Rules every NEXUS AI OS user, customer, and developer must follow."
-      subtitleAr="القواعد التي يلتزم بها كل مستخدم وعميل ومطوّر على منصة NEXUS AI OS."
+      subtitle="Rules every منصة إنجاز الأعمال user, customer, and developer must follow."
+      subtitleAr="القواعد التي يلتزم بها كل مستخدم وعميل ومطوّر على منصة منصة إنجاز الأعمال."
       qualifier="Effective 2026-06-20. Forms part of the Master Services Agreement."
       qualifierAr="ساري ابتداءً من 20-06-2026. جزء من اتفاقية الخدمات الرئيسية."
     >

@@ -19,13 +19,13 @@ import {
 export const Route = createFileRoute("/customers")({
   head: () => ({
     meta: [
-      { title: "Customers & Case Studies — Nexus AI OS" },
+      { title: "Customers & Case Studies — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "Anonymized Fortune-500 grade case studies showing how Nexus AI OS delivers measurable ROI, time savings, and operational impact across enterprise and government.",
+          "Anonymized Fortune-500 grade case studies showing how منصة إنجاز الأعمال delivers measurable ROI, time savings, and operational impact across enterprise and government.",
       },
-      { property: "og:title", content: "Customers & Case Studies — Nexus AI OS" },
+      { property: "og:title", content: "Customers & Case Studies — منصة إنجاز الأعمال" },
       {
         property: "og:description",
         content:
@@ -84,9 +84,9 @@ const CASES: Case[] = [
     titleEn: "Replacing 14 dashboards with a single autonomous operating layer",
     titleAr: "استبدال 14 لوحة تحكم بطبقة تشغيل ذاتية موحدة",
     summaryEn:
-      "A Tier-1 GCC bank consolidated risk, treasury, and branch operations into NEXUS — collapsing weekly executive packs into a live Digital Twin reviewed daily by the CEO.",
+      "A Tier-1 GCC bank consolidated risk, treasury, and branch operations into منصة إنجاز الأعمال — collapsing weekly executive packs into a live Digital Twin reviewed daily by the CEO.",
     summaryAr:
-      "بنك خليجي من الفئة الأولى وحّد عمليات المخاطر والخزينة والفروع داخل NEXUS — مع تحويل تقارير التنفيذيين الأسبوعية إلى توأم رقمي مباشر يراجعه الرئيس التنفيذي يومياً.",
+      "بنك خليجي من الفئة الأولى وحّد عمليات المخاطر والخزينة والفروع داخل منصة إنجاز الأعمال — مع تحويل تقارير التنفيذيين الأسبوعية إلى توأم رقمي مباشر يراجعه الرئيس التنفيذي يومياً.",
     challengeEn: [
       "14 disconnected BI dashboards across risk, treasury, retail and ops.",
       "Monthly close required 9 days of manual reconciliation.",
@@ -116,7 +116,7 @@ const CASES: Case[] = [
     after: [
       { labelEn: "Monthly close", labelAr: "الإقفال الشهري", value: "1.5 days" },
       { labelEn: "Risk reporting", labelAr: "تقارير المخاطر", value: "Real-time" },
-      { labelEn: "Dashboards", labelAr: "لوحات التحكم", value: "1 (NEXUS)" },
+      { labelEn: "Dashboards", labelAr: "لوحات التحكم", value: "1 (منصة إنجاز الأعمال)" },
       { labelEn: "Analyst headcount", labelAr: "عدد المحللين", value: "62 → higher-value work" },
     ],
     kpis: [
@@ -164,9 +164,9 @@ const CASES: Case[] = [
       },
     ],
     quoteEn:
-      "We replaced a wall of dashboards with one screen the board actually trusts. NEXUS gave us back our mornings.",
+      "We replaced a wall of dashboards with one screen the board actually trusts. منصة إنجاز الأعمال gave us back our mornings.",
     quoteAr:
-      "استبدلنا جداراً من اللوحات بشاشة واحدة يثق بها مجلس الإدارة فعلاً. أعاد لنا NEXUS صباحاتنا.",
+      "استبدلنا جداراً من اللوحات بشاشة واحدة يثق بها مجلس الإدارة فعلاً. أعاد لنا منصة إنجاز الأعمال صباحاتنا.",
     attribEn: "Chief Operating Officer · Tier-1 GCC Bank",
     attribAr: "الرئيس التنفيذي للعمليات · بنك خليجي من الفئة الأولى",
     timelineEn: "11 weeks to production · 6 lines of business",
@@ -285,9 +285,9 @@ const CASES: Case[] = [
     titleEn: "Autonomous merchandising across 1,400 stores in 11 countries",
     titleAr: "تجارة ذاتية عبر 1,400 متجر في 11 دولة",
     summaryEn:
-      "A regional retail group plugged NEXUS into ERP, POS and e-commerce — letting FINN agents rebalance inventory, reprice SKUs and brief store managers every morning at 7:00.",
+      "A regional retail group plugged منصة إنجاز الأعمال into ERP, POS and e-commerce — letting FINN agents rebalance inventory, reprice SKUs and brief store managers every morning at 7:00.",
     summaryAr:
-      "ربطت مجموعة تجزئة إقليمية NEXUS بأنظمة ERP ونقاط البيع والتجارة الإلكترونية — وأطلقت وكلاء FINN لإعادة توزيع المخزون وتسعير المنتجات وإفادة مديري المتاجر كل صباح 7:00.",
+      "ربطت مجموعة تجزئة إقليمية منصة إنجاز الأعمال بأنظمة ERP ونقاط البيع والتجارة الإلكترونية — وأطلقت وكلاء FINN لإعادة توزيع المخزون وتسعير المنتجات وإفادة مديري المتاجر كل صباح 7:00.",
     challengeEn: [
       "Stock-outs on 7.4% of top SKUs every weekend.",
       "Country GMs flying blind between monthly reviews.",
@@ -395,7 +395,7 @@ function BeforeAfter({ c, isAr }: { c: Case; isAr: boolean }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-        <SectionLabel isAr={isAr} en="Before NEXUS" ar="قبل NEXUS" />
+        <SectionLabel isAr={isAr} en="Before منصة إنجاز الأعمال" ar="قبل منصة إنجاز الأعمال" />
         <ul className="space-y-2.5">
           {c.before.map((b, i) => (
             <li
@@ -409,7 +409,7 @@ function BeforeAfter({ c, isAr }: { c: Case; isAr: boolean }) {
         </ul>
       </div>
       <div className="rounded-2xl border border-amber-300/25 bg-gradient-to-br from-amber-300/[0.06] to-transparent p-5">
-        <SectionLabel isAr={isAr} en="After NEXUS" ar="بعد NEXUS" />
+        <SectionLabel isAr={isAr} en="After منصة إنجاز الأعمال" ar="بعد منصة إنجاز الأعمال" />
         <ul className="space-y-2.5">
           {c.after.map((a, i) => (
             <li
@@ -502,7 +502,11 @@ function CaseCard({ c, idx, isAr }: { c: Case; idx: number; isAr: boolean }) {
           </ul>
         </div>
         <div>
-          <SectionLabel isAr={isAr} en="The NEXUS Solution" ar="حل NEXUS" />
+          <SectionLabel
+            isAr={isAr}
+            en="The منصة إنجاز الأعمال Solution"
+            ar="حل منصة إنجاز الأعمال"
+          />
           <ul className="space-y-2 text-sm text-muted-foreground">
             {(isAr ? c.solutionAr : c.solutionEn).map((t, i) => (
               <li key={i} className="flex gap-2">
@@ -586,8 +590,8 @@ function CustomersPage() {
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground">
             {isAr
-              ? "تم تعقيم هذه الدراسات لحماية هوية العملاء — والأرقام تمثّل نتائج موحّدة من عمليات نشر مؤسسية وحكومية حقيقية لـ NEXUS AI OS."
-              : "Anonymized to protect customer identity — the numbers reflect consolidated outcomes from real enterprise and government deployments of NEXUS AI OS."}
+              ? "تم تعقيم هذه الدراسات لحماية هوية العملاء — والأرقام تمثّل نتائج موحّدة من عمليات نشر مؤسسية وحكومية حقيقية لـ منصة إنجاز الأعمال."
+              : "Anonymized to protect customer identity — the numbers reflect consolidated outcomes from real enterprise and government deployments of منصة إنجاز الأعمال."}
           </p>
         </header>
 

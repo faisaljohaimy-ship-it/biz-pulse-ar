@@ -192,7 +192,7 @@ export function NxAgentsPage() {
         >
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2 px-1">
             <h2 className="text-sm font-black tracking-[0.18em] text-[#3AE8FF] md:text-base">
-              NEXIOS · AGENTIC FLOW CANVAS
+              منصة إنجاز الأعمال · AGENTIC FLOW CANVAS
             </h2>
             <p className="text-[12px] text-nx-pearl/60">
               المصادر ← الوكلاء ← FINN ← بوابة الاعتماد البشري

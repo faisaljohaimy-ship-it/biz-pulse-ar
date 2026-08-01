@@ -10,10 +10,10 @@ import { NxAgentsPage } from "./-nx-agents-page";
 export const Route = createFileRoute("/nx-agents")({
   head: () => ({
     meta: [
-      { title: "منظومة الوكلاء الثلاثة عشر · NX Agents — NEXIOS AI OS" },
+      { title: "منظومة الوكلاء الثلاثة عشر · NX Agents — منصة إنجاز الأعمال" },
       {
         name: "description",
-        content: "منظومة وكلاء نكسيوس المتخصّصة — قراءة فقط، محاكاة مرجعية موسومة.",
+        content: "منظومة وكلاء منصة إنجاز الأعمال المتخصّصة — قراءة فقط، محاكاة مرجعية موسومة.",
       },
       { name: "robots", content: "noindex" },
     ],

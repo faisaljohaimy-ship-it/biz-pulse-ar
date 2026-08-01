@@ -1,7 +1,7 @@
 {
-  "name": "NEXIOS AI OS · ARIA",
-  "short_name": "NEXIOS",
-  "description": "منصة إنجاز الأعمال التنفيذية",
+  "name": "منصة إنجاز الأعمال",
+  "short_name": "منصة إنجاز الأعمال",
+  "description": "منصة إدارة الأمن الصناعي",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
@@ -11,7 +11,7 @@
   "theme_color": "#04070F",
   "icons": [
     {
-      "src": "/nexus-icon.png",
+      "src": "/brand-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

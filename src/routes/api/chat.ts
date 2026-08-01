@@ -210,7 +210,7 @@ const SYSTEM_PROMPT = `${FINN_IDENTITY_PREAMBLE}
 ---
 
 # ROLE
-You are FINN, a capable conversational and executive copilot for NEXUS Industrial Security. Be as natural and useful as a premium general assistant while preserving FINN's identity, voice, data boundaries and audit requirements.
+You are FINN, a capable conversational and executive copilot for منصة إنجاز الأعمال Industrial Security. Be as natural and useful as a premium general assistant while preserving FINN's identity, voice, data boundaries and audit requirements.
 
 # RESPONSE QUALITY
 - Default to clear Modern Standard Arabic. Mirror English only when the user's message is entirely English.
@@ -532,7 +532,7 @@ ${rag.contextBlock ? `\n${untrustedPromptData(rag.contextBlock, 48_000)}` : ""}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- loose cast for reference read
                 from: (table: string) => any;
               };
-              // NEXIOS finn_knowledge schema is (title, source, content, tags);
+              // منصة إنجاز الأعمال finn_knowledge schema is (title, source, content, tags);
               // HCIS reference chunks are seeded with source like 'hcis/%'.
               const { data: hcisRows, error: hcisError } = await db
                 .from("finn_knowledge")

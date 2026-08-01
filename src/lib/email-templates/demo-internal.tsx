@@ -37,11 +37,13 @@ const Row = ({ label, value }: { label: string; value?: string }) => (
 const InternalDemoNotification = (p: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>New Enterprise Demo Request — {p.company || p.fullName || "NEXUS AI OS"}</Preview>
+    <Preview>
+      New Enterprise Demo Request — {p.company || p.fullName || "منصة إنجاز الأعمال"}
+    </Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>🚀 New Enterprise Demo Request</Heading>
-        <Text style={sub}>NEXUS AI OS — Inbound lead</Text>
+        <Text style={sub}>منصة إنجاز الأعمال — Inbound lead</Text>
         <Row label="Request ID" value={p.requestId} />
         <Row label="Submitted At" value={p.submittedAt} />
         <Row label="Full Name" value={p.fullName} />
@@ -65,7 +67,7 @@ export const template = {
   subject: (data: Readonly<Record<string, unknown>>) => {
     const company = typeof data.company === "string" ? data.company : "";
     const fullName = typeof data.fullName === "string" ? data.fullName : "";
-    return `🚀 New Enterprise Demo Request | ${company || fullName || "NEXUS AI OS"}`;
+    return `🚀 New Enterprise Demo Request | ${company || fullName || "منصة إنجاز الأعمال"}`;
   },
   displayName: "Demo Request — Internal Notification",
   previewData: {

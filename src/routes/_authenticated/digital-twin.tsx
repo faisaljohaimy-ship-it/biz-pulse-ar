@@ -397,7 +397,7 @@ function DigitalTwinPage() {
           </div>
           <div className="leading-tight">
             <div className="text-[12px] font-bold tracking-[0.3em] text-cyan-300/80">
-              NEXUS · DIGITAL TWIN
+              منصة إنجاز الأعمال · DIGITAL TWIN
             </div>
             <div className="text-[12px] font-semibold text-white">
               {ar ? "كون المؤسسة المباشر" : "Live Enterprise Universe"}
@@ -739,7 +739,9 @@ function HolographicCore({ t }: { t: number }) {
         }}
       >
         <div className="text-center leading-tight">
-          <div className="text-[12px] font-bold tracking-[0.3em] text-cyan-50/90">NEXUS</div>
+          <div className="text-[12px] font-bold tracking-[0.3em] text-cyan-50/90">
+            منصة إنجاز الأعمال
+          </div>
           <div className="text-[12px] font-semibold tracking-[0.25em] text-cyan-100/70">CORE</div>
         </div>
       </div>

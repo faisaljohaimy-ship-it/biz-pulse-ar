@@ -4,7 +4,7 @@
  * Mounted at the workspace's top-left by AppShell. Keeps the active region
  * bound to the shared RegionContext, colours every halo from the canonical
  * regional palette, and offers both direct region selection and one-tap
- * cycling. The visual centrepiece is the official NEXIOS command-stage
+ * cycling. The visual centrepiece is the official منصة إنجاز الأعمال command-stage
  * artwork (Saudi map + four regional panels), replacing the previous 3D
  * globe halo.
  */
@@ -30,7 +30,7 @@ function CommandStageThumb({
     <span
       aria-hidden={false}
       role="img"
-      aria-label={ar ? "مسرح القيادة نيكسيوس" : "NEXIOS command stage"}
+      aria-label={ar ? "مسرح القيادة منصة إنجاز الأعمال" : "منصة إنجاز الأعمال command stage"}
       className={cn(
         "relative block h-full w-full overflow-hidden rounded-full ring-1 ring-inset",
         className,

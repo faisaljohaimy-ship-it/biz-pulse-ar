@@ -6,7 +6,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const RELEASE = {
-  product: "NEXIOS AI OS",
+  product: "منصة إنجاز الأعمال",
   edition: "Enterprise",
   version: "1.5.1",
   release_channel: "general-availability",

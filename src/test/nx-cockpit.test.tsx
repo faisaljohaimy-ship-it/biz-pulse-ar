@@ -116,7 +116,7 @@ describe("executive cockpit — composition", () => {
     expect(heading.className).not.toMatch(/hidden/);
     const badge = within(screen.getByTestId("system-header")).getByText("محاكاة مرجعية");
     expect(badge.className).not.toMatch(/hidden/);
-    expect(screen.getByText(/لوحة القيادة العليا لنظام نكسيوس/)).toBeInTheDocument();
+    expect(screen.getByText(/لوحة القيادة العليا لمنصة إنجاز الأعمال/)).toBeInTheDocument();
   });
 
   it("action law: every interactive control carries a registered data-action", async () => {

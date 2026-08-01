@@ -76,7 +76,7 @@ function UnsubscribePage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="max-w-md w-full rounded-2xl border border-border bg-card p-8 text-center shadow-xl">
         <div className="inline-block rounded-full bg-primary/10 px-4 py-1 text-xs font-semibold tracking-widest text-primary">
-          NEXUS AI OS
+          منصة إنجاز الأعمال
         </div>
         <h1 className="mt-4 text-2xl font-bold text-foreground">Email preferences</h1>
 
@@ -87,8 +87,8 @@ function UnsubscribePage() {
         {state.kind === "ready" && (
           <>
             <p className="mt-4 text-sm text-muted-foreground">
-              Click below to unsubscribe from NEXUS AI OS emails. You can re-subscribe anytime by
-              contacting us.
+              Click below to unsubscribe from منصة إنجاز الأعمال emails. You can re-subscribe
+              anytime by contacting us.
             </p>
             <button
               onClick={confirm}

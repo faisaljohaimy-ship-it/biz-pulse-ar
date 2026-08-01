@@ -295,7 +295,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
 
   const t = {
     line1: ar ? "الذكاء يقود." : "Intelligence, in command.",
-    line2: ar ? "نكسيوس ينفّذ." : "NEXIOS executes.",
+    line2: ar ? "منصة إنجاز الأعمال ينفّذ." : "منصة إنجاز الأعمال executes.",
     lede: ar
       ? "منظومة تشغيل ذكية للمؤسسات · FINN في القلب · إدارة الأمن الصناعي · المنطقة الغربية."
       : "Enterprise AI operating system · FINN at the core · Industrial Security · Western Region.",
@@ -722,7 +722,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
           ))}
         </div>
 
-        {/* Supporting NEXIOS signature */}
+        {/* Supporting منصة إنجاز الأعمال signature */}
         <div
           className="mt-12 flex flex-col items-center gap-2"
           style={{ animation: "nxh-fade 900ms ease-out 1150ms both" }}
@@ -732,7 +732,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
             className="bg-gradient-to-b from-white/95 via-[#DFF6FF]/90 to-[#3AE8FF]/80 bg-clip-text text-2xl font-semibold tracking-[0.32em] text-transparent sm:text-3xl sm:tracking-[0.42em]"
             style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif" }}
           >
-            NEXIOS
+            منصة إنجاز الأعمال
           </div>
           <div className="text-[12px] uppercase tracking-[0.5em] text-white/50 sm:text-[12px] sm:tracking-[0.6em]">
             AI · OS
@@ -774,7 +774,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
           </div>
           <div className="text-center">
             <div className="text-sm font-semibold tracking-[0.4em] text-[#DFF6FF]">
-              NEXIOS · BOOT
+              منصة إنجاز الأعمال · BOOT
             </div>
             <div className="mt-1 text-xs text-white/70">{t.boot}</div>
           </div>

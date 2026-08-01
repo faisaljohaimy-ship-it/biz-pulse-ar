@@ -40,9 +40,9 @@ export const EXECUTIVE_BRIDGE_SCENES = [
     body_en:
       "A unified executive pulse that turns scattered signals into clarity, priority, and action.",
     narration_ar:
-      "مرحباً بكم في جسر القيادة التنفيذي لنيكسيوس. أنا FINN، شريككم الذكي في القرار. أمامكم الآن نموذج توضيحي لنبض المؤسسة؛ صورة واحدة تجمع الجاهزية، والمخاطر، والعمليات، وتضع الأهم أولاً. لا مزيد من البحث بين الشاشات أو انتظار التقارير. أنا أقرأ الإشارات، أوضح معناها، وأقدّم للقيادة موقفاً مختصراً قابلاً للتحقق. هنا تبدأ القيادة الحديثة: حقيقة واضحة، في الوقت المناسب، أمام الشخص المخوّل بالقرار.",
+      "مرحباً بكم في جسر القيادة التنفيذي لمنصة إنجاز الأعمال. أنا FINN، شريككم الذكي في القرار. أمامكم الآن نموذج توضيحي لنبض المؤسسة؛ صورة واحدة تجمع الجاهزية، والمخاطر، والعمليات، وتضع الأهم أولاً. لا مزيد من البحث بين الشاشات أو انتظار التقارير. أنا أقرأ الإشارات، أوضح معناها، وأقدّم للقيادة موقفاً مختصراً قابلاً للتحقق. هنا تبدأ القيادة الحديثة: حقيقة واضحة، في الوقت المناسب، أمام الشخص المخوّل بالقرار.",
     narration_en:
-      "Welcome to the NEXIOS Executive Command Bridge. I am FINN, your intelligent decision partner. This demonstration brings readiness, risk, and operations into one verifiable executive pulse. Instead of searching across disconnected screens or waiting for reports, leadership receives the signal, its meaning, and the priority that requires attention. Modern command begins here: clear truth, at the right moment, in front of the person authorized to act.",
+      "Welcome to the منصة إنجاز الأعمال Executive Command Bridge. I am FINN, your intelligent decision partner. This demonstration brings readiness, risk, and operations into one verifiable executive pulse. Instead of searching across disconnected screens or waiting for reports, leadership receives the signal, its meaning, and the priority that requires attention. Modern command begins here: clear truth, at the right moment, in front of the person authorized to act.",
     accent: "navy",
     showSimRibbon: true,
   },
@@ -57,9 +57,9 @@ export const EXECUTIVE_BRIDGE_SCENES = [
     body_en:
       "Security, safety, and maintenance converge in one evidence-led, human-authorized decision path.",
     narration_ar:
-      "في جسر القيادة، لا تبقى الإشارة مجرد تنبيه. يربط نيكسيوس البلاغ بسياقه التشغيلي، ويقارن أثره على الأمن والسلامة والصيانة، ثم أقدّم أنا، FINN، توصية مفسّرة مع الأدلة ودرجة الثقة. يبقى الاعتماد للإنسان المخوّل دائماً. وبعد الموافقة، يتحول القرار إلى تكليف واضح، بمالك ووقت مستهدف ومسار تدقيق كامل. النتيجة ليست سرعة بلا حوكمة؛ بل سرعة مسؤولة يمكن قياسها ومراجعتها.",
+      "في جسر القيادة، لا تبقى الإشارة مجرد تنبيه. يربط منصة إنجاز الأعمال البلاغ بسياقه التشغيلي، ويقارن أثره على الأمن والسلامة والصيانة، ثم أقدّم أنا، FINN، توصية مفسّرة مع الأدلة ودرجة الثقة. يبقى الاعتماد للإنسان المخوّل دائماً. وبعد الموافقة، يتحول القرار إلى تكليف واضح، بمالك ووقت مستهدف ومسار تدقيق كامل. النتيجة ليست سرعة بلا حوكمة؛ بل سرعة مسؤولة يمكن قياسها ومراجعتها.",
     narration_en:
-      "On the Command Bridge, a signal never remains a passive alert. NEXIOS connects it to operational context, evaluates its impact across security, safety, and maintenance, and I present an explained recommendation with evidence and confidence. Authorization always remains with the accountable human. Once approved, the decision becomes a traceable assignment with an owner, a target time, and a complete audit path. This is not speed without governance; it is responsible speed that can be measured and reviewed.",
+      "On the Command Bridge, a signal never remains a passive alert. منصة إنجاز الأعمال connects it to operational context, evaluates its impact across security, safety, and maintenance, and I present an explained recommendation with evidence and confidence. Authorization always remains with the accountable human. Once approved, the decision becomes a traceable assignment with an owner, a target time, and a complete audit path. This is not speed without governance; it is responsible speed that can be measured and reviewed.",
     accent: "emerald",
     showSimRibbon: true,
   },

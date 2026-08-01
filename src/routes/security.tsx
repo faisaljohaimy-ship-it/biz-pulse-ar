@@ -20,13 +20,13 @@ import {
 export const Route = createFileRoute("/security")({
   head: () => ({
     meta: [
-      { title: "Security — Nexus AI OS" },
+      { title: "Security — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "Defence-grade security controls for Nexus AI OS: encryption, identity, audit logging, business continuity, disaster recovery, incident response, and 99.9% uptime SLA.",
+          "Defence-grade security controls for منصة إنجاز الأعمال: encryption, identity, audit logging, business continuity, disaster recovery, incident response, and 99.9% uptime SLA.",
       },
-      { property: "og:title", content: "Security — Nexus AI OS" },
+      { property: "og:title", content: "Security — منصة إنجاز الأعمال" },
       {
         property: "og:description",
         content: "Encryption, identity, audit, BCP/DR and incident response controls.",
@@ -293,12 +293,12 @@ function SecurityPage() {
       active="/security"
       eyebrow="Defence-grade controls"
       eyebrowAr="ضوابط من الدرجة الدفاعية"
-      title="Security at NEXUS"
-      titleAr="الأمن في NEXUS"
+      title="Security at منصة إنجاز الأعمال"
+      titleAr="الأمن في منصة إنجاز الأعمال"
       subtitle="A layered control model spanning encryption, identity, network, application, AI, and human factors — designed for sovereign-grade workloads and Fortune-500 procurement."
       subtitleAr="نموذج ضوابط متعدد الطبقات يشمل التشفير والهوية والشبكة والتطبيقات والذكاء الاصطناعي والعنصر البشري — مُصمَّم للأعباء السيادية ومتطلبات أكبر المؤسسات."
-      qualifier="This page is maintained by the NEXUS team and summarizes enabled controls. It is not an independent attestation; audit reports are available under NDA."
-      qualifierAr="هذه الصفحة يحرّرها فريق NEXUS وتلخّص الضوابط المُفعّلة. ليست شهادة مستقلة؛ تتوفر تقارير التدقيق بموجب اتفاقية عدم إفصاح."
+      qualifier="This page is maintained by the منصة إنجاز الأعمال team and summarizes enabled controls. It is not an independent attestation; audit reports are available under NDA."
+      qualifierAr="هذه الصفحة يحرّرها فريق منصة إنجاز الأعمال وتلخّص الضوابط المُفعّلة. ليست شهادة مستقلة؛ تتوفر تقارير التدقيق بموجب اتفاقية عدم إفصاح."
     >
       <section className="mb-10">
         <SectionTitle

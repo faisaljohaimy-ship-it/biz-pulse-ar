@@ -1,10 +1,10 @@
 /**
- * Static assembled "NEXIOS" wordmark — liquid-chrome letters with a steady
+ * Static assembled "منصة إنجاز الأعمال" wordmark — liquid-chrome letters with a steady
  * emerald/cyan glow and an idle light-sweep every 6s. Pure CSS, zero deps.
  *
  * Accessibility contract:
  *  - The visual is a `role="img"` region with a bilingual, descriptive
- *    aria-label ("NEXIOS AI · نكسيوس — Enterprise AI Operating System") so
+ *    aria-label ("منصة إنجاز الأعمال") so
  *    screen readers announce the brand once as a single image, not as six
  *    separate letters.
  *  - The individual letter <span>s carry `aria-hidden` so AT never spells
@@ -18,8 +18,8 @@
 import { Link } from "@tanstack/react-router";
 import type { ElementType } from "react";
 
-const WORD = "NEXIOS";
-const FINN_LABEL = "NEXIOS AI · نكسيوس — Enterprise AI Operating System";
+const WORD = "منصة إنجاز الأعمال";
+const FINN_LABEL = "منصة إنجاز الأعمال";
 
 type NexiosWordmarkProps = {
   /** Semantic tag for the visible wordmark (default: span). Use "h1" only

@@ -14,11 +14,11 @@ import { LessonCard } from "@/components/learn/LessonCard";
 export const Route = createFileRoute("/_authenticated/learn/")({
   head: () => ({
     meta: [
-      { title: "Executive Knowledge Bridge — NEXIOS AI OS" },
+      { title: "Executive Knowledge Bridge — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "The executive learning surface of NEXIOS. Cinematic lessons, live simulations, FINN as your instructor.",
+          "The executive learning surface of منصة إنجاز الأعمال. Cinematic lessons, live simulations, FINN as your instructor.",
       },
     ],
   }),
@@ -74,7 +74,7 @@ function CatalogPage() {
           </div>
           <div className="min-w-0">
             <div className="truncate text-xs uppercase tracking-[0.22em] text-cyan-300/80">
-              NEXIOS · {ar ? "جسر المعرفة التنفيذي" : "Executive Knowledge Bridge"}
+              منصة إنجاز الأعمال · {ar ? "جسر المعرفة التنفيذي" : "Executive Knowledge Bridge"}
             </div>
             <h1 className="truncate text-2xl font-light text-white sm:text-3xl">
               {ar ? "مسار تعلّم القيادة" : "The executive learning journey"}

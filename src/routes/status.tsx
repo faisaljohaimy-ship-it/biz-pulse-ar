@@ -17,11 +17,11 @@ interface Health {
 export const Route = createFileRoute("/status")({
   head: () => ({
     meta: [
-      { title: "الحالة التشغيلية · System Status — NEXIOS AI OS" },
+      { title: "الحالة التشغيلية · System Status — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "الحالة التشغيلية الحيّة لمنصة نكسيوس · Live operational status for the NEXIOS AI OS platform.",
+          "الحالة التشغيلية الحيّة لمنصة منصة إنجاز الأعمال · Live operational status for the منصة إنجاز الأعمال platform.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -78,7 +78,7 @@ function StatusPage() {
       <div className="mx-auto max-w-3xl">
         <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#00D4FF]/30 bg-[#00D4FF]/5 px-3 py-1 text-xs font-medium text-[#00D4FF]">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00D4FF]" />
-          NEXIOS AI OS
+          منصة إنجاز الأعمال
         </div>
         <h1 className="text-3xl font-bold tracking-tight">الحالة التشغيلية · System Status</h1>
         <p className="mt-2 text-sm text-white/60">

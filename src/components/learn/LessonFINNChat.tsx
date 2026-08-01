@@ -36,7 +36,7 @@ export function LessonFINNChat({ slug, lang, suggested }: Props) {
         <p className="mt-3 text-sm leading-6 text-white/70">
           {ar
             ? "تُفتح المحادثة الرسمية الوحيدة لFINN هنا، بنفس الذاكرة والصوت والصلاحيات في بقية النظام."
-            : "This opens FINN's one official conversation, with the same memory, voice, and permissions used throughout NEXIOS."}
+            : "This opens FINN's one official conversation, with the same memory, voice, and permissions used throughout منصة إنجاز الأعمال."}
         </p>
         <div className="mt-3 flex items-center gap-2 text-xs text-emerald-300/80">
           <ShieldCheck className="h-4 w-4" />

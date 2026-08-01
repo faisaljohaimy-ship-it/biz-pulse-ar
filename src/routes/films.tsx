@@ -24,13 +24,13 @@ export const Route = createFileRoute("/films")({
   },
   head: () => ({
     meta: [
-      { title: "Film Center — NEXIOS AI OS" },
+      { title: "Film Center — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "Eight cinematic films showcasing NEXIOS AI OS: investor story, full walkthrough, FINN intelligence, digital twin, boardroom, live analytics, and ROI — Arabic and English.",
+          "Eight cinematic films showcasing منصة إنجاز الأعمال: investor story, full walkthrough, FINN intelligence, digital twin, boardroom, live analytics, and ROI — Arabic and English.",
       },
-      { property: "og:title", content: "Film Center — NEXIOS AI OS" },
+      { property: "og:title", content: "Film Center — منصة إنجاز الأعمال" },
       { property: "og:url", content: `${DOMAIN_URL}/films` },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
     ],
@@ -59,7 +59,7 @@ const FILMS: Film[] = [
     titleAr: "الفيلم الاستثماري — العربية",
     titleEn: "Investor Film — Arabic",
     descAr: "قصة نِكسيوس من فوضى البيانات إلى ذكاء القرار التنفيذي.",
-    descEn: "The NEXIOS story — from data chaos to executive decision intelligence.",
+    descEn: "The منصة إنجاز الأعمال story — from data chaos to executive decision intelligence.",
     duration: "3:43",
     poster: cinematicCity,
     badgeAr: "رئيسي",
@@ -72,7 +72,7 @@ const FILMS: Film[] = [
     titleAr: "الفيلم الاستثماري — الإنجليزية",
     titleEn: "Investor Film — English",
     descAr: "نِكسيوس كطبقة تشغيل المؤسسة الحديثة.",
-    descEn: "NEXIOS AI OS as the operating layer of the modern enterprise.",
+    descEn: "منصة إنجاز الأعمال as the operating layer of the modern enterprise.",
     duration: "4:32",
     poster: cinematicEarth,
     badgeAr: "رئيسي",
@@ -85,7 +85,7 @@ const FILMS: Film[] = [
     titleAr: "شرح النظام الكامل",
     titleEn: "Product Walkthrough",
     descAr: "جولة تنفيذية في كل وحدات نِكسيوس.",
-    descEn: "Executive tour across every NEXIOS module.",
+    descEn: "Executive tour across every منصة إنجاز الأعمال module.",
     duration: "7:18",
     poster: cinematicBoardroom,
     badgeAr: "تفصيلي",
@@ -150,7 +150,7 @@ const FILMS: Film[] = [
     titleAr: "العائد على الاستثمار",
     titleEn: "ROI",
     descAr: "كيف يُخفّض نِكسيوس ٣٥٪ من التكاليف ويُسرّع التقارير ٩٠٪.",
-    descEn: "How NEXIOS removes 35% of cost and accelerates reporting 90%.",
+    descEn: "How منصة إنجاز الأعمال removes 35% of cost and accelerates reporting 90%.",
     duration: "1:48",
     poster: cinematicCity,
     badgeAr: "أرقام",
@@ -198,7 +198,7 @@ function FilmsPage() {
           <p className="mt-4 text-base text-muted-foreground sm:text-lg">
             {isAr
               ? "نِكسيوس بعيون مجلس الإدارة، المستثمر، الفريق التنفيذي، وفرق التحول."
-              : "NEXIOS through the eyes of the board, the investor, the executive team, and transformation leaders."}
+              : "منصة إنجاز الأعمال through the eyes of the board, the investor, the executive team, and transformation leaders."}
           </p>
         </header>
 
@@ -315,7 +315,7 @@ function PlayerModal({ film, isAr, onClose }: { film: Film; isAr: boolean; onClo
               {isAr ? film.titleAr : film.titleEn}
             </p>
             <p className="truncate text-[12px] uppercase tracking-[0.2em] text-amber-400/80">
-              NEXIOS · Film Center · {film.duration}
+              منصة إنجاز الأعمال · Film Center · {film.duration}
             </p>
           </div>
           <div className="flex items-center gap-2">

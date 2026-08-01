@@ -218,8 +218,8 @@ function IntegrationsHubPage() {
       title={ar ? "مركز التكاملات الموحد" : "Unified Integration Center"}
       subtitle={
         ar
-          ? "حالة حية لكل موصلات NEXIOS المؤسسية مع اختبار اتصال حقيقي."
-          : "Live status of every NEXIOS enterprise connector with real connection testing."
+          ? "حالة حية لكل موصلات منصة إنجاز الأعمال المؤسسية مع اختبار اتصال حقيقي."
+          : "Live status of every منصة إنجاز الأعمال enterprise connector with real connection testing."
       }
       actions={
         <>

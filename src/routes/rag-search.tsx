@@ -11,7 +11,7 @@ import { RagSearchPage } from "./-rag-search-page";
 export const Route = createFileRoute("/rag-search")({
   head: () => ({
     meta: [
-      { title: "البحث المعرفي بالاستشهاد · RAG — NEXIOS AI OS" },
+      { title: "البحث المعرفي بالاستشهاد · RAG — منصة إنجاز الأعمال" },
       {
         name: "description",
         content: "استرجاع هجين معزول لكل مؤسسة — مقاطع واستشهادات فقط.",

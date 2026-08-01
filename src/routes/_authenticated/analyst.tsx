@@ -142,7 +142,7 @@ function AnalystPage() {
       }
       actions={
         <NexusPill tone="violet">
-          <Brain className="h-3 w-3" /> NEXUS AI
+          <Brain className="h-3 w-3" /> منصة إنجاز الأعمال
         </NexusPill>
       }
     >

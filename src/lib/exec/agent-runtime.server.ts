@@ -383,7 +383,7 @@ export async function runAgent(
 
   const systemPrompt = [
     agent.system_prompt?.trim() ||
-      `You are ${agent.name}, an autonomous executive agent inside NEXUS AI OS for the Western Region Industrial Security Department.`,
+      `You are ${agent.name}, an autonomous executive agent inside منصة إنجاز الأعمال for the Western Region Industrial Security Department.`,
     `Mission: ${agent.goal}`,
     `Allowed tools: ${toolIds.length ? toolIds.join(", ") : "(none — answer with analysis only)"}.`,
     ``,

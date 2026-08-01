@@ -64,7 +64,8 @@ function VerifyPermitPage() {
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#06101f]/80 p-6 backdrop-blur-xl">
         <div className="mb-4 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-200">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" /> NEXIOS · PTW
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" /> منصة إنجاز
+            الأعمال · PTW
           </span>
           <span className="text-xs text-white/40">تحقّق التصريح</span>
         </div>

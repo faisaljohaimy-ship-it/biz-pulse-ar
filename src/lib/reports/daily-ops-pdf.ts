@@ -17,6 +17,7 @@
  * disclosure + page numbers.
  */
 import type { DailyOpsData } from "@/lib/exec/showcase-simulation.server";
+import { PRODUCT_BRAND } from "@/lib/domain";
 import { DAILY_REPORT_SCOPE_META, type DailyReportScope } from "@/lib/reports/report-scope";
 import { layoutArabicLine, type ArabicSegment } from "./arabic-text";
 
@@ -162,6 +163,27 @@ export async function buildDailyOpsPdf(
     }
     return total;
   };
+  /**
+   * Same as `arText` but anchored on the LEFT edge.
+   *
+   * Needed because the product name is Arabic while the cover header is a
+   * left-anchored logo block. Drawing it through `enText` would hand Arabic
+   * code points to Helvetica, and pdf-lib's WinAnsi encoder throws outright:
+   * `WinAnsi cannot encode "م"`. The report would not merely look wrong — it
+   * would fail to generate at all.
+   */
+  const arTextLeft = (
+    text: string,
+    leftX: number,
+    y: number,
+    size: number,
+    color = ink,
+    bold = false,
+  ) => {
+    const segs = layoutArabicLine(text);
+    const total = segs.reduce((s, seg) => s + segWidth(seg, size, bold), 0);
+    return arText(text, leftX + total, y, size, color, bold);
+  };
   const enText = (
     text: string,
     x: number,
@@ -195,9 +217,9 @@ export async function buildDailyOpsPdf(
   };
 
   /* ── Cover header ── */
-  // Hex mark: the NEXIOS badge.
+  // Hex mark: the منصة إنجاز الأعمال badge.
   icon("M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z", MARGIN + 12, H - 52, 1.15, emerald);
-  enText("NEXIOS AI OS", MARGIN + 30, H - 58, 21, emerald, true);
+  arTextLeft(PRODUCT_BRAND.name, MARGIN + 30, H - 58, 21, emerald, true);
   enText("Executive Business Platform — Industrial Security", MARGIN + 30, H - 74, 8.5, muted);
   arText(DAILY_REPORT_SCOPE_META[scope].ar, W - MARGIN, H - 70, 25, ink, true);
   arText("إدارة الأمن الصناعي — المنطقة الغربية", W - MARGIN, H - 95, 12, cyan);
@@ -408,8 +430,8 @@ export async function buildDailyOpsPdf(
   const pages = pdf.getPages();
   const footerText =
     data.source === "database"
-      ? "بيانات حية من قاعدة البيانات — is_simulation = false · منصة إنجاز الأعمال التنفيذية NEXIOS"
-      : "بيانات محاكاة مرجعية — is_simulation = true · منصة إنجاز الأعمال التنفيذية NEXIOS";
+      ? "بيانات حية من قاعدة البيانات — is_simulation = false · منصة إنجاز الأعمال"
+      : "بيانات محاكاة مرجعية — is_simulation = true · منصة إنجاز الأعمال";
   const footerSegs = layoutArabicLine(footerText);
   pages.forEach((p, i) => {
     p.drawRectangle({ x: 0, y: 30, width: W, height: 0.5, color: emerald, opacity: 0.6 });

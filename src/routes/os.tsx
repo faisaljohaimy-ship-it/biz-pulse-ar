@@ -30,13 +30,13 @@ import { FinnCinematicIntro } from "@/components/intro/FinnCinematicIntro";
 export const Route = createFileRoute("/os")({
   head: () => ({
     meta: [
-      { title: "Enterprise Operating System — NEXIOS AI OS" },
+      { title: "Enterprise Operating System — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "NEXIOS AI OS — the world-class enterprise operating system for industrial security, Hajj operations, and executive intelligence. Live KPIs, FINN runtime, Digital Twin. Aligned with Saudi Vision 2030.",
+          "منصة إنجاز الأعمال — the world-class enterprise operating system for industrial security, Hajj operations, and executive intelligence. Live KPIs, FINN runtime, Digital Twin. Aligned with Saudi Vision 2030.",
       },
-      { property: "og:title", content: "Enterprise Operating System — NEXIOS AI OS" },
+      { property: "og:title", content: "Enterprise Operating System — منصة إنجاز الأعمال" },
       {
         property: "og:description",
         content:
@@ -123,7 +123,7 @@ function OsHub() {
     title: ar ? "نِظَامُ التَّشْغِيلِ المُؤَسَّسِيّ" : "Enterprise Operating System",
     subtitle: ar
       ? "نِكْسِيُوس — الأَمْنُ الصِّنَاعِيّ، المِنْطَقَةُ الغَرْبِيَّة"
-      : "NEXIOS AI OS — Industrial Security, Western Region",
+      : "منصة إنجاز الأعمال — Industrial Security, Western Region",
     vision: ar
       ? "مِنَصَّةٌ اسْتِرَاتِيجِيَّةٌ تَدْعَمُ رُؤْيَةَ المَمْلَكَةِ ٢٠٣٠ · التَّحَوُّلُ الرَّقْمِيُّ وَالرِّيَادَةُ الصِّنَاعِيَّة"
       : "Strategic platform empowering Saudi Vision 2030 · Digital transformation & industrial leadership",
@@ -167,7 +167,7 @@ function OsHub() {
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-3 sm:px-6">
         <span className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.22em] text-white/60 backdrop-blur">
           <Command className="h-3.5 w-3.5 text-[#3AE8FF]" strokeWidth={2} />
-          NEXIOS · OS
+          منصة إنجاز الأعمال · OS
         </span>
         <LiveDateTime ar={ar} />
       </div>

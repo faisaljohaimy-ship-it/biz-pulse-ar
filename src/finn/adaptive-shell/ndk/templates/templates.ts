@@ -53,7 +53,7 @@ export const OFFICIAL_TEMPLATES: Readonly<Record<string, TemplateFactory>> = {
       .step({ id: "review", stepKind: "approval", note: "اعتماد بشري إلزامي" })
       .build(),
   connector: (seed) =>
-    new ConnectorBuilder({ ...seed, provider: seed.owner ?? "nexios" })
+    new ConnectorBuilder({ ...seed, provider: seed.owner ?? "injaz-al-aamal-platform" })
       .capability(`capability.${seed.id.replace(/^connector\./, "")}`)
       .operation("ping", "فحص الاتصال")
       .build(),

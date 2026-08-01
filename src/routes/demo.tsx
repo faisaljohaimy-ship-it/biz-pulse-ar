@@ -23,13 +23,13 @@ import {
 export const Route = createFileRoute("/demo")({
   head: () => ({
     meta: [
-      { title: "Demo Center — NEXIOS | NEXUS AI OS" },
+      { title: "Demo Center — منصة إنجاز الأعمال | منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "Explore NEXUS AI OS with a fully seeded executive demo. Investor mode, enterprise mode, guided tour, and live sample data.",
+          "Explore منصة إنجاز الأعمال with a fully seeded executive demo. Investor mode, enterprise mode, guided tour, and live sample data.",
       },
-      { property: "og:title", content: "Demo Center — NEXIOS | NEXUS AI OS" },
+      { property: "og:title", content: "Demo Center — منصة إنجاز الأعمال | منصة إنجاز الأعمال" },
       {
         property: "og:description",
         content:
@@ -74,7 +74,7 @@ function DemoCenter() {
             <Sparkles className="h-4 w-4 text-primary-foreground" />
           </div>
           <div className="leading-tight">
-            <div className="text-sm font-bold tracking-wide">NEXUS</div>
+            <div className="text-sm font-bold tracking-wide">منصة إنجاز الأعمال</div>
             <div className="text-[12px] uppercase tracking-[0.2em] text-muted-foreground">
               Demo Center
             </div>
@@ -97,7 +97,9 @@ function DemoCenter() {
             </span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-            <span className="text-gradient">{isAr ? "مركز عرض Nexus" : "Nexus Demo Center"}</span>
+            <span className="text-gradient">
+              {isAr ? "مركز عرض منصة إنجاز الأعمال" : "منصة إنجاز الأعمال Demo Center"}
+            </span>
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-muted-foreground md:text-base">
             {isAr

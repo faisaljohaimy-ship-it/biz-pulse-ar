@@ -26,7 +26,7 @@ const seal = (userText: string, modelText: string) =>
 
 describe("envelope — serialize / validate round-trip", () => {
   it("round-trips a sealed envelope through JSON", () => {
-    const env = seal("ما وحدات نكسيوس؟", "نكسيوس يوفّر مركز القيادة.");
+    const env = seal("ما وحدات منصة إنجاز الأعمال؟", "منصة إنجاز الأعمال يوفّر مركز القيادة.");
     const wire = JSON.parse(JSON.stringify(env));
     const parsed = parseEnvelope(wire);
     expect(parsed.ok).toBe(true);
@@ -46,7 +46,7 @@ describe("envelope — serialize / validate round-trip", () => {
 
 describe("client consumer — displayText only, fail-closed", () => {
   it("returns displayText from a valid envelope", () => {
-    const env = seal("ما وحدات نكسيوس؟", "نكسيوس يوفّر مركز القيادة.");
+    const env = seal("ما وحدات منصة إنجاز الأعمال؟", "منصة إنجاز الأعمال يوفّر مركز القيادة.");
     expect(displayTextFromEnvelope(JSON.parse(JSON.stringify(env)))).toBe(env.displayText);
   });
   it("returns a safe fallback for a malformed envelope (never raw)", () => {
@@ -56,7 +56,7 @@ describe("client consumer — displayText only, fail-closed", () => {
     expect(displayTextFromEnvelope(null)).toBe(CLIENT_SAFE_FALLBACK);
   });
   it("prefers a validated envelope in message metadata over raw parts", () => {
-    const env = seal("ما وحدات نكسيوس؟", "نكسيوس يوفّر مركز القيادة.");
+    const env = seal("ما وحدات منصة إنجاز الأعمال؟", "منصة إنجاز الأعمال يوفّر مركز القيادة.");
     const shown = finnDisplayFromMessage({
       parts: [{ type: "text", text: "RAW MODEL LEAK" }],
       metadata: { envelope: JSON.parse(JSON.stringify(env)) },
@@ -65,7 +65,7 @@ describe("client consumer — displayText only, fail-closed", () => {
     expect(shown).not.toContain("RAW MODEL LEAK");
   });
   it("speakableText comes only from a valid envelope", () => {
-    const env = seal("ما وحدات نكسيوس؟", "نكسيوس يوفّر مركز القيادة.");
+    const env = seal("ما وحدات منصة إنجاز الأعمال؟", "منصة إنجاز الأعمال يوفّر مركز القيادة.");
     expect(speakableTextFromEnvelope(JSON.parse(JSON.stringify(env)))).toBe(env.speakableText);
     expect(speakableTextFromEnvelope({})).toBe("");
   });

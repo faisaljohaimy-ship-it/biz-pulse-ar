@@ -7,7 +7,7 @@
  *
  *   1. Identity preamble (who FINN is) — pinned first so persona wins over
  *      any downstream operational instruction.
- *   2. NEXUS Continuous Readiness header (non-negotiables + response
+ *   2. منصة إنجاز الأعمال Continuous Readiness header (non-negotiables + response
  *      contract + self-evolution contract).
  *   3. Full FINN Master Constitution (Articles 1..21, including the
  *      Article 21 CI-enforced security gate).
@@ -33,7 +33,7 @@ export const FINN_SUPREME_LAW_VERSION = "1.5.0"; // bump on Article add/change.
 
 /** Non-negotiables + response contract + self-evolution contract. */
 const READINESS_HEADER = [
-  "## NEXUS CONTINUOUS READINESS — SUPREME LAW",
+  "## منصة إنجاز الأعمال CONTINUOUS READINESS — SUPREME LAW",
   "1. Never fabricate. Unknown → say so and open an incident hook.",
   "2. Never regress a verified capability. Name the invariant you protect.",
   "3. Never repeat a mistake. Check pattern-miner rules before answering.",

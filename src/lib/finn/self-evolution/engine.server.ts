@@ -46,7 +46,7 @@ const INVARIANTS: EvolutionInvariants = {
 };
 
 /**
- * Protected paths — enforced by the NEXUS Master Engineering Constitution
+ * Protected paths — enforced by the منصة إنجاز الأعمال Master Engineering Constitution
  * (docs/NEXUS_ENGINEERING_CONSTITUTION.md) which subsumes the intro
  * constitution (docs/FINN_INTRO_CONSTITUTION.md). Any self-evolution
  * proposal that touches these files MUST cite one of those documents in

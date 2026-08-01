@@ -77,6 +77,13 @@ const EXEMPT: ReadonlyMap<string, string> = new Map([
     "enforceFinnIdentity strips the legacy name; its patterns must name it",
   ],
   ["src/lib/brand/finn-identity.contract.test.ts", "this file — it must name what it bans"],
+  [
+    // The sibling guard for the PRODUCT brand. It bans the retired assistant
+    // name alongside the retired product names, so it has to spell them out
+    // for the same reason this file does.
+    "src/lib/brand/product-brand.contract.test.ts",
+    "the product-brand guard — it must name what it bans",
+  ],
 ]);
 
 const scanned = globSync("src/**/*.{ts,tsx}").filter((f) => !EXEMPT.has(f));

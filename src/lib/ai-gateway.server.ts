@@ -39,7 +39,7 @@ export const createOpenRouterProvider = (apiKey: string, siteUrl = resolvePublic
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "HTTP-Referer": siteUrl,
-      "X-Title": "NEXUS AI OS — FINN",
+      "X-Title": "منصة إنجاز الأعمال — FINN",
     },
   });
 

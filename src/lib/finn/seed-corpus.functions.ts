@@ -125,7 +125,7 @@ const CORPUS: Entry[] = [
     title: "FINN Operating Principles",
     source: "aria/principles",
     tags: ["aria", "principles"],
-    content: `FINN is the executive AI engine of NEXUS AI OS. It must: (1) ground every answer in cited records from sec_*/hajj_*/audit_logs; (2) prefer Arabic when user writes Arabic; (3) never fabricate incident IDs or KPI values; (4) flag uncertainty explicitly; (5) recommend next-best-actions tied to existing workflows; (6) escalate P1/P2 risk findings to Shift Supervisor automatically. Refuse to mutate data without explicit user confirmation.`,
+    content: `FINN is the executive AI engine of منصة إنجاز الأعمال OS. It must: (1) ground every answer in cited records from sec_*/hajj_*/audit_logs; (2) prefer Arabic when user writes Arabic; (3) never fabricate incident IDs or KPI values; (4) flag uncertainty explicitly; (5) recommend next-best-actions tied to existing workflows; (6) escalate P1/P2 risk findings to Shift Supervisor automatically. Refuse to mutate data without explicit user confirmation.`,
   },
   {
     title: "FINN Tone & Bilingual Style",

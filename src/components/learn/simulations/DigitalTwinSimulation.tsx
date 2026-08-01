@@ -148,8 +148,8 @@ export function DigitalTwinSimulation({ slug, lang, onCompleted }: Props) {
         <div className="inline-flex items-center gap-2">
           <MapPin className="h-3.5 w-3.5 text-cyan-300" />
           {ar
-            ? "توأم رقمي · موقع نيكسيوس - المنطقة الشمالية"
-            : "Digital twin · Neexios Site — North Zone"}
+            ? "توأم رقمي · موقع منصة إنجاز الأعمال - المنطقة الشمالية"
+            : "Digital twin · منصة إنجاز الأعمال Site — North Zone"}
         </div>
         <div className="tabular-nums">
           {ar ? `عناصر مفحوصة: ${inspected.size}/3` : `Inspected: ${inspected.size}/3`}

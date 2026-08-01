@@ -132,7 +132,7 @@ function LessonPage() {
           </div>
           <div className="min-w-0">
             <div className="truncate text-[12px] uppercase tracking-[0.22em] text-cyan-300/80">
-              NEXIOS · {ar ? "جسر المعرفة التنفيذي" : "Executive Knowledge Bridge"} ·{" "}
+              منصة إنجاز الأعمال · {ar ? "جسر المعرفة التنفيذي" : "Executive Knowledge Bridge"} ·{" "}
               {String(lesson.order_index).padStart(2, "0")}
             </div>
             <h1 className="truncate text-2xl font-light text-white sm:text-3xl">{title}</h1>

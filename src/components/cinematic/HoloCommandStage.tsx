@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import type { ExecKpis } from "@/lib/sec.functions";
 
 /**
- * HoloCommandStage — NEXUS holographic Executive Command Center backdrop.
+ * HoloCommandStage — منصة إنجاز الأعمال holographic Executive Command Center backdrop.
  *
  * Pure SVG / CSS hologram (no static avatar, no FINN branding). Renders a
  * central rotating core with concentric halo rings, an orbiting Digital Twin
@@ -267,7 +267,7 @@ export function HoloCommandStage({
             />
           </svg>
 
-          {/* Inner NEXUS core */}
+          {/* Inner منصة إنجاز الأعمال core */}
           <div
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
             style={{ animation: "aria-holo-float 9s ease-in-out infinite" }}
@@ -278,7 +278,9 @@ export function HoloCommandStage({
               <div className="absolute inset-12 rounded-full border border-cyan-200/30" />
               <div className="absolute inset-[60px] rounded-full border border-cyan-100/40 bg-[radial-gradient(circle,rgba(0,212,255,0.35),rgba(4,18,31,0.6)_70%)] shadow-[inset_0_0_40px_rgba(110,231,255,0.4)]" />
               <div className="relative z-10 text-center leading-none">
-                <div className="text-[12px] tracking-[0.4em] text-cyan-200/70 font-mono">NEXUS</div>
+                <div className="text-[12px] tracking-[0.4em] text-cyan-200/70 font-mono">
+                  منصة إنجاز الأعمال
+                </div>
                 <div className={cn("mt-1 text-[12px] tracking-[0.3em] font-mono", statusTone)}>
                   {status}
                 </div>

@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { moduleByRoute, moduleExternalUrl } from "@/lib/nav/modules";
 import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
+import { PRODUCT_BRAND } from "@/lib/domain";
 import { pageBackdropFor } from "@/lib/nav/page-backdrops";
 import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 import { AuroraFantasyBackdrop } from "@/components/backdrops/AuroraFantasyBackdrop";
@@ -102,13 +103,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg shadow-glow">
               <img
-                src="/nexus-icon.png"
-                alt="Nexus AI OS Logo"
+                src="/brand-icon.png"
+                alt={PRODUCT_BRAND.name}
                 className="h-full w-full object-cover"
               />
               <span className="absolute inset-0 rounded-lg animate-pulse-ring" />
             </div>
-            <span className="text-sm font-bold tracking-tight">Nexus</span>
+            <span className="text-sm font-bold tracking-tight">{PRODUCT_BRAND.name}</span>
           </div>
           <div className="flex items-center gap-2">
             <TopUtilityBar />
@@ -228,11 +229,20 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
       <div className="sticky top-0 z-10 border-b border-sidebar-border bg-sidebar/95 backdrop-blur">
         <div className="flex items-center gap-3 px-4 py-4">
           <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-glow">
-            <img src="/nexus-icon.png" alt="Nexus AI OS" className="h-full w-full object-cover" />
+            <img
+              src="/brand-icon.png"
+              alt={PRODUCT_BRAND.name}
+              className="h-full w-full object-cover"
+            />
             <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-bold text-sidebar-foreground">Nexus AI OS</div>
+            {/* THE root cause of the rename never sticking: this was the literal
+                "Nexus AI OS", outside every translation map, so no locale —
+                Arabic, English or Russian — could change it. Read the brand. */}
+            <div className="truncate text-sm font-bold text-sidebar-foreground">
+              {PRODUCT_BRAND.name}
+            </div>
             <div className="truncate text-[12px] text-muted-foreground">{t("app.tagline")}</div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 /**
  * HolographicFlowShowcase — a cinematic, holographic-orbital frame that
  * hosts the two flagship live flow diagrams (Holographic Command Tree +
- * NEXIOS Agentic Flow Canvas). Adds orbital rings, rotating conic halo,
+ * منصة إنجاز الأعمال Agentic Flow Canvas). Adds orbital rings, rotating conic halo,
  * digital scanlines, data-packet streaks and corner brackets so every
  * empty area around the graphs feels alive. Respects prefers-reduced-motion
  * and the `data-nx-frozen` freeze contract. Bilingual + RTL safe.
@@ -236,7 +236,7 @@ export function HolographicFlowShowcase({ ar, agents }: { ar: boolean; agents: A
         {/* Agentic Flow Canvas */}
         <OrbitalFrame
           accent="#34D399"
-          label={ar ? "NEXIOS · مدار الوكلاء" : "NEXIOS · Agentic Orbit"}
+          label={ar ? "منصة إنجاز الأعمال · مدار الوكلاء" : "منصة إنجاز الأعمال · Agentic Orbit"}
           icon={Radio}
           action={
             <span className="inline-flex items-center gap-1.5 rounded-full border border-[#34D399]/40 bg-[#34D399]/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#34D399]">

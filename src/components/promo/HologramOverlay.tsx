@@ -72,7 +72,7 @@ export function HologramOverlay() {
         className="absolute left-5 top-5 font-mono text-[12px] tracking-widest text-emerald-300/70"
         style={{ textShadow: "0 0 8px rgba(16,185,129,0.7)" }}
       >
-        NEXUS · HOLO-FEED · 60.00s
+        منصة إنجاز الأعمال · HOLO-FEED · 60.00s
       </div>
       {/* top-right pulse */}
       <div className="absolute right-5 top-5 flex items-center gap-2">

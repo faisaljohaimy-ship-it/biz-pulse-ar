@@ -31,7 +31,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 };
 
 // Configuration
-const SITE_NAME = "NEXIOS AI OS";
+const SITE_NAME = "منصة إنجاز الأعمال";
 const SENDER_DOMAIN = "notify.neexios.com";
 const ROOT_DOMAIN = "neexios.com";
 const FROM_DOMAIN = "notify.neexios.com";

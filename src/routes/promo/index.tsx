@@ -19,7 +19,7 @@ function PromoHub() {
       <div className="mx-auto max-w-6xl px-5 py-14 md:py-20">
         <header className="mb-10 text-center">
           <div className="mb-2 text-[12px] uppercase tracking-[0.55em] text-white/50">
-            Nexios · Cinematic Suite
+            منصة إنجاز الأعمال · Cinematic Suite
           </div>
           <h1 className="text-4xl font-black md:text-6xl">سلسلة الأفلام التنفيذية</h1>
           <p className="mx-auto mt-4 max-w-xl text-sm text-white/70 md:text-base">

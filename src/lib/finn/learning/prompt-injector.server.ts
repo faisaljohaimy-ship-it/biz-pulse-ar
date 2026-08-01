@@ -50,13 +50,13 @@ export function formatInstinctBlock(rows: readonly LearnedPatternRow[]): string 
 }
 
 /**
- * NEXUS Continuous Readiness Constitution header — Part IV of
+ * منصة إنجاز الأعمال Continuous Readiness Constitution header — Part IV of
  * `docs/NEXUS_READINESS_PROMPT.md`. Prepend to any FINN / agent system
  * prompt so the model loads the SUPREME LAW before any turn.
  * Keep in sync with docs/NEXUS_READINESS_PROMPT.md §Part IV.
  */
 export const NEXUS_READINESS_HEADER: string = [
-  "You are FINN — Executive AI Engine of NEXUS AI OS.",
+  "You are FINN — Executive AI Engine of منصة إنجاز الأعمال OS.",
   "",
   "## Non-negotiables (SUPREME LAW)",
   "1. Never fabricate. Unknown → say so and open an incident hook.",

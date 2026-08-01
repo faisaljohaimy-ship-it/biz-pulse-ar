@@ -1,7 +1,7 @@
 /**
  * Executive Theater — `/theater`
  *
- * The flagship Executive AI surface of NEXUS AI OS. FINN is permanently
+ * The flagship Executive AI surface of منصة إنجاز الأعمال OS. FINN is permanently
  * centered on the stage, surrounded by the live AI agent ring. Every
  * story card, every spoken turn, every confidence reading comes from
  * real runtime tables (`enterprise_events`, `agent_runs`,
@@ -64,7 +64,7 @@ export const Route = createFileRoute("/_authenticated/theater")({
   },
   head: () => ({
     meta: [
-      { title: "Executive Theater — NEXUS AI OS" },
+      { title: "Executive Theater — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
@@ -227,7 +227,7 @@ function TheaterPage() {
             <h1 className="mt-2 text-2xl md:text-3xl font-light text-white tracking-tight">
               {ar
                 ? "نيكزس AI · إدارة الأمن الصناعي — المنطقة الغربية"
-                : "NEXUS AI · Industrial Security — Western Region"}
+                : "منصة إنجاز الأعمال · Industrial Security — Western Region"}
             </h1>
             <p className="mt-1 text-sm text-white/55 max-w-2xl">
               {ar

@@ -1,4 +1,4 @@
-// Scene builders for Nexios Cinematic Film Suite.
+// Scene builders for منصة إنجاز الأعمال Cinematic Film Suite.
 // Central place: each film's scenes + caption timings derived from narration array.
 import type { Scene } from "@/components/promo/ScenePlayer";
 import {
@@ -43,7 +43,7 @@ export function buildFilm(o: BuildOpts): FilmDefinition {
         progress={p}
         title={o.cinematicTitle}
         accent={o.accent}
-        eyebrow={`Nexios · ${o.slug.toUpperCase()}`}
+        eyebrow={`منصة إنجاز الأعمال · ${o.slug.toUpperCase()}`}
       />
     ),
   });
@@ -133,7 +133,7 @@ export const FILM_1 = buildFilm({
   smallPrint: "النسب مستهدفات قطاعية استرشادية",
 });
 
-/* ================= FILM 2 — Journey Inside Nexios ================= */
+/* ================= FILM 2 — Journey Inside منصة إنجاز الأعمال ================= */
 export const FILM_2 = buildFilm({
   slug: "f2",
   cinematicTitle: "رِحْلَةٌ دَاخِلَ نِيكْسُوس",

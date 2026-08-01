@@ -1,3 +1,4 @@
+import { PRODUCT_BRAND } from "@/lib/domain";
 import { containsUnsafeLeakage } from "@/lib/finn/output/finalize";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -567,7 +568,11 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
   }
   const messageId = crypto.randomUUID();
   const senderDomain = "notify.neexios.com";
-  const fromLine = `NEXUS AI OS <noreply@${senderDomain}>`;
+  // The display name a recipient reads in their inbox — brand, not a header
+  // token. The HMAC domain separator further down is deliberately NOT renamed:
+  // it is a signing input, and changing it invalidates every approval token
+  // already issued and still in flight.
+  const fromLine = `${PRODUCT_BRAND.name} <noreply@${senderDomain}>`;
   const plain = payload.html
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")

@@ -18,7 +18,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 };
 
 // Configuration
-const SITE_NAME = "NEXIOS AI OS";
+const SITE_NAME = "منصة إنجاز الأعمال";
 const ROOT_DOMAIN = "neexios.com";
 
 // Sample data for preview mode ONLY (not used in actual email sending).

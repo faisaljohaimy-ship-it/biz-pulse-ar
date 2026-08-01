@@ -14,10 +14,10 @@ import {
 export const Route = createFileRoute("/runtime-hub")({
   head: () => ({
     meta: [
-      { title: "Runtime Hub — NEXUS AI OS" },
+      { title: "Runtime Hub — منصة إنجاز الأعمال" },
       {
         name: "description",
-        content: "Enterprise runtime stages and live modules of NEXUS AI OS.",
+        content: "Enterprise runtime stages and live modules of منصة إنجاز الأعمال OS.",
       },
     ],
   }),
@@ -90,7 +90,7 @@ function RuntimeHub() {
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">نظام التشغيل المؤسسي</h1>
           <p className="mt-1 text-sm text-white/60">
-            NEXUS AI OS — Industrial Security, Western Region
+            منصة إنجاز الأعمال — Industrial Security, Western Region
           </p>
         </div>
 

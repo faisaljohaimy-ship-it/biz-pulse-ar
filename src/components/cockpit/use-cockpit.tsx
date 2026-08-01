@@ -4,7 +4,7 @@
  * experienceLevel, live events (pause buffer), notifications, overlays.
  *
  * Region selection flows through the app-wide RegionProvider so the
- * cockpit and the rest of NEXIOS agree on the active region; the previous
+ * cockpit and the rest of منصة إنجاز الأعمال agree on the active region; the previous
  * region request is aborted on rapid switching; screen readers hear the
  * change through a polite live region owned by the page.
  */

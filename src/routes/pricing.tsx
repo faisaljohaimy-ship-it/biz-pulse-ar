@@ -6,13 +6,13 @@ import { Check, Sparkles, ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — Nexus AI OS" },
+      { title: "Pricing — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "Transparent enterprise pricing for Nexus AI OS — the executive intelligence operating system. Starter, Growth, and Enterprise tiers.",
+          "Transparent enterprise pricing for منصة إنجاز الأعمال — the executive intelligence operating system. Starter, Growth, and Enterprise tiers.",
       },
-      { property: "og:title", content: "Pricing — Nexus AI OS" },
+      { property: "og:title", content: "Pricing — منصة إنجاز الأعمال" },
       {
         property: "og:description",
         content: "Enterprise pricing for the executive AI operating system.",

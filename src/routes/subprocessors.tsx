@@ -7,13 +7,13 @@ import { Building2, Bell, Globe2 } from "lucide-react";
 export const Route = createFileRoute("/subprocessors")({
   head: () => ({
     meta: [
-      { title: "Subprocessors — NEXIOS AI OS" },
+      { title: "Subprocessors — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
-          "Current list of NEXIOS AI OS subprocessors, the services they support, and the regions where they process customer data.",
+          "Current list of منصة إنجاز الأعمال subprocessors, the services they support, and the regions where they process customer data.",
       },
-      { property: "og:title", content: "Subprocessors — NEXIOS AI OS" },
+      { property: "og:title", content: "Subprocessors — منصة إنجاز الأعمال" },
       {
         property: "og:description",
         content: "Authorized subprocessors, processing purpose, and data location.",
@@ -192,8 +192,8 @@ function SubprocessorsPage() {
       eyebrowAr="الشفافية"
       title="Subprocessors"
       titleAr="المورّدون الفرعيون"
-      subtitle="Authorized subprocessors NEXIOS engages to deliver the platform — what they do, where they process data, and what categories they touch."
-      subtitleAr="قائمة المورّدين الفرعيين الذين يستعين بهم NEXIOS لتقديم المنصة — مهامهم ومواقع معالجة البيانات وفئاتها."
+      subtitle="Authorized subprocessors منصة إنجاز الأعمال engages to deliver the platform — what they do, where they process data, and what categories they touch."
+      subtitleAr="قائمة المورّدين الفرعيين الذين يستعين بهم منصة إنجاز الأعمال لتقديم المنصة — مهامهم ومواقع معالجة البيانات وفئاتها."
       qualifier="Categories shown reflect the general architecture. The vendor list specific to a customer's region and plan is provided under NDA on request."
       qualifierAr="تعكس الفئات المعروضة البنية العامة. قائمة المورّدين الخاصة بمنطقة العميل وباقته تُقدَّم عند الطلب بموجب اتفاقية عدم إفصاح."
     >

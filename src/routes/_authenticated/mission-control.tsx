@@ -42,7 +42,7 @@ import {
 export const Route = createFileRoute("/_authenticated/mission-control")({
   head: () => ({
     meta: [
-      { title: "Mission Control — Nexus AI OS" },
+      { title: "Mission Control — منصة إنجاز الأعمال" },
       {
         name: "description",
         content:
@@ -1320,7 +1320,7 @@ function MissionControl() {
             </span>
           </div>
           <div className="uppercase tracking-[0.3em]">
-            {ar ? "نظام نِكسس للذكاء التشغيلي" : "Nexus AI Operating System"}
+            {ar ? "نظام نِكسس للذكاء التشغيلي" : "منصة إنجاز الأعمال Operating System"}
           </div>
         </div>
       </div>
