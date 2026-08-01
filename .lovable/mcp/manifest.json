@@ -13,12 +13,12 @@
     "server": {
       "name": "nexus-aria-mcp",
       "version": "0.1.0",
-      "title": "NEXUS AI OS — FINN"
+      "title": "منصة إنجاز الأعمال — FINN"
     },
     "tools": [
       {
         "name": "ping",
-        "title": "Ping NEXUS",
+        "title": "Ping منصة إنجاز الأعمال",
         "description": "Health check that returns the current server time and app name. Use to verify connectivity.",
         "annotations": {
           "readOnlyHint": true,
@@ -35,7 +35,7 @@
       {
         "name": "ask_aria",
         "title": "Ask FINN",
-        "description": "Send a natural-language question to FINN, the NEXUS Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
+        "description": "Send a natural-language question to FINN, the منصة إنجاز الأعمال Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
         "annotations": {
           "readOnlyHint": true,
           "openWorldHint": false
