@@ -348,7 +348,7 @@ export function SovereignCommandDeck({ ar }: { readonly ar: boolean }) {
 
       {/* ── Marquee ticker REMOVED (G3) ────────────────────────────────
           A second scrolling strip lived here, carrying the same wording as the
-          header bar that G3 deleted ("منصة إنجاز الأعمال التنفيذية"). Removing
+          header bar that G3 deleted ("سَدِيد التنفيذية"). Removing
           only the header bar left this one running — and because items 9+10
           moved this deck to the TOP of the homepage, it would have put the very
           element the owner asked to delete at the top of the page. Gone now,

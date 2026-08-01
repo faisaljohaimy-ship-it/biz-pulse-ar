@@ -40,13 +40,13 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   notFoundComponent: RouteNotFound,
   head: () => ({
     meta: [
-      { title: "AI Command Center — منصة إنجاز الأعمال" },
+      { title: "AI Command Center — SADEED" },
       {
         name: "description",
         content:
           "Executive cockpit: KPIs, incidents, patrols, work orders, and digital-twin telemetry across authorised industrial-security regions.",
       },
-      { property: "og:title", content: "AI Command Center — منصة إنجاز الأعمال" },
+      { property: "og:title", content: "AI Command Center — SADEED" },
       { property: "og:description", content: "Live executive cockpit and operations telemetry." },
       { property: "og:url", content: "https://neexios.com/dashboard" },
       { name: "robots", content: "noindex, nofollow" },
@@ -361,7 +361,7 @@ function OperationsCockpit() {
 
   return (
     <div className="relative w-full bg-[#04060d] text-slate-100">
-      {/* SCREEN 01 — منصة إنجاز الأعمال Reveal hero (cinematic holographic identity) */}
+      {/* SCREEN 01 — SADEED Reveal hero (cinematic holographic identity) */}
       <NexusRevealHero onEnterOps={scrollToOps} />
 
       {/* SCREEN 02 — Operations cockpit */}
@@ -402,7 +402,7 @@ function OperationsCockpit() {
               />
 
               <span className="inline-flex items-center gap-1.5 text-[12px] font-mono tracking-widest uppercase text-primary/80">
-                <Cpu className="w-3 h-3" /> منصة إنجاز الأعمال · AI · OS
+                <Cpu className="w-3 h-3" /> SADEED · AI · OS
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-l from-primary to-secondary">

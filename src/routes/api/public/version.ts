@@ -6,7 +6,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const RELEASE = {
-  product: "منصة إنجاز الأعمال",
+  product: "SADEED",
   edition: "Enterprise",
   version: "1.5.1",
   release_channel: "general-availability",

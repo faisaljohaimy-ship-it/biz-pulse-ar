@@ -2,11 +2,11 @@
 // tidiness: the manifest and the icon are precached, so an existing installed
 // PWA would keep serving the OLD app name from cache and never see the rename.
 // The `activate` handler below deletes every key that is not this one, so the
-// old "nexios-static-*" entries are evicted on the next activation.
+// old cache entries are evicted on the next activation.
 //
 // The name is the internal slug, not the display brand: the display brand is
 // Arabic and a cache key must stay ASCII.
-const CACHE_NAME = "injaz-al-aamal-platform-static-v6-rename";
+const CACHE_NAME = "sadeed-static-v7-rebrand";
 const PRECACHE = ["/brand-icon.png", "/finn-portrait.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

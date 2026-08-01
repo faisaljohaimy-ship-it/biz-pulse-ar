@@ -15,13 +15,12 @@ export const Route = createFileRoute("/request-demo")({
   },
   head: () => ({
     meta: [
-      { title: "Request a Demo — منصة إنجاز الأعمال" },
+      { title: "Request a Demo — SADEED" },
       {
         name: "description",
-        content:
-          "Request a personalized walkthrough of منصة إنجاز الأعمال for your executive team.",
+        content: "Request a personalized walkthrough of SADEED for your executive team.",
       },
-      { property: "og:title", content: "Request a Demo — منصة إنجاز الأعمال" },
+      { property: "og:title", content: "Request a Demo — SADEED" },
       {
         property: "og:description",
         content: "Personalized executive walkthrough tailored to your enterprise.",
@@ -43,8 +42,8 @@ function RequestDemoPage() {
       eyebrow={isAr ? "اطلب عرضاً شخصياً" : "Request a Demo"}
       title={
         isAr
-          ? "أرنا مؤسستك. سنُريك منصة إنجاز الأعمال."
-          : "Tell us about your enterprise. We'll show you منصة إنجاز الأعمال."
+          ? "أرنا مؤسستك. سنُريك سَدِيد."
+          : "Tell us about your enterprise. We'll show you SADEED."
       }
       subtitle={
         isAr
@@ -175,7 +174,7 @@ export function FormShell({
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
             <Sparkles className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="text-sm font-bold tracking-wide">منصة إنجاز الأعمال</span>
+          <span className="text-sm font-bold tracking-wide">SADEED</span>
         </Link>
         <Link
           to="/demo"

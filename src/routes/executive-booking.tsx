@@ -18,13 +18,13 @@ import {
 export const Route = createFileRoute("/executive-booking")({
   head: () => ({
     meta: [
-      { title: "Executive Booking Center — منصة إنجاز الأعمال" },
+      { title: "Executive Booking Center — SADEED" },
       {
         name: "description",
         content:
-          "Book a confidential executive briefing, investor meeting, government brief, or enterprise discovery session with the منصة إنجاز الأعمال team.",
+          "Book a confidential executive briefing, investor meeting, government brief, or enterprise discovery session with the SADEED team.",
       },
-      { property: "og:title", content: "Executive Booking Center — منصة إنجاز الأعمال" },
+      { property: "og:title", content: "Executive Booking Center — SADEED" },
       { property: "og:url", content: `${DOMAIN_URL}/executive-booking` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/executive-booking` }],

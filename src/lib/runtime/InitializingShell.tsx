@@ -58,9 +58,7 @@ export function InitializingShell({
             {error ? "تعذّر تهيئة المنصة" : "تهيئة نظام التشغيل المؤسسي"}
           </h1>
           <p className="mt-1 text-sm text-white/60">
-            {error
-              ? "تحقق من اتصالك وحاول مجدداً"
-              : "منصة إنجاز الأعمال — Industrial Security, All Regions"}
+            {error ? "تحقق من اتصالك وحاول مجدداً" : "SADEED — Industrial Security, All Regions"}
           </p>
         </div>
 

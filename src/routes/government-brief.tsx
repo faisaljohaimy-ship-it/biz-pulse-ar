@@ -16,13 +16,13 @@ import {
 export const Route = createFileRoute("/government-brief")({
   head: () => ({
     meta: [
-      { title: "Government Executive Brief — منصة إنجاز الأعمال" },
+      { title: "Government Executive Brief — SADEED" },
       {
         name: "description",
         content:
-          "Minister-level briefing on منصة إنجاز الأعمال: Saudi Vision 2030 alignment, NCA ECC compliance, data sovereignty, and the sovereign AI deployment model.",
+          "Minister-level briefing on SADEED: Saudi Vision 2030 alignment, NCA ECC compliance, data sovereignty, and the sovereign AI deployment model.",
       },
-      { property: "og:title", content: "منصة إنجاز الأعمال — Government Executive Brief" },
+      { property: "og:title", content: "SADEED — Government Executive Brief" },
       {
         property: "og:description",
         content: "Sovereign executive intelligence platform for the Saudi public sector.",

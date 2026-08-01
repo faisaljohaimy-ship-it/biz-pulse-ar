@@ -20,10 +20,10 @@ export const Route = createFileRoute("/nx-cockpit")({
   }),
   head: () => ({
     meta: [
-      { title: "قمرة القيادة التنفيذية · NX Cockpit — منصة إنجاز الأعمال" },
+      { title: "قمرة القيادة التنفيذية · NX Cockpit — سَدِيد" },
       {
         name: "description",
-        content: "عرض لغة التصميم التنفيذية الموحّدة لنظام منصة إنجاز الأعمال — محاكاة مرجعية.",
+        content: "عرض لغة التصميم التنفيذية الموحّدة لنظام سَدِيد — محاكاة مرجعية.",
       },
       { name: "robots", content: "noindex" },
     ],

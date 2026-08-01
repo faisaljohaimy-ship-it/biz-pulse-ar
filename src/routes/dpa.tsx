@@ -7,13 +7,13 @@ import { ScrollText, FileCheck, Globe, ShieldCheck } from "lucide-react";
 export const Route = createFileRoute("/dpa")({
   head: () => ({
     meta: [
-      { title: "Data Processing Addendum (DPA) — منصة إنجاز الأعمال" },
+      { title: "Data Processing Addendum (DPA) — SADEED" },
       {
         name: "description",
         content:
-          "Summary of the منصة إنجاز الأعمال Data Processing Addendum: roles, processing scope, data subject rights, international transfers, security measures, and breach notification.",
+          "Summary of the SADEED Data Processing Addendum: roles, processing scope, data subject rights, international transfers, security measures, and breach notification.",
       },
-      { property: "og:title", content: "Data Processing Addendum — منصة إنجاز الأعمال" },
+      { property: "og:title", content: "Data Processing Addendum — SADEED" },
       {
         property: "og:description",
         content: "GDPR / PDPL-aligned DPA summary, available in full under enterprise contract.",
@@ -40,12 +40,12 @@ function DpaPage() {
           ar: "العميل بصفته «المتحكم في البيانات» للبيانات الشخصية المُدخلة إلى الخدمة.",
         },
         {
-          en: "منصة إنجاز الأعمال acts as Data Processor and processes personal data solely on documented instructions of the Customer.",
-          ar: "منصة إنجاز الأعمال بصفته «معالج البيانات» ولا يعالج البيانات إلا بناءً على تعليمات موثقة من العميل.",
+          en: "SADEED acts as Data Processor and processes personal data solely on documented instructions of the Customer.",
+          ar: "سَدِيد بصفته «معالج البيانات» ولا يعالج البيانات إلا بناءً على تعليمات موثقة من العميل.",
         },
         {
-          en: "Where منصة إنجاز الأعمال engages subprocessors, منصة إنجاز الأعمال remains liable to the Customer for their performance.",
-          ar: "في حال الاستعانة بمورّدين فرعيين، يبقى منصة إنجاز الأعمال مسؤولًا تجاه العميل عن أدائهم.",
+          en: "Where SADEED engages subprocessors, SADEED remains liable to the Customer for their performance.",
+          ar: "في حال الاستعانة بمورّدين فرعيين، يبقى سَدِيد مسؤولًا تجاه العميل عن أدائهم.",
         },
       ],
     },
@@ -54,8 +54,8 @@ function DpaPage() {
       titleAr: "2 · النطاق والمدة والغرض",
       items: [
         {
-          en: "Subject matter: provision of the منصة إنجاز الأعمال platform and FINN agent services.",
-          ar: "الموضوع: تقديم منصة منصة إنجاز الأعمال وخدمات وكلاء FINN.",
+          en: "Subject matter: provision of the SADEED platform and FINN agent services.",
+          ar: "الموضوع: تقديم منصة سَدِيد وخدمات وكلاء FINN.",
         },
         {
           en: "Duration: the term of the underlying Master Services Agreement, plus any data-return / deletion window.",
@@ -112,8 +112,8 @@ function DpaPage() {
           ar: "تُحفظ القائمة الحالية في صفحة المورّدين الفرعيين؛ ويمكن للعميل الاشتراك في إشعارات التغيير.",
         },
         {
-          en: "منصة إنجاز الأعمال will give prior notice of any new subprocessor and an opportunity to object on reasonable grounds.",
-          ar: "يُخطر منصة إنجاز الأعمال مسبقًا بأي مورّد فرعي جديد ويتيح للعميل الاعتراض لأسباب معقولة.",
+          en: "SADEED will give prior notice of any new subprocessor and an opportunity to object on reasonable grounds.",
+          ar: "يُخطر سَدِيد مسبقًا بأي مورّد فرعي جديد ويتيح للعميل الاعتراض لأسباب معقولة.",
         },
       ],
     },
@@ -140,12 +140,12 @@ function DpaPage() {
       titleAr: "7 · حقوق أصحاب البيانات",
       items: [
         {
-          en: "منصة إنجاز الأعمال will assist Customer in responding to access, rectification, deletion, restriction, and portability requests.",
-          ar: "يساعد منصة إنجاز الأعمال العميل في الرد على طلبات الوصول والتصحيح والحذف والتقييد ونقل البيانات.",
+          en: "SADEED will assist Customer in responding to access, rectification, deletion, restriction, and portability requests.",
+          ar: "يساعد سَدِيد العميل في الرد على طلبات الوصول والتصحيح والحذف والتقييد ونقل البيانات.",
         },
         {
-          en: "Where a request is sent directly to منصة إنجاز الأعمال, it is forwarded to the relevant Customer without undue delay.",
-          ar: "إذا وصل الطلب إلى منصة إنجاز الأعمال مباشرة، يُحوَّل إلى العميل المعني دون تأخير غير مبرر.",
+          en: "Where a request is sent directly to SADEED, it is forwarded to the relevant Customer without undue delay.",
+          ar: "إذا وصل الطلب إلى سَدِيد مباشرة، يُحوَّل إلى العميل المعني دون تأخير غير مبرر.",
         },
       ],
     },
@@ -154,8 +154,8 @@ function DpaPage() {
       titleAr: "8 · الإخطار بالخروقات",
       items: [
         {
-          en: "منصة إنجاز الأعمال will notify Customer without undue delay, and in any case within 72 hours, of a confirmed personal-data breach affecting Customer data.",
-          ar: "يُخطر منصة إنجاز الأعمال العميل دون تأخير، وخلال 72 ساعة كحد أقصى، بأي خرق مؤكد لبيانات شخصية يخصّ العميل.",
+          en: "SADEED will notify Customer without undue delay, and in any case within 72 hours, of a confirmed personal-data breach affecting Customer data.",
+          ar: "يُخطر سَدِيد العميل دون تأخير، وخلال 72 ساعة كحد أقصى، بأي خرق مؤكد لبيانات شخصية يخصّ العميل.",
         },
         {
           en: "Notification includes nature of incident, categories and approximate volume of data, and mitigations taken.",
@@ -201,8 +201,8 @@ function DpaPage() {
       eyebrowAr="تعاقدي"
       title="Data Processing Addendum"
       titleAr="ملحق معالجة البيانات"
-      subtitle="A summary of the منصة إنجاز الأعمال DPA — the controller / processor terms that govern how we handle personal data on behalf of our customers."
-      subtitleAr="ملخّص لـ DPA الخاص بـ منصة إنجاز الأعمال — الشروط بين «المتحكم» و«المعالج» التي تحكم معالجة البيانات الشخصية بالنيابة عن عملائنا."
+      subtitle="A summary of the SADEED DPA — the controller / processor terms that govern how we handle personal data on behalf of our customers."
+      subtitleAr="ملخّص لـ DPA الخاص بـ سَدِيد — الشروط بين «المتحكم» و«المعالج» التي تحكم معالجة البيانات الشخصية بالنيابة عن عملائنا."
       qualifier="This summary is for orientation only. The executed DPA (PDF) prevails in case of conflict. Request the signed document from privacy@neexios.com."
       qualifierAr="هذا الملخص للاسترشاد فقط. يسود ملحق DPA المُوقَّع (PDF) في حال الاختلاف. لطلب النسخة الموقّعة: privacy@neexios.com."
     >

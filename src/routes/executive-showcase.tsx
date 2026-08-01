@@ -30,10 +30,10 @@ export const Route = createFileRoute("/executive-showcase")({
   },
   head: () => ({
     meta: [
-      { title: "العرض التنفيذي — منصة إنجاز الأعمال | Executive Showcase" },
+      { title: "العرض التنفيذي — سَدِيد | Executive Showcase" },
       {
         name: "description",
-        content: "عرض سينمائي تنفيذي لمنصة منصة إنجاز الأعمال بصوت FINN وشاشة منقسمة.",
+        content: "عرض سينمائي تنفيذي لمنصة سَدِيد بصوت FINN وشاشة منقسمة.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -439,7 +439,7 @@ function ExecutiveShowcasePage() {
             className="h-2 w-2 rounded-full"
             style={{ background: scene.accent, boxShadow: `0 0 12px ${scene.accent}` }}
           />
-          منصة إنجاز الأعمال
+          SADEED
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -586,7 +586,7 @@ function ExecutiveShowcasePage() {
                 <div className="min-w-0">
                   <div className="truncate text-[12px] font-black text-white">العرض التنفيذي</div>
                   <div className="truncate text-[12px] tracking-[0.18em] text-cyan-100/65">
-                    منصة إنجاز الأعمال EXECUTIVE FILM
+                    SADEED EXECUTIVE FILM
                   </div>
                 </div>
                 <span className="rounded-full border border-white/15 bg-black/40 px-2 py-1 font-mono text-[12px] text-white/70 backdrop-blur-xl">
@@ -785,7 +785,7 @@ function Finale({ onRestart }: { onRestart: () => void }) {
         className="text-[12px] font-bold uppercase tracking-[0.4em] text-[#3AE8FF]"
         style={{ textShadow: "0 0 18px rgba(58,232,255,0.6)" }}
       >
-        منصة إنجاز الأعمال · AI OPERATING SYSTEM
+        SADEED · AI OPERATING SYSTEM
       </div>
       <h1
         className="mt-4 text-4xl font-black tracking-tight text-white sm:text-6xl"

@@ -1,7 +1,7 @@
 /**
  * Executive Theater — `/theater`
  *
- * The flagship Executive AI surface of منصة إنجاز الأعمال OS. FINN is permanently
+ * The flagship Executive AI surface of SADEED OS. FINN is permanently
  * centered on the stage, surrounded by the live AI agent ring. Every
  * story card, every spoken turn, every confidence reading comes from
  * real runtime tables (`enterprise_events`, `agent_runs`,
@@ -64,7 +64,7 @@ export const Route = createFileRoute("/_authenticated/theater")({
   },
   head: () => ({
     meta: [
-      { title: "Executive Theater — منصة إنجاز الأعمال" },
+      { title: "Executive Theater — SADEED" },
       {
         name: "description",
         content:
@@ -226,7 +226,7 @@ function TheaterPage() {
             </div>
             <h1 className="mt-2 text-2xl md:text-3xl font-light text-white tracking-tight">
               {ar
-                ? "منصة إنجاز الأعمال · إدارة الأمن الصناعي — جميع المناطق"
+                ? "سَدِيد · إدارة الأمن الصناعي — جميع المناطق"
                 : "Enjaz Platform · Industrial Security — All Regions"}
             </h1>
             <p className="mt-1 text-sm text-white/55 max-w-2xl">

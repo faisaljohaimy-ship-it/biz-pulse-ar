@@ -15,7 +15,7 @@ const CHAPTERS: Chapter[] = [
     id: "vision",
     title_ar: "رؤية المنصة",
     title_en: "Platform Vision",
-    desc_ar: "نظرة شاملة على فلسفة منصة إنجاز الأعمال وتأثيرها التشغيلي.",
+    desc_ar: "نظرة شاملة على فلسفة سَدِيد وتأثيرها التشغيلي.",
     duration: "02:10",
     accent: "from-[#00D4FF] to-[#3AE8FF]",
   },
@@ -95,7 +95,7 @@ const CHAPTERS: Chapter[] = [
     id: "roadmap",
     title_ar: "خارطة الطريق",
     title_en: "Roadmap",
-    desc_ar: "موجات الإصدار القادمة من نواة منصة إنجاز الأعمال.",
+    desc_ar: "موجات الإصدار القادمة من نواة سَدِيد.",
     duration: "02:30",
     accent: "from-[#3AE8FF] to-[#00D4FF]",
   },
@@ -319,7 +319,7 @@ function ChapterPlayer({
           <div className="absolute inset-0 grid place-items-center text-center">
             <div>
               <div className="text-[12px] uppercase tracking-[0.4em] text-white/80">
-                منصة إنجاز الأعمال · {chapter.title_en}
+                SADEED · {chapter.title_en}
               </div>
               <div className="mt-3 text-3xl font-semibold text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.6)] sm:text-5xl">
                 {chapter.title_ar}

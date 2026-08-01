@@ -135,7 +135,7 @@ export class AgentBuilder extends ArtifactBuilder<AgentManifest> {
       name: seed.name,
       role: "specialist",
       description: seed.description ?? seed.name,
-      systemPrompt: `أنت ${seed.name} ضمن نظام منصة إنجاز الأعمال — استشر ولا تنفّذ.`,
+      systemPrompt: `أنت ${seed.name} ضمن نظام سَدِيد — استشر ولا تنفّذ.`,
       supportedSkills: [],
       supportedTools: [],
       supportedCapabilities: [],

@@ -151,7 +151,7 @@ function AuthPage() {
               panel on large screens, as a compact strip on small screens. */}
           <div className="mb-5 lg:hidden">
             <span className="nexus-command-chip">
-              <Crown className="h-3.5 w-3.5" /> منصة إنجاز الأعمال · SOVEREIGN INTELLIGENCE
+              <Crown className="h-3.5 w-3.5" /> SADEED · SOVEREIGN INTELLIGENCE
             </span>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {[
@@ -282,14 +282,10 @@ function ExecutiveAcceptanceStage({ isAr, onAccept }: { isAr: boolean; onAccept:
       <header className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-8">
         <Link to="/" className="flex items-center gap-3">
           <span className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-2xl border border-primary/35 bg-primary/10 shadow-[0_0_30px_rgba(0,212,255,.2)]">
-            <img
-              src="/brand-icon.png"
-              alt="منصة إنجاز الأعمال"
-              className="h-full w-full object-cover"
-            />
+            <img src="/brand-icon.png" alt="SADEED" className="h-full w-full object-cover" />
           </span>
           <span>
-            <span className="block text-sm font-black tracking-[0.18em]">منصة إنجاز الأعمال</span>
+            <span className="block text-sm font-black tracking-[0.18em]">SADEED</span>
             <span className="block text-[12px] uppercase tracking-[0.22em] text-primary/75">
               Executive Access
             </span>
@@ -409,7 +405,7 @@ function BrandLockup({ isAr }: { isAr: boolean }) {
   return (
     <div className="max-w-2xl">
       <span className="nexus-command-chip">
-        <Crown className="h-3.5 w-3.5" /> منصة إنجاز الأعمال · SOVEREIGN INTELLIGENCE
+        <Crown className="h-3.5 w-3.5" /> SADEED · SOVEREIGN INTELLIGENCE
       </span>
       <h2 className="nexus-hero-title mt-6 text-4xl font-black leading-tight xl:text-6xl">
         {isAr ? "الذكاء، تحت القيادة." : "Intelligence, under command."}

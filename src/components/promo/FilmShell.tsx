@@ -1,4 +1,4 @@
-// منصة إنجاز الأعمال Cinematic Film Suite — shared shell for /promo/f1..f4.
+// SADEED Cinematic Film Suite — shared shell for /promo/f1..f4.
 // Handles: play gate (user gesture unlocks audio), scene timeline,
 // audio sync with hard-stop on exit, download button with graceful
 // disabled state, captions, replay, prefers-reduced-motion fallback.
@@ -239,7 +239,7 @@ function PlayGate({
       />
       <div className="relative z-10 flex flex-col items-center gap-4">
         <div className="text-xs uppercase tracking-[0.4em]" style={{ color: film.accent }}>
-          منصة إنجاز الأعمال · Film {film.slug.toUpperCase()}
+          SADEED · Film {film.slug.toUpperCase()}
         </div>
         <h1 className="text-3xl font-black leading-tight text-white md:text-5xl">{film.titleAr}</h1>
         {film.subtitleAr && (
@@ -352,7 +352,7 @@ export function ClosingLockup({
       />
       <div style={{ opacity: o }} className="text-center">
         <div className="mb-3 text-[12px] uppercase tracking-[0.5em]" style={{ color: accent }}>
-          منصة إنجاز الأعمال
+          SADEED
         </div>
         <h2 className="text-3xl font-black text-white md:text-5xl">{title}</h2>
         {cta && (

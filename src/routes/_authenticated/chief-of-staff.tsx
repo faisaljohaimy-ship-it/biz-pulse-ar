@@ -134,7 +134,7 @@ function ChiefOfStaffPage() {
                 </div>
               </div>
               <div>
-                <div className="text-sm font-semibold text-white">منصة إنجاز الأعمال Chief</div>
+                <div className="text-sm font-semibold text-white">SADEED Chief</div>
                 <div className="text-[12px] tracking-widest text-violet-300/70">
                   STRATEGIC ADVISOR
                 </div>

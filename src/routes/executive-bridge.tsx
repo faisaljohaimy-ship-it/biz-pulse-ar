@@ -670,7 +670,7 @@ export const Route = createFileRoute("/executive-bridge")({
       .parse(s),
   head: () => ({
     meta: [
-      { title: "جسر القيادة التنفيذي — منصة إنجاز الأعمال | Executive Command Bridge" },
+      { title: "جسر القيادة التنفيذي — سَدِيد | Executive Command Bridge" },
       {
         name: "description",
         content:
@@ -679,8 +679,7 @@ export const Route = createFileRoute("/executive-bridge")({
       { property: "og:title", content: "جسر القيادة التنفيذي — Executive Command Bridge" },
       {
         property: "og:description",
-        content:
-          "A board-room-grade, bilingual منصة إنجاز الأعمال command experience narrated by FINN.",
+        content: "A board-room-grade, bilingual SADEED command experience narrated by FINN.",
       },
     ],
   }),
@@ -1012,7 +1011,7 @@ function ExecutiveBridgePage() {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.28em] text-white/75">
             <span className="h-2 w-2 rounded-full bg-[#F5C560] shadow-[0_0_12px_#F5C560]" />
-            منصة إنجاز الأعمال
+            SADEED
           </div>
           <DateStamp />
         </div>

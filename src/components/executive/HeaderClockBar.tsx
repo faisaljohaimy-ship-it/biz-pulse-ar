@@ -1,7 +1,7 @@
 /**
  * HeaderClockBar — the unified top header strip.
  *
- * OWNER DIRECTIVE (G3): the scrolling marquee ("منصة إنجاز الأعمال التنفيذية
+ * OWNER DIRECTIVE (G3): the scrolling marquee ("سَدِيد التنفيذية
  * ✦ NEXIOS AI") is REMOVED from every screen. It was mounted once in
  * __root.tsx, so deleting it here removes it everywhere at once — الرئيسية and
  * الأمن الصناعي included — with no per-screen edits.

@@ -8,16 +8,16 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/connect")({
   head: () => ({
     meta: [
-      { title: "ربط مساعد ذكاء اصطناعي · منصة إنجاز الأعمال" },
+      { title: "ربط مساعد ذكاء اصطناعي · سَدِيد" },
       {
         name: "description",
         content:
-          "اربط ChatGPT أو Claude بنظام منصة إنجاز الأعمال عبر MCP. انسخ رابط الخادم واتبع الدليل خطوة بخطوة.",
+          "اربط ChatGPT أو Claude بنظام سَدِيد عبر MCP. انسخ رابط الخادم واتبع الدليل خطوة بخطوة.",
       },
-      { property: "og:title", content: "ربط مساعد ذكاء اصطناعي بـ منصة إنجاز الأعمال" },
+      { property: "og:title", content: "ربط مساعد ذكاء اصطناعي بـ سَدِيد" },
       {
         property: "og:description",
-        content: "خطوة بخطوة: الصق رابط منصة إنجاز الأعمال MCP في ChatGPT أو Claude.",
+        content: "خطوة بخطوة: الصق رابط سَدِيد MCP في ChatGPT أو Claude.",
       },
       { property: "og:url", content: `${DOMAIN_URL}/connect` },
       { property: "og:type", content: "website" },
@@ -66,8 +66,8 @@ function ConnectPage() {
             </h1>
             <p className="text-sm text-white/55">
               {ar
-                ? "استخدم منصة إنجاز الأعمال من داخل ChatGPT أو Claude عبر MCP."
-                : "Use منصة إنجاز الأعمال from ChatGPT or Claude through MCP."}
+                ? "استخدم سَدِيد من داخل ChatGPT أو Claude عبر MCP."
+                : "Use SADEED from ChatGPT or Claude through MCP."}
             </p>
           </div>
           <button
@@ -102,8 +102,8 @@ function ConnectPage() {
           </div>
           <p className="mt-3 text-[13px] leading-relaxed text-white/60">
             {ar
-              ? "الصق هذا الرابط في إعدادات الموصّلات لدى مساعدك. بعد الربط يمكنك أن تطلب منه استخدام أدوات منصة إنجاز الأعمال لقراءة البلاغات والمؤشرات والملخصات التنفيذية."
-              : "Paste this URL into your assistant's connector settings. Once connected, you can ask it to use منصة إنجاز الأعمال tools to read incidents, KPIs, and briefings."}
+              ? "الصق هذا الرابط في إعدادات الموصّلات لدى مساعدك. بعد الربط يمكنك أن تطلب منه استخدام أدوات سَدِيد لقراءة البلاغات والمؤشرات والملخصات التنفيذية."
+              : "Paste this URL into your assistant's connector settings. Once connected, you can ask it to use SADEED tools to read incidents, KPIs, and briefings."}
           </p>
         </section>
 
@@ -144,8 +144,8 @@ function ConnectPage() {
                 </li>
                 <li>
                   {ar
-                    ? "٥. ابدأ محادثة جديدة واطلب من ChatGPT استخدام منصة إنجاز الأعمال."
-                    : "5. Start a new chat and ask ChatGPT to use منصة إنجاز الأعمال."}
+                    ? "٥. ابدأ محادثة جديدة واطلب من ChatGPT استخدام سَدِيد."
+                    : "5. Start a new chat and ask ChatGPT to use SADEED."}
                 </li>
               </ol>
             </ClientCard>
@@ -171,11 +171,7 @@ function ConnectPage() {
                     ? "٣. فعّل الموصّل من صندوق المحادثة."
                     : "3. Enable the connector from the chat composer."}
                 </li>
-                <li>
-                  {ar
-                    ? "٤. اطلب من Claude استخدام منصة إنجاز الأعمال."
-                    : "4. Ask Claude to use منصة إنجاز الأعمال."}
-                </li>
+                <li>{ar ? "٤. اطلب من Claude استخدام سَدِيد." : "4. Ask Claude to use SADEED."}</li>
               </ol>
             </ClientCard>
           </div>
@@ -199,8 +195,8 @@ function ConnectPage() {
               <ol className="space-y-2 text-[14px] leading-relaxed text-white/80">
                 <li>
                   {ar
-                    ? '١. افتح تفضيلات تطبيق ChatGPT واختر منصة إنجاز الأعمال ضمن "Enabled apps".'
-                    : '1. Open ChatGPT app preferences and pick منصة إنجاز الأعمال under "Enabled apps".'}
+                    ? '١. افتح تفضيلات تطبيق ChatGPT واختر سَدِيد ضمن "Enabled apps".'
+                    : '1. Open ChatGPT app preferences and pick SADEED under "Enabled apps".'}
                 </li>
                 <li>
                   {ar
@@ -214,8 +210,8 @@ function ConnectPage() {
                 </li>
                 <li>
                   {ar
-                    ? "٤. ابدأ محادثة جديدة واطلب من ChatGPT استخدام منصة إنجاز الأعمال."
-                    : "4. Start a new chat and ask ChatGPT to use منصة إنجاز الأعمال."}
+                    ? "٤. ابدأ محادثة جديدة واطلب من ChatGPT استخدام سَدِيد."
+                    : "4. Start a new chat and ask ChatGPT to use SADEED."}
                 </li>
               </ol>
             </ClientCard>
@@ -224,8 +220,8 @@ function ConnectPage() {
               <ol className="space-y-2 text-[14px] leading-relaxed text-white/80">
                 <li>
                   {ar
-                    ? "١. افتح صفحة الموصّلات واختر موصّل منصة إنجاز الأعمال."
-                    : "1. Open the Connectors page and select the منصة إنجاز الأعمال connector."}
+                    ? "١. افتح صفحة الموصّلات واختر موصّل سَدِيد."
+                    : "1. Open the Connectors page and select the SADEED connector."}
                 </li>
                 <li>
                   {ar
@@ -237,11 +233,7 @@ function ConnectPage() {
                     ? "٣. إن تغيّر الرابط فالصق أحدث رابط من الأعلى."
                     : "3. If the URL changed, paste the latest URL from above."}
                 </li>
-                <li>
-                  {ar
-                    ? "٤. اطلب من Claude استخدام منصة إنجاز الأعمال."
-                    : "4. Ask Claude to use منصة إنجاز الأعمال."}
-                </li>
+                <li>{ar ? "٤. اطلب من Claude استخدام سَدِيد." : "4. Ask Claude to use SADEED."}</li>
               </ol>
             </ClientCard>
           </div>
@@ -250,7 +242,7 @@ function ConnectPage() {
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-white/70">
           {ar ? "تحتاج مساعدة؟ " : "Need help? "}
           <Link to="/contact" className="text-[#3AE8FF] underline-offset-4 hover:underline">
-            {ar ? "تواصل مع فريق منصة إنجاز الأعمال" : "Contact the منصة إنجاز الأعمال team"}
+            {ar ? "تواصل مع فريق سَدِيد" : "Contact the سَدِيد team"}
           </Link>
           .
         </div>

@@ -22,13 +22,13 @@ import {
 export const Route = createFileRoute("/trust")({
   head: () => ({
     meta: [
-      { title: "Trust & Security — منصة إنجاز الأعمال" },
+      { title: "Trust & Security — SADEED" },
       {
         name: "description",
         content:
-          "Trust, security, and compliance posture for منصة إنجاز الأعمال — designed to align with SOC 2, ISO 27001, NCA ECC, and Saudi PDPL. Certifications in progress. Covers data residency, encryption, audit logging, and incident response.",
+          "Trust, security, and compliance posture for SADEED — designed to align with SOC 2, ISO 27001, NCA ECC, and Saudi PDPL. Certifications in progress. Covers data residency, encryption, audit logging, and incident response.",
       },
-      { property: "og:title", content: "Trust & Security — منصة إنجاز الأعمال" },
+      { property: "og:title", content: "Trust & Security — SADEED" },
       { property: "og:description", content: "Procurement-ready security & compliance overview." },
       { property: "og:url", content: `${DOMAIN_URL}/trust` },
       { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
@@ -390,17 +390,17 @@ function TrustPage() {
               : "Enterprise & Government Procurement Ready"}
           </div>
           <h1 className="mt-5 bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-4xl font-semibold leading-tight text-transparent sm:text-5xl">
-            {isAr ? "الثقة والأمان في منصة إنجاز الأعمال" : "Trust at منصة إنجاز الأعمال"}
+            {isAr ? "الثقة والأمان في سَدِيد" : "Trust at سَدِيد"}
           </h1>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
             {isAr
-              ? "صُممت منصة إنجاز الأعمال لمتطلبات الجهات السيادية والمؤسسات الكبرى: صلاحيات بأقل امتياز، عزل مؤسسي، تشفير وتدقيق وفق الضوابط المثبتة لبيئة النشر، وبوابة تمنع الإنتاج حتى اعتماد الإقامة والمعالجات الفرعية."
-              : "منصة إنجاز الأعمال is designed for sovereign and enterprise procurement: least privilege, tenant isolation, deployment-verified encryption and auditing, and an activation gate that blocks production until residency and subprocessors are approved."}
+              ? "صُممت سَدِيد لمتطلبات الجهات السيادية والمؤسسات الكبرى: صلاحيات بأقل امتياز، عزل مؤسسي، تشفير وتدقيق وفق الضوابط المثبتة لبيئة النشر، وبوابة تمنع الإنتاج حتى اعتماد الإقامة والمعالجات الفرعية."
+              : "SADEED is designed for sovereign and enterprise procurement: least privilege, tenant isolation, deployment-verified encryption and auditing, and an activation gate that blocks production until residency and subprocessors are approved."}
           </p>
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground/70">
             {isAr
-              ? "هذه الصفحة يحرّرها فريق منصة إنجاز الأعمال لتلخيص الضوابط المُفعّلة وممارسات الأمان. ليست شهادة أو تدقيقًا مستقلاً. تتوفر تقارير التدقيق وملحق معالجة البيانات (DPA) وقائمة المورّدين الفرعيين بموجب اتفاقية عدم إفصاح."
-              : "This page is maintained by the منصة إنجاز الأعمال team to summarize enabled controls and current practices. It is not an independent attestation. Audit reports, DPA, and subprocessor list are available under NDA."}
+              ? "هذه الصفحة يحرّرها فريق سَدِيد لتلخيص الضوابط المُفعّلة وممارسات الأمان. ليست شهادة أو تدقيقًا مستقلاً. تتوفر تقارير التدقيق وملحق معالجة البيانات (DPA) وقائمة المورّدين الفرعيين بموجب اتفاقية عدم إفصاح."
+              : "This page is maintained by the SADEED team to summarize enabled controls and current practices. It is not an independent attestation. Audit reports, DPA, and subprocessor list are available under NDA."}
           </p>
         </section>
 
@@ -485,7 +485,7 @@ function TrustPage() {
           />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <RespCard
-              title={isAr ? "منصة إنجاز الأعمال" : "منصة إنجاز الأعمال"}
+              title={isAr ? "SADEED" : "SADEED"}
               items={
                 isAr
                   ? [
@@ -617,8 +617,8 @@ function TrustPage() {
             isAr={isAr}
             valueEn="soc@neexios.com"
             valueAr="soc@neexios.com"
-            descEn="For confirmed or suspected security incidents involving منصة إنجاز الأعمال services."
-            descAr="للحوادث الأمنية المؤكدة أو المشتبه بها المتعلقة بخدمات منصة إنجاز الأعمال."
+            descEn="For confirmed or suspected security incidents involving SADEED services."
+            descAr="للحوادث الأمنية المؤكدة أو المشتبه بها المتعلقة بخدمات سَدِيد."
             href="mailto:soc@neexios.com"
           />
         </section>

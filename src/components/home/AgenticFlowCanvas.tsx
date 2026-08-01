@@ -190,7 +190,7 @@ export function AgenticFlowCanvas({
         dir={ar ? "rtl" : "ltr"}
         className="relative flex items-center justify-between px-4 py-3 text-[12px] uppercase tracking-[0.3em] text-[#3AE8FF]/70 sm:px-6"
       >
-        <span>منصة إنجاز الأعمال · Agentic Flow Canvas</span>
+        <span>SADEED · Agentic Flow Canvas</span>
         <Link
           to="/agents-reference"
           className="rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-3 py-1 text-[12px] text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20 hover:text-white"

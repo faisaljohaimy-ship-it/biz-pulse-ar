@@ -56,7 +56,7 @@ export function ExperienceLevelBar() {
       className="nx-glass-e1 rounded-nx-16 sticky bottom-2 z-20 flex flex-wrap items-center justify-between gap-3 border border-white/10 px-3 py-2 backdrop-blur-md"
     >
       <div className="flex items-center gap-2 text-[12px] text-nx-pearl/56">
-        <span className="font-semibold text-nx-pearl">منصة إنجاز الأعمال</span>
+        <span className="font-semibold text-nx-pearl">SADEED</span>
         <span dir="ltr">v2 · Enterprise</span>
       </div>
 

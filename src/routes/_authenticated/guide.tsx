@@ -1,5 +1,5 @@
 /**
- * /guide — the منصة إنجاز الأعمال system map (constitution art. 21): every module
+ * /guide — the SADEED system map (constitution art. 21): every module
  * classified by role with a one-line purpose, a relationship diagram of
  * how the clusters feed one another, and a link into the matching learning
  * track. Built entirely from the single MODULES source (art. 13.5) so it
@@ -64,8 +64,8 @@ function GuidePage() {
         title={ar ? "خريطة النظام" : "System Map"}
         subtitle={
           ar
-            ? "منصة إنجاز الأعمال — منصة إنجاز الأعمال التنفيذية: الوكلاء يقترحون ويجهّزون، والإنسان يعتمد."
-            : "منصة إنجاز الأعمال — the executive execution platform: agents propose & prepare, humans approve."
+            ? "سَدِيد — سَدِيد التنفيذية: الوكلاء يقترحون ويجهّزون، والإنسان يعتمد."
+            : "SADEED — the executive execution platform: agents propose & prepare, humans approve."
         }
         badge={ar ? "دليل" : "Guide"}
       />
@@ -206,8 +206,8 @@ function GuidePage() {
           <div>
             <div className="text-sm font-semibold text-white">
               {ar
-                ? "جديد على منصة إنجاز الأعمال؟ ابدأ من مركز التعلّم"
-                : "New to منصة إنجاز الأعمال? Start at the learning center"}
+                ? "جديد على سَدِيد؟ ابدأ من مركز التعلّم"
+                : "New to SADEED? Start at the learning center"}
             </div>
             <div className="text-xs text-white/60">
               {ar

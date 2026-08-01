@@ -14,10 +14,10 @@ import {
 export const Route = createFileRoute("/runtime-hub")({
   head: () => ({
     meta: [
-      { title: "Runtime Hub — منصة إنجاز الأعمال" },
+      { title: "Runtime Hub — SADEED" },
       {
         name: "description",
-        content: "Enterprise runtime stages and live modules of منصة إنجاز الأعمال OS.",
+        content: "Enterprise runtime stages and live modules of SADEED OS.",
       },
     ],
   }),
@@ -89,9 +89,7 @@ function RuntimeHub() {
             <Sparkles className="h-7 w-7 text-[#3AE8FF]" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">نظام التشغيل المؤسسي</h1>
-          <p className="mt-1 text-sm text-white/60">
-            منصة إنجاز الأعمال — الأمن الصناعي · جميع المناطق
-          </p>
+          <p className="mt-1 text-sm text-white/60">سَدِيد — الأمن الصناعي · جميع المناطق</p>
         </div>
 
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

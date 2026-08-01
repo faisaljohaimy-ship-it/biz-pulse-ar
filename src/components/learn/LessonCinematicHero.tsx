@@ -64,7 +64,7 @@ export function LessonCinematicHero({ title, subtitle, order, lang }: Props) {
         <div className="flex items-center justify-between">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-black/30 px-3 py-1 text-[12px] uppercase tracking-[0.24em] text-cyan-200 backdrop-blur">
             <Radio className="h-3 w-3 animate-pulse" />
-            منصة إنجاز الأعمال · {ar ? "بث تنفيذي مباشر" : "Executive Live"}
+            سَدِيد · {ar ? "بث تنفيذي مباشر" : "Executive Live"}
           </div>
           <div className="text-right font-mono text-[12px] tracking-widest text-cyan-200/70">
             LESSON · {String(order).padStart(2, "0")}

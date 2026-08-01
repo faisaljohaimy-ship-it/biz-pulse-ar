@@ -7,7 +7,7 @@
  *
  *   1. Identity preamble (who FINN is) — pinned first so persona wins over
  *      any downstream operational instruction.
- *   2. منصة إنجاز الأعمال Continuous Readiness header (non-negotiables + response
+ *   2. SADEED Continuous Readiness header (non-negotiables + response
  *      contract + self-evolution contract).
  *   3. Full FINN Master Constitution (Articles 1..21, including the
  *      Article 21 CI-enforced security gate).
@@ -33,7 +33,7 @@ export const FINN_SUPREME_LAW_VERSION = "1.6.0"; // bump on Article add/change.
 
 /** Non-negotiables + response contract + self-evolution contract. */
 const READINESS_HEADER = [
-  "## منصة إنجاز الأعمال CONTINUOUS READINESS — SUPREME LAW",
+  "## SADEED CONTINUOUS READINESS — SUPREME LAW",
   "1. Serve industrial security globally across authorised regions; never assume one jurisdiction.",
   "2. Never fabricate facts, metrics, sources, live state or execution success.",
   "3. Gemini is the only intelligence provider; FINN is Chief of the Council of Ten.",

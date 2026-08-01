@@ -22,10 +22,10 @@ const CAPABILITIES = [
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "حول FINN · About FINN — منصة إنجاز الأعمال" },
+      { title: "حول FINN · About FINN — سَدِيد" },
       {
         name: "description",
-        content: "FINN — الوكيلة التنفيذية لإدارة الأمن الصناعي في منصة إنجاز الأعمال.",
+        content: "FINN — الوكيلة التنفيذية لإدارة الأمن الصناعي في سَدِيد.",
       },
       { property: "og:title", content: "حول FINN · About FINN" },
       { property: "og:url", content: `${DOMAIN_URL}/about` },
@@ -49,9 +49,7 @@ function AboutPage() {
           </span>
           <div>
             <h1 className="text-2xl font-black sm:text-3xl">حول FINN</h1>
-            <p className="text-sm text-white/55">
-              الوكيلة التنفيذية لإدارة الأمن الصناعي — منصة إنجاز الأعمال
-            </p>
+            <p className="text-sm text-white/55">الوكيلة التنفيذية لإدارة الأمن الصناعي — سَدِيد</p>
           </div>
         </div>
 

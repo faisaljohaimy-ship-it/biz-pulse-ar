@@ -1,9 +1,9 @@
 /**
  * هوية المنتج — حارس العلامة.
  *
- * OWNER DIRECTIVE 2026-08-01: the product is «منصة إنجاز الأعمال», the same
- * string in every language. NEXIOS / NEEXIOS / Nexus AI OS / نكسيوس / مِرْقَب
- * must not appear anywhere a user can read them.
+ * OWNER DIRECTIVE 2026-08-01 (second): the product is «سَدِيد» / «SADEED».
+ * Every predecessor — منصة إنجاز الأعمال · NEXIOS · NEEXIOS · Nexus AI OS ·
+ * نكسيوس · مِرْقَب — must not appear anywhere a user can read them.
  *
  * ── THREE PASSES, BECAUSE ONE IS NOT ENOUGH ──
  * ① string literals  ② JSX text and markup  ③ a blunt whole-file backstop.
@@ -27,7 +27,16 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { PRODUCT_BRAND, PRODUCT_NAME, SITE_NAME, COMPANY_NAME } from "../domain";
+import {
+  PRODUCT_BRAND,
+  PRODUCT_NAME,
+  PRODUCT_NAME_AR,
+  PRODUCT_NAME_EN,
+  SITE_NAME,
+  COMPANY_NAME,
+  brandFor,
+  brandName,
+} from "../domain";
 
 const ROOT = resolve(__dirname, "../../..");
 
@@ -38,6 +47,10 @@ const RETIRED = [
   /\bNexus\b/i,
   /نكسيوس/,
   /نيكسيوس/,
+  // The immediately previous brand. Banned for the same reason as the others:
+  // a restored old file or a copied paragraph puts it straight back on screen.
+  /منصة إنجاز الأعمال/,
+  /منصة انجاز الأعمال/,
   /نكسس/,
   /مِرْقَب/,
   /\bمرقب\b/,
@@ -161,31 +174,57 @@ const isIdentifierish = (lit: string) => {
 };
 
 describe("the brand is what the owner set", () => {
-  it("is «منصة إنجاز الأعمال» and is not language-dependent", () => {
-    expect(PRODUCT_BRAND.name).toBe("منصة إنجاز الأعمال");
-    // The whole defect was a Latin literal that no locale could touch. There is
-    // no English variant by design.
-    expect(PRODUCT_BRAND).not.toHaveProperty("nameEn");
+  // Written as literals. Deriving the expectation from the module under test
+  // would pass whatever the module said (article ٣٠).
+  it("is «سَدِيد» in Arabic and «SADEED» in Latin", () => {
+    expect(PRODUCT_BRAND.ar.name).toBe("سَدِيد");
+    expect(PRODUCT_BRAND.en.name).toBe("SADEED");
   });
 
-  it("describes itself as «منصة إدارة الأمن الصناعي»", () => {
-    expect(PRODUCT_BRAND.descriptionAr).toBe("منصة إدارة الأمن الصناعي");
+  it("carries the descriptor and tagline in both languages", () => {
+    expect(PRODUCT_BRAND.ar.descriptor).toBe("منظومة القرار والإنجاز الذكي");
+    expect(PRODUCT_BRAND.en.descriptor).toBe("Intelligent Decision & Execution System");
+    expect(PRODUCT_BRAND.ar.tagline).toBe("قرار أدق. إنجاز أسرع.");
+    expect(PRODUCT_BRAND.en.tagline).toBe("Smarter Decisions. Faster Execution.");
+  });
+
+  it("the Latin form is upper-case — it is a wordmark, not a word", () => {
+    expect(PRODUCT_BRAND.en.name).toBe(PRODUCT_BRAND.en.name.toUpperCase());
+  });
+
+  it("the plain Arabic form drops the diacritics and nothing else", () => {
+    // PDF shaping, TTS input and search indexes all mangle combining marks.
+    // The plain form must still be the SAME word — strip the marks from the
+    // display name and the two have to meet.
+    expect(PRODUCT_BRAND.arPlain).toBe("سديد");
+    expect(PRODUCT_BRAND.ar.name.replace(/[ً-ْ]/g, "")).toBe(PRODUCT_BRAND.arPlain);
+  });
+
+  it("brandFor / brandName pick the right language", () => {
+    expect(brandName(true)).toBe("سَدِيد");
+    expect(brandName(false)).toBe("SADEED");
+    expect(brandFor(true).tagline).toBe(PRODUCT_BRAND.ar.tagline);
+    expect(brandFor(false).tagline).toBe(PRODUCT_BRAND.en.tagline);
   });
 
   it("keeps FINN as the assistant — a separate identity", () => {
+    // The rename brief said so explicitly, and the two identities have
+    // different lifecycles: FINN survived three product renames.
     expect(PRODUCT_BRAND.assistantName).toBe("FINN");
   });
 
   it("every compatibility alias resolves to the new brand", () => {
-    expect(PRODUCT_NAME).toBe(PRODUCT_BRAND.name);
-    expect(SITE_NAME).toBe(PRODUCT_BRAND.name);
-    expect(COMPANY_NAME).toBe(PRODUCT_BRAND.descriptionAr);
+    expect(PRODUCT_NAME).toBe(PRODUCT_BRAND.ar.name);
+    expect(PRODUCT_NAME_AR).toBe(PRODUCT_BRAND.ar.name);
+    expect(PRODUCT_NAME_EN).toBe(PRODUCT_BRAND.en.name);
+    expect(SITE_NAME).toContain(PRODUCT_BRAND.ar.name);
+    expect(COMPANY_NAME).toBe(PRODUCT_BRAND.ar.descriptor);
   });
 
-  it("the internal slug is never the display name", () => {
-    // Cache keys and storage prefixes need ASCII; the display name is Arabic.
+  it("the internal slug is ASCII and is never a display name", () => {
     expect(PRODUCT_BRAND.slug).toMatch(/^[a-z0-9-]+$/);
-    expect(PRODUCT_BRAND.slug).not.toBe(PRODUCT_BRAND.name);
+    expect(PRODUCT_BRAND.slug).not.toBe(PRODUCT_BRAND.ar.name);
+    expect(PRODUCT_BRAND.slug).not.toBe(PRODUCT_BRAND.en.name);
   });
 });
 
@@ -304,9 +343,9 @@ describe("browser-read metadata carries the new brand", () => {
 
   it("the PWA manifest names the platform correctly", () => {
     const m = JSON.parse(readPublic("manifest.webmanifest"));
-    expect(m.name).toBe(PRODUCT_BRAND.name);
-    expect(m.short_name).toBe(PRODUCT_BRAND.name);
-    expect(m.description).toBe(PRODUCT_BRAND.descriptionAr);
+    expect(m.name).toBe(PRODUCT_BRAND.ar.name);
+    expect(m.short_name).toBe(PRODUCT_BRAND.ar.name);
+    expect(m.description).toBe(PRODUCT_BRAND.ar.descriptor);
     expect(m.lang).toBe("ar");
     expect(m.dir).toBe("rtl");
   });

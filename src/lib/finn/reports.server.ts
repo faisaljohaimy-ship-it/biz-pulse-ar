@@ -118,7 +118,7 @@ export async function generateReport(args: {
 
   const md = [
     `# ${title}`,
-    `_${args.language === "ar" ? "منصة إنجاز الأعمال — الأمن الصناعي" : "Enjaz Platform — Industrial Security"} · ${now.toISOString()}_`,
+    `_${args.language === "ar" ? "سَدِيد — الأمن الصناعي" : "Enjaz Platform — Industrial Security"} · ${now.toISOString()}_`,
     "",
     `## ${args.language === "ar" ? "ملخص تنفيذي" : "Executive Summary"}`,
     args.narrative,

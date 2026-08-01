@@ -19,11 +19,11 @@ interface Props {
 const DemoConfirmation = ({ name, requestId }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>We received your demo request — منصة إنجاز الأعمال</Preview>
+    <Preview>We received your demo request — SADEED</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={brandBar}>
-          <Text style={brand}>منصة إنجاز الأعمال</Text>
+          <Text style={brand}>SADEED</Text>
         </Section>
         <Heading style={h1}>Thank you{name ? `, ${name}` : ""}.</Heading>
         <Text style={p}>
@@ -35,7 +35,7 @@ const DemoConfirmation = ({ name, requestId }: Props) => (
           <Text style={refValue}>{requestId || "—"}</Text>
         </Section>
         <Text style={p}>If you need anything in the meantime, just reply to this email.</Text>
-        <Text style={footer}>© منصة إنجاز الأعمال — Enterprise Operating System</Text>
+        <Text style={footer}>© SADEED — Enterprise Operating System</Text>
       </Container>
     </Body>
   </Html>
@@ -43,7 +43,7 @@ const DemoConfirmation = ({ name, requestId }: Props) => (
 
 export const template = {
   component: DemoConfirmation,
-  subject: "✅ We received your request — منصة إنجاز الأعمال",
+  subject: "✅ We received your request — SADEED",
   displayName: "Demo Request — Confirmation",
   previewData: { name: "Faisal", requestId: "NEX-20260626-AB12CD" },
 } satisfies TemplateEntry;

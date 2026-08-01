@@ -21,13 +21,13 @@ import {
 export const Route = createFileRoute("/executive-briefing")({
   head: () => ({
     meta: [
-      { title: "Executive Briefing — منصة إنجاز الأعمال" },
+      { title: "Executive Briefing — SADEED" },
       {
         name: "description",
         content:
-          "Schedule a private executive briefing of منصة إنجاز الأعمال. For investors, enterprise boards, and government leaders. Calendly, Google Calendar, and Outlook ready.",
+          "Schedule a private executive briefing of SADEED. For investors, enterprise boards, and government leaders. Calendly, Google Calendar, and Outlook ready.",
       },
-      { property: "og:title", content: "Executive Briefing — منصة إنجاز الأعمال" },
+      { property: "og:title", content: "Executive Briefing — SADEED" },
       {
         property: "og:description",
         content: "Private live walkthrough for executives, investors, and government leaders.",
@@ -55,23 +55,17 @@ function toICSDate(d: Date) {
 }
 function buildEvent(kind: DemoKind, isAr: boolean) {
   const titles: Record<DemoKind, string> = {
-    investor: isAr
-      ? "عرض المستثمرين — منصة إنجاز الأعمال"
-      : "Investor Briefing — منصة إنجاز الأعمال",
-    enterprise: isAr
-      ? "عرض المؤسسات — منصة إنجاز الأعمال"
-      : "Enterprise Briefing — منصة إنجاز الأعمال",
-    government: isAr
-      ? "العرض الحكومي — منصة إنجاز الأعمال"
-      : "Government Briefing — منصة إنجاز الأعمال",
+    investor: isAr ? "عرض المستثمرين — سَدِيد" : "Investor Briefing — SADEED",
+    enterprise: isAr ? "عرض المؤسسات — سَدِيد" : "Enterprise Briefing — SADEED",
+    government: isAr ? "العرض الحكومي — سَدِيد" : "Government Briefing — SADEED",
   };
   const start = new Date(Date.now() + 24 * 60 * 60 * 1000);
   start.setMinutes(0, 0, 0);
   start.setHours(15);
   const end = new Date(start.getTime() + 45 * 60 * 1000);
   const details = isAr
-    ? "جلسة تنفيذية خاصة لعرض منصة منصة إنجاز الأعمال."
-    : "Private executive session showcasing the منصة إنجاز الأعمال platform.";
+    ? "جلسة تنفيذية خاصة لعرض منصة سَدِيد."
+    : "Private executive session showcasing the SADEED platform.";
   return { title: titles[kind], start, end, details, location: "Online · Secure Conference" };
 }
 function googleCalUrl(kind: DemoKind, isAr: boolean) {
@@ -103,7 +97,7 @@ function downloadICS(kind: DemoKind, isAr: boolean) {
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    `PRODID:-//${PRODUCT_BRAND.name}//Executive Briefing//EN`,
+    `PRODID:-//${PRODUCT_BRAND.en.name}//Executive Briefing//EN`,
     "BEGIN:VEVENT",
     `UID:${Date.now()}@${PRODUCT_BRAND.slug}`,
     `DTSTAMP:${toICSDate(new Date())}`,
@@ -241,9 +235,7 @@ function ExecutiveBriefingPage() {
         {/* Hero */}
         <section className="mb-12 max-w-3xl">
           <h1 className="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-4xl font-semibold leading-tight text-transparent sm:text-5xl">
-            {isAr
-              ? "جلسة تنفيذية مباشرة مع منصة إنجاز الأعمال"
-              : "A private live briefing with منصة إنجاز الأعمال"}
+            {isAr ? "جلسة تنفيذية مباشرة مع سَدِيد" : "A private live briefing with SADEED"}
           </h1>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
             {isAr

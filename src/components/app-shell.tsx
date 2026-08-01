@@ -35,7 +35,8 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { moduleByRoute, moduleExternalUrl } from "@/lib/nav/modules";
 import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
-import { PRODUCT_BRAND } from "@/lib/domain";
+import { brandName } from "@/lib/domain";
+import { SadeedName, SadeedWordmark } from "@/components/brand/SadeedWordmark";
 import { pageBackdropFor } from "@/lib/nav/page-backdrops";
 import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 import { AuroraFantasyBackdrop } from "@/components/backdrops/AuroraFantasyBackdrop";
@@ -104,12 +105,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg shadow-glow">
               <img
                 src="/brand-icon.png"
-                alt={PRODUCT_BRAND.name}
+                alt={brandName(locale === "ar")}
                 className="h-full w-full object-cover"
               />
               <span className="absolute inset-0 rounded-lg animate-pulse-ring" />
             </div>
-            <span className="text-sm font-bold tracking-tight">{PRODUCT_BRAND.name}</span>
+            <SadeedName size="sm" />
           </div>
           <div className="flex items-center gap-2">
             <TopUtilityBar />
@@ -220,7 +221,7 @@ function useNavGroups(): NavGroup[] {
 }
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const loc = useLocation();
   const groups = useNavGroups();
   return (
@@ -231,19 +232,15 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
           <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-glow">
             <img
               src="/brand-icon.png"
-              alt={PRODUCT_BRAND.name}
+              alt={brandName(locale === "ar")}
               className="h-full w-full object-cover"
             />
             <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
           </div>
           <div className="min-w-0 flex-1">
-            {/* THE root cause of the rename never sticking: this was the literal
-                "Nexus AI OS", outside every translation map, so no locale —
-                Arabic, English or Russian — could change it. Read the brand. */}
-            <div className="truncate text-sm font-bold text-sidebar-foreground">
-              {PRODUCT_BRAND.name}
-            </div>
-            <div className="truncate text-[12px] text-muted-foreground">{t("app.tagline")}</div>
+            {/* The mark, not a string. Every previous rename failed here because
+                this slot held a hard-coded literal that no locale could reach. */}
+            <SadeedWordmark size="sm" showDescriptor />
           </div>
         </div>
         <div className="space-y-2 px-3 pb-3">

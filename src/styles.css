@@ -3244,3 +3244,143 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   العلامة الكتابية «سَدِيد | SADEED»
+   Paired with src/components/brand/SadeedWordmark.tsx.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.sadeed-mark {
+  /* Entrance: opacity only (plus a 4px lift). No scale — a scaling wordmark
+     re-rasterises its gradient every frame and shimmers on low-end GPUs. */
+  animation: sadeed-enter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes sadeed-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.sadeed-mark__name {
+  font-weight: 800;
+  /* background-clip:text needs a painted box; the gradient is oversized so the
+     shimmer below has somewhere to travel. */
+  background-image: linear-gradient(110deg, #f8fdff 0%, #8debff 38%, #3b82f6 72%, #c7f6ff 100%);
+  background-size: 220% 100%;
+  background-position: 0% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 6px rgba(103, 232, 249, 0.4)) drop-shadow(0 0 16px rgba(59, 130, 246, 0.22));
+  transition:
+    filter 320ms ease,
+    background-position 320ms ease;
+  animation: sadeed-shimmer 6s ease-in-out infinite;
+}
+
+/* Arabic joins. `letter-spacing` would break the cursive connections and spell
+   the name wrong, so the Arabic face gets presence from weight alone. */
+.sadeed-mark__name--ar {
+  font-family: "Alexandria", "Tajawal", "IBM Plex Sans Arabic", "Cairo", sans-serif;
+  letter-spacing: 0;
+  word-spacing: 0.04em;
+}
+
+.sadeed-mark__name--en {
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Slow sheen across the mark, once every 6s. Animating background-position on
+   a clipped gradient is compositor-cheap — no repaint of the glyphs. */
+@keyframes sadeed-shimmer {
+  0%,
+  72% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+/* Hairline rule under the mark: bright at the start edge, fading out. Uses
+   logical inset so it flips with RTL without a second rule. */
+.sadeed-mark__rule {
+  position: absolute;
+  inset-block-end: -0.28em;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  block-size: 1px;
+  background: linear-gradient(
+    to var(--sadeed-rule-dir, left),
+    rgba(141, 235, 255, 0.85) 0%,
+    rgba(59, 130, 246, 0.5) 45%,
+    transparent 100%
+  );
+  opacity: 0.75;
+  transition: opacity 320ms ease;
+}
+[dir="rtl"] .sadeed-mark__rule {
+  --sadeed-rule-dir: right;
+}
+
+/* Calm lift on hover/press — brighter glow, gradient nudged. Never a transform:
+   the mark often sits next to text that would be dragged out of alignment. */
+.sadeed-mark:hover .sadeed-mark__name,
+.sadeed-mark:focus-visible .sadeed-mark__name,
+.sadeed-mark:active .sadeed-mark__name {
+  filter: drop-shadow(0 0 9px rgba(103, 232, 249, 0.55)) drop-shadow(0 0 22px rgba(59, 130, 246, 0.32));
+}
+.sadeed-mark:hover .sadeed-mark__rule {
+  opacity: 1;
+}
+
+/* LIGHT THEME — the default gradient starts at near-white and disappears on a
+   light surface. Darker stops keep the same hue family at readable contrast. */
+:root:not(.dark) .sadeed-mark__name {
+  background-image: linear-gradient(110deg, #1e3a8a 0%, #0e7490 34%, #2563eb 70%, #155e75 100%);
+  filter: drop-shadow(0 0 5px rgba(37, 99, 235, 0.22));
+}
+:root:not(.dark) .sadeed-mark:hover .sadeed-mark__name {
+  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.35));
+}
+:root:not(.dark) .sadeed-mark__rule {
+  background: linear-gradient(
+    to var(--sadeed-rule-dir, left),
+    rgba(37, 99, 235, 0.8) 0%,
+    rgba(14, 116, 144, 0.45) 45%,
+    transparent 100%
+  );
+}
+
+/* Motion is decoration here; the mark reads identically without it. */
+@media (prefers-reduced-motion: reduce) {
+  .sadeed-mark,
+  .sadeed-mark__name {
+    animation: none;
+  }
+  .sadeed-mark__name {
+    background-position: 0% 0;
+  }
+}
+
+/* Forced-colours: background-clip:text renders the mark INVISIBLE in Windows
+   high-contrast mode, because the clipped background is dropped and the text
+   colour stays `transparent`. Hand it back a system colour. */
+@media (forced-colors: active) {
+  .sadeed-mark__name {
+    background-image: none;
+    color: CanvasText;
+    filter: none;
+  }
+  .sadeed-mark__rule {
+    background: CanvasText;
+  }
+}

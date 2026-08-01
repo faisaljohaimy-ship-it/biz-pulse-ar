@@ -32,13 +32,13 @@ export const Route = createFileRoute("/cinematic-demo")({
   component: CinematicDemo,
   head: () => ({
     meta: [
-      { title: "منصة إنجاز الأعمال — Cinematic Showcase" },
+      { title: "SADEED — Cinematic Showcase" },
       {
         name: "description",
         content:
-          "A Hollywood-grade cinematic walkthrough of منصة إنجاز الأعمال — 3D digital twin, FINN voice, predictive intelligence, boardroom command.",
+          "A Hollywood-grade cinematic walkthrough of SADEED — 3D digital twin, FINN voice, predictive intelligence, boardroom command.",
       },
-      { property: "og:title", content: "منصة إنجاز الأعمال — Cinematic Showcase" },
+      { property: "og:title", content: "SADEED — Cinematic Showcase" },
       {
         property: "og:description",
         content:
@@ -65,8 +65,8 @@ const SCENES: Scene[] = [
   {
     id: "ignition",
     duration: 14,
-    titleAr: "نظام منصة إنجاز الأعمال للذكاء التنفيذي",
-    titleEn: "منصة إنجاز الأعمال Operating System",
+    titleAr: "نظام سَدِيد للذكاء التنفيذي",
+    titleEn: "SADEED Operating System",
     subtitleAr: "حيث تتحول البيانات إلى قرار، والقرار إلى مستقبل",
     subtitleEn: "Where data becomes decision, and decision becomes destiny.",
     kicker: "I. IGNITION",
@@ -153,8 +153,8 @@ const SCENES: Scene[] = [
   {
     id: "finale",
     duration: 16,
-    titleAr: "منصة إنجاز الأعمال. نظام تشغيل المؤسسة الذكية",
-    titleEn: "منصة إنجاز الأعمال. The Operating System for the Intelligent Enterprise.",
+    titleAr: "سَدِيد. نظام تشغيل المؤسسة الذكية",
+    titleEn: "SADEED. The Operating System for the Intelligent Enterprise.",
     subtitleAr: "المستقبل لا يأتي إليك. أنت من يبنيه",
     subtitleEn: "The future doesn't come to you. You build it.",
     kicker: "FINALE",
@@ -300,7 +300,7 @@ function CinematicDemo() {
       <div className="absolute top-[8vh] inset-x-0 z-40 flex items-center justify-between px-6 py-4 text-[12px] md:text-xs tracking-[0.3em] text-white/60 uppercase">
         <div className="flex items-center gap-3">
           <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          <span>REC · منصة إنجاز الأعمال · 4K</span>
+          <span>REC · SADEED · 4K</span>
         </div>
         <div className="flex items-center gap-3 md:gap-6">
           <span className="hidden md:inline">{scene.kicker}</span>

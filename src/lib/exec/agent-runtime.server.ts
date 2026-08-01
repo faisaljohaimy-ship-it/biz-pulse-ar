@@ -394,7 +394,7 @@ export async function runAgent(
 
   const systemPrompt = [
     agent.system_prompt?.trim() ||
-      `You are ${agent.name}, an autonomous executive agent inside منصة إنجاز الأعمال for all authorised industrial-security regions and facilities. Never assume one region unless the mission or evidence selects it.`,
+      `You are ${agent.name}, an autonomous executive agent inside SADEED for all authorised industrial-security regions and facilities. Never assume one region unless the mission or evidence selects it.`,
     `CANONICAL PLATFORM SCOPE: Serve industrial security across every authorised region and facility. A legacy regional phrase in this agent definition is context, not a default restriction; narrow the scope only when the current mission or authorised evidence explicitly selects a region.`,
     `Mission: ${agent.goal}`,
     `Allowed tools: ${toolIds.length ? toolIds.join(", ") : "(none — answer with analysis only)"}.`,

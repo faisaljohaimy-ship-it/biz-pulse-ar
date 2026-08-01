@@ -42,7 +42,7 @@ const HEALTH_DOT: Record<HealthState, string> = {
   unknown: "bg-nx-pearl/38",
 };
 
-/** Hexagonal منصة إنجاز الأعمال brand mark — original SVG, no external asset. */
+/** Hexagonal SADEED brand mark — original SVG, no external asset. */
 function BrandMark() {
   return (
     <svg viewBox="0 0 40 40" aria-hidden className="size-9 shrink-0 text-nx-cyan">
@@ -151,9 +151,7 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
           </button>
           <BrandMark />
           <div className="flex flex-col">
-            <span className="text-lg font-bold leading-tight text-nx-pearl">
-              منصة إنجاز الأعمال
-            </span>
+            <span className="text-lg font-bold leading-tight text-nx-pearl">SADEED</span>
             <span className="text-[12px] tracking-widest text-nx-pearl/56" dir="ltr">
               AI OPERATING SYSTEM
             </span>
@@ -194,8 +192,8 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
           محاكاة مرجعية
         </span>
         <p className="w-full text-xs text-nx-pearl/56 md:w-auto md:flex-1">
-          لوحة القيادة العليا لمنصة إنجاز الأعمال — صحة النظام والمناطق والقرارات وFINN في شاشة
-          واحدة، ببيانات محاكاة مرجعية موسومة.
+          لوحة القيادة العليا لسَدِيد — صحة النظام والمناطق والقرارات وFINN في شاشة واحدة، ببيانات
+          محاكاة مرجعية موسومة.
         </p>
       </div>
       <ArchitectureLayerRail layers={layers} />

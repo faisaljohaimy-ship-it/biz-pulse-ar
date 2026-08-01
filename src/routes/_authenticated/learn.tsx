@@ -13,11 +13,11 @@ export const Route = createFileRoute("/_authenticated/learn")({
   notFoundComponent: RouteNotFound,
   head: () => ({
     meta: [
-      { title: "Executive Knowledge Bridge — منصة إنجاز الأعمال" },
+      { title: "Executive Knowledge Bridge — SADEED" },
       {
         name: "description",
         content:
-          "The executive learning surface of منصة إنجاز الأعمال. Cinematic lessons, live simulations, and FINN as your instructor.",
+          "The executive learning surface of SADEED. Cinematic lessons, live simulations, and FINN as your instructor.",
       },
     ],
   }),

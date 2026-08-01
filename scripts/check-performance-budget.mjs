@@ -11,7 +11,6 @@ const CANDIDATES = [
 const ROOT = CANDIDATES.find((candidate) => existsSync(candidate)) ?? CANDIDATES[0];
 const MiB = 1024 * 1024;
 
-
 const budgets = {
   totalOutput: 52 * MiB,
   totalJavaScript: 10 * MiB,
@@ -50,7 +49,9 @@ let files;
 try {
   files = await walk(ROOT);
 } catch (error) {
-  console.error("Performance budget requires a completed production build (dist/client or .output/public).");
+  console.error(
+    "Performance budget requires a completed production build (dist/client or .output/public).",
+  );
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 }

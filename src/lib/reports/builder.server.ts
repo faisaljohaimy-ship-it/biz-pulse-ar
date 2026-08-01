@@ -66,7 +66,7 @@ function drawHeader(ctx: Ctx): void {
   // directive does allow translating) while the Arabic brand still reaches the
   // reader through setTitle/setProducer/setCreator below — those are UTF-16 in
   // the PDF trailer and encode Arabic correctly.
-  ctx.page.drawText(`${PRODUCT_BRAND.descriptionEn} — Executive Operations Report`, {
+  ctx.page.drawText(`${PRODUCT_BRAND.en.name} — Executive Operations Report`, {
     x: MARGIN,
     y: PAGE.height - 19,
     size: 10,
@@ -219,8 +219,8 @@ export async function buildExecPdf(
 ): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   pdf.setTitle(opts.title);
-  pdf.setProducer(PRODUCT_BRAND.name);
-  pdf.setCreator(`${PRODUCT_BRAND.name} · Executive Reports`);
+  pdf.setProducer(PRODUCT_BRAND.en.name);
+  pdf.setCreator(`${PRODUCT_BRAND.en.name} · Executive Reports`);
 
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -341,7 +341,7 @@ export async function buildExecPdf(
   const n = ctx.pdf.getPageCount();
   for (let i = 0; i < n; i++) {
     const p = ctx.pdf.getPage(i);
-    p.drawText(`Page ${i + 1} of ${n}  ·  ${PRODUCT_BRAND.descriptionEn}  ·  Confidential`, {
+    p.drawText(`Page ${i + 1} of ${n}  ·  ${PRODUCT_BRAND.en.name}  ·  Confidential`, {
       x: MARGIN,
       y: 20,
       size: 8,
@@ -400,7 +400,7 @@ export function htmlSummaryFromSnapshot(
     `<td style="padding:8px 10px;border:1px solid #e2e8f0"><div style="font:600 11px/1.2 system-ui;color:#64748b;text-transform:uppercase;letter-spacing:.08em">${l}</div><div style="font:700 18px/1.3 system-ui;color:#0f172a">${v}</div></td>`;
   return `<!doctype html><html><body style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f8fafc;padding:24px;color:#0f172a">
     <div style="max-width:760px;margin:0 auto;background:#fff;border-radius:14px;padding:28px;box-shadow:0 4px 24px rgba(15,23,42,.08)">
-      <div style="font:600 11px/1 system-ui;letter-spacing:.18em;color:#0891b2;text-transform:uppercase">${PRODUCT_BRAND.name} · Executive Report</div>
+      <div style="font:600 11px/1 system-ui;letter-spacing:.18em;color:#0891b2;text-transform:uppercase">${PRODUCT_BRAND.en.name} · Executive Report</div>
       <h1 style="font:700 22px/1.3 system-ui;margin:6px 0 4px">${opts.title}</h1>
       ${opts.subtitle ? `<div style="font:14px/1.4 system-ui;color:#64748b;margin-bottom:12px">${opts.subtitle}</div>` : ""}
       <div style="font:12px/1.4 system-ui;color:#64748b;margin-bottom:16px">Generated ${new Date(snap.generatedAt).toUTCString()} · Window ${snap.range}</div>

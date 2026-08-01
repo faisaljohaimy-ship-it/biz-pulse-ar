@@ -572,7 +572,7 @@ async function dispatchEmail(payload: z.infer<typeof EmailPayloadSchema>, idempo
   // token. The HMAC domain separator further down is deliberately NOT renamed:
   // it is a signing input, and changing it invalidates every approval token
   // already issued and still in flight.
-  const fromLine = `${PRODUCT_BRAND.name} <noreply@${senderDomain}>`;
+  const fromLine = `${PRODUCT_BRAND.ar.name} — ${PRODUCT_BRAND.en.name} <noreply@${senderDomain}>`;
   const plain = payload.html
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")

@@ -1,5 +1,5 @@
 /**
- * FINN Brain — the single request entry point for منصة إنجاز الأعمال.
+ * FINN Brain — the single request entry point for SADEED.
  *
  * Every page, hook, and component that wants to talk to FINN MUST go through
  * `finnBrain.submit(...)` (via `useFinn().ask(...)`). No component may call

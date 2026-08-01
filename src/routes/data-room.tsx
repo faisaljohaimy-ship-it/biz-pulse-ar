@@ -6,13 +6,13 @@ import { ArrowLeft, FileText, Shield, Landmark, Briefcase, BookOpen, Lock } from
 export const Route = createFileRoute("/data-room")({
   head: () => ({
     meta: [
-      { title: "Executive Data Room — منصة إنجاز الأعمال" },
+      { title: "Executive Data Room — SADEED" },
       {
         name: "description",
         content:
           "Single confidential workspace for investor, government, security, compliance, ROI, and customer documents.",
       },
-      { property: "og:title", content: "منصة إنجاز الأعمال — Executive Data Room" },
+      { property: "og:title", content: "SADEED — Executive Data Room" },
       { property: "og:url", content: `${DOMAIN_URL}/data-room` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/data-room` }],

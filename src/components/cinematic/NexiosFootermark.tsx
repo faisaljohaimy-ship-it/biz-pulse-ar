@@ -1,7 +1,7 @@
 /**
  * NexiosFootermark
  *
- * A large, quiet منصة إنجاز الأعمال signature that closes a page. Stays subordinate:
+ * A large, quiet SADEED signature that closes a page. Stays subordinate:
  * low-opacity gradient text with a hairline underline and a tiny caption.
  * Purely presentational — no motion beyond an ambient shimmer.
  */
@@ -31,7 +31,7 @@ export function NexiosFootermark({ caption = "Enterprise AI Operating System", c
           textShadow: "0 0 40px rgba(0,212,255,0.20)",
         }}
       >
-        منصة إنجاز الأعمال
+        SADEED
       </div>
       <div className="mx-auto mt-4 h-px w-40 bg-gradient-to-r from-transparent via-[#3AE8FF]/60 to-transparent" />
       <div className="mt-3 text-[12px] uppercase tracking-[0.42em] text-white/45">{caption}</div>

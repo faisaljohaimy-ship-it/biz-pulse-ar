@@ -68,7 +68,7 @@ function heuristic(inc: FinnIncidentInput): FinnIncidentAnalysis {
   };
 }
 
-const SYSTEM_PROMPT = `You are FINN, the executive industrial-security assistant inside منصة إنجاز الأعمال for all authorised regions and facilities. Never assume one region unless the incident evidence selects it.
+const SYSTEM_PROMPT = `You are FINN, the executive industrial-security assistant inside SADEED for all authorised regions and facilities. Never assume one region unless the incident evidence selects it.
 You analyse incoming security incidents and return ONLY a JSON object — no prose, no markdown fences.
 The JSON shape MUST be:
 {

@@ -93,7 +93,7 @@ export function toPrintableHtml(rows: ReportRecord[]): string {
     )
     .join("");
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/>
-    <title>تقارير منصة إنجاز الأعمال — وكيل التقارير</title>
+    <title>تقارير سَدِيد — وكيل التقارير</title>
     <style>
       body{font-family:system-ui,'Segoe UI',Tahoma,sans-serif;background:#fff;color:#0A1A2E;padding:24px}
       h1{color:#00577A;border-bottom:2px solid #00D4FF;padding-bottom:8px}
@@ -104,7 +104,7 @@ export function toPrintableHtml(rows: ReportRecord[]): string {
       li{background:#eaf7fb;border-radius:6px;padding:4px 10px;font-size:13px}
       @media print{ body{padding:8mm} }
     </style></head><body>
-    <h1>وكيل التقارير — منصة إنجاز الأعمال</h1>
+    <h1>وكيل التقارير — سَدِيد</h1>
     <div>عدد التقارير: ${rows.length} · تم التوليد: ${new Date().toLocaleString("ar-SA")}</div>
     ${items}
     <script>window.onload=()=>setTimeout(()=>window.print(),300)</script>

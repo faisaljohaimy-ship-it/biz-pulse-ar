@@ -50,7 +50,7 @@ import { DigitalHumanAvatar } from "@/components/digital-humans/DigitalHumanAvat
 export const Route = createFileRoute("/_authenticated/bridge")({
   head: () => ({
     meta: [
-      { title: "Executive War Room — منصة إنجاز الأعمال" },
+      { title: "Executive War Room — SADEED" },
       {
         name: "description",
         content:
@@ -270,7 +270,7 @@ function MissionStatusStrip({
         </div>
         <div className="min-w-0">
           <div className="truncate text-xs uppercase tracking-[0.22em] text-cyan-300/80">
-            منصة إنجاز الأعمال ·{" "}
+            SADEED ·{" "}
             {ar ? "إدارة الأمن الصناعي · جميع المناطق" : "Industrial Security · All Regions"}
           </div>
           <div className="truncate text-2xl font-light text-white sm:text-3xl">

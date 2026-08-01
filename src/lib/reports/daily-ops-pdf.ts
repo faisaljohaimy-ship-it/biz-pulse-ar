@@ -217,12 +217,12 @@ export async function buildDailyOpsPdf(
   };
 
   /* ── Cover header ── */
-  // Hex mark: the منصة إنجاز الأعمال badge.
+  // Hex mark: the SADEED badge.
   icon("M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z", MARGIN + 12, H - 52, 1.15, emerald);
-  arTextLeft(PRODUCT_BRAND.name, MARGIN + 30, H - 58, 21, emerald, true);
+  arTextLeft(PRODUCT_BRAND.arPlain, MARGIN + 30, H - 58, 21, emerald, true);
   enText("Executive Business Platform — Industrial Security", MARGIN + 30, H - 74, 8.5, muted);
   arText(DAILY_REPORT_SCOPE_META[scope].ar, W - MARGIN, H - 70, 25, ink, true);
-  arText("منصة إنجاز الأعمال — إدارة الأمن الصناعي", W - MARGIN, H - 95, 12, cyan);
+  arText("سَدِيد — إدارة الأمن الصناعي", W - MARGIN, H - 95, 12, cyan);
   const hijri = hijriDate(data.date);
   // Intl's islamic-umalqura output already carries the «هـ» era suffix.
   arText(`${data.date} م${hijri ? ` — ${hijri}` : ""}`, W - MARGIN, H - 114, 10, muted);
@@ -430,8 +430,8 @@ export async function buildDailyOpsPdf(
   const pages = pdf.getPages();
   const footerText =
     data.source === "database"
-      ? "بيانات حية من قاعدة البيانات — is_simulation = false · منصة إنجاز الأعمال"
-      : "بيانات محاكاة مرجعية — is_simulation = true · منصة إنجاز الأعمال";
+      ? "بيانات حية من قاعدة البيانات — is_simulation = false · سَدِيد"
+      : "بيانات محاكاة مرجعية — is_simulation = true · سَدِيد";
   const footerSegs = layoutArabicLine(footerText);
   pages.forEach((p, i) => {
     p.drawRectangle({ x: 0, y: 30, width: W, height: 0.5, color: emerald, opacity: 0.6 });

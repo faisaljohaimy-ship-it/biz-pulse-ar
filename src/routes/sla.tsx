@@ -7,13 +7,13 @@ import { Gauge, Timer, BadgeCheck, LifeBuoy, AlertTriangle } from "lucide-react"
 export const Route = createFileRoute("/sla")({
   head: () => ({
     meta: [
-      { title: "Service Level Agreement (SLA) — منصة إنجاز الأعمال" },
+      { title: "Service Level Agreement (SLA) — SADEED" },
       {
         name: "description",
         content:
-          "منصة إنجاز الأعمال Service Level Agreement: 99.9% monthly uptime commitment, severity definitions, response times, service credits, and exclusions.",
+          "SADEED Service Level Agreement: 99.9% monthly uptime commitment, severity definitions, response times, service credits, and exclusions.",
       },
-      { property: "og:title", content: "Service Level Agreement — منصة إنجاز الأعمال" },
+      { property: "og:title", content: "Service Level Agreement — SADEED" },
       {
         property: "og:description",
         content: "99.9% uptime, severity tiers, response times, and service credits.",
@@ -121,8 +121,8 @@ function SlaPage() {
       ar: "الصيانة المجدولة المُعلَن عنها قبل 72 ساعة على الأقل (ضمن نافذة شهرية محدّدة).",
     },
     {
-      en: "Force majeure events outside reasonable control of منصة إنجاز الأعمال.",
-      ar: "أحداث القوة القاهرة الخارجة عن السيطرة المعقولة لـ منصة إنجاز الأعمال.",
+      en: "Force majeure events outside reasonable control of SADEED.",
+      ar: "أحداث القوة القاهرة الخارجة عن السيطرة المعقولة لـ سَدِيد.",
     },
     {
       en: "Customer-caused outages (misconfiguration, breach of acceptable use, third-party integrations).",
@@ -142,7 +142,7 @@ function SlaPage() {
       eyebrowAr="التزام الخدمة"
       title="Service Level Agreement"
       titleAr="اتفاقية مستوى الخدمة"
-      subtitle="A 99.9% monthly uptime commitment for the منصة إنجاز الأعمال production control plane, with defined severity tiers, response times, and service credits."
+      subtitle="A 99.9% monthly uptime commitment for the SADEED production control plane, with defined severity tiers, response times, and service credits."
       subtitleAr="التزام بتوفر شهري 99.9% لطبقة التحكم في الإنتاج، مع مستويات حدّة محدّدة وأزمنة استجابة واعتمادات خدمة."
       qualifier="Definitions on this page summarize the contractual SLA. The executed Order Form and Master Services Agreement prevail in case of conflict."
       qualifierAr="تُلخّص هذه الصفحة الالتزامات التعاقدية. تسود وثيقة الطلب واتفاقية الخدمات الرئيسية المُوقَّعة في حال الاختلاف."
@@ -204,8 +204,8 @@ function SlaPage() {
                 ar: "نسبة التوفر الشهري = (إجمالي دقائق الشهر − دقائق عدم التوفر) ÷ إجمالي دقائق الشهر × 100.",
               },
               {
-                en: "“Unavailable” means the production control plane is returning 5xx errors or is unreachable for > 1 minute as measured by منصة إنجاز الأعمال monitoring.",
-                ar: "«غير متاح» يعني إرجاع أخطاء 5xx أو عدم الوصول لطبقة التحكم لأكثر من دقيقة وفق مراقبة منصة إنجاز الأعمال.",
+                en: "“Unavailable” means the production control plane is returning 5xx errors or is unreachable for > 1 minute as measured by SADEED monitoring.",
+                ar: "«غير متاح» يعني إرجاع أخطاء 5xx أو عدم الوصول لطبقة التحكم لأكثر من دقيقة وفق مراقبة سَدِيد.",
               },
               {
                 en: "Commitment is measured per calendar month, per customer environment.",

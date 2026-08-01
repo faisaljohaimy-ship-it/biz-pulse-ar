@@ -86,7 +86,7 @@ function Consent() {
 
   return (
     <main className="mx-auto max-w-lg p-6">
-      <h1 className="text-2xl font-semibold">Connect {clientName} to منصة إنجاز الأعمال</h1>
+      <h1 className="text-2xl font-semibold">Connect {clientName} to SADEED</h1>
       <p className="mt-3 text-muted-foreground">
         {clientName} will be able to call this app's enabled MCP tools while you are signed in. This
         does not bypass this app's permissions or backend policies.

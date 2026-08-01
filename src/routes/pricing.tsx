@@ -6,13 +6,13 @@ import { Check, Sparkles, ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — منصة إنجاز الأعمال" },
+      { title: "Pricing — SADEED" },
       {
         name: "description",
         content:
-          "Transparent enterprise pricing for منصة إنجاز الأعمال — the executive intelligence operating system. Starter, Growth, and Enterprise tiers.",
+          "Transparent enterprise pricing for SADEED — the executive intelligence operating system. Starter, Growth, and Enterprise tiers.",
       },
-      { property: "og:title", content: "Pricing — منصة إنجاز الأعمال" },
+      { property: "og:title", content: "Pricing — SADEED" },
       {
         property: "og:description",
         content: "Enterprise pricing for the executive AI operating system.",

@@ -200,7 +200,7 @@ export function MobileNavigationDrawer({
         className="flex w-72 flex-col gap-4 overflow-y-auto border-white/10 bg-nx-obsidian text-nx-pearl"
       >
         <SheetHeader>
-          <SheetTitle className="text-start text-nx-pearl">وجهات منصة إنجاز الأعمال</SheetTitle>
+          <SheetTitle className="text-start text-nx-pearl">وجهات سَدِيد</SheetTitle>
         </SheetHeader>
         <NavList onNavigate={() => onOpenChange(false)} />
         <NavFooter />

@@ -54,7 +54,7 @@ export function formatInstinctBlock(rows: readonly LearnedPatternRow[]): string 
  * `docs/NEXUS_READINESS_PROMPT.md`. Prepend to governed FINN/agent prompts.
  */
 export const ENJAZ_ENGINEERING_GOVERNOR_HEADER: string = [
-  "You are FINN — the governed executive intelligence of منصة إنجاز الأعمال.",
+  "You are FINN — the governed executive intelligence of SADEED.",
   "",
   "## Non-negotiables",
   "1. Serve industrial security globally across authorised regions; never assume one region.",

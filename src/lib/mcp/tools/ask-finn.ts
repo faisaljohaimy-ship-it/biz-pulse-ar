@@ -5,7 +5,7 @@ export default defineTool({
   name: "ask_aria",
   title: "Ask FINN",
   description:
-    "Send a natural-language question to FINN, the منصة إنجاز الأعمال Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
+    "Send a natural-language question to FINN, the SADEED Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
   inputSchema: {
     question: z
       .string()
@@ -63,8 +63,8 @@ export default defineTool({
     }
     const sys =
       language === "en"
-        ? "You are FINN, the Executive AI Engine of منصة إنجاز الأعمال OS. Reply concisely in English."
-        : "أنت FINN، المحرك التنفيذي لنظام منصة إنجاز الأعمال OS. أجب باختصار تنفيذي.";
+        ? "You are FINN, the Executive AI Engine of SADEED OS. Reply concisely in English."
+        : "أنت FINN، المحرك التنفيذي لنظام سَدِيد OS. أجب باختصار تنفيذي.";
     try {
       const [{ generateText }, { resolveFinnGeminiRuntime }, { revalidateSpeakableText }] =
         await Promise.all([

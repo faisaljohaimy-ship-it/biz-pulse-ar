@@ -84,8 +84,8 @@ function FabricPage() {
   return (
     <NexusPage
       backdropImage="/enterprise-erp-bg.jpeg"
-      eyebrow="منصة إنجاز الأعمال INTELLIGENCE FABRIC"
-      title={ar ? "النسيج الذكي المؤسسي" : "منصة إنجاز الأعمال Intelligence Fabric"}
+      eyebrow="SADEED INTELLIGENCE FABRIC"
+      title={ar ? "النسيج الذكي المؤسسي" : "سَدِيد Intelligence Fabric"}
       subtitle={
         ar
           ? "طبقة الذكاء التنفيذي الموحّدة فوق كل مصادر البيانات — Power BI، SAP، Microsoft 365، الوكلاء، وسير العمل."

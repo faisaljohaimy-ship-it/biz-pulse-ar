@@ -7,13 +7,12 @@ import { DOMAIN_URL } from "@/lib/domain";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact Sales — منصة إنجاز الأعمال" },
+      { title: "Contact Sales — SADEED" },
       {
         name: "description",
-        content:
-          "Talk to منصة إنجاز الأعمال enterprise sales about pricing, deployment, and security.",
+        content: "Talk to SADEED enterprise sales about pricing, deployment, and security.",
       },
-      { property: "og:title", content: "Contact Sales — منصة إنجاز الأعمال" },
+      { property: "og:title", content: "Contact Sales — SADEED" },
       {
         property: "og:description",
         content: "Enterprise pricing, deployment, and security conversations.",

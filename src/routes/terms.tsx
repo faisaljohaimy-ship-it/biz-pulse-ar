@@ -6,13 +6,12 @@ import { ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms of Service — منصة إنجاز الأعمال" },
+      { title: "Terms of Service — SADEED" },
       {
         name: "description",
-        content:
-          "Terms governing use of منصة إنجاز الأعمال — the executive intelligence operating system.",
+        content: "Terms governing use of SADEED — the executive intelligence operating system.",
       },
-      { property: "og:title", content: "Terms of Service — منصة إنجاز الأعمال" },
+      { property: "og:title", content: "Terms of Service — SADEED" },
       { property: "og:url", content: `${DOMAIN_URL}/terms` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/terms` }],
@@ -44,8 +43,8 @@ function TermsPage() {
         <div className="prose prose-invert mt-10 max-w-none space-y-6 text-sm leading-relaxed text-foreground/90">
           <p>
             {isAr
-              ? "باستخدامك منصة إنجاز الأعمال، فإنك توافق على هذه الشروط نيابةً عن مؤسستك."
-              : "By using منصة إنجاز الأعمال, you agree to these terms on behalf of your organization."}
+              ? "باستخدامك سَدِيد، فإنك توافق على هذه الشروط نيابةً عن مؤسستك."
+              : "By using SADEED, you agree to these terms on behalf of your organization."}
           </p>
 
           <h2 className="text-xl font-semibold">{isAr ? "١. الترخيص" : "1. License"}</h2>

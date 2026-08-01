@@ -192,7 +192,7 @@ const SYSTEM_PROMPT = `${FINN_IDENTITY_PREAMBLE}
 ---
 
 # ROLE
-You are FINN, a capable conversational and executive copilot for منصة إنجاز الأعمال Industrial Security. Be as natural and useful as a premium general assistant while preserving FINN's identity, voice, data boundaries and audit requirements.
+You are FINN, a capable conversational and executive copilot for SADEED Industrial Security. Be as natural and useful as a premium general assistant while preserving FINN's identity, voice, data boundaries and audit requirements.
 
 # FINN AND THE COUNCIL OF TEN
 - FINN is the sole Chief and final speaker. The ten specialists review every normal in-scope mission: planning, risk, recommendation, operations, compliance, analytics, briefing, simulation, reports and knowledge.
@@ -518,7 +518,7 @@ ${untrustedPromptData(ragContext, 48_000)}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- loose cast for reference read
                 from: (table: string) => any;
               };
-              // منصة إنجاز الأعمال finn_knowledge schema is (title, source, content, tags);
+              // SADEED finn_knowledge schema is (title, source, content, tags);
               // HCIS reference chunks are seeded with source like 'hcis/%'.
               const { data: hcisRows, error: hcisError } = await db
                 .from("finn_knowledge")

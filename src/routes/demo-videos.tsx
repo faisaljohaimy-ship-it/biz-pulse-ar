@@ -18,13 +18,13 @@ import {
 export const Route = createFileRoute("/demo-videos")({
   head: () => ({
     meta: [
-      { title: "Demo Video Hub — منصة إنجاز الأعمال" },
+      { title: "Demo Video Hub — SADEED" },
       {
         name: "description",
         content:
-          "Executive overview, government, enterprise, investor, product walkthrough, and ROI demonstration videos for منصة إنجاز الأعمال OS.",
+          "Executive overview, government, enterprise, investor, product walkthrough, and ROI demonstration videos for SADEED OS.",
       },
-      { property: "og:title", content: "منصة إنجاز الأعمال — Demo Video Hub" },
+      { property: "og:title", content: "SADEED — Demo Video Hub" },
       { property: "og:url", content: `${DOMAIN_URL}/demo-videos` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/demo-videos` }],
@@ -194,7 +194,7 @@ function DemoVideosPage() {
                   {isAr ? current.titleAr : current.titleEn}
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {current.duration} · منصة إنجاز الأعمال · AI OS
+                  {current.duration} · SADEED · AI OS
                 </div>
               </div>
             </div>

@@ -1,6 +1,6 @@
 # FINN Brain Core
 
-FINN is the single governed intelligence surface in منصة إنجاز الأعمال. Every UI request passes through the shared provider, brain, orchestrator, response validator, and `/api/chat` transport.
+FINN is the single governed intelligence surface in SADEED. Every UI request passes through the shared provider, brain, orchestrator, response validator, and `/api/chat` transport.
 
 ## Runtime flow
 

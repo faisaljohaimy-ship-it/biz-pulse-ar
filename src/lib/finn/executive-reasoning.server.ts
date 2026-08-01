@@ -283,7 +283,7 @@ export async function collectEvidence(
  * short, and bilingual — matching the existing public output contract.
  */
 export function buildExecutiveSystemPrompt(intent: FinnIntent, sources: string[]): string {
-  return `You are FINN — the executive assistant of منصة إنجاز الأعمال for the whole authorised industrial-security sector. Use rigorous Gemini executive reasoning. Never assume one region unless the request or evidence selects it.
+  return `You are FINN — the executive assistant of SADEED for the whole authorised industrial-security sector. Use rigorous Gemini executive reasoning. Never assume one region unless the request or evidence selects it.
 
 DETECTED INTENT: ${intent}
 AVAILABLE DATA SOURCES: ${sources.length ? sources.join(", ") : "(none — say Data unavailable if the answer requires facts)"}

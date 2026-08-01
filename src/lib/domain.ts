@@ -6,62 +6,88 @@ export const DOMAIN_URL =
 /**
  * هوية المنتج — المصدر المركزي الوحيد.
  *
- * OWNER DIRECTIVE 2026-08-01. The trade name is «منصة إنجاز الأعمال» and it is
- * THE SAME STRING IN EVERY LANGUAGE. It is a name, not a phrase to translate,
- * so there is deliberately no `nameEn` here — adding one is how a second brand
- * gets born.
+ * OWNER DIRECTIVE 2026-08-01 (second): the brand is «سَدِيد» / «SADEED».
  *
- * ── ROOT CAUSE THIS MODULE EXISTS TO CLOSE ──
- * The old brand survived every previous rename because the *shell* never read
- * this file. `app-shell.tsx` rendered the literal string "Nexus AI OS", and
- * ~20 route `head()` blocks hard-coded "— Nexus AI OS" into their titles.
- * A Latin literal outside every translation map is language-INVARIANT: it
- * renders identically under ar, en and ru, and browser auto-translate skips
- * Latin brand tokens. That is precisely why the owner saw "Nexus AI OS" while
- * the Russian page around it was translated — the string was never localisable
- * in the first place, so there was no locale to fix. The fix is structural:
- * one source, imported everywhere, never retyped.
+ * ── THE RULE CHANGED, DELIBERATELY ──
+ * The previous brand was one string for every language, and this file said so
+ * in as many words: "there is deliberately no `nameEn` — adding one is how a
+ * second brand gets born". That was right for a name that had no Latin form.
+ * SADEED is different: the owner specified BOTH forms, because the Arabic
+ * «سَدِيد» and the Latin «SADEED» are the same word, not two brands. So the
+ * shape is now bilingual — and the guard that used to assert `!('nameEn' in …)`
+ * asserts the bilingual contract instead. A doctrine reversal is recorded here
+ * rather than quietly deleted, so the next reader knows it was decided, not
+ * forgotten.
+ *
+ * ── ROOT CAUSE THIS MODULE STILL EXISTS TO CLOSE ──
+ * Two brands ago the name survived every rename because the *shell* never read
+ * this file: `app-shell.tsx` rendered a hard-coded literal, and ~37 route
+ * `head()` blocks pasted the brand into their titles. A literal outside every
+ * translation map is language-INVARIANT — it renders identically under ar, en
+ * and ru, which is exactly how the owner came to see a Latin brand on a Russian
+ * page. One source, imported everywhere, never retyped.
  *
  * ── WHAT IS AND IS NOT RENAMED ──
  * FINN is untouched: it is the assistant, not the product (see BRAND_ASSISTANT).
- * `DOMAIN_URL` stays neexios.com — a live external contract (DNS, OAuth issuer,
- * canonical URLs). The domain is technical; it is not shown as the product name.
+ * `DOMAIN_URL` stays neexios.com — a live external contract (DNS, the Supabase
+ * OAuth issuer, every published canonical URL). The domain is technical; it is
+ * never shown as the product name.
  */
 export const PRODUCT_BRAND = {
-  /** The trade name. Identical in ar / en / ru / any locale. Never translated. */
-  name: "منصة إنجاز الأعمال",
-  /** What the platform is. This one IS translatable prose. */
-  descriptionAr: "منصة إدارة الأمن الصناعي",
-  descriptionEn: "Industrial Security Management Platform",
+  ar: {
+    name: "سَدِيد",
+    descriptor: "منظومة القرار والإنجاز الذكي",
+    tagline: "قرار أدق. إنجاز أسرع.",
+  },
+  en: {
+    name: "SADEED",
+    descriptor: "Intelligent Decision & Execution System",
+    tagline: "Smarter Decisions. Faster Execution.",
+  },
+  /**
+   * Undiacritised Arabic. The display name carries تشكيل («سَدِيد») which is
+   * right on screen but wrong in three places: PDF text shaping, where the
+   * combining marks survive the presentation-form pass unpredictably; speech
+   * synthesis input; and any search index. Those read this instead.
+   */
+  arPlain: "سديد",
   /** The assistant. A separate identity with its own lifecycle — do not merge. */
   assistantName: "FINN",
   /**
-   * Internal slug for cache keys, storage prefixes and build artefacts.
-   * NEVER rendered: it exists so machine-facing identifiers stop reaching for
-   * the display name (which is Arabic, and unsuitable for a cache key).
+   * Internal slug for cache keys, storage prefixes and generated filenames.
+   * NEVER rendered — machine-facing identifiers must not reach for a display
+   * name that is Arabic and diacritised.
    */
-  slug: "injaz-al-aamal-platform",
+  slug: "sadeed",
 } as const;
+
+/** Pick the brand for a locale. `ar` is the boolean the UI already threads. */
+export function brandFor(ar: boolean) {
+  return ar ? PRODUCT_BRAND.ar : PRODUCT_BRAND.en;
+}
+/** The brand NAME for a locale — the most common single lookup. */
+export function brandName(ar: boolean): string {
+  return brandFor(ar).name;
+}
 
 /**
  * Compatibility aliases.
  *
- * Retargeted rather than deleted: 33 modules import from here, and pointing the
- * existing names at the new brand renames every one of them in a single edit —
- * with `tsc` proving no call site was missed. They are intentionally all the
- * same string, because the brand does not vary by language or by surface.
+ * Retargeted rather than deleted: 33 modules import from here, so pointing the
+ * existing names at the new brand renames every one of them in a single edit,
+ * with `tsc` proving no call site was missed.
  */
-export const PRODUCT_NAME_AR = PRODUCT_BRAND.name;
-/** Undiacritised form for search and prose. The name carries no diacritics. */
-export const PRODUCT_NAME_AR_PLAIN = PRODUCT_BRAND.name;
-export const PRODUCT_NAME_EN = PRODUCT_BRAND.name;
+export const PRODUCT_NAME_AR = PRODUCT_BRAND.ar.name;
+export const PRODUCT_NAME_AR_PLAIN = PRODUCT_BRAND.arPlain;
+export const PRODUCT_NAME_EN = PRODUCT_BRAND.en.name;
 
-export const SITE_NAME = PRODUCT_BRAND.name;
-export const COMPANY_NAME = PRODUCT_BRAND.descriptionAr;
-export const PRODUCT_NAME = PRODUCT_BRAND.name;
+/** Arabic-first, because the document is `lang="ar" dir="rtl"` by default. */
+export const SITE_NAME = `${PRODUCT_BRAND.ar.name} — ${PRODUCT_BRAND.en.name}`;
+export const COMPANY_NAME = PRODUCT_BRAND.ar.descriptor;
+export const PRODUCT_NAME = PRODUCT_BRAND.ar.name;
 
-/** «منصة إنجاز الأعمال — منصة إدارة الأمن الصناعي» for OG/description slots. */
-export const SITE_TAGLINE = `${PRODUCT_BRAND.name} — ${PRODUCT_BRAND.descriptionAr}`;
+/** «سَدِيد — منظومة القرار والإنجاز الذكي» for OG/description slots. */
+export const SITE_TAGLINE = `${PRODUCT_BRAND.ar.name} — ${PRODUCT_BRAND.ar.descriptor}`;
 
 /**
  * Single source of truth for the assistant's PUBLIC display persona.

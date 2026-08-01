@@ -99,9 +99,9 @@ export async function buildBiPdf(input: BiPdfInput, fonts: DailyOpsFonts): Promi
   // points, so this would abort report generation, not merely mis-render.
   // `arText` right-anchors, hence the measure-then-place.
   {
-    const segs = layoutArabicLine(PRODUCT_BRAND.name);
+    const segs = layoutArabicLine(PRODUCT_BRAND.arPlain);
     const width = segs.reduce((s, seg) => s + segWidth(seg, 20, true), 0);
-    arText(PRODUCT_BRAND.name, MARGIN + 30 + width, H - 56, 20, emerald, true);
+    arText(PRODUCT_BRAND.arPlain, MARGIN + 30 + width, H - 56, 20, emerald, true);
   }
   arText("لوحات التحليل التنفيذية", W - MARGIN, H - 62, 22, ink, true);
   arText(
@@ -217,9 +217,7 @@ export async function buildBiPdf(input: BiPdfInput, fonts: DailyOpsFonts): Promi
 
   /* Constitutional footer */
   page.drawRectangle({ x: 0, y: 30, width: W, height: 0.5, color: emerald, opacity: 0.6 });
-  const footer = layoutArabicLine(
-    "بيانات محاكاة مرجعية — is_simulation = true · منصة إنجاز الأعمال",
-  );
+  const footer = layoutArabicLine("بيانات محاكاة مرجعية — is_simulation = true · سَدِيد");
   const totalF = footer.reduce((s, seg) => s + segWidth(seg, 7.5, false), 0);
   let fx = W - MARGIN - totalF;
   for (const seg of footer) {

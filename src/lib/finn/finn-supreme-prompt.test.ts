@@ -22,7 +22,7 @@ describe("FINN_SUPREME_LAW", () => {
   it("declares its version and identity preamble", () => {
     expect(FINN_SUPREME_LAW).toContain(`v${FINN_SUPREME_LAW_VERSION}`);
     expect(FINN_SUPREME_LAW).toMatch(/FINN.*executive industrial-security assistant/i);
-    expect(FINN_SUPREME_LAW).toContain("منصة إنجاز الأعمال");
+    expect(FINN_SUPREME_LAW).toContain("SADEED");
   });
 
   it("includes the Article 21 CI-enforced security gate directive", () => {

@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export default defineTool({
   name: "ping",
-  title: "Ping منصة إنجاز الأعمال",
+  title: "Ping SADEED",
   description:
     "Health check that returns the current server time and app name. Use to verify connectivity.",
   inputSchema: {},
@@ -12,7 +12,7 @@ export default defineTool({
     content: [
       {
         type: "text",
-        text: JSON.stringify({ app: "منصة إنجاز الأعمال", ok: true, ts: new Date().toISOString() }),
+        text: JSON.stringify({ app: "SADEED", ok: true, ts: new Date().toISOString() }),
       },
     ],
   }),

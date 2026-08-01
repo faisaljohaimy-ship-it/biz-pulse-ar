@@ -426,7 +426,7 @@ export async function runReasoner(args: {
   knowledge: { title: string; source: string; content: string }[];
 }): Promise<{ text: string; tokens?: number }> {
   const runtime = resolveFinnGeminiRuntime();
-  const system = `You are FINN — the executive industrial-security assistant inside منصة إنجاز الأعمال for all authorised regions and facilities. Never assume the Western Region unless the request or evidence selects it. Respond in ${args.language === "ar" ? "Arabic (MSA)" : "English"}. Render the executive structure with H3 sections in this order: 🎯 Executive Summary, 📊 Related KPIs (table), 🔍 Root Cause Analysis, ⚠️ Risks, 💡 Opportunities, ✅ Recommended Actions, 📈 Confidence, ➡️ Next Executive Decision. Ground EVERY organisation-specific or current number in the supplied context. If a datum is missing, say "بيانات غير متوفرة" / "Data unavailable". Never fabricate.`;
+  const system = `You are FINN — the executive industrial-security assistant inside سَدِيد for all authorised regions and facilities. Never assume the Western Region unless the request or evidence selects it. Respond in ${args.language === "ar" ? "Arabic (MSA)" : "English"}. Render the executive structure with H3 sections in this order: 🎯 Executive Summary, 📊 Related KPIs (table), 🔍 Root Cause Analysis, ⚠️ Risks, 💡 Opportunities, ✅ Recommended Actions, 📈 Confidence, ➡️ Next Executive Decision. Ground EVERY organisation-specific or current number in the supplied context. If a datum is missing, say "بيانات غير متوفرة" / "Data unavailable". Never fabricate.`;
 
   const ctx = [
     `# LIVE KPIs\n${JSON.stringify(args.kpis, null, 2)}`,

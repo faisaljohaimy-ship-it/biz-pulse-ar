@@ -157,9 +157,7 @@ function KnowledgeHubPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={
-              ar
-                ? "اكتب للبحث في كل نظام منصة إنجاز الأعمال…"
-                : "Type to search across all of منصة إنجاز الأعمال…"
+              ar ? "اكتب للبحث في كل نظام سَدِيد…" : "Type to search across all of SADEED…"
             }
             autoFocus
             className="w-full rounded-lg border border-white/10 bg-white/[0.02] px-10 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-400/60 focus:outline-none"

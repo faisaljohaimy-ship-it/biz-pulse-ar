@@ -295,9 +295,9 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
 
   const t = {
     line1: ar ? "الذكاء يقود." : "Intelligence, in command.",
-    line2: ar ? "منصة إنجاز الأعمال ينفّذ." : "منصة إنجاز الأعمال executes.",
+    line2: ar ? "سَدِيد ينفّذ." : "سَدِيد executes.",
     lede: ar
-      ? "منصة إنجاز الأعمال · FINN في القلب · الأمن الصناعي · جميع المناطق."
+      ? "سَدِيد · FINN في القلب · الأمن الصناعي · جميع المناطق."
       : "Enjaz Platform · FINN at the core · Industrial Security · All Regions.",
     ctaPrimary: ar ? "ابدأ التشغيل" : "Start Operation",
     ctaSecondary: ar ? "غرفة القيادة التنفيذية" : "Executive Bridge",
@@ -722,7 +722,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
           ))}
         </div>
 
-        {/* Supporting منصة إنجاز الأعمال signature */}
+        {/* Supporting SADEED signature */}
         <div
           className="mt-12 flex flex-col items-center gap-2"
           style={{ animation: "nxh-fade 900ms ease-out 1150ms both" }}
@@ -732,7 +732,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
             className="bg-gradient-to-b from-white/95 via-[#DFF6FF]/90 to-[#3AE8FF]/80 bg-clip-text text-2xl font-semibold tracking-[0.32em] text-transparent sm:text-3xl sm:tracking-[0.42em]"
             style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif" }}
           >
-            منصة إنجاز الأعمال
+            SADEED
           </div>
           <div className="text-[12px] uppercase tracking-[0.5em] text-white/50 sm:text-[12px] sm:tracking-[0.6em]">
             AI · OS
@@ -774,7 +774,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
           </div>
           <div className="text-center">
             <div className="text-sm font-semibold tracking-[0.4em] text-[#DFF6FF]">
-              منصة إنجاز الأعمال · BOOT
+              SADEED · BOOT
             </div>
             <div className="mt-1 text-xs text-white/70">{t.boot}</div>
           </div>
