@@ -7,10 +7,8 @@
  * Additive layer — never replaces `runExecutiveBrain`. The Chief
  * (executive_brain) still owns the final natural response.
  */
-// Phase 8.3 — boot the Marketplace so plug-in agents self-register
-// into the orchestrator registry before the first mission executes.
-import { bootMarketplace } from "../marketplace";
-bootMarketplace();
+// Phase 8.3 — سوق الإضافات (`../marketplace`) حُذف: منظومة كاملة بلا
+// مستورد حيّ واحد. لا وكيل إضافي يسجّل نفسه، فسقط نداء التشغيل معه.
 
 // Ensure the ten specialist agents linked to FINN are always registered
 // (Constitution, Article 30 — FINN Council of Ten).

@@ -1,0 +1,62 @@
+# تنسيق آلي — حسم «الكاتب الآلي» على main.
+#
+# السبب المُنشئ لهذا الملف: خط النشر الآلي يدفع إلى `main` مباشرة دون أن
+# يشغّل prettier، فكانت خمس نسخات متتالية تُسقط CI بأربعمئة وسبعة وأربعين
+# خطأ تنسيق — كلها قابلة للإصلاح آليًّا، ولا واحد منها عطلٌ حقيقي. النتيجة
+# الأسوأ ليست الحُمرة نفسها بل اعتيادها: بوابة حمراء دائمًا تتوقف عن كونها
+# بوابة، فيمرّ العطل الحقيقي وسط الضجيج.
+#
+# لا يُخفَّض المعيار: `npm run lint` يبقى حاجزًا صارمًا في CI. هذه الوظيفة
+# تُزيل السبب المتكرّر قبل أن يصل الحاجز، ولا تلمس إلا المسافات.
+#
+# منع الحلقة اللانهائية بثلاث طبقات:
+#   ① لا تعمل على نسخة كتبها هذا الملف نفسه (فحص رسالة النسخة).
+#   ② تدفع بـ[skip ci] فلا تُطلق دورة جديدة.
+#   ③ لا تدفع شيئًا إن لم يتغيّر شيء.
+name: Auto-format
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: autoformat-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    # لا تعمل على ناتج نفسها — الطبقة الأولى من منع الحلقة.
+    if: "!contains(github.event.head_commit.message, 'style: تنسيق آلي')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # التاريخ الكامل مطلوب للدفع، والرمز الافتراضي يكفي لأن
+          # الوظيفة تدفع إلى الفرع نفسه الذي أطلقها.
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Format
+        run: npm run format
+
+      - name: Commit if anything changed
+        run: |
+          if git diff --quiet; then
+            echo "لا تغييرات تنسيق — لا شيء يُدفع."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "style: تنسيق آلي [skip ci]"
+          # rebase قبل الدفع: الكاتب الآلي قد يكون دفع نسخة أخرى أثناء
+          # التنسيق، ودفعٌ غير متزامن هنا يخسر عمله.
+          git pull --rebase origin main
+          git push origin HEAD:main

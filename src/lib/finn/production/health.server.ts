@@ -11,11 +11,9 @@ import { countErrorsSince } from "./logging.server";
 
 async function osHealthLevel(): Promise<GateStatus> {
   try {
-    const { evaluateOSHealth } = await import("../os/health.server");
-    const h = evaluateOSHealth();
-    if (h.level === "healthy") return "pass";
-    if (h.level === "degraded") return "warn";
-    return "fail";
+    // `../os` حُذف (منظومة بلا مستورد حيّ). المقياس الذي لا مصدر له يعود
+    // "warn" لا "pass": الصدق العددي (المادة ٢٧) يمنع ادّعاء صحّة لم تُقَس.
+    return "warn";
   } catch {
     return "unknown";
   }
