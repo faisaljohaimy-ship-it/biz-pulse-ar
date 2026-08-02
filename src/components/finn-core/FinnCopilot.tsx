@@ -1908,466 +1908,465 @@ export function FinnCopilot() {
       {/* Unified centered dock — identical placement at every breakpoint */}
       {isOpen && (
         <div className="pointer-events-none fixed inset-0 z-[110] flex items-center justify-center p-[max(0.5rem,env(safe-area-inset-left))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))]">
-        <aside
-          role="complementary"
-          aria-label="FINN executive copilot"
-          dir="rtl"
-          className={cn(
-            // Perfectly centered on every device: phone, tablet, laptop.
-            "nexus-window nexus-aria-window pointer-events-auto relative flex flex-col overflow-hidden rounded-[1.7rem]",
-            "w-[min(96vw,760px)]",
-            "h-[min(86dvh,760px)] max-h-full",
-          )}
-        >
+          <aside
+            role="complementary"
+            aria-label="FINN executive copilot"
+            dir="rtl"
+            className={cn(
+              // Perfectly centered on every device: phone, tablet, laptop.
+              "nexus-window nexus-aria-window pointer-events-auto relative flex flex-col overflow-hidden rounded-[1.7rem]",
+              "w-[min(96vw,760px)]",
+              "h-[min(86dvh,760px)] max-h-full",
+            )}
+          >
+            {/* LAYER 0 — FINN cinematic backdrop */}
+            <FinnPanelBackdrop convMode={convMode} caption={convCaption} />
+            <FinnVoiceDebugBadge />
 
-          {/* LAYER 0 — FINN cinematic backdrop */}
-          <FinnPanelBackdrop convMode={convMode} caption={convCaption} />
-          <FinnVoiceDebugBadge />
+            {/* LAYER 2 — Header */}
+            <header className="relative z-10 flex items-center gap-2 border-b border-primary/15 bg-[linear-gradient(180deg,rgba(6,26,46,.76),rgba(3,15,29,.42))] px-3 py-3 backdrop-blur-xl sm:gap-3 sm:px-4">
+              <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-primary">
+                <Sparkles className="h-4 w-4" aria-hidden />
+                <span
+                  className={cn(
+                    "absolute inset-0 rounded-full ring-1 ring-primary/40",
+                    isBusy && "animate-ping",
+                  )}
+                  aria-hidden
+                />
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col leading-tight">
+                <span className="text-sm font-semibold text-foreground">FINN</span>
+                <span className="max-w-[235px] truncate text-[12px] text-muted-foreground">
+                  {`${statusLabel} · ${convMode ? "صوت" : "نص"}`}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={startNewChat}
+                aria-label="محادثة جديدة"
+                title="محادثة جديدة"
+                className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
+              >
+                <Plus className="h-4 w-4" aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={closePanel}
+                aria-label="Close FINN"
+                className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            </header>
 
-          {/* LAYER 2 — Header */}
-          <header className="relative z-10 flex items-center gap-2 border-b border-primary/15 bg-[linear-gradient(180deg,rgba(6,26,46,.76),rgba(3,15,29,.42))] px-3 py-3 backdrop-blur-xl sm:gap-3 sm:px-4">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-primary">
-              <Sparkles className="h-4 w-4" aria-hidden />
-              <span
-                className={cn(
-                  "absolute inset-0 rounded-full ring-1 ring-primary/40",
-                  isBusy && "animate-ping",
+            {/* Voice notice + Conversation Mode resume chip */}
+            {(convNotice || (convMode && convPaused)) && (
+              <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-2">
+                {convNotice && (
+                  <div className="rounded-full bg-amber-500/15 px-3 py-1 text-[12px] text-amber-200 ring-1 ring-amber-400/40 backdrop-blur-md">
+                    {convNotice}
+                  </div>
                 )}
-                aria-hidden
-              />
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col leading-tight">
-              <span className="text-sm font-semibold text-foreground">FINN</span>
-              <span className="max-w-[235px] truncate text-[12px] text-muted-foreground">
-                {`${statusLabel} · ${convMode ? "صوت" : "نص"}`}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={startNewChat}
-              aria-label="محادثة جديدة"
-              title="محادثة جديدة"
-              className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary"
-            >
-              <Plus className="h-4 w-4" aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={closePanel}
-              aria-label="Close FINN"
-              className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
-            >
-              <X className="h-4 w-4" aria-hidden />
-            </button>
-          </header>
+                {convPaused && (
+                  <button
+                    type="button"
+                    onClick={() => startListening()}
+                    className="rounded-full bg-emerald-500/25 px-4 py-1.5 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-400/60 backdrop-blur-md hover:bg-emerald-500/35 transition-all animate-pulse"
+                  >
+                    اضغط للمتابعة 🎙
+                  </button>
+                )}
+              </div>
+            )}
 
-          {/* Voice notice + Conversation Mode resume chip */}
-          {(convNotice || (convMode && convPaused)) && (
-            <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-2">
-              {convNotice && (
-                <div className="rounded-full bg-amber-500/15 px-3 py-1 text-[12px] text-amber-200 ring-1 ring-amber-400/40 backdrop-blur-md">
-                  {convNotice}
+            {/* Mobile-only compact FINN top avatar */}
+            <FinnTopAvatar />
+
+            {/* LAYER 3 — Messages (transparent so backdrop shows through) */}
+
+            {convMode ? (
+              <section
+                aria-label="المخاطبة الصوتية مع FINN"
+                className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-7 overflow-hidden px-6 py-8 text-center"
+              >
+                <div className="relative grid h-40 w-40 place-items-center sm:h-48 sm:w-48">
+                  <span
+                    className={cn(
+                      "absolute inset-0 rounded-full border border-emerald-300/25 bg-emerald-400/5",
+                      (listening || state === "speaking") && "motion-safe:animate-ping",
+                    )}
+                    aria-hidden
+                  />
+                  <span
+                    className={cn(
+                      "absolute inset-5 rounded-full border border-cyan-300/30 bg-cyan-400/10 shadow-[0_0_70px_rgba(34,211,238,.24)]",
+                      (isBusy || transcribing) && "motion-safe:animate-pulse",
+                    )}
+                    aria-hidden
+                  />
+                  <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-background/55 text-emerald-200 backdrop-blur-xl sm:h-28 sm:w-28">
+                    {isBusy || transcribing ? (
+                      <Sparkles className="h-10 w-10 motion-safe:animate-pulse" aria-hidden />
+                    ) : listening ? (
+                      <Mic className="h-10 w-10" aria-hidden />
+                    ) : state === "speaking" ? (
+                      <AudioWaveform className="h-10 w-10" aria-hidden />
+                    ) : (
+                      <Mic className="h-10 w-10" aria-hidden />
+                    )}
+                  </div>
                 </div>
-              )}
-              {convPaused && (
-                <button
-                  type="button"
-                  onClick={() => startListening()}
-                  className="rounded-full bg-emerald-500/25 px-4 py-1.5 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-400/60 backdrop-blur-md hover:bg-emerald-500/35 transition-all animate-pulse"
-                >
-                  اضغط للمتابعة 🎙
-                </button>
-              )}
-            </div>
-          )}
 
-          {/* Mobile-only compact FINN top avatar */}
-          <FinnTopAvatar />
-
-          {/* LAYER 3 — Messages (transparent so backdrop shows through) */}
-
-          {convMode ? (
-            <section
-              aria-label="المخاطبة الصوتية مع FINN"
-              className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-7 overflow-hidden px-6 py-8 text-center"
-            >
-              <div className="relative grid h-40 w-40 place-items-center sm:h-48 sm:w-48">
-                <span
-                  className={cn(
-                    "absolute inset-0 rounded-full border border-emerald-300/25 bg-emerald-400/5",
-                    (listening || state === "speaking") && "motion-safe:animate-ping",
-                  )}
-                  aria-hidden
-                />
-                <span
-                  className={cn(
-                    "absolute inset-5 rounded-full border border-cyan-300/30 bg-cyan-400/10 shadow-[0_0_70px_rgba(34,211,238,.24)]",
-                    (isBusy || transcribing) && "motion-safe:animate-pulse",
-                  )}
-                  aria-hidden
-                />
-                <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-white/20 bg-background/55 text-emerald-200 backdrop-blur-xl sm:h-28 sm:w-28">
-                  {isBusy || transcribing ? (
-                    <Sparkles className="h-10 w-10 motion-safe:animate-pulse" aria-hidden />
-                  ) : listening ? (
-                    <Mic className="h-10 w-10" aria-hidden />
-                  ) : state === "speaking" ? (
-                    <AudioWaveform className="h-10 w-10" aria-hidden />
-                  ) : (
-                    <Mic className="h-10 w-10" aria-hidden />
-                  )}
+                <div aria-live="polite" className="space-y-2">
+                  <h2 className="text-xl font-semibold text-white sm:text-2xl">
+                    {transcribing
+                      ? "FINN يحلّل صوتك"
+                      : greeting
+                        ? "FINN يرحّب بك"
+                        : listening
+                          ? "FINN يستمع"
+                          : isBusy
+                            ? "FINN يفكّر وينفّذ"
+                            : state === "speaking"
+                              ? "FINN يتحدث"
+                              : "المخاطبة الصوتية"}
+                  </h2>
+                  <p className="text-xs text-white/60 sm:text-sm">
+                    محادثة صوتية فقط · لن يظهر نص السؤال أو الرد
+                  </p>
                 </div>
-              </div>
 
-              <div aria-live="polite" className="space-y-2">
-                <h2 className="text-xl font-semibold text-white sm:text-2xl">
-                  {transcribing
-                    ? "FINN يحلّل صوتك"
-                    : greeting
-                      ? "FINN يرحّب بك"
-                      : listening
-                        ? "FINN يستمع"
-                        : isBusy
-                          ? "FINN يفكّر وينفّذ"
-                          : state === "speaking"
-                            ? "FINN يتحدث"
-                            : "المخاطبة الصوتية"}
-                </h2>
-                <p className="text-xs text-white/60 sm:text-sm">
-                  محادثة صوتية فقط · لن يظهر نص السؤال أو الرد
-                </p>
-              </div>
-
-              <div className="flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={
-                    greeting
-                      ? () => {
-                          stopVoicePlayback();
-                          startListening();
-                        }
-                      : listening
-                        ? finishListening
-                        : isBusy
-                          ? stopResponse
-                          : () => startListening()
-                  }
-                  disabled={transcribing}
-                  aria-label={
-                    greeting
-                      ? "تخطي التحية والبدء بالتحدث"
-                      : listening
-                        ? "إنهاء الكلام"
-                        : isBusy
-                          ? "إيقاف الرد"
-                          : "ابدأ التحدث"
-                  }
-                  className={cn(
-                    "grid h-16 w-16 place-items-center rounded-full border text-white shadow-xl transition-all disabled:opacity-40",
-                    listening
-                      ? "border-rose-300/60 bg-rose-500/75 hover:bg-rose-500"
-                      : "border-emerald-300/60 bg-emerald-500/75 hover:scale-105 hover:bg-emerald-500",
-                  )}
-                >
-                  {greeting ? (
-                    <Mic className="h-6 w-6" aria-hidden />
-                  ) : listening ? (
-                    <Square className="h-5 w-5 fill-current" aria-hidden />
-                  ) : isBusy ? (
-                    <Square className="h-5 w-5 fill-current" aria-hidden />
-                  ) : (
-                    <Mic className="h-6 w-6" aria-hidden />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleConversationMode}
-                  aria-label="إنهاء المخاطبة الصوتية"
-                  className="grid h-12 w-12 place-items-center rounded-full border border-white/20 bg-background/55 text-white/80 backdrop-blur-xl transition hover:border-rose-300/50 hover:text-rose-200"
-                >
-                  <X className="h-5 w-5" aria-hidden />
-                </button>
-              </div>
-            </section>
-          ) : (
-            <div
-              ref={scrollRef}
-              className={cn(
-                "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
-                convMode ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl" : "flex-1",
-              )}
-            >
-              <ul className="space-y-3">
-                {chat.messages.map((m) => {
-                  const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
-                  const mine = m.role === "user";
-                  // FINN's on-screen text stays clean: tashkeel is stripped for
-                  // display while the spoken path (toFinnSpeechText → /api/finn/tts,
-                  // diacritized server-side) keeps full diacritics for pronunciation.
-                  const text = mine ? raw : stripTashkeel(sanitiseAssistantText(raw));
-                  const hasNonTextWork = m.parts.some(
-                    (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
-                  );
-                  const toolParts = !mine
-                    ? m.parts.filter(
-                        (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
-                      )
-                    : [];
-                  if (!text && !hasNonTextWork) return null;
-                  return (
-                    <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                      <div
-                        className={cn(
-                          "group/message max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed backdrop-blur-md sm:max-w-[88%]",
-                          mine
-                            ? "bg-primary/90 text-primary-foreground shadow-md"
-                            : "bg-background/75 text-foreground ring-1 ring-primary/20 shadow-[0_0_24px_rgba(0,212,255,0.08)]",
-                        )}
-                      >
-                        {text ? (
-                          <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-                          </div>
-                        ) : toolParts.length === 0 ? (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-                            يُنَفِّذُ FINN الخُطْوَةَ الآنَ…
-                          </div>
-                        ) : null}
-                        {toolParts.map((part, index) => (
-                          <ToolInvocation
-                            key={`${m.id}-tool-${index}`}
-                            part={part as Parameters<typeof ToolInvocation>[0]["part"]}
-                          />
-                        ))}
-                        {!mine && text && !isBusy && (
-                          <div className="mt-2 flex items-center gap-1 border-t border-white/10 pt-1.5 opacity-70 transition-opacity group-hover/message:opacity-100">
-                            <button
-                              type="button"
-                              onClick={() => void copyMessage(m.id, text)}
-                              aria-label="نسخ الرد"
-                              title="نسخ"
-                              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground"
-                            >
-                              {copiedMessageId === m.id ? (
-                                <Check className="h-3.5 w-3.5" aria-hidden />
-                              ) : (
-                                <Copy className="h-3.5 w-3.5" aria-hidden />
-                              )}
-                            </button>
-                            {m.id === lastAssistantMessageId && (
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={
+                      greeting
+                        ? () => {
+                            stopVoicePlayback();
+                            startListening();
+                          }
+                        : listening
+                          ? finishListening
+                          : isBusy
+                            ? stopResponse
+                            : () => startListening()
+                    }
+                    disabled={transcribing}
+                    aria-label={
+                      greeting
+                        ? "تخطي التحية والبدء بالتحدث"
+                        : listening
+                          ? "إنهاء الكلام"
+                          : isBusy
+                            ? "إيقاف الرد"
+                            : "ابدأ التحدث"
+                    }
+                    className={cn(
+                      "grid h-16 w-16 place-items-center rounded-full border text-white shadow-xl transition-all disabled:opacity-40",
+                      listening
+                        ? "border-rose-300/60 bg-rose-500/75 hover:bg-rose-500"
+                        : "border-emerald-300/60 bg-emerald-500/75 hover:scale-105 hover:bg-emerald-500",
+                    )}
+                  >
+                    {greeting ? (
+                      <Mic className="h-6 w-6" aria-hidden />
+                    ) : listening ? (
+                      <Square className="h-5 w-5 fill-current" aria-hidden />
+                    ) : isBusy ? (
+                      <Square className="h-5 w-5 fill-current" aria-hidden />
+                    ) : (
+                      <Mic className="h-6 w-6" aria-hidden />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={toggleConversationMode}
+                    aria-label="إنهاء المخاطبة الصوتية"
+                    className="grid h-12 w-12 place-items-center rounded-full border border-white/20 bg-background/55 text-white/80 backdrop-blur-xl transition hover:border-rose-300/50 hover:text-rose-200"
+                  >
+                    <X className="h-5 w-5" aria-hidden />
+                  </button>
+                </div>
+              </section>
+            ) : (
+              <div
+                ref={scrollRef}
+                className={cn(
+                  "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
+                  convMode ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl" : "flex-1",
+                )}
+              >
+                <ul className="space-y-3">
+                  {chat.messages.map((m) => {
+                    const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+                    const mine = m.role === "user";
+                    // FINN's on-screen text stays clean: tashkeel is stripped for
+                    // display while the spoken path (toFinnSpeechText → /api/finn/tts,
+                    // diacritized server-side) keeps full diacritics for pronunciation.
+                    const text = mine ? raw : stripTashkeel(sanitiseAssistantText(raw));
+                    const hasNonTextWork = m.parts.some(
+                      (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
+                    );
+                    const toolParts = !mine
+                      ? m.parts.filter(
+                          (part) =>
+                            part.type.startsWith("tool-") || part.type === "tool-invocation",
+                        )
+                      : [];
+                    if (!text && !hasNonTextWork) return null;
+                    return (
+                      <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                        <div
+                          className={cn(
+                            "group/message max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed backdrop-blur-md sm:max-w-[88%]",
+                            mine
+                              ? "bg-primary/90 text-primary-foreground shadow-md"
+                              : "bg-background/75 text-foreground ring-1 ring-primary/20 shadow-[0_0_24px_rgba(0,212,255,0.08)]",
+                          )}
+                        >
+                          {text ? (
+                            <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+                            </div>
+                          ) : toolParts.length === 0 ? (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+                              يُنَفِّذُ FINN الخُطْوَةَ الآنَ…
+                            </div>
+                          ) : null}
+                          {toolParts.map((part, index) => (
+                            <ToolInvocation
+                              key={`${m.id}-tool-${index}`}
+                              part={part as Parameters<typeof ToolInvocation>[0]["part"]}
+                            />
+                          ))}
+                          {!mine && text && !isBusy && (
+                            <div className="mt-2 flex items-center gap-1 border-t border-white/10 pt-1.5 opacity-70 transition-opacity group-hover/message:opacity-100">
                               <button
                                 type="button"
-                                onClick={retry}
-                                aria-label="إعادة توليد الرد"
-                                title="إعادة التوليد"
+                                onClick={() => void copyMessage(m.id, text)}
+                                aria-label="نسخ الرد"
+                                title="نسخ"
                                 className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground"
                               >
-                                <RefreshCcw className="h-3.5 w-3.5" aria-hidden />
+                                {copiedMessageId === m.id ? (
+                                  <Check className="h-3.5 w-3.5" aria-hidden />
+                                ) : (
+                                  <Copy className="h-3.5 w-3.5" aria-hidden />
+                                )}
                               </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-                {isBusy && (
-                  <li className="flex justify-start">
-                    <div className="flex items-center gap-2 rounded-2xl bg-background/60 px-3 py-2 backdrop-blur-md ring-1 ring-primary/20">
-                      <div className="flex gap-1">
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
-                      </div>
-                      <span className="text-xs text-muted-foreground">{THINKING_AR}</span>
-                    </div>
-                  </li>
-                )}
-                {hasError && !isBusy && (
-                  <li className="flex justify-start">
-                    <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
-                      <div className="flex items-start gap-2">
-                        <span className="leading-relaxed">
-                          {(() => {
-                            const raw = (chat.error?.message || "").trim();
-                            if (!raw) return CONNECTION_ERROR_AR;
-                            // Extract server-provided reason from `{ok:false,error:"..."}` payloads
-                            try {
-                              const parsed = JSON.parse(raw) as {
-                                error?: string;
-                              };
-                              // Saved repair method (Lovable): never surface
-                              // auth jargon — show the neutral retry line.
-                              if (
-                                parsed?.error &&
-                                !/authenticat|unauthor|token/i.test(parsed.error)
-                              )
-                                return parsed.error;
-                              if (parsed?.error) return CONNECTION_ERROR_AR;
-                            } catch {
-                              /* not JSON — fall through */
-                            }
-                            // Scrub any accidental provider/model names before showing
-                            const safe = raw
-                              .replace(
-                                /\b(openai|anthropic|google|xai|mistral|gpt-[\w.-]+|claude-[\w.-]+|gemini[\w.-]*|grok[\w.-]*)\b/gi,
-                                "",
-                              )
-                              .trim();
-                            return safe || CONNECTION_ERROR_AR;
-                          })()}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={retry}
-                          className="inline-flex shrink-0 items-center gap-1 rounded-md bg-destructive/80 px-2 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive"
-                        >
-                          <RefreshCcw className="h-3 w-3" /> إعادة المحاولة
-                        </button>
-                      </div>
-                    </div>
-                  </li>
-                )}
-                {!isBusy && !hasError && chat.messages.length === 0 && (
-                  <li className="rounded-xl border border-dashed border-primary/20 bg-background/40 px-3 py-6 text-center text-xs text-muted-foreground backdrop-blur-md">
-                    <p>{EMPTY_STATE_AR}</p>
-                    <button
-                      type="button"
-                      onClick={toggleConversationMode}
-                      className="mx-auto mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-500/15 px-4 py-2 font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
-                    >
-                      <Mic className="h-4 w-4" aria-hidden />
-                      ابدأ المخاطبة
-                    </button>
-                  </li>
-                )}
-              </ul>
-            </div>
-          )}
-
-          {!convMode && (
-            <div className="relative z-10">
-              <ExecutiveCard />
-            </div>
-          )}
-
-          {/* LAYER 4 — Composer, pinned bottom + safe-area. Voice conversation
-              is driven by the mic button in the input row (no toolbar). */}
-          {!convMode && (
-            <div
-              className="relative z-10 border-t border-primary/15 bg-[linear-gradient(180deg,rgba(3,15,29,.48),rgba(3,15,29,.86))] p-3 backdrop-blur-xl"
-              style={{
-                paddingBottom: "calc(0.9rem + env(safe-area-inset-bottom))",
-              }}
-            >
-              {/* Slash-command menu — appears while the draft starts with "/". */}
-              {draft.startsWith("/") && matchQuickCommands(draft.slice(1)).length > 0 && (
-                <div
-                  dir="rtl"
-                  role="listbox"
-                  aria-label="أوامر سريعة"
-                  className="mb-2 overflow-hidden rounded-xl border border-primary/25 bg-background/95 shadow-lg backdrop-blur"
-                >
-                  {matchQuickCommands(draft.slice(1)).map((cmd) => {
-                    const Icon = cmd.icon;
-                    return (
-                      <button
-                        key={cmd.id}
-                        type="button"
-                        role="option"
-                        aria-selected={false}
-                        onClick={() => runQuickCommand(cmd)}
-                        className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-right text-sm text-foreground transition-colors hover:bg-primary/10"
-                      >
-                        <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                        <span className="font-semibold">/{cmd.slash}</span>
-                        <span className="truncate text-xs text-muted-foreground">
-                          {cmd.prompt || cmd.inputPrefix}
-                        </span>
-                      </button>
+                              {m.id === lastAssistantMessageId && (
+                                <button
+                                  type="button"
+                                  onClick={retry}
+                                  aria-label="إعادة توليد الرد"
+                                  title="إعادة التوليد"
+                                  className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                                >
+                                  <RefreshCcw className="h-3.5 w-3.5" aria-hidden />
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </li>
                     );
                   })}
-                </div>
-              )}
-              {/* Quick-command chips removed by request — slash commands remain via "/". */}
-              <form
-                className="flex items-end gap-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  submit();
+                  {isBusy && (
+                    <li className="flex justify-start">
+                      <div className="flex items-center gap-2 rounded-2xl bg-background/60 px-3 py-2 backdrop-blur-md ring-1 ring-primary/20">
+                        <div className="flex gap-1">
+                          <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
+                          <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
+                          <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+                        </div>
+                        <span className="text-xs text-muted-foreground">{THINKING_AR}</span>
+                      </div>
+                    </li>
+                  )}
+                  {hasError && !isBusy && (
+                    <li className="flex justify-start">
+                      <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
+                        <div className="flex items-start gap-2">
+                          <span className="leading-relaxed">
+                            {(() => {
+                              const raw = (chat.error?.message || "").trim();
+                              if (!raw) return CONNECTION_ERROR_AR;
+                              // Extract server-provided reason from `{ok:false,error:"..."}` payloads
+                              try {
+                                const parsed = JSON.parse(raw) as {
+                                  error?: string;
+                                };
+                                // Saved repair method (Lovable): never surface
+                                // auth jargon — show the neutral retry line.
+                                if (
+                                  parsed?.error &&
+                                  !/authenticat|unauthor|token/i.test(parsed.error)
+                                )
+                                  return parsed.error;
+                                if (parsed?.error) return CONNECTION_ERROR_AR;
+                              } catch {
+                                /* not JSON — fall through */
+                              }
+                              // Scrub any accidental provider/model names before showing
+                              const safe = raw
+                                .replace(
+                                  /\b(openai|anthropic|google|xai|mistral|gpt-[\w.-]+|claude-[\w.-]+|gemini[\w.-]*|grok[\w.-]*)\b/gi,
+                                  "",
+                                )
+                                .trim();
+                              return safe || CONNECTION_ERROR_AR;
+                            })()}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={retry}
+                            className="inline-flex shrink-0 items-center gap-1 rounded-md bg-destructive/80 px-2 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive"
+                          >
+                            <RefreshCcw className="h-3 w-3" /> إعادة المحاولة
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  )}
+                  {!isBusy && !hasError && chat.messages.length === 0 && (
+                    <li className="rounded-xl border border-dashed border-primary/20 bg-background/40 px-3 py-6 text-center text-xs text-muted-foreground backdrop-blur-md">
+                      <p>{EMPTY_STATE_AR}</p>
+                      <button
+                        type="button"
+                        onClick={toggleConversationMode}
+                        className="mx-auto mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-500/15 px-4 py-2 font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
+                      >
+                        <Mic className="h-4 w-4" aria-hidden />
+                        ابدأ المخاطبة
+                      </button>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {!convMode && (
+              <div className="relative z-10">
+                <ExecutiveCard />
+              </div>
+            )}
+
+            {/* LAYER 4 — Composer, pinned bottom + safe-area. Voice conversation
+              is driven by the mic button in the input row (no toolbar). */}
+            {!convMode && (
+              <div
+                className="relative z-10 border-t border-primary/15 bg-[linear-gradient(180deg,rgba(3,15,29,.48),rgba(3,15,29,.86))] p-3 backdrop-blur-xl"
+                style={{
+                  paddingBottom: "calc(0.9rem + env(safe-area-inset-bottom))",
                 }}
               >
-                <button
-                  type="button"
-                  onClick={toggleConversationMode}
-                  aria-pressed={convMode}
-                  aria-label={
-                    convMode
-                      ? "إيقاف المخاطبة الصوتية"
-                      : "بدء المخاطبة الصوتية (تحدّث وستردّ FINN صوتاً)"
-                  }
-                  title={
-                    convMode
-                      ? "إيقاف المخاطبة الصوتية"
-                      : "المخاطبة الصوتية — تحدّث وستردّ FINN صوتاً دون كتابة"
-                  }
-                  className={cn(
-                    "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all",
-                    convMode
-                      ? "border-emerald-400/55 bg-emerald-400/15 text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,.35)]"
-                      : "nexus-field border-primary/25 bg-background/70 text-foreground hover:border-primary/50 hover:bg-primary/10",
-                  )}
-                >
-                  {convMode ? (
-                    <MicOff className="h-4 w-4" aria-hidden />
-                  ) : (
-                    <Mic className="h-4 w-4" aria-hidden />
-                  )}
-                </button>
-                <textarea
-                  ref={composerRef}
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      submit();
-                    }
+                {/* Slash-command menu — appears while the draft starts with "/". */}
+                {draft.startsWith("/") && matchQuickCommands(draft.slice(1)).length > 0 && (
+                  <div
+                    dir="rtl"
+                    role="listbox"
+                    aria-label="أوامر سريعة"
+                    className="mb-2 overflow-hidden rounded-xl border border-primary/25 bg-background/95 shadow-lg backdrop-blur"
+                  >
+                    {matchQuickCommands(draft.slice(1)).map((cmd) => {
+                      const Icon = cmd.icon;
+                      return (
+                        <button
+                          key={cmd.id}
+                          type="button"
+                          role="option"
+                          aria-selected={false}
+                          onClick={() => runQuickCommand(cmd)}
+                          className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-right text-sm text-foreground transition-colors hover:bg-primary/10"
+                        >
+                          <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                          <span className="font-semibold">/{cmd.slash}</span>
+                          <span className="truncate text-xs text-muted-foreground">
+                            {cmd.prompt || cmd.inputPrefix}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {/* Quick-command chips removed by request — slash commands remain via "/". */}
+                <form
+                  className="flex items-end gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    submit();
                   }}
-                  rows={1}
-                  placeholder="اسأل FINN…"
-                  aria-label="Ask FINN"
-                  className={cn(
-                    "nexus-field min-h-[40px] max-h-32 flex-1 resize-none rounded-xl border border-primary/20",
-                    "bg-background/70 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",
-                    "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30",
-                  )}
-                />
-                <button
-                  type={isBusy ? "button" : "submit"}
-                  onClick={isBusy ? stopResponse : undefined}
-                  disabled={!isBusy && !draft.trim()}
-                  aria-label={isBusy ? "إيقاف الرد" : "إرسال"}
-                  className={cn(
-                    "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",
-                    "transition-all hover:scale-[1.03] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
-                  )}
                 >
-                  {isBusy ? (
-                    <Square className="h-3.5 w-3.5 fill-current" aria-hidden />
-                  ) : (
-                    <Send className="h-4 w-4" aria-hidden />
-                  )}
-                </button>
-              </form>
-            </div>
-          )}
-        </aside>
+                  <button
+                    type="button"
+                    onClick={toggleConversationMode}
+                    aria-pressed={convMode}
+                    aria-label={
+                      convMode
+                        ? "إيقاف المخاطبة الصوتية"
+                        : "بدء المخاطبة الصوتية (تحدّث وستردّ FINN صوتاً)"
+                    }
+                    title={
+                      convMode
+                        ? "إيقاف المخاطبة الصوتية"
+                        : "المخاطبة الصوتية — تحدّث وستردّ FINN صوتاً دون كتابة"
+                    }
+                    className={cn(
+                      "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all",
+                      convMode
+                        ? "border-emerald-400/55 bg-emerald-400/15 text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,.35)]"
+                        : "nexus-field border-primary/25 bg-background/70 text-foreground hover:border-primary/50 hover:bg-primary/10",
+                    )}
+                  >
+                    {convMode ? (
+                      <MicOff className="h-4 w-4" aria-hidden />
+                    ) : (
+                      <Mic className="h-4 w-4" aria-hidden />
+                    )}
+                  </button>
+                  <textarea
+                    ref={composerRef}
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        submit();
+                      }
+                    }}
+                    rows={1}
+                    placeholder="اسأل FINN…"
+                    aria-label="Ask FINN"
+                    className={cn(
+                      "nexus-field min-h-[40px] max-h-32 flex-1 resize-none rounded-xl border border-primary/20",
+                      "bg-background/70 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",
+                      "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30",
+                    )}
+                  />
+                  <button
+                    type={isBusy ? "button" : "submit"}
+                    onClick={isBusy ? stopResponse : undefined}
+                    disabled={!isBusy && !draft.trim()}
+                    aria-label={isBusy ? "إيقاف الرد" : "إرسال"}
+                    className={cn(
+                      "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",
+                      "transition-all hover:scale-[1.03] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
+                    )}
+                  >
+                    {isBusy ? (
+                      <Square className="h-3.5 w-3.5 fill-current" aria-hidden />
+                    ) : (
+                      <Send className="h-4 w-4" aria-hidden />
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
+          </aside>
         </div>
       )}
-
     </>
   );
 
