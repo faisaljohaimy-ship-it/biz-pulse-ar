@@ -4543,3 +4543,131 @@ tbody tr:hover {
     transform: none;
   }
 }
+
+/* ==========================================================================
+   SADEED — HOLOGRAPHIC CYAN GLASS + LUMINOUS PREMIUM ICON EDGES
+   Soft, eye-catching sky-cyan holographic tint with a continuous gloss sweep,
+   and luxurious illuminated borders on all icon surfaces. Light mode only.
+   ========================================================================== */
+:root {
+  --sd-holo-1: rgba(6, 182, 212, 0.14);
+  --sd-holo-2: rgba(37, 99, 235, 0.10);
+  --sd-holo-edge: rgba(6, 182, 212, 0.55);
+  --sd-holo-edge-soft: rgba(37, 99, 235, 0.35);
+}
+
+@keyframes sd-holo-gloss {
+  0% { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  12% { opacity: 0.9; }
+  55% { opacity: 0.55; }
+  100% { transform: translateX(220%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes sd-holo-tint {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@keyframes sd-holo-edge-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px var(--sd-holo-edge-soft) inset,
+      0 0 10px rgba(6, 182, 212, 0.28),
+      0 6px 18px -10px rgba(37, 99, 235, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px var(--sd-holo-edge) inset,
+      0 0 20px rgba(6, 182, 212, 0.5),
+      0 10px 26px -10px rgba(37, 99, 235, 0.6);
+  }
+}
+
+/* --- Holographic cyan glass on every glass surface --- */
+.nx-glass-e1,
+.finn-portal,
+.nexus-aria-window,
+[data-slot="card"] {
+  position: relative;
+  isolation: isolate;
+  background-image:
+    linear-gradient(135deg, var(--sd-holo-1) 0%, rgba(255, 255, 255, 0.72) 38%, var(--sd-holo-2) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.8));
+  border: 2px solid rgba(6, 182, 212, 0.28);
+  backdrop-filter: blur(22px) saturate(165%);
+  overflow: hidden;
+}
+
+/* Continuous gloss sweep */
+.nx-glass-e1::after,
+.finn-portal::after,
+.nexus-aria-window::after,
+[data-slot="card"]::after {
+  content: "";
+  position: absolute;
+  inset: -40% -60%;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    100deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.75) 48%,
+    rgba(186, 240, 255, 0.6) 52%,
+    transparent 62%
+  );
+  animation: sd-holo-gloss 7s var(--sd-arch-ease, cubic-bezier(0.4, 0, 0.2, 1)) infinite;
+}
+
+.finn-portal::after { animation-duration: 5.5s; }
+[data-slot="card"]:nth-of-type(2n)::after { animation-delay: 1.4s; }
+[data-slot="card"]:nth-of-type(3n)::after { animation-delay: 2.6s; }
+
+.nx-glass-e1:hover,
+[data-slot="card"]:hover {
+  border-color: var(--sd-holo-edge);
+  box-shadow:
+    0 0 0 1px rgba(6, 182, 212, 0.35) inset,
+    0 0 28px rgba(6, 182, 212, 0.32),
+    0 16px 40px -18px rgba(37, 99, 235, 0.5);
+}
+
+/* --- Luminous premium icon edges --- */
+.nx-icon-glow,
+.nx-icon-edge,
+.nx-icon-soft,
+.nx-icon-pulse,
+[data-icon-tile],
+.nx-icon-glow-region {
+  border-radius: 1rem;
+  border: 2px solid var(--sd-holo-edge-soft);
+  background-image: linear-gradient(150deg, rgba(6, 182, 212, 0.16), rgba(255, 255, 255, 0.9) 60%, rgba(37, 99, 235, 0.14));
+  animation: sd-holo-edge-pulse 4.2s ease-in-out infinite;
+}
+
+.nx-icon-glow:hover,
+.nx-icon-edge:hover,
+.nx-icon-soft:hover,
+.nx-icon-pulse:hover,
+[data-icon-tile]:hover,
+.nx-icon-glow-region:hover {
+  border-color: var(--sd-holo-edge);
+  box-shadow:
+    0 0 0 1px var(--sd-holo-edge) inset,
+    0 0 26px rgba(6, 182, 212, 0.55),
+    0 12px 30px -14px rgba(37, 99, 235, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-glass-e1::after,
+  .finn-portal::after,
+  .nexus-aria-window::after,
+  [data-slot="card"]::after,
+  .nx-icon-glow,
+  .nx-icon-edge,
+  .nx-icon-soft,
+  .nx-icon-pulse,
+  [data-icon-tile],
+  .nx-icon-glow-region {
+    animation: none !important;
+  }
+}
