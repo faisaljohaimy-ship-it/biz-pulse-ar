@@ -4361,3 +4361,185 @@ small {
   border: 3px solid transparent;
   background-clip: content-box;
 }
+
+/* ==========================================================================
+   SADEED — VISUAL ARCHITECTURE BLUEPRINT (owner directive, executive glass)
+   Ambient daylight → executive glass framework → navigation → FINN hero →
+   intelligence → workspace → motion & optical layer. Presentation only.
+   ========================================================================== */
+
+:root,
+.light,
+.dark {
+  --sd-arch-edge: rgba(6, 182, 212, 0.42);
+  --sd-arch-reflect: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 18%,
+    rgba(255, 255, 255, 0.72) 46%,
+    rgba(255, 255, 255, 0) 74%
+  );
+  --sd-arch-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Layer 1 · Ambient natural light ─────────────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 70% at 78% -10%, rgba(56, 189, 248, 0.16), transparent 60%),
+    radial-gradient(90% 60% at 10% 0%, rgba(37, 99, 235, 0.1), transparent 62%),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 46%, #f4f7fc 100%);
+}
+.nx-holo-ambience {
+  opacity: 0.22;
+  filter: saturate(0.7);
+}
+
+/* ── Layer 2 · Executive glass framework ─────────────────────────────────── */
+.nx-glass-e1,
+.finn-portal,
+.nexus-aria-window,
+[data-slot="card"],
+.sd-glass-panel {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.74)) padding-box;
+  border: 1px solid var(--sd-line);
+  border-radius: 18px;
+  backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: var(--sd-shadow-1);
+  transition:
+    transform 200ms var(--sd-arch-ease),
+    box-shadow 200ms var(--sd-arch-ease),
+    border-color 200ms var(--sd-arch-ease);
+}
+/* satin top highlight — the machined edge of optical glass */
+.nx-glass-e1::first-line {
+  color: inherit;
+}
+[data-slot="card"]::after,
+.sd-glass-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+  pointer-events: none;
+}
+
+/* ── Layer 3 · Floating navigation glass ─────────────────────────────────── */
+header.nx-clock-bar,
+[data-slot="sidebar"],
+.nx-topnav {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(22px) saturate(160%);
+  border-color: var(--sd-line);
+  box-shadow: 0 10px 30px -22px rgba(17, 24, 39, 0.35);
+}
+
+/* ── Layer 4 · FINN hero, the visual heart ───────────────────────────────── */
+.finn-portal {
+  background:
+    radial-gradient(120% 90% at 50% -20%, rgba(255, 255, 255, 0.98), transparent 62%),
+    linear-gradient(165deg, #ffffff 0%, #f2f9ff 52%, #e6f4fb 100%);
+  border: 1px solid rgba(6, 182, 212, 0.34);
+  border-radius: 24px;
+  box-shadow:
+    var(--sd-shadow-3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.6);
+  animation: sd-breathe 7s var(--sd-arch-ease) infinite;
+}
+.finn-portal::before {
+  background: var(--sd-arch-reflect) !important;
+  opacity: 0.55 !important;
+  animation: sd-sweep 9s linear infinite;
+}
+.finn-portal::after {
+  background: radial-gradient(70% 50% at 50% 100%, rgba(6, 182, 212, 0.18), transparent 70%) !important;
+  opacity: 1 !important;
+}
+@keyframes sd-breathe {
+  0%,
+  100% {
+    box-shadow:
+      var(--sd-shadow-3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 0 0 1px rgba(255, 255, 255, 0.6);
+  }
+  50% {
+    box-shadow:
+      0 6px 12px rgba(17, 24, 39, 0.07),
+      0 34px 78px -26px rgba(6, 182, 212, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 0 0 1px rgba(6, 182, 212, 0.18);
+  }
+}
+@keyframes sd-sweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  55%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+/* ── Layer 7 · Motion & optical interaction ──────────────────────────────── */
+.nx-glass-e1:hover,
+[data-slot="card"]:hover,
+.sd-glass-panel:hover {
+  transform: translateY(-3px);
+  border-color: var(--sd-arch-edge);
+  box-shadow:
+    var(--sd-shadow-2),
+    0 0 0 1px rgba(6, 182, 212, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+button,
+[role="button"],
+a[data-slot="button"] {
+  transition:
+    transform 160ms var(--sd-arch-ease),
+    filter 160ms var(--sd-arch-ease),
+    box-shadow 160ms var(--sd-arch-ease);
+}
+button:hover,
+[role="button"]:hover {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+}
+button:active,
+[role="button"]:active {
+  transform: translateY(0) scale(0.985);
+}
+svg {
+  transition: transform 180ms var(--sd-arch-ease);
+}
+button:hover > svg,
+a:hover > svg,
+[role="button"]:hover > svg {
+  transform: scale(1.05);
+}
+tbody tr {
+  transition: background 160ms var(--sd-arch-ease);
+}
+tbody tr:hover {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(37, 99, 235, 0.06));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .finn-portal,
+  .finn-portal::before {
+    animation: none !important;
+  }
+  .nx-glass-e1:hover,
+  [data-slot="card"]:hover,
+  button:hover,
+  [role="button"]:hover {
+    transform: none;
+  }
+}
