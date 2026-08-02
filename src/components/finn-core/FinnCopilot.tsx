@@ -1858,8 +1858,9 @@ export function FinnCopilot() {
     }
   }, [voice, pageContext, listening]);
 
-  return (
+  const tree = (
     <>
+
       {/* Launcher FAB — hidden while docked */}
       {!isOpen && (
         <button
