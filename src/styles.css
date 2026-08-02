@@ -5861,3 +5861,108 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
     animation-play-state: running !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   DARK MODE PARITY (owner directive 2026-08-02)
+   كل البطاقات والأيقونات تتحوّل فعليًا إلى الوضع الداكن عند اختياره،
+   وتعود إلى الوضع الفاتح عند اختياره، مع اعتماد خلفية صفحة النظام السابقة
+   في كلا الوضعين (نفس الطبقات، بلوحة ألوان كل وضع).
+   ───────────────────────────────────────────────────────────────────────── */
+
+html.dark {
+  --sd-white: #060f1e;
+  --sd-pearl: #08172b;
+  --sd-glass: rgba(12, 26, 46, 0.72);
+  --sd-glass-strong: rgba(14, 32, 56, 0.88);
+  --sd-line: rgba(125, 211, 252, 0.22);
+  --sd-ink: #e8f4ff;
+  --sd-ink-2: rgba(232, 244, 255, 0.72);
+  --sd-shadow-1: 0 10px 30px -14px rgba(0, 0, 0, 0.75);
+  --sd-shadow-2: 0 18px 48px -18px rgba(0, 0, 0, 0.85);
+  --sd-shadow-3: 0 26px 70px -22px rgba(0, 0, 0, 0.9);
+}
+
+html.dark body {
+  background-color: #050d1a !important;
+  background-image:
+    radial-gradient(1100px 620px at 78% -12%, rgba(37, 99, 235, 0.22), transparent 62%),
+    radial-gradient(900px 520px at 8% 4%, rgba(6, 182, 212, 0.16), transparent 60%),
+    linear-gradient(180deg, #050d1a 0%, #08172b 100%) !important;
+  color: var(--sd-ink) !important;
+}
+
+html.dark body::before {
+  background:
+    radial-gradient(120% 70% at 78% -10%, rgba(56, 189, 248, 0.18), transparent 60%),
+    radial-gradient(90% 60% at 10% 0%, rgba(37, 99, 235, 0.16), transparent 62%),
+    linear-gradient(180deg, #050d1a 0%, #071426 46%, #08172b 100%) !important;
+}
+
+/* البطاقات */
+html.dark .holo-card,
+html.dark .nx-glass-e1,
+html.dark .nexus-card,
+html.dark .nexus-window,
+html.dark .nexus-aria-window,
+html.dark .nexus-floating-surface,
+html.dark .nx-region-card,
+html.dark .glass-sidebar,
+html.dark .nexus-toast,
+html.dark .sd-glass-panel,
+html.dark .sd-glass-surface,
+html.dark .spatial-window,
+html.dark [data-slot="card"] {
+  background-color: rgba(10, 24, 43, 0.78) !important;
+  background-blend-mode: normal, normal, normal, screen, normal;
+  border-color: rgba(125, 211, 252, 0.28) !important;
+  box-shadow: var(--sd-shadow-1) !important;
+  color: var(--sd-ink) !important;
+}
+
+/* الأيقونات */
+html.dark .holo-icon,
+html.dark .nx-icon-edge,
+html.dark .nx-icon-wrap,
+html.dark .nx-tile,
+html.dark .nx-holo-icon,
+html.dark [data-holo-icon-wrap] {
+  background-color: rgba(12, 28, 50, 0.82) !important;
+  border-color: rgba(125, 211, 252, 0.34) !important;
+  color: #bfe9ff !important;
+}
+
+/* بطاقة FINN — خلفيتها الرقمية الداكنة السابقة */
+html.dark .finn-portal {
+  background-color: #041020 !important;
+  background-image: linear-gradient(
+    170deg,
+    rgba(8, 47, 73, 0.94) 0%,
+    rgba(4, 22, 42, 0.96) 55%,
+    rgba(2, 10, 22, 0.98) 100%
+  ) !important;
+  border-color: rgba(56, 189, 248, 0.38) !important;
+}
+
+/* الشريط العلوي */
+html.dark .nx-clock-bar {
+  background: rgba(6, 18, 34, 0.88) !important;
+  border-bottom-color: rgba(125, 211, 252, 0.2) !important;
+  color: #dff2ff !important;
+}
+html.dark .nx-clock-bar * {
+  color: #dff2ff !important;
+}
+
+/* شبكة الكهرباء + الطبقات الجوّية تعود لكثافتها الداكنة */
+html.dark {
+  --sec-wire: rgba(6, 182, 212, 0.34);
+  --sec-pylon: rgba(56, 189, 248, 0.22);
+  --sec-mesh: rgba(37, 99, 235, 0.14);
+  --sec-arc: rgba(125, 240, 255, 0.6);
+}
+html.dark .nx-holo-aurora,
+html.dark .nx-holo-grid,
+html.dark .nx-holo-scan,
+html.dark .nx-holo-noise {
+  opacity: 0.16 !important;
+}
