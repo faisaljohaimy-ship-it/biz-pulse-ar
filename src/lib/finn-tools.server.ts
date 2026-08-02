@@ -1134,7 +1134,6 @@ export function buildFinnTools(
           "/sec/circles",
           "/sec/sections",
           "/tasks",
-          "/intelligence",
           "/executive",
           "/sec/reports",
           "/briefing",

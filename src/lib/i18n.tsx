@@ -40,7 +40,6 @@ const dict: Dict = {
   "nav.integrations": { ar: "مركز التكاملات", en: "Integrations Center" },
   "nav.aiops": { ar: "عمليات الذكاء", en: "AI Operations" },
   "nav.orchestration": { ar: "تنسيق العمليات", en: "Orchestration" },
-  "nav.intelligence": { ar: "ذكاء القرارات", en: "Decision Intelligence" },
   "nav.boardroom": { ar: "قاعة المجلس", en: "Boardroom" },
   "theme.toggle": { ar: "الوضع", en: "Theme" },
   "common.coming_soon": { ar: "قريباً", en: "Coming soon" },

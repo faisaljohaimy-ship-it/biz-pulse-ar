@@ -145,10 +145,6 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     ar: "تحليلات أداء FINN واستخدامها.",
     en: "FINN performance and usage analytics.",
   },
-  "/intelligence": {
-    ar: "منظومة الذكاء ذاتية التطور تحت اعتماد بشري.",
-    en: "The self-evolving intelligence organization, human-approved.",
-  },
   "/observability": {
     ar: "الرصد التقني والتكاليف وصحة المنظومة.",
     en: "Technical observability, costs and system health.",

@@ -77,14 +77,6 @@ const ACTIONS = [
     permission: "indicators.view",
   },
   {
-    id: "nav.intelligence",
-    surface: "navigation",
-    labelAr: "الذكاء التنفيذي",
-    effect: "navigate",
-    target: "/intelligence",
-    permission: "intelligence.view",
-  },
-  {
     id: "nav.agents",
     surface: "navigation",
     labelAr: "الوكلاء",

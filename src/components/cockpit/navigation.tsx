@@ -49,12 +49,6 @@ const NAV_ITEMS: readonly NavItem[] = [
   { actionId: "nav.sectors", labelAr: "القطاعات", labelEn: "SECTORS", icon: Boxes },
   { actionId: "nav.commandBridge", labelAr: "جسر القيادة", labelEn: "COMMAND BRIDGE", icon: Ship },
   { actionId: "nav.indicators", labelAr: "المؤشرات", labelEn: "INDICATORS", icon: Gauge },
-  {
-    actionId: "nav.intelligence",
-    labelAr: "الذكاء التنفيذي",
-    labelEn: "INTELLIGENCE",
-    icon: Brain,
-  },
   { actionId: "nav.agents", labelAr: "الوكلاء", labelEn: "AGENTS", icon: Bot },
   { actionId: "nav.operations", labelAr: "التشغيل", labelEn: "OPERATIONS", icon: Wrench },
   { actionId: "nav.risks", labelAr: "المخاطر", labelEn: "RISKS", icon: Shield },

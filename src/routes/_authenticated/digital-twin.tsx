@@ -165,7 +165,7 @@ const NODES: TwinNode[] = [
     angle: 60,
     icon: Brain,
     tone: "#c4b5fd",
-    route: "/intelligence",
+    route: "/finn",
     kpi_ar: "إشارة",
     kpi_en: "signals",
     value: "318",

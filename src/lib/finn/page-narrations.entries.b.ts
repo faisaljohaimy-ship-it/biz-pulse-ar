@@ -333,17 +333,6 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/intelligence",
-    n(
-      "غرفة الاستخبارات",
-      "Intelligence Room",
-      "التقارير الاستخبارية والإشارات المبكّرة",
-      "intelligence reports and early signals",
-      "استباق المتغيّرات قبل ظهورها في الأرقام",
-      "anticipating shifts before they surface in the numbers",
-    ),
-  ],
-  [
     "/_authenticated/risk",
     n(
       "لوحة المخاطر التنفيذية",

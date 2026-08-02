@@ -19,7 +19,6 @@ const PAGE_BACKDROPS: Record<string, string> = {
   // asked only to unify card colours (G4), so "/sec/emergency", "/sec/kpi"
   // and "/sec/exec" keep theirs. [افتراض]
   // Intelligence & analytics → AI/analytics imagery.
-  "/intelligence": "/ai-analytics-bg.jpeg",
   "/observability": "/ai-analytics-bg.jpeg",
   "/sec/kpi": "/ai-analytics-bg.jpeg",
   // Decisions & risk → decision-intelligence imagery.

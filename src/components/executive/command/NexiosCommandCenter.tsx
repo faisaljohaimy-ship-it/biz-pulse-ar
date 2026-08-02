@@ -121,7 +121,7 @@ export const HOTSPOTS = [
   },
   {
     id: "west-tech",
-    to: "/intelligence",
+    to: "/agents",
     labelAr: "التقنية",
     labelEn: "Technology",
     x: 7.1,
@@ -167,7 +167,7 @@ export const HOTSPOTS = [
   // Central Region — royal blue.
   {
     id: "central-ai",
-    to: "/intelligence",
+    to: "/finn",
     labelAr: "الذكاء الاصطناعي",
     labelEn: "Artificial intelligence",
     x: 38,
@@ -509,7 +509,7 @@ export const HOTSPOTS = [
   },
   {
     id: "nav-ai",
-    to: "/intelligence",
+    to: "/finn",
     labelAr: "الذكاء الاصطناعي",
     labelEn: "Artificial intelligence",
     x: 71,

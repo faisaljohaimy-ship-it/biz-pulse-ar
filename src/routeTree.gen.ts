@@ -105,7 +105,6 @@ import { Route as AuthenticatedKnowledgeUploadRouteImport } from './routes/_auth
 import { Route as AuthenticatedKnowledgeHubRouteImport } from './routes/_authenticated/knowledge-hub'
 import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authenticated/knowledge'
 import { Route as AuthenticatedInvestorRouteImport } from './routes/_authenticated/investor'
-import { Route as AuthenticatedIntelligenceRouteImport } from './routes/_authenticated/intelligence'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedHealthRouteImport } from './routes/_authenticated/health'
 import { Route as AuthenticatedHcisRouteImport } from './routes/_authenticated/hcis'
@@ -727,12 +726,6 @@ const AuthenticatedInvestorRoute = AuthenticatedInvestorRouteImport.update({
   path: '/investor',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedIntelligenceRoute =
-  AuthenticatedIntelligenceRouteImport.update({
-    id: '/intelligence',
-    path: '/intelligence',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedIntegrationsRoute =
   AuthenticatedIntegrationsRouteImport.update({
     id: '/integrations',
@@ -1514,7 +1507,6 @@ export interface FileRoutesByFullPath {
   '/hcis': typeof AuthenticatedHcisRoute
   '/health': typeof AuthenticatedHealthRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
-  '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/investor': typeof AuthenticatedInvestorRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/knowledge-hub': typeof AuthenticatedKnowledgeHubRoute
@@ -1742,7 +1734,6 @@ export interface FileRoutesByTo {
   '/hcis': typeof AuthenticatedHcisRoute
   '/health': typeof AuthenticatedHealthRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
-  '/intelligence': typeof AuthenticatedIntelligenceRoute
   '/investor': typeof AuthenticatedInvestorRoute
   '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/knowledge-hub': typeof AuthenticatedKnowledgeHubRoute
@@ -1970,7 +1961,6 @@ export interface FileRoutesById {
   '/_authenticated/hcis': typeof AuthenticatedHcisRoute
   '/_authenticated/health': typeof AuthenticatedHealthRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
-  '/_authenticated/intelligence': typeof AuthenticatedIntelligenceRoute
   '/_authenticated/investor': typeof AuthenticatedInvestorRoute
   '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
   '/_authenticated/knowledge-hub': typeof AuthenticatedKnowledgeHubRoute
@@ -2200,7 +2190,6 @@ export interface FileRouteTypes {
     | '/hcis'
     | '/health'
     | '/integrations'
-    | '/intelligence'
     | '/investor'
     | '/knowledge'
     | '/knowledge-hub'
@@ -2428,7 +2417,6 @@ export interface FileRouteTypes {
     | '/hcis'
     | '/health'
     | '/integrations'
-    | '/intelligence'
     | '/investor'
     | '/knowledge'
     | '/knowledge-hub'
@@ -2655,7 +2643,6 @@ export interface FileRouteTypes {
     | '/_authenticated/hcis'
     | '/_authenticated/health'
     | '/_authenticated/integrations'
-    | '/_authenticated/intelligence'
     | '/_authenticated/investor'
     | '/_authenticated/knowledge'
     | '/_authenticated/knowledge-hub'
@@ -3593,13 +3580,6 @@ declare module '@tanstack/react-router' {
       path: '/investor'
       fullPath: '/investor'
       preLoaderRoute: typeof AuthenticatedInvestorRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/intelligence': {
-      id: '/_authenticated/intelligence'
-      path: '/intelligence'
-      fullPath: '/intelligence'
-      preLoaderRoute: typeof AuthenticatedIntelligenceRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/integrations': {
@@ -4654,7 +4634,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedHcisRoute: typeof AuthenticatedHcisRoute
   AuthenticatedHealthRoute: typeof AuthenticatedHealthRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
-  AuthenticatedIntelligenceRoute: typeof AuthenticatedIntelligenceRoute
   AuthenticatedInvestorRoute: typeof AuthenticatedInvestorRoute
   AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
   AuthenticatedKnowledgeHubRoute: typeof AuthenticatedKnowledgeHubRoute
@@ -4733,7 +4712,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedHcisRoute: AuthenticatedHcisRoute,
   AuthenticatedHealthRoute: AuthenticatedHealthRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
-  AuthenticatedIntelligenceRoute: AuthenticatedIntelligenceRoute,
   AuthenticatedInvestorRoute: AuthenticatedInvestorRoute,
   AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
   AuthenticatedKnowledgeHubRoute: AuthenticatedKnowledgeHubRoute,
