@@ -33,8 +33,15 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       aria-label={ar ? "بوابة FINN التنفيذية" : "FINN executive portal"}
       data-testid="finn-portal-card"
       data-static="true"
-      className="finn-portal finn-portal--static relative flex h-full flex-col overflow-hidden rounded-2xl bg-[#061525] p-4"
+      className="finn-portal finn-portal--tech relative flex h-full flex-col overflow-hidden rounded-2xl bg-[#061525] p-4"
     >
+      {/* Digital background layers — decorative only, never affect layout */}
+      <span className="finn-tech-grid" aria-hidden />
+      <span className="finn-tech-aurora" aria-hidden />
+      <span className="finn-tech-scan" aria-hidden />
+      <span className="finn-tech-orbit" aria-hidden />
+      <span className="finn-tech-noise" aria-hidden />
+
       {/* FINN wordmark — pinned to the card ceiling, always centred */}
       <h2
         className="finn-wordmark relative z-10 text-center text-xl font-black leading-none tracking-[0.32em] text-white sm:text-2xl"
