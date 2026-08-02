@@ -24,6 +24,16 @@ const STATE_LABEL: Record<FinnVisualState, { ar: string; en: string; dot: string
   offline: { ar: "غير متصل — أدخل نصياً", en: "Offline — text input", dot: "bg-amber-400" },
 };
 
+/** Static glyph columns — deterministic (SSR-safe), purely decorative. */
+const CODE_COLUMNS: string[] = [
+  "01001 fn() 7A3F Δ92 <sec/> 0x1F 1101 λ→ 4471 {ok}",
+  "0xB7 128 </ai> 1001 Σ44 finn() 0110 3E9 [##] 7721",
+  "SEC-09 1010 ~$ 0xC4 55E {id} 0011 π71 </> 9032",
+  "1100 0x3D run() 8812 μ07 <kpi> 0101 A9F 6650 ok",
+  "0x9E 0110 sync() 4420 Ω18 </rt> 1011 5C2 3391",
+  "1001 <ops> 0x2A 7734 ζ63 exec() 0010 D4B 1180",
+];
+
 export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPortalProps) {
   const Arrow = ar ? ArrowLeft : ArrowRight;
   const label = STATE_LABEL[state];
