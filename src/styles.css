@@ -6279,9 +6279,9 @@ html.dark .finn-portal:hover {
   position: relative;
   isolation: isolate;
   transition:
-    box-shadow 420ms var(--nx-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
-    transform 420ms var(--nx-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
-    border-color 420ms ease;
+    box-shadow 240ms var(--nx-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+    transform 240ms var(--nx-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+    border-color 240ms ease;
 }
 
 /* تموّج دائري ناعم ينبض بلون المنطقة من قلب البطاقة */
@@ -6386,11 +6386,11 @@ html.dark .finn-portal:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .nx-region-ripple {
-    animation-duration: 9s;
+    animation-duration: 5s;
     opacity: 0.22;
   }
   .nx-region-grid {
-    animation-duration: 20s;
+    animation-duration: 10s;
   }
 }
 
