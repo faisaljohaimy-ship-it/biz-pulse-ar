@@ -1907,17 +1907,19 @@ export function FinnCopilot() {
 
       {/* Unified centered dock — identical placement at every breakpoint */}
       {isOpen && (
+        <div className="pointer-events-none fixed inset-0 z-[110] flex items-center justify-center p-[max(0.5rem,env(safe-area-inset-left))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))]">
         <aside
           role="complementary"
           aria-label="FINN executive copilot"
           dir="rtl"
           className={cn(
-            // Centered on every device: phone, tablet, laptop.
-            "nexus-window nexus-aria-window fixed left-1/2 top-1/2 z-[110] flex -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[1.7rem]",
+            // Perfectly centered on every device: phone, tablet, laptop.
+            "nexus-window nexus-aria-window pointer-events-auto relative flex flex-col overflow-hidden rounded-[1.7rem]",
             "w-[min(96vw,760px)]",
-            "h-[min(86dvh,760px)]",
+            "h-[min(86dvh,760px)] max-h-full",
           )}
         >
+
           {/* LAYER 0 — FINN cinematic backdrop */}
           <FinnPanelBackdrop convMode={convMode} caption={convCaption} />
           <FinnVoiceDebugBadge />
