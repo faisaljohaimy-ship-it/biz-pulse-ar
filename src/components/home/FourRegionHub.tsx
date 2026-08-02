@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { FinnHolographicPortal } from "@/components/home/FinnHolographicPortal";
 import { MicroMeter } from "@/components/charts/premium-charts";
+import { GlassSurface } from "@/components/visual/GlassSurface";
+import { CinematicReveal } from "@/components/visual/CinematicReveal";
 import {
   CC_REGIONS,
   CC_REGION_METRICS,
