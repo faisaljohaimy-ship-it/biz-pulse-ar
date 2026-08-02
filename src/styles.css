@@ -3491,3 +3491,177 @@ body {
   background: #ffffff;
   border-color: rgba(0, 0, 0, 0.12);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   GLASS GLOSS LAYER (owner directive) — كل البطاقات والأيقونات، وFINN،
+   زجاجية لامعة باستمرار في الوضعين الداكن والفاتح.
+   آخر كتلة في الملف ⇒ تسود على قواعد «الوضع الفاتح المسطّح» السابقة.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* 1) البطاقات — زجاج داكن لامع */
+.holo-card,
+.nx-glass-e1,
+.nexus-card,
+.finn-portal {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.10) 0%,
+      rgba(255, 255, 255, 0.035) 38%,
+      rgba(255, 255, 255, 0.015) 100%
+    ),
+    rgba(9, 22, 38, 0.55);
+  backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 0 22px rgba(var(--accent-rgb, 34, 211, 238), 0.16),
+    0 18px 44px rgba(2, 8, 17, 0.45);
+}
+
+/* لمعة علوية متحركة خفيفة على كل بطاقة زجاجية */
+.holo-card::before,
+.finn-portal::after {
+  opacity: 1 !important;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.75),
+    transparent
+  ) !important;
+}
+
+.holo-card:hover,
+.nx-glass-e1:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    0 0 30px rgba(var(--accent-rgb, 34, 211, 238), 0.24),
+    0 22px 54px rgba(2, 8, 17, 0.5);
+}
+
+/* 2) الوضع الفاتح — زجاج فاتح لامع (لا أبيض مسطّح) */
+.light .holo-card,
+.light .nx-glass-e1,
+.light .nexus-card,
+.light .finn-portal,
+.light .glass,
+.light .glass-sidebar,
+.light .nx-clock-bar {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(255, 255, 255, 0.62) 45%,
+      rgba(226, 240, 250, 0.55) 100%
+    );
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(148, 180, 205, 0.22),
+    0 0 20px rgba(var(--accent-rgb, 34, 211, 238), 0.14),
+    0 14px 34px rgba(15, 42, 70, 0.12);
+}
+
+.light .holo-card::before,
+.light .finn-portal::after {
+  opacity: 1 !important;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.98),
+    rgba(var(--accent-rgb, 34, 211, 238), 0.55),
+    transparent
+  ) !important;
+}
+
+.light .holo-card:hover,
+.light .nx-glass-e1:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 0 26px rgba(var(--accent-rgb, 34, 211, 238), 0.22),
+    0 18px 44px rgba(15, 42, 70, 0.16);
+}
+
+/* 3) FINN — زجاجي لامع في الوضعين مع بقاء حافته المتوهجة */
+.finn-portal::before {
+  opacity: 0.5;
+}
+.light .finn-portal::before {
+  opacity: 0.42;
+  filter: blur(6px);
+}
+.light .finn-glass-edge,
+.finn-glass-edge {
+  background-color: transparent;
+  background-image: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.04) 55%,
+    rgba(255, 255, 255, 0.12)
+  );
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.light .finn-glass-edge {
+  background-image: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.55) 55%,
+    rgba(224, 240, 250, 0.6)
+  );
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98);
+}
+
+/* 4) الأيقونات — قرص زجاجي لامع دائم */
+.holo-icon,
+.nx-icon-edge,
+[data-region-glow],
+.nx-region-card {
+  position: relative;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0.06) 55%,
+    rgba(255, 255, 255, 0.14)
+  );
+  backdrop-filter: blur(12px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 0 16px rgba(var(--nx-region-rgb, var(--accent-rgb, 34, 211, 238)), 0.28);
+}
+.light .holo-icon,
+.light .nx-icon-edge,
+.light [data-region-glow],
+.light .nx-region-card {
+  background-image: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.96),
+    rgba(255, 255, 255, 0.62) 55%,
+    rgba(226, 240, 250, 0.66)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 0 16px rgba(var(--nx-region-rgb, var(--accent-rgb, 34, 211, 238)), 0.25);
+}
+
+/* 5) طبقات الأجواء تعود في الوضع الفاتح بخفوت لتبقى الزجاجية مقروءة */
+.light .nx-holo-aurora,
+.light .nx-holo-grid {
+  display: block;
+  opacity: 0.14;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .holo-card,
+  .finn-portal,
+  .holo-icon,
+  .nx-icon-edge {
+    transition: none;
+  }
+}

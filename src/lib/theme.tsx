@@ -5,7 +5,7 @@ export type Theme = "dark" | "light";
 const ThemeCtx = createContext<{ theme: Theme; setTheme: (t: Theme) => void } | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
     const stored = (typeof window !== "undefined" && localStorage.getItem("theme")) as Theme | null;
