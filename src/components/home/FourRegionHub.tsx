@@ -149,7 +149,7 @@ function RegionCard({
     <article
       data-region={panel.id}
       data-region-active={active || undefined}
-      className="holo-card nx-glass-region nx-region-aura relative overflow-hidden rounded-2xl p-3"
+      className="holo-card nx-glass-region nx-region-aura nx-region-edge-freq relative overflow-hidden rounded-2xl p-3"
       style={{
         ["--accent-rgb" as string]: rgb,
         // كل منطقة تُشعّ وتلمع وتتموّج بلونها هي: نُثبّت لون الهالة محليًا
