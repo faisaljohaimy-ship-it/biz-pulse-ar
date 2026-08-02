@@ -262,11 +262,27 @@ function RootShell({ children }: { children: React.ReactNode }) {
   // the LTR→RTL flash for Arabic visitors. The inline ScriptOnce below
   // still upgrades to "en" when the user's localStorage says so.
   return (
-    <html lang="ar" dir="rtl" className="light" suppressHydrationWarning>
+    // `className` مقروء من JSX: كلّما أعاد React رسم <html> أعاد فرض القيمة
+    // المكتوبة هنا. فكتابة "light" ثابتةً كانت تمحو صنف `dark` الذي يضعه
+    // ThemeProvider بعد كل إعادة رسم — فيتعذّر تثبيت الوضع الداكن أصلًا.
+    // الحل: لا صنف ثيم في JSX؛ السكربت المانع أدناه يضعه قبل أول رسم
+    // (فلا وميض)، وThemeProvider يملكه بعدها وحده.
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
+        <script
+          // يسبق أول رسم: يقرأ الاختيار المحفوظ ويضع الصنف، والافتراضي فاتح.
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('theme');" +
+              "t=(t==='dark'||t==='light')?t:'light';" +
+              "var r=document.documentElement;" +
+              "r.classList.add(t);r.style.colorScheme=t;}" +
+              "catch(e){document.documentElement.classList.add('light');}})();",
+          }}
+        />
         <HeadContent />
       </head>
-      <body className="bg-[#F4F7FB]">
+      <body className="bg-background">
         {children}
         <Scripts />
       </body>

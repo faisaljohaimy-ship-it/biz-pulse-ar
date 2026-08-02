@@ -99,7 +99,8 @@ export function SparkArea({
   const H = height;
 
   const { line, area, head } = useMemo(() => {
-    if (values.length === 0) return { line: "", area: "", head: null as null | { x: number; y: number } };
+    if (values.length === 0)
+      return { line: "", area: "", head: null as null | { x: number; y: number } };
     const min = Math.min(...values);
     const max = Math.max(...values);
     const span = max - min || 1;
@@ -119,9 +120,19 @@ export function SparkArea({
   if (!line) return null;
 
   return (
-    <div ref={ref} className={className} aria-hidden={!label} role={label ? "img" : undefined} aria-label={label}>
+    <div
+      ref={ref}
+      className={className}
+      aria-hidden={!label}
+      role={label ? "img" : undefined}
+      aria-label={label}
+    >
       <ChartMotionStyles />
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-full w-full overflow-visible">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        className="h-full w-full overflow-visible"
+      >
         <defs>
           <linearGradient id={`fill-${id}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={`rgba(${accent}, .42)`} />
@@ -146,7 +157,9 @@ export function SparkArea({
               vectorEffect="non-scaling-stroke"
               style={{ ["--pc-len" as string]: 400, strokeDasharray: 400 }}
             />
-            {head && <circle className="pc-dot" cx={head.x} cy={head.y} r={2.4} fill={`rgb(${accent})`} />}
+            {head && (
+              <circle className="pc-dot" cx={head.x} cy={head.y} r={2.4} fill={`rgb(${accent})`} />
+            )}
           </>
         )}
       </svg>
@@ -182,7 +195,9 @@ export function MicroMeter({ ratio, accent = "34, 211, 238", className = "" }: M
       >
         <span
           className="pc-sheen absolute inset-y-0 w-1/3"
-          style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent)" }}
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent)",
+          }}
         />
       </div>
     </div>
@@ -218,7 +233,13 @@ export function RadialGauge({
   return (
     <div ref={ref} className="flex flex-col items-center gap-1.5" style={{ width: size }}>
       <ChartMotionStyles />
-      <svg viewBox="0 0 110 110" width={size} height={size} role="img" aria-label={`${label ?? ""} ${pct}%`}>
+      <svg
+        viewBox="0 0 110 110"
+        width={size}
+        height={size}
+        role="img"
+        aria-label={`${label ?? ""} ${pct}%`}
+      >
         <defs>
           <linearGradient id={`g-${id}`} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor={`rgb(${accent})`} />
@@ -286,12 +307,19 @@ export function BarSeries({
           const a = d.accent ?? accent;
           const h = Math.max(4, (d.value / max) * (height - 26));
           return (
-            <div key={d.label} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1.5">
+            <div
+              key={d.label}
+              className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
+            >
               <span className="text-[12px] font-bold tabular-nums text-[color:var(--ink,#111827)]">
                 {d.value}
               </span>
               <div
-                className={seen ? "pc-bar relative w-full overflow-hidden rounded-t-lg" : "relative w-full rounded-t-lg"}
+                className={
+                  seen
+                    ? "pc-bar relative w-full overflow-hidden rounded-t-lg"
+                    : "relative w-full rounded-t-lg"
+                }
                 style={{
                   height: seen ? h : 0,
                   animationDelay: `${i * 70}ms`,
@@ -302,12 +330,15 @@ export function BarSeries({
                 <span
                   className="pc-sheen absolute inset-y-0 w-1/2"
                   style={{
-                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent)",
+                    background:
+                      "linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent)",
                     animationDelay: `${i * 200}ms`,
                   }}
                 />
               </div>
-              <span className="w-full truncate text-center text-[12px] text-muted-foreground">{d.label}</span>
+              <span className="w-full truncate text-center text-[12px] text-muted-foreground">
+                {d.label}
+              </span>
             </div>
           );
         })}
@@ -343,7 +374,13 @@ export function DonutChart({
   return (
     <div ref={ref} className="flex items-center gap-4">
       <ChartMotionStyles />
-      <svg viewBox="0 0 110 110" width={size} height={size} role="img" aria-label={centerLabel ?? "distribution"}>
+      <svg
+        viewBox="0 0 110 110"
+        width={size}
+        height={size}
+        role="img"
+        aria-label={centerLabel ?? "distribution"}
+      >
         <circle cx="55" cy="55" r={r} fill="none" stroke="rgba(148,163,184,.18)" strokeWidth="11" />
         {total > 0 &&
           slices.map((s, i) => {
@@ -381,7 +418,13 @@ export function DonutChart({
           {total}
         </text>
         {centerLabel && (
-          <text x="55" y="68" textAnchor="middle" className="fill-current opacity-60" style={{ fontSize: 9 }}>
+          <text
+            x="55"
+            y="68"
+            textAnchor="middle"
+            className="fill-current opacity-60"
+            style={{ fontSize: 9 }}
+          >
             {centerLabel}
           </text>
         )}
@@ -394,7 +437,9 @@ export function DonutChart({
               style={{ background: `rgb(${s.accent})`, boxShadow: `0 0 8px rgba(${s.accent}, .8)` }}
             />
             <span className="truncate text-muted-foreground">{s.label}</span>
-            <span className="font-bold tabular-nums text-[color:var(--ink,#111827)]">{s.value}</span>
+            <span className="font-bold tabular-nums text-[color:var(--ink,#111827)]">
+              {s.value}
+            </span>
           </li>
         ))}
       </ul>

@@ -43,6 +43,10 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       {/* Unified FINN backdrop — single source of truth (see FinnUnifiedBackground) */}
       <FinnUnifiedBackground />
 
+      {/* لوح البريق الزجاجي — فوق كل شيء وشفاف تمامًا في وسطه، فلا يحجب
+          الهولوغرام الحيّ. تنسيقه في styles.css (.finn-glass-sheen). */}
+      <div aria-hidden className="finn-glass-sheen" />
+
       {/* Portrait — face-first, fully visible, centred */}
       {/* Live holographic FINN — WebGL scene, not a static image */}
       <FinnLiveHologram

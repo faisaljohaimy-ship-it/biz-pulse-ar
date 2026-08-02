@@ -101,7 +101,6 @@ export async function runAgent(
     throw new Error(`Forbidden: missing role for agent ${agentId}`);
   }
 
-
   const goal = (goalOverride?.trim() || agent.goal).trim();
   const correlationId = crypto.randomUUID();
 

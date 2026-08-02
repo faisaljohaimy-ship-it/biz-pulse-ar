@@ -82,7 +82,6 @@ export function CanonicalFinnRoute() {
           ))}
         </div>
 
-
         <button
           type="button"
           onClick={() => open({ focus: true })}

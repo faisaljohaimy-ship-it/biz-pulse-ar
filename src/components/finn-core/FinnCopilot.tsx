@@ -1861,7 +1861,6 @@ export function FinnCopilot() {
 
   const tree = (
     <>
-
       {/* Launcher FAB — hidden while docked */}
       {!isOpen && (
         <button
@@ -2374,5 +2373,4 @@ export function FinnCopilot() {
   // every device.
   if (typeof document === "undefined") return tree;
   return createPortal(tree, document.body);
-
 }

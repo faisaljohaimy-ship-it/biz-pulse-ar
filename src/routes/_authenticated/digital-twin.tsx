@@ -787,7 +787,7 @@ function Starfield() {
           cx={`${s.x}%`}
           cy={`${s.y}%`}
           r={s.r}
-          fill="white"
+          fill="currentColor"
           style={{ animation: `star-twinkle ${3 + (i % 5)}s ease-in-out ${s.d}s infinite` }}
         />
       ))}

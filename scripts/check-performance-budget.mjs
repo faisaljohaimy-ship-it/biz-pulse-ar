@@ -68,7 +68,7 @@ const largestJs = [...js].sort((a, b) => b.size - a.size)[0];
 const largestMedia = [...media].sort((a, b) => b.size - a.size)[0];
 const describe = (file) => `${mib(file.size)} ${relative(ROOT, file.absolute)}`;
 
-console.log("Enjaz Business Platform production performance budget");
+console.log("سَدِيد | SADEED — production performance budget");
 assertBudget("Total public output", total, budgets.totalOutput);
 assertBudget("Total JavaScript", jsTotal, budgets.totalJavaScript);
 assertBudget(

@@ -94,7 +94,10 @@ export function InteractiveArea({
   }, [points, H]);
 
   const active = hover != null && geo ? points[hover] : null;
-  const shownValue = useAnimatedNumber(active?.value ?? points[points.length - 1]?.value ?? 0, reduce);
+  const shownValue = useAnimatedNumber(
+    active?.value ?? points[points.length - 1]?.value ?? 0,
+    reduce,
+  );
 
   if (!geo) return null;
 
@@ -167,7 +170,12 @@ export function InteractiveArea({
               strokeWidth="1"
               strokeDasharray="3 4"
             />
-            <circle cx={geo.pts[hover].x} cy={geo.pts[hover].y} r="7" fill={`rgba(${accent}, .18)`} />
+            <circle
+              cx={geo.pts[hover].x}
+              cy={geo.pts[hover].y}
+              r="7"
+              fill={`rgba(${accent}, .18)`}
+            />
             <circle cx={geo.pts[hover].x} cy={geo.pts[hover].y} r="3.4" fill={`rgb(${accent})`} />
           </g>
         )}

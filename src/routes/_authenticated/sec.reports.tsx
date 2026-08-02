@@ -25,11 +25,7 @@ import {
   BarChart3,
   TrendingUp,
 } from "lucide-react";
-import {
-  DonutChart,
-  BarSeries,
-  RadialGauge,
-} from "@/components/charts/premium-charts";
+import { DonutChart, BarSeries, RadialGauge } from "@/components/charts/premium-charts";
 import { InteractiveArea } from "@/components/charts/interactive-area";
 import {
   generateDailyOperationsReport,
@@ -418,7 +414,13 @@ function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
       excel: "16, 185, 129",
       csv: "245, 158, 11",
     };
-    const KIND_ACCENT = ["37, 99, 235", "6, 182, 212", "139, 92, 246", "16, 185, 129", "245, 158, 11"];
+    const KIND_ACCENT = [
+      "37, 99, 235",
+      "6, 182, 212",
+      "139, 92, 246",
+      "16, 185, 129",
+      "245, 158, 11",
+    ];
 
     return {
       total: rows.length,
@@ -433,7 +435,11 @@ function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
       kinds: [...byKind.entries()]
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
-        .map(([label, value], i) => ({ label, value, accent: KIND_ACCENT[i % KIND_ACCENT.length] })),
+        .map(([label, value], i) => ({
+          label,
+          value,
+          accent: KIND_ACCENT[i % KIND_ACCENT.length],
+        })),
       perDay,
     };
   }, [rows]);

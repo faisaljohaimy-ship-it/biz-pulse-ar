@@ -109,7 +109,17 @@ function Ring({ pct, color }: { pct: number; color: string }) {
         strokeDashoffset={offset}
         transform="rotate(-90 28 28)"
       />
-      <text x="28" y="31" textAnchor="middle" fontSize="12" fontWeight="700" fill="white">
+      {/* fill="white" كان يخفي النسبة تمامًا في الوضع الفاتح — أبيض على أبيض.
+          currentColor يجعلها تتبع لون النص المحيط في الوضعين. */}
+      <text
+        x="28"
+        y="31"
+        textAnchor="middle"
+        fontSize="12"
+        fontWeight="700"
+        fill="currentColor"
+        className="text-[color:var(--ink)]"
+      >
         {Math.round(pct)}%
       </text>
     </svg>
@@ -136,15 +146,14 @@ function RegionCard({
 
   return (
     <article
-      className="holo-card relative overflow-hidden rounded-2xl p-3"
+      className="holo-card nx-glass-region relative overflow-hidden rounded-2xl p-3"
       style={{
         ["--accent-rgb" as string]: hexToRgbTriplet(color),
         borderColor: active ? color : `${color}55`,
-        // لوحة المنطقة تُلوَّن بلهجة منطقتها فوق أساس يتبع الوضع: كحلي في
-        // الداكن، أبيض في الفاتح. اللهجة تبقى في الطرفين فلا تضيع هوية المنطقة.
-        background: light
-          ? `linear-gradient(135deg, ${color}14, #ffffff 58%, #ffffff)`
-          : `linear-gradient(135deg, ${color}18, rgba(4,17,31,.76) 58%, rgba(4,7,15,.92))`,
+        // لهجة المنطقة تُمرَّر كمتغيّر لا كخلفية جاهزة. الخلفية الجاهزة inline
+        // تتفوّق على أي صنف، فكانت تمحو بريق الزجاج عن هذه اللوحات الأربع
+        // وحدها. الآن تتركّب في styles.css فوق حشوة الزجاج وتحت بريقه.
+        ["--region-tint" as string]: `${color}${light ? "14" : "1f"}`,
       }}
     >
       <button
@@ -176,7 +185,7 @@ function RegionCard({
           <Link
             key={metric.key}
             to={metric.to}
-            className="flex min-h-12 flex-col items-center justify-center rounded-xl border border-[color:var(--hairline-soft)] bg-[color:var(--chip)] px-1 py-1.5 text-center transition hover:border-[color:var(--hairline-hover)] hover:bg-[color:var(--chip-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+            className="nx-glass flex min-h-12 flex-col items-center justify-center rounded-xl border border-[color:var(--hairline-soft)] px-1 py-1.5 text-center transition hover:border-[color:var(--hairline-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
           >
             <span className="text-sm font-black tabular-nums text-[color:var(--ink)]">
               {panel.metrics[metric.key]}
@@ -356,11 +365,7 @@ export function FourRegionHub() {
         </div>
       )}
 
-      <CinematicReveal
-        className="relative mt-4"
-        selector="[data-cinematic]"
-        lightSweep
-      >
+      <CinematicReveal className="relative mt-4" selector="[data-cinematic]" lightSweep>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
           {kpis.map(({ labelAr, labelEn, value, Icon, tone, accent, to }) => {
             // Honest encoding only: percentages map directly, counts map to their
@@ -374,11 +379,7 @@ export function FourRegionHub() {
             );
             const ratio = isPct ? numeric / 100 : numeric / maxCount;
             return (
-              <GlassSurface
-                key={labelEn}
-                accent={accent}
-                className="rounded-2xl"
-              >
+              <GlassSurface key={labelEn} accent={accent} className="rounded-2xl">
                 <Link
                   data-cinematic
                   to={to}
@@ -451,7 +452,7 @@ export function FourRegionHub() {
                 <Link
                   to="/situation-room"
                   aria-label={`${alert.title_ar} — ${alert.department}`}
-                  className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-[color:var(--hairline-soft)] bg-[color:var(--chip)] px-3 py-2 text-xs transition hover:border-[color:var(--hairline-hover)] hover:bg-[color:var(--chip-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+                  className="nx-glass flex min-h-11 items-center justify-between gap-3 rounded-xl border border-[color:var(--hairline-soft)] px-3 py-2 text-xs transition hover:border-[color:var(--hairline-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
                 >
                   <span className="flex min-w-0 items-center gap-2">
                     <span

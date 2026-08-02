@@ -1,4 +1,4 @@
-# NEXIOS AI OS — Security
+# سَدِيد | SADEED — Security
 
 ## Authentication and authorization
 

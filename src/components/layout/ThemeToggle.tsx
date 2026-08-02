@@ -16,9 +16,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label={
-        isDark ? (ar ? "الوضع الفاتح" : "Light mode") : ar ? "الوضع الداكن" : "Dark mode"
-      }
+      aria-label={isDark ? (ar ? "الوضع الفاتح" : "Light mode") : ar ? "الوضع الداكن" : "Dark mode"}
       title={isDark ? (ar ? "الوضع الفاتح" : "Light mode") : ar ? "الوضع الداكن" : "Dark mode"}
       className="fixed top-[calc(env(safe-area-inset-top)+0.75rem)] z-[70] inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary/35 bg-background/85 text-foreground shadow-lg backdrop-blur-md transition-colors hover:border-primary/70 hover:bg-primary/10 ltr:right-3 rtl:left-3"
     >

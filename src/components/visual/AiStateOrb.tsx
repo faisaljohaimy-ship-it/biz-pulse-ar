@@ -19,7 +19,10 @@ const STATE = {
   thinking: { scale: [1, 1.02, 1], dur: 2.6, ring: 0.55, spin: 5, bars: 0.5 },
   speaking: { scale: [1, 1.1, 1], dur: 0.9, ring: 0.9, spin: 10, bars: 1 },
   processing: { scale: [1, 1.04, 1], dur: 1.4, ring: 0.8, spin: 3, bars: 0.7 },
-} as const satisfies Record<AiOrbState, { scale: number[]; dur: number; ring: number; spin: number; bars: number }>;
+} as const satisfies Record<
+  AiOrbState,
+  { scale: number[]; dur: number; ring: number; spin: number; bars: number }
+>;
 
 export interface AiStateOrbProps {
   state?: AiOrbState;

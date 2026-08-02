@@ -3450,11 +3450,11 @@ body {
 
 /* البطاقات الهولوغرامية: الحشوة الكحلية تصبح بيضاء، ويبقى الحدّ المتدرّج
    هو ما يرسم الحافة — فلا تذوب البطاقة في الصفحة. */
+/* الحشوة البيضاء تُترك لرموز الزجاج في آخر الملف كي لا تتعارض نوعية
+   المحدِّد (.light .holo-card أقوى من .holo-card) فتمحو البريق. هنا يبقى
+   الحدّ وحده. */
 .light .holo-card {
-  background:
-    linear-gradient(#ffffff, #ffffff) padding-box,
-    var(--holo-border) border-box;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-color: rgba(15, 40, 70, 0.16);
 }
 
 /* الوهج الخارجي المُعدّ مسبقًا مبني على إضاءة فوق سطح داكن؛ فوق الأبيض
@@ -5980,4 +5980,194 @@ html.dark .nx-holo-noise {
 html.dark .finn-portal,
 html.dark .finn-portal:hover {
   border-color: rgba(125, 211, 252, 0.28) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   الزجاج اللامع الدائم — بطاقات · أيقونات · بوابة FINN، في الوضعين.
+
+   توجيه المالك: «البطاقات والأيقونات في جميع الأوضاع زجاجية لامعة باستمرار،
+   وفِن كذلك في الداكن والفاتح.» الكلمة الحاسمة «باستمرار»: اللمعان كان قبل
+   هذا معلَّقًا على :hover في معظم الأسطح، فيراه من يمرّ بالفأرة وحده — ولا
+   يراه أحد على الجوال إطلاقًا. هنا يصير حالةً ساكنة، والتمرير يزيدها فقط.
+
+   لماذا في آخر الملف: `.holo-card` مُعرَّفة مرتين قبل هذا الموضع (نظام
+   الحشوة ونظام الحافة الهولوغرامية). الكتابة هنا تجعل هذه الطبقة هي
+   الحاكمة بترتيب التتالي دون حذف أيٍّ من التعريفين ودون !important.
+
+   حدّ الأداء المحفوظ في هذا الملف: «لا backdrop-filter لكل بطاقة — عشرون
+   بطاقة مموّهة فوق خلفية متحركة تقتل معدّل الإطارات». الحدّ يُحترم لا
+   يُلغى: اللمعان هنا مبنيّ على تدرّجات وظلال داخلية وهي رخيصة على المُركِّب،
+   والتمويه الفعلي محصور في الأسطح القليلة العدد (بوابة FINN والنوافذ
+   والشريط الجانبي) التي كانت تحمله أصلًا.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* الحشوة الزجاجية */
+  --glass-fill: rgba(9, 26, 46, 0.66);
+  /* البريق: ضوء يسقط من أعلى البطاقة ويخبو عند ثلثها — هذا ما يقرأه
+     البصر «زجاجًا لامعًا» أكثر من التمويه نفسه. */
+  --glass-sheen: linear-gradient(
+    152deg,
+    rgba(255, 255, 255, 0.17) 0%,
+    rgba(255, 255, 255, 0.06) 20%,
+    rgba(255, 255, 255, 0) 44%
+  );
+  /* وميض حافّي أسفل الحدّ العلوي، وظلّ عند القاعدة: يعطيان سُمك اللوح. */
+  --glass-rim: rgba(255, 255, 255, 0.24);
+  --glass-shade: rgba(0, 0, 0, 0.3);
+  --glass-lift: 0 18px 42px -20px rgba(0, 0, 0, 0.62);
+  --glass-edge: rgba(255, 255, 255, 0.14);
+}
+
+.light {
+  /* أبيض شبه معتم: يبقى «النظام كامل أبيض» ويكسب عمق الزجاج. */
+  --glass-fill: rgba(255, 255, 255, 0.78);
+  --glass-sheen: linear-gradient(
+    152deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(233, 243, 251, 0.58) 24%,
+    rgba(255, 255, 255, 0) 50%
+  );
+  --glass-rim: rgba(255, 255, 255, 1);
+  --glass-shade: rgba(15, 40, 70, 0.09);
+  --glass-lift: 0 12px 30px -18px rgba(15, 40, 70, 0.3);
+  --glass-edge: rgba(15, 40, 70, 0.14);
+}
+
+/* ── البطاقات ─────────────────────────────────────────────────────────── */
+.holo-card,
+.nexus-card,
+.nx-glass {
+  background:
+    var(--glass-sheen) padding-box,
+    linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -1px 0 var(--glass-shade),
+    var(--glass-lift);
+}
+
+/* التمرير يعمّق اللمعان ولا يخلقه — الحالة الساكنة لامعة أصلًا. */
+.holo-card:hover,
+.nexus-card:hover,
+.nx-glass:hover {
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -1px 0 var(--glass-shade),
+    0 0 26px rgba(var(--accent-rgb, 34, 211, 238), 0.18),
+    var(--glass-lift);
+}
+
+/* ── الأيقونات: الحاوية لوح زجاجي صغير ────────────────────────────────── */
+.nx-glass-icon {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--glass-edge);
+  background:
+    var(--glass-sheen) padding-box,
+    linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -1px 0 var(--glass-shade),
+    0 6px 16px -10px rgba(0, 0, 0, 0.5);
+}
+/* خطّ ضوء علوي رفيع — نفس حيلة البطاقة بمقاس الأيقونة. */
+.nx-glass-icon::after {
+  content: "";
+  position: absolute;
+  inset-inline: 22%;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--glass-rim), transparent);
+}
+
+/* ── بوابة FINN: لوح زجاجي فوق الهولوغرام، لا بدلًا منه ────────────────── */
+/* الهولوغرام مشهد WebGL حيّ؛ أي حشوة معتمة فوقه تحجبه. فالبريق يُركَّب
+   كطبقة علوية شفافة تمامًا في وسطها، ومعها حافة زجاجية وظلّ رفع. */
+.finn-portal {
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 0 34px rgba(var(--finn-edge, 34, 211, 238), 0.05),
+    inset 0 -1px 0 var(--glass-shade),
+    0 0 22px rgba(var(--finn-edge, 34, 211, 238), 0.14),
+    var(--glass-lift);
+  -webkit-backdrop-filter: blur(2px) saturate(125%);
+  backdrop-filter: blur(2px) saturate(125%);
+}
+/* غلاف البريق: عنصر مستقل حتى لا يُزاحم ::before (الوهج) و::after (خط الضوء)
+   القائمين على هذه البوابة. */
+.finn-portal > .finn-glass-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      152deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.05) 18%,
+      rgba(255, 255, 255, 0) 40%
+    ),
+    radial-gradient(120% 60% at 50% 108%, rgba(255, 255, 255, 0.07), transparent 62%);
+}
+.light .finn-portal > .finn-glass-sheen {
+  background:
+    linear-gradient(
+      152deg,
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(255, 255, 255, 0.14) 20%,
+      rgba(255, 255, 255, 0) 44%
+    ),
+    radial-gradient(120% 60% at 50% 108%, rgba(255, 255, 255, 0.18), transparent 62%);
+}
+/* في الوضع الفاتح تُحاط البوابة بإطار أبيض فتندمج مع الصفحة بدل أن تبدو
+   ثقبًا أسود في لوح أبيض. */
+.light .finn-portal {
+  border-color: rgba(15, 40, 70, 0.18);
+}
+
+/* ── الاحترامات الإلزامية ─────────────────────────────────────────────── */
+/* من يطلب شفافية أقل يحصل على أسطح صمّاء مقروءة، لا زجاجًا مخفَّفًا. */
+@media (prefers-reduced-transparency: reduce) {
+  .holo-card,
+  .nexus-card,
+  .nx-glass,
+  .nx-glass-icon {
+    background: var(--card);
+    box-shadow: none;
+  }
+  .finn-portal,
+  .finn-portal > .finn-glass-sheen {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: none;
+  }
+}
+/* أوضاع التباين القسري: النظام يرسم الأسطح بنفسه، وأي بريق يفسدها. */
+@media (forced-colors: active) {
+  .holo-card,
+  .nexus-card,
+  .nx-glass,
+  .nx-glass-icon,
+  .finn-portal {
+    background: Canvas;
+    box-shadow: none;
+    border: 1px solid CanvasText;
+  }
+  .finn-portal > .finn-glass-sheen,
+  .nx-glass-icon::after {
+    display: none;
+  }
+}
+
+/* لوحات المناطق الأربع: لهجة المنطقة طبقة وسطى بين حشوة الزجاج وبريقه،
+   بدل خلفية inline كانت تتفوّق على الصنف فتمحو البريق عن هذه اللوحات وحدها. */
+.nx-glass-region {
+  background:
+    var(--glass-sheen) padding-box,
+    linear-gradient(135deg, var(--region-tint, transparent), transparent 58%) padding-box,
+    linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
 }

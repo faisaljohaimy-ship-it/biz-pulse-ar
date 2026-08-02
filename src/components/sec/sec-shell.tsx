@@ -211,9 +211,7 @@ export function StatCard({
   const t = STAT_TONES[tone];
   const Icon = t.icon;
   return (
-    <div
-      className={cn("relative rounded-xl border bg-card p-4 shadow-sm transition-colors", t.card)}
-    >
+    <div className={cn("nx-glass relative rounded-xl border p-4 transition-colors", t.card)}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5">
           {/* aria-hidden: the badge beside it already states the tone in words,

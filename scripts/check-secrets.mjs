@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Enjaz Platform secret-leak guard (production-readiness §P3).
+ * SADEED secret-leak guard (production-readiness §P3).
  *
  * Fails the build if the git-tracked tree contains anything that must never
  * ship: a real `.env` file, a database dump, or a hard-coded credential.

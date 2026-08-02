@@ -188,6 +188,10 @@ function useNavGroups(): NavGroup[] {
         { to: "/voice", icon: Mic, label: ar("المساعد الصوتي", "Voice Assistant") },
         { to: "/agents", icon: Bot, label: ar("منصة عمليات الوكلاء", "Agent Operations Platform") },
         { to: "/sec/ai", icon: Brain, label: ar("توصيات FINN", "FINN Recos") },
+        // هاتان الشاشتان كانتا موجودتين بلا رابط في أي سطح تنقّل، فلم يكن
+        // للمالك سبيل لبلوغهما إلا بكتابة العنوان يدويًا (بندا المراجعة 52 و54).
+        { to: "/finn-analytics", icon: BarChart3, label: ar("تحليلات FINN", "FINN Analytics") },
+        { to: "/observability", icon: RadioTower, label: ar("الرصد والتكاليف", "Observability") },
       ],
     },
     {
@@ -342,8 +346,17 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function ThemeIconToggle() {
-  // SADEED is Premium Light Mode only — no theme switch exists.
-  return null;
+  const { theme, setTheme } = useTheme();
+  const { t } = useI18n();
+  return (
+    <button
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="nx-glass-icon grid size-9 place-items-center rounded-full text-muted-foreground transition hover:text-foreground"
+      aria-label={t("theme.toggle")}
+    >
+      {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+    </button>
+  );
 }
 
 function LangIconToggle() {
