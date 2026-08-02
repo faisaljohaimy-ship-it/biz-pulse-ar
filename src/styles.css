@@ -6512,12 +6512,12 @@ html.dark .nx-region-aura {
     rgba(var(--hx-ic, 34, 211, 238), var(--nxr-ripple-fill, 0.16)) 0%,
     transparent 66%
   );
-  animation: nx-region-ripple 3.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation: nx-region-ripple 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   will-change: transform, opacity;
 }
 
 .nx-region-ripple--delayed {
-  animation-delay: 1.6s;
+  animation-delay: 1s;
 }
 
 /* لمعان مائل يعبر السطح: أبيض خفيف على الفاتح، ولون المنطقة هو الأبرز */
