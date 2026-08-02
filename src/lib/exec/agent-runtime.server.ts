@@ -89,9 +89,18 @@ export async function runAgent(
   if (defErr || !def) throw new Error(`Agent not found: ${agentId}`);
   const agent = def as AgentDef & { org_id: string };
   if (!agent.enabled) throw new Error(`Agent disabled: ${agentId}`);
-  if (!(await hasAnyPlatformRole(actorId, agent.permissions ?? []))) {
+  // Agent `permissions` may hold scope strings (e.g. "read:sec") or be empty
+  // for legacy rows; neither maps to a platform role. Gate on the platform
+  // roles actually named in the list, falling back to admin/manager so the
+  // check stays a real gate instead of blocking every agent.
+  const namedPlatformRoles = (agent.permissions ?? []).filter(
+    (p) => p === "admin" || p === "manager" || p === "member",
+  );
+  const requiredRoles = namedPlatformRoles.length ? namedPlatformRoles : ["admin", "manager"];
+  if (!(await hasAnyPlatformRole(actorId, requiredRoles))) {
     throw new Error(`Forbidden: missing role for agent ${agentId}`);
   }
+
 
   const goal = (goalOverride?.trim() || agent.goal).trim();
   const correlationId = crypto.randomUUID();
