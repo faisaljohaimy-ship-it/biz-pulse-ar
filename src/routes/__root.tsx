@@ -39,6 +39,7 @@ import { useIntroActive } from "@/lib/intro-store";
 import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
 import { GlobalBackButton } from "@/components/layout/GlobalBackButton";
 import { HoloAmbience } from "@/components/layout/HoloAmbience";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 import { RegionProvider } from "@/lib/region-context";
