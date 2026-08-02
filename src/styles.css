@@ -6643,3 +6643,13 @@ html.dark .nx-region-aura {
     box-shadow: 0 0 14px -4px rgba(var(--hx-ic, 34, 211, 238), 0.6);
   }
 }
+
+/* ── FINN card: static by owner directive — no motion of any kind ───── */
+.finn-portal--static,
+.finn-portal--static *,
+.finn-portal--static::before,
+.finn-portal--static::after,
+.finn-portal--static *::before,
+.finn-portal--static *::after {
+  animation: none !important;
+}
