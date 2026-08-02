@@ -112,10 +112,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <SadeedName size="sm" />
           </div>
+          {/* OWNER DIRECTIVE: مبدّل الوضع يُحذف من الشريط العلوي ويبقى في
+              الشريط الجانبي وحده (ThemeIconToggle في تذييل SidebarBody) —
+              كان مكرَّرًا في الموضعين. الرئيسية استثناء لأنها خارج هذه القشرة
+              ولا شريط جانبي لها، فمبدّلها في HomeTopNav. */}
           <div className="flex items-center gap-2">
             <TopUtilityBar />
             <OrgSwitcher compact />
-            <ThemeToggle />
           </div>
         </header>
         <main className="nexus-main min-w-0 flex-1">
@@ -335,20 +338,6 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const { t } = useI18n();
-  return (
-    <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground"
-      aria-label={t("theme.toggle")}
-    >
-      {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-    </button>
   );
 }
 

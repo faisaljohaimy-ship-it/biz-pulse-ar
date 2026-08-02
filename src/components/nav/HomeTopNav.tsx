@@ -19,8 +19,10 @@
  *   الذكاء الاصطناعي → /finn      FINN التنفيذية
  */
 import { Link } from "@tanstack/react-router";
+import { Moon, Sun } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { isRouteHidden } from "@/lib/nav/hidden-routes";
+import { useTheme } from "@/lib/theme";
 
 interface TopNavItem {
   readonly to: string;
@@ -38,6 +40,42 @@ const ITEMS: readonly TopNavItem[] = [
   { to: "/finn", ar: "الذكاء الاصطناعي", en: "AI" },
 ];
 
+/**
+ * مبدّل الوضع على الصفحة الرئيسية.
+ *
+ * الرئيسية لا تملك الشريط الأيمن (هي خارج AppShell)، فلو بقي المبدّل في
+ * الشريط وحده لَما وُجد له أثر هنا إطلاقًا — وهو ما جعل الوضع الفاتح يبدو
+ * معطّلًا. مكانه هنا هو الطرف الوحيد المتاح للزائر على هذه الصفحة.
+ */
+function HomeThemeToggle({ ar }: { readonly ar: boolean }) {
+  const { theme, setTheme } = useTheme();
+  const light = theme === "light";
+  const label = light
+    ? ar
+      ? "التحويل إلى الوضع الداكن"
+      : "Switch to dark mode"
+    : ar
+      ? "التحويل إلى الوضع الفاتح"
+      : "Switch to light mode";
+
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(light ? "dark" : "light")}
+      // aria-pressed يجعل الحالة مسموعة لقارئ الشاشة، لا مرئية بالأيقونة فقط.
+      aria-pressed={light}
+      aria-label={label}
+      title={label}
+      className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg border border-[color:var(--hairline)] bg-[color:var(--chip)] px-3 text-[13px] font-semibold text-[color:var(--ink-2)] transition hover:bg-[color:var(--chip-hover)] hover:text-[color:var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-500"
+    >
+      {light ? <Moon className="h-4 w-4" aria-hidden /> : <Sun className="h-4 w-4" aria-hidden />}
+      <span className="hidden sm:inline">
+        {light ? (ar ? "داكن" : "Dark") : ar ? "فاتح" : "Light"}
+      </span>
+    </button>
+  );
+}
+
 export function HomeTopNav() {
   const { locale } = useI18n();
   const ar = locale === "ar";
@@ -49,24 +87,27 @@ export function HomeTopNav() {
     <nav
       aria-label={ar ? "التنقّل الرئيسي" : "Primary navigation"}
       dir={ar ? "rtl" : "ltr"}
-      className="relative z-20 w-full border-b border-white/10 bg-[#04070F]/70 backdrop-blur-sm"
+      className="relative z-20 w-full border-b border-[color:var(--hairline)] bg-[color:var(--surface)]/70 backdrop-blur-sm"
     >
       {/* Scrolls horizontally on narrow screens so the row never wraps into a
           ragged block and never forces the PAGE to scroll sideways. */}
-      <ul className="mx-auto flex w-full max-w-[1400px] items-center gap-1 overflow-x-auto px-3 py-1.5 sm:gap-2 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {items.map((item) => (
-          <li key={item.to} className="shrink-0">
-            <Link
-              to={item.to}
-              activeOptions={{ exact: item.to === "/" }}
-              // ≥44px touch target via min-h-11, per the accessibility floor.
-              className="inline-flex min-h-11 items-center rounded-lg px-3 text-[13px] font-semibold text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 aria-[current=page]:bg-cyan-400/15 aria-[current=page]:text-white sm:text-sm"
-            >
-              {ar ? item.ar : item.en}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <div className="mx-auto flex w-full max-w-[1400px] items-center gap-2 px-3 py-1.5 sm:px-6">
+        <ul className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto sm:gap-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {items.map((item) => (
+            <li key={item.to} className="shrink-0">
+              <Link
+                to={item.to}
+                activeOptions={{ exact: item.to === "/" }}
+                // ≥44px touch target via min-h-11, per the accessibility floor.
+                className="inline-flex min-h-11 items-center rounded-lg px-3 text-[13px] font-semibold text-[color:var(--ink-2)] transition hover:bg-[color:var(--chip-hover)] hover:text-[color:var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-500 aria-[current=page]:bg-cyan-400/15 aria-[current=page]:text-[color:var(--ink)] sm:text-sm"
+              >
+                {ar ? item.ar : item.en}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <HomeThemeToggle ar={ar} />
+      </div>
     </nav>
   );
 }

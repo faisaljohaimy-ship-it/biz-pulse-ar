@@ -22,6 +22,7 @@ import {
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 
@@ -60,14 +61,14 @@ function LiveClock({ ar }: { ar: boolean }) {
 
   return (
     <div className="leading-tight">
-      <div className="font-semibold tabular-nums text-cyan-300">
+      <div className="font-semibold tabular-nums text-[color:var(--tone-cyan)]">
         {now?.toLocaleTimeString(ar ? "ar-SA" : "en-US", {
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
         }) ?? "—"}
       </div>
-      <div className="text-[12px] text-white/50">
+      <div className="text-[12px] text-[color:var(--ink-3)]">
         {now?.toLocaleDateString(ar ? "ar-SA" : "en-US", {
           weekday: "long",
           day: "numeric",
@@ -128,6 +129,7 @@ function RegionCard({
   onSelect: () => void;
 }) {
   const region = REGIONS.find((item) => item.id === panel.id)!;
+  const light = useTheme().theme === "light";
 
   return (
     <article
@@ -135,7 +137,11 @@ function RegionCard({
       style={{
         ["--accent-rgb" as string]: hexToRgbTriplet(color),
         borderColor: active ? color : `${color}55`,
-        background: `linear-gradient(135deg, ${color}18, rgba(4,17,31,.76) 58%, rgba(4,7,15,.92))`,
+        // لوحة المنطقة تُلوَّن بلهجة منطقتها فوق أساس يتبع الوضع: كحلي في
+        // الداكن، أبيض في الفاتح. اللهجة تبقى في الطرفين فلا تضيع هوية المنطقة.
+        background: light
+          ? `linear-gradient(135deg, ${color}14, #ffffff 58%, #ffffff)`
+          : `linear-gradient(135deg, ${color}18, rgba(4,17,31,.76) 58%, rgba(4,7,15,.92))`,
       }}
     >
       <button
@@ -151,12 +157,12 @@ function RegionCard({
               {ar ? region.shortAr : region.shortEn}
             </span>
             {active && (
-              <span className="shrink-0 rounded-md border border-white/25 bg-white/10 px-1.5 py-0.5 text-[12px] font-semibold text-white">
+              <span className="shrink-0 rounded-md border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] px-1.5 py-0.5 text-[12px] font-semibold text-[color:var(--ink)]">
                 {ar ? "المنطقة الحالية" : "Current"}
               </span>
             )}
           </div>
-          <div className="mt-1 truncate text-xs text-white/65">
+          <div className="mt-1 truncate text-xs text-[color:var(--ink-2)]">
             {ar ? panel.subtitleAr : panel.subtitleEn}
           </div>
         </div>
@@ -167,12 +173,14 @@ function RegionCard({
           <Link
             key={metric.key}
             to={metric.to}
-            className="flex min-h-12 flex-col items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.025] px-1 py-1.5 text-center transition hover:border-white/20 hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+            className="flex min-h-12 flex-col items-center justify-center rounded-xl border border-[color:var(--hairline-soft)] bg-[color:var(--chip)] px-1 py-1.5 text-center transition hover:border-[color:var(--hairline-hover)] hover:bg-[color:var(--chip-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
           >
-            <span className="text-sm font-black tabular-nums text-white">
+            <span className="text-sm font-black tabular-nums text-[color:var(--ink)]">
               {panel.metrics[metric.key]}
             </span>
-            <span className="mt-0.5 text-[12px] text-white/65">{ar ? metric.ar : metric.en}</span>
+            <span className="mt-0.5 text-[12px] text-[color:var(--ink-2)]">
+              {ar ? metric.ar : metric.en}
+            </span>
           </Link>
         ))}
       </div>
@@ -210,7 +218,7 @@ export function FourRegionHub() {
       labelEn: "Active agents",
       value: counters?.agents_active ?? 0,
       Icon: Bot,
-      tone: "text-emerald-300",
+      tone: "text-[color:var(--tone-emerald)]",
       accent: "52, 211, 153",
       to: "/nx-agents",
     },
@@ -219,7 +227,7 @@ export function FourRegionHub() {
       labelEn: "Pending approval",
       value: counters?.proposals_pending ?? 0,
       Icon: ShieldCheck,
-      tone: "text-cyan-300",
+      tone: "text-[color:var(--tone-cyan)]",
       accent: "34, 211, 238",
       to: "/decisions",
     },
@@ -228,7 +236,7 @@ export function FourRegionHub() {
       labelEn: "Urgent work",
       value: counters?.urgent_open ?? 0,
       Icon: Siren,
-      tone: "text-rose-300",
+      tone: "text-[color:var(--tone-rose)]",
       accent: "251, 113, 133",
       to: "/urgent-ops",
     },
@@ -237,7 +245,7 @@ export function FourRegionHub() {
       labelEn: "In progress",
       value: counters?.support_processing ?? 0,
       Icon: Clock3,
-      tone: "text-amber-300",
+      tone: "text-[color:var(--tone-amber)]",
       accent: "245, 158, 11",
       to: "/operations",
     },
@@ -246,7 +254,7 @@ export function FourRegionHub() {
       labelEn: "Completed today",
       value: counters?.done_today ?? 0,
       Icon: CheckCircle2,
-      tone: "text-emerald-300",
+      tone: "text-[color:var(--tone-emerald)]",
       accent: "52, 211, 153",
       to: "/execution",
     },
@@ -255,7 +263,7 @@ export function FourRegionHub() {
       labelEn: "Compliance",
       value: `${counters?.compliance_avg ?? 0}%`,
       Icon: Activity,
-      tone: "text-cyan-300",
+      tone: "text-[color:var(--tone-cyan)]",
       accent: "34, 211, 238",
       to: "/hcis-compliance",
     },
@@ -279,7 +287,7 @@ export function FourRegionHub() {
     <section
       aria-label={ar ? "SADEED" : "Unified Work Execution Platform"}
       data-nx-frozen="false"
-      className="relative overflow-hidden rounded-3xl border border-cyan-400/20 bg-gradient-to-br from-[#04070F] via-[#061526] to-[#04070F] p-3 shadow-[0_36px_110px_-45px_rgba(0,212,255,.45)] sm:p-5"
+      className="relative overflow-hidden rounded-3xl border border-cyan-400/20 bg-[color:var(--surface)] bg-gradient-to-br from-[color:var(--surface)] via-[color:var(--surface-2)] to-[color:var(--surface)] p-3 shadow-[0_36px_110px_-45px_rgba(0,212,255,.45)] sm:p-5"
     >
       <style>{`
         .nx-hub-pulse { animation: nxHubPulse 2.8s ease-in-out infinite; }
@@ -304,9 +312,9 @@ export function FourRegionHub() {
         }}
       />
 
-      <header className="relative flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+      <header className="relative flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--hairline)] pb-4">
         <div className="flex items-center gap-3">
-          <div className="rounded-xl border border-cyan-400/20 bg-[#04111f]/75 px-3 py-2">
+          <div className="rounded-xl border border-cyan-400/20 bg-[color:var(--chip-strong)] px-3 py-2">
             <LiveClock ar={ar} />
           </div>
           <span className="hidden min-h-11 items-center gap-2 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-3 text-xs text-emerald-200 sm:inline-flex">
@@ -316,10 +324,10 @@ export function FourRegionHub() {
         </div>
 
         <div className="min-w-[220px] flex-1 text-center">
-          <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-cyan-300/75">
+          <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-[color:var(--tone-cyan)]">
             {ar ? "منصة إدارة الأمن الصناعي" : "Industrial Security Management Platform"}
           </p>
-          <h1 className="mt-1 text-xl font-black text-white sm:text-2xl">
+          <h1 className="mt-1 text-xl font-black text-[color:var(--ink)] sm:text-2xl">
             {ar ? "SADEED" : "Unified Work Execution Platform"}
           </h1>
         </div>
@@ -352,10 +360,10 @@ export function FourRegionHub() {
             to={to}
             aria-label={ar ? labelAr : labelEn}
             style={{ ["--accent-rgb" as string]: accent }}
-            className="holo-card nx-icon-edge-glow block min-h-11 rounded-2xl bg-white/[0.035] p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
+            className="holo-card nx-icon-edge-glow block min-h-11 rounded-2xl border border-[color:var(--hairline-soft)] bg-[color:var(--chip)] p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs text-white/70">{ar ? labelAr : labelEn}</span>
+              <span className="text-xs text-[color:var(--ink-2)]">{ar ? labelAr : labelEn}</span>
               <Icon className={`h-4 w-4 ${tone}`} aria-hidden />
             </div>
             <div className={`mt-2 text-2xl font-black tabular-nums ${tone}`}>{value}</div>
@@ -396,13 +404,13 @@ export function FourRegionHub() {
           className="holo-card order-3 rounded-2xl bg-rose-500/[0.05] p-4 lg:order-none"
         >
           <div className="mb-3 flex items-center justify-between gap-2">
-            <span className="flex items-center gap-2 text-sm font-semibold text-white/85">
-              <Bell className="h-4 w-4 text-rose-300" aria-hidden />
+            <span className="flex items-center gap-2 text-sm font-semibold text-[color:var(--ink-2)]">
+              <Bell className="h-4 w-4 text-[color:var(--tone-rose)]" aria-hidden />
               {ar ? "تنبيهات غرفة العمليات" : "Operations Room alerts"}
             </span>
             <Link
               to="/situation-room"
-              className="text-xs font-semibold text-cyan-300 hover:text-cyan-200"
+              className="text-xs font-semibold text-[color:var(--tone-cyan)] hover:opacity-80"
             >
               {ar ? "فتح غرفة العمليات" : "Open room"}
             </Link>
@@ -413,18 +421,18 @@ export function FourRegionHub() {
                 <Link
                   to="/situation-room"
                   aria-label={`${alert.title_ar} — ${alert.department}`}
-                  className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-3 py-2 text-xs transition hover:border-white/20 hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+                  className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-[color:var(--hairline-soft)] bg-[color:var(--chip)] px-3 py-2 text-xs transition hover:border-[color:var(--hairline-hover)] hover:bg-[color:var(--chip-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
                 >
                   <span className="flex min-w-0 items-center gap-2">
                     <span
                       className={`h-2 w-2 shrink-0 rounded-full ${SEVERITY_DOT[severity]}`}
                       aria-hidden
                     />
-                    <span className="truncate text-white/85">{alert.title_ar}</span>
+                    <span className="truncate text-[color:var(--ink-2)]">{alert.title_ar}</span>
                   </span>
-                  <span className="flex shrink-0 items-center gap-2 text-white/50">
+                  <span className="flex shrink-0 items-center gap-2 text-[color:var(--ink-3)]">
                     <span>{alert.department}</span>
-                    <span className="rounded-md border border-white/10 px-1.5 py-0.5 text-[12px]">
+                    <span className="rounded-md border border-[color:var(--hairline)] px-1.5 py-0.5 text-[12px]">
                       {ar ? SEVERITY_LABEL_AR[severity] : severity}
                     </span>
                   </span>

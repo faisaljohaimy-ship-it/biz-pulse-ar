@@ -6,8 +6,18 @@
  * were retired per directive; nothing here plays audio or motion.
  */
 import homeToroid from "@/assets/nexios-home-toroid.png.asset.json";
+import { useTheme } from "@/lib/theme";
 
 export function HomeVideoBackdrop() {
+  const { theme } = useTheme();
+
+  // الوضع الفاتح = سطح أبيض صافٍ. الخلفية السينمائية وطبقات التعتيم فوقها
+  // مبنية كلها على الكحلي الداكن؛ إبقاؤها تحت صفحة بيضاء يُنتج لوحًا رماديًا
+  // متسخًا لا «نظامًا أبيض». فتُستبدل بأبيض خالص بدل أن تُخفَّف.
+  if (theme === "light") {
+    return <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 bg-white" />;
+  }
+
   return (
     <div
       aria-hidden="true"

@@ -29,7 +29,9 @@ export function HeaderClockBar({ showClock = true }: HeaderClockBarProps) {
   return (
     <div
       dir="ltr"
-      className="pointer-events-none sticky top-0 z-[100] w-full overflow-hidden border-b border-[#3AE8FF]/30 bg-gradient-to-r from-[#02101e] via-[#04243c] to-[#02101e] shadow-[0_4px_24px_-8px_rgba(0,212,255,0.4)]"
+      // `nx-clock-bar` هو المقبض الذي يقلب هذا الشريط في الوضع الفاتح
+      // (styles.css). التدرّج الكحلي أدناه يبقى مرجع الوضع الداكن.
+      className="nx-clock-bar pointer-events-none sticky top-0 z-[100] w-full overflow-hidden border-b border-[#3AE8FF]/30 bg-gradient-to-r from-[#02101e] via-[#04243c] to-[#02101e] shadow-[0_4px_24px_-8px_rgba(0,212,255,0.4)]"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="relative flex h-9 items-center sm:h-10">

@@ -185,37 +185,92 @@ html.safe-mode canvas {
   /* dark mode active by default */
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   الوضع الفاتح — أبيض كامل ونص أسود (توجيه المالك).
+
+   السطوح كلها بيضاء والنص أسود. قرار مقصود: طلب المالك «أيقونات بيضاء»،
+   وأيقونة بيضاء فوق سطح أبيض لا تُرى إطلاقًا — لا رمادية ولا باهتة، بل
+   غائبة تمامًا (وهي أيضًا مخالفة صريحة لـWCAG 2.2 §1.4.11 لتباين غير
+   النص). فالمطبَّق: حاويةُ الأيقونة بيضاء بحدّ شعري خفيف يفصلها عن
+   الخلفية، والرمز نفسه بلون دلالي داكن يُقرأ فوق الأبيض. هكذا يبقى
+   «الأبيض» هو مظهر النظام دون أن يختفي أي عنصر.
+   ───────────────────────────────────────────────────────────────────────── */
 .light {
-  /* Light variant kept for completeness; product runs in dark luxury mode */
-  --background: #f4f8fb;
-  --foreground: #061a2e;
+  --background: #ffffff;
+  --foreground: #000000;
   --card: #ffffff;
-  --card-foreground: #061a2e;
+  --card-foreground: #000000;
   --popover: #ffffff;
-  --popover-foreground: #061a2e;
-  --primary: #00b8d9;
+  --popover-foreground: #000000;
+  --primary: #0e7490;
   --primary-foreground: #ffffff;
-  --secondary: #e6eef5;
-  --secondary-foreground: #0b2742;
-  --muted: #e6eef5;
-  --muted-foreground: #51708a;
-  --accent: #00d4ff;
-  --accent-foreground: #03131f;
-  --border: rgba(11, 39, 66, 0.12);
-  --input: #e6eef5;
-  --ring: #00b8d9;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #000000;
+  --muted: #f4f4f5;
+  --muted-foreground: #3f3f46;
+  --accent: #0e7490;
+  --accent-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.14);
+  --input: #ffffff;
+  --ring: #0e7490;
   --sidebar: #ffffff;
-  --sidebar-foreground: #0b2742;
-  --sidebar-accent: #e6eef5;
-  --sidebar-accent-foreground: #0b2742;
-  --sidebar-border: rgba(11, 39, 66, 0.1);
+  --sidebar-foreground: #000000;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: rgba(0, 0, 0, 0.12);
   color-scheme: light;
 }
 
+/* أبيض صافٍ: لا تدرّجات ملوّنة تكسر «النظام كامل أبيض». */
 .light body {
-  background-image:
-    radial-gradient(ellipse 60% 50% at 8% 0%, rgba(0, 184, 217, 0.1), transparent 60%),
-    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(32, 227, 178, 0.08), transparent 60%);
+  background-image: none;
+  background-color: #ffffff;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   رموز السطح — تنقلب مع الوضع.
+
+   الشاشات المبنية على «أبيض شفّاف فوق داكن» (text-white/70، bg-white/5،
+   border-white/10) تنهار في الوضع الفاتح: أبيض فوق أبيض. هذه الرموز هي
+   البديل — تُكتب مرة واحدة وتقلب نفسها، فلا تُكرَّر شروط الثيم في كل صنف.
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  --surface: #04070f;
+  --surface-2: #061526;
+  --ink: #ffffff;
+  --ink-2: rgba(255, 255, 255, 0.72);
+  --ink-3: rgba(255, 255, 255, 0.5);
+  --chip: rgba(255, 255, 255, 0.035);
+  --chip-strong: rgba(255, 255, 255, 0.1);
+  --chip-hover: rgba(255, 255, 255, 0.07);
+  --hairline: rgba(255, 255, 255, 0.1);
+  --hairline-soft: rgba(255, 255, 255, 0.06);
+  --hairline-hover: rgba(255, 255, 255, 0.2);
+  /* أطياف الحالة: فاتحة فوق الداكن — تُعمَّق في الوضع الفاتح أدناه. */
+  --tone-cyan: #67e8f9;
+  --tone-emerald: #6ee7b7;
+  --tone-rose: #fda4af;
+  --tone-amber: #fcd34d;
+}
+
+.light {
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+  --ink: #000000;
+  --ink-2: #111111;
+  --ink-3: #3f3f46;
+  /* حاويات الأيقونات والبطاقات بيضاء؛ الحدّ الشعري وحده يرسم حوافها. */
+  --chip: #ffffff;
+  --chip-strong: #ffffff;
+  --chip-hover: #f4f4f5;
+  --hairline: rgba(0, 0, 0, 0.14);
+  --hairline-soft: rgba(0, 0, 0, 0.08);
+  --hairline-hover: rgba(0, 0, 0, 0.3);
+  /* درجات داكنة تُقرأ فوق الأبيض — كلها فوق 4.5:1 مقابل #fff. */
+  --tone-cyan: #0e7490;
+  --tone-emerald: #047857;
+  --tone-rose: #be123c;
+  --tone-amber: #b45309;
 }
 
 @layer base {
@@ -3383,4 +3438,56 @@ body {
   .sadeed-mark__rule {
     background: CanvasText;
   }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   الوضع الفاتح — أسطح المكوّنات المكتوبة بألوان صريحة.
+
+   هذه الأصناف تكتب الكحلي داخل تعريفها (تدرّجات وحدود ووهج)، فلا تصل إليها
+   رموز الثيم. تُقلَب هنا في كتلة واحدة بدل تفريق الشرط على عشرات المواضع،
+   والوضع الداكن لا يُمسّ إطلاقًا لأن كل قاعدة مقيَّدة بـ`.light`.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* البطاقات الهولوغرامية: الحشوة الكحلية تصبح بيضاء، ويبقى الحدّ المتدرّج
+   هو ما يرسم الحافة — فلا تذوب البطاقة في الصفحة. */
+.light .holo-card {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    var(--holo-border) border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* الوهج الخارجي المُعدّ مسبقًا مبني على إضاءة فوق سطح داكن؛ فوق الأبيض
+   يظهر كهالة رمادية متسخة. يُطفأ ويُستعاض عنه بالظل أعلاه. */
+.light .holo-card::before,
+.light .holo-card::after {
+  opacity: 0 !important;
+}
+
+/* قشرة التطبيق: الخلفية الكحلية شبه الشفافة تصبح بيضاء صافية. */
+.light .nexus-app-shell {
+  background-color: #ffffff;
+}
+
+/* طبقات الأجواء الهولوغرامية (شفق/شبكة/مسح/ضجيج) مصمَّمة لتُضيء فوق
+   الأسود. فوق الأبيض تتحوّل إلى ضباب سماوي يكسر «النظام كامل أبيض». */
+.light .nx-holo-aurora,
+.light .nx-holo-grid,
+.light .nx-holo-scan,
+.light .nx-holo-noise {
+  display: none;
+}
+
+/* الشريط العلوي للساعة الحية: تدرّج كحلي ← أبيض بحدّ سفلي رفيع. */
+.light .nx-clock-bar {
+  background: #ffffff;
+  border-bottom-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* الشريط الجانبي والنوافذ الزجاجية. */
+.light .glass-sidebar,
+.light .glass {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
 }
