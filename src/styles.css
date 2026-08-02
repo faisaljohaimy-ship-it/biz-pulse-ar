@@ -3665,3 +3665,54 @@ body {
     transition: none;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   OWNER DIRECTIVE (2026-08-02/2) — شريط LIVE أسود في الوضع الفاتح،
+   وبطاقة FINN سماوية فاتحة متدرجة مع خلفية رقمية بنفس التدرّج.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* 1) شريط الوقت العلوي: كل الكتابة سوداء بالكامل في الوضع الفاتح */
+.light .nx-clock-bar,
+.light .nx-clock-bar * {
+  color: #000 !important;
+}
+.light .nx-clock-bar [aria-hidden] > span:not(.animate-ping) {
+  background-color: #000 !important;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.45) !important;
+}
+.light .nx-clock-bar .animate-ping {
+  background-color: rgba(0, 0, 0, 0.35) !important;
+}
+
+/* 2) بطاقة FINN في الوضع الفاتح — سماوي فاتح متدرّج */
+.light .finn-portal {
+  background:
+    linear-gradient(
+      160deg,
+      #eaf9ff 0%,
+      #cdeeff 38%,
+      #a9dff8 70%,
+      #8ed2f2 100%
+    ) !important;
+  border: 1px solid rgba(140, 205, 235, 0.75) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 26px rgba(58, 232, 255, 0.28),
+    0 18px 44px rgba(15, 42, 70, 0.14) !important;
+}
+
+/* 3) الخلفية الرقمية داخل بطاقة FINN بنفس التدرّج السماوي الفاتح */
+.light .finn-portal .nx-no-glow[aria-hidden] {
+  background: linear-gradient(
+    160deg,
+    #eaf9ff 0%,
+    #cdeeff 40%,
+    #a9dff8 75%,
+    #8ed2f2 100%
+  ) !important;
+}
+/* الأسلاك والشيفرة تُقلب إلى حبر داكن كي تبقى مقروءة فوق السماوي */
+.light .finn-portal .nx-no-glow[aria-hidden] svg {
+  filter: invert(1) hue-rotate(180deg) saturate(1.2) brightness(0.85);
+  opacity: 0.55;
+}
