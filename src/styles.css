@@ -5587,3 +5587,108 @@ a > svg,
 .finn-portal:hover {
   transform: perspective(1200px) translate3d(0, -4px, 0) rotateX(3.2deg) rotateY(-3.2deg);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   OWNER DIRECTIVE (2026-08-02/8) — حواف وأطراف كل أيقونة/بطاقة تتوهّج
+   وتلمع بنفس لون الأيقونة الزجاجية نفسها، بحركة أسرع قليلًا، في كل
+   النظام وعلى جميع الأجهزة.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* البطاقات ترث لونها الخاص (المنطقة/اللكنة) وإلا السماوي البولد */
+[data-slot="card"],
+.holo-card,
+.nx-glass-e1,
+.sd-glass-surface,
+.spatial-window,
+.finn-portal {
+  --hx-ic: var(--nx-region-rgb, var(--accent-rgb, var(--hx-fallback)));
+}
+
+@keyframes hx-edge-chroma-fast {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(var(--hx-ic, var(--hx-fallback)), 0.6),
+      0 0 16px -2px rgba(var(--hx-ic, var(--hx-fallback)), 0.42),
+      inset 0 0 14px -6px rgba(var(--hx-ic, var(--hx-fallback)), 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(var(--hx-ic, var(--hx-fallback)), 1),
+      0 0 32px -2px rgba(var(--hx-ic, var(--hx-fallback)), 0.75),
+      inset 0 0 20px -6px rgba(var(--hx-ic, var(--hx-fallback)), 0.7);
+  }
+}
+
+/* أطراف الأيقونات: نفس لون الأيقونة، إيقاع أسرع قليلًا */
+.nx-icon-wrap,
+.nx-tile,
+.nx-icon-edge,
+.nx-holo-icon,
+[data-holo-icon-wrap] {
+  border: 2px solid rgba(var(--hx-ic, var(--hx-fallback)), 0.85) !important;
+  animation: hx-edge-chroma-fast 3s ease-in-out infinite !important;
+  animation-play-state: running !important;
+}
+
+/* أطراف البطاقات: نفس اللون بإيقاع أسرع قليلًا */
+[data-slot="card"],
+.holo-card,
+.nx-glass-e1,
+.sd-glass-surface,
+.spatial-window,
+.finn-portal {
+  border-color: rgba(var(--hx-ic, var(--hx-fallback)), 0.7) !important;
+  border-width: 2px !important;
+  animation: hx-edge-chroma-fast 3.4s ease-in-out infinite !important;
+  animation-play-state: running !important;
+}
+
+/* الحافة الهولوغرافية واللمعان يبقيان لكن أسرع قليلًا */
+[data-slot="card"]::before,
+.holo-card::before,
+.nx-glass-e1::before,
+.sd-glass-surface::before,
+.spatial-window::before,
+.finn-portal::before {
+  animation: hx-iris-drift 5s linear infinite !important;
+}
+
+[data-slot="card"]::after,
+.holo-card::after,
+.nx-glass-e1::after,
+.sd-glass-surface::after,
+.spatial-window::after {
+  animation: hx-iris-drift 4.6s linear infinite !important;
+}
+
+/* توهّج الرمز نفسه بلون الأيقونة لا بالسماوي الثابت */
+.nx-icon,
+.nx-tile,
+.holo-icon,
+[data-holo-icon],
+.nx-icon-wrap > svg,
+button > svg,
+a > svg,
+[data-slot="button"] > svg {
+  filter:
+    drop-shadow(0 0 7px rgba(var(--hx-ic, var(--hx-fallback)), 0.85))
+    drop-shadow(0 0 16px rgba(var(--hx-ic, var(--hx-fallback)), 0.45)) !important;
+  animation: hx-halo-breathe 3.2s ease-in-out infinite !important;
+  animation-play-state: running !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-icon-wrap,
+  .nx-tile,
+  .nx-icon-edge,
+  .nx-holo-icon,
+  [data-holo-icon-wrap],
+  [data-slot="card"],
+  .holo-card,
+  .nx-glass-e1,
+  .sd-glass-surface,
+  .spatial-window,
+  .finn-portal {
+    animation-play-state: running !important;
+  }
+}
