@@ -6645,11 +6645,145 @@ html.dark .nx-region-aura {
 }
 
 /* ── FINN card: static by owner directive — no motion of any kind ───── */
-.finn-portal--static,
-.finn-portal--static *,
-.finn-portal--static::before,
-.finn-portal--static::after,
-.finn-portal--static *::before,
-.finn-portal--static *::after {
-  animation: none !important;
+/* ============================================================
+   FINN card — modern digital background (decorative layers only)
+   Text and controls keep their exact positions: every layer is
+   absolutely positioned, aria-hidden, pointer-events: none, z-0.
+   ============================================================ */
+.finn-portal--tech > span[aria-hidden] {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
 }
+
+.finn-tech-grid {
+  background-image:
+    linear-gradient(to right, rgba(34, 211, 238, 0.16) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(34, 211, 238, 0.12) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(120% 90% at 50% 40%, #000 35%, transparent 78%);
+  animation: finn-tech-grid-drift 3.2s linear infinite;
+  opacity: 0.75;
+}
+
+.finn-tech-aurora {
+  background:
+    radial-gradient(60% 42% at 22% 18%, rgba(34, 211, 238, 0.38), transparent 70%),
+    radial-gradient(55% 40% at 78% 78%, rgba(37, 99, 235, 0.42), transparent 72%),
+    radial-gradient(45% 35% at 60% 20%, rgba(129, 140, 248, 0.28), transparent 70%);
+  filter: blur(6px);
+  animation: finn-tech-aurora-shift 5.5s ease-in-out infinite alternate;
+}
+
+.finn-tech-scan {
+  background: linear-gradient(
+    100deg,
+    transparent 38%,
+    rgba(186, 245, 255, 0.22) 48%,
+    rgba(255, 255, 255, 0.32) 50%,
+    rgba(186, 245, 255, 0.22) 52%,
+    transparent 62%
+  );
+  background-size: 240% 100%;
+  animation: finn-tech-sweep 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  mix-blend-mode: screen;
+}
+
+.finn-tech-orbit {
+  background:
+    conic-gradient(
+      from 0deg at 50% 52%,
+      transparent 0deg,
+      rgba(34, 211, 238, 0.4) 40deg,
+      transparent 110deg,
+      transparent 250deg,
+      rgba(59, 130, 246, 0.35) 300deg,
+      transparent 360deg
+    );
+  mask-image: radial-gradient(closest-side, transparent 56%, #000 58%, #000 63%, transparent 65%);
+  animation: finn-tech-orbit-spin 4.2s linear infinite;
+  opacity: 0.85;
+}
+
+.finn-tech-noise {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.35) 0.6px, transparent 0.7px);
+  background-size: 7px 7px;
+  opacity: 0.06;
+  animation: finn-tech-noise-flicker 1.6s steps(3, end) infinite;
+}
+
+.light .finn-portal--tech .finn-tech-aurora {
+  opacity: 0.85;
+}
+.light .finn-portal--tech .finn-tech-grid {
+  opacity: 0.6;
+}
+
+@keyframes finn-tech-grid-drift {
+  from {
+    background-position:
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      26px 0,
+      0 26px;
+  }
+}
+
+@keyframes finn-tech-aurora-shift {
+  0% {
+    transform: scale(1) translate3d(-1.5%, -1%, 0);
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.08) translate3d(2%, 1.5%, 0);
+    opacity: 0.8;
+  }
+}
+
+@keyframes finn-tech-sweep {
+  0% {
+    background-position: 140% 0;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -40% 0;
+    opacity: 0;
+  }
+}
+
+@keyframes finn-tech-orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes finn-tech-noise-flicker {
+  0%,
+  100% {
+    opacity: 0.05;
+  }
+  50% {
+    opacity: 0.09;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .finn-portal--tech > span[aria-hidden] {
+    animation: none !important;
+  }
+}
+
