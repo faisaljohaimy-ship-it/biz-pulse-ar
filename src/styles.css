@@ -3862,3 +3862,119 @@ body {
     ) !important;
   border-color: rgba(30, 130, 175, 0.7) !important;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   OWNER DIRECTIVE (2026-08-02/4) — كل البطاقات والأيقونات في النظام
+   زجاجية ذات لمعان وتوهج مستمر واضح، ويشمل بطاقة شات FINN.
+   ───────────────────────────────────────────────────────────────────────── */
+
+@keyframes nx-gloss-sweep {
+  0% { background-position: -160% 0, 0 0; }
+  100% { background-position: 260% 0, 0 0; }
+}
+
+@keyframes nx-glow-breathe {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      0 0 18px rgba(var(--nx-glow-rgb, var(--accent-rgb, 34, 211, 238)), 0.28),
+      0 16px 40px rgba(2, 8, 17, 0.38);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 34px rgba(var(--nx-glow-rgb, var(--accent-rgb, 34, 211, 238)), 0.55),
+      0 20px 52px rgba(2, 8, 17, 0.46);
+  }
+}
+
+/* 1) لمعان زجاجي متحرك مستمر فوق كل بطاقة */
+.holo-card,
+.nx-glass-e1,
+.nexus-card,
+.nx-region-card,
+.finn-portal,
+.nexus-window,
+.nexus-aria-window {
+  background-image: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.22) 47%,
+    rgba(255, 255, 255, 0.42) 50%,
+    rgba(255, 255, 255, 0.22) 53%,
+    transparent 62%
+  );
+  background-repeat: no-repeat;
+  background-size: 220% 100%;
+  animation: nx-gloss-sweep 7s linear infinite,
+    nx-glow-breathe 5.5s ease-in-out infinite;
+}
+
+.light .holo-card,
+.light .nx-glass-e1,
+.light .nexus-card,
+.light .nx-region-card,
+.light .finn-portal,
+.light .nexus-window,
+.light .nexus-aria-window {
+  background-image: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.55) 47%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(255, 255, 255, 0.55) 53%,
+    transparent 62%
+  );
+}
+
+/* بطاقة شات FINN — زجاج لامع دائم بحدّ متوهج */
+.nexus-aria-window {
+  backdrop-filter: blur(22px) saturate(170%);
+  border: 2px solid rgba(58, 232, 255, 0.55) !important;
+}
+.light .nexus-aria-window {
+  border-color: rgba(30, 130, 175, 0.6) !important;
+}
+
+/* 2) الأيقونات — لمعة وتوهج مستمران */
+.holo-icon,
+.nx-icon-edge,
+[data-region-glow] {
+  --nx-glow-rgb: var(--nx-region-rgb, var(--accent-rgb, 34, 211, 238));
+  animation: nx-glow-breathe 4.5s ease-in-out infinite;
+}
+
+.holo-icon::after,
+.nx-icon-edge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 60%
+  );
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  animation: nx-gloss-sweep 6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .holo-card,
+  .nx-glass-e1,
+  .nexus-card,
+  .nx-region-card,
+  .finn-portal,
+  .nexus-window,
+  .nexus-aria-window,
+  .holo-icon,
+  .nx-icon-edge,
+  [data-region-glow],
+  .holo-icon::after,
+  .nx-icon-edge::after {
+    animation: none !important;
+  }
+}
