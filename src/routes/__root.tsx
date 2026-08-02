@@ -400,6 +400,7 @@ function RootComponent() {
                   {!suppressOverlays && <FinnWatermark />}
                   {!introActive && !isAccessGate && <HoloAmbience />}
                   {!introActive && !isAccessGate && <GlobalBackButton />}
+                  {!introActive && !isAccessGate && <ThemeToggle />}
                   <div className="relative z-10">
                     <Outlet />
                   </div>
