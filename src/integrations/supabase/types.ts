@@ -279,7 +279,7 @@ export type Database = {
           id: string
           latency_ms: number | null
           model: string
-          org_id: string | null
+          org_id: string
           prompt_tokens: number
           total_tokens: number
           user_id: string
@@ -292,7 +292,7 @@ export type Database = {
           id?: string
           latency_ms?: number | null
           model: string
-          org_id?: string | null
+          org_id: string
           prompt_tokens?: number
           total_tokens?: number
           user_id: string
@@ -305,7 +305,7 @@ export type Database = {
           id?: string
           latency_ms?: number | null
           model?: string
-          org_id?: string | null
+          org_id?: string
           prompt_tokens?: number
           total_tokens?: number
           user_id?: string
@@ -2723,7 +2723,7 @@ export type Database = {
           id: string
           is_simulation: boolean
           notes_ar: string | null
-          org_id: string | null
+          org_id: string
           priority: string
           region_code: string
           status: string
@@ -2734,7 +2734,7 @@ export type Database = {
           id?: string
           is_simulation?: boolean
           notes_ar?: string | null
-          org_id?: string | null
+          org_id: string
           priority?: string
           region_code: string
           status?: string
@@ -2745,7 +2745,7 @@ export type Database = {
           id?: string
           is_simulation?: boolean
           notes_ar?: string | null
-          org_id?: string | null
+          org_id?: string
           priority?: string
           region_code?: string
           status?: string
@@ -4506,7 +4506,7 @@ export type Database = {
           latency_ms: number | null
           max_similarity: number | null
           model_version: string | null
-          org_id: string | null
+          org_id: string
           query_norm: string | null
           query_text: string
           route: string | null
@@ -4521,7 +4521,7 @@ export type Database = {
           latency_ms?: number | null
           max_similarity?: number | null
           model_version?: string | null
-          org_id?: string | null
+          org_id: string
           query_norm?: string | null
           query_text: string
           route?: string | null
@@ -4536,7 +4536,7 @@ export type Database = {
           latency_ms?: number | null
           max_similarity?: number | null
           model_version?: string | null
-          org_id?: string | null
+          org_id?: string
           query_norm?: string | null
           query_text?: string
           route?: string | null
