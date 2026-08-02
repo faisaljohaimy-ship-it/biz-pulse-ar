@@ -28,9 +28,9 @@ import {
 import {
   DonutChart,
   BarSeries,
-  SparkArea,
   RadialGauge,
 } from "@/components/charts/premium-charts";
+import { InteractiveArea } from "@/components/charts/interactive-area";
 import {
   generateDailyOperationsReport,
   getDailyOpsData,
