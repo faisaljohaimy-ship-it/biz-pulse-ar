@@ -8,7 +8,7 @@
 
 NEXIOS depth simulates a **dark control room with one soft overhead light**: surfaces
 closer to the viewer are slightly lighter, blur what's behind them, and cast soft
-obsidian shadows downward. Depth is *informational* — elevation communicates interaction
+obsidian shadows downward. Depth is _informational_ — elevation communicates interaction
 proximity, glass communicates context-over-world, glow communicates live meaning.
 
 ```mermaid
@@ -24,16 +24,17 @@ flowchart TB
 
 ## Elevation scale
 
-| Level | Surface tone | Shadow (`#020811`) | Blur (backdrop) | Border (white) |
-|---|---|---|---|---|
-| **E0** Canvas | obsidian → ink | none | none | none |
-| **E1** Panel | surface @ 65% | 0 8px 24px @ 45% | 12px | 8% |
-| **E2** Raised | surface @ 72% | 0 12px 32px @ 50% | 16px | 10% |
-| **E3** Floating | card @ 78% | 0 16px 40px @ 55% | 20px | 12% |
-| **E4** Dialog | card @ 88% | 0 24px 64px @ 60% | 24px | 14% |
-| **E5** Immediate | card @ 94% (near-solid) | 0 24px 64px @ 60% | 24px | 14% |
+| Level            | Surface tone            | Shadow (`#020811`) | Blur (backdrop) | Border (white) |
+| ---------------- | ----------------------- | ------------------ | --------------- | -------------- |
+| **E0** Canvas    | obsidian → ink          | none               | none            | none           |
+| **E1** Panel     | surface @ 65%           | 0 8px 24px @ 45%   | 12px            | 8%             |
+| **E2** Raised    | surface @ 72%           | 0 12px 32px @ 50%  | 16px            | 10%            |
+| **E3** Floating  | card @ 78%              | 0 16px 40px @ 55%  | 20px            | 12%            |
+| **E4** Dialog    | card @ 88%              | 0 24px 64px @ 60%  | 24px            | 14%            |
+| **E5** Immediate | card @ 94% (near-solid) | 0 24px 64px @ 60%  | 24px            | 14%            |
 
 Rules:
+
 - Adjacent UI may differ by at most **one level**; jumps of two+ levels are reserved for
   modal moments (E1 → E4 with scrim).
 - Higher = more opaque: urgency correlates with solidity. E5 is nearly solid because
@@ -52,15 +53,15 @@ Rules:
 
 ## Glow — التوهج
 
-Glow is *meaning made luminous*, never ambience:
+Glow is _meaning made luminous_, never ambience:
 
-| Glow | Recipe | Licensed use |
-|---|---|---|
-| Focus glow | cyan @ 35%, 24px | keyboard focus, active input |
-| Sector pulse | sector accent @ 30%, 32px, 4s breathe | region halos on maps/chips |
-| Agent presence | `--nx-layer-agent` @ 25%, 24px | FINN/agent active indicator |
-| Authority glow | gold @ 30%, 24px, static | the single approval element |
-| Critical ring | critical @ 40%, 16px, 2-pulse then static | new critical alerts only |
+| Glow           | Recipe                                    | Licensed use                 |
+| -------------- | ----------------------------------------- | ---------------------------- |
+| Focus glow     | cyan @ 35%, 24px                          | keyboard focus, active input |
+| Sector pulse   | sector accent @ 30%, 32px, 4s breathe     | region halos on maps/chips   |
+| Agent presence | `--nx-layer-agent` @ 25%, 24px            | FINN/agent active indicator  |
+| Authority glow | gold @ 30%, 24px, static                  | the single approval element  |
+| Critical ring  | critical @ 40%, 16px, 2-pulse then static | new critical alerts only     |
 
 One glowing element per panel; two glows in a viewport must be different meanings. Glow
 never appears on E0 text or on disabled elements.
@@ -73,7 +74,7 @@ inner shadows except the 1px glass top highlight.
 
 ## Holographic depth
 
-The ambient stratum (E0) may simulate *far* depth — parallax layers, the glowing Kingdom
+The ambient stratum (E0) may simulate _far_ depth — parallax layers, the glowing Kingdom
 map, cinema backgrounds — under three constraints: it never exceeds 8% of viewport
 luminance, it never overlaps focus tiers 1–2 content (Chapter 02), and its parallax
 amplitude ≤ 16px. Holographic depth is scenery through the cockpit window; the

@@ -1,5 +1,7 @@
 # FINN IMPACT PRIORITY DIRECTIVE
+
 ### دستور الأثر التنفيذي الأعلى — NEXIOS / FINN
+
 ### Supreme Executive Impact Constitution — v1.0.0
 
 > **Status:** BINDING · Prompt-as-Law · Loaded by every agent turn
@@ -19,6 +21,7 @@ making. Every response, animation, KPI, and action must serve one goal:
 > **"أن تُفكِّر وتُنفِّذ وتُقرِّر كذكاء تنفيذي حقيقي — لا كمحاكاة."**
 
 ### Absolute Invariants (never violated)
+
 1. **Sequential Execution** — Phases run 1 → 9 in strict order. No skipping.
 2. **Production Quality Only** — No placeholders, mocks, fake KPIs, simulated APIs.
 3. **Evidence-Gated** — Every metric/status/badge renders through `<EvidenceBadge>` (FR-19).
@@ -85,27 +88,29 @@ making. Every response, animation, KPI, and action must serve one goal:
 ---
 
 ## 🥇 PHASE 1 — FINN CORE / نواة FINN
+
 **Goal:** FINN feels like a living Executive AI, not a chatbot.
 **الهدف:** أن تُحسّ FINN كذكاء تنفيذي حي، لا كروبوت محادثة.
 
-| Pillar | Deliverable | Contract |
-|---|---|---|
-| Brain | `runExecutiveBrain` on native `gemini-3.6-flash` | `src/lib/finn/executive-brain/` |
-| Voice | Bilingual TTS + STT, RTL prosody, executive tone | `src/routes/api/finn/tts.ts` |
-| Avatar | Lifecycle ref-counted, HMR-safe, single runtime | `avatar-lifecycle.ts` |
-| Runtime | Bindings pattern (planner, execution, marketplace, memory, cognition, os) | `runtime/bindings.server.ts` |
-| Memory | Episodic · Semantic · Procedural · Decision · Experience | `long-term-memory/` |
-| Reasoning | Chain-of-reason with confidence breakdown, risk facets | `types.ts::ExecutiveBrainAnswer` |
-| Context | Page/section/tenant/role auto-injected via `withAriaSupremeLaw` | `aria-supreme-prompt.ts` |
-| Lip Sync | Viseme timeline aligned to TTS audio | R3F/Heygen providers |
-| Arabic | Native AR conversation, dialect-aware, MSA fallback | Every prompt |
-| Personality | Executive · calm · decisive · evidence-driven | Supreme Law v1.2.0 |
+| Pillar      | Deliverable                                                               | Contract                         |
+| ----------- | ------------------------------------------------------------------------- | -------------------------------- |
+| Brain       | `runExecutiveBrain` on native `gemini-3.6-flash`                          | `src/lib/finn/executive-brain/`  |
+| Voice       | Bilingual TTS + STT, RTL prosody, executive tone                          | `src/routes/api/finn/tts.ts`     |
+| Avatar      | Lifecycle ref-counted, HMR-safe, single runtime                           | `avatar-lifecycle.ts`            |
+| Runtime     | Bindings pattern (planner, execution, marketplace, memory, cognition, os) | `runtime/bindings.server.ts`     |
+| Memory      | Episodic · Semantic · Procedural · Decision · Experience                  | `long-term-memory/`              |
+| Reasoning   | Chain-of-reason with confidence breakdown, risk facets                    | `types.ts::ExecutiveBrainAnswer` |
+| Context     | Page/section/tenant/role auto-injected via `withAriaSupremeLaw`           | `aria-supreme-prompt.ts`         |
+| Lip Sync    | Viseme timeline aligned to TTS audio                                      | R3F/Heygen providers             |
+| Arabic      | Native AR conversation, dialect-aware, MSA fallback                       | Every prompt                     |
+| Personality | Executive · calm · decisive · evidence-driven                             | Supreme Law v1.2.0               |
 
 **Exit Gate:** FINN answers a bilingual executive question with a full envelope (`text_ar`, `text_en`, `confidence`, `risks`, `recommendations`) + speaks it + lip-syncs it.
 
 ---
 
 ## 🥈 PHASE 2 — EXECUTIVE EXECUTION / التنفيذ الحقيقي
+
 **Goal:** FINN executes enterprise workflows, not just answers.
 
 - **Task Planning** — decompose intent → plan graph
@@ -122,6 +127,7 @@ making. Every response, animation, KPI, and action must serve one goal:
 ---
 
 ## 🥉 PHASE 3 — LIVE DEMONSTRATION / العرض الحي
+
 **Goal:** Visitors understand the value in under 30 seconds.
 
 - Live AI Reasoning stream · Live Thinking animation · Live Decision Pipeline
@@ -133,6 +139,7 @@ making. Every response, animation, KPI, and action must serve one goal:
 ---
 
 ## 🏅 PHASE 4 — EXECUTIVE COMMAND CENTER / مركز القيادة
+
 **Goal:** Every executive decision visible in one place.
 
 Executive KPIs · System Health · Runtime Status · Active Operations ·
@@ -143,6 +150,7 @@ Risk Analysis · Confidence Score · Recommendations · Executive Reports · Ope
 ---
 
 ## 🏅 PHASE 5 — ENTERPRISE MEMORY / الذاكرة المؤسسية
+
 **Goal:** FINN continuously remembers, understands, and improves context.
 
 Persistent · Semantic · Organizational Knowledge · Conversation · Executive Context · Historical Decisions · Retrieval.
@@ -152,6 +160,7 @@ Persistent · Semantic · Organizational Knowledge · Conversation · Executive 
 ---
 
 ## 🏅 PHASE 6 — MULTI-AGENT INTELLIGENCE / الوكلاء المتعددون
+
 **Goal:** FINN coordinates specialized agents as one system.
 
 Orchestrator · Specialized Agents · Collaboration Protocol · Parallel Execution ·
@@ -162,6 +171,7 @@ Result Aggregation · Conflict Resolution (`negotiation.server.ts`) · Shared Co
 ---
 
 ## 🏅 PHASE 7 — DIGITAL TWIN / التوأم الرقمي
+
 **Goal:** Executives visualize the whole organization in real time.
 
 Live Twin · Asset Monitoring · Facility Status · Incident Viz · Patrol Viz · Executive Map · Predictive Indicators.
@@ -171,6 +181,7 @@ Live Twin · Asset Monitoring · Facility Status · Incident Viz · Patrol Viz �
 ---
 
 ## 🏅 PHASE 8 — PERFORMANCE & STABILITY / الأداء والاستقرار
+
 **Goal:** Enterprise-grade speed and reliability.
 
 Rendering · Runtime · Bundle Size · Database · APIs · React perf · TypeScript · Memory · Mobile.
@@ -180,6 +191,7 @@ Rendering · Runtime · Bundle Size · Database · APIs · React perf · TypeScr
 ---
 
 ## 🏅 PHASE 9 — EXECUTIVE EXPERIENCE / التجربة التنفيذية
+
 **Goal:** Unforgettable executive experience.
 
 Storytelling · Journey · Interactive Presentation · Operational Narrative · Premium Motion & Animation · Premium UX/UI.
@@ -190,17 +202,17 @@ Storytelling · Journey · Interactive Presentation · Operational Narrative · 
 
 ## FINAL VALIDATION / التحقق النهائي (auto-run)
 
-| Check | Tool | Pass Criteria |
-|---|---|---|
-| Architecture Review | Manual + `agent-architecture-audit` skill | Zero critical/high |
-| Runtime Validation | `stack_modern--invoke-server-function` on core endpoints | All 200 · valid envelope |
-| Performance Benchmark | Playwright + Lighthouse | LCP < 2.0s · CLS < 0.1 |
-| TypeScript Validation | `tsc --noEmit` | 0 errors |
-| Build Validation | production build | success · no warnings |
-| Accessibility | axe + manual RTL sweep | 0 serious violations |
-| Responsive | 320 / 768 / 1280 / 1920 | no overflow · touch-safe |
-| Regression Detection | `tests/e2e/*.spec.ts` | all green |
-| Production Verification | `supabase--linter` + `security--run_security_scan` | 0 pending |
+| Check                   | Tool                                                     | Pass Criteria            |
+| ----------------------- | -------------------------------------------------------- | ------------------------ |
+| Architecture Review     | Manual + `agent-architecture-audit` skill                | Zero critical/high       |
+| Runtime Validation      | `stack_modern--invoke-server-function` on core endpoints | All 200 · valid envelope |
+| Performance Benchmark   | Playwright + Lighthouse                                  | LCP < 2.0s · CLS < 0.1   |
+| TypeScript Validation   | `tsc --noEmit`                                           | 0 errors                 |
+| Build Validation        | production build                                         | success · no warnings    |
+| Accessibility           | axe + manual RTL sweep                                   | 0 serious violations     |
+| Responsive              | 320 / 768 / 1280 / 1920                                  | no overflow · touch-safe |
+| Regression Detection    | `tests/e2e/*.spec.ts`                                    | all green                |
+| Production Verification | `supabase--linter` + `security--run_security_scan`       | 0 pending                |
 
 ---
 

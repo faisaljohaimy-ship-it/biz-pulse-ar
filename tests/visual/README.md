@@ -2,10 +2,10 @@
 
 Guards two elements in `HeroZeroIntro` against layout drift and clipping:
 
-| testid                     | Element                                            |
-| -------------------------- | -------------------------------------------------- |
-| `hero-saudi-emblem`        | Top-center Saudi national emblem (swords + palm)  |
-| `hero-vision-2030-crest`   | Bottom stack — رؤية 2030 crest under NEXIOS AI    |
+| testid                   | Element                                          |
+| ------------------------ | ------------------------------------------------ |
+| `hero-saudi-emblem`      | Top-center Saudi national emblem (swords + palm) |
+| `hero-vision-2030-crest` | Bottom stack — رؤية 2030 crest under NEXIOS AI   |
 
 Viewports covered: `iphone-se`, `iphone-14-pro`, `pixel-7`, `ipad-mini`, `desktop-1440`.
 
@@ -29,9 +29,10 @@ UPDATE_BASELINES=1 python3 tests/visual/hero_emblem_visual.py
 ```
 
 Artifacts:
+
 - `baselines/` — committed reference PNGs (source of truth).
-- `current/`   — last captured PNGs (gitignored).
-- `diffs/`     — per-target diff PNGs when a check fails (gitignored).
+- `current/` — last captured PNGs (gitignored).
+- `diffs/` — per-target diff PNGs when a check fails (gitignored).
 - `last-report.json` — machine-readable summary of the last run.
 
 ## TDD Evidence
@@ -97,4 +98,3 @@ Run:
 npm run test:visual:finn                  # regression check (part of npm run test:visual)
 npm run test:visual:finn:update           # refresh after an intentional visual change
 ```
-

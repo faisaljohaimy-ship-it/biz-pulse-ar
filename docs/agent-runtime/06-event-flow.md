@@ -6,16 +6,16 @@
 
 ## Vocabulary & emitters
 
-| Event | Emitted when | Detail payload |
-|---|---|---|
-| `execution-requested` | a plan is filed (protocol or event-trigger) | mode, agents, filedBy |
-| `execution-approved` | an approver with the `approval` permission approves | approver |
-| `execution-rejected` | approver rejects, OR an approval hook vetoes | approver+reason / veto |
-| `agent-started` | invocation enters running | traceId |
-| `agent-finished` | invocation succeeds | traceId, latency |
-| `agent-failed` | invoker throws | traceId, error |
-| `agent-paused` | coordinator pause | by |
-| `agent-resumed` | coordinator resume | by |
+| Event                 | Emitted when                                        | Detail payload         |
+| --------------------- | --------------------------------------------------- | ---------------------- |
+| `execution-requested` | a plan is filed (protocol or event-trigger)         | mode, agents, filedBy  |
+| `execution-approved`  | an approver with the `approval` permission approves | approver               |
+| `execution-rejected`  | approver rejects, OR an approval hook vetoes        | approver+reason / veto |
+| `agent-started`       | invocation enters running                           | traceId                |
+| `agent-finished`      | invocation succeeds                                 | traceId, latency       |
+| `agent-failed`        | invoker throws                                      | traceId, error         |
+| `agent-paused`        | coordinator pause                                   | by                     |
+| `agent-resumed`       | coordinator resume                                  | by                     |
 
 ## Flow
 
@@ -46,8 +46,8 @@ sequenceDiagram
 to a bus event. When it fires, the coordinator **files a pending request**
 (child context of the binding, `execution-requested` emitted, logged) —
 it never runs anything. The human gate stays intact even for reactive
-automation; a later phase may auto-approve specific bindings *through the
-same approval API*, leaving the audit trail whole.
+automation; a later phase may auto-approve specific bindings _through the
+same approval API_, leaving the audit trail whole.
 
 ## Guarantees
 

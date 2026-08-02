@@ -6,6 +6,7 @@ description: Review Supabase RLS policies for tenant isolation, role escalation 
 # RLS Policy Reviewer
 
 ## Mandatory Checks per public table
+
 1. `ENABLE ROW LEVEL SECURITY` present.
 2. At least one policy per operation actually exposed (SELECT/INSERT/UPDATE/DELETE).
 3. **Tenant isolation** — `org_id = (current_org())` in every policy on multi-tenant tables.
@@ -14,10 +15,12 @@ description: Review Supabase RLS policies for tenant isolation, role escalation 
 6. **Spoofing guard** — `actor_id = auth.uid()` enforced on audit/event INSERTs.
 
 ## Red Flags
+
 - `USING (true)` on user-data tables.
 - `TO public` instead of `TO authenticated`.
 - Service-only tables (orchestration, runtime) with INSERT/UPDATE policies for non-service roles.
 - Functions called in RLS that are not `SECURITY DEFINER` + `SET search_path = public`.
 
 ## Output
+
 `{ table, findings: [{severity, rule, fix_sql}] }`

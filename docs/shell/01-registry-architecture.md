@@ -35,24 +35,24 @@ shell's public index.
 
 ## Module map
 
-| Module | Section | Responsibility |
-|---|---|---|
-| `types.ts` | 05–08, 12 | closed vocabularies: lifecycle, health, dependency semantics, permissions, visibility, activation rules, events |
-| `categories.ts` | 04 | 12 seeded categories, runtime-extensible, typo-proof |
-| `records.ts` | 01, 02, 09 | zod-strict `CapabilityRecord` / `SkillRecord` + structured metadata |
-| `lifecycle.ts` | 05 | 8-state machine, illegal jumps refused |
-| `health.ts` | 06 | per-record health, worst-of aggregation |
-| `dependencies.ts` | 07 | necessity×binding graph, cycle detection, topological order |
-| `permissions.ts` | 08 | deny-by-default grants over 8 actions |
-| `versioning.ts` | 10 | semver algebra, timeline (upgrade/rollback rules), compatibility matrix |
-| `events.ts` | 12 | 8 typed events, journaled, handler-safe |
-| `validation.ts` | 11 | 7-check fail-closed pipeline |
-| `registries.ts` | 01, 02 | the two governed stores + human-gated activation protocol |
-| `discovery-engine.ts` | 03 | `createShellPopulation()` — the single admission door |
+| Module                | Section    | Responsibility                                                                                                  |
+| --------------------- | ---------- | --------------------------------------------------------------------------------------------------------------- |
+| `types.ts`            | 05–08, 12  | closed vocabularies: lifecycle, health, dependency semantics, permissions, visibility, activation rules, events |
+| `categories.ts`       | 04         | 12 seeded categories, runtime-extensible, typo-proof                                                            |
+| `records.ts`          | 01, 02, 09 | zod-strict `CapabilityRecord` / `SkillRecord` + structured metadata                                             |
+| `lifecycle.ts`        | 05         | 8-state machine, illegal jumps refused                                                                          |
+| `health.ts`           | 06         | per-record health, worst-of aggregation                                                                         |
+| `dependencies.ts`     | 07         | necessity×binding graph, cycle detection, topological order                                                     |
+| `permissions.ts`      | 08         | deny-by-default grants over 8 actions                                                                           |
+| `versioning.ts`       | 10         | semver algebra, timeline (upgrade/rollback rules), compatibility matrix                                         |
+| `events.ts`           | 12         | 8 typed events, journaled, handler-safe                                                                         |
+| `validation.ts`       | 11         | 7-check fail-closed pipeline                                                                                    |
+| `registries.ts`       | 01, 02     | the two governed stores + human-gated activation protocol                                                       |
+| `discovery-engine.ts` | 03         | `createShellPopulation()` — the single admission door                                                           |
 
 ## Laws
 
-1. **Generic forever** — records describe *shape*, never content; the layer
+1. **Generic forever** — records describe _shape_, never content; the layer
    ships zero skills, zero agents, zero enterprise data.
 2. **Fail closed** — invalid records never partially register; unknown rule,
    category, permission or event names are refusals, not warnings.

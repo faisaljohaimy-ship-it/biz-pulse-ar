@@ -12,10 +12,10 @@ order.**
 { target: "cap.alpha", necessity: "required" | "optional", binding: "hard" | "soft" }
 ```
 
-| | `hard` | `soft` |
-|---|---|---|
+|                | `hard`                                                                                                   | `soft`                                         |
+| -------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | **`required`** | must resolve AND be lifecycle-healthy; missing/dead blocks resolution and surfaces in conflict detection | must resolve; degradation tolerated at runtime |
-| **`optional`** | absence reported (`missing-optional`) but **never blocks** | absence reported, pure enhancement |
+| **`optional`** | absence reported (`missing-optional`) but **never blocks**                                               | absence reported, pure enhancement             |
 
 ## Resolution
 

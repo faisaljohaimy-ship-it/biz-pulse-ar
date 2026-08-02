@@ -19,24 +19,25 @@ it is lighter, livelier and rarer. Reading any NEXIOS screen means descending fr
 
 ## Glassmorphism — الزجاج التنفيذي
 
-Glass is NEXIOS's working material: panels are translucent so *depth is information* —
+Glass is NEXIOS's working material: panels are translucent so _depth is information_ —
 you always sense there is a world behind the panel you're using.
 
 Rules of glass:
+
 - Glass = background at 55–75% opacity of a `--nx-surface`-family tone + `backdrop-blur`
   of 12–24px + a 1px border at 8–14% white + inner top highlight at 4% white.
 - Glass never stacks more than **two deep**. A glass panel over a glass panel over glass
   is mud, not depth.
 - Text never sits on raw glass over busy content: glass panels that carry body text add a
   scrim (see Chapter 06) to guarantee contrast.
-- Glass is for *containers*. Controls (buttons, inputs) are solid or near-solid — the
+- Glass is for _containers_. Controls (buttons, inputs) are solid or near-solid — the
   hand should never doubt what it's touching.
 
 ## Holographic Layers — الطبقات الهولوغرامية
 
 The holographic stratum is where NEXIOS feels alive: the glowing Kingdom map, sector
 pulse halos, agent presence rings, the cinematic background signature. Holography is a
-*display* register, never a *control* register:
+_display_ register, never a _control_ register:
 
 - Holographic elements are non-interactive or single-tap (open/inspect) only.
 - They render **behind or beside** decision content, never on top of it.
@@ -69,13 +70,13 @@ panels). Every panel has the same anatomy, in RTL order:
 
 NEXIOS runs three named density registers; every screen declares one:
 
-| Register | Where | Objects per viewport | Row height |
-|---|---|---|---|
-| **مجلس** Boardroom | /, boardroom, cinema | ≤ 5 | ≥ 64px |
-| **قيادة** Command | dashboards, hcis, exec | ≤ 9 | 48–56px |
-| **تشغيل** Operations | tables, logs, registers | ≤ 16 | 36–44px |
+| Register             | Where                   | Objects per viewport | Row height |
+| -------------------- | ----------------------- | -------------------- | ---------- |
+| **مجلس** Boardroom   | /, boardroom, cinema    | ≤ 5                  | ≥ 64px     |
+| **قيادة** Command    | dashboards, hcis, exec  | ≤ 9                  | 48–56px    |
+| **تشغيل** Operations | tables, logs, registers | ≤ 16                 | 36–44px    |
 
-Density never changes *within* a screen without a disclosure step (expanding a panel may
+Density never changes _within_ a screen without a disclosure step (expanding a panel may
 raise its register by one). Mixing Boardroom hero numbers with Operations tables on one
 surface is forbidden — link between them instead.
 
@@ -83,7 +84,7 @@ surface is forbidden — link between them instead.
 
 Rhythm is repetition with a beat: identical panel gaps (Chapter 05), identical header
 heights, identical corner radii per component class. The eye should be able to predict
-where the next panel starts before seeing it. Rhythm breaks are *meaningful*: the one
+where the next panel starts before seeing it. Rhythm breaks are _meaningful_: the one
 element allowed to break the grid on a screen is, by definition, its most important
 element — so break it once or never.
 
@@ -91,6 +92,7 @@ element — so break it once or never.
 
 Space is the most expensive material in the system; spending it is what makes NEXIOS feel
 executive rather than operational.
+
 - Minimum breathing: panel padding ≥ 24px in Command register, ≥ 32px in Boardroom.
 - Hero numbers get empty space equal to at least their own height on both vertical sides.
 - Never fill space because it exists. An intentionally empty column is a design element.
@@ -98,6 +100,7 @@ executive rather than operational.
 ## Focus Hierarchy — تسلسل التركيز
 
 Exactly four attention tiers per screen, allocated top-down:
+
 1. **البطل (Hero)** — one element: the decision-relevant fact (KPI, alert, recommendation).
 2. **السياق (Context)** — 2–4 panels that explain the hero.
 3. **المحيط (Periphery)** — navigation, secondary metrics, timelines.

@@ -68,12 +68,12 @@
   --nx-holo-edge: rgb(var(--nx-holo-rgb) / 0.5);
   --nx-holo-edge-hover: rgb(var(--nx-holo-rgb) / 0.78);
   --nx-holo-edge-press: rgb(var(--nx-holo-rgb) / 1);
-  --nx-holo-rest: 0 0 10px rgb(var(--nx-holo-rgb) / 0.26),
-    inset 0 0 8px rgb(var(--nx-holo-rgb) / 0.1);
-  --nx-holo-hover: 0 0 18px rgb(var(--nx-holo-rgb) / 0.44),
-    inset 0 0 12px rgb(var(--nx-holo-rgb) / 0.18);
-  --nx-holo-press: 0 0 28px rgb(var(--nx-holo-rgb) / 0.62),
-    inset 0 0 16px rgb(var(--nx-holo-rgb) / 0.3);
+  --nx-holo-rest:
+    0 0 10px rgb(var(--nx-holo-rgb) / 0.26), inset 0 0 8px rgb(var(--nx-holo-rgb) / 0.1);
+  --nx-holo-hover:
+    0 0 18px rgb(var(--nx-holo-rgb) / 0.44), inset 0 0 12px rgb(var(--nx-holo-rgb) / 0.18);
+  --nx-holo-press:
+    0 0 28px rgb(var(--nx-holo-rgb) / 0.62), inset 0 0 16px rgb(var(--nx-holo-rgb) / 0.3);
 
   /* ── Blur ladder (Ch. 06 caps) ───────────────────────────────────────── */
   --nx-blur-12: 12px;

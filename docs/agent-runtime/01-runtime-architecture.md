@@ -35,19 +35,19 @@ audit trail) and the execution coordinator.
 
 ## Module map
 
-| Module | Sections | Responsibility |
-|---|---|---|
-| `types.ts` | 03–06 | closed vocabularies: 10 lifecycle states, 7 execution modes, 8 events; injected `Clock`/`Monotonic`/`IdFactory` |
-| `records.ts` | 01, 02 | `AgentRecord` (governed view) + `AgentRuntimeManifest` wrapping the frozen Phase-1 agent manifest |
-| `lifecycle.ts` | 03 | machine + `OPERATIONAL_STATES` (running/paused — protocol territory) |
-| `registry.ts` | 01 | governed store; static-factory `OperationalGate` (no public back door) |
-| `events.ts` | 06 | journaled, handler-isolated bus |
-| `execution-context.ts` | 07 | identity/session/memory/permissions/correlation/trace/audit |
-| `observability.ts` | 08 | `TraceCollector` (monotonic spans), `MetricsRegistry`, `LogJournal` |
-| `security.ts` | 09 | authorization, policy decisions, approval hooks, `AuditTrail` |
-| `execution.ts` | 04 | `ExecutionCoordinator` — 7 modes over one governed core |
-| `validation.ts` | 01/02 | fail-closed admission validator |
-| `runtime.ts` | all | `createAgentRuntime(options)` facade |
+| Module                 | Sections | Responsibility                                                                                                  |
+| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `types.ts`             | 03–06    | closed vocabularies: 10 lifecycle states, 7 execution modes, 8 events; injected `Clock`/`Monotonic`/`IdFactory` |
+| `records.ts`           | 01, 02   | `AgentRecord` (governed view) + `AgentRuntimeManifest` wrapping the frozen Phase-1 agent manifest               |
+| `lifecycle.ts`         | 03       | machine + `OPERATIONAL_STATES` (running/paused — protocol territory)                                            |
+| `registry.ts`          | 01       | governed store; static-factory `OperationalGate` (no public back door)                                          |
+| `events.ts`            | 06       | journaled, handler-isolated bus                                                                                 |
+| `execution-context.ts` | 07       | identity/session/memory/permissions/correlation/trace/audit                                                     |
+| `observability.ts`     | 08       | `TraceCollector` (monotonic spans), `MetricsRegistry`, `LogJournal`                                             |
+| `security.ts`          | 09       | authorization, policy decisions, approval hooks, `AuditTrail`                                                   |
+| `execution.ts`         | 04       | `ExecutionCoordinator` — 7 modes over one governed core                                                         |
+| `validation.ts`        | 01/02    | fail-closed admission validator                                                                                 |
+| `runtime.ts`           | all      | `createAgentRuntime(options)` facade                                                                            |
 
 ## Laws
 

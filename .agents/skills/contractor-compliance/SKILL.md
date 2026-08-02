@@ -6,6 +6,7 @@ description: Verify sec_contractors documentation (insurance, safety certs, GOSI
 # Contractor Compliance
 
 ## Required Documents (KSA Industrial)
+
 - Commercial Registration (CR) — valid, matches contractor name
 - Insurance — `insurance_expiry > today + 30d`
 - GOSI certificate — current month
@@ -14,11 +15,13 @@ description: Verify sec_contractors documentation (insurance, safety certs, GOSI
 - ARAMCO/SABIC vendor approval (where applicable)
 
 ## Risk Tiers
-| Tier | Requirement |
-|---|---|
+
+| Tier                        | Requirement                          |
+| --------------------------- | ------------------------------------ |
 | Critical (hot work, height) | All 6 docs + on-site supervisor cert |
-| High | 5 of 6 (Aramco optional) |
-| Standard | CR + Insurance + GOSI |
+| High                        | 5 of 6 (Aramco optional)             |
+| Standard                    | CR + Insurance + GOSI                |
 
 ## Output
+
 `{ contractor_id, tier_eligible, missing: [], expires_within_30d: [], blocked: bool }`

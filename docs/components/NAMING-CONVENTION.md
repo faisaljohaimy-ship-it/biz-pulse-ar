@@ -36,6 +36,7 @@ src/components/nx/
   tables/nx-audit-table.tsx
   …one directory per library doc 01–13
 ```
+
 - File names kebab-case mirroring the component name.
 - One exported component per file plus its prop types; variants live inside, never as
   separate files (variant explosion is how libraries die).

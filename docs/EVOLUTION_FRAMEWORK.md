@@ -29,36 +29,37 @@ Entry points:
 
 ## 3. Pipeline stages / مراحل الأنبوب
 
-| Stage | Contract | Failure mode |
-|---|---|---|
-| `analyze` | `evaluateRelease()` → readiness snapshot | fail → NO_GO, rollback |
-| `plan` | `runSelfImprovementPipeline()` (only when input.improvement provided) | fail → NO_GO |
-| `estimate_risk` | surfaces regressions + gaps counts | pass through |
-| `apply_safe_changes` | records manifest of approved proposals; **never mutates code** | always safe |
-| `detect_issues` | aggregates blockers/warnings/regressions/gaps → `EvolutionIssue[]` | warn if any |
-| `validate` | readiness ≠ NO-GO AND improvement ≠ NO_GO | fail → decision NO_GO |
-| `benchmark` | reports comparison count | unknown when 0 |
-| `report` | final `EngineDecision` + reasons | always emits |
+| Stage                | Contract                                                              | Failure mode           |
+| -------------------- | --------------------------------------------------------------------- | ---------------------- |
+| `analyze`            | `evaluateRelease()` → readiness snapshot                              | fail → NO_GO, rollback |
+| `plan`               | `runSelfImprovementPipeline()` (only when input.improvement provided) | fail → NO_GO           |
+| `estimate_risk`      | surfaces regressions + gaps counts                                    | pass through           |
+| `apply_safe_changes` | records manifest of approved proposals; **never mutates code**        | always safe            |
+| `detect_issues`      | aggregates blockers/warnings/regressions/gaps → `EvolutionIssue[]`    | warn if any            |
+| `validate`           | readiness ≠ NO-GO AND improvement ≠ NO_GO                             | fail → decision NO_GO  |
+| `benchmark`          | reports comparison count                                              | unknown when 0         |
+| `report`             | final `EngineDecision` + reasons                                      | always emits           |
 
 ## 4. Invariants (runtime-enforced) / الثوابت المحمية
 
 Returned in every `EvolutionReport.invariants`:
 
-| Invariant | Guarantee |
-|---|---|
-| `preserveArchitecture` | orchestrator only, no new engines |
-| `preservePublicApi` | no barrel change in `evolution/`, `self-improvement/`, `production/` |
-| `preserveSingletons` | FINN brain/provider/store untouched |
-| `preserveSecurity` | server fn wrapped in `requireSupabaseAuth` |
-| `preserveAriaIdentity` | no changes to `aria-core/*` from this framework |
-| `zeroBreakingChanges` | additive files only |
-| `zeroPlaceholders` | evidence-first; nothing invented |
-| `zeroDuplicateEngines` | composes existing engines, does not fork them |
+| Invariant              | Guarantee                                                            |
+| ---------------------- | -------------------------------------------------------------------- |
+| `preserveArchitecture` | orchestrator only, no new engines                                    |
+| `preservePublicApi`    | no barrel change in `evolution/`, `self-improvement/`, `production/` |
+| `preserveSingletons`   | FINN brain/provider/store untouched                                  |
+| `preserveSecurity`     | server fn wrapped in `requireSupabaseAuth`                           |
+| `preserveAriaIdentity` | no changes to `aria-core/*` from this framework                      |
+| `zeroBreakingChanges`  | additive files only                                                  |
+| `zeroPlaceholders`     | evidence-first; nothing invented                                     |
+| `zeroDuplicateEngines` | composes existing engines, does not fork them                        |
 
 ## 5. Operator surface / واجهة المشغّل
 
 **Route:** `/_authenticated/self-evolution` (bilingual AR/EN).
 Renders:
+
 - decision badge + readiness score
 - pipeline stages with pass/warn/fail/unknown status
 - detected issues grouped by severity
@@ -67,6 +68,7 @@ Renders:
 - applied vs deferred proposal counts
 
 **Server function:** `runSelfEvolutionFn` (POST, auth required):
+
 ```ts
 const run = useServerFn(runSelfEvolutionFn);
 const report = await run({ data: { enableApply: false } });
@@ -78,15 +80,16 @@ const report = await run({ data: { enableApply: false } });
 type EngineDecision = "GO" | "NO_GO" | "GO_WITH_KNOWN_LIMITATIONS" | "UNKNOWN";
 
 interface EvolutionReport {
-  startedAt: string; finishedAt: string;
+  startedAt: string;
+  finishedAt: string;
   decision: EngineDecision;
-  readinessScore: number;              // 0..1
+  readinessScore: number; // 0..1
   readiness: ReleaseDecisionReport | null;
   improvement: SelfImprovementReport | null;
   issues: EvolutionIssue[];
   stages: EvolutionStageResult[];
-  applied: string[];                   // approved proposal ids (manifest)
-  deferred: string[];                  // everything else
+  applied: string[]; // approved proposal ids (manifest)
+  deferred: string[]; // everything else
   reasons: string[];
   invariants: EvolutionInvariants;
 }
@@ -99,6 +102,7 @@ Every engineering surface renders both Arabic (primary) and English (secondary).
 ## 8. Definition of done / تعريف الإنجاز
 
 A cycle is complete only when:
+
 1. TypeScript compilation passes (`npm run typecheck`) — ✅
 2. Build passes (harness-managed) — ✅
 3. Zero duplicate engines/singletons introduced — ✅

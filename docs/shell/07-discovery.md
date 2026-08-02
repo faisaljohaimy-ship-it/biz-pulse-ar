@@ -41,12 +41,12 @@ every gate has passed — a rejected candidate leaves zero residue.
 
 Every consequential act is journaled by the `PopulationEventBus`:
 
-| Event | Emitted by |
-|---|---|
-| `capability-added` / `capability-removed` | capability registry |
-| `skill-registered` / `skill-updated` | skill registry |
-| `validation-failed` | discovery engine (with the stringified issue list) |
-| `activation-requested` / `activation-approved` / `activation-completed` | activation protocol |
+| Event                                                                   | Emitted by                                         |
+| ----------------------------------------------------------------------- | -------------------------------------------------- |
+| `capability-added` / `capability-removed`                               | capability registry                                |
+| `skill-registered` / `skill-updated`                                    | skill registry                                     |
+| `validation-failed`                                                     | discovery engine (with the stringified issue list) |
+| `activation-requested` / `activation-approved` / `activation-completed` | activation protocol                                |
 
 Handlers are isolated (a throwing listener never breaks the Shell) and the
 journal — not any listener — is the audit authority.

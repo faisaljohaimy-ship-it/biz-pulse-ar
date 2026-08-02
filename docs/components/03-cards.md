@@ -16,30 +16,30 @@ designed empty/error · hover 150ms no-scale.
 
 ### Canonical eight (spec of record: Constitution Ch. 08)
 
-| Component | Arabic | Constitutional deltas recap |
-|---|---|---|
-| **NxExecutiveCard** | البطاقة التنفيذية | radius 20, hero-only glow, single-action, gold approval-pending |
-| **NxAnalyticsCard** | بطاقة التحليلات | analytics top-border 2px @24%, no glow, one chart |
-| **NxRuntimeCard** | بطاقة التشغيل | runtime border, state chip, body never turns red |
-| **NxFinnCard** | بطاقة FINN | agent border+ring, 72% glass, evidence row, gate variant |
-| **NxKnowledgeCard** | بطاقة المعرفة | knowledge border, freshness label, drawer preview |
-| **NxShellCard** | بطاقة الصدفة | violet border, kind+version chips, dashed draft |
-| **NxTwinCard** | بطاقة التوأم | twin border, viz zone with sector pulse, telemetry trio |
-| **NxNotificationCard** | بطاقة الإشعار | 16 padding, 12 radius, severity edge-bar, triple redundancy |
+| Component              | Arabic            | Constitutional deltas recap                                     |
+| ---------------------- | ----------------- | --------------------------------------------------------------- |
+| **NxExecutiveCard**    | البطاقة التنفيذية | radius 20, hero-only glow, single-action, gold approval-pending |
+| **NxAnalyticsCard**    | بطاقة التحليلات   | analytics top-border 2px @24%, no glow, one chart               |
+| **NxRuntimeCard**      | بطاقة التشغيل     | runtime border, state chip, body never turns red                |
+| **NxFinnCard**         | بطاقة FINN        | agent border+ring, 72% glass, evidence row, gate variant        |
+| **NxKnowledgeCard**    | بطاقة المعرفة     | knowledge border, freshness label, drawer preview               |
+| **NxShellCard**        | بطاقة الصدفة      | violet border, kind+version chips, dashed draft                 |
+| **NxTwinCard**         | بطاقة التوأم      | twin border, viz zone with sector pulse, telemetry trio         |
+| **NxNotificationCard** | بطاقة الإشعار     | 16 padding, 12 radius, severity edge-bar, triple redundancy     |
 
 ### Derived five
 
-| Component | Purpose | Structure & overrides |
-|---|---|---|
-| **NxAlertCard** | An active alert as a workable object (vs the feed's NotificationCard) | NotificationCard + expanded body: impact line, affected-systems chips, two actions (acknowledge Ghost / act Secondary); critical = one-time 2-pulse ring (Ch. 06) |
-| **NxRiskCard** | One risk with severity + trajectory | Executive base; severity chip (status color + Arabic word + glyph), risk score as KPI Number sm, trend arrow; border tinted status @ 24%; **body fill never status-colored** |
-| **NxApprovalCard** | A pending human decision | FinnCard gate variant promoted to standalone: request summary, requester, evidence count, deadline label; footer = solid strip, gold accent, Approve (Executive Action sm) + Decline (Outline); the only card allowed gold |
-| **NxKpiCard** | One KPI with context | Executive base md; KPI Number (doc 05) + delta chip + sparkline slot + unit/time footer; grid-cap 4-across (Ch. 09) |
-| **NxSummaryCard** / **NxStatusCard** / **NxGlassCard** | Summary: N-up fact rows · Status: entity + state chip + last-event · Glass: the bare glass container primitive the others extend (exposed for ambient-strata content only) | Summary: label/value rows 40px; Status: 16 padding, chip mandatory; Glass: base spec with empty slot — using it to invent a fourteenth card is a finding |
+| Component                                              | Purpose                                                                                                                                                                    | Structure & overrides                                                                                                                                                                                                      |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **NxAlertCard**                                        | An active alert as a workable object (vs the feed's NotificationCard)                                                                                                      | NotificationCard + expanded body: impact line, affected-systems chips, two actions (acknowledge Ghost / act Secondary); critical = one-time 2-pulse ring (Ch. 06)                                                          |
+| **NxRiskCard**                                         | One risk with severity + trajectory                                                                                                                                        | Executive base; severity chip (status color + Arabic word + glyph), risk score as KPI Number sm, trend arrow; border tinted status @ 24%; **body fill never status-colored**                                               |
+| **NxApprovalCard**                                     | A pending human decision                                                                                                                                                   | FinnCard gate variant promoted to standalone: request summary, requester, evidence count, deadline label; footer = solid strip, gold accent, Approve (Executive Action sm) + Decline (Outline); the only card allowed gold |
+| **NxKpiCard**                                          | One KPI with context                                                                                                                                                       | Executive base md; KPI Number (doc 05) + delta chip + sparkline slot + unit/time footer; grid-cap 4-across (Ch. 09)                                                                                                        |
+| **NxSummaryCard** / **NxStatusCard** / **NxGlassCard** | Summary: N-up fact rows · Status: entity + state chip + last-event · Glass: the bare glass container primitive the others extend (exposed for ambient-strata content only) | Summary: label/value rows 40px; Status: 16 padding, chip mandatory; Glass: base spec with empty slot — using it to invent a fourteenth card is a finding                                                                   |
 
-*(Counted as thirteen: eight canonical + Alert, Risk, Approval, KPI, and the
+_(Counted as thirteen: eight canonical + Alert, Risk, Approval, KPI, and the
 Summary/Status/Glass trio specified as one family row for brevity — each is its own
-component with the listed structure.)*
+component with the listed structure.)_
 
 ## Shared card laws (binding)
 

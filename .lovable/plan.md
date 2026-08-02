@@ -1,4 +1,3 @@
-
 # NEXIOS RAG — حزمة التجهيز الكاملة (بدون تطبيق)
 
 **الالتزام الحاكم:** لا أطبّق migration، لا أنشر دالة، لا أعدّل مسار Gemini، لا `db push`، لا PR على main، لا streaming، لا MCP جديد، لا أسرار في الكود. كل ما يلي **ملفات مسوّدة للمراجعة** تحت `.rag-staging/` — لا تُنقل إلى `supabase/migrations/` ولا تُنشر إلا بأمرك.
@@ -48,25 +47,26 @@
 
 ## ② جدول الملفات المُجهَّزة
 
-| الملف (مسوّدة) | ماذا يفعل | المخاطرة المعالَجة | استعلام التحقّق | استعلام التراجع |
-|---|---|---|---|---|
-| `.rag-staging/migrations/001_sec_kb_schema.sql` | جداول `sec_kb_documents`, `sec_kb_chunks(embedding vector(1536))`, فهرس HNSW cosine، أعمدة `org_id`, `doc_code`, `chunk_hash`, `content_tsv` (arabic) | تسرّب مؤسسات، حد HNSW 2000، رموز عربية | `SELECT pg_get_indexdef(i.oid) FROM pg_class i WHERE relname='sec_kb_chunks_embedding_hnsw';` — يجب أن يظهر `vector_cosine_ops` بأبعاد 1536 | `DROP TABLE sec_kb_chunks; DROP TABLE sec_kb_documents;` |
-| `.rag-staging/migrations/002_sec_kb_rls.sql` | RLS + **RESTRICTIVE** policy لعزل `org_id = auth_org_id()`، GRANT لـ authenticated فقط، حرمان anon | 27 فحص عزل غير مطبّق، تسرّب متبادل | `SELECT polname, polpermissive FROM pg_policy WHERE polrelid='public.sec_kb_chunks'::regclass;` — يجب وجود صف واحد على الأقل `permissive=false` | `ALTER TABLE sec_kb_chunks DISABLE ROW LEVEL SECURITY; DROP POLICY ...;` |
-| `.rag-staging/migrations/003_ar_normalize_fn.sql` | `normalize_ar(text) → text` IMMUTABLE (ألف/تاء/تشكيل/تطويل) + `content_tsv GENERATED` باستخدامها | استرجاع ضعيف للرموز العربية | `SELECT normalize_ar('الإسْتِراتِيْجِيَّة');` = `الاستراتيجيه` | `DROP FUNCTION normalize_ar(text) CASCADE;` |
-| `.rag-staging/migrations/004_auth_org_helper.sql` | `auth_org_id() SECURITY DEFINER` يستخرج `org_id` من JWT (`current_setting('request.jwt.claims')`) — **العميل لا يمرّره** | تجاوز العزل من طرف العميل | `SELECT auth_org_id();` من داخل سياق JWT اختباري | `DROP FUNCTION auth_org_id();` |
-| `.rag-staging/migrations/005_rag_hybrid_fn.sql` | `sec_kb_hybrid_search(q_embedding, q_text, k)` — يدمج vector + FTS + trgm بـ **RRF (k=60)** بأوزان 0.5/0.3/0.2، ويُطبّق `auth_org_id()` داخليًا | تسرّب، دقة استرجاع | `EXPLAIN ANALYZE SELECT * FROM sec_kb_hybrid_search(...)` — يجب أن يستخدم HNSW + GIN(tsv) + GIN(trgm) | `DROP FUNCTION sec_kb_hybrid_search(...);` |
-| `.rag-staging/migrations/006_ingestion_upsert_fn.sql` | `sec_kb_upsert_chunk(...)` — idempotent عبر `(doc_code, chunk_hash)`، يُعيد تطبيع L2 بعد أي MRL truncate | ازدواج، تلوث embeddings | إدخال نفس القطعة مرتين ثم `SELECT count(*) FROM sec_kb_chunks WHERE doc_code='SEC-01';` = 1 | `DROP FUNCTION sec_kb_upsert_chunk(...);` |
-| `.rag-staging/functions/rag_query/index.ts` (مسوّدة — لا نشر) | Edge Function مصادَقة: يستدعي embed → `sec_kb_hybrid_search` → evidence gate → إرجاع citations. `service_role` **لا يغادر الدالة** | تسريب مفاتيح، تسرّب مؤسسات | `curl -H "Authorization: Bearer <jwt-org-A>"` لا يرى وثائق org-B | حذف الملف من `.rag-staging/` |
-| `.rag-staging/tools/isolation_probe.sql` | 27 فحص عزل معلن سابقًا (لكل جدول SEC/PTW × 3 عمليات) | العزل غير مُتحقَّق منه | تشغيل السكربت يُخرج جدول ✓/✗ لكل فحص | لا شيء (قراءة فقط) |
-| `.rag-staging/eval/gold_set_ar.jsonl` | 40 سؤال ذهبي عربي عبر SEC-01..SEC-19 + PTW مع إجابات مرجعية | لا مقياس دقة | تشغيل `eval_runner` (لم يُشغَّل) | حذف الملف |
-| `.rag-staging/constitution.diff.md` | تعديل الدستور: إضافة **المادة 31 — بروتوكول RAG** (RRF، عتبات، `insufficient_evidence` مخرَج ناجح، عزل RESTRICTIVE، MRL+L2، عربي مطبَّع) + **المادة 32 — عزل المؤسسات كثابت** (org_id من JWT فقط) | انحراف مستقبلي عن العقيدة | مراجعة بشرية | Revert الملف |
-| `.rag-staging/system.diff.md` | flag `RAG_HYBRID` (off افتراضيًا) في `src/config/feature-flags.ts`، نقطة استدعاء داخل FINN خلف الـflag، لا تعديل لمسار Gemini | كسر FINN الحالية | grep يؤكد أن مسار Gemini غير مُلمَس | Revert الملف |
+| الملف (مسوّدة)                                                | ماذا يفعل                                                                                                                                                                                         | المخاطرة المعالَجة                     | استعلام التحقّق                                                                                                                                 | استعلام التراجع                                                          |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `.rag-staging/migrations/001_sec_kb_schema.sql`               | جداول `sec_kb_documents`, `sec_kb_chunks(embedding vector(1536))`, فهرس HNSW cosine، أعمدة `org_id`, `doc_code`, `chunk_hash`, `content_tsv` (arabic)                                             | تسرّب مؤسسات، حد HNSW 2000، رموز عربية | `SELECT pg_get_indexdef(i.oid) FROM pg_class i WHERE relname='sec_kb_chunks_embedding_hnsw';` — يجب أن يظهر `vector_cosine_ops` بأبعاد 1536     | `DROP TABLE sec_kb_chunks; DROP TABLE sec_kb_documents;`                 |
+| `.rag-staging/migrations/002_sec_kb_rls.sql`                  | RLS + **RESTRICTIVE** policy لعزل `org_id = auth_org_id()`، GRANT لـ authenticated فقط، حرمان anon                                                                                                | 27 فحص عزل غير مطبّق، تسرّب متبادل     | `SELECT polname, polpermissive FROM pg_policy WHERE polrelid='public.sec_kb_chunks'::regclass;` — يجب وجود صف واحد على الأقل `permissive=false` | `ALTER TABLE sec_kb_chunks DISABLE ROW LEVEL SECURITY; DROP POLICY ...;` |
+| `.rag-staging/migrations/003_ar_normalize_fn.sql`             | `normalize_ar(text) → text` IMMUTABLE (ألف/تاء/تشكيل/تطويل) + `content_tsv GENERATED` باستخدامها                                                                                                  | استرجاع ضعيف للرموز العربية            | `SELECT normalize_ar('الإسْتِراتِيْجِيَّة');` = `الاستراتيجيه`                                                                                  | `DROP FUNCTION normalize_ar(text) CASCADE;`                              |
+| `.rag-staging/migrations/004_auth_org_helper.sql`             | `auth_org_id() SECURITY DEFINER` يستخرج `org_id` من JWT (`current_setting('request.jwt.claims')`) — **العميل لا يمرّره**                                                                          | تجاوز العزل من طرف العميل              | `SELECT auth_org_id();` من داخل سياق JWT اختباري                                                                                                | `DROP FUNCTION auth_org_id();`                                           |
+| `.rag-staging/migrations/005_rag_hybrid_fn.sql`               | `sec_kb_hybrid_search(q_embedding, q_text, k)` — يدمج vector + FTS + trgm بـ **RRF (k=60)** بأوزان 0.5/0.3/0.2، ويُطبّق `auth_org_id()` داخليًا                                                   | تسرّب، دقة استرجاع                     | `EXPLAIN ANALYZE SELECT * FROM sec_kb_hybrid_search(...)` — يجب أن يستخدم HNSW + GIN(tsv) + GIN(trgm)                                           | `DROP FUNCTION sec_kb_hybrid_search(...);`                               |
+| `.rag-staging/migrations/006_ingestion_upsert_fn.sql`         | `sec_kb_upsert_chunk(...)` — idempotent عبر `(doc_code, chunk_hash)`، يُعيد تطبيع L2 بعد أي MRL truncate                                                                                          | ازدواج، تلوث embeddings                | إدخال نفس القطعة مرتين ثم `SELECT count(*) FROM sec_kb_chunks WHERE doc_code='SEC-01';` = 1                                                     | `DROP FUNCTION sec_kb_upsert_chunk(...);`                                |
+| `.rag-staging/functions/rag_query/index.ts` (مسوّدة — لا نشر) | Edge Function مصادَقة: يستدعي embed → `sec_kb_hybrid_search` → evidence gate → إرجاع citations. `service_role` **لا يغادر الدالة**                                                                | تسريب مفاتيح، تسرّب مؤسسات             | `curl -H "Authorization: Bearer <jwt-org-A>"` لا يرى وثائق org-B                                                                                | حذف الملف من `.rag-staging/`                                             |
+| `.rag-staging/tools/isolation_probe.sql`                      | 27 فحص عزل معلن سابقًا (لكل جدول SEC/PTW × 3 عمليات)                                                                                                                                              | العزل غير مُتحقَّق منه                 | تشغيل السكربت يُخرج جدول ✓/✗ لكل فحص                                                                                                            | لا شيء (قراءة فقط)                                                       |
+| `.rag-staging/eval/gold_set_ar.jsonl`                         | 40 سؤال ذهبي عربي عبر SEC-01..SEC-19 + PTW مع إجابات مرجعية                                                                                                                                       | لا مقياس دقة                           | تشغيل `eval_runner` (لم يُشغَّل)                                                                                                                | حذف الملف                                                                |
+| `.rag-staging/constitution.diff.md`                           | تعديل الدستور: إضافة **المادة 31 — بروتوكول RAG** (RRF، عتبات، `insufficient_evidence` مخرَج ناجح، عزل RESTRICTIVE، MRL+L2، عربي مطبَّع) + **المادة 32 — عزل المؤسسات كثابت** (org_id من JWT فقط) | انحراف مستقبلي عن العقيدة              | مراجعة بشرية                                                                                                                                    | Revert الملف                                                             |
+| `.rag-staging/system.diff.md`                                 | flag `RAG_HYBRID` (off افتراضيًا) في `src/config/feature-flags.ts`، نقطة استدعاء داخل FINN خلف الـflag، لا تعديل لمسار Gemini                                                                     | كسر FINN الحالية                       | grep يؤكد أن مسار Gemini غير مُلمَس                                                                                                             | Revert الملف                                                             |
 
 ---
 
 ## ③ الافتراضات والعوائق
 
 **افتراضات صريحة:**
+
 - **[افتراض]** أن `pgvector ≥ 0.7` متاح على Supabase الحالي (مطلوب لـ HNSW cosine على 1536).
 - **[افتراض]** أن `pg_trgm` و `unaccent` قابلان للتفعيل (مطلوب `CREATE EXTENSION` — سأُدرجه في migration للمراجعة، لا للتطبيق).
 - **[افتراض]** أن JWT يحمل claim `org_id` بالفعل في نظام المصادقة الحالي. إن لم يكن، `auth_org_id()` يحتاج مصدرًا بديلًا (جدول `org_members` عبر `auth.uid()`). سأُجهّز كلا المسارين.
@@ -78,6 +78,7 @@
 - **[افتراض]** N مرشحين قبل RRF = 40 لكل قناة (120 إجمالًا قبل الدمج). **البديل المرفوض:** 10 — يفوّت مقاطع صحيحة ذات ترتيب متوسط في قناة واحدة.
 
 **عوائق يجب حسمها قبل التطبيق:**
+
 - 🛑 **مصدر `org_id` غير مؤكد.** يجب أن تُخبرني هل يظهر في `auth.jwt() ->> 'org_id'` أم يجب اشتقاقه من `org_members` عبر `auth.uid()`. القرار يغيّر `auth_org_id()`.
 - 🛑 **صلاحية تفعيل EXTENSIONs.** `pg_trgm`, `unaccent` قد يتطلبان صلاحية superuser على Supabase؛ لن أُدرج `CREATE EXTENSION` بدون تأكيدك.
 - 🛑 **حجم مجموعة الذهب.** 40 سؤالًا كافية لبوابة أولية، لكن التقييم الإنتاجي يحتاج ≥ 200. سأُجهّز 40 كأساس + قالب تمديد.
@@ -100,28 +101,28 @@
 
 ## ⑤ المراجعة الذاتية مقابل الممنوعات والثوابت
 
-| البند | الحالة |
-|---|---|
-| ✕ تطبيق migration | ✅ لم يُطبَّق — كل SQL تحت `.rag-staging/migrations/` وليس `supabase/migrations/` |
-| ✕ نشر دالة | ✅ لم تُنشر — Edge function تحت `.rag-staging/functions/` |
-| ✕ db push | ✅ لم يُشغَّل |
-| ✕ تعديل مسار Gemini | ✅ صفر تعديلات على أي ملف يخدم Gemini حاليًا |
-| ✕ PR / دمج | ✅ لا PR — كل شيء محلي في `.rag-staging/` |
-| ✕ streaming | ✅ Edge fn يعيد JSON كاملًا فقط |
-| ✕ MCP جديد | ✅ لا |
-| ✕ tool descriptor_only مفعَّل | ✅ لا |
-| ✕ secret في الكود | ✅ يُقرأ من env داخل Edge fn فقط |
-| ✕ أكثر من commit | ✅ لا commits أصلًا حتى تعتمد |
-| ✓ vector(1536) | ✅ مثبَّت في المخطط |
-| ✓ HNSW ≤ 2000 dim | ✅ 1536 داخل الحد |
-| ✓ إعادة تطبيع L2 بعد MRL | ✅ داخل `sec_kb_upsert_chunk` |
-| ✓ دور الكتابة = `is_org_member(org,'admin')` | ✅ في policies الكتابة |
-| ✓ `org_id` من JWT فقط | ✅ عبر `auth_org_id()` — لا يقبل معامل من العميل |
-| ✓ `service_role` داخل Edge fn فقط | ✅ لا يُصدَّر |
-| ✓ RRF + FTS عربي + pg_trgm | ✅ في `sec_kb_hybrid_search` |
-| ✓ التطبيع العربي (ألف/تاء/تشكيل/تطويل) | ✅ في `normalize_ar` |
-| ✓ upsert idempotent بـ content hash | ✅ `(doc_code, chunk_hash)` unique |
-| ✓ `insufficient_evidence` مخرَج ناجح | ✅ status صريح، ليس 4xx |
+| البند                                        | الحالة                                                                            |
+| -------------------------------------------- | --------------------------------------------------------------------------------- |
+| ✕ تطبيق migration                            | ✅ لم يُطبَّق — كل SQL تحت `.rag-staging/migrations/` وليس `supabase/migrations/` |
+| ✕ نشر دالة                                   | ✅ لم تُنشر — Edge function تحت `.rag-staging/functions/`                         |
+| ✕ db push                                    | ✅ لم يُشغَّل                                                                     |
+| ✕ تعديل مسار Gemini                          | ✅ صفر تعديلات على أي ملف يخدم Gemini حاليًا                                      |
+| ✕ PR / دمج                                   | ✅ لا PR — كل شيء محلي في `.rag-staging/`                                         |
+| ✕ streaming                                  | ✅ Edge fn يعيد JSON كاملًا فقط                                                   |
+| ✕ MCP جديد                                   | ✅ لا                                                                             |
+| ✕ tool descriptor_only مفعَّل                | ✅ لا                                                                             |
+| ✕ secret في الكود                            | ✅ يُقرأ من env داخل Edge fn فقط                                                  |
+| ✕ أكثر من commit                             | ✅ لا commits أصلًا حتى تعتمد                                                     |
+| ✓ vector(1536)                               | ✅ مثبَّت في المخطط                                                               |
+| ✓ HNSW ≤ 2000 dim                            | ✅ 1536 داخل الحد                                                                 |
+| ✓ إعادة تطبيع L2 بعد MRL                     | ✅ داخل `sec_kb_upsert_chunk`                                                     |
+| ✓ دور الكتابة = `is_org_member(org,'admin')` | ✅ في policies الكتابة                                                            |
+| ✓ `org_id` من JWT فقط                        | ✅ عبر `auth_org_id()` — لا يقبل معامل من العميل                                  |
+| ✓ `service_role` داخل Edge fn فقط            | ✅ لا يُصدَّر                                                                     |
+| ✓ RRF + FTS عربي + pg_trgm                   | ✅ في `sec_kb_hybrid_search`                                                      |
+| ✓ التطبيع العربي (ألف/تاء/تشكيل/تطويل)       | ✅ في `normalize_ar`                                                              |
+| ✓ upsert idempotent بـ content hash          | ✅ `(doc_code, chunk_hash)` unique                                                |
+| ✓ `insufficient_evidence` مخرَج ناجح         | ✅ status صريح، ليس 4xx                                                           |
 
 **نتيجة المراجعة: مطابقة كاملة للثوابت والممنوعات.**
 

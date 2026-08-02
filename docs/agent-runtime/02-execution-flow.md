@@ -6,15 +6,15 @@
 
 ## The seven modes
 
-| Mode | Shape | Semantics |
-|---|---|---|
-| `single` | one agent, one input | the atomic unit every other mode composes |
-| `sequential` | ordered steps, independent inputs | fail-fast: a failed step stops the chain |
-| `parallel` | branches fan out | all invocations race; result aggregates every branch |
-| `pipeline` | stages chain | each stage's OUTPUT is the next stage's INPUT |
-| `broadcast` | one input → many agents | same payload delivered to every agent |
-| `event-driven` | bus event → files a request | **never auto-runs** — an event creates a *pending request*, humans decide |
-| `approval-driven` | wraps an inner plan | can never `execute()` directly; request → approve → run |
+| Mode              | Shape                             | Semantics                                                                 |
+| ----------------- | --------------------------------- | ------------------------------------------------------------------------- |
+| `single`          | one agent, one input              | the atomic unit every other mode composes                                 |
+| `sequential`      | ordered steps, independent inputs | fail-fast: a failed step stops the chain                                  |
+| `parallel`        | branches fan out                  | all invocations race; result aggregates every branch                      |
+| `pipeline`        | stages chain                      | each stage's OUTPUT is the next stage's INPUT                             |
+| `broadcast`       | one input → many agents           | same payload delivered to every agent                                     |
+| `event-driven`    | bus event → files a request       | **never auto-runs** — an event creates a _pending request_, humans decide |
+| `approval-driven` | wraps an inner plan               | can never `execute()` directly; request → approve → run                   |
 
 ## The governed core (every invocation, every mode)
 

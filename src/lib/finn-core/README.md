@@ -18,16 +18,16 @@ The intent header changes instructions and permitted tools; it cannot select a d
 
 ## Singleton guarantees
 
-| Concern | Sole owner |
-| --- | --- |
-| UI provider | `FinnProvider` in the app root |
-| Client brain | `finnBrain` |
-| Conversation lifecycle | `conversationManager` |
-| Server model policy | `server/ai-router.server.ts` |
-| Intelligence provider | native `@ai-sdk/google` adapter |
-| Specialist orchestration | FINN Chief + canonical Council of Ten |
-| Knowledge | tenant-scoped hybrid RAG + Evidence Gate |
-| Transport | `/api/chat` |
+| Concern                  | Sole owner                               |
+| ------------------------ | ---------------------------------------- |
+| UI provider              | `FinnProvider` in the app root           |
+| Client brain             | `finnBrain`                              |
+| Conversation lifecycle   | `conversationManager`                    |
+| Server model policy      | `server/ai-router.server.ts`             |
+| Intelligence provider    | native `@ai-sdk/google` adapter          |
+| Specialist orchestration | FINN Chief + canonical Council of Ten    |
+| Knowledge                | tenant-scoped hybrid RAG + Evidence Gate |
+| Transport                | `/api/chat`                              |
 
 ## Model policy
 

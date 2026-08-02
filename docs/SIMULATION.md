@@ -26,19 +26,19 @@ Reused: `sec_sites`, `sec_buildings`, `sec_assets`, `sec_vehicles`,
 
 New (this milestone):
 
-| Table | Purpose |
-|---|---|
-| `sim_departments` | Org chart, budgets, headcount targets, dept heads |
-| `sim_employees` | Bilingual employee master with dept + site + manager FKs |
-| `sim_buses` | Fleet & routes with driver FK |
-| `sim_near_misses` | Reported near-miss events |
-| `sim_inspections` | Scheduled & completed inspections with scores |
-| `sim_risks` | Likelihood × Impact scoring, linked to inspections |
-| `sim_corrective_actions` | Actions from inspection/incident/risk/near_miss |
-| `sim_meetings` | Bilingual meetings with attendee lists |
-| `sim_notifications` | Per-employee alerts |
-| `sim_daily_ops` | Day × site × shift operational rollups + KPI json |
-| `sim_history` | Generic audit trail for any entity |
+| Table                    | Purpose                                                  |
+| ------------------------ | -------------------------------------------------------- |
+| `sim_departments`        | Org chart, budgets, headcount targets, dept heads        |
+| `sim_employees`          | Bilingual employee master with dept + site + manager FKs |
+| `sim_buses`              | Fleet & routes with driver FK                            |
+| `sim_near_misses`        | Reported near-miss events                                |
+| `sim_inspections`        | Scheduled & completed inspections with scores            |
+| `sim_risks`              | Likelihood × Impact scoring, linked to inspections       |
+| `sim_corrective_actions` | Actions from inspection/incident/risk/near_miss          |
+| `sim_meetings`           | Bilingual meetings with attendee lists                   |
+| `sim_notifications`      | Per-employee alerts                                      |
+| `sim_daily_ops`          | Day × site × shift operational rollups + KPI json        |
+| `sim_history`            | Generic audit trail for any entity                       |
 
 Every row carries `org_id`, `metadata.sim_seed`, `status`, `priority` (where
 applicable), `created_at`, `updated_at`. RLS restricts reads to org members

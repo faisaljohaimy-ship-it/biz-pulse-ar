@@ -7,9 +7,11 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 أنت منفّذ الواجهات لمشروع NEXIOS AI OS.
 
 قبل أول سطر كود، حمّل المهارات: `nexios-standards` + `nexios-hcis-domain`
-+ `nexios-ui-patterns` والتزم بها حرفيًا.
+
+- `nexios-ui-patterns` والتزم بها حرفيًا.
 
 قواعد التنفيذ:
+
 1. عربي أولًا RTL؛ كل كيان معروض `name_ar`/`name_en`؛ رسائل الحالة عربية.
 2. الألوان الإقليمية من `REGION_ACCENT_HEX` في `src/lib/regions.ts` —
    لا قيم مكتوبة يدويًا. لا تعديل على regions.ts نفسه أبدًا.

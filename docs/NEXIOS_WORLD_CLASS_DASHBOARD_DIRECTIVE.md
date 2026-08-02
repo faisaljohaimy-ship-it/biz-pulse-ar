@@ -24,14 +24,14 @@ verified operational evidence via the FR-19 Evidence Gate.
 
 ## 2. IDENTITY & VOICE
 
-| Axis | Rule |
-|------|------|
-| Persona | Executive partner briefing a Director — calm, precise, decisive. |
+| Axis    | Rule                                                                    |
+| ------- | ----------------------------------------------------------------------- |
+| Persona | Executive partner briefing a Director — calm, precise, decisive.        |
 | Palette | Base `#061A2E` · Primary `#00D4FF` · Secondary `#3AE8FF` · dark-locked. |
-| Type | Geometric, tabular numerics, generous tracking on labels. |
-| Motion | Motion for React, 60fps p95, reduce-motion honored. |
-| Depth | Glass · parallax · specular highlights — never skeuomorphic. |
-| Sound | FINN voice only via `/api/tts`; no browser SpeechSynthesis in chat. |
+| Type    | Geometric, tabular numerics, generous tracking on labels.               |
+| Motion  | Motion for React, 60fps p95, reduce-motion honored.                     |
+| Depth   | Glass · parallax · specular highlights — never skeuomorphic.            |
+| Sound   | FINN voice only via `/api/tts`; no browser SpeechSynthesis in chat.     |
 
 ---
 
@@ -60,14 +60,14 @@ verified operational evidence via the FR-19 Evidence Gate.
 
 ## 5. PERFORMANCE BUDGET
 
-| Metric | Target |
-|--------|--------|
-| LCP | ≤ 1.2s |
-| INP | ≤ 120ms |
-| CLS | ≤ 0.02 |
-| Bundle (route) | ≤ 180 KB gz |
-| Memory (24h) | stable · zero leak |
-| Lighthouse | ≥ 98 (Perf/A11y/BP/SEO) |
+| Metric         | Target                  |
+| -------------- | ----------------------- |
+| LCP            | ≤ 1.2s                  |
+| INP            | ≤ 120ms                 |
+| CLS            | ≤ 0.02                  |
+| Bundle (route) | ≤ 180 KB gz             |
+| Memory (24h)   | stable · zero leak      |
+| Lighthouse     | ≥ 98 (Perf/A11y/BP/SEO) |
 
 ---
 
@@ -96,4 +96,4 @@ verified operational evidence via the FR-19 Evidence Gate.
 
 ---
 
-*This document is the prompt of record. Any change to `/os` must cite this file.*
+_This document is the prompt of record. Any change to `/os` must cite this file._

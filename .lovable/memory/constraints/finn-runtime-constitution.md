@@ -23,6 +23,7 @@ system prompt unless `safety_passed = true`, `confidence ≥ 0.7`, AND
 rate-limit).
 
 **INVARIANT-12 — Zero-latency baseline** on mobile / tablet / desktop:
+
 1. `service_tier: "priority"` on every gpt-5 family model that supports Fast mode.
 2. AudioContext primed on dock open, before first keystroke.
 3. TLS preconnect to gateway + ElevenLabs on dock open.

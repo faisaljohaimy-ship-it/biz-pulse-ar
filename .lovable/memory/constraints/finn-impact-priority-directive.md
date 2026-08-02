@@ -7,6 +7,7 @@ type: constraint
 # FINN IMPACT PRIORITY DIRECTIVE v1.0.0 — Supreme Executive Law
 
 ## Absolute Invariants
+
 1. Sequential phases 1→9. Never skip.
 2. Production quality only — no placeholders/mocks/simulated APIs.
 3. Every metric/status/badge evidence-gated via `<EvidenceBadge>` (FR-19).
@@ -15,6 +16,7 @@ type: constraint
 6. Definition of Done = all 9 phases complete AND Final Validation green.
 
 ## The Nine Phases
+
 1. **FINN Core** — Brain · Voice · Avatar · Runtime · Memory · Reasoning · Context · Lip Sync · Arabic · Personality.
 2. **Executive Execution** — Task/Action Planning · Approval · Timeline · Progress · Verification · Recommendations · Audit.
 3. **Live Demonstration** — Live Reasoning · Thinking Anim · Decision Pipeline · Execution Flow · Status · Timeline · Presentation.
@@ -26,9 +28,11 @@ type: constraint
 9. **Executive Experience** — Storytelling · Journey · Presentation · Narrative · Motion · Animation · UX · UI.
 
 ## Final Validation (auto-run before "done")
+
 Architecture · Runtime · Performance · TypeScript · Build · Accessibility · Responsive · Regression · Production.
 
 ## Enforcement
+
 - Every FINN entry-point wraps its system prompt via `withFinnSupremeLaw` and includes `FINN_IMPACT_DIRECTIVE`.
 - Self-evolution cycles persist to `aria_evolution_cycles`; high-confidence proposals promote to `aria_improvement_proposals`.
 - Any surface violating an invariant is treated as a P0 regression.

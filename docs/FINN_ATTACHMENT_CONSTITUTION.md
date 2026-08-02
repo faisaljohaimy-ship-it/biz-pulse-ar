@@ -1,4 +1,5 @@
 # FINN Attachment & Generative Response Constitution
+
 **Article 24 — supreme, additive to Articles I–IX and FR-1..23**
 Version 1.0.0 · Effective 2026-07-08
 
@@ -67,13 +68,13 @@ When any turn contains one or more `file` parts, FINN MUST:
 FINN is authorized — and expected — to produce artifacts, not just prose,
 when the user asks for one.
 
-| Ask | Tool | Output shape |
-|---|---|---|
-| Draw / render / image | `generate_image` | `![alt](signed_url)` inline |
-| Report / memo / brief | `generate_document` (markdown) | linked file + inline preview |
-| Chart / dashboard fragment | client-side chart (Recharts) | rendered in chat |
-| Video montage | roadmap (Runway/Veo bridge) | must return `unavailable` until wired |
-| Voice reply | existing `/api/tts` pipeline | streamed audio |
+| Ask                        | Tool                           | Output shape                          |
+| -------------------------- | ------------------------------ | ------------------------------------- |
+| Draw / render / image      | `generate_image`               | `![alt](signed_url)` inline           |
+| Report / memo / brief      | `generate_document` (markdown) | linked file + inline preview          |
+| Chart / dashboard fragment | client-side chart (Recharts)   | rendered in chat                      |
+| Video montage              | roadmap (Runway/Veo bridge)    | must return `unavailable` until wired |
+| Voice reply                | existing `/api/tts` pipeline   | streamed audio                        |
 
 Rules:
 
@@ -108,9 +109,9 @@ reports attachment counts or generation availability.
 - ✅ MIME + size + rate limits enforced server-side.
 - ✅ AI SDK file parts flow end-to-end (composer → transport → model).
 - ✅ At least one generative tool (`generate_image`) live and
-      returning owned, signed URLs.
+  returning owned, signed URLs.
 - ✅ System prompt teaches FINN the acknowledgement + grounding rule.
 - ✅ Tests: `tsc --noEmit` clean; upload rejects a `.exe`; a
-      user-uploaded image returns a description that references the file.
+  user-uploaded image returns a description that references the file.
 
 Violations are treated as production defects and MUST block release.

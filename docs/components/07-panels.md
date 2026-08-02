@@ -15,17 +15,17 @@ empty/error per docs 12–13.
 
 ## The nine panels
 
-| Component | Purpose | Overrides & content grammar |
-|---|---|---|
-| **NxExecutivePanel** | Hosts the screen's hero tier | Boardroom padding 32; may hold ExecutiveKpi or ExecutiveCard grid ≤ 3; the only panel eligible for glow (as hero); title Executive-Title when it IS the screen head |
-| **NxAnalyticsPanel** | Chart group container | analytics top-border 2px @ 24%; hosts AnalyticsCards or one large chart; legend row standardized under header; comparison = small multiples inside, never dual-axis |
-| **NxRuntimePanel** | OS/module health zone | runtime border; hosts RuntimeCards grid or RuntimeTable; header status chip aggregates ("٤/٤ سليم") |
-| **NxFinnPanel** | FINN's living region on a screen | agent border + presence ring in header; hosts FinnCards, voice affordance (Voice Button) and thinking state (doc 11); position: consistent per layout template — FINN appears where executives learned to find him |
-| **NxKnowledgePanel** | Documents/refs zone | knowledge border; KnowledgeCards list + SearchInput; freshness sort default |
-| **NxAgentPanel** | Specialist agents roster | agent border; agent rows: presence ring avatar + mode glyph + supported-skills count; advisory-only affordances (Ch. 07 mode glyph law visible per agent) |
-| **NxShellPanel** | Adaptive Shell population view | violet border; kind filter chips + ShellCards grid; NDK provenance row (package version) in footer |
-| **NxTwinPanel** | Digital twin viewport | twin border; viz zone may run sector pulse + holographic depth within Ch. 06 §holographic caps; telemetry strip below viz; fullscreen affordance → doc 08 Fullscreen |
-| **NxEventStreamPanel** | Live executive events | hosts NotificationCards feed or TimelineTable; newest at top with 200ms entrance; auto-scroll pauses on hover/interaction ("متابعة مباشرة" resume chip); severity filter chips |
+| Component              | Purpose                          | Overrides & content grammar                                                                                                                                                                                        |
+| ---------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **NxExecutivePanel**   | Hosts the screen's hero tier     | Boardroom padding 32; may hold ExecutiveKpi or ExecutiveCard grid ≤ 3; the only panel eligible for glow (as hero); title Executive-Title when it IS the screen head                                                |
+| **NxAnalyticsPanel**   | Chart group container            | analytics top-border 2px @ 24%; hosts AnalyticsCards or one large chart; legend row standardized under header; comparison = small multiples inside, never dual-axis                                                |
+| **NxRuntimePanel**     | OS/module health zone            | runtime border; hosts RuntimeCards grid or RuntimeTable; header status chip aggregates ("٤/٤ سليم")                                                                                                                |
+| **NxFinnPanel**        | FINN's living region on a screen | agent border + presence ring in header; hosts FinnCards, voice affordance (Voice Button) and thinking state (doc 11); position: consistent per layout template — FINN appears where executives learned to find him |
+| **NxKnowledgePanel**   | Documents/refs zone              | knowledge border; KnowledgeCards list + SearchInput; freshness sort default                                                                                                                                        |
+| **NxAgentPanel**       | Specialist agents roster         | agent border; agent rows: presence ring avatar + mode glyph + supported-skills count; advisory-only affordances (Ch. 07 mode glyph law visible per agent)                                                          |
+| **NxShellPanel**       | Adaptive Shell population view   | violet border; kind filter chips + ShellCards grid; NDK provenance row (package version) in footer                                                                                                                 |
+| **NxTwinPanel**        | Digital twin viewport            | twin border; viz zone may run sector pulse + holographic depth within Ch. 06 §holographic caps; telemetry strip below viz; fullscreen affordance → doc 08 Fullscreen                                               |
+| **NxEventStreamPanel** | Live executive events            | hosts NotificationCards feed or TimelineTable; newest at top with 200ms entrance; auto-scroll pauses on hover/interaction ("متابعة مباشرة" resume chip); severity filter chips                                     |
 
 ## Panel laws
 

@@ -6,18 +6,18 @@
 
 ## Delivered
 
-| Section | Deliverable | Where |
-|---|---|---|
-| 01 | Agent registry (13 governed fields + modes, queries, gate-protected store) | `registry.ts` + `records.ts` |
-| 02 | Runtime manifest wrapping the frozen Phase-1 agent manifest (skills/knowledge/tools refs, IO, contract, policies) | `records.ts` |
-| 03 | 10-state lifecycle; operational states protocol-only | `lifecycle.ts` |
-| 04 | Execution model: single/sequential/parallel/pipeline/broadcast/event-driven/approval-driven over one governed core | `execution.ts` |
-| 05 | Health (reused 5-state model, worst-of aggregation, failure degradation) | population `HealthModel` |
-| 06 | 8-event journaled bus, handler-isolated | `events.ts` |
-| 07 | Execution context: identity/session/hierarchical memory/permission view/correlation/trace/audit ids, child chains | `execution-context.ts` |
-| 08 | Observability: monotonic trace spans, per-agent metrics + latency, structured logs | `observability.ts` |
-| 09 | Security: deny-by-default authorization, policy decisions, approval hooks with veto, append-only audit trail | `security.ts` |
-| 10 | This documentation set (architecture, execution flow, lifecycle, registry, observability, event flow) | `docs/agent-runtime/` |
+| Section | Deliverable                                                                                                        | Where                        |
+| ------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------- |
+| 01      | Agent registry (13 governed fields + modes, queries, gate-protected store)                                         | `registry.ts` + `records.ts` |
+| 02      | Runtime manifest wrapping the frozen Phase-1 agent manifest (skills/knowledge/tools refs, IO, contract, policies)  | `records.ts`                 |
+| 03      | 10-state lifecycle; operational states protocol-only                                                               | `lifecycle.ts`               |
+| 04      | Execution model: single/sequential/parallel/pipeline/broadcast/event-driven/approval-driven over one governed core | `execution.ts`               |
+| 05      | Health (reused 5-state model, worst-of aggregation, failure degradation)                                           | population `HealthModel`     |
+| 06      | 8-event journaled bus, handler-isolated                                                                            | `events.ts`                  |
+| 07      | Execution context: identity/session/hierarchical memory/permission view/correlation/trace/audit ids, child chains  | `execution-context.ts`       |
+| 08      | Observability: monotonic trace spans, per-agent metrics + latency, structured logs                                 | `observability.ts`           |
+| 09      | Security: deny-by-default authorization, policy decisions, approval hooks with veto, append-only audit trail       | `security.ts`                |
+| 10      | This documentation set (architecture, execution flow, lifecycle, registry, observability, event flow)              | `docs/agent-runtime/`        |
 
 ## Mandate compliance
 

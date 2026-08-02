@@ -9,11 +9,13 @@ type: constraint
 **Mode:** PRODUCTION · **Target:** EXECUTIVE_READINESS · **Quality:** 10/10 · **Scope:** NON_CRITICAL_GAPS
 
 ## Immutable Rules
+
 - `rebuild: false` · `breakingChanges: false`
 - `duplicateRuntime: false` · `duplicateFINN: false` (INVARIANT-13..17 stand)
 - Preserve routes · architecture · public API surface.
 
 ## Continuous Tasks (executed every turn)
+
 1. **Live Phase Sensors** — Phases 4, 6, 7, 8, 9 MUST report live health from runtime metrics; no `deferred` status allowed. Bind to `src/lib/finn/directive/phase-audit.server.ts`.
 2. **Observability** — metrics, tracing, runtime logs, production-readiness dashboard live and visible.
 3. **Automated Validation** — Playwright E2E + integration + load + stress tests wired into CI (`run on build`).
@@ -21,6 +23,7 @@ type: constraint
 5. **Regression Protection** — block deploy on failure; detect runtime, performance, and ExecutiveCard regressions.
 
 ## Acceptance Gates (must all pass)
+
 - TypeScript errors: 0
 - Build errors: 0
 - Console errors: 0
@@ -31,6 +34,7 @@ type: constraint
 - Production dashboard visible
 
 ## Required Outputs per cycle
+
 FilesCreated · FilesModified · LiveSensorsStatus · ObservabilityStatus · E2EResults · PerformanceMetrics · RegressionProtection · ReadinessScore.
 
 **Stop condition:** AFTER_FINAL_QUALITY_COMPLETION (score = 10/10, all gates green).

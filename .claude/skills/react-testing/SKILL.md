@@ -37,12 +37,12 @@ A test should NOT:
 
 ## Library Choice
 
-| Runner | When | Note |
-|---|---|---|
-| **Vitest** | Vite, Remix, modern setups | Faster, native ESM, Jest-compatible API |
-| **Jest** | Next.js, CRA, established repos | Default for many React projects |
-| **Playwright Component Testing** | Real browser engine needed | Use when JSDOM lacks the required feature |
-| **Cypress Component Testing** | Real browser, Cypress already in use | Alternative to Playwright CT |
+| Runner                           | When                                 | Note                                      |
+| -------------------------------- | ------------------------------------ | ----------------------------------------- |
+| **Vitest**                       | Vite, Remix, modern setups           | Faster, native ESM, Jest-compatible API   |
+| **Jest**                         | Next.js, CRA, established repos      | Default for many React projects           |
+| **Playwright Component Testing** | Real browser engine needed           | Use when JSDOM lacks the required feature |
+| **Cypress Component Testing**    | Real browser, Cypress already in use | Alternative to Playwright CT              |
 
 Pick one. Do not run RTL + Vitest AND Playwright CT in the same repo unless you have a clear lane separation.
 
@@ -119,9 +119,7 @@ import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 
 export const handlers = [
-  http.get("/api/users/:id", ({ params }) =>
-    HttpResponse.json({ id: params.id, name: "Alice" }),
-  ),
+  http.get("/api/users/:id", ({ params }) => HttpResponse.json({ id: params.id, name: "Alice" })),
   http.post("/api/users", async ({ request }) => {
     const body = await request.json();
     return HttpResponse.json({ id: "new-id", ...body }, { status: 201 });
@@ -141,9 +139,7 @@ Configure `onUnhandledRequest: "error"` so any unmocked request fails the test l
 
 ```tsx
 test("renders error on 500", async () => {
-  server.use(
-    http.get("/api/users/:id", () => new HttpResponse(null, { status: 500 })),
-  );
+  server.use(http.get("/api/users/:id", () => new HttpResponse(null, { status: 500 })));
   render(<UserPage id="1" />);
   expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument();
 });
@@ -158,10 +154,7 @@ Wrap providers once in a `test-utils.tsx`:
 import { render, RenderOptions } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-export function renderWithProviders(
-  ui: React.ReactElement,
-  options?: RenderOptions,
-) {
+export function renderWithProviders(ui: React.ReactElement, options?: RenderOptions) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -281,13 +274,13 @@ Decision boundary:
 
 ## Coverage Targets
 
-| Layer | Target |
-|---|---|
-| Pure utilities | >=90% |
-| Custom hooks | >=85% |
-| Presentational components | >=80% — behavior, not lines |
-| Container components | >=70% — golden paths + error states |
-| Pages | E2E covered separately; smoke test minimum |
+| Layer                     | Target                                     |
+| ------------------------- | ------------------------------------------ |
+| Pure utilities            | >=90%                                      |
+| Custom hooks              | >=85%                                      |
+| Presentational components | >=80% — behavior, not lines                |
+| Container components      | >=70% — golden paths + error states        |
+| Pages                     | E2E covered separately; smoke test minimum |
 
 Configure via `vitest.config.ts` / `jest.config.js`:
 
@@ -367,9 +360,7 @@ CI=true vitest run --coverage
 ```tsx
 test("submits user form and shows success", async () => {
   server.use(
-    http.post("/api/users", () =>
-      HttpResponse.json({ id: "1", name: "Alice" }, { status: 201 }),
-    ),
+    http.post("/api/users", () => HttpResponse.json({ id: "1", name: "Alice" }, { status: 201 })),
   );
 
   const user = userEvent.setup();

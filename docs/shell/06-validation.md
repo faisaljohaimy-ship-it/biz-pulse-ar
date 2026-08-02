@@ -8,15 +8,15 @@ nothing partial ever lands in a registry.**
 
 ## The seven checks
 
-| # | Check | What it refuses |
-|---|---|---|
-| 1 | `manifest` (shape) | any deviation from the zod-strict record schema — missing field, extra field, wrong enum, malformed id/semver/date; for skills also record↔manifest identity drift (id, version) |
-| 2 | `category` | categories not present in the `CategoryRegistry` (typos can't invent taxonomy) |
-| 3 | `dependencies` | self-dependency; duplicate targets |
-| 4 | `contract` | timeout above the 300 000 ms ceiling; `retryable` without `idempotent` |
-| 5 | `metadata` | `updatedAt` before `createdAt`; empty owner |
-| 6 | `permissions` | actions outside the eight-action model |
-| 7 | `version` + `capability-references` | non-semver versions; skill references to unregistered capabilities |
+| #   | Check                               | What it refuses                                                                                                                                                                  |
+| --- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `manifest` (shape)                  | any deviation from the zod-strict record schema — missing field, extra field, wrong enum, malformed id/semver/date; for skills also record↔manifest identity drift (id, version) |
+| 2   | `category`                          | categories not present in the `CategoryRegistry` (typos can't invent taxonomy)                                                                                                   |
+| 3   | `dependencies`                      | self-dependency; duplicate targets                                                                                                                                               |
+| 4   | `contract`                          | timeout above the 300 000 ms ceiling; `retryable` without `idempotent`                                                                                                           |
+| 5   | `metadata`                          | `updatedAt` before `createdAt`; empty owner                                                                                                                                      |
+| 6   | `permissions`                       | actions outside the eight-action model                                                                                                                                           |
+| 7   | `version` + `capability-references` | non-semver versions; skill references to unregistered capabilities                                                                                                               |
 
 ## Flow
 

@@ -28,23 +28,23 @@ read, move and feel** — never where they live.
 
 ## The chapters
 
-| # | Chapter | Governs |
-|---|---------|---------|
-| [01](./01-design-philosophy.md) | Design Philosophy | Identity, principles, what NEXIOS refuses to be |
-| [02](./02-visual-language.md) | Visual Language | Glass, holographic layers, panels, density, rhythm |
-| [03](./03-color-system.md) | Color System | Full enterprise palette: hex/rgb/hsl, opacity, usage, accessibility |
-| [04](./04-typography-system.md) | Typography System | Arabic + Latin scales, numbers, KPI display, weights |
-| [05](./05-grid-system.md) | Grid System | 8pt grid, breakpoints, containers, spacing law |
-| [06](./06-depth-system.md) | Depth System | Elevation, glass depth, blur, glow, layer hierarchy |
-| [07](./07-iconography.md) | Iconography | Sizes, stroke, states, animated / executive / agent / runtime icons |
-| [08](./08-card-system.md) | Card System | The eight canonical cards, fully specified |
-| [09](./09-executive-dashboard-principles.md) | Executive Dashboard Principles | Hierarchy, reading flow, decision support, progressive disclosure |
-| [10](./10-responsive-design.md) | Responsive Design | Mobile → 4K rules, RTL responsiveness, density shifting |
+| #                                            | Chapter                        | Governs                                                             |
+| -------------------------------------------- | ------------------------------ | ------------------------------------------------------------------- |
+| [01](./01-design-philosophy.md)              | Design Philosophy              | Identity, principles, what NEXIOS refuses to be                     |
+| [02](./02-visual-language.md)                | Visual Language                | Glass, holographic layers, panels, density, rhythm                  |
+| [03](./03-color-system.md)                   | Color System                   | Full enterprise palette: hex/rgb/hsl, opacity, usage, accessibility |
+| [04](./04-typography-system.md)              | Typography System              | Arabic + Latin scales, numbers, KPI display, weights                |
+| [05](./05-grid-system.md)                    | Grid System                    | 8pt grid, breakpoints, containers, spacing law                      |
+| [06](./06-depth-system.md)                   | Depth System                   | Elevation, glass depth, blur, glow, layer hierarchy                 |
+| [07](./07-iconography.md)                    | Iconography                    | Sizes, stroke, states, animated / executive / agent / runtime icons |
+| [08](./08-card-system.md)                    | Card System                    | The eight canonical cards, fully specified                          |
+| [09](./09-executive-dashboard-principles.md) | Executive Dashboard Principles | Hierarchy, reading flow, decision support, progressive disclosure   |
+| [10](./10-responsive-design.md)              | Responsive Design              | Mobile → 4K rules, RTL responsiveness, density shifting             |
 
 ## How to use this constitution
 
 - **Building a new screen?** Read 01, 05, 09 first. Pick components that already satisfy
-  02–08. If a needed pattern does not exist, extend the constitution *first* (amendment
+  02–08. If a needed pattern does not exist, extend the constitution _first_ (amendment
   below), then build.
 - **Reviewing a PR?** Chapters 03–08 are checklists. A hex value not in Chapter 03, a
   spacing value off the 8pt grid, or a card that doesn't match Chapter 08 is a finding.

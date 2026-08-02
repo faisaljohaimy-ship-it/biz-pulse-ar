@@ -11,7 +11,7 @@
 Arabic is the host script: it sets the tone, the line-height, the rhythm. Cairo carries
 warmth and authority at display sizes; IBM Plex Sans Arabic is the fallback with
 excellent screen hinting. Latin (Space Grotesk) appears for identifiers, units and code —
-it is deliberately more "technical" so English reads as *data*, Arabic as *voice*.
+it is deliberately more "technical" so English reads as _data_, Arabic as _voice_.
 Numbers are a third register of their own: they are the currency of an executive OS and
 get tabular, large, unmissable treatment.
 
@@ -25,17 +25,17 @@ get tabular, large, unmissable treatment.
 
 ## The type scale (8pt-aligned, rem-based, root 16px)
 
-| Level | Use | Size / Line | Weight (Ar) | Notes |
-|---|---|---|---|---|
-| **Display XL** | Boardroom hero KPI | 72 / 80 | 700 | numerals: Latin tabular |
-| **Display** | Screen hero number | 48 / 56 | 700 | |
-| **Executive Title** | Screen title (عنوان تنفيذي) | 32 / 40 | 700 | one per screen |
-| **H2 Header** | Section header | 24 / 32 | 600 | |
-| **H3 Sub-header** | Panel header | 18 / 28 | 600 | 3 words max |
-| **Body** | Paragraphs, insights | 16 / 28 | 400 | Arabic needs the tall 1.75 leading |
-| **Body compact** | Ops tables | 14 / 22 | 400 | Operations register only |
-| **Label** | Chips, captions, axes | 12 / 16 | 500 | 56% pearl opacity default |
-| **Micro** | Provenance footers | 11 / 16 | 500 | never for content |
+| Level               | Use                         | Size / Line | Weight (Ar) | Notes                              |
+| ------------------- | --------------------------- | ----------- | ----------- | ---------------------------------- |
+| **Display XL**      | Boardroom hero KPI          | 72 / 80     | 700         | numerals: Latin tabular            |
+| **Display**         | Screen hero number          | 48 / 56     | 700         |                                    |
+| **Executive Title** | Screen title (عنوان تنفيذي) | 32 / 40     | 700         | one per screen                     |
+| **H2 Header**       | Section header              | 24 / 32     | 600         |                                    |
+| **H3 Sub-header**   | Panel header                | 18 / 28     | 600         | 3 words max                        |
+| **Body**            | Paragraphs, insights        | 16 / 28     | 400         | Arabic needs the tall 1.75 leading |
+| **Body compact**    | Ops tables                  | 14 / 22     | 400         | Operations register only           |
+| **Label**           | Chips, captions, axes       | 12 / 16     | 500         | 56% pearl opacity default          |
+| **Micro**           | Provenance footers          | 11 / 16     | 500         | never for content                  |
 
 ## Numbers — الأرقام
 
@@ -67,13 +67,13 @@ ghost on glass, black weights clot Arabic ligatures.
 
 Type scales by register and viewport (see Chapter 10 for breakpoints):
 
-| Level | Mobile | Desktop | Boardroom/4K |
-|---|---|---|---|
-| Display XL | 40/48 | 72/80 | 96/104 |
-| Display | 32/40 | 48/56 | 64/72 |
-| Executive Title | 24/32 | 32/40 | 40/48 |
-| Body | 15/26 | 16/28 | 18/30 |
-| Label | 12/16 | 12/16 | 14/20 |
+| Level           | Mobile | Desktop | Boardroom/4K |
+| --------------- | ------ | ------- | ------------ |
+| Display XL      | 40/48  | 72/80   | 96/104       |
+| Display         | 32/40  | 48/56   | 64/72        |
+| Executive Title | 24/32  | 32/40   | 40/48        |
+| Body            | 15/26  | 16/28   | 18/30        |
+| Label           | 12/16  | 12/16   | 14/20        |
 
 Scaling is stepped (tokens per breakpoint), not fluid `clamp()` everywhere — stepped
 scales keep the 8pt rhythm intact and are testable. The Boardroom column exists because

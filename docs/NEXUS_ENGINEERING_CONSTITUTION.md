@@ -18,6 +18,7 @@ while forbidding drift, silent degradation, and re-litigation of solved
 problems.
 
 Companion documents (subordinate, must not contradict):
+
 - `docs/FINN_INTRO_CONSTITUTION.md` — INVARIANT-1..12 + FR-1..8
 - `docs/FINN_IDENTITY_CHARTER.md` — persona, voice, bilingual behavior
 - `docs/EVOLUTION_FRAMEWORK.md` — proposal lifecycle
@@ -30,6 +31,7 @@ Companion documents (subordinate, must not contradict):
 All clauses are release-blocking. CI MUST fail if any is violated.
 
 ### §1. Intro Gate (from FINN Intro Constitution)
+
 - **INV-1** Single pre-system gate: `WelcomeThenGenesis` only. No siblings.
 - **INV-1A** `WelcomeThenGenesis` remains mounted while `introActive=true`; root may hide siblings, never the gate.
 - **INV-2** Visible surface within ≤200ms of mount. No blank frame.
@@ -41,12 +43,14 @@ All clauses are release-blocking. CI MUST fail if any is violated.
 - **INV-8** Skip is the ONLY user action allowed to bypass INV-3.
 
 ### §2. Cross-Device Rendering (from Cross-Device Constitution)
+
 - **INV-CD-1** Portrait mobile (`≤768px & portrait`) → `object-fit: cover` + `object-position: center 30%`.
 - **INV-CD-2** Everywhere else → `object-fit: contain` + blurred backdrop fills letterbox.
 - **INV-CD-3** Every top-anchored control uses `env(safe-area-inset-top)`.
 - **INV-CD-4** Intro layer `z-[100]` — nothing renders above it while visible.
 
 ### §3. Chat Runtime (from FINN Runtime Constitution)
+
 - **INV-9** Every authenticated assistant turn persisted to `aria_interactions`
   with `latency_ms`, `first_token_ms`, `model`, `device_class`. Try/catch wrapped —
   never fire-and-forget.
@@ -60,6 +64,7 @@ All clauses are release-blocking. CI MUST fail if any is violated.
   ≥8 chars, composer refocus after send, `abortSignal` wired.
 
 ### §4. Data & Security
+
 - **INV-DS-1** RLS enabled on every `public.*` table. `GRANT` in same migration.
 - **INV-DS-2** Roles in `user_roles` only. Never on `profiles`. `has_role()` is
   `SECURITY DEFINER`.
@@ -69,6 +74,7 @@ All clauses are release-blocking. CI MUST fail if any is violated.
   Unauthenticated `createServerFn` is a public endpoint — treat as such.
 
 ### §5. Architecture
+
 - **INV-A-1** Route path in `createFileRoute("…")` MUST match generated route ID.
 - **INV-A-2** No module-scope property assignments on route components
   (`X.displayName`, `X.head`, etc.) — code-split transform deletes them → `ReferenceError`.
@@ -83,25 +89,25 @@ All clauses are release-blocking. CI MUST fail if any is violated.
 
 Any of these reappearing = release-blocking bug. **Never re-litigate.**
 
-| ID | Regression | Root cause forbidden |
-|----|-----------|----------------------|
-| **FR-1** | FINN cropped at the head on portrait mobile | `contain` on portrait, or `object-position: center` |
-| **FR-2** | Letterbox bars on laptop/desktop/ultrawide | `cover` forced on wide viewports, or missing backdrop |
-| **FR-3** | Intro disappears on video/CDN error | `onError → finish()` before MIN_DISPLAY_MS |
-| **FR-4** | Skip/Sound hidden behind notch | Top-anchored control without safe-area inset |
-| **FR-5** | Auto-dismiss before 3500ms | Any `finish()` path bypassing `finishOnce` |
-| **FR-6** | Hydration mismatch on first paint | `window`/`matchMedia` outside `useEffect` |
-| **FR-7** | Intro replays every refresh | Session guard written after state flip |
-| **FR-8** | Chat/marquee covers intro | Element with `z-index > 100` mounted with intro |
-| **FR-9** | Chat first-token latency >1500ms (p50) | Missing priority tier, missing preconnect, cold TTS |
-| **FR-10** | Marquee blocks chat close button on mobile | `z-[100]` marquee above `z-50` dock |
-| **FR-11** | Learned pattern injected without safety gate | Client-side filter, or relaxed SQL threshold |
-| **FR-12** | Placeholder / fake KPI shipped to prod | Static `Math.random()`, `TODO`, `Lorem ipsum` |
-| **FR-13** | Service-role key in loader/component | Top-level `client.server` import in `*.functions.ts` |
-| **FR-14** | Public schema table without RLS or GRANT | `CREATE TABLE` migration missing GRANT block |
-| **FR-15** | Google OAuth calling `supabase.auth.signInWithOAuth` directly | Bypassing `lovable.auth.signInWithOAuth` broker |
-| **FR-16** | Cinematic intro flashes then disappears / never appears on laptop or mobile | Root shell hides `WelcomeThenGenesis` behind `suppressOverlays`/`introActive`, or marks session complete before `onDone` |
-| **FR-19** | Unverified metric, status, or certification badge shown to user | Static "UPTIME 99.97%", "TLS 1.3", "ISO 27001", "LIVE", "بث مباشر" rendered without an `Evidence` object from `src/lib/evidence/gate.ts` |
+| ID        | Regression                                                                  | Root cause forbidden                                                                                                                     |
+| --------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **FR-1**  | FINN cropped at the head on portrait mobile                                 | `contain` on portrait, or `object-position: center`                                                                                      |
+| **FR-2**  | Letterbox bars on laptop/desktop/ultrawide                                  | `cover` forced on wide viewports, or missing backdrop                                                                                    |
+| **FR-3**  | Intro disappears on video/CDN error                                         | `onError → finish()` before MIN_DISPLAY_MS                                                                                               |
+| **FR-4**  | Skip/Sound hidden behind notch                                              | Top-anchored control without safe-area inset                                                                                             |
+| **FR-5**  | Auto-dismiss before 3500ms                                                  | Any `finish()` path bypassing `finishOnce`                                                                                               |
+| **FR-6**  | Hydration mismatch on first paint                                           | `window`/`matchMedia` outside `useEffect`                                                                                                |
+| **FR-7**  | Intro replays every refresh                                                 | Session guard written after state flip                                                                                                   |
+| **FR-8**  | Chat/marquee covers intro                                                   | Element with `z-index > 100` mounted with intro                                                                                          |
+| **FR-9**  | Chat first-token latency >1500ms (p50)                                      | Missing priority tier, missing preconnect, cold TTS                                                                                      |
+| **FR-10** | Marquee blocks chat close button on mobile                                  | `z-[100]` marquee above `z-50` dock                                                                                                      |
+| **FR-11** | Learned pattern injected without safety gate                                | Client-side filter, or relaxed SQL threshold                                                                                             |
+| **FR-12** | Placeholder / fake KPI shipped to prod                                      | Static `Math.random()`, `TODO`, `Lorem ipsum`                                                                                            |
+| **FR-13** | Service-role key in loader/component                                        | Top-level `client.server` import in `*.functions.ts`                                                                                     |
+| **FR-14** | Public schema table without RLS or GRANT                                    | `CREATE TABLE` migration missing GRANT block                                                                                             |
+| **FR-15** | Google OAuth calling `supabase.auth.signInWithOAuth` directly               | Bypassing `lovable.auth.signInWithOAuth` broker                                                                                          |
+| **FR-16** | Cinematic intro flashes then disappears / never appears on laptop or mobile | Root shell hides `WelcomeThenGenesis` behind `suppressOverlays`/`introActive`, or marks session complete before `onDone`                 |
+| **FR-19** | Unverified metric, status, or certification badge shown to user             | Static "UPTIME 99.97%", "TLS 1.3", "ISO 27001", "LIVE", "بث مباشر" rendered without an `Evidence` object from `src/lib/evidence/gate.ts` |
 
 Every fix touching these areas MUST cite the FR ID(s) it protects.
 The self-evolution engine's `proposalRespectsIntroConstitution` gate blocks
@@ -115,30 +121,34 @@ The system MUST detect, isolate, and recover from its own failures without
 human intervention, within bounded time budgets.
 
 ### §1. Failure detection
+
 - **Client watchdog** (`src/lib/finn/self-healing/watchdog.ts`) monitors
   `chat.status`, video events, TTS pipeline, AudioContext state, and gateway
   responses. Every anomaly → `aria_incidents` row with:
   `severity`, `device_class`, `viewport`, `user_agent`, `network`, `failure_mode`.
 
 ### §2. Recovery ladder (bounded, deterministic)
-| Failure mode | Tier 1 (auto) | Tier 2 (auto) | Tier 3 (auto) | Tier 4 (defer) |
-|--------------|---------------|---------------|---------------|----------------|
-| Chat generation error | Bounded Gemini retry | Honest safe error | Record provider incident | Surface recoverable error card |
-| TTS failure | Retry ×2 | Switch voice ID | Text-only reply | Silent |
-| Video load error | Retry preload once | Poster + HUD fallback | HUD-only mode | — |
-| Autoplay blocked | Show "Tap for sound" chip | Continue muted | — | — |
-| Rate limit (429) | Exponential backoff | Queue with UI hint | Model tier downgrade | User error card |
-| Auth 401 | Refresh session | Redirect `/auth` | — | — |
+
+| Failure mode          | Tier 1 (auto)             | Tier 2 (auto)         | Tier 3 (auto)            | Tier 4 (defer)                 |
+| --------------------- | ------------------------- | --------------------- | ------------------------ | ------------------------------ |
+| Chat generation error | Bounded Gemini retry      | Honest safe error     | Record provider incident | Surface recoverable error card |
+| TTS failure           | Retry ×2                  | Switch voice ID       | Text-only reply          | Silent                         |
+| Video load error      | Retry preload once        | Poster + HUD fallback | HUD-only mode            | —                              |
+| Autoplay blocked      | Show "Tap for sound" chip | Continue muted        | —                        | —                              |
+| Rate limit (429)      | Exponential backoff       | Queue with UI hint    | Model tier downgrade     | User error card                |
+| Auth 401              | Refresh session           | Redirect `/auth`      | —                        | —                              |
 
 Every tier transition is logged. **No tier may skip** MIN_DISPLAY_MS or any Article I invariant.
 
 ### §3. Circuit breakers
+
 - 5 consecutive failures of the same `failure_mode` within 60s → open circuit
   for that dependency (30s cool-down). Watchdog surfaces status via
   `/api/health` route.
 - Circuit state is process-local; durable incident history in DB.
 
 ### §4. Rollback
+
 - Self-evolution proposal that lands and triggers `severity=critical`
   incident within 24h → **auto-rollback** the commit and mark the proposal
   `rejected_by_watchdog` in `evolution_proposals`.
@@ -151,13 +161,16 @@ The system MUST become measurably better from every interaction, without
 drift and without violating safety.
 
 ### §1. Measure everything (INV-9)
+
 Every assistant turn, every tool call, every failure → durable row with
 latency, outcome, model, device class. **No learning without measurement.**
 
 ### §2. Pattern mining
+
 Nightly worker (`src/lib/finn/learning/pattern-miner.server.ts`) reads
 `aria_interactions` + `aria_incidents` from the last 24h, extracts
 recurring signals:
+
 - Repeated question shapes with high user satisfaction → candidate patterns.
 - Recurring failure modes with reproducible fix → candidate self-heal rule.
 - Device+viewport correlations with degradation → candidate adaptation.
@@ -166,7 +179,9 @@ Candidates land in `aria_learned_patterns` with `safety_passed = false`
 by default.
 
 ### §3. Injection gate (INV-10, non-negotiable)
+
 Patterns reach production **only** after:
+
 1. `safety_passed = true` (automated safety review + optional human).
 2. `confidence ≥ 0.7`.
 3. `hits ≥ 3` (seen in ≥3 distinct sessions).
@@ -174,11 +189,13 @@ Patterns reach production **only** after:
 Gate is **SQL-enforced** in the chat handler query. Never bypass client-side.
 
 ### §4. Renewal (INV-11)
+
 - Unseen 30d → pruned.
 - Confidence weekly = `hits / (hits + decay)`.
 - Contradiction from user correction → confidence −0.2 immediately.
 
 ### §5. Scope isolation
+
 Learned behaviors are scoped by `domain` and `context_fingerprint`. A
 pattern learned in one org / one language / one route MUST NOT leak into
 another unless explicitly promoted after multi-context validation.
@@ -201,6 +218,7 @@ mutation surface. It MUST:
    `failure_mode=self_evolution_gate`.
 
 **PROTECTED_PATHS** (canonical list, keep in sync with engine):
+
 ```
 src/components/cinematic/AriaWelcomeVideo.tsx
 src/components/cinematic/WelcomeThenGenesis.tsx
@@ -241,15 +259,15 @@ A change is complete **only when** all pass:
 
 ## Article VII — Enforcement Chain
 
-| Layer | Enforcer | Trigger |
-|-------|----------|---------|
-| Type safety | `tsc --noEmit` in CI | Every push |
-| Route + syntax | Vite plugins | Every dev/build |
-| Runtime invariants | E2E suite | Every PR |
-| Data safety | Supabase linter + migration review | Every migration |
-| Self-evolution | `proposalRespectsIntroConstitution` | Every proposal |
-| Rollback | Watchdog + 24h critical-incident rule | Post-deploy |
-| Learning safety | SQL injection gate (INV-10) | Every chat request |
+| Layer              | Enforcer                              | Trigger            |
+| ------------------ | ------------------------------------- | ------------------ |
+| Type safety        | `tsc --noEmit` in CI                  | Every push         |
+| Route + syntax     | Vite plugins                          | Every dev/build    |
+| Runtime invariants | E2E suite                             | Every PR           |
+| Data safety        | Supabase linter + migration review    | Every migration    |
+| Self-evolution     | `proposalRespectsIntroConstitution`   | Every proposal     |
+| Rollback           | Watchdog + 24h critical-incident rule | Post-deploy        |
+| Learning safety    | SQL injection gate (INV-10)           | Every chat request |
 
 Bypassing any layer without amending this constitution is a
 **constitutional violation** and MUST be reverted.
@@ -259,6 +277,7 @@ Bypassing any layer without amending this constitution is a
 ## Article VIII — Amendment Procedure
 
 This document may be amended only when:
+
 1. A change is proposed as a PR modifying **only** this file (or its
    subordinate constitution files) with a clear rationale.
 2. Every new clause specifies the enforcement mechanism (CI/E2E/SQL/gate).
@@ -294,6 +313,7 @@ assumption (repealed) that GitHub Actions was the sole deploy path with a
 hard secret gate.
 
 ### §1. Two deploy paths, one primary
+
 - **Primary:** deployment runs through **Lovable's own pipeline** (Bun-based),
   which holds the Cloudflare + Supabase secrets in its runtime environment and
   publishes to `neexios.com`.
@@ -302,6 +322,7 @@ hard secret gate.
   deploy. It is not the primary path and MUST NOT be assumed to run.
 
 ### §2. No secret may make CI go red (non-blocking deploy)
+
 - The `deploy` job's **"Check deploy credentials"** step is a non-blocking
   guard: when `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
   `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` are absent it sets
@@ -313,6 +334,7 @@ hard secret gate.
   always mean a real code defect, never a missing deploy credential.
 
 ### §3. The release-blocking gate is `verify`, not `deploy`
+
 - The single release-blocking gate is the `verify` job:
   `npm ci` · `typecheck` · `lint` · `test` · production audit · `build` ·
   performance budget. All must pass (zero errors) — this is the honest gate.
@@ -320,12 +342,14 @@ hard secret gate.
 - The `deploy` job is **non-blocking** per §2.
 
 ### §4. Secrets never live in the repo (reaffirmed)
+
 - No secret value is ever committed. Runtime server secrets live on the
   Cloudflare Worker / Lovable runtime. Public build-time vars (`VITE_SUPABASE_*`)
   reach the backup deploy only via GitHub Actions secrets, and only when the
   owner chooses to activate that path.
 
 ### §5. Dependency-consistency invariant (Bun ↔ npm)
+
 - Lovable's environment uses `bun.lock`; GitHub CI uses `package-lock.json`
   via `npm ci`. The `@tanstack/*` family (`react-router`, `react-start`,
   `router-plugin`) MUST stay in a **single compatible minor family** and
@@ -353,7 +377,7 @@ surface in the product MUST:
 
 1. Never call `AudioContext.createMediaElementSource()` before verified
    unmuted playback.
-2. Resume any `AudioContext` synchronously *inside* the originating user
+2. Resume any `AudioContext` synchronously _inside_ the originating user
    gesture, BEFORE mutating `muted`/`volume` or calling `play()`.
 3. Mirror `muted` as both the property AND the DOM attribute so iOS
    honours the state.
@@ -443,12 +467,14 @@ unless it carries a resolved `Evidence` object naming its source, timestamp,
 and (where applicable) a link a reviewer can open.
 
 **Canonical primitives** (single source of truth — do not fork):
+
 - `src/lib/evidence/gate.ts` — `Evidence`, `hasEvidence`, `isFresh`.
 - `src/components/evidence/EvidenceBadge.tsx` — the ONLY approved renderer
   for a metric/status/certification/LIVE claim. Returns `null` without
   valid evidence. Marks stale evidence visibly (>5 min by default).
 
 **Contract.**
+
 1. Any badge asserting "LIVE", uptime %, TLS/ISO/SOC/PDPL/NCA claim, or a
    count/percentage MUST use `<EvidenceBadge evidence={…} />`.
 2. Evidence MUST originate from one of: a Supabase `sec_*` query, a real
@@ -462,6 +488,7 @@ and (where applicable) a link a reviewer can open.
    `EvidenceBadge`. The self-evolution engine grep-scans for these tokens.
 
 **Forbidden.**
+
 - Handwritten badge markup that duplicates `EvidenceBadge` styling to
   bypass the null-guard.
 - "Aspirational" certifications (marks the org is pursuing but has not
@@ -482,6 +509,7 @@ removing them) — silent tolerance is a Definition-of-Done violation.
 ## FR-20 — Universal First-Gesture Audio Unlock (permanent, all devices)
 
 ### Principle
+
 On every device (mobile, tablet, laptop, desktop), the FIRST user gesture
 in a session MUST unlock the ENTIRE audio pipeline atomically. Splitting
 the unlock across async work is a constitutional violation, because
@@ -489,6 +517,7 @@ iOS Safari and Chrome Mobile enforce autoplay policy per **synchronous
 gesture tick** — anything after `await` no longer counts as user-initiated.
 
 ### The three atomic steps (single tick, no `await` between them)
+
 1. `primeAudio()` — construct/resume shared `AudioContext`, play a 1-frame
    silent buffer to fully unlock iOS WebAudio.
 2. `AriaAudioBus.unlock()` — flip the global bus flag so every subsequent
@@ -498,6 +527,7 @@ gesture tick** — anything after `await` no longer counts as user-initiated.
    navigations skip the "waiting for first tap" state.
 
 ### Enforcement (non-negotiable)
+
 - The universal listener lives in `src/lib/user-interaction.ts` →
   `installInteractionTracker()`. It MUST be installed at
   `src/routes/__root.tsx` on mount — never conditionally, never behind an
@@ -508,13 +538,14 @@ gesture tick** — anything after `await` no longer counts as user-initiated.
   - drops `AriaAudioBus.unlock()` from the handler,
   - removes the root-level install,
   - or gates the listener behind a specific route
-  is auto-flagged as a regression and reverted.
+    is auto-flagged as a regression and reverted.
 - Per-component FINN buttons (Copilot, Dock, Greeter, Tour) MUST still
   call `AriaAudioBus.unlock()` in their own click handlers as a
   belt-and-suspenders — the root listener is the safety net, not the
   primary path.
 
 ### Forbidden patterns
+
 - Creating `new Audio()` / `new SpeechSynthesisUtterance()` AFTER `await`
   in a handler that started from a user click. Construct **synchronously**
   in the gesture tick, then populate `.src` / `.text` later.
@@ -525,13 +556,15 @@ gesture tick** — anything after `await` no longer counts as user-initiated.
   point unlocks.
 
 ### Definition of done
+
 A device is considered constitutionally compliant only when:
+
 - Mobile Safari (iOS 17+) plays FINN voice on the second tap without
   requiring a specific FINN button.
 - Chrome Android plays FINN voice on the first tap on any element.
 - Desktop Chrome/Safari/Firefox play FINN voice on the first click.
 - `VoiceTimeline` shows `OWNER: ACQUIRED` (never `acquire REFUSED — no
-  user gesture yet`) after any tap.
+user gesture yet`) after any tap.
 
 Any bug report of "voice doesn't work on mobile" is treated as an
 FR-20 violation and takes priority over feature work until the Readiness
@@ -570,6 +603,7 @@ reaches the speaker. Symptom: video advances, TTS "completes", user hears
 silence.
 
 Mandatory pattern on touch devices:
+
 - Detect touch: `("ontouchstart" in window) || navigator.maxTouchPoints > 0`
 - **Do not** call `createMediaElementSource` or construct a new
   `AudioContext` for the sole purpose of driving a visualiser
@@ -579,6 +613,7 @@ Mandatory pattern on touch devices:
 - Never `ctx.close()` the shared primed context — other components rely on it
 
 ### Definition of done
+
 - Mobile Safari (iOS 17+) plays the FINN welcome video with **sound** on
   the first tap and the greeting plays to completion (`onEnded` fires
   naturally, `finish()` is not triggered by `MAX_MS` cap).
@@ -595,7 +630,6 @@ Any bug report of "voice doesn't work after tapping on mobile" or "the
 greeting doesn't finish on mobile" is treated as an FR-21 violation and
 takes priority over feature work until the Readiness Loop closes it.
 
-
 ## FR-22 — Absolute Readiness Charter (permanent, supreme)
 
 The user standard for this system is **100% readiness, 100% accuracy, 100%
@@ -605,6 +639,7 @@ means operationally and forbids the failure modes that break it.
 ### §1 — Evidence-based repair (no scattershot)
 
 Every claim of "fixed" MUST be backed by one of:
+
 - A green `npm run typecheck` (typecheck).
 - A green `security--run_security_scan` (0 unresolved findings) OR an
   explicitly documented ignore with rationale in security memory.
@@ -612,6 +647,7 @@ Every claim of "fixed" MUST be backed by one of:
   gateway log line, network request, or DB query result).
 
 Forbidden:
+
 - Rewriting working code to chase an imaginary "100%" when no failing
   signal exists.
 - Reporting "fixed all errors" without listing the specific errors and
@@ -624,6 +660,7 @@ Forbidden:
 The chatbot and FINN voice MUST always render observable output on every
 supported device (mobile Safari, Chrome Android, desktop Chrome/Safari/
 Firefox). Enforced via:
+
 - `MessageResponse` (AI Elements) renders every assistant text `part` with
   live streaming; the streaming caret is visible while `status === "streaming"`.
 - `ReactMarkdown` + `prose prose-invert` renders the FINN copilot bubble.
@@ -638,6 +675,7 @@ Firefox). Enforced via:
 ### §3 — Constitutional enforcement loop
 
 Every agent turn (self-evolution + human-driven) MUST:
+
 1. Read the constitution (this document) via the master constitution
    memory pointer.
 2. Cite the FR / INVARIANT protected by the change in the commit / turn
@@ -649,6 +687,7 @@ Every agent turn (self-evolution + human-driven) MUST:
 ### §4 — Definition of "100% ready"
 
 The system is 100% ready when ALL of the following hold at the same time:
+
 - `npm run typecheck` → 0 errors.
 - `security--run_security_scan` → 0 unresolved findings (documented
   ignores allowed with security-memory rationale).

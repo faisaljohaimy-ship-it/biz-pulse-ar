@@ -6,6 +6,7 @@ description: Audit permit-to-work (PTW) requests in sec_permits for compliance g
 # Permit-to-Work Audit
 
 ## Mandatory Checks
+
 1. **Contractor compliance** — `sec_contractors.insurance_expiry > permit.start_at` AND `safety_cert_valid = true`.
 2. **Conflicting permits** — no overlapping permits on same `building_id` + `permit_type` in (`hot_work`, `confined_space`).
 3. **Risk assessment** — `risk_assessment_url` not null for High/Critical risk.
@@ -14,6 +15,7 @@ description: Audit permit-to-work (PTW) requests in sec_permits for compliance g
 6. **Gas test** — within 4h of confined space entry; recorded in `permit.metadata.gas_test_at`.
 
 ## Output Format
+
 ```
 PTW-{id} | {type} | Site {site_id}
 ✅/❌ Contractor | ✅/❌ Conflicts | ✅/❌ RA | ✅/❌ Approver | ✅/❌ JSA | ✅/❌ Gas
@@ -22,5 +24,6 @@ Reason (AR): ...
 ```
 
 ## Escalation
+
 - 2+ failed checks → REJECT and notify `permit_officer` agent.
 - Hot work with expired contractor cert → automatic 24h block.

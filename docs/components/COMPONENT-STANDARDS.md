@@ -16,15 +16,15 @@ links the spec and satisfies every row.
 
 Unless a spec overrides, every interactive component implements exactly these states:
 
-| State | Universal treatment |
-|---|---|
-| Rest | spec colors, elevation per spec |
-| Hover | +1 border-opacity step, 6% wash, elevation +1 where spec'd — **150ms ease-out, no scale** |
-| Pressed | wash 8%, translate-y 1px, 100ms |
-| Focus (keyboard) | 2px `--nx-cyan` ring, offset 2px, never removed |
-| Disabled | content `--nx-opacity-38`, no hover/press, `aria-disabled` |
-| Loading | skeleton or inline spinner per doc 11 — content never jumps on resolve |
-| Error | `--nx-critical` border @ 40% + message slot — color never alone (glyph/word) |
+| State            | Universal treatment                                                                       |
+| ---------------- | ----------------------------------------------------------------------------------------- |
+| Rest             | spec colors, elevation per spec                                                           |
+| Hover            | +1 border-opacity step, 6% wash, elevation +1 where spec'd — **150ms ease-out, no scale** |
+| Pressed          | wash 8%, translate-y 1px, 100ms                                                           |
+| Focus (keyboard) | 2px `--nx-cyan` ring, offset 2px, never removed                                           |
+| Disabled         | content `--nx-opacity-38`, no hover/press, `aria-disabled`                                |
+| Loading          | skeleton or inline spinner per doc 11 — content never jumps on resolve                    |
+| Error            | `--nx-critical` border @ 40% + message slot — color never alone (glyph/word)              |
 
 Non-interactive components implement Rest / Loading / Empty / Error only.
 
