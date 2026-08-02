@@ -50,7 +50,7 @@ block in `src/styles.css`.**
 ```
 
 Full-distance travel (drawers, sheets) animates transform from off-canvas — the ceiling
-applies to *content within view*, not container entry.
+applies to _content within view_, not container entry.
 
 ## Spring configurations (Framer Motion)
 
@@ -60,11 +60,11 @@ to ease-out with natural interruption handling (the constitutional bounce ban st
 ```ts
 export const NX_SPRINGS = {
   /* interchangeable with --nx-anim-base ease-out */
-  panel:  { type: "spring", stiffness: 420, damping: 42, mass: 1, bounce: 0 },
+  panel: { type: "spring", stiffness: 420, damping: 42, mass: 1, bounce: 0 },
   /* micro interactions */
-  micro:  { type: "spring", stiffness: 700, damping: 50, mass: 0.8, bounce: 0 },
+  micro: { type: "spring", stiffness: 700, damping: 50, mass: 0.8, bounce: 0 },
   /* large surfaces (drawer/fullscreen) */
-  surface:{ type: "spring", stiffness: 300, damping: 38, mass: 1.1, bounce: 0 },
+  surface: { type: "spring", stiffness: 300, damping: 38, mass: 1.1, bounce: 0 },
 } as const;
 ```
 
@@ -74,21 +74,21 @@ interruptible mid-flight (drags, dismissable sheets); otherwise use duration tok
 
 ## Keyframe vocabulary (named, closed set)
 
-| Name | Definition | License |
-|---|---|---|
-| `nx-fade-in` | opacity 0→1 | universal |
-| `nx-rise-in` | opacity 0→1 + translateY 4px→0 | cards, toasts |
-| `nx-scale-in` | opacity 0→1 + scale .98→1 | dialogs, palette |
-| `nx-breathe` | glow/opacity 60%↔100% | presence loops |
-| `nx-pulse-ring` | ring scale 1→1.15 + fade, ×2 then stop | critical alerts |
-| `nx-shimmer` | gradient sweep RTL (right→left) | skeletons |
-| `nx-dot-wave` | 3 dots stagger-bounce (opacity only) | FINN thinking |
-| `nx-sweep` | light band traverse | holographic (doc 05) |
-| `nx-count` | numeric interpolation | KPI (JS-driven) |
-| `nx-ticker-track` | seamless track translate (−50%) | event ticker (v1.0.1 amendment) |
+| Name              | Definition                             | License                         |
+| ----------------- | -------------------------------------- | ------------------------------- |
+| `nx-fade-in`      | opacity 0→1                            | universal                       |
+| `nx-rise-in`      | opacity 0→1 + translateY 4px→0         | cards, toasts                   |
+| `nx-scale-in`     | opacity 0→1 + scale .98→1              | dialogs, palette                |
+| `nx-breathe`      | glow/opacity 60%↔100%                  | presence loops                  |
+| `nx-pulse-ring`   | ring scale 1→1.15 + fade, ×2 then stop | critical alerts                 |
+| `nx-shimmer`      | gradient sweep RTL (right→left)        | skeletons                       |
+| `nx-dot-wave`     | 3 dots stagger-bounce (opacity only)   | FINN thinking                   |
+| `nx-sweep`        | light band traverse                    | holographic (doc 05)            |
+| `nx-count`        | numeric interpolation                  | KPI (JS-driven)                 |
+| `nx-ticker-track` | seamless track translate (−50%)        | event ticker (v1.0.1 amendment) |
 
 New keyframes require a motion-system amendment — the vocabulary is closed so every
-screen *moves* recognizably NEXIOS.
+screen _moves_ recognizably NEXIOS.
 
 ## Reduced-motion mapping (token-level)
 

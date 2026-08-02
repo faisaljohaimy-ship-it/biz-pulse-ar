@@ -31,13 +31,62 @@ const FPS = 30;
 /** Scene id + on-screen title/kicker, mirroring executive-bridge-content.ts.
  *  Durations are estimates; the narration audio is the timing authority. */
 const SCENES = [
-  { id: "command-pulse", n: 1, kicker: "لحظة القيادة", title: "كل ما يهم القيادة. في لحظة واحدة.", accent: "#1E8BFF", seconds: 26 },
-  { id: "decision-engine", n: 2, kicker: "محرك القرار", title: "من الإشارة إلى القرار الموثّق.", accent: "#2DE38C", seconds: 28 },
-  { id: "regional-grid", n: 3, kicker: "الشبكة الإقليمية", title: "أربع مناطق. قيادة واحدة.", accent: "#16D9FF", seconds: 27 },
-  { id: "aria-council", n: 4, kicker: "مجلس FINN", title: "ذكاء تنفيذي يعمل مع القيادة، لا بدلاً عنها.", accent: "#A855F7", seconds: 28 },
-  { id: "digital-twin", n: 5, kicker: "التوأم التشغيلي", title: "الميدان يصبح مفهوماً قبل أن يصبح أزمة.", accent: "#2DE38C", seconds: 27 },
-  { id: "sovereign-trust", n: 6, kicker: "الثقة السيادية", title: "كل قرار محمي. كل إجراء قابل للتفسير.", accent: "#F5A524", seconds: 27 },
-  { id: "activation", n: 7, kicker: "القرار التالي", title: "من الرؤية إلى قيمة قابلة للقياس خلال تسعين يوماً.", accent: "#F5A524", seconds: 28 },
+  {
+    id: "command-pulse",
+    n: 1,
+    kicker: "لحظة القيادة",
+    title: "كل ما يهم القيادة. في لحظة واحدة.",
+    accent: "#1E8BFF",
+    seconds: 26,
+  },
+  {
+    id: "decision-engine",
+    n: 2,
+    kicker: "محرك القرار",
+    title: "من الإشارة إلى القرار الموثّق.",
+    accent: "#2DE38C",
+    seconds: 28,
+  },
+  {
+    id: "regional-grid",
+    n: 3,
+    kicker: "الشبكة الإقليمية",
+    title: "أربع مناطق. قيادة واحدة.",
+    accent: "#16D9FF",
+    seconds: 27,
+  },
+  {
+    id: "aria-council",
+    n: 4,
+    kicker: "مجلس FINN",
+    title: "ذكاء تنفيذي يعمل مع القيادة، لا بدلاً عنها.",
+    accent: "#A855F7",
+    seconds: 28,
+  },
+  {
+    id: "digital-twin",
+    n: 5,
+    kicker: "التوأم التشغيلي",
+    title: "الميدان يصبح مفهوماً قبل أن يصبح أزمة.",
+    accent: "#2DE38C",
+    seconds: 27,
+  },
+  {
+    id: "sovereign-trust",
+    n: 6,
+    kicker: "الثقة السيادية",
+    title: "كل قرار محمي. كل إجراء قابل للتفسير.",
+    accent: "#F5A524",
+    seconds: 27,
+  },
+  {
+    id: "activation",
+    n: 7,
+    kicker: "القرار التالي",
+    title: "من الرؤية إلى قيمة قابلة للقياس خلال تسعين يوماً.",
+    accent: "#F5A524",
+    seconds: 28,
+  },
 ] as const;
 
 const LANG = process.env.ELEVENLABS_LANG === "en" ? "en" : "ar";
@@ -57,7 +106,14 @@ function SceneCard({ scene }: { scene: (typeof SCENES)[number] }) {
         padding: 120,
       }}
     >
-      <div style={{ opacity: appear, transform: `translateY(${rise}px)`, textAlign: "center", maxWidth: 1400 }}>
+      <div
+        style={{
+          opacity: appear,
+          transform: `translateY(${rise}px)`,
+          textAlign: "center",
+          maxWidth: 1400,
+        }}
+      >
         <div
           style={{
             display: "inline-block",
@@ -72,7 +128,9 @@ function SceneCard({ scene }: { scene: (typeof SCENES)[number] }) {
         >
           {`0${scene.n}`} · {scene.kicker}
         </div>
-        <h1 style={{ color: "#F4FAFF", fontSize: 78, lineHeight: 1.25, fontWeight: 800, margin: 0 }}>
+        <h1
+          style={{ color: "#F4FAFF", fontSize: 78, lineHeight: 1.25, fontWeight: 800, margin: 0 }}
+        >
           {scene.title}
         </h1>
         <div style={{ marginTop: 56, color: "#8EA6BE", fontSize: 30, letterSpacing: 4 }}>

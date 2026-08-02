@@ -6,6 +6,7 @@ description: أنماط واجهة NEXIOS — تُستدعى قبل بناء أ�
 # NEXIOS UI Patterns — أنماط الواجهة
 
 ## الحالات الإلزامية لكل صفحة بيانات
+
 1. **skeleton بمهلة** — التحميل اللانهائي محظور: أي استعلام قراءة عرض
    يُسابق 4 ثوانٍ (خادمًا عبر `resilient()`، وعميلًا عبر `Promise.race`
    كما في `makeHooks.useList` و`useHcisFramework`) ثم تنهض المحاكاة
@@ -15,12 +16,14 @@ description: أنماط واجهة NEXIOS — تُستدعى قبل بناء أ�
    Unauthorized/token خام.
 
 ## شارة المحاكاة
+
 - عند تقديم بيانات مرجعية: شارة كهرمانية «محاكاة مرجعية» في رأس الصفحة
   (نمط `NexusPill` في governance) أو لاحقة «· نسخة مرجعية» (نمط ptw،
   حقل `source: "database" | "reference"`).
 - الشارة العامة في الغلاف: «بيئة محاكاة مرجعية · is_simulation=true».
 
 ## المرجع الذهبي: صفحة `/hcis`
+
 - شبكة بطاقات: `grid grid-cols-2 gap-2.5 md:grid-cols-3 xl:grid-cols-4`
   (360-430 ← عمودان، 768 ← ثلاثة، ≥1280 ← أربعة).
 - كود التوجيه بلون زمردي + `name_ar` بارز + فلتر (الكل/SEC/SAF) + بحث
@@ -28,6 +31,7 @@ description: أنماط واجهة NEXIOS — تُستدعى قبل بناء أ�
 - بطاقات KPI: `grid gap-4 sm:grid-cols-2 lg:grid-cols-5`.
 
 ## قواعد مكوّنات
+
 - `NexusCard` يمرر `className` للحاوية الخارجية ويغلّف الأبناء بحاوية
   داخلية — أصناف flex للأبناء تحتاج غلافًا داخليًا خاصًا بك.
 - كل صفحة وحدة تُحمَّل كسولًا (React.lazy / code-splitting عبر الراوتر).
@@ -38,6 +42,7 @@ description: أنماط واجهة NEXIOS — تُستدعى قبل بناء أ�
 - روابط خارجية: `target="_blank" rel="noopener noreferrer"` دون استثناء.
 
 ## التحقق البصري
+
 - المقاسات: 360 / 390 / 430 / 768 / 1280. أداة الفحص السريع: سكربت
   Playwright يمسح المسارات ويصنّف (OK/عالق/خطأ/فارغ) — انظر وكيل
   nexios-demo-readiness.

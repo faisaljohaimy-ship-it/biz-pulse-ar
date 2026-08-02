@@ -10,16 +10,16 @@ This doc specifies the mapping; implementation lands in a later phase.**
 
 Tokens (doc 14) register as Tailwind theme variables so utilities generate from them:
 
-| Ladder | Theme namespace | Example utility |
-|---|---|---|
-| Colors (Ch. 03, existing `--color-*` bridge) | `--color-*` | `bg-card`, `text-primary`, `border-border` |
-| Brand/status/layer (`--nx-cyan`…) | `--color-nx-*` aliases | `text-nx-cyan`, `border-nx-critical`, `border-nx-layer-shell` |
-| Spacing | `--spacing-*` (4…96 ladder only) | `p-6`→24px per scale mapping, gap utilities |
-| Radius | `--radius-*` (existing sm/md/lg/xl + 20/full) | `rounded-lg` = 16 |
-| Shadows | `--shadow-e1…e4` | `shadow-e2` |
-| Blur | `--blur-12/16/20/24` | `backdrop-blur-16` |
-| Animation | `--animate-*` + keyframes (breathe, pulse-sector, shimmer, dot-wave) | `animate-breathe` |
-| Z-index | `--z-*` ladder | `z-modal` |
+| Ladder                                       | Theme namespace                                                      | Example utility                                               |
+| -------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Colors (Ch. 03, existing `--color-*` bridge) | `--color-*`                                                          | `bg-card`, `text-primary`, `border-border`                    |
+| Brand/status/layer (`--nx-cyan`…)            | `--color-nx-*` aliases                                               | `text-nx-cyan`, `border-nx-critical`, `border-nx-layer-shell` |
+| Spacing                                      | `--spacing-*` (4…96 ladder only)                                     | `p-6`→24px per scale mapping, gap utilities                   |
+| Radius                                       | `--radius-*` (existing sm/md/lg/xl + 20/full)                        | `rounded-lg` = 16                                             |
+| Shadows                                      | `--shadow-e1…e4`                                                     | `shadow-e2`                                                   |
+| Blur                                         | `--blur-12/16/20/24`                                                 | `backdrop-blur-16`                                            |
+| Animation                                    | `--animate-*` + keyframes (breathe, pulse-sector, shimmer, dot-wave) | `animate-breathe`                                             |
+| Z-index                                      | `--z-*` ladder                                                       | `z-modal`                                                     |
 
 Rule: theme variables point at `--nx-*` tokens (`--color-nx-cyan: var(--nx-cyan)`), never
 duplicate raw values — one source, two spellings.
@@ -54,6 +54,7 @@ duplicate raw values — one source, two spellings.
 
 NEXIOS is **dark-first and dark-only in v1**: the obsidian theme is the root theme, not
 a `.dark` variant. Therefore:
+
 - No `dark:` variants in nx components — they would imply a light default that doesn't
   exist.
 - All tokens are defined at `:root`; a future light theme (if ever constitutionally

@@ -11,6 +11,7 @@ tools: Read, Grep, Glob, Bash
 حمّل مهارتي `nexios-standards` و`nexios-deploy-safety` ثم نفّذ بالترتيب:
 
 ## 1) بوابة البناء
+
 ```bash
 npx tsc --noEmit                                  # صفر أخطاء
 npx eslint .                                      # كامل الريبو — صفر أخطاء
@@ -19,6 +20,7 @@ npm run build && node scripts/check-performance-budget.mjs
 ```
 
 ## 2) فحص المحظورات (كلها صفر نتائج — أي نتيجة = نقض بالملف والسطر)
+
 ```bash
 grep -rn "speechSynthesis" src/
 grep -rnE "sk-[a-zA-Z0-9]{20}|eleven_[a-zA-Z0-9]{16}" src/
@@ -27,10 +29,12 @@ git diff --stat origin/main -- vite.config.ts src/lib/regions.ts  # فارغ
 grep -rn "<iframe" src/ | grep -i "hajj\|nusuk"                    # لا iframe لنُسك
 grep -rn "enabled: !!user" src/routes/ | grep -vE "knowledge|admin" # قراءات عرض
 ```
+
 (استثناء `knowledge`/`admin` مقصود: استعلاما صلاحية admin شخصية، ليسا
 قراءة عرض.)
 
 ## 3) فحص العقيدة والمعايير
+
 - اختبارا العقد يمران ضمن vitest:
   `aria-service.test.ts` (مصادَق أولًا ← بديل عام) و
   `platforms.test.ts` (رابط نُسك الكانوني).
@@ -55,10 +59,12 @@ grep -rn "enabled: !!user" src/routes/ | grep -vE "knowledge|admin" # قراءا
   اللانهائي سواء.
 
 ## 4) محاكاة المقاسات (عند تغيير واجهات)
+
 - شغّل فحص Playwright على المسارات المتأثرة عند 390 و1280 (نمط سكربت
   المسح: انتظار 7 ثوانٍ ثم تصنيف عالق/خطأ/فارغ من innerText).
 
 ## المخرج الإلزامي
+
 جدول: | البند | ✓/✗ | الموضع | الإصلاح المطلوب |، ثم القرار النهائي
 بسطر واحد لا غير:
 **«مصرَّح بالدفع»** أو **«منقوض — أصلح البنود X قبل إعادة الفحص»**.

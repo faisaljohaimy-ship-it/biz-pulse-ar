@@ -14,14 +14,14 @@ never decorate.
 
 ## Sizes (8pt-locked)
 
-| Token | Size | Stroke | Use |
-|---|---|---|---|
-| `icon-16` | 16px | 1.5px | chips, table cells, inline labels |
-| `icon-20` | 20px | 1.5px | buttons, inputs, nav rail |
-| `icon-24` | 24px | 2px | panel headers, default |
-| `icon-32` | 32px | 2px | feature tiles, empty states |
-| `icon-48` | 48px | 2.5px | module tiles, hero moments |
-| `icon-96` | 96px | 3px | boardroom / cinema only |
+| Token     | Size | Stroke | Use                               |
+| --------- | ---- | ------ | --------------------------------- |
+| `icon-16` | 16px | 1.5px  | chips, table cells, inline labels |
+| `icon-20` | 20px | 1.5px  | buttons, inputs, nav rail         |
+| `icon-24` | 24px | 2px    | panel headers, default            |
+| `icon-32` | 32px | 2px    | feature tiles, empty states       |
+| `icon-48` | 48px | 2.5px  | module tiles, hero moments        |
+| `icon-96` | 96px | 3px    | boardroom / cinema only           |
 
 Stroke scales with size so optical weight stays constant. Never scale an icon between
 tokens — pick the token.
@@ -37,30 +37,31 @@ tokens — pick the token.
 
 ## Interaction states
 
-| State | Treatment |
-|---|---|
-| Rest | pearl @ 72% |
-| Hover | pearl @ 100% + 6% wash behind (no movement) |
-| Pressed | pearl @ 100%, translate 1px down, wash 8% |
-| Active/Selected | accent color (cyan or context accent) + filled variant if it exists |
-| Disabled | pearl @ 38%, no hover response |
-| Focus (keyboard) | 2px cyan ring, radius +2px |
+| State            | Treatment                                                           |
+| ---------------- | ------------------------------------------------------------------- |
+| Rest             | pearl @ 72%                                                         |
+| Hover            | pearl @ 100% + 6% wash behind (no movement)                         |
+| Pressed          | pearl @ 100%, translate 1px down, wash 8%                           |
+| Active/Selected  | accent color (cyan or context accent) + filled variant if it exists |
+| Disabled         | pearl @ 38%, no hover response                                      |
+| Focus (keyboard) | 2px cyan ring, radius +2px                                          |
 
-Icons never change *size* on state — size shifts read as layout bugs.
+Icons never change _size_ on state — size shifts read as layout bugs.
 
 ## Animated icons
 
 Motion license (aligned with Principle 6 — state change only):
+
 - **Micro-transitions** (≤ 200ms, ease-out): hamburger↔close, play↔pause, chevron rotate.
 - **Live indicators** (looping, ≥ 2s cycle, subtle): recording dot, agent presence ring,
-  sync spinner — these are *state displays*, allowed to loop while the state persists.
+  sync spinner — these are _state displays_, allowed to loop while the state persists.
 - Everything else is static. `prefers-reduced-motion` freezes all loops to static state
   frames.
 
 ## Executive icons
 
 Icons in Boardroom register (48/96px) get the executive treatment: 2.5–3px stroke,
-optional soft glow *only if* they carry the screen's single meaning (Chapter 06 glow
+optional soft glow _only if_ they carry the screen's single meaning (Chapter 06 glow
 law), and a 1.5:1 minimum clear-space ratio. Executive icons never sit in crowds — one
 per tile.
 
@@ -70,8 +71,8 @@ Every agent (FINN and specialists from the Adaptive Shell) has: a **presence rin
 (2px, `--nx-layer-agent`, pulsing only while the agent is live), a monogram or glyph at
 the ring's center, and a **mode glyph** at the bottom-left (RTL: bottom-left = trailing):
 advisory (💬 speech-stroke glyph), supervised (👁 eye-stroke), gated (🔒 lock-stroke).
-The mode glyph is constitutional: an executive must always see *what an agent is allowed
-to do* at a glance.
+The mode glyph is constitutional: an executive must always see _what an agent is allowed
+to do_ at a glance.
 
 ## Runtime icons
 
@@ -85,4 +86,4 @@ anywhere in the OS is identifiable by silhouette alone, colorblind-safe by shape
 
 ❌ Emoji as UI icons · ❌ two icon families on one screen · ❌ icons as the only carrier of
 critical meaning (always pair with Arabic label at 16/20px sizes in tier-1 content) ·
-❌ recoloring icons with status colors unless the icon *is* the status glyph.
+❌ recoloring icons with status colors unless the icon _is_ the status glyph.

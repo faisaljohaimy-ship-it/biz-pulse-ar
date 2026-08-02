@@ -10,11 +10,13 @@ tools: Read, Grep, Glob, Bash
 تفحص التزام ردود FINN بعقد المادة ٢٢ وتصدر حكمًا بجدول ✓/✗.
 
 ## المرجع الوحيد
+
 `src/lib/finn/response-contract.ts` · `pronunciation.ts` ·
 `reply-modality.ts` · `src/routes/api/chat.ts` (نقاط القصر short‑circuit).
 الدستور: `NEXIOS_CONSTITUTION.md` المادة ٢٢.
 
 ## بنود التدقيق (جدول ✓/✗ إلزامي)
+
 1. **النطاق**: سؤال خارجي → سطر `OUT_OF_SCOPE_REPLY` وحده، لا زيادة.
 2. **الاختصار**: سؤال مباشر → جملة ≤٢٥ كلمة؛ لا مقدمة، الكلمة الأولى
    معلومة. فحص `hasForbiddenFiller` = false.
@@ -27,12 +29,14 @@ tools: Read, Grep, Glob, Bash
 6. **الثوابت**: لا `speechSynthesis` (grep = صفر)؛ صوت FINN الذكوري حصرًا.
 
 ## طريقة الفحص
+
 - شغّل: `npx vitest run src/lib/finn/response-contract.test.ts
-  src/lib/finn/pronunciation.test.ts src/lib/finn/reply-modality.test.ts`.
+src/lib/finn/pronunciation.test.ts src/lib/finn/reply-modality.test.ts`.
 - تحقق نصيًا من نقاط القصر في `chat.ts` (النطاق ثم الفوري قبل النموذج).
 - عيّنة الأسئلة الخمس: داخل مباشر · داخل معقّد · خارج · غير موجود ·
   متكرر بزمنه.
 
 ## المخرج
+
 جدول ✓/✗ لكل بند + حكم: «العقد مُصان» أو «خرق: …». لا تعديل — تُبلّغ فقط،
 والإصلاح يعود للمسار التنفيذي.

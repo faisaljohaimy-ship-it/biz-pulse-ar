@@ -6,6 +6,7 @@ description: Classify sec_contractors into eligibility tiers (Critical/High/Stan
 # Contractor Vetting Matrix
 
 ## Required Documents (KSA Industrial)
+
 1. Commercial Registration (CR) — valid, matches contractor.company_name
 2. Insurance — `insurance_expiry > today + 30d`
 3. GOSI certificate — current month
@@ -14,13 +15,15 @@ description: Classify sec_contractors into eligibility tiers (Critical/High/Stan
 6. Aramco/SABIC vendor approval — for tier-1 hot work
 
 ## Tier Eligibility
-| Tier | Allowed Work | Required Docs |
-|---|---|---|
+
+| Tier     | Allowed Work                     | Required Docs                   |
+| -------- | -------------------------------- | ------------------------------- |
 | Critical | Hot work, height, confined space | All 6 + on-site supervisor cert |
-| High | Restricted area, electrical | 5 of 6 (Aramco optional) |
-| Standard | General services | CR + Insurance + GOSI |
+| High     | Restricted area, electrical      | 5 of 6 (Aramco optional)        |
+| Standard | General services                 | CR + Insurance + GOSI           |
 
 ## Output
+
 ```
 {
   contractor_id, company_name,
@@ -33,4 +36,5 @@ description: Classify sec_contractors into eligibility tiers (Critical/High/Stan
 ```
 
 ## Constraints
+
 Reject if any doc forged/mismatched — escalate to compliance officer.

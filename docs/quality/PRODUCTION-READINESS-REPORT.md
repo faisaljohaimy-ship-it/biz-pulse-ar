@@ -24,12 +24,12 @@ not yet adopted the Nx library (adoption was constitutionally out of Phase-4 sco
 
 ## Findings & Self-Correction Log (all fixed this phase)
 
-| # | Finding | Category | Fix | Verified |
-|---|---|---|---|---|
-| 1 | `NxTwinLink` used a raw `3s` animation duration + injected an inline `<style>` per render (duplicate style elements under N links) | Motion / DRY | keyframes moved into the closed vocabulary (`nx-tokens.css`), duration → new `--nx-loop-dash` token | ✓ tests + scan |
-| 2 | FINN thinking dots used raw `1.2s` | Motion | → new `--nx-loop-dots` token; motion doc 03 amended (v1.0.1, per the amendment process) | ✓ |
-| 3 | `NxAnimatedKpi` hardcoded `400` ms | Motion | reads `--nx-anim-count` computed value (fallback 400) — reduced-motion token remap now guards it twice | ✓ |
-| 4 | Inline-style loop animations (dots, dash) escaped the class-based reduced-motion pause selectors | Accessibility | `data-nx-loop` pause hook added to the media-query block and both components | ✓ + new axe sweep |
+| #   | Finding                                                                                                                            | Category      | Fix                                                                                                    | Verified          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------ | ----------------- |
+| 1   | `NxTwinLink` used a raw `3s` animation duration + injected an inline `<style>` per render (duplicate style elements under N links) | Motion / DRY  | keyframes moved into the closed vocabulary (`nx-tokens.css`), duration → new `--nx-loop-dash` token    | ✓ tests + scan    |
+| 2   | FINN thinking dots used raw `1.2s`                                                                                                 | Motion        | → new `--nx-loop-dots` token; motion doc 03 amended (v1.0.1, per the amendment process)                | ✓                 |
+| 3   | `NxAnimatedKpi` hardcoded `400` ms                                                                                                 | Motion        | reads `--nx-anim-count` computed value (fallback 400) — reduced-motion token remap now guards it twice | ✓                 |
+| 4   | Inline-style loop animations (dots, dash) escaped the class-based reduced-motion pause selectors                                   | Accessibility | `data-nx-loop` pause hook added to the media-query block and both components                           | ✓ + new axe sweep |
 
 Prior-phase self-corrections already in lineage: physical `-left-1` → logical `-end-1`
 (Phase 4), over-refusal regex narrowing, TTS pronunciation normalization.
@@ -90,24 +90,24 @@ No dead code introduced (the Nx barrel is a public library surface by design).
 **10 · Visual Excellence — 10/10 by law-compliance.** Hierarchy, spacing, glass and
 glow quality are enforced by construction (tokens + closed variants), which is the only
 honest way to score visuals without a human eye: nothing in the implemented surface
-*can* deviate from the ratified language.
+_can_ deviate from the ratified language.
 
 ## Final Quality Scores
 
-| Dimension | Score |
-|---|---|
-| Architecture | **10/10** |
-| Design (law + tokens) | **10/10** |
-| UI (implemented surface) | **10/10** |
-| UX (implemented surface) | **10/10** |
-| Performance | **Production Ready** |
-| Accessibility | **Enterprise Ready** |
-| Consistency | **10/10** |
-| Maintainability | **10/10** |
-| Scalability | **10/10** |
+| Dimension                         | Score                                         |
+| --------------------------------- | --------------------------------------------- |
+| Architecture                      | **10/10**                                     |
+| Design (law + tokens)             | **10/10**                                     |
+| UI (implemented surface)          | **10/10**                                     |
+| UX (implemented surface)          | **10/10**                                     |
+| Performance                       | **Production Ready**                          |
+| Accessibility                     | **Enterprise Ready**                          |
+| Consistency                       | **10/10**                                     |
+| Maintainability                   | **10/10**                                     |
+| Scalability                       | **10/10**                                     |
 | Executive Experience (foundation) | **9/10** — full marks require screen adoption |
-| Engineering | **10/10** |
-| **Overall** | **9.8/10 — PRODUCTION GATE: PASS (scoped)** |
+| Engineering                       | **10/10**                                     |
+| **Overall**                       | **9.8/10 — PRODUCTION GATE: PASS (scoped)**   |
 
 ## Production Gate Verdict
 
@@ -117,7 +117,7 @@ issues · 0 TODO · 0 placeholders · 0 dead code · 0 duplicate components · 0
 styles · 0 duplicate tokens.**
 
 **RELEASE: UNBLOCKED** for everything in scope. The scope boundary is explicit: the Nx
-library and its laws govern all *future* surfaces; existing screens remain on their
+library and its laws govern all _future_ surfaces; existing screens remain on their
 pre-constitution styling until the adoption phases migrate them (they were audited
 green at GLOBAL acceptance and are unchanged since).
 
@@ -145,5 +145,5 @@ green at GLOBAL acceptance and are unchanged since).
 
 ---
 
-*Audit re-run after fixes: all scans, both axe passes, 671-test suite, build and budget
-re-executed clean — the self-correction loop closed at zero known issues.*
+_Audit re-run after fixes: all scans, both axe passes, 671-test suite, build and budget
+re-executed clean — the self-correction loop closed at zero known issues._

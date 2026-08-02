@@ -11,41 +11,42 @@ Linked skills (load in parallel when relevant): `incident-triage`, `crisis-decis
 
 ## 20 Emergency Classes (canonical IDs — use verbatim)
 
-| Code | Class | Primary Data | Authority |
-|---|---|---|---|
-| `EC-01` | Fire | `sec_incidents` `kind=fire` + `sec_sensors.smoke` | Civil Defense 998 |
-| `EC-02` | Explosion | `sec_incidents` `kind=explosion` | Civil Defense 998 + Police 911 |
-| `EC-03` | Gas Leak | `sec_sensors.gas`, `sec_cctv_alerts.thermal` | HAZMAT team + 998 |
-| `EC-04` | Oil Spill | `sec_incidents` `kind=oil_spill` | NEOM/Aramco Env. response |
-| `EC-05` | Chemical Release | `sec_incidents` `kind=chemical_release` | HAZMAT + MOH |
-| `EC-06` | Medical Emergency | `sec_activity_events.action=medical_call` | Red Crescent 997 |
-| `EC-07` | Security Threat | `sec_incidents` `severity≥high` | Internal SOC |
-| `EC-08` | Bomb Threat | `sec_incidents` `kind=bomb_threat` | Police 911 + EOD |
-| `EC-09` | Active Shooter | `sec_incidents` `kind=active_shooter` | Police 911 (immediate) |
-| `EC-10` | Terrorism | `sec_incidents` `kind=terrorism` | Presidency of State Security |
-| `EC-11` | Natural Disaster | `intelligence_events.topic=natdis.*` | Civil Defense + NCM |
-| `EC-12` | Flood | `sec_sensors.water` | Civil Defense 998 |
-| `EC-13` | Earthquake | NCM feed | Civil Defense + SGS |
-| `EC-14` | Power Failure | `sec_assets.kind=power` `status=down` | Utility provider |
-| `EC-15` | Communication Failure | `sec_assets.kind=radio/network` `status=down` | IT + backup channel |
-| `EC-16` | Cyber Attack | `intelligence_events.topic=cyber.*` | NCA + internal CSIRT |
-| `EC-17` | Confined Space Rescue | `sec_permits.kind=confined_space` active | Trained rescue team |
-| `EC-18` | Working at Height Rescue | `sec_permits.kind=height` active | Trained rescue team |
-| `EC-19` | Vehicle Accident | `sec_activity_events.kind=vehicle_accident` | Traffic Police 993 |
-| `EC-20` | Hajj Crowd Emergency | `hajj_kpi_snapshots.density_per_m2 ≥ 6` | Hajj Command + 998 |
+| Code    | Class                    | Primary Data                                      | Authority                      |
+| ------- | ------------------------ | ------------------------------------------------- | ------------------------------ |
+| `EC-01` | Fire                     | `sec_incidents` `kind=fire` + `sec_sensors.smoke` | Civil Defense 998              |
+| `EC-02` | Explosion                | `sec_incidents` `kind=explosion`                  | Civil Defense 998 + Police 911 |
+| `EC-03` | Gas Leak                 | `sec_sensors.gas`, `sec_cctv_alerts.thermal`      | HAZMAT team + 998              |
+| `EC-04` | Oil Spill                | `sec_incidents` `kind=oil_spill`                  | NEOM/Aramco Env. response      |
+| `EC-05` | Chemical Release         | `sec_incidents` `kind=chemical_release`           | HAZMAT + MOH                   |
+| `EC-06` | Medical Emergency        | `sec_activity_events.action=medical_call`         | Red Crescent 997               |
+| `EC-07` | Security Threat          | `sec_incidents` `severity≥high`                   | Internal SOC                   |
+| `EC-08` | Bomb Threat              | `sec_incidents` `kind=bomb_threat`                | Police 911 + EOD               |
+| `EC-09` | Active Shooter           | `sec_incidents` `kind=active_shooter`             | Police 911 (immediate)         |
+| `EC-10` | Terrorism                | `sec_incidents` `kind=terrorism`                  | Presidency of State Security   |
+| `EC-11` | Natural Disaster         | `intelligence_events.topic=natdis.*`              | Civil Defense + NCM            |
+| `EC-12` | Flood                    | `sec_sensors.water`                               | Civil Defense 998              |
+| `EC-13` | Earthquake               | NCM feed                                          | Civil Defense + SGS            |
+| `EC-14` | Power Failure            | `sec_assets.kind=power` `status=down`             | Utility provider               |
+| `EC-15` | Communication Failure    | `sec_assets.kind=radio/network` `status=down`     | IT + backup channel            |
+| `EC-16` | Cyber Attack             | `intelligence_events.topic=cyber.*`               | NCA + internal CSIRT           |
+| `EC-17` | Confined Space Rescue    | `sec_permits.kind=confined_space` active          | Trained rescue team            |
+| `EC-18` | Working at Height Rescue | `sec_permits.kind=height` active                  | Trained rescue team            |
+| `EC-19` | Vehicle Accident         | `sec_activity_events.kind=vehicle_accident`       | Traffic Police 993             |
+| `EC-20` | Hajj Crowd Emergency     | `hajj_kpi_snapshots.density_per_m2 ≥ 6`           | Hajj Command + 998             |
 
 ## Severity Bands → SLA → Notify
 
-| Severity | Trigger | Response SLA | Notify (initial) |
-|---|---|---|---|
-| `Information` | Awareness only, no impact | Log within shift | Shift log only |
-| `Minor` | Single asset, no injury, contained | ≤ 60 min | Team lead |
-| `Moderate` | Single site, limited disruption | ≤ 30 min | Shift supervisor + Ops |
-| `Major` | Multi-asset, injury risk, partial shutdown | ≤ 15 min | Site head + Ops Director |
-| `Critical` | Life safety active, full-site disruption | ≤ 5 min | CSO + COO + Crisis Room |
-| `Catastrophic` | Multi-site, fatality risk, regulatory exposure | < 2 min | CEO + Govt liaisons |
+| Severity       | Trigger                                        | Response SLA     | Notify (initial)         |
+| -------------- | ---------------------------------------------- | ---------------- | ------------------------ |
+| `Information`  | Awareness only, no impact                      | Log within shift | Shift log only           |
+| `Minor`        | Single asset, no injury, contained             | ≤ 60 min         | Team lead                |
+| `Moderate`     | Single site, limited disruption                | ≤ 30 min         | Shift supervisor + Ops   |
+| `Major`        | Multi-asset, injury risk, partial shutdown     | ≤ 15 min         | Site head + Ops Director |
+| `Critical`     | Life safety active, full-site disruption       | ≤ 5 min          | CSO + COO + Crisis Room  |
+| `Catastrophic` | Multi-site, fatality risk, regulatory exposure | < 2 min          | CEO + Govt liaisons      |
 
 Severity floor by class (cannot start lower than):
+
 - `EC-01..EC-03, EC-05, EC-08..EC-10, EC-13, EC-20` → **Major** minimum.
 - `EC-09, EC-10, EC-13` (active) → **Critical** minimum.
 
@@ -70,6 +71,7 @@ Skipping a step is a charter violation — log the skip with justification in `a
 ## AI Action Authority
 
 ARIA / agents MAY (autonomous):
+
 - `Recommend Response` — propose actions citing SOP `doc_code`.
 - `Predict Escalation` — project severity progression from sensor trend + historical incidents.
 - `Estimate Impact` — compute affected headcount, asset value, downtime hours from `sec_*` tables.
@@ -79,6 +81,7 @@ ARIA / agents MAY (autonomous):
 - `Generate Final Report` — after closure.
 
 ARIA / agents MUST NOT (require human approval):
+
 - Order evacuation outside the affected zone.
 - Contact external agencies directly without operator confirmation.
 - Close an incident — `Critical`/`Catastrophic` closure requires CSO sign-off recorded in `audit_logs`.
@@ -86,20 +89,21 @@ ARIA / agents MUST NOT (require human approval):
 
 ## KPIs (compute from forensic tables — never invent)
 
-| KPI | Formula | Target |
-|---|---|---|
-| Response Time | `dispatched_at - detected_at` | ≤ SLA per severity |
-| Mobilization Time | `arrived_on_scene_at - dispatched_at` | ≤ 10 min (urban) |
-| Containment Time | `contained_at - detected_at` | ≤ 60 min (Major-) |
-| Recovery Time | `recovered_at - contained_at` | ≤ 4h (Major-) |
-| Casualties | `sum(incident.casualties)` | 0 |
-| Property Damage | `sum(incident.damage_sar)` | minimize |
-| Business Impact | `downtime_hours × site_revenue_rate` | minimize |
-| Compliance Score | `steps_executed / 13` per incident | ≥ 0.95 |
+| KPI               | Formula                               | Target             |
+| ----------------- | ------------------------------------- | ------------------ |
+| Response Time     | `dispatched_at - detected_at`         | ≤ SLA per severity |
+| Mobilization Time | `arrived_on_scene_at - dispatched_at` | ≤ 10 min (urban)   |
+| Containment Time  | `contained_at - detected_at`          | ≤ 60 min (Major-)  |
+| Recovery Time     | `recovered_at - contained_at`         | ≤ 4h (Major-)      |
+| Casualties        | `sum(incident.casualties)`            | 0                  |
+| Property Damage   | `sum(incident.damage_sar)`            | minimize           |
+| Business Impact   | `downtime_hours × site_revenue_rate`  | minimize           |
+| Compliance Score  | `steps_executed / 13` per incident    | ≥ 0.95             |
 
 ## Output Templates
 
 ### Executive Brief (bilingual, ≤ 200 words)
+
 ```
 [{severity_band}] {emergency_class_code} — {short_title_ar} / {short_title_en}
 Site: {site_name_ar} ({site_id}) | Detected: {detected_at}
@@ -111,6 +115,7 @@ Evidence: incident={id}, correlation_id={cid}, SOPs={[doc_codes]}
 ```
 
 ### Situation Report (every 15 min, active emergencies)
+
 ```
 SITREP #{n} — {emergency_class_code} | {site} | {timestamp}
 Δ since SITREP #{n-1}: {delta}
@@ -120,9 +125,11 @@ Next decision point: {action @ time}
 ```
 
 ### Root Cause Analysis
+
 Sections: Incident Summary → Timeline → Direct Cause → Contributing Factors → Root Cause (5-Why or Fishbone) → Barriers Failed → Corrective Actions (with `sec_work_order` IDs) → Preventive Actions → Sign-off.
 
 ### Lessons Learned
+
 Sections: What worked → What failed → Surprises → Policy/SOP updates required (with `doc_code` references) → Training gaps → Owner + due date.
 
 ## Bilingual Output Discipline
@@ -135,10 +142,10 @@ Sections: What worked → What failed → Surprises → Policy/SOP updates requi
 
 ## Linked Outputs Manifest
 
-| Output | Table | Trigger |
-|---|---|---|
-| Executive Brief | `aria_reports` `kind='exec_brief'` | Step 11 + every severity escalation |
-| Operational Timeline | `sec_incidents.timeline_json` | Continuous (Step 10) |
-| Incident Report | `sec_reports` `kind='incident'` | After Step 12 |
-| Lessons Learned | `aria_reports` `kind='lessons_learned'` | After Step 13 |
-| Root Cause Analysis | `aria_reports` `kind='rca'` | After Step 13 |
+| Output               | Table                                   | Trigger                             |
+| -------------------- | --------------------------------------- | ----------------------------------- |
+| Executive Brief      | `aria_reports` `kind='exec_brief'`      | Step 11 + every severity escalation |
+| Operational Timeline | `sec_incidents.timeline_json`           | Continuous (Step 10)                |
+| Incident Report      | `sec_reports` `kind='incident'`         | After Step 12                       |
+| Lessons Learned      | `aria_reports` `kind='lessons_learned'` | After Step 13                       |
+| Root Cause Analysis  | `aria_reports` `kind='rca'`             | After Step 13                       |

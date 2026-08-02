@@ -4,15 +4,15 @@ _Last updated: 2026-06-26 (Ω-003 — Waves 1 + 3 partial)._
 
 ## Headline Health (current)
 
-| Gate | Result |
-| --- | --- |
-| TypeScript (`tsc --noEmit`) | **0 errors** |
-| `any` / `as any` in source | **0** |
-| `react-router-dom` imports | **0** |
-| `supabase.functions.invoke` | **0** |
-| Supabase linter | **5 warnings — all accepted** (see `@security-memory`) |
-| Public API routes | 2 (both secret-guarded) |
-| Server functions | 112 (Wave 1 baseline) |
+| Gate                        | Result                                                 |
+| --------------------------- | ------------------------------------------------------ |
+| TypeScript (`tsc --noEmit`) | **0 errors**                                           |
+| `any` / `as any` in source  | **0**                                                  |
+| `react-router-dom` imports  | **0**                                                  |
+| `supabase.functions.invoke` | **0**                                                  |
+| Supabase linter             | **5 warnings — all accepted** (see `@security-memory`) |
+| Public API routes           | 2 (both secret-guarded)                                |
+| Server functions            | 112 (Wave 1 baseline)                                  |
 
 ## Ω-003 Wave 1 — API hardening (foundational primitives shipped)
 
@@ -55,13 +55,13 @@ See `@security-memory` for the rationale per finding:
 
 Largest hotspots still standing (no behavioural change yet):
 
-| File | LOC | Planned split |
-| --- | --- | --- |
-| `src/routes/index.tsx` | 2104 | Extract cinematic sections to `src/components/cinematic/sections/*` |
-| `src/components/executive-overlay.tsx` | 1213 | One file per panel under `src/components/exec/overlay/` |
-| `src/routes/_authenticated/command-center.tsx` | 993 | Extract data hooks into `src/lib/command-center/*` |
-| `src/lib/oms.functions.ts` | 878 | Split per domain: `oms/incidents.functions.ts`, `oms/work-orders.functions.ts`, `oms/permits.functions.ts` |
-| `src/routes/_authenticated/digital-twin.tsx` | 780 | Memoise three.js geometry + extract scene components |
+| File                                           | LOC  | Planned split                                                                                              |
+| ---------------------------------------------- | ---- | ---------------------------------------------------------------------------------------------------------- |
+| `src/routes/index.tsx`                         | 2104 | Extract cinematic sections to `src/components/cinematic/sections/*`                                        |
+| `src/components/executive-overlay.tsx`         | 1213 | One file per panel under `src/components/exec/overlay/`                                                    |
+| `src/routes/_authenticated/command-center.tsx` | 993  | Extract data hooks into `src/lib/command-center/*`                                                         |
+| `src/lib/oms.functions.ts`                     | 878  | Split per domain: `oms/incidents.functions.ts`, `oms/work-orders.functions.ts`, `oms/permits.functions.ts` |
+| `src/routes/_authenticated/digital-twin.tsx`   | 780  | Memoise three.js geometry + extract scene components                                                       |
 
 Refactoring requires per-file regression checks; deferred to a focused wave so each file can ship with its own verification.
 

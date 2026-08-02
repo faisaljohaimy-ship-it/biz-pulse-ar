@@ -28,12 +28,7 @@
     "src/components/ui/**",
     "src/components/mission-control/**"
   ],
-  "ignoreDependencies": [
-    "@types/*",
-    "eslint-*",
-    "prettier",
-    "wrangler"
-  ],
+  "ignoreDependencies": ["@types/*", "eslint-*", "prettier", "wrangler"],
   "ignoreBinaries": ["wrangler", "playwright"],
   "vite": true,
   "tanstack-router": true,

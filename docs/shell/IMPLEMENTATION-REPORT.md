@@ -6,21 +6,21 @@
 
 ## Delivered
 
-| Section | Deliverable | Where |
-|---|---|---|
-| 01 | Capability Registry (15-field records, governed store) | `population/records.ts` + `registries.ts` |
-| 02 | Skill Registry (wraps frozen Phase-1 manifest, execution contract, policies) | same |
-| 03 | Discovery engine (single-door admission pipeline + conflict detection) | `population/discovery-engine.ts` |
-| 04 | Category system (12 seeded, extensible, typo-proof) | `population/categories.ts` |
-| 05 | Lifecycle (8 states, machine-enforced, archived terminal) | `population/lifecycle.ts` |
-| 06 | Health model (5 states, worst-of aggregation, honest `unknown`) | `population/health.ts` |
-| 07 | Dependency engine (required/optional × hard/soft, cycle paths, topo order) | `population/dependencies.ts` |
-| 08 | Permission model (8 actions, deny-by-default grants) | `population/permissions.ts` |
-| 09 | Structured metadata block on every record | `population/records.ts` |
-| 10 | Versioning (semver algebra, timeline upgrade/rollback rules, compatibility matrix) | `population/versioning.ts` |
-| 11 | Validation (7 checks, fail-closed, full-issue reporting) | `population/validation.ts` |
-| 12 | Event model (8 events, journaled bus, handler isolation) | `population/events.ts` |
-| 13 | Documentation (this set: architecture, capability, skill, lifecycle, dependency, validation, discovery) | `docs/shell/` |
+| Section | Deliverable                                                                                             | Where                                     |
+| ------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| 01      | Capability Registry (15-field records, governed store)                                                  | `population/records.ts` + `registries.ts` |
+| 02      | Skill Registry (wraps frozen Phase-1 manifest, execution contract, policies)                            | same                                      |
+| 03      | Discovery engine (single-door admission pipeline + conflict detection)                                  | `population/discovery-engine.ts`          |
+| 04      | Category system (12 seeded, extensible, typo-proof)                                                     | `population/categories.ts`                |
+| 05      | Lifecycle (8 states, machine-enforced, archived terminal)                                               | `population/lifecycle.ts`                 |
+| 06      | Health model (5 states, worst-of aggregation, honest `unknown`)                                         | `population/health.ts`                    |
+| 07      | Dependency engine (required/optional × hard/soft, cycle paths, topo order)                              | `population/dependencies.ts`              |
+| 08      | Permission model (8 actions, deny-by-default grants)                                                    | `population/permissions.ts`               |
+| 09      | Structured metadata block on every record                                                               | `population/records.ts`                   |
+| 10      | Versioning (semver algebra, timeline upgrade/rollback rules, compatibility matrix)                      | `population/versioning.ts`                |
+| 11      | Validation (7 checks, fail-closed, full-issue reporting)                                                | `population/validation.ts`                |
+| 12      | Event model (8 events, journaled bus, handler isolation)                                                | `population/events.ts`                    |
+| 13      | Documentation (this set: architecture, capability, skill, lifecycle, dependency, validation, discovery) | `docs/shell/`                             |
 
 ## Compliance with the mandate
 

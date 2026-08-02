@@ -5,6 +5,7 @@ Project: **`jhutlofapjfjjeajawie`** (owner-declared, and now the value in
 carried a stale ref, which is why several files still explain the mismatch).
 
 **Approved decisions**
+
 - Embedding dimension: **`vector(1536)`** (plain `vector`, not `halfvec`).
 - Write role: **`admin`** via `is_org_member(org_id, 'admin')` — matches `aria_knowledge`.
 - **Do NOT auto-apply.** The operator takes a backup, then applies manually.
@@ -37,31 +38,38 @@ Apply with `supabase db push` (or paste each file in the SQL editor) **in this
 exact order**. After each file, run its check and confirm the expected result.
 
 ### 1) `20260728093000_rag_extensions.sql`
+
 ```sql
 SELECT extname, extversion FROM pg_extension
 WHERE extname IN ('vector','pg_trgm','pgcrypto') ORDER BY extname;
 ```
+
 **Expect:** 3 rows. Confirm `vector.extversion` ≥ `0.5.0` (HNSW support). If it is
 present but you see any hint that 1536 needs `halfvec` → STOP (see check above).
 
 ### 2) `20260728093100_rag_ar_normalize.sql`
+
 ```sql
 SELECT public.nx_ar_normalize('السَّلامةِ') AS a,   -- tashkeel + ta marbuta
        public.nx_ar_normalize('ســلامة')   AS b,   -- tatweel
        public.nx_ar_normalize('SEC-18')     AS c;   -- latin lower
 ```
+
 **Expect:** `a = السلامه`, `b = سلامه`, `c = sec-18`.
 
 ### 3) `20260728093200_rag_documents.sql`
+
 ```sql
 SELECT relrowsecurity AS rls_on,
        (SELECT count(*) FROM pg_policies
          WHERE schemaname='public' AND tablename='rag_documents') AS policies
 FROM pg_class WHERE oid = 'public.rag_documents'::regclass;
 ```
+
 **Expect:** `rls_on = t`, `policies = 2` (member read + admin write).
 
 ### 4) `20260728093300_rag_chunks.sql`
+
 ```sql
 SELECT format_type(atttypid, atttypmod) AS embedding_type,
        (SELECT count(*) FROM pg_indexes
@@ -71,6 +79,7 @@ SELECT format_type(atttypid, atttypmod) AS embedding_type,
 FROM pg_attribute
 WHERE attrelid='public.rag_chunks'::regclass AND attname='embedding';
 ```
+
 **Expect:** `embedding_type = vector(1536)` (or `extensions.vector(1536)`),
 `hybrid_indexes = 3` (HNSW + FTS GIN + trgm GIN).
 
@@ -82,21 +91,25 @@ Run these in REVERSE of apply order (a chunk's FK + the normalizer-backed
 generated columns depend on the earlier objects).
 
 ### undo 4) rag_chunks
+
 ```sql
 DROP TABLE IF EXISTS public.rag_chunks;   -- drops its 3 indexes, 2 policies, FK, generated cols
 ```
 
 ### undo 3) rag_documents
+
 ```sql
 DROP TABLE IF EXISTS public.rag_documents;   -- run AFTER rag_chunks; drops policies + updated_at trigger
 ```
 
 ### undo 2) nx_ar_normalize
+
 ```sql
 DROP FUNCTION IF EXISTS public.nx_ar_normalize(text);   -- run AFTER rag_chunks (its generated cols used it)
 ```
 
 ### undo 1) extensions
+
 ```sql
 DROP EXTENSION IF EXISTS pg_trgm;   -- safe once rag_chunks_trgm_gin is gone; errors (safely) if still depended on
 -- pgcrypto: LEAVE installed — it may be shared by other objects.
@@ -111,16 +124,19 @@ DROP EXTENSION IF EXISTS pg_trgm;   -- safe once rag_chunks_trgm_gin is gone; er
 # Session 2 — hybrid search + Edge Functions (STAGED · not deployed)
 
 ## 5) `20260728110000_rag_hybrid_search.sql` (apply AFTER files 1–4)
+
 ```sql
 SELECT p.prosecdef AS is_definer,          -- expect f (SECURITY INVOKER)
        pg_get_function_identity_arguments(p.oid) AS args
 FROM pg_proc p WHERE p.proname = 'rag_hybrid_search';
 ```
+
 **Expect:** one row, `is_definer = f`, and `args` contains NO org parameter —
 `(_query text, _query_embedding vector, _match_count integer)` only. That is the
 isolation proof at the DB layer: there is nothing org-shaped to pass.
 
 **Rollback 5:**
+
 ```sql
 DROP FUNCTION IF EXISTS public.rag_hybrid_search(text, extensions.vector, int);
 DROP INDEX IF EXISTS public.rag_documents_org_code_uq;
@@ -128,6 +144,7 @@ DROP INDEX IF EXISTS public.rag_documents_org_source_title_uq;
 ```
 
 ## Edge Functions (deploy ONLY after approval)
+
 ```bash
 # secrets first (values from your vault — never from the repo):
 supabase secrets set GEMINI_API_KEY=*** --project-ref jhutlofapjfjjeajawie
@@ -135,23 +152,28 @@ supabase secrets set GEMINI_API_KEY=*** --project-ref jhutlofapjfjjeajawie
 supabase functions deploy rag-retrieve --project-ref jhutlofapjfjjeajawie
 supabase functions deploy rag-ingest   --project-ref jhutlofapjfjjeajawie
 ```
+
 Neither function ever uses `service_role` — both forward the CALLER's JWT so
 RLS enforces org isolation (read: viewer، write: admin — مطابق aria_knowledge).
 
 **Verification (positive):**
+
 ```bash
 curl -sX POST "https://jhutlofapjfjjeajawie.supabase.co/functions/v1/rag-retrieve" \
   -H "Authorization: Bearer <USER_JWT>" -H "Content-Type: application/json" \
   -d '{"query":"ما نطاق SEC-18؟"}'
 # expect: {"results":[…],"insufficient_evidence":…,"degraded":null}
 ```
+
 **Verification (NEGATIVE — org from body must be refused):**
+
 ```bash
 curl -sX POST ".../functions/v1/rag-retrieve" \
   -H "Authorization: Bearer <USER_JWT>" -H "Content-Type: application/json" \
   -d '{"query":"x","org_id":"00000000-0000-0000-0000-00000000bbbb"}'
 # expect: HTTP 400 {"error":"org_id_forbidden", …}
 ```
+
 **Rollback (edge):** `supabase functions delete rag-retrieve --project-ref …`
 (وكذلك `rag-ingest`)؛ حذف الدالة لا يمسّ البيانات.
 
@@ -160,6 +182,7 @@ curl -sX POST ".../functions/v1/rag-retrieve" \
 # Session 3 — wiring + evaluation + flag (STAGED · dark by default)
 
 ## Feature flag (NOT_GLOBAL)
+
 The `/rag-search` surface renders ONLY when the environment sets
 `VITE_RAG_RETRIEVAL_ENABLED=true` (Vercel → Environment Variables, per
 environment). Default everywhere: **OFF** — merging/deploying the code alone
@@ -211,9 +234,9 @@ grant execute on function public.rag_capture_readside(int) to service_role;
 
 Sources and what each contributes:
 
-| المصدر | يُقرأ | يُنتج |
-|---|---|---|
-| `aria_learning_log` (unresolved) | السؤال + وقت التسجيل | صفوف في `rag_gaps` |
+| المصدر                            | يُقرأ                | يُنتج              |
+| --------------------------------- | -------------------- | ------------------ |
+| `aria_learning_log` (unresolved)  | السؤال + وقت التسجيل | صفوف في `rag_gaps` |
 | `aria_conversations` (غير محاكاة) | عدّ الطلب وحدّ المسح | **صفر** صفوف فجوات |
 
 The second row is a deliberate refusal, not an omission: a conversation

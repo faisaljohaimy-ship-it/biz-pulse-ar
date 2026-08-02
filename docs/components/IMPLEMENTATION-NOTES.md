@@ -9,11 +9,11 @@ where, and what remains. Updated every implementation phase.**
 
 ### Composites (`src/components/nx/composite/`)
 
-| Component | Spec | Notes |
-|---|---|---|
-| `NxLayerStack` (closed five-stratum chip row) | design 03 §5 / components 07 | pulse licensed only on the active layer; sr-only «نشطة الآن» co-signal |
-| `NxPipelineFlow` (request→…→result, seven stages) | motion 05 §Pipeline | gold approval gate breathes ONLY while pending (single-gold law); execution stage never carries a standing animation (advisory law); CSS-only |
-| `NxEventTicker` (decision/alert/approval/execution/audit) | motion 04 §Ticker | duplicated track + `nx-ticker-track` (0→−50%, leftward); duration from measured width at 24px/s (`--nx-loop-ticker`); pauses on hover/focus; a critical item revokes the loop → static emphasis; reduced motion → static list |
+| Component                                                 | Spec                         | Notes                                                                                                                                                                                                                         |
+| --------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NxLayerStack` (closed five-stratum chip row)             | design 03 §5 / components 07 | pulse licensed only on the active layer; sr-only «نشطة الآن» co-signal                                                                                                                                                        |
+| `NxPipelineFlow` (request→…→result, seven stages)         | motion 05 §Pipeline          | gold approval gate breathes ONLY while pending (single-gold law); execution stage never carries a standing animation (advisory law); CSS-only                                                                                 |
+| `NxEventTicker` (decision/alert/approval/execution/audit) | motion 04 §Ticker            | duplicated track + `nx-ticker-track` (0→−50%, leftward); duration from measured width at 24px/s (`--nx-loop-ticker`); pauses on hover/focus; a critical item revokes the loop → static emphasis; reduced motion → static list |
 
 Motion doc 03 amended (v1.0.1): `nx-ticker-track` joined the closed keyframe
 vocabulary; implemented in `nx-tokens.css`.
@@ -56,17 +56,17 @@ composed-RTL axe pass (0 violations).
 
 ### Components (`src/components/nx/` — Nx prefix per NAMING-CONVENTION)
 
-| Component | Spec | Notes |
-|---|---|---|
-| `NxButton` (10 variants: primary/secondary/ghost/glass/outline/danger/warning/success/runtime/executive) | 01 | loading locks width + `aria-busy`; executive = the gold single |
-| `NxVoiceButton` (idle/listening/recording) | 01 | licensed breathing ring, `aria-pressed` |
-| `NxPanel` (layer accents, 3 density registers, header/footer anatomy) | 07 | |
-| `NxGlassCard`, `NxKpiCard` | 03 | four truths + simulation badge |
-| `NxKpiNumber`, `NxDelta` (direction-aware + noise threshold), `NxStatusIndicator` (triple-coded), `NxAnimatedKpi` (count-up on change only, reduced-motion instant), `NxSparkline` | 05 | |
-| `NxSkeleton`, `NxSpinner`, `NxProgress` | 11 | RTL shimmer, Arabic verbs, determinate/indeterminate |
-| `NxEmptyState` (three honest kinds), `NxErrorState` (recoverable/blocked + trace disclosure) | 12/13 | |
-| `NxFinnPresence` (10 states) + `NxWaveform` | motion 05 / 07 | «executing» renders as بانتظار التنفيذ المعتمد — advisory law kept |
-| `NxRegionPulse`, `NxTwinLink`, `NxTwinNode` | motion 05 | sector color exclusively from `regions.ts`; pulse only when live |
+| Component                                                                                                                                                                          | Spec           | Notes                                                              |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------ |
+| `NxButton` (10 variants: primary/secondary/ghost/glass/outline/danger/warning/success/runtime/executive)                                                                           | 01             | loading locks width + `aria-busy`; executive = the gold single     |
+| `NxVoiceButton` (idle/listening/recording)                                                                                                                                         | 01             | licensed breathing ring, `aria-pressed`                            |
+| `NxPanel` (layer accents, 3 density registers, header/footer anatomy)                                                                                                              | 07             |                                                                    |
+| `NxGlassCard`, `NxKpiCard`                                                                                                                                                         | 03             | four truths + simulation badge                                     |
+| `NxKpiNumber`, `NxDelta` (direction-aware + noise threshold), `NxStatusIndicator` (triple-coded), `NxAnimatedKpi` (count-up on change only, reduced-motion instant), `NxSparkline` | 05             |                                                                    |
+| `NxSkeleton`, `NxSpinner`, `NxProgress`                                                                                                                                            | 11             | RTL shimmer, Arabic verbs, determinate/indeterminate               |
+| `NxEmptyState` (three honest kinds), `NxErrorState` (recoverable/blocked + trace disclosure)                                                                                       | 12/13          |                                                                    |
+| `NxFinnPresence` (10 states) + `NxWaveform`                                                                                                                                        | motion 05 / 07 | «executing» renders as بانتظار التنفيذ المعتمد — advisory law kept |
+| `NxRegionPulse`, `NxTwinLink`, `NxTwinNode`                                                                                                                                        | motion 05      | sector color exclusively from `regions.ts`; pulse only when live   |
 
 ### Tests (`src/components/nx/nx.test.tsx`)
 

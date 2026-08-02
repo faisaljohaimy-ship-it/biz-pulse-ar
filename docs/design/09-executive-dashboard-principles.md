@@ -44,7 +44,7 @@ beyond that, numbers stop being read and start being wallpaper.
 
 ## Executive focus
 
-- **One screen, one question.** A dashboard that answers compliance *and* finance is two
+- **One screen, one question.** A dashboard that answers compliance _and_ finance is two
   dashboards sharing a nav entry.
 - Peripheral data auto-dims: when an alert elevates to hero, context panels drop to 72%
   content opacity until acknowledged — focus is managed, not hoped for.
@@ -54,12 +54,12 @@ beyond that, numbers stop being read and start being wallpaper.
 
 Decision anatomy on every dashboard (mirrors the Executive Intelligence decision model):
 
-| Zone | Content | Card |
-|---|---|---|
-| الوضع Situation | hero KPI/verdict | Executive Card |
-| الدليل Evidence | trends, comparisons | Analytics Cards |
-| التوصية Recommendation | FINN's advice + confidence | FINN Card |
-| البوابة Gate | human approval, gold-marked | FINN Card (gate variant) |
+| Zone                   | Content                     | Card                     |
+| ---------------------- | --------------------------- | ------------------------ |
+| الوضع Situation        | hero KPI/verdict            | Executive Card           |
+| الدليل Evidence        | trends, comparisons         | Analytics Cards          |
+| التوصية Recommendation | FINN's advice + confidence  | FINN Card                |
+| البوابة Gate           | human approval, gold-marked | FINN Card (gate variant) |
 
 The gate is always last in reading order and always explicit — the constitution's visual
 guarantee of the architecture's "no auto-execution" law.
@@ -67,12 +67,13 @@ guarantee of the architecture's "no auto-execution" law.
 ## Progressive disclosure — الكشف التدريجي
 
 Three depths, fixed interaction cost:
+
 1. **Glance** (0 clicks): verdicts, deltas, sparklines.
 2. **Inspect** (1 click): drawer/panel expansion with full chart, breakdown, history.
 3. **Investigate** (2 clicks): the Operations register — tables, logs, exports.
 
 Nothing requires > 2 clicks from glance to raw record. Nothing at depth 2–3 auto-surfaces
-to depth 1 except by *state* (an alert earning hero rank).
+to depth 1 except by _state_ (an alert earning hero rank).
 
 ## No clutter — بلا ضوضاء
 

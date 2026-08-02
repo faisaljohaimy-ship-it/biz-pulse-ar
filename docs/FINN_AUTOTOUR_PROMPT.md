@@ -67,7 +67,7 @@ no operator interaction required.
 ## 4 · Cue authoring rules
 
 - Every cue lives in `src/lib/finn/tour-cues.ts` — single source of truth.
-- `tSec` is the moment FINN *begins* introducing the window (not when
+- `tSec` is the moment FINN _begins_ introducing the window (not when
   she finishes the previous one).
 - Titles are short (≤ 4 words) so the chapter chip never wraps.
 - Routes must exist and be reachable to the current user's role. Broken

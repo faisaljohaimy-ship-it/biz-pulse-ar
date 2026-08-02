@@ -8,19 +8,19 @@ modification.**
 
 ## The skill record
 
-| Field | Type | Notes |
-|---|---|---|
-| `id` | kebab id | must equal `manifest.id` (identity law) |
-| `manifest` | Phase-1 `SkillManifest` | validated by the frozen schema, embedded verbatim |
-| `version` | strict semver | must equal `manifest.version`; timeline-governed |
-| `category` | registered category id | |
-| `requiredCapabilities` | id[] | every reference must resolve in the capability registry |
-| `dependencies` | `{target, necessity, binding}[]` | doc 05 semantics |
-| `executionContract` | see below | how the runtime may invoke it later |
-| `permissions` | 8-action enum[] | known vocabulary only |
-| `policies` | `{id, description, enforcement}[]` | `blocking` or `advisory` |
-| `health` / `lifecycle` | enums | same governance as capabilities |
-| `metadata` | structured block | Section 09 fields |
+| Field                  | Type                               | Notes                                                   |
+| ---------------------- | ---------------------------------- | ------------------------------------------------------- |
+| `id`                   | kebab id                           | must equal `manifest.id` (identity law)                 |
+| `manifest`             | Phase-1 `SkillManifest`            | validated by the frozen schema, embedded verbatim       |
+| `version`              | strict semver                      | must equal `manifest.version`; timeline-governed        |
+| `category`             | registered category id             |                                                         |
+| `requiredCapabilities` | id[]                               | every reference must resolve in the capability registry |
+| `dependencies`         | `{target, necessity, binding}[]`   | doc 05 semantics                                        |
+| `executionContract`    | see below                          | how the runtime may invoke it later                     |
+| `permissions`          | 8-action enum[]                    | known vocabulary only                                   |
+| `policies`             | `{id, description, enforcement}[]` | `blocking` or `advisory`                                |
+| `health` / `lifecycle` | enums                              | same governance as capabilities                         |
+| `metadata`             | structured block                   | Section 09 fields                                       |
 
 ## Execution contract
 

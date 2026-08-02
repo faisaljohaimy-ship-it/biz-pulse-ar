@@ -25,16 +25,16 @@ notifications (doc 09); zone/screen failures use this component.
 
 ## The eight error surfaces
 
-| Error | Treatment |
-|---|---|
-| **Network** | Warning-class; auto-retry with backoff + countdown chip ("محاولة خلال ٥ث"); stale data stays visible with a "قديم" chip rather than being torn down; recovery announces via SuccessNotice |
-| **Runtime** | Module failure zone: RuntimePanel renders error state with module name + last healthy time; "أعد تشغيل الوحدة" only for permitted roles, else "أبلغ التشغيل"; OS-level degradation adds the Banner |
+| Error             | Treatment                                                                                                                                                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Network**       | Warning-class; auto-retry with backoff + countdown chip ("محاولة خلال ٥ث"); stale data stays visible with a "قديم" chip rather than being torn down; recovery announces via SuccessNotice                                                           |
+| **Runtime**       | Module failure zone: RuntimePanel renders error state with module name + last healthy time; "أعد تشغيل الوحدة" only for permitted roles, else "أبلغ التشغيل"; OS-level degradation adds the Banner                                                  |
 | **Authorization** | Session-class failure. NEVER the word "authentication/unauthorized/token": neutral "انتهت الجلسة — استأنف من فضلك" + resume action; guest-viewable surfaces silently fall back to public/simulation data (doctrine: authed-first → public fallback) |
-| **Permission** | Role-class: "هذا الإجراء يتطلب صلاحية أعلى" + who to ask ("مدير المنطقة") ; the control renders disabled-with-reason tooltip BEFORE the attempt where known (prevention over error) |
-| **Knowledge** | Source unavailable: title + source name + freshness of cached copy if shown ("نسخة بتاريخ…"); never render half a document silently |
-| **Agent** | FINN/specialist failure: presence ring dims to 38%; honest line ("تعذّر إكمال التحليل") + retry; voice flow: FINN speaks one status line and returns to listening (guaranteed-reply doctrine) — the conversation never dies silently |
-| **System** | Whole-screen failure (route error boundary): full ErrorState with obsidian calm, trace id, "الرئيسية" + retry; TopNav stays functional — the OS never fully whites/blacks out |
-| **Unexpected** | The catch-all boundary: generic-but-calm ("حدث خطأ غير متوقع") + trace id + retry; auto-reported; NEVER exposes stack traces, raw English, or library names to the executive |
+| **Permission**    | Role-class: "هذا الإجراء يتطلب صلاحية أعلى" + who to ask ("مدير المنطقة") ; the control renders disabled-with-reason tooltip BEFORE the attempt where known (prevention over error)                                                                 |
+| **Knowledge**     | Source unavailable: title + source name + freshness of cached copy if shown ("نسخة بتاريخ…"); never render half a document silently                                                                                                                 |
+| **Agent**         | FINN/specialist failure: presence ring dims to 38%; honest line ("تعذّر إكمال التحليل") + retry; voice flow: FINN speaks one status line and returns to listening (guaranteed-reply doctrine) — the conversation never dies silently                |
+| **System**        | Whole-screen failure (route error boundary): full ErrorState with obsidian calm, trace id, "الرئيسية" + retry; TopNav stays functional — the OS never fully whites/blacks out                                                                       |
+| **Unexpected**    | The catch-all boundary: generic-but-calm ("حدث خطأ غير متوقع") + trace id + retry; auto-reported; NEVER exposes stack traces, raw English, or library names to the executive                                                                        |
 
 ## Laws
 

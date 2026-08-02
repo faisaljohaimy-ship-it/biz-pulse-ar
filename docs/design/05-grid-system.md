@@ -7,7 +7,7 @@
 ## The 8pt Grid — قانون الثمانية
 
 Every dimension in NEXIOS — spacing, sizing, radii, row heights — is a multiple of
-**8px**, with **4px** permitted only *inside* components (icon-to-label gaps, chip
+**8px**, with **4px** permitted only _inside_ components (icon-to-label gaps, chip
 padding). Reasoning: one modular unit makes every screen rhythmically identical, makes
 handoff arithmetic trivial, and scales cleanly across densities (8 → 8/16/24… survives
 2× and 1.5× displays without half-pixels).
@@ -21,20 +21,21 @@ default panel padding (Command register); `space-32` in Boardroom.
 The grid is column-based, RTL-native (column 1 is the **rightmost**), with fixed gutters
 of 24px (16px on mobile):
 
-| Tier | Viewport width | Columns | Margin | Container behavior |
-|---|---|---|---|---|
-| **Mobile** | < 640px | 4 | 16px | fluid, single column stacks |
-| **Tablet** | 640–1023px | 8 | 24px | fluid |
-| **Desktop** | 1024–1535px | 12 | 32px | fluid to max 1440px |
-| **Ultra-wide** | 1536–2559px | 12 | 48px | **content max 1600px, centered**; ambient strata may bleed full width |
-| **4K / Wall** | ≥ 2560px | 16 | 64px | Boardroom register; content max 2240px |
+| Tier           | Viewport width | Columns | Margin | Container behavior                                                    |
+| -------------- | -------------- | ------- | ------ | --------------------------------------------------------------------- |
+| **Mobile**     | < 640px        | 4       | 16px   | fluid, single column stacks                                           |
+| **Tablet**     | 640–1023px     | 8       | 24px   | fluid                                                                 |
+| **Desktop**    | 1024–1535px    | 12      | 32px   | fluid to max 1440px                                                   |
+| **Ultra-wide** | 1536–2559px    | 12      | 48px   | **content max 1600px, centered**; ambient strata may bleed full width |
+| **4K / Wall**  | ≥ 2560px       | 16      | 64px   | Boardroom register; content max 2240px                                |
 
 Rules:
+
 - Panels span whole columns; nothing sits between columns.
 - The hero (Chapter 02 focus tier 1) spans ≥ 6 of 12 columns on desktop.
 - Ultra-wide never stretches reading content past 1600px — extra width goes to margins
   and the ambient/holographic stratum, not to longer lines (Chapter 04 line-length law).
-- 16-column 4K exists for the boardroom wall: it hosts *more panels*, never *wider text*.
+- 16-column 4K exists for the boardroom wall: it hosts _more panels_, never _wider text_.
 
 ## Vertical rhythm
 

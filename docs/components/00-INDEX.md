@@ -8,7 +8,7 @@
 
 The official NEXIOS Enterprise Component Library. Every screen in the system — current
 and future — is composed **only** from components specified here. One visual language,
-one operating system. This library *instantiates* the Design Constitution: where the
+one operating system. This library _instantiates_ the Design Constitution: where the
 Constitution defines law (colors, depth, grid, type), this library defines the parts
 that obey it. Nothing here overrides the Constitution; a conflict is a defect in this
 library.
@@ -19,25 +19,25 @@ against these specs.
 
 ## Library map
 
-| Doc | Category | Components |
-|---|---|---|
-| [NAMING-CONVENTION](./NAMING-CONVENTION.md) | Naming | prefixes, props, files, tokens |
-| [COMPONENT-STANDARDS](./COMPONENT-STANDARDS.md) | Standards | the contract every component signs |
-| [01](./01-buttons.md) | Button System | 16 buttons |
-| [02](./02-inputs.md) | Input System | 14 inputs |
-| [03](./03-cards.md) | Card Library | 13 cards |
-| [04](./04-tables.md) | Table System | 7 tables + behaviors |
-| [05](./05-kpi.md) | KPI Components | 10 indicators |
-| [06](./06-navigation.md) | Navigation | 8 navigators |
-| [07](./07-panels.md) | Panels | 9 panels |
-| [08](./08-modals.md) | Modals | 7 overlays |
-| [09](./09-notifications.md) | Notifications | 8 messengers |
-| [10](./10-timeline.md) | Timeline | 5 timelines |
-| [11](./11-loading.md) | Loading System | 7 waiting states |
-| [12](./12-empty-states.md) | Empty States | premium emptiness |
-| [13](./13-error-states.md) | Error States | 8 failure surfaces |
-| [14](./14-tokens.md) | Component Tokens | the 9 token ladders |
-| [15](./15-tailwind-mapping.md) | Tailwind Mapping | theme, utilities, dark/RTL rules |
+| Doc                                             | Category         | Components                         |
+| ----------------------------------------------- | ---------------- | ---------------------------------- |
+| [NAMING-CONVENTION](./NAMING-CONVENTION.md)     | Naming           | prefixes, props, files, tokens     |
+| [COMPONENT-STANDARDS](./COMPONENT-STANDARDS.md) | Standards        | the contract every component signs |
+| [01](./01-buttons.md)                           | Button System    | 16 buttons                         |
+| [02](./02-inputs.md)                            | Input System     | 14 inputs                          |
+| [03](./03-cards.md)                             | Card Library     | 13 cards                           |
+| [04](./04-tables.md)                            | Table System     | 7 tables + behaviors               |
+| [05](./05-kpi.md)                               | KPI Components   | 10 indicators                      |
+| [06](./06-navigation.md)                        | Navigation       | 8 navigators                       |
+| [07](./07-panels.md)                            | Panels           | 9 panels                           |
+| [08](./08-modals.md)                            | Modals           | 7 overlays                         |
+| [09](./09-notifications.md)                     | Notifications    | 8 messengers                       |
+| [10](./10-timeline.md)                          | Timeline         | 5 timelines                        |
+| [11](./11-loading.md)                           | Loading System   | 7 waiting states                   |
+| [12](./12-empty-states.md)                      | Empty States     | premium emptiness                  |
+| [13](./13-error-states.md)                      | Error States     | 8 failure surfaces                 |
+| [14](./14-tokens.md)                            | Component Tokens | the 9 token ladders                |
+| [15](./15-tailwind-mapping.md)                  | Tailwind Mapping | theme, utilities, dark/RTL rules   |
 
 ## How specs are written
 

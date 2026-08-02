@@ -19,11 +19,11 @@ tick source; the runtime never reads wall time.**
 
 Per-agent counters and latency series:
 
-| Field | Meaning |
-|---|---|
-| `started / finished / failed` | invocation counters |
-| `latencies` | every measured invocation duration |
-| `meanLatency` / `maxLatency` | derived at snapshot time |
+| Field                         | Meaning                            |
+| ----------------------------- | ---------------------------------- |
+| `started / finished / failed` | invocation counters                |
+| `latencies`                   | every measured invocation duration |
+| `meanLatency` / `maxLatency`  | derived at snapshot time           |
 
 Failures record latency too — a slow failure is still a measured failure.
 
@@ -44,11 +44,11 @@ failed invocation, tied to the failing span.
 
 ## Correlation model (Section 07 tie-in)
 
-| Id | Scope | Purpose |
-|---|---|---|
-| `correlationId` | whole execution chain | one story across all children |
-| `traceId` | one context / one span | timing + tree structure |
-| `auditId` | one context | joins the audit trail |
+| Id              | Scope                  | Purpose                       |
+| --------------- | ---------------------- | ----------------------------- |
+| `correlationId` | whole execution chain  | one story across all children |
+| `traceId`       | one context / one span | timing + tree structure       |
+| `auditId`       | one context            | joins the audit trail         |
 
 Exporters (OTLP etc.) are later-phase adapters over these in-memory
 collectors — the shapes are already exporter-friendly.

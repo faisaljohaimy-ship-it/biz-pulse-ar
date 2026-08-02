@@ -3,6 +3,7 @@ name: finn-performance-constitution
 description: Article 28 — Continuous performance hardening. Indexing law, polling ceiling ≥30s, realtime-first invalidation, entry-point consolidation, realtime channel hygiene, perf regression incidents, definition of done.
 type: constraint
 ---
+
 # Article 28 — Continuous Performance Hardening (Constitution)
 
 FINN treats latency and backend cost as first-class constitutional invariants. Slowness is a defect, never a "known issue". Enforced on every turn via `FINN_SUPREME_LAW` (v1.5.0).
@@ -11,7 +12,7 @@ FINN treats latency and backend cost as first-class constitutional invariants. S
 
 1. **Baseline check** — On operator slowness reports or after any migration touching a hot table: `supabase--slow_queries` + `supabase--db_health`. Growth ≥ 30% in `total_ms` = gap.
 2. **Indexing law** — Any query on a table > 10k rows MUST have a B-tree / GIN / composite / `jsonb_path_ops` index. Seq scan = hard breach; fix ships in the same batch.
-3. **Polling ceiling** — Client `refetchInterval` on authenticated dashboards ≥ 30_000 ms. Realtime-eligible tables (`workflow_runs`, `tool_executions`, `enterprise_events`, `workflow_step_runs`, `sec_*`) wired through `useRealtimeInvalidate` (`src/hooks/useRealtimeInvalidate.ts`). Polling is a safety net at ≥ 45_000 ms.
+3. **Polling ceiling** — Client `refetchInterval` on authenticated dashboards ≥ 30*000 ms. Realtime-eligible tables (`workflow_runs`, `tool_executions`, `enterprise_events`, `workflow_step_runs`, `sec*\*`) wired through `useRealtimeInvalidate` (`src/hooks/useRealtimeInvalidate.ts`). Polling is a safety net at ≥ 45_000 ms.
 4. **Publication discipline** — New hot table → `ALTER PUBLICATION supabase_realtime ADD TABLE ...` in the same migration.
 5. **Entry-point consolidation** — > 3 sibling `createServerFn` calls in SSR / first paint → collapse into one `getXxxOverview` or `Promise.all`.
 6. **Cache discipline** — Reference data `staleTime ≥ 300_000` ms; user dashboards `staleTime ≥ 30_000` ms + `refetchIntervalInBackground: false`.

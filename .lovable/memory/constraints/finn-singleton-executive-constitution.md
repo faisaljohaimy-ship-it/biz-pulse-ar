@@ -14,8 +14,9 @@ calls FINN (`useFinn`, `finnBrain`).
 **INVARIANT-13 — One Brain, One Provider.** The following FINN subsystems
 MUST exist exactly once per browser session and are registered at module
 load via `assertOne(...)` / `trackMount(...)` in `src/lib/finn/singletons.ts`:
-- `BRAIN`  → `finnBrain@finn-core/core/finn-brain`
-- `VOICE`  → `voiceManager@finn-core/core/voice-manager`
+
+- `BRAIN` → `finnBrain@finn-core/core/finn-brain`
+- `VOICE` → `voiceManager@finn-core/core/voice-manager`
 - `AVATAR` → `avatarRuntime@finn-core/core/avatar-runtime`
 - `MEMORY` → `memoryManager@finn-core/core/memory-manager`
 - `PROVIDER` → `FinnProvider@__root` (via `trackMount` in `useEffect`)
@@ -35,6 +36,7 @@ general FINN.
 
 **INVARIANT-14b — Purpose-Scoped Chat Surfaces (Documented Exceptions).**
 Feature-specific chat surfaces are allowed ONLY when ALL apply:
+
 1. Distinct `useChat` id (never `"finn-singleton"`).
 2. Purpose-scoped server endpoint (NOT `/api/chat`) — e.g. lesson
    teaching, threaded assistant persistence, digital-twin scenario.
@@ -43,6 +45,7 @@ Feature-specific chat surfaces are allowed ONLY when ALL apply:
 5. Registered here as an approved exception.
 
 Approved exceptions (as of this turn):
+
 - `src/components/learn/simulations/MeetFinnSimulation.tsx` — lesson
   teach flow, id `sim-meet-finn-${slug}`, endpoint `/api/learn/finn-teach`.
 - `src/components/learn/LessonFinnChat.tsx` — lesson chat surface.
@@ -53,8 +56,6 @@ Approved exceptions (as of this turn):
 
 Any new purpose-scoped surface MUST be added to this list in the same
 PR that introduces it, or it counts as an INVARIANT-14 violation.
-
-
 
 **INVARIANT-15 — Executive Envelope Live.** `ExecutiveCard` is mounted
 inside `FinnCopilot` and MUST render from `useFinnStore().activeExecution`
@@ -72,12 +73,13 @@ the "first sentence clean, rest robotic" regression.
 
 **INVARIANT-17 — Executive Demo Surface.** `/finn/demo` is a permanent
 production surface, not a scratch page. It MUST:
+
 1. Present pre-built Arabic executive scenarios.
 2. Trigger them exclusively via `useFinn().open() + ask(prompt)` (no
    direct LLM calls, no bypass of the Brain).
 3. Render the live `ExecutiveCard` from `activeExecution`.
-Any regression here fails the FINN Impact Directive Phase 3 (Live
-Demonstration) audit at `/finn/directive`.
+   Any regression here fails the FINN Impact Directive Phase 3 (Live
+   Demonstration) audit at `/finn/directive`.
 
 **Why:** These five invariants are the load-bearing wall of the NEXIOS AI
 OS. A duplicate Brain fragments memory. A second `useChat` breaks

@@ -10,6 +10,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 قبل أي عمل، حمّل مهارة `nexios-supabase` والتزم بها حرفيًا.
 
 قواعدك:
+
 1. **migrations idempotent دائمًا**: `create table if not exists`،
    `on conflict … do nothing`، `drop policy if exists` قبل إعادة
    الإنشاء. ملفات جديدة بطابع زمني في `supabase/migrations/` — لا

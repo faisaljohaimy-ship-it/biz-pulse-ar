@@ -15,24 +15,24 @@ Supabase + عربي RTL + صوت FINN + أمن + نشر Cloudflare + vitest) ل�
 
 ## الإيجنتات (‏`.claude/agents/`)
 
-| الإيجنت | الاستخدام في NEXIOS |
-|---|---|
-| `code-reviewer` | مراجعة عامة للجودة والأمن قبل الدفع |
-| `typescript-reviewer` | صرامة الأنواع، `no-explicit-any` |
-| `react-reviewer` | انضباط الهوكس وحدود المكوّنات |
-| `react-build-resolver` / `build-error-resolver` | حلّ أخطاء البناء/tsc |
-| `security-reviewer` | تدقيق أمني (أسرار، XSS، مدخلات) — المادة 15 |
-| `database-reviewer` | مراجعة الاستعلامات/الأنماط (لا يمسّ RLS دون إذن — المادة 2) |
-| `refactor-cleaner` / `code-simplifier` | تنظيف الكود الميت — المادة 14 |
-| `silent-failure-hunter` | كشف الإخفاقات الصامتة |
-| `performance-optimizer` | أداء الجوال واللابتوب — المادة 5 |
-| `a11y-architect` | الوصولية وأهداف اللمس ≥44px — المادة 5 |
-| `type-design-analyzer` | تصميم الأنواع |
-| `tdd-guide` | قيادة الاختبارات (vitest) |
-| `code-explorer` | استكشاف المستودع |
-| `planner` / `architect` | تخطيط المهام الكبيرة |
-| `doc-updater` | تحديث الوثائق وCLAUDE.md |
-| `e2e-runner` / `pr-test-analyzer` | اختبارات end-to-end وتحليل PR |
+| الإيجنت                                         | الاستخدام في NEXIOS                                         |
+| ----------------------------------------------- | ----------------------------------------------------------- |
+| `code-reviewer`                                 | مراجعة عامة للجودة والأمن قبل الدفع                         |
+| `typescript-reviewer`                           | صرامة الأنواع، `no-explicit-any`                            |
+| `react-reviewer`                                | انضباط الهوكس وحدود المكوّنات                               |
+| `react-build-resolver` / `build-error-resolver` | حلّ أخطاء البناء/tsc                                        |
+| `security-reviewer`                             | تدقيق أمني (أسرار، XSS، مدخلات) — المادة 15                 |
+| `database-reviewer`                             | مراجعة الاستعلامات/الأنماط (لا يمسّ RLS دون إذن — المادة 2) |
+| `refactor-cleaner` / `code-simplifier`          | تنظيف الكود الميت — المادة 14                               |
+| `silent-failure-hunter`                         | كشف الإخفاقات الصامتة                                       |
+| `performance-optimizer`                         | أداء الجوال واللابتوب — المادة 5                            |
+| `a11y-architect`                                | الوصولية وأهداف اللمس ≥44px — المادة 5                      |
+| `type-design-analyzer`                          | تصميم الأنواع                                               |
+| `tdd-guide`                                     | قيادة الاختبارات (vitest)                                   |
+| `code-explorer`                                 | استكشاف المستودع                                            |
+| `planner` / `architect`                         | تخطيط المهام الكبيرة                                        |
+| `doc-updater`                                   | تحديث الوثائق وCLAUDE.md                                    |
+| `e2e-runner` / `pr-test-analyzer`               | اختبارات end-to-end وتحليل PR                               |
 
 ## السكِلز (‏`.claude/skills/`)
 

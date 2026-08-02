@@ -1,17 +1,10 @@
 [
   {
     "viewport": "mobile-390",
-    "size": [
-      364,
-      521
-    ],
+    "size": [364, 521],
     "tone": {
       "ok": true,
-      "mean_rgb": [
-        11.9,
-        29.3,
-        46.3
-      ],
+      "mean_rgb": [11.9, 29.3, 46.3],
       "mean_luma": 26.85,
       "ceiling": 70.0,
       "cool_margin_required": 4.0
@@ -24,17 +17,10 @@
   },
   {
     "viewport": "laptop-1280",
-    "size": [
-      480,
-      621
-    ],
+    "size": [480, 621],
     "tone": {
       "ok": true,
-      "mean_rgb": [
-        11.4,
-        28.1,
-        44.9
-      ],
+      "mean_rgb": [11.4, 28.1, 44.9],
       "mean_luma": 25.75,
       "ceiling": 70.0,
       "cool_margin_required": 4.0

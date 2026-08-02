@@ -21,16 +21,16 @@ Performance optimization patterns for React 18/19 and Next.js, adapted from [Ver
 
 ## Priority Index
 
-| Priority | Category | Prefix | When it matters |
-|---|---|---|---|
-| 1 — CRITICAL | Eliminating Waterfalls | `async-` | Anytime `await` is followed by independent `await` |
-| 2 — CRITICAL | Bundle Size Optimization | `bundle-` | First-load JS, route-level imports, third-party libs |
-| 3 — HIGH | Server-Side Performance | `server-` | RSC, Server Actions, API routes, SSR |
-| 4 — MEDIUM-HIGH | Client-Side Data Fetching | `client-` | SWR / TanStack Query / raw `fetch` in hooks |
-| 5 — MEDIUM | Re-render Optimization | `rerender-` | High-frequency state updates, parent-child fan-out |
-| 6 — MEDIUM | Rendering Performance | `rendering-` | Long lists, animations, hydration |
-| 7 — LOW-MEDIUM | JavaScript Performance | `js-` | Hot loops, frequent allocations |
-| 8 — LOW | Advanced Patterns | `advanced-` | Effect-event integration, stable refs |
+| Priority        | Category                  | Prefix       | When it matters                                      |
+| --------------- | ------------------------- | ------------ | ---------------------------------------------------- |
+| 1 — CRITICAL    | Eliminating Waterfalls    | `async-`     | Anytime `await` is followed by independent `await`   |
+| 2 — CRITICAL    | Bundle Size Optimization  | `bundle-`    | First-load JS, route-level imports, third-party libs |
+| 3 — HIGH        | Server-Side Performance   | `server-`    | RSC, Server Actions, API routes, SSR                 |
+| 4 — MEDIUM-HIGH | Client-Side Data Fetching | `client-`    | SWR / TanStack Query / raw `fetch` in hooks          |
+| 5 — MEDIUM      | Re-render Optimization    | `rerender-`  | High-frequency state updates, parent-child fan-out   |
+| 6 — MEDIUM      | Rendering Performance     | `rendering-` | Long lists, animations, hydration                    |
+| 7 — LOW-MEDIUM  | JavaScript Performance    | `js-`        | Hot loops, frequent allocations                      |
+| 8 — LOW         | Advanced Patterns         | `advanced-`  | Effect-event integration, stable refs                |
 
 ## 1. Eliminating Waterfalls (CRITICAL)
 
@@ -83,11 +83,7 @@ const posts = await getPosts(id);
 const followers = await getFollowers(id);
 
 // CORRECT — parallel
-const [user, posts, followers] = await Promise.all([
-  getUser(id),
-  getPosts(id),
-  getFollowers(id),
-]);
+const [user, posts, followers] = await Promise.all([getUser(id), getPosts(id), getFollowers(id)]);
 ```
 
 ### Partial dependencies — start early, await late
@@ -323,11 +319,11 @@ const Heavy = memo(function Heavy({ items }: { items: Item[] }) {
 
 ```tsx
 // INCORRECT — new array each render breaks memo
-<List items={items ?? []} />
+<List items={items ?? []} />;
 
 // CORRECT
 const EMPTY: Item[] = [];
-<List items={items ?? EMPTY} />
+<List items={items ?? EMPTY} />;
 ```
 
 ### Primitive dependencies in effects
@@ -433,7 +429,10 @@ Transforming a `<div>` wrapper around an SVG is GPU-accelerated; transforming th
 ### `content-visibility: auto` for long lists
 
 ```css
-.row { content-visibility: auto; contain-intrinsic-size: auto 80px; }
+.row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 80px;
+}
 ```
 
 Browser skips offscreen rendering — major win for lists with hundreds of rows.
@@ -443,7 +442,12 @@ Browser skips offscreen rendering — major win for lists with hundreds of rows.
 ```tsx
 const STATIC_HEADER = <h1>Title</h1>;
 function Page() {
-  return <>{STATIC_HEADER}<Body /></>;
+  return (
+    <>
+      {STATIC_HEADER}
+      <Body />
+    </>
+  );
 }
 ```
 
@@ -471,10 +475,14 @@ React 19 `<Activity mode="visible|hidden">` keeps tree state and effects mounted
 
 ```tsx
 // INCORRECT — `0` renders as text node
-{count && <Badge>{count}</Badge>}
+{
+  count && <Badge>{count}</Badge>;
+}
 
 // CORRECT
-{count > 0 ? <Badge>{count}</Badge> : null}
+{
+  count > 0 ? <Badge>{count}</Badge> : null;
+}
 ```
 
 ### `useTransition` for loading states
@@ -522,7 +530,9 @@ For stable callbacks passed to memoized children:
 
 ```tsx
 const handlerRef = useRef(handler);
-useEffect(() => { handlerRef.current = handler; });
+useEffect(() => {
+  handlerRef.current = handler;
+});
 const stable = useCallback((arg) => handlerRef.current(arg), []);
 ```
 
@@ -553,13 +563,13 @@ When the project ships React Compiler, demote `rerender-*` manual memoization ru
 
 ## Lighthouse / Web Vitals Mapping
 
-| Metric | Most relevant categories |
-|---|---|
-| **LCP** (Largest Contentful Paint) | Waterfalls, Bundle Size, Resource Hints |
-| **INP** (Interaction to Next Paint) | Re-render, Rendering, JavaScript |
-| **CLS** (Cumulative Layout Shift) | Rendering (Suspense placement, image dimensions) |
-| **TBT** (Total Blocking Time) | Bundle Size, JavaScript, Defer Third-Party |
-| **FID** (legacy) | Bundle Size, Hydration |
+| Metric                              | Most relevant categories                         |
+| ----------------------------------- | ------------------------------------------------ |
+| **LCP** (Largest Contentful Paint)  | Waterfalls, Bundle Size, Resource Hints          |
+| **INP** (Interaction to Next Paint) | Re-render, Rendering, JavaScript                 |
+| **CLS** (Cumulative Layout Shift)   | Rendering (Suspense placement, image dimensions) |
+| **TBT** (Total Blocking Time)       | Bundle Size, JavaScript, Defer Third-Party       |
+| **FID** (legacy)                    | Bundle Size, Hydration                           |
 
 ## Related
 

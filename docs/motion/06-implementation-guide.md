@@ -8,12 +8,12 @@ here is implemented in this phase.**
 
 ## Division of labor
 
-| Use CSS (transitions/keyframes) | Use Framer Motion |
-|---|---|
-| Hover/press/focus micro-motion | Presence choreography (mount/unmount with exit animations) |
-| Loops (breathe, shimmer, pulse, ticker) | Layout animations (height auto, shared-element continuity) |
-| Update ticks, sweeps, flashes | Interruptible gestures (drag, sheet dismiss) with NX_SPRINGS |
-| Everything expressible with tokens + pseudo-states | Staggered orchestration (list mounts, pipeline packets) |
+| Use CSS (transitions/keyframes)                    | Use Framer Motion                                            |
+| -------------------------------------------------- | ------------------------------------------------------------ |
+| Hover/press/focus micro-motion                     | Presence choreography (mount/unmount with exit animations)   |
+| Loops (breathe, shimmer, pulse, ticker)            | Layout animations (height auto, shared-element continuity)   |
+| Update ticks, sweeps, flashes                      | Interruptible gestures (drag, sheet dismiss) with NX_SPRINGS |
+| Everything expressible with tokens + pseudo-states | Staggered orchestration (list mounts, pipeline packets)      |
 
 Rule: reach for CSS first — it's cheaper, SSR-safe and token-native. Framer Motion earns
 its bundle cost only for exit/layout/gesture jobs CSS can't do. **AriaCopilot/voice
@@ -25,18 +25,40 @@ are the cautionary tale).
 
 ```css
 /* tokens only — raw ms/curves are findings */
-.nx-hover-surface { transition: background var(--nx-anim-fast) var(--nx-ease-out),
-                                border-color var(--nx-anim-fast) var(--nx-ease-out); }
+.nx-hover-surface {
+  transition:
+    background var(--nx-anim-fast) var(--nx-ease-out),
+    border-color var(--nx-anim-fast) var(--nx-ease-out);
+}
 
 /* licensed loop, GPU-friendly properties only */
-@keyframes nx-breathe { 0%,100% { opacity:.6 } 50% { opacity:1 } }
-.nx-presence { animation: nx-breathe var(--nx-loop-breathe) var(--nx-ease-inout) infinite; }
+@keyframes nx-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.nx-presence {
+  animation: nx-breathe var(--nx-loop-breathe) var(--nx-ease-inout) infinite;
+}
 
 /* reduced motion — token remap, one place */
 @media (prefers-reduced-motion: reduce) {
-  :root { --nx-anim-micro:1ms; --nx-anim-fast:1ms; --nx-anim-base:1ms;
-          --nx-anim-slow:1ms; --nx-anim-cinematic:1ms; }
-  .nx-presence, .nx-shimmer, .nx-ticker { animation-play-state: paused; }
+  :root {
+    --nx-anim-micro: 1ms;
+    --nx-anim-fast: 1ms;
+    --nx-anim-base: 1ms;
+    --nx-anim-slow: 1ms;
+    --nx-anim-cinematic: 1ms;
+  }
+  .nx-presence,
+  .nx-shimmer,
+  .nx-ticker {
+    animation-play-state: paused;
+  }
 }
 ```
 
@@ -45,17 +67,20 @@ are the cautionary tale).
 ```tsx
 // variants mirror spec tables 1:1 (review diffs them)
 const panelVariants = {
-  hidden:  { opacity: 0, y: 4 },
+  hidden: { opacity: 0, y: 4 },
   visible: { opacity: 1, y: 0, transition: NX_SPRINGS.panel },
-  exit:    { opacity: 0, transition: { duration: 0.15, ease: NX_EASE_OUT } },
+  exit: { opacity: 0, transition: { duration: 0.15, ease: NX_EASE_OUT } },
 };
 
 // stagger law encoded once, reused
 const listVariants = { visible: { transition: { staggerChildren: 0.03 } } };
 
 // pipeline packet: transform-only travel
-<motion.div style={{ offsetPath: `path("${channel}")` }}
-  animate={{ offsetDistance: "100%" }} transition={{ duration: 0.3, ease: "linear" }} />
+<motion.div
+  style={{ offsetPath: `path("${channel}")` }}
+  animate={{ offsetDistance: "100%" }}
+  transition={{ duration: 0.3, ease: "linear" }}
+/>;
 ```
 
 - `AnimatePresence` for every exit spec'd in docs 04–05.

@@ -6,6 +6,7 @@ description: طبقة بيانات NEXIOS على Supabase — تُستدعى ق�
 # NEXIOS Supabase — طبقة البيانات
 
 ## المشروع
+
 - المشروع النشط الذي صرّح به المالك: `jhutlofapjfjjeajawie`.
 - `supabase/config.toml` صار يحمل المعرّف نفسه (صُحّح 2026-07-30 بعد أن
   ظلّ يحمل `jhutlofapjfjjeajawie` القديم). ومع ذلك يبقى `VITE_SUPABASE_URL`
@@ -15,6 +16,7 @@ description: طبقة بيانات NEXIOS على Supabase — تُستدعى ق�
   الإدارية فقط.
 
 ## مخطط HCIS الفعلي (migration `20260719200000_hcis_framework_tables_seed_anon.sql`)
+
 - `hcis_directives` — 21 صفًا: `code` (SEC-01…SEC-19, SEC-RC, SAF-GEN)،
   `category`، `name_ar`، `name_en`، `scope_ar`، `issue_note_ar`، `sort_order`.
 - `hcis_sectors` — 13 قطاعًا.
@@ -27,33 +29,35 @@ description: طبقة بيانات NEXIOS على Supabase — تُستدعى ق�
   `00000000-0000-0000-0000-00000000d360`، مراجع `PTW-SIM-*`).
 
 ## RLS
+
 - جداول HCIS وPTW العرضية: `select` مفتوح لـ anon + authenticated.
 - `aria_knowledge` خلف المصادقة **حصريًا** — لا يُفتح لـ anon أبدًا.
 - الكتابات دائمًا خلف `requireSupabaseAuth`؛ القراءات العرضية خلف
   `optionalSupabaseAuth` (لا Unauthorized للزائر أبدًا).
 
 ## قواعد الـ migrations
+
 - **idempotent دائمًا**: `create table if not exists`،
   `on conflict … do nothing`، `drop policy if exists` قبل الإنشاء.
 - لا تمس بيانات قائمة؛ الإضافة فقط. كل صفوف العرض `is_simulation = true`.
 
 ## نمط القراءة المعتمد («بيانات لا تفرغ» — CLAUDE.md)
+
 ```ts
 // دالة خادم عرضية — لا تعلّق ولا تفرغ ولا ترفض الزائر:
 export const getXOverview = createServerFn({ method: "GET" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    const { resilient, buildXSimulation } = await import(
-      "@/lib/exec/showcase-simulation.server"
-    );
+    const { resilient, buildXSimulation } = await import("@/lib/exec/showcase-simulation.server");
     return resilient(
       "x-overview",
-      () => fetchX(context.supabase),      // القراءة الحية
-      (r) => r.rows.length === 0,          // فارغة؟
-      () => buildXSimulation(Date.now()),  // المحاكاة المرجعية
+      () => fetchX(context.supabase), // القراءة الحية
+      (r) => r.rows.length === 0, // فارغة؟
+      () => buildXSimulation(Date.now()), // المحاكاة المرجعية
     ); // سقف 4 ثوانٍ مدمج — الصفوف الحية تفوز متى وصلت
   });
 ```
+
 - في العميل: أي `useQuery` قراءة عرض تُسابق 4 ثوانٍ (انظر
   `makeHooks.useList` في `src/lib/enterprise-domains.ts`) ولا تُقفل
   بـ `enabled: !!user` — البوابة الوحيدة `!authLoading`.
