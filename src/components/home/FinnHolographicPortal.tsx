@@ -1,19 +1,13 @@
 /**
- * FinnHolographicPortal — the executive-grade holographic entry to FINN.
+ * FinnHolographicPortal — the executive entry to FINN.
  *
- * Layout:
- *  - Face-first portrait background (object-contain-top) so the guard's
- *    face is always fully visible.
- *  - "FINN" title floats directly above the head.
- *  - Holographic ring is centred around the face; the mic "Talk now"
- *    button lives INSIDE that ring as the primary CTA.
- *  - Remaining copy + status + secondary CTA sit at the bottom.
+ * Static by decree (owner directive): no motion, no animation inside the
+ * card. FINN is a small, centred portrait; the "FINN" wordmark is pinned
+ * to the card ceiling; the card height matches the sibling region cards.
  */
 import { Link } from "@tanstack/react-router";
 import { Mic, ArrowLeft, ArrowRight } from "lucide-react";
-import { BRAND_ASSISTANT } from "@/lib/domain";
-import { FinnLiveHologram } from "./FinnLiveHologram";
-import { FinnUnifiedBackground } from "./FinnUnifiedBackground";
+import finnCharacter from "@/assets/finn-character.png.asset.json";
 
 export type FinnVisualState = "idle" | "listening" | "thinking" | "speaking" | "offline";
 
@@ -38,113 +32,63 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
     <section
       aria-label={ar ? "بوابة FINN التنفيذية" : "FINN executive portal"}
       data-testid="finn-portal-card"
-      className="finn-portal relative flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl bg-[#061525] sm:min-h-[620px]"
+      data-static="true"
+      className="finn-portal finn-portal--static relative flex h-full flex-col overflow-hidden rounded-2xl bg-[#061525] p-4"
     >
-      {/* Unified FINN backdrop — single source of truth (see FinnUnifiedBackground) */}
-      <FinnUnifiedBackground />
-
-      {/* لوح البريق الزجاجي — فوق كل شيء وشفاف تمامًا في وسطه، فلا يحجب
-          الهولوغرام الحيّ. تنسيقه في styles.css (.finn-glass-sheen). */}
-      <div aria-hidden className="finn-glass-sheen" />
-
-      {/* Portrait — face-first, fully visible, centred */}
-      {/* Live holographic FINN — WebGL scene, not a static image */}
-      <FinnLiveHologram
-        state={state === "offline" ? "offline" : state}
-        ariaLabel={
-          ar
-            ? `${BRAND_ASSISTANT.nameAr}، المساعد التنفيذي الذكي للأمن الصناعي، ${label.ar}`
-            : `${BRAND_ASSISTANT.nameEn}, executive industrial security AI assistant, ${label.en}`
-        }
-      />
-
-      {/* Glass vignettes/scanlines removed per request — keep the backdrop clean */}
-
       {/* FINN wordmark — pinned to the card ceiling, always centred */}
-      <div className="finn-wordmark-bar pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col items-center px-4 pt-3 sm:pt-4">
-        <h2
-          className="finn-wordmark text-center text-2xl font-black leading-none tracking-[0.32em] text-white sm:text-3xl md:text-4xl"
-          style={{
-            textShadow:
-              "0 2px 12px rgba(0,0,0,0.95), 0 0 20px rgba(34,211,238,0.7), 0 0 40px rgba(34,211,238,0.45)",
-          }}
-        >
-          FINN
-        </h2>
-      </div>
+      <h2
+        className="finn-wordmark relative z-10 text-center text-xl font-black leading-none tracking-[0.32em] text-white sm:text-2xl"
+        style={{ textShadow: "0 2px 12px rgba(0,0,0,0.9), 0 0 18px rgba(34,211,238,0.55)" }}
+      >
+        FINN
+      </h2>
 
-      {/* Center — mic CTA over the live hologram; old holographic brackets removed */}
-      <div className="relative z-10 flex flex-1 items-center justify-center px-4 pt-12 sm:pt-14">
-        <div className="relative mx-auto aspect-square w-full max-w-[360px] sm:max-w-[420px]">
-          {/* Mic "Talk now" CTA — sits over the face */}
-          <Link
-            to="/finn"
-            search={{ mode: "voice" } as never}
-            aria-label={ar ? "تحدث الآن مع FINN" : "Talk to FINN now"}
-            className="nx-holo-icon group absolute left-1/2 top-1/2 z-20 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-1 rounded-full text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200 sm:h-24 sm:w-24"
-          >
-            <Mic className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden />
-            <span className="text-[12px] font-bold tracking-wider sm:text-[12px]">
-              {ar ? "تحدث الآن" : "TALK NOW"}
-            </span>
-          </Link>
-        </div>
+      {/* Centre — small static portrait + mic CTA */}
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-3 py-4">
+        <img
+          src={finnCharacter.url}
+          alt={
+            ar
+              ? "FINN — المساعد التنفيذي الذكي للأمن الصناعي"
+              : "FINN — executive industrial security AI assistant"
+          }
+          loading="lazy"
+          decoding="async"
+          className="h-32 w-auto object-contain sm:h-40"
+        />
+        <Link
+          to="/finn"
+          search={{ mode: "voice" } as never}
+          aria-label={ar ? "تحدث الآن مع FINN" : "Talk to FINN now"}
+          className="nx-holo-icon group flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-full text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200"
+        >
+          <Mic className="h-5 w-5" aria-hidden />
+          <span className="text-[10px] font-bold tracking-wider">
+            {ar ? "تحدث الآن" : "TALK NOW"}
+          </span>
+        </Link>
       </div>
 
       {/* Bottom — subtitle, status, secondary CTA */}
-      <footer className="relative z-10 flex flex-col items-center gap-2 px-5 pb-5 sm:px-8 sm:pb-7">
-        <p className="text-center text-xs text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] sm:text-sm">
+      <footer className="relative z-10 flex flex-col items-center gap-2">
+        <p className="text-center text-xs text-white/90">
           {ar
             ? "المساعد التنفيذي الذكي — الأمن الصناعي"
             : "Executive AI Assistant — Industrial Security"}
         </p>
         <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#061525] px-3 py-1 text-[12px] text-white">
-          <span className={`finn-live h-2 w-2 rounded-full ${label.dot}`} aria-hidden />
+          <span className={`h-2 w-2 rounded-full ${label.dot}`} aria-hidden />
           <span>{ar ? label.ar : label.en}</span>
         </div>
         <Link
           to="/finn"
           aria-label={ar ? "الدخول إلى FINN" : "Enter FINN"}
-          className="mt-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-cyan-300/50 bg-cyan-400/15 px-6 py-3 text-sm font-bold text-white shadow-[0_0_28px_rgba(34,211,238,0.35)] transition hover:bg-cyan-400/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 active:scale-[0.98]"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-cyan-300/50 bg-cyan-400/15 px-6 py-3 text-sm font-bold text-white transition hover:bg-cyan-400/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
         >
           <span>{ar ? "الدخول إلى FINN" : "Enter FINN"}</span>
           <Arrow className="h-4 w-4" aria-hidden />
         </Link>
       </footer>
-
-      <style>{`
-        @keyframes finnHaloBreathe { 0%,100%{opacity:.55;transform:scale(1)} 50%{opacity:.95;transform:scale(1.04)} }
-        @keyframes finnRotate { to { transform: rotate(360deg) } }
-        @keyframes finnScan { 0%{transform:translateY(-20%)} 100%{transform:translateY(1200%)} }
-        @keyframes finnPulseRing { 0%{opacity:.55;transform:scale(1)} 100%{opacity:0;transform:scale(1.15)} }
-        @keyframes finnLive { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.55;transform:scale(.82)} }
-        @keyframes finnBgGrid { 0%{background-position:0 0,0 0} 100%{background-position:36px 36px,36px 36px} }
-        @keyframes finnBgSweep { 0%{transform:translateX(-30%)} 100%{transform:translateX(30%)} }
-        @keyframes finnBgHalo { to { transform: translate(-50%,-50%) rotate(360deg) } }
-        @keyframes finnRain { 0%{transform:translateY(-40%)} 100%{transform:translateY(110%)} }
-        .finn-rain-col { animation-name: finnRain; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; }
-        .finn-halo { animation: finnHaloBreathe 6s ease-in-out infinite; will-change: transform,opacity; }
-        .finn-ring-outer { animation: finnRotate 22s linear infinite; will-change: transform; }
-        .finn-scan > span { animation: finnScan 7s linear infinite; will-change: transform; }
-        .finn-pulse { animation: finnPulseRing 4.5s ease-out infinite; will-change: transform,opacity; }
-        .finn-live { animation: finnLive 1.8s ease-in-out infinite; will-change: transform,opacity; }
-        .finn-bg-grid { animation: finnBgGrid 14s linear infinite; will-change: background-position; }
-        .finn-bg-sweep { animation: finnBgSweep 9s ease-in-out infinite alternate; will-change: transform; }
-        .finn-bg-halo { animation: finnBgHalo 40s linear infinite; will-change: transform; }
-        @media (prefers-reduced-motion: reduce) {
-          .finn-halo,.finn-ring-outer,.finn-scan > span,.finn-pulse,.finn-live,.finn-bg-grid,.finn-bg-sweep,.finn-bg-halo,.finn-rain-col { animation: none !important; }
-        }
-        [data-nx-frozen="true"] .finn-halo,
-        [data-nx-frozen="true"] .finn-ring-outer,
-        [data-nx-frozen="true"] .finn-scan > span,
-        [data-nx-frozen="true"] .finn-pulse,
-        [data-nx-frozen="true"] .finn-live,
-        [data-nx-frozen="true"] .finn-bg-grid,
-        [data-nx-frozen="true"] .finn-bg-sweep,
-        [data-nx-frozen="true"] .finn-bg-halo,
-        [data-nx-frozen="true"] .finn-rain-col { animation-play-state: paused !important; }
-
-      `}</style>
     </section>
   );
 }
