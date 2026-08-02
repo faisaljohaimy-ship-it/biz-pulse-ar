@@ -6275,6 +6275,47 @@ html.dark .finn-portal:hover {
   }
 }
 
+/* شدّات موحّدة لكل الطبقات (تخطيط/لمعان/تموّج/إشعاع) — قيم الوضع الفاتح.
+   على الأبيض يكون اللون هو ما يُرى، والأبيض يكاد يختفي؛ لذا نرفع نسبة لون
+   المنطقة ونخفض بريق الأبيض. الوضع الداكن يعكس المعادلة أدناه. */
+.nx-region-aura {
+  --nxr-grid-x: 0.3;
+  --nxr-grid-y: 0.24;
+  --nxr-grid-op: 0.55;
+  --nxr-grid-op-hover: 0.85;
+  --nxr-ripple-line: 0.42;
+  --nxr-ripple-fill: 0.14;
+  --nxr-ripple-op: 0.85;
+  --nxr-glow: 0.26;
+  --nxr-glow-hover: 0.44;
+  --nxr-inner: 0.2;
+  --nxr-inner-hover: 0.3;
+  --nxr-drop: 0.16;
+  --nxr-sheen-white: 0.34;
+  --nxr-sheen-tint: 0.2;
+  --nxr-sheen-op: 0.5;
+  --nxr-top-line: 0.55;
+}
+
+html.dark .nx-region-aura {
+  --nxr-grid-x: 0.2;
+  --nxr-grid-y: 0.16;
+  --nxr-grid-op: 0.6;
+  --nxr-grid-op-hover: 0.9;
+  --nxr-ripple-line: 0.6;
+  --nxr-ripple-fill: 0.18;
+  --nxr-ripple-op: 1;
+  --nxr-glow: 0.4;
+  --nxr-glow-hover: 0.66;
+  --nxr-inner: 0.5;
+  --nxr-inner-hover: 0.66;
+  --nxr-drop: 0.4;
+  --nxr-sheen-white: 0.14;
+  --nxr-sheen-tint: 0.28;
+  --nxr-sheen-op: 0.7;
+  --nxr-top-line: 0.12;
+}
+
 .nx-region-aura {
   position: relative;
   isolation: isolate;
@@ -6282,6 +6323,23 @@ html.dark .finn-portal:hover {
     box-shadow 240ms var(--nx-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
     transform 240ms var(--nx-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
     border-color 240ms ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, var(--nxr-top-line)),
+    inset 0 0 34px -14px rgba(var(--hx-ic, 34, 211, 238), var(--nxr-inner)),
+    0 0 24px -6px rgba(var(--hx-ic, 34, 211, 238), var(--nxr-glow)),
+    0 16px 40px -18px rgba(2, 12, 26, var(--nxr-drop));
+}
+
+.nx-region-aura:hover,
+.nx-region-aura:focus-within,
+.nx-region-aura[data-region-active] {
+  transform: translateY(-2px);
+  border-color: rgba(var(--hx-ic, 34, 211, 238), 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, var(--nxr-top-line)),
+    inset 0 0 44px -12px rgba(var(--hx-ic, 34, 211, 238), var(--nxr-inner-hover)),
+    0 0 40px -6px rgba(var(--hx-ic, 34, 211, 238), var(--nxr-glow-hover)),
+    0 22px 54px -20px rgba(2, 12, 26, calc(var(--nxr-drop) + 0.06));
 }
 
 /* تموّج دائري ناعم ينبض بلون المنطقة من قلب البطاقة */
@@ -6295,10 +6353,10 @@ html.dark .finn-portal:hover {
   height: 168px;
   margin: -84px 0 0 -84px;
   border-radius: 9999px;
-  border: 1px solid rgba(var(--hx-ic, 34, 211, 238), 0.55);
+  border: 1px solid rgba(var(--hx-ic, 34, 211, 238), var(--nxr-ripple-line, 0.5));
   background: radial-gradient(
     circle,
-    rgba(var(--hx-ic, 34, 211, 238), 0.16) 0%,
+    rgba(var(--hx-ic, 34, 211, 238), var(--nxr-ripple-fill, 0.16)) 0%,
     transparent 66%
   );
   animation: nx-region-ripple 3.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
@@ -6309,37 +6367,16 @@ html.dark .finn-portal:hover {
   animation-delay: 1.6s;
 }
 
-/* إشعاع البطاقة نفسه بلون المنطقة — أهدأ في السكون وأقوى عند التفاعل */
-.nx-region-aura {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 0 34px -14px rgba(var(--hx-ic, 34, 211, 238), 0.5),
-    0 0 24px -6px rgba(var(--hx-ic, 34, 211, 238), 0.34),
-    0 16px 40px -18px rgba(2, 12, 26, 0.35);
-}
-
-.nx-region-aura:hover,
-.nx-region-aura:focus-within,
-.nx-region-aura[data-region-active] {
-  transform: translateY(-2px);
-  border-color: rgba(var(--hx-ic, 34, 211, 238), 0.9);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    inset 0 0 44px -12px rgba(var(--hx-ic, 34, 211, 238), 0.62),
-    0 0 40px -6px rgba(var(--hx-ic, 34, 211, 238), 0.6),
-    0 22px 54px -20px rgba(2, 12, 26, 0.42);
-}
-
-/* لمعان مائل يعبر السطح بلون المنطقة */
+/* لمعان مائل يعبر السطح: أبيض خفيف على الفاتح، ولون المنطقة هو الأبرز */
 .nx-region-aura::after {
   background: linear-gradient(
     115deg,
     transparent 34%,
-    rgba(255, 255, 255, 0.16) 48%,
-    rgba(var(--hx-ic, 34, 211, 238), 0.24) 54%,
+    rgba(255, 255, 255, var(--nxr-sheen-white)) 48%,
+    rgba(var(--hx-ic, 34, 211, 238), var(--nxr-sheen-tint)) 54%,
     transparent 68%
   ) !important;
-  opacity: 0.65 !important;
+  opacity: var(--nxr-sheen-op) !important;
 }
 
 /* التخطيط الخلفي (شبكة الحقل) بلون المنطقة — يتحرّك مسحًا رأسيًا هادئًا */
@@ -6362,16 +6399,17 @@ html.dark .finn-portal:hover {
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  opacity: 0.5;
+  opacity: var(--nxr-grid-op, 0.55);
+  transition: opacity 240ms ease;
   background-image:
     repeating-linear-gradient(
       to bottom,
-      rgba(var(--hx-ic, 34, 211, 238), 0.16) 0 1px,
+      rgba(var(--hx-ic, 34, 211, 238), var(--nxr-grid-x)) 0 1px,
       transparent 1px 22px
     ),
     repeating-linear-gradient(
       to right,
-      rgba(var(--hx-ic, 34, 211, 238), 0.13) 0 1px,
+      rgba(var(--hx-ic, 34, 211, 238), var(--nxr-grid-y)) 0 1px,
       transparent 1px 22px
     );
   -webkit-mask-image: radial-gradient(120% 90% at 20% 0%, #000 0%, transparent 78%);
@@ -6381,7 +6419,7 @@ html.dark .finn-portal:hover {
 
 .nx-region-aura:hover .nx-region-grid,
 .nx-region-aura[data-region-active] .nx-region-grid {
-  opacity: 0.78;
+  opacity: var(--nxr-grid-op-hover, 0.85);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -6393,5 +6431,6 @@ html.dark .finn-portal:hover {
     animation-duration: 10s;
   }
 }
+
 
 
