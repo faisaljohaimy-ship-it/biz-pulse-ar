@@ -6,11 +6,13 @@ type: design
 
 # SADEED — Premium Light Executive Edition (owner directive v10.0, 2026-08-02)
 
-**Dark mode is prohibited.** No theme switch, no OS-theme detection, no auto
-switching. `ThemeProvider` (`src/lib/theme.tsx`) resolves permanently to
-`light`; `setTheme` is a no-op kept only for source compatibility. Theme
-toggles were removed from `HomeTopNav`, cockpit `navigation.tsx` NavFooter,
-`app-shell.tsx` (`ThemeIconToggle` → `null`) and the settings screen.
+**AMENDED 2026-08-02/6 by the owner:** light stays the permanent DEFAULT, but a
+manual light/dark switch is now required. `ThemeProvider` (`src/lib/theme.tsx`)
+starts at `light`, never detects the OS theme, and persists the user's explicit
+choice in `localStorage`. The single switch is the floating
+`src/components/layout/ThemeToggle.tsx`, mounted once in `__root.tsx` opposite
+`GlobalBackButton`. Do not re-add per-screen theme toggles (`HomeTopNav`,
+cockpit NavFooter, `app-shell.tsx`, settings) — one switch only.
 
 ## Palette (tokens at the tail of `src/styles.css`, block `SADEED — PREMIUM LIGHT EXECUTIVE LAYER`)
 - Primary Royal Blue `#1D4ED8` · Secondary Azure `#2563EB`/`#3B82F6` · Accent Soft Cyan `#06B6D4`

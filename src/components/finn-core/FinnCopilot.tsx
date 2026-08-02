@@ -1903,13 +1903,10 @@ export function FinnCopilot() {
           aria-label="FINN executive copilot"
           dir="rtl"
           className={cn(
-            // Mobile: dock sits BELOW the marquee/date-time strip so the header
-            // (including the Close X) is always tappable. Desktop: centered.
-            "nexus-window nexus-aria-window fixed left-1/2 z-[110] flex -translate-x-1/2 flex-col overflow-hidden rounded-[1.7rem]",
-            "top-[calc(52px+env(safe-area-inset-top))]",
+            // Centered on every device: phone, tablet, laptop.
+            "nexus-window nexus-aria-window fixed left-1/2 top-1/2 z-[110] flex -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[1.7rem]",
             "w-[min(96vw,760px)]",
-            "h-[calc(100dvh-64px-env(safe-area-inset-top)-env(safe-area-inset-bottom))]",
-            "sm:top-1/2 sm:-translate-y-1/2 sm:h-[min(92vh,760px)]",
+            "h-[min(86dvh,760px)]",
           )}
         >
           {/* LAYER 0 — FINN cinematic backdrop */}
