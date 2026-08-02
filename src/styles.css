@@ -5289,3 +5289,127 @@ a > svg,
   filter: none !important;
   opacity: 0.85 !important;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   OWNER DIRECTIVE (2026-08-02/5) — الحافة الهولوغرافية واللمعان الزجاجي
+   يمرّان باستمرار بلا توقّف (بما في ذلك مع prefers-reduced-motion)، بإيقاع
+   طبيعي، مع زجاجية أوضح وعمق ثلاثي الأبعاد للبطاقات والأيقونات.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* 1) إيقاع طبيعي موحّد */
+[data-slot="card"]::before,
+.holo-card::before,
+.nx-glass-e1::before,
+.sd-glass-surface::before,
+.spatial-window::before,
+.finn-portal::before {
+  animation: hx-iris-drift 9s linear infinite !important;
+  animation-play-state: running !important;
+}
+
+[data-slot="card"]::after,
+.holo-card::after,
+.nx-glass-e1::after,
+.sd-glass-surface::after,
+.spatial-window::after {
+  animation: hx-iris-drift 8s linear infinite !important;
+  animation-play-state: running !important;
+}
+
+.nx-icon,
+.nx-tile,
+[data-holo-icon],
+button > svg,
+a > svg,
+[data-slot="button"] > svg {
+  animation: hx-halo-breathe 5s ease-in-out infinite !important;
+  animation-play-state: running !important;
+}
+
+.nx-icon-wrap::after,
+.nx-tile::after,
+[data-holo-icon-wrap]::after {
+  animation: hx-gloss-run 6s ease-in-out infinite !important;
+  animation-play-state: running !important;
+}
+
+/* 2) الاستمرارية حتى مع تقليل الحركة (طلب المالك الصريح) */
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="card"]::before,
+  [data-slot="card"]::after,
+  .holo-card::before,
+  .holo-card::after,
+  .nx-glass-e1::before,
+  .nx-glass-e1::after,
+  .sd-glass-surface::before,
+  .sd-glass-surface::after,
+  .spatial-window::before,
+  .spatial-window::after,
+  .finn-portal::before {
+    animation-duration: 9s !important;
+    animation-iteration-count: infinite !important;
+    animation-play-state: running !important;
+  }
+
+  .nx-icon,
+  .nx-tile,
+  [data-holo-icon] {
+    animation: hx-halo-breathe 5s ease-in-out infinite !important;
+  }
+
+  .nx-icon-wrap::after,
+  .nx-tile::after,
+  [data-holo-icon-wrap]::after {
+    animation: hx-gloss-run 6s ease-in-out infinite !important;
+  }
+}
+
+/* 3) زجاجية أوضح + عمق ثلاثي الأبعاد */
+[data-slot="card"],
+.holo-card,
+.nx-glass-e1,
+.sd-glass-surface,
+.spatial-window,
+.nx-region-card,
+.nexus-card {
+  backdrop-filter: blur(22px) saturate(175%);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.28),
+    0 2px 4px rgba(15, 23, 42, 0.06),
+    0 12px 28px -14px rgba(30, 64, 175, 0.32),
+    0 34px 70px -38px rgba(2, 12, 27, 0.45);
+  transition:
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-slot="card"]:hover,
+.holo-card:hover,
+.nx-glass-e1:hover,
+.sd-glass-surface:hover,
+.spatial-window:hover,
+.nx-region-card:hover,
+.nexus-card:hover {
+  transform: perspective(1000px) translate3d(0, -4px, 0) rotateX(1.6deg) rotateY(-1.2deg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 30px rgba(56, 189, 248, 0.32),
+    0 22px 46px -20px rgba(30, 64, 175, 0.4),
+    0 46px 90px -44px rgba(2, 12, 27, 0.5);
+}
+
+.nx-icon-wrap,
+.nx-tile,
+[data-holo-icon-wrap] {
+  transform-style: preserve-3d;
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nx-icon-wrap:hover,
+.nx-tile:hover,
+[data-holo-icon-wrap]:hover {
+  transform: perspective(700px) translate3d(0, -3px, 0) rotateX(6deg) rotateY(-6deg);
+}
