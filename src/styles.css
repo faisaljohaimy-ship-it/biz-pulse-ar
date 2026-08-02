@@ -5819,7 +5819,9 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
     52% 100% !important;
   background-repeat: repeat, repeat, repeat, no-repeat !important;
   background-blend-mode: normal, normal, normal, screen;
-  animation: sec-grid-scan 5.4s linear infinite !important;
+  animation:
+    sec-grid-scan 5.4s linear infinite,
+    hx-edge-chroma-fast 3.4s ease-in-out infinite !important;
   animation-play-state: running !important;
 }
 
@@ -5834,7 +5836,9 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
     22px 100%,
     100% 100%,
     62% 100% !important;
-  animation-duration: 4.2s !important;
+  animation:
+    sec-grid-scan 4.2s linear infinite,
+    hx-edge-chroma-fast 3s ease-in-out infinite !important;
 }
 
 /* بطاقة FINN تحتفظ بخلفيتها الرقمية الخاصة — نضيف الأسلاك فقط فوقها */
