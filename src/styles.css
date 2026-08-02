@@ -5626,7 +5626,7 @@ a > svg,
 .nx-holo-icon,
 [data-holo-icon-wrap] {
   border: 2px solid rgba(var(--hx-ic, var(--hx-fallback)), 0.85) !important;
-  animation: hx-edge-chroma-fast 3s ease-in-out infinite !important;
+  animation: hx-edge-chroma-fast 1.8s ease-in-out infinite !important;
   animation-play-state: running !important;
 }
 
@@ -5639,7 +5639,7 @@ a > svg,
 .finn-portal {
   border-color: rgba(var(--hx-ic, var(--hx-fallback)), 0.7) !important;
   border-width: 2px !important;
-  animation: hx-edge-chroma-fast 3.4s ease-in-out infinite !important;
+  animation: hx-edge-chroma-fast 2s ease-in-out infinite !important;
   animation-play-state: running !important;
 }
 
@@ -5820,8 +5820,8 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
   background-repeat: repeat, repeat, repeat, no-repeat !important;
   background-blend-mode: normal, normal, normal, screen;
   animation:
-    sec-grid-scan 5.4s linear infinite,
-    hx-edge-chroma-fast 3.4s ease-in-out infinite !important;
+    sec-grid-scan 3.2s linear infinite,
+    hx-edge-chroma-fast 2s ease-in-out infinite !important;
   animation-play-state: running !important;
 }
 
@@ -5837,8 +5837,8 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
     100% 100%,
     62% 100% !important;
   animation:
-    sec-grid-scan 4.2s linear infinite,
-    hx-edge-chroma-fast 3s ease-in-out infinite !important;
+    sec-grid-scan 2.6s linear infinite,
+    hx-edge-chroma-fast 1.8s ease-in-out infinite !important;
 }
 
 /* بطاقة FINN تحتفظ بخلفيتها الرقمية الخاصة — نضيف الأسلاك فقط فوقها */
@@ -6203,9 +6203,9 @@ html.dark .finn-portal:hover {
 .nx-region-card,
 .nexus-card {
   animation:
-    sec-grid-scan 5.4s linear infinite,
-    hx-edge-chroma-fast 3.4s ease-in-out infinite,
-    finn-aura-breathe 5.5s ease-in-out infinite !important;
+    sec-grid-scan 3.2s linear infinite,
+    hx-edge-chroma-fast 2s ease-in-out infinite,
+    finn-aura-breathe 3.2s ease-in-out infinite !important;
   animation-play-state: running !important;
 }
 
@@ -6216,9 +6216,9 @@ html.dark .finn-portal:hover {
 .holo-icon,
 [data-holo-icon-wrap] {
   animation:
-    sec-grid-scan 4.2s linear infinite,
-    hx-edge-chroma-fast 3s ease-in-out infinite,
-    finn-aura-breathe 4.4s ease-in-out infinite !important;
+    sec-grid-scan 2.6s linear infinite,
+    hx-edge-chroma-fast 1.8s ease-in-out infinite,
+    finn-aura-breathe 2.6s ease-in-out infinite !important;
   animation-play-state: running !important;
 }
 
@@ -6301,12 +6301,12 @@ html.dark .finn-portal:hover {
     rgba(var(--hx-ic, 34, 211, 238), 0.16) 0%,
     transparent 66%
   );
-  animation: nx-region-ripple 5.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation: nx-region-ripple 3.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   will-change: transform, opacity;
 }
 
 .nx-region-ripple--delayed {
-  animation-delay: 2.8s;
+  animation-delay: 1.6s;
 }
 
 /* إشعاع البطاقة نفسه بلون المنطقة — أهدأ في السكون وأقوى عند التفاعل */
@@ -6376,7 +6376,7 @@ html.dark .finn-portal:hover {
     );
   -webkit-mask-image: radial-gradient(120% 90% at 20% 0%, #000 0%, transparent 78%);
   mask-image: radial-gradient(120% 90% at 20% 0%, #000 0%, transparent 78%);
-  animation: nx-region-grid-drift 9s linear infinite;
+  animation: nx-region-grid-drift 5s linear infinite;
 }
 
 .nx-region-aura:hover .nx-region-grid,
