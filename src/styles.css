@@ -6658,15 +6658,32 @@ html.dark .nx-region-aura {
   border-radius: inherit;
 }
 
-.finn-tech-grid {
-  background-image:
-    linear-gradient(to right, rgba(34, 211, 238, 0.16) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(34, 211, 238, 0.12) 1px, transparent 1px);
-  background-size: 26px 26px;
-  mask-image: radial-gradient(120% 90% at 50% 40%, #000 35%, transparent 78%);
-  animation: finn-tech-grid-drift 3.2s linear infinite;
-  opacity: 0.75;
+.finn-tech-code {
+  overflow: hidden;
+  mask-image: radial-gradient(120% 95% at 50% 40%, #000 30%, transparent 82%);
+  opacity: 0.55;
 }
+
+.finn-code-col {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  transform: translateY(-50%);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 10px;
+  line-height: 1.05;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  color: rgba(125, 240, 255, 0.85);
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.55);
+  animation-name: finn-code-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
 
 .finn-tech-aurora {
   background:
@@ -6691,21 +6708,6 @@ html.dark .nx-region-aura {
   mix-blend-mode: screen;
 }
 
-.finn-tech-orbit {
-  background: conic-gradient(
-    from 0deg at 50% 52%,
-    transparent 0deg,
-    rgba(34, 211, 238, 0.4) 40deg,
-    transparent 110deg,
-    transparent 250deg,
-    rgba(59, 130, 246, 0.35) 300deg,
-    transparent 360deg
-  );
-  mask-image: radial-gradient(closest-side, transparent 56%, #000 58%, #000 63%, transparent 65%);
-  animation: finn-tech-orbit-spin 4.2s linear infinite;
-  opacity: 0.85;
-}
-
 .finn-tech-noise {
   background-image: radial-gradient(rgba(255, 255, 255, 0.35) 0.6px, transparent 0.7px);
   background-size: 7px 7px;
@@ -6716,22 +6718,19 @@ html.dark .nx-region-aura {
 .light .finn-portal--tech .finn-tech-aurora {
   opacity: 0.85;
 }
-.light .finn-portal--tech .finn-tech-grid {
-  opacity: 0.6;
+.light .finn-portal--tech .finn-tech-code {
+  opacity: 0.45;
 }
 
-@keyframes finn-tech-grid-drift {
+@keyframes finn-code-fall {
   from {
-    background-position:
-      0 0,
-      0 0;
+    transform: translateY(-50%);
   }
   to {
-    background-position:
-      26px 0,
-      0 26px;
+    transform: translateY(0%);
   }
 }
+
 
 @keyframes finn-tech-aurora-shift {
   0% {
@@ -6764,11 +6763,6 @@ html.dark .nx-region-aura {
   }
 }
 
-@keyframes finn-tech-orbit-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 @keyframes finn-tech-noise-flicker {
   0%,

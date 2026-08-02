@@ -24,6 +24,16 @@ const STATE_LABEL: Record<FinnVisualState, { ar: string; en: string; dot: string
   offline: { ar: "غير متصل — أدخل نصياً", en: "Offline — text input", dot: "bg-amber-400" },
 };
 
+/** Static glyph columns — deterministic (SSR-safe), purely decorative. */
+const CODE_COLUMNS: string[] = [
+  "01001 fn() 7A3F Δ92 <sec/> 0x1F 1101 λ→ 4471 {ok}",
+  "0xB7 128 </ai> 1001 Σ44 finn() 0110 3E9 [##] 7721",
+  "SEC-09 1010 ~$ 0xC4 55E {id} 0011 π71 </> 9032",
+  "1100 0x3D run() 8812 μ07 <kpi> 0101 A9F 6650 ok",
+  "0x9E 0110 sync() 4420 Ω18 </rt> 1011 5C2 3391",
+  "1001 <ops> 0x2A 7734 ζ63 exec() 0010 D4B 1180",
+];
+
 export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPortalProps) {
   const Arrow = ar ? ArrowLeft : ArrowRight;
   const label = STATE_LABEL[state];
@@ -36,10 +46,27 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       className="finn-portal finn-portal--tech relative flex h-full flex-col overflow-hidden rounded-2xl bg-[#061525] p-4"
     >
       {/* Digital background layers — decorative only, never affect layout */}
-      <span className="finn-tech-grid" aria-hidden />
+      <span className="finn-tech-code" aria-hidden>
+        {CODE_COLUMNS.map((col, i) => (
+          <span
+            key={i}
+            className="finn-code-col"
+            style={
+              {
+                "--col-i": i,
+                left: `${(i + 0.5) * (100 / CODE_COLUMNS.length)}%`,
+                animationDuration: `${5.5 + (i % 4) * 1.4}s`,
+                animationDelay: `${-(i * 0.9)}s`,
+              } as React.CSSProperties
+            }
+          >
+            <span>{col}</span>
+            <span>{col}</span>
+          </span>
+        ))}
+      </span>
       <span className="finn-tech-aurora" aria-hidden />
       <span className="finn-tech-scan" aria-hidden />
-      <span className="finn-tech-orbit" aria-hidden />
       <span className="finn-tech-noise" aria-hidden />
 
       {/* FINN wordmark — pinned to the card ceiling, always centred */}
@@ -61,7 +88,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
           }
           loading="lazy"
           decoding="async"
-          className="h-32 w-auto object-contain sm:h-40"
+          className="h-40 w-auto object-contain sm:h-52"
         />
         <Link
           to="/finn"
