@@ -6584,3 +6584,55 @@ html.dark .nx-region-aura {
     animation-duration: 10s;
   }
 }
+
+/* ============================================================
+   حدود أيقونات المناطق — تردد مضيء بلون كل منطقة
+   كل بطاقة منطقة وكل بلاطة/أيقونة بداخلها تنبض بحدّ لامع من
+   لونها هي (--hx-ic يُعاد تعريفه محليًا داخل كل بطاقة).
+   ============================================================ */
+@keyframes nx-region-edge-freq {
+  0%,
+  100% {
+    border-color: rgba(var(--hx-ic, 34, 211, 238), 0.45);
+    box-shadow:
+      inset 0 0 12px -6px rgba(var(--hx-ic, 34, 211, 238), 0.35),
+      0 0 10px -2px rgba(var(--hx-ic, 34, 211, 238), 0.4);
+  }
+  50% {
+    border-color: rgba(var(--hx-ic, 34, 211, 238), 1);
+    box-shadow:
+      inset 0 0 18px -6px rgba(var(--hx-ic, 34, 211, 238), 0.6),
+      0 0 20px -2px rgba(var(--hx-ic, 34, 211, 238), 0.85),
+      0 0 40px -12px rgba(var(--hx-ic, 34, 211, 238), 0.75);
+  }
+}
+
+.nx-region-edge-freq {
+  border: 1px solid rgba(var(--hx-ic, 34, 211, 238), 0.55);
+  animation: nx-region-edge-freq 2.6s ease-in-out infinite;
+}
+
+/* البلاطات الداخلية تتناوب في الوميض فيظهر التردد كنبضة متتابعة */
+.nx-region-edge-freq:nth-child(2) {
+  animation-delay: 0.32s;
+}
+.nx-region-edge-freq:nth-child(3) {
+  animation-delay: 0.64s;
+}
+.nx-region-edge-freq:nth-child(4) {
+  animation-delay: 0.96s;
+}
+
+/* حدّ البطاقة نفسها: نبضة أبطأ وأوسع فلا تزاحم البلاطات */
+.nx-region-aura.nx-region-edge-freq {
+  border-width: 1px;
+  animation-duration: 3.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-region-edge-freq {
+    animation: none;
+    border-color: rgba(var(--hx-ic, 34, 211, 238), 0.8);
+    box-shadow: 0 0 14px -4px rgba(var(--hx-ic, 34, 211, 238), 0.6);
+  }
+}

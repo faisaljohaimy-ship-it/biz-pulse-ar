@@ -149,7 +149,7 @@ function RegionCard({
     <article
       data-region={panel.id}
       data-region-active={active || undefined}
-      className="holo-card nx-glass-region nx-region-aura relative overflow-hidden rounded-2xl p-3"
+      className="holo-card nx-glass-region nx-region-aura nx-region-edge-freq relative overflow-hidden rounded-2xl p-3"
       style={{
         ["--accent-rgb" as string]: rgb,
         // كل منطقة تُشعّ وتلمع وتتموّج بلونها هي: نُثبّت لون الهالة محليًا
@@ -197,7 +197,7 @@ function RegionCard({
           <Link
             key={metric.key}
             to={metric.to}
-            className="nx-glass flex min-h-12 flex-col items-center justify-center rounded-xl border border-[color:var(--hairline-soft)] px-1 py-1.5 text-center transition hover:border-[color:var(--hairline-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+            className="nx-glass nx-region-edge-freq flex min-h-12 flex-col items-center justify-center rounded-xl px-1 py-1.5 text-center transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
           >
             <span className="text-sm font-black tabular-nums text-[color:var(--ink)]">
               {panel.metrics[metric.key]}
