@@ -6692,16 +6692,15 @@ html.dark .nx-region-aura {
 }
 
 .finn-tech-orbit {
-  background:
-    conic-gradient(
-      from 0deg at 50% 52%,
-      transparent 0deg,
-      rgba(34, 211, 238, 0.4) 40deg,
-      transparent 110deg,
-      transparent 250deg,
-      rgba(59, 130, 246, 0.35) 300deg,
-      transparent 360deg
-    );
+  background: conic-gradient(
+    from 0deg at 50% 52%,
+    transparent 0deg,
+    rgba(34, 211, 238, 0.4) 40deg,
+    transparent 110deg,
+    transparent 250deg,
+    rgba(59, 130, 246, 0.35) 300deg,
+    transparent 360deg
+  );
   mask-image: radial-gradient(closest-side, transparent 56%, #000 58%, #000 63%, transparent 65%);
   animation: finn-tech-orbit-spin 4.2s linear infinite;
   opacity: 0.85;
@@ -6786,4 +6785,3 @@ html.dark .nx-region-aura {
     animation: none !important;
   }
 }
-
