@@ -6763,11 +6763,6 @@ html.dark .nx-region-aura {
   }
 }
 
-@keyframes finn-tech-orbit-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 @keyframes finn-tech-noise-flicker {
   0%,
