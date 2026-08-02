@@ -2,7 +2,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { SecPageHeader } from "@/components/sec/sec-shell";
 import { PageBriefing } from "@/components/clarity/PageBriefing";
@@ -15,7 +15,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileText, FileSpreadsheet, Download, RefreshCw, Eye } from "lucide-react";
+import {
+  FileText,
+  FileSpreadsheet,
+  Download,
+  RefreshCw,
+  Eye,
+  PieChart,
+  BarChart3,
+  TrendingUp,
+} from "lucide-react";
+import {
+  DonutChart,
+  BarSeries,
+  SparkArea,
+  RadialGauge,
+} from "@/components/charts/premium-charts";
 import {
   generateDailyOperationsReport,
   getDailyOpsData,
@@ -305,6 +320,8 @@ function Reports() {
         </p>
       </div>
 
+      <ReportsAnalytics rows={list} />
+
       <div className="rounded-xl border border-border bg-card">
         <div className="border-b border-border px-4 py-2 text-xs font-medium text-muted-foreground">
           سجل التقارير ({list.length})
@@ -364,6 +381,99 @@ function Reports() {
             </li>
           )}
         </ul>
+      </div>
+    </div>
+  );
+}
+
+/* ----------------------------------------------------------------
+   لوحة تحليلات التقارير — مشتقّة حصريًا من سجل التقارير الفعلي
+   المعروض في هذه الصفحة (لا أرقام مُختلَقة).
+   ---------------------------------------------------------------- */
+function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
+  const stats = useMemo(() => {
+    const dayMs = 86_400_000;
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const byFormat = new Map<string, number>();
+    const byKind = new Map<string, number>();
+    const perDay = new Array(14).fill(0) as number[];
+    let bytes = 0;
+    let last7 = 0;
+
+    for (const r of rows) {
+      byFormat.set(r.format, (byFormat.get(r.format) ?? 0) + 1);
+      byKind.set(r.kind, (byKind.get(r.kind) ?? 0) + 1);
+      bytes += r.size_bytes ?? 0;
+      const t = new Date(r.created_at).getTime();
+      const idx = 13 - Math.floor((startOfToday.getTime() + dayMs - t) / dayMs);
+      if (idx >= 0 && idx < 14) perDay[idx] += 1;
+      if (t >= startOfToday.getTime() - 6 * dayMs) last7 += 1;
+    }
+
+    const FORMAT_ACCENT: Record<string, string> = {
+      pdf: "244, 63, 94",
+      xlsx: "16, 185, 129",
+      excel: "16, 185, 129",
+      csv: "245, 158, 11",
+    };
+    const KIND_ACCENT = ["37, 99, 235", "6, 182, 212", "139, 92, 246", "16, 185, 129", "245, 158, 11"];
+
+    return {
+      total: rows.length,
+      bytes,
+      last7,
+      freshness: rows.length ? Math.round((last7 / rows.length) * 100) : 0,
+      formats: [...byFormat.entries()].map(([label, value]) => ({
+        label: label.toUpperCase(),
+        value,
+        accent: FORMAT_ACCENT[label.toLowerCase()] ?? "100, 116, 139",
+      })),
+      kinds: [...byKind.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([label, value], i) => ({ label, value, accent: KIND_ACCENT[i % KIND_ACCENT.length] })),
+      perDay,
+    };
+  }, [rows]);
+
+  if (stats.total === 0) return null;
+
+  return (
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+          <PieChart className="h-4 w-4 text-primary" aria-hidden /> توزيع الصيغ المُصدَّرة
+        </div>
+        <DonutChart slices={stats.formats} centerLabel="تقرير" />
+        <p className="mt-3 text-[12px] text-muted-foreground">
+          الحجم التراكمي: {Math.max(1, Math.round(stats.bytes / 1024))} KB
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+          <BarChart3 className="h-4 w-4 text-primary" aria-hidden /> التقارير حسب النوع
+        </div>
+        <BarSeries data={stats.kinds} height={150} />
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+          <TrendingUp className="h-4 w-4 text-primary" aria-hidden /> نشاط التوليد — ١٤ يومًا
+        </div>
+        <div className="h-24">
+          <SparkArea values={stats.perDay} accent="37, 99, 235" height={90} label="نشاط توليد التقارير" />
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <RadialGauge value={stats.freshness} size={92} caption="حداثة السجل (٧ أيام)" />
+          <div className="text-end">
+            <div className="text-2xl font-black tabular-nums text-foreground">{stats.total}</div>
+            <div className="text-[12px] text-muted-foreground">إجمالي التقارير</div>
+            <div className="mt-1 text-[12px] text-muted-foreground">آخر ٧ أيام: {stats.last7}</div>
+          </div>
+        </div>
       </div>
     </div>
   );
