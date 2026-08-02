@@ -5269,3 +5269,23 @@ a > svg,
     animation: none !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   OWNER DIRECTIVE (2026-08-02/4) — إعادة الخلفية الرقمية العصرية داخل
+   بطاقة FINN في الوضع الفاتح: لوحة الدوائر الحيّة الداكنة تعود كما هي،
+   بلا قلب ألوان ولا تسطيح سماوي. حركة FINN ثلاثية الأبعاد أُسرِعت في
+   المشهد نفسه (FinnLiveHologram).
+   ───────────────────────────────────────────────────────────────────────── */
+.light .finn-portal {
+  background: linear-gradient(170deg, #bfeeff 0%, #6fd6f5 26%, #1f6f9c 62%, #061525 100%) !important;
+}
+
+.light .finn-portal .nx-no-glow[aria-hidden] {
+  background: radial-gradient(ellipse at 50% 45%, #04121f 0%, #02080f 45%, #01060b 100%) !important;
+  opacity: 0.92;
+}
+
+.light .finn-portal .nx-no-glow[aria-hidden] svg {
+  filter: none !important;
+  opacity: 0.85 !important;
+}
