@@ -277,27 +277,6 @@ function SettingsPage() {
               </Button>
             </div>
           </div>
-          <div>
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-              {locale === "ar" ? "السمة" : "Theme"}
-            </Label>
-            <div className="mt-2 flex gap-2">
-              <Button
-                size="sm"
-                variant={theme === "dark" ? "default" : "outline"}
-                onClick={() => setTheme("dark")}
-              >
-                {locale === "ar" ? "داكن" : "Dark"}
-              </Button>
-              <Button
-                size="sm"
-                variant={theme === "light" ? "default" : "outline"}
-                onClick={() => setTheme("light")}
-              >
-                {locale === "ar" ? "فاتح" : "Light"}
-              </Button>
-            </div>
-          </div>
         </TabsContent>
 
         <TabsContent

@@ -115,39 +115,9 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function NavFooter() {
-  const { theme, setTheme } = useTheme();
   const { open } = useFinn();
-  const dark = theme === "dark";
   return (
     <div className="mt-auto flex flex-col gap-3 border-t border-white/10 pt-3">
-      <button
-        type="button"
-        data-action="appearance.toggle"
-        role="switch"
-        aria-checked={dark}
-        aria-label="تبديل التباين الداكن"
-        onClick={() => {
-          emitCockpitAction("appearance.toggle");
-          setTheme(dark ? "light" : "dark");
-        }}
-        className="flex min-h-11 items-center justify-between gap-2 rounded-nx-12 px-3 py-2 text-sm text-nx-pearl/72 transition-[background-color] duration-[var(--nx-anim-fast)] hover:bg-white/6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
-      >
-        <span className="flex items-center gap-2">
-          {dark ? <Moon aria-hidden className="size-4" /> : <Sun aria-hidden className="size-4" />}
-          الوضع الداكن
-        </span>
-        <span
-          aria-hidden
-          className={cn(
-            "inline-flex h-5 w-9 items-center rounded-full border px-0.5 transition-colors duration-[var(--nx-anim-fast)]",
-            dark
-              ? "justify-start border-nx-cyan/60 bg-nx-cyan/20"
-              : "justify-end border-white/20 bg-white/10",
-          )}
-        >
-          <span className="size-3.5 rounded-full bg-nx-pearl" />
-        </span>
-      </button>
       <button
         type="button"
         data-action="finn.chat.open"
