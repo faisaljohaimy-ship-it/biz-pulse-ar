@@ -143,12 +143,20 @@ function RegionCard({
 }) {
   const region = REGIONS.find((item) => item.id === panel.id)!;
   const light = useTheme().theme === "light";
+  const rgb = hexToRgbTriplet(color);
 
   return (
     <article
-      className="holo-card nx-glass-region relative overflow-hidden rounded-2xl p-3"
+      data-region={panel.id}
+      data-region-active={active || undefined}
+      className="holo-card nx-glass-region nx-region-aura relative overflow-hidden rounded-2xl p-3"
       style={{
-        ["--accent-rgb" as string]: hexToRgbTriplet(color),
+        ["--accent-rgb" as string]: rgb,
+        // كل منطقة تُشعّ وتلمع وتتموّج بلونها هي: نُثبّت لون الهالة محليًا
+        // (--hx-ic) ونُعيد تعريف لون المنطقة داخل البطاقة فقط، فترث كل
+        // الأيقونات والحدود بداخلها لون هذه المنطقة بدل لون المنطقة النشطة.
+        ["--hx-ic" as string]: rgb,
+        ["--nx-region-rgb" as string]: rgb,
         borderColor: active ? color : `${color}55`,
         // لهجة المنطقة تُمرَّر كمتغيّر لا كخلفية جاهزة. الخلفية الجاهزة inline
         // تتفوّق على أي صنف، فكانت تمحو بريق الزجاج عن هذه اللوحات الأربع
@@ -156,11 +164,15 @@ function RegionCard({
         ["--region-tint" as string]: `${color}${light ? "14" : "1f"}`,
       }}
     >
+      <span aria-hidden className="nx-region-grid" />
+      <span aria-hidden className="nx-region-ripple" />
+
+      <span aria-hidden className="nx-region-ripple nx-region-ripple--delayed" />
       <button
         type="button"
         onClick={onSelect}
         aria-pressed={active}
-        className="flex min-h-14 w-full items-center gap-3 rounded-xl text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+        className="relative z-[1] flex min-h-14 w-full items-center gap-3 rounded-xl text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
       >
         <Ring pct={performance} color={color} />
         <div className="min-w-0 flex-1">
@@ -180,7 +192,7 @@ function RegionCard({
         </div>
       </button>
 
-      <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+      <div className="relative z-[1] mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
         {CC_REGION_METRICS.map((metric) => (
           <Link
             key={metric.key}
