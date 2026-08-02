@@ -6684,7 +6684,6 @@ html.dark .nx-region-aura {
   animation-iteration-count: infinite;
 }
 
-
 .finn-tech-aurora {
   background:
     radial-gradient(60% 42% at 22% 18%, rgba(34, 211, 238, 0.38), transparent 70%),
@@ -6731,7 +6730,6 @@ html.dark .nx-region-aura {
   }
 }
 
-
 @keyframes finn-tech-aurora-shift {
   0% {
     transform: scale(1) translate3d(-1.5%, -1%, 0);
@@ -6762,7 +6760,6 @@ html.dark .nx-region-aura {
     opacity: 0;
   }
 }
-
 
 @keyframes finn-tech-noise-flicker {
   0%,
