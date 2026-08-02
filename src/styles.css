@@ -5713,3 +5713,18 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
     0 0 46px rgba(37, 99, 235, 0.28),
     0 30px 90px rgba(2, 12, 26, 0.45);
 }
+
+/* ── Moiré correction: widen scanline period, calm inside the chat ────── */
+.nx-holo-scan,
+.light .nx-holo-scan {
+  background-size: 100% 7px;
+  opacity: 0.28;
+}
+.nexus-aria-window .nx-holo-scan,
+.nexus-aria-window .nx-holo-noise {
+  display: none !important;
+}
+.nexus-aria-window,
+.nexus-aria-window * {
+  background-attachment: scroll;
+}

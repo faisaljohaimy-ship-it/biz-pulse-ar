@@ -9,6 +9,7 @@
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   AudioWaveform,
   Check,
@@ -1858,8 +1859,9 @@ export function FinnCopilot() {
     }
   }, [voice, pageContext, listening]);
 
-  return (
+  const tree = (
     <>
+
       {/* Launcher FAB — hidden while docked */}
       {!isOpen && (
         <button
@@ -2365,4 +2367,12 @@ export function FinnCopilot() {
       )}
     </>
   );
+
+  // Portal to <body>: ancestors with transform/filter/backdrop-filter would
+  // otherwise become the containing block for `fixed`, pushing the window
+  // off-centre (observed on /finn). Portalling keeps it viewport-centred on
+  // every device.
+  if (typeof document === "undefined") return tree;
+  return createPortal(tree, document.body);
+
 }
