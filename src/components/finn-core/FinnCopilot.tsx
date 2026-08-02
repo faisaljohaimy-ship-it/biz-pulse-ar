@@ -2366,4 +2366,12 @@ export function FinnCopilot() {
       )}
     </>
   );
+
+  // Portal to <body>: ancestors with transform/filter/backdrop-filter would
+  // otherwise become the containing block for `fixed`, pushing the window
+  // off-centre (observed on /finn). Portalling keeps it viewport-centred on
+  // every device.
+  if (typeof document === "undefined") return tree;
+  return createPortal(tree, document.body);
+
 }
