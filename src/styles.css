@@ -3978,3 +3978,72 @@ body {
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   GLOBAL BOLD TYPOGRAPHY DIRECTIVE (owner directive 2026-08-02)
+   كل خطوط النظام بولد سميك في الوضعين
+   ========================================================================== */
+
+html,
+body,
+#root {
+  font-weight: 700;
+}
+
+body *:not(i):not(svg):not(path) {
+  font-weight: 700;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+strong,
+b,
+th,
+.font-black,
+.font-extrabold {
+  font-weight: 800 !important;
+}
+
+p,
+span,
+li,
+a,
+label,
+small,
+td,
+input,
+textarea,
+select,
+option,
+button,
+figcaption,
+blockquote,
+code,
+kbd,
+pre,
+dt,
+dd,
+summary,
+legend,
+[class*="text-"],
+[class*="font-"] {
+  font-weight: 700;
+}
+
+.font-light,
+.font-thin,
+.font-extralight,
+.font-normal,
+.font-medium,
+.font-semibold {
+  font-weight: 700 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  font-weight: 700;
+}
