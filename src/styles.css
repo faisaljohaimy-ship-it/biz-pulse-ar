@@ -5413,3 +5413,17 @@ a > svg,
 [data-holo-icon-wrap]:hover {
   transform: perspective(700px) translate3d(0, -3px, 0) rotateX(6deg) rotateY(-6deg);
 }
+
+/* اسم FINN أعلى البطاقة: ثابت تمامًا بلا حركة ولا لمعان مارّ. */
+.finn-wordmark-bar,
+.finn-wordmark,
+.finn-wordmark-bar::before,
+.finn-wordmark-bar::after,
+.finn-wordmark::before,
+.finn-wordmark::after {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}

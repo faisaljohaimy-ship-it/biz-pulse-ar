@@ -57,9 +57,9 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       {/* Glass vignettes/scanlines removed per request — keep the backdrop clean */}
 
       {/* FINN wordmark — sits in the headroom above the head, compact size */}
-      <div className="relative z-10 flex flex-col items-center px-4 pt-2 sm:pt-3">
+      <div className="finn-wordmark-bar relative z-20 flex flex-col items-center px-4 pt-2 sm:pt-3">
         <h2
-          className="text-2xl font-black leading-none tracking-[0.32em] text-white sm:text-3xl md:text-4xl"
+          className="finn-wordmark text-2xl font-black leading-none tracking-[0.32em] text-white sm:text-3xl md:text-4xl"
           style={{
             textShadow:
               "0 2px 12px rgba(0,0,0,0.95), 0 0 20px rgba(34,211,238,0.7), 0 0 40px rgba(34,211,238,0.45)",
