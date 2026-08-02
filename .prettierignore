@@ -9,3 +9,15 @@ bun.lock
 routeTree.gen.ts
 src/integrations/supabase/types.ts
 packs/
+
+# مولّدات — يملك المولّد شكلها لا prettier.
+#
+# `mcpPlugin()` يعيد كتابة هذه الأربعة في كل بناء، ويكتب الوسيط في سطر
+# واحد. وprettier يكتبه متعدّد الأسطر. فلمّا صار التنسيق آليًّا على main
+# دخل الاثنان في تناوب لا ينتهي: البناء يوحّد السطر، والتنسيق يفرّقه،
+# والشجرة تتسخ بعد كل عملية. eslint يستثنيها أصلًا (eslint.config)، وهذا
+# يكمل الاستثناء على الجانب الآخر — كما لـ`routeTree.gen.ts` تمامًا.
+src/routes/mcp.ts
+# الأقواس تُهرَّب: صيغة gitignore تقرأ [ ] صنفَ محارف لا حرفين.
+src/routes/\[.mcp\]/
+src/routes/\[.well-known\]/
