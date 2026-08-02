@@ -164,7 +164,9 @@ function RegionCard({
         ["--region-tint" as string]: `${color}${light ? "14" : "1f"}`,
       }}
     >
+      <span aria-hidden className="nx-region-grid" />
       <span aria-hidden className="nx-region-ripple" />
+
       <span aria-hidden className="nx-region-ripple nx-region-ripple--delayed" />
       <button
         type="button"
