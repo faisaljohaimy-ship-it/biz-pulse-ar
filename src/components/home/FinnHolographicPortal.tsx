@@ -88,7 +88,7 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
           }
           loading="lazy"
           decoding="async"
-          className="h-32 w-auto object-contain sm:h-40"
+          className="h-40 w-auto object-contain sm:h-52"
         />
         <Link
           to="/finn"
