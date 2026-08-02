@@ -25,6 +25,29 @@ export default defineConfig({
   ...(process.env.VERCEL ? { nitro: { preset: "vercel" } } : {}),
   vite: {
     plugins: [mcpPlugin()],
+    // Publishable (public) Supabase config baked in as a LAST-RESORT fallback.
+    // The published build was shipping without VITE_SUPABASE_* injected, so the
+    // browser client fell back to the "unconfigured" host and every auth/data
+    // call failed. Platform-provided env still wins; these literals only fill
+    // the gap. Both values are public/publishable — no secret is exposed.
+    define: {
+      "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
+        process.env.VITE_SUPABASE_URL ||
+          process.env.SUPABASE_URL ||
+          "https://jhutlofapjfjjeajawie.supabase.co",
+      ),
+      "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(
+        process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+          process.env.SUPABASE_PUBLISHABLE_KEY ||
+          "sb_publishable_8MvukD2H6Xyl76FVdytTTA_0v1UL5Yo",
+      ),
+      "import.meta.env.VITE_SUPABASE_PROJECT_ID": JSON.stringify(
+        process.env.VITE_SUPABASE_PROJECT_ID ||
+          process.env.SUPABASE_PROJECT_ID ||
+          "jhutlofapjfjjeajawie",
+      ),
+    },
+
     // Keep the heavy CLIENT-ONLY markdown/highlighter stack OUT of the SSR
     // (serverless) bundle. `MessageResponseImpl` is "use client" + lazy, so the
     // server never executes shiki/mermaid — but bundling & minifying shiki's
