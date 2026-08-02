@@ -6708,21 +6708,6 @@ html.dark .nx-region-aura {
   mix-blend-mode: screen;
 }
 
-.finn-tech-orbit {
-  background: conic-gradient(
-    from 0deg at 50% 52%,
-    transparent 0deg,
-    rgba(34, 211, 238, 0.4) 40deg,
-    transparent 110deg,
-    transparent 250deg,
-    rgba(59, 130, 246, 0.35) 300deg,
-    transparent 360deg
-  );
-  mask-image: radial-gradient(closest-side, transparent 56%, #000 58%, #000 63%, transparent 65%);
-  animation: finn-tech-orbit-spin 4.2s linear infinite;
-  opacity: 0.85;
-}
-
 .finn-tech-noise {
   background-image: radial-gradient(rgba(255, 255, 255, 0.35) 0.6px, transparent 0.7px);
   background-size: 7px 7px;
@@ -6733,22 +6718,19 @@ html.dark .nx-region-aura {
 .light .finn-portal--tech .finn-tech-aurora {
   opacity: 0.85;
 }
-.light .finn-portal--tech .finn-tech-grid {
-  opacity: 0.6;
+.light .finn-portal--tech .finn-tech-code {
+  opacity: 0.45;
 }
 
-@keyframes finn-tech-grid-drift {
+@keyframes finn-code-fall {
   from {
-    background-position:
-      0 0,
-      0 0;
+    transform: translateY(-50%);
   }
   to {
-    background-position:
-      26px 0,
-      0 26px;
+    transform: translateY(0%);
   }
 }
+
 
 @keyframes finn-tech-aurora-shift {
   0% {
