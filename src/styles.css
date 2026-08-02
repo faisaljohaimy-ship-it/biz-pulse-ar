@@ -6267,7 +6267,7 @@ html.dark .finn-portal:hover {
     opacity: 0;
   }
   18% {
-    opacity: 0.5;
+    opacity: calc(0.5 * var(--nxr-ripple-op, 1));
   }
   100% {
     transform: scale(1.55);
