@@ -5053,7 +5053,7 @@ tbody tr:hover {
   padding: 1.5px;
   background: var(--hx-iris);
   background-size: 320% 320%;
-  animation: hx-iris-drift 9s linear infinite;
+  animation: hx-iris-drift 7s linear infinite;
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -5062,7 +5062,8 @@ tbody tr:hover {
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   mask-composite: exclude;
-  opacity: 0.75;
+  opacity: 1;
+  filter: saturate(1.25);
   pointer-events: none;
   z-index: 0;
 }
@@ -5090,7 +5091,7 @@ tbody tr:hover {
   background-size: 220% 100%;
   animation: hx-iris-drift 6.5s linear infinite;
   mix-blend-mode: screen;
-  opacity: 0.5;
+  opacity: 0.75;
 }
 
 [data-slot="card"] > *,
