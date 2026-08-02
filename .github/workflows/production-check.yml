@@ -1,0 +1,107 @@
+# التحقق الميداني على الإنتاج.
+#
+# لماذا هنا لا في جلسة التطوير: بيئة التطوير محجوبة عن النطاق المنشور بسياسة
+# خروج شبكية (كل CONNECT خارجي يُقابَل بـ403)، فكان كل قول عن الإنتاج
+# استنتاجًا من البناء المحلي لا مشاهدة. خوادم GitHub شبكتها مفتوحة، فينتقل
+# التحقق إلى حيث يمكن أن يقع فعلًا — ويقع عند كل نشر، لا حين يسأل أحد.
+#
+# النشر الأساسي يمرّ عبر خط Lovable خارج GitHub، فلا يمكن ربط هذا الفحص
+# بوظيفة نشر داخلية. البدائل الثلاثة تغطي الحالات:
+#   • بعد كل دفعة إلى main (مع مهلة انتشار قبل الفحص)
+#   • كل ست ساعات — يلتقط ما يتعطّل بعد النشر لا عنده
+#   • يدويًّا عند الطلب، مع إمكان تمرير نطاق آخر
+#
+# لا يُسقط أحمر لسبب خارج الشيفرة: إن غاب عنوان الإنتاج يتخطّى بهدوء
+# (نفس عرف الحارس غير الحاجب في deploy.yml).
+name: Production check
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "عنوان الإنتاج (اتركه فارغًا لاستعمال متغيّر المستودع)"
+        required: false
+        type: string
+
+concurrency:
+  group: production-check
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Resolve production URL
+        id: target
+        env:
+          INPUT_URL: ${{ inputs.url }}
+          VAR_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          URL="${INPUT_URL:-$VAR_URL}"
+          if [ -z "$URL" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::PRODUCTION_URL غير محدَّد — تخطّي فحص الإنتاج (غير حاجب). لتفعيله: Settings → Secrets and variables → Actions → Variables → PRODUCTION_URL"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "url=$URL" >> "$GITHUB_OUTPUT"
+            echo "الهدف: $URL"
+          fi
+
+      # الانتشار على الحافة ليس فوريًّا. الفحص فور الدفع يقيس التوقيت لا
+      # الصحّة، فيُنتظر قبله — وللفحص نفسه تراجع أسّي بخمس محاولات.
+      - name: Wait for edge propagation
+        if: steps.target.outputs.configured == 'true' && github.event_name == 'push'
+        run: sleep 90
+
+      - name: Install
+        if: steps.target.outputs.configured == 'true'
+        run: npm ci --no-audit --no-fund
+
+      # ① الطبقة الأولى: ما يُقدَّم من الخادم — الحالة · سكربت الثيم ·
+      #    العلامة · الأنماط. سريعة ولا تحتاج متصفحًا.
+      - name: Served-HTML contract
+        if: steps.target.outputs.configured == 'true'
+        env:
+          PRODUCTION_URL: ${{ steps.target.outputs.url }}
+          ROUTES: /,/sec,/hcis,/risk
+        run: node scripts/check-production.mjs
+
+      # ② الطبقة الثانية: الحدود التي لا توجد إلا بعد التخطيط — حجم النص،
+      #    مساحة اللمس، التمرير الأفقي. تحتاج محرّكًا حقيقيًّا عند مقاسات حقيقية.
+      - name: Install browser
+        if: steps.target.outputs.configured == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: UI floors on the live site
+        if: steps.target.outputs.configured == 'true'
+        env:
+          BASE_URL: ${{ steps.target.outputs.url }}
+          ROUTES: /,/sec,/hcis,/risk
+        run: node scripts/ui-audit.mjs
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ "${{ steps.target.outputs.configured }}" != "true" ]; then
+            echo "### فحص الإنتاج — متخطّى" >> "$GITHUB_STEP_SUMMARY"
+            echo "متغيّر \`PRODUCTION_URL\` غير محدَّد في المستودع." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ job.status }}" = "success" ]; then
+            echo "### ✓ الإنتاج سليم — ${{ steps.target.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "عقد HTML المُقدَّم وحدود الواجهة صامدة على الموقع الحيّ." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### ✗ الإنتاج سقط في فحص — ${{ steps.target.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "راجع سجلّ الخطوة التي رسبت أعلاه." >> "$GITHUB_STEP_SUMMARY"
+          fi
