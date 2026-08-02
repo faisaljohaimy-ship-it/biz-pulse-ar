@@ -3713,6 +3713,7 @@ body {
 }
 /* الأسلاك والشيفرة تُقلب إلى حبر داكن كي تبقى مقروءة فوق السماوي */
 .light .finn-portal .nx-no-glow[aria-hidden] svg {
-  filter: invert(1) hue-rotate(180deg) saturate(1.2) brightness(0.85);
-  opacity: 0.55;
+  filter: invert(1) hue-rotate(175deg) saturate(2.2) brightness(0.6)
+    drop-shadow(0 0 1px rgba(12, 74, 110, 0.35));
+  opacity: 0.45;
 }
