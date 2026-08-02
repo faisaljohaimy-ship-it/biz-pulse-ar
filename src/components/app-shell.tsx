@@ -342,17 +342,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function ThemeIconToggle() {
-  const { theme, setTheme } = useTheme();
-  const { t } = useI18n();
-  return (
-    <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="grid size-9 place-items-center rounded-full border border-sidebar-border bg-card text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
-      aria-label={t("theme.toggle")}
-    >
-      {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-    </button>
-  );
+  // SADEED is Premium Light Mode only — no theme switch exists.
+  return null;
 }
 
 function LangIconToggle() {
