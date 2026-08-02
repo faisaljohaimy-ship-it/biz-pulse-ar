@@ -5692,3 +5692,24 @@ a > svg,
     animation-play-state: running !important;
   }
 }
+
+/* ── FINN chat scrim + insulating glass ring ─────────────────────────── */
+.finn-chat-scrim {
+  animation: finn-scrim-in 260ms ease-out both;
+  pointer-events: auto;
+}
+:root[data-theme="light"] .finn-chat-scrim,
+html:not([data-theme="dark"]) .finn-chat-scrim {
+  background: rgba(226, 240, 255, 0.42);
+}
+@keyframes finn-scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.nexus-aria-window {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 0 0 10px rgba(6, 182, 212, 0.10),
+    0 0 46px rgba(37, 99, 235, 0.28),
+    0 30px 90px rgba(2, 12, 26, 0.45);
+}
