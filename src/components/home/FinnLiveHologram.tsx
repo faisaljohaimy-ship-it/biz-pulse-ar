@@ -153,21 +153,21 @@ function CharacterPlane({ state }: { state: FinnLiveState }) {
     if (!m) return;
     const u = m.uniforms;
     const t = targets[state];
-    u.uTime.value += reduce ? dt * 0.3 : dt * 2.1;
+    u.uTime.value += reduce ? dt * 0.3 : dt * 1.35;
 
     // smooth toward targets
-    const k = Math.min(1, dt * 8);
+    const k = Math.min(1, dt * 6);
     u.uListen.value += (t.listen - u.uListen.value) * k;
     u.uOffline.value += (t.offline - u.uOffline.value) * k;
     // thinking sweep loops 0->1
     if (state === "thinking" && !reduce) {
-      u.uThink.value = (u.uThink.value + dt * 1.35) % 1.0;
+      u.uThink.value = (u.uThink.value + dt * 0.85) % 1.0;
     } else {
       u.uThink.value += (0 - u.uThink.value) * k;
     }
     // speaking pulses
     if (state === "speaking" && !reduce) {
-      const pulse = 0.55 + 0.45 * Math.abs(Math.sin(u.uTime.value * 9.5));
+      const pulse = 0.55 + 0.45 * Math.abs(Math.sin(u.uTime.value * 7.2));
       u.uSpeak.value += (pulse - u.uSpeak.value) * Math.min(1, dt * 8);
     } else {
       u.uSpeak.value += (t.speak - u.uSpeak.value) * k;
@@ -177,14 +177,14 @@ function CharacterPlane({ state }: { state: FinnLiveState }) {
     const g = groupRef.current;
     if (g) {
       const time = u.uTime.value;
-      const breathe = reduce ? 0 : Math.sin(time * 2.4) * 0.012;
+      const breathe = reduce ? 0 : Math.sin(time * 1.6) * 0.01;
       g.scale.y = 1 + breathe;
       const leanTarget =
-        state === "listening" ? -0.05 : state === "speaking" ? Math.sin(time * 6.0) * 0.02 : 0;
+        state === "listening" ? -0.05 : state === "speaking" ? Math.sin(time * 4.2) * 0.017 : 0;
       g.rotation.x += (leanTarget - g.rotation.x) * Math.min(1, dt * 6);
-      const swayTarget = reduce ? 0 : Math.sin(time * 1.6) * 0.03;
+      const swayTarget = reduce ? 0 : Math.sin(time * 1.0) * 0.02;
       g.rotation.y += (swayTarget - g.rotation.y) * Math.min(1, dt * 4);
-      g.position.y = -0.02 + (reduce ? 0 : Math.sin(time * 2.4) * 0.006);
+      g.position.y = -0.02 + (reduce ? 0 : Math.sin(time * 1.6) * 0.005);
     }
   });
 
@@ -304,7 +304,7 @@ function Pedestal({ state }: { state: FinnLiveState }) {
     if (!ref.current) return;
     const t = performance.now() * 0.001;
     const target = state === "listening" ? 1.15 : state === "speaking" ? 1.08 : 1.0;
-    const pulse = reduce ? target : target + Math.sin(t * 5.0) * 0.035;
+    const pulse = reduce ? target : target + Math.sin(t * 3.4) * 0.028;
     ref.current.scale.x += (pulse - ref.current.scale.x) * Math.min(1, dt * 3);
     ref.current.scale.z = ref.current.scale.x;
   });
@@ -321,13 +321,13 @@ function Pedestal({ state }: { state: FinnLiveState }) {
           side={THREE.DoubleSide}
         />
       </mesh>
-      <HoloRing radius={1.1} y={0} color="#67E8F9" speed={0.95} opacity={0.4} />
-      <HoloRing radius={1.3} y={0} color="#0891B2" speed={-0.7} thickness={0.015} opacity={0.35} />
+      <HoloRing radius={1.1} y={0} color="#67E8F9" speed={0.6} opacity={0.4} />
+      <HoloRing radius={1.3} y={0} color="#0891B2" speed={-0.45} thickness={0.015} opacity={0.35} />
       <HoloRing
         radius={0.75}
         y={0.02}
         color="#67E8F9"
-        speed={1.7}
+        speed={1.05}
         thickness={0.008}
         dashed
         opacity={0.5}
