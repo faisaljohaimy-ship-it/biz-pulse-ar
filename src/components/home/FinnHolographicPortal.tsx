@@ -74,8 +74,8 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       </div>
 
       {/* Center — mic CTA over the live hologram; old holographic brackets removed */}
-      <div className="relative z-10 flex flex-1 items-center justify-center px-4">
-        <div className="relative aspect-square w-full max-w-[360px] sm:max-w-[420px]">
+      <div className="relative z-10 flex flex-1 items-center justify-center px-4 pt-12 sm:pt-14">
+        <div className="relative mx-auto aspect-square w-full max-w-[360px] sm:max-w-[420px]">
           {/* Mic "Talk now" CTA — sits over the face */}
           <Link
             to="/finn"
