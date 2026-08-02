@@ -2365,7 +2365,9 @@ export function FinnCopilot() {
             </div>
           )}
         </aside>
+        </div>
       )}
+
     </>
   );
 
