@@ -5728,3 +5728,132 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
 .nexus-aria-window * {
   background-attachment: scroll;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   SEC-GRID SUBSTRATE — شبكة الشركة السعودية للكهرباء داخل كل بطاقة وأيقونة
+   طبقة خلفية: أسلاك نقل أفقية + أبراج/أعمدة رأسية + نبضة مسح كهربائي
+   تمرّ عبر الأسلاك باستمرار. تُرسم على الخلفية نفسها (الطبقتان الزائفتان
+   محجوزتان للحافة القزحية واللمعان).
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --sec-wire: rgba(6, 182, 212, 0.30);
+  --sec-pylon: rgba(37, 99, 235, 0.20);
+  --sec-mesh: rgba(37, 99, 235, 0.10);
+  --sec-arc: rgba(125, 240, 255, 0.55);
+}
+
+.light {
+  --sec-wire: rgba(6, 132, 168, 0.24);
+  --sec-pylon: rgba(29, 78, 216, 0.16);
+  --sec-mesh: rgba(29, 78, 216, 0.08);
+  --sec-arc: rgba(37, 160, 220, 0.42);
+}
+
+@keyframes sec-grid-scan {
+  0% {
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      -60% 0;
+  }
+  100% {
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      160% 0;
+  }
+}
+
+[data-slot="card"],
+.holo-card,
+.nx-glass-e1,
+.sd-glass-surface,
+.spatial-window,
+.nx-region-card,
+.nx-icon-wrap,
+.nx-tile,
+.nx-icon-edge,
+.nx-holo-icon,
+[data-holo-icon-wrap] {
+  background-image:
+    /* أسلاك النقل الأفقية */
+    repeating-linear-gradient(
+      to bottom,
+      var(--sec-wire) 0px,
+      var(--sec-wire) 1px,
+      transparent 1px,
+      transparent 22px
+    ),
+    /* الأعمدة/الأبراج الرأسية */
+    repeating-linear-gradient(
+      to right,
+      var(--sec-pylon) 0px,
+      var(--sec-pylon) 1px,
+      transparent 1px,
+      transparent 44px
+    ),
+    /* شبكة قطرية خافتة تحاكي عوارض البرج */
+    repeating-linear-gradient(
+      118deg,
+      var(--sec-mesh) 0px,
+      var(--sec-mesh) 1px,
+      transparent 1px,
+      transparent 30px
+    ),
+    /* نبضة المسح الكهربائي التي تسري عبر الأسلاك */
+    linear-gradient(
+      95deg,
+      transparent 42%,
+      var(--sec-arc) 49%,
+      rgba(255, 255, 255, 0.55) 51%,
+      var(--sec-arc) 53%,
+      transparent 60%
+    ) !important;
+  background-size:
+    100% 22px,
+    44px 100%,
+    100% 100%,
+    52% 100% !important;
+  background-repeat: repeat, repeat, repeat, no-repeat !important;
+  background-blend-mode: normal, normal, normal, screen;
+  animation: sec-grid-scan 5.4s linear infinite !important;
+  animation-play-state: running !important;
+}
+
+/* الأيقونات: شبكة أدق ونبضة أسرع لتناسب المساحة الصغيرة */
+.nx-icon-wrap,
+.nx-tile,
+.nx-icon-edge,
+.nx-holo-icon,
+[data-holo-icon-wrap] {
+  background-size:
+    100% 12px,
+    22px 100%,
+    100% 100%,
+    62% 100% !important;
+  animation-duration: 4.2s !important;
+}
+
+/* بطاقة FINN تحتفظ بخلفيتها الرقمية الخاصة — نضيف الأسلاك فقط فوقها */
+.finn-portal {
+  background-blend-mode: screen, screen, screen, screen, normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="card"],
+  .holo-card,
+  .nx-glass-e1,
+  .sd-glass-surface,
+  .spatial-window,
+  .nx-region-card,
+  .nx-icon-wrap,
+  .nx-tile,
+  .nx-icon-edge,
+  .nx-holo-icon,
+  [data-holo-icon-wrap] {
+    animation-play-state: running !important;
+  }
+}
