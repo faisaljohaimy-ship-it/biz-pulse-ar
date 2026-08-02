@@ -463,9 +463,20 @@ function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
         <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
           <TrendingUp className="h-4 w-4 text-primary" aria-hidden /> نشاط التوليد — ١٤ يومًا
         </div>
-        <div className="h-24">
-          <SparkArea values={stats.perDay} accent="37, 99, 235" height={90} label="نشاط توليد التقارير" />
-        </div>
+        <InteractiveArea
+          points={stats.perDay.map((value, i) => {
+            const d = new Date();
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() - (13 - i));
+            return {
+              label: d.toLocaleDateString("ar-SA", { day: "numeric", month: "short" }),
+              value,
+            };
+          })}
+          accent="37, 99, 235"
+          height={96}
+          title="نشاط توليد التقارير"
+        />
         <div className="mt-3 flex items-center justify-between gap-3">
           <RadialGauge value={stats.freshness} size={92} caption="حداثة السجل (٧ أيام)" />
           <div className="text-end">
