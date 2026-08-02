@@ -5966,3 +5966,18 @@ html.dark .nx-holo-scan,
 html.dark .nx-holo-noise {
   opacity: 0.16 !important;
 }
+
+/* ── حدود بطاقة FINN = حدود بطاقات القطاعات تمامًا ───────────────────────── */
+.finn-portal {
+  border: 1px solid var(--sd-line) !important;
+  border-width: 1px !important;
+  border-color: var(--sd-line) !important;
+  animation: none !important;
+}
+.finn-portal:hover {
+  border-color: rgba(29, 78, 216, 0.28) !important;
+}
+html.dark .finn-portal,
+html.dark .finn-portal:hover {
+  border-color: rgba(125, 211, 252, 0.28) !important;
+}
