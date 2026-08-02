@@ -488,9 +488,21 @@ export const upsertReportSchedule = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       return r as ReportScheduleRow;
     }
+    // org_id is mandatory (tenant isolation): resolve the caller's admin org
+    // membership rather than letting the row land without a tenant.
+    const { data: membership, error: orgError } = await supabase
+      .from("org_members")
+      .select("org_id, role")
+      .eq("user_id", userId)
+      .in("role", ["owner", "admin"])
+      .limit(1)
+      .maybeSingle();
+    if (orgError) throw new Error(orgError.message);
+    if (!membership?.org_id) throw new Error("No administered organization for this user");
+
     const { data: r, error } = await supabase
       .from("report_schedules")
-      .insert(row)
+      .insert({ ...row, org_id: membership.org_id })
       .select()
       .single();
     if (error) throw new Error(error.message);

@@ -99,7 +99,9 @@ export async function retrieveWithEvidenceGate(
 
   const baseLog: Record<string, unknown> = {
     query_text: query.slice(0, 2000),
-    org_id: input.orgId ?? null,
+    // Tenant isolation: org_id is mandatory on this table. `finish()` is only
+    // reachable after the missing-org guard below, so this is never null there.
+    org_id: input.orgId,
     hits_count: 0,
     max_similarity: 0,
     model_version: RAG_MODEL_VERSION,
