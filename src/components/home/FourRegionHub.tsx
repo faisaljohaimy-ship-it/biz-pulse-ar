@@ -14,6 +14,7 @@ import {
   Wifi,
 } from "lucide-react";
 import { FinnHolographicPortal } from "@/components/home/FinnHolographicPortal";
+import { MicroMeter } from "@/components/charts/premium-charts";
 import {
   CC_REGIONS,
   CC_REGION_METRICS,
