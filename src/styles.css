@@ -4867,3 +4867,90 @@ tbody tr:hover {
     transform: none !important;
   }
 }
+
+/* =====================================================================
+   SADEED VISUAL EXPERIENCE ARCHITECTURE — Glass / Light / Hover engines
+   Motion layer primitives (GlassSurface, MagneticButton) render these.
+   transform + opacity only → GPU accelerated, 60 FPS budget.
+   ===================================================================== */
+
+.sd-glass-surface {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 252, 255, 0.62));
+  border: 1.5px solid rgba(37, 99, 235, 0.16);
+  border-radius: 1rem;
+  backdrop-filter: blur(20px) saturate(150%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 10px 30px -18px rgba(15, 23, 42, 0.35);
+  transition: border-color 200ms var(--pv-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow 200ms var(--pv-spring, cubic-bezier(.16,1,.3,1));
+}
+
+/* pointer-tracked specular highlight (light engine) */
+.sd-glass-specular {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 220ms ease;
+  background: radial-gradient(
+    280px circle at calc(var(--gs-x, 50) * 1%) calc(var(--gs-y, 50) * 1%),
+    rgba(255, 255, 255, 0.55),
+    rgba(var(--gs-accent, 34, 211, 238), 0.16) 42%,
+    transparent 70%
+  );
+}
+
+/* slow optical light sweep across the surface */
+.sd-glass-sweep {
+  position: absolute;
+  inset: -30% -60%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.5) 48%,
+    rgba(186, 230, 253, 0.35) 54%,
+    transparent 66%
+  );
+  transform: translate3d(-40%, 0, 0);
+}
+
+.sd-glass-surface:hover .sd-glass-specular,
+.sd-magnetic:hover .sd-glass-specular {
+  opacity: 1;
+}
+
+.sd-glass-surface:hover,
+.sd-glass-surface:focus-within {
+  border-color: rgba(6, 182, 212, 0.55);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 0 0 1px rgba(6, 182, 212, 0.18),
+    0 18px 42px -20px rgba(15, 23, 42, 0.45),
+    0 0 28px -10px rgba(6, 182, 212, 0.55);
+}
+
+.sd-glass-surface:hover .sd-glass-sweep,
+.sd-magnetic:hover .sd-glass-sweep {
+  animation: sd-sweep-run 1200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes sd-sweep-run {
+  0% { opacity: 0; transform: translate3d(-45%, 0, 0); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(45%, 0, 0); }
+}
+
+.sd-magnetic {
+  border-radius: 0.85rem;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sd-glass-sweep,
+  .sd-glass-specular { animation: none !important; opacity: 0 !important; }
+  .sd-glass-surface { transition: none !important; }
+}
