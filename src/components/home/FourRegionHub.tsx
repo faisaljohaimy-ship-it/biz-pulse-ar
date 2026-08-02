@@ -354,36 +354,50 @@ export function FourRegionHub() {
         </div>
       )}
 
-      <div className="relative mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-        {kpis.map(({ labelAr, labelEn, value, Icon, tone, accent, to }) => {
-          // Honest encoding only: percentages map directly, counts map to their
-          // share of the largest count in the same row. Nothing is invented.
-          const numeric =
-            typeof value === "number" ? value : Number(String(value).replace("%", "")) || 0;
-          const isPct = typeof value === "string" && value.includes("%");
-          const maxCount = Math.max(
-            1,
-            ...kpis.filter((k) => typeof k.value === "number").map((k) => k.value as number),
-          );
-          const ratio = isPct ? numeric / 100 : numeric / maxCount;
-          return (
-            <Link
-              key={labelEn}
-              to={to}
-              aria-label={ar ? labelAr : labelEn}
-              style={{ ["--accent-rgb" as string]: accent }}
-              className="holo-card nx-icon-edge-glow block min-h-11 rounded-2xl border border-[color:var(--hairline-soft)] bg-[color:var(--chip)] p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-[color:var(--ink-2)]">{ar ? labelAr : labelEn}</span>
-                <Icon className={`h-4 w-4 ${tone}`} aria-hidden />
-              </div>
-              <div className={`mt-2 text-2xl font-black tabular-nums ${tone}`}>{value}</div>
-              <MicroMeter ratio={ratio} accent={accent} className="mt-2" />
-            </Link>
-          );
-        })}
-      </div>
+      <CinematicReveal
+        className="relative mt-4"
+        selector="[data-cinematic]"
+        lightSweep
+      >
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+          {kpis.map(({ labelAr, labelEn, value, Icon, tone, accent, to }) => {
+            // Honest encoding only: percentages map directly, counts map to their
+            // share of the largest count in the same row. Nothing is invented.
+            const numeric =
+              typeof value === "number" ? value : Number(String(value).replace("%", "")) || 0;
+            const isPct = typeof value === "string" && value.includes("%");
+            const maxCount = Math.max(
+              1,
+              ...kpis.filter((k) => typeof k.value === "number").map((k) => k.value as number),
+            );
+            const ratio = isPct ? numeric / 100 : numeric / maxCount;
+            return (
+              <GlassSurface
+                key={labelEn}
+                accent={accent}
+                className="rounded-2xl"
+              >
+                <Link
+                  data-cinematic
+                  to={to}
+                  aria-label={ar ? labelAr : labelEn}
+                  style={{ ["--accent-rgb" as string]: accent }}
+                  className="nx-icon-edge-glow block min-h-11 rounded-2xl p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-[color:var(--ink-2)]">
+                      {ar ? labelAr : labelEn}
+                    </span>
+                    <Icon className={`h-4 w-4 ${tone}`} aria-hidden />
+                  </div>
+                  <div className={`mt-2 text-2xl font-black tabular-nums ${tone}`}>{value}</div>
+                  <MicroMeter ratio={ratio} accent={accent} className="mt-2" />
+                </Link>
+              </GlassSurface>
+            );
+          })}
+        </div>
+      </CinematicReveal>
 
       <div className="relative mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">
         <div className="order-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:order-none lg:grid-cols-1">
