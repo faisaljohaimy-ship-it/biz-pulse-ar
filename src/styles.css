@@ -3717,3 +3717,148 @@ body {
     drop-shadow(0 0 1px rgba(12, 74, 110, 0.35));
   opacity: 0.45;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   OWNER DIRECTIVE (2026-08-02/3) — حدود عريضة (bold) لكل البطاقات
+   والأيقونات في الوضعين · خلفية رقمية داكنة متحركة باستمرار في الوضع
+   الفاتح · بطاقة FINN سماوية في الوضعين.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* 1) حدود بولد — الوضع الداكن */
+.holo-card,
+.nx-glass-e1,
+.nexus-card,
+.finn-portal,
+.glass,
+.nx-region-card {
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: rgba(255, 255, 255, 0.34) !important;
+}
+
+.holo-card:hover,
+.nx-glass-e1:hover,
+.nexus-card:hover,
+.nx-region-card:hover {
+  border-color: rgba(var(--accent-rgb, 34, 211, 238), 0.75) !important;
+}
+
+/* الأيقونات: قرص بحدّ عريض واضح */
+.holo-icon,
+.nx-icon-edge,
+[data-region-glow] {
+  border: 2px solid
+    rgba(var(--nx-region-rgb, var(--accent-rgb, 34, 211, 238)), 0.7) !important;
+}
+
+/* 2) حدود بولد — الوضع الفاتح (حبر داكن لوضوح أعلى) */
+.light .holo-card,
+.light .nx-glass-e1,
+.light .nexus-card,
+.light .glass,
+.light .glass-sidebar,
+.light .nx-clock-bar,
+.light .nx-region-card {
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: rgba(12, 42, 68, 0.42) !important;
+}
+
+.light .holo-card:hover,
+.light .nx-glass-e1:hover,
+.light .nexus-card:hover,
+.light .nx-region-card:hover {
+  border-color: rgba(12, 42, 68, 0.68) !important;
+}
+
+.light .holo-icon,
+.light .nx-icon-edge,
+.light [data-region-glow] {
+  border: 2px solid
+    rgba(var(--nx-region-rgb, var(--accent-rgb, 34, 211, 238)), 0.85) !important;
+}
+
+.light .finn-glass-edge {
+  border-width: 2px !important;
+  border-color: rgba(58, 160, 205, 0.7) !important;
+}
+.finn-glass-edge {
+  border-width: 2px !important;
+}
+
+/* 3) الخلفية الرقمية في الوضع الفاتح — حبر داكن ومتحرك باستمرار */
+.light .nx-holo-ambience {
+  mix-blend-mode: normal;
+}
+
+.light .nx-holo-aurora {
+  display: block;
+  opacity: 0.55;
+  background:
+    radial-gradient(60% 42% at 18% 8%, rgba(8, 47, 73, 0.22), transparent 68%),
+    radial-gradient(52% 38% at 84% 14%, rgba(12, 74, 110, 0.18), transparent 70%),
+    radial-gradient(70% 46% at 50% 108%, rgba(6, 78, 59, 0.14), transparent 72%);
+  animation: nx-holo-aurora-drift 22s ease-in-out infinite alternate;
+}
+
+.light .nx-holo-grid {
+  display: block;
+  opacity: 0.75;
+  background-image:
+    linear-gradient(to right, rgba(10, 40, 64, 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(10, 40, 64, 0.22) 1px, transparent 1px);
+  animation: nx-holo-grid-flow 18s linear infinite;
+}
+
+.light .nx-holo-scan {
+  display: block;
+  opacity: 0.45;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(10, 40, 64, 0.06) 0px,
+    rgba(10, 40, 64, 0.06) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+}
+
+.light .nx-holo-noise {
+  display: block;
+  opacity: 0.5;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(10, 40, 64, 0.12) 46%,
+    rgba(10, 40, 64, 0.12) 47%,
+    transparent 52%
+  );
+  animation: nx-holo-sweep 9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+/* 4) بطاقة FINN سماوية في الوضعين */
+.finn-portal {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(0, 212, 255, 0.30) 0%,
+      rgba(14, 165, 233, 0.22) 42%,
+      rgba(8, 47, 73, 0.55) 100%
+    ) !important;
+  border-color: rgba(58, 232, 255, 0.8) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 30px rgba(58, 232, 255, 0.35),
+    0 20px 48px rgba(2, 8, 17, 0.45) !important;
+}
+
+.light .finn-portal {
+  background:
+    linear-gradient(
+      160deg,
+      #eaf9ff 0%,
+      #cdeeff 38%,
+      #a9dff8 70%,
+      #8ed2f2 100%
+    ) !important;
+  border-color: rgba(30, 130, 175, 0.7) !important;
+}
