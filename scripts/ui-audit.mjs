@@ -24,6 +24,8 @@
  * UI. Set STRICT_CONSOLE=1 to make it a hard failure once the environment is
  * known-good.
  */
+import { existsSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { chromium } from "playwright";
 
 const BASE = (process.env.BASE_URL || "http://127.0.0.1:8080").replace(/\/$/, "");
@@ -115,9 +117,39 @@ const collect = ({ minFont, minTarget }) => {
   };
 };
 
-const browser = await chromium.launch({
-  executablePath: process.env.CHROMIUM_PATH || undefined,
-});
+/**
+ * Playwright resolves its browser by the version it was BUILT against. When the
+ * npm package moves ahead of the browsers on disk — a routine drift in CI images
+ * and in this container — `launch()` dies with "Executable doesn't exist" and the
+ * whole audit is skipped. A quality gate that silently stops running is worse
+ * than no gate, so the launcher falls back to any chromium actually present
+ * before giving up.
+ */
+function resolveChromium() {
+  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
+  const roots = [process.env.PLAYWRIGHT_BROWSERS_PATH, "/opt/pw-browsers"].filter(Boolean);
+  for (const root of roots) {
+    let entries;
+    try {
+      entries = readdirSync(root);
+    } catch {
+      continue;
+    }
+    // الأحدث أولًا: chromium-1194 يسبق chromium-1105 بالترتيب العددي لا النصّي.
+    const dirs = entries
+      .filter((d) => d.startsWith("chromium"))
+      .sort((a, b) => (Number(b.split("-")[1]) || 0) - (Number(a.split("-")[1]) || 0));
+    for (const d of dirs) {
+      for (const rel of ["chrome-linux/chrome", "chrome-linux/headless_shell"]) {
+        const candidate = join(root, d, rel);
+        if (existsSync(candidate)) return candidate;
+      }
+    }
+  }
+  return undefined; // اترك Playwright يحاول بمساره الافتراضي
+}
+
+const browser = await chromium.launch({ executablePath: resolveChromium() });
 
 const rows = [];
 for (const vp of VIEWPORTS) {

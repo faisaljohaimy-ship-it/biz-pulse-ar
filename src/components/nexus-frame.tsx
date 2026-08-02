@@ -52,7 +52,9 @@ function Starfield() {
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full">
       {stars.map((s, i) => (
-        <circle key={i} cx={`${s.x}%`} cy={`${s.y}%`} r={s.r} fill="white" opacity={s.o} />
+        // currentColor لا أبيض صريح: حقل النجوم يرث لون محيطه فيبقى
+        // مرئيًّا في الوضعين بدل أن يذوب في خلفية بيضاء (المادة ٣٤).
+        <circle key={i} cx={`${s.x}%`} cy={`${s.y}%`} r={s.r} fill="currentColor" opacity={s.o} />
       ))}
     </svg>
   );

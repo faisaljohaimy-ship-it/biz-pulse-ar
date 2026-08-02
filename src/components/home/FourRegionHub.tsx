@@ -109,7 +109,7 @@ function Ring({ pct, color }: { pct: number; color: string }) {
         strokeDashoffset={offset}
         transform="rotate(-90 28 28)"
       />
-      {/* fill="white" كان يخفي النسبة تمامًا في الوضع الفاتح — أبيض على أبيض.
+      {/* اللون الأبيض الصريح كان يخفي النسبة تمامًا في الوضع الفاتح.
           currentColor يجعلها تتبع لون النص المحيط في الوضعين. */}
       <text
         x="28"
