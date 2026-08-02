@@ -190,7 +190,7 @@ function RegionCard({
         </div>
       </button>
 
-      <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+      <div className="relative z-[1] mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
         {CC_REGION_METRICS.map((metric) => (
           <Link
             key={metric.key}
