@@ -1896,6 +1896,14 @@ export function FinnCopilot() {
         </button>
       )}
 
+      {/* Backdrop scrim — blurs and isolates the page behind the chat window */}
+      {isOpen && (
+        <div
+          aria-hidden
+          className="finn-chat-scrim fixed inset-0 z-[105] bg-[rgba(6,20,38,.34)] backdrop-blur-[14px] backdrop-saturate-150"
+        />
+      )}
+
       {/* Unified centered dock — identical placement at every breakpoint */}
       {isOpen && (
         <aside
