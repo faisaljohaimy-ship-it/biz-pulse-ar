@@ -5161,3 +5161,111 @@ a > svg,
     animation: none !important;
   }
 }
+
+/* =========================================================
+   HX-ICON-CHROMA — per-icon luminous color identity (v12.1)
+   Every icon/card keeps a continuous bright edge color.
+   Anything with no color of its own falls back to bold cyan.
+   ========================================================= */
+
+:root {
+  --hx-fallback: 34, 211, 238; /* soft cyan */
+}
+
+/* Base: each icon carries its own color variable, defaulting to cyan */
+.nx-icon,
+.nx-tile,
+.holo-icon,
+[data-holo-icon],
+[data-holo-icon-wrap],
+.nx-icon-wrap,
+.nx-icon-edge {
+  --hx-ic: var(--nx-region-rgb, var(--accent-rgb, var(--hx-fallback)));
+}
+
+/* Distinct luminous palette rotation so neighbouring icons differ */
+.nx-icon:nth-of-type(6n + 1),
+.nx-tile:nth-of-type(6n + 1),
+.nx-icon-wrap:nth-of-type(6n + 1),
+[data-holo-icon]:nth-of-type(6n + 1) { --hx-ic: 34, 211, 238; }   /* cyan */
+.nx-icon:nth-of-type(6n + 2),
+.nx-tile:nth-of-type(6n + 2),
+.nx-icon-wrap:nth-of-type(6n + 2),
+[data-holo-icon]:nth-of-type(6n + 2) { --hx-ic: 59, 130, 246; }   /* azure */
+.nx-icon:nth-of-type(6n + 3),
+.nx-tile:nth-of-type(6n + 3),
+.nx-icon-wrap:nth-of-type(6n + 3),
+[data-holo-icon]:nth-of-type(6n + 3) { --hx-ic: 168, 85, 247; }   /* violet */
+.nx-icon:nth-of-type(6n + 4),
+.nx-tile:nth-of-type(6n + 4),
+.nx-icon-wrap:nth-of-type(6n + 4),
+[data-holo-icon]:nth-of-type(6n + 4) { --hx-ic: 16, 185, 129; }   /* emerald */
+.nx-icon:nth-of-type(6n + 5),
+.nx-tile:nth-of-type(6n + 5),
+.nx-icon-wrap:nth-of-type(6n + 5),
+[data-holo-icon]:nth-of-type(6n + 5) { --hx-ic: 245, 158, 11; }   /* amber */
+.nx-icon:nth-of-type(6n + 6),
+.nx-tile:nth-of-type(6n + 6),
+.nx-icon-wrap:nth-of-type(6n + 6),
+[data-holo-icon]:nth-of-type(6n + 6) { --hx-ic: 244, 63, 94; }    /* rose */
+
+/* Region tiles always win with their own semantic region color */
+[data-region] .nx-icon,
+[data-region] .nx-tile,
+[data-region].nx-tile,
+[data-region] [data-holo-icon] {
+  --hx-ic: var(--nx-region-rgb, var(--hx-fallback));
+}
+
+/* Continuous colored glow on the glyph itself */
+.nx-icon,
+.nx-tile,
+.holo-icon,
+[data-holo-icon],
+button > svg,
+a > svg,
+[data-slot="button"] > svg {
+  filter:
+    drop-shadow(0 0 5px rgba(var(--hx-ic, var(--hx-fallback)), 0.65))
+    drop-shadow(0 0 12px rgba(var(--hx-ic, var(--hx-fallback)), 0.32));
+}
+
+@keyframes hx-chroma-edge {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(var(--hx-ic, var(--hx-fallback)), 0.55),
+      0 0 14px rgba(var(--hx-ic, var(--hx-fallback)), 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(var(--hx-ic, var(--hx-fallback)), 0.9),
+      0 0 26px rgba(var(--hx-ic, var(--hx-fallback)), 0.55);
+  }
+}
+
+/* Bold luminous outline for icon containers */
+.nx-icon-wrap,
+.nx-tile,
+.nx-icon-edge,
+[data-holo-icon-wrap] {
+  border: 2px solid rgba(var(--hx-ic, var(--hx-fallback)), 0.7);
+  animation: hx-chroma-edge 4.4s ease-in-out infinite;
+}
+
+/* Fallback: any card/panel without its own accent gets bold cyan edge */
+[data-slot="card"]:not([data-region]):not([style*="--accent-rgb"]),
+.holo-card:not([data-region]):not([style*="--accent-rgb"]),
+.sd-glass-surface:not([data-region]):not([style*="--accent-rgb"]),
+.nx-glass-e1:not([data-region]):not([style*="--accent-rgb"]) {
+  border-width: 2px;
+  border-color: rgba(var(--hx-fallback), 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-icon-wrap,
+  .nx-tile,
+  .nx-icon-edge,
+  [data-holo-icon-wrap] {
+    animation: none !important;
+  }
+}
