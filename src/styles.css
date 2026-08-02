@@ -5528,3 +5528,62 @@ a > svg,
   animation: hx-gloss-run 5s ease-in-out infinite !important;
   animation-play-state: running !important;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   OWNER DIRECTIVE (2026-08-02/7) — إعادة FINN إلى المنتصف بخلفيته الرقمية
+   الهولوغرامية العصرية، مع اسم ثابت في سقف البطاقة، وخلفية سماوية في
+   الوضع الفاتح، وحركة ثلاثية الأبعاد للبطاقة.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* 1) طبقات الزينة المطلقة لا يجوز تحويلها إلى relative (كانت تنهار لصفر) */
+.finn-portal > [aria-hidden].nx-no-glow,
+[data-slot="card"] > [aria-hidden].nx-no-glow,
+.holo-card > [aria-hidden].nx-no-glow,
+.spatial-window > [aria-hidden].nx-no-glow {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+}
+
+/* 2) الخلفية الرقمية داخل البطاقة: سماوية في الوضع الفاتح، داكنة في الداكن */
+.light .finn-portal .nx-no-glow[aria-hidden] {
+  background: radial-gradient(ellipse at 50% 42%, #cbeeff 0%, #7fd7f4 38%, #2f9ac7 72%, #14618c 100%) !important;
+  opacity: 0.95;
+}
+
+.light .finn-portal .nx-no-glow[aria-hidden] svg {
+  filter: none !important;
+  opacity: 0.75 !important;
+}
+
+.light .finn-portal {
+  background: linear-gradient(170deg, #d7f4ff 0%, #8fdcf7 30%, #3aa9d6 68%, #1a6d99 100%) !important;
+  color: #062434;
+}
+
+.light .finn-portal :is(h2, h3, p, span, small, strong) {
+  color: #062434;
+}
+
+.light .finn-portal .finn-wordmark {
+  color: #04202f;
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.85), 0 0 22px rgba(34, 211, 238, 0.55);
+}
+
+/* 3) اسم FINN ثابت في سقف البطاقة */
+.finn-wordmark-bar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+}
+
+/* 4) حركة ثلاثية الأبعاد لبطاقة FINN */
+.finn-portal {
+  transform-style: preserve-3d;
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 420ms ease;
+  will-change: transform;
+}
+
+.finn-portal:hover {
+  transform: perspective(1200px) translate3d(0, -4px, 0) rotateX(3.2deg) rotateY(-3.2deg);
+}
