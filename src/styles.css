@@ -6342,10 +6342,56 @@ html.dark .finn-portal:hover {
   opacity: 0.65 !important;
 }
 
+/* التخطيط الخلفي (شبكة الحقل) بلون المنطقة — يتحرّك مسحًا رأسيًا هادئًا */
+@keyframes nx-region-grid-drift {
+  0% {
+    background-position:
+      0 0,
+      0 0;
+  }
+  100% {
+    background-position:
+      0 22px,
+      22px 0;
+  }
+}
+
+.nx-region-grid {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  opacity: 0.5;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(var(--hx-ic, 34, 211, 238), 0.16) 0 1px,
+      transparent 1px 22px
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgba(var(--hx-ic, 34, 211, 238), 0.13) 0 1px,
+      transparent 1px 22px
+    );
+  -webkit-mask-image: radial-gradient(120% 90% at 20% 0%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(120% 90% at 20% 0%, #000 0%, transparent 78%);
+  animation: nx-region-grid-drift 9s linear infinite;
+}
+
+.nx-region-aura:hover .nx-region-grid,
+.nx-region-aura[data-region-active] .nx-region-grid {
+  opacity: 0.78;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nx-region-ripple {
     animation-duration: 9s;
     opacity: 0.22;
   }
+  .nx-region-grid {
+    animation-duration: 20s;
+  }
 }
+
 
