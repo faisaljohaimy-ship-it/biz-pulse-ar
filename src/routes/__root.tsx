@@ -261,11 +261,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
   // the LTR→RTL flash for Arabic visitors. The inline ScriptOnce below
   // still upgrades to "en" when the user's localStorage says so.
   return (
-    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className="light" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body className="bg-[#04070F]">
+      <body className="bg-[#F4F7FB]">
         {children}
         <Scripts />
       </body>
