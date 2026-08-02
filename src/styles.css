@@ -4047,3 +4047,317 @@ input::placeholder,
 textarea::placeholder {
   font-weight: 700;
 }
+
+/* ==========================================================================
+   SADEED — PREMIUM LIGHT EXECUTIVE LAYER (owner directive v10.0)
+   Light mode only. Premium white glass, royal blue, soft depth, no cyberpunk.
+   This block is intentionally last: it is the final word on surface, colour,
+   depth and typography for every screen.
+   ========================================================================== */
+
+:root,
+.light {
+  /* Brand */
+  --sd-royal: #1d4ed8;
+  --sd-azure: #2563eb;
+  --sd-azure-soft: #3b82f6;
+  --sd-cyan: #06b6d4;
+  --sd-emerald: #059669;
+  --sd-amber: #d97706;
+  --sd-ruby: #dc2626;
+
+  /* Neutrals */
+  --sd-white: #ffffff;
+  --sd-pearl: #f8fafc;
+  --sd-line: #e5e7eb;
+  --sd-ink: #111827;
+  --sd-ink-2: #6b7280;
+
+  /* Premium white glass + elegant elevation */
+  --sd-glass: rgba(255, 255, 255, 0.72);
+  --sd-glass-strong: rgba(255, 255, 255, 0.86);
+  --sd-shadow-1: 0 1px 2px rgba(17, 24, 39, 0.04), 0 6px 16px -8px rgba(17, 24, 39, 0.1);
+  --sd-shadow-2: 0 2px 4px rgba(17, 24, 39, 0.05), 0 14px 34px -14px rgba(17, 24, 39, 0.16);
+  --sd-shadow-3: 0 4px 8px rgba(17, 24, 39, 0.06), 0 28px 64px -24px rgba(29, 78, 216, 0.22);
+}
+
+html,
+html.dark,
+body {
+  color-scheme: light;
+}
+
+:root,
+.light,
+.dark {
+  --background: var(--sd-white);
+  --foreground: var(--sd-ink);
+  --card: var(--sd-white);
+  --card-foreground: var(--sd-ink);
+  --popover: var(--sd-white);
+  --popover-foreground: var(--sd-ink);
+  --primary: var(--sd-royal);
+  --primary-foreground: #ffffff;
+  --primary-glow: var(--sd-azure-soft);
+  --secondary: var(--sd-pearl);
+  --secondary-foreground: var(--sd-ink);
+  --muted: var(--sd-pearl);
+  --muted-foreground: var(--sd-ink-2);
+  --accent: var(--sd-azure);
+  --accent-foreground: #ffffff;
+  --destructive: var(--sd-ruby);
+  --destructive-foreground: #ffffff;
+  --success: var(--sd-emerald);
+  --success-foreground: #ffffff;
+  --warning: var(--sd-amber);
+  --border: var(--sd-line);
+  --input: var(--sd-white);
+  --ring: var(--sd-azure);
+
+  --sidebar: rgba(255, 255, 255, 0.82);
+  --sidebar-foreground: var(--sd-ink);
+  --sidebar-primary: var(--sd-royal);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--sd-pearl);
+  --sidebar-accent-foreground: var(--sd-ink);
+  --sidebar-border: var(--sd-line);
+  --sidebar-ring: var(--sd-azure);
+
+  --chart-1: var(--sd-royal);
+  --chart-2: var(--sd-cyan);
+  --chart-3: var(--sd-emerald);
+  --chart-4: var(--sd-amber);
+  --chart-5: var(--sd-azure-soft);
+
+  /* Surface tokens flip to the executive white workspace */
+  --surface: var(--sd-white);
+  --surface-2: var(--sd-pearl);
+  --ink: var(--sd-ink);
+  --ink-2: var(--sd-ink-2);
+  --ink-3: #9ca3af;
+  --chip: rgba(17, 24, 39, 0.035);
+  --chip-strong: rgba(17, 24, 39, 0.07);
+  --chip-hover: rgba(29, 78, 216, 0.07);
+  --hairline: var(--sd-line);
+  --hairline-soft: #eef1f5;
+  --hairline-hover: rgba(29, 78, 216, 0.35);
+  --tone-cyan: #0e7490;
+  --tone-emerald: #047857;
+  --tone-rose: #be123c;
+  --tone-amber: #b45309;
+
+  --gradient-primary: linear-gradient(135deg, var(--sd-royal) 0%, var(--sd-azure) 55%, var(--sd-cyan) 100%);
+  --gradient-hero: linear-gradient(135deg, #ffffff 0%, var(--sd-pearl) 60%, #eef4ff 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, var(--sd-pearl) 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.7) 100%);
+  --shadow-card: var(--sd-shadow-1);
+  --shadow-elevated: var(--sd-shadow-2);
+  --shadow-glow: var(--sd-shadow-3);
+  --shadow-neon: 0 0 0 1px rgba(29, 78, 216, 0.14), 0 10px 28px -14px rgba(29, 78, 216, 0.3);
+}
+
+/* ── Executive workspace background: soft white gradient + very light grid ── */
+body {
+  background-color: var(--sd-white);
+  background-image:
+    radial-gradient(1100px 620px at 78% -12%, rgba(37, 99, 235, 0.07), transparent 62%),
+    radial-gradient(900px 520px at 8% 4%, rgba(6, 182, 212, 0.05), transparent 60%),
+    linear-gradient(180deg, #ffffff 0%, var(--sd-pearl) 100%);
+  background-attachment: fixed;
+  color: var(--sd-ink);
+}
+
+/* ── Premium white glass on every surface family ─────────────────────────── */
+.holo-card,
+.nx-glass-e1,
+.nexus-card,
+.nexus-window,
+.nexus-aria-window,
+.nexus-floating-surface,
+.nx-region-card,
+.finn-portal,
+.glass-sidebar,
+.nexus-toast,
+[data-slot="card"] {
+  background: var(--sd-glass) !important;
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(248, 250, 252, 0.78) 100%
+  ) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--sd-line) !important;
+  border-radius: var(--radius);
+  box-shadow: var(--sd-shadow-1) !important;
+  color: var(--sd-ink);
+}
+
+.holo-card:hover,
+.nexus-card:hover,
+.nx-region-card:hover,
+[data-slot="card"]:hover {
+  box-shadow: var(--sd-shadow-2) !important;
+  border-color: rgba(29, 78, 216, 0.28) !important;
+  transform: translateY(-2px);
+  transition:
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.finn-portal {
+  background-image: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(239, 246, 255, 0.9) 55%,
+    rgba(236, 254, 255, 0.86) 100%
+  ) !important;
+  box-shadow: var(--sd-shadow-3) !important;
+  border-color: rgba(37, 99, 235, 0.28) !important;
+}
+
+/* ── Quiet the legacy neon: gloss sweeps and heavy glows are out ─────────── */
+.holo-card::after,
+.nx-glass-e1::after,
+.nexus-card::after,
+.nx-region-card::after,
+.holo-icon::after,
+.nx-icon-edge::after,
+.finn-portal::after {
+  opacity: 0.28 !important;
+  mix-blend-mode: normal;
+}
+
+.nx-holo-aurora,
+.nx-holo-grid,
+.nx-holo-scan,
+.nx-holo-noise {
+  opacity: 0.06 !important;
+  filter: none !important;
+}
+
+/* ── Icons: consistent, professional, elegant hover ──────────────────────── */
+.holo-icon,
+.nx-icon-edge {
+  background: var(--sd-white) !important;
+  border: 1px solid var(--sd-line) !important;
+  box-shadow: var(--sd-shadow-1) !important;
+  color: var(--sd-royal);
+}
+.holo-icon:hover,
+.nx-icon-edge:hover {
+  border-color: rgba(29, 78, 216, 0.35) !important;
+  box-shadow: var(--sd-shadow-2) !important;
+}
+svg {
+  vector-effect: non-scaling-stroke;
+}
+
+/* ── Header / clock bar ──────────────────────────────────────────────────── */
+.nx-clock-bar {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  border-bottom: 1px solid var(--sd-line) !important;
+  color: var(--sd-ink) !important;
+  box-shadow: var(--sd-shadow-1);
+}
+.nx-clock-bar * {
+  color: var(--sd-ink) !important;
+}
+
+/* ── Controls: premium buttons, inputs, focus ────────────────────────────── */
+button,
+[role="button"],
+a,
+input,
+select,
+textarea {
+  transition:
+    background-color 150ms ease-out,
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out,
+    transform 100ms ease-out;
+}
+button:active,
+[role="button"]:active {
+  transform: translateY(1px);
+}
+:focus-visible {
+  outline: 2px solid var(--sd-azure);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+input,
+textarea,
+select,
+[data-slot="input"],
+[data-slot="textarea"],
+[data-slot="select-trigger"] {
+  background: var(--sd-white) !important;
+  border: 1px solid var(--sd-line) !important;
+  color: var(--sd-ink) !important;
+  box-shadow: inset 0 1px 2px rgba(17, 24, 39, 0.04);
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--sd-ink-2);
+}
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--sd-azure) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+/* ── Enterprise data grid ────────────────────────────────────────────────── */
+table {
+  color: var(--sd-ink);
+}
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--sd-pearl);
+  color: var(--sd-ink);
+  border-bottom: 1px solid var(--sd-line);
+}
+tbody tr {
+  border-bottom: 1px solid var(--sd-hairline, var(--sd-line));
+}
+tbody tr:hover {
+  background: rgba(37, 99, 235, 0.04);
+}
+
+/* ── Typography: bold executive hierarchy on light ───────────────────────── */
+html[lang="ar"],
+[dir="rtl"] {
+  font-family: "IBM Plex Sans Arabic", "Tajawal", "Cairo", system-ui, sans-serif;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--sd-ink);
+  letter-spacing: -0.01em;
+}
+.text-muted-foreground,
+small {
+  color: var(--sd-ink-2);
+}
+
+/* Scrollbars: quiet and premium */
+* {
+  scrollbar-color: #cbd5e1 transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
