@@ -36,10 +36,27 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       className="finn-portal finn-portal--tech relative flex h-full flex-col overflow-hidden rounded-2xl bg-[#061525] p-4"
     >
       {/* Digital background layers — decorative only, never affect layout */}
-      <span className="finn-tech-grid" aria-hidden />
+      <span className="finn-tech-code" aria-hidden>
+        {CODE_COLUMNS.map((col, i) => (
+          <span
+            key={i}
+            className="finn-code-col"
+            style={
+              {
+                "--col-i": i,
+                left: `${(i + 0.5) * (100 / CODE_COLUMNS.length)}%`,
+                animationDuration: `${5.5 + (i % 4) * 1.4}s`,
+                animationDelay: `${-(i * 0.9)}s`,
+              } as React.CSSProperties
+            }
+          >
+            <span>{col}</span>
+            <span>{col}</span>
+          </span>
+        ))}
+      </span>
       <span className="finn-tech-aurora" aria-hidden />
       <span className="finn-tech-scan" aria-hidden />
-      <span className="finn-tech-orbit" aria-hidden />
       <span className="finn-tech-noise" aria-hidden />
 
       {/* FINN wordmark — pinned to the card ceiling, always centred */}
