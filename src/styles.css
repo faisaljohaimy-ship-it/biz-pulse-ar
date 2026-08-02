@@ -4954,3 +4954,39 @@ tbody tr:hover {
   .sd-glass-specular { animation: none !important; opacity: 0 !important; }
   .sd-glass-surface { transition: none !important; }
 }
+
+/* =====================================================================
+   FINN portal · sky-cyan → deep dark gradient (owner directive)
+   ===================================================================== */
+.finn-portal,
+.light .finn-portal {
+  background:
+    linear-gradient(
+      170deg,
+      rgba(125, 211, 252, 0.95) 0%,
+      rgba(56, 189, 248, 0.92) 22%,
+      rgba(14, 116, 144, 0.94) 55%,
+      rgba(12, 45, 78, 0.97) 80%,
+      rgba(6, 20, 38, 0.99) 100%
+    ) !important;
+  border-color: rgba(103, 232, 249, 0.55) !important;
+  color: #F0F9FF;
+}
+
+.finn-portal :is(h1, h2, h3, h4, h5, h6, p, span, li, label, small, strong, div) {
+  color: inherit;
+}
+
+.finn-portal .text-muted-foreground,
+.finn-portal [class*="text-muted"] {
+  color: rgba(224, 242, 254, 0.78) !important;
+}
+
+.finn-portal::after {
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.28) 48%,
+    transparent 66%
+  );
+}
