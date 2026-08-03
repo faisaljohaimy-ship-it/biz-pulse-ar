@@ -77,8 +77,8 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         FINN
       </h2>
 
-      {/* Centre — small static portrait + mic CTA */}
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-3 py-4">
+      {/* Centre — static portrait, perfectly centred on both axes */}
+      <div className="relative z-10 grid flex-1 place-items-center py-3">
         <img
           src={finnCharacter.url}
           alt={
@@ -88,9 +88,10 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
           }
           loading="lazy"
           decoding="async"
-          className="h-50 w-auto object-contain sm:h-65"
+          className="mx-auto block h-full max-h-56 w-auto max-w-[82%] object-contain object-center sm:max-h-64"
         />
       </div>
+
 
       {/* Bottom — subtitle, status, secondary CTA */}
       <footer className="relative z-10 flex flex-col items-center gap-2">
