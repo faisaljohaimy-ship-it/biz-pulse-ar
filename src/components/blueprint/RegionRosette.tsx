@@ -13,6 +13,7 @@
  * الرسم نفسه مُخفى عن القارئات (`aria-hidden`): هو تمثيل بصري لأرقام تُقرأ
  * كاملةً في الأزرار تحته. لا معلومة تعيش في الشكل وحده.
  */
+import { BRAND_ASSISTANT } from "@/lib/domain";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 
 /** موضع كل منطقة على البوصلة — صفر عند الأعلى، ويزيد مع عقارب الساعة. */
@@ -174,33 +175,30 @@ export function RegionRosette({ values, average, activeRegion, ar }: RegionRoset
         );
       })}
 
-      {/* القلب — المتوسط، أو «لم يُقَس» صراحةً. */}
+      {/* القلب — صورة فِن من مصدر الهوية الوحيد (قرار المالك ٢٠٢٦/٠٨/٠٤)،
+          والمتوسط شارةً على حافتها السفلى؛ «لم يُقَس» يبقى نصًّا صريحًا. */}
+      <defs>
+        <clipPath id="nx-bp-hub-clip">
+          <circle cx={C} cy={C} r={R_HUB - 1.5} />
+        </clipPath>
+      </defs>
       <circle cx={C} cy={C} r={R_HUB} className="nx-bp-hub" strokeWidth="1" />
-      {/* المقاسات في الطبقة لا هنا: الأسلوب المضمّن يُعفي حامله من كل قاعدة
-          عامة، فتُترك له الهندسة (`y`) وحدها وتُنقل الطباعة إلى CSS. */}
-      <text
-        x={C}
-        y={average === null ? C + 2 : C - 1}
-        textAnchor="middle"
-        fill="currentColor"
-        className="nx-bp-hub-value"
-        data-empty={average === null || undefined}
-      >
-        {average === null ? (ar ? "لم يُقَس" : "not measured") : `${Math.round(average)}%`}
-      </text>
-      {average !== null && (
-        <text
-          x={C}
-          y={C + 13}
-          textAnchor="middle"
-          fill="currentColor"
-          className="nx-bp-hub-label"
-          /* التباعد الحرفي يكسر وصل الحروف العربية — يُقصر على اللاتينية. */
-          data-latin={!ar || undefined}
-        >
-          {ar ? "الامتثال" : "COMPLIANCE"}
+      <image
+        href={BRAND_ASSISTANT.portrait}
+        x={C - (R_HUB - 1.5)}
+        y={C - (R_HUB - 1.5)}
+        width={(R_HUB - 1.5) * 2}
+        height={(R_HUB - 1.5) * 2}
+        clipPath="url(#nx-bp-hub-clip)"
+        preserveAspectRatio="xMidYMid slice"
+      />
+      <circle cx={C} cy={C} r={R_HUB} className="nx-bp-hub-ring" strokeWidth="1.6" fill="none" />
+      <g className="nx-bp-hub-badge" data-empty={average === null || undefined}>
+        <rect x={C - 24} y={C + R_HUB - 8} width="48" height="15" rx="7.5" strokeWidth="1" />
+        <text x={C} y={C + R_HUB + 3} textAnchor="middle" fill="currentColor">
+          {average === null ? (ar ? "لم يُقَس" : "not measured") : `${Math.round(average)}%`}
         </text>
-      )}
+      </g>
     </svg>
   );
 }

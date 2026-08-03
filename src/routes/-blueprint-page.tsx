@@ -29,6 +29,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { FlaskConical } from "lucide-react";
 import { HomeTopNav } from "@/components/nav/HomeTopNav";
 import { RegionRosette } from "@/components/blueprint/RegionRosette";
+import { RegionSkyline } from "@/components/blueprint/RegionSkyline";
 import { InstrumentPanel, MeasureRail } from "@/components/blueprint/InstrumentPanels";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { useAuth } from "@/lib/auth-context";
@@ -280,9 +281,15 @@ export function BlueprintPage() {
           </div>
         </section>
 
+        {/* أفق المناطق الأربع — الفن عنصر أساسي: بانوراما صناعية بعرض
+            الصفحة، شمسها التوريق وأبراجها الشبكة التي يحرسها النظام. */}
+        <section className="nx-bp-stage mt-4" style={{ ["--nx-bp-i" as string]: 3 }}>
+          <RegionSkyline ar={ar} />
+        </section>
+
         <section
-          className="nx-bp-stage mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
-          style={{ ["--nx-bp-i" as string]: 3 }}
+          className="nx-bp-stage mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          style={{ ["--nx-bp-i" as string]: 4 }}
         >
           {panels.map((panel, i) => (
             <InstrumentPanel
@@ -300,7 +307,7 @@ export function BlueprintPage() {
         </section>
 
         {/* الوكلاء على المناوبة — امتداد المسرح على صدر الرئيسية. */}
-        <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 4 }}>
+        <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 5 }}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="nx-bp-h2">{ar ? "الوكلاء على المناوبة" : "Agents on shift"}</h2>
             <Link to="/nx-ops" className="nx-bp-more">
@@ -326,7 +333,7 @@ export function BlueprintPage() {
         </section>
 
         {/* سجل القرارات الجاري — أصناف الشريط من طبقة المسرح نفسها. */}
-        <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 5 }}>
+        <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 6 }}>
           <h2 className="nx-bp-h2">{ar ? "سجل القرارات — مباشر" : "Decisions — live"}</h2>
           <div className="nx-op-ticker mt-3" data-static={!pipeline.length || undefined}>
             <div className="nx-op-ticker-track">
@@ -353,7 +360,7 @@ export function BlueprintPage() {
 
         <footer
           className="nx-bp-stage mt-8 flex flex-wrap items-center gap-3 border-t border-[color:var(--hairline-soft)] pt-4"
-          style={{ ["--nx-bp-i" as string]: 6 }}
+          style={{ ["--nx-bp-i" as string]: 7 }}
         >
           {simulation && (
             <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] px-3 text-[12px] text-[color:var(--ink-2)]">
