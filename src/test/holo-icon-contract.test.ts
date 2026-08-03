@@ -59,12 +59,16 @@ describe("nx-holo-icon utility — the token contract", () => {
 });
 
 describe("adoption — icon controls carry no glass fill", () => {
+  // بوابة FINN كانت هنا. أزال المالك أيقونة «تحدث الآن» صراحةً — نصّه في
+  // d4ac6a2، والحذف في 4d1789b — فلم يبقَ في الملف زرٌّ أيقوني أصلًا: نداؤه
+  // الوحيد اليوم رابط نصّي معنون. إبقاؤه في قائمة «أسطح تحمل أيقونات» كان
+  // يطالب ملفًا بلا أيقونة أن يحمل معالجة أيقونة، فيسقط الفحص على قرار لا
+  // على عطل. الثابت الذي وُجد لأجله لم يُلغَ — نُقل إلى فحصه الخاص أدناه.
   const iconSurfaces = [
     "src/components/cockpit/header.tsx",
     "src/components/cockpit/events.tsx",
     "src/components/cockpit/experience-bar.tsx",
     "src/components/cockpit/map.tsx",
-    "src/components/home/FinnHolographicPortal.tsx",
     "src/components/home/FourRegionHub.tsx",
   ];
 
@@ -84,12 +88,29 @@ describe("adoption — icon controls carry no glass fill", () => {
     }
   });
 
-  it("FINN's talk control lost its opaque disc and gained the holo edge", () => {
+  it("لا عنصر تفاعلي في بوابة FINN يلبس قرص البطاقة المعتم", () => {
+    // الصياغة السابقة كانت تفترض وجود زر «تحدث الآن» بعينه، فلمّا أزاله
+    // المالك سقط الفحص على قرارٍ لا على عطل. الثابت المقصود ليس ذلك الزر بل
+    // القاعدة: لون البطاقة `bg-[#061525]` خلفية للبطاقة نفسها، وما إن يلبسه
+    // عنصر تفاعلي حتى يعود القرص المعتم الذي أُلغي في كل النظام.
     const finn = read("src/components/home/FinnHolographicPortal.tsx");
-    const talk = finn.slice(finn.indexOf("Talk to FINN now"));
-    const cls = talk.slice(0, talk.indexOf(">"));
-    expect(cls).toContain("nx-holo-icon");
-    expect(cls).not.toContain("bg-[#061525]");
+    for (const tag of finn.match(/<(?:button|a|Link)\b[^>]*>/g) ?? []) {
+      expect(tag, "عنصر تفاعلي يحمل قرص البطاقة المعتم").not.toContain("bg-[#061525]");
+    }
+  });
+
+  it("إن عاد زر أيقوني إلى بوابة FINN فبالحافة الهولوغرامية لا بقرص", () => {
+    // فحص مشروط لا يفترض عودة الزر ولا يمنعها: ما دام غائبًا فلا شيء يُقاس،
+    // وما إن يعود حتى يُطالَب بالمعالجة نفسها التي يحملها كل زر أيقوني آخر.
+    // بغيره كان حذف الفحص السابق يترك الباب مفتوحًا لعودته بقرص معتم بصمت.
+    // يُلتقط الوسم كاملًا لا ما بعد `aria-label`: ترتيب السمات ليس عقدًا،
+    // ولو سبق `className` النداءَ لأفلت فحصٌ يقرأ ما بعده فقط.
+    const finn = read("src/components/home/FinnHolographicPortal.tsx");
+    const talk = (finn.match(/<(?:button|a|Link)\b[^>]*>/g) ?? []).find((tag) =>
+      /تحدث الآن|Talk to FINN/.test(tag),
+    );
+    if (!talk) return;
+    expect(talk).toContain("nx-holo-icon");
   });
 });
 
