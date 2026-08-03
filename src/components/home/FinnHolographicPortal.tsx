@@ -92,7 +92,6 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         />
       </div>
 
-
       {/* Bottom — subtitle, status, secondary CTA */}
       <footer className="relative z-10 flex flex-col items-center gap-2">
         <p className="text-center text-xs text-white/90">
