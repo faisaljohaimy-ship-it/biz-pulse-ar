@@ -170,6 +170,6 @@
     "@modelcontextprotocol/sdk": "1.30.0",
     "protobufjs": "^7.5.3",
     "esbuild": "^0.28.1",
-    "undici": "7.28.0"
+    "undici": "7.29.0"
   }
 }
