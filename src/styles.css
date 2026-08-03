@@ -7375,6 +7375,217 @@ html.dark .nx-region-aura {
   box-shadow: 0 0 10px rgba(var(--bp-accent-rgb), 0.35);
 }
 
+/* ── جمال الصدر + امتدادات ملء الصفحة ──────────────────────────────────── */
+
+/* خيط الشفق الطيفي — يتنفّس بألوان الرموز الستة على أعلى الصفحة. */
+.nx-bp-ribbon {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 3px;
+  pointer-events: none;
+  background: linear-gradient(
+    to left,
+    var(--tone-cyan),
+    var(--tone-blue),
+    var(--tone-violet),
+    var(--tone-emerald),
+    var(--tone-amber),
+    var(--tone-cyan)
+  );
+  background-size: 300% 100%;
+  filter: drop-shadow(0 2px 12px color-mix(in srgb, var(--tone-cyan) 55%, transparent));
+  animation: nxBpRibbon 14s linear infinite;
+  opacity: 0.9;
+}
+
+@keyframes nxBpRibbon {
+  to {
+    background-position: 300% 0;
+  }
+}
+
+/* حزمتا ضوء مائلتان خلف الترويسة — مسرحية الصدر بلا كلفة شبكية. */
+.nx-bp-beam {
+  position: absolute;
+  inset-block-start: -12%;
+  inline-size: 46%;
+  block-size: 42%;
+  pointer-events: none;
+  rotate: -14deg;
+  filter: blur(46px);
+  opacity: 0.5;
+  animation: nxBpBeam 18s ease-in-out infinite alternate;
+}
+
+.nx-bp-beam--a {
+  inset-inline-end: -6%;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--tone-cyan) 30%, transparent),
+    transparent 70%
+  );
+}
+
+.nx-bp-beam--b {
+  inset-inline-start: -8%;
+  rotate: 14deg;
+  background: linear-gradient(
+    -100deg,
+    color-mix(in srgb, var(--tone-violet) 26%, transparent),
+    transparent 70%
+  );
+  animation-delay: -9s;
+}
+
+@keyframes nxBpBeam {
+  from {
+    translate: 0 0;
+    opacity: 0.38;
+  }
+  to {
+    translate: 0 4%;
+    opacity: 0.6;
+  }
+}
+
+.light .nx-bp-ribbon {
+  opacity: 0.75;
+}
+
+.light .nx-bp-beam {
+  opacity: 0.3;
+}
+
+/* هالة العنوان: الظل يلوّن الحروف الشفافة من خلفها فتتوهّج بلا فقد تباين. */
+.nx-bp-title {
+  text-shadow: 0 0 34px color-mix(in srgb, var(--tone-cyan) 32%, transparent);
+}
+
+/* أزرار المناطق تلمع بلون منطقتها — ساكنة لا رهينة تمرير (المادة ٣٢). */
+.nx-bp-region-btn {
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 0 24px -14px color-mix(in srgb, var(--bp-accent) 55%, transparent);
+}
+
+/* شريط النبض الحي */
+.nx-bp-counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nx-bp-counter {
+  display: flex;
+  min-block-size: 46px;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--tone-cyan) 30%, var(--hairline));
+  background: linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
+  padding-inline: 14px;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 0 18px -10px color-mix(in srgb, var(--tone-cyan) 60%, transparent);
+}
+
+.nx-bp-counter b {
+  font-size: 17px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.nx-bp-counter span {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+/* عناوين الأقسام المضافة وزرّ المسرح */
+.nx-bp-h2 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink-2);
+}
+
+.nx-bp-more {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 34px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--tone-cyan) 45%, var(--hairline));
+  background: color-mix(in srgb, var(--tone-cyan) 10%, transparent);
+  padding-inline: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+  transition: border-color var(--nx-anim-fast) var(--nx-ease-out);
+}
+
+.nx-bp-more:hover {
+  border-color: var(--tone-cyan);
+}
+
+/* بطاقات وكلاء المناوبة — زجاج بلهجة متغيّرة (--op-hue اسم رمز). */
+.nx-bp-agent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-inline-size: 0;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--op-hue) 36%, var(--hairline));
+  background: linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
+  padding: 12px 14px;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 0 22px -12px color-mix(in srgb, var(--op-hue) 60%, transparent);
+  transition: border-color var(--nx-anim-fast) var(--nx-ease-out);
+}
+
+.nx-bp-agent:hover {
+  border-color: var(--op-hue);
+}
+
+.nx-bp-agent b {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.nx-bp-agent i {
+  font-style: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.nx-bp-agent-dot {
+  inline-size: 8px;
+  block-size: 8px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--tone-emerald);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tone-emerald) 80%, transparent);
+}
+
+.nx-bp-agent-dot[data-state="processing"] {
+  background: var(--tone-amber);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tone-amber) 80%, transparent);
+}
+
+.nx-bp-agent-dot[data-state="idle"] {
+  background: transparent;
+  border: 1.5px solid var(--ink-3);
+  box-shadow: none;
+}
+
 /* طبقة الفن تحت قواعد الوصول نفسها: الحركة تسكن لا تختفي، والشفافية
    المخفَّضة والألوان القسرية تُسقطان الزينة كلّها. */
 @media (prefers-reduced-motion: reduce) {
@@ -7382,6 +7593,8 @@ html.dark .nx-region-aura {
   .nx-bp-halo,
   .nx-bp-orbit--a,
   .nx-bp-orbit--b,
+  .nx-bp-ribbon,
+  .nx-bp-beam,
   .nx-bp-arc-tip {
     animation: none !important;
   }
@@ -7393,7 +7606,8 @@ html.dark .nx-region-aura {
 
 @media (prefers-reduced-transparency: reduce) {
   .nx-bp-aurora,
-  .nx-bp-halo {
+  .nx-bp-halo,
+  .nx-bp-beam {
     display: none;
   }
 }
@@ -7402,6 +7616,8 @@ html.dark .nx-region-aura {
   .nx-bp-aurora,
   .nx-bp-halo,
   .nx-bp-orbit,
+  .nx-bp-ribbon,
+  .nx-bp-beam,
   .nx-bp-panel::after {
     display: none;
   }

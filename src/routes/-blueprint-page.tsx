@@ -23,6 +23,7 @@
  * يُرسم له ولا رقم صفري يوهم بقياس وقع.
  */
 import { useMemo } from "react";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { FlaskConical } from "lucide-react";
@@ -34,6 +35,21 @@ import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
+
+/** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
+const STAGE_AR: Record<string, string> = {
+  proposed: "مقترح",
+  prepared: "مجهّز",
+  approved: "معتمد",
+};
+
+/** لهجات بطاقات الوكلاء — أسماء رموز من طبقة الرموز، لا ألوان نهائية. */
+const AGENT_HUES = [
+  "var(--tone-cyan)",
+  "var(--tone-blue)",
+  "var(--tone-violet)",
+  "var(--tone-emerald)",
+] as const;
 
 export function BlueprintPage() {
   const { locale } = useI18n();
@@ -66,6 +82,10 @@ export function BlueprintPage() {
     counters?.compliance_avg && counters.compliance_avg > 0 ? counters.compliance_avg : null;
   const notMeasured = ar ? "لم يُقَس" : "not measured";
   const simulation = data?.simulation ?? true;
+
+  /** نسختان متتاليتان لشريط يلفّ بلا قطع — الثانية زينة محضة. */
+  const pipeline = data?.pipeline ?? [];
+  const ticker = pipeline.length ? [...pipeline, ...pipeline] : [];
 
   /**
    * النسبة تُشتقّ من القيمة نفسها لا من مصدر ثانٍ: لو حُسبت مستقلّةً لأمكن
@@ -138,6 +158,13 @@ export function BlueprintPage() {
         ))}
       </div>
 
+      {/* جمال الصدر: خيط شفق طيفي أعلى الصفحة + حزمتا ضوء مائلتان + غبار
+          نجمي (صنفه معرّف في طبقة المسرح ويعمل عالميًّا). */}
+      <span aria-hidden className="nx-bp-ribbon" />
+      <span aria-hidden className="nx-bp-beam nx-bp-beam--a" />
+      <span aria-hidden className="nx-bp-beam nx-bp-beam--b" />
+      <span aria-hidden className="nx-op-dust" />
+
       <HomeTopNav />
 
       <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-16 pt-4 sm:px-6">
@@ -145,7 +172,7 @@ export function BlueprintPage() {
           <p className="text-[12px] font-bold uppercase tracking-[0.34em] text-[color:var(--tone-cyan)]">
             {ar ? "سَدِيد · السطح الهندسي" : "SADEED · Engineering surface"}
           </p>
-          <h1 className="nx-bp-title mt-2 text-3xl font-black leading-tight sm:text-4xl">
+          <h1 className="nx-bp-title mt-2 text-4xl font-black leading-tight sm:text-5xl">
             {ar ? "المُخطَّط التنفيذي" : "The Executive Blueprint"}
           </h1>
           <p className="mt-2 max-w-[62ch] text-sm text-[color:var(--ink-2)]">
@@ -156,6 +183,24 @@ export function BlueprintPage() {
           <div className="mt-5">
             <MeasureRail label={ar ? "وحدة الرسم ٨" : "grid unit 8"} />
           </div>
+
+          {/* شريط النبض الحي — أرقام صادقة من مصدر الحالة نفسه تملأ الصدر. */}
+          <ul
+            className="nx-bp-counters mt-5"
+            aria-label={ar ? "عدّادات التشغيل الحية" : "Live operating counters"}
+          >
+            {[
+              { ar: "وكلاء نشطون", en: "Active agents", v: counters?.agents_active },
+              { ar: "عاجل مفتوح", en: "Urgent open", v: counters?.urgent_open },
+              { ar: "بانتظار الاعتماد", en: "Pending approval", v: counters?.proposals_pending },
+              { ar: "منجز اليوم", en: "Done today", v: counters?.done_today },
+            ].map((k) => (
+              <li key={k.en} className="nx-bp-counter">
+                <b>{typeof k.v === "number" ? k.v : notMeasured}</b>
+                <span>{ar ? k.ar : k.en}</span>
+              </li>
+            ))}
+          </ul>
         </header>
 
         {/* الانقسام الذهبي: 1 : 1.618 مكتوبًا في الشبكة لا مقدَّرًا بالعين. */}
@@ -254,9 +299,61 @@ export function BlueprintPage() {
           ))}
         </section>
 
+        {/* الوكلاء على المناوبة — امتداد المسرح على صدر الرئيسية. */}
+        <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 4 }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="nx-bp-h2">{ar ? "الوكلاء على المناوبة" : "Agents on shift"}</h2>
+            <Link to="/nx-ops" className="nx-bp-more">
+              {ar ? "مسرح العمليات الحيّ ←" : "Ops theater →"}
+            </Link>
+          </div>
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {(data?.agents ?? []).slice(0, 4).map((agent, i) => (
+              <Link
+                key={agent.id}
+                to="/nx-ops"
+                className="nx-bp-agent"
+                style={{ ["--op-hue" as string]: AGENT_HUES[i % AGENT_HUES.length] }}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="nx-bp-agent-dot" data-state={agent.status} aria-hidden />
+                  <b>{agent.name_ar}</b>
+                </span>
+                <i>{agent.task_ar ?? (ar ? "بانتظار مهمة" : "awaiting task")}</i>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* سجل القرارات الجاري — أصناف الشريط من طبقة المسرح نفسها. */}
+        <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 5 }}>
+          <h2 className="nx-bp-h2">{ar ? "سجل القرارات — مباشر" : "Decisions — live"}</h2>
+          <div className="nx-op-ticker mt-3" data-static={!pipeline.length || undefined}>
+            <div className="nx-op-ticker-track">
+              {ticker.map((p, i) => (
+                <span
+                  key={`${p.id}-${i}`}
+                  className="nx-op-decision"
+                  data-sev={p.severity}
+                  aria-hidden={i >= pipeline.length || undefined}
+                >
+                  <i className="nx-op-stage">{ar ? (STAGE_AR[p.stage] ?? p.stage) : p.stage}</i>
+                  <b>{p.title_ar}</b>
+                  <span className="nx-op-decision-agent">{p.agent_ar}</span>
+                </span>
+              ))}
+              {ticker.length === 0 && (
+                <span className="nx-op-decision">
+                  <b>{ar ? "لا قرارات جارية الآن" : "No decisions in flight"}</b>
+                </span>
+              )}
+            </div>
+          </div>
+        </section>
+
         <footer
           className="nx-bp-stage mt-8 flex flex-wrap items-center gap-3 border-t border-[color:var(--hairline-soft)] pt-4"
-          style={{ ["--nx-bp-i" as string]: 4 }}
+          style={{ ["--nx-bp-i" as string]: 6 }}
         >
           {simulation && (
             <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] px-3 text-[12px] text-[color:var(--ink-2)]">
