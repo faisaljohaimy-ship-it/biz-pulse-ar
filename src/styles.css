@@ -6776,3 +6776,381 @@ html.dark .nx-region-aura {
     animation: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   المُخطَّط التنفيذي — السطح الهندسي (/blueprint)
+   ───────────────────────────────────────────────────────────────────────────
+   ثلاث قواعد تحكم هذه الطبقة كلّها:
+
+   ① كل لون يمرّ برمز. لا قيمة نهائية مكتوبة في عنصر، والأسلوب المضمّن
+     يحمل متغيّرات فقط (--bp-accent) — وإلا أعفى حامله من كل قاعدة عامة
+     بصمت (المادة ٣٣).
+   ② الوضع الفاتح ليس قلبًا آليًّا. لهجات المناطق مصمّمة على الكحلي، وعلى
+     الأبيض تسقط تباينًا. فتُمزج نحو الحبر بـ`color-mix` حتى تتجاوز 3:1
+     للعناصر الرسومية (WCAG 2.2 §1.4.11)، ويُقيَّد المحدِّد بـ`.light .nx-bp-*`
+     (0,2,0) ليعلو على القاعدة العامة (0,1,0) يقينًا لا احتمالًا.
+   ③ الحركة تُكتب بـ`translate`/`scale` المستقلّة لا بـ`transform`: الأخيرة
+     تمحو أي إزاحة سابقة على العنصر نفسه. وكلّها تسقط تحت
+     `prefers-reduced-motion` إلى حالتها النهائية فورًا — لا إلى العدم.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nx-bp-surface {
+  --bp-grid: color-mix(in srgb, var(--ink) 4.5%, transparent);
+  --bp-grid-fine: color-mix(in srgb, var(--ink) 2%, transparent);
+  --bp-line: color-mix(in srgb, var(--ink) 26%, transparent);
+  --bp-line-strong: color-mix(in srgb, var(--ink) 52%, transparent);
+}
+
+/* على الأبيض تختفي الشبكة نفسها عند هذه الشدّة — الحبر الأسود على الأبيض
+   لا يتصرّف كالأبيض على الكحلي. تُرفع حتى تُرى بلا أن تُثقل. */
+.light .nx-bp-surface {
+  --bp-grid: color-mix(in srgb, var(--ink) 8%, transparent);
+  --bp-grid-fine: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+/* بطاقة المُخطَّط — زجاج مبنيّ من رموز الزجاج نفسها (`--glass-*`)، بلا
+   `holo-card`. سبب الفصل مقصود: تلك تحمل مسحة بيضاء دائمة بـ`opacity: 1
+   !important` (قرار المالك للنظام كلّه، ولا يُمسّ). لكن المسحة على سطحٍ
+   وظيفته الدقّة تقرأ عيبَ عرضٍ لا لمعانًا، فيُستعمل هنا الزجاج بلا مسحته
+   — والرموز واحدة، فالوضعان يعملان دون سطر إضافي. */
+.nx-bp-card {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
+  border: 1px solid var(--hairline);
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 10px 30px -18px rgb(2 8 17 / 0.55);
+  transition:
+    border-color var(--nx-anim-fast) var(--nx-ease-out),
+    box-shadow var(--nx-anim-fast) var(--nx-ease-out);
+}
+
+.light .nx-bp-card {
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 8px 24px -18px rgb(15 23 42 / 0.28);
+}
+
+/* الركيزة: ورق الرسم. شبكتان — كبرى ٦٤px وصغرى ٨px — وقناع شعاعي يُذيب
+   الحواف، وإلا قرأتها العين ورقَ مربّعات لا سطحَ رسم. */
+.nx-bp-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(to left, var(--bp-grid) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(to bottom, var(--bp-grid) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(to left, var(--bp-grid-fine) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(to bottom, var(--bp-grid-fine) 0 1px, transparent 1px 8px);
+  -webkit-mask-image: radial-gradient(125% 95% at 50% 26%, #000 28%, transparent 76%);
+  mask-image: radial-gradient(125% 95% at 50% 26%, #000 28%, transparent 76%);
+}
+
+.nx-bp-compass {
+  color: var(--ink);
+  opacity: 0.055;
+}
+
+/* ── المسطرة ────────────────────────────────────────────────────────────── */
+
+.nx-bp-rail {
+  overflow: hidden;
+  background-image:
+    repeating-linear-gradient(to left, var(--bp-line-strong) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(to left, var(--bp-line) 0 1px, transparent 1px 8px);
+  background-size:
+    100% 12px,
+    100% 6px;
+  background-position: bottom;
+  background-repeat: repeat-x;
+}
+
+/* المسحة تُعلن أن السطح حيّ. تسير من اليمين لأن الوثيقة عربية. */
+.nx-bp-rail-sweep {
+  position: absolute;
+  inset-block: 0;
+  inline-size: 14%;
+  background: linear-gradient(
+    to left,
+    transparent,
+    color-mix(in srgb, var(--tone-cyan) 34%, transparent),
+    transparent
+  );
+  animation: nxBpSweep 9s linear infinite;
+}
+
+@keyframes nxBpSweep {
+  from {
+    translate: 130% 0;
+  }
+  to {
+    translate: -360% 0;
+  }
+}
+
+/* ── المسرح: دخول الطبقات متتابعًا ──────────────────────────────────────── */
+
+.nx-bp-stage {
+  animation: nxBpRise var(--nx-anim-cinematic) var(--nx-ease-out) both;
+  animation-delay: calc(var(--nx-bp-i, 0) * 90ms);
+}
+
+@keyframes nxBpRise {
+  from {
+    opacity: 0;
+    translate: 0 var(--nx-move-16);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* ── الوردة ─────────────────────────────────────────────────────────────── */
+
+.nx-bp-region {
+  --bp-accent-eff: var(--bp-accent);
+}
+
+/* المسار ليس خلفية بل هيكل: حين لا يُقاس شيء فهو كلّ ما تراه العين، فإن
+   بهت قرئت الوردة حلقةً مكسورة لا آلةً فارغة. يحمل لهجة منطقته باهتةً
+   ليبقى الشكل مؤلَّفًا وصادقًا معًا. */
+.nx-bp-track {
+  stroke: color-mix(in srgb, var(--bp-accent-eff) 17%, transparent);
+}
+
+/* الأسماء عند الشرق والغرب تتجاوز مربّع الرسم بنحو ٩px. `overflow: visible`
+   يدعها تُطبع كاملة بدل أن تُقصّ («لشرقية» بلا ألفها)، وهو أرخص من توسيع
+   viewBox لأن ذلك كان سيصغّر الوردة كلّها لأجل حرفين. الفائض أصغر من فجوة
+   الشبكة (24px) فلا يلامس الجار. */
+.nx-bp-rosette {
+  overflow: visible;
+}
+
+.nx-bp-region-name {
+  fill: var(--ink-2);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.nx-bp-region[data-active] .nx-bp-region-name {
+  fill: var(--ink);
+}
+
+.nx-bp-region[data-active] .nx-bp-track {
+  stroke: color-mix(in srgb, var(--bp-accent-eff) 26%, transparent);
+}
+
+.nx-bp-spoke {
+  stroke: color-mix(in srgb, var(--bp-accent-eff) 42%, transparent);
+}
+
+.nx-bp-arc {
+  stroke: var(--bp-accent-eff);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--bp-accent-eff) 55%, transparent));
+  stroke-dasharray: var(--bp-arc-len);
+  stroke-dashoffset: var(--bp-arc-len);
+  animation: nxBpDraw 900ms var(--nx-ease-out) both;
+  animation-delay: calc(320ms + var(--bp-arc-i, 0) * 110ms);
+}
+
+@keyframes nxBpDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* المنطقة النشطة تُميَّز بالسُّمك والإشعاع لا باللون وحده — اللون مأخوذ
+   أصلًا لهوية المنطقة، فلا يبقى له طاقة ليقول «نشطة» أيضًا. */
+.nx-bp-region[data-active] .nx-bp-arc {
+  stroke-width: 14;
+  filter: drop-shadow(0 0 11px color-mix(in srgb, var(--bp-accent-eff) 75%, transparent));
+}
+
+.nx-bp-region[data-active] .nx-bp-spoke {
+  stroke: var(--bp-accent-eff);
+  stroke-dasharray: none;
+}
+
+.nx-bp-hub {
+  fill: var(--chip-strong);
+  stroke: var(--hairline);
+}
+
+.nx-bp-hub-value {
+  fill: var(--ink);
+  font-size: 21px;
+  font-weight: 800;
+}
+
+/* «لم يُقَس» نصّ لا رقم — يأخذ مقاسًا يسع الكلمة داخل القلب. */
+.nx-bp-hub-value[data-empty] {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.nx-bp-hub-label {
+  fill: var(--ink-2);
+  font-size: 9.5px;
+}
+
+.nx-bp-hub-label[data-latin] {
+  letter-spacing: 1px;
+}
+
+/* ── أزرار المناطق ──────────────────────────────────────────────────────── */
+
+.nx-bp-region-bar {
+  inline-size: 4px;
+  block-size: 34px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--bp-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--bp-accent) 60%, transparent);
+}
+
+.nx-bp-region-btn[aria-pressed="true"] {
+  border-color: var(--bp-accent);
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 0 0 1px color-mix(in srgb, var(--bp-accent) 30%, transparent);
+}
+
+.nx-bp-region-btn:hover {
+  border-color: var(--hairline-hover);
+}
+
+.light .nx-bp-region-btn[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--bp-accent) 68%, #05080f);
+}
+
+/* ── لوحات القياس ───────────────────────────────────────────────────────── */
+
+.nx-bp-panel {
+  animation: nxBpRise var(--nx-anim-cinematic) var(--nx-ease-out) both;
+  animation-delay: calc(360ms + var(--nx-bp-i, 0) * 90ms);
+}
+
+/* زاوية القصّ — علامة الرسم الهندسي، على ركن بدء القراءة (أعلى اليمين في
+   العربية) لأنها أول ما تلقاه العين. الخصائص منطقية لا فيزيائية، فتنقلب
+   وحدها لو صار المستند من اليسار. */
+.nx-bp-panel-corner {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  pointer-events: none;
+  border-block-start: 2px solid rgb(var(--bp-accent-rgb));
+  border-inline-start: 2px solid rgb(var(--bp-accent-rgb));
+  border-start-start-radius: 16px;
+  opacity: 0.85;
+}
+
+.nx-bp-glyph-on {
+  fill: rgb(var(--bp-accent-rgb));
+}
+
+.nx-bp-glyph-off {
+  fill: color-mix(in srgb, var(--ink) 11%, transparent);
+}
+
+.nx-bp-glyph-on-stroke {
+  stroke: rgb(var(--bp-accent-rgb));
+}
+
+.nx-bp-glyph-off-stroke {
+  stroke: color-mix(in srgb, var(--ink) 13%, transparent);
+}
+
+/* ── الوضع الفاتح ───────────────────────────────────────────────────────── */
+/* اللهجات مصمّمة على الكحلي. على الأبيض يهبط السماوي إلى ما دون 3:1 فيصير
+   الشكل حاضرًا وغير مقروء — وهو أسوأ من غيابه. المزج نحو الحبر يعيده فوق
+   العتبة دون أن يفقد هويته. المحدِّد مُقيَّد بالصنف (0,2,0) ليعلو يقينًا. */
+
+.light .nx-bp-region {
+  --bp-accent-eff: color-mix(in srgb, var(--bp-accent) 66%, #05080f);
+}
+
+.light .nx-bp-arc {
+  filter: none;
+}
+
+.light .nx-bp-region[data-active] .nx-bp-arc {
+  filter: none;
+  stroke-width: 14;
+}
+
+.light .nx-bp-region-bar {
+  background: color-mix(in srgb, var(--bp-accent) 68%, #05080f);
+  box-shadow: none;
+}
+
+.light .nx-bp-glyph-on {
+  fill: color-mix(in srgb, rgb(var(--bp-accent-rgb)) 66%, #05080f);
+}
+
+.light .nx-bp-glyph-on-stroke {
+  stroke: color-mix(in srgb, rgb(var(--bp-accent-rgb)) 66%, #05080f);
+}
+
+.light .nx-bp-panel-corner {
+  border-block-start-color: color-mix(in srgb, rgb(var(--bp-accent-rgb)) 62%, #05080f);
+  border-inline-end-color: color-mix(in srgb, rgb(var(--bp-accent-rgb)) 62%, #05080f);
+}
+
+/* ── الوصول ─────────────────────────────────────────────────────────────── */
+
+/* الحركة تسقط إلى حالتها النهائية، لا إلى العدم: من يطلب تقليل الحركة يريد
+   السكون لا الفراغ. */
+@media (prefers-reduced-motion: reduce) {
+  .nx-bp-stage,
+  .nx-bp-panel,
+  .nx-bp-arc {
+    animation: none !important;
+    opacity: 1;
+    translate: none;
+    stroke-dashoffset: 0;
+  }
+
+  .nx-bp-rail-sweep {
+    animation: none !important;
+    opacity: 0;
+  }
+}
+
+/* الشفافية المخفَّضة: الشبكة والفرجار زينة محضة، فتُرفع كلفتها البصرية. */
+@media (prefers-reduced-transparency: reduce) {
+  .nx-bp-surface::before,
+  .nx-bp-compass {
+    display: none;
+  }
+}
+
+/* الألوان القسرية تُلغي `stroke` المحسوب، فيُعاد الرسم إلى ألوان النظام
+   ليبقى الشكل مقروءًا بدل أن يختفي. */
+@media (forced-colors: active) {
+  .nx-bp-arc,
+  .nx-bp-spoke,
+  .nx-bp-glyph-on-stroke {
+    stroke: CanvasText;
+    filter: none;
+  }
+
+  .nx-bp-glyph-on {
+    fill: CanvasText;
+  }
+
+  .nx-bp-hub {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .nx-bp-surface::before,
+  .nx-bp-compass,
+  .nx-bp-rail-sweep {
+    display: none;
+  }
+}
