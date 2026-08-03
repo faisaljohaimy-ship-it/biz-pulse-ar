@@ -6,7 +6,7 @@
  * to the card ceiling; the card height matches the sibling region cards.
  */
 import { Link } from "@tanstack/react-router";
-import { Mic, ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import finnCharacter from "@/assets/finn-character.png.asset.json";
 
 export type FinnVisualState = "idle" | "listening" | "thinking" | "speaking" | "offline";
@@ -90,17 +90,6 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
           decoding="async"
           className="h-50 w-auto object-contain sm:h-65"
         />
-        <Link
-          to="/finn"
-          search={{ mode: "voice" } as never}
-          aria-label={ar ? "تحدث الآن مع FINN" : "Talk to FINN now"}
-          className="nx-holo-icon group flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-full text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200"
-        >
-          <Mic className="h-5 w-5" aria-hidden />
-          <span className="text-[10px] font-bold tracking-wider">
-            {ar ? "تحدث الآن" : "TALK NOW"}
-          </span>
-        </Link>
       </div>
 
       {/* Bottom — subtitle, status, secondary CTA */}
