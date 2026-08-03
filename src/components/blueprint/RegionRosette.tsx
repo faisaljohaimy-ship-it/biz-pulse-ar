@@ -32,7 +32,8 @@ const HALF_SPAN = 38;
 const R_TICK = 101;
 /** حلقة الأسماء خارج حلقة القياس — تجعل الوردة مقروءة بذاتها لا بجدول جانبي. */
 const R_LABEL = 116;
-const R_HUB = 31;
+/** قلبٌ أوسع ليتّسع جسد فِن كاملًا بوضوح (قرار المالك ٢٠٢٦/٠٨/٠٤). */
+const R_HUB = 38;
 
 function polar(r: number, deg: number) {
   const rad = ((deg - 90) * Math.PI) / 180;
@@ -53,13 +54,11 @@ const arcLength = (r: number, deg: number) => (2 * Math.PI * r * deg) / 360;
 export interface RegionRosetteProps {
   /** نسبة الامتثال لكل منطقة. الغياب = لم يُقَس، لا صفر. */
   values: Partial<Record<RegionId, number>>;
-  /** المتوسط المعروض في القلب — `null` حين لا يُقاس. */
-  average: number | null;
   activeRegion: RegionId;
   ar: boolean;
 }
 
-export function RegionRosette({ values, average, activeRegion, ar }: RegionRosetteProps) {
+export function RegionRosette({ values, activeRegion, ar }: RegionRosetteProps) {
   const ticks = Array.from({ length: 72 }, (_, i) => i * 5);
 
   return (
@@ -175,8 +174,8 @@ export function RegionRosette({ values, average, activeRegion, ar }: RegionRoset
         );
       })}
 
-      {/* القلب — صورة فِن من مصدر الهوية الوحيد (قرار المالك ٢٠٢٦/٠٨/٠٤)،
-          والمتوسط شارةً على حافتها السفلى؛ «لم يُقَس» يبقى نصًّا صريحًا. */}
+      {/* القلب — فِن بجسده كاملًا من مصدر الهوية الوحيد، بلا أرقام فوقه
+          (قرار المالك ٢٠٢٦/٠٨/٠٤): `meet` تُظهر الصورة كلّها ولا تقصّها. */}
       <defs>
         <clipPath id="nx-bp-hub-clip">
           <circle cx={C} cy={C} r={R_HUB - 1.5} />
@@ -190,15 +189,9 @@ export function RegionRosette({ values, average, activeRegion, ar }: RegionRoset
         width={(R_HUB - 1.5) * 2}
         height={(R_HUB - 1.5) * 2}
         clipPath="url(#nx-bp-hub-clip)"
-        preserveAspectRatio="xMidYMid slice"
+        preserveAspectRatio="xMidYMid meet"
       />
       <circle cx={C} cy={C} r={R_HUB} className="nx-bp-hub-ring" strokeWidth="1.6" fill="none" />
-      <g className="nx-bp-hub-badge" data-empty={average === null || undefined}>
-        <rect x={C - 24} y={C + R_HUB - 8} width="48" height="15" rx="7.5" strokeWidth="1" />
-        <text x={C} y={C + R_HUB + 3} textAnchor="middle" fill="currentColor">
-          {average === null ? (ar ? "لم يُقَس" : "not measured") : `${Math.round(average)}%`}
-        </text>
-      </g>
     </svg>
   );
 }

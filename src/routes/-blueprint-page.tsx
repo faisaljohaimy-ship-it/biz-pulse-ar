@@ -29,7 +29,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { FlaskConical } from "lucide-react";
 import { HomeTopNav } from "@/components/nav/HomeTopNav";
 import { RegionRosette } from "@/components/blueprint/RegionRosette";
-import { RegionSkyline } from "@/components/blueprint/RegionSkyline";
+import { PRODUCT_BRAND } from "@/lib/domain";
 import { InstrumentPanel, MeasureRail } from "@/components/blueprint/InstrumentPanels";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { useAuth } from "@/lib/auth-context";
@@ -79,8 +79,6 @@ export function BlueprintPage() {
   }, [data]);
 
   const counters = data?.counters;
-  const average =
-    counters?.compliance_avg && counters.compliance_avg > 0 ? counters.compliance_avg : null;
   const notMeasured = ar ? "لم يُقَس" : "not measured";
   const simulation = data?.simulation ?? true;
 
@@ -173,8 +171,14 @@ export function BlueprintPage() {
           <p className="text-[12px] font-bold uppercase tracking-[0.34em] text-[color:var(--tone-cyan)]">
             {ar ? "سَدِيد · السطح الهندسي" : "SADEED · Engineering surface"}
           </p>
-          <h1 className="nx-bp-title mt-2 text-4xl font-black leading-tight sm:text-5xl">
-            {ar ? "المُخطَّط التنفيذي" : "The Executive Blueprint"}
+          {/* الهوية بلسانيها من مصدرها الوحيد: العربية يمينًا والإنجليزية
+              يسارًا أيًّا كانت لغة الواجهة (قرار المالك ٢٠٢٦/٠٨/٠٤). */}
+          <h1
+            dir="rtl"
+            className="mt-2 flex flex-wrap items-baseline justify-between gap-4 text-4xl font-black leading-tight sm:text-5xl"
+          >
+            <span className="nx-bp-title">{PRODUCT_BRAND.ar.name}</span>
+            <span className="nx-bp-title tracking-[0.06em]">{PRODUCT_BRAND.en.name}</span>
           </h1>
           <p className="mt-2 max-w-[62ch] text-sm text-[color:var(--ink-2)]">
             {ar
@@ -226,12 +230,7 @@ export function BlueprintPage() {
               <span aria-hidden className="nx-bp-halo" />
               <span aria-hidden className="nx-bp-orbit nx-bp-orbit--a" />
               <span aria-hidden className="nx-bp-orbit nx-bp-orbit--b" />
-              <RegionRosette
-                values={compliance}
-                average={average}
-                activeRegion={regionId}
-                ar={ar}
-              />
+              <RegionRosette values={compliance} activeRegion={regionId} ar={ar} />
             </div>
           </div>
 
@@ -281,15 +280,9 @@ export function BlueprintPage() {
           </div>
         </section>
 
-        {/* أفق المناطق الأربع — الفن عنصر أساسي: بانوراما صناعية بعرض
-            الصفحة، شمسها التوريق وأبراجها الشبكة التي يحرسها النظام. */}
-        <section className="nx-bp-stage mt-4" style={{ ["--nx-bp-i" as string]: 3 }}>
-          <RegionSkyline ar={ar} />
-        </section>
-
         <section
-          className="nx-bp-stage mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
-          style={{ ["--nx-bp-i" as string]: 4 }}
+          className="nx-bp-stage mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          style={{ ["--nx-bp-i" as string]: 3 }}
         >
           {panels.map((panel, i) => (
             <InstrumentPanel
@@ -307,7 +300,7 @@ export function BlueprintPage() {
         </section>
 
         {/* الوكلاء على المناوبة — امتداد المسرح على صدر الرئيسية. */}
-        <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 5 }}>
+        <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 4 }}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="nx-bp-h2">{ar ? "الوكلاء على المناوبة" : "Agents on shift"}</h2>
             <Link to="/nx-ops" className="nx-bp-more">
@@ -333,7 +326,7 @@ export function BlueprintPage() {
         </section>
 
         {/* سجل القرارات الجاري — أصناف الشريط من طبقة المسرح نفسها. */}
-        <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 6 }}>
+        <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 5 }}>
           <h2 className="nx-bp-h2">{ar ? "سجل القرارات — مباشر" : "Decisions — live"}</h2>
           <div className="nx-op-ticker mt-3" data-static={!pipeline.length || undefined}>
             <div className="nx-op-ticker-track">
@@ -360,7 +353,7 @@ export function BlueprintPage() {
 
         <footer
           className="nx-bp-stage mt-8 flex flex-wrap items-center gap-3 border-t border-[color:var(--hairline-soft)] pt-4"
-          style={{ ["--nx-bp-i" as string]: 7 }}
+          style={{ ["--nx-bp-i" as string]: 6 }}
         >
           {simulation && (
             <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] px-3 text-[12px] text-[color:var(--ink-2)]">
