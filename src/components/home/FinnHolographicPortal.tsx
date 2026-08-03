@@ -6,7 +6,7 @@
  * to the card ceiling; the card height matches the sibling region cards.
  */
 import { Link } from "@tanstack/react-router";
-import { Mic, ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import finnCharacter from "@/assets/finn-character.png.asset.json";
 
 export type FinnVisualState = "idle" | "listening" | "thinking" | "speaking" | "offline";
