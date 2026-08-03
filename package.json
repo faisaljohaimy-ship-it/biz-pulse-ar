@@ -7,7 +7,10 @@
     "node": ">=22 <25",
     "npm": ">=10"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css",
+    "src/lib/finn/orchestrator/agents.ts"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite dev",
