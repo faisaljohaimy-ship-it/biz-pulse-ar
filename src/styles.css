@@ -251,6 +251,8 @@ html.safe-mode canvas {
   --tone-emerald: #6ee7b7;
   --tone-rose: #fda4af;
   --tone-amber: #fcd34d;
+  --tone-blue: #93c5fd;
+  --tone-violet: #c4b5fd;
 }
 
 .light {
@@ -271,6 +273,8 @@ html.safe-mode canvas {
   --tone-emerald: #047857;
   --tone-rose: #be123c;
   --tone-amber: #b45309;
+  --tone-blue: #1d4ed8;
+  --tone-violet: #6d28d9;
 }
 
 @layer base {
@@ -4174,6 +4178,8 @@ body {
   --tone-emerald: #047857;
   --tone-rose: #be123c;
   --tone-amber: #b45309;
+  --tone-blue: #1d4ed8;
+  --tone-violet: #6d28d9;
 
   --gradient-primary: linear-gradient(
     135deg,
@@ -8486,6 +8492,726 @@ html.dark .nx-region-aura {
 
   .nx-tw-pulse {
     stroke: CanvasText;
+    filter: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   مسرح العمليات الحيّ (/nx-ops)
+   ───────────────────────────────────────────────────────────────────────────
+   ثلاث قواعد: ① كل لون يمرّ رمزًا أو متغيّرًا (--op-hue = اسم رمز من طبقة
+   الرموز، لا قيمة نهائية). ② الحركة بخصائص مستقلّة translate/scale/rotate
+   بمنحنى النظام var(--nx-ease-out) — انضباط Remotion نفسه. ③ الوضع الفاتح
+   يمزج الخطوط نحو الحبر ويترك التوهّج للّون الصافي.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nx-op {
+  --op-line: color-mix(in srgb, var(--ink) 10%, transparent);
+  --op-hue-ink: var(--op-hue);
+}
+
+/* أرضية المسرح: شبكة منظورية تلتقي عند أفقٍ علوي — عمق بلا مكتبة ثلاثية. */
+.nx-op-floor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to bottom, transparent 55%, color-mix(in srgb, var(--ink) 3.5%, transparent)),
+    repeating-linear-gradient(to left, var(--op-line) 0 1px, transparent 1px 72px),
+    repeating-linear-gradient(to bottom, var(--op-line) 0 1px, transparent 1px 72px);
+  -webkit-mask-image: radial-gradient(130% 100% at 50% 18%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(130% 100% at 50% 18%, #000 30%, transparent 78%);
+  opacity: 0.6;
+}
+
+.nx-op-aurora {
+  position: absolute;
+  inline-size: 52vmax;
+  block-size: 52vmax;
+  border-radius: 999px;
+  pointer-events: none;
+  filter: blur(64px);
+  opacity: 0.42;
+  animation: nxOpDrift 30s ease-in-out infinite alternate;
+}
+
+.nx-op-aurora--a {
+  inset-block-start: -18%;
+  inset-inline-end: -10%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--tone-cyan) 34%, transparent),
+    transparent 70%
+  );
+}
+
+.nx-op-aurora--b {
+  inset-block-end: -22%;
+  inset-inline-start: -12%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--tone-violet) 30%, transparent),
+    transparent 70%
+  );
+  animation-delay: -12s;
+}
+
+@keyframes nxOpDrift {
+  from {
+    translate: 0 0;
+    scale: 1;
+  }
+  to {
+    translate: -3% 4%;
+    scale: 1.1;
+  }
+}
+
+.light .nx-op-aurora {
+  opacity: 0.26;
+  filter: blur(80px);
+}
+
+/* غبار نجمي — نقاط ضوء ساكنة من تدرّجات شعاعية صغيرة، بلا أي أصل شبكي. */
+.nx-op-dust {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(
+      2px 2px at 12% 24%,
+      color-mix(in srgb, var(--tone-cyan) 55%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      1.5px 1.5px at 78% 14%,
+      color-mix(in srgb, var(--tone-violet) 50%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      2px 2px at 64% 68%,
+      color-mix(in srgb, var(--tone-emerald) 45%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      1.5px 1.5px at 30% 82%,
+      color-mix(in srgb, var(--tone-amber) 45%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      1.5px 1.5px at 90% 55%,
+      color-mix(in srgb, var(--tone-cyan) 40%, transparent),
+      transparent 55%
+    );
+  opacity: 0.7;
+}
+
+.light .nx-op-dust {
+  opacity: 0.35;
+}
+
+/* ── الدخول المسرحي ─────────────────────────────────────────────────────── */
+
+.nx-op-enter {
+  animation: nxOpRise var(--nx-anim-cinematic) var(--nx-ease-out) both;
+  animation-delay: calc(var(--op-i, 0) * 70ms);
+}
+
+@keyframes nxOpRise {
+  from {
+    opacity: 0;
+    translate: 0 var(--nx-move-16);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* ── الترويسة ───────────────────────────────────────────────────────────── */
+
+.nx-op-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  color: var(--tone-cyan);
+}
+
+.nx-op-title {
+  margin-block-start: 6px;
+  font-size: clamp(28px, 4.2vw, 40px);
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .nx-op-title {
+    background: linear-gradient(100deg, var(--ink) 30%, var(--tone-cyan) 78%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+.nx-op-lede {
+  margin-block-start: 8px;
+  max-inline-size: 64ch;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.nx-op-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nx-op-chip {
+  display: flex;
+  min-block-size: 44px;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--glass-fill);
+  padding-inline: 14px;
+  box-shadow: inset 0 1px 0 var(--glass-rim);
+}
+
+.nx-op-chip b {
+  font-size: 16px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.nx-op-chip span {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+/* ── قلب المسرح ─────────────────────────────────────────────────────────── */
+
+.nx-op-core {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--tone-cyan) 45%, var(--hairline));
+  background: linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
+  padding: 18px 20px;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 0 34px -10px color-mix(in srgb, var(--tone-cyan) 55%, transparent),
+    0 14px 34px -22px rgb(2 8 17 / 0.6);
+}
+
+.nx-op-core-ring {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 130px;
+  block-size: 130px;
+  margin-block-start: -65px;
+  margin-inline-start: -65px;
+  border: 1px solid color-mix(in srgb, var(--tone-cyan) 50%, transparent);
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: -1;
+  animation: nxOpRipple 3.6s var(--nx-ease-out) infinite;
+}
+
+.nx-op-core-ring--b {
+  animation-delay: 1.8s;
+}
+
+@keyframes nxOpRipple {
+  from {
+    scale: 0.55;
+    opacity: 0.8;
+  }
+  to {
+    scale: 2.6;
+    opacity: 0;
+  }
+}
+
+.nx-op-core-crown {
+  display: grid;
+  place-items: center;
+  inline-size: 52px;
+  block-size: 52px;
+  flex: none;
+  border-radius: 16px;
+  color: var(--tone-amber);
+  border: 1px solid color-mix(in srgb, var(--tone-amber) 55%, var(--hairline));
+  background: color-mix(in srgb, var(--tone-amber) 10%, transparent);
+  box-shadow: 0 0 22px -6px color-mix(in srgb, var(--tone-amber) 70%, transparent);
+}
+
+.nx-op-core-crown svg {
+  inline-size: 26px;
+  block-size: 18px;
+}
+
+.nx-op-core-name {
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.nx-op-core-task {
+  margin-block-start: 4px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.nx-op-core-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+.nx-op-core-side b {
+  font-size: 22px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--tone-cyan) 45%, transparent);
+}
+
+.nx-op-core-side span {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+/* ── حزمة الأنابيب ──────────────────────────────────────────────────────── */
+
+.nx-op-bus {
+  display: none;
+  inline-size: 100%;
+  block-size: 74px;
+  margin-block: 2px;
+}
+
+@media (min-width: 1280px) {
+  .nx-op-bus {
+    display: block;
+  }
+}
+
+.nx-op-pipe {
+  fill: none;
+  stroke: color-mix(in srgb, var(--op-hue) 34%, transparent);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 6;
+  animation: nxOpFlow 2.8s linear infinite;
+}
+
+/* نبضة تسري في الأنبوب: شرطة قصيرة على فجوة طويلة تجري بالإزاحة. */
+.nx-op-pulse {
+  fill: none;
+  stroke: var(--op-hue);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 3 220;
+  animation: nxOpTravel 3.4s linear infinite;
+  animation-delay: calc(var(--op-i, 0) * -0.6s);
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--op-hue) 80%, transparent));
+}
+
+@keyframes nxOpFlow {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+@keyframes nxOpTravel {
+  to {
+    stroke-dashoffset: -223;
+  }
+}
+
+/* ── الغرف ──────────────────────────────────────────────────────────────── */
+
+.nx-op-room {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--op-hue) 36%, var(--hairline));
+  background: linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
+  padding: 14px 16px;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 0 26px -12px color-mix(in srgb, var(--op-hue) 60%, transparent),
+    0 12px 30px -22px rgb(2 8 17 / 0.55);
+}
+
+/* حافة علوية بلون الغرفة — كما تحمل غرف المرجع إطارها المتوهّج. */
+.nx-op-room-edge {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 14px;
+  block-size: 2px;
+  border-radius: 999px;
+  background: linear-gradient(to left, transparent, var(--op-hue), transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--op-hue) 60%, transparent);
+}
+
+.nx-op-room--ghost {
+  min-block-size: 200px;
+  border-style: dashed;
+  opacity: 0.4;
+}
+
+.nx-op-scene {
+  inline-size: 100%;
+  block-size: 64px;
+  margin-block-end: 10px;
+  color: var(--ink-2);
+}
+
+.nx-op-ink {
+  stroke: currentColor;
+  opacity: 0.75;
+}
+
+.nx-op-wall {
+  stroke: var(--op-hue-ink);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--op-hue) 45%, transparent));
+}
+
+.nx-op-spark {
+  stroke: var(--op-hue-ink);
+  opacity: 1;
+}
+
+.nx-op-room-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nx-op-role {
+  flex: none;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--op-hue) 40%, var(--hairline));
+  background: color-mix(in srgb, var(--op-hue) 9%, transparent);
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.nx-op-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.nx-op-status i {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 999px;
+  background: var(--tone-emerald);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tone-emerald) 80%, transparent);
+}
+
+.nx-op-status[data-state="active"] i {
+  animation: nxOpBeat 1.6s ease-in-out infinite;
+}
+
+.nx-op-status[data-state="processing"] i {
+  background: var(--tone-amber);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tone-amber) 80%, transparent);
+  animation: nxOpBeat 0.9s ease-in-out infinite;
+}
+
+.nx-op-status[data-state="idle"] i {
+  background: transparent;
+  border: 1.5px solid var(--ink-3);
+  box-shadow: none;
+}
+
+@keyframes nxOpBeat {
+  0%,
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+  50% {
+    scale: 1.45;
+    opacity: 0.7;
+  }
+}
+
+/* راية الخطورة: الشكل قبل اللون — مثمّن للحرج ومثلث للمرتفع (WCAG 1.4.1). */
+.nx-op-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 7px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.nx-op-flag svg {
+  inline-size: 9px;
+  block-size: 9px;
+}
+
+.nx-op-flag[data-sev="critical"] {
+  color: var(--tone-rose);
+  border: 1px solid color-mix(in srgb, var(--tone-rose) 55%, transparent);
+  background: color-mix(in srgb, var(--tone-rose) 12%, transparent);
+}
+
+.nx-op-flag[data-sev="high"] {
+  color: var(--tone-amber);
+  border: 1px solid color-mix(in srgb, var(--tone-amber) 55%, transparent);
+  background: color-mix(in srgb, var(--tone-amber) 12%, transparent);
+}
+
+.nx-op-task {
+  margin-block-start: 8px;
+  min-block-size: 2.6em;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.nx-op-meter {
+  margin-block-start: 8px;
+  block-size: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.nx-op-meter span {
+  display: block;
+  block-size: 100%;
+  inline-size: var(--op-fill, 0%);
+  border-radius: 999px;
+  background: linear-gradient(
+    to left,
+    color-mix(in srgb, var(--op-hue) 55%, transparent),
+    var(--op-hue)
+  );
+  box-shadow: 0 0 10px color-mix(in srgb, var(--op-hue) 65%, transparent);
+  transition: inline-size 600ms var(--nx-ease-out);
+}
+
+.nx-op-done {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.nx-op-done b {
+  font-size: 14px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.nx-op-cta {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 32px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--op-hue, var(--tone-cyan)) 45%, var(--hairline));
+  background: color-mix(in srgb, var(--op-hue, var(--tone-cyan)) 10%, transparent);
+  padding-inline: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+  transition: border-color var(--nx-anim-fast) var(--nx-ease-out);
+}
+
+.nx-op-cta:hover {
+  border-color: var(--op-hue, var(--tone-cyan));
+}
+
+/* ── شريط القرارات ──────────────────────────────────────────────────────── */
+
+.nx-op-h2 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink-2);
+  margin-block-end: 10px;
+}
+
+.nx-op-ticker {
+  overflow: hidden;
+  border-block: 1px solid var(--hairline-soft);
+  padding-block: 10px;
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(to left, transparent, #000 6%, #000 94%, transparent);
+}
+
+.nx-op-ticker-track {
+  display: flex;
+  gap: 10px;
+  inline-size: max-content;
+  animation: nxOpTicker 42s linear infinite;
+}
+
+/* الوثيقة عربية: المسار يجري نحو اليسار فيقرأه القادم من اليمين أولًا. */
+@keyframes nxOpTicker {
+  to {
+    translate: 50% 0;
+  }
+}
+
+.nx-op-ticker[data-static] .nx-op-ticker-track {
+  animation: none;
+  inline-size: auto;
+  flex-wrap: wrap;
+}
+
+.nx-op-decision {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--glass-fill);
+  padding: 7px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.nx-op-decision b {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.nx-op-decision-agent {
+  color: var(--ink-3);
+}
+
+.nx-op-stage {
+  font-style: normal;
+  font-weight: 800;
+  font-size: 11px;
+  border-radius: 6px;
+  padding: 1px 6px;
+  color: var(--tone-cyan);
+  border: 1px solid color-mix(in srgb, var(--tone-cyan) 45%, transparent);
+}
+
+.nx-op-decision[data-sev="critical"] .nx-op-stage {
+  color: var(--tone-rose);
+  border-color: color-mix(in srgb, var(--tone-rose) 55%, transparent);
+}
+
+.nx-op-decision[data-sev="high"] .nx-op-stage {
+  color: var(--tone-amber);
+  border-color: color-mix(in srgb, var(--tone-amber) 55%, transparent);
+}
+
+/* ── الوضع الفاتح: الخط يميل للحبر والتوهّج يبقى للّون الصافي ───────────── */
+
+.light .nx-op-room {
+  border-color: color-mix(in srgb, var(--op-hue) 45%, var(--hairline));
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 0 22px -14px color-mix(in srgb, var(--op-hue) 50%, transparent),
+    0 10px 26px -20px rgb(15 23 42 / 0.3);
+}
+
+.light .nx-op-core {
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 0 26px -12px color-mix(in srgb, var(--tone-cyan) 40%, transparent),
+    0 12px 28px -20px rgb(15 23 42 / 0.3);
+}
+
+.light .nx-op-core-side b {
+  text-shadow: 0 0 14px color-mix(in srgb, var(--tone-cyan) 30%, transparent);
+}
+
+.light .nx-op-scene {
+  color: var(--ink);
+}
+
+/* ── الوصول ─────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-op-enter,
+  .nx-op-core-ring,
+  .nx-op-pipe,
+  .nx-op-pulse,
+  .nx-op-status i,
+  .nx-op-aurora,
+  .nx-op-ticker-track {
+    animation: none !important;
+    opacity: 1;
+    translate: none;
+  }
+
+  .nx-op-core-ring {
+    display: none;
+  }
+
+  .nx-op-ticker-track {
+    inline-size: auto;
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .nx-op-aurora,
+  .nx-op-dust,
+  .nx-op-floor {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-op-aurora,
+  .nx-op-dust,
+  .nx-op-floor,
+  .nx-op-room-edge,
+  .nx-op-core-ring,
+  .nx-op-bus {
+    display: none;
+  }
+
+  .nx-op-title {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+
+  .nx-op-wall,
+  .nx-op-spark,
+  .nx-op-ink {
+    stroke: CanvasText;
+    filter: none;
+  }
+
+  .nx-op-core-side b {
+    text-shadow: none;
+  }
+
+  .nx-op-meter span,
+  .nx-op-status i {
+    box-shadow: none;
     filter: none;
   }
 }

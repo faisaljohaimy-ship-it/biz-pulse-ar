@@ -13,7 +13,7 @@
 import * as React from "react";
 import { ArrowRight, Bot } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { NxEmptyState, NxErrorState, NxPanel, NxSkeleton } from "@/components/nx";
 import { getAgentFleetState } from "@/lib/agents/fleet.functions";
@@ -145,17 +145,28 @@ export function NxAgentsPage() {
             </div>
           </div>
 
-          {data ? (
-            <span
-              className={
-                data.is_simulation
-                  ? "rounded-full border border-nx-gold/50 px-3 py-1 text-[12px] font-semibold text-nx-gold"
-                  : "rounded-full border border-nx-success/50 px-3 py-1 text-[12px] font-semibold text-nx-success"
-              }
+          <div className="flex flex-wrap items-center gap-2">
+            {/* مدخل مسرح العمليات — قرار المالك ٢٠٢٦/٠٨/٠٤: المسرح يُفتح من
+                خلفية الوكلاء لا من الرئيسية. */}
+            <Link
+              to="/nx-ops"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3.5 text-xs font-bold text-nx-pearl transition-colors hover:border-primary hover:bg-primary/20"
             >
-              {data.is_simulation ? "عرض توضيحي · محاكاة مرجعية" : "حقيقي · قراءة"}
-            </span>
-          ) : null}
+              <Bot className="h-4 w-4 text-primary" aria-hidden="true" />
+              <span>مسرح العمليات الحيّ</span>
+            </Link>
+            {data ? (
+              <span
+                className={
+                  data.is_simulation
+                    ? "rounded-full border border-nx-gold/50 px-3 py-1 text-[12px] font-semibold text-nx-gold"
+                    : "rounded-full border border-nx-success/50 px-3 py-1 text-[12px] font-semibold text-nx-success"
+                }
+              >
+                {data.is_simulation ? "عرض توضيحي · محاكاة مرجعية" : "حقيقي · قراءة"}
+              </span>
+            ) : null}
+          </div>
         </header>
 
         {isLoading ? (
