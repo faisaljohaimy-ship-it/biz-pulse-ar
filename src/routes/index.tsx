@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { FourRegionHub } from "@/components/home/FourRegionHub";
 import { HomeTopNav } from "@/components/nav/HomeTopNav";
 import { HomeVideoBackdrop } from "@/components/home/HomeVideoBackdrop";
+import { HomeHeroVisual } from "@/components/home/HomeHeroVisual";
 import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 
@@ -51,7 +52,15 @@ function HomePage() {
 
       <HomeTopNav />
       <main className="relative z-10 mx-auto w-full max-w-[1600px] px-3 py-4 sm:px-6 sm:py-6">
-        <FourRegionHub />
+        {/* فن الصفحة الرئيسية — تصوّر حي للمناطق الأربع */}
+        <section className="mb-12 flex justify-center">
+          <HomeHeroVisual />
+        </section>
+
+        {/* لوحة المناطق الأربع المفصّلة */}
+        <section>
+          <FourRegionHub />
+        </section>
       </main>
     </div>
   );

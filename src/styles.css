@@ -7154,3 +7154,1070 @@ html.dark .nx-region-aura {
     display: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   اتجاه أ — «مركز المهام» (/nx-atlas)
+   الكثافة جمال: الفواصل شعيرات لا فجوات، والحدود تُشارَك بين الخلايا فلا
+   يبقى بين لوحتين هواء. كل رقم أحادي العرض ليصطفّ عموديًّا كعمود قياس.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nx-at {
+  --at-line: color-mix(in srgb, var(--ink) 12%, transparent);
+  --at-line-soft: color-mix(in srgb, var(--ink) 7%, transparent);
+  --at-cell: color-mix(in srgb, var(--ink) 2.5%, transparent);
+  --at-cell-hot: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.light .nx-at {
+  --at-line: color-mix(in srgb, var(--ink) 16%, transparent);
+  --at-line-soft: color-mix(in srgb, var(--ink) 9%, transparent);
+  --at-cell: color-mix(in srgb, var(--ink) 2%, transparent);
+  --at-cell-hot: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+
+.nx-at-mono {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: 0.01em;
+}
+
+/* ── شريط التلمترية ─────────────────────────────────────────────────────── */
+
+.nx-at-telemetry {
+  border-block-end: 1px solid var(--at-line);
+}
+
+.nx-at-cell {
+  padding: 10px 12px;
+  border-inline-start: 1px solid var(--at-line-soft);
+  background: var(--at-cell);
+}
+
+.nx-at-cell:first-child {
+  border-inline-start: 0;
+}
+
+/* ── الأعمدة واللوحات ───────────────────────────────────────────────────── */
+
+.nx-at-col {
+  display: flex;
+  flex-direction: column;
+  border-inline-start: 1px solid var(--at-line);
+}
+
+.nx-at-col:first-child {
+  border-inline-start: 0;
+}
+
+.nx-at-panel {
+  border-block-end: 1px solid var(--at-line);
+}
+
+.nx-at-panel:last-child {
+  flex: 1;
+}
+
+.nx-at-panel-head {
+  padding: 8px 12px;
+  border-block-end: 1px solid var(--at-line-soft);
+  background: var(--at-cell);
+}
+
+/* أقواس التثبيت — علامة أداة القياس على ركني كل لوحة. */
+.nx-at-panel-head::before,
+.nx-at-panel-head::after {
+  content: "";
+  position: absolute;
+  inline-size: 9px;
+  block-size: 9px;
+  inset-block-start: 0;
+  border-block-start: 1px solid color-mix(in srgb, var(--tone-cyan) 62%, transparent);
+  pointer-events: none;
+}
+
+.nx-at-panel-head::before {
+  inset-inline-start: 0;
+  border-inline-start: 1px solid color-mix(in srgb, var(--tone-cyan) 62%, transparent);
+}
+
+.nx-at-panel-head::after {
+  inset-inline-end: 0;
+  border-inline-end: 1px solid color-mix(in srgb, var(--tone-cyan) 62%, transparent);
+}
+
+/* ── المناطق ────────────────────────────────────────────────────────────── */
+
+.nx-at-region {
+  border-block-end: 1px solid var(--at-line-soft);
+  transition: background var(--nx-anim-fast) var(--nx-ease-out);
+}
+
+.nx-at-region:hover {
+  background: var(--at-cell-hot);
+}
+
+.nx-at-region[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--at-accent) 9%, transparent);
+  box-shadow: inset 3px 0 0 var(--at-accent);
+}
+
+.light .nx-at-region[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--at-accent) 12%, transparent);
+}
+
+.nx-at-dial-track {
+  stroke: var(--at-line);
+}
+
+.nx-at-dial-value {
+  stroke: var(--at-accent, var(--tone-cyan));
+}
+
+.nx-at-dial-text {
+  fill: var(--ink);
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.nx-at-tag {
+  flex: none;
+  border: 1px solid var(--at-line);
+  border-radius: 4px;
+  padding: 0 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.nx-at-micro {
+  display: block;
+  min-inline-size: 0;
+  border-inline-start: 1px solid var(--at-line-soft);
+  padding-inline-start: 5px;
+}
+
+.nx-at-micro:first-child {
+  border-inline-start: 0;
+  padding-inline-start: 0;
+}
+
+/* ── الأشرطة ────────────────────────────────────────────────────────────── */
+
+.nx-at-meter,
+.nx-at-init {
+  padding-block: 7px;
+  border-block-end: 1px solid var(--at-line-soft);
+}
+
+.nx-at-meter:last-child,
+.nx-at-init:last-child {
+  border-block-end: 0;
+}
+
+.nx-at-bar {
+  display: block;
+  block-size: 4px;
+  margin-block-start: 5px;
+  border-radius: 2px;
+  background: var(--at-line);
+  position: relative;
+  overflow: hidden;
+}
+
+.nx-at-bar::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--at-fill, 0%);
+  border-radius: inherit;
+  background: var(--tone-cyan);
+}
+
+.nx-at-bar--accent::after {
+  background: var(--at-accent, var(--tone-cyan));
+}
+
+/* ── مصفوفة الوحدات ─────────────────────────────────────────────────────── */
+
+.nx-at-module {
+  border-inline-start: 1px solid var(--at-line-soft);
+  border-block-end: 1px solid var(--at-line-soft);
+  background: color-mix(in srgb, var(--ink) calc(1.4% + var(--at-i, 0) * 0.28%), transparent);
+  transition: background var(--nx-anim-fast) var(--nx-ease-out);
+}
+
+.nx-at-module:hover {
+  background: var(--at-cell-hot);
+}
+
+/* ── مؤشرات المنطقة ─────────────────────────────────────────────────────── */
+
+.nx-at-kpi {
+  padding: 12px;
+  border-inline-start: 1px solid var(--at-line-soft);
+}
+
+.nx-at-kpi:first-child {
+  border-inline-start: 0;
+}
+
+/* ── مجرى الأحداث ───────────────────────────────────────────────────────── */
+
+.nx-at-event {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-block-end: 1px solid var(--at-line-soft);
+}
+
+.nx-at-event-dot {
+  inline-size: 6px;
+  block-size: 6px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--tone-cyan);
+}
+
+/* «عالٍ» لا يُقال باللون وحده: يكبر ويأخذ هالة، فيفترق عن «معلومة» شكلًا. */
+.nx-at-event-dot[data-level="high"] {
+  inline-size: 8px;
+  block-size: 8px;
+  background: var(--tone-rose);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone-rose) 22%, transparent);
+}
+
+.nx-at-chip {
+  display: block;
+  border: 1px solid var(--at-line-soft);
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: var(--at-cell);
+}
+
+/* ── شريط الحالة ────────────────────────────────────────────────────────── */
+
+.nx-at-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-block-start: 1px solid var(--at-line);
+  background: var(--at-cell);
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+@media (forced-colors: active) {
+  .nx-at-bar::after,
+  .nx-at-event-dot {
+    background: CanvasText;
+  }
+
+  .nx-at-dial-value {
+    stroke: CanvasText;
+  }
+}
+
+/* الجسد يتمدّد على ارتفاع النافذة: العمود الأخير في كل عمود يأخذ الفائض،
+   فلا يتبقّى ثلثٌ أسفل الشاشة خاليًا يفضح أن التخطيط أقصر من الشاشة. */
+.nx-at-body > .nx-at-col {
+  min-block-size: 0;
+}
+
+.nx-at-matrix {
+  align-content: start;
+  grid-auto-rows: minmax(56px, auto);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   اتجاه ب — «السيادي» (/nx-sovereign)
+   الطباعة هي العمارة: لا حاويات زجاجية، بل مقاسات نصّية وشعيرات ذهبية.
+   الذهب رمز واحد يتبدّل بالوضع — لا لون نهائي في أي عنصر.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nx-sv {
+  --sv-gold: #c9a227;
+  --sv-gold-soft: color-mix(in srgb, #c9a227 34%, transparent);
+  --sv-hair: color-mix(in srgb, var(--ink) 13%, transparent);
+  --sv-ink-3: color-mix(in srgb, var(--ink) 52%, transparent);
+}
+
+/* على الأبيض يبهت الذهب الفاتح ويصير أصفر باهتًا؛ يُعمَّق حتى يبقى ذهبًا
+   ويجتاز عتبة النصّ الصغير. */
+.light .nx-sv {
+  --sv-gold: #8a6a12;
+  --sv-gold-soft: color-mix(in srgb, #8a6a12 30%, transparent);
+  --sv-hair: color-mix(in srgb, var(--ink) 16%, transparent);
+}
+
+.nx-sv-wrap {
+  max-inline-size: 1180px;
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+
+.nx-sv-num,
+.nx-sv-ledger-v,
+.nx-sv-figure-value,
+.nx-sv-spread-pct {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── الترويسة ───────────────────────────────────────────────────────────── */
+
+.nx-sv-band {
+  padding-block: 56px 44px;
+  border-block-end: 1px solid var(--sv-gold-soft);
+}
+
+.nx-sv-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: var(--sv-gold);
+  padding-block-end: 14px;
+  border-block-end: 1px solid var(--sv-hair);
+}
+
+.nx-sv-title {
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 900;
+  line-height: 0.94;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.nx-sv-lede {
+  margin-block-start: 18px;
+  max-inline-size: 54ch;
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  color: var(--ink-2);
+}
+
+.nx-sv-figure {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: start;
+  justify-content: start;
+  column-gap: 6px;
+  padding-inline-start: 26px;
+  border-inline-start: 2px solid var(--sv-gold);
+}
+
+.nx-sv-figure-value {
+  font-size: clamp(4.5rem, 13vw, 9rem);
+  font-weight: 900;
+  line-height: 0.82;
+  color: var(--sv-gold);
+}
+
+.nx-sv-figure-unit {
+  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  color: var(--sv-gold-soft);
+  padding-block-start: 6px;
+}
+
+.nx-sv-figure-label {
+  grid-column: 1 / -1;
+  margin-block-start: 14px;
+  max-inline-size: 30ch;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+/* ── شريط النجمة الثمانية ───────────────────────────────────────────────── */
+
+.nx-sv-girih-band {
+  position: relative;
+  overflow: hidden;
+  padding-block: 62px;
+  border-block-end: 1px solid var(--sv-hair);
+}
+
+.nx-sv-girih {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  color: var(--sv-gold);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.nx-sv-ledger {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--sv-hair);
+  border: 1px solid var(--sv-hair);
+}
+
+@media (min-width: 900px) {
+  .nx-sv-ledger {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.nx-sv-ledger > li {
+  padding: 18px 14px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(3px);
+  text-align: center;
+}
+
+.nx-sv-ledger-v {
+  display: block;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.nx-sv-ledger-k {
+  display: block;
+  margin-block-start: 6px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--sv-ink-3);
+}
+
+/* ── أطروحات المناطق ────────────────────────────────────────────────────── */
+
+.nx-sv-regions,
+.nx-sv-initiatives {
+  padding-block: 44px;
+}
+
+.nx-sv-h2 {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  color: var(--sv-gold);
+  padding-block-end: 12px;
+  margin-block-end: 22px;
+  border-block-end: 1px solid var(--sv-gold-soft);
+}
+
+.nx-sv-spread {
+  position: relative;
+  display: block;
+  padding: 26px 24px 22px;
+  background: var(--surface);
+  outline: 1px solid var(--sv-hair);
+  transition: background var(--nx-anim-base) var(--nx-ease-out);
+}
+
+.nx-sv-spread:hover {
+  background: color-mix(in srgb, var(--ink) 3%, var(--surface));
+}
+
+.nx-sv-spread[aria-pressed="true"] {
+  box-shadow: inset 0 3px 0 var(--sv-accent);
+}
+
+.nx-sv-spread-no {
+  position: absolute;
+  inset-block-start: 18px;
+  inset-inline-end: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: var(--sv-gold-soft);
+}
+
+.nx-sv-spread-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nx-sv-spread-name {
+  font-size: 1.75rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+/* الحالة النشطة تُقال بالكلمة قبل اللون. */
+.nx-sv-mark {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 2px 8px;
+  color: var(--sv-accent);
+  border: 1px solid currentColor;
+}
+
+.nx-sv-spread-sub {
+  display: block;
+  margin-block-start: 4px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.nx-sv-spread-pct {
+  display: block;
+  margin-block-start: 14px;
+  font-size: 3.25rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--sv-accent);
+}
+
+.nx-sv-pct-sign {
+  font-style: normal;
+  font-size: 1.25rem;
+  font-weight: 800;
+  padding-inline-start: 2px;
+  color: var(--sv-ink-3);
+}
+
+.nx-sv-nm {
+  font-style: normal;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sv-ink-3);
+}
+
+.nx-sv-rule {
+  display: block;
+  block-size: 1px;
+  margin-block: 16px;
+  background: linear-gradient(to left, var(--sv-gold), transparent);
+}
+
+.nx-sv-table {
+  display: grid;
+  gap: 7px;
+}
+
+.nx-sv-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.nx-sv-row-k {
+  font-style: normal;
+  color: var(--ink-2);
+}
+
+/* نقاط الوصل كما في فهرس كتاب — تربط الاسم بقيمته عبر الفراغ. */
+.nx-sv-row-dots {
+  border-block-end: 1px dotted var(--sv-hair);
+  transform: translateY(-3px);
+}
+
+.nx-sv-row-v {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* ── جدول المبادرات ─────────────────────────────────────────────────────── */
+
+.nx-sv-tbl {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.nx-sv-tbl th {
+  padding: 10px 12px;
+  text-align: start;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--sv-ink-3);
+  border-block-end: 1px solid var(--sv-gold-soft);
+}
+
+.nx-sv-tbl td {
+  padding: 12px;
+  border-block-end: 1px solid var(--sv-hair);
+  color: var(--ink);
+}
+
+.nx-sv-tbl tbody tr:hover td {
+  background: color-mix(in srgb, var(--ink) 3%, transparent);
+}
+
+.nx-sv-progress {
+  display: inline-grid;
+  inline-size: 128px;
+  justify-items: end;
+  gap: 5px;
+}
+
+.nx-sv-progress::after {
+  content: "";
+  inline-size: 100%;
+  block-size: 3px;
+  background: linear-gradient(
+    to left,
+    var(--sv-gold) 0 var(--sv-p),
+    var(--sv-hair) var(--sv-p) 100%
+  );
+}
+
+/* ── التذييل ────────────────────────────────────────────────────────────── */
+
+.nx-sv-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-block: 26px 44px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--sv-ink-3);
+  border-block-start: 1px solid var(--sv-hair);
+}
+
+.nx-sv-foot-rule {
+  flex: 1;
+  block-size: 1px;
+  background: var(--sv-gold-soft);
+}
+
+@media (forced-colors: active) {
+  .nx-sv-girih {
+    display: none;
+  }
+
+  .nx-sv-progress::after {
+    background: CanvasText;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   اتجاه ج — «التوأم الحيّ» (/nx-twin)
+   العمق يُصنع بثلاث طبقات حقيقية لا بظلّ مرسوم، والارتفاع يحمل القيمة.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nx-tw {
+  --tw-line: color-mix(in srgb, var(--ink) 10%, transparent);
+  --tw-glow: color-mix(in srgb, var(--tone-cyan) 26%, transparent);
+  --tw-plate: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+.light .nx-tw {
+  --tw-line: color-mix(in srgb, var(--ink) 14%, transparent);
+  --tw-glow: color-mix(in srgb, var(--tone-cyan) 16%, transparent);
+  --tw-plate: color-mix(in srgb, var(--ink) 3%, transparent);
+}
+
+/* ── طبقات العمق ────────────────────────────────────────────────────────── */
+
+.nx-tw-far,
+.nx-tw-mid,
+.nx-tw-near {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.nx-tw-far {
+  background-image: radial-gradient(circle at center, var(--tw-line) 1px, transparent 1.4px);
+  background-size: 30px 30px;
+  opacity: 0.55;
+  filter: blur(0.4px);
+}
+
+.nx-tw-mid {
+  background: radial-gradient(120% 78% at 50% 30%, var(--tw-glow), transparent 62%);
+}
+
+.nx-tw-near {
+  background: radial-gradient(130% 100% at 50% 42%, transparent 46%, var(--surface) 96%);
+}
+
+/* ── الترويسة ───────────────────────────────────────────────────────────── */
+
+.nx-tw-eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  color: var(--tone-cyan);
+}
+
+.nx-tw-title {
+  margin-block-start: 8px;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.nx-tw-avg {
+  display: grid;
+  justify-items: end;
+  padding-inline-end: 16px;
+  border-inline-end: 3px solid var(--tone-cyan);
+}
+
+.nx-tw-avg-v {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.nx-tw-avg-k {
+  margin-block-start: 4px;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+}
+
+/* ── المشهد ─────────────────────────────────────────────────────────────── */
+
+.nx-tw-stage {
+  position: relative;
+}
+
+.nx-tw-svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  color: var(--ink);
+  overflow: visible;
+}
+
+.nx-tw-floor line {
+  stroke: var(--tw-line);
+  stroke-width: 1;
+}
+
+.nx-tw-conduit {
+  stroke: var(--tw-line);
+  stroke-width: 2;
+}
+
+/* النبض يسري في الأنبوب: شرطة قصيرة تتحرّك على طول المسار. */
+.nx-tw-pulse {
+  stroke: var(--tw-accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 10 210;
+  animation: nxTwFlow 2.8s linear infinite;
+  animation-delay: calc(var(--tw-i, 0) * -0.6s);
+  filter: drop-shadow(0 0 5px var(--tw-accent));
+}
+
+@keyframes nxTwFlow {
+  from {
+    stroke-dashoffset: 220;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.nx-tw-pad {
+  fill: color-mix(in srgb, var(--tw-accent) 9%, transparent);
+  stroke: color-mix(in srgb, var(--tw-accent) 45%, transparent);
+  stroke-width: 1.5;
+}
+
+.nx-tw-pad-in {
+  fill: color-mix(in srgb, var(--tw-accent) 18%, transparent);
+  stroke: none;
+}
+
+/* العمود: ارتفاعه هو القيمة، وتدرّجه يوهم بأسطوانة لا بمستطيل مسطّح. */
+.nx-tw-tower {
+  fill: var(--tw-accent);
+  opacity: 0.9;
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--tw-accent) 60%, transparent));
+}
+
+.nx-tw-cap {
+  fill: color-mix(in srgb, var(--tw-accent) 55%, white);
+}
+
+.light .nx-tw-cap {
+  fill: color-mix(in srgb, var(--tw-accent) 70%, #ffffff);
+}
+
+.nx-tw-node[data-active] .nx-tw-pad {
+  stroke: var(--tw-accent);
+  stroke-width: 2.5;
+}
+
+.nx-tw-node[data-active] .nx-tw-tower {
+  opacity: 1;
+  filter: drop-shadow(0 0 22px var(--tw-accent));
+}
+
+.nx-tw-name {
+  font-size: 13px;
+  font-weight: 800;
+  fill: var(--ink-2);
+}
+
+.nx-tw-val {
+  font-size: 17px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  fill: var(--ink);
+}
+
+.nx-tw-val[data-empty] {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--ink-3);
+}
+
+.nx-tw-hub ellipse {
+  fill: color-mix(in srgb, var(--tone-cyan) 12%, transparent);
+  stroke: color-mix(in srgb, var(--tone-cyan) 55%, transparent);
+  stroke-width: 1.5;
+}
+
+.nx-tw-hub-in {
+  fill: color-mix(in srgb, var(--tone-cyan) 40%, transparent) !important;
+}
+
+/* ── لوحات الحالة الطافية ───────────────────────────────────────────────── */
+
+.nx-tw-hud {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-block-start: 10px;
+}
+
+@media (min-width: 1024px) {
+  .nx-tw-hud {
+    position: absolute;
+    inset-block: 0;
+    inset-inline: 0;
+    display: block;
+    margin: 0;
+    pointer-events: none;
+  }
+
+  .nx-tw-hud > .nx-tw-card {
+    position: absolute;
+    inline-size: 190px;
+    pointer-events: auto;
+  }
+
+  .nx-tw-hud > .nx-tw-card:nth-child(1) {
+    inset-block-start: 0;
+    inset-inline-start: 0;
+  }
+  .nx-tw-hud > .nx-tw-card:nth-child(2) {
+    inset-block-start: 0;
+    inset-inline-end: 0;
+  }
+  .nx-tw-hud > .nx-tw-card:nth-child(3) {
+    inset-block-end: 0;
+    inset-inline-start: 0;
+  }
+  .nx-tw-hud > .nx-tw-card:nth-child(4) {
+    inset-block-end: 0;
+    inset-inline-end: 0;
+  }
+}
+
+/* الارتفاع مركَّب: ظلّ قريب يحدّد الحافة، وظلّ بعيد يصنع المسافة، وحافة
+   مضيئة تفصل اللوحة عن المشهد تحتها. */
+.nx-tw-card {
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: var(--glass-fill);
+  border: 1px solid var(--hairline);
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 2px 6px rgb(2 8 17 / 0.35),
+    0 22px 44px -18px rgb(2 8 17 / 0.65);
+  backdrop-filter: blur(14px);
+}
+
+.light .nx-tw-card {
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 2px 6px rgb(15 23 42 / 0.1),
+    0 20px 40px -20px rgb(15 23 42 / 0.3);
+}
+
+.nx-tw-card-v {
+  display: block;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.nx-tw-card-k {
+  display: block;
+  margin-block-start: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.nx-tw-card-h {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* ── اللوحات السفلية ────────────────────────────────────────────────────── */
+
+.nx-tw-panel {
+  border-radius: 16px;
+  padding: 14px;
+  background: var(--tw-plate);
+  border: 1px solid var(--hairline);
+}
+
+.nx-tw-h2 {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: var(--ink-3);
+  margin-block-end: 10px;
+}
+
+.nx-tw-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: start;
+  transition: border-color var(--nx-anim-fast) var(--nx-ease-out);
+}
+
+.nx-tw-pick[aria-pressed="true"] {
+  border-color: var(--tw-accent);
+  background: color-mix(in srgb, var(--tw-accent) 10%, transparent);
+}
+
+.nx-tw-pick-dot {
+  inline-size: 9px;
+  block-size: 9px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--tw-accent);
+}
+
+.nx-tw-pick-mark {
+  margin-inline-start: auto;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+
+.nx-tw-metric {
+  display: block;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--ink) 3%, transparent);
+  border: 1px solid var(--hairline-soft);
+}
+
+.nx-tw-metric b {
+  display: block;
+  font-size: 1.0625rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.nx-tw-metric i {
+  display: block;
+  font-style: normal;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.nx-tw-timeline {
+  margin-block-start: 10px;
+  border-block-start: 1px solid var(--hairline-soft);
+}
+
+.nx-tw-timeline > li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 8px;
+  border-block-end: 1px solid var(--hairline-soft);
+  font-size: 13px;
+}
+
+.nx-tw-timeline > li:last-child {
+  border-block-end: 0;
+}
+
+.nx-tw-timeline i {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.nx-tw-tl-dot {
+  inline-size: 7px;
+  block-size: 7px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--tone-cyan);
+}
+
+/* «عالٍ» يكبر ويأخذ هالة — لا يُقال باللون وحده. */
+.nx-tw-tl-dot[data-level="high"] {
+  inline-size: 9px;
+  block-size: 9px;
+  background: var(--tone-rose);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone-rose) 22%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-tw-pulse {
+    animation: none !important;
+    stroke-dasharray: none;
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .nx-tw-far,
+  .nx-tw-mid {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-tw-far,
+  .nx-tw-mid,
+  .nx-tw-near {
+    display: none;
+  }
+
+  .nx-tw-tower,
+  .nx-tw-cap {
+    fill: CanvasText;
+    filter: none;
+  }
+
+  .nx-tw-pulse {
+    stroke: CanvasText;
+    filter: none;
+  }
+}

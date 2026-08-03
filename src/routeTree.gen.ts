@@ -27,7 +27,10 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PermitsRouteImport } from './routes/permits'
 import { Route as OsRouteImport } from './routes/os'
+import { Route as NxTwinRouteImport } from './routes/nx-twin'
+import { Route as NxSovereignRouteImport } from './routes/nx-sovereign'
 import { Route as NxCockpitRouteImport } from './routes/nx-cockpit'
+import { Route as NxAtlasRouteImport } from './routes/nx-atlas'
 import { Route as NxAgentsRouteImport } from './routes/nx-agents'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
@@ -327,9 +330,24 @@ const OsRoute = OsRouteImport.update({
   path: '/os',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NxTwinRoute = NxTwinRouteImport.update({
+  id: '/nx-twin',
+  path: '/nx-twin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NxSovereignRoute = NxSovereignRouteImport.update({
+  id: '/nx-sovereign',
+  path: '/nx-sovereign',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NxCockpitRoute = NxCockpitRouteImport.update({
   id: '/nx-cockpit',
   path: '/nx-cockpit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NxAtlasRoute = NxAtlasRouteImport.update({
+  id: '/nx-atlas',
+  path: '/nx-atlas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NxAgentsRoute = NxAgentsRouteImport.update({
@@ -1457,7 +1475,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/nx-agents': typeof NxAgentsRoute
+  '/nx-atlas': typeof NxAtlasRoute
   '/nx-cockpit': typeof NxCockpitRoute
+  '/nx-sovereign': typeof NxSovereignRoute
+  '/nx-twin': typeof NxTwinRoute
   '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
@@ -1685,7 +1706,10 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/nx-agents': typeof NxAgentsRoute
+  '/nx-atlas': typeof NxAtlasRoute
   '/nx-cockpit': typeof NxCockpitRoute
+  '/nx-sovereign': typeof NxSovereignRoute
+  '/nx-twin': typeof NxTwinRoute
   '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
@@ -1913,7 +1937,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/nx-agents': typeof NxAgentsRoute
+  '/nx-atlas': typeof NxAtlasRoute
   '/nx-cockpit': typeof NxCockpitRoute
+  '/nx-sovereign': typeof NxSovereignRoute
+  '/nx-twin': typeof NxTwinRoute
   '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
@@ -2143,7 +2170,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/nx-agents'
+    | '/nx-atlas'
     | '/nx-cockpit'
+    | '/nx-sovereign'
+    | '/nx-twin'
     | '/os'
     | '/permits'
     | '/pricing'
@@ -2371,7 +2401,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/nx-agents'
+    | '/nx-atlas'
     | '/nx-cockpit'
+    | '/nx-sovereign'
+    | '/nx-twin'
     | '/os'
     | '/permits'
     | '/pricing'
@@ -2598,7 +2631,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/nx-agents'
+    | '/nx-atlas'
     | '/nx-cockpit'
+    | '/nx-sovereign'
+    | '/nx-twin'
     | '/os'
     | '/permits'
     | '/pricing'
@@ -2828,7 +2864,10 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   NxAgentsRoute: typeof NxAgentsRoute
+  NxAtlasRoute: typeof NxAtlasRoute
   NxCockpitRoute: typeof NxCockpitRoute
+  NxSovereignRoute: typeof NxSovereignRoute
+  NxTwinRoute: typeof NxTwinRoute
   OsRoute: typeof OsRoute
   PermitsRoute: typeof PermitsRoute
   PricingRoute: typeof PricingRoute
@@ -3049,11 +3088,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/nx-twin': {
+      id: '/nx-twin'
+      path: '/nx-twin'
+      fullPath: '/nx-twin'
+      preLoaderRoute: typeof NxTwinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nx-sovereign': {
+      id: '/nx-sovereign'
+      path: '/nx-sovereign'
+      fullPath: '/nx-sovereign'
+      preLoaderRoute: typeof NxSovereignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/nx-cockpit': {
       id: '/nx-cockpit'
       path: '/nx-cockpit'
       fullPath: '/nx-cockpit'
       preLoaderRoute: typeof NxCockpitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nx-atlas': {
+      id: '/nx-atlas'
+      path: '/nx-atlas'
+      fullPath: '/nx-atlas'
+      preLoaderRoute: typeof NxAtlasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nx-agents': {
@@ -4817,7 +4877,10 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   NxAgentsRoute: NxAgentsRoute,
+  NxAtlasRoute: NxAtlasRoute,
   NxCockpitRoute: NxCockpitRoute,
+  NxSovereignRoute: NxSovereignRoute,
+  NxTwinRoute: NxTwinRoute,
   OsRoute: OsRoute,
   PermitsRoute: PermitsRoute,
   PricingRoute: PricingRoute,
