@@ -6949,7 +6949,8 @@ html.dark .nx-region-aura {
 
 .nx-bp-arc {
   stroke: var(--bp-accent-eff);
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--bp-accent-eff) 55%, transparent));
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--bp-accent-eff) 85%, transparent))
+    drop-shadow(0 0 20px color-mix(in srgb, var(--bp-accent-eff) 45%, transparent));
   stroke-dasharray: var(--bp-arc-len);
   stroke-dashoffset: var(--bp-arc-len);
   animation: nxBpDraw 900ms var(--nx-ease-out) both;
@@ -6966,7 +6967,8 @@ html.dark .nx-region-aura {
    أصلًا لهوية المنطقة، فلا يبقى له طاقة ليقول «نشطة» أيضًا. */
 .nx-bp-region[data-active] .nx-bp-arc {
   stroke-width: 14;
-  filter: drop-shadow(0 0 11px color-mix(in srgb, var(--bp-accent-eff) 75%, transparent));
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--bp-accent-eff) 95%, transparent))
+    drop-shadow(0 0 26px color-mix(in srgb, var(--bp-accent-eff) 55%, transparent));
 }
 
 .nx-bp-region[data-active] .nx-bp-spoke {
@@ -7074,12 +7076,14 @@ html.dark .nx-region-aura {
   --bp-accent-eff: color-mix(in srgb, var(--bp-accent) 66%, #05080f);
 }
 
+/* اللمعان مطلب صريح في الوضعين: خط القوس يحفظ تباينه بمزج الحبر، والتوهّج
+   يُترك للّون الصافي — فهو زينة حول الخط لا الخط نفسه (WCAG محفوظ). */
 .light .nx-bp-arc {
-  filter: none;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--bp-accent) 40%, transparent));
 }
 
 .light .nx-bp-region[data-active] .nx-bp-arc {
-  filter: none;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--bp-accent) 55%, transparent));
   stroke-width: 14;
 }
 
@@ -7152,6 +7156,270 @@ html.dark .nx-region-aura {
   .nx-bp-compass,
   .nx-bp-rail-sweep {
     display: none;
+  }
+}
+
+/* ── طبقة الفن — الشفق والهالة والمدارات ─────────────────────────────────
+   الفن هنا عامل رئيسي لا خلفية: شفق بألوان المناطق الأربع يتنفّس خلف ورق
+   الرسم، وهالة مخروطية تدور خلف الوردة على ترتيب البوصلة نفسه، ومداران
+   متعاكسان يعلنان أن الآلة حيّة. كل لون يمرّ متغيّرًا (--bp-accent /
+   --bp-c-*) لا قيمة نهائية — المادة ٣٣. */
+
+.nx-bp-aurora {
+  position: absolute;
+  inline-size: 46vmax;
+  block-size: 46vmax;
+  border-radius: 999px;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--bp-accent) 38%, transparent),
+    transparent 72%
+  );
+  filter: blur(58px);
+  opacity: 0.5;
+  animation: nxBpAurora 26s ease-in-out infinite alternate;
+  animation-delay: calc(var(--bp-aurora-i, 0) * -7s);
+}
+
+.nx-bp-aurora:nth-of-type(1) {
+  inset-block-start: -14%;
+  inset-inline-end: -6%;
+}
+
+.nx-bp-aurora:nth-of-type(2) {
+  inset-block-start: 18%;
+  inset-inline-start: -12%;
+}
+
+.nx-bp-aurora:nth-of-type(3) {
+  inset-block-end: -18%;
+  inset-inline-end: 16%;
+}
+
+.nx-bp-aurora:nth-of-type(4) {
+  inset-block-end: -6%;
+  inset-inline-start: 26%;
+}
+
+@keyframes nxBpAurora {
+  from {
+    translate: 0 0;
+    scale: 1;
+  }
+  to {
+    translate: -3% 4%;
+    scale: 1.14;
+  }
+}
+
+/* الشفق فوق الأبيض يسقط ضبابًا رماديًّا إن بقي بكثافة الكحلي — يُخفَّف
+   ويُوسَّع نثره فيُقرأ لمعانًا لا بقعة. */
+.light .nx-bp-aurora {
+  opacity: 0.34;
+  filter: blur(74px);
+}
+
+.nx-bp-art {
+  --bp-halo-ring: color-mix(in srgb, var(--ink) 20%, transparent);
+}
+
+/* الهالة: مخروط ألوان المناطق على مواضعها الجغرافية — يُقنَّع حلقةً لا
+   قرصًا كي لا يطمس قلب الوردة، ويدور دورة كاملة كل ١٨ ثانية. */
+.nx-bp-halo {
+  position: absolute;
+  inset: -9%;
+  border-radius: 999px;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--bp-c-n) 55%, transparent),
+    color-mix(in srgb, var(--bp-c-e) 55%, transparent),
+    color-mix(in srgb, var(--bp-c-s) 55%, transparent),
+    color-mix(in srgb, var(--bp-c-w) 55%, transparent),
+    color-mix(in srgb, var(--bp-c-n) 55%, transparent)
+  );
+  -webkit-mask-image: radial-gradient(
+    closest-side,
+    transparent 56%,
+    #000 72%,
+    #000 84%,
+    transparent 96%
+  );
+  mask-image: radial-gradient(closest-side, transparent 56%, #000 72%, #000 84%, transparent 96%);
+  filter: blur(14px);
+  opacity: 0.6;
+  animation: nxBpSpin 18s linear infinite;
+}
+
+@keyframes nxBpSpin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+
+.light .nx-bp-halo {
+  opacity: 0.42;
+}
+
+/* مداران متعاكسان — خطّا إنشاء يدوران ببطء شديد حول الوردة. */
+.nx-bp-orbit {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  border: 1px dashed var(--bp-halo-ring);
+}
+
+.nx-bp-orbit--a {
+  inset: -4.5%;
+  animation: nxBpSpin 64s linear infinite;
+}
+
+.nx-bp-orbit--b {
+  inset: -1.5%;
+  border-style: dotted;
+  animation: nxBpSpin 88s linear infinite reverse;
+}
+
+/* رأس المدار — نقطة ضوء تجري على الحلقة فتقول «حيّ» بلا صوت. */
+.nx-bp-orbit--a::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -3px;
+  inset-inline-start: calc(50% - 3px);
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 999px;
+  background: var(--tone-cyan);
+  box-shadow: 0 0 12px var(--tone-cyan);
+}
+
+/* أطراف الأقواس — لمعة عند حدَّي كل قوس مقيس، تظهر بعد اكتمال رسمه. */
+.nx-bp-arc-tip {
+  fill: var(--bp-accent-eff);
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--bp-accent-eff) 90%, transparent));
+  animation: nxBpTip 700ms var(--nx-ease-out) both;
+  animation-delay: calc(560ms + var(--bp-arc-i, 0) * 110ms);
+}
+
+@keyframes nxBpTip {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* شعيرة اللهجة أعلى كل لوحة قياس — خط ضوء متدرّج يعلن لون اللوحة. */
+.nx-bp-panel::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 16px;
+  block-size: 2px;
+  border-radius: 999px;
+  background: linear-gradient(to left, transparent, rgb(var(--bp-accent-rgb)), transparent);
+  opacity: 0.9;
+  box-shadow: 0 0 14px rgba(var(--bp-accent-rgb), 0.55);
+}
+
+/* توهّج الرقم المقيس والرمز المضيء — اللمعان على القيمة لا على الغياب. */
+.nx-bp-panel-value {
+  text-shadow: 0 0 22px rgba(var(--bp-accent-rgb), 0.5);
+}
+
+.nx-bp-glyph-on {
+  filter: drop-shadow(0 0 6px rgba(var(--bp-accent-rgb), 0.65));
+}
+
+.nx-bp-glyph-on-stroke {
+  filter: drop-shadow(0 0 6px rgba(var(--bp-accent-rgb), 0.65));
+}
+
+/* العنوان اللامع: تدرّج من الحبر إلى السماوي — رموز لا قيم نهائية.
+   التفريغ خلف حارس @supports وجوبًا: `text-fill-color: transparent` بلا
+   خلفية مقصوصة على النص = عنوان غير مرئي في متصفح لا يدعم القصّ. */
+.nx-bp-title {
+  color: var(--ink);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .nx-bp-title {
+    background: linear-gradient(100deg, var(--ink) 34%, var(--tone-cyan) 82%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+.light .nx-bp-panel-value {
+  text-shadow: 0 0 18px rgba(var(--bp-accent-rgb), 0.35);
+}
+
+.light .nx-bp-glyph-on,
+.light .nx-bp-glyph-on-stroke {
+  filter: drop-shadow(0 0 5px rgba(var(--bp-accent-rgb), 0.4));
+}
+
+.light .nx-bp-panel::after {
+  opacity: 0.75;
+  box-shadow: 0 0 10px rgba(var(--bp-accent-rgb), 0.35);
+}
+
+/* طبقة الفن تحت قواعد الوصول نفسها: الحركة تسكن لا تختفي، والشفافية
+   المخفَّضة والألوان القسرية تُسقطان الزينة كلّها. */
+@media (prefers-reduced-motion: reduce) {
+  .nx-bp-aurora,
+  .nx-bp-halo,
+  .nx-bp-orbit--a,
+  .nx-bp-orbit--b,
+  .nx-bp-arc-tip {
+    animation: none !important;
+  }
+
+  .nx-bp-arc-tip {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .nx-bp-aurora,
+  .nx-bp-halo {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-bp-aurora,
+  .nx-bp-halo,
+  .nx-bp-orbit,
+  .nx-bp-panel::after {
+    display: none;
+  }
+
+  .nx-bp-title {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+
+  .nx-bp-arc-tip {
+    fill: CanvasText;
+    filter: none;
+  }
+
+  /* توهّجات الرموز والأقواس أدنى في ترتيب المصدر من كتلة forced-colors
+     الأصلية، ونسخ .light نوعيّتها (0,2,0) تعلو قاعدتها — فتُطفأ هنا صراحةً
+     بنوعية مساوية أو أعلى كي لا يعود بريق حول رسمٍ فُرض لونه. */
+  .nx-bp-glyph-on,
+  .nx-bp-glyph-on-stroke,
+  .light .nx-bp-glyph-on,
+  .light .nx-bp-glyph-on-stroke,
+  .light .nx-bp-arc,
+  .light .nx-bp-region[data-active] .nx-bp-arc {
+    filter: none;
   }
 }
 

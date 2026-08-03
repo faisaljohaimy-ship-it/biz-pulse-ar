@@ -139,7 +139,9 @@ export function InstrumentPanel({
       <div className="mt-2 flex items-end justify-between gap-3">
         <p
           className={`font-black tabular-nums leading-none ${
-            measured ? "text-3xl text-[color:var(--ink)]" : "text-base text-[color:var(--ink-3)]"
+            measured
+              ? "nx-bp-panel-value text-3xl text-[color:var(--ink)]"
+              : "text-base text-[color:var(--ink-3)]"
           }`}
         >
           {measured ? `${value}${suffix ?? ""}` : notMeasured}

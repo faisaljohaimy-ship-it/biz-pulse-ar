@@ -122,6 +122,22 @@ export function BlueprintPage() {
         <line x1="50" y1="0" x2="50" y2="100" stroke="currentColor" strokeWidth="0.07" />
       </svg>
 
+      {/* الشفق اللوني — الفن عامل رئيسي لا خلفية: أربع هالات بألوان المناطق
+          الأربع تتنفّس خلف ورق الرسم. اللون يمرّ متغيّرًا (--bp-accent) لا
+          قيمة نهائية، فيبقى خاضعًا لقواعد الوضعين في الطبقة العامة. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        {REGIONS.map((region, i) => (
+          <span
+            key={region.id}
+            className="nx-bp-aurora"
+            style={{
+              ["--bp-accent" as string]: REGION_ACCENT_HEX[region.id],
+              ["--bp-aurora-i" as string]: i,
+            }}
+          />
+        ))}
+      </div>
+
       <HomeTopNav />
 
       <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-16 pt-4 sm:px-6">
@@ -129,7 +145,7 @@ export function BlueprintPage() {
           <p className="text-[12px] font-bold uppercase tracking-[0.34em] text-[color:var(--tone-cyan)]">
             {ar ? "سَدِيد · السطح الهندسي" : "SADEED · Engineering surface"}
           </p>
-          <h1 className="mt-2 text-3xl font-black leading-tight text-[color:var(--ink)] sm:text-4xl">
+          <h1 className="nx-bp-title mt-2 text-3xl font-black leading-tight sm:text-4xl">
             {ar ? "المُخطَّط التنفيذي" : "The Executive Blueprint"}
           </h1>
           <p className="mt-2 max-w-[62ch] text-sm text-[color:var(--ink-2)]">
@@ -145,10 +161,32 @@ export function BlueprintPage() {
         {/* الانقسام الذهبي: 1 : 1.618 مكتوبًا في الشبكة لا مقدَّرًا بالعين. */}
         <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.618fr)] lg:items-center">
           <div
-            className="nx-bp-stage mx-auto w-full max-w-[380px]"
+            className="nx-bp-stage mx-auto w-full max-w-[430px]"
             style={{ ["--nx-bp-i" as string]: 1 }}
           >
-            <RegionRosette values={compliance} average={average} activeRegion={regionId} ar={ar} />
+            {/* لوحة الفن المركزية: هالة مخروطية بألوان المناطق تدور خلف
+                الوردة، ومداران متعاكسان حولها. ترتيب ألوان الهالة هو ترتيب
+                البوصلة نفسه — شمالها أزرق الوسطى وشرقها أخضر الشرقية —
+                فالدوران يجري على الحقيقة الجغرافية لا على الزينة. */}
+            <div
+              className="nx-bp-art relative"
+              style={{
+                ["--bp-c-n" as string]: REGION_ACCENT_HEX.central,
+                ["--bp-c-e" as string]: REGION_ACCENT_HEX.eastern,
+                ["--bp-c-s" as string]: REGION_ACCENT_HEX.southern,
+                ["--bp-c-w" as string]: REGION_ACCENT_HEX.western,
+              }}
+            >
+              <span aria-hidden className="nx-bp-halo" />
+              <span aria-hidden className="nx-bp-orbit nx-bp-orbit--a" />
+              <span aria-hidden className="nx-bp-orbit nx-bp-orbit--b" />
+              <RegionRosette
+                values={compliance}
+                average={average}
+                activeRegion={regionId}
+                ar={ar}
+              />
+            </div>
           </div>
 
           <div

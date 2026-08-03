@@ -16,8 +16,13 @@ const PANELS = read("src/components/blueprint/InstrumentPanels.tsx");
 const PAGE = read("src/routes/-blueprint-page.tsx");
 const CSS = read("src/styles.css");
 
-/** طبقة المُخطَّط وحدها من styles.css — لئلا تُقاس قواعد غيرها. */
-const LAYER = CSS.slice(CSS.indexOf("المُخطَّط التنفيذي — السطح الهندسي"));
+/** طبقة المُخطَّط وحدها من styles.css — لئلا تُقاس قواعد غيرها.
+ * الحدّ الأعلى واجب لا ترف: الشريحة كانت مفتوحة النهاية حين كان المُخطَّط
+ * آخر طبقة في الملف، فلمّا أُلحقت طبقات الاتجاهات بعده صارت المفتوحة تقيس
+ * قواعد غيرها وتُسقط العقد بذنب لم يرتكبه. */
+const LAYER_START = CSS.indexOf("المُخطَّط التنفيذي — السطح الهندسي");
+const LAYER_END = CSS.indexOf("اتجاه أ — «مركز المهام»", LAYER_START);
+const LAYER = CSS.slice(LAYER_START, LAYER_END === -1 ? undefined : LAYER_END);
 
 describe("المُخطَّط — المادة ٣٣: لا لون نهائي خارج طبقة الرموز", () => {
   it("لا لون سداسي مكتوب في أي مكوّن", () => {

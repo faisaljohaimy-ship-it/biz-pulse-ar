@@ -33,8 +33,10 @@ const HUB_CODE = stripComments(HUB);
 const CARD_CODE = stripComments(CARD);
 
 describe("FourRegionHub — live executive hub", () => {
-  it("is the home centerpiece and the static poster is gone", () => {
-    expect(INDEX).toContain("<FourRegionHub />");
+  it("home renders the approved blueprint surface and the static poster stays gone", () => {
+    // قرار المالك ٢٠٢٦/٠٨/٠٣: مركز الرئيسية هو «المُخطَّط التنفيذي»؛ يبقى
+    // هذا الملف حارسًا لعقود المكوّن نفسه أينما رُكِّب.
+    expect(INDEX).toContain("component: BlueprintPage");
     expect(INDEX).not.toContain("<NexiosCommandCenter />");
   });
 

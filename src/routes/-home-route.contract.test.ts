@@ -25,10 +25,11 @@ describe("homepage route contract", () => {
     expect(INDEX).toMatch(/export const Route\s*=\s*createFileRoute\("\/"\)/);
   });
 
-  it("renders the approved compact homepage and keeps retired sections removed", () => {
-    for (const section of ["<FourRegionHub />", "<HomeTopNav />"]) {
-      expect(INDEX).toContain(section);
-    }
+  it("renders the approved blueprint homepage and keeps retired sections removed", () => {
+    // قرار المالك ٢٠٢٦/٠٨/٠٣: الرئيسية هي سطح «المُخطَّط التنفيذي» نفسه —
+    // تسجيلان لمساعد واحد (/ و/blueprint) فلا ازدواج كود.
+    expect(INDEX).toContain('from "./-blueprint-page"');
+    expect(INDEX).toContain("component: BlueprintPage");
     for (const retired of [
       "<SovereignCommandDeck",
       "<DashboardPreviewRail",

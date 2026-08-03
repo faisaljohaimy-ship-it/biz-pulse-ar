@@ -62,9 +62,11 @@ export function RegionRosette({ values, average, activeRegion, ar }: RegionRoset
   const ticks = Array.from({ length: 72 }, (_, i) => i * 5);
 
   return (
+    // `relative` تُدخل الرسم في طبقة العناصر الموضوعة فيُرسم فوق هالة الفن
+    // ومداريها المجاورين — المطلقُ الموضع يعلو غيرَ الموضوع مهما تأخّر في DOM.
     <svg
       viewBox={`0 0 ${SIZE} ${SIZE}`}
-      className="nx-bp-rosette h-full w-full text-[color:var(--ink)]"
+      className="nx-bp-rosette relative h-full w-full text-[color:var(--ink)]"
       aria-hidden
       focusable="false"
     >
@@ -127,17 +129,34 @@ export function RegionRosette({ values, average, activeRegion, ar }: RegionRoset
 
             {/* القيمة: تنمو متناظرة حول المحور. لا تُرسم إن لم تُقَس. */}
             {pct !== null && pct > 0 && (
-              <path
-                d={arcPath(R_ARC, axis - half, axis + half)}
-                className="nx-bp-arc"
-                fill="none"
-                strokeWidth="11"
-                strokeLinecap="round"
-                style={{
-                  ["--bp-arc-len" as string]: `${arcLength(R_ARC, half * 2).toFixed(2)}`,
-                  ["--bp-arc-i" as string]: index,
-                }}
-              />
+              <>
+                <path
+                  d={arcPath(R_ARC, axis - half, axis + half)}
+                  className="nx-bp-arc"
+                  fill="none"
+                  strokeWidth="11"
+                  strokeLinecap="round"
+                  style={{
+                    ["--bp-arc-len" as string]: `${arcLength(R_ARC, half * 2).toFixed(2)}`,
+                    ["--bp-arc-i" as string]: index,
+                  }}
+                />
+                {/* لمعتا الطرفين — تظهران بعد اكتمال رسم القوس، فتقرأ العين
+                    حدَّي القياس نقطتي ضوء لا نهايتين مبتورتين. */}
+                {[axis - half, axis + half].map((deg) => {
+                  const tip = polar(R_ARC, deg);
+                  return (
+                    <circle
+                      key={deg}
+                      cx={tip.x.toFixed(2)}
+                      cy={tip.y.toFixed(2)}
+                      r="2.4"
+                      className="nx-bp-arc-tip"
+                      style={{ ["--bp-arc-i" as string]: index }}
+                    />
+                  );
+                })}
+              </>
             )}
 
             {/* الاسم عند محور المنطقة — الوردة تُقرأ وحدها بلا مفتاح جانبي،
