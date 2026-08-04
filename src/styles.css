@@ -887,33 +887,13 @@ body {
     transform: rotateX(180deg);
   }
 }
-.aria-orb-halo {
-  position: absolute;
-  inset: -14%;
-  border-radius: 9999px;
-  background: radial-gradient(circle, var(--aria-halo) 0%, transparent 65%);
-  filter: blur(8px);
-  animation: aria-orb-halo var(--aria-speed) ease-in-out infinite;
-  pointer-events: none;
-}
 .aria-orb-ring-a {
   animation: aria-orb-spin 12s linear infinite;
   transform-box: fill-box;
 }
-.aria-orb-ring-b {
-  animation: aria-orb-spin-r 18s linear infinite;
-  transform-box: fill-box;
-}
-.aria-orb-scan {
-  animation: aria-orb-scan var(--aria-speed) ease-in-out infinite;
-  transform-box: fill-box;
-}
 
 @media (prefers-reduced-motion: reduce) {
-  .aria-orb-halo,
-  .aria-orb-ring-a,
-  .aria-orb-ring-b,
-  .aria-orb-scan {
+  .aria-orb-ring-a {
     animation: none !important;
   }
 }
@@ -1022,59 +1002,7 @@ body {
     opacity: 0;
   }
 }
-
-.aria-hero-bg {
-  background:
-    radial-gradient(
-      ellipse at 50% 30%,
-      color-mix(in oklab, var(--aria-cyan) 18%, transparent) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse at 20% 80%,
-      color-mix(in oklab, var(--aria-glow) 14%, transparent) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse at 80% 70%,
-      color-mix(in oklab, var(--aria-cyan-bright) 10%, transparent) 0%,
-      transparent 55%
-    ),
-    linear-gradient(180deg, var(--aria-bg) 0%, var(--aria-bg-2) 60%, var(--aria-bg) 100%);
-}
-.aria-grid {
-  background-image:
-    linear-gradient(color-mix(in oklab, var(--aria-cyan) 8%, transparent) 1px, transparent 1px),
-    linear-gradient(
-      90deg,
-      color-mix(in oklab, var(--aria-cyan) 8%, transparent) 1px,
-      transparent 1px
-    );
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse at 50% 50%, black 30%, transparent 75%);
-}
-.aria-ray {
-  animation: aria-ray-sweep 9s ease-in-out infinite;
-}
-.aria-glass-card {
-  background: linear-gradient(
-    135deg,
-    color-mix(in oklab, var(--aria-cyan) 10%, transparent),
-    color-mix(in oklab, var(--aria-card) 35%, transparent)
-  );
-  border: 1px solid color-mix(in oklab, var(--aria-cyan) 35%, transparent);
-  backdrop-filter: blur(14px) saturate(140%);
-  box-shadow:
-    0 8px 40px -10px color-mix(in oklab, var(--aria-cyan) 40%, transparent),
-    inset 0 1px 0 color-mix(in oklab, white 12%, transparent);
-}
-.aria-mini-bar {
-  transform-origin: bottom;
-  animation: aria-bar 2.2s ease-in-out infinite;
-}
 @media (prefers-reduced-motion: reduce) {
-  .aria-ray,
-  .aria-mini-bar,
   [class*="aria-float"],
   [class*="aria-spin"],
   [class*="aria-pulse"],
@@ -1216,11 +1144,6 @@ body {
 }
 
 /* ═══ FINN presence — state-driven CSS (no video, no audio, no canvas) ═══ */
-.aria-presence .aria-figure {
-  transform-origin: 50% 50%;
-  animation: aria-idle-breathe 8s ease-in-out infinite;
-  will-change: transform, filter;
-}
 .aria-presence .aria-glow {
   background: radial-gradient(
     circle,
@@ -1275,9 +1198,6 @@ body {
     transparent 72%
   );
   animation: aria-glow-speak 620ms ease-in-out infinite;
-}
-.aria-presence[data-aria-state="speaking"] .aria-figure {
-  animation: aria-figure-speak 620ms ease-in-out infinite;
 }
 
 @keyframes aria-idle-breathe {
@@ -1358,7 +1278,6 @@ body {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .aria-presence .aria-figure,
   .aria-presence .aria-glow,
   .aria-presence .aria-shimmer {
     animation: none !important;
@@ -2462,9 +2381,6 @@ a:active svg,
 }
 
 /* FINN glass edge — REMOVED per owner directive. No-op stub. */
-.finn-glass-edge {
-  background-color: #061525;
-}
 
 /* ────────────────────────────────────────────────────────────────
    CARD RADIATION — REMOVED per owner directive. The regional halo
@@ -3437,29 +3353,6 @@ body {
   opacity: 0.42;
   filter: blur(6px);
 }
-.light .finn-glass-edge,
-.finn-glass-edge {
-  background-color: transparent;
-  background-image: linear-gradient(
-    150deg,
-    rgba(255, 255, 255, 0.16),
-    rgba(255, 255, 255, 0.04) 55%,
-    rgba(255, 255, 255, 0.12)
-  );
-  backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
-}
-.light .finn-glass-edge {
-  background-image: linear-gradient(
-    150deg,
-    rgba(255, 255, 255, 0.9),
-    rgba(255, 255, 255, 0.55) 55%,
-    rgba(224, 240, 250, 0.6)
-  );
-  border-color: rgba(255, 255, 255, 0.9);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98);
-}
 
 /* 4) الأيقونات — قرص زجاجي لامع دائم */
 .holo-icon,
@@ -3611,14 +3504,6 @@ body {
 .light .nx-icon-edge,
 .light [data-region-glow] {
   border: 2px solid rgba(var(--nx-region-rgb, var(--accent-rgb, 34, 211, 238)), 0.85) !important;
-}
-
-.light .finn-glass-edge {
-  border-width: 2px !important;
-  border-color: rgba(58, 160, 205, 0.7) !important;
-}
-.finn-glass-edge {
-  border-width: 2px !important;
 }
 
 /* 3) الخلفية الرقمية في الوضع الفاتح — حبر داكن ومتحرك باستمرار */
@@ -5316,10 +5201,7 @@ a > svg,
 }
 
 /* اسم FINN أعلى البطاقة: ثابت تمامًا بلا حركة ولا لمعان مارّ. */
-.finn-wordmark-bar,
 .finn-wordmark,
-.finn-wordmark-bar::before,
-.finn-wordmark-bar::after,
 .finn-wordmark::before,
 .finn-wordmark::after {
   animation: none !important;
@@ -5476,11 +5358,6 @@ a > svg,
 }
 
 /* 3) اسم FINN ثابت في سقف البطاقة */
-.finn-wordmark-bar {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 30 !important;
-}
 
 /* 4) حركة ثلاثية الأبعاد لبطاقة FINN */
 .finn-portal {
@@ -5992,31 +5869,6 @@ html.dark .finn-portal:hover {
 }
 /* غلاف البريق: عنصر مستقل حتى لا يُزاحم ::before (الوهج) و::after (خط الضوء)
    القائمين على هذه البوابة. */
-.finn-portal > .finn-glass-sheen {
-  position: absolute;
-  inset: 0;
-  z-index: 30;
-  pointer-events: none;
-  border-radius: inherit;
-  background:
-    linear-gradient(
-      152deg,
-      rgba(255, 255, 255, 0.16) 0%,
-      rgba(255, 255, 255, 0.05) 18%,
-      rgba(255, 255, 255, 0) 40%
-    ),
-    radial-gradient(120% 60% at 50% 108%, rgba(255, 255, 255, 0.07), transparent 62%);
-}
-.light .finn-portal > .finn-glass-sheen {
-  background:
-    linear-gradient(
-      152deg,
-      rgba(255, 255, 255, 0.42) 0%,
-      rgba(255, 255, 255, 0.14) 20%,
-      rgba(255, 255, 255, 0) 44%
-    ),
-    radial-gradient(120% 60% at 50% 108%, rgba(255, 255, 255, 0.18), transparent 62%);
-}
 /* في الوضع الفاتح تُحاط البوابة بإطار أبيض فتندمج مع الصفحة بدل أن تبدو
    ثقبًا أسود في لوح أبيض. */
 .light .finn-portal {
@@ -6033,8 +5885,7 @@ html.dark .finn-portal:hover {
     background: var(--card);
     box-shadow: none;
   }
-  .finn-portal,
-  .finn-portal > .finn-glass-sheen {
+  .finn-portal {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background: none;
@@ -6051,7 +5902,6 @@ html.dark .finn-portal:hover {
     box-shadow: none;
     border: 1px solid CanvasText;
   }
-  .finn-portal > .finn-glass-sheen,
   .nx-glass-icon::after {
     display: none;
   }
@@ -7536,12 +7386,24 @@ html.dark .nx-region-aura {
    واجهة. الفيديو لا يُرى صريحًا إلا عبر backdrop-filter الزجاج، وتوهّجات
    السطح ترث لون اللحظة من عيّنة الفيديو (--live-rgb) بسقوط سماوي. */
 
+/* الفيلم عمودي (576×1024) — قصّه بـcover كان يقرّبه فيضيع مشهده. قرار
+   المالك ٢٠٢٦/٠٨/٠٥: الإطار كاملًا من بُعد (contain) مع انحسار طفيف،
+   والمحيط حوله يتوهّج بلون لحظة الفيلم نفسها فلا حوافّ مبتورة. */
+.nx-hv {
+  background: radial-gradient(
+    58% 52% at 50% 46%,
+    color-mix(in srgb, var(--live, var(--tone-cyan)) 16%, transparent),
+    transparent 76%
+  );
+}
+
 .nx-hv-video {
   position: absolute;
   inset: 0;
   inline-size: 100%;
   block-size: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  scale: 0.94;
   opacity: 1;
 }
 
