@@ -7672,8 +7672,9 @@ html.dark .nx-region-aura {
   background-size: 280% 100%;
   background-position: 140% 0;
   opacity: 0.8;
-  /* بانورامية بطيئة: عبور خطّي متصل بلا سكون — حركة هندسية هادئة. */
-  animation: nxBpSheen 6s linear infinite;
+  /* ذهاب وإياب (قرار المالك): اللمعة تعبر البطاقة ثم تعود أدراجها —
+     تناوبٌ بمنحنى جيبي فيتباطأ الانعطاف عند الطرفين طبيعيًّا. */
+  animation: nxBpSheen 5s ease-in-out infinite alternate;
   animation-delay: calc(var(--pulse-i, var(--nx-bp-i, 0)) * 0.45s);
 }
 
