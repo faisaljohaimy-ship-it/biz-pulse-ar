@@ -177,23 +177,27 @@ export function BlueprintPage() {
 
       <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-16 pt-4 sm:px-6">
         <header className="nx-bp-stage" style={{ ["--nx-bp-i" as string]: 0 }}>
-          <p className="text-[12px] font-bold uppercase tracking-[0.34em] text-[color:var(--tone-cyan)]">
-            {ar ? "سَدِيد · السطح الهندسي" : "SADEED · Engineering surface"}
-          </p>
-          {/* الهوية بلسانيها من مصدرها الوحيد: العربية يمينًا والإنجليزية
-              يسارًا أيًّا كانت لغة الواجهة (قرار المالك ٢٠٢٦/٠٨/٠٤). */}
-          <h1
-            dir="rtl"
-            className="mt-2 flex flex-wrap items-baseline justify-between gap-4 text-4xl font-black leading-tight sm:text-5xl"
-          >
-            <span className="nx-bp-title">{PRODUCT_BRAND.ar.name}</span>
-            <span className="nx-bp-title tracking-[0.06em]">{PRODUCT_BRAND.en.name}</span>
-          </h1>
-          <p className="mt-2 max-w-[62ch] text-sm text-[color:var(--ink-2)]">
-            {ar
-              ? "أربع مناطق على بوصلة واحدة: الموضع في الرسم هو الموضع على الأرض، وطول القوس هو نسبة الامتثال."
-              : "Four regions on one compass: position in the drawing is position on the ground, and arc length is the compliance figure."}
-          </p>
+          {/* رأس على زجاج: مع الفيلم بكامل سطوعه صار النص العاري فوق أومضاته
+              دون 4.5:1 — القشرة الزجاجية تعيد التباين والفيلم يبقى ظاهرًا حولها. */}
+          <div className="nx-bp-head-scrim">
+            <p className="nx-bp-eyebrow text-[12px] font-bold uppercase tracking-[0.34em]">
+              {ar ? "سَدِيد · السطح الهندسي" : "SADEED · Engineering surface"}
+            </p>
+            {/* الهوية بلسانيها من مصدرها الوحيد: العربية يمينًا والإنجليزية
+                يسارًا أيًّا كانت لغة الواجهة (قرار المالك ٢٠٢٦/٠٨/٠٤). */}
+            <h1
+              dir="rtl"
+              className="mt-2 flex flex-wrap items-baseline justify-between gap-4 text-4xl font-black leading-tight sm:text-5xl"
+            >
+              <span className="nx-bp-title">{PRODUCT_BRAND.ar.name}</span>
+              <span className="nx-bp-title tracking-[0.06em]">{PRODUCT_BRAND.en.name}</span>
+            </h1>
+            <p className="mt-2 max-w-[62ch] text-sm text-[color:var(--ink)]">
+              {ar
+                ? "أربع مناطق على بوصلة واحدة: الموضع في الرسم هو الموضع على الأرض، وطول القوس هو نسبة الامتثال."
+                : "Four regions on one compass: position in the drawing is position on the ground, and arc length is the compliance figure."}
+            </p>
+          </div>
           <div className="mt-5">
             <MeasureRail label={ar ? "وحدة الرسم ٨" : "grid unit 8"} />
           </div>
@@ -254,7 +258,6 @@ export function BlueprintPage() {
             >
               <span aria-hidden className="nx-bp-halo" />
               <span aria-hidden className="nx-bp-orbit nx-bp-orbit--a" />
-              <span aria-hidden className="nx-bp-orbit nx-bp-orbit--b" />
               {/* هالة فِن — مخروط ألوان المناطق الأربع يدور خلف القلب. */}
               <span aria-hidden className="nx-bp-finn-halo" />
               <RegionRosette values={compliance} activeRegion={regionId} ar={ar} />

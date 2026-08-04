@@ -1962,31 +1962,6 @@ body {
   will-change: box-shadow, border-color;
 }
 
-/* Corner brackets — the HUD "frame" accents in the poster. Pure border tint. */
-.nx-hud-corner::before,
-.nx-hud-corner::after {
-  content: "";
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border-color: rgba(var(--nx-region-rgb, 34, 211, 238), 0.6);
-  pointer-events: none;
-}
-.nx-hud-corner::before {
-  top: 8px;
-  inset-inline-start: 8px;
-  border-top: 2px solid;
-  border-inline-start: 2px solid;
-  border-start-start-radius: 8px;
-}
-.nx-hud-corner::after {
-  bottom: 8px;
-  inset-inline-end: 8px;
-  border-bottom: 2px solid;
-  border-inline-end: 2px solid;
-  border-end-end-radius: 8px;
-}
-
 /* Radar sweep — a slow rotating beam inside the central activity stage. */
 @keyframes nx-radar-sweep {
   to {
@@ -6846,6 +6821,7 @@ html.dark .nx-region-aura {
 }
 
 .light .nx-bp-card {
+  background: var(--card-fill) padding-box;
   box-shadow:
     inset 0 1px 0 var(--glass-rim),
     0 8px 24px -18px rgb(15 23 42 / 0.28);
@@ -7002,27 +6978,6 @@ html.dark .nx-region-aura {
 .nx-bp-hub {
   fill: var(--chip-strong);
   stroke: var(--hairline);
-}
-
-.nx-bp-hub-value {
-  fill: var(--ink);
-  font-size: 21px;
-  font-weight: 800;
-}
-
-/* «لم يُقَس» نصّ لا رقم — يأخذ مقاسًا يسع الكلمة داخل القلب. */
-.nx-bp-hub-value[data-empty] {
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.nx-bp-hub-label {
-  fill: var(--ink-2);
-  font-size: 9.5px;
-}
-
-.nx-bp-hub-label[data-latin] {
-  letter-spacing: 1px;
 }
 
 /* ── أزرار المناطق ──────────────────────────────────────────────────────── */
@@ -7300,25 +7255,7 @@ html.dark .nx-region-aura {
   animation: nxBpSpin 64s linear infinite;
 }
 
-.nx-bp-orbit--b {
-  inset: -1.5%;
-  border-style: dotted;
-  animation: nxBpSpin 88s linear infinite reverse;
-}
-
 /* رأس المدار — نقطة ضوء تجري على الحلقة فتقول «حيّ» بلا صوت. */
-.nx-bp-orbit--a::before {
-  content: "";
-  position: absolute;
-  inset-block-start: -3px;
-  inset-inline-start: calc(50% - 3px);
-  inline-size: 6px;
-  block-size: 6px;
-  border-radius: 999px;
-  background: var(--tone-cyan);
-  box-shadow: 0 0 12px var(--tone-cyan);
-}
-
 /* أطراف الأقواس — لمعة عند حدَّي كل قوس مقيس، تظهر بعد اكتمال رسمه. */
 .nx-bp-arc-tip {
   fill: var(--bp-accent-eff);
@@ -7519,11 +7456,42 @@ html.dark .nx-region-aura {
   color: var(--ink-3);
 }
 
-/* عناوين الأقسام المضافة وزرّ المسرح */
+/* عناوين الأقسام المضافة وزرّ المسرح — رقاقة زجاجية بحبر كامل: نص 14px
+   عريض دون عتبة النص الكبير، فلا يُترك عاريًا فوق أومضات الفيلم الساطعة. */
 .nx-bp-h2 {
+  inline-size: fit-content;
+  border-radius: 10px;
+  padding: 4px 10px;
+  background: var(--card-fill) padding-box;
   font-size: 14px;
   font-weight: 800;
+  color: var(--ink);
+}
+
+/* السطر التمهيدي: سماويٌّ فوق الداكن، وحبرٌ ثانٍ فوق الفاتح — سماويّ
+   الفاتح (#0e7490) مضمون فوق الأبيض شبه الصافي فقط، والفيلم أنهى صفاءه. */
+.nx-bp-eyebrow {
+  color: var(--tone-cyan);
+}
+
+.light .nx-bp-eyebrow {
   color: var(--ink-2);
+}
+
+/* قشرة الرأس الزجاجية — الشرط الذي أبقى الغطاء العام خفيفًا: النص محمول
+   على زجاجه الخاص والفيلم ظاهر بكامل وضوحه خارجه. */
+.nx-bp-head-scrim {
+  inline-size: fit-content;
+  border-radius: 18px;
+  padding: 12px 16px;
+  margin-inline: -16px;
+  background: linear-gradient(
+      color-mix(in srgb, var(--surface) 58%, transparent),
+      color-mix(in srgb, var(--surface) 70%, transparent)
+    )
+    padding-box;
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
 }
 
 .nx-bp-more {
@@ -7537,7 +7505,6 @@ html.dark .nx-region-aura {
   font-size: 12px;
   font-weight: 800;
   color: var(--ink);
-  transition: border-color var(--nx-anim-fast) var(--nx-ease-out);
 }
 
 .nx-bp-more:hover {
@@ -7603,26 +7570,9 @@ html.dark .nx-region-aura {
   box-shadow: none;
 }
 
-/* قلب الوردة: حلقة فِن المضيئة وشارة المتوسط على حافتها. */
 .nx-bp-hub-ring {
   stroke: color-mix(in srgb, var(--tone-cyan) 60%, var(--hairline));
   filter: drop-shadow(0 0 10px color-mix(in srgb, var(--tone-cyan) 45%, transparent));
-}
-
-.nx-bp-hub-badge rect {
-  fill: var(--chip-strong);
-  stroke: var(--hairline);
-}
-
-.nx-bp-hub-badge text {
-  fill: var(--ink);
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.nx-bp-hub-badge[data-empty] text {
-  font-size: 7.5px;
-  font-weight: 700;
 }
 
 /* ── الترقية الهولوغرامية: زجاج شفاف ثلاثي الأبعاد وبريق حواف ─────────────
@@ -7813,11 +7763,7 @@ html.dark .nx-region-aura {
     drop-shadow(0 0 22px color-mix(in srgb, var(--tone-cyan) 50%, transparent));
 }
 
-.nx-bp-glyph-on {
-  filter: drop-shadow(0 0 7px rgba(var(--bp-accent-rgb), 0.9))
-    drop-shadow(0 0 18px rgba(var(--bp-accent-rgb), 0.5));
-}
-
+.nx-bp-glyph-on,
 .nx-bp-glyph-on-stroke {
   filter: drop-shadow(0 0 7px rgba(var(--bp-accent-rgb), 0.9))
     drop-shadow(0 0 18px rgba(var(--bp-accent-rgb), 0.5));
@@ -7858,38 +7804,32 @@ html.dark .nx-region-aura {
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
-  opacity: 0.85;
+  opacity: 1;
 }
 
 .nx-hv-video[data-light] {
-  opacity: 0.38;
+  opacity: 0.85;
 }
 
-/* الغطاء السينمائي — رموز السطح فيتبع الوضعين ويحفظ تباين WCAG فوق أي
-   إطار من الفيلم مهما أضاء. */
+/* الغطاء السينمائي — أخف ما يحفظ قراءة الحبر (قرار المالك: الفيلم يُرى
+   بوضوح كاملًا في الوضعين، والبطاقات الزجاجية تصون نصوصها بنفسها). */
 .nx-hv-veil {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(
-      120% 80% at 50% 0%,
-      color-mix(in srgb, var(--surface) 30%, transparent),
-      transparent 60%
-    ),
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--surface) 82%, transparent),
-      color-mix(in srgb, var(--surface) 66%, transparent) 40%,
-      color-mix(in srgb, var(--surface) 88%, transparent)
-    );
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface) 42%, transparent),
+    color-mix(in srgb, var(--surface) 26%, transparent) 40%,
+    color-mix(in srgb, var(--surface) 54%, transparent)
+  );
 }
 
 .light .nx-hv-veil {
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--surface) 94%, transparent),
-    color-mix(in srgb, var(--surface) 88%, transparent) 45%,
-    color-mix(in srgb, var(--surface) 96%, transparent)
+    color-mix(in srgb, var(--surface) 66%, transparent),
+    color-mix(in srgb, var(--surface) 54%, transparent) 45%,
+    color-mix(in srgb, var(--surface) 74%, transparent)
   );
 }
 
@@ -7903,12 +7843,27 @@ html.dark .nx-region-aura {
 /* الإضاءة المحيطية الحية — لون اللحظة من الفيلم، وسقوطه سماوي الرموز. */
 .nx-bp-surface {
   --live: rgb(var(--live-rgb, 34 211 238));
+  /* حشوة البطاقة الرقيقة — تُعرَّف مرة وتُستهلك في كل زجاج الصفحة. */
+  --card-fill: linear-gradient(
+    color-mix(in srgb, var(--surface) 42%, transparent),
+    color-mix(in srgb, var(--surface) 58%, transparent)
+  );
+}
+
+.light .nx-bp-surface {
+  --card-fill: linear-gradient(
+    color-mix(in srgb, var(--surface) 70%, transparent),
+    color-mix(in srgb, var(--surface) 80%, transparent)
+  );
 }
 
 /* الزجاج يتعمّق (28px) فيُرى الفيلم عبره لا خلفه، وتوهّجه الخارجي حيّ. */
 .nx-bp-card {
-  backdrop-filter: blur(28px) saturate(1.5);
-  -webkit-backdrop-filter: blur(28px) saturate(1.5);
+  /* الفيلم خلفية البطاقة نفسها (قرار المالك): ضبابٌ خفيف يصفّيه ولا
+     يطمسه، وحشوة سطحية رقيقة تحفظ قراءة الحبر فوقه. */
+  background: var(--card-fill) padding-box;
+  backdrop-filter: blur(10px) saturate(1.35);
+  -webkit-backdrop-filter: blur(10px) saturate(1.35);
   box-shadow:
     inset 0 1px 0 var(--glass-rim),
     inset 0 -14px 28px -22px rgb(2 8 17 / 0.6),
@@ -7926,8 +7881,9 @@ html.dark .nx-region-aura {
 
 .nx-bp-counter,
 .nx-bp-agent {
-  backdrop-filter: blur(22px) saturate(1.4);
-  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  background: var(--card-fill) padding-box;
+  backdrop-filter: blur(9px) saturate(1.35);
+  -webkit-backdrop-filter: blur(9px) saturate(1.35);
 }
 
 .nx-bp-counter {
@@ -7950,7 +7906,7 @@ html.dark .nx-region-aura {
   }
 
   .nx-hv-video {
-    opacity: 0.7;
+    opacity: 0.85;
   }
 }
 
@@ -8065,13 +8021,8 @@ html.dark .nx-region-aura {
   .nx-bp-aurora,
   .nx-bp-halo,
   .nx-bp-orbit--a,
-  .nx-bp-orbit--b,
   .nx-bp-ribbon,
   .nx-bp-beam,
-  .nx-sk-sun,
-  .nx-sk-pulse,
-  .nx-sk-beacon,
-  .nx-sk-holo,
   .nx-bp-finn-halo,
   .nx-bp-card::before,
   .nx-bp-counter::after,
@@ -8088,10 +8039,6 @@ html.dark .nx-region-aura {
     translate: none;
   }
 
-  .nx-sk-beacon {
-    opacity: 1;
-  }
-
   .nx-bp-arc-tip {
     opacity: 1;
   }
@@ -8101,9 +8048,6 @@ html.dark .nx-region-aura {
   .nx-bp-aurora,
   .nx-bp-halo,
   .nx-bp-beam,
-  .nx-sk-dome,
-  .nx-sk-base,
-  .nx-sk-scan,
   .nx-bp-finn-halo,
   .nx-bp-card::before,
   .nx-bp-counter::after,
@@ -8130,7 +8074,6 @@ html.dark .nx-region-aura {
   .nx-bp-orbit,
   .nx-bp-ribbon,
   .nx-bp-beam,
-  .nx-sk-dome,
   .nx-bp-finn-halo,
   .nx-bp-card::before,
   .nx-bp-counter::after,
@@ -8140,31 +8083,9 @@ html.dark .nx-region-aura {
     display: none;
   }
 
-  .nx-sk-hot,
-  .nx-sk-pulse,
-  .nx-sk-sun,
-  .nx-sk-face,
-  .nx-sk-depth,
-  .nx-sk-detail,
   .nx-bp-hub-ring {
     stroke: CanvasText;
     filter: none;
-  }
-
-  .nx-sk-face,
-  .nx-sk-depth {
-    fill: none;
-  }
-
-  .nx-sk-beacon,
-  .nx-sk-glass {
-    fill: CanvasText;
-    filter: none;
-  }
-
-  .nx-sk-base,
-  .nx-sk-scan {
-    display: none;
   }
 
   .nx-bp-title {
