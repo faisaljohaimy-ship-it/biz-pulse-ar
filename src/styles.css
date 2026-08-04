@@ -7813,7 +7813,8 @@ html.dark .nx-region-aura {
   border-color: var(--tone-cyan);
 }
 
-/* بريق الحواف — لمعة قطرية من رمز حافة الزجاج تعبر البطاقة كل ٧ ثوانٍ. */
+/* بريق الحواف — لمعة قطرية زجاجية تعبر البطاقة كل ثانيتين، كما يلمع
+   الزجاج الحقيقي تحت ضوء يمرّ عليه (قرار المالك ٢٠٢٦/٠٨/٠٤). */
 .nx-bp-card::before,
 .nx-bp-counter::after,
 .nx-bp-agent::after {
@@ -7825,8 +7826,23 @@ html.dark .nx-region-aura {
   background: linear-gradient(115deg, transparent 38%, var(--glass-rim) 50%, transparent 62%);
   background-size: 280% 100%;
   background-position: 130% 0;
-  opacity: 0.6;
-  animation: nxBpSheen 7s var(--nx-ease-out) infinite;
+  opacity: 0.75;
+  animation: nxBpSheen 2s var(--nx-ease-out) infinite;
+}
+
+/* فوق الأبيض تختفي اللمعة البيضاء — تُستبدل بلمعة سماوية من طبقة الرموز
+   بكثافة أعلى، فتُرى الجمالية في الوضع الفاتح بوضوح. background-image
+   وحدها كي لا يُصفَّر مقاس الخلفية وموضعها الموروثان من القاعدة. */
+.light .nx-bp-card::before,
+.light .nx-bp-counter::after,
+.light .nx-bp-agent::after {
+  background-image: linear-gradient(
+    115deg,
+    transparent 36%,
+    color-mix(in srgb, var(--tone-cyan) 24%, transparent) 50%,
+    transparent 64%
+  );
+  opacity: 0.95;
 }
 
 @keyframes nxBpSheen {
