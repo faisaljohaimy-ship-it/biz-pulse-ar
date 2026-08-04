@@ -280,11 +280,14 @@ export function BlueprintPage() {
               const pct = compliance[region.id];
               const active = region.id === regionId;
               return (
-                <button
+                /* كل منطقة تفتح على معلوماتها في القمرة الموحدة (قرار المالك)،
+                   والاختيار العام يواكب الوجهة قبل الانتقال. */
+                <Link
                   key={region.id}
-                  type="button"
+                  to="/nx-cockpit"
+                  search={{ region: region.id }}
                   onClick={() => setRegion(region.id)}
-                  aria-pressed={active}
+                  aria-label={ar ? `افتح معلومات ${region.labelAr}` : `Open ${region.labelEn}`}
                   className="nx-bp-region-btn nx-bp-card group flex min-h-14 items-center gap-3 rounded-2xl p-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
                   style={{
                     ["--bp-accent" as string]: REGION_ACCENT_HEX[region.id],
@@ -315,7 +318,7 @@ export function BlueprintPage() {
                       {ar ? "الحالية" : "current"}
                     </span>
                   )}
-                </button>
+                </Link>
               );
             })}
           </div>

@@ -63,18 +63,18 @@ export function HoloVideoEngine() {
   const active = !prefStill && !userOff;
 
   // إيقاف/استئناف مع رؤية التبويب — بطارية أولًا. والحركة مُهدَّأة:
-  // الفيلم يجري بنصف سرعته تقريبًا فيبقى مشهدًا محيطيًا لا مشتِّتًا،
+  // الفيلم يجري بسرعة ٠٫٤٠ (قرار المالك) فيبقى مشهدًا محيطيًا لا مشتِّتًا،
   // وتُعاد كتابة الإبطاء بعد كل استئناف لأن بعض المتصفحات تصفّره.
   useEffect(() => {
     if (!active) return;
     const v = videoRef.current;
-    if (v) v.playbackRate = 0.45;
+    if (v) v.playbackRate = 0.4;
     const onVisibility = () => {
       const vv = videoRef.current;
       if (!vv) return;
       if (document.hidden) vv.pause();
       else {
-        vv.playbackRate = 0.45;
+        vv.playbackRate = 0.4;
         void vv.play().catch(() => {});
       }
     };

@@ -122,8 +122,12 @@ describe("المُخطَّط — الوصول", () => {
     expect(PANELS.match(/aria-hidden/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
   });
 
-  it("أزرار المناطق تعلن حالتها وتبلغ أرضية اللمس", () => {
-    expect(PAGE).toContain("aria-pressed={active}");
+  it("أزرار المناطق روابط لمعلومات كل منطقة وتبلغ أرضية اللمس", () => {
+    // قرار المالك ٢٠٢٦/٠٨/٠٤: كل منطقة تفتح على معلوماتها في القمرة
+    // الموحدة، مع اسم وصول صريح بدل حالة ضغط لم تعد موجودة.
+    expect(PAGE).toContain('to="/nx-cockpit"');
+    expect(PAGE).toContain("search={{ region: region.id }}");
+    expect(PAGE).toMatch(/aria-label=\{ar \? `افتح معلومات /);
     expect(PAGE).toMatch(/nx-bp-region-btn[^"]*min-h-14/);
   });
 

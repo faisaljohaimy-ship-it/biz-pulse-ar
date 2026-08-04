@@ -7808,7 +7808,7 @@ html.dark .nx-region-aura {
 }
 
 .nx-hv-video[data-light] {
-  opacity: 0.85;
+  opacity: 1;
 }
 
 /* الغطاء السينمائي — أخف ما يحفظ قراءة الحبر (قرار المالك: الفيلم يُرى
@@ -7818,18 +7818,18 @@ html.dark .nx-region-aura {
   inset: 0;
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--surface) 42%, transparent),
-    color-mix(in srgb, var(--surface) 26%, transparent) 40%,
-    color-mix(in srgb, var(--surface) 54%, transparent)
+    color-mix(in srgb, var(--surface) 28%, transparent),
+    color-mix(in srgb, var(--surface) 17%, transparent) 40%,
+    color-mix(in srgb, var(--surface) 36%, transparent)
   );
 }
 
 .light .nx-hv-veil {
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--surface) 66%, transparent),
-    color-mix(in srgb, var(--surface) 54%, transparent) 45%,
-    color-mix(in srgb, var(--surface) 74%, transparent)
+    color-mix(in srgb, var(--surface) 33%, transparent),
+    color-mix(in srgb, var(--surface) 27%, transparent) 45%,
+    color-mix(in srgb, var(--surface) 37%, transparent)
   );
 }
 
