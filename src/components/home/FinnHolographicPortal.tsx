@@ -81,7 +81,9 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
       <div className="relative z-10 grid flex-1 place-items-center py-3">
         <div
           className="relative aspect-square h-auto w-[68%] max-w-56 overflow-hidden rounded-full border border-cyan-300/35 bg-[#08203a]"
-          style={{ boxShadow: "0 0 28px rgba(34,211,238,0.28), inset 0 0 24px rgba(6,182,212,0.18)" }}
+          style={{
+            boxShadow: "0 0 28px rgba(34,211,238,0.28), inset 0 0 24px rgba(6,182,212,0.18)",
+          }}
         >
           <img
             src={finnCharacter.url}
@@ -96,7 +98,6 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
           />
         </div>
       </div>
-
 
       {/* Bottom — subtitle, status, secondary CTA */}
       <footer className="relative z-10 flex flex-col items-center gap-2">
