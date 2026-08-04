@@ -7962,6 +7962,44 @@ html.dark .nx-region-aura {
   }
 }
 
+/* زر إيقاف الخلفية (WCAG 2.2.2) — رقاقة زجاجية ثابتة أسفل الجهة اليسرى
+   الفيزيائية (بعيدًا عن مُطلق فِن)، بهدف لمس كافٍ وحلقة تركيز ظاهرة. */
+.nx-hv-toggle {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  inline-size: 38px;
+  block-size: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: var(--glass-fill);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition:
+    border-color var(--nx-anim-fast) var(--nx-ease-out),
+    color var(--nx-anim-fast) var(--nx-ease-out),
+    scale 150ms var(--nx-ease-out);
+}
+
+.nx-hv-toggle:hover {
+  border-color: var(--tone-cyan);
+  color: var(--ink);
+}
+
+.nx-hv-toggle:active {
+  scale: 0.94;
+}
+
+.nx-hv-toggle:focus-visible {
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: 2px;
+}
+
 /* ── مدرسة إميل كوالسكي في التفاعل (قرار المالك ٢٠٢٦/٠٨/٠٤) ─────────────
    الاستجابة فورية والحركة محسوسة لا مرئية: تحويمٌ يرفع أو يكبّر قليلًا
    (≤2px / ≤1.5%)، وضغطةٌ تنكمش لمسيًّا (0.98)، بأزمنة 150–200م.ث وخصائص
