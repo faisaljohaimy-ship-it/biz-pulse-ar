@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { NxEmptyState, NxErrorState, NxPanel, NxSkeleton } from "@/components/nx";
+import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { getAgentFleetState } from "@/lib/agents/fleet.functions";
 import { feedSourcesFor } from "@/lib/agents/feed-sources";
 import { AgenticFlowCanvas } from "@/components/home/AgenticFlowCanvas";
@@ -121,7 +122,17 @@ export function NxAgentsPage() {
 
   return (
     <div dir="rtl" className="min-h-dvh bg-nx-obsidian text-nx-pearl">
-      <main className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 px-3 py-5 md:px-6">
+      {/* الخلفية الحية (قرار المالك ٢٠٢٦/٠٨/٠٥): الصفحة دائمة الدكنة،
+          فالسطح يُثبَّت داكنًا للغطاء كي لا يبيضّ في الوضع الفاتح. */}
+      <div
+        style={{
+          ["--surface" as string]: "#04070d",
+          ["--live" as string]: "rgb(var(--live-rgb, 34 211 238))",
+        }}
+      >
+        <HoloVideoEngine src="/holo-bg-2.mp4" />
+      </div>
+      <main className="relative mx-auto flex w-full max-w-[1600px] flex-col gap-4 px-3 py-5 md:px-6">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-start gap-3">
             <button

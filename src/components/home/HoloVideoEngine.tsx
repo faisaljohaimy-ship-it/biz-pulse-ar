@@ -20,33 +20,31 @@ import { Pause, Play } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
 
-const VIDEO_SRC = "/holo-bg.mp4";
 const STORE_KEY = "nx-holo-bg";
-const RATE = 0.4;
+const RATE = 0.35;
 
 /** نسيج حبيبي دقيق — SVG turbulence مضمّن، لا أصل شبكي (CSP آمن). */
 const NOISE_URI =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E";
 
-export function HoloVideoEngine() {
+export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {}) {
   const { theme } = useTheme();
   const { locale } = useI18n();
   const ar = locale === "ar";
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const [mounted, setMounted] = useState(false);
   const [userOff, setUserOff] = useState(false);
 
-  // القرار على العميل: الفيلم يعمل دائمًا ما لم يوقفه المستخدم بنفسه.
+  // ظهور فوري بلا تأخير (قرار المالك): الفيلم يُرسم من الخادم نفسه ويبدأ
+  // فور توفر أول إطار؛ ولا يُطفأ إلا إن كان المستخدم أوقفه سابقًا.
   useEffect(() => {
     setUserOff(window.localStorage?.getItem(STORE_KEY) === "off");
-    setMounted(true);
   }, []);
 
-  const active = mounted && !userOff;
+  const active = !userOff;
 
   // إيقاف/استئناف مع رؤية التبويب — بطارية أولًا. والحركة مُهدَّأة:
-  // الفيلم يجري بسرعة ٠٫٤٠ (قرار المالك) فيبقى مشهدًا محيطيًا لا مشتِّتًا,
+  // الفيلم يجري بسرعة ٠٫٣٥ (قرار المالك) فيبقى مشهدًا محيطيًا لا مشتِّتًا,
   // وتُعاد كتابة الإبطاء بعد كل استئناف لأن بعض المتصفحات تصفّره.
   useEffect(() => {
     if (!active) return;
@@ -163,7 +161,7 @@ export function HoloVideoEngine() {
         {active && (
           <video
             ref={videoRef}
-            src={VIDEO_SRC}
+            src={src}
             autoPlay
             muted
             loop
@@ -181,34 +179,32 @@ export function HoloVideoEngine() {
       </div>
 
       {/* WCAG 2.2.2: الحركة الدائمة يقابلها زر إيقاف دائم الظهور بيد المستخدم. */}
-      {mounted && (
-        <button
-          type="button"
-          onClick={toggle}
-          aria-pressed={userOff}
-          aria-label={
-            userOff
-              ? ar
-                ? "تشغيل الخلفية المتحركة"
-                : "Play animated background"
-              : ar
-                ? "إيقاف الخلفية المتحركة"
-                : "Pause animated background"
-          }
-          title={
-            userOff
-              ? ar
-                ? "تشغيل الخلفية"
-                : "Play background"
-              : ar
-                ? "إيقاف الخلفية"
-                : "Pause background"
-          }
-          className="nx-hv-toggle"
-        >
-          {userOff ? <Play size={15} aria-hidden /> : <Pause size={15} aria-hidden />}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={toggle}
+        aria-pressed={userOff}
+        aria-label={
+          userOff
+            ? ar
+              ? "تشغيل الخلفية المتحركة"
+              : "Play animated background"
+            : ar
+              ? "إيقاف الخلفية المتحركة"
+              : "Pause animated background"
+        }
+        title={
+          userOff
+            ? ar
+              ? "تشغيل الخلفية"
+              : "Play background"
+            : ar
+              ? "إيقاف الخلفية"
+              : "Pause background"
+        }
+        className="nx-hv-toggle"
+      >
+        {userOff ? <Play size={15} aria-hidden /> : <Pause size={15} aria-hidden />}
+      </button>
     </>
   );
 }

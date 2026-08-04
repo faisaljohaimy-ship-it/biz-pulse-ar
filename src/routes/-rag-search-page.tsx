@@ -15,6 +15,7 @@
 import * as React from "react";
 import { FileSearch, LockKeyhole, Search, ShieldQuestion } from "lucide-react";
 import { NxEmptyState, NxErrorState, NxSkeleton } from "@/components/nx";
+import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { useAuth } from "@/lib/auth-context";
 import { isRagRetrievalEnabled, RAG_FLAG_NAME } from "@/lib/rag/flags";
 import { RAG_DISPLAY_COUNT, ragRetrieve, type RagRetrieveResponse } from "@/lib/rag/client";
@@ -53,7 +54,16 @@ export function RagSearchPage() {
 
   return (
     <div dir="rtl" className="min-h-dvh bg-nx-obsidian text-nx-pearl">
-      <main className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-3 py-6 md:px-6">
+      {/* الخلفية الحية (قرار المالك ٢٠٢٦/٠٨/٠٥) — سطح داكن مثبَّت للغطاء. */}
+      <div
+        style={{
+          ["--surface" as string]: "#04070d",
+          ["--live" as string]: "rgb(var(--live-rgb, 34 211 238))",
+        }}
+      >
+        <HoloVideoEngine src="/holo-bg-3.mp4" />
+      </div>
+      <main className="relative mx-auto flex w-full max-w-4xl flex-col gap-4 px-3 py-6 md:px-6">
         <header>
           <h1 className="text-xl font-black md:text-2xl">البحث المعرفي — استرجاع بالاستشهاد</h1>
           <p className="mt-1 text-xs text-nx-pearl/64 md:text-sm">
