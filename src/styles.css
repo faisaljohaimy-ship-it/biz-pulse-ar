@@ -7778,6 +7778,159 @@ html.dark .nx-region-aura {
   font-weight: 700;
 }
 
+/* ── الترقية الهولوغرامية: زجاج شفاف ثلاثي الأبعاد وبريق حواف ─────────────
+   (قرار المالك ٢٠٢٦/٠٨/٠٤): كل بطاقة زجاج حقيقي (backdrop-filter) بعمق
+   ظلّي مزدوج، ولمعة قطرية تعبرها دوريًّا، وتوهّجات مضاعفة في كل مكان. */
+
+.nx-bp-card {
+  backdrop-filter: blur(16px) saturate(1.35);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35);
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -14px 28px -22px rgb(2 8 17 / 0.6),
+    0 18px 44px -26px rgb(2 8 17 / 0.75),
+    0 0 30px -16px color-mix(in srgb, var(--tone-cyan) 40%, transparent);
+}
+
+.light .nx-bp-card {
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -12px 24px -22px rgb(15 23 42 / 0.25),
+    0 14px 34px -24px rgb(15 23 42 / 0.35),
+    0 0 24px -16px color-mix(in srgb, var(--tone-cyan) 30%, transparent);
+}
+
+.nx-bp-counter,
+.nx-bp-agent {
+  position: relative;
+  isolation: isolate;
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  transition: border-color var(--nx-anim-fast) var(--nx-ease-out);
+}
+
+.nx-bp-counter:hover {
+  border-color: var(--tone-cyan);
+}
+
+/* بريق الحواف — لمعة قطرية من رمز حافة الزجاج تعبر البطاقة كل ٧ ثوانٍ. */
+.nx-bp-card::before,
+.nx-bp-counter::after,
+.nx-bp-agent::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 38%, var(--glass-rim) 50%, transparent 62%);
+  background-size: 280% 100%;
+  background-position: 130% 0;
+  opacity: 0.6;
+  animation: nxBpSheen 7s var(--nx-ease-out) infinite;
+}
+
+@keyframes nxBpSheen {
+  0% {
+    background-position: 130% 0;
+  }
+  55%,
+  100% {
+    background-position: -80% 0;
+  }
+}
+
+/* هالة فِن — مخروط ألوان المناطق الأربع يدور خلف القلب ويشعّ من حوله. */
+.nx-bp-finn-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  inline-size: 41%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    var(--bp-c-n),
+    var(--bp-c-e),
+    var(--bp-c-s),
+    var(--bp-c-w),
+    var(--bp-c-n)
+  );
+  filter: blur(14px);
+  opacity: 0.9;
+  animation: nxBpSpin 10s linear infinite;
+}
+
+.light .nx-bp-finn-halo {
+  opacity: 0.6;
+}
+
+/* زر فِن — شفاف فوق القلب؛ التمرير والتركيز يوقدان حلقته. */
+.nx-bp-finn-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  inline-size: 30%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: box-shadow var(--nx-anim-fast) var(--nx-ease-out);
+}
+
+.nx-bp-finn-btn:hover {
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--tone-cyan) 80%, transparent),
+    0 0 28px color-mix(in srgb, var(--tone-cyan) 60%, transparent);
+}
+
+.nx-bp-finn-btn:focus-visible {
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: 3px;
+}
+
+/* لمعان مضاعف: حلقة القلب، الرموز، زوايا اللوحات، العنوان، الشفق. */
+.nx-bp-hub-ring {
+  stroke: var(--tone-cyan);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--tone-cyan) 85%, transparent))
+    drop-shadow(0 0 22px color-mix(in srgb, var(--tone-cyan) 50%, transparent));
+}
+
+.nx-bp-glyph-on {
+  filter: drop-shadow(0 0 7px rgba(var(--bp-accent-rgb), 0.9))
+    drop-shadow(0 0 18px rgba(var(--bp-accent-rgb), 0.5));
+}
+
+.nx-bp-glyph-on-stroke {
+  filter: drop-shadow(0 0 7px rgba(var(--bp-accent-rgb), 0.9))
+    drop-shadow(0 0 18px rgba(var(--bp-accent-rgb), 0.5));
+}
+
+.nx-bp-panel-corner {
+  filter: drop-shadow(0 0 9px rgba(var(--bp-accent-rgb), 0.65));
+}
+
+.nx-bp-title {
+  text-shadow:
+    0 0 18px color-mix(in srgb, var(--tone-cyan) 45%, transparent),
+    0 0 52px color-mix(in srgb, var(--tone-cyan) 30%, transparent);
+}
+
+.nx-bp-aurora {
+  opacity: 0.62;
+}
+
+.light .nx-bp-aurora {
+  opacity: 0.4;
+}
+
+.nx-bp-region-bar {
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--bp-accent) 85%, transparent),
+    0 0 26px color-mix(in srgb, var(--bp-accent) 45%, transparent);
+}
+
 /* طبقة الفن تحت قواعد الوصول نفسها: الحركة تسكن لا تختفي، والشفافية
    المخفَّضة والألوان القسرية تُسقطان الزينة كلّها. */
 @media (prefers-reduced-motion: reduce) {
@@ -7791,6 +7944,10 @@ html.dark .nx-region-aura {
   .nx-sk-pulse,
   .nx-sk-beacon,
   .nx-sk-holo,
+  .nx-bp-finn-halo,
+  .nx-bp-card::before,
+  .nx-bp-counter::after,
+  .nx-bp-agent::after,
   .nx-bp-arc-tip {
     animation: none !important;
   }
@@ -7810,8 +7967,19 @@ html.dark .nx-region-aura {
   .nx-bp-beam,
   .nx-sk-dome,
   .nx-sk-base,
-  .nx-sk-scan {
+  .nx-sk-scan,
+  .nx-bp-finn-halo,
+  .nx-bp-card::before,
+  .nx-bp-counter::after,
+  .nx-bp-agent::after {
     display: none;
+  }
+
+  .nx-bp-card,
+  .nx-bp-counter,
+  .nx-bp-agent {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 
@@ -7822,6 +7990,10 @@ html.dark .nx-region-aura {
   .nx-bp-ribbon,
   .nx-bp-beam,
   .nx-sk-dome,
+  .nx-bp-finn-halo,
+  .nx-bp-card::before,
+  .nx-bp-counter::after,
+  .nx-bp-agent::after,
   .nx-bp-panel::after {
     display: none;
   }

@@ -102,6 +102,7 @@ export function BlueprintPage() {
       glyph: "ridge" as const,
       accent: "34, 211, 238",
       caption: ar ? "وكلاء يعملون الآن على مهامّ مفتوحة" : "Agents currently working open tasks",
+      to: "/nx-agents",
     },
     {
       label: ar ? "بانتظار الاعتماد" : "Pending approval",
@@ -110,6 +111,7 @@ export function BlueprintPage() {
       glyph: "segment" as const,
       accent: "245, 158, 11",
       caption: ar ? "مقترحات موقوفة على قرار بشري" : "Proposals held for a human decision",
+      to: "/nx-ops",
     },
     {
       label: ar ? "منجز اليوم" : "Completed today",
@@ -118,6 +120,7 @@ export function BlueprintPage() {
       glyph: "nest" as const,
       accent: "52, 211, 153",
       caption: ar ? "مهامّ أُغلقت منذ بداية اليوم" : "Tasks closed since the day began",
+      to: "/nx-ops",
     },
   ];
 
@@ -195,14 +198,26 @@ export function BlueprintPage() {
             aria-label={ar ? "عدّادات التشغيل الحية" : "Live operating counters"}
           >
             {[
-              { ar: "وكلاء نشطون", en: "Active agents", v: counters?.agents_active },
-              { ar: "عاجل مفتوح", en: "Urgent open", v: counters?.urgent_open },
-              { ar: "بانتظار الاعتماد", en: "Pending approval", v: counters?.proposals_pending },
-              { ar: "منجز اليوم", en: "Done today", v: counters?.done_today },
+              {
+                ar: "وكلاء نشطون",
+                en: "Active agents",
+                v: counters?.agents_active,
+                to: "/nx-agents",
+              },
+              { ar: "عاجل مفتوح", en: "Urgent open", v: counters?.urgent_open, to: "/nx-ops" },
+              {
+                ar: "بانتظار الاعتماد",
+                en: "Pending approval",
+                v: counters?.proposals_pending,
+                to: "/nx-ops",
+              },
+              { ar: "منجز اليوم", en: "Done today", v: counters?.done_today, to: "/nx-ops" },
             ].map((k) => (
-              <li key={k.en} className="nx-bp-counter">
-                <b>{typeof k.v === "number" ? k.v : notMeasured}</b>
-                <span>{ar ? k.ar : k.en}</span>
+              <li key={k.en}>
+                <Link to={k.to} className="nx-bp-counter">
+                  <b>{typeof k.v === "number" ? k.v : notMeasured}</b>
+                  <span>{ar ? k.ar : k.en}</span>
+                </Link>
               </li>
             ))}
           </ul>
@@ -230,7 +245,17 @@ export function BlueprintPage() {
               <span aria-hidden className="nx-bp-halo" />
               <span aria-hidden className="nx-bp-orbit nx-bp-orbit--a" />
               <span aria-hidden className="nx-bp-orbit nx-bp-orbit--b" />
+              {/* هالة فِن — مخروط ألوان المناطق الأربع يدور خلف القلب. */}
+              <span aria-hidden className="nx-bp-finn-halo" />
               <RegionRosette values={compliance} activeRegion={regionId} ar={ar} />
+              {/* النقر على فِن يدخل الشات — زر شفاف فوق القلب بحلقة تركيز
+                  ظاهرة، فيبقى الرسم زينة والفعل عنصرًا وصولًا سليمًا. */}
+              <Link
+                to="/finn"
+                aria-label={ar ? "افتح محادثة فِن" : "Open FINN chat"}
+                title={ar ? "تحدث مع فِن" : "Talk to FINN"}
+                className="nx-bp-finn-btn"
+              />
             </div>
           </div>
 
@@ -285,17 +310,22 @@ export function BlueprintPage() {
           style={{ ["--nx-bp-i" as string]: 3 }}
         >
           {panels.map((panel, i) => (
-            <InstrumentPanel
+            <Link
               key={panel.label}
-              label={panel.label}
-              value={panel.value}
-              ratio={gauge(panel.value, panel.ceiling)}
-              glyph={panel.glyph}
-              accent={panel.accent}
-              caption={panel.caption}
-              notMeasured={notMeasured}
-              index={i}
-            />
+              to={panel.to}
+              className="block rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
+            >
+              <InstrumentPanel
+                label={panel.label}
+                value={panel.value}
+                ratio={gauge(panel.value, panel.ceiling)}
+                glyph={panel.glyph}
+                accent={panel.accent}
+                caption={panel.caption}
+                notMeasured={notMeasured}
+                index={i}
+              />
+            </Link>
           ))}
         </section>
 
