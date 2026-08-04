@@ -77,20 +77,26 @@ export function FinnHolographicPortal({ ar, state = "idle" }: FinnHolographicPor
         FINN
       </h2>
 
-      {/* Centre — static portrait, perfectly centred on both axes */}
+      {/* Centre — static circular portrait, perfectly centred on both axes */}
       <div className="relative z-10 grid flex-1 place-items-center py-3">
-        <img
-          src={finnCharacter.url}
-          alt={
-            ar
-              ? "FINN — المساعد التنفيذي الذكي للأمن الصناعي"
-              : "FINN — executive industrial security AI assistant"
-          }
-          loading="lazy"
-          decoding="async"
-          className="mx-auto block h-full max-h-56 w-auto max-w-[82%] object-contain object-center sm:max-h-64"
-        />
+        <div
+          className="relative aspect-square h-auto w-[68%] max-w-56 overflow-hidden rounded-full border border-cyan-300/35 bg-[#08203a]"
+          style={{ boxShadow: "0 0 28px rgba(34,211,238,0.28), inset 0 0 24px rgba(6,182,212,0.18)" }}
+        >
+          <img
+            src={finnCharacter.url}
+            alt={
+              ar
+                ? "FINN — المساعد التنفيذي الذكي للأمن الصناعي"
+                : "FINN — executive industrial security AI assistant"
+            }
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover object-top"
+          />
+        </div>
       </div>
+
 
       {/* Bottom — subtitle, status, secondary CTA */}
       <footer className="relative z-10 flex flex-col items-center gap-2">
