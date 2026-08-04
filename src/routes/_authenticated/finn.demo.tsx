@@ -38,7 +38,7 @@ const SCENARIOS: ReadonlyArray<{ id: string; label_ar: string; prompt: string }>
   {
     id: "ops-status",
     label_ar: "ما حالة العمليات الآن؟",
-    prompt: "ما حالة العمليات الآن؟ اعطني ملخصاً تنفيذياً مع أعلى المخاطر والإجراء الموصى به.",
+    prompt: "ما حالة العمليات الآن؟ أعطني ملخصاً تنفيذياً مع أعلى المخاطر والإجراء الموصى به.",
   },
   {
     id: "incident-triage",

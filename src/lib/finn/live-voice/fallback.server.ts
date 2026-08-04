@@ -39,7 +39,7 @@ export function decideVoiceFallback(input: FallbackInput): VoiceFallbackDecision
   if (!input.hasMicrophone) {
     return {
       kind: "text_fallback_no_microphone",
-      message_ar: "لا يمكن الوصول إلى المايكروفون. الكتابة متاحة.",
+      message_ar: "لا يمكن الوصول إلى الميكروفون. الكتابة متاحة.",
       message_en: "Microphone unavailable. Text input is available.",
       allow_text_input: true,
     };

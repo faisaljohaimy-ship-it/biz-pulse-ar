@@ -62,7 +62,7 @@ const CORE: Sub[] = [
     locationEn: "Global (auth metadata only)",
     locationAr: "عالمي (بيانات المصادقة فقط)",
     dataEn: "Email, display name, auth tokens",
-    dataAr: "البريد والاسم وروموز المصادقة",
+    dataAr: "البريد والاسم ورموز المصادقة",
   },
   {
     name: "Foundation model providers (LLM)",

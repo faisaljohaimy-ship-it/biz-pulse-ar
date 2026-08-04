@@ -733,17 +733,6 @@ html.safe-mode canvas {
 }
 
 /* Presentation mode hides app chrome (sidebar, mobile header, overlay dock/avatar) */
-body.nexus-presenting aside,
-body.nexus-presenting header.glass,
-body.nexus-presenting .nexus-chrome {
-  display: none !important;
-}
-body.nexus-presenting main {
-  padding: 0 !important;
-}
-body.nexus-presenting .nexus-main > div {
-  max-width: none !important;
-}
 
 /* Global horizontal-overflow guard: prevents rogue wide children (charts,
    raw tables, marquees inside authenticated shells) from pushing the sticky
@@ -791,9 +780,7 @@ body {
   .nexus-sidebar nav > div > div:first-child {
     display: none;
   }
-  .nexus-sidebar nav a > span,
-  .nexus-sidebar .nexus-brand-text,
-  .nexus-sidebar .nexus-user-meta {
+  .nexus-sidebar nav a > span {
     display: none !important;
   }
   .nexus-sidebar nav a {
@@ -808,15 +795,6 @@ body {
     padding: 0.5rem 0.75rem !important;
   }
   /* Compact overlay chrome */
-  .nexus-chrome kbd {
-    display: none !important;
-  }
-  .nexus-chrome .nexus-dock-label {
-    display: none !important;
-  }
-  .nexus-chrome .nexus-avatar-meta {
-    display: none !important;
-  }
 }
 
 /* ── 4K / ultrawide tuning ────────────────────────────────────── */
@@ -827,14 +805,6 @@ body {
 }
 
 /* ── Reduced motion: kill orbital spins + node float for accessibility/perf ── */
-@media (prefers-reduced-motion: reduce) {
-  .nexus-node {
-    animation: none !important;
-  }
-  .nexus-node:hover {
-    transform: translate(-50%, -50%) scale(1.02) !important;
-  }
-}
 
 @keyframes nexus-grid-pan {
   0% {
@@ -883,42 +853,8 @@ body {
     transform: rotateX(60deg) rotateZ(-340deg);
   }
 }
-.nexus-globe-inner {
-  animation: nexus-globe-spin-y 48s linear infinite;
-  transform-style: preserve-3d;
-}
-.nexus-orbit-ring {
-  animation: nexus-ring-spin 22s linear infinite;
-  transform-style: preserve-3d;
-}
-.nexus-orbit-ring-rev {
-  animation: nexus-ring-spin-rev 34s linear infinite;
-  transform-style: preserve-3d;
-}
 
 /* Phone in landscape: keep hero + 3D scene visible without scroll-away */
-@media (orientation: landscape) and (max-height: 540px) {
-  .nexus-launch-main {
-    padding-top: 0.25rem !important;
-    padding-bottom: 1rem !important;
-  }
-  .nexus-launch-main h1 {
-    font-size: 1.6rem !important;
-    line-height: 1.05 !important;
-  }
-  .nexus-launch-main p {
-    font-size: 0.75rem !important;
-    margin-top: 0.5rem !important;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nexus-globe-inner,
-  .nexus-orbit-ring,
-  .nexus-orbit-ring-rev {
-    animation: none !important;
-  }
-}
 
 /* ── FINN cinematic orb ───────────────────────────────────── */
 @keyframes aria-orb-halo {
@@ -1765,20 +1701,7 @@ body {
     background-color: rgba(var(--nx-region-rgb, 34, 211, 238), 0.12);
   }
 }
-.nx-sector-pulse {
-  animation: nx-sector-breathe 6.5s ease-in-out infinite;
-  will-change: box-shadow, border-color, background-color;
-}
 /* Stagger neighbours so the grid shimmers like a living organism. */
-.nx-sector-pulse:nth-child(2n) {
-  animation-delay: -1.6s;
-}
-.nx-sector-pulse:nth-child(3n) {
-  animation-delay: -3.2s;
-}
-.nx-sector-pulse:nth-child(4n) {
-  animation-delay: -4.8s;
-}
 
 /* Region-picker buttons reuse the same living edge language outside the
    command-centre artwork. --region-control-rgb is the option's own colour. */
@@ -1853,7 +1776,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .nx-icon-pulse,
-  .nx-sector-pulse,
   .nx-holo-globe-pulse,
   .nx-hotspot-frame,
   .nx-hotspot-frame::before,
@@ -1963,32 +1885,8 @@ body {
 }
 
 /* Radar sweep — a slow rotating beam inside the central activity stage. */
-@keyframes nx-radar-sweep {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.nx-radar-sweep {
-  animation: nx-radar-sweep 8s linear infinite;
-  transform-origin: center;
-}
 
 /* Active sector hub — an expanding ping ring on the region map. */
-@keyframes nx-hub-ping {
-  0% {
-    transform: scale(0.55);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1.7);
-    opacity: 0;
-  }
-}
-.nx-hub-ping {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: nx-hub-ping 2.6s ease-out infinite;
-}
 
 /* FINN — animated voice waveform (staggered bars) + a slow orbiting ring. */
 @keyframes nx-wave {
@@ -2018,18 +1916,11 @@ body {
     transform: rotate(-360deg);
   }
 }
-.nx-orb-ring-rev {
-  animation: nx-orb-spin-rev 20s linear infinite;
-  transform-origin: center;
-}
 
 @media (prefers-reduced-motion: reduce) {
   .nx-living-border,
-  .nx-radar-sweep,
-  .nx-hub-ping,
   .nx-wave-bar,
-  .nx-orb-ring,
-  .nx-orb-ring-rev {
+  .nx-orb-ring {
     animation: none !important;
   }
 }
@@ -2226,14 +2117,6 @@ body {
   box-shadow: none;
 }
 
-.nexus-tooltip {
-  border: 1px solid rgba(111, 255, 233, 0.34);
-  background: rgba(4, 24, 40, 0.94);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 12px 32px -18px rgba(0, 212, 255, 0.72);
-}
-
 .nexus-toast {
   border-radius: 1rem !important;
   -webkit-backdrop-filter: blur(22px) saturate(130%);
@@ -2263,12 +2146,6 @@ body {
   border-color: rgba(0, 132, 164, 0.2);
   background: rgba(255, 255, 255, 0.82);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.light .nexus-tooltip {
-  border-color: rgba(0, 132, 164, 0.25);
-  background: rgba(255, 255, 255, 0.96);
-  color: #061a2e;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2455,40 +2332,6 @@ body {
   animation: nexus-aria-orbit 12s linear infinite;
 }
 
-.nexus-aria-channel {
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  border: 1px solid rgba(0, 212, 255, 0.16);
-  border-radius: 0.8rem;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.035), transparent), rgba(3, 19, 34, 0.62);
-  color: rgba(215, 234, 244, 0.84);
-  font-size: 0.68rem;
-  font-weight: 650;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
-  transition:
-    border-color 180ms ease,
-    background-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
-}
-
-.nexus-aria-channel:hover,
-.nexus-aria-channel:focus-visible,
-.nexus-aria-channel.is-active {
-  border-color: rgba(58, 232, 255, 0.5);
-  background: rgba(0, 212, 255, 0.1);
-  color: #ffffff;
-  box-shadow:
-    0 0 22px -12px rgba(0, 212, 255, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  outline: none;
-  transform: translateY(-1px);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .nexus-aria-launcher,
   .nexus-aria-launcher::before {
@@ -2534,9 +2377,7 @@ body {
 
 button svg,
 a svg,
-[role="button"] svg,
-.nx-icon-glow svg,
-svg.nx-icon-glow {
+[role="button"] svg {
   filter: drop-shadow(0 0 4px color-mix(in oklab, var(--icon-glow, currentColor) 55%, transparent))
     drop-shadow(0 0 12px color-mix(in oklab, var(--icon-glow, currentColor) 32%, transparent));
   animation: nx-icon-edge-glow 6s ease-in-out infinite;
@@ -2547,8 +2388,7 @@ svg.nx-icon-glow {
 
 button:hover svg,
 a:hover svg,
-[role="button"]:hover svg,
-.nx-icon-glow:hover svg {
+[role="button"]:hover svg {
   filter: drop-shadow(0 0 8px color-mix(in oklab, var(--icon-glow, currentColor) 82%, transparent))
     drop-shadow(0 0 20px color-mix(in oklab, var(--icon-glow, currentColor) 52%, transparent));
   transform: translateZ(0) scale(1.04);
@@ -2596,20 +2436,12 @@ a:active svg,
 }
 
 /* Region tiles opt in: glow uses --nx-region-rgb instead of currentColor. */
-.nx-icon-glow-region svg,
-[data-region] .nx-icon-glow-region svg {
-  filter: drop-shadow(0 0 5px rgba(var(--nx-region-rgb, 0, 212, 255), 0.5))
-    drop-shadow(0 0 12px rgba(var(--nx-region-rgb, 0, 212, 255), 0.3));
-}
 
 /* Accessibility & perf — reduced motion + frozen state */
 @media (prefers-reduced-motion: reduce) {
   button svg,
   a svg,
   [role="button"] svg,
-  .nx-icon-glow svg,
-  svg.nx-icon-glow,
-  .nx-icon-glow-pulse svg,
   .nx-icon-edge::before {
     animation: none !important;
     transition: none !important;
@@ -2639,18 +2471,15 @@ a:active svg,
    used to bleed onto every card, panel and heading; the visual
    language is now: icons carry the light, cards stay quiet.
    ──────────────────────────────────────────────────────────────── */
-.nx-page-halo,
 [data-page-glow="on"],
 main[data-region] {
   position: relative;
 }
-.nx-page-halo::before,
 [data-page-glow="on"]::before,
 main[data-region]::before {
   content: none !important;
 }
 
-.nx-region-card,
 button[data-region-glow],
 a[data-region-glow] {
   box-shadow: none;
@@ -2658,7 +2487,6 @@ a[data-region-glow] {
     box-shadow 240ms ease-out,
     transform 240ms ease-out;
 }
-.nx-region-card:hover,
 button[data-region-glow]:hover,
 a[data-region-glow]:hover {
   box-shadow: none;
@@ -3636,8 +3464,7 @@ body {
 /* 4) الأيقونات — قرص زجاجي لامع دائم */
 .holo-icon,
 .nx-icon-edge,
-[data-region-glow],
-.nx-region-card {
+[data-region-glow] {
   position: relative;
   border-radius: inherit;
   background-image: linear-gradient(
@@ -3653,8 +3480,7 @@ body {
 }
 .light .holo-icon,
 .light .nx-icon-edge,
-.light [data-region-glow],
-.light .nx-region-card {
+.light [data-region-glow] {
   background-image: linear-gradient(
     150deg,
     rgba(255, 255, 255, 0.96),
@@ -3744,8 +3570,7 @@ body {
 .nx-glass-e1,
 .nexus-card,
 .finn-portal,
-.glass,
-.nx-region-card {
+.glass {
   border-width: 2px !important;
   border-style: solid !important;
   border-color: rgba(255, 255, 255, 0.34) !important;
@@ -3753,8 +3578,7 @@ body {
 
 .holo-card:hover,
 .nx-glass-e1:hover,
-.nexus-card:hover,
-.nx-region-card:hover {
+.nexus-card:hover {
   border-color: rgba(var(--accent-rgb, 34, 211, 238), 0.75) !important;
 }
 
@@ -3771,8 +3595,7 @@ body {
 .light .nexus-card,
 .light .glass,
 .light .glass-sidebar,
-.light .nx-clock-bar,
-.light .nx-region-card {
+.light .nx-clock-bar {
   border-width: 2px !important;
   border-style: solid !important;
   border-color: rgba(12, 42, 68, 0.42) !important;
@@ -3780,8 +3603,7 @@ body {
 
 .light .holo-card:hover,
 .light .nx-glass-e1:hover,
-.light .nexus-card:hover,
-.light .nx-region-card:hover {
+.light .nexus-card:hover {
   border-color: rgba(12, 42, 68, 0.68) !important;
 }
 
@@ -3912,7 +3734,6 @@ body {
 .holo-card,
 .nx-glass-e1,
 .nexus-card,
-.nx-region-card,
 .finn-portal,
 .nexus-window,
 .nexus-aria-window {
@@ -3934,7 +3755,6 @@ body {
 .light .holo-card,
 .light .nx-glass-e1,
 .light .nexus-card,
-.light .nx-region-card,
 .light .finn-portal,
 .light .nexus-window,
 .light .nexus-aria-window {
@@ -3987,7 +3807,6 @@ body {
   .holo-card,
   .nx-glass-e1,
   .nexus-card,
-  .nx-region-card,
   .finn-portal,
   .nexus-window,
   .nexus-aria-window,
@@ -4206,7 +4025,6 @@ body {
 .nexus-window,
 .nexus-aria-window,
 .nexus-floating-surface,
-.nx-region-card,
 .finn-portal,
 .glass-sidebar,
 .nexus-toast,
@@ -4226,7 +4044,6 @@ body {
 
 .holo-card:hover,
 .nexus-card:hover,
-.nx-region-card:hover,
 [data-slot="card"]:hover {
   box-shadow: var(--sd-shadow-2) !important;
   border-color: rgba(29, 78, 216, 0.28) !important;
@@ -4252,7 +4069,6 @@ body {
 .holo-card::after,
 .nx-glass-e1::after,
 .nexus-card::after,
-.nx-region-card::after,
 .holo-icon::after,
 .nx-icon-edge::after,
 .finn-portal::after {
@@ -4464,8 +4280,7 @@ body::before {
 
 /* ── Layer 3 · Floating navigation glass ─────────────────────────────────── */
 header.nx-clock-bar,
-[data-slot="sidebar"],
-.nx-topnav {
+[data-slot="sidebar"] {
   background: rgba(255, 255, 255, 0.78);
   backdrop-filter: blur(22px) saturate(160%);
   border-color: var(--sd-line);
@@ -4695,12 +4510,10 @@ tbody tr:hover {
 }
 
 /* --- Luminous premium icon edges --- */
-.nx-icon-glow,
 .nx-icon-edge,
 .nx-icon-soft,
 .nx-icon-pulse,
-[data-icon-tile],
-.nx-icon-glow-region {
+[data-icon-tile] {
   border-radius: 1rem;
   border: 2px solid var(--sd-holo-edge-soft);
   background-image: linear-gradient(
@@ -4712,12 +4525,10 @@ tbody tr:hover {
   animation: sd-holo-edge-pulse 4.2s ease-in-out infinite;
 }
 
-.nx-icon-glow:hover,
 .nx-icon-edge:hover,
 .nx-icon-soft:hover,
 .nx-icon-pulse:hover,
-[data-icon-tile]:hover,
-.nx-icon-glow-region:hover {
+[data-icon-tile]:hover {
   border-color: var(--sd-holo-edge);
   box-shadow:
     0 0 0 1px var(--sd-holo-edge) inset,
@@ -4730,12 +4541,10 @@ tbody tr:hover {
   .finn-portal::after,
   .nexus-aria-window::after,
   [data-slot="card"]::after,
-  .nx-icon-glow,
   .nx-icon-edge,
   .nx-icon-soft,
   .nx-icon-pulse,
-  [data-icon-tile],
-  .nx-icon-glow-region {
+  [data-icon-tile] {
     animation: none !important;
   }
 }
@@ -5225,7 +5034,6 @@ tbody tr:hover {
 
 /* --- Icons: perpetual holographic halo + sheen --- */
 .nx-icon,
-.nx-tile,
 [data-holo-icon],
 button > svg,
 a > svg,
@@ -5234,15 +5042,11 @@ a > svg,
   animation: hx-halo-breathe 3.6s ease-in-out infinite;
 }
 
-.nx-icon-wrap,
-.nx-tile,
 [data-holo-icon-wrap] {
   position: relative;
   overflow: hidden;
 }
 
-.nx-icon-wrap::after,
-.nx-tile::after,
 [data-holo-icon-wrap]::after {
   content: "";
   position: absolute;
@@ -5268,8 +5072,6 @@ a > svg,
   .spatial-window::after,
   .finn-portal::before,
   .nx-icon,
-  .nx-tile,
-  .nx-icon-wrap::after,
   [data-holo-icon],
   [data-holo-icon-wrap]::after {
     animation: none !important;
@@ -5288,64 +5090,47 @@ a > svg,
 
 /* Base: each icon carries its own color variable, defaulting to cyan */
 .nx-icon,
-.nx-tile,
 .holo-icon,
 [data-holo-icon],
 [data-holo-icon-wrap],
-.nx-icon-wrap,
 .nx-icon-edge {
   --hx-ic: var(--nx-region-rgb, var(--accent-rgb, var(--hx-fallback)));
 }
 
 /* Distinct luminous palette rotation so neighbouring icons differ */
 .nx-icon:nth-of-type(6n + 1),
-.nx-tile:nth-of-type(6n + 1),
-.nx-icon-wrap:nth-of-type(6n + 1),
 [data-holo-icon]:nth-of-type(6n + 1) {
   --hx-ic: 34, 211, 238;
 } /* cyan */
 .nx-icon:nth-of-type(6n + 2),
-.nx-tile:nth-of-type(6n + 2),
-.nx-icon-wrap:nth-of-type(6n + 2),
 [data-holo-icon]:nth-of-type(6n + 2) {
   --hx-ic: 59, 130, 246;
 } /* azure */
 .nx-icon:nth-of-type(6n + 3),
-.nx-tile:nth-of-type(6n + 3),
-.nx-icon-wrap:nth-of-type(6n + 3),
 [data-holo-icon]:nth-of-type(6n + 3) {
   --hx-ic: 168, 85, 247;
 } /* violet */
 .nx-icon:nth-of-type(6n + 4),
-.nx-tile:nth-of-type(6n + 4),
-.nx-icon-wrap:nth-of-type(6n + 4),
 [data-holo-icon]:nth-of-type(6n + 4) {
   --hx-ic: 16, 185, 129;
 } /* emerald */
 .nx-icon:nth-of-type(6n + 5),
-.nx-tile:nth-of-type(6n + 5),
-.nx-icon-wrap:nth-of-type(6n + 5),
 [data-holo-icon]:nth-of-type(6n + 5) {
   --hx-ic: 245, 158, 11;
 } /* amber */
 .nx-icon:nth-of-type(6n + 6),
-.nx-tile:nth-of-type(6n + 6),
-.nx-icon-wrap:nth-of-type(6n + 6),
 [data-holo-icon]:nth-of-type(6n + 6) {
   --hx-ic: 244, 63, 94;
 } /* rose */
 
 /* Region tiles always win with their own semantic region color */
 [data-region] .nx-icon,
-[data-region] .nx-tile,
-[data-region].nx-tile,
 [data-region] [data-holo-icon] {
   --hx-ic: var(--nx-region-rgb, var(--hx-fallback));
 }
 
 /* Continuous colored glow on the glyph itself */
 .nx-icon,
-.nx-tile,
 .holo-icon,
 [data-holo-icon],
 button > svg,
@@ -5370,8 +5155,6 @@ a > svg,
 }
 
 /* Bold luminous outline for icon containers */
-.nx-icon-wrap,
-.nx-tile,
 .nx-icon-edge,
 [data-holo-icon-wrap] {
   border: 2px solid rgba(var(--hx-ic, var(--hx-fallback)), 0.7);
@@ -5388,8 +5171,6 @@ a > svg,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nx-icon-wrap,
-  .nx-tile,
   .nx-icon-edge,
   [data-holo-icon-wrap] {
     animation: none !important;
@@ -5449,7 +5230,6 @@ a > svg,
 }
 
 .nx-icon,
-.nx-tile,
 [data-holo-icon],
 button > svg,
 a > svg,
@@ -5458,8 +5238,6 @@ a > svg,
   animation-play-state: running !important;
 }
 
-.nx-icon-wrap::after,
-.nx-tile::after,
 [data-holo-icon-wrap]::after {
   animation: hx-gloss-run 6s ease-in-out infinite !important;
   animation-play-state: running !important;
@@ -5484,13 +5262,10 @@ a > svg,
   }
 
   .nx-icon,
-  .nx-tile,
   [data-holo-icon] {
     animation: hx-halo-breathe 5s ease-in-out infinite !important;
   }
 
-  .nx-icon-wrap::after,
-  .nx-tile::after,
   [data-holo-icon-wrap]::after {
     animation: hx-gloss-run 6s ease-in-out infinite !important;
   }
@@ -5502,7 +5277,6 @@ a > svg,
 .nx-glass-e1,
 .sd-glass-surface,
 .spatial-window,
-.nx-region-card,
 .nexus-card {
   backdrop-filter: blur(22px) saturate(175%);
   transform-style: preserve-3d;
@@ -5523,7 +5297,6 @@ a > svg,
 .nx-glass-e1:hover,
 .sd-glass-surface:hover,
 .spatial-window:hover,
-.nx-region-card:hover,
 .nexus-card:hover {
   transform: perspective(1000px) translate3d(0, -4px, 0) rotateX(1.6deg) rotateY(-1.2deg);
   box-shadow:
@@ -5533,15 +5306,11 @@ a > svg,
     0 46px 90px -44px rgba(2, 12, 27, 0.5);
 }
 
-.nx-icon-wrap,
-.nx-tile,
 [data-holo-icon-wrap] {
   transform-style: preserve-3d;
   transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.nx-icon-wrap:hover,
-.nx-tile:hover,
 [data-holo-icon-wrap]:hover {
   transform: perspective(700px) translate3d(0, -3px, 0) rotateX(6deg) rotateY(-6deg);
 }
@@ -5629,7 +5398,6 @@ a > svg,
 
 /* 4) الأيقونات: هالة أقوى بإيقاع طبيعي موحّد */
 .nx-icon,
-.nx-tile,
 [data-holo-icon],
 button > svg,
 a > svg,
@@ -5640,16 +5408,12 @@ a > svg,
   animation-play-state: running !important;
 }
 
-.nx-icon-wrap,
-.nx-tile,
 [data-holo-icon-wrap] {
   box-shadow:
     0 0 0 2px rgba(34, 211, 238, 0.42),
     0 0 26px -4px rgba(56, 189, 248, 0.6) !important;
 }
 
-.nx-icon-wrap::after,
-.nx-tile::after,
 [data-holo-icon-wrap]::after {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent) !important;
   animation: hx-gloss-run 5s ease-in-out infinite !important;
@@ -5764,8 +5528,6 @@ a > svg,
 }
 
 /* أطراف الأيقونات: نفس لون الأيقونة، إيقاع أسرع قليلًا */
-.nx-icon-wrap,
-.nx-tile,
 .nx-icon-edge,
 .nx-holo-icon,
 [data-holo-icon-wrap] {
@@ -5807,10 +5569,8 @@ a > svg,
 
 /* توهّج الرمز نفسه بلون الأيقونة لا بالسماوي الثابت */
 .nx-icon,
-.nx-tile,
 .holo-icon,
 [data-holo-icon],
-.nx-icon-wrap > svg,
 button > svg,
 a > svg,
 [data-slot="button"] > svg {
@@ -5821,8 +5581,6 @@ a > svg,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nx-icon-wrap,
-  .nx-tile,
   .nx-icon-edge,
   .nx-holo-icon,
   [data-holo-icon-wrap],
@@ -5919,9 +5677,6 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
 .nx-glass-e1,
 .sd-glass-surface,
 .spatial-window,
-.nx-region-card,
-.nx-icon-wrap,
-.nx-tile,
 .nx-icon-edge,
 .nx-holo-icon,
 [data-holo-icon-wrap] {
@@ -5973,8 +5728,6 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
 }
 
 /* الأيقونات: شبكة أدق ونبضة أسرع لتناسب المساحة الصغيرة */
-.nx-icon-wrap,
-.nx-tile,
 .nx-icon-edge,
 .nx-holo-icon,
 [data-holo-icon-wrap] {
@@ -5999,9 +5752,6 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
   .nx-glass-e1,
   .sd-glass-surface,
   .spatial-window,
-  .nx-region-card,
-  .nx-icon-wrap,
-  .nx-tile,
   .nx-icon-edge,
   .nx-holo-icon,
   [data-holo-icon-wrap] {
@@ -6052,7 +5802,6 @@ html.dark .nexus-card,
 html.dark .nexus-window,
 html.dark .nexus-aria-window,
 html.dark .nexus-floating-surface,
-html.dark .nx-region-card,
 html.dark .glass-sidebar,
 html.dark .nexus-toast,
 html.dark .sd-glass-panel,
@@ -6069,8 +5818,6 @@ html.dark [data-slot="card"] {
 /* الأيقونات */
 html.dark .holo-icon,
 html.dark .nx-icon-edge,
-html.dark .nx-icon-wrap,
-html.dark .nx-tile,
 html.dark .nx-holo-icon,
 html.dark [data-holo-icon-wrap] {
   background-color: rgba(12, 28, 50, 0.82) !important;
@@ -6347,7 +6094,6 @@ html.dark .finn-portal:hover {
 .nx-glass-e1,
 .sd-glass-surface,
 .spatial-window,
-.nx-region-card,
 .nexus-card {
   animation:
     sec-grid-scan 3.2s linear infinite,
@@ -6356,8 +6102,6 @@ html.dark .finn-portal:hover {
   animation-play-state: running !important;
 }
 
-.nx-icon-wrap,
-.nx-tile,
 .nx-icon-edge,
 .nx-holo-icon,
 .holo-icon,
@@ -6375,9 +6119,6 @@ html.dark .finn-portal:hover {
 .nx-glass-e1::after,
 .sd-glass-surface::after,
 .spatial-window::after,
-.nx-region-card::after,
-.nx-icon-wrap::after,
-.nx-tile::after,
 .nx-icon-edge::after,
 .holo-icon::after {
   opacity: 0.5 !important;
@@ -6390,10 +6131,7 @@ html.dark .finn-portal:hover {
   .nx-glass-e1,
   .sd-glass-surface,
   .spatial-window,
-  .nx-region-card,
   .nexus-card,
-  .nx-icon-wrap,
-  .nx-tile,
   .nx-icon-edge,
   .nx-holo-icon,
   .holo-icon,
@@ -7910,14 +7648,6 @@ html.dark .nx-region-aura {
   }
 }
 
-/* سندٌ في CSS لقرار المكوّن: لو تغيّر تفضيل الحركة بعد التركيب فالفيديو
-   يُخفى فورًا دون انتظار إعادة تحميل. */
-@media (prefers-reduced-motion: reduce) {
-  .nx-hv-video {
-    display: none;
-  }
-}
-
 /* زر إيقاف الخلفية (WCAG 2.2.2) — رقاقة زجاجية ثابتة أسفل الجهة اليسرى
    الفيزيائية (بعيدًا عن مُطلق فِن)، بهدف لمس كافٍ وحلقة تركيز ظاهرة. */
 .nx-hv-toggle {
@@ -9144,11 +8874,207 @@ html.dark .nx-region-aura {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone-rose) 22%, transparent);
 }
 
+/* ── طبقة الحركة والجمال (ترقية ٢٠٢٦/٠٨/٠٥) ────────────────────────────
+   دخول متتابع، قلب ينبض، توجيه وإفادة في الأنابيب، أعمدة تنهض من أرضها,
+   ولوحات تلمع لمعة نبض المؤسسة نفسها — كل حركة بخصائص مستقلة. */
+
+.nx-tw-aur {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  filter: blur(70px);
+  animation: nxTwBreathe 11s ease-in-out infinite alternate;
+}
+
+.nx-tw-aur--a {
+  background: radial-gradient(
+    34% 26% at 24% 30%,
+    color-mix(in srgb, var(--tone-cyan) 24%, transparent),
+    transparent 70%
+  );
+}
+
+.nx-tw-aur--b {
+  background: radial-gradient(
+    36% 28% at 76% 62%,
+    color-mix(in srgb, var(--tone-violet) 20%, transparent),
+    transparent 70%
+  );
+  animation-delay: -5s;
+}
+
+@keyframes nxTwBreathe {
+  from {
+    opacity: 0.35;
+    scale: 1;
+  }
+  to {
+    opacity: 0.65;
+    scale: 1.06;
+  }
+}
+
+.nx-tw-enter {
+  animation: nxTwEnter 640ms var(--nx-ease-out) both;
+  animation-delay: calc(var(--tw-si, 0) * 90ms);
+}
+
+@keyframes nxTwEnter {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    filter: blur(0);
+  }
+}
+
+/* الحلقة المدارية وصدى القلب — نوعية أعلى من `.nx-tw-hub ellipse`. */
+.nx-tw-hub .nx-tw-orbit {
+  fill: none;
+  stroke: color-mix(in srgb, var(--tone-cyan) 45%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 5 9;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: nxTwSpin 14s linear infinite;
+}
+
+@keyframes nxTwSpin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+.nx-tw-hub .nx-tw-hub-ping {
+  fill: none;
+  stroke: color-mix(in srgb, var(--tone-cyan) 55%, transparent);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: nxTwPing 3.2s var(--nx-ease-out) infinite;
+}
+
+@keyframes nxTwPing {
+  from {
+    scale: 0.6;
+    opacity: 0.9;
+  }
+  to {
+    scale: 2.1;
+    opacity: 0;
+  }
+}
+
+/* الإفادة تعود إيابًا — أخفت وأبطأ من التوجيه الذاهب. */
+.nx-tw-pulse--back {
+  stroke-width: 1.8;
+  opacity: 0.55;
+  stroke-dasharray: 6 214;
+  animation-duration: 3.6s;
+  animation-delay: calc(var(--tw-i, 0) * -0.9s - 1.4s);
+}
+
+/* العمود ينهض من أرضه نهوضًا متتابعًا، وقلبه المضيء يوهم بالأسطوانة. */
+.nx-tw-tower,
+.nx-tw-tower-core {
+  transform-box: fill-box;
+  transform-origin: center 100%;
+  animation: nxTwRise 900ms var(--nx-ease-out) both;
+  animation-delay: calc(180ms + var(--tw-i, 0) * 110ms);
+}
+
+@keyframes nxTwRise {
+  from {
+    scale: 1 0.02;
+  }
+}
+
+.nx-tw-tower-core {
+  fill: color-mix(in srgb, var(--tw-accent) 30%, white);
+  opacity: 0.75;
+}
+
+.light .nx-tw-tower-core {
+  fill: color-mix(in srgb, var(--tw-accent) 45%, white);
+}
+
+/* هالة القمة تتنفس بإيقاع متزحزح لكل عمود. */
+.nx-tw-cap-halo {
+  fill: none;
+  stroke: color-mix(in srgb, var(--tw-accent) 70%, transparent);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: nxTwHalo 2.6s ease-in-out infinite;
+  animation-delay: calc(var(--tw-i, 0) * -0.65s);
+}
+
+@keyframes nxTwHalo {
+  0%,
+  100% {
+    scale: 1;
+    opacity: 0.35;
+  }
+  50% {
+    scale: 1.45;
+    opacity: 0.85;
+  }
+}
+
+/* شريحة القيمة الزجاجية فوق كل قمة — القراءة محمولة لا معلّقة. */
+.nx-tw-chip {
+  fill: color-mix(in srgb, var(--surface) 62%, transparent);
+  stroke: var(--hairline);
+  stroke-width: 1;
+}
+
+/* لمعة عابرة على لوحات الحالة — إيقاع نبض المؤسسة نفسه ذهابًا وإيابًا,
+   مركّبة مع الدخول لأن البطاقة تحمل الصنفين معًا. */
+.nx-tw-card {
+  background-image: linear-gradient(
+    115deg,
+    transparent 42%,
+    color-mix(in srgb, var(--ink) 8%, transparent) 50%,
+    transparent 58%
+  );
+  background-size: 240% 100%;
+  animation:
+    nxTwEnter 640ms var(--nx-ease-out) both,
+    nxBpSheen 5s ease-in-out infinite alternate;
+  animation-delay: calc(var(--tw-si, 0) * 90ms), calc(var(--pulse-i, 0) * 0.45s + 700ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .nx-tw-pulse {
+  .nx-tw-pulse,
+  .nx-tw-pulse--back {
     animation: none !important;
     stroke-dasharray: none;
     opacity: 0.55;
+  }
+
+  .nx-tw-aur,
+  .nx-tw-enter,
+  .nx-tw-hub .nx-tw-orbit,
+  .nx-tw-hub .nx-tw-hub-ping,
+  .nx-tw-tower,
+  .nx-tw-tower-core,
+  .nx-tw-cap-halo,
+  .nx-tw-card {
+    animation: none;
+  }
+
+  .nx-tw-enter {
+    opacity: 1;
+    translate: none;
+    filter: none;
+  }
+
+  .nx-tw-hub .nx-tw-hub-ping {
+    opacity: 0;
   }
 }
 
@@ -9162,7 +9088,9 @@ html.dark .nx-region-aura {
 @media (forced-colors: active) {
   .nx-tw-far,
   .nx-tw-mid,
-  .nx-tw-near {
+  .nx-tw-near,
+  .nx-tw-aur,
+  .nx-tw-cap-halo {
     display: none;
   }
 

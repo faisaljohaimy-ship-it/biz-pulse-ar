@@ -233,7 +233,7 @@ export const SCENARIOS_B: Record<string, DecisionScenario> = {
           en: "3 concurrent alerts, only 2 patrols available",
         },
         briefing: {
-          ar: "التنبيهات: (A) باب مفتوح في مستودع، (B) شخص غير معروف قرب البوابة الغربية، (C) حسّاس دخان انذار كاذب متكرّر.",
+          ar: "التنبيهات: (A) باب مفتوح في مستودع، (B) شخص غير معروف قرب البوابة الغربية، (C) حسّاس دخان إنذار كاذب متكرّر.",
           en: "Alerts: (A) door left open in warehouse, (B) unknown person near west gate, (C) smoke sensor with frequent false alarms.",
         },
         metrics: [

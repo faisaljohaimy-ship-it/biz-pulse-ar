@@ -3,7 +3,6 @@ import {
   Activity,
   BarChart3,
   Bot,
-  Brain,
   Building2,
   Camera,
   Crown,
@@ -187,7 +186,6 @@ function useNavGroups(): NavGroup[] {
         { to: "/finn", icon: Sparkles, label: ar("FINN", "FINN") },
         { to: "/voice", icon: Mic, label: ar("المساعد الصوتي", "Voice Assistant") },
         { to: "/agents", icon: Bot, label: ar("منصة عمليات الوكلاء", "Agent Operations Platform") },
-        { to: "/sec/ai", icon: Brain, label: ar("توصيات FINN", "FINN Recos") },
         // هاتان الشاشتان كانتا موجودتين بلا رابط في أي سطح تنقّل، فلم يكن
         // للمالك سبيل لبلوغهما إلا بكتابة العنوان يدويًا (بندا المراجعة 52 و54).
         { to: "/finn-analytics", icon: BarChart3, label: ar("تحليلات FINN", "FINN Analytics") },

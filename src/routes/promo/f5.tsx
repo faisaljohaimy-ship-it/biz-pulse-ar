@@ -13,7 +13,7 @@ export const Route = createFileRoute("/promo/f5")({
       { property: "og:title", content: "نيكسوس — المملكة تتحوّل بالهولوجرام" },
       {
         property: "og:description",
-        content: "بصريات هولوجرامية للرياض والظهران — بلغة نيكسوس التنفيذية.",
+        content: "بصريات هولوغرامية للرياض والظهران — بلغة نيكسوس التنفيذية.",
       },
     ],
   }),

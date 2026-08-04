@@ -39,7 +39,7 @@ export function decideAcceptanceFallback(
   if (input.hasMicrophone === false) {
     return {
       kind: "microphone_missing",
-      message_ar: "لا يمكن الوصول إلى المايكروفون.",
+      message_ar: "لا يمكن الوصول إلى الميكروفون.",
       message_en: "Microphone not available.",
       allowTextInput: true,
     };

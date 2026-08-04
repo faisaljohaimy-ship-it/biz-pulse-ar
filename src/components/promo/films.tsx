@@ -208,7 +208,7 @@ export const FILM_5: FilmDefinition = {
     slug: "f5",
     cinematicTitle: "المَمْلَكَةُ تَتَحَوَّل",
     titleAr: "المَمْلَكَةُ تَتَحَوَّل — بالهُولُوجرام",
-    subtitleAr: "أبراج المملكة والفيصلية وأرامكو وسابك — بصريات هولوجرامية.",
+    subtitleAr: "أبراج المملكة والفيصلية وأرامكو وسابك — بصريات هولوغرامية.",
     accent: "#22d3ee",
     duration: 68,
     narrations: [

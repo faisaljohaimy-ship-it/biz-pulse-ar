@@ -101,7 +101,7 @@ export function FinnExecutivePanel({ finn }: { finn: FinnSnapshot }) {
     // The mic itself lives in FinnCopilot (exclusive FINN voice, server
     // keys). Opening focused = the explicit gesture that surface expects.
     open({ focus: true });
-    cockpit.announce("فُتحت لوحة FINN — ابدأ المحادثة الصوتية من زر المايكروفون فيها");
+    cockpit.announce("فُتحت لوحة FINN — ابدأ المحادثة الصوتية من زر الميكروفون فيها");
   }, [open, cockpit]);
 
   return (

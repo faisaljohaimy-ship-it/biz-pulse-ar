@@ -1313,12 +1313,12 @@ function MissionControl() {
             <Mic className="h-3.5 w-3.5" />
             <span>
               {ar
-                ? `الصوت جاهز معمFINNً لـ ${runtimeProfiles.length} وكيل — لم يُفعّل بعد.`
+                ? `الصوت جاهز معماريًا لـ ${runtimeProfiles.length} وكيل — لم يُفعّل بعد.`
                 : `Voice architecture prepared for ${runtimeProfiles.length} agents — not enabled yet.`}
             </span>
           </div>
           <div className="uppercase tracking-[0.3em]">
-            {ar ? "نظام نِكسس للذكاء التشغيلي" : "سَدِيد Operating System"}
+            {ar ? "نظام سَدِيد للذكاء التشغيلي" : "SADEED Operating System"}
           </div>
         </div>
       </div>

@@ -5,14 +5,15 @@
  * فوقه غطاء سينمائي داكن يحفظ القراءة، ثم نسيج حبيبي خافت، ثم زجاج
  * البطاقات — فلا تُرى حركته إلا **عبر** الزجاج (backdrop-filter).
  *
+ * **متحرّكة دائمًا (قرار المالك ٢٠٢٦/٠٨/٠٥):** تفضيلات النظام لا توقف
+ * الفيلم بعد اليوم — كانت prefers-reduced-motion على أجهزة العرض تطفئه
+ * فتبدو الرئيسية واقفة. الإيقاف بيد المستخدم وحده عبر زر ظاهر دائم
+ * (WCAG 2.2.2)، واختياره محفوظ.
+ *
  * الإضاءة المحيطية الحية: عيّنة لونية تُقرأ من إطارات الفيديو كل ٣٥٠م.ث
  * على لوحة 8×8، تُنعَّم خطيًّا وتُكتب متغيّرًا `--live-rgb` على **حاوية
  * الصفحة لا الجذر** (نطاق إبطال أضيق)، ولا تُكتب إلا حين يتجاوز التغيّر
  * عتبةً — فلا إعادة حساب أنماط بلا داعٍ.
- *
- * WCAG 2.2.2 (إيقاف/إخفاء — مستوى A): زر إيقاف ظاهر للمستخدم يُطفئ
- * الفيلم ويُحفظ اختياره، وتفضيلات النظام (تقليل الحركة/الشفافية/
- * Save-Data) تُراقب حيًّا بمستمعي تغيير لا عند التركيب فقط.
  */
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
@@ -21,22 +22,11 @@ import { useI18n } from "@/lib/i18n";
 
 const VIDEO_SRC = "/holo-bg.mp4";
 const STORE_KEY = "nx-holo-bg";
+const RATE = 0.4;
 
 /** نسيج حبيبي دقيق — SVG turbulence مضمّن، لا أصل شبكي (CSP آمن). */
 const NOISE_URI =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E";
-
-const PREF_QUERIES = [
-  "(prefers-reduced-motion: reduce)",
-  "(prefers-reduced-transparency: reduce)",
-] as const;
-
-function prefersStill(): boolean {
-  if (typeof window === "undefined") return true;
-  const saveData =
-    (navigator as { connection?: { saveData?: boolean } }).connection?.saveData === true;
-  return PREF_QUERIES.some((q) => window.matchMedia?.(q).matches ?? false) || saveData;
-}
 
 export function HoloVideoEngine() {
   const { theme } = useTheme();
@@ -44,37 +34,33 @@ export function HoloVideoEngine() {
   const ar = locale === "ar";
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const [prefStill, setPrefStill] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [userOff, setUserOff] = useState(false);
 
-  // القرار على العميل، ويُراقَب حيًّا: تغيير تفضيل النظام منتصف الجلسة
-  // يوقف الفيلم والعيّنة فورًا لا عند إعادة التحميل فقط.
+  // القرار على العميل: الفيلم يعمل دائمًا ما لم يوقفه المستخدم بنفسه.
   useEffect(() => {
     setUserOff(window.localStorage?.getItem(STORE_KEY) === "off");
-    const update = () => setPrefStill(prefersStill());
-    update();
-    const queries = PREF_QUERIES.map((q) => window.matchMedia?.(q)).filter(
-      Boolean,
-    ) as MediaQueryList[];
-    queries.forEach((q) => q.addEventListener?.("change", update));
-    return () => queries.forEach((q) => q.removeEventListener?.("change", update));
+    setMounted(true);
   }, []);
 
-  const active = !prefStill && !userOff;
+  const active = mounted && !userOff;
 
   // إيقاف/استئناف مع رؤية التبويب — بطارية أولًا. والحركة مُهدَّأة:
-  // الفيلم يجري بسرعة ٠٫٤٠ (قرار المالك) فيبقى مشهدًا محيطيًا لا مشتِّتًا،
+  // الفيلم يجري بسرعة ٠٫٤٠ (قرار المالك) فيبقى مشهدًا محيطيًا لا مشتِّتًا,
   // وتُعاد كتابة الإبطاء بعد كل استئناف لأن بعض المتصفحات تصفّره.
   useEffect(() => {
     if (!active) return;
     const v = videoRef.current;
-    if (v) v.playbackRate = 0.4;
+    if (v) {
+      v.playbackRate = RATE;
+      void v.play().catch(() => {});
+    }
     const onVisibility = () => {
       const vv = videoRef.current;
       if (!vv) return;
       if (document.hidden) vv.pause();
       else {
-        vv.playbackRate = 0.4;
+        vv.playbackRate = RATE;
         void vv.play().catch(() => {});
       }
     };
@@ -182,7 +168,7 @@ export function HoloVideoEngine() {
             muted
             loop
             playsInline
-            preload="metadata"
+            preload="auto"
             disablePictureInPicture
             className="nx-hv-video"
             data-light={light || undefined}
@@ -194,9 +180,8 @@ export function HoloVideoEngine() {
         <span className="nx-hv-noise" style={{ backgroundImage: `url("${NOISE_URI}")` }} />
       </div>
 
-      {/* WCAG 2.2.2: إيقاف الخلفية المتحركة بيد المستخدم — يظهر فقط حين
-          لا تفرض تفضيلات النظام السكونَ أصلًا. */}
-      {!prefStill && (
+      {/* WCAG 2.2.2: الحركة الدائمة يقابلها زر إيقاف دائم الظهور بيد المستخدم. */}
+      {mounted && (
         <button
           type="button"
           onClick={toggle}
