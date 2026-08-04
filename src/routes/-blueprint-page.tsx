@@ -102,7 +102,7 @@ export function BlueprintPage() {
       glyph: "ridge" as const,
       accent: "34, 211, 238",
       caption: ar ? "وكلاء يعملون الآن على مهامّ مفتوحة" : "Agents currently working open tasks",
-      to: "/nx-agents",
+      to: "/nx-flow",
     },
     {
       label: ar ? "بانتظار الاعتماد" : "Pending approval",
@@ -202,7 +202,7 @@ export function BlueprintPage() {
                 ar: "وكلاء نشطون",
                 en: "Active agents",
                 v: counters?.agents_active,
-                to: "/nx-agents",
+                to: "/nx-flow",
               },
               { ar: "عاجل مفتوح", en: "Urgent open", v: counters?.urgent_open, to: "/nx-ops" },
               {

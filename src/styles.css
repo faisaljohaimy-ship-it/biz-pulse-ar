@@ -246,13 +246,26 @@ html.safe-mode canvas {
   --hairline: rgba(255, 255, 255, 0.1);
   --hairline-soft: rgba(255, 255, 255, 0.06);
   --hairline-hover: rgba(255, 255, 255, 0.2);
-  /* أطياف الحالة: فاتحة فوق الداكن — تُعمَّق في الوضع الفاتح أدناه. */
-  --tone-cyan: #67e8f9;
-  --tone-emerald: #6ee7b7;
-  --tone-rose: #fda4af;
-  --tone-amber: #fcd34d;
-  --tone-blue: #93c5fd;
-  --tone-violet: #c4b5fd;
+  /* أطياف الحالة: نقيّة صافية مشبعة فوق الداكن (قرار المالك ٢٠٢٦/٠٨/٠٤)
+     — تُعمَّق في الوضع الفاتح أدناه حفظًا للتباين. */
+  --tone-cyan: #22d3ee;
+  --tone-emerald: #34d399;
+  --tone-rose: #fb7185;
+  --tone-amber: #fbbf24;
+  --tone-blue: #60a5fa;
+  --tone-violet: #a78bfa;
+  /* لوح «الرحلة» الساطع — ثابت في الوضعين: ورقة فاتحة وألوان مشرقة نقية. */
+  --stage-paper: #f7faff;
+  --stage-paper-2: #ecf3ff;
+  --stage-ink: #0b1526;
+  --stage-ink-2: #46566e;
+  --stage-line: rgba(11, 21, 38, 0.1);
+  --stage-cyan: #06b6d4;
+  --stage-blue: #3b82f6;
+  --stage-violet: #8b5cf6;
+  --stage-emerald: #10b981;
+  --stage-amber: #f59e0b;
+  --stage-rose: #f43f5e;
 }
 
 .light {
@@ -7586,176 +7599,6 @@ html.dark .nx-region-aura {
   box-shadow: none;
 }
 
-/* ── أفق المناطق الأربع — البانوراما الصناعية ──────────────────────────── */
-
-.nx-sk {
-  color: var(--ink-2);
-  max-block-size: 240px;
-}
-
-.light .nx-sk {
-  color: var(--ink);
-}
-
-.nx-sk-line {
-  stroke: currentColor;
-  fill: none;
-  opacity: 0.55;
-}
-
-.nx-sk-horizon {
-  stroke: color-mix(in srgb, var(--ink) 34%, transparent);
-  fill: none;
-}
-
-/* العناصر الحارّة: أجزاء المنشأة الحاملة للطاقة تلمع بلون منطقتها. */
-.nx-sk-hot {
-  stroke: var(--sk-hue);
-  fill: none;
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--sk-hue) 65%, transparent));
-}
-
-/* قبة التوهّج — سماء المنطقة. */
-.nx-sk-dome {
-  fill: var(--sk-hue);
-  opacity: 0.13;
-  filter: blur(18px);
-}
-
-.light .nx-sk-dome {
-  opacity: 0.1;
-}
-
-.nx-sk-wire {
-  stroke: color-mix(in srgb, var(--ink) 30%, transparent);
-  fill: none;
-  stroke-width: 1.2;
-  stroke-dasharray: 2 6;
-}
-
-/* نبضة الطاقة: شرطة قصيرة على فجوة طويلة تجري بالإزاحة نحو برج الوصول. */
-.nx-sk-pulse {
-  stroke: var(--sk-hue);
-  fill: none;
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  stroke-dasharray: 5 340;
-  animation: nxSkTravel 4.2s linear infinite;
-  animation-delay: calc(var(--sk-i, 0) * -1.4s);
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--sk-hue) 80%, transparent));
-}
-
-@keyframes nxSkTravel {
-  to {
-    stroke-dashoffset: -345;
-  }
-}
-
-.nx-sk-beacon {
-  fill: var(--sk-hue);
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--sk-hue) 85%, transparent));
-  animation: nxSkBlink 2.4s ease-in-out infinite;
-  animation-delay: calc(var(--sk-i, 0) * -0.8s);
-}
-
-@keyframes nxSkBlink {
-  0%,
-  100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-/* الشمس الهندسية — تدور دورة كاملة كل ١٦٠ ثانية حول مركزها هي. */
-.nx-sk-sun {
-  stroke: var(--tone-amber);
-  opacity: 0.5;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: nxSkSpin 160s linear infinite;
-  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--tone-amber) 40%, transparent));
-}
-
-@keyframes nxSkSpin {
-  to {
-    rotate: 360deg;
-  }
-}
-
-.light .nx-sk-sun {
-  opacity: 0.6;
-}
-
-.nx-sk-name {
-  fill: currentColor;
-  font-size: 12.5px;
-  font-weight: 800;
-  opacity: 0.9;
-}
-
-/* لغة الهولوغرام: وجه أمامي شفاف متوهّج، وجوه عمق خافتة، تفاصيل بلون
-   المنطقة، زجاج مضيء، بِركة إسقاط عند القاعدة، وغلالة مسح فوق المشهد. */
-.nx-sk-face {
-  fill: color-mix(in srgb, var(--sk-hue) 10%, transparent);
-  stroke: color-mix(in srgb, var(--sk-hue) 78%, transparent);
-}
-
-.nx-sk-depth {
-  fill: color-mix(in srgb, var(--sk-hue) 5%, transparent);
-  stroke: color-mix(in srgb, var(--sk-hue) 38%, transparent);
-  stroke-width: 1.1;
-}
-
-.nx-sk-detail {
-  fill: none;
-  stroke: color-mix(in srgb, var(--sk-hue) 60%, transparent);
-}
-
-.nx-sk-glass {
-  fill: color-mix(in srgb, var(--sk-hue) 55%, transparent);
-}
-
-.nx-sk-base {
-  fill: color-mix(in srgb, var(--sk-hue) 15%, transparent);
-  filter: blur(6px);
-}
-
-.nx-sk-scan {
-  color: var(--tone-cyan);
-  opacity: 0.055;
-}
-
-/* وميض الإسقاط — تنفّس بطيء يقول «هولوغرام» بلا إزعاج. */
-.nx-sk-holo {
-  animation: nxSkHolo 6s ease-in-out infinite;
-  animation-delay: calc(var(--sk-i, 0) * -1.5s);
-}
-
-@keyframes nxSkHolo {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.93;
-  }
-}
-
-/* فوق الأبيض تُعمَّق حدود الهولوغرام نحو الحبر لتصون تباينها. */
-.light .nx-sk-face {
-  stroke: color-mix(in srgb, var(--sk-hue) 60%, #05080f);
-}
-
-.light .nx-sk-detail {
-  stroke: color-mix(in srgb, var(--sk-hue) 48%, #05080f);
-}
-
-.light .nx-sk-depth {
-  stroke: color-mix(in srgb, var(--sk-hue) 32%, #05080f);
-}
-
 /* قلب الوردة: حلقة فِن المضيئة وشارة المتوسط على حافتها. */
 .nx-bp-hub-ring {
   stroke: color-mix(in srgb, var(--tone-cyan) 60%, var(--hairline));
@@ -7829,8 +7672,9 @@ html.dark .nx-region-aura {
   background-size: 280% 100%;
   background-position: 140% 0;
   opacity: 0.8;
-  animation: nxBpSheen 2s var(--nx-ease-out) infinite;
-  animation-delay: calc(var(--pulse-i, var(--nx-bp-i, 0)) * 0.18s);
+  /* بانورامية بطيئة: عبور خطّي متصل بلا سكون — حركة هندسية هادئة. */
+  animation: nxBpSheen 6s linear infinite;
+  animation-delay: calc(var(--pulse-i, var(--nx-bp-i, 0)) * 0.45s);
 }
 
 /* تنفّس الطفو — البطاقة ترتفع ٤px وتحطّ بهدوء، كلٌّ بطور مختلف. */
@@ -7851,27 +7695,21 @@ html.dark .nx-region-aura {
 
 /* نبضة الأيقونات المزدوجة — خفقة «لب-دب» على رموز اللوحات وأشرطة
    المناطق، بنفس تدرّج الموجة فتخفق مع مرورها. */
+/* لمعان الأيقونات الثابت — تموّج ناعم مستمر يسري بأطوار متعاقبة. */
 .nx-bp-glyph-on,
 .nx-bp-glyph-on-stroke,
 .nx-bp-region-bar {
-  animation: nxBpIconBeat 2s ease-in-out infinite;
-  animation-delay: calc(var(--pulse-i, var(--nx-bp-i, 0)) * 0.18s);
+  animation: nxBpIconBeat 4s ease-in-out infinite;
+  animation-delay: calc(var(--pulse-i, var(--nx-bp-i, 0)) * 0.45s);
 }
 
 @keyframes nxBpIconBeat {
   0%,
-  30%,
   100% {
     opacity: 1;
   }
-  8% {
-    opacity: 0.6;
-  }
-  16% {
-    opacity: 1;
-  }
-  22% {
-    opacity: 0.75;
+  50% {
+    opacity: 0.68;
   }
 }
 
@@ -7894,9 +7732,8 @@ html.dark .nx-region-aura {
   0% {
     background-position: 140% 0;
   }
-  35%,
   100% {
-    background-position: -60% 0;
+    background-position: -140% 0;
   }
 }
 
@@ -7920,26 +7757,19 @@ html.dark .nx-region-aura {
   );
   filter: blur(14px);
   opacity: 0.9;
-  /* الدوران والخفقان على خاصيتين مستقلتين (rotate/scale) فيتراكبان. */
+  /* الدوران والتنفس على خاصيتين مستقلتين (rotate/scale) فيتراكبان. */
   animation:
     nxBpSpin 10s linear infinite,
-    nxBpHaloBeat 2s ease-in-out infinite;
+    nxBpHaloBeat 4s ease-in-out infinite;
 }
 
 @keyframes nxBpHaloBeat {
   0%,
-  30%,
   100% {
     scale: 1;
   }
-  8% {
-    scale: 1.07;
-  }
-  16% {
-    scale: 1.01;
-  }
-  22% {
-    scale: 1.05;
+  50% {
+    scale: 1.06;
   }
 }
 
@@ -9921,5 +9751,377 @@ html.dark .nx-region-aura {
   .nx-op-status i {
     box-shadow: none;
     filter: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   رحلة الوكلاء مع فِن (/nx-flow) — لوح ساطع ثابت الإضاءة (رموز --stage-*)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nx-fl-enter {
+  animation: nxOpRise var(--nx-anim-cinematic) var(--nx-ease-out) both;
+  animation-delay: calc(var(--pulse-i, 0) * 90ms);
+}
+
+.nx-fl-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  color: var(--tone-cyan);
+}
+
+.nx-fl-title {
+  margin-block-start: 6px;
+  font-size: clamp(26px, 3.8vw, 36px);
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.nx-fl-lede {
+  margin-block-start: 6px;
+  max-inline-size: 70ch;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.nx-fl-back {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  padding-inline: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* اللوح: ورقة فاتحة مشرقة دائمًا — عمل فني مقصود الإضاءة في الوضعين. */
+.nx-fl-stage {
+  border-radius: 24px;
+  border: 1px solid var(--stage-line);
+  background:
+    radial-gradient(
+      90% 60% at 50% 0%,
+      color-mix(in srgb, var(--stage-cyan) 9%, transparent),
+      transparent 70%
+    ),
+    repeating-linear-gradient(to left, var(--stage-line) 0 1px, transparent 1px 56px),
+    repeating-linear-gradient(to bottom, var(--stage-line) 0 1px, transparent 1px 56px),
+    linear-gradient(var(--stage-paper), var(--stage-paper-2));
+  color: var(--stage-ink);
+  padding: 22px 20px 24px;
+  box-shadow: 0 24px 60px -34px rgb(2 8 17 / 0.5);
+}
+
+.nx-fl-steps {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-block-end: 18px;
+}
+
+.nx-fl-step {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--stage-line);
+  background: rgb(255 255 255 / 0.75);
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--stage-ink);
+}
+
+.nx-fl-step b {
+  display: grid;
+  place-items: center;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 999px;
+  background: var(--stage-blue);
+  color: var(--stage-paper);
+  font-size: 12px;
+}
+
+.nx-fl-step:nth-child(2) b {
+  background: var(--stage-emerald);
+}
+
+.nx-fl-step:nth-child(3) b {
+  background: var(--stage-amber);
+}
+
+.nx-fl-step-arrow {
+  inline-size: 18px;
+  block-size: 2px;
+  border-radius: 999px;
+  background: var(--stage-blue);
+  animation: nxFlArrow 2.4s ease-in-out infinite;
+}
+
+@keyframes nxFlArrow {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* فِن — قلب اللوح */
+.nx-fl-core {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-inline-size: 640px;
+  margin-inline: auto;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--stage-cyan) 45%, var(--stage-line));
+  background: rgb(255 255 255 / 0.85);
+  padding: 14px 18px;
+  box-shadow: 0 0 34px -12px color-mix(in srgb, var(--stage-cyan) 65%, transparent);
+}
+
+.nx-fl-core-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  inline-size: 150px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  z-index: -1;
+  background: conic-gradient(
+    var(--stage-cyan),
+    var(--stage-blue),
+    var(--stage-violet),
+    var(--stage-emerald),
+    var(--stage-amber),
+    var(--stage-cyan)
+  );
+  filter: blur(26px);
+  opacity: 0.45;
+  animation: nxBpSpin 12s linear infinite;
+}
+
+.nx-fl-core-img {
+  inline-size: 84px;
+  block-size: 84px;
+  flex: none;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid var(--stage-cyan);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--stage-cyan) 55%, transparent);
+}
+
+.nx-fl-core-name {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--stage-ink);
+}
+
+.nx-fl-core-task {
+  margin-block-start: 4px;
+  font-size: 13px;
+  color: var(--stage-ink-2);
+}
+
+.nx-fl-core-done {
+  margin-inline-start: auto;
+  text-align: center;
+  flex: none;
+}
+
+.nx-fl-core-done b {
+  display: block;
+  font-size: 20px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--stage-ink);
+}
+
+.nx-fl-core-done span {
+  font-size: 11px;
+  color: var(--stage-ink-2);
+}
+
+.nx-fl-bus {
+  display: none;
+  inline-size: 100%;
+  block-size: 64px;
+}
+
+@media (min-width: 1280px) {
+  .nx-fl-bus {
+    display: block;
+  }
+}
+
+.nx-fl-pipe {
+  fill: none;
+  stroke: color-mix(in srgb, var(--fl-hue) 45%, transparent);
+  stroke-width: 1.6;
+  stroke-dasharray: 5 6;
+  animation: nxOpFlow 2.6s linear infinite;
+}
+
+.nx-fl-pulse {
+  fill: none;
+  stroke: var(--fl-hue);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-dasharray: 4 200;
+  animation: nxFlTravel 3s linear infinite;
+  animation-delay: calc(var(--pulse-i, 0) * -0.5s);
+}
+
+@keyframes nxFlTravel {
+  to {
+    stroke-dashoffset: -204;
+  }
+}
+
+/* غرف الوكلاء — بطاقات بيضاء بحواف ساطعة */
+.nx-fl-card {
+  border-radius: 16px;
+  border: 1.5px solid color-mix(in srgb, var(--fl-hue) 55%, transparent);
+  background: rgb(255 255 255 / 0.85);
+  padding: 12px 14px;
+  color: var(--stage-ink);
+  box-shadow: 0 10px 26px -18px color-mix(in srgb, var(--fl-hue) 70%, transparent);
+}
+
+.nx-fl-card--ghost {
+  min-block-size: 150px;
+  border-style: dashed;
+  opacity: 0.4;
+}
+
+.nx-fl-card-name {
+  font-size: 13.5px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nx-fl-chip {
+  flex: none;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--fl-hue, var(--stage-cyan)) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fl-hue, var(--stage-cyan)) 45%, transparent);
+  padding: 1px 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--stage-ink);
+}
+
+.nx-fl-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--stage-ink-2);
+}
+
+.nx-fl-status i {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 999px;
+  background: var(--stage-emerald);
+  animation: nxOpBeat 1.6s ease-in-out infinite;
+}
+
+.nx-fl-status[data-state="processing"] i {
+  background: var(--stage-amber);
+}
+
+.nx-fl-status[data-state="idle"] i {
+  background: transparent;
+  border: 1.5px solid var(--stage-ink-2);
+  animation: none;
+}
+
+.nx-fl-task {
+  margin-block-start: 6px;
+  min-block-size: 2.5em;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--stage-ink-2);
+}
+
+.nx-fl-meter {
+  margin-block-start: 6px;
+  block-size: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--stage-ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.nx-fl-meter span {
+  display: block;
+  block-size: 100%;
+  inline-size: var(--fl-fill, 0%);
+  border-radius: 999px;
+  background: linear-gradient(
+    to left,
+    color-mix(in srgb, var(--fl-hue) 55%, transparent),
+    var(--fl-hue)
+  );
+  transition: inline-size 700ms var(--nx-ease-out);
+}
+
+.nx-fl-done {
+  font-size: 11px;
+  color: var(--stage-ink-2);
+}
+
+.nx-fl-done b {
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--stage-ink);
+}
+
+.nx-fl-stepchip {
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--fl-hue) 12%, transparent);
+  padding: 2px 7px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--stage-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-fl-enter,
+  .nx-fl-pipe,
+  .nx-fl-pulse,
+  .nx-fl-step-arrow,
+  .nx-fl-core-halo,
+  .nx-fl-status i {
+    animation: none !important;
+    opacity: 1;
+    translate: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-fl-core-halo {
+    display: none;
+  }
+
+  .nx-fl-pipe,
+  .nx-fl-pulse {
+    stroke: CanvasText;
   }
 }

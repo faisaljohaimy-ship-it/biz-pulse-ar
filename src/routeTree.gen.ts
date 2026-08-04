@@ -30,6 +30,7 @@ import { Route as OsRouteImport } from './routes/os'
 import { Route as NxTwinRouteImport } from './routes/nx-twin'
 import { Route as NxSovereignRouteImport } from './routes/nx-sovereign'
 import { Route as NxOpsRouteImport } from './routes/nx-ops'
+import { Route as NxFlowRouteImport } from './routes/nx-flow'
 import { Route as NxCockpitRouteImport } from './routes/nx-cockpit'
 import { Route as NxAtlasRouteImport } from './routes/nx-atlas'
 import { Route as NxAgentsRouteImport } from './routes/nx-agents'
@@ -344,6 +345,11 @@ const NxSovereignRoute = NxSovereignRouteImport.update({
 const NxOpsRoute = NxOpsRouteImport.update({
   id: '/nx-ops',
   path: '/nx-ops',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NxFlowRoute = NxFlowRouteImport.update({
+  id: '/nx-flow',
+  path: '/nx-flow',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NxCockpitRoute = NxCockpitRouteImport.update({
@@ -1483,6 +1489,7 @@ export interface FileRoutesByFullPath {
   '/nx-agents': typeof NxAgentsRoute
   '/nx-atlas': typeof NxAtlasRoute
   '/nx-cockpit': typeof NxCockpitRoute
+  '/nx-flow': typeof NxFlowRoute
   '/nx-ops': typeof NxOpsRoute
   '/nx-sovereign': typeof NxSovereignRoute
   '/nx-twin': typeof NxTwinRoute
@@ -1715,6 +1722,7 @@ export interface FileRoutesByTo {
   '/nx-agents': typeof NxAgentsRoute
   '/nx-atlas': typeof NxAtlasRoute
   '/nx-cockpit': typeof NxCockpitRoute
+  '/nx-flow': typeof NxFlowRoute
   '/nx-ops': typeof NxOpsRoute
   '/nx-sovereign': typeof NxSovereignRoute
   '/nx-twin': typeof NxTwinRoute
@@ -1947,6 +1955,7 @@ export interface FileRoutesById {
   '/nx-agents': typeof NxAgentsRoute
   '/nx-atlas': typeof NxAtlasRoute
   '/nx-cockpit': typeof NxCockpitRoute
+  '/nx-flow': typeof NxFlowRoute
   '/nx-ops': typeof NxOpsRoute
   '/nx-sovereign': typeof NxSovereignRoute
   '/nx-twin': typeof NxTwinRoute
@@ -2181,6 +2190,7 @@ export interface FileRouteTypes {
     | '/nx-agents'
     | '/nx-atlas'
     | '/nx-cockpit'
+    | '/nx-flow'
     | '/nx-ops'
     | '/nx-sovereign'
     | '/nx-twin'
@@ -2413,6 +2423,7 @@ export interface FileRouteTypes {
     | '/nx-agents'
     | '/nx-atlas'
     | '/nx-cockpit'
+    | '/nx-flow'
     | '/nx-ops'
     | '/nx-sovereign'
     | '/nx-twin'
@@ -2644,6 +2655,7 @@ export interface FileRouteTypes {
     | '/nx-agents'
     | '/nx-atlas'
     | '/nx-cockpit'
+    | '/nx-flow'
     | '/nx-ops'
     | '/nx-sovereign'
     | '/nx-twin'
@@ -2878,6 +2890,7 @@ export interface RootRouteChildren {
   NxAgentsRoute: typeof NxAgentsRoute
   NxAtlasRoute: typeof NxAtlasRoute
   NxCockpitRoute: typeof NxCockpitRoute
+  NxFlowRoute: typeof NxFlowRoute
   NxOpsRoute: typeof NxOpsRoute
   NxSovereignRoute: typeof NxSovereignRoute
   NxTwinRoute: typeof NxTwinRoute
@@ -3120,6 +3133,13 @@ declare module '@tanstack/react-router' {
       path: '/nx-ops'
       fullPath: '/nx-ops'
       preLoaderRoute: typeof NxOpsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nx-flow': {
+      id: '/nx-flow'
+      path: '/nx-flow'
+      fullPath: '/nx-flow'
+      preLoaderRoute: typeof NxFlowRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nx-cockpit': {
@@ -4899,6 +4919,7 @@ const rootRouteChildren: RootRouteChildren = {
   NxAgentsRoute: NxAgentsRoute,
   NxAtlasRoute: NxAtlasRoute,
   NxCockpitRoute: NxCockpitRoute,
+  NxFlowRoute: NxFlowRoute,
   NxOpsRoute: NxOpsRoute,
   NxSovereignRoute: NxSovereignRoute,
   NxTwinRoute: NxTwinRoute,
