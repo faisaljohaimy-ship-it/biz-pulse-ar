@@ -28,6 +28,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { FlaskConical } from "lucide-react";
 import { HomeTopNav } from "@/components/nav/HomeTopNav";
+import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { RegionRosette } from "@/components/blueprint/RegionRosette";
 import { PRODUCT_BRAND } from "@/lib/domain";
 import { InstrumentPanel, MeasureRail } from "@/components/blueprint/InstrumentPanels";
@@ -129,6 +130,11 @@ export function BlueprintPage() {
       className="nx-bp-surface relative min-h-screen overflow-hidden bg-[color:var(--surface)] text-[color:var(--ink)]"
       data-pending={isPending || undefined}
     >
+      {/* الأساس الهولوغرامي الحي: الفيلم الصامت + الغطاء + النسيج — كل ما
+          فوقه من زجاج يرى حركته عبر backdrop-filter، وتوهّجاته ترث لونها
+          من عيّنة الفيديو الحية (--live-rgb). */}
+      <HoloVideoEngine />
+
       {/* أثر الفرجار — دوائر إنشاء باهتة تحت كل شيء، بلا أي كلفة شبكية. */}
       <svg
         aria-hidden

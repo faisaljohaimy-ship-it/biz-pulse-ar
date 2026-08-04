@@ -7847,6 +7847,121 @@ html.dark .nx-region-aura {
     0 0 26px color-mix(in srgb, var(--bp-accent) 45%, transparent);
 }
 
+/* ── المحرك الهولوغرامي الحي (قرار المالك ٢٠٢٦/٠٨/٠٤) ───────────────────
+   ست طبقات: فيديو ← غطاء سينمائي ← نسيج ← زجاج البطاقات ← توهّج حي ←
+   واجهة. الفيديو لا يُرى صريحًا إلا عبر backdrop-filter الزجاج، وتوهّجات
+   السطح ترث لون اللحظة من عيّنة الفيديو (--live-rgb) بسقوط سماوي. */
+
+.nx-hv-video {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+
+.nx-hv-video[data-light] {
+  opacity: 0.38;
+}
+
+/* الغطاء السينمائي — رموز السطح فيتبع الوضعين ويحفظ تباين WCAG فوق أي
+   إطار من الفيلم مهما أضاء. */
+.nx-hv-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      120% 80% at 50% 0%,
+      color-mix(in srgb, var(--surface) 30%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--surface) 82%, transparent),
+      color-mix(in srgb, var(--surface) 66%, transparent) 40%,
+      color-mix(in srgb, var(--surface) 88%, transparent)
+    );
+}
+
+.light .nx-hv-veil {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface) 94%, transparent),
+    color-mix(in srgb, var(--surface) 88%, transparent) 45%,
+    color-mix(in srgb, var(--surface) 96%, transparent)
+  );
+}
+
+.nx-hv-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+}
+
+/* الإضاءة المحيطية الحية — لون اللحظة من الفيلم، وسقوطه سماوي الرموز. */
+.nx-bp-surface {
+  --live: rgb(var(--live-rgb, 34 211 238));
+}
+
+/* الزجاج يتعمّق (28px) فيُرى الفيلم عبره لا خلفه، وتوهّجه الخارجي حيّ. */
+.nx-bp-card {
+  backdrop-filter: blur(28px) saturate(1.5);
+  -webkit-backdrop-filter: blur(28px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -14px 28px -22px rgb(2 8 17 / 0.6),
+    0 18px 44px -26px rgb(2 8 17 / 0.75),
+    0 0 36px -14px color-mix(in srgb, var(--live) 45%, transparent);
+}
+
+.light .nx-bp-card {
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -12px 24px -22px rgb(15 23 42 / 0.25),
+    0 14px 34px -24px rgb(15 23 42 / 0.35),
+    0 0 26px -16px color-mix(in srgb, var(--live) 35%, transparent);
+}
+
+.nx-bp-counter,
+.nx-bp-agent {
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+}
+
+.nx-bp-counter {
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    0 0 20px -10px color-mix(in srgb, var(--live) 55%, transparent);
+}
+
+.nx-bp-hub-ring {
+  stroke: color-mix(in srgb, var(--live) 70%, var(--tone-cyan));
+}
+
+/* الجوال: زجاج أخف وفيلم أهدأ — مظهر فاخر ببطارية رحيمة. */
+@media (max-width: 640px) {
+  .nx-bp-card,
+  .nx-bp-counter,
+  .nx-bp-agent {
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  }
+
+  .nx-hv-video {
+    opacity: 0.7;
+  }
+}
+
+/* سندٌ في CSS لقرار المكوّن: لو تغيّر تفضيل الحركة بعد التركيب فالفيديو
+   يُخفى فورًا دون انتظار إعادة تحميل. */
+@media (prefers-reduced-motion: reduce) {
+  .nx-hv-video {
+    display: none;
+  }
+}
+
 /* ── مدرسة إميل كوالسكي في التفاعل (قرار المالك ٢٠٢٦/٠٨/٠٤) ─────────────
    الاستجابة فورية والحركة محسوسة لا مرئية: تحويمٌ يرفع أو يكبّر قليلًا
    (≤2px / ≤1.5%)، وضغطةٌ تنكمش لمسيًّا (0.98)، بأزمنة 150–200م.ث وخصائص
@@ -7964,6 +8079,11 @@ html.dark .nx-region-aura {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
+
+  .nx-hv-video,
+  .nx-hv-noise {
+    display: none;
+  }
 }
 
 @media (forced-colors: active) {
@@ -7977,6 +8097,7 @@ html.dark .nx-region-aura {
   .nx-bp-card::before,
   .nx-bp-counter::after,
   .nx-bp-agent::after,
+  .nx-hv,
   .nx-bp-panel::after {
     display: none;
   }
