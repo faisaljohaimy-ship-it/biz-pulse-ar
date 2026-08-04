@@ -212,9 +212,13 @@ export function BlueprintPage() {
                 to: "/nx-ops",
               },
               { ar: "منجز اليوم", en: "Done today", v: counters?.done_today, to: "/nx-ops" },
-            ].map((k) => (
+            ].map((k, i) => (
               <li key={k.en}>
-                <Link to={k.to} className="nx-bp-counter">
+                <Link
+                  to={k.to}
+                  className="nx-bp-counter nx-bp-float"
+                  style={{ ["--pulse-i" as string]: i }}
+                >
                   <b>{typeof k.v === "number" ? k.v : notMeasured}</b>
                   <span>{ar ? k.ar : k.en}</span>
                 </Link>
@@ -263,7 +267,7 @@ export function BlueprintPage() {
             className="nx-bp-stage grid grid-cols-1 gap-3 sm:grid-cols-2"
             style={{ ["--nx-bp-i" as string]: 2 }}
           >
-            {REGIONS.map((region) => {
+            {REGIONS.map((region, i) => {
               const pct = compliance[region.id];
               const active = region.id === regionId;
               return (
@@ -273,7 +277,10 @@ export function BlueprintPage() {
                   onClick={() => setRegion(region.id)}
                   aria-pressed={active}
                   className="nx-bp-region-btn nx-bp-card group flex min-h-14 items-center gap-3 rounded-2xl p-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
-                  style={{ ["--bp-accent" as string]: REGION_ACCENT_HEX[region.id] }}
+                  style={{
+                    ["--bp-accent" as string]: REGION_ACCENT_HEX[region.id],
+                    ["--pulse-i" as string]: i + 4,
+                  }}
                 >
                   <span aria-hidden className="nx-bp-region-bar" />
                   <span className="min-w-0 flex-1">
@@ -313,7 +320,8 @@ export function BlueprintPage() {
             <Link
               key={panel.label}
               to={panel.to}
-              className="block rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
+              className="nx-bp-float block rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
+              style={{ ["--pulse-i" as string]: i + 8 }}
             >
               <InstrumentPanel
                 label={panel.label}
@@ -342,8 +350,11 @@ export function BlueprintPage() {
               <Link
                 key={agent.id}
                 to="/nx-ops"
-                className="nx-bp-agent"
-                style={{ ["--op-hue" as string]: AGENT_HUES[i % AGENT_HUES.length] }}
+                className="nx-bp-agent nx-bp-float"
+                style={{
+                  ["--op-hue" as string]: AGENT_HUES[i % AGENT_HUES.length],
+                  ["--pulse-i" as string]: i + 11,
+                }}
               >
                 <span className="flex items-center gap-2">
                   <span className="nx-bp-agent-dot" data-state={agent.status} aria-hidden />

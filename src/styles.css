@@ -7813,8 +7813,10 @@ html.dark .nx-region-aura {
   border-color: var(--tone-cyan);
 }
 
-/* بريق الحواف — لمعة قطرية زجاجية تعبر البطاقة كل ثانيتين، كما يلمع
-   الزجاج الحقيقي تحت ضوء يمرّ عليه (قرار المالك ٢٠٢٦/٠٨/٠٤). */
+/* نبض المؤسسة — إخراج حركي واحد (قرار المالك ٢٠٢٦/٠٨/٠٤):
+   موجة بريق تعبر البطاقة سريعًا في أول ثلث الدورة ثم تسكن خارج الإطار،
+   وكل عنصر يتأخر عن جاره ١٨٠م.ث فيُرى النبض يسري عبر الصفحة عضوًا
+   عضوًا — لا وميضًا متزامنًا. المنحنى منحنى النظام الواحد. */
 .nx-bp-card::before,
 .nx-bp-counter::after,
 .nx-bp-agent::after {
@@ -7825,9 +7827,52 @@ html.dark .nx-region-aura {
   pointer-events: none;
   background: linear-gradient(115deg, transparent 38%, var(--glass-rim) 50%, transparent 62%);
   background-size: 280% 100%;
-  background-position: 130% 0;
-  opacity: 0.75;
+  background-position: 140% 0;
+  opacity: 0.8;
   animation: nxBpSheen 2s var(--nx-ease-out) infinite;
+  animation-delay: calc(var(--pulse-i, var(--nx-bp-i, 0)) * 0.18s);
+}
+
+/* تنفّس الطفو — البطاقة ترتفع ٤px وتحطّ بهدوء، كلٌّ بطور مختلف. */
+.nx-bp-float {
+  animation: nxBpFloat 6s ease-in-out infinite;
+  animation-delay: calc(var(--pulse-i, 0) * -0.9s);
+}
+
+@keyframes nxBpFloat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+/* نبضة الأيقونات المزدوجة — خفقة «لب-دب» على رموز اللوحات وأشرطة
+   المناطق، بنفس تدرّج الموجة فتخفق مع مرورها. */
+.nx-bp-glyph-on,
+.nx-bp-glyph-on-stroke,
+.nx-bp-region-bar {
+  animation: nxBpIconBeat 2s ease-in-out infinite;
+  animation-delay: calc(var(--pulse-i, var(--nx-bp-i, 0)) * 0.18s);
+}
+
+@keyframes nxBpIconBeat {
+  0%,
+  30%,
+  100% {
+    opacity: 1;
+  }
+  8% {
+    opacity: 0.6;
+  }
+  16% {
+    opacity: 1;
+  }
+  22% {
+    opacity: 0.75;
+  }
 }
 
 /* فوق الأبيض تختفي اللمعة البيضاء — تُستبدل بلمعة سماوية من طبقة الرموز
@@ -7847,11 +7892,11 @@ html.dark .nx-region-aura {
 
 @keyframes nxBpSheen {
   0% {
-    background-position: 130% 0;
+    background-position: 140% 0;
   }
-  55%,
+  35%,
   100% {
-    background-position: -80% 0;
+    background-position: -60% 0;
   }
 }
 
@@ -7875,7 +7920,27 @@ html.dark .nx-region-aura {
   );
   filter: blur(14px);
   opacity: 0.9;
-  animation: nxBpSpin 10s linear infinite;
+  /* الدوران والخفقان على خاصيتين مستقلتين (rotate/scale) فيتراكبان. */
+  animation:
+    nxBpSpin 10s linear infinite,
+    nxBpHaloBeat 2s ease-in-out infinite;
+}
+
+@keyframes nxBpHaloBeat {
+  0%,
+  30%,
+  100% {
+    scale: 1;
+  }
+  8% {
+    scale: 1.07;
+  }
+  16% {
+    scale: 1.01;
+  }
+  22% {
+    scale: 1.05;
+  }
 }
 
 .light .nx-bp-finn-halo {
@@ -7964,8 +8029,16 @@ html.dark .nx-region-aura {
   .nx-bp-card::before,
   .nx-bp-counter::after,
   .nx-bp-agent::after,
+  .nx-bp-float,
+  .nx-bp-glyph-on,
+  .nx-bp-glyph-on-stroke,
+  .nx-bp-region-bar,
   .nx-bp-arc-tip {
     animation: none !important;
+  }
+
+  .nx-bp-float {
+    translate: none;
   }
 
   .nx-sk-beacon {
