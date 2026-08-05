@@ -6190,12 +6190,14 @@ html.dark .nx-holo-noise {
   );
 }
 
+/* الوضع الفاتح بمعامل وضوح ١٫٥ (قرار المالك): الغطاء يخفّ بمقدار الثُّلث
+   فيزداد ظهور الفيلم بمقدار النصف — والحبر محمول على زجاجه فيبقى مقروءًا. */
 .light .nx-hv-veil {
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--surface) 33%, transparent),
-    color-mix(in srgb, var(--surface) 27%, transparent) 45%,
-    color-mix(in srgb, var(--surface) 37%, transparent)
+    color-mix(in srgb, var(--surface) 22%, transparent),
+    color-mix(in srgb, var(--surface) 18%, transparent) 45%,
+    color-mix(in srgb, var(--surface) 25%, transparent)
   );
 }
 
