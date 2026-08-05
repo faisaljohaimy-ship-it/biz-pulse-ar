@@ -53,7 +53,7 @@ export const NxPanel = React.forwardRef<HTMLElement, NxPanelProps>(
       {...props}
     >
       <header className="flex h-12 shrink-0 items-center justify-between gap-2 px-6">
-        <h3 className="text-lg font-semibold text-nx-pearl">{title}</h3>
+        <h3 className="text-lg font-bold text-nx-pearl">{title}</h3>
         {headerSlot}
       </header>
       <div className={cn("flex-1", DENSITY_PADDING[density], "pt-0")}>{children}</div>

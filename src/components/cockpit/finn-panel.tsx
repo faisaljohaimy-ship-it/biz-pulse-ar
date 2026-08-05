@@ -133,7 +133,7 @@ export function FinnExecutivePanel({ finn }: { finn: FinnSnapshot }) {
     >
       <div className="flex flex-col items-center gap-4">
         <NxFinnPresence state={presenceState} mode="advisory" size="lg" />
-        <p className="text-center text-xs font-semibold text-nx-pearl/56">المساعد التنفيذي</p>
+        <p className="text-center text-xs font-bold text-nx-pearl/56">المساعد التنفيذي</p>
 
         <section aria-label="التوصية الرئيسية" className="w-full">
           <h4 className="mb-1 text-sm font-semibold text-nx-cyan">التوصية الرئيسية</h4>
@@ -165,7 +165,7 @@ export function FinnExecutivePanel({ finn }: { finn: FinnSnapshot }) {
         </section>
 
         <section aria-label="إجراءات سريعة" data-testid="quick-actions" className="w-full">
-          <h4 className="mb-2 text-sm font-semibold text-nx-pearl/72">إجراءات سريعة</h4>
+          <h4 className="mb-2 text-sm font-bold text-nx-pearl/72">إجراءات سريعة</h4>
           <ul className="flex flex-col gap-2">
             {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon;

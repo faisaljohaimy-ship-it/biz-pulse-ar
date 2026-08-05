@@ -475,7 +475,7 @@ export function IncidentDrawer({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-full sm:max-w-xl overflow-y-auto" dir="rtl">
+      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto" dir="rtl">
         {incident && (
           <>
             <SheetHeader>

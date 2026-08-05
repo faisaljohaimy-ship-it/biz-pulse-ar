@@ -172,7 +172,7 @@ export function LiveEventStream() {
                   }}
                   className="flex min-h-11 flex-col gap-0.5 rounded-nx-8 text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
                 >
-                  <span className="text-sm font-semibold text-nx-pearl">{event.titleAr}</span>
+                  <span className="text-sm font-bold text-nx-pearl">{event.titleAr}</span>
                   <span className="text-xs text-nx-pearl/64">{event.detailAr}</span>
                   <span className="text-[12px] text-nx-pearl/60">المصدر: {event.source}</span>
                 </button>

@@ -270,14 +270,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <script
-          // يسبق أول رسم: يقرأ الاختيار المحفوظ ويضع الصنف، والافتراضي فاتح.
+          // يسبق أول رسم: يقرأ الاختيار المحفوظ ويضع الصنف، والافتراضي داكن —
+          // هوية سَدِيد داكنة، والافتراضي الفاتح كان يُغرق نصوص القمرة (قرار ٢٠٢٦/٠٨/٠٥).
           dangerouslySetInnerHTML={{
             __html:
               "(function(){try{var t=localStorage.getItem('theme');" +
-              "t=(t==='dark'||t==='light')?t:'light';" +
+              "t=(t==='dark'||t==='light')?t:'dark';" +
               "var r=document.documentElement;" +
               "r.classList.add(t);r.style.colorScheme=t;}" +
-              "catch(e){document.documentElement.classList.add('light');}})();",
+              "catch(e){document.documentElement.classList.add('dark');}})();",
           }}
         />
         <HeadContent />

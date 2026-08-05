@@ -213,7 +213,7 @@ function RegionMetricCards({
             style={{ color: region.accentHex }}
           >
             <span className="flex items-center justify-between gap-2">
-              <span className="text-xs font-semibold text-nx-pearl">{region.labelAr}</span>
+              <span className="text-xs font-bold text-nx-pearl">{region.labelAr}</span>
               <span aria-hidden className="size-1.5 rounded-full bg-current" />
             </span>
             <span className="flex items-baseline gap-2">
@@ -425,7 +425,7 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
           className="fixed inset-0 z-50 flex flex-col gap-4 bg-nx-obsidian/96 p-4 backdrop-blur-sm md:p-8"
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-lg font-semibold text-nx-pearl">الخريطة الاستراتيجية</h3>
+            <h3 className="text-lg font-bold text-nx-pearl">الخريطة الاستراتيجية</h3>
             {modeControls}
           </div>
           <div className="min-h-0 flex-1">{scene}</div>

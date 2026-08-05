@@ -90,7 +90,7 @@ export function ArchitectureLayerRail({ layers }: { layers: readonly Architectur
     <nav
       aria-label="طبقات المعمارية الخمس"
       data-testid="architecture-layer-rail"
-      className="-mx-1 flex items-stretch gap-2 overflow-x-auto px-1 py-1"
+      className="-mx-1 hidden items-stretch gap-2 overflow-x-auto px-1 py-1 lg:flex"
     >
       {layers.map((layer) => (
         <button
@@ -110,7 +110,7 @@ export function ArchitectureLayerRail({ layers }: { layers: readonly Architectur
             0{layer.order}
           </span>
           <span className="flex flex-col">
-            <span className="text-xs font-semibold text-nx-pearl">{layer.labelAr}</span>
+            <span className="text-xs font-bold text-nx-pearl">{layer.labelAr}</span>
             <span className="text-[12px] tracking-wide text-nx-pearl/48" dir="ltr">
               {layer.labelEn}
             </span>

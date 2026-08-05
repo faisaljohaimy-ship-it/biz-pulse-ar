@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetTrigger>
             <SheetContent
               id="nexus-mobile-nav"
-              side={locale === "ar" ? "right" : "left"}
+              side="right"
               className="w-72 glass-sidebar p-0 text-sidebar-foreground"
             >
               <SidebarBody onNavigate={() => setOpen(false)} />

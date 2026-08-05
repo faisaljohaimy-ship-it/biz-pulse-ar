@@ -66,7 +66,7 @@ export function CapabilityGrid({ capabilities }: { capabilities: readonly Capabi
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2">
                 <Icon aria-hidden className={cn("size-4", meta.accent)} />
-                <span className="text-sm font-semibold text-nx-pearl">{capability.labelAr}</span>
+                <span className="text-sm font-bold text-nx-pearl">{capability.labelAr}</span>
               </span>
               <span
                 aria-hidden

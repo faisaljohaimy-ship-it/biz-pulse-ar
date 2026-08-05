@@ -220,7 +220,7 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
                 n.read ? "border-white/8 opacity-72" : "border-nx-cyan/30",
               )}
             >
-              <span className="flex items-center justify-between text-sm font-semibold text-nx-pearl">
+              <span className="flex items-center justify-between text-sm font-bold text-nx-pearl">
                 {n.titleAr}
                 <bdi className="text-[12px] font-normal text-nx-pearl/64" dir="ltr">
                   {n.time}
@@ -346,7 +346,7 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
                 key={decision.id}
                 className="nx-glass-e1 rounded-nx-12 flex flex-col gap-2 border border-nx-gold/24 p-3"
               >
-                <span className="text-sm font-semibold text-nx-pearl">{decision.titleAr}</span>
+                <span className="text-sm font-bold text-nx-pearl">{decision.titleAr}</span>
                 <span className="text-xs text-nx-pearl/64">
                   {region?.shortAr ?? "—"} · {decision.impactAr}
                 </span>
@@ -573,7 +573,7 @@ export function CockpitOverlays({ snapshot }: { snapshot: CockpitSnapshot }) {
         }}
       >
         <SheetContent
-          side="left"
+          side="right"
           data-testid="detail-drawer"
           className="flex w-full max-w-md flex-col gap-4 overflow-y-auto border-white/10 bg-nx-obsidian text-nx-pearl"
         >

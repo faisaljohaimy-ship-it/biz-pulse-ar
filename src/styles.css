@@ -10057,3 +10057,42 @@ html.dark .nx-region-aura {
     stroke: CanvasText;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   قرار المالك ٢٠٢٦/٠٨/٠٥ — مقروئية الوضعين (تقارير تدقيق العشرين وكيلًا)
+   ١) الأسطح داكنة الهوية (القمرة وأخواتها فوق bg-nx-obsidian) لا يبيّضها
+      الوضع الفاتح: زجاجها يبقى داكنًا فيقرأ حبرها اللؤلئي في الوضعين.
+   ٢) الأدراج (nexus-sheet) أسطح مصمتة لا زجاج شفاف — طبقة «الزجاج الأبيض»
+      العامة كانت تفرض تدرّجًا شبه أبيض عليها بـ!important في الوضعين معًا
+      فيختفي نصها اللؤلئي، وكتلة الليل كانت تعيد اللون دون صورة الخلفية.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.light .bg-nx-obsidian .nx-glass-e1 {
+  background: color-mix(in srgb, var(--nx-surface) 65%, transparent) !important;
+  background-image: none !important;
+  border-color: rgb(255 255 255 / 0.16) !important;
+}
+
+.light .bg-nx-obsidian .nx-glass-e1::after {
+  display: none !important;
+}
+
+.nexus-sheet {
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.nexus-sheet.bg-nx-obsidian {
+  background: var(--nx-obsidian) !important;
+  color: var(--nx-pearl);
+}
+
+html.dark .nexus-window,
+html.dark .glass-sidebar {
+  background-image: none !important;
+}
+
+html.dark .glass-sidebar {
+  background-color: rgb(7 20 38 / 0.97) !important;
+}

@@ -75,8 +75,11 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
           <>
             <Icon aria-hidden className="size-4 shrink-0" />
             <span className="flex min-w-0 flex-col">
-              <span className="truncate text-sm font-medium">{item.labelAr}</span>
-              <span className="truncate text-[12px] tracking-wide opacity-56" dir="ltr">
+              <span className="truncate text-sm font-bold">{item.labelAr}</span>
+              <span
+                className="truncate text-[12px] font-semibold tracking-wide opacity-72"
+                dir="ltr"
+              >
                 {item.labelEn}
               </span>
             </span>
@@ -129,7 +132,7 @@ function NavFooter() {
       >
         <NxFinnPresence state="idle" mode="advisory" size="sm" />
         <span className="flex flex-col">
-          <span className="text-sm font-semibold text-nx-pearl">FINN</span>
+          <span className="text-sm font-bold text-nx-pearl">FINN</span>
           <span className="text-[12px] text-nx-success">المساعد التنفيذي · متصل</span>
         </span>
       </button>
@@ -164,7 +167,7 @@ export function MobileNavigationDrawer({
         className="flex w-72 flex-col gap-4 overflow-y-auto border-white/10 bg-nx-obsidian text-nx-pearl"
       >
         <SheetHeader>
-          <SheetTitle className="text-start text-nx-pearl">وجهات سَدِيد</SheetTitle>
+          <SheetTitle className="text-start font-bold text-nx-pearl">وجهات سَدِيد</SheetTitle>
         </SheetHeader>
         <NavList onNavigate={() => onOpenChange(false)} />
         <NavFooter />
