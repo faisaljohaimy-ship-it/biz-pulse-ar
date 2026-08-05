@@ -17,7 +17,7 @@
  *   /nx-cockpit · /departments · /sec/kpi · /mission-control ·
  *   /situation-room · /executive-map · /urgent-ops · /boardroom · /agents ·
  *   /operations · /risk · /governance · /knowledge · /integrations ·
- *   /sec/reports · /settings · /guide · /runtime-hub · /portfolio · /dashboard
+ *   /sec/reports · /settings · /guide · /portfolio · /dashboard
  * لا واحد منها في `HIDDEN_ROUTES` ولا واحد منها جذع إعادة توجيه.
  */
 
@@ -449,7 +449,7 @@ const ACTIONS = [
     surface: "capability",
     labelAr: "عرض مكونات القشرة",
     effect: "navigate",
-    target: "/runtime-hub",
+    target: "/nx-flow",
     permission: "shell.view",
   },
   {

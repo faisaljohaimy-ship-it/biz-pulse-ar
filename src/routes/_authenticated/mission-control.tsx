@@ -1125,7 +1125,7 @@ function MissionControl() {
             </div>
             <h1 className="mt-2 text-3xl md:text-5xl font-light tracking-tight">
               {/* البند ٢٢: the heading now matches the sidebar entry that
-                  leads here — «مركز القيادة التنفيذي» is /command-center. */}
+                  leads here — ولا شاشة أخرى تحمل الاسم بعد حذف /command-center. */}
               {screenName("/mission-control", ar)}
             </h1>
             <p className="mt-2 text-white/60 max-w-2xl text-sm md:text-base">

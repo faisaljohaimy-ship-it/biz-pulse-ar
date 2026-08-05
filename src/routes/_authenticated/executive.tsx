@@ -716,7 +716,7 @@ function ExecutiveCommandCenter() {
               <Boxes className="h-3.5 w-3.5" /> {ar ? "التوأم الرقمي" : "Digital Twin"}
             </Link>
             <Link
-              to="/command-center"
+              to="/situation-room"
               className="inline-flex items-center gap-1.5 rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-xs font-semibold text-rose-200 hover:bg-rose-400/20"
             >
               <Radar className="h-3.5 w-3.5" /> {ar ? "العمليات الأمنية" : "Security Ops"}

@@ -42,7 +42,7 @@ const NAV_SURFACES = [
  * The routes whose names collided. Prose elsewhere may still say «غرفة
  * العمليات» inside a sentence — that is language, not a label.
  */
-const GUARDED_ROUTES = ["/sec", "/situation-room", "/mission-control", "/command-center"] as const;
+const GUARDED_ROUTES = ["/sec", "/situation-room", "/mission-control"] as const;
 
 /**
  * Names the review retired.
@@ -97,16 +97,14 @@ describe("the four names the review unified", () => {
   });
 
   it("«مركز القيادة» is /mission-control and nothing else", () => {
+    // /command-center «مركز القيادة التنفيذي» حُذف كليًّا (قرار المالك
+    // ٢٠٢٦/٠٨/٠٥) — فلم يبقَ للاسم إلا صاحبه الواحد.
     expect(screenNameAr("/mission-control")).toBe("مركز القيادة");
-    expect(screenNameAr("/command-center")).not.toBe("مركز القيادة");
+    expect(SCREEN_NAMES["/command-center" as keyof typeof SCREEN_NAMES]).toBeUndefined();
   });
 
   it("/sec is «الأمن الصناعي»", () => {
     expect(screenNameAr("/sec")).toBe("الأمن الصناعي");
-  });
-
-  it("/command-center keeps its own distinct name", () => {
-    expect(screenNameAr("/command-center")).toBe("مركز القيادة التنفيذي");
   });
 });
 

@@ -29,7 +29,7 @@ const GROUP_AR: Record<CmdGroup, string> = {
  * وجهات اللوحة — الجيل الكانوني وحده.
  *
  * كانت اللوحة (⌘K، مركّبة في قشرة التطبيق الحيّة) بابًا خلفيًا إلى الجيل
- * السابق: `/runtime-hub` و`/command-center` و`/operations`
+ * السابق: `/operations`
  * و`/exec` و`/briefing` و`/decisions`. لا قيمة في تلميع الواجهة الجديدة
  * ثم ترك مفتاح لوحة المفاتيح يعيد الزائر إلى القديم في ضغطتين.
  *
@@ -37,8 +37,7 @@ const GROUP_AR: Record<CmdGroup, string> = {
  * تكرار لسطح قائم ⇐ تُسحب · ③ سطح فريد ولا بديل له ⇐ تبقى.
  *
  * المسحوبة ومآلها:
- *   /runtime-hub · /command-center → `/nx-cockpit` (القمرة الكانونية).
- *     و`/runtime-hub` نفسه شبكة أبواب تفتح `/command-center` و`/operations`
+ *   /nx-cockpit هي القمرة الكانونية الوحيدة (وحُذف سلفاها من النظام).
  *     و`/exec` — بابٌ إلى أبواب قديمة، لا وحدة.
  *   /operations → `/nx-ops` (مسرح العمليات الحيّ).
  *   /exec → `/nx-flow` (رحلة الوكلاء مع فِن) — والاسم صار صادقًا: الصفحة

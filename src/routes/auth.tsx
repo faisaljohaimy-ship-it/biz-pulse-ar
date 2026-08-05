@@ -49,7 +49,8 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   const goNext = () => {
-    const target = redirectTo && redirectTo.startsWith("/") ? redirectTo : "/command-center";
+    // بعد الدخول: القمرة الكانونية (كانت /command-center وحُذفت كليًّا).
+    const target = redirectTo && redirectTo.startsWith("/") ? redirectTo : "/nx-cockpit";
     navigate({ to: target, replace: true });
   };
 

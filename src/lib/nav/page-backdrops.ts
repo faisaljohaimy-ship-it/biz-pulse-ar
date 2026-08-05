@@ -35,7 +35,6 @@ const PAGE_BACKDROPS: Record<string, string> = {
   // Smart command center — a pure map plate (never a dashboard screenshot:
   // its text bleeds through as "ghost cards"). Registered here so the shell
   // renders ONE photo backdrop instead of the aurora + a page-level copy.
-  "/command-center": "/smart-city-map-bg.webp",
 };
 
 /** The backdrop image for a route (exact match), or undefined. */

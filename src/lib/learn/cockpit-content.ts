@@ -2,7 +2,7 @@
  * Golden-Reference Executive Cockpit content.
  *
  * The cockpit strip (decision timeline, incident replay, predictive
- * analytics, risk heat map, command-center links) is rendered for any
+ * analytics, risk heat map, cockpit links) is rendered for any
  * lesson that has content registered here. Every future Golden-Reference
  * lesson adds a bilingual entry to this map — no new components required.
  *
@@ -239,7 +239,7 @@ export const COCKPIT_CONTENT: Record<string, CockpitContent> = {
         hint_en: "Full executive 3D scene",
       },
       {
-        to: "/command-center",
+        to: "/nx-cockpit",
         label_ar: "مركز القيادة",
         label_en: "Command center",
         hint_ar: "الحوادث والدوريات والأصول لحظياً",

@@ -311,9 +311,9 @@ export function runDirectiveAudit(): DirectiveAuditReport {
     },
     {
       n: 4,
-      key: "command-center",
-      title_en: "Command Center",
-      title_ar: "مركز القيادة",
+      key: "cockpit",
+      title_en: "Executive Cockpit",
+      title_ar: "قمرة القيادة التنفيذية",
       status: rollUp(p4),
       probes: p4,
     },

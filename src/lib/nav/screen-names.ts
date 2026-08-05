@@ -12,7 +12,6 @@
  *     dashboard tiles.
  *   · ONE name over TWO routes — «غرفة العمليات» pointed at both `/sec` and
  *     `/situation-room`, and «مركز القيادة» at both `/mission-control` and
- *     `/command-center`.
  *
  * The second is the worse one. A name that resolves to two destinations makes
  * the navigation unlearnable: the operator clicks the words they remember and
@@ -37,14 +36,13 @@ export interface ScreenName {
  * preview rail, the executive map hotspots. They still need canonical names
  * because they still collide.
  *
- * `/command-center` and `/mission-control` are genuinely two screens, and the
+ * `/mission-control` is a screen of its own, and the
  * names say which is which: مركز القيادة التنفيذي is the executive command
  * center (the KPI/approval/agent-council surface, per its own file header),
  * while مركز القيادة is the live mission-control stream listed in MODULES.
  */
 const EXTRA_SCREEN_NAMES: Readonly<Record<string, ScreenName>> = {
   "/": { ar: "الرئيسية", en: "Home" },
-  "/command-center": { ar: "مركز القيادة التنفيذي", en: "Executive Command Center" },
   // Its own heading said «غرفة العمليات» while the command palette called it
   // «جسر تنفيذي» — a THIRD route claiming /situation-room's name.
   "/sec/exec": { ar: "اللوحة التنفيذية", en: "Executive Dashboard" },

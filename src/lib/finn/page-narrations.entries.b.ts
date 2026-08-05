@@ -94,17 +94,6 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
 
   // ── Executive command / decision surfaces ───────────────────────────
   [
-    "/command-center",
-    n(
-      "مركز القيادة",
-      "Command Center",
-      "الوحدات التشغيلية، الحالة، والقرارات الحيّة",
-      "operational modules, status, and live decisions",
-      "قيادة تنفيذية موحّدة عبر قناة واحدة",
-      "unified executive command through a single channel",
-    ),
-  ],
-  [
     "/mission-control",
     n(
       "مراقبة المهمة",

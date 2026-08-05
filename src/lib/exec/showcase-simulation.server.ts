@@ -2461,7 +2461,7 @@ export function buildReportsRegistrySimulation(now: number) {
   );
 }
 
-/* ── Smart command center (/command-center) ────────────────────────────── */
+/* ── Smart command state (canonical cockpit + twin) ────────────────────── */
 
 export type CommandSeverity = "critical" | "high" | "medium" | "healthy" | "idle";
 

@@ -16,7 +16,6 @@ import { Route as SubprocessorsRouteImport } from './routes/subprocessors'
 import { Route as SlaRouteImport } from './routes/sla'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityRouteImport } from './routes/security'
-import { Route as RuntimeHubRouteImport } from './routes/runtime-hub'
 import { Route as RoiRouteImport } from './routes/roi'
 import { Route as ResponsibleAiRouteImport } from './routes/responsible-ai'
 import { Route as RequestDemoRouteImport } from './routes/request-demo'
@@ -124,7 +123,6 @@ import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDecisionsRouteImport } from './routes/_authenticated/decisions'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCrisisRouteImport } from './routes/_authenticated/crisis'
-import { Route as AuthenticatedCommandCenterRouteImport } from './routes/_authenticated/command-center'
 import { Route as AuthenticatedCockpitRouteImport } from './routes/_authenticated/cockpit'
 import { Route as AuthenticatedChiefOfStaffRouteImport } from './routes/_authenticated/chief-of-staff'
 import { Route as AuthenticatedBriefingRouteImport } from './routes/_authenticated/briefing'
@@ -263,11 +261,6 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SecurityRoute = SecurityRouteImport.update({
   id: '/security',
   path: '/security',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RuntimeHubRoute = RuntimeHubRouteImport.update({
-  id: '/runtime-hub',
-  path: '/runtime-hub',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoiRoute = RoiRouteImport.update({
@@ -824,12 +817,6 @@ const AuthenticatedCrisisRoute = AuthenticatedCrisisRouteImport.update({
   path: '/crisis',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedCommandCenterRoute =
-  AuthenticatedCommandCenterRouteImport.update({
-    id: '/command-center',
-    path: '/command-center',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedCockpitRoute = AuthenticatedCockpitRouteImport.update({
   id: '/cockpit',
   path: '/cockpit',
@@ -1427,7 +1414,6 @@ export interface FileRoutesByFullPath {
   '/request-demo': typeof RequestDemoRoute
   '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
-  '/runtime-hub': typeof RuntimeHubRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
@@ -1447,7 +1433,6 @@ export interface FileRoutesByFullPath {
   '/briefing': typeof AuthenticatedBriefingRoute
   '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/cockpit': typeof AuthenticatedCockpitRoute
-  '/command-center': typeof AuthenticatedCommandCenterRoute
   '/crisis': typeof AuthenticatedCrisisRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decisions': typeof AuthenticatedDecisionsRoute
@@ -1648,7 +1633,6 @@ export interface FileRoutesByTo {
   '/request-demo': typeof RequestDemoRoute
   '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
-  '/runtime-hub': typeof RuntimeHubRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
@@ -1668,7 +1652,6 @@ export interface FileRoutesByTo {
   '/briefing': typeof AuthenticatedBriefingRoute
   '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/cockpit': typeof AuthenticatedCockpitRoute
-  '/command-center': typeof AuthenticatedCommandCenterRoute
   '/crisis': typeof AuthenticatedCrisisRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/decisions': typeof AuthenticatedDecisionsRoute
@@ -1869,7 +1852,6 @@ export interface FileRoutesById {
   '/request-demo': typeof RequestDemoRoute
   '/responsible-ai': typeof ResponsibleAiRoute
   '/roi': typeof RoiRoute
-  '/runtime-hub': typeof RuntimeHubRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
@@ -1889,7 +1871,6 @@ export interface FileRoutesById {
   '/_authenticated/briefing': typeof AuthenticatedBriefingRoute
   '/_authenticated/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/_authenticated/cockpit': typeof AuthenticatedCockpitRoute
-  '/_authenticated/command-center': typeof AuthenticatedCommandCenterRoute
   '/_authenticated/crisis': typeof AuthenticatedCrisisRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/decisions': typeof AuthenticatedDecisionsRoute
@@ -2092,7 +2073,6 @@ export interface FileRouteTypes {
     | '/request-demo'
     | '/responsible-ai'
     | '/roi'
-    | '/runtime-hub'
     | '/security'
     | '/sitemap.xml'
     | '/sla'
@@ -2112,7 +2092,6 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/chief-of-staff'
     | '/cockpit'
-    | '/command-center'
     | '/crisis'
     | '/dashboard'
     | '/decisions'
@@ -2313,7 +2292,6 @@ export interface FileRouteTypes {
     | '/request-demo'
     | '/responsible-ai'
     | '/roi'
-    | '/runtime-hub'
     | '/security'
     | '/sitemap.xml'
     | '/sla'
@@ -2333,7 +2311,6 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/chief-of-staff'
     | '/cockpit'
-    | '/command-center'
     | '/crisis'
     | '/dashboard'
     | '/decisions'
@@ -2533,7 +2510,6 @@ export interface FileRouteTypes {
     | '/request-demo'
     | '/responsible-ai'
     | '/roi'
-    | '/runtime-hub'
     | '/security'
     | '/sitemap.xml'
     | '/sla'
@@ -2553,7 +2529,6 @@ export interface FileRouteTypes {
     | '/_authenticated/briefing'
     | '/_authenticated/chief-of-staff'
     | '/_authenticated/cockpit'
-    | '/_authenticated/command-center'
     | '/_authenticated/crisis'
     | '/_authenticated/dashboard'
     | '/_authenticated/decisions'
@@ -2756,7 +2731,6 @@ export interface RootRouteChildren {
   RequestDemoRoute: typeof RequestDemoRoute
   ResponsibleAiRoute: typeof ResponsibleAiRoute
   RoiRoute: typeof RoiRoute
-  RuntimeHubRoute: typeof RuntimeHubRoute
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SlaRoute: typeof SlaRoute
@@ -2880,13 +2854,6 @@ declare module '@tanstack/react-router' {
       path: '/security'
       fullPath: '/security'
       preLoaderRoute: typeof SecurityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/runtime-hub': {
-      id: '/runtime-hub'
-      path: '/runtime-hub'
-      fullPath: '/runtime-hub'
-      preLoaderRoute: typeof RuntimeHubRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roi': {
@@ -3636,13 +3603,6 @@ declare module '@tanstack/react-router' {
       path: '/crisis'
       fullPath: '/crisis'
       preLoaderRoute: typeof AuthenticatedCrisisRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/command-center': {
-      id: '/_authenticated/command-center'
-      path: '/command-center'
-      fullPath: '/command-center'
-      preLoaderRoute: typeof AuthenticatedCommandCenterRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cockpit': {
@@ -4489,7 +4449,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBriefingRoute: typeof AuthenticatedBriefingRoute
   AuthenticatedChiefOfStaffRoute: typeof AuthenticatedChiefOfStaffRoute
   AuthenticatedCockpitRoute: typeof AuthenticatedCockpitRoute
-  AuthenticatedCommandCenterRoute: typeof AuthenticatedCommandCenterRoute
   AuthenticatedCrisisRoute: typeof AuthenticatedCrisisRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDecisionsRoute: typeof AuthenticatedDecisionsRoute
@@ -4566,7 +4525,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBriefingRoute: AuthenticatedBriefingRoute,
   AuthenticatedChiefOfStaffRoute: AuthenticatedChiefOfStaffRoute,
   AuthenticatedCockpitRoute: AuthenticatedCockpitRoute,
-  AuthenticatedCommandCenterRoute: AuthenticatedCommandCenterRoute,
   AuthenticatedCrisisRoute: AuthenticatedCrisisRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDecisionsRoute: AuthenticatedDecisionsRoute,
@@ -4688,7 +4646,6 @@ const rootRouteChildren: RootRouteChildren = {
   RequestDemoRoute: RequestDemoRoute,
   ResponsibleAiRoute: ResponsibleAiRoute,
   RoiRoute: RoiRoute,
-  RuntimeHubRoute: RuntimeHubRoute,
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SlaRoute: SlaRoute,

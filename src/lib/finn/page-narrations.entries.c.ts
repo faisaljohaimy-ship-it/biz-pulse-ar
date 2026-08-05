@@ -286,17 +286,6 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/runtime-hub",
-    n(
-      "مركز التشغيل",
-      "Runtime Hub",
-      "المكوّنات التشغيلية للمنصّة",
-      "the runtime components of the platform",
-      "شفافية هندسية موثوقة",
-      "trustworthy engineering transparency",
-    ),
-  ],
-  [
     "/data-room",
     n(
       "غرفة البيانات",

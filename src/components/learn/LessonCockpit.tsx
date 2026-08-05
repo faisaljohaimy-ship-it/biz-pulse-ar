@@ -2,7 +2,7 @@
  * LessonCockpit — Golden-Reference executive cockpit strip.
  *
  * Renders decision timeline, incident replay, predictive analytics,
- * risk heat map, and command-center cross-links for any lesson that
+ * risk heat map, and cockpit cross-links for any lesson that
  * has content registered in `cockpit-content.ts`. Zero per-lesson code
  * required — future lessons just add their content entry.
  */
