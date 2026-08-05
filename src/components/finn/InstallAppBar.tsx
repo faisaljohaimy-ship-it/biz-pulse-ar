@@ -37,7 +37,6 @@ const EXEC_ROUTE_PATTERNS = [
   "/executive-showcase",
   "/executive-bridge",
   "/cinematic-demo",
-  "/promo",
 ];
 
 function isExecutiveRoute(): boolean {

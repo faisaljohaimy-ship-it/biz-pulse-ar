@@ -410,19 +410,6 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
   ],
   // ── Top-level surfaces ───────────────────────────────────────────────
   [
-    "/os",
-    {
-      titleAr: "نِظَامُ التَّشْغِيلِ المُؤَسَّسِيّ",
-      titleEn: "Enterprise Operating System",
-      purposeAr:
-        "لَوْحَةُ القِيَادَةِ السِّيَادِيَّةُ لِلْمُؤَسَّسَةِ تَعْرِضُ نَبْضَهَا الحَيَّ عَبْرَ سِتَّةِ مُؤَشِّرَاتٍ تَنْفِيذِيَّة.",
-      purposeEn: "The sovereign command deck — live enterprise pulse across six executive KPIs.",
-      actionAr:
-        "افْتَحْ أَيَّ بِطَاقَةٍ لِلتَّعَمُّقِ فِي مَصْدَرِهَا أَوِ ادْخُلْ إِلَى وِحْدَاتِ التَّشْغِيل.",
-      actionEn: "Drill into any tile's source, or enter the runtime modules from here.",
-    },
-  ],
-  [
     "/operations",
     {
       titleAr: "طَبَقَةُ تَصَوُّرِ العَمَلِيَّات",

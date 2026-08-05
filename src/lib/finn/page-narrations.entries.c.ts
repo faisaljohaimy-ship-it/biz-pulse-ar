@@ -556,17 +556,6 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/status",
-    n(
-      "حالة النظام",
-      "Status",
-      "توفّر الخدمات في الوقت الحقيقي",
-      "real-time service availability",
-      "شفافية تشغيلية دائمة",
-      "always-on operational transparency",
-    ),
-  ],
-  [
     "/pricing",
     n(
       "الباقات والأسعار",
@@ -608,17 +597,6 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "scheduling a session with the team",
       "استثمار وقتك مع خبير",
       "investing your time with an expert",
-    ),
-  ],
-  [
-    "/os",
-    n(
-      "نظام التشغيل المؤسسي",
-      "Enterprise Operating System",
-      "قاعة القيادة، النبض التشغيلي، والمؤشرات التنفيذية",
-      "the command deck, live pulse, and executive indicators",
-      "قرار تنفيذي من المشهد الأول للمنصّة",
-      "an executive decision from the platform's very first screen",
     ),
   ],
   [

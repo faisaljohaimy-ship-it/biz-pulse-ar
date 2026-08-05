@@ -6,7 +6,7 @@
 //
 // The name is the internal slug, not the display brand: the display brand is
 // Arabic and a cache key must stay ASCII.
-const CACHE_NAME = "sadeed-static-v7-rebrand";
+const CACHE_NAME = "sadeed-static-v8-sadeed-only";
 const PRECACHE = ["/brand-icon.png", "/finn-portrait.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

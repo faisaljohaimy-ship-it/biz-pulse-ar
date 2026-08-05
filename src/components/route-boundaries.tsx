@@ -22,7 +22,7 @@ export function RouteError({ error, reset }: { error: Error; reset: () => void }
             <RotateCw className="h-4 w-4" /> إعادة المحاولة
           </button>
           <Link
-            to="/dashboard"
+            to="/"
             className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
           >
             <Home className="h-4 w-4" /> اللوحة الرئيسية
@@ -40,7 +40,7 @@ export function RouteNotFound() {
         <h2 className="mb-2 text-2xl font-bold text-foreground">404</h2>
         <p className="mb-4 text-sm text-muted-foreground">الصفحة المطلوبة غير موجودة</p>
         <Link
-          to="/dashboard"
+          to="/"
           className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/20"
         >
           <Home className="h-4 w-4" /> العودة للوحة

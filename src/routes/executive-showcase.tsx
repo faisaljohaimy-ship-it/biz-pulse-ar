@@ -798,7 +798,7 @@ function Finale({ onRestart }: { onRestart: () => void }) {
       </p>
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
         <Link
-          to="/os"
+          to="/"
           className="inline-flex items-center justify-center gap-2 rounded-sm bg-[#3AE8FF] px-6 py-4 text-sm font-bold uppercase tracking-[0.18em] text-[#061A2E] shadow-[0_6px_28px_rgba(58,232,255,0.35)] transition hover:bg-[#5CEEFF]"
         >
           بدء العملية · Start Operation

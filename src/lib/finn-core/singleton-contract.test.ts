@@ -80,12 +80,6 @@ describe("FINN singleton release contract", () => {
     }
   });
 
-  it("derives command-center FINN status from the singleton runtime", () => {
-    const preview = source("src/components/executive/command/cc/FinnConsole.tsx");
-    expect(preview).toContain("useFinn");
-    expect(preview).not.toMatch(/setInterval|useChat|useFinnVoice/);
-  });
-
   it("keeps every audible voice on the server FINN voice route (no browser TTS)", () => {
     const client = source("src/lib/digital-humans/finn-voice.ts");
     const specialists = source("src/lib/digital-humans/free-agent-speech.ts");

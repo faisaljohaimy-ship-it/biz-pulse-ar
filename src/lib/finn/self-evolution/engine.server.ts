@@ -54,7 +54,6 @@ const INVARIANTS: EvolutionInvariants = {
  * INVARIANTs / Forbidden Regressions, or it is auto-deferred.
  */
 export const PROTECTED_PATHS: readonly string[] = [
-  "src/components/intro/FinnCinematicIntro.tsx",
   "src/routes/__root.tsx",
   "src/routes/index.tsx",
   "src/lib/finn/learning/interaction-log.server.ts",

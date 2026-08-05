@@ -31,9 +31,7 @@ const ROOT = resolve(__dirname, "../../..");
 const NAV_SURFACES = [
   "src/components/app-shell.tsx",
   "src/components/sec/sec-shell.tsx",
-  "src/components/os/DashboardPreviewRail.tsx",
   "src/components/executive/CommandPalette.tsx",
-  "src/components/executive/command/NexiosCommandCenter.tsx",
   "src/routes/_authenticated/dashboard.tsx",
   // Not a list, but its exit button names a destination — and it is rendered
   // over two different screens, so a hard-coded name is wrong on one of them.

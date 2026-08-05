@@ -69,7 +69,6 @@ describe("adoption — icon controls carry no glass fill", () => {
     "src/components/cockpit/events.tsx",
     "src/components/cockpit/experience-bar.tsx",
     "src/components/cockpit/map.tsx",
-    "src/components/home/FourRegionHub.tsx",
   ];
 
   it("every listed surface uses the holographic treatment", () => {
@@ -86,31 +85,6 @@ describe("adoption — icon controls carry no glass fill", () => {
         /nx-glass-e1[^"']*(?:inline-flex\s+size-11|size-11\s+items-center)/,
       );
     }
-  });
-
-  it("لا عنصر تفاعلي في بوابة FINN يلبس قرص البطاقة المعتم", () => {
-    // الصياغة السابقة كانت تفترض وجود زر «تحدث الآن» بعينه، فلمّا أزاله
-    // المالك سقط الفحص على قرارٍ لا على عطل. الثابت المقصود ليس ذلك الزر بل
-    // القاعدة: لون البطاقة `bg-[#061525]` خلفية للبطاقة نفسها، وما إن يلبسه
-    // عنصر تفاعلي حتى يعود القرص المعتم الذي أُلغي في كل النظام.
-    const finn = read("src/components/home/FinnHolographicPortal.tsx");
-    for (const tag of finn.match(/<(?:button|a|Link)\b[^>]*>/g) ?? []) {
-      expect(tag, "عنصر تفاعلي يحمل قرص البطاقة المعتم").not.toContain("bg-[#061525]");
-    }
-  });
-
-  it("إن عاد زر أيقوني إلى بوابة FINN فبالحافة الهولوغرامية لا بقرص", () => {
-    // فحص مشروط لا يفترض عودة الزر ولا يمنعها: ما دام غائبًا فلا شيء يُقاس،
-    // وما إن يعود حتى يُطالَب بالمعالجة نفسها التي يحملها كل زر أيقوني آخر.
-    // بغيره كان حذف الفحص السابق يترك الباب مفتوحًا لعودته بقرص معتم بصمت.
-    // يُلتقط الوسم كاملًا لا ما بعد `aria-label`: ترتيب السمات ليس عقدًا،
-    // ولو سبق `className` النداءَ لأفلت فحصٌ يقرأ ما بعده فقط.
-    const finn = read("src/components/home/FinnHolographicPortal.tsx");
-    const talk = (finn.match(/<(?:button|a|Link)\b[^>]*>/g) ?? []).find((tag) =>
-      /تحدث الآن|Talk to FINN/.test(tag),
-    );
-    if (!talk) return;
-    expect(talk).toContain("nx-holo-icon");
   });
 });
 

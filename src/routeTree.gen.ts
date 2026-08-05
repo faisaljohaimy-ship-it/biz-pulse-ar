@@ -13,7 +13,6 @@ import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SubprocessorsRouteImport } from './routes/subprocessors'
-import { Route as StatusRouteImport } from './routes/status'
 import { Route as SlaRouteImport } from './routes/sla'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SecurityRouteImport } from './routes/security'
@@ -26,7 +25,6 @@ import { Route as RagSearchRouteImport } from './routes/rag-search'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PermitsRouteImport } from './routes/permits'
-import { Route as OsRouteImport } from './routes/os'
 import { Route as NxTwinRouteImport } from './routes/nx-twin'
 import { Route as NxSovereignRouteImport } from './routes/nx-sovereign'
 import { Route as NxOpsRouteImport } from './routes/nx-ops'
@@ -58,16 +56,8 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AupRouteImport } from './routes/aup'
 import { Route as AgentsReferenceRouteImport } from './routes/agents-reference'
 import { Route as AgentsFlowRouteImport } from './routes/agents-flow'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PromoIndexRouteImport } from './routes/promo/index'
-import { Route as PromoImpactRouteImport } from './routes/promo/impact'
-import { Route as PromoF5RouteImport } from './routes/promo/f5'
-import { Route as PromoF4RouteImport } from './routes/promo/f4'
-import { Route as PromoF3RouteImport } from './routes/promo/f3'
-import { Route as PromoF2RouteImport } from './routes/promo/f2'
-import { Route as PromoF1RouteImport } from './routes/promo/f1'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
 import { Route as ApiVoiceSttRouteImport } from './routes/api/voice-stt'
@@ -262,11 +252,6 @@ const SubprocessorsRoute = SubprocessorsRouteImport.update({
   path: '/subprocessors',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StatusRoute = StatusRouteImport.update({
-  id: '/status',
-  path: '/status',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SlaRoute = SlaRouteImport.update({
   id: '/sla',
   path: '/sla',
@@ -325,11 +310,6 @@ const PricingRoute = PricingRouteImport.update({
 const PermitsRoute = PermitsRouteImport.update({
   id: '/permits',
   path: '/permits',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OsRoute = OsRouteImport.update({
-  id: '/os',
-  path: '/os',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NxTwinRoute = NxTwinRouteImport.update({
@@ -487,11 +467,6 @@ const AgentsFlowRoute = AgentsFlowRouteImport.update({
   path: '/agents-flow',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -499,41 +474,6 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromoIndexRoute = PromoIndexRouteImport.update({
-  id: '/promo/',
-  path: '/promo/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromoImpactRoute = PromoImpactRouteImport.update({
-  id: '/promo/impact',
-  path: '/promo/impact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromoF5Route = PromoF5RouteImport.update({
-  id: '/promo/f5',
-  path: '/promo/f5',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromoF4Route = PromoF4RouteImport.update({
-  id: '/promo/f4',
-  path: '/promo/f4',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromoF3Route = PromoF3RouteImport.update({
-  id: '/promo/f3',
-  path: '/promo/f3',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromoF2Route = PromoF2RouteImport.update({
-  id: '/promo/f2',
-  path: '/promo/f2',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromoF1Route = PromoF1RouteImport.update({
-  id: '/promo/f1',
-  path: '/promo/f1',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
@@ -1461,7 +1401,6 @@ const AuthenticatedHcisDirectiveCodeRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/agents-flow': typeof AgentsFlowRoute
   '/agents-reference': typeof AgentsReferenceRoute
   '/aup': typeof AupRoute
@@ -1493,7 +1432,6 @@ export interface FileRoutesByFullPath {
   '/nx-ops': typeof NxOpsRoute
   '/nx-sovereign': typeof NxSovereignRoute
   '/nx-twin': typeof NxTwinRoute
-  '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1506,7 +1444,6 @@ export interface FileRoutesByFullPath {
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
-  '/status': typeof StatusRoute
   '/subprocessors': typeof SubprocessorsRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
@@ -1592,13 +1529,6 @@ export interface FileRoutesByFullPath {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/promo/f1': typeof PromoF1Route
-  '/promo/f2': typeof PromoF2Route
-  '/promo/f3': typeof PromoF3Route
-  '/promo/f4': typeof PromoF4Route
-  '/promo/f5': typeof PromoF5Route
-  '/promo/impact': typeof PromoImpactRoute
-  '/promo/': typeof PromoIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1694,7 +1624,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/agents-flow': typeof AgentsFlowRoute
   '/agents-reference': typeof AgentsReferenceRoute
   '/aup': typeof AupRoute
@@ -1726,7 +1655,6 @@ export interface FileRoutesByTo {
   '/nx-ops': typeof NxOpsRoute
   '/nx-sovereign': typeof NxSovereignRoute
   '/nx-twin': typeof NxTwinRoute
-  '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1739,7 +1667,6 @@ export interface FileRoutesByTo {
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
-  '/status': typeof StatusRoute
   '/subprocessors': typeof SubprocessorsRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
@@ -1823,13 +1750,6 @@ export interface FileRoutesByTo {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/promo/f1': typeof PromoF1Route
-  '/promo/f2': typeof PromoF2Route
-  '/promo/f3': typeof PromoF3Route
-  '/promo/f4': typeof PromoF4Route
-  '/promo/f5': typeof PromoF5Route
-  '/promo/impact': typeof PromoImpactRoute
-  '/promo': typeof PromoIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -1927,7 +1847,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/about': typeof AboutRoute
   '/agents-flow': typeof AgentsFlowRoute
   '/agents-reference': typeof AgentsReferenceRoute
   '/aup': typeof AupRoute
@@ -1959,7 +1878,6 @@ export interface FileRoutesById {
   '/nx-ops': typeof NxOpsRoute
   '/nx-sovereign': typeof NxSovereignRoute
   '/nx-twin': typeof NxTwinRoute
-  '/os': typeof OsRoute
   '/permits': typeof PermitsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -1972,7 +1890,6 @@ export interface FileRoutesById {
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sla': typeof SlaRoute
-  '/status': typeof StatusRoute
   '/subprocessors': typeof SubprocessorsRoute
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
@@ -2058,13 +1975,6 @@ export interface FileRoutesById {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/promo/f1': typeof PromoF1Route
-  '/promo/f2': typeof PromoF2Route
-  '/promo/f3': typeof PromoF3Route
-  '/promo/f4': typeof PromoF4Route
-  '/promo/f5': typeof PromoF5Route
-  '/promo/impact': typeof PromoImpactRoute
-  '/promo/': typeof PromoIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
@@ -2162,7 +2072,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
     | '/agents-flow'
     | '/agents-reference'
     | '/aup'
@@ -2194,7 +2103,6 @@ export interface FileRouteTypes {
     | '/nx-ops'
     | '/nx-sovereign'
     | '/nx-twin'
-    | '/os'
     | '/permits'
     | '/pricing'
     | '/privacy'
@@ -2207,7 +2115,6 @@ export interface FileRouteTypes {
     | '/security'
     | '/sitemap.xml'
     | '/sla'
-    | '/status'
     | '/subprocessors'
     | '/terms'
     | '/trust'
@@ -2293,13 +2200,6 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
-    | '/promo/f1'
-    | '/promo/f2'
-    | '/promo/f3'
-    | '/promo/f4'
-    | '/promo/f5'
-    | '/promo/impact'
-    | '/promo/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/assistant/$threadId'
@@ -2395,7 +2295,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
     | '/agents-flow'
     | '/agents-reference'
     | '/aup'
@@ -2427,7 +2326,6 @@ export interface FileRouteTypes {
     | '/nx-ops'
     | '/nx-sovereign'
     | '/nx-twin'
-    | '/os'
     | '/permits'
     | '/pricing'
     | '/privacy'
@@ -2440,7 +2338,6 @@ export interface FileRouteTypes {
     | '/security'
     | '/sitemap.xml'
     | '/sla'
-    | '/status'
     | '/subprocessors'
     | '/terms'
     | '/trust'
@@ -2524,13 +2421,6 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
-    | '/promo/f1'
-    | '/promo/f2'
-    | '/promo/f3'
-    | '/promo/f4'
-    | '/promo/f5'
-    | '/promo/impact'
-    | '/promo'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/assistant/$threadId'
@@ -2627,7 +2517,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/about'
     | '/agents-flow'
     | '/agents-reference'
     | '/aup'
@@ -2659,7 +2548,6 @@ export interface FileRouteTypes {
     | '/nx-ops'
     | '/nx-sovereign'
     | '/nx-twin'
-    | '/os'
     | '/permits'
     | '/pricing'
     | '/privacy'
@@ -2672,7 +2560,6 @@ export interface FileRouteTypes {
     | '/security'
     | '/sitemap.xml'
     | '/sla'
-    | '/status'
     | '/subprocessors'
     | '/terms'
     | '/trust'
@@ -2758,13 +2645,6 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
-    | '/promo/f1'
-    | '/promo/f2'
-    | '/promo/f3'
-    | '/promo/f4'
-    | '/promo/f5'
-    | '/promo/impact'
-    | '/promo/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/assistant/$threadId'
@@ -2862,7 +2742,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  AboutRoute: typeof AboutRoute
   AgentsFlowRoute: typeof AgentsFlowRoute
   AgentsReferenceRoute: typeof AgentsReferenceRoute
   AupRoute: typeof AupRoute
@@ -2894,7 +2773,6 @@ export interface RootRouteChildren {
   NxOpsRoute: typeof NxOpsRoute
   NxSovereignRoute: typeof NxSovereignRoute
   NxTwinRoute: typeof NxTwinRoute
-  OsRoute: typeof OsRoute
   PermitsRoute: typeof PermitsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -2907,7 +2785,6 @@ export interface RootRouteChildren {
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SlaRoute: typeof SlaRoute
-  StatusRoute: typeof StatusRoute
   SubprocessorsRoute: typeof SubprocessorsRoute
   TermsRoute: typeof TermsRoute
   TrustRoute: typeof TrustRoute
@@ -2921,13 +2798,6 @@ export interface RootRouteChildren {
   ApiVoiceSttRoute: typeof ApiVoiceSttRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
-  PromoF1Route: typeof PromoF1Route
-  PromoF2Route: typeof PromoF2Route
-  PromoF3Route: typeof PromoF3Route
-  PromoF4Route: typeof PromoF4Route
-  PromoF5Route: typeof PromoF5Route
-  PromoImpactRoute: typeof PromoImpactRoute
-  PromoIndexRoute: typeof PromoIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiAgentsFleetRoute: typeof ApiAgentsFleetRoute
@@ -3016,13 +2886,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubprocessorsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/status': {
-      id: '/status'
-      path: '/status'
-      fullPath: '/status'
-      preLoaderRoute: typeof StatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sla': {
       id: '/sla'
       path: '/sla'
@@ -3105,13 +2968,6 @@ declare module '@tanstack/react-router' {
       path: '/permits'
       fullPath: '/permits'
       preLoaderRoute: typeof PermitsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/os': {
-      id: '/os'
-      path: '/os'
-      fullPath: '/os'
-      preLoaderRoute: typeof OsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nx-twin': {
@@ -3331,13 +3187,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentsFlowRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -3350,55 +3199,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/promo/': {
-      id: '/promo/'
-      path: '/promo'
-      fullPath: '/promo/'
-      preLoaderRoute: typeof PromoIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/promo/impact': {
-      id: '/promo/impact'
-      path: '/promo/impact'
-      fullPath: '/promo/impact'
-      preLoaderRoute: typeof PromoImpactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/promo/f5': {
-      id: '/promo/f5'
-      path: '/promo/f5'
-      fullPath: '/promo/f5'
-      preLoaderRoute: typeof PromoF5RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/promo/f4': {
-      id: '/promo/f4'
-      path: '/promo/f4'
-      fullPath: '/promo/f4'
-      preLoaderRoute: typeof PromoF4RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/promo/f3': {
-      id: '/promo/f3'
-      path: '/promo/f3'
-      fullPath: '/promo/f3'
-      preLoaderRoute: typeof PromoF3RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/promo/f2': {
-      id: '/promo/f2'
-      path: '/promo/f2'
-      fullPath: '/promo/f2'
-      preLoaderRoute: typeof PromoF2RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/promo/f1': {
-      id: '/promo/f1'
-      path: '/promo/f1'
-      fullPath: '/promo/f1'
-      preLoaderRoute: typeof PromoF1RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
@@ -4891,7 +4691,6 @@ const ApiChatRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  AboutRoute: AboutRoute,
   AgentsFlowRoute: AgentsFlowRoute,
   AgentsReferenceRoute: AgentsReferenceRoute,
   AupRoute: AupRoute,
@@ -4923,7 +4722,6 @@ const rootRouteChildren: RootRouteChildren = {
   NxOpsRoute: NxOpsRoute,
   NxSovereignRoute: NxSovereignRoute,
   NxTwinRoute: NxTwinRoute,
-  OsRoute: OsRoute,
   PermitsRoute: PermitsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
@@ -4936,7 +4734,6 @@ const rootRouteChildren: RootRouteChildren = {
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SlaRoute: SlaRoute,
-  StatusRoute: StatusRoute,
   SubprocessorsRoute: SubprocessorsRoute,
   TermsRoute: TermsRoute,
   TrustRoute: TrustRoute,
@@ -4951,13 +4748,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVoiceSttRoute: ApiVoiceSttRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
-  PromoF1Route: PromoF1Route,
-  PromoF2Route: PromoF2Route,
-  PromoF3Route: PromoF3Route,
-  PromoF4Route: PromoF4Route,
-  PromoF5Route: PromoF5Route,
-  PromoImpactRoute: PromoImpactRoute,
-  PromoIndexRoute: PromoIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiAgentsFleetRoute: ApiAgentsFleetRoute,
