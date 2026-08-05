@@ -503,33 +503,6 @@ html.safe-mode canvas {
       transform: translateY(0);
     }
   }
-  @keyframes float-y {
-    0%,
-    100% {
-      transform: translate(-50%, -50%) translateY(0);
-    }
-    50% {
-      transform: translate(-50%, -50%) translateY(-6px);
-    }
-  }
-  @keyframes dash {
-    to {
-      stroke-dashoffset: -20;
-    }
-  }
-  @keyframes drift-up {
-    0% {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    20% {
-      opacity: 0.6;
-    }
-    100% {
-      transform: translateY(-120px);
-      opacity: 0;
-    }
-  }
   @keyframes radar-sweep {
     to {
       transform: rotate(360deg);
@@ -711,27 +684,6 @@ html.safe-mode canvas {
 }
 
 /* ── Executive Overlay animations ──────────────────────────────── */
-@keyframes slide-in-right {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-@keyframes slide-in-left {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
 /* Presentation mode hides app chrome (sidebar, mobile header, overlay dock/avatar) */
 
 /* Global horizontal-overflow guard: prevents rogue wide children (charts,
@@ -806,85 +758,13 @@ body {
 
 /* ── Reduced motion: kill orbital spins + node float for accessibility/perf ── */
 
-@keyframes nexus-grid-pan {
-  0% {
-    background-position:
-      0 0,
-      0 0;
-  }
-  100% {
-    background-position:
-      56px 56px,
-      56px 56px;
-  }
-}
-
-@keyframes nexus-orbit {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* ── 3D Digital Twin globe ─────────────────────────────────── */
-@keyframes nexus-globe-spin-y {
-  from {
-    transform: rotateY(0deg);
-  }
-  to {
-    transform: rotateY(360deg);
-  }
-}
-@keyframes nexus-ring-spin {
-  from {
-    transform: rotateX(75deg) rotateZ(0deg);
-  }
-  to {
-    transform: rotateX(75deg) rotateZ(360deg);
-  }
-}
-@keyframes nexus-ring-spin-rev {
-  from {
-    transform: rotateX(60deg) rotateZ(20deg);
-  }
-  to {
-    transform: rotateX(60deg) rotateZ(-340deg);
-  }
-}
-
 /* Phone in landscape: keep hero + 3D scene visible without scroll-away */
 
 /* ── FINN cinematic orb ───────────────────────────────────── */
-@keyframes aria-orb-halo {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.55;
-  }
-  50% {
-    transform: scale(1.18);
-    opacity: 0.9;
-  }
-}
 @keyframes aria-orb-spin {
   to {
     transform: rotate(360deg);
-  }
-}
-@keyframes aria-orb-spin-r {
-  to {
-    transform: rotate(-360deg);
-  }
-}
-@keyframes aria-orb-scan {
-  0%,
-  100% {
-    transform: rotateX(0deg);
-  }
-  50% {
-    transform: rotateX(180deg);
   }
 }
 .aria-orb-ring-a {
@@ -911,120 +791,12 @@ body {
   --aria-text: #ffffff;
   --aria-text-soft: #d7eaf4;
 }
-@keyframes aria-float-y {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-@keyframes aria-float-x {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(8px);
-  }
-}
-@keyframes aria-spin-slow {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes aria-spin-rev {
-  to {
-    transform: rotate(-360deg);
-  }
-}
-@keyframes aria-pulse-core {
-  0%,
-  100% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-  50% {
-    transform: scale(1.04);
-    filter: brightness(1.25);
-  }
-}
-@keyframes aria-ray-sweep {
-  0%,
-  100% {
-    opacity: 0.25;
-    transform: translateX(-4%);
-  }
-  50% {
-    opacity: 0.55;
-    transform: translateX(4%);
-  }
-}
-@keyframes aria-tick {
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-@keyframes aria-bar {
-  0%,
-  100% {
-    transform: scaleY(0.5);
-  }
-  50% {
-    transform: scaleY(1);
-  }
-}
-@keyframes aria-holo-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-14px);
-  }
-}
-@keyframes aria-holo-scan {
-  0% {
-    transform: translateY(-10%);
-    opacity: 0;
-  }
-  15%,
-  85% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(110%);
-    opacity: 0;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   [class*="aria-float"],
   [class*="aria-spin"],
   [class*="aria-pulse"],
   [class*="aria-tick"] {
     animation: none !important;
-  }
-}
-
-@keyframes core-scan {
-  0% {
-    transform: translateY(-110%);
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(110%);
-    opacity: 0;
   }
 }
 
@@ -1200,17 +972,6 @@ body {
   animation: aria-glow-speak 620ms ease-in-out infinite;
 }
 
-@keyframes aria-idle-breathe {
-  0%,
-  100% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-  50% {
-    transform: scale(1.014);
-    filter: brightness(1.06);
-  }
-}
 @keyframes aria-glow-idle {
   0%,
   100% {
@@ -1251,17 +1012,6 @@ body {
   50% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1.06);
-  }
-}
-@keyframes aria-figure-speak {
-  0%,
-  100% {
-    transform: scale(1);
-    filter: brightness(1.05);
-  }
-  50% {
-    transform: scale(1.008);
-    filter: brightness(1.15);
   }
 }
 @keyframes aria-shimmer-sweep {
@@ -1416,18 +1166,6 @@ body {
 /* Every command-centre icon owns a live edge in its assigned colour.
    The selected region receives a stronger breathing halo, while the pressed
    control gets a short high-energy bloom before navigation. */
-@keyframes nx-hotspot-live-edge {
-  0%,
-  100% {
-    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.28);
-    background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.018);
-  }
-  50% {
-    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.62);
-    background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.045);
-  }
-}
-
 @keyframes nx-hotspot-edge-sweep {
   0%,
   18% {
@@ -1444,182 +1182,9 @@ body {
   }
 }
 
-@keyframes nx-hotspot-inner-bloom {
-  0%,
-  100% {
-    opacity: 0.12;
-    transform: scale(0.82);
-  }
-  50% {
-    opacity: 0.4;
-    transform: scale(1.06);
-  }
-}
-
-@keyframes nx-active-region-edge {
-  0%,
-  100% {
-    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.58);
-    background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.045);
-  }
-  50% {
-    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 1);
-    background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.095);
-  }
-}
-
-@keyframes nx-hotspot-activation-bloom {
-  0% {
-    transform: scale(0.95);
-    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.62);
-  }
-  38% {
-    transform: scale(1.055);
-    border-color: rgba(255, 255, 255, 0.98);
-  }
-  100% {
-    transform: scale(1);
-    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.62);
-  }
-}
-
-.nx-region-hotspot {
-  isolation: isolate;
-}
-
-.nx-hotspot-frame {
-  border: 1px solid rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.34);
-  background: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.025);
-  box-shadow:
-    inset 0 0 0 1px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.12),
-    inset 0 0 13px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.08),
-    0 0 11px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.3);
-  animation: nx-hotspot-live-edge 4.4s ease-in-out infinite;
-  animation-delay: var(--hotspot-delay, 0s);
-  will-change: border-color, background-color;
-}
-
-.nx-hotspot-frame::before {
-  position: absolute;
-  inset: -1px;
-  padding: 1px;
-  border-radius: inherit;
-  background: linear-gradient(
-      112deg,
-      transparent 18%,
-      rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.12) 34%,
-      rgba(255, 255, 255, 0.98) 49%,
-      rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.96) 57%,
-      transparent 78%
-    )
-    180% 50% / 260% 100% no-repeat;
-  content: "";
-  opacity: 0.55;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  animation: nx-hotspot-edge-sweep 4.9s ease-in-out infinite;
-  animation-delay: var(--hotspot-delay, 0s);
-}
-
-.nx-hotspot-frame::after {
-  position: absolute;
-  inset: 18%;
-  border-radius: inherit;
-  background: radial-gradient(
-    circle,
-    rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.32),
-    transparent 72%
-  );
-  content: "";
-  filter: blur(8px);
-  animation: nx-hotspot-inner-bloom 4.4s ease-in-out infinite;
-  animation-delay: var(--hotspot-delay, 0s);
-}
-
-.nx-region-hotspot:hover .nx-hotspot-frame,
-.nx-region-hotspot:focus-visible .nx-hotspot-frame {
-  border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.95);
-  box-shadow:
-    inset 0 0 18px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.2),
-    0 0 20px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.72),
-    0 0 42px -8px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.94);
-}
-
-.nx-region-hotspot:focus-visible {
-  outline: 2px solid rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.95);
-  outline-offset: 2px;
-}
-
-.nx-active-region-hotspot {
-  background-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.035);
-}
-
-.nx-active-region-hotspot .nx-hotspot-frame {
-  animation: nx-active-region-edge 2.45s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  animation-delay: var(--hotspot-delay, 0s);
-}
-
-.nx-active-region-hotspot .nx-hotspot-frame::before {
-  opacity: 0.98;
-  animation-duration: 3.1s;
-}
-
-.nx-hotspot-activated .nx-hotspot-frame,
-.nx-region-hotspot:active .nx-hotspot-frame {
-  animation:
-    nx-hotspot-activation-bloom 0.78s cubic-bezier(0.16, 1, 0.3, 1) both,
-    nx-active-region-edge 2.15s ease-in-out 0.78s infinite;
-}
-
-.nx-hotspot-activated .nx-hotspot-frame::before {
-  opacity: 1;
-  animation-duration: 2.2s;
-}
-
 /* Transparent holographic shell surrounding the region globe. */
-@keyframes nx-holo-globe-breathe {
-  0%,
-  100% {
-    opacity: 0.72;
-    transform: scale(0.96);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.04);
-  }
-}
-.nx-holo-globe-pulse {
-  animation: nx-holo-globe-breathe 3.2s ease-in-out infinite;
-  transform-origin: center;
-  will-change: transform, opacity, box-shadow;
-}
-
 /* Sector cards — a calm halo (border + glow) that breathes in the region
    colour; content stays fully legible. */
-@keyframes nx-sector-breathe {
-  0%,
-  100% {
-    border-color: rgba(var(--nx-region-rgb, 34, 211, 238), 0.4);
-    box-shadow:
-      0 0 26px -4px rgba(var(--nx-region-rgb, 34, 211, 238), 0.5),
-      inset 0 0 14px -6px rgba(var(--nx-region-rgb, 34, 211, 238), 0.4);
-    background-color: rgba(var(--nx-region-rgb, 34, 211, 238), 0.06);
-  }
-  50% {
-    border-color: rgba(var(--nx-region-rgb, 34, 211, 238), 0.85);
-    box-shadow:
-      0 0 44px -4px rgba(var(--nx-region-rgb, 34, 211, 238), 0.85),
-      0 0 16px -2px rgba(var(--nx-region-rgb, 34, 211, 238), 0.55),
-      inset 0 0 20px -8px rgba(var(--nx-region-rgb, 34, 211, 238), 0.6);
-    background-color: rgba(var(--nx-region-rgb, 34, 211, 238), 0.12);
-  }
-}
 /* Stagger neighbours so the grid shimmers like a living organism. */
 
 /* Region-picker buttons reuse the same living edge language outside the
@@ -1695,21 +1260,9 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .nx-icon-pulse,
-  .nx-holo-globe-pulse,
-  .nx-hotspot-frame,
-  .nx-hotspot-frame::before,
-  .nx-hotspot-frame::after,
   .nx-region-control,
   .nx-region-control::after {
     animation: none !important;
-  }
-
-  .nx-active-region-hotspot .nx-hotspot-frame,
-  .nx-hotspot-activated .nx-hotspot-frame {
-    border-color: rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.95);
-    box-shadow:
-      inset 0 0 18px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.18),
-      0 0 18px rgba(var(--hotspot-rgb, var(--nx-region-rgb)), 0.58);
   }
 }
 
@@ -1771,20 +1324,6 @@ body {
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* Frosted command surface — the console's panels/cards. Region-tinted glass. */
-.nx-cmd-surface {
-  background:
-    linear-gradient(
-      150deg,
-      rgba(var(--nx-region-rgb, 34, 211, 238), 0.08),
-      rgba(6, 22, 42, 0.55) 42%
-    ),
-    rgba(4, 15, 28, 0.62);
-  border: 1px solid rgba(var(--nx-region-rgb, 34, 211, 238), 0.18);
-  backdrop-filter: blur(16px) saturate(140%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 24px 60px -34px rgba(var(--nx-region-rgb, 34, 211, 238), 0.55);
-}
 
 /* Living border — a calm glowing frame that breathes in the region colour.
    Used on the console shell and hero panels. */
@@ -1830,12 +1369,6 @@ body {
   animation: nx-orb-spin 14s linear infinite;
   transform-origin: center;
 }
-@keyframes nx-orb-spin-rev {
-  to {
-    transform: rotate(-360deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .nx-living-border,
   .nx-wave-bar,
@@ -2273,11 +1806,6 @@ body {
    Region tiles keep their sweep via `.nx-icon-glow-region` below. */
 /* Executive-Bridge-style icon edge glow: a soft edge halo + rotating
    conic sweep, mirroring `.ehub-ring` motion on the Bridge card. */
-@keyframes nx-icon-edge-sweep {
-  to {
-    transform: rotate(360deg);
-  }
-}
 @keyframes nx-icon-edge-glow {
   0%,
   100% {
@@ -2323,36 +1851,6 @@ a:active svg,
 /* Rotating conic edge sweep — same motion language as the Executive
    Bridge card's `.ehub-ring`. Applied around any element carrying
    `.nx-icon-edge` (or `<Icon class="nx-icon-edge">`). */
-.nx-icon-edge {
-  position: relative;
-  isolation: isolate;
-}
-.nx-icon-edge::before {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border-radius: inherit;
-  padding: 1.5px;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    color-mix(in oklab, var(--icon-glow, currentColor) 90%, transparent) 60deg,
-    transparent 150deg,
-    transparent 360deg
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: nx-icon-edge-sweep 6s linear infinite;
-  pointer-events: none;
-  z-index: 0;
-}
-.nx-icon-edge > * {
-  position: relative;
-  z-index: 1;
-}
 
 /* Region tiles opt in: glow uses --nx-region-rgb instead of currentColor. */
 
@@ -2360,22 +1858,18 @@ a:active svg,
 @media (prefers-reduced-motion: reduce) {
   button svg,
   a svg,
-  [role="button"] svg,
-  .nx-icon-edge::before {
+  [role="button"] svg {
     animation: none !important;
     transition: none !important;
   }
 }
 
-[data-nx-frozen="true"] svg,
-[data-nx-frozen="true"] .nx-icon-edge::before {
+[data-nx-frozen="true"] svg {
   animation-play-state: paused !important;
 }
 
 /* Decorative background SVGs (PCB traces, code rain, grid) must not glow */
-[data-icon-glow="off"] svg,
-.nx-no-glow svg,
-.nx-no-glow.svg {
+[data-icon-glow="off"] svg {
   filter: none !important;
   animation: none !important;
 }
@@ -2417,11 +1911,6 @@ h3,
 }
 
 /* Mobile tuning — trim edge radii so the icon halo stays crisp. */
-@media (max-width: 640px) {
-  .nx-icon-edge::before {
-    inset: -4px;
-  }
-}
 
 /* ═══════════════════════════════════════════════════════════════════════
    HOLOGRAPHIC LAYER SYSTEM — the single visual language for module tiles
@@ -2547,22 +2036,6 @@ h3,
 }
 
 /* Live badge chip on tiles. */
-.holo-badge {
-  position: absolute;
-  top: 6px;
-  inset-inline-start: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  border-radius: 999px;
-  border: 1px solid rgba(var(--holo-accent), 0.45);
-  background: rgba(var(--holo-accent), 0.12);
-  padding: 1px 7px;
-  font-size: 9.5px;
-  font-weight: 700;
-  color: rgb(110, 231, 183);
-  letter-spacing: 0.02em;
-}
 
 /* Status-pulse dot for "قيد التهيئة" connectors. */
 @keyframes holo-dot {
@@ -2938,63 +2411,6 @@ html.nx-presenting .nexus-app-shell {
 }
 
 /* Focal FINN card frame */
-.finn-portal {
-  --finn-edge: 34, 211, 238;
-  position: relative;
-  isolation: isolate;
-  border: 1px solid rgba(var(--finn-edge), 0.58);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    inset 0 0 34px rgba(var(--finn-edge), 0.035),
-    0 0 22px rgba(var(--finn-edge), 0.13),
-    0 24px 58px rgba(0, 0, 0, 0.32);
-}
-.finn-portal::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  z-index: -1;
-  pointer-events: none;
-  border-radius: inherit;
-  background: linear-gradient(
-    120deg,
-    rgba(96, 225, 255, 0.82),
-    rgba(34, 211, 238, 0.24) 34%,
-    rgba(59, 130, 246, 0.46) 70%,
-    rgba(34, 211, 238, 0.72)
-  );
-  filter: blur(5px);
-  opacity: 0.38;
-  animation: finn-edge-breathe 5.5s ease-in-out infinite;
-}
-.finn-portal::after {
-  content: "";
-  position: absolute;
-  inset-inline: 8%;
-  top: 0;
-  height: 1px;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgba(190, 245, 255, 0.7), transparent);
-}
-.finn-portal:hover::before,
-.finn-portal:focus-within::before {
-  opacity: 0.52;
-}
-@keyframes finn-edge-breathe {
-  0%,
-  100% {
-    opacity: 0.32;
-  }
-  50% {
-    opacity: 0.46;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .finn-portal::before {
-    animation: none !important;
-  }
-}
-
 /* ── Readability & touch floors — one layer, not per-page patches ─────────
    Three invariants the platform kept violating page by page, fixed once at
    the token layer.
@@ -3262,8 +2678,7 @@ body {
 /* 1) البطاقات — زجاج داكن لامع */
 .holo-card,
 .nx-glass-e1,
-.nexus-card,
-.finn-portal {
+.nexus-card {
   background:
     linear-gradient(
       145deg,
@@ -3282,8 +2697,7 @@ body {
 }
 
 /* لمعة علوية متحركة خفيفة على كل بطاقة زجاجية */
-.holo-card::before,
-.finn-portal::after {
+.holo-card::before {
   opacity: 1 !important;
   background: linear-gradient(
     90deg,
@@ -3306,7 +2720,6 @@ body {
 .light .holo-card,
 .light .nx-glass-e1,
 .light .nexus-card,
-.light .finn-portal,
 .light .glass,
 .light .glass-sidebar,
 .light .nx-clock-bar {
@@ -3325,8 +2738,7 @@ body {
     0 14px 34px rgba(15, 42, 70, 0.12);
 }
 
-.light .holo-card::before,
-.light .finn-portal::after {
+.light .holo-card::before {
   opacity: 1 !important;
   background: linear-gradient(
     90deg,
@@ -3346,17 +2758,9 @@ body {
 }
 
 /* 3) FINN — زجاجي لامع في الوضعين مع بقاء حافته المتوهجة */
-.finn-portal::before {
-  opacity: 0.5;
-}
-.light .finn-portal::before {
-  opacity: 0.42;
-  filter: blur(6px);
-}
 
 /* 4) الأيقونات — قرص زجاجي لامع دائم */
 .holo-icon,
-.nx-icon-edge,
 [data-region-glow] {
   position: relative;
   border-radius: inherit;
@@ -3372,7 +2776,6 @@ body {
     0 0 16px rgba(var(--nx-region-rgb, var(--accent-rgb, 34, 211, 238)), 0.28);
 }
 .light .holo-icon,
-.light .nx-icon-edge,
 .light [data-region-glow] {
   background-image: linear-gradient(
     150deg,
@@ -3394,9 +2797,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .holo-card,
-  .finn-portal,
-  .holo-icon,
-  .nx-icon-edge {
+  .holo-icon {
     transition: none;
   }
 }
@@ -3420,37 +2821,9 @@ body {
 }
 
 /* 2) بطاقة FINN في الوضع الفاتح — سماوي فاتح متدرّج */
-.light .finn-portal {
-  background: linear-gradient(
-    160deg,
-    #eaf9ff 0%,
-    #cdeeff 38%,
-    #a9dff8 70%,
-    #8ed2f2 100%
-  ) !important;
-  border: 1px solid rgba(140, 205, 235, 0.75) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 0 26px rgba(58, 232, 255, 0.28),
-    0 18px 44px rgba(15, 42, 70, 0.14) !important;
-}
 
 /* 3) الخلفية الرقمية داخل بطاقة FINN بنفس التدرّج السماوي الفاتح */
-.light .finn-portal .nx-no-glow[aria-hidden] {
-  background: linear-gradient(
-    160deg,
-    #eaf9ff 0%,
-    #cdeeff 40%,
-    #a9dff8 75%,
-    #8ed2f2 100%
-  ) !important;
-}
 /* الأسلاك والشيفرة تُقلب إلى حبر داكن كي تبقى مقروءة فوق السماوي */
-.light .finn-portal .nx-no-glow[aria-hidden] svg {
-  filter: invert(1) hue-rotate(175deg) saturate(2.2) brightness(0.6)
-    drop-shadow(0 0 1px rgba(12, 74, 110, 0.35));
-  opacity: 0.45;
-}
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/3) — حدود عريضة (bold) لكل البطاقات
@@ -3462,7 +2835,6 @@ body {
 .holo-card,
 .nx-glass-e1,
 .nexus-card,
-.finn-portal,
 .glass {
   border-width: 2px !important;
   border-style: solid !important;
@@ -3477,7 +2849,6 @@ body {
 
 /* الأيقونات: قرص بحدّ عريض واضح */
 .holo-icon,
-.nx-icon-edge,
 [data-region-glow] {
   border: 2px solid rgba(var(--nx-region-rgb, var(--accent-rgb, 34, 211, 238)), 0.7) !important;
 }
@@ -3501,7 +2872,6 @@ body {
 }
 
 .light .holo-icon,
-.light .nx-icon-edge,
 .light [data-region-glow] {
   border: 2px solid rgba(var(--nx-region-rgb, var(--accent-rgb, 34, 211, 238)), 0.85) !important;
 }
@@ -3556,30 +2926,6 @@ body {
 }
 
 /* 4) بطاقة FINN سماوية في الوضعين */
-.finn-portal {
-  background: linear-gradient(
-    160deg,
-    rgba(0, 212, 255, 0.3) 0%,
-    rgba(14, 165, 233, 0.22) 42%,
-    rgba(8, 47, 73, 0.55) 100%
-  ) !important;
-  border-color: rgba(58, 232, 255, 0.8) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    0 0 30px rgba(58, 232, 255, 0.35),
-    0 20px 48px rgba(2, 8, 17, 0.45) !important;
-}
-
-.light .finn-portal {
-  background: linear-gradient(
-    160deg,
-    #eaf9ff 0%,
-    #cdeeff 38%,
-    #a9dff8 70%,
-    #8ed2f2 100%
-  ) !important;
-  border-color: rgba(30, 130, 175, 0.7) !important;
-}
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/4) — كل البطاقات والأيقونات في النظام
@@ -3619,7 +2965,6 @@ body {
 .holo-card,
 .nx-glass-e1,
 .nexus-card,
-.finn-portal,
 .nexus-window,
 .nexus-aria-window {
   background-image: linear-gradient(
@@ -3640,7 +2985,6 @@ body {
 .light .holo-card,
 .light .nx-glass-e1,
 .light .nexus-card,
-.light .finn-portal,
 .light .nexus-window,
 .light .nexus-aria-window {
   background-image: linear-gradient(
@@ -3664,14 +3008,12 @@ body {
 
 /* 2) الأيقونات — لمعة وتوهج مستمران */
 .holo-icon,
-.nx-icon-edge,
 [data-region-glow] {
   --nx-glow-rgb: var(--nx-region-rgb, var(--accent-rgb, 34, 211, 238));
   animation: nx-glow-breathe 4.5s ease-in-out infinite;
 }
 
-.holo-icon::after,
-.nx-icon-edge::after {
+.holo-icon::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -3692,14 +3034,11 @@ body {
   .holo-card,
   .nx-glass-e1,
   .nexus-card,
-  .finn-portal,
   .nexus-window,
   .nexus-aria-window,
   .holo-icon,
-  .nx-icon-edge,
   [data-region-glow],
-  .holo-icon::after,
-  .nx-icon-edge::after {
+  .holo-icon::after {
     animation: none !important;
   }
 }
@@ -3910,7 +3249,6 @@ body {
 .nexus-window,
 .nexus-aria-window,
 .nexus-floating-surface,
-.finn-portal,
 .glass-sidebar,
 .nexus-toast,
 [data-slot="card"] {
@@ -3939,24 +3277,11 @@ body {
     transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.finn-portal {
-  background-image: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.96) 0%,
-    rgba(239, 246, 255, 0.9) 55%,
-    rgba(236, 254, 255, 0.86) 100%
-  ) !important;
-  box-shadow: var(--sd-shadow-3) !important;
-  border-color: rgba(37, 99, 235, 0.28) !important;
-}
-
 /* ── Quiet the legacy neon: gloss sweeps and heavy glows are out ─────────── */
 .holo-card::after,
 .nx-glass-e1::after,
 .nexus-card::after,
-.holo-icon::after,
-.nx-icon-edge::after,
-.finn-portal::after {
+.holo-icon::after {
   opacity: 0.28 !important;
   mix-blend-mode: normal;
 }
@@ -3970,15 +3295,13 @@ body {
 }
 
 /* ── Icons: consistent, professional, elegant hover ──────────────────────── */
-.holo-icon,
-.nx-icon-edge {
+.holo-icon {
   background: var(--sd-white) !important;
   border: 1px solid var(--sd-line) !important;
   box-shadow: var(--sd-shadow-1) !important;
   color: var(--sd-royal);
 }
-.holo-icon:hover,
-.nx-icon-edge:hover {
+.holo-icon:hover {
   border-color: rgba(29, 78, 216, 0.35) !important;
   box-shadow: var(--sd-shadow-2) !important;
 }
@@ -4133,10 +3456,8 @@ body::before {
 
 /* ── Layer 2 · Executive glass framework ─────────────────────────────────── */
 .nx-glass-e1,
-.finn-portal,
 .nexus-aria-window,
-[data-slot="card"],
-.sd-glass-panel {
+[data-slot="card"] {
   position: relative;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.74))
     padding-box;
@@ -4153,8 +3474,7 @@ body::before {
 .nx-glass-e1::first-line {
   color: inherit;
 }
-[data-slot="card"]::after,
-.sd-glass-panel::after {
+[data-slot="card"]::after {
   content: "";
   position: absolute;
   inset: 0 0 auto 0;
@@ -4173,47 +3493,6 @@ header.nx-clock-bar,
 }
 
 /* ── Layer 4 · FINN hero, the visual heart ───────────────────────────────── */
-.finn-portal {
-  background:
-    radial-gradient(120% 90% at 50% -20%, rgba(255, 255, 255, 0.98), transparent 62%),
-    linear-gradient(165deg, #ffffff 0%, #f2f9ff 52%, #e6f4fb 100%);
-  border: 1px solid rgba(6, 182, 212, 0.34);
-  border-radius: 24px;
-  box-shadow:
-    var(--sd-shadow-3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.6);
-  animation: sd-breathe 7s var(--sd-arch-ease) infinite;
-}
-.finn-portal::before {
-  background: var(--sd-arch-reflect) !important;
-  opacity: 0.55 !important;
-  animation: sd-sweep 9s linear infinite;
-}
-.finn-portal::after {
-  background: radial-gradient(
-    70% 50% at 50% 100%,
-    rgba(6, 182, 212, 0.18),
-    transparent 70%
-  ) !important;
-  opacity: 1 !important;
-}
-@keyframes sd-breathe {
-  0%,
-  100% {
-    box-shadow:
-      var(--sd-shadow-3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.9),
-      0 0 0 1px rgba(255, 255, 255, 0.6);
-  }
-  50% {
-    box-shadow:
-      0 6px 12px rgba(17, 24, 39, 0.07),
-      0 34px 78px -26px rgba(6, 182, 212, 0.34),
-      inset 0 1px 0 rgba(255, 255, 255, 0.95),
-      0 0 0 1px rgba(6, 182, 212, 0.18);
-  }
-}
 @keyframes sd-sweep {
   0% {
     transform: translateX(-120%);
@@ -4226,8 +3505,7 @@ header.nx-clock-bar,
 
 /* ── Layer 7 · Motion & optical interaction ──────────────────────────────── */
 .nx-glass-e1:hover,
-[data-slot="card"]:hover,
-.sd-glass-panel:hover {
+[data-slot="card"]:hover {
   transform: translateY(-3px);
   border-color: var(--sd-arch-edge);
   box-shadow:
@@ -4268,10 +3546,6 @@ tbody tr:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .finn-portal,
-  .finn-portal::before {
-    animation: none !important;
-  }
   .nx-glass-e1:hover,
   [data-slot="card"]:hover,
   button:hover,
@@ -4309,16 +3583,6 @@ tbody tr:hover {
   }
 }
 
-@keyframes sd-holo-tint {
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
 @keyframes sd-holo-edge-pulse {
   0%,
   100% {
@@ -4337,7 +3601,6 @@ tbody tr:hover {
 
 /* --- Holographic cyan glass on every glass surface --- */
 .nx-glass-e1,
-.finn-portal,
 .nexus-aria-window,
 [data-slot="card"] {
   position: relative;
@@ -4357,7 +3620,6 @@ tbody tr:hover {
 
 /* Continuous gloss sweep */
 .nx-glass-e1::after,
-.finn-portal::after,
 .nexus-aria-window::after,
 [data-slot="card"]::after {
   content: "";
@@ -4373,10 +3635,6 @@ tbody tr:hover {
     transparent 62%
   );
   animation: sd-holo-gloss 7s var(--sd-arch-ease, cubic-bezier(0.4, 0, 0.2, 1)) infinite;
-}
-
-.finn-portal::after {
-  animation-duration: 5.5s;
 }
 [data-slot="card"]:nth-of-type(2n)::after {
   animation-delay: 1.4s;
@@ -4395,7 +3653,6 @@ tbody tr:hover {
 }
 
 /* --- Luminous premium icon edges --- */
-.nx-icon-edge,
 .nx-icon-soft,
 .nx-icon-pulse,
 [data-icon-tile] {
@@ -4410,7 +3667,6 @@ tbody tr:hover {
   animation: sd-holo-edge-pulse 4.2s ease-in-out infinite;
 }
 
-.nx-icon-edge:hover,
 .nx-icon-soft:hover,
 .nx-icon-pulse:hover,
 [data-icon-tile]:hover {
@@ -4423,10 +3679,8 @@ tbody tr:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .nx-glass-e1::after,
-  .finn-portal::after,
   .nexus-aria-window::after,
   [data-slot="card"]::after,
-  .nx-icon-edge,
   .nx-icon-soft,
   .nx-icon-pulse,
   [data-icon-tile] {
@@ -4496,7 +3750,6 @@ body::after {
 
 /* ---- Layer 04 · Optical glass: refraction + internal diffusion ---- */
 .nx-glass-e1,
-.finn-portal,
 .nexus-aria-window,
 [data-slot="card"] {
   position: relative;
@@ -4508,7 +3761,6 @@ body::after {
 }
 
 .nx-glass-e1::before,
-.finn-portal::before,
 [data-slot="card"]::before {
   content: "";
   position: absolute;
@@ -4525,7 +3777,6 @@ body::after {
 
 /* ---- Layer 09 · Optical reflection: hover-reactive sweep ---- */
 .nx-glass-e1:hover,
-.finn-portal:hover,
 [data-slot="card"]:hover {
   transform: translate3d(0, -3px, 0);
   border-color: var(--pv-edge);
@@ -4617,17 +3868,6 @@ tbody tr:hover {
 }
 
 /* ---- Layer 07 · FINN AI focus: the first thing users notice ---- */
-.finn-portal {
-  z-index: 3;
-  box-shadow:
-    0 0 0 1px rgba(6, 182, 212, 0.35) inset,
-    0 0 48px -12px rgba(56, 189, 248, 0.55),
-    0 32px 80px -40px rgba(30, 64, 175, 0.45);
-}
-
-.finn-portal:hover {
-  transform: translate3d(0, -4px, 0) scale(1.004);
-}
 
 /* ---- Performance + accessibility guards ---- */
 @media (prefers-reduced-motion: reduce) {
@@ -4638,7 +3878,6 @@ tbody tr:hover {
   }
 
   .nx-glass-e1,
-  .finn-portal,
   .nexus-aria-window,
   [data-slot="card"],
   button,
@@ -4751,37 +3990,6 @@ tbody tr:hover {
 /* =====================================================================
    FINN portal · sky-cyan → deep dark gradient (owner directive)
    ===================================================================== */
-.finn-portal,
-.light .finn-portal {
-  background: linear-gradient(
-    170deg,
-    rgba(125, 211, 252, 0.95) 0%,
-    rgba(56, 189, 248, 0.92) 22%,
-    rgba(14, 116, 144, 0.94) 55%,
-    rgba(12, 45, 78, 0.97) 80%,
-    rgba(6, 20, 38, 0.99) 100%
-  ) !important;
-  border-color: rgba(103, 232, 249, 0.55) !important;
-  color: #f0f9ff;
-}
-
-.finn-portal :is(h1, h2, h3, h4, h5, h6, p, span, li, label, small, strong, div) {
-  color: inherit;
-}
-
-.finn-portal .text-muted-foreground,
-.finn-portal [class*="text-muted"] {
-  color: rgba(224, 242, 254, 0.78) !important;
-}
-
-.finn-portal::after {
-  background: linear-gradient(
-    115deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.28) 48%,
-    transparent 66%
-  );
-}
 
 /* =====================================================================
    HOLOGRAPHIC CONTINUOUS SHEEN — cards + icons (owner directive)
@@ -4847,7 +4055,6 @@ tbody tr:hover {
 .nx-glass-e1,
 .sd-glass-surface,
 .spatial-window,
-.finn-portal,
 .nexus-aria-window {
   position: relative;
   isolation: isolate;
@@ -4857,8 +4064,7 @@ tbody tr:hover {
 .holo-card::before,
 .nx-glass-e1::before,
 .sd-glass-surface::before,
-.spatial-window::before,
-.finn-portal::before {
+.spatial-window::before {
   content: "";
   position: absolute;
   inset: -1.5px;
@@ -4911,8 +4117,7 @@ tbody tr:hover {
 .holo-card > *,
 .nx-glass-e1 > *,
 .sd-glass-surface > *,
-.spatial-window > *,
-.finn-portal > * {
+.spatial-window > * {
   position: relative;
   z-index: 2;
 }
@@ -4955,7 +4160,6 @@ a > svg,
   .sd-glass-surface::after,
   .spatial-window::before,
   .spatial-window::after,
-  .finn-portal::before,
   .nx-icon,
   [data-holo-icon],
   [data-holo-icon-wrap]::after {
@@ -4977,8 +4181,7 @@ a > svg,
 .nx-icon,
 .holo-icon,
 [data-holo-icon],
-[data-holo-icon-wrap],
-.nx-icon-edge {
+[data-holo-icon-wrap] {
   --hx-ic: var(--nx-region-rgb, var(--accent-rgb, var(--hx-fallback)));
 }
 
@@ -5040,7 +4243,6 @@ a > svg,
 }
 
 /* Bold luminous outline for icon containers */
-.nx-icon-edge,
 [data-holo-icon-wrap] {
   border: 2px solid rgba(var(--hx-ic, var(--hx-fallback)), 0.7);
   animation: hx-chroma-edge 4.4s ease-in-out infinite;
@@ -5056,7 +4258,6 @@ a > svg,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nx-icon-edge,
   [data-holo-icon-wrap] {
     animation: none !important;
   }
@@ -5068,25 +4269,6 @@ a > svg,
    بلا قلب ألوان ولا تسطيح سماوي. حركة FINN ثلاثية الأبعاد أُسرِعت في
    المشهد نفسه (FinnLiveHologram).
    ───────────────────────────────────────────────────────────────────────── */
-.light .finn-portal {
-  background: linear-gradient(
-    170deg,
-    #bfeeff 0%,
-    #6fd6f5 26%,
-    #1f6f9c 62%,
-    #061525 100%
-  ) !important;
-}
-
-.light .finn-portal .nx-no-glow[aria-hidden] {
-  background: radial-gradient(ellipse at 50% 45%, #04121f 0%, #02080f 45%, #01060b 100%) !important;
-  opacity: 0.92;
-}
-
-.light .finn-portal .nx-no-glow[aria-hidden] svg {
-  filter: none !important;
-  opacity: 0.85 !important;
-}
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/5) — الحافة الهولوغرافية واللمعان الزجاجي
@@ -5099,8 +4281,7 @@ a > svg,
 .holo-card::before,
 .nx-glass-e1::before,
 .sd-glass-surface::before,
-.spatial-window::before,
-.finn-portal::before {
+.spatial-window::before {
   animation: hx-iris-drift 9s linear infinite !important;
   animation-play-state: running !important;
 }
@@ -5139,8 +4320,7 @@ a > svg,
   .sd-glass-surface::before,
   .sd-glass-surface::after,
   .spatial-window::before,
-  .spatial-window::after,
-  .finn-portal::before {
+  .spatial-window::after {
     animation-duration: 9s !important;
     animation-iteration-count: infinite !important;
     animation-play-state: running !important;
@@ -5201,15 +4381,6 @@ a > svg,
 }
 
 /* اسم FINN أعلى البطاقة: ثابت تمامًا بلا حركة ولا لمعان مارّ. */
-.finn-wordmark,
-.finn-wordmark::before,
-.finn-wordmark::after {
-  animation: none !important;
-  transition: none !important;
-  transform: none !important;
-  filter: none !important;
-  mix-blend-mode: normal !important;
-}
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/6) — زجاجية أكثر توهجًا ولمعانًا لكل البطاقات
@@ -5234,8 +4405,7 @@ a > svg,
 .holo-card::before,
 .nx-glass-e1::before,
 .sd-glass-surface::before,
-.spatial-window::before,
-.finn-portal::before {
+.spatial-window::before {
   inset: -2px !important;
   padding: 2px !important;
   filter: saturate(1.6) brightness(1.18) !important;
@@ -5267,8 +4437,7 @@ a > svg,
 .holo-card,
 .nx-glass-e1,
 .sd-glass-surface,
-.spatial-window,
-.finn-portal {
+.spatial-window {
   backdrop-filter: blur(24px) saturate(190%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
   box-shadow:
@@ -5309,68 +4478,12 @@ a > svg,
    ───────────────────────────────────────────────────────────────────────── */
 
 /* 1) طبقات الزينة المطلقة لا يجوز تحويلها إلى relative (كانت تنهار لصفر) */
-.finn-portal > [aria-hidden].nx-no-glow,
-[data-slot="card"] > [aria-hidden].nx-no-glow,
-.holo-card > [aria-hidden].nx-no-glow,
-.spatial-window > [aria-hidden].nx-no-glow {
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 0 !important;
-}
 
 /* 2) الخلفية الرقمية داخل البطاقة: سماوية في الوضع الفاتح، داكنة في الداكن */
-.light .finn-portal .nx-no-glow[aria-hidden] {
-  background: radial-gradient(
-    ellipse at 50% 42%,
-    #cbeeff 0%,
-    #7fd7f4 38%,
-    #2f9ac7 72%,
-    #14618c 100%
-  ) !important;
-  opacity: 0.95;
-}
-
-.light .finn-portal .nx-no-glow[aria-hidden] svg {
-  filter: none !important;
-  opacity: 0.75 !important;
-}
-
-.light .finn-portal {
-  background: linear-gradient(
-    170deg,
-    #d7f4ff 0%,
-    #8fdcf7 30%,
-    #3aa9d6 68%,
-    #1a6d99 100%
-  ) !important;
-  color: #062434;
-}
-
-.light .finn-portal :is(h2, h3, p, span, small, strong) {
-  color: #062434;
-}
-
-.light .finn-portal .finn-wordmark {
-  color: #04202f;
-  text-shadow:
-    0 1px 10px rgba(255, 255, 255, 0.85),
-    0 0 22px rgba(34, 211, 238, 0.55);
-}
 
 /* 3) اسم FINN ثابت في سقف البطاقة */
 
 /* 4) حركة ثلاثية الأبعاد لبطاقة FINN */
-.finn-portal {
-  transform-style: preserve-3d;
-  transition:
-    transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 420ms ease;
-  will-change: transform;
-}
-
-.finn-portal:hover {
-  transform: perspective(1200px) translate3d(0, -4px, 0) rotateX(3.2deg) rotateY(-3.2deg);
-}
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/8) — حواف وأطراف كل أيقونة/بطاقة تتوهّج
@@ -5383,8 +4496,7 @@ a > svg,
 .holo-card,
 .nx-glass-e1,
 .sd-glass-surface,
-.spatial-window,
-.finn-portal {
+.spatial-window {
   --hx-ic: var(--nx-region-rgb, var(--accent-rgb, var(--hx-fallback)));
 }
 
@@ -5405,7 +4517,6 @@ a > svg,
 }
 
 /* أطراف الأيقونات: نفس لون الأيقونة، إيقاع أسرع قليلًا */
-.nx-icon-edge,
 .nx-holo-icon,
 [data-holo-icon-wrap] {
   border: 2px solid rgba(var(--hx-ic, var(--hx-fallback)), 0.85) !important;
@@ -5418,8 +4529,7 @@ a > svg,
 .holo-card,
 .nx-glass-e1,
 .sd-glass-surface,
-.spatial-window,
-.finn-portal {
+.spatial-window {
   border-color: rgba(var(--hx-ic, var(--hx-fallback)), 0.7) !important;
   border-width: 2px !important;
   animation: hx-edge-chroma-fast 2s ease-in-out infinite !important;
@@ -5431,8 +4541,7 @@ a > svg,
 .holo-card::before,
 .nx-glass-e1::before,
 .sd-glass-surface::before,
-.spatial-window::before,
-.finn-portal::before {
+.spatial-window::before {
   animation: hx-iris-drift 5s linear infinite !important;
 }
 
@@ -5458,15 +4567,13 @@ a > svg,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nx-icon-edge,
   .nx-holo-icon,
   [data-holo-icon-wrap],
   [data-slot="card"],
   .holo-card,
   .nx-glass-e1,
   .sd-glass-surface,
-  .spatial-window,
-  .finn-portal {
+  .spatial-window {
     animation-play-state: running !important;
   }
 }
@@ -5554,7 +4661,6 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
 .nx-glass-e1,
 .sd-glass-surface,
 .spatial-window,
-.nx-icon-edge,
 .nx-holo-icon,
 [data-holo-icon-wrap] {
   background-image:
@@ -5605,7 +4711,6 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
 }
 
 /* الأيقونات: شبكة أدق ونبضة أسرع لتناسب المساحة الصغيرة */
-.nx-icon-edge,
 .nx-holo-icon,
 [data-holo-icon-wrap] {
   background-size:
@@ -5619,9 +4724,6 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
 }
 
 /* بطاقة FINN تحتفظ بخلفيتها الرقمية الخاصة — نضيف الأسلاك فقط فوقها */
-.finn-portal {
-  background-blend-mode: screen, screen, screen, screen, normal;
-}
 
 @media (prefers-reduced-motion: reduce) {
   [data-slot="card"],
@@ -5629,7 +4731,6 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
   .nx-glass-e1,
   .sd-glass-surface,
   .spatial-window,
-  .nx-icon-edge,
   .nx-holo-icon,
   [data-holo-icon-wrap] {
     animation-play-state: running !important;
@@ -5681,7 +4782,6 @@ html.dark .nexus-aria-window,
 html.dark .nexus-floating-surface,
 html.dark .glass-sidebar,
 html.dark .nexus-toast,
-html.dark .sd-glass-panel,
 html.dark .sd-glass-surface,
 html.dark .spatial-window,
 html.dark [data-slot="card"] {
@@ -5694,7 +4794,6 @@ html.dark [data-slot="card"] {
 
 /* الأيقونات */
 html.dark .holo-icon,
-html.dark .nx-icon-edge,
 html.dark .nx-holo-icon,
 html.dark [data-holo-icon-wrap] {
   background-color: rgba(12, 28, 50, 0.82) !important;
@@ -5703,16 +4802,6 @@ html.dark [data-holo-icon-wrap] {
 }
 
 /* بطاقة FINN — خلفيتها الرقمية الداكنة السابقة */
-html.dark .finn-portal {
-  background-color: #041020 !important;
-  background-image: linear-gradient(
-    170deg,
-    rgba(8, 47, 73, 0.94) 0%,
-    rgba(4, 22, 42, 0.96) 55%,
-    rgba(2, 10, 22, 0.98) 100%
-  ) !important;
-  border-color: rgba(56, 189, 248, 0.38) !important;
-}
 
 /* الشريط العلوي */
 html.dark .nx-clock-bar {
@@ -5739,19 +4828,6 @@ html.dark .nx-holo-noise {
 }
 
 /* ── حدود بطاقة FINN = حدود بطاقات القطاعات تمامًا ───────────────────────── */
-.finn-portal {
-  border: 1px solid var(--sd-line) !important;
-  border-width: 1px !important;
-  border-color: var(--sd-line) !important;
-  animation: none !important;
-}
-.finn-portal:hover {
-  border-color: rgba(29, 78, 216, 0.28) !important;
-}
-html.dark .finn-portal,
-html.dark .finn-portal:hover {
-  border-color: rgba(125, 211, 252, 0.28) !important;
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    الزجاج اللامع الدائم — بطاقات · أيقونات · بوابة FINN، في الوضعين.
@@ -5857,23 +4933,10 @@ html.dark .finn-portal:hover {
 /* ── بوابة FINN: لوح زجاجي فوق الهولوغرام، لا بدلًا منه ────────────────── */
 /* الهولوغرام مشهد WebGL حيّ؛ أي حشوة معتمة فوقه تحجبه. فالبريق يُركَّب
    كطبقة علوية شفافة تمامًا في وسطها، ومعها حافة زجاجية وظلّ رفع. */
-.finn-portal {
-  box-shadow:
-    inset 0 1px 0 var(--glass-rim),
-    inset 0 0 34px rgba(var(--finn-edge, 34, 211, 238), 0.05),
-    inset 0 -1px 0 var(--glass-shade),
-    0 0 22px rgba(var(--finn-edge, 34, 211, 238), 0.14),
-    var(--glass-lift);
-  -webkit-backdrop-filter: blur(2px) saturate(125%);
-  backdrop-filter: blur(2px) saturate(125%);
-}
 /* غلاف البريق: عنصر مستقل حتى لا يُزاحم ::before (الوهج) و::after (خط الضوء)
    القائمين على هذه البوابة. */
 /* في الوضع الفاتح تُحاط البوابة بإطار أبيض فتندمج مع الصفحة بدل أن تبدو
    ثقبًا أسود في لوح أبيض. */
-.light .finn-portal {
-  border-color: rgba(15, 40, 70, 0.18);
-}
 
 /* ── الاحترامات الإلزامية ─────────────────────────────────────────────── */
 /* من يطلب شفافية أقل يحصل على أسطح صمّاء مقروءة، لا زجاجًا مخفَّفًا. */
@@ -5885,19 +4948,13 @@ html.dark .finn-portal:hover {
     background: var(--card);
     box-shadow: none;
   }
-  .finn-portal {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background: none;
-  }
 }
 /* أوضاع التباين القسري: النظام يرسم الأسطح بنفسه، وأي بريق يفسدها. */
 @media (forced-colors: active) {
   .holo-card,
   .nexus-card,
   .nx-glass,
-  .nx-glass-icon,
-  .finn-portal {
+  .nx-glass-icon {
     background: Canvas;
     box-shadow: none;
     border: 1px solid CanvasText;
@@ -5909,12 +4966,6 @@ html.dark .finn-portal:hover {
 
 /* لوحات المناطق الأربع: لهجة المنطقة طبقة وسطى بين حشوة الزجاج وبريقه،
    بدل خلفية inline كانت تتفوّق على الصنف فتمحو البريق عن هذه اللوحات وحدها. */
-.nx-glass-region {
-  background:
-    var(--glass-sheen) padding-box,
-    linear-gradient(135deg, var(--region-tint, transparent), transparent 58%) padding-box,
-    linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
-}
 
 /* ─────────────────────────────────────────────────────────────────────────
    FINN AURA — نفس حركة اللمعان/الإشعاع في بطاقة فن تُطبَّق على كل
@@ -5952,7 +5003,6 @@ html.dark .finn-portal:hover {
   animation-play-state: running !important;
 }
 
-.nx-icon-edge,
 .nx-holo-icon,
 .holo-icon,
 [data-holo-icon-wrap] {
@@ -5969,7 +5019,6 @@ html.dark .finn-portal:hover {
 .nx-glass-e1::after,
 .sd-glass-surface::after,
 .spatial-window::after,
-.nx-icon-edge::after,
 .holo-icon::after {
   opacity: 0.5 !important;
   mix-blend-mode: screen;
@@ -5982,7 +5031,6 @@ html.dark .finn-portal:hover {
   .sd-glass-surface,
   .spatial-window,
   .nexus-card,
-  .nx-icon-edge,
   .nx-holo-icon,
   .holo-icon,
   [data-holo-icon-wrap] {
@@ -5996,235 +5044,27 @@ html.dark .finn-portal:hover {
    فترث كل العناصر بداخلها لون منطقتها لا لون المنطقة النشطة.
    ───────────────────────────────────────────────────────────────────────── */
 
-@keyframes nx-region-ripple {
-  0% {
-    transform: scale(0.72);
-    opacity: 0;
-  }
-  18% {
-    opacity: calc(0.5 * var(--nxr-ripple-op, 1));
-  }
-  100% {
-    transform: scale(1.55);
-    opacity: 0;
-  }
-}
-
 /* شدّات موحّدة لكل الطبقات (تخطيط/لمعان/تموّج/إشعاع) — قيم الوضع الفاتح.
    على الأبيض يكون اللون هو ما يُرى، والأبيض يكاد يختفي؛ لذا نرفع نسبة لون
    المنطقة ونخفض بريق الأبيض. الوضع الداكن يعكس المعادلة أدناه. */
-.nx-region-aura {
-  --nxr-grid-x: 0.3;
-  --nxr-grid-y: 0.24;
-  --nxr-grid-op: 0.55;
-  --nxr-grid-op-hover: 0.85;
-  --nxr-ripple-line: 0.42;
-  --nxr-ripple-fill: 0.14;
-  --nxr-ripple-op: 0.85;
-  --nxr-glow: 0.26;
-  --nxr-glow-hover: 0.44;
-  --nxr-inner: 0.2;
-  --nxr-inner-hover: 0.3;
-  --nxr-drop: 0.16;
-  --nxr-sheen-white: 0.34;
-  --nxr-sheen-tint: 0.2;
-  --nxr-sheen-op: 0.5;
-  --nxr-top-line: 0.55;
-}
-
-html.dark .nx-region-aura {
-  --nxr-grid-x: 0.2;
-  --nxr-grid-y: 0.16;
-  --nxr-grid-op: 0.6;
-  --nxr-grid-op-hover: 0.9;
-  --nxr-ripple-line: 0.6;
-  --nxr-ripple-fill: 0.18;
-  --nxr-ripple-op: 1;
-  --nxr-glow: 0.4;
-  --nxr-glow-hover: 0.66;
-  --nxr-inner: 0.5;
-  --nxr-inner-hover: 0.66;
-  --nxr-drop: 0.4;
-  --nxr-sheen-white: 0.14;
-  --nxr-sheen-tint: 0.28;
-  --nxr-sheen-op: 0.7;
-  --nxr-top-line: 0.12;
-}
-
-.nx-region-aura {
-  position: relative;
-  isolation: isolate;
-  transition:
-    box-shadow 240ms var(--nx-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
-    transform 240ms var(--nx-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
-    border-color 240ms ease;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, var(--nxr-top-line)),
-    inset 0 0 34px -14px rgba(var(--hx-ic, 34, 211, 238), var(--nxr-inner)),
-    0 0 24px -6px rgba(var(--hx-ic, 34, 211, 238), var(--nxr-glow)),
-    0 16px 40px -18px rgba(2, 12, 26, var(--nxr-drop));
-}
-
-.nx-region-aura:hover,
-.nx-region-aura:focus-within,
-.nx-region-aura[data-region-active] {
-  transform: translateY(-2px);
-  border-color: rgba(var(--hx-ic, 34, 211, 238), 0.9);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, var(--nxr-top-line)),
-    inset 0 0 44px -12px rgba(var(--hx-ic, 34, 211, 238), var(--nxr-inner-hover)),
-    0 0 40px -6px rgba(var(--hx-ic, 34, 211, 238), var(--nxr-glow-hover)),
-    0 22px 54px -20px rgba(2, 12, 26, calc(var(--nxr-drop) + 0.06));
-}
 
 /* تموّج دائري ناعم ينبض بلون المنطقة من قلب البطاقة */
-.nx-region-ripple {
-  pointer-events: none;
-  position: absolute;
-  z-index: 0;
-  inset-inline-start: 12%;
-  top: 18%;
-  width: 168px;
-  height: 168px;
-  margin: -84px 0 0 -84px;
-  border-radius: 9999px;
-  border: 1px solid rgba(var(--hx-ic, 34, 211, 238), var(--nxr-ripple-line, 0.5));
-  background: radial-gradient(
-    circle,
-    rgba(var(--hx-ic, 34, 211, 238), var(--nxr-ripple-fill, 0.16)) 0%,
-    transparent 66%
-  );
-  animation: nx-region-ripple 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-  will-change: transform, opacity;
-}
 
 .nx-region-ripple--delayed {
   animation-delay: 1s;
 }
 
 /* لمعان مائل يعبر السطح: أبيض خفيف على الفاتح، ولون المنطقة هو الأبرز */
-.nx-region-aura::after {
-  background: linear-gradient(
-    115deg,
-    transparent 34%,
-    rgba(255, 255, 255, var(--nxr-sheen-white)) 48%,
-    rgba(var(--hx-ic, 34, 211, 238), var(--nxr-sheen-tint)) 54%,
-    transparent 68%
-  ) !important;
-  opacity: var(--nxr-sheen-op) !important;
-}
 
 /* التخطيط الخلفي (شبكة الحقل) بلون المنطقة — يتحرّك مسحًا رأسيًا هادئًا */
-@keyframes nx-region-grid-drift {
-  0% {
-    background-position:
-      0 0,
-      0 0;
-  }
-  100% {
-    background-position:
-      0 22px,
-      22px 0;
-  }
-}
-
-.nx-region-grid {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  opacity: var(--nxr-grid-op, 0.55);
-  transition: opacity 240ms ease;
-  background-image:
-    repeating-linear-gradient(
-      to bottom,
-      rgba(var(--hx-ic, 34, 211, 238), var(--nxr-grid-x)) 0 1px,
-      transparent 1px 22px
-    ),
-    repeating-linear-gradient(
-      to right,
-      rgba(var(--hx-ic, 34, 211, 238), var(--nxr-grid-y)) 0 1px,
-      transparent 1px 22px
-    );
-  -webkit-mask-image: radial-gradient(120% 90% at 20% 0%, #000 0%, transparent 78%);
-  mask-image: radial-gradient(120% 90% at 20% 0%, #000 0%, transparent 78%);
-  animation: nx-region-grid-drift 5s linear infinite;
-}
-
-.nx-region-aura:hover .nx-region-grid,
-.nx-region-aura[data-region-active] .nx-region-grid {
-  opacity: var(--nxr-grid-op-hover, 0.85);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nx-region-ripple {
-    animation-duration: 5s;
-    opacity: 0.22;
-  }
-  .nx-region-grid {
-    animation-duration: 10s;
-  }
-}
-
 /* ============================================================
    حدود أيقونات المناطق — تردد مضيء بلون كل منطقة
    كل بطاقة منطقة وكل بلاطة/أيقونة بداخلها تنبض بحدّ لامع من
    لونها هي (--hx-ic يُعاد تعريفه محليًا داخل كل بطاقة).
    ============================================================ */
-@keyframes nx-region-edge-freq {
-  0%,
-  100% {
-    border-color: rgba(var(--hx-ic, 34, 211, 238), 0.45);
-    box-shadow:
-      inset 0 0 12px -6px rgba(var(--hx-ic, 34, 211, 238), 0.35),
-      0 0 10px -2px rgba(var(--hx-ic, 34, 211, 238), 0.4);
-  }
-  /* صعود سريع كنبضة قلب ثم انطفاء تدريجي طبيعي */
-  32% {
-    border-color: rgba(var(--hx-ic, 34, 211, 238), 1);
-    box-shadow:
-      inset 0 0 18px -6px rgba(var(--hx-ic, 34, 211, 238), 0.6),
-      0 0 20px -2px rgba(var(--hx-ic, 34, 211, 238), 0.85),
-      0 0 40px -12px rgba(var(--hx-ic, 34, 211, 238), 0.75);
-  }
-  58% {
-    border-color: rgba(var(--hx-ic, 34, 211, 238), 0.72);
-    box-shadow:
-      inset 0 0 15px -6px rgba(var(--hx-ic, 34, 211, 238), 0.48),
-      0 0 15px -2px rgba(var(--hx-ic, 34, 211, 238), 0.6);
-  }
-}
-
-.nx-region-edge-freq {
-  border: 1px solid rgba(var(--hx-ic, 34, 211, 238), 0.55);
-  animation: nx-region-edge-freq 1.5s cubic-bezier(0.33, 0, 0.2, 1) infinite;
-}
-
 /* البلاطات الداخلية تتناوب في الوميض فيظهر التردد كنبضة متتابعة */
-.nx-region-edge-freq:nth-child(2) {
-  animation-delay: 0.16s;
-}
-.nx-region-edge-freq:nth-child(3) {
-  animation-delay: 0.32s;
-}
-.nx-region-edge-freq:nth-child(4) {
-  animation-delay: 0.48s;
-}
 
 /* حدّ البطاقة نفسها: نبضة أوسع قليلًا فلا تزاحم البلاطات */
-.nx-region-aura.nx-region-edge-freq {
-  border-width: 1px;
-  animation-duration: 2s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nx-region-edge-freq {
-    animation: none;
-    border-color: rgba(var(--hx-ic, 34, 211, 238), 0.8);
-    box-shadow: 0 0 14px -4px rgba(var(--hx-ic, 34, 211, 238), 0.6);
-  }
-}
 
 /* ── FINN card: static by owner directive — no motion of any kind ───── */
 /* ============================================================
@@ -6232,47 +5072,11 @@ html.dark .nx-region-aura {
    Text and controls keep their exact positions: every layer is
    absolutely positioned, aria-hidden, pointer-events: none, z-0.
    ============================================================ */
-.finn-portal--tech > span[aria-hidden] {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: inherit;
-}
 
 .finn-tech-code {
   overflow: hidden;
   mask-image: radial-gradient(120% 95% at 50% 40%, #000 30%, transparent 82%);
   opacity: 0.55;
-}
-
-.finn-code-col {
-  position: absolute;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-  transform: translateY(-50%);
-  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 10px;
-  line-height: 1.05;
-  letter-spacing: 0.14em;
-  white-space: nowrap;
-  color: rgba(125, 240, 255, 0.85);
-  text-shadow: 0 0 8px rgba(34, 211, 238, 0.55);
-  animation-name: finn-code-fall;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
-.finn-tech-aurora {
-  background:
-    radial-gradient(60% 42% at 22% 18%, rgba(34, 211, 238, 0.38), transparent 70%),
-    radial-gradient(55% 40% at 78% 78%, rgba(37, 99, 235, 0.42), transparent 72%),
-    radial-gradient(45% 35% at 60% 20%, rgba(129, 140, 248, 0.28), transparent 70%);
-  filter: blur(6px);
-  animation: finn-tech-aurora-shift 5.5s ease-in-out infinite alternate;
 }
 
 .finn-tech-scan {
@@ -6294,36 +5098,6 @@ html.dark .nx-region-aura {
   background-size: 7px 7px;
   opacity: 0.06;
   animation: finn-tech-noise-flicker 1.6s steps(3, end) infinite;
-}
-
-.light .finn-portal--tech .finn-tech-aurora {
-  opacity: 0.85;
-}
-.light .finn-portal--tech .finn-tech-code {
-  opacity: 0.45;
-}
-
-@keyframes finn-code-fall {
-  from {
-    transform: translateY(-50%);
-  }
-  to {
-    transform: translateY(0%);
-  }
-}
-
-@keyframes finn-tech-aurora-shift {
-  0% {
-    transform: scale(1) translate3d(-1.5%, -1%, 0);
-    opacity: 0.72;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1.08) translate3d(2%, 1.5%, 0);
-    opacity: 0.8;
-  }
 }
 
 @keyframes finn-tech-sweep {
@@ -6350,12 +5124,6 @@ html.dark .nx-region-aura {
   }
   50% {
     opacity: 0.09;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .finn-portal--tech > span[aria-hidden] {
-    animation: none !important;
   }
 }
 
