@@ -7386,9 +7386,8 @@ html.dark .nx-region-aura {
    واجهة. الفيديو لا يُرى صريحًا إلا عبر backdrop-filter الزجاج، وتوهّجات
    السطح ترث لون اللحظة من عيّنة الفيديو (--live-rgb) بسقوط سماوي. */
 
-/* الفيلم عمودي (576×1024) — قصّه بـcover كان يقرّبه فيضيع مشهده. قرار
-   المالك ٢٠٢٦/٠٨/٠٥: الإطار كاملًا من بُعد (contain) مع انحسار طفيف،
-   والمحيط حوله يتوهّج بلون لحظة الفيلم نفسها فلا حوافّ مبتورة. */
+/* قرار المالك ٢٠٢٦/٠٨/٠٥ (الأخير): الفيلم يملأ الشاشة كلها — cover
+   كامل الامتلاء بلا انحسار. */
 .nx-hv {
   background: radial-gradient(
     58% 52% at 50% 46%,
@@ -7397,26 +7396,12 @@ html.dark .nx-region-aura {
   );
 }
 
-.nx-hv-fill {
-  position: absolute;
-  inset: -6%;
-  inline-size: 112%;
-  block-size: 112%;
-  filter: blur(52px) saturate(1.25);
-  opacity: 0.6;
-}
-
-.light .nx-hv-fill {
-  opacity: 0.5;
-}
-
 .nx-hv-video {
   position: absolute;
   inset: 0;
   inline-size: 100%;
   block-size: 100%;
-  object-fit: contain;
-  scale: 0.86;
+  object-fit: cover;
   opacity: 1;
 }
 
@@ -7668,7 +7653,6 @@ html.dark .nx-region-aura {
   }
 
   .nx-hv-video,
-  .nx-hv-fill,
   .nx-hv-noise {
     display: none;
   }
