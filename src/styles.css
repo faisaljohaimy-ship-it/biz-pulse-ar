@@ -8509,18 +8509,6 @@ html[dir="ltr"] .nx-hv-toggle {
   color: var(--ink-2);
 }
 
-.nx-fl-back {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 34px;
-  border-radius: 10px;
-  border: 1px solid var(--hairline);
-  padding-inline: 12px;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--ink);
-}
-
 /* اللوح: ورقة فاتحة مشرقة دائمًا — عمل فني مقصود الإضاءة في الوضعين. */
 .nx-fl-stage {
   border-radius: 24px;

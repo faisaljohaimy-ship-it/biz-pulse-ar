@@ -51,35 +51,6 @@ const ITEMS: readonly TopNavItem[] = [
  * الشريط وحده لَما وُجد له أثر هنا إطلاقًا — وهو ما جعل الوضع الفاتح يبدو
  * معطّلًا. مكانه هنا هو الطرف الوحيد المتاح للزائر على هذه الصفحة.
  */
-function HomeThemeToggle({ ar }: { readonly ar: boolean }) {
-  const { theme, setTheme } = useTheme();
-  const light = theme === "light";
-  const label = light
-    ? ar
-      ? "التحويل إلى الوضع الداكن"
-      : "Switch to dark mode"
-    : ar
-      ? "التحويل إلى الوضع الفاتح"
-      : "Switch to light mode";
-
-  return (
-    <button
-      type="button"
-      onClick={() => setTheme(light ? "dark" : "light")}
-      // aria-pressed يجعل الحالة مسموعة لقارئ الشاشة، لا مرئية بالأيقونة فقط.
-      aria-pressed={light}
-      aria-label={label}
-      title={label}
-      className="nx-glass-icon inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[13px] font-semibold text-[color:var(--ink-2)] transition hover:bg-[color:var(--chip-hover)] hover:text-[color:var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-500"
-    >
-      {light ? <Moon className="h-4 w-4" aria-hidden /> : <Sun className="h-4 w-4" aria-hidden />}
-      <span className="hidden sm:inline">
-        {light ? (ar ? "داكن" : "Dark") : ar ? "فاتح" : "Light"}
-      </span>
-    </button>
-  );
-}
-
 export function HomeTopNav() {
   const { locale } = useI18n();
   const ar = locale === "ar";
@@ -110,7 +81,6 @@ export function HomeTopNav() {
             </li>
           ))}
         </ul>
-        <HomeThemeToggle ar={ar} />
       </div>
     </nav>
   );

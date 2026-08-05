@@ -16,9 +16,8 @@
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, FlaskConical } from "lucide-react";
+import { FlaskConical } from "lucide-react";
 import {
   CC_ALERTS,
   CC_REGIONS,
@@ -48,18 +47,6 @@ export function NxTwinPage() {
   const { regionId, setRegion } = useRegion();
   const { loading: authLoading } = useAuth();
   const getState = useServerFn(getCommandCenterState);
-  const navigate = useNavigate();
-
-  // مخرج الصفحة: كانت طريقًا مسدودًا بلا رجوع داخل المشهد. النمط نفسه
-  // المعتمد في /nx-agents — تاريخ المتصفح أولًا، والرئيسية إن لم يكن له
-  // تاريخ (فتحٌ مباشر من رابط).
-  const goBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      window.history.back();
-      return;
-    }
-    void navigate({ to: "/" });
-  };
 
   const { data } = useQuery({
     queryKey: ["twin-state"],
@@ -112,20 +99,6 @@ export function NxTwinPage() {
           style={{ ["--tw-si" as string]: 0 }}
         >
           <div className="flex items-center gap-3">
-            {/* هدف اللمس ٤٤ على الجوال (WCAG 2.5.8) و٣٦ على المكتب حيث
-                المؤشّر دقيق — نفس رقاقة الرجوع في /nx-agents. */}
-            <button
-              type="button"
-              onClick={goBack}
-              aria-label={ar ? "رجوع" : "Back"}
-              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] px-3.5 text-[13px] font-bold text-[color:var(--ink)] transition-colors hover:border-[color:var(--tone-cyan)] md:h-9"
-            >
-              <ArrowRight
-                className={`h-4 w-4 text-[color:var(--tone-cyan)] ${ar ? "" : "rotate-180"}`}
-                aria-hidden="true"
-              />
-              <span>{ar ? "رجوع" : "Back"}</span>
-            </button>
             <div>
               <p className="nx-tw-eyebrow">
                 {ar ? "سَدِيد · التوأم الحيّ" : "SADEED · Living Twin"}

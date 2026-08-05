@@ -52,7 +52,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
-import { AppBackButton } from "@/components/nav/AppBackButton";
 import { TopUtilityBar } from "@/components/nav/TopUtilityBar";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 
@@ -116,7 +115,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <SadeedName size="sm" />
           </div>
           {/* OWNER DIRECTIVE: مبدّل الوضع يُحذف من الشريط العلوي ويبقى في
-              الشريط الجانبي وحده (ThemeIconToggle في تذييل SidebarBody) —
+              الشريط الجانبي وحده —
               كان مكرَّرًا في الموضعين. الرئيسية استثناء لأنها خارج هذه القشرة
               ولا شريط جانبي لها، فمبدّلها في HomeTopNav. */}
           <div className="flex items-center gap-2">
@@ -126,12 +125,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="nexus-main min-w-0 flex-1">
           <div className="relative mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
+            {/* زر الرجوع صار واحدًا عامًّا في الجذر (قرار المالك ٢٠٢٦/٠٨/٠٥)
+                — فلم يبقَ هنا إلا شريط الأدوات على الشاشات الواسعة. */}
             {loc.pathname !== "/" && (
-              <div className="sticky top-14 z-30 flex w-full items-center justify-between gap-3 px-3 pt-3 md:top-3 md:px-4">
-                <AppBackButton fallback="/" />
-                <div className="hidden md:flex">
-                  <TopUtilityBar />
-                </div>
+              <div className="sticky top-14 z-30 hidden w-full items-center justify-end gap-3 px-3 pt-3 md:top-3 md:flex md:px-4">
+                <TopUtilityBar />
               </div>
             )}
             {children}
@@ -356,26 +354,11 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
           <UserChip />
           <div className="ms-auto flex shrink-0 items-center gap-1.5">
             <LangIconToggle />
-            <ThemeIconToggle />
             <SignOutIcon />
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function ThemeIconToggle() {
-  const { theme, setTheme } = useTheme();
-  const { t } = useI18n();
-  return (
-    <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="nx-glass-icon grid size-9 place-items-center rounded-full text-muted-foreground transition hover:text-foreground"
-      aria-label={t("theme.toggle")}
-    >
-      {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-    </button>
   );
 }
 

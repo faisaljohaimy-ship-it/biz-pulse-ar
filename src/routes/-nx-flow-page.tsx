@@ -10,7 +10,6 @@
  * عملٌ فني مقصود الإضاءة، والحركة كلها بخصائص مستقلة بمنحنى النظام.
  */
 import { useMemo } from "react";
-import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { FlaskConical } from "lucide-react";
@@ -128,9 +127,6 @@ export function NxFlowPage() {
             <h1 className="nx-fl-title">
               {ar ? "رحلة الوكلاء مع فِن" : "The agents' journey with FINN"}
             </h1>
-            <Link to="/" className="nx-fl-back">
-              {ar ? "→ الرئيسية" : "← Home"}
-            </Link>
           </div>
           <p className="nx-fl-lede">
             {ar

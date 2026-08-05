@@ -135,21 +135,6 @@ export function NxAgentsPage() {
       <main className="relative mx-auto flex w-full max-w-[1600px] flex-col gap-4 px-3 py-5 md:px-6">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                if (typeof window !== "undefined" && window.history.length > 1)
-                  window.history.back();
-                else void navigate({ to: "/" });
-              }}
-              aria-label="رجوع"
-              // ٤٤ بكسل على الجوال أرضيةً للمس (WCAG 2.5.8)، و٣٦ على المكتب
-              // حيث المؤشّر دقيق — فلا يتضخّم الشريط العلوي بلا داعٍ.
-              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-primary/30 bg-white/[0.04] px-3 text-xs font-semibold text-nx-pearl transition-colors hover:border-primary/60 hover:bg-primary/10 md:h-9"
-            >
-              <ArrowRight className="h-4 w-4 text-primary" aria-hidden="true" />
-              <span>رجوع</span>
-            </button>
             <div>
               <h1 className="text-xl font-black md:text-2xl">منظومة الوكلاء الثلاثة عشر</h1>
               <p className="mt-1 text-xs text-nx-pearl/64 md:text-sm">

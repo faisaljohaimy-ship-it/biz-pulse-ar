@@ -1,7 +1,6 @@
 // وكيل التقارير — صفحة تشغيل وعرض التقارير المولّدة باستمرار.
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AppBackButton } from "@/components/nav/AppBackButton";
 import { buildReport, toCsv, toPrintableHtml, type ReportRecord } from "@/lib/reports-agent/engine";
 
 export const Route = createFileRoute("/reports-agent")({
@@ -74,7 +73,6 @@ function ReportsAgentPage() {
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#061A2E] text-white">
-      <AppBackButton />
       <div className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
         <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
