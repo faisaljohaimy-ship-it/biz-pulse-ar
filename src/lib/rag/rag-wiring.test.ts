@@ -149,8 +149,8 @@ describe("rank metrics — arithmetic on hand-written fixtures (no retrieval)", 
       { corpusVerified: true },
     );
     expect(row.measuredQuestions).toBe(1);
-    expect(row.anchorsAvailable).toBe(21);
-    // 21 anchors exist but only 1 ran — the 30-question floor is nowhere near.
+    expect(row.anchorsAvailable).toBe(41);
+    // 41 anchors exist but only 1 ran — the 30-question floor is nowhere near.
     expect(decideAutoEnable({ ...row, corpusVerified: true }).blockers).toContain(
       "measured_questions_below_30",
     );
@@ -168,18 +168,30 @@ describe("rank metrics — arithmetic on hand-written fixtures (no retrieval)", 
 });
 
 describe("anchor set integrity — seed-verbatim only, zero authored questions", () => {
-  it("holds exactly the 21 seeded directive codes, each once", () => {
-    expect(GOLDEN_ANCHORS).toHaveLength(21);
+  it("holds exactly the 41 seeded codes, each once, in seed order", () => {
+    // نمو المتن (قرار المالك ٢٠٢٦/٠٨/٠٥): 21 توجيهًا + 7 مراحل + 13 قطاعًا،
+    // كلها صفوف مبذورة أصلًا في القاعدة — لا سؤال مؤلَّفًا واحدًا.
+    expect(GOLDEN_ANCHORS).toHaveLength(41);
     const codes = GOLDEN_ANCHORS.map((a) => a.code);
-    expect(new Set(codes).size).toBe(21);
+    expect(new Set(codes).size).toBe(41);
     const sec = Array.from({ length: 19 }, (_, i) => `SEC-${String(i + 1).padStart(2, "0")}`);
-    expect(codes).toEqual([...sec, "SEC-RC", "SAF-GEN"]);
+    const stages = Array.from({ length: 7 }, (_, i) => `STAGE-0${i + 1}`);
+    const sectors = Array.from(
+      { length: 13 },
+      (_, i) => `SECTOR-${String(i + 1).padStart(2, "0")}`,
+    );
+    expect(codes).toEqual([...sec, "SEC-RC", "SAF-GEN", ...stages, ...sectors]);
   });
 
-  it("records that the seed supplies ZERO questions (30 not possible)", () => {
+  it("the anchor count matches the seed rows it was grown from", () => {
+    // الجرد يظل صادقًا: البذرة لا تحوي عمود أسئلة، والمرساة مجموع صفوفها.
     expect(SEED_INVENTORY.questions).toBe(0);
     expect(SEED_INVENTORY.directives).toBe(21);
-    expect(GOLDEN_ANCHORS.length).toBeLessThan(30);
+    expect(GOLDEN_ANCHORS.length).toBe(
+      SEED_INVENTORY.directives + SEED_INVENTORY.approvalStages + SEED_INVENTORY.sectors,
+    );
+    // العائق البنيوي أمام عتبة الثلاثين زال — والقياس الفعلي ما زال شرطًا.
+    expect(GOLDEN_ANCHORS.length).toBeGreaterThanOrEqual(30);
   });
 
   it("every probe is non-empty Arabic (a seed label, not a question)", () => {

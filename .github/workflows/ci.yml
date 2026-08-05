@@ -32,6 +32,8 @@ jobs:
         run: npm run build
       - name: Enforce performance budget
         run: npm run check:performance
+      - name: RAG preflight (isolation + privilege on real Postgres)
+        run: npm run check:rag
       - name: Smoke check bundle
         run: test -d dist || test -d .output
 

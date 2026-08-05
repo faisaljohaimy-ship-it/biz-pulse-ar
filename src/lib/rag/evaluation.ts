@@ -34,9 +34,17 @@ export interface GoldenAnchor {
 }
 
 /**
- * The 21 seeded directives — the complete, non-invented anchor set.
- * 19 SEC + SEC-RC + SAF-GEN. Any expansion beyond 21 requires either new
- * seed rows or operator-approved question authoring; neither is assumed.
+ * The 41 seeded anchors — complete and non-invented.
+ *
+ * Growth decision (owner, ٢٠٢٦/٠٨/٠٥): the gate needs >= 30 measured
+ * questions, but the anchor stood at 21 directives, so 21 < 30 kept it
+ * STRUCTURALLY shut. The gap is closed by SEEDED CORPUS GROWTH, never by
+ * authoring questions: migration 20260805120000_rag_corpus_growth.sql
+ * ingests rows that already exist in the base — the 21 directives, the 7
+ * approval-cycle stages, the 13 regulated sectors — and every probe below
+ * is the VERBATIM name of one of those rows.
+ *   21 directives + 7 stages + 13 sectors = 41 >= 30.
+ * Any further expansion still requires new seed rows, never invention.
  */
 export const GOLDEN_ANCHORS: readonly GoldenAnchor[] = [
   { code: "SEC-01", probeAr: "المتطلبات العامة للتوجيهات الأمنية" },
@@ -60,6 +68,30 @@ export const GOLDEN_ANCHORS: readonly GoldenAnchor[] = [
   { code: "SEC-19", probeAr: "أمن المدن الصناعية" },
   { code: "SEC-RC", probeAr: "المجمعات السكنية التابعة للمنشآت الصناعية" },
   { code: "SAF-GEN", probeAr: "توجيهات السلامة والحماية من الحريق — نظرة عامة" },
+
+  // دورة الاعتماد السبع — من بذرة hcis_approval_stages (name_ar حرفيًّا).
+  { code: "STAGE-01", probeAr: "تصنيف المنشأة وتقييم الثغرات الأمنية" },
+  { code: "STAGE-02", probeAr: "التصميم المفاهيمي 10%" },
+  { code: "STAGE-03", probeAr: "التصميم الهندسي الأولي 30%" },
+  { code: "STAGE-04", probeAr: "التصميم التفصيلي 60%" },
+  { code: "STAGE-05", probeAr: "التصميم التفصيلي 90%" },
+  { code: "STAGE-06", probeAr: "الإصدار للتنفيذ 100%" },
+  { code: "STAGE-07", probeAr: "اختبارات القبول" },
+
+  // القطاعات الخاضعة للتنظيم — من بذرة hcis_sectors (name_ar حرفيًّا).
+  { code: "SECTOR-01", probeAr: "الكهرباء — التوليد والنقل والتوزيع" },
+  { code: "SECTOR-02", probeAr: "البترول" },
+  { code: "SECTOR-03", probeAr: "البتروكيماويات" },
+  { code: "SECTOR-04", probeAr: "الغاز" },
+  { code: "SECTOR-05", probeAr: "المياه والتحلية" },
+  { code: "SECTOR-06", probeAr: "الاتصالات" },
+  { code: "SECTOR-07", probeAr: "التعدين" },
+  { code: "SECTOR-08", probeAr: "الصناعات الكيميائية" },
+  { code: "SECTOR-09", probeAr: "المتفجرات المدنية" },
+  { code: "SECTOR-10", probeAr: "الصناعات المعدنية" },
+  { code: "SECTOR-11", probeAr: "الموانئ والواجهات البحرية الصناعية" },
+  { code: "SECTOR-12", probeAr: "السكك الحديدية" },
+  { code: "SECTOR-13", probeAr: "الخدمات الصناعية والمدن الصناعية" },
 ];
 
 /** Honest inventory of what the seed can and cannot supply. */
