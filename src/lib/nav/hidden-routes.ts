@@ -32,9 +32,8 @@ export const HIDDEN_ROUTES: ReadonlySet<string> = new Set([
   //   /cinematic-demo      "NEXUS AI OS — Cinematic Showcase"
   //   /films               "Film Center — NEXIOS AI OS"
   //   /theater             — same family, a cinematic playback surface
-  // DELIBERATELY NOT HIDDEN: /executive-bridge "جسر القيادة التنفيذي" — a real
-  // command feature, not a cinematic show, and never named in the review.
-  // (/executive-show was checked and does not exist — no phantom entry here.)
+  // (/executive-bridge «جسر القيادة» حُذف من النظام كليًّا بقرار المالك
+  //  ٢٠٢٦/٠٨/٠٥ — لا مسار له ولا إخفاء يلزمه.)
   "/executive-showcase",
   "/cinematic-demo",
   "/films",

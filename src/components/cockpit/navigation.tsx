@@ -76,12 +76,6 @@ const NAV_GROUPS: readonly NavGroup[] = [
     labelEn: "COMMAND & OPERATIONS",
     items: [
       {
-        actionId: "nav.commandBridge",
-        labelAr: "جسر القيادة",
-        labelEn: "COMMAND BRIDGE",
-        icon: Ship,
-      },
-      {
         actionId: "nav.missionControl",
         labelAr: "مركز القيادة",
         labelEn: "MISSION CONTROL",

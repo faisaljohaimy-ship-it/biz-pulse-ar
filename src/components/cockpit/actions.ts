@@ -14,7 +14,7 @@
  * وجودُ ملف مسار». المسار المُخفى في `lib/nav/hidden-routes.ts` يرمي
  * `redirect({ to: "/" })` في `beforeLoad`، فملفّه موجود وزرّه ميت. الوجهات
  * الحالية كلها حيّة بعد سحب `/analytics` من `nav.indicators`:
- *   /nx-cockpit · /departments · /bridge · /sec/kpi · /mission-control ·
+ *   /nx-cockpit · /departments · /sec/kpi · /mission-control ·
  *   /situation-room · /executive-map · /urgent-ops · /boardroom · /agents ·
  *   /operations · /risk · /governance · /knowledge · /integrations ·
  *   /sec/reports · /settings · /guide · /runtime-hub · /portfolio · /dashboard
@@ -69,14 +69,6 @@ const ACTIONS = [
     effect: "navigate",
     target: "/departments",
     permission: "sectors.view",
-  },
-  {
-    id: "nav.commandBridge",
-    surface: "navigation",
-    labelAr: "جسر القيادة",
-    effect: "navigate",
-    target: "/bridge",
-    permission: "command.view",
   },
   {
     // كان الهدف `/analytics` — وهو مسار مُخفى في `lib/nav/hidden-routes.ts`

@@ -42,13 +42,7 @@ const NAV_SURFACES = [
  * The routes whose names collided. Prose elsewhere may still say «غرفة
  * العمليات» inside a sentence — that is language, not a label.
  */
-const GUARDED_ROUTES = [
-  "/sec",
-  "/situation-room",
-  "/mission-control",
-  "/command-center",
-  "/bridge",
-] as const;
+const GUARDED_ROUTES = ["/sec", "/situation-room", "/mission-control", "/command-center"] as const;
 
 /**
  * Names the review retired.

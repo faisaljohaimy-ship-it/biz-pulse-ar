@@ -228,19 +228,6 @@ function useNavGroups(): NavGroup[] {
       ],
     },
     {
-      label: ar("العرض التنفيذي", "Executive Showcase"),
-      items: [
-        {
-          to: "/executive-bridge",
-          icon: RadioTower,
-          label: ar("جسر القيادة التنفيذي", "Command Bridge"),
-        },
-        // «العرض التنفيذي» (/executive-showcase) HIDDEN by owner directive —
-        // see src/lib/nav/hidden-routes.ts. «جسر القيادة التنفيذي» above is a
-        // different, still-live screen and deliberately stays.
-      ],
-    },
-    {
       label: ar("المعرفة", "Knowledge"),
       items: [
         { to: "/sec/reports", icon: FileText, label: ar("التقارير", "Reports") },

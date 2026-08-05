@@ -32,12 +32,7 @@ function isIOS(): boolean {
   return /iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
-const EXEC_ROUTE_PATTERNS = [
-  "/executive-show",
-  "/executive-showcase",
-  "/executive-bridge",
-  "/cinematic-demo",
-];
+const EXEC_ROUTE_PATTERNS = ["/executive-show", "/executive-showcase", "/cinematic-demo"];
 
 function isExecutiveRoute(): boolean {
   if (typeof window === "undefined") return false;

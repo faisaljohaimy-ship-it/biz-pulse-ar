@@ -83,15 +83,7 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     requirement: "all",
     vars: [S("ELEVENLABS_API_KEY", "ElevenLabs — FINN's exclusive voice")],
   },
-  {
-    key: "bridge-film",
-    labelAr: "خط إنتاج فيلم جسر القيادة (HeyGen)",
-    requirement: "all",
-    vars: [
-      S("HEYGEN_API_KEY", "HeyGen avatar video API"),
-      S("BRIDGE_AUDIO_BASE_URL", "https base URL hosting the FINN voice clips", false),
-    ],
-  },
+
   {
     key: "outbound-email",
     labelAr: "البريد الصادر (Resend)",

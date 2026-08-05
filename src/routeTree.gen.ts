@@ -39,7 +39,6 @@ import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveShowcaseRouteImport } from './routes/executive-showcase'
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
-import { Route as ExecutiveBridgeRouteImport } from './routes/executive-bridge'
 import { Route as ExecutiveBookingRouteImport } from './routes/executive-booking'
 import { Route as DpaRouteImport } from './routes/dpa'
 import { Route as DemoVideosRouteImport } from './routes/demo-videos'
@@ -129,7 +128,6 @@ import { Route as AuthenticatedCommandCenterRouteImport } from './routes/_authen
 import { Route as AuthenticatedCockpitRouteImport } from './routes/_authenticated/cockpit'
 import { Route as AuthenticatedChiefOfStaffRouteImport } from './routes/_authenticated/chief-of-staff'
 import { Route as AuthenticatedBriefingRouteImport } from './routes/_authenticated/briefing'
-import { Route as AuthenticatedBridgeRouteImport } from './routes/_authenticated/bridge'
 import { Route as AuthenticatedBoardroomRouteImport } from './routes/_authenticated/boardroom'
 import { Route as AuthenticatedBiRouteImport } from './routes/_authenticated/bi'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
@@ -380,11 +378,6 @@ const ExecutiveShowcaseRoute = ExecutiveShowcaseRouteImport.update({
 const ExecutiveBriefingRoute = ExecutiveBriefingRouteImport.update({
   id: '/executive-briefing',
   path: '/executive-briefing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExecutiveBridgeRoute = ExecutiveBridgeRouteImport.update({
-  id: '/executive-bridge',
-  path: '/executive-bridge',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExecutiveBookingRoute = ExecutiveBookingRouteImport.update({
@@ -851,11 +844,6 @@ const AuthenticatedChiefOfStaffRoute =
 const AuthenticatedBriefingRoute = AuthenticatedBriefingRouteImport.update({
   id: '/briefing',
   path: '/briefing',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedBridgeRoute = AuthenticatedBridgeRouteImport.update({
-  id: '/bridge',
-  path: '/bridge',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedBoardroomRoute = AuthenticatedBoardroomRouteImport.update({
@@ -1417,7 +1405,6 @@ export interface FileRoutesByFullPath {
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
   '/executive-booking': typeof ExecutiveBookingRoute
-  '/executive-bridge': typeof ExecutiveBridgeRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
@@ -1457,7 +1444,6 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/bi': typeof AuthenticatedBiRoute
   '/boardroom': typeof AuthenticatedBoardroomRoute
-  '/bridge': typeof AuthenticatedBridgeRoute
   '/briefing': typeof AuthenticatedBriefingRoute
   '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/cockpit': typeof AuthenticatedCockpitRoute
@@ -1640,7 +1626,6 @@ export interface FileRoutesByTo {
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
   '/executive-booking': typeof ExecutiveBookingRoute
-  '/executive-bridge': typeof ExecutiveBridgeRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
@@ -1680,7 +1665,6 @@ export interface FileRoutesByTo {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/bi': typeof AuthenticatedBiRoute
   '/boardroom': typeof AuthenticatedBoardroomRoute
-  '/bridge': typeof AuthenticatedBridgeRoute
   '/briefing': typeof AuthenticatedBriefingRoute
   '/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/cockpit': typeof AuthenticatedCockpitRoute
@@ -1863,7 +1847,6 @@ export interface FileRoutesById {
   '/demo-videos': typeof DemoVideosRoute
   '/dpa': typeof DpaRoute
   '/executive-booking': typeof ExecutiveBookingRoute
-  '/executive-bridge': typeof ExecutiveBridgeRoute
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
@@ -1903,7 +1886,6 @@ export interface FileRoutesById {
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/bi': typeof AuthenticatedBiRoute
   '/_authenticated/boardroom': typeof AuthenticatedBoardroomRoute
-  '/_authenticated/bridge': typeof AuthenticatedBridgeRoute
   '/_authenticated/briefing': typeof AuthenticatedBriefingRoute
   '/_authenticated/chief-of-staff': typeof AuthenticatedChiefOfStaffRoute
   '/_authenticated/cockpit': typeof AuthenticatedCockpitRoute
@@ -2088,7 +2070,6 @@ export interface FileRouteTypes {
     | '/demo-videos'
     | '/dpa'
     | '/executive-booking'
-    | '/executive-bridge'
     | '/executive-briefing'
     | '/executive-showcase'
     | '/films'
@@ -2128,7 +2109,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/bi'
     | '/boardroom'
-    | '/bridge'
     | '/briefing'
     | '/chief-of-staff'
     | '/cockpit'
@@ -2311,7 +2291,6 @@ export interface FileRouteTypes {
     | '/demo-videos'
     | '/dpa'
     | '/executive-booking'
-    | '/executive-bridge'
     | '/executive-briefing'
     | '/executive-showcase'
     | '/films'
@@ -2351,7 +2330,6 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/bi'
     | '/boardroom'
-    | '/bridge'
     | '/briefing'
     | '/chief-of-staff'
     | '/cockpit'
@@ -2533,7 +2511,6 @@ export interface FileRouteTypes {
     | '/demo-videos'
     | '/dpa'
     | '/executive-booking'
-    | '/executive-bridge'
     | '/executive-briefing'
     | '/executive-showcase'
     | '/films'
@@ -2573,7 +2550,6 @@ export interface FileRouteTypes {
     | '/_authenticated/analytics'
     | '/_authenticated/bi'
     | '/_authenticated/boardroom'
-    | '/_authenticated/bridge'
     | '/_authenticated/briefing'
     | '/_authenticated/chief-of-staff'
     | '/_authenticated/cockpit'
@@ -2758,7 +2734,6 @@ export interface RootRouteChildren {
   DemoVideosRoute: typeof DemoVideosRoute
   DpaRoute: typeof DpaRoute
   ExecutiveBookingRoute: typeof ExecutiveBookingRoute
-  ExecutiveBridgeRoute: typeof ExecutiveBridgeRoute
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
   ExecutiveShowcaseRoute: typeof ExecutiveShowcaseRoute
   FilmsRoute: typeof FilmsRoute
@@ -3066,13 +3041,6 @@ declare module '@tanstack/react-router' {
       path: '/executive-briefing'
       fullPath: '/executive-briefing'
       preLoaderRoute: typeof ExecutiveBriefingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/executive-bridge': {
-      id: '/executive-bridge'
-      path: '/executive-bridge'
-      fullPath: '/executive-bridge'
-      preLoaderRoute: typeof ExecutiveBridgeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/executive-booking': {
@@ -3696,13 +3664,6 @@ declare module '@tanstack/react-router' {
       path: '/briefing'
       fullPath: '/briefing'
       preLoaderRoute: typeof AuthenticatedBriefingRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/bridge': {
-      id: '/_authenticated/bridge'
-      path: '/bridge'
-      fullPath: '/bridge'
-      preLoaderRoute: typeof AuthenticatedBridgeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/boardroom': {
@@ -4525,7 +4486,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedBiRoute: typeof AuthenticatedBiRoute
   AuthenticatedBoardroomRoute: typeof AuthenticatedBoardroomRoute
-  AuthenticatedBridgeRoute: typeof AuthenticatedBridgeRoute
   AuthenticatedBriefingRoute: typeof AuthenticatedBriefingRoute
   AuthenticatedChiefOfStaffRoute: typeof AuthenticatedChiefOfStaffRoute
   AuthenticatedCockpitRoute: typeof AuthenticatedCockpitRoute
@@ -4603,7 +4563,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedBiRoute: AuthenticatedBiRoute,
   AuthenticatedBoardroomRoute: AuthenticatedBoardroomRoute,
-  AuthenticatedBridgeRoute: AuthenticatedBridgeRoute,
   AuthenticatedBriefingRoute: AuthenticatedBriefingRoute,
   AuthenticatedChiefOfStaffRoute: AuthenticatedChiefOfStaffRoute,
   AuthenticatedCockpitRoute: AuthenticatedCockpitRoute,
@@ -4707,7 +4666,6 @@ const rootRouteChildren: RootRouteChildren = {
   DemoVideosRoute: DemoVideosRoute,
   DpaRoute: DpaRoute,
   ExecutiveBookingRoute: ExecutiveBookingRoute,
-  ExecutiveBridgeRoute: ExecutiveBridgeRoute,
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
   ExecutiveShowcaseRoute: ExecutiveShowcaseRoute,
   FilmsRoute: FilmsRoute,

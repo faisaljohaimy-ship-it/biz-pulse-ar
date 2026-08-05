@@ -382,7 +382,6 @@ function RootComponent() {
 
   const isPromo = pathname.startsWith("/promo");
   const isHero = pathname === "/" || pathname === "";
-  const isBridge = pathname.startsWith("/executive-bridge");
   const isAccessGate = pathname.startsWith("/auth");
   const isAgentOperations =
     pathname === "/agents" || pathname === "/agents-flow" || pathname === "/agents-reference";
@@ -401,7 +400,7 @@ function RootComponent() {
   const introActive = useIntroActive();
   const suppressOverlays = isPromo || isAccessGate || isAgentOperations || introActive;
   const suppressMarquee = isAccessGate || introActive;
-  const suppressClock = isPromo || isBridge;
+  const suppressClock = isPromo;
 
   return (
     <QueryClientProvider client={queryClient}>

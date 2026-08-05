@@ -47,7 +47,6 @@ const EXTRA_SCREEN_NAMES: Readonly<Record<string, ScreenName>> = {
   "/command-center": { ar: "مركز القيادة التنفيذي", en: "Executive Command Center" },
   // Its own heading said «غرفة العمليات» while the command palette called it
   // «جسر تنفيذي» — a THIRD route claiming /situation-room's name.
-  "/bridge": { ar: "الجسر التنفيذي", en: "Executive Bridge" },
   "/sec/exec": { ar: "اللوحة التنفيذية", en: "Executive Dashboard" },
   "/sec/incidents": { ar: "البلاغات", en: "Incidents" },
   "/sec/kpi": { ar: "مؤشرات الأداء", en: "Live KPIs" },

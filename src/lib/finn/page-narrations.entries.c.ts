@@ -222,17 +222,6 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/bridge",
-    n(
-      "الجسر التنفيذي",
-      "Executive Bridge",
-      "ربط بين الفرق والقرارات الحيّة",
-      "linking teams and live decisions",
-      "قرار تنفيذي متزامن بلا فجوات",
-      "synchronized executive decisions with no gaps",
-    ),
-  ],
-  [
     "/exec",
     n(
       "المشغّل التنفيذي",
@@ -282,17 +271,6 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   ],
   // حُذف «/executive-showcase»: ضمن عائلة العروض السينمائية المخفية بأمر
   // المالك (hidden-routes.ts) مع /cinematic-demo و/films و/theater.
-  [
-    "/executive-bridge",
-    n(
-      "جسر القيادة التنفيذي بصوت FINN",
-      "FINN Executive Command Bridge",
-      "تحويل الإشارات التشغيلية إلى موقف تنفيذي وقرار محكوم",
-      "turning operational signals into an executive posture and governed decision",
-      "قيادة أسرع، أوضح، وقابلة للتفسير",
-      "faster, clearer, and explainable leadership",
-    ),
-  ],
   // حُذف صفّ «/executive» العام: لا توجد صفحة تنفيذية عامة بهذا المسار — المسار
   // الوحيد هو _authenticated/executive («المساحة التنفيذية»)، وصفّه في
   // page-narrations.entries.b.ts. كان الصفّان يتنازعان مسارًا واحدًا.
