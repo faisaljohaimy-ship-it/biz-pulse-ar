@@ -8,13 +8,13 @@
 
 شُغِّل في هذه الجلسة على **PostgreSQL 16.13 + pgvector 0.6.0** حقيقيين:
 
-| الفحص | النتيجة |
-| --- | --- |
-| تطبيق ترحيلات RAG التسعة (`20260728*`) | ✓ نجحت كلها بلا خطأ واحد |
-| إنشاء الكائنات: `rag_documents` · `rag_chunks` · `rag_hybrid_search` · `rag_query_log` · `rag_gaps` · `rag_eval_runs` · `rag_health` · فهرسا HNSW | ✓ موجودة |
-| `rag_layer_check` · `rag_barrier_check` · `rag_capture_check` · `rag_operations_check` · `rag_search_check` | ✓ خمستها مرّت |
-| نمو المتن `20260805120000_rag_corpus_growth.sql` | ✓ 41 وثيقة + 41 مقطعًا، وإعادة التشغيل لا تضاعف |
-| استرجاع معجمي بلا متجهات (`tsv` + `nx_ar_normalize`) | ✓ «الأسوار الأمنية» ← SEC-02، «تقييم الثغرات الأمنية» ← SEC-01 + STAGE-01 |
+| الفحص                                                                                                                                             | النتيجة                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| تطبيق ترحيلات RAG التسعة (`20260728*`)                                                                                                            | ✓ نجحت كلها بلا خطأ واحد                                                  |
+| إنشاء الكائنات: `rag_documents` · `rag_chunks` · `rag_hybrid_search` · `rag_query_log` · `rag_gaps` · `rag_eval_runs` · `rag_health` · فهرسا HNSW | ✓ موجودة                                                                  |
+| `rag_layer_check` · `rag_barrier_check` · `rag_capture_check` · `rag_operations_check` · `rag_search_check`                                       | ✓ خمستها مرّت                                                             |
+| نمو المتن `20260805120000_rag_corpus_growth.sql`                                                                                                  | ✓ 41 وثيقة + 41 مقطعًا، وإعادة التشغيل لا تضاعف                           |
+| استرجاع معجمي بلا متجهات (`tsv` + `nx_ar_normalize`)                                                                                              | ✓ «الأسوار الأمنية» ← SEC-02، «تقييم الثغرات الأمنية» ← SEC-01 + STAGE-01 |
 
 ## ما يبقى بيد المالك (خطوتان فقط)
 
