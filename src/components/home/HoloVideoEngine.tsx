@@ -21,7 +21,7 @@ import { useTheme } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
 
 const STORE_KEY = "nx-holo-bg";
-const RATE = 0.35;
+const RATE = 0.3;
 
 /** نسيج حبيبي دقيق — SVG turbulence مضمّن، لا أصل شبكي (CSP آمن). */
 const NOISE_URI =
@@ -44,7 +44,7 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
   const active = !userOff;
 
   // إيقاف/استئناف مع رؤية التبويب — بطارية أولًا. والحركة مُهدَّأة:
-  // الفيلم يجري بسرعة ٠٫٣٥ (قرار المالك) فيبقى مشهدًا محيطيًا لا مشتِّتًا,
+  // الفيلم يجري بسرعة ٠٫٣٠ (قرار المالك) فيبقى مشهدًا محيطيًا لا مشتِّتًا,
   // وتُعاد كتابة الإبطاء بعد كل استئناف لأن بعض المتصفحات تصفّره.
   useEffect(() => {
     if (!active) return;
