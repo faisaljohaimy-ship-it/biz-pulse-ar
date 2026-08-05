@@ -7397,6 +7397,19 @@ html.dark .nx-region-aura {
   );
 }
 
+.nx-hv-fill {
+  position: absolute;
+  inset: -6%;
+  inline-size: 112%;
+  block-size: 112%;
+  filter: blur(52px) saturate(1.25);
+  opacity: 0.6;
+}
+
+.light .nx-hv-fill {
+  opacity: 0.5;
+}
+
 .nx-hv-video {
   position: absolute;
   inset: 0;
@@ -7427,9 +7440,9 @@ html.dark .nx-region-aura {
 .light .nx-hv-veil {
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--surface) 22%, transparent),
-    color-mix(in srgb, var(--surface) 18%, transparent) 45%,
-    color-mix(in srgb, var(--surface) 25%, transparent)
+    color-mix(in srgb, var(--surface) 33%, transparent),
+    color-mix(in srgb, var(--surface) 27%, transparent) 45%,
+    color-mix(in srgb, var(--surface) 37%, transparent)
   );
 }
 
@@ -7655,6 +7668,7 @@ html.dark .nx-region-aura {
   }
 
   .nx-hv-video,
+  .nx-hv-fill,
   .nx-hv-noise {
     display: none;
   }

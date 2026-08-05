@@ -32,6 +32,7 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
   const { locale } = useI18n();
   const ar = locale === "ar";
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const fillRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [userOff, setUserOff] = useState(false);
 
@@ -76,12 +77,18 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
     canvas.height = 8;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
+    const fillCtx = fillRef.current?.getContext("2d") ?? null;
     let prev: [number, number, number] | null = null;
     let written: [number, number, number] | null = null;
     const tick = () => {
       const v = videoRef.current;
       if (!v || v.readyState < 2 || document.hidden) return;
       try {
+        // مرآة الامتلاء: نفس فك الترميز يُطلى بدقة منخفضة خلف الإطار الحاد
+        // فيمتلئ المحيط بألوان الفيلم المتحركة دون فكّ ترميز ثانٍ.
+        if (fillCtx && fillRef.current) {
+          fillCtx.drawImage(v, 0, 0, fillRef.current.width, fillRef.current.height);
+        }
         ctx.drawImage(v, 0, 0, 8, 8);
         const d = ctx.getImageData(0, 0, 8, 8).data;
         let r = 0;
@@ -157,7 +164,9 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
         dir="ltr"
         className="nx-hv pointer-events-none fixed inset-0 z-0"
       >
-        {/* الطبقة ١ — الفيلم الصامت */}
+        {/* الطبقة ٠ — مرآة الامتلاء المموّهة: ألوان الفيلم تملأ الخلفية كلها */}
+        {active && <canvas ref={fillRef} width={72} height={128} className="nx-hv-fill" />}
+        {/* الطبقة ١ — الفيلم الصامت: الإطار كاملًا من بُعد */}
         {active && (
           <video
             ref={videoRef}
