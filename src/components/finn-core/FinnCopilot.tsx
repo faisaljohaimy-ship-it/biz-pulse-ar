@@ -1875,6 +1875,11 @@ export function FinnCopilot() {
           }}
           aria-label="Open FINN — المخاطبة"
           title="المخاطبة مع FINN"
+          // الموضع مقترن بزر إيقاف الخلفية (.nx-hv-toggle في styles.css):
+          // هذا المُطلق على الحافة المنطقية `end` — يسارًا في العربية ويمينًا
+          // في الإنجليزية — وذاك يُرسى على الحافة الفيزيائية المقابلة بقراءة
+          // dir من <html>. تغيير هذه الحافة يوجب تغيير تلك، وإلا اجتمع
+          // الزران في ركن واحد على أحد الاتجاهين.
           className={cn(
             "fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] end-6 z-50 flex h-14 w-14 items-center justify-center",
             "nexus-aria-launcher rounded-full border border-primary/45 bg-card/80 text-primary backdrop-blur-xl",

@@ -338,13 +338,17 @@ function OperationsCockpit() {
   });
   const k = kpisQ.data;
   const fmt = (v: number | undefined) => (v === undefined ? "—" : v.toLocaleString("en-US"));
-  const sysStatus = !k
-    ? "INITIALIZING"
-    : k.executive_readiness >= 75
-      ? "OPTIMAL"
-      : k.executive_readiness >= 50
-        ? "ELEVATED"
-        : "ALERT";
+  // المادة ٢٧ — الجاهزية غير المقيسة لا تُترجم حالةً: تبقى «INITIALIZING»
+  // (لا قياس بعد) بدل إعلان ALERT مستنتَج من غياب رقم.
+  const readiness = k?.executive_readiness ?? null;
+  const sysStatus =
+    !k || readiness === null
+      ? "INITIALIZING"
+      : readiness >= 75
+        ? "OPTIMAL"
+        : readiness >= 50
+          ? "ELEVATED"
+          : "ALERT";
   const sysTone =
     sysStatus === "OPTIMAL"
       ? "text-emerald-400"

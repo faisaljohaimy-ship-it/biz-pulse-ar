@@ -9,25 +9,74 @@ import { cn } from "@/lib/utils";
 import type { CapabilityInfo, HealthState } from "./repository";
 import { emitCockpitAction, getCockpitAction, type CockpitActionId } from "./actions";
 
-const CAPABILITY_META: Record<
-  CapabilityInfo["id"],
-  { actionId: CockpitActionId; icon: React.ComponentType<{ className?: string }>; accent: string }
-> = {
-  shell: { actionId: "capability.shell.open", icon: Boxes, accent: "text-nx-cyan" },
-  agents: { actionId: "capability.agents.open", icon: Bot, accent: "text-nx-layer-agent" },
-  rag: { actionId: "capability.rag.open", icon: Database, accent: "text-nx-layer-knowledge" },
+interface CapabilityMeta {
+  readonly actionId: CockpitActionId;
+  readonly icon: React.ComponentType<{ className?: string }>;
+  readonly accent: string;
+  /** وجهة كانونية تَجُبّ هدف السجل — انظر التعليق أدناه. */
+  readonly href?: string;
+}
+
+/**
+ * وجهات البطاقات — الجيل الكانوني وحده.
+ *
+ * ثلاث بطاقات كانت تفتح صفحات الجيل السابق: «القشرة» إلى `/runtime-hub`
+ * (شبكةُ أبواب تفتح `/command-center` و`/operations` و`/exec` — بابٌ إلى
+ * أبواب لا وحدةَ خلفها)، و«المعرفة» إلى `/knowledge` (قائمة وثائق CRUD)،
+ * و«الأداء الاستراتيجي» إلى `/portfolio` (مصفوفة مبادرات ثابتة). البطاقة
+ * التي تعد بقدرة مؤسسية ثم تُنزل الزائر في الجيل القديم تنقض ما تعرضه
+ * القمرة فوقها مباشرة.
+ *
+ * `href` هنا يَجُبّ `target` القادم من سجل الإجراءات، ولا يمسّ `data-action`
+ * — فالتدقيق (`auditCockpitActions`) يفحص المعرّف لا الوجهة، والتحليلات
+ * تبقى على معرّفها نفسه. **السجل (`actions.ts`) يملكه غيرنا**، فوجهاته
+ * الثلاث القديمة تحتاج تحديثًا من مالكه ليعود المصدر واحدًا؛ حتى ذلك الحين
+ * الشبكة لا تفتح بابًا قديمًا.
+ */
+const CAPABILITY_META: Record<CapabilityInfo["id"], CapabilityMeta> = {
+  // «القشرة التكيفية» — رحلة التشغيل الحيّة هي ما يُري القشرة وهي تعمل.
+  shell: {
+    actionId: "capability.shell.open",
+    icon: Boxes,
+    accent: "text-nx-cyan",
+    href: "/nx-flow",
+  },
+  // شبكة الوكلاء الكانونية — لا لوحة الإدارة القديمة.
+  agents: {
+    actionId: "capability.agents.open",
+    icon: Bot,
+    accent: "text-nx-layer-agent",
+    href: "/nx-agents",
+  },
+  // قاعدة معرفة الأمن الصناعي — سطح معرفة قائم بذاته لا قائمة وثائق.
+  rag: {
+    actionId: "capability.rag.open",
+    icon: Database,
+    accent: "text-nx-layer-knowledge",
+    href: "/sec/knowledge",
+  },
+  // مركز التكاملات الحيّ — الوجهة الصحيحة أصلًا، فتبقى كما هي.
   integrations: {
     actionId: "capability.integrations.open",
     icon: Cable,
     accent: "text-nx-warning",
   },
+  // «الأداء الاستراتيجي» — اللوحة التنفيذية تقرأ مؤشراتها من مصدر حيّ.
   performance: {
     actionId: "capability.performance.open",
     icon: LineChart,
     accent: "text-nx-success",
+    href: "/sec/exec",
   },
+  // المخاطر — وحدة قائمة في سجل الوحدات، فلا بديل لها.
   risk: { actionId: "capability.risk.open", icon: ShieldCheck, accent: "text-nx-layer-shell" },
 };
+
+/** الوجهة الفعلية لبطاقة قدرة — الكانونية إن وُجدت، وإلا هدف السجل. */
+export function capabilityHref(id: CapabilityInfo["id"]): string {
+  const meta = CAPABILITY_META[id];
+  return meta.href ?? getCockpitAction(meta.actionId).target ?? "/nx-cockpit";
+}
 
 const STATUS_WORD: Record<HealthState, string> = {
   healthy: "سليمة",
@@ -52,12 +101,11 @@ export function CapabilityGrid({ capabilities }: { capabilities: readonly Capabi
     >
       {capabilities.map((capability) => {
         const meta = CAPABILITY_META[capability.id];
-        const action = getCockpitAction(meta.actionId);
         const Icon = meta.icon;
         return (
           <a
             key={capability.id}
-            href={action.target}
+            href={capabilityHref(capability.id)}
             data-action={meta.actionId}
             data-capability={capability.id}
             onClick={() => emitCockpitAction(meta.actionId)}

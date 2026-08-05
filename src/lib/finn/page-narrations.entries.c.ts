@@ -4,7 +4,7 @@ import { n } from "./page-narrations.base";
 
 export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   [
-    "/_authenticated/settings",
+    "/settings",
     n(
       "الإعدادات",
       "Settings",
@@ -15,7 +15,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/admin",
+    "/admin",
     n(
       "لوحة المشرف",
       "Admin",
@@ -26,7 +26,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/security-center",
+    "/security-center",
     n(
       "مركز الأمن المعلوماتي",
       "Security Center",
@@ -37,7 +37,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/health",
+    "/health",
     n(
       "صحّة المنصة",
       "Platform Health",
@@ -48,7 +48,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/tts",
+    "/tts",
     n(
       "تركيب الكلام",
       "Text-to-Speech",
@@ -59,7 +59,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/voice-setup",
+    "/voice-setup",
     n(
       "إعداد الصوت",
       "Voice Setup",
@@ -70,7 +70,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/voice",
+    "/voice",
     n(
       "الصوت التنفيذي لFINN",
       "FINN Voice",
@@ -81,7 +81,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/elevenlabs-status",
+    "/elevenlabs-status",
     n(
       "حالة موفّر الصوت",
       "Voice Provider Status",
@@ -94,7 +94,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
 
   // ── Work & delivery ─────────────────────────────────────────────────
   [
-    "/_authenticated/tasks",
+    "/tasks",
     n(
       "لوحة المهام",
       "Tasks",
@@ -105,7 +105,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/team",
+    "/team",
     n(
       "الفريق",
       "Team",
@@ -116,7 +116,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/departments",
+    "/departments",
     n(
       "الأقسام",
       "Departments",
@@ -127,7 +127,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/events",
+    "/events",
     n(
       "الأحداث المؤسسية",
       "Enterprise Events",
@@ -138,7 +138,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/files",
+    "/files",
     n(
       "مركز الملفات",
       "Files Center",
@@ -149,7 +149,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/leads",
+    "/leads",
     n(
       "العملاء المحتملون",
       "Leads",
@@ -160,7 +160,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/marketplace",
+    "/marketplace",
     n(
       "سوق الحلول",
       "Marketplace",
@@ -171,7 +171,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/investor",
+    "/investor",
     n(
       "لوحة المستثمر",
       "Investor",
@@ -182,7 +182,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/customers",
+    "/customers",
     n(
       "العملاء",
       "Customers",
@@ -194,30 +194,10 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   ],
 
   // ── Learning & readiness ────────────────────────────────────────────
+  // حُذف «/learn» و«/learn/» (أكاديمية التعلّم): مسار مخفي بأمر المالك يُعيد
+  // التوجيه للرئيسية.
   [
-    "/_authenticated/learn.index",
-    n(
-      "أكاديمية التعلّم",
-      "Learning Academy",
-      "المسارات، الدروس، والتقدّم",
-      "learning tracks, lessons, and progress",
-      "بناء كفاءة داخلية سريعة",
-      "building rapid internal capability",
-    ),
-  ],
-  [
-    "/_authenticated/learn",
-    n(
-      "التعلّم",
-      "Learning",
-      "الدروس المفتوحة والمُقتَرَحة",
-      "open and recommended lessons",
-      "تطوير مستمر مُدمَج في يوم العمل",
-      "continuous development embedded in the workday",
-    ),
-  ],
-  [
-    "/_authenticated/readiness",
+    "/readiness",
     n(
       "مؤشر الجاهزية",
       "Readiness",
@@ -227,30 +207,11 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "a unified reading of operational readiness",
     ),
   ],
+  // حُذف «/theater» (قاعة العرض): ضمن عائلة العروض السينمائية المخفية.
+  // حُذف «/hajj» و«/hajj-prime»: لا مسار لهما في src/routes إطلاقًا — رواية
+  // شاشة غير موجودة أسوأ من الصمت.
   [
-    "/_authenticated/theater",
-    n(
-      "قاعة العرض",
-      "Theater",
-      "مشاهد حيّة لتوضيح القدرات للقيادة",
-      "live scenes that explain capability to leadership",
-      "تبنٍّ أسرع من قِبَل صنّاع القرار",
-      "faster adoption by decision-makers",
-    ),
-  ],
-  [
-    "/_authenticated/hajj",
-    n(
-      "منظومة الحج ١٤٤٧",
-      "Hajj 1447",
-      "المؤشرات التشغيلية للحج بأدق تفصيل",
-      "the operational indicators for Hajj at the finest detail",
-      "أداء حج آمن يليق بمكانة المشعر",
-      "safe Hajj operations worthy of the holy site",
-    ),
-  ],
-  [
-    "/_authenticated/digital-twin",
+    "/digital-twin",
     n(
       "التوأم الرقمي",
       "Digital Twin",
@@ -261,7 +222,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/bridge",
+    "/bridge",
     n(
       "الجسر التنفيذي",
       "Executive Bridge",
@@ -272,7 +233,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/exec",
+    "/exec",
     n(
       "المشغّل التنفيذي",
       "Executive Runner",
@@ -283,7 +244,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/operations",
+    "/operations",
     n(
       "العمليات",
       "Operations",
@@ -293,13 +254,8 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "complete operational control from one place",
     ),
   ],
-  [
-    "/_authenticated",
-    {
-      ar: "أنت الآن في منطقة العمل المصادَقة. جميع القدرات التنفيذية متاحة هنا.",
-      en: "You are in the authenticated workspace. Every executive capability is available here.",
-    },
-  ],
+  // حُذف صفّ «/_authenticated» الجامع: مُعرّف تخطيط لا مسار يقف عليه أحد،
+  // وبقاؤه كان يبتلع كل شاشة بلا صفّ خاص بها فيسمعها الزائر بوصف عام.
 
   // ── Public marketing / trust surfaces ───────────────────────────────
   [
@@ -324,17 +280,8 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "shortening time-to-decision",
     ),
   ],
-  [
-    "/executive-showcase",
-    n(
-      "العرض التنفيذي",
-      "Executive Showcase",
-      "أبرز القدرات مقدَّمة بلغة القرار",
-      "the top capabilities framed in decision language",
-      "تبنٍّ سريع من صنّاع القرار",
-      "rapid buy-in from decision-makers",
-    ),
-  ],
+  // حُذف «/executive-showcase»: ضمن عائلة العروض السينمائية المخفية بأمر
+  // المالك (hidden-routes.ts) مع /cinematic-demo و/films و/theater.
   [
     "/executive-bridge",
     n(
@@ -346,17 +293,9 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "faster, clearer, and explainable leadership",
     ),
   ],
-  [
-    "/executive",
-    n(
-      "الصفحة التنفيذية العامة",
-      "Public Executive Page",
-      "ملخص القدرات للمستوى التنفيذي",
-      "an executive-level capability summary",
-      "قراءة سريعة قبل الاجتماع",
-      "a fast pre-meeting read",
-    ),
-  ],
+  // حُذف صفّ «/executive» العام: لا توجد صفحة تنفيذية عامة بهذا المسار — المسار
+  // الوحيد هو _authenticated/executive («المساحة التنفيذية»)، وصفّه في
+  // page-narrations.entries.b.ts. كان الصفّان يتنازعان مسارًا واحدًا.
   [
     "/government-brief",
     n(
@@ -366,17 +305,6 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "the platform summary tailored for government",
       "شفافية سيادية تليق بالجهات الرقابية",
       "sovereign-grade transparency for regulators",
-    ),
-  ],
-  [
-    "/hajj-prime",
-    n(
-      "الحج برايم",
-      "Hajj Prime",
-      "الطبقة التنفيذية لمنظومة الحج",
-      "the executive layer for the Hajj system",
-      "أداء حج ذو جودة سيادية",
-      "sovereign-quality Hajj performance",
     ),
   ],
   [
@@ -423,17 +351,7 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "adoption grounded in experience, not promises",
     ),
   ],
-  [
-    "/films",
-    n(
-      "الأفلام التنفيذية",
-      "Executive Films",
-      "أفلام قصيرة تُقدّم الرؤية بلغة القيادة",
-      "short films that present the vision in leadership language",
-      "أثر تنفيذي طويل الأمد",
-      "long-lasting executive impact",
-    ),
-  ],
+  // حُذف «/films»: مخفي بأمر المالك — ولا يُعلن في sitemap.xml بعد اليوم.
   [
     "/roi",
     n(
@@ -641,6 +559,197 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "the first introduction to the platform and its executive capability",
       "قراءة سريعة لقيمة النظام",
       "a fast reading of the system's value",
+    ),
+  ],
+
+  // ── شاشات حيّة كانت بلا صفّ (المادة ٢٢) ─────────────────────────────
+  // كل مسار هنا موجود فعلًا في src/routes وغير مخفي، وكان يسقط قبل اليوم على
+  // نصّ عام. الوصف مكتوب من عنوان الصفحة ومحتواها لا من قالب، وبلا رقم واحد
+  // غير مقيس (المادة ٢٧).
+  [
+    "/guide",
+    n(
+      "خريطة النظام",
+      "System Map",
+      "كل وحدة مصنّفة بدورها مع سطر غرضها ومخطّط علاقتها بالعناقيد الأخرى",
+      "every module classified by role with its one-line purpose and a cluster relationship diagram",
+      "معرفة أين تذهب قبل أن تضغط",
+      "knowing where to go before you click",
+      "الخريطة مبنيّة من سجلّ الوحدات الواحد، فلا تختلف عن الشريط الجانبي أبدًا",
+      "the map is built from the single module registry, so it can never drift from the sidebar",
+    ),
+  ],
+  [
+    "/hcis",
+    n(
+      "الامتثال HCIS",
+      "HCIS Compliance",
+      "مصفوفة توجيهات الهيئة العليا للأمن الصناعي وحالة كل توجيه",
+      "the High Commission for Industrial Security directive matrix and per-directive status",
+      "دليل امتثال جاهز للعرض على الجهة الرقابية",
+      "a compliance record ready to show the regulator",
+      "البلاطات تقرأ من جداول الإطار الأربعة، وكل توجيه يفتح صفحة إرشاده بالرمز",
+      "the tiles read from the four framework tables, and each directive opens its guidance page by code",
+    ),
+  ],
+  [
+    "/finn-analytics",
+    n(
+      "تحليلات FINN",
+      "FINN Analytics",
+      "استخدام FINN وأنماط الأسئلة وأداء الردّ",
+      "FINN usage, question patterns, and response performance",
+      "قراءة صادقة لما تستفيده المؤسسة من المحرّك",
+      "an honest reading of what the enterprise gets from the engine",
+      "ما لم يُقَس يظهر «لم يُقَس» ولا يُستبدل بصفر",
+      "what is not measured shows as «not measured» and is never replaced by a zero",
+    ),
+  ],
+  [
+    "/reports-agent",
+    n(
+      "وكيل التقارير",
+      "Reports Agent",
+      "تشغيل الوكيل وعرض التقارير المولّدة وسجل كل تشغيلة",
+      "running the agent, viewing generated reports, and each run's log",
+      "تقارير دورية بلا عمل يدوي متكرّر",
+      "recurring reports without repeated manual work",
+    ),
+  ],
+  [
+    "/rag-search",
+    n(
+      "البحث المعرفي بالاستشهاد",
+      "Cited Knowledge Search",
+      "بحثًا في المتن الموثّق يعيد المقاطع مع استشهادها",
+      "a search over the verified corpus that returns passages with their citations",
+      "إجابة يمكن تتبّع مصدرها سطرًا بسطر",
+      "an answer whose source you can trace line by line",
+      "الشاشة تشحن مطفأة خلف راية الاسترجاع، ولا تُرفع الراية إلا بقياس فعلي",
+      "the screen ships dark behind the retrieval flag, and the flag is not raised without an actual measurement",
+    ),
+  ],
+  [
+    "/rag-monitor",
+    n(
+      "رصد طبقة المعرفة",
+      "Knowledge Layer Monitor",
+      "حالة المتن والفجوات المرصودة وبوابة الراية",
+      "corpus state, observed gaps, and the flag gate",
+      "شفافية كاملة لما تعرفه المنظومة وما لا تعرفه بعد",
+      "full transparency about what the system knows and what it does not yet know",
+      "كل مؤشّر غير مقيس يُعرض «لم يُقَس» — الصفر ليس بديلًا عن الغياب",
+      "every unmeasured indicator renders «not measured» — zero is not a stand-in for absence",
+    ),
+  ],
+  [
+    "/blueprint",
+    n(
+      "المُخطَّط التنفيذي",
+      "Executive Blueprint",
+      "بنية المنظومة وطبقاتها ومسار تنفيذ كل مرحلة",
+      "the system architecture, its layers, and the delivery path of each phase",
+      "فهم ما بُني وما تبقّى قبل أي التزام",
+      "understanding what is built and what remains before any commitment",
+    ),
+  ],
+  [
+    "/connect",
+    n(
+      "ربط مساعد ذكاء اصطناعي",
+      "Connect an AI Assistant",
+      "خطوات ربط مساعدك الخارجي بالمنصّة عبر بروتوكول السياق",
+      "the steps to connect your external assistant through the context protocol",
+      "استعمال أدوات المنصّة من داخل المساعد الذي تستخدمه أصلًا",
+      "using the platform's tools from inside the assistant you already use",
+    ),
+  ],
+  [
+    "/nx-cockpit",
+    n(
+      "قمرة القيادة التنفيذية",
+      "NX Cockpit",
+      "مشهد القمرة الموحّد: المؤشرات والقرارات والوكلاء في إطار واحد",
+      "the unified cockpit view: indicators, decisions, and agents in one frame",
+      "قراءة الوضع كاملًا دون تنقّل بين الشاشات",
+      "reading the whole situation without hopping between screens",
+    ),
+  ],
+  [
+    "/nx-ops",
+    n(
+      "مسرح العمليات الحيّ",
+      "Ops Theater",
+      "مشهدًا حيًّا للعمليات الجارية وتسلسل أحداثها",
+      "a live stage of running operations and their event sequence",
+      "متابعة الميدان كما يجري لا كما يُروى لاحقًا",
+      "watching the field as it happens, not as it is retold later",
+    ),
+  ],
+  [
+    "/nx-flow",
+    n(
+      "رحلة الوكلاء مع فِن",
+      "Agents Flow",
+      "مسار المهمة من طلبها حتى إغلاقها عبر الوكلاء تحت قيادة FINN",
+      "a task's path from request to closure across the agents under FINN's command",
+      "رؤية من فعل ماذا ومتى بلا صندوق أسود",
+      "seeing who did what and when, with no black box",
+    ),
+  ],
+  [
+    "/nx-agents",
+    n(
+      "منظومة الوكلاء",
+      "NX Agents",
+      "الوكلاء المتخصّصين وأدوارهم وحدود صلاحية كلٍّ منهم",
+      "the specialist agents, their roles, and the boundary of each one's authority",
+      "قدرة تنفيذية موازية تبقى تحت سيطرة معلنة",
+      "parallel executive capacity that stays under declared control",
+    ),
+  ],
+  [
+    "/nx-atlas",
+    n(
+      "مركز المهام",
+      "NX Atlas",
+      "المهام مرتّبة باتجاهها وأولويتها ومالكها",
+      "tasks arranged by direction, priority, and owner",
+      "أولويات واضحة بدل قائمة طويلة بلا ترتيب",
+      "clear priorities instead of one long unordered list",
+    ),
+  ],
+  [
+    "/nx-sovereign",
+    n(
+      "المشهد السيادي",
+      "NX Sovereign",
+      "الطبقة السيادية: النطاق الوطني والجهات والامتثال",
+      "the sovereign layer: national scope, entities, and compliance",
+      "قراءة تليق بجهة رقابية لا بلوحة تشغيل فقط",
+      "a reading fit for a regulator, not only an operations board",
+    ),
+  ],
+  [
+    "/nx-twin",
+    n(
+      "التوأم الحيّ",
+      "NX Twin",
+      "نموذجًا حيًّا للأصول والمواقع يتحرّك مع الميدان",
+      "a live model of assets and sites that moves with the field",
+      "اختبار القرار على النموذج قبل الميدان",
+      "testing the decision on the model before the field",
+    ),
+  ],
+  [
+    "/verify/permit",
+    n(
+      "التحقّق من تصريح عمل",
+      "Permit Verification",
+      "نتيجة التحقّق من التصريح المقروء برمز QR: سارٍ أو موقوف أو منتهٍ",
+      "the verification verdict for a QR-scanned permit: valid, suspended, or expired",
+      "تحقّق ميداني فوري بلا حساب ولا وسيط",
+      "instant field verification with no account and no intermediary",
     ),
   ],
 ];

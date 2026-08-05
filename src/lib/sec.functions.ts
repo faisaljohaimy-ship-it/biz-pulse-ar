@@ -497,6 +497,10 @@ export {
   getExecKpis,
   getPublicKpis,
   getExecTimeseries,
+  // المادة ٢٧ — مُنسِّقا العرض الموحّدان لما لم يُقَس، بجوار مصدرهما.
+  UNMEASURED_AR,
+  pctOrUnmeasured,
+  numOrUnmeasured,
 } from "./sec-exec-kpis.functions";
 export type {
   ExecKpis,

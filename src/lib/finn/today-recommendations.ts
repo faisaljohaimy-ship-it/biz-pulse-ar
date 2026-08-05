@@ -8,6 +8,7 @@
 import { REGIONS } from "@/lib/regions";
 import { REGION_MARKERS } from "@/components/executive/region-markers";
 import { regionSim } from "@/lib/sec/region-sim-data";
+import { pctOrUnmeasured } from "@/lib/sec-exec-kpis.functions";
 import type { ExecKpis } from "@/lib/sec-exec-kpis.functions";
 
 export type RecoTone = "rose" | "amber" | "cyan";
@@ -46,9 +47,11 @@ export function getTodayRecommendations(live?: ExecKpis): readonly FinnRecommend
       },
       {
         id: "readiness",
-        tone: live.executive_readiness >= 75 ? "cyan" : "amber",
+        // المادة ٢٧ — الجاهزية غير المقيسة لا تُقرأ نجاحًا ولا إخفاقًا:
+        // النغمة محايدة (cyan) والنص يقول «لم يُقَس» بدل رقم مُختلق.
+        tone: live.executive_readiness !== null && live.executive_readiness < 75 ? "amber" : "cyan",
         to: "/sec/kpi",
-        textAr: `الجاهزية التنفيذية ${live.executive_readiness}% ومؤشر المخاطر ${live.risk_index}% — المؤشر محسوب من المصادر التشغيلية الحية.`,
+        textAr: `الجاهزية التنفيذية ${pctOrUnmeasured(live.executive_readiness)} ومؤشر المخاطر ${pctOrUnmeasured(live.risk_index)} — المؤشر محسوب من المصادر التشغيلية الحية.`,
       },
     ];
   }

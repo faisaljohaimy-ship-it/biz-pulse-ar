@@ -28,9 +28,18 @@ const gateTone: Record<string, string> = {
   pending: "bg-muted/40 text-muted-foreground border-border",
 };
 
+// المادة ٢٧ — الصدق العددي: ما لم يُقَس يُعرض بنصّه لا بصفر مُختلق.
+const UNMEASURED = "لم يُقَس";
+
 function fmt(v: number | null | undefined, suffix = ""): string {
-  if (v === null || v === undefined) return "—";
+  if (v === null || v === undefined) return UNMEASURED;
   return `${v}${suffix}`;
+}
+
+// نسبة عبور البوابة: null ⇐ «لم يُقَس» بدل 0%.
+function fmtPct(v: number | null | undefined): string {
+  if (v === null || v === undefined) return UNMEASURED;
+  return `${Math.round(v * 100)}%`;
 }
 
 function StatCard({
@@ -51,7 +60,7 @@ function StatCard({
       </div>
       <div className="min-w-0">
         <div className="text-xs text-muted-foreground">{label}</div>
-        <div className="text-lg font-semibold">{value}</div>
+        <div className="text-lg font-bold text-foreground">{value}</div>
         {hint ? <div className="text-[12px] text-muted-foreground">{hint}</div> : null}
       </div>
     </Card>
@@ -83,23 +92,23 @@ function RagMonitor() {
         <StatCard
           icon={<Search className="w-5 h-5" />}
           label="إجمالي الاستعلامات"
-          value={fmt(data?.total ?? 0)}
+          value={fmt(data?.total)}
         />
         <StatCard
           icon={<ShieldCheck className="w-5 h-5" />}
           label="نسبة عبور بوابة الأدلة"
-          value={`${Math.round((data?.pass_rate ?? 0) * 100)}%`}
-          hint={`${data?.passed ?? 0} من ${data?.total ?? 0}`}
+          value={fmtPct(data?.pass_rate)}
+          hint={data ? `${data.passed} من ${data.total}` : undefined}
         />
         <StatCard
           icon={<TimerReset className="w-5 h-5" />}
           label="متوسط زمن الاستجابة"
-          value={fmt(data?.avg_latency_ms ?? null, " ms")}
+          value={fmt(data?.avg_latency_ms, " ms")}
         />
         <StatCard
           icon={<Gauge className="w-5 h-5" />}
           label="متوسط أعلى تشابه"
-          value={fmt(data?.avg_max_similarity ?? null)}
+          value={fmt(data?.avg_max_similarity)}
         />
       </div>
 
@@ -107,22 +116,22 @@ function RagMonitor() {
         <StatCard
           icon={<ShieldCheck className="w-5 h-5" />}
           label="عبَر البوابة"
-          value={fmt(data?.passed ?? 0)}
+          value={fmt(data?.passed)}
         />
         <StatCard
           icon={<ShieldCheck className="w-5 h-5" />}
           label="أقل من العتبة"
-          value={fmt(data?.below_threshold ?? 0)}
+          value={fmt(data?.below_threshold)}
         />
         <StatCard
           icon={<ShieldCheck className="w-5 h-5" />}
           label="بلا استشهادات كافية"
-          value={fmt(data?.no_citations ?? 0)}
+          value={fmt(data?.no_citations)}
         />
         <StatCard
           icon={<ShieldCheck className="w-5 h-5" />}
           label="أخطاء / حجب حقن"
-          value={fmt(data?.errors ?? 0)}
+          value={fmt(data?.errors)}
         />
       </div>
 

@@ -192,47 +192,55 @@ export async function runKpiEngine(supabase: SupabaseClient): Promise<{
       threshold: 0,
       severity: "alert",
     });
-  if (kpis.cctv_health < 80)
+  // المادة ٢٧ — المؤشر غير المقيس (`null`) لا يجتاز العتبة ولا يرسب فيها:
+  // يُتخطّى البند بصمت بدل توليد خرق وهمي من غياب قياس.
+  const cctvHealth = kpis.cctv_health;
+  if (cctvHealth !== null && cctvHealth < 80)
     breaches.push({
       metric: "cctv_health",
-      value: kpis.cctv_health,
+      value: cctvHealth,
       threshold: 80,
-      severity: kpis.cctv_health < 60 ? "alert" : "warn",
+      severity: cctvHealth < 60 ? "alert" : "warn",
     });
-  if (kpis.access_health < 80)
+  const accessHealth = kpis.access_health;
+  if (accessHealth !== null && accessHealth < 80)
     breaches.push({
       metric: "access_health",
-      value: kpis.access_health,
+      value: accessHealth,
       threshold: 80,
-      severity: kpis.access_health < 60 ? "alert" : "warn",
+      severity: accessHealth < 60 ? "alert" : "warn",
     });
-  if (kpis.patrol_completion < 90)
+  const patrolCompletion = kpis.patrol_completion;
+  if (patrolCompletion !== null && patrolCompletion < 90)
     breaches.push({
       metric: "patrol_completion",
-      value: kpis.patrol_completion,
+      value: patrolCompletion,
       threshold: 90,
       severity: "warn",
     });
-  if (kpis.contractors_compliance < 90)
+  const contractorsCompliance = kpis.contractors_compliance;
+  if (contractorsCompliance !== null && contractorsCompliance < 90)
     breaches.push({
       metric: "contractors_compliance",
-      value: kpis.contractors_compliance,
+      value: contractorsCompliance,
       threshold: 90,
       severity: "warn",
     });
-  if (kpis.risk_index > 60)
+  const riskIndex = kpis.risk_index;
+  if (riskIndex !== null && riskIndex > 60)
     breaches.push({
       metric: "risk_index",
-      value: kpis.risk_index,
+      value: riskIndex,
       threshold: 60,
-      severity: kpis.risk_index > 80 ? "alert" : "warn",
+      severity: riskIndex > 80 ? "alert" : "warn",
     });
-  if (kpis.executive_readiness < 70)
+  const executiveReadiness = kpis.executive_readiness;
+  if (executiveReadiness !== null && executiveReadiness < 70)
     breaches.push({
       metric: "executive_readiness",
-      value: kpis.executive_readiness,
+      value: executiveReadiness,
       threshold: 70,
-      severity: kpis.executive_readiness < 50 ? "alert" : "warn",
+      severity: executiveReadiness < 50 ? "alert" : "warn",
     });
   return { kpis, breaches };
 }
@@ -348,14 +356,16 @@ export async function runRiskEngine(supabase: SupabaseClient, kpis: ExecKpis): P
       ref: c.ref,
     });
   }
-  if (kpis.risk_index > 70) {
+  // المادة ٢٧ — مؤشر مخاطر غير مقيس لا يولّد بند خطر.
+  const riskIndex = kpis.risk_index;
+  if (riskIndex !== null && riskIndex > 70) {
     items.push({
       id: "global-risk",
       kind: "incident",
       title: "ارتفاع مؤشر المخاطر العام",
-      score: kpis.risk_index,
-      severity: kpis.risk_index > 85 ? "critical" : "high",
-      rationale: `risk_index=${kpis.risk_index} (الحد ≤ 60)`,
+      score: riskIndex,
+      severity: riskIndex > 85 ? "critical" : "high",
+      rationale: `risk_index=${riskIndex} (الحد ≤ 60)`,
       ref: null,
     });
   }
@@ -387,9 +397,11 @@ export function runDecisionEngine(risks: RiskItem[], kpis: ExecKpis): DecisionIt
       alternatives: ["تمديد التصريح بعد المراجعة"],
     });
   }
-  if (kpis.cctv_health < 80) {
+  // المادة ٢٧ — لا توصية مبنية على مؤشر لم يُقَس.
+  const cctvHealth = kpis.cctv_health;
+  if (cctvHealth !== null && cctvHealth < 80) {
     decisions.push({
-      recommendation: `جدولة صيانة وقائية لمنظومة CCTV (الصحة ${kpis.cctv_health}%)`,
+      recommendation: `جدولة صيانة وقائية لمنظومة CCTV (الصحة ${cctvHealth}%)`,
       rationale: `cctv_health < 80%؛ ${kpis.cameras_total - kpis.cameras_online} كاميرا غير متصلة`,
       confidence: 0.8,
       suggested_tool: "sec_create_work_order",
@@ -401,9 +413,10 @@ export function runDecisionEngine(risks: RiskItem[], kpis: ExecKpis): DecisionIt
       alternatives: ["إعادة فحص الشبكة قبل فتح أمر صيانة"],
     });
   }
-  if (kpis.patrol_completion < 90) {
+  const patrolCompletion = kpis.patrol_completion;
+  if (patrolCompletion !== null && patrolCompletion < 90) {
     decisions.push({
-      recommendation: `تعزيز الدوريات (إنجاز ${kpis.patrol_completion}%)`,
+      recommendation: `تعزيز الدوريات (إنجاز ${patrolCompletion}%)`,
       rationale: "patrol_completion دون الهدف 90%",
       confidence: 0.75,
       suggested_tool: "sec_schedule_patrol",

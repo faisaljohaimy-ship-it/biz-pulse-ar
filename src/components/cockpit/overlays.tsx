@@ -7,6 +7,7 @@
  * lands in the simulated audit log (executeAction → correlationId).
  */
 import * as React from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Check, Search } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ import { NxButton, NxErrorState, NxSparkline } from "@/components/nx";
 import type { CockpitSnapshot } from "./repository";
 import { useCockpit, type DrawerTopic, type WorkflowId } from "./use-cockpit";
 import { emitCockpitAction } from "./actions";
+import { capabilityHref } from "./capabilities";
 
 /* ── Section error isolation (package 01 §عزل الفشل) ─────────────────── */
 
@@ -71,6 +73,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 
 function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: CockpitSnapshot }) {
   const cockpit = useCockpit();
+  const navigate = useNavigate();
   const [search, setSearch] = React.useState("");
   const [confirming, setConfirming] = React.useState<string | null>(null);
 
@@ -260,13 +263,19 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
                 kind: "حدث",
                 open: () => cockpit.openDrawer({ type: "event", id: e.id }),
               })),
+            // نتيجة «قدرة» كانت `() => undefined` — سطرٌ يظهر في البحث ولا
+            // يفعل شيئًا عند النقر. صارت تفتح وجهة البطاقة الكانونية نفسها
+            // (`capabilityHref`)، فلا يوجد في الدرج سطر ميت ولا باب قديم.
             ...snapshot.capabilities
               .filter((c) => c.labelAr.includes(query))
               .map((c) => ({
                 key: `c-${c.id}`,
                 labelAr: c.labelAr,
                 kind: "قدرة",
-                open: () => undefined,
+                open: () => {
+                  cockpit.closeOverlay();
+                  navigate({ to: capabilityHref(c.id) });
+                },
               })),
           ]
         : [];

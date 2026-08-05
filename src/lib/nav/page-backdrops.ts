@@ -22,7 +22,8 @@ const PAGE_BACKDROPS: Record<string, string> = {
   "/observability": "/ai-analytics-bg.jpeg",
   "/sec/kpi": "/ai-analytics-bg.jpeg",
   // Decisions & risk → decision-intelligence imagery.
-  "/analytics": "/decision-intel-bg.jpeg",
+  // «/analytics» أُزيل: المسار مخفي بأمر المالك ويُعيد التوجيه للرئيسية، فلا
+  // خلفية تُرسم له أبدًا — الصفّ كان يعِد بشاشة لم تعد تُعرض.
   "/decisions": "/decision-intel-bg.jpeg",
   "/risk": "/decision-intel-bg.jpeg",
   // Strategy & governance → strategy-map imagery.

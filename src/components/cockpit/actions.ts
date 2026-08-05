@@ -9,6 +9,16 @@
  * src/routes/ — the contract's abstract paths (/sectors, /command-bridge,
  * /shell, /dashboards …) have no route files, so each maps to the nearest
  * real module. regions.ts stays the only geographic source (4 regions).
+ *
+ * تدقيق الوجهات (كل `target` من نوع `navigate`): «الوجهة الحيّة شرط، لا
+ * وجودُ ملف مسار». المسار المُخفى في `lib/nav/hidden-routes.ts` يرمي
+ * `redirect({ to: "/" })` في `beforeLoad`، فملفّه موجود وزرّه ميت. الوجهات
+ * الحالية كلها حيّة بعد سحب `/analytics` من `nav.indicators`:
+ *   /nx-cockpit · /departments · /bridge · /sec/kpi · /mission-control ·
+ *   /situation-room · /executive-map · /urgent-ops · /boardroom · /agents ·
+ *   /operations · /risk · /governance · /knowledge · /integrations ·
+ *   /sec/reports · /settings · /guide · /runtime-hub · /portfolio · /dashboard
+ * لا واحد منها في `HIDDEN_ROUTES` ولا واحد منها جذع إعادة توجيه.
  */
 
 export type CockpitSurface =
@@ -69,12 +79,58 @@ const ACTIONS = [
     permission: "command.view",
   },
   {
+    // كان الهدف `/analytics` — وهو مسار مُخفى في `lib/nav/hidden-routes.ts`
+    // يرمي `redirect({ to: "/" })` في `beforeLoad`، فكان الزر في التنقّل
+    // الرئيسي يعيد المستخدم إلى الرئيسية بلا مؤشرات. البديل الحيّ الصادق هو
+    // `/sec/kpi` («مؤشرات الأداء») لأنه شاشة مؤشرات قائمة بذاتها تقرأ
+    // `getSecOverview` بمسار الضيف — لا شريط KPI داخل القمرة نفسها (ذاك جزء
+    // من `nav.home` ولا يصلح وجهةً منفصلة).
     id: "nav.indicators",
     surface: "navigation",
     labelAr: "المؤشرات",
     effect: "navigate",
-    target: "/analytics",
+    target: "/sec/kpi",
     permission: "indicators.view",
+  },
+  {
+    id: "nav.missionControl",
+    surface: "navigation",
+    labelAr: "مركز القيادة",
+    effect: "navigate",
+    target: "/mission-control",
+    permission: "command.view",
+  },
+  {
+    id: "nav.situationRoom",
+    surface: "navigation",
+    labelAr: "غرفة العمليات",
+    effect: "navigate",
+    target: "/situation-room",
+    permission: "operations.view",
+  },
+  {
+    id: "nav.executiveMap",
+    surface: "navigation",
+    labelAr: "الخريطة التنفيذية",
+    effect: "navigate",
+    target: "/executive-map",
+    permission: "cockpit.view",
+  },
+  {
+    id: "nav.urgentOps",
+    surface: "navigation",
+    labelAr: "العاجل",
+    effect: "navigate",
+    target: "/urgent-ops",
+    permission: "operations.view",
+  },
+  {
+    id: "nav.boardroom",
+    surface: "navigation",
+    labelAr: "قاعة المجلس",
+    effect: "navigate",
+    target: "/boardroom",
+    permission: "cockpit.view",
   },
   {
     id: "nav.agents",
@@ -139,6 +195,16 @@ const ACTIONS = [
     effect: "navigate",
     target: "/settings",
     permission: "settings.view",
+  },
+  {
+    // خريطة النظام الدستورية (`/guide`) — كانت بلا أي رابط وارد في المنظومة
+    // كلها، فلا يبلغها إلا من يعرف عنوانها. مدخلها هنا تذييل درج التنقّل.
+    id: "nav.systemMap",
+    surface: "navigation",
+    labelAr: "خريطة النظام",
+    effect: "navigate",
+    target: "/guide",
+    permission: "cockpit.view",
   },
 
   // ── Architecture layers 01..05 ─────────────────────────────────────────

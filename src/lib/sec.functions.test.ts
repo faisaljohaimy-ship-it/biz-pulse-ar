@@ -75,18 +75,20 @@ const sample: ExecKpiSources = {
 };
 
 describe("computeExecKpis", () => {
-  it("returns zeroed, deterministic shape for empty sources", () => {
+  it("returns «لم يُقَس» (null) — not fabricated zeros — for empty sources", () => {
+    // المادة ٢٧ (قرار المالك ٢٠٢٦/٠٨/٠٥): الصفر ليس بديلًا عن غياب القياس.
+    // العدّ صفرٌ **مقيس** (لا حوادث = صفر حوادث)، أما النِّسب فلا مصدر لها
+    // بلا صفوف ⇒ null، والمركَّب الذي يُبنى من مجهولٍ مجهولٌ مثله.
     const k = computeExecKpis(empty);
-    // resolution rate uses (closed / (total || 1)) → 0 when nothing exists
     expect(k.incidents_total).toBe(0);
-    expect(k.incidents_resolution_rate).toBe(0);
-    expect(k.cctv_health).toBe(0);
-    expect(k.access_health).toBe(0);
-    expect(k.patrol_completion).toBe(0);
-    expect(k.contractors_compliance).toBe(0);
-    expect(k.risk_index).toBe(50); // (100 - 0) / 2
-    expect(k.safety_index).toBe(50);
-    expect(k.executive_readiness).toBe(10); // round((0+0+0+0+50)/5)
+    expect(k.incidents_resolution_rate).toBeNull();
+    expect(k.cctv_health).toBeNull();
+    expect(k.access_health).toBeNull();
+    expect(k.patrol_completion).toBeNull();
+    expect(k.contractors_compliance).toBeNull();
+    expect(k.risk_index).toBeNull();
+    expect(k.safety_index).toBeNull();
+    expect(k.executive_readiness).toBeNull();
   });
 
   it("computes exact KPI values from sample sources (snapshot of the contract)", () => {
@@ -116,14 +118,15 @@ describe("computeExecKpis", () => {
       sites_operational: 2,
       sites_total: 3,
       patrols_active: 2,
-      patrol_completion: 50, // ((0.5 + 1.0 + 0)/3)*100
+      // دورية بلا نقاط تفتيش لا تُقاس، فلا تُخفض المتوسط بصفرٍ لم يقع.
+      patrol_completion: 75, // ((0.5 + 1.0 + 0)/3)*100
       visitors_inside: 2,
       permits_active: 2,
       contractors_active: 2,
       contractors_compliance: 70, // round((80+90+40)/3)
       risk_index: 49, // round(min(100, 1*15 + 2*5 + (100-53)/2)) = round(48.5)
       safety_index: 52, // round(100 - 48.5)
-      executive_readiness: 63, // round((53+90+70+50+51.5)/5)
+      executive_readiness: 68, // يتبع تصحيح نسبة الدوريات أعلاه // round((53+90+70+50+51.5)/5)
     });
   });
 
@@ -150,13 +153,17 @@ describe("computeExecKpis", () => {
       k.executive_readiness,
     ];
     for (const v of pct) {
+      // المادة ٢٧: «لم يُقَس» تعود null ولا تخضع لحدود القياس.
+      if (v === null) continue;
       expect(Number.isFinite(v)).toBe(true);
       expect(v).toBeGreaterThanOrEqual(0);
       expect(v).toBeLessThanOrEqual(100);
     }
-    // Mirror invariant
-    expect(k.risk_index + k.safety_index).toBeGreaterThanOrEqual(99);
-    expect(k.risk_index + k.safety_index).toBeLessThanOrEqual(101);
+    // Mirror invariant — يُقاس فقط حين قِيس الطرفان.
+    if (k.risk_index !== null && k.safety_index !== null) {
+      expect(k.risk_index + k.safety_index).toBeGreaterThanOrEqual(99);
+      expect(k.risk_index + k.safety_index).toBeLessThanOrEqual(101);
+    }
     // Counts must be non-negative integers
     const counts = [
       k.incidents_total,
@@ -183,6 +190,8 @@ describe("computeExecKpis", () => {
       k.mttr_minutes,
     ];
     for (const c of counts) {
+      // العدّ صفرٌ مقيس، لكن المتوسطات (mttr) تعود null حين لا مصدر لها.
+      if (c === null) continue;
       expect(Number.isInteger(c)).toBe(true);
       expect(c).toBeGreaterThanOrEqual(0);
     }
@@ -235,8 +244,8 @@ describe("computeExecKpis", () => {
         ],
       }),
     );
-    expect(k.mttr_minutes).toBe(0);
-    expect(Number.isFinite(k.mttr_minutes)).toBe(true);
+    // زمنا الاستجابة غائبان ⇒ لا متوسط يُقاس (لا NaN ولا صفر مُختلق).
+    expect(k.mttr_minutes).toBeNull();
     assertInvariants(k);
   });
 
@@ -249,7 +258,8 @@ describe("computeExecKpis", () => {
         ],
       }),
     );
-    expect(k.patrol_completion).toBe(0);
+    // مقام صفري ⇒ لا نسبة تُقاس (لا NaN ولا صفر مُختلق).
+    expect(k.patrol_completion).toBeNull();
     assertInvariants(k);
   });
 
@@ -301,6 +311,7 @@ describe("computeExecKpis", () => {
   it("weights different incident severities consistently (only critical drives risk)", () => {
     const lowOnly = computeExecKpis(
       makeSources({
+        cameras: [{ status: "online", health: 100 }],
         incidents: Array.from({ length: 20 }, () => ({
           severity: "low",
           status: "open",
@@ -310,6 +321,7 @@ describe("computeExecKpis", () => {
     );
     const critOnly = computeExecKpis(
       makeSources({
+        cameras: [{ status: "online", health: 100 }],
         incidents: Array.from({ length: 2 }, () => ({
           severity: "critical",
           status: "open",
@@ -317,8 +329,11 @@ describe("computeExecKpis", () => {
         })),
       }),
     );
-    // 20 low-severity open incidents must NOT raise risk above 2 critical ones
-    expect(critOnly.risk_index).toBeGreaterThan(lowOnly.risk_index);
+    // 20 low-severity open incidents must NOT raise risk above 2 critical ones.
+    // الحادثتان مقيستان (صفوف موجودة) فالمقارنة مشروعة بعد إثبات القياس.
+    expect(critOnly.risk_index).not.toBeNull();
+    expect(lowOnly.risk_index).not.toBeNull();
+    expect(critOnly.risk_index ?? -1).toBeGreaterThan(lowOnly.risk_index ?? -1);
     assertInvariants(lowOnly);
     assertInvariants(critOnly);
   });
@@ -434,11 +449,30 @@ describe("ExecKpisSchema (API contract)", () => {
     });
   }
 
-  it("rejects null / undefined fields in any KPI", () => {
+  it("accepts null ONLY on measurable-or-not fields, rejects it everywhere else", () => {
+    // المادة ٢٧ (قرار المالك ٢٠٢٦/٠٨/٠٥): ما قد لا يُقاس يقبل null صراحةً،
+    // وما هو عدٌّ صريح (صفرُه مقيس) يظل يرفضه. القائمة مغلقة عمدًا: أي
+    // توسيع لاحق للـnullable يسقط هذا الحارس بدل أن يمرّ صامتًا.
+    const NULLABLE = new Set([
+      "incidents_resolution_rate",
+      "mttr_minutes",
+      "cctv_health",
+      "access_health",
+      "patrol_completion",
+      "contractors_compliance",
+      "risk_index",
+      "safety_index",
+      "executive_readiness",
+    ]);
     const k = computeExecKpis(sample) as Record<string, unknown>;
     for (const key of Object.keys(k)) {
       const broken = { ...k, [key]: null };
-      expect(() => ExecKpisSchema.parse(broken)).toThrow();
+      if (NULLABLE.has(key)) {
+        expect(() => ExecKpisSchema.parse(broken)).not.toThrow();
+      } else {
+        expect(() => ExecKpisSchema.parse(broken)).toThrow();
+      }
+      // الحقل الغائب مرفوض دائمًا — «لم يُقَس» تُصرَّح بـnull لا بالحذف.
       const broken2 = { ...k };
       delete broken2[key];
       expect(() => ExecKpisSchema.parse(broken2)).toThrow();

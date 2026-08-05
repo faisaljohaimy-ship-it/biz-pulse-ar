@@ -1,9 +1,9 @@
 ---
 name: nexios-supabase
-description: طبقة بيانات NEXIOS على Supabase — تُستدعى قبل كتابة أي migration أو سياسة RLS أو استعلام أو دالة خادم تقرأ البيانات. تغطي مخطط HCIS الفعلي، قواعد anon، نمط resilient()/optionalSupabaseAuth، وقاعدة is_simulation.
+description: طبقة بيانات سَدِيد على Supabase — تُستدعى قبل كتابة أي migration أو سياسة RLS أو استعلام أو دالة خادم تقرأ البيانات. تغطي مخطط HCIS الفعلي، قواعد anon، نمط resilient()/optionalSupabaseAuth، وقاعدة is_simulation.
 ---
 
-# NEXIOS Supabase — طبقة البيانات
+# سَدِيد Supabase — طبقة البيانات
 
 ## المشروع
 

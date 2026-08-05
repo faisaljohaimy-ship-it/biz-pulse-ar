@@ -92,33 +92,55 @@ export const reapStaleToolExecutions = createServerFn({ method: "POST" })
   });
 
 export const listToolRegistry = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // قراءة عرض: `/_authenticated` مفتوح للزائر (لا beforeLoad)، فلا يجوز أن
+  // ترمي Unauthorized وتترك السجل هيكلًا أبديًا. RLS وحدها تقرّر الصفوف؛
+  // resilient يسابق ٤ ثوانٍ ويعيد قائمة فارغة فتظهر الحالة الفارغة الصادقة.
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (context.supabase as any)
-      .from("tool_registry")
-      .select(
-        "id, category, name, description, permissions, requires_approval, enabled, schema_json",
-      )
-      .order("category", { ascending: true })
-      .order("name", { ascending: true });
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    const { resilient } = await import("./exec/showcase-simulation.server");
+    return resilient(
+      "tool-registry",
+      async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (context.supabase as any)
+          .from("tool_registry")
+          .select(
+            "id, category, name, description, permissions, requires_approval, enabled, schema_json",
+          )
+          .order("category", { ascending: true })
+          .order("name", { ascending: true });
+        if (error) throw new Error(error.message);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (data ?? []) as any[];
+      },
+      () => false,
+      () => [],
+    );
   });
 
 export const listToolExecutions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // قراءة عرض — لا اختلاق هنا: الفشل يعيد فراغًا لا صفوفًا مصطنعة (المادة ٢٧).
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (context.supabase as any)
-      .from("tool_executions")
-      .select(
-        "id, tool_id, status, actor_id, correlation_id, started_at, finished_at, duration_ms, error, input_json, output_json, created_at",
-      )
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    const { resilient } = await import("./exec/showcase-simulation.server");
+    return resilient(
+      "tool-executions",
+      async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (context.supabase as any)
+          .from("tool_executions")
+          .select(
+            "id, tool_id, status, actor_id, correlation_id, started_at, finished_at, duration_ms, error, input_json, output_json, created_at",
+          )
+          .order("created_at", { ascending: false })
+          .limit(50);
+        if (error) throw new Error(error.message);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (data ?? []) as any[];
+      },
+      () => false,
+      () => [],
+    );
   });
 
 /* ----------------------------- Workflow API ----------------------------- */
@@ -151,28 +173,50 @@ export const createWorkflow = createServerFn({ method: "POST" })
   });
 
 export const listWorkflows = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // قراءة عرض — الكتابة (إنشاء/تشغيل/إلغاء) تبقى خلف requireSupabaseAuth.
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (context.supabase as any)
-      .from("workflows")
-      .select("id, name, description, enabled, trigger_topic, updated_at")
-      .order("updated_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    const { resilient } = await import("./exec/showcase-simulation.server");
+    return resilient(
+      "workflows-list",
+      async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (context.supabase as any)
+          .from("workflows")
+          .select("id, name, description, enabled, trigger_topic, updated_at")
+          .order("updated_at", { ascending: false });
+        if (error) throw new Error(error.message);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (data ?? []) as any[];
+      },
+      () => false,
+      () => [],
+    );
   });
 
 export const listWorkflowRuns = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // قراءة عرض لسجل التشغيل — لا تتوقف الشاشة عند انقطاع المصدر.
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (context.supabase as any)
-      .from("workflow_runs")
-      .select("id, workflow_id, status, current_step, started_at, finished_at, error, triggered_by")
-      .order("started_at", { ascending: false })
-      .limit(50);
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    const { resilient } = await import("./exec/showcase-simulation.server");
+    return resilient(
+      "workflow-runs",
+      async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (context.supabase as any)
+          .from("workflow_runs")
+          .select(
+            "id, workflow_id, status, current_step, started_at, finished_at, error, triggered_by",
+          )
+          .order("started_at", { ascending: false })
+          .limit(50);
+        if (error) throw new Error(error.message);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (data ?? []) as any[];
+      },
+      () => false,
+      () => [],
+    );
   });
 
 const TriggerSchema = z.object({
@@ -338,16 +382,26 @@ export const getWorkflowRunDetail = createServerFn({ method: "POST" })
 /* ------------------------------ Events API ------------------------------ */
 
 export const listRecentEvents = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  // قراءة عرض لناقل الأحداث — نفس نمط `getMissionTimeline` المعتمد.
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (context.supabase as any)
-      .from("enterprise_events")
-      .select("id, topic, source, payload_json, status, occurred_at")
-      .order("occurred_at", { ascending: false })
-      .limit(50);
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    const { resilient } = await import("./exec/showcase-simulation.server");
+    return resilient(
+      "recent-events",
+      async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (context.supabase as any)
+          .from("enterprise_events")
+          .select("id, topic, source, payload_json, status, occurred_at")
+          .order("occurred_at", { ascending: false })
+          .limit(50);
+        if (error) throw new Error(error.message);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (data ?? []) as any[];
+      },
+      () => false,
+      () => [],
+    );
   });
 
 /* ------------------------------ Agents API ------------------------------ */

@@ -12,7 +12,7 @@ import {
 // watchdog.client is loaded dynamically inside useEffect (client-only module)
 
 import appCss from "../styles.css?url";
-import { COMPANY_NAME, DOMAIN_URL, PRODUCT_NAME, SITE_NAME } from "@/lib/domain";
+import { COMPANY_NAME, DOMAIN_URL, PRODUCT_NAME, SITE_NAME, SITE_TAGLINE } from "@/lib/domain";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
@@ -133,41 +133,52 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "FINN" },
-      { name: "application-name", content: "FINN" },
+      // اسم التطبيق المثبَّت يطابق `manifest.webmanifest` حرفًا بحرف؛
+      // اختلافهما يظهر اسمين للمنتج نفسه على الشاشة الرئيسية.
+      { name: "apple-mobile-web-app-title", content: PRODUCT_NAME },
+      { name: "application-name", content: PRODUCT_NAME },
       { name: "google-site-verification", content: "ZMjRDSJhOrvRVKAbg8VWNjP8CICjLONLC3Jk6nKpsUQ" },
       { title: SITE_NAME },
+      // كانت هذه الثلاثة `"N"` — بقيّة تسمية مسحوبة قُصّت ولم تُستبدل،
+      // فخرجت للباحث ولمشاركات الروابط وصفًا من حرف واحد. المصدر الآن
+      // `SITE_TAGLINE` من `@/lib/domain`: اسم واحد لا يُعاد كتابته يدويًا.
       {
         name: "description",
-        content: "N",
+        content: SITE_TAGLINE,
       },
       { property: "og:title", content: SITE_NAME },
       {
         property: "og:description",
-        content: "N",
+        content: SITE_TAGLINE,
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
       { property: "og:image", content: `${DOMAIN_URL}/finn-portrait.png` },
       { property: "og:image:width", content: "1128" },
       { property: "og:image:height", content: "1920" },
-      { property: "og:image:alt", content: "FINN · منصة إدارة الأمن الصناعي" },
+      // الصورة صورة FINN، والوصف يقولها: FINN المساعد داخل المنتج، لا
+      // اسمًا ثانيًا للمنتج (`PRODUCT_BRAND.assistantName` هويّة منفصلة).
+      { property: "og:image:alt", content: `FINN · ${PRODUCT_NAME}` },
       { property: "og:site_name", content: COMPANY_NAME },
       { name: "twitter:card", content: "summary_large_image" },
       {
         name: "twitter:title",
-        content: "FINN · منصة إدارة الأمن الصناعي",
+        content: SITE_NAME,
       },
       {
         name: "twitter:description",
-        content: "N",
+        content: SITE_TAGLINE,
       },
       { name: "twitter:image", content: `${DOMAIN_URL}/finn-portrait.png` },
-      { name: "twitter:image:alt", content: "FINN · منصة إدارة الأمن الصناعي" },
-      { title: "FINN · منصة إدارة الأمن الصناعي" },
+      { name: "twitter:image:alt", content: `FINN · ${PRODUCT_NAME}` },
+      // تكرار متعمَّد من نسخة Lovable القديمة: الإدخال الأخير هو ما يفوز
+      // في وسم واحد، فكان عنوان التبويب يعود لتسمية سابقة بعد كل رسم.
+      // الاثنان الآن `SITE_NAME` نفسه — التكرار صار بلا أثر بدل أن يكون
+      // ناسخًا صامتًا.
+      { title: SITE_NAME },
       {
         property: "og:title",
-        content: "FINN · منصة إدارة الأمن الصناعي",
+        content: SITE_NAME,
       },
       {
         property: "og:image",

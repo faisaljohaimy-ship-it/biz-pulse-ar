@@ -31,11 +31,17 @@ export function HeaderClockBar({ showClock = true }: HeaderClockBarProps) {
       dir="ltr"
       // `nx-clock-bar` هو المقبض الذي يقلب هذا الشريط في الوضع الفاتح
       // (styles.css). التدرّج الكحلي أدناه يبقى مرجع الوضع الداكن.
-      className="nx-clock-bar pointer-events-none sticky top-0 z-[100] w-full overflow-hidden border-b border-[#3AE8FF]/30 bg-gradient-to-r from-[#02101e] via-[#04243c] to-[#02101e] shadow-[0_4px_24px_-8px_rgba(0,212,255,0.4)]"
+      //
+      // ترتيب التكديس (تحسين الجوال ٢٠٢٦/٠٨/٠٥): الشريط لاصق أعلى الصفحة
+      // بينما زرّا الرجوع/الرئيسية ومبدّل الوضع عائمان فوقه عند z-70. كان
+      // الشريط عند z-100 فيمرّ خلفيته المصمتة فوقها ويقصّها عن اللمس؛ صار
+      // دونها فيبقيان ظاهرَين، وحُجز لهما ممرّ أفقي في `nx-clock-slot`
+      // (styles.css) فلا يسقط نص الساعة تحتهما في أيٍّ من الاتجاهين.
+      className="nx-clock-bar pointer-events-none sticky top-0 z-[45] w-full overflow-hidden border-b border-[#3AE8FF]/30 bg-gradient-to-r from-[#02101e] via-[#04243c] to-[#02101e] shadow-[0_4px_24px_-8px_rgba(0,212,255,0.4)]"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="relative flex h-9 items-center sm:h-10">
-        <div className="pointer-events-auto ps-2 sm:ps-3">
+        <div className="nx-clock-slot pointer-events-auto">
           <LiveClock className="!border-transparent !bg-transparent !px-0 !py-0 !shadow-none" />
         </div>
       </div>

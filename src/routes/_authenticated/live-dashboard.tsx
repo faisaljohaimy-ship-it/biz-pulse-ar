@@ -15,8 +15,8 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
+// مكتبتا التصدير (xlsx / jspdf) ثقيلتان ولا تُستدعيان إلا من زر التصدير،
+// فتُحمَّلان بالاستيراد الديناميكي داخل المعالِج — لا في حزمة الصفحة.
 import {
   Activity,
   AlertTriangle,
@@ -176,8 +176,10 @@ function LiveExecutiveDashboard() {
     return ts.points.filter((p) => p.day.includes(s));
   }, [ts, search]);
 
-  function exportExcel() {
+  async function exportExcel() {
     if (!ts) return;
+    // تُجلب xlsx عند الضغط فقط؛ السلوك والملف الناتج كما هما.
+    const XLSX = await import("xlsx");
     const wb = XLSX.utils.book_new();
     const rows = filteredPoints.map((p) => ({
       Date: p.day,
@@ -203,8 +205,10 @@ function LiveExecutiveDashboard() {
     XLSX.writeFile(wb, `nexios-executive-${range}d-${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 
-  function exportPdf() {
+  async function exportPdf() {
     if (!ts) return;
+    // تُجلب jspdf عند الضغط فقط؛ محتوى التقرير كما هو دون تغيير.
+    const { default: jsPDF } = await import("jspdf");
     const doc = new jsPDF({ orientation: "landscape" });
     doc.setFontSize(16);
     doc.text("SADEED — Executive Dashboard", 14, 16);
@@ -313,10 +317,24 @@ function LiveExecutiveDashboard() {
           >
             <RefreshCw className="w-3.5 h-3.5 me-1.5" /> تحديث
           </Button>
-          <Button size="sm" variant="outline" onClick={exportExcel} disabled={!ts}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              void exportExcel();
+            }}
+            disabled={!ts}
+          >
             <FileSpreadsheet className="w-3.5 h-3.5 me-1.5" /> Excel
           </Button>
-          <Button size="sm" variant="outline" onClick={exportPdf} disabled={!ts}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              void exportPdf();
+            }}
+            disabled={!ts}
+          >
             <FileText className="w-3.5 h-3.5 me-1.5" /> PDF
           </Button>
         </div>

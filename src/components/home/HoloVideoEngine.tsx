@@ -178,7 +178,9 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
         <span className="nx-hv-noise" style={{ backgroundImage: `url("${NOISE_URI}")` }} />
       </div>
 
-      {/* WCAG 2.2.2: الحركة الدائمة يقابلها زر إيقاف دائم الظهور بيد المستخدم. */}
+      {/* WCAG 2.2.2: الحركة الدائمة يقابلها زر إيقاف دائم الظهور بيد المستخدم.
+          موضعه في styles.css: الركن السفلي المقابل لمُطلق فِن في الاتجاهين
+          معًا، وهدف لمسه ٤٤×٤٤ على الجوال (WCAG 2.5.8). */}
       <button
         type="button"
         onClick={toggle}
@@ -203,7 +205,7 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
         }
         className="nx-hv-toggle"
       >
-        {userOff ? <Play size={15} aria-hidden /> : <Pause size={15} aria-hidden />}
+        {userOff ? <Play size={16} aria-hidden /> : <Pause size={16} aria-hidden />}
       </button>
     </>
   );

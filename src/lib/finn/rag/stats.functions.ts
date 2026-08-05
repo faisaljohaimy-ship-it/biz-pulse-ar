@@ -26,7 +26,9 @@ export type RagStatsSummary = {
   errors: number;
   avg_latency_ms: number | null;
   avg_max_similarity: number | null;
-  pass_rate: number;
+  // المادة ٢٧ — الصدق العددي: بلا استعلامات لا توجد نسبة عبور،
+  // فتعود null («لم يُقَس») ولا تُختلق صفرًا يوحي بفشل البوابة.
+  pass_rate: number | null;
   recent: RagStatsRow[];
 };
 
@@ -69,7 +71,8 @@ export const getRagStats = createServerFn({ method: "GET" })
       avg_max_similarity: sim.length
         ? Number((sim.reduce((a, b) => a + b, 0) / sim.length).toFixed(3))
         : null,
-      pass_rate: total ? Number((passed / total).toFixed(3)) : 0,
+      // بلا عيّنة لا قياس — null لا صفر (كأخواتها avg_* أعلاه).
+      pass_rate: total ? Number((passed / total).toFixed(3)) : null,
       recent: rows.slice(0, 50),
     };
   });

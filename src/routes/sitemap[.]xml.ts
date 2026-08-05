@@ -37,7 +37,8 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/aup", changefreq: "yearly", priority: "0.3" },
           { path: "/responsible-ai", changefreq: "yearly", priority: "0.4" },
           { path: "/login", changefreq: "monthly", priority: "0.4" },
-          { path: "/films", changefreq: "monthly", priority: "0.6" },
+          // «/films» أُزيل: المسار مخفي بأمر المالك ويُعيد التوجيه للرئيسية،
+          // وإعلان مسار مُعاد توجيهه في خريطة الموقع يُنفق زحفًا على لا شيء.
         ];
 
         const urls = entries

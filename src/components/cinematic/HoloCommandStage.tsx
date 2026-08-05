@@ -35,9 +35,13 @@ export function HoloCommandStage({
   k: ExecKpis | undefined;
   status: "OPTIMAL" | "ELEVATED" | "ALERT" | "INITIALIZING";
 }) {
-  const num = (v: number | undefined) =>
-    v === undefined ? "—" : v.toLocaleString(isAr ? "ar-SA" : "en-US");
-  const pct = (v: number | undefined) => (v === undefined ? "—" : `${Math.round(v)}%`);
+  // المادة ٢٧ — يُفرَّق بين حالتين: `undefined` = لم تصل البيانات بعد («—»)،
+  // و`null` = وصلت ولم يُقَس المؤشر («لم يُقَس»). الصفر ليس بديلًا عن أيّهما.
+  const unmeasured = isAr ? "لم يُقَس" : "Not measured";
+  const num = (v: number | null | undefined) =>
+    v === undefined ? "—" : v === null ? unmeasured : v.toLocaleString(isAr ? "ar-SA" : "en-US");
+  const pct = (v: number | null | undefined) =>
+    v === undefined ? "—" : v === null ? unmeasured : `${Math.round(v)}%`;
 
   const widgets: Array<{
     icon: typeof ShieldAlert;
@@ -284,7 +288,14 @@ export function HoloCommandStage({
                 <div className={cn("mt-1 text-[12px] tracking-[0.3em] font-mono", statusTone)}>
                   {status}
                 </div>
-                <div className="mt-3 text-3xl font-bold tabular-nums text-cyan-100">
+                {/* الرقم كبير حين يُقاس؛ وإن لم يُقَس فسطر أصغر يسع النص العربي
+                    دون أن يفيض من القرص (المادة ٢٧ لا تُختصر إلى صفر). */}
+                <div
+                  className={cn(
+                    "mt-3 font-bold tabular-nums text-cyan-100",
+                    typeof k?.executive_readiness === "number" ? "text-3xl" : "text-sm",
+                  )}
+                >
                   {pct(k?.executive_readiness)}
                 </div>
                 <div className="mt-1 text-[12px] tracking-[0.3em] text-cyan-200/60 font-mono">

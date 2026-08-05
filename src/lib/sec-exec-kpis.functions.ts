@@ -8,12 +8,18 @@ import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-midd
 // ============= EXECUTIVE KPIs =============
 // Zod schema is the canonical contract for the API output. The TS type below
 // is inferred from it so the runtime and compile-time shapes never drift.
-// All fields are required, finite, non-negative integers. Percentage/index
+// Counting fields are required, finite, non-negative integers. Percentage/index
 // fields (resolution_rate, health, completion, compliance, risk, safety,
 // readiness) must also stay within 0..100. Money totals can grow large but
 // must remain safe integers.
+//
+// المادة ٢٧ — الصدق العددي: المؤشر المشتق من مجموعة مصادر فارغة لا يُقاس،
+// فيعود `null` («لم يُقَس») ولا يُختلق صفرًا يُقرأ كأداء منهار. العدّ يبقى
+// صفرًا لأن «صفر صفوف» قياسٌ صحيح، أما المتوسط/النسبة فبلا عيّنة لا وجود له.
 const nonNegInt = z.number().int().nonnegative().finite();
 const pctInt = nonNegInt.max(100);
+const nonNegIntOrNull = nonNegInt.nullable();
+const pctIntOrNull = pctInt.nullable();
 const moneyInt = z
   .number()
   .int()
@@ -26,8 +32,8 @@ export const ExecKpisSchema = z
     incidents_total: nonNegInt,
     incidents_open: nonNegInt,
     incidents_critical: nonNegInt,
-    incidents_resolution_rate: pctInt,
-    mttr_minutes: nonNegInt,
+    incidents_resolution_rate: pctIntOrNull,
+    mttr_minutes: nonNegIntOrNull,
     preventive_wo: nonNegInt,
     corrective_wo: nonNegInt,
     wo_open: nonNegInt,
@@ -38,27 +44,43 @@ export const ExecKpisSchema = z
     projects_spent_total: moneyInt,
     cameras_total: nonNegInt,
     cameras_online: nonNegInt,
-    cctv_health: pctInt,
+    cctv_health: pctIntOrNull,
     gates_total: nonNegInt,
     gates_online: nonNegInt,
-    access_health: pctInt,
+    access_health: pctIntOrNull,
     sensors_total: nonNegInt,
     sensors_alarming: nonNegInt,
     sites_operational: nonNegInt,
     sites_total: nonNegInt,
     patrols_active: nonNegInt,
-    patrol_completion: pctInt,
+    patrol_completion: pctIntOrNull,
     visitors_inside: nonNegInt,
     permits_active: nonNegInt,
     contractors_active: nonNegInt,
-    contractors_compliance: pctInt,
-    risk_index: pctInt,
-    safety_index: pctInt,
-    executive_readiness: pctInt,
+    contractors_compliance: pctIntOrNull,
+    // المخاطر مشتقة من صحة الكاميرات؛ فإن لم تُقَس تلك لم يُقَس هذان.
+    risk_index: pctIntOrNull,
+    safety_index: pctIntOrNull,
+    // مركّب: أي طرف غير مقيس يجعل الجاهزية غير مقيسة.
+    executive_readiness: pctIntOrNull,
   })
   .strict();
 
 export type ExecKpis = z.infer<typeof ExecKpisSchema>;
+
+// نص العرض الموحّد للمؤشر غير المقيس (المادة ٢٧). كل سطح يعرض حقلًا قد
+// يكون `null` يستعمل هذين المُنسِّقين بدل `?? 0` — فالصفر ادّعاء قياس.
+export const UNMEASURED_AR = "لم يُقَس";
+
+/** نسبة مئوية للعرض، أو «لم يُقَس» إن لم تُقَس. */
+export function pctOrUnmeasured(v: number | null | undefined): string {
+  return v === null || v === undefined ? UNMEASURED_AR : `${v}%`;
+}
+
+/** عدد للعرض (مع لاحقة اختيارية)، أو «لم يُقَس» إن لم يُقَس. */
+export function numOrUnmeasured(v: number | null | undefined, suffix = ""): string {
+  return v === null || v === undefined ? UNMEASURED_AR : `${v}${suffix}`;
+}
 
 export type ExecKpiSources = {
   incidents: { severity: string; status: string; response_minutes: number | null }[];
@@ -158,47 +180,57 @@ export function computeExecKpis(src: ExecKpiSources): ExecKpis {
     projects: PRJ,
   } = src;
 
-  const incTotal = I.length || 1;
   const incOpen = I.filter((i) => i.status !== "resolved" && i.status !== "closed").length;
   const incClosed = I.length - incOpen;
   const incCritical = I.filter((i) => i.severity === "critical" && i.status !== "closed").length;
-  const mttr = I.filter((i) => i.response_minutes != null).reduce(
-    (s, i, _, a) => s + (i.response_minutes ?? 0) / (a.length || 1),
-    0,
-  );
+  // المادة ٢٧: بلا بلاغ زمنه مسجَّل لا يوجد متوسط استجابة — null لا صفر
+  // (صفر دقيقة استجابة ادّعاء أداء مثالي، وهو أخطر من غياب الرقم).
+  const responded = I.filter((i) => i.response_minutes != null);
+  const mttr = responded.length
+    ? responded.reduce((s, i) => s + (i.response_minutes ?? 0), 0) / responded.length
+    : null;
   const camOnline = CAM.filter((c) => c.status === "online").length;
   const gateOnline = G.filter((g) => g.status === "online").length;
+  // بلا كاميرات مسجَّلة لا تُقاس صحة المنظومة — وليست منهارة عند الصفر.
   const cctvHealth = CAM.length
     ? Math.round(CAM.reduce((s, c) => s + c.health, 0) / CAM.length)
-    : 0;
-  const accessHealth = G.length ? Math.round(G.reduce((s, g) => s + g.health, 0) / G.length) : 0;
+    : null;
+  const accessHealth = G.length ? Math.round(G.reduce((s, g) => s + g.health, 0) / G.length) : null;
   const sensorsAlarming = SEN.filter((s) => s.status === "alarm" || s.status === "offline").length;
-  const patrolCompletion = P.length
+  // الدوريات: تُحسب النسبة من الدوريات ذات نقاط تفتيش فقط. دورية بمقام
+  // صفري لا تُقاس، وإدخالها بصفر كان يخفض النسبة بقياسٍ لم يقع أصلًا؛
+  // وإن لم تكن ثمة دورية قابلة للقياس فالنتيجة «لم يُقَس» لا صفر.
+  const measurableP = P.filter((p) => p.checkpoints_total > 0);
+  const patrolCompletion = measurableP.length
     ? Math.round(
-        (P.reduce(
-          (s, p) => s + (p.checkpoints_total ? p.checkpoints_done / p.checkpoints_total : 0),
-          0,
-        ) /
-          P.length) *
+        (measurableP.reduce((s, p) => s + p.checkpoints_done / p.checkpoints_total, 0) /
+          measurableP.length) *
           100,
       )
-    : 0;
+    : null;
   const compliance = C.length
     ? Math.round(C.reduce((s, c) => s + c.compliance_score, 0) / C.length)
-    : 0;
-  const resolutionRate = Math.round((incClosed / incTotal) * 100);
-  const riskIndex = Math.min(100, incCritical * 15 + sensorsAlarming * 5 + (100 - cctvHealth) / 2);
-  const safetyIndex = Math.max(0, 100 - riskIndex);
-  const executiveReadiness = Math.round(
-    (cctvHealth + accessHealth + compliance + patrolCompletion + safetyIndex) / 5,
-  );
+    : null;
+  // بلا بلاغات لا توجد نسبة إغلاق (كان يُحسب 0/1 فيظهر 0% إنجاز مُختلق).
+  const resolutionRate = I.length ? Math.round((incClosed / I.length) * 100) : null;
+  // المخاطر تستهلك صحة الكاميرات؛ الصفر المُختلق كان يضيف 50 نقطة خطر وهمية.
+  const riskIndexRaw =
+    cctvHealth === null
+      ? null
+      : Math.min(100, incCritical * 15 + sensorsAlarming * 5 + (100 - cctvHealth) / 2);
+  const safetyIndexRaw = riskIndexRaw === null ? null : Math.max(0, 100 - riskIndexRaw);
+  // المركّب: أي طرف غير مقيس ⇐ الجاهزية غير مقيسة (لا متوسط فوق فراغ).
+  const readinessParts = [cctvHealth, accessHealth, compliance, patrolCompletion, safetyIndexRaw];
+  const executiveReadiness = readinessParts.some((v) => v === null)
+    ? null
+    : Math.round((readinessParts as number[]).reduce((s, v) => s + v, 0) / readinessParts.length);
 
   return {
     incidents_total: I.length,
     incidents_open: incOpen,
     incidents_critical: incCritical,
     incidents_resolution_rate: resolutionRate,
-    mttr_minutes: Math.round(mttr),
+    mttr_minutes: mttr === null ? null : Math.round(mttr),
     preventive_wo: WO.filter((w) => w.kind === "preventive").length,
     corrective_wo: WO.filter((w) => w.kind === "corrective").length,
     wo_open: WO.filter((w) => w.status !== "closed" && w.status !== "cancelled").length,
@@ -223,8 +255,8 @@ export function computeExecKpis(src: ExecKpiSources): ExecKpis {
     permits_active: PM.filter((p) => p.status === "active" || p.status === "approved").length,
     contractors_active: C.filter((c) => c.status === "active").length,
     contractors_compliance: compliance,
-    risk_index: Math.round(riskIndex),
-    safety_index: Math.round(safetyIndex),
+    risk_index: riskIndexRaw === null ? null : Math.round(riskIndexRaw),
+    safety_index: safetyIndexRaw === null ? null : Math.round(safetyIndexRaw),
     executive_readiness: executiveReadiness,
   };
 }
@@ -320,7 +352,8 @@ export type ExecTimeseries = {
   totals: {
     incidents: number;
     incidents_resolved: number;
-    resolution_rate: number; // 0..100
+    // المادة ٢٧: بلا بلاغات في النافذة لا توجد نسبة إغلاق — null لا صفر.
+    resolution_rate: number | null; // 0..100 أو null إن لم يُقَس
     work_orders_opened: number;
     work_orders_closed: number;
     patrols_completed: number;
@@ -442,7 +475,8 @@ export const getExecTimeseries = createServerFn({ method: "GET" })
       totals: {
         incidents,
         incidents_resolved,
-        resolution_rate: incidents === 0 ? 0 : Math.round((incidents_resolved / incidents) * 100),
+        resolution_rate:
+          incidents === 0 ? null : Math.round((incidents_resolved / incidents) * 100),
         work_orders_opened: wo_opened,
         work_orders_closed: wo_closed,
         patrols_completed: patrols,

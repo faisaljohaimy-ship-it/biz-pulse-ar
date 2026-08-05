@@ -1,9 +1,9 @@
 ---
 name: nexios-deploy-safety
-description: أمان النشر لمشروع NEXIOS — يُستدعى قبل أي commit/push أو عمل على CI أو أسئلة «لماذا لا يظهر التغيير على neexios.com». يغطي خط النشر الفعلي (Lovable أساسي + GitHub Actions/Cloudflare اختياري)، انضباط الالتزام الواحد، والمحظورات وفحوصها.
+description: أمان النشر لمشروع سَدِيد — يُستدعى قبل أي commit/push أو عمل على CI أو أسئلة «لماذا لا يظهر التغيير على neexios.com». يغطي خط النشر الفعلي (Lovable أساسي + GitHub Actions/Cloudflare اختياري)، انضباط الالتزام الواحد، والمحظورات وفحوصها.
 ---
 
-# NEXIOS Deploy Safety — أمان النشر
+# سَدِيد Deploy Safety — أمان النشر
 
 ## خط النشر الفعلي (لا تفترض غيره)
 

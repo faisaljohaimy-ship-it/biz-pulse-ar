@@ -11,7 +11,7 @@
  * Four mandatory states: loading · empty · error · success (art. 14).
  */
 import * as React from "react";
-import { ArrowRight, Bot } from "lucide-react";
+import { ArrowRight, Bot, FlaskConical, ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -143,7 +143,9 @@ export function NxAgentsPage() {
                 else void navigate({ to: "/" });
               }}
               aria-label="رجوع"
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-primary/30 bg-white/[0.04] px-3 text-xs font-semibold text-nx-pearl transition-colors hover:border-primary/60 hover:bg-primary/10"
+              // ٤٤ بكسل على الجوال أرضيةً للمس (WCAG 2.5.8)، و٣٦ على المكتب
+              // حيث المؤشّر دقيق — فلا يتضخّم الشريط العلوي بلا داعٍ.
+              className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-primary/30 bg-white/[0.04] px-3 text-xs font-semibold text-nx-pearl transition-colors hover:border-primary/60 hover:bg-primary/10 md:h-9"
             >
               <ArrowRight className="h-4 w-4 text-primary" aria-hidden="true" />
               <span>رجوع</span>
@@ -166,15 +168,22 @@ export function NxAgentsPage() {
               <Bot className="h-4 w-4 text-primary" aria-hidden="true" />
               <span>مسرح العمليات الحيّ</span>
             </Link>
+            {/* شارة المصدر — أيقونة القارورة تلازم المحاكاة كما في تذييل
+                /nx-flow، والصفوف الحية تُبدّل الشارة كلها لا لونها فقط. */}
             {data ? (
               <span
                 className={
                   data.is_simulation
-                    ? "rounded-full border border-nx-gold/50 px-3 py-1 text-[12px] font-semibold text-nx-gold"
-                    : "rounded-full border border-nx-success/50 px-3 py-1 text-[12px] font-semibold text-nx-success"
+                    ? "inline-flex items-center gap-1.5 rounded-full border border-nx-gold/50 px-3 py-1 text-[12px] font-semibold text-nx-gold"
+                    : "inline-flex items-center gap-1.5 rounded-full border border-nx-success/50 px-3 py-1 text-[12px] font-semibold text-nx-success"
                 }
               >
-                {data.is_simulation ? "عرض توضيحي · محاكاة مرجعية" : "حقيقي · قراءة"}
+                {data.is_simulation ? (
+                  <FlaskConical className="h-3.5 w-3.5" aria-hidden />
+                ) : (
+                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
+                )}
+                {data.is_simulation ? "بيانات محاكاة مرجعية" : "حقيقي · قراءة"}
               </span>
             ) : null}
           </div>
@@ -220,7 +229,11 @@ export function NxAgentsPage() {
               المصادر ← الوكلاء ← FINN ← بوابة الاعتماد البشري
             </p>
           </div>
-          <div className="w-full overflow-x-auto">
+          {/* أرضية قراءة نصّ اللوحة: مقاسها الداخلي ١٢٦٠ وحدة، فلو انكمشت
+              إلى عرض الجوال هبط نصّها إلى ~٣ بكسل. `nx-svg-readable`
+              (styles.css) يمنع انكماشها تحت العرض الذي يُبقي النص ≥١١ بكسل،
+              والفائض يُمرَّر أفقيًا داخل هذه الحاوية لا على الصفحة. */}
+          <div className="nx-svg-readable w-full overflow-x-auto">
             <AgenticFlowCanvas
               ar
               variant="full"

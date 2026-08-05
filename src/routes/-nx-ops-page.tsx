@@ -171,13 +171,48 @@ const GLYPHS: React.ReactNode[] = [
   </g>,
 ];
 
+/**
+ * حالة الخطأ الصادقة — بديل الهياكل الشبحية حين ينقطع المصدر.
+ * تتبع عُرف `NxErrorState` (دور alert · عنوان · سبب · زر إعادة) لكنها
+ * مكتوبة برموز `--ink`/`--surface` لا برموز القمرة الداكنة الثابتة
+ * (`nx-pearl` أبيض مطلق فيختفي على السطح الفاتح — المادة ٣٣).
+ * لا تُذكر مصادقة ولا رمز وصول في النص (الطريقة المحفوظة §٣).
+ */
+function OpsFailure({ ar, onRetry }: { ar: boolean; onRetry: () => void }) {
+  return (
+    <div
+      role="alert"
+      className="mx-auto mt-8 flex max-w-md flex-col items-center gap-3 rounded-2xl border border-[color:var(--hairline)] bg-[color:var(--chip)] px-5 py-10 text-center"
+    >
+      <span aria-hidden className="text-2xl text-[color:var(--tone-amber)]">
+        ⚠
+      </span>
+      <h2 className="text-[16px] font-bold text-[color:var(--ink)]">
+        {ar ? "تعذّر تحميل مسرح العمليات" : "The operations theater could not load"}
+      </h2>
+      <p className="text-[13px] font-medium text-[color:var(--ink-2)]">
+        {ar
+          ? "لم تصل بيانات المناوبة. لا شيء هنا مقدَّر أو مفترض — أعد المحاولة."
+          : "Shift data did not arrive. Nothing here is estimated — try again."}
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="min-h-11 rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] px-5 text-[13px] font-bold text-[color:var(--ink)] transition-colors hover:bg-[color:var(--chip)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--tone-cyan)]"
+      >
+        {ar ? "إعادة المحاولة" : "Retry"}
+      </button>
+    </div>
+  );
+}
+
 export function NxOpsPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const { loading: authLoading } = useAuth();
   const getState = useServerFn(getCommandCenterState);
 
-  const { data } = useQuery({
+  const { data, isError, isPending, refetch } = useQuery({
     queryKey: ["ops-theater-state"],
     queryFn: () => getState(),
     enabled: !authLoading,
@@ -244,170 +279,189 @@ export function NxOpsPage() {
           </p>
         </header>
 
+        {/* فشل القراءة يوقف المسرح كله ويعرض سببًا صادقًا بزر إعادة —
+            لا هياكل شبحية تدور بلا نهاية (المادة ٢٧). */}
+        {isError ? <OpsFailure ar={ar} onRetry={() => void refetch()} /> : null}
+
         {/* ── قلب المسرح: FINN التنفيذية ───────────────────────────── */}
-        <section className="nx-op-enter mt-6" style={{ ["--op-i" as string]: 1 }}>
-          <article className="nx-op-core" data-state={finn?.status ?? "idle"}>
-            <span aria-hidden className="nx-op-core-ring nx-op-core-ring--a" />
-            <span aria-hidden className="nx-op-core-ring nx-op-core-ring--b" />
-            <div className="nx-op-core-crown" aria-hidden>
-              <svg viewBox="0 0 24 16" focusable="false">
-                <path
-                  d="M2 13h20M3 12L2 4l5 4 5-7 5 7 5-4-1 8z"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <h2 className="nx-op-core-name">{finn?.name_ar ?? "FINN التنفيذية"}</h2>
-                <span className="nx-op-status" data-state={finn?.status ?? "idle"}>
-                  <i aria-hidden />
-                  {finn ? (ar ? STATUS_AR[finn.status] : STATUS_EN[finn.status]) : dash}
-                </span>
-              </div>
-              <p className="nx-op-core-task">
-                {finn?.task_ar ?? (ar ? "بانتظار مهمة" : "awaiting task")}
-              </p>
-            </div>
-            <div className="nx-op-core-side">
-              <b>{finn ? finn.done_today : dash}</b>
-              <span>{ar ? "منجز اليوم" : "done today"}</span>
-              <Link to="/finn" className="nx-op-cta">
-                {ar ? "فتح مركز القيادة" : "Open command"}
-              </Link>
-            </div>
-          </article>
+        {!isError && (
+          <>
+            <section className="nx-op-enter mt-6" style={{ ["--op-i" as string]: 1 }}>
+              <article className="nx-op-core" data-state={finn?.status ?? "idle"}>
+                <span aria-hidden className="nx-op-core-ring nx-op-core-ring--a" />
+                <span aria-hidden className="nx-op-core-ring nx-op-core-ring--b" />
+                <div className="nx-op-core-crown" aria-hidden>
+                  <svg viewBox="0 0 24 16" focusable="false">
+                    <path
+                      d="M2 13h20M3 12L2 4l5 4 5-7 5 7 5-4-1 8z"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <h2 className="nx-op-core-name">{finn?.name_ar ?? "FINN التنفيذية"}</h2>
+                    <span className="nx-op-status" data-state={finn?.status ?? "idle"}>
+                      <i aria-hidden />
+                      {finn ? (ar ? STATUS_AR[finn.status] : STATUS_EN[finn.status]) : dash}
+                    </span>
+                  </div>
+                  <p className="nx-op-core-task">
+                    {finn?.task_ar ?? (ar ? "بانتظار مهمة" : "awaiting task")}
+                  </p>
+                </div>
+                <div className="nx-op-core-side">
+                  <b>{finn ? finn.done_today : dash}</b>
+                  <span>{ar ? "منجز اليوم" : "done today"}</span>
+                  <Link to="/finn" className="nx-op-cta">
+                    {ar ? "فتح مركز القيادة" : "Open command"}
+                  </Link>
+                </div>
+              </article>
 
-          {/* حزمة الأنابيب: من القلب تتفرّع إلى الغرف — زينة تعلن التدفق */}
-          <svg
-            aria-hidden
-            focusable="false"
-            className="nx-op-bus"
-            viewBox="0 0 1000 90"
-            preserveAspectRatio="none"
-          >
-            {rooms.slice(0, 10).map((room, i) => {
-              const n = Math.min(rooms.length, 10);
-              const x = (1000 / (n + 1)) * (i + 1);
-              const d = `M500 4 C500 55 ${x} 30 ${x} 88`;
-              return (
-                <g key={room.id} style={{ ["--op-hue" as string]: HUE_WHEEL[i % 6] }}>
-                  <path d={d} className="nx-op-pipe" />
-                  <path d={d} className="nx-op-pulse" style={{ ["--op-i" as string]: i }} />
-                </g>
-              );
-            })}
-          </svg>
-        </section>
-
-        {/* ── الغرف العشر ──────────────────────────────────────────── */}
-        <section
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
-          aria-label={ar ? "غرف الوكلاء" : "Agent rooms"}
-        >
-          {rooms.map((agent, i) => (
-            <article
-              key={agent.id}
-              className="nx-op-room nx-op-enter"
-              data-state={agent.status}
-              style={{
-                ["--op-hue" as string]: HUE_WHEEL[i % 6],
-                ["--op-i" as string]: i + 2,
-              }}
-            >
-              <span aria-hidden className="nx-op-room-edge" />
-              <RoomScene glyph={GLYPHS[i % GLYPHS.length]} />
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="nx-op-room-name">{agent.name_ar}</h3>
-                <span className="nx-op-role">{agent.role}</span>
-              </div>
-              <div className="mt-1.5 flex items-center gap-2">
-                <span className="nx-op-status" data-state={agent.status}>
-                  <i aria-hidden />
-                  {ar ? STATUS_AR[agent.status] : STATUS_EN[agent.status]}
-                </span>
-                {(agent.severity === "high" || agent.severity === "critical") && (
-                  <span className="nx-op-flag" data-sev={agent.severity}>
-                    <svg viewBox="0 0 10 10" aria-hidden focusable="false">
-                      {agent.severity === "critical" ? (
-                        <path d="M3 .5h4L9.5 3v4L7 9.5H3L.5 7V3z" fill="currentColor" />
-                      ) : (
-                        <path d="M5 .8l4.5 8H.5z" fill="currentColor" />
-                      )}
-                    </svg>
-                    {agent.severity === "critical"
-                      ? ar
-                        ? "حرج"
-                        : "critical"
-                      : ar
-                        ? "مرتفع"
-                        : "high"}
-                  </span>
-                )}
-              </div>
-              <p className="nx-op-task">
-                {agent.task_ar ?? (ar ? "بانتظار مهمة" : "awaiting task")}
-              </p>
-              <div className="nx-op-meter" aria-hidden>
-                <span
-                  style={{
-                    ["--op-fill" as string]: maxDone
-                      ? `${(agent.done_today / maxDone) * 100}%`
-                      : "0%",
-                  }}
-                />
-              </div>
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <span className="nx-op-done">
-                  <b>{agent.done_today}</b> {ar ? "منجز اليوم" : "done today"}
-                </span>
-                <Link to={roleRoute(agent.role, agent.name_ar)} className="nx-op-cta">
-                  {ar ? "فتح مركز القيادة" : "Open command"}
-                </Link>
-              </div>
-            </article>
-          ))}
-
-          {/* هيكل انتظار صادق — يظهر قبل وصول أول دفعة بيانات فقط */}
-          {rooms.length === 0 &&
-            Array.from({ length: 6 }, (_, i) => (
-              <article
-                key={i}
-                className="nx-op-room nx-op-room--ghost nx-op-enter"
-                style={{ ["--op-i" as string]: i + 2 }}
+              {/* حزمة الأنابيب: من القلب تتفرّع إلى الغرف — زينة تعلن التدفق */}
+              <svg
                 aria-hidden
-              />
-            ))}
-        </section>
+                focusable="false"
+                className="nx-op-bus"
+                viewBox="0 0 1000 90"
+                preserveAspectRatio="none"
+              >
+                {rooms.slice(0, 10).map((room, i) => {
+                  const n = Math.min(rooms.length, 10);
+                  const x = (1000 / (n + 1)) * (i + 1);
+                  const d = `M500 4 C500 55 ${x} 30 ${x} 88`;
+                  return (
+                    <g key={room.id} style={{ ["--op-hue" as string]: HUE_WHEEL[i % 6] }}>
+                      <path d={d} className="nx-op-pipe" />
+                      <path d={d} className="nx-op-pulse" style={{ ["--op-i" as string]: i }} />
+                    </g>
+                  );
+                })}
+              </svg>
+            </section>
 
-        {/* ── شريط القرارات الجاري ─────────────────────────────────── */}
-        <section className="nx-op-enter mt-8" style={{ ["--op-i" as string]: 13 }}>
-          <h2 className="nx-op-h2">{ar ? "سجل تبادل البيانات — مباشر" : "Data exchange — live"}</h2>
-          <div className="nx-op-ticker" data-static={ticker.length === 0 || undefined}>
-            <div className="nx-op-ticker-track">
-              {ticker.map((p, i) => (
-                <span
-                  key={`${p.id}-${i}`}
-                  className="nx-op-decision"
-                  data-sev={p.severity}
-                  aria-hidden={i >= pipeline.length || undefined}
+            {/* ── الغرف العشر ──────────────────────────────────────────── */}
+            <section
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+              aria-label={ar ? "غرف الوكلاء" : "Agent rooms"}
+            >
+              {rooms.map((agent, i) => (
+                <article
+                  key={agent.id}
+                  className="nx-op-room nx-op-enter"
+                  data-state={agent.status}
+                  style={{
+                    ["--op-hue" as string]: HUE_WHEEL[i % 6],
+                    ["--op-i" as string]: i + 2,
+                  }}
                 >
-                  <i className="nx-op-stage">{ar ? (STAGE_AR[p.stage] ?? p.stage) : p.stage}</i>
-                  <b>{p.title_ar}</b>
-                  <span className="nx-op-decision-agent">{p.agent_ar}</span>
-                </span>
+                  <span aria-hidden className="nx-op-room-edge" />
+                  <RoomScene glyph={GLYPHS[i % GLYPHS.length]} />
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="nx-op-room-name">{agent.name_ar}</h3>
+                    <span className="nx-op-role">{agent.role}</span>
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <span className="nx-op-status" data-state={agent.status}>
+                      <i aria-hidden />
+                      {ar ? STATUS_AR[agent.status] : STATUS_EN[agent.status]}
+                    </span>
+                    {(agent.severity === "high" || agent.severity === "critical") && (
+                      <span className="nx-op-flag" data-sev={agent.severity}>
+                        <svg viewBox="0 0 10 10" aria-hidden focusable="false">
+                          {agent.severity === "critical" ? (
+                            <path d="M3 .5h4L9.5 3v4L7 9.5H3L.5 7V3z" fill="currentColor" />
+                          ) : (
+                            <path d="M5 .8l4.5 8H.5z" fill="currentColor" />
+                          )}
+                        </svg>
+                        {agent.severity === "critical"
+                          ? ar
+                            ? "حرج"
+                            : "critical"
+                          : ar
+                            ? "مرتفع"
+                            : "high"}
+                      </span>
+                    )}
+                  </div>
+                  <p className="nx-op-task">
+                    {agent.task_ar ?? (ar ? "بانتظار مهمة" : "awaiting task")}
+                  </p>
+                  <div className="nx-op-meter" aria-hidden>
+                    <span
+                      style={{
+                        ["--op-fill" as string]: maxDone
+                          ? `${(agent.done_today / maxDone) * 100}%`
+                          : "0%",
+                      }}
+                    />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <span className="nx-op-done">
+                      <b>{agent.done_today}</b> {ar ? "منجز اليوم" : "done today"}
+                    </span>
+                    <Link to={roleRoute(agent.role, agent.name_ar)} className="nx-op-cta">
+                      {ar ? "فتح مركز القيادة" : "Open command"}
+                    </Link>
+                  </div>
+                </article>
               ))}
-              {ticker.length === 0 && (
-                <span className="nx-op-decision">
-                  <b>{ar ? "لا قرارات جارية الآن" : "No decisions in flight"}</b>
-                </span>
-              )}
-            </div>
-          </div>
-        </section>
+
+              {/* هيكل انتظار صادق — أثناء أول جلب فقط؛ الفشل يوقفه ويورّث
+              الشاشة إلى كتلة الخطأ أعلاه، فلا يدور الهيكل بلا نهاية */}
+              {rooms.length === 0 &&
+                isPending &&
+                Array.from({ length: 6 }, (_, i) => (
+                  <article
+                    key={i}
+                    className="nx-op-room nx-op-room--ghost nx-op-enter"
+                    style={{ ["--op-i" as string]: i + 2 }}
+                    aria-hidden
+                  />
+                ))}
+
+              {/* وصل الرد وليس فيه وكلاء — يُقال صراحةً لا يُترك فراغًا */}
+              {rooms.length === 0 && !isPending ? (
+                <p className="text-[13px] font-medium text-[color:var(--ink-2)]">
+                  {ar ? "لا وكلاء على المناوبة الآن." : "No agents on shift right now."}
+                </p>
+              ) : null}
+            </section>
+
+            {/* ── شريط القرارات الجاري ─────────────────────────────────── */}
+            <section className="nx-op-enter mt-8" style={{ ["--op-i" as string]: 13 }}>
+              <h2 className="nx-op-h2">
+                {ar ? "سجل تبادل البيانات — مباشر" : "Data exchange — live"}
+              </h2>
+              <div className="nx-op-ticker" data-static={ticker.length === 0 || undefined}>
+                <div className="nx-op-ticker-track">
+                  {ticker.map((p, i) => (
+                    <span
+                      key={`${p.id}-${i}`}
+                      className="nx-op-decision"
+                      data-sev={p.severity}
+                      aria-hidden={i >= pipeline.length || undefined}
+                    >
+                      <i className="nx-op-stage">{ar ? (STAGE_AR[p.stage] ?? p.stage) : p.stage}</i>
+                      <b>{p.title_ar}</b>
+                      <span className="nx-op-decision-agent">{p.agent_ar}</span>
+                    </span>
+                  ))}
+                  {ticker.length === 0 && (
+                    <span className="nx-op-decision">
+                      <b>{ar ? "لا قرارات جارية الآن" : "No decisions in flight"}</b>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </section>
+          </>
+        )}
 
         {/* ── التذييل ──────────────────────────────────────────────── */}
         <footer

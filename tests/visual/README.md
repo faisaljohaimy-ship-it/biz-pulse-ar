@@ -5,7 +5,7 @@ Guards two elements in `HeroZeroIntro` against layout drift and clipping:
 | testid                   | Element                                          |
 | ------------------------ | ------------------------------------------------ |
 | `hero-saudi-emblem`      | Top-center Saudi national emblem (swords + palm) |
-| `hero-vision-2030-crest` | Bottom stack — رؤية 2030 crest under NEXIOS AI   |
+| `hero-vision-2030-crest` | Bottom stack — رؤية 2030 crest under SADEED      |
 
 Viewports covered: `iphone-se`, `iphone-14-pro`, `pixel-7`, `ipad-mini`, `desktop-1440`.
 

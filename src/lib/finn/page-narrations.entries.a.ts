@@ -5,7 +5,7 @@ import { n } from "./page-narrations.base";
 export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
   // ── SEC command surface ─────────────────────────────────────────────
   [
-    "/_authenticated/sec.incidents",
+    "/sec/incidents",
     n(
       "لوحة الحوادث الأمنية",
       "Security Incidents",
@@ -18,7 +18,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.cctv",
+    "/sec/cctv",
     n(
       "لوحة كاميرات المراقبة",
       "CCTV Operations",
@@ -31,7 +31,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.patrols",
+    "/sec/patrols",
     n(
       "لوحة الدوريات",
       "Patrols",
@@ -44,7 +44,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.permits",
+    "/sec/permits",
     n(
       "لوحة تصاريح العمل",
       "Work Permits",
@@ -57,7 +57,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.assets",
+    "/sec/assets",
     n(
       "لوحة الأصول الأمنية",
       "Security Assets",
@@ -70,7 +70,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.kpi",
+    "/sec/kpi",
     n(
       "مؤشرات الأداء الأمنية",
       "Security KPIs",
@@ -83,7 +83,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.exec",
+    "/sec/exec",
     n(
       "غرفة القيادة التنفيذية للأمن",
       "Security Executive Room",
@@ -96,7 +96,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.risks",
+    "/sec/risks",
     n(
       "سجل المخاطر",
       "Risk Register",
@@ -109,7 +109,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.emergency",
+    "/sec/emergency",
     n(
       "لوحة الطوارئ",
       "Emergency Response",
@@ -122,7 +122,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.safety",
+    "/sec/safety",
     n(
       "لوحة السلامة",
       "Safety",
@@ -135,7 +135,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.maintenance",
+    "/sec/maintenance",
     n(
       "لوحة الصيانة — أوامر العمل",
       "Maintenance — Work Orders",
@@ -148,7 +148,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.facilities",
+    "/sec/facilities",
     n(
       "لوحة المنشآت",
       "Facilities",
@@ -161,7 +161,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.projects",
+    "/sec/projects",
     n(
       "لوحة المشاريع الأمنية",
       "Security Projects",
@@ -174,7 +174,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.reports",
+    "/sec/reports",
     n(
       "لوحة التقارير التنفيذية للأمن",
       "Security Executive Reports",
@@ -187,7 +187,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.timeline",
+    "/sec/timeline",
     n(
       "الخط الزمني الأمني",
       "Security Timeline",
@@ -200,7 +200,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.shifts",
+    "/sec/shifts",
     n(
       "لوحة المناوبات",
       "Shifts",
@@ -213,7 +213,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.sections",
+    "/sec/sections",
     n(
       "لوحة الأقسام الأمنية",
       "Security Sections",
@@ -226,7 +226,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.circles",
+    "/sec/circles",
     n(
       "الدوائر التشغيلية",
       "Operational Circles",
@@ -239,7 +239,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.ai",
+    "/sec/ai",
     n(
       "طبقة الذكاء الأمني",
       "Security AI Layer",
@@ -252,7 +252,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.integrations",
+    "/sec/integrations",
     n(
       "لوحة تكاملات الأمن",
       "Security Integrations",
@@ -265,7 +265,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.access",
+    "/sec/access",
     n(
       "لوحة صلاحيات الوصول",
       "Access Control",
@@ -278,7 +278,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.contractors",
+    "/sec/contractors",
     n(
       "لوحة المقاولين",
       "Contractors",
@@ -291,7 +291,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.visitors",
+    "/sec/visitors",
     n(
       "لوحة الزوار",
       "Visitors",
@@ -304,7 +304,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.vehicles",
+    "/sec/vehicles",
     n(
       "لوحة المركبات",
       "Vehicles",
@@ -317,7 +317,7 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.knowledge",
+    "/sec/knowledge",
     n(
       "قاعدة معرفة الأمن",
       "Security Knowledge",

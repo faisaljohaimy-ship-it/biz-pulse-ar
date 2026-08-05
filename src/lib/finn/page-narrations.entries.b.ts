@@ -4,7 +4,7 @@ import { n } from "./page-narrations.base";
 
 export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
-    "/_authenticated/sec.twin",
+    "/sec/twin",
     n(
       "التوأم الرقمي للمنطقة",
       "Regional Digital Twin",
@@ -17,7 +17,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/sec.index",
+    "/sec",
     n(
       "الصفحة الرئيسية للقيادة الأمنية",
       "Security Command Home",
@@ -29,23 +29,13 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
       "a tab grid (Executive · Ops Room · Digital Twin · Circles · Sections · Projects · WOs) navigates without reload under one LIVE badge",
     ),
   ],
-  [
-    "/_authenticated/sec",
-    n(
-      "قسم القيادة الأمنية",
-      "Security Command",
-      "نظرة عامة حيّة على الحوادث والدوريات والكاميرات",
-      "a live overview of incidents, patrols, and cameras",
-      "قيادة أمنية موحّدة مبنية على بيّنة",
-      "unified evidence-based security command",
-      "غلاف موحّد يجمع كل صفحات /sec.* تحت شريط تبويبات ثابت وشارة LIVE مربوطة بـ dataUpdatedAt من sec_overview",
-      "one shell wrapping every /sec.* page under a persistent tab bar with a LIVE badge bound to dataUpdatedAt from sec_overview",
-    ),
-  ],
+  // حُذف صفّ الغلاف «/_authenticated/sec»: الغلاف لا يملك مسارًا يقف عليه
+  // المستخدم — ما يُعرض فعلًا عند /sec هو صفّ الفهرس أعلاه. صفّان لشاشة
+  // واحدة يعنيان روايتين لمنظر واحد.
 
   // ── Executive / FINN surfaces ───────────────────────────────────────
   [
-    "/_authenticated/aria.demo",
+    "/finn/demo",
     n(
       "عرض FINN التنفيذي",
       "FINN Executive Demo",
@@ -56,7 +46,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/aria.directive",
+    "/finn/directive",
     n(
       "لوحة الميثاق التنفيذي لFINN",
       "FINN Executive Directive",
@@ -67,7 +57,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/aria-documents",
+    "/finn-documents",
     n(
       "وثائق FINN",
       "FINN Documents",
@@ -78,7 +68,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/aria",
+    "/finn",
     n(
       "واجهة FINN",
       "FINN Console",
@@ -89,7 +79,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/assistant.index",
+    "/assistant",
     n(
       "مساعد FINN التنفيذي",
       "FINN Executive Assistant",
@@ -99,21 +89,12 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
       "actions completed, not just answers delivered",
     ),
   ],
-  [
-    "/_authenticated/assistant",
-    n(
-      "مساعد FINN",
-      "FINN Assistant",
-      "خيط محادثة مركّز مع سياق كامل",
-      "a focused thread with the full context loaded",
-      "استمرارية معرفية بين الجلسات",
-      "knowledge continuity across sessions",
-    ),
-  ],
+  // حُذف صفّ «/_authenticated/assistant» المكرّر: صفّ الفهرس أعلاه يغطّي
+  // /assistant وخيوطها /assistant/$threadId معًا عبر مطابقة المقاطع.
 
   // ── Executive command / decision surfaces ───────────────────────────
   [
-    "/_authenticated/command-center",
+    "/command-center",
     n(
       "مركز القيادة",
       "Command Center",
@@ -124,7 +105,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/mission-control",
+    "/mission-control",
     n(
       "مراقبة المهمة",
       "Mission Control",
@@ -135,7 +116,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/situation-room",
+    "/situation-room",
     n(
       "غرفة الموقف",
       "Situation Room",
@@ -146,7 +127,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/crisis",
+    "/crisis",
     n(
       "غرفة الأزمات",
       "Crisis Room",
@@ -157,7 +138,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/urgent-ops",
+    "/urgent-ops",
     n(
       "العمليات العاجلة",
       "Urgent Operations",
@@ -168,7 +149,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/decisions",
+    "/decisions",
     n(
       "لوحة القرارات",
       "Decisions Ledger",
@@ -179,7 +160,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/executive-map",
+    "/executive-map",
     n(
       "الخريطة التنفيذية",
       "Executive Map",
@@ -189,19 +170,10 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
       "instant spatial reading of the situation",
     ),
   ],
+  // حُذف «/executive-reports»: مسار مخفي بأمر المالك (hidden-routes.ts) يُعيد
+  // التوجيه للرئيسية — التقارير التنفيذية دُمجت في /sec/reports.
   [
-    "/_authenticated/executive-reports",
-    n(
-      "التقارير التنفيذية",
-      "Executive Reports",
-      "تقارير معتمدة للقيادة العليا والمساهمين",
-      "reports certified for senior leadership and stakeholders",
-      "لغة قرار موحّدة بين المستويات",
-      "one decision language shared across levels",
-    ),
-  ],
-  [
-    "/_authenticated/executive",
+    "/executive",
     n(
       "المساحة التنفيذية",
       "Executive Workspace",
@@ -212,7 +184,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/cockpit",
+    "/cockpit",
     n(
       "قمرة القيادة",
       "Executive Cockpit",
@@ -223,7 +195,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/boardroom",
+    "/boardroom",
     n(
       "قاعة مجلس الإدارة",
       "Boardroom",
@@ -234,7 +206,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/briefing",
+    "/briefing",
     n(
       "الإيجاز التنفيذي",
       "Executive Briefing",
@@ -245,7 +217,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/chief-of-staff",
+    "/chief-of-staff",
     n(
       "رئيس الديوان",
       "Chief of Staff",
@@ -256,7 +228,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/execution",
+    "/execution",
     n(
       "لوحة التنفيذ",
       "Execution Board",
@@ -267,7 +239,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/transformation",
+    "/transformation",
     n(
       "لوحة التحوّل",
       "Transformation",
@@ -278,7 +250,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/portfolio",
+    "/portfolio",
     n(
       "محفظة المبادرات",
       "Portfolio",
@@ -289,7 +261,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/outcomes",
+    "/outcomes",
     n(
       "لوحة النتائج",
       "Outcomes",
@@ -300,7 +272,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/dashboard",
+    "/dashboard",
     n(
       "اللوحة التنفيذية",
       "Dashboard",
@@ -310,19 +282,10 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
       "a comprehensive view without noise",
     ),
   ],
+  // حُذف «/analytics»: مسار مخفي بأمر المالك — الإحصائيات موزّعة على لوحات
+  // أخرى، ورواية شاشة مُعاد توجيهها كذبٌ على السامع.
   [
-    "/_authenticated/analytics",
-    n(
-      "لوحة التحليلات",
-      "Analytics",
-      "الاتجاهات، المقارنات الزمنية، والانحرافات المهمّة",
-      "trends, time comparisons, and notable deviations",
-      "قرارات مبنية على بيانات لا حدس",
-      "decisions built on data, not hunches",
-    ),
-  ],
-  [
-    "/_authenticated/analyst",
+    "/analyst",
     n(
       "مساحة المحلل",
       "Analyst Workspace",
@@ -333,7 +296,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/risk",
+    "/risk",
     n(
       "لوحة المخاطر التنفيذية",
       "Executive Risk",
@@ -344,7 +307,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/governance",
+    "/governance",
     n(
       "الحوكمة",
       "Governance",
@@ -355,7 +318,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/live-dashboard",
+    "/live-dashboard",
     n(
       "اللوحة الحيّة",
       "Live Dashboard",
@@ -368,7 +331,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
 
   // ── FINN operations / runtime ───────────────────────────────────────
   [
-    "/_authenticated/orchestration",
+    "/orchestration",
     n(
       "تنسيق الوكلاء",
       "Agent Orchestration",
@@ -379,7 +342,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/agents",
+    "/agents",
     n(
       "منصة عمليات الوكلاء",
       "AI Agents",
@@ -390,7 +353,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/workflows",
+    "/workflows",
     n(
       "مسارات العمل",
       "Workflows",
@@ -401,7 +364,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/ai-ops",
+    "/ai-ops",
     n(
       "عمليات الذكاء الاصطناعي",
       "AI Operations",
@@ -412,7 +375,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/self-evolution",
+    "/self-evolution",
     n(
       "التطوّر الذاتي",
       "Self-Evolution",
@@ -423,7 +386,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/memory",
+    "/memory",
     n(
       "ذاكرة FINN",
       "FINN Memory",
@@ -434,7 +397,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/forgotten",
+    "/forgotten",
     n(
       "المُنسَى",
       "Forgotten Items",
@@ -445,7 +408,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/knowledge-hub",
+    "/knowledge-hub",
     n(
       "مركز المعرفة",
       "Knowledge Hub",
@@ -456,7 +419,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/knowledge-upload",
+    "/knowledge-upload",
     n(
       "رفع المعرفة",
       "Knowledge Upload",
@@ -467,7 +430,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/knowledge",
+    "/knowledge",
     n(
       "قاعدة المعرفة",
       "Knowledge Base",
@@ -478,7 +441,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/prompts",
+    "/prompts",
     n(
       "مكتبة الموجّهات",
       "Prompt Library",
@@ -489,7 +452,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/tools",
+    "/tools",
     n(
       "الأدوات التنفيذية",
       "Executive Tools",
@@ -500,7 +463,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/tool-health",
+    "/tool-health",
     n(
       "صحّة الأدوات",
       "Tool Health",
@@ -511,7 +474,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/fabric",
+    "/fabric",
     n(
       "النسيج التشغيلي",
       "Operational Fabric",
@@ -522,7 +485,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/observability",
+    "/observability",
     n(
       "المراقبة الشاملة",
       "Observability",
@@ -533,7 +496,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/diagnostics",
+    "/diagnostics",
     n(
       "التشخيصات",
       "Diagnostics",
@@ -544,7 +507,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/integrations",
+    "/integrations",
     n(
       "التكاملات",
       "Integrations",
@@ -555,7 +518,7 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/_authenticated/settings.microsoft",
+    "/settings/microsoft",
     n(
       "إعدادات مايكروسوفت",
       "Microsoft Settings",

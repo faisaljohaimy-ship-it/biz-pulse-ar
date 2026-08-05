@@ -1,9 +1,16 @@
 /**
  * /guide — the SADEED system map (constitution art. 21): every module
- * classified by role with a one-line purpose, a relationship diagram of
- * how the clusters feed one another, and a link into the matching learning
- * track. Built entirely from the single MODULES source (art. 13.5) so it
- * can never drift from the real navigation.
+ * classified by role with a one-line purpose and a relationship diagram of
+ * how the clusters feed one another. Built entirely from the single MODULES
+ * source (art. 13.5) so it can never drift from the real navigation.
+ *
+ * مداخل هذه الصفحة: تذييل درج القمرة · الشريط الجانبي · شريط الرئيسية
+ * (كانت بلا رابط وارد واحد).
+ *
+ * قاعدة هذه الصفحة: لا تُذكر إلا وحدة موجودة في `MODULES`. المسارات المخفية
+ * في `lib/nav/hidden-routes.ts` (/analytics · /bi · /ptw · /learn) خرجت من
+ * السجل، فيسقط ذكرها هنا تلقائيًا — ومجموعةٌ خلت من الوحدات لا يُرسم لها
+ * عنوانٌ فارغ.
  */
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
@@ -11,7 +18,7 @@ import { useI18n } from "@/lib/i18n";
 import { MODULES, MODULE_PURPOSE, moduleExternalUrl, type ModuleEntry } from "@/lib/nav/modules";
 import { PageHeader, Section } from "@/components/page-header";
 import { PageBriefing } from "@/components/clarity/PageBriefing";
-import { Map as MapIcon, GraduationCap } from "lucide-react";
+import { Map as MapIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/guide")({
   component: GuidePage,
@@ -42,16 +49,20 @@ const GROUPS: Array<{ ar: string; en: string; routes: string[] }> = [
     en: "Analytics & Reporting",
     routes: ["/bi", "/analytics", "/sec/reports", "/observability"],
   },
-  {
-    ar: "الوصول الخارجي والتعلّم",
-    en: "External & Learning",
-    routes: ["/learn"],
-  },
 ];
 
 function moduleOf(to: string): ModuleEntry | undefined {
   return MODULES.find((m) => m.to === to);
 }
+
+/**
+ * المجموعات بعد إسقاط المسارات التي لا وحدة لها في السجل (مخفية أو غير
+ * كانونية). المجموعة الخالية تُحذف كاملة فلا يبقى عنوانٌ فوق شبكة فارغة.
+ */
+const RESOLVED_GROUPS = GROUPS.map((g) => ({
+  ...g,
+  modules: g.routes.map(moduleOf).filter((m): m is ModuleEntry => m !== undefined),
+})).filter((g) => g.modules.length > 0);
 
 function GuidePage() {
   const { locale } = useI18n();
@@ -72,10 +83,12 @@ function GuidePage() {
 
       <PageBriefing
         routeKey="guide"
+        // العدد يُشتق من السجل نفسه — كان مكتوبًا «الثلاث والعشرين» ثابتًا
+        // بينما السجل يحمل عددًا آخر، فالرقم المحفور يكذب عند أول تعديل.
         what={
           ar
-            ? "خريطة كاملة لوحدات النظام الثلاث والعشرين وأدوارها والعلاقات بينها."
-            : "A complete map of the platform's modules, their roles and relationships."
+            ? `خريطة كاملة لوحدات النظام (${MODULES.length}) وأدوارها والعلاقات بينها.`
+            : `A complete map of the platform's ${MODULES.length} modules, their roles and relationships.`
         }
         dataSource={
           ar ? "مصدر التنقّل الموحّد modules.ts" : "The single navigation source modules.ts"
@@ -86,12 +99,12 @@ function GuidePage() {
             ? [
                 "استكشف الوحدات مصنّفة حسب دورها الوظيفي",
                 "تابع كيف تتدفّق البيانات بين المجموعات",
-                "انتقل إلى أي وحدة أو إلى مركز التعلّم مباشرة",
+                "انتقل إلى أي وحدة مباشرة من بطاقتها",
               ]
             : [
                 "Browse modules grouped by function",
                 "See how data flows between clusters",
-                "Jump into any module or the learning center",
+                "Jump straight into any module from its card",
               ]
         }
       />
@@ -153,13 +166,12 @@ function GuidePage() {
       </div>
 
       {/* Grouped module catalog. */}
-      {GROUPS.map((g) => (
+      {RESOLVED_GROUPS.map((g) => (
         <div key={g.en} className="space-y-3">
-          <h2 className="text-lg font-semibold text-white">{ar ? g.ar : g.en}</h2>
+          <h2 className="text-lg font-bold text-white">{ar ? g.ar : g.en}</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {g.routes.map((to) => {
-              const m = moduleOf(to);
-              if (!m) return null;
+            {g.modules.map((m) => {
+              const to = m.to;
               const Icon = m.icon;
               const inner = (
                 <div className="holo-card flex h-full items-start gap-3 rounded-2xl p-3.5 transition hover:-translate-y-0.5">
@@ -195,29 +207,9 @@ function GuidePage() {
           </div>
         </div>
       ))}
-
-      {/* Learning bridge. */}
-      <Link
-        to={"/learn" as "/"}
-        className="holo-card flex items-center justify-between gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5"
-      >
-        <div className="flex items-center gap-3">
-          <GraduationCap className="h-6 w-6 text-emerald-300" aria-hidden />
-          <div>
-            <div className="text-sm font-semibold text-white">
-              {ar
-                ? "جديد على سَدِيد؟ ابدأ من مركز التعلّم"
-                : "New to SADEED? Start at the learning center"}
-            </div>
-            <div className="text-xs text-white/60">
-              {ar
-                ? "خمسة مسارات تشرح المنصة والامتثال والتصاريح والوكلاء والتقارير."
-                : "Five tracks covering the platform, compliance, permits, agents & reports."}
-            </div>
-          </div>
-        </div>
-        <span className="text-[#3AE8FF]">←</span>
-      </Link>
+      {/* «مركز التعلّم» (/learn) كان يُختم به هذا الجدول، وهو مسار مخفى يعيد
+          التوجيه إلى «/» — رابطٌ ميت في نهاية خريطة النظام. حُذف ولم يُستبدل:
+          لا سطح تعلّم حيّ في السجل، واختلاق وجهة أسوأ من غيابها. */}
     </Section>
   );
 }

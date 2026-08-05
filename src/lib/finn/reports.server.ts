@@ -2,6 +2,7 @@
 // and persists them to finn_reports.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { pctOrUnmeasured, numOrUnmeasured, UNMEASURED_AR } from "@/lib/sec.functions";
 import type { ExecKpis } from "@/lib/sec.functions";
 import type { RiskItem, DecisionItem, ReportKind } from "./types";
 
@@ -21,8 +22,15 @@ function kpiTable(k: ExecKpis, lang: "ar" | "en"): string {
     lang === "ar"
       ? "| المؤشر | القيمة | الهدف | الحالة |\n|---|---|---|---|"
       : "| KPI | Value | Target | Status |\n|---|---|---|---|";
-  const row = (label: string, value: number | string, target: string, ok: boolean) =>
-    `| ${label} | ${value} | ${target} | ${ok ? "🟢" : "🟠"} |`;
+  // المادة ٢٧ — `ok === null` تعني «لم يُقَس»: لا تجتاز ولا ترسب، وتُكتب
+  // الحالة نصًّا لا لونًا وحده (المادة ٣٤ / WCAG 2.2 §1.4.1).
+  const unmeasuredEn = "Not measured";
+  const notMeasured = lang === "ar" ? UNMEASURED_AR : unmeasuredEn;
+  const row = (label: string, value: number | string, target: string, ok: boolean | null) =>
+    `| ${label} | ${value} | ${target} | ${ok === null ? `⚪ ${notMeasured}` : ok ? "🟢" : "🟠"} |`;
+  const pct = (v: number | null) => (v === null ? notMeasured : pctOrUnmeasured(v));
+  const gte = (v: number | null, t: number) => (v === null ? null : v >= t);
+  const lte = (v: number | null, t: number) => (v === null ? null : v <= t);
   const lines = [
     head,
     row(
@@ -39,41 +47,51 @@ function kpiTable(k: ExecKpis, lang: "ar" | "en"): string {
     ),
     row(
       lang === "ar" ? "نسبة الحل" : "Resolution Rate",
-      `${k.incidents_resolution_rate}%`,
+      pct(k.incidents_resolution_rate),
       "≥ 85%",
-      k.incidents_resolution_rate >= 85,
+      gte(k.incidents_resolution_rate, 85),
     ),
-    row("MTTR", `${k.mttr_minutes}m`, "≤ 15m", k.mttr_minutes <= 15),
+    row(
+      "MTTR",
+      k.mttr_minutes === null ? notMeasured : numOrUnmeasured(k.mttr_minutes, "m"),
+      "≤ 15m",
+      lte(k.mttr_minutes, 15),
+    ),
     row(
       lang === "ar" ? "إنجاز الدوريات" : "Patrol Completion",
-      `${k.patrol_completion}%`,
+      pct(k.patrol_completion),
       "≥ 95%",
-      k.patrol_completion >= 95,
+      gte(k.patrol_completion, 95),
     ),
     row(
       lang === "ar" ? "صحة CCTV" : "CCTV Health",
-      `${k.cctv_health}%`,
+      pct(k.cctv_health),
       "≥ 80%",
-      k.cctv_health >= 80,
+      gte(k.cctv_health, 80),
     ),
     row(
       lang === "ar" ? "صحة التحكم بالدخول" : "Access Health",
-      `${k.access_health}%`,
+      pct(k.access_health),
       "≥ 80%",
-      k.access_health >= 80,
+      gte(k.access_health, 80),
     ),
     row(
       lang === "ar" ? "امتثال المقاولين" : "Contractor Compliance",
-      `${k.contractors_compliance}%`,
+      pct(k.contractors_compliance),
       "≥ 90%",
-      k.contractors_compliance >= 90,
+      gte(k.contractors_compliance, 90),
     ),
-    row(lang === "ar" ? "مؤشر المخاطر" : "Risk Index", k.risk_index, "≤ 60", k.risk_index <= 60),
+    row(
+      lang === "ar" ? "مؤشر المخاطر" : "Risk Index",
+      k.risk_index === null ? notMeasured : k.risk_index,
+      "≤ 60",
+      lte(k.risk_index, 60),
+    ),
     row(
       lang === "ar" ? "الجاهزية التنفيذية" : "Executive Readiness",
-      `${k.executive_readiness}%`,
+      pct(k.executive_readiness),
       "≥ 70%",
-      k.executive_readiness >= 70,
+      gte(k.executive_readiness, 70),
     ),
   ];
   return lines.join("\n");

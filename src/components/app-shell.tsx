@@ -5,11 +5,14 @@ import {
   Bot,
   Building2,
   Camera,
+  Compass,
   Crown,
   FileText,
   FolderOpen,
+  Gauge,
   Grid3x3,
   Home,
+  Map as MapIcon,
   LogOut,
   LogIn,
   MapPin,
@@ -24,6 +27,7 @@ import {
   Settings,
   Shield,
   ShieldAlert,
+  Siren,
   Sparkles,
   Sun,
   Wrench,
@@ -155,7 +159,38 @@ function useNavGroups(): NavGroup[] {
   const groups: NavGroup[] = [
     {
       label: ar("الرئيسية", "Home"),
-      items: [{ to: "/", icon: Home, label: ar("الرئيسية", "Home") }],
+      items: [
+        { to: "/", icon: Home, label: ar("الرئيسية", "Home") },
+        // «خريطة النظام» (/guide) — الخريطة الدستورية للوحدات (المادة ٢١).
+        // كانت الصفحة بلا رابط وارد واحد في المنظومة كلها، فلا يبلغها إلا من
+        // يحفظ عنوانها. هذا مدخلها الدائم من الشريط الجانبي.
+        { to: "/guide", icon: Compass, label: ar("خريطة النظام", "System Map") },
+      ],
+    },
+    {
+      // وحدات كانونية خمس من `lib/nav/modules.ts` كانت غير قابلة للبلوغ من أي
+      // سطح تنقّل حيّ (لا الشريط الجانبي ولا الشريط العلوي ولا درج القمرة):
+      // /mission-control · /situation-room · /executive-map · /urgent-ops ·
+      // /boardroom. تُعرض هنا في مجموعتها الوظيفية، وأسماؤها وأيقوناتها
+      // تأتي من السجل عبر canon() فلا تنحرف عن الشبكة أو خريطة النظام.
+      label: ar("القيادة والعمليات", "Command & Operations"),
+      items: [
+        // الاسمان محروسان في screen-names.ts («مركز القيادة» و«غرفة العمليات»
+        // انحرفا سابقًا بين شاشتين)، فيُقرآن من المصدر ولا يُعاد كتابتهما.
+        {
+          to: "/mission-control",
+          icon: Gauge,
+          label: ar(screenNameAr("/mission-control"), screenNameEn("/mission-control")),
+        },
+        {
+          to: "/situation-room",
+          icon: Radar,
+          label: ar(screenNameAr("/situation-room"), screenNameEn("/situation-room")),
+        },
+        { to: "/executive-map", icon: MapIcon, label: ar("الخريطة التنفيذية", "Executive Map") },
+        { to: "/urgent-ops", icon: Siren, label: ar("العاجل", "Urgent Ops") },
+        { to: "/boardroom", icon: Building2, label: ar("قاعة المجلس", "Boardroom") },
+      ],
     },
     {
       label: ar("العمليات", "Operations"),

@@ -14,7 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { EventTimeline } from "@/components/events/EventTimeline";
 import { useRuntime } from "@/lib/runtime/RuntimeContext";
-import { getExecKpis } from "@/lib/sec.functions";
+import { getExecKpis, pctOrUnmeasured, numOrUnmeasured } from "@/lib/sec.functions";
 import {
   Activity,
   Bot,
@@ -166,6 +166,11 @@ function InvestorCenter() {
 
 type RuntimeShape = ReturnType<typeof useRuntime>;
 type KpiShape = Awaited<ReturnType<typeof getExecKpis>> | undefined;
+
+// المادة ٢٧ — المؤشر غير المقيس بلا نغمة حكم: `undefined` يترك البلاطة محايدة
+// بدل وسمها نجاحًا أو تحذيرًا استُنتج من غياب قياس.
+const toneGte = (v: number | null, t: number): "success" | "warn" | undefined =>
+  v === null ? undefined : v >= t ? "success" : "warn";
 
 function Header({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape }) {
   const readiness = kpis?.executive_readiness ?? 0;
@@ -648,7 +653,7 @@ function RiskCenterPanel({ kpis }: { kpis: KpiShape }) {
     <PanelCard
       icon={ShieldAlert}
       title="Risk Center"
-      badge={kpis ? `${kpis.risk_index}% index` : "—"}
+      badge={kpis ? `${pctOrUnmeasured(kpis.risk_index)} index` : "—"}
       empty={rows.length === 0}
       emptyVariant="monitoring"
       emptyHint="no high-severity risks"
@@ -691,8 +696,8 @@ function DigitalTwinPanel({ kpis }: { kpis: KpiShape }) {
         </div>
         <Progress value={pct} className="h-1.5" />
         <div className="grid grid-cols-2 gap-2 mt-2">
-          <Stat label="CCTV" value={kpis ? `${kpis.cctv_health}%` : "—"} />
-          <Stat label="Access" value={kpis ? `${kpis.access_health}%` : "—"} />
+          <Stat label="CCTV" value={kpis ? pctOrUnmeasured(kpis.cctv_health) : "—"} />
+          <Stat label="Access" value={kpis ? pctOrUnmeasured(kpis.access_health) : "—"} />
         </div>
         <LiveStatus size="sm" variant="live" label="Twin synced" className="mt-2" />
       </div>
@@ -774,48 +779,49 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
     ? [
         {
           label: "Readiness",
-          value: `${kpis.executive_readiness}%`,
-          tone: kpis.executive_readiness >= 80 ? "success" : "warn",
+          value: pctOrUnmeasured(kpis.executive_readiness),
+          tone: toneGte(kpis.executive_readiness, 80),
         },
         {
           label: "Safety",
-          value: `${kpis.safety_index}%`,
-          tone: kpis.safety_index >= 80 ? "success" : "warn",
+          value: pctOrUnmeasured(kpis.safety_index),
+          tone: toneGte(kpis.safety_index, 80),
         },
         {
           label: "Risk",
-          value: `${kpis.risk_index}%`,
-          tone: kpis.risk_index > 30 ? "warn" : "success",
+          value: pctOrUnmeasured(kpis.risk_index),
+          tone: kpis.risk_index === null ? undefined : kpis.risk_index > 30 ? "warn" : "success",
         },
         {
           label: "MTTR",
-          value: `${kpis.mttr_minutes}m`,
-          tone: kpis.mttr_minutes <= 15 ? "success" : "warn",
+          value: numOrUnmeasured(kpis.mttr_minutes, "m"),
+          tone:
+            kpis.mttr_minutes === null ? undefined : kpis.mttr_minutes <= 15 ? "success" : "warn",
         },
         {
           label: "Resolution",
-          value: `${kpis.incidents_resolution_rate}%`,
-          tone: kpis.incidents_resolution_rate >= 80 ? "success" : "warn",
+          value: pctOrUnmeasured(kpis.incidents_resolution_rate),
+          tone: toneGte(kpis.incidents_resolution_rate, 80),
         },
         {
           label: "CCTV",
-          value: `${kpis.cctv_health}%`,
-          tone: kpis.cctv_health >= 90 ? "success" : "warn",
+          value: pctOrUnmeasured(kpis.cctv_health),
+          tone: toneGte(kpis.cctv_health, 90),
         },
         {
           label: "Access",
-          value: `${kpis.access_health}%`,
-          tone: kpis.access_health >= 90 ? "success" : "warn",
+          value: pctOrUnmeasured(kpis.access_health),
+          tone: toneGte(kpis.access_health, 90),
         },
         {
           label: "Patrols",
-          value: `${kpis.patrol_completion}%`,
-          tone: kpis.patrol_completion >= 90 ? "success" : "warn",
+          value: pctOrUnmeasured(kpis.patrol_completion),
+          tone: toneGte(kpis.patrol_completion, 90),
         },
         {
           label: "Compliance",
-          value: `${kpis.contractors_compliance}%`,
-          tone: kpis.contractors_compliance >= 90 ? "success" : "warn",
+          value: pctOrUnmeasured(kpis.contractors_compliance),
+          tone: toneGte(kpis.contractors_compliance, 90),
         },
         { label: "WO Open", value: `${kpis.wo_open}` },
         { label: "Projects", value: `${kpis.projects_in_progress}` },

@@ -3,7 +3,7 @@ name: nexios-aria
 description: منظومة FINN الصوتية والدردشة — تُستدعى قبل لمس أي مسار صوت/دردشة (FinnCopilot، /api/chat، /api/finn/tts، voice-config، digital-humans). تغطي حصرية صوت FINN الذكوري، حظر browser TTS، طريقة الإصلاح المحفوظة 401/403، وطبقات «FINN لا تتعطل».
 ---
 
-# NEXIOS FINN — المساعد الصوتي الدائم
+# سَدِيد · FINN — المساعد الصوتي الدائم
 
 ## الصوت (ثوابت غير قابلة للتفاوض)
 

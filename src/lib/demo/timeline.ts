@@ -72,7 +72,10 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     executiveMessage_en: "The operating day begins.",
     executiveMessage_ar: "يبدأ اليوم التشغيلي.",
     cameraTarget: "os.grid",
-    uiAction: { kind: "navigate", to: "/os" },
+    // كان "/os" — مسار محذوف من src/routes، فكانت الخطوة الأولى في العرض
+    // التنفيذي تقود الزائر إلى لا شيء. "/dashboard" هي شبكة الوحدات الحيّة
+    // التي يصفها هذا المشهد فعلًا.
+    uiAction: { kind: "navigate", to: "/dashboard" },
     finnNarration_en: "Good morning. Shift open at Jeddah Industrial Site. All systems nominal.",
     finnNarration_ar:
       "صباح الخير. بدأت الوردية في موقع جدة الصناعي، وجميع الأنظمة تعمل بشكل طبيعي.",

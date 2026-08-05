@@ -15,6 +15,41 @@ const H = 3_600_000;
 const M = 60_000;
 const iso = (ms: number) => new Date(ms).toISOString();
 
+/* ── الوسم المركزي للمحاكاة (المادة ٦ · «كل بيانات العرض موسومة») ────────
+   لا صفّ يخرج من هذا الملف بلا `is_simulation = true`. القاعدة واحدة
+   ومطبَّقة في مكان واحد: يُوسم الجذر، ويُوسم كل عنصر داخل مصفوفة — فالصف
+   هو عنصر المصفوفة. الكائنات الحاوية للأرقام (counts · system · metadata)
+   ليست صفوفًا فلا تُوسم، لكنّ المشّاء ينزل خلالها ليبلغ المصفوفات الأعمق.
+   حقلٌ موجود مسبقًا لا يُداس أبدًا، وصفوف القاعدة الحية لا تمرّ من هنا:
+   `resilient` يوسم مسار البديل وحده، وما يصل من القاعدة يُعاد كما هو. */
+
+const isPlainRecord = (v: unknown): v is Record<string, unknown> => {
+  if (typeof v !== "object" || v === null || Array.isArray(v)) return false;
+  const proto = Object.getPrototypeOf(v);
+  return proto === Object.prototype || proto === null;
+};
+
+function walkSimulation(value: unknown, isRow: boolean, seen: WeakSet<object>): void {
+  if (Array.isArray(value)) {
+    if (seen.has(value)) return;
+    seen.add(value);
+    for (const item of value) walkSimulation(item, true, seen);
+    return;
+  }
+  if (!isPlainRecord(value) || seen.has(value)) return;
+  seen.add(value);
+  if (isRow && !("is_simulation" in value) && !Object.isFrozen(value)) {
+    value.is_simulation = true;
+  }
+  for (const key of Object.keys(value)) walkSimulation(value[key], false, seen);
+}
+
+/** يَسِم بنية محاكاة كاملة موضعيًّا ويعيدها بنوعها كما هو. */
+export function markSimulation<T>(value: T): T {
+  walkSimulation(value, true, new WeakSet());
+  return value;
+}
+
 /* ── Agents fleet (mirrors the digital-humans registry personas) ────────── */
 
 const FLEET = [
@@ -96,7 +131,7 @@ export function buildBridgeSimulation(now: number): BridgeState {
     last_run_at: iso(now - (i + 1) * 7 * M),
     last_run_status: i === 4 ? "queued" : "succeeded",
   }));
-  return {
+  return markSimulation({
     health: {
       score: 92,
       open_incidents: 3,
@@ -112,7 +147,7 @@ export function buildBridgeSimulation(now: number): BridgeState {
     },
     agents,
     generated_at: iso(now),
-  };
+  });
 }
 
 /* ── Mission timeline (سجل التشغيل) ─────────────────────────────────────── */
@@ -350,17 +385,19 @@ const TIMELINE: Array<[minAgo: number, TL]> = [
 ];
 
 export function buildTimelineSimulation(now: number): MissionTimelineEntry[] {
-  return TIMELINE.map(([minAgo, e], i) => ({
-    id: `sim-tl-${i + 1}`,
-    ts: iso(now - minAgo * M),
-    ...e,
-  }));
+  return markSimulation(
+    TIMELINE.map(([minAgo, e], i) => ({
+      id: `sim-tl-${i + 1}`,
+      ts: iso(now - minAgo * M),
+      ...e,
+    })),
+  );
 }
 
 /* ── Predicted risks ────────────────────────────────────────────────────── */
 
 export function buildRiskSimulation(): PredictedRisk[] {
-  return [
+  return markSimulation([
     {
       id: "sim-r1",
       title_ar: "إجهاد حراري في نوافذ الأعمال الساخنة",
@@ -398,7 +435,7 @@ export function buildRiskSimulation(): PredictedRisk[] {
       horizon_hours: 30,
       severity: "medium",
     },
-  ];
+  ]);
 }
 
 /* ── Executive KPI sources (اللوحة التنفيذية) ───────────────────────────── */
@@ -409,7 +446,7 @@ import type { SecOverview } from "@/lib/sec.functions";
 const fill = <T>(n: number, f: (i: number) => T): T[] => Array.from({ length: n }, (_, i) => f(i));
 
 export function buildExecKpiSourcesSimulation(): ExecKpiSources {
-  return {
+  return markSimulation({
     incidents: [
       ...fill(1, () => ({ severity: "critical", status: "investigating", response_minutes: 22 })),
       ...fill(2, () => ({ severity: "high", status: "open", response_minutes: 41 })),
@@ -478,7 +515,7 @@ export function buildExecKpiSourcesSimulation(): ExecKpiSources {
         health: "done",
       },
     ],
-  };
+  });
 }
 
 /* ── Sec overview (مؤشرات الأداء) ───────────────────────────────────────── */
@@ -940,7 +977,7 @@ export function buildSecOverviewSimulation(now: number): SecOverview {
       acknowledged_by: "الصيانة",
     },
   ];
-  return {
+  return markSimulation({
     sites: SITES,
     incidents: INC,
     patrols: PAT,
@@ -961,7 +998,7 @@ export function buildSecOverviewSimulation(now: number): SecOverview {
       assets_offline: AST.filter((a) => a.status === "offline" || a.status === "degraded").length,
       contractors_active: CON.filter((c) => c.status === "active").length,
     },
-  };
+  });
 }
 
 /* ── Agent operations (نافذة الوكلاء + سجل التشغيل) ─────────────────────── */
@@ -1009,7 +1046,7 @@ export function buildAgentOpsSimulation(now: number): AgentOpsOverview {
       last_finished_at: iso(now - (i + 1) * 11 * M + 21_000),
     };
   });
-  return {
+  return markSimulation({
     agents,
     system: {
       agents_total: agents.length,
@@ -1025,7 +1062,7 @@ export function buildAgentOpsSimulation(now: number): AgentOpsOverview {
       queue_length: agents.filter((a) => a.state === "queued").length,
       window_days: 30,
     },
-  };
+  });
 }
 
 export type SimAgentRun = {
@@ -1058,33 +1095,37 @@ const RUN_SUMMARIES: Array<[agentIdx: number, minAgo: number, status: string, su
 ];
 
 export function buildAgentRunsSimulation(now: number): SimAgentRun[] {
-  return RUN_SUMMARIES.map(([ai, minAgo, status, summary], i) => ({
-    id: `sim-run-${i + 1}`,
-    agent_id: FLEET[ai]!.id,
-    status,
-    summary,
-    steps: [],
-    error: status === "failed" ? "sensor_timeout: GATE-S-4 لم يستجب خلال 30 ثانية" : null,
-    started_at: iso(now - minAgo * M),
-    finished_at:
-      status === "running" || status === "queued" ? null : iso(now - minAgo * M + 24_000),
-    triggered_by: "scheduler",
-    goal_override: null,
-    audit_json: { simulated: true },
-  }));
+  return markSimulation(
+    RUN_SUMMARIES.map(([ai, minAgo, status, summary], i) => ({
+      id: `sim-run-${i + 1}`,
+      agent_id: FLEET[ai]!.id,
+      status,
+      summary,
+      steps: [],
+      error: status === "failed" ? "sensor_timeout: GATE-S-4 لم يستجب خلال 30 ثانية" : null,
+      started_at: iso(now - minAgo * M),
+      finished_at:
+        status === "running" || status === "queued" ? null : iso(now - minAgo * M + 24_000),
+      triggered_by: "scheduler",
+      goal_override: null,
+      audit_json: { simulated: true },
+    })),
+  );
 }
 
 export function buildAgentDefsSimulation(now: number) {
-  return FLEET.map((a, i) => ({
-    id: a.id,
-    name: a.name,
-    goal: a.goal,
-    model: AGENT_MODEL,
-    tool_allowlist: ["read_ops", "notify", "report"],
-    permissions: ["ops.read"],
-    enabled: true,
-    updated_at: iso(now - (i + 2) * H),
-  }));
+  return markSimulation(
+    FLEET.map((a, i) => ({
+      id: a.id,
+      name: a.name,
+      goal: a.goal,
+      model: AGENT_MODEL,
+      tool_allowlist: ["read_ops", "notify", "report"],
+      permissions: ["ops.read"],
+      enabled: true,
+      updated_at: iso(now - (i + 2) * H),
+    })),
+  );
 }
 
 /* ── Resilience guard ───────────────────────────────────────────────────
@@ -1106,14 +1147,14 @@ export async function resilient<T>(
         setTimeout(() => reject(new Error("showcase-timeout")), timeoutMs);
       }),
     ]);
-    if (isEmpty(value)) return await fallback();
+    if (isEmpty(value)) return markSimulation(await fallback());
     return value;
   } catch (error) {
     console.error(
       `[showcase] ${label} unavailable — serving simulation:`,
       error instanceof Error ? error.message : error,
     );
-    return await fallback();
+    return markSimulation(await fallback());
   }
 }
 
@@ -1233,7 +1274,7 @@ export function buildAccessSimulation(now: number) {
     entity_ref: ref as string,
     actor_name: "نظام البوابات الآلي",
   }));
-  return {
+  return markSimulation({
     visitors: visitors.map(([full_name, organization, host, purpose, status, ago, badge], i) => ({
       id: `sim-vis-${i + 1}`,
       ref: `VIS-SIM-${100 + i}`,
@@ -1287,7 +1328,7 @@ export function buildAccessSimulation(now: number) {
     gates,
     denied_events,
     sites: ACCESS_SITES,
-  };
+  });
 }
 
 /* ── Intelligence fabric (/boardroom · /intelligence) raw rows ─────────── */
@@ -1465,7 +1506,7 @@ export function buildFabricRowsSimulation(now: number) {
     created_at: iso(now - (i + 2) * 24 * H),
     updated_at: iso(now - i * 20 * H),
   }));
-  return { eventRows, alertRows, taskRows };
+  return markSimulation({ eventRows, alertRows, taskRows });
 }
 
 /* ── Hajj operations (مشاعر) command center ────────────────────────────── */
@@ -1549,7 +1590,7 @@ export function buildHajjSimulation(now: number) {
     compliance_pct: 94,
     risk_level: "medium",
   };
-  return { sites, stations, tasks, kpi };
+  return markSimulation({ sites, stations, tasks, kpi });
 }
 
 /* ── Integrations hub (/integrations) ──────────────────────────────────── */
@@ -1609,7 +1650,7 @@ export function buildIntegrationsSimulation(now: number) {
       }),
     }),
   );
-  return {
+  return markSimulation({
     providers,
     totals: {
       total: providers.length,
@@ -1622,7 +1663,7 @@ export function buildIntegrationsSimulation(now: number) {
       events_24h: providers.reduce((s, p) => s + p.events_24h, 0),
     },
     generated_at: iso(now),
-  };
+  });
 }
 
 export function buildIntegrationEventsSimulation(now: number) {
@@ -1640,16 +1681,18 @@ export function buildIntegrationEventsSimulation(now: number) {
     ["SAP", "work_orders", "ok", "GET /workorders?delta → 200 (9)", 470, 780, 9],
     ["Microsoft outlook", "outlook", "ok", "مزامنة صندوق القيادة", 540, 1450, 21],
   ] as const;
-  return E.map(([provider, kind, status, message, minAgo, duration_ms, items_count], i) => ({
-    id: `sim-ie-${i + 1}`,
-    provider,
-    kind,
-    status,
-    message,
-    at: iso(now - (minAgo as number) * M),
-    duration_ms,
-    items_count,
-  }));
+  return markSimulation(
+    E.map(([provider, kind, status, message, minAgo, duration_ms, items_count], i) => ({
+      id: `sim-ie-${i + 1}`,
+      provider,
+      kind,
+      status,
+      message,
+      at: iso(now - (minAgo as number) * M),
+      duration_ms,
+      items_count,
+    })),
+  );
 }
 
 /* ── Digital twin (/sec/twin) — hierarchical asset model ───────────────── */
@@ -1859,7 +1902,7 @@ export function buildTwinTreeSimulation(now: number) {
     };
   });
 
-  return {
+  return markSimulation({
     region: {
       name_ar: "إدارة الأمن الصناعي بالمنطقة الغربية",
       name_en: "Western Region Industrial Security",
@@ -1899,7 +1942,7 @@ export function buildTwinTreeSimulation(now: number) {
       },
     ],
     circles,
-  };
+  });
 }
 
 /* ── Knowledge repository (/sec/knowledge) ─────────────────────────────── */
@@ -2131,7 +2174,7 @@ export function buildKbSimulation(now: number) {
       updated_at: iso(now - (i + 3) * 26 * H),
     }),
   );
-  return { categories, articles };
+  return markSimulation({ categories, articles });
 }
 
 /* ── Integration connectors (/sec/integrations) ────────────────────────── */
@@ -2219,16 +2262,18 @@ export function buildConnectorsSimulation(now: number) {
       140,
     ],
   ] as const;
-  return C.map(([id, label, category, status, note, scopes, doc, syncMin]) => ({
-    id,
-    label,
-    category,
-    status,
-    note,
-    scopes: [...scopes],
-    doc,
-    last_sync_at: syncMin === null ? null : iso(now - (syncMin as number) * M),
-  }));
+  return markSimulation(
+    C.map(([id, label, category, status, note, scopes, doc, syncMin]) => ({
+      id,
+      label,
+      category,
+      status,
+      note,
+      scopes: [...scopes],
+      doc,
+      last_sync_at: syncMin === null ? null : iso(now - (syncMin as number) * M),
+    })),
+  );
 }
 
 /* ── Daily operations dataset (report engine fuel) ─────────────────────── */
@@ -2376,7 +2421,7 @@ export function buildDailyOpsSimulation(dateKey: string): DailyOpsData {
       permits: 3 + Math.floor(r() * 3),
     };
   });
-  return {
+  return markSimulation({
     date: dateKey,
     source: "reference",
     incidents,
@@ -2384,34 +2429,36 @@ export function buildDailyOpsSimulation(dateKey: string): DailyOpsData {
     permits: permits.map(({ _kind, ...p }) => p),
     activity,
     trend7,
-  };
+  });
 }
 
 /* ── Reports registry (/sec/reports) seeded rows ───────────────────────── */
 
 export function buildReportsRegistrySimulation(now: number) {
-  return fill(5, (i) => {
-    const d = new Date(now - (i + 1) * 24 * H).toISOString().slice(0, 10);
-    const pdf = i % 2 === 0;
-    return {
-      id: `sim-rep-${d}-${pdf ? "pdf" : "xlsx"}`,
-      org_id: "00000000-0000-0000-0000-00000000d360",
-      kind: "daily",
-      format: pdf ? "pdf" : "xlsx",
-      title: `تقرير العمليات اليومي — ${d}`,
-      related_entity_type: null,
-      related_entity_id: null,
-      related_entity_ref: null,
-      storage_path: null,
-      size_bytes: pdf ? 88_000 - i * 3_500 : 34_000 + i * 1_200,
-      range_from: `${d}T00:00:00.000Z`,
-      range_to: null,
-      generated_by: null,
-      generated_by_name: "محرك المحاكاة المرجعية",
-      created_at: iso(now - (i + 1) * 24 * H + 18 * H),
-      meta: { simulated: true, date: d },
-    };
-  });
+  return markSimulation(
+    fill(5, (i) => {
+      const d = new Date(now - (i + 1) * 24 * H).toISOString().slice(0, 10);
+      const pdf = i % 2 === 0;
+      return {
+        id: `sim-rep-${d}-${pdf ? "pdf" : "xlsx"}`,
+        org_id: "00000000-0000-0000-0000-00000000d360",
+        kind: "daily",
+        format: pdf ? "pdf" : "xlsx",
+        title: `تقرير العمليات اليومي — ${d}`,
+        related_entity_type: null,
+        related_entity_id: null,
+        related_entity_ref: null,
+        storage_path: null,
+        size_bytes: pdf ? 88_000 - i * 3_500 : 34_000 + i * 1_200,
+        range_from: `${d}T00:00:00.000Z`,
+        range_to: null,
+        generated_by: null,
+        generated_by_name: "محرك المحاكاة المرجعية",
+        created_at: iso(now - (i + 1) * 24 * H + 18 * H),
+        meta: { simulated: true, date: d },
+      };
+    }),
+  );
 }
 
 /* ── Smart command center (/command-center) ────────────────────────────── */
@@ -2561,7 +2608,7 @@ export function buildCommandCenterSimulation(now: number): CommandCenterState {
     }),
   );
 
-  return {
+  return markSimulation({
     source: "reference",
     agents,
     pipeline,
@@ -2578,7 +2625,7 @@ export function buildCommandCenterSimulation(now: number): CommandCenterState {
         regions.reduce((s, r) => s + r.compliance_pct, 0) / regions.length,
       ),
     },
-  };
+  });
 }
 
 /* ═══════════════════ BI executive dashboard simulation ═══════════════════
@@ -2665,7 +2712,7 @@ export function buildBiDashboardSimulation(now: number): BiDashboardData {
       return Math.min(1, shift * week + jitter);
     }),
   );
-  return {
+  return markSimulation({
     source: "reference",
     simulation: true,
     departments: [...BI_DEPARTMENTS],
@@ -2673,5 +2720,5 @@ export function buildBiDashboardSimulation(now: number): BiDashboardData {
     severity_mix,
     compliance,
     heatmap,
-  };
+  });
 }

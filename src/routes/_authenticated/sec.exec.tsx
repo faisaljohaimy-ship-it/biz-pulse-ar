@@ -2,7 +2,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getExecKpis } from "@/lib/sec.functions";
+import { getExecKpis, pctOrUnmeasured, numOrUnmeasured } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard, SecLoading, SecError } from "@/components/sec/sec-shell";
 
 export const Route = createFileRoute("/_authenticated/sec/exec")({
@@ -27,7 +27,13 @@ function ExecDashboard() {
   if (isLoading || !k) return <SecLoading />;
 
   const fmt = (n: number) => n.toLocaleString("ar-SA");
-  const pct = (n: number) => `${n}%`;
+  // المادة ٢٧ — ما لم يُقَس يُعرض «لم يُقَس» ولا تُلوَّن له نغمة حكم:
+  // `undefined` يعيد النغمة الافتراضية المحايدة بدل نجاح أو تحذير مُختلق.
+  const pct = (n: number | null) => pctOrUnmeasured(n);
+  const toneGte = (n: number | null, t: number): "success" | "warning" | undefined =>
+    n === null ? undefined : n >= t ? "success" : "warning";
+  const toneLte = (n: number | null, t: number): "success" | "warning" | undefined =>
+    n === null ? undefined : n <= t ? "success" : "warning";
 
   return (
     <div className="space-y-5">
@@ -78,13 +84,13 @@ function ExecDashboard() {
         <StatCard
           label="نسبة الحل"
           value={pct(k.incidents_resolution_rate)}
-          tone={k.incidents_resolution_rate >= 80 ? "success" : "warning"}
+          tone={toneGte(k.incidents_resolution_rate, 80)}
         />
         <StatCard
           label="زمن الاستجابة"
-          value={`${k.mttr_minutes} د`}
+          value={numOrUnmeasured(k.mttr_minutes, " د")}
           hint="MTTR — هدف ≤ 15 د"
-          tone={k.mttr_minutes <= 15 ? "success" : "warning"}
+          tone={toneLte(k.mttr_minutes, 15)}
         />
       </Section>
 
@@ -111,13 +117,13 @@ function ExecDashboard() {
           label="جاهزية CCTV"
           value={pct(k.cctv_health)}
           hint={`${k.cameras_online}/${k.cameras_total} متصلة`}
-          tone={k.cctv_health >= 90 ? "success" : "warning"}
+          tone={toneGte(k.cctv_health, 90)}
         />
         <StatCard
           label="التحكم بالدخول"
           value={pct(k.access_health)}
           hint={`${k.gates_online}/${k.gates_total} بوابة`}
-          tone={k.access_health >= 90 ? "success" : "warning"}
+          tone={toneGte(k.access_health, 90)}
         />
         <StatCard
           label="حساسات في إنذار"
@@ -137,7 +143,7 @@ function ExecDashboard() {
         <StatCard
           label="إنجاز الدوريات"
           value={pct(k.patrol_completion)}
-          tone={k.patrol_completion >= 90 ? "success" : "warning"}
+          tone={toneGte(k.patrol_completion, 90)}
         />
         <StatCard label="زوّار بالداخل" value={k.visitors_inside} />
         <StatCard label="تصاريح فعّالة" value={k.permits_active} />
@@ -145,7 +151,7 @@ function ExecDashboard() {
         <StatCard
           label="امتثال المقاولين"
           value={pct(k.contractors_compliance)}
-          tone={k.contractors_compliance >= 90 ? "success" : "warning"}
+          tone={toneGte(k.contractors_compliance, 90)}
         />
       </Section>
     </div>
