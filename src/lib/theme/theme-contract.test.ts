@@ -89,6 +89,52 @@ describe("عقد الوضع الفاتح — سُلَّم الحبر يُقرأ 
   });
 });
 
+describe("عقد الوضع الداكن — أزرق سماوي مائل إلى الأزرق الداكن", () => {
+  /**
+   * أساس الوضع الداكن كما يُقرأ من `:root` — من **آخر** كتلة تعلنه.
+   *
+   * أول صياغة قرأت أوّل `:root {` في الملف، وهي كتلة لوحة `--nx-*` التي
+   * لا تعلن `--surface` أصلًا، فعاد الرمز `undefined` وسقط الحارس على
+   * قيمةٍ لا وجود لها بدل أن يفحص القيمة النافذة. الموضع في ملفٍ تتعدّد
+   * فيه كتل `:root` ليس هويّة.
+   */
+  const darkSurface = (() => {
+    let found: string | undefined;
+    for (const m of CSS.matchAll(/:root[^{]*\{/g)) {
+      const block = CSS.slice(m.index!, CSS.indexOf("\n}", m.index!));
+      if (/^\s*\.light/m.test(block.slice(0, block.indexOf("{")))) continue; // كتلة مشتركة
+      const hit = block.match(/--surface:\s*(#[0-9a-f]{6})/i)?.[1];
+      if (hit) found = hit;
+    }
+    return found;
+  })();
+
+  it("الأساس أزرق لا أسود — والقناة الزرقاء تعلو الحمراء بفارق ظاهر", () => {
+    // قرار المالك ٢٠٢٦/٠٨/٠٦. كان `#04070f` — كحليّ شبه أسود، فارق
+    // الزرقة فيه ١١ درجة فقط ولا يُقرأ لونًا.
+    expect(darkSurface, "أساس الوضع الداكن غير مقروء من :root").toBeDefined();
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(darkSurface!.slice(i, i + 2), 16));
+    expect(b, `الزرقة ${b} لا تعلو الحمرة ${r}`).toBeGreaterThan(r + 24);
+    expect(b).toBeGreaterThan(g); // سماويّ مائل للأزرق لا أخضر
+  });
+
+  it("لا قاعدتان داكنتان متنازعتان — `--surface` و`--nx-bg-1` واحد", () => {
+    // كان `--background` يقرأ من `--nx-bg-1` (كحليّ) و`--surface` من
+    // شبه الأسود، فسطحان مختلفان في الشاشة الواحدة.
+    const nxBg = CSS.match(/--nx-bg-1:\s*(#[0-9a-f]{6})/i)?.[1];
+    expect(nxBg?.toLowerCase()).toBe(darkSurface?.toLowerCase());
+  });
+
+  it("يبقى تحت الحبر الأبيض بتباين عالٍ", () => {
+    const lum = (hex: string) => {
+      const v = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+      const [r, g, b] = v.map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    expect(1.05 / (lum(darkSurface!) + 0.05)).toBeGreaterThan(12);
+  });
+});
+
 describe("عقد الوضعين — المادة ٣٤: لا لون صريح خارج طبقة الرموز", () => {
   it('لا fill="white" في أي مكوّن أو مسار', async () => {
     // العطل الأصلي: نسبة أداء المنطقة داخل حلقة SVG كانت fill="white" —

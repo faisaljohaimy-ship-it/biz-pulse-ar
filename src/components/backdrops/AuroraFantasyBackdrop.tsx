@@ -33,7 +33,7 @@ export function AuroraFantasyBackdrop({
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 90% at 50% -10%, #0a1836 0%, #050b1c 45%, #02040c 100%)",
+            "radial-gradient(120% 90% at 50% -10%, #10365e 0%, #0a2542 45%, #061a2e 100%)",
         }}
       />
 
@@ -103,7 +103,7 @@ export function AuroraFantasyBackdrop({
       <div
         className="absolute inset-0"
         style={{
-          background: "radial-gradient(130% 100% at 50% 40%, transparent 55%, #02040c 100%)",
+          background: "radial-gradient(130% 100% at 50% 40%, transparent 55%, #04121f 100%)",
         }}
       />
 
