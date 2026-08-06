@@ -316,7 +316,11 @@ html.safe-mode canvas {
       radial-gradient(ellipse 70% 55% at 10% -5%, rgba(0, 212, 255, 0.18), transparent 60%),
       radial-gradient(ellipse 55% 45% at 100% 100%, rgba(111, 255, 233, 0.1), transparent 60%),
       radial-gradient(ellipse 40% 30% at 50% 120%, rgba(0, 184, 217, 0.1), transparent 60%);
-    background-attachment: fixed;
+    /* لا `fixed` هنا: الثبات يأتي من `body::before` وهو **عنصر** ثابت يغطّي
+       إطار العرض كاملًا، فطبقة الجسم تحته لا تُرى أصلًا. وإبقاء الخاصيّة
+       كان يجمع سوأتَين: عملًا بلا أثر مرئي، وسلوكًا متقطّعًا على iOS
+       Safari حيث `background-attachment: fixed` معطوبة. */
+    background-attachment: scroll;
   }
 
   /* Selection */
@@ -3219,7 +3223,8 @@ body {
     radial-gradient(1100px 620px at 78% -12%, rgba(37, 99, 235, 0.07), transparent 62%),
     radial-gradient(900px 520px at 8% 4%, rgba(6, 182, 212, 0.05), transparent 60%),
     linear-gradient(180deg, #ffffff 0%, var(--sd-pearl) 100%);
-  background-attachment: fixed;
+  /* كسابقتها: الطبقة الثابتة المرئية هي `body::before`، وهذه تحتها. */
+  background-attachment: scroll;
   color: var(--sd-ink);
 }
 
@@ -4740,6 +4745,23 @@ html.dark {
   --sd-shadow-1: 0 10px 30px -14px rgba(3, 12, 32, 0.75);
   --sd-shadow-2: 0 18px 48px -18px rgba(3, 12, 32, 0.85);
   --sd-shadow-3: 0 26px 70px -22px rgba(3, 12, 32, 0.9);
+
+  /* ── الحبران الثانويّان يعودان للوضع الداكن (٢٠٢٦/٠٨/٠٦) ──────────────
+     `--ink` يتبع اللوحة (`var(--sd-ink)`) فينقلب مع الوضع صحيحًا. أمّا
+     `--ink-2` و`--ink-3` فكُتبا **قيمتين صريحتين** `#374151` و`#4b5563`
+     داخل كتلة `:root, .light, .dark` — ومحدِّدها يشمل `.dark` نفسه. فحمل
+     الوضعُ الداكن رماديَّي الوضع الفاتح: حبرٌ داكن على كحليّ.
+
+     قِيس لا قُدِّر: قراءة الرمز من `<html>` تعطي `#374151` في الوضعين معًا،
+     ورمز مبدّل الوضع (يقرأ `--ink-2`) يخرج عند ١٫٥٢:١ على الكحلي — دون
+     عتبة ٣:١ لعناصر الواجهة (WCAG 1.4.11). ويُرى في تكبير الترويسة:
+     الشمس أخفت من الجرس المجاور بوضوح.
+
+     والقيمتان الفاتحتان تبقيان كما هما: عُمِّقتا عمدًا لتعبرا العتبة على
+     الورق وعلى الرقاقة الرمادية معًا (الشرح عند تعريفهما). فالإصلاح
+     استعادةٌ للوضع الداكن وحده، لا نقضٌ لذلك القياس. */
+  --ink-2: rgba(226, 235, 255, 0.74);
+  --ink-3: rgba(226, 235, 255, 0.55);
 }
 
 html.dark body {
@@ -9961,43 +9983,56 @@ html[data-nx-motion="off"] .nx-op-decision::before {
   color: var(--color-slate-600);
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   SCROLLING SCREEN BACKDROP (قرار المالك ٢٠٢٦/٠٨/٠٦ — تحديث)
-   الخلفية تتحرك مع سحب الصفحة على الجوال وكل الأجهزة: تُلغى التثبيتة
-   (background-attachment: fixed لا يعمل بثبات على iOS ويسبب قطعًا)،
-   والطبقة المحيطة تمتد على كامل ارتفاع المستند لا على إطار العرض.
-   ───────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   الخلفية ثابتة على الشاشة (قرار المالك ٢٠٢٦/٠٨/٠٦)
+   ═══════════════════════════════════════════════════════════════════════════
+
+   المالك: «اجعل خلفية الصفحة الرئيسية ثابتة على الشاشة كما كانت في أوّل
+   عمل». وكانت كذلك فعلًا: `body::before` عند سطر ٣٤٢٢ مكتوبة
+   `position: fixed; inset: 0` منذ إنشائها. ثم جاءت كتلة لاحقة تقلبها إلى
+   `position: absolute !important` بارتفاع المستند كلّه، فصارت تنساح مع
+   السحب. هذا استرجاعٌ للأصل لا اختراعُ سلوكٍ جديد.
+
+   **وحجّة iOS التي بُني عليها التغيير صحيحة — لكنها عن خاصيّة أخرى.**
+   المعطوب على iOS Safari هو `background-attachment: fixed`: المتصفّح
+   يتجاهلها أو يرسمها متقطّعة. أمّا **عنصرٌ** بـ`position: fixed` فيعمل
+   هناك كما يعمل في غيره. والفرق ليس نظريًّا: خلفية فيلم الرئيسية
+   (`HomeVideoBackdrop`) مثبَّتة بهذه الطريقة نفسها — حاوية `fixed inset-0`
+   والفيديو `absolute` داخلها — وتعمل على الأجهزة كلّها منذ إنشائها. فالحلّ
+   المطلوب موجودٌ في المستودع ومجرَّب، ولا يحتاج التخلّي عن الثبات.
+
+   وشرط صحّة `position: fixed` أن يخلو أسلافه من `transform` أو `filter` أو
+   `backdrop-filter` أو `will-change` — فأيٌّ منها يُنشئ containing block
+   جديدًا فيصير «الثابت» ثابتًا بالنسبة إليه لا إلى الشاشة. فُحص `html`
+   و`body` في هذا الملف: لا شيء من ذلك عليهما. الشرط قائم.
+
+   **تعارض مسجَّل (المادة ٣٥):** الكتلة المنقوضة هنا من كاتبٍ آخر نشط على
+   `main`. نصّ المالك الصريح يسود، وقد يُعاد التحريك في دفعةٍ تالية — وذلك
+   قراره لا قرارنا. */
 html,
 html.dark {
+  /* يمنع وميض الورق الأبيض عند السحب الزائد (overscroll) في الوضع الداكن:
+     `--sd-white` نفسه ينقلب إلى #0a1730 تحت `html.dark`. */
   background-color: var(--sd-white);
 }
 
 body,
 html.dark body {
-  position: relative;
   min-height: 100%;
-  background-attachment: scroll !important;
-  background-repeat: no-repeat !important;
-  background-size:
-    100% 180vh,
-    100% 180vh,
-    100% 100% !important;
-  background-position:
-    center top,
-    center top,
-    center top !important;
 }
 
+/* الطبقة المحيطة تعود إلى إطار العرض: تملأ الشاشة وتبقى تحتها ثابتةً
+   مهما طال المستند. `100dvh` لا `100%` — فشريط متصفّح الجوال ينكمش أثناء
+   السحب، و`vh` الثابتة تترك شريطًا فارغًا أسفل الشاشة عند انكماشه. */
 body::before,
 html.dark body::before {
-  position: absolute !important;
-  inset: 0 !important;
-  height: auto !important;
-  min-height: 100% !important;
-  background-attachment: scroll !important;
-  background-repeat: no-repeat !important;
-  background-size: cover !important;
-  opacity: 1 !important;
+  position: fixed;
+  inset: 0;
+  block-size: 100dvh;
+  background-attachment: scroll;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 1;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
