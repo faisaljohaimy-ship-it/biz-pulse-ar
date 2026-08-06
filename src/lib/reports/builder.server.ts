@@ -7,6 +7,14 @@ import * as XLSX from "xlsx";
 import type { ExecutiveSnapshot } from "./snapshot.server";
 import { FINN_SIGNATURE_WORDMARK } from "@/lib/finn/signature";
 
+// Article 27: an unmeasured KPI is never coerced to "null" or to 0.
+// The PDF uses WinAnsi standard fonts, so the label stays Latin here.
+const UNMEASURED_EN = "Not measured";
+const pct = (v: number | null | undefined) =>
+  v === null || v === undefined ? UNMEASURED_EN : `${v}%`;
+const num = (v: number | null | undefined, suffix = "") =>
+  v === null || v === undefined ? UNMEASURED_EN : `${v}${suffix}`;
+
 const PAGE = { width: 612, height: 792 }; // US Letter
 const MARGIN = 40;
 const BRAND = rgb(0.0, 0.831, 1.0); // #00D4FF
@@ -240,18 +248,18 @@ export async function buildExecPdf(
   drawText(ctx, "Executive KPIs", { size: 13, bold: true });
   const k = snap.kpis;
   kpiGrid(ctx, [
-    { label: "Executive Readiness", value: `${k.executive_readiness}%` },
-    { label: "Safety Index", value: `${k.safety_index}%` },
-    { label: "Risk Index", value: `${k.risk_index}%` },
+    { label: "Executive Readiness", value: pct(k.executive_readiness) },
+    { label: "Safety Index", value: pct(k.safety_index) },
+    { label: "Risk Index", value: pct(k.risk_index) },
     { label: "Open Incidents", value: String(k.incidents_open) },
     { label: "Critical Incidents", value: String(k.incidents_critical) },
-    { label: "Resolution Rate", value: `${k.incidents_resolution_rate}%` },
-    { label: "MTTR (min)", value: String(k.mttr_minutes) },
+    { label: "Resolution Rate", value: pct(k.incidents_resolution_rate) },
+    { label: "MTTR (min)", value: num(k.mttr_minutes) },
     { label: "Work Orders Open", value: String(k.wo_open) },
     { label: "WO Closed", value: String(k.wo_closed) },
-    { label: "CCTV Health", value: `${k.cctv_health}%` },
-    { label: "Access Health", value: `${k.access_health}%` },
-    { label: "Patrol Completion", value: `${k.patrol_completion}%` },
+    { label: "CCTV Health", value: pct(k.cctv_health) },
+    { label: "Access Health", value: pct(k.access_health) },
+    { label: "Patrol Completion", value: pct(k.patrol_completion) },
     { label: "Sites Operational", value: `${k.sites_operational}/${k.sites_total}` },
     { label: "Permits Active", value: String(k.permits_active) },
     { label: "Visitors Inside", value: String(k.visitors_inside) },
@@ -405,9 +413,9 @@ export function htmlSummaryFromSnapshot(
       ${opts.subtitle ? `<div style="font:14px/1.4 system-ui;color:#64748b;margin-bottom:12px">${opts.subtitle}</div>` : ""}
       <div style="font:12px/1.4 system-ui;color:#64748b;margin-bottom:16px">Generated ${new Date(snap.generatedAt).toUTCString()} · Window ${snap.range}</div>
       <table style="width:100%;border-collapse:collapse;font-family:system-ui">
-        <tr>${cell("Executive Readiness", k.executive_readiness + "%")}${cell("Safety Index", k.safety_index + "%")}${cell("Risk Index", k.risk_index + "%")}</tr>
-        <tr>${cell("Open Incidents", k.incidents_open)}${cell("Critical Incidents", k.incidents_critical)}${cell("Resolution Rate", k.incidents_resolution_rate + "%")}</tr>
-        <tr>${cell("Work Orders Open", k.wo_open)}${cell("CCTV Health", k.cctv_health + "%")}${cell("Patrol Completion", k.patrol_completion + "%")}</tr>
+        <tr>${cell("Executive Readiness", pct(k.executive_readiness))}${cell("Safety Index", pct(k.safety_index))}${cell("Risk Index", pct(k.risk_index))}</tr>
+        <tr>${cell("Open Incidents", k.incidents_open)}${cell("Critical Incidents", k.incidents_critical)}${cell("Resolution Rate", pct(k.incidents_resolution_rate))}</tr>
+        <tr>${cell("Work Orders Open", k.wo_open)}${cell("CCTV Health", pct(k.cctv_health))}${cell("Patrol Completion", pct(k.patrol_completion))}</tr>
       </table>
       <p style="font:13px/1.6 system-ui;color:#334155;margin-top:16px">
         Window totals — Incidents: <b>${snap.totals.incidents}</b> · Work Orders: <b>${snap.totals.workOrders}</b> · Permits: <b>${snap.totals.permits}</b> · Patrols: <b>${snap.totals.patrols}</b>.
