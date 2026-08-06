@@ -32,15 +32,18 @@ export function HeaderClockBar({ showClock = true }: HeaderClockBarProps) {
       // `nx-clock-bar` هو المقبض الذي يقلب هذا الشريط في الوضع الفاتح
       // (styles.css). التدرّج الكحلي أدناه يبقى مرجع الوضع الداكن.
       //
-      // ترتيب التكديس (تحسين الجوال ٢٠٢٦/٠٨/٠٥): الشريط لاصق أعلى الصفحة
-      // بينما زرّا الرجوع/الرئيسية ومبدّل الوضع عائمان فوقه عند z-70. كان
-      // الشريط عند z-100 فيمرّ خلفيته المصمتة فوقها ويقصّها عن اللمس؛ صار
-      // دونها فيبقيان ظاهرَين، وحُجز لهما ممرّ أفقي في `nx-clock-slot`
-      // (styles.css) فلا يسقط نص الساعة تحتهما في أيٍّ من الاتجاهين.
+      // ترتيب التكديس (قرار المالك ٢٠٢٦/٠٨/٠٦): الشريط لاصق أعلى الصفحة،
+      // وزرّا الرجوع/الرئيسية **لم يعودا يطفوان فوقه** — نزلا إلى صفّ
+      // الترويسة محاذيَين لمدار النوافذ. فسقط سبب الممرّ المحجوز في
+      // `nx-clock-slot`، واستعاد التاريخ الكامل عرضه بعد أن كان مقصوصًا
+      // (المرفق IMG_9412). الشريط يبقى دون الزوج في التكديس احتياطًا.
       className="nx-clock-bar pointer-events-none sticky top-0 z-[45] w-full overflow-hidden border-b border-[#3AE8FF]/30 bg-gradient-to-r from-[#02101e] via-[#04243c] to-[#02101e] shadow-[0_4px_24px_-8px_rgba(0,212,255,0.4)]"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
-      <div className="relative flex h-9 items-center sm:h-10">
+      {/* الارتفاع من `--nx-clockbar-h` لا من `h-9 sm:h-10`: زوج الرجوع
+          والرئيسية يتموضع تحت هذا الشريط، فلو تغيّر الارتفاع هنا وحده
+          انزلق الزوج فوق الشريط من جديد — وهو العطل المُبلَّغ نفسه. */}
+      <div className="nx-clock-row relative flex items-center">
         <div className="nx-clock-slot pointer-events-auto">
           <LiveClock className="!border-transparent !bg-transparent !px-0 !py-0 !shadow-none" />
         </div>

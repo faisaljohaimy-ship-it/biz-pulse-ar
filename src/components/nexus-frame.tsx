@@ -92,8 +92,14 @@ export function NexusPage({
 }) {
   return (
     <div className="relative isolate min-h-[calc(100vh-3.5rem)] overflow-hidden bg-[#04060f] text-slate-200">
-      {/* Background field */}
-      <div className="pointer-events-none absolute inset-0">
+      {/* Background field — **زينة الوضع الداكن، لا قشرة الصفحة.**
+
+          كانت الصورة وحدها موسومة `nx-backdrop`، أمّا إخوتها (لطخات الضباب
+          والتظليل الأسود عند ٥٥٪ والنجوم وخطوط المسح) فلا. فيُخفى الغلاف
+          في الوضع الفاتح وتبقى الطبقات المعتمة فوقه: صفحةٌ سوداء يكتب فوقها
+          حبرٌ داكن — وهو ما يُرى في المرفق IMG_9412. الوسم على الحاوية
+          يُسقط الحقل كلّه دفعةً واحدة (القاعدة عند `.light .nx-backdrop`). */}
+      <div className="nx-backdrop pointer-events-none absolute inset-0">
         {backdropImage && (
           <GlossyImageBackdrop src={backdropImage} className="z-0" opacity={0.38} />
         )}
@@ -132,10 +138,24 @@ export function NexusPage({
                 {eyebrow}
               </div>
             )}
-            <h1 className="mt-1 bg-gradient-to-r from-white via-cyan-100 to-white bg-clip-text text-2xl font-bold tracking-tight text-transparent md:text-3xl">
+            {/* العنوان كان `from-white via-cyan-100 to-white` فوق قصٍّ شفّاف.
+                و`white` في الوضع الفاتح يُقلَب إلى حبرٍ داكن عبر جسر الرموز،
+                بينما `cyan-100` يبقى فاتحًا — فيخرج تدرّج داكن·فاتح·داكن
+                يقرؤه العين على أنه عنوان مطموس. يُقرأ اللون الآن من `--ink`
+                و`--tone-cyan`، وهما معرَّفان في الوضعين معًا فلا يحتاج
+                العنوان جسرًا يصحّ في أحدهما دون الآخر. */}
+            <h1
+              className="mt-1 bg-clip-text text-2xl font-bold tracking-tight text-transparent md:text-3xl"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to right, var(--ink), var(--tone-cyan) 50%, var(--ink))",
+              }}
+            >
               {title}
             </h1>
-            {subtitle && <p className="mt-1 max-w-3xl text-sm text-slate-400">{subtitle}</p>}
+            {subtitle && (
+              <p className="mt-1 max-w-3xl text-sm text-[color:var(--ink-2)]">{subtitle}</p>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">{actions}</div>
         </header>

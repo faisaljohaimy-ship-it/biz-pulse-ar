@@ -35,9 +35,12 @@ export function ThemeToggle({ className }: { className?: string } = {}) {
       title={label}
       className={cn("nx-theme-toggle nx-orb", className)}
       style={{
-        // اللكنة تتبع الوجهة: كهرمانيّ نهارًا وبنفسجيّ ليلًا — فالزرّ يُقرأ
-        // «إلى أين» قبل أن تُقرأ أيقونته.
-        ["--orb-accent" as string]: theme === "light" ? "var(--tone-violet)" : "var(--tone-amber)",
+        // لكنةٌ سماويّة في الاتجاهين (قرار المالك ٢٠٢٦/٠٨/٠٦): كانت كهرمانيّة
+        // ليلًا، فتقف وحدها دافئةً بين أربعة مدارات سماويّة في السقف نفسه.
+        // والكهرماني في هذا النظام لونُ **تحذير** لا زينة (CLAUDE.md)، فصرفه
+        // إلى مبدّل وضعٍ يُضعف إشارته حيث تلزم. الوجهة تبقى مقروءة من
+        // الأيقونة نفسها — شمسٌ ليلًا وقمرٌ نهارًا — لا من الحرارة اللونية.
+        ["--orb-accent" as string]: "var(--tone-cyan)",
         ["--orb-speed" as string]: "2.4s",
       }}
     >

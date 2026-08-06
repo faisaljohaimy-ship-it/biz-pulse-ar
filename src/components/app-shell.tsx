@@ -70,6 +70,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
+import { BackHomeControls } from "@/components/layout/GlobalBackButton";
 import { TopUtilityBar } from "@/components/nav/TopUtilityBar";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 
@@ -121,8 +122,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
 
-          <div className="flex items-center gap-2">
-            <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg shadow-glow">
+          {/* الرجوع/الرئيسية داخل الصفّ بجوار مدار النوافذ (قرار المالك
+              ٢٠٢٦/٠٨/٠٦): محاذاةٌ بالتخطيط لا بحسابٍ عائم — فيُفسح لهما
+              الصفّ بدل أن يجلسا فوق الشعار. */}
+          <BackHomeControls />
+
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg shadow-glow">
               <img
                 src="/brand-icon.png"
                 alt={brandName(locale === "ar")}

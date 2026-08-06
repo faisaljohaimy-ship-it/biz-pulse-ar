@@ -6,7 +6,11 @@
 //
 // The name is the internal slug, not the display brand: the display brand is
 // Arabic and a cache key must stay ASCII.
-const CACHE_NAME = "sadeed-static-v8-sadeed-only";
+// v9 (٢٠٢٦/٠٨/٠٦): المفتاح يُرفع مع تغيّر الاستراتيجية لا مع تغيّر المحتوى
+// وحده. النسخ المخزَّنة تحت v8 كُتبت تحت قاعدة «الذاكرة أوّلًا للجميع»،
+// و`activate` أدناه يحذف كل مفتاح سوى هذا — فتُطرح تلك النسخ عند أوّل تفعيل
+// بدل أن تبقى مؤهَّلة للخدمة تحت القاعدة الجديدة.
+const CACHE_NAME = "sadeed-static-v9-network-first-code";
 const PRECACHE = ["/brand-icon.png", "/finn-portrait.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
@@ -45,16 +49,41 @@ self.addEventListener("fetch", (event) => {
   );
   if (!isStaticAsset) return;
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request).then((response) => {
-        if (response.ok && response.type === "basic") {
-          const copy = response.clone();
-          void caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        }
-        return response;
-      });
-      return cached ?? network;
-    }),
-  );
+  // ── الكودُ من الشبكة، والوسائطُ من الذاكرة ────────────────────────────
+  //
+  // كانت الاستراتيجية واحدة للجميع: `cached ?? network` — أي **الذاكرة
+  // أوّلًا** حتى للسكربتات والأنماط. وهذا يجعل السطر التالي ممكنًا: نسخة
+  // مخزَّنة من كودٍ قديم تُخدَم إلى الأبد ما دام مسارها لم يتغيّر، فيرى
+  // المالك واجهةً لا وجود لها في المستودع (المرفق IMG_9413: علامة سابقة
+  // وأزرار أُزيلت من الكود منذ أسابيع).
+  //
+  // البصمة في اسم الملف تحمي من ذلك عادةً — لكنها تحمي بالمصادفة لا
+  // بالتصميم: يكفي أصلٌ واحد غير مبصوم ليُثبِّت جيلًا كاملًا. فالتفريق
+  // صريح الآن:
+  //
+  //   • JS/CSS  ← الشبكة أوّلًا، والذاكرة شبكةُ أمانٍ حين ينقطع الاتصال.
+  //     أسوأ حالة: طلبٌ إضافي. أسوأ حالة الأخرى كانت: تطبيقٌ آخر.
+  //   • الصور والخطوط ← الذاكرة أوّلًا كما كانت. محتواها لا «يقدُم»،
+  //     وتخزينها هو كامل الفائدة من هذا العامل.
+  const isCode = /\.(?:css|js)$/i.test(url.pathname);
+
+  const fromNetwork = () =>
+    fetch(request).then((response) => {
+      if (response.ok && response.type === "basic") {
+        const copy = response.clone();
+        void caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+      }
+      return response;
+    });
+
+  if (isCode) {
+    // `caches.match` تعيد `undefined` حين لا نسخة — و`respondWith(undefined)`
+    // خطأ تشغيل لا تعطّلٌ صريح. فيُصرَّح بالفشل بدل تمرير الفراغ.
+    event.respondWith(
+      fromNetwork().catch(() => caches.match(request).then((cached) => cached ?? Response.error())),
+    );
+    return;
+  }
+
+  event.respondWith(caches.match(request).then((cached) => cached ?? fromNetwork()));
 });
