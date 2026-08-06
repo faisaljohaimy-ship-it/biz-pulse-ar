@@ -9863,9 +9863,10 @@ html[data-nx-motion="off"] .nx-op-decision::before {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   FIXED SCREEN BACKDROP (قرار المالك ٢٠٢٦/٠٨/٠٦)
-   خلفية النظام تعود واضحة وثابتة: طبقة واحدة مثبّتة على إطار العرض،
-   لا تتحرّك مع التمرير، ولا تُقصّ عند الحواف — في الوضعين معًا.
+   SCROLLING SCREEN BACKDROP (قرار المالك ٢٠٢٦/٠٨/٠٦ — تحديث)
+   الخلفية تتحرك مع سحب الصفحة على الجوال وكل الأجهزة: تُلغى التثبيتة
+   (background-attachment: fixed لا يعمل بثبات على iOS ويسبب قطعًا)،
+   والطبقة المحيطة تمتد على كامل ارتفاع المستند لا على إطار العرض.
    ───────────────────────────────────────────────────────────────────────── */
 html,
 html.dark {
@@ -9874,17 +9875,24 @@ html.dark {
 
 body,
 html.dark body {
-  background-attachment: fixed, fixed, fixed !important;
+  position: relative;
+  min-height: 100%;
+  background-attachment: scroll !important;
   background-repeat: no-repeat !important;
-  background-size: cover !important;
-  background-position: center top !important;
+  background-size: 100% 180vh, 100% 180vh, 100% 100% !important;
+  background-position:
+    center top,
+    center top,
+    center top !important;
 }
 
 body::before,
 html.dark body::before {
-  position: fixed !important;
+  position: absolute !important;
   inset: 0 !important;
-  background-attachment: fixed !important;
+  height: auto !important;
+  min-height: 100% !important;
+  background-attachment: scroll !important;
   background-repeat: no-repeat !important;
   background-size: cover !important;
   opacity: 1 !important;
