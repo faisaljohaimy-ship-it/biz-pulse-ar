@@ -1,3 +1,15 @@
+/**
+ * أسماء وكلاء «منصة عمليات الوكلاء» — مسمّيات وظيفية لا صفة «وكيل X».
+ *
+ * البند ٢٥ (٢٠٢٦/٠٨/٠٦): «تعديل المسميات إلى ما يطابق الوكلاء الذين
+ * سيُستخدمون في قطاع الأمن الصناعي». وكانت الأسماء كلها على قالب واحد
+ * («وكيل التقارير» · «وكيل المخاطر») يصف *ماهيّة* الشيء — أنه وكيل — لا
+ * *دوره*. ومدير أمن صناعي يقرأ لوحة فيها أربعة عشر اسمًا يبدأ كلٌّ منها
+ * بالكلمة نفسها لا يميّز بينها إلا بعد قراءة الكلمة الثانية؛ ويقرأ «محلّل
+ * المخاطر الأمنية» و«مراقب امتثال HCIS» فيعرف المسؤولية من أول كلمة.
+ *
+ * `id` لم يُمسّ في أيٍّ منها — مفتاح آليٌّ تربطه الحالات والسجلات.
+ */
 type AgentDisplayInput = {
   id: string;
   name: string;
@@ -27,7 +39,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /report|brief|تقرير|موجز/i,
-    nameAr: "وكيل التقارير الأمنية",
+    nameAr: "مُعِدّ التقارير الأمنية",
     nameEn: "Security Reporting Agent",
     departmentAr: "التقارير",
     departmentEn: "Reporting",
@@ -36,7 +48,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /kpi|performance|مؤشر|أداء/i,
-    nameAr: "وكيل مؤشرات الأداء",
+    nameAr: "محلّل مؤشرات الأداء",
     nameEn: "Performance KPI Agent",
     departmentAr: "الأداء والقياس",
     departmentEn: "Performance",
@@ -45,7 +57,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /risk|مخاطر/i,
-    nameAr: "وكيل المخاطر الأمنية",
+    nameAr: "محلّل المخاطر الأمنية",
     nameEn: "Security Risk Agent",
     departmentAr: "المخاطر",
     departmentEn: "Risk",
@@ -54,7 +66,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /incident|response|investigat|حادث|بلاغ|استجاب/i,
-    nameAr: "وكيل الحوادث والتصعيد",
+    nameAr: "قائد الحوادث والتصعيد",
     nameEn: "Incident & Escalation Agent",
     departmentAr: "غرفة العمليات",
     departmentEn: "Operations Room",
@@ -63,7 +75,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /monitor|watch|cctv|camera|ot_eye|رصد|مراقب|كامير/i,
-    nameAr: "وكيل مراقبة العمليات",
+    nameAr: "مراقب العمليات",
     nameEn: "Operations Monitoring Agent",
     departmentAr: "المراقبة الميدانية",
     departmentEn: "Field Monitoring",
@@ -72,7 +84,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /maintenance|predict|work.?order|صيانة|تنبؤ/i,
-    nameAr: "وكيل الصيانة التنبؤية",
+    nameAr: "مخطّط الصيانة التنبؤية",
     nameEn: "Predictive Maintenance Agent",
     departmentAr: "الصيانة",
     departmentEn: "Maintenance",
@@ -81,7 +93,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /compliance|audit|hcis|readiness|امتثال|تدقيق/i,
-    nameAr: "وكيل امتثال HCIS",
+    nameAr: "مراقب امتثال HCIS",
     nameEn: "HCIS Compliance Agent",
     departmentAr: "الامتثال والتدقيق",
     departmentEn: "Compliance & Audit",
@@ -90,7 +102,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /identity|access|guard|هوية|دخول|وصول/i,
-    nameAr: "وكيل الهوية والدخول",
+    nameAr: "ضابط الهوية والدخول",
     nameEn: "Identity & Access Agent",
     departmentAr: "التحكم بالدخول",
     departmentEn: "Access Control",
@@ -99,7 +111,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /transport|patrol|حركة|دورية|نقل/i,
-    nameAr: "وكيل الحركة والدوريات",
+    nameAr: "قائد الحركة والدوريات",
     nameEn: "Movement & Patrol Agent",
     departmentAr: "الدوريات والحركة",
     departmentEn: "Patrols & Movement",
@@ -108,7 +120,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /workflow|orchestrat|تنسيق|مسار/i,
-    nameAr: "وكيل سير العمليات",
+    nameAr: "منسّق سير العمليات",
     nameEn: "Operations Workflow Agent",
     departmentAr: "تنسيق العمليات",
     departmentEn: "Operations Coordination",
@@ -117,7 +129,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /notification|alert|تنبيه|إشعار/i,
-    nameAr: "وكيل التنبيهات",
+    nameAr: "مُشغّل مركز التنبيهات",
     nameEn: "Alerts Agent",
     departmentAr: "التنبيهات والتواصل",
     departmentEn: "Alerts & Communication",
@@ -126,7 +138,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /knowledge|rag|معرفة/i,
-    nameAr: "وكيل المعرفة الأمنية",
+    nameAr: "أمين المعرفة الأمنية",
     nameEn: "Security Knowledge Agent",
     departmentAr: "المعرفة والإجراءات",
     departmentEn: "Knowledge & Procedures",
@@ -135,7 +147,7 @@ const ROLES: RoleDefinition[] = [
   },
   {
     match: /twin|digital|توأم/i,
-    nameAr: "وكيل التوأم الرقمي",
+    nameAr: "مُشغّل التوأم الرقمي",
     nameEn: "Digital Twin Agent",
     departmentAr: "الأصول الرقمية",
     departmentEn: "Digital Assets",
@@ -153,7 +165,7 @@ export function industrialSecurityAgentDisplay(agent: AgentDisplayInput, ar: boo
   const role =
     ROLES.find((candidate) => candidate.match.test(haystack)) ??
     ({
-      nameAr: "وكيل دعم الأمن الصناعي",
+      nameAr: "مسؤول دعم الأمن الصناعي",
       nameEn: "Industrial Security Support Agent",
       departmentAr: "دعم العمليات",
       departmentEn: "Operations Support",

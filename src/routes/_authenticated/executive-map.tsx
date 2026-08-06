@@ -8,6 +8,10 @@ import { PageHeader } from "@/components/page-header";
 import { CommandBackdrop } from "@/components/executive/CommandBackdrop";
 import { REGION_MARKERS } from "@/components/executive/region-markers";
 import { ExecutiveMapClient, type MapSite } from "@/components/executive-map-client";
+// «داخل المملكة» يُعرَّف مرّة واحدة للنظام كلّه: كان هنا تعريفٌ ثانٍ يقبل
+// حتى العرض 33 بينما يقبل الآخر 32.5 — نقطةٌ تُقبل في خريطة وتُرفض في
+// أخرى، وهو أسوأ من الخطأ الواحد لأنه يظهر ولا يظهر.
+import { isInsideSaudi } from "@/components/map/saudi-geometry";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
@@ -146,10 +150,6 @@ const SEED_SITES: MapSite[] = [
   },
 ];
 
-function isSaudiCoordinate(lat: number, lng: number) {
-  return lat >= 16 && lat <= 33 && lng >= 34 && lng <= 56;
-}
-
 function closestRegion(lat: number, lng: number): RegionId {
   return REGION_MARKERS.reduce(
     (best, marker) => {
@@ -185,7 +185,7 @@ function ExecutiveMapPage() {
         for (const incident of (incidents ?? []) as unknown as IncidentGeoRow[]) {
           const lat = incident.location_lat;
           const lng = incident.location_lng;
-          if (typeof lat !== "number" || typeof lng !== "number" || !isSaudiCoordinate(lat, lng)) {
+          if (typeof lat !== "number" || typeof lng !== "number" || !isInsideSaudi(lat, lng)) {
             continue;
           }
           extras.push({
@@ -208,7 +208,7 @@ function ExecutiveMapPage() {
         for (const crisis of (crises ?? []) as unknown as CrisisGeoRow[]) {
           const lat = crisis.lat;
           const lng = crisis.lng;
-          if (typeof lat !== "number" || typeof lng !== "number" || !isSaudiCoordinate(lat, lng)) {
+          if (typeof lat !== "number" || typeof lng !== "number" || !isInsideSaudi(lat, lng)) {
             continue;
           }
           extras.push({
@@ -412,6 +412,55 @@ function ExecutiveMapPage() {
                 }}
               />
               {label}
+            </div>
+          ))}
+        </div>
+
+        {/* مفتاح الحالة — الحجم كان مشروحًا واللون لا. ورسمٌ يحمل بُعدين
+            ويشرح واحدًا يُقرأ نصفه تخمينًا. */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border/60 px-4 py-3 text-[12px] text-muted-foreground">
+          <span className="font-semibold text-foreground">{isAr ? "اللون" : "Colour"}:</span>
+          {(
+            [
+              ["ok", isAr ? "سليم" : "Healthy"],
+              ["warn", isAr ? "تحذير" : "Warning"],
+              ["critical", isAr ? "حرج" : "Critical"],
+            ] as const
+          ).map(([status, label]) => (
+            <span key={status} className="flex items-center gap-1.5">
+              <span
+                aria-hidden
+                className={`h-3 w-3 rounded-full border-2 ${
+                  status === "ok"
+                    ? "border-primary bg-primary/50"
+                    : status === "warn"
+                      ? "border-amber-500 bg-amber-500/50"
+                      : "border-destructive bg-destructive/50 [border-style:dashed]"
+                }`}
+              />
+              {label}
+            </span>
+          ))}
+          <span className="text-[11px]">
+            {isAr
+              ? "— «حرج» بحدٍّ متقطّع أيضًا، فلا يُقرأ باللون وحده"
+              : "— critical is also dashed, never colour alone"}
+          </span>
+        </div>
+
+        {/* التوزيع على الإدارات الأربع — «التوضيح» المطلوب رقمًا لا انطباعًا */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-b border-border/60 px-4 py-3 text-[12px] sm:grid-cols-4">
+          {REGIONS.map((r) => (
+            <div key={r.id} className="flex items-center gap-2">
+              <span
+                aria-hidden
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ background: REGION_ACCENT_HEX[r.id] }}
+              />
+              <span className="text-muted-foreground">{isAr ? r.shortAr : r.shortEn}</span>
+              <b className="tabular-nums text-foreground">
+                {visible.filter((v) => v.region === r.id).length}
+              </b>
             </div>
           ))}
         </div>

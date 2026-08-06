@@ -25,6 +25,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { getSecOverview } from "@/lib/sec.functions";
+import { RegionPulseMap } from "@/components/map/RegionPulseMap";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { screenName, screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
@@ -1257,6 +1258,23 @@ function MissionControl() {
               </Link>
             </div>
           </div>
+        </div>
+
+        {/* نبض المناطق — التوزيع الجغرافي (البند ٢٣). يسبق شريط المواقع
+            عمدًا: «أين» قبل «ماذا»، فالقائمة تُقرأ بعد أن يُعرف التوزيع. */}
+        <div className="mt-6">
+          <RegionPulseMap
+            ar={ar}
+            loading={q.isPending}
+            error={q.error ? (ar ? "تعذّر جلب المواقع" : "Failed to load sites") : null}
+            sites={(ov?.sites ?? []).map((s) => ({
+              id: s.id,
+              name: ar ? (s.name_ar ?? s.name_en) : (s.name_en ?? s.name_ar),
+              lat: s.lat,
+              lng: s.lng,
+              health: s.status === "critical" ? "critical" : s.status === "warning" ? "warn" : "ok",
+            }))}
+          />
         </div>
 
         {/* Sites strip */}

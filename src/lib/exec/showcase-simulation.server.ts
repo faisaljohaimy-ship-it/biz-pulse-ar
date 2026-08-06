@@ -10,6 +10,7 @@
  */
 import type { BridgeState, MissionTimelineEntry } from "./bridge.functions";
 import type { PredictedRisk } from "./predictive.functions";
+import { agentName, type DigitalHumanId } from "@/lib/digital-humans/registry";
 import { sumMeasured } from "./measured-sum";
 
 const H = 3_600_000;
@@ -2519,24 +2520,42 @@ export type CommandCenterState = {
 };
 
 export function buildCommandCenterSimulation(now: number): CommandCenterState {
+  /**
+   * سيناريو المناوبة — **الحالة والمهمة فقط**. الاسم لا يُكتب هنا: يُقرأ
+   * من `DIGITAL_HUMANS` بمفتاح `id` (البند ٢٥ · ٢٠٢٦/٠٨/٠٦).
+   *
+   * كانت هنا قائمة أسماء ثانية («وكيل الصيانة» · «وكيل الرصد» …) تخالف
+   * السجل الكانوني تمامًا، فيرى المستخدم الوكيل نفسه باسمين حسب الشاشة
+   * التي فتحها. ولا يلتقط ذلك بناءٌ ولا اختبار — الاسمان صحيحان نحويًّا،
+   * والتناقض لا يُرى إلا بفتح الشاشتين معًا.
+   *
+   * الحقل الأول مفتاح السجل، والباقي سيناريو العرض.
+   */
   const AGENTS: Array<
-    [string, string, "active" | "processing" | "idle", string | null, number, CommandSeverity]
+    [
+      DigitalHumanId,
+      string,
+      "active" | "processing" | "idle",
+      string | null,
+      number,
+      CommandSeverity,
+    ]
   > = [
-    ["FINN التنفيذية", "التنسيق العام", "active", "توليد موجز القيادة الصباحي", 14, "healthy"],
-    ["وكيل الامتثال HCIS", "الامتثال", "processing", "تدقيق SEC-18 لمحطات التحويل", 9, "medium"],
-    ["وكيل الصيانة", "الصيانة", "active", "جدولة أوامر العمل الوقائية", 11, "healthy"],
-    ["وكيل التقارير", "التقارير", "processing", "إعداد تقرير العمليات اليومي", 6, "medium"],
-    ["وكيل الرصد", "المراقبة", "active", "تتبع 142 كاميرا عبر الإدارات", 22, "healthy"],
-    ["وكيل التصاريح", "PTW", "active", "مطابقة تصاريح العمل السارية", 8, "healthy"],
-    ["وكيل الطوارئ", "الاستجابة", "idle", null, 3, "idle"],
-    ["وكيل المخاطر", "التنبؤ", "processing", "تحليل نمط إنذارات المحيط", 5, "high"],
-    ["وكيل المقاولين", "الوصول", "active", "تدقيق تصاريح دخول المقاولين", 7, "healthy"],
-    ["وكيل الدوريات", "الميدان", "active", "متابعة جولات الدوريات الليلية", 10, "healthy"],
-    ["وكيل التكاملات", "المنصات", "processing", "مزامنة قنوات البيانات التشغيلية", 4, "medium"],
+    ["aria", "التنسيق العام", "active", "توليد موجز القيادة الصباحي", 14, "healthy"],
+    ["compliance_auditor", "الامتثال", "processing", "تدقيق SEC-18 لمحطات التحويل", 9, "medium"],
+    ["digital_twin", "الصيانة", "active", "جدولة أوامر العمل الوقائية", 11, "healthy"],
+    ["executive_reporter", "التقارير", "processing", "إعداد تقرير العمليات اليومي", 6, "medium"],
+    ["cctv_intelligence", "المراقبة", "active", "تتبع 142 كاميرا عبر الإدارات", 22, "healthy"],
+    ["visitor_intelligence", "التصاريح", "active", "مطابقة تصاريح العمل السارية", 8, "healthy"],
+    ["emergency_coordinator", "الاستجابة", "idle", null, 3, "idle"],
+    ["risk_intelligence", "التنبؤ", "processing", "تحليل نمط إنذارات المحيط", 5, "high"],
+    ["incident_commander", "الوصول", "active", "تدقيق تصاريح دخول المقاولين", 7, "healthy"],
+    ["patrol_commander", "الميدان", "active", "متابعة جولات الدوريات الليلية", 10, "healthy"],
+    ["knowledge_ai", "المنصات", "processing", "مزامنة قنوات البيانات التشغيلية", 4, "medium"],
   ];
-  const agents = AGENTS.map(([name_ar, role, status, task_ar, done_today, severity], i) => ({
+  const agents = AGENTS.map(([agentId, role, status, task_ar, done_today, severity], i) => ({
     id: `sim-ca-${i + 1}`,
-    name_ar,
+    name_ar: agentName(agentId),
     role,
     status,
     task_ar,
@@ -2544,23 +2563,24 @@ export function buildCommandCenterSimulation(now: number): CommandCenterState {
     severity,
   }));
 
+  /** صاحب كل قرار بمفتاح السجل — لا اسم مكتوب (البند ٢٥). */
   const PIPELINE: Array<
-    [string, "proposed" | "prepared" | "approved", CommandSeverity, string, number]
+    [string, "proposed" | "prepared" | "approved", CommandSeverity, DigitalHumanId, number]
   > = [
-    ["جدولة صيانة وقائية لمحطة 132 ك.ف", "proposed", "medium", "وكيل الصيانة", 26],
-    ["تعليق تصريح عمل ساخن — رياح نشطة", "prepared", "high", "وكيل التصاريح", 48],
-    ["إصدار التقرير الأسبوعي للقيادة", "prepared", "medium", "وكيل التقارير", 70],
-    ["رفع تصنيف إنذار المحيط الشرقي", "proposed", "critical", "وكيل المخاطر", 15],
-    ["تحديث قائمة تفتيش SEC-18", "approved", "medium", "وكيل الامتثال HCIS", 200],
-    ["تعزيز دورية القطاع الجنوبي", "proposed", "high", "وكيل الرصد", 95],
-    ["أرشفة بلاغات الأسبوع المغلقة", "approved", "healthy", "FINN التنفيذية", 260],
+    ["جدولة صيانة وقائية لمحطة 132 ك.ف", "proposed", "medium", "digital_twin", 26],
+    ["تعليق تصريح عمل ساخن — رياح نشطة", "prepared", "high", "visitor_intelligence", 48],
+    ["إصدار التقرير الأسبوعي للقيادة", "prepared", "medium", "executive_reporter", 70],
+    ["رفع تصنيف إنذار المحيط الشرقي", "proposed", "critical", "risk_intelligence", 15],
+    ["تحديث قائمة تفتيش SEC-18", "approved", "medium", "compliance_auditor", 200],
+    ["تعزيز دورية القطاع الجنوبي", "proposed", "high", "patrol_commander", 95],
+    ["أرشفة بلاغات الأسبوع المغلقة", "approved", "healthy", "aria", 260],
   ];
-  const pipeline = PIPELINE.map(([title_ar, stage, severity, agent_ar, minAgo], i) => ({
+  const pipeline = PIPELINE.map(([title_ar, stage, severity, ownerId, minAgo], i) => ({
     id: `sim-cp-${i + 1}`,
     title_ar,
     stage,
     severity,
-    agent_ar,
+    agent_ar: agentName(ownerId),
     created_at: iso(now - minAgo * M),
   }));
 

@@ -9040,3 +9040,186 @@ html[data-nx-motion="off"] .nx-pulse-spark {
     stroke: CanvasText;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   نبض المناطق — خريطة التوزيع التخطيطية (البند ٢٣ · ٢٠٢٦/٠٨/٠٦).
+   كل لون يمرّ متغيّرًا (`--rpm-accent`) من `regions.ts`، ولا قيمة نهائية
+   في الترميز. الأحجام بوحدات viewBox فتتدرّج مع أي عرض بلا استعلام وسائط.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nx-rpm-svg {
+  aspect-ratio: 4 / 3;
+  max-block-size: 340px;
+}
+
+.nx-rpm-land {
+  fill: color-mix(in srgb, var(--tone-blue) 8%, transparent);
+  stroke: color-mix(in srgb, var(--tone-blue) 32%, transparent);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.nx-rpm-site {
+  fill: color-mix(in srgb, var(--rpm-accent) 82%, transparent);
+  stroke: color-mix(in srgb, var(--rpm-accent) 95%, white);
+  stroke-width: 0.75;
+}
+
+/* «حرج» يُقال بالشكل لا باللون وحده (WCAG 1.4.1): حلقة خارجية حول النقطة. */
+.nx-rpm-site[data-health="critical"] {
+  stroke: var(--ink);
+  stroke-width: 1.6;
+}
+
+.nx-rpm-halo {
+  fill: color-mix(in srgb, var(--rpm-accent) 16%, transparent);
+  stroke: color-mix(in srgb, var(--rpm-accent) 45%, transparent);
+  stroke-width: 1;
+}
+
+.nx-rpm-halo[data-active] {
+  stroke-width: 2.5;
+  stroke: var(--rpm-accent);
+}
+
+.nx-rpm-node {
+  fill: var(--rpm-accent);
+  stroke: color-mix(in srgb, var(--surface) 70%, transparent);
+  stroke-width: 1.5;
+}
+
+.nx-rpm-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 8px;
+}
+
+/* أرضية اللمس ٤٤px واجبة لا مستحبّة — هذه أزرار اختيار منطقة. */
+.nx-rpm-chip {
+  display: flex;
+  inline-size: 100%;
+  min-block-size: 44px;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--chip);
+  padding-inline: 12px;
+  text-align: start;
+  transition: border-color var(--nx-anim-fast) var(--nx-ease-out);
+}
+
+.nx-rpm-chip:hover:not(:disabled) {
+  border-color: var(--rpm-accent);
+}
+
+.nx-rpm-chip:disabled {
+  cursor: default;
+}
+
+.nx-rpm-chip[aria-pressed="true"] {
+  border-color: var(--rpm-accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rpm-accent) 40%, transparent);
+}
+
+.nx-rpm-swatch {
+  inline-size: 10px;
+  block-size: 10px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--rpm-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--rpm-accent) 60%, transparent);
+}
+
+.nx-rpm-chip-name {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.nx-rpm-chip-count {
+  font-size: 15px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.nx-rpm-chip-flag {
+  border-radius: 6px;
+  border: 1px solid var(--hairline);
+  background: var(--chip-strong);
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.nx-rpm-key {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 6px 14px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.nx-rpm-key > div {
+  display: flex;
+  gap: 6px;
+}
+
+.nx-rpm-key dt {
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.nx-rpm-key dt::after {
+  content: ":";
+}
+
+.nx-rpm-skeleton {
+  block-size: 220px;
+  border-radius: 14px;
+  background: linear-gradient(
+    100deg,
+    var(--chip) 30%,
+    color-mix(in srgb, var(--tone-cyan) 10%, var(--chip)) 50%,
+    var(--chip) 70%
+  );
+  background-size: 300% 100%;
+  animation: nxRpmShimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes nxRpmShimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-rpm-skeleton {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-rpm-land,
+  .nx-rpm-site,
+  .nx-rpm-halo,
+  .nx-rpm-node {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .nx-rpm-swatch {
+    background: CanvasText;
+    box-shadow: none;
+  }
+}

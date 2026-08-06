@@ -161,7 +161,20 @@ const PAL = {
   },
 } as const;
 
-/** Canonical 11 Digital Humans. FINN is always index 0 (primary). */
+/**
+ * السجل الكانوني للوكلاء الأحد عشر — **المصدر الوحيد لاسم أي وكيل**.
+ * FINN دائمًا في الفهرس صفر (الرئيسي).
+ *
+ * ## التسمية بوظيفة القطاع لا بصفة تقنية (البند ٢٥ · ٢٠٢٦/٠٨/٠٦)
+ *
+ * كانت أسماءٌ منها أوصافًا تقنية — «ذكاء المخاطر»، «ذكاء الكاميرات»،
+ * «ذكاء الزوار» — تصف *كيف* يعمل الوكيل لا *ماذا* يفعل. ومدير أمن صناعي
+ * يقرأ لوحةً فيها «ذكاء الكاميرات» لا يعرف من يخاطب؛ ويقرأ «مشغّل
+ * المراقبة التلفزيونية» فيعرف الدور والمسؤولية فورًا. فصارت كلها مسمّيات
+ * وظيفية معتمدة في القطاع.
+ *
+ * `id` لم يُمسّ في أيٍّ منها: مفتاح آليٌّ تربطه الأصوات والحالات والسجلات.
+ */
 export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
   {
     id: "aria",
@@ -213,8 +226,8 @@ export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
     id: "risk_intelligence",
     role: "risk",
     personality: "analytical",
-    name_ar: "ذكاء المخاطر",
-    name_en: "Risk Intelligence",
+    name_ar: "محلّل المخاطر",
+    name_en: "Risk Analyst",
     department_ar: "تحليل المخاطر",
     department_en: "Risk Analytics",
     title_ar: "محلل المخاطر التشغيلية",
@@ -236,8 +249,8 @@ export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
     id: "compliance_auditor",
     role: "compliance",
     personality: "advisory",
-    name_ar: "مدقق الامتثال",
-    name_en: "Compliance Auditor",
+    name_ar: "مراقب الامتثال",
+    name_en: "Compliance Monitor",
     department_ar: "الامتثال والحوكمة",
     department_en: "Compliance & Governance",
     title_ar: "مدقق السياسات الصناعية",
@@ -259,8 +272,8 @@ export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
     id: "cctv_intelligence",
     role: "cctv",
     personality: "vigilant",
-    name_ar: "ذكاء الكاميرات",
-    name_en: "CCTV Intelligence",
+    name_ar: "مشغّل المراقبة التلفزيونية",
+    name_en: "CCTV Operator",
     department_ar: "مراقبة الفيديو",
     department_en: "Video Surveillance",
     title_ar: "محلل تنبيهات الكاميرات",
@@ -328,8 +341,8 @@ export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
     id: "visitor_intelligence",
     role: "visitor",
     personality: "advisory",
-    name_ar: "ذكاء الزوار",
-    name_en: "Visitor Intelligence",
+    name_ar: "ضابط تصاريح الزوار",
+    name_en: "Visitor Permits Officer",
     department_ar: "إدارة الزوار",
     department_en: "Visitor Management",
     title_ar: "محلل دخول الزوار",
@@ -351,8 +364,8 @@ export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
     id: "knowledge_ai",
     role: "knowledge",
     personality: "advisory",
-    name_ar: "ذكاء المعرفة",
-    name_en: "Knowledge AI",
+    name_ar: "أمين الإجراءات الصناعية",
+    name_en: "Industrial Procedures Custodian",
     department_ar: "قاعدة المعرفة الصناعية",
     department_en: "Industrial Knowledge Base",
     title_ar: "أمين الإجراءات الصناعية",
@@ -374,8 +387,8 @@ export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
     id: "executive_reporter",
     role: "reporter",
     personality: "narrative",
-    name_ar: "المراسل التنفيذي",
-    name_en: "Executive Reporter",
+    name_ar: "مُعِدّ التقارير التنظيمية",
+    name_en: "Regulatory Reporting Officer",
     department_ar: "التقارير التنفيذية",
     department_en: "Executive Reporting",
     title_ar: "كاتب الإحاطات التنفيذية",
@@ -397,8 +410,8 @@ export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
     id: "digital_twin",
     role: "twin",
     personality: "analytical",
-    name_ar: "التوأم الرقمي",
-    name_en: "Digital Twin",
+    name_ar: "مُشغّل التوأم الرقمي",
+    name_en: "Digital Twin Operator",
     department_ar: "النمذجة التشغيلية",
     department_en: "Operational Modeling",
     title_ar: "محاكي البيئة الصناعية",
@@ -424,4 +437,20 @@ export const SPECIALISTS: DigitalHumanSpec[] = DIGITAL_HUMANS.slice(1);
 
 export function findHuman(id: string): DigitalHumanSpec | undefined {
   return DIGITAL_HUMANS.find((h) => h.id === id);
+}
+
+/** مفاتيح الوكلاء الكانونية — مشتقّة من السجل لا مكتوبة ثانيةً. */
+export type DigitalHumanId = (typeof DIGITAL_HUMANS)[number]["id"];
+
+/**
+ * الاسم العربي المعتمد لوكيل بمفتاحه — البوابة الوحيدة لكتابة اسم وكيل
+ * في أي سطح (البند ٢٥).
+ *
+ * ترمي عند مفتاح مجهول عمدًا: اسمٌ فارغ أو مفتاحٌ خام يظهر على الشاشة
+ * عطلٌ صامت، والرمي يكشفه في البناء لا عند العميل.
+ */
+export function agentName(id: DigitalHumanId): string {
+  const spec = DIGITAL_HUMANS.find((h) => h.id === id);
+  if (!spec) throw new Error(`unknown digital human id: ${id}`);
+  return spec.name_ar;
 }

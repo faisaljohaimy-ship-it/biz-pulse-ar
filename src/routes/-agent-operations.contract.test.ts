@@ -14,17 +14,28 @@ describe("agent operations platform contract", () => {
     expect(AGENTS_ROUTE).toContain('"منصة عمليات الوكلاء"');
     expect(AGENTS_ROUTE).toContain("industrialSecurityAgentDisplay");
 
+    // البند ٢٥ (٢٠٢٦/٠٨/٠٦): مسمّيات وظيفية لا قالب «وكيل X». كان هذا
+    // الفحص يثبّت القالب القديم حرفًا بحرف، فصار يثبّت القرار الجديد.
     for (const role of [
-      "وكيل مراقبة العمليات",
-      "وكيل الحوادث والتصعيد",
-      "وكيل الصيانة التنبؤية",
-      "وكيل امتثال HCIS",
-      "وكيل الهوية والدخول",
-      "وكيل الحركة والدوريات",
-      "وكيل التقارير الأمنية",
+      "مراقب العمليات",
+      "قائد الحوادث والتصعيد",
+      "مخطّط الصيانة التنبؤية",
+      "مراقب امتثال HCIS",
+      "ضابط الهوية والدخول",
+      "قائد الحركة والدوريات",
+      "مُعِدّ التقارير الأمنية",
+      "محلّل المخاطر الأمنية",
     ]) {
-      expect(AGENT_DISPLAY).toContain(role);
+      expect(AGENT_DISPLAY, `المسمّى «${role}» مفقود`).toContain(role);
     }
+  });
+
+  it("لا اسم على قالب «وكيل X» — المسمّى دورٌ لا صفة", () => {
+    // أربعة عشر اسمًا تبدأ بالكلمة نفسها لا يُميَّز بينها إلا بعد قراءة
+    // الكلمة الثانية. الحارس على `nameAr` وحده — `id` مفتاح آلي لا يُمسّ.
+    const names = [...AGENT_DISPLAY.matchAll(/nameAr:\s*"([^"]+)"/g)].map((m) => m[1]);
+    expect(names.length, "لم يُقرأ أي اسم — تغيّر شكل الحقل").toBeGreaterThanOrEqual(10);
+    expect(names.filter((n) => n.startsWith("وكيل "))).toEqual([]);
   });
 
   it("keeps the retired holographic tree out of the canonical page", () => {

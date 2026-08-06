@@ -46,12 +46,10 @@ export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: bo
     (async () => {
       const [rl, L] = await Promise.all([import("react-leaflet"), import("leaflet")]);
       await import("leaflet/dist/leaflet.css");
-      delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
+      // (أُزيلت تهيئة أيقونات Leaflet الافتراضية: الخريطة ترسم
+      //  `CircleMarker` حصرًا فلا تُطلب تلك الصور أصلًا — وكانت ثلاثة
+      //  طلبات إلى unpkg.com لا حامل لها.)
+      void L;
       if (!alive) return;
       setMods({
         MapContainer: rl.MapContainer,
@@ -91,19 +89,19 @@ export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: bo
       style={{ background: "hsl(var(--background))" }}
     >
       <LayersControl position="topright">
-        <LayersControl.BaseLayer checked name="Dark">
+        <LayersControl.BaseLayer checked name={isAr ? "داكن" : "Dark"}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
         </LayersControl.BaseLayer>
-        <LayersControl.BaseLayer name="Light">
+        <LayersControl.BaseLayer name={isAr ? "فاتح" : "Light"}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           />
         </LayersControl.BaseLayer>
-        <LayersControl.BaseLayer name="Standard">
+        <LayersControl.BaseLayer name={isAr ? "قياسي" : "Standard"}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -116,11 +114,14 @@ export function ExecutiveMapClient({ sites, isAr }: { sites: MapSite[]; isAr: bo
           key={s.id}
           center={[s.lat, s.lng]}
           radius={TYPE_RADIUS[s.type]}
+          // «حرج» يُقال بالشكل أيضًا: حدٌّ متقطّع أعرض. اللون وحده يسقط
+          // على عمى الألوان الأحمر-الأخضر، وهذه لوحة إنذار (WCAG 1.4.1).
           pathOptions={{
             color: STATUS_COLOR[s.status],
             fillColor: STATUS_COLOR[s.status],
             fillOpacity: 0.55,
-            weight: 2,
+            weight: s.status === "critical" ? 3 : 2,
+            dashArray: s.status === "critical" ? "4 3" : undefined,
           }}
         >
           <Popup>
