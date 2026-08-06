@@ -4752,9 +4752,9 @@ html.dark .nexus-toast,
 html.dark .sd-glass-surface,
 html.dark .spatial-window,
 html.dark [data-slot="card"] {
-  background-color: rgba(10, 24, 43, 0.78) !important;
+  background-color: rgba(8, 44, 62, 0.78) !important;
   background-blend-mode: normal, normal, normal, screen, normal;
-  border-color: rgba(125, 211, 252, 0.28) !important;
+  border-color: rgba(103, 232, 249, 0.3) !important;
   box-shadow: var(--sd-shadow-1) !important;
   color: var(--sd-ink) !important;
 }
@@ -4763,17 +4763,17 @@ html.dark [data-slot="card"] {
 html.dark .holo-icon,
 html.dark .nx-holo-icon,
 html.dark [data-holo-icon-wrap] {
-  background-color: rgba(12, 28, 50, 0.82) !important;
-  border-color: rgba(125, 211, 252, 0.34) !important;
-  color: #bfe9ff !important;
+  background-color: rgba(9, 50, 70, 0.82) !important;
+  border-color: rgba(103, 232, 249, 0.36) !important;
+  color: #c8f6ff !important;
 }
 
 /* بطاقة FINN — خلفيتها الرقمية الداكنة السابقة */
 
 /* الشريط العلوي */
 html.dark .nx-clock-bar {
-  background: rgba(6, 18, 34, 0.88) !important;
-  border-bottom-color: rgba(125, 211, 252, 0.2) !important;
+  background: rgba(5, 36, 52, 0.88) !important;
+  border-bottom-color: rgba(103, 232, 249, 0.22) !important;
   color: #dff2ff !important;
 }
 html.dark .nx-clock-bar * {
