@@ -8,7 +8,7 @@
 import { useEffect, useMemo } from "react";
 import { SPECIALISTS, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import { useDigitalHuman } from "@/lib/digital-humans/engine";
-import { DigitalHumanAvatar } from "./DigitalHumanAvatar";
+import { AgentPulseIcon } from "./AgentPulseIcon";
 import { cn } from "@/lib/utils";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence } from "@/lib/evidence/gate";
@@ -73,7 +73,7 @@ function AgentCard({
       )}
     >
       <div className="flex items-center gap-3">
-        <DigitalHumanAvatar spec={spec} state={dh.state} size={64} ar={ar} />
+        <AgentPulseIcon spec={spec} state={dh.state} size={64} ar={ar} />
         <div className="min-w-0 flex-1">
           <div className="text-sm text-white truncate">{ar ? spec.name_ar : spec.name_en}</div>
           <div className="text-[12px] text-white/55 truncate">

@@ -6,7 +6,7 @@
 import { cn } from "@/lib/utils";
 import type { BridgeAgent, BridgeAgentStatus } from "@/lib/exec/bridge.functions";
 import { findHuman } from "@/lib/digital-humans/registry";
-import { DigitalHumanAvatar } from "@/components/digital-humans/DigitalHumanAvatar";
+import { AgentPulseIcon } from "@/components/digital-humans/AgentPulseIcon";
 import {
   Brain,
   Mic,
@@ -108,7 +108,7 @@ export function AgentNode({ agent, ar, size = 96, spotlight, onClick }: Props) {
           spotlight && "ring-cyan-200/80 shadow-[0_0_56px_rgba(0,212,255,0.65)]",
         )}
       >
-        <DigitalHumanAvatar
+        <AgentPulseIcon
           spec={persona}
           state={
             agent.status === "thinking"

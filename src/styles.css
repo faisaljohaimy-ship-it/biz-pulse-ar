@@ -8979,3 +8979,137 @@ html[dir="ltr"] .nx-clock-slot {
     min-inline-size: 0;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   أيقونة الوكيل المشعّة — نبضٌ سريع بدل الرسم الكرتوني (قرار المالك
+   ٢٠٢٦/٠٨/٠٥). ثلاث طبقات ضوء: هالة تتنفّس، حلقة زجاجية، وخطُّ نبض يسري
+   عليه ضوء. اللون كله من `--pulse-accent` والإيقاع من `--pulse-beat`.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nx-pulse-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.nx-pulse-halo {
+  position: absolute;
+  inset: -14%;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--pulse-accent) 42%, transparent),
+    transparent 68%
+  );
+  filter: blur(6px);
+  animation: nxPulseHalo var(--pulse-beat, 1.2s) ease-in-out infinite;
+}
+
+.nx-pulse-icon--ambient .nx-pulse-halo {
+  inset: -26%;
+  filter: blur(12px);
+}
+
+@keyframes nxPulseHalo {
+  0%,
+  100% {
+    opacity: 0.45;
+    scale: 0.94;
+  }
+  35% {
+    opacity: 1;
+    scale: 1.06;
+  }
+}
+
+.nx-pulse-svg {
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.nx-pulse-ring {
+  fill: none;
+  stroke: color-mix(in srgb, var(--pulse-accent) 62%, transparent);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--pulse-accent) 70%, transparent));
+}
+
+.nx-pulse-disc {
+  fill: color-mix(in srgb, var(--pulse-accent) 12%, transparent);
+  stroke: color-mix(in srgb, var(--pulse-accent) 26%, transparent);
+  stroke-width: 1;
+}
+
+/* الأثر الساكن — يُبقي شكل الموجة مقروءًا حتى بين النبضتين. */
+.nx-pulse-track {
+  fill: none;
+  stroke: color-mix(in srgb, var(--pulse-accent) 30%, transparent);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* الضوء الجاري — شرطة قصيرة تعبر المسار بإيقاع الحالة، ولمعانها
+   drop-shadow لا تشبّع لون: الضوء هو ما يلمع لا الحبر. */
+.nx-pulse-spark {
+  fill: none;
+  stroke: color-mix(in srgb, var(--pulse-accent) 92%, white);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 34 210;
+  filter: drop-shadow(0 0 5px var(--pulse-accent))
+    drop-shadow(0 0 12px color-mix(in srgb, var(--pulse-accent) 55%, transparent));
+  animation: nxPulseRun var(--pulse-beat, 1.2s) linear infinite;
+}
+
+@keyframes nxPulseRun {
+  from {
+    stroke-dashoffset: 244;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* «تعذّر» يُقال بالشكل لا باللون وحده (WCAG 1.4.1): الحلقة متقطّعة. */
+.nx-pulse-icon[data-state="error"] .nx-pulse-ring {
+  stroke-dasharray: 6 7;
+}
+
+.light .nx-pulse-disc {
+  fill: color-mix(in srgb, var(--pulse-accent) 18%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-pulse-halo,
+  .nx-pulse-spark {
+    animation: none;
+  }
+
+  .nx-pulse-halo {
+    opacity: 0.6;
+    scale: 1;
+  }
+
+  /* بلا حركة يبقى الضوء ساكنًا على القمّة فيُقرأ الشكل كاملًا. */
+  .nx-pulse-spark {
+    stroke-dasharray: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-pulse-halo {
+    display: none;
+  }
+
+  .nx-pulse-ring,
+  .nx-pulse-track,
+  .nx-pulse-spark {
+    stroke: CanvasText;
+    filter: none;
+  }
+}

@@ -21,13 +21,6 @@ function seedIfEmpty(): void {
       status: "unknown",
     },
     {
-      id: "unit.hologram-face",
-      kind: "unit",
-      label: "Hologram Face",
-      target: "src/components/digital-humans/HologramFace.test.tsx",
-      status: "unknown",
-    },
-    {
       id: "unit.chat-guard",
       kind: "unit",
       label: "Chat guard",

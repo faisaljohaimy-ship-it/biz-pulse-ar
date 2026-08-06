@@ -7,7 +7,7 @@
 import { useEffect } from "react";
 import { FINN } from "@/lib/digital-humans/registry";
 import { useDigitalHuman } from "@/lib/digital-humans/engine";
-import { DigitalHumanAvatar } from "./DigitalHumanAvatar";
+import { AgentPulseIcon } from "./AgentPulseIcon";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -38,7 +38,7 @@ export function FinnStage({ ar, line_ar, line_en, size = 120, className, framed 
 
   const body = (
     <div className="flex items-center gap-4">
-      <DigitalHumanAvatar spec={FINN} state={dh.state} size={size} ar={ar} ambient />
+      <AgentPulseIcon spec={FINN} state={dh.state} size={size} ar={ar} ambient />
       <div className="min-w-0">
         <div className="text-[12px] uppercase tracking-[0.3em] text-cyan-300/80">
           {ar ? FINN.title_ar : FINN.title_en}

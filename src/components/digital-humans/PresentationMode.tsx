@@ -18,7 +18,7 @@ import {
 } from "@/lib/digital-humans/registry";
 import { useDigitalHuman, type SpokenTurn } from "@/lib/digital-humans/engine";
 import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/finn-voice";
-import { DigitalHumanAvatar } from "./DigitalHumanAvatar";
+import { AgentPulseIcon } from "./AgentPulseIcon";
 import { cn } from "@/lib/utils";
 
 export interface PresentationOverview {
@@ -421,14 +421,12 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
                 isActive ? "bg-cyan-400/10 ring-1 ring-cyan-400/30 scale-105" : "bg-white/[0.02]",
               )}
             >
-              <DigitalHumanAvatar
-                spec={s}
-                state={r.state}
-                size={56}
-                ar={ar}
-                showLabel
-                mouthAmplitude={liveAmp}
-              />
+              <AgentPulseIcon spec={s} state={r.state} size={56} ar={ar} />
+              <div className="mt-1.5 text-center">
+                <div className="truncate text-[12px] font-bold text-white">
+                  {ar ? s.name_ar : s.name_en}
+                </div>
+              </div>
             </div>
           );
         })}
