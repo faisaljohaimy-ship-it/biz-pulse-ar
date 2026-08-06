@@ -405,9 +405,9 @@ export function htmlSummaryFromSnapshot(
       ${opts.subtitle ? `<div style="font:14px/1.4 system-ui;color:#64748b;margin-bottom:12px">${opts.subtitle}</div>` : ""}
       <div style="font:12px/1.4 system-ui;color:#64748b;margin-bottom:16px">Generated ${new Date(snap.generatedAt).toUTCString()} · Window ${snap.range}</div>
       <table style="width:100%;border-collapse:collapse;font-family:system-ui">
-        <tr>${cell("Executive Readiness", k.executive_readiness + "%")}${cell("Safety Index", k.safety_index + "%")}${cell("Risk Index", k.risk_index + "%")}</tr>
-        <tr>${cell("Open Incidents", k.incidents_open)}${cell("Critical Incidents", k.incidents_critical)}${cell("Resolution Rate", k.incidents_resolution_rate + "%")}</tr>
-        <tr>${cell("Work Orders Open", k.wo_open)}${cell("CCTV Health", k.cctv_health + "%")}${cell("Patrol Completion", k.patrol_completion + "%")}</tr>
+        <tr>${cell("Executive Readiness", pct(k.executive_readiness))}${cell("Safety Index", pct(k.safety_index))}${cell("Risk Index", pct(k.risk_index))}</tr>
+        <tr>${cell("Open Incidents", k.incidents_open)}${cell("Critical Incidents", k.incidents_critical)}${cell("Resolution Rate", pct(k.incidents_resolution_rate))}</tr>
+        <tr>${cell("Work Orders Open", k.wo_open)}${cell("CCTV Health", pct(k.cctv_health))}${cell("Patrol Completion", pct(k.patrol_completion))}</tr>
       </table>
       <p style="font:13px/1.6 system-ui;color:#334155;margin-top:16px">
         Window totals — Incidents: <b>${snap.totals.incidents}</b> · Work Orders: <b>${snap.totals.workOrders}</b> · Permits: <b>${snap.totals.permits}</b> · Patrols: <b>${snap.totals.patrols}</b>.
