@@ -39,6 +39,7 @@ import { useIntroActive } from "@/lib/intro-store";
 import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
 import { GlobalBackButton } from "@/components/layout/GlobalBackButton";
 import { HoloAmbience } from "@/components/layout/HoloAmbience";
+import { RouteTransition } from "@/components/motion/RouteTransition";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 import { RegionProvider } from "@/lib/region-context";
@@ -440,7 +441,9 @@ function RootComponent() {
                   {!introActive && !isAccessGate && <HoloAmbience />}
                   {!introActive && !isAccessGate && <GlobalBackButton />}
                   <div className="relative z-10">
-                    <Outlet />
+                    <RouteTransition>
+                      <Outlet />
+                    </RouteTransition>
                   </div>
                   {!isAccessGate && copilotReady && (
                     <Suspense fallback={null}>

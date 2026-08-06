@@ -9640,9 +9640,11 @@ html[data-nx-motion="off"] .nx-op-decision::before {
   /* ٤٤×٤٤ هدف لمس (WCAG 2.5.8) — الزرّ يعمل باللمس كما بالمؤشّر. */
   inline-size: 44px;
   block-size: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--hairline);
-  background: var(--chip);
+  /* نفس هيئة الجرس المجاور في العنقود: زرّان متجاوران بحدَّين مختلفين
+     يُقرآن عنصرين من نظامين. */
+  border-radius: 0.75rem;
+  border: 1px solid var(--sidebar-border, var(--hairline));
+  background: color-mix(in srgb, var(--card, var(--chip)) 60%, transparent);
   color: var(--ink-2);
   transition:
     border-color var(--nx-anim-fast, 0.15s) ease,

@@ -33,7 +33,13 @@ export function ThemeToggle({ className }: { className?: string } = {}) {
       aria-pressed={theme === "light"}
       aria-label={label}
       title={label}
-      className={cn("nx-theme-toggle", className)}
+      className={cn("nx-theme-toggle nx-orb", className)}
+      style={{
+        // اللكنة تتبع الوجهة: كهرمانيّ نهارًا وبنفسجيّ ليلًا — فالزرّ يُقرأ
+        // «إلى أين» قبل أن تُقرأ أيقونته.
+        ["--orb-accent" as string]: theme === "light" ? "var(--tone-violet)" : "var(--tone-amber)",
+        ["--orb-speed" as string]: "2.4s",
+      }}
     >
       {/* الشمس تظهر في الداكن (ما ستذهب إليه)، والقمر في الفاتح. */}
       <Sun className="nx-theme-ico nx-theme-ico--sun size-4" aria-hidden />

@@ -70,7 +70,6 @@ export function TopUtilityBar({ className }: { className?: string }) {
 
   return (
     <div className={cn("flex items-center gap-1.5", className)}>
-      <ThemeToggle />
       {/* Notifications */}
       <div className="relative" ref={notifRef}>
         <button
@@ -140,6 +139,10 @@ export function TopUtilityBar({ className }: { className?: string }) {
           </div>
         )}
       </div>
+      {/* بعد الجرس لا قبله: الجرس حالةٌ تُقرأ أوّلًا في اتجاه القراءة،
+          والمبدّل تفضيلٌ يُضبط مرّة. وهذا يجعل ترتيب العنقود ثابتًا في
+          الترويسة الضيّقة والعريضة معًا. */}
+      <ThemeToggle />
     </div>
   );
 }
