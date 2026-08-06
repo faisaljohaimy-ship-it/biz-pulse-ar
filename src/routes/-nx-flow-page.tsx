@@ -35,7 +35,9 @@ type FlowAgent = {
   role: string;
   status: "active" | "processing" | "idle";
   task_ar: string | null;
-  done_today: number;
+  /** `null` = لم يُقَس. لا عمود في القاعدة يحمل هذا العدد؛ الصفر قياسٌ
+      والغياب ليس صفرًا (المادة ٢٧). */
+  done_today: number | null;
   severity: string;
 };
 
@@ -104,7 +106,7 @@ export function NxFlowPage() {
     return {
       finn: head,
       rooms: rest,
-      maxDone: rest.reduce((m, a) => Math.max(m, a.done_today), 0),
+      maxDone: rest.reduce((m, a) => Math.max(m, a.done_today ?? 0), 0),
     };
   }, [data]);
 
@@ -173,7 +175,7 @@ export function NxFlowPage() {
                 </p>
               </div>
               <div className="nx-fl-core-done">
-                <b>{finn ? finn.done_today : dash}</b>
+                <b>{finn?.done_today ?? dash}</b>
                 <span>{ar ? "منجز اليوم" : "done today"}</span>
               </div>
             </article>
@@ -221,15 +223,16 @@ export function NxFlowPage() {
                   <div className="nx-fl-meter" aria-hidden>
                     <span
                       style={{
-                        ["--fl-fill" as string]: maxDone
-                          ? `${(agent.done_today / maxDone) * 100}%`
-                          : "0%",
+                        ["--fl-fill" as string]:
+                          maxDone && agent.done_today !== null
+                            ? `${(agent.done_today / maxDone) * 100}%`
+                            : "0%",
                       }}
                     />
                   </div>
                   <div className="mt-1.5 flex items-center justify-between gap-2">
                     <span className="nx-fl-done">
-                      <b>{agent.done_today}</b> {ar ? "منجز" : "done"}
+                      <b>{agent.done_today ?? dash}</b> {ar ? "منجز" : "done"}
                     </span>
                     <span className="nx-fl-stepchip">
                       {agent.severity === "high" || agent.severity === "critical"

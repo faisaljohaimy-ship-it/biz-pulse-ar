@@ -9,6 +9,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { REGIONS } from "@/lib/regions";
 import type { CommandCenterState, CommandSeverity } from "@/lib/exec/showcase-simulation.server";
+import { sumMeasured } from "@/lib/exec/measured-sum";
 
 export type { CommandCenterState, CommandSeverity };
 
@@ -73,7 +74,10 @@ async function fetchCommandCenterLive(supabase: {
         ? "processing"
         : "idle") as "active" | "processing" | "idle",
     task_ar: a.focus_area,
-    done_today: 0,
+    // لا عمود في القاعدة يحمل «منجز اليوم» للوكيل. كان يُكتب صفرًا هنا،
+    // فتُجمع الأصفار في العدّاد ويُعرض «0» قياسًا لم يقع. `null` تقول
+    // الحقيقة: لم يُقَس (المادة ٢٧).
+    done_today: null,
     severity: (a.status === "active" ? "healthy" : "idle") as CommandSeverity,
   }));
 
@@ -186,7 +190,7 @@ async function fetchCommandCenterLive(supabase: {
       proposals_pending: pipeline.filter((p) => p.stage !== "approved").length,
       urgent_open: urgent.length,
       support_processing: ((supportRes.data ?? []) as unknown[]).length,
-      done_today: agents.reduce((s, a) => s + a.done_today, 0),
+      done_today: sumMeasured(agents.map((a) => a.done_today)),
       compliance_avg: regions.length
         ? Math.round(regions.reduce((s, r) => s + r.compliance_pct, 0) / regions.length)
         : 0,

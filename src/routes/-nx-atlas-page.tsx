@@ -123,7 +123,9 @@ export function NxAtlasPage() {
   const regionLabel = ar ? activeRegion.shortAr : activeRegion.shortEn;
   const c = data?.counters;
   const dash = "—";
-  const num = (v: number | undefined) =>
+  // `null` صريحة من الخادم تعني «لم يُقَس» وتُقرأ شرطة كما تُقرأ الغائبة —
+  // الفحص `typeof v === "number"` يُسقط الاثنتين معًا، فلا صفر يُختلق.
+  const num = (v: number | null | undefined) =>
     typeof v === "number" ? v.toLocaleString(ar ? "ar-SA" : "en-US") : dash;
 
   /** شريط التلمترية العلوي — ثمانية قياسات متجاورة بلا فراغ بينها. */

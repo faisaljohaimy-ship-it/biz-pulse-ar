@@ -10,6 +10,7 @@
  */
 import type { BridgeState, MissionTimelineEntry } from "./bridge.functions";
 import type { PredictedRisk } from "./predictive.functions";
+import { sumMeasured } from "./measured-sum";
 
 const H = 3_600_000;
 const M = 60_000;
@@ -2477,7 +2478,9 @@ export type CommandCenterState = {
     role: string;
     status: "active" | "processing" | "idle";
     task_ar: string | null;
-    done_today: number;
+    /** `null` = لم يُقَس. لا عمود في القاعدة يحمل هذا العدد بعد، والمسار
+        الحيّ كان يكتب صفرًا مكانه — والصفر قياسٌ لا غياب (المادة ٢٧). */
+    done_today: number | null;
     severity: CommandSeverity;
   }>;
   pipeline: Array<{
@@ -2509,7 +2512,8 @@ export type CommandCenterState = {
     proposals_pending: number;
     urgent_open: number;
     support_processing: number;
-    done_today: number;
+    /** `null` = لم يُقَس — لا يُستبدل بصفر (المادة ٢٧). */
+    done_today: number | null;
     compliance_avg: number;
   };
 };
@@ -2620,7 +2624,7 @@ export function buildCommandCenterSimulation(now: number): CommandCenterState {
       proposals_pending: pipeline.filter((p) => p.stage !== "approved").length,
       urgent_open: urgent.filter((u) => u.status !== "مغلق").length,
       support_processing: 4,
-      done_today: agents.reduce((s, a) => s + a.done_today, 0),
+      done_today: sumMeasured(agents.map((a) => a.done_today)),
       compliance_avg: Math.round(
         regions.reduce((s, r) => s + r.compliance_pct, 0) / regions.length,
       ),

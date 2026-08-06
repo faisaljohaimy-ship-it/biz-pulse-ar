@@ -3141,12 +3141,19 @@ body {
   --hairline: var(--sd-line);
   --hairline-soft: #eef1f5;
   --hairline-hover: rgba(29, 78, 216, 0.35);
-  --tone-cyan: #0e7490;
-  --tone-emerald: #047857;
-  --tone-rose: #be123c;
-  --tone-amber: #b45309;
-  --tone-blue: #1d4ed8;
-  --tone-violet: #6d28d9;
+
+  /* أطياف الحالة أُخرجت من هنا (٢٠٢٦/٠٨/٠٦) — والسبب أن هذه الكتلة
+     محدِّدها `:root, .light, .dark`، أي أنها كانت تفرض **درجات الوضع
+     الفاتح على الوضع الداكن أيضًا**: نوعيّة `.dark` هي (0,1,0) وتعلو
+     `:root` (0,0,1)، فكانت تُبطل قرار المالك ٢٠٢٦/٠٨/٠٤ المكتوب صراحةً في
+     `:root` («أطياف نقيّة صافية مشبعة فوق الداكن»). النتيجة أن كل
+     `var(--tone-*)` في الوضع الداكن كان يرسم الدرجة المعتمة المصمَّمة
+     للأبيض — على مستوى النظام كلّه لا على شاشة بعينها. اكتُشف بقياس
+     `getComputedStyle` حين خرجت أيقونات نبض باهتة على الكحلي، لا بقراءة.
+
+     بحذف الأسطر الستة يعود التوزيع الصحيح بلا قاعدة جديدة:
+     `:root` (سطر ٢٥١) للداكن المشبَع، و`.light` (سطر ٢٨٥) للعميق فوق
+     الأبيض. الوضع الفاتح لا يتغيّر: كان يأخذ القيم نفسها من `.light`. */
 
   --gradient-primary: linear-gradient(
     135deg,
@@ -8845,7 +8852,10 @@ html[dir="ltr"] .nx-clock-slot {
     transparent 68%
   );
   filter: blur(6px);
-  animation: nxPulseHalo var(--pulse-beat, 1.2s) ease-in-out infinite;
+  /* الهالة تذهب وتعود مع الضوء لا بإيقاع ثانٍ: نفس المدّة ونفس المنحنى
+     ونفس `alternate`، فيتّسع الوهج مع ذهاب النبضة ويهدأ مع إيابها —
+     حركةٌ واحدة تُقرأ، لا حركتان متجاورتان. */
+  animation: nxPulseHalo var(--pulse-beat, 1.2s) ease-in-out infinite alternate;
 }
 
 .nx-pulse-icon--ambient .nx-pulse-halo {
@@ -8853,13 +8863,14 @@ html[dir="ltr"] .nx-clock-slot {
   filter: blur(12px);
 }
 
+/* طرفان لا ثلاثة: مع `alternate` يرسم المتصفّح العودة بنفسه، فكتابة
+   الإطار الأخير مساويًا للأول تُنتج دورةً مزدوجة الطول ونصفها ساكن. */
 @keyframes nxPulseHalo {
-  0%,
-  100% {
+  from {
     opacity: 0.45;
     scale: 0.94;
   }
-  35% {
+  to {
     opacity: 1;
     scale: 1.06;
   }
@@ -8914,7 +8925,13 @@ html[dir="ltr"] .nx-clock-slot {
   stroke-dasharray: 34 210;
   filter: drop-shadow(0 0 5px var(--pulse-lum))
     drop-shadow(0 0 12px color-mix(in srgb, var(--pulse-lum) 55%, transparent));
-  animation: nxPulseRun var(--pulse-beat, 1.2s) linear infinite;
+  /* ذهابٌ وإياب (قرار المالك ٢٠٢٦/٠٨/٠٦): `alternate` يعكس الاتجاه كل
+     دورة، فيمضي الضوء على الموجة ثم يعود على أثره بدل أن يقفز إلى بدايته.
+
+     و`ease-in-out` لا `linear` لأن الانعكاس بلا تباطؤ يُقرأ ارتدادًا حادًّا:
+     الجسم الذي يعود يهدأ عند الطرف ثم ينطلق، والخطّي يجعله يرتدّ كالكرة
+     على جدار. المنحنى هو ما يحوّل القفزة إلى ذهابٍ وإياب. */
+  animation: nxPulseRun var(--pulse-beat, 1.2s) ease-in-out infinite alternate;
 }
 
 .light .nx-pulse-spark {

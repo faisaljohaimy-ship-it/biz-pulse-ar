@@ -114,6 +114,16 @@ describe("المُخطَّط — المادة ٢٧: الصدق العددي", ()
     expect(ROSETTE).toMatch(/pct\s*!==\s*null\s*&&\s*pct\s*>\s*0\s*&&/);
   });
 
+  it("«منجز اليوم» لا يُختلق له صفر في المسار الحيّ", () => {
+    // العطل: لا عمود في القاعدة يحمل عدد المنجز للوكيل، فكُتب `done_today: 0`
+    // لكل وكيل ثم جُمعت الأصفار — فعُرض «0» قياسًا لم يقع، ورسم له قوسُ
+    // الدائرة الجديد. الجمع صار عبر `sumMeasured`: لا قياس ⇐ null.
+    const FN = read("src/lib/exec/command-center.functions.ts");
+    expect(FN).not.toMatch(/done_today:\s*0\b/);
+    expect(FN).toContain("sumMeasured");
+    expect(FN).not.toMatch(/done_today:\s*agents\.reduce/);
+  });
+
   it("نسبة الشكل مشتقّة من الرقم المعروض نفسه", () => {
     // لو حُسبت من مصدر ثانٍ لأمكن أن يمتلئ الشكل والرقم يقول «لم يُقَس».
     expect(PAGE).toMatch(/value === null \? null :/);
@@ -186,6 +196,21 @@ describe("المُخطَّط — أيقونات الرئيسية دوائر نب
     const beats = new Set(PAGE.match(/beatSeconds: [\d.]+/g) ?? []);
     expect(beats.size).toBeGreaterThanOrEqual(3);
     expect(PAGE).toContain("0.86 + i * 0.11");
+  });
+
+  it("النبض ذهابٌ وإياب — الضوء والهالة على إيقاع واحد", () => {
+    // قرار المالك ٢٠٢٦/٠٨/٠٦. `alternate` وحدها لا تكفي: بغير `ease-in-out`
+    // يرتدّ الضوء عند الطرف ارتدادًا حادًّا بدل أن يهدأ ويعود، وبغير توحيد
+    // المنحنى والمدّة بين الطبقتين تُقرأ حركتان متجاورتان لا حركة واحدة.
+    for (const name of ["nxPulseRun", "nxPulseHalo"]) {
+      expect(CSS, `${name} لا تذهب وتعود`).toMatch(
+        new RegExp(`animation: ${name} var\\(--pulse-beat[^;]*ease-in-out infinite alternate`),
+      );
+    }
+    // ومع `alternate` تكون الإطارات طرفين لا ثلاثة: إطارٌ أخيرٌ مساوٍ
+    // للأول يُنتج دورةً مزدوجة الطول نصفها ساكن.
+    const halo = CSS.slice(CSS.indexOf("@keyframes nxPulseHalo"));
+    expect(halo.slice(0, halo.indexOf("\n}"))).not.toContain("100%");
   });
 
   it("للحركة الدائمة مفتاح إيقاف واحد ظاهر (WCAG 2.2.2)", () => {

@@ -48,7 +48,9 @@ type OpAgent = {
   role: string;
   status: "active" | "processing" | "idle";
   task_ar: string | null;
-  done_today: number;
+  /** `null` = لم يُقَس. لا عمود في القاعدة يحمل هذا العدد؛ الصفر قياسٌ
+      والغياب ليس صفرًا (المادة ٢٧). */
+  done_today: number | null;
   severity: string;
 };
 
@@ -228,7 +230,7 @@ export function NxOpsPage() {
     return {
       finn: head,
       rooms: rest,
-      maxDone: rest.reduce((m, a) => Math.max(m, a.done_today), 0),
+      maxDone: rest.reduce((m, a) => Math.max(m, a.done_today ?? 0), 0),
     };
   }, [data]);
 
@@ -314,7 +316,7 @@ export function NxOpsPage() {
                   </p>
                 </div>
                 <div className="nx-op-core-side">
-                  <b>{finn ? finn.done_today : dash}</b>
+                  <b>{finn?.done_today ?? dash}</b>
                   <span>{ar ? "منجز اليوم" : "done today"}</span>
                   <Link to="/finn" className="nx-op-cta">
                     {ar ? "فتح مركز القيادة" : "Open command"}
@@ -395,15 +397,18 @@ export function NxOpsPage() {
                   <div className="nx-op-meter" aria-hidden>
                     <span
                       style={{
-                        ["--op-fill" as string]: maxDone
-                          ? `${(agent.done_today / maxDone) * 100}%`
-                          : "0%",
+                        // ما لم يُقَس لا يُرسم له طول — لا شريط بطول صفر
+                        // يوهم بقياسٍ وقع ونتيجته صفر (المادة ٢٧).
+                        ["--op-fill" as string]:
+                          maxDone && agent.done_today !== null
+                            ? `${(agent.done_today / maxDone) * 100}%`
+                            : "0%",
                       }}
                     />
                   </div>
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <span className="nx-op-done">
-                      <b>{agent.done_today}</b> {ar ? "منجز اليوم" : "done today"}
+                      <b>{agent.done_today ?? dash}</b> {ar ? "منجز اليوم" : "done today"}
                     </span>
                     <Link to={roleRoute(agent.role, agent.name_ar)} className="nx-op-cta">
                       {ar ? "فتح مركز القيادة" : "Open command"}
