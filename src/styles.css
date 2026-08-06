@@ -9678,6 +9678,16 @@ html[data-nx-motion="off"] .nx-op-decision::before {
   grid-area: 1 / 1;
 }
 
+/* القمر مخفيّ افتراضًا: لو خلا الجذر من الصنفين للحظة (قبل السكربت المانع)
+   كانت الأيقونتان تُرسمان فوق بعضهما. الشمس هي الحالة الأساس. */
+.nx-theme-ico--moon {
+  display: none;
+}
+
+.light .nx-theme-ico--moon {
+  display: block;
+}
+
 .dark .nx-theme-ico--moon,
 .light .nx-theme-ico--sun {
   display: none;
