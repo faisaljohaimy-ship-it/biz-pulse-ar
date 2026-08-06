@@ -7,6 +7,14 @@ import * as XLSX from "xlsx";
 import type { ExecutiveSnapshot } from "./snapshot.server";
 import { FINN_SIGNATURE_WORDMARK } from "@/lib/finn/signature";
 
+// Article 27: an unmeasured KPI is never coerced to "null" or to 0.
+// The PDF uses WinAnsi standard fonts, so the label stays Latin here.
+const UNMEASURED_EN = "Not measured";
+const pct = (v: number | null | undefined) =>
+  v === null || v === undefined ? UNMEASURED_EN : `${v}%`;
+const num = (v: number | null | undefined, suffix = "") =>
+  v === null || v === undefined ? UNMEASURED_EN : `${v}${suffix}`;
+
 const PAGE = { width: 612, height: 792 }; // US Letter
 const MARGIN = 40;
 const BRAND = rgb(0.0, 0.831, 1.0); // #00D4FF
