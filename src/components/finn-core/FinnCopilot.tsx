@@ -53,6 +53,7 @@ import {
   speakableTextFromEnvelope,
 } from "@/lib/finn/output/client-consumer";
 import { stripTashkeel } from "@/lib/finn/tashkeel";
+import { VENDOR_MASK_RE } from "@/lib/finn/vendor-mask";
 import { chooseFinnRecorderMime, recorderFileExtension } from "@/lib/finn/media-recorder";
 import { advanceFinnVoiceActivity, createFinnVoiceActivityState } from "@/lib/finn/voice-activity";
 import {
@@ -298,10 +299,9 @@ function sanitiseAssistantText(raw: string): string {
   t = t
     .replace(/```(?:log|trace|stacktrace)[\s\S]*?```/gi, "")
     .replace(/```[\s\S]*?```/g, (m) => (/stack\s+trace|traceback/i.test(m) ? "" : m));
-  t = t.replace(
-    /\b(openai|anthropic|google|xai|mistral|gpt-\d[\w.-]*|claude-\d[\w.-]*|gemini[\w.-]*|grok[\w.-]*)\b/gi,
-    "",
-  );
+  // القناع من مصدر واحد يشاركه الحارس، فلا تفترق نسخته هنا عمّا يفحصه
+  // الاختبار — وهو ما سمح أصلًا بوصول جملة مكسورة إلى الشاشة.
+  t = t.replace(VENDOR_MASK_RE, "");
   t = t.replace(/\bat\s+[\w$.<>]+\s*\([^)]*:\d+:\d+\)/g, "");
   t = t.replace(/\berror:\s*[^\n]{0,200}/gi, ERROR_MASK_AR);
   return t.trim();
@@ -1976,13 +1976,10 @@ export function FinnCopilot() {
                     } catch {
                       /* not JSON — fall through */
                     }
-                    // Scrub any accidental provider/model names before showing
-                    const safe = raw
-                      .replace(
-                        /\b(openai|anthropic|google|xai|mistral|gpt-[\w.-]+|claude-[\w.-]+|gemini[\w.-]*|grok[\w.-]*)\b/gi,
-                        "",
-                      )
-                      .trim();
+                    // القناع المشترك نفسه لا نسخة ثانية: كانت هنا نسخةٌ
+                    // افترقت فعلًا عن الأولى (`gpt-[\w.-]+` مقابل
+                    // `gpt-\d[\w.-]*`)، فيمسح أحدهما ما لا يمسحه الآخر.
+                    const safe = raw.replace(VENDOR_MASK_RE, "").trim();
                     return safe || CONNECTION_ERROR_AR;
                   })()}
                 </span>

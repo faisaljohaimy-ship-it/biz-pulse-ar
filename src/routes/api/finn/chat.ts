@@ -105,7 +105,8 @@ async function handlePost(request: Request): Promise<Response> {
     process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
   )?.trim();
   if (!googleKey) {
-    return jsonError("خدمة FINN تحتاج GEMINI_API_KEY.", 503);
+    // لا اسم مزوّد ولا متغيّر بيئة في نصٍّ يقرأه المستخدم.
+    return jsonError("خدمة FINN غير متاحة الآن. أعد المحاولة بعد قليل.", 503);
   }
 
   const contentLength = Number(request.headers.get("content-length") || "0");
