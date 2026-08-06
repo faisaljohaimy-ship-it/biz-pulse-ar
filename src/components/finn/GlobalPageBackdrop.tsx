@@ -10,7 +10,7 @@ export function GlobalPageBackdrop() {
     <div
       aria-hidden="true"
       dir="ltr"
-      className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#04070F]"
+      className="nx-backdrop pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#04070F]"
     >
       <img
         src={"/finn-portrait.png"}

@@ -17,6 +17,7 @@ import { MODULES, MODULE_PURPOSE } from "@/lib/nav/modules";
 const read = (p: string) => readFileSync(p, "utf8");
 const SHELL = read("src/components/app-shell.tsx");
 const ROOT = read("src/routes/__root.tsx");
+const CSS_SRC = read("src/styles.css");
 
 describe("البند ٤٩ — الامتثال: HCIS هو المعتمد ولا أثر لـSAIS", () => {
   it("لا ذكر لـSAIS في أي مصدر تطبيقي", () => {
@@ -90,29 +91,57 @@ describe("البندان ٥٧ و٥٨ — هوية داكنة ثابتة بلا �
     }
   });
 
-  it("لا مبدّل وضع في أي سطح — البند ٥٨ يُغلق بالإزالة", () => {
-    // البند ٥٨ طلب حذف الأيقونة من كل الواجهات. مع اعتماد الداكن هويةً
-    // ثابتة (البند ٥٧، الخيار «ب») صار الحذف كاملًا: لا زر، ولا مكوّن.
-    expect(ROOT).not.toContain("ThemeToggle");
-    expect(SHELL).not.toContain("ThemeToggle");
-    expect(SHELL).not.toContain("ThemeIconToggle");
+  it("مبدّل الوضع حاضر على الجوال وكل الأجهزة", () => {
+    // البند ٥٨ كان قد أُغلق بالإزالة مع اعتماد الداكن هويةً ثابتة. ثم نقض
+    // المالك ذلك (٢٠٢٦/٠٨/٠٦) وطلب عودة المبدّل على الجوال وكل الأجهزة —
+    // فالحارس يحرس القرار الجديد لا القديم.
+    //
+    // موضعه `TopUtilityBar` لا الشريط الجانبي: القشرة تُركّب هذا الشريط
+    // مرّتين — في ترويسة الجوال وفي الشريط العلوي للشاشات الواسعة — بينما
+    // الشريط الجانبي على الجوال يُطوى داخل درج لا يُفتح إلا بنقرة.
+    const bar = read("src/components/nav/TopUtilityBar.tsx");
+    expect(bar).toContain("<ThemeToggle />");
+    // ترويسة الجوال (`md:hidden`) والشريط العريض كلاهما يُركّبه.
+    expect(SHELL.match(/<TopUtilityBar\s*\/>/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    expect(SHELL).toContain("md:hidden");
+    // والرئيسية خارج القشرة، فلها مبدّلها في شريطها.
+    expect(read("src/components/nav/HomeTopNav.tsx")).toContain("<ThemeToggle");
   });
 
-  it("لا ملف مبدّل باقٍ ولا استدعاء له في أي مكوّن", () => {
-    // بقاء المكوّن يتيح إعادة تركيبه سهوًا فيعود البند من حيث أُغلق.
-    const offenders = globSync("src/{routes,components}/**/*.tsx").filter((f) =>
-      /<ThemeToggle\b|ThemeIconToggle/.test(readFileSync(f, "utf8")),
-    );
-    expect(offenders).toEqual([]);
-    expect(globSync("src/components/layout/ThemeToggle.tsx")).toEqual([]);
+  it("المبدّل زرّ حقيقي بهدف لمس ٤٤px يعمل باللمس والمؤشّر", () => {
+    // مبدّلٌ يظهر بالتمرير وحده لا وجود له على الجوال إطلاقًا.
+    const cmp = read("src/components/layout/ThemeToggle.tsx");
+    expect(cmp).toContain('type="button"');
+    expect(cmp).toContain("onClick={toggle}");
+    expect(cmp).toMatch(/aria-pressed=/);
+    expect(cmp).toMatch(/aria-label=/);
+    const rule = CSS_SRC.slice(CSS_SRC.indexOf(".nx-theme-toggle {"));
+    const body = rule.slice(0, rule.indexOf("\n}"));
+    expect(body).toContain("inline-size: 44px");
+    expect(body).toContain("block-size: 44px");
   });
 
-  it("لا شاشة تستدعي مبدّلًا برمجيًّا (setTheme)", () => {
-    // الطريق الثاني لعودة الوضع: نداء برمجي بلا زر.
-    const offenders = globSync("src/{routes,components}/**/*.tsx").filter((f) =>
-      /\bsetTheme\b/.test(readFileSync(f, "utf8")),
-    );
-    expect(offenders).toEqual([]);
+  it("الأيقونة تتبع صنف الجذر لا حالة React — فلا وميضة عند كل فتح", () => {
+    // الحالة تبدأ داكنة دائمًا لتطابق الخادم؛ الرسم منها يُظهر أيقونة الوضع
+    // الخطأ حتى يكتمل الترطيب لمن اختار الفاتح.
+    expect(CSS_SRC).toContain(".dark .nx-theme-ico--moon");
+    expect(CSS_SRC).toContain(".light .nx-theme-ico--sun");
+  });
+
+  it("الاختيار يُقرأ قبل أول رسم ويُحفظ", () => {
+    expect(ROOT).toContain("localStorage.getItem('theme')");
+    expect(read("src/lib/theme.tsx")).toContain("localStorage.setItem(THEME_KEY");
+  });
+
+  it("جسر الوضع الفاتح قائم — وإلا عاد المبدّل بعطله", () => {
+    // ١٢٨٧ قيمة داكنة مكتوبة يدويًّا في ١٤٥ ملفًا هي سبب إلغاء المبدّل أول
+    // مرّة. Tailwind يُصرّف كل أدوات الأبيض عبر `--color-white`، فإعادة
+    // تعريفه تحت `.light` وحدها تقلب ١٠٧٢ موضعًا مع حفظ تدرّج الشفافية.
+    const bridge = CSS_SRC.slice(CSS_SRC.indexOf("جسر الوضع الفاتح"));
+    expect(bridge).toMatch(/\.light \{\s*[^}]*--color-white:/);
+    // والخطوات دون ٥٥٪ تسقط تحت ٤٫٥:١ على الأبيض، فتُرفع إلى `--ink-3`.
+    expect(bridge).toContain('[class*="text-white/50"]');
+    expect(bridge).toContain("color: var(--ink-3)");
   });
 });
 

@@ -1,6 +1,13 @@
 /**
  * TopUtilityBar — global top-right utilities:
  *   • Notifications → dropdown with empty/live state
+ *   • Theme toggle → light/dark, on every device
+ *
+ * مبدّل الوضع هنا لا في الشريط الجانبي (قرار المالك ٢٠٢٦/٠٨/٠٦): هذا
+ * الشريط مركَّب مرّتين في القشرة — في ترويسة الجوال (`md:hidden`) وفي
+ * الشريط العلوي للشاشات الواسعة — فوضعُه هنا يجعله ظاهرًا على الجوال وكل
+ * الأجهزة بإدراجٍ واحد. الشريط الجانبي على الجوال يُطوى داخل درجٍ لا يُفتح
+ * إلا بنقرة، فمبدّلٌ داخله مبدّلٌ مخفيّ.
  *
  * Mounted once in AppShell. Fully RTL, ≥44px targets, keyboard accessible.
  *
@@ -16,6 +23,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Bell } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 type Notif = {
@@ -62,6 +70,7 @@ export function TopUtilityBar({ className }: { className?: string }) {
 
   return (
     <div className={cn("flex items-center gap-1.5", className)}>
+      <ThemeToggle />
       {/* Notifications */}
       <div className="relative" ref={notifRef}>
         <button

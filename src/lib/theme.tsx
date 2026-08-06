@@ -1,60 +1,84 @@
-import { createContext, useContext, useEffect, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
 /**
- * هوية سَدِيد البصرية **داكنة ثابتة** — قرار ٢٠٢٦/٠٨/٠٦ (البندان ٥٧ و٥٨ من
- * سجل التغيير المفتوح).
+ * وضعا سَدِيد — **الداكن أساسًا والفاتح اختيارًا** (قرار المالك ٢٠٢٦/٠٨/٠٦،
+ * ناسخٌ لقرار التوحيد على الداكن في اليوم نفسه).
  *
- * ## لماذا حُسم بالإلغاء لا بالإصلاح
+ * ## ما الذي تغيّر ولماذا
  *
- * البلاغ كان «النظام الفاتح لا يعمل على المنصة كاملة». وقياسٌ فعليّ على
- * الشجرة أعطى الحكم: **١٣٢٩ قيمة داكنة مكتوبة يدويًّا في ١١٦ ملفًا**
- * (`text-white`، `bg-[#04070F]`، `border-white/…`) خارج طبقة الرموز
- * كليًّا. ترحيلها كلّها ترحيلًا صحيحًا — مع تحقّق تباين لكل شاشة — عملُ
- * أسابيع لا جلسة؛ وترحيلها جزئيًّا يُنتج بالضبط ما يشتكي منه المالك:
- * وضعٌ فاتح يعمل هنا ولا يعمل هناك. **الوعد المكسور أسوأ من الوعد
- * المسحوب.**
+ * أُلغي المبدّل صباحًا لأن الوضع الفاتح كان مكسورًا: **١٢٨٧ قيمة داكنة
+ * مكتوبة يدويًّا في ١٤٥ ملفًا** خارج طبقة الرموز، فالوضع الفاتح كان يقلب
+ * الرموز ولا يقلبها. ثم طلب المالك عودة المبدّل على الجوال وكل الأجهزة،
+ * فعاد — لكن ليس كما كان: عودته وحدها كانت ستعيد العطل نفسه.
  *
- * والهوية نفسها داكنة أصلًا: الفيلم الهولوغرامي، والزجاج، والتوهّجات —
- * كلها مصمَّمة على الكحلي، والفاتح كان توأمها الأضعف دائمًا. فالحسم
- * بالإلغاء يوحّد المنتج بدل أن يجزّئه.
+ * الجسر في `styles.css` هو ما يجعلها عودةً صالحة. لبّه سطرٌ واحد:
+ * Tailwind v4 يُصرّف **كل** أدوات الأبيض عبر `var(--color-white)` —
+ * `text-white` و`text-white/60` و`border-white/10` و`bg-white/5` جميعها.
+ * فإعادة تعريف هذا المتغيّر وحده تحت `.light` تقلب ١٠٧٢ موضعًا دفعةً
+ * واحدة **مع حفظ تدرّج الشفافية في كل موضع**. لا تعديل على ملف مكوّن
+ * واحد، ولا خطر على الوضع الداكن لأن القاعدة محصورة بـ`.light`.
  *
- * ## ما بقي عمدًا
+ * ## الأساس يبقى داكنًا
  *
- * طبقة `.light` في styles.css (١٠٤ قواعد) **لم تُحذف**. هذه سياسة
- * المستودع نفسها المكتوبة في `hidden-routes.ts`: «إلغاء الإخفاء حذفُ سطر،
- * وإلغاء الحذف حَفريّات». إعادة الوضع الفاتح يومًا ما = إعادة زرٍّ واحد،
- * لا إعادة كتابة طبقة كاملة.
- *
- * ## الشكل المتبقّي
- *
- * `useTheme()` باقٍ بعقده كما هو ويعيد `"dark"` دائمًا، فلا يُلمس أيٌّ من
- * مستهلكيه ولا يتغيّر معرّف واحد. `setTheme` أُزيل: دالةٌ لا تفعل شيئًا
- * أسوأ من غيابها — تُغري بالنداء وتصمت.
+ * لا قراءة لتفضيل النظام: من لم يختر يحصل على الداكن — الهوية مصمَّمة
+ * عليه (الفيلم والزجاج والتوهّجات). والفاتح اختيارٌ صريح يُحفظ.
  */
-export type Theme = "dark";
+export type Theme = "dark" | "light";
 
-/** الوضع الوحيد. قيمة لا حالة: لا شيء يبدّلها في وقت التشغيل. */
-const FIXED_THEME: Theme = "dark";
+/** ما يحصل عليه من لم يختر. الهوية داكنة، والفاتح قرارٌ لا افتراض. */
+export const DEFAULT_THEME: Theme = "dark";
 
-const ThemeCtx = createContext<{ theme: Theme } | null>(null);
+/** المفتاح نفسه الذي يقرأه السكربت السابق لأول رسم في `__root.tsx`. */
+export const THEME_KEY = "theme";
+
+const ThemeCtx = createContext<{
+  theme: Theme;
+  setTheme: (t: Theme) => void;
+  toggle: () => void;
+} | null>(null);
+
+/** يكتب الوضع على الجذر — نقطة التطبيق الوحيدة، فلا يتنازع كاتبان. */
+function apply(theme: Theme) {
+  const root = document.documentElement;
+  root.classList.toggle("light", theme === "light");
+  root.classList.toggle("dark", theme === "dark");
+  root.style.colorScheme = theme;
+}
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // السكربت السابق لأول رسم في `__root.tsx` يضع الصنف قبل أي رسم. هذا
-  // التأثير حارسٌ لا مُطبِّق: يزيل `light` إن سرّبها تخزينٌ قديم أو امتداد،
-  // فلا تبقى نصف شاشة فاتحة بعد قرار التوحيد.
+  // تبدأ داكنة كما يرسمها الخادم تمامًا، فلا يختلف أول رسمٍ على العميل عن
+  // الخادم. السكربت السابق لأول رسم يكون قد وضع الصنف الصحيح على `<html>`
+  // قبل ذلك، والمزامنة أدناه تُلحق حالة React به بلا وميض.
+  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
+
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove("light");
-    root.classList.add("dark");
-    root.style.colorScheme = "dark";
+    let stored: string | null = null;
     try {
-      localStorage.removeItem("theme");
+      stored = localStorage.getItem(THEME_KEY);
     } catch {
-      /* تخزين محظور — الصنف أعلاه كافٍ لهذه الجلسة. */
+      /* تخزين محظور — يبقى الافتراضي لهذه الجلسة. */
+    }
+    const next: Theme = stored === "light" || stored === "dark" ? stored : DEFAULT_THEME;
+    setThemeState(next);
+    apply(next);
+  }, []);
+
+  const setTheme = useCallback((next: Theme) => {
+    setThemeState(next);
+    apply(next);
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch {
+      /* تخزين محظور — الاختيار يسري لهذه الجلسة. */
     }
   }, []);
 
-  return <ThemeCtx.Provider value={{ theme: FIXED_THEME }}>{children}</ThemeCtx.Provider>;
+  const toggle = useCallback(
+    () => setTheme(document.documentElement.classList.contains("light") ? "dark" : "light"),
+    [setTheme],
+  );
+
+  return <ThemeCtx.Provider value={{ theme, setTheme, toggle }}>{children}</ThemeCtx.Provider>;
 }
 
 export function useTheme() {

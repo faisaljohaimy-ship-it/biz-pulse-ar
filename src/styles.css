@@ -3133,8 +3133,21 @@ body {
   --surface: var(--sd-white);
   --surface-2: var(--sd-pearl);
   --ink: var(--sd-ink);
-  --ink-2: var(--sd-ink-2);
-  --ink-3: #9ca3af;
+  /* الدرجتان الخافتتان كانتا `#6b7280` و`#9ca3af`، أي ٤٫٨٣:١ و**٢٫٥٤:١**
+     على الأبيض — والثانية دون عتبة ٤٫٥:١ (WCAG 1.4.3)، فكل نصّ ثانوي
+     يحملها غير مقروء في الوضع الفاتح: «بانتظار الاعتماد» و«وكلاء نشطون»
+     وعناوين الوحدات وغيرها. قِيس بمسحٍ آليّ على الرئيسية في الوضعين.
+     أُعمِّقتا درجةً واحدة فحُفظ التدرّج وعبرت العتبة: ٧٫٥٦:١ و٤٫٨٣:١.
+
+     وموضع الإصلاح هنا لا في كتلة `.light` أعلى الملف: محدِّد هذه الكتلة
+     `:root, .light` وهي **لاحقة**، فكانت تحجب ما تكتبه تلك بالنوعيّة
+     نفسها. الرمز يُقرأ من آخر كاتبٍ له لا من أوّل من عرّفه. */
+     ولا يكفي أن تعبرا العتبة على الأبيض وحده: كثير من النصّ الثانوي يقع
+     على رقاقات رمادية فاتحة (‏#e0e0e2 تقريبًا) لا على الورق نفسه، وهناك
+     تهبط `#6b7280` إلى ٣٫٦٥:١. فأُعمِّقتا درجةً أخرى لتعبرا على السطحين
+     معًا: ٧٫٩:١ و٥٫٧:١ على الرقاقة، و١٠٫٣:١ و٧٫٥٦:١ على الأبيض. */
+  --ink-2: #374151;
+  --ink-3: #4b5563;
   --chip: rgba(17, 24, 39, 0.035);
   --chip-strong: rgba(17, 24, 39, 0.07);
   --chip-hover: rgba(29, 78, 216, 0.07);
@@ -9524,4 +9537,305 @@ html[data-nx-motion="off"] .nx-op-decision::before {
     background: CanvasText;
     box-shadow: none;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   جسر الوضع الفاتح — عودة المبدّل بلا عودة عطله (قرار المالك ٢٠٢٦/٠٨/٠٦)
+   ═══════════════════════════════════════════════════════════════════════════
+
+   المبدّل أُلغي صباحًا لأن الوضع الفاتح كان يقلب طبقة الرموز ولا يقلب
+   **١٢٨٧ قيمة داكنة مكتوبة يدويًّا في ١٤٥ ملفًا**: `text-white` و
+   `border-white/10` و`bg-[#04111F]`. إعادةُ الزرّ وحدها كانت ستعيد العطل.
+
+   المفتاح: Tailwind v4 يُصرّف **كل** أدوات الأبيض عبر `var(--color-white)`
+   — تحقّقتُ من الحزمة المبنيّة نفسها:
+     .text-white       { color: var(--color-white) }
+     .text-white\/60   { color: color-mix(in oklab, var(--color-white) 60%, transparent) }
+     .border-white\/10 { border-color: color-mix(in oklab, var(--color-white) 10%, transparent) }
+   فإعادة تعريف هذا المتغيّر وحده تحت `.light` تقلب **١٠٧٢ موضعًا**
+   (٨٣٪ من العطل) دفعةً واحدة، **مع حفظ تدرّج الشفافية في كل موضع** —
+   بلا لمس ملف مكوّن واحد، وبلا أي خطر على الوضع الداكن لأن كل ما هنا
+   محصور بـ`.light`.
+
+   وهذا ليس لونًا خارج طبقة الرموز: هو ترجمةُ أداةٍ قديمة إلى رمز، ومكانها
+   الطبقة بالضبط.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.light {
+  /* «الأبيض» في الوضع الفاتح حبرٌ لا خلفية. أسودُ ملاحيّ لا أسود خالص —
+     أهدأ على العين ويوافق حبر الرموز. */
+  --color-white: #06101f;
+}
+
+/* الخطوات دون ٥٥٪ تسقط تحت ٤٫٥:١ على الأبيض (٥٠٪ تعطي ٣٫٩٥:١)، فتُرفع
+   إلى `--ink-3` — وهو ما وُضع لهذه الدرجة أصلًا ويعطي ١٠:١. */
+.light [class*="text-white/50"],
+.light [class*="text-white/45"],
+.light [class*="text-white/40"],
+.light [class*="text-white/35"],
+.light [class*="text-white/30"],
+.light [class*="text-white/25"],
+.light [class*="text-white/24"],
+.light [class*="text-white/20"],
+.light [class*="text-white/15"],
+.light [class*="placeholder:text-white/"]::placeholder {
+  color: var(--ink-3);
+}
+
+/* الأسطح الداكنة المكتوبة بقيمة صريحة — لا تمرّ بمتغيّر فلا يبلغها السطر
+   أعلاه. القائمة صريحة عمدًا: `[class*="bg-[#0"]` كانت ستبتلع معها
+   السماوي `#00D4FF` وهو لكنة لا سطح. */
+.light [class*="bg-[#04111" i],
+.light [class*="bg-[#061A2E" i],
+.light [class*="bg-[#04070F" i],
+.light [class*="bg-[#0A1E33" i],
+.light [class*="bg-[#06070D" i],
+.light [class*="bg-[#0A0A0F" i],
+.light [class*="bg-[#06101F" i],
+.light [class*="bg-[#04060D" i],
+.light [class*="bg-[#03101D" i],
+.light [class*="bg-[#08172A" i],
+.light [class*="bg-[#0A2540" i],
+.light [class*="bg-[#04101" i],
+.light [class*="bg-[#0A0A1F" i],
+.light [class*="bg-[#0A1B33" i],
+.light [class*="bg-[#04121F" i],
+.light [class*="bg-[#02101E" i],
+.light [class*="bg-[#020A14" i],
+.light [class*="bg-[#020812" i],
+.light [class*="bg-[#02060F" i],
+.light [class*="bg-[#0a0a1f" i] {
+  background-color: var(--chip-strong);
+  color: var(--ink);
+}
+
+/* والحبر المكتوب بقيمة داكنة صريحة يصير أبيض على الأبيض لو تُرك. */
+.light [class*="text-[#04" i],
+.light [class*="text-[#06" i],
+.light [class*="text-[#0a" i],
+.light [class*="text-[#02" i] {
+  color: var(--ink);
+}
+
+/* اللكنة السماوية `#3AE8FF` مصمَّمة على الكحلي: على الأبيض تعطي ١٫٤:١
+   نصًّا — أي لا شيء. تُعمَّق للنصّ والحدّ، وتبقى كما هي خلفيةً. */
+.light [class*="text-[#3AE8FF" i],
+.light [class*="text-[#00D4FF" i],
+.light [class*="text-[#BEEBFF" i],
+.light [class*="text-[#7CF9FF" i],
+.light [class*="text-[#DFF6FF" i] {
+  color: #0e6f85;
+}
+
+.light [class*="border-[#3AE8FF" i],
+.light [class*="border-[#00D4FF" i] {
+  border-color: #0e6f85;
+}
+
+/* ── المبدّل نفسه ────────────────────────────────────────────────────────── */
+
+.nx-theme-toggle {
+  display: grid;
+  place-items: center;
+  /* ٤٤×٤٤ هدف لمس (WCAG 2.5.8) — الزرّ يعمل باللمس كما بالمؤشّر. */
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--chip);
+  color: var(--ink-2);
+  transition:
+    border-color var(--nx-anim-fast, 0.15s) ease,
+    color var(--nx-anim-fast, 0.15s) ease,
+    background-color var(--nx-anim-fast, 0.15s) ease;
+}
+
+.nx-theme-toggle:hover {
+  border-color: color-mix(in srgb, var(--tone-cyan) 55%, var(--hairline));
+  color: var(--ink);
+  background: var(--chip-hover);
+}
+
+.nx-theme-toggle:focus-visible {
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: 2px;
+}
+
+/* الأيقونة تتبع صنف الجذر لا حالة React: الحالة تبدأ داكنة دائمًا لتطابق
+   الخادم، فلو رُسمت منها لظهرت أيقونة الوضع الخطأ حتى يكتمل الترطيب. */
+.nx-theme-ico {
+  grid-area: 1 / 1;
+}
+
+.dark .nx-theme-ico--moon,
+.light .nx-theme-ico--sun {
+  display: none;
+}
+
+@media (forced-colors: active) {
+  .nx-theme-toggle {
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+}
+
+/* ── السطوح السينمائية طبقةُ الوضع الداكن وحدها ─────────────────────────────
+
+   الشفق والفيلم والزجاج مصمَّمة على الكحلي. في الوضع الفاتح كانت طبقةُ
+   الخلفية الزخرفية تبقى تُرسم فوق سطحٍ صار أبيض، فتُظلم الصفحةَ كلَّها
+   ويقع الحبر الداكن على تدرّجٍ أغمق منه: «مركز القيادة» كان يُقرأ داكنًا
+   على داكن رغم أن سطح الصفحة تحته أبيض. رُئي بلقطة على ٣٩٠px بعد التبديل.
+
+   هذه الطبقات `aria-hidden` بالكامل — زخرفةٌ لا معلومة — فإسقاطها في
+   الفاتح لا يُنقص محتوى، ويعطي «مساحة العمل التنفيذية البيضاء» التي تسمّيها
+   رموز هذا الوضع نفسها.
+
+   **استثناء مقصود:** `.nx-hv` (فيلم الرئيسية) يبقى — المالك طلب صراحةً
+   وضوحه ١ **في الوضعين** (٢٠٢٦/٠٨/٠٦)، فلا يُسقطه هذا البند. */
+.light .nx-backdrop {
+  display: none;
+}
+
+/* ── لكنات الدرجات الفاتحة تُعمَّق في الوضع الفاتح ──────────────────────────
+
+   نحو ألف موضع تستعمل الدرجات ٢٠٠–٤٠٠ من لوحة Tailwind (`text-cyan-300`،
+   `text-amber-300`، `text-emerald-300` …). هذه مصمَّمة على الكحلي؛ على
+   الأبيض تعطي ١٫٥:١ تقريبًا — أي نصًّا غير مقروء.
+
+   والمخرج هو المخرج نفسه: Tailwind يُصرّفها إلى `var(--color-<لون>-<درجة>)`،
+   فإعادة تعريف الدرجة تحت `.light` تُعمّق كل مواضعها دفعةً واحدة مع حفظ
+   الهُوية اللونية (سماويٌّ يبقى سماويًّا). القيم مأخوذة من درجات ٦٠٠–٧٠٠
+   في اللوحة نفسها، وكلّها تعبر ٤٫٥:١ على الأبيض.
+
+   وهذا يشمل الخلفيات والحدود التي تستعمل الدرجة نفسها — وهو مقصود: خلفية
+   `bg-cyan-300` على سطحٍ أبيض لكنةٌ صارخة، والدرجة الأعمق أليق. */
+.light {
+  --color-cyan-200: #007492;
+  --color-cyan-300: #007492;
+  --color-cyan-400: #00617c;
+  --color-sky-200: #0369a1;
+  --color-sky-300: #0369a1;
+  --color-sky-400: #075985;
+  --color-teal-200: #0f766e;
+  --color-teal-300: #0f766e;
+  --color-teal-400: #115e59;
+  --color-emerald-200: #047857;
+  --color-emerald-300: #047857;
+  --color-emerald-400: #065f46;
+  --color-green-200: #15803d;
+  --color-green-300: #15803d;
+  --color-green-400: #166534;
+  --color-blue-200: #1d4ed8;
+  --color-blue-300: #1d4ed8;
+  --color-blue-400: #1e40af;
+  --color-violet-200: #6d28d9;
+  --color-violet-300: #6d28d9;
+  --color-violet-400: #5b21b6;
+  --color-amber-200: #b45309;
+  --color-amber-300: #b45309;
+  --color-amber-400: #92400e;
+  --color-rose-200: #be123c;
+  --color-rose-300: #be123c;
+  --color-rose-400: #9f1239;
+  --color-red-200: #b91c1c;
+  --color-red-300: #b91c1c;
+  --color-red-400: #991b1b;
+  /* الرماديّات: ٢٠٠–٤٠٠ على الأبيض تحت العتبة كلّها. */
+  --color-slate-200: #475569;
+  --color-slate-300: #475569;
+  --color-slate-400: #475569;
+  --color-gray-200: #4b5563;
+  --color-gray-300: #4b5563;
+  --color-gray-400: #4b5563;
+  --color-zinc-200: #52525b;
+  --color-zinc-300: #52525b;
+  --color-zinc-400: #52525b;
+  --color-neutral-300: #525252;
+  --color-neutral-400: #525252;
+}
+
+/* ── لكنات النصّ الفاتحة: مصمَّمة على الكحلي، معدومة على الأبيض ────────────
+
+   نحو ألف موضع تستعمل درجات ٢٠٠/٣٠٠/٤٠٠ لونًا للنصّ (`text-cyan-300`،
+   `text-amber-300`…). هذه الدرجات موضوعة لتضيء فوق الكحلي؛ على الأبيض
+   تعطي ١٫٥–٢٫٥:١ — أي نصًّا لا يُقرأ. تُعمَّق إلى الدرجة ٧٠٠ من اللوحة
+   نفسها فيبقى اللون هو اللون ويعبر ٤٫٥:١ (WCAG 1.4.3).
+
+   **النصّ وحده.** لم أُعِد تعريف متغيّر اللوحة (`--color-cyan-300`) رغم
+   أنه كان سطرًا واحدًا: المتغيّر نفسه يغذّي `bg-cyan-300` و
+   `border-cyan-300`، فكان سيقلب رقاقاتٍ وحدودًا لا شأن لها بالقراءة —
+   إصلاحٌ يجرّ عطلًا. */
+.light [class*="text-cyan-200"],
+.light [class*="text-cyan-300"],
+.light [class*="text-cyan-400"] {
+  color: var(--color-cyan-700);
+}
+
+.light [class*="text-sky-200"],
+.light [class*="text-sky-300"],
+.light [class*="text-sky-400"] {
+  color: var(--color-sky-700);
+}
+
+.light [class*="text-teal-200"],
+.light [class*="text-teal-300"],
+.light [class*="text-teal-400"] {
+  color: var(--color-teal-700);
+}
+
+.light [class*="text-emerald-200"],
+.light [class*="text-emerald-300"],
+.light [class*="text-emerald-400"] {
+  color: var(--color-emerald-700);
+}
+
+.light [class*="text-green-200"],
+.light [class*="text-green-300"],
+.light [class*="text-green-400"] {
+  color: var(--color-green-700);
+}
+
+.light [class*="text-amber-200"],
+.light [class*="text-amber-300"],
+.light [class*="text-amber-400"] {
+  color: var(--color-amber-700);
+}
+
+.light [class*="text-rose-200"],
+.light [class*="text-rose-300"],
+.light [class*="text-rose-400"] {
+  color: var(--color-rose-700);
+}
+
+.light [class*="text-red-200"],
+.light [class*="text-red-300"],
+.light [class*="text-red-400"] {
+  color: var(--color-red-700);
+}
+
+.light [class*="text-violet-200"],
+.light [class*="text-violet-300"],
+.light [class*="text-violet-400"] {
+  color: var(--color-violet-700);
+}
+
+.light [class*="text-blue-200"],
+.light [class*="text-blue-300"],
+.light [class*="text-blue-400"] {
+  color: var(--color-blue-700);
+}
+
+/* المحايدة تُعمَّق درجةً أقل — هي حبرٌ ثانوي لا لكنة. */
+.light [class*="text-slate-200"],
+.light [class*="text-slate-300"],
+.light [class*="text-slate-400"],
+.light [class*="text-gray-200"],
+.light [class*="text-gray-300"],
+.light [class*="text-gray-400"],
+.light [class*="text-zinc-200"],
+.light [class*="text-zinc-300"],
+.light [class*="text-zinc-400"],
+.light [class*="text-neutral-300"],
+.light [class*="text-neutral-400"] {
+  color: var(--color-slate-600);
 }

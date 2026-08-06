@@ -26,7 +26,7 @@ export function AuroraFantasyBackdrop({
   return (
     <div
       aria-hidden
-      className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
+      className={`nx-backdrop pointer-events-none absolute inset-0 overflow-hidden ${className}`}
     >
       {/* Deep base gradient */}
       <div

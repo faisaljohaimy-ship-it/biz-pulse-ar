@@ -27,7 +27,7 @@ export function GlossyImageBackdrop({
   return (
     <div
       aria-hidden
-      className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}
+      className={cn("nx-backdrop pointer-events-none absolute inset-0 overflow-hidden", className)}
     >
       <img
         src={src}

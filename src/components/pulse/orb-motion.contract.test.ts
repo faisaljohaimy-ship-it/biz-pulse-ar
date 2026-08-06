@@ -79,16 +79,32 @@ describe("مفتاح الحركة الواحد يُسكِت الطبقة كلّ�
     expect(OFF).toContain(".nx-op-decision::before");
   });
 
+  /**
+   * الكتلة التي تحرس قاعدةً بعينها — لا «آخر كتلة في الملف».
+   *
+   * أول صياغة قرأت الأخيرة، فكسرت حين أُلحقت بالملف كتلةُ ألوانٍ قسرية
+   * أحدث تخصّ مبدّل الوضع: الحارس صار يفحص طبقةً أخرى ويمرّ أو يسقط بلا
+   * علاقة بما وُضع لأجله. الموضع في ملفٍ يُلحق به الجديد ليس هويّة.
+   */
+  const blockGuarding = (at: string, rule: string) => {
+    for (let i = CSS.lastIndexOf(at); i !== -1; i = CSS.lastIndexOf(at, i - 1)) {
+      const end = CSS.indexOf("\n}\n", i);
+      const block = CSS.slice(i, end === -1 ? undefined : end);
+      if (block.includes(rule)) return block;
+    }
+    return "";
+  };
+
   it("تفضيل النظام يُسكِتها كذلك", () => {
-    // آخر كتلةٍ في الملف هي كتلة هذه الطبقة — البحث من النهاية يتجنّب
-    // كتل `prefers-reduced-motion` الأقدم التي تحرس طبقات أخرى.
-    const reduced = CSS.slice(CSS.lastIndexOf("@media (prefers-reduced-motion: reduce)"));
-    expect(reduced).toContain("nx-op-ticker::after");
+    const reduced = blockGuarding("@media (prefers-reduced-motion: reduce)", "nx-op-ticker::after");
+    expect(reduced, "لا كتلة `prefers-reduced-motion` تحرس الشريط").not.toBe("");
+    expect(reduced).toContain("animation: none");
   });
 
   it("الألوان القسرية تُسقِط الزخرفة ولا تُبقيها بلونٍ مستعار", () => {
-    const forced = CSS.slice(CSS.lastIndexOf("@media (forced-colors: active)"));
-    expect(forced).toContain(".nx-op-ticker::after");
+    const forced = blockGuarding("@media (forced-colors: active)", ".nx-op-ticker::after");
+    expect(forced, "لا كتلة `forced-colors` تحرس الشريط").not.toBe("");
+    expect(forced).toContain("display: none");
     expect(forced).toContain("CanvasText");
   });
 });

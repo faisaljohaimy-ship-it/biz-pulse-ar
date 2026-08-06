@@ -15,7 +15,7 @@ export function HomeVideoBackdrop() {
     <div
       aria-hidden="true"
       dir="ltr"
-      className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#04070F]"
+      className="nx-backdrop pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#04070F]"
     >
       {/* Permanent homepage backdrop: the cinematic SADEED toroid over the
           Saudi command plateau. Object-cover keeps the toroid centred from

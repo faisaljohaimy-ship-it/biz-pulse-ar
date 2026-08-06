@@ -19,10 +19,9 @@
  *   الذكاء الاصطناعي → /finn      FINN التنفيذي
  */
 import { Link } from "@tanstack/react-router";
-import { Moon, Sun } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { isRouteHidden } from "@/lib/nav/hidden-routes";
-import { useTheme } from "@/lib/theme";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 interface TopNavItem {
   readonly to: string;
@@ -81,6 +80,10 @@ export function HomeTopNav() {
             </li>
           ))}
         </ul>
+        {/* الرئيسية خارج القشرة فلا `TopUtilityBar` لها — ومبدّلها هنا.
+            `shrink-0` خارج قائمة التمرير الأفقي: لو وُضع داخلها لانزلق خارج
+            الشاشة على الجوال ولم يعد يُرى. */}
+        <ThemeToggle className="shrink-0" />
       </div>
     </nav>
   );

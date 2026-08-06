@@ -23,22 +23,69 @@ describe("عقد الهوية — المادة ٣٢: الصنف ذو الكات�
     expect(htmlTag).not.toMatch(/className\s*=\s*["'{][^}"']*\b(light|dark)\b/);
   });
 
-  it("يثبّت الداكن بسكربت يسبق أول رسم ولا يقرأ تفضيلًا", () => {
-    // الهوية داكنة ثابتة (٢٠٢٦/٠٨/٠٦). بغير سكربت ما قبل الرسم يومض النظام
-    // حتى يكتمل الترطيب؛ وبقراءة تفضيلٍ مخزَّن يعود الوضع الملغى من الباب
-    // الخلفي على جهاز جرّبه صاحبه يومًا.
-    expect(ROOT).toMatch(/classList\.remove\(['"]light['"]\)/);
-    expect(ROOT).toMatch(/classList\.add\(['"]dark['"]\)/);
-    expect(ROOT).not.toMatch(/localStorage\.getItem\(['"]theme['"]\)/);
+  it("يقرأ الاختيار المحفوظ قبل أول رسم، والافتراضي داكن", () => {
+    // قراءةُ الاختيار في مزوّد React بدل السكربت تعني وميضةً داكنة كاملة
+    // عند كل فتح لمن اختار الفاتح. والافتراضي داكن بلا كشفٍ عن تفضيل نظام
+    // التشغيل: من لم يختر يحصل على هوية سَدِيد كما صُمِّمت.
+    expect(ROOT).toMatch(/localStorage\.getItem\(['"]theme['"]\)/);
+    expect(ROOT).toMatch(/classList\.toggle\(['"]dark['"]/);
+    expect(ROOT).toMatch(/classList\.toggle\(['"]light['"]/);
+    expect(ROOT).not.toMatch(/prefers-color-scheme/);
   });
 
-  it("المزوّد يثبّت ولا يبدّل — ولا يصدّر مبدّلًا", () => {
-    // `setTheme` أُزيل لا عُطِّل: دالةٌ لا تفعل شيئًا أسوأ من غيابها، تُغري
-    // بالنداء وتصمت. والمزوّد يمسح `light` حارسًا من تخزينٍ قديم أو امتداد.
-    expect(THEME_CODE).not.toMatch(/setTheme/);
-    expect(THEME).toMatch(/classList\.remove\("light"\)/);
-    expect(THEME).toMatch(/classList\.add\("dark"\)/);
-    expect(THEME).toMatch(/export type Theme = "dark"/);
+  it("المزوّد يبدّل ويحفظ، ونقطة التطبيق واحدة", () => {
+    // كاتبان على الصنف يعني وضعًا يتأرجح. `apply` هي الموضع الوحيد الذي
+    // يلمس `<html>`، و`setTheme` تحفظ الاختيار وإلا سقط عند أول تنقّل.
+    expect(THEME_CODE).toMatch(/export type Theme = "dark" \| "light"/);
+    expect(THEME_CODE).toMatch(/function apply\(theme: Theme\)/);
+    expect(THEME_CODE).toMatch(/localStorage\.setItem\(THEME_KEY/);
+    // حالةٌ أوّلية داكنة دائمًا — أي اشتقاقها من DOM يُنتج اختلاف ترطيب.
+    expect(THEME_CODE).toMatch(/useState<Theme>\(DEFAULT_THEME\)/);
+    const applyCount = (THEME_CODE.match(/classList\.toggle/g) ?? []).length;
+    expect(applyCount, "الصنف يُكتب في أكثر من موضع").toBe(2);
+  });
+});
+
+describe("عقد الوضع الفاتح — سُلَّم الحبر يُقرأ فعلًا", () => {
+  /** نسبة تباين WCAG بين لونين ست عشريّين. */
+  const ratio = (a: string, b: string) => {
+    const lum = (hex: string) => {
+      const v = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+      const [r, g, bl] = v.map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+    };
+    const [x, y] = [lum(a), lum(b)];
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  };
+
+  /**
+   * القيمة النافذة فعلًا لا أوّل تعريف.
+   *
+   * الرمز يُقرأ من **آخر** كاتبٍ له بالنوعيّة نفسها. في هذا الملف كتلتان
+   * تكتبان حبر الوضع الفاتح: `.light` أعلاه، ثم `:root, .light` بعدها —
+   * والثانية تحجب الأولى. قراءةُ الأولى كانت ستُمرّر الحارس على قيمةٍ لا
+   * يراها المستخدم.
+   */
+  const effective = (token: string) => {
+    const hits = [...CSS.matchAll(new RegExp(`\\.light[^{]*\\{[^}]*?${token}:\\s*([^;]+);`, "gs"))];
+    const last = hits.at(-1)?.[1]?.trim();
+    return last?.startsWith("#") ? last : undefined;
+  };
+
+  it("الحبر الثانوي والثالث يعبران ٤٫٥:١ على الأبيض (WCAG 1.4.3)", () => {
+    // كانا `#6b7280` و`#9ca3af` — والثاني ٢٫٥٤:١، أي أن كل نصّ ثانوي في
+    // الوضع الفاتح كان غير مقروء. رُصد بمسحٍ آليّ على الرئيسية لا بالقراءة.
+    for (const token of ["--ink-2", "--ink-3"]) {
+      const hex = effective(token);
+      expect(hex, `${token} لا يُقرأ من الملف`).toBeDefined();
+      expect(ratio(hex!, "#ffffff"), `${token} = ${hex} تباينه ضعيف`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("التدرّج محفوظ — الثانوي أعمق من الثالث", () => {
+    // إصلاحٌ يوحّد الدرجتين يُنجي التباين ويقتل الهرمية البصرية.
+    const [i2, i3] = [effective("--ink-2")!, effective("--ink-3")!];
+    expect(ratio(i2, "#ffffff")).toBeGreaterThan(ratio(i3, "#ffffff"));
   });
 });
 
