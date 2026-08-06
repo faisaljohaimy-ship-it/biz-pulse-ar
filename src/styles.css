@@ -5274,15 +5274,6 @@ html.dark .nx-holo-noise {
 
 /* ── أزرار المناطق ──────────────────────────────────────────────────────── */
 
-.nx-bp-region-bar {
-  inline-size: 4px;
-  block-size: 34px;
-  flex: none;
-  border-radius: 999px;
-  background: var(--bp-accent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--bp-accent) 60%, transparent);
-}
-
 .nx-bp-region-btn[aria-pressed="true"] {
   border-color: var(--bp-accent);
   box-shadow:
@@ -5321,22 +5312,6 @@ html.dark .nx-holo-noise {
   opacity: 0.85;
 }
 
-.nx-bp-glyph-on {
-  fill: rgb(var(--bp-accent-rgb));
-}
-
-.nx-bp-glyph-off {
-  fill: color-mix(in srgb, var(--ink) 11%, transparent);
-}
-
-.nx-bp-glyph-on-stroke {
-  stroke: rgb(var(--bp-accent-rgb));
-}
-
-.nx-bp-glyph-off-stroke {
-  stroke: color-mix(in srgb, var(--ink) 13%, transparent);
-}
-
 /* ── الوضع الفاتح ───────────────────────────────────────────────────────── */
 /* اللهجات مصمّمة على الكحلي. على الأبيض يهبط السماوي إلى ما دون 3:1 فيصير
    الشكل حاضرًا وغير مقروء — وهو أسوأ من غيابه. المزج نحو الحبر يعيده فوق
@@ -5355,19 +5330,6 @@ html.dark .nx-holo-noise {
 .light .nx-bp-region[data-active] .nx-bp-arc {
   filter: drop-shadow(0 0 12px color-mix(in srgb, var(--bp-accent) 55%, transparent));
   stroke-width: 14;
-}
-
-.light .nx-bp-region-bar {
-  background: color-mix(in srgb, var(--bp-accent) 68%, #05080f);
-  box-shadow: none;
-}
-
-.light .nx-bp-glyph-on {
-  fill: color-mix(in srgb, rgb(var(--bp-accent-rgb)) 66%, #05080f);
-}
-
-.light .nx-bp-glyph-on-stroke {
-  stroke: color-mix(in srgb, rgb(var(--bp-accent-rgb)) 66%, #05080f);
 }
 
 .light .nx-bp-panel-corner {
@@ -5407,14 +5369,9 @@ html.dark .nx-holo-noise {
    ليبقى الشكل مقروءًا بدل أن يختفي. */
 @media (forced-colors: active) {
   .nx-bp-arc,
-  .nx-bp-spoke,
-  .nx-bp-glyph-on-stroke {
+  .nx-bp-spoke {
     stroke: CanvasText;
     filter: none;
-  }
-
-  .nx-bp-glyph-on {
-    fill: CanvasText;
   }
 
   .nx-bp-hub {
@@ -5583,14 +5540,6 @@ html.dark .nx-holo-noise {
   text-shadow: 0 0 22px rgba(var(--bp-accent-rgb), 0.5);
 }
 
-.nx-bp-glyph-on {
-  filter: drop-shadow(0 0 6px rgba(var(--bp-accent-rgb), 0.65));
-}
-
-.nx-bp-glyph-on-stroke {
-  filter: drop-shadow(0 0 6px rgba(var(--bp-accent-rgb), 0.65));
-}
-
 /* العنوان اللامع: تدرّج من الحبر إلى السماوي — رموز لا قيم نهائية.
    التفريغ خلف حارس @supports وجوبًا: `text-fill-color: transparent` بلا
    خلفية مقصوصة على النص = عنوان غير مرئي في متصفح لا يدعم القصّ. */
@@ -5609,11 +5558,6 @@ html.dark .nx-holo-noise {
 
 .light .nx-bp-panel-value {
   text-shadow: 0 0 18px rgba(var(--bp-accent-rgb), 0.35);
-}
-
-.light .nx-bp-glyph-on,
-.light .nx-bp-glyph-on-stroke {
-  filter: drop-shadow(0 0 5px rgba(var(--bp-accent-rgb), 0.4));
 }
 
 .light .nx-bp-panel::after {
@@ -5842,26 +5786,6 @@ html.dark .nx-holo-noise {
   color: var(--ink-3);
 }
 
-.nx-bp-agent-dot {
-  inline-size: 8px;
-  block-size: 8px;
-  flex: none;
-  border-radius: 999px;
-  background: var(--tone-emerald);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--tone-emerald) 80%, transparent);
-}
-
-.nx-bp-agent-dot[data-state="processing"] {
-  background: var(--tone-amber);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--tone-amber) 80%, transparent);
-}
-
-.nx-bp-agent-dot[data-state="idle"] {
-  background: transparent;
-  border: 1.5px solid var(--ink-3);
-  box-shadow: none;
-}
-
 .nx-bp-hub-ring {
   stroke: color-mix(in srgb, var(--tone-cyan) 60%, var(--hairline));
   filter: drop-shadow(0 0 10px color-mix(in srgb, var(--tone-cyan) 45%, transparent));
@@ -5940,25 +5864,9 @@ html.dark .nx-holo-noise {
   }
 }
 
-/* نبضة الأيقونات المزدوجة — خفقة «لب-دب» على رموز اللوحات وأشرطة
-   المناطق، بنفس تدرّج الموجة فتخفق مع مرورها. */
-/* لمعان الأيقونات الثابت — تموّج ناعم مستمر يسري بأطوار متعاقبة. */
-.nx-bp-glyph-on,
-.nx-bp-glyph-on-stroke,
-.nx-bp-region-bar {
-  animation: nxBpIconBeat 4s ease-in-out infinite;
-  animation-delay: calc(var(--pulse-i, var(--nx-bp-i, 0)) * 0.45s);
-}
-
-@keyframes nxBpIconBeat {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.68;
-  }
-}
+/* (`nxBpIconBeat` — خفقة الشفافية على رموز اللوحات وأشرطة المناطق — أُزيلت
+   ٢٠٢٦/٠٨/٠٦ مع حامليها: صارت الأيقونات دوائر نبض تحمل حركتها في طبقتها
+   الخاصة، فبقاء الإطارات بلا مستهلك تركةٌ ميتة لا احتياط.) */
 
 /* فوق الأبيض تختفي اللمعة البيضاء — تُستبدل بلمعة سماوية من طبقة الرموز
    بكثافة أعلى، فتُرى الجمالية في الوضع الفاتح بوضوح. background-image
@@ -6055,12 +5963,6 @@ html.dark .nx-holo-noise {
     drop-shadow(0 0 22px color-mix(in srgb, var(--tone-cyan) 50%, transparent));
 }
 
-.nx-bp-glyph-on,
-.nx-bp-glyph-on-stroke {
-  filter: drop-shadow(0 0 7px rgba(var(--bp-accent-rgb), 0.9))
-    drop-shadow(0 0 18px rgba(var(--bp-accent-rgb), 0.5));
-}
-
 .nx-bp-panel-corner {
   filter: drop-shadow(0 0 9px rgba(var(--bp-accent-rgb), 0.65));
 }
@@ -6077,12 +5979,6 @@ html.dark .nx-holo-noise {
 
 .light .nx-bp-aurora {
   opacity: 0.4;
-}
-
-.nx-bp-region-bar {
-  box-shadow:
-    0 0 12px color-mix(in srgb, var(--bp-accent) 85%, transparent),
-    0 0 26px color-mix(in srgb, var(--bp-accent) 45%, transparent);
 }
 
 /* ── المحرك الهولوغرامي الحي (قرار المالك ٢٠٢٦/٠٨/٠٤) ───────────────────
@@ -6346,9 +6242,6 @@ html[dir="ltr"] .nx-hv-toggle {
   .nx-bp-counter::after,
   .nx-bp-agent::after,
   .nx-bp-float,
-  .nx-bp-glyph-on,
-  .nx-bp-glyph-on-stroke,
-  .nx-bp-region-bar,
   .nx-bp-arc-tip {
     animation: none !important;
   }
@@ -6419,10 +6312,6 @@ html[dir="ltr"] .nx-hv-toggle {
   /* توهّجات الرموز والأقواس أدنى في ترتيب المصدر من كتلة forced-colors
      الأصلية، ونسخ .light نوعيّتها (0,2,0) تعلو قاعدتها — فتُطفأ هنا صراحةً
      بنوعية مساوية أو أعلى كي لا يعود بريق حول رسمٍ فُرض لونه. */
-  .nx-bp-glyph-on,
-  .nx-bp-glyph-on-stroke,
-  .light .nx-bp-glyph-on,
-  .light .nx-bp-glyph-on-stroke,
   .light .nx-bp-arc,
   .light .nx-bp-region[data-active] .nx-bp-arc {
     filter: none;
@@ -8927,6 +8816,23 @@ html[dir="ltr"] .nx-clock-slot {
   display: grid;
   place-items: center;
   flex: none;
+  /* لونان لا لون واحد، وهذا هو الدرس:
+     `--pulse-ink`  الحبر — يحمل التباين، فيُغمَّق على الأبيض.
+     `--pulse-lum`  الضوء — يحمل اللون، ويبقى مشبَعًا في الوضعين.
+     أول محاولة مزجت الاثنين في متغيّر واحد، فلمّا غُمِّق للوضع الفاتح
+     غُمِّقت معه الهالة والتوهّج — فخرجت الأيقونة رماديّة باهتة بدل أن
+     تكون مشعّة ملوّنة. الإشعاع لونٌ والقراءة تباين، ولا يُخدمان بقيمة
+     واحدة. */
+  --pulse-ink: var(--pulse-accent);
+  --pulse-lum: var(--pulse-accent);
+}
+
+/* الوضع الفاتح: اللكنات مصمَّمة على الكحلي؛ على الأبيض يهبط السماوي
+   والكهرماني دون 3:1 فيصير الشكل حاضرًا وغير مقروء (WCAG 2.2 §1.4.11).
+   يُغمَّق الحبر وحده — والضوء يبقى كما هو فيظلّ التوهّج ملوّنًا. النوعيّة
+   (0,2,0) تعلو القاعدة العامة (0,1,0) يقينًا، فلا يحكم الترتيب وحده. */
+.light .nx-pulse-icon {
+  --pulse-ink: color-mix(in srgb, var(--pulse-accent) 72%, #05080f);
 }
 
 .nx-pulse-halo {
@@ -8935,7 +8841,7 @@ html[dir="ltr"] .nx-clock-slot {
   border-radius: 999px;
   background: radial-gradient(
     circle at 50% 50%,
-    color-mix(in srgb, var(--pulse-accent) 42%, transparent),
+    color-mix(in srgb, var(--pulse-lum) 42%, transparent),
     transparent 68%
   );
   filter: blur(6px);
@@ -8968,38 +8874,51 @@ html[dir="ltr"] .nx-clock-slot {
 
 .nx-pulse-ring {
   fill: none;
-  stroke: color-mix(in srgb, var(--pulse-accent) 62%, transparent);
+  stroke: color-mix(in srgb, var(--pulse-ink) 62%, transparent);
   stroke-width: 2;
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--pulse-accent) 70%, transparent));
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--pulse-lum) 70%, transparent));
 }
 
+/* القرص عدسة ملوّنة لا رقعة رمادية: على الكحلي يُمزج نحو الشفافية،
+   وعلى الأبيض نحو الأبيض — فيبقى في الحالتين لونًا خفيفًا لا رمادًا. */
 .nx-pulse-disc {
-  fill: color-mix(in srgb, var(--pulse-accent) 12%, transparent);
-  stroke: color-mix(in srgb, var(--pulse-accent) 26%, transparent);
+  fill: color-mix(in srgb, var(--pulse-lum) 12%, transparent);
+  stroke: color-mix(in srgb, var(--pulse-ink) 26%, transparent);
   stroke-width: 1;
+}
+
+.light .nx-pulse-disc {
+  fill: color-mix(in srgb, var(--pulse-lum) 15%, white);
+  stroke: color-mix(in srgb, var(--pulse-ink) 34%, transparent);
 }
 
 /* الأثر الساكن — يُبقي شكل الموجة مقروءًا حتى بين النبضتين. */
 .nx-pulse-track {
   fill: none;
-  stroke: color-mix(in srgb, var(--pulse-accent) 30%, transparent);
+  stroke: color-mix(in srgb, var(--pulse-ink) 30%, transparent);
   stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-/* الضوء الجاري — شرطة قصيرة تعبر المسار بإيقاع الحالة، ولمعانها
-   drop-shadow لا تشبّع لون: الضوء هو ما يلمع لا الحبر. */
+/* الضوء الجاري — شرطة قصيرة تعبر المسار بإيقاع الحالة. على الكحلي تُفتَّح
+   نحو الأبيض لتلمع، وعلى الأبيض تُعمَّق: اللمعان نسبةٌ إلى الخلفية لا
+   قيمة مطلقة، وشرطةٌ بيضاء على أبيض ليست ضوءًا بل غياب. الهالة حول
+   الشرطة تبقى بلون العنصر في الحالتين. */
 .nx-pulse-spark {
   fill: none;
-  stroke: color-mix(in srgb, var(--pulse-accent) 92%, white);
+  stroke: color-mix(in srgb, var(--pulse-ink) 92%, white);
   stroke-width: 4.5;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 34 210;
-  filter: drop-shadow(0 0 5px var(--pulse-accent))
-    drop-shadow(0 0 12px color-mix(in srgb, var(--pulse-accent) 55%, transparent));
+  filter: drop-shadow(0 0 5px var(--pulse-lum))
+    drop-shadow(0 0 12px color-mix(in srgb, var(--pulse-lum) 55%, transparent));
   animation: nxPulseRun var(--pulse-beat, 1.2s) linear infinite;
+}
+
+.light .nx-pulse-spark {
+  stroke: color-mix(in srgb, var(--pulse-ink) 88%, #05080f);
 }
 
 @keyframes nxPulseRun {
@@ -9011,13 +8930,51 @@ html[dir="ltr"] .nx-clock-slot {
   }
 }
 
+/* قوس القياس — يُرسم فوق الحلقة بطول يوازي النسبة، ولا يُرسم إطلاقًا حين
+   لا قياس (المادة ٢٧: الغياب ليس صفرًا، ولا قوسًا كاملًا). ساكن عمدًا:
+   النبض يقول «حيّ» والقوس يقول «قِيس» — ولو تحرّك الاثنان لالتبس المعنيان. */
+.nx-pulse-arc {
+  fill: none;
+  stroke: color-mix(in srgb, var(--pulse-ink) 95%, white);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--pulse-lum) 80%, transparent));
+}
+
+.light .nx-pulse-arc {
+  stroke: var(--pulse-ink);
+}
+
 /* «تعذّر» يُقال بالشكل لا باللون وحده (WCAG 1.4.1): الحلقة متقطّعة. */
-.nx-pulse-icon[data-state="error"] .nx-pulse-ring {
+.nx-pulse-icon[data-pulse-state="error"] .nx-pulse-ring {
   stroke-dasharray: 6 7;
 }
 
-.light .nx-pulse-disc {
-  fill: color-mix(in srgb, var(--pulse-accent) 18%, transparent);
+/* الحالة الساكنة — بلا ضوء جارٍ، فتُقرأ «موجودة غير عاملة» بالشكل نفسه.
+   الهالة تخفت ولا تختفي: الاختفاء يقرأ عطلًا، والخفوت يقرأ سكونًا. */
+.nx-pulse-icon--muted .nx-pulse-halo {
+  animation: none;
+  opacity: 0.32;
+  scale: 1;
+}
+
+/* ── مفتاح الحركة الواحد (WCAG 2.2.2) ──────────────────────────────────────
+   زر إيقاف الخلفية في `HoloVideoEngine` كان يوقف الفيلم وحده، فتبقى نبضات
+   الأيقونات تعمل بعد أن يطلب المستخدم السكون صراحةً. صار الزر يكتب
+   `data-nx-motion="off"` على الجذر، فتسكن معه كل الحركة الزخرفية الدائمة
+   على الصفحة بمفتاح واحد ظاهر ومحفوظ — لا مفتاح لكل عنصر. */
+html[data-nx-motion="off"] .nx-pulse-halo,
+html[data-nx-motion="off"] .nx-pulse-spark {
+  animation: none;
+}
+
+html[data-nx-motion="off"] .nx-pulse-halo {
+  opacity: 0.6;
+  scale: 1;
+}
+
+html[data-nx-motion="off"] .nx-pulse-spark {
+  stroke-dasharray: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -9042,10 +8999,31 @@ html[dir="ltr"] .nx-clock-slot {
     display: none;
   }
 
+  /* القوس أُضيف بعد هذه الكتلة (٢٠٢٦/٠٨/٠٦) ولم يُدرَج فيها، فبقي في الوضع
+     القسري يحمل لونه وتوهّجه بينما فُرض على إخوته لون النظام — أي أن الوضع
+     الذي وُضع لإزالة اللون كان يُبقي أبرز خط في الأيقونة ملوَّنًا. */
+  /* نسخ `.light` مُدرجة صراحةً — وهذا شرط لا تزيّد: نوعيّة `.light .x`
+     هي (0,2,0) وتعلو (0,1,0) مهما تأخّر ترتيب المصدر، فلولا إدراجها لبقي
+     القوس والشرارة ملوَّنَين في الوضع القسري بينما فُرض على إخوتهما لون
+     النظام — أي أن الوضع الموضوع لإزالة اللون يُبقي أبرز خطّين ملوَّنَين.
+     ثبت بالقياس الحيّ لا بالافتراض: `getComputedStyle` أعاد أزرق للقوس
+     تحت forced-colors قبل هذا السطر. (نفس درس `.light .nx-bp-arc` أعلاه.) */
   .nx-pulse-ring,
   .nx-pulse-track,
-  .nx-pulse-spark {
+  .nx-pulse-spark,
+  .nx-pulse-arc,
+  .light .nx-pulse-spark,
+  .light .nx-pulse-arc {
     stroke: CanvasText;
     filter: none;
+  }
+
+  /* القرص لون اللوحة لا لون العنصر — وإلا رُسمت الموجة على أرضية مصمتة
+     بلون النص فاختفت. والقوس يبقى مميَّزًا بسُمكه (3.5 مقابل 2) لا بلونه،
+     فالوضع القسري يُلغي الألوان ولا يُلغي القياس. */
+  .nx-pulse-disc,
+  .light .nx-pulse-disc {
+    fill: Canvas;
+    stroke: CanvasText;
   }
 }

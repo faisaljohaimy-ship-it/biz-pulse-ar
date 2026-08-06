@@ -32,6 +32,7 @@ import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { RegionRosette } from "@/components/blueprint/RegionRosette";
 import { PRODUCT_BRAND } from "@/lib/domain";
 import { InstrumentPanel, MeasureRail } from "@/components/blueprint/InstrumentPanels";
+import { PulseGlyph } from "@/components/pulse/PulseGlyph";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
@@ -52,6 +53,29 @@ const AGENT_HUES = [
   "var(--tone-violet)",
   "var(--tone-emerald)",
 ] as const;
+
+/**
+ * لكنات دوائر نبض الوكلاء — ثلاثيات RGB كثلاثيات اللوحات، لا رموز `--tone-*`.
+ *
+ * السبب مقيس لا مفترض: قياس حيّ على الصفحة أظهر أن `var(--tone-cyan)` يعطي
+ * **القيمة نفسها في الوضعين** (`#0e7490`)، لأن كتلة
+ * `:root, .light, .dark { … }` في styles.css تفرض درجات الوضع الفاتح على
+ * `.dark` أيضًا وتعلو `:root` نوعيّةً وترتيبًا. فالرمز لا «يتبع الوضع»
+ * كما يبدو من اسمه: لو مُرِّر كما هو خرجت أيقونات الوكلاء باهتة على الكحلي؛
+ * ولو صُحِّح للوضع الفاتح فوق ذلك لهبطت الأربع إلى ما يقارب الأسود معًا.
+ *
+ * الثلاثي الصريح يُخرج المسألة من الطبقة المعطوبة: لكنة داكنة مشبعة يصحّحها
+ * علاج الوضع الفاتح مرّة واحدة — نفس مسار اللوحات بالضبط.
+ * (`--op-hue` على البطاقة يبقى على الرموز؛ توهّج الإطار لا الأيقونة.)
+ */
+const AGENT_PULSE_RGB = ["34, 211, 238", "96, 165, 250", "167, 139, 250", "52, 211, 153"] as const;
+
+/** إيقاع نبضة الوكيل بالثواني — يعمل ⇐ أسرع، ساكن ⇐ هادئ. */
+const AGENT_BEAT: Record<"active" | "processing" | "idle", number> = {
+  processing: 0.72,
+  active: 0.84,
+  idle: 1.6,
+};
 
 export function BlueprintPage() {
   const { locale } = useI18n();
@@ -100,7 +124,7 @@ export function BlueprintPage() {
       label: ar ? "الوكلاء النشطون" : "Active agents",
       value: counters?.agents_active ?? null,
       ceiling: 12,
-      glyph: "ridge" as const,
+      beatSeconds: 0.82,
       accent: "34, 211, 238",
       caption: ar ? "وكلاء يعملون الآن على مهامّ مفتوحة" : "Agents currently working open tasks",
       to: "/nx-flow",
@@ -109,7 +133,7 @@ export function BlueprintPage() {
       label: ar ? "بانتظار الاعتماد" : "Pending approval",
       value: counters?.proposals_pending ?? null,
       ceiling: 12,
-      glyph: "segment" as const,
+      beatSeconds: 0.94,
       accent: "245, 158, 11",
       caption: ar ? "مقترحات موقوفة على قرار بشري" : "Proposals held for a human decision",
       to: "/nx-ops",
@@ -118,7 +142,7 @@ export function BlueprintPage() {
       label: ar ? "منجز اليوم" : "Completed today",
       value: counters?.done_today ?? null,
       ceiling: 24,
-      glyph: "nest" as const,
+      beatSeconds: 1.06,
       accent: "52, 211, 153",
       caption: ar ? "مهامّ أُغلقت منذ بداية اليوم" : "Tasks closed since the day began",
       to: "/nx-ops",
@@ -294,7 +318,16 @@ export function BlueprintPage() {
                     ["--pulse-i" as string]: i + 4,
                   }}
                 >
-                  <span aria-hidden className="nx-bp-region-bar" />
+                  {/* أيقونة المنطقة — دائرة نبض بلون المنطقة نفسه، وقوسها
+                      نسبة الامتثال المعروضة إلى جوارها. لم تُقَس ⇐ لا قوس
+                      (المادة ٢٧)، والدائرة تنبض لأن المنطقة حيّة لا لأنها
+                      مقيسة. الإيقاع يتفاوت بالترتيب فلا تخفق الأربع معًا. */}
+                  <PulseGlyph
+                    accent={REGION_ACCENT_HEX[region.id]}
+                    beatSeconds={0.86 + i * 0.11}
+                    size={32}
+                    ratio={pct === undefined ? null : pct / 100}
+                  />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-black text-[color:var(--ink)]">
                       {ar ? region.shortAr : region.shortEn}
@@ -339,7 +372,7 @@ export function BlueprintPage() {
                 label={panel.label}
                 value={panel.value}
                 ratio={gauge(panel.value, panel.ceiling)}
-                glyph={panel.glyph}
+                beatSeconds={panel.beatSeconds}
                 accent={panel.accent}
                 caption={panel.caption}
                 notMeasured={notMeasured}
@@ -369,7 +402,16 @@ export function BlueprintPage() {
                 }}
               >
                 <span className="flex items-center gap-2">
-                  <span className="nx-bp-agent-dot" data-state={agent.status} aria-hidden />
+                  {/* حالة الوكيل بالشكل لا باللون وحده (WCAG 1.4.1): الساكن
+                      بلا ضوء جارٍ وبحلقة متقطّعة، والعامل ينبض بحلقة متّصلة —
+                      يُقرأ الفرق بلا تمييز لوني. */}
+                  <PulseGlyph
+                    accent={`rgb(${AGENT_PULSE_RGB[i % AGENT_PULSE_RGB.length]})`}
+                    beatSeconds={AGENT_BEAT[agent.status]}
+                    size={26}
+                    muted={agent.status === "idle"}
+                    dashedRing={agent.status === "idle"}
+                  />
                   <b>{agent.name_ar}</b>
                 </span>
                 <i>{agent.task_ar ?? (ar ? "بانتظار مهمة" : "awaiting task")}</i>

@@ -10,15 +10,15 @@
  *   يتحدّث/يحلّل ← نبض سريع، ينصت/يبحث ← متوسط، جاهز ← هادئ،
  *   تعذّر ← بطيء بلون التحذير.
  *
- * الإشعاع مبنيّ من ثلاث طبقات لا من ظلٍّ واحد: هالة خارجية تتنفّس، وحلقة
- * زجاجية، وخطُّ نبضٍ يسري عليه ضوء متحرّك (stroke-dashoffset) مع
- * `drop-shadow` بلون الوكيل — فاللمعان يأتي من الضوء لا من التشبّع.
+ * **الطبقات نفسها مشتركة مع الرئيسية** منذ ٢٠٢٦/٠٨/٠٦: الرسم في
+ * `PulseGlyph`، وهذا الملف يضيف فوقه معنى الحالة وحده (الإيقاع، الوصف،
+ * والحلقة المتقطّعة عند التعذّر). فلغة الأيقونة واحدة في السطحين ولا يمكن
+ * لأحدهما أن ينحرف عن الآخر بصمت.
  *
  * اللون من لكنة الوكيل في السجل (`spec.palette.accent`)، ولا لون نهائيًّا في
- * الترميز: كل قيمة تمرّ متغيّرًا (`--pulse-accent`) فتحترم طبقة الرموز.
- * والحركة تسكن كاملةً مع `prefers-reduced-motion` (الأنماط في styles.css).
+ * الترميز: كل قيمة تمرّ متغيّرًا فتحترم طبقة الرموز.
  */
-import { cn } from "@/lib/utils";
+import { PulseGlyph } from "@/components/pulse/PulseGlyph";
 import type { DigitalHumanSpec, DigitalHumanState } from "@/lib/digital-humans/registry";
 
 interface Props {
@@ -58,9 +58,6 @@ const STATE_LABEL: Record<DigitalHumanState, { ar: string; en: string }> = {
   error: { ar: "تعذّر", en: "Error" },
 };
 
-/** مسار موجة النبض داخل مربّع 100×100 — قمّة حادّة واحدة كتخطيط القلب. */
-const PULSE_PATH = "M8 52 H30 L37 52 L43 30 L50 70 L57 46 L63 52 H92";
-
 export function AgentPulseIcon({
   spec,
   state,
@@ -73,34 +70,17 @@ export function AgentPulseIcon({
   const name = ar ? spec.name_ar : spec.name_en;
 
   return (
-    <div
-      className={cn("nx-pulse-icon", ambient && "nx-pulse-icon--ambient", className)}
-      style={{
-        ["--pulse-accent" as string]: spec.palette.accent,
-        ["--pulse-beat" as string]: `${BEAT_SECONDS[state]}s`,
-        inlineSize: size,
-        blockSize: size,
-      }}
-      data-state={state}
-    >
-      {/* الطبقة ١ — الهالة المتنفّسة */}
-      <span aria-hidden className="nx-pulse-halo" />
-
-      <svg
-        viewBox="0 0 100 100"
-        className="nx-pulse-svg"
-        role="img"
-        aria-label={`${name} — ${label}`}
-      >
-        {/* الطبقة ٢ — الحلقة الزجاجية والقرص الداخلي */}
-        <circle cx="50" cy="50" r="46" className="nx-pulse-ring" />
-        <circle cx="50" cy="50" r="38" className="nx-pulse-disc" />
-
-        {/* الطبقة ٣ — أثر الموجة الساكن ثم الضوء الجاري فوقه */}
-        <path d={PULSE_PATH} className="nx-pulse-track" />
-        <path d={PULSE_PATH} className="nx-pulse-spark" />
-      </svg>
-    </div>
+    <PulseGlyph
+      accent={spec.palette.accent}
+      beatSeconds={BEAT_SECONDS[state]}
+      size={size}
+      ambient={ambient}
+      // «تعذّر» يُقال بالشكل لا باللون وحده (WCAG 1.4.1).
+      dashedRing={state === "error"}
+      label={`${name} — ${label}`}
+      className={className}
+      dataState={state}
+    />
   );
 }
 

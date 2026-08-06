@@ -288,7 +288,14 @@ function RootShell({ children }: { children: React.ReactNode }) {
               "(function(){try{var t=localStorage.getItem('theme');" +
               "t=(t==='dark'||t==='light')?t:'dark';" +
               "var r=document.documentElement;" +
-              "r.classList.add(t);r.style.colorScheme=t;}" +
+              "r.classList.add(t);r.style.colorScheme=t;" +
+              // اختيار «إيقاف الحركة» يُطبَّق هنا لا في محرّك الخلفية وحده:
+              // ذاك المحرّك لا يُركَّب إلا على الصفحات التي لها خلفية فيلم،
+              // فكان المستخدم يوقف الحركة ثم تنبض الأيقونات على كل صفحة
+              // أخرى — أي أن اختياره يسقط بمجرّد التنقّل. القراءة قبل أول
+              // رسم تمنع أيضًا وميضةً واحدة قبل تطبيق الاختيار.
+              "if(localStorage.getItem('nx-holo-bg')==='off')" +
+              "r.setAttribute('data-nx-motion','off');}" +
               "catch(e){document.documentElement.classList.add('dark');}})();",
           }}
         />

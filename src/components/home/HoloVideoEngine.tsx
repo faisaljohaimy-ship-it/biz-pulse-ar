@@ -43,6 +43,16 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
 
   const active = !userOff;
 
+  // مفتاح الحركة الواحد (WCAG 2.2.2): هذا الزر كان يوقف الفيلم وحده، فتبقى
+  // نبضات أيقونات الصفحة تعمل بعد أن يطلب المستخدم السكون صراحةً. الراية
+  // تُكتب على الجذر من هنا — من JS لا من الترميز، فلا تُفرض عند كل إعادة
+  // رسم — وطبقة الرموز في styles.css تُسكِت بها كل حركة زخرفية دائمة.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (userOff) root.setAttribute("data-nx-motion", "off");
+    else root.removeAttribute("data-nx-motion");
+  }, [userOff]);
+
   // إيقاف/استئناف مع رؤية التبويب — بطارية أولًا. والحركة مُهدَّأة:
   // الفيلم يجري بسرعة ٠٫٣٠ (قرار المالك) فيبقى مشهدًا محيطيًا لا مشتِّتًا,
   // وتُعاد كتابة الإبطاء بعد كل استئناف لأن بعض المتصفحات تصفّره.
