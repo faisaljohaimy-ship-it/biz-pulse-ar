@@ -4709,34 +4709,34 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
    ───────────────────────────────────────────────────────────────────────── */
 
 html.dark {
-  /* لوحة داكنة سماويّة (قرار المالك ٢٠٢٦/٠٨/٠٦): الأساس أزرق سماويّ
-     مائل للسيان بدل الكحليّ الغامق، مع حفاظ التباين على AA. */
-  --sd-white: #041a26;
-  --sd-pearl: #062a3c;
-  --sd-glass: rgba(8, 42, 60, 0.72);
-  --sd-glass-strong: rgba(10, 52, 74, 0.88);
-  --sd-line: rgba(103, 232, 249, 0.26);
-  --sd-ink: #eaffff;
-  --sd-ink-2: rgba(226, 250, 255, 0.74);
-  --sd-shadow-1: 0 10px 30px -14px rgba(0, 20, 30, 0.75);
-  --sd-shadow-2: 0 18px 48px -18px rgba(0, 20, 30, 0.85);
-  --sd-shadow-3: 0 26px 70px -22px rgba(0, 20, 30, 0.9);
+  /* لوحة داكنة زرقاء تنفيذية (قرار المالك ٢٠٢٦/٠٨/٠٦): الأساس بلون أيقونة
+     «اللوحة التنفيذية» — أزرق ملكي/سماوي #2563EB–#3B82F6 — بدل السيان. */
+  --sd-white: #0a1730;
+  --sd-pearl: #12244a;
+  --sd-glass: rgba(18, 36, 74, 0.72);
+  --sd-glass-strong: rgba(24, 46, 92, 0.88);
+  --sd-line: rgba(96, 141, 255, 0.28);
+  --sd-ink: #eef4ff;
+  --sd-ink-2: rgba(226, 235, 255, 0.74);
+  --sd-shadow-1: 0 10px 30px -14px rgba(3, 12, 32, 0.75);
+  --sd-shadow-2: 0 18px 48px -18px rgba(3, 12, 32, 0.85);
+  --sd-shadow-3: 0 26px 70px -22px rgba(3, 12, 32, 0.9);
 }
 
 html.dark body {
-  background-color: #04202e !important;
+  background-color: #0a1730 !important;
   background-image:
-    radial-gradient(1100px 620px at 78% -12%, rgba(14, 165, 233, 0.26), transparent 62%),
-    radial-gradient(900px 520px at 8% 4%, rgba(34, 211, 238, 0.2), transparent 60%),
-    linear-gradient(180deg, #04202e 0%, #073349 100%) !important;
+    radial-gradient(1100px 620px at 78% -12%, rgba(59, 130, 246, 0.28), transparent 62%),
+    radial-gradient(900px 520px at 8% 4%, rgba(37, 99, 235, 0.22), transparent 60%),
+    linear-gradient(180deg, #0a1730 0%, #12285a 100%) !important;
   color: var(--sd-ink) !important;
 }
 
 html.dark body::before {
   background:
-    radial-gradient(120% 70% at 78% -10%, rgba(56, 189, 248, 0.22), transparent 60%),
-    radial-gradient(90% 60% at 10% 0%, rgba(34, 211, 238, 0.18), transparent 62%),
-    linear-gradient(180deg, #04202e 0%, #062b3e 46%, #073349 100%) !important;
+    radial-gradient(120% 70% at 78% -10%, rgba(91, 140, 255, 0.24), transparent 60%),
+    radial-gradient(90% 60% at 10% 0%, rgba(37, 99, 235, 0.2), transparent 62%),
+    linear-gradient(180deg, #0a1730 0%, #0e1f45 46%, #12285a 100%) !important;
 }
 
 
@@ -4752,9 +4752,9 @@ html.dark .nexus-toast,
 html.dark .sd-glass-surface,
 html.dark .spatial-window,
 html.dark [data-slot="card"] {
-  background-color: rgba(8, 44, 62, 0.78) !important;
+  background-color: rgba(18, 38, 78, 0.78) !important;
   background-blend-mode: normal, normal, normal, screen, normal;
-  border-color: rgba(103, 232, 249, 0.3) !important;
+  border-color: rgba(96, 141, 255, 0.32) !important;
   box-shadow: var(--sd-shadow-1) !important;
   color: var(--sd-ink) !important;
 }
@@ -4763,22 +4763,23 @@ html.dark [data-slot="card"] {
 html.dark .holo-icon,
 html.dark .nx-holo-icon,
 html.dark [data-holo-icon-wrap] {
-  background-color: rgba(9, 50, 70, 0.82) !important;
-  border-color: rgba(103, 232, 249, 0.36) !important;
-  color: #c8f6ff !important;
+  background-color: rgba(22, 46, 94, 0.84) !important;
+  border-color: rgba(96, 141, 255, 0.38) !important;
+  color: #d5e3ff !important;
 }
 
 /* بطاقة FINN — خلفيتها الرقمية الداكنة السابقة */
 
 /* الشريط العلوي */
 html.dark .nx-clock-bar {
-  background: rgba(5, 36, 52, 0.88) !important;
-  border-bottom-color: rgba(103, 232, 249, 0.22) !important;
-  color: #dff2ff !important;
+  background: rgba(12, 28, 62, 0.9) !important;
+  border-bottom-color: rgba(96, 141, 255, 0.24) !important;
+  color: #e4edff !important;
 }
 html.dark .nx-clock-bar * {
-  color: #dff2ff !important;
+  color: #e4edff !important;
 }
+
 
 /* شبكة الكهرباء + الطبقات الجوّية تعود لكثافتها الداكنة */
 html.dark {
