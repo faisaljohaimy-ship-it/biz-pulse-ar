@@ -5,9 +5,21 @@ on:
     branches: [main]
   pull_request:
 
+# ── لماذا وظائف متوازية لا وظيفة واحدة ────────────────────────────────────
+# كانت `verify` وظيفةً واحدة تجمع التثبيت والفحص والبناء وفحوص Postgres،
+# فتتجاوز خمس عشرة دقيقة على مُشغّل بنواتين. وهذا الحساب يقطع أي وظيفة عند
+# ١٥:٠٠ بالضبط — قِيس على تشغيلين متتاليين: 15m02s و15m00s ثم «cancelled».
+# والنتيجة أن `deploy` (‏`needs: verify`) كانت تُتخطّى في **كل** دفعة، فبقي
+# الإنتاج مجمَّدًا على بناء ١٩ يوليو ثلاثة أسابيع كاملة.
+#
+# التقسيم يُبقي كل وظيفة بعيدة عن السقف، ويكشف الخطوة الساقطة بدل «سقطت
+# verify»، ويقصّر زمن الحائط لأنها تجري معًا. و`timeout-minutes: 13` تجعل
+# التعليق يفشل فشلًا صريحًا قبل القطع الخارجي الصامت.
 jobs:
-  verify:
+  static:
+    name: static (types · lint · dead code)
     runs-on: ubuntu-latest
+    timeout-minutes: 13
     permissions:
       contents: read
     steps:
@@ -24,18 +36,63 @@ jobs:
         run: npm run lint
       - name: Dead-code scan (advisory)
         run: npm run check:deadcode || true
+
+  test:
+    name: test (unit · audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
       - name: Unit tests
         run: npm test
       - name: Production dependency audit
         run: npm audit --omit=dev --audit-level=high
+
+  build:
+    name: build (bundle · budget)
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
       - name: Build
         run: npm run build
       - name: Enforce performance budget
         run: npm run check:performance
-      - name: RAG preflight (isolation + privilege on real Postgres)
-        run: npm run check:rag
       - name: Smoke check bundle
         run: test -d dist || test -d .output
+
+  rag-preflight:
+    name: rag preflight (real Postgres)
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: RAG preflight (isolation + privilege on real Postgres)
+        run: npm run check:rag
 
   # Article 21 — Continuous security gate. The Article 19 E2E spec is a
   # blocking check on every push/PR. If it fails, the merge is blocked and
@@ -43,7 +100,7 @@ jobs:
   # regression in the operational incident stream — not just in CI logs.
   security-gap-closure-e2e:
     runs-on: ubuntu-latest
-    needs: verify
+    needs: [static, test, build]
     # Bind to the production environment so this gate can read secrets whether
     # they were added as repository secrets OR under the `production`
     # environment (matching the deploy job). Without this, environment-scoped
@@ -113,9 +170,9 @@ jobs:
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     # Constitution Article X: the OPTIONAL backup Cloudflare deploy. It gates on
-    # `verify` only (E2E is advisory). deploy.yml skips quietly and stays GREEN
+    # الفحوص الأربعة (E2E استشاري). deploy.yml skips quietly and stays GREEN
     # when its secrets are absent — primary deployment is Lovable's pipeline, so
     # a missing deploy secret never blocks CI or reds the run.
-    needs: [verify]
+    needs: [static, test, build, rag-preflight]
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
