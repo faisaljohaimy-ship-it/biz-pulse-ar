@@ -37,29 +37,29 @@ export function GlobalBackButton() {
 
   return (
     <div
-      /* أسفل الشاشة من جهة البداية: الترويسة اللاصقة وشريط الساعة يحتلّان
-         أعلى الصفحة على الجوال والحاسوب معًا، فكان الزرّان يغطّيانهما.
-         الجهة المقابلة محجوزة لمشغّل فِن، والارتفاع يتجاوز شريط المحاكاة. */
-      className="fixed bottom-[calc(3.25rem+env(safe-area-inset-bottom))] z-[70] flex items-center gap-2 ltr:left-3 rtl:right-3"
+      /* سقف النظام، مائلًا نحو كلمة «سَدِيد» (قرار المالك ٢٠٢٦/٠٨/٠٦):
+         الزرّان يجلسان داخل الشريط العلوي بجوار أيقونة النوافذ من الداخل،
+         بإزاحة كافية حتى لا يغطّيا الأيقونة ولا العلامة. */
+      className="fixed top-[calc(0.6rem+env(safe-area-inset-top))] z-[70] flex items-center gap-1.5 ltr:left-[5.75rem] rtl:right-[5.75rem]"
       dir={isRtl ? "rtl" : "ltr"}
     >
       <button
         type="button"
         onClick={goBack}
         aria-label={isRtl ? "رجوع" : "Back"}
-        className="inline-flex h-10 items-center gap-1.5 rounded-full border border-primary/30 bg-background/85 px-3 text-xs font-semibold text-foreground shadow-lg backdrop-blur-sm transition-colors hover:border-primary/60 hover:bg-primary/10"
+        className="inline-flex h-9 items-center gap-1.5 rounded-full border border-primary/30 bg-background/85 px-2.5 text-xs font-semibold text-foreground shadow-lg backdrop-blur-sm transition-colors hover:border-primary/60 hover:bg-primary/10"
       >
         <ArrowRight
           className={`h-4 w-4 text-primary ${isRtl ? "" : "rotate-180"}`}
           aria-hidden="true"
         />
-        <span className="hidden sm:inline">{isRtl ? "رجوع" : "Back"}</span>
+        <span className="hidden lg:inline">{isRtl ? "رجوع" : "Back"}</span>
       </button>
       <button
         type="button"
         onClick={() => void navigate({ to: "/" })}
         aria-label={isRtl ? "الرئيسية" : "Home"}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-background/85 text-foreground shadow-lg backdrop-blur-sm transition-colors hover:border-primary/50 hover:bg-primary/10"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary/20 bg-background/85 text-foreground shadow-lg backdrop-blur-sm transition-colors hover:border-primary/50 hover:bg-primary/10"
       >
         <Home className="h-4 w-4 text-primary" aria-hidden="true" />
       </button>
