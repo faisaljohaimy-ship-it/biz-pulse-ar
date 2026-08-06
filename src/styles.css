@@ -9861,3 +9861,31 @@ html[data-nx-motion="off"] .nx-op-decision::before {
 .light [class*="text-neutral-400"] {
   color: var(--color-slate-600);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   FIXED SCREEN BACKDROP (قرار المالك ٢٠٢٦/٠٨/٠٦)
+   خلفية النظام تعود واضحة وثابتة: طبقة واحدة مثبّتة على إطار العرض،
+   لا تتحرّك مع التمرير، ولا تُقصّ عند الحواف — في الوضعين معًا.
+   ───────────────────────────────────────────────────────────────────────── */
+html,
+html.dark {
+  background-color: var(--sd-white);
+}
+
+body,
+html.dark body {
+  background-attachment: fixed, fixed, fixed !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  background-position: center top !important;
+}
+
+body::before,
+html.dark body::before {
+  position: fixed !important;
+  inset: 0 !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  opacity: 1 !important;
+}
