@@ -35,6 +35,24 @@ import {
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
+
+/**
+ * لكنات دوائر الأيقونات — تدور على عناصر الشريط فيأخذ كلٌّ لونه.
+ *
+ * لونٌ واحد لكل الأيقونات يجعل الشريط جدارًا سماويًّا لا يُميَّز فيه عنصر
+ * عن جاره إلا بالنص؛ والتفاوت يجعل الموضع نفسه علامةً تُحفظ بالعين.
+ * أسماء رموز من طبقة الرموز لا قيمًا نهائية (المادة ٣٣).
+ */
+const ORB_HUES = [
+  "var(--tone-cyan)",
+  "var(--tone-blue)",
+  "var(--tone-violet)",
+  "var(--tone-emerald)",
+  "var(--tone-amber)",
+] as const;
+
+/** إيقاع النبض بالثواني — يتفاوت قليلًا فلا تخفق الأيقونات دفعةً واحدة. */
+const ORB_BEATS = ["1.05s", "1.2s", "0.95s", "1.35s", "1.12s"] as const;
 import { useI18n } from "@/lib/i18n";
 import { moduleByRoute, moduleExternalUrl } from "@/lib/nav/modules";
 import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
@@ -282,7 +300,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
               {g.label}
             </div>
             <div className="space-y-1">
-              {g.items.map((it) => {
+              {g.items.map((it, itemIndex) => {
                 const active = loc.pathname === it.to || loc.pathname.startsWith(it.to + "/");
                 // External sister platform (Nusuk): the sidebar entry is a
                 // real anchor that opens the platform in a new tab directly.
@@ -300,7 +318,13 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                       onClick={onNavigate}
                       className="group relative flex h-11 cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-sidebar-foreground/75 transition-all hover:bg-sidebar-accent/40 hover:text-sidebar-foreground active:scale-[0.98]"
                     >
-                      <span className="grid size-8 shrink-0 place-items-center rounded-lg transition-colors">
+                      <span
+                        className="nx-orb grid size-8 shrink-0 place-items-center rounded-lg transition-colors"
+                        style={{
+                          ["--orb-accent" as string]: ORB_HUES[itemIndex % ORB_HUES.length],
+                          ["--orb-speed" as string]: ORB_BEATS[itemIndex % ORB_BEATS.length],
+                        }}
+                      >
                         <ItIcon className="size-4" aria-hidden />
                       </span>
                       <span className="truncate">{it.label}</span>
@@ -331,11 +355,16 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                     )}
                     <span
                       className={cn(
-                        "grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
+                        "nx-orb grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
                         active
                           ? "nx-icon-pulse bg-primary/15 text-primary"
                           : "bg-muted/30 text-muted-foreground group-hover:bg-muted/50 group-hover:text-foreground",
                       )}
+                      data-orb-active={active || undefined}
+                      style={{
+                        ["--orb-accent" as string]: ORB_HUES[itemIndex % ORB_HUES.length],
+                        ["--orb-speed" as string]: ORB_BEATS[itemIndex % ORB_BEATS.length],
+                      }}
                     >
                       <it.icon className="nx-icon-soft size-4" />
                     </span>

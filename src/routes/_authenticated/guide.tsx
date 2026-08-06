@@ -27,6 +27,21 @@ export const Route = createFileRoute("/_authenticated/guide")({
   ),
 });
 
+/**
+ * لكنات دوائر خريطة النظام وإيقاعاتها — لكل وحدة لونها ونبضها، فلا تبدو
+ * الشبكة صفًّا واحدًا ينبض بنَفَسٍ واحد. الطول أوّليٌّ (٦) لا يقسم عدد
+ * الوحدات، فيدور اللون على المجموعة بدل أن يتكرّر في العمود نفسه.
+ */
+const GUIDE_HUES = [
+  "var(--tone-cyan)",
+  "var(--tone-blue)",
+  "var(--tone-violet)",
+  "var(--tone-emerald)",
+  "var(--tone-amber)",
+  "var(--tone-rose)",
+] as const;
+const GUIDE_BEATS = ["1.02s", "1.18s", "0.92s", "1.3s", "1.1s", "0.86s"] as const;
+
 /** Functional clusters — the map's rows. */
 const GROUPS: Array<{ ar: string; en: string; routes: string[] }> = [
   {
@@ -170,12 +185,19 @@ function GuidePage() {
         <div key={g.en} className="space-y-3">
           <h2 className="text-lg font-bold text-white">{ar ? g.ar : g.en}</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {g.modules.map((m) => {
+            {g.modules.map((m, mi) => {
               const to = m.to;
               const Icon = m.icon;
               const inner = (
                 <div className="holo-card flex h-full items-start gap-3 rounded-2xl p-3.5 transition hover:-translate-y-0.5">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(58,232,255,0.1)] text-[#3AE8FF]">
+                  {/* دائرة رقمية مشعّة حول أيقونة كل وحدة — نفس لغة النظام */}
+                  <span
+                    className="nx-orb flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(58,232,255,0.1)] text-[#3AE8FF]"
+                    style={{
+                      ["--orb-accent" as string]: GUIDE_HUES[mi % GUIDE_HUES.length],
+                      ["--orb-speed" as string]: GUIDE_BEATS[mi % GUIDE_BEATS.length],
+                    }}
+                  >
                     <Icon className="h-5 w-5" aria-hidden />
                   </span>
                   <div>

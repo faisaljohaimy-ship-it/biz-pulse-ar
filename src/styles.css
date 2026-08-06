@@ -3595,10 +3595,14 @@ tbody tr:hover {
     0 16px 40px -18px rgba(37, 99, 235, 0.5);
 }
 
-/* --- Luminous premium icon edges --- */
-.nx-icon-soft,
-.nx-icon-pulse,
-[data-icon-tile] {
+/* --- Luminous premium icon edges ---
+   `:not(svg)` ليس تجميلًا: هذه الأصناف تُكتب أحيانًا على الأيقونة نفسها
+   (`<Icon className="nx-icon-soft" />`) لا على بلاطتها، فتُطلى خطوطُ الرمز
+   بتدرّج أبيض ٩٠٪ ويُحاط بحدٍّ ٢px — فيصير الرمز لطخةً داخل مربّع، ولا
+   يُفرَّق «الرئيسية» من «الخريطة». قِيس بلقطة ٣× على الشريط الجانبي.
+   الخلفية والحدّ من شأن الحاوية؛ الرمز يُقرأ بحدّه لا بطلائه
+   (الدستور: الأيقونة بلون خلفيتها معدومة لا باهتة · WCAG 2.2 §1.4.11). */
+:is(.nx-icon-soft, .nx-icon-pulse, [data-icon-tile]):not(svg) {
   border-radius: 1rem;
   border: 2px solid var(--sd-holo-edge-soft);
   background-image: linear-gradient(
@@ -3610,9 +3614,7 @@ tbody tr:hover {
   animation: sd-holo-edge-pulse 4.2s ease-in-out infinite;
 }
 
-.nx-icon-soft:hover,
-.nx-icon-pulse:hover,
-[data-icon-tile]:hover {
+:is(.nx-icon-soft, .nx-icon-pulse, [data-icon-tile]):not(svg):hover {
   border-color: var(--sd-holo-edge);
   box-shadow:
     0 0 0 1px var(--sd-holo-edge) inset,
@@ -9219,6 +9221,267 @@ html[data-nx-motion="off"] .nx-pulse-spark {
   }
 
   .nx-rpm-swatch {
+    background: CanvasText;
+    box-shadow: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   nx-orb — الدائرة الرقمية المشعّة على كل أيقونة في النظام
+   (قرار المالك ٢٠٢٦/٠٨/٠٦).
+
+   لغة واحدة تحكم أيقونات النظام كلّها: هالة تتنفّس + حلقة زجاجية + ضوء
+   يدور على محيطها. والحركة **ذهابًا وإيابًا** (`alternate`) بمنحنى
+   `ease-in-out` — نفس إيقاع دوائر النبض على الرئيسية ومركز القيادة، فلا
+   تُقرأ الشاشة إيقاعين متجاورين.
+
+   لماذا `::before`/`::after` لا عنصران في الترميز: هذه تُطبَّق على مئات
+   الأيقونات عبر النظام؛ عنصران إضافيان لكل واحدة يعني آلاف العُقد في
+   شجرة DOM بلا معنى دلالي. الزخرفة مكانها الطبقة لا الترميز.
+
+   اللون من `--orb-accent` — يُمرَّر متغيّرًا لكل أيقونة فتختلف الألوان،
+   ويسقط إلى السماوي حين لا يُمرَّر.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nx-orb {
+  position: relative;
+  isolation: isolate;
+  --orb: var(--orb-accent, var(--tone-cyan));
+  --orb-beat: var(--orb-speed, 1.15s);
+}
+
+/* شارة أيقونة الوحدة (HCIS وما يشاركها الصنف) تلبس اللغة نفسها من الطبقة
+   لا من الترميز — ولونها لون الإدارة النشطة الذي تحمله أصلًا، فلا يُفرض
+   عليها طيفٌ ثانٍ يخالف المنطقة التي يقرأها المستخدم.
+   `.nx-holo-icon` مستثناة عمدًا: تحمل ثلاث حركات `!important` وحدًّا حيًّا
+   بالفعل، وإضافة رابعة فوقها تزاحمٌ لا ترقية. */
+.nx-module-icon {
+  position: relative;
+  isolation: isolate;
+  --orb: rgb(var(--nx-region-rgb, 34, 211, 238));
+  --orb-beat: 1.24s;
+}
+
+/* ① الهالة — تتنفّس ذهابًا وإيابًا خارج حدود الأيقونة */
+:is(.nx-orb, .nx-module-icon)::before {
+  content: "";
+  position: absolute;
+  inset: -22%;
+  z-index: -1;
+  border-radius: inherit;
+  /* حلقة ضوء لا قرصًا ممتلئًا: المركز شفّاف عمدًا.
+     أول تمرير كان تدرّجًا يبدأ معتمًا من المركز، فصار خلف كل أيقونة قرصٌ
+     مضيء يبتلع خطوطها — قِيس بلقطة ٣× على الشريط الجانبي فإذا الأيقونات
+     لطخاتٌ لا أشكال. والدستور صريح: الأيقونة بلون خلفيتها معدومة لا باهتة
+     (WCAG 2.2 §1.4.11). فالإشعاع يخرج من المحيط والشكل يبقى نظيفًا. */
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 46%,
+    color-mix(in srgb, var(--orb) 46%, transparent) 64%,
+    transparent 82%
+  );
+  filter: blur(4px);
+  animation: nxOrbBreathe var(--orb-beat) ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* ② الحلقة الزجاجية + الضوء الجاري عليها.
+   قوس مضيء بقناع `mask` لا حدٌّ مصمت: الحدّ يُضيء المحيط كلّه دفعةً،
+   والقوس يجري عليه فيُقرأ نبضًا يمضي ويعود. */
+:is(.nx-orb, .nx-module-icon)::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from 0turn,
+    transparent 0deg,
+    color-mix(in srgb, var(--orb) 95%, white) 40deg,
+    color-mix(in srgb, var(--orb) 55%, transparent) 90deg,
+    transparent 170deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--orb) 70%, transparent));
+  animation: nxOrbRun var(--orb-beat) ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes nxOrbBreathe {
+  from {
+    opacity: 0.42;
+    scale: 0.9;
+  }
+  to {
+    opacity: 1;
+    scale: 1.08;
+  }
+}
+
+/* ذهابٌ وإياب لا دورانًا كاملًا: `alternate` تعكس الاتجاه فيمضي الضوء على
+   المحيط ثم يعود على أثره — وهو ما طُلب صراحةً. `rotate` مستقلّة لا
+   `transform` (المادة ٣٢). */
+@keyframes nxOrbRun {
+  from {
+    rotate: -35deg;
+  }
+  to {
+    rotate: 215deg;
+  }
+}
+
+/* الشكل قبل الضوء: ظلٌّ ضيّق يفصل الأيقونة عن الحلقة ولا يذيب خطوطها.
+   كان ٥px بـ٥٥٪ فطمس الشكل — الأيقونة تُعرَف بحدّها لا بهالتها، وضوءُ
+   الحلقة يكفي للإشعاع. */
+:is(.nx-orb, .nx-module-icon) > svg,
+:is(.nx-orb, .nx-module-icon) svg {
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--orb) 30%, transparent));
+}
+
+/* أيقونة نشطة: نبض أسرع وهالة أوسع — النشاط يُقرأ قبل النص. */
+.nx-orb[data-orb-active] {
+  --orb-beat: var(--orb-speed, 0.78s);
+}
+
+.nx-orb[data-orb-active]::before {
+  inset: -30%;
+}
+
+/* ── شريط الإعلان السفلي — نبض يمضي ويعود على طول الشريط ───────────────── */
+
+.nx-op-ticker {
+  position: relative;
+}
+
+/* خيط ضوء يجري على حافة الشريط ذهابًا وإيابًا، فيُقرأ الشريط حيًّا حتى
+   حين تتوقّف قائمته (`data-static`). */
+.nx-op-ticker::after {
+  content: "";
+  position: absolute;
+  /* صفرٌ لا سالب: الشريط `overflow: hidden`، وأي إزاحة خارجه تُقصّ فيختفي
+     الخيط كلّه بلا أثر في الملف يدلّ عليه. */
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 2px;
+  background: linear-gradient(
+    to left,
+    transparent,
+    color-mix(in srgb, var(--tone-cyan) 90%, white) 18%,
+    color-mix(in srgb, var(--tone-violet) 85%, white) 50%,
+    color-mix(in srgb, var(--tone-emerald) 90%, white) 82%,
+    transparent
+  );
+  background-size: 42% 100%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tone-cyan) 70%, transparent));
+  animation: nxTickerSweep 3.6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes nxTickerSweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+/* كل قرار في الشريط يحمل نقطة نبض بلون خطورته — تخفق ذهابًا وإيابًا
+   بإيقاع يتفاوت بالخطورة: الحرج أسرع. */
+.nx-op-decision::before {
+  content: "";
+  inline-size: 7px;
+  block-size: 7px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--tone-cyan);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--tone-cyan) 80%, transparent);
+  animation: nxDecisionBeat 1.5s ease-in-out infinite alternate;
+}
+
+.nx-op-decision[data-sev="critical"]::before {
+  background: var(--tone-rose);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--tone-rose) 85%, transparent);
+  animation-duration: 0.72s;
+}
+
+.nx-op-decision[data-sev="high"]::before {
+  background: var(--tone-amber);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--tone-amber) 85%, transparent);
+  animation-duration: 0.95s;
+}
+
+.nx-op-decision[data-sev="healthy"]::before {
+  background: var(--tone-emerald);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--tone-emerald) 80%, transparent);
+}
+
+@keyframes nxDecisionBeat {
+  from {
+    opacity: 0.45;
+    scale: 0.82;
+  }
+  to {
+    opacity: 1;
+    scale: 1.15;
+  }
+}
+
+/* ── المفتاح الواحد يُسكِت هذه الطبقة أيضًا (WCAG 2.2.2) ───────────────── */
+
+html[data-nx-motion="off"] :is(.nx-orb, .nx-module-icon)::before,
+html[data-nx-motion="off"] :is(.nx-orb, .nx-module-icon)::after,
+html[data-nx-motion="off"] .nx-op-ticker::after,
+html[data-nx-motion="off"] .nx-op-decision::before {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.nx-orb, .nx-module-icon)::before,
+  :is(.nx-orb, .nx-module-icon)::after,
+  .nx-op-ticker::after,
+  .nx-op-decision::before {
+    animation: none;
+  }
+
+  :is(.nx-orb, .nx-module-icon)::before {
+    opacity: 0.6;
+    scale: 1;
+  }
+
+  .nx-op-decision::before {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@media (forced-colors: active) {
+  :is(.nx-orb, .nx-module-icon)::before,
+  .nx-op-ticker::after {
+    display: none;
+  }
+
+  :is(.nx-orb, .nx-module-icon)::after {
+    background: CanvasText;
+    filter: none;
+  }
+
+  :is(.nx-orb, .nx-module-icon) > svg,
+  :is(.nx-orb, .nx-module-icon) svg {
+    filter: none;
+  }
+
+  .nx-op-decision::before {
     background: CanvasText;
     box-shadow: none;
   }

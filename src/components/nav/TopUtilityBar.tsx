@@ -69,7 +69,14 @@ export function TopUtilityBar({ className }: { className?: string }) {
           onClick={() => setNotifOpen((v) => !v)}
           aria-label={ar ? "التنبيهات" : "Notifications"}
           aria-expanded={notifOpen}
-          className="relative grid size-11 place-items-center rounded-xl border border-sidebar-border bg-card/60 text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+          className="nx-orb relative grid size-11 place-items-center rounded-xl border border-sidebar-border bg-card/60 text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+          style={{
+            // اللون هنا يحمل معنًى لا زينة: كهرماني حين يوجد غير مقروء،
+            // سماوي حين لا شيء ينتظر. والعدد مكتوب في الشارة فوقه — فاللون
+            // إشارةٌ ثانية لا الوحيدة (WCAG 1.4.1).
+            ["--orb-accent" as string]: unread > 0 ? "var(--tone-amber)" : "var(--tone-cyan)",
+            ["--orb-speed" as string]: unread > 0 ? "0.8s" : "1.6s",
+          }}
         >
           <Bell className="size-4" aria-hidden />
           {unread > 0 && (

@@ -26,6 +26,16 @@ import {
 } from "lucide-react";
 import { getSecOverview } from "@/lib/sec.functions";
 import { RegionPulseMap } from "@/components/map/RegionPulseMap";
+
+/** لكنات دوائر الإجراءات التنفيذية وإيقاعاتها — لكل إجراء لونه ونبضه. */
+const ACTION_HUES = [
+  "var(--tone-cyan)",
+  "var(--tone-violet)",
+  "var(--tone-emerald)",
+  "var(--tone-amber)",
+  "var(--tone-blue)",
+] as const;
+const ACTION_BEATS = ["0.9s", "1.1s", "1.25s", "0.98s", "1.16s"] as const;
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { screenName, screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
@@ -1307,7 +1317,7 @@ function MissionControl() {
             {ar ? "الإجراءات التنفيذية" : "Executive Actions"}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {ACTIONS.map((a) => {
+            {ACTIONS.map((a, ai) => {
               const Icon = a.icon;
               return (
                 <Link
@@ -1315,7 +1325,15 @@ function MissionControl() {
                   to={a.to}
                   className="group rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-4 hover:border-cyan-400/40 hover:bg-cyan-400/5 transition-all duration-300 flex items-center gap-3"
                 >
-                  <div className="h-9 w-9 rounded-lg bg-cyan-400/10 border border-cyan-400/20 grid place-items-center group-hover:bg-cyan-400/20 transition">
+                  {/* دائرة رقمية مشعّة حول كل أيقونة إجراء، بلونٍ وإيقاع
+                      مختلفين — نفس لغة دوائر النبض على الرئيسية. */}
+                  <div
+                    className="nx-orb h-9 w-9 rounded-lg bg-cyan-400/10 border border-cyan-400/20 grid place-items-center group-hover:bg-cyan-400/20 transition"
+                    style={{
+                      ["--orb-accent" as string]: ACTION_HUES[ai % ACTION_HUES.length],
+                      ["--orb-speed" as string]: ACTION_BEATS[ai % ACTION_BEATS.length],
+                    }}
+                  >
                     <Icon className="h-4 w-4 text-cyan-300" />
                   </div>
                   <div className="text-sm text-white/90">{ar ? a.ar : a.en}</div>
