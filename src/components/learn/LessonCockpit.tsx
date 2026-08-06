@@ -65,7 +65,7 @@ export function LessonCockpit({ slug, lang, lessonTitle }: Props) {
             <LessonAskFinn
               prompt={
                 ar
-                  ? `FINN، اشرحي لي منطق كلّ قرار في الجدول الزمني لحصّة «${lessonTitle}»، وأيّها كنتِ ستأخذينه بشكل مختلف ولماذا.`
+                  ? `FINN، اشرح لي منطق كلّ قرار في الجدول الزمني لحصّة «${lessonTitle}»، وأيّها كنتَ ستأخذه بشكل مختلف ولماذا.`
                   : `FINN, walk me through the reasoning behind each decision in the "${lessonTitle}" timeline — and which you would have made differently, and why.`
               }
               label={ar ? "اسأل FINN عن هذه القرارات" : "Ask FINN about these decisions"}

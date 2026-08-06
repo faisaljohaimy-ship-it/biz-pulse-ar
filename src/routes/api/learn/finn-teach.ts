@@ -73,7 +73,7 @@ export const Route = createFileRoute("/api/learn/finn-teach")({
         const baseInstructor =
           lang === "ar"
             ? (lesson.aria_system_prompt_ar as string) ||
-              `أنت FINN، معلّمة تنفيذية داخل جسر المعرفة التنفيذي. المتعلّم يتابع "${lesson.title_ar}". أجيبي بالعربية الفصحى، مختصرة، تنفيذية.`
+              `أنت FINN، معلّم تنفيذي داخل جسر المعرفة التنفيذي. المتعلّم يتابع "${lesson.title_ar}". أجب بالعربية الفصحى، مختصرة، تنفيذية.`
             : (lesson.aria_system_prompt_en as string) ||
               `You are FINN, an executive instructor inside the Executive Knowledge Bridge. The learner is taking "${lesson.title_en}". Reply in English, concise, executive.`;
 

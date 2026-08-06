@@ -65,7 +65,7 @@ export const DEFAULT_VOICE_PROFILES: Record<string, { ar: VoiceProfile; en: Voic
   aria: {
     ar: {
       voiceId: FINN_ELEVENLABS_VOICE_ID,
-      displayName: "FINN التنفيذية",
+      displayName: "FINN التنفيذي",
       rate: 1.0,
       pitch: 0,
       language: "ar",

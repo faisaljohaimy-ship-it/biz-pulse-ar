@@ -128,7 +128,7 @@ async function handlePost(request: Request): Promise<Response> {
   }
   if (rate.unavailable) return rateLimitUnavailableResponse();
   if (!rate.allowed) {
-    return jsonError("FINN مشغولة حالياً. حاول بعد قليل.", 429);
+    return jsonError("FINN مشغول حالياً. حاول بعد قليل.", 429);
   }
 
   let body: unknown;

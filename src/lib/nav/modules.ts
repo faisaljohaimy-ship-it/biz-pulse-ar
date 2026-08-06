@@ -58,7 +58,7 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/urgent-ops", ar: "العاجل", en: "Urgent Ops", icon: Siren },
   { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Building2 },
 
-  { to: "/finn", ar: "FINN التنفيذية", en: "FINN Engine", icon: Sparkles },
+  { to: "/finn", ar: "FINN التنفيذي", en: "FINN Engine", icon: Sparkles },
   { to: "/finn-analytics", ar: "تحليلات FINN", en: "FINN Analytics", icon: LineChart },
   { to: "/observability", ar: "الرصد والتكاليف", en: "Observability", icon: Telescope },
 ];
@@ -138,7 +138,7 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     en: "The boardroom — the executive briefing for leadership.",
   },
   "/finn": {
-    ar: "FINN التنفيذية — المساعد الذكي الصوتي والنصي.",
+    ar: "FINN التنفيذي — المساعد الذكي الصوتي والنصي.",
     en: "FINN Executive — the voice and text AI assistant.",
   },
   "/finn-analytics": {

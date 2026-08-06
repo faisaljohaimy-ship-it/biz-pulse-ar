@@ -3,7 +3,7 @@
  *
  * المرجعان المعتمدان من المالك (٢٠٢٦/٠٨/٠٤): غرفة عمليات بخطوط بيانات
  * نابضة تصل قلبًا مركزيًّا بفرق متوهّجة، وغرفٌ مرسومة يسكنها وكلاء
- * يعملون. الترجمة هنا بهوية سَدِيد: FINN التنفيذية قلبُ المسرح، وعشرة
+ * يعملون. الترجمة هنا بهوية سَدِيد: FINN التنفيذي قلبُ المسرح، وعشرة
  * وكلاء متخصصون غرفُه، وخط القرارات شريطه السفلي.
  *
  * انضباط الحركة انضباط Remotion نفسه: منحنى واحد `--nx-ease-out`
@@ -285,7 +285,7 @@ export function NxOpsPage() {
             لا هياكل شبحية تدور بلا نهاية (المادة ٢٧). */}
         {isError ? <OpsFailure ar={ar} onRetry={() => void refetch()} /> : null}
 
-        {/* ── قلب المسرح: FINN التنفيذية ───────────────────────────── */}
+        {/* ── قلب المسرح: FINN التنفيذي ───────────────────────────── */}
         {!isError && (
           <>
             <section className="nx-op-enter mt-6" style={{ ["--op-i" as string]: 1 }}>
@@ -305,7 +305,7 @@ export function NxOpsPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <h2 className="nx-op-core-name">{finn?.name_ar ?? "FINN التنفيذية"}</h2>
+                    <h2 className="nx-op-core-name">{finn?.name_ar ?? "FINN التنفيذي"}</h2>
                     <span className="nx-op-status" data-state={finn?.status ?? "idle"}>
                       <i aria-hidden />
                       {finn ? (ar ? STATUS_AR[finn.status] : STATUS_EN[finn.status]) : dash}

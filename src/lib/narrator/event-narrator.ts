@@ -61,7 +61,7 @@ export interface NarratorLine {
 }
 
 const AGENT_NAMES: Record<NarratorAgent, { ar: string; en: string }> = {
-  aria: { ar: "FINN التنفيذية", en: "FINN Executive" },
+  aria: { ar: "FINN التنفيذي", en: "FINN Executive" },
   incident_commander: { ar: "قائد الحوادث", en: "Incident Commander" },
   risk_analyst: { ar: "محلل المخاطر", en: "Risk Analyst" },
   compliance_auditor: { ar: "مدقق الامتثال", en: "Compliance Auditor" },

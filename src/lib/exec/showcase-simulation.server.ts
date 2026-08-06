@@ -1007,7 +1007,7 @@ export function buildSecOverviewSimulation(now: number): SecOverview {
 
 import type { AgentOpsOverview } from "@/lib/exec.functions";
 
-const AGENT_MODEL = "aria-router";
+const AGENT_MODEL = "finn-router";
 const AGENT_STATES: Array<AgentOpsOverview["agents"][number]["state"]> = [
   "running",
   "running",

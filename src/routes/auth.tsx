@@ -130,7 +130,7 @@ function AuthPage() {
               },
               {
                 icon: Sparkles,
-                ar: "FINN جاهزة للعمل بعد التحقق من الهوية",
+                ar: "FINN جاهز للعمل بعد التحقق من الهوية",
                 en: "FINN activates after identity verification",
               },
             ].map((item) => (

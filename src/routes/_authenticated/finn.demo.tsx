@@ -72,7 +72,7 @@ function FinnDemoPage() {
           <Sparkles className="h-3.5 w-3.5" aria-hidden />
           سيناريو تنفيذي حي
         </div>
-        <h1 className="text-2xl font-semibold text-foreground">تجربة FINN التنفيذية</h1>
+        <h1 className="text-2xl font-semibold text-foreground">تجربة FINN التنفيذي</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
           اختر سيناريو تنفيذي وسيتم إرساله إلى FINN عبر القناة المفردة. ستظهر بطاقة الملخص التنفيذي
           أدناه فور اكتمال التحليل.
