@@ -467,17 +467,21 @@ export function FinnCopilot() {
 
   // Drive FINN presence state from chat lifecycle.
   // thinking > listening > idle (speaking is driven by audio events below).
+  // Perf: depends on a boolean, not the draft text, so presence does not
+  // update (and re-render the avatar) on every keystroke.
+  const hasDraft = draft.trim().length > 0;
   useEffect(() => {
     if (isBusy || transcribing) {
       finnState.set("thinking");
       return;
     }
-    if (draft.trim().length > 0) {
+    if (hasDraft) {
       finnState.set("listening");
       return;
     }
     if (finnState.get() !== "speaking") finnState.set("idle");
-  }, [isBusy, transcribing, draft]);
+  }, [isBusy, transcribing, hasDraft]);
+
   // On unmount / panel close, drop to idle.
   useEffect(
     () => () => {
