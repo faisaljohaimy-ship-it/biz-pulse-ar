@@ -456,7 +456,11 @@ export function BlueprintPage() {
               {ar ? "بيانات محاكاة مرجعية" : "Reference simulation"}
             </span>
           )}
-          <span className="text-[12px] text-[color:var(--ink-3)]">
+          {/* هذا السطر كان على الفيلم مباشرةً بلا زجاج تحته وبأخفّ درجات
+              الحبر — فيمرّ تحته قوس النفق الساطع فيهبط تباينه إلى ١٫٤٢:١.
+              الحلّ رفعُ الحبر درجةً ووضعُ حشوة السطح تحته (نفس علاج
+              `.nx-bp-head-scrim`)، لا تعتيمُ الفيلم. */}
+          <span className="nx-bp-note text-[12px] text-[color:var(--ink-2)]">
             {ar
               ? "الأرقام من مصدر النظام الحيّ. ما لا يصل منه يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
               : "Figures come from the live system source. Whatever does not arrive reads “not measured” — never a substituted zero."}

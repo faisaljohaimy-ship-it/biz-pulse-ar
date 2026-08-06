@@ -5739,13 +5739,39 @@ html.dark .nx-holo-noise {
   -webkit-backdrop-filter: blur(9px);
 }
 
+/* سطرٌ نصّي على الفيلم مباشرةً — يحتاج ما تحته لا ما فوقه. */
+.nx-bp-note {
+  border-radius: 12px;
+  padding: 6px 12px;
+  background: linear-gradient(
+      color-mix(in srgb, var(--surface) 62%, transparent),
+      color-mix(in srgb, var(--surface) 74%, transparent)
+    )
+    padding-box;
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+
 .nx-bp-more {
   display: inline-flex;
   align-items: center;
   min-block-size: 34px;
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--tone-cyan) 45%, var(--hairline));
-  background: color-mix(in srgb, var(--tone-cyan) 10%, transparent);
+  /* كان `--tone-cyan 10%` وحده — طلاءٌ شفّاف يكاد لا يحجب شيئًا. والفيلم
+     خلفه نفقٌ نيونيّ يمرّ فيه قوسٌ سماوي ساطع، فيهبط تباين الحبر إلى
+     ١٫٩٧:١ حين يمرّ تحته (WCAG 1.4.3 يطلب ٤٫٥:١). حشوة السطح + ضبابٌ
+     زجاجي — نفس علاج `.nx-bp-head-scrim` — تُبقي اللكنة السماوية ظاهرةً
+     في الحدّ وتحفظ القراءة تحت أسطع إطار في الحلقة. */
+  background:
+    linear-gradient(
+        color-mix(in srgb, var(--surface) 62%, transparent),
+        color-mix(in srgb, var(--surface) 74%, transparent)
+      )
+      padding-box,
+    color-mix(in srgb, var(--tone-cyan) 10%, transparent) padding-box;
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
   padding-inline: 12px;
   font-size: 12px;
   font-weight: 800;
@@ -6110,8 +6136,11 @@ html.dark .nx-holo-noise {
     -webkit-backdrop-filter: blur(12px) saturate(1.2);
   }
 
+  /* الوضوح ١ على الجوال أيضًا (قرار المالك ٢٠٢٦/٠٨/٠٦): كان ٠٫٨٥ هنا
+     وحده، فيبهت الفيلم على الشاشة التي يُعرض عليها أكثر ما يُعرض. قراءة
+     الحبر يحرسها الغطاء `.nx-hv-veil` وزجاج البطاقات، لا تعتيم الفيلم. */
   .nx-hv-video {
-    opacity: 0.85;
+    opacity: 1;
   }
 }
 
@@ -8978,6 +9007,16 @@ html[dir="ltr"] .nx-clock-slot {
    الأيقونات تعمل بعد أن يطلب المستخدم السكون صراحةً. صار الزر يكتب
    `data-nx-motion="off"` على الجذر، فتسكن معه كل الحركة الزخرفية الدائمة
    على الصفحة بمفتاح واحد ظاهر ومحفوظ — لا مفتاح لكل عنصر. */
+/* الفيلم نفسه أولى ما تُسكِته الراية، وكان غائبًا عنها:
+   السكربت المانع في `__root.tsx` يقرأ `nx-holo-bg` ويكتب الراية **قبل أول
+   رسم**، بينما حالة React لا تُقرأ إلا بعد الترطيب. فمن أوقف الخلفية صراحةً
+   كان يراها تعمل من جديد ثوانيَ عند كل فتح — والزرّ هو آلية الوصول الوحيدة
+   هنا بعد أن أُلغيت الاستجابة لـ prefers-reduced-motion. هذه القاعدة تُغلق
+   الفجوة قبل الرسم؛ ثم يفكّ الترطيب العنصر نفسه. */
+html[data-nx-motion="off"] .nx-hv-video {
+  display: none;
+}
+
 html[data-nx-motion="off"] .nx-pulse-halo,
 html[data-nx-motion="off"] .nx-pulse-spark {
   animation: none;

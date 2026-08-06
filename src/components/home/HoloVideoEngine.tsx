@@ -10,6 +10,16 @@
  * فتبدو الرئيسية واقفة. الإيقاف بيد المستخدم وحده عبر زر ظاهر دائم
  * (WCAG 2.2.2)، واختياره محفوظ.
  *
+ * **حلقة بلا لُحمة (قرار المالك ٢٠٢٦/٠٨/٠٦):** `public/holo-bg.mp4` ليس
+ * المقطع الأصلي كما ورد — أوّله وآخره لا يلتقيان، فكل دورة كانت ستقطع
+ * قطعًا ظاهرًا. أُعيد تركيبه **بندولًا**: ذهابٌ ثم عودة على الأثر نفسه،
+ * بلا إطار مكرّر عند المفصل — فالإطار الأخير يجاور الأول مجاورةً طبيعية
+ * ولا لُحمة تُرى. وقيس ذلك لا فُرض: تشابه الإطارين عند اللُّحمة ٠٫٦٤
+ * مقابل ٠٫٦٧ لأي انتقالٍ عادي داخل الفيلم — بينما كان ٠٫١٦ قبل التركيب.
+ * ٩٥٦ إطارًا · ٤٨ إ/ث · ١٩٫٩ث تصير ٦٦٫٤ث على سرعة ٠٫٣٠. والمعدّل رُفع من
+ * ٢٤ بتنعيم حركي لأن ٢٤×٠٫٣٠ = ٧٫٢ إطارًا جديدًا في الثانية تُرى متقطّعة.
+ * لا مسار صوت في الملف — الخلفية صامتة بحكم التصميم، فبقاؤه وزنٌ بلا فائدة.
+ *
  * الإضاءة المحيطية الحية: عيّنة لونية تُقرأ من إطارات الفيديو كل ٣٥٠م.ث
  * على لوحة 8×8، تُنعَّم خطيًّا وتُكتب متغيّرًا `--live-rgb` على **حاوية
  * الصفحة لا الجذر** (نطاق إبطال أضيق)، ولا تُكتب إلا حين يتجاوز التغيّر
@@ -22,6 +32,11 @@ import { useI18n } from "@/lib/i18n";
 const STORE_KEY = "nx-holo-bg";
 const RATE = 0.3;
 
+/** أحداث التعثّر التي تُوقظ الحارس — خارج المكوّن فلا تُبنى كل إعادة رسم. */
+const MEDIA_EVENTS = ["stalled", "suspend", "pause", "ended"] as const;
+/** أول إيماءة من المستخدم هي ما يفكّ حظر التشغيل التلقائي في المتصفحات. */
+const GESTURE_EVENTS = ["pointerdown", "keydown", "touchstart"] as const;
+
 /** نسيج حبيبي دقيق — SVG turbulence مضمّن، لا أصل شبكي (CSP آمن). */
 const NOISE_URI =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E";
@@ -32,6 +47,7 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [userOff, setUserOff] = useState(false);
+  const [suppressed, setSuppressed] = useState(false);
 
   // ظهور فوري بلا تأخير (قرار المالك): الفيلم يُرسم من الخادم نفسه ويبدأ
   // فور توفر أول إطار؛ ولا يُطفأ إلا إن كان المستخدم أوقفه سابقًا.
@@ -39,7 +55,28 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
     setUserOff(window.localStorage?.getItem(STORE_KEY) === "off");
   }, []);
 
-  const active = !userOff;
+  // تفضيلان يُخفيان الفيلم في طبقة الرموز أصلًا: «قلّل الشفافية» يُخفي
+  // `.nx-hv-video`، و«الألوان القسرية» تُخفي `.nx-hv` كلها. لكن الإخفاء
+  // بصريّ فقط — فكان العنصر يبقى مركَّبًا: الملف يُحمَّل، ويُفكّ ترميزه ٤٨
+  // إطارًا في الثانية، وحارس الثانيتين يعمل، وعيّنة اللون تقرأ منه كل ٣٥٠م.ث
+  // لسطحٍ لا يراه أحد — على جهازٍ صاحبُه غالبًا طلب التخفيف لسببٍ وجيه.
+  // والأسوأ أثرًا: العيّنة تظل تكتب `--live-rgb` فتتبدّل ألوان توهّج
+  // البطاقات بلا مصدرٍ مرئي يفسّرها. القراءة هنا تُنهي ذلك كلّه.
+  useEffect(() => {
+    const queries = [
+      window.matchMedia?.("(prefers-reduced-transparency: reduce)"),
+      window.matchMedia?.("(forced-colors: active)"),
+    ].filter(Boolean) as MediaQueryList[];
+    if (!queries.length) return;
+    const sync = () => setSuppressed(queries.some((q) => q.matches));
+    sync();
+    for (const q of queries) q.addEventListener("change", sync);
+    return () => {
+      for (const q of queries) q.removeEventListener("change", sync);
+    };
+  }, []);
+
+  const active = !userOff && !suppressed;
 
   // مفتاح الحركة الواحد (WCAG 2.2.2): هذا الزر كان يوقف الفيلم وحده، فتبقى
   // نبضات أيقونات الصفحة تعمل بعد أن يطلب المستخدم السكون صراحةً. الراية
@@ -54,24 +91,49 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
   // إيقاف/استئناف مع رؤية التبويب — بطارية أولًا. والحركة مُهدَّأة:
   // الفيلم يجري بسرعة ٠٫٣٠ (قرار المالك) فيبقى مشهدًا محيطيًا لا مشتِّتًا,
   // وتُعاد كتابة الإبطاء بعد كل استئناف لأن بعض المتصفحات تصفّره.
+  //
+  // **الاستمرار قيدٌ لا أمنية (قرار المالك ٢٠٢٦/٠٨/٠٦):** الفيلم لا يقف.
+  // `play()` تُرفض صامتةً في حالات حقيقية — سياسة التشغيل التلقائي قبل أول
+  // إيماءة, ووضع توفير الطاقة على iOS, وتعثّر فكّ الترميز على شبكة بطيئة —
+  // وكل واحدة منها تترك الخلفية ساكنة بلا أثر في الشاشة يدلّ على السبب.
+  // لذلك: حارسٌ دوريّ يعيد التشغيل ويعيد كتابة السرعة، ويستيقظ كذلك على
+  // أول إيماءة من المستخدم (وهي ما تفكّ حظر التشغيل التلقائي أصلًا).
+  // الإيقاف المقصود وحده يُحترم: التبويب المخفي، واختيار المستخدم الصريح.
   useEffect(() => {
     if (!active) return;
-    const v = videoRef.current;
-    if (v) {
-      v.playbackRate = RATE;
-      void v.play().catch(() => {});
-    }
-    const onVisibility = () => {
-      const vv = videoRef.current;
-      if (!vv) return;
-      if (document.hidden) vv.pause();
-      else {
-        vv.playbackRate = RATE;
-        void vv.play().catch(() => {});
-      }
+    // العنصر يُلتقط مرّة هنا ويُستعمل في الربط والفكّ معًا. قراءة
+    // `videoRef.current` داخل دالة التنظيف تقرأ ما صار إليه المرجع لا ما
+    // رُبط عليه — فإن تبدّل العنصر بقيت مستمعاته معلّقة عليه إلى الأبد،
+    // ومع دوريّة كل ثانيتين يصير التسريب تراكميًّا. (رصده eslint هنا.)
+    const video = videoRef.current;
+    if (!video) return;
+
+    const resume = () => {
+      if (document.hidden) return;
+      if (video.playbackRate !== RATE) video.playbackRate = RATE;
+      if (video.paused || video.ended) void video.play().catch(() => {});
     };
+
+    resume();
+
+    const onVisibility = () => {
+      if (document.hidden) video.pause();
+      else resume();
+    };
+
     document.addEventListener("visibilitychange", onVisibility);
-    return () => document.removeEventListener("visibilitychange", onVisibility);
+    // الأحداث تلتقط التعثّر فور وقوعه؛ والدورية تمسك ما لا يُطلق حدثًا
+    // (رفض تلقائي صامت، أو تجميد على خلفية النظام).
+    for (const ev of MEDIA_EVENTS) video.addEventListener(ev, resume);
+    for (const ev of GESTURE_EVENTS) window.addEventListener(ev, resume, { passive: true });
+    const id = window.setInterval(resume, 2000);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      for (const ev of MEDIA_EVENTS) video.removeEventListener(ev, resume);
+      for (const ev of GESTURE_EVENTS) window.removeEventListener(ev, resume);
+      window.clearInterval(id);
+    };
   }, [active]);
 
   // العيّنة المحيطية: 8×8 كل ٣٥٠م.ث بتنعيم خطي، والكتابة على حاوية
@@ -166,14 +228,25 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
       >
         {/* الطبقة ١ — الفيلم الصامت يملأ الشاشة كلها (قرار المالك) */}
         {active && (
+          // **لا `autoPlay` ولا `preload="auto"` — عن قصد.** كلاهما يبدأ من
+          // مُحلِّل HTML قبل أن يعمل أي JS، ولذلك ثلاث نتائج خاطئة معًا:
+          //   ① `playbackRate` لا تُضبط إلا من JS، فالفيلم كان يبدأ بسرعة
+          //      ١٫٠ — أي ٣٫٣ أضعاف ما طلبه المالك — ثم يهبط فجأةً إلى ٠٫٣٠
+          //      عند الترطيب. لُكنةٌ ظاهرة على كل فتحةٍ من الذاكرة المؤقتة.
+          //   ② من أوقف الخلفية صراحةً يراها تعمل من جديد حتى يكتمل
+          //      الترطيب — والزرّ هو آلية الوصول الوحيدة هنا (WCAG 2.2.2)
+          //      بعد أن أُلغيت الاستجابة لـ prefers-reduced-motion.
+          //   ③ الملف يُحمَّل كاملًا على المسار الحرج ولو كان مُطفأً.
+          // البديل: `resume()` في التأثير يضبط السرعة **ثم** يشغّل. الثمن
+          // تأخّرٌ بمقدار الترطيب قبل أول حركة، وهو أهون من لُكنةٍ وسرعةٍ
+          // مخالفة وتحميلٍ لا يُرى.
           <video
             ref={videoRef}
             src={src}
-            autoPlay
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             disablePictureInPicture
             className="nx-hv-video"
           />
