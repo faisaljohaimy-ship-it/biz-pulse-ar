@@ -4739,7 +4739,6 @@ html.dark body::before {
     linear-gradient(180deg, #0a1730 0%, #0e1f45 46%, #12285a 100%) !important;
 }
 
-
 /* البطاقات */
 html.dark .holo-card,
 html.dark .nx-glass-e1,
@@ -4779,7 +4778,6 @@ html.dark .nx-clock-bar {
 html.dark .nx-clock-bar * {
   color: #e4edff !important;
 }
-
 
 /* شبكة الكهرباء + الطبقات الجوّية تعود لكثافتها الداكنة */
 html.dark {
@@ -9879,7 +9877,10 @@ html.dark body {
   min-height: 100%;
   background-attachment: scroll !important;
   background-repeat: no-repeat !important;
-  background-size: 100% 180vh, 100% 180vh, 100% 100% !important;
+  background-size:
+    100% 180vh,
+    100% 180vh,
+    100% 100% !important;
   background-position:
     center top,
     center top,
