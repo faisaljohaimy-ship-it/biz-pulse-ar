@@ -240,9 +240,9 @@ export async function buildExecPdf(
   drawText(ctx, "Executive KPIs", { size: 13, bold: true });
   const k = snap.kpis;
   kpiGrid(ctx, [
-    { label: "Executive Readiness", value: `${k.executive_readiness}%` },
-    { label: "Safety Index", value: `${k.safety_index}%` },
-    { label: "Risk Index", value: `${k.risk_index}%` },
+    { label: "Executive Readiness", value: pct(k.executive_readiness) },
+    { label: "Safety Index", value: pct(k.safety_index) },
+    { label: "Risk Index", value: pct(k.risk_index) },
     { label: "Open Incidents", value: String(k.incidents_open) },
     { label: "Critical Incidents", value: String(k.incidents_critical) },
     { label: "Resolution Rate", value: `${k.incidents_resolution_rate}%` },
