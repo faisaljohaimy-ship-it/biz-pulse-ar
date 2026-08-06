@@ -39,7 +39,6 @@ import { useIntroActive } from "@/lib/intro-store";
 import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
 import { GlobalBackButton } from "@/components/layout/GlobalBackButton";
 import { HoloAmbience } from "@/components/layout/HoloAmbience";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 import { RegionProvider } from "@/lib/region-context";
@@ -285,10 +284,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
           // هوية سَدِيد داكنة، والافتراضي الفاتح كان يُغرق نصوص القمرة (قرار ٢٠٢٦/٠٨/٠٥).
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var t=localStorage.getItem('theme');" +
-              "t=(t==='dark'||t==='light')?t:'dark';" +
-              "var r=document.documentElement;" +
-              "r.classList.add(t);r.style.colorScheme=t;" +
+              // الهوية داكنة ثابتة (قرار ٢٠٢٦/٠٨/٠٦): لا قراءة تفضيل ولا
+              // كشف عن نظام التشغيل. و`remove('light')` ليس تزيّدًا — تخزينٌ
+              // قديم أو امتداد متصفّح قد يزرع الصنف قبل أن يعمل المزوّد،
+              // فتخرج نصف شاشة فاتحة على هوية داكنة.
+              "(function(){try{var r=document.documentElement;" +
+              "r.classList.remove('light');r.classList.add('dark');" +
+              "r.style.colorScheme='dark';" +
               // اختيار «إيقاف الحركة» يُطبَّق هنا لا في محرّك الخلفية وحده:
               // ذاك المحرّك لا يُركَّب إلا على الصفحات التي لها خلفية فيلم،
               // فكان المستخدم يوقف الحركة ثم تنبض الأيقونات على كل صفحة
@@ -435,7 +437,6 @@ function RootComponent() {
                   {!suppressOverlays && <FinnWatermark />}
                   {!introActive && !isAccessGate && <HoloAmbience />}
                   {!introActive && !isAccessGate && <GlobalBackButton />}
-                  {!introActive && !isAccessGate && <ThemeToggle />}
                   <div className="relative z-10">
                     <Outlet />
                   </div>

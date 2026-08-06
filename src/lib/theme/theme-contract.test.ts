@@ -12,8 +12,10 @@ import { describe, expect, it } from "vitest";
 const ROOT = readFileSync("src/routes/__root.tsx", "utf8");
 const CSS = readFileSync("src/styles.css", "utf8");
 const THEME = readFileSync("src/lib/theme.tsx", "utf8");
+/** التعليق يشرح ما أُزيل ويسمّيه — الحارس يفحص الكود وحده. */
+const THEME_CODE = THEME.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "");
 
-describe("عقد الوضعين — المادة ٣٢: الصنف ذو الكاتبين", () => {
+describe("عقد الهوية — المادة ٣٢: الصنف ذو الكاتبين", () => {
   it("لا يكتب صنف ثيم على <html> في الترميز", () => {
     // العطل الأصلي: <html className="light"> يعيد فرض نفسه عند كل إعادة رسم
     // فيمحو `dark` الذي يضعه المزوّد — فيستحيل تثبيت الوضع الداكن.
@@ -21,15 +23,22 @@ describe("عقد الوضعين — المادة ٣٢: الصنف ذو الكا�
     expect(htmlTag).not.toMatch(/className\s*=\s*["'{][^}"']*\b(light|dark)\b/);
   });
 
-  it("يضع الحالة الأولى بسكربت يسبق أول رسم", () => {
-    // بغير هذا السكربت يومض النظام بالوضع الخطأ حتى يكتمل الترطيب.
-    expect(ROOT).toMatch(/localStorage\.getItem\(['"]theme['"]\)/);
-    expect(ROOT).toMatch(/classList\.add/);
+  it("يثبّت الداكن بسكربت يسبق أول رسم ولا يقرأ تفضيلًا", () => {
+    // الهوية داكنة ثابتة (٢٠٢٦/٠٨/٠٦). بغير سكربت ما قبل الرسم يومض النظام
+    // حتى يكتمل الترطيب؛ وبقراءة تفضيلٍ مخزَّن يعود الوضع الملغى من الباب
+    // الخلفي على جهاز جرّبه صاحبه يومًا.
+    expect(ROOT).toMatch(/classList\.remove\(['"]light['"]\)/);
+    expect(ROOT).toMatch(/classList\.add\(['"]dark['"]\)/);
+    expect(ROOT).not.toMatch(/localStorage\.getItem\(['"]theme['"]\)/);
   });
 
-  it("المزوّد وحده يبدّل الصنف في وقت التشغيل", () => {
-    expect(THEME).toMatch(/classList\.toggle\(["']dark["']/);
-    expect(THEME).toMatch(/classList\.toggle\(["']light["']/);
+  it("المزوّد يثبّت ولا يبدّل — ولا يصدّر مبدّلًا", () => {
+    // `setTheme` أُزيل لا عُطِّل: دالةٌ لا تفعل شيئًا أسوأ من غيابها، تُغري
+    // بالنداء وتصمت. والمزوّد يمسح `light` حارسًا من تخزينٍ قديم أو امتداد.
+    expect(THEME_CODE).not.toMatch(/setTheme/);
+    expect(THEME).toMatch(/classList\.remove\("light"\)/);
+    expect(THEME).toMatch(/classList\.add\("dark"\)/);
+    expect(THEME).toMatch(/export type Theme = "dark"/);
   });
 });
 

@@ -17,7 +17,6 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
-import { useTheme } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
 
 const STORE_KEY = "nx-holo-bg";
@@ -28,7 +27,6 @@ const NOISE_URI =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E";
 
 export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {}) {
-  const { theme } = useTheme();
   const { locale } = useI18n();
   const ar = locale === "ar";
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -147,7 +145,6 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
     };
   }, [active]);
 
-  const light = theme === "light";
   const toggle = () =>
     setUserOff((v) => {
       const next = !v;
@@ -179,7 +176,6 @@ export function HoloVideoEngine({ src = "/holo-bg.mp4" }: { src?: string } = {})
             preload="auto"
             disablePictureInPicture
             className="nx-hv-video"
-            data-light={light || undefined}
           />
         )}
         {/* الطبقة ٢ — الغطاء السينمائي (بالرموز فيتبع الوضعين) */}

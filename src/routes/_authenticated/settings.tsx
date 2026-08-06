@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
-import { useTheme } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +17,7 @@ import {
   Save,
   KeyRound,
   User,
-  Palette,
+  Languages,
   Bell,
   Shield,
   Plug,
@@ -37,7 +36,6 @@ export const Route = createFileRoute("/_authenticated/settings")({
 function SettingsPage() {
   const { t, locale, setLocale } = useI18n();
   const { user, signOut } = useAuth();
-  const { theme, setTheme } = useTheme();
 
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -156,8 +154,8 @@ function SettingsPage() {
         </h1>
         <p className="text-sm text-muted-foreground">
           {locale === "ar"
-            ? "إدارة الملف الشخصي، المظهر، اللغة، الإشعارات والأمان."
-            : "Manage profile, appearance, language, notifications and security."}
+            ? "إدارة الملف الشخصي واللغة والإشعارات والأمان."
+            : "Manage profile, language, notifications and security."}
         </p>
       </header>
 
@@ -191,9 +189,11 @@ function SettingsPage() {
             <User className="h-4 w-4" />
             {locale === "ar" ? "الملف" : "Profile"}
           </TabsTrigger>
+          {/* الهوية داكنة ثابتة (٢٠٢٦/٠٨/٠٦)، فلم يبقَ في هذا التبويب خيار
+              مظهر — واسمٌ يَعِد بما لا يحتويه أسوأ من تبويب مفقود. */}
           <TabsTrigger value="appearance" className="gap-2">
-            <Palette className="h-4 w-4" />
-            {locale === "ar" ? "المظهر" : "Appearance"}
+            <Languages className="h-4 w-4" />
+            {locale === "ar" ? "اللغة" : "Language"}
           </TabsTrigger>
           <TabsTrigger value="notifications" className="gap-2">
             <Bell className="h-4 w-4" />
