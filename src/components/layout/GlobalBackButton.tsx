@@ -37,7 +37,10 @@ export function GlobalBackButton() {
 
   return (
     <div
-      className="fixed top-[calc(env(safe-area-inset-top)+0.75rem)] z-[70] flex items-center gap-2 ltr:left-3 rtl:right-3"
+      /* أسفل الشاشة من جهة البداية: الترويسة اللاصقة وشريط الساعة يحتلّان
+         أعلى الصفحة على الجوال والحاسوب معًا، فكان الزرّان يغطّيانهما.
+         الجهة المقابلة محجوزة لمشغّل فِن، والارتفاع يتجاوز شريط المحاكاة. */
+      className="fixed bottom-[calc(3.25rem+env(safe-area-inset-bottom))] z-[70] flex items-center gap-2 ltr:left-3 rtl:right-3"
       dir={isRtl ? "rtl" : "ltr"}
     >
       <button
