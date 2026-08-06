@@ -50,7 +50,7 @@ export const responsePipeline = {
     }
     if (/429/.test(raw)) {
       return locale === "ar"
-        ? "FINN مشغولة حالياً. حاول مرة أخرى بعد لحظات."
+        ? "FINN مشغول حالياً. حاول مرة أخرى بعد لحظات."
         : "FINN is temporarily rate limited. Please retry in a moment.";
     }
     if (/401|403/i.test(raw)) {

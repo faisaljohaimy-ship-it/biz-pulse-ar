@@ -38,7 +38,7 @@ export function CanonicalFinnRoute() {
           FINN · المساعد التنفيذي
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
-          {ar ? "FINN الموحّدة" : "The unified FINN"}
+          {ar ? "FINN الموحّد" : "The unified FINN"}
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
           {ar
@@ -59,14 +59,14 @@ export function CanonicalFinnRoute() {
               Icon: AudioWaveform,
               ar: "صوت واحد",
               en: "One voice",
-              promptAr: "ابدئي المحادثة الصوتية وردّي عليّ صوتيًا.",
+              promptAr: "ابدأ المحادثة الصوتية وردّ عليّ صوتيًا.",
               promptEn: "Start the voice conversation and reply to me by voice.",
             },
             {
               Icon: ShieldCheck,
               ar: "مسار محكوم",
               en: "Governed runtime",
-              promptAr: "اشرحي لي ضوابط الحوكمة والصلاحيات المطبّقة على هذه الجلسة.",
+              promptAr: "اشرح لي ضوابط الحوكمة والصلاحيات المطبّقة على هذه الجلسة.",
               promptEn: "Explain the governance and permission controls applied to this session.",
             },
           ].map(({ Icon, ar: labelAr, en, promptAr, promptEn }) => (
@@ -93,7 +93,7 @@ export function CanonicalFinnRoute() {
               ? "افتح FINN"
               : "Open FINN"
             : ar
-              ? "FINN جاهزة الآن"
+              ? "FINN جاهز الآن"
               : "FINN is ready"}
         </button>
       </section>

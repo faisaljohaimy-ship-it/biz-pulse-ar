@@ -62,7 +62,7 @@ export function decideAcceptanceFallback(
   }
   return {
     kind: "ok",
-    message_ar: "جاهزة.",
+    message_ar: "جاهز.",
     message_en: "Ready.",
     allowTextInput: true,
   };

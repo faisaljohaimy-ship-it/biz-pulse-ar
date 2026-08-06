@@ -141,7 +141,7 @@ function buildAgentScript(
   const greet = greeting();
   const opener: AgentLine = {
     id: "aria-open",
-    name_ar: "FINN التنفيذية",
+    name_ar: "FINN التنفيذي",
     name_en: "FINN Executive",
     initials: "AI",
     icon: Brain,
@@ -172,7 +172,7 @@ function buildAgentScript(
       agents: empty,
       closer: {
         id: "aria-close",
-        name_ar: "FINN التنفيذية",
+        name_ar: "FINN التنفيذي",
         name_en: "FINN Executive",
         initials: "AI",
         icon: Brain,
@@ -275,7 +275,7 @@ function buildAgentScript(
 
   const closer: AgentLine = {
     id: "aria-close",
-    name_ar: "FINN التنفيذية",
+    name_ar: "FINN التنفيذي",
     name_en: "FINN Executive",
     initials: "AI",
     icon: Brain,

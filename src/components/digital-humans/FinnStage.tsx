@@ -52,7 +52,7 @@ export function FinnStage({ ar, line_ar, line_en, size = 120, className, framed 
           </div>
         ) : (
           <div className="mt-2 text-sm text-white/55">
-            {ar ? "جاهزة لخدمتك. أستمع للأحداث الحية." : "Standing by. Monitoring live operations."}
+            {ar ? "جاهز لخدمتك. أستمع للأحداث الحية." : "Standing by. Monitoring live operations."}
           </div>
         )}
       </div>

@@ -16,7 +16,7 @@
  *   الموارد   → /sec/assets       الأصول والموارد
  *   المخاطر   → /risk
  *   التقارير  → /sec/reports
- *   الذكاء الاصطناعي → /finn      FINN التنفيذية
+ *   الذكاء الاصطناعي → /finn      FINN التنفيذي
  */
 import { Link } from "@tanstack/react-router";
 import { Moon, Sun } from "lucide-react";
