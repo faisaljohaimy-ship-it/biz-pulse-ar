@@ -1,4 +1,4 @@
-# إطار NEXIOS التشغيلي للامتثال لنظام حماية البيانات الشخصية (PDPL)
+# إطار SADEED التشغيلي للامتثال لنظام حماية البيانات الشخصية (PDPL)
 
 ## نسخة 1.0 · 15 يوليو 2026 · جاهزة للتخصيص التعاقدي
 
@@ -7,7 +7,7 @@
 ## 1. الأطراف والمسؤولية
 
 - **المتحكم:** العميل المسمّى في نموذج الطلب أو اتفاقية الخدمات؛ يحدد أغراض المعالجة ووسائلها.
-- **المعالج:** مشغّل NEXIOS المسمّى في ملحق معالجة البيانات الموقع؛ يعالج البيانات وفق تعليمات المتحكم الموثقة.
+- **المعالج:** مشغّل SADEED المسمّى في ملحق معالجة البيانات الموقع؛ يعالج البيانات وفق تعليمات المتحكم الموثقة.
 - **قناة الخصوصية:** `privacy@neexios.com`.
 - **قناة الحوادث الأمنية:** `security@neexios.com`.
 - **مسؤول الاعتماد:** مالك الخصوصية أو مسؤول حماية البيانات الذي يسجله العميل في سجل تفعيل المستأجر. لا يُنشط الإنتاج قبل تعيينه.
@@ -126,4 +126,4 @@
 
 ### English executive summary
 
-This operational baseline covers the NEXIOS core platform only. It establishes controller/processor roles through the signed Order Form and DPA; activation gates for residency, subprocessors and transfers; 30-day maximum rights handling; a documented retention schedule; and a 72-hour authority-notification workflow where the statutory harm threshold is met. FINN email/SMS requires content-bound human approval, one-time dispatch and signed delivery webhooks. The Hajj module is excluded from this release and requires its own DPIA and retention annex before processing real personal data.
+This operational baseline covers the SADEED core platform only. It establishes controller/processor roles through the signed Order Form and DPA; activation gates for residency, subprocessors and transfers; 30-day maximum rights handling; a documented retention schedule; and a 72-hour authority-notification workflow where the statutory harm threshold is met. FINN email/SMS requires content-bound human approval, one-time dispatch and signed delivery webhooks. The Hajj module is excluded from this release and requires its own DPIA and retention annex before processing real personal data.

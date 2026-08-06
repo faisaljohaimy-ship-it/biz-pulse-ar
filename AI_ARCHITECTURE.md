@@ -1,4 +1,4 @@
-# NEXIOS AI OS — AI Architecture
+# SADEED — AI Architecture
 
 ## Charter v10.0 (Enforced)
 

@@ -16,7 +16,7 @@ import { useI18n } from "@/lib/i18n";
  *   3. FINN energy core — layered conic + radial SVG rings, no boxes, no
  *      generic circles. Reads as living intelligence, not UI chrome.
  *   4. Voice pulse ribbon — deterministic waveform driven by requestAnimationFrame.
- *   5. Cinematic copy stack — headline, lede, CTAs, trust, subordinate NEXIOS.
+ *   5. Cinematic copy stack — headline, lede, CTAs, trust, subordinate SADEED.
  *
  * Performance contract:
  *   - Only transform/opacity/filter animate; zero layout-affecting keyframes.

@@ -7,7 +7,7 @@ obsidian.**
 
 ## Foundation
 
-NEXIOS icons are **stroke icons** (lucide-family grammar): consistent stroke, rounded
+SADEED icons are **stroke icons** (lucide-family grammar): consistent stroke, rounded
 joins, minimal interior detail — they must survive 16px chips and 96px boardroom tiles
 alike. Icons are instruments, not illustrations: they clarify, label and signal; they
 never decorate.

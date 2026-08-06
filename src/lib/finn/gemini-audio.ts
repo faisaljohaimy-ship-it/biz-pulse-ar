@@ -1,7 +1,7 @@
 /**
  * Small, runtime-neutral helpers for Gemini audio requests and responses.
  * Kept free of Node-only APIs so the same code can be tested in the overlay
- * and used by NEXIOS server runtimes without adding another dependency.
+ * and used by SADEED server runtimes without adding another dependency.
  */
 
 export type GeminiAudioBlock = {

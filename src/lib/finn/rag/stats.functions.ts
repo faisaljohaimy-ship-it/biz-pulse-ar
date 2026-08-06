@@ -1,4 +1,4 @@
-// NEXIOS RAG — WS-8. Observability stats for the rag_query_log dashboard.
+// SADEED RAG — WS-8. Observability stats for the rag_query_log dashboard.
 // Server function only. Reads through the authenticated Supabase client so
 // RLS + RESTRICTIVE tenant isolation apply (the caller sees only rows they
 // own within the current org).

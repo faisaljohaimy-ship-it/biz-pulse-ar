@@ -88,7 +88,7 @@ const EXEMPT: ReadonlyMap<string, string> = new Map([
 
 const scanned = globSync("src/**/*.{ts,tsx}").filter((f) => !EXEMPT.has(f));
 
-const ASSETS = ["public/media/nexios-executive-presentation-chapters.vtt", "README.md"];
+const ASSETS = ["public/media/sadeed-executive-presentation-chapters.vtt", "README.md"];
 
 describe("FINN identity — the old name stays off every visible surface", () => {
   it("actually scanned the application source", () => {

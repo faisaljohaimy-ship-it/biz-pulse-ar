@@ -35,6 +35,17 @@ describe("normalizeFinnSpeechText — acronym dictionary (token-bounded)", () =>
       expect(ar(key)).toBe(D[key]);
     }
   });
+  it("never speaks a retired name as itself", () => {
+    // The loop above compares the dictionary against itself, so it would stay
+    // green even if someone mapped NEXIOS back to «نِكْسِيُوس». These two
+    // assert the DECISION: the retired product and assistant names are voiced
+    // as their replacements, never as the names the owner removed.
+    expect(ar("NEXIOS")).toBe("المنصة");
+    expect(ar("ARIA")).toBe("فِنّ");
+    for (const spoken of [ar("NEXIOS"), ar("ARIA")]) {
+      expect(spoken).not.toMatch(/نكس|نِكْس|آريا/);
+    }
+  });
   it("does not rewrite letters inside other words", () => {
     // "AI" must not fire inside "SAID"; no Arabic present → English context.
     expect(normalizeFinnSpeechText("SAID", { lang: "en" }).speech).toBe("SAID");

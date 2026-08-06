@@ -1,4 +1,4 @@
-# بطاقات النشر المباشر — NEXIOS
+# بطاقات النشر المباشر — SADEED
 
 المسار الأساسي هو Cloudflare Workers. لا تبدأ نقل الدومين قبل نجاح نسخة
 تجريبية والتحقق من تسجيل الدخول والبيانات.
@@ -26,7 +26,7 @@
 
 ## ③ أسرار Worker
 
-من Cloudflare **Workers & Pages → NEXIOS → Settings → Variables and Secrets**
+من Cloudflare **Workers & Pages → SADEED → Settings → Variables and Secrets**
 أضف أسرار الخادم المذكورة في `.env.example`. الحد الأدنى العملي:
 
 - `SUPABASE_URL`

@@ -761,41 +761,17 @@ body {
 /* ── 3D Digital Twin globe ─────────────────────────────────── */
 /* Phone in landscape: keep hero + 3D scene visible without scroll-away */
 
-/* ── FINN cinematic orb ───────────────────────────────────── */
-@keyframes aria-orb-spin {
+/* دوران بطيء للحلقات الزخرفية. كان مُستدعى باسم `aria-spin-slow` من ثلاثة
+   مكوّنات بأسلوب مضمّن — وإطاراته غير معرّفة أصلًا، فالحركة لم تعمل يومًا.
+   عُرِّفت هنا باسم النظام، والحارس يطابق سمة `style` لأن الاستدعاء مضمّن
+   ولا صنف له. `rotate` مستقلّة لا `transform` (عقيدة الوضعين §٣). */
+@keyframes nx-spin-slow {
   to {
-    transform: rotate(360deg);
+    rotate: 360deg;
   }
 }
-.aria-orb-ring-a {
-  animation: aria-orb-spin 12s linear infinite;
-  transform-box: fill-box;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .aria-orb-ring-a {
-    animation: none !important;
-  }
-}
-
-/* ============ FINN Executive Hero (Scene 01) ============ */
-:root {
-  --aria-bg: #061a2e;
-  --aria-bg-2: #0b2742;
-  --aria-surface: #123b57;
-  --aria-card: #184e77;
-  --aria-cyan: #00d4ff;
-  --aria-cyan-bright: #3ae8ff;
-  --aria-aqua: #6fffe9;
-  --aria-glow: #00b8d9;
-  --aria-text: #ffffff;
-  --aria-text-soft: #d7eaf4;
-}
-@media (prefers-reduced-motion: reduce) {
-  [class*="aria-float"],
-  [class*="aria-spin"],
-  [class*="aria-pulse"],
-  [class*="aria-tick"] {
+  [style*="nx-spin-slow"] {
     animation: none !important;
   }
 }
@@ -875,48 +851,8 @@ body {
   }
 }
 
-@keyframes aria-breathe {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    filter: brightness(1);
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.015);
-    filter: brightness(1.08);
-  }
-}
-.animate-aria-breathe {
-  animation: aria-breathe 7s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .animate-aria-breathe {
-    animation: none;
-  }
-}
-
-@keyframes aria-sys-breathe {
-  0%,
-  100% {
-    transform: translateX(-50%) scale(1);
-    filter: brightness(1);
-  }
-  50% {
-    transform: translateX(-50%) scale(1.014);
-    filter: brightness(1.07);
-  }
-}
-.animate-aria-sys-breathe {
-  animation: aria-sys-breathe 8s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .animate-aria-sys-breathe {
-    animation: none;
-  }
-}
-
 /* ═══ FINN presence — state-driven CSS (no video, no audio, no canvas) ═══ */
-.aria-presence .aria-glow {
+.finn-presence .finn-glow {
   background: radial-gradient(
     circle,
     rgba(0, 212, 255, 0.22) 0%,
@@ -927,10 +863,10 @@ body {
   transition:
     background 400ms ease,
     transform 400ms ease;
-  animation: aria-glow-idle 8s ease-in-out infinite;
+  animation: finn-glow-idle 8s ease-in-out infinite;
   will-change: opacity, transform;
 }
-.aria-presence .aria-shimmer {
+.finn-presence .finn-shimmer {
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -945,34 +881,34 @@ body {
 }
 
 /* Listening — user typing / mic hot: emerald ring + gentle glow pulse */
-.aria-presence[data-aria-state="listening"] .aria-glow {
+.finn-presence[data-finn-state="listening"] .finn-glow {
   background: radial-gradient(
     circle,
     rgba(52, 211, 153, 0.28) 0%,
     rgba(52, 211, 153, 0.1) 45%,
     transparent 72%
   );
-  animation: aria-glow-listen 1.8s ease-in-out infinite;
+  animation: finn-glow-listen 1.8s ease-in-out infinite;
 }
 /* Thinking — subtle shimmer sweep */
-.aria-presence[data-aria-state="thinking"] .aria-shimmer {
-  animation: aria-shimmer-sweep 2.4s linear infinite;
+.finn-presence[data-finn-state="thinking"] .finn-shimmer {
+  animation: finn-shimmer-sweep 2.4s linear infinite;
 }
-.aria-presence[data-aria-state="thinking"] .aria-glow {
-  animation: aria-glow-think 3s ease-in-out infinite;
+.finn-presence[data-finn-state="thinking"] .finn-glow {
+  animation: finn-glow-think 3s ease-in-out infinite;
 }
 /* Speaking — rhythmic glow pulse synced to speech */
-.aria-presence[data-aria-state="speaking"] .aria-glow {
+.finn-presence[data-finn-state="speaking"] .finn-glow {
   background: radial-gradient(
     circle,
     rgba(0, 212, 255, 0.32) 0%,
     rgba(58, 232, 255, 0.12) 45%,
     transparent 72%
   );
-  animation: aria-glow-speak 620ms ease-in-out infinite;
+  animation: finn-glow-speak 620ms ease-in-out infinite;
 }
 
-@keyframes aria-glow-idle {
+@keyframes finn-glow-idle {
   0%,
   100% {
     opacity: 0.85;
@@ -983,7 +919,7 @@ body {
     transform: translate(-50%, -50%) scale(1.04);
   }
 }
-@keyframes aria-glow-listen {
+@keyframes finn-glow-listen {
   0%,
   100% {
     opacity: 0.75;
@@ -994,7 +930,7 @@ body {
     transform: translate(-50%, -50%) scale(1.08);
   }
 }
-@keyframes aria-glow-think {
+@keyframes finn-glow-think {
   0%,
   100% {
     opacity: 0.7;
@@ -1003,7 +939,7 @@ body {
     opacity: 0.95;
   }
 }
-@keyframes aria-glow-speak {
+@keyframes finn-glow-speak {
   0%,
   100% {
     opacity: 0.85;
@@ -1014,7 +950,7 @@ body {
     transform: translate(-50%, -50%) scale(1.06);
   }
 }
-@keyframes aria-shimmer-sweep {
+@keyframes finn-shimmer-sweep {
   0% {
     opacity: 0;
     transform: translateX(-40%);
@@ -1028,8 +964,8 @@ body {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .aria-presence .aria-glow,
-  .aria-presence .aria-shimmer {
+  .finn-presence .finn-glow,
+  .finn-presence .finn-shimmer {
     animation: none !important;
   }
 }
@@ -1134,7 +1070,7 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   NEXIOS cinematic pulses — gentle glow on active icons + sector color-breathe.
+   SADEED cinematic pulses — gentle glow on active icons + sector color-breathe.
    Pure CSS (GPU-composited box-shadow/opacity), still under reduced-motion.
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -1378,7 +1314,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   NEXIOS Spatial Window System 3.0
+   SADEED Spatial Window System 3.0
    One premium glass language for dialogs, sheets, drawers, menus and fields.
    Kept CSS-native so the visual upgrade adds no runtime JavaScript cost.
    -------------------------------------------------------------------------- */
@@ -1613,13 +1549,13 @@ body {
   }
 }
 
-@keyframes nexus-aria-orbit {
+@keyframes finn-launcher-orbit {
   to {
     transform: rotate(360deg);
   }
 }
 
-@keyframes nexus-aria-pulse {
+@keyframes finn-launcher-pulse {
   0%,
   100% {
     opacity: 0.6;
@@ -1629,7 +1565,7 @@ body {
   }
 }
 
-.nexus-aria-window {
+.finn-window {
   animation: nexus-window-reveal 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
   box-shadow:
     0 48px 120px -42px rgba(0, 0, 0, 0.95),
@@ -1639,7 +1575,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   NEXIOS Identity System 4.0 — sovereign spatial intelligence
+   SADEED Identity System 4.0 — sovereign spatial intelligence
    High-recognition public/activation surfaces with no image dependency.
    -------------------------------------------------------------------------- */
 @keyframes nexus-identity-drift {
@@ -1766,27 +1702,27 @@ body {
   }
 }
 
-.nexus-aria-launcher {
+.finn-launcher {
   isolation: isolate;
   box-shadow:
     0 0 0 1px rgba(111, 255, 233, 0.12),
     0 18px 46px -18px rgba(0, 212, 255, 0.7);
-  animation: nexus-aria-pulse 3.6s ease-in-out infinite;
+  animation: finn-launcher-pulse 3.6s ease-in-out infinite;
 }
 
-.nexus-aria-launcher::before {
+.finn-launcher::before {
   content: "";
   position: absolute;
   inset: -7px;
   z-index: -1;
   border-radius: inherit;
   border: 1px dashed rgba(111, 255, 233, 0.38);
-  animation: nexus-aria-orbit 12s linear infinite;
+  animation: finn-launcher-orbit 12s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nexus-aria-launcher,
-  .nexus-aria-launcher::before {
+  .finn-launcher,
+  .finn-launcher::before {
     animation: none !important;
   }
 }
@@ -2966,7 +2902,7 @@ body {
 .nx-glass-e1,
 .nexus-card,
 .nexus-window,
-.nexus-aria-window {
+.finn-window {
   background-image: linear-gradient(
     115deg,
     transparent 38%,
@@ -2986,7 +2922,7 @@ body {
 .light .nx-glass-e1,
 .light .nexus-card,
 .light .nexus-window,
-.light .nexus-aria-window {
+.light .finn-window {
   background-image: linear-gradient(
     115deg,
     transparent 38%,
@@ -2998,11 +2934,11 @@ body {
 }
 
 /* بطاقة شات FINN — زجاج لامع دائم بحدّ متوهج */
-.nexus-aria-window {
+.finn-window {
   backdrop-filter: blur(22px) saturate(170%);
   border: 2px solid rgba(58, 232, 255, 0.55) !important;
 }
-.light .nexus-aria-window {
+.light .finn-window {
   border-color: rgba(30, 130, 175, 0.6) !important;
 }
 
@@ -3035,7 +2971,7 @@ body {
   .nx-glass-e1,
   .nexus-card,
   .nexus-window,
-  .nexus-aria-window,
+  .finn-window,
   .holo-icon,
   [data-region-glow],
   .holo-icon::after {
@@ -3247,7 +3183,7 @@ body {
 .nx-glass-e1,
 .nexus-card,
 .nexus-window,
-.nexus-aria-window,
+.finn-window,
 .nexus-floating-surface,
 .glass-sidebar,
 .nexus-toast,
@@ -3456,7 +3392,7 @@ body::before {
 
 /* ── Layer 2 · Executive glass framework ─────────────────────────────────── */
 .nx-glass-e1,
-.nexus-aria-window,
+.finn-window,
 [data-slot="card"] {
   position: relative;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.74))
@@ -3601,7 +3537,7 @@ tbody tr:hover {
 
 /* --- Holographic cyan glass on every glass surface --- */
 .nx-glass-e1,
-.nexus-aria-window,
+.finn-window,
 [data-slot="card"] {
   position: relative;
   isolation: isolate;
@@ -3620,7 +3556,7 @@ tbody tr:hover {
 
 /* Continuous gloss sweep */
 .nx-glass-e1::after,
-.nexus-aria-window::after,
+.finn-window::after,
 [data-slot="card"]::after {
   content: "";
   position: absolute;
@@ -3679,7 +3615,7 @@ tbody tr:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .nx-glass-e1::after,
-  .nexus-aria-window::after,
+  .finn-window::after,
   [data-slot="card"]::after,
   .nx-icon-soft,
   .nx-icon-pulse,
@@ -3750,7 +3686,7 @@ body::after {
 
 /* ---- Layer 04 · Optical glass: refraction + internal diffusion ---- */
 .nx-glass-e1,
-.nexus-aria-window,
+.finn-window,
 [data-slot="card"] {
   position: relative;
   isolation: isolate;
@@ -3878,7 +3814,7 @@ tbody tr:hover {
   }
 
   .nx-glass-e1,
-  .nexus-aria-window,
+  .finn-window,
   [data-slot="card"],
   button,
   [data-slot="button"] {
@@ -4055,7 +3991,7 @@ tbody tr:hover {
 .nx-glass-e1,
 .sd-glass-surface,
 .spatial-window,
-.nexus-aria-window {
+.finn-window {
   position: relative;
   isolation: isolate;
 }
@@ -4595,7 +4531,7 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
     opacity: 1;
   }
 }
-.nexus-aria-window {
+.finn-window {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.28),
     0 0 0 10px rgba(6, 182, 212, 0.1),
@@ -4609,12 +4545,12 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
   background-size: 100% 7px;
   opacity: 0.28;
 }
-.nexus-aria-window .nx-holo-scan,
-.nexus-aria-window .nx-holo-noise {
+.finn-window .nx-holo-scan,
+.finn-window .nx-holo-noise {
   display: none !important;
 }
-.nexus-aria-window,
-.nexus-aria-window * {
+.finn-window,
+.finn-window * {
   background-attachment: scroll;
 }
 
@@ -4778,7 +4714,7 @@ html.dark .holo-card,
 html.dark .nx-glass-e1,
 html.dark .nexus-card,
 html.dark .nexus-window,
-html.dark .nexus-aria-window,
+html.dark .finn-window,
 html.dark .nexus-floating-surface,
 html.dark .glass-sidebar,
 html.dark .nexus-toast,

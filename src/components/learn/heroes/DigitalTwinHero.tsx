@@ -168,7 +168,7 @@ export function DigitalTwinHero({ title, subtitle, lang }: Props) {
           <div className="inline-flex items-center gap-2">
             <Radar
               className="h-3.5 w-3.5"
-              style={{ animation: "aria-spin-slow 8s linear infinite" }}
+              style={{ animation: "nx-spin-slow 8s linear infinite" }}
             />
             {ar ? "توأم رقمي مباشر" : "Live digital twin"}
           </div>

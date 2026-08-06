@@ -1,7 +1,7 @@
 /**
  * Thirteen-agent live simulation engine (constitution art. 23).
  *
- * A DETERMINISTIC, seeded reference simulation of the thirteen NEXIOS agents by
+ * A DETERMINISTIC, seeded reference simulation of the thirteen SADEED agents by
  * their registry names. Given the same seed it produces the exact same event
  * sequence every session — so an executive demo is reproducible, never random.
  *

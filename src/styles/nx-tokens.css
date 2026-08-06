@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   NEXIOS Design Tokens — implementation of the Design Constitution
+   SADEED Design Tokens — implementation of the Design Constitution
    (docs/design/) and Component Token ladders (docs/components/14-tokens.md,
    docs/motion/03-animation-tokens.md).
 
@@ -177,7 +177,7 @@
 }
 
 /* ── Holographic icon control (NO glass fill) ───────────────────────────────
-   The icon-button treatment across NEXIOS: the frosted panel behind an icon is
+   The icon-button treatment across SADEED: the frosted panel behind an icon is
    REMOVED (transparent, no backdrop blur) and identity moves to a glowing
    holographic EDGE plus a matching glow on the icon's own strokes. Press is a
    real, felt response — the edge saturates, the halo blooms, the control dips.

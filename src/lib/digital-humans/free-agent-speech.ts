@@ -1,7 +1,7 @@
 /**
  * Governed specialist speech — server-generated ElevenLabs audio only.
  *
- * Owner voice policy: every audible voice in NEXIOS is ElevenLabs "Layan",
+ * Owner voice policy: every audible voice in SADEED is ElevenLabs "Layan",
  * synthesized server-side by /api/finn/tts (the key never reaches the
  * client). Browser TTS is banned in all paths. Specialist narration flows
  * through the SAME governed channel model as before: it must own the

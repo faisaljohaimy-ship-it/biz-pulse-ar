@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — boundary guard.
+ * SADEED FINN Shell — boundary guard.
  *
  * The shell READS from the core and writes ONLY to its own `shell_*` tables.
  * Writing to a core table from the shell is forbidden by construction: any such

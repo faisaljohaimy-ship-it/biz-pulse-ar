@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — telemetry.
+ * SADEED FINN Shell — telemetry.
  *
  * Builds `shell_runs` rows for every selection/execution. Persistence goes
  * through the single runtime write gateway (allowlist + session-derived org_id)

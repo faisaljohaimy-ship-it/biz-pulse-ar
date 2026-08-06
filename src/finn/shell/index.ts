@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — public entry.
+ * SADEED FINN Shell — public entry.
  *
  * The advisory capability layer: a single-source catalog (12 skills + 5 agents),
  * a deterministic selection engine, telemetry, bounded self-adaptation, an eval

@@ -32,7 +32,7 @@ export function CommandBackdrop() {
           filter: "blur(80px)",
         }}
       />
-      {/* Aurora blob 3 (deep NEXIOS teal — third accent) */}
+      {/* Aurora blob 3 (deep SADEED teal — third accent) */}
       <div
         className="cmd-aurora-3 absolute top-[35%] left-[45%] h-[420px] w-[420px] rounded-full"
         style={{
@@ -52,7 +52,7 @@ export function CommandBackdrop() {
             "radial-gradient(ellipse 85% 75% at 50% 40%, black 55%, transparent 100%)",
         }}
       />
-      {/* NEXIOS particle sparkles — pure CSS, no canvas. Radial-gradient
+      {/* SADEED particle sparkles — pure CSS, no canvas. Radial-gradient
          dots layered over the aurora; parallax drift on two z-planes.
          Reduced-motion freezes them entirely. */}
       <div

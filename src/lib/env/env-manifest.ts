@@ -1,6 +1,6 @@
 /**
  * Environment manifest + validator — one declarative source of truth for the
- * environment variables NEXIOS reads, grouped by the capability each powers.
+ * environment variables SADEED reads, grouped by the capability each powers.
  *
  * DOCTRINE (constitution: «FINN لا تتعطل»): the app is designed to DEGRADE, not
  * crash, when a key is absent — a missing provider key must never take the

@@ -1,13 +1,13 @@
 # FINN IMPACT PRIORITY DIRECTIVE
 
-### دستور الأثر التنفيذي الأعلى — NEXIOS / FINN
+### دستور الأثر التنفيذي الأعلى — SADEED / FINN
 
 ### Supreme Executive Impact Constitution — v1.0.0
 
 > **Status:** BINDING · Prompt-as-Law · Loaded by every agent turn
-> **Scope:** Governs every FINN runtime, every NEXIOS surface, every AI decision
+> **Scope:** Governs every FINN runtime, every SADEED surface, every AI decision
 > **Enforcement:** Non-skippable · Sequential · Production-only
-> **Related law:** `NEXUS_ENGINEERING_CONSTITUTION.md` · `FINN_MASTER_CONSTITUTION.md` · `NEXUS_READINESS_PROMPT.md`
+> **Related law:** `SADEED_ENGINEERING_CONSTITUTION.md` · `FINN_MASTER_CONSTITUTION.md` · `SADEED_READINESS_PROMPT.md`
 
 ---
 
@@ -237,9 +237,9 @@ Every cycle writes to `aria_evolution_cycles` and, when confidence ≥ 0.85, pro
 
 ## FINAL OBJECTIVE / الهدف النهائي
 
-> Transform **NEXIOS** into a world-class **Enterprise AI Operating System** where **FINN** becomes a **living executive intelligence** capable of **understanding**, **reasoning**, **orchestrating**, **visualizing**, and **supporting** enterprise operations through a **premium, production-ready** experience.
+> Transform **SADEED** into a world-class **Enterprise AI Operating System** where **FINN** becomes a **living executive intelligence** capable of **understanding**, **reasoning**, **orchestrating**, **visualizing**, and **supporting** enterprise operations through a **premium, production-ready** experience.
 
-> تحويل **NEXIOS** إلى **نظام تشغيل ذكاء مؤسسي عالمي** تُصبح فيه **FINN** **ذكاءً تنفيذياً حياً** يفهم ويُحلّل ويُدير ويُنفّذ ويُقدّم تجربة إنتاجية فاخرة.
+> تحويل **SADEED** إلى **نظام تشغيل ذكاء مؤسسي عالمي** تُصبح فيه **FINN** **ذكاءً تنفيذياً حياً** يفهم ويُحلّل ويُدير ويُنفّذ ويُقدّم تجربة إنتاجية فاخرة.
 
 ---
 

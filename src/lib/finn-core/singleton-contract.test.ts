@@ -76,7 +76,9 @@ describe("FINN singleton release contract", () => {
     ]) {
       const contents = source(component);
       expect(contents).toContain("useFinn");
-      expect(contents).not.toMatch(/useChat|DefaultChatTransport|\/api\/learn\/aria-teach/);
+      // المسار القديم `/api/learn/aria-teach` حُذف؛ الحارس يلاحق الآن المسار
+      // الحقيقي — فالمقصود منع نداء مباشر للنقطة، لا منع اسم مهجور.
+      expect(contents).not.toMatch(/useChat|DefaultChatTransport|\/api\/learn\/finn-teach/);
     }
   });
 

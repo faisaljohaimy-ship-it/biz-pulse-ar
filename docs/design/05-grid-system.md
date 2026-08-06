@@ -1,12 +1,12 @@
 # Chapter 05 — Grid System
 
-**The 8pt law, the responsive grid, and the spacing vocabulary of NEXIOS.**
+**The 8pt law, the responsive grid, and the spacing vocabulary of SADEED.**
 
 ---
 
 ## The 8pt Grid — قانون الثمانية
 
-Every dimension in NEXIOS — spacing, sizing, radii, row heights — is a multiple of
+Every dimension in SADEED — spacing, sizing, radii, row heights — is a multiple of
 **8px**, with **4px** permitted only _inside_ components (icon-to-label gaps, chip
 padding). Reasoning: one modular unit makes every screen rhythmically identical, makes
 handoff arithmetic trivial, and scales cleanly across densities (8 → 8/16/24… survives

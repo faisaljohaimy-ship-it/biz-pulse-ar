@@ -1,6 +1,6 @@
 # Chapter 08 — Card System
 
-**The eight canonical cards. Every card in NEXIOS is one of these or a constitutional
+**The eight canonical cards. Every card in SADEED is one of these or a constitutional
 amendment.**
 
 ---

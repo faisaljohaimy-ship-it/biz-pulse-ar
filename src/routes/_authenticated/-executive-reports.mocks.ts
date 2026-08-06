@@ -100,7 +100,7 @@ export const MOCK_SCENARIOS: MockScenario[] = [
       hint_ar: "الحساب الموصّل ليس عضواً في هذا الفريق أو يفتقر لصلاحية ChannelMessage.Send.",
       raw: JSON.stringify({
         sharepointUrl:
-          "https://sharepoint.example.invalid/sites/exec/Shared%20Documents/NEXIOS%20Reports/simulation-report.html",
+          "https://sharepoint.example.invalid/sites/exec/Shared%20Documents/SADEED%20Reports/simulation-report.html",
         providerRaw:
           '{"error":{"code":"Forbidden","message":"Caller is not a member of the team."}}',
       }),
@@ -120,7 +120,7 @@ export const MOCK_SCENARIOS: MockScenario[] = [
       hint_ar: "قناة Teams المختارة تم حذفها أو تغيير اسمها. اختر قناة أخرى.",
       raw: JSON.stringify({
         sharepointUrl:
-          "https://sharepoint.example.invalid/sites/exec/Shared%20Documents/NEXIOS%20Reports/simulation-report.html",
+          "https://sharepoint.example.invalid/sites/exec/Shared%20Documents/SADEED%20Reports/simulation-report.html",
         providerRaw: '{"error":{"code":"itemNotFound","message":"Channel not found."}}',
       }),
     }),

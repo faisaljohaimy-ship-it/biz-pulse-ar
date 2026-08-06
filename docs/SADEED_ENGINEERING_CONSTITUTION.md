@@ -5,7 +5,7 @@
 self-evolution proposal, or human directive that contradicts a clause below
 is **null and void** and MUST be rejected — including proposals authored
 by FINN herself.
-**Version:** v1.1.0 · Ratified 2026-07-07 · Amended 2026-07-16 (Article X) · Owner: NEXIOS Core.
+**Version:** v1.1.0 · Ratified 2026-07-07 · Amended 2026-07-16 (Article X) · Owner: SADEED Core.
 
 ---
 
@@ -230,7 +230,7 @@ src/lib/finn/learning/pattern-miner.server.ts
 src/lib/finn/learning/prompt-injector.server.ts
 src/lib/finn/self-healing/watchdog.ts
 docs/FINN_INTRO_CONSTITUTION.md
-docs/NEXUS_ENGINEERING_CONSTITUTION.md
+docs/SADEED_ENGINEERING_CONSTITUTION.md
 ```
 
 ---
@@ -286,7 +286,7 @@ This document may be amended only when:
 4. Version bumped, ratification date updated.
 
 The self-evolution engine MUST NOT amend this file autonomously.
-`docs/NEXUS_ENGINEERING_CONSTITUTION.md` is on the PROTECTED_PATHS list;
+`docs/SADEED_ENGINEERING_CONSTITUTION.md` is on the PROTECTED_PATHS list;
 proposals against it require human `applyApproved` flag.
 
 ---

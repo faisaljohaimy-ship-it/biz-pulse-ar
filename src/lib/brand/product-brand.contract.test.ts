@@ -102,15 +102,13 @@ const ALLOWED_TECHNICAL = new Set([
   "src/finn/runtime/executive/workspace.ts",
   "src/finn/runtime/executive/persistence.ts",
   "src/finn/runtime/executive/executive.test.ts",
-  // Category D — «NEXIOS Reports» is a live SharePoint FOLDER already holding
-  // published reports. The folder name is a storage path, not a display name;
-  // renaming it strands every report filed to date.
-  "src/routes/_authenticated/executive-reports.tsx",
-  "src/routes/_authenticated/-executive-reports.mocks.ts",
-  // Same folder, reached through the Graph upload path. Only the backstop pass
-  // caught these two — the literal tokeniser had swallowed them.
-  "src/lib/sharepoint.functions.ts",
-  "src/lib/exec-reports.functions.ts",
+  // ── الاستثناء المُلغى ٢٠٢٦/٠٨/٠٦ ──
+  // كانت أربعة ملفات معفاة هنا لأجل مجلّد SharePoint «NEXIOS Reports»: تقرأ
+  // الإعفاء أنه «مسار تخزين لا اسم عرض»، وكان نصفه صحيحًا — والنصف الآخر أن
+  // الاسم كان **يُطبع على الشاشة** في نموذج النشر. أُخرجت الأربعة من الإعفاء
+  // بعد أن صار المجلّد قيمة واحدة في `src/lib/sharepoint-report-folder.ts`،
+  // فالحارس صار يحميها بدل أن يستثنيها. ما نُشر سابقًا لم يُنقل ولم يُحذف،
+  // وروابطه المطلقة المحفوظة تعمل كما هي.
   // Matches text inside an existing constitution document by its literal
   // heading. The matcher must keep the document's actual wording.
   "src/lib/finn/self-evolution/engine.server.ts",

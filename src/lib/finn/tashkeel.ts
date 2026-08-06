@@ -1,7 +1,7 @@
 /**
  * Arabic tashkeel (diacritics) — single source of truth.
  *
- * NEXIOS doctrine: FINN's spoken output keeps full Arabic diacritics so the
+ * SADEED doctrine: FINN's spoken output keeps full Arabic diacritics so the
  * TTS layer (ElevenLabs Layan) pronounces Modern Standard Arabic correctly,
  * while the on-screen text stays clean and undiacritized. The diacritized
  * form is authoritative; the display form is derived by stripping the marks.

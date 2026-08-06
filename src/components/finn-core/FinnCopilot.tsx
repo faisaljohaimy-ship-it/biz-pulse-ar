@@ -315,9 +315,9 @@ function FinnPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
   return (
     <div
       aria-hidden
-      data-aria-state={state}
+      data-finn-state={state}
       data-conv-mode={convMode ? "on" : "off"}
-      className="aria-presence absolute inset-0 overflow-hidden pointer-events-none"
+      className="finn-presence absolute inset-0 overflow-hidden pointer-events-none"
       style={{ background: "#04070F" }}
     >
       {/* Phase 0 — FINN cinematic signature (the visual brand of the window). */}
@@ -347,7 +347,7 @@ function FinnPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
             "linear-gradient(to bottom, rgba(4,7,15,0.15) 0%, rgba(4,7,15,0.55) 55%, rgba(4,7,15,0.85) 100%)",
         }}
       />
-      <div className="aria-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+      <div className="finn-glow absolute left-1/2 top-[38%] h-[70%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full" />
       {convMode && (
         <div
           className="absolute left-1/2 top-[30%] h-[60%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full motion-reduce:hidden"
@@ -1882,7 +1882,7 @@ export function FinnCopilot() {
           // الزران في ركن واحد على أحد الاتجاهين.
           className={cn(
             "fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] end-6 z-50 flex h-14 w-14 items-center justify-center",
-            "nexus-aria-launcher rounded-full border border-primary/45 bg-card/80 text-primary backdrop-blur-xl",
+            "finn-launcher rounded-full border border-primary/45 bg-card/80 text-primary backdrop-blur-xl",
             "transition-all hover:scale-105 hover:border-primary",
             "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
           )}
@@ -1919,7 +1919,7 @@ export function FinnCopilot() {
             dir="rtl"
             className={cn(
               // Perfectly centered on every device: phone, tablet, laptop.
-              "nexus-window nexus-aria-window pointer-events-auto relative flex flex-col overflow-hidden rounded-[1.7rem]",
+              "nexus-window finn-window pointer-events-auto relative flex flex-col overflow-hidden rounded-[1.7rem]",
               "w-[min(96vw,760px)]",
               "h-[min(86dvh,760px)] max-h-full",
             )}

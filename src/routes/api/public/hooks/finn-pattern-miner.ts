@@ -1,6 +1,6 @@
 /**
  * Nightly FINN pattern miner cron target.
- * Article IV §2 of docs/NEXUS_ENGINEERING_CONSTITUTION.md.
+ * Article IV §2 of docs/SADEED_ENGINEERING_CONSTITUTION.md.
  *
  * Called by pg_cron once per day. Authenticated via CRON_HOOK_SECRET
  * (timing-safe) — the legacy SUPABASE_PUBLISHABLE_KEY guard was removed

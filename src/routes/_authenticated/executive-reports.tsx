@@ -19,6 +19,10 @@ import { publishExecutiveReport } from "@/lib/exec-reports.functions";
 import type { PublishErrorEnvelope } from "@/lib/exec-reports.functions";
 import { getCurrentUserIsAdmin } from "@/lib/authz.functions";
 import {
+  SHAREPOINT_REPORT_FOLDER,
+  SHAREPOINT_REPORT_FOLDER_SEGMENT,
+} from "@/lib/sharepoint-report-folder";
+import {
   AlertTriangle,
   FileText,
   Send,
@@ -286,7 +290,7 @@ function ExecutiveReportsPage() {
     const filename = `${safeTitle}-${stamp.slice(0, 10)}.html`;
     const siteHost = "sharepoint.example.invalid";
     const sitePath = "/sites/exec";
-    const webUrl = `https://${siteHost}${sitePath}/Shared%20Documents/NEXIOS%20Reports/${encodeURIComponent(filename)}`;
+    const webUrl = `https://${siteHost}${sitePath}/Shared%20Documents/${SHAREPOINT_REPORT_FOLDER_SEGMENT}/${encodeURIComponent(filename)}`;
     const shareUrl = `https://${siteHost}/:b:/s/exec/${newRequestId().replace(/-/g, "").slice(0, 22)}`;
     const teamsMessageId = `${Date.now()}`;
     const teamsMessageUrl = `https://teams.microsoft.com/l/message/19%3Amock-channel%40thread.tacv2/${teamsMessageId}?tenantId=mock-tenant&groupId=mock-group&parentMessageId=${teamsMessageId}`;
@@ -458,7 +462,7 @@ function ExecutiveReportsPage() {
           <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">
               {isAr ? "سيُحفظ في" : "Saves into"}{" "}
-              <code className="text-foreground">/NEXIOS Reports/</code>
+              <code className="text-foreground">/{SHAREPOINT_REPORT_FOLDER}/</code>
             </div>
             <Button
               onClick={onPublish}

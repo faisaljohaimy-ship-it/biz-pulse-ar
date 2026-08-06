@@ -6,7 +6,7 @@
 
 ## Philosophy of adaptation
 
-NEXIOS does not shrink to fit — it **re-prioritizes**. The tier ladder (Chapter 05) sets
+SADEED does not shrink to fit — it **re-prioritizes**. The tier ladder (Chapter 05) sets
 the grid; this chapter sets _what survives_ at each size. The invariant across all sizes:
 the executive question sequence (Chapter 09) remains answerable, in order, without
 horizontal scrolling, in RTL.

@@ -1,4 +1,4 @@
-# NEXIOS Motion & Cinematic System — نظام الحركة السينمائي
+# SADEED Motion & Cinematic System — نظام الحركة السينمائي
 
 **Version 1.0 · Status: RATIFIED · Parent law: [Design Constitution](../design/00-INDEX.md) · Sibling law: [Component Library](../components/00-INDEX.md)**
 
@@ -6,9 +6,9 @@
 
 ## What this is
 
-The official motion language of NEXIOS: how the OS moves, breathes and responds. Motion
+The official motion language of SADEED: how the OS moves, breathes and responds. Motion
 here is a _communication channel_ — every animation reports system state, guides
-attention, or confirms an action. Decoration-only motion does not exist in NEXIOS.
+attention, or confirms an action. Decoration-only motion does not exist in SADEED.
 
 This phase is **specification only**: no implementation, no page changes, no
 architecture changes. It deepens the motion budget already ratified (Component Standards

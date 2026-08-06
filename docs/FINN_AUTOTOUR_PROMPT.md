@@ -11,7 +11,7 @@
 ## 1 · Mission
 
 Turn the uploaded FINN narration (≈8:19, portrait 9:16, AR audio) into a
-self-driving executive tour of the entire NEXIOS platform: as FINN
+self-driving executive tour of the entire SADEED platform: as FINN
 describes each of the 32 surfaces, the corresponding window opens **by
 itself** inside the tour viewport, in perfect timing with her voice —
 no operator interaction required.
@@ -46,7 +46,7 @@ no operator interaction required.
 │  /aria/tour shell (parent)                                        │
 │  ┌────────────────────────────────────────────┐  ┌─────────────┐ │
 │  │  <iframe src={current.route} />            │  │  <video>    │ │
-│  │  Live NEXIOS viewport                      │  │  FINN MP4   │ │
+│  │  Live SADEED viewport                      │  │  FINN MP4   │ │
 │  │  (authenticated session inherited)         │  │  master     │ │
 │  │                                            │  │  clock      │ │
 │  └────────────────────────────────────────────┘  └─────────────┘ │

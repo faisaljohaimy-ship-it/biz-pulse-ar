@@ -1,4 +1,4 @@
-// NEXIOS RAG — WS-8. لوحة مراقبة استعلامات RAG (بوابة الأدلة، زمن الاستجابة،
+// SADEED RAG — WS-8. لوحة مراقبة استعلامات RAG (بوابة الأدلة، زمن الاستجابة،
 // أفضل الاستعلامات، آخر السجلات). قراءة فقط عبر rag_query_log مع عزل المستأجر.
 
 import { createFileRoute } from "@tanstack/react-router";

@@ -22,20 +22,20 @@ describe("output architecture — no raw model path may return", () => {
     expect(src).not.toMatch(/\.toUIMessageStreamResponse\(/);
   });
 
-  it("aria/chat.ts no longer proxies the raw provider stream body", () => {
+  it("finn/chat.ts no longer proxies the raw provider stream body", () => {
     const src = read("src/routes/api/finn/chat.ts");
     expect(src).toMatch(/finalizeFinnOutput/);
     expect(src).toMatch(/renderForUI/);
     expect(src).not.toMatch(/new Response\(\s*openAIResponse\.body/);
   });
 
-  it("public/aria-stream.ts revalidates buffered text (no per-token forward)", () => {
+  it("public/finn-stream.ts revalidates buffered text (no per-token forward)", () => {
     const src = read("src/routes/api/public/finn-stream.ts");
     expect(src).toMatch(/revalidateSpeakableText/);
     expect(src).not.toMatch(/send\(\{\s*delta\s*\}\)/);
   });
 
-  it("learn/aria-teach.ts buffers via generateText (no raw streamText passthrough)", () => {
+  it("learn/finn-teach.ts buffers via generateText (no raw streamText passthrough)", () => {
     const src = read("src/routes/api/learn/finn-teach.ts");
     expect(src).toMatch(/generateText/);
     expect(src).toMatch(/revalidateSpeakableText/);

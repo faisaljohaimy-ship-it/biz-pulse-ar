@@ -2,7 +2,7 @@
  * NxLayerStack · مكدّس الطبقات — spec: docs/design/03 §5 (layer palette) +
  * docs/components/07 (chips as panel-grade surfaces).
  *
- * The five architectural strata of the NEXIOS runtime rendered as a closed
+ * The five architectural strata of the SADEED runtime rendered as a closed
  * chip row. Purely presentational: the runtime itself is frozen — this is a
  * mirror, never a control surface. Pulse is licensed only on the active
  * layer (presence loop, motion doc 03); everything else is static.

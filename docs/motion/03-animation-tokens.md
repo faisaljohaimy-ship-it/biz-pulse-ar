@@ -88,7 +88,7 @@ interruptible mid-flight (drags, dismissable sheets); otherwise use duration tok
 | `nx-ticker-track` | seamless track translate (−50%)        | event ticker (v1.0.1 amendment) |
 
 New keyframes require a motion-system amendment — the vocabulary is closed so every
-screen _moves_ recognizably NEXIOS.
+screen _moves_ recognizably SADEED.
 
 ## Reduced-motion mapping (token-level)
 

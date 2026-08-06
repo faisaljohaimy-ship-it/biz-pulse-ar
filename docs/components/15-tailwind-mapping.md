@@ -1,6 +1,6 @@
 # 15 — Tailwind Mapping · ربط Tailwind
 
-**How the token system becomes utilities. NEXIOS uses Tailwind v4 CSS-first theming —
+**How the token system becomes utilities. SADEED uses Tailwind v4 CSS-first theming —
 the existing `src/styles.css` `@theme`/token structure is the single mapping point.
 This doc specifies the mapping; implementation lands in a later phase.**
 
@@ -52,7 +52,7 @@ duplicate raw values — one source, two spellings.
 
 ## Dark mode rules
 
-NEXIOS is **dark-first and dark-only in v1**: the obsidian theme is the root theme, not
+SADEED is **dark-first and dark-only in v1**: the obsidian theme is the root theme, not
 a `.dark` variant. Therefore:
 
 - No `dark:` variants in nx components — they would imply a light default that doesn't

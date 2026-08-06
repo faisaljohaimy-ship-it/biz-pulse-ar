@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — 30 evaluation cases.
+ * SADEED FINN Shell — 30 evaluation cases.
  *
  * Each case is a realistic Arabic task with the skill that MUST be selected and
  * whether it involves a human-gated action. The runner asserts: selection

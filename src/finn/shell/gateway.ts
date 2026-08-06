@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — the single mandatory runtime write gateway.
+ * SADEED FINN Shell — the single mandatory runtime write gateway.
  *
  * EVERY shell-originated write (insert/update/upsert/delete/rpc) MUST pass
  * through here. Enforcement is an ALLOWLIST with default-deny:

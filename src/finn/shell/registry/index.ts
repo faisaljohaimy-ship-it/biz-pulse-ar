@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — registry + deterministic selection engine.
+ * SADEED FINN Shell — registry + deterministic selection engine.
  *
  * Builds the capability index, validates it (catalog size, dangling agent→skill
  * refs, near-duplicate descriptions), and selects the top-K skills for a task by

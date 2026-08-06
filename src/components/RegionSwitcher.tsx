@@ -2,7 +2,7 @@
  * RegionSwitcher — compact four-way picker for the Industrial Security
  * regional administrations. Selecting a region sets the active sector via
  * `useRegion().setRegion()` and navigates to `/sec`, which reads the same
- * context so the entire Nexios system boots into the chosen region.
+ * context so the entire SADEED system boots into the chosen region.
  */
 import { useNavigate } from "@tanstack/react-router";
 import { MapPin, ChevronDown } from "lucide-react";

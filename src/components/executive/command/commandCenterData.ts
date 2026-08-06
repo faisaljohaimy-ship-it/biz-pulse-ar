@@ -1,5 +1,5 @@
 /**
- * Command-center data model — the four regional panels of the unified NEXIOS
+ * Command-center data model — the four regional panels of the unified SADEED
  * command center (the poster). Values mirror the executive poster and are
  * labelled «محاكاة» in the UI. Every module route is a REAL existing route so
  * every icon is active.

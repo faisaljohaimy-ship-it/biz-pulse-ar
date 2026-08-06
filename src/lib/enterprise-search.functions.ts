@@ -154,7 +154,10 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
               meta: `${r.mime_type ?? "doc"} · ${r.status}`,
               ref: (r.tags ?? []).join(", ") || null,
               at: r.updated_at,
-              href: `/aria-documents?doc=${r.id}`,
+              // `/aria-documents` لم يوجد قط كمسار — كل نتيجة بحث في هذا
+              // المصدر كانت تفتح 404. المسار الحقيقي `/finn-documents`.
+              // (`source: "aria_document"` يبقى: اسم جدول القاعدة الحيّ.)
+              href: `/finn-documents?doc=${r.id}`,
             })),
           ),
       );

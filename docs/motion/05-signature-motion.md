@@ -1,6 +1,6 @@
 # 05 — Signature Motion · الحركة المميِّزة
 
-**The four signatures that make NEXIOS unmistakable: FINN's presence, the runtime
+**The four signatures that make SADEED unmistakable: FINN's presence, the runtime
 pipeline flow, the living twin, and the holographic effects vocabulary. Sections 05–07, 13.**
 
 ---

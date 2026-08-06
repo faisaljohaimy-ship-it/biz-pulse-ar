@@ -13,7 +13,7 @@ tools: Read, Grep, Glob, Bash
 
 `src/lib/finn/response-contract.ts` · `pronunciation.ts` ·
 `reply-modality.ts` · `src/routes/api/chat.ts` (نقاط القصر short‑circuit).
-الدستور: `NEXIOS_CONSTITUTION.md` المادة ٢٢.
+الدستور: `SADEED_CONSTITUTION.md` المادة ٢٢.
 
 ## بنود التدقيق (جدول ✓/✗ إلزامي)
 

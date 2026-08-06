@@ -1,4 +1,4 @@
-# NEXIOS · WORLD-CLASS EXECUTIVE DASHBOARD DIRECTIVE
+# SADEED · WORLD-CLASS EXECUTIVE DASHBOARD DIRECTIVE
 
 > **Prompt of Record — Principal AI Software Architect Mandate**
 > **Target surface:** `/os` (Enterprise Operating System — first screen of the platform)

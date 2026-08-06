@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — proposal authorization (single source of truth).
+ * SADEED FINN Shell — proposal authorization (single source of truth).
  *
  * Policy = ADMIN_ONLY_APPROVAL, the safest reading of the current spec:
  *

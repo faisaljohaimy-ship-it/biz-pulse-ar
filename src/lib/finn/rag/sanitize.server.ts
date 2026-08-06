@@ -1,4 +1,4 @@
-// NEXIOS RAG — sanitization & rate-limiting (WS-7). Server-only.
+// SADEED RAG — sanitization & rate-limiting (WS-7). Server-only.
 // Two responsibilities:
 //   1. Redact PII (KSA phones, national IDs, emails) from chunk content
 //      BEFORE it is embedded/stored, and from retrieved snippets BEFORE

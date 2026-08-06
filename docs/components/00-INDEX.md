@@ -1,4 +1,4 @@
-# NEXIOS Component Library — فهرس المكوّنات الرسمي
+# SADEED Component Library — فهرس المكوّنات الرسمي
 
 **Version 1.0 · Status: RATIFIED · Parent law: [`/docs/design/`](../design/00-INDEX.md) (Design Constitution v1.0)**
 
@@ -6,7 +6,7 @@
 
 ## What this is
 
-The official NEXIOS Enterprise Component Library. Every screen in the system — current
+The official SADEED Enterprise Component Library. Every screen in the system — current
 and future — is composed **only** from components specified here. One visual language,
 one operating system. This library _instantiates_ the Design Constitution: where the
 Constitution defines law (colors, depth, grid, type), this library defines the parts
@@ -63,4 +63,4 @@ Constitution's card chapter established).
 Reusable (no page-specific logic) · Scalable (density registers, not forks) · Responsive
 (390 → 4K contracts) · Accessible (WCAG 2.1 AA minimum, AAA text) · Animated within the
 motion budget · RTL-native with LTR embedding · One-OS feel (passes the "does it look
-like NEXIOS?" review question with no context given).
+like SADEED?" review question with no context given).

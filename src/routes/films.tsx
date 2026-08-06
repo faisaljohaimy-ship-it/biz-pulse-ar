@@ -10,7 +10,7 @@ import cinematicEarth from "@/assets/cinematic-earth.webp";
 import investorAr from "@/assets/films/investor-ar.mp4.asset.json";
 import investorEn from "@/assets/films/investor-en.mp4.asset.json";
 import walkthroughSrc from "@/assets/films/walkthrough.mp4.asset.json";
-import finnSrc from "@/assets/films/aria.mp4.asset.json";
+import finnSrc from "@/assets/films/finn.mp4.asset.json";
 import digitalTwinSrc from "@/assets/films/digital-twin.mp4.asset.json";
 import boardroomSrc from "@/assets/films/boardroom.mp4.asset.json";
 import analyticsSrc from "@/assets/films/analytics.mp4.asset.json";

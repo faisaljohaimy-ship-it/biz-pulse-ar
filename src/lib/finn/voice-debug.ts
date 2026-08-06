@@ -3,7 +3,7 @@
  * VOICE_DEBUG corner badge so we can SEE (not guess) which engine is
  * speaking at any instant: Gemini, browser fallback, or greeting. Amber
  * flashes indicate a failure/fallback. `elevenlabs` remains in the union only
- * so older debug badges in the parent NEXIOS project continue to compile.
+ * so older debug badges in the parent SADEED project continue to compile.
  */
 export type VoiceSource = "gemini" | "elevenlabs" | "browser" | "greeting";
 export type VoiceEvent = {

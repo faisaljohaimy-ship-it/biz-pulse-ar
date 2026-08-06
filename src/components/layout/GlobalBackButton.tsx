@@ -1,25 +1,37 @@
 import { useCallback } from "react";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useCanGoBack, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Home } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 /**
  * Global back control — shown on every page except the home shell.
  * RTL-safe: the arrow points right in Arabic, left in English.
+ *
+ * **الرجوع لا يغادر النظام (إصلاح ٢٠٢٦/٠٨/٠٦).** كان الزر يستدعي
+ * `window.history.back()` متى كان `window.history.length > 1`، وهذا الطول
+ * يَعُدّ **تاريخ التبويب كله** لا تاريخ التطبيق: أي صفحة زارها المستخدم في
+ * التبويب نفسه قبل فتح سَدِيد تبقى مُدخلًا صالحًا. فإن كانت تلك المُدخلة نسخة
+ * قديمة من الموقع (نسخة ما قبل إعادة التسمية مثلًا) أعادها المتصفح من ذاكرة
+ * التنقّل (bfcache) كما هي — فيرى المالك «الشكل القديم» عائدًا وكأن النظام
+ * ارتدّ، بينما البناء الحالي لم يتغيّر إطلاقًا.
+ *
+ * `useCanGoBack()` يسأل مكدّس المسيّر نفسه: هل دفع **هذا التطبيق** مُدخلة
+ * يمكن الرجوع إليها؟ إن لا — فالرجوع الوحيد الآمن هو الرئيسية.
  */
 export function GlobalBackButton() {
   const navigate = useNavigate();
+  const canGoBack = useCanGoBack();
   const { locale } = useI18n();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isRtl = locale === "ar";
 
   const goBack = useCallback(() => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
+    if (canGoBack) {
       window.history.back();
       return;
     }
     void navigate({ to: "/" });
-  }, [navigate]);
+  }, [canGoBack, navigate]);
 
   if (pathname === "/" || pathname === "" || pathname === "/index") return null;
 

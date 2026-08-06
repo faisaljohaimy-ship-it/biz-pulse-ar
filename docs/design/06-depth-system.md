@@ -1,12 +1,12 @@
 # Chapter 06 — Depth System
 
-**Elevation, glass depth, blur, glow, shadow, holographic depth — the physics of NEXIOS.**
+**Elevation, glass depth, blur, glow, shadow, holographic depth — the physics of SADEED.**
 
 ---
 
 ## The model
 
-NEXIOS depth simulates a **dark control room with one soft overhead light**: surfaces
+SADEED depth simulates a **dark control room with one soft overhead light**: surfaces
 closer to the viewer are slightly lighter, blur what's behind them, and cast soft
 obsidian shadows downward. Depth is _informational_ — elevation communicates interaction
 proximity, glass communicates context-over-world, glow communicates live meaning.

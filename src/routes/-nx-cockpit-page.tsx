@@ -1,5 +1,5 @@
 /**
- * ExecutiveCockpitPage (exported as NxCockpitPage) — the NEXIOS executive
+ * ExecutiveCockpitPage (exported as NxCockpitPage) — the SADEED executive
  * cockpit, colocated as a non-route helper (dash prefix) so the router
  * auto-code-splits the route out of the entry bundle.
  *

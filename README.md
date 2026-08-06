@@ -63,7 +63,7 @@ Cloudflare Workers هو هدف الإنتاج الأساسي. راجع [DEPLOYME
 - [TESTING.md](TESTING.md) — بوابات الجودة والاختبارات الحية
 - [KNOWN_EXTERNAL_DEPENDENCIES.md](KNOWN_EXTERNAL_DEPENDENCIES.md) — الخدمات الخارجية وحالات fallback
 - [RELEASE_NOTES.md](RELEASE_NOTES.md) — ملاحظات الإصدار
-- [docs/NEXIOS_PDPL_COMPLIANCE.md](docs/NEXIOS_PDPL_COMPLIANCE.md) — إطار PDPL وبوابة التفعيل
+- [docs/SADEED_PDPL_COMPLIANCE.md](docs/SADEED_PDPL_COMPLIANCE.md) — إطار PDPL وبوابة التفعيل
 - [docs/PDPL_PRODUCTION_REGISTER.md](docs/PDPL_PRODUCTION_REGISTER.md) — سجل حقائق الإطلاق الإلزامية
 
 البيانات الظاهرة داخل صورة مركز القيادة نموذجية للعرض؛ الأزرار الشفافة

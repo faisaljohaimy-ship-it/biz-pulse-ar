@@ -52,7 +52,7 @@ ships **328 non-API routes**; the real equivalents are `/sec`, `/projects`,
 | Horizontal overflow               | 0 (already clean — a pre-existing `overflow-x: hidden` guard)                                    |
 | WebGL capability detection        | **absent** — `canUseWebGL` in 0 files; 4 unguarded `<Canvas>` mounts                             |
 | Supabase health truthfulness      | **misleading** — «الأنظمة متصلة» hard-coded at `FourRegionHub.tsx:258`, independent of any probe |
-| Identity strings                  | ARIA 48 · NEXIOS 253 · NEEXIOS 1 · "Nexus AI OS" 37 · «FINN جاهزة» 2 · «FINN الموحّدة» 2         |
+| Identity strings                  | ARIA 48 · SADEED 253 · NEEXIOS 1 · "Nexus AI OS" 37 · «FINN جاهزة» 2 · «FINN الموحّدة» 2         |
 | Global reduced-motion honouring   | absent                                                                                           |
 | Global focus-visible ring         | absent                                                                                           |
 | Touch-target floor                | none — no global rule at any breakpoint                                                          |

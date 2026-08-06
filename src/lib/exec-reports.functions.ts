@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError } from "@/lib/api";
 import { hasPlatformRole } from "@/lib/authz.server";
+import { SHAREPOINT_REPORT_FOLDER_SEGMENT } from "@/lib/sharepoint-report-folder";
 
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
 const TEAMS_GW = "https://connector-gateway.lovable.dev/microsoft_teams";
@@ -377,7 +378,7 @@ export const publishExecutiveReport = createServerFn({ method: "POST" })
     // ── 1. Upload to SharePoint ──────────────────────────────────────────────
     const uploadPath = `/sites/${encodeURIComponent(
       data.siteId,
-    )}/drive/root:/NEXIOS%20Reports/${encodeURIComponent(filename)}:/content`;
+    )}/drive/root:/${SHAREPOINT_REPORT_FOLDER_SEGMENT}/${encodeURIComponent(filename)}:/content`;
     let up: Response;
     try {
       up = await httpFetch(`${SP_GW}${uploadPath}`, {

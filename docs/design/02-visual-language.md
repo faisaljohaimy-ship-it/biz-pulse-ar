@@ -1,6 +1,6 @@
 # Chapter 02 — Visual Language
 
-**The Executive Design Language: how NEXIOS surfaces are built, layered and read.**
+**The Executive Design Language: how SADEED surfaces are built, layered and read.**
 
 ---
 
@@ -14,12 +14,12 @@ flowchart TB
 ```
 
 Four strata, always in this order. The canvas is darkest and stillest; each stratum above
-it is lighter, livelier and rarer. Reading any NEXIOS screen means descending from light
+it is lighter, livelier and rarer. Reading any SADEED screen means descending from light
 (what matters now) into glass (the working context) into night (everything else).
 
 ## Glassmorphism — الزجاج التنفيذي
 
-Glass is NEXIOS's working material: panels are translucent so _depth is information_ —
+Glass is SADEED's working material: panels are translucent so _depth is information_ —
 you always sense there is a world behind the panel you're using.
 
 Rules of glass:
@@ -35,7 +35,7 @@ Rules of glass:
 
 ## Holographic Layers — الطبقات الهولوغرامية
 
-The holographic stratum is where NEXIOS feels alive: the glowing Kingdom map, sector
+The holographic stratum is where SADEED feels alive: the glowing Kingdom map, sector
 pulse halos, agent presence rings, the cinematic background signature. Holography is a
 _display_ register, never a _control_ register:
 
@@ -68,7 +68,7 @@ panels). Every panel has the same anatomy, in RTL order:
 
 ## Information Density — كثافة المعلومات
 
-NEXIOS runs three named density registers; every screen declares one:
+SADEED runs three named density registers; every screen declares one:
 
 | Register             | Where                   | Objects per viewport | Row height |
 | -------------------- | ----------------------- | -------------------- | ---------- |
@@ -90,7 +90,7 @@ element — so break it once or never.
 
 ## Premium White Space — الفراغ الفاخر
 
-Space is the most expensive material in the system; spending it is what makes NEXIOS feel
+Space is the most expensive material in the system; spending it is what makes SADEED feel
 executive rather than operational.
 
 - Minimum breathing: panel padding ≥ 24px in Command register, ≥ 32px in Boardroom.

@@ -1,6 +1,6 @@
 /**
  * FINN Learning — Prompt Injector.
- * Article IV §3 of docs/NEXUS_ENGINEERING_CONSTITUTION.md (INV-10 gate).
+ * Article IV §3 of docs/SADEED_ENGINEERING_CONSTITUTION.md (INV-10 gate).
  *
  * The canonical INV-10 filter lives in `src/routes/api/chat.ts` (SQL:
  * safety_passed=true AND confidence≥0.7). This helper is the reusable,
@@ -51,7 +51,7 @@ export function formatInstinctBlock(rows: readonly LearnedPatternRow[]): string 
 
 /**
  * Compact runtime form of the Engineering Governor Prompt in
- * `docs/NEXUS_READINESS_PROMPT.md`. Prepend to governed FINN/agent prompts.
+ * `docs/SADEED_READINESS_PROMPT.md`. Prepend to governed FINN/agent prompts.
  */
 export const ENJAZ_ENGINEERING_GOVERNOR_HEADER: string = [
   "You are FINN — the governed executive intelligence of SADEED.",

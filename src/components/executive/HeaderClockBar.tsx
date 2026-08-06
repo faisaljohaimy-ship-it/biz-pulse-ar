@@ -1,10 +1,10 @@
 /**
  * HeaderClockBar — the unified top header strip.
  *
- * OWNER DIRECTIVE (G3): the scrolling marquee ("سَدِيد التنفيذية
- * ✦ NEXIOS AI") is REMOVED from every screen. It was mounted once in
- * __root.tsx, so deleting it here removes it everywhere at once — الرئيسية and
- * الأمن الصناعي included — with no per-screen edits.
+ * OWNER DIRECTIVE (G3): the scrolling brand marquee is REMOVED from every
+ * screen. It was mounted once in __root.tsx, so deleting it here removes it
+ * everywhere at once — الرئيسية and الأمن الصناعي included — with no
+ * per-screen edits.
  *
  * The LIVE clock is deliberately KEPT. It shared this bar with the marquee
  * (one strip, no ghost row), so removing the component wholesale would have

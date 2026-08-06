@@ -1,4 +1,4 @@
-# NEXIOS Production Readiness Report — تقرير الجاهزية للإنتاج
+# SADEED Production Readiness Report — تقرير الجاهزية للإنتاج
 
 **Phase 5 · Quality Gates & Executive Audit · v1.0**
 **Auditor role: Enterprise Quality Director · Method: assume defects, verify everything**
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-NEXIOS was audited across ten categories with mechanical, reproducible checks — not
+SADEED was audited across ten categories with mechanical, reproducible checks — not
 assertions. The audit found **four real defects, all in the newest layer (Phase-4 motion
 implementation), all fixed and re-verified within this phase** under the mandated
 explain → fix → verify → re-audit loop. After correction: **671 tests (644 passing, 27
@@ -20,7 +20,7 @@ The engineered foundation — the seven-layer runtime, the Adaptive Shell + NDK,
 design-law trilogy, the token system and the Nx component core — is **production-ready
 within its scope**. The honestly-stated boundary of that scope: existing screens have
 not yet adopted the Nx library (adoption was constitutionally out of Phase-4 scope), so
-"NEXIOS the product" carries a designed migration runway, not a defect list.
+"SADEED the product" carries a designed migration runway, not a defect list.
 
 ## Findings & Self-Correction Log (all fixed this phase)
 

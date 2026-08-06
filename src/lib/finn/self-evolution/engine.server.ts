@@ -47,7 +47,7 @@ const INVARIANTS: EvolutionInvariants = {
 
 /**
  * Protected paths — enforced by the SADEED Master Engineering Constitution
- * (docs/NEXUS_ENGINEERING_CONSTITUTION.md) which subsumes the intro
+ * (docs/SADEED_ENGINEERING_CONSTITUTION.md) which subsumes the intro
  * constitution (docs/FINN_INTRO_CONSTITUTION.md). Any self-evolution
  * proposal that touches these files MUST cite one of those documents in
  * its `rationale` AND explicitly promise to preserve the listed
@@ -65,8 +65,8 @@ export const PROTECTED_PATHS: readonly string[] = [
   "src/lib/evidence/gate.ts",
   "src/components/evidence/EvidenceBadge.tsx",
   "docs/FINN_INTRO_CONSTITUTION.md",
-  "docs/NEXUS_ENGINEERING_CONSTITUTION.md",
-  "docs/NEXUS_READINESS_PROMPT.md",
+  "docs/SADEED_ENGINEERING_CONSTITUTION.md",
+  "docs/SADEED_READINESS_PROMPT.md",
 ];
 
 export function proposalRespectsIntroConstitution(p: {

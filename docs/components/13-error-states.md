@@ -1,6 +1,6 @@
 # 13 — Error States · حالات الخطأ
 
-**Failure is information. NEXIOS errors are neutral, specific, Arabic, and always paired
+**Failure is information. SADEED errors are neutral, specific, Arabic, and always paired
 with a way forward. Doctrine: no authentication jargon ever reaches the user (any
 /authenticat|unauthor|token/i is replaced by neutral Arabic + retry — Constitution-level
 law inherited from engineering doctrine).**

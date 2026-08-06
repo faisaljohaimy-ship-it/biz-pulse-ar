@@ -1,12 +1,12 @@
 # Chapter 01 — Design Philosophy
 
-**The identity of NEXIOS, and the seven principles every pixel answers to.**
+**The identity of SADEED, and the seven principles every pixel answers to.**
 
 ---
 
-## Who NEXIOS is
+## Who SADEED is
 
-NEXIOS is the operating system of the executive floor — a قمرة قيادة (command bridge) for
+SADEED is the operating system of the executive floor — a قمرة قيادة (command bridge) for
 leaders of critical infrastructure. It is not a dashboard product, not a chat product,
 not a BI tool. It is the place where an executive, in Arabic, sees the state of their
 world, understands why it is that way, and decides — with FINN advising, never acting
@@ -18,10 +18,10 @@ The identity in one sentence:
 
 Visually this means: a deep obsidian night (the data world), disciplined cyan light (the
 command signal), sector colors as the only celebration (the living map of the Kingdom),
-and glass surfaces that reveal depth without ever shouting. NEXIOS looks like a control
+and glass surfaces that reveal depth without ever shouting. SADEED looks like a control
 room at night: dark, luminous, precise, unhurried.
 
-What NEXIOS refuses to be: a wall of widgets, a neon arcade, a Western dashboard with
+What SADEED refuses to be: a wall of widgets, a neon arcade, a Western dashboard with
 Arabic bolted on, or a system that hides judgment behind decoration.
 
 ## The seven principles

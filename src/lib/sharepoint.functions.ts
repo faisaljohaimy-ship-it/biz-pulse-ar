@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { apiError, input, z } from "@/lib/api";
 import { httpFetch, httpJson } from "@/lib/api/http.server";
 import { requirePlatformAdmin } from "@/lib/authz.server";
+import { SHAREPOINT_REPORT_FOLDER_SEGMENT } from "@/lib/sharepoint-report-folder";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
 
@@ -85,7 +86,7 @@ export const uploadReportToSharePoint = createServerFn({ method: "POST" })
     await requirePlatformAdmin(context.userId);
     const bin = Buffer.from(data.base64, "base64");
     const safeName = data.filename.replace(/[/\\]/g, "_");
-    const uploadPath = `/sites/${encodeURIComponent(data.siteId)}/drive/root:/NEXIOS%20Reports/${encodeURIComponent(safeName)}:/content`;
+    const uploadPath = `/sites/${encodeURIComponent(data.siteId)}/drive/root:/${SHAREPOINT_REPORT_FOLDER_SEGMENT}/${encodeURIComponent(safeName)}:/content`;
 
     const up = await httpFetch(`${GATEWAY_URL}${uploadPath}`, {
       method: "PUT",

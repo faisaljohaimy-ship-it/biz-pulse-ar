@@ -18,7 +18,7 @@ export const FINN_GEMINI_TTS_SAMPLE_RATE = 24_000;
 export const FINN_GEMINI_TTS_DIRECTION =
   "اقرأ بصوتِ رجلٍ سعوديٍّ هادئ ودافئ وجميل، ناعمِ النبرة، عميقٍ دون جهورية أو نبرة آلية، بإيقاعٍ متمهّلٍ مطمئن ولمسةٍ احترافية راقية. انطق النص التالي فقط كما هو، من دون إضافة مقدمة أو تعليق:";
 
-// Compatibility exports retained because the full NEXIOS repository may
+// Compatibility exports retained because the full SADEED repository may
 // still contain older public-voice imports outside this focused overlay.
 // The authenticated FINN chat no longer calls ElevenLabs.
 

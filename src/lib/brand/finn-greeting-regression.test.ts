@@ -204,20 +204,13 @@ describe("FINN greeting regression — every text→voice boundary scrubs the na
 
 describe("FINN greeting regression — every TTS endpoint is wired to a guard", () => {
   /** Every route that can turn text into audio. A new one must join this list. */
-  const TTS_ROUTES = [
-    "src/routes/api/finn/tts.ts",
-    "src/routes/api/public/finn-tts.ts",
-    "src/routes/api/public/aria-tts.ts",
-  ];
+  // `api/public/aria-tts.ts` كان ثالث المسارات — حُذف مع كل شقيقاته
+  // `aria-*` بقرار المالك ٢٠٢٦/٠٨/٠٦ (إزالة الاسم القديم كليًّا)، ولم يعد
+  // في النظام مسارٌ ينطق نصًّا خارج هذين.
+  const TTS_ROUTES = ["src/routes/api/finn/tts.ts", "src/routes/api/public/finn-tts.ts"];
 
   /** Symbols that guarantee the identity guard runs before synthesis. */
-  const GUARDS = [
-    "revalidateSpeakableText",
-    "synthesizeSafeSpeech",
-    "enforceFinnIdentity",
-    // The legacy alias delegates wholesale to the canonical guarded handler.
-    "LEGACY_HANDLERS",
-  ];
+  const GUARDS = ["revalidateSpeakableText", "synthesizeSafeSpeech", "enforceFinnIdentity"];
 
   it.each(TTS_ROUTES)("%s routes its text through the identity guard", (file) => {
     const src = readFileSync(file, "utf8");

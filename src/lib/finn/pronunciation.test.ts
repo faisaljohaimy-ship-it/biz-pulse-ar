@@ -68,7 +68,9 @@ describe("applyFinnPronunciation — acronym dictionary", () => {
     expect(applyFinnPronunciation("PTW")).toBe("تصريح العمل");
     expect(applyFinnPronunciation("HCIS")).toBe("الهيئة العليا للأمن الصناعي");
     expect(applyFinnPronunciation("راجع CCTV")).toBe("راجع كاميرات المراقبة");
-    expect(applyFinnPronunciation("NEXIOS")).toBe("نكسيوس");
+    // الاسم القديم لا يُنطق اسمًا — يُنطق «المنصة». لو أعاده أحد إلى النطق
+    // الحرفي لخرج اسم مُزال من كل شاشة عبر الصوت وحده.
+    expect(applyFinnPronunciation("NEXIOS")).toBe("المنصة");
     expect(applyFinnPronunciation("FINN")).toBe("فِن");
   });
 

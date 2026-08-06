@@ -6,7 +6,7 @@
 
 ## 1 · Executive Motion — حركة تنفيذية
 
-NEXIOS moves like a senior officer: deliberate, economical, already-composed. Nothing
+SADEED moves like a senior officer: deliberate, economical, already-composed. Nothing
 darts, nothing bounces, nothing begs. Weighted-glass physics (Constitution Ch. 01 §6):
 surfaces have mass, arrive settled, and decelerate — `ease-out` is the house curve
 because command interfaces answer _immediately_ then settle, they never wind up.
@@ -27,7 +27,7 @@ is not a job.
 
 ## 3 · Calm Intelligence — الذكاء الهادئ
 
-The system is alive but never restless. At rest, a NEXIOS screen has at most **two**
+The system is alive but never restless. At rest, a SADEED screen has at most **two**
 moving things visible: one ambient stratum motion (≥ 4s cycle) and one licensed presence
 loop (FINN's breathing, a live dot). Everything else is still until state changes.
 Intelligence is shown through _timing_ (instant response, honest progress), not through

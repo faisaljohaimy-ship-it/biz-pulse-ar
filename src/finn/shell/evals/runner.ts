@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — eval runner.
+ * SADEED FINN Shell — eval runner.
  *
  * Runs every case through the real selection engine and computes the three
  * acceptance metrics:

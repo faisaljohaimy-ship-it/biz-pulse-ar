@@ -1,5 +1,5 @@
 /**
- * NEXIOS — hidden-ROUTE switchboard (companion to config/hidden-ui.ts, which
+ * SADEED — hidden-ROUTE switchboard (companion to config/hidden-ui.ts, which
  * hides UI *fragments*; this hides whole *screens*).
  *
  * OWNER DIRECTIVE — the hide policy, stated exactly as it was given:
@@ -28,9 +28,9 @@ export const HIDDEN_ROUTES: ReadonlySet<string> = new Set([
   // «العروض التنفيذية السينمائية» — حذف الواجهة بالكامل.
   // [افتراض] The owner named one screen; the repo has a FAMILY of cinematic
   // show routes with no single canonical one. Resolved by TITLE, not by guess:
-  //   /executive-showcase  "العرض التنفيذي — نيكسيوس | Executive Showcase"
-  //   /cinematic-demo      "NEXUS AI OS — Cinematic Showcase"
-  //   /films               "Film Center — NEXIOS AI OS"
+  //   /executive-showcase  "العرض التنفيذي — سَدِيد | Executive Showcase"
+  //   /cinematic-demo      "SADEED — Cinematic Showcase"
+  //   /films               "Film Center — SADEED"
   //   /theater             — same family, a cinematic playback surface
   // (/executive-bridge «جسر القيادة» حُذف من النظام كليًّا بقرار المالك
   //  ٢٠٢٦/٠٨/٠٥ — لا مسار له ولا إخفاء يلزمه.)

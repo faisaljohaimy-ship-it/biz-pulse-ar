@@ -1,6 +1,6 @@
 /**
  * Industrial Security — the four Saudi regional administrations.
- * Every region hosts the SAME full Nexios system; only the active
+ * Every region hosts the SAME full SADEED system; only the active
  * sector/label changes. Keep this list ordered as it should appear
  * in the sidebar switcher.
  */

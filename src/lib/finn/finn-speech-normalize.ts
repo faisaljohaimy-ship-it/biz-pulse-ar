@@ -44,12 +44,14 @@ export interface FinnSpeech {
  * spelled in Arabic where spelling is the natural reading of a code/acronym. */
 export const FINN_SPEECH_DICTIONARY: Readonly<Record<string, string>> = {
   FINN: "فِنّ",
-  NEXIOS: "نِكْسِيُوس",
-  // The assistant is FINN. This entry used to map the legacy token to its own
-  // spoken form «آريا», which meant any stale text containing "ARIA" would be
-  // SPOKEN as ARIA even though nothing on screen says it any more. Mapping it
-  // to «فِنّ» closes the last channel the old name could still reach a user
-  // through — the voice.
+  // The two retired names, kept as INPUT keys only. Neither is ever spoken as
+  // itself: a legacy token that survives in a stale knowledge row or a model
+  // turn used to be read aloud verbatim — the name was gone from every screen
+  // and still coming out of the speaker. The product name now speaks as
+  // «المنصة» and the assistant as «فِنّ», which closes the last channel the
+  // old names could reach a user through. Deleting the keys would not do it:
+  // an unmapped Latin token gets spelled letter by letter instead.
+  NEXIOS: "المنصة",
   ARIA: "فِنّ",
   HCIS: "إتش سي آي إس",
   PTW: "بي تي دبليو",

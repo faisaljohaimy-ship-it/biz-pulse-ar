@@ -196,7 +196,7 @@ export function HoloCommandStage({
           <svg
             className="absolute inset-0 h-full w-full opacity-80"
             viewBox="0 0 400 400"
-            style={{ animation: "aria-spin-slow 90s linear infinite" }}
+            style={{ animation: "nx-spin-slow 90s linear infinite" }}
           >
             <defs>
               <radialGradient id="hcs-halo" cx="50%" cy="50%" r="50%">
@@ -249,7 +249,7 @@ export function HoloCommandStage({
           <svg
             className="absolute inset-0 h-full w-full opacity-60"
             viewBox="0 0 400 400"
-            style={{ animation: "aria-spin-slow 60s linear infinite reverse" }}
+            style={{ animation: "nx-spin-slow 60s linear infinite reverse" }}
           >
             <circle
               cx="200"

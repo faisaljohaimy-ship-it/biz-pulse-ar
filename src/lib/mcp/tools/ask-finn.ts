@@ -2,7 +2,7 @@ import { defineTool, type ToolContext } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 
 export default defineTool({
-  name: "ask_aria",
+  name: "ask_finn",
   title: "Ask FINN",
   description:
     "Send a natural-language question to FINN, the SADEED Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
@@ -25,7 +25,7 @@ export default defineTool({
     try {
       const { enforceRateLimit, rateLimitResponse, rateLimitUnavailableResponse } =
         await import("@/lib/governance/rate-limit.server");
-      const rate = await enforceRateLimit(`mcp-ask-aria:${callerKey}`, 20, 60);
+      const rate = await enforceRateLimit(`mcp-ask-finn:${callerKey}`, 20, 60);
       if (rate.unavailable) {
         const r = rateLimitUnavailableResponse();
         return {

@@ -1,4 +1,4 @@
-# NEXIOS AI OS — Deployment
+# SADEED — Deployment
 
 ## Canonical target
 
@@ -100,7 +100,7 @@ behavior before production activation.
    controlled email and SMS, and confirm `delivered` or `failed` arrives through
    each signed webhook before allowing general administrative use.
 8. Complete the PDPL activation evidence listed in
-   `docs/NEXIOS_PDPL_COMPLIANCE.md`, configure every field in
+   `docs/SADEED_PDPL_COMPLIANCE.md`, configure every field in
    `docs/PDPL_PRODUCTION_REGISTER.md`, and confirm the PDPL dimension in
    `/readiness`; the open presentation is not authorization to process live
    personal data.

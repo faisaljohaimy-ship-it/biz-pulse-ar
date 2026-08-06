@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — shared types.
+ * SADEED FINN Shell — shared types.
  *
  * The shell is an ADVISORY capability layer. It reads from the core, selects
  * the right skill/agent for a task, records telemetry, and adapts three bounded

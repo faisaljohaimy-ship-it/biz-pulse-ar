@@ -11,7 +11,7 @@
 | `1c673e2`        | **الجزء ١** — صوت ذكوري (Gemini «Charon» + توجيه سعودي مذكّر؛ بديل ElevenLabs «Adam») + صورة FINN الرجل (`public/finn-portrait.png`) في كل أسطح الأفاتار | `git revert 1c673e2`  | يعيد صوت وصورة آريا الأنثى |
 | `faa6803`        | **الجزء ٢** — مسح الاسم ARIA/آريا → FINN عبر 300+ ملف (حساس لحالة الأحرف؛ سمات aria-\* ومعرّفات الكود سليمة) + هوية الأفاتار مذكّرة + نطق FINN→«فِن»     | `git revert faa6803`  | يعيد اسم آريا الظاهر       |
 | `15709b2`        | **الجزء ٣** — إعادة تسمية مسار الصفحة `/aria` → `/finn` (5 ملفات + الروابط + شجرة المسارات)؛ مسارات `/api/aria/*` باقية                                  | `git revert 15709b2`  | يعيد مسار `/aria`          |
-| _(هذا الالتزام)_ | **الجزء ٤** — تحديث الدستور (CLAUDE.md · NEXIOS_CONSTITUTION.md · docs · .lovable) إلى FINN + صوت ذكوري، وتنسيق prettier                                 | `git revert <commit>` | يعيد نص دستور آريا/ليان    |
+| _(هذا الالتزام)_ | **الجزء ٤** — تحديث الدستور (CLAUDE.md · SADEED_CONSTITUTION.md · docs · .lovable) إلى FINN + صوت ذكوري، وتنسيق prettier                                 | `git revert <commit>` | يعيد نص دستور آريا/ليان    |
 
 **تحديث:** حُذفت الأفاتار الأنثوية القديمة (١٠ من `src/assets/` + `public/aria-icon.jpeg`) بعد التأكد من عدم وجود مراجع؛ حُدِّث `sw.js` (precache → `/finn-portrait.png`, cache v3) وعلامة hash الهوية.
 

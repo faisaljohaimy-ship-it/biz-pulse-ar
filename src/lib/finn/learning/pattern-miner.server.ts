@@ -1,6 +1,6 @@
 /**
  * FINN Learning — Pattern Miner (nightly).
- * Article IV §2 of docs/NEXUS_ENGINEERING_CONSTITUTION.md.
+ * Article IV §2 of docs/SADEED_ENGINEERING_CONSTITUTION.md.
  *
  * Reads the last 24h of `finn_interactions` + `finn_incidents`, extracts
  * safe recurring patterns, and UPSERTs them into `finn_learned_patterns`

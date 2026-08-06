@@ -1,12 +1,12 @@
-# NEXIOS Executive Design Constitution — الدستور التصميمي التنفيذي
+# SADEED Executive Design Constitution — الدستور التصميمي التنفيذي
 
-**Version 1.0 · Status: RATIFIED · Scope: every current and future screen, component, animation, interaction and feature of NEXIOS**
+**Version 1.0 · Status: RATIFIED · Scope: every current and future screen, component, animation, interaction and feature of SADEED**
 
 ---
 
 ## What this is
 
-NEXIOS is an Executive AI Operating System — Arabic-first, RTL-native, built for the Saudi
+SADEED is an Executive AI Operating System — Arabic-first, RTL-native, built for the Saudi
 energy and utilities sector. This constitution is the permanent design law of the product.
 It does not redesign anything; it codifies the identity the system already carries —
 obsidian depth, cyan command light, sector-colored life, glass panels, holographic
@@ -19,7 +19,7 @@ read, move and feel** — never where they live.
 ## Authority and precedence
 
 1. This constitution governs all visual and interaction decisions.
-2. `NEXIOS_CONSTITUTION.md` and `CLAUDE.md` govern engineering doctrine; where they
+2. `SADEED_CONSTITUTION.md` and `CLAUDE.md` govern engineering doctrine; where they
    constrain implementation (regions.ts single-source, RTL, performance budget), those
    constraints are load-bearing walls of this constitution, not exceptions to it.
 3. Existing tokens in `src/styles.css` and `src/lib/regions.ts` are the **canonical
@@ -30,7 +30,7 @@ read, move and feel** — never where they live.
 
 | #                                            | Chapter                        | Governs                                                             |
 | -------------------------------------------- | ------------------------------ | ------------------------------------------------------------------- |
-| [01](./01-design-philosophy.md)              | Design Philosophy              | Identity, principles, what NEXIOS refuses to be                     |
+| [01](./01-design-philosophy.md)              | Design Philosophy              | Identity, principles, what SADEED refuses to be                     |
 | [02](./02-visual-language.md)                | Visual Language                | Glass, holographic layers, panels, density, rhythm                  |
 | [03](./03-color-system.md)                   | Color System                   | Full enterprise palette: hex/rgb/hsl, opacity, usage, accessibility |
 | [04](./04-typography-system.md)              | Typography System              | Arabic + Latin scales, numbers, KPI display, weights                |

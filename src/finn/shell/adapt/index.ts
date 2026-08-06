@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — bounded self-adaptation.
+ * SADEED FINN Shell — bounded self-adaptation.
  *
  * Adaptation may move ONLY the three scoped parameters (topK,
  * confidenceThreshold, maxTokens) inside their [min,max] bounds, and only when

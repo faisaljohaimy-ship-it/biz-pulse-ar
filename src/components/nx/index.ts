@@ -1,5 +1,5 @@
 /**
- * NEXIOS Component Library — implementation surface (Phase 4 · Phase A core).
+ * SADEED Component Library — implementation surface (Phase 4 · Phase A core).
  * Specs: docs/components/ · laws: docs/design/ + docs/motion/.
  */
 export {

@@ -1,4 +1,4 @@
-# NEXIOS AI OS — Simulation Engine (Milestone 1)
+# SADEED — Simulation Engine (Milestone 1)
 
 The **Simulation Engine** produces a realistic, fully-related demo dataset
 across 20 operational domains. In Phase 2, a single flag will swap the

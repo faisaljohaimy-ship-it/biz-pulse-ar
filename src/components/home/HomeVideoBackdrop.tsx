@@ -1,7 +1,7 @@
 /**
  * HomeVideoBackdrop — fullscreen static backdrop for the homepage.
  *
- * The permanent cinematic NEXIOS toroid over the Saudi command plateau.
+ * The permanent cinematic SADEED toroid over the Saudi command plateau.
  * The former gesture-gated FINN greeting film (home-bg.mp4) and its button
  * were retired per directive; nothing here plays audio or motion.
  */
@@ -24,7 +24,7 @@ export function HomeVideoBackdrop() {
       dir="ltr"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#04070F]"
     >
-      {/* Permanent homepage backdrop: the cinematic NEXIOS toroid over the
+      {/* Permanent homepage backdrop: the cinematic SADEED toroid over the
           Saudi command plateau. Object-cover keeps the toroid centred from
           360px phones through 4K wall displays. */}
       <img

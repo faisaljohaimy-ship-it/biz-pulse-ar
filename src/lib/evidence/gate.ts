@@ -12,7 +12,7 @@
  * "LIVE", "بث مباشر" are FORBIDDEN in JSX unless produced by a
  * verified `Evidence` here.
  *
- * See docs/NEXUS_ENGINEERING_CONSTITUTION.md § FR-19.
+ * See docs/SADEED_ENGINEERING_CONSTITUTION.md § FR-19.
  */
 
 export type EvidenceKind =

@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — configuration (single typed source).
+ * SADEED FINN Shell — configuration (single typed source).
  *
  * Mirrors the reviewed shell.config contract. `toolCallsEnabled` stays false
  * until a real connector is implemented and tested; every capability therefore

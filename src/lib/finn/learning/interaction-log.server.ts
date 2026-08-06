@@ -1,6 +1,6 @@
 /**
  * FINN Learning — Interaction Log (server helper).
- * Article IV §1 of docs/NEXUS_ENGINEERING_CONSTITUTION.md (INV-9).
+ * Article IV §1 of docs/SADEED_ENGINEERING_CONSTITUTION.md (INV-9).
  *
  * Thin, typed accessor over `finn_interactions`. The chat handler writes
  * rows directly (see src/routes/api/chat.ts); this module exposes safe

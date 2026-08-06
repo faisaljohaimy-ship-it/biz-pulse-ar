@@ -1,4 +1,4 @@
-# النشر التلقائي — NEXIOS (neexios.com)
+# النشر التلقائي — SADEED (neexios.com)
 
 هدف الإنتاج المعتمد هو **Cloudflare Workers**. عند كل `git push` إلى `main`
 تعمل بوابة GitHub Actions، وتفشل بوضوح إذا غابت بيانات النشر المطلوبة. لا أسرار

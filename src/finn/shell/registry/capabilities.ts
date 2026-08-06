@@ -1,5 +1,5 @@
 /**
- * NEXIOS FINN Shell — the capability catalog (SINGLE SOURCE OF TRUTH).
+ * SADEED FINN Shell — the capability catalog (SINGLE SOURCE OF TRUTH).
  *
  * Exactly 12 skills + 5 agents. These are FINN's runtime product capabilities;
  * they are defined ONCE here and are intentionally NOT duplicated as

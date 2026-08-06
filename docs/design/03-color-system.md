@@ -7,7 +7,7 @@ and `src/lib/regions.ts` (sector accents — the ONLY source of sector color).**
 
 ## Design reasoning
 
-NEXIOS is dark-first: a deep blue-black night in which light means something. The palette
+SADEED is dark-first: a deep blue-black night in which light means something. The palette
 therefore has _one_ luminous accent family (cyan — the command signal), _one_ rationed
 authority color (gold), a strict status trio, four sector accents that are the only
 polychrome celebration in the system, and a layer palette so each architectural stratum
@@ -95,7 +95,7 @@ multiply like weeds; the ladder keeps depth consistent everywhere.
 
 1. **The 80/15/5 law:** any screen ≈ 80% neutrals (canvas+glass), 15% one accent family,
    5% everything else (status chips, sector marks, gold). Exceeding 5% polychrome makes a
-   NEXIOS screen stop looking like NEXIOS.
+   SADEED screen stop looking like SADEED.
 2. One accent family per screen: cyan-family by default; a sector page may substitute its
    sector accent as the 15%.
 3. Gold: at most one gold element per screen (Principle 6).

@@ -1,7 +1,7 @@
 # 12 — Empty States · حالات الفراغ الفاخرة
 
 **Emptiness is a screen too. A blank region is a broken promise; a designed empty state
-is guidance. Every list, table, panel, feed and search in NEXIOS ships WITH its empty
+is guidance. Every list, table, panel, feed and search in SADEED ships WITH its empty
 state — no component review passes without one.**
 
 ---

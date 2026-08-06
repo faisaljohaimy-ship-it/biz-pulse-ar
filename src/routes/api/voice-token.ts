@@ -1,7 +1,7 @@
 /**
  * Retired token-minting compatibility endpoint.
  *
- * NEXIOS no longer starts a second ElevenLabs agent/Scribe conversation. Voice
+ * SADEED no longer starts a second ElevenLabs agent/Scribe conversation. Voice
  * input and output are owned by the root-mounted FinnCopilot, preventing a
  * second identity, memory, microphone, or speech runtime from drifting in.
  */
