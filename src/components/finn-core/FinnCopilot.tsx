@@ -1859,6 +1859,174 @@ export function FinnCopilot() {
     }
   }, [voice, pageContext, listening]);
 
+  // Perf: the transcript is memoised so typing in the composer never
+  // re-renders every markdown message (repeated repaints of the blurred
+  // panel crashed the tab on mobile).
+  const messageList = useMemo(
+    () => (
+                <ul className="space-y-3">
+                  {chat.messages.map((m) => {
+                    const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+                    const mine = m.role === "user";
+                    // FINN's on-screen text stays clean: tashkeel is stripped for
+                    // display while the spoken path (toFinnSpeechText → /api/finn/tts,
+                    // diacritized server-side) keeps full diacritics for pronunciation.
+                    const text = mine ? raw : stripTashkeel(sanitiseAssistantText(raw));
+                    const hasNonTextWork = m.parts.some(
+                      (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
+                    );
+                    const toolParts = !mine
+                      ? m.parts.filter(
+                          (part) =>
+                            part.type.startsWith("tool-") || part.type === "tool-invocation",
+                        )
+                      : [];
+                    if (!text && !hasNonTextWork) return null;
+                    return (
+                      <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                        <div
+                          className={cn(
+                            "group/message max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed backdrop-blur-md sm:max-w-[88%]",
+                            mine
+                              ? "bg-primary/90 text-primary-foreground shadow-md"
+                              : "bg-background/75 text-foreground ring-1 ring-primary/20 shadow-[0_0_24px_rgba(0,212,255,0.08)]",
+                          )}
+                        >
+                          {text ? (
+                            <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+                            </div>
+                          ) : toolParts.length === 0 ? (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+                              يُنَفِّذُ FINN الخُطْوَةَ الآنَ…
+                            </div>
+                          ) : null}
+                          {toolParts.map((part, index) => (
+                            <ToolInvocation
+                              key={`${m.id}-tool-${index}`}
+                              part={part as Parameters<typeof ToolInvocation>[0]["part"]}
+                            />
+                          ))}
+                          {!mine && text && !isBusy && (
+                            <div className="mt-2 flex items-center gap-1 border-t border-white/10 pt-1.5 opacity-70 transition-opacity group-hover/message:opacity-100">
+                              <button
+                                type="button"
+                                onClick={() => void copyMessage(m.id, text)}
+                                aria-label="نسخ الرد"
+                                title="نسخ"
+                                className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                              >
+                                {copiedMessageId === m.id ? (
+                                  <Check className="h-3.5 w-3.5" aria-hidden />
+                                ) : (
+                                  <Copy className="h-3.5 w-3.5" aria-hidden />
+                                )}
+                              </button>
+                              {m.id === lastAssistantMessageId && (
+                                <button
+                                  type="button"
+                                  onClick={retry}
+                                  aria-label="إعادة توليد الرد"
+                                  title="إعادة التوليد"
+                                  className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                                >
+                                  <RefreshCcw className="h-3.5 w-3.5" aria-hidden />
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                  {isBusy && (
+                    <li className="flex justify-start">
+                      <div className="flex items-center gap-2 rounded-2xl bg-background/60 px-3 py-2 backdrop-blur-md ring-1 ring-primary/20">
+                        <div className="flex gap-1">
+                          <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
+                          <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
+                          <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+                        </div>
+                        <span className="text-xs text-muted-foreground">{THINKING_AR}</span>
+                      </div>
+                    </li>
+                  )}
+                  {hasError && !isBusy && (
+                    <li className="flex justify-start">
+                      <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
+                        <div className="flex items-start gap-2">
+                          <span className="leading-relaxed">
+                            {(() => {
+                              const raw = (chat.error?.message || "").trim();
+                              if (!raw) return CONNECTION_ERROR_AR;
+                              // Extract server-provided reason from `{ok:false,error:"..."}` payloads
+                              try {
+                                const parsed = JSON.parse(raw) as {
+                                  error?: string;
+                                };
+                                // Saved repair method (Lovable): never surface
+                                // auth jargon — show the neutral retry line.
+                                if (
+                                  parsed?.error &&
+                                  !/authenticat|unauthor|token/i.test(parsed.error)
+                                )
+                                  return parsed.error;
+                                if (parsed?.error) return CONNECTION_ERROR_AR;
+                              } catch {
+                                /* not JSON — fall through */
+                              }
+                              // Scrub any accidental provider/model names before showing
+                              const safe = raw
+                                .replace(
+                                  /\b(openai|anthropic|google|xai|mistral|gpt-[\w.-]+|claude-[\w.-]+|gemini[\w.-]*|grok[\w.-]*)\b/gi,
+                                  "",
+                                )
+                                .trim();
+                              return safe || CONNECTION_ERROR_AR;
+                            })()}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={retry}
+                            className="inline-flex shrink-0 items-center gap-1 rounded-md bg-destructive/80 px-2 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive"
+                          >
+                            <RefreshCcw className="h-3 w-3" /> إعادة المحاولة
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  )}
+                  {!isBusy && !hasError && chat.messages.length === 0 && (
+                    <li className="rounded-xl border border-dashed border-primary/20 bg-background/40 px-3 py-6 text-center text-xs text-muted-foreground backdrop-blur-md">
+                      <p>{EMPTY_STATE_AR}</p>
+                      <button
+                        type="button"
+                        onClick={toggleConversationMode}
+                        className="mx-auto mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-500/15 px-4 py-2 font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
+                      >
+                        <Mic className="h-4 w-4" aria-hidden />
+                        ابدأ المخاطبة
+                      </button>
+                    </li>
+                  )}
+                </ul>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      chat.messages,
+      chat.error,
+      isBusy,
+      hasError,
+      copiedMessageId,
+      lastAssistantMessageId,
+      copyMessage,
+      retry,
+      toggleConversationMode,
+    ],
+  );
+
+
   const tree = (
     <>
       {/* Launcher FAB — hidden while docked */}
@@ -2102,153 +2270,7 @@ export function FinnCopilot() {
                   convMode ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl" : "flex-1",
                 )}
               >
-                <ul className="space-y-3">
-                  {chat.messages.map((m) => {
-                    const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
-                    const mine = m.role === "user";
-                    // FINN's on-screen text stays clean: tashkeel is stripped for
-                    // display while the spoken path (toFinnSpeechText → /api/finn/tts,
-                    // diacritized server-side) keeps full diacritics for pronunciation.
-                    const text = mine ? raw : stripTashkeel(sanitiseAssistantText(raw));
-                    const hasNonTextWork = m.parts.some(
-                      (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
-                    );
-                    const toolParts = !mine
-                      ? m.parts.filter(
-                          (part) =>
-                            part.type.startsWith("tool-") || part.type === "tool-invocation",
-                        )
-                      : [];
-                    if (!text && !hasNonTextWork) return null;
-                    return (
-                      <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                        <div
-                          className={cn(
-                            "group/message max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed backdrop-blur-md sm:max-w-[88%]",
-                            mine
-                              ? "bg-primary/90 text-primary-foreground shadow-md"
-                              : "bg-background/75 text-foreground ring-1 ring-primary/20 shadow-[0_0_24px_rgba(0,212,255,0.08)]",
-                          )}
-                        >
-                          {text ? (
-                            <div className="prose prose-sm prose-invert max-w-none break-words [&_*]:text-inherit [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_table]:text-xs">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-                            </div>
-                          ) : toolParts.length === 0 ? (
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-                              يُنَفِّذُ FINN الخُطْوَةَ الآنَ…
-                            </div>
-                          ) : null}
-                          {toolParts.map((part, index) => (
-                            <ToolInvocation
-                              key={`${m.id}-tool-${index}`}
-                              part={part as Parameters<typeof ToolInvocation>[0]["part"]}
-                            />
-                          ))}
-                          {!mine && text && !isBusy && (
-                            <div className="mt-2 flex items-center gap-1 border-t border-white/10 pt-1.5 opacity-70 transition-opacity group-hover/message:opacity-100">
-                              <button
-                                type="button"
-                                onClick={() => void copyMessage(m.id, text)}
-                                aria-label="نسخ الرد"
-                                title="نسخ"
-                                className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground"
-                              >
-                                {copiedMessageId === m.id ? (
-                                  <Check className="h-3.5 w-3.5" aria-hidden />
-                                ) : (
-                                  <Copy className="h-3.5 w-3.5" aria-hidden />
-                                )}
-                              </button>
-                              {m.id === lastAssistantMessageId && (
-                                <button
-                                  type="button"
-                                  onClick={retry}
-                                  aria-label="إعادة توليد الرد"
-                                  title="إعادة التوليد"
-                                  className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground"
-                                >
-                                  <RefreshCcw className="h-3.5 w-3.5" aria-hidden />
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </li>
-                    );
-                  })}
-                  {isBusy && (
-                    <li className="flex justify-start">
-                      <div className="flex items-center gap-2 rounded-2xl bg-background/60 px-3 py-2 backdrop-blur-md ring-1 ring-primary/20">
-                        <div className="flex gap-1">
-                          <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
-                          <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
-                          <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
-                        </div>
-                        <span className="text-xs text-muted-foreground">{THINKING_AR}</span>
-                      </div>
-                    </li>
-                  )}
-                  {hasError && !isBusy && (
-                    <li className="flex justify-start">
-                      <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
-                        <div className="flex items-start gap-2">
-                          <span className="leading-relaxed">
-                            {(() => {
-                              const raw = (chat.error?.message || "").trim();
-                              if (!raw) return CONNECTION_ERROR_AR;
-                              // Extract server-provided reason from `{ok:false,error:"..."}` payloads
-                              try {
-                                const parsed = JSON.parse(raw) as {
-                                  error?: string;
-                                };
-                                // Saved repair method (Lovable): never surface
-                                // auth jargon — show the neutral retry line.
-                                if (
-                                  parsed?.error &&
-                                  !/authenticat|unauthor|token/i.test(parsed.error)
-                                )
-                                  return parsed.error;
-                                if (parsed?.error) return CONNECTION_ERROR_AR;
-                              } catch {
-                                /* not JSON — fall through */
-                              }
-                              // Scrub any accidental provider/model names before showing
-                              const safe = raw
-                                .replace(
-                                  /\b(openai|anthropic|google|xai|mistral|gpt-[\w.-]+|claude-[\w.-]+|gemini[\w.-]*|grok[\w.-]*)\b/gi,
-                                  "",
-                                )
-                                .trim();
-                              return safe || CONNECTION_ERROR_AR;
-                            })()}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={retry}
-                            className="inline-flex shrink-0 items-center gap-1 rounded-md bg-destructive/80 px-2 py-1 text-xs font-semibold text-destructive-foreground hover:bg-destructive"
-                          >
-                            <RefreshCcw className="h-3 w-3" /> إعادة المحاولة
-                          </button>
-                        </div>
-                      </div>
-                    </li>
-                  )}
-                  {!isBusy && !hasError && chat.messages.length === 0 && (
-                    <li className="rounded-xl border border-dashed border-primary/20 bg-background/40 px-3 py-6 text-center text-xs text-muted-foreground backdrop-blur-md">
-                      <p>{EMPTY_STATE_AR}</p>
-                      <button
-                        type="button"
-                        onClick={toggleConversationMode}
-                        className="mx-auto mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-500/15 px-4 py-2 font-semibold text-emerald-100 transition hover:bg-emerald-500/25"
-                      >
-                        <Mic className="h-4 w-4" aria-hidden />
-                        ابدأ المخاطبة
-                      </button>
-                    </li>
-                  )}
-                </ul>
+                {messageList}
               </div>
             )}
 
