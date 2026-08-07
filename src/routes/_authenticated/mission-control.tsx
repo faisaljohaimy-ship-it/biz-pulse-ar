@@ -446,7 +446,7 @@ function AgentStep({
   return (
     <div
       className={cn(
-        "transition-all duration-500",
+        "transition-[opacity,transform] duration-500",
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
       )}
     >
@@ -521,7 +521,7 @@ function StepConnector({ active }: { active: boolean }) {
     <div className="flex justify-start ps-1 my-1.5">
       <ChevronDown
         className={cn(
-          "h-3.5 w-3.5 transition-all duration-500",
+          "h-3.5 w-3.5 transition-[color,opacity] duration-500",
           active ? "text-cyan-300/70 opacity-100" : "text-white/15 opacity-50",
         )}
         aria-hidden
@@ -593,7 +593,7 @@ function CollaborationStream({
           return (
             <div key={`${line.id}-${i}`}>
               {isClosingSynthesis && state !== "queued" ? (
-                <div className="mt-3 rounded-xl border border-cyan-400/30 bg-cyan-400/[0.06] p-4 transition-all duration-500 opacity-100 translate-y-0">
+                <div className="mt-3 rounded-xl border border-cyan-400/30 bg-cyan-400/[0.06] p-4 transition-[opacity,transform] duration-500 opacity-100 translate-y-0">
                   <AgentStep line={line} state={state} ar={ar} isFinn />
                 </div>
               ) : (
@@ -627,7 +627,7 @@ function StatCard({
 }) {
   const t = TONE[tone];
   return (
-    <div className="group rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 hover:border-cyan-400/30 hover:bg-white/[0.05] transition-all duration-300">
+    <div className="group rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 hover:border-cyan-400/30 hover:bg-white/[0.05] transition-[border-color,background-color] duration-300">
       <div className="flex items-start justify-between">
         <div className="text-xs text-white/60">{label}</div>
         <div
@@ -853,7 +853,7 @@ function WelcomeOverlay({ onDone, ar, name }: { onDone: () => void; ar: boolean;
         </div>
         <div
           className={cn(
-            "text-3xl md:text-4xl font-light tracking-wide text-white transition-all duration-700",
+            "text-3xl md:text-4xl font-light tracking-wide text-white transition-[opacity,transform] duration-700",
             phase >= 0 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
           )}
         >
@@ -861,7 +861,7 @@ function WelcomeOverlay({ onDone, ar, name }: { onDone: () => void; ar: boolean;
         </div>
         <div
           className={cn(
-            "mt-3 text-sm md:text-base text-cyan-200/80 transition-all duration-700 delay-200",
+            "mt-3 text-sm md:text-base text-cyan-200/80 transition-[opacity,transform] duration-700 delay-200",
             phase >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
           )}
         >
@@ -1323,7 +1323,7 @@ function MissionControl() {
                 <Link
                   key={a.to + a.en}
                   to={a.to}
-                  className="group rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-4 hover:border-cyan-400/40 hover:bg-cyan-400/5 transition-all duration-300 flex items-center gap-3"
+                  className="group rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-4 hover:border-cyan-400/40 hover:bg-cyan-400/5 transition-[border-color,background-color] duration-300 flex items-center gap-3"
                 >
                   {/* دائرة رقمية مشعّة حول كل أيقونة إجراء، بلونٍ وإيقاع
                       مختلفين — نفس لغة دوائر النبض على الرئيسية. */}

@@ -89,7 +89,7 @@ export const NexusOrb = forwardRef<HTMLButtonElement, Props>(function NexusOrb(
             className={cn(
               "nexus-orb-dot h-[3px] w-[3px] self-center justify-self-center rounded-full",
               "bg-primary shadow-[0_0_6px_var(--primary-glow,var(--primary))]",
-              "transition-all duration-300",
+              "transition-[background-color] duration-300",
               "group-data-[open=true]:bg-secondary",
             )}
           />

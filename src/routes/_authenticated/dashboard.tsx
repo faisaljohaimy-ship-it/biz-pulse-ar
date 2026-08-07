@@ -212,7 +212,7 @@ function NodeCard({
   return (
     <Link
       to={n.to}
-      className={`group relative flex flex-col gap-2.5 ${pad} rounded-xl bg-gradient-to-br from-background/60 to-background/30 backdrop-blur-xl border border-white/5 hover:border-white/20 transition-all duration-300 overflow-hidden`}
+      className={`group relative flex flex-col gap-2.5 ${pad} rounded-xl bg-gradient-to-br from-background/60 to-background/30 backdrop-blur-xl border border-white/5 hover:border-white/20 transition-[border-color] duration-300 overflow-hidden`}
       style={{ boxShadow: `0 0 30px -12px rgba(${t.rgb},0.4)` }}
     >
       <div
@@ -227,7 +227,7 @@ function NodeCard({
         >
           <Icon className={`${iconSize} ${t.text}`} />
         </div>
-        <ArrowUpRight className="w-4 h-4 text-foreground/30 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+        <ArrowUpRight className="w-4 h-4 text-foreground/30 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-[color,transform]" />
       </div>
       <div className="relative">
         <div

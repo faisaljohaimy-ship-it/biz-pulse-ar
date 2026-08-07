@@ -27,7 +27,7 @@ export function LessonCard({ lesson, lang }: Props) {
   const card = (
     <article
       className={cn(
-        "group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-6 backdrop-blur transition-all",
+        "group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-6 backdrop-blur transition-[border-color,box-shadow] duration-200",
         lesson.published
           ? "border-cyan-400/20 bg-gradient-to-br from-[#061A2E]/80 to-[#04111F]/80 hover:border-cyan-400/50 hover:shadow-[0_20px_60px_-20px_rgba(0,212,255,0.35)]"
           : "border-white/10 bg-white/[0.02] opacity-70",

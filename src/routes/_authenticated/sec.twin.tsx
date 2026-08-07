@@ -2,9 +2,12 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { getTwinTree, type TwinTree } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
+import { RegionTwinScene, type TwinAsset } from "@/components/sec/RegionTwinScene";
+import { TWIN_PROFILES } from "@/components/sec/region-twin-profiles";
+import { DEFAULT_REGION_ID, REGIONS, type RegionId } from "@/lib/regions";
 import {
   ChevronRight,
   Network,
@@ -39,6 +42,52 @@ type SelectedKind =
   | "patrol_team";
 type Selected = { kind: SelectedKind; id: string } | null;
 
+/**
+ * أصول المشهد من الشجرة المحمّلة: كاميرات وبوابات وحسّاسات المقدّمة.
+ *
+ * العدد محدود بـ١٤ لا لتقليل الرسم بل لأن ما فوقه يتراكم على المشهد
+ * فيحجب البنى التي يُفترض أن يشير إليها. والحدّ **يُعلَن** أسفل المشهد
+ * بدل أن يُقصّ بصمت — القصّ الصامت يُقرأ «هذا كل ما هناك».
+ */
+const SCENE_ASSET_CAP = 14;
+
+function sceneAssets(tree: TwinTree | undefined): { shown: TwinAsset[]; total: number } {
+  if (!tree) return { shown: [], total: 0 };
+  const out: TwinAsset[] = [];
+  for (const circle of tree.circles) {
+    for (const site of circle.sites) {
+      for (const building of site.buildings) {
+        for (const cam of building.cameras) {
+          out.push({
+            id: `cam-${cam.id}`,
+            labelAr: `كاميرا ${cam.code}`,
+            tone: cam.status === "online" ? "ok" : cam.status === "degraded" ? "warn" : "danger",
+          });
+        }
+        for (const gate of building.gates) {
+          out.push({
+            id: `gate-${gate.id}`,
+            labelAr: `بوابة ${gate.code}`,
+            tone: gate.status === "online" ? "ok" : "warn",
+          });
+        }
+        for (const sensor of building.sensors) {
+          out.push({
+            id: `sensor-${sensor.id}`,
+            labelAr: `حسّاس ${sensor.code}`,
+            tone: sensor.status === "online" ? "ok" : sensor.status === "alarm" ? "danger" : "warn",
+          });
+        }
+      }
+    }
+  }
+  // ما ليس سليمًا يُعرض أوّلًا: المشهد لوحة إنذار، وإخفاء إنذارٍ خلف حدٍّ
+  // عدديّ لأن ترتيب القاعدة صادف أن يضعه أخيرًا عطلٌ لا اختصار.
+  const rank = { danger: 0, warn: 1, ok: 2 } as const;
+  out.sort((a, b) => rank[a.tone] - rank[b.tone]);
+  return { shown: out.slice(0, SCENE_ASSET_CAP), total: out.length };
+}
+
 function TwinPage() {
   const fetchTree = useServerFn(getTwinTree);
   const { data, isLoading } = useQuery({
@@ -48,6 +97,9 @@ function TwinPage() {
   });
   const [selected, setSelected] = useState<Selected>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set(["region"]));
+  const [sceneRegion, setSceneRegion] = useState<RegionId>(DEFAULT_REGION_ID);
+  const { shown: assets, total: assetTotal } = useMemo(() => sceneAssets(data), [data]);
+  const profile = TWIN_PROFILES[sceneRegion];
 
   const toggle = (key: string) => {
     setExpanded((prev) => {
@@ -61,9 +113,57 @@ function TwinPage() {
   return (
     <div className="space-y-4">
       <SecPageHeader
-        title="التوأم الرقمي للمنطقة الغربية"
-        subtitle="نموذج تفاعلي هرمي لجميع الأصول الأمنية في الدوائر التشغيلية الخمس"
+        title="التوأم الرقمي للمناطق"
+        subtitle="مشهد مرسوم لكل منطقة، ونموذج هرمي تفاعلي لجميع الأصول الأمنية"
       />
+
+      {/* المشهد المرسوم — لا `transform` ولا `filter` على هذه الغلافات:
+          أيٌّ منها يُسقط كل `position: fixed` في الصفحة إلى نفسه. */}
+      <section className="rounded-xl border border-border bg-card p-3">
+        <div
+          role="tablist"
+          aria-label="اختيار المنطقة المعروضة"
+          className="mb-3 flex flex-wrap gap-2"
+        >
+          {REGIONS.map((region) => {
+            const active = region.id === sceneRegion;
+            return (
+              <button
+                key={region.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setSceneRegion(region.id)}
+                className={cn(
+                  "rounded-lg border px-3 py-1.5 text-sm transition-[background-color,border-color,color] duration-200",
+                  active
+                    ? "border-primary/60 bg-primary/15 text-foreground"
+                    : "border-border bg-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {region.shortAr}
+              </button>
+            );
+          })}
+        </div>
+
+        <RegionTwinScene regionId={sceneRegion} assets={assets} />
+
+        <p className="mt-2 text-xs text-muted-foreground">
+          {profile.terrainAr}
+          {" · "}
+          {assetTotal > 0 ? (
+            <>
+              {assetTotal > assets.length
+                ? `أبرز ${assets.length} أصلًا من ${assetTotal} مثبّتة على المشهد (غير السليمة أوّلًا)`
+                : `${assets.length} أصلًا مثبّتة على المشهد`}
+            </>
+          ) : (
+            "لم تصل أصول حيّة بعد — المشهد يعرض بنية المنطقة"
+          )}
+        </p>
+      </section>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[420px_1fr]">
         <div className="rounded-xl border border-border bg-card p-3 max-h-[78vh] overflow-y-auto">
           {isLoading || !data ? (

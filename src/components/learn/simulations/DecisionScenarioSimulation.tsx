@@ -243,7 +243,7 @@ function OptionButton({
       onClick={onClick}
       disabled={revealed}
       className={cn(
-        "group flex flex-col gap-2 rounded-2xl border p-4 text-start transition-all",
+        "group flex flex-col gap-2 rounded-2xl border p-4 text-start transition-[border-color,background-color,opacity]",
         !revealed &&
           "border-white/12 bg-white/[0.02] hover:border-cyan-400/50 hover:bg-cyan-400/[0.05]",
         showCorrect && "border-emerald-400/50 bg-emerald-400/[0.08]",

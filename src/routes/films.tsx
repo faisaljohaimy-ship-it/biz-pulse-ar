@@ -206,7 +206,7 @@ function FilmsPage() {
           {FILMS.map((f) => (
             <article
               key={f.id}
-              className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-card/30 backdrop-blur-sm transition-all hover:-translate-y-1 ${accentBorder[f.accent]} ${accentGlow[f.accent]}`}
+              className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-card/30 backdrop-blur-sm transition-[transform,border-color] hover:-translate-y-1 ${accentBorder[f.accent]} ${accentGlow[f.accent]}`}
             >
               <button
                 type="button"

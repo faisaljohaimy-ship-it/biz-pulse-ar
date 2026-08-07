@@ -303,7 +303,7 @@ function Reports() {
         {pdfBusy && (
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-primary transition-all duration-500"
+              className="h-full rounded-full bg-primary transition-[width] duration-500"
               style={{
                 width: pdfPhase === "data" ? "30%" : pdfPhase === "font" ? "65%" : "90%",
               }}

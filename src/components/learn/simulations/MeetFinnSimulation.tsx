@@ -69,7 +69,7 @@ export function MeetFinnSimulation({ slug, lang, suggested, onCompleted }: Props
                   key={index}
                   type="button"
                   onClick={() => ask(text)}
-                  className="group flex items-start gap-3 rounded-2xl border border-cyan-400/20 bg-white/[0.02] p-4 text-start transition-all hover:border-cyan-400/50 hover:bg-cyan-400/[0.06]"
+                  className="group flex items-start gap-3 rounded-2xl border border-cyan-400/20 bg-white/[0.02] p-4 text-start transition-[border-color,background-color] hover:border-cyan-400/50 hover:bg-cyan-400/[0.06]"
                 >
                   <PlayCircle className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300 transition-transform group-hover:scale-110" />
                   <span className="text-sm text-white/90">{text}</span>

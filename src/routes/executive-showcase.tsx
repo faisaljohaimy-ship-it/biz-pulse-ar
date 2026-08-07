@@ -639,7 +639,7 @@ function ExecutiveShowcasePage() {
               className="group grid h-11 min-w-[20px] place-items-center"
             >
               <span
-                className={`block h-2 rounded-full transition-all ${
+                className={`block h-2 rounded-full transition-[width,background-color] ${
                   !isFinale && i === idx ? "w-8" : "w-2 bg-white/30 group-hover:bg-white/60"
                 }`}
                 style={

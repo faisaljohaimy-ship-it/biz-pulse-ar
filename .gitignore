@@ -58,3 +58,7 @@ bun.lock
 bun.lockb
 pnpm-lock.yaml
 yarn.lock
+
+# مخرَج أداة معاينة مشهد التوأم (لقطات محلّية)
+.twin-preview/
+vite.twin-preview.config.mjs

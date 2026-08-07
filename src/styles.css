@@ -10323,3 +10323,100 @@ html .nx-clock-bar .nx-lottie-live,
 html .nx-clock-bar .nx-lottie-live * {
   color: var(--tone-cyan) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   التوأم الرقمي المرسوم — طبقة رموز المشهد
+   ═══════════════════════════════════════════════════════════════════
+
+   مشهد `RegionTwinScene` لا يكتب لونًا واحدًا في الجافاسكربت: كل ما فيه
+   يشير إلى `--twin-*`، وهذه الكتلة وحدها تُعرّفها. فيتبع المشهدُ الوضعين
+   بلا قراءة حالة ولا إعادة رسم — وهي قاعدة النظام نفسها (المادة ٣٣):
+   اللون في طبقة الرموز لا في الترميز.
+
+   الترتيب: `:root` هو الوضع الداكن في هذا الملف (كما سائر الرموز أعلاه)،
+   و`html.light` (0,1,1) يحجبه صراحةً بدل الاتّكال على ترتيب المصدر.
+
+   ملاحظة على `--twin-window`: النافذة **مضيئة** في الليل و**داكنة** في
+   النهار. عكسُها يقلب الواقعيّة ويُسقط التباين في أحد الوضعين معًا. */
+:root {
+  --twin-sky-1: #031521;
+  --twin-sky-2: #072f42;
+  --twin-sky-3: #0d4f68;
+  --twin-sun: #7fe3ff;
+  --twin-ridge: #02182459;
+  --twin-haze: #0d4f68;
+  --twin-ground-0: #0d4257;
+  --twin-ground-1: #06283a;
+  --twin-ground-2: #03161f;
+  --twin-water-1: #0a3d55;
+  --twin-water-2: #041e2c;
+  --twin-face-lit: #14536b;
+  --twin-face-roof: #1d6b87;
+  --twin-face-shadow: #08293a;
+  --twin-rim: #6fdcff;
+  --twin-line: rgba(160, 225, 255, 0.5);
+  --twin-lattice: rgba(140, 215, 250, 0.78);
+  --twin-window: #9be8ff;
+  --twin-contact: #010c13;
+  --twin-pin-halo: rgba(3, 21, 33, 0.82);
+}
+
+html.light {
+  --twin-sky-1: #a4d5ee;
+  --twin-sky-2: #cbe7f6;
+  --twin-sky-3: #e9f3fb;
+  --twin-sun: #fff4cf;
+  --twin-ridge: #9fbdd0;
+  --twin-haze: #e9f3fb;
+  --twin-ground-0: #e6dcc8;
+  --twin-ground-1: #d6ccb8;
+  --twin-ground-2: #b4a78e;
+  --twin-water-1: #79bedc;
+  --twin-water-2: #4693b8;
+  --twin-face-lit: #dde6ed;
+  --twin-face-roof: #f3f7fa;
+  --twin-face-shadow: #93a3b1;
+  --twin-rim: #ffffff;
+  --twin-line: rgba(28, 52, 72, 0.44);
+  --twin-lattice: rgba(38, 66, 88, 0.72);
+  --twin-window: #46647a;
+  --twin-contact: #67717c;
+  --twin-pin-halo: rgba(255, 255, 255, 0.92);
+}
+
+.nx-twin-scene {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 1200 / 560;
+  border-radius: 0.75rem;
+}
+
+/* الشعلة: `opacity` و`transform` وحدهما — لا خاصيّة تُسبب تخطيطًا أو
+   إعادة طلاء. والأصل عند `scaleY(1)` فلا تبقى تحويلة عند التوقّف. */
+@keyframes nx-twin-flare {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: scaleY(1);
+  }
+  38% {
+    opacity: 1;
+    transform: scaleY(1.14);
+  }
+  67% {
+    opacity: 0.7;
+    transform: scaleY(0.93);
+  }
+}
+
+.nx-twin-flare {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: nx-twin-flare 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-twin-flare {
+    animation: none;
+  }
+}

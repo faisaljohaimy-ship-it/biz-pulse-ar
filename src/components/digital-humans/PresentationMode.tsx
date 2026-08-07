@@ -417,7 +417,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
             <div
               key={s.id}
               className={cn(
-                "flex flex-col items-center p-2 rounded-xl transition-all",
+                "flex flex-col items-center p-2 rounded-xl transition-[background-color,transform,box-shadow]",
                 isActive ? "bg-cyan-400/10 ring-1 ring-cyan-400/30 scale-105" : "bg-white/[0.02]",
               )}
             >
@@ -435,7 +435,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
       {/* Live caption from current speaker */}
       <div
         className={cn(
-          "rounded-xl border p-4 transition-all min-h-[88px]",
+          "rounded-xl border p-4 transition-[border-color,background-color] min-h-[88px]",
           currentSpeaker?.currentTurn
             ? "border-cyan-400/30 bg-cyan-400/[0.06]"
             : "border-white/10 bg-white/[0.02]",
@@ -475,7 +475,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
         <div className="mt-3">
           <div className="h-1 rounded-full bg-white/10 overflow-hidden">
             <div
-              className="h-full bg-cyan-300/80 transition-all duration-500"
+              className="h-full bg-cyan-300/80 transition-[width] duration-500"
               style={{ width: `${Math.round((stepIdx / Math.max(1, script.length)) * 100)}%` }}
             />
           </div>

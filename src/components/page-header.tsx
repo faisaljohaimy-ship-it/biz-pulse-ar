@@ -57,7 +57,7 @@ export function ModuleCard({
   children?: ReactNode;
 }) {
   return (
-    <div className="group rounded-2xl border border-border bg-card/60 p-5 shadow-elevated backdrop-blur transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow">
+    <div className="group rounded-2xl border border-border bg-card/60 p-5 shadow-elevated backdrop-blur transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
           {Icon && (

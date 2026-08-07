@@ -543,7 +543,7 @@ function ValueStack({
           <div
             key={s.label}
             style={{ width: `${(s.value / safeTotal) * 100}%`, background: s.color }}
-            className="h-full transition-all duration-700 ease-out"
+            className="h-full transition-[width] duration-700 ease-out"
             title={`${s.label}: ${fmtCurrency(s.value, locale)}`}
           />
         ))}

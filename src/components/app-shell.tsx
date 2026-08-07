@@ -322,7 +322,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                       rel="noopener noreferrer"
                       title="يُفتح في نافذة جديدة"
                       onClick={onNavigate}
-                      className="group relative flex h-11 cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-sidebar-foreground/75 transition-all hover:bg-sidebar-accent/40 hover:text-sidebar-foreground active:scale-[0.98]"
+                      className="group relative flex h-11 cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-sidebar-foreground/75 transition-[background-color,color,transform] hover:bg-sidebar-accent/40 hover:text-sidebar-foreground active:scale-[0.98]"
                     >
                       <span
                         className="nx-orb grid size-8 shrink-0 place-items-center rounded-lg transition-colors"
@@ -347,7 +347,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                     to={it.to}
                     onClick={onNavigate}
                     className={cn(
-                      "group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-all",
+                      "group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-[background-color,color]",
                       active
                         ? "bg-gradient-to-l from-primary/15 to-transparent text-sidebar-foreground"
                         : "text-sidebar-foreground/75 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground",

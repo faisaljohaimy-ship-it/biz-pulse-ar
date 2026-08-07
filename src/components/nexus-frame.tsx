@@ -304,7 +304,7 @@ export function NexusCard({
   return (
     <div
       className={cn(
-        "holo-edge group relative overflow-hidden rounded-2xl border border-cyan-400/15 bg-[#06101f]/70 p-5 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-300/35",
+        "holo-edge group relative overflow-hidden rounded-2xl border border-cyan-400/15 bg-[#06101f]/70 p-5 backdrop-blur-xl transition-[transform,border-color] duration-300 hover:-translate-y-0.5 hover:border-cyan-300/35",
         glow && "shadow-exec",
         className,
       )}

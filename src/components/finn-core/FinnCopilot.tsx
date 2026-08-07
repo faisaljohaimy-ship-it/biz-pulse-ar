@@ -389,7 +389,7 @@ function FinnTopAvatar() {
     <div className="relative z-10 flex justify-center pt-3 pb-2">
       <div
         className={cn(
-          "relative h-24 w-24 overflow-hidden rounded-full border-2 bg-[#04070F] transition-all duration-300",
+          "relative h-24 w-24 overflow-hidden rounded-full border-2 bg-[#04070F] transition-[border-color,box-shadow] duration-300",
           speaking
             ? "border-emerald-400/80 shadow-[0_0_28px_rgba(16,185,129,0.55)] motion-safe:animate-pulse"
             : "border-emerald-400/40",
@@ -2046,7 +2046,7 @@ export function FinnCopilot() {
           className={cn(
             "fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] end-6 z-50 flex h-14 w-14 items-center justify-center",
             "finn-launcher rounded-full border border-primary/45 bg-card/80 text-primary backdrop-blur-xl",
-            "transition-all hover:scale-105 hover:border-primary",
+            "transition-[transform,border-color] hover:scale-105 hover:border-primary",
             "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
           )}
         >
@@ -2140,7 +2140,7 @@ export function FinnCopilot() {
                   <button
                     type="button"
                     onClick={() => startListening()}
-                    className="rounded-full bg-emerald-500/25 px-4 py-1.5 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-400/60 backdrop-blur-md hover:bg-emerald-500/35 transition-all animate-pulse"
+                    className="rounded-full bg-emerald-500/25 px-4 py-1.5 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-400/60 backdrop-blur-md hover:bg-emerald-500/35 transition-[background-color] animate-pulse"
                   >
                     اضغط للمتابعة 🎙
                   </button>
@@ -2231,7 +2231,7 @@ export function FinnCopilot() {
                             : "ابدأ التحدث"
                     }
                     className={cn(
-                      "grid h-16 w-16 place-items-center rounded-full border text-white shadow-xl transition-all disabled:opacity-40",
+                      "grid h-16 w-16 place-items-center rounded-full border text-white shadow-xl transition-[transform,background-color,border-color,opacity] disabled:opacity-40",
                       listening
                         ? "border-rose-300/60 bg-rose-500/75 hover:bg-rose-500"
                         : "border-emerald-300/60 bg-emerald-500/75 hover:scale-105 hover:bg-emerald-500",
@@ -2261,7 +2261,7 @@ export function FinnCopilot() {
               <div
                 ref={scrollRef}
                 className={cn(
-                  "relative z-10 overflow-y-auto px-4 py-4 transition-all duration-[600ms] ease-out",
+                  "relative z-10 overflow-y-auto px-4 py-4 transition-[background-color] duration-[600ms] ease-out",
                   convMode ? "max-h-[32%] flex-none bg-background/45 backdrop-blur-xl" : "flex-1",
                 )}
               >
@@ -2336,7 +2336,7 @@ export function FinnCopilot() {
                         : "المخاطبة الصوتية — تحدّث وستردّ FINN صوتاً دون كتابة"
                     }
                     className={cn(
-                      "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all",
+                      "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-[border-color,background-color,color,box-shadow]",
                       convMode
                         ? "border-emerald-400/55 bg-emerald-400/15 text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,.35)]"
                         : "nexus-field border-primary/25 bg-background/70 text-foreground hover:border-primary/50 hover:bg-primary/10",
@@ -2374,7 +2374,7 @@ export function FinnCopilot() {
                     aria-label={isBusy ? "إيقاف الرد" : "إرسال"}
                     className={cn(
                       "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",
-                      "transition-all hover:scale-[1.03] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
+                      "transition-[transform,filter,opacity] hover:scale-[1.03] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
                     )}
                   >
                     {isBusy ? (

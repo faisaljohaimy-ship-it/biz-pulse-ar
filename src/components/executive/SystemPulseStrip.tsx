@@ -55,7 +55,7 @@ export function SystemPulseStrip({
         {chips.map((c) => (
           <div
             key={c.key}
-            className={`rounded-lg border px-3 py-2 transition-all duration-300 ${TONE_CLASS[c.status]}`}
+            className={`rounded-lg border px-3 py-2 transition-[background-color,color,border-color,box-shadow] duration-300 ${TONE_CLASS[c.status]}`}
             title={c.detail}
           >
             <div className="flex items-center justify-between gap-2">

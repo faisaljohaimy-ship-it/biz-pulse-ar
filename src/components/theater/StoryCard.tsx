@@ -70,7 +70,7 @@ export function StoryCard({ line, ar, active, onClick }: Props) {
       type={onClick ? "button" : undefined}
       className={cn(
         "w-full text-start rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl",
-        "p-4 ring-1 transition-all duration-300",
+        "p-4 ring-1 transition-[transform,box-shadow,border-color,background-color] duration-300",
         tone.ring,
         active && "scale-[1.01] shadow-[0_0_40px_rgba(0,212,255,0.18)] border-cyan-300/40",
         onClick &&

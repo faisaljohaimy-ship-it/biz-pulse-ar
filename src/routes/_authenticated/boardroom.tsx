@@ -196,7 +196,7 @@ function BoardroomPage() {
               <button
                 key={i}
                 onClick={() => setIdx(i)}
-                className={`h-1.5 rounded-full transition-all ${i === idx ? "w-8 bg-cyan-300" : "w-2 bg-white/15"}`}
+                className={`h-1.5 rounded-full transition-[width,background-color] ${i === idx ? "w-8 bg-cyan-300" : "w-2 bg-white/15"}`}
                 aria-label={`Slide ${i + 1}`}
               />
             ))}

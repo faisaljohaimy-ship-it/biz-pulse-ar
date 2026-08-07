@@ -67,7 +67,7 @@ function AgentCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-4 transition-all",
+        "rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-4 transition-[border-color,background-color,box-shadow]",
         "hover:border-cyan-400/30 hover:bg-white/[0.05]",
         dh.state === "speaking" && "ring-1 ring-cyan-400/30",
       )}
@@ -85,7 +85,7 @@ function AgentCard({
             </span>
             <div className="flex-1 h-1 rounded-full bg-white/10 overflow-hidden">
               <div
-                className="h-full transition-all duration-700"
+                className="h-full transition-[width] duration-700"
                 style={{
                   width: `${Math.round(dh.confidence * 100)}%`,
                   background: spec.palette.accent,

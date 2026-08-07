@@ -76,7 +76,7 @@ export function FinnUsageAnalytics({ className = "" }: { readonly className?: st
             {weekly.map((v, i) => (
               <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1.5">
                 <div
-                  className="w-full rounded-t bg-gradient-to-t from-[#1933E6]/70 to-[#3AE8FF]/85 transition-all"
+                  className="w-full rounded-t bg-gradient-to-t from-[#1933E6]/70 to-[#3AE8FF]/85 transition-[height] duration-500 ease-out"
                   style={{ height: `${Math.max(6, Math.round((v / peak) * 104))}px` }}
                   title={`${WEEK_DAYS[i]}: ${v}`}
                 />

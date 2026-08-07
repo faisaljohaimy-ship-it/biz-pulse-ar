@@ -350,7 +350,7 @@ export function ExecutivePresentationPlayer() {
             <span
               key={s.id}
               className={cn(
-                "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] transition-all",
+                "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] transition-[border-color,background-color,color]",
                 i === sceneIdx && (phase === "playing" || phase === "paused" || phase === "done")
                   ? "border-cyan-300/70 bg-cyan-400/15 font-semibold text-cyan-100"
                   : "border-white/10 text-white/45",

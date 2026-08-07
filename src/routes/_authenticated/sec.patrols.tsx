@@ -47,7 +47,10 @@ function Patrols() {
                 {p.route} · {p.ref}
               </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
-                <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                <div
+                  className="h-full bg-primary transition-[width]"
+                  style={{ width: `${pct}%` }}
+                />
               </div>
               <div className="mt-1 flex justify-between text-[12px] text-muted-foreground">
                 <span>

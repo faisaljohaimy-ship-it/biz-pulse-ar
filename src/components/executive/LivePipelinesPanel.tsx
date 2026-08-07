@@ -40,7 +40,7 @@ function PipelineCard({ s }: { s: LivePipelineSeries }) {
 
   return (
     <div
-      className={`rounded-xl border bg-background/40 backdrop-blur-xl p-4 transition-all ${TONE_RING[s.status]}`}
+      className={`rounded-xl border bg-background/40 backdrop-blur-xl p-4 transition-[border-color,box-shadow] duration-300 ${TONE_RING[s.status]}`}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">

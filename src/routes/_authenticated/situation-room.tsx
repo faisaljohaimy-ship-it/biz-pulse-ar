@@ -194,7 +194,7 @@ function SituationRoomPage() {
                 "bg-gradient-to-br from-cyan-400 to-cyan-500 text-[#04111F] shadow-[0_0_56px_rgba(0,212,255,0.5)]",
                 "text-sm font-semibold uppercase tracking-[0.2em]",
                 "hover:from-cyan-300 hover:to-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed",
-                "transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200",
+                "transition-[opacity] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200",
               )}
               aria-label={ar ? "ابدأ الموجز التنفيذي" : "Begin Executive Briefing"}
             >

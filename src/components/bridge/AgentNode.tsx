@@ -103,7 +103,7 @@ export function AgentNode({ agent, ar, size = 96, spotlight, onClick }: Props) {
     >
       <div
         className={cn(
-          "relative rounded-full ring-2 transition-all duration-500",
+          "relative rounded-full ring-2 transition-[box-shadow,opacity] duration-500",
           STATUS_RING[agent.status],
           spotlight && "ring-cyan-200/80 shadow-[0_0_56px_rgba(0,212,255,0.65)]",
         )}
