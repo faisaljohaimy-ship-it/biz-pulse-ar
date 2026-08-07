@@ -1,6 +1,7 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { Network, ShieldCheck, FileText, Database } from "lucide-react";
 import { governanceSystems, governancePolicies } from "@/lib/enterprise-domains";
@@ -122,6 +123,7 @@ const GOVERNANCE_REFERENCE_POLICIES = [
 function GovernancePage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const { user } = useAuth();
 
   const systemsQ = governanceSystems.useList();
   const systemsCreate = governanceSystems.useCreate();
@@ -132,7 +134,11 @@ function GovernancePage() {
 
   // Showcase doctrine (CLAUDE.md): the governance window never renders
   // empty — with no anon-visible rows the built-in reference set fills it.
-  const usingReference = !systemsQ.isLoading && (systemsQ.data ?? []).length === 0;
+  // الشارة تُشتق من المصدرين كليهما: السياسات تسقط للمرجع مستقلةً عن
+  // الأنظمة، وشارةٌ من نصف البيانات نصف صدق.
+  const usingReferenceSystems = !systemsQ.isLoading && (systemsQ.data ?? []).length === 0;
+  const usingReferencePolicies = !policiesQ.isLoading && (policiesQ.data ?? []).length === 0;
+  const usingReference = usingReferenceSystems || usingReferencePolicies;
   const systems = (systemsQ.data ?? []).length
     ? (systemsQ.data ?? [])
     : GOVERNANCE_REFERENCE_SYSTEMS;
@@ -206,10 +212,19 @@ function GovernancePage() {
             <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
               {ar ? "الأنظمة والاتفاقيات" : "SYSTEMS & SERVICE AGREEMENTS"}
             </div>
+            {usingReferenceSystems && (
+              <NexusPill tone="amber">{ar ? "محاكاة مرجعية" : "Reference simulation"}</NexusPill>
+            )}
           </div>
           <InlineAddForm
             ar={ar}
             isPending={systemsCreate.isPending}
+            disabled={!user}
+            disabledTitle={
+              ar
+                ? "سجّل الدخول لإضافة نظام — الإضافة متاحة للمستخدمين المسجّلين فقط"
+                : "Sign in to add a system — creation is for signed-in users only"
+            }
             fields={[
               {
                 key: "name",
@@ -241,7 +256,7 @@ function GovernancePage() {
               },
             ]}
             onSubmit={(v) =>
-              systemsCreate.mutate({
+              systemsCreate.mutateAsync({
                 name: String(v.name),
                 kind: String(v.kind),
                 owner: String(v.owner || ""),
@@ -327,10 +342,19 @@ function GovernancePage() {
             <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
               {ar ? "السياسات والامتثال" : "POLICIES & ENFORCEMENT"}
             </div>
+            {usingReferencePolicies && (
+              <NexusPill tone="amber">{ar ? "محاكاة مرجعية" : "Reference simulation"}</NexusPill>
+            )}
           </div>
           <InlineAddForm
             ar={ar}
             isPending={policiesCreate.isPending}
+            disabled={!user}
+            disabledTitle={
+              ar
+                ? "سجّل الدخول لإضافة سياسة — الإضافة متاحة للمستخدمين المسجّلين فقط"
+                : "Sign in to add a policy — creation is for signed-in users only"
+            }
             fields={[
               { key: "name", label: ar ? "الاسم" : "Name", required: true },
               { key: "name_en", label: ar ? "بالإنجليزية" : "English name" },
@@ -343,7 +367,7 @@ function GovernancePage() {
               },
             ]}
             onSubmit={(v) =>
-              policiesCreate.mutate({
+              policiesCreate.mutateAsync({
                 name: String(v.name),
                 name_en: String(v.name_en || ""),
                 version: String(v.version),
@@ -399,10 +423,18 @@ function GovernancePage() {
           </div>
         )}
         {policies.length > 0 && (
-          <div className="mt-3 text-[12px] text-slate-500">
-            {ar
-              ? `متوسط تغطية السياسات: ${avgPolicyCoverage}%`
-              : `Avg policy coverage: ${avgPolicyCoverage}%`}
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-slate-500">
+            {/* المتوسط المشتق من المرجع ليس قياسًا — يُعرض مقرونًا بشارته. */}
+            <span>
+              {ar
+                ? `متوسط تغطية السياسات: ${avgPolicyCoverage}%`
+                : `Avg policy coverage: ${avgPolicyCoverage}%`}
+            </span>
+            {usingReferencePolicies && (
+              <NexusPill tone="amber">
+                {ar ? "محاكاة مرجعية — ليس قياسًا حيًّا" : "Reference simulation — not measured"}
+              </NexusPill>
+            )}
           </div>
         )}
       </NexusCard>

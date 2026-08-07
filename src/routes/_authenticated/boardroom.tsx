@@ -169,7 +169,7 @@ function BoardroomPage() {
           <div className="text-[12px] font-bold tracking-[0.35em] text-cyan-300/80">
             {s.eyebrow}
           </div>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-5xl">
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground md:text-5xl">
             {s.title}
           </h2>
           <p className="mt-4 max-w-3xl text-base text-slate-300">{s.body}</p>
@@ -252,7 +252,9 @@ function BoardroomPage() {
                   >
                     {a.severity.toUpperCase()}
                   </NexusPill>
-                  <div className="text-sm text-white">{ar ? a.title : (a.title_en ?? a.title)}</div>
+                  <div className="text-sm text-foreground">
+                    {ar ? a.title : (a.title_en ?? a.title)}
+                  </div>
                 </div>
                 <div className="font-mono text-xs text-slate-400">
                   impact {a.business_impact_score}

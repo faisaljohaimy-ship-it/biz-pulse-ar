@@ -17,11 +17,21 @@ export function InlineAddForm({
   onSubmit,
   isPending,
   ar,
+  disabled = false,
+  disabledTitle,
 }: {
   fields: FieldDef[];
-  onSubmit: (values: Record<string, string | number>) => void;
+  /**
+   * عند تمرير Promise (مثل `mutateAsync`) لا يُغلَق النموذج ولا تُمسح
+   * القيم إلا بعد نجاح الحفظ فعلًا — الفشل يُبقي النموذج مفتوحًا للتصحيح
+   * ورسالته تصدر من معالج `onError` في طبقة البيانات.
+   */
+  onSubmit: (values: Record<string, string | number>) => void | Promise<unknown>;
   isPending: boolean;
   ar: boolean;
+  /** بوابة بشرية: يُعطَّل زر الإضافة للزائر مع تفسير في `disabledTitle`. */
+  disabled?: boolean;
+  disabledTitle?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<Record<string, string | number>>(() =>
@@ -32,7 +42,7 @@ export function InlineAddForm({
     setValues(Object.fromEntries(fields.map((f) => [f.key, f.defaultValue ?? ""])));
   }
 
-  function submit() {
+  async function submit() {
     const missing = fields.find((f) => f.required && !String(values[f.key] ?? "").trim());
     if (missing) return;
     const out: Record<string, string | number> = {};
@@ -41,16 +51,24 @@ export function InlineAddForm({
       if (f.type === "number") out[f.key] = Number(v) || 0;
       else out[f.key] = String(v ?? "");
     }
-    onSubmit(out);
-    reset();
-    setOpen(false);
+    try {
+      await onSubmit(out);
+      // لا إغلاق قبل معرفة النتيجة — «حفظ» ينغلق ثم لا يحدث شيء فشلٌ صامت.
+      reset();
+      setOpen(false);
+    } catch {
+      // رسالة الفشل تصدر من `onError` في طبقة البيانات؛ يبقى النموذج
+      // مفتوحًا بقيمه كي يصحّح المستخدم ويعيد المحاولة.
+    }
   }
 
   if (!open) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-400/20"
+        disabled={disabled}
+        title={disabled ? disabledTitle : undefined}
+        className="flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-400/20 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Plus className="h-3.5 w-3.5" /> {ar ? "إضافة" : "Add"}
       </button>
@@ -100,7 +118,7 @@ export function InlineAddForm({
           {ar ? "إلغاء" : "Cancel"}
         </button>
         <button
-          onClick={submit}
+          onClick={() => void submit()}
           disabled={isPending}
           className="flex items-center gap-1.5 rounded-full bg-gradient-to-br from-cyan-500 to-violet-500 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
         >

@@ -4,7 +4,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { getAccessOverview, setGateStatus } from "@/lib/access.functions";
-import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
+import { userFacingError } from "@/lib/errors/user-facing-error";
+import { useAuth } from "@/lib/auth-context";
+import { SecPageHeader, SimTag, StatCard, statusClass } from "@/components/sec/sec-shell";
 import {
   Select,
   SelectContent,
@@ -21,8 +23,13 @@ export const Route = createFileRoute("/_authenticated/sec/access")({
   component: AccessControlPage,
 });
 
+/** صفوف المحاكاة المرجعية معرّفاتها sim-* — الكتابة عليها بلا معنى وترمي ZodError خامًا. */
+const SIM_ACTION_INFO = "هذه بيانات محاكاة مرجعية — الإجراء متاح على البيانات الحية فقط";
+const isSimRow = (id: string) => id.startsWith("sim-");
+
 function AccessControlPage() {
   const fetchOverview = useServerFn(getAccessOverview);
+  const { user } = useAuth();
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["access-overview"],
@@ -47,7 +54,7 @@ function AccessControlPage() {
       toast.success("تم تحديث حالة البوّابة");
       qc.invalidateQueries({ queryKey: ["access-overview"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   return (
@@ -55,7 +62,9 @@ function AccessControlPage() {
       <SecPageHeader
         title="التحكم بالدخول"
         subtitle="نظرة موحدة على الزوار · المقاولين · المركبات · البوّابات"
-      />
+      >
+        {data?.source === "reference" && <SimTag />}
+      </SecPageHeader>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
         <StatCard label="زوار بالداخل" value={k?.visitors_inside ?? 0} tone="success" />
@@ -141,6 +150,13 @@ function AccessControlPage() {
                     </td>
                   </tr>
                 )}
+                {!isLoading && gates.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
+                      لا بوّابات مسجّلة بعد — ستظهر هنا فور ربط بوّابات المواقع
+                    </td>
+                  </tr>
+                )}
                 {gates.map((g) => {
                   const site = g.site_id ? sitesMap.get(g.site_id) : null;
                   return (
@@ -163,14 +179,27 @@ function AccessControlPage() {
                       <td className="px-3 py-2">
                         <Select
                           value={g.status}
-                          onValueChange={(v) =>
-                            mGate.mutate({
-                              gate_id: g.id,
-                              status: v as "online" | "degraded" | "offline" | "maintenance",
-                            })
-                          }
+                          disabled={!user}
+                          onValueChange={(v) => {
+                            const status = v as "online" | "degraded" | "offline" | "maintenance";
+                            if (isSimRow(g.id)) {
+                              toast.info(SIM_ACTION_INFO);
+                              return;
+                            }
+                            // بوابة تأكيد بشري: إيقاف بوّابة أمنية يوقف حركة
+                            // الدخول عبرها — لا يقع بنقرة واحدة.
+                            if (
+                              status === "offline" &&
+                              !confirm(
+                                `تأكيد إيقاف البوّابة ${g.code} (offline)؟ ستتوقف حركة الدخول عبرها حتى إعادة تشغيلها.`,
+                              )
+                            )
+                              return;
+                            mGate.mutate({ gate_id: g.id, status });
+                          }}
                         >
                           <SelectTrigger
+                            title={!user ? "يتطلب تسجيل الدخول لتغيير حالة البوّابة" : undefined}
                             className={`h-7 w-32 rounded-full border px-2 py-0 text-[12px] ${statusClass(g.status)}`}
                           >
                             <SelectValue />
@@ -212,7 +241,7 @@ function AccessControlPage() {
                   <div className="flex items-center justify-between">
                     <span className="font-mono font-medium">{p.plate ?? d.entity_ref ?? "—"}</span>
                     <span className="text-[12px] text-muted-foreground">
-                      {new Date(d.occurred_at).toLocaleString("ar-SA")}
+                      {d.occurred_at ? new Date(d.occurred_at).toLocaleString("ar-SA") : "—"}
                     </span>
                   </div>
                   <div className="mt-1 text-muted-foreground">

@@ -136,12 +136,31 @@ describe("عقد الوضع الداكن — أزرق سماوي مائل إلى
 });
 
 describe("عقد الوضعين — المادة ٣٤: لا لون صريح خارج طبقة الرموز", () => {
-  it('لا fill="white" في أي مكوّن أو مسار', async () => {
+  it("لا تعبئة بيضاء نهائية (white / #fff / #ffffff) في أي مكوّن أو مسار", async () => {
     // العطل الأصلي: نسبة أداء المنطقة داخل حلقة SVG كانت fill="white" —
-    // مقروءة على الكحلي، غائبة تمامًا على الأبيض.
+    // مقروءة على الكحلي، غائبة تمامًا على الأبيض. والنمط الحرفي وحده كان
+    // يترك الصيغ السداسية (#fff/#ffffff بأي حالة أحرف) تفلت — فوُسِّع.
+    const WHITE_FILL = /fill=["'](?:white|#f{3}|#f{6})["']/i;
+    /**
+     * استثناء موثَّق — قائمة صريحة مغلقة، فأي موضع جديد يمسكه الحارس:
+     * NexusRevealHero يرسم بريق النواة `fill="#ffffff"` فوق خلفية داكنة
+     * ذاتية داخل الـSVG نفسه (تدرّج `nxh-nucleus`) لا فوق سطح الوضعين —
+     * فتحويله إلى currentColor يكسر المظهر لا يصلحه. النظير الآخر المعلوم
+     * `src/lib/finn/signature.ts` (لوح كحلي ذاتي داخل SVG مولَّد) خارج نطاق
+     * glob هذا الحارس أصلًا فلا يحتاج إدراجًا هنا.
+     */
+    const SELF_BACKED_SVG = new Set(["src/components/cinematic/NexusRevealHero.tsx"]);
     const { globSync } = await import("node:fs");
     const files = globSync("src/{components,routes}/**/*.tsx");
-    const offenders = files.filter((f) => /fill="white"/.test(readFileSync(f, "utf8")));
+    const offenders = files.filter((f) => {
+      if (SELF_BACKED_SVG.has(f)) return false;
+      // الحارس يفحص الكود وحده — تعليقٌ يشرح النمط ليس خرقًا له
+      // (نفس مبدأ THEME_CODE أعلاه؛ وإلا سقط LottieIcon على تعليق توثيقي).
+      const code = readFileSync(f, "utf8")
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/^[ \t]*\/\/.*$/gm, "");
+      return WHITE_FILL.test(code);
+    });
     expect(offenders).toEqual([]);
   });
 

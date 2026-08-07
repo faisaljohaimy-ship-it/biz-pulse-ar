@@ -7,6 +7,7 @@
 import * as React from "react";
 import { Bell, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SadeedWordmark } from "@/components/brand/SadeedWordmark";
 import { NxStatusIndicator } from "@/components/nx";
 import type { ArchitectureLayerInfo, HealthState } from "./repository";
 import { useCockpit } from "./use-cockpit";
@@ -42,24 +43,19 @@ const HEALTH_DOT: Record<HealthState, string> = {
   unknown: "bg-nx-pearl/38",
 };
 
-/** Hexagonal SADEED brand mark — original SVG, no external asset. */
+/**
+ * أيقونة العلامة الرسمية — نفس أصل `/brand-icon.png` المستخدم في app-shell.
+ * (كان هنا سداسي SVG مرسوم يدويًّا مخالفًا للهوية — أُزيل بتوحيد العلامة.)
+ * `alt=""` + aria-hidden لأن اسم العلامة الحيّ يُقرأ من SadeedWordmark بجوارها.
+ */
 function BrandMark() {
   return (
-    <svg viewBox="0 0 40 40" aria-hidden className="size-9 shrink-0 text-nx-cyan">
-      <polygon
-        points="20,3 35,11.5 35,28.5 20,37 5,28.5 5,11.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        opacity="0.8"
-      />
-      <polygon
-        points="20,11 28,15.5 28,24.5 20,29 12,24.5 12,15.5"
-        fill="currentColor"
-        opacity="0.35"
-      />
-      <circle cx="20" cy="20" r="2.5" fill="currentColor" />
-    </svg>
+    <img
+      src="/brand-icon.png"
+      alt=""
+      aria-hidden
+      className="rounded-nx-12 size-9 shrink-0 object-cover"
+    />
   );
 }
 
@@ -150,12 +146,9 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
             <Menu aria-hidden className="size-5" />
           </button>
           <BrandMark />
-          <div className="flex flex-col">
-            <span className="text-lg font-bold leading-tight text-nx-pearl">SADEED</span>
-            <span className="text-[12px] tracking-widest text-nx-pearl/56" dir="ltr">
-              AI OPERATING SYSTEM
-            </span>
-          </div>
+          {/* العلامة الكتابية الكانونية: الاسم يتبع اللغة، والوصف الرسمي
+              «منظومة القرار والإنجاز الذكي» بدل نصٍّ لاتيني ثابت. */}
+          <SadeedWordmark size="sm" showDescriptor />
         </div>
         <div className="flex items-center gap-3">
           <NxStatusIndicator status="success" label="بث مباشر" live />

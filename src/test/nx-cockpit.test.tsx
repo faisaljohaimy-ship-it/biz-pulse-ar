@@ -16,6 +16,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { ThemeProvider } from "@/lib/theme";
+import { I18nProvider } from "@/lib/i18n";
 import { RegionProvider } from "@/lib/region-context";
 import { REGIONS } from "@/lib/regions";
 import { useFinnStore } from "@/lib/finn-core/store";
@@ -57,16 +58,21 @@ function makeTestRepo(): { repo: ExecutiveCockpitRepository; push: (e: CockpitEv
 
 async function renderCockpit(repo?: ExecutiveCockpitRepository) {
   const utils = render(
-    <ThemeProvider>
-      <RegionProvider>
-        <NxCockpitPage
-          repository={
-            repo ?? createDemoCockpitRepository({ latencyMs: 0, eventIntervalMs: 9_999_999 })
-          }
-          urlSync={false}
-        />
-      </RegionProvider>
-    </ThemeProvider>,
+    // ترويسة القمرة صارت تعرض `SadeedWordmark` الكانوني (توحيد العلامة بدل
+    // السداسي اليدوي)، وهو يقرأ اللغة من `useI18n` — فبدون المزوّد يرمي
+    // عند أول تصيير وتسقط الثلاثة عشر اختبارًا هنا معًا.
+    <I18nProvider>
+      <ThemeProvider>
+        <RegionProvider>
+          <NxCockpitPage
+            repository={
+              repo ?? createDemoCockpitRepository({ latencyMs: 0, eventIntervalMs: 9_999_999 })
+            }
+            urlSync={false}
+          />
+        </RegionProvider>
+      </ThemeProvider>
+    </I18nProvider>,
   );
   await screen.findByTestId("system-header");
   return utils;

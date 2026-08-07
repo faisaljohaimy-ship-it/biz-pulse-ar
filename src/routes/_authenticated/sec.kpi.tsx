@@ -2,7 +2,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getSecOverview } from "@/lib/sec.functions";
+import { getSecOverview, pctOrUnmeasured, numOrUnmeasured } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
 import { SecPageHeader, StatCard, SecLoading, SecError } from "@/components/sec/sec-shell";
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
@@ -25,13 +25,22 @@ function KPI() {
   if (isError) return <SecError onRetry={() => refetch()} />;
   if (!data) return <SecLoading />;
 
-  const total = data.incidents.length || 1;
+  // المادة ٢٧ — الصدق العددي: المتوسط/النسبة بلا عيّنة لا وجود له، فيعود
+  // `null` ويُعرض «لم يُقَس» بنغمة محايدة — لا «MTTR: 0 د» بشارة «سليم»
+  // ولا «نسبة حل: 0%» بإنذار مختلَق من غياب البيانات. العدّ يبقى قياسًا
+  // صحيحًا ولو كان صفرًا.
   const resolved = data.incidents.filter(
     (i) => i.status === "resolved" || i.status === "closed",
   ).length;
-  const mttr = data.incidents
-    .filter((i) => i.response_minutes != null)
-    .reduce((s, i, _, a) => s + (i.response_minutes ?? 0) / (a.length || 1), 0);
+  const resolutionRate = data.incidents.length
+    ? Math.round((resolved / data.incidents.length) * 100)
+    : null;
+  const mttrSamples = data.incidents.filter((i) => i.response_minutes != null);
+  const mttr = mttrSamples.length
+    ? Math.round(
+        mttrSamples.reduce((s, i) => s + (i.response_minutes ?? 0), 0) / mttrSamples.length,
+      )
+    : null;
   const patrolCompletion = data.patrols.length
     ? Math.round(
         (data.patrols.reduce(
@@ -41,46 +50,51 @@ function KPI() {
           data.patrols.length) *
           100,
       )
-    : 0;
+    : null;
   const compliance = data.contractors.length
     ? Math.round(
         data.contractors.reduce((s, c) => s + c.compliance_score, 0) / data.contractors.length,
       )
-    : 0;
+    : null;
   const assetHealth = data.assets.length
     ? Math.round(data.assets.reduce((s, a) => s + a.health, 0) / data.assets.length)
-    : 0;
+    : null;
 
-  const kpis = [
+  const kpis: Array<{
+    label: string;
+    value: string | number;
+    target?: string;
+    tone?: "default" | "danger" | "warning" | "success";
+  }> = [
     {
       label: "نسبة حل البلاغات",
-      value: `${Math.round((resolved / total) * 100)}%`,
+      value: pctOrUnmeasured(resolutionRate),
       target: "≥ 85%",
-      tone: resolved / total >= 0.85 ? "success" : ("warning" as const),
+      tone: resolutionRate === null ? undefined : resolutionRate >= 85 ? "success" : "warning",
     },
     {
       label: "MTTR — متوسط زمن الاستجابة",
-      value: `${Math.round(mttr)} د`,
+      value: numOrUnmeasured(mttr, " د"),
       target: "≤ 15 د",
-      tone: mttr <= 15 ? "success" : ("warning" as const),
+      tone: mttr === null ? undefined : mttr <= 15 ? "success" : "warning",
     },
     {
       label: "إنجاز الدوريات",
-      value: `${patrolCompletion}%`,
+      value: pctOrUnmeasured(patrolCompletion),
       target: "≥ 95%",
-      tone: patrolCompletion >= 95 ? "success" : ("warning" as const),
+      tone: patrolCompletion === null ? undefined : patrolCompletion >= 95 ? "success" : "warning",
     },
     {
       label: "امتثال المقاولين",
-      value: `${compliance}%`,
+      value: pctOrUnmeasured(compliance),
       target: "≥ 90%",
-      tone: compliance >= 90 ? "success" : ("warning" as const),
+      tone: compliance === null ? undefined : compliance >= 90 ? "success" : "warning",
     },
     {
       label: "صحة الأصول الأمنية",
-      value: `${assetHealth}%`,
+      value: pctOrUnmeasured(assetHealth),
       target: "≥ 92%",
-      tone: assetHealth >= 92 ? "success" : ("warning" as const),
+      tone: assetHealth === null ? undefined : assetHealth >= 92 ? "success" : "warning",
     },
     {
       label: "تنبيهات CCTV غير مُستجاب لها",

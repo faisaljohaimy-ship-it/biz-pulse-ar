@@ -32,6 +32,12 @@ export type ProviderStatus = {
   setup_hint_en: string;
   /** Hourly activity counts for the 24h sparkline (reference rows). */
   activity24h?: number[];
+  /**
+   * العَلَم البنيوي للمحاكاة المرجعية — تحقنه markSimulation في
+   * showcase-simulation.server وقت التشغيل؛ صفوف القاعدة الحية لا تحمله.
+   * الواجهة تقرأه بدل مطابقة نصّ setup_hint_ar.
+   */
+  is_simulation?: boolean;
 };
 
 export type IntegrationsOverview = {

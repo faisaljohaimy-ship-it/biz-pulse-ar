@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listIntegrations } from "@/lib/integrations/stubs.functions";
-import { SecPageHeader } from "@/components/sec/sec-shell";
+import { SecPageHeader, SecLoading, SecError } from "@/components/sec/sec-shell";
 import { CheckCircle2, XCircle, AlertCircle, Plug } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sec/integrations")({
@@ -25,11 +25,19 @@ const CATEGORY_AR: Record<string, string> = {
 
 function Integrations() {
   const fetchList = useServerFn(listIntegrations);
-  const { data: providers } = useQuery({
+  const {
+    data: providers,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["sec-integrations"],
     queryFn: () => fetchList(),
   });
-  const usingReference = (providers ?? []).some((p) => "last_sync_at" in p);
+  // كشف بنيوي للمحاكاة المرجعية — لا استنتاج من وجود حقل عرضي.
+  const usingReference = (providers ?? []).some((p) => p.is_simulation === true);
+  if (isLoading) return <SecLoading rows={9} />;
+  if (isError) return <SecError onRetry={() => void refetch()} />;
   return (
     <div className="space-y-4">
       <SecPageHeader
@@ -42,6 +50,11 @@ function Integrations() {
           </span>
         )}
       </SecPageHeader>
+      {(providers ?? []).length === 0 && (
+        <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+          لا توجد مزوّدات معرّفة بعد
+        </div>
+      )}
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {(providers ?? []).map((p) => {
           const Icon =

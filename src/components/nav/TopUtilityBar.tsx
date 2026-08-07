@@ -101,14 +101,14 @@ export function TopUtilityBar({ className }: { className?: string }) {
             role="dialog"
             aria-label={ar ? "التنبيهات" : "Notifications"}
             dir={ar ? "rtl" : "ltr"}
-            className="absolute end-0 top-[calc(100%+8px)] z-50 w-[min(92vw,360px)] overflow-hidden rounded-2xl border border-sidebar-border bg-[#06101F]/98 shadow-2xl backdrop-blur-xl"
+            className="absolute end-0 top-[calc(100%+8px)] z-50 w-[min(92vw,360px)] overflow-hidden rounded-2xl border border-[color:var(--hairline)] bg-popover shadow-2xl"
           >
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-              <div className="text-sm font-bold text-white">
+            <div className="flex items-center justify-between border-b border-[color:var(--hairline)] px-4 py-3">
+              <div className="text-sm font-bold text-foreground">
                 {ar ? "التنبيهات" : "Notifications"}
               </div>
               {simulated && (
-                <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-[12px] font-semibold text-amber-200">
+                <span className="rounded-full border border-[color:var(--tone-amber)]/40 bg-[color:var(--tone-amber)]/10 px-2 py-0.5 text-[12px] font-semibold text-[color:var(--tone-amber)]">
                   {ar ? "محاكاة" : "Simulated"}
                 </span>
               )}
@@ -116,18 +116,18 @@ export function TopUtilityBar({ className }: { className?: string }) {
             <div className="max-h-[60vh] overflow-y-auto">
               {items.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
-                  <Bell className="size-6 text-white/30" aria-hidden />
-                  <p className="text-sm text-white/70">
+                  <Bell className="size-6 text-[color:var(--ink-3)]" aria-hidden />
+                  <p className="text-sm text-[color:var(--ink-2)]">
                     {ar ? "لا توجد تنبيهات حالياً" : "No notifications right now"}
                   </p>
-                  <p className="text-[12px] text-white/40">
+                  <p className="text-[12px] text-[color:var(--ink-3)]">
                     {ar
                       ? "سيظهر أي حدث حرج فور وصوله."
                       : "New critical events will appear here instantly."}
                   </p>
                 </div>
               ) : (
-                <ul className="divide-y divide-white/5">
+                <ul className="divide-y divide-[color:var(--hairline-soft)]">
                   {items.map((n) => (
                     <li key={n.id}>
                       <NotifRow n={n} ar={ar} onNav={() => setNotifOpen(false)} />
@@ -152,10 +152,10 @@ function NotifRow({ n, ar, onNav }: { n: Notif; ar: boolean; onNav: () => void }
     n.severity === "critical"
       ? "text-destructive border-destructive/40"
       : n.severity === "warn"
-        ? "text-amber-300 border-amber-400/40"
-        : "text-cyan-200 border-cyan-400/30";
+        ? "text-[color:var(--tone-amber)] border-[color:var(--tone-amber)]/40"
+        : "text-[color:var(--tone-cyan)] border-[color:var(--tone-cyan)]/30";
   const body = (
-    <div className="flex items-start gap-3 px-4 py-3 transition hover:bg-white/5">
+    <div className="flex items-start gap-3 px-4 py-3 transition hover:bg-[color:var(--chip)]">
       <span
         className={cn(
           "mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border text-[12px] font-bold",
@@ -166,10 +166,10 @@ function NotifRow({ n, ar, onNav }: { n: Notif; ar: boolean; onNav: () => void }
         !
       </span>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium text-white">
+        <div className="truncate text-sm font-medium text-foreground">
           {ar ? n.title_ar : n.title_en}
         </div>
-        <div className="mt-0.5 flex items-center gap-2 text-[12px] text-white/50">
+        <div className="mt-0.5 flex items-center gap-2 text-[12px] text-[color:var(--ink-3)]">
           <span>{n.source}</span>
           <span aria-hidden>·</span>
           <span>{n.time}</span>

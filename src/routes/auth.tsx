@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth-context";
+import { brandFor, brandName } from "@/lib/domain";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -152,7 +153,12 @@ function AuthPage() {
               panel on large screens, as a compact strip on small screens. */}
           <div className="mb-5 lg:hidden">
             <span className="nexus-command-chip">
-              <Crown className="h-3.5 w-3.5" /> SADEED · SOVEREIGN INTELLIGENCE
+              <Crown className="h-3.5 w-3.5" />
+              {/* الثنائية الرسمية من brandFor — والعربية بلا تباعد أحرف لأن
+                  التباعد يقطع وصلات الحرف العربي (عقيدة SadeedWordmark). */}
+              <span className={isAr ? "tracking-normal" : undefined}>
+                {brandFor(isAr).name} · {brandFor(isAr).descriptor}
+              </span>
             </span>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {[
@@ -283,10 +289,17 @@ function ExecutiveAcceptanceStage({ isAr, onAccept }: { isAr: boolean; onAccept:
       <header className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-8">
         <Link to="/" className="flex items-center gap-3">
           <span className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-2xl border border-primary/35 bg-primary/10 shadow-[0_0_30px_rgba(0,212,255,.2)]">
-            <img src="/brand-icon.png" alt="SADEED" className="h-full w-full object-cover" />
+            <img
+              src="/brand-icon.png"
+              alt={brandName(isAr)}
+              className="h-full w-full object-cover"
+            />
           </span>
           <span>
-            <span className="block text-sm font-black tracking-[0.18em]">SADEED</span>
+            {/* الاسم يتبع اللغة — والتباعد للاتيني فقط: يقطع وصلات العربية. */}
+            <span className={`block text-sm font-black ${isAr ? "" : "tracking-[0.18em]"}`}>
+              {brandName(isAr)}
+            </span>
             <span className="block text-[12px] uppercase tracking-[0.22em] text-primary/75">
               Executive Access
             </span>
@@ -406,7 +419,12 @@ function BrandLockup({ isAr }: { isAr: boolean }) {
   return (
     <div className="max-w-2xl">
       <span className="nexus-command-chip">
-        <Crown className="h-3.5 w-3.5" /> SADEED · SOVEREIGN INTELLIGENCE
+        <Crown className="h-3.5 w-3.5" />
+        {/* الثنائية الرسمية من brandFor — والعربية بلا تباعد أحرف لأن
+            التباعد يقطع وصلات الحرف العربي (عقيدة SadeedWordmark). */}
+        <span className={isAr ? "tracking-normal" : undefined}>
+          {brandFor(isAr).name} · {brandFor(isAr).descriptor}
+        </span>
       </span>
       <h2 className="nexus-hero-title mt-6 text-4xl font-black leading-tight xl:text-6xl">
         {isAr ? "الذكاء، تحت القيادة." : "Intelligence, under command."}

@@ -209,7 +209,8 @@ function IntegrationsHubPage() {
     () => [...localEvents, ...(events.data ?? [])],
     [localEvents, events.data],
   );
-  const usingReference = providers.some((p) => p.setup_hint_ar.includes("محاكاة مرجعية"));
+  // كشف بنيوي للمحاكاة المرجعية — لا مطابقة نصّ عربي قابلة للكسر.
+  const usingReference = providers.some((p) => p.is_simulation === true);
 
   return (
     <NexusPage
@@ -276,6 +277,30 @@ function IntegrationsHubPage() {
           <div className="mt-6 flex items-center justify-center py-10 text-sm text-slate-400">
             <Loader2 className="me-2 h-4 w-4 animate-spin" /> {ar ? "جارٍ التحميل…" : "Loading…"}
           </div>
+        ) : overview.isError ? (
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 py-10 text-center">
+            <AlertTriangle className="h-8 w-8 text-amber-400" />
+            <div className="text-sm font-semibold text-white">
+              {ar ? "تعذّر تحميل حالة الموصلات" : "Couldn't load connector status"}
+            </div>
+            <p className="max-w-sm text-[12px] text-slate-400">
+              {ar
+                ? "حدث تأخّر مؤقّت في جلب البيانات. أعد المحاولة."
+                : "A temporary delay occurred while fetching data. Try again."}
+            </p>
+            <button
+              type="button"
+              onClick={() => void overview.refetch()}
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-[12px] font-semibold text-cyan-100 hover:bg-cyan-400/20"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              {ar ? "إعادة المحاولة" : "Retry"}
+            </button>
+          </div>
+        ) : providers.length === 0 ? (
+          <div className="mt-6 py-10 text-center text-sm text-slate-500">
+            {ar ? "لا توجد موصلات معرّفة بعد" : "No connectors defined yet"}
+          </div>
         ) : (
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {providers.map((p) => {
@@ -283,7 +308,7 @@ function IntegrationsHubPage() {
               const pill = healthPill(p.health, ar);
               const PillIcon = pill.icon;
               const isTesting = testing === p.id;
-              const isSim = p.setup_hint_ar.includes("محاكاة مرجعية");
+              const isSim = p.is_simulation === true;
               const sparkColor =
                 p.health === "healthy" ? "#34d399" : p.health === "error" ? "#fbbf24" : "#22d3ee";
               return (

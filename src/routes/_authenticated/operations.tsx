@@ -15,7 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { EventTimeline } from "@/components/events/EventTimeline";
 import { useRuntime } from "@/lib/runtime/RuntimeContext";
-import { getExecKpis } from "@/lib/sec.functions";
+import { getExecKpis, pctOrUnmeasured, numOrUnmeasured } from "@/lib/sec.functions";
 import { getAgentOpsOverview } from "@/lib/exec.functions";
 import {
   Activity,
@@ -27,8 +27,6 @@ import {
   Gauge,
   CheckCircle2,
   Database,
-  Cpu,
-  ServerCog,
   Sparkles,
   Layers,
   ClipboardList,
@@ -189,7 +187,7 @@ function OpsHeader({ runtime, kpis }: { runtime: RuntimeShape; kpis: KpiShape })
           <div className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-center">
             <div className="text-[12px] uppercase tracking-wider text-primary">Readiness</div>
             <div className="text-lg font-bold text-foreground">
-              {kpis?.executive_readiness ?? "—"}%
+              {pctOrUnmeasured(kpis?.executive_readiness)}
             </div>
           </div>
         </div>
@@ -209,7 +207,7 @@ function HealthCard({
   label: string;
   value: string | number;
   hint?: string;
-  tone: "ok" | "warn" | "crit" | "info";
+  tone: "ok" | "warn" | "crit" | "info" | "muted";
   icon: typeof Activity;
 }) {
   const tones: Record<typeof tone, string> = {
@@ -217,6 +215,8 @@ function HealthCard({
     warn: "border-amber-500/30 text-amber-300",
     crit: "border-rose-500/40 text-rose-300",
     info: "border-cyan-500/30 text-cyan-300",
+    // المادة ٢٧ — نغمة محايدة لما لم يُقَس: لا حكم أخضر ولا إنذار مختلَق.
+    muted: "border-border/50 text-muted-foreground",
   } as const;
   return (
     <Card className={cn("bg-card/60 backdrop-blur p-3", tones[tone])}>
@@ -241,46 +241,41 @@ function HealthWall({
   kpis: KpiShape;
   agentOps: AgentOpsShape;
 }) {
-  const queueDepth = agentOps?.system.queue_length ?? 0;
+  // المادة ٢٧ — الصدق العددي: ما لا مصدر قياس له يُعرض «لم يُقَس» بنغمة
+  // محايدة. لا 100% أثناء التحميل، ولا صحة مختلَقة من غياب الوكلاء، ولا
+  // نسبة تجميلية للـworkflows — العدّ الحقيقي وحده هو المقيس.
+  const queueDepth = agentOps?.system.queue_length ?? null;
   const agentHealth = agentOps?.system.agents_total
     ? Math.round(
         ((agentOps.system.agents_enabled - agentOps.system.agents_failed) /
           agentOps.system.agents_total) *
           100,
       )
-    : 100;
-  const wfHealth = Math.max(0, 100 - Math.min(100, runtime.counts.workflows_enabled ? 0 : 10));
-  const securityHealth = Math.max(0, 100 - (kpis?.risk_index ?? 0));
+    : null;
+  const securityHealth = kpis?.risk_index != null ? Math.max(0, 100 - kpis.risk_index) : null;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
-      <HealthCard
-        label="System"
-        value="Online"
-        tone="ok"
-        icon={ServerCog}
-        hint="all services nominal"
-      />
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
       <HealthCard
         label="Enterprise"
-        value={`${kpis?.executive_readiness ?? "—"}%`}
-        tone="info"
+        value={pctOrUnmeasured(kpis?.executive_readiness)}
+        tone={kpis?.executive_readiness != null ? "info" : "muted"}
         icon={Sparkles}
         hint="readiness index"
       />
       <HealthCard
         label="Agents"
-        value={`${agentHealth}%`}
-        tone={agentHealth >= 80 ? "ok" : "warn"}
+        value={pctOrUnmeasured(agentHealth)}
+        tone={agentHealth === null ? "muted" : agentHealth >= 80 ? "ok" : "warn"}
         icon={Bot}
-        hint={`${agentOps?.system.agents_running ?? 0} running`}
+        hint={agentOps ? `${agentOps.system.agents_running} running` : undefined}
       />
       <HealthCard
         label="Workflows"
-        value={`${wfHealth}%`}
-        tone={wfHealth >= 80 ? "ok" : "warn"}
+        value={runtime.counts.workflows_enabled}
+        tone="info"
         icon={Workflow}
-        hint={`${runtime.counts.workflows_enabled} enabled`}
+        hint="enabled workflows"
       />
       <HealthCard
         label="Integrations"
@@ -291,10 +286,10 @@ function HealthWall({
       />
       <HealthCard
         label="Security"
-        value={`${securityHealth}%`}
-        tone={securityHealth >= 70 ? "ok" : "crit"}
+        value={pctOrUnmeasured(securityHealth)}
+        tone={securityHealth === null ? "muted" : securityHealth >= 70 ? "ok" : "crit"}
         icon={ShieldAlert}
-        hint={`${kpis?.incidents_critical ?? 0} critical`}
+        hint={kpis ? `${kpis.incidents_critical} critical` : undefined}
       />
       <HealthCard
         label="Database"
@@ -305,8 +300,8 @@ function HealthWall({
       />
       <HealthCard
         label="Queue"
-        value={queueDepth}
-        tone={queueDepth > 20 ? "warn" : "ok"}
+        value={numOrUnmeasured(queueDepth)}
+        tone={queueDepth === null ? "muted" : queueDepth > 20 ? "warn" : "ok"}
         icon={Layers}
         hint="pending + running"
       />
@@ -420,7 +415,7 @@ function LiveExecutionCenter() {
         </div>
       ) : (
         <ScrollArea className="h-[420px]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pr-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pe-2">
             {wfRuns.map((r) => {
               const idx = wfStepIndex.get(r.id);
               const pct = idx && idx.total > 0 ? Math.round((idx.done / idx.total) * 100) : 0;
@@ -617,7 +612,7 @@ function WorkflowPhaseTimeline() {
         </div>
         <span className="text-[12px] text-muted-foreground">24h window · {runs.length} runs</span>
       </div>
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
         {counts.map((c, i) => (
           <div key={c.key} className="relative">
             <div className={cn("rounded-md border px-2 py-3 text-center", c.tone)}>
@@ -625,7 +620,7 @@ function WorkflowPhaseTimeline() {
               <div className="text-xl font-bold tabular-nums">{c.n}</div>
             </div>
             {i < counts.length - 1 ? (
-              <div className="hidden md:block absolute right-[-6px] top-1/2 size-2 -translate-y-1/2 rotate-45 border-t border-r border-border/40" />
+              <div className="hidden lg:block absolute end-[-6px] top-1/2 size-2 -translate-y-1/2 rotate-45 border-t border-e border-border/40" />
             ) : null}
           </div>
         ))}
@@ -774,7 +769,7 @@ function AuditCenter() {
         </div>
       ) : (
         <ScrollArea className="h-[280px]">
-          <div className="space-y-1.5 pr-2">
+          <div className="space-y-1.5 pe-2">
             {rows.map((r) => (
               <div
                 key={r.id}
@@ -837,8 +832,9 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
     },
     {
       label: "Resolution",
-      value: `${kpis.incidents_resolution_rate}%`,
-      hint: `MTTR ${kpis.mttr_minutes}m`,
+      // المادة ٢٧ — الحقول القابلة لأن تكون null تُعرض «لم يُقَس» لا `null%`.
+      value: pctOrUnmeasured(kpis.incidents_resolution_rate),
+      hint: `MTTR ${numOrUnmeasured(kpis.mttr_minutes, "m")}`,
       icon: Timer,
     },
     {
@@ -850,18 +846,18 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
     {
       label: "Patrols",
       value: kpis.patrols_active,
-      hint: `${kpis.patrol_completion}% completion`,
+      hint: `completion ${pctOrUnmeasured(kpis.patrol_completion)}`,
       icon: Activity,
     },
     {
       label: "CCTV Health",
-      value: `${kpis.cctv_health}%`,
+      value: pctOrUnmeasured(kpis.cctv_health),
       hint: `${kpis.cameras_online}/${kpis.cameras_total} online`,
       icon: Gauge,
     },
     {
       label: "Access Health",
-      value: `${kpis.access_health}%`,
+      value: pctOrUnmeasured(kpis.access_health),
       hint: `${kpis.gates_online}/${kpis.gates_total} gates`,
       icon: Gauge,
     },
@@ -873,7 +869,7 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
     },
     {
       label: "Compliance",
-      value: `${kpis.contractors_compliance}%`,
+      value: pctOrUnmeasured(kpis.contractors_compliance),
       hint: `${kpis.contractors_active} contractors`,
       icon: CheckCircle2,
     },
@@ -891,13 +887,13 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
     },
     {
       label: "Risk Index",
-      value: `${kpis.risk_index}%`,
-      hint: `safety ${kpis.safety_index}%`,
+      value: pctOrUnmeasured(kpis.risk_index),
+      hint: `safety ${pctOrUnmeasured(kpis.safety_index)}`,
       icon: ShieldAlert,
     },
     {
       label: "Readiness",
-      value: `${kpis.executive_readiness}%`,
+      value: pctOrUnmeasured(kpis.executive_readiness),
       hint: "executive composite",
       icon: Sparkles,
     },

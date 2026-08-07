@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { userFacingError } from "@/lib/errors/user-facing-error";
+import { useAuth } from "@/lib/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,6 +60,13 @@ interface Proposal {
   status: "مقترح" | "معتمد" | "مرفوض";
   decided_by: string | null;
   created_at: string;
+}
+
+/** مسودة يجهّزها محرك FINN محليًا — لا تُكتب للقاعدة إلا باعتماد بشري. */
+interface FinnDraftProposal {
+  area: string;
+  proposal_ar: string;
+  impact: Proposal["impact"];
 }
 
 const STATUSES: TaskStatus[] = ["جديد", "قيد المعالجة", "بانتظار اعتماد", "مغلق"];
@@ -196,16 +206,17 @@ function buildReferenceBoard(now: number) {
   return { tasks, requests, proposals };
 }
 
+/* danger أحمر / warning كهرماني — الدلالة ثابتة، والدرجات تعمل في الوضعين. */
 const PRIORITY_COLOR: Record<Priority, string> = {
-  "عاجل جدًا": "bg-red-600/20 text-red-300 border-red-500/40",
-  عاجل: "bg-amber-500/20 text-amber-200 border-amber-500/40",
-  متابعة: "bg-cyan-500/15 text-cyan-200 border-cyan-500/30",
+  "عاجل جدًا": "bg-red-500/15 text-red-600 border-red-500/40 dark:text-red-300",
+  عاجل: "bg-amber-500/15 text-amber-600 border-amber-500/40 dark:text-amber-300",
+  متابعة: "bg-cyan-500/10 text-[color:var(--tone-cyan)] border-cyan-500/30",
 };
 
 const CHANNEL_COLOR: Record<SupportRequest["channel"], string> = {
-  داخلي: "bg-slate-500/20 text-slate-200 border-slate-500/30",
-  ميداني: "bg-emerald-500/20 text-emerald-200 border-emerald-500/30",
-  تنفيذي: "bg-fuchsia-500/20 text-fuchsia-200 border-fuchsia-500/30",
+  داخلي: "bg-muted/40 text-muted-foreground border-border",
+  ميداني: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-300",
+  تنفيذي: "bg-fuchsia-500/15 text-fuchsia-600 border-fuchsia-500/30 dark:text-fuchsia-300",
 };
 
 function formatCountdown(due: string | null): { text: string; critical: boolean } {
@@ -220,10 +231,15 @@ function formatCountdown(due: string | null): { text: string; critical: boolean 
 }
 
 function UrgentOpsPage() {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<UrgentTask[]>([]);
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [drafts, setDrafts] = useState<FinnDraftProposal[]>([]);
   const [dragId, setDragId] = useState<string | null>(null);
+  // حارس تكرار محرك FINN: بصمة آخر تحليل — لا إعادة معالجة لنفس الإشارات.
+  const lastAnalysisRef = useRef("");
+  const guestTitle = !user ? "يتطلب تسجيل الدخول" : undefined;
 
   const loadAll = useCallback(async () => {
     const [t, r, p] = await Promise.all([
@@ -276,7 +292,9 @@ function UrgentOpsPage() {
     };
   }, [loadAll]);
 
-  // Self-evolution heuristic — proposes improvements once per mount if signals warrant.
+  // محرك مقترحات FINN — تحليل فقط: يرصد الإشارات كلما تغيّرت البيانات
+  // ويجهّز مسودات محلية. لا كتابة تلقائية للقاعدة — الإدراج حصريًا خلف
+  // زر اعتماد بشري (submitDraft) وفق عقيدة بوابة التأكيد البشري.
   useEffect(() => {
     if (tasks.length === 0) return;
     const now = Date.now();
@@ -290,45 +308,68 @@ function UrgentOpsPage() {
       return ms > 0 && ms < 4 * 3600 * 1000;
     });
 
-    const propose = async (area: string, proposal_ar: string, impact: Proposal["impact"]) => {
-      const { data: existing } = await supabase
-        .from("finn_improvement_proposals")
-        .select("id")
-        .eq("proposal_ar", proposal_ar)
-        .eq("status", "مقترح")
-        .limit(1);
-      if (existing && existing.length > 0) return;
-      await supabase.from("finn_improvement_proposals").insert({ area, proposal_ar, impact });
-    };
+    const candidates: FinnDraftProposal[] = [];
+    if (overdue.length >= 3) {
+      const byDept: Record<string, number> = {};
+      for (const t of overdue) byDept[t.department] = (byDept[t.department] ?? 0) + 1;
+      const top = Object.entries(byDept).sort((a, b) => b[1] - a[1])[0];
+      candidates.push({
+        area: "SLA",
+        proposal_ar: `${overdue.length} مهام تجاوزت SLA — أقترح رفع أولوية قسم ${top[0]} وتخصيص فريق دعم إضافي خلال ٢٤ ساعة.`,
+        impact: "حرج",
+      });
+    }
+    if (breach.length >= 2) {
+      candidates.push({
+        area: "استباق SLA",
+        proposal_ar: `${breach.length} مهام على وشك خرق SLA خلال أقل من ٤ ساعات — أقترح تفعيل غرفة استجابة سريعة وإشعار مالكي المهام.`,
+        impact: "عالٍ",
+      });
+    }
+    if (unassigned.length >= 2) {
+      candidates.push({
+        area: "المساندة",
+        proposal_ar: `${unassigned.length} طلبات مساندة بلا مسؤول محدد — أقترح إسنادها آلياً لأقرب فريق متاح ومتابعة الاستجابة كل ساعة.`,
+        impact: "متوسط",
+      });
+    }
 
-    (async () => {
-      if (overdue.length >= 3) {
-        const byDept: Record<string, number> = {};
-        for (const t of overdue) byDept[t.department] = (byDept[t.department] ?? 0) + 1;
-        const top = Object.entries(byDept).sort((a, b) => b[1] - a[1])[0];
-        await propose(
-          "SLA",
-          `${overdue.length} مهام تجاوزت SLA — أقترح رفع أولوية قسم ${top[0]} وتخصيص فريق دعم إضافي خلال ٢٤ ساعة.`,
-          "حرج",
-        );
-      }
-      if (breach.length >= 2) {
-        await propose(
-          "استباق SLA",
-          `${breach.length} مهام على وشك خرق SLA خلال أقل من ٤ ساعات — أقترح تفعيل غرفة استجابة سريعة وإشعار مالكي المهام.`,
-          "عالٍ",
-        );
-      }
-      if (unassigned.length >= 2) {
-        await propose(
-          "المساندة",
-          `${unassigned.length} طلبات مساندة بلا مسؤول محدد — أقترح إسنادها آلياً لأقرب فريق متاح ومتابعة الاستجابة كل ساعة.`,
-          "متوسط",
-        );
-      }
-    })().catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // ما سبق تسجيله في السجل لا يُعرض مسودةً مكررة.
+    const fresh = candidates.filter((c) => !proposals.some((p) => p.proposal_ar === c.proposal_ar));
+    const signature = fresh.map((c) => c.proposal_ar).join(" | ");
+    if (signature === lastAnalysisRef.current) return;
+    lastAnalysisRef.current = signature;
+    setDrafts(fresh);
+  }, [tasks, requests, proposals]);
+
+  /** الإدراج للسجل — يُستدعى من زر الاعتماد البشري فقط. */
+  const submitDraft = async (d: FinnDraftProposal) => {
+    const { data: existing, error: lookupError } = await supabase
+      .from("finn_improvement_proposals")
+      .select("id")
+      .eq("proposal_ar", d.proposal_ar)
+      .eq("status", "مقترح")
+      .limit(1);
+    if (lookupError) {
+      toast.error(userFacingError(lookupError));
+      return;
+    }
+    if (existing && existing.length > 0) {
+      setDrafts((cur) => cur.filter((x) => x.proposal_ar !== d.proposal_ar));
+      toast.success("المقترح مسجّل مسبقًا بانتظار الاعتماد");
+      return;
+    }
+    const { error } = await supabase
+      .from("finn_improvement_proposals")
+      .insert({ area: d.area, proposal_ar: d.proposal_ar, impact: d.impact });
+    if (error) {
+      toast.error(userFacingError(error));
+      return;
+    }
+    setDrafts((cur) => cur.filter((x) => x.proposal_ar !== d.proposal_ar));
+    toast.success("أُدرج مقترح FINN بانتظار الاعتماد");
+    void loadAll();
+  };
 
   const grouped = useMemo(() => {
     const map: Record<TaskStatus, UrgentTask[]> = {
@@ -347,19 +388,60 @@ function UrgentOpsPage() {
     return map;
   }, [tasks]);
 
+  // الكتابات الثلاث: تحديث محلي متفائل + فحص الخطأ + تراجع محلي عند
+  // الفشل — لا يُترك السحب يبدو ناجحًا وهو مرفوض. صفوف المحاكاة
+  // (sim-*) ليست في القاعدة، فتُحدَّث محليًا فقط دون طلب كتابة.
   const moveTask = async (id: string, status: TaskStatus) => {
-    await supabase.from("urgent_tasks").update({ status }).eq("id", id);
+    const prev = tasks;
+    setTasks((cur) => cur.map((t) => (t.id === id ? { ...t, status } : t)));
+    if (id.startsWith("sim-")) {
+      toast.success(`نُقلت المهمة إلى «${status}» (محاكاة مرجعية)`);
+      return;
+    }
+    const { error } = await supabase.from("urgent_tasks").update({ status }).eq("id", id);
+    if (error) {
+      setTasks(prev);
+      toast.error(userFacingError(error));
+      return;
+    }
+    toast.success(`نُقلت المهمة إلى «${status}»`);
   };
 
   const assignRequest = async (id: string, assigned_to: string) => {
-    await supabase.from("support_requests").update({ assigned_to }).eq("id", id);
+    const prev = requests;
+    setRequests((cur) => cur.map((r) => (r.id === id ? { ...r, assigned_to } : r)));
+    if (id.startsWith("sim-")) {
+      toast.success(`أُسند الطلب إلى ${assigned_to} (محاكاة مرجعية)`);
+      return;
+    }
+    const { error } = await supabase.from("support_requests").update({ assigned_to }).eq("id", id);
+    if (error) {
+      setRequests(prev);
+      toast.error(userFacingError(error));
+      return;
+    }
+    toast.success(`أُسند الطلب إلى ${assigned_to}`);
   };
 
   const decide = async (id: string, status: "معتمد" | "مرفوض") => {
-    await supabase
+    const prev = proposals;
+    const decided_by = "المسؤول التنفيذي";
+    setProposals((cur) => cur.map((p) => (p.id === id ? { ...p, status, decided_by } : p)));
+    const successMsg = status === "معتمد" ? "اعتُمد المقترح" : "رُفض المقترح";
+    if (id.startsWith("sim-")) {
+      toast.success(`${successMsg} (محاكاة مرجعية)`);
+      return;
+    }
+    const { error } = await supabase
       .from("finn_improvement_proposals")
-      .update({ status, decided_by: "المسؤول التنفيذي" })
+      .update({ status, decided_by })
       .eq("id", id);
+    if (error) {
+      setProposals(prev);
+      toast.error(userFacingError(error));
+      return;
+    }
+    toast.success(successMsg);
   };
 
   return (
@@ -367,7 +449,7 @@ function UrgentOpsPage() {
       {/* Simulation banner */}
       <div
         role="status"
-        className="rounded-lg border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-amber-100 text-sm flex items-center gap-2"
+        className="rounded-lg border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-amber-700 dark:text-amber-200 text-sm flex items-center gap-2"
       >
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span className="font-semibold">
@@ -376,15 +458,15 @@ function UrgentOpsPage() {
       </div>
 
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-cyan-100">المساندة ومتابعة الأعمال العاجلة</h1>
-        <p className="text-sm text-cyan-200/70">
+        <h1 className="text-2xl font-bold text-foreground">المساندة ومتابعة الأعمال العاجلة</h1>
+        <p className="text-sm text-muted-foreground">
           Urgent Operations & Support Desk — مركز تنفيذي متكامل مع محرك FINN للتحسين المستمر.
         </p>
       </header>
 
       {/* Panel 1 — Kanban */}
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-cyan-100">الأعمال العاجلة</h2>
+        <h2 className="mb-3 text-lg font-semibold text-foreground">الأعمال العاجلة</h2>
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           {STATUSES.map((status) => (
             <div
@@ -396,11 +478,14 @@ function UrgentOpsPage() {
                   setDragId(null);
                 }
               }}
-              className="rounded-xl border border-cyan-500/20 bg-[#061A2E]/60 p-3 min-h-[300px]"
+              className="rounded-xl border border-border/60 bg-card/60 p-3 min-h-[300px]"
             >
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-semibold text-cyan-100">{status}</span>
-                <Badge variant="outline" className="border-cyan-500/40 text-cyan-200">
+                <span className="text-sm font-semibold text-foreground">{status}</span>
+                <Badge
+                  variant="outline"
+                  className="border-cyan-500/40 text-[color:var(--tone-cyan)]"
+                >
                   {grouped[status].length}
                 </Badge>
               </div>
@@ -410,11 +495,13 @@ function UrgentOpsPage() {
                   return (
                     <div
                       key={t.id}
-                      draggable
+                      draggable={!!user}
+                      title={!user ? "يتطلب تسجيل الدخول لنقل المهام" : undefined}
                       onDragStart={() => setDragId(t.id)}
                       className={cn(
-                        "cursor-grab rounded-lg border bg-[#0A2540]/80 p-3 text-sm shadow-sm transition hover:border-cyan-400/60",
-                        cd.critical ? "border-red-500/60 animate-pulse" : "border-cyan-500/20",
+                        "rounded-lg border bg-background/80 p-3 text-sm shadow-sm transition hover:border-[color:var(--tone-cyan)]",
+                        user ? "cursor-grab" : "cursor-default",
+                        cd.critical ? "border-red-500/60 animate-pulse" : "border-border/60",
                       )}
                     >
                       <div className="mb-1 flex items-start justify-between gap-2">
@@ -429,14 +516,16 @@ function UrgentOpsPage() {
                         <span
                           className={cn(
                             "text-[12px]",
-                            cd.critical ? "text-red-300 font-bold" : "text-cyan-200/70",
+                            cd.critical
+                              ? "text-red-600 dark:text-red-300 font-bold"
+                              : "text-muted-foreground",
                           )}
                         >
                           {cd.text}
                         </span>
                       </div>
-                      <p className="font-medium text-cyan-50 leading-snug">{t.title_ar}</p>
-                      <div className="mt-2 flex items-center justify-between text-[12px] text-cyan-200/60">
+                      <p className="font-medium text-foreground leading-snug">{t.title_ar}</p>
+                      <div className="mt-2 flex items-center justify-between text-[12px] text-muted-foreground">
                         <span>{t.department}</span>
                         <span>{t.owner_name ?? "—"}</span>
                       </div>
@@ -444,7 +533,7 @@ function UrgentOpsPage() {
                   );
                 })}
                 {grouped[status].length === 0 && (
-                  <p className="text-xs text-cyan-200/40 text-center py-6">لا توجد مهام</p>
+                  <p className="text-xs text-muted-foreground/70 text-center py-6">لا توجد مهام</p>
                 )}
               </div>
             </div>
@@ -454,19 +543,19 @@ function UrgentOpsPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Panel 2 — Support queue */}
-        <Card className="border-cyan-500/20 bg-[#061A2E]/60">
+        <Card className="border-border/60 bg-card/60">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-cyan-100">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <ShieldCheck className="h-4 w-4" /> طلبات المساندة
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {requests.map((r) => (
-              <div key={r.id} className="rounded-lg border border-cyan-500/20 bg-[#0A2540]/60 p-3">
+              <div key={r.id} className="rounded-lg border border-border/60 bg-background/60 p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-cyan-50">{r.topic_ar}</p>
-                    <p className="text-[12px] text-cyan-200/60 mt-1">من: {r.requester}</p>
+                    <p className="text-sm font-medium text-foreground">{r.topic_ar}</p>
+                    <p className="text-[12px] text-muted-foreground mt-1">من: {r.requester}</p>
                   </div>
                   <span
                     className={cn(
@@ -480,9 +569,13 @@ function UrgentOpsPage() {
                 <div className="mt-2 flex items-center gap-2">
                   <Select
                     value={r.assigned_to ?? ""}
+                    disabled={!user}
                     onValueChange={(v) => void assignRequest(r.id, v)}
                   >
-                    <SelectTrigger className="h-8 text-xs bg-[#061A2E]/60 border-cyan-500/30">
+                    <SelectTrigger
+                      title={guestTitle}
+                      className="h-8 text-xs bg-background/60 border-border"
+                    >
                       <SelectValue placeholder="إسناد المسؤولية" />
                     </SelectTrigger>
                     <SelectContent>
@@ -496,37 +589,76 @@ function UrgentOpsPage() {
                       <SelectItem value="د. ريم القحطاني">د. ريم القحطاني</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Badge variant="outline" className="border-cyan-500/30 text-cyan-200 text-[12px]">
+                  <Badge
+                    variant="outline"
+                    className="border-cyan-500/30 text-[color:var(--tone-cyan)] text-[12px]"
+                  >
                     {r.status}
                   </Badge>
                 </div>
               </div>
             ))}
             {requests.length === 0 && (
-              <p className="text-xs text-cyan-200/50 text-center py-4">لا توجد طلبات مساندة.</p>
+              <p className="text-xs text-muted-foreground/70 text-center py-4">
+                لا توجد طلبات مساندة.
+              </p>
             )}
           </CardContent>
         </Card>
 
         {/* Panel 3 — FINN proposals */}
-        <Card className="border-cyan-500/20 bg-[#061A2E]/60">
+        <Card className="border-border/60 bg-card/60">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-cyan-100">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Sparkles className="h-4 w-4" /> مقترحات FINN لتطوير المنظومة
             </CardTitle>
-            <p className="text-[12px] text-amber-200/80 mt-1">
+            <p className="text-[12px] text-amber-700 dark:text-amber-200/80 mt-1">
               FINN تقترح وتجهّز — الاعتماد النهائي بشري.
             </p>
           </CardHeader>
           <CardContent className="space-y-2">
+            {drafts.map((d) => (
+              <div
+                key={d.proposal_ar}
+                className="rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 p-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Badge className="text-[12px] border bg-amber-500/15 text-amber-600 border-amber-500/40 dark:text-amber-300">
+                    مسودة FINN
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="border-cyan-500/40 text-[color:var(--tone-cyan)] text-[12px]"
+                  >
+                    {d.area}
+                  </Badge>
+                </div>
+                <p className="mt-2 text-sm text-foreground leading-relaxed">{d.proposal_ar}</p>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-[12px] text-muted-foreground">
+                    لا تُسجَّل إلا باعتماد بشري
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 border-amber-500/40 text-amber-600 hover:bg-amber-500/10 dark:text-amber-300"
+                    disabled={!user}
+                    title={guestTitle}
+                    onClick={() => void submitDraft(d)}
+                  >
+                    <Sparkles className="ms-1 h-3 w-3" /> إدراج للاعتماد
+                  </Button>
+                </div>
+              </div>
+            ))}
             {proposals.map((p) => (
-              <div key={p.id} className="rounded-lg border border-cyan-500/20 bg-[#0A2540]/60 p-3">
+              <div key={p.id} className="rounded-lg border border-border/60 bg-background/60 p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className="border-cyan-500/40 text-cyan-200 text-[12px]"
+                        className="border-cyan-500/40 text-[color:var(--tone-cyan)] text-[12px]"
                       >
                         {p.area}
                       </Badge>
@@ -534,20 +666,20 @@ function UrgentOpsPage() {
                         className={cn(
                           "text-[12px] border",
                           p.impact === "حرج"
-                            ? "bg-red-600/20 text-red-200 border-red-500/40"
+                            ? "bg-red-500/15 text-red-600 border-red-500/40 dark:text-red-300"
                             : p.impact === "عالٍ"
-                              ? "bg-amber-500/20 text-amber-200 border-amber-500/40"
-                              : "bg-cyan-500/15 text-cyan-200 border-cyan-500/30",
+                              ? "bg-amber-500/15 text-amber-600 border-amber-500/40 dark:text-amber-300"
+                              : "bg-cyan-500/10 text-[color:var(--tone-cyan)] border-cyan-500/30",
                         )}
                       >
                         {p.impact}
                       </Badge>
                     </div>
-                    <p className="mt-2 text-sm text-cyan-50 leading-relaxed">{p.proposal_ar}</p>
+                    <p className="mt-2 text-sm text-foreground leading-relaxed">{p.proposal_ar}</p>
                   </div>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="text-[12px] text-cyan-200/60">
+                  <span className="text-[12px] text-muted-foreground">
                     الحالة: {p.status}
                     {p.decided_by ? ` · ${p.decided_by}` : ""}
                   </span>
@@ -556,26 +688,30 @@ function UrgentOpsPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-7 border-emerald-500/40 text-emerald-200 hover:bg-emerald-500/10"
+                        className="h-7 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-300"
+                        disabled={!user}
+                        title={guestTitle}
                         onClick={() => void decide(p.id, "معتمد")}
                       >
-                        <CheckCircle2 className="ml-1 h-3 w-3" /> اعتماد
+                        <CheckCircle2 className="ms-1 h-3 w-3" /> اعتماد
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-7 border-red-500/40 text-red-200 hover:bg-red-500/10"
+                        className="h-7 border-red-500/40 text-red-600 hover:bg-red-500/10 dark:text-red-300"
+                        disabled={!user}
+                        title={guestTitle}
                         onClick={() => void decide(p.id, "مرفوض")}
                       >
-                        <XCircle className="ml-1 h-3 w-3" /> رفض
+                        <XCircle className="ms-1 h-3 w-3" /> رفض
                       </Button>
                     </div>
                   ) : null}
                 </div>
               </div>
             ))}
-            {proposals.length === 0 && (
-              <p className="text-xs text-cyan-200/50 text-center py-4">
+            {proposals.length === 0 && drafts.length === 0 && (
+              <p className="text-xs text-muted-foreground/70 text-center py-4">
                 لا توجد مقترحات حالياً. سيقوم محرك FINN بتحليل المؤشرات واقتراح تحسينات عند رصد
                 إشارات تشغيلية.
               </p>

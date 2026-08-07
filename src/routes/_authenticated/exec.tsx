@@ -39,6 +39,8 @@ import {
   Bot,
   Sparkles,
   RotateCcw,
+  Wrench,
+  Inbox,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -297,7 +299,7 @@ function ExecConsole() {
                             )}
                             {t.requires_approval && (
                               <Badge className="bg-amber-500/20 text-amber-300 text-xs">
-                                <ShieldAlert className="size-3 mr-1" />
+                                <ShieldAlert className="size-3 me-1" />
                                 approval
                               </Badge>
                             )}
@@ -309,6 +311,33 @@ function ExecConsole() {
                       </button>
                     </li>
                   ))}
+                  {tools.isLoading && !(tools.data ?? []).length && (
+                    <li className="text-center p-4">
+                      <LiveStatus variant="initializing" hint="Tool registry loading" size="sm" />
+                    </li>
+                  )}
+                  {tools.isError && !(tools.data ?? []).length && (
+                    <li className="flex flex-col items-center gap-2 p-8 text-center">
+                      <XCircle className="size-8 text-muted-foreground/60" />
+                      <p className="text-sm font-medium">تعذّر تحميل سجل الأدوات</p>
+                      <p className="text-xs text-muted-foreground">
+                        حدث خلل مؤقت أثناء جلب القائمة — أعد المحاولة الآن.
+                      </p>
+                      <Button size="sm" variant="outline" onClick={() => void tools.refetch()}>
+                        إعادة المحاولة
+                      </Button>
+                    </li>
+                  )}
+                  {!tools.isLoading && !tools.isError && !(tools.data ?? []).length && (
+                    <li className="flex flex-col items-center gap-2 p-8 text-center">
+                      <Wrench className="size-8 text-muted-foreground/60" />
+                      <p className="text-sm font-medium">لا توجد أدوات مسجّلة بعد</p>
+                      <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                        تمتلئ هذه القائمة عند تسجيل أدوات التنفيذ في سجل الأدوات (tool_registry) —
+                        تظهر كل أداة هنا مع فئتها ومتطلبات الاعتماد لتشغيلها من هذا التبويب.
+                      </p>
+                    </li>
+                  )}
                 </ul>
               </ScrollArea>
             </Card>
@@ -398,8 +427,31 @@ function ExecConsole() {
                     </details>
                   </li>
                 ))}
-                {!execs.data?.length && (
-                  <li className="p-4 text-center">
+                {execs.isLoading && !(execs.data ?? []).length && (
+                  <li className="text-center p-4">
+                    <LiveStatus variant="initializing" hint="Execution log loading" size="sm" />
+                  </li>
+                )}
+                {execs.isError && !execs.data?.length && (
+                  <li className="flex flex-col items-center gap-2 p-8 text-center">
+                    <XCircle className="size-8 text-muted-foreground/60" />
+                    <p className="text-sm font-medium">تعذّر تحميل سجل التنفيذ</p>
+                    <p className="text-xs text-muted-foreground">
+                      حدث خلل مؤقت أثناء جلب السجل — أعد المحاولة الآن.
+                    </p>
+                    <Button size="sm" variant="outline" onClick={() => void execs.refetch()}>
+                      إعادة المحاولة
+                    </Button>
+                  </li>
+                )}
+                {!execs.isLoading && !execs.isError && !execs.data?.length && (
+                  <li className="flex flex-col items-center gap-2 p-8 text-center">
+                    <Inbox className="size-8 text-muted-foreground/60" />
+                    <p className="text-sm font-medium">لا توجد عمليات تنفيذ بعد</p>
+                    <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                      يمتلئ هذا السجل تلقائيًا عند تشغيل أي أداة من تبويب الأدوات — تظهر هنا حالة كل
+                      عملية ومدتها ونتيجتها فور اكتمالها.
+                    </p>
                     <LiveStatus
                       variant="monitoring"
                       hint="Tool runtime online · awaiting executions"

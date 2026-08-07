@@ -10,7 +10,9 @@ import {
   checkOutVisitor,
   checkInExpectedVisitor,
 } from "@/lib/access.functions";
-import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
+import { userFacingError } from "@/lib/errors/user-facing-error";
+import { useAuth } from "@/lib/auth-context";
+import { SecPageHeader, SimTag, StatCard, statusClass } from "@/components/sec/sec-shell";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,8 +40,13 @@ export const Route = createFileRoute("/_authenticated/sec/visitors")({
   component: VisitorsPage,
 });
 
+/** صفوف المحاكاة المرجعية معرّفاتها sim-* — الكتابة عليها بلا معنى وترمي ZodError خامًا. */
+const SIM_ACTION_INFO = "هذه بيانات محاكاة مرجعية — الإجراء متاح على البيانات الحية فقط";
+const isSimRow = (id: string) => id.startsWith("sim-");
+
 function VisitorsPage() {
   const fetchOverview = useServerFn(getAccessOverview);
+  const { user } = useAuth();
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["access-overview"],
@@ -58,7 +65,7 @@ function VisitorsPage() {
       toast.success("تم تسجيل الخروج");
       qc.invalidateQueries({ queryKey: ["access-overview"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
   const mCheckIn = useMutation({
     mutationFn: (visitor_id: string) => checkInFn({ data: { visitor_id } }),
@@ -66,12 +73,13 @@ function VisitorsPage() {
       toast.success("تم تسجيل الدخول");
       qc.invalidateQueries({ queryKey: ["access-overview"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   return (
     <div className="space-y-4">
       <SecPageHeader title="إدارة الزوار" subtitle={`${visitors.length} زائر مسجّل`}>
+        {data?.source === "reference" && <SimTag />}
         <NewVisitorDialog
           sites={sites}
           onCreated={() => qc.invalidateQueries({ queryKey: ["access-overview"] })}
@@ -148,8 +156,16 @@ function VisitorsPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => mCheckOut.mutate(v.id)}
-                      disabled={mCheckOut.isPending}
+                      onClick={() => {
+                        if (isSimRow(v.id)) {
+                          toast.info(SIM_ACTION_INFO);
+                          return;
+                        }
+                        mCheckOut.mutate(v.id);
+                      }}
+                      // التعطيل للصف الجاري وحده — لا تجميد كل الصفوف معًا
+                      disabled={!user || (mCheckOut.isPending && mCheckOut.variables === v.id)}
+                      title={!user ? "يتطلب تسجيل الدخول" : undefined}
                     >
                       <LogOut className="h-3.5 w-3.5 me-1" /> خروج
                     </Button>
@@ -157,8 +173,15 @@ function VisitorsPage() {
                   {v.status === "expected" && (
                     <Button
                       size="sm"
-                      onClick={() => mCheckIn.mutate(v.id)}
-                      disabled={mCheckIn.isPending}
+                      onClick={() => {
+                        if (isSimRow(v.id)) {
+                          toast.info(SIM_ACTION_INFO);
+                          return;
+                        }
+                        mCheckIn.mutate(v.id);
+                      }}
+                      disabled={!user || (mCheckIn.isPending && mCheckIn.variables === v.id)}
+                      title={!user ? "يتطلب تسجيل الدخول" : undefined}
                     >
                       <LogIn className="h-3.5 w-3.5 me-1" /> دخول
                     </Button>
@@ -181,6 +204,7 @@ function NewVisitorDialog({
   sites: { id: string; code: string; name_ar: string }[];
   onCreated: () => void;
 }) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [full_name, setName] = useState("");
   const [organization, setOrg] = useState("");
@@ -206,7 +230,8 @@ function NewVisitorDialog({
           phone: phone || undefined,
           id_number: id_number || undefined,
           vehicle_plate: vehicle_plate || undefined,
-          site_id: site_id || undefined,
+          // خيارات المحاكاة sim-* ليست UUID — تُسقط قبل الإرسال بدل ZodError خام
+          site_id: site_id && !isSimRow(site_id) ? site_id : undefined,
           status,
           expected_at:
             status === "expected" && expected_at ? new Date(expected_at).toISOString() : undefined,
@@ -228,13 +253,13 @@ function NewVisitorDialog({
       setBadge("");
       onCreated();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button size="sm" disabled={!user} title={!user ? "يتطلب تسجيل الدخول" : undefined}>
           <Plus className="h-4 w-4 me-1" /> زائر جديد
         </Button>
       </DialogTrigger>

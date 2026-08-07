@@ -112,11 +112,11 @@ function ExecutiveReportsPage() {
   > | null>(null);
   const [lastError, setLastError] = useState<PublishErrorEnvelope | null>(null);
 
-  // «بيانات لا تفرغ»: guests browsing the public showcase see a labelled
-  // reference briefing set instead of an empty page (publishing itself
-  // remains admin-only).
+  // «بيانات لا تفرغ»: كل من لا يملك بيانات حية — زائرًا كان أو عضوًا
+  // مسجَّلًا غير مسؤول — يرى مجموعة ملخصات مرجعية موسومة كمحاكاة بدل
+  // صفحة فارغة. النشر نفسه يبقى للمسؤول حصرًا، ومسار المسؤول الحي لا يُمس.
   useEffect(() => {
-    if (user) return;
+    if (user && isAdmin !== false) return; // مسؤول أو دور قيد الحسم — المسار الحي
     const day = 86_400_000;
     setBriefings(
       [
@@ -128,13 +128,14 @@ function ExecutiveReportsPage() {
         id: `sim-brief-${i + 1}`,
         title: title as string,
         title_en: title_en as string,
-        summary: "ملخص مرجعي للعرض العام — النسخة الكاملة متاحة بعد تسجيل الدخول.",
-        summary_en: "Reference summary for the public showcase.",
+        summary: "ملخص مرجعي للعرض — تُستبدل بالملخصات الحية فور توفرها.",
+        summary_en:
+          "Reference summary for the showcase — replaced by live briefings once available.",
         generated_at: new Date(Date.now() - (agoDays as number) * day).toISOString(),
       })),
     );
     setLoading(false);
-  }, [user]);
+  }, [user, isAdmin]);
 
   // Check admin role
   useEffect(() => {
@@ -152,7 +153,9 @@ function ExecutiveReportsPage() {
   // Load sites, channels, briefings (only if admin)
   useEffect(() => {
     if (!isAdmin) {
-      setLoading(false);
+      // زائر أو عضو غير مسؤول: تنتهي حالة التحميل هنا (وتنهض المراجع
+      // المدمجة أعلاه)؛ عضو دوره قيد الحسم: نُبقي التحميل حتى يُحسم.
+      if (!user || isAdmin === false) setLoading(false);
       return;
     }
     let alive = true;
@@ -198,7 +201,7 @@ function ExecutiveReportsPage() {
     return () => {
       alive = false;
     };
-  }, [isAdmin, fetchSites, fetchChannels, isAr]);
+  }, [isAdmin, user, fetchSites, fetchChannels, isAr]);
 
   const groupedChannels = useMemo(() => {
     const m = new Map<string, ChannelOpt[]>();
@@ -318,23 +321,9 @@ function ExecutiveReportsPage() {
     );
   };
 
-  if (isAdmin === false) {
-    return (
-      <div className="p-6">
-        <Card className="p-8 text-center">
-          <ShieldX className="h-12 w-12 mx-auto text-destructive mb-3" />
-          <div className="text-lg font-semibold">
-            {isAr ? "صلاحية غير كافية" : "Insufficient permissions"}
-          </div>
-          <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-            {isAr
-              ? "نشر التقارير التنفيذية إلى Microsoft 365 يتطلب صلاحية المسؤول (admin)."
-              : "Publishing executive reports to Microsoft 365 requires the admin role."}
-          </p>
-        </Card>
-      </div>
-    );
-  }
+  // الملخصات المرجعية تُعرض لكل من لا يملك بيانات حية (زائر أو عضو غير
+  // مسؤول)؛ لوحة النشر وحدها هي المقصورة على المسؤول.
+  const usingReference = briefings.some((b) => b.id.startsWith("sim-brief-"));
 
   return (
     <div className="space-y-4 p-4 md:p-6">
@@ -352,13 +341,20 @@ function ExecutiveReportsPage() {
       <div className="grid gap-4 md:grid-cols-3">
         {/* Briefings picker */}
         <Card className="md:col-span-1 p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between gap-2 mb-3">
             <div className="font-semibold text-sm">
               {isAr ? "ملخصات سابقة" : "Recent Briefings"}
             </div>
-            <Badge variant="outline" className="text-xs">
-              {briefings.length}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {usingReference && (
+                <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[12px] font-medium text-amber-600 dark:text-amber-300">
+                  {isAr ? "محاكاة مرجعية" : "Reference simulation"}
+                </span>
+              )}
+              <Badge variant="outline" className="text-xs">
+                {briefings.length}
+              </Badge>
+            </div>
           </div>
           <div className="space-y-2 max-h-[420px] overflow-y-auto">
             {loading && (
@@ -388,288 +384,305 @@ function ExecutiveReportsPage() {
           </div>
         </Card>
 
-        {/* Compose + Publish */}
-        <Card className="md:col-span-2 p-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm">
-            <ShieldCheck className="h-4 w-4 text-primary" />
-            <span className="font-medium">
-              {isAr ? "حسب صلاحيات المستخدم" : "Permission-gated"}
-            </span>
-            <span className="text-muted-foreground">·</span>
-            <span className="text-muted-foreground text-xs">
+        {/* Compose + Publish — مسار المسؤول الحي؛ غير المسؤول يرى تنبيه الصلاحية مكانه */}
+        {isAdmin === false ? (
+          <Card className="md:col-span-2 p-8 text-center">
+            <ShieldX className="h-12 w-12 mx-auto text-destructive mb-3" />
+            <div className="text-lg font-semibold">
+              {isAr ? "صلاحية غير كافية للنشر" : "Insufficient permissions to publish"}
+            </div>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
               {isAr
-                ? "ينشر بهوية حساب الـ Microsoft 365 الموصّل"
-                : "Publishes using the connected Microsoft 365 account"}
-            </span>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-2">
-            <div>
-              <Label className="text-xs">{isAr ? "موقع SharePoint" : "SharePoint Site"}</Label>
-              <select
-                value={siteId}
-                onChange={(e) => setSiteId(e.target.value)}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                disabled={loading || sites.length === 0}
-              >
-                <option value="">{isAr ? "اختر موقعاً" : "Select a site"}</option>
-                {sites.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.displayName}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label className="text-xs">{isAr ? "قناة Teams" : "Teams Channel"}</Label>
-              <select
-                value={channelKey}
-                onChange={(e) => setChannelKey(e.target.value)}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                disabled={loading || channels.length === 0}
-              >
-                <option value="">{isAr ? "اختر قناة" : "Select a channel"}</option>
-                {groupedChannels.map(([team, list]) => (
-                  <optgroup key={team} label={team}>
-                    {list.map((c) => (
-                      <option key={`${c.teamId}|${c.id}`} value={`${c.teamId}|${c.id}`}>
-                        {c.displayName}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-xs">{isAr ? "العنوان" : "Title"}</Label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={isAr ? "تقرير تنفيذي - الربع الحالي" : "Executive report — Q current"}
-            />
-          </div>
-          <div>
-            <Label className="text-xs">{isAr ? "العنوان الفرعي" : "Subtitle"}</Label>
-            <Input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
-          </div>
-          <div>
-            <Label className="text-xs">{isAr ? "الملخص" : "Summary"}</Label>
-            <Textarea value={summary} onChange={(e) => setSummary(e.target.value)} rows={8} />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-muted-foreground">
-              {isAr ? "سيُحفظ في" : "Saves into"}{" "}
-              <code className="text-foreground">/{SHAREPOINT_REPORT_FOLDER}/</code>
-            </div>
-            <Button
-              onClick={onPublish}
-              disabled={publishing || loading || !siteId || !channelKey || !title}
-            >
-              {publishing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-              <span className="ms-2">
-                {isAr ? "نشر إلى SharePoint + Teams" : "Publish to SharePoint + Teams"}
+                ? "نشر التقارير التنفيذية إلى Microsoft 365 يتطلب صلاحية المسؤول (admin) — وتبقى الملخصات المرجعية المجاورة متاحة للاطلاع."
+                : "Publishing executive reports to Microsoft 365 requires the admin role — the adjacent reference briefings remain viewable."}
+            </p>
+          </Card>
+        ) : (
+          <Card className="md:col-span-2 p-4 space-y-4">
+            <div className="flex items-center gap-2 text-sm">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              <span className="font-medium">
+                {isAr ? "حسب صلاحيات المستخدم" : "Permission-gated"}
               </span>
-            </Button>
-          </div>
-
-          {ENABLE_GRAPH_SIMULATION && (
-            <div className="rounded-lg border border-dashed border-border/70 bg-muted/30 p-3 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <FlaskConical className="h-3.5 w-3.5" />
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground text-xs">
                 {isAr
-                  ? "وضع المحاكاة — متاح في بيئة التطوير فقط"
-                  : "Simulation mode — development only"}
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  ? "ينشر بهوية حساب الـ Microsoft 365 الموصّل"
+                  : "Publishes using the connected Microsoft 365 account"}
+              </span>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <Label className="text-xs">{isAr ? "موقع SharePoint" : "SharePoint Site"}</Label>
                 <select
-                  value={mockKey}
-                  onChange={(e) => setMockKey(e.target.value)}
-                  className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-xs"
+                  value={siteId}
+                  onChange={(e) => setSiteId(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  disabled={loading || sites.length === 0}
                 >
-                  {MOCK_SCENARIOS.map((s) => (
-                    <option key={s.key} value={s.key}>
-                      {isAr ? s.label_ar : s.label_en}
+                  <option value="">{isAr ? "اختر موقعاً" : "Select a site"}</option>
+                  {sites.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.displayName}
                     </option>
                   ))}
                 </select>
-                <Button size="sm" variant="outline" onClick={simulateMockError}>
-                  <FlaskConical className="h-3.5 w-3.5" />
-                  <span className="ms-2">{isAr ? "محاكاة الخطأ" : "Simulate error"}</span>
-                </Button>
-                <Button size="sm" variant="default" onClick={simulateMockSuccess}>
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  <span className="ms-2">{isAr ? "محاكاة النجاح" : "Simulate success"}</span>
-                </Button>
+              </div>
+              <div>
+                <Label className="text-xs">{isAr ? "قناة Teams" : "Teams Channel"}</Label>
+                <select
+                  value={channelKey}
+                  onChange={(e) => setChannelKey(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  disabled={loading || channels.length === 0}
+                >
+                  <option value="">{isAr ? "اختر قناة" : "Select a channel"}</option>
+                  {groupedChannels.map(([team, list]) => (
+                    <optgroup key={team} label={team}>
+                      {list.map((c) => (
+                        <option key={`${c.teamId}|${c.id}`} value={`${c.teamId}|${c.id}`}>
+                          {c.displayName}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
               </div>
             </div>
-          )}
 
-          {lastError &&
-            (() => {
-              const stageLabel = STAGE_LABEL[lastError.stage];
-              let partialSharepointUrl: string | null = null;
-              if (lastError.stage === "teams_post" && lastError.raw) {
-                try {
-                  const r = JSON.parse(lastError.raw);
-                  if (typeof r?.sharepointUrl === "string") partialSharepointUrl = r.sharepointUrl;
-                } catch {
-                  /* ignore */
-                }
-              }
-              const copyRequestId = () => {
-                if (!lastError.requestId) return;
-                navigator.clipboard
-                  .writeText(lastError.requestId)
-                  .then(() => toast.success(isAr ? "تم النسخ" : "Copied"));
-              };
-              return (
-                <Card className="p-4 border-destructive/40 bg-destructive/5">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0 space-y-3">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-semibold text-destructive">
-                          {isAr ? lastError.message_ar : lastError.message_en}
-                        </span>
-                      </div>
+            <div>
+              <Label className="text-xs">{isAr ? "العنوان" : "Title"}</Label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={isAr ? "تقرير تنفيذي - الربع الحالي" : "Executive report — Q current"}
+              />
+            </div>
+            <div>
+              <Label className="text-xs">{isAr ? "العنوان الفرعي" : "Subtitle"}</Label>
+              <Input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">{isAr ? "الملخص" : "Summary"}</Label>
+              <Textarea value={summary} onChange={(e) => setSummary(e.target.value)} rows={8} />
+            </div>
 
-                      {/* Diagnostic chips */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="text-[12px]">
-                          {isAr ? stageLabel.ar : stageLabel.en}
-                        </Badge>
-                        {lastError.status && (
-                          <Badge variant="outline" className="text-[12px]">
-                            HTTP {lastError.status}
-                          </Badge>
-                        )}
-                        {lastError.code && (
-                          <Badge variant="outline" className="text-[12px] font-mono">
-                            {lastError.code}
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Request ID bar */}
-                      {lastError.requestId && (
-                        <div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2">
-                          <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wide">
-                            {isAr ? "معرّف الطلب" : "Request ID"}
-                          </span>
-                          <code className="text-[12px] font-mono text-foreground">
-                            {lastError.requestId}
-                          </code>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="ml-auto"
-                            onClick={copyRequestId}
-                            aria-label={isAr ? "نسخ معرّف الطلب" : "Copy request ID"}
-                          >
-                            <ClipboardCopy className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      )}
-
-                      {(lastError.hint_en || lastError.hint_ar) && (
-                        <div className="text-xs text-muted-foreground">
-                          💡 {isAr ? lastError.hint_ar : lastError.hint_en}
-                        </div>
-                      )}
-
-                      {partialSharepointUrl && (
-                        <div className="text-xs">
-                          <span className="text-muted-foreground">
-                            {isAr
-                              ? "تم رفع التقرير. افتحه يدوياً:"
-                              : "Report was uploaded. Open it manually:"}
-                          </span>{" "}
-                          <a
-                            href={partialSharepointUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-primary hover:underline"
-                          >
-                            <ExternalLink className="h-3 w-3" /> SharePoint
-                          </a>
-                        </div>
-                      )}
-
-                      {lastError.raw && lastError.stage !== "teams_post" && (
-                        <details className="text-[12px] text-muted-foreground">
-                          <summary className="cursor-pointer">
-                            {isAr ? "تفاصيل تقنية" : "Technical details"}
-                          </summary>
-                          <pre className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/50 p-2">
-                            {lastError.raw}
-                          </pre>
-                        </details>
-                      )}
-                    </div>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-6 w-6"
-                      onClick={() => setLastError(null)}
-                      aria-label={isAr ? "إغلاق" : "Dismiss"}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </Card>
-              );
-            })()}
-
-          {lastResult && (
-            <Card className="p-3 bg-muted/40 border-primary/30">
-              <div className="text-sm font-semibold mb-2">
-                {isAr ? "تم النشر بنجاح" : "Published successfully"}
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-muted-foreground">
+                {isAr ? "سيُحفظ في" : "Saves into"}{" "}
+                <code className="text-foreground">/{SHAREPOINT_REPORT_FOLDER}/</code>
               </div>
-              <div className="space-y-1 text-xs">
-                <div>📄 {lastResult.sharepoint.name}</div>
-                <a
-                  href={lastResult.sharepoint.shareUrl ?? lastResult.sharepoint.webUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary hover:underline"
-                >
-                  <ExternalLink className="h-3 w-3" />{" "}
-                  {isAr ? "افتح في SharePoint" : "Open in SharePoint"}
-                </a>
-                {lastResult.teams.messageUrl && (
-                  <div>
-                    <a
-                      href={lastResult.teams.messageUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-primary hover:underline"
-                    >
-                      <ExternalLink className="h-3 w-3" />{" "}
-                      {isAr ? "افتح الرسالة في Teams" : "Open Teams message"}
-                    </a>
-                  </div>
+              <Button
+                onClick={onPublish}
+                disabled={publishing || loading || !siteId || !channelKey || !title}
+              >
+                {publishing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
                 )}
+                <span className="ms-2">
+                  {isAr ? "نشر إلى SharePoint + Teams" : "Publish to SharePoint + Teams"}
+                </span>
+              </Button>
+            </div>
+
+            {ENABLE_GRAPH_SIMULATION && (
+              <div className="rounded-lg border border-dashed border-border/70 bg-muted/30 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <FlaskConical className="h-3.5 w-3.5" />
+                  {isAr
+                    ? "وضع المحاكاة — متاح في بيئة التطوير فقط"
+                    : "Simulation mode — development only"}
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <select
+                    value={mockKey}
+                    onChange={(e) => setMockKey(e.target.value)}
+                    className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-xs"
+                  >
+                    {MOCK_SCENARIOS.map((s) => (
+                      <option key={s.key} value={s.key}>
+                        {isAr ? s.label_ar : s.label_en}
+                      </option>
+                    ))}
+                  </select>
+                  <Button size="sm" variant="outline" onClick={simulateMockError}>
+                    <FlaskConical className="h-3.5 w-3.5" />
+                    <span className="ms-2">{isAr ? "محاكاة الخطأ" : "Simulate error"}</span>
+                  </Button>
+                  <Button size="sm" variant="default" onClick={simulateMockSuccess}>
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    <span className="ms-2">{isAr ? "محاكاة النجاح" : "Simulate success"}</span>
+                  </Button>
+                </div>
               </div>
-            </Card>
-          )}
-        </Card>
+            )}
+
+            {lastError &&
+              (() => {
+                const stageLabel = STAGE_LABEL[lastError.stage];
+                let partialSharepointUrl: string | null = null;
+                if (lastError.stage === "teams_post" && lastError.raw) {
+                  try {
+                    const r = JSON.parse(lastError.raw);
+                    if (typeof r?.sharepointUrl === "string")
+                      partialSharepointUrl = r.sharepointUrl;
+                  } catch {
+                    /* ignore */
+                  }
+                }
+                const copyRequestId = () => {
+                  if (!lastError.requestId) return;
+                  navigator.clipboard
+                    .writeText(lastError.requestId)
+                    .then(() => toast.success(isAr ? "تم النسخ" : "Copied"));
+                };
+                return (
+                  <Card className="p-4 border-destructive/40 bg-destructive/5">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0 space-y-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-semibold text-destructive">
+                            {isAr ? lastError.message_ar : lastError.message_en}
+                          </span>
+                        </div>
+
+                        {/* Diagnostic chips */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="secondary" className="text-[12px]">
+                            {isAr ? stageLabel.ar : stageLabel.en}
+                          </Badge>
+                          {lastError.status && (
+                            <Badge variant="outline" className="text-[12px]">
+                              HTTP {lastError.status}
+                            </Badge>
+                          )}
+                          {lastError.code && (
+                            <Badge variant="outline" className="text-[12px] font-mono">
+                              {lastError.code}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Request ID bar */}
+                        {lastError.requestId && (
+                          <div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-2">
+                            <span className="text-[12px] text-muted-foreground font-medium uppercase tracking-wide">
+                              {isAr ? "معرّف الطلب" : "Request ID"}
+                            </span>
+                            <code className="text-[12px] font-mono text-foreground">
+                              {lastError.requestId}
+                            </code>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="ms-auto"
+                              onClick={copyRequestId}
+                              aria-label={isAr ? "نسخ معرّف الطلب" : "Copy request ID"}
+                            >
+                              <ClipboardCopy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+
+                        {(lastError.hint_en || lastError.hint_ar) && (
+                          <div className="text-xs text-muted-foreground">
+                            💡 {isAr ? lastError.hint_ar : lastError.hint_en}
+                          </div>
+                        )}
+
+                        {partialSharepointUrl && (
+                          <div className="text-xs">
+                            <span className="text-muted-foreground">
+                              {isAr
+                                ? "تم رفع التقرير. افتحه يدوياً:"
+                                : "Report was uploaded. Open it manually:"}
+                            </span>{" "}
+                            <a
+                              href={partialSharepointUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-primary hover:underline"
+                            >
+                              <ExternalLink className="h-3 w-3" /> SharePoint
+                            </a>
+                          </div>
+                        )}
+
+                        {lastError.raw && lastError.stage !== "teams_post" && (
+                          <details className="text-[12px] text-muted-foreground">
+                            <summary className="cursor-pointer">
+                              {isAr ? "تفاصيل تقنية" : "Technical details"}
+                            </summary>
+                            <pre className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/50 p-2">
+                              {lastError.raw}
+                            </pre>
+                          </details>
+                        )}
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6"
+                        onClick={() => setLastError(null)}
+                        aria-label={isAr ? "إغلاق" : "Dismiss"}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })()}
+
+            {lastResult && (
+              <Card className="p-3 bg-muted/40 border-primary/30">
+                <div className="text-sm font-semibold mb-2">
+                  {isAr ? "تم النشر بنجاح" : "Published successfully"}
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div>📄 {lastResult.sharepoint.name}</div>
+                  <a
+                    href={lastResult.sharepoint.shareUrl ?? lastResult.sharepoint.webUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-primary hover:underline"
+                  >
+                    <ExternalLink className="h-3 w-3" />{" "}
+                    {isAr ? "افتح في SharePoint" : "Open in SharePoint"}
+                  </a>
+                  {lastResult.teams.messageUrl && (
+                    <div>
+                      <a
+                        href={lastResult.teams.messageUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                      >
+                        <ExternalLink className="h-3 w-3" />{" "}
+                        {isAr ? "افتح الرسالة في Teams" : "Open Teams message"}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+          </Card>
+        )}
       </div>
 
-      {/* PDF + Excel + Outlook + Scheduling (production wave) */}
-      <BinaryReportsPanel
-        sites={sites}
-        isAr={isAr}
-        defaultSiteId={siteId}
-        defaultTitle={title}
-        defaultSubtitle={subtitle}
-      />
+      {/* PDF + Excel + Outlook + Scheduling (production wave) — للمسؤول فقط */}
+      {isAdmin !== false && (
+        <BinaryReportsPanel
+          sites={sites}
+          isAr={isAr}
+          defaultSiteId={siteId}
+          defaultTitle={title}
+          defaultSubtitle={subtitle}
+        />
+      )}
     </div>
   );
 }

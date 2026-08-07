@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 // ============================================================
 // Types
@@ -127,6 +129,30 @@ export type BriefingOpportunity = {
 // ============================================================
 type AnyRow = { id: string };
 
+/**
+ * صفوف المحاكاة المرجعية معرّفاتها تبدأ بـ`sim-` — ليست UUID فترفضها
+ * القاعدة بصمت. تُعترض قبل الكتابة وتُعلن للمستخدم بإشعار صادق بدل
+ * «حذفٍ» لا يقع.
+ */
+const SIM_ID_PREFIX = "sim-";
+const SIM_ROW_MESSAGE_AR = "هذه بيانات محاكاة مرجعية — الإجراء متاح على البيانات الحية فقط";
+
+class SimulationRowError extends Error {
+  constructor() {
+    super("simulation-reference-row");
+    this.name = "SimulationRowError";
+  }
+}
+
+/** لا فشل صامت: صف محاكاة ⇐ إشعار توضيحي؛ سوى ذلك ⇐ خطأ عربي آمن للعرض. */
+function reportMutationError(error: unknown) {
+  if (error instanceof SimulationRowError) {
+    toast.info(SIM_ROW_MESSAGE_AR);
+    return;
+  }
+  toast.error(userFacingError(error));
+}
+
 function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
   table:
     | "governance_systems"
@@ -186,7 +212,11 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
         if (error) throw error;
         return data as T;
       },
-      onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+      onSuccess: () => {
+        toast.success("تمت الإضافة بنجاح");
+        qc.invalidateQueries({ queryKey: key });
+      },
+      onError: reportMutationError,
     });
   }
 
@@ -194,11 +224,16 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
     const qc = useQueryClient();
     return useMutation({
       mutationFn: async ({ id, patch }: { id: string; patch: Partial<Insert> }) => {
+        if (id.startsWith(SIM_ID_PREFIX)) throw new SimulationRowError();
         const { data, error } = await tbl().update(patch).eq("id", id).select().single();
         if (error) throw error;
         return data as T;
       },
-      onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+      onSuccess: () => {
+        toast.success("تم حفظ التعديل");
+        qc.invalidateQueries({ queryKey: key });
+      },
+      onError: reportMutationError,
     });
   }
 
@@ -206,11 +241,16 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
     const qc = useQueryClient();
     return useMutation({
       mutationFn: async (id: string) => {
+        if (id.startsWith(SIM_ID_PREFIX)) throw new SimulationRowError();
         const { error } = await tbl().delete().eq("id", id);
         if (error) throw error;
         return id;
       },
-      onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+      onSuccess: () => {
+        toast.success("تم الحذف");
+        qc.invalidateQueries({ queryKey: key });
+      },
+      onError: reportMutationError,
     });
   }
 

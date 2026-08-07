@@ -34,7 +34,7 @@ function OpsRoom() {
     <div className="space-y-4">
       <SecPageHeader
         title={`${screenNameAr("/sec")} — ${region.labelAr}`}
-        subtitle="بيانات تشغيلية حية ومقيّدة بالمؤسسة؛ لا تُعرض أرقام محاكاة في هذه الصفحة"
+        subtitle="بيانات تشغيلية مقيّدة بالمؤسسة؛ وعند غياب الصفوف الحية تُعرض محاكاة مرجعية"
       >
         <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_overview" />
         <button

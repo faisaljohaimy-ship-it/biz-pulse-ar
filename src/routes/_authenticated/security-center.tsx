@@ -135,7 +135,7 @@ function SecurityCenterPage() {
                 {(overview.data?.members ?? []).map((m) => (
                   <tr key={`${m.org_id}-${m.user_id}`} className="border-b border-white/5">
                     <td className="py-2 pe-3">
-                      <div className="font-medium text-white">
+                      <div className="font-medium text-foreground">
                         {m.display_name ?? m.user_id.slice(0, 8)}
                         {m.user_id === overview.data?.current_user_id && (
                           <span className="ms-2 text-[12px] text-cyan-300">

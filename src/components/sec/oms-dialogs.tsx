@@ -52,6 +52,8 @@ import {
 import { generateIncidentReport } from "@/lib/oms-reports.functions";
 import { getSecOverview } from "@/lib/sec.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 import { severityClass, statusClass } from "./sec-shell";
 import {
   Sparkles,
@@ -95,7 +97,7 @@ export function NewIncidentDialog() {
       setOpen(false);
       setForm({ ...form, title_ar: "", title_en: "", notes: "" });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -252,7 +254,7 @@ export function IncidentDrawer({
       qc.invalidateQueries({ queryKey: ["oms-incidents"] });
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const esc = useServerFn(escalateIncident);
@@ -263,6 +265,7 @@ export function IncidentDrawer({
       qc.invalidateQueries({ queryKey: ["oms-incidents"] });
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
     },
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const upd = useServerFn(updateIncident);
@@ -279,6 +282,7 @@ export function IncidentDrawer({
       qc.invalidateQueries({ queryKey: ["oms-incidents"] });
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
     },
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const [actionText, setActionText] = useState("");
@@ -291,6 +295,7 @@ export function IncidentDrawer({
       qc.invalidateQueries({ queryKey: ["oms-incidents"] });
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
     },
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const [rootCause, setRootCause] = useState("");
@@ -304,6 +309,7 @@ export function IncidentDrawer({
       qc.invalidateQueries({ queryKey: ["oms-kpis"] });
       onOpenChange(false);
     },
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const cw = useServerFn(createWorkOrder);
@@ -324,7 +330,7 @@ export function IncidentDrawer({
       qc.invalidateQueries({ queryKey: ["oms-work-orders"] });
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   // ── Executive Review ──
@@ -339,7 +345,7 @@ export function IncidentDrawer({
       qc.invalidateQueries({ queryKey: ["oms-incident-detail", incident!.id] });
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   // ── Detail (refresh attachments/executive review) ──
@@ -403,7 +409,7 @@ export function IncidentDrawer({
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident.id] });
       qc.invalidateQueries({ queryKey: ["oms-incidents"] });
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(userFacingError(e));
     } finally {
       setUploading(false);
     }
@@ -413,7 +419,7 @@ export function IncidentDrawer({
       const r = await getAttachUrl({ data: { storage_path } });
       if (r.url) window.open(r.url, "_blank", "noopener");
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(userFacingError(e));
     }
   };
   const mRemoveAttach = useMutation({
@@ -425,6 +431,7 @@ export function IncidentDrawer({
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
       qc.invalidateQueries({ queryKey: ["oms-incidents"] });
     },
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   // ── Report download ──
@@ -448,10 +455,10 @@ export function IncidentDrawer({
         qc.invalidateQueries({ queryKey: ["oms-reports"] });
         qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
       } catch (e) {
-        toast.error((e as Error).message);
+        toast.error(userFacingError(e));
       }
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   // Latest FINN event for recommendations
@@ -841,7 +848,7 @@ export function NewWorkOrderDialog() {
         notes: "",
       }));
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -997,6 +1004,7 @@ export function NewWorkOrderDialog() {
 
 export function WorkOrderActions({ id, status }: { id: string; status: string }) {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const ap = useServerFn(approveWorkOrder);
   const cm = useServerFn(completeWorkOrder);
   const [note, setNote] = useState("");
@@ -1008,6 +1016,7 @@ export function WorkOrderActions({ id, status }: { id: string; status: string })
       qc.invalidateQueries({ queryKey: ["oms-work-orders"] });
       qc.invalidateQueries({ queryKey: ["sec-work-orders"] });
     },
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
   const mC = useMutation({
     mutationFn: () => cm({ data: { work_order_id: id, completion_notes: note } }),
@@ -1019,11 +1028,18 @@ export function WorkOrderActions({ id, status }: { id: string; status: string })
       qc.invalidateQueries({ queryKey: ["sec-work-orders"] });
       qc.invalidateQueries({ queryKey: ["oms-kpis"] });
     },
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
   return (
     <div className="flex gap-1">
       {status === "open" && (
-        <Button size="sm" variant="outline" onClick={() => mA.mutate()} disabled={mA.isPending}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => mA.mutate()}
+          disabled={mA.isPending || !user}
+          title={user ? undefined : "الاعتماد قرار تشغيلي — سجّل الدخول أولًا"}
+        >
           اعتماد
         </Button>
       )}
@@ -1079,7 +1095,7 @@ export function NewPermitDialog() {
       qc.invalidateQueries({ queryKey: ["oms-kpis"] });
       setOpen(false);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -1176,17 +1192,21 @@ export function NewPermitDialog() {
 
 export function PermitActions({ id, status }: { id: string; status: string }) {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const ap = useServerFn(approvePermit);
   const dn = useServerFn(denyPermit);
   const [open, setOpen] = useState(false);
+  const [confirmApproveOpen, setConfirmApproveOpen] = useState(false);
   const [reason, setReason] = useState("");
   const mA = useMutation({
     mutationFn: () => ap({ data: { permit_id: id } }),
     onSuccess: () => {
       toast.success("اعتُمد التصريح");
+      setConfirmApproveOpen(false);
       qc.invalidateQueries({ queryKey: ["oms-permits"] });
       qc.invalidateQueries({ queryKey: ["oms-kpis"] });
     },
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
   const mD = useMutation({
     mutationFn: () => dn({ data: { permit_id: id, reason } }),
@@ -1195,16 +1215,49 @@ export function PermitActions({ id, status }: { id: string; status: string }) {
       setOpen(false);
       qc.invalidateQueries({ queryKey: ["oms-permits"] });
     },
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
   if (status !== "pending") return <span className="text-xs text-muted-foreground">—</span>;
   return (
     <div className="flex gap-1">
-      <Button size="sm" variant="outline" onClick={() => mA.mutate()} disabled={mA.isPending}>
-        اعتماد
-      </Button>
+      {/* بوابة بشرية: اعتماد تصريح العمل قرار تشغيلي — لا يمرّ بضغطة واحدة. */}
+      <Dialog open={confirmApproveOpen} onOpenChange={setConfirmApproveOpen}>
+        <DialogTrigger asChild>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!user}
+            title={user ? undefined : "اعتماد التصاريح قرار تشغيلي — سجّل الدخول أولًا"}
+          >
+            اعتماد
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-sm" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>تأكيد اعتماد التصريح</DialogTitle>
+            <DialogDescription>
+              أنت على وشك اعتماد تصريح عمل — قرار تشغيلي يُسجَّل باسمك ويسمح ببدء العمل ميدانيًا. هل
+              تريد المتابعة؟
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmApproveOpen(false)}>
+              إلغاء
+            </Button>
+            <Button onClick={() => mA.mutate()} disabled={mA.isPending}>
+              {mA.isPending ? "جارٍ الاعتماد…" : "تأكيد الاعتماد"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button size="sm" variant="outline">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!user}
+            title={user ? undefined : "رفض التصاريح قرار تشغيلي — سجّل الدخول أولًا"}
+          >
             رفض
           </Button>
         </DialogTrigger>

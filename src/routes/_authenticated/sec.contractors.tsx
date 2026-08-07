@@ -9,7 +9,9 @@ import {
   createContractor,
   updateContractorStatus,
 } from "@/lib/access.functions";
-import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
+import { userFacingError } from "@/lib/errors/user-facing-error";
+import { useAuth } from "@/lib/auth-context";
+import { SecPageHeader, SimTag, StatCard, statusClass } from "@/components/sec/sec-shell";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,8 +49,13 @@ const PERMIT_TYPES = [
   "chemical",
 ];
 
+/** صفوف المحاكاة المرجعية معرّفاتها sim-* — الكتابة عليها بلا معنى وترمي ZodError خامًا. */
+const SIM_ACTION_INFO = "هذه بيانات محاكاة مرجعية — الإجراء متاح على البيانات الحية فقط";
+const isSimRow = (id: string) => id.startsWith("sim-");
+
 function ContractorsPage() {
   const fetchOverview = useServerFn(getAccessOverview);
+  const { user } = useAuth();
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["access-overview"],
@@ -73,12 +80,13 @@ function ContractorsPage() {
       toast.success("تم تحديث الحالة");
       qc.invalidateQueries({ queryKey: ["access-overview"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   return (
     <div className="space-y-4">
       <SecPageHeader title="إدارة المقاولين" subtitle={`${contractors.length} مقاول مسجّل`}>
+        {data?.source === "reference" && <SimTag />}
         <NewContractorDialog
           onCreated={() => qc.invalidateQueries({ queryKey: ["access-overview"] })}
         />
@@ -184,7 +192,15 @@ function ContractorsPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => mStatus.mutate({ id: c.id, status: "active" })}
+                  disabled={!user}
+                  title={!user ? "يتطلب تسجيل الدخول" : undefined}
+                  onClick={() => {
+                    if (isSimRow(c.id)) {
+                      toast.info(SIM_ACTION_INFO);
+                      return;
+                    }
+                    mStatus.mutate({ id: c.id, status: "active" });
+                  }}
                 >
                   <RotateCcw className="h-3 w-3 me-1" /> تفعيل
                 </Button>
@@ -193,9 +209,17 @@ function ContractorsPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() =>
-                    mStatus.mutate({ id: c.id, status: "suspended", reason: "تعليق إداري" })
-                  }
+                  disabled={!user}
+                  title={!user ? "يتطلب تسجيل الدخول" : undefined}
+                  onClick={() => {
+                    if (isSimRow(c.id)) {
+                      toast.info(SIM_ACTION_INFO);
+                      return;
+                    }
+                    // بوابة تأكيد بشري: تعليق مقاول يوقف دخول عمالته — لا يقع بنقرة واحدة
+                    if (confirm(`تأكيد تعليق «${c.name}»؟ سيُمنع دخول عمالته حتى إعادة التفعيل.`))
+                      mStatus.mutate({ id: c.id, status: "suspended", reason: "تعليق إداري" });
+                  }}
                 >
                   <Pause className="h-3 w-3 me-1" /> تعليق
                 </Button>
@@ -204,8 +228,14 @@ function ContractorsPage() {
                 <Button
                   size="sm"
                   variant="destructive"
+                  disabled={!user}
+                  title={!user ? "يتطلب تسجيل الدخول" : undefined}
                   onClick={() => {
-                    if (confirm("تأكيد الحظر؟"))
+                    if (isSimRow(c.id)) {
+                      toast.info(SIM_ACTION_INFO);
+                      return;
+                    }
+                    if (confirm(`تأكيد حظر «${c.name}» وإدراجه بالقائمة السوداء؟`))
                       mStatus.mutate({
                         id: c.id,
                         status: "blacklisted",
@@ -225,6 +255,7 @@ function ContractorsPage() {
 }
 
 function NewContractorDialog({ onCreated }: { onCreated: () => void }) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [contract_no, setContractNo] = useState("");
@@ -268,7 +299,7 @@ function NewContractorDialog({ onCreated }: { onCreated: () => void }) {
       setInsurance("");
       onCreated();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const togglePermit = (p: string) =>
@@ -277,7 +308,7 @@ function NewContractorDialog({ onCreated }: { onCreated: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button size="sm" disabled={!user} title={!user ? "يتطلب تسجيل الدخول" : undefined}>
           <Plus className="h-4 w-4 me-1" /> مقاول جديد
         </Button>
       </DialogTrigger>

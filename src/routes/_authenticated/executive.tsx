@@ -151,11 +151,11 @@ function ExecutiveCommandCenter() {
       amber: 55,
       rose: 32,
     };
-    const rows: Array<{ key: DomainKey; score: number; sample: string }> = [];
+    const rows: Array<{ key: DomainKey; score: number | null; sample: string }> = [];
     (Object.keys(DOMAIN_META) as DomainKey[]).forEach((dk) => {
       const meta = DOMAIN_META[dk];
       const matched = pulse.kpis.filter((k) => meta.match.test(k.label_en + " " + k.label_ar));
-      let score: number;
+      let score: number | null;
       let sample = "";
       if (dk === "security") {
         const openIncidents = (incidentsQ.data ?? []).filter((i) =>
@@ -174,7 +174,8 @@ function ExecutiveCommandCenter() {
         score = Math.max(40, 100 - highRiskPermits * 8);
         sample = ar ? `${activePermits} تصريح نشط` : `${activePermits} active permits`;
       } else if (matched.length === 0) {
-        score = 70;
+        // المادة ٢٧ — الصدق العددي: لا مؤشرات مطابقة = لا قياس، لا رقم مؤلَّف.
+        score = null;
         sample = ar ? "لا توجد بيانات بعد" : "No data yet";
       } else {
         score = Math.round(
@@ -301,8 +302,17 @@ function ExecutiveCommandCenter() {
           {domainScores.map(({ key, score, sample }) => {
             const meta = DOMAIN_META[key];
             const Icon = meta.icon;
+            // المادة ٢٧ — «لم يُقَس» بنغمة محايدة حين لا قياس، لا شريط 70 مؤلَّفًا.
             const tone =
-              score >= 80 ? "emerald" : score >= 60 ? "cyan" : score >= 40 ? "amber" : "rose";
+              score === null
+                ? "slate"
+                : score >= 80
+                  ? "emerald"
+                  : score >= 60
+                    ? "cyan"
+                    : score >= 40
+                      ? "amber"
+                      : "rose";
             return (
               <NexusCard key={key} className="p-4">
                 <div className="flex items-start justify-between">
@@ -314,12 +324,16 @@ function ExecutiveCommandCenter() {
                           ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-300"
                           : tone === "amber"
                             ? "border-amber-400/30 bg-amber-400/10 text-amber-300"
-                            : "border-rose-400/30 bg-rose-400/10 text-rose-300"
+                            : tone === "slate"
+                              ? "border-slate-400/30 bg-slate-400/10 text-slate-400"
+                              : "border-rose-400/30 bg-rose-400/10 text-rose-300"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
                   </div>
-                  <NexusPill tone={tone}>{score}</NexusPill>
+                  <NexusPill tone={tone}>
+                    {score === null ? (ar ? "لم يُقَس" : "Not measured") : score}
+                  </NexusPill>
                 </div>
                 <div className="mt-3 text-sm font-semibold text-slate-100">
                   {ar ? meta.ar : meta.en}
@@ -386,7 +400,7 @@ function ExecutiveCommandCenter() {
                       {ar ? k.why_ar : k.why_en}
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
+                  <div className="text-end shrink-0">
                     <div
                       className={`text-lg font-bold tabular-nums ${
                         k.tone === "emerald"

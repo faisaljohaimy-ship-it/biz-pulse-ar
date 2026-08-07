@@ -54,9 +54,10 @@ describe("المُخطَّط — المادة ٣٣: لا لون نهائي خا�
     }
   });
 
-  it('لا fill="white" — الرسم يتبع الحبر', () => {
+  it("لا تعبئة بيضاء نهائية (white / #fff / #ffffff) — الرسم يتبع الحبر", () => {
+    // النمط الحرفي `fill="white"` وحده كان يترك الصيغ السداسية تفلت.
     for (const src of [ROSETTE, PANELS, PAGE]) {
-      expect(src).not.toMatch(/fill="white"/);
+      expect(src).not.toMatch(/fill=["'](?:white|#f{3}|#f{6})["']/i);
     }
   });
 });

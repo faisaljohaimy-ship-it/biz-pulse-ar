@@ -11,6 +11,11 @@ export type IntegrationStatus = {
   note: string;
   /** Present on reference-simulation rows (and future live sync metadata). */
   last_sync_at?: string | null;
+  /**
+   * العَلَم البنيوي للمحاكاة المرجعية — تحقنه markSimulation في
+   * showcase-simulation.server وقت التشغيل؛ الصفوف الحية (env) لا تحمله.
+   */
+  is_simulation?: boolean;
 };
 
 const PROVIDERS: IntegrationStatus[] = [

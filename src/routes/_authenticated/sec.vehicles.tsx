@@ -10,7 +10,9 @@ import {
   vehicleCheckOut,
   denyVehicleAccess,
 } from "@/lib/access.functions";
-import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
+import { userFacingError } from "@/lib/errors/user-facing-error";
+import { useAuth } from "@/lib/auth-context";
+import { SecPageHeader, SimTag, StatCard, statusClass } from "@/components/sec/sec-shell";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -48,8 +50,13 @@ const TYPE_LABEL: Record<string, string> = {
   other: "أخرى",
 };
 
+/** صفوف المحاكاة المرجعية معرّفاتها sim-* — الكتابة عليها بلا معنى وترمي ZodError خامًا. */
+const SIM_ACTION_INFO = "هذه بيانات محاكاة مرجعية — الإجراء متاح على البيانات الحية فقط";
+const isSimRow = (id: string) => id.startsWith("sim-");
+
 function VehiclesPage() {
   const fetchOverview = useServerFn(getAccessOverview);
+  const { user } = useAuth();
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["access-overview"],
@@ -70,7 +77,7 @@ function VehiclesPage() {
       toast.success("تم تسجيل الخروج");
       qc.invalidateQueries({ queryKey: ["access-overview"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
   const mDeny = useMutation({
     mutationFn: ({ plate, reason }: { plate: string; reason: string }) =>
@@ -79,7 +86,7 @@ function VehiclesPage() {
       toast.success("تم تسجيل محاولة الرفض");
       qc.invalidateQueries({ queryKey: ["access-overview"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const denyQuick = () => {
@@ -92,7 +99,14 @@ function VehiclesPage() {
   return (
     <div className="space-y-4">
       <SecPageHeader title="إدارة المركبات" subtitle={`${vehicles.length} مركبة مسجّلة`}>
-        <Button size="sm" variant="outline" onClick={denyQuick}>
+        {data?.source === "reference" && <SimTag />}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={denyQuick}
+          disabled={!user}
+          title={!user ? "يتطلب تسجيل الدخول" : undefined}
+        >
           <ShieldX className="h-4 w-4 me-1" /> تسجيل رفض دخول
         </Button>
         <NewVehicleDialog
@@ -183,8 +197,16 @@ function VehiclesPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => mOut.mutate(v.id)}
-                      disabled={mOut.isPending}
+                      onClick={() => {
+                        if (isSimRow(v.id)) {
+                          toast.info(SIM_ACTION_INFO);
+                          return;
+                        }
+                        mOut.mutate(v.id);
+                      }}
+                      // التعطيل للصف الجاري وحده — لا تجميد كل الصفوف معًا
+                      disabled={!user || (mOut.isPending && mOut.variables === v.id)}
+                      title={!user ? "يتطلب تسجيل الدخول" : undefined}
                     >
                       <LogOut className="h-3.5 w-3.5 me-1" /> خروج
                     </Button>
@@ -210,6 +232,7 @@ function NewVehicleDialog({
   gates: { id: string; code: string; kind: string }[];
   onCreated: () => void;
 }) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [plate, setPlate] = useState("");
   const [vehicle_type, setType] = useState<
@@ -237,9 +260,10 @@ function NewVehicleDialog({
           company: company || undefined,
           driver_phone: driver_phone || undefined,
           driver_id_number: driver_id_number || undefined,
-          contractor_id: contractor_id || undefined,
-          site_id: site_id || undefined,
-          gate_id: gate_id || undefined,
+          // خيارات المحاكاة sim-* ليست UUID — تُسقط قبل الإرسال بدل ZodError خام
+          contractor_id: contractor_id && !isSimRow(contractor_id) ? contractor_id : undefined,
+          site_id: site_id && !isSimRow(site_id) ? site_id : undefined,
+          gate_id: gate_id && !isSimRow(gate_id) ? gate_id : undefined,
           permit_no: permit_no || undefined,
           permit_expires_at: permit_expires_at
             ? new Date(permit_expires_at).toISOString()
@@ -263,13 +287,13 @@ function NewVehicleDialog({
       setPermitExp("");
       onCreated();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button size="sm" disabled={!user} title={!user ? "يتطلب تسجيل الدخول" : undefined}>
           <Plus className="h-4 w-4 me-1" /> مركبة جديدة
         </Button>
       </DialogTrigger>

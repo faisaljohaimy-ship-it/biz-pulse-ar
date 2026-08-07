@@ -175,6 +175,15 @@ export const getAccessOverview = createServerFn({ method: "GET" })
     const { visitors, contractors, vehicles, gates } = raw;
     const denied = raw.denied_events;
 
+    // resilient() يسم صفوف بديل المحاكاة is_simulation=true لكن هذا الكائن
+    // المعاد مركّب من جديد فيسقط العَلَم عن الجذر — نمرّر مصدرًا صريحًا
+    // (نمط ptw: source: "database" | "reference") لتُظهر الصفحات شارة
+    // «محاكاة مرجعية». قراءة عرض فقط — لا تغيير مصادقة ولا RLS.
+    const isSimulated = [gates[0], visitors[0], contractors[0], vehicles[0]].some(
+      (row) => (row as { is_simulation?: boolean } | undefined)?.is_simulation === true,
+    );
+    const source: "database" | "reference" = isSimulated ? "reference" : "database";
+
     const now = Date.now();
     const expiringContractors = contractors.filter(
       (c) => c.expires_at && new Date(c.expires_at).getTime() - now < 1000 * 60 * 60 * 24 * 30,
@@ -186,6 +195,7 @@ export const getAccessOverview = createServerFn({ method: "GET" })
     );
 
     return {
+      source,
       visitors,
       contractors,
       vehicles,

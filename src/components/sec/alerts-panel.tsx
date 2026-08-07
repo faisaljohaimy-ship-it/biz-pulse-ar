@@ -35,30 +35,33 @@ const PRIO_STYLE: Record<
   Priority,
   { dot: string; text: string; border: string; bg: string; label: string }
 > = {
+  // عائلة «الخطر» حمراء `red-*` كما في العقد المحروس
+  // (sec-shell.tsx · stat-tone.contract.test.ts) — لا `rose-*`؛ والنصوص
+  // بدرجتين لكل وضع: عميقة على الأبيض، مشبَعة على الكحلي.
   critical: {
-    dot: "bg-rose-500",
-    text: "text-rose-300",
-    border: "border-rose-500/40",
-    bg: "bg-rose-500/10",
+    dot: "bg-red-500",
+    text: "text-red-700 dark:text-red-300",
+    border: "border-red-500/40",
+    bg: "bg-red-500/10",
     label: "حرج",
   },
   high: {
     dot: "bg-amber-400",
-    text: "text-amber-300",
+    text: "text-amber-700 dark:text-amber-300",
     border: "border-amber-400/40",
     bg: "bg-amber-400/10",
     label: "مرتفع",
   },
   medium: {
     dot: "bg-sky-400",
-    text: "text-sky-300",
+    text: "text-sky-700 dark:text-sky-300",
     border: "border-sky-400/40",
     bg: "bg-sky-400/10",
     label: "متوسط",
   },
   low: {
     dot: "bg-emerald-400",
-    text: "text-emerald-300",
+    text: "text-emerald-700 dark:text-emerald-300",
     border: "border-emerald-400/40",
     bg: "bg-emerald-400/10",
     label: "منخفض",
@@ -99,11 +102,13 @@ function severityToPriority(sev: string | null | undefined): Priority {
 
 export function AlertsPanel() {
   const fetchOverview = useServerFn(getSecOverview);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data, isFetching, dataUpdatedAt } = useQuery({
     queryKey: ["sec-overview-alerts", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
-    enabled: !!user,
+    // قراءة عرض: البوابة الوحيدة `!authLoading` — لا `enabled: !!user`،
+    // فالخادم يخدم الزائر عبر `optionalSupabaseAuth` والمحاكاة المرجعية.
+    enabled: !authLoading,
     refetchInterval: 20_000,
     staleTime: 10_000,
   });
@@ -199,15 +204,15 @@ export function AlertsPanel() {
   );
 
   return (
-    <section className="relative rounded-xl bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-xl border border-white/5 overflow-hidden">
-      <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-rose-400/60 to-transparent" />
+    <section className="relative rounded-xl bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-xl border border-[color:var(--hairline)] overflow-hidden">
+      <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-400/60 to-transparent" />
 
-      <header className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/5">
+      <header className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[color:var(--hairline-soft)]">
         <div className="flex items-center gap-2">
           <div className="relative">
-            <BellRing className="w-4 h-4 text-rose-300" />
+            <BellRing className="w-4 h-4 text-red-600 dark:text-red-400" />
             {counts.critical > 0 && (
-              <span className="absolute -top-1 -left-1 w-2 h-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_currentColor]" />
+              <span className="absolute -top-1 -start-1 w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_currentColor]" />
             )}
           </div>
           <span className="text-[12px] tracking-[0.3em] uppercase text-foreground/60 font-mono">
@@ -231,11 +236,16 @@ export function AlertsPanel() {
           }
         />
         {/* fallback keeps a subtle idle dot when no evidence yet */}
-        {!data && <span className="w-1.5 h-1.5 rounded-full bg-white/20" aria-hidden="true" />}
+        {!data && (
+          <span
+            className="w-1.5 h-1.5 rounded-full bg-[color:var(--hairline)]"
+            aria-hidden="true"
+          />
+        )}
       </header>
 
       {/* Priority filters */}
-      <div className="flex flex-wrap items-center gap-1.5 px-4 py-2.5 border-b border-white/5">
+      <div className="flex flex-wrap items-center gap-1.5 px-4 py-2.5 border-b border-[color:var(--hairline-soft)]">
         <Filter className="w-3 h-3 text-foreground/40 me-1" />
         {(["all", "critical", "high", "medium", "low"] as const).map((p) => {
           const active = prio === p;
@@ -249,7 +259,7 @@ export function AlertsPanel() {
                   ? style
                     ? `${style.bg} ${style.text} ${style.border}`
                     : "bg-primary/15 text-primary border-primary/40"
-                  : "border-white/5 text-foreground/50 hover:border-white/15 hover:text-foreground/80"
+                  : "border-[color:var(--hairline-soft)] text-foreground/50 hover:border-[color:var(--hairline)] hover:text-foreground/80"
               }`}
             >
               {style && <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />}
@@ -261,13 +271,13 @@ export function AlertsPanel() {
       </div>
 
       {/* Source filters */}
-      <div className="flex flex-wrap items-center gap-1.5 px-4 py-2 border-b border-white/5">
+      <div className="flex flex-wrap items-center gap-1.5 px-4 py-2 border-b border-[color:var(--hairline-soft)]">
         <button
           onClick={() => setSource("all")}
           className={`rounded-md px-2 py-0.5 text-[12px] font-mono border transition-colors ${
             source === "all"
               ? "border-primary/40 text-primary bg-primary/10"
-              : "border-white/5 text-foreground/50 hover:text-foreground/80"
+              : "border-[color:var(--hairline-soft)] text-foreground/50 hover:text-foreground/80"
           }`}
         >
           جميع المصادر
@@ -283,7 +293,7 @@ export function AlertsPanel() {
               className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[12px] font-mono border transition-colors ${
                 active
                   ? "border-secondary/40 text-secondary bg-secondary/10"
-                  : "border-white/5 text-foreground/50 hover:text-foreground/80"
+                  : "border-[color:var(--hairline-soft)] text-foreground/50 hover:text-foreground/80"
               }`}
             >
               <Icon className="w-3 h-3" /> {M.label}
@@ -293,7 +303,7 @@ export function AlertsPanel() {
       </div>
 
       {/* List */}
-      <ul className="max-h-[420px] overflow-y-auto divide-y divide-white/5">
+      <ul className="max-h-[420px] overflow-y-auto divide-y divide-[color:var(--hairline-soft)]">
         {filtered.length === 0 && (
           <li className="px-4 py-10 text-center text-xs text-foreground/40 font-mono">
             <ShieldAlert className="w-5 h-5 mx-auto mb-2 text-emerald-400/70" />
@@ -307,7 +317,7 @@ export function AlertsPanel() {
             <li key={a.id}>
               <Link
                 to={a.to}
-                className="group flex items-start gap-3 px-4 py-2.5 hover:bg-white/[0.03] transition-colors"
+                className="group flex items-start gap-3 px-4 py-2.5 hover:bg-[color:var(--chip)] transition-colors"
               >
                 <span
                   className={`mt-1.5 w-2 h-2 rounded-full ${style.dot} shadow-[0_0_6px_currentColor] shrink-0`}
