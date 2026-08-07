@@ -289,7 +289,7 @@ export type TwinSignals = {
 };
 
 export const getTwinSignals = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<TwinSignals> => {
     const { supabase } = context;
     const [events, alerts, tasks, docs] = await Promise.all([
@@ -383,7 +383,7 @@ function linregSlope(values: number[]): number {
 }
 
 export const getPredictions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<PredictionsPayload> => {
     const { supabase } = context;
     const day = 86_400_000;
