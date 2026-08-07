@@ -199,9 +199,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700;800&family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/png", href: "/finn-portrait.png" },
-      { rel: "apple-touch-icon", href: "/finn-portrait.png" },
-      { rel: "shortcut icon", type: "image/png", href: "/finn-portrait.png" },
+      // كانت الثلاثة تشير إلى `/finn-portrait.png` — **١٫٩٢ ميغابايت**،
+      // يجلبها المتصفّح على كل صفحة ليرسم أيقونة تبويب بحجم ١٦ بكسل.
+      // وهي أثقل أصلٍ في `public/` بفارق، وخارج رادار
+      // `check-performance-budget.mjs` لأن فحص الوسائط يقتصر على الصوت
+      // والفيديو — فمرّت بلا أن يلحظها أحد.
+      //
+      // و`brand-icon.png` (٧٨ كيلوبايت) هو **علامة المنتج** أصلًا: يستعمله
+      // `app-shell` في الترويسة والشريط الجانبي، وهو `logo` في بيانات
+      // schema.org أدناه. أي أن التصحيح يوحّد الهوية ويخفّف معًا: أيقونة
+      // التبويب كانت صورةَ المساعد لا علامةَ المنتج.
+      { rel: "icon", type: "image/png", href: "/brand-icon.png" },
+      { rel: "apple-touch-icon", href: "/brand-icon.png" },
+      { rel: "shortcut icon", type: "image/png", href: "/brand-icon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
     ],
     scripts: [

@@ -20,7 +20,7 @@ export function FinnWatermark() {
       }}
     >
       <img
-        src={"/finn-portrait.png"}
+        src={"/finn-portrait.webp"}
         alt=""
         loading="lazy"
         decoding="async"

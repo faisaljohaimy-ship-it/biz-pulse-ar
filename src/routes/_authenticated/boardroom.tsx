@@ -1,3 +1,4 @@
+import { RouteError } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -22,11 +23,9 @@ export const Route = createFileRoute("/_authenticated/boardroom")({
     </div>
   ),
   component: BoardroomPage,
-  errorComponent: ({ error }) => (
-    <div className="p-8 text-rose-300" role="alert">
-      Boardroom error: {error.message}
-    </div>
-  ),
+  // كان: `Boardroom error: {error.message}` — بالإنجليزية، وبنصّ الخطأ
+  // الخام، وبلا زر إعادة محاولة. الحدّ المشترك يفعل الثلاثة صحيحًا.
+  errorComponent: RouteError,
 });
 
 function BoardroomPage() {
@@ -35,16 +34,6 @@ function BoardroomPage() {
   const { data } = useSuspenseQuery(boardroomQuery);
   const [idx, setIdx] = useState(0);
   const [fs, setFs] = useState(false);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") setIdx((i) => Math.min(3, i + 1));
-      if (e.key === "ArrowLeft") setIdx((i) => Math.max(0, i - 1));
-      if (e.key === "Escape" && fs) setFs(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [fs]);
 
   const m = Object.fromEntries(data.metrics.map((x) => [x.id, x]));
   const health = m.enterpriseHealth;
@@ -126,6 +115,25 @@ function BoardroomPage() {
     },
   ];
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // في واجهةٍ عربية «التالي» يقع بصريًّا على **اليسار**. وكان السهم
+      // الأيمن يتقدّم والأيسر يرجع — أي أن المُقدِّم يضغط الاتجاه الذي
+      // يراه فيرجع للشريحة السابقة أمام المجلس. الاتّجاه يتبع الكتابة.
+      const forward = ar ? "ArrowLeft" : "ArrowRight";
+      const back = ar ? "ArrowRight" : "ArrowLeft";
+      // وكان الحدّ الأعلى `3` صلبًا بينما الزر يستعمل `slides.length - 1`،
+      // فإضافة شريحةٍ خامسة تُوقف لوحة المفاتيح عند الرابعة وحدها.
+      if (e.key === forward) setIdx((i) => Math.min(slides.length - 1, i + 1));
+      if (e.key === back) setIdx((i) => Math.max(0, i - 1));
+      if (e.key === "Escape" && fs) setFs(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // `ar` و`slides.length` يدخلان المنطق فعلًا الآن: الأوّل يقلب اتّجاه
+    // السهمين، والثاني يحدّ التقدّم. إغفالهما يُجمّد المستمع على أوّل قيمة.
+  }, [fs, ar, slides.length]);
+
   const s = slides[idx];
 
   return (
@@ -188,7 +196,12 @@ function BoardroomPage() {
             disabled={idx === 0}
             className="flex items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-300 disabled:opacity-30"
           >
-            <ChevronLeft className="h-3.5 w-3.5" /> {ar ? "السابق" : "Prev"}
+            {ar ? (
+              <ChevronRight className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronLeft className="h-3.5 w-3.5" />
+            )}{" "}
+            {ar ? "السابق" : "Prev"}
           </button>
 
           <div className="flex items-center gap-2">
@@ -210,7 +223,12 @@ function BoardroomPage() {
             disabled={idx === slides.length - 1}
             className="flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 disabled:opacity-30"
           >
-            {ar ? "التالي" : "Next"} <ChevronRight className="h-3.5 w-3.5" />
+            {ar ? "التالي" : "Next"}{" "}
+            {ar ? (
+              <ChevronLeft className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" />
+            )}
           </button>
         </div>
       </NexusCard>

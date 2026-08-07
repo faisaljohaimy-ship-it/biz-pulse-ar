@@ -15,13 +15,29 @@ export function useLiveRows<T>(
     let alive = true;
     setLoading(true);
     const refetch = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (build(supabase.from(table as any)) as any).then(({ data }: { data: T[] | null }) => {
-        if (alive) {
-          setRows(data ?? []);
+      // كان هذا `.then(...)` وحده: لا `catch` ولا سقف زمني. فرفضُ الوعد —
+      // انقطاع شبكة، أو رفض RLS يعيد `error` بدل `data` — يعني أن
+      // `setLoading(false)` لا يُنفَّذ **أبدًا**، فيبقى هيكل التحميل إلى
+      // الأبد ويُطبع `unhandled rejection` في الطرفية. والقاعدة المطبَّقة
+      // في `makeHooks.useList` هي المرجع: سباق أربع ثوانٍ، ثم قائمة فارغة
+      // تنهض تحتها المراجع المدمجة — لا انتظارٌ بلا نهاية.
+      const TIMEOUT_MS = 4_000;
+      Promise.race([
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (build(supabase.from(table as any)) as any).then(
+          ({ data }: { data: T[] | null }) => data ?? [],
+        ),
+        new Promise<T[]>((resolve) => setTimeout(() => resolve([]), TIMEOUT_MS)),
+      ])
+        .catch((error: unknown) => {
+          console.warn(`[useLiveRows] ${table} تعذّرت قراءته`, error);
+          return [] as T[];
+        })
+        .then((next: T[]) => {
+          if (!alive) return;
+          setRows(next);
           setLoading(false);
-        }
-      });
+        });
     };
     refetch();
     const channel = supabase

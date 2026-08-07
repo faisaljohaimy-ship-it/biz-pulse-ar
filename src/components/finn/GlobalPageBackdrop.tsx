@@ -13,7 +13,7 @@ export function GlobalPageBackdrop() {
       className="nx-backdrop pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[color:var(--surface)]"
     >
       <img
-        src={"/finn-portrait.png"}
+        src={"/finn-portrait.webp"}
         alt=""
         draggable={false}
         className="absolute inset-0 h-full w-full object-cover object-[center_top] opacity-70 md:opacity-75"

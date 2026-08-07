@@ -4,6 +4,7 @@
  * caught error is logged with route context so operators can trace it.
  */
 import { useRouter } from "@tanstack/react-router";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 import { useEffect } from "react";
 
 interface Props {
@@ -44,10 +45,12 @@ export function RouteErrorBoundary({ error, reset, routeLabel }: Props) {
           تعذّر تحميل هذا القسم مؤقتاً. تم تسجيل الحادثة وسيبقى بقية النظام يعمل. يمكنك إعادة
           المحاولة الآن.
         </p>
-        {error?.message ? (
-          <pre className="text-xs text-rose-200/80 bg-black/30 rounded-lg p-3 text-left overflow-auto max-h-32 font-mono">
-            {error.message}
-          </pre>
+        {/* كانت هذه الكتلة تعرض `error.message` خامًا في `<pre>` — وهو
+            المكان الذي يصل منه نصّ المصادقة الإنجليزي إلى شاشةٍ عربية. */}
+        {error ? (
+          <p className="text-xs text-rose-200/80 bg-black/30 rounded-lg p-3 max-h-32 overflow-auto">
+            {userFacingError(error)}
+          </p>
         ) : null}
         <div className="flex items-center justify-center gap-3">
           <button

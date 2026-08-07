@@ -1,5 +1,6 @@
 import { useRouter, Link } from "@tanstack/react-router";
 import { AlertTriangle, Home, RotateCw } from "lucide-react";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export function RouteError({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
@@ -8,9 +9,10 @@ export function RouteError({ error, reset }: { error: Error; reset: () => void }
       <div className="max-w-md rounded-2xl border border-destructive/30 bg-card/80 p-6 text-center shadow-lg">
         <AlertTriangle className="mx-auto mb-3 h-10 w-10 text-destructive" />
         <h2 className="mb-2 text-lg font-semibold text-foreground">حدث خطأ غير متوقع</h2>
-        <p className="mb-4 line-clamp-3 text-sm text-muted-foreground" dir="ltr">
-          {error?.message ?? "Unknown error"}
-        </p>
+        {/* كان هذا يطبع `error.message` كما هو و`dir="ltr"` — فيصل الزائرَ
+            العربيَّ نصُّ `requireSupabaseAuth` الحرفيّ:
+            «Unauthorized: No authorization header provided». */}
+        <p className="mb-4 line-clamp-3 text-sm text-muted-foreground">{userFacingError(error)}</p>
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={() => {

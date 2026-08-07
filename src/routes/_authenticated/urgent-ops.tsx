@@ -337,7 +337,13 @@ function UrgentOpsPage() {
       "بانتظار اعتماد": [],
       مغلق: [],
     };
-    for (const t of tasks) map[t.status].push(t);
+    // `TaskStatus` نوعٌ في وقت الترجمة فقط، والصفوف تصل من القاعدة عبر
+    // `as UrgentTask[]` بلا تحقّق. فحالةٌ واحدة خارج الأربع — «مغلقة» أو
+    // `new` أو ما يكتبه تكامل أو migration — تجعل `map[t.status]` غير
+    // معرَّفة، فيرمي `.push` داخل `useMemo` أثناء التصيير وتسقط اللوحة
+    // كلّها إلى حدّ الخطأ. والمجهول يُلحق بـ«جديد» ليُرى ويُعالَج، لا
+    // يُسقط الشاشة ولا يُبتلع صامتًا.
+    for (const t of tasks) (map[t.status] ?? map["جديد"]).push(t);
     return map;
   }, [tasks]);
 

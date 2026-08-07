@@ -268,7 +268,7 @@ const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = "FINN يفكّر…";
-const STILL_SRC = "/finn-portrait.png";
+const STILL_SRC = "/finn-portrait.webp";
 
 // Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,
 // and provider re-renders. Any second speak(replyId) for the same id is dropped
@@ -326,7 +326,7 @@ function FinnPanelBackdrop({ convMode, caption }: { convMode: boolean; caption: 
           default text chat keeps the clean signature backdrop. */}
       {convMode && (
         <img
-          src={"/finn-portrait.png"}
+          src={"/finn-portrait.webp"}
           alt=""
           draggable={false}
           className="absolute inset-0 h-full w-full object-cover object-[center_top] opacity-60"

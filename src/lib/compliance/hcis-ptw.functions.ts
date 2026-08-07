@@ -344,7 +344,12 @@ export const getPtwOverview = createServerFn({ method: "GET" })
     }
     // The board is NEVER empty: with no anon-visible rows (unreachable or
     // unseeded database) serve the built-in relative-time simulation.
-    if (p.length === 0 && t.length === 0) {
+    // كان `p.length === 0 && t.length === 0`. و`permit_types` تُملأ من
+    // migration بينما `permits` قد تبقى فارغة — فيتحقّق الشرط الثاني دون
+    // الأوّل، فلا تنطلق المحاكاة، وتُرسم اللوحة `0/0/0/0` مع «لا تصاريح
+    // سارية» وبلا شارة محاكاة (لأن الشارة تشترط `permits.some(...)` على
+    // مصفوفةٍ فارغة). التصاريح هي المعروض، ففراغها وحده هو الفراغ.
+    if (p.length === 0) {
       const sim = buildPtwSimulation(now);
       p = sim.permits;
       t = sim.types;
