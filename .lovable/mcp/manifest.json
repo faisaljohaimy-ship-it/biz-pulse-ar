@@ -5,9 +5,7 @@
   "auth": {
     "type": "oauth",
     "issuer": "https://jhutlofapjfjjeajawie.supabase.co/auth/v1",
-    "accepted_audiences": [
-      "authenticated"
-    ]
+    "accepted_audiences": ["authenticated"]
   },
   "mcp": {
     "server": {
@@ -51,16 +49,11 @@
             },
             "language": {
               "type": "string",
-              "enum": [
-                "ar",
-                "en"
-              ],
+              "enum": ["ar", "en"],
               "description": "Preferred reply language."
             }
           },
-          "required": [
-            "question"
-          ],
+          "required": ["question"],
           "additionalProperties": false,
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
@@ -79,12 +72,7 @@
           "properties": {
             "region": {
               "type": "string",
-              "enum": [
-                "central",
-                "western",
-                "eastern",
-                "southern"
-              ],
+              "enum": ["central", "western", "eastern", "southern"],
               "description": "Optional region filter."
             },
             "include_findings": {
@@ -110,12 +98,7 @@
           "properties": {
             "region": {
               "type": "string",
-              "enum": [
-                "central",
-                "western",
-                "eastern",
-                "southern"
-              ],
+              "enum": ["central", "western", "eastern", "southern"],
               "description": "Optional region filter."
             },
             "type_key": {
