@@ -101,6 +101,7 @@
     "input-otp": "^1.4.2",
     "jspdf": "^4.2.1",
     "leaflet": "^1.9.4",
+    "lottie-web": "^5.13.0",
     "lucide-react": "^1.16.0",
     "mammoth": "^1.12.0",
     "motion": "^12.40.0",
