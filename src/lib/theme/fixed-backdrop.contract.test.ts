@@ -25,12 +25,17 @@ const CSS = readFileSync("src/styles.css", "utf8");
  *  القواعد وحدها، وإلّا أسقطَ الملفَّ شرحُ الملف. */
 const CODE = CSS.replace(/\/\*[\s\S]*?\*\//g, "");
 
-/** آخر كتلة تكتب موضع `body::before` هي التي تحكم فعلًا. */
-const lastBackdropRule = (() => {
-  const at = CSS.lastIndexOf("body::before");
-  if (at === -1) return "";
-  return CSS.slice(at, CSS.indexOf("}", at) + 1);
-})();
+/**
+ * **كل** كتل `body::before` لا آخرها.
+ *
+ * أوّل صياغة قرأت `lastIndexOf` وحدها، ظنًّا أن المتأخّر يحكم. وهي ثغرة:
+ * الكاتب الآخر كتب `position: absolute !important` — و`!important` تغلب
+ * الترتيب، فلو أعادها عند السطر ٤٧٧٦ (وهناك كتلة `html.dark body::before`
+ * بالمحدِّد نفسه) لعاد الوضع الداكن إلى الانسياح **والحارس يمرّ**. الحماية
+ * لا تكون بموضعٍ في الملف.
+ */
+const backdropRules = [...CODE.matchAll(/[^{}]*body::before[^{}]*\{[^}]*\}/g)].map((m) => m[0]);
+const lastBackdropRule = backdropRules.at(-1) ?? "";
 
 describe("خلفية الصفحة ثابتة على الشاشة", () => {
   it("actually located the backdrop rule", () => {
@@ -39,15 +44,19 @@ describe("خلفية الصفحة ثابتة على الشاشة", () => {
     expect(CSS).toContain("body::before");
   });
 
-  it("آخر قاعدة تحكم الموضع تكتب fixed لا absolute", () => {
+  it("لا كتلة واحدة — في أيٍّ منها — تُعيد الطبقة إلى absolute", () => {
+    // كل الكتل تُفحص: `!important` تغلب الترتيب، فآخر كتلةٍ ليست بالضرورة
+    // الكلمة الأخيرة.
+    const offenders = backdropRules.filter((r) => /position:\s*absolute/.test(r));
+    expect(offenders, `كتلة تُعيد الانسياح: ${offenders.join(" | ").slice(0, 200)}`).toEqual([]);
     expect(lastBackdropRule).toMatch(/position:\s*fixed/);
-    expect(lastBackdropRule).not.toMatch(/position:\s*absolute/);
   });
 
   it("لا ارتفاع بامتداد المستند — هذا هو شكل الانسياح", () => {
     // `height: auto` + `min-height: 100%` على طبقةٍ ثابتة تعني: امتدّ مع
     // الصفحة. وهو بالضبط ما نقضه المالك.
-    expect(lastBackdropRule).not.toMatch(/height:\s*auto/);
+    const stretched = backdropRules.filter((r) => /height:\s*auto/.test(r));
+    expect(stretched).toEqual([]);
   });
 
   it("لا يُعتمد على background-attachment: fixed — معطوبة على iOS", () => {
@@ -62,13 +71,28 @@ describe("خلفية الصفحة ثابتة على الشاشة", () => {
     // بابٍ آخر دون أن يمسّ أحدٌ سطر `position`.
     // **الأسلاف وحدهم.** أوّل صياغة التقطت `body::after { filter: blur(8px) }`
     // وعدّته خرقًا — وهو ليس كذلك: العنصر الزائف شقيقٌ لـ`body::before` لا
-    // سلفٌ له، فمرشّحه لا يُنشئ لها containing block. المحدِّد هنا مقصورٌ
-    // على `html` و`body` نفسيهما (ومعهما أصنافهما)، بلا عنصرٍ زائف وبلا
-    // محدِّد نسب.
-    const rootBlocks = [...CSS.matchAll(/(^|\n)((?:html|body)(?:\.[\w-]+)*)\s*\{([^}]*)\}/g)]
-      .map((m) => ({ sel: m[2], body: m[3] }))
-      .filter(({ body }) => /(^|\s|;)(transform|filter|perspective):/.test(body))
-      .filter(({ body }) => !/transform:\s*none|filter:\s*none/.test(body));
+    // سلفٌ له، فمرشّحه لا يُنشئ لها containing block.
+    //
+    // لكنّها أخطأت في الاتّجاه الآخر أيضًا، وهو الأخطر: استثنت المحدِّدات
+    // النسبية جملةً، بينما `html.dark body { … }` (styles.css:4767) يُنسّق
+    // **body نفسه** — أي السلف المباشر. فالمقياس الصحيح ليس «بلا نسب» بل
+    // «ينتهي بـhtml أو body».
+    //
+    // وأُضيفت الخصائص الناقصة: `will-change` (سببُ هذا العطل بعينه، ولم تكن
+    // مفحوصة!) و`backdrop-filter` (وُعد بها التعليق ولم يطابقها المحدِّد:
+    // اشتراط `(^|\s|;)` قبل `filter` يمنع مطابقة `backdrop-filter` لأن
+    // السابق فيها شَرطة) و`contain` و`content-visibility` — وكلّها تُنشئ
+    // containing block.
+    const BREAKERS =
+      /(^|[\s;])(transform|filter|backdrop-filter|perspective|will-change|contain|content-visibility)\s*:/;
+    const rootBlocks = [
+      ...CODE.matchAll(/(^|\n)([^{}]*?(?:html|body)(?:\.[\w-]+)*)\s*\{([^}]*)\}/g),
+    ]
+      .map((m) => ({ sel: m[2].trim(), body: m[3] }))
+      // العناصر الزائفة شقيقة لا سلف — تُستثنى.
+      .filter(({ sel }) => !sel.includes("::") && !sel.includes("*"))
+      .filter(({ body }) => BREAKERS.test(body))
+      .filter(({ body }) => !/(transform|filter|contain|will-change):\s*(none|auto)/.test(body));
     expect(
       rootBlocks.map((b) => b.sel),
       "سلفٌ جذريّ يحمل transform/filter فيُبطل الثبات",

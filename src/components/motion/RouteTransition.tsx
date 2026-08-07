@@ -29,7 +29,7 @@
  *   اتجاه القراءة لا عكسه.
  * - **الأجهزة الضعيفة**: تُختصر المدد وتُلغى الضبابة.
  */
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import { useRouterState } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
@@ -108,20 +108,32 @@ function buildVariants(family: Family, dirSign: number, lowEnd: boolean): Varian
         exit: { opacity: 0, y: 8, scaleY: 0.995, transition: leave },
       };
     case "intelligence":
-      // تركيز عدسة — الضبابة تُسقَط على الأجهزة الضعيفة لأنها أغلى مرشّح.
+      /* تركيز عدسة — **بالمقياس والشفافية وحدهما، بلا مرشّح.**
+       *
+       * كانت هذه العائلة تستعمل `filter: blur()`، وهي الخاصيّة الوحيدة في
+       * الملف التي خرجت عن قاعدته المعلنة (تحويلٌ وشفافية لا غير). وثمنها
+       * لم يكن أداءً بل صحّةً:
+       *
+       * `motion` يُعيد `transform` إلى `none` حين تعود قيمه إلى أصلها،
+       * **ولا نظير لذلك للمرشّح** — فيبقى `filter: blur(0px)` مضمَّنًا بعد
+       * انتهاء الحركة. و`blur(0px)` ليست `none`: أي قيمةٍ محسوبة للمرشّح
+       * غير `none` تُنشئ containing block (Filter Effects L1)، فينكسر كل
+       * `position: fixed` تحت الغلاف — وهو يلفّ `<Outlet/>`، أي كل شاشة.
+       *
+       * وأوّل ضحاياه `/rag-search` (من هذه العائلة، ويُصيّر
+       * `HoloVideoEngine`): تنساح خلفيته ومعها زرّ `.nx-hv-toggle` وهو
+       * آلية الإيقاف الوحيدة لحركةٍ دائمة (WCAG 2.2.2).
+       *
+       * ولم يكن `onAnimationComplete` كافيًا: `initial={false}` يمنع الحركة
+       * عند أوّل تركيب، فلا يُستدعى المُنظِّف أصلًا بينما `motion` يكون قد
+       * كتب قيمة المرشّح. قِيس بعد المحاولة: `blur(0px)` باقيةٌ والخلفية
+       * تنساح. فالعلاج ألّا يُكتب المرشّح رأسًا.
+       *
+       * والمقياس وحده يؤدّي المعنى: العدسة تتراجع من ١٫٠٣ إلى ١٫٠٠. */
       return {
-        initial: {
-          opacity: 0,
-          scale: lowEnd ? 1.012 : 1.03,
-          filter: lowEnd ? "blur(0px)" : "blur(7px)",
-        },
-        animate: { opacity: 1, scale: 1, filter: "blur(0px)", transition: enter },
-        exit: {
-          opacity: 0,
-          scale: 0.994,
-          filter: lowEnd ? "blur(0px)" : "blur(3px)",
-          transition: leave,
-        },
+        initial: { opacity: 0, scale: lowEnd ? 1.012 : 1.03 },
+        animate: { opacity: 1, scale: 1, transition: enter },
+        exit: { opacity: 0, scale: 0.994, transition: leave },
       };
     case "analytics":
       return {
@@ -161,6 +173,8 @@ export function RouteTransition({ children }: { children: ReactNode }) {
   // فلا اختلاف بين أول رسمٍ على الجهتين.
   const [lowEnd, setLowEnd] = useState(false);
   const [switchedOff, setSwitchedOff] = useState(false);
+  /** مرجع الغلاف — يُنزع عنه المرشّح الباقي عند انتهاء الحركة (انظر أدناه). */
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setLowEnd(detectLowEnd()), []);
 
@@ -190,10 +204,16 @@ export function RouteTransition({ children }: { children: ReactNode }) {
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={pathname}
+        ref={wrapRef}
         variants={variants}
         initial="initial"
         animate="animate"
         exit="exit"
+        /* حزامٌ ثانٍ فوق الحمّالة: لا عائلة تكتب مرشّحًا بعد اليوم (انظر
+         * `buildVariants`)، لكن لو أُعيد يومًا فلن يبقى مضمَّنًا بعد الحركة.
+         * السطر رخيص، والعطل الذي يمنعه كسَرَ كل `position: fixed` في
+         * النظام. */
+        onAnimationComplete={() => wrapRef.current?.style.removeProperty("filter")}
         /* الأصل من الأعلى ليقرأ «المصراع» هبوطًا لا تمدّدًا من الوسط.
 
            **و`will-change` أُزيلت — كانت تكسر كل `position: fixed` في النظام.**

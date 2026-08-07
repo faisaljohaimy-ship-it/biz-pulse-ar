@@ -1,0 +1,432 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   حركة الأيقونات — ست حركات تحكم الطبقتين (أ) السقف والتنقّل و(ب) الوحدات.
+
+   لماذا CSS لا Lottie: مقطع `lottie_light` وحده ١٦٧٬٠٨٤ بايت = ٣٠٫٢٪ من
+   ٥٥٢٬٩٠٢ بايت المتبقّية في ميزانية JavaScript. والسبب الأسبق أنّ ملفّ
+   bodymovin يخزّن اللون قيمةً نهائية (`"c":{"k":[r,g,b,1]}`) ولا يعرف
+   `currentColor` — فأيقونة Lottie لا ترث `--ink` ولا تتلوّن بلون المنطقة من
+   `--nx-region-rgb` ولا تنقلب بين الوضعين. المادة ٣٤ بند ٢ تمنع اللون خارج
+   طبقة الرموز، فالمانع هوية قبل أن يكون ميزانية.
+
+   لماذا الطبقة هنا لا في الترميز: هذه الحركات تركب على ما هو مرسوم أصلًا —
+   `lucide-react` تكتب على كل أيقونة صنفًا ثابتًا (`lucide-radar`) وتضع
+   `stroke="currentColor"` على `viewBox="0 0 24 24"`. فلا مكوّن جديد ولا
+   عقدة DOM إضافية على ١٤٦١ موضع أيقونة.
+
+   قاعدة الهوية: ما لا يحمل معنًى يتحرّك مرّة عند الدخول ويسكن. ولا تدور
+   حركةٌ بلا نهاية إلّا حيث تعني «حيّ». وكل ما يدور فهو `alternate` بمنحنى
+   `ease-in-out` — يمضي ويعود، لا يقفز إلى بدايته. هذا إيقاع الطبقة المعتمد
+   في `nxOrbBreathe`/`nxOrbRun`، ولوحةٌ بإيقاعين متجاورين تُقرأ ضجيجًا.
+
+   القياس الحاكم: ٣١ أيقونة تُرسم معًا في الشريط الجانبي. فالحركات الخمس
+   العامّة على `transform`/`opacity` وحدهما (تُركَّب على GPU بلا إعادة
+   تخطيط)، والسادسة — رسم المسار — تُعيد الطلاء كل إطار، فهي محصورة
+   بالأسطح الكبيرة قليلة العدد ومحظورة على الشريط الجانبي.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── ثوابت الطبقة ────────────────────────────────────────────────────────
+   المُدد والمنحنيات من `nx-tokens.css` لا أرقامًا جديدة. وتلك الرموز
+   مُعاد ربطها إلى `1ms` داخل `prefers-reduced-motion`، فكل حركة لمرّة
+   واحدة هنا تمتثل للتفضيل دون سطر إضافي. الحلقات وحدها تحتاج نصًّا صريحًا. */
+:root {
+  /* طول المسار الافتراضي لرسم الأيقونة — بوحدات `viewBox` لا بكسل.
+     ١٠٠ يزيد على أطول طفل مقيس في المجموعة (`folder-open` = ٨٢٫٨)، فأي
+     أيقونة خارج الجدول أدناه تُرسم كاملة ولا تُقصّ. */
+  --nx-draw-len: 100;
+  /* تأخير اختياري للموجة — يُمرَّر مضمّنًا حيث تُمرَّر `--orb-accent` أصلًا.
+     الافتراضي صفر: ٣١ أيقونة تنهض دفعةً واحدة تُقرأ لوحةً تظهر، والموجة
+     عبرها تُقرأ اضطرابًا. */
+  --nx-ico-delay: 0ms;
+}
+
+/* ═══ ① النهوض — `nx-ico-rise` ═══════════════════════════════════════════
+   الحركة الافتراضية لكل أيقونة في الطبقتين: تظهر مرّة عند الدخول ثم تسكن.
+   `opacity` + `translate` + `scale` فقط — لا خاصية تُعيد التخطيط، فـ٣١
+   نسخة متزامنة تبقى على المُركِّب.
+
+   تُكتب على الحاوية (`.nx-orb` / `.nx-module-icon`) لا على `<svg>`: الرمز
+   نفسه تشغله `nx-icon-soft` بحركة `opacity` لا نهائية، واختصار `animation`
+   يستبدل ولا يجمع — فكتابتها هناك تمحو تنفّس الرمز بصمت. */
+@keyframes nx-ico-rise {
+  from {
+    opacity: 0;
+    translate: 0 var(--nx-move-4, 4px);
+    scale: 0.92;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+.nx-orb,
+.nx-module-icon {
+  animation: nx-ico-rise var(--nx-anim-slow, 300ms) var(--nx-ease-out) var(--nx-ico-delay) both;
+}
+
+/* العنصر النشط يحمل `nx-icon-pulse` وهي حركة حدٍّ لا نهائية على الحاوية
+   نفسها. الصنفان متساويان في النوعية (0,1,0) فيحسمهما ترتيب المصدر وحده،
+   وأيّهما فاز محا الآخر. تُذكر الحركتان معًا في قاعدة أعلى نوعيةً (0,2,0)
+   فتُحسم المسألة نصًّا لا بموضع السطر. */
+.nx-orb.nx-icon-pulse,
+.nx-module-icon.nx-icon-pulse {
+  animation:
+    nx-ico-rise var(--nx-anim-slow, 300ms) var(--nx-ease-out) var(--nx-ico-delay) both,
+    nx-icon-breathe 3.4s var(--nx-ease-inout) infinite;
+}
+
+/* ═══ ② الرسم — `nx-ico-draw` ════════════════════════════════════════════
+   المسار يُرسم من نقطة بدايته. تُركَّب على أطفال `<svg>` لا على `<svg>`
+   نفسه — الأطفال (`path`/`circle`/`line`) لا حركة عليهم فلا تعارض.
+
+   لماذا لا تعمّ كل الأيقونات: `stroke-dashoffset` تُعيد رسم الهندسة كل
+   إطار ولا تصعد إلى المُركِّب. ٣١ نسخة متزامنة على درج الجوال خطر إطارات
+   مقيس، فالرسم محصور بالأسطح الكبيرة قليلة العدد (ترويسة الصفحة، بطاقة
+   التوجيه، بلاطة الوحدة) ومحظور على الشريط الجانبي.
+
+   الأمان بالتصميم: لا `forwards`. بانتهاء الحركة تعود الخاصيتان إلى
+   قيمتهما الأصلية (`none`/`0`) فتظهر الأيقونة كاملة يقينًا — حتى لو كان
+   `--nx-draw-len` أقصر من مسارها. الصياغة التي تُثبّت `dasharray` في
+   القاعدة الأساسية تترك أي أيقونة أطول مقصوصةً إلى الأبد. */
+@keyframes nx-ico-draw {
+  from {
+    stroke-dasharray: var(--nx-draw-len);
+    stroke-dashoffset: var(--nx-draw-len);
+    opacity: 0.35;
+  }
+  to {
+    stroke-dasharray: var(--nx-draw-len);
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+[data-nx-ico="draw"] > * {
+  animation: nx-ico-draw var(--nx-anim-cinematic, 600ms) var(--nx-ease-out) var(--nx-ico-delay);
+}
+
+/* جدول أطوال المسارات — مقيسة لا مقدَّرة.
+   القيمة = طول أطول طفل في الأيقونة بوحدات `viewBox`، مقرَّبة لأعلى.
+   حُسبت تحليليًّا من هندسة `lucide-react@1.21.0`: تفكيك `d` ثم تكامل عددي
+   للمنحنيات والأقواس، ومحيط الدوائر `2πr`.
+
+   لماذا لكل أيقونة قيمتها: الطول المشترك يترك زمنًا ميتًا. الطفل الأقصر
+   يكتمل عند `offset ≤ D − L`، فأيقونة طولها ٢٤ بقيمة ١٠٠ تنتهي في أول
+   ٢٤٪ من المدّة وتقف ٧٦٪ بلا تغيّر. بالجدول لا يتجاوز الزمن الميت ٪٥.
+
+   ملاحظة أسماء: الصنف المكتوب هو اسم الملف في lucide لا اسم المكوّن في
+   React. `CheckCircle2` ← `circle-check` و`BarChart3` ← `chart-column`
+   و`Home` ← `house` و`AlertTriangle` ← `triangle-alert`. الاستيراد باسمٍ
+   مستعار لا يغيّر الصنف المنبعث. */
+.lucide-list-checks {
+  --nx-draw-len: 9;
+}
+.lucide-scan-line {
+  --nx-draw-len: 11;
+}
+.lucide-waypoints {
+  --nx-draw-len: 13;
+}
+.lucide-radio-tower {
+  --nx-draw-len: 24;
+}
+.lucide-network {
+  --nx-draw-len: 25;
+}
+.lucide-telescope,
+.lucide-user-check {
+  --nx-draw-len: 26;
+}
+.lucide-plug-zap {
+  --nx-draw-len: 27;
+}
+.lucide-anchor,
+.lucide-lightbulb {
+  --nx-draw-len: 33;
+}
+.lucide-boxes,
+.lucide-siren {
+  --nx-draw-len: 34;
+}
+.lucide-chart-column,
+.lucide-chart-line {
+  --nx-draw-len: 36;
+}
+.lucide-plug,
+.lucide-radar {
+  --nx-draw-len: 38;
+}
+.lucide-mic {
+  --nx-draw-len: 39;
+}
+.lucide-car,
+.lucide-rocket {
+  --nx-draw-len: 40;
+}
+.lucide-fence {
+  --nx-draw-len: 41;
+}
+.lucide-gauge {
+  --nx-draw-len: 42;
+}
+.lucide-fire-extinguisher {
+  --nx-draw-len: 43;
+}
+.lucide-cctv,
+.lucide-external-link,
+.lucide-file-badge {
+  --nx-draw-len: 44;
+}
+.lucide-hard-hat {
+  --nx-draw-len: 49;
+}
+.lucide-activity,
+.lucide-building-2,
+.lucide-door-open {
+  --nx-draw-len: 50;
+}
+.lucide-eye {
+  --nx-draw-len: 53;
+}
+.lucide-train-front {
+  --nx-draw-len: 55;
+}
+.lucide-bell {
+  --nx-draw-len: 56;
+}
+.lucide-bot,
+.lucide-clipboard-check,
+.lucide-clipboard-list {
+  --nx-draw-len: 57;
+}
+.lucide-shield,
+.lucide-shield-alert,
+.lucide-shield-check,
+.lucide-shield-half {
+  --nx-draw-len: 59;
+}
+.lucide-triangle-alert {
+  --nx-draw-len: 61;
+}
+.lucide-circle-check,
+.lucide-clock,
+.lucide-compass {
+  --nx-draw-len: 63;
+}
+.lucide-house {
+  --nx-draw-len: 64;
+}
+.lucide-camera,
+.lucide-key-round,
+.lucide-octagon-alert,
+.lucide-sparkles {
+  --nx-draw-len: 66;
+}
+.lucide-book-open-check,
+.lucide-file-text,
+.lucide-zap {
+  --nx-draw-len: 67;
+}
+.lucide-crown,
+.lucide-map {
+  --nx-draw-len: 68;
+}
+.lucide-id-card,
+.lucide-settings,
+.lucide-warehouse {
+  --nx-draw-len: 69;
+}
+.lucide-building,
+.lucide-grid-3x3,
+.lucide-wrench {
+  --nx-draw-len: 73;
+}
+.lucide-factory {
+  --nx-draw-len: 76;
+}
+.lucide-book-open {
+  --nx-draw-len: 77;
+}
+.lucide-folder-open {
+  --nx-draw-len: 83;
+}
+
+/* ═══ ③ التثبيت — `nx-ico-lock` ══════════════════════════════════════════
+   تحوّل الحالة النشطة. انتقالٌ لا حركة: الانتقال يُشغَّل بتغيّر الحالة
+   ويعود بعودتها، وهو أيضًا لا يزاحم `nx-icon-soft` على خانة `animation`.
+
+   `data-status="active"` و`aria-current="page"` يكتبهما TanStack Router على
+   كل `<Link>` نشط من نفسه — فالحركة تركب على الشريط الجانبي وشريط SEC ودرج
+   القمرة وبطاقات HCIS بلا لمس سطر واحد في الترميز.
+
+   `stroke-width` هي الإشارة الحاملة: الرمز النشط أثخن خطًّا فيُقرأ قبل نصّه.
+   ولأنّ `lucide` تكتبها سمةَ عرض (`stroke-width="2"`) فقاعدة CSS تعلوها. */
+:is([data-status="active"], [aria-current="page"]) :is(.nx-orb, .nx-module-icon) > svg,
+nav :is([data-status="active"], [aria-current="page"]) > svg {
+  stroke-width: 2.4;
+  scale: 1.08;
+}
+
+/* نطاق الانتقال محصور بمعالم التنقّل. أوّل صياغة كانت `a > svg, button > svg`
+   فتلمس كل أيقونة داخل رابط أو زر في النظام — ومنها ما يحمل `transition-colors`
+   من Tailwind، واختصار `transition` يستبدل قائمة الخصائص ولا يضيف إليها، فيسقط
+   انتقال اللون القائم بلا أثر يدلّ عليه. */
+:is(.nx-orb, .nx-module-icon) > svg,
+nav a > svg,
+nav button > svg {
+  transition:
+    stroke-width var(--nx-anim-base, 200ms) var(--nx-ease-out),
+    scale var(--nx-anim-base, 200ms) var(--nx-ease-out);
+}
+
+/* ═══ ④ النبض الحيّ — `nx-ico-live` ══════════════════════════════════════
+   الحلقة الوحيدة المسموح لها بالدوام، ومعناها واحد: هذه القراءة حيّة الآن.
+   `alternate` + `ease-in-out` على إيقاع الطبقة، ومداها ٦٪ — تحت عتبة
+   الالتفات وفوق عتبة الملاحظة.
+
+   بوّابتها سمةٌ صريحة لا صنف: `[data-nx-ico="live"]`. الصنف `lucide-radar`
+   وحده يظهر في ١٤٦١ موضعًا، ولو عُلّقت الحلقة عليه لدارت اللوحة كلّها.
+   السمة تُكتب حيث الحالة حيّة فعلًا ولا تتسرّب.
+
+   `data-nx-loop` تُلحقها بخطّاف الإيقاف القائم في `nx-tokens.css`. */
+@keyframes nx-ico-live {
+  from {
+    scale: 1;
+    opacity: 0.86;
+  }
+  to {
+    scale: 1.06;
+    opacity: 1;
+  }
+}
+
+[data-nx-ico="live"] {
+  animation: nx-ico-live var(--nx-loop-breathe, 2s) var(--nx-ease-inout) infinite alternate;
+}
+
+/* ═══ ⑤ المسح — `nx-ico-sweep` ═══════════════════════════════════════════
+   دورانٌ محدود يمضي ويعود، لا دورةً كاملة. لا يُركَّب إلّا حيث يدور الجسم
+   نفسه في الواقع: إبرة الرادار، وسِنّ الترس. الدوران على رمزٍ ساكن
+   (درع، مبنى، ملف) كذبٌ بصري لا زينة.
+
+   المحور: `transform-box: view-box` يجعل المرجع إطار `viewBox` لا صندوق
+   الشكل، و`transform-origin: center` عندها = (١٢،١٢) وهو مركز القرص. بلا
+   هذين يدور العنصر حول مركز نفسه فتتأرجح الإبرة بدل أن تمسح.
+
+   إبرة الرادار هي الطفل الأخير في `lucide-radar` (المسار `m13.41 10.59
+   5.66-5.66`، طوله ٨٫٠ وحدات) — قُرئ من هندسة الحزمة لا خُمّن. */
+@keyframes nx-ico-sweep {
+  from {
+    rotate: -26deg;
+  }
+  to {
+    rotate: 26deg;
+  }
+}
+
+[data-nx-ico="sweep"] > *:last-child,
+[data-nx-ico="sweep"].lucide-settings > *:first-child {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: nx-ico-sweep 3.2s var(--nx-ease-inout) infinite alternate;
+}
+
+/* ═══ ⑥ خفقة الإنذار — `nx-ico-alert` ════════════════════════════════════
+   ثلاث نغمات لا نغمة واحدة بثلاثة ألوان. المادة صريحة: أحمر/كهرماني هو
+   الزوج الذي يطمسه عمى الألوان الأحمر-الأخضر، والفارق واجب الظهور في أكثر
+   من اللون (WCAG 2.2 §1.4.1). فالحركة هنا حاملٌ سادس بعد الخلفية والحدّ
+   والأيقونة ولون النص والشارة:
+
+     • خطر    — خفقة مزدوجة سريعة (٩٠٠ms): إيقاعٌ يُقرأ نبضًا مستعجلًا.
+     • تحذير  — ميلٌ بطيء ذهابًا وإيابًا (٢٫٤s): يتحرّك ولا يستعجل.
+     • سليم   — لا حلقة إطلاقًا. السليم لا يخفق؛ لوحةٌ يومض فيها كل شيء
+                لا تقول شيئًا. يكفيه نهوض الدخول.
+
+   الأشكال تتبع عرف لوحات السلامة أصلًا (مثمّن/مثلث/دائرة)، والحركة تتبع
+   الشكل فيبقى الفارق مقروءًا في التدرّج الرمادي وفي عمى الألوان معًا.
+
+   البوّابة سمة `data-nx-ico` صريحة كما في ④ — ولنفس السبب. */
+@keyframes nx-ico-alert-danger {
+  0%,
+  38%,
+  100% {
+    scale: 1;
+  }
+  14%,
+  26% {
+    scale: 1.12;
+  }
+}
+
+@keyframes nx-ico-alert-warning {
+  from {
+    rotate: -5deg;
+  }
+  to {
+    rotate: 5deg;
+  }
+}
+
+[data-nx-ico="danger"] {
+  animation: nx-ico-alert-danger 0.9s var(--nx-ease-inout) infinite;
+}
+
+[data-nx-ico="warning"] {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: nx-ico-alert-warning 2.4s var(--nx-ease-inout) infinite alternate;
+}
+
+/* ═══ الامتثال — تُقرأ مع الطبقة لا بعدها ════════════════════════════════ */
+
+/* مفتاح المستخدم الواحد. `prefers-reduced-motion` يُعيد ربط رموز المدّة إلى
+   `1ms` في nx-tokens فتسقط الحركات لمرّة واحدة تلقائيًّا — أمّا الحلقات
+   الأربع فتحتاج نصًّا صريحًا، وكذلك مفتاح التطبيق الذي لا يمرّ بالرموز. */
+html[data-nx-motion="off"] :is(.nx-orb, .nx-module-icon),
+html[data-nx-motion="off"] [data-nx-ico],
+html[data-nx-motion="off"] [data-nx-ico] > * {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.nx-orb, .nx-module-icon),
+  [data-nx-ico],
+  [data-nx-ico] > * {
+    animation: none;
+  }
+
+  /* السكون لا يعني الاختفاء: ما كانت `opacity: 0` في أول إطار تعود ظاهرة. */
+  .nx-orb,
+  .nx-module-icon,
+  [data-nx-ico="live"] {
+    opacity: 1;
+    scale: 1;
+    translate: none;
+  }
+
+  /* الرسم يُلغى لا يُجمَّد — الأيقونة نصف المرسومة رمزٌ آخر. */
+  [data-nx-ico="draw"] > * {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* الألوان القسرية: الشكل هو كل ما يبقى، فلا يُخاطر بقصّه ولا بإثخانه. */
+@media (forced-colors: active) {
+  [data-nx-ico] {
+    animation: none;
+  }
+
+  [data-nx-ico="draw"] > * {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+
+  :is([data-status="active"], [aria-current="page"]) :is(.nx-orb, .nx-module-icon) > svg,
+  :is([data-status="active"], [aria-current="page"]) > svg {
+    stroke-width: 2;
+    scale: 1;
+  }
+}
