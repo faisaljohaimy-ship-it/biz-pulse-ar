@@ -578,7 +578,30 @@ ${untrustedPromptData(ragContext, 48_000)}
         // Chief + the complete canonical Council of Ten. Its output is an
         // internal advisory only: it can improve completeness and risk review,
         // but it can never elevate a model opinion into operational evidence.
-        if (lastUserText) {
+        //
+        // ── لماذا صار خارج المسار الافتراضي (قرار المالك ٢٠٢٦/٠٨/٠٧) ──────
+        //
+        // المالك: «اجعل فن يردّ سريعًا كجمني بلا تأخير». وهذا المجلس كان
+        // **السبب الأكبر للتأخير**، لا سببًا من جملة أسباب:
+        //
+        //   • `runAgentMission` استدعاءُ نموذجٍ **كامل** بمهلة ٥٠ ثانية
+        //     (`timeoutMs: 50_000`)، يسبق استدعاء الإجابة نفسه بالتسلسل.
+        //     فكل دور = نموذجان كاملان أحدهما بعد الآخر.
+        //   • ووكيله الرئيس معقودٌ على `estimated_latency_ms: 12_000` و
+        //     `execution_policy: "sequential"`، والعشرة الباقون معلَّقون عليه.
+        //   • وقبله يُقرأ خمسة جداول لبناء الموجز.
+        //   • **ومخرَجه لا يصل المستخدم أصلًا**: يُحقن في `systemPrompt`
+        //     وسمًا `<council-advisory>` موصوفًا في موضعه بأنه
+        //     «UNTRUSTED … NOT EVIDENCE» ولا يجوز الاستشهاد به ولا ذكر
+        //     أسماء وكلائه. أي: ثمنٌ بنموذجٍ كامل مقابل مشورةٍ لا يُبنى
+        //     عليها شيء ولا تُرى.
+        //   • وكان يعمل **للزائر غير المصادَق** أيضًا — الشرط الوحيد وجود نصّ.
+        //
+        // فصار **اختياريًّا صريحًا** (`replyMode: "deep"`) لا افتراضيًّا:
+        // القدرة محفوظة كاملةً لمن يطلب مراجعةً عميقة، والمسار الافتراضي —
+        // وهو مسار العرض والاستعمال اليومي — لم يعد ينتظر نموذجًا لا يُرى
+        // مخرَجه. ولم يُحذف سطرٌ من منطق المجلس نفسه.
+        if (lastUserText && replyMode === "deep") {
           try {
             const { runAgentMission } = await import("@/lib/finn/orchestrator");
             const outcome = await runAgentMission({
@@ -795,11 +818,14 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
         // Persist ONLY the safe text (never raw model output).
         if (userId) {
           if (lastUserText) {
-            try {
-              await persistAdaptivePreferences(supabase, userId, lastUserText);
-            } catch (preferenceError) {
-              console.warn("[api/chat] adaptive preference persistence skipped", preferenceError);
-            }
+            // **لا يُنتظر.** كتابةُ تفضيلات لا يراها المستخدم في هذا الدور
+            // كانت تُؤخّر ردَّه برحلة شبكةٍ كاملة إلى القاعدة. الردّ لا
+            // يتوقّف عليها، فتمضي على التوازي ويُبلَّغ فشلها ولا يُبتلع.
+            void persistAdaptivePreferences(supabase, userId, lastUserText).catch(
+              (preferenceError: unknown) => {
+                console.warn("[api/chat] adaptive preference persistence skipped", preferenceError);
+              },
+            );
           }
           const q = (lastUserText ?? "").trim();
           const a = safeDisplayText.trim();

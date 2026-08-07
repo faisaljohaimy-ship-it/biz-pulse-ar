@@ -24,7 +24,15 @@ type ChatBody = {
   threadId?: string;
   model?: string;
   grounded?: boolean;
-  replyMode?: "text" | "voice";
+  /**
+   * `deep` يطلب مراجعة «مجلس العشرة» صراحةً.
+   *
+   * كان المجلس يعمل في **كل** دور — استدعاءُ نموذجٍ كامل بمهلة ٥٠ ثانية
+   * يسبق استدعاء الإجابة، ومخرَجه لا يصل المستخدم (يُحقن في التعليمات
+   * موصوفًا بأنه غير موثوق ولا يُستشهد به). فصار طلبًا صريحًا لا افتراضًا،
+   * والوضع الافتراضي `text` لا ينتظره.
+   */
+  replyMode?: "text" | "voice" | "deep";
 };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -208,13 +216,19 @@ export async function validateChatRequest(
   const model =
     typeof input.model === "string" && input.model.length <= 100 ? input.model : undefined;
   const grounded = typeof input.grounded === "boolean" ? input.grounded : undefined;
-  if (input.replyMode !== undefined && input.replyMode !== "text" && input.replyMode !== "voice") {
+  const REPLY_MODES = ["text", "voice", "deep"] as const;
+  if (
+    input.replyMode !== undefined &&
+    !(REPLY_MODES as readonly string[]).includes(String(input.replyMode))
+  ) {
     return {
       ok: false,
       response: chatJsonError("Reply mode is invalid.", 400, requestId),
     };
   }
-  const replyMode = input.replyMode === "voice" ? "voice" : "text";
+  const replyMode = (REPLY_MODES as readonly string[]).includes(String(input.replyMode ?? ""))
+    ? (input.replyMode as "text" | "voice" | "deep")
+    : "text";
 
   const authorization = request.headers.get("authorization")?.trim() ?? null;
   if (
