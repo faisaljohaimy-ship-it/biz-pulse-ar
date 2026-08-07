@@ -88,24 +88,24 @@ type Surface = {
  * الأسطح المرشّحة. القائمة هي عقد التركيب نفسه: أي سطح يُضاف بلا سطر هنا
  * يمرّ بلا فحصٍ للون — وهو بالضبط الباب الذي دخل منه المنع الأصلي.
  */
+/**
+ * **الأسطح المقيسة — القائمة تُشتقّ من الواقع لا من النيّة.**
+ *
+ * كانت هنا ثلاثة محدِّدات (`.nexus-sidebar` · `.finn-launcher` ·
+ * `.nx-module-icon`) لا وجود لأيٍّ منها في الشجرة: `LottieIcon` مركَّب في
+ * `LiveClock` حصرًا. فتخطّى ٣٤ اختبارًا من ٣٦ بصمت، ولم تُفحص الدعوى التي
+ * كُتب الملف لأجلها — أن اللون يتبع الوضعين — ولا مرّة واحدة.
+ *
+ * ومحدِّدٌ لا يطابق شيئًا **يتخطّى**، لا يفشل. وهذا أسوأ من الفشل: يُقرأ
+ * تقرير التشغيل أخضرَ بينما لم يُقَس شيء.
+ */
 const SURFACES: readonly Surface[] = [
   {
-    name: "شعار السقف — الشريط الجانبي",
+    name: "مؤشّر «حيّ» — شريط الساعة",
     url: "/hcis",
-    selector: `.nexus-sidebar [${STATE_ATTR}]`,
+    // الشريط لاصق أعلى كل صفحة، فالسطح حاضر بلا تمرير.
+    selector: `.nx-clock-bar [${STATE_ATTR}]`,
     scrollable: false,
-  },
-  {
-    name: "مدار FINN العائم",
-    url: "/hcis",
-    selector: `.finn-launcher [${STATE_ATTR}]`,
-    scrollable: false,
-  },
-  {
-    name: "بلاطة توجيه HCIS",
-    url: "/hcis/directive/SEC-01",
-    selector: `.nx-module-icon [${STATE_ATTR}]`,
-    scrollable: true,
   },
 ];
 

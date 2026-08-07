@@ -394,8 +394,20 @@ export function LottieIcon({
             : player.loadAnimation({ ...base, path: src });
 
         anim.addEventListener("DOMLoaded", onReady);
+        // **قناتان لا قناة.** `data_failed` عطلٌ قاتل: الملف لم يُحمَّل، فلا
+        // شيء يُرسم — والسقوط إلى الرمز الساكن هو الصواب.
         anim.addEventListener("data_failed", onFailed);
-        anim.addEventListener("error", onFailed);
+        // أمّا `error` فقناةٌ عامّة في bodymovin تشمل `renderFrameError`
+        // وهو **غير قاتل**: إطارٌ واحد تعذّر استيفاؤه والمشغّل حيّ. وربطها
+        // بـ`onFailed` كان يوقف المشغّل (`pause()`) على أوّل تعثّر، ويترك
+        // الرمز الساكن مخفيًّا — فيرى المستخدم أيقونةً متجمّدة لا الاحتياط.
+        //
+        // ونجا ذلك بالصدفة الزمنية وحدها: الخطأ يقع قبل `DOMLoaded`،
+        // فيعيده `onReady` إلى التشغيل بعده. لو تأخّر إطارًا واحدًا لتجمّد
+        // بلا مُوقِظ إلا عبور `IntersectionObserver`.
+        anim.addEventListener("error", (reason: unknown) => {
+          warnOnce(`تعثّر إطار في ${key}`, reason);
+        });
         if (bounce) anim.addEventListener("complete", onComplete);
         if (speed !== 1) anim.setSpeed(speed);
       } catch (reason) {

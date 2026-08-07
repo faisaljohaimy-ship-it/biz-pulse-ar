@@ -4944,8 +4944,24 @@ html.dark .sd-glass-surface,
 html.dark .spatial-window,
 html.dark [data-slot="card"] {
   /* تُركَّب فوق الأساس #041e2c فتعطي #0a3244 — ١٢٫٣٠:١ تحت الحبر البحريّ
-     `#e9f6ff`، و١٫٢٧:١ فوق الأساس أي ارتفاعٌ يُرى ولا يصرخ. */
+     `#e9f6ff`، و١٫٢٧:١ فوق الأساس أي ارتفاعٌ يُرى ولا يصرخ.
+
+     **و`background-image: none` ليست زينة — بدونها الرقم أعلاه يقيس سطحًا
+     لا يُرى.** القاعدة العامّة للزجاج (سطر ٣٢٨١) تكتب
+     `background-image: linear-gradient(rgba(255,255,255,0.94) → …)`
+     بـ`!important` وبلا تخصيصٍ لوضع. والصورة تُرسم **فوق** اللون، فكانت
+     تغطّي هذا الأساس الداكن كاملًا: بطاقةٌ بيضاء بحبرٍ أبيض
+     (`--sd-ink #e9f6ff` فوق `#f0f3f4`) = **١٫٠٢:١**.
+
+     والنطاق ليس هامشيًّا: `ui/card.tsx` يرسم `nexus-card` على كل `<Card>`،
+     ومعها `nexus-floating-surface` في القوائم المنسدلة والاختيار
+     و`nexus-toast` في الإشعارات. أي كل بطاقة وقائمة وإشعار في الوضع
+     الداكن.
+
+     وكان الفخّ معروفًا: `nexus-window` و`glass-sidebar` أُنقذتا وحدهما
+     بـ`background-image: none !important` في موضعٍ آخر — اثنتان من تسع. */
   background-color: rgba(12, 56, 75, 0.78) !important;
+  background-image: none !important;
   background-blend-mode: normal, normal, normal, screen, normal;
   border-color: rgba(74, 190, 232, 0.4) !important;
   box-shadow: var(--sd-shadow-1) !important;
