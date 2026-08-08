@@ -273,3 +273,41 @@ describe("المُخطَّط — الاقتطاع من حزمة الدخول", (
     expect(route).not.toMatch(/export\s+(function|const)\s+BlueprintPage/);
   });
 });
+
+describe("المُخطَّط — أرضيّتا القراءة واللمس", () => {
+  /**
+   * سقطتا في فحص الإنتاج (`scripts/ui-audit.mjs`) بـ ٨ من ٣٢ تركيبة، وقيستا
+   * محليًّا في متصفح حقيقي على ٣٧٥ و٣٩٠ و٧٦٨ و١٤٤٠ و١٩٢٠ قبل التصحيح:
+   * لافتات العدّادات ١١px مرسومة، ورابط المسرح ١٤٦×٣٤.
+   *
+   * الفحص هنا على النصّ لا على التخطيط — jsdom لا يقيس شيئًا من هذا،
+   * وميدانُ القياس الحقيقي هو `ui-audit`. قيمته أنه يمنع العودة الصامتة
+   * بين تشغيلين للفحص الميداني، لا أنه يُغني عنه.
+   */
+  const rule = (selector: string) => {
+    const at = CSS.indexOf(`${selector} {`);
+    expect(at, `القاعدة ${selector} غير موجودة`).toBeGreaterThan(-1);
+    return CSS.slice(at, CSS.indexOf("\n}", at));
+  };
+
+  it("لافتات العدّادات ≥ ١٢px — أرضية القراءة الوظيفية", () => {
+    const size = rule(".nx-bp-counter span").match(/font-size:\s*([\d.]+)px/);
+    expect(size, "لا حجم خطّ مصرَّح").not.toBeNull();
+    expect(Number(size![1])).toBeGreaterThanOrEqual(12);
+  });
+
+  it("رابط المسرح ≥ ٤٤px — أرضية الإبهام والمؤشّر معًا", () => {
+    const h = rule(".nx-bp-more").match(/min-block-size:\s*([\d.]+)px/);
+    expect(h, "لا ارتفاع أدنى مصرَّح").not.toBeNull();
+    expect(Number(h![1])).toBeGreaterThanOrEqual(44);
+  });
+
+  it("الفحص الميداني يقيس نصّ SVG بمقياس رسمه لا بوحدات viewBox", () => {
+    // وردة المناطق viewBox 260 تُرسم في 343–430px، فـ 10.5px مصرَّحة تظهر
+    // 13.85–17.37px. قراءة المصرَّح وحده كانت تُسقط أربع لافتات سليمة في كل
+    // مقاس — وتُخفي في المقابل نصًّا صغيرًا حقيقيًّا داخل SVG مصغَّر.
+    const audit = read("scripts/ui-audit.mjs");
+    expect(audit).toContain("getScreenCTM");
+    expect(audit).toMatch(/parseFloat\(cs\.fontSize\) \* scale/);
+  });
+});

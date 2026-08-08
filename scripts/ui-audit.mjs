@@ -75,11 +75,31 @@ const collect = ({ minFont, minTarget }) => {
       .map((n) => n.textContent.trim())
       .join("");
     if (ownText) {
-      const fs = parseFloat(cs.fontSize);
+      // النصّ داخل SVG لا يُقرأ بحجمه المصرَّح: وحدات viewBox تُقاس ثم
+      // تُمدَّد بمقياس الرسم. وردة المناطق على الرئيسية viewBox 260 تُرسم
+      // في 343–430px، فـ 10.5px مصرَّحة تظهر 13.85–17.37px مقيسة — فوق
+      // الأرضية لا تحتها. كان هذا الفحص يقرأ المصرَّح وحده فيُسقط أربع
+      // لافتات سليمة في كل مقاس (٨ من ٣٢ تركيبة)، ويُخفي في الوقت نفسه
+      // نصًّا صغيرًا حقيقيًّا داخل SVG مصغَّر — العطل في الاتجاهين.
+      // مقياس الرسم يؤخذ من محدِّد الشاشة: جذر المحدِّد التربيعي لقيمته
+      // يعطي المقياس المتماثل ولو صاحبه دوران.
+      let scale = 1;
+      if (el.ownerSVGElement && typeof el.getScreenCTM === "function") {
+        const m = el.getScreenCTM();
+        if (m) {
+          const s = Math.sqrt(Math.abs(m.a * m.d - m.b * m.c));
+          if (s > 0 && Number.isFinite(s)) scale = s;
+        }
+      }
+      const fs = parseFloat(cs.fontSize) * scale;
       if (fs) {
         if (fs < min) min = fs;
         if (fs < minFont && smallText.length < 8) {
-          smallText.push({ fs, tag: el.tagName, text: ownText.slice(0, 44) });
+          smallText.push({
+            fs: Math.round(fs * 10) / 10,
+            tag: el.tagName,
+            text: ownText.slice(0, 44),
+          });
         }
       }
     }
