@@ -61,7 +61,7 @@ export function RagSearchPage() {
           ["--live" as string]: "rgb(var(--live-rgb, 34 211 238))",
         }}
       >
-        <HoloVideoEngine src="/holo-bg-3.mp4" />
+        <HoloVideoEngine />
       </div>
       <main className="relative mx-auto flex w-full max-w-4xl flex-col gap-4 px-3 py-6 md:px-6">
         <header>

@@ -130,7 +130,7 @@ export function NxAgentsPage() {
           ["--live" as string]: "rgb(var(--live-rgb, 34 211 238))",
         }}
       >
-        <HoloVideoEngine src="/holo-bg-2.mp4" />
+        <HoloVideoEngine />
       </div>
       <main className="relative mx-auto flex w-full max-w-[1600px] flex-col gap-4 px-3 py-5 md:px-6">
         <header className="flex flex-wrap items-center justify-between gap-3">
