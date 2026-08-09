@@ -12,23 +12,23 @@
 
 ## ١ — أقسام اللوحة ← مصدر البيانات
 
-| قسم الداشبورد (index.tsx)      | المكوّن                                       | مصدر البيانات (الملف)                                                            | الوسم                   |
-| ------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------- |
-| نبض المؤسسة — لقطة عامة (KPIs) | `SovereignCommandDeck`                        | مصادق: `getExecKpis` عبر `useExecutiveKpiSource`؛ عام: `region-sim-data.ts`      | حي موثق / محاكاة موسومة |
-| طابور القرارات                 | `OsDecisionQueue`                             | مصادق: حوادث وكاميرات وتصاريح وأوامر عمل محكومة بـRLS؛ عام: `region-sim-data.ts` | حي موثق / محاكاة موسومة |
-| توصيات سَدِيد اليومية          | `AriaTodayRecommendations`                    | مصادق: `ExecKpis`؛ عام: توصيات عرض ثابتة                                         | حي موثق / محاكاة موسومة |
-| جسر القيادة — الفصلان 1 و2     | `executive-bridge.tsx`                        | مصادق: `ExecKpis`؛ عام: التجميع الإقليمي الاصطناعي                               | حي موثق / محاكاة موسومة |
-| غرفة العمليات المحمية          | `/sec`                                        | `getSecOverview` عبر جلسة Supabase وRLS                                          | حي موثق                 |
-| الأقسام المحمية                | `/sec/sections`                               | `getSections` عبر جلسة Supabase وRLS                                             | حي موثق                 |
-| الدوائر التشغيلية المحمية      | `/sec/circles`                                | `getTwinTree` عبر جلسة Supabase وRLS                                             | حي موثق                 |
-| بطاقات العرض التنفيذي          | `ExecutiveShowcaseHub`                        | `CARDS` داخل الملف (أسماء قانونية)                                               | تنقّل                   |
-| وحدات النظام                   | `SystemModulesDashboard`                      | `SYSTEM_MODULES` داخل الملف — **سجلّ الأسماء/الأيقونات المعتمد**                 | تنقّل                   |
-| العرض الحي للنظام              | `LiveSystemShowcase`                          | `@/lib/i18n` (محتوى عرض ثابت، لا أرقام)                                          | —                       |
-| مسرح/لوحة الحج                 | `HajjExecutiveStage` · `HajjCommandDashboard` | fixtures محلية `is_simulation` + `src/lib/hajj-embed.ts`                         | محاكاة (رأس الملف)      |
-| شريط مركز القيادة              | `MissionControlStrip`                         | `getPublicKpis` → لقطة تسويقية اصطناعية ثابتة                                    | محاكاة موسومة           |
-| حلقة الوكلاء                   | `AgentRing` (executive)                       | `listAgents/listAgentRuns` → `src/lib/exec.functions.ts`                         |                         |
-| بطاقة معاينة الأمن             | `SecCommandLiveCard`                          | `getPublicKpis` → لقطة تسويقية اصطناعية ثابتة                                    | محاكاة موسومة           |
-| الخلفية السينمائية (شات سَدِيد)| `AriaSignatureBackdrop`                       | `src/lib/finn/signature.ts` (بصمة، لا بيانات)                                    | —                       |
+| قسم الداشبورد (index.tsx)       | المكوّن                                       | مصدر البيانات (الملف)                                                            | الوسم                   |
+| ------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------- |
+| نبض المؤسسة — لقطة عامة (KPIs)  | `SovereignCommandDeck`                        | مصادق: `getExecKpis` عبر `useExecutiveKpiSource`؛ عام: `region-sim-data.ts`      | حي موثق / محاكاة موسومة |
+| طابور القرارات                  | `OsDecisionQueue`                             | مصادق: حوادث وكاميرات وتصاريح وأوامر عمل محكومة بـRLS؛ عام: `region-sim-data.ts` | حي موثق / محاكاة موسومة |
+| توصيات سَدِيد اليومية           | `AriaTodayRecommendations`                    | مصادق: `ExecKpis`؛ عام: توصيات عرض ثابتة                                         | حي موثق / محاكاة موسومة |
+| جسر القيادة — الفصلان 1 و2      | `executive-bridge.tsx`                        | مصادق: `ExecKpis`؛ عام: التجميع الإقليمي الاصطناعي                               | حي موثق / محاكاة موسومة |
+| غرفة العمليات المحمية           | `/sec`                                        | `getSecOverview` عبر جلسة Supabase وRLS                                          | حي موثق                 |
+| الأقسام المحمية                 | `/sec/sections`                               | `getSections` عبر جلسة Supabase وRLS                                             | حي موثق                 |
+| الدوائر التشغيلية المحمية       | `/sec/circles`                                | `getTwinTree` عبر جلسة Supabase وRLS                                             | حي موثق                 |
+| بطاقات العرض التنفيذي           | `ExecutiveShowcaseHub`                        | `CARDS` داخل الملف (أسماء قانونية)                                               | تنقّل                   |
+| وحدات النظام                    | `SystemModulesDashboard`                      | `SYSTEM_MODULES` داخل الملف — **سجلّ الأسماء/الأيقونات المعتمد**                 | تنقّل                   |
+| العرض الحي للنظام               | `LiveSystemShowcase`                          | `@/lib/i18n` (محتوى عرض ثابت، لا أرقام)                                          | —                       |
+| مسرح/لوحة الحج                  | `HajjExecutiveStage` · `HajjCommandDashboard` | fixtures محلية `is_simulation` + `src/lib/hajj-embed.ts`                         | محاكاة (رأس الملف)      |
+| شريط مركز القيادة               | `MissionControlStrip`                         | `getPublicKpis` → لقطة تسويقية اصطناعية ثابتة                                    | محاكاة موسومة           |
+| حلقة الوكلاء                    | `AgentRing` (executive)                       | `listAgents/listAgentRuns` → `src/lib/exec.functions.ts`                         |                         |
+| بطاقة معاينة الأمن              | `SecCommandLiveCard`                          | `getPublicKpis` → لقطة تسويقية اصطناعية ثابتة                                    | محاكاة موسومة           |
+| الخلفية السينمائية (شات سَدِيد) | `AriaSignatureBackdrop`                       | `src/lib/finn/signature.ts` (بصمة، لا بيانات)                                    | —                       |
 
 ## ٢ — سجلّ الوحدات المعتمد (المصدر الواحد للأسماء والأيقونات)
 
