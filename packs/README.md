@@ -7,7 +7,7 @@ Installed as descriptor assets; NOTHING here is activated.
 |---|---|---|
 | `nexios-modern-skills-pack` v1.0.0 | 144 skill (`nx-*`) في 12 مجالًا + سجل JSON + مخطط + ترحيل SQL + محمّل TS | واصفات فقط · `enabled=false` |
 | `nexios-modern-agents-tools-pack` v1.0.0 | 72 وكيلًا (`nx_*`) + 180 أداة (`nx.*`) + ارتباطات + سجل MCP + بطاقات A2A + OpenAPI + ترحيل SQL | `descriptor_only` · `enabled=false` |
-| `nexios-modern-stack` v1 | promptfoo evals + سير CI (finn-quality) + طبقة OTel GenAI + استراتيجية MCP | أصول غير موصولة |
+| `nexios-modern-stack` v1 | promptfoo evals + سير CI (sadeed-quality) + طبقة OTel GenAI + استراتيجية MCP | أصول غير موصولة |
 
 ## ما جرى عند التثبيت (وما لم يجرِ)
 
@@ -19,7 +19,7 @@ Installed as descriptor assets; NOTHING here is activated.
 - ✘ **لم تُطبَّق ترحيلات SQL** — ملفا `db/*.sql` أصلان مرجعيان هنا ولم
   يُنقلا إلى `supabase/migrations/`؛ وثيقتا التثبيت تشترطان مراجعة في
   بيئة غير إنتاجية وتحديد `org_id` صراحة (`INSTALL_IN_NEXIOS_AR.md`).
-- ✘ **لم يُفعَّل سير CI** — `nexios-modern-stack/ci/finn-quality.yml` لم
+- ✘ **لم يُفعَّل سير CI** — `nexios-modern-stack/ci/sadeed-quality.yml` لم
   يُنسخ إلى `.github/workflows/` (وثيقة الحزمة نفسها: بعد العرض
   التنفيذي، مع تثبيت الإصدارات).
 - ✘ لا وكيل ولا أداة ولا skill دخل مسارات التطبيق أو الحزم المبنية —

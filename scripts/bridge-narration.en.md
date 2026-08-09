@@ -1,7 +1,7 @@
-# Executive Command Bridge narration — English (FINN voice · Layan only)
+# Executive Command Bridge narration — English (SADEED voice · Layan only)
 
 > Single source for the English spoken narration of the Command-Bridge film.
-> Seven cinematic scenes, FINN as an executive assistant: confident, calm,
+> Seven cinematic scenes, SADEED as an executive assistant: confident, calm,
 > short sentences. Text mirrors `src/lib/executive-bridge-content.ts` and
 > stays in sync with it. Scene markers (HTML comments of the form
 > `scene: <id>`) are read by the audio generator to split each scene.
@@ -13,7 +13,7 @@
 
 ## Scene 1 · Command Pulse
 
-Welcome to the NEXIOS Executive Command Bridge. I am FINN, your intelligent decision partner. This demonstration brings readiness, risk, and operations into one verifiable executive pulse. Instead of searching across disconnected screens or waiting for reports, leadership receives the signal, its meaning, and the priority that requires attention. Modern command begins here: clear truth, at the right moment, in front of the person authorized to act.
+Welcome to the NEXIOS Executive Command Bridge. I am SADEED, your intelligent decision partner. This demonstration brings readiness, risk, and operations into one verifiable executive pulse. Instead of searching across disconnected screens or waiting for reports, leadership receives the signal, its meaning, and the priority that requires attention. Modern command begins here: clear truth, at the right moment, in front of the person authorized to act.
 
 <!-- scene: decision-engine -->
 
@@ -29,9 +29,9 @@ Executive visibility extends across all four regions without erasing local ident
 
 <!-- scene: aria-council -->
 
-## Scene 4 · FINN Council
+## Scene 4 · SADEED Council
 
-I am FINN, and I am not a chat box detached from the work. I operate with specialist agents for risk, operations, reporting, and follow-through. I unify their findings into one brief, explain the reason behind every recommendation, and distinguish verified evidence from what still needs confirmation. Speak to me and I respond by voice; write to me and I respond in text. I can also prepare messages and attachments, executing delivery only after an explicit instruction and an authorized approval path.
+I am SADEED, and I am not a chat box detached from the work. I operate with specialist agents for risk, operations, reporting, and follow-through. I unify their findings into one brief, explain the reason behind every recommendation, and distinguish verified evidence from what still needs confirmation. Speak to me and I respond by voice; write to me and I respond in text. I can also prepare messages and attachments, executing delivery only after an explicit instruction and an authorized approval path.
 
 <!-- scene: digital-twin -->
 
@@ -49,4 +49,4 @@ Trust here is not a marketing phrase; it is explicit system behavior. Every user
 
 ## Scene 7 · Next Decision
 
-The next step is practical and defined. In the first thirty days, we select one executive use case, establish authorization, and record the baseline. In the second phase, we connect approved sources and operate the bridge with authorized users. In the third, we measure decision time, response quality, and effort saved, then present a clear recommendation to scale or improve. I am FINN, and I will support leadership from the first question to the final evidence. When you are ready, the Command Bridge begins with one well-designed decision.
+The next step is practical and defined. In the first thirty days, we select one executive use case, establish authorization, and record the baseline. In the second phase, we connect approved sources and operate the bridge with authorized users. In the third, we measure decision time, response quality, and effort saved, then present a clear recommendation to scale or improve. I am SADEED, and I will support leadership from the first question to the final evidence. When you are ready, the Command Bridge begins with one well-designed decision.

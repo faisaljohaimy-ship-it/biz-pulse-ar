@@ -23,7 +23,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publishEvent } from "@/lib/exec/event-bus.server";
 import { consumePendingEvents } from "@/lib/runtime/consume-events.server";
-import { autoSeedFinnCorpusForOrg } from "@/lib/finn/seed-corpus.server";
+import { autoSeedSadeedCorpusForOrg } from "@/lib/sadeed/seed-corpus.server";
 
 // Real long-running LLM agents (knowledge/exec/ops) genuinely take 60-80min
 // for multi-tool deep reasoning. Killing them at 5min produced fake "timeout"
@@ -188,7 +188,7 @@ export const runtimePulse = createServerFn({ method: "POST" })
       workflowsAdvanced++;
     }
 
-    // 4) Auto-seed FINN corpus on first activation (once per org).
+    // 4) Auto-seed SADEED corpus on first activation (once per org).
     //    Cheap probe: skip if any knowledge already exists for this org.
     let corpusInserted = 0;
     try {
@@ -197,7 +197,7 @@ export const runtimePulse = createServerFn({ method: "POST" })
         .select("id", { count: "exact", head: true })
         .eq("org_id", orgId);
       if ((count ?? 0) === 0) {
-        const r = await autoSeedFinnCorpusForOrg(supabaseAdmin as never, orgId);
+        const r = await autoSeedSadeedCorpusForOrg(supabaseAdmin as never, orgId);
         corpusInserted = r.inserted;
         if (r.inserted > 0) {
           await publishEvent(supabase, {
@@ -213,7 +213,7 @@ export const runtimePulse = createServerFn({ method: "POST" })
         }
       }
     } catch (err) {
-      console.error("[pulse] autoSeedFinnCorpusForOrg failed", err);
+      console.error("[pulse] autoSeedSadeedCorpusForOrg failed", err);
     }
 
     // 5) Emit a single heartbeat ONLY if real work happened.

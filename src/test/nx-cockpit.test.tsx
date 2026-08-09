@@ -11,7 +11,7 @@
  *   - experience levels change density,
  *   - the initiative workflow validates and passes the human gate,
  *   - touch targets declare the 44px floor,
- *   - the voice button routes to the ONE FINN integration (store command).
+ *   - the voice button routes to the ONE SADEED integration (store command).
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -19,7 +19,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
 import { RegionProvider } from "@/lib/region-context";
 import { REGIONS } from "@/lib/regions";
-import { useFinnStore } from "@/lib/finn-core/store";
+import { useSadeedStore } from "@/lib/sadeed-core/store";
 import { NxCockpitPage } from "@/routes/-nx-cockpit-page";
 import { auditCockpitActions, COCKPIT_ACTIONS } from "@/components/cockpit/actions";
 import {
@@ -80,7 +80,7 @@ async function renderCockpit(repo?: ExecutiveCockpitRepository) {
 
 beforeEach(() => {
   window.localStorage.clear();
-  useFinnStore.setState({ pendingCommands: [], mode: "collapsed", voice: "idle" });
+  useSadeedStore.setState({ pendingCommands: [], mode: "collapsed", voice: "idle" });
 });
 
 afterEach(() => {
@@ -99,9 +99,9 @@ describe("executive cockpit — composition", () => {
       "strategic-map",
       "saudi-map-visualization",
       "region-metric-cards",
-      "finn-panel",
+      "sadeed-panel",
       "quick-actions",
-      "finn-voice",
+      "sadeed-voice",
       "capability-grid",
       "event-stream",
       "experience-level-bar",
@@ -259,14 +259,14 @@ describe("executive cockpit — interactions", () => {
     expect(await screen.findByText("سُجل إجراء معتمد")).toBeInTheDocument();
   });
 
-  it("voice + chat buttons route to the ONE FINN integration (store command)", async () => {
+  it("voice + chat buttons route to the ONE SADEED integration (store command)", async () => {
     await renderCockpit();
     fireEvent.click(screen.getByRole("button", { name: "تحدث إلى سديد" }));
-    expect(useFinnStore.getState().pendingCommands.some((c) => c.kind === "open")).toBe(true);
+    expect(useSadeedStore.getState().pendingCommands.some((c) => c.kind === "open")).toBe(true);
 
-    useFinnStore.setState({ pendingCommands: [] });
+    useSadeedStore.setState({ pendingCommands: [] });
     fireEvent.click(screen.getByRole("button", { name: "محادثة سَدِيد" }));
-    expect(useFinnStore.getState().pendingCommands.some((c) => c.kind === "open")).toBe(true);
+    expect(useSadeedStore.getState().pendingCommands.some((c) => c.kind === "open")).toBe(true);
   });
 
   it("touch-target law: cockpit controls declare the 44px floor", async () => {

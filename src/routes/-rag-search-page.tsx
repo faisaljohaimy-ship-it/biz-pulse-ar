@@ -5,7 +5,7 @@
  * Ships DARK behind VITE_RAG_RETRIEVAL_ENABLED (NOT_GLOBAL, default OFF).
  * Auth-gated by design (same posture as finn_knowledge): a guest sees a
  * sign-in gate state, never an Unauthorized error. Renders chunks +
- * citations ONLY — no generation, no streaming, and the Gemini/FINN path
+ * citations ONLY — no generation, no streaming, and the Gemini/SADEED path
  * is untouched by this surface.
  *
  * insufficient_evidence is rendered as a SUCCESSFUL, honest outcome

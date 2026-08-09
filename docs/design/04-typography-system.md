@@ -17,7 +17,7 @@ get tabular, large, unmissable treatment.
 
 ## Script rules
 
-1. UI copy, insights, FINN's voice: **Arabic**. English never leads a screen.
+1. UI copy, insights, SADEED's voice: **Arabic**. English never leads a screen.
 2. Mixed lines use bidi isolation (`dir="auto"` / `<bdi>`); layout direction never flips.
 3. Latin identifiers inside Arabic text (SEC-18, KPI codes) render in the Latin stack at
    95% of the Arabic size to balance x-height.

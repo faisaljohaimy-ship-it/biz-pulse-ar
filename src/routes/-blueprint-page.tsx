@@ -44,7 +44,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, getRegion, type RegionId } from "@/lib/regions";
-import { FinnStagePresence } from "@/components/finn/FinnStagePresence";
+import { SadeedStagePresence } from "@/components/sadeed/SadeedStagePresence";
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
 const STAGE_AR: Record<string, string> = {
@@ -360,16 +360,16 @@ export function BlueprintPage() {
               <span aria-hidden className="nx-bp-halo" />
               <span aria-hidden className="nx-bp-orbit nx-bp-orbit--a" />
               {/* هالة المساعد — مخروط ألوان المناطق الأربع يدور خلف القلب.
-                  الصنف يبقى `nx-bp-finn-*`: معرّف آلة لا اسم عرض. */}
-              <span aria-hidden className="nx-bp-finn-halo" />
+                  الصنف يبقى `nx-bp-sadeed-*`: معرّف آلة لا اسم عرض. */}
+              <span aria-hidden className="nx-bp-sadeed-halo" />
               <RegionRosette values={compliance} activeRegion={regionId} ar={ar} />
               {/* النقر على قلب الوردة يدخل محادثة المساعد — زر شفاف فوق القلب
                   بحلقة تركيز ظاهرة، فيبقى الرسم زينة والفعل عنصرًا وصولًا
                   سليمًا. الاسم المعروض من `PRODUCT_BRAND` وحده (توحيد اسم
                   المساعد على «سَدِيد» — قرار المالك ٢٠٢٦/٠٨/٠٩)؛ المسار
-                  `/finn` معرّف توجيه لا يراه مستخدم فيبقى كما هو. */}
+                  `/sadeed` معرّف توجيه لا يراه مستخدم فيبقى كما هو. */}
               <Link
-                to="/finn"
+                to="/sadeed"
                 aria-label={
                   ar
                     ? `افتح محادثة ${PRODUCT_BRAND.assistantName}`
@@ -378,7 +378,7 @@ export function BlueprintPage() {
                 title={
                   ar ? `تحدث مع ${PRODUCT_BRAND.assistantName}` : `Talk to ${PRODUCT_BRAND.en.name}`
                 }
-                className="nx-bp-finn-btn"
+                className="nx-bp-sadeed-btn"
               />
             </div>
           </div>
@@ -517,7 +517,7 @@ export function BlueprintPage() {
           className="nx-dash-slot nx-bp-stage mx-auto mt-8 w-full max-w-[760px]"
           style={{ ["--nx-bp-i" as string]: 5 }}
         >
-          <FinnStagePresence />
+          <SadeedStagePresence />
         </section>
 
         {/* ════ ٢ · توصيات سَدِيد ═════════════════════════════════════════

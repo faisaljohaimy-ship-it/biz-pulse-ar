@@ -47,13 +47,13 @@ export {
   type NxEmptyKind,
 } from "./feedback/nx-states";
 export {
-  NxFinnPresence,
+  NxSadeedPresence,
   NxWaveform,
-  FINN_STATE_LABEL,
-  type NxFinnPresenceProps,
-  type NxFinnState,
+  SADEED_STATE_LABEL,
+  type NxSadeedPresenceProps,
+  type NxSadeedState,
   type NxWaveformProps,
-} from "./finn/nx-finn-presence";
+} from "./sadeed/nx-sadeed-presence";
 export {
   NxRegionPulse,
   NxTwinLink,

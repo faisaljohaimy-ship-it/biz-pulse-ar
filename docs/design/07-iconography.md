@@ -67,7 +67,7 @@ per tile.
 
 ## Agent icons
 
-Every agent (FINN and specialists from the Adaptive Shell) has: a **presence ring**
+Every agent (SADEED and specialists from the Adaptive Shell) has: a **presence ring**
 (2px, `--nx-layer-agent`, pulsing only while the agent is live), a monogram or glyph at
 the ring's center, and a **mode glyph** at the bottom-left (RTL: bottom-left = trailing):
 advisory (💬 speech-stroke glyph), supervised (👁 eye-stroke), gated (🔒 lock-stroke).

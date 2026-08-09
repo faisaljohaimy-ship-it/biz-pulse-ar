@@ -11,13 +11,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PlayCircle, StopCircle, Sparkles, Volume2, VolumeX } from "lucide-react";
 import {
-  FINN,
+  SADEED,
   DIGITAL_HUMANS,
   findHuman,
   type DigitalHumanSpec,
 } from "@/lib/digital-humans/registry";
 import { useDigitalHuman, type SpokenTurn } from "@/lib/digital-humans/engine";
-import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/finn-voice";
+import { speakAs, detectLang, type SpeakHandle } from "@/lib/digital-humans/sadeed-voice";
 import { AgentPulseIcon } from "./AgentPulseIcon";
 import { cn } from "@/lib/utils";
 
@@ -162,7 +162,7 @@ function buildScript(ov: PresentationOverview, ar: boolean, displayName: string)
       text_en: "Executive report is composed and ready for delivery.",
     },
 
-    // FINN recommendation
+    // SADEED recommendation
     {
       speakerId: "aria",
       preState: "thinking",
@@ -208,7 +208,7 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
   const [, forceTick] = useState(0);
 
   // All 11 canonical Digital Humans are present — no specialist silently
-  // falls back to FINN when its turn begins.
+  // falls back to SADEED when its turn begins.
   const stageSpecs = useMemo<DigitalHumanSpec[]>(() => DIGITAL_HUMANS, []);
 
   // Build one engine per stage human

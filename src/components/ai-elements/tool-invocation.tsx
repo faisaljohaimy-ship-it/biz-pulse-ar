@@ -14,9 +14,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import {
-  approveFinnOutboundMessage,
-  cancelFinnOutboundMessage,
-} from "@/lib/finn/outbound-messaging.functions";
+  approveSadeedOutboundMessage,
+  cancelSadeedOutboundMessage,
+} from "@/lib/sadeed/outbound-messaging.functions";
 
 /**
  * Renders an inline tool invocation from an AI SDK UIMessage part of type
@@ -231,8 +231,8 @@ function approvalPreview(output: unknown): ApprovalPreview | null {
 }
 
 function OutboundApprovalCard({ approval }: { approval: ApprovalPreview }) {
-  const approveFn = useServerFn(approveFinnOutboundMessage);
-  const cancelFn = useServerFn(cancelFinnOutboundMessage);
+  const approveFn = useServerFn(approveSadeedOutboundMessage);
+  const cancelFn = useServerFn(cancelSadeedOutboundMessage);
   const [reviewed, setReviewed] = useState(false);
   const [phase, setPhase] = useState<
     "idle" | "approving" | "cancelling" | "sent" | "cancelled" | "error"

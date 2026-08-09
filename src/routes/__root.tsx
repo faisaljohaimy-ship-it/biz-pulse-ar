@@ -18,22 +18,22 @@ import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 
-// ── FINN Singleton ────────────────────────────────────────────────────
-// ONE FINN. Do not add a second copilot at the root. See
-// `src/lib/finn-core/README.md` for the migration kill-list.
-import { FinnProvider } from "@/lib/finn-core";
+// ── SADEED Singleton ────────────────────────────────────────────────────
+// ONE SADEED. Do not add a second copilot at the root. See
+// `src/lib/sadeed-core/README.md` for the migration kill-list.
+import { SadeedProvider } from "@/lib/sadeed-core";
 // Deferred off the hydration critical path: the copilot is the heaviest
 // root widget and nothing above the fold needs it at first input. It
 // lazy-loads after the first idle moment post-hydration, so every route
-// becomes interactive immediately after paint. ONE FINN law unchanged.
-const FinnCopilot = lazy(() =>
-  import("@/components/finn-core/FinnCopilot").then((m) => ({ default: m.FinnCopilot })),
+// becomes interactive immediately after paint. ONE SADEED law unchanged.
+const SadeedCopilot = lazy(() =>
+  import("@/components/sadeed-core/SadeedCopilot").then((m) => ({ default: m.SadeedCopilot })),
 );
-import { InstallAppBar } from "@/components/finn/InstallAppBar";
-// FinnGlobalBackdrop removed — FINN renders only via FinnCopilot top-circle
-import { GlobalPageBackdrop } from "@/components/finn/GlobalPageBackdrop";
+import { InstallAppBar } from "@/components/sadeed/InstallAppBar";
+// SadeedGlobalBackdrop removed — SADEED renders only via SadeedCopilot top-circle
+import { GlobalPageBackdrop } from "@/components/sadeed/GlobalPageBackdrop";
 import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsulaBackdrop";
-import { FinnWatermark } from "@/components/executive/FinnWatermark";
+import { SadeedWatermark } from "@/components/executive/SadeedWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
 import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
@@ -153,7 +153,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
-      { property: "og:image", content: `${DOMAIN_URL}/finn-portrait.png` },
+      { property: "og:image", content: `${DOMAIN_URL}/sadeed-portrait.png` },
       { property: "og:image:width", content: "1128" },
       { property: "og:image:height", content: "1920" },
       // الصورة صورة المساعد. النصّ البديل يذكر الاسم **مرّة واحدة**: بعد
@@ -171,7 +171,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "twitter:description",
         content: SITE_TAGLINE,
       },
-      { name: "twitter:image", content: `${DOMAIN_URL}/finn-portrait.png` },
+      { name: "twitter:image", content: `${DOMAIN_URL}/sadeed-portrait.png` },
       { name: "twitter:image:alt", content: `${PRODUCT_NAME} — المساعد التنفيذي` },
       // تكرار متعمَّد من نسخة Lovable القديمة: الإدخال الأخير هو ما يفوز
       // في وسم واحد، فكان عنوان التبويب يعود لتسمية سابقة بعد كل رسم.
@@ -201,7 +201,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700;800&family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
-      // كانت الثلاثة تشير إلى `/finn-portrait.png` — **١٫٩٢ ميغابايت**،
+      // كانت الثلاثة تشير إلى `/sadeed-portrait.png` — **١٫٩٢ ميغابايت**،
       // يجلبها المتصفّح على كل صفحة ليرسم أيقونة تبويب بحجم ١٦ بكسل.
       // وهي أثقل أصلٍ في `public/` بفارق، وخارج رادار
       // `check-performance-budget.mjs` لأن فحص الوسائط يقتصر على الصوت
@@ -339,7 +339,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   // Article III (self-healing): install the client watchdog once at root.
   // FR-20: also install the universal first-gesture audio unlock so that
-  // ANY tap anywhere on the app primes AudioContext + unlocks FinnAudioBus
+  // ANY tap anywhere on the app primes AudioContext + unlocks SadeedAudioBus
   // in the same synchronous tick — required for iOS/Android autoplay policy.
   useEffect(() => {
     let cleanup: (() => void) | undefined;
@@ -352,12 +352,12 @@ function RootComponent() {
     } catch {
       /* ignore */
     }
-    import("@/lib/finn/self-healing/watchdog").then((m) => {
+    import("@/lib/sadeed/self-healing/watchdog").then((m) => {
       if (cancelled) return;
-      cleanup = m.installFinnWatchdog();
+      cleanup = m.installSadeedWatchdog();
     });
     // Permanent background self-healing agent (Article III, always-on).
-    void import("@/lib/finn/self-healing/permanent-agent").then((m) => {
+    void import("@/lib/sadeed/self-healing/permanent-agent").then((m) => {
       if (cancelled) return;
       try {
         m.installPermanentHealer();
@@ -442,14 +442,14 @@ function RootComponent() {
           <I18nProvider>
             <DemoModeProvider>
               <RegionProvider>
-                <FinnProvider>
+                <SadeedProvider>
                   {/* Deepest ambient layer on EVERY page (incl. home): the
                       Arabian Peninsula, light-green pulse, four sector borders
                       in sky-blue, the active sector's border pulsing. */}
                   {!isHero && !introActive && !isAccessGate && !isAgentOperations && (
                     <ArabianPeninsulaBackdrop />
                   )}
-                  {/* Global FINN hologram backdrop for every non-home page.
+                  {/* Global SADEED hologram backdrop for every non-home page.
                       Homepage owns its own HomeVideoBackdrop; the agent
                       operations platform deliberately uses a clean background. */}
                   {!isHero && !isPromo && !isAccessGate && !isAgentOperations && !introActive && (
@@ -458,7 +458,7 @@ function RootComponent() {
                   {/* Unified header: the scrolling marquee is removed (G3); the
                       LIVE clock remains as this strip's only content. */}
                   {!suppressMarquee && <HeaderClockBar showClock={!suppressClock} />}
-                  {!suppressOverlays && <FinnWatermark />}
+                  {!suppressOverlays && <SadeedWatermark />}
                   {!introActive && !isAccessGate && <HoloAmbience />}
                   {!introActive && !isAccessGate && <GlobalBackButton />}
                   <div className="relative z-10">
@@ -468,16 +468,16 @@ function RootComponent() {
                   </div>
                   {!isAccessGate && copilotReady && (
                     <Suspense fallback={null}>
-                      <FinnCopilot />
+                      <SadeedCopilot />
                     </Suspense>
                   )}
                   <InstallAppBar />
-                  {/* FINN speaks ONLY inside Conversation Mode («مخاطبة») in the
+                  {/* SADEED speaks ONLY inside Conversation Mode («مخاطبة») in the
                       copilot panel, and via the homepage greeting button. No
                       route auto-narration, no page greeters, and no cinematic
                       welcome overlay — the homepage renders directly. */}
                   <Toaster />
-                </FinnProvider>
+                </SadeedProvider>
               </RegionProvider>
             </DemoModeProvider>
           </I18nProvider>

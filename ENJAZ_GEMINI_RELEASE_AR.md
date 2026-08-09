@@ -27,7 +27,7 @@
    `supabase/migrations/20260801100000_finn_gemini36_council10_rag_tools.sql`.
 5. أعد تضمين وثائق المعرفة التاريخية بالنموذج المعتمد، ثم شغّل مجموعة تقييم
    RAG الحية وعزل المستأجرين.
-6. لا تغيّر `FINN_GEMINI_RAG_READY` إلى `true` إلا بعد نجاح التقييم، والتحقق من
+6. لا تغيّر `SADEED_GEMINI_RAG_READY` إلى `true` إلا بعد نجاح التقييم، والتحقق من
    المصادر، واختبار الاسترجاع داخل كل مؤسسة.
 7. شغّل `npm run check:secrets` ثم `npm run check` و`npm audit --omit=dev` قبل
    النشر.

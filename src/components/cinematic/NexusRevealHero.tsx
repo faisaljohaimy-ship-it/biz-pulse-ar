@@ -13,7 +13,7 @@ import { useI18n } from "@/lib/i18n";
  *   1. Canvas particle field — Neural Streams (GPU-friendly, rAF-throttled,
  *      DPR-clamped, pauses when off-screen, respects reduced motion).
  *   2. Volumetric light rays — SVG filter + soft blur, motion-safe only.
- *   3. FINN energy core — layered conic + radial SVG rings, no boxes, no
+ *   3. SADEED energy core — layered conic + radial SVG rings, no boxes, no
  *      generic circles. Reads as living intelligence, not UI chrome.
  *   4. Voice pulse ribbon — deterministic waveform driven by requestAnimationFrame.
  *   5. Cinematic copy stack — headline, lede, CTAs, trust, subordinate SADEED.
@@ -107,7 +107,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       ctx.globalCompositeOperation = "lighter";
 
       const cx = width * 0.5;
-      const cy = height * 0.42; // FINN core sits slightly above center
+      const cy = height * 0.42; // SADEED core sits slightly above center
 
       for (const p of particles) {
         // gentle attraction to core + slight cursor pull
@@ -285,7 +285,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
     }, 700);
   };
 
-  const scrollToFinn = () => {
+  const scrollToSadeed = () => {
     if (typeof document === "undefined") return;
     const el = document.getElementById("aria-quick-ask");
     if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -301,7 +301,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       : "SADEED · Executive intelligence at the core · Industrial Security · All Regions.",
     ctaPrimary: ar ? "ابدأ التشغيل" : "Start Operation",
     ctaSecondary: ar ? "غرفة القيادة التنفيذية" : "Executive Bridge",
-    ctaFinn: ar ? "اسأل سَدِيد" : "Ask SADEED",
+    ctaSadeed: ar ? "اسأل سَدِيد" : "Ask SADEED",
     boot: ar ? "تهيئة بيئة التشغيل…" : "Booting operating environment…",
     booting: ar ? "جارٍ تشغيل النظام…" : "Launching platform…",
     trust: ar
@@ -309,8 +309,8 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       : ["Enterprises", "Governments", "Industrial Security", "Fortune 500"],
     // علامة لفظية لاتينية في الحالين — الشكل المُطوَّل بتباعد الحروف جزء من
     // التصميم، والاسم العربي المشكول لا يقرأ صحيحًا تحت `uppercase tracking`.
-    finnName: "SADEED",
-    finnRole: ar ? "الذكاء التنفيذي" : "Executive Intelligence",
+    sadeedName: "SADEED",
+    sadeedRole: ar ? "الذكاء التنفيذي" : "Executive Intelligence",
     scroll: ar ? "اسحب للأسفل" : "Scroll to explore",
   };
 
@@ -419,7 +419,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       ============================================================ */}
       <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center px-5 py-16 text-center sm:py-20">
         {/* ============================================================
-            FINN ENERGY CORE — no boxes, no cards, no generic circles
+            SADEED ENERGY CORE — no boxes, no cards, no generic circles
             Pure layered light: SVG conic rings + waveform ribbon + wordmark
         ============================================================ */}
         <div
@@ -628,15 +628,15 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
             <div className="pointer-events-none absolute bottom-[22%] hidden h-px w-[62%] bg-gradient-to-r from-transparent via-[#3AE8FF]/70 to-transparent motion-reduce:block" />
           </div>
 
-          {/* FINN nameplate */}
+          {/* SADEED nameplate */}
           <div className="-mt-2 flex flex-col items-center sm:-mt-4">
             <h2 className="bg-gradient-to-b from-white via-[#E6F9FF] to-[#3AE8FF] bg-clip-text text-4xl font-extralight uppercase tracking-[0.42em] text-transparent sm:text-6xl sm:tracking-[0.5em]">
-              {t.finnName}
+              {t.sadeedName}
             </h2>
             <div className="mt-3 flex items-center gap-3">
               <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#3AE8FF]/70" />
               <p className="text-[12px] uppercase tracking-[0.42em] text-[#3AE8FF]/85 sm:text-[12px] sm:tracking-[0.52em]">
-                {t.finnRole}
+                {t.sadeedRole}
               </p>
               <span className="h-px w-8 bg-gradient-to-l from-transparent to-[#3AE8FF]/70" />
             </div>
@@ -699,11 +699,11 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
 
           <button
             type="button"
-            onClick={scrollToFinn}
+            onClick={scrollToSadeed}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/[0.06] px-6 py-3.5 text-sm font-semibold text-[#DFF6FF] transition hover:bg-[#3AE8FF]/[0.14] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3AE8FF]"
           >
             <MessageSquare className="h-4 w-4" />
-            <span>{t.ctaFinn}</span>
+            <span>{t.ctaSadeed}</span>
           </button>
         </div>
 
@@ -745,7 +745,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       {/* Scroll affordance */}
       <button
         type="button"
-        onClick={scrollToFinn}
+        onClick={scrollToSadeed}
         aria-label={t.scroll}
         className="group absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-1.5 text-[12px] uppercase tracking-[0.36em] text-white/45 transition hover:text-[#3AE8FF] sm:flex"
       >

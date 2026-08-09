@@ -23,7 +23,7 @@ must feel like turning the head, not changing worlds:
 - **Digital Twin:** viewport holds last frame during route return (continuity), telemetry
   strip refreshes with update tick (below).
 - **Adaptive Shell:** grid mount stagger by kind groups (skills, then agents…).
-- **FINN:** summon = scale-in 200ms from the summon origin (button/palette); FINN never
+- **SADEED:** summon = scale-in 200ms from the summon origin (button/palette); SADEED never
   "navigates" — he appears.
 - **Analytics:** charts draw axes first (150ms), then series (300ms clip-path reveal,
   once per data-load — not per tab-return).
@@ -95,4 +95,4 @@ Bound to components doc 11: skeleton shimmer `nx-shimmer` 2s linear RTL sweep ·
 inside static glass — glass itself NEVER pulses (surfaces are furniture) · runtime
 loading = staged checklist, each stage's spinner 900ms linear · knowledge loading =
 page-shaped shimmer · twin loading = silhouette static + telemetry shimmer (no sector
-pulse while loading — pulse means live) · FINN thinking = doc 05.
+pulse while loading — pulse means live) · SADEED thinking = doc 05.

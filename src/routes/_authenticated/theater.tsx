@@ -1,13 +1,13 @@
 /**
  * Executive Theater — `/theater`
  *
- * The flagship Executive AI surface of SADEED OS. FINN is permanently
+ * The flagship Executive AI surface of SADEED OS. SADEED is permanently
  * centered on the stage, surrounded by the live AI agent ring. Every
  * story card, every spoken turn, every confidence reading comes from
  * real runtime tables (`enterprise_events`, `agent_runs`,
  * `executive_briefings`). No mock data, no random talking.
  *
- * Reuses: AgentRing, FinnScene (R3F), bridge.functions, briefing.functions,
+ * Reuses: AgentRing, SadeedScene (R3F), bridge.functions, briefing.functions,
  * narrator, conductor, voice profiles. Adds: StoryCard, conductor wiring,
  * one-click 60s briefing.
  */
@@ -37,17 +37,19 @@ import { getBridgeState } from "@/lib/exec/bridge.functions";
 import { generateExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { AgentRing } from "@/components/bridge/AgentRing";
 import { speakAgent } from "@/lib/digital-humans/speak-agent";
-import type { FinnScene as FinnSceneT } from "@/components/digital-humans/r3f/FinnScene";
+import type { SadeedScene as SadeedSceneT } from "@/components/digital-humans/r3f/SadeedScene";
 
 // Lazy + client-only: react-three-fiber + three.js only loads when Theater
 // renders in the browser. The SSR branch makes the `import()` dead code so
 // Vite excludes the Three.js chunk from the server bundle (Vercel build-memory
 // guard); the server renders nothing for the WebGL scene.
-const FinnScene = lazy(
-  (): Promise<{ default: typeof FinnSceneT }> =>
+const SadeedScene = lazy(
+  (): Promise<{ default: typeof SadeedSceneT }> =>
     import.meta.env.SSR
-      ? Promise.resolve({ default: (() => null) as unknown as typeof FinnSceneT })
-      : import("@/components/digital-humans/r3f/FinnScene").then((m) => ({ default: m.FinnScene })),
+      ? Promise.resolve({ default: (() => null) as unknown as typeof SadeedSceneT })
+      : import("@/components/digital-humans/r3f/SadeedScene").then((m) => ({
+          default: m.SadeedScene,
+        })),
 );
 import { StoryCard } from "@/components/theater/StoryCard";
 import { ConnectionLines } from "@/components/theater/ConnectionLines";
@@ -164,9 +166,9 @@ function TheaterPage() {
     return agents.find((a) => a.name.toLowerCase().includes(first))?.id ?? null;
   }, [agents, conductor.currentSpeaker]);
 
-  // FINN gaze — looks toward the active speaking agent's position on the ring,
+  // SADEED gaze — looks toward the active speaking agent's position on the ring,
   // or softly toward the camera when she is speaking herself.
-  const finnGaze = useMemo<{ x: number; y: number } | null>(() => {
+  const sadeedGaze = useMemo<{ x: number; y: number } | null>(() => {
     if (!speakerAgentId) return conductor.state === "speaking" ? { x: 0, y: -0.05 } : null;
     const idx = agents.findIndex((a) => a.id === speakerAgentId);
     if (idx < 0 || agents.length === 0) return null;
@@ -355,7 +357,7 @@ function TheaterPage() {
               </div>
             )}
 
-            {/* Animated collaboration beams — each agent → FINN (ring mode only) */}
+            {/* Animated collaboration beams — each agent → SADEED (ring mode only) */}
             <div className="hidden sm:block">
               <ConnectionLines agents={agents} radius={240} speakerId={speakerAgentId} size={640} />
             </div>
@@ -376,12 +378,12 @@ function TheaterPage() {
                   />
                 }
               >
-                <FinnScene
+                <SadeedScene
                   spec={conductor.currentSpeaker}
                   state={aliveState}
                   mouthAmplitude={conductor.mouthAmplitude}
                   size={300}
-                  gaze={finnGaze}
+                  gaze={sadeedGaze}
                 />
               </Suspense>
             </AgentRing>
@@ -436,7 +438,7 @@ function TheaterPage() {
         </section>
       </div>
 
-      {/* Mobile breathing room for the global FINN launcher. */}
+      {/* Mobile breathing room for the global SADEED launcher. */}
       <div className="h-32 sm:h-0" aria-hidden />
 
       <ExplainPanel

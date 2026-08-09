@@ -22,7 +22,7 @@ vocabulary; implemented in `nx-tokens.css`.
 
 Additive-only assembly of the executive cockpit reference: layer stack → KPI row
 (5 × `NxKpiCard`, simulation-badged) → pipeline (approval pending) → twin zone
-(4 region pulses + 4 twin nodes) → FINN panel (presence + voice + quick actions,
+(4 region pulses + 4 twin nodes) → SADEED panel (presence + voice + quick actions,
 «لا تنفيذ دون اعتماد بشري») → event ticker. **Not wired into any navigation**
 (`noindex`); zero changes to existing pages or chrome.
 
@@ -65,13 +65,13 @@ composed-RTL axe pass (0 violations).
 | `NxKpiNumber`, `NxDelta` (direction-aware + noise threshold), `NxStatusIndicator` (triple-coded), `NxAnimatedKpi` (count-up on change only, reduced-motion instant), `NxSparkline` | 05             |                                                                    |
 | `NxSkeleton`, `NxSpinner`, `NxProgress`                                                                                                                                            | 11             | RTL shimmer, Arabic verbs, determinate/indeterminate               |
 | `NxEmptyState` (three honest kinds), `NxErrorState` (recoverable/blocked + trace disclosure)                                                                                       | 12/13          |                                                                    |
-| `NxFinnPresence` (10 states) + `NxWaveform`                                                                                                                                        | motion 05 / 07 | «executing» renders as بانتظار التنفيذ المعتمد — advisory law kept |
+| `NxSadeedPresence` (10 states) + `NxWaveform`                                                                                                                                      | motion 05 / 07 | «executing» renders as بانتظار التنفيذ المعتمد — advisory law kept |
 | `NxRegionPulse`, `NxTwinLink`, `NxTwinNode`                                                                                                                                        | motion 05      | sector color exclusively from `regions.ts`; pulse only when live   |
 
 ### Tests (`src/components/nx/nx.test.tsx`)
 
 22 tests: variant closed sets, aria/busy/pressed semantics, direction-aware delta
-logic, provenance + simulation badge, loading roles, empty/error anatomy, all FINN
+logic, provenance + simulation badge, loading roles, empty/error anatomy, all SADEED
 states with Arabic co-signals, twin live-pulse gating, and a jest-axe pass over a
 composed RTL surface (0 violations).
 
@@ -90,7 +90,7 @@ composed RTL surface (0 violations).
    onto Nx components is intentionally out of scope (the mandate forbids redesigning
    pages) and is the natural Phase 5+ work, screen by screen behind QA gates.
 2. **Unimplemented specs**: inputs (doc 02), tables (04), navigation chrome (06),
-   modals (08), notifications (09), timelines (10), FAB/floating/FINN-button variants,
+   modals (08), notifications (09), timelines (10), FAB/floating/SADEED-button variants,
    gauges/progress-ring/heat indicator (05 partial), executive search/palette.
 3. **Motion**: page-transition grammar and the pipeline light-packet need route-level
    integration (Framer Motion patterns from motion doc 06) — deferred with adoption.

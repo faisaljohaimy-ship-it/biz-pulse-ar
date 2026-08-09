@@ -1,5 +1,5 @@
 // Agentic Flow Canvas — n8n-style holographic topology.
-// 4 columns: Sources → Agents → FINN → Human Approval Gate.
+// 4 columns: Sources → Agents → SADEED → Human Approval Gate.
 // All Arabic labels rendered via <foreignObject> + dir="rtl" for correct
 // shaping and bidi — never as raw SVG <text>.
 
@@ -89,12 +89,12 @@ export function AgenticFlowCanvas({
       positions.set(p.node.id, p);
     for (const p of layoutColumn(agents, COL_X.agent, NODE_H.agent, HEADER_H))
       positions.set(p.node.id, p);
-    // Center FINN vertically against agent column
+    // Center SADEED vertically against agent column
     const agentColHeight = agents.length * (NODE_H.agent + ROW_GAP);
-    const finnStart = HEADER_H + Math.max(0, agentColHeight / 2 - NODE_H.aria / 2);
-    for (const p of layoutColumn(aria, COL_X.aria, NODE_H.aria, finnStart))
+    const sadeedStart = HEADER_H + Math.max(0, agentColHeight / 2 - NODE_H.aria / 2);
+    for (const p of layoutColumn(aria, COL_X.aria, NODE_H.aria, sadeedStart))
       positions.set(p.node.id, p);
-    for (const p of layoutColumn(gate, COL_X.gate, NODE_H.gate, finnStart + 20))
+    for (const p of layoutColumn(gate, COL_X.gate, NODE_H.gate, sadeedStart + 20))
       positions.set(p.node.id, p);
 
     const maxY = Math.max(...Array.from(positions.values()).map((p) => p.y + p.h), HEADER_H + 200);

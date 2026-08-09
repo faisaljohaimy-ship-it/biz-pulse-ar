@@ -1,6 +1,6 @@
 // Executive Demonstration Scenario — one complete operational day (06:00–18:00 Riyadh).
 // Builds a single coherent story across sites/employees/inspections/risks/incidents/
-// work-orders/notifications/meetings/daily-ops/KPIs so FINN can trace cause → effect.
+// work-orders/notifications/meetings/daily-ops/KPIs so SADEED can trace cause → effect.
 //
 // Idempotent: every row tagged metadata.scenario_tag; re-running purges & rebuilds.
 // Requires base simulation seed (departments/employees/sites) — auto-runs if missing.
@@ -441,7 +441,7 @@ export async function runExecutiveScenario(
     event: "Day shift closed — compliance 74% (↓), response 6 min (↑), 1 contained incident",
   });
 
-  // ---- FINN executive briefing (report) -------------------------------------
+  // ---- SADEED executive briefing (report) -------------------------------------
   if (opts.userId) {
     await admin.from("finn_reports").insert({
       user_id: opts.userId,

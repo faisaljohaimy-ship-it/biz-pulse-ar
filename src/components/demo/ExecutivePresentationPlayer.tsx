@@ -1,6 +1,6 @@
 /**
  * ExecutivePresentationPlayer — the guided executive presentation on the
- * demo page. FINN's self-hosted executive film plays on
+ * demo page. SADEED's self-hosted executive film plays on
  * the LEFT in a dark #04111f frame, full face visible; on the RIGHT a
  * cinematic scene panel (kicker · title · body) switches automatically in
  * sync with the narration cues, ending on a closing CTA.
@@ -10,8 +10,8 @@
  *
  * Rules: audio starts ONLY after the first user interaction (the start
  * button); full RTL; responsive mobile + laptop; clean stop on exit
- * (pause + release on unmount). While playing it owns the FinnAudioBus
- * "hero-soundtrack" channel so any FINN chat voice preempts it instantly.
+ * (pause + release on unmount). While playing it owns the SadeedAudioBus
+ * "hero-soundtrack" channel so any SADEED chat voice preempts it instantly.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { FinnAudioBus } from "@/lib/finn/audio-bus";
+import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { useI18n } from "@/lib/i18n";
 import { EXECUTIVE_PRESENTATION_MEDIA } from "@/lib/executive-presentation.media";
 
@@ -234,7 +234,7 @@ export function ExecutivePresentationPlayer() {
         /* ignore */
       }
     }
-    FinnAudioBus.release("hero-soundtrack");
+    SadeedAudioBus.release("hero-soundtrack");
     setPhase(nextPhase);
   }, []);
 
@@ -243,8 +243,8 @@ export function ExecutivePresentationPlayer() {
     (fromBeginning: boolean) => {
       const v = videoRef.current;
       if (!v || videoFailed) return;
-      FinnAudioBus.unlock();
-      const granted = FinnAudioBus.acquire("hero-soundtrack", () => {
+      SadeedAudioBus.unlock();
+      const granted = SadeedAudioBus.acquire("hero-soundtrack", () => {
         const el = videoRef.current;
         if (el) {
           try {
@@ -269,7 +269,7 @@ export function ExecutivePresentationPlayer() {
       v.play()
         .then(() => setPhase("playing"))
         .catch(() => {
-          FinnAudioBus.release("hero-soundtrack");
+          SadeedAudioBus.release("hero-soundtrack");
           setPhase("idle");
         });
     },
@@ -330,7 +330,7 @@ export function ExecutivePresentationPlayer() {
           /* ignore */
         }
       }
-      FinnAudioBus.release("hero-soundtrack");
+      SadeedAudioBus.release("hero-soundtrack");
     };
   }, []);
 
@@ -367,7 +367,7 @@ export function ExecutivePresentationPlayer() {
       {/* LTR grid so the video is physically LEFT and the scene panel RIGHT
           on every locale; inner content is RTL. Mobile stacks: video then panel. */}
       <div dir="ltr" className="grid gap-3 md:grid-cols-[minmax(220px,300px)_1fr]">
-        {/* LEFT — FINN narrator video, full face, dark #04111f frame */}
+        {/* LEFT — SADEED narrator video, full face, dark #04111f frame */}
         <div className="relative mx-auto w-full max-w-[300px] overflow-hidden rounded-2xl bg-[#04111f] shadow-[0_24px_80px_-28px_rgba(34,182,255,0.8)] ring-1 ring-cyan-300/35 md:mx-0 md:max-w-none">
           <div className="aspect-[9/16] max-h-[62vh] w-full">
             <video
@@ -381,7 +381,7 @@ export function ExecutivePresentationPlayer() {
               onLoadedData={() => setVideoFailed(false)}
               onEnded={onEnded}
               onError={() => {
-                FinnAudioBus.release("hero-soundtrack");
+                SadeedAudioBus.release("hero-soundtrack");
                 setPhase("idle");
                 setVideoFailed(true);
               }}

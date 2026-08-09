@@ -9,9 +9,9 @@
   },
   "mcp": {
     "server": {
-      "name": "sadeed-finn-mcp",
+      "name": "sadeed-mcp",
       "version": "0.1.0",
-      "title": "SADEED — FINN"
+      "title": "SADEED — SADEED"
     },
     "tools": [
       {
@@ -31,9 +31,9 @@
         "outputSchema": null
       },
       {
-        "name": "ask_finn",
-        "title": "Ask FINN",
-        "description": "Send a natural-language question to FINN, the SADEED Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
+        "name": "ask_sadeed",
+        "title": "Ask SADEED",
+        "description": "Send a natural-language question to SADEED, the SADEED Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
         "annotations": {
           "readOnlyHint": true,
           "openWorldHint": false

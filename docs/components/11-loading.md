@@ -2,7 +2,7 @@
 
 **Waiting is a designed state. The OS never shows a lying spinner: loading is shaped
 like the truth it precedes (skeleton), measured when measurable (progress), and honest
-about thinking (FINN). عقيدة «بيانات لا تفرغ» applies: ≤ 4s to content or fallback.**
+about thinking (SADEED). عقيدة «بيانات لا تفرغ» applies: ≤ 4s to content or fallback.**
 
 ---
 
@@ -14,7 +14,7 @@ about thinking (FINN). عقيدة «بيانات لا تفرغ» applies: ≤ 4s
 | Sub-second inline operation           | **Spinner** (16/20px inline)                   |
 | Measurable long operation             | **Progress** (bar/ring, determinate)           |
 | Unmeasurable long operation           | Progress indeterminate + elapsed time + cancel |
-| FINN reasoning                        | **FINN Thinking**                              |
+| SADEED reasoning                      | **SADEED Thinking**                            |
 | Domain zones (runtime/knowledge/twin) | flavored skeletons below                       |
 
 Full-screen spinners are banned. Blocking overlays for loading are banned (except inside
@@ -28,7 +28,7 @@ the triggering button/modal footer).
 | **NxSpinner**          | 16/20/24px stroke ring, 1.5–2px, cyan @ 72%, 900ms rotation; inline only (buttons, chips, table cells); always beside an Arabic verb ("يحمّل…") when ≥ 20px                                                                                                                                                            |
 | **NxProgress**         | Bar 4px (radius 2) or Ring (doc 05 geometry); determinate: fill cyan, % Label trailing; indeterminate: 30% segment sweeping 1.5s; long ops add elapsed + step line ("٣/٥ فحص التبعيات"); cancel affordance where the op is cancelable                                                                                  |
 | **NxRuntimeLoading**   | Boot/module operations: staged checklist rows (stage name + pending/active spinner 16/done ✓) mirroring the real boot stages; runtime accent; used in runtime modals/panels                                                                                                                                            |
-| **NxFinnThinking**     | FINN's reasoning state: presence ring slow-breathes + three-dot wave (staggered 200ms) + rotating status line from a fixed honest set ("أراجع الدليل…", "أرتب التوصية…"); NEVER fake streams text; voice mode: subtle waveform idle; timeout → honest fallback line with retry (guaranteed-reply doctrine)             |
+| **NxSadeedThinking**   | SADEED's reasoning state: presence ring slow-breathes + three-dot wave (staggered 200ms) + rotating status line from a fixed honest set ("أراجع الدليل…", "أرتب التوصية…"); NEVER fake streams text; voice mode: subtle waveform idle; timeout → honest fallback line with retry (guaranteed-reply doctrine)           |
 | **NxKnowledgeLoading** | Document zones: page-shaped skeleton (title bar + measure-width text bars) + source chip placeholder; freshness slot shimmer                                                                                                                                                                                           |
 | **NxTwinLoading**      | Twin viewport: silhouette placeholder of the asset class (station/network outline at white 8%) + telemetry strip skeleton; sector pulse absent while loading (pulse = live data only — a loading pulse would lie)                                                                                                      |
 

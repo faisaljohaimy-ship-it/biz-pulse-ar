@@ -20,11 +20,11 @@ running build with Playwright, not estimated.
 - **The root font-size was deliberately NOT changed.** Every Tailwind spacing
   and type utility is rem-based, so moving the root would silently rescale the
   whole product — including shrinking `text-xs` back below the new 12px floor.
-- **`FinnScene` uses a hook, not a bare call.** `canUseWebGL()` answers false
+- **`SadeedScene` uses a hook, not a bare call.** `canUseWebGL()` answers false
   during SSR and true on the client; an early return on that value runs zero
   hooks on the server and N on the client, which React rejects at hydration.
-- **The decorative digit rain in `FinnUnifiedBackground` was left small** — the
-  brief permits it. The `FINN-CORE` watermark inside it was raised, because a
+- **The decorative digit rain in `SadeedUnifiedBackground` was left small** — the
+  brief permits it. The `SADEED-CORE` watermark inside it was raised, because a
   label is text, not texture.
 
 ## Verified viewport matrix — 7 viewports × 5 routes = 35 combinations
@@ -32,17 +32,17 @@ running build with Playwright, not estimated.
 Measured live via Playwright/Chromium against `vite dev`, computing styles on
 every visible element that owns text.
 
-| Metric                                 | Before            | After                              |
-| -------------------------------------- | ----------------- | ---------------------------------- |
-| Smallest rendered font                 | 6px               | **12px on all 35**                 |
-| Elements rendering below 12px          | 1,163 in source   | **0 on all 35**                    |
-| Touch targets <44px on coarse pointers | up to 5 per route | **0 on all touch viewports**       |
-| Controls <40px on desktop              | unmeasured        | **0** (`/` `/risk` `/finn` `/sec`) |
-| Horizontal overflow                    | 0                 | **0 on all 35**                    |
-| WebGL / three.js console errors        | unguarded         | **0 on all 35**                    |
+| Metric                                 | Before            | After                                |
+| -------------------------------------- | ----------------- | ------------------------------------ |
+| Smallest rendered font                 | 6px               | **12px on all 35**                   |
+| Elements rendering below 12px          | 1,163 in source   | **0 on all 35**                      |
+| Touch targets <44px on coarse pointers | up to 5 per route | **0 on all touch viewports**         |
+| Controls <40px on desktop              | unmeasured        | **0** (`/` `/risk` `/sadeed` `/sec`) |
+| Horizontal overflow                    | 0                 | **0 on all 35**                      |
+| WebGL / three.js console errors        | unguarded         | **0 on all 35**                      |
 
 Viewports: 375×667 · 390×844 · 844×390 · 768×1024 · 1366×768 · 1440×900 · 1920×1080.
-Routes: `/` `/projects` `/risk` `/finn` `/sec`.
+Routes: `/` `/projects` `/risk` `/sadeed` `/sec`.
 
 > The desktop rows report non-zero counts against a 44px threshold because the
 > audit used one threshold everywhere. Re-measured against the brief's actual

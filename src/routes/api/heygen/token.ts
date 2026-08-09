@@ -2,7 +2,7 @@
  * The legacy HeyGen Streaming Avatar browser client was removed after vendor
  * deprecation. Keep the endpoint contract explicit and fail closed until the
  * LiveAvatar adapter is implemented; never mint paid tokens for an unusable
- * client. FINN continues through the local SVG/R3F provider.
+ * client. SADEED continues through the local SVG/R3F provider.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { verifySupabaseExecutive } from "@/lib/hook-auth.server";

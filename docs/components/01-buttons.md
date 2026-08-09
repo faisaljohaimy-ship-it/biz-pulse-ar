@@ -39,8 +39,8 @@ replaces the icon slot, width locked (no reflow), `aria-busy="true"`.
 | **Runtime Button**   | Module/system operations (restart, load)                  | Secondary base + `--nx-layer-runtime` 24% border + runtime glyph; **requires confirm for state-changing ops**                          |
 | **Executive Action** | Decision-grade acts (approve directive, sign)             | lg/xl only, solid gold `--nx-gold`, obsidian text, static authority glow; **one per screen — the Constitution's single-gold law**      |
 | **Loading Button**   | Not a variant — the loading state of any variant          | see base; documented separately because it is a review checkpoint                                                                      |
-| **Voice Button**     | Push-to-talk / FINN listening                             | 48–56px circle, glass base; listening = agent-glow breathing ring (2s); recording = solid critical dot glyph; `aria-pressed` semantics |
-| **FINN Button**      | Invoke/summon FINN                                        | Ghost base + agent presence ring on icon + `--nx-layer-agent` text; appears identically OS-wide (one summon affordance)                |
+| **Voice Button**     | Push-to-talk / SADEED listening                           | 48–56px circle, glass base; listening = agent-glow breathing ring (2s); recording = solid critical dot glyph; `aria-pressed` semantics |
+| **SADEED Button**    | Invoke/summon SADEED                                      | Ghost base + agent presence ring on icon + `--nx-layer-agent` text; appears identically OS-wide (one summon affordance)                |
 
 ## Hierarchy law
 
@@ -50,7 +50,7 @@ sits adjacent to Primary (fat-finger law: 8px minimum gap + order separation).
 
 ## Animation notes
 
-Voice Button's breathing ring and FINN Button's presence ring are the only looping
+Voice Button's breathing ring and SADEED Button's presence ring are the only looping
 buttons (they display _state_: listening/available). All other button motion is
 transactional micro-motion. Reduced-motion: rings freeze at 60% intensity.
 

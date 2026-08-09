@@ -3,7 +3,7 @@
  *
  * One grammar for every action. Closed variant set; loading locks width and
  * sets aria-busy; Executive Action enforces the single-gold law by existing
- * as exactly one variant. Voice/FINN buttons are specialized siblings below.
+ * as exactly one variant. Voice/SADEED buttons are specialized siblings below.
  */
 import * as React from "react";
 import { Loader2, Mic } from "lucide-react";

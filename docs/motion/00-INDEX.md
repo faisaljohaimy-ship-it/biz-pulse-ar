@@ -18,15 +18,15 @@ constitutional caps.
 
 ## Document map
 
-| Doc                                                     | Covers                                                    | Prompt sections      |
-| ------------------------------------------------------- | --------------------------------------------------------- | -------------------- |
-| [01 Motion Constitution](./01-motion-constitution.md)   | Principles, hierarchy, accessibility                      | 01                   |
-| [02 Timing Standards](./02-timing-standards.md)         | Duration classes, easing, latency budgets                 | 02                   |
-| [03 Animation Tokens](./03-animation-tokens.md)         | Tokens, springs, keyframe vocabulary                      | 15 (tokens)          |
-| [04 Interface Motion](./04-interface-motion.md)         | Pages, panels, KPI, stream, notifications, micro, loading | 03 04 08 09 10 11 12 |
-| [05 Signature Motion](./05-signature-motion.md)         | FINN, runtime pipeline, digital twin, holographic effects | 05 06 07 13          |
-| [06 Implementation Guide](./06-implementation-guide.md) | Framer Motion / CSS patterns, GPU rules, performance      | 14 15                |
-| [07 Quality Checklist](./07-quality-checklist.md)       | The ship gate for any motion                              | QA                   |
+| Doc                                                     | Covers                                                      | Prompt sections      |
+| ------------------------------------------------------- | ----------------------------------------------------------- | -------------------- |
+| [01 Motion Constitution](./01-motion-constitution.md)   | Principles, hierarchy, accessibility                        | 01                   |
+| [02 Timing Standards](./02-timing-standards.md)         | Duration classes, easing, latency budgets                   | 02                   |
+| [03 Animation Tokens](./03-animation-tokens.md)         | Tokens, springs, keyframe vocabulary                        | 15 (tokens)          |
+| [04 Interface Motion](./04-interface-motion.md)         | Pages, panels, KPI, stream, notifications, micro, loading   | 03 04 08 09 10 11 12 |
+| [05 Signature Motion](./05-signature-motion.md)         | SADEED, runtime pipeline, digital twin, holographic effects | 05 06 07 13          |
+| [06 Implementation Guide](./06-implementation-guide.md) | Framer Motion / CSS patterns, GPU rules, performance        | 14 15                |
+| [07 Quality Checklist](./07-quality-checklist.md)       | The ship gate for any motion                                | QA                   |
 
 ## The one-sentence law
 

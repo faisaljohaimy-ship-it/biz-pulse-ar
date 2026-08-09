@@ -5,7 +5,7 @@
  *
  * Composition (package 01 §معمارية الصفحة):
  *   SystemHeader (brand · layer rail 01..05 · clock · notifications)
- *   DesktopSideNavigation | RuntimeDataFlow + KPI + StrategicMap | FINN
+ *   DesktopSideNavigation | RuntimeDataFlow + KPI + StrategicMap | SADEED
  *   CapabilityGrid → LiveEventStream → ExperienceLevelBar
  *
  * Every interactive control carries a registered data-action; the dev
@@ -23,7 +23,7 @@ import { CockpitHeader } from "@/components/cockpit/header";
 import { DesktopSideNavigation, MobileNavigationDrawer } from "@/components/cockpit/navigation";
 import { PrimaryKpiStrip, RuntimeFlowPanel } from "@/components/cockpit/panels";
 import { StrategicMapPanel } from "@/components/cockpit/map";
-import { FinnExecutivePanel } from "@/components/cockpit/finn-panel";
+import { SadeedExecutivePanel } from "@/components/cockpit/sadeed-panel";
 import { CapabilityGrid } from "@/components/cockpit/capabilities";
 import { LiveEventStream } from "@/components/cockpit/events";
 import { CockpitOverlays, CockpitSectionBoundary } from "@/components/cockpit/overlays";
@@ -177,7 +177,7 @@ function CockpitContent() {
                   </CockpitSectionBoundary>
 
                   <CockpitSectionBoundary sectionAr="لوحة سَدِيد">
-                    <FinnExecutivePanel finn={cockpit.snapshot.data.finn} />
+                    <SadeedExecutivePanel sadeed={cockpit.snapshot.data.sadeed} />
                   </CockpitSectionBoundary>
                 </div>
 

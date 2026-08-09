@@ -2,7 +2,7 @@
  * Article 26 — Rate limiting + audit trail E2E lock.
  *
  * Verifies:
- *   1. `/api/public/hooks/finn-incident` returns 429 after > 60 requests in
+ *   1. `/api/public/hooks/sadeed-incident` returns 429 after > 60 requests in
  *      60 s from the same client IP (rate-limit bucket keyed by IP).
  *   2. A well-formed beacon still returns 202 in a fresh bucket.
  *
@@ -32,7 +32,7 @@ test.describe("Article 26 — audit trail + rate limiting", () => {
     let lastRetryAfter: string | null = null;
 
     for (let i = 0; i < 65; i += 1) {
-      const res = await ctx.post("/api/public/hooks/finn-incident", {
+      const res = await ctx.post("/api/public/hooks/sadeed-incident", {
         data: {
           kind: "unhandled_error",
           detail: `article-26 lock ${i}`,

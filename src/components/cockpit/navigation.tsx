@@ -1,7 +1,7 @@
 /**
  * DesktopSideNavigation — وجهات مجمَّعة في خمس مجموعات، كلّها مسارات حيّة
  * (لا مسار مُخفى ولا جذع إعادة توجيه — التدقيق موثّق في `./actions.ts`)،
- * مع حالة نشِطة وحضور FINN المصغّر. سطح المكتب: شريط ثابت ≥1280px.
+ * مع حالة نشِطة وحضور SADEED المصغّر. سطح المكتب: شريط ثابت ≥1280px.
  * الجوال/اللوحي: القائمة نفسها داخل درج Sheet يُفتح من زر القائمة.
  *
  * وحدات القيادة والعمليات الخمس (`/mission-control` · `/situation-room` ·
@@ -36,8 +36,8 @@ import {
   Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFinn } from "@/lib/finn-core/hooks/useFinn";
-import { NxFinnPresence } from "@/components/nx";
+import { useSadeed } from "@/lib/sadeed-core/hooks/useSadeed";
+import { NxSadeedPresence } from "@/components/nx";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { emitCockpitAction, getCockpitAction, type CockpitActionId } from "./actions";
 
@@ -197,7 +197,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function NavFooter({ onNavigate }: { onNavigate?: () => void }) {
-  const { open } = useFinn();
+  const { open } = useSadeed();
   const systemMap = getCockpitAction("nav.systemMap");
   return (
     <div className="mt-auto flex flex-col gap-3 border-t border-white/10 pt-3">
@@ -222,14 +222,14 @@ function NavFooter({ onNavigate }: { onNavigate?: () => void }) {
       </a>
       <button
         type="button"
-        data-action="finn.chat.open"
+        data-action="sadeed.chat.open"
         onClick={() => {
-          emitCockpitAction("finn.chat.open");
+          emitCockpitAction("sadeed.chat.open");
           open({ focus: true });
         }}
         className="nx-glass-e1 rounded-nx-12 flex min-h-11 items-center gap-3 px-3 py-2 text-start transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
       >
-        <NxFinnPresence state="idle" mode="advisory" size="sm" />
+        <NxSadeedPresence state="idle" mode="advisory" size="sm" />
         <span className="flex flex-col">
           <span className="text-sm font-bold text-nx-pearl">سَدِيد</span>
           <span className="text-[12px] text-nx-success">المساعد التنفيذي · متصل</span>

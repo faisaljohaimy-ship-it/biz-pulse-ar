@@ -27,7 +27,7 @@ with a decision or a depth the page cannot host. Elevations per Constitution Ch.
 | **NxDrawer**         | Inspect depth without leaving context (Ch. 09 disclosure level 2) | slides from **left** edge (RTL: leftward = deeper), width 480 / 45% tablet / 100% mobile; E3, page stays visible + inert; header sticky with breadcrumb-back; may host panels/cards/tables                                                                                                                                |
 | **NxFullscreen**     | Multi-step flows, immersive viewers (twin, cinema)                | full viewport E4 solid-ish (94%), TopNav replaced by flow header (title + step indicator + exit); exit always confirms if unsaved; the only overlay allowed to contain its own nav (Tabs/steps)                                                                                                                           |
 | **NxApprovalModal**  | The human gate (executes the Constitution's approval anatomy)     | md; body = ApprovalCard content (request, evidence links, impact, deadline); footer solid strip: Executive Action gold "اعتماد" + Outline "رفض" + Ghost "لاحقًا"; **scrim not click-dismissable; Escape = "لاحقًا"** — a gate is never dismissed by accident; decision writes an audit line (shown as confirmation toast) |
-| **NxFinnModal**      | Summoned FINN conversation surface                                | lg; agent border + presence ring header; body = conversation (FinnCards) + composer (VoiceInput); FINN thinking state per doc 11; never auto-opens — only by user summon or explicit alert action                                                                                                                         |
+| **NxSadeedModal**    | Summoned SADEED conversation surface                              | lg; agent border + presence ring header; body = conversation (SadeedCards) + composer (VoiceInput); SADEED thinking state per doc 11; never auto-opens — only by user summon or explicit alert action                                                                                                                     |
 | **NxRuntimeModal**   | Module operations detail (restart plan, health detail)            | md; runtime border; state-changing actions inside require typed-confirm pattern for critical modules (اكتب اسم الوحدة)                                                                                                                                                                                                    |
 | **NxKnowledgeModal** | Document/reference reader                                         | lg; knowledge border; reader typography (Body 16/28, measure ≤ 75ch); source + freshness header row; cite/copy affordances                                                                                                                                                                                                |
 
@@ -35,7 +35,7 @@ with a decision or a depth the page cannot host. Elevations per Constitution Ch.
 
 Confirm/decide → Dialog · Inspect → Drawer · Flow/immerse → Fullscreen. If content
 scrolls more than 2× viewport in a Dialog, it belonged in a Drawer; if a Drawer needs
-steps, it belonged in Fullscreen. Approval/Finn/Runtime/Knowledge are flavored instances,
+steps, it belonged in Fullscreen. Approval/Sadeed/Runtime/Knowledge are flavored instances,
 not new physics.
 
 ## Mobile

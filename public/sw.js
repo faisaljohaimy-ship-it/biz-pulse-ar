@@ -11,7 +11,7 @@
 // و`activate` أدناه يحذف كل مفتاح سوى هذا — فتُطرح تلك النسخ عند أوّل تفعيل
 // بدل أن تبقى مؤهَّلة للخدمة تحت القاعدة الجديدة.
 const CACHE_NAME = "sadeed-static-v9-network-first-code";
-const PRECACHE = ["/brand-icon.png", "/finn-portrait.png", "/manifest.webmanifest"];
+const PRECACHE = ["/brand-icon.png", "/sadeed-portrait.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)));

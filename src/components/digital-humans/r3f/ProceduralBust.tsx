@@ -5,7 +5,7 @@
  *
  * The bust is intentionally restrained: stylised but professional. Real
  * production deployments swap this for a configured GLTF (Ready Player
- * Me, custom scan) via `VITE_FINN_AVATAR_URL`. The animation contract
+ * Me, custom scan) via `VITE_SADEED_AVATAR_URL`. The animation contract
  * (breath, blink, jaw viseme, head tracking) is identical so the swap
  * is mechanical.
  */

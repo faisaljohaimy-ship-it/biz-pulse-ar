@@ -2,7 +2,7 @@
  * Retired token-minting compatibility endpoint.
  *
  * SADEED no longer starts a second ElevenLabs agent/Scribe conversation. Voice
- * input and output are owned by the root-mounted FinnCopilot, preventing a
+ * input and output are owned by the root-mounted SadeedCopilot, preventing a
  * second identity, memory, microphone, or speech runtime from drifting in.
  */
 import { createFileRoute } from "@tanstack/react-router";

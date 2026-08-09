@@ -66,9 +66,9 @@ export const MODULES: readonly ModuleEntry[] = [
   // لا مبنى. و`Building2` كانت أيقونة «الدوائر» في الشريط الجانبي أيضًا.
   { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Presentation },
 
-  // المسارات `/finn*` عقود توجيه حيّة تبقى كما هي؛ التسمية وحدها هي المعروضة.
-  { to: "/finn", ar: "سَدِيد التنفيذي", en: "SADEED Engine", icon: Sparkles },
-  { to: "/finn-analytics", ar: "تحليلات سَدِيد", en: "SADEED Analytics", icon: LineChart },
+  // المسارات `/sadeed*` عقود توجيه حيّة تبقى كما هي؛ التسمية وحدها هي المعروضة.
+  { to: "/sadeed", ar: "سَدِيد التنفيذي", en: "SADEED Engine", icon: Sparkles },
+  { to: "/sadeed-analytics", ar: "تحليلات سَدِيد", en: "SADEED Analytics", icon: LineChart },
   { to: "/observability", ar: "الرصد والتكاليف", en: "Observability", icon: Telescope },
 ];
 
@@ -142,11 +142,11 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     ar: "قاعة المجلس — العرض التنفيذي للقيادة.",
     en: "The boardroom — the executive briefing for leadership.",
   },
-  "/finn": {
+  "/sadeed": {
     ar: "سَدِيد التنفيذي — المساعد الذكي الصوتي والنصي.",
     en: "SADEED Executive — the voice and text AI assistant.",
   },
-  "/finn-analytics": {
+  "/sadeed-analytics": {
     ar: "تحليلات أداء سَدِيد واستخدامه.",
     en: "SADEED performance and usage analytics.",
   },

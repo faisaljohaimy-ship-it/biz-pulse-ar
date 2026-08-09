@@ -1,4 +1,4 @@
-/** Authenticated FINN speech-to-text — native Google Gemini only. */
+/** Authenticated SADEED speech-to-text — native Google Gemini only. */
 import { createFileRoute } from "@tanstack/react-router";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
 import {
@@ -9,7 +9,7 @@ import {
 import {
   MAX_GEMINI_AUDIO_BYTES,
   transcribeWithGemini,
-} from "@/lib/finn/gemini-transcription.server";
+} from "@/lib/sadeed/gemini-transcription.server";
 
 const ARABIC_RANGE = /[\u0600-\u06FF]/;
 

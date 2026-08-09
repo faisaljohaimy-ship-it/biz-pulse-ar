@@ -4,11 +4,11 @@ import { test, expect } from "@playwright/test";
  * Voice tour panel opens on button tap and closes cleanly.
  * The button label may vary slightly; match on the Arabic phrase.
  */
-test.describe("FINN voice tour — open/close", () => {
+test.describe("SADEED voice tour — open/close", () => {
   test("tour opens and closes cleanly", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    const openBtn = page.getByRole("button", { name: /جولة صوتية|جولة مع FINN/i }).first();
+    const openBtn = page.getByRole("button", { name: /جولة صوتية|جولة مع SADEED/i }).first();
     if (!(await openBtn.isVisible({ timeout: 5_000 }).catch(() => false))) {
       test.skip(true, "voice tour trigger not present on this viewport");
       return;

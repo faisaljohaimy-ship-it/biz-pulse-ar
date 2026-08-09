@@ -27,27 +27,27 @@ application, then stop the Wrangler process with `Ctrl+C`.
   all 44 artwork controls remain unique and labelled.
 - The cinematic-welcome media contract locks the self-hosted MP4/WebP paths and
   prevents the hard timeout from cutting off the 64.62-second film.
-- FINN messaging tests lock E.164 normalization, Twilio sender/form/media
+- SADEED messaging tests lock E.164 normalization, Twilio sender/form/media
   constraints, the 1,600-character SMS ceiling, signed short-lived approval
   tokens, tamper/expiry rejection, HTTPS delivery callbacks, and verified
   Twilio/Resend webhook signatures without making live sends.
 - PDPL readiness tests lock the production fail-closed gate: controller, DPO,
   residency, DPA status, retention decisions, breach owner, and legal approval
   must all be configured before release-candidate status is possible.
-- FINN modality tests lock text-only keyboard replies and voice replies only for
+- SADEED modality tests lock text-only keyboard replies and voice replies only for
   microphone turns captured inside Conversation Mode.
-- FINN singleton tests lock one root-mounted copilot, one authenticated TTS
+- SADEED singleton tests lock one root-mounted copilot, one authenticated TTS
   runtime, compatibility-only historical routes, and the absence of a second
   Digital Twin or legacy assistant voice/conversation owner.
 - Agent-voice contract tests lock all eleven Digital Humans, ten distinct free
   bilingual system-voice profiles, preferred and deterministic fallback
-  selection, paid-endpoint removal, FINN/specialist separation, non-overlapping
+  selection, paid-endpoint removal, SADEED/specialist separation, non-overlapping
   audio priority, and the three responsive home-artwork sources.
 - Attachment inspection tests lock real magic-byte matching, executable and
   active-content rejection, valid UTF-8/JSON, EICAR blocking, and macro-free
   Office containers. The upload path additionally quarantines before promotion.
 - Executive Bridge tests lock the seven-chapter bilingual story, simulation
-  labels, and the 1,200-character public FINN voice limit for every narration.
+  labels, and the 1,200-character public SADEED voice limit for every narration.
 - Playwright covers the unauthenticated `/command-center` redirect and the
   authenticated route when E2E credentials are supplied.
 - CI uses `npm ci`; lint failures are blocking and tests are no longer omitted.
@@ -67,7 +67,7 @@ production environment. Unit tests do not fabricate those results.
 
 ### Live approval and delivery exercise
 
-Use only dedicated test recipients. Prepare an email/SMS in FINN, inspect the
+Use only dedicated test recipients. Prepare an email/SMS in SADEED, inspect the
 full confirmation card, cancel one request, approve another once, then repeat
 the click and replay a signed provider event. Verify that the ledger contains
 one outbound message, one provider dispatch, and deduplicated event rows. Test

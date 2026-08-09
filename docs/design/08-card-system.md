@@ -59,9 +59,9 @@ Module/system health from the OS runtime.
 | States   | healthy = calm; degraded = warning chip; failed = critical ring (Ch. 06) — the **card body never turns red** |
 | Hover    | E2 + reveal last-event line                                                                                  |
 
-## 4 · FINN Card — بطاقة FINN
+## 4 · SADEED Card — بطاقة SADEED
 
-FINN's voice in card form: insight, answer, or recommendation.
+SADEED's voice in card form: insight, answer, or recommendation.
 
 | Property               | Value                                                                                                          |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------- |

@@ -949,7 +949,7 @@ const kbSearch: ToolExecutor = {
   },
 };
 
-/* -------------------------- Governed FINN RAG ------------------------- */
+/* -------------------------- Governed SADEED RAG ------------------------- */
 
 const ragSearchVerified: ToolExecutor = {
   id: "rag.search_verified",
@@ -963,8 +963,8 @@ const ragSearchVerified: ToolExecutor = {
   async execute(input, ctx) {
     const data = input as z.infer<typeof ragSearchVerified.input>;
     const [{ retrieveWithEvidenceGate }, { safeExcerpt }] = await Promise.all([
-      import("@/lib/finn/rag/retrieve.server"),
-      import("@/lib/finn/rag/sanitize.server"),
+      import("@/lib/sadeed/rag/retrieve.server"),
+      import("@/lib/sadeed/rag/sanitize.server"),
     ]);
     const outcome = await retrieveWithEvidenceGate(ctx.supabase, {
       query: data.query,

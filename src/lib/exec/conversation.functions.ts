@@ -3,7 +3,7 @@
  *
  * Reads the LIVE record of work the AI organization has done from
  * `agent_runs` + `agent_definitions`, projects each completed run as a
- * single bilingual "statement" by that specialist agent, then asks FINN
+ * single bilingual "statement" by that specialist agent, then asks SADEED
  * (Gemini-first) to synthesize one executive
  * recommendation across all statements. The synthesis is persisted to
  * `finn_reports` (kind=`conversation`) so follow-up loads are instant
@@ -15,7 +15,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
+import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,7 +59,7 @@ export type AgentConversation = {
   generated_at: string;
   /** Conversation transcript — newest-first. */
   turns: ConversationTurn[];
-  /** FINN's executive synthesis across the transcript. */
+  /** SADEED's executive synthesis across the transcript. */
   synthesis: ConversationSynthesis | null;
   /** Whether the synthesis was loaded from cache. */
   cached: boolean;
@@ -136,7 +136,7 @@ function cacheTitle(anchor: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Server function — get live conversation + FINN synthesis
+// Server function — get live conversation + SADEED synthesis
 // ---------------------------------------------------------------------------
 
 export const getAgentConversation = createServerFn({ method: "GET" })
@@ -252,7 +252,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
     // Synthesize through the canonical Gemini runtime.
     let synthesis: ConversationSynthesis;
     try {
-      const runtime = resolveFinnGeminiRuntime();
+      const runtime = resolveSadeedGeminiRuntime();
 
       const findings = turns
         .map(
@@ -262,7 +262,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         .join("\n");
 
       const prompt =
-        `You are FINN, executive industrial-security assistant inside SADEED for all authorised regions and facilities. Never assume one region unless the evidence selects it. ` +
+        `You are SADEED, executive industrial-security assistant inside SADEED for all authorised regions and facilities. Never assume one region unless the evidence selects it. ` +
         `Read the LIVE statements from your specialist agents below and synthesize ONE executive recommendation. ` +
         `Speak as an executive to executives — no SQL, no table names, no markdown, no schemas, no UUIDs. ` +
         `Return STRICT JSON with these keys exactly:\n` +
@@ -305,7 +305,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         source: "gemini",
       };
 
-      // Persist as FINN's short-term executive memory.
+      // Persist as SADEED's short-term executive memory.
       try {
         const { data: orgRow } = await sb
           .from("org_members")
@@ -321,7 +321,7 @@ export const getAgentConversation = createServerFn({ method: "GET" })
             kind: "conversation",
             title: cacheKey,
             payload: synthesis,
-            markdown: `FINN · ${synthesis.priority.toUpperCase()}\n\n${synthesis.recommendation_en}`,
+            markdown: `SADEED · ${synthesis.priority.toUpperCase()}\n\n${synthesis.recommendation_en}`,
             confidence: synthesis.confidence,
             period_start: turns[turns.length - 1]?.occurred_at ?? generated_at,
             period_end: generated_at,

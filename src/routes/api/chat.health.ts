@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { resolveGoogleGeminiModel } from "@/lib/ai-gateway.server";
-import { GEMINI_EMBEDDING_MODEL } from "@/lib/finn/gemini-embeddings.server";
-import { isGeminiRagReady } from "@/lib/finn/rag.server";
+import { GEMINI_EMBEDDING_MODEL } from "@/lib/sadeed/gemini-embeddings.server";
+import { isGeminiRagReady } from "@/lib/sadeed/rag.server";
 
 export const Route = createFileRoute("/api/chat/health")({
   server: {

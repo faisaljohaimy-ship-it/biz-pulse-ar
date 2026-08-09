@@ -1,7 +1,7 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
 /**
- * The only reasoning provider used by FINN and its council.
+ * The only reasoning provider used by SADEED and its council.
  *
  * Keep model selection server-owned. A client-supplied model identifier is
  * never forwarded unless it appears in this allow-list.
@@ -13,8 +13,8 @@ export const DEFAULT_GOOGLE_MODEL = "gemini-3.6-flash";
 export const createGoogleGeminiProvider = (apiKey: string) =>
   createGoogleGenerativeAI({
     apiKey,
-    name: "finn-google-gemini",
-    headers: { "x-goog-api-client": "enjaz-finn/1.0" },
+    name: "sadeed-google-gemini",
+    headers: { "x-goog-api-client": "enjaz-sadeed/1.0" },
   });
 
 /** Resolve a server-configured production Gemini model. */

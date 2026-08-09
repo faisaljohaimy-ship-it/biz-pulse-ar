@@ -201,7 +201,7 @@ export function NxAgentsPage() {
           />
         ) : null}
 
-        {/* لوحة التدفق الرئيسية: المصادر ← الوكلاء ← FINN ← بوابة الاعتماد البشري */}
+        {/* لوحة التدفق الرئيسية: المصادر ← الوكلاء ← SADEED ← بوابة الاعتماد البشري */}
         <section
           aria-label="لوحة تدفّق الوكلاء"
           className="rounded-nx-12 border border-[#3AE8FF]/18 bg-[#04101F]/70 p-2 md:p-3"

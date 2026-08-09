@@ -9,7 +9,7 @@
 SADEED is the operating system of the executive floor — a قمرة قيادة (command bridge) for
 leaders of critical infrastructure. It is not a dashboard product, not a chat product,
 not a BI tool. It is the place where an executive, in Arabic, sees the state of their
-world, understands why it is that way, and decides — with FINN advising, never acting
+world, understands why it is that way, and decides — with SADEED advising, never acting
 alone.
 
 The identity in one sentence:
@@ -37,9 +37,9 @@ decision-relevant fact.
 
 ### 2 · AI First — الذكاء أولًا
 
-FINN is a resident of every screen, not a feature on one. Intelligence appears as
+SADEED is a resident of every screen, not a feature on one. Intelligence appears as
 _advice with evidence_: a recommendation card carries its confidence, its reasoning and
-its human-approval gate — because the frozen architecture guarantees FINN never executes.
+its human-approval gate — because the frozen architecture guarantees SADEED never executes.
 The design must make that guarantee _visible_: advisory surfaces look advisory (glass,
 glow), execution gates look like gates (solid, gold-accented, explicit).
 **Rule:** no AI output appears without provenance affordance (confidence, source, or the

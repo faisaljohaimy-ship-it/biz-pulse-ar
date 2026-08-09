@@ -119,7 +119,7 @@ async function fetchCommandCenterLive(supabase: {
         | "prepared"
         | "approved",
       severity: sevOfImpact(p.impact),
-      agent_ar: `FINN — ${p.area}`,
+      agent_ar: `SADEED — ${p.area}`,
       created_at: p.created_at,
     })),
   ].slice(0, 12);

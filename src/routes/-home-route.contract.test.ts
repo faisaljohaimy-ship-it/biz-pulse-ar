@@ -33,8 +33,8 @@ describe("homepage route contract", () => {
     for (const retired of [
       "<SovereignCommandDeck",
       "<DashboardPreviewRail",
-      "<FinnAnomalyStrip",
-      "<FinnTodayRecommendations",
+      "<SadeedAnomalyStrip",
+      "<SadeedTodayRecommendations",
       "<OsDecisionQueue",
       "<ExecutiveShowcaseHub",
       "<HolographicFlowShowcase",

@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils";
 import { DEFAULT_VOICE_PROFILES, type AgentRuntimeProfile } from "@/lib/agents/voice-architecture";
 import { ExecutiveNarrator } from "@/components/mission-control/ExecutiveNarrator";
 import { AmbientParticles } from "@/components/mission-control/AmbientParticles";
-import { FinnStage } from "@/components/digital-humans/FinnStage";
+import { SadeedStage } from "@/components/digital-humans/SadeedStage";
 import { AgentRoster, type RosterSignal } from "@/components/digital-humans/AgentRoster";
 import {
   PresentationMode,
@@ -432,12 +432,12 @@ function AgentStep({
   line,
   state,
   ar,
-  isFinn,
+  isSadeed,
 }: {
   line: AgentLine;
   state: TurnState;
   ar: boolean;
-  isFinn?: boolean;
+  isSadeed?: boolean;
 }) {
   const t = TONE[line.tone];
   const visible = state !== "queued";
@@ -467,7 +467,9 @@ function AgentStep({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className={cn("text-sm font-medium", isFinn ? "text-cyan-200" : "text-white/90")}>
+            <span
+              className={cn("text-sm font-medium", isSadeed ? "text-cyan-200" : "text-white/90")}
+            >
               {ar ? line.name_ar : line.name_en}
             </span>
             {state === "done" && <CheckCircle2 className={cn("h-3.5 w-3.5", t.text)} aria-hidden />}
@@ -504,7 +506,7 @@ function AgentStep({
             <div
               className={cn(
                 "mt-2 text-sm leading-relaxed",
-                isFinn ? "text-white/95" : "text-white/85",
+                isSadeed ? "text-white/95" : "text-white/85",
               )}
             >
               {ar ? line.finding_ar : line.finding_en}
@@ -587,17 +589,17 @@ function CollaborationStream({
       <div>
         {seq.map((line, i) => {
           const isLast = i === lastIdx;
-          const isFinn = i === 0 || isLast;
+          const isSadeed = i === 0 || isLast;
           const isClosingSynthesis = isLast;
           const state = stateFor(i);
           return (
             <div key={`${line.id}-${i}`}>
               {isClosingSynthesis && state !== "queued" ? (
                 <div className="mt-3 rounded-xl border border-cyan-400/30 bg-cyan-400/[0.06] p-4 transition-[opacity,transform] duration-500 opacity-100 translate-y-0">
-                  <AgentStep line={line} state={state} ar={ar} isFinn />
+                  <AgentStep line={line} state={state} ar={ar} isSadeed />
                 </div>
               ) : (
-                <AgentStep line={line} state={state} ar={ar} isFinn={isFinn} />
+                <AgentStep line={line} state={state} ar={ar} isSadeed={isSadeed} />
               )}
               {!isLast && <StepConnector active={stateFor(i + 1) !== "queued"} />}
             </div>
@@ -897,7 +899,7 @@ const ACTIONS = [
   },
   { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل", en: "Work Orders" },
   { to: "/sec/reports", icon: FileBarChart2, ar: "التقارير", en: "Reports" },
-  { to: "/finn", icon: MessageSquare, ar: "اسأل سَدِيد", en: "Ask SADEED" },
+  { to: "/sadeed", icon: MessageSquare, ar: "اسأل سَدِيد", en: "Ask SADEED" },
 ] as const;
 
 /* ────────────────────────────────────────────────────────────
@@ -1109,7 +1111,7 @@ function MissionControl() {
     ];
   }, [ov, hasData]);
 
-  const finnLine = useMemo(() => {
+  const sadeedLine = useMemo(() => {
     if (!ov || !hasData) return { ar: "", en: "" };
     return { ar: narrative, en: narrative };
   }, [ov, hasData, narrative]);
@@ -1170,9 +1172,9 @@ function MissionControl() {
           </div>
         </div>
 
-        {/* FINN — permanent Digital Human */}
+        {/* SADEED — permanent Digital Human */}
         <div className="mt-6">
-          <FinnStage ar={ar} line_ar={finnLine.ar} line_en={finnLine.en} />
+          <SadeedStage ar={ar} line_ar={sadeedLine.ar} line_en={sadeedLine.en} />
         </div>
 
         {/* Status */}
@@ -1231,7 +1233,7 @@ function MissionControl() {
           />
         </div>
 
-        {/* Collaboration + Timeline + FINN Summary */}
+        {/* Collaboration + Timeline + SADEED Summary */}
         <div className="mt-6 grid lg:grid-cols-3 gap-4 md:gap-6">
           <div className="lg:col-span-2">
             <CollaborationStream
@@ -1269,7 +1271,7 @@ function MissionControl() {
                 ))}
               </ul>
               <Link
-                to="/finn"
+                to="/sadeed"
                 className="mt-5 inline-flex items-center justify-between gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100 hover:bg-cyan-400/20 transition"
               >
                 <span>{ar ? "متابعة مع سَدِيد" : "Continue with SADEED"}</span>

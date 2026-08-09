@@ -29,7 +29,7 @@ import { join } from "node:path";
 import { chromium } from "playwright";
 
 const BASE = (process.env.BASE_URL || "http://127.0.0.1:8080").replace(/\/$/, "");
-const ROUTES = (process.env.ROUTES || "/,/projects,/risk,/finn,/sec").split(",").filter(Boolean);
+const ROUTES = (process.env.ROUTES || "/,/projects,/risk,/sadeed,/sec").split(",").filter(Boolean);
 const STRICT_CONSOLE = process.env.STRICT_CONSOLE === "1";
 const SETTLE_MS = Number(process.env.SETTLE_MS || 2600);
 

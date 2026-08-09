@@ -29,12 +29,12 @@ describe("env-manifest — capability validation (never throws on read)", () => 
 
   it("ignores blank / whitespace-only values (treated as unset)", () => {
     const report = validateEnv({ ELEVENLABS_API_KEY: "   " });
-    expect(report.degraded.some((s) => s.key === "finn-voice")).toBe(true);
+    expect(report.degraded.some((s) => s.key === "sadeed-voice")).toBe(true);
   });
 
   it("assertCapability throws a specific, value-free message when unconfigured", () => {
-    expect(() => assertCapability("finn-voice", {})).toThrowError(/ELEVENLABS_API_KEY/);
-    expect(() => assertCapability("finn-voice", { ELEVENLABS_API_KEY: "k" })).not.toThrow();
+    expect(() => assertCapability("sadeed-voice", {})).toThrowError(/ELEVENLABS_API_KEY/);
+    expect(() => assertCapability("sadeed-voice", { ELEVENLABS_API_KEY: "k" })).not.toThrow();
     expect(() => assertCapability("nope", {})).toThrowError(/Unknown env capability/);
   });
 

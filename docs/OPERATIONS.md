@@ -7,7 +7,7 @@
 - Intelligence: native Google Gemini only (`gemini-3.6-flash`).
 - Retrieval: Gemini embeddings plus tenant-scoped hybrid retrieval and an Evidence Gate.
 - Speech: Gemini transcription; ElevenLabs speech output.
-- Agent runtime: FINN Chief plus the canonical Council of Ten.
+- Agent runtime: SADEED Chief plus the canonical Council of Ten.
 
 ## Observability
 

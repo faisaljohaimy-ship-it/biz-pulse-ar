@@ -2,13 +2,13 @@
  * Governed specialist speech — server-generated ElevenLabs audio only.
  *
  * Owner voice policy: every audible voice in SADEED is ElevenLabs "Layan",
- * synthesized server-side by /api/finn/tts (the key never reaches the
+ * synthesized server-side by /api/sadeed/tts (the key never reaches the
  * client). Browser TTS is banned in all paths. Specialist narration flows
  * through the SAME governed channel model as before: it must own the
- * "agent-tts" source on FinnAudioBus before any audio starts, so FINN
+ * "agent-tts" source on SadeedAudioBus before any audio starts, so SADEED
  * (chat-tts) can always preempt it and no two voices ever overlap.
  */
-import { FinnAudioBus } from "@/lib/finn/audio-bus";
+import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { getPrimedAudioContext } from "@/lib/user-interaction";
 import type { VoiceLang } from "./voice-profiles";
@@ -98,7 +98,7 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
     opts.onAmplitude?.(0);
     if (ownsBus) {
       ownsBus = false;
-      FinnAudioBus.release("agent-tts");
+      SadeedAudioBus.release("agent-tts");
     }
   };
 
@@ -112,21 +112,21 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
     if (segments.length === 0) return;
     // iOS/gesture policy: never start (or spend provider quota) before the
     // bus has been unlocked by a real user gesture.
-    if (!FinnAudioBus.isUnlocked()) return;
+    if (!SadeedAudioBus.isUnlocked()) return;
 
-    ownsBus = FinnAudioBus.acquire("agent-tts", stop);
+    ownsBus = SadeedAudioBus.acquire("agent-tts", stop);
     if (!ownsBus) return;
 
     let started = false;
     try {
       // Distinct ElevenLabs premade voice per specialist persona (server
-      // whitelists the id; FINN herself never goes through this path).
-      const { AGENT_ELEVEN_VOICES } = await import("@/lib/finn/voice-config");
+      // whitelists the id; SADEED herself never goes through this path).
+      const { AGENT_ELEVEN_VOICES } = await import("@/lib/sadeed/voice-config");
       const voiceId = opts.voiceProfileId ? AGENT_ELEVEN_VOICES[opts.voiceProfileId] : undefined;
       for (const segment of segments) {
         if (stopped) return;
         const payload = JSON.stringify({ text: segment, ...(voiceId ? { voiceId } : {}) });
-        let res = await authenticatedFetch("/api/finn/tts", {
+        let res = await authenticatedFetch("/api/sadeed/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: payload,
@@ -135,7 +135,7 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
         // Saved repair method (CLAUDE.md): auth-first → public fallback
         // on 401/403 so guest sessions hear the agents too.
         if (!res.ok && (res.status === 401 || res.status === 403)) {
-          res = await fetch("/api/public/finn-tts", {
+          res = await fetch("/api/public/sadeed-tts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: payload,
@@ -187,7 +187,7 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
           opts.onStart?.();
         }
         source.start();
-        FinnAudioBus.notifyPlaying("agent-tts");
+        SadeedAudioBus.notifyPlaying("agent-tts");
         sampleAmp();
         await done;
       }
@@ -199,9 +199,9 @@ export function speakFreeAgent(opts: FreeAgentSpeechOptions): FreeAgentSpeechHan
       if (!stopped) throw err;
     } finally {
       if (ownsBus) {
-        FinnAudioBus.notifyStopped("agent-tts");
+        SadeedAudioBus.notifyStopped("agent-tts");
         ownsBus = false;
-        FinnAudioBus.release("agent-tts");
+        SadeedAudioBus.release("agent-tts");
       }
     }
   })();

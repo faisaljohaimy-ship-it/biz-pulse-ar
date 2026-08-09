@@ -22,11 +22,11 @@ guiding; never cute, never apologetic.
 
 ## The empty grammar — three honest kinds
 
-| Kind                                  | Meaning                        | Rules                                                                                                                                                        |
-| ------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **فارغ بحق** True empty               | Nothing exists yet             | Title names what will live here; action creates/starts the first one ("أضف أول توصية") or explains how items arrive ("تظهر التوصيات هنا فور صدورها من FINN") |
-| **فارغ بالتصفية** Filtered empty      | Items exist, filters hide them | States the active filters as chips + "مسح التصفية" action; NEVER looks identical to true empty (the executive must know data exists)                         |
-| **فارغ بالنتيجة** No results (search) | Query matched nothing          | Echoes the query ("لا نتائج لـ «…»"), offers مسح البحث + broaden suggestion when computable                                                                  |
+| Kind                                  | Meaning                        | Rules                                                                                                                                                          |
+| ------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **فارغ بحق** True empty               | Nothing exists yet             | Title names what will live here; action creates/starts the first one ("أضف أول توصية") or explains how items arrive ("تظهر التوصيات هنا فور صدورها من SADEED") |
+| **فارغ بالتصفية** Filtered empty      | Items exist, filters hide them | States the active filters as chips + "مسح التصفية" action; NEVER looks identical to true empty (the executive must know data exists)                           |
+| **فارغ بالنتيجة** No results (search) | Query matched nothing          | Echoes the query ("لا نتائج لـ «…»"), offers مسح البحث + broaden suggestion when computable                                                                    |
 
 ## Per-surface empties (binding examples)
 
@@ -35,7 +35,7 @@ guiding; never cute, never apologetic.
 | Approval queue          | "لا اعتمادات معلّقة — كل القرارات محسومة" + ✓ icon success-tinted; this is GOOD news and may look like it (the one celebratory-calm empty)                        |
 | Event stream            | "لا أحداث في هذه النافذة" + time-range chips to widen                                                                                                             |
 | KPI panel (no data yet) | KPI skeleton → after 4s: reference values with `is_simulation` badge (بيانات لا تفرغ doctrine) — the empty state here is the _simulation fallback_, never a blank |
-| FINN conversation       | Opening prompt suggestions (3 chips of high-value questions) — FINN's empty is an invitation                                                                      |
+| SADEED conversation     | Opening prompt suggestions (3 chips of high-value questions) — SADEED's empty is an invitation                                                                    |
 | Shell registry views    | "لا عناصر من هذا النوع بعد" + "أنشئ عبر NDK" pointer (doc-linked, no execution affordance)                                                                        |
 | Audit views             | True empty never shown once system live; zero-result filters only (audit trails always have a genesis)                                                            |
 | Twin viewport           | Asset silhouette + "بانتظار أول قراءة" + connection state chip                                                                                                    |

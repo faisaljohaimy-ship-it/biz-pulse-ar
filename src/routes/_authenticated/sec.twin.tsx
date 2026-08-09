@@ -542,7 +542,7 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
           <Cell label="غرف التحكم" value={c.control_rooms.length} />
           <Cell label="فرق الدوريات" value={c.patrol_teams.length} />
         </Grid>
-        <FINNSection
+        <SADEEDSection
           analysis={`دائرة ${c.name_ar} تضم ${c.sites.length} موقعاً و ${c.patrol_teams.length} فرقة دوريات. مستوى التغطية ${c.sites.length >= 2 ? "كافٍ" : "يحتاج تعزيز"}.`}
           actions={[
             `مراجعة تغطية CCTV في ${c.sites.length} موقعاً`,
@@ -585,7 +585,7 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
           />
           <Cell label="الحساسات" value={site.buildings.reduce((s, b) => s + b.sensors.length, 0)} />
         </Grid>
-        <FINNSection
+        <SADEEDSection
           analysis={`موقع ${site.name_ar} (${site.sensitivity}) حالياً ${site.status}. عدد الأصول المرتبطة كافٍ للتشغيل العادي.`}
           actions={[
             site.status !== "operational"
@@ -624,7 +624,7 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
         >
           {b.status}
         </span>
-        <FINNSection
+        <SADEEDSection
           analysis={`المبنى ${b.name_ar} يحتوي ${b.cameras.length + b.gates.length + b.sensors.length} أصل أمني. الصحة العامة ${b.status}.`}
           actions={[
             "فحص بصري شامل خلال 48 ساعة",
@@ -653,7 +653,7 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
           <Cell label="الدقة" value={cam.resolution ?? "—"} />
           <Cell label="آخر اتصال" value={new Date(cam.last_seen_at).toLocaleTimeString("ar-SA")} />
         </Grid>
-        <FINNSection
+        <SADEEDSection
           analysis={`الكاميرا ${cam.code} حالياً ${cam.status}. الصحة ${cam.health}%.`}
           actions={
             cam.status !== "online"
@@ -764,7 +764,7 @@ function Cell({ label, value }: { label: string; value: string | number }) {
     </div>
   );
 }
-function FINNSection({ analysis, actions }: { analysis: string; actions: string[] }) {
+function SADEEDSection({ analysis, actions }: { analysis: string; actions: string[] }) {
   return (
     <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3">
       <div className="text-xs font-semibold text-primary">🧠 تحليل سَدِيد</div>

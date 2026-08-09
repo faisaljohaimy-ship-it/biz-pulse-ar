@@ -15,7 +15,7 @@ proximity, glass communicates context-over-world, glow communicates live meaning
 flowchart TB
     E5["E5 · التنبيه الفوري — toasts, command palette"]
     E4["E4 · الحوار — modals, approval gates"]
-    E3["E3 · العائم — drawers, popovers, FINN overlay"]
+    E3["E3 · العائم — drawers, popovers, SADEED overlay"]
     E2["E2 · المرفوع — hover/active cards, dragged items"]
     E1["E1 · اللوح — resting panels & cards"]
     E0["E0 · القماش — canvas, ambient/holographic stratum"]
@@ -55,13 +55,13 @@ Rules:
 
 Glow is _meaning made luminous_, never ambience:
 
-| Glow           | Recipe                                    | Licensed use                 |
-| -------------- | ----------------------------------------- | ---------------------------- |
-| Focus glow     | cyan @ 35%, 24px                          | keyboard focus, active input |
-| Sector pulse   | sector accent @ 30%, 32px, 4s breathe     | region halos on maps/chips   |
-| Agent presence | `--nx-layer-agent` @ 25%, 24px            | FINN/agent active indicator  |
-| Authority glow | gold @ 30%, 24px, static                  | the single approval element  |
-| Critical ring  | critical @ 40%, 16px, 2-pulse then static | new critical alerts only     |
+| Glow           | Recipe                                    | Licensed use                  |
+| -------------- | ----------------------------------------- | ----------------------------- |
+| Focus glow     | cyan @ 35%, 24px                          | keyboard focus, active input  |
+| Sector pulse   | sector accent @ 30%, 32px, 4s breathe     | region halos on maps/chips    |
+| Agent presence | `--nx-layer-agent` @ 25%, 24px            | SADEED/agent active indicator |
+| Authority glow | gold @ 30%, 24px, static                  | the single approval element   |
+| Critical ring  | critical @ 40%, 16px, 2-pulse then static | new critical alerts only      |
 
 One glowing element per panel; two glows in a viewport must be different meanings. Glow
 never appears on E0 text or on disabled elements.
@@ -83,5 +83,5 @@ instruments (E1+) always read against it.
 ## Layer hierarchy (z-index map)
 
 `0` canvas/ambient · `10` panels · `20` raised · `30` sticky headers/rail · `40` drawers
-& popovers · `50` modals+scrim · `60` toasts/palette · `70` FINN voice overlay (never
+& popovers · `50` modals+scrim · `60` toasts/palette · `70` SADEED voice overlay (never
 obscured). Hard-coded z-indexes outside this ladder are forbidden.

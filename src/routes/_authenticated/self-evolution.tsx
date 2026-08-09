@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-// FINN Self-Evolution — Operator UI (analyze-only report renderer).
+// SADEED Self-Evolution — Operator UI (analyze-only report renderer).
 // Bilingual AR/EN. No autonomous mutations. Full-sweep readout.
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

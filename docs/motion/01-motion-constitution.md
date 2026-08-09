@@ -29,7 +29,7 @@ is not a job.
 
 The system is alive but never restless. At rest, a SADEED screen has at most **two**
 moving things visible: one ambient stratum motion (≥ 4s cycle) and one licensed presence
-loop (FINN's breathing, a live dot). Everything else is still until state changes.
+loop (SADEED's breathing, a live dot). Everything else is still until state changes.
 Intelligence is shown through _timing_ (instant response, honest progress), not through
 perpetual busyness.
 

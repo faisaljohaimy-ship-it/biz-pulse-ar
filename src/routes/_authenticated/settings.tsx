@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { seedFinnCorpus } from "@/lib/finn/seed-corpus.functions";
+import { seedSadeedCorpus } from "@/lib/sadeed/seed-corpus.functions";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   errorComponent: RouteError,
@@ -50,7 +50,7 @@ function SettingsPage() {
   const [pushAlerts, setPushAlerts] = useState(false);
   const [criticalOnly, setCriticalOnly] = useState(false);
 
-  const runSeedCorpus = useServerFn(seedFinnCorpus);
+  const runSeedCorpus = useServerFn(seedSadeedCorpus);
   const [seedingCorpus, setSeedingCorpus] = useState(false);
 
   async function handleSeedCorpus() {

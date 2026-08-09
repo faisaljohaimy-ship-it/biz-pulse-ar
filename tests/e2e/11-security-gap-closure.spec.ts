@@ -7,7 +7,7 @@
  * Two invariants are asserted, and if either breaks the failure is treated
  * as a constitution regression (Art. 19), not a flaky test:
  *
- *   1. The public incident sink (POST /api/public/hooks/finn-incident) is a
+ *   1. The public incident sink (POST /api/public/hooks/sadeed-incident) is a
  *      defensive write-only surface: accepts a well-formed beacon (202),
  *      rejects unknown kinds (400), bad JSON (400), and oversized bodies
  *      (413). It MUST land the row in `finn_public_incidents` — never in
@@ -31,7 +31,7 @@ const SUPABASE_ANON =
 
 test.describe("Constitution Art. 19 · security gap-closure", () => {
   test("public incident sink accepts a well-formed beacon (202)", async ({ request }) => {
-    const res = await request.post("/api/public/hooks/finn-incident", {
+    const res = await request.post("/api/public/hooks/sadeed-incident", {
       data: {
         kind: "unhandled_error",
         detail: "art19 e2e probe",
@@ -44,14 +44,14 @@ test.describe("Constitution Art. 19 · security gap-closure", () => {
   });
 
   test("public incident sink rejects unknown kind (400)", async ({ request }) => {
-    const res = await request.post("/api/public/hooks/finn-incident", {
+    const res = await request.post("/api/public/hooks/sadeed-incident", {
       data: { kind: "not_a_real_kind", detail: "x" },
     });
     expect(res.status()).toBe(400);
   });
 
   test("public incident sink rejects malformed JSON (400)", async ({ request }) => {
-    const res = await request.post("/api/public/hooks/finn-incident", {
+    const res = await request.post("/api/public/hooks/sadeed-incident", {
       headers: { "content-type": "application/json" },
       data: "{not json",
     });
@@ -61,7 +61,7 @@ test.describe("Constitution Art. 19 · security gap-closure", () => {
   test("public incident sink rejects oversized payload (413)", async ({ request }) => {
     // > 4096 byte body is refused by Content-Length gate before parsing.
     const bigDetail = "x".repeat(5000);
-    const res = await request.post("/api/public/hooks/finn-incident", {
+    const res = await request.post("/api/public/hooks/sadeed-incident", {
       data: { kind: "unhandled_error", detail: bigDetail },
     });
     expect(res.status()).toBe(413);

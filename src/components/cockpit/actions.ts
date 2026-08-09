@@ -27,7 +27,7 @@ export type CockpitSurface =
   | "runtime-flow"
   | "kpi"
   | "map"
-  | "finn"
+  | "sadeed"
   | "quick-actions"
   | "capability"
   | "event-stream"
@@ -372,20 +372,20 @@ const ACTIONS = [
     permission: "cockpit.view",
   },
 
-  // ── FINN ───────────────────────────────────────────────────────────────
+  // ── SADEED ───────────────────────────────────────────────────────────────
   {
-    id: "finn.chat.open",
-    surface: "finn",
+    id: "sadeed.chat.open",
+    surface: "sadeed",
     labelAr: "فتح محادثة سَدِيد",
-    effect: "open-finn-chat",
-    permission: "finn.use",
+    effect: "open-sadeed-chat",
+    permission: "sadeed.use",
   },
   {
-    id: "finn.chat.send",
-    surface: "finn",
+    id: "sadeed.chat.send",
+    surface: "sadeed",
     labelAr: "إرسال رسالة إلى سَدِيد",
-    effect: "open-finn-chat",
-    permission: "finn.use",
+    effect: "open-sadeed-chat",
+    permission: "sadeed.use",
   },
   {
     id: "toast.dismiss",
@@ -395,15 +395,15 @@ const ACTIONS = [
     permission: "cockpit.view",
   },
   {
-    id: "finn.voice.toggle",
-    surface: "finn",
+    id: "sadeed.voice.toggle",
+    surface: "sadeed",
     labelAr: "بدء أو إيقاف التحدث مع سَدِيد",
     effect: "toggle-voice",
-    permission: "finn.voice",
+    permission: "sadeed.voice",
   },
   {
-    id: "finn.recommendation.open",
-    surface: "finn",
+    id: "sadeed.recommendation.open",
+    surface: "sadeed",
     labelAr: "عرض القرار بالتفصيل",
     effect: "open-detail",
     permission: "decisions.view",

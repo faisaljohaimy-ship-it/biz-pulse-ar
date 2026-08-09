@@ -109,10 +109,10 @@ export const createIncident = createServerFn({ method: "POST" })
       console.error("[createIncident] event publish", err);
     }
 
-    // ── Auto FINN analysis (Gemini with timeout + heuristic fallback) ──
+    // ── Auto SADEED analysis (Gemini with timeout + heuristic fallback) ──
     try {
-      const { finnAnalyseIncident } = await import("./oms-finn.server");
-      const analysis = await finnAnalyseIncident({
+      const { sadeedAnalyseIncident } = await import("./oms-sadeed.server");
+      const analysis = await sadeedAnalyseIncident({
         ref,
         category: data.category,
         title_ar: data.title_ar,
@@ -604,7 +604,7 @@ export {
   getEntityTimeline,
   getRecentActivity,
   getOmsKpis,
-  finnAnalyzeIncident,
+  sadeedAnalyzeIncident,
   setExecutiveReview,
   addIncidentAttachment,
   removeIncidentAttachment,

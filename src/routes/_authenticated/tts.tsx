@@ -19,7 +19,7 @@ import {
 import { toast } from "sonner";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 
-// FINN voice is HARD-LOCKED to the canonical male voice server-side.
+// SADEED voice is HARD-LOCKED to the canonical male voice server-side.
 // This dev tool only exposes the canonical voice — the server ignores any
 // `voiceId` in the request body regardless of what is sent from here.
 const VOICES = [{ id: "izhopdR43PRI5gAmjXTj", label: "سَدِيد — الصوت المعتمد (مقفل)" }];
@@ -56,7 +56,7 @@ function TtsPage() {
     if (!text.trim()) return;
     setLoading(true);
     try {
-      const r = await authenticatedFetch("/api/finn/tts", {
+      const r = await authenticatedFetch("/api/sadeed/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

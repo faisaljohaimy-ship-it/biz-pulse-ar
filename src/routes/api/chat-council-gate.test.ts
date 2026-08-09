@@ -68,7 +68,7 @@ vi.mock("@/lib/governance/rate-limit.server", () => ({
   rateLimitUnavailableResponse: () => new Response("unavailable", { status: 503 }),
 }));
 
-vi.mock("@/lib/finn/orchestrator", () => ({
+vi.mock("@/lib/sadeed/orchestrator", () => ({
   runAgentMission: async (input: unknown) => {
     councilCalls.push(input);
     return {

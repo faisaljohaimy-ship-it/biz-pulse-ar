@@ -1,5 +1,5 @@
 /**
- * Server-only, dependency-free inspection for FINN attachments.
+ * Server-only, dependency-free inspection for SADEED attachments.
  *
  * This is a structural safety gate, not a replacement for an enterprise AV
  * engine. It verifies the real file signature, blocks executable/active
@@ -7,9 +7,9 @@
  * bombs before the object can leave quarantine.
  */
 
-export const FINN_ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024;
+export const SADEED_ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024;
 
-export const FINN_ATTACHMENT_MIME_TYPES = [
+export const SADEED_ATTACHMENT_MIME_TYPES = [
   "image/png",
   "image/jpeg",
   "image/webp",
@@ -31,10 +31,10 @@ export const FINN_ATTACHMENT_MIME_TYPES = [
   "text/csv",
 ] as const;
 
-export type FinnAttachmentMime = (typeof FINN_ATTACHMENT_MIME_TYPES)[number];
+export type SadeedAttachmentMime = (typeof SADEED_ATTACHMENT_MIME_TYPES)[number];
 
 export type FileInspectionResult = {
-  detectedMime: FinnAttachmentMime;
+  detectedMime: SadeedAttachmentMime;
   family: "image" | "pdf" | "audio" | "video" | "text" | "office";
   checks: string[];
 };
@@ -49,7 +49,7 @@ export class FileInspectionError extends Error {
   }
 }
 
-const MIME_EXTENSIONS: Record<FinnAttachmentMime, readonly string[]> = {
+const MIME_EXTENSIONS: Record<SadeedAttachmentMime, readonly string[]> = {
   "image/png": ["png"],
   "image/jpeg": ["jpg", "jpeg"],
   "image/webp": ["webp"],
@@ -116,7 +116,7 @@ function u32(bytes: Uint8Array, offset: number): number {
   );
 }
 
-function assertFilename(filename: string, claimedMime: FinnAttachmentMime) {
+function assertFilename(filename: string, claimedMime: SadeedAttachmentMime) {
   const normalized = filename.normalize("NFKC").trim();
   if (!normalized || normalized.startsWith(".") || /[\0\r\n/\\]/.test(normalized)) {
     throw new FileInspectionError("unsafe_filename", "Attachment filename is unsafe.");
@@ -212,7 +212,7 @@ function inspectZip(bytes: Uint8Array): ZipSummary {
   return { names, totalUncompressed, entries };
 }
 
-function inspectText(bytes: Uint8Array, mime: FinnAttachmentMime): FileInspectionResult {
+function inspectText(bytes: Uint8Array, mime: SadeedAttachmentMime): FileInspectionResult {
   if (bytes.includes(0)) {
     throw new FileInspectionError("binary_text", "Binary data cannot be uploaded as text.");
   }
@@ -245,17 +245,17 @@ function mismatch(): never {
   );
 }
 
-export function inspectFinnAttachment(input: {
+export function inspectSadeedAttachment(input: {
   bytes: Uint8Array;
   filename: string;
   claimedMime: string;
 }): FileInspectionResult {
   const { bytes, filename, claimedMime } = input;
-  if (!FINN_ATTACHMENT_MIME_TYPES.includes(claimedMime as FinnAttachmentMime)) {
+  if (!SADEED_ATTACHMENT_MIME_TYPES.includes(claimedMime as SadeedAttachmentMime)) {
     throw new FileInspectionError("unsupported_mime", "Attachment type is not allowed.");
   }
-  const mime = claimedMime as FinnAttachmentMime;
-  if (bytes.length === 0 || bytes.length > FINN_ATTACHMENT_MAX_BYTES) {
+  const mime = claimedMime as SadeedAttachmentMime;
+  if (bytes.length === 0 || bytes.length > SADEED_ATTACHMENT_MAX_BYTES) {
     throw new FileInspectionError("unsafe_size", "Attachment size is outside the allowed range.");
   }
   assertFilename(filename, mime);

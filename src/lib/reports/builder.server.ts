@@ -5,7 +5,7 @@ import { PRODUCT_BRAND } from "@/lib/domain";
 import { PDFDocument, StandardFonts, degrees, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import * as XLSX from "xlsx";
 import type { ExecutiveSnapshot } from "./snapshot.server";
-import { FINN_SIGNATURE_WORDMARK } from "@/lib/finn/signature";
+import { SADEED_SIGNATURE_WORDMARK } from "@/lib/sadeed/signature";
 
 // Article 27: an unmeasured KPI is never coerced to "null" or to 0.
 // The PDF uses WinAnsi standard fonts, so the label stays Latin here.
@@ -36,11 +36,11 @@ function newPage(ctx: Ctx): void {
   drawHeader(ctx);
 }
 
-// Faint tiled «FINN@nexios.com» wordmark behind every page — the same visual
+// Faint tiled «SADEED@nexios.com» wordmark behind every page — the same visual
 // signature as the chat backdrop and loading screen (unified identity). The
 // wordmark is Latin, so it encodes cleanly in pdf-lib's WinAnsi fonts.
 function drawSignatureWatermark(page: PDFPage, font: PDFFont): void {
-  const line = `${FINN_SIGNATURE_WORDMARK}   ${FINN_SIGNATURE_WORDMARK}   ${FINN_SIGNATURE_WORDMARK}`;
+  const line = `${SADEED_SIGNATURE_WORDMARK}   ${SADEED_SIGNATURE_WORDMARK}   ${SADEED_SIGNATURE_WORDMARK}`;
   const ink = rgb(0.55, 0.63, 0.73);
   for (let i = 0; i < 11; i++) {
     page.drawText(line, {

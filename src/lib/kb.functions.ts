@@ -299,7 +299,7 @@ function simKeywordSearch(
 
 export const kbSemanticSearch = createServerFn({ method: "POST" })
   // Open showcase read; unreachable database/embedding ⇒ keyword search
-  // over the built-in reference articles so FINN search never dies.
+  // over the built-in reference articles so SADEED search never dies.
   .middleware([optionalSupabaseAuth])
   .inputValidator((data: unknown) => SemanticInput.parse(data))
   .handler(async ({ data, context }) => {
@@ -396,7 +396,7 @@ export const kbSeedFoundational = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
-    if (process.env.FINN_ENABLE_LEGACY_REFERENCE_SEED?.trim().toLowerCase() !== "true") {
+    if (process.env.SADEED_ENABLE_LEGACY_REFERENCE_SEED?.trim().toLowerCase() !== "true") {
       return { upserted: 0, status: "disabled_requires_verified_corpus" as const };
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

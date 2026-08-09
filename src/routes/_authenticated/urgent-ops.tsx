@@ -62,8 +62,8 @@ interface Proposal {
   created_at: string;
 }
 
-/** مسودة يجهّزها محرك FINN محليًا — لا تُكتب للقاعدة إلا باعتماد بشري. */
-interface FinnDraftProposal {
+/** مسودة يجهّزها محرك SADEED محليًا — لا تُكتب للقاعدة إلا باعتماد بشري. */
+interface SadeedDraftProposal {
   area: string;
   proposal_ar: string;
   impact: Proposal["impact"];
@@ -235,9 +235,9 @@ function UrgentOpsPage() {
   const [tasks, setTasks] = useState<UrgentTask[]>([]);
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [drafts, setDrafts] = useState<FinnDraftProposal[]>([]);
+  const [drafts, setDrafts] = useState<SadeedDraftProposal[]>([]);
   const [dragId, setDragId] = useState<string | null>(null);
-  // حارس تكرار محرك FINN: بصمة آخر تحليل — لا إعادة معالجة لنفس الإشارات.
+  // حارس تكرار محرك SADEED: بصمة آخر تحليل — لا إعادة معالجة لنفس الإشارات.
   const lastAnalysisRef = useRef("");
   const guestTitle = !user ? "يتطلب تسجيل الدخول" : undefined;
 
@@ -292,7 +292,7 @@ function UrgentOpsPage() {
     };
   }, [loadAll]);
 
-  // محرك مقترحات FINN — تحليل فقط: يرصد الإشارات كلما تغيّرت البيانات
+  // محرك مقترحات SADEED — تحليل فقط: يرصد الإشارات كلما تغيّرت البيانات
   // ويجهّز مسودات محلية. لا كتابة تلقائية للقاعدة — الإدراج حصريًا خلف
   // زر اعتماد بشري (submitDraft) وفق عقيدة بوابة التأكيد البشري.
   useEffect(() => {
@@ -308,7 +308,7 @@ function UrgentOpsPage() {
       return ms > 0 && ms < 4 * 3600 * 1000;
     });
 
-    const candidates: FinnDraftProposal[] = [];
+    const candidates: SadeedDraftProposal[] = [];
     if (overdue.length >= 3) {
       const byDept: Record<string, number> = {};
       for (const t of overdue) byDept[t.department] = (byDept[t.department] ?? 0) + 1;
@@ -343,7 +343,7 @@ function UrgentOpsPage() {
   }, [tasks, requests, proposals]);
 
   /** الإدراج للسجل — يُستدعى من زر الاعتماد البشري فقط. */
-  const submitDraft = async (d: FinnDraftProposal) => {
+  const submitDraft = async (d: SadeedDraftProposal) => {
     const { data: existing, error: lookupError } = await supabase
       .from("finn_improvement_proposals")
       .select("id")
@@ -606,7 +606,7 @@ function UrgentOpsPage() {
           </CardContent>
         </Card>
 
-        {/* Panel 3 — FINN proposals */}
+        {/* Panel 3 — SADEED proposals */}
         <Card className="border-border/60 bg-card/60">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">

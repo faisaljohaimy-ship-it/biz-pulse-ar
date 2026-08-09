@@ -3,12 +3,12 @@
  *
  * The same agent ecosystem renders on every device, only the presentation
  * adapts:
- *   • Desktop / Laptop  → full circular ring around FINN
+ *   • Desktop / Laptop  → full circular ring around SADEED
  *   • Tablet            → tightened ring (auto radius)
- *   • Mobile portrait   → swipeable executive carousel below the FINN stage
+ *   • Mobile portrait   → swipeable executive carousel below the SADEED stage
  *
  * No feature disappears at any breakpoint — every agent is reachable and
- * the spotlight, click handler, and FINN stage are preserved end-to-end.
+ * the spotlight, click handler, and SADEED stage are preserved end-to-end.
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { BridgeAgent } from "@/lib/exec/bridge.functions";
@@ -19,7 +19,7 @@ interface Props {
   ar: boolean;
   /** Preferred outer ring radius. Auto-fits to container on smaller screens. */
   radius?: number;
-  /** Diameter of the central reserved area for FINN. */
+  /** Diameter of the central reserved area for SADEED. */
   centerSize?: number;
   spotlightId?: string | null;
   children?: React.ReactNode;
@@ -71,7 +71,7 @@ export function AgentRing({
     return { radius: r, centerSize: c, mode: "ring" as const };
   }, [containerW, preferredRadius, preferredCenter]);
 
-  // CAROUSEL MODE — phones. FINN stage on top, scrollable agent rail below.
+  // CAROUSEL MODE — phones. SADEED stage on top, scrollable agent rail below.
   if (mode === "carousel") {
     return (
       <div ref={wrapRef} className="relative mx-auto w-full">
@@ -113,7 +113,7 @@ export function AgentRing({
           style={{ width: radius * 2 + 80, height: radius * 2 + 80 }}
         />
 
-        {/* Center stage (FINN / children) */}
+        {/* Center stage (SADEED / children) */}
         <div
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
           style={{ width: centerSize, height: centerSize }}
@@ -121,7 +121,7 @@ export function AgentRing({
           {children}
         </div>
 
-        {/* Agent nodes — active speaker glides ~22px toward FINN */}
+        {/* Agent nodes — active speaker glides ~22px toward SADEED */}
         {positions.map(({ agent, x, y, angle }) => {
           const isSpot = spotlightId === agent.id;
           const push = isSpot ? 22 : 0;

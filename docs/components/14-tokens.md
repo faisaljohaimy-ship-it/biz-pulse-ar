@@ -52,7 +52,7 @@ as one composite. Components reference the level, never the parts
 | --------------------- | -------------------------------------- | ----------------------------------------------------------------- |
 | `--nx-glow-focus`     | cyan 35% / 24px                        | keyboard focus, active input                                      |
 | `--nx-glow-sector`    | `rgb(var(--nx-region-rgb))` 30% / 32px | region halos (RGB var set by region-context — existing mechanism) |
-| `--nx-glow-agent`     | layer-agent 25% / 24px                 | FINN/agent presence                                               |
+| `--nx-glow-agent`     | layer-agent 25% / 24px                 | SADEED/agent presence                                             |
 | `--nx-glow-authority` | gold 30% / 24px static                 | THE approval element                                              |
 | `--nx-glow-critical`  | critical 40% / 16px                    | new critical alerts (2-pulse then static)                         |
 

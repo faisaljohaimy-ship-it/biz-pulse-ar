@@ -45,7 +45,7 @@ The glance device. Contract:
 ### Ultra-wide (1536–2559px) — الشاشة العريضة
 
 - Content max 1600px centered (Chapter 05); freed margins host the ambient stratum and
-  optional pinned FINN rail — reading lines never stretch.
+  optional pinned SADEED rail — reading lines never stretch.
 - Multi-panel workspaces may place two Command-register groups side by side; never one
   group stretched.
 

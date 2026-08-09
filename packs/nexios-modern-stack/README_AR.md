@@ -9,7 +9,7 @@
 |---|---|
 | حالات الفشل الخمس غير موجودة | `evals/promptfooconfig.yaml` |
 | مقاومة الحقن بلا حالات | فريق أحمر: `indirect-injection` + `multilingual` |
-| 27 تأكيد RLS متخطّى | `ci/finn-quality.yml` → وظيفة `rls` بقاعدة مؤقتة |
+| 27 تأكيد RLS متخطّى | `ci/sadeed-quality.yml` → وظيفة `rls` بقاعدة مؤقتة |
 | `service_role` لم يُفحص | فحص ثابت يكسر البناء |
 | القياس الحيّ غائب (`telemetry/`) | `otel/genai.ts` |
 | 180 أداة وهمية | `mcp/MCP_STRATEGY_AR.md` |
@@ -17,7 +17,7 @@
 ## المحتوى
 ```
 evals/promptfooconfig.yaml   تقييم مخرجات عربي + فريق أحمر (40+ إضافة هجوم)
-ci/finn-quality.yml          بوابة: أسرار · service_role · CodeQL · RLS · تقييم
+ci/sadeed-quality.yml          بوابة: أسرار · service_role · CodeQL · RLS · تقييم
 otel/genai.ts                طبقة قياس بمعايير OTel GenAI (gen_ai.*)
 mcp/MCP_STRATEGY_AR.md       تحويل الأدوات الوهمية إلى خوادم MCP حقيقية
 ```

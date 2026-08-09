@@ -1,5 +1,5 @@
 /**
- * HologramFX — premium R3F building blocks used by FinnScene:
+ * HologramFX — premium R3F building blocks used by SadeedScene:
  *
  *  - HologramShell:   semi-transparent Fresnel sphere around the head,
  *                     gives the "neural crystal" rim glow.

@@ -28,29 +28,29 @@ Configure these in the Worker environment, never in a committed `.env` file:
 
 - `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - `CRON_HOOK_SECRET` (at least 16 characters)
-- At least one configured AI provider key for live FINN responses
+- At least one configured AI provider key for live SADEED responses
 - `LEADS_NOTIFY_EMAIL` if internal lead notifications are required
 - Optional voice and enterprise connector values documented in `.env.example`
-- Optional `FINN_FILE_SCAN_URL` and `FINN_FILE_SCAN_SECRET` for an enterprise
+- Optional `SADEED_FILE_SCAN_URL` and `SADEED_FILE_SCAN_SECRET` for an enterprise
   malware scanner; structural inspection and quarantine remain active without it
 - Every `PDPL_*` control in `docs/PDPL_PRODUCTION_REGISTER.md`; missing or
   invalid values keep `/readiness` in a fail-closed, non-release-candidate state
 
-## FINN outbound channels
+## SADEED outbound channels
 
 Configure at least one email path and the SMS path only when live delivery is
-required. FINN shows a safe configuration error when a channel is absent.
+required. SADEED shows a safe configuration error when a channel is absent.
 
 | Channel        | Runtime secrets                                                                                        |
 | -------------- | ------------------------------------------------------------------------------------------------------ |
 | Outlook email  | `LOVABLE_API_KEY`, `MICROSOFT_OUTLOOK_API_KEY`                                                         |
 | Resend email   | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` (verified sender/domain)                                         |
 | Twilio SMS/MMS | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, plus `TWILIO_FROM_NUMBER` or `TWILIO_MESSAGING_SERVICE_SID` |
-| FINN voice     | `ELEVENLABS_API_KEY`                                                                                   |
+| SADEED voice   | `ELEVENLABS_API_KEY`                                                                                   |
 
 Outbound governance additionally requires:
 
-- `FINN_MESSAGE_APPROVAL_SECRET` with at least 32 random characters.
+- `SADEED_MESSAGE_APPROVAL_SECRET` with at least 32 random characters.
 - `RESEND_WEBHOOK_SECRET` and a Resend webhook targeting
   `/api/public/hooks/resend-message-status`.
 - `TWILIO_STATUS_CALLBACK_URL` set to the exact public HTTPS URL ending in
@@ -67,10 +67,10 @@ browser/operating-system catalogue, prefer same-language local voices, and fall
 back to the system default for `ar-SA`, `en-US`, or `en-GB`. Install the Arabic
 and English system voice/language packs on managed devices for consistent
 quality. Start one agent run from a real browser gesture and confirm that its
-actual returned summary is narrated; then speak to FINN and confirm her
+actual returned summary is narrated; then speak to SADEED and confirm her
 ElevenLabs voice takes priority without overlap.
 
-## FINN attachment boundary
+## SADEED attachment boundary
 
 Migration `20260716110000_aria_attachment_quarantine.sql` must be applied before
 enabling uploads. It removes authenticated browser writes to the clean bucket,
@@ -79,7 +79,7 @@ ledger. Files are never signed from quarantine. The server verifies their real
 structure and promotes only an approved object.
 
 For additional enterprise malware detection, configure both
-`FINN_FILE_SCAN_URL` and `FINN_FILE_SCAN_SECRET`. The endpoint receives raw bytes
+`SADEED_FILE_SCAN_URL` and `SADEED_FILE_SCAN_SECRET`. The endpoint receives raw bytes
 with the detected content type and SHA-256 header and must return
 `{"clean":true,"engine":"vendor-name"}`. Once configured, timeout, HTTP error,
 malformed output, or a non-clean verdict blocks the upload. Test this fail-closed
@@ -94,7 +94,7 @@ behavior before production activation.
 5. Push to `main`. CI invokes the reusable Cloudflare deployment only after all
    verification and authenticated security E2E jobs pass; there is no manual
    deployment bypass in the workflow.
-6. Verify `/api/public/health`, authentication redirect, FINN text/voice modality,
+6. Verify `/api/public/health`, authentication redirect, SADEED text/voice modality,
    file upload, lead form, and one tenant-scoped read against production.
 7. If outbound channels are enabled, create and cancel a draft, approve one
    controlled email and SMS, and confirm `delivered` or `failed` arrives through

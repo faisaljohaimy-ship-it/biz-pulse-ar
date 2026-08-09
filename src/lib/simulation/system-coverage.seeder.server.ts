@@ -384,7 +384,7 @@ export async function seedSystemCoverage(
 
     // briefing_risks / _opportunities / _actions — no metadata column → purge
     // by our exact known titles (delete-by-value) so re-seeds stay idempotent
-    // and never touch real FINN-generated briefing rows.
+    // and never touch real SADEED-generated briefing rows.
     await admin
       .from("briefing_risks")
       .delete()

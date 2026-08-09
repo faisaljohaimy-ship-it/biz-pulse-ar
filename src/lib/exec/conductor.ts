@@ -7,7 +7,7 @@
  * Responsibilities:
  *  - Subscribe to the live event stream and convert actionable rows into
  *    sequential speaking turns (one specialist agent at a time).
- *  - Run cinematic briefings: FINN → specialists → FINN synthesis, each
+ *  - Run cinematic briefings: SADEED → specialists → SADEED synthesis, each
  *    turn voiced through `speakAs` with lip-sync amplitude exposed to
  *    the 3D rig.
  *  - Surface a single source of truth (currentSpeaker / state / amp) so
@@ -18,8 +18,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEventStream } from "@/lib/events/useEventStream";
 import { narrateEvent, type NarratorLine } from "@/lib/narrator/event-narrator";
-import { speakAs, type SpeakHandle } from "@/lib/digital-humans/finn-voice";
-import { FINN, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
+import { speakAs, type SpeakHandle } from "@/lib/digital-humans/sadeed-voice";
+import { SADEED, findHuman, type DigitalHumanSpec } from "@/lib/digital-humans/registry";
 import { narratorAgentToHumanId } from "@/lib/digital-humans/voice-profiles";
 import type { BriefingSegment, ExecutiveBriefing } from "@/lib/exec/briefing.functions";
 
@@ -41,13 +41,13 @@ export type ConductorLine = {
   briefing?: BriefingSegment;
 };
 
-/** Only severities worth FINN's voice. Avoids "random talking" on info events. */
+/** Only severities worth SADEED's voice. Avoids "random talking" on info events. */
 const ACTIONABLE = new Set(["high", "critical", "warn", "warning"]);
 
 function resolveSpeaker(agentKey: string): DigitalHumanSpec {
-  if (agentKey === "aria") return FINN;
+  if (agentKey === "aria") return SADEED;
   const humanId = narratorAgentToHumanId(agentKey);
-  return findHuman(humanId) ?? findHuman("risk_intelligence") ?? FINN;
+  return findHuman(humanId) ?? findHuman("risk_intelligence") ?? SADEED;
 }
 
 export interface UseConductorOptions {
@@ -79,7 +79,7 @@ export function useConductor(opts: UseConductorOptions): ConductorRuntime {
 
   const [feed, setFeed] = useState<ConductorLine[]>([]);
   const [state, setState] = useState<ConductorState>("idle");
-  const [currentSpeaker, setCurrentSpeaker] = useState<DigitalHumanSpec>(FINN);
+  const [currentSpeaker, setCurrentSpeaker] = useState<DigitalHumanSpec>(SADEED);
   const [currentLine, setCurrentLine] = useState<ConductorLine | null>(null);
   const [mouthAmplitude, setMouthAmplitude] = useState(0);
   const [presenting, setPresenting] = useState(false);
@@ -116,7 +116,7 @@ export function useConductor(opts: UseConductorOptions): ConductorRuntime {
     setFeed((prev) => [...fresh.slice().reverse(), ...prev].slice(0, 50));
 
     // Only enqueue actionable lines for voice; calm info events still
-    // appear in the story feed but FINN stays quiet.
+    // appear in the story feed but SADEED stays quiet.
     if (!presenting) {
       const actionable = fresh.filter((l) =>
         l.narrator ? ACTIONABLE.has(l.narrator.severity.toLowerCase()) : false,
@@ -136,7 +136,7 @@ export function useConductor(opts: UseConductorOptions): ConductorRuntime {
     if (!next) {
       setPending(0);
       setState("idle");
-      setCurrentSpeaker(FINN);
+      setCurrentSpeaker(SADEED);
       setCurrentLine(null);
       return;
     }
@@ -183,7 +183,7 @@ export function useConductor(opts: UseConductorOptions): ConductorRuntime {
     setPending(0);
     setPresenting(false);
     setState("idle");
-    setCurrentSpeaker(FINN);
+    setCurrentSpeaker(SADEED);
     setCurrentLine(null);
   }, []);
 
@@ -231,7 +231,7 @@ export function useConductor(opts: UseConductorOptions): ConductorRuntime {
         };
       });
 
-      // Append the recommendation as FINN's closing turn (already covered
+      // Append the recommendation as SADEED's closing turn (already covered
       // by the last briefing segment, but echo title for emphasis).
       queueRef.current.push(...turns);
       setPending(queueRef.current.length);
@@ -272,7 +272,7 @@ export function useConductor(opts: UseConductorOptions): ConductorRuntime {
     }
     setPresenting(false);
     setState("idle");
-    setCurrentSpeaker(FINN);
+    setCurrentSpeaker(SADEED);
     setCurrentLine(null);
   }, [ar, voiceEnabled]);
 

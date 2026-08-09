@@ -1,15 +1,15 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { FINN, DIGITAL_HUMANS, SPECIALISTS } from "./registry";
+import { SADEED, DIGITAL_HUMANS, SPECIALISTS } from "./registry";
 import { resolveVoice } from "./voice-profiles";
 
 const source = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
 describe("specialist voice release contract", () => {
-  it("keeps one FINN and ten voice-ready specialist identities", () => {
+  it("keeps one SADEED and ten voice-ready specialist identities", () => {
     expect(DIGITAL_HUMANS).toHaveLength(11);
-    expect(FINN.id).toBe("aria");
+    expect(SADEED.id).toBe("aria");
     expect(SPECIALISTS).toHaveLength(10);
     expect(new Set(DIGITAL_HUMANS.map((human) => human.id)).size).toBe(11);
     expect(SPECIALISTS.every((human) => human.voiceProfileId !== "aria")).toBe(true);
@@ -34,28 +34,28 @@ describe("specialist voice release contract", () => {
     expect(signatures.size).toBe(20);
   });
 
-  it("speaks specialists through the server FINN voice route with zero browser TTS", () => {
+  it("speaks specialists through the server SADEED voice route with zero browser TTS", () => {
     const local = source("src/lib/digital-humans/free-agent-speech.ts");
     expect(existsSync(join(process.cwd(), "src/routes/api/agents/tts.ts"))).toBe(false);
-    expect(local).toContain('authenticatedFetch("/api/finn/tts"');
-    expect(local).toContain('FinnAudioBus.acquire("agent-tts"');
+    expect(local).toContain('authenticatedFetch("/api/sadeed/tts"');
+    expect(local).toContain('SadeedAudioBus.acquire("agent-tts"');
     // Owner voice policy: browser TTS is banned in every path.
     expect(local).not.toMatch(/speechSynthesis|SpeechSynthesisUtterance/);
     expect(local).not.toMatch(/OPENAI_API_KEY|gpt-4o-mini-tts/);
   });
 
-  it("keeps the audible voice a single canonical FINN voice, key server-side only", () => {
-    const tts = source("src/routes/api/finn/tts.ts");
+  it("keeps the audible voice a single canonical SADEED voice, key server-side only", () => {
+    const tts = source("src/routes/api/sadeed/tts.ts");
     expect(tts).toContain("ELEVENLABS_API_KEY");
-    expect(tts).toContain("FINN_ELEVENLABS_VOICE_ID");
+    expect(tts).toContain("SADEED_ELEVENLABS_VOICE_ID");
     expect(tts).not.toMatch(/GEMINI_TTS|generativelanguage/);
-    const config = source("src/lib/finn/voice-config.ts");
+    const config = source("src/lib/sadeed/voice-config.ts");
     expect(config).toContain('"izhopdR43PRI5gAmjXTj"');
     // The key never appears client-side.
     for (const file of [
       "src/lib/digital-humans/free-agent-speech.ts",
-      "src/lib/digital-humans/finn-voice.ts",
-      "src/components/finn-core/FinnCopilot.tsx",
+      "src/lib/digital-humans/sadeed-voice.ts",
+      "src/components/sadeed-core/SadeedCopilot.tsx",
     ]) {
       expect(source(file)).not.toContain("ELEVENLABS_API_KEY");
     }
@@ -70,25 +70,25 @@ describe("specialist voice release contract", () => {
   });
 
   it("uses one priority-controlled audio channel for specialist speech", () => {
-    const bus = source("src/lib/finn/audio-bus.ts");
-    const client = source("src/lib/digital-humans/finn-voice.ts");
+    const bus = source("src/lib/sadeed/audio-bus.ts");
+    const client = source("src/lib/digital-humans/sadeed-voice.ts");
     const local = source("src/lib/digital-humans/free-agent-speech.ts");
     expect(bus).toContain('"agent-tts": 2');
     expect(bus).toContain('"chat-tts": 3');
     // The bus itself is a pure arbitration channel — no speech engine inside.
     expect(bus).not.toMatch(/speechSynthesis|SpeechSynthesisUtterance/);
-    expect(client).toContain('authenticatedFetch("/api/finn/tts"');
+    expect(client).toContain('authenticatedFetch("/api/sadeed/tts"');
     expect(client).toContain("speakFreeAgent");
     expect(client).not.toContain("/api/agents/tts");
     // Specialist playback is bus-governed: it must own agent-tts first, so
-    // FINN (chat-tts, higher priority) always preempts and never overlaps.
-    expect(local).toContain('FinnAudioBus.acquire("agent-tts"');
-    expect(local).toContain('FinnAudioBus.release("agent-tts"');
+    // SADEED (chat-tts, higher priority) always preempts and never overlaps.
+    expect(local).toContain('SadeedAudioBus.acquire("agent-tts"');
+    expect(local).toContain('SadeedAudioBus.release("agent-tts"');
     // Saved repair method (CLAUDE.md): the public endpoint is allowed ONLY
     // as the 401/403 guest fallback of the SAME server voice pipeline —
     // auth-first must remain the primary path in both clients.
-    expect(client).toContain('authenticatedFetch("/api/finn/tts"');
-    expect(local).toContain('authenticatedFetch("/api/finn/tts"');
+    expect(client).toContain('authenticatedFetch("/api/sadeed/tts"');
+    expect(local).toContain('authenticatedFetch("/api/sadeed/tts"');
     expect(client).toMatch(/status === 401 \|\| res\.status === 403/);
   });
 });

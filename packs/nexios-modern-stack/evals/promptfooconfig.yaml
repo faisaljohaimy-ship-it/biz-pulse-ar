@@ -1,14 +1,14 @@
-# NEXIOS FINN — تقييم المخرجات وفريق أحمر
+# NEXIOS SADEED — تقييم المخرجات وفريق أحمر
 # ثبّت الإصدار في CI ولا تستخدم @latest هناك.
 #   npx promptfoo@<pinned> eval  -c evals/promptfooconfig.yaml
 #   npx promptfoo@<pinned> redteam run -c evals/promptfooconfig.yaml
 
-description: FINN output-level evals — Arabic industrial security
+description: SADEED output-level evals — Arabic industrial security
 
 providers:
   # وجّهه إلى نقطة نهاية تطبيقك، لا إلى النموذج مباشرة —
   # وإلا اختبرت النموذج بدل القشرة والبوابات.
-  - id: https://localhost:5173/api/finn
+  - id: https://localhost:5173/api/sadeed
     config:
       method: POST
       headers: { 'Content-Type': 'application/json' }

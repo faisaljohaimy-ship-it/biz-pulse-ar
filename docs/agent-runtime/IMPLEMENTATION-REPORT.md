@@ -1,6 +1,6 @@
 # Agent Runtime Foundation Phase 6 — Implementation Report · تقرير التنفيذ
 
-**v1.0 · `src/finn/adaptive-shell/agent-runtime/`**
+**v1.0 · `src/sadeed/adaptive-shell/agent-runtime/`**
 
 ---
 
@@ -27,7 +27,7 @@
   (`agent.alpha`, `agent.reactor`).
 - **Core frozen** — imports resolve only within the Adaptive Shell
   (Phase-1 schemas, population primitives); zero imports from
-  `src/finn/runtime` or any Core layer. The only pre-existing file touched
+  `src/sadeed/runtime` or any Core layer. The only pre-existing file touched
   is the shell's own index (one additive export line).
 - **Generic · composable · observable · scalable · extensible** — records
   are schema-driven; primitives are reused not duplicated (one definition

@@ -9,7 +9,7 @@
  *
  * Never hand-render "LIVE" / "SYNC" / "بث مباشر" strings in SEC UI —
  * always route them through this component (or `EvidenceBadge`
- * directly with a resolved `Evidence`). See FINN Master Constitution
+ * directly with a resolved `Evidence`). See SADEED Master Constitution
  * Articles 18 & 20 and NEXUS FR-19.
  */
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";

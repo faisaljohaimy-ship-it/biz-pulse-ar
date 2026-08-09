@@ -155,9 +155,9 @@ export const enterpriseSearch = createServerFn({ method: "POST" })
               ref: (r.tags ?? []).join(", ") || null,
               at: r.updated_at,
               // `/aria-documents` لم يوجد قط كمسار — كل نتيجة بحث في هذا
-              // المصدر كانت تفتح 404. المسار الحقيقي `/finn-documents`.
+              // المصدر كانت تفتح 404. المسار الحقيقي `/sadeed-documents`.
               // (`source: "aria_document"` يبقى: اسم جدول القاعدة الحيّ.)
-              href: `/finn-documents?doc=${r.id}`,
+              href: `/sadeed-documents?doc=${r.id}`,
             })),
           ),
       );
@@ -222,7 +222,7 @@ export const getKnowledgeStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<KnowledgeStats> => {
     const supabase = context.supabase;
-    const [inc, wo, kb, finnDocs, kd] = await Promise.all([
+    const [inc, wo, kb, sadeedDocs, kd] = await Promise.all([
       supabase.from("sec_incidents").select("*", { count: "exact", head: true }),
       supabase.from("sec_work_orders").select("*", { count: "exact", head: true }),
       supabase.from("sec_knowledge_articles").select("*", { count: "exact", head: true }),
@@ -233,7 +233,7 @@ export const getKnowledgeStats = createServerFn({ method: "GET" })
       incidents: inc.count ?? 0,
       work_orders: wo.count ?? 0,
       kb_articles: kb.count ?? 0,
-      finn_documents: finnDocs.count ?? 0,
+      finn_documents: sadeedDocs.count ?? 0,
       knowledge_docs: kd.count ?? 0,
     };
   });

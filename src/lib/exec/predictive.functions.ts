@@ -8,7 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
-import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
+import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 
 export type PredictedRisk = {
   id: string;
@@ -108,7 +108,7 @@ async function fetchPredictedRisks(
 
     // Try Gemini for executive language; fall back deterministically.
     try {
-      const runtime = resolveFinnGeminiRuntime();
+      const runtime = resolveSadeedGeminiRuntime();
       const signal = anomalies
         .map(
           (a, i) =>

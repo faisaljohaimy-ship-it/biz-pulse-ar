@@ -45,8 +45,8 @@ Non-interactive components implement Rest / Loading / Empty / Error only.
 - Every control has an accessible Arabic name; icons alone never label (Ch. 07).
 - Touch targets ≥ 44×44px on touch tiers.
 - Live regions: notifications/toasts announce via `aria-live="polite"`, critical via
-  `assertive`; FINN speech surfaces mirror text for screen readers.
-- Semantics first: native elements over FINN re-implementation, always.
+  `assertive`; SADEED speech surfaces mirror text for screen readers.
+- Semantics first: native elements over SADEED re-implementation, always.
 
 ## 5 · RTL / LTR
 

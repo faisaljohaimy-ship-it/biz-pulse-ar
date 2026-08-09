@@ -12,7 +12,7 @@ It does not redesign anything; it codifies the identity the system already carri
 obsidian depth, cyan command light, sector-colored life, glass panels, holographic
 layers — and elevates it into reusable, scalable, future-proof rules.
 
-The architecture is approved and frozen. The Executive Runtime, Adaptive Shell, FINN and
+The architecture is approved and frozen. The Executive Runtime, Adaptive Shell, SADEED and
 the navigation model stay exactly where they are. This document governs **how things look,
 read, move and feel** — never where they live.
 
@@ -63,7 +63,7 @@ screens follow the constitution, never the other way around.
 
 - Arabic-first, RTL-native. English is the guest, Arabic is the host.
 - `src/lib/regions.ts` is the only source of sector geography and sector accent colors.
-- FINN speaks with one voice; the interface never contradicts what FINN says.
+- SADEED speaks with one voice; the interface never contradicts what SADEED says.
 - Simulation data is always visibly badged (`is_simulation`).
 - The performance budget (`scripts/check-performance-budget.mjs`) caps every aesthetic
   ambition: beauty that breaks the budget is a defect, not a feature.

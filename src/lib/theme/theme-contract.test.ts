@@ -146,7 +146,7 @@ describe("عقد الوضعين — المادة ٣٤: لا لون صريح خا
      * NexusRevealHero يرسم بريق النواة `fill="#ffffff"` فوق خلفية داكنة
      * ذاتية داخل الـSVG نفسه (تدرّج `nxh-nucleus`) لا فوق سطح الوضعين —
      * فتحويله إلى currentColor يكسر المظهر لا يصلحه. النظير الآخر المعلوم
-     * `src/lib/finn/signature.ts` (لوح كحلي ذاتي داخل SVG مولَّد) خارج نطاق
+     * `src/lib/sadeed/signature.ts` (لوح كحلي ذاتي داخل SVG مولَّد) خارج نطاق
      * glob هذا الحارس أصلًا فلا يحتاج إدراجًا هنا.
      */
     const SELF_BACKED_SVG = new Set(["src/components/cinematic/NexusRevealHero.tsx"]);

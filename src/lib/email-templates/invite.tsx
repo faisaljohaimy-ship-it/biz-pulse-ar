@@ -45,7 +45,7 @@ export const InviteEmail = ({ siteName, siteUrl, confirmationUrl }: InviteEmailP
 
 export default InviteEmail;
 
-const main = { backgroundColor: "#ffffff", fontFamily: "Finnl, sans-serif" };
+const main = { backgroundColor: "#ffffff", fontFamily: "Arial, sans-serif" };
 const container = { padding: "20px 25px" };
 const h1 = {
   fontSize: "22px",

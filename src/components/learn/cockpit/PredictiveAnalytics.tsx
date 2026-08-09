@@ -1,5 +1,5 @@
 /**
- * PredictiveAnalytics — forecast strip with confidence band and FINN insight.
+ * PredictiveAnalytics — forecast strip with confidence band and SADEED insight.
  *
  * Pure SVG (no chart library). Renders actuals as a solid line + dots,
  * forecast as a dashed line, and lower/upper bounds as a translucent

@@ -99,13 +99,14 @@ export function NxFlowPage() {
     refetchInterval: 30_000,
   });
 
-  const { finn, rooms, maxDone } = useMemo(() => {
+  const { sadeed, rooms, maxDone } = useMemo(() => {
     const agents = (data?.agents ?? []) as FlowAgent[];
-    // يقبل الاسمين معًا: العرض «سَدِيد»، وصفوف القاعدة الحيّة ما زالت «FINN».
-    const head = agents.find((a) => /FINN|سديد|سَدِيد/i.test(a.name_ar));
+    // يقبل الأسماء الثلاثة: العرض «سَدِيد»، وصفوف القاعدة الحيّة ما زالت تحمل
+    // «FINN» — كسر المعرّفات ٢٠٢٦/٠٨/٠٩ لم يمسّ صفًّا واحدًا في القاعدة.
+    const head = agents.find((a) => /SADEED|FINN|سديد|سَدِيد/i.test(a.name_ar));
     const rest = agents.filter((a) => a !== head);
     return {
-      finn: head,
+      sadeed: head,
       rooms: rest,
       maxDone: rest.reduce((m, a) => Math.max(m, a.done_today ?? 0), 0),
     };
@@ -172,15 +173,15 @@ export function NxFlowPage() {
               />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="nx-fl-core-name">{finn?.name_ar ?? BRAND_ASSISTANT.nameAr}</h2>
+                  <h2 className="nx-fl-core-name">{sadeed?.name_ar ?? BRAND_ASSISTANT.nameAr}</h2>
                   <span className="nx-fl-chip">{ar ? "التنسيق العام" : "Coordination"}</span>
                 </div>
                 <p className="nx-fl-core-task">
-                  {finn?.task_ar ?? (ar ? "بانتظار مهمة" : "awaiting task")}
+                  {sadeed?.task_ar ?? (ar ? "بانتظار مهمة" : "awaiting task")}
                 </p>
               </div>
               <div className="nx-fl-core-done">
-                <b>{finn?.done_today ?? dash}</b>
+                <b>{sadeed?.done_today ?? dash}</b>
                 <span>{ar ? "منجز اليوم" : "done today"}</span>
               </div>
             </article>

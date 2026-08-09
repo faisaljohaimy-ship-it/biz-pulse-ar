@@ -7,7 +7,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { requireBearerUser } from "@/lib/finn/require-bearer.server";
+import { requireBearerUser } from "@/lib/sadeed/require-bearer.server";
 import {
   enforceRateLimit,
   rateLimitResponse,

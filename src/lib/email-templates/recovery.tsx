@@ -41,7 +41,7 @@ export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps)
 
 export default RecoveryEmail;
 
-const main = { backgroundColor: "#ffffff", fontFamily: "Finnl, sans-serif" };
+const main = { backgroundColor: "#ffffff", fontFamily: "Arial, sans-serif" };
 const container = { padding: "20px 25px" };
 const h1 = {
   fontSize: "22px",

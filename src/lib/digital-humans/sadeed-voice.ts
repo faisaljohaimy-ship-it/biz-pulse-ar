@@ -1,0 +1,256 @@
+/**
+ * SADEED Voice — bilingual server-side speech for the Executive Digital
+ * Human. SADEED uses her authenticated ElevenLabs MP3 route; specialist
+ * agents route through `speakFreeAgent` which enforces the project-wide
+ * policy: **browser TTS (`speechSynthesis`) is banned in all paths** —
+ * every audible voice, SADEED or specialist, is server-synthesized via
+ * ElevenLabs and gated through the shared `SadeedAudioBus` for exclusivity.
+ * Both paths emit 0..1 amplitude samples so the avatar can drive lip-sync.
+ *
+ * Voice routing is fully automatic. SADEED always uses her locked ElevenLabs
+ * endpoint; specialists use curated ElevenLabs voice IDs from the
+ * project whitelist (`AGENT_ELEVEN_VOICES`). Callers can never inject an
+ * arbitrary provider voice id.
+ *
+ * Designed to be replaceable: when an external avatar provider (Azure
+ * AI Avatar, HeyGen, D-ID) is wired in, that provider can either consume
+ * the same amplitude callback to drive its own lip-sync or take over
+ * audio synthesis entirely — only this file changes.
+ */
+
+import type { VoiceLang } from "./voice-profiles";
+import type { DigitalHumanSpec } from "./registry";
+import { speakFreeAgent } from "./free-agent-speech";
+import { authenticatedFetch } from "@/lib/auth-fetch";
+import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
+import { getPrimedAudioContext } from "@/lib/user-interaction";
+
+export type { VoiceLang } from "./voice-profiles";
+
+export interface SpeakHandle {
+  promise: Promise<void>;
+  stop: () => void;
+}
+
+export interface SpeakOptions {
+  text: string;
+  lang?: VoiceLang;
+  /** Optional persona — picks voice + instructions for that Digital Human. */
+  voiceProfileId?: string;
+  /** Registry identity. Omitted means the canonical SADEED identity. */
+  speakerId?: string;
+  /** Called continuously with 0..1 mouth amplitude. */
+  onAmplitude?: (a: number) => void;
+  /** Called once when audio actually begins. */
+  onStart?: () => void;
+  /** Abort signal — stop()s playback. */
+  signal?: AbortSignal;
+}
+
+const ARABIC_RANGE = /[\u0600-\u06FF]/;
+export function detectLang(text: string): VoiceLang {
+  return ARABIC_RANGE.test(text) ? "ar" : "en";
+}
+
+let sharedCtx: AudioContext | null = null;
+function getAudioContext(): AudioContext {
+  const primed = getPrimedAudioContext();
+  if (primed && primed.state !== "closed") {
+    sharedCtx = primed;
+    return primed;
+  }
+  try {
+    if (sharedCtx && sharedCtx.state !== "closed") return sharedCtx;
+  } catch {
+    sharedCtx = null;
+  }
+  const Ctor: typeof AudioContext =
+    (
+      window as unknown as {
+        AudioContext?: typeof AudioContext;
+        webkitAudioContext?: typeof AudioContext;
+      }
+    ).AudioContext ??
+    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  sharedCtx = new Ctor();
+  return sharedCtx;
+}
+
+/** Pending and active Digital Human speech handles. Audible ownership itself
+ * stays with SadeedAudioBus so a lower-priority specialist can never cancel SADEED.
+ */
+const activeHandles = new Set<SpeakHandle>();
+
+function trackHandle<T extends SpeakHandle>(handle: T): T {
+  activeHandles.add(handle);
+  void handle.promise.then(
+    () => activeHandles.delete(handle),
+    () => activeHandles.delete(handle),
+  );
+  return handle;
+}
+
+export function stopActiveSadeedVoice(): void {
+  for (const handle of activeHandles) {
+    try {
+      handle.stop();
+    } catch {
+      /* ignore */
+    }
+  }
+  activeHandles.clear();
+}
+
+/**
+ * Speak `text` using the SADEED voice. Returns a handle whose `promise`
+ * resolves after playback completes or is stopped. Pure client runtime
+ * (no localStorage / no cookies).
+ */
+export function speakSadeed(opts: SpeakOptions): SpeakHandle {
+  const lang = opts.lang ?? detectLang(opts.text);
+  const speakerId = opts.speakerId ?? "aria";
+
+  if (speakerId !== "aria") {
+    return trackHandle(
+      speakFreeAgent({
+        text: opts.text,
+        lang,
+        voiceProfileId: opts.voiceProfileId,
+        onAmplitude: opts.onAmplitude,
+        onStart: opts.onStart,
+        signal: opts.signal,
+      }),
+    );
+  }
+
+  let stopped = false;
+  let source: AudioBufferSourceNode | null = null;
+  let raf = 0;
+  let ownsBus = false;
+
+  const stop = () => {
+    stopped = true;
+    try {
+      source?.stop();
+    } catch {
+      /* already stopped */
+    }
+    cancelAnimationFrame(raf);
+    opts.onAmplitude?.(0);
+    if (ownsBus) {
+      ownsBus = false;
+      SadeedAudioBus.release("chat-tts");
+    }
+  };
+
+  if (opts.signal) {
+    if (opts.signal.aborted) stop();
+    else opts.signal.addEventListener("abort", stop, { once: true });
+  }
+
+  const promise = (async () => {
+    try {
+      // Do not spend SADEED provider quota before the first real gesture.
+      // The global interaction tracker unlocks this synchronously on pointer,
+      // keyboard, or touch input across desktop and mobile.
+      if (!SadeedAudioBus.isUnlocked()) return;
+      let res = await authenticatedFetch("/api/sadeed/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: opts.text }),
+      });
+      // Saved repair method (CLAUDE.md): auth-first → public fallback on
+      // 401/403 — same Layan voice, guest sessions included.
+      if (!res.ok && (res.status === 401 || res.status === 403)) {
+        res = await fetch("/api/public/sadeed-tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: opts.text }),
+          cache: "no-store",
+        });
+      }
+      if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
+      if (stopped) return;
+      const ctx = getAudioContext();
+      if (ctx.state === "suspended") await ctx.resume().catch(() => {});
+      const buf = await res.arrayBuffer();
+      const audio = await ctx.decodeAudioData(buf);
+      if (stopped) return;
+
+      ownsBus = SadeedAudioBus.acquire("chat-tts", stop);
+      if (!ownsBus) return;
+
+      source = ctx.createBufferSource();
+      source.buffer = audio;
+
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.6;
+      const data = new Uint8Array(analyser.frequencyBinCount);
+
+      source.connect(analyser);
+      analyser.connect(ctx.destination);
+
+      const sampleAmp = () => {
+        if (stopped) return;
+        if (document.visibilityState === "hidden") {
+          opts.onAmplitude?.(0);
+          return;
+        }
+        analyser.getByteTimeDomainData(data);
+        // RMS around 128 baseline → 0..1 amplitude
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / data.length);
+        const amp = Math.max(0, Math.min(1, rms * 2.4));
+        opts.onAmplitude?.(amp);
+        raf = requestAnimationFrame(sampleAmp);
+      };
+
+      const done = new Promise<void>((resolve) => {
+        source!.onended = () => {
+          cancelAnimationFrame(raf);
+          opts.onAmplitude?.(0);
+          resolve();
+        };
+      });
+
+      opts.onStart?.();
+      source.start();
+      SadeedAudioBus.notifyPlaying("chat-tts");
+      sampleAmp();
+      await done;
+    } catch (err) {
+      cancelAnimationFrame(raf);
+      opts.onAmplitude?.(0);
+      // SADEED never falls back to a specialist/system voice: identity over
+      // substitution. Her failed segment remains silent.
+      console.warn("[aria-voice] SADEED TTS failed — segment skipped", err);
+      if (!stopped) throw err;
+    } finally {
+      if (ownsBus) {
+        SadeedAudioBus.notifyStopped("chat-tts");
+        ownsBus = false;
+        SadeedAudioBus.release("chat-tts");
+      }
+    }
+  })();
+
+  const handle: SpeakHandle = { promise, stop };
+  return trackHandle(handle);
+}
+
+/**
+ * Speak `text` in the voice of a specific Digital Human persona.
+ * Thin convenience over `speakSadeed` — picks the persona's voice and
+ * tone instructions. The lip-sync amplitude contract is identical.
+ */
+export function speakAs(
+  spec: Pick<DigitalHumanSpec, "id" | "voiceProfileId">,
+  opts: Omit<SpeakOptions, "voiceProfileId">,
+): SpeakHandle {
+  return speakSadeed({ ...opts, speakerId: spec.id, voiceProfileId: spec.voiceProfileId });
+}

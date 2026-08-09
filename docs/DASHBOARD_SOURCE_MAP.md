@@ -28,7 +28,7 @@
 | شريط مركز القيادة               | `MissionControlStrip`                         | `getPublicKpis` → لقطة تسويقية اصطناعية ثابتة                                    | محاكاة موسومة           |
 | حلقة الوكلاء                    | `AgentRing` (executive)                       | `listAgents/listAgentRuns` → `src/lib/exec.functions.ts`                         |                         |
 | بطاقة معاينة الأمن              | `SecCommandLiveCard`                          | `getPublicKpis` → لقطة تسويقية اصطناعية ثابتة                                    | محاكاة موسومة           |
-| الخلفية السينمائية (شات سَدِيد) | `AriaSignatureBackdrop`                       | `src/lib/finn/signature.ts` (بصمة، لا بيانات)                                    | —                       |
+| الخلفية السينمائية (شات سَدِيد) | `AriaSignatureBackdrop`                       | `src/lib/sadeed/signature.ts` (بصمة، لا بيانات)                                  | —                       |
 
 ## ٢ — سجلّ الوحدات المعتمد (المصدر الواحد للأسماء والأيقونات)
 

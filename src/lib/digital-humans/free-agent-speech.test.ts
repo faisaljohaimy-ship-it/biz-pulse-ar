@@ -3,7 +3,7 @@
  *
  * The runtime must: never call any browser TTS, never start before the bus
  * is gesture-unlocked, never play without owning the "agent-tts" channel,
- * fetch audio exclusively from /api/finn/tts, and release the channel when
+ * fetch audio exclusively from /api/sadeed/tts, and release the channel when
  * playback ends or stop() is called.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -18,7 +18,7 @@ const { bus, fetchMock } = vi.hoisted(() => ({
   },
   fetchMock: vi.fn(),
 }));
-vi.mock("@/lib/finn/audio-bus", () => ({ FinnAudioBus: bus }));
+vi.mock("@/lib/sadeed/audio-bus", () => ({ SadeedAudioBus: bus }));
 vi.mock("@/lib/auth-fetch", () => ({
   authenticatedFetch: (...args: unknown[]) => fetchMock(...args),
 }));
@@ -65,20 +65,20 @@ beforeEach(() => {
   (window as unknown as { AudioContext?: unknown }).AudioContext = FakeAudioContext;
 });
 
-describe("specialist speech runtime (server FINN voice)", () => {
+describe("specialist speech runtime (server SADEED voice)", () => {
   it("splits long Arabic text into speakable segments", () => {
     const chunks = splitSpeechText("الجملة الأولى. الجملة الثانية؟ الجملة الثالثة!");
     expect(chunks).toHaveLength(3);
     expect(splitSpeechText("   ")).toHaveLength(0);
   });
 
-  it("plays through the governed agent-tts channel via /api/finn/tts", async () => {
+  it("plays through the governed agent-tts channel via /api/sadeed/tts", async () => {
     const onStart = vi.fn();
     const handle = speakFreeAgent({ text: "تقرير الحالة الأمنية.", lang: "ar", onStart });
     await handle.promise;
     expect(bus.acquire).toHaveBeenCalledWith("agent-tts", expect.any(Function));
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/finn/tts",
+      "/api/sadeed/tts",
       expect.objectContaining({ method: "POST" }),
     );
     expect(onStart).toHaveBeenCalledTimes(1);
@@ -94,8 +94,8 @@ describe("specialist speech runtime (server FINN voice)", () => {
     expect(bus.acquire).not.toHaveBeenCalled();
   });
 
-  it("does not start or consume a specialist voice while FINN owns audio", async () => {
-    // FINN (chat-tts) owns the bus → acquire("agent-tts") is denied.
+  it("does not start or consume a specialist voice while SADEED owns audio", async () => {
+    // SADEED (chat-tts) owns the bus → acquire("agent-tts") is denied.
     bus.acquire.mockReturnValue(false);
     const handle = speakFreeAgent({ text: "تجربة أخرى", lang: "ar" });
     await handle.promise;

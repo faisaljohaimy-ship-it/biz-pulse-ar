@@ -162,7 +162,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       {/* Global command palette on non-home routes (home mounts its own with cinema handler). */}
       {loc.pathname !== "/" && <CommandPalette />}
-      {/* Legacy ExecutiveOverlay removed — FINN singleton lives at root. */}
+      {/* Legacy ExecutiveOverlay removed — SADEED singleton lives at root. */}
     </div>
   );
 }
@@ -251,12 +251,16 @@ function useNavGroups(): NavGroup[] {
     {
       label: ar("الذكاء", "Intelligence"),
       items: [
-        { to: "/finn", icon: Sparkles, label: ar("سَدِيد", "SADEED") },
+        { to: "/sadeed", icon: Sparkles, label: ar("سَدِيد", "SADEED") },
         { to: "/voice", icon: Mic, label: ar("المساعد الصوتي", "Voice Assistant") },
         { to: "/agents", icon: Bot, label: ar("منصة عمليات الوكلاء", "Agent Operations Platform") },
         // هاتان الشاشتان كانتا موجودتين بلا رابط في أي سطح تنقّل، فلم يكن
         // للمالك سبيل لبلوغهما إلا بكتابة العنوان يدويًا (بندا المراجعة 52 و54).
-        { to: "/finn-analytics", icon: BarChart3, label: ar("تحليلات سَدِيد", "SADEED Analytics") },
+        {
+          to: "/sadeed-analytics",
+          icon: BarChart3,
+          label: ar("تحليلات سَدِيد", "SADEED Analytics"),
+        },
         { to: "/observability", icon: RadioTower, label: ar("الرصد والتكاليف", "Observability") },
       ],
     },

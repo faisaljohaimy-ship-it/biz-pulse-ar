@@ -3,7 +3,7 @@ interface Props {
   lang?: "ar" | "en";
 }
 
-/** LessonNarration — audio removed site-wide. FINN (chat panel) is the only
+/** LessonNarration — audio removed site-wide. SADEED (chat panel) is the only
  *  voice on the site now. This stub keeps the render slot silent. */
 export function LessonNarration(_props: Props) {
   return null;

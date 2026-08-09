@@ -2,7 +2,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // Knowledge Upload Center — enterprise SOP ingestion.
 // Pipeline: client extracts text (PDF.js / mammoth) → uploads file to the
 // aria-documents bucket → server fn creates the row and invokes
-// /api/public/hooks/finn-docs-ingest with the extracted text → polls
+// /api/public/hooks/sadeed-docs-ingest with the extracted text → polls
 // bilingual chunk stats + citation readiness until ready.
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -22,8 +22,8 @@ import {
 import {
   enqueueKnowledgeIngest,
   getKnowledgeChunkStats,
-} from "@/lib/finn/knowledge-upload.functions";
-import { listFinnDocuments, deleteFinnDocument } from "@/lib/finn/documents.functions";
+} from "@/lib/sadeed/knowledge-upload.functions";
+import { listSadeedDocuments, deleteSadeedDocument } from "@/lib/sadeed/documents.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -101,11 +101,11 @@ function KnowledgeUploadCenter() {
 
   const enqueueFn = useServerFn(enqueueKnowledgeIngest);
   const statsFn = useServerFn(getKnowledgeChunkStats);
-  const deleteFn = useServerFn(deleteFinnDocument);
+  const deleteFn = useServerFn(deleteSadeedDocument);
 
   const docsQ = useQuery({
     queryKey: ["knowledge-upload", "docs"],
-    queryFn: () => listFinnDocuments(),
+    queryFn: () => listSadeedDocuments(),
     refetchInterval: 20_000,
     refetchIntervalInBackground: false,
     staleTime: 15_000,
@@ -191,9 +191,9 @@ function KnowledgeUploadCenter() {
         </h1>
         <p className="text-muted-foreground text-sm">
           Upload SOPs, policies, and operations manuals (PDF / DOCX / TXT). Each file is chunked
-          bilingually (AR / EN), embedded, and made citation-ready for FINN via{" "}
+          bilingually (AR / EN), embedded, and made citation-ready for SADEED via{" "}
           <code className="text-xs bg-muted/50 px-1.5 py-0.5 rounded">
-            /api/public/hooks/finn-docs-ingest
+            /api/public/hooks/sadeed-docs-ingest
           </code>
           .
         </p>

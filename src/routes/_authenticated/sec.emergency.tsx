@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { SecPageHeader, SampleBadge, StatCard } from "@/components/sec/sec-shell";
 import { Siren, Flame, Wind, Droplets, Phone } from "lucide-react";
-import { EmergencyBroadcast } from "@/components/finn/EmergencyBroadcast";
+import { EmergencyBroadcast } from "@/components/sadeed/EmergencyBroadcast";
 
 export const Route = createFileRoute("/_authenticated/sec/emergency")({
   errorComponent: RouteError,

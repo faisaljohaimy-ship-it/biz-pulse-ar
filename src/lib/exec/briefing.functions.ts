@@ -8,7 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
-import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
+import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 // اسم المساعد المعروض من مصدره الوحيد (قرار المالك ٢٠٢٦/٠٨/٠٩).
 import { BRAND_ASSISTANT } from "@/lib/domain";
 
@@ -164,7 +164,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
     // 45–55s: SADEED merge — recommendation via Gemini
     let recommendation: ExecutiveBriefing["recommendation"];
     try {
-      const runtime = resolveFinnGeminiRuntime();
+      const runtime = resolveSadeedGeminiRuntime();
       const findings = agentsToSpeak
         .map((a) => {
           const latest = runs.find((r) => r.agent_id === a.id);

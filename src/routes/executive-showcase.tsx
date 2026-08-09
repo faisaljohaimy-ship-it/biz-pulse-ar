@@ -1,4 +1,4 @@
-// Executive Showcase — split-screen: FINN video (left) explaining the system,
+// Executive Showcase — split-screen: SADEED video (left) explaining the system,
 // synchronized content cards (right). Video-driven scene timing. RTL-first,
 // bilingual, sim-tagged, respects prefers-reduced-motion.
 import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
@@ -49,7 +49,7 @@ type Scene = {
   value_ar: string;
   value_en: string;
   accent: string;
-  /** Start time in the FINN video (seconds). */
+  /** Start time in the SADEED video (seconds). */
   startAt: number;
   visual: () => React.ReactNode;
 };
@@ -57,7 +57,7 @@ type Scene = {
 const ACCENT_NAVY = "#3AE8FF";
 const ACCENT_EMERALD = "#34D399";
 
-// The supplied 46.85-second FINN film is divided into six concise chapters.
+// The supplied 46.85-second SADEED film is divided into six concise chapters.
 // Content on the right advances from the video clock, never from an unsynced timer.
 const SCENES: Scene[] = [
   {
@@ -124,7 +124,7 @@ const SCENES: Scene[] = [
     value_en: "Bilingual executive engine with natural voice and live memory.",
     accent: ACCENT_EMERALD,
     startAt: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[5],
-    visual: () => <FinnHUD />,
+    visual: () => <SadeedHUD />,
   },
 ];
 
@@ -489,7 +489,7 @@ function ExecutiveShowcasePage() {
 
       {/* Body: split-screen (video left, content right). Mobile: stacked. */}
       <main className="relative z-20 flex flex-1 flex-col gap-4 overflow-hidden px-3 py-3 sm:px-6 md:flex-row md:gap-6 md:px-8 md:py-4">
-        {/* Left: FINN video */}
+        {/* Left: SADEED video */}
         <div className="relative order-1 flex w-full shrink-0 items-center justify-center md:h-full md:w-[42%]">
           <div
             className="relative h-[48vh] w-auto max-w-full overflow-hidden rounded-[1.4rem] border border-cyan-300/30 bg-[#04111f] md:h-full md:w-auto"
@@ -499,7 +499,7 @@ function ExecutiveShowcasePage() {
               transition: "box-shadow 700ms ease",
             }}
           >
-            {/* Soft emerald glow that draws attention to Finn's face */}
+            {/* Soft emerald glow that draws attention to Sadeed's face */}
             <div
               aria-hidden
               className="pointer-events-none absolute inset-x-0 top-0 z-10 h-1/2"
@@ -540,7 +540,7 @@ function ExecutiveShowcasePage() {
                 style={{ animation: "showcase-video-scan 4.8s ease-in-out infinite" }}
               />
             )}
-            {/* Graceful fallback when the narration video can't load: an FINN
+            {/* Graceful fallback when the narration video can't load: an SADEED
                 stage that mirrors the current scene, so the panel is never
                 empty and the visual tour still plays. */}
             {videoFailed && !isFinale && (
@@ -570,7 +570,7 @@ function ExecutiveShowcasePage() {
                 </div>
               </div>
             )}
-            {/* FINN · LIVE badge */}
+            {/* SADEED · LIVE badge */}
             <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-full border border-emerald-300/50 bg-black/60 px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.32em] text-emerald-200 backdrop-blur">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inset-0 animate-ping rounded-full bg-emerald-300 opacity-70" />
@@ -1001,7 +1001,7 @@ function HajjHUD() {
   );
 }
 
-function FinnHUD() {
+function SadeedHUD() {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3">
       <div className="relative">

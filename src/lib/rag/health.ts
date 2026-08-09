@@ -36,7 +36,7 @@ export interface RagHealthRow {
 
 /**
  * Operating limits. These are targets for the retrieval layer only; they say
- * nothing about FINN's own latency, which this layer does not touch.
+ * nothing about SADEED's own latency, which this layer does not touch.
  */
 export const HEALTH_LIMITS = {
   /** Above this p95, retrieval is too slow to sit in front of an answer. */

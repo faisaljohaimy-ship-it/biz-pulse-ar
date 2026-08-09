@@ -5,22 +5,24 @@ import { Link } from "@tanstack/react-router";
 import { Bot, Activity, ShieldCheck, Cpu, Sparkles, MessageSquare } from "lucide-react";
 import { listAgents, listAgentRuns } from "@/lib/exec.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { FINN_COUNCIL_OF_TEN } from "@/lib/finn/orchestrator/council";
+import { SADEED_COUNCIL_OF_TEN } from "@/lib/sadeed/orchestrator/council";
 
-const COUNCIL_ORDER = new Map<string, number>(FINN_COUNCIL_OF_TEN.map((id, index) => [id, index]));
+const COUNCIL_ORDER = new Map<string, number>(
+  SADEED_COUNCIL_OF_TEN.map((id, index) => [id, index]),
+);
 
 /**
  * AgentRing — Executive AI Command Center surface.
  *
  * Cinematic neural ring of production agents (`agent_definitions`) orbiting
- * the FINN core. Every node is alive: heartbeat pulse, status halo,
- * orbital sway, and SVG energy lines that flow toward FINN when the agent
+ * the SADEED core. Every node is alive: heartbeat pulse, status halo,
+ * orbital sway, and SVG energy lines that flow toward SADEED when the agent
  * is actively running. Status is derived from the latest `agent_runs` rows.
  *
  * EXECUTIVE CONTRACT (silent agents): the surrounding agents are background
- * workers — they NEVER converse with the user. Only FINN replies. Hover/focus
+ * workers — they NEVER converse with the user. Only SADEED replies. Hover/focus
  * reveals read-only telemetry; the action CTA always routes the executive
- * back to FINN, who orchestrates the rest of the swarm.
+ * back to SADEED, who orchestrates the rest of the swarm.
  *
  * Charter v10.0: no fabricated names/metrics. RLS-gated; unauthenticated
  * mounts render skeleton pips, never demo agents.
@@ -272,7 +274,7 @@ export function AgentRing() {
           />
         ))}
 
-        {/* Connector network — energy lines from FINN core to each pip. */}
+        {/* Connector network — energy lines from SADEED core to each pip. */}
         <svg
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
@@ -287,7 +289,7 @@ export function AgentRing() {
             </radialGradient>
           </defs>
           <circle cx="50" cy="50" r="44" fill="url(#ring-core-glow)" />
-          {/* Spoke lines: each agent → FINN core */}
+          {/* Spoke lines: each agent → SADEED core */}
           {pips.map(({ i, x, y }) => {
             const a = agents[i];
             const tone = a ? TONE[a.status] : TONE.unknown;
@@ -341,9 +343,9 @@ export function AgentRing() {
           )}
         </svg>
 
-        {/* Central FINN core — breathing, scan ray, only interactive AI. */}
+        {/* Central SADEED core — breathing, scan ray, only interactive AI. */}
         <Link
-          to="/finn"
+          to="/sadeed"
           aria-label="افتح سديد — المساعد التنفيذي الوحيد"
           className="group absolute left-1/2 top-1/2 flex h-28 w-28 items-center justify-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#00D4FF]/35 via-[#0a2a44] to-[#061A2E] text-white sm:h-32 sm:w-32"
           style={{
@@ -471,7 +473,7 @@ export function AgentRing() {
         })}
       </div>
 
-      {/* Inspector — telemetry only. The CTA always defers to FINN. */}
+      {/* Inspector — telemetry only. The CTA always defers to SADEED. */}
       <div
         role="status"
         aria-live="polite"
@@ -539,7 +541,7 @@ function Inspector({ vm }: { vm: AgentVM }) {
         )}
         <div className="mt-3 flex flex-wrap justify-end gap-2 sm:justify-start">
           <Link
-            to="/finn"
+            to="/sadeed"
             className="inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[12px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
           >
             <MessageSquare className="h-3 w-3" />
@@ -556,7 +558,7 @@ function EmptyState() {
     <div className="text-center">
       <p className="text-xs text-white/65">سجلّ تشغيل الوكلاء فارغ حاليًا.</p>
       <Link
-        to="/finn"
+        to="/sadeed"
         className="mt-3 inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[12px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
       >
         <Sparkles className="h-3 w-3" />

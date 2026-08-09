@@ -149,16 +149,16 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
     }
     case "recommendation": {
       const region = snapshot.regions.find(
-        (r) => r.regionId === snapshot.finn.recommendationRegionId,
+        (r) => r.regionId === snapshot.sadeed.recommendationRegionId,
       );
       return (
         <div className="flex flex-col gap-3">
           <p className="text-sm leading-relaxed text-nx-pearl/88">
-            {cockpit.regionDetail?.recommendationAr ?? snapshot.finn.recommendationAr}
+            {cockpit.regionDetail?.recommendationAr ?? snapshot.sadeed.recommendationAr}
           </p>
           <div className="flex flex-col">
-            <Row label="درجة الثقة" value={`${Math.round(snapshot.finn.confidence * 100)}٪`} />
-            <Row label="عدد المصادر" value={snapshot.finn.sourceCount} />
+            <Row label="درجة الثقة" value={`${Math.round(snapshot.sadeed.confidence * 100)}٪`} />
+            <Row label="عدد المصادر" value={snapshot.sadeed.sourceCount} />
             <Row
               label="المنطقة المعنية"
               value={cockpit.regionDetail?.labelAr ?? region?.labelAr ?? "—"}
@@ -172,7 +172,7 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
             loading={cockpit.commandBusy}
             onClick={async () => {
               emitCockpitAction("overlay.confirm");
-              const result = await cockpit.runCommand("finn.recommendation.open", {
+              const result = await cockpit.runCommand("sadeed.recommendation.open", {
                 decision: "approve-recommendation",
               });
               if (result) {

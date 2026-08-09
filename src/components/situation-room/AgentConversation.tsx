@@ -3,7 +3,7 @@
  *
  * Renders the LIVE multi-agent transcript produced by
  * `getAgentConversation`: each specialist agent appears as a speaker
- * bubble, FINN's executive synthesis closes the conversation with the
+ * bubble, SADEED's executive synthesis closes the conversation with the
  * recommended action and next steps. Pure presentation; no fabrication.
  */
 import { useQuery } from "@tanstack/react-query";

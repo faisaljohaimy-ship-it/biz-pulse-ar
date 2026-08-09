@@ -1,9 +1,9 @@
 /**
- * Canonical FINN voice diagnostics.
+ * Canonical SADEED voice diagnostics.
  *
  * This endpoint verifies the single server-side ElevenLabs TTS identity used
- * by FINN. It intentionally does not mint realtime, Scribe, or Conversational
- * AI tokens: conversation ownership stays in the root-mounted FINN copilot.
+ * by SADEED. It intentionally does not mint realtime, Scribe, or Conversational
+ * AI tokens: conversation ownership stays in the root-mounted SADEED copilot.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
@@ -12,7 +12,7 @@ import {
   rateLimitResponse,
   rateLimitUnavailableResponse,
 } from "@/lib/governance/rate-limit.server";
-import { FINN_ELEVENLABS_MODEL, FINN_ELEVENLABS_VOICE_ID } from "@/lib/finn/voice-config";
+import { SADEED_ELEVENLABS_MODEL, SADEED_ELEVENLABS_VOICE_ID } from "@/lib/sadeed/voice-config";
 
 type Check = {
   id: "api_key" | "canonical_voice" | "canonical_runtime";
@@ -83,7 +83,7 @@ async function probeCanonicalVoice(apiKey: string | undefined): Promise<Check> {
 
   try {
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/voices/${encodeURIComponent(FINN_ELEVENLABS_VOICE_ID)}`,
+      `https://api.elevenlabs.io/v1/voices/${encodeURIComponent(SADEED_ELEVENLABS_VOICE_ID)}`,
       {
         headers: { "xi-api-key": apiKey },
         signal: AbortSignal.timeout(8_000),
@@ -143,7 +143,7 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
           label: "Governed SADEED TTS runtime",
           status: ready ? "ok" : "skipped",
           detail: ready
-            ? `/api/finn/tts · ${FINN_ELEVENLABS_MODEL} · authenticated · rate-limited`
+            ? `/api/sadeed/tts · ${SADEED_ELEVENLABS_MODEL} · authenticated · rate-limited`
             : "Runtime remains closed until the provider key and locked voice pass verification.",
         };
 
@@ -160,8 +160,8 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
           voice: {
             configured: true,
             identity: "SADEED",
-            model: FINN_ELEVENLABS_MODEL,
-            id_masked: `${FINN_ELEVENLABS_VOICE_ID.slice(0, 3)}…${FINN_ELEVENLABS_VOICE_ID.slice(-3)}`,
+            model: SADEED_ELEVENLABS_MODEL,
+            id_masked: `${SADEED_ELEVENLABS_VOICE_ID.slice(0, 3)}…${SADEED_ELEVENLABS_VOICE_ID.slice(-3)}`,
           },
           live_voice_ready: ready,
           generated_at: new Date().toISOString(),

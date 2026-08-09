@@ -163,7 +163,7 @@ const PAL = {
 
 /**
  * السجل الكانوني للوكلاء الأحد عشر — **المصدر الوحيد لاسم أي وكيل**.
- * FINN دائمًا في الفهرس صفر (الرئيسي).
+ * SADEED دائمًا في الفهرس صفر (الرئيسي).
  *
  * ## التسمية بوظيفة القطاع لا بصفة تقنية (البند ٢٥ · ٢٠٢٦/٠٨/٠٦)
  *
@@ -431,7 +431,7 @@ export const DIGITAL_HUMANS: DigitalHumanSpec[] = [
   },
 ];
 
-export const FINN: DigitalHumanSpec = DIGITAL_HUMANS[0];
+export const SADEED: DigitalHumanSpec = DIGITAL_HUMANS[0];
 
 export const SPECIALISTS: DigitalHumanSpec[] = DIGITAL_HUMANS.slice(1);
 

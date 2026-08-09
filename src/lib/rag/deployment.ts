@@ -34,7 +34,7 @@ export interface ChangeShape {
   touchesEdgeFunctions: boolean;
   /** Would change rag_enabled / any feature flag default. */
   changesFeatureFlag: boolean;
-  /** Touches the FINN / Gemini answer path. FORBIDDEN — never deployable. */
+  /** Touches the SADEED / Gemini answer path. FORBIDDEN — never deployable. */
   touchesAnswerPath: boolean;
   /** tsc + lint + tests + build all green. */
   qualityGateGreen: boolean;

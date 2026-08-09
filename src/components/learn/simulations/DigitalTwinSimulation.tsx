@@ -2,7 +2,7 @@
  * DigitalTwinSimulation — an interactive facility-map twin.
  *
  * SVG floor plan with animated sensors, cameras, and one moving incident.
- * The learner clicks an asset to see live-style telemetry; FINN-style
+ * The learner clicks an asset to see live-style telemetry; SADEED-style
  * recommendations pop for anomalies. Completing three inspections marks the
  * simulation as done.
  */

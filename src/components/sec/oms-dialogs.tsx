@@ -35,7 +35,7 @@ import {
   closeIncident,
   addCorrectiveAction,
   escalateIncident,
-  finnAnalyzeIncident,
+  sadeedAnalyzeIncident,
   getEntityTimeline,
   createWorkOrder,
   approveWorkOrder,
@@ -211,7 +211,7 @@ export function NewIncidentDialog() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INCIDENT — Detail Drawer (timeline, actions, FINN, work order, close)
+// INCIDENT — Detail Drawer (timeline, actions, SADEED, work order, close)
 // ─────────────────────────────────────────────────────────────────────────────
 type IncRow = {
   id: string;
@@ -248,8 +248,8 @@ export function IncidentDrawer({
     enabled: open,
   });
 
-  const aria = useServerFn(finnAnalyzeIncident);
-  const mFinn = useMutation({
+  const aria = useServerFn(sadeedAnalyzeIncident);
+  const mSadeed = useMutation({
     mutationFn: () => aria({ data: { incident_id: incident!.id } }),
     onSuccess: () => {
       toast.success("اكتمل تحليل سَدِيد");
@@ -463,12 +463,12 @@ export function IncidentDrawer({
     onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
-  // Latest FINN event for recommendations
-  const latestFinn = (timeline ?? []).find(
+  // Latest SADEED event for recommendations
+  const latestSadeed = (timeline ?? []).find(
     (e) => e.event === "aria_analyzed" || e.event === "aria_auto_analyzed",
   );
-  const finnRecs =
-    (latestFinn?.payload as
+  const sadeedRecs =
+    (latestSadeed?.payload as
       | { recommendations?: string[]; immediate_actions?: string[] }
       | undefined) ?? {};
 
@@ -544,7 +544,7 @@ export function IncidentDrawer({
                 </div>
               </div>
 
-              {/* FINN summary + recommendations */}
+              {/* SADEED summary + recommendations */}
               <div className="rounded-lg border border-violet-500/30 bg-violet-500/5 p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-medium text-violet-700 dark:text-violet-400">
@@ -553,40 +553,41 @@ export function IncidentDrawer({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => mFinn.mutate()}
-                    disabled={mFinn.isPending}
+                    onClick={() => mSadeed.mutate()}
+                    disabled={mSadeed.isPending}
                   >
-                    {mFinn.isPending ? "جارٍ التحليل…" : "إعادة التحليل"}
+                    {mSadeed.isPending ? "جارٍ التحليل…" : "إعادة التحليل"}
                   </Button>
                 </div>
                 <p className="text-xs text-foreground">
                   {incident.ai_summary ?? "لم يُشغَّل التحليل بعد."}
                 </p>
-                {Array.isArray(finnRecs.immediate_actions) &&
-                  finnRecs.immediate_actions.length > 0 && (
+                {Array.isArray(sadeedRecs.immediate_actions) &&
+                  sadeedRecs.immediate_actions.length > 0 && (
                     <div className="mt-2">
                       <div className="text-[12px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">
                         إجراءات فورية
                       </div>
                       <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[12px] text-foreground">
-                        {finnRecs.immediate_actions.map((a, i) => (
+                        {sadeedRecs.immediate_actions.map((a, i) => (
                           <li key={i}>{a}</li>
                         ))}
                       </ul>
                     </div>
                   )}
-                {Array.isArray(finnRecs.recommendations) && finnRecs.recommendations.length > 0 && (
-                  <div className="mt-2">
-                    <div className="text-[12px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">
-                      توصيات
+                {Array.isArray(sadeedRecs.recommendations) &&
+                  sadeedRecs.recommendations.length > 0 && (
+                    <div className="mt-2">
+                      <div className="text-[12px] font-semibold uppercase tracking-wide text-violet-700/80 dark:text-violet-400/80">
+                        توصيات
+                      </div>
+                      <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[12px] text-foreground">
+                        {sadeedRecs.recommendations.map((a, i) => (
+                          <li key={i}>{a}</li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="mt-1 list-disc space-y-0.5 pr-4 text-[12px] text-foreground">
-                      {finnRecs.recommendations.map((a, i) => (
-                        <li key={i}>{a}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                  )}
               </div>
 
               {/* Quick actions */}

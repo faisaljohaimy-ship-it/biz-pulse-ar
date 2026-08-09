@@ -9,7 +9,7 @@ import { trace, SpanStatusCode } from "@opentelemetry/api";
 
 export const SEMCONV_VERSION = "1.41.0"; // ثبّتها ووثّقها
 
-const tracer = trace.getTracer("nexios.finn.shell", SEMCONV_VERSION);
+const tracer = trace.getTracer("nexios.sadeed.shell", SEMCONV_VERSION);
 
 type Outcome = "success" | "partial" | "fail" | "insufficient_evidence";
 

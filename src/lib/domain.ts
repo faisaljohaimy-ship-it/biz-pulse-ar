@@ -55,15 +55,15 @@ export const PRODUCT_BRAND = {
   /**
    * The assistant.
    *
-   * OWNER DIRECTIVE 2026-08-09 («توحيد اسم Finn إلى سَدِيد»): the assistant is
-   * no longer a second name. It was FINN — a separate identity that survived
+   * OWNER DIRECTIVE 2026-08-09 («توحيد اسم Sadeed إلى سَدِيد»): the assistant is
+   * no longer a second name. It was SADEED — a separate identity that survived
    * three product renames — and the owner has now merged it into the product
    * brand. So this field is no longer a DIFFERENT name; it is the same word,
    * kept as a named field because ~40 call sites ask for "the assistant's
    * name" and deleting the field would make each of them reach for a literal.
    *
-   * The machine side did NOT merge: `finn-core`, `/finn`, `/api/finn/*`,
-   * `finn_knowledge`, `FinnCopilot` and `public/finn-portrait.*` keep their
+   * The machine side did NOT merge: `sadeed-core`, `/sadeed`, `/api/sadeed/*`,
+   * `finn_knowledge`, `SadeedCopilot` and `public/sadeed-portrait.*` keep their
    * identifiers. Renaming those orphans live user state and breaks routing,
    * and no user reads them.
    */
@@ -107,7 +107,7 @@ export const SITE_TAGLINE = `${PRODUCT_BRAND.ar.name} — ${PRODUCT_BRAND.ar.des
 /**
  * Single source of truth for the assistant's PUBLIC display persona.
  * Change it here in one line and every surface updates. The engine, knowledge
- * base (finn_knowledge), route (`/finn`) and server voice path keep their
+ * base (finn_knowledge), route (`/sadeed`) and server voice path keep their
  * internal names — those are identifiers, and no user reads them.
  *
  * OWNER DIRECTIVE 2026-08-09: the displayed name is «سَدِيد» / «SADEED», the
@@ -123,5 +123,5 @@ export const BRAND_ASSISTANT = {
   roleAr: "مساعدك الذكي التنفيذي — الأمن الصناعي",
   roleEn: "Your Executive AI — Industrial Security",
   /** Compressed WebP portrait (persona card); PNG remains for OG/preview. */
-  portrait: "/finn.webp",
+  portrait: "/sadeed.webp",
 } as const;

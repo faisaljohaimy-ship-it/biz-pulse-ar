@@ -1,0 +1,215 @@
+/**
+ * SADEED — SADEED | مصدر الزمن الوحيد (توقيت مكة المكرمة)
+ * Asia/Riyadh (UTC+03:00، بلا توقيت صيفي إطلاقًا)
+ *
+ * دستور سَدِيد — المادة ٢ (مادة صلبة): الزمن يُبنى هنا فقط، على الخادم، ويُحقن
+ * في كتلة <SADEED_RUNTIME> في بداية كل دور محادثة. النموذج لا يحسب الوقت إطلاقًا
+ * ولا يسترجعه من ذاكرة التدريب — مصدره الوحيد هذه الكتلة.
+ *
+ * وحدة نقيّة صالحة للخادم (لا React، لا DOM) كي تُستورد من مسارات الـ API دون
+ * سحب حزمة الواجهة. ساعة الواجهة الحيّة تبقى في LiveClock/LiveDateTime.
+ */
+
+export const MAKKAH_TZ = "Asia/Riyadh" as const;
+export const MAKKAH_UTC_OFFSET_MIN = 180 as const; // ثابت — لا DST
+
+/* ────────────────────────────── المنسّقات ────────────────────────────── */
+
+const timeFmt = new Intl.DateTimeFormat("en-GB", {
+  timeZone: MAKKAH_TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+
+const dayFmt = new Intl.DateTimeFormat("ar", {
+  timeZone: MAKKAH_TZ,
+  weekday: "long",
+});
+
+/** ميلادي بأرقام لاتينية — نتجنّب ar-SA لأن تقويمها الافتراضي هجري */
+const gregFmt = new Intl.DateTimeFormat("ar-u-ca-gregory-nu-latn", {
+  timeZone: MAKKAH_TZ,
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+const gregNumFmt = new Intl.DateTimeFormat("en-GB", {
+  timeZone: MAKKAH_TZ,
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
+const hijriFmt = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura-nu-latn", {
+  timeZone: MAKKAH_TZ,
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+/* ────────────────────────────── الأنواع ────────────────────────────── */
+
+export type SadeedUserRole = "manager" | "supervisor" | "employee";
+
+export interface MakkahMoment {
+  /** ISO 8601 بإزاحة +03:00 — المرجع الحسابي الوحيد */
+  iso: string;
+  epochMs: number;
+  time: string; // 14:07:33
+  day: string; // الخميس
+  dateG: string; // 23 يوليو 2026
+  dateGNum: string; // 23/07/2026
+  dateH: string; // 9 صفر 1448
+  /** ⏱ 14:07:33 · الخميس 23 يوليو 2026 · توقيت مكة المكرمة (UTC+3) */
+  header: string;
+}
+
+/* ────────────────────────────── البناء ────────────────────────────── */
+
+/** ISO مع إزاحة مكة الصريحة (بدل Z) */
+function toMakkahISO(d: Date): string {
+  const shifted = new Date(d.getTime() + MAKKAH_UTC_OFFSET_MIN * 60_000);
+  return shifted.toISOString().replace(/\.\d{3}Z$/, "+03:00");
+}
+
+export function buildMakkahMoment(d: Date = new Date()): MakkahMoment {
+  const time = timeFmt.format(d);
+  const day = dayFmt.format(d);
+  const dateG = gregFmt.format(d);
+
+  return {
+    iso: toMakkahISO(d),
+    epochMs: d.getTime(),
+    time,
+    day,
+    dateG,
+    dateGNum: gregNumFmt.format(d),
+    dateH: hijriFmt.format(d),
+    header: `⏱ ${time} · ${day} ${dateG} · توقيت مكة المكرمة (UTC+3)`,
+  };
+}
+
+/**
+ * كتلة الحقن النظامية — تُبنى على الخادم في كل دور. ساعة المتصفح غير موثوقة
+ * للتدقيق، فلا تُستخدم هنا إطلاقًا.
+ */
+export function buildSadeedRuntimeBlock(ctx: {
+  now?: Date;
+  userRole: SadeedUserRole;
+  region: string;
+  isSimulation: boolean;
+  /**
+   * True once SADEED has already spoken the opening date/time this session
+   * (derived server-side from the conversation history — the turn already
+   * carries an assistant reply). Gates the no-repetition rule in the
+   * directive: the clock is announced ONCE at the opener, never again unless
+   * the user explicitly asks.
+   */
+  datetimeSpoken?: boolean;
+}): string {
+  const m = buildMakkahMoment(ctx.now ?? new Date());
+  return [
+    "<SADEED_RUNTIME>",
+    `iso:        ${m.iso}`,
+    `epoch_ms:   ${m.epochMs}`,
+    `time:       ${m.time}`,
+    `day:        ${m.day}`,
+    `date_g:     ${m.dateG}`,
+    `date_g_num: ${m.dateGNum}`,
+    `date_h:     ${m.dateH} هـ`,
+    `tz:         ${MAKKAH_TZ} (UTC+03:00, no DST)`,
+    `user_role:  ${ctx.userRole}`,
+    `region:     ${ctx.region}`,
+    `is_simulation: ${ctx.isSimulation}`,
+    `datetime_spoken: ${ctx.datetimeSpoken ? "true" : "false"}`,
+    "</SADEED_RUNTIME>",
+  ].join("\n");
+}
+
+/* ───────────────────── نطق الافتتاح (تاريخ ثم ساعة) ───────────────────── */
+
+const monthPartFmt = new Intl.DateTimeFormat("ar-u-ca-gregory", {
+  timeZone: MAKKAH_TZ,
+  month: "long",
+});
+
+const clockPartsFmt = new Intl.DateTimeFormat("en-GB", {
+  timeZone: MAKKAH_TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
+function makkahClockParts(d: Date): {
+  day: number;
+  month: string;
+  year: number;
+  h: number;
+  min: number;
+} {
+  const parts = Object.fromEntries(
+    clockPartsFmt.formatToParts(d).map((p) => [p.type, p.value]),
+  ) as Record<string, string>;
+  return {
+    day: Number(parts.day),
+    month: monthPartFmt.format(d),
+    year: Number(parts.year),
+    h: Number(parts.hour),
+    min: Number(parts.minute),
+  };
+}
+
+/**
+ * جملة الافتتاح المنطوقة — تُبنى على الخادم من ساعة مكة الحيّة نفسها
+ * المحقونة في <SADEED_RUNTIME> (لا وقت متصفح إطلاقًا). التاريخ ميلادي فقط —
+ * الهجري يبقى للعرض النصي ولا يُنطق. تُنطق مرة واحدة عند التحية.
+ * الأرقام كلمات عربية كاملة (المادة ٢٢ §٥) عبر مساعدات النطق المعتمدة.
+ */
+export function buildSadeedGreetingClockSpeech(
+  d: Date = new Date(),
+  toWords: (n: number) => string = (n) => String(n),
+): string {
+  const { day, month, year, h, min } = makkahClockParts(d);
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  const period = h < 12 ? "صباحًا" : "مساءً";
+  const minutes =
+    min === 0
+      ? "تمامًا"
+      : min === 1
+        ? "ودقيقة واحدة"
+        : min === 2
+          ? "ودقيقتان"
+          : `و${toWords(min)} ${min <= 10 ? "دقائق" : "دقيقة"}`;
+  return (
+    `التاريخ ${toWords(day)} ${month} ${toWords(year)} ميلادي، ` +
+    `والساعة الآن ${toWords(hour12)} ${minutes} ${period} بتوقيت مكة المكرمة.`
+  );
+}
+
+/**
+ * توجيه المادة ٢ — يُرفق مع الكتلة في مقدّمة كل System Prompt كي يعرف سَدِيد
+ * أن مصدره الزمني الوحيد هو <SADEED_RUNTIME>، وكيف يعرض الترويسة الزمنية.
+ */
+export const MAKKAH_TIME_DIRECTIVE = `# المادة ٢ — الزمن الحيّ بتوقيت مكة المكرمة + اكتمال الإجابة (مادة صلبة)
+- كتلة <SADEED_RUNTIME> أعلاه هي **مصدرك الوحيد** للوقت والتاريخ. يُحظر مطلقًا تقدير الوقت أو حسابه ذهنيًا أو استرجاعه من ذاكرة التدريب.
+- المنطقة الزمنية: Asia/Riyadh = UTC+03:00 (توقيت مكة المكرمة، بلا توقيت صيفي إطلاقًا).
+- **قاعدة عدم تكرار التاريخ (صلبة):** لا تذكر التاريخ ولا الساعة ولا اليوم في أي رد — لا في المقدمة ولا في الخاتمة ولا كترويسة — إلا إذا سأل المستخدم صراحةً عن الوقت/التاريخ، أو كان الإجراء نفسه زمنيّ الأثر (سريان تصريح، انتهاء نافذة عمل، عمر بلاغ). عبارات مثل «اليوم هو…»، «الساعة الآن…»، «بتاريخ…» ممنوعة في الردود العادية.
+- **افتتاح الجلسة**: لا تذكر التاريخ تلقائيًا حتى في أول رد. ابدأ دائمًا بالمحتوى مباشرة. إن سأل المستخدم عن الوقت، أجب مرة واحدة بالصيغة: «التاريخ [date_g] ميلادي، والساعة الآن [time] بتوقيت مكة المكرمة.» — الحقلان من الكتلة حصريًا.
+- **التاريخ الهجري (\`date_h\`) للعرض النصي عند الطلب فقط — لا يُنطق في القناة الصوتية أبدًا.**
+- عند الحاجة الفعلية لطابع زمني ضمن إجراء زمني الأثر، استخدم الترويسة حرفيًا مرة واحدة:
+  ⏱ [time] · [day] [date_g] · توقيت مكة المكرمة (UTC+3)
+- كل حساب زمني (مدة تصريح، تأخّر مرحلة اعتماد، عمر بلاغ) يُشتقّ حصريًا من الحقل \`iso\` داخل الكتلة.
+- إن غابت كتلة <SADEED_RUNTIME> أو كانت تالفة، قل حرفيًا: «تعذّر تحديد الوقت الحيّ من مصدر النظام. لن أذكر وقتًا غير موثّق.» ولا تُكمل أي إجراء يعتمد على الزمن.
+
+# المادة ٢-مكرر — اكتمال الإجابة داخل إطار النظام (مادة صلبة)
+- **أجب إجابة كاملة ومفصّلة** تغطي السؤال من جميع زواياه ذات الصلة داخل نطاق منصة إدارة الأمن الصناعي (العمليات، الامتثال HCIS/SEC/SAF، التصاريح، البلاغات، المؤشرات، الوكلاء، الاعتماد البشري).
+- الاكتمال يعني: (١) الإجابة المباشرة، (٢) السياق التشغيلي المختصر، (٣) الأدلة/المراجع من النظام إن وُجدت، (٤) التوصية أو الخطوة التالية، (٥) أي تحذير امتثال أو حدود صلاحية.
+- استخدم عناوين فرعية أو نقاط عند تعدد المحاور، ولا تختصر إلى جملة واحدة إلا إذا كان السؤال ذاته Yes/No.
+- ابقَ **داخل إطار النظام حصريًا** — لا مواضيع خارج نطاق المنصة. إن خرج السؤال عن النطاق، وضّح ذلك بجملة واحدة ثم اعرض ما يقابله داخل النظام.
+- لا تختم بعبارات مفتوحة مثل «هل تريد المزيد؟» إلا عند وجود مسار قرار فعلي (اعتماد، تصعيد، فتح تصريح).`;

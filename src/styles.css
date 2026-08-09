@@ -884,8 +884,8 @@ body {
   }
 }
 
-/* ═══ FINN presence — state-driven CSS (no video, no audio, no canvas) ═══ */
-.finn-presence .finn-glow {
+/* ═══ SADEED presence — state-driven CSS (no video, no audio, no canvas) ═══ */
+.sadeed-presence .sadeed-glow {
   background: radial-gradient(
     circle,
     rgba(0, 212, 255, 0.22) 0%,
@@ -896,10 +896,10 @@ body {
   transition:
     background 400ms ease,
     transform 400ms ease;
-  animation: finn-glow-idle 8s ease-in-out infinite;
+  animation: sadeed-glow-idle 8s ease-in-out infinite;
   will-change: opacity, transform;
 }
-.finn-presence .finn-shimmer {
+.sadeed-presence .sadeed-shimmer {
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -914,34 +914,34 @@ body {
 }
 
 /* Listening — user typing / mic hot: emerald ring + gentle glow pulse */
-.finn-presence[data-finn-state="listening"] .finn-glow {
+.sadeed-presence[data-sadeed-state="listening"] .sadeed-glow {
   background: radial-gradient(
     circle,
     rgba(52, 211, 153, 0.28) 0%,
     rgba(52, 211, 153, 0.1) 45%,
     transparent 72%
   );
-  animation: finn-glow-listen 1.8s ease-in-out infinite;
+  animation: sadeed-glow-listen 1.8s ease-in-out infinite;
 }
 /* Thinking — subtle shimmer sweep */
-.finn-presence[data-finn-state="thinking"] .finn-shimmer {
-  animation: finn-shimmer-sweep 2.4s linear infinite;
+.sadeed-presence[data-sadeed-state="thinking"] .sadeed-shimmer {
+  animation: sadeed-shimmer-sweep 2.4s linear infinite;
 }
-.finn-presence[data-finn-state="thinking"] .finn-glow {
-  animation: finn-glow-think 3s ease-in-out infinite;
+.sadeed-presence[data-sadeed-state="thinking"] .sadeed-glow {
+  animation: sadeed-glow-think 3s ease-in-out infinite;
 }
 /* Speaking — rhythmic glow pulse synced to speech */
-.finn-presence[data-finn-state="speaking"] .finn-glow {
+.sadeed-presence[data-sadeed-state="speaking"] .sadeed-glow {
   background: radial-gradient(
     circle,
     rgba(0, 212, 255, 0.32) 0%,
     rgba(58, 232, 255, 0.12) 45%,
     transparent 72%
   );
-  animation: finn-glow-speak 620ms ease-in-out infinite;
+  animation: sadeed-glow-speak 620ms ease-in-out infinite;
 }
 
-@keyframes finn-glow-idle {
+@keyframes sadeed-glow-idle {
   0%,
   100% {
     opacity: 0.85;
@@ -952,7 +952,7 @@ body {
     transform: translate(-50%, -50%) scale(1.04);
   }
 }
-@keyframes finn-glow-listen {
+@keyframes sadeed-glow-listen {
   0%,
   100% {
     opacity: 0.75;
@@ -963,7 +963,7 @@ body {
     transform: translate(-50%, -50%) scale(1.08);
   }
 }
-@keyframes finn-glow-think {
+@keyframes sadeed-glow-think {
   0%,
   100% {
     opacity: 0.7;
@@ -972,7 +972,7 @@ body {
     opacity: 0.95;
   }
 }
-@keyframes finn-glow-speak {
+@keyframes sadeed-glow-speak {
   0%,
   100% {
     opacity: 0.85;
@@ -983,7 +983,7 @@ body {
     transform: translate(-50%, -50%) scale(1.06);
   }
 }
-@keyframes finn-shimmer-sweep {
+@keyframes sadeed-shimmer-sweep {
   0% {
     opacity: 0;
     transform: translateX(-40%);
@@ -997,8 +997,8 @@ body {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .finn-presence .finn-glow,
-  .finn-presence .finn-shimmer {
+  .sadeed-presence .sadeed-glow,
+  .sadeed-presence .sadeed-shimmer {
     animation: none !important;
   }
 }
@@ -1315,7 +1315,7 @@ body {
 
 /* Active sector hub — an expanding ping ring on the region map. */
 
-/* FINN — animated voice waveform (staggered bars) + a slow orbiting ring. */
+/* SADEED — animated voice waveform (staggered bars) + a slow orbiting ring. */
 @keyframes nx-wave {
   0%,
   100% {
@@ -1582,13 +1582,13 @@ body {
   }
 }
 
-@keyframes finn-launcher-orbit {
+@keyframes sadeed-launcher-orbit {
   to {
     transform: rotate(360deg);
   }
 }
 
-@keyframes finn-launcher-pulse {
+@keyframes sadeed-launcher-pulse {
   0%,
   100% {
     opacity: 0.6;
@@ -1598,7 +1598,7 @@ body {
   }
 }
 
-.finn-window {
+.sadeed-window {
   animation: nexus-window-reveal 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
   box-shadow:
     0 48px 120px -42px rgba(0, 0, 0, 0.95),
@@ -1735,27 +1735,27 @@ body {
   }
 }
 
-.finn-launcher {
+.sadeed-launcher {
   isolation: isolate;
   box-shadow:
     0 0 0 1px rgba(111, 255, 233, 0.12),
     0 18px 46px -18px rgba(0, 212, 255, 0.7);
-  animation: finn-launcher-pulse 3.6s ease-in-out infinite;
+  animation: sadeed-launcher-pulse 3.6s ease-in-out infinite;
 }
 
-.finn-launcher::before {
+.sadeed-launcher::before {
   content: "";
   position: absolute;
   inset: -7px;
   z-index: -1;
   border-radius: inherit;
   border: 1px dashed rgba(111, 255, 233, 0.38);
-  animation: finn-launcher-orbit 12s linear infinite;
+  animation: sadeed-launcher-orbit 12s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .finn-launcher,
-  .finn-launcher::before {
+  .sadeed-launcher,
+  .sadeed-launcher::before {
     animation: none !important;
   }
 }
@@ -1843,7 +1843,7 @@ a:active svg,
   animation: none !important;
 }
 
-/* FINN glass edge — REMOVED per owner directive. No-op stub. */
+/* SADEED glass edge — REMOVED per owner directive. No-op stub. */
 
 /* ────────────────────────────────────────────────────────────────
    CARD RADIATION — REMOVED per owner directive. The regional halo
@@ -2335,7 +2335,7 @@ html.nx-presenting .nexus-app-shell {
 /* ─────────────────────────────────────────────────────────────────
    HOLOGRAPHIC EDGE SYSTEM — executive card frames.
    `.holo-card`  : standard panel edge (accent via --accent-rgb)
-   `.finn-portal`: the focal FINN card, one notch more luminous.
+   `.sadeed-portal`: the focal SADEED card, one notch more luminous.
    ───────────────────────────────────────────────────────────────── */
 .holo-card {
   position: relative;
@@ -2379,7 +2379,7 @@ html.nx-presenting .nexus-app-shell {
   outline-offset: 2px;
 }
 
-/* Focal FINN card frame */
+/* Focal SADEED card frame */
 /* ── Readability & touch floors — one layer, not per-page patches ─────────
    Three invariants the platform kept violating page by page, fixed once at
    the token layer.
@@ -2639,7 +2639,7 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   GLASS GLOSS LAYER (owner directive) — كل البطاقات والأيقونات، وFINN،
+   GLASS GLOSS LAYER (owner directive) — كل البطاقات والأيقونات، وSADEED،
    زجاجية لامعة باستمرار في الوضعين الداكن والفاتح.
    آخر كتلة في الملف ⇒ تسود على قواعد «الوضع الفاتح المسطّح» السابقة.
    ───────────────────────────────────────────────────────────────────────── */
@@ -2738,7 +2738,7 @@ body {
     0 18px 44px rgba(15, 42, 70, 0.16);
 }
 
-/* 3) FINN — زجاجي لامع في الوضعين مع بقاء حافته المتوهجة */
+/* 3) SADEED — زجاجي لامع في الوضعين مع بقاء حافته المتوهجة */
 
 /* 4) الأيقونات — قرص زجاجي لامع دائم */
 .holo-icon,
@@ -2785,7 +2785,7 @@ body {
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/2) — شريط LIVE أسود في الوضع الفاتح،
-   وبطاقة FINN سماوية فاتحة متدرجة مع خلفية رقمية بنفس التدرّج.
+   وبطاقة SADEED سماوية فاتحة متدرجة مع خلفية رقمية بنفس التدرّج.
    ───────────────────────────────────────────────────────────────────────── */
 
 /* 1) شريط الوقت العلوي: كل الكتابة سوداء بالكامل في الوضع الفاتح */
@@ -2801,15 +2801,15 @@ body {
   background-color: rgba(0, 0, 0, 0.35) !important;
 }
 
-/* 2) بطاقة FINN في الوضع الفاتح — سماوي فاتح متدرّج */
+/* 2) بطاقة SADEED في الوضع الفاتح — سماوي فاتح متدرّج */
 
-/* 3) الخلفية الرقمية داخل بطاقة FINN بنفس التدرّج السماوي الفاتح */
+/* 3) الخلفية الرقمية داخل بطاقة SADEED بنفس التدرّج السماوي الفاتح */
 /* الأسلاك والشيفرة تُقلب إلى حبر داكن كي تبقى مقروءة فوق السماوي */
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/3) — حدود عريضة (bold) لكل البطاقات
    والأيقونات في الوضعين · خلفية رقمية داكنة متحركة باستمرار في الوضع
-   الفاتح · بطاقة FINN سماوية في الوضعين.
+   الفاتح · بطاقة SADEED سماوية في الوضعين.
    ───────────────────────────────────────────────────────────────────────── */
 
 /* 1) حدود بولد — الوضع الداكن */
@@ -2911,11 +2911,11 @@ body {
   animation: nx-holo-sweep 9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
-/* 4) بطاقة FINN سماوية في الوضعين */
+/* 4) بطاقة SADEED سماوية في الوضعين */
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/4) — كل البطاقات والأيقونات في النظام
-   زجاجية ذات لمعان وتوهج مستمر واضح، ويشمل بطاقة شات FINN.
+   زجاجية ذات لمعان وتوهج مستمر واضح، ويشمل بطاقة شات SADEED.
    ───────────────────────────────────────────────────────────────────────── */
 
 @keyframes nx-gloss-sweep {
@@ -2952,7 +2952,7 @@ body {
 .nx-glass-e1,
 .nexus-card,
 .nexus-window,
-.finn-window {
+.sadeed-window {
   background-image: linear-gradient(
     115deg,
     transparent 38%,
@@ -2972,7 +2972,7 @@ body {
 .light .nx-glass-e1,
 .light .nexus-card,
 .light .nexus-window,
-.light .finn-window {
+.light .sadeed-window {
   background-image: linear-gradient(
     115deg,
     transparent 38%,
@@ -2983,12 +2983,12 @@ body {
   );
 }
 
-/* بطاقة شات FINN — زجاج لامع دائم بحدّ متوهج */
-.finn-window {
+/* بطاقة شات SADEED — زجاج لامع دائم بحدّ متوهج */
+.sadeed-window {
   backdrop-filter: blur(22px) saturate(170%);
   border: 2px solid rgba(58, 232, 255, 0.55) !important;
 }
-.light .finn-window {
+.light .sadeed-window {
   border-color: rgba(30, 130, 175, 0.6) !important;
 }
 
@@ -3021,7 +3021,7 @@ body {
   .nx-glass-e1,
   .nexus-card,
   .nexus-window,
-  .finn-window,
+  .sadeed-window,
   .holo-icon,
   [data-region-glow],
   .holo-icon::after {
@@ -3272,7 +3272,7 @@ body {
 .nx-glass-e1,
 .nexus-card,
 .nexus-window,
-.finn-window,
+.sadeed-window,
 .nexus-floating-surface,
 .glass-sidebar,
 .nexus-toast,
@@ -3445,7 +3445,7 @@ small {
 
 /* ==========================================================================
    SADEED — VISUAL ARCHITECTURE BLUEPRINT (owner directive, executive glass)
-   Ambient daylight → executive glass framework → navigation → FINN hero →
+   Ambient daylight → executive glass framework → navigation → SADEED hero →
    intelligence → workspace → motion & optical layer. Presentation only.
    ========================================================================== */
 
@@ -3481,7 +3481,7 @@ body::before {
 
 /* ── Layer 2 · Executive glass framework ─────────────────────────────────── */
 .nx-glass-e1,
-.finn-window,
+.sadeed-window,
 [data-slot="card"] {
   position: relative;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.74))
@@ -3517,7 +3517,7 @@ header.nx-clock-bar,
   box-shadow: 0 10px 30px -22px rgba(17, 24, 39, 0.35);
 }
 
-/* ── Layer 4 · FINN hero, the visual heart ───────────────────────────────── */
+/* ── Layer 4 · SADEED hero, the visual heart ───────────────────────────────── */
 @keyframes sd-sweep {
   0% {
     transform: translateX(-120%);
@@ -3626,7 +3626,7 @@ tbody tr:hover {
 
 /* --- Holographic cyan glass on every glass surface --- */
 .nx-glass-e1,
-.finn-window,
+.sadeed-window,
 [data-slot="card"] {
   position: relative;
   isolation: isolate;
@@ -3645,7 +3645,7 @@ tbody tr:hover {
 
 /* Continuous gloss sweep */
 .nx-glass-e1::after,
-.finn-window::after,
+.sadeed-window::after,
 [data-slot="card"]::after {
   content: "";
   position: absolute;
@@ -3706,7 +3706,7 @@ tbody tr:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .nx-glass-e1::after,
-  .finn-window::after,
+  .sadeed-window::after,
   [data-slot="card"]::after,
   .nx-icon-soft,
   .nx-icon-pulse,
@@ -3777,7 +3777,7 @@ body::after {
 
 /* ---- Layer 04 · Optical glass: refraction + internal diffusion ---- */
 .nx-glass-e1,
-.finn-window,
+.sadeed-window,
 [data-slot="card"] {
   position: relative;
   isolation: isolate;
@@ -3894,7 +3894,7 @@ tbody tr:hover {
   box-shadow: inset 0 0 0 1px var(--pv-edge-soft);
 }
 
-/* ---- Layer 07 · FINN AI focus: the first thing users notice ---- */
+/* ---- Layer 07 · SADEED AI focus: the first thing users notice ---- */
 
 /* ---- Performance + accessibility guards ---- */
 @media (prefers-reduced-motion: reduce) {
@@ -3905,7 +3905,7 @@ tbody tr:hover {
   }
 
   .nx-glass-e1,
-  .finn-window,
+  .sadeed-window,
   [data-slot="card"],
   button,
   [data-slot="button"] {
@@ -4015,7 +4015,7 @@ tbody tr:hover {
 }
 
 /* =====================================================================
-   FINN portal · sky-cyan → deep dark gradient (owner directive)
+   SADEED portal · sky-cyan → deep dark gradient (owner directive)
    ===================================================================== */
 
 /* =====================================================================
@@ -4082,7 +4082,7 @@ tbody tr:hover {
 .nx-glass-e1,
 .sd-glass-surface,
 .spatial-window,
-.finn-window {
+.sadeed-window {
   position: relative;
   isolation: isolate;
 }
@@ -4292,9 +4292,9 @@ a > svg,
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/4) — إعادة الخلفية الرقمية العصرية داخل
-   بطاقة FINN في الوضع الفاتح: لوحة الدوائر الحيّة الداكنة تعود كما هي،
-   بلا قلب ألوان ولا تسطيح سماوي. حركة FINN ثلاثية الأبعاد أُسرِعت في
-   المشهد نفسه (FinnLiveHologram).
+   بطاقة SADEED في الوضع الفاتح: لوحة الدوائر الحيّة الداكنة تعود كما هي،
+   بلا قلب ألوان ولا تسطيح سماوي. حركة SADEED ثلاثية الأبعاد أُسرِعت في
+   المشهد نفسه (SadeedLiveHologram).
    ───────────────────────────────────────────────────────────────────────── */
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -4407,7 +4407,7 @@ a > svg,
   transform: perspective(700px) translate3d(0, -3px, 0) rotateX(6deg) rotateY(-6deg);
 }
 
-/* اسم FINN أعلى البطاقة: ثابت تمامًا بلا حركة ولا لمعان مارّ. */
+/* اسم SADEED أعلى البطاقة: ثابت تمامًا بلا حركة ولا لمعان مارّ. */
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/6) — زجاجية أكثر توهجًا ولمعانًا لكل البطاقات
@@ -4499,7 +4499,7 @@ a > svg,
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   OWNER DIRECTIVE (2026-08-02/7) — إعادة FINN إلى المنتصف بخلفيته الرقمية
+   OWNER DIRECTIVE (2026-08-02/7) — إعادة SADEED إلى المنتصف بخلفيته الرقمية
    الهولوغرامية العصرية، مع اسم ثابت في سقف البطاقة، وخلفية سماوية في
    الوضع الفاتح، وحركة ثلاثية الأبعاد للبطاقة.
    ───────────────────────────────────────────────────────────────────────── */
@@ -4508,9 +4508,9 @@ a > svg,
 
 /* 2) الخلفية الرقمية داخل البطاقة: سماوية في الوضع الفاتح، داكنة في الداكن */
 
-/* 3) اسم FINN ثابت في سقف البطاقة */
+/* 3) اسم SADEED ثابت في سقف البطاقة */
 
-/* 4) حركة ثلاثية الأبعاد لبطاقة FINN */
+/* 4) حركة ثلاثية الأبعاد لبطاقة SADEED */
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/8) — حواف وأطراف كل أيقونة/بطاقة تتوهّج
@@ -4605,16 +4605,16 @@ a > svg,
   }
 }
 
-/* ── FINN chat scrim + insulating glass ring ─────────────────────────── */
-.finn-chat-scrim {
-  animation: finn-scrim-in 260ms ease-out both;
+/* ── SADEED chat scrim + insulating glass ring ─────────────────────────── */
+.sadeed-chat-scrim {
+  animation: sadeed-scrim-in 260ms ease-out both;
   pointer-events: auto;
 }
-:root[data-theme="light"] .finn-chat-scrim,
-html:not([data-theme="dark"]) .finn-chat-scrim {
+:root[data-theme="light"] .sadeed-chat-scrim,
+html:not([data-theme="dark"]) .sadeed-chat-scrim {
   background: rgba(226, 240, 255, 0.42);
 }
-@keyframes finn-scrim-in {
+@keyframes sadeed-scrim-in {
   from {
     opacity: 0;
   }
@@ -4622,7 +4622,7 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
     opacity: 1;
   }
 }
-.finn-window {
+.sadeed-window {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.28),
     0 0 0 10px rgba(6, 182, 212, 0.1),
@@ -4636,12 +4636,12 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
   background-size: 100% 7px;
   opacity: 0.28;
 }
-.finn-window .nx-holo-scan,
-.finn-window .nx-holo-noise {
+.sadeed-window .nx-holo-scan,
+.sadeed-window .nx-holo-noise {
   display: none !important;
 }
-.finn-window,
-.finn-window * {
+.sadeed-window,
+.sadeed-window * {
   background-attachment: scroll;
 }
 
@@ -4752,7 +4752,7 @@ html:not([data-theme="dark"]) .finn-chat-scrim {
     hx-edge-chroma-fast 1.8s ease-in-out infinite !important;
 }
 
-/* بطاقة FINN تحتفظ بخلفيتها الرقمية الخاصة — نضيف الأسلاك فقط فوقها */
+/* بطاقة SADEED تحتفظ بخلفيتها الرقمية الخاصة — نضيف الأسلاك فقط فوقها */
 
 @media (prefers-reduced-motion: reduce) {
   [data-slot="card"],
@@ -4936,7 +4936,7 @@ html.dark .holo-card,
 html.dark .nx-glass-e1,
 html.dark .nexus-card,
 html.dark .nexus-window,
-html.dark .finn-window,
+html.dark .sadeed-window,
 html.dark .nexus-floating-surface,
 html.dark .glass-sidebar,
 html.dark .nexus-toast,
@@ -4979,7 +4979,7 @@ html.dark [data-holo-icon-wrap] {
   color: #cfe8f7 !important;
 }
 
-/* بطاقة FINN — خلفيتها الرقمية الداكنة السابقة */
+/* بطاقة SADEED — خلفيتها الرقمية الداكنة السابقة */
 
 /* الشريط العلوي */
 html.dark .nx-clock-bar {
@@ -5008,10 +5008,10 @@ html.dark .nx-holo-noise {
   opacity: 0.16 !important;
 }
 
-/* ── حدود بطاقة FINN = حدود بطاقات القطاعات تمامًا ───────────────────────── */
+/* ── حدود بطاقة SADEED = حدود بطاقات القطاعات تمامًا ───────────────────────── */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   الزجاج اللامع الدائم — بطاقات · أيقونات · بوابة FINN، في الوضعين.
+   الزجاج اللامع الدائم — بطاقات · أيقونات · بوابة SADEED، في الوضعين.
 
    توجيه المالك: «البطاقات والأيقونات في جميع الأوضاع زجاجية لامعة باستمرار،
    وفِن كذلك في الداكن والفاتح.» الكلمة الحاسمة «باستمرار»: اللمعان كان قبل
@@ -5025,7 +5025,7 @@ html.dark .nx-holo-noise {
    حدّ الأداء المحفوظ في هذا الملف: «لا backdrop-filter لكل بطاقة — عشرون
    بطاقة مموّهة فوق خلفية متحركة تقتل معدّل الإطارات». الحدّ يُحترم لا
    يُلغى: اللمعان هنا مبنيّ على تدرّجات وظلال داخلية وهي رخيصة على المُركِّب،
-   والتمويه الفعلي محصور في الأسطح القليلة العدد (بوابة FINN والنوافذ
+   والتمويه الفعلي محصور في الأسطح القليلة العدد (بوابة SADEED والنوافذ
    والشريط الجانبي) التي كانت تحمله أصلًا.
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -5112,7 +5112,7 @@ html.dark .nx-holo-noise {
   background: linear-gradient(90deg, transparent, var(--glass-rim), transparent);
 }
 
-/* ── بوابة FINN: لوح زجاجي فوق الهولوغرام، لا بدلًا منه ────────────────── */
+/* ── بوابة SADEED: لوح زجاجي فوق الهولوغرام، لا بدلًا منه ────────────────── */
 /* الهولوغرام مشهد WebGL حيّ؛ أي حشوة معتمة فوقه تحجبه. فالبريق يُركَّب
    كطبقة علوية شفافة تمامًا في وسطها، ومعها حافة زجاجية وظلّ رفع. */
 /* غلاف البريق: عنصر مستقل حتى لا يُزاحم ::before (الوهج) و::after (خط الضوء)
@@ -5150,11 +5150,11 @@ html.dark .nx-holo-noise {
    بدل خلفية inline كانت تتفوّق على الصنف فتمحو البريق عن هذه اللوحات وحدها. */
 
 /* ─────────────────────────────────────────────────────────────────────────
-   FINN AURA — نفس حركة اللمعان/الإشعاع في بطاقة فن تُطبَّق على كل
+   SADEED AURA — نفس حركة اللمعان/الإشعاع في بطاقة فن تُطبَّق على كل
    الأيقونات والبطاقات، بلون كل عنصر (--hx-ic) وبإيقاع فن نفسه.
    ───────────────────────────────────────────────────────────────────────── */
 
-@keyframes finn-aura-breathe {
+@keyframes sadeed-aura-breathe {
   0%,
   100% {
     box-shadow:
@@ -5181,7 +5181,7 @@ html.dark .nx-holo-noise {
   animation:
     sec-grid-scan 3.2s linear infinite,
     hx-edge-chroma-fast 2s ease-in-out infinite,
-    finn-aura-breathe 3.2s ease-in-out infinite !important;
+    sadeed-aura-breathe 3.2s ease-in-out infinite !important;
   animation-play-state: running !important;
 }
 
@@ -5191,7 +5191,7 @@ html.dark .nx-holo-noise {
   animation:
     sec-grid-scan 2.6s linear infinite,
     hx-edge-chroma-fast 1.8s ease-in-out infinite,
-    finn-aura-breathe 2.6s ease-in-out infinite !important;
+    sadeed-aura-breathe 2.6s ease-in-out infinite !important;
   animation-play-state: running !important;
 }
 
@@ -5248,20 +5248,20 @@ html.dark .nx-holo-noise {
 
 /* حدّ البطاقة نفسها: نبضة أوسع قليلًا فلا تزاحم البلاطات */
 
-/* ── FINN card: static by owner directive — no motion of any kind ───── */
+/* ── SADEED card: static by owner directive — no motion of any kind ───── */
 /* ============================================================
-   FINN card — modern digital background (decorative layers only)
+   SADEED card — modern digital background (decorative layers only)
    Text and controls keep their exact positions: every layer is
    absolutely positioned, aria-hidden, pointer-events: none, z-0.
    ============================================================ */
 
-.finn-tech-code {
+.sadeed-tech-code {
   overflow: hidden;
   mask-image: radial-gradient(120% 95% at 50% 40%, #000 30%, transparent 82%);
   opacity: 0.55;
 }
 
-.finn-tech-scan {
+.sadeed-tech-scan {
   background: linear-gradient(
     100deg,
     transparent 38%,
@@ -5271,18 +5271,18 @@ html.dark .nx-holo-noise {
     transparent 62%
   );
   background-size: 240% 100%;
-  animation: finn-tech-sweep 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: sadeed-tech-sweep 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   mix-blend-mode: screen;
 }
 
-.finn-tech-noise {
+.sadeed-tech-noise {
   background-image: radial-gradient(rgba(255, 255, 255, 0.35) 0.6px, transparent 0.7px);
   background-size: 7px 7px;
   opacity: 0.06;
-  animation: finn-tech-noise-flicker 1.6s steps(3, end) infinite;
+  animation: sadeed-tech-noise-flicker 1.6s steps(3, end) infinite;
 }
 
-@keyframes finn-tech-sweep {
+@keyframes sadeed-tech-sweep {
   0% {
     background-position: 140% 0;
     opacity: 0;
@@ -5299,7 +5299,7 @@ html.dark .nx-holo-noise {
   }
 }
 
-@keyframes finn-tech-noise-flicker {
+@keyframes sadeed-tech-noise-flicker {
   0%,
   100% {
     opacity: 0.05;
@@ -5997,7 +5997,7 @@ html.dark .nx-holo-noise {
 }
 
 /* هالة فِن — مخروط ألوان المناطق الأربع يدور خلف القلب ويشعّ من حوله. */
-.nx-bp-finn-halo {
+.nx-bp-sadeed-halo {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -6032,12 +6032,12 @@ html.dark .nx-holo-noise {
   }
 }
 
-.light .nx-bp-finn-halo {
+.light .nx-bp-sadeed-halo {
   opacity: 0.6;
 }
 
 /* زر فِن — شفاف فوق القلب؛ التمرير والتركيز يوقدان حلقته. */
-.nx-bp-finn-btn {
+.nx-bp-sadeed-btn {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -6049,13 +6049,13 @@ html.dark .nx-holo-noise {
   transition: box-shadow var(--nx-anim-fast) var(--nx-ease-out);
 }
 
-.nx-bp-finn-btn:hover {
+.nx-bp-sadeed-btn:hover {
   box-shadow:
     0 0 0 2px color-mix(in srgb, var(--tone-cyan) 80%, transparent),
     0 0 28px color-mix(in srgb, var(--tone-cyan) 60%, transparent);
 }
 
-.nx-bp-finn-btn:focus-visible {
+.nx-bp-sadeed-btn:focus-visible {
   outline: 2px solid var(--tone-cyan);
   outline-offset: 3px;
 }
@@ -6228,7 +6228,7 @@ html.dark .nx-holo-noise {
   scale: 0.97;
 }
 
-.nx-bp-finn-btn:active {
+.nx-bp-sadeed-btn:active {
   scale: 0.97;
 }
 
@@ -6248,7 +6248,7 @@ html.dark .nx-holo-noise {
   .nx-bp-orbit--a,
   .nx-bp-ribbon,
   .nx-bp-beam,
-  .nx-bp-finn-halo,
+  .nx-bp-sadeed-halo,
   .nx-bp-arc-tip {
     animation: none !important;
   }
@@ -6265,7 +6265,7 @@ html.dark .nx-holo-noise {
   .nx-bp-aurora,
   .nx-bp-halo,
   .nx-bp-beam,
-  .nx-bp-finn-halo {
+  .nx-bp-sadeed-halo {
     display: none;
   }
 
@@ -6288,7 +6288,7 @@ html.dark .nx-holo-noise {
   .nx-bp-orbit,
   .nx-bp-ribbon,
   .nx-bp-beam,
-  .nx-bp-finn-halo,
+  .nx-bp-sadeed-halo,
   .nx-hv,
   .nx-bp-panel::after {
     display: none;

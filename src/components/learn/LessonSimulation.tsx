@@ -2,7 +2,7 @@
  * LessonSimulation — routes to the correct simulation for a lesson's kind.
  */
 import type { SimulationKind, Bilingual } from "@/lib/learn/types";
-import { MeetFinnSimulation } from "./simulations/MeetFinnSimulation";
+import { MeetSadeedSimulation } from "./simulations/MeetSadeedSimulation";
 import { DecisionScenarioSimulation } from "./simulations/DecisionScenarioSimulation";
 import { DigitalTwinSimulation } from "./simulations/DigitalTwinSimulation";
 import { KnowledgeGraphSimulation } from "./simulations/KnowledgeGraphSimulation";
@@ -18,7 +18,12 @@ interface Props {
 export function LessonSimulation({ slug, lang, kind, suggested, onCompleted }: Props) {
   if (kind === "meet_aria") {
     return (
-      <MeetFinnSimulation slug={slug} lang={lang} suggested={suggested} onCompleted={onCompleted} />
+      <MeetSadeedSimulation
+        slug={slug}
+        lang={lang}
+        suggested={suggested}
+        onCompleted={onCompleted}
+      />
     );
   }
   if (kind === "decision_scenario") {

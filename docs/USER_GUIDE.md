@@ -24,13 +24,13 @@ Email/password or Google. First sign-in seeds your personal executive dataset au
 | `/governance`, `/transformation`, `/outcomes` | Enterprise programs                                            |
 | `/observability`                              | Audit + AI usage (admin)                                       |
 
-## FINN Copilot
+## SADEED Copilot
 
 Click the chat icon or open `/assistant`. Supports Arabic and English, streaming, and pulls live context from your Fabric.
 
 ## Voice
 
-`/voice` — speak to FINN (STT) and have it read replies aloud (TTS), Arabic + English.
+`/voice` — speak to SADEED (STT) and have it read replies aloud (TTS), Arabic + English.
 
 ## Shortcuts
 

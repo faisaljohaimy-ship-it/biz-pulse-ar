@@ -26,16 +26,16 @@ check:secrets check:deadcode format`. No script was invented.
 
 The brief names `/sec/kpi` and `/sec/projects`. **Neither exists.** The repo
 ships **328 non-API routes**; the real equivalents are `/sec`, `/projects`,
-`/risk`, `/finn`. The audit ran against `/`, `/projects`, `/risk`, `/finn`, `/sec`.
+`/risk`, `/sadeed`. The audit ran against `/`, `/projects`, `/risk`, `/sadeed`, `/sec`.
 
 ## Key files
 
 - App shell / nav: `src/components/app-shell.tsx`, `src/components/nav/HomeTopNav.tsx`,
   `src/components/cockpit/navigation.tsx`, `src/components/sec/sec-shell.tsx`
 - Home: `src/routes/index.tsx`, `src/components/home/FourRegionHub.tsx`
-- سَدِيد: `src/components/finn-core/FinnCopilot.tsx`, `src/components/home/FinnLiveHologram.tsx`
-- 3D: `SectorGlobeScene.tsx`, `RegionGlobeScene.tsx`, `FinnLiveHologram.tsx`,
-  `digital-humans/r3f/FinnScene.tsx`
+- سَدِيد: `src/components/sadeed-core/SadeedCopilot.tsx`, `src/components/home/SadeedLiveHologram.tsx`
+- 3D: `SectorGlobeScene.tsx`, `RegionGlobeScene.tsx`, `SadeedLiveHologram.tsx`,
+  `digital-humans/r3f/SadeedScene.tsx`
 
 ## Measured baseline
 
@@ -52,7 +52,7 @@ ships **328 non-API routes**; the real equivalents are `/sec`, `/projects`,
 | Horizontal overflow               | 0 (already clean — a pre-existing `overflow-x: hidden` guard)                                    |
 | WebGL capability detection        | **absent** — `canUseWebGL` in 0 files; 4 unguarded `<Canvas>` mounts                             |
 | Supabase health truthfulness      | **misleading** — «الأنظمة متصلة» hard-coded at `FourRegionHub.tsx:258`, independent of any probe |
-| Identity strings                  | ARIA 48 · SADEED 253 · NEEXIOS 1 · "Nexus AI OS" 37 · «FINN جاهزة» 2 · «FINN الموحّدة» 2         |
+| Identity strings                  | ARIA 48 · SADEED 253 · NEEXIOS 1 · "Nexus AI OS" 37 · «SADEED جاهزة» 2 · «SADEED الموحّدة» 2     |
 | Global reduced-motion honouring   | absent                                                                                           |
 | Global focus-visible ring         | absent                                                                                           |
 | Touch-target floor                | none — no global rule at any breakpoint                                                          |

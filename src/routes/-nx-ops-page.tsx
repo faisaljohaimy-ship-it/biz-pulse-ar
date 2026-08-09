@@ -3,7 +3,7 @@
  *
  * المرجعان المعتمدان من المالك (٢٠٢٦/٠٨/٠٤): غرفة عمليات بخطوط بيانات
  * نابضة تصل قلبًا مركزيًّا بفرق متوهّجة، وغرفٌ مرسومة يسكنها وكلاء
- * يعملون. الترجمة هنا بهوية سَدِيد: FINN التنفيذي قلبُ المسرح، وعشرة
+ * يعملون. الترجمة هنا بهوية سَدِيد: SADEED التنفيذي قلبُ المسرح، وعشرة
  * وكلاء متخصصون غرفُه، وخط القرارات شريطه السفلي.
  *
  * انضباط الحركة انضباط Remotion نفسه: منحنى واحد `--nx-ease-out`
@@ -227,16 +227,18 @@ export function NxOpsPage() {
    * المساعد قلب المسرح؛ البقية غرفه. الاسم هو المفتاح لا الترتيب.
    *
    * يقبل المطابِق الاسمين معًا عمدًا: العرض صار «سَدِيد» بقرار المالك
-   * ٢٠٢٦/٠٨/٠٩، لكن صفوف القاعدة الحيّة ما زالت تحمل «FINN التنفيذي» حتى
+   * ٢٠٢٦/٠٨/٠٩، لكن صفوف القاعدة الحيّة ما زالت تحمل «SADEED التنفيذي» حتى
    * تُرحَّل. لو طابق الاسم الجديد وحده لاختفى القلب من المسرح على الإنتاج
    * ولظهرت أحد عشر غرفة بلا مركز — عطلٌ صامت لا يلتقطه tsc ولا الاختبار.
    */
-  const { finn, rooms, maxDone } = useMemo(() => {
+  const { sadeed, rooms, maxDone } = useMemo(() => {
     const agents = (data?.agents ?? []) as OpAgent[];
-    const head = agents.find((a) => /FINN|سديد|سَدِيد/i.test(a.name_ar));
+    // الأسماء الثلاثة معًا: صفوف القاعدة الحيّة ما زالت تحمل «FINN» — كسر
+    // المعرّفات ٢٠٢٦/٠٨/٠٩ لم يمسّ صفًّا واحدًا في القاعدة.
+    const head = agents.find((a) => /SADEED|FINN|سديد|سَدِيد/i.test(a.name_ar));
     const rest = agents.filter((a) => a !== head);
     return {
-      finn: head,
+      sadeed: head,
       rooms: rest,
       maxDone: rest.reduce((m, a) => Math.max(m, a.done_today ?? 0), 0),
     };
@@ -297,11 +299,11 @@ export function NxOpsPage() {
             لا هياكل شبحية تدور بلا نهاية (المادة ٢٧). */}
         {isError ? <OpsFailure ar={ar} onRetry={() => void refetch()} /> : null}
 
-        {/* ── قلب المسرح: FINN التنفيذي ───────────────────────────── */}
+        {/* ── قلب المسرح: SADEED التنفيذي ───────────────────────────── */}
         {!isError && (
           <>
             <section className="nx-op-enter mt-6" style={{ ["--op-i" as string]: 1 }}>
-              <article className="nx-op-core" data-state={finn?.status ?? "idle"}>
+              <article className="nx-op-core" data-state={sadeed?.status ?? "idle"}>
                 <span aria-hidden className="nx-op-core-ring nx-op-core-ring--a" />
                 <span aria-hidden className="nx-op-core-ring nx-op-core-ring--b" />
                 <div className="nx-op-core-crown" aria-hidden>
@@ -317,20 +319,20 @@ export function NxOpsPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <h2 className="nx-op-core-name">{finn?.name_ar ?? "سَدِيد التنفيذي"}</h2>
-                    <span className="nx-op-status" data-state={finn?.status ?? "idle"}>
+                    <h2 className="nx-op-core-name">{sadeed?.name_ar ?? "سَدِيد التنفيذي"}</h2>
+                    <span className="nx-op-status" data-state={sadeed?.status ?? "idle"}>
                       <i aria-hidden />
-                      {finn ? (ar ? STATUS_AR[finn.status] : STATUS_EN[finn.status]) : dash}
+                      {sadeed ? (ar ? STATUS_AR[sadeed.status] : STATUS_EN[sadeed.status]) : dash}
                     </span>
                   </div>
                   <p className="nx-op-core-task">
-                    {finn?.task_ar ?? (ar ? "بانتظار مهمة" : "awaiting task")}
+                    {sadeed?.task_ar ?? (ar ? "بانتظار مهمة" : "awaiting task")}
                   </p>
                 </div>
                 <div className="nx-op-core-side">
-                  <b>{finn?.done_today ?? dash}</b>
+                  <b>{sadeed?.done_today ?? dash}</b>
                   <span>{ar ? "منجز اليوم" : "done today"}</span>
-                  <Link to="/finn" className="nx-op-cta">
+                  <Link to="/sadeed" className="nx-op-cta">
                     {ar ? "فتح مركز القيادة" : "Open command"}
                   </Link>
                 </div>

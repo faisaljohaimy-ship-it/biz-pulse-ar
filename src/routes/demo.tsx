@@ -106,7 +106,7 @@ function DemoCenter() {
           </p>
         </div>
 
-        {/* Guided executive presentation — FINN narrates, previews follow. */}
+        {/* Guided executive presentation — SADEED narrates, previews follow. */}
         <div className="mt-10">
           <ExecutivePresentationPlayer />
         </div>

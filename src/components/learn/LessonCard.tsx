@@ -1,6 +1,6 @@
 /**
  * LessonCard — catalog card for a single lesson.
- * Uses semantic tokens sparingly; primary surface uses the FINN HUD palette
+ * Uses semantic tokens sparingly; primary surface uses the SADEED HUD palette
  * (bg #04111F / cyan #00D4FF) to remain visually consistent with the platform.
  */
 import { Link } from "@tanstack/react-router";

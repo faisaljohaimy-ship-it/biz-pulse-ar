@@ -3,7 +3,7 @@
  *
  * Auto-plays through recorded frames of a past incident with a scrub bar
  * and status pill, so an executive can *see* how an event unfolded and
- * where FINN intervened. Reusable via `cockpit-content.ts`.
+ * where SADEED intervened. Reusable via `cockpit-content.ts`.
  */
 import { useEffect, useState } from "react";
 import { Pause, Play, RotateCcw } from "lucide-react";

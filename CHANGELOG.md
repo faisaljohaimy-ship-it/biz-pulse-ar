@@ -16,8 +16,8 @@ All notable changes to NEXIOS AI OS.
   fallback, and sentence-aware chunking so long execution summaries continue
   reliably without clipping.
 - Kept every call behind the shared audio arbiter: ungoverned browser speech is
-  blocked, specialist speech cannot interrupt FINN, and FINN can safely preempt
-  a specialist. FINN remains exclusively on her ElevenLabs identity.
+  blocked, specialist speech cannot interrupt SADEED, and SADEED can safely preempt
+  a specialist. SADEED remains exclusively on her ElevenLabs identity.
 - Removed `/api/agents/tts` and its provider secret/deployment dependency, while
   retaining actual-result narration, persistent mute, and animated lip cadence.
 
@@ -29,23 +29,23 @@ All notable changes to NEXIOS AI OS.
   with purpose-built mobile, tablet, and desktop WebP crops, responsive source
   selection, priority loading, readability lighting, and a seamless greeting-
   film crossfade instead of stretching one image across every display.
-- Voice-enabled all eleven Digital Humans. FINN keeps her canonical ElevenLabs
+- Voice-enabled all eleven Digital Humans. SADEED keeps her canonical ElevenLabs
   identity, while the ten specialist agents use an authenticated, rate-limited,
   server-governed speech route with fixed per-agent voices and instructions.
 - Connected agent speech to real work: manual and realtime runs announce their
   actual status and returned summary, preserve the underlying execution, expose
   a persistent mute control, and never narrate invented progress.
 - Added a shared audio priority arbiter so specialist speech cannot overlap or
-  interrupt FINN, and prevented provider calls before a genuine browser gesture.
+  interrupt SADEED, and prevented provider calls before a genuine browser gesture.
 - Added contract coverage for all agents, voice ownership, audio priority,
   responsive image sources, endpoint authorization, and server-side voice
   locking. The Hajj platform remains outside this release and unchanged.
 
 ## [1.4.0] — 2026-07-16
 
-### Attachment security, one FINN, and release integrity
+### Attachment security, one SADEED, and release integrity
 
-- Moved FINN attachments through a service-role-only quarantine bucket before
+- Moved SADEED attachments through a service-role-only quarantine bucket before
   promotion, added real signature/MIME/extension validation, executable and
   active-content blocking, Office macro/path/decompression-bomb inspection,
   EICAR detection, content hashing, and a privacy-minimal scan ledger.
@@ -56,7 +56,7 @@ All notable changes to NEXIOS AI OS.
   method-preserving compatibility redirect, and removed the separate Digital
   Twin and legacy assistant conversation/voice runtimes. Historical assistant
   links, the former `/aria` console, and learning dialogs now open the single
-  root-mounted FINN surface; command-center voice state reads that runtime
+  root-mounted SADEED surface; command-center voice state reads that runtime
   instead of animating a parallel simulated assistant.
 - Made Cloudflare deployment callable only from the successful CI workflow
   after unit, type, lint, production audit, authenticated security E2E, build,
@@ -70,12 +70,12 @@ All notable changes to NEXIOS AI OS.
 ### Identity, open presentation, and production governance
 
 - Introduced NEXIOS Identity System 4.0 across public, activation, window,
-  sidebar, mobile-header, and FINN surfaces with spatial glass, restrained
+  sidebar, mobile-header, and SADEED surfaces with spatial glass, restrained
   living light, responsive depth, and reduced-motion equivalents.
 - Moved credentials behind an open executive presentation and explicit
   transition acceptance. Visitors can assess the system without an account;
   protected routes and data still require real authentication and RLS.
-- Replaced direct FINN email/SMS execution with durable drafts, exact previews,
+- Replaced direct SADEED email/SMS execution with durable drafts, exact previews,
   content-bound ten-minute approval tokens, one-time atomic dispatch, encrypted
   payloads, masked recipients, and signed Twilio/Resend delivery webhooks.
 - Added database retention enforcement for outbound encrypted content and
@@ -88,7 +88,7 @@ All notable changes to NEXIOS AI OS.
 - Added a fail-closed PDPL readiness dimension covering controller identity,
   DPO/contact, residency, DPA register state, retention decisions, breach
   ownership, and legal approval without exposing their configured values.
-- Connected the public executive deck, decision queue, FINN recommendations,
+- Connected the public executive deck, decision queue, SADEED recommendations,
   and the first two command-bridge chapters to tenant-scoped live KPIs after
   authentication; anonymous presentation values remain visibly labelled demo
   data.
@@ -98,16 +98,16 @@ All notable changes to NEXIOS AI OS.
 
 ## [1.2.0] — 2026-07-15
 
-### FINN Executive Command Bridge
+### SADEED Executive Command Bridge
 
 - Rebuilt the public Executive Command Bridge as a complete seven-chapter,
   Arabic-first board-room story spanning command pulse, governed decisions,
-  regional operations, the FINN agent council, the operational twin,
+  regional operations, the SADEED agent council, the operational twin,
   sovereign trust, and a 90-day activation path.
 - Added dedicated Arabic and English executive narration scripts for every
-  chapter, synthesized through FINN's canonical ElevenLabs identity only after
+  chapter, synthesized through SADEED's canonical ElevenLabs identity only after
   an explicit user gesture.
-- Unified chapter and full-tour playback behind the global FINN audio arbiter,
+- Unified chapter and full-tour playback behind the global SADEED audio arbiter,
   with real media progress, preemption safety, visible voice state, animated
   waveform feedback, and honest failure when the voice provider is unavailable.
 - Restored the promised seven-scene contract, applied the exact four regional
@@ -116,12 +116,12 @@ All notable changes to NEXIOS AI OS.
 
 ## [1.1.0] — 2026-07-15
 
-### Spatial windows and FINN action channels
+### Spatial windows and SADEED action channels
 
 - Replaced the shared dialog, sheet, drawer, menu, popover, card, tooltip, and
   form primitives with one responsive glass-window language, animated light
   rails, clearer focus states, and reduced-motion fallbacks.
-- Rebuilt FINN's copilot surface with a spatial glass frame, an explicit voice,
+- Rebuilt SADEED's copilot surface with a spatial glass frame, an explicit voice,
   email, SMS, and file action rail, live tool-result cards, and a more visible
   multimodal upload path.
 - Added role-gated email delivery through Outlook or Resend and SMS/MMS delivery
@@ -136,7 +136,7 @@ All notable changes to NEXIOS AI OS.
 
 ### Cinematic welcome film
 
-- Replaced the global pre-system welcome with the supplied 64.62-second FINN film.
+- Replaced the global pre-system welcome with the supplied 64.62-second SADEED film.
 - Added a self-hosted, fast-start H.264/AAC source and a matching WebP first-paint poster.
 - Preserved sound recovery, mute, skip, reduced-motion entry, and responsive portrait framing.
 - Raised the hard playback cap to 72 seconds and versioned the session guard so the new film is shown once to existing sessions.
@@ -155,7 +155,7 @@ All notable changes to NEXIOS AI OS.
 
 ### Executive presentation
 
-- Replaced the remote narrator dependency with the supplied 46.85-second FINN executive film.
+- Replaced the remote narrator dependency with the supplied 46.85-second SADEED executive film.
 - Added a web-optimized, fast-start H.264/AAC source, WebP poster, and bilingual chapter track.
 - Re-timed all executive showcase surfaces to one canonical six-chapter media contract.
 - Added cinematic framing, responsive portrait presentation, graceful media fallback, and accessible custom controls.
@@ -169,7 +169,7 @@ All notable changes to NEXIOS AI OS.
 - Added executive role gates, fail-closed rate limits, lead abuse controls, and privacy-safe logging.
 - Replaced vulnerable `xlsx` with the maintained `@e965/xlsx` alias; production audit is clean.
 - Removed the deprecated unused HeyGen SDK and disabled paid token minting until LiveAvatar support exists.
-- Added the interactive 44-control FINN command-center artwork, exact regional colors, active-region glow, and transparent 3D region selector.
+- Added the interactive 44-control SADEED command-center artwork, exact regional colors, active-region glow, and transparent 3D region selector.
 - Normalized integration status reporting, Power BI credential testing, role names, deployment docs, and GitHub workflows.
 
 ## [1.0.0] — 2026-06-30
@@ -187,7 +187,7 @@ All notable changes to NEXIOS AI OS.
 - Living Executive Narrator + Digital Humans platform (R3F fallback).
 - Multi-tenant org isolation across 50+ tables with RESTRICTIVE RLS.
 - Public API surface: `/api/public/health`, `/api/public/version`, `/api/public/hooks/run-agent`.
-- ElevenLabs TTS/STT for FINN + executive agent voices.
+- ElevenLabs TTS/STT for SADEED + executive agent voices.
 - Emergency Response Framework skill + Industrial Security Policy (IS-001 to IS-012).
 - Tool Runner v2 with schema-driven validation and payload previews.
 - Charter v10.0 enforcement: zero fabrication, every claim runtime-backed.

@@ -1,4 +1,4 @@
-// Auto-split from oms.functions.ts — timeline, activity, KPIs, FINN analysis,
+// Auto-split from oms.functions.ts — timeline, activity, KPIs, SADEED analysis,
 // executive review, attachments, and list queries. Re-exported by oms.functions.
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -116,11 +116,11 @@ export const getOmsKpis = createServerFn({ method: "GET" })
   });
 
 // ============================================================================
-// FINN — operational analysis stub (calls existing AI Gateway later;
+// SADEED — operational analysis stub (calls existing AI Gateway later;
 // here we return a heuristic recommendation built from incident state)
 // ============================================================================
 
-export const finnAnalyzeIncident = createServerFn({ method: "POST" })
+export const sadeedAnalyzeIncident = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ incident_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
@@ -131,8 +131,8 @@ export const finnAnalyzeIncident = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    const { finnAnalyseIncident } = await import("./oms-finn.server");
-    const analysis = await finnAnalyseIncident({
+    const { sadeedAnalyseIncident } = await import("./oms-sadeed.server");
+    const analysis = await sadeedAnalyseIncident({
       ref: inc.ref,
       category: inc.category,
       title_ar: inc.title_ar,

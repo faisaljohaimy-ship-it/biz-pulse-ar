@@ -68,7 +68,7 @@ export interface RegionSnapshot {
   recommendationAr: string;
 }
 
-export interface FinnSnapshot {
+export interface SadeedSnapshot {
   status: "connected" | "disconnected" | "busy" | "not-configured";
   recommendationAr: string;
   recommendationRegionId: RegionId;
@@ -114,7 +114,7 @@ export interface CockpitSnapshot {
   runtimeFlow: readonly RuntimeStageInfo[];
   metrics: readonly MetricValue[];
   regions: readonly RegionSnapshot[];
-  finn: FinnSnapshot;
+  sadeed: SadeedSnapshot;
   capabilities: readonly CapabilityInfo[];
   events: readonly CockpitEvent[];
   notifications: readonly NotificationItem[];
@@ -385,7 +385,7 @@ function buildSnapshot(): CockpitSnapshot {
       },
     ],
     regions: buildRegions(),
-    finn: {
+    sadeed: {
       status: "connected",
       recommendationAr: REGION_SEED.eastern.recommendationAr,
       recommendationRegionId: "eastern",

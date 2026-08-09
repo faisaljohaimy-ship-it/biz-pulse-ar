@@ -64,7 +64,7 @@ describe("secret guard — credential content", () => {
   it("skips lockfiles, the guard itself, and binary assets", () => {
     expect(shouldSkipContent("package-lock.json")).toBe(true);
     expect(shouldSkipContent("scripts/check-secrets.mjs")).toBe(true);
-    expect(shouldSkipContent("public/finn.webp")).toBe(true);
+    expect(shouldSkipContent("public/sadeed.webp")).toBe(true);
     expect(shouldSkipContent("src/lib/foo.ts")).toBe(false);
   });
 });

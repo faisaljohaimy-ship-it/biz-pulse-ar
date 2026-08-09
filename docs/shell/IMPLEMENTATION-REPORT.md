@@ -24,7 +24,7 @@
 
 ## Compliance with the mandate
 
-- **Core untouched** — `git diff` outside `src/finn/adaptive-shell/population/`
+- **Core untouched** — `git diff` outside `src/sadeed/adaptive-shell/population/`
   shows only one additive export line in the shell's own index. Runtime
   contracts, Executive Runtime, Phase-1 registries and the NDK are
   byte-identical.

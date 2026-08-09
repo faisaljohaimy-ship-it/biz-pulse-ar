@@ -34,7 +34,7 @@ block in `src/styles.css`.**
 --nx-loop-pulse-sector: 4s;    /* region halos */
 --nx-loop-shimmer:      2s;    /* skeleton sweep */
 --nx-loop-ambient:      8s;    /* holographic drift */
---nx-loop-dots:         1.2s;  /* FINN thinking dot wave (v1.0.1 amendment) */
+--nx-loop-dots:         1.2s;  /* SADEED thinking dot wave (v1.0.1 amendment) */
 --nx-loop-dash:         3s;    /* twin energy-flow dash drift (v1.0.1 amendment) */
 --nx-loop-ticker:       linear, speed 24px/s;  /* event ticker */
 ```
@@ -82,7 +82,7 @@ interruptible mid-flight (drags, dismissable sheets); otherwise use duration tok
 | `nx-breathe`      | glow/opacity 60%↔100%                  | presence loops                  |
 | `nx-pulse-ring`   | ring scale 1→1.15 + fade, ×2 then stop | critical alerts                 |
 | `nx-shimmer`      | gradient sweep RTL (right→left)        | skeletons                       |
-| `nx-dot-wave`     | 3 dots stagger-bounce (opacity only)   | FINN thinking                   |
+| `nx-dot-wave`     | 3 dots stagger-bounce (opacity only)   | SADEED thinking                 |
 | `nx-sweep`        | light band traverse                    | holographic (doc 05)            |
 | `nx-count`        | numeric interpolation                  | KPI (JS-driven)                 |
 | `nx-ticker-track` | seamless track translate (−50%)        | event ticker (v1.0.1 amendment) |

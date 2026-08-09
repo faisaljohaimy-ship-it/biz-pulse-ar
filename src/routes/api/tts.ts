@@ -1,7 +1,7 @@
 /**
  * Deprecated compatibility route.
  *
- * FINN has one authenticated voice runtime at `/api/finn/tts`. A permanent
+ * SADEED has one authenticated voice runtime at `/api/sadeed/tts`. A permanent
  * method-preserving redirect keeps older clients functional without owning a
  * second voice, rate-limit, or provider implementation.
  */
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/api/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const target = new URL("/api/finn/tts", request.url);
+        const target = new URL("/api/sadeed/tts", request.url);
         return new Response(null, {
           status: 308,
           headers: {

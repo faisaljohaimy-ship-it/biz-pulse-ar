@@ -165,7 +165,7 @@ const NODES: TwinNode[] = [
     angle: 60,
     icon: Brain,
     tone: "#c4b5fd",
-    route: "/finn",
+    route: "/sadeed",
     kpi_ar: "إشارة",
     kpi_en: "signals",
     value: "318",
@@ -655,7 +655,7 @@ function DigitalTwinPage() {
             : "Predictions"}
       </button>
 
-      {/* The single global FinnCopilot is mounted by __root.tsx. */}
+      {/* The single global SadeedCopilot is mounted by __root.tsx. */}
 
       {/* Keyframes */}
       <style>{`

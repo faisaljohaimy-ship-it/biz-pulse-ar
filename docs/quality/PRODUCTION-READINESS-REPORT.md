@@ -27,7 +27,7 @@ not yet adopted the Nx library (adoption was constitutionally out of Phase-4 sco
 | #   | Finding                                                                                                                            | Category      | Fix                                                                                                    | Verified          |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------ | ----------------- |
 | 1   | `NxTwinLink` used a raw `3s` animation duration + injected an inline `<style>` per render (duplicate style elements under N links) | Motion / DRY  | keyframes moved into the closed vocabulary (`nx-tokens.css`), duration → new `--nx-loop-dash` token    | ✓ tests + scan    |
-| 2   | FINN thinking dots used raw `1.2s`                                                                                                 | Motion        | → new `--nx-loop-dots` token; motion doc 03 amended (v1.0.1, per the amendment process)                | ✓                 |
+| 2   | SADEED thinking dots used raw `1.2s`                                                                                               | Motion        | → new `--nx-loop-dots` token; motion doc 03 amended (v1.0.1, per the amendment process)                | ✓                 |
 | 3   | `NxAnimatedKpi` hardcoded `400` ms                                                                                                 | Motion        | reads `--nx-anim-count` computed value (fallback 400) — reduced-motion token remap now guards it twice | ✓                 |
 | 4   | Inline-style loop animations (dots, dash) escaped the class-based reduced-motion pause selectors                                   | Accessibility | `data-nx-loop` pause hook added to the media-query block and both components                           | ✓ + new axe sweep |
 
@@ -41,14 +41,14 @@ intelligence imports no execution surface; Adaptive Shell + NDK import zero Core
 modules; no engine→kernel cycles in orchestration/OS; Nx components import no runtime
 (presentation-only). Full runtime chain boots in tests (OS seven-stage sequence → four
 layers → READY). 294 runtime/shell tests + 22 OS tests green. No drift: frozen layers
-byte-identical this phase (`git diff src/finn src/lib/finn/output` empty).
+byte-identical this phase (`git diff src/sadeed src/lib/sadeed/output` empty).
 
 **02 · Design Constitution compliance — 10/10** (implemented surface). Zero raw hex,
 zero physical-direction utilities, zero `dark:` variants, zero TODO/placeholder in
 `nx/**` and tokens. Single-gold law structurally enforced (one `executive` variant).
 
 **03 · Component Library — consistent, partial coverage.** Every implemented component
-(buttons, panel, cards, KPI set, loading, empty/error, FINN presence, twin primitives)
+(buttons, panel, cards, KPI set, loading, empty/error, SADEED presence, twin primitives)
 matches its spec table; **one definition per concept** (duplicate scan: 1 each).
 Unimplemented specs (inputs/tables/nav/modals/notifications/timelines) are documented
 gaps, not inconsistencies — nothing ships half-specified.

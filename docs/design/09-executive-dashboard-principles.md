@@ -28,9 +28,9 @@ RTL Z-path: top-right (hero verdict) → top-left (hero context/delta) → sweep
 (supporting panels) → bottom-left (deep links, provenance). Panel order follows the
 executive's mental question sequence:
 
-**هل أنا بخير؟ → أين الانحراف؟ → لماذا؟ → ماذا تنصح يا FINN؟ → ماذا أقرر؟**
+**هل أنا بخير؟ → أين الانحراف؟ → لماذا؟ → ماذا تنصح يا SADEED؟ → ماذا أقرر؟**
 
-(Am I fine? → Where is the deviation? → Why? → What does FINN advise? → What do I decide?)
+(Am I fine? → Where is the deviation? → Why? → What does SADEED advise? → What do I decide?)
 
 Every dashboard must be walkable in that exact order without a single backtrack. A layout
 that forces the eye to jump back up violates this chapter.
@@ -54,12 +54,12 @@ beyond that, numbers stop being read and start being wallpaper.
 
 Decision anatomy on every dashboard (mirrors the Executive Intelligence decision model):
 
-| Zone                   | Content                     | Card                     |
-| ---------------------- | --------------------------- | ------------------------ |
-| الوضع Situation        | hero KPI/verdict            | Executive Card           |
-| الدليل Evidence        | trends, comparisons         | Analytics Cards          |
-| التوصية Recommendation | FINN's advice + confidence  | FINN Card                |
-| البوابة Gate           | human approval, gold-marked | FINN Card (gate variant) |
+| Zone                   | Content                      | Card                       |
+| ---------------------- | ---------------------------- | -------------------------- |
+| الوضع Situation        | hero KPI/verdict             | Executive Card             |
+| الدليل Evidence        | trends, comparisons          | Analytics Cards            |
+| التوصية Recommendation | SADEED's advice + confidence | SADEED Card                |
+| البوابة Gate           | human approval, gold-marked  | SADEED Card (gate variant) |
 
 The gate is always last in reading order and always explicit — the constitution's visual
 guarantee of the architecture's "no auto-execution" law.

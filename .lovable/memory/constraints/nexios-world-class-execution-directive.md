@@ -36,9 +36,9 @@ SRP, Open/Closed, DI, composition over inheritance, feature isolation, server-fi
 
 Executive AI command center: premium, minimal, elegant, futuristic, fast, responsive, accessible. Every screen presentation-ready. Every animation intentional. Every transition cinematic.
 
-## FINN Requirements
+## SADEED Requirements
 
-FINN is the operating intelligence of NEXIOS. Continuously improve: reasoning, orchestration, planning, executive reporting, multilingual support, voice, avatar, memory, context awareness, recommendations, decision support, workflow automation. Never regress.
+SADEED is the operating intelligence of NEXIOS. Continuously improve: reasoning, orchestration, planning, executive reporting, multilingual support, voice, avatar, memory, context awareness, recommendations, decision support, workflow automation. Never regress.
 
 ## Performance Targets
 

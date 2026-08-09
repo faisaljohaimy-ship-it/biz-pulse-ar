@@ -6,12 +6,12 @@
 
 ## Component names
 
-- Prefix **`Nx`** + PascalCase noun: `NxButton`, `NxKpiNumber`, `NxFinnCard`,
+- Prefix **`Nx`** + PascalCase noun: `NxButton`, `NxKpiNumber`, `NxSadeedCard`,
   `NxApprovalModal`. The prefix marks "official library" — an un-prefixed component in a
   screen is by definition unofficial and a finding.
 - Category is implicit in the noun, never doubled: `NxTableAudit` ❌ → `NxAuditTable` ✅.
-- Domain-flavored components carry the domain first: `NxFinnCard`, `NxTwinPanel`,
-  `NxShellMenu` — domain prefixes are the closed set: `Finn`, `Runtime`, `Shell`,
+- Domain-flavored components carry the domain first: `NxSadeedCard`, `NxTwinPanel`,
+  `NxShellMenu` — domain prefixes are the closed set: `Sadeed`, `Runtime`, `Shell`,
   `Knowledge`, `Twin`, `Agent`, `Exec`.
 
 ## Variant & prop grammar
@@ -32,7 +32,7 @@
 ```
 src/components/nx/
   buttons/nx-button.tsx          → NxButton (all variants, one file)
-  cards/nx-finn-card.tsx
+  cards/nx-sadeed-card.tsx
   tables/nx-audit-table.tsx
   …one directory per library doc 01–13
 ```

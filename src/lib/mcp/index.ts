@@ -1,6 +1,6 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import pingTool from "./tools/ping";
-import askFinnTool from "./tools/ask-finn";
+import askSadeedTool from "./tools/ask-sadeed";
 import hcisStatusTool from "./tools/hcis-status";
 import ptwActiveTool from "./tools/ptw-active";
 import { BUILTIN_PROJECT_REF, isIssuerResolved, resolveIssuer } from "./project-ref";
@@ -32,14 +32,14 @@ const oauthIssuer = isIssuerResolved({
   : `https://${BUILTIN_PROJECT_REF}.supabase.co/auth/v1`;
 
 export default defineMcp({
-  name: "sadeed-finn-mcp",
-  title: "SADEED — FINN",
+  name: "sadeed-mcp",
+  title: "SADEED — SADEED",
   version: "0.1.0",
   instructions:
-    "MCP server for SADEED OS. Use `ping` to verify connectivity, `ask_finn` to query FINN (the Executive AI Engine) for bilingual (AR/EN) executive briefings, `hcis_status` for HCIS industrial-security compliance (overall/per-region % + critical findings), and `ptw_active_permits` for currently active digital work permits by region/type.",
+    "MCP server for SADEED OS. Use `ping` to verify connectivity, `ask_sadeed` to query SADEED (the Executive AI Engine) for bilingual (AR/EN) executive briefings, `hcis_status` for HCIS industrial-security compliance (overall/per-region % + critical findings), and `ptw_active_permits` for currently active digital work permits by region/type.",
   auth: auth.oauth.issuer({
     issuer: oauthIssuer,
     acceptedAudiences: "authenticated",
   }),
-  tools: [pingTool, askFinnTool, hcisStatusTool, ptwActiveTool],
+  tools: [pingTool, askSadeedTool, hcisStatusTool, ptwActiveTool],
 });

@@ -60,14 +60,14 @@ mean "warning". Context disambiguates: sector colors appear only beside sector n
 
 ## 5 · Layer palette (architectural strata)
 
-| Layer token            | Layer                             | HEX       | RGB         | HSL           |
-| ---------------------- | --------------------------------- | --------- | ----------- | ------------- |
-| `--nx-layer-runtime`   | **Runtime** (OS/kernel surfaces)  | `#00B8D9` | 0 184 217   | 189° 100% 43% |
-| `--nx-layer-shell`     | **Adaptive Shell** (skills/NDK)   | `#8B7CF6` | 139 124 246 | 247° 87% 73%  |
-| `--nx-layer-agent`     | **Agent Runtime** (FINN & agents) | `#00D4FF` | 0 212 255   | 191° 100% 50% |
-| `--nx-layer-knowledge` | **Knowledge**                     | `#4CC9F0` | 76 201 240  | 194° 85% 62%  |
-| `--nx-layer-twin`      | **Digital Twin**                  | `#22D3EE` | 34 211 238  | 188° 86% 53%  |
-| `--nx-layer-analytics` | **Analytics**                     | `#3B82F6` | 59 130 246  | 217° 91% 60%  |
+| Layer token            | Layer                               | HEX       | RGB         | HSL           |
+| ---------------------- | ----------------------------------- | --------- | ----------- | ------------- |
+| `--nx-layer-runtime`   | **Runtime** (OS/kernel surfaces)    | `#00B8D9` | 0 184 217   | 189° 100% 43% |
+| `--nx-layer-shell`     | **Adaptive Shell** (skills/NDK)     | `#8B7CF6` | 139 124 246 | 247° 87% 73%  |
+| `--nx-layer-agent`     | **Agent Runtime** (SADEED & agents) | `#00D4FF` | 0 212 255   | 191° 100% 50% |
+| `--nx-layer-knowledge` | **Knowledge**                       | `#4CC9F0` | 76 201 240  | 194° 85% 62%  |
+| `--nx-layer-twin`      | **Digital Twin**                    | `#22D3EE` | 34 211 238  | 188° 86% 53%  |
+| `--nx-layer-analytics` | **Analytics**                       | `#3B82F6` | 59 130 246  | 217° 91% 60%  |
 
 The shell violet is the one _new_ hue this constitution introduces (nothing existing uses
 violet, making the Adaptive Shell instantly recognizable). Layer colors are used for:

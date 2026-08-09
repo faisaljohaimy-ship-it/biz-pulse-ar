@@ -1,5 +1,5 @@
 /**
- * Server-function wrappers for the FINN Self-Evolution Engine.
+ * Server-function wrappers for the SADEED Self-Evolution Engine.
  *
  * - `runSelfEvolutionFn`: runs one analyze-only cycle and persists it to
  *   `finn_evolution_cycles` (unless `persist:false`).
@@ -11,7 +11,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requirePlatformAdmin } from "@/lib/authz.server";
-import { runSelfEvolution } from "@/lib/finn/self-evolution";
+import { runSelfEvolution } from "@/lib/sadeed/self-evolution";
 
 const RunInput = z
   .object({
@@ -31,7 +31,7 @@ export const runSelfEvolutionFn = createServerFn({ method: "POST" })
     let persistedId: string | null = null;
     let persistError: string | null = null;
     if (data?.persist !== false) {
-      const { persistEvolutionCycle } = await import("@/lib/finn/self-evolution/persist.server");
+      const { persistEvolutionCycle } = await import("@/lib/sadeed/self-evolution/persist.server");
       const out = await persistEvolutionCycle(report, "manual");
       if ("error" in out) persistError = out.error;
       else persistedId = out.id;

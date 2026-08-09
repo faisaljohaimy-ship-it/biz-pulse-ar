@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { generateText, tool, stepCountIs, type ToolSet } from "ai";
 import { z } from "zod";
-import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
+import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 import { getExecutor, listExecutorIds } from "./tool-registry.server";
 import { executeTool } from "./tool-orchestrator.server";
 import { audit } from "./audit.server";
@@ -386,9 +386,9 @@ export async function runAgent(
   );
 
   // 4) Run the bounded LLM loop.
-  let geminiRuntime: ReturnType<typeof resolveFinnGeminiRuntime>;
+  let geminiRuntime: ReturnType<typeof resolveSadeedGeminiRuntime>;
   try {
-    geminiRuntime = resolveFinnGeminiRuntime();
+    geminiRuntime = resolveSadeedGeminiRuntime();
   } catch {
     await failRun(supabase, runId, actorId, "SADEED Gemini provider missing");
     return {

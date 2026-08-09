@@ -2,7 +2,7 @@
  * Environment manifest + validator — one declarative source of truth for the
  * environment variables SADEED reads, grouped by the capability each powers.
  *
- * DOCTRINE (constitution: «FINN لا تتعطل»): the app is designed to DEGRADE, not
+ * DOCTRINE (constitution: «SADEED لا تتعطل»): the app is designed to DEGRADE, not
  * crash, when a key is absent — a missing provider key must never take the
  * whole surface down. So this module never throws at import/boot: it REPORTS.
  *  - validateEnv() returns a structured report (which capabilities are ready,
@@ -78,7 +78,7 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     ],
   },
   {
-    key: "finn-voice",
+    key: "sadeed-voice",
     labelAr: "صوت سَدِيد (ElevenLabs — هوية مقفلة)",
     requirement: "all",
     vars: [S("ELEVENLABS_API_KEY", "ElevenLabs — SADEED's exclusive voice")],
@@ -107,8 +107,8 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     labelAr: "توقيع اعتماد الرسائل (≥32 حرفًا)",
     requirement: "all",
     vars: [
-      S("FINN_MESSAGE_APPROVAL_SECRET", "Signs approval tokens; encrypts payloads"),
-      S("ARIA_MESSAGE_APPROVAL_SECRET", "Legacy alias of FINN_MESSAGE_APPROVAL_SECRET"),
+      S("SADEED_MESSAGE_APPROVAL_SECRET", "Signs approval tokens; encrypts payloads"),
+      S("ARIA_MESSAGE_APPROVAL_SECRET", "Legacy alias of SADEED_MESSAGE_APPROVAL_SECRET"),
     ],
   },
 ];

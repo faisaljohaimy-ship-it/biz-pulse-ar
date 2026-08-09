@@ -2,7 +2,7 @@
  * HomeVideoBackdrop — fullscreen static backdrop for the homepage.
  *
  * The permanent cinematic SADEED toroid over the Saudi command plateau.
- * The former gesture-gated FINN greeting film (home-bg.mp4) and its button
+ * The former gesture-gated SADEED greeting film (home-bg.mp4) and its button
  * were retired per directive; nothing here plays audio or motion.
  */
 import homeToroid from "@/assets/nexios-home-toroid.png.asset.json";

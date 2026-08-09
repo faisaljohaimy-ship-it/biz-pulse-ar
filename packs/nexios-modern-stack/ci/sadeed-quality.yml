@@ -1,0 +1,73 @@
+# ضعه في .github/workflows/sadeed-quality.yml
+# بوابة جودة وأمن — تكسر البناء، لا تكتفي بالتحذير.
+name: SADEED Quality Gate
+
+on:
+  pull_request:
+  push: { branches: [main] }
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: أسرار مسرّبة في كامل التاريخ
+        uses: gitleaks/gitleaks-action@v2
+
+      - name: منع service_role خارج المسار الخادمي
+        run: |
+          if grep -rn "service_role\|SERVICE_ROLE" src/ --include="*.ts" --include="*.tsx" \
+             | grep -v "^src/server/"; then
+            echo "::error::مفتاح خدمي في كود العميل — يتجاوز RLS وحارس الحدود"
+            exit 1
+          fi
+
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit
+      - name: صفر تحذير جديد داخل القشرة
+        run: bunx eslint src/sadeed/shell --max-warnings=0
+      - run: bunx knip || echo "::warning::knip لم يعمل — فحص نظافة، غير مانع للدفع"
+      - run: bun test
+
+  codeql:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with: { languages: javascript-typescript }
+      - uses: github/codeql-action/analyze@v3
+
+  rls:
+    # يفكّ أكبر مانع لديك: 27 تأكيد cross-org متخطّى
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+      - name: قاعدة مؤقتة + الهجرات (محلية في الـrunner — لا تمسّ الإنتاج)
+        run: |
+          supabase start
+          supabase db reset --local
+      - name: تأكيدات العزل — skipped = failed
+        run: bun test tests/rls --reporter=verbose
+        env:
+          SUPABASE_URL: http://localhost:54321
+          RLS_TESTS_REQUIRED: "true"
+
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: تقييم المخرجات
+        run: npx promptfoo@0.121.18 eval -c evals/promptfooconfig.yaml --fail-on-error
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: فريق أحمر — عند تغيّر القشرة
+        if: contains(github.event.pull_request.labels.*.name, 'shell')
+        run: npx promptfoo@0.121.18 redteam run -c evals/promptfooconfig.yaml

@@ -27,7 +27,7 @@ flowchart TB
     style P5 fill:#1a2436,stroke:#8b7cf6
 ```
 
-The population layer (`src/finn/adaptive-shell/population/`) **composes** the
+The population layer (`src/sadeed/adaptive-shell/population/`) **composes** the
 frozen Phase-1 schemas (a `SkillRecord` embeds the Phase-1 `SkillManifest`
 verbatim) and adds the governance the mandate demands. Nothing in Phase 1,
 the NDK, or any Core layer was modified — one additive export line joins the

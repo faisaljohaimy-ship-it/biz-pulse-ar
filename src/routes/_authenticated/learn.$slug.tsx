@@ -1,5 +1,5 @@
 /**
- * Executive lesson page — cinematic video, narration, FINN dialogue,
+ * Executive lesson page — cinematic video, narration, SADEED dialogue,
  * live simulation, executive summary, learning objectives, quiz, and nav.
  * Fully responsive, RTL/LTR safe, and progress-aware.
  */
@@ -23,10 +23,10 @@ import { LessonVideo } from "@/components/learn/LessonVideo";
 import { LessonCinematicHero } from "@/components/learn/LessonCinematicHero";
 import { DigitalTwinHero } from "@/components/learn/heroes/DigitalTwinHero";
 import { LessonLiveKpis, type LiveKpi } from "@/components/learn/LessonLiveKpis";
-import { LessonAskFinn } from "@/components/learn/LessonAskFinn";
+import { LessonAskSadeed } from "@/components/learn/LessonAskSadeed";
 import { LessonNarration } from "@/components/learn/LessonNarration";
 import { LessonSimulation } from "@/components/learn/LessonSimulation";
-import { LessonFINNChat } from "@/components/learn/LessonFINNChat";
+import { LessonSADEEDChat } from "@/components/learn/LessonSADEEDChat";
 import { LessonQuiz } from "@/components/learn/LessonQuiz";
 import { LessonNav } from "@/components/learn/LessonNav";
 import { LessonCockpit } from "@/components/learn/LessonCockpit";
@@ -173,7 +173,7 @@ function LessonPage() {
             <p className="text-base leading-relaxed text-white/85">{summary}</p>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               {narration && <LessonNarration text={narration} lang={ar ? "ar" : "en"} />}
-              <LessonAskFinn
+              <LessonAskSadeed
                 prompt={
                   ar
                     ? `سَدِيد، وضّح لي بإيجاز أهمّ ما يجب أن أفهمه من حصّة «${title}» بصفتي مديراً تنفيذياً.`
@@ -255,7 +255,7 @@ function LessonPage() {
           />
         </main>
 
-        {/* FINN sidecar (desktop) */}
+        {/* SADEED sidecar (desktop) */}
         <aside className="lg:sticky lg:top-4 lg:h-fit">
           <div className="rounded-3xl border border-cyan-400/15 bg-[#0A1E33]/70 p-5 backdrop-blur-xl">
             <div className="mb-3 flex items-center gap-3">
@@ -271,7 +271,7 @@ function LessonPage() {
                 </div>
               </div>
             </div>
-            <LessonFINNChat
+            <LessonSADEEDChat
               slug={lesson.slug}
               lang={ar ? "ar" : "en"}
               suggested={lesson.aria_suggested_prompts}

@@ -8,7 +8,7 @@
 Claude Code → git push origin main → GitHub Actions → Verify → Cloudflare Workers → neexios.com
 ```
 
-يبقى Vercel هدفاً يدوياً اختيFINNً فقط؛ `vercel.json` يعطّل نشر `main`
+يبقى Vercel هدفاً يدوياً اختيSADEEDً فقط؛ `vercel.json` يعطّل نشر `main`
 التلقائي لمنع نشر الفرع الإنتاجي نفسه إلى مزودين في الوقت ذاته.
 
 ---
@@ -46,7 +46,7 @@ E2E أمني حاجب**. القاعدة الثابتة: لا push لكود مك�
 
 1. طبّق ترحيلات Supabase بالترتيب، وبالأخص
    `20260715190000_aria_outbound_approval_ledger.sql`.
-2. أنشئ `FINN_MESSAGE_APPROVAL_SECRET` عشوائياً بطول 32 محرفاً على الأقل.
+2. أنشئ `SADEED_MESSAGE_APPROVAL_SECRET` عشوائياً بطول 32 محرفاً على الأقل.
    تغيير هذا السر يبطل طلبات الاعتماد المعلّقة، ولا يؤثر في السجل المكتمل.
 3. اضبط موفر البريد (`OUTLOOK_*` أو `RESEND_API_KEY` + `RESEND_FROM_EMAIL`)
    و/أو Twilio، ثم نفّذ إرسالاً تجريبياً إلى مستلم مخصص للاختبار.

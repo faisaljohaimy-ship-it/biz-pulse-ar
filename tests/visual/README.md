@@ -66,9 +66,9 @@ Current baseline: **25 checks passing across 5 viewports**.
 
 ---
 
-## FINN card — `finn_card_visual.py`
+## SADEED card — `sadeed_card_visual.py`
 
-Guards `mem://design/finn-visual-constitution.md` on the FINN portal card at
+Guards `mem://design/sadeed-visual-constitution.md` on the SADEED portal card at
 the two viewports the product must ship correctly on:
 
 | viewport      | width × height |
@@ -76,7 +76,7 @@ the two viewports the product must ship correctly on:
 | `mobile-390`  | 390 × 844      |
 | `laptop-1280` | 1280 × 800     |
 
-Targets `data-testid="finn-portal-card"` (the `.finn-glass-edge` wrapper).
+Targets `data-testid="sadeed-portal-card"` (the `.sadeed-glass-edge` wrapper).
 
 Per viewport it asserts:
 
@@ -85,7 +85,7 @@ Per viewport it asserts:
    light overlay) trips this immediately.
 2. **Pixel stability** — element screenshot matches the committed baseline
    with mean per-channel Δ ≤ 6.0 / 255. This is the actual guard on the
-   `.finn-glass-edge` luminous ring, PCB traces, code rain and digital grid
+   `.sadeed-glass-edge` luminous ring, PCB traces, code rain and digital grid
    — remove or drift any of them and the diff PNG lands in `diffs/`.
 
 Determinism: all CSS animations/transitions are frozen via an `add_init_script`
@@ -95,6 +95,6 @@ never contributes flake.
 Run:
 
 ```bash
-npm run test:visual:finn                  # regression check (part of npm run test:visual)
-npm run test:visual:finn:update           # refresh after an intentional visual change
+npm run test:visual:sadeed                  # regression check (part of npm run test:visual)
+npm run test:visual:sadeed:update           # refresh after an intentional visual change
 ```

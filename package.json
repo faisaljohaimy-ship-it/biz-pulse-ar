@@ -10,7 +10,7 @@
   },
   "sideEffects": [
     "**/*.css",
-    "src/lib/finn/orchestrator/agents.ts"
+    "src/lib/sadeed/orchestrator/agents.ts"
   ],
   "type": "module",
   "scripts": {
@@ -25,10 +25,10 @@
     "check:secrets": "node scripts/check-secrets.mjs",
     "check:deadcode": "knip --no-progress --reporter compact",
     "test": "vitest run",
-    "test:visual": "python3 tests/visual/hero_emblem_visual.py && python3 tests/visual/finn_card_visual.py",
-    "test:visual:update": "UPDATE_BASELINES=1 python3 tests/visual/hero_emblem_visual.py && UPDATE_BASELINES=1 python3 tests/visual/finn_card_visual.py",
-    "test:visual:finn": "python3 tests/visual/finn_card_visual.py",
-    "test:visual:finn:update": "UPDATE_BASELINES=1 python3 tests/visual/finn_card_visual.py",
+    "test:visual": "python3 tests/visual/hero_emblem_visual.py && python3 tests/visual/sadeed_card_visual.py",
+    "test:visual:update": "UPDATE_BASELINES=1 python3 tests/visual/hero_emblem_visual.py && UPDATE_BASELINES=1 python3 tests/visual/sadeed_card_visual.py",
+    "test:visual:sadeed": "python3 tests/visual/sadeed_card_visual.py",
+    "test:visual:sadeed:update": "UPDATE_BASELINES=1 python3 tests/visual/sadeed_card_visual.py",
     "test:stacking": "python3 tests/visual/hero_stacking.py",
     "format": "prettier --write .",
     "test:e2e": "playwright test",

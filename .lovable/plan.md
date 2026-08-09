@@ -30,7 +30,7 @@
    │     - وإلا → return { citations[], passages[] }
    │
    ▼
-[FINN Answer Composer]  (خلف flag: RAG_HYBRID=off افتراضيًا)
+[SADEED Answer Composer]  (خلف flag: RAG_HYBRID=off افتراضيًا)
    │  يضمّن الاستشهادات {doc_code, section, offset, score}
    ▼
 [Output Gateway = NOT_GLOBAL]  (لا تغيير)
@@ -59,7 +59,7 @@
 | `.rag-staging/tools/isolation_probe.sql`                      | 27 فحص عزل معلن سابقًا (لكل جدول SEC/PTW × 3 عمليات)                                                                                                                                              | العزل غير مُتحقَّق منه                 | تشغيل السكربت يُخرج جدول ✓/✗ لكل فحص                                                                                                            | لا شيء (قراءة فقط)                                                       |
 | `.rag-staging/eval/gold_set_ar.jsonl`                         | 40 سؤال ذهبي عربي عبر SEC-01..SEC-19 + PTW مع إجابات مرجعية                                                                                                                                       | لا مقياس دقة                           | تشغيل `eval_runner` (لم يُشغَّل)                                                                                                                | حذف الملف                                                                |
 | `.rag-staging/constitution.diff.md`                           | تعديل الدستور: إضافة **المادة 31 — بروتوكول RAG** (RRF، عتبات، `insufficient_evidence` مخرَج ناجح، عزل RESTRICTIVE، MRL+L2، عربي مطبَّع) + **المادة 32 — عزل المؤسسات كثابت** (org_id من JWT فقط) | انحراف مستقبلي عن العقيدة              | مراجعة بشرية                                                                                                                                    | Revert الملف                                                             |
-| `.rag-staging/system.diff.md`                                 | flag `RAG_HYBRID` (off افتراضيًا) في `src/config/feature-flags.ts`، نقطة استدعاء داخل FINN خلف الـflag، لا تعديل لمسار Gemini                                                                     | كسر FINN الحالية                       | grep يؤكد أن مسار Gemini غير مُلمَس                                                                                                             | Revert الملف                                                             |
+| `.rag-staging/system.diff.md`                                 | flag `RAG_HYBRID` (off افتراضيًا) في `src/config/feature-flags.ts`، نقطة استدعاء داخل SADEED خلف الـflag، لا تعديل لمسار Gemini                                                                   | كسر SADEED الحالية                     | grep يؤكد أن مسار Gemini غير مُلمَس                                                                                                             | Revert الملف                                                             |
 
 ---
 

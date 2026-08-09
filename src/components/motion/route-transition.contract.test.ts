@@ -26,7 +26,7 @@ describe("تنويع الحركة — لكل عائلة شاشات حركتها"
     expect(routeFamily("/governance")).toBe("security");
     expect(routeFamily("/sec/permits")).toBe("security");
     expect(routeFamily("/agents")).toBe("intelligence");
-    expect(routeFamily("/finn-analytics")).toBe("intelligence");
+    expect(routeFamily("/sadeed-analytics")).toBe("intelligence");
     expect(routeFamily("/observability")).toBe("analytics");
     expect(routeFamily("/settings")).toBe("default");
   });

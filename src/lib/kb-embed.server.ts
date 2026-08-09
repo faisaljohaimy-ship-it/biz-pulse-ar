@@ -4,15 +4,15 @@
 import {
   EMBEDDING_DIMS,
   EMBEDDING_MODEL,
-  embedText as embedFinnText,
-} from "./finn/embeddings.server";
-import type { GeminiEmbeddingPurpose } from "./finn/gemini-embeddings.server";
+  embedText as embedSadeedText,
+} from "./sadeed/embeddings.server";
+import type { GeminiEmbeddingPurpose } from "./sadeed/gemini-embeddings.server";
 
 export async function embedText(
   text: string,
   purpose: GeminiEmbeddingPurpose = "retrieval-query",
 ): Promise<number[]> {
-  const vector = await embedFinnText(text, { purpose });
+  const vector = await embedSadeedText(text, { purpose });
   if (!vector) throw new Error("Gemini embedding unavailable");
   return vector;
 }

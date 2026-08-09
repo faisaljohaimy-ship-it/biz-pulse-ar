@@ -202,7 +202,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
           : undefined,
     });
 
-    // FINN Knowledge
+    // SADEED Knowledge
     const { count: kCount } = await supabaseAdmin
       .from("finn_knowledge")
       .select("id", { count: "exact", head: true })

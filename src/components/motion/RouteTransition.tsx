@@ -66,7 +66,7 @@ export function routeFamily(pathname: string): Family {
     return "security";
   }
   if (
-    p.startsWith("/finn") ||
+    p.startsWith("/sadeed") ||
     p.startsWith("/agents") ||
     p.startsWith("/digital-twin") ||
     p.startsWith("/rag") ||

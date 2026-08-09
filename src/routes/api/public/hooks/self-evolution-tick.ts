@@ -1,5 +1,5 @@
 // Cron-triggered self-evolution tick. Runs one analyze-only cycle of the
-// FINN Self-Evolution Engine and persists the report to
+// SADEED Self-Evolution Engine and persists the report to
 // `finn_evolution_cycles`. Guarded by CRON_HOOK_SECRET. Never applies code.
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -12,8 +12,9 @@ export const Route = createFileRoute("/api/public/hooks/self-evolution-tick")({
         const denied = verifyCronHookSecret(request);
         if (denied) return denied;
 
-        const { runSelfEvolution } = await import("@/lib/finn/self-evolution");
-        const { persistEvolutionCycle } = await import("@/lib/finn/self-evolution/persist.server");
+        const { runSelfEvolution } = await import("@/lib/sadeed/self-evolution");
+        const { persistEvolutionCycle } =
+          await import("@/lib/sadeed/self-evolution/persist.server");
 
         try {
           const report = await runSelfEvolution({ enableApply: false });

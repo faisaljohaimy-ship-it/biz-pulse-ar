@@ -18,7 +18,7 @@ import type { ExecKpis } from "@/lib/sec.functions";
 /**
  * HoloCommandStage — SADEED holographic Executive Command Center backdrop.
  *
- * Pure SVG / CSS hologram (no static avatar, no FINN branding). Renders a
+ * Pure SVG / CSS hologram (no static avatar, no SADEED branding). Renders a
  * central rotating core with concentric halo rings, an orbiting Digital Twin
  * status constellation, and floating live KPI cards anchored around the
  * stage. All visible numbers are bound to real `ExecKpis` data.

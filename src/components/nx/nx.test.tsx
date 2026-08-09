@@ -16,12 +16,12 @@ import {
   NxProgress,
   NxEmptyState,
   NxErrorState,
-  NxFinnPresence,
-  FINN_STATE_LABEL,
+  NxSadeedPresence,
+  SADEED_STATE_LABEL,
   NxWaveform,
   NxRegionPulse,
   NxTwinNode,
-  type NxFinnState,
+  type NxSadeedState,
 } from "./index";
 
 describe("NxButton — spec 01", () => {
@@ -180,19 +180,19 @@ describe("Empty & error states — specs 12/13", () => {
   });
 });
 
-describe("NxFinnPresence — motion doc 05", () => {
+describe("NxSadeedPresence — motion doc 05", () => {
   it("renders every state with its Arabic co-signal (reduced-motion parity)", () => {
-    const states = Object.keys(FINN_STATE_LABEL) as NxFinnState[];
+    const states = Object.keys(SADEED_STATE_LABEL) as NxSadeedState[];
     for (const state of states) {
-      const { unmount } = render(<NxFinnPresence state={state} />);
-      expect(screen.getByRole("status")).toHaveAttribute("data-finn-state", state);
-      expect(screen.getByText(FINN_STATE_LABEL[state])).toBeInTheDocument();
+      const { unmount } = render(<NxSadeedPresence state={state} />);
+      expect(screen.getByRole("status")).toHaveAttribute("data-sadeed-state", state);
+      expect(screen.getByText(SADEED_STATE_LABEL[state])).toBeInTheDocument();
       unmount();
     }
   });
 
-  it("«executing» renders as awaiting APPROVED execution — FINN never executes", () => {
-    expect(FINN_STATE_LABEL.executing).toBe("بانتظار التنفيذ المعتمد");
+  it("«executing» renders as awaiting APPROVED execution — SADEED never executes", () => {
+    expect(SADEED_STATE_LABEL.executing).toBe("بانتظار التنفيذ المعتمد");
   });
 
   it("waveform bars follow the provided real levels", () => {
@@ -230,7 +230,7 @@ describe("Accessibility — axe sweep over states (audit cat 07)", () => {
         <NxEmptyState icon={<svg />} title="فارغ" description="لا عناصر بعد" />
         <NxErrorState title="تعذّر" description="انقطاع" onRetry={() => undefined} traceId="t-1" />
         <NxVoiceButton state="listening" />
-        <NxFinnPresence state="reasoning" mode="gated" />
+        <NxSadeedPresence state="reasoning" mode="gated" />
         <NxRegionPulse regionId="central" live />
         <NxTwinNode name="محطة" status="critical" />
       </div>,
@@ -247,7 +247,7 @@ describe("Accessibility — axe over a composed surface", () => {
           <NxKpiCard label="التوافر" value="99.2" unit="%" updatedAt="12:00" />
           <NxButton variant="primary">تفاصيل</NxButton>
           <NxStatusIndicator status="success" />
-          <NxFinnPresence state="idle" />
+          <NxSadeedPresence state="idle" />
         </NxPanel>
       </div>,
     );

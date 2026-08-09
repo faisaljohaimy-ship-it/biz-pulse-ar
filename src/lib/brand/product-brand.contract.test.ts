@@ -76,32 +76,32 @@ const ALLOWED_TECHNICAL = new Set([
   "src/lib/domain.ts",
   // This guard names the retired strings in order to ban them.
   "src/lib/brand/product-brand.contract.test.ts",
-  // The FINN identity guard, same reason.
-  "src/lib/brand/finn-identity.contract.test.ts",
+  // The SADEED identity guard, same reason.
+  "src/lib/brand/sadeed-identity.contract.test.ts",
   // Speech normalisation must still recognise the old spoken forms in stored
-  // text so FINN pronounces legacy records correctly.
-  "src/lib/finn/finn-speech-normalize.ts",
-  "src/lib/finn/finn-speech-normalize.test.ts",
-  "src/lib/finn/output/finalize.ts",
+  // text so SADEED pronounces legacy records correctly.
+  "src/lib/sadeed/sadeed-speech-normalize.ts",
+  "src/lib/sadeed/sadeed-speech-normalize.test.ts",
+  "src/lib/sadeed/output/finalize.ts",
   // Same reason: the pronunciation map converts a legacy spelling that still
   // exists in stored rows into correct Arabic speech. Deleting the entry would
-  // make FINN spell the old name letter by letter instead of hiding it.
-  "src/lib/finn/pronunciation.ts",
-  "src/lib/finn/pronunciation.test.ts",
+  // make SADEED spell the old name letter by letter instead of hiding it.
+  "src/lib/sadeed/pronunciation.ts",
+  "src/lib/sadeed/pronunciation.test.ts",
   // A regression test whose whole job is to assert the retired greeting is
   // rejected. It must be able to write the string it bans.
-  "src/lib/brand/finn-greeting-regression.test.ts",
+  "src/lib/brand/sadeed-greeting-regression.test.ts",
   // Category D — the HMAC domain separator `nexios:aria:outbound:v1` is a
   // SIGNING INPUT. Renaming it invalidates every approval token already issued
   // and still in flight, silently breaking outbound approvals in production.
-  "src/lib/finn/outbound-messaging.server.ts",
-  "src/lib/finn/outbound-messaging.crypto.test.ts",
+  "src/lib/sadeed/outbound-messaging.server.ts",
+  "src/lib/sadeed/outbound-messaging.crypto.test.ts",
   // Category D — `nexios://workspace/<id>` is a persisted deep-link scheme and
   // `nexios.shell` is the localStorage prefix under which every saved workspace
   // already lives. Renaming either orphans existing user state.
-  "src/finn/runtime/executive/workspace.ts",
-  "src/finn/runtime/executive/persistence.ts",
-  "src/finn/runtime/executive/executive.test.ts",
+  "src/sadeed/runtime/executive/workspace.ts",
+  "src/sadeed/runtime/executive/persistence.ts",
+  "src/sadeed/runtime/executive/executive.test.ts",
   // ── الاستثناء المُلغى ٢٠٢٦/٠٨/٠٦ ──
   // كانت أربعة ملفات معفاة هنا لأجل مجلّد SharePoint «NEXIOS Reports»: تقرأ
   // الإعفاء أنه «مسار تخزين لا اسم عرض»، وكان نصفه صحيحًا — والنصف الآخر أن
@@ -111,7 +111,7 @@ const ALLOWED_TECHNICAL = new Set([
   // وروابطه المطلقة المحفوظة تعمل كما هي.
   // Matches text inside an existing constitution document by its literal
   // heading. The matcher must keep the document's actual wording.
-  "src/lib/finn/self-evolution/engine.server.ts",
+  "src/lib/sadeed/self-evolution/engine.server.ts",
   // Asserts the Supabase project ref against the historical Lovable host.
   "src/lib/mcp/project-ref.test.ts",
 ]);
@@ -208,16 +208,16 @@ describe("the brand is what the owner set", () => {
   });
 
   it("names the assistant with the brand — one name, by owner directive", () => {
-    // OWNER DIRECTIVE 2026-08-09 («توحيد اسم Finn إلى سَدِيد») REVERSES the
-    // earlier rule this test used to encode. FINN was a separate identity that
+    // OWNER DIRECTIVE 2026-08-09 («توحيد اسم Sadeed إلى سَدِيد») REVERSES the
+    // earlier rule this test used to encode. SADEED was a separate identity that
     // survived three product renames; the owner has now merged it, so the
     // assistant is displayed as the product brand and nothing else.
     //
     // Written as a literal, not derived from PRODUCT_BRAND.ar.name: deriving it
     // would pass whatever the module said (article ٣٠).
     expect(PRODUCT_BRAND.assistantName).toBe("سَدِيد");
-    // The merge is DISPLAY-ONLY. `finn-core`, `/finn`, `/api/finn/*`,
-    // `finn_knowledge`, `FinnCopilot` and `public/finn-portrait.*` keep their
+    // The merge is DISPLAY-ONLY. `sadeed-core`, `/sadeed`, `/api/sadeed/*`,
+    // `finn_knowledge`, `SadeedCopilot` and `public/sadeed-portrait.*` keep their
     // identifiers — renaming them orphans live user state and breaks routing.
     // That boundary is the rule in CLAUDE.md: ban display text, not identifiers.
   });
