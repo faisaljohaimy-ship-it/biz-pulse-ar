@@ -8141,8 +8141,9 @@ html.dark .nx-holo-noise {
   color: var(--stage-ink);
 }
 
+/* لافتة «منجز اليوم» — أرضية القراءة ١٢px. */
 .nx-fl-core-done span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--stage-ink-2);
 }
 
@@ -8211,8 +8212,11 @@ html.dark .nx-holo-noise {
   border-radius: 8px;
   background: color-mix(in srgb, var(--fl-hue, var(--stage-cyan)) 16%, transparent);
   border: 1px solid color-mix(in srgb, var(--fl-hue, var(--stage-cyan)) 45%, transparent);
-  padding: 1px 8px;
-  font-size: 10.5px;
+  /* «التنسيق العام» · «الامتثال» · «الصيانة»: هذه الشارة تحمل تخصّص الوكيل،
+     وهو المعلومة التي تفرّق البطاقات بعضها عن بعض — لا زخرفة. ١٠٫٥px ترفع
+     الحشو الرأسي بدرجة واحدة لتبقى الشارة متناسبة مع سطرها. */
+  padding: 2px 8px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--stage-ink);
 }
@@ -8222,7 +8226,8 @@ html.dark .nx-holo-noise {
   align-items: center;
   gap: 6px;
   margin-block-start: 6px;
-  font-size: 11.5px;
+  /* «ينفّذ الآن» · «يعالج التوجيه» — حالة الوكيل الحيّة، أرضية ١٢px. */
+  font-size: 12px;
   font-weight: 700;
   color: var(--stage-ink-2);
 }
@@ -8274,23 +8279,25 @@ html.dark .nx-holo-noise {
   transition: inline-size 700ms var(--nx-ease-out);
 }
 
+/* «منجز» بجوار رقمه — أرضية القراءة ١٢px. */
 .nx-fl-done {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--stage-ink-2);
 }
 
 .nx-fl-done b {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   color: var(--stage-ink);
 }
 
+/* «٢ · ينفّذ» — رقم الخطوة وحالتها، أصغر نصّ يحمل معنًى في البطاقة. */
 .nx-fl-stepchip {
   border-radius: 7px;
   background: color-mix(in srgb, var(--fl-hue) 12%, transparent);
   padding: 2px 7px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--stage-ink);
 }

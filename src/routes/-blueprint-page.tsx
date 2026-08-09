@@ -457,11 +457,9 @@ export function BlueprintPage() {
                 ? `مساعد ذكاء اصطناعي يعطي رؤية تنفيذية على الأمن الصناعي في جميع المناطق — ${REGIONS.map((r) => r.shortAr).join(" · ")} — من سطح واحد.`
                 : `An AI assistant giving executive visibility into industrial security across all regions — ${REGIONS.map((r) => r.shortEn).join(" · ")} — from a single surface.`}
             </p>
-            <p className="mt-2 max-w-[62ch] text-sm text-[color:var(--ink)]">
-              {ar
-                ? "المناطق الأربع وحالتها على طرف، وسَدِيد في الوسط، وتحليلاته وتنبيهاته على الطرف المقابل — سطح واحد بلا تنقّل."
-                : "The four regions and their status on one side, SADEED in the middle, and its analytics and alerts on the other — one surface, no navigation."}
-            </p>
+            {/* حُذف سطر «المناطق الأربع وحالتها على طرف…» بأمر المالك
+                ٢٠٢٦/٠٨/٠٩: كان يصف تخطيط الصفحة بالكلمات فوق الصفحة نفسها،
+                والتخطيط ظاهرٌ للعين تحته مباشرة. */}
           </div>
         </header>
 
