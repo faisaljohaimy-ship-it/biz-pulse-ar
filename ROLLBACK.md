@@ -48,3 +48,62 @@ aria server-fns (aria.functions · rag.functions · agent.functions · personas 
 aria-impact-directive · nexios-final-quality-directive) · digital-humans r3f
 (R3FAvatarProvider · HeygenAvatarProvider) · shadcn (ui/tooltip · ui/skeleton) ·
 aria-core/use-aria — تحتاج تأكيدًا يدويًا قبل أي حذف لاحق.
+
+---
+
+## ٢٠٢٦/٠٨/٠٩ — إعادة تسمية المعرّفات إلى «سَدِيد» (كسرٌ نظيف)
+
+الالتزام: `8ca633c` — ٦٥٤ ملفًا. أمر المالك: «استبدل فن بسديد في كل شيء»
+ثم «اكسر نظيف بلا جسور».
+
+### ⚠ عملٌ مطلوب في لوحة الاستضافة قبل النشر — عشرة متغيّرات لا أربعة
+
+رسالة الالتزام `8ca633c` تذكر **أربعة**؛ الجرد الفعلي بعدها أعطى **عشرة**.
+هذا هو السجلّ الصحيح (لا يُعاد كتابة تاريخٍ مدفوع، فيُصحَّح بالإضافة):
+
+| القديم                              | الجديد                                | ما يكسره تركُه                          |
+| ----------------------------------- | ------------------------------------- | --------------------------------------- |
+| `FINN_MESSAGE_APPROVAL_SECRET`      | `SADEED_MESSAGE_APPROVAL_SECRET`      | توقيع HMAC لاعتماد الرسائل الصادرة      |
+| `FINN_MAX_OUTPUT_TOKENS`            | `SADEED_MAX_OUTPUT_TOKENS`            | سقف مخرجات النموذج                      |
+| `FINN_ENABLE_MANAGED_EMAIL_QUEUE`   | `SADEED_ENABLE_MANAGED_EMAIL_QUEUE`   | طابور البريد المُدار                    |
+| `FINN_ENABLE_LEGACY_REFERENCE_SEED` | `SADEED_ENABLE_LEGACY_REFERENCE_SEED` | بذرة المراجع القديمة                    |
+| `FINN_DIRECT_SEND_ENABLED`          | `SADEED_DIRECT_SEND_ENABLED`          | مفتاح قتل الإرسال المباشر — يفشل مغلقًا |
+| `FINN_OUTBOUND_AUTO_APPROVE`        | `SADEED_OUTBOUND_AUTO_APPROVE`        | بديل المفتاح أعلاه                      |
+| `FINN_OWNER_EMAIL`                  | `SADEED_OWNER_EMAIL`                  | **يرمي استثناءً عند غيابه**             |
+| `FINN_OWNER_SMS`                    | `SADEED_OWNER_SMS`                    | **يرمي استثناءً عند غيابه**             |
+| `FINN_GEMINI_RAG_READY`             | `SADEED_GEMINI_RAG_READY`             | راية جاهزية RAG                         |
+| `HEYGEN_FINN_AVATAR_ID`             | `HEYGEN_SADEED_AVATAR_ID`             | سكربت توليد فيديو المساعد               |
+
+أربعةٌ منها (`OWNER_EMAIL` · `OWNER_SMS` · `DIRECT_SEND_ENABLED` ·
+`OUTBOUND_AUTO_APPROVE`) لها بدائل `ARIA_*` قديمة ما زال الكود يقرؤها،
+فتعمل مؤقتًا لو ضُبطت تلك — وليست خطة، بل بقيّة حقبة سابقة.
+
+### المسارات المكسورة عمدًا — لا موجِّه يبقى
+
+`/finn` · `/api/finn/*` · `/api/public/finn-*` تعيد **404** بعد النشر.
+ويشمل الأثر: الروابط المحفوظة، وأي `og:image` مفهرَس كان يشير إلى
+`/finn-portrait.png`.
+
+### ثلاث ثغرات أحدثها الاستبدال الآلي وأُصلحت قبل الدفع
+
+الاستبدال **نقل** الحارس بدل أن يُبقيه، والاختبارات انتقلت معه فمرّت
+خضراء وهي تحرس شيئًا آخر:
+
+1. `pronunciation.ts` — `\bFINN\b` صارت `\bSADEED\b`، فنصٌّ مخزّن فيه
+   «FINN» كان سيُتهجّى «إف-آي-إن-إن» من مكبّر الصوت. أُعيدت المدخلة
+   **إلى جانب** الجديدة.
+2. `sadeed-speech-normalize.ts` — مفتاح القاموس `FINN` صار `SADEED`.
+   أُعيد إلى جانبه.
+3. `-nx-flow-page.tsx` و`-nx-ops-page.tsx` — مطابِق قلب المسرح
+   `/FINN|سديد/i` صار `/SADEED|…/`، **وصفوف القاعدة الحيّة ما زالت
+   «FINN»** (الترحيل `bf06184` لم يُطبَّق بعد) ⇒ صفر وكيل يُطابَق ⇒
+   **١١ غرفة بلا مركز**. صار المطابِق ثلاثيًّا.
+
+**الدرس:** إعادة تسمية شاملة تنقل طرفَي المطابِق معًا. الحارس الذي يقرأ
+بيانات خارجية (قاعدة · نصّ مخزّن · صفٌّ قديم) يجب أن يُفحص طرفه الأيسر
+يدويًّا — الاختبارات الخضراء لا تكشفه لأنها انتقلت معه.
+
+### التراجع
+
+`git revert 8ca633c` يعيد المسارات والمعرّفات القديمة. ولا يلزم تراجعٌ
+في القاعدة: أسماء الجداول `finn_*` لم تُمسّ أصلًا.
