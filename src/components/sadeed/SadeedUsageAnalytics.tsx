@@ -6,6 +6,13 @@
  * honestly badged «محاكاة». Layout is horizontal-first per constitution art. 5:
  * a KPI snap-rail on mobile → grid on lg+, with a weekly volume bar chart and a
  * top-questions rail beside it. Full RTL, ≥44px targets.
+ *
+ * ── ألوان الرموز، لا قيم نهائية (المواد ٣٢–٣٤) ──
+ * كان السطح مكتوبًا بألوان صريحة (`#3AE8FF` · `text-white` · `white/45`)
+ * مصمّمة على الكحلي وحده. وقد رُكِّب على الرئيسية ٢٠٢٦/٠٨/٠٩ بأمر المالك —
+ * والرئيسية سطحٌ بوضعين ومبدّلُ الوضع عليها — فكان الوضع الفاتح يعطي حبرًا
+ * أبيض على زجاج أبيض: غيابٌ كامل لا بهتان. كل لون هنا اليوم من طبقة الرموز
+ * فيعمل في الوضعين بلا قاعدة ثانية، ويعمل في `/sadeed-analytics` كما كان.
  */
 import { BarChart3, MessageSquare, Users, Timer, ThumbsUp } from "lucide-react";
 import { getUsageAnalytics, type UsageKpi } from "@/lib/sadeed/usage-analytics";
@@ -25,25 +32,40 @@ export function SadeedUsageAnalytics({ className = "" }: { readonly className?: 
   const { kpis, topQuestions, weekly } = getUsageAnalytics();
   const peak = Math.max(...weekly, 1);
 
+  /* `@container` — استعلام حاوية لا استعلام إطار.
+     صار السطح يُركَّب في موضعين بعرضين مختلفين تمامًا: عمودٌ ثالث من ثلاثة
+     على الرئيسية (نحو ٤٣٦px عند ١٤٤٠) وصفحةٌ بعرضها كلّه في
+     `/sadeed-analytics` (نحو ١٢٠٠px). ونقاطُ الإطار تقيس الشاشة فتعطي
+     الموضعين التخطيط نفسه — إمّا أربع رقاقات مكدَّسة الحروف في العمود، أو
+     عمودٌ واحد يهدر عرض الصفحة. القياس على الحاوية يصحّح الموضعين بقاعدة
+     واحدة بلا استثناء لأحدهما.
+     (وهي `container-type: inline-size`: تُنشئ كتلة احتواء لكل
+     `position: fixed` بداخلها. لا عنصر ثابت هنا اليوم، والملحوظة مكتوبة كي
+     لا يُضاف واحد لاحقًا فيسقط إلى اللوحة بلا أن يُفهم السبب.) */
   return (
     <section
       dir="rtl"
       aria-label={`تحليلات استخدام ${SADEED_DISPLAY_NAME_AR_PLAIN}`}
-      className={`relative w-full rounded-2xl border border-[#3AE8FF]/18 bg-gradient-to-b from-[#061A2E]/55 to-[#04101C]/70 p-4 backdrop-blur-md sm:p-5 ${className}`}
+      className={`@container relative w-full rounded-2xl border border-[color:var(--hairline)] bg-[color:var(--surface-2)] p-4 sm:p-5 ${className}`}
     >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-[#3AE8FF]/12 text-[#3AE8FF]">
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-[color:var(--chip-strong)] text-[color:var(--tone-cyan)]">
             <BarChart3 className="h-4 w-4" aria-hidden />
           </span>
-          <h2 className="text-sm font-bold text-white sm:text-base">تحليلات الاستخدام</h2>
+          <h2 className="text-sm font-bold text-[color:var(--ink)] sm:text-base">
+            تحليلات الاستخدام
+          </h2>
         </div>
         <SimBadge ar className="text-[12px]" />
       </div>
 
-      {/* KPI rail — horizontal snap on mobile → 4-across grid on lg+ */}
+      {/* شريط الرقاقات: انزلاقٌ أفقي في الحاويات الضيّقة ← عمودان حين تبلغ
+          الحاوية ٣٨٤px ← أربعة حين تبلغ ٧٦٨px. أربع رقاقات في ٤٣٦px تعطي
+          ٨٥px للرقاقة، فتتكدّس اللافتة كلمةً في كل سطر وتُقرأ عمودًا من
+          الحروف لا لافتة. */}
       <div
-        className="-mx-1 mb-5 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-1 pb-1 sm:gap-3 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0"
+        className="-mx-1 mb-5 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-1 pb-1 sm:gap-3 @sm:mx-0 @sm:grid @sm:grid-cols-2 @sm:overflow-visible @sm:px-0 @3xl:grid-cols-4"
         style={{ scrollbarWidth: "none" }}
       >
         {kpis.map((k: UsageKpi) => {
@@ -51,56 +73,73 @@ export function SadeedUsageAnalytics({ className = "" }: { readonly className?: 
           return (
             <div
               key={k.key}
-              className="w-[46%] shrink-0 snap-start rounded-xl border border-white/10 bg-white/[0.03] p-3 sm:w-[38%] lg:w-auto"
+              className="w-[46%] shrink-0 snap-start rounded-xl border border-[color:var(--hairline-soft)] bg-[color:var(--chip)] p-3 sm:w-[38%] @sm:w-auto"
             >
-              <Icon className="h-4 w-4 text-[#3AE8FF]" aria-hidden />
+              <Icon className="h-4 w-4 text-[color:var(--tone-cyan)]" aria-hidden />
               <div
-                className="mt-2 text-xl font-black text-white"
+                className="mt-2 text-xl font-black text-[color:var(--ink)]"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
                 {k.value}
               </div>
-              <div className="mt-0.5 text-[12px] font-semibold text-white/80">{k.ar}</div>
-              <div className="mt-0.5 text-[12px] leading-relaxed text-white/45">{k.hintAr}</div>
+              <div className="mt-0.5 text-[12px] font-semibold text-[color:var(--ink-2)]">
+                {k.ar}
+              </div>
+              <div className="mt-0.5 text-[12px] leading-relaxed text-[color:var(--ink-3)]">
+                {k.hintAr}
+              </div>
             </div>
           );
         })}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
+      {/* `minmax(0, …)` لا `fr` عارية: الحدّ الأدنى التلقائي لعنصر الشبكة
+          هو `min-content`، فمخطّط الأعمدة السبعة وقائمة الأسئلة يتجاوزان
+          العمود ويخرجان يسارًا في صفحةٍ `rtl` — فائضٌ سالب لا يزيد
+          `scrollWidth` ولا يلتقطه فحص التمرير الأفقي. قِيس ١٤٧px على ١٤٤٠
+          و٢٢٨px على ١٠٢٤ قبل هذا السطر.
+          والانقسام على عرض الحاوية (`@3xl` = ٧٦٨px) لا على عرض الشاشة:
+          في عمودٍ ثالث من ثلاثة لا يتّسع نصفُ اللوحة لسبعة أعمدة بلافتاتها
+          (حدّها الأدنى ٢٣٩px)، فيبقيان مكدَّسين حتى يتوفّر العرض فعلًا. */}
+      <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
         {/* Weekly volume bars */}
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5">
-          <div className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]/70">
+        <div className="rounded-xl border border-[color:var(--hairline-soft)] bg-[color:var(--chip)] p-3.5">
+          <div className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[color:var(--tone-cyan)]">
             حجم الرسائل — آخر ٧ أيام
           </div>
           <div className="flex h-32 items-end justify-between gap-1.5">
             {weekly.map((v, i) => (
-              <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1.5">
+              <div
+                key={i}
+                className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
+              >
                 <div
-                  className="w-full rounded-t bg-gradient-to-t from-[#1933E6]/70 to-[#3AE8FF]/85 transition-[height] duration-500 ease-out"
+                  className="w-full rounded-t bg-gradient-to-t from-[color:var(--tone-blue)] to-[color:var(--tone-cyan)] transition-[height] duration-500 ease-out"
                   style={{ height: `${Math.max(6, Math.round((v / peak) * 104))}px` }}
                   title={`${WEEK_DAYS[i]}: ${v}`}
                 />
-                <span className="text-[12px] text-white/40">{WEEK_DAYS[i].slice(0, 3)}</span>
+                <span className="text-[12px] text-[color:var(--ink-3)]">
+                  {WEEK_DAYS[i].slice(0, 3)}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Top questions */}
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5">
-          <div className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#3AE8FF]/70">
+        <div className="rounded-xl border border-[color:var(--hairline-soft)] bg-[color:var(--chip)] p-3.5">
+          <div className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[color:var(--tone-cyan)]">
             أكثر الأسئلة تكراراً
           </div>
           <ul className="space-y-2">
             {topQuestions.map((q, i) => (
               <li key={i} className="flex items-center gap-2 text-[12px]">
-                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#3AE8FF]/12 text-[12px] font-bold text-[#3AE8FF]">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[color:var(--chip-strong)] text-[12px] font-bold text-[color:var(--tone-cyan)]">
                   {i + 1}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-white/80">{q.ar}</span>
+                <span className="min-w-0 flex-1 truncate text-[color:var(--ink-2)]">{q.ar}</span>
                 <span
-                  className="shrink-0 font-mono text-[12px] text-white/45"
+                  className="shrink-0 font-mono text-[12px] text-[color:var(--ink-3)]"
                   style={{ fontVariantNumeric: "tabular-nums" }}
                 >
                   {q.count}

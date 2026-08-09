@@ -6,12 +6,11 @@
  * صفر يحلّ محلّ غياب. الفحص يقرأ المصدر لأن أثر هذه الأخطاء لا يظهر إلا
  * بعد رسم في متصفح أو بعد قلب الثيم.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const read = (p: string) => readFileSync(p, "utf8");
 
-const ROSETTE = read("src/components/blueprint/RegionRosette.tsx");
 const PANELS = read("src/components/blueprint/InstrumentPanels.tsx");
 const PAGE = read("src/routes/-blueprint-page.tsx");
 const PULSE = read("src/components/pulse/PulseGlyph.tsx");
@@ -29,7 +28,6 @@ describe("المُخطَّط — المادة ٣٣: لا لون نهائي خا�
   it("لا لون سداسي مكتوب في أي مكوّن", () => {
     // الاستثناء الوحيد المسموح: مثال في تعليق يشرح محوّل الثلاثي.
     for (const [name, src] of [
-      ["RegionRosette", ROSETTE],
       ["InstrumentPanels", PANELS],
       ["blueprint-page", PAGE],
     ] as const) {
@@ -39,7 +37,9 @@ describe("المُخطَّط — المادة ٣٣: لا لون نهائي خا�
   });
 
   it("لهجات المناطق تأتي من regions.ts وحده", () => {
-    expect(ROSETTE).toContain('from "@/lib/regions"');
+    // كان الشطر الأول على `RegionRosette` — حُذفت ٢٠٢٦/٠٨/٠٩ بأمر المالك،
+    // والقاعدة انتقلت إلى حاملها الجديد: بطاقات المناطق في الصفحة نفسها.
+    expect(PAGE).toContain('from "@/lib/regions"');
     expect(PAGE).toContain("REGION_ACCENT_HEX");
     // لا اسم منطقة مكتوب نصًّا في الصفحة — الأسماء من المصدر الوحيد.
     expect(PAGE).not.toMatch(/"(الوسطى|الغربية|الشرقية|الجنوبية)"/);
@@ -47,7 +47,7 @@ describe("المُخطَّط — المادة ٣٣: لا لون نهائي خا�
 
   it("الأسلوب المضمّن يمرّر متغيّرات لا قيمًا نهائية", () => {
     // `style={{ background: "#22D3EE" }}` يعفي حامله من كل قاعدة عامة بصمت.
-    for (const src of [ROSETTE, PANELS, PAGE]) {
+    for (const src of [PANELS, PAGE]) {
       for (const inline of src.match(/style=\{\{[^}]*\}\}/g) ?? []) {
         expect(inline, "أسلوب مضمّن يحمل قيمة نهائية").toMatch(/--[a-z-]+/);
       }
@@ -56,7 +56,7 @@ describe("المُخطَّط — المادة ٣٣: لا لون نهائي خا�
 
   it("لا تعبئة بيضاء نهائية (white / #fff / #ffffff) — الرسم يتبع الحبر", () => {
     // النمط الحرفي `fill="white"` وحده كان يترك الصيغ السداسية تفلت.
-    for (const src of [ROSETTE, PANELS, PAGE]) {
+    for (const src of [PANELS, PAGE]) {
       expect(src).not.toMatch(/fill=["'](?:white|#f{3}|#f{6})["']/i);
     }
   });
@@ -74,12 +74,21 @@ describe("المُخطَّط — المادة ٣٢: الحركة بخصائص م
   });
 
   it("تقليل الحركة يوقفها عند حالتها النهائية لا عند العدم", () => {
-    const block = LAYER.slice(LAYER.indexOf("prefers-reduced-motion"));
+    // الالتقاط على **قاعدة الوسائط** لا على ذكر اسمها: أول ورودٍ للسلسلة في
+    // الطبقة هو تعليقٌ في ترويستها، فالقطع عنده كان يُدخل نصَّ التعليقات في
+    // المقيس — ويمرّ الشرط بكلمةٍ مكتوبة في شرحٍ لا بقاعدةٍ نافذة.
+    const at = LAYER.indexOf("@media (prefers-reduced-motion");
+    expect(at, "لا كتلة تخفيف حركة في طبقة المُخطَّط").toBeGreaterThan(-1);
+    const block = LAYER.slice(at);
     expect(block).toContain("animation: none");
-    // بغير هذه الثلاثة يبقى العنصر شفافًا أو مزاحًا أو غير مرسوم إلى الأبد.
-    expect(block).toContain("opacity: 1");
-    expect(block).toContain("translate: none");
-    expect(block).toContain("stroke-dashoffset: 0");
+    // **سقط من هذا البند ثلاثة شروط ٢٠٢٦/٠٨/٠٩، لا تخفيفًا بل لزوال موضوعها.**
+    // كانت `opacity: 1` و`translate: none` و`stroke-dashoffset: 0` إنقاذًا
+    // لقوس وردة المناطق: رسمٌ يبدأ شفافًا مزاحًا بـ`dashoffset` كامل، فإلغاء
+    // حركته بلا إنقاذ يتركه غير مرسوم إلى الأبد. حُذفت الوردة بأمر المالك،
+    // ولم يبقَ في الطبقة عنصرٌ تبدأ حالتُه الأولى من العدم — الشفق والخيط
+    // والحزمتان كلّها مرئية قبل حركتها وبعدها، فتسكينها يكفي.
+    // ويبقى الشرط الحيّ الوحيد أعلاه: حركةٌ دائمة بلا تسكين خرقٌ وصولي.
+    expect(block).not.toContain("stroke-dashoffset");
   });
 
   it("بطاقات الرئيسية ساكنة: لا دخول متدرّج ولا طفو دائم (قرار المالك ٢٠٢٦/٠٨/٠٩)", () => {
@@ -101,9 +110,12 @@ describe("المُخطَّط — المادة ٣٢: الحركة بخصائص م
 
 describe("المُخطَّط — الوضعان يعملان معًا", () => {
   it("للهجات المناطق نسخة فاتحة مقيّدة بالصنف لا بالجذر", () => {
-    // `.light .nx-bp-region` نوعيّتها (0,2,0) فتعلو القاعدة العامة (0,1,0)
+    // `.light .nx-home-region` نوعيّتها (0,2,0) فتعلو القاعدة العامة (0,1,0)
     // يقينًا. لو كُتبت على `:root` لتساوت النوعيّة وحكم الترتيب وحده.
-    expect(LAYER).toMatch(/\.light\s+\.nx-bp-region\s*\{[^}]*--bp-accent-eff/);
+    // (كانت على `.nx-bp-region` — مجموعة المنطقة داخل الوردة المحذوفة
+    // ٢٠٢٦/٠٨/٠٩ — والقاعدة نفسها انتقلت إلى شعيرة البطاقة المستطيلة التي
+    // ورثت حمل اللكنة، فلم يُفرَّغ الحارس بل تبع موضوعه.)
+    expect(LAYER).toMatch(/\.light\s+\.nx-home-region\s*\{[^}]*--bp-accent-eff/);
     // أيقونات اللوحات والمناطق صارت دوائر نبض (٢٠٢٦/٠٨/٠٦)، وطبقتها في
     // آخر الملف لا داخل طبقة المُخطَّط — فيُفحص المصدر كلّه لا الشريحة.
     // نفس الدرس المسجَّل هنا لرسوم المُخطَّط: اللكنة تُمزج نحو الحبر على
@@ -127,8 +139,18 @@ describe("المُخطَّط — المادة ٢٧: الصدق العددي", ()
     expect(PAGE).not.toMatch(/counters\?\.\w+\s*\?\?\s*0/);
   });
 
-  it("القوس لا يُرسم لمنطقة لم تُقَس", () => {
-    expect(ROSETTE).toMatch(/pct\s*!==\s*null\s*&&\s*pct\s*>\s*0\s*&&/);
+  it("حالة المنطقة تُقرأ من الخادم ولا تُشتقّ من رقم الامتثال", () => {
+    // كان هنا حارسٌ على قوس الوردة («لا يُرسم لمنطقة لم تُقَس»). ذهبت
+    // الوردة ٢٠٢٦/٠٨/٠٩، والقاعدة التي كان يخدمها — لا شكلَ لغياب — انتقلت
+    // إلى بطاقات المناطق: قوس دائرة النبض محروس أدناه، والحالة النصّية
+    // محروسة هنا.
+    //
+    // والخطر الجديد أن تُشتقّ الحالة من `compliance_pct` بعتبات مؤلَّفة
+    // («فوق ٩٠ سليم») فتُعرض حكمًا كأنه قياس. المصدر الوحيد المسموح هو
+    // `severity` القادم من الخادم، وغيابُ الصفّ يُقرأ «لم يُقَس» لا «سليم».
+    expect(PAGE).toContain("REGION_SEVERITY_TONE");
+    expect(PAGE).toMatch(/if \(!row\) return \{ tone: STAT_TONES\.default, label: notMeasured \}/);
+    expect(PAGE).not.toMatch(/compliance_pct\s*[><]=?\s*\d+\s*\?\s*"/);
   });
 
   it("«منجز اليوم» لا يُختلق له صفر في المسار الحيّ", () => {
@@ -150,7 +172,6 @@ describe("المُخطَّط — المادة ٢٧: الصدق العددي", ()
 
 describe("المُخطَّط — الوصول", () => {
   it("الرسوم مخفاة عن القارئات لأن أرقامها مكتوبة إلى جوارها", () => {
-    expect(ROSETTE).toContain("aria-hidden");
     expect(PANELS).toContain("aria-hidden");
     // دائرة النبض تُخفي نفسها ما لم تُعطَ وصفًا، ولا موضع على الرئيسية
     // يعطيها وصفًا — لأن الرقم والاسم إلى جوارها يقولان ما تقوله. العدّ
@@ -162,13 +183,15 @@ describe("المُخطَّط — الوصول", () => {
     }
   });
 
-  it("أزرار المناطق روابط لمعلومات كل منطقة وتبلغ أرضية اللمس", () => {
+  it("بطاقات المناطق روابط لمعلومات كل منطقة وتبلغ أرضية اللمس", () => {
     // قرار المالك ٢٠٢٦/٠٨/٠٤: كل منطقة تفتح على معلوماتها في القمرة
     // الموحدة، مع اسم وصول صريح بدل حالة ضغط لم تعد موجودة.
     expect(PAGE).toContain('to="/nx-cockpit"');
     expect(PAGE).toContain("search={{ region: region.id }}");
     expect(PAGE).toMatch(/aria-label=\{ar \? `افتح معلومات /);
-    expect(PAGE).toMatch(/nx-bp-region-btn[^"]*min-h-14/);
+    // الصنف صار `.nx-home-region` والأرضية ٨٠px: البطاقة مستطيلة تحمل سطرين
+    // وشارة حالة (أمر المالك ٢٠٢٦/٠٨/٠٩)، لا شريطًا بسطر واحد.
+    expect(PAGE).toMatch(/nx-home-region[^"]*min-h-20/);
   });
 
   it("الحالة النشطة لا تُقال باللون وحده", () => {
@@ -308,6 +331,97 @@ describe("المُخطَّط — أيقونات الرئيسية دوائر نب
     for (const sel of [".light .nx-pulse-arc", ".light .nx-pulse-spark", ".light .nx-pulse-disc"]) {
       expect(forced, `${sel} خارج كتلة الألوان القسرية`).toContain(sel);
     }
+  });
+});
+
+/**
+ * صدر الرئيسية — ثلاثة أعمدة (أمر المالك ٢٠٢٦/٠٨/٠٩).
+ *
+ * «اعد الصفحة الرئيسية للنظام بطاقات كما كانت مسبقاً واضف المناطق الاربع
+ * فاليمين مستطيلة وسديد فالمنتصف وتحليلات سديد + التنبيهات فاليسار»، وسُئل
+ * عن الوردة الدائرية فأجاب «تحذف».
+ */
+describe("الرئيسية — التخطيط الثلاثي", () => {
+  it("الأعمدة منطقية لا فيزيائية، فلا ينقلب الترتيب على الإنجليزية", () => {
+    // الصفحة `rtl`: «اليمين» هو `start` و«اليسار» هو `end`. كتابتهما
+    // `left`/`right` تثبّت التخطيط على اتجاه واحد فينقلب المعنى في الاتجاه
+    // الآخر — والخطأ لا يظهر إلا بعد قلب اللغة، ولا يلتقطه tsc ولا jsdom.
+    // القياس على الطبقة **منزوعةَ التعليقات**: شرحُ القاعدة أطول منها، فنافذةٌ
+    // بعدد أحرف تقع كلّها داخل التعليق وتُسقط قاعدةً سليمة — أو تُمرّر كلمةً
+    // مكتوبة في شرحٍ لا في قاعدة نافذة. كلا الخطأين يقرأه المرء «فحصًا مرّ».
+    const code = LAYER.replace(/\/\*[\s\S]*?\*\//g, "");
+    const at = code.indexOf(".nx-home-triad {");
+    expect(at, "شبكة التخطيط الثلاثي غير معرَّفة").toBeGreaterThan(-1);
+    const grid = code.slice(at, at + 400);
+    expect(grid).toContain("grid-template-columns");
+    expect(grid).not.toMatch(/\b(left|right)\s*:/);
+    // بغير `minmax(0, …)` يتمدّد العمود بمحتواه (جدول أو شريط منزلق) فيدفع
+    // الصفحة إلى تمرير أفقي على ٣٩٠px — وهو ما يقيسه `ui-audit`.
+    expect(grid).toMatch(/minmax\(0,/);
+  });
+
+  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد ← التحليلات والتنبيهات", () => {
+    // العمود واحد دون `lg`، فالتكديس هو ترتيب DOM نفسه. لو رُتّبت الأعمدة
+    // بـ`order` لانقلب الترتيب على الجوال بلا أن يسقط شيء.
+    const regions = PAGE.indexOf("nx-home-region");
+    const stage = PAGE.indexOf("<SadeedStagePresence");
+    const analytics = PAGE.indexOf("<SadeedUsageAnalytics");
+    const anomalies = PAGE.indexOf("<SadeedAnomalyStrip");
+    for (const [name, at] of [
+      ["بطاقات المناطق", regions],
+      ["SadeedStagePresence", stage],
+      ["SadeedUsageAnalytics", analytics],
+      ["SadeedAnomalyStrip", anomalies],
+    ] as const) {
+      expect(at, `${name} غير مركَّب على الرئيسية`).toBeGreaterThan(-1);
+    }
+    expect(regions).toBeLessThan(stage);
+    expect(stage).toBeLessThan(analytics);
+    expect(analytics).toBeLessThan(anomalies);
+    expect(PAGE, "أداة `order-*` تفصل ترتيب العرض عن ترتيب DOM").not.toMatch(
+      /(?:^|[\s"'`])(?:sm:|md:|lg:)?order-\d/m,
+    );
+  });
+
+  it("الوردة وأثر الفرجار محذوفان بلا تركة", () => {
+    // الحذف يُحرَس كما تُحرَس الإضافة: مكوّنٌ مُصدَّر بلا مستهلك يُعاد
+    // استيراده لأنه «موجود»، وصنفٌ باقٍ في CSS بلا حاملٍ يعود سطحًا حيًّا
+    // بأول لصقٍ لاحق.
+    expect(existsSync("src/components/blueprint/RegionRosette.tsx")).toBe(false);
+    expect(PAGE).not.toContain("RegionRosette");
+    for (const sel of [
+      ".nx-bp-rosette",
+      ".nx-bp-region",
+      ".nx-bp-region-btn",
+      ".nx-bp-region-name",
+      ".nx-bp-track",
+      ".nx-bp-spoke",
+      ".nx-bp-arc",
+      ".nx-bp-arc-tip",
+      ".nx-bp-hub",
+      ".nx-bp-hub-ring",
+      ".nx-bp-art",
+      ".nx-bp-halo",
+      ".nx-bp-orbit",
+      ".nx-bp-sadeed-halo",
+      ".nx-bp-sadeed-btn",
+      ".nx-bp-compass",
+    ]) {
+      expect(CSS.indexOf(`${sel} {`), `${sel} بقي في الأنماط بلا حامل`).toBe(-1);
+    }
+    // و«عبارتها» في الأمر نفسه: وصف الميتا كان يقول «على بوصلة واحدة …
+    // والامتثال مقروءًا طولَ قوس» — يصف سطحًا لم يعد موجودًا.
+    for (const route of ["src/routes/blueprint.tsx", "src/routes/index.tsx"]) {
+      expect(read(route)).not.toContain("بوصلة");
+    }
+  });
+
+  it("`nxBpSpin` باقٍ: مستهلكه خارج طبقة المُخطَّط", () => {
+    // درسٌ من هذه الجلسة: الإطار كان يُشغّل هالة الوردة، وله مستهلك ثانٍ
+    // في هالة قلب المسرح. حذفه مع حامله الأول يوقف حركةً حيّة في سطحٍ آخر
+    // بلا أن يسقط بناءٌ ولا فحص — فالإطار المفقود لا يُخطئ، يُهمَل بصمت.
+    expect(CSS).toContain("@keyframes nxBpSpin");
+    expect(CSS).toMatch(/animation: nxBpSpin \d+s linear infinite;/);
   });
 });
 

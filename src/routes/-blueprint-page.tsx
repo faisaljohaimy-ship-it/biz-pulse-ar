@@ -6,12 +6,19 @@
  *
  * ## لغة التصميم
  *
- * **الوحدة قبل الزينة.** التخطيط كلّه يلتزم شبكة ٨px، والانقسام الأفقي
- * `1 : 1.618` نسبة ذهبية مكتوبة في الشبكة لا مصادفة بصرية. (مسطرة الوحدة
- * المعلنة أعلى الصفحة أُزيلت بقرار المالك ٢٠٢٦/٠٨/٠٩ مع عدّاداتها الأربعة.)
+ * **الوحدة قبل الزينة.** التخطيط كلّه يلتزم شبكة ٨px. (مسطرة الوحدة المعلنة
+ * أعلى الصفحة أُزيلت بقرار المالك ٢٠٢٦/٠٨/٠٩ مع عدّاداتها الأربعة.)
  *
- * **الشكل يحمل معنى.** وردة المناطق بوصلة: الغربية غربًا والشرقية شرقًا
- * والجنوبية جنوبًا. الموضع معلومة، لا ترتيب حروف.
+ * **الصدر ثلاثة أعمدة (أمر المالك ٢٠٢٦/٠٨/٠٩):** «المناطق الأربع فاليمين
+ * مستطيلة وسَدِيد فالمنتصف وتحليلات سَدِيد + التنبيهات فاليسار». والصفحة
+ * `rtl`، فاليمين هو الطرف المنطقي `start` واليسار `end`: الترتيب يُكتب
+ * ترتيبَ خلايا في الشبكة — منطقيًّا لا فيزيائيًّا — فينقلب وحده على الواجهة
+ * الإنجليزية، ويتكدّس على الجوال بالترتيب نفسه لأنه ترتيب DOM.
+ *
+ * (وردة المناطق البوصلية حُذفت في الأمر نفسه: سُئل المالك عنها فأجاب
+ * «تحذف». ومعناها — الموضع في الرسم هو الموضع على الأرض — لم يُنقَل إلى
+ * بديلٍ يدّعيه: البطاقات المستطيلة قائمة لا خريطة، فلا تقول عن الموضع شيئًا
+ * ولا تكذب فيه.)
  *
  * **الحركة مسرح لا حلية.** الطبقات تدخل متتابعة بمنحنى
  * `cubic-bezier(0.16, 1, 0.3, 1)` — وهو `--nx-ease-out` المعرَّف في النظام
@@ -29,11 +36,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { FlaskConical } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
-import { RegionRosette } from "@/components/blueprint/RegionRosette";
 import { PRODUCT_BRAND } from "@/lib/domain";
 import { InstrumentPanel } from "@/components/blueprint/InstrumentPanels";
 import { PulseGlyph } from "@/components/pulse/PulseGlyph";
-import { getCommandCenterState } from "@/lib/exec/command-center.functions";
+import { getCommandCenterState, type CommandSeverity } from "@/lib/exec/command-center.functions";
 import { getRiskBoard, type RiskSeverity } from "@/lib/exec/risk-board.functions";
 // نغمات الشدّة تُستهلك من مصدرها المحروس (`stat-tone.contract.test.ts`) ولا
 // تُعاد كتابتها هنا: أحمر بمثمّن «خطر» · كهرماني بمثلث «تحذير» · أخضر
@@ -45,6 +51,8 @@ import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, getRegion, type RegionId } from "@/lib/regions";
 import { SadeedStagePresence } from "@/components/sadeed/SadeedStagePresence";
+import { SadeedUsageAnalytics } from "@/components/sadeed/SadeedUsageAnalytics";
+import { SadeedAnomalyStrip } from "@/components/sadeed/SadeedAnomalyStrip";
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
 const STAGE_AR: Record<string, string> = {
@@ -58,6 +66,25 @@ const SEVERITY_TONE: Record<RiskSeverity, StatTone> = {
   high: "danger",
   medium: "warning",
   low: "success",
+};
+
+/**
+ * حالة المنطقة ⇄ النغمة.
+ *
+ * الحالة **تُقرأ من الخادم** (`regions[].severity`) ولا تُشتقّ من نسبة
+ * الامتثال: اشتقاقها كان سيعني اختراع عتبات لا مصدر لها، ثم عرضها حكمًا
+ * كأنّه قياس (المادة ٢٧). وما لم يصل صفُّ المنطقة أصلًا فلا حالة لها —
+ * تُقرأ «لم يُقَس»، لا «سليم».
+ *
+ * والشدّة نفسها من `STAT_TONES` وحده: أحمر بمثمّن «خطر» · كهرماني بمثلث
+ * «تحذير» · أخضر بدائرة «سليم» (WCAG 2.2 §1.4.1) — لا تُعاد كتابتها هنا.
+ */
+const REGION_SEVERITY_TONE: Record<CommandSeverity, StatTone> = {
+  critical: "danger",
+  high: "danger",
+  medium: "warning",
+  healthy: "success",
+  idle: "default",
 };
 
 const SEVERITY_LABEL: Record<RiskSeverity, { ar: string; en: string }> = {
@@ -180,6 +207,22 @@ export function BlueprintPage() {
   const lowRegion = rankCompliance(-1);
   const regionName = (id: RegionId) => (ar ? getRegion(id).shortAr : getRegion(id).shortEn);
 
+  /**
+   * حالة المنطقة كما تُعرض: نغمة `STAT_TONES` + كلمتها.
+   *
+   * ثلاث حالات لا اثنتان — والفرق بينها هو موضع المادة ٢٧ كلّه:
+   * ① لا صفَّ للمنطقة أصلًا ⇐ «لم يُقَس»، لا «سليم» ولا نغمة تُطمئن.
+   * ② صفٌّ بشدّة معروفة ⇐ نغمتها وشكلها وكلمتها من `STAT_TONES`.
+   * ③ صفٌّ بشدّة لا تقابل إنذارًا (`idle`) ⇐ «بلا تصنيف»: قياسٌ وقع ولم
+   *    يُنتج حكمًا، فلا يُقال عنه «لم يُقَس» ولا يُرفع إلى «سليم».
+   */
+  const regionStatus = (id: RegionId) => {
+    const row = regionRows.find((r) => r.region_id === id);
+    if (!row) return { tone: STAT_TONES.default, label: notMeasured };
+    const tone = STAT_TONES[REGION_SEVERITY_TONE[row.severity]];
+    return { tone, label: tone.badge ?? (ar ? "بلا تصنيف" : "unclassified") };
+  };
+
   const dashCards: Array<{
     key: string;
     label: string;
@@ -263,20 +306,10 @@ export function BlueprintPage() {
           من عيّنة الفيديو الحية (--live-rgb). */}
       <HoloVideoEngine />
 
-      {/* أثر الفرجار — دوائر إنشاء باهتة تحت كل شيء، بلا أي كلفة شبكية. */}
-      <svg
-        aria-hidden
-        focusable="false"
-        className="nx-bp-compass pointer-events-none absolute inset-0 h-full w-full"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <circle cx="50" cy="34" r="30" fill="none" stroke="currentColor" strokeWidth="0.09" />
-        <circle cx="50" cy="34" r="46" fill="none" stroke="currentColor" strokeWidth="0.09" />
-        <circle cx="50" cy="34" r="18.5" fill="none" stroke="currentColor" strokeWidth="0.09" />
-        <line x1="0" y1="34" x2="100" y2="34" stroke="currentColor" strokeWidth="0.07" />
-        <line x1="50" y1="0" x2="50" y2="100" stroke="currentColor" strokeWidth="0.07" />
-      </svg>
+      {/* (أثر الفرجار — دوائر الإنشاء الثلاث والخطّان المتقاطعان
+          (`.nx-bp-compass`) — أُزيل بأمر المالك ٢٠٢٦/٠٨/٠٩: «قم بإزالة
+          البوصلة وعبارتها». كان يرسم مركزَ بوصلةٍ عند 50٪/34٪ — موضع الوردة
+          المحذوفة — فبقاؤه بعدها يشير إلى مركزٍ لم يعد فيه شيء.) */}
 
       {/* الشفق اللوني — الفن عامل رئيسي لا خلفية: أربع هالات بألوان المناطق
           الأربع تتنفّس خلف ورق الرسم. اللون يمرّ متغيّرًا (--bp-accent) لا
@@ -332,121 +365,137 @@ export function BlueprintPage() {
             </p>
             <p className="mt-2 max-w-[62ch] text-sm text-[color:var(--ink)]">
               {ar
-                ? "أربع مناطق على بوصلة واحدة: الموضع في الرسم هو الموضع على الأرض، وطول القوس هو نسبة الامتثال."
-                : "Four regions on one compass: position in the drawing is position on the ground, and arc length is the compliance figure."}
+                ? "المناطق الأربع وحالتها على طرف، وسَدِيد في الوسط، وتحليلاته وتنبيهاته على الطرف المقابل — سطح واحد بلا تنقّل."
+                : "The four regions and their status on one side, SADEED in the middle, and its analytics and alerts on the other — one surface, no navigation."}
             </p>
           </div>
         </header>
 
-        {/* الانقسام الذهبي: 1 : 1.618 مكتوبًا في الشبكة لا مقدَّرًا بالعين. */}
-        <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.618fr)] lg:items-center">
-          <div
-            className="nx-bp-stage mx-auto w-full max-w-[430px]"
+        {/* ════ صدر الصفحة — ثلاثة أعمدة (أمر المالك ٢٠٢٦/٠٨/٠٩) ═══════════
+            المناطق `start` · سَدِيد وسطًا · تحليلاته وتنبيهاته `end`.
+            الشبكة معرَّفة في `.nx-home-triad` بأعمدة منطقية لا فيزيائية،
+            فترتيب DOM هو ترتيب العرض في الاتجاهين، وهو نفسه ترتيب التكديس
+            على الجوال (عمود واحد دون `lg`). */}
+        <section className="nx-home-triad mt-8">
+          {/* ── يمينًا (start) · المناطق الأربع بطاقات مستطيلة ───────────── */}
+          <section
+            className="nx-bp-stage"
             style={{ ["--nx-bp-i" as string]: 1 }}
+            aria-labelledby="nx-regions-heading"
           >
-            {/* لوحة الفن المركزية: هالة مخروطية بألوان المناطق تدور خلف
-                الوردة، ومداران متعاكسان حولها. ترتيب ألوان الهالة هو ترتيب
-                البوصلة نفسه — شمالها أزرق الوسطى وشرقها أخضر الشرقية —
-                فالدوران يجري على الحقيقة الجغرافية لا على الزينة. */}
-            <div
-              className="nx-bp-art relative"
-              style={{
-                ["--bp-c-n" as string]: REGION_ACCENT_HEX.central,
-                ["--bp-c-e" as string]: REGION_ACCENT_HEX.eastern,
-                ["--bp-c-s" as string]: REGION_ACCENT_HEX.southern,
-                ["--bp-c-w" as string]: REGION_ACCENT_HEX.western,
-              }}
-            >
-              <span aria-hidden className="nx-bp-halo" />
-              <span aria-hidden className="nx-bp-orbit nx-bp-orbit--a" />
-              {/* هالة المساعد — مخروط ألوان المناطق الأربع يدور خلف القلب.
-                  الصنف يبقى `nx-bp-sadeed-*`: معرّف آلة لا اسم عرض. */}
-              <span aria-hidden className="nx-bp-sadeed-halo" />
-              <RegionRosette values={compliance} activeRegion={regionId} ar={ar} />
-              {/* النقر على قلب الوردة يدخل محادثة المساعد — زر شفاف فوق القلب
-                  بحلقة تركيز ظاهرة، فيبقى الرسم زينة والفعل عنصرًا وصولًا
-                  سليمًا. الاسم المعروض من `PRODUCT_BRAND` وحده (توحيد اسم
-                  المساعد على «سَدِيد» — قرار المالك ٢٠٢٦/٠٨/٠٩)؛ المسار
-                  `/sadeed` معرّف توجيه لا يراه مستخدم فيبقى كما هو. */}
-              <Link
-                to="/sadeed"
-                aria-label={
-                  ar
-                    ? `افتح محادثة ${PRODUCT_BRAND.assistantName}`
-                    : `Open ${PRODUCT_BRAND.en.name} chat`
-                }
-                title={
-                  ar ? `تحدث مع ${PRODUCT_BRAND.assistantName}` : `Talk to ${PRODUCT_BRAND.en.name}`
-                }
-                className="nx-bp-sadeed-btn"
-              />
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="nx-bp-h2" id="nx-regions-heading">
+                {ar ? "المناطق الأربع" : "The four regions"}
+              </h2>
+              {simulation && <SimChip ar={ar} />}
             </div>
-          </div>
+            {/* الأسماء والترتيب واللكنات من `regions.ts` وحده — لا حرف منها
+                مكتوب هنا (المرجع الجغرافي الوحيد). */}
+            <ul className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              {REGIONS.map((region, i) => {
+                const pct = compliance[region.id];
+                const active = region.id === regionId;
+                const { tone, label } = regionStatus(region.id);
+                const ToneIcon = tone.icon;
+                return (
+                  <li key={region.id}>
+                    {/* كل منطقة تفتح على معلوماتها في القمرة الموحدة (قرار
+                        المالك)، والاختيار العام يواكب الوجهة قبل الانتقال.
+                        بلا `nx-bp-card` عمدًا — انظر تعليل بطاقات الشدّة:
+                        زجاجها قاعدةٌ خارج الطبقات فتمحو خلفية النغمة وحدّها
+                        فيستوي «خطر» و«تحذير». الأساس `.nx-home-region` ولا
+                        يكتب `background` ولا `border-color`. */}
+                    <Link
+                      to="/nx-cockpit"
+                      search={{ region: region.id }}
+                      onClick={() => setRegion(region.id)}
+                      aria-label={ar ? `افتح معلومات ${region.labelAr}` : `Open ${region.labelEn}`}
+                      className={`nx-home-region flex min-h-20 items-center gap-3 rounded-2xl border p-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)] ${tone.card}`}
+                      style={{
+                        ["--bp-accent" as string]: REGION_ACCENT_HEX[region.id],
+                        ["--pulse-i" as string]: i + 4,
+                      }}
+                    >
+                      {/* شعيرة لكنة المنطقة — هوية المنطقة على حافة البطاقة،
+                          وخلفيتها وحدّها مملوكان للنغمة. تُمزج نحو الحبر في
+                          الوضع الفاتح (`--bp-accent-eff`) وإلا سقطت دون 3:1. */}
+                      <span aria-hidden className="nx-home-accent" />
+                      {/* أيقونة المنطقة — دائرة نبض بلون المنطقة نفسه، وقوسها
+                          نسبة الامتثال المعروضة إلى جوارها. لم تُقَس ⇐ لا قوس
+                          (المادة ٢٧)، والدائرة تنبض لأن المنطقة حيّة لا لأنها
+                          مقيسة. الإيقاع يتفاوت بالترتيب فلا تخفق الأربع معًا. */}
+                      <PulseGlyph
+                        accent={REGION_ACCENT_HEX[region.id]}
+                        beatSeconds={0.86 + i * 0.11}
+                        size={32}
+                        ratio={pct === undefined ? null : pct / 100}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-black text-[color:var(--ink)]">
+                          {ar ? region.shortAr : region.shortEn}
+                        </span>
+                        <span className="mt-0.5 block truncate text-[12px] text-[color:var(--ink-3)]">
+                          {ar ? region.labelAr : region.labelEn}
+                        </span>
+                        {/* الحالة: شكلٌ وكلمة معًا — مثمّن «خطر» · مثلث
+                            «تحذير» · دائرة «سليم» — فلا يحملها اللون وحده. */}
+                        <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                          {ToneIcon && (
+                            <ToneIcon aria-hidden className={`h-4 w-4 shrink-0 ${tone.iconCls}`} />
+                          )}
+                          <span className={`nx-dash-chip border ${tone.badgeCls}`}>{label}</span>
+                          {/* الحالة النشطة لا تُقال باللون وحده كذلك. */}
+                          {active && (
+                            <span className="nx-dash-chip border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] text-[color:var(--ink)]">
+                              {ar ? "الحالية" : "current"}
+                            </span>
+                          )}
+                        </span>
+                      </span>
+                      <span
+                        className={`shrink-0 tabular-nums ${
+                          pct === undefined
+                            ? "text-[12px] text-[color:var(--ink-3)]"
+                            : "text-lg font-black text-[color:var(--ink)]"
+                        }`}
+                      >
+                        {pct === undefined ? notMeasured : `${Math.round(pct)}%`}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
 
-          <div
-            className="nx-bp-stage grid grid-cols-1 gap-3 sm:grid-cols-2"
+          {/* ── وسطًا · المساعد ───────────────────────────────────────────
+              فتحة تركيب لا مكوّن: المساعد يُبنى في مسار مستقل ويُركَّب هنا.
+              الحاوية تنطوي كلّيًّا وهي فارغة (`.nx-dash-slot:empty`) — فلا
+              صندوق فارغ ولا فجوة قبل أن يصلها المكوّن.
+              لا تُستورد هنا أي وحدة كوبايلوت: الاستيراد يجرّ الحزمة إلى مسار
+              الدخول ويكسر ميزانية الأداء قبل أن يصل المكوّن أصلًا. */}
+          <section
+            id="sadeed-assistant-slot"
+            data-slot="assistant"
+            aria-label={ar ? `المساعد ${PRODUCT_BRAND.assistantName}` : PRODUCT_BRAND.en.name}
+            className="nx-dash-slot nx-bp-stage w-full"
             style={{ ["--nx-bp-i" as string]: 2 }}
           >
-            {REGIONS.map((region, i) => {
-              const pct = compliance[region.id];
-              const active = region.id === regionId;
-              return (
-                /* كل منطقة تفتح على معلوماتها في القمرة الموحدة (قرار المالك)،
-                   والاختيار العام يواكب الوجهة قبل الانتقال. */
-                <Link
-                  key={region.id}
-                  to="/nx-cockpit"
-                  search={{ region: region.id }}
-                  onClick={() => setRegion(region.id)}
-                  aria-label={ar ? `افتح معلومات ${region.labelAr}` : `Open ${region.labelEn}`}
-                  className="nx-bp-region-btn nx-bp-card group flex min-h-14 items-center gap-3 rounded-2xl p-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
-                  style={{
-                    ["--bp-accent" as string]: REGION_ACCENT_HEX[region.id],
-                    ["--pulse-i" as string]: i + 4,
-                  }}
-                >
-                  {/* أيقونة المنطقة — دائرة نبض بلون المنطقة نفسه، وقوسها
-                      نسبة الامتثال المعروضة إلى جوارها. لم تُقَس ⇐ لا قوس
-                      (المادة ٢٧)، والدائرة تنبض لأن المنطقة حيّة لا لأنها
-                      مقيسة. الإيقاع يتفاوت بالترتيب فلا تخفق الأربع معًا. */}
-                  <PulseGlyph
-                    accent={REGION_ACCENT_HEX[region.id]}
-                    beatSeconds={0.86 + i * 0.11}
-                    size={32}
-                    ratio={pct === undefined ? null : pct / 100}
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-black text-[color:var(--ink)]">
-                      {ar ? region.shortAr : region.shortEn}
-                    </span>
-                    <span className="mt-0.5 block truncate text-[12px] text-[color:var(--ink-3)]">
-                      {ar ? region.labelAr : region.labelEn}
-                    </span>
-                  </span>
-                  <span
-                    className={`shrink-0 tabular-nums ${
-                      pct === undefined
-                        ? "text-[12px] text-[color:var(--ink-3)]"
-                        : "text-lg font-black text-[color:var(--ink)]"
-                    }`}
-                  >
-                    {pct === undefined ? notMeasured : `${Math.round(pct)}%`}
-                  </span>
-                  {/* الحالة النشطة لا تُقال باللون وحده: شارة نصّية تصحبها. */}
-                  {active && (
-                    <span className="shrink-0 rounded-md border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] px-1.5 py-0.5 text-[12px] font-semibold text-[color:var(--ink)]">
-                      {ar ? "الحالية" : "current"}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+            <SadeedStagePresence />
+          </section>
+
+          {/* ── يسارًا (end) · تحليلات سَدِيد ثم تنبيهاته ─────────────────
+              الاثنان يقرآن لقطة محاكاة حتمية موسومة بشارتها الخاصة
+              (`SimBadge`)، فلا يُنسب إليهما قياس حيّ. */}
+          <div className="nx-bp-stage flex flex-col gap-4" style={{ ["--nx-bp-i" as string]: 3 }}>
+            <SadeedUsageAnalytics />
+            <SadeedAnomalyStrip />
           </div>
         </section>
 
         <section
           className="nx-bp-stage mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
-          style={{ ["--nx-bp-i" as string]: 3 }}
+          style={{ ["--nx-bp-i" as string]: 4 }}
         >
           {panels.map((panel, i) => (
             <Link
@@ -474,7 +523,7 @@ export function BlueprintPage() {
             القيم من `getCommandCenterState` وحدها، والغياب نصّ لا صفر. */}
         <section
           className="nx-bp-stage mt-8"
-          style={{ ["--nx-bp-i" as string]: 4 }}
+          style={{ ["--nx-bp-i" as string]: 5 }}
           aria-labelledby="nx-dash-heading"
         >
           <div className="flex flex-wrap items-center gap-3">
@@ -501,23 +550,6 @@ export function BlueprintPage() {
               </div>
             ))}
           </div>
-        </section>
-
-        {/* ════ ٤ · موضع المساعد — منتصف الصفحة ═══════════════════════════
-            فتحة تركيب لا مكوّن: المساعد يُبنى في مسار مستقل، ويُركَّب هنا
-            داخل الحاوية أدناه. الحاوية مركزية بعرض مضبوط وتنطوي كلّيًّا وهي
-            فارغة (`.nx-dash-slot:empty { display: none }`) — فلا صندوق فارغ
-            ولا فجوة رأسية على الإنتاج قبل أن يصلها المكوّن.
-            لا تُستورد هنا أي وحدة كوبايلوت: الاستيراد يجرّ الحزمة إلى مسار
-            الدخول ويكسر ميزانية الأداء قبل أن يصل المكوّن أصلًا. */}
-        <section
-          id="sadeed-assistant-slot"
-          data-slot="assistant"
-          aria-label={ar ? `المساعد ${PRODUCT_BRAND.assistantName}` : PRODUCT_BRAND.en.name}
-          className="nx-dash-slot nx-bp-stage mx-auto mt-8 w-full max-w-[760px]"
-          style={{ ["--nx-bp-i" as string]: 5 }}
-        >
-          <SadeedStagePresence />
         </section>
 
         {/* ════ ٢ · توصيات سَدِيد ═════════════════════════════════════════

@@ -133,8 +133,11 @@ export function SadeedStagePresence({ className }: SadeedStagePresenceProps) {
         </p>
 
         {/* الأفعال: عمود على الجوال وصفّ على الشاشات الأوسع. كل هدف ≥ ٤٤px
-            ارتفاعًا (‏min-h-12‏ = ‏48px‏) — §2.5.8. */}
-        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-center sm:gap-3">
+            ارتفاعًا (‏min-h-12‏ = ‏48px‏) — §2.5.8.
+            و`flex-wrap` واجبة منذ ٢٠٢٦/٠٨/٠٩: صار السطح يعيش في العمود
+            الأوسط من ثلاثة، فثلاثة أزرار في صفٍّ واحد تتجاوز عرض العمود
+            (قِيس ٣١px فائضًا على ١٠٢٤px). تلتفّ فتنزل تحتها بدل أن تُقصّ. */}
+        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
           <button
             type="button"
             onPointerDown={unlockAudio}

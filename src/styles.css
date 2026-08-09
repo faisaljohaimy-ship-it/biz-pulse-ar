@@ -5381,10 +5381,9 @@ html.dark .nx-holo-noise {
   mask-image: radial-gradient(125% 95% at 50% 26%, #000 28%, transparent 76%);
 }
 
-.nx-bp-compass {
-  color: var(--ink);
-  opacity: 0.055;
-}
+/* (أثر الفرجار `.nx-bp-compass` — أُزيل بأمر المالك ٢٠٢٦/٠٨/٠٩ مع عنصره
+   في الترميز. وشبكة ورق الرسم `.nx-bp-surface::before` تبقى: هي ركيزة
+   السطح لا إشارة بوصلة.) */
 
 /* (── المسطرة ── : `.nx-bp-rail` و`.nx-bp-rail-sweep` و`@keyframes nxBpSweep`
    أُزيلت ٢٠٢٦/٠٨/٠٩ مع مكوّن `MeasureRail` الذي كان حاملها الوحيد.) */
@@ -5397,94 +5396,84 @@ html.dark .nx-holo-noise {
    والدخول المحذوف كان يترك البطاقة شفافة ومزاحة حتى ينتهي؛ بغيابه لا حاجة
    إلى إنقاذها بـ`opacity: 1` عند تقليل الحركة. */
 
-/* ── الوردة ─────────────────────────────────────────────────────────────── */
+/* ── صدر الرئيسية: التخطيط الثلاثي (أمر المالك ٢٠٢٦/٠٨/٠٩) ────────────────
+   «المناطق الأربع فاليمين مستطيلة وسَدِيد فالمنتصف وتحليلات سَدِيد +
+   التنبيهات فاليسار».
 
-.nx-bp-region {
-  --bp-accent-eff: var(--bp-accent);
+   الأعمدة تُكتب في `grid-template-columns` **لا** بمواضع فيزيائية: ترتيب
+   خلايا الشبكة يتبع اتجاه الكتابة، فالخلية الأولى تقع `start` — يمينًا في
+   العربية ويسارًا في الإنجليزية — بلا سطر ثانٍ ولا `direction: rtl` مكتوبة.
+   ودون `lg` عمودٌ واحد: التكديس هو ترتيب DOM نفسه، فلا يتبدّل الترتيب بين
+   المقاسين. و`minmax(0, …)` واجبة: بغير حدٍّ أدنى صفري يتمدّد العمود بمحتواه
+   (جدول أو شريط منزلق) فيدفع الصفحة إلى تمرير أفقي على ٣٩٠px. */
+
+.nx-home-triad {
+  display: grid;
+  /* `minmax(0, 1fr)` لا `auto`: مسار الشبكة التلقائي حجمه الأساسي
+     **max-content** لمحتواه، فعمودٌ واحد يحمل لوحة تحليلات ذات شريط رقاقات
+     أفقي يتمدّد إلى عرض محتواه ويتجاوز الحاوية بمئات البكسلات. وفي صفحةٍ
+     `rtl` يخرج الفائض إلى اليسار — أي في الاتجاه السالب — فلا يزيد
+     `scrollWidth` ولا يلتقطه فحص التمرير الأفقي: المحتوى يُقصّ خارج الشاشة
+     بصمت. قِيس على ٣٩٠px: ٥٣١px فائضًا قبل هذا السطر. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
 }
 
-/* المسار ليس خلفية بل هيكل: حين لا يُقاس شيء فهو كلّ ما تراه العين، فإن
-   بهت قرئت الوردة حلقةً مكسورة لا آلةً فارغة. يحمل لهجة منطقته باهتةً
-   ليبقى الشكل مؤلَّفًا وصادقًا معًا. */
-.nx-bp-track {
-  stroke: color-mix(in srgb, var(--bp-accent-eff) 17%, transparent);
-}
-
-/* الأسماء عند الشرق والغرب تتجاوز مربّع الرسم بنحو ٩px. `overflow: visible`
-   يدعها تُطبع كاملة بدل أن تُقصّ («لشرقية» بلا ألفها)، وهو أرخص من توسيع
-   viewBox لأن ذلك كان سيصغّر الوردة كلّها لأجل حرفين. الفائض أصغر من فجوة
-   الشبكة (24px) فلا يلامس الجار. */
-.nx-bp-rosette {
-  overflow: visible;
-}
-
-.nx-bp-region-name {
-  fill: var(--ink-2);
-  font-size: 10.5px;
-  font-weight: 700;
-}
-
-.nx-bp-region[data-active] .nx-bp-region-name {
-  fill: var(--ink);
-}
-
-.nx-bp-region[data-active] .nx-bp-track {
-  stroke: color-mix(in srgb, var(--bp-accent-eff) 26%, transparent);
-}
-
-.nx-bp-spoke {
-  stroke: color-mix(in srgb, var(--bp-accent-eff) 42%, transparent);
-}
-
-.nx-bp-arc {
-  stroke: var(--bp-accent-eff);
-  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--bp-accent-eff) 85%, transparent))
-    drop-shadow(0 0 20px color-mix(in srgb, var(--bp-accent-eff) 45%, transparent));
-  stroke-dasharray: var(--bp-arc-len);
-  stroke-dashoffset: var(--bp-arc-len);
-  animation: nxBpDraw 900ms var(--nx-ease-out) both;
-  animation-delay: calc(320ms + var(--bp-arc-i, 0) * 110ms);
-}
-
-@keyframes nxBpDraw {
-  to {
-    stroke-dashoffset: 0;
+@media (min-width: 1024px) {
+  .nx-home-triad {
+    /* النسب قِيست لا قُدِّرت: العمود الأخير يحمل مخطّطًا بسبعة أعمدة
+       بلافتاتها (٢٣٩px حدًّا أدنى مع حشوتيه)، فحصّته أوسع من حصّة الوسط —
+       وبطاقة المساعد تتوسّط عرضها أيًّا كان. تُبقي الأعمدة الثلاثة داخل
+       حدودها على ١٠٢٤px، وهي أضيق عرضٍ يظهر عنده التخطيط الثلاثي. */
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1.2fr);
+    align-items: start;
   }
 }
 
-/* المنطقة النشطة تُميَّز بالسُّمك والإشعاع لا باللون وحده — اللون مأخوذ
-   أصلًا لهوية المنطقة، فلا يبقى له طاقة ليقول «نشطة» أيضًا. */
-.nx-bp-region[data-active] .nx-bp-arc {
-  stroke-width: 14;
-  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--bp-accent-eff) 95%, transparent))
-    drop-shadow(0 0 26px color-mix(in srgb, var(--bp-accent-eff) 55%, transparent));
+/* بطاقة المنطقة المستطيلة.
+   **لا `background` ولا `border-color` هنا** — للسبب البنيوي نفسه المشروح
+   عند `.nx-risk-card` أدناه: زجاج `.nx-bp-card` قاعدةٌ خارج الطبقات فتعلو
+   أدوات Tailwind كلّها وتمحو خلفية النغمة وحدّها، فيستوي «خطر» و«تحذير»
+   بلا سقوط أي فحص. الحدّ والخلفية مِلكُ `STAT_TONES` وحده.
+   وما يبقى هنا هو التغذية الراجعة: ارتفاعٌ عند التمرير وانكماشٌ عند الضغط
+   (مدرسة كوالسكي) — استجابةٌ للمستخدم لا حركةٌ تلقائية، فلا تسقط مع تسكين
+   البطاقات ولا مع تقليل الحركة. */
+.nx-home-region {
+  --bp-accent-eff: var(--bp-accent);
+  position: relative;
+  isolation: isolate;
+  transition:
+    translate 200ms var(--nx-ease-out),
+    scale 150ms var(--nx-ease-out);
 }
 
-.nx-bp-region[data-active] .nx-bp-spoke {
-  stroke: var(--bp-accent-eff);
-  stroke-dasharray: none;
+.nx-home-region:hover {
+  translate: 0 -2px;
 }
 
-.nx-bp-hub {
-  fill: var(--chip-strong);
-  stroke: var(--hairline);
+.nx-home-region:active {
+  translate: 0 0;
+  scale: 0.98;
 }
 
-/* ── أزرار المناطق ──────────────────────────────────────────────────────── */
-
-.nx-bp-region-btn[aria-pressed="true"] {
-  border-color: var(--bp-accent);
-  box-shadow:
-    inset 0 1px 0 var(--glass-rim),
-    inset 0 0 0 1px color-mix(in srgb, var(--bp-accent) 30%, transparent);
+/* اللكنات مصمّمة على الكحلي. على الأبيض يهبط السماوي دون 3:1 فيصير الشكل
+   حاضرًا غير مقروء (WCAG 2.2 §1.4.11) — يُمزج نحو الحبر فيعود فوق العتبة
+   بلا فقد هوية. المحدِّد مُقيَّد بالصنف (0,2,0) ليعلو القاعدة العامة (0,1,0)
+   يقينًا لا احتمالًا. */
+.light .nx-home-region {
+  --bp-accent-eff: color-mix(in srgb, var(--bp-accent) 66%, #05080f);
 }
 
-.nx-bp-region-btn:hover {
-  border-color: var(--hairline-hover);
-}
-
-.light .nx-bp-region-btn[aria-pressed="true"] {
-  border-color: color-mix(in srgb, var(--bp-accent) 68%, #05080f);
+/* شعيرة لكنة المنطقة — عنصر في مجرى الـflex لا مطلق الموضع: فترتيبه منطقي
+   يتبع الاتجاه، ولا يفرض على البطاقة كتلةَ احتواء تُنزِّل إليها كل
+   `position: fixed` بداخلها. */
+.nx-home-accent {
+  flex: 0 0 auto;
+  align-self: stretch;
+  inline-size: 4px;
+  min-block-size: 44px;
+  border-radius: 999px;
+  background: var(--bp-accent-eff);
 }
 
 /* ── لوحات القياس ───────────────────────────────────────────────────────── */
@@ -5506,24 +5495,9 @@ html.dark .nx-holo-noise {
 }
 
 /* ── الوضع الفاتح ───────────────────────────────────────────────────────── */
-/* اللهجات مصمّمة على الكحلي. على الأبيض يهبط السماوي إلى ما دون 3:1 فيصير
-   الشكل حاضرًا وغير مقروء — وهو أسوأ من غيابه. المزج نحو الحبر يعيده فوق
-   العتبة دون أن يفقد هويته. المحدِّد مُقيَّد بالصنف (0,2,0) ليعلو يقينًا. */
-
-.light .nx-bp-region {
-  --bp-accent-eff: color-mix(in srgb, var(--bp-accent) 66%, #05080f);
-}
-
-/* اللمعان مطلب صريح في الوضعين: خط القوس يحفظ تباينه بمزج الحبر، والتوهّج
-   يُترك للّون الصافي — فهو زينة حول الخط لا الخط نفسه (WCAG محفوظ). */
-.light .nx-bp-arc {
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--bp-accent) 40%, transparent));
-}
-
-.light .nx-bp-region[data-active] .nx-bp-arc {
-  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--bp-accent) 55%, transparent));
-  stroke-width: 14;
-}
+/* (نسخة `.light` للكنات المناطق انتقلت إلى `.light .nx-home-region` أعلاه مع
+   حاملها: الوردة حُذفت ٢٠٢٦/٠٨/٠٩ والقاعدة نفسها — المزج نحو الحبر — بقيت
+   سارية على شعيرة البطاقة المستطيلة.) */
 
 .light .nx-bp-panel-corner {
   border-block-start-color: color-mix(in srgb, rgb(var(--bp-accent-rgb)) 62%, #05080f);
@@ -5532,50 +5506,42 @@ html.dark .nx-holo-noise {
 
 /* ── الوصول ─────────────────────────────────────────────────────────────── */
 
-/* الحركة تسقط إلى حالتها النهائية، لا إلى العدم: من يطلب تقليل الحركة يريد
-   السكون لا الفراغ. */
-@media (prefers-reduced-motion: reduce) {
-  .nx-bp-arc {
-    animation: none !important;
-    opacity: 1;
-    translate: none;
-    stroke-dashoffset: 0;
-  }
-}
+/* (كتلة تقليل الحركة التي كانت هنا كان موضوعها قوسَ الوردة وحده: رسمٌ
+   بـ`stroke-dashoffset` متحرّك يبقى نصفَ مرسوم لو أُلغيت حركته بلا إنقاذ.
+   ذهب القوس مع الوردة ٢٠٢٦/٠٨/٠٩، ولم يبقَ في هذه الطبقة رسمٌ يُسكَّن إلى
+   حالةٍ عالقة — والتسكين الباقي في كتلة طبقة الفن أدناه.) */
 
-/* الشفافية المخفَّضة: الشبكة والفرجار زينة محضة، فتُرفع كلفتها البصرية. */
+/* الشفافية المخفَّضة: شبكة ورق الرسم زينة محضة، فتُرفع كلفتها البصرية. */
 @media (prefers-reduced-transparency: reduce) {
-  .nx-bp-surface::before,
-  .nx-bp-compass {
+  .nx-bp-surface::before {
     display: none;
   }
 }
 
-/* الألوان القسرية تُلغي `stroke` المحسوب، فيُعاد الرسم إلى ألوان النظام
-   ليبقى الشكل مقروءًا بدل أن يختفي. */
+/* الألوان القسرية تُلغي كل لون محسوب، فتُعاد العناصر الحاملة للمعنى إلى
+   ألوان النظام لتبقى مرئية بدل أن تختفي. */
 @media (forced-colors: active) {
-  .nx-bp-arc,
-  .nx-bp-spoke {
-    stroke: CanvasText;
-    filter: none;
+  /* شعيرة لكنة المنطقة خلفيةٌ محضة، والخلفيات تُفرض إلى `Canvas` في هذا
+     الوضع — أي تختفي الشعيرة تمامًا. تُعاد إلى `CanvasText` لتبقى حدًّا
+     مرئيًّا بين البطاقات. */
+  .nx-home-accent {
+    background: CanvasText;
   }
 
-  .nx-bp-hub {
-    fill: Canvas;
-    stroke: CanvasText;
-  }
-
-  .nx-bp-surface::before,
-  .nx-bp-compass {
+  .nx-bp-surface::before {
     display: none;
   }
 }
 
-/* ── طبقة الفن — الشفق والهالة والمدارات ─────────────────────────────────
-   الفن هنا عامل رئيسي لا خلفية: شفق بألوان المناطق الأربع يتنفّس خلف ورق
-   الرسم، وهالة مخروطية تدور خلف الوردة على ترتيب البوصلة نفسه، ومداران
-   متعاكسان يعلنان أن الآلة حيّة. كل لون يمرّ متغيّرًا (--bp-accent /
-   --bp-c-*) لا قيمة نهائية — المادة ٣٣. */
+/* ── طبقة الفن — الشفق ────────────────────────────────────────────────────
+   الفن هنا عامل رئيسي لا خلفية: أربع هالات بألوان المناطق الأربع تتنفّس
+   خلف ورق الرسم. كل لون يمرّ متغيّرًا (--bp-accent) لا قيمة نهائية —
+   المادة ٣٣.
+
+   (كان معها في هذه الطبقة هالةٌ مخروطية ومداران يدوران «على ترتيب البوصلة
+   نفسه» — ذهبت ثلاثتها ٢٠٢٦/٠٨/٠٩ مع الوردة التي كانت تدور حولها، والوصف
+   نفسه صار يشير إلى ترتيبٍ لا وجود له. والشفق باقٍ لأنه لا يشير إلى موضع:
+   بقعُ ضوءٍ في أركان الصفحة، لا مواضع مناطق على الأرض.) */
 
 .nx-bp-aurora {
   position: absolute;
@@ -5631,79 +5597,21 @@ html.dark .nx-holo-noise {
   filter: blur(74px);
 }
 
-.nx-bp-art {
-  --bp-halo-ring: color-mix(in srgb, var(--ink) 20%, transparent);
-}
+/* (طبقة فن الوردة — `.nx-bp-art` و`.nx-bp-halo` وحلقتاها `.nx-bp-orbit*`
+   وأطراف الأقواس `.nx-bp-arc-tip` وإطارها `nxBpTip` — أُزيلت ٢٠٢٦/٠٨/٠٩ مع
+   الوردة نفسها: لم تكن زينةً عامّة بل مدارات حول رسمٍ بعينه، فبقاؤها بلا
+   حاملٍ تركةٌ ميتة تعود سطحًا حيًّا بأول لصقٍ لاحق. والشفق `.nx-bp-aurora`
+   والخيط والحزمتان يبقون — هم خلفية الصفحة لا حاشية الرسم.) */
 
-/* الهالة: مخروط ألوان المناطق على مواضعها الجغرافية — يُقنَّع حلقةً لا
-   قرصًا كي لا يطمس قلب الوردة، ويدور دورة كاملة كل ١٨ ثانية. */
-.nx-bp-halo {
-  position: absolute;
-  inset: -9%;
-  border-radius: 999px;
-  pointer-events: none;
-  background: conic-gradient(
-    from 0deg,
-    color-mix(in srgb, var(--bp-c-n) 55%, transparent),
-    color-mix(in srgb, var(--bp-c-e) 55%, transparent),
-    color-mix(in srgb, var(--bp-c-s) 55%, transparent),
-    color-mix(in srgb, var(--bp-c-w) 55%, transparent),
-    color-mix(in srgb, var(--bp-c-n) 55%, transparent)
-  );
-  -webkit-mask-image: radial-gradient(
-    closest-side,
-    transparent 56%,
-    #000 72%,
-    #000 84%,
-    transparent 96%
-  );
-  mask-image: radial-gradient(closest-side, transparent 56%, #000 72%, #000 84%, transparent 96%);
-  filter: blur(14px);
-  opacity: 0.6;
-  animation: nxBpSpin 18s linear infinite;
-}
-
+/* `nxBpSpin` **يبقى**: مستهلكه لم يعد في هذه الطبقة — هالة قلب المسرح
+   (`.nx-fl-core-halo`) تدور به أيضًا. حذفه مع حامله الأول كان سيوقف حركةً
+   حيّة في سطحٍ آخر بلا أن يسقط بناءٌ ولا فحص. */
 @keyframes nxBpSpin {
   from {
     rotate: 0deg;
   }
   to {
     rotate: 360deg;
-  }
-}
-
-.light .nx-bp-halo {
-  opacity: 0.42;
-}
-
-/* مداران متعاكسان — خطّا إنشاء يدوران ببطء شديد حول الوردة. */
-.nx-bp-orbit {
-  position: absolute;
-  border-radius: 999px;
-  pointer-events: none;
-  border: 1px dashed var(--bp-halo-ring);
-}
-
-.nx-bp-orbit--a {
-  inset: -4.5%;
-  animation: nxBpSpin 64s linear infinite;
-}
-
-/* رأس المدار — نقطة ضوء تجري على الحلقة فتقول «حيّ» بلا صوت. */
-/* أطراف الأقواس — لمعة عند حدَّي كل قوس مقيس، تظهر بعد اكتمال رسمه. */
-.nx-bp-arc-tip {
-  fill: var(--bp-accent-eff);
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--bp-accent-eff) 90%, transparent));
-  animation: nxBpTip 700ms var(--nx-ease-out) both;
-  animation-delay: calc(560ms + var(--bp-arc-i, 0) * 110ms);
-}
-
-@keyframes nxBpTip {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 
@@ -5837,8 +5745,10 @@ html.dark .nx-holo-noise {
   text-shadow: 0 0 34px color-mix(in srgb, var(--tone-cyan) 32%, transparent);
 }
 
-/* أزرار المناطق تلمع بلون منطقتها — ساكنة لا رهينة تمرير (المادة ٣٢). */
-.nx-bp-region-btn {
+/* بطاقات المناطق تلمع بلون منطقتها — ساكنة لا رهينة تمرير (المادة ٣٢).
+   `box-shadow` وحده هنا: الخلفية والحدّ مِلكُ النغمة، وكتابتهما في قاعدةٍ
+   خارج الطبقات كانت ستمحوها بصمت. */
+.nx-home-region {
   box-shadow:
     inset 0 1px 0 var(--glass-rim),
     0 0 24px -14px color-mix(in srgb, var(--bp-accent) 55%, transparent);
@@ -5949,10 +5859,8 @@ html.dark .nx-holo-noise {
 /* (بطاقات «الوكلاء على المناوبة» `.nx-bp-agent` — ولهجتها `--op-hue` —
    أُزيلت ٢٠٢٦/٠٨/٠٩ بقرار المالك: القسم كلّه حُذف من الرئيسية.) */
 
-.nx-bp-hub-ring {
-  stroke: color-mix(in srgb, var(--tone-cyan) 60%, var(--hairline));
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--tone-cyan) 45%, transparent));
-}
+/* (حلقة قلب الوردة `.nx-bp-hub-ring` وقرصها `.nx-bp-hub` — أُزيلا
+   ٢٠٢٦/٠٨/٠٩ مع الوردة: كانا دائرتَي SVG داخلها لا غير.) */
 
 /* ── الترقية الهولوغرامية: زجاج شفاف ثلاثي الأبعاد وبريق حواف ─────────────
    (قرار المالك ٢٠٢٦/٠٨/٠٤): كل بطاقة زجاج حقيقي (backdrop-filter) بعمق
@@ -5996,77 +5904,13 @@ html.dark .nx-holo-noise {
   }
 }
 
-/* هالة فِن — مخروط ألوان المناطق الأربع يدور خلف القلب ويشعّ من حوله. */
-.nx-bp-sadeed-halo {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  inline-size: 41%;
-  aspect-ratio: 1;
-  border-radius: 999px;
-  pointer-events: none;
-  background: conic-gradient(
-    from 0deg,
-    var(--bp-c-n),
-    var(--bp-c-e),
-    var(--bp-c-s),
-    var(--bp-c-w),
-    var(--bp-c-n)
-  );
-  filter: blur(14px);
-  opacity: 0.9;
-  /* الدوران والتنفس على خاصيتين مستقلتين (rotate/scale) فيتراكبان. */
-  animation:
-    nxBpSpin 10s linear infinite,
-    nxBpHaloBeat 4s ease-in-out infinite;
-}
+/* (هالة قلب الوردة `.nx-bp-sadeed-halo` وإطارها `nxBpHaloBeat`، وزرّ القلب
+   الشفّاف `.nx-bp-sadeed-btn` بحالاته الأربع — أُزيلت ٢٠٢٦/٠٨/٠٩ مع الوردة.
+   ومدخل المحادثة لم يُفقد: صار زرّين مكتوبين بأسمائهما في
+   `SadeedStagePresence` وسط الصفحة — هدفٌ ٤٨px بنصّ يُقرأ، بدل مساحة شفافة
+   ٣٠٪ فوق رسمٍ لا يُخبر أنه قابل للنقر.) */
 
-@keyframes nxBpHaloBeat {
-  0%,
-  100% {
-    scale: 1;
-  }
-  50% {
-    scale: 1.06;
-  }
-}
-
-.light .nx-bp-sadeed-halo {
-  opacity: 0.6;
-}
-
-/* زر فِن — شفاف فوق القلب؛ التمرير والتركيز يوقدان حلقته. */
-.nx-bp-sadeed-btn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  inline-size: 30%;
-  aspect-ratio: 1;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: box-shadow var(--nx-anim-fast) var(--nx-ease-out);
-}
-
-.nx-bp-sadeed-btn:hover {
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--tone-cyan) 80%, transparent),
-    0 0 28px color-mix(in srgb, var(--tone-cyan) 60%, transparent);
-}
-
-.nx-bp-sadeed-btn:focus-visible {
-  outline: 2px solid var(--tone-cyan);
-  outline-offset: 3px;
-}
-
-/* لمعان مضاعف: حلقة القلب، الرموز، زوايا اللوحات، العنوان، الشفق. */
-.nx-bp-hub-ring {
-  stroke: var(--tone-cyan);
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--tone-cyan) 85%, transparent))
-    drop-shadow(0 0 22px color-mix(in srgb, var(--tone-cyan) 50%, transparent));
-}
-
+/* لمعان مضاعف: الرموز، زوايا اللوحات، العنوان، الشفق. */
 .nx-bp-panel-corner {
   filter: drop-shadow(0 0 9px rgba(var(--bp-accent-rgb), 0.65));
 }
@@ -6162,10 +6006,6 @@ html.dark .nx-holo-noise {
     0 0 26px -16px color-mix(in srgb, var(--live) 35%, transparent);
 }
 
-.nx-bp-hub-ring {
-  stroke: color-mix(in srgb, var(--live) 70%, var(--tone-cyan));
-}
-
 /* الجوال: زجاج أخف وفيلم أهدأ — مظهر فاخر ببطارية رحيمة. */
 @media (max-width: 640px) {
   .nx-bp-card {
@@ -6201,23 +6041,6 @@ html.dark .nx-holo-noise {
   scale: 0.985;
 }
 
-.nx-bp-region-btn {
-  transition:
-    translate 200ms var(--nx-ease-out),
-    scale 150ms var(--nx-ease-out),
-    border-color var(--nx-anim-fast) var(--nx-ease-out),
-    box-shadow 200ms var(--nx-ease-out);
-}
-
-.nx-bp-region-btn:hover {
-  translate: 0 -2px;
-}
-
-.nx-bp-region-btn:active {
-  translate: 0 0;
-  scale: 0.98;
-}
-
 .nx-bp-more {
   transition:
     border-color var(--nx-anim-fast) var(--nx-ease-out),
@@ -6225,10 +6048,6 @@ html.dark .nx-holo-noise {
 }
 
 .nx-bp-more:active {
-  scale: 0.97;
-}
-
-.nx-bp-sadeed-btn:active {
   scale: 0.97;
 }
 
@@ -6244,28 +6063,19 @@ html.dark .nx-holo-noise {
    المخفَّضة والألوان القسرية تُسقطان الزينة كلّها. */
 @media (prefers-reduced-motion: reduce) {
   .nx-bp-aurora,
-  .nx-bp-halo,
-  .nx-bp-orbit--a,
   .nx-bp-ribbon,
-  .nx-bp-beam,
-  .nx-bp-sadeed-halo,
-  .nx-bp-arc-tip {
+  .nx-bp-beam {
     animation: none !important;
   }
 
-  /* (`.nx-bp-float` خرج من هنا ٢٠٢٦/٠٨/٠٩: لم يبقَ عليه ما يُسكَّن — ما فيه
-     انتقالُ مقياسٍ عند التمرير والضغط، وذاك استجابةٌ للمستخدم تبقى.) */
-
-  .nx-bp-arc-tip {
-    opacity: 1;
-  }
+  /* (`.nx-bp-float` و`.nx-home-region` خارج هذه الكتلة: ما فيهما انتقالُ
+     مقياسٍ وإزاحةٍ عند التمرير والضغط — استجابةٌ للمستخدم تبقى، لا حركةٌ
+     تلقائية تُسكَّن. وأطراف الأقواس خرجت مع الوردة نفسها ٢٠٢٦/٠٨/٠٩.) */
 }
 
 @media (prefers-reduced-transparency: reduce) {
   .nx-bp-aurora,
-  .nx-bp-halo,
-  .nx-bp-beam,
-  .nx-bp-sadeed-halo {
+  .nx-bp-beam {
     display: none;
   }
 
@@ -6284,19 +6094,11 @@ html.dark .nx-holo-noise {
 
 @media (forced-colors: active) {
   .nx-bp-aurora,
-  .nx-bp-halo,
-  .nx-bp-orbit,
   .nx-bp-ribbon,
   .nx-bp-beam,
-  .nx-bp-sadeed-halo,
   .nx-hv,
   .nx-bp-panel::after {
     display: none;
-  }
-
-  .nx-bp-hub-ring {
-    stroke: CanvasText;
-    filter: none;
   }
 
   .nx-bp-title {
@@ -6304,17 +6106,11 @@ html.dark .nx-holo-noise {
     -webkit-text-fill-color: currentColor;
   }
 
-  .nx-bp-arc-tip {
-    fill: CanvasText;
-    filter: none;
-  }
-
-  /* توهّجات الرموز والأقواس أدنى في ترتيب المصدر من كتلة forced-colors
-     الأصلية، ونسخ .light نوعيّتها (0,2,0) تعلو قاعدتها — فتُطفأ هنا صراحةً
-     بنوعية مساوية أو أعلى كي لا يعود بريق حول رسمٍ فُرض لونه. */
-  .light .nx-bp-arc,
-  .light .nx-bp-region[data-active] .nx-bp-arc {
-    filter: none;
+  /* توهّج شعيرة المنطقة أدنى في ترتيب المصدر من الكتلة الأولى، ونسخة
+     `.light` نوعيّتها (0,2,0) تعلو قاعدتها — فيُطفأ هنا صراحةً بنوعية
+     مساوية أو أعلى كي لا يعود بريق حول رسمٍ فُرض لونه. */
+  .light .nx-home-accent {
+    background: CanvasText;
   }
 }
 
@@ -8192,10 +7988,15 @@ html.dark .nx-holo-noise {
   color: var(--ink-3);
 }
 
+/* رقاقة المرحلة في شريط القرارات.
+   ١٢px لا ١١: أرضية القراءة التي يقيسها `scripts/ui-audit.mjs`. كانت ١١px
+   فتسقط الرقاقة في الفحص الميداني على كل مقاسٍ يصل فيه صفُّ القرارات قبل
+   انتهاء مهلة الاستقرار — وهو ما جعل السقوط يبدو متقطّعًا (٥ من ٨ مرّةً
+   و٨ من ٨ أخرى) فقُرئ ضجيجًا لا عطلًا. الكلمة نفسها بحجمها الوظيفي. */
 .nx-op-stage {
   font-style: normal;
   font-weight: 800;
-  font-size: 11px;
+  font-size: 12px;
   border-radius: 6px;
   padding: 1px 6px;
   color: var(--tone-cyan);
@@ -9101,7 +8902,9 @@ html[data-nx-motion="off"] .nx-pulse-spark {
      القوس والشرارة ملوَّنَين في الوضع القسري بينما فُرض على إخوتهما لون
      النظام — أي أن الوضع الموضوع لإزالة اللون يُبقي أبرز خطّين ملوَّنَين.
      ثبت بالقياس الحيّ لا بالافتراض: `getComputedStyle` أعاد أزرق للقوس
-     تحت forced-colors قبل هذا السطر. (نفس درس `.light .nx-bp-arc` أعلاه.) */
+     تحت forced-colors قبل هذا السطر. (نفس درس `.light .nx-home-accent` في
+     طبقة المُخطَّط أعلاه — والدرس أقدم من حامله: كان مكتوبًا على قوس وردة
+     المناطق قبل حذفها ٢٠٢٦/٠٨/٠٩، وانتقل إلى الشعيرة التي ورثت موضعه.) */
   .nx-pulse-ring,
   .nx-pulse-track,
   .nx-pulse-spark,

@@ -127,13 +127,85 @@ const collect = ({ minFont, minTarget }) => {
     }
   }
 
+  // ① الصفحة تُمرَّر أفقيًّا: `scrollWidth` يتجاوز `clientWidth`.
+  const de = document.documentElement;
+  const overflow = de.scrollWidth - de.clientWidth;
+
+  // ② المحتوى مقصوص خارج الشاشة — وهذا ما كان يفلت.
+  //
+  // القياس الأول وحده يمسك «الصفحة تُمرَّر»، ولا يمسك «الصفحة لا تُمرَّر
+  // والمحتوى مقطوع». في RTL يخرج الفائض **يسارًا** فيقع في المنطقة السالبة،
+  // وإن كان له سلفٌ بـ`overflow: hidden` فلا يزيد `scrollWidth` أصلًا: لا
+  // شريط تمرير ولا رقم — والنصف الأيسر من الصفحة غير موجود على الشاشة.
+  // قِيس على هذا السطح فعلًا ٥٣١px مقطوعة على ٣٩٠px والفحص يعطي «✓».
+  //
+  // **الصياغة الأولى كانت بلا قيمة، وكُشفت بقياس سلبي.** كانت تتجاهل كل
+  // عنصر له سلفٌ `overflow` غير `visible` — و`<main>` على هذا السطح يحمل
+  // `overflow-hidden`، فأُلغي الفحص كلّه على الصفحة التي وُضع لها: حُقن كسرٌ
+  // عرضه 1600px على شاشة 390px فمرّ الفحص أخضر.
+  //
+  // القاعدة الصحيحة تفرّق بين قاصٍّ وقاصّ:
+  //   · `auto`/`scroll` — تمريرٌ مقصود، والمحتوى **يمكن بلوغه**. يُتجاهل.
+  //     (حاوية جدول المخاطر منه.)
+  //   · `hidden`/`clip` — قصٌّ بلا مخرج: ما خرج **لا يُبلَغ أبدًا**. يُقاس
+  //     على صندوق القاصّ نفسه لا على نافذة العرض.
+  //
+  // وتُقاس **العناصر التي تحمل نصًّا مرئيًّا أو تكون عناصر تحكّم** وحدها:
+  // توهّج زخرفيّ يتجاوز بطاقته ليس عطلًا، وفقدُ سطرٍ أو زرٍّ هو العطل.
+  const clipperOf = (el) => {
+    for (let p = el.parentElement; p && p !== de; p = p.parentElement) {
+      const o = getComputedStyle(p).overflowX;
+      if (o === "auto" || o === "scroll") return { kind: "scroll" };
+      if (o === "hidden" || o === "clip") return { kind: "clip", rect: p.getBoundingClientRect() };
+    }
+    return { kind: "viewport" };
+  };
+
+  let clipped = 0;
+  let clippedTag = "";
+  for (const el of document.querySelectorAll("body *")) {
+    const cs = getComputedStyle(el);
+    if (cs.display === "none" || cs.visibility === "hidden" || cs.opacity === "0") continue;
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) continue;
+
+    const carriesMeaning =
+      [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) ||
+      el.matches("button, a[href], input, select, textarea, [role='button'], [role='tab']");
+    if (!carriesMeaning) continue;
+
+    // **المتحرّك لا يُحاكَم بلقطة.** شريط القرارات اللافّ يضع عناصره خارج
+    // قاصّها في كل لحظة، والحركة هي ما يُدخلها — فقياسها في إطار واحد يعطي
+    // آلاف البكسلات «مقصوصة» وهي سليمة. كُشفت هذه بالتشغيل: الحارس أسقط ٧ من
+    // ٨ على `.nx-op-decision-agent` وحده. فيُتجاهل ما موضعه دالّة في الزمن —
+    // له أو لسلفٍ بينه وبين قاصّه حركةٌ مسمّاة.
+    let animated = getComputedStyle(el).animationName !== "none";
+    for (let p = el.parentElement; p && !animated && p !== de; p = p.parentElement) {
+      const pcs = getComputedStyle(p);
+      if (pcs.animationName !== "none") animated = true;
+      if (pcs.overflowX !== "visible") break; // بلغنا القاصّ
+    }
+    if (animated) continue;
+
+    const c = clipperOf(el);
+    if (c.kind === "scroll") continue; // يُبلَغ بالتمرير — تصميم لا عطل
+    const left = c.kind === "clip" ? c.rect.left : 0;
+    const right = c.kind === "clip" ? c.rect.right : de.clientWidth;
+    // عتبة ٤px: كسور التقريب في تخطيط الشبكة ليست عطلًا.
+    const past = Math.max(0, r.right - right, left - r.left);
+    if (past > 4 && past > clipped) {
+      clipped = past;
+      clippedTag = `${el.tagName}.${(el.className || "").toString().split(" ")[0]}`;
+    }
+  }
+
   return {
     minFont: min === Infinity ? null : min,
     smallText,
     smallTargets,
-    // scrollWidth beyond clientWidth is the definition of a page that scrolls
-    // sideways — the single most reported mobile defect.
-    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    overflow,
+    clipped: Math.round(clipped),
+    clippedTag,
   };
 };
 
@@ -209,6 +281,7 @@ await browser.close();
 const fail = (r) =>
   r.fatal ||
   r.overflow > 0 ||
+  r.clipped > 0 ||
   r.smallText.length > 0 ||
   r.smallTargets.length > 0 ||
   r.webgl.length > 0 ||
@@ -224,7 +297,17 @@ console.log(
   `floors: text ≥${MIN_FONT}px · targets ≥${MIN_TARGET_TOUCH}px touch / ≥${MIN_TARGET_MOUSE}px mouse\n`,
 );
 
-const head = ["viewport", "route", "minFont", `<${MIN_FONT}px`, "small", "ovf", "err", "webgl"];
+const head = [
+  "viewport",
+  "route",
+  "minFont",
+  `<${MIN_FONT}px`,
+  "small",
+  "ovf",
+  "clip",
+  "err",
+  "webgl",
+];
 console.log(
   head[0].padEnd(18) +
     head[1].padEnd(12) +
@@ -232,8 +315,9 @@ console.log(
     head[3].padStart(8) +
     head[4].padStart(7) +
     head[5].padStart(5) +
-    head[6].padStart(5) +
-    head[7].padStart(7),
+    head[6].padStart(6) +
+    head[7].padStart(5) +
+    head[8].padStart(7),
 );
 
 for (const r of rows) {
@@ -249,6 +333,7 @@ for (const r of rows) {
       String(r.smallText.length).padStart(8) +
       String(r.smallTargets.length).padStart(7) +
       String(r.overflow).padStart(5) +
+      String(r.clipped).padStart(6) +
       String(r.errors.length).padStart(5) +
       String(r.webgl.length).padStart(7) +
       mark,
@@ -264,6 +349,8 @@ if (broken.length) {
     }
     console.log(`\n${r.vp} ${r.route}:`);
     if (r.overflow > 0) console.log(`  · horizontal overflow: ${r.overflow}px`);
+    if (r.clipped > 0)
+      console.log(`  · clipped outside the viewport: ${r.clipped}px — ${r.clippedTag}`);
     for (const s of r.smallText) console.log(`  · text ${s.fs}px <${s.tag}> "${s.text}"`);
     for (const s of r.smallTargets)
       console.log(`  · target ${s.w}×${s.h} (min ${r.minTarget}) <${s.tag}> "${s.label}"`);
