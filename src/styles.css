@@ -5540,68 +5540,15 @@ html.dark .nx-holo-noise {
 
    (كان معها في هذه الطبقة هالةٌ مخروطية ومداران يدوران «على ترتيب البوصلة
    نفسه» — ذهبت ثلاثتها ٢٠٢٦/٠٨/٠٩ مع الوردة التي كانت تدور حولها، والوصف
-   نفسه صار يشير إلى ترتيبٍ لا وجود له. والشفق باقٍ لأنه لا يشير إلى موضع:
-   بقعُ ضوءٍ في أركان الصفحة، لا مواضع مناطق على الأرض.) */
-
-.nx-bp-aurora {
-  position: absolute;
-  inline-size: 46vmax;
-  block-size: 46vmax;
-  border-radius: 999px;
-  background: radial-gradient(
-    closest-side,
-    color-mix(in srgb, var(--bp-accent) 38%, transparent),
-    transparent 72%
-  );
-  filter: blur(58px);
-  opacity: 0.5;
-  animation: nxBpAurora 26s ease-in-out infinite alternate;
-  animation-delay: calc(var(--bp-aurora-i, 0) * -7s);
-}
-
-.nx-bp-aurora:nth-of-type(1) {
-  inset-block-start: -14%;
-  inset-inline-end: -6%;
-}
-
-.nx-bp-aurora:nth-of-type(2) {
-  inset-block-start: 18%;
-  inset-inline-start: -12%;
-}
-
-.nx-bp-aurora:nth-of-type(3) {
-  inset-block-end: -18%;
-  inset-inline-end: 16%;
-}
-
-.nx-bp-aurora:nth-of-type(4) {
-  inset-block-end: -6%;
-  inset-inline-start: 26%;
-}
-
-@keyframes nxBpAurora {
-  from {
-    translate: 0 0;
-    scale: 1;
-  }
-  to {
-    translate: -3% 4%;
-    scale: 1.14;
-  }
-}
-
-/* الشفق فوق الأبيض يسقط ضبابًا رماديًّا إن بقي بكثافة الكحلي — يُخفَّف
-   ويُوسَّع نثره فيُقرأ لمعانًا لا بقعة. */
-.light .nx-bp-aurora {
-  opacity: 0.34;
-  filter: blur(74px);
-}
+   نفسه صار يشير إلى ترتيبٍ لا وجود له. وتبعها الشفق في الأمر التالي.) */
 
 /* (طبقة فن الوردة — `.nx-bp-art` و`.nx-bp-halo` وحلقتاها `.nx-bp-orbit*`
    وأطراف الأقواس `.nx-bp-arc-tip` وإطارها `nxBpTip` — أُزيلت ٢٠٢٦/٠٨/٠٩ مع
    الوردة نفسها: لم تكن زينةً عامّة بل مدارات حول رسمٍ بعينه، فبقاؤها بلا
-   حاملٍ تركةٌ ميتة تعود سطحًا حيًّا بأول لصقٍ لاحق. والشفق `.nx-bp-aurora`
-   والخيط والحزمتان يبقون — هم خلفية الصفحة لا حاشية الرسم.) */
+   حاملٍ تركةٌ ميتة تعود سطحًا حيًّا بأول لصقٍ لاحق. وتبعها الشفق
+   `.nx-bp-aurora` والخيط `.nx-bp-ribbon` والحزمتان `.nx-bp-beam` في الأمر
+   التالي من المالك: أربع هالات مخروطية تدور خلف السطح كانت تُقرأ بوصلةً
+   ثانية بعد حذف الأولى، وترتيبُ ألوانها لا يقول عن المنطقة شيئًا يُقاس.) */
 
 /* `nxBpSpin` **يبقى**: مستهلكه لم يعد في هذه الطبقة — هالة قلب المسرح
    (`.nx-fl-core-halo`) تدور به أيضًا. حذفه مع حامله الأول كان سيوقف حركةً
@@ -5659,86 +5606,6 @@ html.dark .nx-holo-noise {
 }
 
 /* ── جمال الصدر + امتدادات ملء الصفحة ──────────────────────────────────── */
-
-/* خيط الشفق الطيفي — يتنفّس بألوان الرموز الستة على أعلى الصفحة. */
-.nx-bp-ribbon {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  block-size: 3px;
-  pointer-events: none;
-  background: linear-gradient(
-    to left,
-    var(--tone-cyan),
-    var(--tone-blue),
-    var(--tone-violet),
-    var(--tone-emerald),
-    var(--tone-amber),
-    var(--tone-cyan)
-  );
-  background-size: 300% 100%;
-  filter: drop-shadow(0 2px 12px color-mix(in srgb, var(--tone-cyan) 55%, transparent));
-  animation: nxBpRibbon 14s linear infinite;
-  opacity: 0.9;
-}
-
-@keyframes nxBpRibbon {
-  to {
-    background-position: 300% 0;
-  }
-}
-
-/* حزمتا ضوء مائلتان خلف الترويسة — مسرحية الصدر بلا كلفة شبكية. */
-.nx-bp-beam {
-  position: absolute;
-  inset-block-start: -12%;
-  inline-size: 46%;
-  block-size: 42%;
-  pointer-events: none;
-  rotate: -14deg;
-  filter: blur(46px);
-  opacity: 0.5;
-  animation: nxBpBeam 18s ease-in-out infinite alternate;
-}
-
-.nx-bp-beam--a {
-  inset-inline-end: -6%;
-  background: linear-gradient(
-    100deg,
-    color-mix(in srgb, var(--tone-cyan) 30%, transparent),
-    transparent 70%
-  );
-}
-
-.nx-bp-beam--b {
-  inset-inline-start: -8%;
-  rotate: 14deg;
-  background: linear-gradient(
-    -100deg,
-    color-mix(in srgb, var(--tone-violet) 26%, transparent),
-    transparent 70%
-  );
-  animation-delay: -9s;
-}
-
-@keyframes nxBpBeam {
-  from {
-    translate: 0 0;
-    opacity: 0.38;
-  }
-  to {
-    translate: 0 4%;
-    opacity: 0.6;
-  }
-}
-
-.light .nx-bp-ribbon {
-  opacity: 0.75;
-}
-
-.light .nx-bp-beam {
-  opacity: 0.3;
-}
 
 /* هالة العنوان: الظل يلوّن الحروف الشفافة من خلفها فتتوهّج بلا فقد تباين. */
 .nx-bp-title {
@@ -5921,14 +5788,6 @@ html.dark .nx-holo-noise {
     0 0 52px color-mix(in srgb, var(--tone-cyan) 30%, transparent);
 }
 
-.nx-bp-aurora {
-  opacity: 0.62;
-}
-
-.light .nx-bp-aurora {
-  opacity: 0.4;
-}
-
 /* ── خلفية النظام — سطح داكن ثابت (قرار المالك ٢٠٢٦/٠٨/٠٩) ───────────────
    كانت ست طبقات أوّلها فيلم صامت بحلقة دائمة، فوقه غطاء سينمائي يحفظ قراءة
    الحبر. أمر المالك: خلفية ثابتة وغامقة فقط. فسقط الفيلم، وسقط معه الغطاء
@@ -6061,24 +5920,17 @@ html.dark .nx-holo-noise {
 
 /* طبقة الفن تحت قواعد الوصول نفسها: الحركة تسكن لا تختفي، والشفافية
    المخفَّضة والألوان القسرية تُسقطان الزينة كلّها. */
-@media (prefers-reduced-motion: reduce) {
-  .nx-bp-aurora,
-  .nx-bp-ribbon,
-  .nx-bp-beam {
-    animation: none !important;
-  }
-
-  /* (`.nx-bp-float` و`.nx-home-region` خارج هذه الكتلة: ما فيهما انتقالُ
-     مقياسٍ وإزاحةٍ عند التمرير والضغط — استجابةٌ للمستخدم تبقى، لا حركةٌ
-     تلقائية تُسكَّن. وأطراف الأقواس خرجت مع الوردة نفسها ٢٠٢٦/٠٨/٠٩.) */
-}
+/* (لا كتلة `prefers-reduced-motion` في هذه الطبقة بعد اليوم: خرج منها آخر
+   ما يُسكَّن — الشفق وخيطه وحزمتاه ٢٠٢٦/٠٨/٠٩ بأمر المالك، وأطراف الأقواس
+   قبلها مع الوردة. وكتلةٌ فارغة تبقى إغراءً بإضافة حركةٍ إليها بلا مراجعة.
+   و`.nx-bp-float` و`.nx-home-region` لم تكونا فيها أصلًا: ما فيهما انتقالُ
+   مقياسٍ عند التمرير والضغط — استجابةٌ للمستخدم تبقى، لا حركةٌ تلقائية.
+   والحركة الدائمة الباقية في النظام — نبضات الأيقونات — مخرجُها في طبقتها
+   وحارسُها بند «للحركة الدائمة الباقية مخرجٌ حيّ».) */
 
 @media (prefers-reduced-transparency: reduce) {
-  .nx-bp-aurora,
-  .nx-bp-beam {
-    display: none;
-  }
-
+  /* (الشفق والحزمتان خرجتا ٢٠٢٦/٠٨/٠٩ مع طبقة الفن — ولم يبق ما يُخفى
+     هنا سوى ما له حاملٌ حيّ.) */
   .nx-bp-card {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -6093,9 +5945,6 @@ html.dark .nx-holo-noise {
 }
 
 @media (forced-colors: active) {
-  .nx-bp-aurora,
-  .nx-bp-ribbon,
-  .nx-bp-beam,
   .nx-hv,
   .nx-bp-panel::after {
     display: none;

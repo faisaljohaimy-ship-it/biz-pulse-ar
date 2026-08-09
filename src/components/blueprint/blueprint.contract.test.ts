@@ -77,9 +77,23 @@ describe("المُخطَّط — المادة ٣٢: الحركة بخصائص م
     // الالتقاط على **قاعدة الوسائط** لا على ذكر اسمها: أول ورودٍ للسلسلة في
     // الطبقة هو تعليقٌ في ترويستها، فالقطع عنده كان يُدخل نصَّ التعليقات في
     // المقيس — ويمرّ الشرط بكلمةٍ مكتوبة في شرحٍ لا بقاعدةٍ نافذة.
-    const at = LAYER.indexOf("@media (prefers-reduced-motion");
-    expect(at, "لا كتلة تخفيف حركة في طبقة المُخطَّط").toBeGreaterThan(-1);
-    const block = LAYER.slice(at);
+    // **وانقلب البند ثانيةً في اليوم نفسه.** كان يشترط وجود الكتلة مطلقًا،
+    // ثم حُذف الشفق وخيطه وحزمتاه — آخرُ حركةٍ تلقائية في الطبقة — فصار
+    // يشترط علاجًا لداءٍ زال، وسقط على غيابه. فيُفحص **الشرط لا السطر**: ما
+    // دامت في الطبقة حركةٌ تلقائية مسمّاة وجب لها مخرج، ولا حركة ⇐ لا مخرج
+    // مطلوبًا ولا كتلة فارغة تبقى إغراءً بإضافةٍ بلا مراجعة. وهو غير فارغ
+    // المعنى: إعادة أيّ `animation: nxBp…` بلا كتلة تُسكِتها تُسقطه.
+    const code = LAYER.replace(/\/\*[\s\S]*?\*\//g, "");
+    const automatic = [...code.matchAll(/animation:\s*([A-Za-z][\w-]*)/g)]
+      .map((m) => m[1])
+      .filter((n) => n !== "none");
+    const at = code.indexOf("@media (prefers-reduced-motion");
+    if (automatic.length === 0) {
+      expect(at, "كتلة تخفيف حركة بلا حركة تُسكِّنها").toBe(-1);
+      return;
+    }
+    expect(at, `حركة تلقائية (${[...new Set(automatic)].join(", ")}) بلا مخرج`).toBeGreaterThan(-1);
+    const block = code.slice(at);
     expect(block).toContain("animation: none");
     // **سقط من هذا البند ثلاثة شروط ٢٠٢٦/٠٨/٠٩، لا تخفيفًا بل لزوال موضوعها.**
     // كانت `opacity: 1` و`translate: none` و`stroke-dashoffset: 0` إنقاذًا
@@ -406,8 +420,24 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
       ".nx-bp-sadeed-halo",
       ".nx-bp-sadeed-btn",
       ".nx-bp-compass",
+      // وطبقة الفن التالية لها في الأمر نفسه (٢٠٢٦/٠٨/٠٩): الشفق المخروطي
+      // وخيطه وحزمتا الضوء. أربع هالات تدور خلف السطح كانت تُقرأ بوصلةً
+      // ثانية بعد حذف الأولى.
+      ".nx-bp-aurora",
+      ".nx-bp-ribbon",
+      ".nx-bp-beam",
     ]) {
       expect(CSS.indexOf(`${sel} {`), `${sel} بقي في الأنماط بلا حامل`).toBe(-1);
+    }
+    // والإطارات معها: قاعدةٌ ذهبت وإطارها باقٍ تركةٌ تُغري بإعادتها.
+    for (const kf of ["nxBpAurora", "nxBpRibbon", "nxBpBeam"]) {
+      expect(CSS.indexOf(`@keyframes ${kf}`), `${kf} بقي بلا مستهلك`).toBe(-1);
+    }
+    // ولا حاملَ في الترميز: الصنف يعود سطحًا حيًّا بأول لصق.
+    for (const cls of ["nx-bp-aurora", "nx-bp-ribbon", "nx-bp-beam", "nx-bp-compass"]) {
+      expect(PAGE, `${cls} عاد إلى الصفحة`).not.toMatch(
+        new RegExp(`className=["'\`][^"'\`]*\\b${cls}\\b`),
+      );
     }
     // و«عبارتها» في الأمر نفسه: وصف الميتا كان يقول «على بوصلة واحدة …
     // والامتثال مقروءًا طولَ قوس» — يصف سطحًا لم يعد موجودًا.
