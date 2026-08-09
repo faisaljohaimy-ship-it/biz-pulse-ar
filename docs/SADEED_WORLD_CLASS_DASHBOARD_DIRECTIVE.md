@@ -31,18 +31,18 @@ verified operational evidence via the FR-19 Evidence Gate.
 | Type    | Geometric, tabular numerics, generous tracking on labels.               |
 | Motion  | Motion for React, 60fps p95, reduce-motion honored.                     |
 | Depth   | Glass · parallax · specular highlights — never skeuomorphic.            |
-| Sound   | FINN voice only via `/api/tts`; no browser SpeechSynthesis in chat.     |
+| Sound   | SADEED voice only via `/api/tts`; no browser SpeechSynthesis in chat.   |
 
 ---
 
 ## 3. INFORMATION ARCHITECTURE (fixed order)
 
-1. **Command Deck** — FINN presence, mission clock, health pulse, session state.
+1. **Command Deck** — SADEED presence, mission clock, health pulse, session state.
 2. **Live Pulse Row** — sites, assets offline, contractors active, runtime pulse.
 3. **Executive KPIs** — 6 sovereign tiles (Critical, Open Incidents, Patrols,
    CCTV Alerts, Visitors, Permits) — all via `<EvidenceBadge>`.
 4. **Decision Queue** — top decisions awaiting executive action (evidence-linked).
-5. **Predictive Strip** — FINN-derived forward indicators (evidence-linked).
+5. **Predictive Strip** — SADEED-derived forward indicators (evidence-linked).
 6. **Runtime Modules** — deep-link tiles to every subsystem.
 
 ---
@@ -73,13 +73,13 @@ verified operational evidence via the FR-19 Evidence Gate.
 
 ## 6. DEFINITION OF DONE
 
-- 0 TypeScript errors · 0 deferred phases in FINN audit.
+- 0 TypeScript errors · 0 deferred phases in SADEED audit.
 - 0 hardcoded color literals in `/os` component tree.
 - 0 static `LIVE` / `بث مباشر` strings — all badges evidence-gated.
-- 0 duplicate FINN singleton mounts.
+- 0 duplicate SADEED singleton mounts.
 - Mobile & desktop screenshots verified: **full dashboard renders without clipping**.
 - Executive Card E2E: PASS.
-- First-impression paint ≤ 200ms; FINN greeting delivered once, silently.
+- First-impression paint ≤ 200ms; SADEED greeting delivered once, silently.
 
 ---
 

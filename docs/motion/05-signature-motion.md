@@ -1,15 +1,15 @@
 # 05 — Signature Motion · الحركة المميِّزة
 
-**The four signatures that make SADEED unmistakable: FINN's presence, the runtime
+**The four signatures that make SADEED unmistakable: SADEED's presence, the runtime
 pipeline flow, the living twin, and the holographic effects vocabulary. Sections 05–07, 13.**
 
 ---
 
-## FINN Motion (Section 05)
+## SADEED Motion (Section 05)
 
-FINN's body is the **presence ring** (Ch. 07): a circular ring + avatar center + mode
+SADEED's body is the **presence ring** (Ch. 07): a circular ring + avatar center + mode
 glyph. Every state is a ring behavior — one instrument, many readings. Voice remains
-FINN's male server voice exclusively (doctrine); motion only _accompanies_ it.
+SADEED's male server voice exclusively (doctrine); motion only _accompanies_ it.
 
 | State          | Ring behavior                                                                                                                                                                                                     | Co-signal (static parity)                              |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
@@ -18,7 +18,7 @@ FINN's male server voice exclusively (doctrine); motion only _accompanies_ it.
 | **Thinking**   | ring steady 80% + `nx-dot-wave` three dots + rotating honest status line                                                                                                                                          | "يفكر…"                                                |
 | **Retrieving** | thinking + knowledge-blue comet: a 30° arc segment orbits the ring 2s/rev                                                                                                                                         | "يراجع المصادر" + source count ticking up              |
 | **Reasoning**  | thinking + ring segments illuminate sequentially (4 quadrants, 500ms each) — deliberation made visible                                                                                                            | "يرتب الاستدلال"                                       |
-| **Executing**  | NEVER exists on FINN — FINN is advisory (frozen architecture); execution motion belongs to the pipeline (below) AFTER a human gate. FINN's ring during a gated run: steady + gold link-thread toward the pipeline | "بانتظار التنفيذ المعتمد"                              |
+| **Executing**  | NEVER exists on SADEED — SADEED is advisory (frozen architecture); execution motion belongs to the pipeline (below) AFTER a human gate. SADEED's ring during a gated run: steady + gold link-thread toward the pipeline | "بانتظار التنفيذ المعتمد"                              |
 | **Speaking**   | ring amplitude follows speech envelope (voice-driven, 30fps sampling)                                                                                                                                             | live transcript                                        |
 | **Completed**  | one full-ring sweep 400ms then settle to idle                                                                                                                                                                     | ✓ + summary line                                       |
 | **Error**      | ring dims to 38%, single amber under-arc; NO shaking, NO red flood                                                                                                                                                | honest Arabic line + retry (guaranteed-reply doctrine) |
@@ -29,7 +29,7 @@ idle mic = flat line breathing; never a fake canned waveform.
 **Eye contact:** the avatar's focal highlight drifts ≤ 2px toward the active
 speaker/input focus (8s ease-inout) — subliminal attentiveness, disabled under
 reduced-motion, never a tracking gimmick.
-**Breathing effect:** the master 2s cycle above — FINN's heartbeat; all FINN loops phase-
+**Breathing effect:** the master 2s cycle above — SADEED's heartbeat; all SADEED loops phase-
 lock to it (one organism, not a widget cluster).
 **Halo effect:** on summon and on completed-major-brief only: a single 600ms soft halo
 expansion (agent glow 25%→0 over 48px). Once. Halos that repeat become noise.
@@ -45,7 +45,7 @@ move. RTL: flow travels right → left.
 | Request             | packet born at origin node: scale-in 150ms                                                                                                                                                                               |
 | Routing             | packet travels channel 300ms linear; chosen route's channel illuminates 24%                                                                                                                                              |
 | Knowledge retrieval | knowledge node pulses once; mini source-count ticks                                                                                                                                                                      |
-| Reasoning           | reasoning node runs quadrant illumination (FINN grammar — same vocabulary)                                                                                                                                               |
+| Reasoning           | reasoning node runs quadrant illumination (SADEED grammar — same vocabulary)                                                                                                                                               |
 | **Approval**        | packet STOPS at the gold gate node; gate breathes (the only breathing gold, 2s) until human decision; approve → gate flashes 300ms and opens (gap widens 8px); decline → packet fades at gate, decline path lights amber |
 | Execution           | post-gate only: packet travels with exec-cyan trail; executing node ring rotates 900ms linear                                                                                                                            |
 | Completion          | terminal node: full-ring sweep 400ms + outcome chip scale-in                                                                                                                                                             |

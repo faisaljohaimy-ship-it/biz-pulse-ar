@@ -44,6 +44,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, getRegion, type RegionId } from "@/lib/regions";
+import { FinnStagePresence } from "@/components/finn/FinnStagePresence";
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
 const STAGE_AR: Record<string, string> = {
@@ -516,7 +517,7 @@ export function BlueprintPage() {
           className="nx-dash-slot nx-bp-stage mx-auto mt-8 w-full max-w-[760px]"
           style={{ ["--nx-bp-i" as string]: 5 }}
         >
-          {/* موضع المساعد — يُركَّب هنا */}
+          <FinnStagePresence />
         </section>
 
         {/* ════ ٢ · توصيات سَدِيد ═════════════════════════════════════════

@@ -90,7 +90,7 @@ Routes: `/` `/projects` `/risk` `/finn` `/sec`.
 
 ## Not done in this pass
 
-Navigation consolidation, the home information hierarchy, FINN dialog semantics,
+Navigation consolidation, the home information hierarchy, SADEED dialog semantics,
 project/risk empty states, Arabic terminology mapping, and `Intl` number/date
 formatting are **not** implemented. The platform ships **328 non-API routes**;
 this pass deliberately spent its effort on the systemic layers that move every

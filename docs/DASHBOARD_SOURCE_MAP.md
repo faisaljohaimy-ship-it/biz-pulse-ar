@@ -16,7 +16,7 @@
 | ------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------- |
 | نبض المؤسسة — لقطة عامة (KPIs) | `SovereignCommandDeck`                        | مصادق: `getExecKpis` عبر `useExecutiveKpiSource`؛ عام: `region-sim-data.ts`      | حي موثق / محاكاة موسومة |
 | طابور القرارات                 | `OsDecisionQueue`                             | مصادق: حوادث وكاميرات وتصاريح وأوامر عمل محكومة بـRLS؛ عام: `region-sim-data.ts` | حي موثق / محاكاة موسومة |
-| توصيات FINN اليومية            | `AriaTodayRecommendations`                    | مصادق: `ExecKpis`؛ عام: توصيات عرض ثابتة                                         | حي موثق / محاكاة موسومة |
+| توصيات سَدِيد اليومية          | `AriaTodayRecommendations`                    | مصادق: `ExecKpis`؛ عام: توصيات عرض ثابتة                                         | حي موثق / محاكاة موسومة |
 | جسر القيادة — الفصلان 1 و2     | `executive-bridge.tsx`                        | مصادق: `ExecKpis`؛ عام: التجميع الإقليمي الاصطناعي                               | حي موثق / محاكاة موسومة |
 | غرفة العمليات المحمية          | `/sec`                                        | `getSecOverview` عبر جلسة Supabase وRLS                                          | حي موثق                 |
 | الأقسام المحمية                | `/sec/sections`                               | `getSections` عبر جلسة Supabase وRLS                                             | حي موثق                 |
@@ -28,7 +28,7 @@
 | شريط مركز القيادة              | `MissionControlStrip`                         | `getPublicKpis` → لقطة تسويقية اصطناعية ثابتة                                    | محاكاة موسومة           |
 | حلقة الوكلاء                   | `AgentRing` (executive)                       | `listAgents/listAgentRuns` → `src/lib/exec.functions.ts`                         |                         |
 | بطاقة معاينة الأمن             | `SecCommandLiveCard`                          | `getPublicKpis` → لقطة تسويقية اصطناعية ثابتة                                    | محاكاة موسومة           |
-| الخلفية السينمائية (شات FINN)  | `AriaSignatureBackdrop`                       | `src/lib/finn/signature.ts` (بصمة، لا بيانات)                                    | —                       |
+| الخلفية السينمائية (شات سَدِيد)| `AriaSignatureBackdrop`                       | `src/lib/finn/signature.ts` (بصمة، لا بيانات)                                    | —                       |
 
 ## ٢ — سجلّ الوحدات المعتمد (المصدر الواحد للأسماء والأيقونات)
 
@@ -47,7 +47,7 @@
 | `/governance`        | الحوكمة            | `ClipboardCheck`           |
 | `/risk`              | المخاطر            | `ShieldAlert`              |
 | `/hajj`              | منصة نُسك الحج     | `Moon`                     |
-| `/aria`              | FINN التنفيذية     | `Sparkles`                 |
+| `/aria`              | سَدِيد التنفيذي    | `Sparkles`                 |
 
 ## ٣ — المصدر الجغرافي الواحد
 
@@ -77,7 +77,7 @@
 | `/agents`            | الوكلاء        | **الوكلاء الأذكياء**                     |
 | `/executive-reports` | التقارير       | **التقارير التنفيذية**                   |
 | `/hajj`              | عمليات الحج    | **منصة نُسك الحج** (متوافق مع المادة 12) |
-| `/aria`              | FINN           | **FINN التنفيذية**                       |
+| `/aria`              | سَدِيد         | **سَدِيد التنفيذي**                      |
 | `/sec/maintenance`   | أوامر العمل    | **الصيانة**                              |
 
 > لإعادة تسمية أي وحدة مستقبلاً: عدّل `src/lib/nav/modules.ts` فقط، فينعكس على

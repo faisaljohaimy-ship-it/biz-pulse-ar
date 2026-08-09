@@ -33,7 +33,7 @@ ships **328 non-API routes**; the real equivalents are `/sec`, `/projects`,
 - App shell / nav: `src/components/app-shell.tsx`, `src/components/nav/HomeTopNav.tsx`,
   `src/components/cockpit/navigation.tsx`, `src/components/sec/sec-shell.tsx`
 - Home: `src/routes/index.tsx`, `src/components/home/FourRegionHub.tsx`
-- FINN: `src/components/finn-core/FinnCopilot.tsx`, `src/components/home/FinnLiveHologram.tsx`
+- سَدِيد: `src/components/finn-core/FinnCopilot.tsx`, `src/components/home/FinnLiveHologram.tsx`
 - 3D: `SectorGlobeScene.tsx`, `RegionGlobeScene.tsx`, `FinnLiveHologram.tsx`,
   `digital-humans/r3f/FinnScene.tsx`
 
