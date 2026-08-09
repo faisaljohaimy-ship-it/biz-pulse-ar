@@ -4,6 +4,8 @@
 // No org_id, no user data, no proposals — pure display topology.
 
 import { createServerFn } from "@tanstack/react-start";
+// اسم المساعد المعروض من مصدره الوحيد (قرار المالك ٢٠٢٦/٠٨/٠٩).
+import { BRAND_ASSISTANT } from "@/lib/domain";
 
 const SHOWCASE_ORG_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -105,7 +107,12 @@ export const listShowcaseFlow = createServerFn({ method: "GET" }).handler(
         return;
       }
       if (kind === "aria") {
-        nodes.set(id, { id, kind, name_ar: "FINN", name_en: "FINN" });
+        nodes.set(id, {
+          id,
+          kind,
+          name_ar: BRAND_ASSISTANT.nameAr,
+          name_en: BRAND_ASSISTANT.nameEn,
+        });
         return;
       }
       nodes.set(id, {

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * InstallAppBar — "📱 حمّل FINN كتطبيق" (Phase 6).
+ * InstallAppBar — "📱 حمّل سَدِيد كتطبيق" (Phase 6).
  *
  * Android/Desktop: captures `beforeinstallprompt` and installs in one tap.
  * iOS/Safari (which never fires that event): shows the Add-to-Home-Screen

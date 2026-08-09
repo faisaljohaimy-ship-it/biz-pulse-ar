@@ -102,7 +102,7 @@ export async function sendTwilioSms(
       body: form.toString(),
       retries: 0,
       timeoutMs: 15_000,
-      label: "FINN Twilio Messages API",
+      label: "SADEED Twilio Messages API",
     },
   );
 }

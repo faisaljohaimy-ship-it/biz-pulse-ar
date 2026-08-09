@@ -3,6 +3,9 @@ import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Json } from "@/integrations/supabase/types";
 import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
+// اسم المساعد المعروض من مصدره الوحيد (قرار المالك ٢٠٢٦/٠٨/٠٩): هذه قيمٌ
+// تُكتب في القاعدة ثمّ تُقرأ على الشاشة نسبةً للفاعل — نصّ عرض لا معرّف.
+import { BRAND_ASSISTANT } from "@/lib/domain";
 import {
   prepareFinnOutboundMessage,
   sendFinnOutboundMessageDirectInternal,
@@ -71,7 +74,7 @@ async function logEvent(
     entity_ref,
     event,
     actor_id: userId,
-    actor_name: "FINN",
+    actor_name: BRAND_ASSISTANT.nameAr,
     payload: payload as Json,
   });
   if (error) {
@@ -109,7 +112,7 @@ export type FinnToolRuntimeContext = {
 };
 
 /**
- * Build the FINN executive toolbelt. All tools are RLS-scoped via the
+ * Build the SADEED executive toolbelt. All tools are RLS-scoped via the
  * request supabase client and gated by connector availability.
  */
 export function buildFinnTools(
@@ -319,7 +322,7 @@ export function buildFinnTools(
 
     send_executive_email: tool({
       description:
-        "Send an HTML executive email. Direct send is allowed only when the recipient is the registered FINN owner AND the current user message explicitly asks to send an email; otherwise the message is routed to the reviewed approval flow so it is not silently dropped.",
+        "Send an HTML executive email. Direct send is allowed only when the recipient is the registered SADEED owner AND the current user message explicitly asks to send an email; otherwise the message is routed to the reviewed approval flow so it is not silently dropped.",
       inputSchema: z.object({
         to: z.string().email().optional(),
         cc: z.string().email().optional(),
@@ -363,7 +366,7 @@ export function buildFinnTools(
 
     send_executive_sms: tool({
       description:
-        "Send an executive SMS/MMS. Direct send is allowed only when the recipient is the registered FINN owner AND the current user message explicitly asks to send an SMS; otherwise the message is routed to the reviewed approval flow so it is not silently dropped.",
+        "Send an executive SMS/MMS. Direct send is allowed only when the recipient is the registered SADEED owner AND the current user message explicitly asks to send an SMS; otherwise the message is routed to the reviewed approval flow so it is not silently dropped.",
       inputSchema: z.object({
         to: z.string().min(8).max(24).optional().describe("Optional E.164 recipient"),
         body: z.string().min(1).max(1600),
@@ -428,8 +431,8 @@ export function buildFinnTools(
             department: args.department,
             impact: args.impact,
             due_at: args.due_at ?? null,
-            source: "FINN",
-            source_en: "FINN",
+            source: BRAND_ASSISTANT.nameAr,
+            source_en: BRAND_ASSISTANT.nameEn,
             status: "open",
           })
           .select("id,key,title,kind,impact")
@@ -484,7 +487,7 @@ export function buildFinnTools(
 
     search_knowledge: tool({
       description:
-        "Search the current tenant's verified industrial-security corpus through Gemini embeddings, hybrid retrieval and the FINN evidence gate. Use for policies, procedures and domain references. Never cite a result unless gate_result is passed.",
+        "Search the current tenant's verified industrial-security corpus through Gemini embeddings, hybrid retrieval and the SADEED evidence gate. Use for policies, procedures and domain references. Never cite a result unless gate_result is passed.",
       inputSchema: z.object({
         query: z.string().trim().min(3).max(2000),
         limit: z.number().int().min(2).max(12).default(8),
@@ -554,7 +557,7 @@ export function buildFinnTools(
             owner: args.owner ?? null,
             business_impact_score: args.business_impact_score,
             detail: args.summary ?? null,
-            source: "FINN",
+            source: BRAND_ASSISTANT.nameAr,
           })
           .select("id,title,severity,business_impact_score")
           .single();
@@ -1099,7 +1102,7 @@ export function buildFinnTools(
           .update({
             status,
             notes: notes ?? null,
-            acknowledged_by: acknowledged_by ?? "FINN",
+            acknowledged_by: acknowledged_by ?? BRAND_ASSISTANT.nameAr,
           })
           .eq("id", id)
           .select("ref,camera_code")

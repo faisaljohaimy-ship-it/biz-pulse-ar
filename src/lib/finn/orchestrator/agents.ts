@@ -343,7 +343,7 @@ const reportsAgent: ExecutiveAgent = {
     ],
     {
       description:
-        "Always-on reports agent — generates periodic executive reports and exposes them as evidence for FINN.",
+        "Always-on reports agent — generates periodic executive reports and exposes them as evidence for SADEED.",
       priority: "medium",
       estimated_cost: "low",
       estimated_latency_ms: 200,

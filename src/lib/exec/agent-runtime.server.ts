@@ -390,11 +390,11 @@ export async function runAgent(
   try {
     geminiRuntime = resolveFinnGeminiRuntime();
   } catch {
-    await failRun(supabase, runId, actorId, "FINN Gemini provider missing");
+    await failRun(supabase, runId, actorId, "SADEED Gemini provider missing");
     return {
       runId,
       status: "failed",
-      summary: "FINN Gemini provider is not configured",
+      summary: "SADEED Gemini provider is not configured",
       steps: 0,
       error: "GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY missing",
     };

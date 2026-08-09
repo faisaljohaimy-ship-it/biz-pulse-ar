@@ -7,6 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { listShowcaseFlow, type FlowGraph, type FlowNode } from "@/lib/flow.functions";
+// اسم المساعد المعروض من مصدره الوحيد — لا يُكتب حرفًا هنا فيتخلّف عنه.
+import { BRAND_ASSISTANT } from "@/lib/domain";
 
 const COL_X = { source: 60, agent: 380, aria: 760, gate: 1020 } as const;
 const NODE_W = { source: 190, agent: 260, aria: 220, gate: 240 } as const;
@@ -155,7 +157,7 @@ export function AgenticFlowCanvas({
     {
       x: COL_X.aria,
       w: NODE_W.aria,
-      label: "FINN",
+      label: ar ? BRAND_ASSISTANT.nameAr : BRAND_ASSISTANT.nameEn,
       sub: ar ? "الذكاء المركزي" : "Executive Brain",
     },
     {
@@ -322,7 +324,7 @@ export function AgenticFlowCanvas({
                       className="flex h-full w-full flex-col items-center justify-center text-center leading-tight"
                     >
                       <div className="text-[22px] font-bold tracking-[0.15em] text-white">
-                        {ar ? "FINN" : "FINN"}
+                        {ar ? BRAND_ASSISTANT.nameAr : BRAND_ASSISTANT.nameEn}
                       </div>
                       <div className="mt-1 text-[12px] font-semibold uppercase tracking-[0.3em] text-[#3AE8FF]">
                         {ar ? "الذكاء التنفيذي" : "Executive Brain"}

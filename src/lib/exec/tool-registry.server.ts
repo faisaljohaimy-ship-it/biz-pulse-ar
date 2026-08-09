@@ -954,7 +954,7 @@ const kbSearch: ToolExecutor = {
 const ragSearchVerified: ToolExecutor = {
   id: "rag.search_verified",
   description:
-    "Search only the current tenant's verified industrial-security corpus through hybrid retrieval and the FINN evidence gate. A passed result always has at least two citations.",
+    "Search only the current tenant's verified industrial-security corpus through hybrid retrieval and the SADEED evidence gate. A passed result always has at least two citations.",
   input: z.object({
     query: z.string().trim().min(3).max(2000),
     category_code: z.string().trim().max(80).optional(),

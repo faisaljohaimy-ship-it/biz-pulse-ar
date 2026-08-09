@@ -32,7 +32,7 @@ export function isFinnOwnerDirectSendEnabled(
 function normalizeEmail(value: string): string {
   const email = value.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error("FINN owner email is invalid.");
+    throw new Error("SADEED owner email is invalid.");
   }
   return email;
 }
@@ -43,7 +43,7 @@ export function getFinnOwnerRecipients(
   const email = env.FINN_OWNER_EMAIL?.trim() || env.ARIA_OWNER_EMAIL?.trim();
   const sms = env.FINN_OWNER_SMS?.trim() || env.ARIA_OWNER_SMS?.trim();
   if (!email || !sms) {
-    throw new Error("FINN owner recipients are not configured.");
+    throw new Error("SADEED owner recipients are not configured.");
   }
   return {
     email: normalizeEmail(email),
@@ -56,7 +56,7 @@ export function resolveOwnerEmail(requested?: string): string {
   if (!requested) return owner;
   if (normalizeEmail(requested) !== owner) {
     throw new Error(
-      "Direct email is restricted to the registered FINN owner. Use the reviewed approval flow for another recipient.",
+      "Direct email is restricted to the registered SADEED owner. Use the reviewed approval flow for another recipient.",
     );
   }
   return owner;
@@ -67,7 +67,7 @@ export function resolveOwnerSms(requested?: string): string {
   if (!requested) return owner;
   if (normalizeE164(requested) !== owner) {
     throw new Error(
-      "Direct SMS is restricted to the registered FINN owner. Use the reviewed approval flow for another recipient.",
+      "Direct SMS is restricted to the registered SADEED owner. Use the reviewed approval flow for another recipient.",
     );
   }
   return owner;

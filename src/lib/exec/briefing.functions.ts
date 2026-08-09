@@ -1,7 +1,7 @@
 /**
  * Executive Briefing — composes a 60-second operational presentation
  * from real runtime data: latest agent runs, open incidents/patrols,
- * recent events. FINN merges findings into one recommendation via Gemini.
+ * recent events. SADEED merges findings into one recommendation via Gemini.
  * Persists each briefing in
  * `executive_briefings`.
  */
@@ -9,6 +9,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { resolveFinnGeminiRuntime } from "@/lib/finn/gemini-provider.server";
+// اسم المساعد المعروض من مصدره الوحيد (قرار المالك ٢٠٢٦/٠٨/٠٩).
+import { BRAND_ASSISTANT } from "@/lib/domain";
 
 export type BriefingSegment = {
   /** Seconds offset from briefing start. */
@@ -118,11 +120,11 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
         ? "The available data requires intensified follow-up"
         : "The operational posture is stable within the available data";
 
-    // 0–5s: FINN welcome
+    // 0–5s: SADEED welcome
     segments.push({
       at: 0,
       speaker_id: "aria",
-      speaker_name: "FINN",
+      speaker_name: BRAND_ASSISTANT.nameAr,
       text_ar: "السلام عليكم. هذا الموجز التنفيذي للأمن الصناعي عبر المواقع المصرح بها.",
       text_en: "Good day. This is the industrial-security brief across authorised sites.",
     });
@@ -131,7 +133,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
     segments.push({
       at: 5,
       speaker_id: "aria",
-      speaker_name: "FINN",
+      speaker_name: BRAND_ASSISTANT.nameAr,
       text_ar: `${postureAr}. لدينا ${open.length} بلاغًا مفتوحًا منها ${critical.length} حرج، و${activePatrols} دورية نشطة، و${openHighRiskPermits} تصاريح عالية الخطورة.`,
       text_en: `${postureEn}. ${open.length} open incidents (${critical.length} critical), ${activePatrols} active patrols, ${openHighRiskPermits} high-risk permits in effect.`,
       badges: [
@@ -159,7 +161,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
       });
     });
 
-    // 45–55s: FINN merge — recommendation via Gemini
+    // 45–55s: SADEED merge — recommendation via Gemini
     let recommendation: ExecutiveBriefing["recommendation"];
     try {
       const runtime = resolveFinnGeminiRuntime();
@@ -171,7 +173,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
         .join("\n");
 
       const prompt =
-        `You are FINN, executive industrial-security assistant for all authorised regions and sites. Read these agent findings and the operational snapshot. ` +
+        `You are SADEED, executive industrial-security assistant for all authorised regions and sites. Read these agent findings and the operational snapshot. ` +
         `Return STRICT JSON with keys title_ar, title_en, rationale_ar, rationale_en, confidence (0..1), horizon_hours (integer). ` +
         `Be specific, non-technical, executive-tone. No tables, no markdown.\n\n` +
         `Snapshot: open=${open.length} critical=${critical.length} patrols=${activePatrols} permits_high=${openHighRiskPermits}.\n\n` +
@@ -219,7 +221,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
     segments.push({
       at: 55,
       speaker_id: "aria",
-      speaker_name: "FINN",
+      speaker_name: BRAND_ASSISTANT.nameAr,
       text_ar: `التوصية: ${recommendation.title_ar}. مستوى الثقة ${Math.round(recommendation.confidence * 100)}٪.`,
       text_en: `Recommendation: ${recommendation.title_en}. Confidence ${Math.round(recommendation.confidence * 100)}%.`,
     });
