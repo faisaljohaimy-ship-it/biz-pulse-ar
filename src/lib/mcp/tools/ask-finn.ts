@@ -3,9 +3,9 @@ import { z } from "zod";
 
 export default defineTool({
   name: "ask_finn",
-  title: "Ask FINN",
+  title: "Ask SADEED",
   description:
-    "Send a natural-language question to FINN, the SADEED Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
+    "Send a natural-language question to SADEED, the Executive AI Engine, and receive an executive briefing (bilingual AR/EN). Read-only reasoning; does not mutate app state.",
   inputSchema: {
     question: z
       .string()
@@ -57,14 +57,14 @@ export default defineTool({
     );
     if (!geminiReady) {
       return {
-        content: [{ type: "text", text: "FINN is unavailable: Gemini is not configured." }],
+        content: [{ type: "text", text: "SADEED is unavailable: Gemini is not configured." }],
         isError: true,
       };
     }
     const sys =
       language === "en"
-        ? "You are FINN, the Executive AI Engine of SADEED OS. Reply concisely in English."
-        : "أنت FINN، المحرك التنفيذي لنظام سَدِيد OS. أجب باختصار تنفيذي.";
+        ? "You are SADEED, the Executive AI Engine. Reply concisely in English."
+        : "أنت سَدِيد، المحرك التنفيذي للمنصة. أجب باختصار تنفيذي.";
     try {
       const [{ generateText }, { resolveFinnGeminiRuntime }, { revalidateSpeakableText }] =
         await Promise.all([
@@ -84,7 +84,10 @@ export default defineTool({
       const validated = revalidateSpeakableText(result.text);
       const reply = validated.ok ? validated.text : "";
       if (!reply)
-        return { content: [{ type: "text", text: "FINN returned no safe text." }], isError: true };
+        return {
+          content: [{ type: "text", text: "SADEED returned no safe text." }],
+          isError: true,
+        };
       return { content: [{ type: "text", text: reply }] };
     } catch (err) {
       return {

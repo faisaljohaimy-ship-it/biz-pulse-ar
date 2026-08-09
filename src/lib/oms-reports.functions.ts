@@ -152,7 +152,7 @@ async function buildIncidentPdf(
   hr();
 
   if (inc.ai_summary) {
-    drawText("FINN Executive Summary", { bold: true, size: 11, color: accent });
+    drawText("SADEED Executive Summary", { bold: true, size: 11, color: accent });
     drawText(inc.ai_summary);
     hr();
   }
@@ -295,8 +295,8 @@ export const generateIncidentReport = createServerFn({ method: "POST" })
         ["Response (min)", inc.response_minutes ?? ""],
         ["Root Cause", inc.root_cause ?? ""],
         ["Executive Review", inc.executive_review ?? ""],
-        ["FINN Summary", inc.ai_summary ?? ""],
-        ["FINN Auto-Analyzed", inc.aria_auto_analyzed ? "YES" : "NO"],
+        ["SADEED Summary", inc.ai_summary ?? ""],
+        ["SADEED Auto-Analyzed", inc.aria_auto_analyzed ? "YES" : "NO"],
       ]);
       XLSX.utils.book_append_sheet(wb, summary, "Incident");
 

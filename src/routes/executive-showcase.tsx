@@ -33,7 +33,7 @@ export const Route = createFileRoute("/executive-showcase")({
       { title: "العرض التنفيذي — سَدِيد | Executive Showcase" },
       {
         name: "description",
-        content: "عرض سينمائي تنفيذي لمنصة سَدِيد بصوت FINN وشاشة منقسمة.",
+        content: "عرض سينمائي تنفيذي لمنصة سَدِيد بالصوت التنفيذي وشاشة منقسمة.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -118,8 +118,8 @@ const SCENES: Scene[] = [
   {
     id: "aria",
     icon: Sparkles,
-    title_ar: "FINN — الذكاء التنفيذي",
-    title_en: "FINN — Executive Intelligence",
+    title_ar: "سَدِيد — الذكاء التنفيذي",
+    title_en: "SADEED — Executive Intelligence",
     value_ar: "محرك تنفيذي ثنائي اللغة بصوت طبيعي وذاكرة حيّة.",
     value_en: "Bilingual executive engine with natural voice and live memory.",
     accent: ACCENT_EMERALD,
@@ -517,7 +517,7 @@ function ExecutiveShowcasePage() {
               preload="metadata"
               controls={false}
               disablePictureInPicture
-              aria-label="فيلم FINN للعرض التنفيذي · FINN executive presentation film"
+              aria-label="فيلم سديد للعرض التنفيذي · SADEED executive presentation film"
               onLoadedData={() => setVideoFailed(false)}
               onError={() => setVideoFailed(true)}
             >
@@ -560,7 +560,7 @@ function ExecutiveShowcasePage() {
                 >
                   <scene.icon className="h-9 w-9" />
                 </span>
-                <div className="text-lg font-black text-white">FINN · FINN</div>
+                <div className="text-lg font-black text-white">سَدِيد · SADEED</div>
                 <div className="text-sm font-semibold text-white/85">{scene.title_ar}</div>
                 <div className="max-w-xs text-[12px] leading-relaxed text-white/60">
                   {scene.value_ar}
@@ -579,7 +579,7 @@ function ExecutiveShowcasePage() {
                   style={{ boxShadow: "0 0 8px #34D399" }}
                 />
               </span>
-              FINN · LIVE
+              SADEED · LIVE
             </div>
             {!needsStart && !isFinale && !videoFailed && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-between gap-3 p-3.5">
@@ -1016,7 +1016,7 @@ function FinnHUD() {
         <style>{`@keyframes orb{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}`}</style>
       </div>
       <div className="text-center">
-        <div className="text-[12px] uppercase tracking-[0.4em] text-[#3AE8FF]">FINN · FINN</div>
+        <div className="text-[12px] uppercase tracking-[0.4em] text-[#3AE8FF]">سَدِيد · SADEED</div>
         <div className="mt-1 font-mono text-[12px] text-white/60">bilingual · voice · memory</div>
       </div>
     </div>

@@ -325,8 +325,8 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
       "procedures, policies, and lessons learned",
       "تعلّم مؤسسي متراكم يمنع تكرار الأخطاء",
       "compounding institutional learning that prevents repeat errors",
-      "المستندات مفهرسة بتضمينات RAG لتُستشهَد داخل ردود FINN مع رابط للمصدر والصفحة",
-      "documents are RAG-indexed so FINN cites them inline with a link to source and page",
+      "المستندات مفهرسة بتضمينات RAG لتُستشهَد داخل ردود سَدِيد مع رابط للمصدر والصفحة",
+      "documents are RAG-indexed so SADEED cites them inline with a link to source and page",
     ),
   ],
 ];

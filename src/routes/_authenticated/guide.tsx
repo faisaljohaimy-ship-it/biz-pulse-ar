@@ -52,7 +52,7 @@ const GROUPS: Array<{ ar: string; en: string; routes: string[] }> = [
   {
     ar: "الأمن والامتثال",
     en: "Security & Compliance",
-    routes: ["/sec", "/hcis", "/ptw", "/sec/permits", "/sec/maintenance", "/governance", "/risk"],
+    routes: ["/sec", "/ptw", "/sec/permits", "/sec/maintenance", "/governance", "/risk"],
   },
   {
     ar: "الذكاء والوكلاء",

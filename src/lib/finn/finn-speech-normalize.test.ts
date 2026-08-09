@@ -41,7 +41,7 @@ describe("normalizeFinnSpeechText — acronym dictionary (token-bounded)", () =>
     // assert the DECISION: the retired product and assistant names are voiced
     // as their replacements, never as the names the owner removed.
     expect(ar("NEXIOS")).toBe("المنصة");
-    expect(ar("ARIA")).toBe("فِنّ");
+    expect(ar("ARIA")).toBe("سَدِيد");
     for (const spoken of [ar("NEXIOS"), ar("ARIA")]) {
       expect(spoken).not.toMatch(/نكس|نِكْس|آريا/);
     }

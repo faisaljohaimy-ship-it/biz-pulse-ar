@@ -9,7 +9,7 @@ import {
   Shield,
   Users,
   Key,
-  Activity,
+  ScrollText,
   Loader2,
   CheckCircle2,
   XCircle,
@@ -206,7 +206,8 @@ function SecurityCenterPage() {
       {/* Audit Trail */}
       <NexusCard>
         <div className="flex items-center gap-2">
-          <Activity className="h-4 w-4 text-cyan-300" />
+          {/* «سجل التدقيق» قيدٌ مكتوب لا خطُّ نبض. */}
+          <ScrollText className="h-4 w-4 text-cyan-300" aria-hidden />
           <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "سجل التدقيق" : "AUDIT TRAIL"}
           </div>

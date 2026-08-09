@@ -1,8 +1,8 @@
-# FINN Auto-Tour — Master Engineering Prompt
+# SADEED Auto-Tour — Master Engineering Prompt
 
 **Route:** `/aria/tour`
 **Status:** Production
-**Owner:** FINN Executive Brain (singleton)
+**Owner:** SADEED Executive Brain (singleton)
 **Video asset:** `src/assets/aria-tour-full-v2.mp4.asset.json`
 **Cue schedule:** `src/lib/finn/tour-cues.ts`
 
@@ -10,17 +10,17 @@
 
 ## 1 · Mission
 
-Turn the uploaded FINN narration (≈8:19, portrait 9:16, AR audio) into a
-self-driving executive tour of the entire SADEED platform: as FINN
+Turn the uploaded SADEED narration (≈8:19, portrait 9:16, AR audio) into a
+self-driving executive tour of the entire SADEED platform: as SADEED
 describes each of the 32 surfaces, the corresponding window opens **by
-itself** inside the tour viewport, in perfect timing with her voice —
+itself** inside the tour viewport, in perfect timing with his voice —
 no operator interaction required.
 
 ---
 
 ## 2 · Contract (Definition of Done)
 
-1. Opening `/aria/tour` autoplays the FINN narration and immediately
+1. Opening `/aria/tour` autoplays the SADEED narration and immediately
    loads `/os` in the viewport.
 2. On every `timeupdate` (~4 Hz), the sync engine resolves
    `activeCue(currentTime)` from `TOUR_CUES` and, if the route changed,
@@ -31,8 +31,8 @@ no operator interaction required.
    chapters, chapter ticks on the progress rail are clickable.
 5. Calibration mode: pressing `M` while playing prints a copy-paste
    `TourCue` line to the console, keyed to the current route.
-6. The FINN singleton (INVARIANT-13..17) is NOT re-instantiated inside
-   the iframe — the iframe hosts the target route, FINN lives on the
+6. The SADEED singleton (INVARIANT-13..17) is NOT re-instantiated inside
+   the iframe — the iframe hosts the target route, SADEED lives on the
    parent shell.
 7. Typecheck passes, RTL layout is preserved, no hardcoded colors, no
    `SpeechSynthesis` usage.
@@ -46,7 +46,7 @@ no operator interaction required.
 │  /aria/tour shell (parent)                                        │
 │  ┌────────────────────────────────────────────┐  ┌─────────────┐ │
 │  │  <iframe src={current.route} />            │  │  <video>    │ │
-│  │  Live SADEED viewport                      │  │  FINN MP4   │ │
+│  │  Live SADEED viewport                      │  │  SADEED MP4 │ │
 │  │  (authenticated session inherited)         │  │  master     │ │
 │  │                                            │  │  clock      │ │
 │  └────────────────────────────────────────────┘  └─────────────┘ │
@@ -67,8 +67,8 @@ no operator interaction required.
 ## 4 · Cue authoring rules
 
 - Every cue lives in `src/lib/finn/tour-cues.ts` — single source of truth.
-- `tSec` is the moment FINN _begins_ introducing the window (not when
-  she finishes the previous one).
+- `tSec` is the moment SADEED _begins_ introducing the window (not when
+  he finishes the previous one).
 - Titles are short (≤ 4 words) so the chapter chip never wraps.
 - Routes must exist and be reachable to the current user's role. Broken
   routes surface immediately in the iframe as a route boundary.
@@ -79,7 +79,7 @@ no operator interaction required.
 
 ## 5 · Motion & hand-choreography (narrator layer)
 
-Because the FINN video is a pre-rendered performance, choreography is
+Because the SADEED video is a pre-rendered performance, choreography is
 **baked in**, not driven. When re-recording:
 
 - **Phase A — window opens (0.0–0.8s):** right hand rises from side to
@@ -99,7 +99,7 @@ Because the FINN video is a pre-rendered performance, choreography is
 
 - No autoplay with sound on hostile browsers → we accept a silent-start
   fallback and let the user press Play; we never bypass the policy.
-- No `postMessage` chatter into the iframe (would violate the FINN
+- No `postMessage` chatter into the iframe (would violate the SADEED
   singleton invariant).
 - No re-implementing the video timeline in JS timers — the browser's
   media clock is authoritative.

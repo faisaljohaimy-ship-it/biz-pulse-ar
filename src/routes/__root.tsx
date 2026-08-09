@@ -156,9 +156,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image", content: `${DOMAIN_URL}/finn-portrait.png` },
       { property: "og:image:width", content: "1128" },
       { property: "og:image:height", content: "1920" },
-      // الصورة صورة FINN، والوصف يقولها: FINN المساعد داخل المنتج، لا
-      // اسمًا ثانيًا للمنتج (`PRODUCT_BRAND.assistantName` هويّة منفصلة).
-      { property: "og:image:alt", content: `FINN · ${PRODUCT_NAME}` },
+      // الصورة صورة المساعد. النصّ البديل يذكر الاسم **مرّة واحدة**: بعد
+      // توحيد اسم المساعد باسم المنتج (قرار المالك ٢٠٢٦/٠٨/٠٩) صار تكراره
+      // على طرفَي الفاصل «سَدِيد · سَدِيد» — لغوٌ يُنطق مرّتين في قارئ
+      // الشاشة. فالاسم للمنتج، والمساعد يوصف بدوره.
+      { property: "og:image:alt", content: `${PRODUCT_NAME} — المساعد التنفيذي` },
       { property: "og:site_name", content: COMPANY_NAME },
       { name: "twitter:card", content: "summary_large_image" },
       {
@@ -170,7 +172,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: SITE_TAGLINE,
       },
       { name: "twitter:image", content: `${DOMAIN_URL}/finn-portrait.png` },
-      { name: "twitter:image:alt", content: `FINN · ${PRODUCT_NAME}` },
+      { name: "twitter:image:alt", content: `${PRODUCT_NAME} — المساعد التنفيذي` },
       // تكرار متعمَّد من نسخة Lovable القديمة: الإدخال الأخير هو ما يفوز
       // في وسم واحد، فكان عنوان التبويب يعود لتسمية سابقة بعد كل رسم.
       // الاثنان الآن `SITE_NAME` نفسه — التكرار صار بلا أثر بدل أن يكون
@@ -303,14 +305,23 @@ function RootShell({ children }: { children: React.ReactNode }) {
               "var t=localStorage.getItem('theme');" +
               "var d=t!=='light';" +
               "r.classList.toggle('light',!d);r.classList.toggle('dark',d);" +
-              "r.style.colorScheme=d?'dark':'light';" +
-              // اختيار «إيقاف الحركة» يُطبَّق هنا لا في محرّك الخلفية وحده:
-              // ذاك المحرّك لا يُركَّب إلا على الصفحات التي لها خلفية فيلم،
-              // فكان المستخدم يوقف الحركة ثم تنبض الأيقونات على كل صفحة
-              // أخرى — أي أن اختياره يسقط بمجرّد التنقّل. القراءة قبل أول
-              // رسم تمنع أيضًا وميضةً واحدة قبل تطبيق الاختيار.
-              "if(localStorage.getItem('nx-holo-bg')==='off')" +
-              "r.setAttribute('data-nx-motion','off');}" +
+              "r.style.colorScheme=d?'dark':'light';}" +
+              // **سقطت من هنا قراءة `nx-holo-bg` (قرار المالك ٢٠٢٦/٠٨/٠٩).**
+              // كان هذا السطر يقرأ المفتاح ويكتب `data-nx-motion="off"` قبل
+              // أول رسم، لأن اختيار المستخدم كان يسقط بمجرّد التنقّل إلى
+              // صفحة بلا خلفية فيلم. وقد حُذف الفيلم وحُذف معه زرّه —
+              // والزرّ هو الكاتب **الوحيد** لهذا المفتاح.
+              //
+              // فبقاء القراءة يعني مفتاحًا يتيمًا في تخزين من ضغط الزرّ
+              // يومًا: يُسكِت نبضات الأيقونات وانتقالات المسار على كل صفحة،
+              // إلى الأبد، بلا واجهة تفكّه — أي حالة عالقة لا تفضيلًا. وما
+              // طلبه ذلك المستخدم أصلًا كان «أوقف فيلم الخلفية» لا «أوقف
+              // كل حركة إلى الأبد».
+              //
+              // والحركة الباقية لها مخرجها الحيّ: `prefers-reduced-motion`
+              // في styles.css و`icon-motion.css` و`LottieIcon`. والسمة
+              // `data-nx-motion` تبقى سطحَ تحكّم عاملًا، بلا كاتب في
+              // الواجهة اليوم.
               "catch(e){document.documentElement.classList.add('dark');}})();",
           }}
         />

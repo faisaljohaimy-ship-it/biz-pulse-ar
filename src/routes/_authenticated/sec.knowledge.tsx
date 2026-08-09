@@ -34,7 +34,7 @@ import {
   LayoutTemplate,
   CheckSquare,
   Loader2,
-  RotateCw,
+  Sprout,
   Wand2,
   ChevronRight,
 } from "lucide-react";
@@ -199,7 +199,9 @@ function KbPage() {
               {seedM.isPending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <RotateCw className="h-3.5 w-3.5" />
+                /* «زرع تأسيسي» بذرُ متنٍ أوّل، لا إعادةُ تدوير — و`RotateCw`
+                   سهمُ تحديثٍ يقرأ «أعِد ما كان». */
+                <Sprout className="h-3.5 w-3.5" aria-hidden />
               )}
               زرع تأسيسي
             </Button>
@@ -232,7 +234,7 @@ function KbPage() {
       <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-4">
         <label className="mb-2 flex items-center gap-2 text-sm font-medium">
           <Sparkles className="h-4 w-4 text-cyan-500" />
-          البحث الدلالي عبر FINN (يفهم اللغة الطبيعية ar/en)
+          البحث الدلالي عبر سَدِيد (يفهم اللغة الطبيعية ar/en)
         </label>
         <Input
           dir="auto"

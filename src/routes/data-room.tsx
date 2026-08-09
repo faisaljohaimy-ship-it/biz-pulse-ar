@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
-import { ArrowLeft, FileText, Shield, Landmark, Briefcase, BookOpen, Lock } from "lucide-react";
+import { ArrowLeft, FileText, Shield, Landmark, Briefcase, ShieldCheck, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/data-room")({
   head: () => ({
@@ -98,7 +98,8 @@ const SECTIONS: Section[] = [
   },
   {
     id: "compliance",
-    icon: <BookOpen className="h-5 w-5" />,
+    // «وثائق الامتثال» شهادةُ مطابقة لا كتابٌ مفتوح.
+    icon: <ShieldCheck className="h-5 w-5" />,
     title: "Compliance Documents",
     titleAr: "وثائق الامتثال",
     docs: [

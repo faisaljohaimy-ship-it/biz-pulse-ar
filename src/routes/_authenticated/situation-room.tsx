@@ -25,7 +25,7 @@ import {
   Wrench,
   Brain,
   GaugeCircle,
-  Radio,
+  HeartPulse,
   Sparkles,
   Map as MapIcon,
   Presentation,
@@ -370,7 +370,8 @@ function OperationalHealthColumn({
       className="flex flex-col gap-3 rounded-3xl border border-cyan-400/15 bg-[#0A1E33]/70 p-4 backdrop-blur-xl"
     >
       <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-cyan-200/80">
-        <Radio className="h-4 w-4" />
+        {/* «الصحة التشغيلية» — و`Radio` بثٌّ لا صحّة. */}
+        <HeartPulse className="h-4 w-4" aria-hidden />
         {ar ? "الصحة التشغيلية" : "Operational Health"}
       </div>
 

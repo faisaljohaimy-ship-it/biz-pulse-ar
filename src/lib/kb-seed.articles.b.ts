@@ -105,15 +105,17 @@ export const ARTICLES_B: KbSeedArticle[] = [
     summary_ar: "موجز يومي مكثف للمدير التنفيذي.",
     summary_en: "Daily condensed brief for the executive director.",
     procedure_ar:
-      "1) 3 نقاط رئيسية.\n2) المخاطر العاجلة.\n3) قرارات مطلوبة.\n4) FINN توليد + مراجعة بشرية.\n5) تسليم 06:00.",
+      "1) 3 نقاط رئيسية.\n2) المخاطر العاجلة.\n3) قرارات مطلوبة.\n4) توليد سَدِيد + مراجعة بشرية.\n5) تسليم 06:00.",
     procedure_en:
-      "1) 3 key points. 2) Urgent risks. 3) Decisions required. 4) FINN-generated + human-reviewed. 5) Deliver 06:00.",
+      "1) 3 key points. 2) Urgent risks. 3) Decisions required. 4) SADEED-generated + human-reviewed. 5) Deliver 06:00.",
     risk_level: "medium",
     priority: "elevated",
     related_workflows: ["Executive Briefing"],
     related_agents: ["executive_briefer", "aria_executive"],
-    keywords_ar: ["موجز", "تنفيذي", "قرارات", "FINN"],
-    keywords_en: ["brief", "executive", "decisions", "FINN"],
+    // الاسم بلا تشكيل في الكلمات المفتاحية عمدًا: هذه مدخلات فهرس بحث،
+    // والمستخدم يكتب «سديد» لا «سَدِيد»، فالتشكيل يمنع المطابقة لا يعينها.
+    keywords_ar: ["موجز", "تنفيذي", "قرارات", "سديد"],
+    keywords_en: ["brief", "executive", "decisions", "SADEED"],
     version: "1.0",
   },
 

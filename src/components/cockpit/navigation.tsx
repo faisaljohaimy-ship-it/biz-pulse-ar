@@ -231,7 +231,7 @@ function NavFooter({ onNavigate }: { onNavigate?: () => void }) {
       >
         <NxFinnPresence state="idle" mode="advisory" size="sm" />
         <span className="flex flex-col">
-          <span className="text-sm font-bold text-nx-pearl">FINN</span>
+          <span className="text-sm font-bold text-nx-pearl">سَدِيد</span>
           <span className="text-[12px] text-nx-success">المساعد التنفيذي · متصل</span>
         </span>
       </button>

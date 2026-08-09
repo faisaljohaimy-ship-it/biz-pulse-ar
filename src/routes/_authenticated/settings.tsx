@@ -346,12 +346,12 @@ function SettingsPage() {
           <div className="border-t border-border pt-4 space-y-2">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Database className="h-4 w-4" />
-              {locale === "ar" ? "قاعدة معرفة FINN" : "FINN Knowledge Corpus"}
+              {locale === "ar" ? "قاعدة معرفة سَدِيد" : "SADEED Knowledge Corpus"}
             </h3>
             <p className="text-xs text-muted-foreground">
               {locale === "ar"
-                ? "يرفع 30 وثيقة مرجعية مؤسسية (سياسات، إجراءات SOP، KPIs، مسارات العمل) ويفهرسها للذاكرة الدلالية لـ FINN. يتطلب صلاحية مسؤول."
-                : "Seed 30 enterprise reference entries (policies, SOPs, KPIs, workflows) and index them for FINN's semantic memory. Admin only."}
+                ? "يرفع 30 وثيقة مرجعية مؤسسية (سياسات، إجراءات SOP، KPIs، مسارات العمل) ويفهرسها للذاكرة الدلالية لسَدِيد. يتطلب صلاحية مسؤول."
+                : "Seed 30 enterprise reference entries (policies, SOPs, KPIs, workflows) and index them for SADEED's semantic memory. Admin only."}
             </p>
             <Button
               onClick={handleSeedCorpus}

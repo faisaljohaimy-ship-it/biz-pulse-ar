@@ -147,7 +147,7 @@ export function PredictiveAnalytics({ title, unit, series, insight, lang }: Prop
 
       <div className="rounded-xl border border-cyan-400/30 bg-cyan-400/[0.06] p-3 text-xs leading-relaxed text-cyan-100">
         <span className="me-2 font-semibold text-cyan-200">
-          {ar ? "استنتاج FINN:" : "FINN insight:"}
+          {ar ? "استنتاج سَدِيد:" : "SADEED insight:"}
         </span>
         {insight}
       </div>

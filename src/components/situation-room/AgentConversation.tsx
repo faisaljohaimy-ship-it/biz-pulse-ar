@@ -160,7 +160,7 @@ export function AgentConversation({ ar }: { ar: boolean }) {
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.2em] text-cyan-100">
               <Sparkles className="h-3.5 w-3.5" />
-              {ar ? "خلاصة FINN التنفيذية" : "FINN Executive Synthesis"}
+              {ar ? "خلاصة سَدِيد التنفيذية" : "SADEED Executive Synthesis"}
             </div>
             <span
               className={cn(
@@ -221,7 +221,7 @@ export function AgentConversation({ ar }: { ar: boolean }) {
               {ar ? "ثقة الخلاصة" : "Synthesis confidence"}: {Math.round(synth.confidence * 100)}%
             </span>
             <span>
-              {synth.source === "gemini" ? "FINN · Gemini" : ar ? "وضع احتياطي" : "Fallback"}
+              {synth.source === "gemini" ? "سَدِيد · Gemini" : ar ? "وضع احتياطي" : "Fallback"}
               {data?.cached ? ` · ${ar ? "ذاكرة" : "memory"}` : ""}
             </span>
           </div>

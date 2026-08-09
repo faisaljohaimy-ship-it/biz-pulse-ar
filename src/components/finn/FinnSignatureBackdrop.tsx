@@ -48,7 +48,9 @@ export function FinnSignatureBackdrop({
   const front = 0.06 * intensity; // front layer base opacity (~6%)
   const glyph = 0.052 * intensity; // floating letters stay below chat contrast
   const row = `${FINN_SIGNATURE_WORDMARK}  `;
-  const floatingGlyphs = "FINNFINNFINN".split("");
+  // الحروف الطائرة مشتقّة من العلامة نفسها لا مكتوبة حرفيًّا: كانت نسخة
+  // ثانية من الاسم تتخلّف عن مصدرها عند أي تغيير للعلامة.
+  const floatingGlyphs = FINN_SIGNATURE_WORDMARK.repeat(3).split("");
 
   return (
     <div

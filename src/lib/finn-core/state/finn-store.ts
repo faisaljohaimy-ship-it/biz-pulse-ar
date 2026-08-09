@@ -30,6 +30,12 @@ interface FinnState {
   activeEnvelope: ExecutiveEnvelope | null;
   activeExecution: ExecutionEnvelope | null;
   pendingCommands: PendingCommand[];
+  /**
+   * عدّاد طلبات «ابدأ المخاطبة الصوتية». عدّاد لا راية منطقية عمدًا: الراية
+   * ترتفع مرة ثم تبقى مرفوعة، فلا يستطيع المستخدم طلب المخاطبة ثانيةً بعد
+   * أن ينهيها. كل ضغطة تزيد الرقم، فيلتقطها المستمع بوصفها حدثًا جديدًا.
+   */
+  voiceConversationRequest: number;
 
   // Actions
   setMode: (mode: FinnMode) => void;
@@ -40,6 +46,8 @@ interface FinnState {
   setActiveExecution: (execution: ExecutionEnvelope | null) => void;
   enqueue: (cmd: PendingCommand) => void;
   drainCommands: () => PendingCommand[];
+  /** يفتح اللوحة ويطلب بدء المخاطبة الصوتية في نفس الضغطة. */
+  requestVoiceConversation: () => void;
 }
 
 export const useFinnStore = create<FinnState>((set, get) => ({
@@ -50,6 +58,7 @@ export const useFinnStore = create<FinnState>((set, get) => ({
   activeEnvelope: null,
   activeExecution: null,
   pendingCommands: [],
+  voiceConversationRequest: 0,
 
   setMode: (mode) => set({ mode }),
   setVoice: (voice) => set({ voice }),
@@ -64,4 +73,9 @@ export const useFinnStore = create<FinnState>((set, get) => ({
     set({ pendingCommands: [] });
     return cmds;
   },
+  requestVoiceConversation: () =>
+    set({
+      mode: get().mode === "collapsed" ? "docked" : get().mode,
+      voiceConversationRequest: get().voiceConversationRequest + 1,
+    }),
 }));

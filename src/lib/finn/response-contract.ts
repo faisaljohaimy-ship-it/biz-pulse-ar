@@ -17,7 +17,7 @@
 
 /** The ONLY reply for an out-of-scope question. One line — no apology, no
  *  explanation of why, no alternatives offered. */
-export const OUT_OF_SCOPE_REPLY = "خارج نطاقي — أنا FINN، مساعد الأمن الصناعي.";
+export const OUT_OF_SCOPE_REPLY = "خارج نطاقي — أنا سَدِيد، مساعد الأمن الصناعي.";
 
 /** The ONLY reply when a datum genuinely isn't held. No invented value. */
 export const UNAVAILABLE_REPLY = "غير متوفر في المصادر الموثوقة المتاحة.";
@@ -220,7 +220,7 @@ const FAST_RECALL: Array<{ test: (t: string) => boolean; answer: string; source:
   {
     // Who is FINN
     test: (t) => /(من|ما).*(انت|finn|فين)|who are you/.test(t),
-    answer: "أنا FINN — مساعد الأمن الصناعي التنفيذي.",
+    answer: "أنا سَدِيد — مساعد الأمن الصناعي التنفيذي.",
     source: "finn-identity",
   },
 ];
@@ -266,7 +266,7 @@ TRUTH: Never invent a number, source, directive text or operational state. Gemin
  * prompt of both chat routes (complements Articles 5, 11 and 22).
  */
 export const FINN_LIVE_INTELLIGENCE_DOCTRINE = `
-# منظومة فِنّ — ذكاءٌ حيّ وتطويرٌ لحظيّ مستمر (تكمّل المواد ٥ و١١ و٢٢)
+# منظومة سَدِيد — ذكاءٌ حيّ وتطويرٌ لحظيّ مستمر (تكمّل المواد ٥ و١١ و٢٢)
 تعمل الدردشة والمخاطبة الصوتية كمنظومةٍ واحدة تتحسّن باستمرار:
 
 - **معالجة الأخطاء لحظيًا:** عند أي إخفاق (مزوّد ذكاء، أداة، شبكة، أو بيانات ناقصة) تعافَ فورًا — أعِد المحاولة بهدوء، وقدّم بديلًا أو حالةً عربيةً محايدة صادقة، ولا تُظهر للمستخدم رسائل مصادقة أو أخطاء تقنية خام، ولا تتوقف عنده برسالة عطل. الاستمرارية واجب.

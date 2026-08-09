@@ -17,10 +17,10 @@ export const Route = createFileRoute("/_authenticated/finn/demo")({
   component: FinnDemoPage,
   head: () => ({
     meta: [
-      { title: "FINN — سيناريو تنفيذي مباشر" },
+      { title: "سَدِيد — سيناريو تنفيذي مباشر" },
       {
         name: "description",
-        content: "سيناريو حي لعرض قدرات FINN التنفيذية: قرار، توصية، موافقة.",
+        content: "سيناريو حي لعرض قدرات سَدِيد التنفيذية: قرار، توصية، موافقة.",
       },
     ],
   }),
@@ -72,10 +72,10 @@ function FinnDemoPage() {
           <Sparkles className="h-3.5 w-3.5" aria-hidden />
           سيناريو تنفيذي حي
         </div>
-        <h1 className="text-2xl font-semibold text-foreground">تجربة FINN التنفيذي</h1>
+        <h1 className="text-2xl font-semibold text-foreground">تجربة سَدِيد التنفيذي</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          اختر سيناريو تنفيذي وسيتم إرساله إلى FINN عبر القناة المفردة. ستظهر بطاقة الملخص التنفيذي
-          أدناه فور اكتمال التحليل.
+          اختر سيناريو تنفيذي وسيتم إرساله إلى سَدِيد عبر القناة المفردة. ستظهر بطاقة الملخص
+          التنفيذي أدناه فور اكتمال التحليل.
         </p>
       </header>
 
@@ -99,7 +99,7 @@ function FinnDemoPage() {
       </section>
 
       <section
-        aria-label="ملخص FINN التنفيذي الحالي"
+        aria-label="ملخص سديد التنفيذي الحالي"
         className="rounded-xl border border-border/40 bg-background/40 p-1"
       >
         <ExecutiveCard />

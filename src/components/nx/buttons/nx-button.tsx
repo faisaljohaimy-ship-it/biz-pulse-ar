@@ -83,7 +83,7 @@ export const NxVoiceButton = React.forwardRef<HTMLButtonElement, NxVoiceButtonPr
     <button
       ref={ref}
       aria-pressed={state !== "idle"}
-      aria-label={state === "idle" ? "تحدث إلى FINN" : state === "listening" ? "يستمع" : "يسجل"}
+      aria-label={state === "idle" ? "تحدث إلى سديد" : state === "listening" ? "يستمع" : "يسجل"}
       data-voice-state={state}
       className={cn(
         "relative inline-flex size-12 items-center justify-center rounded-full nx-glass-e1 text-nx-pearl cursor-pointer transition-[border-color,box-shadow] duration-[var(--nx-anim-micro)] ease-[var(--nx-ease-out)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-nx-obsidian",

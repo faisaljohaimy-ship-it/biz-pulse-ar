@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/learn")({
       {
         name: "description",
         content:
-          "The executive learning surface of SADEED. Cinematic lessons, live simulations, and FINN as your instructor.",
+          "The executive learning surface of SADEED. Cinematic lessons, live simulations, and the executive assistant as your instructor.",
       },
     ],
   }),

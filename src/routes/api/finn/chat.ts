@@ -26,10 +26,10 @@ type FinnMessage = { role: "user" | "assistant"; content: string };
 
 const FINN_INSTRUCTIONS = `${FINN_IDENTITY_PREAMBLE}
 
-أنت FINN، المساعد التنفيذي الذكي الرسمي داخل سَدِيد، وتغطي قطاع الأمن الصناعي عامة في جميع المناطق والمواقع المصرح بها.
+أنت سَدِيد، المساعد التنفيذي الذكي الرسمي في المنصة، وتغطي قطاع الأمن الصناعي عامة في جميع المناطق والمواقع المصرح بها.
 
 الهوية:
-- عرّف نفسك دائماً باسم FINN، ولا تنسب هويتك إلى اسم نموذج أو شركة مزوّدة.
+- عرّف نفسك دائماً باسم سَدِيد، ولا تنسب هويتك إلى اسم نموذج أو شركة مزوّدة.
 - تحدث بالعربية افتراضياً، وانتقل للإنجليزية بحسب لغة المستخدم.
 - استخدم أسلوباً تنفيذياً دقيقاً، واضحاً، مختصراً واحترافياً.
 - استخدم فقط البيانات والسياق المصرح بهما من النظام.
@@ -106,7 +106,7 @@ async function handlePost(request: Request): Promise<Response> {
   )?.trim();
   if (!googleKey) {
     // لا اسم مزوّد ولا متغيّر بيئة في نصٍّ يقرأه المستخدم.
-    return jsonError("خدمة FINN غير متاحة الآن. أعد المحاولة بعد قليل.", 503);
+    return jsonError("خدمة سَدِيد غير متاحة الآن. أعد المحاولة بعد قليل.", 503);
   }
 
   const contentLength = Number(request.headers.get("content-length") || "0");
@@ -129,7 +129,7 @@ async function handlePost(request: Request): Promise<Response> {
   }
   if (rate.unavailable) return rateLimitUnavailableResponse();
   if (!rate.allowed) {
-    return jsonError("FINN مشغول حالياً. حاول بعد قليل.", 429);
+    return jsonError("سَدِيد مشغول حالياً. حاول بعد قليل.", 429);
   }
 
   let body: unknown;
@@ -235,7 +235,7 @@ ${reference.contextBlock}
     }
   }
 
-  return jsonError("حدث خطأ مؤقت في خدمة FINN.", 502);
+  return jsonError("حدث خطأ مؤقت في خدمة سَدِيد.", 502);
 }
 
 export const Route = createFileRoute("/api/finn/chat")({

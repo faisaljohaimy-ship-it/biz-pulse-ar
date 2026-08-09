@@ -1,206 +1,223 @@
 /**
- * عقد خلفية الرئيسية — «متواصلة، بلا لُحمة، بوضوح كامل»
- * (قرار المالك ٢٠٢٦/٠٨/٠٦).
+ * عقد خلفية النظام — **ساكنة، داكنة، بلا زر** (قرار المالك ٢٠٢٦/٠٨/٠٩).
  *
- * ثلاثة مطالب هنا لا يكسر سقوطُها بناءً ولا اختبارَ عرض:
+ * **لماذا انقلب هذا الملف رأسًا على عقب.** كان يحرس عكس ما يحرسه اليوم:
+ * فيلمًا صامتًا بحلقة بلا لُحمة، ٩٦٠ إطارًا بسرعة ٠٫٣٠، وحارسًا دوريًّا
+ * يعيد تشغيله كلما رُفض `play()` صامتًا، وزرَّ إيقافٍ دائم الظهور. أمر
+ * المالك: «الخلفية تكون ثابتة وغامقة فقط، وشيل زر إيقاف الخلفية». فسقط
+ * الفيلم، وسقط معه كل بند وُجد لأجله — واللُّحمة وعدد الإطارات ومسار
+ * الصوت وأبعاد الترميز صارت أسئلةً عن ملفٍ لا يُحمَّل.
  *
- * ① **اللُّحمة**: مقطعٌ أوّله لا يشبه آخره يقطع قطعًا ظاهرًا كل دورة.
- *    لا يُرى إلا بانتظار دورة كاملة (٦٦ ثانية على سرعة ٠٫٣٠) — وهو أطول
- *    مما يصبر عليه فاحصٌ بشري. لذلك يُقاس الملف نفسه هنا لا الكود وحده.
- * ② **الاستمرار**: `play()` تُرفض صامتةً في حالات حقيقية، فتبقى الخلفية
- *    ساكنة بلا أثر يدلّ على السبب. الحارس الدوري هو ما يمنع ذلك.
- * ③ **الوضوح**: أي `opacity` أقل من ١ على الفيلم يُبطل المطلب في الوضع
- *    الذي كُتبت فيه القاعدة وحده — والقاعدة الساقطة كانت للجوال.
+ * **الملف لا يُحذف، ويحرس الواقع الجديد:** ما سقط بصمت لا يُلاحَظ. الفيلم
+ * يعود بسطرٍ واحد، والزرُّ يعود بسطرين، وكلاهما يمرّ من tsc ومن البناء بلا
+ * صوت — فهنا موضع الإمساك.
+ *
+ * وكل بند أدناه يسقط لو انعكس الكود: لا فحص يمرّ لأن شيئًا لم يوجد.
  */
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const ENGINE = readFileSync("src/components/home/HoloVideoEngine.tsx", "utf8");
 const CSS = readFileSync("src/styles.css", "utf8");
-/** التعليق يشرح الأرقام ويذكرها — الحارس يفحص الكود وحده. */
-const CODE = ENGINE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "");
+const ROOT = readFileSync("src/routes/__root.tsx", "utf8");
 
-describe("① الفيلم المنشور — بندولٌ حقيقي لا مقطعًا خامًا", () => {
-  const FILE = "public/holo-bg.mp4";
+/** التعليقات تشرح ما حُذف وتذكر أسماءه — الحارس يفحص الكود وحده. */
+const strip = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "");
+const CODE = strip(ENGINE);
+const ROOT_CODE = strip(ROOT);
+/** ملف الأنماط بلا تعليقات: هذا الملف نفسه يذكر ما حُذف بأسمائه لتوثيق سببه. */
+const SHEET = CSS.replace(/\/\*[\s\S]*?\*\//g, "");
 
-  it("موجود وضمن سقف الوسائط", () => {
-    const bytes = statSync(FILE).size;
-    expect(bytes).toBeGreaterThan(1_000_000);
-    // سقف «أكبر أصل وسائط» في ميزانية الأداء ١٤ MiB.
-    expect(bytes / 1024 / 1024).toBeLessThan(14);
+/** كل كتل قواعد `.nx-hv*` كما هي في الملف — على أي عمق من التداخل. */
+const HV_RULES = SHEET.match(/\.nx-hv[\w-]*[^{}]*\{[^{}]*\}/g) ?? [];
+
+describe("① لا فيلم — ولا شيءَ مما وُجد لخدمته", () => {
+  it("لا عنصر فيديو ولا إشارة إلى ملف الخلفية", () => {
+    // `<video>` يعود بسطر، ويبدأ التحميل وفكّ الترميز من مُحلِّل HTML قبل
+    // أي JS — أي أن عودته لا يمسكها شيء بعد سقوط هذا البند.
+    expect(CODE).not.toContain("<video");
+    expect(CODE).not.toMatch(/\.mp4/);
+    expect(CODE).not.toMatch(/videoRef|HTMLVideoElement/);
   });
 
-  it("لا مسار صوت — الخلفية صامتة بحكم التصميم", () => {
-    // مسارٌ لا يُسمع أبدًا يظلّ يُحمَّل على شبكة المستخدم. قُرئ من صندوق
-    // `hdlr` في الحاوية: `soun` حاضرة = ثمّة مسار صوت.
-    const head = readFileSync(FILE).subarray(0, 200_000).toString("latin1");
-    expect(head.includes("hdlr")).toBe(true); // الحاوية مقروءة أصلًا
-    expect(head.includes("soun"), "الملف يحمل مسار صوت").toBe(false);
-  });
-
-  it("دورةٌ كاملة بالمعدّل المعتمد — لا مقطعًا مبتورًا", () => {
-    // المشهد الحالي حلقةٌ أصلية (قيست ٠٫٩٦٦ عند السيْر مقابل ٠٫٩١٣ و٠٫٨٧١
-    // لانتقالين عاديين في المصدر)، فلا بندول له — والعدد المعتمد ٩٦٠ =
-    // ٢٠٫٠ث × ٤٨ إ/ث، أي دورة المصدر كاملةً بلا زيادة ولا نقص.
-    //
-    // العدد بعينه هو ما يحرس اللُّحمة هنا: التنعيم على نسخةٍ واحدة أعطى
-    // ٩٥٧ إطارًا — ثلاثةٌ ناقصة لأن الإطار الأخير بلا جارٍ يُمزَج به —
-    // فهبط سيْر الحلقة إلى ٠٫٨٨٦ بينما جيرانه ٠٫٩٩. أيّ رقمٍ غير ٩٦٠
-    // يعني أن الدورة لم تُقتطع من مصدرٍ مُغذًّى مرّتين، واللُّحمة عادت.
-    const buf = readFileSync(FILE);
-    const i = buf.indexOf(Buffer.from("stts", "latin1"));
-    expect(i, "جدول التوقيت stts غير موجود").toBeGreaterThan(-1);
-    const frames = buf.readUInt32BE(i + 12); // sample_count لأول مُدخَل
-    expect(frames, `عدد الإطارات ${frames} — الدورة غير كاملة`).toBe(960);
-  });
-
-  it("أبعاد الترميز المعتمد — لا مصدرًا خامًا ولا قصًّا مختلفًا", () => {
-    // فحص **بديل** لا فحص بكسل: القياس على أبعاد الحاوية. يمسك الخطأ
-    // الواقعي — استبدال الملف بمصدرٍ خام بأبعادٍ أخرى، أو إعادة ترميزه
-    // بقصٍّ غير المعتمد. لا يمسك علامةً مائية في مصدرٍ آخر بالأبعاد
-    // نفسها، ولا يُدّعى أنه يفعل؛ فحص العلامة يدويّ عند اعتماد كل مصدر.
-    const buf = readFileSync(FILE);
-    const i = buf.indexOf(Buffer.from("tkhd", "latin1"));
-    expect(i, "صندوق المسار tkhd غير موجود").toBeGreaterThan(-1);
-    // نسخة 0 من tkhd: العرض والارتفاع 16.16 في آخر ٨ بايت من الحمولة.
-    const width = buf.readUInt32BE(i + 4 + 76) / 65536;
-    const height = buf.readUInt32BE(i + 4 + 80) / 65536;
-    expect([width, height], "أبعاد غير معتمدة").toEqual([576, 1024]);
-  });
-
-  it("ملفُّ خلفيةٍ واحد للنظام كلّه", () => {
-    // كانت ثلاثة: `holo-bg-2` للوكلاء و`holo-bg-3` للبحث المعرفي. حُذفت
-    // بقرار المالك ٢٠٢٦/٠٨/٠٨، ومعها المُعامل `src`. الحارس على الأمرين
-    // معًا: ملفٌ يعود، أو مسارٌ يُشير إلى ملفٍ غير موجود فتظهر خلفية
-    // سوداء على تلك الصفحة وحدها — وهو ما لا يمسكه tsc ولا البناء.
-    for (const gone of ["public/holo-bg-2.mp4", "public/holo-bg-3.mp4"]) {
-      expect(existsSync(gone), `${gone} عاد`).toBe(false);
+  it("لا منطق تشغيل ولا مؤقّتات ولا مستمعات وسائط", () => {
+    // الحارس الدوري كان يُشغّل `resume` كل ثانيتين ويستمع لستة أحداث.
+    // بقاء أيٍّ منها بعد ذهاب الفيلم عملٌ دوريّ على صفحةٍ ساكنة.
+    for (const gone of [
+      "setInterval",
+      "playbackRate",
+      ".play()",
+      "visibilitychange",
+      "addEventListener",
+      "document.hidden",
+    ]) {
+      expect(CODE, `بقي ${gone} بعد سكون الخلفية`).not.toContain(gone);
     }
-    for (const page of ["src/routes/-nx-agents-page.tsx", "src/routes/-rag-search-page.tsx"]) {
-      expect(readFileSync(page, "utf8")).toContain("<HoloVideoEngine />");
+  });
+
+  it("لا عيّنة لون حية — ولا انهيار في توهّجات البطاقات بذهابها", () => {
+    // العيّنة كانت تقرأ لوحة 8×8 من الفيديو كل ٣٥٠م.ث وتكتب `--live-rgb`.
+    expect(CODE).not.toMatch(/getImageData|createElement\("canvas"\)/);
+    expect(CODE).not.toContain("--live-rgb");
+    // ولأن الكاتب ذهب، فالمستهلكون الثلاثة يعيشون على قيمة السقوط وحدها —
+    // وهي مرساة السماوي نفسها التي كانت العيّنة تمزج نحوها. نزعُ السقوط من
+    // أيٍّ منهم يجعل `--live` بلا قيمة فينهار التوهّج إلى لا شيء، وهو ما
+    // لا يمسكه tsc ولا البناء.
+    for (const consumer of [
+      "src/routes/-nx-agents-page.tsx",
+      "src/routes/-rag-search-page.tsx",
+      "src/styles.css",
+    ]) {
+      expect(
+        readFileSync(consumer, "utf8"),
+        `${consumer} فقد قيمة السقوط الساكنة لـ--live-rgb`,
+      ).toMatch(/var\(--live-rgb,\s*34 211 238\)/);
     }
-    expect(CODE).not.toMatch(/holo-bg-[23]/);
+  });
+
+  it("لا قاعدة `.nx-hv-video` باقية في طبقة الأنماط", () => {
+    // قاعدةٌ لعنصرٍ لا يُركَّب تُغري بإعادته، وتُبقي `object-fit` و`opacity`
+    // موصوفَين لسطحٍ غير موجود.
+    expect(SHEET).not.toContain(".nx-hv-video");
+  });
+
+  it("طبقات الخلفية بلا حركة — وهذا ما يُسقط موجب WCAG 2.2.2", () => {
+    // البند يوجب مخرجًا للحركة **الدائمة**. لا حركة ⇐ لا موجِب ⇐ حذف الزر
+    // استيفاءٌ لا تنازل. فإن عادت حركةٌ إلى هذه الطبقات عاد الموجِب معها،
+    // وهذا الفحص هو ما يُلزم بإعادة المخرج قبل إعادة الحركة.
+    expect(HV_RULES.length, "لا قواعد `.nx-hv` أصلًا").toBeGreaterThan(0);
+    for (const rule of HV_RULES) {
+      expect(rule, "حركة على طبقة الخلفية بلا مخرج").not.toMatch(
+        /\b(animation|transition)(-[\w-]+)?\s*:/,
+      );
+    }
   });
 });
 
-describe("② لا يتوقّف — والإيقاف المقصود وحده يُحترم", () => {
-  it("السرعة ٠٫٣٠ ثابتة", () => {
-    expect(CODE).toMatch(/const RATE = 0\.3\b/);
+describe("② لا زر إيقاف — ولا مفتاحًا يتيمًا في التخزين", () => {
+  it("لا زر في الترميز ولا حالة تحفظ اختياره", () => {
+    expect(CODE).not.toContain("<button");
+    expect(CODE).not.toContain("aria-pressed");
+    expect(CODE).not.toContain("localStorage");
+    expect(CODE).not.toContain("nx-holo-bg");
+    // ولا حالة أصلًا: المكوّن صار ناتجًا ثابتًا حرفيًّا.
+    expect(CODE).not.toMatch(/useState|useEffect/);
   });
 
-  it("يحمل حارسًا يعيد التشغيل لا محاولةً واحدة تُبتلع", () => {
-    // `void v.play().catch(() => {})` وحدها تعني: إن رُفضت، سكنت الخلفية
-    // إلى الأبد ولا أحد يعلم.
-    expect(CODE).toMatch(/setInterval\(resume/);
-    expect(CODE).toMatch(/addEventListener\(ev, resume/);
-    for (const ev of ["stalled", "pointerdown", "keydown"]) {
-      expect(CODE, `الحارس لا يستيقظ على ${ev}`).toContain(`"${ev}"`);
-    }
+  it("لا قواعد `.nx-hv-toggle` في طبقة الأنماط", () => {
+    // ست قواعد كانت: الرقاقة، التحويم، الضغط، حلقة التركيز، قلب الركن في
+    // الإنجليزية، وأرضية اللمس ٤٤×٤٤. بقاؤها يُبقي ركنًا محجوزًا لعنصرٍ
+    // ميت، ويصطدم يومًا بمُطلق فِن في الركن نفسه.
+    expect(SHEET).not.toContain("nx-hv-toggle");
   });
 
-  it("الحارس يحترم التبويب المخفي فلا يوقظ فيلمًا أُوقف عمدًا", () => {
-    // بغير هذا يتصارع الحارس مع إيقاف البطارية كل ثانيتين.
-    expect(CODE).toMatch(/if \(document\.hidden\) return/);
+  it("السكربت المانع لم يعد يقرأ المفتاح اليتيم", () => {
+    // الزرّ كان الكاتب الوحيد لـ`nx-holo-bg`. بقاء القراءة يعني أن من ضغط
+    // الزرّ يومًا تبقى نبضات الأيقونات وانتقالات المسار مُطفأة عنده إلى
+    // الأبد بلا واجهة تفكّها — حالة عالقة لا تفضيلًا.
+    expect(ROOT_CODE).not.toContain("nx-holo-bg");
+    expect(ROOT_CODE).not.toContain("data-nx-motion");
+    // ولم يسقط معه سكربت الثيم: هو والراية كانا في السطر نفسه.
+    expect(ROOT_CODE).toContain("localStorage.getItem('theme')");
+    expect(ROOT_CODE).toMatch(/classList\.toggle\('dark',d\)/);
   });
 
-  it("العنصر يُلتقط مرّة ويُربط ويُفكّ عليه هو نفسه", () => {
-    // قراءة `videoRef.current` داخل التنظيف تقرأ ما صار إليه المرجع لا ما
-    // رُبط عليه — فتبقى المستمعات معلّقة على العنصر القديم، ومع دوريّة كل
-    // ثانيتين يصير التسريب تراكميًّا. رصده eslint أول مرة؛ وهذا يمنع عودته
-    // لو عُطِّلت القاعدة يومًا.
-    expect(CODE).toMatch(/const video = videoRef\.current;/);
-    const cleanup = CODE.slice(CODE.indexOf("return () => {", CODE.indexOf("const video =")));
-    expect(cleanup.slice(0, cleanup.indexOf("\n    };"))).not.toContain("videoRef.current");
+  it("الحركة الباقية في النظام تحتفظ بمخرجها الحيّ", () => {
+    // نبضات الأيقونات لم تكن تعتمد على زر الخلفية وحده. ولأن كاتب الراية
+    // ذهب، فمخرجها الوحيد اليوم هو تفضيل النظام — وسقوطه يترك حركةً دائمة
+    // بلا مخرج البتّة، وهو ما يجعل هذا البند غير فارغ المعنى.
+    // والسمة تبقى سطحَ تحكّم عاملًا لمن يكتبها برمجيًّا.
+    const flag = SHEET.indexOf('html[data-nx-motion="off"] .nx-pulse-halo');
+    expect(flag, "راية سكون الحركة لم تعد تُسكِت النبضات").toBeGreaterThan(-1);
+    // وتفضيل النظام — المخرج الوحيد الباقي — يُسكِتها في الكتلة التالية له.
+    const rm = SHEET.indexOf("@media (prefers-reduced-motion: reduce)", flag);
+    expect(rm, "لا كتلة تفضيل نظام بعد الراية").toBeGreaterThan(-1);
+    const body = SHEET.slice(rm, rm + 400);
+    expect(body, "النبضات بلا مخرج بعد ذهاب الزرّ").toMatch(/\.nx-pulse-(halo|spark)/);
+    expect(body).toMatch(/animation:\s*none/);
   });
+});
 
-  it("يُنظّف كل ما ربطه عند التفكيك", () => {
-    expect(CODE).toMatch(/clearInterval\(id\)/);
-    expect(CODE).toMatch(/removeEventListener\(ev, resume\)/);
-  });
+describe("③ سطح داكن ثابت — معرَّف في الوضعين معًا (المواد ٣٢–٣٤)", () => {
+  const nxHv = SHEET.slice(
+    SHEET.indexOf(".nx-hv {"),
+    SHEET.indexOf("}", SHEET.indexOf(".nx-hv {")) + 1,
+  );
 
-  it("الحلقة والكتم وتشغيل الصفحة مثبّتة في الترميز", () => {
-    for (const attr of ["loop", "muted", "playsInline"]) {
-      expect(ENGINE, `السمة ${attr} مفقودة`).toContain(attr);
-    }
-  });
-
-  it('لا `autoPlay` ولا `preload="auto"` — السرعة تُضبط قبل التشغيل', () => {
-    // `autoPlay` يبدأ من مُحلِّل HTML قبل أي JS، و`playbackRate` لا تُضبط
-    // إلا من JS — فكان الفيلم يعمل بسرعة ١٫٠ (٣٫٣ أضعاف المطلوب) حتى
-    // الترطيب ثم يهبط فجأةً. ويبدأ كذلك لمن أوقفه صراحةً، ويسحب الملف
-    // كاملًا على المسار الحرج ولو كان مُطفأً.
-    const tag = ENGINE.slice(
-      ENGINE.indexOf("<video"),
-      ENGINE.indexOf("/>", ENGINE.indexOf("<video")),
+  it("`.nx-hv` تُرسم من طبقة الرموز لا من ألوان مكتوبة", () => {
+    // لونٌ مكتوب هنا هو الخطأ بعينه: `#041e2c` يعطي «غامقة» في الداكن
+    // ويطلي الوضع الفاتح بلوحٍ أسود — والوضع الثاني سطح صحّة لا قشرة.
+    expect(nxHv, "قاعدة `.nx-hv` غير موجودة").toContain("background");
+    expect(nxHv).toContain("var(--surface)");
+    expect(nxHv).toContain("var(--surface-2)");
+    expect(nxHv, "لون مكتوب خارج طبقة الرموز").not.toMatch(
+      /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(/,
     );
-    expect(tag).not.toMatch(/\bautoPlay\b/);
-    expect(tag).toContain('preload="metadata"');
-    // و`resume` تضبط السرعة في السطر السابق للتشغيل لا بعده.
-    const resume = CODE.slice(CODE.indexOf("const resume = ()"));
-    const body = resume.slice(0, resume.indexOf("};"));
-    expect(body.indexOf("playbackRate")).toBeLessThan(body.indexOf(".play()"));
   });
 
-  it("الاختيار المحفوظ يُحترم قبل أول رسم لا بعد الترطيب", () => {
-    // السكربت المانع يكتب `data-nx-motion="off"` قبل الرسم؛ وبلا قاعدة
-    // تربطها بالفيلم كان من أوقف الخلفية يراها تعمل ثوانيَ عند كل فتح —
-    // والزرّ هو آلية الوصول الوحيدة هنا (WCAG 2.2.2).
-    expect(CSS).toContain('html[data-nx-motion="off"] .nx-hv-video');
-  });
-
-  it("لا يُركَّب أصلًا حين يُخفيه تفضيل المستخدم", () => {
-    // الإخفاء في CSS بصريّ فقط: كان الملف يُحمَّل ويُفكّ ترميزه وتُقرأ منه
-    // عيّنة اللون كل ٣٥٠م.ث لسطحٍ لا يراه أحد — وتظلّ `--live-rgb` تُبدّل
-    // توهّج البطاقات بلا مصدر مرئي.
-    expect(CODE).toContain("prefers-reduced-transparency: reduce");
-    expect(CODE).toContain("forced-colors: active");
-    expect(CODE).toMatch(/const active = !userOff && !suppressed/);
-  });
-});
-
-describe("③ الوضوح ١ في الوضعين وعلى كل المقاسات", () => {
-  it("لا تعتيم للفيلم في أي قاعدة", () => {
-    // كانت `@media (max-width: 640px)` تخفضه إلى ٠٫٨٥ — على الشاشة التي
-    // يُعرض عليها أكثر ما يُعرض.
-    const rules = CSS.match(/\.nx-hv-video\s*\{[^}]*\}/g) ?? [];
-    expect(rules.length).toBeGreaterThan(1);
-    for (const r of rules) {
-      const m = r.match(/opacity:\s*([\d.]+)/);
-      if (m) expect(Number(m[1]), `تعتيم ${m[1]} على الفيلم`).toBe(1);
+  it("رمز السطح ينقلب مع الوضع — فالداكن غامق والفاتح لا ينكسر", () => {
+    // الفحص على الرمز نفسه لا على وصفٍ له: تعريفان مختلفان، أحدهما تحت
+    // `.light`، والقيمة الأساس أغمق من قيمة الفاتح. لو وُحِّدت القيمتان
+    // يومًا صار للنظام خلفيةٌ واحدة في الوضعين وسقط هذا البند.
+    const luma = (hex: string) => {
+      const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    };
+    // كل تعريف حرفيّ للرمز مع محدِّد كتلته — يُقرأ من الملف لا يُفترض.
+    const decls: { selector: string; hex: string }[] = [];
+    for (const m of SHEET.matchAll(/--surface:\s*(#[0-9a-fA-F]{6})/g)) {
+      const before = SHEET.slice(0, m.index);
+      const open = before.lastIndexOf("{");
+      const prev = Math.max(before.lastIndexOf("}"), before.lastIndexOf(";", open));
+      decls.push({ selector: before.slice(prev + 1, open).trim(), hex: m[1] });
     }
+    expect(decls.length, "لا تعريف حرفيّ لرمز السطح").toBeGreaterThanOrEqual(2);
+    const dark = decls.filter((d) => luma(d.hex) < 0.2);
+    const light = decls.filter((d) => luma(d.hex) > 0.7);
+    expect(dark.length, "لا قيمة داكنة لرمز السطح").toBeGreaterThan(0);
+    expect(light.length, "لا قيمة فاتحة لرمز السطح").toBeGreaterThan(0);
+    // والقيمة الفاتحة تحت محدِّد الوضع الفاتح لا معلَّقة في الفراغ.
+    expect(
+      light.some((d) => d.selector.includes(".light")),
+      "الفاتح بلا محدِّد وضع",
+    ).toBe(true);
   });
 
-  it("قراءة الحبر يحرسها الغطاء لا تعتيم الفيلم", () => {
-    // الغطاء يبقى — إسقاطه يجعل النص على مشهد متحرّك عالي التباين.
-    expect(CSS).toContain(".nx-hv-veil");
-    expect(CSS).toContain(".light .nx-hv-veil");
+  it("النسيج خافت يكسر التسطيح ولا يُشوّش الحبر", () => {
+    // الطبقة الوحيدة فوق السطح. وضوحٌ مرتفع يجعلها ضجيجًا مقروءًا خلف
+    // النصّ بدل نسيجٍ محسوس.
+    const noise = SHEET.slice(SHEET.indexOf(".nx-hv-noise {"));
+    const body = noise.slice(0, noise.indexOf("\n}"));
+    const m = body.match(/opacity:\s*([\d.]+)/);
+    expect(m, "`.nx-hv-noise` بلا وضوح معرَّف").not.toBeNull();
+    expect(Number(m![1])).toBeLessThanOrEqual(0.08);
   });
 
-  it("لا نصّ على الفيلم بلا حشوة تحته", () => {
-    // الغطاء وحده لا يكفي لما لا زجاج تحته: سطران على الرئيسية كانا على
-    // الفيلم مباشرةً، فيهبط تباينهما إلى ١٫٤٢:١ و١٫٩٧:١ حين يمرّ تحتهما
-    // قوس النفق الساطع — والمطلوب ٤٫٥:١ (WCAG 1.4.3). العلاج حشوةٌ
-    // وضبابٌ تحت النصّ، لا تعتيمٌ للفيلم يُبطل ما طلبه المالك.
-    const PAGE = readFileSync("src/routes/-blueprint-page.tsx", "utf8");
-    expect(PAGE).toContain("nx-bp-note");
-    // ولا يعود ذلك السطر إلى أخفّ درجات الحبر.
-    expect(PAGE).not.toMatch(/nx-bp-note[^"]*var\(--ink-3\)/);
-    for (const cls of [".nx-bp-note", ".nx-bp-more"]) {
-      const rule = CSS.slice(CSS.indexOf(`${cls} {`));
-      expect(rule.slice(0, rule.indexOf("\n}")), `${cls} بلا حشوة`).toContain("backdrop-filter");
+  it("التفضيلان الوصوليان ما زالا مُحترمَين", () => {
+    // «قلّل الشفافية» يُسقط النسيج، و«الألوان القسرية» تُسقط الطبقة كلها.
+    // الموضع لا النصّ: القاعدة تقع داخل كتلة التفضيل لا خارجها.
+    const noiseRule = SHEET.indexOf(".nx-hv-noise {", SHEET.indexOf(".nx-hv-noise {") + 1);
+    expect(noiseRule, "لا قاعدة إخفاء ثانية للنسيج").toBeGreaterThan(-1);
+    const trans = SHEET.lastIndexOf("@media (prefers-reduced-transparency: reduce)", noiseRule);
+    expect(trans, "قاعدة إخفاء النسيج خارج كتلة «قلّل الشفافية»").toBeGreaterThan(-1);
+    // الكتلة تُغلق قبل التالية: لو نُقلت القاعدة خارجها سقط البند.
+    const after = SHEET.indexOf("@media (forced-colors: active)", trans);
+    expect(noiseRule).toBeLessThan(after);
+    expect(SHEET.slice(noiseRule, after)).toMatch(/display:\s*none/);
+
+    const forced = SHEET.slice(after, SHEET.indexOf("\n}\n", after));
+    expect(forced, "`.nx-hv` لا تُسقَط في الألوان القسرية").toMatch(/^\s*\.nx-hv,$/m);
+  });
+
+  it("الطبقة مُركَّبة في الصفحات الثلاث التي تستهلكها", () => {
+    // الاسم عقدٌ حيّ عبر ثلاث صفحات: إعادة تسميته أو إسقاطه من إحداها
+    // تترك تلك الصفحة بلا خلفية — ولا يمسكه tsc إن بقي الاستيراد.
+    for (const page of [
+      "src/routes/-blueprint-page.tsx",
+      "src/routes/-nx-agents-page.tsx",
+      "src/routes/-rag-search-page.tsx",
+    ]) {
+      expect(readFileSync(page, "utf8"), `${page} بلا خلفية`).toContain("<HoloVideoEngine />");
     }
-  });
-
-  it("تفضيل «قلّل الشفافية» يبقى مُحترمًا", () => {
-    // مطلبٌ وصولي مستقل عن الوضوح: من طلب سطحًا صلبًا يحصل عليه.
-    // الموضع لا النصّ: القاعدة تقع بين فتح كتلة «قلّل الشفافية» وبين
-    // الكتلة التالية — فلو نُقلت خارجها سقط البند. (في الملف أكثر من كتلة
-    // بهذا الاسم، فتُقرأ الأخيرة قبل `forced-colors`.)
-    const rule = CSS.lastIndexOf(".nx-hv-video,\n  .nx-hv-noise");
-    const opens = CSS.lastIndexOf("@media (prefers-reduced-transparency: reduce)", rule);
-    const next = CSS.indexOf("@media (forced-colors: active)", opens);
-    expect(rule, "قاعدة إخفاء الفيلم غير موجودة").toBeGreaterThan(-1);
-    expect(opens, "لا كتلة «قلّل الشفافية» قبلها").toBeGreaterThan(-1);
-    expect(rule).toBeLessThan(next);
   });
 });

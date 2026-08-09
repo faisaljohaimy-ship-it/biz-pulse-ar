@@ -5,9 +5,9 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
+  BellPlus,
   Ghost,
   Plus,
-  Sparkles,
   Database,
 } from "lucide-react";
 import { useState } from "react";
@@ -458,7 +458,9 @@ function NewAlertDialog({ ar }: { ar: boolean }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" className="gap-1.5">
-          <Sparkles className="h-3.5 w-3.5" />
+          {/* الزر يفتح «إنشاء تنبيه تنفيذي» — فِعلُه إضافةُ تنبيه، لا توليدُ
+              ذكاء. و`Sparkles` في هذا النظام علامةُ المساعد. */}
+          <BellPlus className="h-3.5 w-3.5" aria-hidden />
           {ar ? "تنبيه" : "Alert"}
         </Button>
       </DialogTrigger>

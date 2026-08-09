@@ -185,8 +185,8 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
           محاكاة مرجعية
         </span>
         <p className="w-full text-xs text-nx-pearl/56 md:w-auto md:flex-1">
-          لوحة القيادة العليا لسَدِيد — صحة النظام والمناطق والقرارات وFINN في شاشة واحدة، ببيانات
-          محاكاة مرجعية موسومة.
+          لوحة القيادة العليا لسَدِيد — صحة النظام والمناطق والقرارات والمساعد في شاشة واحدة،
+          ببيانات محاكاة مرجعية موسومة.
         </p>
       </div>
       <ArchitectureLayerRail layers={layers} />

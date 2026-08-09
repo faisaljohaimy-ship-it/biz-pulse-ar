@@ -50,8 +50,8 @@ export const responsePipeline = {
     }
     if (/429/.test(raw)) {
       return locale === "ar"
-        ? "FINN مشغول حالياً. حاول مرة أخرى بعد لحظات."
-        : "FINN is temporarily rate limited. Please retry in a moment.";
+        ? "سَدِيد مشغول حالياً. حاول مرة أخرى بعد لحظات."
+        : "SADEED is temporarily rate limited. Please retry in a moment.";
     }
     if (/401|403/i.test(raw)) {
       return locale === "ar"
@@ -61,10 +61,10 @@ export const responsePipeline = {
     if (/AbortError|timeout/i.test(raw)) {
       return locale === "ar"
         ? "استغرقت الاستجابة وقتاً طويلاً. سنعيد المحاولة تلقائياً."
-        : "FINN took too long to respond. Please retry.";
+        : "SADEED took too long to respond. Please retry.";
     }
     return locale === "ar"
       ? "تعذّر إتمام الطلب. حاول مرة أخرى."
-      : "FINN could not complete this response. Please retry.";
+      : "SADEED could not complete this response. Please retry.";
   },
 };

@@ -217,7 +217,7 @@ export function AgentRing() {
 
   return (
     <section
-      aria-label="مركز قيادة الذكاء التنفيذي — حلقة الوكلاء الصامتين حول FINN"
+      aria-label="مركز قيادة الذكاء التنفيذي — حلقة الوكلاء الصامتين حول سديد"
       className="relative mx-auto mt-10 w-full max-w-5xl px-4 sm:mt-16 sm:px-6"
     >
       {/* Local cinematic keyframes — scoped to the ring so they don't leak. */}
@@ -239,10 +239,10 @@ export function AgentRing() {
           Executive AI Command Center
         </div>
         <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
-          FINN — العقل التنفيذي
+          سَدِيد — العقل التنفيذي
         </h2>
         <p className="mx-auto mt-1 max-w-xl text-xs text-white/55 sm:text-sm">
-          الوكلاء يعملون بصمت في الخلفية. FINN وحدها تتحدّث إليك.
+          الوكلاء يعملون بصمت في الخلفية. سَدِيد وحده يتحدّث إليك.
         </p>
       </div>
 
@@ -344,7 +344,7 @@ export function AgentRing() {
         {/* Central FINN core — breathing, scan ray, only interactive AI. */}
         <Link
           to="/finn"
-          aria-label="افتح FINN — المساعد التنفيذي الوحيد"
+          aria-label="افتح سديد — المساعد التنفيذي الوحيد"
           className="group absolute left-1/2 top-1/2 flex h-28 w-28 items-center justify-center rounded-full border border-[#3AE8FF]/70 bg-gradient-to-br from-[#00D4FF]/35 via-[#0a2a44] to-[#061A2E] text-white sm:h-32 sm:w-32"
           style={{
             animation: "ring-core-breathe 5.2s ease-in-out infinite",
@@ -378,7 +378,7 @@ export function AgentRing() {
           <div className="relative text-center transition-transform group-hover:scale-105">
             <Sparkles className="mx-auto h-7 w-7 text-[#3AE8FF] drop-shadow-[0_0_8px_rgba(58,232,255,0.8)]" />
             <div className="mt-1 text-[12px] font-semibold uppercase tracking-[0.32em] text-white/85">
-              FINN
+              SADEED
             </div>
           </div>
           {/* Particle emission (3 staggered motes) */}
@@ -485,7 +485,7 @@ export function AgentRing() {
           <p className="text-center text-xs text-white/55">جارٍ تحميل حلقة الوكلاء…</p>
         ) : (
           <p className="text-center text-xs text-white/55">
-            مرّر فوق أي وكيل لعرض حالته. التواصل والقرارات تمرّ عبر FINN فقط.
+            مرّر فوق أي وكيل لعرض حالته. التواصل والقرارات تمرّ عبر سَدِيد فقط.
           </p>
         )}
       </div>
@@ -543,7 +543,7 @@ function Inspector({ vm }: { vm: AgentVM }) {
             className="inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[12px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
           >
             <MessageSquare className="h-3 w-3" />
-            <span>اطلب من FINN تنسيق هذا الوكيل</span>
+            <span>اطلب من سَدِيد تنسيق هذا الوكيل</span>
           </Link>
         </div>
       </div>
@@ -560,7 +560,7 @@ function EmptyState() {
         className="mt-3 inline-flex items-center gap-1 rounded-lg border border-[#3AE8FF]/50 bg-[#3AE8FF]/10 px-3 py-1.5 text-[12px] font-medium text-white transition hover:bg-[#3AE8FF]/20"
       >
         <Sparkles className="h-3 w-3" />
-        <span>تحدّث مع FINN</span>
+        <span>تحدّث مع سَدِيد</span>
       </Link>
     </div>
   );

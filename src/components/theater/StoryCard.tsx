@@ -5,7 +5,7 @@
  * `enterprise_events` row. Never invents data: missing facts are simply
  * omitted.
  */
-import { Clock, ShieldAlert, ShieldCheck, Activity, ChevronRight, Hash } from "lucide-react";
+import { Clock, ShieldAlert, ShieldCheck, Activity, Timer, ChevronRight, Hash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NarratorLine } from "@/lib/narrator/event-narrator";
 
@@ -120,7 +120,8 @@ export function StoryCard({ line, ar, active, onClick }: Props) {
       <footer className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] text-white/55">
         {line.duration_ms != null && (
           <span className="inline-flex items-center gap-1">
-            <Activity className="h-3 w-3" />
+            {/* القيمة **مدّة** بالمللي ثانية؛ و`Activity` خطُّ نبضٍ يقرأ «نشاط». */}
+            <Timer className="h-3 w-3" aria-hidden />
             {ar ? `${line.duration_ms} مللي ثانية` : `${line.duration_ms} ms`}
           </span>
         )}

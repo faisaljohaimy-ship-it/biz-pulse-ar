@@ -1,4 +1,4 @@
-# FINN Intro Constitution
+# SADEED Intro Constitution
 
 **Status:** Immutable engineering rule. Any PR/self-evolution proposal that
 touches the intro gate MUST reference this document by ID and preserve every
@@ -70,7 +70,7 @@ in production.
 
 ---
 
-# FINN Runtime Constitution (Chat + Self-Learning)
+# SADEED Runtime Constitution (Chat + Self-Learning)
 
 **Status:** Immutable engineering rule. Any PR or self-evolution proposal
 that touches the chat runtime, learning pipeline, or self-healing layer
@@ -102,7 +102,7 @@ Files under jurisdiction:
   switch, TTS failure, timeout, rate-limit).
 - **INVARIANT-12 — Zero-latency baseline.** The chat pipeline MUST ship
   these speed guarantees on every device (mobile / tablet / desktop):
-  1. Governed native Gemini serving for every FINN intelligence request
+  1. Governed native Gemini serving for every SADEED intelligence request
      family model that supports Fast mode.
   2. AudioContext primed on dock open, BEFORE the first user keystroke.
   3. TLS preconnect to gateway + ElevenLabs on dock open.
@@ -125,24 +125,24 @@ Files under jurisdiction:
 
 ## Rationale
 
-FINN is the executive AI face of NEXUS AI OS. Every millisecond of latency
+SADEED is the executive AI face of NEXUS AI OS. Every millisecond of latency
 degrades executive trust; every uncalibrated learned instinct risks
 propagating a bad answer forever. Measuring on every turn, gating
 injection behind safety+confidence+hits, and renewing patterns weekly
-turns FINN into a self-improving agent WITHOUT introducing drift.
+turns SADEED into a self-improving agent WITHOUT introducing drift.
 
 ---
 
-# FINN Cross-Device Rendering Constitution (Intro)
+# SADEED Cross-Device Rendering Constitution (Intro)
 
 **Status:** Immutable engineering rule. Applies to `AriaCinematicIntro`
-and any future pre-hero cinematic gate. Governs how FINN appears on
+and any future pre-hero cinematic gate. Governs how SADEED appears on
 mobile, tablet, laptop, and desktop.
 
 ## Rendering Contract
 
 - **Portrait mobile (`≤768px` AND orientation:portrait):** `object-fit: cover`
-  with `object-position: center 30%`. FINN fills the frame; her face sits
+  with `object-position: center 30%`. SADEED fills the frame; his face sits
   in the upper third; no letterbox.
 - **Landscape mobile, tablet, laptop, desktop, ultrawide:** `object-fit: contain`.
   A blurred, scaled copy of the same video renders behind it as a full-bleed
@@ -160,7 +160,7 @@ and MUST be reverted or hot-fixed, never re-litigated:
 
 | ID   | Regression                                                        | Root cause to avoid                                                                                                  |
 | ---- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| FR-1 | FINN cropped at the head on portrait mobile                       | `object-fit: contain` on portrait mobile, or `object-position: center`                                               |
+| FR-1 | SADEED cropped at the head on portrait mobile                     | `object-fit: contain` on portrait mobile, or `object-position: center`                                               |
 | FR-2 | Large black letterbox bars on laptop / desktop / ultrawide        | `object-fit: cover` forced on wide viewports, or missing blurred backdrop                                            |
 | FR-3 | Intro disappears entirely when the video errors / CDN fails       | `onError` calling `finish()` before `MIN_DISPLAY_MS`, or no poster/HUD                                               |
 | FR-4 | Skip / Sound button hidden behind the iOS notch                   | Top-anchored control without `env(safe-area-inset-top)`                                                              |
@@ -192,8 +192,8 @@ proposals that do not.
 
 ## Rationale
 
-FINN is the executive face of NEXUS AI OS. A cropped head on mobile, a
-black bar on a boardroom laptop, or a chat modal covering her presence
+SADEED is the executive face of NEXUS AI OS. A cropped head on mobile, a
+black bar on a boardroom laptop, or a chat modal covering his presence
 each cost more than a first impression — they signal an unfinished
 product. Codifying the rendering contract + forbidden regressions turns
 these into deterministic, machine-enforceable invariants that the

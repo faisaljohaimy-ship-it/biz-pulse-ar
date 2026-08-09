@@ -209,7 +209,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
       .eq("org_id", orgId);
     subs.push({
       id: "aria_rag",
-      label: "FINN Knowledge / RAG",
+      label: "SADEED Knowledge / RAG",
       status: (kCount ?? 0) > 0 ? "healthy" : "warning",
       evidence: { documents: kCount ?? 0 },
       reason: (kCount ?? 0) === 0 ? "No indexed enterprise knowledge." : undefined,

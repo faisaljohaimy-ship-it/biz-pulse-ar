@@ -45,8 +45,23 @@ const EN_OLD = /(?<![A-Za-z_-])ARIA(?![A-Za-z_-])/;
  * voice label is a visible identity leak too, so it gets its own check.
  * Scanned in STRING LITERALS only: ~28 code comments still narrate the old
  * voice, and rewriting comments is a separate cleanup, not an identity fix.
+ *
+ * ── WHY THIS IS A REGEX AND NOT `includes()` ──
+ * It used to be a bare substring. Arabic is written without word separators
+ * INSIDE a word, so «ليان» is a substring of ordinary Arabic vocabulary: the
+ * plural adjective «الوَصُوليان» ends in exactly those four letters, and the
+ * guard failed on a home-page test title that had nothing to do with any voice.
+ * A guard that cries wolf on correct Arabic gets deleted, so it needs a word
+ * boundary — and JavaScript's `\b` cannot supply one, because `\w` is ASCII: at
+ * an Arabic/Arabic letter seam `\b` never fires at all. The boundary is
+ * therefore spelled out as "no Arabic letter on either side", which keeps the
+ * retired name caught when it stands as a word (after a space, «صوت ليان»,
+ * quote or punctuation) and lets it pass when it is merely the tail of a
+ * longer, unrelated word.
  */
-const VOICE_OLD_AR = "ليان";
+/** Arabic letter class — the alphabet plus the extended ranges, no marks. */
+const AR_LETTER = "\\u0621-\\u064A\\u066E-\\u06D3\\u06FA-\\u06FF\\u0750-\\u077F";
+const VOICE_OLD_AR = new RegExp(`(?<![${AR_LETTER}])ليان(?![${AR_LETTER}])`);
 const VOICE_OLD_EN = /(?<![A-Za-z])Layan(?![A-Za-z])/;
 
 const stripComments = (s: string) =>
@@ -108,6 +123,19 @@ describe("FINN identity — the old name stays off every visible surface", () =>
     expect("from('finn_knowledge')").not.toMatch(EN_OLD);
   });
 
+  it("still catches the retired VOICE name, and only when it is a word", () => {
+    // The negative half first — the false positive that made this guard fail on
+    // a clean repo. «الوصوليان» is ordinary Arabic; it must not be a hit.
+    expect("التفضيلان الوصوليان ما زالا مُحترمَين").not.toMatch(VOICE_OLD_AR);
+    // The positive half — proof the boundary did not disarm the guard. If any
+    // of these stops matching, the retired voice name can return unnoticed.
+    expect("صوت ليان الحصري").toMatch(VOICE_OLD_AR);
+    expect("ليان").toMatch(VOICE_OLD_AR);
+    expect("identity: FINN · ليان").toMatch(VOICE_OLD_AR);
+    expect("الصوت (ليان) متوقف").toMatch(VOICE_OLD_AR);
+    expect("FINN · Layan").toMatch(VOICE_OLD_EN);
+  });
+
   it("has no «آريا» in application source", () => {
     const hits = scanned.filter((f) => stripComments(readFileSync(f, "utf8")).includes(AR_OLD));
     expect(hits).toEqual([]);
@@ -123,7 +151,7 @@ describe("FINN identity — the old name stays off every visible surface", () =>
     // reaches a screen or an API payload, not what a comment reminisces about.
     const hits = scanned.filter((f) => {
       const literals = stripComments(readFileSync(f, "utf8")).match(/"[^"\n]*"|'[^'\n]*'/g) ?? [];
-      return literals.some((s) => s.includes(VOICE_OLD_AR) || VOICE_OLD_EN.test(s));
+      return literals.some((s) => VOICE_OLD_AR.test(s) || VOICE_OLD_EN.test(s));
     });
     expect(hits).toEqual([]);
   });

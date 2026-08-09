@@ -53,7 +53,7 @@ describe("OUT evals — production output gateway", () => {
     const normalized = enforceFinnIdentity(
       `${oldArabicAssistant} يقدّم الملخص داخل ${oldEnglishPlatform}، و${oldEnglishAssistant} جاهز على منصة ${oldArabicPlatform}.`,
     );
-    expect(normalized).toBe("FINN يقدّم الملخص داخل المنصة، وFINN جاهز على المنصة.");
+    expect(normalized).toBe("سَدِيد يقدّم الملخص داخل المنصة، وSADEED جاهز على المنصة.");
     expect(normalized).not.toContain(oldArabicAssistant);
     expect(normalized).not.toContain(oldEnglishAssistant);
     expect(normalized).not.toContain(oldEnglishPlatform);

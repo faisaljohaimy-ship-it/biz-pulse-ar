@@ -12,7 +12,6 @@ import {
   Mic,
   Radio,
   TrendingUp,
-  AlertTriangle,
   Play,
   Pause,
   SkipForward,
@@ -36,13 +35,13 @@ export const Route = createFileRoute("/cinematic-demo")({
       {
         name: "description",
         content:
-          "A Hollywood-grade cinematic walkthrough of SADEED — 3D digital twin, FINN voice, predictive intelligence, boardroom command.",
+          "A Hollywood-grade cinematic walkthrough of SADEED — 3D digital twin, executive voice, predictive intelligence, boardroom command.",
       },
       { property: "og:title", content: "SADEED — Cinematic Showcase" },
       {
         property: "og:description",
         content:
-          "Investor-ready cinematic experience: digital twin, live telemetry, FINN voice, global network.",
+          "Investor-ready cinematic experience: digital twin, live telemetry, executive voice, global network.",
       },
     ],
   }),
@@ -131,11 +130,11 @@ const SCENES: Scene[] = [
   {
     id: "aria",
     duration: 20,
-    titleAr: "FINN — مساعدتك الصوتية التنفيذية",
-    titleEn: "FINN — Your Executive Voice",
-    subtitleAr: "تتحدث. تستمع. تنفذ",
-    subtitleEn: "She speaks. She listens. She executes.",
-    kicker: "VII. FINN",
+    titleAr: "سَدِيد — مساعدك الصوتي التنفيذي",
+    titleEn: "SADEED — Your Executive Voice",
+    subtitleAr: "يتحدث. يستمع. ينفّذ",
+    subtitleEn: "He speaks. He listens. He executes.",
+    kicker: "VII. SADEED",
     Icon: Mic,
     bg: "radial-gradient(120% 90% at 50% 30%, oklch(0.30 0.16 195) 0%, oklch(0.06 0.04 240) 70%, #000 100%)",
   },
@@ -713,7 +712,9 @@ function PredictStage({ t, isAr }: { t: number; isAr: boolean }) {
         })}
       </svg>
       <div className="absolute bottom-[22vh] left-1/2 -translate-x-1/2 text-[12px] tracking-[0.3em] uppercase text-amber-300/80 flex items-center gap-2">
-        <AlertTriangle className="w-3 h-3" />{" "}
+        {/* السطر بشارةُ **نمو** موجب؛ والمثلث الكهرماني في هذا النظام علامةُ
+            «تحذير» حصرًا — فكان يقلب معنى الخبر. */}
+        <TrendingUp className="w-3 h-3" aria-hidden />{" "}
         {isAr ? "توقع: نمو +18.4% خلال 90 يوماً" : "Forecast: +18.4% growth in 90 days"}
       </div>
     </div>
@@ -752,7 +753,7 @@ function FinnStage({ t }: { t: number }) {
         </div>
       </div>
       <div className="absolute bottom-[22vh] left-1/2 -translate-x-1/2 text-[12px] tracking-[0.4em] uppercase text-cyan-200/80 flex items-center gap-2">
-        <Eye className="w-3 h-3" /> FINN · LISTENING
+        <Eye className="w-3 h-3" /> SADEED · LISTENING
       </div>
     </div>
   );

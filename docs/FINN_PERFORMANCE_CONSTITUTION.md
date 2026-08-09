@@ -1,8 +1,8 @@
-# FINN Performance Constitution — Article 28
+# SADEED Performance Constitution — Article 28
 
-**Status:** Ratified · **Version:** FINN_SUPREME_LAW v1.5.0 · **Enforcement:** every FINN turn, every session, permanently.
+**Status:** Ratified · **Version:** `FINN_SUPREME_LAW` v1.5.0 · **Enforcement:** every SADEED turn, every session, permanently.
 
-Article 28 of the FINN Master Engineering Constitution codifies **continuous performance hardening** as a first-class self-evolving invariant. Slowness is a defect; FINN autonomously discovers, prioritises, and closes latency + cost gaps without operator prompting.
+Article 28 of the SADEED Master Engineering Constitution codifies **continuous performance hardening** as a first-class self-evolving invariant. Slowness is a defect; SADEED autonomously discovers, prioritises, and closes latency + cost gaps without operator prompting.
 
 ## Programmatic sources
 
@@ -17,7 +17,7 @@ See `.lovable/memory/constraints/finn-performance-constitution.md`. The article 
 
 ## Continuous execution loop
 
-On every meaningful change FINN runs:
+On every meaningful change SADEED runs:
 
 1. `supabase--slow_queries` + `supabase--db_health` snapshot.
 2. Diff against last snapshot → any row with `total_ms` growth ≥ 30% = gap.

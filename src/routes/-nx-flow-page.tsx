@@ -13,7 +13,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { FlaskConical } from "lucide-react";
-import { HomeTopNav } from "@/components/nav/HomeTopNav";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { BRAND_ASSISTANT } from "@/lib/domain";
 import { useAuth } from "@/lib/auth-context";
@@ -44,12 +44,12 @@ type FlowAgent = {
 const STATUS_AR: Record<FlowAgent["status"], string> = {
   active: "ينفّذ الآن",
   processing: "يعالج التوجيه",
-  idle: "بانتظار توجيه فِن",
+  idle: "بانتظار توجيه سَدِيد",
 };
 const STATUS_EN: Record<FlowAgent["status"], string> = {
   active: "executing",
   processing: "processing",
-  idle: "awaiting FINN",
+  idle: "awaiting SADEED",
 };
 
 /**
@@ -101,7 +101,8 @@ export function NxFlowPage() {
 
   const { finn, rooms, maxDone } = useMemo(() => {
     const agents = (data?.agents ?? []) as FlowAgent[];
-    const head = agents.find((a) => /FINN/i.test(a.name_ar));
+    // يقبل الاسمين معًا: العرض «سَدِيد»، وصفوف القاعدة الحيّة ما زالت «FINN».
+    const head = agents.find((a) => /FINN|سديد|سَدِيد/i.test(a.name_ar));
     const rest = agents.filter((a) => a !== head);
     return {
       finn: head,
@@ -111,7 +112,7 @@ export function NxFlowPage() {
   }, [data]);
 
   const steps = [
-    { n: "١", ar: "فِن توجّه المهمة", en: "FINN directs" },
+    { n: "١", ar: "سَدِيد يوجّه المهمة", en: "SADEED directs" },
     { n: "٢", ar: "الوكيل ينفّذ ويحدّث", en: "Agent executes" },
     { n: "٣", ar: "القرار يعود للاعتماد البشري", en: "Human approves" },
   ];
@@ -120,20 +121,24 @@ export function NxFlowPage() {
 
   return (
     <main className="relative min-h-screen bg-[color:var(--surface)] text-[color:var(--ink)]">
-      <HomeTopNav />
+      {/* حُذف الشريط العلوي (قرار المالك ٢٠٢٦/٠٨/٠٩، البند ١٢)؛ ومبدّل الوضع
+          بقي — الصفحة خارج القشرة فلا مبدّل آخر لها (المادة ٣٢). */}
+      <div className="relative z-20 flex justify-end px-4 pt-3 sm:px-6">
+        <ThemeToggle />
+      </div>
 
       <div className="mx-auto w-full max-w-[1360px] px-4 pb-14 pt-4 sm:px-6">
         <header className="nx-fl-enter" style={{ ["--pulse-i" as string]: 0 }}>
           <p className="nx-fl-eyebrow">{ar ? "سَدِيد · غرفة العمليات" : "SADEED · Operations"}</p>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <h1 className="nx-fl-title">
-              {ar ? "رحلة الوكلاء مع فِن" : "The agents' journey with FINN"}
+              {ar ? "رحلة الوكلاء مع سَدِيد" : "The agents' journey with SADEED"}
             </h1>
           </div>
           <p className="nx-fl-lede">
             {ar
-              ? "لوح حيّ يقرأ كيف تُدار المناوبة: التوجيه يخرج من فِن، فينفّذه كل وكيل باختصاصه، ثم يعود ما يستلزم قرارًا إلى الاعتماد البشري."
-              : "A living board of the shift: direction leaves FINN, each agent executes its specialty, and whatever needs a decision returns to human approval."}
+              ? "لوح حيّ يقرأ كيف تُدار المناوبة: التوجيه يخرج من سَدِيد، فينفّذه كل وكيل باختصاصه، ثم يعود ما يستلزم قرارًا إلى الاعتماد البشري."
+              : "A living board of the shift: direction leaves SADEED, each agent executes its specialty, and whatever needs a decision returns to human approval."}
           </p>
         </header>
 
@@ -218,7 +223,7 @@ export function NxFlowPage() {
                     {ar ? STATUS_AR[agent.status] : STATUS_EN[agent.status]}
                   </span>
                   <p className="nx-fl-task">
-                    {agent.task_ar ?? (ar ? "بانتظار توجيه فِن" : "awaiting FINN")}
+                    {agent.task_ar ?? (ar ? "بانتظار توجيه سَدِيد" : "awaiting SADEED")}
                   </p>
                   <div className="nx-fl-meter" aria-hidden>
                     <span

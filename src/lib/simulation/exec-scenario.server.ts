@@ -491,7 +491,10 @@ export async function runExecutiveScenario(
         `_Confidence: 0.92 — grounded in system data; no fabrication._`,
       ].join("\n"),
     });
-    narrative.push({ time: "18:15", event: "FINN executive briefing generated (confidence 0.92)" });
+    narrative.push({
+      time: "18:15",
+      event: "SADEED executive briefing generated (confidence 0.92)",
+    });
   }
 
   return {

@@ -9,7 +9,7 @@
  * المرجع: OPEN_CHANGELOG (فحص d06f247 · ٠٢/٠٨/٢٠٢٦)، البنود ٤٩ · ٥٢ · ٥٤ ·
  * ٥٦ · ٥٧ · ٥٨.
  */
-import { globSync, readFileSync } from "node:fs";
+import { existsSync, globSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { HIDDEN_ROUTES, isRouteHidden } from "@/lib/nav/hidden-routes";
 import { MODULES, MODULE_PURPOSE } from "@/lib/nav/modules";
@@ -19,7 +19,7 @@ const SHELL = read("src/components/app-shell.tsx");
 const ROOT = read("src/routes/__root.tsx");
 const CSS_SRC = read("src/styles.css");
 
-describe("البند ٤٩ — الامتثال: HCIS هو المعتمد ولا أثر لـSAIS", () => {
+describe("البند ٤٩ — شاشة الامتثال محذوفة، ولا أثر لـSAIS", () => {
   it("لا ذكر لـSAIS في أي مصدر تطبيقي", () => {
     // قرار المالك في CLAUDE.md: «SAIS غير معتمد ولا واضح. لا يُضاف، ولا
     // يُخمَّن معناه، ولا يُغيَّر بسببه مسار أو تسمية.» فالإخفاء المطلوب في
@@ -33,25 +33,38 @@ describe("البند ٤٩ — الامتثال: HCIS هو المعتمد ولا 
     }
   });
 
-  it("مسار الامتثال المعتمد حيّ ومسمّى HCIS", () => {
-    const hcis = MODULES.find((m) => m.to === "/hcis");
-    expect(hcis, "وحدة الامتثال غائبة عن السجل الكانوني").toBeDefined();
-    expect(hcis!.ar).toBe("الامتثال HCIS");
-    expect(isRouteHidden("/hcis")).toBe(false);
-    expect(MODULE_PURPOSE["/hcis"]).toBeDefined();
+  // البند كان يحرس **حياة** شاشة «الامتثال HCIS» على `/hcis`. نقض المالك
+  // ذلك بأمر مباشر (٢٠٢٦/٠٨/٠٩): «احذف هذه الصفحة مع أيقونتها بشكل نهائي».
+  // فالحارس يحرس القرار الجديد لا القديم — وهو الآن حارس **اقتلاع**: حذفٌ
+  // لا إخفاء، فلا سطر في `hidden-routes` ولا جذع توجيه، وطبقة بياناتها
+  // (`src/lib/hcis/`) سقطت معها لأن مستهلكها الوحيد كان صفحتيها.
+  it("لا وحدة ولا سطر غرض ولا رابط تنقّل لمسار الامتثال المحذوف", () => {
+    expect(MODULES.some((m) => m.to === "/hcis")).toBe(false);
+    expect(MODULE_PURPOSE["/hcis"]).toBeUndefined();
+    expect(SHELL).not.toContain('to: "/hcis"');
   });
 
-  it("الرابط التاريخي /hcis-compliance يوجّه للمعتمد لا يُسقط الزائر", () => {
-    // الإخفاء الأعمى كان سيحوّل كل رابط قديم إلى 404؛ التوجيه يحفظه.
-    const compat = read("src/routes/hcis-compliance.tsx");
-    expect(compat).toMatch(/redirect\(\{\s*to:\s*"\/hcis"\s*\}\)/);
+  it("الحذف حذفٌ لا إخفاء — لا ملفّ مسار ولا جذع توجيه ولا طبقة بيانات", () => {
+    // الإخفاء يُبقي الملفات ويضيف توجيهًا؛ المطلوب هنا نقيضه تمامًا،
+    // فوجود أيٍّ من هذه يعني أن الاقتلاع ارتدّ إلى إخفاء بصمت.
+    for (const p of [
+      "src/routes/_authenticated/hcis.tsx",
+      "src/routes/_authenticated/hcis_.directive.$code.tsx",
+      "src/routes/hcis-compliance.tsx",
+      "src/lib/hcis/framework.ts",
+      "src/lib/hcis/reference-data.ts",
+    ]) {
+      expect(existsSync(p), `${p} عاد إلى الشجرة`).toBe(false);
+    }
+    expect(isRouteHidden("/hcis")).toBe(false);
+    expect(read("src/lib/nav/hidden-routes.ts")).not.toContain('"/hcis"');
   });
 });
 
 describe("البندان ٥٢ و٥٤ — شاشتان جاهزتان لهما رابط في التنقّل", () => {
   // شاشة مبنيّة بلا رابط شاشةٌ مهدورة: لا تُحذف، تُوصَل.
   for (const [to, ar] of [
-    ["/finn-analytics", "تحليلات FINN"],
+    ["/finn-analytics", "تحليلات سَدِيد"],
     ["/observability", "الرصد والتكاليف"],
   ] as const) {
     it(`«${ar}» موصولة من الشريط الجانبي وحاضرة في السجل الكانوني`, () => {
@@ -104,8 +117,16 @@ describe("البندان ٥٧ و٥٨ — هوية داكنة ثابتة بلا �
     // ترويسة الجوال (`md:hidden`) والشريط العريض كلاهما يُركّبه.
     expect(SHELL.match(/<TopUtilityBar\s*\/>/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
     expect(SHELL).toContain("md:hidden");
-    // والرئيسية خارج القشرة، فلها مبدّلها في شريطها.
-    expect(read("src/components/nav/HomeTopNav.tsx")).toContain("<ThemeToggle");
+    // والصفحات خارج القشرة لها مبدّلها في متنها مباشرةً: الشريط العلوي
+    // (`HomeTopNav`) الذي كان يحمله حُذف بقرار المالك ٢٠٢٦/٠٨/٠٩ (البند ١٢)،
+    // ومبدّله لم يُحذف معه وإلا سقط الوضع الفاتح عن أكثر الصفحات زيارةً.
+    for (const p of [
+      "src/routes/-blueprint-page.tsx",
+      "src/routes/-nx-ops-page.tsx",
+      "src/routes/-nx-flow-page.tsx",
+    ]) {
+      expect(read(p), `${p} بلا مبدّل وضع`).toContain("<ThemeToggle");
+    }
   });
 
   it("المبدّل زرّ حقيقي بهدف لمس ٤٤px يعمل باللمس والمؤشّر", () => {

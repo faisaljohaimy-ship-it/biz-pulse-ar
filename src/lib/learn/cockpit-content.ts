@@ -90,9 +90,9 @@ export const COCKPIT_CONTENT: Record<string, CockpitContent> = {
       },
       {
         t: "06:14",
-        actor_ar: "FINN",
-        actor_en: "FINN",
-        decision_ar: "طابقت النمط مع 71% من حالات فشل مضخات مماثلة خلال 24 ساعة.",
+        actor_ar: "سَدِيد",
+        actor_en: "SADEED",
+        decision_ar: "طابق النمط مع 71% من حالات فشل مضخات مماثلة خلال 24 ساعة.",
         decision_en: "Pattern matched to 71% of similar pump failures within 24h horizon.",
         tone: "info",
       },
@@ -116,8 +116,8 @@ export const COCKPIT_CONTENT: Record<string, CockpitContent> = {
         t: "06:34",
         actor_ar: "الرئيس التنفيذي",
         actor_en: "CEO",
-        decision_ar: "اعتُمد القرار — أُبلغ مجلس الإدارة عبر FINN بموجز من ثلاث نقاط.",
-        decision_en: "Decision approved — board briefed by FINN with a 3-point summary.",
+        decision_ar: "اعتُمد القرار — أُبلغ مجلس الإدارة عبر سَدِيد بموجز من ثلاث نقاط.",
+        decision_en: "Decision approved — board briefed by SADEED with a 3-point summary.",
         tone: "ok",
       },
     ],
@@ -145,8 +145,8 @@ export const COCKPIT_CONTENT: Record<string, CockpitContent> = {
           t_s: 24,
           label_ar: "T+24 ث",
           label_en: "T+24 s",
-          detail_ar: "التوأم يرصد تسرباً — تنبيه FINN",
-          detail_en: "Twin flags leak — FINN alert raised",
+          detail_ar: "التوأم يرصد تسرباً — تنبيه سَدِيد",
+          detail_en: "Twin flags leak — SADEED alert raised",
           status: "warn",
         },
         {
@@ -193,9 +193,9 @@ export const COCKPIT_CONTENT: Record<string, CockpitContent> = {
         { label: "T+72h", forecast: 0.29, lower: 0.16, upper: 0.44 },
       ],
       aria_insight_ar:
-        "FINN: تنفيذ الصيانة الليلة يُسقط الذروة المتوقعة عند +24 س من 0.41 إلى 0.09.",
+        "سَدِيد: تنفيذ الصيانة الليلة يُسقط الذروة المتوقعة عند +24 س من 0.41 إلى 0.09.",
       aria_insight_en:
-        "FINN: executing tonight's maintenance drops the +24h peak from 0.41 to 0.09.",
+        "SADEED: executing tonight's maintenance drops the +24h peak from 0.41 to 0.09.",
     },
     risk: {
       title_ar: "خريطة حرارية للمخاطر · الموقع الشمالي",

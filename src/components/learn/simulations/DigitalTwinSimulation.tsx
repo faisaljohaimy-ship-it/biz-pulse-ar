@@ -57,8 +57,9 @@ const ASSETS: Asset[] = [
     reading_ar: "0.42 mm/s · متذبذب",
     reading_en: "0.42 mm/s · jittery",
     status: "warn",
-    recommendation_ar: "تنبيه FINN: النمط يطابق 71% من الأعطال السابقة. جدولة صيانة الليلة.",
-    recommendation_en: "FINN: pattern matches 71% of prior failures. Schedule maintenance tonight.",
+    recommendation_ar: "تنبيه سَدِيد: النمط يطابق 71% من الأعطال السابقة. جدولة صيانة الليلة.",
+    recommendation_en:
+      "SADEED: pattern matches 71% of prior failures. Schedule maintenance tonight.",
   },
   {
     id: "s3",
@@ -92,8 +93,8 @@ const ASSETS: Asset[] = [
     reading_ar: "بثّ مقطوع 12 ثانية",
     reading_en: "feed lost 12 s ago",
     status: "critical",
-    recommendation_ar: "تنبيه FINN: احتمال 62% أن السبب انقطاع كابل. استدعاء صيانة IT.",
-    recommendation_en: "FINN: 62% cable fault likelihood. Dispatch IT maintenance.",
+    recommendation_ar: "تنبيه سَدِيد: احتمال 62% أن السبب انقطاع كابل. استدعاء صيانة IT.",
+    recommendation_en: "SADEED: 62% cable fault likelihood. Dispatch IT maintenance.",
   },
   {
     id: "i1",
@@ -106,8 +107,8 @@ const ASSETS: Asset[] = [
     reading_en: "5 min since detect · crew inbound",
     status: "critical",
     recommendation_ar:
-      "FINN: احتوى النموذج التوأمي التسرّب افتراضياً وأوصى بتحويل الحمل إلى الخط B.",
-    recommendation_en: "FINN: twin contained leak virtually and recommends load-shift to line B.",
+      "سَدِيد: احتوى النموذج التوأمي التسرّب افتراضياً وأوصى بتحويل الحمل إلى الخط B.",
+    recommendation_en: "SADEED: twin contained leak virtually and recommends load-shift to line B.",
   },
 ];
 

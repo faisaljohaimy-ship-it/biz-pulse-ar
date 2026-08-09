@@ -30,6 +30,9 @@ describe("وسم المحاكاة المركزي", () => {
       S.buildReportsRegistrySimulation(now),
       S.buildCommandCenterSimulation(now),
       S.buildBiDashboardSimulation(now),
+      // سجل مخاطر الرئيسية (البند ١٢ب · ٢٠٢٦/٠٨/٠٩): صفوف الجدول وبطاقات
+      // التوصيات معًا — كلاهما صفوف عرض، فلا يخرج أيّهما بلا وسم.
+      S.buildRiskBoardSimulation(now),
     ];
     let rows = 0;
     const check = (v: unknown, isRow: boolean) => {

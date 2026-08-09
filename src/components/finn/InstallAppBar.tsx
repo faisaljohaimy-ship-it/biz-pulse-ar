@@ -11,6 +11,7 @@
 import { useEffect, useState } from "react";
 import { Download, Share, Plus, X } from "lucide-react";
 import { useFinnStore } from "@/lib/finn-core/state/finn-store";
+import { FINN_DISPLAY_NAME_AR } from "@/lib/finn-core/branding";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -139,9 +140,11 @@ export function InstallAppBar() {
             <Download className="h-5 w-5" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-bold text-white">📱 حمّل FINN كتطبيق</div>
+            <div className="text-sm font-bold text-white">
+              {`📱 حمّل ${FINN_DISPLAY_NAME_AR} كتطبيق`}
+            </div>
             <div className="truncate text-[12px] text-white/60">
-              ثبّتها على جهازك واعمل بسرعة ودون اتصال.
+              ثبّته على جهازك واعمل بسرعة ودون اتصال.
             </div>
           </div>
           {ios ? (
@@ -182,7 +185,8 @@ export function InstallAppBar() {
               اختر <span className="font-semibold">«إضافة إلى الشاشة الرئيسية»</span>.
             </li>
             <li>
-              ثم <span className="font-semibold">«إضافة»</span> — وتظهر FINN كتطبيق.
+              ثم <span className="font-semibold">«إضافة»</span>
+              {` — ويظهر ${FINN_DISPLAY_NAME_AR} كتطبيق.`}
             </li>
           </ol>
         )}

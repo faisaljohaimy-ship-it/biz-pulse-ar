@@ -131,8 +131,8 @@ function AuthPage() {
               },
               {
                 icon: Sparkles,
-                ar: "FINN جاهز للعمل بعد التحقق من الهوية",
-                en: "FINN activates after identity verification",
+                ar: "سَدِيد جاهز للعمل بعد التحقق من الهوية",
+                en: "SADEED activates after identity verification",
               },
             ].map((item) => (
               <div
@@ -164,7 +164,7 @@ function AuthPage() {
               {[
                 { icon: ShieldCheck, ar: "مساحة مؤسسية محمية", en: "Protected workspace" },
                 { icon: Fingerprint, ar: "كل إجراء موثّق", en: "Every action traceable" },
-                { icon: Sparkles, ar: "FINN بعد التحقق", en: "FINN after verification" },
+                { icon: Sparkles, ar: "سَدِيد بعد التحقق", en: "SADEED after verification" },
               ].map((item) => (
                 <span
                   key={item.en}
@@ -361,10 +361,10 @@ function ExecutiveAcceptanceStage({ isAr, onAccept }: { isAr: boolean; onAccept:
                 <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-400" />
               </span>
               <span className="text-[12px] font-bold uppercase tracking-[0.22em] text-white/60">
-                {isAr ? "العرض التنفيذي بصوت FINN" : "Executive presentation · FINN narration"}
+                {isAr ? "العرض التنفيذي بصوت سَدِيد" : "Executive presentation · SADEED narration"}
               </span>
             </div>
-            <span className="nexus-command-chip">FINN · LIVE EXPERIENCE</span>
+            <span className="nexus-command-chip">SADEED · LIVE EXPERIENCE</span>
           </div>
           <ExecutivePresentationPlayer />
         </section>
@@ -431,8 +431,8 @@ function BrandLockup({ isAr }: { isAr: boolean }) {
       </h2>
       <p className="mt-4 max-w-xl text-base leading-8 text-white/58">
         {isAr
-          ? "هوية تنفيذية سعودية، قرار موثّق، وFINN تعمل داخل حدود الصلاحية البشرية."
-          : "Saudi executive identity, governed decisions, and FINN operating inside human authority."}
+          ? "هوية تنفيذية سعودية، قرار موثّق، وسَدِيد يعمل داخل حدود الصلاحية البشرية."
+          : "Saudi executive identity, governed decisions, and SADEED operating inside human authority."}
       </p>
     </div>
   );

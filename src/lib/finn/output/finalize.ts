@@ -201,8 +201,10 @@ export function enforceFinnIdentity(text: string): string {
     text
       .replace(RE_SELF_INTRO_AR, " ")
       .replace(RE_SELF_INTRO_EN, " ")
-      .replace(RE_LEGACY_NAME_AR, "FINN")
-      .replace(RE_LEGACY_NAME_EN, "FINN")
+      // Owner directive 2026-08-09: the displayed assistant name is the brand
+      // itself — «سَدِيد» in Arabic prose, «SADEED» in Latin prose.
+      .replace(RE_LEGACY_NAME_AR, "سَدِيد")
+      .replace(RE_LEGACY_NAME_EN, "SADEED")
       .replace(RE_LEGACY_PLATFORM_WITH_PREFIX_AR, "المنصة")
       .replace(RE_LEGACY_PLATFORM_AR, "المنصة")
       .replace(RE_LEGACY_PLATFORM_EN, platformReplacement)

@@ -6,7 +6,7 @@ import {
 
 describe("FINN conversation greeting", () => {
   it("welcomes the user and asks how FINN can help", () => {
-    expect(FINN_CONVERSATION_GREETING_AR).toContain("أنا فِن");
+    expect(FINN_CONVERSATION_GREETING_AR).toContain("أنا سَدِيد");
     expect(FINN_CONVERSATION_GREETING_AR).toContain("الأرقام حاضرة");
   });
 

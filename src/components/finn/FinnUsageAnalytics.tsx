@@ -10,6 +10,7 @@
 import { BarChart3, MessageSquare, Users, Timer, ThumbsUp } from "lucide-react";
 import { getUsageAnalytics, type UsageKpi } from "@/lib/finn/usage-analytics";
 import { SimBadge } from "@/components/os/SimBadge";
+import { FINN_DISPLAY_NAME_AR_PLAIN } from "@/lib/finn-core/branding";
 
 const KPI_ICON: Record<string, typeof MessageSquare> = {
   messages: MessageSquare,
@@ -27,7 +28,7 @@ export function FinnUsageAnalytics({ className = "" }: { readonly className?: st
   return (
     <section
       dir="rtl"
-      aria-label="تحليلات استخدام FINN"
+      aria-label={`تحليلات استخدام ${FINN_DISPLAY_NAME_AR_PLAIN}`}
       className={`relative w-full rounded-2xl border border-[#3AE8FF]/18 bg-gradient-to-b from-[#061A2E]/55 to-[#04101C]/70 p-4 backdrop-blur-md sm:p-5 ${className}`}
     >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">

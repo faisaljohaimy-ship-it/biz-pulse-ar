@@ -300,7 +300,7 @@ function KnowledgeUploadCenter() {
           {job.phase === "done" && (
             <div className="flex items-center gap-2 text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3">
               <Sparkles className="h-4 w-4" />
-              Ingested · FINN can now cite this document.
+              Ingested · SADEED can now cite this document.
             </div>
           )}
         </section>

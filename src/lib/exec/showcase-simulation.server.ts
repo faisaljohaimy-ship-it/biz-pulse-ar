@@ -11,6 +11,7 @@
 import type { BridgeState, MissionTimelineEntry } from "./bridge.functions";
 import type { PredictedRisk } from "./predictive.functions";
 import { agentName, type DigitalHumanId } from "@/lib/digital-humans/registry";
+import { REGIONS, type RegionId } from "@/lib/regions";
 import { sumMeasured } from "./measured-sum";
 
 const H = 3_600_000;
@@ -2245,10 +2246,10 @@ export function buildConnectorsSimulation(now: number) {
     ],
     [
       "elevenlabs",
-      "ElevenLabs — صوت FINN",
+      "ElevenLabs — صوت سَدِيد",
       "ai",
       "configured",
-      "نشط — صوت FINN الحصري عبر الخادم.",
+      "نشط — صوت سَدِيد الحصري عبر الخادم.",
       ["tts.stream"],
       "Server-side API key",
       3,
@@ -2745,4 +2746,111 @@ export function buildBiDashboardSimulation(now: number): BiDashboardData {
     compliance,
     heatmap,
   });
+}
+
+/* ── سجل المخاطر على الرئيسية (بطاقات مجمّعة + جدول تفصيلي) ──────────────
+   قرار المالك ٢٠٢٦/٠٨/٠٩ (البند ١٢ب): «المخاطر في الداشبورد كبيانات»،
+   والاختيار «الاثنان معًا» — مؤشرات مجمّعة وجدول صفوف.
+
+   سُلّم الشدّة ثلاثيّ عمدًا: `high · medium · low` تقابل واحدةً بواحدة
+   نغمات `STAT_TONES` المحروسة (`danger` أحمر بمثمّن · `warning` كهرماني
+   بمثلث · `success` أخضر بدائرة). سُلّمٌ رباعي كان سيُجبر شدّتين على نغمة
+   واحدة، فيصير الفرق بينهما لونًا أو نصًّا بلا شكل — وهو بالضبط ما يمنعه
+   `stat-tone.contract.test.ts`.
+
+   المنطقة تأتي من `regions.ts` — المرجع الجغرافي الوحيد — دورةً على
+   الترتيب، ولا اسم منطقة مكتوب هنا نصًّا. */
+
+export type RiskSeverity = "high" | "medium" | "low";
+
+export type RiskRow = {
+  id: string;
+  ref: string;
+  title_ar: string;
+  /** `null` = لم تُسنَد المخاطرة إلى منطقة في المصدر ⇒ «لم يُقَس» (المادة ٢٧). */
+  region_id: RegionId | null;
+  severity: RiskSeverity;
+  status_ar: string;
+};
+
+export type RiskRecommendation = {
+  id: string;
+  title_ar: string;
+  /** لماذا رُفعت التوصية — الإشارة المقيسة خلفها. */
+  why_ar: string;
+  /** الإجراء المقترح — جملة تنفيذية واحدة. */
+  action_ar: string;
+  severity: RiskSeverity;
+};
+
+export type RiskBoard = {
+  source: "database" | "reference";
+  simulation: boolean;
+  rows: RiskRow[];
+  recommendations: RiskRecommendation[];
+};
+
+export function buildRiskBoardSimulation(now: number): RiskBoard {
+  /** [المرجع، العنوان، فهرس المنطقة أو -1، الشدّة، الحالة] */
+  const REG: Array<[string, string, number, RiskSeverity, string]> = [
+    ["R-101", "اختراق محتمل لسياج المحيط الشمالي", 0, "high", "مفتوحة"],
+    ["R-102", "تجاوز صلاحية تصاريح مقاولي الصيانة", 1, "high", "قيد المعالجة"],
+    ["R-103", "انقطاع تغذية كاميرات البوابة الرئيسة", 2, "high", "قيد المعالجة"],
+    ["R-104", "ضعف الاستجابة لإنذارات المواد الخطرة", 3, "medium", "تحت المراقبة"],
+    ["R-105", "نقص تغطية الورديات المسائية", 1, "medium", "مفتوحة"],
+    ["R-106", "تأخر تحديث بيانات الزوار بين البوّابات", 0, "medium", "قيد المعالجة"],
+    ["R-107", "ازدحام بوابة المركبات في ذروة التسليم", 2, "medium", "تحت المراقبة"],
+    ["R-108", "تفاوت جودة تدقيق أذونات العمل الساخن", 3, "medium", "مفتوحة"],
+    ["R-109", "تقادم بطاريات أجهزة اللاسلكي الميدانية", 0, "low", "مُخفَّفة"],
+    ["R-110", "تكرار إنذارات كاذبة في مجسّات السياج", 2, "low", "تحت المراقبة"],
+    ["R-111", "بطء مزامنة سجل المفاتيح مع المستودع", 1, "low", "مُخفَّفة"],
+    // مخاطرة قائمة بلا إسناد جغرافي في المصدر — تُعرض «لم يُقَس» لا منطقةً
+    // مُخمَّنة. وجودها في المرجع مقصود: الحالة الصعبة يجب أن تُرى في العرض.
+    ["R-112", "فجوة في توثيق تسليم الورديات بين الإدارات", -1, "medium", "مفتوحة"],
+  ];
+
+  const rows: RiskRow[] = REG.map(([ref, title_ar, ri, severity, status_ar], i) => ({
+    id: `sim-risk-${i + 1}`,
+    ref,
+    title_ar,
+    region_id: ri < 0 ? null : (REGIONS[ri % REGIONS.length]!.id as RegionId),
+    severity,
+    status_ar,
+  }));
+
+  /** التوصية تُسنَد إلى منطقة من نفس المصدر — لا اسم مكتوب يدويًّا. */
+  const rec = (i: number) => REGIONS[i % REGIONS.length]!.shortAr;
+
+  const recommendations: RiskRecommendation[] = [
+    {
+      id: `sim-rec-1-${now}`,
+      title_ar: `قدّم نافذة الأعمال الساخنة في ${rec(1)} إلى الفترة الصباحية`,
+      why_ar: "ثلاثة تصاريح أعمال ساخنة تتقاطع مع ذروة الحرارة بعد الظهر في المواقع نفسها.",
+      action_ar: "أعد جدولة التصاريح الثلاثة قبل 11:00 وألزم دورات ترطيب كل 45 دقيقة.",
+      severity: "high",
+    },
+    {
+      id: `sim-rec-2-${now}`,
+      title_ar: `افتح مسار تفتيش إضافيًّا على بوابة المقاولين في ${rec(2)}`,
+      why_ar: "تزامن أربعة أوامر عمل مع دخول جماعي متوقع بين 06:30 و08:00 على بوابة واحدة.",
+      action_ar: "شغّل المسار الثاني ساعتين وفعّل التسجيل المسبق برمز QR للمقاولين المعتمدين.",
+      severity: "medium",
+    },
+    {
+      id: `sim-rec-3-${now}`,
+      title_ar: `عوّض تغطية الكاميرات المتوقفة في ${rec(0)} بدورية مؤقتة`,
+      why_ar: "ثلاث كاميرات في نافذة صيانة تُخفض تغطية القطاع الشمالي حتى مساء الغد.",
+      action_ar: "أضف دورية راجلة كل ساعة ووجّه الكاميرا الدوّارة لتغطية الزاوية المكشوفة.",
+      severity: "medium",
+    },
+    {
+      id: `sim-rec-4-${now}`,
+      title_ar: `وحّد نموذج تسليم الورديات عبر الإدارات`,
+      why_ar: "فجوة التوثيق تظهر في مخاطرة قائمة بلا إسناد جغرافي — فلا يُعرف أين تتكرر.",
+      action_ar: "اعتمد نموذجًا واحدًا لتسليم الوردية واربطه بسجل المخاطر لإسناد كل بند لمنطقته.",
+      severity: "low",
+    },
+  ];
+
+  return markSimulation({ source: "reference", simulation: true, rows, recommendations });
 }

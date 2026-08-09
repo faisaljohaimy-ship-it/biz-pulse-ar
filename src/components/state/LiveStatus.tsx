@@ -1,5 +1,15 @@
 import { cn } from "@/lib/utils";
-import { Activity, Loader2, Radio, Search, RefreshCw, Cpu, CheckCircle2, Moon } from "lucide-react";
+import {
+  Activity,
+  Loader2,
+  Radio,
+  ScanEye,
+  Search,
+  RefreshCw,
+  Cpu,
+  Hourglass,
+  Moon,
+} from "lucide-react";
 
 export type LiveStatusVariant =
   | "initializing"
@@ -22,16 +32,19 @@ const VARIANTS: Record<
     dot: "bg-cyan-400",
     pulse: true,
   },
+  // «مراقبة» عينٌ ماسحة، و«حيّ» بثٌّ — و`Radio` كانت على المراقبة بينما
+  // «حيّ» تحمل علامة صحّ (`CheckCircle2`) التي تقول «انتهى بنجاح» لا «يعمل الآن».
   monitoring: {
     label: "Monitoring",
-    icon: Radio,
+    icon: ScanEye,
     cls: "text-emerald-300 border-emerald-500/30 bg-emerald-500/10",
     dot: "bg-emerald-400",
     pulse: true,
   },
+  // «في الطابور» انتظارٌ لم يبدأ؛ و`Activity` خطُّ نبضٍ يقول «يجري الآن».
   queued: {
     label: "Queued",
-    icon: Activity,
+    icon: Hourglass,
     cls: "text-slate-300 border-slate-500/30 bg-slate-500/10",
     dot: "bg-slate-400",
     pulse: false,
@@ -59,7 +72,7 @@ const VARIANTS: Record<
   },
   live: {
     label: "Live",
-    icon: CheckCircle2,
+    icon: Radio,
     cls: "text-emerald-300 border-emerald-500/30 bg-emerald-500/10",
     dot: "bg-emerald-400",
     pulse: true,

@@ -10,11 +10,11 @@ import { NxFlowPage } from "./-nx-flow-page";
 export const Route = createFileRoute("/nx-flow")({
   head: () => ({
     meta: [
-      { title: "رحلة الوكلاء مع فِن · Agents Flow — سَدِيد" },
+      { title: "رحلة الوكلاء مع سَدِيد · Agents Flow" },
       {
         name: "description",
         content:
-          "لوح ساطع يقرأ رحلة العمل: فِن توجّه، الوكلاء ينفّذون، والقرار يعود للاعتماد البشري. محاكاة مرجعية.",
+          "لوح ساطع يقرأ رحلة العمل: سَدِيد يوجّه، الوكلاء ينفّذون، والقرار يعود للاعتماد البشري. محاكاة مرجعية.",
       },
       { name: "robots", content: "noindex" },
     ],

@@ -74,7 +74,7 @@ export function LessonCard({ lesson, lang }: Props) {
             </span>
           )}
           <span className="inline-flex items-center gap-1">
-            <Sparkles className="h-3.5 w-3.5" /> FINN
+            <Sparkles className="h-3.5 w-3.5" /> سَدِيد
           </span>
         </div>
         {lesson.published ? (

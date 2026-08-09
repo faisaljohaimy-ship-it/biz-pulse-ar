@@ -5,6 +5,7 @@
  * than the current owner).
  */
 import { VoiceTimeline } from "./voice-timeline";
+import { isFinnVoiceMuted, subscribeFinnVoiceMute } from "@/lib/finn-core/state/voice-mute";
 
 // The four live voice sources: homepage greeting, specialist-agent speech,
 // the conversation greeting, and reply TTS. FINN chat always wins;
@@ -71,6 +72,15 @@ export const FinnAudioBus = {
     // EXEMPTION: the hero soundtrack's ONE optimistic mount-time attempt may
     // pass { bypassGesture: true }. No FINN / tour source is ever exempt.
     const bypass = opts?.bypassGesture === true && BYPASS_ALLOWED.has(source);
+    // بوابة الكتم (طلب المالك «ونقدر نصمته»). تسبق كل شيء عمدًا: الرفض هنا
+    // يقع قبل أن يُطلب أي مقطع TTS من الخادم، فالكتم صمتٌ حقيقي لا خفض
+    // مستوى فوق صوت اشتُري ونُزِّل. وهي في الناقل لا في مكوّن، لأن الناقل
+    // هو الممرّ الإجباري الوحيد لكل مصدر صوت في المنظومة — فمصدر واحد
+    // منسيّ لا يستطيع النطق من خلف الزر.
+    if (isFinnVoiceMuted()) {
+      VoiceTimeline.push("OWNER", "acquire REFUSED (muted)", { source, stack });
+      return false;
+    }
     if (!unlocked && !bypass) {
       console.warn("[aria-audio-bus] acquire REFUSED — no user gesture yet", {
         source,
@@ -188,6 +198,13 @@ export const FinnAudioBus = {
     return current?.source ?? null;
   },
 };
+
+// الكتم أثناء النطق يقطع الجملة الجارية فورًا. بغير هذا يضغط المستخدم الزر
+// ويظل يسمع بقية الجملة، فيقرأ الزر معطّلًا. الاتجاه واحد — الناقل يشترك على
+// حالة الكتم، وحالة الكتم لا تعرف بالناقل — فلا حلقة استيراد.
+subscribeFinnVoiceMute((muted) => {
+  if (muted) FinnAudioBus.stopAll();
+});
 
 if (typeof window !== "undefined") {
   window.addEventListener("pagehide", () => FinnAudioBus.stopAll());

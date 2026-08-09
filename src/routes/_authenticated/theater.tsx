@@ -68,7 +68,7 @@ export const Route = createFileRoute("/_authenticated/theater")({
       {
         name: "description",
         content:
-          "Living executive command theater with FINN Digital Human, specialist AI agent orchestra and one-click 60-second briefings — powered exclusively by real runtime data.",
+          "Living executive command theater with the SADEED Digital Human, specialist AI agent orchestra and one-click 60-second briefings — powered exclusively by real runtime data.",
       },
     ],
   }),
@@ -231,8 +231,8 @@ function TheaterPage() {
             </h1>
             <p className="mt-1 text-sm text-white/55 max-w-2xl">
               {ar
-                ? "FINN والمنظومة المتخصصة تراقب العمليات الحية وتقدم التوصيات التنفيذية ضمن 60 ثانية."
-                : "FINN and the specialist orchestra monitor live operations and deliver executive recommendations in under 60 seconds."}
+                ? "سَدِيد والمنظومة المتخصصة يراقبان العمليات الحية ويقدّمان التوصيات التنفيذية ضمن 60 ثانية."
+                : "SADEED and the specialist orchestra monitor live operations and deliver executive recommendations in under 60 seconds."}
             </p>
           </div>
 
@@ -417,8 +417,8 @@ function TheaterPage() {
             {recentLines.length === 0 && (
               <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-sm text-white/55 backdrop-blur">
                 {ar
-                  ? "لا توجد أحداث تشغيلية حديثة. FINN في وضع المراقبة."
-                  : "No recent operational events. FINN is monitoring in standby."}
+                  ? "لا توجد أحداث تشغيلية حديثة. سَدِيد في وضع المراقبة."
+                  : "No recent operational events. SADEED is monitoring in standby."}
               </div>
             )}
             {recentLines.map((line) =>

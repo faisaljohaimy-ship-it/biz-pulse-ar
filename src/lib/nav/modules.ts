@@ -12,16 +12,15 @@
  */
 
 import {
-  BarChart3,
   Bot,
   Boxes,
-  Building2,
   ClipboardCheck,
-  FileText,
+  FileBarChart,
+  FileCheck2,
   Gauge,
-  ShieldCheck,
   LineChart,
   Map as MapIcon,
+  Presentation,
   Radar,
   Shield,
   ShieldAlert,
@@ -49,17 +48,27 @@ export const MODULES: readonly ModuleEntry[] = [
   // G7: the canonical name is «منصة عمليات الوكلاء» in every surface.
   { to: "/agents", ar: "منصة عمليات الوكلاء", en: "Agent Operations Platform", icon: Bot },
   { to: "/digital-twin", ar: "التوأم الرقمي", en: "Digital Twin", icon: Boxes },
-  { to: "/sec/reports", ar: "التقارير", en: "Reports", icon: BarChart3 },
+  // تقرير لا رسم بياني: `BarChart3` كانت أيقونة **مؤشرات الأداء** نفسها في
+  // الشريط الجانبي، فقرأت الوحدتان بأيقونة واحدة. الوحدة تُصدِّر ملفات
+  // (PDF/Excel) — فالوثيقة ذات البيانات هي دلالتها.
+  { to: "/sec/reports", ar: "التقارير", en: "Reports", icon: FileBarChart },
   { to: "/governance", ar: "الحوكمة", en: "Governance", icon: ClipboardCheck },
   { to: "/risk", ar: "المخاطر", en: "Risk", icon: ShieldAlert },
   { to: "/sec/maintenance", ar: "الصيانة", en: "Maintenance", icon: Wrench },
-  { to: "/sec/permits", ar: "التصاريح", en: "Permits", icon: FileText },
-  { to: "/hcis", ar: "الامتثال HCIS", en: "HCIS Compliance", icon: ShieldCheck },
+  // التصريح وثيقة **مُعتمَدة** لا ورقة نصّ: علامة الاعتماد هي ما يميّزه عن
+  // أي مستند آخر في المنظومة.
+  { to: "/sec/permits", ar: "التصاريح", en: "Permits", icon: FileCheck2 },
+  // «الامتثال HCIS» (/hcis) حُذفت بالكامل بأمر المالك ٢٠٢٦/٠٨/٠٩ — لا إخفاء
+  // ولا توجيه: الصفحة وأيقونتها ومسارها وطبقة بياناتها (src/lib/hcis)
+  // اقتُلعت من الشجرة. لا يُعاد سطرها هنا إلا بأمر مالك جديد.
   { to: "/urgent-ops", ar: "العاجل", en: "Urgent Ops", icon: Siren },
-  { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Building2 },
+  // قاعة المجلس = **العرض التنفيذي للقيادة** (كما في MODULE_PURPOSE أدناه)،
+  // لا مبنى. و`Building2` كانت أيقونة «الدوائر» في الشريط الجانبي أيضًا.
+  { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Presentation },
 
-  { to: "/finn", ar: "FINN التنفيذي", en: "FINN Engine", icon: Sparkles },
-  { to: "/finn-analytics", ar: "تحليلات FINN", en: "FINN Analytics", icon: LineChart },
+  // المسارات `/finn*` عقود توجيه حيّة تبقى كما هي؛ التسمية وحدها هي المعروضة.
+  { to: "/finn", ar: "سَدِيد التنفيذي", en: "SADEED Engine", icon: Sparkles },
+  { to: "/finn-analytics", ar: "تحليلات سَدِيد", en: "SADEED Analytics", icon: LineChart },
   { to: "/observability", ar: "الرصد والتكاليف", en: "Observability", icon: Telescope },
 ];
 
@@ -86,8 +95,8 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     en: "The executive geographic map of assets and regions.",
   },
   "/agents": {
-    ar: "منصة عمليات الوكلاء — تشغيل ومراقبة تحت قيادة FINN.",
-    en: "Agent operations platform — run and monitor under FINN.",
+    ar: "منصة عمليات الوكلاء — تشغيل ومراقبة تحت قيادة سَدِيد.",
+    en: "Agent operations platform — run and monitor under SADEED.",
   },
   "/digital-twin": {
     ar: "التوأم الرقمي — مطابقة الميدان بالنموذج الرقمي.",
@@ -121,10 +130,6 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     ar: "إدارة تصاريح العمل السارية والمنتهية.",
     en: "Manage active and expired work permits.",
   },
-  "/hcis": {
-    ar: "مصفوفة الامتثال للهيئة العليا للأمن الصناعي.",
-    en: "The HCIS compliance matrix.",
-  },
   "/ptw": {
     ar: "تصاريح العمل الرقمية بدورة حياة كاملة وQR.",
     en: "Digital permits-to-work with full lifecycle and QR.",
@@ -138,12 +143,12 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     en: "The boardroom — the executive briefing for leadership.",
   },
   "/finn": {
-    ar: "FINN التنفيذي — المساعد الذكي الصوتي والنصي.",
-    en: "FINN Executive — the voice and text AI assistant.",
+    ar: "سَدِيد التنفيذي — المساعد الذكي الصوتي والنصي.",
+    en: "SADEED Executive — the voice and text AI assistant.",
   },
   "/finn-analytics": {
-    ar: "تحليلات أداء FINN واستخدامها.",
-    en: "FINN performance and usage analytics.",
+    ar: "تحليلات أداء سَدِيد واستخدامه.",
+    en: "SADEED performance and usage analytics.",
   },
   "/observability": {
     ar: "الرصد التقني والتكاليف وصحة المنظومة.",

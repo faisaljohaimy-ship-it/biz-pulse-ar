@@ -176,7 +176,7 @@ function CockpitContent() {
                     <StrategicMapPanel regions={cockpit.snapshot.data.regions} />
                   </CockpitSectionBoundary>
 
-                  <CockpitSectionBoundary sectionAr="لوحة FINN">
+                  <CockpitSectionBoundary sectionAr="لوحة سَدِيد">
                     <FinnExecutivePanel finn={cockpit.snapshot.data.finn} />
                   </CockpitSectionBoundary>
                 </div>

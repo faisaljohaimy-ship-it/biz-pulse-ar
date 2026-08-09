@@ -59,7 +59,7 @@ describe("NxButton — spec 01", () => {
 
   it("voice button states expose aria-pressed and Arabic names", () => {
     const { rerender } = render(<NxVoiceButton state="idle" />);
-    expect(screen.getByRole("button", { name: "تحدث إلى FINN" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "تحدث إلى سديد" })).toHaveAttribute(
       "aria-pressed",
       "false",
     );

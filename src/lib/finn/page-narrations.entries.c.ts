@@ -52,8 +52,8 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     n(
       "تركيب الكلام",
       "Text-to-Speech",
-      "أصوات FINN وإعدادات النطق",
-      "FINN's voices and pronunciation settings",
+      "أصوات سَدِيد وإعدادات النطق",
+      "SADEED's voices and pronunciation settings",
       "صوت طبيعي راقٍ يليق بحضور تنفيذي",
       "a natural, refined voice worthy of executive presence",
     ),
@@ -72,12 +72,12 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/voice",
     n(
-      "الصوت التنفيذي لFINN",
-      "FINN Voice",
+      "الصوت التنفيذي لسَدِيد",
+      "SADEED Voice",
       "إعدادات الصوت، المعاينة، وسجل التشغيل",
       "voice settings, preview, and playback log",
-      "حضور صوتي احترافي لFINN",
-      "professional voice presence for FINN",
+      "حضور صوتي احترافي لسَدِيد",
+      "professional voice presence for SADEED",
     ),
   ],
   [
@@ -546,26 +546,17 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "the map is built from the single module registry, so it can never drift from the sidebar",
     ),
   ],
-  [
-    "/hcis",
-    n(
-      "الامتثال HCIS",
-      "HCIS Compliance",
-      "مصفوفة توجيهات الهيئة العليا للأمن الصناعي وحالة كل توجيه",
-      "the High Commission for Industrial Security directive matrix and per-directive status",
-      "دليل امتثال جاهز للعرض على الجهة الرقابية",
-      "a compliance record ready to show the regulator",
-      "البلاطات تقرأ من جداول الإطار الأربعة، وكل توجيه يفتح صفحة إرشاده بالرمز",
-      "the tiles read from the four framework tables, and each directive opens its guidance page by code",
-    ),
-  ],
+  // صفٌّ محذوف: «الامتثال HCIS» على `/hcis`. الصفحة ومسارها وطبقة بياناتها
+  // اقتُلعت بأمر المالك ٢٠٢٦/٠٨/٠٩، فبقي هذا الصفّ يصف شاشةً لا وجود لها —
+  // وهو بالضبط ما يمسكه `page-narrations.contract.test.ts` («صفوف تشير إلى
+  // مسارات محذوفة»): سردٌ يتيم لا يُنطق أبدًا لأن لا مسار يستدعيه.
   [
     "/finn-analytics",
     n(
-      "تحليلات FINN",
-      "FINN Analytics",
-      "استخدام FINN وأنماط الأسئلة وأداء الردّ",
-      "FINN usage, question patterns, and response performance",
+      "تحليلات سَدِيد",
+      "SADEED Analytics",
+      "استخدام سَدِيد وأنماط الأسئلة وأداء الردّ",
+      "SADEED usage, question patterns, and response performance",
       "قراءة صادقة لما تستفيده المؤسسة من المحرّك",
       "an honest reading of what the enterprise gets from the engine",
       "ما لم يُقَس يظهر «لم يُقَس» ولا يُستبدل بصفر",
@@ -656,10 +647,10 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/nx-flow",
     n(
-      "رحلة الوكلاء مع فِن",
+      "رحلة الوكلاء مع سَدِيد",
       "Agents Flow",
-      "مسار المهمة من طلبها حتى إغلاقها عبر الوكلاء تحت قيادة FINN",
-      "a task's path from request to closure across the agents under FINN's command",
+      "مسار المهمة من طلبها حتى إغلاقها عبر الوكلاء تحت قيادة سَدِيد",
+      "a task's path from request to closure across the agents under SADEED's command",
       "رؤية من فعل ماذا ومتى بلا صندوق أسود",
       "seeing who did what and when, with no black box",
     ),

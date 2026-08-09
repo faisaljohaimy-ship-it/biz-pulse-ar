@@ -81,6 +81,22 @@ describe("المُخطَّط — المادة ٣٢: الحركة بخصائص م
     expect(block).toContain("translate: none");
     expect(block).toContain("stroke-dashoffset: 0");
   });
+
+  it("بطاقات الرئيسية ساكنة: لا دخول متدرّج ولا طفو دائم (قرار المالك ٢٠٢٦/٠٨/٠٩)", () => {
+    // الحارس على الإسناد لا على الاسم: ذكر `nxBpRise` في تعليق يشرح الإزالة
+    // مسموح، وإعادته إلى `animation` هي العودة الممنوعة.
+    expect(LAYER).not.toMatch(/animation:\s*nxBp(Rise|Float)\b/);
+    expect(LAYER).not.toMatch(/@keyframes\s+nxBp(Rise|Float)\b/);
+    // ولا لمعةَ عابرة دائمة على البطاقة نفسها — الطبقة الحاملة أُزيلت أصلًا.
+    // المحدِّد يُقاس في أول سطره لا في أي موضع: ذِكره داخل تعليق ليس عودةً له.
+    expect(LAYER).not.toMatch(/^\s*\.nx-bp-card::before/m);
+    // والسكون لا يبلغ التغذية الراجعة: انتقال المقياس عند التمرير والضغط
+    // استجابةٌ للمستخدم، وحذفه ضررٌ وصولي لا تحسين.
+    const float = LAYER.slice(LAYER.indexOf(".nx-bp-float {"));
+    expect(float.slice(0, float.indexOf("\n}"))).toContain("transition: scale");
+    expect(LAYER).toContain(".nx-bp-float:hover");
+    expect(LAYER).toContain(".nx-bp-float:active");
+  });
 });
 
 describe("المُخطَّط — الوضعان يعملان معًا", () => {
@@ -173,7 +189,10 @@ describe("المُخطَّط — أيقونات الرئيسية دوائر نب
     // مصدر واحد لسطحين: الرئيسية ومركز القيادة. نسختان من نفس الشكل تعني
     // أن أول تعديل على إحداهما يفتح فجوة لا يراها أحد.
     expect(PANELS).toContain("PulseGlyph");
-    expect((PAGE.match(/<PulseGlyph/g) ?? []).length).toBeGreaterThanOrEqual(2);
+    // كانت الرئيسية تحمل رسمين: دوائر المناطق ودوائر بطاقات الوكلاء. أُزيلت
+    // بطاقات «الوكلاء على المناوبة» ٢٠٢٦/٠٨/٠٩ بقرار المالك، فبقي مستهلك
+    // واحد — والبند يحرس أن يبقى مستهلكًا للمصدر الواحد لا نسخةً منه.
+    expect((PAGE.match(/<PulseGlyph/g) ?? []).length).toBeGreaterThanOrEqual(1);
     expect(read("src/components/digital-humans/AgentPulseIcon.tsx")).toContain(
       "@/components/pulse/PulseGlyph",
     );
@@ -187,9 +206,14 @@ describe("المُخطَّط — أيقونات الرئيسية دوائر نب
     expect(PAGE).toMatch(/ratio=\{pct === undefined \? null : pct \/ 100\}/);
   });
 
-  it("حالة الوكيل الساكن تُقال بالشكل لا باللون وحده", () => {
-    expect(PAGE).toMatch(/muted=\{agent\.status === "idle"\}/);
-    expect(PAGE).toMatch(/dashedRing=\{agent\.status === "idle"\}/);
+  it("حالة الوكيل تُقال بالشكل لا باللون وحده", () => {
+    // كان الحارس على بطاقات «الوكلاء على المناوبة» في الرئيسية، وقد أُزيلت
+    // ٢٠٢٦/٠٨/٠٩ بقرار المالك. القاعدة نفسها لم تُنسخ: هي مطبَّقة في مستهلك
+    // الرسم الباقي — أيقونة الوكيل في مركز القيادة — فانتقل الحارس إليه بدل
+    // أن يُفرَّغ. الحلقة المتقطّعة تقول ما لا يقوله اللون وحده (WCAG 1.4.1).
+    expect(read("src/components/digital-humans/AgentPulseIcon.tsx")).toMatch(
+      /dashedRing=\{state === "error"\}/,
+    );
   });
 
   it("الإيقاعات متفاوتة فلا تخفق الأيقونات دفعةً واحدة", () => {
@@ -214,18 +238,39 @@ describe("المُخطَّط — أيقونات الرئيسية دوائر نب
     expect(halo.slice(0, halo.indexOf("\n}"))).not.toContain("100%");
   });
 
-  it("للحركة الدائمة مفتاح إيقاف واحد ظاهر (WCAG 2.2.2)", () => {
-    // زر إيقاف الخلفية يوقف النبضات أيضًا — مفتاح واحد يُسكِت الصفحة، لا
-    // زر لكل طبقة ولا حركة دائمة بلا مخرج.
-    expect(read("src/components/home/HoloVideoEngine.tsx")).toContain(
-      'setAttribute("data-nx-motion", "off")',
-    );
+  it("للحركة الدائمة الباقية مخرجٌ حيّ (WCAG 2.2.2)", () => {
+    // **انقلب هذا الحارس بقرار المالك ٢٠٢٦/٠٨/٠٩.** كان يشترط زرّ إيقاف
+    // الخلفية (`data-nx-motion` من `HoloVideoEngine`) مفتاحًا واحدًا يُسكِت
+    // الصفحة كلّها. ثم أُمر بخلفية ساكنة داكنة وبحذف الزر، فذهب الفيلم
+    // وذهب معه كاتبُ الراية — وبقي الحارس يطلب سطرًا نُقض قصدًا.
+    //
+    // والقاعدة التي وُجد لأجلها لم تسقط: **حركة دائمة بلا مخرج** خرقٌ
+    // وصولي. فما زالت نبضات الأيقونات تعمل بلا توقّف، ومخرجها اليوم هو
+    // تفضيل النظام. فيُفحص المخرج حيث صار، لا حيث كان.
+    // **الكتلة بعينها لا بقيّة الملف.** في `styles.css` أربعون كتلة
+    // `prefers-reduced-motion`؛ فقراءة ما بعد أولها تلتقط نبضةً تُسكَت في
+    // كتلةٍ أخرى بعيدة، ويمرّ الفحص حتى لو نُزعت النبضة من كتلتها. جُرّب
+    // ذلك فعلًا: نزعُ `.nx-pulse-halo` من كتلتها لم يُسقط الصيغة السابقة —
+    // فأُعيدت بمطابقة أقواس تقرأ كل كتلة على حدة.
+    const blocks: string[] = [];
+    const OPEN = "@media (prefers-reduced-motion: reduce)";
+    for (let i = CSS.indexOf(OPEN); i > -1; i = CSS.indexOf(OPEN, i + 1)) {
+      let depth = 0;
+      for (let j = CSS.indexOf("{", i); j < CSS.length; j++) {
+        if (CSS[j] === "{") depth++;
+        else if (CSS[j] === "}" && --depth === 0) {
+          blocks.push(CSS.slice(i, j + 1));
+          break;
+        }
+      }
+    }
+    expect(blocks.length, "لا كتلة تخفيف حركة أصلًا").toBeGreaterThan(0);
+    // كتلةٌ واحدة على الأقل تُسكِت نبضة الهالة صراحةً داخل حدودها.
+    const silenced = blocks.some((b) => /\.nx-pulse-halo[^{}]*\{[^{}]*animation:\s*none/.test(b));
+    expect(silenced, "نبضة الهالة الدائمة بلا مخرج في أي كتلة تخفيف").toBe(true);
+    // والسمة تبقى سطح تحكّم عاملًا لمن يكتبها برمجيًّا (إعدادات المستخدم
+    // مثلًا) — القاعدة باقية وإن ذهب زرّها.
     expect(CSS).toContain('html[data-nx-motion="off"] .nx-pulse-spark');
-    // والاختيار يسري على كل صفحة لا على صفحات الفيلم وحدها: محرّك الخلفية
-    // لا يُركَّب إلا حيث توجد خلفية، فلولا قراءة الجذر لسقط الاختيار بمجرّد
-    // التنقّل إلى شاشة أخرى فيها نبضات.
-    expect(read("src/routes/__root.tsx")).toContain("nx-holo-bg");
-    expect(read("src/routes/__root.tsx")).toContain("data-nx-motion");
   });
 
   it("سمة الحالة مُنَمذَجة فلا تصطدم بقاعدة عامة", () => {
@@ -244,9 +289,11 @@ describe("المُخطَّط — أيقونات الرئيسية دوائر نب
     // `:root, .light, .dark` تفرض درجات الوضع الفاتح على `.dark` أيضًا.
     // فلا يجوز تمرير `--tone-*` لكنةً للأيقونة: باهتة على الكحلي، ولو
     // صُحِّحت للأبيض فوق ذلك لهبطت كل اللكنات إلى ما يقارب الأسود معًا.
-    expect(PAGE).toContain("AGENT_PULSE_RGB");
-    expect(PAGE).toMatch(/accent=\{`rgb\(\$\{AGENT_PULSE_RGB/);
-    expect(PAGE).not.toMatch(/accent=\{AGENT_HUES/);
+    // كان الحارس على ثلاثيّ `AGENT_PULSE_RGB` في بطاقات «الوكلاء على
+    // المناوبة»، وقد أُزيلت هي وثلاثيّها ٢٠٢٦/٠٨/٠٩ بقرار المالك. القاعدة
+    // أوسع من حاملها: أي لكنة تُمرَّر لدائرة نبض على هذه الصفحة تبقى ممنوعة
+    // من رموز `--tone-*`، ولكنات المناطق تأتي قيمًا صريحة من regions.ts.
+    expect(PAGE).not.toMatch(/accent=\{`?var\(--tone-/);
     // والعلاج يبقى واحدًا لكل اللكنات — لا استثناء يُفلت أيقونةً منه.
     expect(CSS).not.toContain("nx-pulse-icon--themed");
   });
@@ -276,9 +323,12 @@ describe("المُخطَّط — الاقتطاع من حزمة الدخول", (
 
 describe("المُخطَّط — أرضيّتا القراءة واللمس", () => {
   /**
-   * سقطتا في فحص الإنتاج (`scripts/ui-audit.mjs`) بـ ٨ من ٣٢ تركيبة، وقيستا
-   * محليًّا في متصفح حقيقي على ٣٧٥ و٣٩٠ و٧٦٨ و١٤٤٠ و١٩٢٠ قبل التصحيح:
-   * لافتات العدّادات ١١px مرسومة، ورابط المسرح ١٤٦×٣٤.
+   * سقط رابط المسرح في فحص الإنتاج (`scripts/ui-audit.mjs`)، وقيس محليًّا في
+   * متصفح حقيقي على ٣٧٥ و٣٩٠ و٧٦٨ و١٤٤٠ و١٩٢٠ قبل التصحيح: ١٤٦×٣٤.
+   *
+   * (كان هنا بندٌ ثانٍ يحرس لافتات العدّادات عند ١٢px — سقطت معها لأن شريط
+   * `.nx-bp-counter` نفسه حُذف بقرار المالك ٢٠٢٦/٠٨/٠٩. البند أدناه يحرس
+   * الحذف نفسه: أرضيةُ قراءةٍ لسطحٍ غير موجود حراسةٌ لفراغ.)
    *
    * الفحص هنا على النصّ لا على التخطيط — jsdom لا يقيس شيئًا من هذا،
    * وميدانُ القياس الحقيقي هو `ui-audit`. قيمته أنه يمنع العودة الصامتة
@@ -289,12 +339,6 @@ describe("المُخطَّط — أرضيّتا القراءة واللمس", ()
     expect(at, `القاعدة ${selector} غير موجودة`).toBeGreaterThan(-1);
     return CSS.slice(at, CSS.indexOf("\n}", at));
   };
-
-  it("لافتات العدّادات ≥ ١٢px — أرضية القراءة الوظيفية", () => {
-    const size = rule(".nx-bp-counter span").match(/font-size:\s*([\d.]+)px/);
-    expect(size, "لا حجم خطّ مصرَّح").not.toBeNull();
-    expect(Number(size![1])).toBeGreaterThanOrEqual(12);
-  });
 
   it("رابط المسرح ≥ ٤٤px — أرضية الإبهام والمؤشّر معًا", () => {
     const h = rule(".nx-bp-more").match(/min-block-size:\s*([\d.]+)px/);
@@ -309,5 +353,18 @@ describe("المُخطَّط — أرضيّتا القراءة واللمس", ()
     const audit = read("scripts/ui-audit.mjs");
     expect(audit).toContain("getScreenCTM");
     expect(audit).toMatch(/parseFloat\(cs\.fontSize\) \* scale/);
+  });
+
+  it("شريط العدّادات ومسطرة الوحدة محذوفان بلا تركة (قرار المالك ٢٠٢٦/٠٨/٠٩)", () => {
+    // الحذف يُحرَس كما تُحرَس الإضافة: صنفٌ باقٍ في CSS بلا حاملٍ في الترميز
+    // يعود سطحًا حيًّا بأول لصقٍ لاحق، ومكوّنٌ مُصدَّر بلا مستهلك يُعاد
+    // استيراده لأنه «موجود». الأرقام نفسها تبقى في لوحات `.nx-bp-panel`.
+    expect(PAGE).not.toContain("nx-bp-counters");
+    expect(PAGE).not.toContain("nx-bp-counter");
+    expect(PAGE).not.toContain("MeasureRail");
+    expect(PANELS).not.toMatch(/export\s+function\s+MeasureRail/);
+    for (const sel of [".nx-bp-counters", ".nx-bp-counter", ".nx-bp-rail"]) {
+      expect(CSS.indexOf(`${sel} {`), `${sel} بقي في الأنماط بلا حامل`).toBe(-1);
+    }
   });
 });

@@ -376,14 +376,14 @@ const ACTIONS = [
   {
     id: "finn.chat.open",
     surface: "finn",
-    labelAr: "فتح محادثة FINN",
+    labelAr: "فتح محادثة سَدِيد",
     effect: "open-finn-chat",
     permission: "finn.use",
   },
   {
     id: "finn.chat.send",
     surface: "finn",
-    labelAr: "إرسال رسالة إلى FINN",
+    labelAr: "إرسال رسالة إلى سَدِيد",
     effect: "open-finn-chat",
     permission: "finn.use",
   },
@@ -397,7 +397,7 @@ const ACTIONS = [
   {
     id: "finn.voice.toggle",
     surface: "finn",
-    labelAr: "بدء أو إيقاف التحدث مع FINN",
+    labelAr: "بدء أو إيقاف التحدث مع سَدِيد",
     effect: "toggle-voice",
     permission: "finn.voice",
   },

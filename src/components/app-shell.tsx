@@ -3,33 +3,33 @@ import {
   Activity,
   BarChart3,
   Bot,
+  Boxes,
   Building2,
-  Camera,
+  Cctv,
   Compass,
-  Crown,
   FileText,
+  FolderKanban,
   FolderOpen,
+  Footprints,
   Gauge,
   Grid3x3,
   Home,
+  LayoutDashboard,
   Map as MapIcon,
   LogOut,
   LogIn,
-  MapPin,
   Menu,
   Mic,
-  Moon,
-  Network,
   Plug,
   Radar,
   RadioTower,
-  Rocket,
   Settings,
   Shield,
   ShieldAlert,
+  ShieldUser,
   Siren,
   Sparkles,
-  Sun,
+  Waypoints,
   Wrench,
   ExternalLink as ExternalLinkIcon,
 } from "lucide-react";
@@ -221,31 +221,42 @@ function useNavGroups(): NavGroup[] {
         // العمليات», which is /situation-room's name, so two sidebar entries
         // read the same and landed elsewhere. See lib/nav/screen-names.ts.
         { to: "/sec", icon: Activity, label: ar(screenNameAr("/sec"), screenNameEn("/sec")) },
-        { to: "/sec/exec", icon: Crown, label: ar("اللوحة التنفيذية", "Exec Dashboard") },
+        // «اللوحة التنفيذية» لوحة مؤشرات لا تاج: `Crown` كانت تقول «امتياز»
+        // لا «لوحة»، وهي دلالة لا وجود لها في الشاشة نفسها.
+        { to: "/sec/exec", icon: LayoutDashboard, label: ar("اللوحة التنفيذية", "Exec Dashboard") },
         { to: "/sec/circles", icon: Building2, label: ar("الدوائر", "Circles") },
         { to: "/sec/sections", icon: Grid3x3, label: ar("الأقسام", "Sections") },
-        { to: "/sec/projects", icon: Rocket, label: ar("المشاريع", "Projects") },
+        // `Rocket` = إطلاق، لا **إدارة** مشاريع. لوح المشاريع هو الدلالة.
+        { to: "/sec/projects", icon: FolderKanban, label: ar("المشاريع", "Projects") },
         { to: "/sec/maintenance", icon: Wrench, label: ar("الصيانة", "Maintenance") },
-        { to: "/hcis", icon: Shield, label: ar("الامتثال HCIS", "HCIS Compliance") },
+        // «الامتثال HCIS» (/hcis) DELETED by owner directive ٢٠٢٦/٠٨/٠٩ — the
+        // screen, its route, its icon and its data layer were removed from the
+        // tree entirely. This is a deletion, not a hide: no hidden-routes entry
+        // and no redirect stub exist for it.
         // «تصاريح العمل الرقمية» (/ptw) HIDDEN by owner directive — غير قابلة
         // للتطبيق حالياً. See src/lib/nav/hidden-routes.ts. Note /sec/permits
         // («التصاريح») is a DIFFERENT screen and stays visible.
         { to: "/sec/incidents", icon: ShieldAlert, label: ar("البلاغات", "Incidents") },
-        { to: "/sec/patrols", icon: Radar, label: ar("الدوريات", "Patrols") },
-        { to: "/sec/cctv", icon: Camera, label: ar("CCTV", "CCTV") },
+        // الدورية جولةٌ راجلة، والرادار كشفٌ عن بُعد — و`Radar` أيقونة «غرفة
+        // العمليات» في السجل الكانوني، فقرأ البندان بأيقونة واحدة.
+        { to: "/sec/patrols", icon: Footprints, label: ar("الدوريات", "Patrols") },
+        // `Cctv` كاميرا مراقبة فعليًّا؛ `Camera` كاميرا تصوير.
+        { to: "/sec/cctv", icon: Cctv, label: ar("CCTV", "CCTV") },
         { to: "/sec/kpi", icon: BarChart3, label: ar("مؤشرات الأداء", "KPIs") },
-        { to: "/sec/twin", icon: Network, label: ar("التوأم الرقمي", "Digital Twin") },
+        // الاسم نفسه («التوأم الرقمي») في السجل الكانوني يحمل `Boxes` — واسمٌ
+        // واحد بأيقونتين انحرافٌ في الهوية (المادة 13.5).
+        { to: "/sec/twin", icon: Boxes, label: ar("التوأم الرقمي", "Digital Twin") },
       ],
     },
     {
       label: ar("الذكاء", "Intelligence"),
       items: [
-        { to: "/finn", icon: Sparkles, label: ar("FINN", "FINN") },
+        { to: "/finn", icon: Sparkles, label: ar("سَدِيد", "SADEED") },
         { to: "/voice", icon: Mic, label: ar("المساعد الصوتي", "Voice Assistant") },
         { to: "/agents", icon: Bot, label: ar("منصة عمليات الوكلاء", "Agent Operations Platform") },
         // هاتان الشاشتان كانتا موجودتين بلا رابط في أي سطح تنقّل، فلم يكن
         // للمالك سبيل لبلوغهما إلا بكتابة العنوان يدويًا (بندا المراجعة 52 و54).
-        { to: "/finn-analytics", icon: BarChart3, label: ar("تحليلات FINN", "FINN Analytics") },
+        { to: "/finn-analytics", icon: BarChart3, label: ar("تحليلات سَدِيد", "SADEED Analytics") },
         { to: "/observability", icon: RadioTower, label: ar("الرصد والتكاليف", "Observability") },
       ],
     },
@@ -254,14 +265,18 @@ function useNavGroups(): NavGroup[] {
       items: [
         { to: "/sec/reports", icon: FileText, label: ar("التقارير", "Reports") },
         { to: "/integrations", icon: Plug, label: ar("التكاملات", "Integrations") },
-        { to: "/connect", icon: Bot, label: ar("ربط الوكلاء (MCP)", "Agent Connect (MCP)") },
+        // `Bot` أيقونة **منصة الوكلاء** نفسها أعلاه؛ وهذا البند رابطٌ لا وكيل —
+        // فِعلُه الوصل (MCP) لا التشغيل.
+        { to: "/connect", icon: Waypoints, label: ar("ربط الوكلاء (MCP)", "Agent Connect (MCP)") },
         { to: "/files", icon: FolderOpen, label: ar("الملفات", "Files") },
       ],
     },
     {
       label: ar("الإدارة", "Administration"),
       items: [
-        { to: "/admin", icon: Shield, label: ar("لوحة الإدارة", "Admin Panel") },
+        // `Shield` أيقونة وحدة **الأمن الصناعي** الكانونية؛ ولوحة الإدارة
+        // إدارةُ مستخدمين وأدوار لا وحدةُ أمن صناعي.
+        { to: "/admin", icon: ShieldUser, label: ar("لوحة الإدارة", "Admin Panel") },
         { to: "/settings", icon: Settings, label: ar("الإعدادات", "Settings") },
       ],
     },

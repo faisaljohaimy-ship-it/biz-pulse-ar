@@ -108,8 +108,11 @@ describe("FINN greeting regression — the shipped greetings", () => {
         .replace(/[\u064B-\u0652\u0670]/g, "")
         .replace(/\s+/g, " ")
         .trim();
-    expect(bare(FINN_CONVERSATION_GREETING_AR_TTS)).toContain("فن");
-    expect(bare(FINN_CONVERSATION_GREETING_AR)).toContain("فن");
+    // Owner directive 2026-08-09: the spoken self-name is «سَدِيد», the same
+    // word as the product. Compared undiacritised because the TTS twin carries
+    // full تشكيل and the display form does not.
+    expect(bare(FINN_CONVERSATION_GREETING_AR_TTS)).toContain("سديد");
+    expect(bare(FINN_CONVERSATION_GREETING_AR)).toContain("سديد");
   });
 });
 

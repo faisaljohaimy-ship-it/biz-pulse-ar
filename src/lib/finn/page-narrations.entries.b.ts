@@ -37,10 +37,10 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/finn/demo",
     n(
-      "عرض FINN التنفيذي",
-      "FINN Executive Demo",
-      "مشاهد حيّة تُظهر كفاءة FINN في اتخاذ القرار",
-      "live scenes that showcase FINN's decision throughput",
+      "عرض سَدِيد التنفيذي",
+      "SADEED Executive Demo",
+      "مشاهد حيّة تُظهر كفاءة سَدِيد في اتخاذ القرار",
+      "live scenes that showcase SADEED's decision throughput",
       "تجربة مباشرة لقدرات النظام دون بيئة اختبار منفصلة",
       "hands-on capability experience with no separate sandbox",
     ),
@@ -48,21 +48,21 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/finn/directive",
     n(
-      "لوحة الميثاق التنفيذي لFINN",
-      "FINN Executive Directive",
+      "لوحة الميثاق التنفيذي لسَدِيد",
+      "SADEED Executive Directive",
       "المواثيق، الحوكمة، ومسارات التطوّر",
       "the charter, governance, and evolution paths",
-      "شفافية كاملة لسلطة FINN وقيودها",
-      "full transparency of FINN's authority and boundaries",
+      "شفافية كاملة لسلطة سَدِيد وقيودها",
+      "full transparency of SADEED's authority and boundaries",
     ),
   ],
   [
     "/finn-documents",
     n(
-      "وثائق FINN",
-      "FINN Documents",
-      "المستندات المُغذّية لذاكرة FINN",
-      "documents that feed FINN's memory",
+      "وثائق سَدِيد",
+      "SADEED Documents",
+      "المستندات المُغذّية لذاكرة سَدِيد",
+      "documents that feed SADEED's memory",
       "قرارات مبنية على مصادر معرفة موثّقة",
       "decisions grounded in cited knowledge sources",
     ),
@@ -70,8 +70,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/finn",
     n(
-      "واجهة FINN",
-      "FINN Console",
+      "واجهة سَدِيد",
+      "SADEED Console",
       "محادثة تنفيذية مباشرة مع المحرّك",
       "a direct executive conversation with the engine",
       "استشارة فورية بلغة القرار",
@@ -81,8 +81,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/assistant",
     n(
-      "مساعد FINN التنفيذي",
-      "FINN Executive Assistant",
+      "مساعد سَدِيد التنفيذي",
+      "SADEED Executive Assistant",
       "المحادثات، السياق، والإجراءات المُنجَزة",
       "conversations, context, and completed actions",
       "تنفيذ مهام بدلاً من مجرّد الإجابة عليها",
@@ -377,8 +377,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   [
     "/memory",
     n(
-      "ذاكرة FINN",
-      "FINN Memory",
+      "ذاكرة سَدِيد",
+      "SADEED Memory",
       "السياق طويل الأمد والحقائق المؤسسية",
       "long-term context and enterprise facts",
       "استمرارية معرفية عبر كل تفاعل",
@@ -412,8 +412,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
     n(
       "رفع المعرفة",
       "Knowledge Upload",
-      "استيراد مستندات جديدة لذاكرة FINN",
-      "ingest new documents into FINN's memory",
+      "استيراد مستندات جديدة لذاكرة سَدِيد",
+      "ingest new documents into SADEED's memory",
       "توسيع نطاق ذكاء المؤسسة بسرعة",
       "expand enterprise intelligence quickly",
     ),

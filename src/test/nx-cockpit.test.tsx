@@ -261,11 +261,11 @@ describe("executive cockpit — interactions", () => {
 
   it("voice + chat buttons route to the ONE FINN integration (store command)", async () => {
     await renderCockpit();
-    fireEvent.click(screen.getByRole("button", { name: "تحدث إلى FINN" }));
+    fireEvent.click(screen.getByRole("button", { name: "تحدث إلى سديد" }));
     expect(useFinnStore.getState().pendingCommands.some((c) => c.kind === "open")).toBe(true);
 
     useFinnStore.setState({ pendingCommands: [] });
-    fireEvent.click(screen.getByRole("button", { name: "محادثة FINN" }));
+    fireEvent.click(screen.getByRole("button", { name: "محادثة سَدِيد" }));
     expect(useFinnStore.getState().pendingCommands.some((c) => c.kind === "open")).toBe(true);
   });
 

@@ -5386,64 +5386,16 @@ html.dark .nx-holo-noise {
   opacity: 0.055;
 }
 
-/* ── المسطرة ────────────────────────────────────────────────────────────── */
+/* (── المسطرة ── : `.nx-bp-rail` و`.nx-bp-rail-sweep` و`@keyframes nxBpSweep`
+   أُزيلت ٢٠٢٦/٠٨/٠٩ مع مكوّن `MeasureRail` الذي كان حاملها الوحيد.) */
 
-.nx-bp-rail {
-  overflow: hidden;
-  background-image:
-    repeating-linear-gradient(to left, var(--bp-line-strong) 0 1px, transparent 1px 64px),
-    repeating-linear-gradient(to left, var(--bp-line) 0 1px, transparent 1px 8px);
-  background-size:
-    100% 12px,
-    100% 6px;
-  background-position: bottom;
-  background-repeat: repeat-x;
-}
-
-/* المسحة تُعلن أن السطح حيّ. تسير من اليمين لأن الوثيقة عربية. */
-.nx-bp-rail-sweep {
-  position: absolute;
-  inset-block: 0;
-  inline-size: 14%;
-  background: linear-gradient(
-    to left,
-    transparent,
-    color-mix(in srgb, var(--tone-cyan) 34%, transparent),
-    transparent
-  );
-  animation: nxBpSweep 9s linear infinite;
-}
-
-@keyframes nxBpSweep {
-  from {
-    translate: 130% 0;
-  }
-  to {
-    translate: -360% 0;
-  }
-}
-
-/* ── المسرح: دخول الطبقات متتابعًا ──────────────────────────────────────── */
-
-.nx-bp-stage {
-  animation: nxBpRise var(--nx-anim-cinematic) var(--nx-ease-out) both;
-  animation-delay: calc(var(--nx-bp-i, 0) * 90ms);
-}
-
-/* دخولٌ بتوقيع إميل كوالسكي: مسافة أصغر (10px لا 16) مع ضبابية خاطفة
-   تذوب — الحركة تُحسّ ولا تُرى، والعنصر «يتكوّن» لا «يصل». */
-@keyframes nxBpRise {
-  from {
-    opacity: 0;
-    translate: 0 10px;
-    filter: blur(6px);
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-    filter: blur(0);
-  }
-}
+/* ── المسرح: بلا دخول متدرّج (قرار المالك ٢٠٢٦/٠٨/٠٩) ────────────────────────
+   بطاقات الرئيسية ولوحاتها تُرسم ساكنة من أول إطار: لا `nxBpRise` ولا تأخير
+   متتابع بـ`--nx-bp-i`. الصنفان `.nx-bp-stage` و`.nx-bp-panel` يبقيان في
+   الترميز حاملَي بنية لا حركة، وإطارات `nxBpRise` أُزيلت معهما لأنهما كانا
+   مستهلكيها الوحيدين — وبقاء إطارات بلا مستهلك تركةٌ ميتة لا احتياط.
+   والدخول المحذوف كان يترك البطاقة شفافة ومزاحة حتى ينتهي؛ بغيابه لا حاجة
+   إلى إنقاذها بـ`opacity: 1` عند تقليل الحركة. */
 
 /* ── الوردة ─────────────────────────────────────────────────────────────── */
 
@@ -5537,11 +5489,6 @@ html.dark .nx-holo-noise {
 
 /* ── لوحات القياس ───────────────────────────────────────────────────────── */
 
-.nx-bp-panel {
-  animation: nxBpRise var(--nx-anim-cinematic) var(--nx-ease-out) both;
-  animation-delay: calc(360ms + var(--nx-bp-i, 0) * 90ms);
-}
-
 /* زاوية القصّ — علامة الرسم الهندسي، على ركن بدء القراءة (أعلى اليمين في
    العربية) لأنها أول ما تلقاه العين. الخصائص منطقية لا فيزيائية، فتنقلب
    وحدها لو صار المستند من اليسار. */
@@ -5588,18 +5535,11 @@ html.dark .nx-holo-noise {
 /* الحركة تسقط إلى حالتها النهائية، لا إلى العدم: من يطلب تقليل الحركة يريد
    السكون لا الفراغ. */
 @media (prefers-reduced-motion: reduce) {
-  .nx-bp-stage,
-  .nx-bp-panel,
   .nx-bp-arc {
     animation: none !important;
     opacity: 1;
     translate: none;
     stroke-dashoffset: 0;
-  }
-
-  .nx-bp-rail-sweep {
-    animation: none !important;
-    opacity: 0;
   }
 }
 
@@ -5626,8 +5566,7 @@ html.dark .nx-holo-noise {
   }
 
   .nx-bp-surface::before,
-  .nx-bp-compass,
-  .nx-bp-rail-sweep {
+  .nx-bp-compass {
     display: none;
   }
 }
@@ -5905,42 +5844,21 @@ html.dark .nx-holo-noise {
     0 0 24px -14px color-mix(in srgb, var(--bp-accent) 55%, transparent);
 }
 
-/* شريط النبض الحي */
-.nx-bp-counters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
+/* (شريط النبض الحي — `.nx-bp-counters` وبطاقاته الأربع `.nx-bp-counter`
+   («وكلاء نشطون» · «عاجل مفتوح» · «بانتظار الاعتماد» · «منجز اليوم») —
+   أُزيل بقرار المالك ٢٠٢٦/٠٨/٠٩ مع المسطرة فوقه. أرقامه نفسها تبقى مقروءة
+   في لوحات `.nx-bp-panel` أسفل الصفحة، فلا قياس فُقد بحذفه.) */
 
-.nx-bp-counter {
-  display: flex;
-  min-block-size: 46px;
-  flex-direction: column;
-  justify-content: center;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--tone-cyan) 30%, var(--hairline));
-  background: linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
-  padding-inline: 14px;
-  box-shadow:
-    inset 0 1px 0 var(--glass-rim),
-    0 0 18px -10px color-mix(in srgb, var(--tone-cyan) 60%, transparent);
-}
-
-.nx-bp-counter b {
-  font-size: 17px;
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
+/* فقرة تعريف المنتج تحت العلامة (بند المالك ٢٠٢٦/٠٨/٠٩) — نصٌّ أساسي لا
+   ثانوي: حبره `--ink` من طبقة الرموز، لا `--ink-3` الذي وُضع للتوابع، فيبقى
+   فوق ٤٫٥:١ في الوضعين على السطح الساكن (WCAG 1.4.3). و١٥px فوق أرضية
+   القراءة ١٢px التي يقيسها `scripts/ui-audit.mjs`. */
+.nx-bp-lede {
+  max-inline-size: 62ch;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 600;
   color: var(--ink);
-}
-
-/* ١٢px لا ١١: أرضية القراءة الوظيفية (`MIN_FONT` في `scripts/ui-audit.mjs`).
-   وهذه لافتات العدّادات الأربع على الرئيسية — «وكلاء نشطون» و«عاجل مفتوح»
-   و«بانتظار الاعتماد» و«منجز اليوم» — أي أصغر نصّ يقرؤه مديرٌ تنفيذي على
-   أول شاشة. قيس أنها ١١px مرسومة فعلًا لا مصرَّحة (على ٣٧٥ و٣٩٠ و٧٦٨
-   و١٤٤٠ و١٩٢٠)، فالعطل حقيقي لا وهمَ قياس. */
-.nx-bp-counter span {
-  font-size: 12px;
-  color: var(--ink-3);
 }
 
 /* عناوين الأقسام المضافة وزرّ المسرح — رقاقة زجاجية بحبر كامل: نص 14px
@@ -6028,44 +5946,8 @@ html.dark .nx-holo-noise {
   border-color: var(--tone-cyan);
 }
 
-/* بطاقات وكلاء المناوبة — زجاج بلهجة متغيّرة (--op-hue اسم رمز). */
-.nx-bp-agent {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-inline-size: 0;
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--op-hue) 36%, var(--hairline));
-  background: linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box;
-  padding: 12px 14px;
-  box-shadow:
-    inset 0 1px 0 var(--glass-rim),
-    0 0 22px -12px color-mix(in srgb, var(--op-hue) 60%, transparent);
-  transition: border-color var(--nx-anim-fast) var(--nx-ease-out);
-}
-
-.nx-bp-agent:hover {
-  border-color: var(--op-hue);
-}
-
-.nx-bp-agent b {
-  min-inline-size: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--ink);
-}
-
-.nx-bp-agent i {
-  font-style: normal;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 11.5px;
-  color: var(--ink-3);
-}
+/* (بطاقات «الوكلاء على المناوبة» `.nx-bp-agent` — ولهجتها `--op-hue` —
+   أُزيلت ٢٠٢٦/٠٨/٠٩ بقرار المالك: القسم كلّه حُذف من الرئيسية.) */
 
 .nx-bp-hub-ring {
   stroke: color-mix(in srgb, var(--tone-cyan) 60%, var(--hairline));
@@ -6094,75 +5976,16 @@ html.dark .nx-holo-noise {
     0 0 24px -16px color-mix(in srgb, var(--tone-cyan) 30%, transparent);
 }
 
-.nx-bp-counter,
-.nx-bp-agent {
-  position: relative;
-  isolation: isolate;
-  backdrop-filter: blur(14px) saturate(1.3);
-  -webkit-backdrop-filter: blur(14px) saturate(1.3);
-  transition: border-color var(--nx-anim-fast) var(--nx-ease-out);
-}
-
-.nx-bp-counter:hover {
-  border-color: var(--tone-cyan);
-}
-
-/* نبض المؤسسة — إخراج حركي واحد (قرار المالك ٢٠٢٦/٠٨/٠٤):
-   موجة بريق تعبر البطاقة سريعًا في أول ثلث الدورة ثم تسكن خارج الإطار،
-   وكل عنصر يتأخر عن جاره ١٨٠م.ث فيُرى النبض يسري عبر الصفحة عضوًا
-   عضوًا — لا وميضًا متزامنًا. المنحنى منحنى النظام الواحد. */
-.nx-bp-card::before,
-.nx-bp-counter::after,
-.nx-bp-agent::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(115deg, transparent 38%, var(--glass-rim) 50%, transparent 62%);
-  background-size: 280% 100%;
-  background-position: 140% 0;
-  opacity: 0.8;
-  /* ذهاب وإياب (قرار المالك): اللمعة تعبر البطاقة ثم تعود أدراجها —
-     تناوبٌ بمنحنى جيبي فيتباطأ الانعطاف عند الطرفين طبيعيًّا. */
-  animation: nxBpSheen 5s ease-in-out infinite alternate;
-  animation-delay: calc(var(--pulse-i, var(--nx-bp-i, 0)) * 0.45s);
-}
-
-/* تنفّس الطفو — البطاقة ترتفع ٤px وتحطّ بهدوء، كلٌّ بطور مختلف. */
-.nx-bp-float {
-  animation: nxBpFloat 6s ease-in-out infinite;
-  animation-delay: calc(var(--pulse-i, 0) * -0.9s);
-}
-
-@keyframes nxBpFloat {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 -4px;
-  }
-}
+/* (`nxBpFloat` — تنفّس الطفو الدائم على البطاقات — و`.nx-bp-card::before`
+   حاملة لمعة `nxBpSheen` العابرة، أُزيلتا ٢٠٢٦/٠٨/٠٩ بقرار المالك: بطاقات
+   الرئيسية ساكنة. الإطارات `nxBpSheen` باقية لأن بطاقات التوأم
+   `.nx-tw-card` ما زالت تستهلكها، أمّا `nxBpFloat` فذهبت مع
+   مستهلكها الوحيد. ويبقى `.nx-bp-float` صنفَ تفاعلٍ لا حركة: انتقال المقياس
+   عند التمرير والضغط أدناه تغذيةٌ راجعة، وحذفه ضررٌ وصولي لا تحسين.) */
 
 /* (`nxBpIconBeat` — خفقة الشفافية على رموز اللوحات وأشرطة المناطق — أُزيلت
    ٢٠٢٦/٠٨/٠٦ مع حامليها: صارت الأيقونات دوائر نبض تحمل حركتها في طبقتها
    الخاصة، فبقاء الإطارات بلا مستهلك تركةٌ ميتة لا احتياط.) */
-
-/* فوق الأبيض تختفي اللمعة البيضاء — تُستبدل بلمعة سماوية من طبقة الرموز
-   بكثافة أعلى، فتُرى الجمالية في الوضع الفاتح بوضوح. background-image
-   وحدها كي لا يُصفَّر مقاس الخلفية وموضعها الموروثان من القاعدة. */
-.light .nx-bp-card::before,
-.light .nx-bp-counter::after,
-.light .nx-bp-agent::after {
-  background-image: linear-gradient(
-    115deg,
-    transparent 36%,
-    color-mix(in srgb, var(--tone-cyan) 24%, transparent) 50%,
-    transparent 64%
-  );
-  opacity: 0.95;
-}
 
 @keyframes nxBpSheen {
   0% {
@@ -6262,52 +6085,32 @@ html.dark .nx-holo-noise {
   opacity: 0.4;
 }
 
-/* ── المحرك الهولوغرامي الحي (قرار المالك ٢٠٢٦/٠٨/٠٤) ───────────────────
-   ست طبقات: فيديو ← غطاء سينمائي ← نسيج ← زجاج البطاقات ← توهّج حي ←
-   واجهة. الفيديو لا يُرى صريحًا إلا عبر backdrop-filter الزجاج، وتوهّجات
-   السطح ترث لون اللحظة من عيّنة الفيديو (--live-rgb) بسقوط سماوي. */
+/* ── خلفية النظام — سطح داكن ثابت (قرار المالك ٢٠٢٦/٠٨/٠٩) ───────────────
+   كانت ست طبقات أوّلها فيلم صامت بحلقة دائمة، فوقه غطاء سينمائي يحفظ قراءة
+   الحبر. أمر المالك: خلفية ثابتة وغامقة فقط. فسقط الفيلم، وسقط معه الغطاء
+   لأنه لم يوجد إلا ليُخفّف مشهدًا متحرّكًا عالي التباين تحت النصّ — ولا
+   مشهد بعده. بقيت طبقتان ساكنتان: السطح ثم النسيج، وتحتهما زجاج البطاقات.
 
-/* قرار المالك ٢٠٢٦/٠٨/٠٥ (الأخير): الفيلم يملأ الواجهة كلها بلا قصّ —
-   fill يمدّ الإطار على مقاس الشاشة تمامًا فيبقى المشهد كاملًا قريبًا. */
+   والعمق لم يُفقد بذهاب الغطاء: تدرّجه الرأسي انطوى في السطح نفسه أدناه. */
+
+/* السطح من رموز الوضعين لا من لون مكتوب: `--surface`/`--surface-2` معرَّفان
+   في `:root` و`.light` معًا (المواد ٣٢–٣٤)، فالطبقة داكنة في الوضع الداكن
+   وبيضاء في الفاتح بلا قاعدة ثانية. واللكنة السماوية تُقرأ من `--live` —
+   ولها سقوط `--tone-cyan` — وهي اليوم قيمة ساكنة بعد أن توقّفت عيّنة
+   الفيديو الحية عن كتابة `--live-rgb`. */
 .nx-hv {
-  background: radial-gradient(
-    58% 52% at 50% 46%,
-    color-mix(in srgb, var(--live, var(--tone-cyan)) 16%, transparent),
-    transparent 76%
-  );
-}
-
-.nx-hv-video {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  object-fit: fill;
-  opacity: 1;
-}
-
-/* الغطاء السينمائي — أخف ما يحفظ قراءة الحبر (قرار المالك: الفيلم يُرى
-   بوضوح كاملًا في الوضعين، والبطاقات الزجاجية تصون نصوصها بنفسها). */
-.nx-hv-veil {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--surface) 19%, transparent),
-    color-mix(in srgb, var(--surface) 11%, transparent) 40%,
-    color-mix(in srgb, var(--surface) 24%, transparent)
-  );
-}
-
-/* الوضع الفاتح بمعامل وضوح ١٫٥ (قرار المالك): الغطاء يخفّ بمقدار الثُّلث
-   فيزداد ظهور الفيلم بمقدار النصف — والحبر محمول على زجاجه فيبقى مقروءًا. */
-.light .nx-hv-veil {
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--surface) 22%, transparent),
-    color-mix(in srgb, var(--surface) 18%, transparent) 45%,
-    color-mix(in srgb, var(--surface) 25%, transparent)
-  );
+  background:
+    radial-gradient(
+      58% 52% at 50% 46%,
+      color-mix(in srgb, var(--live, var(--tone-cyan)) 12%, transparent),
+      transparent 76%
+    ),
+    linear-gradient(
+      to bottom,
+      var(--surface) 0%,
+      color-mix(in srgb, var(--surface-2) 62%, var(--surface)) 45%,
+      var(--surface) 100%
+    );
 }
 
 .nx-hv-noise {
@@ -6317,7 +6120,10 @@ html.dark .nx-holo-noise {
   mix-blend-mode: overlay;
 }
 
-/* الإضاءة المحيطية الحية — لون اللحظة من الفيلم، وسقوطه سماوي الرموز. */
+/* لكنة الإضاءة المحيطية — كانت لون اللحظة تقرأه عيّنةٌ حيّة من إطارات
+   الفيلم. سكنت الخلفية (قرار المالك ٢٠٢٦/٠٨/٠٩) فسكن معها اللون: لا كاتب
+   لـ`--live-rgb` بعد اليوم، وقيمة السقوط السماوية هي القيمة النافذة —
+   وهي مرساة العيّنة نفسها، فلا يتبدّل توهّج البطاقات بذهابها. */
 .nx-bp-surface {
   --live: rgb(var(--live-rgb, 34 211 238));
   /* حشوة البطاقة الرقيقة — تُعرَّف مرة وتُستهلك في كل زجاج الصفحة. */
@@ -6356,104 +6162,32 @@ html.dark .nx-holo-noise {
     0 0 26px -16px color-mix(in srgb, var(--live) 35%, transparent);
 }
 
-.nx-bp-counter,
-.nx-bp-agent {
-  background: var(--card-fill) padding-box;
-  backdrop-filter: blur(9px) saturate(1.35);
-  -webkit-backdrop-filter: blur(9px) saturate(1.35);
-}
-
-.nx-bp-counter {
-  box-shadow:
-    inset 0 1px 0 var(--glass-rim),
-    0 0 20px -10px color-mix(in srgb, var(--live) 55%, transparent);
-}
-
 .nx-bp-hub-ring {
   stroke: color-mix(in srgb, var(--live) 70%, var(--tone-cyan));
 }
 
 /* الجوال: زجاج أخف وفيلم أهدأ — مظهر فاخر ببطارية رحيمة. */
 @media (max-width: 640px) {
-  .nx-bp-card,
-  .nx-bp-counter,
-  .nx-bp-agent {
+  .nx-bp-card {
     backdrop-filter: blur(12px) saturate(1.2);
     -webkit-backdrop-filter: blur(12px) saturate(1.2);
   }
-
-  /* الوضوح ١ على الجوال أيضًا (قرار المالك ٢٠٢٦/٠٨/٠٦): كان ٠٫٨٥ هنا
-     وحده، فيبهت الفيلم على الشاشة التي يُعرض عليها أكثر ما يُعرض. قراءة
-     الحبر يحرسها الغطاء `.nx-hv-veil` وزجاج البطاقات، لا تعتيم الفيلم. */
-  .nx-hv-video {
-    opacity: 1;
-  }
 }
 
-/* زر إيقاف الخلفية (WCAG 2.2.2) — رقاقة زجاجية ثابتة في الركن السفلي
-   **المقابل** لمُطلق فِن، بهدف لمس كافٍ وحلقة تركيز ظاهرة.
+/* زر إيقاف الخلفية (`.nx-hv-toggle`) حُذف بقرار المالك ٢٠٢٦/٠٨/٠٩ — ومعه
+   قواعده الست هنا: الرقاقة، والتحويم، والضغط، وحلقة التركيز، وقلب الركن
+   في الإنجليزية، وأرضية اللمس ٤٤×٤٤.
 
-   المُطلق يجلس على الحافة المنطقية `end` وهو مركَّب في جذر التطبيق، فحافته
-   الفيزيائية تتبع اتجاه <html> وحده: يسارًا في العربية ويمينًا في
-   الإنجليزية. ولأن صفحات تفرض dir محليًّا (الوكلاء مثلًا) فالخصائص
-   المنطقية هنا تكذب — الاتجاه يُقرأ من الجذر لا من الحاوية، وإلا اجتمع
-   الزران في ركن واحد على الإنجليزية. */
-.nx-hv-toggle {
-  position: fixed;
-  right: 14px;
-  left: auto;
-  bottom: calc(14px + env(safe-area-inset-bottom));
-  z-index: 40;
-  display: grid;
-  place-items: center;
-  inline-size: 38px;
-  block-size: 38px;
-  border-radius: 999px;
-  border: 1px solid var(--hairline);
-  background: var(--glass-fill);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: var(--ink-2);
-  cursor: pointer;
-  transition:
-    border-color var(--nx-anim-fast) var(--nx-ease-out),
-    color var(--nx-anim-fast) var(--nx-ease-out),
-    scale 150ms var(--nx-ease-out);
-}
-
-.nx-hv-toggle:hover {
-  border-color: var(--tone-cyan);
-  color: var(--ink);
-}
-
-.nx-hv-toggle:active {
-  scale: 0.94;
-}
-
-.nx-hv-toggle:focus-visible {
-  outline: 2px solid var(--tone-cyan);
-  outline-offset: 2px;
-}
-
-/* الإنجليزية: المُطلق ينتقل إلى اليمين، فينتقل هذا الزر إلى اليسار. */
-html[dir="ltr"] .nx-hv-toggle {
-  left: 14px;
-  right: auto;
-}
-
-/* أرضية اللمس ٤٤×٤٤ حيث الإصبع هو المؤشّر (WCAG 2.5.8) — والمكتب ذو
-   المؤشّر الدقيق يبقى عند ٣٨ بلا تضخّم. */
-@media (max-width: 640px), (pointer: coarse) {
-  .nx-hv-toggle {
-    inline-size: 44px;
-    block-size: 44px;
-  }
-}
+   **وهذا استيفاء لـWCAG 2.2.2 لا تنازلٌ عنه:** البند يوجب مخرجًا للحركة
+   الدائمة، والحركة هنا كانت الفيلم وحده. بزوال الفيلم زال موجِب الزر،
+   وبقاؤه كان سيترك في الركن هدفَ لمسٍ لا يوقف شيئًا. والركن السفلي
+   المقابل لمُطلق فِن عاد خاليًا — فلا اصطدام بين عنصرين ثابتين. */
 
 /* ── مدرسة إميل كوالسكي في التفاعل (قرار المالك ٢٠٢٦/٠٨/٠٤) ─────────────
    الاستجابة فورية والحركة محسوسة لا مرئية: تحويمٌ يرفع أو يكبّر قليلًا
    (≤2px / ≤1.5%)، وضغطةٌ تنكمش لمسيًّا (0.98)، بأزمنة 150–200م.ث وخصائص
-   مركّبة فقط — وscale لا يصادم طفو translate فيتراكبان. */
+   مركّبة فقط. هذه استجابةٌ للمستخدم لا حركةٌ تلقائية، فتبقى بعد تسكين
+   البطاقات (٢٠٢٦/٠٨/٠٩): إلغاؤها يسلب التغذية الراجعة ولا يُسكّن شيئًا. */
 
 .nx-bp-float {
   transition: scale 180ms var(--nx-ease-out);
@@ -6498,11 +6232,8 @@ html[dir="ltr"] .nx-hv-toggle {
   scale: 0.97;
 }
 
-/* الدخول أسرع وأخف — 540م.ث تكفي ليُحسّ لا ليُنتظر. */
-.nx-bp-stage,
-.nx-bp-panel {
-  animation-duration: 540ms;
-}
+/* (ضبط مدّة الدخول — 540م.ث — سقط مع الدخول نفسه ٢٠٢٦/٠٨/٠٩: لا حركة
+   يُضبط زمنها على `.nx-bp-stage` و`.nx-bp-panel` بعد تسكين البطاقات.) */
 
 /* شريط القرارات يقف تحت المؤشر — القراءة مقدَّمة على الاستعراض. */
 .nx-op-ticker:hover .nx-op-ticker-track {
@@ -6518,17 +6249,12 @@ html[dir="ltr"] .nx-hv-toggle {
   .nx-bp-ribbon,
   .nx-bp-beam,
   .nx-bp-finn-halo,
-  .nx-bp-card::before,
-  .nx-bp-counter::after,
-  .nx-bp-agent::after,
-  .nx-bp-float,
   .nx-bp-arc-tip {
     animation: none !important;
   }
 
-  .nx-bp-float {
-    translate: none;
-  }
+  /* (`.nx-bp-float` خرج من هنا ٢٠٢٦/٠٨/٠٩: لم يبقَ عليه ما يُسكَّن — ما فيه
+     انتقالُ مقياسٍ عند التمرير والضغط، وذاك استجابةٌ للمستخدم تبقى.) */
 
   .nx-bp-arc-tip {
     opacity: 1;
@@ -6539,21 +6265,18 @@ html[dir="ltr"] .nx-hv-toggle {
   .nx-bp-aurora,
   .nx-bp-halo,
   .nx-bp-beam,
-  .nx-bp-finn-halo,
-  .nx-bp-card::before,
-  .nx-bp-counter::after,
-  .nx-bp-agent::after {
+  .nx-bp-finn-halo {
     display: none;
   }
 
-  .nx-bp-card,
-  .nx-bp-counter,
-  .nx-bp-agent {
+  .nx-bp-card {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
 
-  .nx-hv-video,
+  /* النسيج وحده — عنصر الفيلم لم يعد يُركَّب (خلفية ثابتة، ٢٠٢٦/٠٨/٠٩).
+     والسطح `.nx-hv` نفسه يبقى: هو خلفية الصفحة لا زخرفةً فوقها، وإخفاؤه
+     يكشف ما تحته لا يُبسّطه. */
   .nx-hv-noise {
     display: none;
   }
@@ -6566,9 +6289,6 @@ html[dir="ltr"] .nx-hv-toggle {
   .nx-bp-ribbon,
   .nx-bp-beam,
   .nx-bp-finn-halo,
-  .nx-bp-card::before,
-  .nx-bp-counter::after,
-  .nx-bp-agent::after,
   .nx-hv,
   .nx-bp-panel::after {
     display: none;
@@ -9328,21 +9048,15 @@ html[dir="ltr"] .nx-clock-slot {
   scale: 1;
 }
 
-/* ── مفتاح الحركة الواحد (WCAG 2.2.2) ──────────────────────────────────────
-   زر إيقاف الخلفية في `HoloVideoEngine` كان يوقف الفيلم وحده، فتبقى نبضات
-   الأيقونات تعمل بعد أن يطلب المستخدم السكون صراحةً. صار الزر يكتب
-   `data-nx-motion="off"` على الجذر، فتسكن معه كل الحركة الزخرفية الدائمة
-   على الصفحة بمفتاح واحد ظاهر ومحفوظ — لا مفتاح لكل عنصر. */
-/* الفيلم نفسه أولى ما تُسكِته الراية، وكان غائبًا عنها:
-   السكربت المانع في `__root.tsx` يقرأ `nx-holo-bg` ويكتب الراية **قبل أول
-   رسم**، بينما حالة React لا تُقرأ إلا بعد الترطيب. فمن أوقف الخلفية صراحةً
-   كان يراها تعمل من جديد ثوانيَ عند كل فتح — والزرّ هو آلية الوصول الوحيدة
-   هنا بعد أن أُلغيت الاستجابة لـ prefers-reduced-motion. هذه القاعدة تُغلق
-   الفجوة قبل الرسم؛ ثم يفكّ الترطيب العنصر نفسه. */
-html[data-nx-motion="off"] .nx-hv-video {
-  display: none;
-}
+/* ── راية سكون الحركة `data-nx-motion="off"` ──────────────────────────────
+   كانت تُكتب من زر إيقاف الخلفية، وأولى ما تُسكِته الفيلم. وقد حُذف الزر
+   والفيلم معًا (قرار المالك ٢٠٢٦/٠٨/٠٩)، فسقطت معهما قاعدة
+   `html[data-nx-motion="off"] .nx-hv-video` — عنصرٌ لم يعد يُركَّب.
 
+   والراية نفسها تبقى عاملةً هنا وفي `icon-motion.css` و`LottieIcon`
+   و`RouteTransition`: هي سطحُ التحكم البرمجي في الحركة الزخرفية، ولا كاتب
+   لها اليوم في الواجهة. والحركة الباقية (النبضات والأيقونات) يحرسها
+   `prefers-reduced-motion` أدناه — وهو مخرجٌ حيّ لا يعتمد على زرّ محذوف. */
 html[data-nx-motion="off"] .nx-pulse-halo,
 html[data-nx-motion="off"] .nx-pulse-spark {
   animation: none;
@@ -10427,5 +10141,225 @@ html.light {
 @media (prefers-reduced-motion: reduce) {
   .nx-twin-flare {
     animation: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   لوحة المؤشرات · توصيات سَدِيد · سجل المخاطر (الصفحة الرئيسية)
+   قرار المالك ٢٠٢٦/٠٨/٠٩ — البند ٩ (عودة الداشبورد والبطاقات) والبند ١٢ب
+   (المخاطر كبيانات: بطاقات مجمّعة **و**جدول تفصيلي).
+   ───────────────────────────────────────────────────────────────────────────
+   أربع قواعد تحكم هذه الطبقة:
+
+   ① **بلا حركة على البطاقات** (البند ١٠). لا دخول متدرّج ولا طفو دائم.
+     ما يبقى هو انتقال الحدّ الموروث من `.nx-bp-card` — تغذية راجعة عند
+     التمرير والتركيز، لا زخرفة تعمل من تلقائها.
+   ② **لا لون نهائي.** كل لون رمزٌ (`--ink` · `--ink-2` · `--ink-3` ·
+     `--chip` · `--hairline*`) أو مزيجٌ منه. لكنات المناطق تصل متغيّرًا
+     (`--bp-accent`) من `regions.ts` عبر الأسلوب المضمّن، لا قيمةً نهائية.
+   ③ **الوضعان معًا.** ما يحتاج تعديلًا على الأبيض يُقيَّد بـ`.light .nx-*`
+     (نوعيّة 0,2,0) ليعلو القاعدة العامة (0,1,0) يقينًا لا احتمالًا.
+   ④ **الأرضيتان.** لا نصّ دون 12px، والجدول يُمرَّر داخل حاويته وحدها —
+     الصفحة نفسها لا تُمرَّر أفقيًّا على 390px.
+
+   نغمات الشدّة (أحمر/مثمّن · كهرماني/مثلث · أخضر/دائرة) **ليست هنا**: هي
+   في `STAT_TONES` المحروسة بـ`stat-tone.contract.test.ts`، وتصل الترميزَ
+   أصنافًا جاهزة. هذه الطبقة تعطي الشكل والمقاس فقط، فلا تُنسخ الدلالة
+   في مكانين يتباعدان.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* بطاقة اللوحة — الزجاج موروث من `.nx-bp-card`، وهذه تضبط الإيقاع الداخلي
+   وحده. `min-block-size` يمنع تفاوت ارتفاعات الشبكة حين يقصر عنوان ويطول
+   آخر، فتبقى الشبكة صفًّا مقروءًا لا سُلّمًا. */
+.nx-dash-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-block-size: 104px;
+}
+
+.nx-dash-label {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* لا `color` هنا عمدًا: بطاقات الشدّة تمرّر لون النغمة صنفًا من
+   `STAT_TONES`، ولو فرضت هذه القاعدة حبرًا لغلبته (ترتيب المصدر) فطُمس
+   الفرق بين «خطر» و«تحذير» في أهمّ موضع يظهر فيه — الرقم نفسه. الحبر
+   المحايد يُمرَّر صراحةً في الترميز حيث لا نغمة. */
+.nx-dash-value {
+  margin-block-start: 2px;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+/* الغياب لا يُصاح به كما يُصاح بالرقم: أصغر وأهدأ، وهو نصّ لا صفر. */
+.nx-dash-absent {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+
+.nx-dash-caption {
+  margin-block-start: 2px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.nx-dash-subhead {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink-2);
+}
+
+.nx-dash-empty {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-3);
+}
+
+/* رقاقة الحالة/الشدّة — الشكل والحشوة هنا، واللون والكلمة من `STAT_TONES`.
+   `gap` لأن الرقاقة تحمل أيقونة الشكل إلى جانب الكلمة في خلايا الجدول. */
+.nx-dash-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* أساس البطاقة المنغَّمة (الشدّة والتوصية).
+   **لا `background` ولا `border-color` هنا، ولا `.nx-bp-card` في الترميز.**
+   السبب بنيويّ لا ذوقيّ: أدوات Tailwind تعيش داخل `@layer utilities`، وأي
+   قاعدة **خارج الطبقات** تعلوها مهما تأخّر ترتيبها — فسطرٌ واحد من زجاج
+   `.nx-bp-card` كان يمحو `bg-red-500/10` و`border-red-500/50` معًا، فيستوي
+   «خطر» و«تحذير» في الخلفية والحدّ وينهار نصف عقد النغمات بلا سقوط أي فحص
+   (jsdom لا يحسب تعارض الطبقات). الحدّ والخلفية يبقيان مِلكًا للنغمة وحدها،
+   وهذه القاعدة تعطي العمق والإيقاع الداخلي فقط. */
+.nx-risk-card,
+.nx-dash-rec {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px -20px rgb(2 8 17 / 0.5);
+}
+
+.light .nx-risk-card,
+.light .nx-dash-rec {
+  box-shadow: 0 8px 24px -20px rgb(15 23 42 / 0.26);
+}
+
+.nx-dash-rec-title {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.nx-dash-rec-line {
+  margin-block-start: 8px;
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--ink-2);
+}
+
+.nx-dash-rec-line b {
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* فتحة المساعد — حاوية مركزية جاهزة، تنطوي كلّيًّا وهي فارغة.
+   بغير `:empty` يبقى صندوقٌ بلا محتوى وفجوةٌ رأسية على الإنتاج إلى أن
+   يصلها المكوّن؛ وبها لا يرى المستخدم أثرًا لموضعٍ لم يُملأ بعد. */
+.nx-dash-slot:empty {
+  display: none;
+}
+
+/* ── سجل المخاطر ─────────────────────────────────────────────────────── */
+
+/* بطاقة المنطقة: خيط اللكنة على الحافة الابتدائية — يقرأ في RTL يمينًا
+   وفي LTR يسارًا بلا قاعدة ثانية. */
+.nx-risk-region {
+  --risk-accent-eff: var(--bp-accent);
+  border-inline-start: 3px solid color-mix(in srgb, var(--risk-accent-eff) 72%, transparent);
+}
+
+/* اللكنات مصمّمة على الكحلي؛ على الأبيض تسقط تباينًا للعناصر الرسومية
+   (WCAG 2.2 §1.4.11 يطلب 3:1). تُمزج نحو الحبر بنفس علاج `.light .nx-bp-*`. */
+.light .nx-risk-region {
+  --risk-accent-eff: color-mix(in srgb, var(--bp-accent) 58%, var(--ink));
+}
+
+/* التمرير الأفقي محبوس في الحاوية: `overscroll-behavior-inline: contain`
+   يمنع تسرّب إيماءة التمرير إلى الصفحة خلفها على الجوال. */
+.nx-risk-scroll {
+  overscroll-behavior-inline: contain;
+}
+
+.nx-risk-table {
+  inline-size: 100%;
+  /* دون هذا يضغط أربعة أعمدة في 358px فيلتفّ العنوان حرفًا حرفًا. المقاس
+     يفرض التمرير داخل الحاوية — لا على الصفحة. */
+  min-inline-size: 560px;
+  border-collapse: collapse;
+  text-align: start;
+}
+
+.nx-risk-table th {
+  padding: 10px 12px;
+  background: var(--chip);
+  border-block-end: 1px solid var(--hairline);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+  color: var(--ink-2);
+  text-align: start;
+  white-space: nowrap;
+}
+
+.nx-risk-table td {
+  padding: 10px 12px;
+  border-block-start: 1px solid var(--hairline-soft);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink);
+  vertical-align: top;
+}
+
+.nx-risk-ref {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+
+.nx-risk-title {
+  display: block;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+/* في وضع الألوان القسرية تسقط `color-mix` كلّها إلى ألوان النظام: خيط
+   اللكنة يُعاد إلى حدّ النظام بدل أن يختفي، فتبقى البطاقة مفصولة عن
+   جارتها بحدٍّ مرئي لا بلونٍ أُلغي. */
+@media (forced-colors: active) {
+  .nx-risk-region,
+  .light .nx-risk-region {
+    border-inline-start-color: CanvasText;
+  }
+
+  .nx-risk-table th,
+  .nx-risk-table td {
+    border-color: CanvasText;
   }
 }

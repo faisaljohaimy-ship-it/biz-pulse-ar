@@ -288,8 +288,8 @@ export function runDirectiveAudit(): DirectiveAuditReport {
     {
       n: 1,
       key: "aria-core",
-      title_en: "FINN Core",
-      title_ar: "نواة FINN",
+      title_en: "SADEED Core",
+      title_ar: "نواة سَدِيد",
       status: rollUp(p1),
       probes: p1,
     },

@@ -159,7 +159,7 @@ export const finnAnalyzeIncident = createServerFn({ method: "POST" })
       entity_ref: inc.ref,
       event: "aria_analyzed",
       actor_id: context.userId,
-      actor_name: `FINN (${analysis.source})`,
+      actor_name: `سَدِيد (${analysis.source})`,
       payload: {
         risk_score: analysis.risk_score,
         recommendations: analysis.recommendations,

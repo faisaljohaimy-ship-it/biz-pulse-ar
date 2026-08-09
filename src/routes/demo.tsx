@@ -4,7 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { ExecutivePresentationPlayer } from "@/components/demo/ExecutivePresentationPlayer";
 
 import {
-  RotateCcw,
+  CalendarCheck,
   Briefcase,
   TrendingUp,
   Users,
@@ -187,7 +187,9 @@ function DemoCenter() {
             onClick={() => navigate({ to: "/book" })}
             className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-start transition hover:border-amber-400/40 disabled:opacity-50"
           >
-            <RotateCcw className="h-5 w-5 text-amber-400" />
+            {/* الزر يحجز جلسة تنفيذية؛ و`RotateCcw` سهمُ **تراجع/إعادة ضبط** —
+                فِعلٌ مضادّ لما يفعله الزر. */}
+            <CalendarCheck className="h-5 w-5 text-amber-400" aria-hidden />
             <div className="flex-1">
               <div className="text-sm font-semibold">
                 {isAr ? "احجز جلسة تنفيذية" : "Book an executive session"}

@@ -1,7 +1,7 @@
-# FINN Autonomous Evolution Framework / إطار التطور الذاتي لـ FINN
+# SADEED Autonomous Evolution Framework / إطار التطور الذاتي لـسَدِيد
 
-> Enterprise engineering doctrine for the FINN platform.
-> دستور هندسي لمنصة FINN — تطور ذاتي محكوم بالأدلة.
+> Enterprise engineering doctrine for the SADEED platform.
+> دستور هندسي لمنصة سَدِيد — تطور ذاتي محكوم بالأدلة.
 
 ## 1. Purpose / الهدف
 
@@ -48,7 +48,7 @@ Returned in every `EvolutionReport.invariants`:
 | ---------------------- | -------------------------------------------------------------------- |
 | `preserveArchitecture` | orchestrator only, no new engines                                    |
 | `preservePublicApi`    | no barrel change in `evolution/`, `self-improvement/`, `production/` |
-| `preserveSingletons`   | FINN brain/provider/store untouched                                  |
+| `preserveSingletons`   | SADEED brain/provider/store untouched                                |
 | `preserveSecurity`     | server fn wrapped in `requireSupabaseAuth`                           |
 | `preserveAriaIdentity` | no changes to `aria-core/*` from this framework                      |
 | `zeroBreakingChanges`  | additive files only                                                  |
@@ -97,7 +97,7 @@ interface EvolutionReport {
 
 ## 7. Language & output policy / سياسة اللغة
 
-Every engineering surface renders both Arabic (primary) and English (secondary). RTL-safe. No serif fonts. Uses the project's semantic FINN-HUD tokens; no hardcoded colors in the operator route.
+Every engineering surface renders both Arabic (primary) and English (secondary). RTL-safe. No serif fonts. Uses the project's semantic HUD design tokens; no hardcoded colors in the operator route.
 
 ## 8. Definition of done / تعريف الإنجاز
 

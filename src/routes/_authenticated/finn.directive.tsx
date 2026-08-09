@@ -14,10 +14,10 @@ export const Route = createFileRoute("/_authenticated/finn/directive")({
   loader: ({ context }) => context.queryClient.ensureQueryData(auditQuery),
   head: () => ({
     meta: [
-      { title: "FINN Directive Ledger — SADEED" },
+      { title: "Directive Ledger — SADEED" },
       {
         name: "description",
-        content: "Live phase-by-phase audit of the FINN Impact Priority Directive.",
+        content: "Live phase-by-phase audit of the SADEED Impact Priority Directive.",
       },
     ],
   }),
@@ -47,10 +47,10 @@ function DirectivePage() {
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
-            FINN Impact Directive — Phase Ledger
+            SADEED Impact Directive — Phase Ledger
           </h1>
           <p className="text-sm text-slate-400" dir="rtl">
-            سجل التنفيذ الحي لمراحل توجيه FINN التنفيذي (v{data.version}). آخر تحديث:{" "}
+            سجل التنفيذ الحي لمراحل توجيه سَدِيد التنفيذي (v{data.version}). آخر تحديث:{" "}
             {new Date(data.generated_at).toLocaleString("ar-SA")}
           </p>
           <div

@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   ShieldCheck,
   AlertTriangle,
+  OctagonAlert,
   Activity,
   MessageSquare,
   FileBarChart2,
@@ -17,7 +18,6 @@ import {
   Brain,
   ShieldAlert,
   Map as MapIcon,
-  Clock,
   Camera,
   Users,
   BadgeCheck,
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/_authenticated/mission-control")({
       {
         name: "description",
         content:
-          "Executive AI Operations Center — live, bilingual mission control conducted by FINN and specialist agents using real operational data.",
+          "Executive AI Operations Center — live, bilingual mission control conducted by SADEED and specialist agents using real operational data.",
       },
     ],
   }),
@@ -141,8 +141,8 @@ function buildAgentScript(
   const greet = greeting();
   const opener: AgentLine = {
     id: "aria-open",
-    name_ar: "FINN التنفيذي",
-    name_en: "FINN Executive",
+    name_ar: "سَدِيد التنفيذي",
+    name_en: "SADEED Executive",
     initials: "AI",
     icon: Brain,
     tone: "cyan",
@@ -172,8 +172,8 @@ function buildAgentScript(
       agents: empty,
       closer: {
         id: "aria-close",
-        name_ar: "FINN التنفيذي",
-        name_en: "FINN Executive",
+        name_ar: "سَدِيد التنفيذي",
+        name_en: "SADEED Executive",
         initials: "AI",
         icon: Brain,
         tone: "cyan",
@@ -275,13 +275,13 @@ function buildAgentScript(
 
   const closer: AgentLine = {
     id: "aria-close",
-    name_ar: "FINN التنفيذي",
-    name_en: "FINN Executive",
+    name_ar: "سَدِيد التنفيذي",
+    name_en: "SADEED Executive",
     initials: "AI",
     icon: Brain,
     tone: "cyan",
-    status_ar: "خلاصة FINN",
-    status_en: "FINN conclusion",
+    status_ar: "خلاصة سَدِيد",
+    status_en: "SADEED conclusion",
     finding_ar:
       c.incidents_critical > 0
         ? `يلزم تدخل تنفيذي: ${c.incidents_critical} حادث حرج بانتظار القرار.`
@@ -571,7 +571,7 @@ function CollaborationStream({
           </div>
           <div>
             <div className="text-sm text-white font-medium">
-              {ar ? "تعاون FINN والوكلاء" : "FINN & Agents Collaboration"}
+              {ar ? "تعاون سَدِيد والوكلاء" : "SADEED & Agents Collaboration"}
             </div>
             <div className="text-[12px] text-cyan-200/70">
               {ar ? "بث مباشر للتقييم التشغيلي" : "Live operational assessment stream"}
@@ -672,6 +672,14 @@ function OverallStatusBanner({
   };
   const m = map[status];
   const t = TONE[m.tone];
+  /**
+   * الشكل يتبع الحالة لا اللون وحده (المادة: مثمّن = خطر · مثلث = تحذير ·
+   * دائرة = سليم — نفس مفردات `STAT_TONES` في sec-shell). كان الدرع المُعلَّم
+   * `ShieldCheck` ثابتًا في الحالات الثلاث، فيقرأ عاملٌ لا يميّز الأحمر من
+   * الكهرماني «سليم» بينما الوضع **حرج**.
+   */
+  const StatusIcon =
+    status === "critical" ? OctagonAlert : status === "attention" ? AlertTriangle : ShieldCheck;
   return (
     <div
       className={cn(
@@ -680,7 +688,7 @@ function OverallStatusBanner({
         t.bg,
       )}
     >
-      <ShieldCheck className={cn("h-6 w-6 mt-0.5", t.text)} />
+      <StatusIcon aria-hidden className={cn("h-6 w-6 mt-0.5", t.text)} />
       <div className="min-w-0">
         <div className="text-[12px] uppercase tracking-[0.3em] text-white/60">
           {ar ? "آخر تحديث الآن" : "Updated just now"}
@@ -776,7 +784,8 @@ function ActivityTimeline({ items, ar }: { items: TimelineItem[]; ar: boolean })
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 md:p-6">
       <div className="flex items-center gap-3 mb-4">
-        <Clock className="h-4 w-4 text-cyan-300" />
+        {/* «النشاط الحي» نبضٌ لا وقت — والساعة تقرأ «مجدول/مؤجَّل». */}
+        <Activity className="h-4 w-4 text-cyan-300" aria-hidden />
         <div className="text-sm text-white/85">{ar ? "النشاط الحي" : "Live Activity"}</div>
         <span className="ms-auto text-[12px] text-white/40">
           {items.length} {ar ? "حدث" : "events"}
@@ -865,7 +874,7 @@ function WelcomeOverlay({ onDone, ar, name }: { onDone: () => void; ar: boolean;
             phase >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
           )}
         >
-          {ar ? "تبدأ FINN التقييم التشغيلي…" : "FINN is starting the operational assessment…"}
+          {ar ? "يبدأ سَدِيد التقييم التشغيلي…" : "SADEED is starting the operational assessment…"}
         </div>
       </div>
     </div>
@@ -888,7 +897,7 @@ const ACTIONS = [
   },
   { to: "/sec/maintenance", icon: Wrench, ar: "أوامر العمل", en: "Work Orders" },
   { to: "/sec/reports", icon: FileBarChart2, ar: "التقارير", en: "Reports" },
-  { to: "/finn", icon: MessageSquare, ar: "اسأل FINN", en: "Ask FINN" },
+  { to: "/finn", icon: MessageSquare, ar: "اسأل سَدِيد", en: "Ask SADEED" },
 ] as const;
 
 /* ────────────────────────────────────────────────────────────
@@ -1141,8 +1150,8 @@ function MissionControl() {
             </h1>
             <p className="mt-2 text-white/60 max-w-2xl text-sm md:text-base">
               {ar
-                ? "بث لحظي للوضع التشغيلي تقدّمه FINN بدعم من وكلاء التحليل المتخصصين، باستخدام البيانات الحية فقط."
-                : "Live operational stream conducted by FINN and specialist agents, powered strictly by real data."}
+                ? "بث لحظي للوضع التشغيلي يقدّمه سَدِيد بدعم من وكلاء التحليل المتخصصين، باستخدام البيانات الحية فقط."
+                : "Live operational stream conducted by SADEED and specialist agents, powered strictly by real data."}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -1242,7 +1251,7 @@ function MissionControl() {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-white">
-                    {ar ? "ملخص FINN" : "FINN Summary"}
+                    {ar ? "ملخص سَدِيد" : "SADEED Summary"}
                   </div>
                   <div className="text-[12px] text-white/50">
                     {ar ? "توصيات تنفيذية" : "Executive recommendations"}
@@ -1263,7 +1272,7 @@ function MissionControl() {
                 to="/finn"
                 className="mt-5 inline-flex items-center justify-between gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100 hover:bg-cyan-400/20 transition"
               >
-                <span>{ar ? "متابعة مع FINN" : "Continue with FINN"}</span>
+                <span>{ar ? "متابعة مع سَدِيد" : "Continue with SADEED"}</span>
                 <ArrowRight className={cn("h-4 w-4", ar && "rotate-180")} />
               </Link>
             </div>

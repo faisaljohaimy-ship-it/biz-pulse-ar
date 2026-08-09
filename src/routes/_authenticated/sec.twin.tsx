@@ -767,7 +767,7 @@ function Cell({ label, value }: { label: string; value: string | number }) {
 function FINNSection({ analysis, actions }: { analysis: string; actions: string[] }) {
   return (
     <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3">
-      <div className="text-xs font-semibold text-primary">🧠 تحليل FINN</div>
+      <div className="text-xs font-semibold text-primary">🧠 تحليل سَدِيد</div>
       <p className="mt-1 text-xs text-foreground">{analysis}</p>
       <div className="mt-2 text-xs font-semibold text-primary">إجراءات مقترحة</div>
       <ul className="mt-1 list-disc list-inside text-xs text-muted-foreground space-y-0.5">

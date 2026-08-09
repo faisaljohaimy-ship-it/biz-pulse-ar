@@ -33,7 +33,8 @@
 
 **الأسماء المتقاعدة** — لا يعود أيٌّ منها إلى أي سطح: NEXIOS · NEEXIOS ·
 Nexus AI OS · نكسيوس · نيكسيوس · مِرْقَب · MIRQAB · «منصة إنجاز الأعمال» ·
-ARIA/آريا (اسم المساعد صار FINN). ما يبقى منها فهو **معرّفات تقنية** لا
+ARIA/آريا · FINN/فِن (اسم المساعد صار «سَدِيد» بقرار المالك ٢٠٢٦/٠٨/٠٩).
+ما يبقى منها فهو **معرّفات تقنية** لا
 تُقرأ للمستخدم: نطاق، مفتاح تخزين، اسم مكوّن، مسار أصل على شبكة التوزيع —
 وكلٌّ منها مُستثنى صراحةً ومُوثَّق في حارس العلامة.
 
@@ -167,18 +168,18 @@ prohibited in any document or presentation.
 
 ---
 
-## الباب الرابع — منظومة الصوت (FINN)
+## الباب الرابع — منظومة الصوت (سَدِيد)
 
-## Chapter IV — The Voice System (FINN)
+## Chapter IV — The Voice System (SADEED)
 
 ### المادة ١٠ — الصوت الحصري
 
-صوت FINN **صوت ذكوري سعودي عبر الخادم** (`FINN_ELEVENLABS_VOICE_ID`) يُولَّد
+صوت سَدِيد **صوت ذكوري سعودي عبر الخادم** (`FINN_ELEVENLABS_VOICE_ID`) يُولَّد
 على الخادم (المسار `/api/finn/tts` وبديله العام `/api/public/finn-tts`)
 — هذه القناة الوحيدة. **browser TTS (`speechSynthesis`) محظور دستوريًا
 في كل مسار — وجوده نقضٌ تلقائي.** أصوات الوكلاء المتخصصين فقط من
 القائمة البيضاء `AGENT_ELEVEN_VOICES`.
-**Article 10 — Exclusive voice.** FINN speaks exclusively via ElevenLabs
+**Article 10 — Exclusive voice.** SADEED speaks exclusively via ElevenLabs
 a male voice generated server-side (`/api/finn/tts` and its public fallback).
 Browser TTS (`speechSynthesis`) is constitutionally banned on every
 path — its presence is an automatic veto. Specialist agents may use
@@ -195,11 +196,11 @@ requires a first user gesture to unlock the AudioContext.
 
 ### المادة ١٢ — أمانة المساعد
 
-FINN تصرّح بحالة المحاكاة في ردودها، لا تدّعي امتلاك نصوص رسمية،
-وتوجّه طالبها للقنوات المعتمدة (hcis.gov.sa)؛ وأي فعل طارئ تقترحه
-يمر حتمًا بالمادة ٨. ولا تُظهر للمستخدم أبدًا عبارات مصادقة خام —
+سَدِيد يصرّح بحالة المحاكاة في ردوده، لا يدّعي امتلاك نصوص رسمية،
+ويوجّه طالبها للقنوات المعتمدة (hcis.gov.sa)؛ وأي فعل طارئ يقترحه
+يمر حتمًا بالمادة ٨. ولا يُظهر للمستخدم أبدًا عبارات مصادقة خام —
 رسالة عربية محايدة مع زر إعادة المحاولة.
-**Article 12 — Assistant honesty.** FINN discloses simulation status,
+**Article 12 — Assistant honesty.** SADEED discloses simulation status,
 never claims possession of official texts, redirects to approved
 channels, routes every proposed emergency action through Article 8, and
 never surfaces raw auth error strings to the user.
@@ -317,23 +318,23 @@ infinite loading state.
 
 ---
 
-## الباب الثامن — عقيدة FINN
+## الباب الثامن — عقيدة سَدِيد
 
-## Chapter VIII — FINN Doctrine
+## Chapter VIII — SADEED Doctrine
 
-### المادة ٢٢ — عقد رد FINN
+### المادة ٢٢ — عقد رد سَدِيد
 
-FINN مساعد أمن صناعي؛ لا تتحدث خارج نطاقه ولا تقول أكثر مما سُئلت عنه.
+سَدِيد مساعد أمن صناعي؛ لا يتحدث خارج نطاقه ولا يقول أكثر مما سُئل عنه.
 النطاق المسموح حصرًا: توجيهات HCIS (SEC/SAF) · الامتثال وحالته · تصاريح
 العمل PTW · العمليات والبلاغات · السلامة والحريق · التقارير التشغيلية ·
 وحدات نكسيوس نفسها. خارجه سطرٌ واحد ثابت. عقد الاختصار: مباشر → جملة
 ≤٢٥ كلمة؛ نطاق توجيه → ٣ نقاط؛ معقّد → ٥ أسطر ثم «أفصّل أكثر؟»؛ لا
 مقدمات ولا حشو، والكلمة الأولى معلومة. مسارٌ فوري (<٤٠٠ms) يجيب المتكرر
 قبل النموذج. حارس هلوسة: البيان غير المحفوظ يُقابَل بسطر «غير متوفر
-لدي». النطق عبر صوت FINN حصرًا يحوّل الرموز إلى عربية صحيحة (SEC-18 → «سِك
+لدي». النطق عبر صوت سَدِيد حصرًا يحوّل الرموز إلى عربية صحيحة (SEC-18 → «سِك
 ثمانية عشر»). العقد مثبَّت باختبارات (`response-contract.test.ts` ·
 `pronunciation.test.ts`) ومصونٌ بوكيل `nexios-finn-response-auditor`.
-**Article 22 — FINN Response Contract.** FINN is an industrial-security
+**Article 22 — SADEED Response Contract.** SADEED is an industrial-security
 assistant: it never speaks outside that domain, nor says more than asked.
 Scope is exclusively HCIS SEC/SAF directives · compliance & its status ·
 PTW permits · operations & incidents · safety & fire · operational
@@ -342,7 +343,7 @@ line. Brevity contract: direct → one sentence ≤25 words; directive scope
 → 3 bullets; complex → 5 lines then "أفصّل أكثر؟"; no preamble or filler,
 the first word is the answer. A sub-400ms fast path answers recurring
 questions before the model. A hallucination guard answers an unheld datum
-with "غير متوفر لدي". Pronunciation (FINN's voice only) speaks codes as correct
+with "غير متوفر لدي". Pronunciation (SADEED's voice only) speaks codes as correct
 Arabic (SEC-18 → «سِك ثمانية عشر»). The contract is pinned by unit tests
 (`response-contract.test.ts` · `pronunciation.test.ts`) and safeguarded by
 the `nexios-finn-response-auditor` agent.
@@ -439,7 +440,7 @@ itself is revoked, not merely filtered.
 ### المادة ٢٦ — الالتقاط من جهة القراءة
 
 تعلُّم النظام من محادثاته يجري **من جهة القراءة حصرًا**: مهمة مجدولة
-تقرأ جداول المحادثات القائمة بعد وقوعها. **صفر تعديل على مسار FINN /
+تقرأ جداول المحادثات القائمة بعد وقوعها. **صفر تعديل على مسار سَدِيد /
 Gemini**، ولا استدعاء التقاط داخل مسار طلب مستخدم إطلاقًا — والمنع
 مفروض بالامتياز (التنفيذ محجوب عن `anon` و`authenticated`)، لا بالتوصية.
 الالتقاط يكتب في سجل الفجوات وحده؛ ولا يكتب في المتن ولا في المقاطع ولا
@@ -448,7 +449,7 @@ Gemini**، ولا استدعاء التقاط داخل مسار طلب مستخ�
 **Article 26 — Read-Side Capture.** The system learns from its own
 conversations **from the read side only**: a scheduled job reads the
 existing conversation tables after the fact. **Zero modification to the
-FINN/Gemini path**, and never a capture call inside a user request path —
+SADEED/Gemini path**, and never a capture call inside a user request path —
 enforced by privilege (EXECUTE revoked from `anon` and `authenticated`),
 not by convention. Capture writes to the gap ledger alone; never to the
 corpus, the chunks, or the candidates. Where the organisation cannot be
@@ -681,11 +682,11 @@ is an operational decision the implementer does not own.
 | ------------ | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
 | 2026-07-20   | —              | التأسيس: إقرار الدستور بمواده العشرين · Founding: constitution enacted with all twenty articles                                                                                                                                                                                                                                                                       | مالك المنتج Product Owner |
 | 2026-07-21   | ٢١             | إضافة مبدأ الوضوح المطلق · Added the Absolute-Clarity Principle                                                                                                                                                                                                                                                                                                       | مالك المنتج Product Owner |
-| 2026-07-21   | ٢٢             | عقد رد FINN: حصر النطاق · الاختصار · المسار الفوري · حارس الهلوسة · النطق · Article 22 FINN Response Contract: scope lock, brevity, fast recall, hallucination guard, pronunciation                                                                                                                                                                                   | مالك المنتج Product Owner |
+| 2026-07-21   | ٢٢             | عقد رد سَدِيد: حصر النطاق · الاختصار · المسار الفوري · حارس الهلوسة · النطق · Article 22 SADEED Response Contract: scope lock, brevity, fast recall, hallucination guard, pronunciation                                                                                                                                                                                 | مالك المنتج Product Owner |
 | 2026-07-27   | ٢٣             | منظومة الوكلاء الثلاثة عشر: أدوارهم · حدّهم القرائي · التمييز محاكاة/حقيقي · Article 23 thirteen-agent system: roles, read-only bound, simulation/real distinction                                                                                                                                                                                                    | مالك المنتج Product Owner |
 | 2026-07-27   | ٢٤             | التدرّج الخماسي في الصلاحية عبر البوابة البشرية · Article 24 five-step escalation ladder through the human gate                                                                                                                                                                                                                                                       | مالك المنتج Product Owner |
 | 2026-07-28   | ٢٥             | حاجز منع التسمّم: بوابة أحادية في القاعدة · العزل يعلو الاعتماد · Article 25 poisoning barrier: one-way DB gate, isolation outranks approval                                                                                                                                                                                                                          | مالك المنتج Product Owner |
-| 2026-07-28   | ٢٦             | الالتقاط من جهة القراءة حصرًا · صفر تعديل على مسار FINN/Gemini · Article 26 read-side-only capture, zero modification to the FINN/Gemini path                                                                                                                                                                                                                         | مالك المنتج Product Owner |
+| 2026-07-28   | ٢٦             | الالتقاط من جهة القراءة حصرًا · صفر تعديل على مسار سَدِيد/Gemini · Article 26 read-side-only capture, zero modification to the SADEED/Gemini path                                                                                                                                                                                                                       | مالك المنتج Product Owner |
 | 2026-07-28   | ٢٧             | الصدق العددي: NULL لما لم يُقَس · شرطا رفع الراية · Article 27 numerical honesty: NULL when unmeasured, the two flag thresholds                                                                                                                                                                                                                                       | مالك المنتج Product Owner |
 | 2026-07-28   | ٢٨             | ميزانية النشر واحتياطي النشرتين · فحص صحة ٩٠ ثانية · Article 28 deployment budget, two-deploy reserve, 90-second health check                                                                                                                                                                                                                                         | مالك المنتج Product Owner |
 | 2026-07-28   | ٢٩             | نوعا التراجع المتمايزان وسجل النشر · Article 29 the two distinct rollbacks and the deployment log                                                                                                                                                                                                                                                                     | مالك المنتج Product Owner |
@@ -694,3 +695,4 @@ is an operational decision the implementer does not own.
 | 2026-08-01   | ١              | **اسم المنتج: مِرْقَب ← سَدِيد (SADEED)** — ثنائي اللغة بواصف وشعار، ومصدره الوحيد `PRODUCT_BRAND`، ويحرسه اختبار عقد يمنع عودة كل اسم متقاعد · **Product name: MIRQAB → SADEED**, bilingual with descriptor and tagline, single-sourced and guarded by a contract test                                                                                               | مالك المنتج Product Owner |
 | 2026-08-02   | ٣٢·٣٣·٣٤       | **دروس الوضعين**: الصنف ذو الكاتبين (صنف ثيم في JSX يمحو ما يضعه المزوّد) · الأسلوب المضمّن يُعفي حامله من أي قاعدة عامة · اللون الصريح يموت عند قلب الوضع، والوضع الثاني سطح صحّة لا قشرة · Articles 32–34: the two-writer attribute, inline styles exempt their bearer, hardcoded colour dies on theme flip                                                         | مالك المنتج Product Owner |
 | 2026-08-02   | ٣٥             | **الفرع ذو الكاتبين**: نصّ المالك الصريح يسود على أي التزام آلي، ويُدمج غير المتعارض، ويُبلَّغ المالك بالتعارض · Article 35: the owner's explicit instruction outranks automated commits; conflicts are reported                                                                                                                                                      | مالك المنتج Product Owner |
+| 2026-08-09   | ١·١٠·١٢·٢٢·٢٦  | **اسم المساعد: FINN ← سَدِيد** — بقرار صريح من مالك المنتج يشمل وثائق الحوكمة والدستور نفسه، استثناءً واعيًا من قاعدة «لا تُمسّ وثائق الحوكمة». المساعد **مذكّر** نحويًّا. والمعرّفات التقنية `finn-*` (المسارات · الوحدات · المكوّنات · `FINN_*` · الترويسات · الجداول) تبقى كما هي في الوثائق لأنها عقود حيّة، وتغييرها نصًّا يجعل الوثيقة تكذب على الكود · **Assistant name: FINN → SADEED**, by explicit product-owner decision extending to governance docs and this constitution; the assistant is grammatically masculine; `finn-*` technical identifiers remain verbatim as live contracts | مالك المنتج Product Owner |

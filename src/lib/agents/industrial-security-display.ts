@@ -30,8 +30,8 @@ type RoleDefinition = {
 const ROLES: RoleDefinition[] = [
   {
     match: /executive|aria|finn|commander|قياد/i,
-    nameAr: "FINN التنفيذي",
-    nameEn: "FINN Executive",
+    nameAr: "سَدِيد التنفيذي",
+    nameEn: "SADEED Executive",
     departmentAr: "القيادة التنفيذية",
     departmentEn: "Executive Command",
     descriptionAr: "تنسيق وكلاء الأمن الصناعي وتجهيز الملخصات للاعتماد البشري.",

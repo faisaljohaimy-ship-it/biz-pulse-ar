@@ -58,8 +58,8 @@ export function MeetFinnSimulation({ slug, lang, suggested, onCompleted }: Props
         <div className="space-y-4">
           <div className="text-sm text-white/70">
             {ar
-              ? "اختر سؤالاً تنفيذياً؛ ستفتحه FINN في محادثتها الرسمية مع الاحتفاظ بذاكرتها وصوتها الواحد."
-              : "Choose an executive question; FINN will open it in her official conversation with one persistent memory and voice."}
+              ? "اختر سؤالاً تنفيذياً؛ سيفتحه سَدِيد في محادثته الرسمية مع الاحتفاظ بذاكرته وصوته الواحد."
+              : "Choose an executive question; SADEED will open it in his official conversation with one persistent memory and voice."}
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             {suggested.map((suggestion, index) => {
@@ -95,11 +95,11 @@ export function MeetFinnSimulation({ slug, lang, suggested, onCompleted }: Props
             )}
             {step === 2
               ? ar
-                ? "FINN تعالج السؤال في نافذتها الموحدة…"
-                : "FINN is processing in her unified panel…"
+                ? "سَدِيد يعالج السؤال في نافذته الموحدة…"
+                : "SADEED is processing in his unified panel…"
               : ar
-                ? "اكتملت الجولة عبر ذاكرة FINN وصوتها الرسمي."
-                : "The turn completed through FINN's official memory and voice."}
+                ? "اكتملت الجولة عبر ذاكرة سَدِيد وصوته الرسمي."
+                : "The turn completed through SADEED's official memory and voice."}
           </div>
         </div>
       )}
@@ -108,8 +108,8 @@ export function MeetFinnSimulation({ slug, lang, suggested, onCompleted }: Props
         <div className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-400/30 bg-emerald-400/[0.06] p-4">
           <div className="text-sm text-white/90">
             {ar
-              ? "اكتملت تجربة FINN الموحّدة. سجّل تقدمك في الحصة."
-              : "You completed the unified FINN experience. Record your lesson progress."}
+              ? "اكتملت تجربة سَدِيد الموحّدة. سجّل تقدمك في الحصة."
+              : "You completed the unified SADEED experience. Record your lesson progress."}
           </div>
           <button
             type="button"
@@ -130,8 +130,8 @@ export function MeetFinnSimulation({ slug, lang, suggested, onCompleted }: Props
 
 function ExecutiveStepper({ step, ar }: { step: 1 | 2 | 3; ar: boolean }) {
   const labels = ar
-    ? ["اختر سؤالاً", "شاهد FINN الرسمية", "أكمل المحاكاة"]
-    : ["Choose a question", "Watch official FINN", "Complete"];
+    ? ["اختر سؤالاً", "شاهد سَدِيد الرسمي", "أكمل المحاكاة"]
+    : ["Choose a question", "Watch official SADEED", "Complete"];
 
   return (
     <ol className="flex flex-wrap items-center gap-2 text-xs">

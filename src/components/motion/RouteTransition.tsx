@@ -58,7 +58,6 @@ export function routeFamily(pathname: string): Family {
   }
   if (
     p.startsWith("/sec") ||
-    p.startsWith("/hcis") ||
     p.startsWith("/governance") ||
     p.startsWith("/risk") ||
     p.startsWith("/ptw") ||

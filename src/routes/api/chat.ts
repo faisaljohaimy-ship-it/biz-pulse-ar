@@ -309,7 +309,7 @@ export const Route = createFileRoute("/api/chat")({
           console.error("[api/chat] Supabase configuration is incomplete", {
             requestId,
           });
-          return jsonError("FINN data service is not configured.", 503, requestId);
+          return jsonError("SADEED data service is not configured.", 503, requestId);
         }
         // Two clients:
         //  - `supabase` runs as the caller (RLS applies) when a bearer is
@@ -379,7 +379,7 @@ export const Route = createFileRoute("/api/chat")({
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) {
           return jsonError(
-            "FINN is temporarily rate limited. Please retry shortly.",
+            "SADEED is temporarily rate limited. Please retry shortly.",
             429,
             requestId,
           );
@@ -743,7 +743,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           if (status === "400")
             return "تعذّر تنفيذ الطلب بصيغته الحالية — اختصر السؤال أو أعد المحاولة.";
           if (lower.includes("aborterror") || lower.includes("timeout"))
-            return "استغرقت FINN وقتًا طويلًا — أعد المحاولة، وستُعيد الاتصال تلقائيًا.";
+            return "استغرق سَدِيد وقتًا طويلًا — أعد المحاولة، وسيُعيد الاتصال تلقائيًا.";
           return `تعذّر إكمال الرد${status ? ` (رمز ${status})` : ""} — أعد المحاولة. المعرّف: ${requestId}`;
         };
 

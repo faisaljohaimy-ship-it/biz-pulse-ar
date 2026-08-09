@@ -42,6 +42,8 @@ import { FinnVideoAvatar } from "@/components/finn/FinnVideoAvatar";
 import { FinnVoiceDebug } from "@/lib/finn/voice-debug";
 import { FINN_GEMINI_TTS_VOICE } from "@/lib/finn/voice-config";
 import { FinnVoiceDebugBadge } from "@/components/finn/FinnVoiceDebugBadge";
+import { FinnMuteToggle } from "@/components/finn/FinnMuteToggle";
+import { isFinnVoiceMuted } from "@/lib/finn-core/state/voice-mute";
 import { setIntroActive } from "@/lib/intro-store";
 import { VoiceTimeline } from "@/lib/finn/voice-timeline";
 import { FinnSignatureBackdrop } from "@/components/finn/FinnSignatureBackdrop";
@@ -61,6 +63,10 @@ import {
   FINN_CONVERSATION_GREETING_AR_TTS,
   shouldContinueAfterFinnGreeting,
 } from "@/lib/finn/conversation-greeting";
+// اسم المساعد المعروض — من مصدر الهوية الوحيد، لا مكتوبًا حرفًا في ١٨ موضعًا.
+// المشكول «سَدِيد» لِما تقرؤه العين، وغير المشكول «سديد» لِما يقرؤه قارئ الشاشة
+// (`aria-label` و`title`): علامات التشكيل تُتهجّى حرفًا حرفًا في NVDA وVoiceOver.
+import { FINN_DISPLAY_NAME_AR, FINN_DISPLAY_NAME_AR_PLAIN } from "@/lib/finn-core/branding";
 import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
 // speakFinn / speakablePageScript intentionally NOT imported — the panel-open
 // page intro stays silent; reply speech runs through the streaming TTS
@@ -267,7 +273,7 @@ function rmsLevel(samples: Float32Array): number {
 const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
-const THINKING_AR = "FINN يفكّر…";
+const THINKING_AR = `${FINN_DISPLAY_NAME_AR} يفكّر…`;
 const STILL_SRC = "/finn-portrait.webp";
 
 // Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,
@@ -990,7 +996,9 @@ export function FinnCopilot() {
         FinnAudioBus.release("chat-tts");
         streamStateRef.current.delete(messageId);
         if (convModeRef.current && s.playbackFailed) {
-          setConvNotice("تعذّر تشغيل صوت FINN — تحقق من صوت الجهاز ثم اضغط للمتابعة.");
+          setConvNotice(
+            `تعذّر تشغيل صوت ${FINN_DISPLAY_NAME_AR} — تحقق من صوت الجهاز ثم اضغط للمتابعة.`,
+          );
           setConvPaused(true);
         } else if (convModeRef.current) {
           if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
@@ -1690,6 +1698,15 @@ export function FinnCopilot() {
   }, [hasError, fetchTTS, playAudioClip]);
 
   const playConversationGreeting = useCallback(async () => {
+    // الصوت مكتوم: لا تُشترى تحية لن تُسمع. الناقل كان سيرفض القناة بعد
+    // تنزيل المقطع، فالفحص هنا يوفّر الطلب ويمضي إلى الإصغاء مباشرة —
+    // الكتم يمنع خروج الصوت، لا يمنع المستخدم من التحدّث.
+    if (isFinnVoiceMuted()) {
+      setGreeting(false);
+      finnState.set("listening");
+      scheduleConversationRelisten(180);
+      return;
+    }
     const controller = new AbortController();
     greetingAbortRef.current?.abort();
     greetingAbortRef.current = controller;
@@ -1702,7 +1719,7 @@ export function FinnCopilot() {
       if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
       setGreeting(false);
       if (convModeRef.current && !controller.signal.aborted) {
-        setConvNotice("تعذّر تشغيل تحية FINN، يمكنك البدء بالتحدث مباشرة.");
+        setConvNotice(`تعذّر تشغيل تحية ${FINN_DISPLAY_NAME_AR}، يمكنك البدء بالتحدث مباشرة.`);
         scheduleConversationRelisten(180);
       }
       return;
@@ -1747,7 +1764,7 @@ export function FinnCopilot() {
     if (greetingAbortRef.current === controller) greetingAbortRef.current = null;
     setGreeting(false);
     if (!wasAborted && (!playbackStarted || !playedGreeting) && convModeRef.current) {
-      setConvNotice("تعذّر تشغيل التحية، ابدأ بالتحدث وسأجيبك بصوت FINN.");
+      setConvNotice(`تعذّر تشغيل التحية، ابدأ بالتحدث وسأجيبك بصوت ${FINN_DISPLAY_NAME_AR}.`);
     }
     if (
       shouldContinueAfterFinnGreeting({
@@ -1779,7 +1796,9 @@ export function FinnCopilot() {
       // No speech input on this browser → Conversation Mode cannot work.
       // Stay in the text chat (typed turns are text-only by rule) and show
       // a transient notice instead of a half-broken voice mode.
-      setConvNotice("المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسيردّ FINN نصياً.");
+      setConvNotice(
+        `المتصفح لا يدعم الإدخال الصوتي — اكتب رسالتك وسيردّ ${FINN_DISPLAY_NAME_AR} نصياً.`,
+      );
       if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
       noticeTimerRef.current = setTimeout(() => setConvNotice(null), 5000);
       try {
@@ -1811,6 +1830,21 @@ export function FinnCopilot() {
     stopVoicePlayback,
     composerRef,
   ]);
+
+  // طلب «ابدأ المخاطبة» قادمًا من سطح خارجي (حضور المساعد في وسط الرئيسية).
+  // العدّاد لا الراية: كل ضغطة حدث مستقل، فيمكن طلب المخاطبة مرارًا بعد
+  // إنهائها. اللوحة تُفتح والعدّاد يزيد في تحديث واحد، فحين يجري هذا الأثر
+  // تكون `isOpen` صحيحة أصلًا ولا يلزم انتظار دورة ثانية.
+  const voiceConversationRequest = useFinnStore((s) => s.voiceConversationRequest);
+  const handledVoiceRequestRef = useRef(0);
+  useEffect(() => {
+    if (voiceConversationRequest === 0) return;
+    if (handledVoiceRequestRef.current === voiceConversationRequest) return;
+    if (!isOpen) return;
+    handledVoiceRequestRef.current = voiceConversationRequest;
+    if (convModeRef.current) return;
+    toggleConversationMode();
+  }, [voiceConversationRequest, isOpen, toggleConversationMode]);
 
   // ESC exits conversation mode first, then closes panel.
   useEffect(() => {
@@ -1855,7 +1889,7 @@ export function FinnCopilot() {
       case "processing":
         return THINKING_AR;
       case "speaking":
-        return "FINN يتحدث…";
+        return `${FINN_DISPLAY_NAME_AR} يتحدث…`;
       case "listening":
         return "يستمع…";
       default:
@@ -1902,7 +1936,7 @@ export function FinnCopilot() {
                 ) : toolParts.length === 0 ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-                    يُنَفِّذُ FINN الخُطْوَةَ الآنَ…
+                    {`يُنَفِّذُ ${FINN_DISPLAY_NAME_AR} الخُطْوَةَ الآنَ…`}
                   </div>
                 ) : null}
                 {toolParts.map((part, index) => (
@@ -2036,8 +2070,8 @@ export function FinnCopilot() {
             dismissBlockingIntro();
             setMode("docked");
           }}
-          aria-label="Open FINN — المخاطبة"
-          title="المخاطبة مع FINN"
+          aria-label={`فتح ${FINN_DISPLAY_NAME_AR_PLAIN} — المخاطبة`}
+          title={`المخاطبة مع ${FINN_DISPLAY_NAME_AR_PLAIN}`}
           // الموضع مقترن بزر إيقاف الخلفية (.nx-hv-toggle في styles.css):
           // هذا المُطلق على الحافة المنطقية `end` — يسارًا في العربية ويمينًا
           // في الإنجليزية — وذاك يُرسى على الحافة الفيزيائية المقابلة بقراءة
@@ -2078,7 +2112,7 @@ export function FinnCopilot() {
         <div className="pointer-events-none fixed inset-0 z-[110] flex items-center justify-center p-[max(0.5rem,env(safe-area-inset-left))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))]">
           <aside
             role="complementary"
-            aria-label="FINN executive copilot"
+            aria-label={`${FINN_DISPLAY_NAME_AR_PLAIN} — المساعد التنفيذي`}
             dir="rtl"
             className={cn(
               // Perfectly centered on every device: phone, tablet, laptop.
@@ -2104,11 +2138,17 @@ export function FinnCopilot() {
                 />
               </div>
               <div className="flex min-w-0 flex-1 flex-col leading-tight">
-                <span className="text-sm font-semibold text-foreground">FINN</span>
+                <span className="text-sm font-semibold text-foreground">
+                  {FINN_DISPLAY_NAME_AR}
+                </span>
                 <span className="max-w-[235px] truncate text-[12px] text-muted-foreground">
                   {`${statusLabel} · ${convMode ? "صوت" : "نص"}`}
                 </span>
               </div>
+              {/* الكتم داخل اللوحة أيضًا: اللوحة تغطي الصفحة حين تُفتح، فلو
+                  كان الزر على الرئيسية وحدها لَغاب في اللحظة التي يتكلم فيها
+                  المساعد فعلًا — وهي اللحظة التي يُطلب فيها الكتم. */}
+              <FinnMuteToggle className="h-11 w-11 min-w-11 px-0" />
               <button
                 type="button"
                 onClick={startNewChat}
@@ -2121,7 +2161,7 @@ export function FinnCopilot() {
               <button
                 type="button"
                 onClick={closePanel}
-                aria-label="Close FINN"
+                aria-label={`إغلاق ${FINN_DISPLAY_NAME_AR_PLAIN}`}
                 className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
               >
                 <X className="h-4 w-4" aria-hidden />
@@ -2155,7 +2195,7 @@ export function FinnCopilot() {
 
             {convMode ? (
               <section
-                aria-label="المخاطبة الصوتية مع FINN"
+                aria-label={`المخاطبة الصوتية مع ${FINN_DISPLAY_NAME_AR_PLAIN}`}
                 className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-7 overflow-hidden px-6 py-8 text-center"
               >
                 <div className="relative grid h-40 w-40 place-items-center sm:h-48 sm:w-48">
@@ -2189,15 +2229,15 @@ export function FinnCopilot() {
                 <div aria-live="polite" className="space-y-2">
                   <h2 className="text-xl font-semibold text-white sm:text-2xl">
                     {transcribing
-                      ? "FINN يحلّل صوتك"
+                      ? `${FINN_DISPLAY_NAME_AR} يحلّل صوتك`
                       : greeting
-                        ? "FINN يرحّب بك"
+                        ? `${FINN_DISPLAY_NAME_AR} يرحّب بك`
                         : listening
-                          ? "FINN يستمع"
+                          ? `${FINN_DISPLAY_NAME_AR} يستمع`
                           : isBusy
-                            ? "FINN يفكّر وينفّذ"
+                            ? `${FINN_DISPLAY_NAME_AR} يفكّر وينفّذ`
                             : state === "speaking"
-                              ? "FINN يتحدث"
+                              ? `${FINN_DISPLAY_NAME_AR} يتحدث`
                               : "المخاطبة الصوتية"}
                   </h2>
                   <p className="text-xs text-white/60 sm:text-sm">
@@ -2328,12 +2368,12 @@ export function FinnCopilot() {
                     aria-label={
                       convMode
                         ? "إيقاف المخاطبة الصوتية"
-                        : "بدء المخاطبة الصوتية (تحدّث وستردّ FINN صوتاً)"
+                        : `بدء المخاطبة الصوتية (تحدّث وسيردّ ${FINN_DISPLAY_NAME_AR_PLAIN} صوتاً)`
                     }
                     title={
                       convMode
                         ? "إيقاف المخاطبة الصوتية"
-                        : "المخاطبة الصوتية — تحدّث وستردّ FINN صوتاً دون كتابة"
+                        : `المخاطبة الصوتية — تحدّث وسيردّ ${FINN_DISPLAY_NAME_AR_PLAIN} صوتاً دون كتابة`
                     }
                     className={cn(
                       "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-[border-color,background-color,color,box-shadow]",
@@ -2359,8 +2399,8 @@ export function FinnCopilot() {
                       }
                     }}
                     rows={1}
-                    placeholder="اسأل FINN…"
-                    aria-label="Ask FINN"
+                    placeholder={`اسأل ${FINN_DISPLAY_NAME_AR}…`}
+                    aria-label={`اسأل ${FINN_DISPLAY_NAME_AR_PLAIN}`}
                     className={cn(
                       "nexus-field min-h-[40px] max-h-32 flex-1 resize-none rounded-xl border border-primary/20",
                       "bg-background/70 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",

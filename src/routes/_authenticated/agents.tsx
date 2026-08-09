@@ -502,8 +502,8 @@ function AgentsOps() {
         routeKey="agents"
         what={
           locale === "ar"
-            ? "منصة عمليات الوكلاء — تشغيل ومراقبة تحت قيادة FINN واعتماد بشري."
-            : "Runtime operations for the intelligent agent fleet under FINN, human-approved."
+            ? "منصة عمليات الوكلاء — تشغيل ومراقبة تحت قيادة سَدِيد واعتماد بشري."
+            : "Runtime operations for the intelligent agent fleet under SADEED, human-approved."
         }
         dataSource="agent_definitions · agent_runs"
         actions={

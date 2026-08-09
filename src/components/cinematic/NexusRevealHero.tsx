@@ -297,17 +297,19 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
     line1: ar ? "الذكاء يقود." : "Intelligence, in command.",
     line2: ar ? "سَدِيد ينفّذ." : "سَدِيد executes.",
     lede: ar
-      ? "سَدِيد · FINN في القلب · الأمن الصناعي · جميع المناطق."
-      : "Enjaz Platform · FINN at the core · Industrial Security · All Regions.",
+      ? "سَدِيد · الذكاء التنفيذي في القلب · الأمن الصناعي · جميع المناطق."
+      : "SADEED · Executive intelligence at the core · Industrial Security · All Regions.",
     ctaPrimary: ar ? "ابدأ التشغيل" : "Start Operation",
     ctaSecondary: ar ? "غرفة القيادة التنفيذية" : "Executive Bridge",
-    ctaFinn: ar ? "اسأل FINN" : "Ask FINN",
+    ctaFinn: ar ? "اسأل سَدِيد" : "Ask SADEED",
     boot: ar ? "تهيئة بيئة التشغيل…" : "Booting operating environment…",
     booting: ar ? "جارٍ تشغيل النظام…" : "Launching platform…",
     trust: ar
       ? ["المؤسسات", "الحكومات", "الأمن الصناعي", "Fortune 500"]
       : ["Enterprises", "Governments", "Industrial Security", "Fortune 500"],
-    finnName: ar ? "FINN" : "FINN",
+    // علامة لفظية لاتينية في الحالين — الشكل المُطوَّل بتباعد الحروف جزء من
+    // التصميم، والاسم العربي المشكول لا يقرأ صحيحًا تحت `uppercase tracking`.
+    finnName: "SADEED",
     finnRole: ar ? "الذكاء التنفيذي" : "Executive Intelligence",
     scroll: ar ? "اسحب للأسفل" : "Scroll to explore",
   };
@@ -317,7 +319,7 @@ export function NexusRevealHero({ onEnterOps }: { onEnterOps?: () => void }) {
       ref={stageRef}
       dir={ar ? "rtl" : "ltr"}
       data-scene="nexus-reveal"
-      aria-label={ar ? "المشهد التنفيذي — FINN" : "Executive reveal — FINN"}
+      aria-label={ar ? "المشهد التنفيذي — سديد" : "Executive reveal — SADEED"}
       className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#02060F] text-white [--nxh-mx:0] [--nxh-my:0]"
     >
       {/* ============================================================

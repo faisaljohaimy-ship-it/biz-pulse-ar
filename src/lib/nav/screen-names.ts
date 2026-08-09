@@ -50,7 +50,7 @@ const EXTRA_SCREEN_NAMES: Readonly<Record<string, ScreenName>> = {
   "/sec/kpi": { ar: "مؤشرات الأداء", en: "Live KPIs" },
   "/exec": { ar: "محرك التنفيذ", en: "Execution Engine" },
   "/operations": { ar: "سجل التشغيل", en: "Operations Log" },
-  "/finn": { ar: "FINN", en: "FINN" },
+  "/finn": { ar: "سَدِيد", en: "SADEED" },
 };
 
 function buildScreenNames(): Readonly<Record<string, ScreenName>> {

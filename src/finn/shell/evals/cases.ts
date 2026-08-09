@@ -91,7 +91,7 @@ export const EVAL_CASES: readonly EvalCase[] = [
     expect: "rag-arabic",
     gated: false,
   },
-  { id: "c19", task: "شكّل هذا النص وانطقه بصوت فن", expect: "tashkeel-tts", gated: false },
+  { id: "c19", task: "شكّل هذا النص وانطقه بصوت سديد", expect: "tashkeel-tts", gated: false },
   { id: "c20", task: "اقرأ التقرير بصوت مع تشكيل صحيح", expect: "tashkeel-tts", gated: false },
   { id: "c21", task: "صدّر التقرير إلى PDF ونزّله", expect: "doc-export", gated: true },
   { id: "c22", task: "احفظ المستند وصدّره تصدير PDF", expect: "doc-export", gated: true },

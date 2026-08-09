@@ -138,7 +138,7 @@ export const createIncident = createServerFn({ method: "POST" })
         entity_ref: ref,
         event: "aria_auto_analyzed",
         actor_id: userId,
-        actor_name: `FINN (${analysis.source})`,
+        actor_name: `سَدِيد (${analysis.source})`,
         payload: {
           risk_score: analysis.risk_score,
           recommendations: analysis.recommendations,
@@ -471,7 +471,7 @@ export const completeWorkOrder = createServerFn({ method: "POST" })
         entity_ref: null,
         event: "auto_contained_by_work_order",
         actor_id: userId,
-        actor_name: "FINN Workflow",
+        actor_name: "سَدِيد — سير العمل",
         payload: { work_order_ref: row.ref },
       });
     }

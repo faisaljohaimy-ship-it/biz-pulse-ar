@@ -98,12 +98,12 @@ const CASES: Case[] = [
       "مراجعات أداء الفروع تعتمد على تقارير متأخرة بـ T+5.",
     ],
     solutionEn: [
-      "Deployed FINN on top of core banking, T24 and risk warehouses.",
+      "Deployed SADEED on top of core banking, T24 and risk warehouses.",
       "Built a Digital Twin of every branch, product and risk line.",
       "Activated autonomous agents for limits breach, AML triage and FX hedging suggestions.",
     ],
     solutionAr: [
-      "نشر FINN فوق النظام المصرفي الجوهري وT24 ومستودعات المخاطر.",
+      "نشر سَدِيد فوق النظام المصرفي الجوهري وT24 ومستودعات المخاطر.",
       "بناء توأم رقمي لكل فرع ومنتج وخط مخاطر.",
       "تشغيل وكلاء ذاتيين لتجاوز الحدود وفرز غسل الأموال واقتراحات التحوّط.",
     ],
@@ -185,9 +185,9 @@ const CASES: Case[] = [
     titleEn: "A sovereign Digital Twin for a Vision 2030 mega-program",
     titleAr: "توأم رقمي سيادي لبرنامج كبرى من رؤية 2030",
     summaryEn:
-      "A national authority unified 38 entities into one sovereign control room — Arabic-native, in-Kingdom data residency, with FINN briefing leadership in MSA every morning.",
+      "A national authority unified 38 entities into one sovereign control room — Arabic-native, in-Kingdom data residency, with SADEED briefing leadership in MSA every morning.",
     summaryAr:
-      "وحّدت جهة وطنية 38 جهة في غرفة تحكم سيادية واحدة — عربية أصلية، باستضافة داخل المملكة، مع FINN تقدّم إفادة يومية للقيادة بالفصحى.",
+      "وحّدت جهة وطنية 38 جهة في غرفة تحكم سيادية واحدة — عربية أصلية، باستضافة داخل المملكة، مع سَدِيد يقدّم إفادة يومية للقيادة بالفصحى.",
     challengeEn: [
       "38 entities reporting in incompatible formats and timelines.",
       "Cabinet briefings rebuilt manually from PowerPoint each week.",
@@ -200,12 +200,12 @@ const CASES: Case[] = [
     ],
     solutionEn: [
       "In-Kingdom deployment aligned with NCA ECC and PDPL.",
-      "FINN tuned on MSA + Gulf dialect for ministerial briefings.",
+      "SADEED tuned on MSA + Gulf dialect for ministerial briefings.",
       "Digital Twin of the program: budget, milestones, contractors, risk.",
     ],
     solutionAr: [
       "نشر داخل المملكة بمواءمة ECC وPDPL.",
-      "تدريب FINN على الفصحى واللهجة الخليجية للإفادات الوزارية.",
+      "تدريب سَدِيد على الفصحى واللهجة الخليجية للإفادات الوزارية.",
       "توأم رقمي للبرنامج: الميزانية، المعالم، المقاولون، المخاطر.",
     ],
     before: [
@@ -218,7 +218,11 @@ const CASES: Case[] = [
       { labelEn: "Briefing cycle", labelAr: "دورة الإفادة", value: "Daily, on-demand" },
       { labelEn: "Entity coverage", labelAr: "تغطية الجهات", value: "38 / 38" },
       { labelEn: "Decision latency", labelAr: "زمن القرار", value: "< 48 hours" },
-      { labelEn: "Arabic-native UX", labelAr: "تجربة عربية أصلية", value: "Full RTL + FINN voice" },
+      {
+        labelEn: "Arabic-native UX",
+        labelAr: "تجربة عربية أصلية",
+        value: "Full RTL + SADEED voice",
+      },
     ],
     kpis: [
       {
@@ -285,9 +289,9 @@ const CASES: Case[] = [
     titleEn: "Autonomous merchandising across 1,400 stores in 11 countries",
     titleAr: "تجارة ذاتية عبر 1,400 متجر في 11 دولة",
     summaryEn:
-      "A regional retail group plugged SADEED into ERP, POS and e-commerce — letting FINN agents rebalance inventory, reprice SKUs and brief store managers every morning at 7:00.",
+      "A regional retail group plugged SADEED into ERP, POS and e-commerce — letting its agents rebalance inventory, reprice SKUs and brief store managers every morning at 7:00.",
     summaryAr:
-      "ربطت مجموعة تجزئة إقليمية سَدِيد بأنظمة ERP ونقاط البيع والتجارة الإلكترونية — وأطلقت وكلاء FINN لإعادة توزيع المخزون وتسعير المنتجات وإفادة مديري المتاجر كل صباح 7:00.",
+      "ربطت مجموعة تجزئة إقليمية سَدِيد بأنظمة ERP ونقاط البيع والتجارة الإلكترونية — وأطلقت وكلاءه لإعادة توزيع المخزون وتسعير المنتجات وإفادة مديري المتاجر كل صباح 7:00.",
     challengeEn: [
       "Stock-outs on 7.4% of top SKUs every weekend.",
       "Country GMs flying blind between monthly reviews.",
@@ -301,12 +305,12 @@ const CASES: Case[] = [
     solutionEn: [
       "Live Digital Twin of every store, SKU and country P&L.",
       "Autonomous re-order and dynamic pricing agents with human approval.",
-      "Morning FINN brief delivered to 1,400 store managers in their language.",
+      "Morning SADEED brief delivered to 1,400 store managers in their language.",
     ],
     solutionAr: [
       "توأم رقمي حي لكل متجر ومنتج وP&L لكل دولة.",
       "وكلاء ذاتيون لإعادة الطلب والتسعير الديناميكي مع موافقة بشرية.",
-      "إفادة صباحية من FINN لـ1,400 مدير متجر بلغتهم.",
+      "إفادة صباحية من سَدِيد لـ1,400 مدير متجر بلغتهم.",
     ],
     before: [
       { labelEn: "Stock-out rate", labelAr: "معدل نفاد المخزون", value: "7.4%" },
@@ -364,8 +368,8 @@ const CASES: Case[] = [
         icon: <Clock className="h-4 w-4" />,
       },
     ],
-    quoteEn: "FINN runs the morning meeting now. The team shows up with decisions, not slides.",
-    quoteAr: "تدير FINN الاجتماع الصباحي الآن. يحضر الفريق بقرارات، لا بشرائح.",
+    quoteEn: "SADEED runs the morning meeting now. The team shows up with decisions, not slides.",
+    quoteAr: "يدير سَدِيد الاجتماع الصباحي الآن. يحضر الفريق بقرارات، لا بشرائح.",
     attribEn: "Group CEO · MENA Retail Holding",
     attribAr: "الرئيس التنفيذي للمجموعة · قابضة تجزئة إقليمية",
     timelineEn: "8 weeks pilot · 14 weeks regional rollout",

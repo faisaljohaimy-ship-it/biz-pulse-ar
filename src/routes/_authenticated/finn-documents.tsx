@@ -162,10 +162,10 @@ function FinnDocumentsConsole() {
       <header className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
           <FileSearch className="h-8 w-8 text-primary" />
-          ذكاء المستندات — FINN Document Intelligence
+          ذكاء المستندات — SADEED Document Intelligence
         </h1>
         <p className="text-muted-foreground text-sm">
-          ارفع تقاريرك (PDF / Word / Excel / نص) — تُقطَّع وتُفهرس دلالياً لتجيب FINN عليها بدقة.
+          ارفع تقاريرك (PDF / Word / Excel / نص) — تُقطَّع وتُفهرس دلالياً ليجيب سَدِيد عليها بدقة.
         </p>
       </header>
 
@@ -289,7 +289,7 @@ function FinnDocumentsConsole() {
           </div>
         ) : docs.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            لا توجد مستندات بعد. ارفع أول ملف لتبدأ FINN بفهرسته دلالياً.
+            لا توجد مستندات بعد. ارفع أول ملف ليبدأ سَدِيد بفهرسته دلالياً.
           </p>
         ) : (
           <div className="divide-y divide-border/40">

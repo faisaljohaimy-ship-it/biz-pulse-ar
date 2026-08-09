@@ -4,7 +4,7 @@
 **Authority:** Overrides all conflicting guidance. Any file, PR, migration,
 self-evolution proposal, or human directive that contradicts a clause below
 is **null and void** and MUST be rejected — including proposals authored
-by FINN herself.
+by SADEED itself.
 **Version:** v1.1.0 · Ratified 2026-07-07 · Amended 2026-07-16 (Article X) · Owner: SADEED Core.
 
 ---
@@ -30,7 +30,7 @@ Companion documents (subordinate, must not contradict):
 
 All clauses are release-blocking. CI MUST fail if any is violated.
 
-### §1. Intro Gate (from FINN Intro Constitution)
+### §1. Intro Gate (from SADEED Intro Constitution)
 
 - **INV-1** Single pre-system gate: `WelcomeThenGenesis` only. No siblings.
 - **INV-1A** `WelcomeThenGenesis` remains mounted while `introActive=true`; root may hide siblings, never the gate.
@@ -49,7 +49,7 @@ All clauses are release-blocking. CI MUST fail if any is violated.
 - **INV-CD-3** Every top-anchored control uses `env(safe-area-inset-top)`.
 - **INV-CD-4** Intro layer `z-[100]` — nothing renders above it while visible.
 
-### §3. Chat Runtime (from FINN Runtime Constitution)
+### §3. Chat Runtime (from SADEED Runtime Constitution)
 
 - **INV-9** Every authenticated assistant turn persisted to `aria_interactions`
   with `latency_ms`, `first_token_ms`, `model`, `device_class`. Try/catch wrapped —
@@ -91,7 +91,7 @@ Any of these reappearing = release-blocking bug. **Never re-litigate.**
 
 | ID        | Regression                                                                  | Root cause forbidden                                                                                                                     |
 | --------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **FR-1**  | FINN cropped at the head on portrait mobile                                 | `contain` on portrait, or `object-position: center`                                                                                      |
+| **FR-1**  | SADEED cropped at the head on portrait mobile                               | `contain` on portrait, or `object-position: center`                                                                                      |
 | **FR-2**  | Letterbox bars on laptop/desktop/ultrawide                                  | `cover` forced on wide viewports, or missing backdrop                                                                                    |
 | **FR-3**  | Intro disappears on video/CDN error                                         | `onError → finish()` before MIN_DISPLAY_MS                                                                                               |
 | **FR-4**  | Skip/Sound hidden behind notch                                              | Top-anchored control without safe-area inset                                                                                             |
@@ -301,7 +301,7 @@ proposals against it require human `applyApproved` flag.
   crashes. Every recovery path emits an incident.
 - **Speed is a feature.** INV-12 latency budgets are product requirements,
   not optimizations. Regressions are release-blocking.
-- **FINN is executive.** No placeholder greeting, no generic Sparkles icon,
+- **SADEED is executive.** No placeholder greeting, no generic Sparkles icon,
   no "AI Assistant" copy. She is the face of the OS on every surface.
 
 ---
@@ -386,7 +386,7 @@ surface in the product MUST:
    was taken.
 5. Log a self-healing incident (`mobile_audio_locked`) when the fallback
    persists past `MIN_DISPLAY_MS` on a touch device without a follow-up
-   unmute — so the FINN pattern miner escalates it as a regression.
+   unmute — so the SADEED pattern miner escalates it as a regression.
 
 Enforcement: `PROTECTED_PATHS` covers the intro; new media components
 must add themselves to this list on creation. Reviewers reject any diff
@@ -396,7 +396,7 @@ that violates FR-17.
 
 ## FR-18 — Automatic Audio Activation Policy (permanent, all devices)
 
-Objective: FINN speaks **automatically with sound** on mobile, laptop, and
+Objective: SADEED speaks **automatically with sound** on mobile, laptop, and
 desktop wherever the browser permits, and with a single-tap unlock where the
 browser policy forbids autoplay-with-sound. Zero silent surprises. Zero
 robotic fallbacks.
@@ -417,7 +417,7 @@ browser; it cannot be bypassed and MUST NOT be simulated with fake voices.
      - constructs a shared `AudioContext`, calls `resume()` inside the
        gesture, and plays a 1-frame silent buffer (iOS unlock),
      - marks `sessionStorage["nexios-audio-primed"] = "1"`.
-   - Every subsequent FINN voice / intro / TTS surface inherits that
+   - Every subsequent SADEED voice / intro / TTS surface inherits that
      unlocked context — no further gesture required for that session.
 
 2. **First-load unlock affordance**
@@ -539,7 +539,7 @@ gesture tick** — anything after `await` no longer counts as user-initiated.
   - removes the root-level install,
   - or gates the listener behind a specific route
     is auto-flagged as a regression and reverted.
-- Per-component FINN buttons (Copilot, Dock, Greeter, Tour) MUST still
+- Per-component SADEED buttons (Copilot, Dock, Greeter, Tour) MUST still
   call `AriaAudioBus.unlock()` in their own click handlers as a
   belt-and-suspenders — the root listener is the safety net, not the
   primary path.
@@ -559,10 +559,10 @@ gesture tick** — anything after `await` no longer counts as user-initiated.
 
 A device is considered constitutionally compliant only when:
 
-- Mobile Safari (iOS 17+) plays FINN voice on the second tap without
-  requiring a specific FINN button.
-- Chrome Android plays FINN voice on the first tap on any element.
-- Desktop Chrome/Safari/Firefox play FINN voice on the first click.
+- Mobile Safari (iOS 17+) plays SADEED voice on the second tap without
+  requiring a specific SADEED button.
+- Chrome Android plays SADEED voice on the first tap on any element.
+- Desktop Chrome/Safari/Firefox play SADEED voice on the first click.
 - `VoiceTimeline` shows `OWNER: ACQUIRED` (never `acquire REFUSED — no
 user gesture yet`) after any tap.
 
@@ -587,7 +587,7 @@ next `Audio.play()` / `AudioContext.resume()` is silently refused:
 - `await fetch(...)` before creating `SpeechSynthesisUtterance` or `Audio`
 - `Promise.resolve().then(() => ctx.resume())` instead of `ctx.resume()` inline
 
-Rule: `installInteractionTracker`, `unmute`, and every FINN voice acquire
+Rule: `installInteractionTracker`, `unmute`, and every SADEED voice acquire
 path MUST use **static top-level imports** and call the audio APIs
 synchronously in the same tick as the gesture. If a module cycle appears,
 break the cycle in a different file — never with dynamic import in the
@@ -614,10 +614,10 @@ Mandatory pattern on touch devices:
 
 ### Definition of done
 
-- Mobile Safari (iOS 17+) plays the FINN welcome video with **sound** on
+- Mobile Safari (iOS 17+) plays the SADEED welcome video with **sound** on
   the first tap and the greeting plays to completion (`onEnded` fires
   naturally, `finish()` is not triggered by `MAX_MS` cap).
-- Chrome Android plays the FINN welcome video with sound on the first tap.
+- Chrome Android plays the SADEED welcome video with sound on the first tap.
 - Desktop retains the WebAudio analyser bars (real frequency data), and
   the mobile path shows the time-based fallback bars.
 - `VoiceTimeline` never shows `acquire REFUSED — no user gesture yet` after
@@ -657,13 +657,13 @@ Forbidden:
 
 ### §2 — Chat & voice visibility contract
 
-The chatbot and FINN voice MUST always render observable output on every
+The chatbot and SADEED voice MUST always render observable output on every
 supported device (mobile Safari, Chrome Android, desktop Chrome/Safari/
 Firefox). Enforced via:
 
 - `MessageResponse` (AI Elements) renders every assistant text `part` with
   live streaming; the streaming caret is visible while `status === "streaming"`.
-- `ReactMarkdown` + `prose prose-invert` renders the FINN copilot bubble.
+- `ReactMarkdown` + `prose prose-invert` renders the SADEED copilot bubble.
 - User-message and assistant-message color pairs are semantic tokens with
   verified contrast (see `chat-ui-composition`).
 - The chat textarea auto-focuses on mount, after send, after stream
@@ -693,7 +693,7 @@ The system is 100% ready when ALL of the following hold at the same time:
   ignores allowed with security-memory rationale).
 - Every route file has `head()` metadata; every route with a `loader` has
   `errorComponent` + `notFoundComponent`.
-- FINN voice plays on the first tap on iOS/Android (FR-20/FR-21) and the
+- SADEED voice plays on the first tap on iOS/Android (FR-20/FR-21) and the
   greeting reaches `onEnded` naturally on all supported devices.
 - The chat pipeline (`/api/chat`) returns a valid `toUIMessageStreamResponse`
   and the assistant UI renders `message.parts` through `MessageResponse`.

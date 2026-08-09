@@ -16,8 +16,8 @@ export interface HeroActionSpec {
 export const HERO_ACTIONS: Readonly<Record<HeroButtonId, HeroActionSpec>> = {
   talk_to_aria: {
     id: "talk_to_aria",
-    label_ar: "تحدّث مع FINN",
-    label_en: "Talk to FINN",
+    label_ar: "تحدّث مع سَدِيد",
+    label_en: "Talk to SADEED",
     prompt_ar: "ابدأ المحادثة التنفيذية. استمع إلى المستخدم ثم أجب باحترافية.",
     prompt_en: "Start the executive conversation. Listen, then respond concisely.",
     requiresVoice: true,

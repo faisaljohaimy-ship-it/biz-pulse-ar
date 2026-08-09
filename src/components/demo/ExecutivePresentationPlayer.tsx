@@ -25,6 +25,7 @@ import {
   Shield,
   SkipForward,
   Sparkles,
+  VideoOff,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
@@ -132,8 +133,8 @@ const SCENES: readonly Scene[] = [
     id: "agents",
     at: EXECUTIVE_PRESENTATION_MEDIA.cueSeconds[3],
     icon: Bot,
-    kicker_ar: "وكلاء FINN",
-    kicker_en: "FINN Agents",
+    kicker_ar: "وكلاء سَدِيد",
+    kicker_en: "SADEED Agents",
     title_ar: "وكلاء تنفيذيون يعملون معك.",
     title_en: "Executive agents that work alongside you.",
     body_ar: "يفهمون، ويحلّلون، وينفّذون بموافقة بشرية — لا قرار دون إذن.",
@@ -384,7 +385,7 @@ export function ExecutivePresentationPlayer() {
                 setPhase("idle");
                 setVideoFailed(true);
               }}
-              aria-label={ar ? "فيلم FINN للعرض التنفيذي" : "FINN executive presentation film"}
+              aria-label={ar ? "فيلم سديد للعرض التنفيذي" : "SADEED executive presentation film"}
               disablePictureInPicture
               className="h-full w-full object-cover object-top"
             >
@@ -407,7 +408,7 @@ export function ExecutivePresentationPlayer() {
             <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between gap-2 p-3">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-200/30 bg-[#04111f]/65 px-2.5 py-1 text-[12px] font-bold tracking-[0.2em] text-cyan-100 backdrop-blur-xl">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_10px_#22d3ee]" />
-                FINN · FILM
+                SADEED · FILM
               </span>
               <span className="rounded-full border border-white/15 bg-black/45 px-2 py-1 font-mono text-[12px] text-white/70 backdrop-blur-xl">
                 {EXECUTIVE_PRESENTATION_MEDIA.durationLabel}
@@ -425,7 +426,12 @@ export function ExecutivePresentationPlayer() {
                 backgroundSize: "cover",
               }}
             >
-              <Sparkles className="h-8 w-8 text-cyan-200 drop-shadow-[0_0_14px_rgba(34,211,238,.9)]" />
+              {/* لوحة `role="alert"` تقول «تعذّر تحميل الفيلم» — فالأيقونة
+                  فيلمٌ متعذّر، لا لمعة. */}
+              <VideoOff
+                aria-hidden
+                className="h-8 w-8 text-cyan-200 drop-shadow-[0_0_14px_rgba(34,211,238,.9)]"
+              />
               <p className="text-sm font-bold text-white">
                 {ar ? "تعذّر تحميل الفيلم التنفيذي" : "The executive film could not be loaded"}
               </p>
@@ -465,7 +471,7 @@ export function ExecutivePresentationPlayer() {
                     : "ابدأ العرض التنفيذي"}
               </span>
               <span dir="rtl" className="text-[12px] text-cyan-200/80">
-                FINN ترافقك صوتياً خلال جولة المنصة
+                سَدِيد يرافقك صوتياً خلال جولة المنصة
               </span>
             </button>
           )}

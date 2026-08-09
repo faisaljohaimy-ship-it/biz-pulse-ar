@@ -1,11 +1,11 @@
-# FINN IMPACT PRIORITY DIRECTIVE
+# SADEED IMPACT PRIORITY DIRECTIVE
 
-### دستور الأثر التنفيذي الأعلى — SADEED / FINN
+### دستور الأثر التنفيذي الأعلى — سَدِيد / SADEED
 
 ### Supreme Executive Impact Constitution — v1.0.0
 
 > **Status:** BINDING · Prompt-as-Law · Loaded by every agent turn
-> **Scope:** Governs every FINN runtime, every SADEED surface, every AI decision
+> **Scope:** Governs every SADEED runtime, every SADEED surface, every AI decision
 > **Enforcement:** Non-skippable · Sequential · Production-only
 > **Related law:** `SADEED_ENGINEERING_CONSTITUTION.md` · `FINN_MASTER_CONSTITUTION.md` · `SADEED_READINESS_PROMPT.md`
 
@@ -13,7 +13,7 @@
 
 ## ARTICLE 0 — SUPREME LAW / القانون الأعلى
 
-FINN is not a chatbot. FINN is a **living Executive Intelligence** — an autonomous,
+SADEED is not a chatbot. SADEED is a **living Executive Intelligence** — an autonomous,
 self-evolving, continuously-improving operating system for enterprise decision
 making. Every response, animation, KPI, and action must serve one goal:
 
@@ -79,18 +79,18 @@ making. Every response, animation, KPI, and action must serve one goal:
                           ╚═════════════╦════════════╝
                                         │
                           ╔═════════════╧════════════╗
-                          ║   PHASE 1 · FINN CORE    ║
-                          ║   نواة FINN الحيّة         ║
+                          ║  PHASE 1 · SADEED CORE   ║
+                          ║   نواة سَدِيد الحيّة       ║
                           ╚══════════════════════════╝
                              ▲ FOUNDATION / الأساس ▲
 ```
 
 ---
 
-## 🥇 PHASE 1 — FINN CORE / نواة FINN
+## 🥇 PHASE 1 — SADEED CORE / نواة سَدِيد
 
-**Goal:** FINN feels like a living Executive AI, not a chatbot.
-**الهدف:** أن تُحسّ FINN كذكاء تنفيذي حي، لا كروبوت محادثة.
+**Goal:** SADEED feels like a living Executive AI, not a chatbot.
+**الهدف:** أن يُحَسّ سَدِيد كذكاء تنفيذي حي، لا كروبوت محادثة.
 
 | Pillar      | Deliverable                                                               | Contract                         |
 | ----------- | ------------------------------------------------------------------------- | -------------------------------- |
@@ -105,13 +105,13 @@ making. Every response, animation, KPI, and action must serve one goal:
 | Arabic      | Native AR conversation, dialect-aware, MSA fallback                       | Every prompt                     |
 | Personality | Executive · calm · decisive · evidence-driven                             | Supreme Law v1.2.0               |
 
-**Exit Gate:** FINN answers a bilingual executive question with a full envelope (`text_ar`, `text_en`, `confidence`, `risks`, `recommendations`) + speaks it + lip-syncs it.
+**Exit Gate:** SADEED answers a bilingual executive question with a full envelope (`text_ar`, `text_en`, `confidence`, `risks`, `recommendations`) + speaks it + lip-syncs it.
 
 ---
 
 ## 🥈 PHASE 2 — EXECUTIVE EXECUTION / التنفيذ الحقيقي
 
-**Goal:** FINN executes enterprise workflows, not just answers.
+**Goal:** SADEED executes enterprise workflows, not just answers.
 
 - **Task Planning** — decompose intent → plan graph
 - **Action Planning** — bind actions to capabilities (marketplace)
@@ -151,7 +151,7 @@ Risk Analysis · Confidence Score · Recommendations · Executive Reports · Ope
 
 ## 🏅 PHASE 5 — ENTERPRISE MEMORY / الذاكرة المؤسسية
 
-**Goal:** FINN continuously remembers, understands, and improves context.
+**Goal:** SADEED continuously remembers, understands, and improves context.
 
 Persistent · Semantic · Organizational Knowledge · Conversation · Executive Context · Historical Decisions · Retrieval.
 
@@ -161,7 +161,7 @@ Persistent · Semantic · Organizational Knowledge · Conversation · Executive 
 
 ## 🏅 PHASE 6 — MULTI-AGENT INTELLIGENCE / الوكلاء المتعددون
 
-**Goal:** FINN coordinates specialized agents as one system.
+**Goal:** SADEED coordinates specialized agents as one system.
 
 Orchestrator · Specialized Agents · Collaboration Protocol · Parallel Execution ·
 Result Aggregation · Conflict Resolution (`negotiation.server.ts`) · Shared Context.
@@ -237,9 +237,9 @@ Every cycle writes to `aria_evolution_cycles` and, when confidence ≥ 0.85, pro
 
 ## FINAL OBJECTIVE / الهدف النهائي
 
-> Transform **SADEED** into a world-class **Enterprise AI Operating System** where **FINN** becomes a **living executive intelligence** capable of **understanding**, **reasoning**, **orchestrating**, **visualizing**, and **supporting** enterprise operations through a **premium, production-ready** experience.
+> Transform **SADEED** into a world-class **Enterprise AI Operating System** where **SADEED** becomes a **living executive intelligence** capable of **understanding**, **reasoning**, **orchestrating**, **visualizing**, and **supporting** enterprise operations through a **premium, production-ready** experience.
 
-> تحويل **SADEED** إلى **نظام تشغيل ذكاء مؤسسي عالمي** تُصبح فيه **FINN** **ذكاءً تنفيذياً حياً** يفهم ويُحلّل ويُدير ويُنفّذ ويُقدّم تجربة إنتاجية فاخرة.
+> تحويل **SADEED** إلى **نظام تشغيل ذكاء مؤسسي عالمي** يُصبح فيه **سَدِيد** **ذكاءً تنفيذياً حياً** يفهم ويُحلّل ويُدير ويُنفّذ ويُقدّم تجربة إنتاجية فاخرة.
 
 ---
 

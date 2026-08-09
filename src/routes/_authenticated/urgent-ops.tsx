@@ -367,7 +367,7 @@ function UrgentOpsPage() {
       return;
     }
     setDrafts((cur) => cur.filter((x) => x.proposal_ar !== d.proposal_ar));
-    toast.success("أُدرج مقترح FINN بانتظار الاعتماد");
+    toast.success("أُدرج مقترح سَدِيد بانتظار الاعتماد");
     void loadAll();
   };
 
@@ -460,7 +460,7 @@ function UrgentOpsPage() {
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-foreground">المساندة ومتابعة الأعمال العاجلة</h1>
         <p className="text-sm text-muted-foreground">
-          Urgent Operations & Support Desk — مركز تنفيذي متكامل مع محرك FINN للتحسين المستمر.
+          Urgent Operations & Support Desk — مركز تنفيذي متكامل مع محرك سَدِيد للتحسين المستمر.
         </p>
       </header>
 
@@ -610,10 +610,10 @@ function UrgentOpsPage() {
         <Card className="border-border/60 bg-card/60">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
-              <Sparkles className="h-4 w-4" /> مقترحات FINN لتطوير المنظومة
+              <Sparkles className="h-4 w-4" /> مقترحات سَدِيد لتطوير المنظومة
             </CardTitle>
             <p className="text-[12px] text-amber-700 dark:text-amber-200/80 mt-1">
-              FINN تقترح وتجهّز — الاعتماد النهائي بشري.
+              سَدِيد يقترح ويجهّز — الاعتماد النهائي بشري.
             </p>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -624,7 +624,7 @@ function UrgentOpsPage() {
               >
                 <div className="flex items-center gap-2">
                   <Badge className="text-[12px] border bg-amber-500/15 text-amber-600 border-amber-500/40 dark:text-amber-300">
-                    مسودة FINN
+                    مسودة سَدِيد
                   </Badge>
                   <Badge
                     variant="outline"
@@ -712,7 +712,7 @@ function UrgentOpsPage() {
             ))}
             {proposals.length === 0 && drafts.length === 0 && (
               <p className="text-xs text-muted-foreground/70 text-center py-4">
-                لا توجد مقترحات حالياً. سيقوم محرك FINN بتحليل المؤشرات واقتراح تحسينات عند رصد
+                لا توجد مقترحات حالياً. سيقوم محرك سَدِيد بتحليل المؤشرات واقتراح تحسينات عند رصد
                 إشارات تشغيلية.
               </p>
             )}

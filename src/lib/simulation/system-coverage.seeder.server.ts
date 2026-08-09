@@ -170,7 +170,7 @@ const EVO_SUMMARIES = [
   "إضافة ربط تلقائي بين فجوات الامتثال وخطط المعالجة المقترحة.",
   "تحسين توقيت تنبيهات قرب انتهاء التصاريح لتقليل الإنذارات المتأخرة.",
   "ضبط عتبات كشف محاولات الدخول المرفوضة لتقليل الإنذارات الكاذبة.",
-  "تحديث ملخّصات FINN التنفيذي لتكون أكثر إيجازًا واعتمادًا على البيانات.",
+  "تحديث ملخّصات سَدِيد التنفيذي لتكون أكثر إيجازًا واعتمادًا على البيانات.",
 ];
 
 // ── /learn module content — global, idempotent via `sim-` slug prefix ────────
@@ -292,22 +292,22 @@ const LEARN_LESSONS: SimLesson[] = [
     slug: "sim-aria-executive",
     order_index: 4,
     category: "core",
-    title_ar: "FINN في القرار التنفيذي",
-    title_en: "FINN for Executive Decisions",
-    subtitle_ar: "كيف تستمد FINN معلوماتها من المحاكاة وقاعدة البيانات",
-    subtitle_en: "How FINN grounds answers in the simulation and database",
+    title_ar: "سَدِيد في القرار التنفيذي",
+    title_en: "SADEED for Executive Decisions",
+    subtitle_ar: "كيف يستمد سَدِيد معلوماته من المحاكاة وقاعدة البيانات",
+    subtitle_en: "How SADEED grounds answers in the simulation and database",
     summary_ar:
-      "تعلّم كيف تجيب FINN باختصار واعتمادًا على المحاكاة وقاعدة البيانات فقط، وكيف تستخدم أدوات الامتثال والتصاريح، ومتى تُرسل البريد والرسائل نيابة عنك.",
+      "تعلّم كيف يجيب سَدِيد باختصار واعتمادًا على المحاكاة وقاعدة البيانات فقط، وكيف يستخدم أدوات الامتثال والتصاريح، ومتى يُرسل البريد والرسائل نيابة عنك.",
     summary_en:
-      "Learn how FINN answers concisely grounded only in the simulation and database, how it uses compliance and permit tools, and when it sends email and SMS on your behalf.",
+      "Learn how SADEED answers concisely grounded only in the simulation and database, how it uses compliance and permit tools, and when it sends email and SMS on your behalf.",
     quiz: [
       {
-        prompt_ar: "من أين تستمد FINN معلوماتها؟",
-        prompt_en: "Where does FINN source its information?",
+        prompt_ar: "من أين يستمد سَدِيد معلوماته؟",
+        prompt_en: "Where does SADEED source its information?",
         options_ar: ["المحاكاة وقاعدة البيانات فقط", "الإنترنت المفتوح", "تخمينات عامة"],
         options_en: ["Simulation and database only", "The open internet", "General guesses"],
         correct_index: 0,
-        explanation_ar: "FINN مقيّد بالمحاكاة وقاعدة البيانات فقط لضمان دقّة وموثوقية الإجابات.",
+        explanation_ar: "سَدِيد مقيّد بالمحاكاة وقاعدة البيانات فقط لضمان دقّة وموثوقية الإجابات.",
       },
     ],
   },

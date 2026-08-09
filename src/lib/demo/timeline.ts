@@ -236,9 +236,9 @@ export const EXECUTIVE_DAY_TIMELINE: readonly DemoStep[] = [
     title_en: "Day close — briefing generated",
     title_ar: "إغلاق اليوم — إصدار التقرير التنفيذي",
     description_en:
-      "Compliance closed at 74% (baseline 92%). Response time strong at 6 minutes. FINN briefing generated at confidence 0.92.",
+      "Compliance closed at 74% (baseline 92%). Response time strong at 6 minutes. SADEED briefing generated at confidence 0.92.",
     description_ar:
-      "أُغلق الالتزام عند 74% (المستوى المرجعي 92%). زمن الاستجابة قوي عند 6 دقائق. تم إنشاء تقرير FINN بثقة 0.92.",
+      "أُغلق الالتزام عند 74% (المستوى المرجعي 92%). زمن الاستجابة قوي عند 6 دقائق. تم إنشاء تقرير سَدِيد بثقة 0.92.",
     affectedModules: ["executive-reports", "aria"],
     executiveMessage_en:
       "A prevented catastrophe — with a full evidence chain and a policy fix in flight.",

@@ -33,7 +33,6 @@ import { Route as NxAtlasRouteImport } from './routes/nx-atlas'
 import { Route as NxAgentsRouteImport } from './routes/nx-agents'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as HcisComplianceRouteImport } from './routes/hcis-compliance'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as ExecutiveShowcaseRouteImport } from './routes/executive-showcase'
@@ -101,7 +100,6 @@ import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authentica
 import { Route as AuthenticatedInvestorRouteImport } from './routes/_authenticated/investor'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedHealthRouteImport } from './routes/_authenticated/health'
-import { Route as AuthenticatedHcisRouteImport } from './routes/_authenticated/hcis'
 import { Route as AuthenticatedGuideRouteImport } from './routes/_authenticated/guide'
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
@@ -211,7 +209,6 @@ import { Route as ApiPublicHooksFinnIncidentRouteImport } from './routes/api/pub
 import { Route as ApiPublicHooksFinnDocsIngestRouteImport } from './routes/api/public/hooks/finn-docs-ingest'
 import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/api/public/hooks/executive-reports-run'
 import { Route as ApiFinnProvidersStatusRouteImport } from './routes/api/finn/providers/status'
-import { Route as AuthenticatedHcisDirectiveCodeRouteImport } from './routes/_authenticated/hcis_.directive.$code'
 
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
   id: '/unsubscribe',
@@ -331,11 +328,6 @@ const McpRoute = McpRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HcisComplianceRoute = HcisComplianceRouteImport.update({
-  id: '/hcis-compliance',
-  path: '/hcis-compliance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GovernmentBriefRoute = GovernmentBriefRouteImport.update({
@@ -682,11 +674,6 @@ const AuthenticatedIntegrationsRoute =
 const AuthenticatedHealthRoute = AuthenticatedHealthRouteImport.update({
   id: '/health',
   path: '/health',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedHcisRoute = AuthenticatedHcisRouteImport.update({
-  id: '/hcis',
-  path: '/hcis',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedGuideRoute = AuthenticatedGuideRouteImport.update({
@@ -1274,12 +1261,6 @@ const ApiFinnProvidersStatusRoute = ApiFinnProvidersStatusRouteImport.update({
   path: '/api/finn/providers/status',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedHcisDirectiveCodeRoute =
-  AuthenticatedHcisDirectiveCodeRouteImport.update({
-    id: '/hcis_/directive/$code',
-    path: '/hcis/directive/$code',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -1303,7 +1284,6 @@ export interface FileRoutesByFullPath {
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
-  '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/nx-agents': typeof NxAgentsRoute
@@ -1361,7 +1341,6 @@ export interface FileRoutesByFullPath {
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/guide': typeof AuthenticatedGuideRoute
-  '/hcis': typeof AuthenticatedHcisRoute
   '/health': typeof AuthenticatedHealthRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/investor': typeof AuthenticatedInvestorRoute
@@ -1467,7 +1446,6 @@ export interface FileRoutesByFullPath {
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
-  '/hcis/directive/$code': typeof AuthenticatedHcisDirectiveCodeRoute
   '/api/finn/providers/status': typeof ApiFinnProvidersStatusRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/finn-docs-ingest': typeof ApiPublicHooksFinnDocsIngestRoute
@@ -1507,7 +1485,6 @@ export interface FileRoutesByTo {
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
-  '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/nx-agents': typeof NxAgentsRoute
@@ -1565,7 +1542,6 @@ export interface FileRoutesByTo {
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/guide': typeof AuthenticatedGuideRoute
-  '/hcis': typeof AuthenticatedHcisRoute
   '/health': typeof AuthenticatedHealthRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/investor': typeof AuthenticatedInvestorRoute
@@ -1669,7 +1645,6 @@ export interface FileRoutesByTo {
   '/assistant': typeof AuthenticatedAssistantIndexRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
-  '/hcis/directive/$code': typeof AuthenticatedHcisDirectiveCodeRoute
   '/api/finn/providers/status': typeof ApiFinnProvidersStatusRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/finn-docs-ingest': typeof ApiPublicHooksFinnDocsIngestRoute
@@ -1711,7 +1686,6 @@ export interface FileRoutesById {
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
-  '/hcis-compliance': typeof HcisComplianceRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/nx-agents': typeof NxAgentsRoute
@@ -1769,7 +1743,6 @@ export interface FileRoutesById {
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
   '/_authenticated/guide': typeof AuthenticatedGuideRoute
-  '/_authenticated/hcis': typeof AuthenticatedHcisRoute
   '/_authenticated/health': typeof AuthenticatedHealthRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/investor': typeof AuthenticatedInvestorRoute
@@ -1875,7 +1848,6 @@ export interface FileRoutesById {
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
-  '/_authenticated/hcis_/directive/$code': typeof AuthenticatedHcisDirectiveCodeRoute
   '/api/finn/providers/status': typeof ApiFinnProvidersStatusRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/finn-docs-ingest': typeof ApiPublicHooksFinnDocsIngestRoute
@@ -1917,7 +1889,6 @@ export interface FileRouteTypes {
     | '/executive-showcase'
     | '/films'
     | '/government-brief'
-    | '/hcis-compliance'
     | '/login'
     | '/mcp'
     | '/nx-agents'
@@ -1975,7 +1946,6 @@ export interface FileRouteTypes {
     | '/forgotten'
     | '/governance'
     | '/guide'
-    | '/hcis'
     | '/health'
     | '/integrations'
     | '/investor'
@@ -2081,7 +2051,6 @@ export interface FileRouteTypes {
     | '/assistant/'
     | '/learn/'
     | '/sec/'
-    | '/hcis/directive/$code'
     | '/api/finn/providers/status'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/finn-docs-ingest'
@@ -2121,7 +2090,6 @@ export interface FileRouteTypes {
     | '/executive-showcase'
     | '/films'
     | '/government-brief'
-    | '/hcis-compliance'
     | '/login'
     | '/mcp'
     | '/nx-agents'
@@ -2179,7 +2147,6 @@ export interface FileRouteTypes {
     | '/forgotten'
     | '/governance'
     | '/guide'
-    | '/hcis'
     | '/health'
     | '/integrations'
     | '/investor'
@@ -2283,7 +2250,6 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/learn'
     | '/sec'
-    | '/hcis/directive/$code'
     | '/api/finn/providers/status'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/finn-docs-ingest'
@@ -2324,7 +2290,6 @@ export interface FileRouteTypes {
     | '/executive-showcase'
     | '/films'
     | '/government-brief'
-    | '/hcis-compliance'
     | '/login'
     | '/mcp'
     | '/nx-agents'
@@ -2382,7 +2347,6 @@ export interface FileRouteTypes {
     | '/_authenticated/forgotten'
     | '/_authenticated/governance'
     | '/_authenticated/guide'
-    | '/_authenticated/hcis'
     | '/_authenticated/health'
     | '/_authenticated/integrations'
     | '/_authenticated/investor'
@@ -2488,7 +2452,6 @@ export interface FileRouteTypes {
     | '/_authenticated/assistant/'
     | '/_authenticated/learn/'
     | '/_authenticated/sec/'
-    | '/_authenticated/hcis_/directive/$code'
     | '/api/finn/providers/status'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/finn-docs-ingest'
@@ -2530,7 +2493,6 @@ export interface RootRouteChildren {
   ExecutiveShowcaseRoute: typeof ExecutiveShowcaseRoute
   FilmsRoute: typeof FilmsRoute
   GovernmentBriefRoute: typeof GovernmentBriefRoute
-  HcisComplianceRoute: typeof HcisComplianceRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   NxAgentsRoute: typeof NxAgentsRoute
@@ -2775,13 +2737,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hcis-compliance': {
-      id: '/hcis-compliance'
-      path: '/hcis-compliance'
-      fullPath: '/hcis-compliance'
-      preLoaderRoute: typeof HcisComplianceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/government-brief': {
@@ -3251,13 +3206,6 @@ declare module '@tanstack/react-router' {
       path: '/health'
       fullPath: '/health'
       preLoaderRoute: typeof AuthenticatedHealthRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/hcis': {
-      id: '/_authenticated/hcis'
-      path: '/hcis'
-      fullPath: '/hcis'
-      preLoaderRoute: typeof AuthenticatedHcisRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/guide': {
@@ -4023,13 +3971,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFinnProvidersStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/hcis_/directive/$code': {
-      id: '/_authenticated/hcis_/directive/$code'
-      path: '/hcis/directive/$code'
-      fullPath: '/hcis/directive/$code'
-      preLoaderRoute: typeof AuthenticatedHcisDirectiveCodeRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
   }
 }
 
@@ -4167,7 +4108,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
   AuthenticatedGuideRoute: typeof AuthenticatedGuideRoute
-  AuthenticatedHcisRoute: typeof AuthenticatedHcisRoute
   AuthenticatedHealthRoute: typeof AuthenticatedHealthRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedInvestorRoute: typeof AuthenticatedInvestorRoute
@@ -4208,7 +4148,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedWorkflowsRoute: typeof AuthenticatedWorkflowsRoute
   AuthenticatedAssistantThreadIdRoute: typeof AuthenticatedAssistantThreadIdRoute
   AuthenticatedAssistantIndexRoute: typeof AuthenticatedAssistantIndexRoute
-  AuthenticatedHcisDirectiveCodeRoute: typeof AuthenticatedHcisDirectiveCodeRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -4243,7 +4182,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
   AuthenticatedGuideRoute: AuthenticatedGuideRoute,
-  AuthenticatedHcisRoute: AuthenticatedHcisRoute,
   AuthenticatedHealthRoute: AuthenticatedHealthRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedInvestorRoute: AuthenticatedInvestorRoute,
@@ -4284,7 +4222,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedWorkflowsRoute: AuthenticatedWorkflowsRoute,
   AuthenticatedAssistantThreadIdRoute: AuthenticatedAssistantThreadIdRoute,
   AuthenticatedAssistantIndexRoute: AuthenticatedAssistantIndexRoute,
-  AuthenticatedHcisDirectiveCodeRoute: AuthenticatedHcisDirectiveCodeRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -4325,7 +4262,6 @@ const rootRouteChildren: RootRouteChildren = {
   ExecutiveShowcaseRoute: ExecutiveShowcaseRoute,
   FilmsRoute: FilmsRoute,
   GovernmentBriefRoute: GovernmentBriefRoute,
-  HcisComplianceRoute: HcisComplianceRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   NxAgentsRoute: NxAgentsRoute,

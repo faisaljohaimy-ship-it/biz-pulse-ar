@@ -207,10 +207,19 @@ describe("the brand is what the owner set", () => {
     expect(brandFor(false).tagline).toBe(PRODUCT_BRAND.en.tagline);
   });
 
-  it("keeps FINN as the assistant — a separate identity", () => {
-    // The rename brief said so explicitly, and the two identities have
-    // different lifecycles: FINN survived three product renames.
-    expect(PRODUCT_BRAND.assistantName).toBe("FINN");
+  it("names the assistant with the brand — one name, by owner directive", () => {
+    // OWNER DIRECTIVE 2026-08-09 («توحيد اسم Finn إلى سَدِيد») REVERSES the
+    // earlier rule this test used to encode. FINN was a separate identity that
+    // survived three product renames; the owner has now merged it, so the
+    // assistant is displayed as the product brand and nothing else.
+    //
+    // Written as a literal, not derived from PRODUCT_BRAND.ar.name: deriving it
+    // would pass whatever the module said (article ٣٠).
+    expect(PRODUCT_BRAND.assistantName).toBe("سَدِيد");
+    // The merge is DISPLAY-ONLY. `finn-core`, `/finn`, `/api/finn/*`,
+    // `finn_knowledge`, `FinnCopilot` and `public/finn-portrait.*` keep their
+    // identifiers — renaming them orphans live user state and breaks routing.
+    // That boundary is the rule in CLAUDE.md: ban display text, not identifiers.
   });
 
   it("every compatibility alias resolves to the new brand", () => {

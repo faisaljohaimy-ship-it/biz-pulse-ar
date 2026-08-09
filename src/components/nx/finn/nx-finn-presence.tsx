@@ -9,6 +9,8 @@
  */
 import * as React from "react";
 import { cn } from "@/lib/utils";
+// المشكول للعين، وغير المشكول لقارئ الشاشة — التشكيل يُتهجّى في `aria-label`.
+import { FINN_DISPLAY_NAME_AR, FINN_DISPLAY_NAME_AR_PLAIN } from "@/lib/finn-core/branding";
 
 export type NxFinnState =
   | "idle"
@@ -71,7 +73,7 @@ export const NxFinnPresence = React.forwardRef<HTMLDivElement, NxFinnPresencePro
       <div
         ref={ref}
         role="status"
-        aria-label={`FINN: ${FINN_STATE_LABEL[state]}`}
+        aria-label={`${FINN_DISPLAY_NAME_AR_PLAIN}: ${FINN_STATE_LABEL[state]}`}
         data-finn-state={state}
         className={cn("inline-flex flex-col items-center gap-2", className)}
         {...props}
@@ -85,7 +87,7 @@ export const NxFinnPresence = React.forwardRef<HTMLDivElement, NxFinnPresencePro
             )}
           />
           <span className="text-sm font-bold text-nx-pearl" aria-hidden>
-            FINN
+            {FINN_DISPLAY_NAME_AR}
           </span>
           <span
             aria-hidden

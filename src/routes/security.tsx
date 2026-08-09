@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   Eye,
   Server,
-  Database,
+  DatabaseBackup,
+  ScanEye,
   Cpu,
   GitBranch,
   Users,
@@ -162,8 +163,8 @@ function SecurityPage() {
           ar: "لا تُستخدم بيانات العملاء لتدريب نماذج مشتركة.",
         },
         {
-          en: "Prompt-injection defences, output filtering, and tool-use sandboxing for FINN agents.",
-          ar: "حماية من حقن الموجّهات وتصفية المخرجات وعزل الأدوات لوكلاء FINN.",
+          en: "Prompt-injection defences, output filtering, and tool-use sandboxing for SADEED agents.",
+          ar: "حماية من حقن الموجّهات وتصفية المخرجات وعزل الأدوات لوكلاء سَدِيد.",
         },
         {
           en: "Human-in-the-loop approval gates for high-impact autonomous actions.",
@@ -191,7 +192,8 @@ function SecurityPage() {
       ],
     },
     {
-      icon: <Database className="h-5 w-5" />,
+      // التعافي **استرجاعُ** نسخة، لا مجرّد قاعدة بيانات.
+      icon: <DatabaseBackup className="h-5 w-5" />,
       titleEn: "Disaster Recovery (DR)",
       titleAr: "التعافي من الكوارث",
       items: [
@@ -267,7 +269,9 @@ function SecurityPage() {
       ],
     },
     {
-      icon: <Shield className="h-5 w-5" />,
+      // «المراقبة والاكتشاف» مسحٌ وكشف؛ و`Shield` هي أيقونة بطاقة
+      // «ضوابط الأمن» في الصفحة نفسها.
+      icon: <ScanEye className="h-5 w-5" />,
       titleEn: "Monitoring & Detection",
       titleAr: "المراقبة والاكتشاف",
       items: [

@@ -211,7 +211,7 @@ export function NxAgentsPage() {
               SADEED · AGENTIC FLOW CANVAS
             </h2>
             <p className="text-[12px] text-nx-pearl/60">
-              المصادر ← الوكلاء ← FINN ← بوابة الاعتماد البشري
+              المصادر ← الوكلاء ← سَدِيد ← بوابة الاعتماد البشري
             </p>
           </div>
           {/* أرضية قراءة نصّ اللوحة: مقاسها الداخلي ١٢٦٠ وحدة، فلو انكمشت

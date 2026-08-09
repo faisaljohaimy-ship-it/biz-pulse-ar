@@ -63,8 +63,8 @@ function PrivacyPage() {
             </li>
             <li>
               {isAr
-                ? "بيانات المؤسسة التي تختار رفعها: مؤشرات، تنبيهات، وثائق، محادثات FINN."
-                : "Enterprise data you choose to upload: KPIs, alerts, documents, FINN conversations."}
+                ? "بيانات المؤسسة التي تختار رفعها: مؤشرات، تنبيهات، وثائق، محادثات سَدِيد."
+                : "Enterprise data you choose to upload: KPIs, alerts, documents, SADEED conversations."}
             </li>
             <li>
               {isAr

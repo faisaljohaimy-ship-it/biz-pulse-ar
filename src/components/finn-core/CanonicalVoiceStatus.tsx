@@ -71,10 +71,10 @@ export function CanonicalVoiceStatus() {
             </div>
             <div>
               <p className="text-[12px] font-bold uppercase tracking-[0.35em] text-cyan-300">
-                FINN · صوت موحّد
+                سَدِيد · صوت موحّد
               </p>
               <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">
-                حالة صوت FINN الرسمي
+                حالة صوت سَدِيد الرسمي
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                 فحص للهوية الصوتية الواحدة والمسار الخادمي المحكوم. لا تنشئ هذه الصفحة مساعداً أو
@@ -184,7 +184,7 @@ export function CanonicalVoiceStatus() {
                         : "border-amber-500/30 bg-amber-500/15 text-amber-300"
                     }
                   >
-                    {diagnostics.live_voice_ready ? "FINN VOICE READY" : "SAFE CLOSED"}
+                    {diagnostics.live_voice_ready ? "SADEED VOICE READY" : "SAFE CLOSED"}
                   </Badge>
                   <p className="mt-2 text-xs text-slate-400">
                     آخر فحص: {new Date(diagnostics.generated_at).toLocaleString("ar-SA")}
@@ -193,14 +193,14 @@ export function CanonicalVoiceStatus() {
                 <Button asChild className="bg-cyan-400 text-[#061A2E] hover:bg-cyan-300">
                   <Link to="/assistant">
                     <Sparkles className="ml-2 h-4 w-4" />
-                    افتح FINN الرسمية
+                    افتح سَدِيد الرسمي
                   </Link>
                 </Button>
               </CardContent>
             </Card>
 
             <p className="px-2 text-xs leading-5 text-slate-500">
-              الإعداد الوحيد المطلوب للصوت هو المفتاح الخادمي. هوية FINN وصوتها ونموذجها مقفلة
+              الإعداد الوحيد المطلوب للصوت هو المفتاح الخادمي. هوية سَدِيد وصوته ونموذجه مقفلة
               مركزياً، وأي فشل يؤدي إلى الصمت الآمن بدلاً من تشغيل صوت بديل.
             </p>
           </>

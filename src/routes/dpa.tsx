@@ -54,8 +54,8 @@ function DpaPage() {
       titleAr: "2 · النطاق والمدة والغرض",
       items: [
         {
-          en: "Subject matter: provision of the SADEED platform and FINN agent services.",
-          ar: "الموضوع: تقديم منصة سَدِيد وخدمات وكلاء FINN.",
+          en: "Subject matter: provision of the SADEED platform and its agent services.",
+          ar: "الموضوع: تقديم منصة سَدِيد وخدمات وكلائها.",
         },
         {
           en: "Duration: the term of the underlying Master Services Agreement, plus any data-return / deletion window.",

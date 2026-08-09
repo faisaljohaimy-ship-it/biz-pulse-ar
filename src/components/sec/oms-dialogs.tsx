@@ -109,7 +109,9 @@ export function NewIncidentDialog() {
       <DialogContent className="max-w-lg" dir="rtl">
         <DialogHeader>
           <DialogTitle>تسجيل بلاغ أمني</DialogTitle>
-          <DialogDescription>سيُسجَّل البلاغ وتُشغَّل FINN لتحليل المخاطر فوراً.</DialogDescription>
+          <DialogDescription>
+            سيُسجَّل البلاغ ويُشغَّل سَدِيد لتحليل المخاطر فوراً.
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
           <div className="grid gap-1.5">
@@ -250,7 +252,7 @@ export function IncidentDrawer({
   const mFinn = useMutation({
     mutationFn: () => aria({ data: { incident_id: incident!.id } }),
     onSuccess: () => {
-      toast.success("اكتمل تحليل FINN");
+      toast.success("اكتمل تحليل سَدِيد");
       qc.invalidateQueries({ queryKey: ["oms-incidents"] });
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
     },
@@ -546,7 +548,7 @@ export function IncidentDrawer({
               <div className="rounded-lg border border-violet-500/30 bg-violet-500/5 p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-medium text-violet-700 dark:text-violet-400">
-                    <Sparkles className="h-3.5 w-3.5" /> تحليل FINN
+                    <Sparkles className="h-3.5 w-3.5" /> تحليل سَدِيد
                   </div>
                   <Button
                     size="sm"

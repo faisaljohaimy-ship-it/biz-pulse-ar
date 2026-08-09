@@ -34,7 +34,7 @@ const FINN_WELCOME_AR: UIMessage = {
   parts: [
     {
       type: "text",
-      text: "أَهْلًا بِكَ — أَنَا فِنّ، مُسَاعِدُكَ التَّنْفِيذِيُّ الذَّكِيُّ. أَنَا مَعَكَ فِي كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِدٍ. اسْأَلْنِي عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِّرَاتِ، أَوِ القَرَارَاتِ التَّنْفِيذِيَّةِ.",
+      text: "أَهْلًا بِكَ — أَنَا سَدِيد، مُسَاعِدُكَ التَّنْفِيذِيُّ الذَّكِيُّ. أَنَا مَعَكَ فِي كُلِّ صَفْحَة، بِذَاكِرَةٍ وَاحِدَةٍ وَصَوْتٍ وَاحِدٍ. اسْأَلْنِي عَنِ الأَمْنِ الصِّنَاعِيِّ، أَوِ المُؤَشِّرَاتِ، أَوِ القَرَارَاتِ التَّنْفِيذِيَّةِ.",
     },
   ],
 };
@@ -134,7 +134,7 @@ export function FinnProvider({ children }: { children: React.ReactNode }) {
     if (!last || last.role !== "assistant") return;
     const text =
       last.parts.map((p) => (p.type === "text" ? p.text : "")).join("") ||
-      "FINN completed a non-text tool step.";
+      "SADEED completed a non-text tool step.";
     reportedRef.current.add(active.id);
     finnBrain.reportCompletion(active.id, text);
   }, [chat.status, chat.messages]);

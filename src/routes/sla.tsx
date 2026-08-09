@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
 import { TrustShell, SectionTitle, Card, Bullets } from "@/components/trust-shell";
-import { Gauge, Timer, BadgeCheck, LifeBuoy, AlertTriangle } from "lucide-react";
+import { Gauge, Timer, TimerReset, BadgeCheck, LifeBuoy, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/sla")({
   head: () => ({
@@ -163,7 +163,8 @@ function SlaPage() {
             ar: "إقرار SEV-1",
           },
           {
-            icon: <BadgeCheck className="h-4 w-4" />,
+            // مؤشّر **زمن** (RTO ≤ 4h)؛ و`BadgeCheck` وسامُ اعتماد لا مؤقّت.
+            icon: <TimerReset className="h-4 w-4" />,
             v: "≤ 4h",
             en: "RTO (tier-1)",
             ar: "زمن الاستعادة (فئة 1)",

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Search, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { Search, ArrowLeft, ArrowRight, SearchX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 
@@ -126,13 +126,6 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
         group: "Navigate",
       },
       {
-        id: "hcis",
-        title_ar: screenNameAr("/hcis"),
-        title_en: screenNameEn("/hcis"),
-        to: "/hcis",
-        group: "Navigate",
-      },
-      {
         id: "twin",
         title_ar: screenNameAr("/digital-twin"),
         title_en: screenNameEn("/digital-twin"),
@@ -148,7 +141,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
       },
       {
         id: "agent-flow",
-        title_ar: "رحلة الوكلاء مع فِن",
+        title_ar: "رحلة الوكلاء مع سَدِيد",
         title_en: "Agents Flow",
         to: "/nx-flow",
         group: "Agents",
@@ -300,7 +293,9 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
           ))}
           {filtered.length === 0 && (
             <div className="flex flex-col items-center gap-2 px-6 py-10 text-center text-white/50">
-              <Sparkles className="h-5 w-5 text-[#3AE8FF]" />
+              {/* «لا توجد نتائج» حالةُ بحثٍ خائب، لا لمعةُ ذكاء: `Sparkles`
+                  كانت تَعِد بشيء بينما النص ينفيه. */}
+              <SearchX className="h-5 w-5 text-[#3AE8FF]" aria-hidden />
               <p className="text-sm">{ar ? "لا توجد نتائج" : "No matches"}</p>
             </div>
           )}

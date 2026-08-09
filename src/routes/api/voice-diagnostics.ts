@@ -75,7 +75,7 @@ async function probeCanonicalVoice(apiKey: string | undefined): Promise<Check> {
   if (!apiKey) {
     return {
       id: "canonical_voice",
-      label: "FINN canonical voice",
+      label: "SADEED canonical voice",
       status: "skipped",
       detail: "API key missing — identity could not be verified.",
     };
@@ -92,30 +92,30 @@ async function probeCanonicalVoice(apiKey: string | undefined): Promise<Check> {
     if (!response.ok) {
       return {
         id: "canonical_voice",
-        label: "FINN canonical voice",
+        label: "SADEED canonical voice",
         status: "failed",
         detail:
           response.status === 404
-            ? "The locked FINN voice is not available to this ElevenLabs account."
+            ? "The locked SADEED voice is not available to this ElevenLabs account."
             : `ElevenLabs returned HTTP ${response.status}.`,
-        fix: "Grant this account access to the locked FINN voice; do not substitute another voice.",
+        fix: "Grant this account access to the locked SADEED voice; do not substitute another voice.",
       };
     }
 
     const payload = (await response.json()) as { name?: string };
     return {
       id: "canonical_voice",
-      label: "FINN canonical voice",
+      label: "SADEED canonical voice",
       status: "ok",
       detail: payload.name ? `${payload.name} · identity locked` : "Identity locked and reachable.",
     };
   } catch (error) {
     return {
       id: "canonical_voice",
-      label: "FINN canonical voice",
+      label: "SADEED canonical voice",
       status: "failed",
       detail: error instanceof Error ? error.message : "Network error.",
-      fix: "Verify provider availability and retry without changing FINN's voice identity.",
+      fix: "Verify provider availability and retry without changing SADEED's voice identity.",
     };
   }
 }
@@ -140,7 +140,7 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
         const ready = apiKeyCheck.status === "ok" && voiceCheck.status === "ok";
         const runtimeCheck: Check = {
           id: "canonical_runtime",
-          label: "Governed FINN TTS runtime",
+          label: "Governed SADEED TTS runtime",
           status: ready ? "ok" : "skipped",
           detail: ready
             ? `/api/finn/tts · ${FINN_ELEVENLABS_MODEL} · authenticated · rate-limited`
@@ -155,11 +155,11 @@ export const Route = createFileRoute("/api/voice-diagnostics")({
             present: Boolean(apiKey),
             auth_type: "api_key",
             scopes_note:
-              "The server secret is used only by the governed FINN TTS endpoint and is never exposed to the browser.",
+              "The server secret is used only by the governed SADEED TTS endpoint and is never exposed to the browser.",
           },
           voice: {
             configured: true,
-            identity: "FINN",
+            identity: "SADEED",
             model: FINN_ELEVENLABS_MODEL,
             id_masked: `${FINN_ELEVENLABS_VOICE_ID.slice(0, 3)}…${FINN_ELEVENLABS_VOICE_ID.slice(-3)}`,
           },

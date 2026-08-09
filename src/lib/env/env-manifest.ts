@@ -70,7 +70,7 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
   },
   {
     key: "aria-brain",
-    labelAr: "عقل FINN ومجلس الوكلاء (Google Gemini فقط)",
+    labelAr: "عقل سَدِيد ومجلس الوكلاء (Google Gemini فقط)",
     requirement: "one-of",
     vars: [
       S("GEMINI_API_KEY", "Google Gemini native API"),
@@ -79,9 +79,9 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
   },
   {
     key: "finn-voice",
-    labelAr: "صوت FINN (ElevenLabs — هوية مقفلة)",
+    labelAr: "صوت سَدِيد (ElevenLabs — هوية مقفلة)",
     requirement: "all",
-    vars: [S("ELEVENLABS_API_KEY", "ElevenLabs — FINN's exclusive voice")],
+    vars: [S("ELEVENLABS_API_KEY", "ElevenLabs — SADEED's exclusive voice")],
   },
 
   {

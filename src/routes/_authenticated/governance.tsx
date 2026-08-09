@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
-import { Network, ShieldCheck, FileText, Database } from "lucide-react";
+import { Network, ShieldCheck, FileText, Server } from "lucide-react";
 import { governanceSystems, governancePolicies } from "@/lib/enterprise-domains";
 import { InlineAddForm, DeleteButton, EmptyState } from "@/components/crud-inline";
 
@@ -276,7 +276,8 @@ function GovernancePage() {
         ) : systems.length === 0 ? (
           <div className="mt-4">
             <EmptyState
-              icon={<Database className="h-8 w-8" />}
+              // «أضف أول **نظام مؤسسي**» — نظامٌ مُشغَّل لا قاعدة بيانات.
+              icon={<Server className="h-8 w-8" />}
               title={
                 ar
                   ? "لا توجد أنظمة بعد — أضف أول نظام مؤسسي."

@@ -21,8 +21,10 @@ describe("FINN_SUPREME_LAW", () => {
 
   it("declares its version and identity preamble", () => {
     expect(FINN_SUPREME_LAW).toContain(`v${FINN_SUPREME_LAW_VERSION}`);
-    expect(FINN_SUPREME_LAW).toMatch(/FINN.*executive industrial-security assistant/i);
-    expect(FINN_SUPREME_LAW).toContain("SADEED");
+    // قرار المالك ٢٠٢٦/٠٨/٠٩: اسم المساعد المعروض صار «سَدِيد / SADEED».
+    // الديباجة تُعرّف نفسها بالاسمين معًا، والتوقّع يتبعها لا العكس.
+    expect(FINN_SUPREME_LAW).toMatch(/SADEED.*executive industrial-security assistant/i);
+    expect(FINN_SUPREME_LAW).toContain("سَدِيد");
   });
 
   it("includes the Article 21 CI-enforced security gate directive", () => {

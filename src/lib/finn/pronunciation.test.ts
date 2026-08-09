@@ -71,7 +71,7 @@ describe("applyFinnPronunciation — acronym dictionary", () => {
     // الاسم القديم لا يُنطق اسمًا — يُنطق «المنصة». لو أعاده أحد إلى النطق
     // الحرفي لخرج اسم مُزال من كل شاشة عبر الصوت وحده.
     expect(applyFinnPronunciation("NEXIOS")).toBe("المنصة");
-    expect(applyFinnPronunciation("FINN")).toBe("فِن");
+    expect(applyFinnPronunciation("FINN")).toBe("سَدِيد");
   });
 
   it("leaves plain Arabic prose untouched", () => {

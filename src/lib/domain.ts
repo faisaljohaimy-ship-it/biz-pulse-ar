@@ -28,7 +28,8 @@ export const DOMAIN_URL =
  * page. One source, imported everywhere, never retyped.
  *
  * ── WHAT IS AND IS NOT RENAMED ──
- * FINN is untouched: it is the assistant, not the product (see BRAND_ASSISTANT).
+ * The assistant's DISPLAY name was merged into the brand by owner directive
+ * 2026-08-09 (see BRAND_ASSISTANT); its identifiers were not (see below).
  * `DOMAIN_URL` stays neexios.com — a live external contract (DNS, the Supabase
  * OAuth issuer, every published canonical URL). The domain is technical; it is
  * never shown as the product name.
@@ -51,8 +52,22 @@ export const PRODUCT_BRAND = {
    * synthesis input; and any search index. Those read this instead.
    */
   arPlain: "سديد",
-  /** The assistant. A separate identity with its own lifecycle — do not merge. */
-  assistantName: "FINN",
+  /**
+   * The assistant.
+   *
+   * OWNER DIRECTIVE 2026-08-09 («توحيد اسم Finn إلى سَدِيد»): the assistant is
+   * no longer a second name. It was FINN — a separate identity that survived
+   * three product renames — and the owner has now merged it into the product
+   * brand. So this field is no longer a DIFFERENT name; it is the same word,
+   * kept as a named field because ~40 call sites ask for "the assistant's
+   * name" and deleting the field would make each of them reach for a literal.
+   *
+   * The machine side did NOT merge: `finn-core`, `/finn`, `/api/finn/*`,
+   * `finn_knowledge`, `FinnCopilot` and `public/finn-portrait.*` keep their
+   * identifiers. Renaming those orphans live user state and breaks routing,
+   * and no user reads them.
+   */
+  assistantName: "سَدِيد",
   /**
    * Internal slug for cache keys, storage prefixes and generated filenames.
    * NEVER rendered — machine-facing identifiers must not reach for a display
@@ -91,15 +106,19 @@ export const SITE_TAGLINE = `${PRODUCT_BRAND.ar.name} — ${PRODUCT_BRAND.ar.des
 
 /**
  * Single source of truth for the assistant's PUBLIC display persona.
- * FINN is the front-facing presentation identity (name + portrait). Change
- * it here in one line and every surface updates. The engine, knowledge base
- * (finn_knowledge), and server voice path stay on their internal names.
+ * Change it here in one line and every surface updates. The engine, knowledge
+ * base (finn_knowledge), route (`/finn`) and server voice path keep their
+ * internal names — those are identifiers, and no user reads them.
+ *
+ * OWNER DIRECTIVE 2026-08-09: the displayed name is «سَدِيد» / «SADEED», the
+ * same word as the product. Derived from PRODUCT_BRAND rather than retyped, so
+ * the two can never drift apart again.
  */
 export const BRAND_ASSISTANT = {
   /** Latin display name (headings, English UI). */
-  nameEn: "FINN",
-  /** Arabic display name — «فِن» per constitution Article 3. */
-  nameAr: "فِن",
+  nameEn: PRODUCT_BRAND.en.name,
+  /** Arabic display name. */
+  nameAr: PRODUCT_BRAND.ar.name,
   /** One-line role shown under the name on the persona card. */
   roleAr: "مساعدك الذكي التنفيذي — الأمن الصناعي",
   roleEn: "Your Executive AI — Industrial Security",

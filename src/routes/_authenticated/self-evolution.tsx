@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/self-evolution")({
   component: SelfEvolutionPage,
   head: () => ({
     meta: [
-      { title: "FINN Self-Evolution — Engineering Report" },
+      { title: "SADEED Self-Evolution — Engineering Report" },
       {
         name: "description",
         content: "Continuous engineering loop: analyze, plan, validate, benchmark, report.",
@@ -134,7 +134,7 @@ function SelfEvolutionPage() {
   return (
     <div className="space-y-6 p-4 md:p-6" dir="ltr">
       <PageHeader
-        title="FINN Self-Evolution / محرك التطور الذاتي"
+        title="SADEED Self-Evolution / محرك التطور الذاتي"
         subtitle="Continuous engineering loop — analyze → plan → validate → benchmark → report. Analyze-only mode."
         icon={ShieldCheck}
         actions={

@@ -71,7 +71,7 @@ const PROVIDERS: IntegrationStatus[] = [
     status: "not_configured",
     scopes: ["generateContent", "embedContent", "image.generate", "audio.transcribe"],
     doc: "GEMINI_API_KEY",
-    note: "متصل — المحرك الوحيد لـFINN ومجلس الوكلاء العشرة.",
+    note: "متصل — المحرك الوحيد لسَدِيد ومجلس الوكلاء العشرة.",
   },
   {
     id: "supabase",

@@ -28,10 +28,10 @@ import { emitCockpitAction, type CockpitActionId } from "./actions";
 
 const VOICE_LABEL: Record<string, string> = {
   idle: "اضغط للتحدث — كيف يمكنني مساعدتك اليوم؟",
-  listening: "FINN يستمع إليك الآن",
+  listening: "سَدِيد يستمع إليك الآن",
   recording: "جارٍ الالتقاط…",
   transcribing: "جارٍ تحويل حديثك إلى نص…",
-  speaking: "FINN يتحدث…",
+  speaking: "سَدِيد يتحدث…",
   processing: "جارٍ المعالجة…",
 };
 
@@ -69,7 +69,7 @@ const QUICK_ACTIONS: readonly QuickActionDef[] = [
   },
   {
     actionId: "finn.chat.open",
-    labelAr: "محادثة FINN",
+    labelAr: "محادثة سَدِيد",
     icon: MessageCircle,
     run: (_cockpit, openFinn) => openFinn(),
   },
@@ -101,13 +101,13 @@ export function FinnExecutivePanel({ finn }: { finn: FinnSnapshot }) {
     // The mic itself lives in FinnCopilot (exclusive FINN voice, server
     // keys). Opening focused = the explicit gesture that surface expects.
     open({ focus: true });
-    cockpit.announce("فُتحت لوحة FINN — ابدأ المحادثة الصوتية من زر الميكروفون فيها");
+    cockpit.announce("فُتحت لوحة سديد — ابدأ المحادثة الصوتية من زر الميكروفون فيها");
   }, [open, cockpit]);
 
   return (
     <NxPanel
       data-testid="finn-panel"
-      title="FINN"
+      title="سَدِيد"
       layer="agent"
       density="command"
       headerSlot={
@@ -190,7 +190,7 @@ export function FinnExecutivePanel({ finn }: { finn: FinnSnapshot }) {
         </section>
 
         <section
-          aria-label="التحدث مع FINN"
+          aria-label="التحدث مع سديد"
           data-testid="finn-voice"
           className="flex w-full flex-col items-center gap-2 border-t border-white/10 pt-4"
         >

@@ -20,7 +20,10 @@ describe("تنويع الحركة — لكل عائلة شاشات حركتها"
     expect(routeFamily("/blueprint")).toBe("home");
     expect(routeFamily("/mission-control")).toBe("command");
     expect(routeFamily("/situation-room")).toBe("command");
-    expect(routeFamily("/hcis/directive/SEC-18")).toBe("security");
+    // كان هنا `/hcis/directive/SEC-18`؛ حُذفت شاشة الامتثال ومسارها بأمر
+    // المالك ٢٠٢٦/٠٨/٠٩، فالعيّنة استُبدلت بشاشة أمنية حيّة — والقاعدة
+    // المحروسة (التصنيف بالبادئة) لم تتغيّر.
+    expect(routeFamily("/governance")).toBe("security");
     expect(routeFamily("/sec/permits")).toBe("security");
     expect(routeFamily("/agents")).toBe("intelligence");
     expect(routeFamily("/finn-analytics")).toBe("intelligence");

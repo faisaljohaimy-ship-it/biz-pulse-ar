@@ -59,8 +59,8 @@ function AupPage() {
           ar: "الهندسة العكسية أو الاستخراج الجماعي أو تجاوز حدود المعدل.",
         },
         {
-          en: "Using FINN agents to generate disinformation, CSAM, weapons design, or malware.",
-          ar: "استخدام وكلاء FINN لإنتاج تضليل أو مواد CSAM أو تصاميم أسلحة أو برمجيات خبيثة.",
+          en: "Using SADEED agents to generate disinformation, CSAM, weapons design, or malware.",
+          ar: "استخدام وكلاء سَدِيد لإنتاج تضليل أو مواد CSAM أو تصاميم أسلحة أو برمجيات خبيثة.",
         },
         {
           en: "Probing, scanning, or attacking the Service or other tenants.",

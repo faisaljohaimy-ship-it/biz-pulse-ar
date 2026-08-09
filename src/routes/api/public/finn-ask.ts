@@ -75,23 +75,23 @@ type PublicAskErrorCode =
 
 function errorPayload(error: PublicAskErrorCode, status?: number) {
   const message_ar: Record<PublicAskErrorCode, string> = {
-    missing_provider_key: "إعداد FINN غير مكتمل: مفتاح مزوّد الذكاء غير مفعّل.",
+    missing_provider_key: "إعداد سَدِيد غير مكتمل: مفتاح مزوّد الذكاء غير مفعّل.",
     quota_exceeded: "رصيد الذكاء الاصطناعي مستنفد مؤقتًا.",
     rate_limited: "تم تجاوز حد الطلبات مؤقتًا. أعد المحاولة بعد قليل.",
-    provider_auth_failed: "تعذّر توثيق FINN مع مزوّد الذكاء.",
+    provider_auth_failed: "تعذّر توثيق سَدِيد مع مزوّد الذكاء.",
     provider_error: "مزوّد الذكاء أعاد خطأ مؤقتًا.",
     network_error: "انقطع الاتصال بمزوّد الذكاء مؤقتًا.",
-    timeout: "استغرقت FINN وقتًا أطول من المتوقع.",
+    timeout: "استغرق سَدِيد وقتًا أطول من المتوقع.",
     empty_response: "وصل رد فارغ من مزوّد الذكاء.",
   };
   const message_en: Record<PublicAskErrorCode, string> = {
-    missing_provider_key: "FINN is not fully configured: the AI provider key is missing.",
+    missing_provider_key: "SADEED is not fully configured: the AI provider key is missing.",
     quota_exceeded: "AI credits are temporarily exhausted.",
     rate_limited: "The request limit was reached temporarily. Please retry shortly.",
-    provider_auth_failed: "FINN could not authenticate with the AI provider.",
+    provider_auth_failed: "SADEED could not authenticate with the AI provider.",
     provider_error: "The AI provider returned a temporary error.",
     network_error: "The connection to the AI provider was interrupted.",
-    timeout: "FINN took longer than expected to respond.",
+    timeout: "SADEED took longer than expected to respond.",
     empty_response: "The AI provider returned an empty response.",
   };
   return { error, message_ar: message_ar[error], message_en: message_en[error], status };
@@ -160,7 +160,7 @@ export const Route = createFileRoute("/api/public/finn-ask")({
         if (!isInScope(data.question)) {
           return Response.json({
             text_ar: OUT_OF_SCOPE_REPLY,
-            text_en: "FINN is dedicated to industrial-security topics only.",
+            text_en: "SADEED is dedicated to industrial-security topics only.",
             mode: "concise" as const,
           });
         }

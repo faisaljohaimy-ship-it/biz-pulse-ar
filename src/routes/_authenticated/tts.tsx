@@ -22,7 +22,7 @@ import { authenticatedFetch } from "@/lib/auth-fetch";
 // FINN voice is HARD-LOCKED to the canonical male voice server-side.
 // This dev tool only exposes the canonical voice — the server ignores any
 // `voiceId` in the request body regardless of what is sent from here.
-const VOICES = [{ id: "izhopdR43PRI5gAmjXTj", label: "FINN — canonical (locked)" }];
+const VOICES = [{ id: "izhopdR43PRI5gAmjXTj", label: "سَدِيد — الصوت المعتمد (مقفل)" }];
 
 const TASHKEEL = "\u064B\u064C\u064D\u064E\u064F\u0650\u0651\u0652";
 const SAMPLE_AR =

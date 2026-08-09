@@ -9,7 +9,7 @@ import { PageHeader, Section } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/EmptyState";
-import { Search, ShieldCheck, TimerReset, Gauge } from "lucide-react";
+import { Search, ShieldCheck, ShieldX, TimerReset, Gauge, Quote, TrendingDown } from "lucide-react";
 import { getRagStats, type RagStatsRow } from "@/lib/finn/rag/stats.functions";
 
 export const Route = createFileRoute("/_authenticated/rag-monitor")({
@@ -118,18 +118,20 @@ function RagMonitor() {
           label="عبَر البوابة"
           value={fmt(data?.passed)}
         />
+        {/* ثلاث بطاقات **فشل** كانت تحمل درع النجاح نفسه الذي تحمله بطاقة
+            «عبَر البوابة» — فتقرأ الأربع سواءً وهي أربع حالات متناقضة. */}
         <StatCard
-          icon={<ShieldCheck className="w-5 h-5" />}
+          icon={<TrendingDown className="w-5 h-5" />}
           label="أقل من العتبة"
           value={fmt(data?.below_threshold)}
         />
         <StatCard
-          icon={<ShieldCheck className="w-5 h-5" />}
+          icon={<Quote className="w-5 h-5" />}
           label="بلا استشهادات كافية"
           value={fmt(data?.no_citations)}
         />
         <StatCard
-          icon={<ShieldCheck className="w-5 h-5" />}
+          icon={<ShieldX className="w-5 h-5" />}
           label="أخطاء / حجب حقن"
           value={fmt(data?.errors)}
         />

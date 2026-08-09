@@ -24,19 +24,9 @@
  */
 import { PulseGlyph } from "@/components/pulse/PulseGlyph";
 
-/** المسطرة الهندسية — تُعلن الوحدة التي يلتزمها التخطيط كلّه (٨px / ٦٤px). */
-export function MeasureRail({ label }: { label: string }) {
-  return (
-    <div className="nx-bp-rail-wrap flex items-end gap-3">
-      <span className="shrink-0 text-[12px] font-bold uppercase tracking-[0.34em] text-[color:var(--ink-3)]">
-        {label}
-      </span>
-      <span aria-hidden className="nx-bp-rail relative block h-3 flex-1">
-        <span className="nx-bp-rail-sweep" />
-      </span>
-    </div>
-  );
-}
+/* (`MeasureRail` — مسطرة الوحدة ٨px/٦٤px — أُزيلت بقرار المالك ٢٠٢٦/٠٨/٠٩
+   مع بطاقات العدّادات الأربع تحتها. لم يبقَ لها مستهلك في المستودع، فبقاؤها
+   تصديرًا يتيمًا تركةٌ ميتة لا احتياط.) */
 
 export interface InstrumentPanelProps {
   label: string;

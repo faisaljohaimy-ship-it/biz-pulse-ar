@@ -17,8 +17,8 @@ export const SCENARIOS_A: Record<string, DecisionScenario> = {
           en: "Gradual temperature climb in transformer room",
         },
         briefing: {
-          ar: "ترصد FINN ارتفاعاً في حرارة المحوّل بمعدل 0.4 درجة/ساعة على مدى 6 ساعات، مع تذبذب في القراءات الاهتزازية. لا يوجد إنذار حرج، لكن النمط يطابق 84% من الأعطال السابقة.",
-          en: "FINN detects a 0.4°C/hour rise on a transformer over 6 hours, with vibration jitter. No critical alarm yet, but the pattern matches 84% of prior failure signatures.",
+          ar: "يرصد سَدِيد ارتفاعاً في حرارة المحوّل بمعدل 0.4 درجة/ساعة على مدى 6 ساعات، مع تذبذب في القراءات الاهتزازية. لا يوجد إنذار حرج، لكن النمط يطابق 84% من الأعطال السابقة.",
+          en: "SADEED detects a 0.4°C/hour rise on a transformer over 6 hours, with vibration jitter. No critical alarm yet, but the pattern matches 84% of prior failure signatures.",
         },
         metrics: [
           {
@@ -88,12 +88,12 @@ export const SCENARIOS_A: Record<string, DecisionScenario> = {
       },
       {
         headline: {
-          ar: "تنبّؤ FINN بذروة استهلاك في يوم الجمعة",
-          en: "FINN forecasts a Friday peak demand",
+          ar: "تنبّؤ سَدِيد بذروة استهلاك في يوم الجمعة",
+          en: "SADEED forecasts a Friday peak demand",
         },
         briefing: {
-          ar: "توقّع FINN يشير إلى ارتفاع 22% في الأحمال يوم الجمعة القادم، متزامناً مع فعالية اجتماعية بالموقع. الطاقة الاحتياطية الحالية تكفي لـ 91% من السيناريو الأسوأ.",
-          en: "FINN forecasts a 22% load spike next Friday, coinciding with an on-site event. Current reserve covers 91% of the worst case.",
+          ar: "توقّع سَدِيد يشير إلى ارتفاع 22% في الأحمال يوم الجمعة القادم، متزامناً مع فعالية اجتماعية بالموقع. الطاقة الاحتياطية الحالية تكفي لـ 91% من السيناريو الأسوأ.",
+          en: "SADEED forecasts a 22% load spike next Friday, coinciding with an on-site event. Current reserve covers 91% of the worst case.",
         },
         metrics: [
           { label: { ar: "الأحمال المتوقّعة", en: "Projected load" }, value: "+22%", tone: "warn" },
@@ -192,13 +192,13 @@ export const SCENARIOS_A: Record<string, DecisionScenario> = {
           },
           {
             label: {
-              ar: "احتجاز عند البوابة، تفعيل تصريح طارئ عبر FINN خلال 3 دقائق",
-              en: "Hold at gate, fast-track permit via FINN in 3 min",
+              ar: "احتجاز عند البوابة، تفعيل تصريح طارئ عبر سَدِيد خلال 3 دقائق",
+              en: "Hold at gate, fast-track permit via SADEED in 3 min",
             },
             correct: true,
             feedback: {
-              ar: "الخيار التنفيذي الصحيح. إجراء صارم بلا تعطيل — FINN أصدرت تصريحاً موقّعاً رقمياً في 2:14 دقيقة.",
-              en: "Correct executive move. Rigor without disruption — FINN issued a signed permit in 2:14.",
+              ar: "الخيار التنفيذي الصحيح. إجراء صارم بلا تعطيل — أصدر سَدِيد تصريحاً موقّعاً رقمياً في 2:14 دقيقة.",
+              en: "Correct executive move. Rigor without disruption — SADEED issued a signed permit in 2:14.",
             },
             kpiChanges: [
               { key: "compliance", label: { ar: "امتثال", en: "Compliance" }, delta: +6 },
@@ -226,8 +226,8 @@ export const SCENARIOS_A: Record<string, DecisionScenario> = {
           en: "CCTV alert: motion inside hazardous-materials store after hours",
         },
         briefing: {
-          ar: "تحليل FINN للحركة: 78% ثقة أنه شخص واحد، 22% أنه حيوان. لا بطاقة وصول مُسجّلة. أقرب دورية على بُعد 4 دقائق.",
-          en: "FINN motion analysis: 78% confidence single human, 22% animal. No badge scan. Nearest patrol 4 min away.",
+          ar: "تحليل سَدِيد للحركة: 78% ثقة أنه شخص واحد، 22% أنه حيوان. لا بطاقة وصول مُسجّلة. أقرب دورية على بُعد 4 دقائق.",
+          en: "SADEED motion analysis: 78% confidence single human, 22% animal. No badge scan. Nearest patrol 4 min away.",
         },
         metrics: [
           {
@@ -282,8 +282,8 @@ export const SCENARIOS_A: Record<string, DecisionScenario> = {
       },
     ],
     debrief: {
-      ar: "العمليات الصناعية الآمنة لا تعني القسوة — تعني إجراءات متسقة، سريعة، وقابلة للتدقيق. FINN تضمن الثلاثة.",
-      en: "Safe industrial ops aren't about being harsh — they're about consistent, fast, auditable process. FINN delivers all three.",
+      ar: "العمليات الصناعية الآمنة لا تعني القسوة — تعني إجراءات متسقة، سريعة، وقابلة للتدقيق. يضمن سَدِيد الثلاثة.",
+      en: "Safe industrial ops aren't about being harsh — they're about consistent, fast, auditable process. SADEED delivers all three.",
     },
   },
 
@@ -332,13 +332,13 @@ export const SCENARIOS_A: Record<string, DecisionScenario> = {
           },
           {
             label: {
-              ar: "إخلاء فوري عبر المسارين الآمنين + توجيه FINN للطاقم عبر الاتصال المباشر",
-              en: "Evacuate now via 2 safe paths + FINN guides staff via live comms",
+              ar: "إخلاء فوري عبر المسارين الآمنين + توجيه سَدِيد للطاقم عبر الاتصال المباشر",
+              en: "Evacuate now via 2 safe paths + SADEED guides staff via live comms",
             },
             correct: true,
             feedback: {
-              ar: "قرار قيادي. FINN وجّهت 14 موظفاً في 3:20 دقيقة، مع خارطة تُحدَّث لحظياً حسب انتشار الدخان.",
-              en: "Command-quality decision. FINN guided all 14 out in 3:20, with a live-updating map as smoke spread.",
+              ar: "قرار قيادي. وجّه سَدِيد 14 موظفاً في 3:20 دقيقة، مع خارطة تُحدَّث لحظياً حسب انتشار الدخان.",
+              en: "Command-quality decision. SADEED guided all 14 out in 3:20, with a live-updating map as smoke spread.",
             },
             kpiChanges: [
               { key: "life", label: { ar: "سلامة", en: "Life" }, delta: +6 },
@@ -393,8 +393,8 @@ export const SCENARIOS_A: Record<string, DecisionScenario> = {
             },
             correct: true,
             feedback: {
-              ar: "دقيق تنفيذياً. البيانات الحيّة من FINN وفّرت 4–6 دقائق بحث في الدخان.",
-              en: "Executively precise. FINN's live badge data saved 4–6 minutes of smoke-search.",
+              ar: "دقيق تنفيذياً. البيانات الحيّة من سَدِيد وفّرت 4–6 دقائق بحث في الدخان.",
+              en: "Executively precise. SADEED's live badge data saved 4–6 minutes of smoke-search.",
             },
             kpiChanges: [
               { key: "life", label: { ar: "سلامة", en: "Life" }, delta: +8 },
@@ -432,8 +432,8 @@ export const SCENARIOS_A: Record<string, DecisionScenario> = {
       },
     ],
     debrief: {
-      ar: "الاستجابة للطوارئ هي مسرح تنفيذي بالثواني. FINN تحوّل البيانات الفوضوية إلى قرار واحد واضح — لكن السلطة تبقى لك.",
-      en: "Emergency response is executive theater in seconds. FINN turns chaos into one clear decision — but authority stays with you.",
+      ar: "الاستجابة للطوارئ هي مسرح تنفيذي بالثواني. يحوّل سَدِيد البيانات الفوضوية إلى قرار واحد واضح — لكن السلطة تبقى لك.",
+      en: "Emergency response is executive theater in seconds. SADEED turns chaos into one clear decision — but authority stays with you.",
     },
   },
 };

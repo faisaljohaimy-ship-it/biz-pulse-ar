@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
-import { Gavel, CheckCircle2, Clock, AlertOctagon } from "lucide-react";
+import { Activity, ScrollText, Sparkles, Target } from "lucide-react";
 import { useFabricSnapshot, metric } from "@/lib/use-fabric";
 import { PredictionsPanel } from "@/components/predictions-panel";
 
@@ -274,7 +274,9 @@ function DecisionsPage() {
       }
       actions={
         <NexusPill tone="violet">
-          <Gavel className="h-3 w-3" /> {fabric.counts.events} {ar ? "حدث" : "EVENTS"}
+          {/* الشارة تعدّ **أحداثًا**، والمطرقة تقول «حُكم» — دلالةٌ أخرى. */}
+          <Activity className="h-3 w-3" aria-hidden /> {fabric.counts.events}{" "}
+          {ar ? "حدث" : "EVENTS"}
         </NexusPill>
       }
     >
@@ -305,7 +307,8 @@ function DecisionsPage() {
 
       <NexusCard glow>
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-cyan-300" />
+          {/* سجلّ لا ساعة: `Clock` تقول «وقت»، والبطاقة **جدول قرارات** مُقيَّد. */}
+          <ScrollText className="h-4 w-4 text-cyan-300" aria-hidden />
           <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
             {ar ? "سجل القرارات" : "DECISION LEDGER"}
           </div>
@@ -345,7 +348,9 @@ function DecisionsPage() {
 
       <NexusCard>
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-violet-300" />
+          {/* البطاقة «توصيات… بانتظار المراجعة»، و`CheckCircle2` علامةُ
+           **إنجاز مكتمل** — نقيض حالتها. */}
+          <Sparkles className="h-4 w-4 text-violet-300" aria-hidden />
           <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
             {ar ? "توصيات الذكاء الاصطناعي" : "AI RECOMMENDATIONS PENDING REVIEW"}
           </div>
@@ -371,7 +376,9 @@ function DecisionsPage() {
 
       <NexusCard>
         <div className="flex items-center gap-2">
-          <AlertOctagon className="h-4 w-4 text-amber-300" />
+          {/* المثمّن محجوز لـ«خطر» أحمر (stat-tone.contract) — وقد كان هنا
+              كهرمانيًّا فوق **تحليل أثر استراتيجي** ليس إنذارًا أصلًا. */}
+          <Target className="h-4 w-4 text-amber-300" aria-hidden />
           <div className="text-[12px] font-bold tracking-[0.25em] text-amber-300/80">
             {ar ? "تحليل الأثر الاستراتيجي" : "STRATEGIC IMPACT ANALYSIS"}
           </div>

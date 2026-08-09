@@ -29,16 +29,16 @@ export function CanonicalFinnRoute() {
         <button
           type="button"
           onClick={() => open({ focus: true })}
-          aria-label={ar ? "افتح FINN" : "Open FINN"}
+          aria-label={ar ? "افتح سديد" : "Open SADEED"}
           className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.7rem] border border-cyan-300/30 bg-cyan-400/10 shadow-[0_0_55px_rgba(34,211,238,0.22)] transition hover:scale-105 hover:border-cyan-200/60"
         >
           <Sparkles className="h-9 w-9 text-cyan-200" />
         </button>
         <p className="mt-7 text-[12px] font-bold uppercase tracking-[0.42em] text-cyan-300">
-          FINN · المساعد التنفيذي
+          سَدِيد · المساعد التنفيذي
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
-          {ar ? "FINN الموحّد" : "The unified FINN"}
+          {ar ? "سَدِيد الموحّد" : "The unified SADEED"}
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
           {ar
@@ -52,7 +52,7 @@ export function CanonicalFinnRoute() {
               Icon: BrainCircuit,
               ar: "ذاكرة واحدة",
               en: "One memory",
-              promptAr: "اعرض لي ما تتذكّرينه عن جلستي الحالية وسياق عملي.",
+              promptAr: "اعرض لي ما تتذكّره عن جلستي الحالية وسياق عملي.",
               promptEn: "Show me what you remember about my current session and work context.",
             },
             {
@@ -90,11 +90,11 @@ export function CanonicalFinnRoute() {
           <Sparkles className="h-4 w-4 text-cyan-200" />
           {mode === "collapsed"
             ? ar
-              ? "افتح FINN"
-              : "Open FINN"
+              ? "افتح سَدِيد"
+              : "Open SADEED"
             : ar
-              ? "FINN جاهز الآن"
-              : "FINN is ready"}
+              ? "سَدِيد جاهز الآن"
+              : "SADEED is ready"}
         </button>
       </section>
     </main>

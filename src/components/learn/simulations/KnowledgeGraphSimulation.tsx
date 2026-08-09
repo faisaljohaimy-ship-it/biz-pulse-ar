@@ -254,7 +254,7 @@ export function KnowledgeGraphSimulation({ slug, lang, onCompleted }: Props) {
         {/* Results */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
           <div className="mb-2 flex items-center justify-between text-[12px] uppercase tracking-[0.2em] text-white/60">
-            <span>{ar ? "نتائج FINN" : "FINN results"}</span>
+            <span>{ar ? "نتائج سَدِيد" : "SADEED results"}</span>
             <span>
               {ar
                 ? `استعلامات: ${completedQueries.length}/3`
@@ -266,8 +266,8 @@ export function KnowledgeGraphSimulation({ slug, lang, onCompleted }: Props) {
               <div className="text-center">
                 <Sparkles className="mx-auto mb-2 h-6 w-6 text-white/30" />
                 {ar
-                  ? "شغّل استعلاماً لبدء رؤية ذاكرة FINN"
-                  : "Run a query to explore FINN's memory"}
+                  ? "شغّل استعلاماً لبدء رؤية ذاكرة سَدِيد"
+                  : "Run a query to explore SADEED's memory"}
               </div>
             </div>
           )}

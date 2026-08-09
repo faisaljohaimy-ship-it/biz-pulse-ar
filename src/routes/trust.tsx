@@ -578,8 +578,8 @@ function TrustPage() {
                 </div>
                 <p className="mt-2">
                   {isAr
-                    ? "تشغيل FINN بالعربية أولًا، ودعم فرق الذكاء الاصطناعي والأمن المحلية."
-                    : "Arabic-first FINN operation and support for local AI and security teams."}
+                    ? "تشغيل سَدِيد بالعربية أولًا، ودعم فرق الذكاء الاصطناعي والأمن المحلية."
+                    : "Arabic-first SADEED operation and support for local AI and security teams."}
                 </p>
               </div>
             </div>

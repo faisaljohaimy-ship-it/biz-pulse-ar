@@ -455,7 +455,7 @@ function buildSnapshot(): CockpitSnapshot {
         severity: "success",
         titleAr: "تم تنفيذ مبادرة بنجاح",
         detailAr: "تحسين سلسلة الإمداد",
-        source: "FINN",
+        source: "سَدِيد",
       },
       {
         id: "evt-1143",
@@ -487,7 +487,7 @@ function buildSnapshot(): CockpitSnapshot {
         severity: "info",
         titleAr: "تقرير يومي جاهز",
         detailAr: "الذكاء التنفيذي",
-        source: "FINN",
+        source: "سَدِيد",
       },
       {
         id: "evt-1135",
@@ -595,9 +595,9 @@ const LIVE_EVENT_POOL: readonly Omit<CockpitEvent, "id" | "time">[] = [
   },
   {
     severity: "info",
-    titleAr: "توصية جديدة من FINN",
+    titleAr: "توصية جديدة من سَدِيد",
     detailAr: "إعادة جدولة صيانة وقائية",
-    source: "FINN",
+    source: "سَدِيد",
   },
   {
     severity: "success",

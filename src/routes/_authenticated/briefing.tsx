@@ -88,7 +88,7 @@ function BriefingPage() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
               <div className="text-[12px] font-bold tracking-[0.3em] text-cyan-300/80">
-                {ar ? "الملخص الاستراتيجي · FINN" : "STRATEGIC SUMMARY · FINN"}
+                {ar ? "الملخص الاستراتيجي · سَدِيد" : "STRATEGIC SUMMARY · SADEED"}
               </div>
               <InlineAddForm
                 ar={ar}

@@ -8,7 +8,7 @@ import {
   Globe2,
   Building2,
   Cpu,
-  FileCheck2,
+  TrendingUp,
   Landmark,
   FileText,
 } from "lucide-react";
@@ -70,7 +70,9 @@ function GovernmentBriefPage() {
           body: "تمكين الكوادر الوطنية، توطين خوارزميات اللغة العربية والمعرفة المؤسسية، والمساهمة في رفع تصنيف المملكة في مؤشرات الجاهزية للذكاء الاصطناعي.",
         },
         {
-          icon: <FileCheck2 className="h-5 w-5" />,
+          // بطاقةُ **أثرٍ اقتصادي** (خفض تكلفة ورفع إنتاجية)، لا وثيقةٍ مُتحقَّق
+          // منها — و`FileCheck2` تقرأ «مستند معتمد».
+          icon: <TrendingUp className="h-5 w-5" />,
           title: "الأثر الاقتصادي والتشغيلي",
           body: "خفض التكاليف 18–28%، رفع الإنتاجية 22–32%، تقليل المخاطر 35–48%، وتسريع دورة القرار بمعدل 40 ضعفاً.",
         },
@@ -102,7 +104,7 @@ function GovernmentBriefPage() {
           body: "Builds national capability, localizes Arabic models and Saudi enterprise knowledge, and reinforces the Kingdom's position in global AI readiness.",
         },
         {
-          icon: <FileCheck2 className="h-5 w-5" />,
+          icon: <TrendingUp className="h-5 w-5" />,
           title: "Economic & Operational Impact",
           body: "18–28% cost reduction, 22–32% productivity uplift, 35–48% risk reduction, and decision cycles 40× faster.",
         },

@@ -42,7 +42,7 @@ describe("Article 22 — scope lock", () => {
   });
 
   it("out-of-scope reply is a single line with no apology or alternative", () => {
-    expect(OUT_OF_SCOPE_REPLY).toBe("خارج نطاقي — أنا FINN، مساعد الأمن الصناعي.");
+    expect(OUT_OF_SCOPE_REPLY).toBe("خارج نطاقي — أنا سَدِيد، مساعد الأمن الصناعي.");
     expect(OUT_OF_SCOPE_REPLY.split("\n")).toHaveLength(1);
     expect(hasForbiddenFiller(OUT_OF_SCOPE_REPLY)).toBe(false);
   });
@@ -111,6 +111,7 @@ describe("Article 22 — system-prompt contract text", () => {
 
 describe("FINN live-intelligence doctrine", () => {
   it("codifies live error recovery, governed self-improvement, accuracy and a measured pace", () => {
+    expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("منظومة سَدِيد");
     expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("معالجة الأخطاء لحظيًا");
     expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("تطوير مستمر منضبط");
     expect(FINN_LIVE_INTELLIGENCE_DOCTRINE).toContain("الدقة المطلقة");

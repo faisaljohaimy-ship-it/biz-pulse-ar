@@ -29,7 +29,7 @@ export function LessonAskFinn({ prompt, label, className }: Props) {
       )}
     >
       <Sparkles className="h-4 w-4" aria-hidden />
-      {label ?? "Ask FINN"}
+      {label ?? "Ask SADEED"}
     </button>
   );
 }

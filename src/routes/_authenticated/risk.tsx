@@ -4,7 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { useFabricSnapshot, metric } from "@/lib/use-fabric";
-import { Shield, AlertTriangle, FileCheck, ClipboardList } from "lucide-react";
+import { Siren, AlertTriangle, FileCheck, ClipboardList } from "lucide-react";
 import { PredictionsPanel } from "@/components/predictions-panel";
 
 export const Route = createFileRoute("/_authenticated/risk")({
@@ -172,7 +172,9 @@ function RiskPage() {
       }
       actions={
         <NexusPill tone="rose">
-          <Shield className="h-3 w-3" /> {openAlerts} {ar ? "تنبيه نشط" : "ACTIVE"}
+          {/* الشارة تعدّ **تنبيهات نشطة** في نغمة الخطر؛ و`Shield` هي أيقونة
+              وحدة «الأمن الصناعي» الكانونية — درعٌ يقرأ «محميّ» لا «تنبيه». */}
+          <Siren className="h-3 w-3" aria-hidden /> {openAlerts} {ar ? "تنبيه نشط" : "ACTIVE"}
         </NexusPill>
       }
       status={pulse.status}

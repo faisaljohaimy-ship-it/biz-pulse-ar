@@ -144,8 +144,8 @@ function ExecutiveBriefingPage() {
         icon: <Building2 className="h-5 w-5" />,
         title: isAr ? "عرض المؤسسات" : "Enterprise Briefing",
         desc: isAr
-          ? "FINN Core، التوأم الرقمي، والأتمتة التنفيذية."
-          : "FINN Core, Digital Twin, and autonomous operations.",
+          ? "نواة سَدِيد، التوأم الرقمي، والأتمتة التنفيذية."
+          : "SADEED Core, Digital Twin, and autonomous operations.",
         duration: "45 min",
       },
       {
@@ -420,8 +420,8 @@ function ExecutiveBriefingPage() {
               <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
                 {[
                   isAr
-                    ? "عرض حي لـ FINN Core والتوأم الرقمي"
-                    : "Live FINN Core & Digital Twin demo",
+                    ? "عرض حي لنواة سَدِيد والتوأم الرقمي"
+                    : "Live SADEED Core & Digital Twin demo",
                   isAr ? "نموذج مالي مخصص لمؤسستك" : "Custom financial model for your enterprise",
                   isAr ? "خارطة طريق للتطبيق والامتثال" : "Implementation & compliance roadmap",
                   isAr ? "ملف تنفيذي مغلق NDA" : "NDA-protected executive packet",

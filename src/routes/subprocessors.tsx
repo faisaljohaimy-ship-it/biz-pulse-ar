@@ -66,8 +66,8 @@ const CORE: Sub[] = [
   },
   {
     name: "Foundation model providers (LLM)",
-    purposeEn: "FINN reasoning, summarization, and language understanding.",
-    purposeAr: "الاستنتاج والتلخيص وفهم اللغة لـ FINN.",
+    purposeEn: "SADEED reasoning, summarization, and language understanding.",
+    purposeAr: "الاستنتاج والتلخيص وفهم اللغة لسَدِيد.",
     locationEn: "Enterprise routing to in-region endpoints where available",
     locationAr: "توجيه مؤسسي لنقاط نهاية داخل المنطقة حيثما توفّر",
     dataEn: "Prompts & context the customer chooses to send",

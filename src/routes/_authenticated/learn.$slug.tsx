@@ -176,10 +176,10 @@ function LessonPage() {
               <LessonAskFinn
                 prompt={
                   ar
-                    ? `FINN، وضّحي لي بإيجاز أهمّ ما يجب أن أفهمه من حصّة «${title}» بصفتي مديراً تنفيذياً.`
-                    : `FINN, give me the executive one-pager on what I must understand from the lesson "${title}".`
+                    ? `سَدِيد، وضّح لي بإيجاز أهمّ ما يجب أن أفهمه من حصّة «${title}» بصفتي مديراً تنفيذياً.`
+                    : `SADEED, give me the executive one-pager on what I must understand from the lesson "${title}".`
                 }
-                label={ar ? "اسأل FINN حول هذه الحصة" : "Ask FINN about this lesson"}
+                label={ar ? "اسأل سَدِيد حول هذه الحصة" : "Ask SADEED about this lesson"}
               />
             </div>
           </SectionCard>
@@ -263,7 +263,7 @@ function LessonPage() {
                 <MessageSquare className="h-5 w-5 text-cyan-200" />
               </div>
               <div>
-                <div className="text-sm font-semibold text-white">FINN</div>
+                <div className="text-sm font-semibold text-white">سَدِيد</div>
                 <div className="text-[12px] text-white/60">
                   {ar
                     ? "معلّمتك التنفيذية لهذه الحصة"
