@@ -15,6 +15,7 @@ import { isInsideSaudi } from "@/components/map/saudi-geometry";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/executive-map")({
   component: ExecutiveMapPage,
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/executive-map")({
     <div className="p-6">
       <Card className="p-6">
         <div className="font-semibold text-destructive">تعذّر تحميل الخريطة</div>
-        <div className="mt-1 text-sm text-muted-foreground">{error.message}</div>
+        <div className="mt-1 text-sm text-muted-foreground">{userFacingError(error)}</div>
         <Button className="mt-3" onClick={reset}>
           إعادة المحاولة
         </Button>

@@ -247,7 +247,3 @@ export function DemoModeProvider({ children }: { children: React.ReactNode }) {
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
-
-export function useDemoMode(): DemoModeContextValue {
-  return React.useContext(Ctx);
-}

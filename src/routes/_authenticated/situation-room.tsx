@@ -53,6 +53,7 @@ import { BriefingStage } from "@/components/bridge/BriefingStage";
 import { MissionTimeline } from "@/components/bridge/MissionTimeline";
 import { DecisionEngine } from "@/components/situation-room/DecisionEngine";
 import { AgentConversation } from "@/components/situation-room/AgentConversation";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/situation-room")({
   head: () => ({
@@ -70,7 +71,7 @@ export const Route = createFileRoute("/_authenticated/situation-room")({
       <div className="space-y-3">
         <AlertTriangle className="mx-auto h-8 w-8 text-rose-400" />
         <div className="text-lg font-semibold text-white">Situation Room unavailable</div>
-        <div className="max-w-md text-sm text-white/60">{error.message}</div>
+        <div className="max-w-md text-sm text-white/60">{userFacingError(error)}</div>
         <button
           onClick={reset}
           className="rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10"
@@ -226,9 +227,7 @@ function SituationRoomPage() {
           </div>
 
           {startBriefing.error && (
-            <div className="text-sm text-rose-300">
-              {String((startBriefing.error as Error).message)}
-            </div>
+            <div className="text-sm text-rose-300">{userFacingError(startBriefing.error)}</div>
           )}
         </div>
 

@@ -28,13 +28,40 @@
  *
  * **الصدق العددي (المادة ٢٧).** ما لم يُقَس يُقرأ «لم يُقَس»؛ لا قوس قيمة
  * يُرسم له ولا رقم صفري يوهم بقياس وقع.
+ *
+ * ## المداخل — WCAG 2.2 §2.4.5 «أكثر من طريق»
+ *
+ * الرئيسية **خارج القشرة**: لا شريط جانبي لها ولا `TopUtilityBar`، وشريطها
+ * العلوي حُذف بأمر المالك ٢٠٢٦/٠٨/٠٩. فكلّ ما يصل منها إلى بقية النظام هو
+ * ما يُكتب في نسيج هذه الصفحة نفسها — ولا شريط تنقّل جديد يُعوّض الحذف.
+ *
+ * القاعدة المستخلَصة من قياسٍ لا من ظنّ: قبل هذه الدفعة كانت الصفحة تحمل
+ * اثني عشر رابطًا ظاهرًا — لا «زرًّا شفّافًا وحيدًا» كما خُشي — لكنّ سبعة
+ * منها إلى `/nx-cockpit` و`/nx-flow` و`/nx-ops`، وهي أسطح مستقلّة خارج
+ * القشرة كذلك فلا شريط جانبي فيها؛ والخمسة الباقية بطاقاتُ شريط الشذوذ،
+ * وهي **مشروطة**: `detectAnomalies()` تعيد قائمة فارغة حين لا انحراف،
+ * فتنطوي حالة السكينة ومعها الروابط الخمسة دفعةً واحدة. أي أن الطريق
+ * الوحيد إلى وحدات النظام كان معلَّقًا على وجود عطلٍ في البيانات.
+ *
+ * فالمداخل الآن ثلاث طبقات مستقلّة، لا تسقط إحداها بسقوط أخرى:
+ * ① **بطاقات المناطق** ← قمرة كل منطقة (`/nx-cockpit?region=…`).
+ * ② **بطاقات المؤشرات** ← الوحدة التي يُتصرَّف فيها بالرقم، واسمها معروض
+ *    في البطاقة نفسها من `lib/nav/modules` — فالرابط **يُرى رابطًا**، ولا
+ *    يُترك سطحًا صامتًا يُكتشف بالنقر.
+ * ③ **تذييل الصفحة** ← ثمانية مداخل ثابتة غير مشروطة ببيانات، أوّلها
+ *    «خريطة النظام» (`/guide`) التي تعدّ الوحدات كلّها (المادة ٢١).
+ *
+ * وأسماء الوجهات وأيقوناتها تُقرأ من `lib/nav/modules` وحده (المادة 13.5)،
+ * فلا تنحرف تسمية وجهة هنا عن تسميتها في الشريط الجانبي وخريطة النظام.
  */
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { FlaskConical } from "lucide-react";
+import { ArrowRight, Compass, FlaskConical } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { moduleByRoute } from "@/lib/nav/modules";
+import { SCREEN_NAMES } from "@/lib/nav/screen-names";
 import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { PRODUCT_BRAND } from "@/lib/domain";
 import { InstrumentPanel } from "@/components/blueprint/InstrumentPanels";
@@ -94,6 +121,67 @@ const SEVERITY_LABEL: Record<RiskSeverity, { ar: string; en: string }> = {
 };
 
 const SEVERITY_ORDER: RiskSeverity[] = ["high", "medium", "low"];
+
+/**
+ * مداخل التذييل — الطبقة الثالثة، وهي وحدها **غير مشروطة ببيانات**.
+ *
+ * الترتيب مقصود: «خريطة النظام» أولًا لأنها الوجهة التي تعدّ الوحدات كلّها
+ * (المادة ٢١)، فمن بلغها بلغ ما لم يُذكر هنا. ثم القيادة والعمليات، ثم
+ * المخاطر والحوكمة والتقارير، ثم الوكلاء وسَدِيد.
+ *
+ * `/guide` وحدها ليست وحدة كانونية في `lib/nav/modules` — فتُكتب تسميتها
+ * هنا صراحةً كما تُكتب في الشريط الجانبي، والبقيّة تُقرأ من السجلّ فلا
+ * تنحرف تسميتها عن تسميتها هناك.
+ */
+const FOOTER_LINKS: ReadonlyArray<{
+  to: string;
+  fallbackAr?: string;
+  fallbackEn?: string;
+  fallbackIcon?: typeof Compass;
+}> = [
+  { to: "/guide", fallbackAr: "خريطة النظام", fallbackEn: "System Map", fallbackIcon: Compass },
+  { to: "/mission-control" },
+  { to: "/situation-room" },
+  { to: "/risk" },
+  { to: "/governance" },
+  { to: "/sec/reports" },
+  { to: "/agents" },
+  { to: "/sadeed" },
+];
+
+/**
+ * رقاقة الوجهة — ما يجعل البطاقة **تُقرأ رابطًا قبل النقر**.
+ *
+ * كانت بطاقات المؤشرات أسطحًا صامتة: لا نصّ يقول إلى أين تذهب ولا سهم
+ * يقول إنها تذهب أصلًا. اسم الوجهة من `lib/nav/modules`، فهو نفسه المعروض
+ * في الشريط الجانبي وخريطة النظام.
+ *
+ * `mt-auto` لأن `.nx-dash-card` عمود مرن بارتفاع أدنى: الرقاقة تُدفع إلى
+ * القاع فتصطفّ الرقاقات في صفٍّ واحد مهما تفاوتت أطوال الشروح فوقها.
+ *
+ * **المصدر `SCREEN_NAMES` لا `moduleByRoute`، وهذا ما صحّحه القياس:**
+ * `moduleByRoute` تعرف الوحدات الكانونية وحدها، و`/sec/kpi` و`/sec/incidents`
+ * صفحتان داخل وحدة `/sec` لا وحدتان — فرجعت `undefined` وانطوت الرقاقة،
+ * فبقيت بطاقتان من ستّ بلا نصّ وجهة على المتصفح. و`SCREEN_NAMES` تدمج
+ * `MODULES` مع صفحات خارجها وتجعل السجلّ غالبًا عند التعارض، فهي سلطة
+ * التسمية الواحدة (المادة 13.5) — ومنها يقرأ الشريط الجانبي لهاتين بالضبط.
+ *
+ * وتُقرأ **خريطةً** لا عبر `screenNameAr`: تلك ترمي على مسار غير معروف
+ * عمدًا — وهو صواب في الشريط الجانبي حيث الاسم الغائب عطلٌ يجب أن يسقط
+ * البناء، وخطأ هنا حيث يُسقط الرئيسية كلّها لأجل رقاقة. فالغائب تُطوى
+ * رقاقته ويبقى الرابط عاملًا.
+ */
+function DestinationChip({ to, ar }: { to: string; ar: boolean }) {
+  const entry = SCREEN_NAMES[to];
+  if (!entry) return null;
+  const name = ar ? entry.ar : entry.en;
+  return (
+    <span className="mt-auto flex items-center gap-1.5 pt-2 text-[12px] font-bold text-[color:var(--ink-2)]">
+      <ArrowRight aria-hidden data-flip-rtl className="h-3.5 w-3.5 shrink-0" />
+      {ar ? `افتح ${name}` : `Open ${name}`}
+    </span>
+  );
+}
 
 /** شارة المحاكاة — نصّها ومظهرها واحد أينما ظهرت على هذا السطح. */
 function SimChip({ ar }: { ar: boolean }) {
@@ -223,8 +311,21 @@ export function BlueprintPage() {
     return { tone, label: tone.badge ?? (ar ? "بلا تصنيف" : "unclassified") };
   };
 
+  /**
+   * لكل بطاقة وجهة — **الوحدة التي يُتصرَّف فيها بالرقم**، لا وجهة عامة
+   * تُرضي عدّادًا. البطاقة كانت `<div>` صامتًا؛ صارت رابطًا يحمل اسم وجهته
+   * مكتوبًا (`DestinationChip`)، فالمداخل لا تبقى معلَّقة على شريط الشذوذ
+   * وحده — وهو مشروط بوجود انحراف أصلًا.
+   *
+   * وجهتان مكرّرتان عمدًا ولا تُفرَّقان بالتكلّف: «العاجل» و«المساندة»
+   * عدّادان لسطحٍ واحد (`/urgent-ops` — الأعمال العاجلة واتفاقيات الخدمة)،
+   * وترتيب المناطق أعلى وأدنى مقارنةٌ عبر المناطق فوجهتها مركز القيادة
+   * الموحّد. وإرسال «أعلى منطقة» إلى قمرة تلك المنطقة كان سيكرّر ما تفعله
+   * بطاقات المناطق فوقها بالضبط، ويسقط أصلًا حين لا منطقة مقيسة.
+   */
   const dashCards: Array<{
     key: string;
+    to: string;
     label: string;
     value: number | null;
     suffix?: string;
@@ -232,6 +333,7 @@ export function BlueprintPage() {
   }> = [
     {
       key: "compliance",
+      to: "/sec/kpi",
       label: ar ? "متوسط الامتثال" : "Average compliance",
       value: counters && counters.compliance_avg > 0 ? counters.compliance_avg : null,
       suffix: "%",
@@ -239,24 +341,31 @@ export function BlueprintPage() {
     },
     {
       key: "incidents",
+      to: "/sec/incidents",
       label: ar ? "البلاغات المفتوحة" : "Open incidents",
-      value: regionRows.length ? regionRows.reduce((s, r) => s + r.incidents_open, 0) : null,
+      // العدّاد الكلّي لا مجموعُ صفوف المناطق: توزيع البلاغات على المناطق
+      // غير مقيس (لا عمود منطقة على `sec_incidents`) فصار `null` في كل صفّ،
+      // والجملةُ وحدها مقيسة. جمعُ الصفوف هنا كان يُظهر العدد كأنه موزَّع.
+      value: counters?.incidents_open ?? null,
       caption: ar ? "بلاغات لم تُغلق في المناطق كلّها" : "Incidents not yet closed, all regions",
     },
     {
       key: "urgent",
+      to: "/urgent-ops",
       label: ar ? "المهامّ العاجلة" : "Urgent tasks",
       value: counters?.urgent_open ?? null,
       caption: ar ? "مهامّ داخل مهلة استجابة سارية" : "Tasks inside a live response window",
     },
     {
       key: "support",
+      to: "/urgent-ops",
       label: ar ? "طلبات المساندة" : "Support requests",
       value: counters?.support_processing ?? null,
       caption: ar ? "طلبات قيد المعالجة الآن" : "Requests in processing right now",
     },
     {
       key: "top-region",
+      to: "/mission-control",
       label: ar ? "أعلى منطقة امتثالًا" : "Highest compliance",
       value: topRegion?.compliance_pct ?? null,
       suffix: "%",
@@ -268,6 +377,7 @@ export function BlueprintPage() {
     },
     {
       key: "low-region",
+      to: "/mission-control",
       label: ar ? "أدنى منطقة امتثالًا" : "Lowest compliance",
       value: lowRegion?.compliance_pct ?? null,
       suffix: "%",
@@ -518,9 +628,21 @@ export function BlueprintPage() {
           </div>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {dashCards.map((card) => (
-              <div key={card.key} className="nx-bp-card nx-dash-card rounded-2xl p-4">
-                <div className="nx-dash-label">{card.label}</div>
-                <div className="nx-dash-value text-[color:var(--ink)]">
+              /* `<Link>` لا `<div>` مع `onClick`: العنصر الدلالي وحده يعطي
+                 التبويب والإدخال و«فتح في لسان جديد» بلا سطر جافاسكربت.
+                 والأرضية ١٠٤px من `.nx-dash-card` — فوق ٤٤px بفارق واسع.
+
+                 وبلا `aria-label`: الاسم المتاح يُبنى من محتوى البطاقة نفسه
+                 — العنوان فالرقم فالشرح فاسم الوجهة. واسمٌ مكتوب هنا كان
+                 سيحجب الرقم والوجهة عن القارئات، ويخالف «التسمية تحوي النصّ
+                 المرئي» (WCAG 2.2 §2.5.3). */
+              <Link
+                key={card.key}
+                to={card.to}
+                className="nx-bp-card nx-dash-card rounded-2xl p-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
+              >
+                <span className="nx-dash-label">{card.label}</span>
+                <span className="nx-dash-value block text-[color:var(--ink)]">
                   {card.value === null ? (
                     <span className="nx-dash-absent">{notMeasured}</span>
                   ) : (
@@ -529,9 +651,10 @@ export function BlueprintPage() {
                       {card.suffix ?? ""}
                     </span>
                   )}
-                </div>
-                <div className="nx-dash-caption">{card.caption}</div>
-              </div>
+                </span>
+                <span className="nx-dash-caption block">{card.caption}</span>
+                <DestinationChip to={card.to} ar={ar} />
+              </Link>
             ))}
           </div>
         </section>
@@ -683,7 +806,21 @@ export function BlueprintPage() {
 
           {/* الجدول التفصيلي — رأس دلالي، والتمرير الأفقي داخل الحاوية
               وحدها: الصفحة نفسها لا تُمرَّر أفقيًّا على 390px. */}
-          <h3 className="nx-dash-subhead mt-5">{ar ? "سجل المخاطر" : "Risk register"}</h3>
+          {/* وإلى جوار الرأس مدخلٌ إلى الوحدة نفسها: ما تعرضه هذه الصفحة
+              لقطةٌ للقراءة لا سجلٌّ يُتصرَّف فيه — لا فرز ولا تصفية ولا
+              تخفيف. و`/risk` كانت على بُعد ثلاث نقرات من الرئيسية (بطاقة
+              منطقة ← القمرة ← خريطة النظام ← المخاطر)، فصارت نقرةً واحدة
+              من الموضع الذي يسأل فيه القارئ عنها. */}
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+            <h3 className="nx-dash-subhead">{ar ? "سجل المخاطر" : "Risk register"}</h3>
+            <Link
+              to="/risk"
+              className="nx-bp-card inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 text-[13px] font-bold text-[color:var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
+            >
+              <ArrowRight aria-hidden data-flip-rtl className="h-4 w-4 shrink-0" />
+              {ar ? "افتح سجل المخاطر الكامل" : "Open the full risk register"}
+            </Link>
+          </div>
           <div className="nx-risk-scroll nx-bp-card mt-2 overflow-x-auto rounded-2xl">
             <table className="nx-risk-table">
               <caption className="sr-only">
@@ -765,19 +902,68 @@ export function BlueprintPage() {
         </section>
 
         <footer
-          className="nx-bp-stage mt-8 flex flex-wrap items-center gap-3 border-t border-[color:var(--hairline-soft)] pt-4"
+          className="nx-bp-stage mt-8 border-t border-[color:var(--hairline-soft)] pt-4"
           style={{ ["--nx-bp-i" as string]: 9 }}
         >
-          {simulation && <SimChip ar={ar} />}
-          {/* هذا السطر كان على الفيلم مباشرةً بلا زجاج تحته وبأخفّ درجات
+          {/* ── مداخل النظام — الطبقة غير المشروطة ─────────────────────────
+              ليست شريطًا علويًّا ولا عودةً له: الشريط حُذف بأمر المالك، وهذا
+              تذييل الصفحة القائم يحمل ما يحمله كل تذييل — الروابط الأساسية.
+              وهو الطبقة الوحيدة التي **لا تسقط ببيانات**: بطاقات المناطق
+              والمؤشرات وشريط الشذوذ كلّها تتبع ما يصل من الخادم، وهذه ثمانية
+              مداخل ثابتة تصمد ولو لم يصل صفٌّ واحد (WCAG 2.2 §2.4.5).
+
+              **أرضية اللمس مضمونة لأن هذه مراسٍ حقيقية `<a href>`، لا لأن
+              صنفًا هنا يفرضها.** قِيست الرقاقة على متصفح حقيقي فجاءت ٤٠px
+              على اللابتوب، وكاد يُقرأ ذلك سقوطًا — وليس كذلك: طبقة الأرضيات
+              في `styles.css` تعطي كل `a[href]` أربعًا وأربعين على المؤشّر
+              الخشن (`pointer: coarse`) وأربعين على الدقيق (`pointer: fine`)،
+              وهما بالضبط أرضيتا `ui-audit`. والقاعدتان خارج الطبقات فتعلوان
+              أدوات Tailwind، فـ`min-h-[44px]` هنا حدٌّ ذاتيّ احتياطي لا
+              الضامن. الضامن أن العنصر مرساة — ولو صار `<div onClick>` سقطت
+              الأرضية والتبويب معًا بلا أن يلحظه فحص.
+
+              والنصّ مرئي فلا يحتاج `aria-label` يكرّره، والأيقونة
+              `aria-hidden` لأن الكلمة إلى جوارها تقول ما تقوله. */}
+          <nav aria-label={ar ? "مداخل النظام" : "System entry points"}>
+            <h2 className="nx-dash-subhead">{ar ? "مداخل النظام" : "System entry points"}</h2>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {FOOTER_LINKS.map((entry) => {
+                const mod = moduleByRoute(entry.to);
+                const label = mod
+                  ? ar
+                    ? mod.ar
+                    : mod.en
+                  : ar
+                    ? (entry.fallbackAr ?? entry.to)
+                    : (entry.fallbackEn ?? entry.to);
+                const Icon = mod?.icon ?? entry.fallbackIcon ?? Compass;
+                return (
+                  <li key={entry.to}>
+                    <Link
+                      to={entry.to}
+                      className="nx-bp-card inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 text-[13px] font-bold text-[color:var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
+                    >
+                      <Icon aria-hidden className="h-4 w-4 shrink-0 text-[color:var(--ink-2)]" />
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {simulation && <SimChip ar={ar} />}
+            {/* هذا السطر كان على الفيلم مباشرةً بلا زجاج تحته وبأخفّ درجات
               الحبر — فيمرّ تحته قوس النفق الساطع فيهبط تباينه إلى ١٫٤٢:١.
               الحلّ رفعُ الحبر درجةً ووضعُ حشوة السطح تحته (نفس علاج
               `.nx-bp-head-scrim`)، لا تعتيمُ الفيلم. */}
-          <span className="nx-bp-note text-[12px] text-[color:var(--ink-2)]">
-            {ar
-              ? "الأرقام من مصدر النظام الحيّ. ما لا يصل منه يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
-              : "Figures come from the live system source. Whatever does not arrive reads “not measured” — never a substituted zero."}
-          </span>
+            <span className="nx-bp-note text-[12px] text-[color:var(--ink-2)]">
+              {ar
+                ? "الأرقام من مصدر النظام الحيّ. ما لا يصل منه يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
+                : "Figures come from the live system source. Whatever does not arrive reads “not measured” — never a substituted zero."}
+            </span>
+          </div>
         </footer>
       </div>
     </main>

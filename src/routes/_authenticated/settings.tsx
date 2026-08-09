@@ -26,6 +26,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { seedSadeedCorpus } from "@/lib/sadeed/seed-corpus.functions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   errorComponent: RouteError,
@@ -66,7 +67,7 @@ function SettingsPage() {
         toast.warning(`${res.failures.length} ${locale === "ar" ? "إخفاقات" : "failures"}`);
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Seed failed");
+      toast.error(userFacingError(e));
     } finally {
       setSeedingCorpus(false);
     }
@@ -110,7 +111,7 @@ function SettingsPage() {
         { onConflict: "user_id" },
       );
     setSavingProfile(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(userFacingError(error));
     else toast.success(t("settings.profileSaved") ?? "Profile saved");
   }
 
@@ -126,7 +127,7 @@ function SettingsPage() {
     setUpdatingPassword(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setUpdatingPassword(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(userFacingError(error));
     else {
       toast.success("Password updated");
       setNewPassword("");

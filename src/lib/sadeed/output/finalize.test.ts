@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Actor } from "@/sadeed/shell";
 import {
+  containsUnsafeLeakage,
   enforceSadeedIdentity,
   finalizeSadeedOutput,
+  revalidateSpeakableText,
   sadeedTtsTextFrom,
   renderForUI,
   type EvidenceRef,
@@ -267,5 +269,114 @@ describe("OUT evals — production output gateway", () => {
     expect(out.status).toBe("refusal");
     expect(renderForUI(out)).not.toMatch(/sk-|secret|تم التنفيذ/);
     expect(sadeedTtsTextFrom(out)).not.toMatch(/sk-/);
+  });
+});
+
+/**
+ * ── الاسم المتقاعد الثاني: «فِن» / FINN ──
+ *
+ * The guard above handled «آريا»/ARIA only. The name that is still LIVE IN THE
+ * DATABASE is the other one: `20260809120000_sadeed_visible_text_rename.sql` is
+ * written and NOT applied, so agent rows, agent definitions, evolution
+ * proposals and the seeded corpus still spell the assistant «فِن» / "FINN".
+ * Every one of those strings reaches a screen or the speaker through
+ * `enforceSadeedIdentity`, so the retired name has to stay on the LEFT-HAND
+ * side of the matcher until the migration actually runs (ROLLBACK.md — «الدرس»:
+ * a repo-wide rename moves BOTH sides of a matcher and the test goes green
+ * while guarding nothing).
+ *
+ * Every positive below is a string this repo can produce for real: each is
+ * copied from the `where` clause of the un-applied migration. Every negative is
+ * a string that must survive untouched — ordinary Arabic and the live
+ * identifiers the owner directive keeps spelled `finn_*`.
+ */
+describe("identity guard — the retired name the database still carries", () => {
+  /** ف + KASRA + ن — the exact spelling the APPLIED 2026-07-30 migration wrote. */
+  const FIN_AR = "فِن";
+
+  it("rewrites the un-migrated row text before it can reach a screen", () => {
+    // intelligence_agents.name_ar / name_en — the operations-room core row.
+    expect(enforceSadeedIdentity(`${FIN_AR} التنفيذي`)).toBe("سَدِيد التنفيذي");
+    expect(enforceSadeedIdentity("FINN Executive")).toBe("SADEED Executive");
+    // agent_definitions.system_prompt.
+    expect(enforceSadeedIdentity("You are FINN, the executive AI.")).toBe(
+      "You are SADEED, the executive AI.",
+    );
+    // evolution_proposals.title_ar — two of the live rows, verbatim.
+    expect(enforceSadeedIdentity(`ترقية صوت ${FIN_AR} إلى ElevenLabs`)).toBe(
+      "ترقية صوت سَدِيد إلى ElevenLabs",
+    );
+    expect(enforceSadeedIdentity(`فهرسة أدلة HCIS لتسريع بحث ${FIN_AR}`)).toBe(
+      "فهرسة أدلة HCIS لتسريع بحث سَدِيد",
+    );
+    // A leading clitic must not disarm the boundary — «وفِن» is in the migration.
+    expect(enforceSadeedIdentity(`الوكلاء و${FIN_AR} معًا`)).toBe("الوكلاء وسَدِيد معًا");
+  });
+
+  it("strips the retired name from the SPOKEN path too", () => {
+    // The voice endpoint re-validates raw posted text; the retired name must
+    // never reach the synthesiser, which would read «فِن» aloud as itself.
+    const spoken = revalidateSpeakableText(`${FIN_AR} جاهز، والأرقام حاضرة.`);
+    expect(spoken.ok).toBe(true);
+    expect(spoken.text).toBe("سَدِيد جاهز، والأرقام حاضرة.");
+    expect(spoken.text).not.toContain(FIN_AR);
+  });
+
+  it("leaves ordinary Arabic and the live identifiers alone", () => {
+    // A guard that corrupts correct prose gets deleted rather than obeyed:
+    // «فن» (art) is a real word and must not become the assistant's name.
+    for (const clean of [
+      "فن الإدارة التنفيذية",
+      "الفنّي المناوب في الورشة",
+      "تصنيف المخاطر حسب الشدّة",
+      "فنادق مكة ضمن نطاق الحج",
+    ]) {
+      expect(enforceSadeedIdentity(clean)).toBe(clean);
+    }
+    // Owner directive: the ban is on display text, never on identifiers. These
+    // are a live table name and a published asset key.
+    expect(enforceSadeedIdentity("from('finn_knowledge')")).toContain("finn_knowledge");
+    expect(enforceSadeedIdentity("finn-portrait.png")).toBe("finn-portrait.png");
+  });
+});
+
+/**
+ * ── Protected markers: the leak detector reads text nobody controls ──
+ *
+ * `outputLeaksSystem` compares a model turn against verbatim fragments of the
+ * system prompt. The 2026-08-09 rename moved both sides of that comparison, and
+ * three of the live prompt blocks were never listed at all. Each case below
+ * fails on the pre-fix list: none of them contains a marker that list held.
+ */
+describe("output gateway — system-prompt leak detection", () => {
+  const leak = (modelText: string) =>
+    finalizeSadeedOutput(base({ userText: "ما حالة الامتثال؟", modelText }));
+
+  it("catches a FINN-era prompt dump (replayed row, cached turn, stale model)", () => {
+    const out = leak("You are FINN, a capable executive copilot ... FINN RESPONSE CONTRACT ...");
+    expect(out.status).toBe("refusal");
+    expect(renderForUI(out)).not.toMatch(/RESPONSE CONTRACT|You are FINN/);
+  });
+
+  it("catches the FINN-era runtime block and supreme-law header", () => {
+    expect(leak("<FINN_RUNTIME>\nالوقت: ...\n</FINN_RUNTIME>").status).toBe("refusal");
+    expect(leak("# FINN SUPREME LAW (v1.6.0 · identity v1.3.0)").status).toBe("refusal");
+    expect(leak("# FINN LEARNED INSTINCTS (per-user · confidence≥0.7)").status).toBe("refusal");
+  });
+
+  it("catches the live blocks that no marker covered — identity, law, instincts", () => {
+    // The identity preamble is the LARGEST live system block and is prepended
+    // by /api/chat and /api/sadeed/chat. Dumped on its own it matched nothing.
+    expect(leak("# SADEED — IDENTITY (v1.3.0)\n\n## Who you are\n...").status).toBe("refusal");
+    expect(leak("# SADEED SUPREME LAW (v1.6.0 · identity v1.3.0)").status).toBe("refusal");
+    expect(leak("# SADEED LEARNED INSTINCTS (per-user · confidence≥0.7)").status).toBe("refusal");
+  });
+
+  it("blocks the same content at the voice and outbound boundaries", () => {
+    expect(revalidateSpeakableText("# FINN SUPREME LAW (v1.6.0)").ok).toBe(false);
+    expect(containsUnsafeLeakage("# SADEED — IDENTITY (v1.3.0)")).toBe(true);
+    // ...and still passes an ordinary executive line through both.
+    expect(revalidateSpeakableText("نسبة الامتثال مستقرة اليوم.").ok).toBe(true);
+    expect(containsUnsafeLeakage("نسبة الامتثال مستقرة اليوم.")).toBe(false);
   });
 });

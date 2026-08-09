@@ -24,9 +24,9 @@ npm run build && node scripts/check-performance-budget.mjs
 ```bash
 grep -rn "speechSynthesis" src/
 grep -rnE "sk-[a-zA-Z0-9]{20}|eleven_[a-zA-Z0-9]{16}" src/
-grep -rn "lovable.app" src/ --include="*.tsx" | grep -v platforms
+grep -rn "lovable.app" src/ --include="*.tsx"
 git diff --stat origin/main -- vite.config.ts src/lib/regions.ts  # فارغ
-grep -rn "<iframe" src/ | grep -i "hajj\|nusuk"                    # لا iframe لنُسك
+grep -rn "<iframe" src/ | grep -i "hajj\|nusuk"                    # لا iframe لمنصّة شقيقة
 grep -rn "enabled: !!user" src/routes/ | grep -vE "knowledge|admin" # قراءات عرض
 ```
 
@@ -35,15 +35,15 @@ grep -rn "enabled: !!user" src/routes/ | grep -vE "knowledge|admin" # قراءا
 
 ## 3) فحص العقيدة والمعايير
 
-- اختبارا العقد يمران ضمن vitest:
-  `aria-service.test.ts` (مصادَق أولًا ← بديل عام) و
-  `platforms.test.ts` (رابط نُسك الكانوني).
-- **عقد FINN (المادة ٢٢)**: `response-contract.test.ts` و
-  `pronunciation.test.ts` خضراء؛ وإن مسّ الـ diff منطق ردود FINN
-  (`response-contract.ts` · `pronunciation.ts` · `reply-modality.ts` ·
+- اختبار العقد يمرّ ضمن vitest:
+  `src/lib/sadeed-core/services/sadeed-service.test.ts`
+  (مصادَق أولًا ← بديل عام عند 401/403).
+- **عقد سَدِيد (المادة ٢٢)**: `src/lib/sadeed/response-contract.test.ts` و
+  `src/lib/sadeed/pronunciation.test.ts` خضراء؛ وإن مسّ الـ diff منطق ردود
+  سَدِيد (`response-contract.ts` · `pronunciation.ts` · `reply-modality.ts` ·
   `routes/api/chat.ts`) استدعِ وكيل `nexios-aria-response-auditor`. تحقق
   أن نقطتي القصر في `chat.ts` تسبقان النموذج (النطاق ثم المسار الفوري)،
-  وأن نص TTS يمرّ `applyAriaPronunciation`. أي خرق = نقض بذكر المادة ٢٢.
+  وأن نص TTS يمرّ `applySadeedPronunciation`. أي خرق = نقض بذكر المادة ٢٢.
 - أي دالة خادم قراءة عرض جديدة: `optionalSupabaseAuth` + `resilient()`.
 - راجع الصفحات المتغيرة في diff ضد قائمة `nexios-standards`:
   RTL بلا قص أفقي · الحالات الثلاث (skeleton بمهلة/فارغ/خطأ عربي) ·

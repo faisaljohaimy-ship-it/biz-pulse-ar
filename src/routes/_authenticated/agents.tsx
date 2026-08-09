@@ -17,6 +17,7 @@ import { useI18n } from "@/lib/i18n";
 import { PageHeader, Section } from "@/components/page-header";
 import { PageBriefing } from "@/components/clarity/PageBriefing";
 import { industrialSecurityAgentDisplay } from "@/lib/agents/industrial-security-display";
+import { pctOrUnmeasured } from "@/lib/sec-exec-kpis.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -63,6 +64,7 @@ import {
 import { toast } from "sonner";
 import { speakRuntimeAgent } from "@/lib/digital-humans/speak-agent";
 import { stopActiveSadeedVoice } from "@/lib/digital-humans/sadeed-voice";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsOps,
@@ -393,7 +395,7 @@ function AgentsOps() {
       void qc.invalidateQueries({ queryKey: ["agents"] });
     },
     onError: (e: unknown, variables) => {
-      const message = e instanceof Error ? e.message : String(e);
+      const message = userFacingError(e);
       toast.error(message);
       narrateAgentRun({ agentId: variables.agentId, status: "failed", summary: message });
     },
@@ -413,7 +415,7 @@ function AgentsOps() {
       );
       void qc.invalidateQueries({ queryKey: ["agents", "ops"] });
     },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : String(e)),
+    onError: (e: unknown) => toast.error(userFacingError(e)),
   });
 
   const cancelM = useMutation({
@@ -422,7 +424,7 @@ function AgentsOps() {
       toast.success(locale === "ar" ? "تم إلغاء التشغيل" : "Run cancelled");
       void qc.invalidateQueries({ queryKey: ["agents"] });
     },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : String(e)),
+    onError: (e: unknown) => toast.error(userFacingError(e)),
   });
 
   const retryM = useMutation({
@@ -431,7 +433,7 @@ function AgentsOps() {
       toast.success(locale === "ar" ? "إعادة المحاولة بدأت" : "Retry started");
       void qc.invalidateQueries({ queryKey: ["agents"] });
     },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : String(e)),
+    onError: (e: unknown) => toast.error(userFacingError(e)),
   });
 
   const ops = opsQ.data;
@@ -669,9 +671,11 @@ function AgentsOps() {
 
                     {/* Real metrics */}
                     <div className="grid grid-cols-3 gap-2 rounded-lg border border-border/40 bg-muted/20 p-2 text-center">
+                      {/* المادة ٢٧ — وكيلٌ بلا تشغيل منتهٍ لا نسبة نجاح له:
+                          «0%» كانت تُقرأ فشلًا تامًّا لمن لم يُشغَّل أصلًا. */}
                       <Stat
                         label={locale === "ar" ? "نجاح" : "Success"}
-                        value={`${a.success_rate}%`}
+                        value={pctOrUnmeasured(a.success_rate)}
                         hint={`${a.succeeded}/${a.succeeded + a.failed + a.cancelled}`}
                       />
                       <Stat

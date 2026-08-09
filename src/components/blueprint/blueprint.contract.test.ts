@@ -213,6 +213,79 @@ describe("المُخطَّط — الوصول", () => {
     expect(PAGE).toMatch(/active && \(/);
     expect(PAGE).toContain('ar ? "الحالية" : "current"');
   });
+
+  /**
+   * المداخل — WCAG 2.2 §2.4.5، وهو البند الذي سقط فعلًا.
+   *
+   * الرئيسية خارج القشرة: لا شريط جانبي ولا `TopUtilityBar`، وشريطها العلوي
+   * محذوف بأمر المالك. فلا يبقى إلا ما تكتبه الصفحة نفسها. والعطل الذي
+   * يحرسه هذا البند ليس «صفر روابط» — كانت اثني عشر — بل أن **كلّها**
+   * كانت إمّا إلى أسطح خارج القشرة (`/nx-*`) أو مشروطةً ببيانات (بطاقات
+   * الشذوذ تنطوي حين لا انحراف). فالحارس على الطبقة **غير المشروطة**.
+   */
+  it("للرئيسية مداخل ثابتة إلى القشرة لا تسقط بغياب البيانات (WCAG 2.2 §2.4.5)", () => {
+    // ① التذييل يحمل قائمة مداخل ثابتة — لا داخل شرط بيانات.
+    expect(PAGE).toContain("FOOTER_LINKS");
+    expect(PAGE).toMatch(/<nav aria-label=\{ar \? "مداخل النظام"/);
+    // ولا تُلفّ القائمة بشرط: `simulation &&` أو `data?` قبلها يُعيد العطل.
+    const footer = PAGE.slice(PAGE.indexOf("<footer"));
+    expect(footer.slice(0, footer.indexOf("FOOTER_LINKS"))).not.toMatch(/\{\s*\w+\s*&&/);
+
+    // ② الوجهات الست التي كانت بعيدة، وفيها `/risk` التي كانت على ثلاث نقرات.
+    for (const to of [
+      "/guide",
+      "/mission-control",
+      "/situation-room",
+      "/risk",
+      "/governance",
+      "/sec/reports",
+    ]) {
+      expect(PAGE).toContain(`{ to: "${to}"`);
+    }
+
+    // ③ بطاقات المؤشرات روابط لا `<div>` صامتة، ولكلٍّ وجهة معلنة.
+    expect(PAGE).toMatch(/dashCards\.map\(\(card\) => \(/);
+    expect(PAGE).toMatch(/<Link\s+key=\{card\.key\}\s+to=\{card\.to\}/);
+    expect(PAGE).toContain("<DestinationChip to={card.to} ar={ar} />");
+
+    // ④ الوجهة تُقرأ **قبل** النقر: اسمها مكتوب في البطاقة من سلطة التسمية
+    //    وحدها (المادة 13.5)، فلا تُكتب تسمية ثانية تنحرف عن الشريط الجانبي.
+    //    و`SCREEN_NAMES` هي المصدر لأنها تدمج `MODULES` مع الصفحات خارجها:
+    //    `/sec/kpi` و`/sec/incidents` ليستا وحدتين، فـ`moduleByRoute` وحدها
+    //    كانت تُرجع `undefined` فتنطوي رقاقتاهما — وهو ما قِيس على المتصفح.
+    expect(PAGE).toContain('import { SCREEN_NAMES } from "@/lib/nav/screen-names"');
+    expect(PAGE).toMatch(/const entry = SCREEN_NAMES\[to\]/);
+    expect(PAGE).toMatch(/افتح \$\{name\}/);
+    // ولا تُقرأ عبر `screenNameAr`: ترمي على مسار غير معروف، فتُسقط الرئيسية
+    // كلّها لأجل رقاقة. الغياب يطوي الرقاقة ويُبقي الرابط عاملًا.
+    expect(PAGE).not.toContain("screenNameAr(");
+  });
+
+  it("كل مدخل مضاف يبلغ أرضية اللمس وله حلقة تركيز ظاهرة", () => {
+    // بطاقة المؤشرات ترث `min-block-size: 104px` من `.nx-dash-card`.
+    expect(CSS).toMatch(/\.nx-dash-card\s*\{[^}]*min-block-size:\s*104px/);
+
+    // **الضامن الحقيقي للأرضية أن المداخل مراسٍ، لا أن صنفًا يفرض ارتفاعًا.**
+    // طبقة الأرضيات تعطي كل `a[href]` ٤٤px على المؤشّر الخشن و٤٠px على
+    // الدقيق، وهما أرضيتا `ui-audit` نفسها — والقاعدتان خارج الطبقات فتعلوان
+    // أدوات Tailwind. فلو صار أي مدخل `<div onClick>` سقطت الأرضية والتبويب
+    // معًا. لذلك يُفحص المصدر أولًا ثم الصنف احتياطًا.
+    expect(CSS).toMatch(/@media \(pointer: coarse\)[\s\S]{0,300}?min-block-size:\s*44px/);
+    expect(CSS).toMatch(/@media \(pointer: fine\)[\s\S]{0,200}?min-block-size:\s*40px/);
+
+    const chips = [...PAGE.matchAll(/className="nx-bp-card inline-flex ([^"]*)"/g)].map(
+      (m) => m[1],
+    );
+    expect(chips.length).toBeGreaterThanOrEqual(2);
+    for (const cls of chips) {
+      expect(cls).toContain("min-h-[44px]");
+      // حلقة التركيز — `focus-visible:outline` لا إلغاؤها.
+      expect(cls).toContain("focus-visible:outline");
+    }
+    expect(PAGE).not.toContain("focus:outline-none");
+    // ولا مدخل مبنيّ على عنصر غير تفاعلي.
+    expect(PAGE).not.toMatch(/<div[^>]*onClick=/);
+  });
 });
 
 /**

@@ -5,10 +5,10 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   AlertTriangle,
   BellRing,
-  Camera,
-  KeyRound,
+  Boxes,
+  Cctv,
+  FileCheck2,
   ShieldAlert,
-  Wrench,
   Filter,
   ArrowUpRight,
 } from "lucide-react";
@@ -72,10 +72,13 @@ const SOURCE_META: Record<
   Source,
   { icon: React.ComponentType<{ className?: string }>; label: string }
 > = {
+  // `Camera` كاميرا تصوير لا مراقبة، و`KeyRound` مفتاحُ **دخول** لا تصريحَ
+  // عمل مُعتمَدًا، و`Wrench` أيقونة **الصيانة** لا الأصول — والأيقونات هنا
+  // تُقرأ من مصدر البلاغ فتظهر بلا نصّ يشرحها.
   incident: { icon: AlertTriangle, label: "بلاغات" },
-  cctv: { icon: Camera, label: "مراقبة" },
-  permit: { icon: KeyRound, label: "تصاريح" },
-  asset: { icon: Wrench, label: "أصول" },
+  cctv: { icon: Cctv, label: "مراقبة" },
+  permit: { icon: FileCheck2, label: "تصاريح" },
+  asset: { icon: Boxes, label: "أصول" },
 };
 
 function timeAgo(iso: string) {

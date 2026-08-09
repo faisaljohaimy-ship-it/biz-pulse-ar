@@ -31,6 +31,9 @@ from pathlib import Path
 
 from playwright.async_api import async_playwright
 
+sys.path.insert(0, str(Path(__file__).parent))
+from _runtime import BASE_URL, resolve_chromium  # noqa: E402
+
 VIEWPORTS = [
     ("iphone-se", 375, 667),
     ("iphone-14-pro", 393, 852),
@@ -39,7 +42,7 @@ VIEWPORTS = [
     ("desktop-1440", 1440, 900),
 ]
 
-URL = "http://localhost:8080/?intro=1"
+URL = f"{BASE_URL}/?intro=1"
 SHELL_MAX_Z = 80
 INTRO_MIN_Z = 10
 
@@ -150,7 +153,7 @@ async def run() -> int:
     report: list[dict] = []
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=True, executable_path=resolve_chromium())
         try:
             for label, w, h in VIEWPORTS:
                 ctx = await browser.new_context(

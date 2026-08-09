@@ -8,6 +8,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { triggerWorkflow } from "@/lib/exec/workflow-engine.server";
 import { z } from "zod";
 
@@ -43,8 +44,11 @@ function tone(v: number, warn: number, crit: number, inverse = false): PulseTone
   return "healthy";
 }
 
+// نبض المنصّة على `/live-dashboard` — نافذة عرض، لا إجراء.
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const getSystemPulse = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<SystemPulse> => {
     const { supabase } = context;
     const sinceHour = new Date(Date.now() - 3600_000).toISOString();
@@ -318,8 +322,10 @@ function pipelineTone(errorRate: number, ready: boolean, totalRuns: number): Pul
   return tone(errorRate, 5, 15, true);
 }
 
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const getLivePipelines = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<LivePipelines> => {
     const { supabase } = context;
     const now = new Date();
@@ -452,8 +458,10 @@ export type BusinessKpiSet = {
   generated_at: string;
 };
 
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const getBusinessKpis = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<BusinessKpiSet> => {
     const { supabase } = context;
     const sinceDay = new Date(Date.now() - 24 * 3600_000).toISOString();
@@ -586,8 +594,12 @@ export type ExecutiveDecision = {
   created_at: string;
 };
 
+// قائمة القرارات المعلّقة **قراءةٌ**؛ اعتمادها ورفضها (`approveDecision`
+// و`dismissDecision`) يبقيان خلف `requireSupabaseAuth` أدناه.
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const listPendingDecisions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<ExecutiveDecision[]> => {
     const { data, error } = await context.supabase
       .from("finn_decisions")
@@ -723,8 +735,10 @@ export type TimelineEntry = {
   subtitle: string | null;
 };
 
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const getExecutiveTimeline = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<TimelineEntry[]> => {
     const { supabase } = context;
     const [events, decisions, runs] = await Promise.all([

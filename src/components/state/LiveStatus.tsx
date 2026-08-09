@@ -131,33 +131,3 @@ export function LiveStatus({
     </div>
   );
 }
-
-export function LiveStatusBlock({
-  variant = "monitoring",
-  title,
-  hint,
-  lastSync,
-  className,
-}: {
-  variant?: LiveStatusVariant;
-  title: string;
-  hint?: string;
-  lastSync?: string | Date | null;
-  className?: string;
-}) {
-  const ts = lastSync ? new Date(lastSync).toLocaleTimeString() : null;
-  return (
-    <div
-      className={cn("flex flex-col items-center justify-center gap-3 py-8 text-center", className)}
-    >
-      <LiveStatus variant={variant} />
-      <div className="space-y-1">
-        <div className="text-sm text-foreground/80">{title}</div>
-        {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
-        {ts ? (
-          <div className="text-[12px] text-muted-foreground font-mono">last sync · {ts}</div>
-        ) : null}
-      </div>
-    </div>
-  );
-}

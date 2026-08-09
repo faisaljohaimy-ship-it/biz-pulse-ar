@@ -418,7 +418,9 @@ function LiveExecutionCenter() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pe-2">
             {wfRuns.map((r) => {
               const idx = wfStepIndex.get(r.id);
-              const pct = idx && idx.total > 0 ? Math.round((idx.done / idx.total) * 100) : 0;
+              // المادة ٢٧ — بلا صفوف خطوات لا تُقاس نسبة تقدّم. كان يُكتب
+              // صفرًا، فيُقرأ «بدأ ولم يتقدّم» عن تشغيلٍ لم يُرصد منه شيء.
+              const pct = idx && idx.total > 0 ? Math.round((idx.done / idx.total) * 100) : null;
               return (
                 <ExecutionCard
                   key={`wf-${r.id}`}
@@ -449,7 +451,11 @@ function LiveExecutionCenter() {
                   trigger={r.triggered_by ? "user" : "auto"}
                   assignee={agentName(r.agent_id)}
                   currentStep={r.goal_override ? r.goal_override.slice(0, 80) : `step ${stepCount}`}
-                  progress={Math.min(95, stepCount * 10)}
+                  // المادة ٢٧ — كانت النسبة تُشتقّ من عدد الخطوات بسُلَّمٍ
+                  // مؤلَّف («كل خطوة عشرة بالمئة») وسقفٍ عند خمسٍ وتسعين
+                  // يُخفي أنه مؤلَّف. لا عمود يحمل مجموع خطوات التشغيل،
+                  // فلا مقام ⇐ لا نسبة.
+                  progress={null}
                   stepCounter={`${stepCount} steps`}
                   now={now}
                 />
@@ -471,7 +477,8 @@ function ExecutionCard(props: {
   trigger: string;
   assignee: string;
   currentStep: string;
-  progress: number;
+  /** `null` = لم يُقَس — لا صفر ولا شريط ممتلئ بلا قياس (المادة ٢٧). */
+  progress: number | null;
   stepCounter: string | null;
   now: number;
 }) {
@@ -489,9 +496,13 @@ function ExecutionCard(props: {
     now,
   } = props;
   const duration = fmtDuration(startedAt, finishedAt, now);
-  const priority = kind === "Workflow" ? "Normal" : "High";
+  // «الأولوية» كانت ثابتًا من نوع البطاقة — كل تشغيل وكيل «High» وكل مسار
+  // عمل «Normal». لا عمود أولوية على `agent_runs` ولا `workflow_runs`،
+  // فالكلمة حكمٌ مؤلَّف لا قراءة. تبقى الخانة ويسقط ادّعاؤها.
+  const priority = "—";
+  // الوقت المتبقّي مشتقٌّ من نسبة التقدّم؛ فإن لم تُقَس النسبة فلا اشتقاق.
   const estCompletion =
-    !finishedAt && progress > 0 && progress < 100
+    !finishedAt && progress !== null && progress > 0 && progress < 100
       ? `${Math.max(1, Math.round((((now - new Date(startedAt).getTime()) / progress) * (100 - progress)) / 1000))}s`
       : "—";
   const statusTone =
@@ -523,10 +534,11 @@ function ExecutionCard(props: {
         <div className="flex items-center justify-between text-[12px] font-mono">
           <span className="text-muted-foreground">progress</span>
           <span className="text-foreground tabular-nums">
-            {progress}% {stepCounter ? `· ${stepCounter}` : ""}
+            {pctOrUnmeasured(progress)} {stepCounter ? `· ${stepCounter}` : ""}
           </span>
         </div>
-        <Progress value={progress} className="h-1.5" />
+        {/* الشريط شكلُ الرقم: لا يُرسم لما لم يُقَس، فشريطٌ فارغ يُقرأ صفرًا. */}
+        {progress === null ? null : <Progress value={progress} className="h-1.5" />}
       </div>
       <div className="text-[12px] text-muted-foreground truncate">
         <span className="text-foreground/80 font-mono">step:</span> {currentStep}
@@ -654,16 +666,6 @@ function AgentRuntimeGrid({ agentOps }: { agentOps: AgentOpsShape }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
           {list.map((a) => {
-            const health =
-              a.state === "failed"
-                ? 35
-                : a.state === "running"
-                  ? 92
-                  : a.state === "queued"
-                    ? 70
-                    : a.enabled
-                      ? 88
-                      : 0;
             const tone =
               a.state === "failed"
                 ? "border-rose-500/40"
@@ -698,9 +700,13 @@ function AgentRuntimeGrid({ agentOps }: { agentOps: AgentOpsShape }) {
                 </div>
                 <div className="text-[12px] text-muted-foreground line-clamp-2">{a.goal}</div>
                 <div className="grid grid-cols-3 gap-1 text-[12px] font-mono">
-                  <Cell label="health" value={`${health}%`} />
+                  {/* المادة ٢٧ — «الصحة» كانت رقمًا مؤلَّفًا من الحالة وحدها:
+                      فاشل ٣٥٪ · يعمل ٩٢٪ · مصطفّ ٧٠٪ · مفعَّل ٨٨٪. لا عمود
+                      صحة للوكيل ولا حساب خلف السُّلَّم، والحالة نفسها معروضة
+                      في الشارة إلى جانبها — فالرقم زخرفةٌ تدّعي قياسًا. */}
+                  <Cell label="health" value={pctOrUnmeasured(null)} />
                   <Cell label="queue" value={String(a.running)} />
-                  <Cell label="success" value={`${a.success_rate}%`} />
+                  <Cell label="success" value={pctOrUnmeasured(a.success_rate)} />
                   <Cell label="runs" value={String(a.total_runs)} />
                   <Cell
                     label="avg"

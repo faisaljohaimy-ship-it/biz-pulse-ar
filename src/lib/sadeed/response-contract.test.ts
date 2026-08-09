@@ -60,6 +60,24 @@ describe("Article 22 — fast recall (recurring FAQs answer with no model)", () 
     expect(matchFastRecall("ما حالة تصريح العمل رقم ٤٤٢؟")).toBeNull();
   });
 
+  /**
+   * The identity matcher READS USER INPUT, so its left-hand side must keep the
+   * retired names for as long as a user can still type them — and users type
+   * what the database still shows them («فِن التنفيذي» on the operations room,
+   * until the un-applied rename migration runs). The 2026-08-09 sweep renamed
+   * both sides of three matchers at once and every test stayed green; this lock
+   * exists so the same sweep cannot silently empty this one (ROLLBACK.md).
+   */
+  it("still answers a user who asks by either retired name", () => {
+    for (const q of ["من أنت؟", "من هو SADEED؟", "من هو finn؟", "من هو فين؟", "who are you"]) {
+      expect(matchFastRecall(q)?.source).toBe("sadeed-identity");
+    }
+    // ...and the answer never repeats the retired name back at the user.
+    expect(matchFastRecall("من هو finn؟")!.answer).toBe(
+      "أنا سَدِيد — مساعد الأمن الصناعي التنفيذي.",
+    );
+  });
+
   it("every fast-recall answer obeys brevity: one line, ≤25 words, zero filler", () => {
     for (const q of ["من أنت؟", "من هو SADEED؟"]) {
       const hit = matchFastRecall(q);

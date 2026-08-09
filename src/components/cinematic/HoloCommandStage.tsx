@@ -1,11 +1,12 @@
 import {
   ShieldAlert,
-  Camera,
+  Cctv,
+  FileCheck2,
   KeyRound,
   Activity,
   Wrench,
   Users,
-  Radio,
+  Footprints,
   Gauge,
   Hexagon,
   Boxes,
@@ -60,7 +61,8 @@ export function HoloCommandStage({
       text: "text-rose-200",
     },
     {
-      icon: Camera,
+      // `Camera` كاميرا تصوير؛ و`Cctv` كاميرا مراقبة فعليًّا.
+      icon: Cctv,
       label: isAr ? "كاميرات نشطة" : "CCTV Online",
       value: `${num(k?.cameras_online)}/${num(k?.cameras_total)}`,
       pos: "top-[16%] end-[4%]",
@@ -84,7 +86,9 @@ export function HoloCommandStage({
       text: "text-emerald-100",
     },
     {
-      icon: KeyRound,
+      // `KeyRound` مفتاحُ دخول — وهي في هذا المكوّن نفسه أيقونة «البوابات»
+      // أدناه، فقرأت البطاقتان بأيقونة واحدة؛ والتصريح وثيقة معتمَدة.
+      icon: FileCheck2,
       label: isAr ? "تصاريح نشطة" : "Active Permits",
       value: num(k?.permits_active),
       pos: "top-[40%] start-[1%]",
@@ -92,7 +96,8 @@ export function HoloCommandStage({
       text: "text-amber-100",
     },
     {
-      icon: Radio,
+      // `Radio` جهازُ إرسال؛ والدورية جولةٌ راجلة في الميدان.
+      icon: Footprints,
       label: isAr ? "دوريات ميدانية" : "Field Patrols",
       value: `${num(k?.patrols_active)} · ${pct(k?.patrol_completion)}`,
       pos: "bottom-[14%] start-[5%]",
@@ -132,7 +137,7 @@ export function HoloCommandStage({
       deg: -90,
       text: "text-cyan-200",
     },
-    { icon: Camera, label: "CCTV", value: pct(k?.cctv_health), deg: -30, text: "text-emerald-200" },
+    { icon: Cctv, label: "CCTV", value: pct(k?.cctv_health), deg: -30, text: "text-emerald-200" },
     {
       icon: KeyRound,
       label: isAr ? "البوابات" : "Gates",

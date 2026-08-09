@@ -19,10 +19,13 @@ tools: Read, Write, Grep, Glob, Bash
    - `sessionStorage.setItem("nexios-welcome", "complete:v4")` لتخطي الترحيب
    - مقاسان: 390×800 (جوال، hasTouch) و1280×950 (لابتوب)، locale "ar"
    - انتظر 7 ثوانٍ بعد domcontentloaded (حارس resilient = 4 ثوانٍ + رحلة).
-3. المسارات الحرجة كحد أدنى: `/`، `/hcis` (+ عمق
-   `/hcis/directive/SEC-18`)، `/ptw`، `/hajj`، `/agents`، `/aria`،
+3. المسارات الحرجة كحد أدنى: `/`، `/sec` (+ عمق `/sec/permits`)،
+   `/ptw`، `/agents`، `/sadeed`،
    `/situation-room`، `/sec/exec`، `/sec/kpi`، `/boardroom`،
    `/mission-control`، `/urgent-ops`، `/governance`، `/integrations`.
+   (`/hcis` و`/hcis/directive/*` و`/hajj` و`/aria` **حُذفت كلها** —
+   لا تُفحص ولا تُعاد إلى القائمة؛ الامتثال يُفحص اليوم من `/ptw`
+   وشبكة `/sec`، والمساعد من `/sadeed`.)
 4. صنّف كل صفحة من innerText:
    - **عالق**: بقاء «جاري التحميل» — كسر عقيدة، أعلى خطورة.
    - **خطأ**: Unauthorized/تعذّر/Something went wrong.

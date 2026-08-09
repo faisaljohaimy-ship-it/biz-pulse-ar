@@ -4,6 +4,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { z } from "zod";
 
 export type TimelinePhase =
@@ -54,8 +55,11 @@ function asJson(v: unknown): JsonVal {
   }
 }
 
+// درج «الخط الزمني للتنفيذ» — عرض تفاصيل تشغيلة، لا تشغيلها.
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const getExecutionTimeline = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

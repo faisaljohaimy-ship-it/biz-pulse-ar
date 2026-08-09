@@ -9,7 +9,7 @@ import {
   Bot,
   Radio,
   Sparkles,
-  AlertTriangle,
+  OctagonAlert,
 } from "lucide-react";
 
 const STAGES = [
@@ -51,8 +51,21 @@ export function InitializingShell({
 
       <div className="relative z-10 w-full max-w-xl px-6">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[#00D4FF]/40 bg-[#00D4FF]/10 shadow-[0_0_40px_rgba(0,212,255,0.35)]">
-            <Sparkles className="h-7 w-7 text-[#3AE8FF]" />
+          {/* شارة الرأس كانت `Sparkles` في الحالتين — فيعلو المنصةَ بريقٌ
+              يَعِد بالذكاء بينما العنوان تحته يقول «تعذّر التهيئة». الفشل
+              خطرٌ لا وعد، وشكله المثمّن الأحمر (عرف لوحات السلامة). */}
+          <div
+            className={
+              error
+                ? "mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-red-500/50 bg-red-500/10 shadow-[0_0_40px_rgba(239,68,68,0.35)]"
+                : "mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[#00D4FF]/40 bg-[#00D4FF]/10 shadow-[0_0_40px_rgba(0,212,255,0.35)]"
+            }
+          >
+            {error ? (
+              <OctagonAlert aria-hidden className="h-7 w-7 text-red-300" />
+            ) : (
+              <Sparkles aria-hidden className="h-7 w-7 text-[#3AE8FF]" />
+            )}
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">
             {error ? "تعذّر تهيئة المنصة" : "تهيئة نظام التشغيل المؤسسي"}
@@ -65,7 +78,7 @@ export function InitializingShell({
         {error ? (
           <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-5 text-sm text-red-100">
             <div className="mb-2 flex items-center gap-2 font-medium">
-              <AlertTriangle className="h-4 w-4" />
+              <OctagonAlert aria-hidden className="h-4 w-4" />
               <span>Runtime bootstrap failed</span>
             </div>
             <p className="mb-4 break-all text-red-200/80">{error}</p>

@@ -1,7 +1,9 @@
 # SADEED Auto-Tour — Master Engineering Prompt
 
-**Route:** `/aria/tour`
-**Status:** Production
+**Route:** `/aria/tour` — **حُذف؛ لا مسار جولة في المنتج اليوم**
+**Status:** ⚠️ غير مُنفَّذ (٢٠٢٦/٠٨/٠٩) — لا `tour-cues.ts` ولا واصف
+الفيديو ولا مسار `/aria/*`. النصّ محفوظ مواصفةً هندسية لأي إعادة بناء،
+ولا يُقرأ منه مسارٌ للتنقّل ولا يُدرَج في سيناريو عرض.
 **Owner:** SADEED Executive Brain (singleton)
 **Video asset:** `src/assets/aria-tour-full-v2.mp4.asset.json`
 **Cue schedule:** `src/lib/sadeed/tour-cues.ts`

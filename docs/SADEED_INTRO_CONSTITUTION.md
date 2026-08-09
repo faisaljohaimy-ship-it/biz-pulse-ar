@@ -4,6 +4,14 @@
 touches the intro gate MUST reference this document by ID and preserve every
 invariant below. Violations are release-blockers.
 
+> ⚠️ **حالة التنفيذ (٢٠٢٦/٠٨/٠٩): بوابة المقدّمة السينمائية غير موجودة في
+> الشيفرة.** لا `AriaWelcomeVideo.tsx` ولا `WelcomeThenGenesis.tsx` ولا
+> `AriaCinematicIntro` — أُزيلت كلها، و`src/components/cinematic/` لم يبقَ
+> فيه سوى `HoloCommandStage.tsx` و`NexusRevealHero.tsx`. والباقي حيًّا من
+> ملفات الاختصاص: `src/routes/__root.tsx` و`src/lib/user-interaction.ts`
+> و`src/lib/intro-store.ts`. النصّ محفوظ **قانونًا حاكمًا لأي إعادة بناء**
+> — لا وصفًا لسطحٍ قائم اليوم.
+
 ## Scope
 
 Files under jurisdiction:
@@ -81,7 +89,7 @@ MUST cite this section and preserve every invariant below.
 Files under jurisdiction:
 
 - `src/routes/api/chat.ts` (streaming chat handler)
-- `src/components/sadeed-core/AriaCopilot.tsx` (chat UI + TTS pipeline)
+- `src/components/sadeed-core/SadeedCopilot.tsx` (chat UI + TTS pipeline)
 - `src/lib/sadeed/learning/*` (interaction log, pattern miner, prompt injector)
 - `src/lib/sadeed/self-healing/*` (watchdog, incident ledger)
 - DB tables: `aria_interactions`, `aria_learned_patterns`, `aria_incidents`

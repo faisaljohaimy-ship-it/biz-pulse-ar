@@ -454,38 +454,83 @@ async function fetchTwinTree(supabase: { from: (t: string) => any }): Promise<Tw
 }
 
 // ============= PROJECTS & MAINTENANCE =============
+// أربع قراءات عرض: `/sec/projects` و`/sec/sections` وشبكة الصيانة. كانت
+// خلف `requireSupabaseAuth` فكان الزائر يرى الجداول فارغة وبطاقات الرأس
+// أصفارًا. القاعدة نفسها المطبَّقة في `getSecOverview` فوق: القراءة
+// `optionalSupabaseAuth` (سياسات RLS للـ`anon` هي ما يقرر)، والفراغ يُملأ
+// بالمحاكاة المرجعية — وصفوف القاعدة الحيّة تفوز متى وصلت.
 export const getProjects = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<SecProject[]> => {
-    const { data } = await context.supabase
-      .from("sec_projects")
-      .select("*")
-      .order("ends_at", { ascending: true });
-    return (data ?? []) as SecProject[];
+    const { buildSecProjectsSimulation, resilient } =
+      await import("./exec/showcase-simulation.server");
+    return resilient(
+      "sec-projects",
+      async () => {
+        const { data } = await context.supabase
+          .from("sec_projects")
+          .select("*")
+          .order("ends_at", { ascending: true });
+        return (data ?? []) as SecProject[];
+      },
+      (rows) => rows.length === 0,
+      () => buildSecProjectsSimulation(Date.now()),
+    );
   });
 
 export const getWorkOrders = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<SecWorkOrder[]> => {
-    const { data } = await context.supabase
-      .from("sec_work_orders")
-      .select("*")
-      .order("opened_at", { ascending: false });
-    return (data ?? []) as SecWorkOrder[];
+    const { buildOmsSimulation, resilient } = await import("./exec/showcase-simulation.server");
+    return resilient(
+      "sec-work-orders",
+      async () => {
+        const { data } = await context.supabase
+          .from("sec_work_orders")
+          .select("*")
+          .order("opened_at", { ascending: false });
+        return (data ?? []) as SecWorkOrder[];
+      },
+      (rows) => rows.length === 0,
+      () => buildOmsSimulation(Date.now()).work_orders as unknown as SecWorkOrder[],
+    );
   });
 
 export const getSections = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<SecSection[]> => {
-    const { data } = await context.supabase.from("sec_sections").select("*").order("code");
-    return (data ?? []) as SecSection[];
+    const { buildTwinTreeSimulation, resilient } =
+      await import("./exec/showcase-simulation.server");
+    return resilient(
+      "sec-sections",
+      async () => {
+        const { data } = await context.supabase.from("sec_sections").select("*").order("code");
+        return (data ?? []) as SecSection[];
+      },
+      (rows) => rows.length === 0,
+      // نفس شجرة التوأم التي تغذّي `/sec/twin` — قسمٌ واحد لا قسمان
+      // متضاربان بين شاشتين تقرآن الشيء نفسه.
+      () => buildTwinTreeSimulation(Date.now()).sections as SecSection[],
+    );
   });
 
 export const getCircles = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<SecCircle[]> => {
-    const { data } = await context.supabase.from("sec_circles").select("*").order("code");
-    return (data ?? []) as SecCircle[];
+    const { buildTwinTreeSimulation, resilient } =
+      await import("./exec/showcase-simulation.server");
+    return resilient(
+      "sec-circles",
+      async () => {
+        const { data } = await context.supabase.from("sec_circles").select("*").order("code");
+        return (data ?? []) as SecCircle[];
+      },
+      (rows) => rows.length === 0,
+      () =>
+        buildTwinTreeSimulation(Date.now()).circles.map(
+          ({ sites: _s, control_rooms: _c, patrol_teams: _p, ...circle }) => circle as SecCircle,
+        ),
+    );
   });
 
 // Executive KPIs moved to a focused module; re-exported so `@/lib/sec.functions`

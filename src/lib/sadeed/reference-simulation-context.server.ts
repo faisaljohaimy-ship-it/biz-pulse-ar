@@ -46,10 +46,13 @@ export function buildReferenceSimulationContext(now = Date.now()): ReferenceSimu
     `- متوسط الامتثال عبر المناطق: ${command.counters.compliance_avg}%`,
     "",
     "## الامتثال والبلاغات حسب المنطقة",
-    ...command.regions.map(
-      (region) =>
-        `- ${REGION_AR[region.region_id] ?? region.region_id}: امتثال ${region.compliance_pct}%؛ بلاغات مفتوحة ${region.incidents_open}؛ حالة ${region.severity}`,
-    ),
+    // المادة ٢٧ — ما لم يُقَس يُقال «لم يُقَس»، ولا يُسرَّب `null` نصًّا إلى
+    // فم سَدِيد. المحاكاة المرجعية اليوم تُقيس الحقلين، والحارس لما بعدها.
+    ...command.regions.map((region) => {
+      const compliance = region.compliance_pct > 0 ? `${region.compliance_pct}%` : "لم يُقَس";
+      const incidents = region.incidents_open ?? "لم يُقَس";
+      return `- ${REGION_AR[region.region_id] ?? region.region_id}: امتثال ${compliance}؛ بلاغات مفتوحة ${incidents}؛ حالة ${region.severity}`;
+    }),
     "",
     "## البلاغات المفتوحة ذات الأولوية",
     ...openIncidents.map(

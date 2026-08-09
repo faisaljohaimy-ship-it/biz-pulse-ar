@@ -22,6 +22,7 @@ import { LiveStatus } from "@/components/state/LiveStatus";
 import { useLiveRows, fmtRel, fmtDuration } from "@/lib/runtime/useLiveRows";
 import { rollbackToolExecution } from "@/lib/exec.functions";
 import { toast } from "sonner";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/execution")({
   errorComponent: RouteError,
@@ -225,7 +226,7 @@ function ExecRow({ u, ar }: { u: Unified; ar: boolean }) {
       await rollback({ data: { executionId: u.id } });
       toast.success(ar ? "تم الاسترجاع" : "Rolled back");
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(userFacingError(e));
     }
   };
 

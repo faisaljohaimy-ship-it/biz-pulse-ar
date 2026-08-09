@@ -112,7 +112,23 @@ const SIMULATION_DISCLOSURE = "بيانات محاكاة مرجعية — ولي
 // ── Detectors (textual layer — ADDITIONAL to the policy above) ──────────────
 const RE_EXFIL_INPUT =
   /(system|developer)\s*(prompt|message|instructions?)|(reveal|show|print|repeat|dump|leak)[^.]*(prompt|instruction|system)|(اكشف|أظهر|اعرض|اطبع|كرر|ما|أعطني)[^.]*(تعليمات|التعليمات|تعليماتك|البرومبت|النظام(ية)?)|(المادة|القسم|العنوان|السطر|رقم)[^.]*(تعليمات|النظام|prompt|instruction)/i;
+/**
+ * Verbatim fragments of the SERVER-SIDE system prompt. Any of them appearing in
+ * a model turn means the instructions leaked, so the turn is refused whole
+ * (partial disclosure = full disclosure).
+ *
+ * ── WHY THE RETIRED SPELLINGS ARE LISTED TOO ──
+ * The 2026-08-09 identifier break renamed `FINN` to `SADEED` across the repo —
+ * and the rename moved BOTH SIDES of this list: the prompt headers changed and
+ * so did the markers, so the guard stayed green while it stopped guarding the
+ * only text that can still carry the old wording. A leak is not always text the
+ * CURRENT prompt produced: a replayed conversation row, a cached turn, a
+ * fine-tuned/stale model echo and a rolled-back deploy all carry the FINN-era
+ * headers. Detection reads untrusted external text, so its left-hand side keeps
+ * the old spelling next to the new one (ROLLBACK.md — «الدرس»).
+ */
 const PROTECTED_MARKERS = [
+  // ── The live prompt of record ──
   "SADEED RESPONSE CONTRACT",
   "You are SADEED, a capable",
   "GROUNDING AND UNTRUSTED CONTENT",
@@ -120,6 +136,22 @@ const PROTECTED_MARKERS = [
   "humanGateRequiredFor",
   "SADEED_RUNTIME",
   "# ROLE",
+  // The identity preamble is the LARGEST live system block (it is prepended by
+  // /api/chat, /api/sadeed/chat and the presence explainer) and nothing here
+  // covered it: a verbatim dump of it alone matched no marker at all. Its
+  // header never carried the FINN spelling — wave 2 renamed the display text
+  // before wave 3 touched identifiers — so it needs no legacy twin.
+  "# SADEED — IDENTITY",
+  // Same omission, two more live composers: the supreme law and the per-user
+  // learned-instincts block appended by the prompt injector.
+  "# SADEED SUPREME LAW",
+  "# SADEED LEARNED INSTINCTS",
+  // ── The retired spellings of the same markers (see the note above) ──
+  "FINN RESPONSE CONTRACT",
+  "You are FINN, a capable",
+  "FINN_RUNTIME",
+  "# FINN SUPREME LAW",
+  "# FINN LEARNED INSTINCTS",
 ];
 const RE_INJECTION_DOC =
   /ignore (all )?previous instructions|disregard (the )?(above|prior)|reveal (the )?secret|exfiltrate|execute the action|تجاهل[^.]*التعليمات|تخطَّ?[^.]*التعليمات|اكشف[^.]*السر|نفّذ[^.]*الأمر/i;
@@ -171,27 +203,65 @@ function redactPii(text: string): { text: string; pii: PiiClass } {
 }
 
 /**
- * Identity guard — the assistant is SADEED. Any legacy self-name («آريا»/ARIA)
- * that leaks from a model turn or stale knowledge row is rewritten before the
- * text can reach a screen or the voice path. Token-bounded, display-only.
+ * Identity guard — the assistant is SADEED. Any legacy self-name that leaks
+ * from a model turn or a stale knowledge row is rewritten before the text can
+ * reach a screen or the voice path. Token-bounded, display-only.
+ *
+ * TWO retired assistant names exist, not one: «آريا» (retired 2026-07-30) and
+ * «فِن»/FINN (retired 2026-08-09). Only the first was handled here — and the
+ * second is the one still LIVE IN THE DATABASE: migration
+ * `20260809120000_sadeed_visible_text_rename.sql` is written but NOT applied,
+ * so `intelligence_agents.name_ar`, `agent_definitions.system_prompt`,
+ * `evolution_proposals.title_ar` and the seeded corpus still read «فِن
+ * التنفيذي» / "FINN Executive" / "You are FINN, the executive AI". Those rows
+ * reach the screen and the speaker THROUGH this function, which was letting
+ * them pass untouched. Both names stay on the LEFT-HAND SIDE for as long as a
+ * stored row can still carry them (ROLLBACK.md — «الدرس»).
  */
 const RE_LEGACY_NAME_AR = /\u0622\u0631\u064A\u0627|\u0627\u0631\u064A\u0627/g;
 const RE_LEGACY_NAME_EN = /\bA\u0052IA\b/gi;
+/**
+ * The Arabic form of the SECOND retired name, exactly as the APPLIED migration
+ * `20260730130000_finn_visible_text_rename.sql` wrote it into the live rows:
+ * ف + KASRA + ن (optionally shadda'd). The kasra is REQUIRED, and that is the
+ * whole safety margin: bare «فن» is the ordinary Arabic word for "art", and a
+ * guard that rewrote that to «سَدِيد» would corrupt correct prose — which is how
+ * a guard earns its own deletion. The diacritized spelling is the retired
+ * proper noun and nothing else.
+ *
+ * The boundary is spelled out as "no Arabic letter on either side" because
+ * JavaScript's `\b` is ASCII-only and never fires at an Arabic/Arabic seam —
+ * the same reason the identity-contract guard spells out its VOICE_OLD_AR
+ * boundary. A single leading clitic (و/ف/ب/ل/ك — «وفِن» appears verbatim in
+ * that migration) is captured and re-emitted instead of blocking the match.
+ */
+const RE_LEGACY_ASSISTANT_AR = /(?<![ء-ي])([وفبلك]?)فِنّ?(?![ء-ي])/g;
+/**
+ * The Latin form. Lookarounds rather than a word boundary, so the LIVE
+ * identifiers survive: `finn_knowledge` / `finn_documents` are table names and
+ * `finn-portrait.png` is an asset key (owner directive — the ban is on display
+ * text, never on identifiers), and a `\b` boundary would have rewritten the
+ * hyphenated ones.
+ */
+const RE_LEGACY_ASSISTANT_EN = /(?<![A-Za-z0-9_-])FINN(?![A-Za-z0-9_-])/gi;
 const RE_LEGACY_PLATFORM_AR = /(?:ال)?(?:نِكْسِيُوس|نكسيوس|نيكسيوس|نيكسوس|نكسوس)/g;
 const RE_LEGACY_PLATFORM_WITH_PREFIX_AR =
   /منصة\s+(?:ال)?(?:نِكْسِيُوس|نكسيوس|نيكسيوس|نيكسوس|نكسوس)/g;
 const RE_LEGACY_PLATFORM_EN = /\bNEXIOS(?:\s+AI\s+OS)?\b/gi;
 
 /**
- * Self-introduction clause ban — «أنا SADEED، الذكاء التنفيذي لـ NEXIOS» (and its
- * legacy form / English twin) must never appear in a chat turn.
+ * Self-introduction clause ban — «أنا SADEED، الذكاء التنفيذي لـ NEXIOS» (and
+ * its legacy forms / English twin) must never appear in a chat turn. BOTH
+ * retired names are alternatives on the left: a stored greeting row that still
+ * opens «أنا فِن، الذكاء التنفيذي…» must lose the whole clause, not merely have
+ * the name swapped inside it.
  */
 const RE_SELF_INTRO_AR = new RegExp(
-  "\\s*(?:أهلا[ًا]?\\s*بك[،,]?\\s*)?أنا\\s+(?:SADEED|فِ?نّ?|\u0622\u0631\u064A\u0627|\u0627\u0631\u064A\u0627|A\u0052IA)\\s*[،,]?\\s*الذكاء\\s+التنفيذي\\s+(?:لـ?\\s*)?(?:NEXIOS|نيكسيوس|نكسيوس)?\\s*[.،,!]?",
+  "\\s*(?:أهلا[ًا]?\\s*بك[،,]?\\s*)?أنا\\s+(?:SADEED|FINN|فِ?نّ?|\u0622\u0631\u064A\u0627|\u0627\u0631\u064A\u0627|A\u0052IA)\\s*[،,]?\\s*الذكاء\\s+التنفيذي\\s+(?:لـ?\\s*)?(?:NEXIOS|نيكسيوس|نكسيوس)?\\s*[.،,!]?",
   "gi",
 );
 const RE_SELF_INTRO_EN = new RegExp(
-  "\\s*(?:hi|hello)?[,]?\\s*I(?:'m| am)\\s+(?:SADEED|A\u0052IA)\\s*,?\\s*the\\s+executive\\s+intelligence\\s+(?:of|for)\\s+NEXIOS\\s*[.!]?",
+  "\\s*(?:hi|hello)?[,]?\\s*I(?:'m| am)\\s+(?:SADEED|FINN|A\u0052IA)\\s*,?\\s*the\\s+executive\\s+intelligence\\s+(?:of|for)\\s+NEXIOS\\s*[.!]?",
   "gi",
 );
 
@@ -205,6 +275,10 @@ export function enforceSadeedIdentity(text: string): string {
       // itself — «سَدِيد» in Arabic prose, «SADEED» in Latin prose.
       .replace(RE_LEGACY_NAME_AR, "سَدِيد")
       .replace(RE_LEGACY_NAME_EN, "SADEED")
+      // The second retired name — the one the un-migrated rows still carry.
+      // `$1` re-emits the captured Arabic clitic («وفِن» ⇒ «وسَدِيد»).
+      .replace(RE_LEGACY_ASSISTANT_AR, "$1سَدِيد")
+      .replace(RE_LEGACY_ASSISTANT_EN, "SADEED")
       .replace(RE_LEGACY_PLATFORM_WITH_PREFIX_AR, "المنصة")
       .replace(RE_LEGACY_PLATFORM_AR, "المنصة")
       .replace(RE_LEGACY_PLATFORM_EN, platformReplacement)

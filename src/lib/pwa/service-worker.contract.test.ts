@@ -23,7 +23,7 @@
  * هنا **أيّ الاستراتيجيتين كُتب**، وهذا يُقرأ من الملف.
  */
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const SW = readFileSync("public/sw.js", "utf8");
 /** التعليقات تشرح العطل وتقتبس السطر القديم — الحارس يفحص الكود وحده. */
@@ -61,9 +61,26 @@ describe("عامل الخدمة — الكود من الشبكة لا من ال�
   });
 
   it("المفتاح رُفع مع تغيّر الاستراتيجية فتُطرح نسخ القاعدة السابقة", () => {
-    expect(CODE).toMatch(/CACHE_NAME = "sadeed-static-v9/);
-    // والتفعيل يحذف كل مفتاح سواه — وإلا بقيت v8 مؤهَّلة للخدمة.
+    // v10 (٢٠٢٦/٠٨/٠٩): رُفع لأن **عضوية قائمة التخزين المسبق** تغيّرت —
+    // `/sadeed-portrait.png` (١٫٩٢ ميغابايت) حُذف من `public/` بعد أن ثبت
+    // أنه نسخة مطابقة بايتًا ببايت من `src/assets/`، ولا يرسمه أي مكوّن.
+    // والرفع هنا ليس تجميلًا: `activate` يحذف كل مفتاح **سوى** الحالي، فلو
+    // بقي v9 لبقيت النسخة الثقيلة مخزَّنة على كل جهاز مثبَّت إلى الأبد.
+    expect(CODE).toMatch(/CACHE_NAME = "sadeed-static-v10/);
+    // والتفعيل يحذف كل مفتاح سواه — وإلا بقيت v9 مؤهَّلة للخدمة.
     expect(CODE).toMatch(/key !== CACHE_NAME/);
+  });
+
+  it("لا يخزّن مسبقًا أصلًا محذوفًا — `addAll` ترفض الدفعة كاملة عند 404", () => {
+    // `cache.addAll` ذرّية: أي مسار يعيد 404 يُفشل **تثبيت العامل كله**، لا
+    // ذلك المدخل وحده. فكل مسار في القائمة يجب أن يقابله ملف قائم فعلًا.
+    const precache = CODE.match(/const PRECACHE = \[([^\]]*)\]/);
+    expect(precache).not.toBeNull();
+    const paths = [...precache![1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+    expect(paths.length).toBeGreaterThan(0);
+    for (const p of paths) {
+      expect(existsSync(`public${p}`), `${p} مذكور في PRECACHE ولا وجود له`).toBe(true);
+    }
   });
 
   it("لا يخزّن تنقّلًا ولا نداء API — هذه ثوابت قائمة تُصان", () => {

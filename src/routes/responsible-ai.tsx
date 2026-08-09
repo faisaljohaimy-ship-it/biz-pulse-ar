@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
 import { TrustShell, SectionTitle, Card, Bullets } from "@/components/trust-shell";
-import { Brain, Sparkles, ShieldCheck, Users } from "lucide-react";
+import { Brain, Eye, Lock, ShieldCheck, Users } from "lucide-react";
 
 export const Route = createFileRoute("/responsible-ai")({
   head: () => ({
@@ -117,10 +117,13 @@ function RaiPage() {
       <section className="mb-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           { icon: <Users className="h-4 w-4" />, en: "Human-in-the-loop", ar: "إشراف بشري" },
-          { icon: <Sparkles className="h-4 w-4" />, en: "Transparent", ar: "شفافية" },
+          // `Sparkles` تقول «سِحر/توليد» لا «شفافية»؛ والشفافية أن يُرى ما يجري.
+          { icon: <Eye className="h-4 w-4" />, en: "Transparent", ar: "شفافية" },
           { icon: <ShieldCheck className="h-4 w-4" />, en: "Safety-tested", ar: "اختبارات سلامة" },
           {
-            icon: <Brain className="h-4 w-4" />,
+            // البند نفيٌ صريح: «بلا تدريب». و`Brain` تقول «تدريب نموذج» —
+            // أي عكس ما يعِد به السطر تمامًا؛ والقفل يقول «بياناتك محبوسة».
+            icon: <Lock className="h-4 w-4" />,
             en: "No model training on tenant data",
             ar: "بلا تدريب على بيانات المستأجرين",
           },

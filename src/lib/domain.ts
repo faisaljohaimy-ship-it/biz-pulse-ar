@@ -93,7 +93,6 @@ export function brandName(ar: boolean): string {
  * with `tsc` proving no call site was missed.
  */
 export const PRODUCT_NAME_AR = PRODUCT_BRAND.ar.name;
-export const PRODUCT_NAME_AR_PLAIN = PRODUCT_BRAND.arPlain;
 export const PRODUCT_NAME_EN = PRODUCT_BRAND.en.name;
 
 /** Arabic-first, because the document is `lang="ar" dir="rtl"` by default. */

@@ -14,7 +14,7 @@ import {
   KeyRound,
   Database,
   Users,
-  Activity,
+  FileClock,
   ScrollText,
   Building2,
 } from "lucide-react";
@@ -237,7 +237,8 @@ function TrustPage() {
       ],
     },
     {
-      icon: <Activity className="h-5 w-5" />,
+      // `Activity` نبضةُ **مراقبة أداء**؛ وسجل التدقيق قيدٌ موثَّق بزمنه.
+      icon: <FileClock className="h-5 w-5" />,
       titleEn: "Audit Logging",
       titleAr: "سجلات التدقيق",
       bullets: [

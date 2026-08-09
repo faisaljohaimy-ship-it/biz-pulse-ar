@@ -62,3 +62,13 @@ yarn.lock
 # مخرَج أداة معاينة مشهد التوأم (لقطات محلّية)
 .twin-preview/
 vite.twin-preview.config.mjs
+
+# آثار تشغيل الفحوص والمسابر — لا تُدفع أبدًا.
+# `test-results/` وحدها بلغت 44 MiB في جلسة واحدة (مقاطع فيديو وآثار
+# Playwright)، ولو دُفعت لتجاوزت ميزانية الأداء ولبقيت في التاريخ للأبد.
+# و`.probe*.mjs` و`.audit-tmp/` مسابر مؤقتة يكتبها الفحص ثم يهملها.
+test-results/
+playwright-report/
+blob-report/
+.audit-tmp/
+.probe*.mjs

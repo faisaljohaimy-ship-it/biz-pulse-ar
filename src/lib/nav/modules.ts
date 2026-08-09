@@ -160,23 +160,11 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
   },
 };
 
-/** Localized one-line purpose for a route, or undefined if not a module. */
-export function modulePurpose(to: string, ar: boolean): string | undefined {
-  const p = MODULE_PURPOSE[to];
-  return p ? (ar ? p.ar : p.en) : undefined;
-}
-
 const BY_ROUTE = new Map<string, ModuleEntry>(MODULES.map((m) => [m.to, m]));
 
 /** Canonical entry for a route, or undefined if the route is not a top-level module. */
 export function moduleByRoute(to: string): ModuleEntry | undefined {
   return BY_ROUTE.get(to);
-}
-
-/** Canonical localized label for a route, or `undefined` if not a module. */
-export function moduleLabel(to: string, ar: boolean): string | undefined {
-  const m = BY_ROUTE.get(to);
-  return m ? (ar ? m.ar : m.en) : undefined;
 }
 
 /**

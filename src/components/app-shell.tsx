@@ -139,9 +139,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <SadeedName size="sm" />
           </div>
           {/* OWNER DIRECTIVE: مبدّل الوضع يُحذف من الشريط العلوي ويبقى في
-              الشريط الجانبي وحده —
-              كان مكرَّرًا في الموضعين. الرئيسية استثناء لأنها خارج هذه القشرة
-              ولا شريط جانبي لها، فمبدّلها في HomeTopNav. */}
+              الشريط الجانبي وحده — كان مكرَّرًا في الموضعين. */}
           <div className="flex items-center gap-2">
             <TopUtilityBar />
             <OrgSwitcher compact />

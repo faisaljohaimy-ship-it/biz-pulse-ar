@@ -1,6 +1,6 @@
 /**
  * حارس وسم المحاكاة — العهد: لا صفّ عرض بلا `is_simulation = true`،
- * ولا صفّ قاعدة حيّ يُداس بالوسم. البانيات العشرون كلها مُعدَّدة هنا،
+ * ولا صفّ قاعدة حيّ يُداس بالوسم. البانيات كلها مُعدَّدة هنا،
  * فإضافة بانية جديدة بلا `markSimulation` تسقط هذا الفحص.
  */
 import { describe, expect, it } from "vitest";
@@ -33,6 +33,11 @@ describe("وسم المحاكاة المركزي", () => {
       // سجل مخاطر الرئيسية (البند ١٢ب · ٢٠٢٦/٠٨/٠٩): صفوف الجدول وبطاقات
       // التوصيات معًا — كلاهما صفوف عرض، فلا يخرج أيّهما بلا وسم.
       S.buildRiskBoardSimulation(now),
+      // نوافذ OMS الثلاث وسجلّ نشاطها (`/sec/incidents` · `/sec/maintenance`
+      // · `/sec/permits`) ومشاريع الأنظمة الأمنية — صفوف عرض كاملة، فلا
+      // يخرج صفٌّ منها بلا وسم.
+      S.buildOmsSimulation(now),
+      S.buildSecProjectsSimulation(now),
     ];
     let rows = 0;
     const check = (v: unknown, isRow: boolean) => {

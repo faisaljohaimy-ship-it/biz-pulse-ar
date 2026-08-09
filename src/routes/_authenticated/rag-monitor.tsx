@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/EmptyState";
 import { Search, ShieldCheck, ShieldX, TimerReset, Gauge, Quote, TrendingDown } from "lucide-react";
 import { getRagStats, type RagStatsRow } from "@/lib/sadeed/rag/stats.functions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/rag-monitor")({
   errorComponent: RouteError,
@@ -82,11 +83,7 @@ function RagMonitor() {
         subtitle="بوابة الأدلة، زمن الاستجابة، وسجل الاستعلامات — آخر 24 ساعة"
       />
 
-      {error ? (
-        <Card className="p-4 text-sm text-rose-300">
-          تعذّر تحميل الإحصاءات: {(error as Error).message}
-        </Card>
-      ) : null}
+      {error ? <Card className="p-4 text-sm text-rose-300">{userFacingError(error)}</Card> : null}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard

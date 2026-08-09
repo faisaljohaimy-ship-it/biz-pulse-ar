@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CheckCircle2, XCircle, Clock, Play, Pause, RotateCcw, Ban } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Play, Pause, Ban } from "lucide-react";
 import { toast } from "sonner";
 
 type StepRow = {
@@ -231,7 +231,8 @@ export function WorkflowRunDetail({
                 onClick={() => resumeMut.mutate()}
                 className="gap-1"
               >
-                <RotateCcw className="size-3" />
+                {/* `RotateCcw` تراجعٌ/استرجاع، والاستئناف نظيرُ `Pause`. */}
+                <Play className="size-3" />
                 Resume
               </Button>
               <Button

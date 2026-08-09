@@ -1,15 +1,15 @@
 ---
 name: nexios-aria
-description: منظومة سَدِيد الصوتية والدردشة — تُستدعى قبل لمس أي مسار صوت/دردشة (FinnCopilot، /api/chat، /api/finn/tts، voice-config، digital-humans). تغطي حصرية صوت سَدِيد الذكوري، حظر browser TTS، طريقة الإصلاح المحفوظة 401/403، وطبقات «سَدِيد لا يتعطل».
+description: منظومة سَدِيد الصوتية والدردشة — تُستدعى قبل لمس أي مسار صوت/دردشة (SadeedCopilot، /api/chat، /api/sadeed/tts، voice-config، digital-humans). تغطي حصرية صوت سَدِيد الذكوري، حظر browser TTS، طريقة الإصلاح المحفوظة 401/403، وطبقات «سَدِيد لا يتعطل».
 ---
 
 # سَدِيد — المساعد الصوتي الدائم
 
 ## الصوت (ثوابت غير قابلة للتفاوض)
 
-- صوت سَدِيد **حصريًا صوت ذكوري عبر ElevenLabs** (`FINN_ELEVENLABS_VOICE_ID =
-"izhopdR43PRI5gAmjXTj"` في `src/lib/finn/voice-config.ts`)، يُولَّد على
-  الخادم عبر `/api/finn/tts` (السر `ELEVENLABS_API_KEY` بيئي فقط).
+- صوت سَدِيد **حصريًا صوت ذكوري عبر ElevenLabs** (`SADEED_ELEVENLABS_VOICE_ID =
+"izhopdR43PRI5gAmjXTj"` في `src/lib/sadeed/voice-config.ts`)، يُولَّد على
+  الخادم عبر `/api/sadeed/tts` (السر `ELEVENLABS_API_KEY` بيئي فقط).
 - **`speechSynthesis` محظور نهائيًا في كل المسارات** — وجوده خطأ فادح
   يُرفض في المراجعة. افحص قبل الدفع:
   `grep -rn "speechSynthesis" src/ → صفر نتائج`.
@@ -24,25 +24,27 @@ description: منظومة سَدِيد الصوتية والدردشة — تُ�
 ## طريقة الإصلاح المحفوظة «مصادَق أولًا ← بديل عام عند 401/403»
 
 (المصدر Lovable `f413ffa` — موثقة في CLAUDE.md، مثبّتة باختبار عقد
-`src/lib/finn-core/services/finn-service.test.ts`):
+`src/lib/sadeed-core/services/sadeed-service.test.ts`):
 
-1. جرّب النقطة المصادَقة أولًا (Bearer من جلسة Supabase).
+1. جرّب النقطة المصادَقة أولًا (Bearer من جلسة Supabase) عبر
+   `sadeedAuthedFetch` في `src/lib/sadeed-core/services/sadeed-service.ts`.
 2. عند 401/403 أعد نفس الطلب بلا Authorization (مسار الضيف في
    `/api/chat`) أو عبر `/api/public/...` المكافئ
-   (`aria-transcribe`, `aria-tts`).
+   (`/api/public/sadeed-transcribe`, `/api/public/sadeed-tts`).
 3. لا تُظهر عبارات مصادقة للمستخدم — رسالة عربية محايدة + زر إعادة.
 4. جاهزية القدرة = OR عبر كل المفاتيح القادرة عليها (`/api/chat/health`).
 
 ## طبقات «سَدِيد لا يتعطل» (تُصان معًا)
 
 1. رد مضمون: لا مزوّد متاحًا ← `/api/chat` يبث ردًا محليًا صادقًا (لا 503).
-2. إعادة محاولة تلقائية 2× بتراجع زمني في `FinnCopilot` + تبريد المزوّد
-   الفاشل في الخادم (`isCooling`/`markVendorFatal`).
+2. إعادة محاولة تلقائية 2× بتراجع زمني في `SadeedCopilot`
+   (`src/components/sadeed-core/SadeedCopilot.tsx`) + تبريد المزوّد الفاشل
+   في الخادم، فتذهب المحاولة التالية إلى مزوّد آخر مهيأ.
 3. المحادثة الصوتية لا تتوقف: بعد استنفاد المحاولات ينطق سَدِيد سطر حالة
    بصوته وتعود المحادثة للإصغاء بعدّاد جديد.
 4. بوابة تأكيد بشري لأي إجراء طارئ أو كتابة يقترحها سَدِيد.
 
 ## أداء
 
-- `MessageResponse` (streamdown/shiki/mermaid) **ممنوع** في FinnCopilot —
+- `MessageResponse` (streamdown/shiki/mermaid) **ممنوع** في `SadeedCopilot` —
   يبقى `react-markdown + remark-gfm` (ميزانية الأداء).

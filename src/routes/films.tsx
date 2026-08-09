@@ -3,9 +3,15 @@ import { useState, useEffect, useRef } from "react";
 import { useI18n } from "@/lib/i18n";
 import { DOMAIN_URL } from "@/lib/domain";
 import { ArrowLeft, Play, Clock, X, Maximize2 } from "lucide-react";
-import cinematicCity from "@/assets/cinematic-city.jpg";
-import cinematicBoardroom from "@/assets/cinematic-boardroom.jpg";
-import cinematicEarth from "@/assets/cinematic-earth.webp";
+// ملصقات الأفلام. كانت ثلاثة ملفات تحت `@/assets/` وهي **نُسخ** من لوحات
+// `public/`: `cinematic-city.jpg` = `smart-city-bg.jpeg` بايتًا ببايت،
+// و`cinematic-boardroom.jpg` = `executive-desk-bg.jpeg` بايتًا ببايت،
+// و`cinematic-earth.webp` الصورة نفسها في `strategy-map-bg.webp`. صارت
+// مساراتٍ عامة إلى النسخة الموحَّدة الواحدة — فالمستعرض يحمّل اللوحة مرّة
+// واحدة لكل الشاشات بدل نسخة مُجزّأة خاصة بهذا المسار.
+const cinematicCity = "/city-night-bg.webp";
+const cinematicBoardroom = "/command-room-bg.webp";
+const cinematicEarth = "/earth-network-bg.webp";
 
 import investorAr from "@/assets/films/investor-ar.mp4.asset.json";
 import investorEn from "@/assets/films/investor-en.mp4.asset.json";
@@ -184,7 +190,9 @@ function FilmsPage() {
           to="/"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4" />
+          {/* سهم «العودة» يشير إلى جهة الرجوع، وهي في RTL اليمين — نمط بقية
+              صفحات الواجهة العامة (trust · roi · customers …). */}
+          <ArrowLeft className={`h-4 w-4 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة" : "Back"}
         </Link>
 
@@ -232,7 +240,9 @@ function FilmsPage() {
                 </div>
                 <span className="absolute inset-0 flex items-center justify-center">
                   <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-black/40 backdrop-blur-md transition-transform group-hover:scale-110 group-hover:bg-white/10">
-                    <Play className="h-7 w-7 translate-x-0.5 fill-white text-white" />
+                    {/* `fill-white` تكتب `fill:#fff` نهائيًّا (المادة ٣٣ §٢) —
+                        و`fill-current` تتبع `text-white` فتعطي الرسم نفسه. */}
+                    <Play className="h-7 w-7 translate-x-0.5 fill-current text-white" />
                   </span>
                 </span>
               </button>

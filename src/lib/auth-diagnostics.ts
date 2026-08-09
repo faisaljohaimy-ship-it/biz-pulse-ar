@@ -117,7 +117,3 @@ export function installAuthDiagnostics() {
     authLog("page:show", { persisted: (e as PageTransitionEvent).persisted }),
   );
 }
-
-export function getDiagSid(): string {
-  return getSid();
-}

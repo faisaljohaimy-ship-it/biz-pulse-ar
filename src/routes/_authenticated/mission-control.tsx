@@ -49,6 +49,7 @@ import {
   PresentationMode,
   type PresentationOverview,
 } from "@/components/digital-humans/PresentationMode";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/mission-control")({
   head: () => ({
@@ -66,7 +67,7 @@ export const Route = createFileRoute("/_authenticated/mission-control")({
     <div className="min-h-screen bg-[#061A2E] text-white grid place-items-center p-6">
       <div className="text-center">
         <div className="text-sm text-rose-300">Mission Control error</div>
-        <div className="mt-2 text-white/70 text-sm">{error.message}</div>
+        <div className="mt-2 text-white/70 text-sm">{userFacingError(error)}</div>
       </div>
     </div>
   ),
@@ -1121,7 +1122,7 @@ function MissionControl() {
       dir={ar ? "rtl" : "ltr"}
       className="relative isolate min-h-screen overflow-hidden bg-[#061A2E] text-white"
     >
-      <GlossyImageBackdrop src="/ceo-dashboard-bg.webp" opacity={0.5} />
+      <GlossyImageBackdrop src="/command-room-bg.webp" opacity={0.5} />
       {!welcomeDone && (
         <WelcomeOverlay ar={ar} onDone={() => setWelcomeDone(true)} name={displayName} />
       )}

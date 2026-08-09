@@ -180,7 +180,8 @@ export function FormShell({
           to="/demo"
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-3 w-3" />
+          {/* في RTL جهةُ الرجوع اليمين — كما في بقية صفحات الواجهة العامة. */}
+          <ArrowLeft className={`h-3 w-3 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "مركز العرض" : "Demo Center"}
         </Link>
       </header>
@@ -229,7 +230,11 @@ export function FormShell({
                       type={f.type ?? "text"}
                       required={f.required}
                       maxLength={f.type === "email" ? 255 : 200}
-                      className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary/60 focus:ring-1 focus:ring-primary/40"
+                      // ارتفاع الحقل كان محصّلة `py-2` وحدها: ٢٠px سطر + ١٦px
+                      // حشو + ٢px حدّ = ٣٨px — تحت أرضيتَي اللمس (٤٤) والفأرة
+                      // (٤٠) معًا. و`min-h-11` (٤٤px) ترضيهما بقيمة واحدة دون
+                      // أن تمسّ الحشو الأفقي ولا حجم النصّ.
+                      className="min-h-11 w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary/60 focus:ring-1 focus:ring-primary/40"
                     />
                   )}
                 </div>

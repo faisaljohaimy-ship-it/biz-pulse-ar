@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { Bot, Activity, ShieldCheck, Cpu, Sparkles, MessageSquare } from "lucide-react";
 import { listAgents, listAgentRuns } from "@/lib/exec.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 import { SADEED_COUNCIL_OF_TEN } from "@/lib/sadeed/orchestrator/council";
 
 const COUNCIL_ORDER = new Map<string, number>(
@@ -115,22 +115,11 @@ export function AgentRing() {
   const fetchAgents = useServerFn(listAgents);
   const fetchRuns = useServerFn(listAgentRuns);
 
-  // Only call protected server fns when a Supabase session exists.
-  // Public/landing visitors have no bearer token → would 401.
-  const [hasSession, setHasSession] = useState(false);
-  useEffect(() => {
-    let alive = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (alive) setHasSession(!!data.session);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      setHasSession(!!s);
-    });
-    return () => {
-      alive = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
+  // «بيانات لا تفرغ»: `listAgents` و`listAgentRuns` صارتا قراءتَي عرض تحت
+  // `optionalSupabaseAuth` وتقدّمان المحاكاة المرجعية للزائر — فالبوابة
+  // الوحيدة `!authLoading`، لا وجود جلسة. (التعليق السابق «would 401» كان
+  // صحيحًا يوم كانت الدالّتان خلف `requireSupabaseAuth`، ولم يعد.)
+  const { loading: authLoading } = useAuth();
 
   const agentsQ = useQuery({
     queryKey: ["exec", "agents", "ring"],
@@ -144,7 +133,7 @@ export function AgentRing() {
     refetchInterval: 30_000,
     staleTime: 15_000,
     retry: false,
-    enabled: hasSession,
+    enabled: !authLoading,
   });
 
   const runsQ = useQuery({
@@ -159,7 +148,7 @@ export function AgentRing() {
     refetchInterval: 45_000,
     staleTime: 10_000,
     retry: false,
-    enabled: hasSession,
+    enabled: !authLoading,
   });
 
   const agents: AgentVM[] = useMemo(() => {
@@ -201,10 +190,6 @@ export function AgentRing() {
   const empty = !loading && agents.length === 0;
   const [active, setActive] = useState<string | null>(null);
   const activeVM = agents.find((a) => a.id === active) ?? null;
-
-  // Public/anonymous sessions never see this surface — it depends entirely
-  // on authenticated live data. No placeholders, no session-state notice.
-  if (!hasSession) return null;
 
   // Geometry. SVG/positioning lives in a 100x100 normalized coord space so
   // the layer scales fluidly with the container.

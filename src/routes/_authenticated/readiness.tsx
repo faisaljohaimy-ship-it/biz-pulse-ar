@@ -4,7 +4,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ShieldCheck, CheckCircle2, XCircle, RotateCcw, Printer, AlertOctagon } from "lucide-react";
+import { ShieldCheck, CheckCircle2, XCircle, RefreshCw, Printer, AlertOctagon } from "lucide-react";
 import { PageHeader, Section } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { useI18n } from "@/lib/i18n";
 import { EmptyState } from "@/components/state/EmptyState";
 import { getProductionReadiness, type ReadinessDimension } from "@/lib/runtime/readiness.functions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/readiness")({
   errorComponent: RouteError,
@@ -94,7 +95,9 @@ function ReadinessReportPage() {
         actions={
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isFetching}>
-              <RotateCcw className={`h-3 w-3 me-1 ${isFetching ? "animate-spin" : ""}`} />{" "}
+              {/* `RotateCcw` سهمُ **تراجع** — والزر يُعيد الاحتساب من المصدر،
+                  لا يتراجع عن شيء. */}
+              <RefreshCw className={`h-3 w-3 me-1 ${isFetching ? "animate-spin" : ""}`} />{" "}
               {ar ? "إعادة احتساب" : "Recalculate"}
             </Button>
             <Button
@@ -113,7 +116,7 @@ function ReadinessReportPage() {
           {ar ? "احتساب…" : "Calculating…"}
         </Card>
       ) : error ? (
-        <EmptyState reason="error" title="Report failed" description={(error as Error).message} />
+        <EmptyState reason="error" title="Report failed" description={userFacingError(error)} />
       ) : !data ? (
         <EmptyState
           reason="waiting"

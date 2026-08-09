@@ -13,10 +13,18 @@ import { sumMeasured } from "@/lib/exec/measured-sum";
 
 export type { CommandCenterState, CommandSeverity };
 
-async function fetchCommandCenterLive(supabase: {
+/**
+ * مُصدَّرة لأجل حارس المادة ٢٧ (`numeric-honesty.contract.test.ts`): العطل
+ * الذي تحرسه — إسناد كل البلاغات إلى المنطقة الأولى وتصفير الباقي — لا
+ * يلتقطه tsc ولا eslint، ويحتاج تشغيلًا فعليًّا بعميل مُصطنع ليُثبت أن كل
+ * منطقة تعود `null`. حارسُ نصٍّ وحده يُخدع بإعادة صياغة السطر.
+ */
+export async function fetchCommandCenterLive(supabase: {
   from: (t: string) => any;
 }): Promise<CommandCenterState> {
-  const [agentsRes, evRes, aiRes, urgentRes, supportRes, sitesRes, incidentsRes, complianceRes] =
+  // `sec_sites` كان يُقرأ لحساب «الأصول النشطة» ضربًا في ٨ — مُضاعِفٌ مؤلَّف
+  // لا مصدر له، ولا عمود منطقة على الجدول أصلًا. سقط الحساب فسقطت قراءته.
+  const [agentsRes, evRes, aiRes, urgentRes, supportRes, incidentsRes, complianceRes] =
     await Promise.all([
       supabase
         .from("intelligence_agents")
@@ -44,7 +52,6 @@ async function fetchCommandCenterLive(supabase: {
         .select("id,status,is_simulation")
         .neq("status", "مغلق")
         .limit(50),
-      supabase.from("sec_sites").select("id,circle_id,status"),
       supabase.from("sec_incidents").select("id,status,severity").neq("status", "resolved"),
       supabase.from("hcis_compliance_status").select("region_code,status"),
     ]);
@@ -151,10 +158,18 @@ async function fetchCommandCenterLive(supabase: {
   }>;
   // Constitution art. 4: regions.ts is the ONLY geographic source.
   const regionIds = REGIONS.map((r) => r.id);
-  const openIncidents = ((incidentsRes.data ?? []) as Array<{ severity: string }>).length;
-  const regions = regionIds.map((region_id, i) => {
+  // البلاغات المفتوحة **جملةً**، لا موزَّعةً: `sec_incidents` لا يحمل منطقة،
+  // ولا يصل إليها عبر `site_id → sec_sites` (ولا هذا يحمل منطقة؛ `circle_id`
+  // دوائرُ مدنٍ — makkah/jeddah/madinah/taif/tabuk — لا مناطق `regions.ts`).
+  // فالجملة مقيسة والتوزيع ليس مقيسًا؛ يُعرض المقيس ويُقال عن الآخر «لم
+  // يُقَس» — لا يُطمس المقيس ولا يُختلق غيره.
+  const openIncidents = ((incidentsRes.data ?? []) as unknown[]).length;
+  const regions = regionIds.map((region_id) => {
     const rows = complianceRows.filter((r) => r.region_code === region_id);
     const assessed = rows.filter((r) => r.status !== "not_assessed");
+    // عقد `compliance_pct` القائم مع كل مستهلكيه: صفرٌ من الخادم = «لا قراءة»
+    // (منصوصٌ عليه في `-blueprint-page.tsx` ومحروسٌ في اختبار عقده)، فلا
+    // يُعرض رقمًا في أي سطح. لذلك يبقى صفرًا هنا ولا يتحوّل `null`.
     const pct = assessed.length
       ? Math.round(
           (assessed.filter((r) => r.status === "compliant" || r.status === "in_progress").length /
@@ -162,13 +177,21 @@ async function fetchCommandCenterLive(supabase: {
             100,
         )
       : 0;
-    const inc = i === 0 ? openIncidents : 0;
     return {
       region_id,
-      assets_active: ((sitesRes.data ?? []) as unknown[]).length * 8,
-      incidents_open: inc,
+      // لا عمود منطقة على `sec_sites`، فلا عدد أصول لمنطقة. وكان يُكتب هنا
+      // «عدد المواقع كلّها × ٨»: مُضاعِفٌ مؤلَّف، ونفسُ الرقم لكل منطقة.
+      assets_active: null,
+      // المادة ٢٧ — كان العدد يُسنَد كاملًا إلى المنطقة الأولى (بموضعها في
+      // المصفوفة لا بشيء في البيانات) ويُصفَّر لما بعدها، فتُعرض ثلاث مناطق
+      // «بلا بلاغات» عرضًا لا قياسًا. لا توزيع يُخترع: `null` ⇐ «لم يُقَس».
+      incidents_open: null,
       compliance_pct: pct,
-      severity: (inc > 3 ? "critical" : inc > 0 ? "medium" : "healthy") as CommandSeverity,
+      // الشدّة كانت مشتقّة من `inc` المختلَق، فتخرج «سليم» لثلاث مناطق لم
+      // تُقَس. مُدخَلها الوحيد غير مقيس ⇐ لا حكم: `idle` تُقرأ «بلا تصنيف»
+      // عند العرض. واشتقاقها من `compliance_pct` بعتبات مؤلَّفة ممنوع
+      // صراحةً (حارس عقد المُخطَّط).
+      severity: "idle" as CommandSeverity,
       last_pulse_at: new Date().toISOString(),
     };
   });
@@ -191,9 +214,18 @@ async function fetchCommandCenterLive(supabase: {
       urgent_open: urgent.length,
       support_processing: ((supportRes.data ?? []) as unknown[]).length,
       done_today: sumMeasured(agents.map((a) => a.done_today)),
-      compliance_avg: regions.length
-        ? Math.round(regions.reduce((s, r) => s + r.compliance_pct, 0) / regions.length)
-        : 0,
+      // العدّ الكلّي قياسٌ وقع (صفوف `sec_incidents` غير المُغلقة) — وهو
+      // الوحيد المقيس في هذا الباب، فيُعرض؛ والتوزيع على المناطق «لم يُقَس».
+      incidents_open: openIncidents,
+      // متوسط المقيس وحده. كان المقام `regions.length` — أي أربعة دائمًا —
+      // فمنطقةٌ واحدة مقيسة بـ97% مع ثلاثٍ لم تُقيَّم تُخرج «24%»: انهيارُ
+      // امتثالٍ لم يقع. والصفر هنا يبقى «لا قراءة» كعقد `compliance_pct`.
+      compliance_avg: (() => {
+        const measured = regions.filter((r) => r.compliance_pct > 0);
+        return measured.length
+          ? Math.round(measured.reduce((s, r) => s + r.compliance_pct, 0) / measured.length)
+          : 0;
+      })(),
     },
   };
 }

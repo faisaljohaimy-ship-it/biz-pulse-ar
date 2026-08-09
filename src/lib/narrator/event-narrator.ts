@@ -444,8 +444,3 @@ export function narrateEvent(row: EnterpriseEventRow): NarratorLine {
     correlation_id: row.correlation_id,
   };
 }
-
-/** Map a batch (most-recent-first preserved). */
-export function narrateEvents(rows: EnterpriseEventRow[]): NarratorLine[] {
-  return rows.map(narrateEvent);
-}

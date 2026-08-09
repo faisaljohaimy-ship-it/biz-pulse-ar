@@ -5,6 +5,16 @@ import { defineConfig, devices } from "@playwright/test";
  * The security subset is wired into CI; run the full suite with `npm run test:e2e`.
  * Base URL defaults to the local dev server; override with PLAYWRIGHT_BASE_URL
  * to hit preview/published (e.g. https://neexios.com).
+ *
+ *   npx vite dev --port 8085 --host 127.0.0.1
+ *   PLAYWRIGHT_BASE_URL=http://127.0.0.1:8085 npx playwright test --project=desktop
+ *
+ * **مشروع `mobile` يحتاج webkit.** `devices["iPhone 13"]` محرّكه webkit، وما
+ * على القرص في حاويات العمل كروميوم وحده — فيسقط المشروع كلّه بـ
+ * «Executable doesn't exist at …/webkit-‹بناء›/pw_run.sh» قبل فتح صفحة واحدة.
+ * وهو فشل **تركيب** لا فشل منتج: لا يُقرأ ارتدادًا، ولا يُداوى بتبديل
+ * المحرّك إلى كروميوم — ذاك يمحو تغطية سفاري بصمت ويُبقي التقرير أخضر.
+ * الدواء تركيب webkit، أو حصر التشغيل بـ`--project=desktop`.
  */
 export default defineConfig({
   testDir: "./tests/e2e",

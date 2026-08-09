@@ -32,6 +32,8 @@ const BASE = (process.env.BASE_URL || "http://127.0.0.1:8080").replace(/\/$/, ""
 const ROUTES = (process.env.ROUTES || "/,/projects,/risk,/sadeed,/sec").split(",").filter(Boolean);
 const STRICT_CONSOLE = process.env.STRICT_CONSOLE === "1";
 const SETTLE_MS = Number(process.env.SETTLE_MS || 2600);
+/** كم مرّة يُعاد القياس على صفحة لم تُرسَم بعد قبل الحكم عليها بالفراغ. */
+const EMPTY_RETRIES = Number(process.env.EMPTY_RETRIES || 3);
 
 /** The device matrix from the UI brief. `touch` decides which target floor applies. */
 const VIEWPORTS = [
@@ -266,8 +268,50 @@ for (const vp of VIEWPORTS) {
     try {
       await page.goto(BASE + route, { waitUntil: "domcontentloaded", timeout: 30000 });
       await page.waitForTimeout(SETTLE_MS);
-      const r = await page.evaluate(collect, { minFont: MIN_FONT, minTarget });
-      rows.push({ vp: vp.name, touch: vp.touch, route, minTarget, ...r, errors, webgl });
+
+      // **الصفحة الفارغة كانت تُعطي ✓.** كل أرضية هنا شرطٌ على ما وُجد: لا
+      // نصّ ⇒ لا نصّ تحت ١٢px، لا زرّ ⇒ لا هدف صغير، لا محتوى ⇒ لا قصّ. فحين
+      // لا تُرسَم الصفحة أصلًا تمرّ الأربع «سليمة» ويقرأ الجدول `minFont -`
+      // بلا علامة. وهذا هو عين العمى الذي كُشف في RTL، في موضع آخر: الفحص
+      // يصمت حيث يجب أن يصرخ.
+      //
+      // ولها في dev سببٌ حميد يجب ألّا يُحسب عطلًا: خادم التطوير يترجم
+      // المسار عند أول طلب ثم يعيد التحميل كاملًا (`full-reload`)، فقياسٌ عند
+      // ٢٦٠٠ms يقع داخل النافذة الميتة. قِيس على /guide: 63 عقدة عند ٤ ثوانٍ،
+      // و٧٢٣ عند ٨.
+      //
+      // فالتمييز بالإعادة لا بالتراخي: يُعاد القياس ما دامت الصفحة بلا نصّ،
+      // فإن نهضت قِيست حقًّا، وإن بقيت فارغة بعد المهل كلّها فهي **عطل
+      // معلن** لا نجاح صامت. وضياع سياق التنفيذ أثناء إعادة التحميل يُعاد
+      // كذلك بدل أن يُسجَّل FATAL على تنقّلٍ عابر.
+      let r = null;
+      for (let attempt = 0; attempt <= EMPTY_RETRIES; attempt++) {
+        try {
+          r = await page.evaluate(collect, { minFont: MIN_FONT, minTarget });
+        } catch (e) {
+          if (attempt === EMPTY_RETRIES || !/destroyed|navigat/i.test(String(e))) throw e;
+          r = null;
+        }
+        if (r && r.minFont !== null) break;
+        if (attempt < EMPTY_RETRIES) await page.waitForTimeout(SETTLE_MS);
+      }
+      rows.push({
+        vp: vp.name,
+        touch: vp.touch,
+        route,
+        minTarget,
+        // قيم محايدة تحفظ شكل الصف حين تبقى الصفحة فارغة؛ `minFont` الفارغة
+        // وحدها هي ما يُسقط الصف، لا انهيار في الطباعة.
+        minFont: null,
+        smallText: [],
+        smallTargets: [],
+        overflow: 0,
+        clipped: 0,
+        clippedTag: "",
+        ...r,
+        errors,
+        webgl,
+      });
     } catch (e) {
       rows.push({ vp: vp.name, route, fatal: String(e).slice(0, 110) });
     }
@@ -280,6 +324,8 @@ await browser.close();
 // ── Report ────────────────────────────────────────────────────────────────
 const fail = (r) =>
   r.fatal ||
+  // صفحة بلا نصّ مقيس: كل أرضية أخرى فارغة الشرط، فالنجاح هنا نجاح صامت.
+  r.minFont == null ||
   r.overflow > 0 ||
   r.clipped > 0 ||
   r.smallText.length > 0 ||
@@ -348,6 +394,10 @@ if (broken.length) {
       continue;
     }
     console.log(`\n${r.vp} ${r.route}:`);
+    if (r.minFont == null)
+      console.log(
+        `  · the page rendered no measurable text — every other floor is vacuously true here`,
+      );
     if (r.overflow > 0) console.log(`  · horizontal overflow: ${r.overflow}px`);
     if (r.clipped > 0)
       console.log(`  · clipped outside the viewport: ${r.clipped}px — ${r.clippedTag}`);

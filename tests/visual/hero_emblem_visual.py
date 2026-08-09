@@ -25,6 +25,9 @@ from pathlib import Path
 from PIL import Image, ImageChops
 from playwright.async_api import async_playwright
 
+sys.path.insert(0, str(Path(__file__).parent))
+from _runtime import BASE_URL, resolve_chromium  # noqa: E402
+
 ROOT = Path(__file__).parent
 BASELINES = ROOT / "baselines"
 CURRENT = ROOT / "current"
@@ -53,7 +56,7 @@ TARGETS = [
     "hero-vision-2030-crest",   # bottom stack (رؤية 2030)
 ]
 
-URL = "http://localhost:8080/?intro=1"
+URL = f"{BASE_URL}/?intro=1"
 
 
 def compare(a: Path, b: Path, diff_out: Path) -> float:
@@ -88,7 +91,7 @@ async def run() -> int:
     report: list[dict] = []
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=True, executable_path=resolve_chromium())
         try:
             for label, w, h in VIEWPORTS:
                 context = await browser.new_context(

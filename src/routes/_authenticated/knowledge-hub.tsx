@@ -23,6 +23,7 @@ import {
   type SearchSource,
   type SearchHit,
 } from "@/lib/enterprise-search.functions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/knowledge-hub")({
   errorComponent: RouteError,
@@ -200,7 +201,7 @@ function KnowledgeHubPage() {
           </div>
         ) : search.isError ? (
           <div className="mt-6 rounded-md border border-rose-500/40 bg-rose-500/5 p-3 text-sm text-rose-200">
-            {(search.error as Error)?.message}
+            {userFacingError(search.error)}
           </div>
         ) : !results || results.hits.length === 0 ? (
           search.isPending ? null : (

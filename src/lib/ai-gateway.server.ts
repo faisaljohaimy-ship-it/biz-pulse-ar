@@ -24,7 +24,3 @@ export function resolveGoogleGeminiModel(
   const configured = env.GEMINI_MODEL?.trim() ?? "";
   return GOOGLE_MODELS.some(({ id }) => id === configured) ? configured : DEFAULT_GOOGLE_MODEL;
 }
-
-export function isGeminiModelId(modelId: string): boolean {
-  return GOOGLE_MODELS.some(({ id }) => id === modelId);
-}

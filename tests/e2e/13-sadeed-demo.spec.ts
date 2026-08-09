@@ -1,18 +1,30 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * /aria/demo is INVARIANT-17 territory: the permanent executive-demo surface.
- * Unauthenticated visits must redirect to /auth; the authenticated leg is
- * skipped without real creds rather than faking a session.
+ * `/sadeed/demo` أرض INVARIANT-17: سطح العرض التنفيذي الدائم.
+ *
+ * تصحيحان على ما كان مكتوبًا هنا:
+ *   ① المسار كان `/aria/demo`؛ أُعيدت تسميته إلى `/sadeed/demo` في الموجة
+ *      الثالثة (`8ca633c`) بلا موجّه ولا مسار قديم — فالعنوان القديم 404.
+ *   ② «التوجيه إلى /auth» عقدٌ منسوخ: `src/routes/_authenticated.tsx` رفع
+ *      البوابة صراحةً («no beforeLoad redirect to "/auth" anymore»)،
+ *      وعقيدة `CLAUDE.md` الطبقة ٤ تمنع Unauthorized على الزائر. فالمقيس
+ *      صار: الزائر يصل السطح ويُصيَّر، بلا حدود خطأ.
+ *
+ * الساق المصادَقة تُتخطّى بلا اعتمادات حقيقية بدل تزوير جلسة.
  */
-test.describe("/aria/demo — INVARIANT-17", () => {
-  test("unauthenticated visit redirects to /auth", async ({ page }) => {
-    await page.goto("/aria/demo", { waitUntil: "domcontentloaded" });
-    await page.waitForURL(/\/auth(\?|$)/, { timeout: 10_000 });
-    expect(page.url()).toMatch(/\/auth/);
+const DEMO_ROUTE = "/sadeed/demo";
+
+test.describe("/sadeed/demo — INVARIANT-17", () => {
+  test("زيارة بلا جلسة تصل السطح وتُصيَّر", async ({ page }) => {
+    await page.goto(DEMO_ROUTE, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(3_000);
+    expect(new URL(page.url()).pathname, "الزائر طُرد عن سطح العرض").toBe(DEMO_ROUTE);
+    await expect(page.locator("body")).not.toContainText("حدث خطأ — جارٍ الاستعادة");
+    await expect(page.locator("body")).not.toContainText("404");
   });
 
-  test("authenticated visit renders scenarios and can trigger one", async ({ page }) => {
+  test("زيارة مصادَقة تُصيَّر السيناريوهات وتشغّل واحدًا", async ({ page }) => {
     const email = process.env.E2E_TEST_EMAIL;
     const password = process.env.E2E_TEST_PASSWORD;
     if (!email || !password) {
@@ -35,7 +47,7 @@ test.describe("/aria/demo — INVARIANT-17", () => {
       .click();
     await page.waitForURL((u) => !/\/auth/.test(u.pathname), { timeout: 15_000 });
 
-    await page.goto("/aria/demo", { waitUntil: "domcontentloaded" });
+    await page.goto(DEMO_ROUTE, { waitUntil: "domcontentloaded" });
     await expect(page.locator("body")).not.toContainText("حدث خطأ — جارٍ الاستعادة");
 
     // Trigger the first scenario button — asserts the singleton Brain path works.

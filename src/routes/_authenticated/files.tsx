@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/files")({
   errorComponent: RouteError,
@@ -71,7 +72,7 @@ function FilesPage() {
       toast.success(locale === "ar" ? "تم الرفع" : "Uploaded");
       qc.invalidateQueries({ queryKey: ["files"] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed");
+      toast.error(userFacingError(e));
     } finally {
       setUploading(false);
     }
@@ -80,7 +81,7 @@ function FilesPage() {
   const remove = async (name: string) => {
     if (!user) return;
     const { error } = await supabase.storage.from("uploads").remove([`${user.id}/${name}`]);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(userFacingError(error));
     qc.invalidateQueries({ queryKey: ["files"] });
   };
 

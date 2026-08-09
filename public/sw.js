@@ -10,8 +10,15 @@
 // وحده. النسخ المخزَّنة تحت v8 كُتبت تحت قاعدة «الذاكرة أوّلًا للجميع»،
 // و`activate` أدناه يحذف كل مفتاح سوى هذا — فتُطرح تلك النسخ عند أوّل تفعيل
 // بدل أن تبقى مؤهَّلة للخدمة تحت القاعدة الجديدة.
-const CACHE_NAME = "sadeed-static-v9-network-first-code";
-const PRECACHE = ["/brand-icon.png", "/sadeed-portrait.png", "/manifest.webmanifest"];
+// v10 (٢٠٢٦/٠٨/٠٩): المفتاح يُرفع لأن **عضوية قائمة التخزين المسبق** تغيّرت،
+// لا لأن محتوى ملف تغيّر. كان `/sadeed-portrait.png` — ١٫٩٢ ميغابايت — يُجلب
+// ويُخزَّن عند كل تثبيت، وهو ملف **لا يرسمه أي مكوّن**: كل أسطح الصورة
+// (SadeedCopilot · SadeedWatermark · GlobalPageBackdrop · SadeedStagePresence)
+// تقرأ `/sadeed-portrait.webp` — الصورة نفسها بالمقاس نفسه (1024×1536) في
+// ١٤٤ كيلوبايت. و`activate` أدناه يحذف كل مفتاح سوى هذا، فبغير رفع المفتاح
+// تبقى النسخة الثقيلة مخزَّنة عند كل تثبيت قائم إلى الأبد.
+const CACHE_NAME = "sadeed-static-v10-network-first-code";
+const PRECACHE = ["/brand-icon.png", "/sadeed-portrait.webp", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)));

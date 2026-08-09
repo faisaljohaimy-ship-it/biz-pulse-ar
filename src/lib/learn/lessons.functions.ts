@@ -1,11 +1,20 @@
 /**
  * Executive Knowledge Bridge — server functions.
- * All calls run under `requireSupabaseAuth`.
+ *
+ * القراءة (`listLessons` · `getLesson` · `getQuiz`) تحت
+ * `optionalSupabaseAuth`: صفحات `/learn` نوافذ عرض يتصفّحها زائر، ومنهج
+ * التعلّم محتوى منشور لا بيان مؤسسة. أمّا الكتابة (`submitQuiz` ·
+ * `updateProgress`) فتبقى خلف `requireSupabaseAuth` — لا تقدّم بلا صاحب.
+ *
+ * وتقدّم الزائر `null` لا صفرًا (المادة ٢٧): «لم يبدأ» غيابُ قياس لا
+ * قياسٌ بصفر.
+ *
  * Quiz correct answers are never exposed to the client — grading happens server-side.
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import type {
   LessonCategory,
   LessonListItem,
@@ -24,10 +33,11 @@ type Sb = any;
 
 async function loadProgress(
   supabase: Sb,
-  userId: string,
+  userId: string | null,
   lessonIds: string[],
 ): Promise<Record<string, LessonProgress>> {
-  if (lessonIds.length === 0) return {};
+  // زائر بلا جلسة: لا سجلّ تقدّم أصلًا — لا استعلام ولا صفر مُختلَق.
+  if (!userId || lessonIds.length === 0) return {};
   const { data, error } = await supabase
     .from("learn_lesson_progress")
     .select(
@@ -53,7 +63,7 @@ async function loadProgress(
 // ---------- listLessons ----------
 
 export const listLessons = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<LessonListItem[]> => {
     const { supabase, userId } = context;
     const { data, error } = await supabase
@@ -77,7 +87,7 @@ export const listLessons = createServerFn({ method: "GET" })
 const GetLessonInput = z.object({ slug: z.string().min(1).max(120) });
 
 export const getLesson = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .inputValidator((data: unknown) => GetLessonInput.parse(data))
   .handler(async ({ data, context }): Promise<LessonDetail> => {
     const { supabase, userId } = context;
@@ -136,7 +146,7 @@ export const getLesson = createServerFn({ method: "GET" })
 // ---------- getQuiz (sanitized) ----------
 
 export const getQuiz = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .inputValidator((data: unknown) => GetLessonInput.parse(data))
   .handler(async ({ data, context }): Promise<QuizQuestionPublic[]> => {
     const { supabase } = context;

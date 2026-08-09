@@ -2503,8 +2503,18 @@ export type CommandCenterState = {
   }>;
   regions: Array<{
     region_id: "central" | "western" | "eastern" | "southern";
-    assets_active: number;
-    incidents_open: number;
+    /** `null` = لم يُقَس — لا عمود منطقة على `sec_sites`، فلا عدد أصول لمنطقة. */
+    assets_active: number | null;
+    /**
+     * `null` = لم يُقَس (المادة ٢٧).
+     *
+     * `sec_incidents` لا يحمل منطقة — لا عمودًا مباشرًا ولا عبر
+     * `site_id → sec_sites` (ولا هذا يحمل منطقة؛ `circle_id` دوائرُ مدنٍ:
+     * makkah/jeddah/madinah/taif/tabuk، لا مناطق `regions.ts` الأربع).
+     * فالتوزيع على المناطق غير قابل للقياس من المسار الحيّ، و«صفر بلاغات»
+     * لمنطقة لم تُقَس ادّعاءُ سلامةٍ لم يقع.
+     */
+    incidents_open: number | null;
     compliance_pct: number;
     severity: CommandSeverity;
     last_pulse_at: string;
@@ -2516,6 +2526,11 @@ export type CommandCenterState = {
     support_processing: number;
     /** `null` = لم يُقَس — لا يُستبدل بصفر (المادة ٢٧). */
     done_today: number | null;
+    /**
+     * البلاغات المفتوحة **جملةً** — العدّ الكلّي مقيس ولو تعذّر توزيعه على
+     * المناطق، فلا يُطمس المقيس بحجّة أن تفصيله غير مقيس. `null` = لم يُقَس.
+     */
+    incidents_open: number | null;
     compliance_avg: number;
   };
 };
@@ -2646,6 +2661,9 @@ export function buildCommandCenterSimulation(now: number): CommandCenterState {
       urgent_open: urgent.filter((u) => u.status !== "مغلق").length,
       support_processing: 4,
       done_today: sumMeasured(agents.map((a) => a.done_today)),
+      // مشتقٌّ من صفوف المناطق نفسها التي تُعرض — فلا يقول الرأس رقمًا
+      // تكذّبه اللوحة تحته.
+      incidents_open: sumMeasured(regions.map((r) => r.incidents_open)),
       compliance_avg: Math.round(
         regions.reduce((s, r) => s + r.compliance_pct, 0) / regions.length,
       ),
@@ -2853,4 +2871,611 @@ export function buildRiskBoardSimulation(now: number): RiskBoard {
   ];
 
   return markSimulation({ source: "reference", simulation: true, rows, recommendations });
+}
+
+/* ── OMS: البلاغات · أوامر العمل · التصاريح · سجل النشاط ─────────────────
+   شاشات `/sec/incidents` و`/sec/maintenance` و`/sec/permits` نوافذ عرض
+   يفتحها زائر، فلا يجوز أن تفرغ ولا أن تردّ خطأ مصادقة.
+
+   **بنيةٌ واحدة لا ثلاث.** البلاغات وأوامر العمل والتصاريح تُبنى معًا
+   ويُشتقّ منها العدّاد نفسه الذي تعرضه بطاقات الرأس — القاعدة المكتسَبة من
+   سجلّ المخاطر: الرأس لا يجوز أن يناقض لوحته. ولو بُني كلٌّ على حدة لأمكن
+   أن يقول العدّاد «٣ مفتوحة» بينما الجدول تحته يعرض أربعًا.
+
+   وأوامر العمل تُسنَد إلى بلاغاتها بـ`source_incident_id` الحقيقي داخل
+   المجموعة نفسها، فسلسلة «بلاغ ← أمر عمل» تُقرأ في العرض كما تُقرأ في
+   القاعدة الحيّة. */
+
+export type OmsIncidentRow = {
+  id: string;
+  ref: string;
+  site_id: string | null;
+  category: string;
+  title_ar: string;
+  title_en: string | null;
+  severity: string;
+  status: string;
+  priority: string;
+  owner: string | null;
+  assigned_to: string | null;
+  reported_at: string;
+  resolved_at: string | null;
+  response_minutes: number | null;
+  root_cause: string | null;
+  ai_summary: string | null;
+  ai_risk_score: number | null;
+  aria_auto_analyzed: boolean;
+  escalated: boolean;
+  corrective_actions: Array<{ action: string; owner: string; due_at: string }>;
+  attachments: never[];
+  attachments_count: number;
+  executive_review: string | null;
+  executive_reviewed_at: string | null;
+  executive_reviewed_by: string | null;
+};
+
+export type OmsWorkOrderRow = {
+  id: string;
+  ref: string;
+  site_id: string | null;
+  building_id: string | null;
+  asset_kind: string;
+  asset_code: string | null;
+  kind: string;
+  title_ar: string;
+  title_en: string | null;
+  priority: string;
+  status: string;
+  assigned_to: string | null;
+  contractor: string | null;
+  opened_at: string;
+  due_at: string | null;
+  closed_at: string | null;
+  approved_at: string | null;
+  approved_by: string | null;
+  completion_notes: string | null;
+  notes: string | null;
+  source_incident_id: string | null;
+  attachments: never[];
+};
+
+export type OmsPermitRow = {
+  id: string;
+  ref: string;
+  site_id: string | null;
+  work_type: string;
+  contractor: string;
+  risk_level: string;
+  status: string;
+  starts_at: string;
+  ends_at: string;
+  approver: string | null;
+  approved_at: string | null;
+  approved_by: string | null;
+  notes: string | null;
+  attachments: never[];
+};
+
+export type OmsActivityRow = {
+  id: string;
+  entity_type: string;
+  entity_id: string;
+  entity_ref: string | null;
+  event: string;
+  actor_id: string | null;
+  actor_name: string | null;
+  occurred_at: string;
+  payload: Record<string, never>;
+};
+
+export type OmsSimulation = {
+  incidents: OmsIncidentRow[];
+  work_orders: OmsWorkOrderRow[];
+  permits: OmsPermitRow[];
+  activity: OmsActivityRow[];
+};
+
+/** [المرجع، العنوان، الفئة، الشدّة، الحالة، الأولوية، دقائق الاستجابة، درجة الخطر، مُصعَّد] */
+const OMS_INC: Array<
+  [string, string, string, string, string, string, number | null, number, boolean]
+> = [
+  [
+    "INC-2411",
+    "إنذار حراري في غرفة المحولات الغربية",
+    "fire",
+    "critical",
+    "investigating",
+    "urgent",
+    12,
+    88,
+    true,
+  ],
+  [
+    "INC-2410",
+    "رصد طائرة مسيّرة فوق المحيط الشمالي",
+    "airspace",
+    "critical",
+    "open",
+    "urgent",
+    null,
+    84,
+    true,
+  ],
+  [
+    "INC-2409",
+    "دخول غير مصرّح عند السور الشمالي",
+    "perimeter",
+    "high",
+    "in_progress",
+    "high",
+    19,
+    71,
+    false,
+  ],
+  [
+    "INC-2408",
+    "تجمهر عند بوابة المقاولين الشرقية",
+    "crowd",
+    "high",
+    "resolved",
+    "high",
+    26,
+    63,
+    false,
+  ],
+  [
+    "INC-2407",
+    "تعطل كاميرا البوابة الرئيسية",
+    "cctv",
+    "medium",
+    "in_progress",
+    "medium",
+    34,
+    48,
+    false,
+  ],
+  [
+    "INC-2406",
+    "مركبة متوقفة في منطقة محظورة",
+    "access",
+    "medium",
+    "resolved",
+    "medium",
+    22,
+    41,
+    false,
+  ],
+  [
+    "INC-2405",
+    "انقطاع اتصال مستشعر اهتزاز جنوبي",
+    "sensors",
+    "medium",
+    "resolved",
+    "medium",
+    45,
+    44,
+    false,
+  ],
+  [
+    "INC-2404",
+    "تسرّب زيت محدود في ورشة الصيانة",
+    "environment",
+    "medium",
+    "closed",
+    "medium",
+    38,
+    39,
+    false,
+  ],
+  [
+    "INC-2403",
+    "محاولة دخول ببطاقة منتهية الصلاحية",
+    "access",
+    "low",
+    "closed",
+    "low",
+    15,
+    22,
+    false,
+  ],
+  ["INC-2402", "بلاغ فقدان بطاقة تعريف موظف", "identity", "low", "closed", "low", 31, 18, false],
+  ["INC-2401", "إنذار كاذب من مجسّ السياج الغربي", "sensors", "low", "closed", "low", 9, 14, false],
+];
+
+const OMS_OWNERS = ["م. سلطان العتيبي", "أ. نورة الدوسري", "م. خالد الغامدي", "أ. ريم القحطاني"];
+const OMS_CONTRACTORS = [
+  "الإنشاءات الصناعية المتقدمة",
+  "صيانة الشبكات الموحدة",
+  "الحلول الكهروميكانيكية",
+  "أعمال الارتفاعات المحدودة",
+];
+
+/** [المرجع، العنوان، النوع، الحالة، الأولوية، نوع الأصل، رمز الأصل، فهرس البلاغ المصدر أو -1] */
+const OMS_WO: Array<[string, string, string, string, string, string, string, number]> = [
+  [
+    "WO-3312",
+    "استبدال وحدة تغذية غرفة المحولات",
+    "corrective",
+    "in_progress",
+    "urgent",
+    "power",
+    "UPS-CR-2",
+    0,
+  ],
+  [
+    "WO-3311",
+    "إصلاح كاميرا البوابة الرئيسية",
+    "corrective",
+    "open",
+    "high",
+    "camera",
+    "CAM-E-12",
+    4,
+  ],
+  [
+    "WO-3310",
+    "معايرة مستشعرات الحرارة — مبنى المحولات",
+    "preventive",
+    "open",
+    "high",
+    "sensor",
+    "SNS-TH-9",
+    -1,
+  ],
+  [
+    "WO-3309",
+    "فحص دوري لنظام كشف التسلل",
+    "preventive",
+    "in_progress",
+    "normal",
+    "sensor",
+    "SNS-PID-22",
+    -1,
+  ],
+  [
+    "WO-3308",
+    "استبدال مجسّ السياج الغربي",
+    "corrective",
+    "closed",
+    "normal",
+    "sensor",
+    "SNS-FN-4",
+    10,
+  ],
+  [
+    "WO-3307",
+    "صيانة وقائية لكاميرات القطاع الغربي",
+    "preventive",
+    "closed",
+    "normal",
+    "camera",
+    "CAM-W-03",
+    -1,
+  ],
+  [
+    "WO-3306",
+    "إصلاح إنارة السور الجنوبي",
+    "corrective",
+    "closed",
+    "low",
+    "lighting",
+    "LGT-S-17",
+    -1,
+  ],
+  [
+    "WO-3305",
+    "تحديث برمجيات قارئات البطاقات",
+    "preventive",
+    "open",
+    "normal",
+    "gate",
+    "GATE-E1",
+    -1,
+  ],
+  ["WO-3304", "إصلاح حاجز مروري متعطل", "corrective", "in_progress", "high", "gate", "GATE-W2", 5],
+  [
+    "WO-3303",
+    "تنظيف وفحص مرشحات غرفة التحكم",
+    "preventive",
+    "closed",
+    "low",
+    "hvac",
+    "HVC-CR-1",
+    -1,
+  ],
+];
+
+/** [المرجع، نوع العمل، مستوى الخطورة، الحالة، بداية بالساعات من الآن، مدّتها] */
+const OMS_PTW: Array<[string, string, string, string, number, number]> = [
+  ["PTW-1187", "أعمال ساخنة — لحام سياج المحيط", "high", "active", -2, 8],
+  ["PTW-1186", "دخول مساحة مغلقة — خزان الوقود 3", "critical", "active", -1, 6],
+  ["PTW-1185", "فصل تيار مجدول — لوحة التوزيع الغربية", "critical", "pending", 4, 5],
+  ["PTW-1184", "أعمال على ارتفاع — برج الإنارة الشمالي", "medium", "approved", 2, 7],
+  ["PTW-1183", "حفر بالقرب من كابلات الجهد المتوسط", "high", "pending", 20, 9],
+  ["PTW-1182", "أعمال ساخنة — قطع مواسير الورشة", "high", "closed", -30, 6],
+  ["PTW-1181", "صيانة كهربائية — غرفة المولدات", "medium", "closed", -52, 8],
+];
+
+const OMS_EVENTS: Array<[string, string]> = [
+  ["incident_created", "غرفة التحكم"],
+  ["incident_escalated", "قائد الوردية"],
+  ["aria_analyzed", "سَدِيد (gemini)"],
+  ["work_order_created", "إدارة الصيانة"],
+  ["work_order_approved", "م. سلطان العتيبي"],
+  ["permit_approved", "مشرف السلامة"],
+  ["permit_verified", "بوابة المقاولين"],
+  ["executive_reviewed", "المدير التنفيذي"],
+  ["attachment_added", "فريق الميدان"],
+  ["incident_closed", "غرفة التحكم"],
+];
+
+/**
+ * مجموعة عرض واحدة متّسقة لنوافذ OMS الثلاث وسجلّ نشاطها.
+ *
+ * الطوابع الزمنية نسبيّة إلى `now` دائمًا — نافذة العرض تبقى «اليوم» مهما
+ * تأخّر تاريخ التشغيل، ولا تعتمد على بذرة قاعدة.
+ */
+export function buildOmsSimulation(now: number): OmsSimulation {
+  const incidents: OmsIncidentRow[] = OMS_INC.map(
+    (
+      [
+        ref,
+        title_ar,
+        category,
+        severity,
+        status,
+        priority,
+        response_minutes,
+        ai_risk_score,
+        escalated,
+      ],
+      i,
+    ) => {
+      const reportedAt = now - (i * 7 + 2) * H;
+      const done = status === "resolved" || status === "closed";
+      return {
+        id: `sim-inc-${i + 1}`,
+        ref,
+        site_id: `sim-s${(i % 4) + 1}`,
+        category,
+        title_ar,
+        title_en: null,
+        severity,
+        status,
+        priority,
+        owner: OMS_OWNERS[i % OMS_OWNERS.length]!,
+        assigned_to: OMS_OWNERS[(i + 1) % OMS_OWNERS.length]!,
+        reported_at: iso(reportedAt),
+        resolved_at: done ? iso(reportedAt + (response_minutes ?? 30) * M) : null,
+        response_minutes,
+        root_cause: done ? "تحليل مرجعي: سبب جذري موثّق في تقرير الإغلاق." : null,
+        ai_summary: `تحليل مرجعي: ${title_ar} — الأثر التشغيلي محدود والمتابعة جارية وفق الإجراء المعتمد.`,
+        ai_risk_score,
+        aria_auto_analyzed: true,
+        escalated,
+        corrective_actions: done
+          ? [
+              {
+                action: "تحديث إجراء الاستجابة وتعميمه على الورديات الثلاث",
+                owner: OMS_OWNERS[(i + 2) % OMS_OWNERS.length]!,
+                due_at: iso(reportedAt + 72 * H),
+              },
+            ]
+          : [],
+        attachments: [],
+        attachments_count: 0,
+        executive_review: i === 0 ? "روجعت تنفيذيًّا — تُرفع خطة الاحتواء خلال ٢٤ ساعة." : null,
+        executive_reviewed_at: i === 0 ? iso(reportedAt + 3 * H) : null,
+        executive_reviewed_by: null,
+      };
+    },
+  );
+
+  const work_orders: OmsWorkOrderRow[] = OMS_WO.map(
+    ([ref, title_ar, kind, status, priority, asset_kind, asset_code, incIdx], i) => {
+      const openedAt = now - (i * 9 + 5) * H;
+      const closed = status === "closed";
+      return {
+        id: `sim-wo-${i + 1}`,
+        ref,
+        site_id: `sim-s${(i % 4) + 1}`,
+        building_id: null,
+        asset_kind,
+        asset_code,
+        kind,
+        title_ar,
+        title_en: null,
+        priority,
+        status,
+        assigned_to: OMS_OWNERS[i % OMS_OWNERS.length]!,
+        contractor: OMS_CONTRACTORS[i % OMS_CONTRACTORS.length]!,
+        opened_at: iso(openedAt),
+        // أمران متأخّران عمدًا — «متأخرة» عدّادٌ يجب أن يُرى غير صفر.
+        due_at: iso(openedAt + (i < 2 ? 4 : 60) * H),
+        closed_at: closed ? iso(openedAt + 20 * H) : null,
+        approved_at: status === "open" ? null : iso(openedAt + 2 * H),
+        approved_by: null,
+        completion_notes: closed ? "أُغلق بعد التحقق الميداني." : null,
+        notes: null,
+        source_incident_id: incIdx >= 0 ? (incidents[incIdx]?.id ?? null) : null,
+        attachments: [],
+      };
+    },
+  );
+
+  const permits: OmsPermitRow[] = OMS_PTW.map(
+    ([ref, work_type, risk_level, status, startOffsetH, durationH], i) => {
+      const startsAt = now + startOffsetH * H;
+      return {
+        id: `sim-ptw-${i + 1}`,
+        ref,
+        site_id: `sim-s${(i % 4) + 1}`,
+        work_type,
+        contractor: OMS_CONTRACTORS[i % OMS_CONTRACTORS.length]!,
+        risk_level,
+        status,
+        starts_at: iso(startsAt),
+        ends_at: iso(startsAt + durationH * H),
+        approver: status === "pending" ? null : "مشرف السلامة",
+        approved_at: status === "pending" ? null : iso(startsAt - H),
+        approved_by: null,
+        notes: null,
+        attachments: [],
+      };
+    },
+  );
+
+  // سجلّ النشاط يشير إلى كيانات موجودة في المجموعة نفسها — لا مراجع يتيمة.
+  const activity: OmsActivityRow[] = fill(24, (i) => {
+    const [event, actor] = OMS_EVENTS[i % OMS_EVENTS.length]!;
+    const onIncident = i % 3 !== 2;
+    const entity = onIncident
+      ? incidents[i % incidents.length]!
+      : work_orders[i % work_orders.length]!;
+    return {
+      id: `sim-evt-${i + 1}`,
+      entity_type: onIncident ? "incident" : "work_order",
+      entity_id: entity.id,
+      entity_ref: entity.ref,
+      event,
+      actor_id: null,
+      actor_name: actor,
+      // أول ثمانية أحداث داخل آخر ٢٤ ساعة — عدّاد «نشاط ٢٤ ساعة» لا يفرغ.
+      occurred_at: iso(now - (i < 8 ? i * 2 + 1 : i * 5) * H),
+      payload: {},
+    };
+  });
+
+  return markSimulation({ incidents, work_orders, permits, activity });
+}
+
+/* ── مشاريع الأنظمة الأمنية (`/sec/projects`) ────────────────────────────
+   الصفحة تجمع الميزانية والمصروف وتحسب نسبة الصرف — فالأرقام هنا متسقة:
+   المصروف ≤ الميزانية دائمًا، ونسبة الإنجاز تتبع الحالة لا تناقضها. */
+
+export type SecProjectRow = {
+  id: string;
+  ref: string;
+  circle_id: string | null;
+  name_ar: string;
+  name_en: string;
+  kind: string;
+  status: string;
+  progress: number;
+  budget_sar: number;
+  spent_sar: number;
+  starts_at: string | null;
+  ends_at: string | null;
+  manager: string | null;
+  contractor: string | null;
+  health: "green" | "amber" | "red";
+};
+
+/** [المرجع، الاسم عربيًّا، الاسم إنجليزيًّا، النوع، الحالة، الإنجاز٪، الميزانية، نسبة الصرف، الصحة] */
+const SEC_PROJECTS: Array<
+  [string, string, string, string, string, number, number, number, "green" | "amber" | "red"]
+> = [
+  [
+    "PRJ-101",
+    "تحديث شبكة كاميرات المحيط",
+    "Perimeter CCTV refresh",
+    "cctv",
+    "in-progress",
+    62,
+    4_800_000,
+    0.56,
+    "green",
+  ],
+  [
+    "PRJ-102",
+    "نظام التحكم بالدخول الموحّد",
+    "Unified access control",
+    "access_control",
+    "in-progress",
+    35,
+    2_100_000,
+    0.3,
+    "green",
+  ],
+  [
+    "PRJ-103",
+    "مركز التحكم الاحتياطي",
+    "Backup control room",
+    "control_room",
+    "in-progress",
+    88,
+    1_250_000,
+    0.87,
+    "amber",
+  ],
+  [
+    "PRJ-104",
+    "أسوار ذكية بمجسّات اهتزاز",
+    "Smart fence with vibration sensors",
+    "perimeter",
+    "in-progress",
+    24,
+    3_600_000,
+    0.41,
+    "red",
+  ],
+  [
+    "PRJ-105",
+    "منظومة كشف الطائرات المسيّرة",
+    "Counter-UAS detection",
+    "counter_uas",
+    "planned",
+    5,
+    2_950_000,
+    0.02,
+    "green",
+  ],
+  [
+    "PRJ-106",
+    "ترقية شبكة الاتصال اللاسلكي",
+    "Radio network upgrade",
+    "comms",
+    "completed",
+    100,
+    900_000,
+    0.97,
+    "green",
+  ],
+  [
+    "PRJ-107",
+    "تأهيل بوابات الشحن الآلية",
+    "Automated freight gates",
+    "gates",
+    "completed",
+    100,
+    3_400_000,
+    0.97,
+    "green",
+  ],
+];
+
+export function buildSecProjectsSimulation(now: number): SecProjectRow[] {
+  const D = 24 * H;
+  return markSimulation(
+    SEC_PROJECTS.map(
+      ([ref, name_ar, name_en, kind, status, progress, budget_sar, spentRatio, health], i) => ({
+        id: `sim-prj-${i + 1}`,
+        ref,
+        circle_id: `sim-tw-cir-${i % 3}`,
+        name_ar,
+        name_en,
+        kind,
+        status,
+        progress,
+        budget_sar,
+        // المصروف يبقى دون الميزانية دائمًا — نسبة الصرف المعروضة لا تتجاوز ١٠٠٪.
+        spent_sar: Math.round(budget_sar * Math.min(spentRatio, 1)),
+        starts_at: iso(now - (120 + i * 40) * D),
+        ends_at: iso(now + (status === "completed" ? -(20 + i * 10) : 60 + i * 45) * D),
+        manager: OMS_OWNERS[i % OMS_OWNERS.length]!,
+        contractor: OMS_CONTRACTORS[i % OMS_CONTRACTORS.length]!,
+        health,
+      }),
+    ),
+  );
 }

@@ -25,6 +25,7 @@ import {
   ORG_ROLES,
   type OrgRole,
 } from "@/lib/security-center.functions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/security-center")({
   errorComponent: RouteError,
@@ -64,7 +65,7 @@ function SecurityCenterPage() {
       void qc.invalidateQueries({ queryKey: ["sec-overview"] });
       void qc.invalidateQueries({ queryKey: ["sec-audit"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const totals = overview.data?.totals;

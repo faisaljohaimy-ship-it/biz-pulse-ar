@@ -11,6 +11,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type DecisionItem = {
   id: string;
@@ -56,8 +57,11 @@ function priorityFromScore(score: number): DecisionItem["priority"] {
   return "low";
 }
 
+// محرّك القرارات في غرفة العمليات — تجميع قراءات محضة يعرضه الزائر.
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const getExecutiveDecisions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<ExecutiveDecisions> => {
     const sb = context.supabase;
     const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();

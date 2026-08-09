@@ -17,21 +17,21 @@
  */
 import * as React from "react";
 import {
+  BarChart3,
   Bot,
   Boxes,
-  Building2,
   Cable,
+  ClipboardCheck,
   Compass,
-  FileText,
+  FileBarChart,
   Gauge,
-  Landmark,
   LayoutGrid,
   BookOpen,
   Map as MapIcon,
+  Presentation,
   Radar,
   Settings,
-  Shield,
-  Ship,
+  ShieldAlert,
   Siren,
   Wrench,
 } from "lucide-react";
@@ -95,17 +95,33 @@ const NAV_GROUPS: readonly NavGroup[] = [
       },
       { actionId: "nav.operations", labelAr: "التشغيل", labelEn: "OPERATIONS", icon: Wrench },
       { actionId: "nav.urgentOps", labelAr: "العاجل", labelEn: "URGENT OPS", icon: Siren },
-      { actionId: "nav.boardroom", labelAr: "قاعة المجلس", labelEn: "BOARDROOM", icon: Building2 },
+      // قاعة المجلس = **العرض التنفيذي للقيادة** كما في سجل الوحدات، لا مبنى؛
+      // و`Building2` أيقونة «الدوائر» في الشريط الجانبي.
+      {
+        actionId: "nav.boardroom",
+        labelAr: "قاعة المجلس",
+        labelEn: "BOARDROOM",
+        icon: Presentation,
+      },
     ],
   },
   {
     labelAr: "الأداء والحوكمة",
     labelEn: "PERFORMANCE & GOVERNANCE",
     items: [
-      { actionId: "nav.indicators", labelAr: "المؤشرات", labelEn: "INDICATORS", icon: Gauge },
-      { actionId: "nav.risks", labelAr: "المخاطر", labelEn: "RISKS", icon: Shield },
-      { actionId: "nav.governance", labelAr: "الحوكمة", labelEn: "GOVERNANCE", icon: Landmark },
-      { actionId: "nav.reports", labelAr: "التقارير", labelEn: "REPORTS", icon: FileText },
+      // أيقونات هذه المجموعة كانت تنقض السجل الكانوني: `Gauge` أيقونة «مركز
+      // القيادة» نفسها في القائمة أعلاه فقرأ البندان بأيقونة واحدة، و`Shield`
+      // أيقونة وحدة «الأمن الصناعي» لا المخاطر، و`Landmark` مبنى حكومي لا
+      // حوكمة، و`FileText` نصٌّ مجرّد والتقارير وثائق ذات بيانات.
+      { actionId: "nav.indicators", labelAr: "المؤشرات", labelEn: "INDICATORS", icon: BarChart3 },
+      { actionId: "nav.risks", labelAr: "المخاطر", labelEn: "RISKS", icon: ShieldAlert },
+      {
+        actionId: "nav.governance",
+        labelAr: "الحوكمة",
+        labelEn: "GOVERNANCE",
+        icon: ClipboardCheck,
+      },
+      { actionId: "nav.reports", labelAr: "التقارير", labelEn: "REPORTS", icon: FileBarChart },
     ],
   },
   {

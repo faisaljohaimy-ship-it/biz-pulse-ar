@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Ban, Pause, RotateCcw } from "lucide-react";
+import { Plus, Ban, Pause, Play } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/contractors")({
@@ -202,7 +202,10 @@ function ContractorsPage() {
                     mStatus.mutate({ id: c.id, status: "active" });
                   }}
                 >
-                  <RotateCcw className="h-3 w-3 me-1" /> تفعيل
+                  {/* `RotateCcw` سهمُ **تراجع** — وهي أيقونة «الاسترجاع» في
+                      شاشات التنفيذ؛ والتفعيل ضدُّ «تعليق» المجاور، فأيقونته
+                      نظيرةُ `Pause`. */}
+                  <Play className="h-3 w-3 me-1" /> تفعيل
                 </Button>
               )}
               {c.status === "active" && (

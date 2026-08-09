@@ -24,6 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/sadeed-documents")({
   errorComponent: RouteError,
@@ -143,7 +144,7 @@ function SadeedDocumentsConsole() {
       setUploadState(null);
       qc.invalidateQueries({ queryKey: ["aria-documents"] });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg = userFacingError(e);
       setUploadErr(msg);
       setUploadState(null);
     }
@@ -270,9 +271,7 @@ function SadeedDocumentsConsole() {
           </div>
         )}
         {searchMut.isError && (
-          <p className="text-sm text-destructive">
-            {searchMut.error instanceof Error ? searchMut.error.message : "فشل البحث"}
-          </p>
+          <p className="text-sm text-destructive">{userFacingError(searchMut.error)}</p>
         )}
       </section>
 

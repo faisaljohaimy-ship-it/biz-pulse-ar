@@ -121,10 +121,6 @@ function validate(schema: JsonSchema, value: unknown, path = "$"): FieldError[] 
   return errors;
 }
 
-export function validateAgainstSchema(schema: JsonSchema, value: unknown): FieldError[] {
-  return validate(schema, value);
-}
-
 type FieldProps = {
   name: string;
   schema: JsonSchema;

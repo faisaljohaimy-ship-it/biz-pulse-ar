@@ -30,7 +30,11 @@ export interface FreeAgentSpeechHandle {
 export function splitSpeechText(text: string, maxChars = 220): string[] {
   const clean = text.replace(/\s+/g, " ").trim();
   if (!clean) return [];
-  const sentences = clean.split(/(?<=[.!?؟؛])\s+/u);
+  // القطع عند علامة نهاية متبوعة بفراغ. كُتب بعلامةٍ وسيطة لا بـ`lookbehind`:
+  // هذا الملف يبلغ المتصفح (عبر `sadeed-voice.ts`)، و`(?<=…)` **خطأ تحليل**
+  // على Safari دون ١٦٫٤ — لا يعطب هذه الدالة وحدها بل يُسقط الوحدة كلّها،
+  // فيصمت صوت الوكلاء بلا استثناء يُلتقط.
+  const sentences = clean.replace(/([.!?؟؛])\s+/g, "$1\u0000").split("\u0000");
   const chunks: string[] = [];
 
   for (const sentence of sentences) {

@@ -354,8 +354,10 @@ export const cancelWorkflowRunFn = createServerFn({ method: "POST" })
     return toJson(res);
   });
 
+// درج تفاصيل تشغيلة سير العمل — **عرض** رغم كونه POST (المعرّف في الجسم).
+// تشغيل سير العمل واستئنافه وإلغاؤه تبقى خلف `requireSupabaseAuth`.
 export const getWorkflowRunDetail = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .inputValidator((d: unknown) => RunIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -510,7 +512,8 @@ export type AgentOpsRecord = {
   failed: number;
   cancelled: number;
   running: number;
-  success_rate: number;
+  /** `null` = لم يُقَس — لا تشغيل منتهٍ في النافذة (المادة ٢٧). */
+  success_rate: number | null;
   avg_duration_ms: number | null;
   last_status: string | null;
   last_run_at: string | null;
@@ -595,7 +598,10 @@ async function fetchAgentOpsOverview(sb: any): Promise<AgentOpsOverview> {
       const runningOnly = list.filter((r) => r.status === "running").length;
       const running = queued + runningOnly;
       const finished = succeeded + failed + cancelled;
-      const success_rate = finished ? Math.round((succeeded / finished) * 100) : 0;
+      // المادة ٢٧ — بلا تشغيل منتهٍ لا توجد نسبة نجاح. كان يُكتب صفرًا،
+      // فوكيلٌ لم يُشغَّل قطّ يُقرأ «نجاح 0%» — أي فشلًا تامًّا. `null` تقول
+      // «لم يُقَس». وصفرٌ حقيقي (شغّل وفشل كله) يبقى صفرًا.
+      const success_rate = finished ? Math.round((succeeded / finished) * 100) : null;
 
       const durations = list
         .filter((r) => r.finished_at)
@@ -757,8 +763,10 @@ export type ToolSampleContext = {
   has_real_data: boolean;
 };
 
+// معرّفات نموذجية تملأ حقول نموذج مشغّل الأدوات. قراءة عرض بحتة —
+// و`runTool` نفسها تبقى خلف المصادقة وبوابة الاعتماد البشري.
 export const getToolSampleContext = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<ToolSampleContext> => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = context.supabase as any;
@@ -772,7 +780,8 @@ export const getToolSampleContext = createServerFn({ method: "GET" })
     };
     const [org_id, site_id, workflow_id, incident_id, asset_id, tool_id, agent_id] =
       await Promise.all([
-        getCurrentOrgIdForUser(context.userId),
+        // زائر بلا جلسة: لا مؤسسة حالية — `null` غيابٌ صريح لا معرّف مُخمَّن.
+        context.userId ? getCurrentOrgIdForUser(context.userId) : Promise.resolve(null),
         pick("sec_sites"),
         pick("workflows"),
         pick("sec_incidents"),
@@ -782,7 +791,7 @@ export const getToolSampleContext = createServerFn({ method: "GET" })
       ]);
     const has_real_data = Boolean(org_id || site_id || workflow_id || incident_id);
     return {
-      user_id: context.userId,
+      user_id: context.userId ?? "",
       org_id,
       now_iso: new Date().toISOString(),
       site_id,

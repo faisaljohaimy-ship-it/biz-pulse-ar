@@ -10,6 +10,7 @@ import { GraduationCap, Sparkles, AlertTriangle } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { listLessons } from "@/lib/learn/lessons.functions";
 import { LessonCard } from "@/components/learn/LessonCard";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/learn/")({
   head: () => ({
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/_authenticated/learn/")({
         <div className="text-lg font-semibold text-white">
           Executive Knowledge Bridge unavailable
         </div>
-        <div className="max-w-md text-sm text-white/60">{error.message}</div>
+        <div className="max-w-md text-sm text-white/60">{userFacingError(error)}</div>
         <button
           onClick={reset}
           className="rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10"

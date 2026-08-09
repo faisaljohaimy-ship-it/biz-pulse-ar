@@ -101,9 +101,15 @@ export function NxFlowPage() {
 
   const { sadeed, rooms, maxDone } = useMemo(() => {
     const agents = (data?.agents ?? []) as FlowAgent[];
-    // يقبل الأسماء الثلاثة: العرض «سَدِيد»، وصفوف القاعدة الحيّة ما زالت تحمل
-    // «FINN» — كسر المعرّفات ٢٠٢٦/٠٨/٠٩ لم يمسّ صفًّا واحدًا في القاعدة.
-    const head = agents.find((a) => /SADEED|FINN|سديد|سَدِيد/i.test(a.name_ar));
+    // العرض «سَدِيد»، وصفوف القاعدة الحيّة ما زالت تحمل الاسم القديم — كسر
+    // المعرّفات ٢٠٢٦/٠٨/٠٩ لم يمسّ صفًّا واحدًا. و`name_ar` عربيّ: الصفّ
+    // المنشور اسمه «فِن التنفيذي» لا «FINN»، فلاتينيّةٌ وحدها لا تجده.
+    // والحدّان يمنعان ابتلاع «فنّي» وأخواتها — ومكتوبان بمجموعتين لا
+    // بـ`lookbehind`: تلك خطأ **تحليل** على Safari دون ١٦٫٤ يُسقط الحزمة
+    // كلّها لا هذا السطر وحده.
+    const head = agents.find((a) =>
+      /SADEED|FINN|سديد|سَدِيد|(?:^|[^ء-ي])فِ?ن(?:[^ء-ي]|$)/i.test(a.name_ar),
+    );
     const rest = agents.filter((a) => a !== head);
     return {
       sadeed: head,

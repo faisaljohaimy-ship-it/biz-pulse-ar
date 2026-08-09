@@ -6,11 +6,15 @@
  * and are intentionally NOT listed here.
  */
 const PAGE_BACKDROPS: Record<string, string> = {
-  // Operations & live rooms → smart-city / command-wall imagery.
-  "/situation-room": "/smart-city-bg.jpeg",
-  "/operations": "/smart-city-bg.jpeg",
-  "/crisis": "/command-wall-bg.jpeg",
-  "/sec/emergency": "/command-wall-bg.jpeg",
+  // Operations & live rooms → night-city imagery.
+  // `smart-city-bg.jpeg` و`command-wall-bg.jpeg` كانا **الملف نفسه** بايتًا
+  // ببايت (md5 واحد)، فالتفريق بينهما كان اسمًا لا صورة. وُحِّدا في
+  // `city-night-bg.webp` — الاسم يصف الصورة (مدينة ليلية) لا الشاشة، لأن
+  // الشاشات أربع والصورة واحدة.
+  "/situation-room": "/city-night-bg.webp",
+  "/operations": "/city-night-bg.webp",
+  "/crisis": "/city-night-bg.webp",
+  "/sec/emergency": "/city-night-bg.webp",
   // OWNER DIRECTIVE (G5): "/sec" (الأمن الصناعي) and "/agents" (الوكلاء
   // الأذكياء) are UNLISTED — their photographic backdrops are removed. Both
   // pages keep the ambient gradient layers from __root, so nothing is left
@@ -18,20 +22,23 @@ const PAGE_BACKDROPS: Record<string, string> = {
   // Scope note: the owner named these two screens. The sec/* sub-screens were
   // asked only to unify card colours (G4), so "/sec/emergency", "/sec/kpi"
   // and "/sec/exec" keep theirs. [افتراض]
-  // Intelligence & analytics → AI/analytics imagery.
-  "/observability": "/ai-analytics-bg.jpeg",
-  "/sec/kpi": "/ai-analytics-bg.jpeg",
-  // Decisions & risk → decision-intelligence imagery.
+  // Intelligence · decisions · strategy · maps → صورة الأرض الليلية بأقواس
+  // الشبكة. كانت موزَّعة على خمسة أسماء (`ai-analytics` · `decision-intel` ·
+  // `integration-gateway` · `strategy-map` · `smart-city-map`) وستّ نسخ —
+  // الثلاثة الأولى md5 واحد، والأخيرتان md5 واحد، والمجموعتان الصورة نفسها
+  // بترميزين (فرق إدراكي 1.09/255 = فرق مُرمِّز لا فرق صورة). فالتنويع الذي
+  // توحي به الأسماء لم يكن موجودًا على الشاشة أصلًا؛ التوحيد لا يغيّر بكسلًا
+  // واحدًا مما يراه المستخدم.
+  "/observability": "/earth-network-bg.webp",
+  "/sec/kpi": "/earth-network-bg.webp",
   // «/analytics» أُزيل: المسار مخفي بأمر المالك ويُعيد التوجيه للرئيسية، فلا
   // خلفية تُرسم له أبدًا — الصفّ كان يعِد بشاشة لم تعد تُعرض.
-  "/decisions": "/decision-intel-bg.jpeg",
-  "/risk": "/decision-intel-bg.jpeg",
-  // Strategy & governance → strategy-map imagery.
-  "/executive": "/strategy-map-bg.webp",
-  "/governance": "/strategy-map-bg.webp",
-  "/sec/exec": "/strategy-map-bg.webp",
-  // Maps → smart-city map imagery.
-  "/executive-map": "/smart-city-map-bg.webp",
+  "/decisions": "/earth-network-bg.webp",
+  "/risk": "/earth-network-bg.webp",
+  "/executive": "/earth-network-bg.webp",
+  "/governance": "/earth-network-bg.webp",
+  "/sec/exec": "/earth-network-bg.webp",
+  "/executive-map": "/earth-network-bg.webp",
   // Smart command center — a pure map plate (never a dashboard screenshot:
   // its text bleeds through as "ghost cards"). Registered here so the shell
   // renders ONE photo backdrop instead of the aurora + a page-level copy.

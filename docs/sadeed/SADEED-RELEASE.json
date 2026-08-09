@@ -6,7 +6,7 @@
   "voice": {
     "provider": "ElevenLabs",
     "voiceId": "gVzwmdZzRgBrNjXaTmi5",
-    "greeting": "مرحباً بك، أنا فِن. كيف يمكنني مساعدتك اليوم؟"
+    "greeting": "مرحباً بك، أنا سَدِيد. كيف يمكنني مساعدتك اليوم؟"
   },
   "features": {
     "visibleConversationButton": true,

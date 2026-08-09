@@ -17,22 +17,6 @@ const AUDIO_PRIMED_KEY = "nexios-audio-primed";
 
 let sharedCtx: AudioContext | null = null;
 
-export function hasPriorInteraction(): boolean {
-  try {
-    return window.sessionStorage.getItem(KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-export function isAudioPrimed(): boolean {
-  try {
-    return window.sessionStorage.getItem(AUDIO_PRIMED_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
 export function markInteracted(): void {
   try {
     window.sessionStorage.setItem(KEY, "1");

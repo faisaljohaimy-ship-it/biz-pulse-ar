@@ -12,7 +12,7 @@ import {
   XCircle,
   Pause,
   HelpCircle,
-  RotateCcw,
+  RefreshCw,
   ExternalLink,
 } from "lucide-react";
 import { PageHeader, Section } from "@/components/page-header";
@@ -27,6 +27,7 @@ import {
   type SubsystemHealth,
 } from "@/lib/runtime/health.functions";
 import { EmptyState } from "@/components/state/EmptyState";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/health")({
   errorComponent: RouteError,
@@ -127,14 +128,11 @@ function HealthDashboard() {
     refetchInterval: 45_000,
   });
 
-  // Never surface an auth phrase to a viewer (saved repair doctrine): an
-  // auth-gated probe on a signed-out session shows a neutral Arabic line.
-  const rawErr = error ? ((error as Error).message ?? "") : "";
-  const errText = /authenticat|unauthor|token|authorization header/i.test(rawErr)
-    ? ar
-      ? "تعذّر جلب بيانات الصحة — يتطلب جلسة نشطة."
-      : "Health data unavailable — an active session is required."
-    : rawErr;
+  // المرشِّح واحد ومركزي (`userFacingError`). كانت هنا نسخةٌ محلّية من
+  // القاعدة تفحص عبارات المصادقة وحدها ثم **تطبع الخام** في فرع الـelse —
+  // فتسرّب اسم جدول أو نصّ خطأ Postgres إلى الشاشة. والقاعدة المنسوخة
+  // تُصلَح في موضع وتُنسى في آخر، وهو ما وقع.
+  const errText = error ? userFacingError(error) : "";
 
   return (
     <Section>
@@ -147,7 +145,9 @@ function HealthDashboard() {
         badge={ar ? "حي" : "Live"}
         actions={
           <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isFetching}>
-            <RotateCcw className={`h-3 w-3 me-1 ${isFetching ? "animate-spin" : ""}`} />{" "}
+            {/* `RotateCcw` سهمُ **تراجع** وهي أيقونة «الاسترجاع/Rollback» في
+                شاشات التنفيذ؛ والتحديث دورةُ جلبٍ لا تراجع. */}
+            <RefreshCw className={`h-3 w-3 me-1 ${isFetching ? "animate-spin" : ""}`} />{" "}
             {ar ? "تحديث" : "Refresh"}
           </Button>
         }

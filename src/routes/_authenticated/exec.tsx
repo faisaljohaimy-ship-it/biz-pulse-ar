@@ -43,6 +43,7 @@ import {
   Inbox,
 } from "lucide-react";
 import { toast } from "sonner";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/exec")({
   component: ExecConsole,
@@ -198,7 +199,7 @@ function ExecConsole() {
       toast.success(`Agent ${String(r.status ?? "")} (${r.steps ?? 0} steps)`);
       void agentRuns.refetch();
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toast.error(userFacingError(err)),
   });
 
   const approveMut = useMutation({
@@ -207,7 +208,7 @@ function ExecConsole() {
     onSuccess: () => {
       void execs.refetch();
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toast.error(userFacingError(err)),
   });
 
   const rollbackMut = useMutation({
@@ -216,7 +217,7 @@ function ExecConsole() {
       toast.success("Execution rolled back");
       void execs.refetch();
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toast.error(userFacingError(err)),
   });
 
   const triggerWithDefaultsSF = useServerFn(triggerWorkflowWithDefaultsFn);
@@ -230,7 +231,7 @@ function ExecConsole() {
       void runs.refetch();
       void events.refetch();
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toast.error(userFacingError(err)),
   });
 
   const triggerAllMut = useMutation({
@@ -241,7 +242,7 @@ function ExecConsole() {
       void runs.refetch();
       void events.refetch();
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => toast.error(userFacingError(err)),
   });
 
   return (

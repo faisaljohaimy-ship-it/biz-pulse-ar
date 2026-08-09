@@ -3,6 +3,13 @@
 **Article 24 — supreme, additive to Articles I–IX and FR-1..23**
 Version 1.0.0 · Effective 2026-07-08
 
+> ⚠️ **حالة التنفيذ (٢٠٢٦/٠٨/٠٩): وحدة المرفقات غير موجودة في الشيفرة.**
+> لا `src/lib/sadeed/attachments.functions.ts` ولا `uploadAriaAttachment`
+> ولا `AriaDock` — أُزيلت كلها. والاسم `AriaCopilot` صار `SadeedCopilot`
+> (`src/components/sadeed-core/SadeedCopilot.tsx`)، و`/assistant` وحده باقٍ
+> من أسطح هذا الميثاق. النصّ محفوظ **قانونًا حاكمًا لأي إعادة بناء** — لا
+> وصفًا لسطحٍ قائم اليوم؛ فلا تقرأ منه مسارًا للتنقّل.
+
 > This charter governs every attachment sent to SADEED and every generative
 > artifact SADEED returns (image, document, chart, or media). It is programmatic
 > law: violations MUST fail closed. No placeholders, no fake previews, no
@@ -13,7 +20,7 @@ Version 1.0.0 · Effective 2026-07-08
 ## §1 · Scope
 
 Applies to every SADEED surface where a user attaches media or asks SADEED to
-produce media: `AriaCopilot`, `AriaDock`, `/assistant`, MCP tool calls,
+produce media: `SadeedCopilot`, `/assistant`, MCP tool calls,
 public embed. Signed-out visitors MAY NOT upload; generative tools are
 gated by `requireSupabaseAuth`.
 

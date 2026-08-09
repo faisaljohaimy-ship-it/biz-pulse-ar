@@ -13,7 +13,11 @@
  */
 import { test, expect, request as pwRequest } from "@playwright/test";
 
-const APP_BASE = process.env.APP_BASE_URL ?? "http://localhost:8080";
+// `pwRequest.newContext` لا يرث `use.baseURL` من الإعدادات، فالعنوان يُبنى
+// هنا. وكان مثبّتًا على 8080 وحده: أي تشغيل على منفذ آخر كان يسقط بـ
+// ECONNREFUSED — فشل اتصال يُقرأ في التقرير فشلًا في محدِّد المعدّل.
+const APP_BASE =
+  process.env.APP_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:8080";
 const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
 const SUPABASE_PUBLISHABLE_KEY =
   process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";

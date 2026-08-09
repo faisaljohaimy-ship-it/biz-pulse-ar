@@ -138,7 +138,7 @@ function BoardroomPage() {
 
   return (
     <NexusPage
-      backdropImage="/executive-desk-bg.jpeg"
+      backdropImage="/command-room-bg.webp"
       eyebrow="BOARDROOM · LIVE"
       title={ar ? "وضع قاعة الاجتماع التنفيذية" : "Executive Boardroom Mode"}
       subtitle={

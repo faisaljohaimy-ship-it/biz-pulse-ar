@@ -10,6 +10,7 @@ import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/tasks")({
   errorComponent: RouteError,
@@ -59,7 +60,7 @@ function TasksPage() {
       setTitle("");
       qc.invalidateQueries({ queryKey: ["tasks"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const updateStatus = useMutation({

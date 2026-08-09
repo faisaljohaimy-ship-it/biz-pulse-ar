@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  RotateCcw,
+  RefreshCw,
   ShieldCheck,
   History,
 } from "lucide-react";
@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { runSelfEvolutionFn, listEvolutionCyclesFn } from "@/lib/self-evolution.functions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/self-evolution")({
   errorComponent: RouteError,
@@ -144,7 +145,9 @@ function SelfEvolutionPage() {
             onClick={() => cycle.mutate()}
             disabled={cycle.isPending}
           >
-            <RotateCcw className={`h-4 w-4 mr-1.5 ${cycle.isPending ? "animate-spin" : ""}`} />
+            {/* الزر يُشغّل **دورة** هندسية؛ و`RotateCcw` سهمُ تراجعٍ واحد
+                (أيقونة الاسترجاع في شاشات التنفيذ)، لا دورةً مغلقة. */}
+            <RefreshCw className={`h-4 w-4 mr-1.5 ${cycle.isPending ? "animate-spin" : ""}`} />
             Run cycle / تشغيل دورة
           </Button>
         }
@@ -156,9 +159,7 @@ function SelfEvolutionPage() {
         </Card>
       )}
       {cycle.error && (
-        <Card className="glass-card p-4 text-sm text-rose-300">
-          Failed to run engine: {(cycle.error as Error).message}
-        </Card>
+        <Card className="glass-card p-4 text-sm text-rose-300">{userFacingError(cycle.error)}</Card>
       )}
       {cycle.data?.persistError && (
         <Card className="glass-card p-4 text-sm text-amber-300">

@@ -38,6 +38,7 @@ import {
   DAILY_REPORT_SCOPE_META,
   type DailyReportScope,
 } from "@/lib/reports/report-scope";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/sec/reports")({
   errorComponent: RouteError,
@@ -163,7 +164,7 @@ function Reports() {
         ...cur,
       ]);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
     onSettled: () => setPdfPhase(null),
   });
 
@@ -174,7 +175,7 @@ function Reports() {
       toast.success(`تم توليد ${res.file_name}`);
       qc.invalidateQueries({ queryKey: ["oms-reports"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const getUrl = useServerFn(getReportDownloadUrl);
@@ -207,7 +208,7 @@ function Reports() {
       if (resp.url) window.open(resp.url, "_blank", "noopener");
       else toast.error("الملف غير متاح في التخزين");
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(userFacingError(e));
     } finally {
       setPdfPhase(null);
     }

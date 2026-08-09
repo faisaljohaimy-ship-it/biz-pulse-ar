@@ -5,6 +5,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError } from "@/lib/api";
 import { hasPlatformRole } from "@/lib/authz.server";
@@ -402,8 +403,13 @@ export type ReportScheduleRow = {
   updated_at: string;
 };
 
+// عرض جداول التقارير المجدولة قراءةٌ؛ إنشاؤها وتعديلها وحذفها
+// (`upsertReportSchedule` · `deleteReportSchedule`) تبقى خلف المصادقة
+// وفحص صلاحية المسؤول أدناه.
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const listReportSchedules = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<ReportScheduleRow[]> => {
     const { data, error } = await context.supabase
       .from("report_schedules")

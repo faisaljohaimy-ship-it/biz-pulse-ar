@@ -41,6 +41,7 @@ import { ExecutiveTimeline } from "@/components/executive/ExecutiveTimeline";
 import { LivePipelinesPanel } from "@/components/executive/LivePipelinesPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/live-dashboard")({
   head: () => ({
@@ -57,7 +58,7 @@ export const Route = createFileRoute("/_authenticated/live-dashboard")({
   errorComponent: ({ error, reset }) => (
     <div className="p-8 text-rose-300" dir="rtl">
       <div className="text-lg font-semibold">تعذّر تحميل لوحة القيادة</div>
-      <div className="text-xs opacity-70 mt-1">{String(error?.message || error)}</div>
+      <div className="text-xs opacity-70 mt-1">{userFacingError(error)}</div>
       <button onClick={reset} className="mt-4 text-primary underline text-sm">
         إعادة المحاولة
       </button>
@@ -561,9 +562,7 @@ function LiveExecutiveDashboard() {
       </div>
 
       {tsQ.isError && (
-        <div className="mt-4 text-xs text-rose-400 font-mono">
-          {String((tsQ.error as Error).message)}
-        </div>
+        <div className="mt-4 text-xs text-rose-400 font-mono">{userFacingError(tsQ.error)}</div>
       )}
     </div>
   );

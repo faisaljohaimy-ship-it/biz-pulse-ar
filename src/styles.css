@@ -7419,8 +7419,10 @@ html.dark .nx-holo-noise {
   color: var(--ink);
 }
 
+/* ١٢px أرضية القراءة لا اختيار أسلوبيّ: هذه لافتة العدّاد («وكلاء نشطون»)
+   وهي ما يُعرّف الرقم فوقها — تحتها لا يُقرأ العدّاد أصلًا. */
 .nx-op-chip span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-3);
 }
 
@@ -7518,8 +7520,9 @@ html.dark .nx-holo-noise {
   text-shadow: 0 0 18px color-mix(in srgb, var(--tone-cyan) 45%, transparent);
 }
 
+/* لافتة «منجز اليوم» تحت رقم القلب — نفس أرضية القراءة (١٢px). */
 .nx-op-core-side span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-3);
 }
 
@@ -7761,10 +7764,13 @@ html.dark .nx-holo-noise {
   color: var(--ink);
 }
 
+/* «فتح مركز القيادة» رابط تنقّل حقيقي لا زخرفة: ٣٢px كانت تحت أرضيتَي
+   اللمس (٤٤) والفأرة (٤٠) معًا، فيُقاس ١٢٥×٣٢ ويسقط في كل مقاس. ٤٤px
+   ترضي الأرضيتين بقيمة واحدة، والحشو الأفقي يبقى كما هو. */
 .nx-op-cta {
   display: inline-flex;
   align-items: center;
-  min-block-size: 32px;
+  min-block-size: 44px;
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--op-hue, var(--tone-cyan)) 45%, var(--hairline));
   background: color-mix(in srgb, var(--op-hue, var(--tone-cyan)) 10%, transparent);

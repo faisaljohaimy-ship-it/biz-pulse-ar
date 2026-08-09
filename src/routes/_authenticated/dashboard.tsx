@@ -6,23 +6,24 @@ import {
   Activity,
   AlertTriangle,
   ArrowUpRight,
+  BarChart3,
   Boxes,
   Building2,
-  Camera,
-  ClipboardList,
+  Cctv,
+  Clock,
   Cpu,
   FileBarChart2,
-  Flame,
+  FileCheck2,
+  Footprints,
   Gauge,
+  HardHat,
   Hexagon,
-  KeyRound,
-  LifeBuoy,
   Map,
   Network,
   Radio,
-  ShieldCheck,
+  ShieldAlert,
   SignalHigh,
-  Truck,
+  Siren,
   Users,
   Wrench,
 } from "lucide-react";
@@ -109,7 +110,7 @@ const TIER_COMMAND: Node[] = [
     en: "Executive Reports",
     tone: "primary",
   },
-  { to: "/sec/kpi", icon: Activity, ar: "مؤشرات الأداء", en: "Live KPIs", tone: "secondary" },
+  { to: "/sec/kpi", icon: BarChart3, ar: "مؤشرات الأداء", en: "Live KPIs", tone: "secondary" },
   {
     to: "/executive-map",
     icon: Map,
@@ -141,16 +142,18 @@ const TIER_OPERATIONS: Node[] = [
     hint: (k) => `${k?.incidents_open ?? 0} open · ${k?.incidents_critical ?? 0} critical`,
   },
   {
+    // `ShieldCheck` تقول «مُتحقَّق/ممتثِل»، والدورية جولةٌ راجلة في الميدان.
     to: "/sec/patrols",
-    icon: ShieldCheck,
+    icon: Footprints,
     ar: "الدوريات",
     en: "Patrols",
     tone: "secondary",
     hint: (k) => `${k?.patrols_active ?? 0} active`,
   },
   {
+    // `Camera` كاميرا تصوير؛ و`Cctv` كاميرا مراقبة فعليًّا.
     to: "/sec/cctv",
-    icon: Camera,
+    icon: Cctv,
     ar: "المراقبة المرئية",
     en: "CCTV Grid",
     tone: "primary",
@@ -166,8 +169,10 @@ const TIER_OPERATIONS: Node[] = [
     hint: (k) => `${k?.wo_open ?? 0} open`,
   },
   {
+    // `KeyRound` مفتاحُ **دخول** (وهي أيقونة «التحكم بالدخول»)؛ والتصريح
+    // وثيقة عمل مُعتمَدة — كما في سجل الوحدات الكانوني.
     to: "/sec/permits",
-    icon: KeyRound,
+    icon: FileCheck2,
     ar: "التصاريح",
     en: "Permits",
     tone: "secondary",
@@ -178,12 +183,16 @@ const TIER_OPERATIONS: Node[] = [
 
 // Tier 3 — Field Support
 const TIER_FIELD: Node[] = [
-  { to: "/sec/emergency", icon: LifeBuoy, ar: "الطوارئ", en: "Emergency", tone: "rose" },
-  { to: "/sec/risks", icon: Flame, ar: "المخاطر", en: "Risks", tone: "amber" },
+  // `LifeBuoy` عوّامة الإنقاذ هي أيقونة «الدعم/المساعدة» المتعارف عليها، لا
+  // الطوارئ؛ و`Flame` تقول «حريق» — نوعُ حادثٍ بعينه في منتج أمن صناعي، لا
+  // سجلَّ مخاطر؛ و`Truck` شاحنةُ نقل لا مقاولًا؛ والوردية نافذةٌ زمنية لا
+  // قائمة تُشطب.
+  { to: "/sec/emergency", icon: Siren, ar: "الطوارئ", en: "Emergency", tone: "rose" },
+  { to: "/sec/risks", icon: ShieldAlert, ar: "المخاطر", en: "Risks", tone: "amber" },
   { to: "/sec/assets", icon: Boxes, ar: "الأصول", en: "Assets", tone: "secondary" },
   { to: "/sec/facilities", icon: Building2, ar: "المنشآت", en: "Facilities", tone: "secondary" },
-  { to: "/sec/contractors", icon: Truck, ar: "المقاولون", en: "Contractors", tone: "secondary" },
-  { to: "/sec/shifts", icon: ClipboardList, ar: "الورديات", en: "Shifts", tone: "primary" },
+  { to: "/sec/contractors", icon: HardHat, ar: "المقاولون", en: "Contractors", tone: "secondary" },
+  { to: "/sec/shifts", icon: Clock, ar: "الورديات", en: "Shifts", tone: "primary" },
 ];
 
 function useClock() {

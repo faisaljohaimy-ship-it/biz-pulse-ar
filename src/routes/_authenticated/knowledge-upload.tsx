@@ -27,6 +27,7 @@ import { listSadeedDocuments, deleteSadeedDocument } from "@/lib/sadeed/document
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/knowledge-upload")({
   errorComponent: RouteError,
@@ -157,7 +158,7 @@ function KnowledgeUploadCenter() {
       setJob({ fileName: file.name, phase: "ingesting", documentId: res.document_id });
       qc.invalidateQueries({ queryKey: ["knowledge-upload", "docs"] });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg = userFacingError(e);
       setJob({ fileName: file.name, phase: "error", error: msg });
     }
   };

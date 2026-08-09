@@ -11,9 +11,13 @@ test.describe("Landing page — clean load", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.waitForLoadState("networkidle").catch(() => {});
 
-    // Text body must contain the Arabic comma phrase.
+    // النسخة العربية المعروضة على الرئيسية. كانت العبارة المرصودة «الذكاء،»
+    // من نصّ بطل سابق؛ أُعيد بناء الرئيسية (تخطيط ثلاثي) فزال النصّ من `/`
+    // وبقي في `/auth` و`/executive-showcase` وحدهما. المرصود اليوم اسم
+    // المنتج ونطاقه — أثبت النصّين معًا لا واحدًا: الاسم وحده يمرّ من ترويسة.
     const bodyText = await page.locator("body").innerText();
-    expect(bodyText).toContain("الذكاء،");
+    expect(bodyText).toContain("سَدِيد");
+    expect(bodyText).toContain("الأمن الصناعي");
 
     // Internal asset paths must not appear as visible text nodes.
     expect(bodyText).not.toContain("/aria-hero-motion.mp4");

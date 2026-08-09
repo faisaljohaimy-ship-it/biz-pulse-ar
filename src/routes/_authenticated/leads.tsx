@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 type Lead = {
   id: string;
@@ -37,7 +38,7 @@ function LeadsAdmin() {
       .order("created_at", { ascending: false })
       .limit(200);
     const { data, error } = await q;
-    if (error) toast.error(error.message);
+    if (error) toast.error(userFacingError(error));
     setRows((data ?? []) as Lead[]);
     setLoading(false);
   }
@@ -48,7 +49,7 @@ function LeadsAdmin() {
 
   async function setStatus(id: string, status: string) {
     const { error } = await supabase.from("leads").update({ status }).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(userFacingError(error));
     setRows((r) => r.map((x) => (x.id === id ? { ...x, status } : x)));
   }
 

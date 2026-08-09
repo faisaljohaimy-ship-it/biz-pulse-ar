@@ -15,6 +15,7 @@ import {
 import { runExecutiveScenarioFn } from "@/lib/simulation/exec-scenario.functions";
 import { runHcisPtwSeedFn } from "@/lib/compliance/hcis-ptw.functions";
 import { useState } from "react";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   errorComponent: RouteError,
@@ -134,13 +135,13 @@ function SimulationPanel({ locale }: { locale: string }) {
       setLog(JSON.stringify(r.counts, null, 2));
       status.refetch();
     },
-    onError: (e: Error) => setLog(`Error: ${e.message}`),
+    onError: (e: Error) => setLog(userFacingError(e)),
   });
 
   const validateMut = useMutation({
     mutationFn: () => validate(),
     onSuccess: (r) => setLog(JSON.stringify(r, null, 2)),
-    onError: (e: Error) => setLog(`Error: ${e.message}`),
+    onError: (e: Error) => setLog(userFacingError(e)),
   });
 
   const hcisSeedMut = useMutation({
@@ -149,7 +150,7 @@ function SimulationPanel({ locale }: { locale: string }) {
       setLog(JSON.stringify(r.counts, null, 2));
       status.refetch();
     },
-    onError: (e: Error) => setLog(`Error: ${e.message}`),
+    onError: (e: Error) => setLog(userFacingError(e)),
   });
 
   const scenarioMut = useMutation({
@@ -167,7 +168,7 @@ function SimulationPanel({ locale }: { locale: string }) {
       );
       status.refetch();
     },
-    onError: (e: Error) => setLog(`Error: ${e.message}`),
+    onError: (e: Error) => setLog(userFacingError(e)),
   });
 
   return (

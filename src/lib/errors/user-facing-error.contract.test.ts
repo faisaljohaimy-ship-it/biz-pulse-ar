@@ -80,6 +80,30 @@ describe("الحدود تمرّ بالمرشِّح فعلًا", () => {
     "src/components/RouteErrorBoundary.tsx",
   ];
 
+  it("حدّ الجذر يطبع الخام في التطوير وحده — لا في الإنتاج", () => {
+    // **رُفع هذا الحدّ تصعيدًا بوصفه تسريبًا، وليس تسريبًا — والفارق يُكتب.**
+    // `__root.tsx` يطبع `error.message` خامًا فعلًا، لكن خلف
+    // `import.meta.env.DEV`: وهي ثابتة **وقت البناء** في Vite، تُطوى إلى
+    // `false` فيُشذَّب الفرع كلّه من حزمة الإنتاج. فلا نصّ يبلغ مستخدمًا.
+    //
+    // وهو حدّ الالتقاط الأخير: كل مسار بلا `errorComponent` خاصّ يسقط فيه.
+    // فلو حُذفت البوابة يومًا — سطرٌ واحد — لصار أعرض تسريبٍ في المنتج بلا
+    // أن يُسقط بناءً ولا فحصًا. لذلك يُحرس **الاقتران**: طبعٌ خامّ مسموح
+    // ما دام محجوبًا، وممنوع مكشوفًا.
+    const src = readFileSync("src/routes/__root.tsx", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^[ \t]*\/\/.*$/gm, "");
+    for (const m of src.match(/\{[^{}]*error\??\.\s*message[^{}]*\}/g) ?? []) {
+      // الطبع يقع داخل `{cond && (…)}`؛ فيُقرأ ما قبله في السطر نفسه أو
+      // الأسطر القليلة السابقة بحثًا عن البوابة.
+      const at = src.indexOf(m);
+      const before = src.slice(Math.max(0, at - 400), at);
+      expect(before, `طبعٌ خام بلا بوابة تطوير: ${m.trim().slice(0, 60)}`).toContain(
+        "import.meta.env.DEV",
+      );
+    }
+  });
+
   it.each(BOUNDARIES)("%s — يستدعي المرشِّح", (file) => {
     const src = readFileSync(file, "utf8");
     expect(src).toContain("userFacingError");

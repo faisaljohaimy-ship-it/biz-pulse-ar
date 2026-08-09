@@ -645,10 +645,6 @@ export function emitCockpitAction(actionId: CockpitActionId): void {
   }
 }
 
-export function readCockpitAnalytics(): readonly CockpitActionEvent[] {
-  return analyticsBuffer;
-}
-
 // ── Dev-mode dead-control audit ──────────────────────────────────────────
 
 /**

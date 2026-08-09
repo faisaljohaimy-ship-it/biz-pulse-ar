@@ -22,6 +22,7 @@ import {
   suspendRegionPermitsFn,
   type PtwOverview,
 } from "@/lib/compliance/hcis-ptw.functions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/ptw")({
   // OWNER DIRECTIVE — screen HIDDEN (see src/lib/nav/hidden-routes.ts).
@@ -83,7 +84,7 @@ function PtwPage() {
       setShowCreate(false);
       void qc.invalidateQueries({ queryKey: ["ptw-overview"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "error"),
+    onError: (e) => toast.error(userFacingError(e)),
   });
 
   const suspendMut = useMutation({
@@ -95,7 +96,7 @@ function PtwPage() {
       setSuspendTarget(null);
       void qc.invalidateQueries({ queryKey: ["ptw-overview"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "error"),
+    onError: (e) => toast.error(userFacingError(e)),
   });
 
   const activePermits = (data?.permits ?? []).filter((p) => p.status === "active");

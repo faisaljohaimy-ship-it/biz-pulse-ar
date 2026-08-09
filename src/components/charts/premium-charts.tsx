@@ -4,7 +4,7 @@
  * No chart library, no runtime data invention: every component renders only
  * the values it is handed. Honest visuals, luxury execution.
  */
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 /* ---------------------------------------------------------------- utils */
 
@@ -33,175 +33,18 @@ function useInView<T extends Element>(): [React.RefObject<T | null>, boolean] {
   return [ref, seen];
 }
 
-/** Catmull-Rom → cubic Bézier: silky curves instead of polyline corners. */
-function smoothPath(points: readonly { x: number; y: number }[]): string {
-  if (points.length === 0) return "";
-  if (points.length < 3) {
-    return points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`).join(" ");
-  }
-  let d = `M${points[0].x} ${points[0].y}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i - 1] ?? points[i];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[i + 2] ?? p2;
-    const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c1y = p1.y + (p2.y - p0.y) / 6;
-    const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c2y = p2.y - (p3.y - p1.y) / 6;
-    d += ` C${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
-  }
-  return d;
-}
-
 const MOTION_CSS = `
-@keyframes pc-draw { from { stroke-dashoffset: var(--pc-len); } to { stroke-dashoffset: 0; } }
 @keyframes pc-rise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-@keyframes pc-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @keyframes pc-sheen { 0% { transform: translateX(-120%); } 100% { transform: translateX(220%); } }
-@keyframes pc-pulse { 0%,100% { opacity:.55; transform: scale(1); } 50% { opacity:1; transform: scale(1.35); } }
-.pc-draw { animation: pc-draw 1100ms cubic-bezier(.16,1,.3,1) both; }
-.pc-area { animation: pc-fade 900ms cubic-bezier(.16,1,.3,1) both; }
 .pc-bar { transform-origin: bottom; animation: pc-rise 780ms cubic-bezier(.16,1,.3,1) both; }
-.pc-dot { animation: pc-pulse 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 .pc-sheen { animation: pc-sheen 5.5s cubic-bezier(.4,0,.2,1) infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .pc-draw, .pc-area, .pc-bar, .pc-dot, .pc-sheen { animation: none !important; stroke-dashoffset: 0 !important; transform: none !important; opacity: 1 !important; }
+  .pc-bar, .pc-sheen { animation: none !important; stroke-dashoffset: 0 !important; transform: none !important; opacity: 1 !important; }
 }
 `;
 
 function ChartMotionStyles() {
   return <style>{MOTION_CSS}</style>;
-}
-
-/* --------------------------------------------------------- SparkArea */
-
-export interface SparkAreaProps {
-  values: readonly number[];
-  /** rgb triplet, e.g. "34, 211, 238" */
-  accent?: string;
-  height?: number;
-  className?: string;
-  label?: string;
-}
-
-/** Glowing gradient area sparkline with a drawing stroke and a live head dot. */
-export function SparkArea({
-  values,
-  accent = "34, 211, 238",
-  height = 40,
-  className = "",
-  label,
-}: SparkAreaProps) {
-  const id = useId().replace(/:/g, "");
-  const [ref, seen] = useInView<HTMLDivElement>();
-  const W = 120;
-  const H = height;
-
-  const { line, area, head } = useMemo(() => {
-    if (values.length === 0)
-      return { line: "", area: "", head: null as null | { x: number; y: number } };
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const span = max - min || 1;
-    const step = values.length > 1 ? W / (values.length - 1) : W;
-    const pts = values.map((v, i) => ({
-      x: +(i * step).toFixed(2),
-      y: +(H - 4 - ((v - min) / span) * (H - 10)).toFixed(2),
-    }));
-    const d = smoothPath(pts);
-    return {
-      line: d,
-      area: `${d} L${W} ${H} L0 ${H} Z`,
-      head: pts[pts.length - 1],
-    };
-  }, [values, H]);
-
-  if (!line) return null;
-
-  return (
-    <div
-      ref={ref}
-      className={className}
-      aria-hidden={!label}
-      role={label ? "img" : undefined}
-      aria-label={label}
-    >
-      <ChartMotionStyles />
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="none"
-        className="h-full w-full overflow-visible"
-      >
-        <defs>
-          <linearGradient id={`fill-${id}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={`rgba(${accent}, .42)`} />
-            <stop offset="60%" stopColor={`rgba(${accent}, .12)`} />
-            <stop offset="100%" stopColor={`rgba(${accent}, 0)`} />
-          </linearGradient>
-          <linearGradient id={`stroke-${id}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor={`rgba(${accent}, .55)`} />
-            <stop offset="100%" stopColor={`rgb(${accent})`} />
-          </linearGradient>
-        </defs>
-        {seen && (
-          <>
-            <path className="pc-area" d={area} fill={`url(#fill-${id})`} />
-            <path
-              className="pc-draw"
-              d={line}
-              fill="none"
-              stroke={`url(#stroke-${id})`}
-              strokeWidth={2}
-              strokeLinecap="round"
-              vectorEffect="non-scaling-stroke"
-              style={{ ["--pc-len" as string]: 400, strokeDasharray: 400 }}
-            />
-            {head && (
-              <circle className="pc-dot" cx={head.x} cy={head.y} r={2.4} fill={`rgb(${accent})`} />
-            )}
-          </>
-        )}
-      </svg>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------- MicroMeter */
-
-export interface MicroMeterProps {
-  /** 0..1 share of the row maximum. */
-  ratio: number;
-  accent?: string;
-  className?: string;
-}
-
-/** Ultra-thin proportional meter for KPI tiles — encodes a real share only. */
-export function MicroMeter({ ratio, accent = "34, 211, 238", className = "" }: MicroMeterProps) {
-  const pct = Math.max(0, Math.min(1, Number.isFinite(ratio) ? ratio : 0)) * 100;
-  return (
-    <div
-      className={`relative h-1.5 w-full overflow-hidden rounded-full bg-[color:var(--hairline-soft,rgba(148,163,184,.25))] ${className}`}
-      aria-hidden
-    >
-      <ChartMotionStyles />
-      <div
-        className="relative h-full rounded-full transition-[width] duration-700 ease-out"
-        style={{
-          width: `${pct}%`,
-          background: `linear-gradient(90deg, rgba(${accent}, .45), rgb(${accent}))`,
-          boxShadow: `0 0 12px rgba(${accent}, .55)`,
-        }}
-      >
-        <span
-          className="pc-sheen absolute inset-y-0 w-1/3"
-          style={{
-            background: "linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent)",
-          }}
-        />
-      </div>
-    </div>
-  );
 }
 
 /* -------------------------------------------------------- RadialGauge */

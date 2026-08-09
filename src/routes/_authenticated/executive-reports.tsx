@@ -46,6 +46,7 @@ const STAGE_LABEL: Record<PublishErrorEnvelope["stage"], { en: string; ar: strin
   unknown: { en: "Unknown", ar: "غير معروف" },
 };
 import { MOCK_SCENARIOS, type MockScenario } from "./-executive-reports.mocks";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 const ENABLE_GRAPH_SIMULATION = import.meta.env.DEV;
 
@@ -250,7 +251,7 @@ function ExecutiveReportsPage() {
         setLastError(env);
         toast.error(isAr ? env.message_ar : env.message_en);
       } else {
-        const msg = (e as { message?: string })?.message ?? (isAr ? "فشل النشر" : "Publish failed");
+        const msg = userFacingError(e);
         setLastError({
           __publishError: true,
           stage: "unknown",

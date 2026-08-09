@@ -16,7 +16,7 @@ here is implemented in this phase.**
 | Everything expressible with tokens + pseudo-states | Staggered orchestration (list mounts, pipeline packets)      |
 
 Rule: reach for CSS first — it's cheaper, SSR-safe and token-native. Framer Motion earns
-its bundle cost only for exit/layout/gesture jobs CSS can't do. **AriaCopilot/voice
+its bundle cost only for exit/layout/gesture jobs CSS can't do. **SadeedCopilot/voice
 surfaces keep their frozen performance contract** — no new animation libraries enter
 those paths (doctrine: performance budget is law; `MessageResponse`-class regressions
 are the cautionary tale).

@@ -20,10 +20,6 @@ export function useRuntime(): RuntimeContextValue {
   return v;
 }
 
-export function useRuntimeOptional(): RuntimeContextValue | null {
-  return useContext(RuntimeCtx);
-}
-
 export function RuntimeProvider({ children }: { children: ReactNode }) {
   const bootstrap = useServerFn(bootstrapEnterprise);
   const qc = useQueryClient();

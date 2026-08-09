@@ -132,7 +132,8 @@ function PricingPage() {
           to="/"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4" />
+          {/* في RTL جهةُ الرجوع اليمين — كما في بقية صفحات الواجهة العامة. */}
+          <ArrowLeft className={`h-4 w-4 ${isAr ? "rotate-180" : ""}`} />
           {isAr ? "العودة للرئيسية" : "Back to home"}
         </Link>
 

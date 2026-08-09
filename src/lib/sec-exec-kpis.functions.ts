@@ -361,8 +361,12 @@ export type ExecTimeseries = {
   };
 };
 
+// السلسلة الزمنية التنفيذية — أختها `getExecKpis` فوقها تحت
+// `optionalSupabaseAuth` منذ البداية، وهما تُقرآن في الشاشة نفسها.
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const getExecTimeseries = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .inputValidator((input: { days?: number } | undefined) =>
     z.object({ days: z.number().int().min(1).max(180).default(30) }).parse(input ?? {}),
   )

@@ -16,23 +16,23 @@
 | ------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------- |
 | نبض المؤسسة — لقطة عامة (KPIs)  | `SovereignCommandDeck`                        | مصادق: `getExecKpis` عبر `useExecutiveKpiSource`؛ عام: `region-sim-data.ts`      | حي موثق / محاكاة موسومة |
 | طابور القرارات                  | `OsDecisionQueue`                             | مصادق: حوادث وكاميرات وتصاريح وأوامر عمل محكومة بـRLS؛ عام: `region-sim-data.ts` | حي موثق / محاكاة موسومة |
-| توصيات سَدِيد اليومية           | `AriaTodayRecommendations`                    | مصادق: `ExecKpis`؛ عام: توصيات عرض ثابتة                                         | حي موثق / محاكاة موسومة |
-| جسر القيادة — الفصلان 1 و2      | `executive-bridge.tsx`                        | مصادق: `ExecKpis`؛ عام: التجميع الإقليمي الاصطناعي                               | حي موثق / محاكاة موسومة |
+| توصيات سَدِيد اليومية           | `SadeedTodayRecommendations`                  | مصادق: `ExecKpis`؛ عام: توصيات عرض ثابتة                                         | حي موثق / محاكاة موسومة |
 | غرفة العمليات المحمية           | `/sec`                                        | `getSecOverview` عبر جلسة Supabase وRLS                                          | حي موثق                 |
 | الأقسام المحمية                 | `/sec/sections`                               | `getSections` عبر جلسة Supabase وRLS                                             | حي موثق                 |
 | الدوائر التشغيلية المحمية       | `/sec/circles`                                | `getTwinTree` عبر جلسة Supabase وRLS                                             | حي موثق                 |
 | بطاقات العرض التنفيذي           | `ExecutiveShowcaseHub`                        | `CARDS` داخل الملف (أسماء قانونية)                                               | تنقّل                   |
 | وحدات النظام                    | `SystemModulesDashboard`                      | `SYSTEM_MODULES` داخل الملف — **سجلّ الأسماء/الأيقونات المعتمد**                 | تنقّل                   |
 | العرض الحي للنظام               | `LiveSystemShowcase`                          | `@/lib/i18n` (محتوى عرض ثابت، لا أرقام)                                          | —                       |
-| مسرح/لوحة الحج                  | `HajjExecutiveStage` · `HajjCommandDashboard` | fixtures محلية `is_simulation` + `src/lib/hajj-embed.ts`                         | محاكاة (رأس الملف)      |
 | شريط مركز القيادة               | `MissionControlStrip`                         | `getPublicKpis` → لقطة تسويقية اصطناعية ثابتة                                    | محاكاة موسومة           |
 | حلقة الوكلاء                    | `AgentRing` (executive)                       | `listAgents/listAgentRuns` → `src/lib/exec.functions.ts`                         |                         |
 | بطاقة معاينة الأمن              | `SecCommandLiveCard`                          | `getPublicKpis` → لقطة تسويقية اصطناعية ثابتة                                    | محاكاة موسومة           |
-| الخلفية السينمائية (شات سَدِيد) | `AriaSignatureBackdrop`                       | `src/lib/sadeed/signature.ts` (بصمة، لا بيانات)                                  | —                       |
+| الخلفية السينمائية (شات سَدِيد) | `SadeedSignatureBackdrop`                     | `src/lib/sadeed/signature.ts` (بصمة، لا بيانات)                                  | —                       |
 
 ## ٢ — سجلّ الوحدات المعتمد (المصدر الواحد للأسماء والأيقونات)
 
-من `src/components/executive/SystemModulesDashboard.tsx` (`SYSTEM_MODULES`):
+المصدر الواحد اليوم `src/lib/nav/modules.ts` (`MODULES`) — انظر §٤ أدناه.
+(كان `src/components/executive/SystemModulesDashboard.tsx` هو الموضع، وقد
+حُذف الملف؛ والسجلّ نفسه انتقل ولم يُلغَ.)
 
 | المسار               | الاسم (ar)         | الأيقونة (lucide) — وظيفية |
 | -------------------- | ------------------ | -------------------------- |
@@ -46,8 +46,7 @@
 | `/analytics`         | الإحصائيات         | `Activity`                 |
 | `/governance`        | الحوكمة            | `ClipboardCheck`           |
 | `/risk`              | المخاطر            | `ShieldAlert`              |
-| `/hajj`              | منصة نُسك الحج     | `Moon`                     |
-| `/aria`              | سَدِيد التنفيذي    | `Sparkles`                 |
+| `/sadeed`            | سَدِيد التنفيذي    | `Sparkles`                 |
 
 ## ٣ — المصدر الجغرافي الواحد
 
@@ -63,8 +62,9 @@
 ## ٤ — توحيد جذري: القائمة تقرأ من المصدر الواحد ✅ (مُنفَّذ)
 
 أُنشئ سجلّ الوحدات المعتمد كوحدة واحدة `src/lib/nav/modules.ts` (`MODULES`)،
-وباتت **لوحة الوحدات (`SystemModulesDashboard`) والقائمة الجانبية
-(`app-shell`) تقرآن منه معاً**. أي عنصر في القائمة مساره وحدةٌ في السجلّ يأخذ
+وباتت **القائمة الجانبية (`app-shell`) تقرأ منه**؛ ولوحة الوحدات
+(`SystemModulesDashboard`) كانت تقرأ منه أيضًا قبل حذف ملفها. أي عنصر في
+القائمة مساره وحدةٌ في السجلّ يأخذ
 **اسمها وأيقونتها من السجلّ تلقائيّاً** عبر `moduleByRoute` — فلا يمكن أن تختلف
 هوية وحدة بين شاشتين بعد اليوم. المسارات غير المُدرجة (صفحات فرعية، الإدارة)
 تحتفظ بتسمياتها.
@@ -76,8 +76,7 @@
 | `/sec`               | غرفة العمليات  | **الأمن الصناعي**                        |
 | `/agents`            | الوكلاء        | **الوكلاء الأذكياء**                     |
 | `/executive-reports` | التقارير       | **التقارير التنفيذية**                   |
-| `/hajj`              | عمليات الحج    | **منصة نُسك الحج** (متوافق مع المادة 12) |
-| `/aria`              | سَدِيد         | **سَدِيد التنفيذي**                      |
+| `/sadeed`            | سَدِيد         | **سَدِيد التنفيذي**                      |
 | `/sec/maintenance`   | أوامر العمل    | **الصيانة**                              |
 
 > لإعادة تسمية أي وحدة مستقبلاً: عدّل `src/lib/nav/modules.ts` فقط، فينعكس على

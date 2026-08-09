@@ -1,6 +1,6 @@
 ---
 name: nexios-hcis-domain
-description: المرجع المعتمد لنطاق الهيئة العليا للأمن الصناعي (HCIS) ومنصة نُسك — يُستدعى في أي عمل يمس صفحات الامتثال أو التوجيهات أو التصاريح أو محتوى FINN التنظيمي أو أي نص يذكر HCIS/الهيئة/SEC/SAF.
+description: المرجع المعتمد لنطاق الهيئة العليا للأمن الصناعي (HCIS) — يُستدعى في أي عمل يمس الامتثال أو التوجيهات أو تصاريح العمل أو محتوى سَدِيد التنظيمي أو أي نص يذكر HCIS/الهيئة/SEC/SAF.
 ---
 
 # سَدِيد HCIS Domain — المرجع التنظيمي المعتمد
@@ -13,10 +13,15 @@ description: المرجع المعتمد لنطاق الهيئة العليا ل
 
 ## 2) التوجيهات الأمنية (إصدار 2017) — الجدول المعتمد
 
-الأسماء العربية أدناه حرفيًا من `src/lib/hcis/reference-data.ts`
-والأيقونات من `DIRECTIVE_ICONS` في `src/lib/hcis/framework.ts`:
+**مصدر هذه الأسماء اليوم القاعدة لا الكود:** جدول `hcis_directives`
+المبذور حرفيًا في
+`supabase/migrations/20260718120000_hcis_compliance_framework_seed.sql`.
+(مجلّد `src/lib/hcis/` **حُذف** مع صفحة `/hcis` بقرار المالك ٢٠٢٦/٠٨/٠٩،
+ومعه `reference-data.ts` و`framework.ts`؛ فلا خريطة أيقونات حيّة اليوم —
+عمود الأيقونات أدناه يبقى **توصيةً معتمدة** لأي سطح يعرض التوجيهات
+مستقبلًا، لا استيرادًا من ثابت قائم.)
 
-| الرمز   | الاسم العربي الرسمي                            | أيقونة lucide                                                 |
+| الرمز   | الاسم العربي الرسمي                            | أيقونة lucide الموصى بها                                      |
 | ------- | ---------------------------------------------- | ------------------------------------------------------------- |
 | SEC-01  | المتطلبات العامة للتوجيهات الأمنية             | BookOpenCheck                                                 |
 | SEC-02  | الأسوار الأمنية                                | Fence                                                         |
@@ -40,7 +45,7 @@ description: المرجع المعتمد لنطاق الهيئة العليا ل
 | SEC-RC  | المجمعات السكنية التابعة للمنشآت الصناعية      | Building2                                                     |
 | SAF-GEN | توجيهات السلامة والحماية من الحريق — نظرة عامة | FireExtinguisher (بديل موثق لـ Flame غير المتوفرة بهذا الشكل) |
 
-لا تخترع أيقونات جديدة — التزم الخريطة القائمة؛ أي بديل يُوثَّق.
+لا تخترع أيقونات جديدة — التزم الخريطة أعلاه؛ أي بديل يُوثَّق.
 
 ## 3) دورة الاعتماد السبع (`hcis_approval_stages`)
 
@@ -78,15 +83,36 @@ issue_note_ar, sort_order)` — 21 صفًا.
 - `hcis_approval_stages(stage_no, name_ar, name_en, description_ar)` — 7.
 - `hcis_compliance_status(directive_code, region_code, status,
 priority, is_simulation)` — 76 صفًا (19 × 4 مناطق).
-- المسارات: الشبكة `/hcis`، الصفحة الإرشادية `/hcis/directive/:code`
-  (مثال العمق: `/hcis/directive/SEC-18`).
 
-## 8) منصة نُسك (الحج)
+## 8) أين يعيش النطاق اليوم — لا صفحة `/hcis`
 
-- منصة مستقلة **تُفتح خارجيًا** — لا iframe ولا proxy (المادة ٥ من
-  الدستور). الرابط يعيش فقط في `src/config/platforms.ts`: الكانوني
-  المدمج أساس، و`VITE_HAJJ_EMBED_URL` تجاوز https اختياري — مثبّت
-  باختبار `src/config/platforms.test.ts`.
-- العرض بطاقة سينمائية (`HajjEmbedFrame.tsx`) بغلاف داشبورد؛ لا يُعرض
-  الرابط الخام كنص. صفحة `/hajj` الداخلية تعرض عمليات المشاعر
-  (محاكاة مرجعية عند غياب البيانات الحية).
+**صفحة `/hcis` و`/hcis/directive/:code` حُذفتا نهائيًّا** بقرار المالك
+٢٠٢٦/٠٨/٠٩، ومعهما `src/lib/hcis/` وصفحة `hcis-compliance`. **الحذف حذف
+سطح عرض لا إلغاء نطاق** — لا تُعاد بناؤها، ولا يُذكر أيٌّ من المسارين في
+عرضٍ أو وثيقة.
+
+النطاق التنظيمي حيٌّ في أربعة مواضع، وأي عمل امتثالي يُسنَد إليها:
+
+1. **تصاريح العمل `/ptw`** — الصفحة `src/routes/_authenticated/ptw.tsx`
+   ودوالّها `src/lib/compliance/hcis-ptw.functions.ts`
+   (`getHcisOverview` · `getPtwOverview` · `createPermitFn` ·
+   `suspendRegionPermitsFn`)، وبذرتها `hcis-ptw.seeder.server.ts`.
+   القراءات خلف `optionalSupabaseAuth`، والكتابات وحدها مصادَقة.
+2. **المرجع التنظيمي لردود سَدِيد** — `src/lib/sadeed/hcis-reference.ts`
+   (`isHcisReferenceQuery` · `formatHcisReference`).
+3. **أدوات MCP** — `src/lib/mcp/tools/hcis-status.ts` و`ptw-active.ts`.
+4. **جداول `hcis_*` في القاعدة** وبذورها في `supabase/migrations/`.
+
+وسطح العرض البديل للامتثال هو شبكة `/sec` وصفحاتها (`/sec/permits` ·
+`/sec/incidents` · `/sec/safety` · `/sec/kpi`)، إضافة إلى `/ptw`.
+
+## 9) منصة نُسك (الحج) — **مسحوبة**
+
+- **سُحبت الوحدة الخارجية.** لا صفحة `/hajj` ولا `HajjEmbedFrame`
+  ولا `src/config/platforms.ts` — كلها محذوفة. وآلية الفتح الخارجي وحدها
+  باقية في `moduleExternalUrl` بـ`src/lib/nav/modules.ts`، وهي تعيد
+  `null` اليوم لأن **لا وحدة خارجية مسجَّلة**.
+- القاعدة الدستورية تبقى قائمة لأي منصّة شقيقة مستقبلية: **فتح خارجي
+  فقط — لا iframe ولا proxy** (المادة ٥). ويبقى
+  `VITE_HAJJ_EMBED_URL` في `.env.example` بلا مستهلك في الكود؛ لا تبنِ
+  عليه سطحًا جديدًا دون قرار مالك.

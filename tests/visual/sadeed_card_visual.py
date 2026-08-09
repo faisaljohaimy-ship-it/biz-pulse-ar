@@ -37,6 +37,9 @@ from pathlib import Path
 from PIL import Image, ImageChops
 from playwright.async_api import async_playwright
 
+sys.path.insert(0, str(Path(__file__).parent))
+from _runtime import BASE_URL, resolve_chromium  # noqa: E402
+
 ROOT = Path(__file__).parent
 BASELINES = ROOT / "baselines"
 CURRENT = ROOT / "current"
@@ -52,7 +55,7 @@ VIEWPORTS = [
     ("laptop-1280", 1280, 800),
 ]
 
-URL = "http://localhost:8080/"
+URL = f"{BASE_URL}/"
 CARD_TESTID = "sadeed-portal-card"
 
 # --- Constitutional palette (mem://design/sadeed-visual-constitution.md) ------
@@ -128,7 +131,7 @@ async def run() -> int:
     report: list[dict] = []
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=True, executable_path=resolve_chromium())
         try:
             for label, vw, vh in VIEWPORTS:
                 context = await browser.new_context(

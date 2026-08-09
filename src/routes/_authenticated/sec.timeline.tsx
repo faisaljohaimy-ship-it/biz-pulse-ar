@@ -6,7 +6,10 @@ import { getSecOverview } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
 import { SecPageHeader, severityClass, SecLoading, SecError } from "@/components/sec/sec-shell";
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
-import { AlertTriangle, Radar, UserCheck, Camera, FileBadge } from "lucide-react";
+// أيقونات هذا الخط الزمني تُقرأ من نوع الحدث وتظهر بلا نصّ يشرحها، فتُطابق
+// أيقونات الوحدات نفسها: الدورية جولةٌ راجلة لا رادارًا، و`Camera` كاميرا
+// تصوير لا مراقبة، والتصريح وثيقة معتمَدة لا شارة.
+import { AlertTriangle, Footprints, UserCheck, Cctv, FileCheck2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sec/timeline")({
   errorComponent: RouteError,
@@ -45,7 +48,7 @@ function Timeline() {
       .filter((p) => p.started_at)
       .map((p) => ({
         t: p.started_at!,
-        icon: Radar,
+        icon: Footprints,
         title: `دورية ${p.team}`,
         sub: `${p.route} · ${p.status}`,
       })),
@@ -57,13 +60,13 @@ function Timeline() {
     })),
     ...data.cctv.map((c) => ({
       t: c.detected_at,
-      icon: Camera,
+      icon: Cctv,
       title: `CCTV: ${c.alert_type}`,
       sub: `${c.camera_code} · ثقة ${Math.round(c.confidence * 100)}%`,
     })),
     ...data.permits.map((p) => ({
       t: p.starts_at,
-      icon: FileBadge,
+      icon: FileCheck2,
       title: `تصريح: ${p.work_type}`,
       sub: `${p.contractor} · ${p.status}`,
       sev: p.risk_level,

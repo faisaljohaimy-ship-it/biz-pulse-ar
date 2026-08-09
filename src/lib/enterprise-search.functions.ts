@@ -4,6 +4,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type SearchSource =
   | "incident"
@@ -47,8 +48,11 @@ const emptyBySource: Record<SearchSource, number> = {
   knowledge_doc: 0,
 };
 
+// البحث المؤسسي **قراءة** رغم كونه POST (الاستعلام في الجسم لا المسار).
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const enterpriseSearch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .inputValidator((d: unknown) => schema.parse(d))
   .handler(async ({ data, context }): Promise<SearchResponse> => {
     const started = Date.now();
@@ -218,8 +222,10 @@ export type KnowledgeStats = {
   knowledge_docs: number;
 };
 
+// قراءة عرض على شاشة يفتحها زائر: `optionalSupabaseAuth` — سياسات RLS
+// للـ`anon` هي ما يقرر ما يُرى، لا خطأ مصادقة يوقف الشاشة.
 export const getKnowledgeStats = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<KnowledgeStats> => {
     const supabase = context.supabase;
     const [inc, wo, kb, sadeedDocs, kd] = await Promise.all([

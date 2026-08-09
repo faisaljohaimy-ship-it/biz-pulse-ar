@@ -99,10 +99,18 @@ type Surface = {
  * ومحدِّدٌ لا يطابق شيئًا **يتخطّى**، لا يفشل. وهذا أسوأ من الفشل: يُقرأ
  * تقرير التشغيل أخضرَ بينما لم يُقَس شيء.
  */
+/**
+ * **السطح تغيّر لأن صفحته حُذفت.** كان المقيس `/hcis`، وحُذفت الصفحة نهائيًّا
+ * بقرار المالك ٢٠٢٦/٠٨/٠٩ فصارت 404 — و404 يحمل شريط الساعة أيضًا، فكان
+ * الفحص «يمرّ» على صفحة خطأ. المقيس اليوم `/blueprint`: صفحة عامّة قائمة
+ * تحمل شريط الساعة **ومبدّل الوضع** معًا، وكلاهما لازم هنا (`flipTheme`).
+ */
+const CLOCK_SURFACE_URL = "/blueprint";
+
 const SURFACES: readonly Surface[] = [
   {
     name: "مؤشّر «حيّ» — شريط الساعة",
-    url: "/hcis",
+    url: CLOCK_SURFACE_URL,
     // الشريط لاصق أعلى كل صفحة، فالسطح حاضر بلا تمرير.
     selector: `.nx-clock-bar [${STATE_ATTR}]`,
     scrollable: false,
@@ -428,15 +436,23 @@ for (const surface of SURFACES) {
 
    الفحص هنا يقرأ `animation-name` المحسوب لا نصّ الملف: الغرض إثبات أنّ
    القاعدة **فازت في التتالي**، لا أنّها مكتوبة. القاعدة المكتوبة التي
-   تخسر أمام نوعيةٍ أعلى تمرّ في قراءة النصّ وتسقط على الشاشة. */
+   تخسر أمام نوعيةٍ أعلى تمرّ في قراءة النصّ وتسقط على الشاشة.
+
+   ⚠︎ **هذان الفحصان يتخطّيان اليوم، وبصدق لا بصمت.** كانا يفتحان
+   `/hcis/directive/SEC-01` — صفحة محذوفة — ويبحثان عن `.nx-module-icon`.
+   والمحدِّد نفسه لا وجود له في الشجرة: `nx-module-icon` بقي صنفًا في
+   `src/styles.css` بلا حاملٍ واحد يركّبه. فالعنوان صار سطحًا قائمًا
+   (`/blueprint`) لكي يكون التخطّي إقرارًا بأنّ **البلاطة غير مركَّبة**، لا
+   ستارًا على صفحةٍ مفقودة. وحين تُركَّب بلاطة تحمل `.nx-module-icon` يعود
+   الفحصان للعمل بلا تعديل. */
 
 test.describe("Lottie · منع التصادم", () => {
   test("الرمز الساكن وكل ما تحته بلا حركة CSS أثناء التشغيل", async ({ page }) => {
-    await openAt(page, "/hcis/directive/SEC-01", "dark");
+    await openAt(page, CLOCK_SURFACE_URL, "dark");
     const wrapper = page.locator(`.nx-module-icon [${STATE_ATTR}]`).first();
 
     if ((await page.locator(`.nx-module-icon [${STATE_ATTR}]`).count()) === 0) {
-      test.skip(true, "بلاطة توجيه HCIS غير مركَّبة");
+      test.skip(true, "بلاطة `.nx-module-icon` غير مركَّبة في الشجرة");
     }
 
     await waitForPlaying(wrapper, "بلاطة توجيه HCIS");
@@ -462,11 +478,11 @@ test.describe("Lottie · منع التصادم", () => {
   });
 
   test("شجرة المشغّل بلا drop-shadow موروث من طبقة المدار", async ({ page }) => {
-    await openAt(page, "/hcis/directive/SEC-01", "dark");
+    await openAt(page, CLOCK_SURFACE_URL, "dark");
     const wrapper = page.locator(`.nx-module-icon [${STATE_ATTR}]`).first();
 
     if ((await page.locator(`.nx-module-icon [${STATE_ATTR}]`).count()) === 0) {
-      test.skip(true, "بلاطة توجيه HCIS غير مركَّبة");
+      test.skip(true, "بلاطة `.nx-module-icon` غير مركَّبة في الشجرة");
     }
 
     await waitForPlaying(wrapper, "بلاطة توجيه HCIS");
@@ -502,7 +518,7 @@ test("لا تحذير سقوطٍ من LottieIcon على أي سطح مركَّب
     if (msg.type() === "warning" && msg.text().includes("[LottieIcon]")) warnings.push(msg.text());
   });
 
-  await openAt(page, "/hcis", "dark");
+  await openAt(page, CLOCK_SURFACE_URL, "dark");
   await page.waitForTimeout(6_000);
 
   expect(warnings, `سقطت أيقونة إلى رمزها الساكن:\n${warnings.join("\n")}`).toEqual([]);

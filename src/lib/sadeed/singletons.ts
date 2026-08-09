@@ -68,16 +68,6 @@ export function assertOne(key: SadeedSingletonKey, owner: string): boolean {
   return false;
 }
 
-/** Release a singleton (e.g. on unmount / teardown). */
-export function releaseOne(key: SadeedSingletonKey, owner: string): void {
-  if (typeof window === "undefined") return;
-  const reg = registry();
-  if (reg.owners[key] === owner) {
-    delete reg.owners[key];
-    delete reg.warned[key];
-  }
-}
-
 /**
  * Track a live React mount (e.g. SadeedProvider). Increments an active
  * mount counter; warns once when count exceeds 1 (true duplication —
@@ -100,14 +90,4 @@ export function trackMount(key: SadeedSingletonKey, owner: string): () => void {
     cur.mounts[key] = Math.max(0, (cur.mounts[key] ?? 1) - 1);
     if ((cur.mounts[key] ?? 0) <= 1) cur.warned[key] = false;
   };
-}
-
-/** Introspect current owners (for /aria/directive audit + tests). */
-export function currentSingletons(): Readonly<Partial<Record<SadeedSingletonKey, string>>> {
-  return { ...registry().owners };
-}
-
-/** Introspect current mount counts. */
-export function currentMounts(): Readonly<Partial<Record<SadeedSingletonKey, number>>> {
-  return { ...registry().mounts };
 }

@@ -30,6 +30,7 @@ import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import { PageBriefing } from "@/components/clarity/PageBriefing";
 import { PowerBIEmbed } from "@/components/analytics/PowerBIEmbed";
 import { getBiDashboard, type BiDashboardData } from "@/lib/exec/bi-dashboard.functions";
+import { pctOrUnmeasured } from "@/lib/sec-exec-kpis.functions";
 
 export const Route = createFileRoute("/_authenticated/bi")({
   // OWNER DIRECTIVE — screen HIDDEN (see src/lib/nav/hidden-routes.ts).
@@ -126,7 +127,9 @@ function BiPage() {
   const sla = useMemo(() => {
     const total = filtered.reduce((s, r) => s + r.sla_total, 0);
     const met = filtered.reduce((s, r) => s + r.sla_met, 0);
-    return { total, met, pct: total ? Math.round((met / total) * 100) : 100 };
+    // المادة ٢٧ — بلا عيّنة لا يوجد أداء SLA. كان المقام الصفري يُخرج
+    // «١٠٠٪»: أعلى درجة ممكنة تُمنح لغياب القياس، وهو أخطر اختلاق في اللوحة.
+    return { total, met, pct: total ? Math.round((met / total) * 100) : null };
   }, [filtered]);
 
   const sevMix = useMemo(
@@ -327,7 +330,12 @@ function BiPage() {
               ["البلاغات", totals.incidents, "#f87171"],
               ["أوامر العمل", totals.work_orders, "#22d3ee"],
               ["التصاريح", totals.permits, "#10b981"],
-              ["أداء SLA", `${sla.pct}%`, sla.pct >= 90 ? "#10b981" : "#fbbf24"],
+              // اللون حكمٌ كالرقم: ما لم يُقَس لا يُصبَغ أخضر ولا كهرمانيًّا.
+              [
+                "أداء SLA",
+                pctOrUnmeasured(sla.pct),
+                sla.pct === null ? "#94a3b8" : sla.pct >= 90 ? "#10b981" : "#fbbf24",
+              ],
             ].map(([label, value, color]) => (
               <div key={String(label)} className="holo-card rounded-2xl p-3">
                 <div className="text-[12px] text-white/55">{label}</div>

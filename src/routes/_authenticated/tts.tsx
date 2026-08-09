@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { authenticatedFetch } from "@/lib/auth-fetch";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 // SADEED voice is HARD-LOCKED to the canonical male voice server-side.
 // This dev tool only exposes the canonical voice — the server ignores any
@@ -78,7 +79,7 @@ function TtsPage() {
       setAudioUrl(url);
       setTimeout(() => audioRef.current?.play().catch(() => {}), 50);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "TTS error");
+      toast.error(userFacingError(e));
     } finally {
       setLoading(false);
     }

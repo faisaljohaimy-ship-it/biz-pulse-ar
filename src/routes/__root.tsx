@@ -153,9 +153,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
-      { property: "og:image", content: `${DOMAIN_URL}/sadeed-portrait.png` },
-      { property: "og:image:width", content: "1128" },
-      { property: "og:image:height", content: "1920" },
+      // الملف كان `/sadeed-portrait.png` — ١٫٩٢ ميغابايت لصورة فوتوغرافية،
+      // وهو أثقل أصل في `public/` بفارق. وPNG ترميز خاطئ لصورة متدرّجة:
+      // النسخة WebP الموجودة أصلًا (`/sadeed-portrait.webp`) هي **الصورة
+      // نفسها بالمقاس نفسه** في ١٤٤ كيلوبايت — ٩٣٪ أخفّ. وإعادة ضغط PNG بلا
+      // فقد لا تُجدي: أصغر ناتج بلا فقد ٢٫٧٥ ميغابايت، أي **أكبر** من الأصل.
+      //
+      // والمقاسان المعلنان كانا خاطئين: 1128×1920 بينما الملف 1024×1536 —
+      // أي أن كل قارئ بطاقة اجتماعية كان يحجز إطارًا بنسبة غير نسبة الصورة.
+      { property: "og:image", content: `${DOMAIN_URL}/sadeed-portrait.webp` },
+      { property: "og:image:width", content: "1024" },
+      { property: "og:image:height", content: "1536" },
       // الصورة صورة المساعد. النصّ البديل يذكر الاسم **مرّة واحدة**: بعد
       // توحيد اسم المساعد باسم المنتج (قرار المالك ٢٠٢٦/٠٨/٠٩) صار تكراره
       // على طرفَي الفاصل «سَدِيد · سَدِيد» — لغوٌ يُنطق مرّتين في قارئ
@@ -171,7 +179,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "twitter:description",
         content: SITE_TAGLINE,
       },
-      { name: "twitter:image", content: `${DOMAIN_URL}/sadeed-portrait.png` },
+      { name: "twitter:image", content: `${DOMAIN_URL}/sadeed-portrait.webp` },
       { name: "twitter:image:alt", content: `${PRODUCT_NAME} — المساعد التنفيذي` },
       // تكرار متعمَّد من نسخة Lovable القديمة: الإدخال الأخير هو ما يفوز
       // في وسم واحد، فكان عنوان التبويب يعود لتسمية سابقة بعد كل رسم.

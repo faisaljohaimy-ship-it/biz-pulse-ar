@@ -23,6 +23,7 @@ import { LiveStatus } from "@/components/state/LiveStatus";
 import { useLiveRows, fmtRel, fmtDuration } from "@/lib/runtime/useLiveRows";
 import { triggerWorkflowFn, cancelWorkflowRunFn } from "@/lib/exec.functions";
 import { toast } from "sonner";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/workflows")({
   errorComponent: RouteError,
@@ -215,7 +216,7 @@ function WorkflowDefRow({ wf, liveRuns, ar }: { wf: WfRow; liveRuns: RunRow[]; a
       await trigger({ data: { workflowId: wf.id, payload: {} } });
       toast.success(ar ? "بدأ التنفيذ" : "Execution started");
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(userFacingError(e));
     } finally {
       setPending(false);
     }
@@ -288,7 +289,7 @@ function RunRowCard({
       await cancel({ data: { runId: run.id } });
       toast.success(ar ? "تم الإلغاء" : "Cancelled");
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(userFacingError(e));
     }
   };
 

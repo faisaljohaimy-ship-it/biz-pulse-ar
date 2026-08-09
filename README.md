@@ -13,9 +13,10 @@
 حقول الدخول إلا بعد إقرار صريح بالانتقال من العرض المفتوح إلى مرحلة التفعيل؛
 ولا يمنح هذا الإقرار أي صلاحية داخل النظام.
 
-يتضمن المسار `/executive-bridge` إيجازاً قيادياً تفاعلياً من سبعة فصول بصوت
-سَدِيد الموحّد. يبدأ الصوت بعد ضغط المستخدم، ويعرض حالة التحضير والتشغيل والخطأ
-بوضوح، ولا يستبدل صوت سَدِيد بصوت متصفح آلي عند غياب إعداد ElevenLabs.
+يبدأ صوت سَدِيد بعد ضغط المستخدم دائماً، ويعرض حالة التحضير والتشغيل والخطأ
+بوضوح، ولا يُستبدل بصوت متصفح آلي عند غياب إعداد ElevenLabs. (المسار
+`/executive-bridge` «جسر القيادة» حُذف من النظام كليًّا بقرار المالك
+٢٠٢٦/٠٨/٠٥، ولا بديل مسجَّل له.)
 
 ## المتطلبات
 
@@ -61,8 +62,8 @@ Cloudflare Workers هو هدف الإنتاج الأساسي. راجع [DEPLOYME
 - [ARCHITECTURE.md](ARCHITECTURE.md) — بنية النظام
 - [SECURITY.md](SECURITY.md) — الضوابط الأمنية والإبلاغ
 - [TESTING.md](TESTING.md) — بوابات الجودة والاختبارات الحية
-- [KNOWN_EXTERNAL_DEPENDENCIES.md](KNOWN_EXTERNAL_DEPENDENCIES.md) — الخدمات الخارجية وحالات fallback
-- [RELEASE_NOTES.md](RELEASE_NOTES.md) — ملاحظات الإصدار
+- [CHANGELOG.md](CHANGELOG.md) — سجل التغييرات
+- [ROLLBACK.md](ROLLBACK.md) — خطة التراجع
 - [docs/SADEED_PDPL_COMPLIANCE.md](docs/SADEED_PDPL_COMPLIANCE.md) — إطار PDPL وبوابة التفعيل
 - [docs/PDPL_PRODUCTION_REGISTER.md](docs/PDPL_PRODUCTION_REGISTER.md) — سجل حقائق الإطلاق الإلزامية
 

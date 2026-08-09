@@ -1,8 +1,4 @@
 // Simulation Engine — configuration.
-// Phase 2 will flip SIM_MODE to "off" and swap seeders for live adapters
-// without touching consumers.
-export const SIM_MODE: "on" | "off" = "on";
-
 export const SIM_VOLUMES = {
   departments: 12,
   employees: 120, // scaled for demo perf; increase for full load

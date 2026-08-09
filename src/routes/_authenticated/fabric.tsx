@@ -39,6 +39,7 @@ import {
   createIntelligenceAlert,
   resolveAlert,
 } from "@/lib/intelligence.functions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const fabricQuery = queryOptions({
   queryKey: ["fabric-snapshot"],
@@ -57,7 +58,7 @@ export const Route = createFileRoute("/_authenticated/fabric")({
   component: FabricPage,
   errorComponent: ({ error }) => (
     <div className="p-8 text-rose-300" role="alert">
-      Fabric error: {error.message}
+      {userFacingError(error)}
     </div>
   ),
 });
@@ -83,7 +84,7 @@ function FabricPage() {
 
   return (
     <NexusPage
-      backdropImage="/enterprise-erp-bg.jpeg"
+      backdropImage="/command-room-bg.webp"
       eyebrow="SADEED INTELLIGENCE FABRIC"
       title={ar ? "النسيج الذكي المؤسسي" : "سَدِيد Intelligence Fabric"}
       subtitle={

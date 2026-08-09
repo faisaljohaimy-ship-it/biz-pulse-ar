@@ -13,7 +13,7 @@ import {
   Sparkles,
   Target,
   MessageSquare,
-  Award,
+  ClipboardCheck,
   Play,
   Activity,
 } from "lucide-react";
@@ -32,6 +32,7 @@ import { LessonNav } from "@/components/learn/LessonNav";
 import { LessonCockpit } from "@/components/learn/LessonCockpit";
 import { getCockpitContent } from "@/lib/learn/cockpit-content";
 import { cn } from "@/lib/utils";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/learn/$slug")({
   component: LessonPage,
@@ -40,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/learn/$slug")({
       <div className="space-y-3">
         <AlertTriangle className="mx-auto h-8 w-8 text-rose-400" />
         <div className="text-lg font-semibold text-white">Lesson unavailable</div>
-        <div className="max-w-md text-sm text-white/60">{error.message}</div>
+        <div className="max-w-md text-sm text-white/60">{userFacingError(error)}</div>
         <button
           onClick={reset}
           className="rounded-xl border border-cyan-400/40 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-400/10"
@@ -235,9 +236,9 @@ function LessonPage() {
             <LessonCockpit slug={lesson.slug} lang={ar ? "ar" : "en"} lessonTitle={title} />
           )}
 
-          {/* Quiz */}
+          {/* Quiz — `Award` وسامُ **نتيجة** الاجتياز؛ والقسم هو الاختبار نفسه. */}
           <SectionCard
-            icon={<Award className="h-4 w-4" />}
+            icon={<ClipboardCheck className="h-4 w-4" />}
             label={ar ? "اختبار المعرفة" : "Knowledge test"}
           >
             <LessonQuiz

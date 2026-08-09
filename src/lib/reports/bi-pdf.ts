@@ -13,7 +13,8 @@ export type BiPdfInput = {
   department: string;
   trend: Array<{ date: string; incidents: number; work_orders: number; permits: number }>;
   byDept: Array<{ name: string; value: number }>;
-  sla: { total: number; met: number; pct: number };
+  /** `pct === null` = لم يُقَس — بلا عيّنة لا أداء SLA (المادة ٢٧). */
+  sla: { total: number; met: number; pct: number | null };
   sevMix: Array<{ severity: string; count: number }>;
   compliance: Array<{ region_id: string; label_ar: string; pct: number }>;
   totals: { incidents: number; work_orders: number; permits: number };
@@ -118,7 +119,7 @@ export async function buildBiPdf(input: BiPdfInput, fonts: DailyOpsFonts): Promi
     ["البلاغات", String(input.totals.incidents)],
     ["أوامر العمل", String(input.totals.work_orders)],
     ["التصاريح", String(input.totals.permits)],
-    ["أداء SLA", `${input.sla.pct}%`],
+    ["أداء SLA", input.sla.pct === null ? "لم يُقَس" : `${input.sla.pct}%`],
   ];
   const bw = (W - MARGIN * 2 - 3 * 12) / 4;
   kpis.forEach(([label, value], i) => {

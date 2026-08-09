@@ -14,7 +14,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 
 // ---------------------------------------------------------------------------
@@ -139,8 +139,11 @@ function cacheTitle(anchor: string): string {
 // Server function — get live conversation + SADEED synthesis
 // ---------------------------------------------------------------------------
 
+// حوار الوكلاء في غرفة العمليات — نافذة عرض. القراءة تحت
+// `optionalSupabaseAuth`، وحفظ الخلاصة في ذاكرة سَدِيد يبقى مشروطًا بجلسة
+// فعلية (لا كتابة باسم زائر).
 export const getAgentConversation = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<AgentConversation> => {
     const sb = context.supabase;
     const generated_at = new Date().toISOString();
@@ -305,16 +308,18 @@ export const getAgentConversation = createServerFn({ method: "GET" })
         source: "gemini",
       };
 
-      // Persist as SADEED's short-term executive memory.
+      // Persist as SADEED's short-term executive memory — لصاحب جلسة فقط.
       try {
-        const { data: orgRow } = await sb
-          .from("org_members")
-          .select("org_id")
-          .eq("user_id", context.userId)
-          .limit(1)
-          .maybeSingle();
+        const { data: orgRow } = context.userId
+          ? await sb
+              .from("org_members")
+              .select("org_id")
+              .eq("user_id", context.userId)
+              .limit(1)
+              .maybeSingle()
+          : { data: null };
         const org_id = orgRow?.org_id ?? null;
-        if (org_id) {
+        if (org_id && context.userId) {
           await sb.from("finn_reports").insert({
             org_id,
             user_id: context.userId,

@@ -6,10 +6,17 @@ import { test, expect } from "@playwright/test";
  * screens that render client_* data. Skipped as a whole when test-user
  * credentials aren't available.
  */
+/**
+ * مساران من هذه القائمة لم يعودا موجودين: `/command-center` حُذف كليًّا
+ * (480aa92) و`/intelligence` لا مقابل له في شجرة المسيّر. ومسارٌ غير موجود
+ * يُصيَّر صفحة 404 — والشريط غائب عنها بحقّ، فيُقرأ الفشل عطلًا في الشريط
+ * وهو عطلٌ في القائمة. أُبدلا بسطحين قائمين يقرآن `client_*`:
+ * `/situation-room` و`/fabric`.
+ */
 const ROUTES = [
-  "/command-center",
+  "/situation-room",
   "/urgent-ops",
-  "/intelligence",
+  "/fabric",
   "/exec",
   "/executive-map",
   "/executive-reports",

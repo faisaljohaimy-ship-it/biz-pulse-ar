@@ -15,7 +15,9 @@ import {
   GitBranch,
   FileText,
   Zap,
+  RefreshCw,
   RotateCcw,
+  RotateCw,
   ChevronDown,
   ChevronRight,
   Copy,
@@ -206,7 +208,9 @@ export function ExecutionTimeline({
         description="The execution exists but has not emitted any audit, step, or event records. Refresh in a few seconds."
         action={
           <Button size="sm" variant="outline" onClick={() => refetch()}>
-            <RotateCcw className="h-3 w-3 me-1" /> Refresh
+            {/* `RotateCcw` محجوزة في هذا الملف نفسه لحالة `rolled_back`
+                (تراجُع)؛ فالتحديث والإعادة لا يستعيرانها. */}
+            <RefreshCw className="h-3 w-3 me-1" /> Refresh
           </Button>
         }
         compact
@@ -242,7 +246,8 @@ export function ExecutionTimeline({
           )}
           {onRetry && (
             <Button size="sm" variant="outline" onClick={onRetry}>
-              <RotateCcw className="h-3 w-3 me-1" /> Retry
+              {/* عقارب الساعة = إعادة المحاولة إلى الأمام؛ وعكسها = التراجع. */}
+              <RotateCw className="h-3 w-3 me-1" /> Retry
             </Button>
           )}
         </div>

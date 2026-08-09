@@ -33,6 +33,7 @@ import {
   type ProviderStatus,
   type SyncEvent,
 } from "@/lib/integrations-hub.functions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/integrations")({
   errorComponent: RouteError,
@@ -199,7 +200,7 @@ function IntegrationsHubPage() {
       void qc.invalidateQueries({ queryKey: ["integrations-overview"] });
       void qc.invalidateQueries({ queryKey: ["integrations-events"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const totals = overview.data?.totals;
@@ -214,7 +215,7 @@ function IntegrationsHubPage() {
 
   return (
     <NexusPage
-      backdropImage="/integration-gateway-bg.jpeg"
+      backdropImage="/earth-network-bg.webp"
       eyebrow="INTEGRATION CONTROL"
       title={ar ? "مركز التكاملات الموحد" : "Unified Integration Center"}
       subtitle={

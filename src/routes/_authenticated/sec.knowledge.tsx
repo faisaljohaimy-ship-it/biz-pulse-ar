@@ -56,6 +56,7 @@ import {
 } from "@/lib/kb.functions";
 import { getCurrentUserIsAdmin } from "@/lib/authz.functions";
 import { useAuth } from "@/lib/auth-context";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/sec/knowledge")({
   errorComponent: RouteError,
@@ -103,11 +104,14 @@ const RISK_COLORS: Record<string, string> = {
 };
 
 function KbPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const getIsAdmin = useServerFn(getCurrentUserIsAdmin);
   const adminQ = useQuery({
     queryKey: ["kb", "isAdmin", user?.id],
-    enabled: !!user?.id,
+    // البوابة الوحيدة `!authLoading` — لا `enabled: !!user`. الدالّة صارت
+    // تحت `optionalSupabaseAuth` وتعيد `isAdmin:false` للزائر، فالانتظار
+    // على وجود مستخدم يترك الاستعلام معلّقًا أبدًا بلا سبب.
+    enabled: !authLoading,
     queryFn: async () => {
       const result = await getIsAdmin();
       return !!result.isAdmin;
@@ -156,7 +160,7 @@ function KbPage() {
       toast.success(`تم زرع ${r.upserted} مقالة تأسيسية`);
       qc.invalidateQueries({ queryKey: ["kb"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
   const embedM = useMutation({
     mutationFn: () => embedFn({ data: { batch: 20 } }),
@@ -168,7 +172,7 @@ function KbPage() {
       else toast.success(msg);
       qc.invalidateQueries({ queryKey: ["kb"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const categories = categoriesQ.data ?? [];

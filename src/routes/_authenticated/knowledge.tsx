@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/knowledge")({
   errorComponent: RouteError,
@@ -56,7 +57,7 @@ function KnowledgePage() {
       setOpen(false);
       qc.invalidateQueries({ queryKey: ["kb"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const del = useMutation({

@@ -34,6 +34,7 @@ import {
   type MicrosoftIntegrationRow,
   type MicrosoftSyncLogRow,
 } from "@/lib/integration-microsoft.functions";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/settings/microsoft")({
   errorComponent: RouteError,
@@ -99,7 +100,7 @@ function MicrosoftSettingsPage() {
           /* non-fatal */
         }
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
+        const msg = userFacingError(e);
         if (/forbidden/i.test(msg)) setForbidden(true);
         else toast.error(msg);
       } finally {
@@ -149,7 +150,7 @@ function MicrosoftSettingsPage() {
       setRow(saved);
       toast.success(isAr ? "تم حفظ الإعدادات" : "Settings saved");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
+      toast.error(userFacingError(e));
     } finally {
       setSaving(false);
     }
@@ -172,7 +173,7 @@ function MicrosoftSettingsPage() {
       const fresh = await fetchFn();
       if (fresh) setRow(fresh);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
+      toast.error(userFacingError(e));
     } finally {
       setTesting(false);
     }
@@ -199,7 +200,7 @@ function MicrosoftSettingsPage() {
       setRow(saved);
       toast.success(isAr ? "تم حفظ إعدادات المزامنة" : "Sync settings saved");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
+      toast.error(userFacingError(e));
     } finally {
       setSavingSync(false);
     }
@@ -216,7 +217,7 @@ function MicrosoftSettingsPage() {
       const fresh = await fetchFn();
       if (fresh) setRow(fresh);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
+      toast.error(userFacingError(e));
     } finally {
       setSyncing(false);
     }
