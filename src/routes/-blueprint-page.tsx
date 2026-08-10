@@ -66,7 +66,6 @@ import { moduleByRoute } from "@/lib/nav/modules";
 import { SCREEN_NAMES } from "@/lib/nav/screen-names";
 import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { PRODUCT_BRAND } from "@/lib/domain";
-import { InstrumentPanel } from "@/components/blueprint/InstrumentPanels";
 import { PulseGlyph } from "@/components/pulse/PulseGlyph";
 import { getCommandCenterState, type CommandSeverity } from "@/lib/exec/command-center.functions";
 import { getRiskBoard, type RiskSeverity } from "@/lib/exec/risk-board.functions";
@@ -80,6 +79,7 @@ import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, getRegion, type RegionId } from "@/lib/regions";
 import { SadeedStagePresence } from "@/components/sadeed/SadeedStagePresence";
+import { SadeedUsageAnalytics } from "@/components/sadeed/SadeedUsageAnalytics";
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
 const STAGE_AR: Record<string, string> = {
@@ -236,37 +236,11 @@ export function BlueprintPage() {
   const pipeline = data?.pipeline ?? [];
   const ticker = pipeline.length ? [...pipeline, ...pipeline] : [];
 
-  /**
-   * النسبة تُشتقّ من القيمة نفسها لا من مصدر ثانٍ: لو حُسبت مستقلّةً لأمكن
-   * أن يمتلئ الشكل بينما الرقم يقول «لم يُقَس» — وهو تناقض يراه المستخدم
-   * ولا يراه أيّ فحص. المقام سقف عرضٍ للشكل فقط، لا يمسّ الرقم المعروض.
-   */
-  const gauge = (value: number | null, ceiling: number) =>
-    value === null ? null : Math.min(1, value / ceiling);
-
-  const panels = [
-    // حُذفت أيقونة «الوكلاء النشطون» (كانت تعرض ١٠) بأمر المالك ٢٠٢٦/٠٨/١٠.
-    // و`agents_active` يبقى في عقد `getCommandCenterState` ويقرؤه `/nx-ops`
-    // و`/nx-flow` — الحذف حذفُ أيقونةٍ من الرئيسية لا إلغاءُ عدّاد.
-    {
-      label: ar ? "بانتظار الاعتماد" : "Pending approval",
-      value: counters?.proposals_pending ?? null,
-      ceiling: 12,
-      beatSeconds: 0.94,
-      accent: "245, 158, 11",
-      caption: ar ? "مقترحات موقوفة على قرار بشري" : "Proposals held for a human decision",
-      to: "/nx-ops",
-    },
-    {
-      label: ar ? "منجز اليوم" : "Completed today",
-      value: counters?.done_today ?? null,
-      ceiling: 24,
-      beatSeconds: 1.06,
-      accent: "52, 211, 153",
-      caption: ar ? "مهامّ أُغلقت منذ بداية اليوم" : "Tasks closed since the day began",
-      to: "/nx-ops",
-    },
-  ];
+  /* حُذفت لوحات المؤشّرات الثلاث من الرئيسية بأمر المالك: «الوكلاء
+     النشطون» ثم «بانتظار الاعتماد» و«منجز اليوم» (٢٠٢٦/٠٨/١٠). ومعها
+     مولّد النسبة `gauge` ومكوّن `InstrumentPanel` — بقاؤهما بلا مستهلك
+     يُغري بإعادة التركيب. والعدّادات نفسها باقية في العقد، تقرؤها
+     `/nx-ops` و`/nx-flow`. */
 
   /* ── شبكة بطاقات الداشبورد ────────────────────────────────────────────
      مؤشرات تنفيذية للأمن الصناعي عبر المناطق الأربع. كل قيمة تأتي من
@@ -512,7 +486,7 @@ export function BlueprintPage() {
                           مقيسة. الإيقاع يتفاوت بالترتيب فلا تخفق الأربع معًا. */}
                       <PulseGlyph
                         accent={REGION_ACCENT_HEX[region.id]}
-                        beatSeconds={0.86 + i * 0.11}
+                        beatSeconds={0.86}
                         size={32}
                         ratio={pct === undefined ? null : pct / 100}
                       />
@@ -554,6 +528,21 @@ export function BlueprintPage() {
             </ul>
           </section>
 
+          {/* ── تحليلات سَدِيد · يمين بطاقة المساعد ────────────────────
+              أمر المالك ٢٠٢٦/٠٨/١٠: «ضع تحليلات سَدِيد على يمين بطاقة سَدِيد».
+              والصفحة `rtl`، فاليمين هو الطرف المنطقي `start` — والأسبق في
+              DOM يُرسم أيمن. فتقع التحليلات **قبل** المساعد في الترتيب،
+              وتبقى المناطق أيمن منها.
+              تقرأ لقطة محاكاة حتمية موسومة بشارتها (`SimBadge`)، فلا يُنسب
+              إليها قياس حيّ. */}
+          <section
+            aria-label={ar ? "تحليلات استخدام سَدِيد" : "SADEED usage analytics"}
+            className="nx-bp-stage w-full"
+            style={{ ["--nx-bp-i" as string]: 2 }}
+          >
+            <SadeedUsageAnalytics />
+          </section>
+
           {/* ── وسطًا · المساعد ───────────────────────────────────────────
               فتحة تركيب لا مكوّن: المساعد يُبنى في مسار مستقل ويُركَّب هنا.
               الحاوية تنطوي كلّيًّا وهي فارغة (`.nx-dash-slot:empty`) — فلا
@@ -565,41 +554,10 @@ export function BlueprintPage() {
             data-slot="assistant"
             aria-label={ar ? `المساعد ${PRODUCT_BRAND.assistantName}` : PRODUCT_BRAND.en.name}
             className="nx-dash-slot nx-bp-stage w-full"
-            style={{ ["--nx-bp-i" as string]: 2 }}
+            style={{ ["--nx-bp-i" as string]: 3 }}
           >
             <SadeedStagePresence />
           </section>
-
-          {/* العمود الأيسر فارغ عمدًا: حُذف «كشف الشذوذ» بتعديل المالك عبر
-              Lovable (`865c59b`) وحُذفت «تحليلات الاستخدام» بأمره في الجلسة
-              نفسها — فلم يبقَ للعمود حامل. والشبكة صارت عمودين. */}
-        </section>
-
-        <section
-          // بطاقتان بعد حذف «الوكلاء النشطون»: `lg:grid-cols-3` كان يترك
-          // عمودًا فارغًا على الشاشات الواسعة.
-          className="nx-bp-stage mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2"
-          style={{ ["--nx-bp-i" as string]: 4 }}
-        >
-          {panels.map((panel, i) => (
-            <Link
-              key={panel.label}
-              to={panel.to}
-              className="nx-bp-float block rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
-              style={{ ["--pulse-i" as string]: i + 8 }}
-            >
-              <InstrumentPanel
-                label={panel.label}
-                value={panel.value}
-                ratio={gauge(panel.value, panel.ceiling)}
-                beatSeconds={panel.beatSeconds}
-                accent={panel.accent}
-                caption={panel.caption}
-                notMeasured={notMeasured}
-                index={i}
-              />
-            </Link>
-          ))}
         </section>
 
         {/* ════ ١ · شبكة بطاقات الداشبورد ════════════════════════════════
