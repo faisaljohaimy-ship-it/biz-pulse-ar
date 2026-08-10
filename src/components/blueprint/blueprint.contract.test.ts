@@ -457,30 +457,44 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
     expect(grid).toMatch(/minmax\(0,/);
   });
 
-  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد ← التنبيهات", () => {
+  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد", () => {
     // العمود واحد دون `lg`، فالتكديس هو ترتيب DOM نفسه. لو رُتّبت الأعمدة
     // بـ`order` لانقلب الترتيب على الجوال بلا أن يسقط شيء.
     //
-    // `SadeedUsageAnalytics` خرج من السلسلة يوم حُذف من الرئيسية (أمر المالك
-    // ٢٠٢٦/٠٨/١٠). والقاعدة لم تُضعَّف: هي تلزم **كل ما بقي مركَّبًا**،
-    // ومكوّنٌ محذوفٌ لا تُحرَس رتبته لأنه لا رتبة له.
+    // خرج من السلسلة حاملاها الأخيران في اليوم نفسه: «كشف الشذوذ» بتعديل
+    // المالك عبر Lovable و«تحليلات الاستخدام» بأمره في الجلسة. والقاعدة لم
+    // تُضعَّف: هي تلزم **كل ما بقي مركَّبًا**، ومكوّنٌ محذوفٌ لا تُحرَس
+    // رتبته لأنه لا رتبة له. وغيابهما يحرسه البند التالي صراحةً.
     const regions = PAGE.indexOf("nx-home-region");
     const stage = PAGE.indexOf("<SadeedStagePresence");
-    const anomalies = PAGE.indexOf("<SadeedAnomalyStrip");
     for (const [name, at] of [
       ["بطاقات المناطق", regions],
       ["SadeedStagePresence", stage],
-      ["SadeedAnomalyStrip", anomalies],
     ] as const) {
       expect(at, `${name} غير مركَّب على الرئيسية`).toBeGreaterThan(-1);
     }
-    // وحُذف فلا يعود بابًا خلفيًّا: لا استيراد ولا تركيب.
-    expect(PAGE, "عادت تحليلات الاستخدام إلى الرئيسية").not.toContain("SadeedUsageAnalytics");
     expect(regions).toBeLessThan(stage);
-    expect(stage).toBeLessThan(anomalies);
     expect(PAGE, "أداة `order-*` تفصل ترتيب العرض عن ترتيب DOM").not.toMatch(
       /(?:^|[\s"'`])(?:sm:|md:|lg:)?order-\d/m,
     );
+  });
+
+  it("الشذوذ والتحليلات والوكلاء النشطون محذوفة من الرئيسية بلا تركة", () => {
+    // أمر المالك ٢٠٢٦/٠٨/١٠: حذف أيقونة وبطاقات كشف الشذوذ وبطاقة الوكلاء
+    // النشطين من الصفحة الرئيسية. والحذف يُحرَس كما تُحرَس الإضافة: استيرادٌ
+    // باقٍ أو تركيبٌ باقٍ يعيدان السطح بأول لصقٍ لاحق — وقد عاد فعلًا مرةً
+    // بعد دمجٍ على `main` لم يُلحِظ الحذف.
+    // القياس على الكود **منزوعَ التعليقات**: توثيقُ الحذف نفسه يذكر الاسمين،
+    // فمطابقة النصّ الخام تُسقط الحارس على شرحٍ لا على سطح.
+    const code = PAGE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    expect(code).not.toContain("SadeedAnomalyStrip");
+    expect(code).not.toContain("SadeedUsageAnalytics");
+    expect(code).not.toMatch(/agents_active|الوكلاء النشطون/);
+    // الحذف حذفُ عرضٍ من الرئيسية لا إلغاءُ سطح: المكوّنان يبقيان حيَّين في
+    // صفحة تحليلات سَدِيد، وعدّاد الوكلاء في `/nx-ops` و`/nx-flow`.
+    const analyticsPage = read("src/routes/_authenticated/sadeed-analytics.tsx");
+    expect(analyticsPage).toContain("<SadeedAnomalyStrip");
+    expect(analyticsPage).toContain("<SadeedUsageAnalytics");
   });
 
   it("الوردة وأثر الفرجار محذوفان بلا تركة", () => {
