@@ -630,7 +630,6 @@ export function BlueprintPage() {
               )}
             </section>
             <SadeedUsageAnalytics />
-            <SadeedAnomalyStrip />
           </div>
         </section>
 
