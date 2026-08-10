@@ -457,26 +457,37 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
     expect(grid).toMatch(/minmax\(0,/);
   });
 
-  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد ← التحليلات والتنبيهات", () => {
+  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد ← التحليلات", () => {
     // العمود واحد دون `lg`، فالتكديس هو ترتيب DOM نفسه. لو رُتّبت الأعمدة
     // بـ`order` لانقلب الترتيب على الجوال بلا أن يسقط شيء.
     const regions = PAGE.indexOf("nx-home-region");
     const stage = PAGE.indexOf("<SadeedStagePresence");
     const analytics = PAGE.indexOf("<SadeedUsageAnalytics");
-    const anomalies = PAGE.indexOf("<SadeedAnomalyStrip");
     for (const [name, at] of [
       ["بطاقات المناطق", regions],
       ["SadeedStagePresence", stage],
       ["SadeedUsageAnalytics", analytics],
-      ["SadeedAnomalyStrip", anomalies],
     ] as const) {
       expect(at, `${name} غير مركَّب على الرئيسية`).toBeGreaterThan(-1);
     }
     expect(regions).toBeLessThan(stage);
     expect(stage).toBeLessThan(analytics);
-    expect(analytics).toBeLessThan(anomalies);
     expect(PAGE, "أداة `order-*` تفصل ترتيب العرض عن ترتيب DOM").not.toMatch(
       /(?:^|[\s"'`])(?:sm:|md:|lg:)?order-\d/m,
+    );
+  });
+
+  it("«كشف شذوذ المؤشرات» و«الوكلاء النشطون» محذوفان من الرئيسية بلا تركة", () => {
+    // أمر المالك ٢٠٢٦/٠٨/١٠: حذف أيقونة وبطاقات كشف الشذوذ وبطاقة الوكلاء
+    // النشطين من الصفحة الرئيسية. والحذف يُحرَس كما تُحرَس الإضافة: استيرادٌ
+    // باقٍ أو تركيبٌ باقٍ يعيدان السطح بأول لصقٍ لاحق — وقد عاد فعلًا مرةً
+    // بعد دمجٍ على `main` لم يُلحِظ الحذف.
+    expect(PAGE).not.toContain("SadeedAnomalyStrip");
+    expect(PAGE).not.toMatch(/agents_active|الوكلاء النشطون/);
+    // الحذف حذفُ عرضٍ من الرئيسية لا إلغاءُ سطح: المكوّن يبقى حيًّا في صفحة
+    // تحليلات سَدِيد، وعدّاد الوكلاء في `/nx-ops` و`/nx-flow`.
+    expect(read("src/routes/_authenticated/sadeed-analytics.tsx")).toContain(
+      "<SadeedAnomalyStrip",
     );
   });
 
