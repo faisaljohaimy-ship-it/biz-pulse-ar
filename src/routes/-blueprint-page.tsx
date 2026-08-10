@@ -79,7 +79,6 @@ import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, getRegion, type RegionId } from "@/lib/regions";
 import { SadeedStagePresence } from "@/components/sadeed/SadeedStagePresence";
 import { SadeedUsageAnalytics } from "@/components/sadeed/SadeedUsageAnalytics";
-import { SadeedAnomalyStrip } from "@/components/sadeed/SadeedAnomalyStrip";
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
 const STAGE_AR: Record<string, string> = {
@@ -570,12 +569,13 @@ export function BlueprintPage() {
             <SadeedStagePresence />
           </section>
 
-          {/* ── يسارًا (end) · تحليلات سَدِيد ثم تنبيهاته ─────────────────
-              الاثنان يقرآن لقطة محاكاة حتمية موسومة بشارتها الخاصة
-              (`SimBadge`)، فلا يُنسب إليهما قياس حيّ. */}
+          {/* ── يسارًا (end) · تحليلات سَدِيد ─────────────────────────────
+              تقرأ لقطة محاكاة حتمية موسومة بشارتها الخاصة (`SimBadge`)، فلا
+              يُنسب إليها قياس حيّ. أيقونة وبطاقات «كشف شذوذ المؤشرات» حُذفت
+              من الرئيسية بأمر المالك ٢٠٢٦/٠٨/١٠ — سطحها الباقي في
+              `/sadeed-analytics` وحدها. */}
           <div className="nx-bp-stage flex flex-col gap-4" style={{ ["--nx-bp-i" as string]: 3 }}>
             <SadeedUsageAnalytics />
-            <SadeedAnomalyStrip />
           </div>
         </section>
 
