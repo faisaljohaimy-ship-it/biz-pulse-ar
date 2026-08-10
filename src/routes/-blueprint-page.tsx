@@ -570,10 +570,65 @@ export function BlueprintPage() {
             <SadeedStagePresence />
           </section>
 
-          {/* ── يسارًا (end) · تحليلات سَدِيد ثم تنبيهاته ─────────────────
-              الاثنان يقرآن لقطة محاكاة حتمية موسومة بشارتها الخاصة
-              (`SimBadge`)، فلا يُنسب إليهما قياس حيّ. */}
+          {/* ── يسارًا (end) · توصيات سَدِيد ثم تحليلاته وتنبيهاته ───────
+              التوصيات انتقلت إلى عمود الصدر الأيسر (أمر المالك ٢٠٢٦/٠٨/١٠)
+              لتجاور بطاقة سَدِيد مباشرة. كل توصية: عنوان · سبب · إجراء
+              مقترح، ومصدرها `getRiskBoard` — المسار الحيّ يبنيها من
+              المعالجة المسجَّلة في صف المخاطرة نفسه ولا يؤلّف إجراءً،
+              والبديل محاكاة مرجعية موسومة بشارتها (`SimBadge`). */}
           <div className="nx-bp-stage flex flex-col gap-4" style={{ ["--nx-bp-i" as string]: 3 }}>
+            <section aria-labelledby="nx-rec-heading">
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="nx-bp-h2" id="nx-rec-heading">
+                  {ar ? `توصيات ${PRODUCT_BRAND.assistantName}` : `${PRODUCT_BRAND.en.name} advisories`}
+                </h2>
+                {riskSimulation && <SimChip ar={ar} />}
+              </div>
+              {recommendations.length ? (
+                <ul className="mt-3 grid grid-cols-1 gap-3">
+                  {recommendations.map((rec) => {
+                    const tone = STAT_TONES[SEVERITY_TONE[rec.severity]];
+                    const ToneIcon = tone.icon;
+                    return (
+                      /* لا `nx-bp-card` هنا عمدًا: زجاجها قاعدةٌ **خارج الطبقات**
+                         فتعلو أدوات Tailwind كلّها مهما تأخّرت (قاعدة الطبقات في
+                         CSS: غير المُطبَّق يسبق المُطبَّق)، فتمحو خلفية النغمة
+                         وحدّها — ويبقى «خطر» و«تحذير» بلا فرق في الخلفية والحدّ.
+                         الأساس هنا `.nx-dash-rec` ولا يكتب `background` ولا
+                         `border-color`، فيبقى الفرق كاملًا كما يشترطه العقد. */
+                      <li key={rec.id} className={`nx-dash-rec rounded-2xl border p-4 ${tone.card}`}>
+                        <div className="flex items-start gap-2">
+                          {ToneIcon && (
+                            <ToneIcon
+                              aria-hidden
+                              className={`mt-0.5 h-4 w-4 shrink-0 ${tone.iconCls}`}
+                            />
+                          )}
+                          <h3 className="nx-dash-rec-title">{rec.title_ar}</h3>
+                          {tone.badge && (
+                            <span className={`nx-dash-chip shrink-0 border ${tone.badgeCls}`}>
+                              {tone.badge}
+                            </span>
+                          )}
+                        </div>
+                        <p className="nx-dash-rec-line">
+                          <b>{ar ? "السبب: " : "Why: "}</b>
+                          {rec.why_ar}
+                        </p>
+                        <p className="nx-dash-rec-line">
+                          <b>{ar ? "الإجراء المقترح: " : "Proposed action: "}</b>
+                          {rec.action_ar}
+                        </p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="nx-dash-empty mt-3">
+                  {ar ? "لا توصيات قائمة الآن." : "No advisories right now."}
+                </p>
+              )}
+            </section>
             <SadeedUsageAnalytics />
             <SadeedAnomalyStrip />
           </div>
