@@ -482,8 +482,11 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
     // النشطين من الصفحة الرئيسية. والحذف يُحرَس كما تُحرَس الإضافة: استيرادٌ
     // باقٍ أو تركيبٌ باقٍ يعيدان السطح بأول لصقٍ لاحق — وقد عاد فعلًا مرةً
     // بعد دمجٍ على `main` لم يُلحِظ الحذف.
-    expect(PAGE).not.toContain("SadeedAnomalyStrip");
-    expect(PAGE).not.toMatch(/agents_active|الوكلاء النشطون/);
+    // القياس على الكود **منزوعَ التعليقات**: توثيقُ الحذف نفسه يذكر الاسمين،
+    // فمطابقة النصّ الخام تُسقط الحارس على شرحٍ لا على سطح.
+    const code = PAGE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    expect(code).not.toContain("SadeedAnomalyStrip");
+    expect(code).not.toMatch(/agents_active|الوكلاء النشطون/);
     // الحذف حذفُ عرضٍ من الرئيسية لا إلغاءُ سطح: المكوّن يبقى حيًّا في صفحة
     // تحليلات سَدِيد، وعدّاد الوكلاء في `/nx-ops` و`/nx-flow`.
     expect(read("src/routes/_authenticated/sadeed-analytics.tsx")).toContain(
