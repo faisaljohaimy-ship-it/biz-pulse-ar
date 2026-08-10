@@ -187,7 +187,9 @@ describe("المُخطَّط — المادة ٢٧: الصدق العددي", ()
     const glyph = PAGE.match(/ratio=\{([^}]*)\}/g) ?? [];
     expect(glyph.length, "لا مستهلك لنسبة الشكل — تغيّر الحقل فبطل الحارس").toBeGreaterThan(0);
     for (const r of glyph) {
-      expect(r, `نسبة لا تُفرِّق الغياب عن الصفر: ${r}`).toMatch(/undefined \? null|=== null \? null/);
+      expect(r, `نسبة لا تُفرِّق الغياب عن الصفر: ${r}`).toMatch(
+        /undefined \? null|=== null \? null/,
+      );
     }
     // والرقم المعروض من المتغيّر نفسه — وإلّا انفصل الشكل عن رقمه.
     expect(PAGE).toMatch(/ratio=\{pct === undefined \? null : pct \/ 100\}/);
