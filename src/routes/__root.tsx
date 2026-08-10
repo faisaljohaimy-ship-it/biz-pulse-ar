@@ -215,13 +215,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       // `check-performance-budget.mjs` لأن فحص الوسائط يقتصر على الصوت
       // والفيديو — فمرّت بلا أن يلحظها أحد.
       //
-      // و`brand-icon.png` (٧٨ كيلوبايت) هو **علامة المنتج** أصلًا: يستعمله
+      // و`sadeed-icon.png` هو **علامة المنتج** الرقمية العصرية: يستعمله
       // `app-shell` في الترويسة والشريط الجانبي، وهو `logo` في بيانات
       // schema.org أدناه. أي أن التصحيح يوحّد الهوية ويخفّف معًا: أيقونة
       // التبويب كانت صورةَ المساعد لا علامةَ المنتج.
-      { rel: "icon", type: "image/png", href: "/brand-icon.png" },
-      { rel: "apple-touch-icon", href: "/brand-icon.png" },
-      { rel: "shortcut icon", type: "image/png", href: "/brand-icon.png" },
+      { rel: "icon", type: "image/png", href: "/sadeed-icon.png" },
+      { rel: "apple-touch-icon", href: "/sadeed-icon.png" },
+      { rel: "shortcut icon", type: "image/png", href: "/favicon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
     ],
     scripts: [
@@ -250,7 +250,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: COMPANY_NAME,
           legalName: COMPANY_NAME,
           url: DOMAIN_URL,
-          logo: `${DOMAIN_URL}/brand-icon.png`,
+          logo: `${DOMAIN_URL}/sadeed-icon.png`,
           description:
             "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation.",
           areaServed: ["SA", "AE", "KW", "QA", "BH", "OM"],
