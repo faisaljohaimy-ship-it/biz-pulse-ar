@@ -457,24 +457,24 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
     expect(grid).toMatch(/minmax\(0,/);
   });
 
-  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد ← التحليلات والتنبيهات", () => {
+  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد ← التحليلات — ولا شريط شذوذ", () => {
     // العمود واحد دون `lg`، فالتكديس هو ترتيب DOM نفسه. لو رُتّبت الأعمدة
     // بـ`order` لانقلب الترتيب على الجوال بلا أن يسقط شيء.
     const regions = PAGE.indexOf("nx-home-region");
     const stage = PAGE.indexOf("<SadeedStagePresence");
     const analytics = PAGE.indexOf("<SadeedUsageAnalytics");
-    const anomalies = PAGE.indexOf("<SadeedAnomalyStrip");
     for (const [name, at] of [
       ["بطاقات المناطق", regions],
       ["SadeedStagePresence", stage],
       ["SadeedUsageAnalytics", analytics],
-      ["SadeedAnomalyStrip", anomalies],
     ] as const) {
       expect(at, `${name} غير مركَّب على الرئيسية`).toBeGreaterThan(-1);
     }
     expect(regions).toBeLessThan(stage);
     expect(stage).toBeLessThan(analytics);
-    expect(analytics).toBeLessThan(anomalies);
+    // «كشف شذوذ المؤشرات» حُذف من الرئيسية — يبقى سطحًا في
+    // /sadeed-analytics وحدها، ولا يعود لأول لصقٍ لاحق.
+    expect(PAGE).not.toContain("SadeedAnomalyStrip");
     expect(PAGE, "أداة `order-*` تفصل ترتيب العرض عن ترتيب DOM").not.toMatch(
       /(?:^|[\s"'`])(?:sm:|md:|lg:)?order-\d/m,
     );
