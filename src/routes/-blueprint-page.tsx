@@ -47,13 +47,18 @@
  * فتنطوي حالة السكينة ومعها الروابط الخمسة دفعةً واحدة. أي أن الطريق
  * الوحيد إلى وحدات النظام كان معلَّقًا على وجود عطلٍ في البيانات.
  *
- * فالمداخل الآن ثلاث طبقات مستقلّة، لا تسقط إحداها بسقوط أخرى:
+ * والمداخل الآن **طبقتان** بعد أن كانت ثلاثًا:
  * ① **بطاقات المناطق** ← قمرة كل منطقة (`/nx-cockpit?region=…`).
- * ② **بطاقات المؤشرات** ← الوحدة التي يُتصرَّف فيها بالرقم، واسمها معروض
- *    في البطاقة نفسها من `lib/nav/modules` — فالرابط **يُرى رابطًا**، ولا
- *    يُترك سطحًا صامتًا يُكتشف بالنقر.
- * ③ **تذييل الصفحة** ← ثمانية مداخل ثابتة غير مشروطة ببيانات، أوّلها
+ * ② **تذييل الصفحة** ← ثمانية مداخل ثابتة غير مشروطة ببيانات، أوّلها
  *    «خريطة النظام» (`/guide`) التي تعدّ الوحدات كلّها (المادة ٢١).
+ *
+ * **وسقطت الطبقة الوسطى بحذف «لوحة المؤشرات التنفيذية» (أمر المالك
+ * ٢٠٢٦/٠٨/١٠).** كانت بطاقاتها الستّ روابطَ تحمل اسم وجهتها مكتوبًا، وهي
+ * المدخل الوحيد من الرئيسية إلى `/sec/kpi` و`/sec/incidents` و
+ * `/urgent-ops`. والثلاثة ليست في التذييل، فلم يبقَ إليها طريقٌ من هذه
+ * الصفحة — تُبلَغ من خريطة النظام والشريط الجانبي في بقيّة القشرة. وهذا
+ * **أثرٌ مقصودٌ للحذف يُسجَّل ولا يُعوَّض من تلقاء النفس**: تعويضه بإضافة
+ * روابط لم تُطلَب توسيعٌ للأمر لا تنفيذٌ له.
  *
  * وأسماء الوجهات وأيقوناتها تُقرأ من `lib/nav/modules` وحده (المادة 13.5)،
  * فلا تنحرف تسمية وجهة هنا عن تسميتها في الشريط الجانبي وخريطة النظام.
@@ -65,7 +70,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { ArrowRight, Compass, FlaskConical } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { moduleByRoute } from "@/lib/nav/modules";
-import { SCREEN_NAMES } from "@/lib/nav/screen-names";
 import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { PRODUCT_BRAND } from "@/lib/domain";
 import { PulseGlyph } from "@/components/pulse/PulseGlyph";
@@ -155,40 +159,6 @@ const FOOTER_LINKS: ReadonlyArray<{
   { to: "/sadeed" },
 ];
 
-/**
- * رقاقة الوجهة — ما يجعل البطاقة **تُقرأ رابطًا قبل النقر**.
- *
- * كانت بطاقات المؤشرات أسطحًا صامتة: لا نصّ يقول إلى أين تذهب ولا سهم
- * يقول إنها تذهب أصلًا. اسم الوجهة من `lib/nav/modules`، فهو نفسه المعروض
- * في الشريط الجانبي وخريطة النظام.
- *
- * `mt-auto` لأن `.nx-dash-card` عمود مرن بارتفاع أدنى: الرقاقة تُدفع إلى
- * القاع فتصطفّ الرقاقات في صفٍّ واحد مهما تفاوتت أطوال الشروح فوقها.
- *
- * **المصدر `SCREEN_NAMES` لا `moduleByRoute`، وهذا ما صحّحه القياس:**
- * `moduleByRoute` تعرف الوحدات الكانونية وحدها، و`/sec/kpi` و`/sec/incidents`
- * صفحتان داخل وحدة `/sec` لا وحدتان — فرجعت `undefined` وانطوت الرقاقة،
- * فبقيت بطاقتان من ستّ بلا نصّ وجهة على المتصفح. و`SCREEN_NAMES` تدمج
- * `MODULES` مع صفحات خارجها وتجعل السجلّ غالبًا عند التعارض، فهي سلطة
- * التسمية الواحدة (المادة 13.5) — ومنها يقرأ الشريط الجانبي لهاتين بالضبط.
- *
- * وتُقرأ **خريطةً** لا عبر `screenNameAr`: تلك ترمي على مسار غير معروف
- * عمدًا — وهو صواب في الشريط الجانبي حيث الاسم الغائب عطلٌ يجب أن يسقط
- * البناء، وخطأ هنا حيث يُسقط الرئيسية كلّها لأجل رقاقة. فالغائب تُطوى
- * رقاقته ويبقى الرابط عاملًا.
- */
-function DestinationChip({ to, ar }: { to: string; ar: boolean }) {
-  const entry = SCREEN_NAMES[to];
-  if (!entry) return null;
-  const name = ar ? entry.ar : entry.en;
-  return (
-    <span className="mt-auto flex items-center gap-1.5 pt-2 text-[12px] font-bold text-[color:var(--ink-2)]">
-      <ArrowRight aria-hidden data-flip-rtl className="h-3.5 w-3.5 shrink-0" />
-      {ar ? `افتح ${name}` : `Open ${name}`}
-    </span>
-  );
-}
-
 /** شارة المحاكاة — نصّها ومظهرها واحد أينما ظهرت على هذا السطح. */
 function SimChip({ ar }: { ar: boolean }) {
   return (
@@ -237,42 +207,11 @@ export function BlueprintPage() {
 
   const counters = data?.counters;
   const notMeasured = ar ? "لم يُقَس" : "not measured";
-  const simulation = data?.simulation ?? true;
 
-  /** نسختان متتاليتان لشريط يلفّ بلا قطع — الثانية زينة محضة. */
-  const pipeline = data?.pipeline ?? [];
-  const ticker = pipeline.length ? [...pipeline, ...pipeline] : [];
-
-  /* حُذفت لوحات المؤشّرات الثلاث من الرئيسية بأمر المالك: «الوكلاء
-     النشطون» ثم «بانتظار الاعتماد» و«منجز اليوم» (٢٠٢٦/٠٨/١٠). ومعها
-     مولّد النسبة `gauge` ومكوّن `InstrumentPanel` — بقاؤهما بلا مستهلك
-     يُغري بإعادة التركيب. والعدّادات نفسها باقية في العقد، تقرؤها
-     `/nx-ops` و`/nx-flow`. */
-
-  /* ── شبكة بطاقات الداشبورد ────────────────────────────────────────────
-     مؤشرات تنفيذية للأمن الصناعي عبر المناطق الأربع. كل قيمة تأتي من
-     `getCommandCenterState` — عدّاداتها أو صفوف مناطقها — وما لم يصل يُقرأ
-     «لم يُقَس» لا صفرًا (المادة ٢٧).
-
-     التمييز المقصود: صفرٌ **مقيس** (وصلت الصفوف وعُدّت فكانت صفرًا) يُعرض
-     رقمًا؛ وغيابُ الصفوف أصلًا يُعرض نصًّا. لذلك الشرط على وجود الصفوف لا
-     على قيمة المجموع. الاستثناء الوحيد الامتثال: صفرُه من الخادم يعني «لا
-     قراءة» — وهي القاعدة المكتوبة أصلًا في هذا الملف أعلاه. */
-  const regionRows = data?.regions ?? [];
-  // `!== null` لا `> 0`: الصفر قياسٌ (امتثال ٠٪) لا غياب. والمنطقة المنهارة هي بالضبط
-  // ما كانت البطاقة تخفيه: تُرشَّح خارج «المقيس» فلا تصير «أدنى منطقة» أبدًا.
-  const measuredCompliance = regionRows.filter(
-    (r): r is (typeof regionRows)[number] & { compliance_pct: number } => r.compliance_pct !== null,
-  );
-  const rankCompliance = (dir: 1 | -1) =>
-    measuredCompliance.length
-      ? measuredCompliance.reduce((best, row) =>
-          (row.compliance_pct - best.compliance_pct) * dir > 0 ? row : best,
-        )
-      : null;
-  const topRegion = rankCompliance(1);
-  const lowRegion = rankCompliance(-1);
   const regionName = (id: RegionId) => (ar ? getRegion(id).shortAr : getRegion(id).shortEn);
+
+  /** صفوف المناطق — تُقرأ في بطاقات المناطق وحالتها. */
+  const regionRows = data?.regions ?? [];
 
   /**
    * حالة المنطقة كما تُعرض: نغمة `STAT_TONES` + كلمتها.
@@ -289,84 +228,17 @@ export function BlueprintPage() {
     const tone = STAT_TONES[REGION_SEVERITY_TONE[row.severity]];
     return { tone, label: tone.badge ?? (ar ? "بلا تصنيف" : "unclassified") };
   };
+  const simulation = data?.simulation ?? true;
 
-  /**
-   * لكل بطاقة وجهة — **الوحدة التي يُتصرَّف فيها بالرقم**، لا وجهة عامة
-   * تُرضي عدّادًا. البطاقة كانت `<div>` صامتًا؛ صارت رابطًا يحمل اسم وجهته
-   * مكتوبًا (`DestinationChip`)، فالمداخل لا تبقى معلَّقة على شريط الشذوذ
-   * وحده — وهو مشروط بوجود انحراف أصلًا.
-   *
-   * وجهتان مكرّرتان عمدًا ولا تُفرَّقان بالتكلّف: «العاجل» و«المساندة»
-   * عدّادان لسطحٍ واحد (`/urgent-ops` — الأعمال العاجلة واتفاقيات الخدمة)،
-   * وترتيب المناطق أعلى وأدنى مقارنةٌ عبر المناطق فوجهتها مركز القيادة
-   * الموحّد. وإرسال «أعلى منطقة» إلى قمرة تلك المنطقة كان سيكرّر ما تفعله
-   * بطاقات المناطق فوقها بالضبط، ويسقط أصلًا حين لا منطقة مقيسة.
-   */
-  const dashCards: Array<{
-    key: string;
-    to: string;
-    label: string;
-    value: number | null;
-    suffix?: string;
-    caption: string;
-  }> = [
-    {
-      key: "compliance",
-      to: "/sec/kpi",
-      label: ar ? "متوسط الامتثال" : "Average compliance",
-      value: counters && counters.compliance_avg > 0 ? counters.compliance_avg : null,
-      suffix: "%",
-      caption: ar ? "متوسط المناطق الأربع مجتمعة" : "Mean across the four regions",
-    },
-    {
-      key: "incidents",
-      to: "/sec/incidents",
-      label: ar ? "البلاغات المفتوحة" : "Open incidents",
-      // العدّاد الكلّي لا مجموعُ صفوف المناطق: توزيع البلاغات على المناطق
-      // غير مقيس (لا عمود منطقة على `sec_incidents`) فصار `null` في كل صفّ،
-      // والجملةُ وحدها مقيسة. جمعُ الصفوف هنا كان يُظهر العدد كأنه موزَّع.
-      value: counters?.incidents_open ?? null,
-      caption: ar ? "بلاغات لم تُغلق في المناطق كلّها" : "Incidents not yet closed, all regions",
-    },
-    {
-      key: "urgent",
-      to: "/urgent-ops",
-      label: ar ? "المهامّ العاجلة" : "Urgent tasks",
-      value: counters?.urgent_open ?? null,
-      caption: ar ? "مهامّ داخل مهلة استجابة سارية" : "Tasks inside a live response window",
-    },
-    {
-      key: "support",
-      to: "/urgent-ops",
-      label: ar ? "طلبات المساندة" : "Support requests",
-      value: counters?.support_processing ?? null,
-      caption: ar ? "طلبات قيد المعالجة الآن" : "Requests in processing right now",
-    },
-    {
-      key: "top-region",
-      to: "/mission-control",
-      label: ar ? "أعلى منطقة امتثالًا" : "Highest compliance",
-      value: topRegion?.compliance_pct ?? null,
-      suffix: "%",
-      caption: topRegion
-        ? regionName(topRegion.region_id)
-        : ar
-          ? "لا منطقة مقيسة بعد"
-          : "No measured region yet",
-    },
-    {
-      key: "low-region",
-      to: "/mission-control",
-      label: ar ? "أدنى منطقة امتثالًا" : "Lowest compliance",
-      value: lowRegion?.compliance_pct ?? null,
-      suffix: "%",
-      caption: lowRegion
-        ? regionName(lowRegion.region_id)
-        : ar
-          ? "لا منطقة مقيسة بعد"
-          : "No measured region yet",
-    },
-  ];
+  /** نسختان متتاليتان لشريط يلفّ بلا قطع — الثانية زينة محضة. */
+  const pipeline = data?.pipeline ?? [];
+  const ticker = pipeline.length ? [...pipeline, ...pipeline] : [];
+
+  /* حُذفت لوحات المؤشّرات الثلاث من الرئيسية بأمر المالك: «الوكلاء
+     النشطون» ثم «بانتظار الاعتماد» و«منجز اليوم» (٢٠٢٦/٠٨/١٠). ومعها
+     مولّد النسبة `gauge` ومكوّن `InstrumentPanel` — بقاؤهما بلا مستهلك
+     يُغري بإعادة التركيب. والعدّادات نفسها باقية في العقد، تقرؤها
+     `/nx-ops` و`/nx-flow`. */
 
   /* ── المخاطر (البند ١٢ب · «الاثنان معًا») ──────────────────────────────
      البطاقات المجمّعة والجدول يقرآن **الصفوف نفسها**: العدّ مشتقٌّ من
@@ -623,53 +495,6 @@ export function BlueprintPage() {
               </p>
             )}
           </section>
-        </section>
-
-        {/* ════ ١ · شبكة بطاقات الداشبورد ════════════════════════════════
-            عودة لوحة المؤشرات إلى الرئيسية (قرار المالك ٢٠٢٦/٠٨/٠٩ · البند ٩).
-            القيم من `getCommandCenterState` وحدها، والغياب نصّ لا صفر. */}
-        <section
-          className="nx-bp-stage mt-8"
-          style={{ ["--nx-bp-i" as string]: 5 }}
-          aria-labelledby="nx-dash-heading"
-        >
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="nx-bp-h2" id="nx-dash-heading">
-              {ar ? "لوحة المؤشرات التنفيذية" : "Executive indicators"}
-            </h2>
-            {simulation && <SimChip ar={ar} />}
-          </div>
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {dashCards.map((card) => (
-              /* `<Link>` لا `<div>` مع `onClick`: العنصر الدلالي وحده يعطي
-                 التبويب والإدخال و«فتح في لسان جديد» بلا سطر جافاسكربت.
-                 والأرضية ١٠٤px من `.nx-dash-card` — فوق ٤٤px بفارق واسع.
-
-                 وبلا `aria-label`: الاسم المتاح يُبنى من محتوى البطاقة نفسه
-                 — العنوان فالرقم فالشرح فاسم الوجهة. واسمٌ مكتوب هنا كان
-                 سيحجب الرقم والوجهة عن القارئات، ويخالف «التسمية تحوي النصّ
-                 المرئي» (WCAG 2.2 §2.5.3). */
-              <Link
-                key={card.key}
-                to={card.to}
-                className="nx-bp-card nx-dash-card rounded-2xl p-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
-              >
-                <span className="nx-dash-label">{card.label}</span>
-                <span className="nx-dash-value block text-[color:var(--ink)]">
-                  {card.value === null ? (
-                    <span className="nx-dash-absent">{notMeasured}</span>
-                  ) : (
-                    <span className="tabular-nums">
-                      {card.value}
-                      {card.suffix ?? ""}
-                    </span>
-                  )}
-                </span>
-                <span className="nx-dash-caption block">{card.caption}</span>
-                <DestinationChip to={card.to} ar={ar} />
-              </Link>
-            ))}
-          </div>
         </section>
 
         {/* ════ ٣ · المخاطر — بطاقات مجمّعة + جدول تفصيلي ═════════════════
