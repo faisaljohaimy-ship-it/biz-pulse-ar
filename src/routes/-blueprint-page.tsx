@@ -486,7 +486,7 @@ export function BlueprintPage() {
                           مقيسة. الإيقاع يتفاوت بالترتيب فلا تخفق الأربع معًا. */}
                       <PulseGlyph
                         accent={REGION_ACCENT_HEX[region.id]}
-                        beatSeconds={0.86}
+                        beatSeconds={0.86 + i * 0.11}
                         size={32}
                         ratio={pct === undefined ? null : pct / 100}
                       />
