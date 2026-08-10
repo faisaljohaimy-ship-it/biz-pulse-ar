@@ -157,7 +157,9 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             <h2
               id={headingId}
               // النص عريض وعالي التباين في الوضعين — لا رمادي باهت.
-              className="px-3 pb-0.5 text-[11px] font-bold uppercase tracking-[0.16em] text-nx-pearl/72"
+              // ١٢px أرضية القراءة: هذه عناوين مجموعات التنقّل، وهي ما يقسم
+              // القائمة كلّها — أصغر منها لا يُقرأ ولو كان عريضًا.
+              className="px-3 pb-0.5 text-[12px] font-bold uppercase tracking-[0.16em] text-nx-pearl/72"
               dir="rtl"
             >
               {group.labelAr}

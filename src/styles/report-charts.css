@@ -1,0 +1,373 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   طقم رسوم التقارير — طبقة الأنماط
+   src/components/reports/charts/*
+
+   هذه الطبقة تُكتب **مرّة واحدة** ولا يُكتب لون في أي ملف tsx: كل ما ترسمه
+   الرسوم يقرأ `currentColor`، و`color` وحده هو ما تحمله الأصناف هنا. هذا هو
+   ما يجعل الوضعين الداكن والفاتح صحيحين بلا شرط ثيم واحد في الترميز
+   (المادتان ٣٢–٣٤).
+
+   ثلاث قواعد تحكم الملف:
+   ① لا لون خام إطلاقًا — لا hex ولا rgb() ولا hsl() ولا اسم لون. المصدر
+     `--ink` · `--surface` · `--hairline` · `--tone-*` وما يُشتقّ منها
+     بـ`color-mix`. حارس ذلك `report-charts.contract.test.ts`.
+   ② القيم النهائية لا تُكتب في `style` المضمّن داخل المكوّنات؛ المكوّن
+     يمرّر **صنفًا** والصنف يمرّر `color`، فيبقى كل شيء تحت هذه الطبقة.
+   ③ الطقم للطباعة قبل الشاشة: `@media print` و`.rpt-static` يُلغيان كل
+     حركة وانتقال، فلقطة الـPDF تُلتقط على إطار مستقرّ لا على منتصف
+     انتقال.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.rpt-chart {
+  /* ── الرموز المحلّية: كلها مشتقّة، ولا واحدة منها لون خام ───────────── */
+  --rpt-ink: var(--ink);
+  --rpt-ink-2: var(--ink-2);
+  --rpt-ink-3: var(--ink-3);
+  --rpt-surface: var(--surface);
+  --rpt-hairline: var(--hairline);
+  --rpt-hairline-soft: var(--hairline-soft);
+  --rpt-grid: color-mix(in srgb, var(--ink) 13%, transparent);
+  --rpt-chip: var(--chip);
+
+  /* لوحة السلاسل — ست خانات.
+     الدلالة لا تركب على اللون هنا: خانات السلاسل **تصنيفية** لا حالة،
+     ولذلك تُميَّز أيضًا بنمط تقطيع الخط (`--rpt-dash-*` في المكوّن) حتى
+     تُقرأ على طابعة رمادية لا تعرف الأزرق من السماوي. */
+  --rpt-series-1: var(--tone-cyan);
+  --rpt-series-2: var(--tone-blue);
+  --rpt-series-3: var(--tone-violet);
+  --rpt-series-4: color-mix(in srgb, var(--tone-emerald) 82%, var(--ink));
+  --rpt-series-5: color-mix(in srgb, var(--tone-blue) 58%, var(--ink));
+  --rpt-series-6: color-mix(in srgb, var(--tone-cyan) 42%, var(--ink));
+
+  /* النغمات الدلالية — «خطر» أحمر و«تحذير» كهرماني، لا يُوحَّدان.
+     واللون وحده لا يحمل الفرق: الشكل يحمله معه (مثمّن · مثلث · دائرة)،
+     والكلمة تحمله ثالثةً. (WCAG 2.2 §1.4.1) */
+  --rpt-danger: var(--tone-rose);
+  --rpt-warning: var(--tone-amber);
+  --rpt-success: var(--tone-emerald);
+  --rpt-neutral: var(--ink-3);
+
+  direction: rtl;
+  color: var(--rpt-ink);
+  font-family: "IBM Plex Sans Arabic", "Tajawal", "Cairo", system-ui, sans-serif;
+  /* الأرقام تُصفّ عموديًّا في الجداول والمحاور والوسائل. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--nx-space-12, 12px);
+}
+
+/* ── الترويسة ───────────────────────────────────────────────────────────── */
+.rpt-chart .rpt-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rpt-chart .rpt-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--rpt-ink);
+}
+.rpt-chart .rpt-caption {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--rpt-ink-3);
+}
+
+/* ── مساحة الرسم ────────────────────────────────────────────────────────── */
+.rpt-chart .rpt-plot {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+/* اللبّ الوسطي للحلقي — نصّ HTML لا نصّ SVG: النصّ العربي داخل <text>
+   لا يلتفّ ولا يُقصّ بأمان، وطبقة HTML تطبع بالخطّ نفسه. */
+.rpt-chart .rpt-core {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+  text-align: center;
+}
+.rpt-chart .rpt-core-value {
+  font-size: 1.375rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--rpt-ink);
+}
+.rpt-chart .rpt-core-label {
+  font-size: 0.6875rem;
+  color: var(--rpt-ink-3);
+}
+
+/* ── الحالة الفارغة: «لم يُقَس» ─────────────────────────────────────────── */
+.rpt-chart .rpt-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 120px;
+  border: 1px dashed var(--rpt-hairline);
+  border-radius: var(--nx-radius-12, 12px);
+  background: var(--rpt-chip);
+  color: var(--rpt-ink-3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* ── الوسيلة (legend) ───────────────────────────────────────────────────── */
+.rpt-chart .rpt-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+}
+.rpt-chart .rpt-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--rpt-ink-2);
+}
+.rpt-chart .rpt-legend-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rpt-chart .rpt-legend-value {
+  font-weight: 700;
+  color: var(--rpt-ink);
+}
+.rpt-chart .rpt-legend-unmeasured {
+  font-weight: 600;
+  color: var(--rpt-ink-3);
+}
+
+/* عيّنة السلسلة: خطّ بنمط التقطيع نفسه المستعمل في الرسم — فالوسيلة تصف
+   ما يُرى فعلًا لا مجرّد لون. */
+.rpt-chart .rpt-swatch {
+  flex: none;
+  display: block;
+  overflow: visible;
+}
+
+/* ── الحاشية: تصريح ما لم يُقَس (المادة ٢٧) ─────────────────────────────── */
+.rpt-chart .rpt-note {
+  margin: 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--rpt-hairline-soft);
+  font-size: 0.6875rem;
+  line-height: 1.7;
+  color: var(--rpt-ink-3);
+}
+
+/* ── شارة نغمة المقياس ──────────────────────────────────────────────────── */
+.rpt-chart .rpt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: var(--rpt-chip);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+/* الشارة تلوّن نفسها من نغمتها، والحدّ يقرأ `currentColor` — فلا لون ثانٍ. */
+.rpt-chart .rpt-badge.rpt-tone-danger {
+  color: var(--rpt-danger);
+}
+.rpt-chart .rpt-badge.rpt-tone-warning {
+  color: var(--rpt-warning);
+}
+.rpt-chart .rpt-badge.rpt-tone-success {
+  color: var(--rpt-success);
+}
+.rpt-chart .rpt-badge.rpt-tone-neutral {
+  color: var(--rpt-neutral);
+}
+
+/* ── خانات السلاسل: الصنف يحمل `color` وحده ─────────────────────────────── */
+.rpt-chart .rpt-series-1 {
+  color: var(--rpt-series-1);
+}
+.rpt-chart .rpt-series-2 {
+  color: var(--rpt-series-2);
+}
+.rpt-chart .rpt-series-3 {
+  color: var(--rpt-series-3);
+}
+.rpt-chart .rpt-series-4 {
+  color: var(--rpt-series-4);
+}
+.rpt-chart .rpt-series-5 {
+  color: var(--rpt-series-5);
+}
+.rpt-chart .rpt-series-6 {
+  color: var(--rpt-series-6);
+}
+
+.rpt-chart .rpt-tone-danger {
+  color: var(--rpt-danger);
+}
+.rpt-chart .rpt-tone-warning {
+  color: var(--rpt-warning);
+}
+.rpt-chart .rpt-tone-success {
+  color: var(--rpt-success);
+}
+.rpt-chart .rpt-tone-neutral {
+  color: var(--rpt-neutral);
+}
+
+/* ── تطويع recharts على طبقة الرموز ──────────────────────────────────────
+   قواعد CSS تغلب سمات العرض (presentation attributes)، فما يكتبه recharts
+   افتراضيًّا من ألوان خام (وأشهرها `stroke="#fff"` على قطاعات الفطيرة)
+   يُمحى هنا حتمًا لا احتمالًا. */
+.rpt-chart .recharts-cartesian-grid line {
+  stroke: var(--rpt-grid);
+}
+.rpt-chart .recharts-cartesian-axis-line,
+.rpt-chart .recharts-cartesian-axis-tick-line {
+  stroke: var(--rpt-hairline);
+}
+.rpt-chart .recharts-cartesian-axis-tick text,
+.rpt-chart .recharts-label,
+.rpt-chart .recharts-text {
+  fill: var(--rpt-ink-2);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.rpt-chart .recharts-sector {
+  stroke: none;
+}
+.rpt-chart .recharts-wrapper {
+  direction: rtl;
+}
+/* التلميح شاشةٌ فقط — يُحذف أصلًا في وضع الالتقاط، وهذا احتياط ثانٍ. */
+.rpt-chart .rpt-tip {
+  border: 1px solid var(--rpt-hairline);
+  border-radius: var(--nx-radius-8, 8px);
+  background: var(--rpt-surface);
+  box-shadow: var(--nx-shadow-e1);
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  color: var(--rpt-ink);
+}
+.rpt-chart .rpt-tip-label {
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.rpt-chart .rpt-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  line-height: 1.8;
+}
+
+/* ── المقياس (gauge) — قوسان: وجه الجهاز ثم القياس ───────────────────────
+   الوجه يُرسم دائمًا لأنه هيكل الأداة؛ **قوس القيمة لا يُرسم إذا لم يُقَس**
+   (المادة ٢٧، وهي القاعدة نفسها في InstrumentPanels). */
+.rpt-chart .rpt-gauge {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.rpt-chart .rpt-gauge > svg {
+  display: block;
+  max-width: 100%;
+}
+/* القراءة تجلس داخل قوس نصف الدائرة، لا تحته: المساحة تحت القوس فارغة
+   بحكم الشكل، وتركها فارغة يهدر ثلث ارتفاع البطاقة في تقرير مطبوع. */
+.rpt-chart .rpt-gauge-read {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 2%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  text-align: center;
+}
+
+.rpt-chart .rpt-gauge-track {
+  stroke: var(--rpt-grid);
+}
+.rpt-chart .rpt-gauge-value {
+  stroke: currentColor;
+}
+.rpt-chart .rpt-gauge-tick {
+  stroke: var(--rpt-hairline);
+}
+
+/* ── البديل النصّي: مخفيّ بصريًّا، حاضر لقارئ الشاشة ─────────────────────
+   مكرَّر محليًّا ولا يُتَّكل على أداة Tailwind وحدها: الطقم قد يُقتطع إلى
+   صفحة تصدير لا تمرّ على خطّ البناء نفسه. */
+.rpt-chart .rpt-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ═══ الالتقاط: لا حركة ولا انتقال ═════════════════════════════════════════
+   `staticRender` يضع `.rpt-static`. لا يكفي إيقاف حركات recharts وحدها:
+   أي انتقال CSS قد يُلتقط في منتصفه فيخرج الخطّ نصفَ مرسوم في الـPDF. */
+.rpt-chart.rpt-static,
+.rpt-chart.rpt-static *,
+.rpt-chart.rpt-static *::before,
+.rpt-chart.rpt-static *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rpt-chart,
+  .rpt-chart *,
+  .rpt-chart *::before,
+  .rpt-chart *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media print {
+  .rpt-chart {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .rpt-chart,
+  .rpt-chart *,
+  .rpt-chart *::before,
+  .rpt-chart *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  /* الطباعة تُسقط الخلفيات افتراضيًّا في أغلب المحرّكات؛ الحدّ يبقى فيبقى
+     الشكل مقروءًا حتى بلا تعبئة. */
+  .rpt-chart .rpt-empty {
+    background: none;
+  }
+}

@@ -1,0 +1,787 @@
+/* ============================================================================
+   report-viewer.css — عارض التقرير المفصَّل
+   ----------------------------------------------------------------------------
+   ثلاث قواعد تحكم هذا الملف:
+
+   ① لا لون خارج طبقة الرموز (المادة ٣٣ §٢). كل لون هنا `var(--…)` أو
+     `color-mix()` فوق رمز — لا قيمة سداسية ولا `rgba()` مكتوبة يدويًّا
+     **خارج كتلة الطباعة**. ولذلك يحمل الوضعان الداكن والفاتح صحيحين معًا
+     بلا كتلة `.light` ثانية: الرموز العامة (`--ink` · `--surface` · …)
+     تنقلب مع الوضع، والعارض يقرأ منها. وهذا مقصود لا كسل — كتابة
+     `.light .rv-…` كانت سترفع النوعيّة فوق كل قاعدة عامة لاحقة وتُسكِت
+     التصحيحات المستقبلية بصمت (المادة ٣٤ §٤).
+
+   ② لا شيء مطويّ. لا قاعدة في هذا الملف تُخفي كتلة محتوى، ولا حالة
+     `:hover` تكشف شيئًا غير موجود قبلها (المادة ٣٤ §٥) — ما يظهر
+     بالتمرير وحده لا وجود له على الجوال ولا على الورق.
+
+   ③ الورق فاتح دائمًا. كتلة الطباعة تُعيد تعريف الرموز نفسها إلى ورق
+     أبيض وحبر داكن مهما كان وضع الشاشة، والقِيَم السداسية **مسموحة هناك
+     وحدها**: الورق ليس ثيمًا يُقلَب، وأطياف الوضع الداكن تُطبع أحبارًا
+     لا تُقرأ.
+
+   الحارس: `src/components/reports/viewer/report-viewer.contract.test.tsx`
+   ============================================================================ */
+
+.rv-doc {
+  /* رموز العارض — كلها مشتقّة من طبقة الرموز العامة، فتتبع الوضعين. */
+  --rv-ink: var(--ink);
+  --rv-ink-2: var(--ink-2);
+  --rv-ink-3: var(--ink-3);
+  --rv-surface: var(--surface);
+  --rv-surface-2: var(--surface-2);
+  --rv-chip: var(--chip);
+  --rv-chip-strong: var(--chip-strong);
+  --rv-hairline: var(--hairline);
+  --rv-hairline-soft: var(--hairline-soft);
+
+  --rv-series-1: var(--tone-cyan);
+  --rv-series-2: var(--tone-emerald);
+  --rv-series-3: var(--tone-amber);
+  --rv-series-4: var(--tone-blue);
+  --rv-series-5: var(--tone-rose);
+  --rv-series-6: var(--tone-violet);
+
+  --rv-tone-danger: var(--tone-rose);
+  --rv-tone-warning: var(--tone-amber);
+  --rv-tone-success: var(--tone-emerald);
+  --rv-tone-info: var(--tone-blue);
+
+  --rv-gap: 1.25rem;
+  --rv-radius: 0.875rem;
+
+  direction: rtl;
+  text-align: start;
+  color: var(--rv-ink);
+  background: var(--rv-surface);
+  font-family: var(--font-arabic);
+  line-height: 1.75;
+  padding: clamp(1rem, 2.5vw, 2rem);
+  max-width: 68rem;
+  margin-inline: auto;
+}
+
+/* ---------------------------------------------------------------- الترويسة */
+
+.rv-doc-head {
+  border-bottom: 2px solid var(--rv-hairline);
+  padding-bottom: 1rem;
+  margin-bottom: var(--rv-gap);
+}
+
+.rv-region {
+  font-size: 0.875rem;
+  color: var(--rv-ink-2);
+  margin: 0 0 0.25rem;
+  border-inline-start: 4px solid rgb(var(--rv-region-rgb));
+  padding-inline-start: 0.625rem;
+}
+
+.rv-doc-title {
+  font-size: clamp(1.5rem, 3.5vw, 2.125rem);
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0 0 0.375rem;
+  color: var(--rv-ink);
+}
+
+.rv-period {
+  font-size: 0.9375rem;
+  color: var(--rv-ink-2);
+  margin: 0;
+}
+
+.rv-period-label {
+  color: var(--rv-ink-3);
+}
+
+/* الإنجليزية مرافقة دائمة — سطر ثانوي تحت العربية، لا بديل عنها. */
+.rv-en {
+  display: block;
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--rv-ink-3);
+  letter-spacing: 0.01em;
+}
+
+/* ------------------------------------------------------- شارة المحاكاة */
+
+.rv-sim-badge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.875rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--rv-tone-warning);
+  border-radius: var(--rv-radius);
+  background: color-mix(in srgb, var(--rv-tone-warning) 12%, transparent);
+  color: var(--rv-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.rv-sim-dot {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+  background: var(--rv-tone-warning);
+  flex: none;
+}
+
+.rv-sim-badge .rv-en {
+  display: inline-block;
+  margin-inline-start: auto;
+}
+
+.rv-sim-code {
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  font-size: 0.9em;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 0.25rem;
+  background: var(--rv-chip-strong);
+  direction: ltr;
+  display: inline-block;
+}
+
+/* ------------------------------------------------------------- الأقسام */
+
+.rv-body {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--rv-gap) * 1.5);
+}
+
+.rv-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rv-gap);
+}
+
+.rv-section-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+  font-weight: 700;
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rv-hairline-soft);
+  color: var(--rv-ink);
+}
+
+.rv-section-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: 0.5rem;
+  background: rgba(var(--rv-region-rgb), 0.18);
+  color: var(--rv-ink);
+  font-size: 0.875rem;
+  font-weight: 700;
+  flex: none;
+}
+
+.rv-section-title .rv-en {
+  flex-basis: 100%;
+}
+
+.rv-empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--rv-ink-2);
+  border: 1px dashed var(--rv-hairline);
+  border-radius: var(--rv-radius);
+  margin: 0;
+}
+
+/* -------------------------------------------------------------- الكتل */
+
+.rv-block {
+  background: var(--rv-surface-2);
+  border: 1px solid var(--rv-hairline-soft);
+  border-radius: var(--rv-radius);
+  padding: clamp(0.875rem, 2vw, 1.25rem);
+  margin: 0;
+  /* بطاقة لا تُشطر بين صفحتين. */
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.rv-block-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin: 0 0 0.625rem;
+  color: var(--rv-ink);
+}
+
+.rv-p {
+  margin: 0 0 0.75rem;
+  color: var(--rv-ink-2);
+}
+
+.rv-p:last-child {
+  margin-bottom: 0;
+}
+
+.rv-prose-en {
+  direction: ltr;
+  text-align: start;
+  border-top: 1px dashed var(--rv-hairline-soft);
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+  color: var(--rv-ink-3);
+}
+
+.rv-footnote {
+  margin: 0.625rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--rv-ink-3);
+}
+
+/* ------------------------------------------------------------ الجداول */
+
+.rv-table-wrap {
+  /* الجدول العريض يسكرول داخل حاويته — الصفحة نفسها لا تسكرول أفقيًّا. */
+  overflow-x: auto;
+  border-radius: 0.5rem;
+}
+
+.rv-table-wrap:focus-visible {
+  outline: 2px solid var(--rv-series-1);
+  outline-offset: 2px;
+}
+
+.rv-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.rv-caption {
+  caption-side: top;
+  text-align: start;
+  font-weight: 700;
+  color: var(--rv-ink);
+  padding-bottom: 0.625rem;
+}
+
+.rv-table th,
+.rv-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--rv-hairline-soft);
+  text-align: start;
+  vertical-align: top;
+}
+
+.rv-table thead th {
+  background: var(--rv-chip-strong);
+  color: var(--rv-ink);
+  font-weight: 700;
+  border-bottom: 2px solid var(--rv-hairline);
+  white-space: nowrap;
+}
+
+.rv-table tbody th {
+  font-weight: 600;
+  color: var(--rv-ink);
+}
+
+.rv-table tbody td {
+  color: var(--rv-ink-2);
+}
+
+.rv-table tbody tr:last-child th,
+.rv-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.rv-table [data-align="center"] {
+  text-align: center;
+}
+
+.rv-table [data-align="end"] {
+  text-align: end;
+}
+
+/* ------------------------------------------------------------- الرسوم */
+
+.rv-chart-svg {
+  inline-size: 100%;
+  block-size: auto;
+  display: block;
+  overflow: visible;
+}
+
+.rv-chart-series {
+  color: var(--rv-series-1);
+}
+
+[data-series="1"] {
+  color: var(--rv-series-1);
+}
+[data-series="2"] {
+  color: var(--rv-series-2);
+}
+[data-series="3"] {
+  color: var(--rv-series-3);
+}
+[data-series="4"] {
+  color: var(--rv-series-4);
+}
+[data-series="5"] {
+  color: var(--rv-series-5);
+}
+[data-series="6"] {
+  color: var(--rv-series-6);
+}
+
+.rv-chart-grid {
+  stroke: var(--rv-hairline-soft);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.rv-chart-axis {
+  stroke: var(--rv-hairline);
+  stroke-width: 1.5;
+}
+
+.rv-chart-bar {
+  fill: currentColor;
+}
+
+.rv-chart-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.rv-chart-area {
+  fill: currentColor;
+  opacity: 0.14;
+  stroke: none;
+}
+
+.rv-chart-dot {
+  fill: currentColor;
+  stroke: var(--rv-surface-2);
+  stroke-width: 2;
+}
+
+.rv-chart-donut-track {
+  fill: none;
+  stroke: var(--rv-chip-strong);
+  stroke-width: 30;
+}
+
+.rv-chart-donut-seg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 30;
+}
+
+.rv-chart-value {
+  fill: var(--rv-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rv-chart-label {
+  fill: var(--rv-ink-2);
+  font-size: 12px;
+}
+
+.rv-chart-total {
+  fill: var(--rv-ink);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.rv-chart-total-label {
+  fill: var(--rv-ink-3);
+  font-size: 12px;
+}
+
+/* مفتاح القِيَم — ظاهر دائمًا: قراءة الرسم لا تُترك للّون وحده. */
+.rv-chart-legend {
+  list-style: none;
+  margin: 0.875rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.375rem;
+}
+
+@media (min-width: 640px) {
+  .rv-chart-legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.375rem 1rem;
+  }
+}
+
+.rv-chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--rv-ink-2);
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--rv-hairline-soft);
+}
+
+.rv-chart-swatch {
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-radius: 0.25rem;
+  background: currentColor;
+  flex: none;
+}
+
+.rv-chart-legend-label {
+  min-inline-size: 0;
+}
+
+.rv-chart-legend-label .rv-en {
+  font-size: 0.75rem;
+}
+
+.rv-chart-legend-value {
+  margin-inline-start: auto;
+  font-weight: 700;
+  color: var(--rv-ink);
+  white-space: nowrap;
+}
+
+.rv-chart-legend-share {
+  font-weight: 400;
+  color: var(--rv-ink-3);
+}
+
+.rv-unit {
+  font-weight: 400;
+  color: var(--rv-ink-3);
+  font-size: 0.875em;
+}
+
+/* ------------------------------------------------------------- الصور */
+
+.rv-figure-img {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: 0.5rem;
+  border: 1px solid var(--rv-hairline-soft);
+  background: var(--rv-chip);
+}
+
+.rv-figcaption {
+  margin-top: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--rv-ink-2);
+}
+
+.rv-credit {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--rv-ink-3);
+  margin-top: 0.25rem;
+}
+
+/* --------------------------------------------------------- المؤشرات */
+
+.rv-kpi-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .rv-kpi-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .rv-kpi-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.rv-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--rv-tone, var(--rv-hairline));
+  background: color-mix(in srgb, var(--rv-tone, var(--rv-chip)) 10%, transparent);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.rv-kpi-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  color: var(--rv-tone, var(--rv-ink-2));
+}
+
+.rv-kpi-label {
+  font-size: 0.8125rem;
+  color: var(--rv-ink-2);
+  line-height: 1.4;
+}
+
+.rv-kpi-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--rv-ink);
+  line-height: 1.2;
+}
+
+.rv-kpi-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.rv-kpi-delta {
+  font-size: 0.75rem;
+  color: var(--rv-ink-3);
+}
+
+/* --------------------------------------------------------- التنبيهات */
+
+.rv-callout {
+  border-inline-start-width: 4px;
+  border-inline-start-color: var(--rv-tone, var(--rv-hairline));
+  background: color-mix(in srgb, var(--rv-tone, var(--rv-chip)) 10%, transparent);
+}
+
+/* النغمات: اللون **حامل ثالث** بعد الشكل والكلمة (WCAG 2.2 §1.4.1).
+   «خطر» أحمر مثمّن و«تحذير» كهرماني مثلّث — لا يُوحَّدان ولا يتبادلان. */
+[data-tone="danger"] {
+  --rv-tone: var(--rv-tone-danger);
+}
+[data-tone="warning"] {
+  --rv-tone: var(--rv-tone-warning);
+}
+[data-tone="success"] {
+  --rv-tone: var(--rv-tone-success);
+}
+[data-tone="info"] {
+  --rv-tone: var(--rv-tone-info);
+}
+
+.rv-tone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--rv-tone, var(--rv-hairline));
+  background: var(--rv-surface);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.rv-tone-glyph {
+  color: var(--rv-tone, var(--rv-ink-2));
+  flex: none;
+}
+
+.rv-tone-word {
+  color: var(--rv-ink);
+}
+
+.rv-tone-badge .rv-en {
+  display: inline;
+  font-size: 0.75rem;
+}
+
+/* ------------------------------------------------------------ التذييل */
+
+.rv-doc-foot {
+  margin-top: calc(var(--rv-gap) * 1.5);
+  padding-top: 0.875rem;
+  border-top: 2px solid var(--rv-hairline);
+  font-size: 0.8125rem;
+  color: var(--rv-ink-3);
+}
+
+.rv-foot-line {
+  margin: 0 0 0.25rem;
+}
+
+.rv-foot-sim {
+  color: var(--rv-ink-2);
+  font-weight: 600;
+}
+
+/* ترويسة/تذييل الورق: لا وجود لهما على الشاشة. وهذا ليس طيًّا لمحتوى —
+   نصّهما مكرّر حرفيًّا من ترويسة المستند وتذييله، وهما `aria-hidden`. */
+.rv-print-header,
+.rv-print-footer {
+  display: none;
+}
+
+/* ============================================================================
+   @@PRINT-START@@  —  الطباعة: A4، ورق فاتح، حبر داكن، دائمًا.
+   القيم السداسية مسموحة **هنا وحدها**: الورق ليس ثيمًا يُقلَب.
+   ============================================================================ */
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm 14mm;
+  }
+
+  .rv-doc {
+    /* الورق يفرض لوحته فوق أي وضع شاشة. الدرجات هي درجات الوضع الفاتح
+       المقيسة في `styles.css` — عابرة لعتبة ٤٫٥:١ على الأبيض. */
+    --rv-ink: #111827;
+    --rv-ink-2: #374151;
+    --rv-ink-3: #4b5563;
+    --rv-surface: #ffffff;
+    --rv-surface-2: #ffffff;
+    --rv-chip: #f4f4f5;
+    --rv-chip-strong: #e9eaee;
+    --rv-hairline: #9ca3af;
+    --rv-hairline-soft: #d1d5db;
+
+    --rv-series-1: #0e7490;
+    --rv-series-2: #047857;
+    --rv-series-3: #b45309;
+    --rv-series-4: #1d4ed8;
+    --rv-series-5: #be123c;
+    --rv-series-6: #0369a1;
+
+    --rv-tone-danger: #be123c;
+    --rv-tone-warning: #b45309;
+    --rv-tone-success: #047857;
+    --rv-tone-info: #1d4ed8;
+
+    color: #111827;
+    background: #ffffff;
+    max-width: none;
+    padding: 0;
+    /* فسحة للترويسة والتذييل المكرّرين. */
+    margin-top: 12mm;
+    margin-bottom: 12mm;
+    font-size: 10.5pt;
+  }
+
+  /* الطابعة تُسقط الخلفيات افتراضيًّا — والخلفية هنا حاملة معنى
+     (نغمة التنبيه، ترويسة الجدول)، فتُطلب صراحةً. */
+  .rv-doc,
+  .rv-doc * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* الترويسة والتذييل يتكرّران على كل صفحة. */
+  .rv-print-header,
+  .rv-print-footer {
+    display: block;
+    position: fixed;
+    inset-inline: 0;
+    font-size: 8.5pt;
+    color: #374151;
+    background: #ffffff;
+  }
+
+  .rv-print-header {
+    top: 0;
+    border-bottom: 0.5pt solid #9ca3af;
+    padding-bottom: 2mm;
+  }
+
+  .rv-print-footer {
+    bottom: 0;
+    border-top: 0.5pt solid #9ca3af;
+    padding-top: 2mm;
+  }
+
+  /* شارة المحاكاة تبقى ظاهرة على الورق — الوسم شرط أصالة العرض، وإخفاؤه
+     في الطباعة يُخرج ورقةً تبدو تقريرًا عن عميل حقيقي. */
+  .rv-sim-badge {
+    display: flex;
+    border: 1pt solid #b45309;
+    background: #fef3c7;
+    color: #111827;
+  }
+
+  .rv-foot-sim {
+    display: block;
+    color: #111827;
+  }
+
+  /* قسم جديد = صفحة جديدة. */
+  .rv-section {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .rv-section:first-child {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  /* لا بطاقة تُشطر بين ورقتين. */
+  .rv-block,
+  .rv-kpi,
+  .rv-figure,
+  .rv-callout,
+  .rv-chart-block,
+  .rv-table-block {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border-color: #d1d5db;
+    background: #ffffff;
+  }
+
+  .rv-section-title,
+  .rv-block-title,
+  .rv-caption {
+    break-after: avoid;
+    page-break-after: avoid;
+    color: #111827;
+  }
+
+  .rv-table thead {
+    /* ترويسة الجدول تتكرّر مع كل صفحة يمتدّ إليها. */
+    display: table-header-group;
+    background: #e9eaee;
+  }
+
+  .rv-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* الجدول لا يسكرول على الورق. */
+  .rv-table-wrap {
+    overflow: visible;
+  }
+
+  .rv-figure-img {
+    max-block-size: 90mm;
+    object-fit: contain;
+  }
+
+  .rv-tone-badge {
+    background: #ffffff;
+  }
+}
+/* @@PRINT-END@@ */

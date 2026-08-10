@@ -74,26 +74,33 @@ function PipelineCard({ s }: { s: LivePipelineSeries }) {
 
       <div className="h-24">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={s.buckets} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+          {/* الهامش الأيسر كان ‎-٢٠‎: يسحب منطقة الرسم خارج حدّ الـSVG، فأوّل
+              لافتة زمنية تُرسم قبل الحافة ويقصّها الجذر (قِيس ٥px مقطوعة من
+              «00:35»). صفرٌ يبقيها داخل الرسم، وعرض المحور الرأسي أعلاه
+              يكفي لنصف اللافتة الأولى. */}
+          <AreaChart data={s.buckets} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
             <defs>
               <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={stroke} stopOpacity={0.5} />
                 <stop offset="100%" stopColor={stroke} stopOpacity={0.02} />
               </linearGradient>
             </defs>
+            {/* لافتات المحور نصٌّ يُقرأ لا زخرفة شبكة: بدونها لا يُعرف زمن
+                النقطة ولا قيمتها. ٩px كانت تحت أرضية القراءة بثلاث درجات،
+                و`width` تتّسع معها لئلّا يُقصّ الرقم الأعرض. */}
             <XAxis
               dataKey="label"
-              tick={{ fill: "hsl(215 20% 55%)", fontSize: 9 }}
+              tick={{ fill: "hsl(215 20% 55%)", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
               interval={2}
             />
             <YAxis
-              tick={{ fill: "hsl(215 20% 55%)", fontSize: 9 }}
+              tick={{ fill: "hsl(215 20% 55%)", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
               allowDecimals={false}
-              width={28}
+              width={34}
             />
             <Tooltip
               cursor={{ stroke: stroke, strokeOpacity: 0.3 }}

@@ -2425,6 +2425,15 @@ body {
     min-block-size: 40px;
     min-inline-size: 40px;
   }
+  /* الحقول كانت ساقطة من هذه الشبكة وحدها: قرينتها في `pointer: coarse`
+     أعلاه تشمل `input/select/textarea`، وهنا لم تشملها — فحقلٌ كُتب له
+     `h-8` يصير ٣٢px على الفأرة بينما يصير ٤٤px على اللمس. قِيس على
+     /live-dashboard: مدخل البحث ١٧٦×٣٢ تحت أرضية الفأرة (٤٠).
+     ولا يُفرض هنا حدٌّ أفقي: الحقل يأخذ عرض حاويته، وفرضه يكسر الحقول
+     الضيّقة المقصودة (رمز التحقق حرفًا حرفًا). */
+  :where(input:not([type="hidden"]):not([type="range"]), select, textarea) {
+    min-block-size: 40px;
+  }
 }
 
 :where(a, button, [role="button"], input, select, textarea, [tabindex]):focus-visible {
@@ -6780,8 +6789,11 @@ html.dark .nx-holo-noise {
   fill: var(--ink);
 }
 
+/* «لم يُقَس» — لا تظهر إلا حين تغيب القيمة، فلا يمسكها الفحص على بيانات
+   المحاكاة المكتملة. وهي مع ذلك تحت الأرضية متى ظهرت: عطلٌ كامن يُصلَح
+   بالقراءة لا بالانتظار حتى تفرغ البيانات. */
 .nx-tw-val[data-empty] {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   fill: var(--ink-3);
 }
@@ -7644,7 +7656,8 @@ html.dark .nx-holo-noise {
   border: 1px solid color-mix(in srgb, var(--op-hue) 40%, var(--hairline));
   background: color-mix(in srgb, var(--op-hue) 9%, transparent);
   padding: 2px 8px;
-  font-size: 11px;
+  /* تخصّص الغرفة («الامتثال» · «الصيانة» · «التصاريح») — أرضية ١٢px. */
+  font-size: 12px;
   font-weight: 700;
   color: var(--ink-2);
 }
@@ -7700,8 +7713,9 @@ html.dark .nx-holo-noise {
   align-items: center;
   gap: 4px;
   border-radius: 7px;
-  padding: 1px 7px;
-  font-size: 11px;
+  padding: 2px 7px;
+  /* شارة الأولوية («مرتفع») — وهي إنذار، فالأرضية فيها آكد. */
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -8523,8 +8537,14 @@ html[dir="ltr"] .nx-clock-slot {
   }
 
   .nx-tw-svg {
-    /* ٥٤٠ ÷ ٧٦٠ = ٠٫٧١ ⇐ الاسم ١١٫٤ بكسل والقيمة ١٣٫٥ — فوق حدّ القراءة. */
-    min-inline-size: 540px;
+    /* حسابٌ صُحِّح بالقياس: ٥٤٠ ÷ ٧٦٠ = ٠٫٧١، والاسم المصرَّح ١٦ يظهر
+       ١١٫٤ بكسل — **تحت** أرضية القراءة لا فوقها كما قال التعليق السابق.
+       نصّ SVG لا يُقاس بمصرَّحه بل بمصرَّحه × مقياس الرسم، ومقياس الرسم هنا
+       هو العرض المرسوم ÷ ٧٦٠ من الـviewBox. فالأرضية شرطٌ على العرض:
+       ١٢ ≤ ١٦ × (العرض ÷ ٧٦٠) ⇐ العرض ≥ ٥٧٠. و٦٠٠ تعطي ٠٫٧٩ ⇐ الاسم
+       ١٢٫٦ و«لم يُقَس» ١٢٫٦ والقيمة ١٥ — كلّها فوق الأرضية بهامش.
+       والمشهد داخل `overflow-x: auto` فالزيادة تُبلَغ بالتمرير لا تُقصّ. */
+    min-inline-size: 600px;
   }
 }
 
@@ -8899,8 +8919,9 @@ html[data-nx-motion="off"] .nx-pulse-spark {
   border-radius: 6px;
   border: 1px solid var(--hairline);
   background: var(--chip-strong);
-  padding: 1px 6px;
-  font-size: 11px;
+  padding: 2px 6px;
+  /* أرضية القراءة ١٢px — عطل كامن مثل سابقه، يظهر متى ظهرت الشارة. */
+  font-size: 12px;
   font-weight: 600;
   color: var(--ink-2);
 }

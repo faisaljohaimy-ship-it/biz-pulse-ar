@@ -259,7 +259,8 @@ function LiveExecutiveDashboard() {
     doc.save(`nexios-executive-${range}d-${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
-  const chartAxis = { stroke: "hsl(var(--muted-foreground))", fontSize: 10 };
+  // لافتات المحاور تُقرأ كنصّ — أرضية ١٢px تسري عليها كما تسري على المتن.
+  const chartAxis = { stroke: "hsl(var(--muted-foreground))", fontSize: 12 };
 
   return (
     <div className="min-h-screen bg-[#04060d] text-slate-100 p-4 md:p-6" dir="rtl">
@@ -427,7 +428,7 @@ function LiveExecutiveDashboard() {
                     fontSize: 12,
                   }}
                 />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Area
                   type="monotone"
                   dataKey="incidents_critical"
@@ -471,7 +472,7 @@ function LiveExecutiveDashboard() {
                       fontSize: 12,
                     }}
                   />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar dataKey="work_orders_opened" fill="#f59e0b" name="Opened" />
                   <Bar dataKey="work_orders_closed" fill="#10b981" name="Closed" />
                 </BarChart>

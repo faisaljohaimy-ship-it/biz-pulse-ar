@@ -365,9 +365,23 @@ function ROIPage() {
       </main>
 
       <style>{`
-        .roi-range { -webkit-appearance: none; appearance: none; height: 4px; background: linear-gradient(90deg, rgba(251,191,36,0.6), rgba(251,191,36,0.15)); border-radius: 999px; outline: none; }
-        .roi-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 999px; background: #fbbf24; border: 2px solid #0a0a0f; box-shadow: 0 0 0 4px rgba(251,191,36,0.18), 0 0 18px rgba(251,191,36,0.45); cursor: pointer; transition: transform .15s ease; }
+        /* المزلاج كان يُقاس 370×4: الارتفاع كان مرسومًا على الحقل نفسه، فصار
+           جسم العنصر بارتفاع مساره — هدفٌ بأربعة بكسلات تحت أرضيتَي اللمس
+           (٤٤) والفأرة (٤٠) معًا. الفصل هو الحل: الحقل يأخذ ٤٤px ويصير
+           شفافًا، والمسار المرئي ينتقل إلى الطبقة الزائفة فيبقى ٤px كما هو.
+           المظهر لم يتغيّر، والهدف صار مطابقًا. */
+        .roi-range { -webkit-appearance: none; appearance: none; height: 44px; background: transparent; border-radius: 999px; outline: none; }
+        .roi-range::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: linear-gradient(90deg, rgba(251,191,36,0.6), rgba(251,191,36,0.15)); }
+        .roi-range::-moz-range-track { height: 4px; border-radius: 999px; background: linear-gradient(90deg, rgba(251,191,36,0.6), rgba(251,191,36,0.15)); }
+        /* ‎(٤ − ١٨) ÷ ٢ = ‎-٧‎ — تُركّز الإبهام على المسار في WebKit بعد أن صار
+           المسار طبقةً زائفة داخل حقلٍ أطول منه. */
+        .roi-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -7px; width: 18px; height: 18px; border-radius: 999px; background: #fbbf24; border: 2px solid #0a0a0f; box-shadow: 0 0 0 4px rgba(251,191,36,0.18), 0 0 18px rgba(251,191,36,0.45); cursor: pointer; transition: transform .15s ease; }
         .roi-range::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        /* إلغاء الحدّ (outline: none) بلا بديل يمحو أثر التركيز للوحة
+           المفاتيح — يُعاد بحلقة من طبقة الرموز، وحركة التفاعل تبقى كما هي.
+           ولا تُكتب هنا شرطة مائلة عكسية ولا علامة اقتباس مائلة: هذه القواعد
+           تعيش داخل قالب نصّي في JSX، والعلامة المائلة تُنهيه فتكسر الملف. */
+        .roi-range:focus-visible { outline: 2px solid var(--tone-amber); outline-offset: 3px; }
         .roi-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #fbbf24; border: 2px solid #0a0a0f; box-shadow: 0 0 0 4px rgba(251,191,36,0.18), 0 0 18px rgba(251,191,36,0.45); cursor: pointer; }
         @keyframes roi-pulse { 0%,100% { opacity: .35 } 50% { opacity: 1 } }
         .roi-live-dot { animation: roi-pulse 1.8s ease-in-out infinite; }

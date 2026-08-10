@@ -129,55 +129,74 @@ function GuidePage() {
         <div className="mb-2 text-sm font-semibold text-white/90">
           {ar ? "تدفّق البيانات بين المجموعات" : "How the clusters feed one another"}
         </div>
-        <svg
-          viewBox="0 0 900 200"
-          className="h-auto w-full"
-          role="img"
-          aria-label={ar ? "مخطط العلاقات" : "Relationship diagram"}
-        >
-          {[
-            { x: 90, ar: "الميدان\nوالأمن", en: "Field\n& Security", rgb: "34,211,238" },
-            { x: 300, ar: "الذكاء\nوالوكلاء", en: "Intelligence\n& Agents", rgb: "58,232,255" },
-            { x: 510, ar: "التحليل\nوالتقارير", en: "Analytics\n& Reports", rgb: "251,191,36" },
-            { x: 720, ar: "القيادة\nوالاعتماد", en: "Command\n& Approval", rgb: "16,185,129" },
-          ].map((c, i, arr) => (
-            <g key={c.x}>
-              {i < arr.length - 1 && (
-                <line
-                  x1={c.x + 46}
-                  y1={100}
-                  x2={arr[i + 1]!.x - 46}
-                  y2={100}
-                  stroke="rgba(120,160,200,0.35)"
-                  strokeWidth={2}
-                  markerEnd="url(#gd-arrow)"
+        {/* نصّ SVG يُقاس بمصرَّحه × مقياس الرسم، ومقياس الرسم = العرض المرسوم
+            ÷ ٩٠٠ من الـviewBox. على ٣٧٥px يبقى للبطاقة ~٣٠٧px ⇐ مقياس ٠٫٣٤،
+            فـ١٢ وحدة تظهر **٤٫١ بكسل**: لافتات المخطط معدومة عمليًّا. وقُيّد
+            الأمر من طرفيه: `min-w` يمنع الانكماش تحت ما يُقرأ (٦٨٠ ⇐ مقياس
+            ٠٫٧٦ ⇐ ١٧ × ٠٫٧٦ = ١٢٫٨px)، و`max-w` يمنع التضخّم فوق مقاس
+            التصميم (٩٠٠ ⇐ مقياس ١ ⇐ ١٧px بالضبط). والفائض يُبلَغ بالتمرير
+            داخل غلافه لا يُقصّ. */}
+        <div className="overflow-x-auto">
+          <svg
+            viewBox="0 0 900 200"
+            className="mx-auto h-auto w-full min-w-[680px] max-w-[900px]"
+            role="img"
+            aria-label={ar ? "مخطط العلاقات" : "Relationship diagram"}
+          >
+            {[
+              { x: 90, ar: "الميدان\nوالأمن", en: "Field\n& Security", rgb: "34,211,238" },
+              { x: 300, ar: "الذكاء\nوالوكلاء", en: "Intelligence\n& Agents", rgb: "58,232,255" },
+              { x: 510, ar: "التحليل\nوالتقارير", en: "Analytics\n& Reports", rgb: "251,191,36" },
+              { x: 720, ar: "القيادة\nوالاعتماد", en: "Command\n& Approval", rgb: "16,185,129" },
+            ].map((c, i, arr) => (
+              <g key={c.x}>
+                {i < arr.length - 1 && (
+                  <line
+                    x1={c.x + 46}
+                    y1={100}
+                    x2={arr[i + 1]!.x - 46}
+                    y2={100}
+                    stroke="rgba(120,160,200,0.35)"
+                    strokeWidth={2}
+                    markerEnd="url(#gd-arrow)"
+                  />
+                )}
+                <circle
+                  cx={c.x}
+                  cy={100}
+                  r={44}
+                  style={{ fill: `rgba(${c.rgb},0.12)`, stroke: `rgb(${c.rgb})`, strokeWidth: 1.6 }}
                 />
-              )}
-              <circle
-                cx={c.x}
-                cy={100}
-                r={44}
-                style={{ fill: `rgba(${c.rgb},0.12)`, stroke: `rgb(${c.rgb})`, strokeWidth: 1.6 }}
-              />
-              {(ar ? c.ar : c.en).split("\n").map((line, li) => (
-                <text
-                  key={li}
-                  x={c.x}
-                  y={96 + li * 15}
-                  textAnchor="middle"
-                  style={{ fontSize: 12, fill: "#e6f6ff", fontWeight: 600 }}
-                >
-                  {line}
-                </text>
-              ))}
-            </g>
-          ))}
-          <defs>
-            <marker id="gd-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-              <path d="M0 0 L6 3 L0 6 Z" fill="rgba(160,190,220,0.7)" />
-            </marker>
-          </defs>
-        </svg>
+                {(ar ? c.ar : c.en).split("\n").map((line, li) => (
+                  <text
+                    key={li}
+                    x={c.x}
+                    // ١٧ وحدة مع تباعد ١٩ بين السطرين: عند أضيق مقياس (٠٫٧٦)
+                    // تعطي ١٢٫٨px، وعند مقياس ١ تعطي ١٧px — والسطران يبقيان
+                    // داخل الدائرة (نصف قطرها ٤٤).
+                    y={95 + li * 19}
+                    textAnchor="middle"
+                    style={{ fontSize: 17, fill: "#e6f6ff", fontWeight: 600 }}
+                  >
+                    {line}
+                  </text>
+                ))}
+              </g>
+            ))}
+            <defs>
+              <marker
+                id="gd-arrow"
+                markerWidth="8"
+                markerHeight="8"
+                refX="6"
+                refY="3"
+                orient="auto"
+              >
+                <path d="M0 0 L6 3 L0 6 Z" fill="rgba(160,190,220,0.7)" />
+              </marker>
+            </defs>
+          </svg>
+        </div>
       </div>
 
       {/* Grouped module catalog. */}

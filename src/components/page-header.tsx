@@ -34,7 +34,13 @@ export function PageHeader({
           {subtitle && <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{subtitle}</p>}
         </div>
       </div>
-      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      {/* `shrink-0` كانت تعني «لا أتقلّص أبدًا»، وهي في صفٍّ ضيّق تعني «أخرج
+          من الشاشة». على ٧٦٨px يبقى للمحتوى ٥٤٤px، فيطلب العنوان + الأزرار
+          أكثر منها؛ ولأن الوعاء يرفض التقلّص يفيض — وفي RTL يفيض **يسارًا**
+          إلى الإحداثيات السالبة (قِيس: الرابط عند ‎-85..34‎)، و`<main>` يحمل
+          `overflow-x-hidden` فلا شريط تمرير يبلغه: زرّ موجود في الترميز
+          ومعدوم على الشاشة. البديل أن يلتفّ الصفّ بدل أن يخرج. */}
+      {actions && <div className="flex flex-wrap items-center gap-2 sm:justify-end">{actions}</div>}
     </div>
   );
 }

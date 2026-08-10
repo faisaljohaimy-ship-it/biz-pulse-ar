@@ -442,7 +442,10 @@ function ExecutiveMapPage() {
               {label}
             </span>
           ))}
-          <span className="text-[11px]">
+          {/* هذا السطر هو ما يشرح أنّ «حرج» لا يُعرف باللون وحده (WCAG 2.2
+              §1.4.1) — أي أنّه شرط قراءة اللوحة لمن لا يميّز الأحمر. كتابته
+              تحت أرضية القراءة تُبطل الغرض الذي كُتب له. */}
+          <span className="text-[12px]">
             {isAr
               ? "— «حرج» بحدٍّ متقطّع أيضًا، فلا يُقرأ باللون وحده"
               : "— critical is also dashed, never colour alone"}

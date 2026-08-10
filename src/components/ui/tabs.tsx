@@ -12,7 +12,16 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
+      // شريط التبويب كان `inline-flex` بعرض محتواه وبلا مخرج: خمسة تبويبات
+      // على ٣٧٥px تعطي ٤٤٤px، و`<main>` يحمل `overflow-x-hidden` — فتبويب
+      // «Events» يقع كاملًا خارج الشاشة (٣٧٩–٤٥٦) **بلا شريط تمرير يبلغه**.
+      // `max-w-full` تحبس الشريط في عرض أبيه، و`overflow-x-auto` تحوّل
+      // الفائض من مقصوصٍ إلى مبلوغٍ بالسحب.
+      "inline-flex max-w-full items-center justify-center overflow-x-auto rounded-lg bg-muted p-1 text-muted-foreground",
+      // و`h-9` (٣٦px) كانت تناقض أرضية اللمس: التبويب نفسه ٤٤px بقاعدة عامة،
+      // فكان يبرز ٤px فوق حبّة الشريط وتحتها. `min-h-9` تحفظ المظهر حين
+      // يكفي الارتفاع وتترك الحبّة تنمو لتحتوي هدفًا مطابقًا للأرضية.
+      "min-h-9",
       className,
     )}
     {...props}
@@ -27,7 +36,9 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background cursor-pointer transition-[background-color,color,box-shadow,opacity] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow",
+      // `shrink-0` داخل شريطٍ يُمرَّر: بلا هذا يضغط الفليكس التبويبات لتُقحم
+      // في العرض المتاح فيضيع حشوها، والمقصود أن تحتفظ بمقاسها ويُمرَّر الشريط.
+      "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background cursor-pointer transition-[background-color,color,box-shadow,opacity] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow",
       className,
     )}
     {...props}

@@ -14,6 +14,7 @@
  *   node scripts/ui-audit.mjs                          # against a local dev server
  *   BASE_URL=https://neexios.com node scripts/ui-audit.mjs
  *   ROUTES=/,/risk BASE_URL=… node scripts/ui-audit.mjs
+ *   THEME=light node scripts/ui-audit.mjs             # ثم THEME=dark — المادة ٣٣
  *
  * EXIT CODE
  *   0 — every hard floor held
@@ -31,6 +32,14 @@ import { chromium } from "playwright";
 const BASE = (process.env.BASE_URL || "http://127.0.0.1:8080").replace(/\/$/, "");
 const ROUTES = (process.env.ROUTES || "/,/projects,/risk,/sadeed,/sec").split(",").filter(Boolean);
 const STRICT_CONSOLE = process.env.STRICT_CONSOLE === "1";
+/**
+ * الوضع الذي يُقاس فيه: `dark` · `light` · أو الافتراضي (ما يقرّره النظام).
+ * المادتان ٣٢–٣٤: الوضع الثاني سطح صحّة لا قشرة، وكل فحص يُشغَّل مرتين.
+ * وهو ذو أثر مقيس على الأرضيات: قواعد `.light` تسبق العامة في نوعية
+ * المحدِّد، فقد يختلف حجم نصّ أو ارتفاع هدف بالوضع دون أن يظهر في تشغيل
+ * واحد. تُزرع القيمة قبل أول رسم بالمفتاح نفسه الذي يقرأه `__root.tsx`.
+ */
+const THEME = process.env.THEME || "";
 const SETTLE_MS = Number(process.env.SETTLE_MS || 2600);
 /** كم مرّة يُعاد القياس على صفحة لم تُرسَم بعد قبل الحكم عليها بالفراغ. */
 const EMPTY_RETRIES = Number(process.env.EMPTY_RETRIES || 3);
@@ -96,7 +105,14 @@ const collect = ({ minFont, minTarget }) => {
       const fs = parseFloat(cs.fontSize) * scale;
       if (fs) {
         if (fs < min) min = fs;
-        if (fs < minFont && smallText.length < 8) {
+        // **هامش الكسر دون البكسل — والأرضية لم تُمسّ.**
+        // Recharts يكتب على الـSVG عرضًا صحيحًا (‎width="301"‎ وviewBox بالعرض
+        // نفسه) بينما التخطيط يضعه في ٣٠٠٫٦٥٦px، فيصير مقياس الرسم ٠٫٩٩٨٨٦
+        // ويظهر نصٌّ مصرَّح ١٢px بـ‎١١٫٩٨٦px. قُيس هذا فعلًا على /live-dashboard.
+        // لا قيمة يكتبها مؤلّف تنجو منه، ولا فرق يراه بشر في ٠٫٠١٤px.
+        // فالمقارنة تحتمل ٠٫١px — وهي أقلّ بخمس مرّات من أصغر خطوة يكتبها
+        // مؤلّف (نصف بكسل)، فلا تستر خرقًا حقيقيًّا: ١١٫٥px تبقى ساقطة.
+        if (fs + 0.1 < minFont && smallText.length < 8) {
           smallText.push({
             fs: Math.round(fs * 10) / 10,
             tag: el.tagName,
@@ -106,10 +122,27 @@ const collect = ({ minFont, minTarget }) => {
       }
     }
 
+    // **استثناء «داخل النصّ» (WCAG 2.2 §2.5.8).** الرابط الجاري داخل جملة —
+    // «…تواصل مع security@neexios.com.» — لا يُعطى صندوقًا ٤٤px إلا بتمزيق
+    // الفقرة التي يجري فيها، ولهذا استثناه المعيار نصًّا. وكان الفحص يُسقطه
+    // ١٧٦×١٦ في كل مقاس على /security، وهو سليم.
+    //
+    // والاستثناء مشروط بشرطين معًا لئلّا يتسرّب منه زرّ حقيقي:
+    //   ① `display: inline` — فالزرّ المتنكّر رابطًا يكون `inline-flex` أو
+    //      `block`، فلا يناله الاستثناء (نحو `.nx-op-cta`).
+    //   ② أبوه يحمل نصًّا خاصًّا به حول الرابط — فرابط تنقّل وحيدٌ في `<li>`
+    //      ليس «داخل جملة» ويبقى محكومًا بالأرضية.
+    const inlineTextLink =
+      el.tagName === "A" &&
+      cs.display === "inline" &&
+      !!el.parentElement &&
+      [...el.parentElement.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+
     const isControl =
       el.matches("button, a[href], [role='button'], [role='tab'], input, select, textarea") &&
       !el.hasAttribute("disabled") &&
-      cs.pointerEvents !== "none";
+      cs.pointerEvents !== "none" &&
+      !inlineTextLink;
     // Measure the UNTRANSFORMED layout box. getBoundingClientRect() folds in
     // CSS transforms, so an entrance animation that opens at scale(0.6) — the
     // orb's `orb-wake` — reports a compliant 44px button as 31px and fails the
@@ -253,6 +286,17 @@ for (const vp of VIEWPORTS) {
     isMobile: vp.touch,
     locale: "ar-SA",
   });
+  if (THEME) {
+    // يُكتب المفتاح قبل تنفيذ أي سكربت للصفحة، فيلتقطه السكربت المانع في
+    // `__root.tsx` ويضع الحالة قبل أول رسم — لا وميض ولا قياس على وضع خاطئ.
+    await ctx.addInitScript((t) => {
+      try {
+        localStorage.setItem("theme", t);
+      } catch {
+        /* التخزين محجوب — يبقى الوضع الافتراضي */
+      }
+    }, THEME);
+  }
   for (const route of ROUTES) {
     const page = await ctx.newPage();
     const errors = [];
@@ -335,7 +379,7 @@ const fail = (r) =>
 
 const broken = rows.filter(fail);
 
-console.log(`\nUI audit — ${BASE}`);
+console.log(`\nUI audit — ${BASE}${THEME ? ` · theme=${THEME}` : ""}`);
 console.log(
   `${VIEWPORTS.length} viewports × ${ROUTES.length} routes = ${rows.length} combinations`,
 );
