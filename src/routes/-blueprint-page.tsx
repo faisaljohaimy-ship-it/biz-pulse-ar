@@ -78,7 +78,6 @@ import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, getRegion, type RegionId } from "@/lib/regions";
 import { SadeedStagePresence } from "@/components/sadeed/SadeedStagePresence";
-import { SadeedUsageAnalytics } from "@/components/sadeed/SadeedUsageAnalytics";
 import { SadeedAnomalyStrip } from "@/components/sadeed/SadeedAnomalyStrip";
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
@@ -570,11 +569,13 @@ export function BlueprintPage() {
             <SadeedStagePresence />
           </section>
 
-          {/* ── يسارًا (end) · تحليلات سَدِيد ثم تنبيهاته ─────────────────
-              الاثنان يقرآن لقطة محاكاة حتمية موسومة بشارتها الخاصة
-              (`SimBadge`)، فلا يُنسب إليهما قياس حيّ. */}
+          {/* ── يسارًا (end) · تنبيهات سَدِيد ─────────────────────────────
+              حُذفت بطاقات «تحليلات الاستخدام» وأيقوناتها بأمر المالك
+              ٢٠٢٦/٠٨/١٠. والمكوّن نفسه باقٍ ويعمل على `/sadeed-analytics` —
+              الحذف رفعٌ عن الرئيسية لا إزالةٌ للسطح.
+              وما بقي يقرأ لقطة محاكاة حتمية موسومة بشارتها (`SimBadge`)،
+              فلا يُنسب إليه قياس حيّ. */}
           <div className="nx-bp-stage flex flex-col gap-4" style={{ ["--nx-bp-i" as string]: 3 }}>
-            <SadeedUsageAnalytics />
             <SadeedAnomalyStrip />
           </div>
         </section>

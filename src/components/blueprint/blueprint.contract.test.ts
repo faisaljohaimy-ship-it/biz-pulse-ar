@@ -457,24 +457,27 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
     expect(grid).toMatch(/minmax\(0,/);
   });
 
-  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد ← التحليلات والتنبيهات", () => {
+  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد ← التنبيهات", () => {
     // العمود واحد دون `lg`، فالتكديس هو ترتيب DOM نفسه. لو رُتّبت الأعمدة
     // بـ`order` لانقلب الترتيب على الجوال بلا أن يسقط شيء.
+    //
+    // `SadeedUsageAnalytics` خرج من السلسلة يوم حُذف من الرئيسية (أمر المالك
+    // ٢٠٢٦/٠٨/١٠). والقاعدة لم تُضعَّف: هي تلزم **كل ما بقي مركَّبًا**،
+    // ومكوّنٌ محذوفٌ لا تُحرَس رتبته لأنه لا رتبة له.
     const regions = PAGE.indexOf("nx-home-region");
     const stage = PAGE.indexOf("<SadeedStagePresence");
-    const analytics = PAGE.indexOf("<SadeedUsageAnalytics");
     const anomalies = PAGE.indexOf("<SadeedAnomalyStrip");
     for (const [name, at] of [
       ["بطاقات المناطق", regions],
       ["SadeedStagePresence", stage],
-      ["SadeedUsageAnalytics", analytics],
       ["SadeedAnomalyStrip", anomalies],
     ] as const) {
       expect(at, `${name} غير مركَّب على الرئيسية`).toBeGreaterThan(-1);
     }
+    // وحُذف فلا يعود بابًا خلفيًّا: لا استيراد ولا تركيب.
+    expect(PAGE, "عادت تحليلات الاستخدام إلى الرئيسية").not.toContain("SadeedUsageAnalytics");
     expect(regions).toBeLessThan(stage);
-    expect(stage).toBeLessThan(analytics);
-    expect(analytics).toBeLessThan(anomalies);
+    expect(stage).toBeLessThan(anomalies);
     expect(PAGE, "أداة `order-*` تفصل ترتيب العرض عن ترتيب DOM").not.toMatch(
       /(?:^|[\s"'`])(?:sm:|md:|lg:)?order-\d/m,
     );
