@@ -496,29 +496,36 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
     expect(grid).toMatch(/minmax\(0,/);
   });
 
-  it("ترتيب DOM هو ترتيب العرض: المناطق ← التحليلات ← سَدِيد", () => {
+  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد ← توصياته", () => {
     // العمود واحد دون `lg`، فالتكديس هو ترتيب DOM نفسه. لو رُتّبت الأعمدة
     // بـ`order` لانقلب الترتيب على الجوال بلا أن يسقط شيء.
     //
-    // **والترتيب نفسه هو موضع الأمر:** «تحليلات سَدِيد على يمين بطاقة
-    // سَدِيد» (المالك ٢٠٢٦/٠٨/١٠). وفي `rtl` الأسبق في DOM يُرسم أيمن —
-    // فوقوع التحليلات **قبل** المساعد هو معنى «يمينه»، لا تفصيلًا تقنيًّا.
-    // ولو انعكس السطران لانقلب الجانبان بلا أن يسقط tsc ولا eslint.
+    // **والترتيب نفسه هو موضع الأمر:** «سَدِيد في المنتصف، وتوصياته على
+    // يسار بطاقته» (المالك ٢٠٢٦/٠٨/١٠). وفي `rtl` الأسبق في DOM يُرسم
+    // أيمن — فوقوع التوصيات **بعد** المساعد هو معنى «يساره»، لا تفصيلًا
+    // تقنيًّا. ولو انعكس السطران لانقلب الجانبان بلا أن يسقط tsc ولا
+    // eslint ولا أيّ فحصٍ آخر.
     //
-    // و«كشف الشذوذ» خرج من السلسلة بتعديل المالك عبر Lovable، وغيابه
-    // يحرسه البند التالي صراحةً.
+    // وخرج من السلسلة حاملان: «كشف الشذوذ» بتعديل المالك عبر Lovable،
+    // و«تحليلات الاستخدام» بأمره — وغيابهما يحرسه البند التالي صراحةً.
     const regions = PAGE.indexOf("nx-home-region");
     const stage = PAGE.indexOf("<SadeedStagePresence");
-    const analytics = PAGE.indexOf("<SadeedUsageAnalytics");
+    const advisories = PAGE.indexOf('id="nx-rec-heading"');
     for (const [name, at] of [
       ["بطاقات المناطق", regions],
-      ["SadeedUsageAnalytics", analytics],
       ["SadeedStagePresence", stage],
+      ["توصيات سَدِيد", advisories],
     ] as const) {
       expect(at, `${name} غير مركَّب على الرئيسية`).toBeGreaterThan(-1);
     }
-    expect(regions).toBeLessThan(analytics);
-    expect(analytics, "التحليلات يسار المساعد لا يمينه").toBeLessThan(stage);
+    expect(regions, "المناطق ليست أيمن الثلاثة").toBeLessThan(stage);
+    expect(stage, "التوصيات يمين المساعد لا يساره").toBeLessThan(advisories);
+    // والتوصيات **داخل** الصدر الثلاثي لا قسمًا مستقلًّا تحته: خروجها منه
+    // يُعيدها شريطًا عرضيًّا ويترك العمود الأيسر فارغًا بلا أن يسقط شيء.
+    const triad = PAGE.indexOf('className="nx-home-triad');
+    const triadEnd = PAGE.indexOf("\n        </section>", triad);
+    expect(triad, "الصدر الثلاثي غير موجود").toBeGreaterThan(-1);
+    expect(advisories, "التوصيات خارج الصدر الثلاثي").toBeLessThan(triadEnd);
     expect(PAGE, "أداة `order-*` تفصل ترتيب العرض عن ترتيب DOM").not.toMatch(
       /(?:^|[\s"'`])(?:sm:|md:|lg:)?order-\d/m,
     );
@@ -533,6 +540,7 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
     // فمطابقة النصّ الخام تُسقط الحارس على شرحٍ لا على سطح.
     const code = PAGE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
     expect(code).not.toContain("SadeedAnomalyStrip");
+    expect(code, "عادت تحليلات الاستخدام إلى الرئيسية").not.toContain("SadeedUsageAnalytics");
     // اللوحات الثلاث: «الوكلاء النشطون» ثم «بانتظار الاعتماد» و«منجز اليوم».
     // ومعها `InstrumentPanel` نفسه — مكوّنٌ مستورَدٌ بلا مستهلك يُعاد تركيبه
     // لأنه «موجود».
