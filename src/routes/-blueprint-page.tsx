@@ -10,7 +10,9 @@
  * أعلى الصفحة أُزيلت بقرار المالك ٢٠٢٦/٠٨/٠٩ مع عدّاداتها الأربعة.)
  *
  * **الصدر ثلاثة أعمدة (أمر المالك ٢٠٢٦/٠٨/٠٩):** «المناطق الأربع فاليمين
- * مستطيلة وسَدِيد فالمنتصف وتحليلات سَدِيد + التنبيهات فاليسار». والصفحة
+ * مستطيلة وسَدِيد فالمنتصف وتحليلات سَدِيد + التنبيهات فاليسار» — ثم حُذفت
+ * أيقونة وبطاقات «كشف شذوذ المؤشرات» وبطاقة «الوكلاء النشطون» من الرئيسية
+ * بأمر المالك ٢٠٢٦/٠٨/١٠، فبقي العمود الأيسر للتحليلات وحدها. والصفحة
  * `rtl`، فاليمين هو الطرف المنطقي `start` واليسار `end`: الترتيب يُكتب
  * ترتيبَ خلايا في الشبكة — منطقيًّا لا فيزيائيًّا — فينقلب وحده على الواجهة
  * الإنجليزية، ويتكدّس على الجوال بالترتيب نفسه لأنه ترتيب DOM.
@@ -79,7 +81,6 @@ import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, getRegion, type RegionId } from "@/lib/regions";
 import { SadeedStagePresence } from "@/components/sadeed/SadeedStagePresence";
 import { SadeedUsageAnalytics } from "@/components/sadeed/SadeedUsageAnalytics";
-
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
 const STAGE_AR: Record<string, string> = {
@@ -570,65 +571,12 @@ export function BlueprintPage() {
             <SadeedStagePresence />
           </section>
 
-          {/* ── يسارًا (end) · توصيات سَدِيد ثم تحليلاته وتنبيهاته ───────
-              التوصيات انتقلت إلى عمود الصدر الأيسر (أمر المالك ٢٠٢٦/٠٨/١٠)
-              لتجاور بطاقة سَدِيد مباشرة. كل توصية: عنوان · سبب · إجراء
-              مقترح، ومصدرها `getRiskBoard` — المسار الحيّ يبنيها من
-              المعالجة المسجَّلة في صف المخاطرة نفسه ولا يؤلّف إجراءً،
-              والبديل محاكاة مرجعية موسومة بشارتها (`SimBadge`). */}
+          {/* ── يسارًا (end) · تحليلات سَدِيد ─────────────────────────────
+              تقرأ لقطة محاكاة حتمية موسومة بشارتها الخاصة (`SimBadge`)، فلا
+              يُنسب إليها قياس حيّ. أيقونة وبطاقات «كشف شذوذ المؤشرات» حُذفت
+              من الرئيسية بأمر المالك ٢٠٢٦/٠٨/١٠ — سطحها الباقي في
+              `/sadeed-analytics` وحدها. */}
           <div className="nx-bp-stage flex flex-col gap-4" style={{ ["--nx-bp-i" as string]: 3 }}>
-            <section aria-labelledby="nx-rec-heading">
-              <div className="flex flex-wrap items-center gap-3">
-                <h2 className="nx-bp-h2" id="nx-rec-heading">
-                  {ar ? `توصيات ${PRODUCT_BRAND.assistantName}` : `${PRODUCT_BRAND.en.name} advisories`}
-                </h2>
-                {riskSimulation && <SimChip ar={ar} />}
-              </div>
-              {recommendations.length ? (
-                <ul className="mt-3 grid grid-cols-1 gap-3">
-                  {recommendations.map((rec) => {
-                    const tone = STAT_TONES[SEVERITY_TONE[rec.severity]];
-                    const ToneIcon = tone.icon;
-                    return (
-                      /* لا `nx-bp-card` هنا عمدًا: زجاجها قاعدةٌ **خارج الطبقات**
-                         فتعلو أدوات Tailwind كلّها مهما تأخّرت (قاعدة الطبقات في
-                         CSS: غير المُطبَّق يسبق المُطبَّق)، فتمحو خلفية النغمة
-                         وحدّها — ويبقى «خطر» و«تحذير» بلا فرق في الخلفية والحدّ.
-                         الأساس هنا `.nx-dash-rec` ولا يكتب `background` ولا
-                         `border-color`، فيبقى الفرق كاملًا كما يشترطه العقد. */
-                      <li key={rec.id} className={`nx-dash-rec rounded-2xl border p-4 ${tone.card}`}>
-                        <div className="flex items-start gap-2">
-                          {ToneIcon && (
-                            <ToneIcon
-                              aria-hidden
-                              className={`mt-0.5 h-4 w-4 shrink-0 ${tone.iconCls}`}
-                            />
-                          )}
-                          <h3 className="nx-dash-rec-title">{rec.title_ar}</h3>
-                          {tone.badge && (
-                            <span className={`nx-dash-chip shrink-0 border ${tone.badgeCls}`}>
-                              {tone.badge}
-                            </span>
-                          )}
-                        </div>
-                        <p className="nx-dash-rec-line">
-                          <b>{ar ? "السبب: " : "Why: "}</b>
-                          {rec.why_ar}
-                        </p>
-                        <p className="nx-dash-rec-line">
-                          <b>{ar ? "الإجراء المقترح: " : "Proposed action: "}</b>
-                          {rec.action_ar}
-                        </p>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="nx-dash-empty mt-3">
-                  {ar ? "لا توصيات قائمة الآن." : "No advisories right now."}
-                </p>
-              )}
-            </section>
             <SadeedUsageAnalytics />
           </div>
         </section>
@@ -705,6 +653,67 @@ export function BlueprintPage() {
               </Link>
             ))}
           </div>
+        </section>
+
+        {/* ════ ٢ · توصيات سَدِيد ═════════════════════════════════════════
+            كل توصية: عنوان · سبب · إجراء مقترح. مصدرها `getRiskBoard` —
+            المسار الحيّ يبنيها من المعالجة المسجَّلة في صف المخاطرة نفسه ولا
+            يؤلّف إجراءً، والبديل محاكاة مرجعية موسومة. */}
+        <section
+          className="nx-bp-stage mt-8"
+          style={{ ["--nx-bp-i" as string]: 6 }}
+          aria-labelledby="nx-rec-heading"
+        >
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="nx-bp-h2" id="nx-rec-heading">
+              {ar ? `توصيات ${PRODUCT_BRAND.assistantName}` : `${PRODUCT_BRAND.en.name} advisories`}
+            </h2>
+            {riskSimulation && <SimChip ar={ar} />}
+          </div>
+          {recommendations.length ? (
+            <ul className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
+              {recommendations.map((rec) => {
+                const tone = STAT_TONES[SEVERITY_TONE[rec.severity]];
+                const ToneIcon = tone.icon;
+                return (
+                  /* لا `nx-bp-card` هنا عمدًا: زجاجها قاعدةٌ **خارج الطبقات**
+                     فتعلو أدوات Tailwind كلّها مهما تأخّرت (قاعدة الطبقات في
+                     CSS: غير المُطبَّق يسبق المُطبَّق)، فتمحو خلفية النغمة
+                     وحدّها — ويبقى «خطر» و«تحذير» بلا فرق في الخلفية والحدّ.
+                     الأساس هنا `.nx-dash-rec` ولا يكتب `background` ولا
+                     `border-color`، فيبقى الفرق كاملًا كما يشترطه العقد. */
+                  <li key={rec.id} className={`nx-dash-rec rounded-2xl border p-4 ${tone.card}`}>
+                    <div className="flex items-start gap-2">
+                      {ToneIcon && (
+                        <ToneIcon
+                          aria-hidden
+                          className={`mt-0.5 h-4 w-4 shrink-0 ${tone.iconCls}`}
+                        />
+                      )}
+                      <h3 className="nx-dash-rec-title">{rec.title_ar}</h3>
+                      {tone.badge && (
+                        <span className={`nx-dash-chip shrink-0 border ${tone.badgeCls}`}>
+                          {tone.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="nx-dash-rec-line">
+                      <b>{ar ? "السبب: " : "Why: "}</b>
+                      {rec.why_ar}
+                    </p>
+                    <p className="nx-dash-rec-line">
+                      <b>{ar ? "الإجراء المقترح: " : "Proposed action: "}</b>
+                      {rec.action_ar}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="nx-dash-empty mt-3">
+              {ar ? "لا توصيات قائمة الآن." : "No advisories right now."}
+            </p>
+          )}
         </section>
 
         {/* ════ ٣ · المخاطر — بطاقات مجمّعة + جدول تفصيلي ═════════════════
@@ -896,7 +905,7 @@ export function BlueprintPage() {
               ليست شريطًا علويًّا ولا عودةً له: الشريط حُذف بأمر المالك، وهذا
               تذييل الصفحة القائم يحمل ما يحمله كل تذييل — الروابط الأساسية.
               وهو الطبقة الوحيدة التي **لا تسقط ببيانات**: بطاقات المناطق
-              والمؤشرات وشريط الشذوذ كلّها تتبع ما يصل من الخادم، وهذه ثمانية
+              والمؤشرات كلّها تتبع ما يصل من الخادم، وهذه ثمانية
               مداخل ثابتة تصمد ولو لم يصل صفٌّ واحد (WCAG 2.2 §2.4.5).
 
               **أرضية اللمس مضمونة لأن هذه مراسٍ حقيقية `<a href>`، لا لأن
