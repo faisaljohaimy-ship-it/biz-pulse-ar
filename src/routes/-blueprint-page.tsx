@@ -79,7 +79,7 @@ import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, getRegion, type RegionId } from "@/lib/regions";
 import { SadeedStagePresence } from "@/components/sadeed/SadeedStagePresence";
 import { SadeedUsageAnalytics } from "@/components/sadeed/SadeedUsageAnalytics";
-import { SadeedAnomalyStrip } from "@/components/sadeed/SadeedAnomalyStrip";
+
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
 const STAGE_AR: Record<string, string> = {
