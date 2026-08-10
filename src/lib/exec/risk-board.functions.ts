@@ -46,9 +46,28 @@ function toSeverity(priority: unknown, score: unknown): RiskSeverity {
   if (p === "critical" || p === "high" || p === "حرج" || p === "عالٍ") return "high";
   if (p === "medium" || p === "متوسط") return "medium";
   if (p === "low" || p === "منخفض") return "low";
-  const s = typeof score === "number" ? score : 0;
-  return s >= 15 ? "high" : s >= 8 ? "medium" : "low";
+  // **المادة ٢٧.** كان هنا `const s = typeof score === "number" ? score : 0`،
+  // فصفٌّ بلا أولوية معروفة **وبلا درجة** يهبط إلى `low` ⇒ نغمة `success`
+  // ⇒ دائرة خضراء وكلمة «سليم». أي: حكمُ سلامةٍ مصنوعٌ من صفرٍ ملفَّق لا من
+  // قياس — وهو بعينه «نظامٌ لم يُشغَّل يُقرأ نظامًا سليمًا خاملًا».
+  // ما لم يُقَس لا يُمنح البراءة: لا درجة ⇒ لا هبوط إلى «سليم».
+  //
+  // ولا يُستبدل الأخضر بالكهرماني: ذاك حكمُ «تحذير» مصنوعٌ من غيابٍ كذلك.
+  // الغياب يُقال غيابًا — `"unmeasured"` — فيأخذ نغمة محايدة ويُقرأ
+  // «لم يُقَس»، كما تفعل `idle` في حالة المنطقة.
+  if (typeof score !== "number" || !Number.isFinite(score)) return "unmeasured";
+  return score >= 15 ? "high" : score >= 8 ? "medium" : "low";
 }
+
+/**
+ * نصّ الغياب الموحَّد (المادة ٢٧).
+ *
+ * كان الغائب يُكتب «—» في العنوان والحالة، بينما المنطقة الغائبة في الجدول
+ * نفسه تُكتب «لم يُقَس». فيقرأ المستخدم في صفٍّ واحد لغتَي غياب: خطٌّ في
+ * خانة وجملةٌ في أخرى — والخطّ لا يقول إن كان القياس لم يقع أم وقع وخرج
+ * فارغًا. نصٌّ واحد لمعنًى واحد، وهو النصّ الذي تعرضه الصفحة أصلًا.
+ */
+const NOT_MEASURED_AR = "لم يُقَس";
 
 const STATUS_AR: Record<string, string> = {
   open: "مفتوحة",
@@ -67,9 +86,17 @@ const SEVERITY_AR: Record<RiskSeverity, string> = {
   high: "عالية",
   medium: "متوسطة",
   low: "منخفضة",
+  unmeasured: NOT_MEASURED_AR,
 };
 
-const SEVERITY_RANK: Record<RiskSeverity, number> = { high: 0, medium: 1, low: 2 };
+// غير المقيس **آخر** الترتيب: الفرز بالخطورة، وما لم يُقَس لا خطورة له
+// تُقارَن — وتقديمه على «عالية» يدفن ما قِيس فعلًا تحت ما لم يُقَس.
+const SEVERITY_RANK: Record<RiskSeverity, number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
+  unmeasured: 3,
+};
 
 type SimRiskRow = {
   id: string;
@@ -95,10 +122,10 @@ async function fetchRiskBoardLive(supabase: { from: (t: string) => any }): Promi
   const rows: RiskRow[] = raw.map((r, i) => ({
     id: r.id,
     ref: r.ref ?? `R-${i + 1}`,
-    title_ar: r.title ?? "—",
+    title_ar: r.title ?? NOT_MEASURED_AR,
     region_id: toRegionId(r.metadata?.region ?? r.metadata?.region_id),
     severity: toSeverity(r.priority, r.score),
-    status_ar: STATUS_AR[(r.status ?? "").toLowerCase()] ?? r.status ?? "—",
+    status_ar: STATUS_AR[(r.status ?? "").toLowerCase()] ?? r.status ?? NOT_MEASURED_AR,
   }));
 
   /**

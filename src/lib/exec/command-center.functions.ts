@@ -145,9 +145,14 @@ export async function fetchCommandCenterLive(supabase: {
     .map((u) => ({
       id: u.id,
       title_ar: u.title_ar,
-      department: u.department ?? "—",
+      // نصّ الغياب الموحَّد لا «—»: الخطّ لا يقول إن كان القياس لم يقع أم
+      // وقع فارغًا، والصفحة تكتب «لم يُقَس» لكل غياب آخر (المادة ٢٧).
+      department: u.department ?? "لم يُقَس",
       due_at: u.due_at!,
-      sla_hours: u.sla_hours ?? 24,
+      // `sla_hours` عمود يقبل `NULL`، وكان يُكتب مكانه **٢٤** — رقمٌ مؤلَّف
+      // لا مصدر له يدخل عقد الحالة فيقرؤه كل مستهلك لاحق مهلةً متّفقًا عليها،
+      // ويُحسب منه تأخّرٌ أو التزامٌ لم يُقَس أيّهما. لا مهلة مسجَّلة ⇒ `null`.
+      sla_hours: u.sla_hours ?? null,
       status: u.status,
     }));
 

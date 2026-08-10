@@ -146,6 +146,29 @@ describe("المُخطَّط — الوضعان يعملان معًا", () => {
 });
 
 describe("المُخطَّط — المادة ٢٧: الصدق العددي", () => {
+  it("الخطورة غير المقيسة لا تُمنح براءة — ولا تحذيرًا", () => {
+    // العطل الذي أُصلح: `toSeverity` كانت تكتب `score ?? 0` ثم تصنّف، فصفٌّ
+    // بلا أولوية **وبلا درجة** يهبط إلى `low` ⇒ نغمة `success` ⇒ دائرة
+    // خضراء وكلمة «سليم». حكمُ سلامةٍ مصنوعٌ من صفرٍ ملفَّق — وهو أخطر من
+    // رقمٍ خاطئ لأنه يُقرأ طمأنينة.
+    //
+    // ولا يكفي رفعه إلى `medium`: الكهرماني حكمُ «تحذير»، وهو مصنوعٌ من
+    // الغياب نفسه. فالغياب حالةٌ ثالثة تُقال: `unmeasured` بنغمة محايدة.
+    const RISK = read("src/lib/exec/risk-board.functions.ts");
+    const code = RISK.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "");
+    expect(code, "درجة غائبة تُستبدل بصفر ثم تُصنَّف").not.toMatch(
+      /score\s*(?:\?\?|:contentReference)\s*0|typeof score === "number" \? score : 0/,
+    );
+    expect(code, "الغياب لا يُعاد حالةً صريحة").toMatch(/return "unmeasured"/);
+
+    // والنغمة محايدة لا خضراء ولا كهرمانية — وإلّا عاد الحكم من باب آخر.
+    const tone = PAGE.match(/SEVERITY_TONE[^=]*=\s*\{([\s\S]*?)\}/)?.[1] ?? "";
+    expect(tone, "لم تُقرأ خريطة النغمات — تغيّر شكلها فبطل الحارس").toContain("unmeasured");
+    expect(tone).toMatch(/unmeasured:\s*"default"/);
+    // ومعروضةٌ لا مطويّة: عددها خبرٌ عن جودة البيانات.
+    expect(PAGE).toMatch(/SEVERITY_ORDER[^=]*=\s*\[[^\]]*"unmeasured"/);
+  });
+
   it("الغياب يُقرأ نصًّا ولا يُستبدل بصفر", () => {
     expect(PAGE).toContain("لم يُقَس");
     expect(PANELS).toContain("notMeasured");
@@ -187,7 +210,9 @@ describe("المُخطَّط — المادة ٢٧: الصدق العددي", ()
     const glyph = PAGE.match(/ratio=\{([^}]*)\}/g) ?? [];
     expect(glyph.length, "لا مستهلك لنسبة الشكل — تغيّر الحقل فبطل الحارس").toBeGreaterThan(0);
     for (const r of glyph) {
-      expect(r, `نسبة لا تُفرِّق الغياب عن الصفر: ${r}`).toMatch(/undefined \? null|=== null \? null/);
+      expect(r, `نسبة لا تُفرِّق الغياب عن الصفر: ${r}`).toMatch(
+        /undefined \? null|=== null \? null/,
+      );
     }
     // والرقم المعروض من المتغيّر نفسه — وإلّا انفصل الشكل عن رقمه.
     expect(PAGE).toMatch(/ratio=\{pct === undefined \? null : pct \/ 100\}/);

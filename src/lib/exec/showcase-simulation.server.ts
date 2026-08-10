@@ -2498,7 +2498,9 @@ export type CommandCenterState = {
     title_ar: string;
     department: string;
     due_at: string;
-    sla_hours: number;
+    /** `null` = لا مهلة مسجَّلة على الصفّ ⇒ «لم يُقَس». كان يُكتب مكانها ٢٤
+        ساعة في المسار الحيّ — مهلةٌ مؤلَّفة يُحسب منها التزامٌ لم يُقَس. */
+    sla_hours: number | null;
     status: string;
   }>;
   regions: Array<{
@@ -2779,7 +2781,15 @@ export function buildBiDashboardSimulation(now: number): BiDashboardData {
    المنطقة تأتي من `regions.ts` — المرجع الجغرافي الوحيد — دورةً على
    الترتيب، ولا اسم منطقة مكتوب هنا نصًّا. */
 
-export type RiskSeverity = "high" | "medium" | "low";
+/**
+ * شدّة المخاطرة — وفيها **غيابٌ صريح** (المادة ٢٧).
+ *
+ * كان النوع ثلاثيًّا، فصفٌّ بلا أولوية وبلا درجة لا يجد ما يقوله إلا إحدى
+ * الشدّات الثلاث — فيهبط إلى `low` ويُعرض دائرةً خضراء وكلمة «سليم».
+ * أي براءةٌ مصنوعة من غياب. و`"unmeasured"` تجعل الغياب حالةً تُقال، لا
+ * فراغًا يُملأ بأقلّ الشدّات.
+ */
+export type RiskSeverity = "high" | "medium" | "low" | "unmeasured";
 
 export type RiskRow = {
   id: string;

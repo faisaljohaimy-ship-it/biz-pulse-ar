@@ -93,6 +93,8 @@ const SEVERITY_TONE: Record<RiskSeverity, StatTone> = {
   high: "danger",
   medium: "warning",
   low: "success",
+  // غير المقيس نغمةٌ محايدة لا خضراء: «سليم» حكمٌ يقتضي قياسًا وقع.
+  unmeasured: "default",
 };
 
 /**
@@ -118,9 +120,12 @@ const SEVERITY_LABEL: Record<RiskSeverity, { ar: string; en: string }> = {
   high: { ar: "عالية", en: "High" },
   medium: { ar: "متوسطة", en: "Medium" },
   low: { ar: "منخفضة", en: "Low" },
+  unmeasured: { ar: "لم يُقَس", en: "Not measured" },
 };
 
-const SEVERITY_ORDER: RiskSeverity[] = ["high", "medium", "low"];
+// وغير المقيس **معروضٌ** لا مطويّ: عدده خبرٌ عن جودة البيانات نفسها، وطيّه
+// يجعل لوحةً ناقصة القياس تبدو مكتملة.
+const SEVERITY_ORDER: RiskSeverity[] = ["high", "medium", "low", "unmeasured"];
 
 /**
  * مداخل التذييل — الطبقة الثالثة، وهي وحدها **غير مشروطة ببيانات**.
