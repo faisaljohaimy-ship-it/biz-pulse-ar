@@ -24,37 +24,59 @@ export async function fetchCommandCenterLive(supabase: {
 }): Promise<CommandCenterState> {
   // `sec_sites` كان يُقرأ لحساب «الأصول النشطة» ضربًا في ٨ — مُضاعِفٌ مؤلَّف
   // لا مصدر له، ولا عمود منطقة على الجدول أصلًا. سقط الحساب فسقطت قراءته.
-  const [agentsRes, evRes, aiRes, urgentRes, supportRes, incidentsRes, complianceRes] =
-    await Promise.all([
-      supabase
-        .from("intelligence_agents")
-        .select("id,name_ar,role,focus_area,status")
-        .order("name_ar")
-        .limit(12),
-      supabase
-        .from("evolution_proposals")
-        .select("id,title_ar,priority,status,created_at")
-        .order("created_at", { ascending: false })
-        .limit(30),
-      supabase
-        .from("finn_improvement_proposals")
-        .select("id,area,proposal_ar,impact,status,created_at")
-        .order("created_at", { ascending: false })
-        .limit(30),
-      supabase
-        .from("urgent_tasks")
-        .select("id,title_ar,department,priority,status,due_at,sla_hours,is_simulation")
-        .neq("status", "مغلق")
-        .order("due_at", { ascending: true })
-        .limit(12),
-      supabase
-        .from("support_requests")
-        .select("id,status,is_simulation")
-        .neq("status", "مغلق")
-        .limit(50),
-      supabase.from("sec_incidents").select("id,status,severity").neq("status", "resolved"),
-      supabase.from("hcis_compliance_status").select("region_code,status"),
-    ]);
+  // **العدّ منفصلٌ عن العرض (المادة ٢٧).** كانت العدّادات تُحسب بطول مصفوفة
+  // الصفوف المجلوبة، وهي مسقوفة بـ`limit` للعرض — فثلاثون مهمّة عاجلة تُعرض
+  // «١٢»، وسبعون طلب مساندة تُعرض «٥٠». والرقم يبدو نهائيًّا ولا شيء يقول
+  // إنه مبتور: عطلٌ يقرأه مسؤولٌ قرارًا. فيُطلب العدّ الفعلي بـ
+  // `count: "exact", head: true` — استعلامٌ لا يجلب صفًّا واحدًا.
+  const [
+    agentsRes,
+    evRes,
+    aiRes,
+    urgentRes,
+    supportRes,
+    incidentsRes,
+    complianceRes,
+    urgentCountRes,
+    supportCountRes,
+  ] = await Promise.all([
+    supabase
+      .from("intelligence_agents")
+      .select("id,name_ar,role,focus_area,status")
+      .order("name_ar")
+      .limit(12),
+    supabase
+      .from("evolution_proposals")
+      .select("id,title_ar,priority,status,created_at")
+      .order("created_at", { ascending: false })
+      .limit(30),
+    supabase
+      .from("finn_improvement_proposals")
+      .select("id,area,proposal_ar,impact,status,created_at")
+      .order("created_at", { ascending: false })
+      .limit(30),
+    supabase
+      .from("urgent_tasks")
+      .select("id,title_ar,department,priority,status,due_at,sla_hours,is_simulation")
+      .neq("status", "مغلق")
+      .order("due_at", { ascending: true })
+      .limit(12),
+    supabase
+      .from("support_requests")
+      .select("id,status,is_simulation")
+      .neq("status", "مغلق")
+      .limit(50),
+    supabase.from("sec_incidents").select("id,status,severity").neq("status", "resolved"),
+    supabase.from("hcis_compliance_status").select("region_code,status"),
+    supabase
+      .from("urgent_tasks")
+      .select("id", { count: "exact", head: true })
+      .neq("status", "مغلق"),
+    supabase
+      .from("support_requests")
+      .select("id", { count: "exact", head: true })
+      .neq("status", "مغلق"),
+  ]);
 
   const sevOfImpact = (v: string | null): CommandSeverity =>
     v === "حرج" || v === "critical" || v === "immediate"
@@ -172,16 +194,19 @@ export async function fetchCommandCenterLive(supabase: {
   const regions = regionIds.map((region_id) => {
     const rows = complianceRows.filter((r) => r.region_code === region_id);
     const assessed = rows.filter((r) => r.status !== "not_assessed");
-    // عقد `compliance_pct` القائم مع كل مستهلكيه: صفرٌ من الخادم = «لا قراءة»
-    // (منصوصٌ عليه في `-blueprint-page.tsx` ومحروسٌ في اختبار عقده)، فلا
-    // يُعرض رقمًا في أي سطح. لذلك يبقى صفرًا هنا ولا يتحوّل `null`.
+    // **كان الصفر يحمل معنى الغياب** — «صفرٌ من الخادم = لا قراءة» — وهو
+    // ترميزٌ يبتلع القياس الأخطر: منطقةٌ قِيست فعلًا وامتثالها **٠٪**
+    // (انهيارٌ كامل) كانت تُقرأ «لم يُقَس»، فلا يُرسم لها قوس، وتسقط من
+    // متوسط الامتثال، **ولا يمكن أن تظهر أبدًا في بطاقة «أدنى منطقة
+    // امتثالًا»** — أي أن أسوأ منطقة هي بالضبط التي يخفيها العرض.
+    // فالغياب `null` والصفر صفر (المادة ٢٧).
     const pct = assessed.length
       ? Math.round(
           (assessed.filter((r) => r.status === "compliant" || r.status === "in_progress").length /
             assessed.length) *
             100,
         )
-      : 0;
+      : null;
     return {
       region_id,
       // لا عمود منطقة على `sec_sites`، فلا عدد أصول لمنطقة. وكان يُكتب هنا
@@ -216,8 +241,11 @@ export async function fetchCommandCenterLive(supabase: {
     counters: {
       agents_active: agents.filter((a) => a.status !== "idle").length,
       proposals_pending: pipeline.filter((p) => p.stage !== "approved").length,
-      urgent_open: urgent.length,
-      support_processing: ((supportRes.data ?? []) as unknown[]).length,
+      // `count` من الخادم لا طول الصفحة المجلوبة. وإن لم يصل العدّ (خطأ أو
+      // مسار لا يدعمه) فالجواب `null` = «لم يُقَس» — لا طولُ الصفحة المبتور،
+      // فذاك رقمٌ خاطئ يُقرأ صحيحًا.
+      urgent_open: typeof urgentCountRes?.count === "number" ? urgentCountRes.count : null,
+      support_processing: typeof supportCountRes?.count === "number" ? supportCountRes.count : null,
       done_today: sumMeasured(agents.map((a) => a.done_today)),
       // العدّ الكلّي قياسٌ وقع (صفوف `sec_incidents` غير المُغلقة) — وهو
       // الوحيد المقيس في هذا الباب، فيُعرض؛ والتوزيع على المناطق «لم يُقَس».
@@ -226,7 +254,9 @@ export async function fetchCommandCenterLive(supabase: {
       // فمنطقةٌ واحدة مقيسة بـ97% مع ثلاثٍ لم تُقيَّم تُخرج «24%»: انهيارُ
       // امتثالٍ لم يقع. والصفر هنا يبقى «لا قراءة» كعقد `compliance_pct`.
       compliance_avg: (() => {
-        const measured = regions.filter((r) => r.compliance_pct > 0);
+        const measured = regions.filter(
+          (r): r is typeof r & { compliance_pct: number } => r.compliance_pct !== null,
+        );
         return measured.length
           ? Math.round(measured.reduce((s, r) => s + r.compliance_pct, 0) / measured.length)
           : 0;

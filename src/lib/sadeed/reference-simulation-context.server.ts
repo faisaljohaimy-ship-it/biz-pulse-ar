@@ -49,7 +49,9 @@ export function buildReferenceSimulationContext(now = Date.now()): ReferenceSimu
     // المادة ٢٧ — ما لم يُقَس يُقال «لم يُقَس»، ولا يُسرَّب `null` نصًّا إلى
     // فم سَدِيد. المحاكاة المرجعية اليوم تُقيس الحقلين، والحارس لما بعدها.
     ...command.regions.map((region) => {
-      const compliance = region.compliance_pct > 0 ? `${region.compliance_pct}%` : "لم يُقَس";
+      // `!== null` لا `> 0`: الصفر قياسٌ (امتثال ٠٪) لا غياب. والفرق يبلغ فم سَدِيد:
+      // «امتثال ٠٪» خبرٌ عاجل، و«لم يُقَس» اعتذارٌ عن غياب — ولا يُقالان معًا.
+      const compliance = region.compliance_pct !== null ? `${region.compliance_pct}%` : "لم يُقَس";
       const incidents = region.incidents_open ?? "لم يُقَس";
       return `- ${REGION_AR[region.region_id] ?? region.region_id}: امتثال ${compliance}؛ بلاغات مفتوحة ${incidents}؛ حالة ${region.severity}`;
     }),

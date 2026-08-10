@@ -228,7 +228,8 @@ export function BlueprintPage() {
   const compliance = useMemo(() => {
     const out: Partial<Record<RegionId, number>> = {};
     for (const row of data?.regions ?? []) {
-      if (row.compliance_pct > 0) out[row.region_id] = row.compliance_pct;
+      // `!== null` لا `> 0`: الصفر قياسٌ (امتثال ٠٪) لا غياب.
+      if (row.compliance_pct !== null) out[row.region_id] = row.compliance_pct;
     }
     return out;
   }, [data]);
@@ -257,7 +258,11 @@ export function BlueprintPage() {
      على قيمة المجموع. الاستثناء الوحيد الامتثال: صفرُه من الخادم يعني «لا
      قراءة» — وهي القاعدة المكتوبة أصلًا في هذا الملف أعلاه. */
   const regionRows = data?.regions ?? [];
-  const measuredCompliance = regionRows.filter((r) => r.compliance_pct > 0);
+  // `!== null` لا `> 0`: الصفر قياسٌ (امتثال ٠٪) لا غياب. والمنطقة المنهارة هي بالضبط
+  // ما كانت البطاقة تخفيه: تُرشَّح خارج «المقيس» فلا تصير «أدنى منطقة» أبدًا.
+  const measuredCompliance = regionRows.filter(
+    (r): r is (typeof regionRows)[number] & { compliance_pct: number } => r.compliance_pct !== null,
+  );
   const rankCompliance = (dir: 1 | -1) =>
     measuredCompliance.length
       ? measuredCompliance.reduce((best, row) =>
@@ -828,9 +833,18 @@ export function BlueprintPage() {
           </div>
         </section>
 
-        {/* سجل القرارات الجاري — أصناف الشريط من طبقة المسرح نفسها. */}
+        {/* سجل القرارات الجاري — أصناف الشريط من طبقة المسرح نفسها.
+
+            **العنوان كان يقول «مباشر» بلا شارة محاكاة.** والصفوف تأتي من
+            `pipeline`، وهي عند سقوط المسار الحيّ صفوفٌ مكتوبة يدويًّا في
+            `buildCommandCenterSimulation` («تعليق تصريح عمل ساخن — رياح
+            نشطة»…). فكان القسم الوحيد على الصفحة بلا `SimChip` — وهو
+            بالضبط القسم الذي يدّعي عنوانه المباشرة. */}
         <section className="nx-bp-stage mt-8" style={{ ["--nx-bp-i" as string]: 8 }}>
-          <h2 className="nx-bp-h2">{ar ? "سجل القرارات — مباشر" : "Decisions — live"}</h2>
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="nx-bp-h2">{ar ? "سجل القرارات" : "Decisions"}</h2>
+            {simulation && <SimChip ar={ar} />}
+          </div>
           <div className="nx-op-ticker mt-3" data-static={!pipeline.length || undefined}>
             <div className="nx-op-ticker-track">
               {ticker.map((p, i) => (

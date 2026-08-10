@@ -15,7 +15,7 @@
  * فيعمل في الوضعين بلا قاعدة ثانية، ويعمل في `/sadeed-analytics` كما كان.
  */
 import { BarChart3, MessageSquare, Users, Timer, ThumbsUp } from "lucide-react";
-import { getUsageAnalytics, type UsageKpi } from "@/lib/sadeed/usage-analytics";
+import { NOT_MEASURED_AR, getUsageAnalytics, type UsageKpi } from "@/lib/sadeed/usage-analytics";
 import { SimBadge } from "@/components/os/SimBadge";
 import { SADEED_DISPLAY_NAME_AR_PLAIN } from "@/lib/sadeed-core/branding";
 
@@ -28,9 +28,26 @@ const KPI_ICON: Record<string, typeof MessageSquare> = {
 
 const WEEK_DAYS = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
+/**
+ * لافتات «آخر ٧ أيام» — مشتقّة من اليوم الفعلي لا ثابتة.
+ *
+ * كان العمود يُلافَت بـ`WEEK_DAYS[i]`، و`weekly` مفهرسٌ **الفهرس ٦ = اليوم**
+ * (كما ينصّ عقده). فكانت اللافتة تقول «الأحد» لِما قبل ستّة أيام أيًّا كان
+ * اليوم — أي أن أسماء الأيام صحيحة **يوم السبت وحده**، وخاطئة ستّة أيام من
+ * سبعة. ومؤشّرٌ زمنيّ بلافتة يومٍ خاطئة أسوأ من مؤشّر بلا لافتة: يُقرأ
+ * «الجمعة أهدأ الأيام» عن عمودٍ هو الثلاثاء.
+ *
+ * والقيم تبقى حتمية كما هي؛ المشتقّ هو الاسم وحده.
+ */
+function lastSevenDayNames(today: Date): string[] {
+  const end = today.getDay();
+  return Array.from({ length: 7 }, (_, i) => WEEK_DAYS[(end - 6 + i + 14) % 7]!);
+}
+
 export function SadeedUsageAnalytics({ className = "" }: { readonly className?: string }) {
   const { kpis, topQuestions, weekly } = getUsageAnalytics();
   const peak = Math.max(...weekly, 1);
+  const dayNames = lastSevenDayNames(new Date());
 
   /* `@container` — استعلام حاوية لا استعلام إطار.
      صار السطح يُركَّب في موضعين بعرضين مختلفين تمامًا: عمودٌ ثالث من ثلاثة
@@ -80,12 +97,25 @@ export function SadeedUsageAnalytics({ className = "" }: { readonly className?: 
                 className="mt-2 text-xl font-black text-[color:var(--ink)]"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
-                {k.value}
+                {/* `null` = لا أداة قياس ⇒ «لم يُقَس» بدرجة حبرٍ أهدأ وحجمٍ
+                    أصغر: النصّ لا يُقرأ رقمًا، ولا يُترك فراغًا يُقرأ صفرًا
+                    (المادة ٢٧). */}
+                {k.value ?? (
+                  <span className="text-[13px] font-semibold text-[color:var(--ink-2)]">
+                    {NOT_MEASURED_AR}
+                  </span>
+                )}
               </div>
-              <div className="mt-0.5 text-[12px] font-semibold text-[color:var(--ink-2)]">
-                {k.ar}
-              </div>
-              <div className="mt-0.5 text-[12px] leading-relaxed text-[color:var(--ink-3)]">
+              {/* درجتا الحبر ترتفعان درجةً واحدة (٢٠٢٦/٠٨/١٠ — قياس لا تقدير).
+                  `--ink-3` فوق `--chip` يعطي **٤٫١٩:١** مقيسًا على البكسل
+                  المرسوم في الوضع الداكن — دون ٤٫٥:١ (WCAG 2.2 §1.4.3)، وهي
+                  رقاقةٌ رُفعت عن السطح فقلّ الفارق. و`--ink-2` مكانه يعطي
+                  ٦٫٣٠:١ داكنًا و٩٫١٨:١ فاتحًا.
+                  والتدرّج بين اللافتة وتابعها **لونٌ وحده**: قاعدةٌ عامة تفرض
+                  ٧٠٠ على نصّ الـ١٢px هنا، فلا وزن يفرّقهما. لذلك تصعد
+                  اللافتة إلى `--ink` بدل أن يلتقيا عند درجةٍ واحدة. */}
+              <div className="mt-0.5 text-[12px] font-semibold text-[color:var(--ink)]">{k.ar}</div>
+              <div className="mt-0.5 text-[12px] leading-relaxed text-[color:var(--ink-2)]">
                 {k.hintAr}
               </div>
             </div>
@@ -116,10 +146,12 @@ export function SadeedUsageAnalytics({ className = "" }: { readonly className?: 
                 <div
                   className="w-full rounded-t bg-gradient-to-t from-[color:var(--tone-blue)] to-[color:var(--tone-cyan)] transition-[height] duration-500 ease-out"
                   style={{ height: `${Math.max(6, Math.round((v / peak) * 104))}px` }}
-                  title={`${WEEK_DAYS[i]}: ${v}`}
+                  title={`${dayNames[i]}: ${v}`}
                 />
-                <span className="text-[12px] text-[color:var(--ink-3)]">
-                  {WEEK_DAYS[i].slice(0, 3)}
+                {/* لافتة اليوم هي المفتاح الوحيد لقراءة العمود — و`--ink-3`
+                    فوق `--chip` ٤٫١٩:١ داكنًا. `--ink-2` يرفعها إلى ٦٫٣٠:١. */}
+                <span className="text-[12px] text-[color:var(--ink-2)]">
+                  {dayNames[i]!.slice(0, 3)}
                 </span>
               </div>
             ))}
@@ -134,12 +166,19 @@ export function SadeedUsageAnalytics({ className = "" }: { readonly className?: 
           <ul className="space-y-2">
             {topQuestions.map((q, i) => (
               <li key={i} className="flex items-center gap-2 text-[12px]">
-                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[color:var(--chip-strong)] text-[12px] font-bold text-[color:var(--tone-cyan)]">
+                {/* رقم الرتبة كان `--tone-cyan` فوق `--chip-strong`: **٤٫١٣:١**
+                    مقيسًا في الوضع الفاتح — ساقطٌ هناك وحده، والداكن يمرّ
+                    بـ٤٫٩٦:١. وهذا عين ما تُوجب له المادة ٣٣ جولتين: لونٌ واحد
+                    يعبر في وضع ويسقط في الآخر، ولا يكشفه تشغيلٌ واحد.
+                    و`--ink-2` يعطي ٧٫٩٤:١ فاتحًا و٥٫٠٠:١ داكنًا. واللكنة
+                    السماوية باقية حيث تعبر: ترويسة اللوحة وأيقونات الرقاقات
+                    وتدرّج الأعمدة. */}
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[color:var(--chip-strong)] text-[12px] font-bold text-[color:var(--ink-2)]">
                   {i + 1}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-[color:var(--ink-2)]">{q.ar}</span>
+                <span className="min-w-0 flex-1 truncate text-[color:var(--ink)]">{q.ar}</span>
                 <span
-                  className="shrink-0 font-mono text-[12px] text-[color:var(--ink-3)]"
+                  className="shrink-0 font-mono text-[12px] text-[color:var(--ink-2)]"
                   style={{ fontVariantNumeric: "tabular-nums" }}
                 >
                   {q.count}

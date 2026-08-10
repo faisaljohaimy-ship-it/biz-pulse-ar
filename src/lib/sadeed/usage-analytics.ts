@@ -14,9 +14,13 @@ import { regionSim } from "@/lib/sec/region-sim-data";
 export interface UsageKpi {
   readonly key: string;
   readonly ar: string;
-  readonly value: string;
+  /** `null` = لا أداة قياس في المنتج أصلًا ⇒ يُعرض «لم يُقَس» (المادة ٢٧). */
+  readonly value: string | null;
   readonly hintAr: string;
 }
+
+/** نصّ الغياب الموحَّد — نفسه المستعمل في كل سطح آخر. */
+export const NOT_MEASURED_AR = "لم يُقَس";
 
 export interface TopQuestion {
   readonly ar: string;
@@ -28,7 +32,8 @@ export interface UsageAnalytics {
   readonly topQuestions: readonly TopQuestion[];
   /** Last 7 days message volume (index 0 = six days ago … 6 = today). */
   readonly weekly: readonly number[];
-  readonly satisfaction: number; // 0–100
+  /** `null` = لم يُقَس — لا مصدر تقييمٍ في المنتج (المادة ٢٧). */
+  readonly satisfaction: number | null;
 }
 
 /** Deterministic 7-day shape scaled to a base volume — no randomness. */
@@ -47,9 +52,17 @@ export function getUsageAnalytics(): UsageAnalytics {
   const alerts = sum((c) => c.cctv_new);
   const messagesToday = fieldStaff * 7 + incidents * 11 + alerts * 5;
   const activeUsers = REGIONS.length * 6 + Math.round(fieldStaff / 12);
-  // Response time inversely tracks load, clamped to a graceful band.
-  const responseMs = 900 + incidents * 12;
-  const satisfaction = Math.max(88, 98 - incidents);
+  // **مؤشّران حُذفت أرقامهما (المادة ٢٧ — أمر المالك ٢٠٢٦/٠٨/١٠).**
+  //
+  // كان هنا `responseMs = 900 + incidents * 12` و
+  // `satisfaction = Math.max(88, 98 - incidents)` — أي رقمان مشتقّان من عدد
+  // البلاغات لا من قياس. والأخطر تسميتهما مصدرًا: «متوسط زمن أول رد» و«من
+  // تقييمات المستخدمين».
+  //
+  // **ولا سطح في هذا المنتج يجمع تقييمًا، ولا أداة تقيس زمن أول رد.** فليست
+  // المسألة أن الرقم محاكاة — الشارة تقول ذلك — بل أن الحاشية تدّعي أداةً
+  // غير موجودة. والمحاكاة المرجعية نائبٌ عن بيانات ستوجد، لا عن أداةٍ لم
+  // تُبنَ. فالجواب «لم يُقَس» حتى يُقاسا.
 
   const kpis: UsageKpi[] = [
     {
@@ -67,14 +80,14 @@ export function getUsageAnalytics(): UsageAnalytics {
     {
       key: "latency",
       ar: "زمن الاستجابة",
-      value: `${(responseMs / 1000).toFixed(1)} ث`,
-      hintAr: "متوسط زمن أول رد",
+      value: null,
+      hintAr: "لا قياس لزمن الردّ بعد",
     },
     {
       key: "satisfaction",
       ar: "الرضا 👍",
-      value: `${satisfaction}%`,
-      hintAr: "من تقييمات المستخدمين",
+      value: null,
+      hintAr: "لا سطح تقييم في المنتج بعد",
     },
   ];
 
@@ -90,6 +103,6 @@ export function getUsageAnalytics(): UsageAnalytics {
     kpis,
     topQuestions,
     weekly: weeklyShape(Math.round(messagesToday / 1.2)),
-    satisfaction,
+    satisfaction: null,
   };
 }

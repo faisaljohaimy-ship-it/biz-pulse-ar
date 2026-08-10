@@ -2517,15 +2517,22 @@ export type CommandCenterState = {
      * لمنطقة لم تُقَس ادّعاءُ سلامةٍ لم يقع.
      */
     incidents_open: number | null;
-    compliance_pct: number;
+    /**
+     * `null` = لم يُقَس (لا صفّ تقييمٍ للمنطقة). و**الصفر قياس**: منطقةٌ
+     * قِيست وامتثالها ٠٪. كان الاثنان صفرًا واحدًا، فكانت المنطقة المنهارة
+     * تُقرأ غير مقيسة وتختفي من «أدنى منطقة امتثالًا».
+     */
+    compliance_pct: number | null;
     severity: CommandSeverity;
     last_pulse_at: string;
   }>;
   counters: {
     agents_active: number;
     proposals_pending: number;
-    urgent_open: number;
-    support_processing: number;
+    /** `null` = لم يُقَس. العدّ من الخادم لا طولُ الصفحة المسقوفة بـ`limit`. */
+    urgent_open: number | null;
+    /** `null` = لم يُقَس — كسابقتها. */
+    support_processing: number | null;
     /** `null` = لم يُقَس — لا يُستبدل بصفر (المادة ٢٧). */
     done_today: number | null;
     /**

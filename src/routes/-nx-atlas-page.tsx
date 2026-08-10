@@ -115,7 +115,8 @@ export function NxAtlasPage() {
   const live = useMemo(() => {
     const out: Partial<Record<RegionId, number>> = {};
     for (const r of data?.regions ?? [])
-      if (r.compliance_pct > 0) out[r.region_id] = r.compliance_pct;
+      // `!== null` لا `> 0`: الصفر قياسٌ (امتثال ٠٪) لا غياب.
+      if (r.compliance_pct !== null) out[r.region_id] = r.compliance_pct;
     return out;
   }, [data]);
 
