@@ -245,15 +245,9 @@ export function BlueprintPage() {
     value === null ? null : Math.min(1, value / ceiling);
 
   const panels = [
-    {
-      label: ar ? "الوكلاء النشطون" : "Active agents",
-      value: counters?.agents_active ?? null,
-      ceiling: 12,
-      beatSeconds: 0.82,
-      accent: "34, 211, 238",
-      caption: ar ? "وكلاء يعملون الآن على مهامّ مفتوحة" : "Agents currently working open tasks",
-      to: "/nx-flow",
-    },
+    // حُذفت أيقونة «الوكلاء النشطون» (كانت تعرض ١٠) بأمر المالك ٢٠٢٦/٠٨/١٠.
+    // و`agents_active` يبقى في عقد `getCommandCenterState` ويقرؤه `/nx-ops`
+    // و`/nx-flow` — الحذف حذفُ أيقونةٍ من الرئيسية لا إلغاءُ عدّاد.
     {
       label: ar ? "بانتظار الاعتماد" : "Pending approval",
       value: counters?.proposals_pending ?? null,
@@ -586,7 +580,9 @@ export function BlueprintPage() {
         </section>
 
         <section
-          className="nx-bp-stage mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          // بطاقتان بعد حذف «الوكلاء النشطون»: `lg:grid-cols-3` كان يترك
+          // عمودًا فارغًا على الشاشات الواسعة.
+          className="nx-bp-stage mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2"
           style={{ ["--nx-bp-i" as string]: 4 }}
         >
           {panels.map((panel, i) => (
