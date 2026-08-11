@@ -14,17 +14,51 @@
     "verified_against": "voice/waveform.png (1320x300, ~25.4 px/s) — visual match: faint blip 2.2–4.0s, gap to 5.36s, continuous body to 46.4s, two short tail phrases, silence after 50.56s"
   },
   "speech_segments": [
-    { "index": 1, "start_s": 2.236, "end_s": 4.044, "duration_s": 1.809, "note": "quiet opening phrase (very low amplitude — -30dB threshold misreads it as silence)" },
-    { "index": 2, "start_s": 5.361, "end_s": 46.382, "duration_s": 41.021, "note": "main body — continuous with sub-0.3s breaths only" },
-    { "index": 3, "start_s": 46.701, "end_s": 47.644, "duration_s": 0.944, "note": "short closing phrase A" },
-    { "index": 4, "start_s": 48.839, "end_s": 50.558, "duration_s": 1.720, "note": "short closing phrase B (final speech)" }
+    {
+      "index": 1,
+      "start_s": 2.236,
+      "end_s": 4.044,
+      "duration_s": 1.809,
+      "note": "quiet opening phrase (very low amplitude — -30dB threshold misreads it as silence)"
+    },
+    {
+      "index": 2,
+      "start_s": 5.361,
+      "end_s": 46.382,
+      "duration_s": 41.021,
+      "note": "main body — continuous with sub-0.3s breaths only"
+    },
+    {
+      "index": 3,
+      "start_s": 46.701,
+      "end_s": 47.644,
+      "duration_s": 0.944,
+      "note": "short closing phrase A"
+    },
+    {
+      "index": 4,
+      "start_s": 48.839,
+      "end_s": 50.558,
+      "duration_s": 1.72,
+      "note": "short closing phrase B (final speech)"
+    }
   ],
   "silences": [
     { "start_s": 0.0, "end_s": 2.236, "duration_s": 2.236, "note": "lead-in" },
-    { "start_s": 4.044, "end_s": 5.361, "duration_s": 1.317, "note": "internal pause after opening" },
+    {
+      "start_s": 4.044,
+      "end_s": 5.361,
+      "duration_s": 1.317,
+      "note": "internal pause after opening"
+    },
     { "start_s": 46.382, "end_s": 46.701, "duration_s": 0.318 },
     { "start_s": 47.644, "end_s": 48.839, "duration_s": 1.195 },
-    { "start_s": 50.558, "end_s": 51.966, "duration_s": 1.408, "note": "tail silence to end of file" }
+    {
+      "start_s": 50.558,
+      "end_s": 51.966,
+      "duration_s": 1.408,
+      "note": "tail silence to end of file"
+    }
   ],
   "summary": {
     "segment_count": 4,
