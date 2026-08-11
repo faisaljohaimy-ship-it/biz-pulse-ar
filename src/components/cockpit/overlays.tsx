@@ -142,7 +142,6 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
                 </bdi>
               }
             />
-            <Row label="الوسم" value="محاكاة مرجعية · is_simulation" />
           </div>
         </div>
       );

@@ -176,17 +176,13 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
         </div>
       </div>
       {/* Absolute-clarity law (Article 21): the page introduces itself in
-          one visible sentence on EVERY viewport, simulation badge included. */}
+          one visible sentence on EVERY viewport. */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <h1 className="text-xl font-bold leading-tight text-nx-pearl md:text-2xl">
           قمرة القيادة التنفيذية
         </h1>
-        <span className="rounded-nx-8 border border-nx-warning/40 px-2 py-0.5 text-[12px] text-nx-warning">
-          محاكاة مرجعية
-        </span>
         <p className="w-full text-xs text-nx-pearl/56 md:w-auto md:flex-1">
-          لوحة القيادة العليا لسَدِيد — صحة النظام والمناطق والقرارات والمساعد في شاشة واحدة،
-          ببيانات محاكاة مرجعية موسومة.
+          لوحة القيادة العليا لسَدِيد — صحة النظام والمناطق والقرارات والمساعد في شاشة واحدة.
         </p>
       </div>
       <ArchitectureLayerRail layers={layers} />

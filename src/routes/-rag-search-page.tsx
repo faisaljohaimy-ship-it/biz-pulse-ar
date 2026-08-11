@@ -195,11 +195,6 @@ export function RagSearchPage() {
                           · مقطع {r.citation.chunk_index + 1}
                         </span>
                         <span className="text-nx-pearl/56">· {pathsWord(r.matched_paths)}</span>
-                        {r.is_simulation ? (
-                          <span className="rounded-full border border-nx-gold/50 px-2 py-0.5 text-nx-gold">
-                            محاكاة مرجعية
-                          </span>
-                        ) : null}
                       </div>
                       <p className="line-clamp-4 text-sm leading-relaxed text-nx-pearl/88">
                         {r.content}

@@ -396,7 +396,7 @@ export function StrategicMapPanel({ regions }: { regions: readonly RegionSnapsho
           title="الخريطة الاستراتيجية"
           layer="twin"
           density="operations"
-          footer={<span>أداء المناطق الأربع في الوقت الفعلي · محاكاة مرجعية</span>}
+          footer={<span>أداء المناطق الأربع في الوقت الفعلي</span>}
         >
           <div className="flex flex-col gap-4">
             {/* Controls live in the flowing content, not the fixed-height

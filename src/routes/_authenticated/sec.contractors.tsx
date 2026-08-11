@@ -11,7 +11,7 @@ import {
 } from "@/lib/access.functions";
 import { userFacingError } from "@/lib/errors/user-facing-error";
 import { useAuth } from "@/lib/auth-context";
-import { SecPageHeader, SimTag, StatCard, statusClass } from "@/components/sec/sec-shell";
+import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -86,7 +86,6 @@ function ContractorsPage() {
   return (
     <div className="space-y-4">
       <SecPageHeader title="إدارة المقاولين" subtitle={`${contractors.length} مقاول مسجّل`}>
-        {data?.source === "reference" && <SimTag />}
         <NewContractorDialog
           onCreated={() => qc.invalidateQueries({ queryKey: ["access-overview"] })}
         />

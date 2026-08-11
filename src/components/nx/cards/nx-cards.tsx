@@ -36,20 +36,19 @@ export interface NxKpiCardProps extends React.HTMLAttributes<HTMLDivElement> {
   delta?: Omit<NxDeltaProps, "className">;
   /** Provenance (Standards §7): time reference + source class. */
   updatedAt: string;
+  /**
+   * @deprecated وسم المحاكاة حُذف من كل الشاشات بقرار المالك ٢٠٢٦/٠٨/١١.
+   * الخاصية باقية للتوافق مع نداءات قائمة ولا تُصيّر شيئًا.
+   */
   simulation?: boolean;
 }
 
 /** NxKpiCard · بطاقة مؤشر — one KPI with the four truths. */
 export const NxKpiCard = React.forwardRef<HTMLDivElement, NxKpiCardProps>(
-  ({ className, label, value, unit, delta, updatedAt, simulation = false, ...props }, ref) => (
+  ({ className, label, value, unit, delta, updatedAt, simulation: _simulation, ...props }, ref) => (
     <NxGlassCard ref={ref} interactive className={cn("flex flex-col gap-2", className)} {...props}>
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-nx-pearl/56">{label}</span>
-        {simulation ? (
-          <span className="rounded-nx-8 border border-nx-warning/40 px-2 py-0.5 text-[12px] text-nx-warning">
-            محاكاة
-          </span>
-        ) : null}
       </div>
       <div className="flex items-baseline gap-2">
         <NxKpiNumber value={value} unit={unit} size="lg" />

@@ -108,7 +108,6 @@ function GuidePage() {
         dataSource={
           ar ? "مصدر التنقّل الموحّد modules.ts" : "The single navigation source modules.ts"
         }
-        simulation={false}
         actions={
           ar
             ? [

@@ -38,8 +38,8 @@ type Notif = {
 
 // Live wiring lands next turn (enterprise_events subscription). For now the
 // list is empty — the panel shows a professional empty state, never fake rows.
-const useLiveNotifications = (): { items: Notif[]; simulated: boolean } => {
-  return { items: [], simulated: false };
+const useLiveNotifications = (): { items: Notif[] } => {
+  return { items: [] };
 };
 
 export function TopUtilityBar({ className }: { className?: string }) {
@@ -47,7 +47,7 @@ export function TopUtilityBar({ className }: { className?: string }) {
   const ar = locale === "ar";
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
-  const { items, simulated } = useLiveNotifications();
+  const { items } = useLiveNotifications();
   const unread = items.length;
 
   useEffect(() => {
@@ -107,11 +107,6 @@ export function TopUtilityBar({ className }: { className?: string }) {
               <div className="text-sm font-bold text-foreground">
                 {ar ? "التنبيهات" : "Notifications"}
               </div>
-              {simulated && (
-                <span className="rounded-full border border-[color:var(--tone-amber)]/40 bg-[color:var(--tone-amber)]/10 px-2 py-0.5 text-[12px] font-semibold text-[color:var(--tone-amber)]">
-                  {ar ? "محاكاة" : "Simulated"}
-                </span>
-              )}
             </div>
             <div className="max-h-[60vh] overflow-y-auto">
               {items.length === 0 ? (

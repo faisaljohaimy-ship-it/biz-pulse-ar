@@ -18,7 +18,6 @@ import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { FlaskConical } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { useAuth } from "@/lib/auth-context";
@@ -492,12 +491,6 @@ export function NxOpsPage() {
           className="nx-op-enter mt-8 flex flex-wrap items-center gap-3 border-t border-[color:var(--hairline-soft)] pt-4"
           style={{ ["--op-i" as string]: 14 }}
         >
-          {(data?.simulation ?? true) && (
-            <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] px-3 text-[12px] text-[color:var(--ink-2)]">
-              <FlaskConical className="h-3.5 w-3.5" aria-hidden />
-              {ar ? "بيانات محاكاة مرجعية" : "Reference simulation"}
-            </span>
-          )}
           <span className="text-[12px] text-[color:var(--ink-3)]">
             {ar
               ? "الصفوف الحية تحل محل المحاكاة فور وصولها. ما لا يصل يُقرأ «لم يُقَس» — لا يُستبدل بصفر."

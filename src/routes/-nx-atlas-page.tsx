@@ -13,7 +13,7 @@ import { useMemo, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Activity, ArrowUpRight, FlaskConical, Waves } from "lucide-react";
+import { Activity, ArrowUpRight, Waves } from "lucide-react";
 import {
   CC_ALERTS,
   CC_REGIONS,
@@ -360,15 +360,7 @@ export function NxAtlasPage() {
           <Waves className="h-3.5 w-3.5 text-[color:var(--tone-cyan)]" aria-hidden />
           {ar ? "سَدِيد · مركز المهام" : "SADEED · Mission Control"}
         </span>
-        {/* شارة المحاكاة — النافذة تُقدَّم من `resilient`، فالوسم واجب ظهور
-            بنفس صيغة تذييل /nx-flow. الصفوف الحية تُسقط الشارة من تلقائها. */}
         <span className="inline-flex flex-wrap items-center gap-2">
-          {(data?.simulation ?? true) && (
-            <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] px-3 text-[12px] font-semibold text-[color:var(--ink-2)]">
-              <FlaskConical className="h-3.5 w-3.5" aria-hidden />
-              {ar ? "بيانات محاكاة مرجعية" : "Reference simulation"}
-            </span>
-          )}
           <span className="nx-at-mono text-[12px] text-[color:var(--ink-3)]">
             {ar ? "ما لم يُقَس يُعرض «—»" : "unmeasured shows “—”"}
           </span>

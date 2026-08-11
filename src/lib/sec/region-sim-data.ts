@@ -3,8 +3,11 @@
  * Used by /sec pages when a region is active so the UI reflects
  * the switch instantly (circles, sections, KPIs).
  *
- * NOTE: Every KPI derived from this dataset is a demo simulation
- * and must be labelled "عرض توضيحي · محاكاة" in the UI.
+ * NOTE: Every KPI derived from this dataset is a demo simulation.
+ * The on-screen simulation badge was removed by owner directive
+ * (2026-08-11) — do NOT re-introduce a visual badge here. Provenance
+ * disclosure survives only in exported output (reports/PDF) and in
+ * SADEED's own replies.
  */
 
 import type { RegionId } from "@/lib/regions";

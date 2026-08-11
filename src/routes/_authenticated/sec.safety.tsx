@@ -1,6 +1,6 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
-import { SecPageHeader, SampleBadge, StatCard, severityClass } from "@/components/sec/sec-shell";
+import { SecPageHeader, StatCard, severityClass } from "@/components/sec/sec-shell";
 
 export const Route = createFileRoute("/_authenticated/sec/safety")({
   errorComponent: RouteError,
@@ -50,11 +50,7 @@ const OBS = [
 function Safety() {
   return (
     <div className="space-y-4">
-      <SecPageHeader
-        title="ملاحظات السلامة"
-        subtitle="رصد المخالفات والمشاهدات في الميدان"
-        badge="Sample"
-      />
+      <SecPageHeader title="ملاحظات السلامة" subtitle="رصد المخالفات والمشاهدات في الميدان" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="إجمالي هذا الشهر" value={47} />
         <StatCard
@@ -69,7 +65,6 @@ function Safety() {
         />
         <StatCard label="معدّل الإغلاق" value="82%" tone="success" />
       </div>
-      <SampleBadge />
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <table className="min-w-full text-sm">
           <thead className="bg-muted/40 text-xs text-muted-foreground">

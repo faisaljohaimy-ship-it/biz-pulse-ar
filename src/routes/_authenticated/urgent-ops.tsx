@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertTriangle, ShieldCheck, Sparkles, CheckCircle2, XCircle } from "lucide-react";
+import { ShieldCheck, Sparkles, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/urgent-ops")({
@@ -446,17 +446,6 @@ function UrgentOpsPage() {
 
   return (
     <div dir="rtl" className="space-y-6 p-4 md:p-6">
-      {/* Simulation banner */}
-      <div
-        role="status"
-        className="rounded-lg border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-amber-700 dark:text-amber-200 text-sm flex items-center gap-2"
-      >
-        <AlertTriangle className="h-4 w-4 shrink-0" />
-        <span className="font-semibold">
-          بيئة محاكاة تجريبية — البيانات افتراضية لأغراض العرض · Simulation environment — demo data
-        </span>
-      </div>
-
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-foreground">المساندة ومتابعة الأعمال العاجلة</h1>
         <p className="text-sm text-muted-foreground">

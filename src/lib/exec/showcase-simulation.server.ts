@@ -1643,8 +1643,8 @@ export function buildIntegrationsSimulation(now: number) {
       last_sync_status: connected ? "ok" : null,
       events_24h,
       errors_24h,
-      setup_hint_ar: "بيانات محاكاة مرجعية — اربط الموصل الفعلي من الإعدادات",
-      setup_hint_en: "Reference simulation — link the live connector from settings",
+      setup_hint_ar: "اربط الموصل الفعلي من الإعدادات",
+      setup_hint_en: "Link the live connector from settings",
       // Deterministic hourly working-day curve scaled to the provider's
       // 24h volume — fuel for the card sparkline.
       activity24h: fill(24, (h) => {

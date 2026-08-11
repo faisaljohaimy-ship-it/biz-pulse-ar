@@ -1,9 +1,9 @@
 /**
  * PageBriefing — the constitutional Article-21 widget: every screen
  * explains itself within three seconds. One sentence of purpose, the
- * data source (with the simulation badge when applicable), and 2–3
- * available actions. Collapsible; open by default on the first visit to
- * each route (localStorage, no PII), collapsed afterwards.
+ * data source, and 2–3 available actions. Collapsible; open by default
+ * on the first visit to each route (localStorage, no PII), collapsed
+ * afterwards.
  */
 import { useEffect, useState } from "react";
 import { ChevronDown, Database, Info, MousePointerClick } from "lucide-react";
@@ -12,7 +12,6 @@ export function PageBriefing({
   routeKey,
   what,
   dataSource,
-  simulation = true,
   actions,
 }: {
   /** Stable per-route key for the first-visit memory (e.g. "bi"). */
@@ -21,8 +20,6 @@ export function PageBriefing({
   what: string;
   /** «مصدر البيانات» — table names / origin, human-readable Arabic. */
   dataSource: string;
-  /** Whether displayed data may be reference simulation (Article 6 badge). */
-  simulation?: boolean;
   /** «ما يمكنك فعله هنا» — 2–3 short bullets. */
   actions: string[];
 }) {
@@ -66,11 +63,6 @@ export function PageBriefing({
             <div>
               <div className="font-semibold text-white/85">مصدر البيانات</div>
               <div className="mt-0.5 leading-relaxed">{dataSource}</div>
-              {simulation && (
-                <div className="mt-1 inline-flex rounded-full border border-amber-300/40 bg-amber-300/10 px-2 py-0.5 text-[12px] text-amber-200">
-                  محاكاة مرجعية — is_simulation = true
-                </div>
-              )}
             </div>
           </div>
           <div className="flex items-start gap-2">

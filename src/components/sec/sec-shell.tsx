@@ -205,13 +205,11 @@ export function StatCard({
   value,
   hint,
   tone = "default",
-  sim = false,
 }: {
   label: string;
   value: string | number;
   hint?: string;
   tone?: StatTone;
-  sim?: boolean;
 }) {
   const t = STAT_TONES[tone];
   const Icon = t.icon;
@@ -226,7 +224,6 @@ export function StatCard({
             {label}
           </div>
         </div>
-        {sim && <SimTag />}
       </div>
       <div className="mt-1 flex items-center gap-2">
         <div className={cn("text-2xl font-bold", t.value)}>{value}</div>
@@ -243,25 +240,6 @@ export function StatCard({
       </div>
       {hint && <div className="mt-1 text-[12px] text-muted-foreground">{hint}</div>}
     </div>
-  );
-}
-
-export function SimTag() {
-  return (
-    <span
-      className="shrink-0 rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[12px] font-medium leading-none text-amber-600 dark:text-amber-400"
-      title="بيانات محاكاة لأغراض العرض التوضيحي"
-    >
-      عرض توضيحي · محاكاة
-    </span>
-  );
-}
-
-export function SampleBadge() {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[12px] font-medium text-amber-600 dark:text-amber-400">
-      Sample data — لم يُربط بنظام مباشر بعد
-    </span>
   );
 }
 

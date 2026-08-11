@@ -115,13 +115,19 @@ describe("executive cockpit — composition", () => {
     }
   });
 
-  it("absolute-clarity law: visible h1, identification sentence and badge on every viewport", async () => {
+  it("absolute-clarity law: visible h1 and identification sentence on every viewport", async () => {
+    // ٢٠٢٦/٠٨/١١ بأمر المالك: رُفعت شارة المحاكاة عن كل شاشة. فسقط شرط الشارة من «قانون الوضوح المطلق»، وبقي شرطاه الآخران —
+    // وهما الحاملان للقانون أصلًا: عنوانٌ ظاهر يقول أين أنت، وجملةُ تعريفٍ
+    // تقول ما هذا السطح. الشارة كانت تقول **مصدر** الأرقام لا **هوية**
+    // الشاشة، وحراسة مصدرها انتقلت إلى أسطح الإفصاح النصّي.
     await renderCockpit();
     const heading = screen.getByRole("heading", { level: 1, name: "قمرة القيادة التنفيذية" });
     expect(heading).toBeInTheDocument();
     expect(heading.className).not.toMatch(/hidden/);
-    const badge = within(screen.getByTestId("system-header")).getByText("محاكاة مرجعية");
-    expect(badge.className).not.toMatch(/hidden/);
+    expect(
+      within(screen.getByTestId("system-header")).queryByText("محاكاة مرجعية"),
+      "عادت شارة المحاكاة إلى ترويسة القمرة بعد رفعها",
+    ).not.toBeInTheDocument();
     expect(screen.getByText(/لوحة القيادة العليا لسَدِيد/)).toBeInTheDocument();
   });
 

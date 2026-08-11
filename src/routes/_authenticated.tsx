@@ -1,7 +1,6 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { RuntimeProvider } from "@/lib/runtime/RuntimeContext";
-import { SimulationRibbon } from "@/components/SimulationRibbon";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -21,7 +20,6 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthLayout() {
   return (
     <RuntimeProvider>
-      <SimulationRibbon />
       <AppShell>
         <Outlet />
       </AppShell>

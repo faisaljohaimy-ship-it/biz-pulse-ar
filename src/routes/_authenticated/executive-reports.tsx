@@ -322,10 +322,6 @@ function ExecutiveReportsPage() {
     );
   };
 
-  // الملخصات المرجعية تُعرض لكل من لا يملك بيانات حية (زائر أو عضو غير
-  // مسؤول)؛ لوحة النشر وحدها هي المقصورة على المسؤول.
-  const usingReference = briefings.some((b) => b.id.startsWith("sim-brief-"));
-
   return (
     <div className="space-y-4 p-4 md:p-6">
       <PageHeader
@@ -347,11 +343,6 @@ function ExecutiveReportsPage() {
               {isAr ? "ملخصات سابقة" : "Recent Briefings"}
             </div>
             <div className="flex items-center gap-2">
-              {usingReference && (
-                <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[12px] font-medium text-amber-600 dark:text-amber-300">
-                  {isAr ? "محاكاة مرجعية" : "Reference simulation"}
-                </span>
-              )}
               <Badge variant="outline" className="text-xs">
                 {briefings.length}
               </Badge>

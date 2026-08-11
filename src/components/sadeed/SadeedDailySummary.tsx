@@ -1,11 +1,10 @@
 /**
  * SadeedDailySummary — the 3-line executive summary atop the dashboard (Phase 5).
  * A concise, SADEED-voiced status read derived from the dashboard's own fixtures.
- * Navy/emerald glassmorphism, full RTL, badged «محاكاة».
+ * Navy/emerald glassmorphism, full RTL.
  */
 import { Sparkles } from "lucide-react";
 import { getDailySummary } from "@/lib/sadeed/today-summary";
-import { SimBadge } from "@/components/os/SimBadge";
 import { cn } from "@/lib/utils";
 import { SADEED_DISPLAY_NAME_AR, SADEED_DISPLAY_NAME_AR_PLAIN } from "@/lib/sadeed-core/branding";
 
@@ -20,16 +19,17 @@ export function SadeedDailySummary({ className }: { className?: string }) {
         className,
       )}
     >
-      <div className="mb-2.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-emerald-400/12 text-emerald-300">
-            <Sparkles className="h-4 w-4" aria-hidden />
-          </span>
-          <h2 className="text-sm font-bold text-white">
-            {`ملخص ${SADEED_DISPLAY_NAME_AR} التنفيذي — اليوم`}
-          </h2>
-        </div>
-        <SimBadge ar className="text-[12px]" />
+      {/* صفٌّ واحد بعد رفع شارة المحاكاة (٢٠٢٦/٠٨/١١): كان الصفّ الخارجي
+          `justify-between` بطرفين — عنوانٌ وشارة. وبقاء الغلاف بطرفٍ واحد
+          يترك `justify-between` بلا معنى و`div` وسيطًا بلا وظيفة، فدُمج
+          الصفّان في صفّ العنوان وحده. */}
+      <div className="mb-2.5 flex items-center gap-2">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-emerald-400/12 text-emerald-300">
+          <Sparkles className="h-4 w-4" aria-hidden />
+        </span>
+        <h2 className="text-sm font-bold text-white">
+          {`ملخص ${SADEED_DISPLAY_NAME_AR} التنفيذي — اليوم`}
+        </h2>
       </div>
       <ol className="space-y-1.5 pr-1">
         {lines.map((line, i) => (

@@ -1,6 +1,6 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
-import { SecPageHeader, SampleBadge, StatCard } from "@/components/sec/sec-shell";
+import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
 
 export const Route = createFileRoute("/_authenticated/sec/shifts")({
   errorComponent: RouteError,
@@ -42,18 +42,13 @@ const SHIFTS = [
 function Shifts() {
   return (
     <div className="space-y-4">
-      <SecPageHeader
-        title="إدارة الورديات"
-        subtitle="جدول الورديات وأعداد الحرّاس"
-        badge="Sample"
-      />
+      <SecPageHeader title="إدارة الورديات" subtitle="جدول الورديات وأعداد الحرّاس" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="إجمالي الحرّاس" value={SHIFTS.reduce((s, x) => s + x.guards, 0)} />
         <StatCard label="حاليّاً بالميدان" value={SHIFTS[0].guards} tone="success" />
         <StatCard label="عدد الورديات" value={SHIFTS.length} />
         <StatCard label="التغطية" value="100%" tone="success" />
       </div>
-      <SampleBadge />
       <div className="grid gap-3 md:grid-cols-2">
         {SHIFTS.map((s) => (
           <div key={s.name} className="rounded-xl border border-border bg-card p-4">

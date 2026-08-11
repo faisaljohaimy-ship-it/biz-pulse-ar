@@ -228,7 +228,6 @@ function BiPage() {
         routeKey="bi"
         what="لوحات التحليل التنفيذية — اتجاهات التشغيل والامتثال وأداء اتفاقيات الخدمة بنمط Power BI."
         dataSource="sec_incidents · hcis_compliance_status — ومحاكاة مرجعية عند صمت القاعدة"
-        simulation={data?.simulation ?? true}
         actions={[
           "رشّح بالفترة والإدارة والحدّة — كل الرسوم تُعاد من نفس الصفوف",
           "صدّر اللوحة الحالية إلى PDF أو Excel",
@@ -239,11 +238,6 @@ function BiPage() {
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-lg font-bold tracking-tight sm:text-xl">لوحات التحليل التنفيذية</h1>
-          {data?.simulation && (
-            <p className="mt-1 text-[12px] text-amber-300/90">
-              محاكاة مرجعية — is_simulation = true
-            </p>
-          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button

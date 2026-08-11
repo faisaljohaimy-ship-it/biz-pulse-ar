@@ -2,7 +2,7 @@
  * SadeedAnomalyStrip — Phase 5 KPI anomaly detection surface.
  *
  * Renders the deterministic findings from `detectAnomalies()` (fixture-derived,
- * no key, honestly «محاكاة»-badged) as a horizontal card rail — a snap-scroll
+ * no key) as a horizontal card rail — a snap-scroll
  * on mobile, a grid on lg+ (constitution art. 5). Each card links to the real
  * module where the operator acts on the deviation (art. 6). When no anomaly is
  * found the strip shows a calm "all nominal" state — never an empty void.
@@ -22,7 +22,6 @@
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, ShieldCheck, ArrowUpLeft } from "lucide-react";
 import { detectAnomalies, type AnomalySeverity } from "@/lib/sadeed/anomaly-detection";
-import { SimBadge } from "@/components/os/SimBadge";
 import { STAT_TONES, type StatTone } from "@/components/sec/sec-shell";
 
 /** الشذوذ ⇄ النغمة: تقابل واحد بواحد، فلا شدّة بلا شكل يميّزها. */
@@ -40,19 +39,20 @@ export function SadeedAnomalyStrip({ className = "" }: { readonly className?: st
       aria-label="كشف شذوذ المؤشرات"
       className={`@container relative w-full rounded-2xl border border-[color:var(--hairline)] bg-[color:var(--surface-2)] p-4 sm:p-5 ${className}`}
     >
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-[color:var(--chip-strong)] text-[color:var(--tone-amber)]">
-            <AlertTriangle className="h-4 w-4" aria-hidden />
-          </span>
-          <h2 className="text-sm font-bold text-[color:var(--ink)] sm:text-base">
-            كشف شذوذ المؤشرات
-          </h2>
-          <span className="rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip)] px-2 py-0.5 text-[12px] font-semibold text-[color:var(--ink-2)]">
-            {anomalies.length}
-          </span>
-        </div>
-        <SimBadge ar className="text-[12px]" />
+      {/* صفٌّ واحد بعد رفع شارة المحاكاة (٢٠٢٦/٠٨/١١): الطرف الثاني الذي
+          وُضع لأجله `justify-between` زال، فدُمج غلاف العنوان في الصفّ
+          نفسه — و`flex-wrap` يبقى ليلتفّ عدّاد الشذوذ تحت العنوان في
+          الحاويات الضيّقة بدل أن يفيض. */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-[color:var(--chip-strong)] text-[color:var(--tone-amber)]">
+          <AlertTriangle className="h-4 w-4" aria-hidden />
+        </span>
+        <h2 className="text-sm font-bold text-[color:var(--ink)] sm:text-base">
+          كشف شذوذ المؤشرات
+        </h2>
+        <span className="rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip)] px-2 py-0.5 text-[12px] font-semibold text-[color:var(--ink-2)]">
+          {anomalies.length}
+        </span>
       </div>
 
       {anomalies.length === 0 ? (

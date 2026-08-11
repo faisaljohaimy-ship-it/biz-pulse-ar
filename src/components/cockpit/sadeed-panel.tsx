@@ -151,9 +151,7 @@ export function SadeedExecutivePanel({ sadeed }: { sadeed: SadeedSnapshot }) {
               {recommendation}
             </p>
           )}
-          <p className="mt-1 text-[12px] text-nx-pearl/64">
-            مبنية على {sadeed.sourceCount} مصدرًا · محاكاة مرجعية
-          </p>
+          <p className="mt-1 text-[12px] text-nx-pearl/64">مبنية على {sadeed.sourceCount} مصدرًا</p>
           <NxButton
             variant="executive"
             size="lg"

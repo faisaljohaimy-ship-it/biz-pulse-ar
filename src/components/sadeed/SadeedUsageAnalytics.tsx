@@ -2,8 +2,8 @@
  * SadeedUsageAnalytics — Phase 5 usage & satisfaction dashboard for SADEED.
  *
  * Reads the deterministic, fixture-derived analytics (`getUsageAnalytics`) — no
- * network, no external key — so it renders identically everywhere and is
- * honestly badged «محاكاة». Layout is horizontal-first per constitution art. 5:
+ * network, no external key — so it renders identically everywhere.
+ * Layout is horizontal-first per constitution art. 5:
  * a KPI snap-rail on mobile → grid on lg+, with a weekly volume bar chart and a
  * top-questions rail beside it. Full RTL, ≥44px targets.
  *
@@ -16,7 +16,6 @@
  */
 import { BarChart3, MessageSquare, Users, Timer, ThumbsUp } from "lucide-react";
 import { NOT_MEASURED_AR, getUsageAnalytics, type UsageKpi } from "@/lib/sadeed/usage-analytics";
-import { SimBadge } from "@/components/os/SimBadge";
 import { SADEED_DISPLAY_NAME_AR_PLAIN } from "@/lib/sadeed-core/branding";
 
 const KPI_ICON: Record<string, typeof MessageSquare> = {
@@ -65,16 +64,16 @@ export function SadeedUsageAnalytics({ className = "" }: { readonly className?: 
       aria-label={`تحليلات استخدام ${SADEED_DISPLAY_NAME_AR_PLAIN}`}
       className={`@container relative w-full rounded-2xl border border-[color:var(--hairline)] bg-[color:var(--surface-2)] p-4 sm:p-5 ${className}`}
     >
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-[color:var(--chip-strong)] text-[color:var(--tone-cyan)]">
-            <BarChart3 className="h-4 w-4" aria-hidden />
-          </span>
-          <h2 className="text-sm font-bold text-[color:var(--ink)] sm:text-base">
-            تحليلات الاستخدام
-          </h2>
-        </div>
-        <SimBadge ar className="text-[12px]" />
+      {/* صفٌّ واحد بعد رفع شارة المحاكاة (٢٠٢٦/٠٨/١١): لم يبقَ للصفّ طرفان
+          حتى يُباعَد بينهما، فدُمج غلاف العنوان في الصفّ نفسه ولم يُترك
+          `div` بلا مضمون. */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-[color:var(--chip-strong)] text-[color:var(--tone-cyan)]">
+          <BarChart3 className="h-4 w-4" aria-hidden />
+        </span>
+        <h2 className="text-sm font-bold text-[color:var(--ink)] sm:text-base">
+          تحليلات الاستخدام
+        </h2>
       </div>
 
       {/* شريط الرقاقات: انزلاقٌ أفقي في الحاويات الضيّقة ← عمودان حين تبلغ

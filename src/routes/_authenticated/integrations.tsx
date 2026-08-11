@@ -210,9 +210,6 @@ function IntegrationsHubPage() {
     () => [...localEvents, ...(events.data ?? [])],
     [localEvents, events.data],
   );
-  // كشف بنيوي للمحاكاة المرجعية — لا مطابقة نصّ عربي قابلة للكسر.
-  const usingReference = providers.some((p) => p.is_simulation === true);
-
   return (
     <NexusPage
       backdropImage="/earth-network-bg.webp"
@@ -225,11 +222,6 @@ function IntegrationsHubPage() {
       }
       actions={
         <>
-          {usingReference && (
-            <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[12px] font-semibold text-amber-300">
-              {ar ? "محاكاة مرجعية" : "Reference simulation"}
-            </span>
-          )}
           <button
             onClick={() => {
               void overview.refetch();

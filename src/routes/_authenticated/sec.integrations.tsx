@@ -34,8 +34,6 @@ function Integrations() {
     queryKey: ["sec-integrations"],
     queryFn: () => fetchList(),
   });
-  // كشف بنيوي للمحاكاة المرجعية — لا استنتاج من وجود حقل عرضي.
-  const usingReference = (providers ?? []).some((p) => p.is_simulation === true);
   if (isLoading) return <SecLoading rows={9} />;
   if (isError) return <SecError onRetry={() => void refetch()} />;
   return (
@@ -43,13 +41,7 @@ function Integrations() {
       <SecPageHeader
         title="جاهزية التكامل"
         subtitle="حالة المزوّدات الخارجية — كل وحدة جاهزة للربط الفعلي عند تكوين البيانات الصحيحة"
-      >
-        {usingReference && (
-          <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[12px] font-medium text-amber-600 dark:text-amber-300">
-            محاكاة مرجعية
-          </span>
-        )}
-      </SecPageHeader>
+      />
       {(providers ?? []).length === 0 && (
         <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
           لا توجد مزوّدات معرّفة بعد

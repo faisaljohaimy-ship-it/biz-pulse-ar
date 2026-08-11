@@ -1,10 +1,17 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * The SimulationRibbon is mounted globally at the _authenticated layout,
- * so every authenticated route inherits it. This test exercises a set of
- * screens that render client_* data. Skipped as a whole when test-user
- * credentials aren't available.
+ * **انقلب هذا الملفّ ٢٠٢٦/٠٨/١١ بأمر المالك: حُذف شريط المحاكاة من النظام.**
+ *
+ * كان يؤكّد **ظهور** الشريط على كل مسار مصادَق (كان مركَّبًا في تخطيط
+ * `_authenticated`). وقد رُفع الشريط ومعه كل شارة محاكاة على الشاشة، فصار
+ * التأكيد القديم يحرس ما أُمر بحذفه.
+ *
+ * ولم يُحذف الملفّ: قُلب ليحرس **الحذف** نفسه. فالشريط كان مركَّبًا في
+ * التخطيط لا في الصفحات، وإعادته سطرٌ واحد في ملفٍّ واحد يعيده إلى عشرات
+ * الشاشات دفعةً واحدة — وهو بالضبط نوع الارتداد الذي لا يلاحظه أحد.
+ *
+ * ويبقى مُتخطًّى كلّه حين لا تتوفّر اعتمادات مستخدم الاختبار.
  */
 /**
  * مساران من هذه القائمة لم يعودا موجودين: `/command-center` حُذف كليًّا
@@ -22,7 +29,7 @@ const ROUTES = [
   "/executive-reports",
 ];
 
-test.describe("Simulation ribbon — coverage", () => {
+test.describe("Simulation ribbon — stays removed", () => {
   test.beforeEach(async ({ page }) => {
     const email = process.env.E2E_TEST_EMAIL;
     const password = process.env.E2E_TEST_PASSWORD;
@@ -45,10 +52,12 @@ test.describe("Simulation ribbon — coverage", () => {
   });
 
   for (const route of ROUTES) {
-    test(`ribbon visible on ${route}`, async ({ page }) => {
+    test(`no simulation ribbon on ${route}`, async ({ page }) => {
       await page.goto(route, { waitUntil: "domcontentloaded" });
-      const ribbon = page.getByText(/بيئة محاكاة/);
-      await expect(ribbon).toBeVisible({ timeout: 8_000 });
+      // تُنتظر الشاشة حتى تستقرّ قبل الحكم بالغياب: تأكيدُ عدمٍ على صفحةٍ لم
+      // تُصيَّر بعد يمرّ دائمًا ولا يُثبت شيئًا.
+      await expect(page.locator("main, [role='main']").first()).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText(/بيئة محاكاة/)).toHaveCount(0);
     });
   }
 });

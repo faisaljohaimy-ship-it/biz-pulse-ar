@@ -12,7 +12,7 @@ import {
 } from "@/lib/access.functions";
 import { userFacingError } from "@/lib/errors/user-facing-error";
 import { useAuth } from "@/lib/auth-context";
-import { SecPageHeader, SimTag, StatCard, statusClass } from "@/components/sec/sec-shell";
+import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -99,7 +99,6 @@ function VehiclesPage() {
   return (
     <div className="space-y-4">
       <SecPageHeader title="إدارة المركبات" subtitle={`${vehicles.length} مركبة مسجّلة`}>
-        {data?.source === "reference" && <SimTag />}
         <Button
           size="sm"
           variant="outline"

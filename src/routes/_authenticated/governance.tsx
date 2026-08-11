@@ -136,9 +136,6 @@ function GovernancePage() {
   // empty — with no anon-visible rows the built-in reference set fills it.
   // الشارة تُشتق من المصدرين كليهما: السياسات تسقط للمرجع مستقلةً عن
   // الأنظمة، وشارةٌ من نصف البيانات نصف صدق.
-  const usingReferenceSystems = !systemsQ.isLoading && (systemsQ.data ?? []).length === 0;
-  const usingReferencePolicies = !policiesQ.isLoading && (policiesQ.data ?? []).length === 0;
-  const usingReference = usingReferenceSystems || usingReferencePolicies;
   const systems = (systemsQ.data ?? []).length
     ? (systemsQ.data ?? [])
     : GOVERNANCE_REFERENCE_SYSTEMS;
@@ -173,9 +170,6 @@ function GovernancePage() {
       }
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          {usingReference && (
-            <NexusPill tone="amber">{ar ? "محاكاة مرجعية" : "Reference simulation"}</NexusPill>
-          )}
           <NexusPill tone="cyan">
             <Network className="h-3 w-3" /> {systems.length} SYSTEMS
           </NexusPill>
@@ -212,9 +206,6 @@ function GovernancePage() {
             <div className="text-[12px] font-bold tracking-[0.25em] text-cyan-300/80">
               {ar ? "الأنظمة والاتفاقيات" : "SYSTEMS & SERVICE AGREEMENTS"}
             </div>
-            {usingReferenceSystems && (
-              <NexusPill tone="amber">{ar ? "محاكاة مرجعية" : "Reference simulation"}</NexusPill>
-            )}
           </div>
           <InlineAddForm
             ar={ar}
@@ -343,9 +334,6 @@ function GovernancePage() {
             <div className="text-[12px] font-bold tracking-[0.25em] text-violet-300/80">
               {ar ? "السياسات والامتثال" : "POLICIES & ENFORCEMENT"}
             </div>
-            {usingReferencePolicies && (
-              <NexusPill tone="amber">{ar ? "محاكاة مرجعية" : "Reference simulation"}</NexusPill>
-            )}
           </div>
           <InlineAddForm
             ar={ar}
@@ -425,17 +413,11 @@ function GovernancePage() {
         )}
         {policies.length > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-slate-500">
-            {/* المتوسط المشتق من المرجع ليس قياسًا — يُعرض مقرونًا بشارته. */}
             <span>
               {ar
                 ? `متوسط تغطية السياسات: ${avgPolicyCoverage}%`
                 : `Avg policy coverage: ${avgPolicyCoverage}%`}
             </span>
-            {usingReferencePolicies && (
-              <NexusPill tone="amber">
-                {ar ? "محاكاة مرجعية — ليس قياسًا حيًّا" : "Reference simulation — not measured"}
-              </NexusPill>
-            )}
           </div>
         )}
       </NexusCard>

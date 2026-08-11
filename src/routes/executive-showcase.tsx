@@ -19,7 +19,6 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { SimulationRibbon } from "@/components/SimulationRibbon";
 import { EXECUTIVE_PRESENTATION_MEDIA } from "@/lib/executive-presentation.media";
 
 export const Route = createFileRoute("/executive-showcase")({
@@ -359,8 +358,6 @@ function ExecutiveShowcasePage() {
       aria-modal="true"
       aria-label="العرض التنفيذي · Executive Showcase"
     >
-      <SimulationRibbon />
-
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
           className="absolute inset-0 opacity-70"
@@ -749,9 +746,6 @@ function SceneView({ scene, reduced }: { scene: Scene; reduced: boolean }) {
         <p dir="ltr" className="mt-1 max-w-xl text-xs leading-relaxed text-white/50 sm:text-sm">
           {scene.value_en}
         </p>
-        <span className="mt-3 inline-flex items-center gap-1 rounded-full border border-amber-300/40 bg-amber-300/10 px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.28em] text-amber-200">
-          عرض توضيحي · محاكاة
-        </span>
       </div>
       <div
         className="relative min-h-[220px] flex-1 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] shadow-[0_30px_80px_rgba(0,0,0,0.5)]"

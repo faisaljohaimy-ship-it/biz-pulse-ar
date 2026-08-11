@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { getAccessOverview, setGateStatus } from "@/lib/access.functions";
 import { userFacingError } from "@/lib/errors/user-facing-error";
 import { useAuth } from "@/lib/auth-context";
-import { SecPageHeader, SimTag, StatCard, statusClass } from "@/components/sec/sec-shell";
+import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
 import {
   Select,
   SelectContent,
@@ -62,9 +62,7 @@ function AccessControlPage() {
       <SecPageHeader
         title="التحكم بالدخول"
         subtitle="نظرة موحدة على الزوار · المقاولين · المركبات · البوّابات"
-      >
-        {data?.source === "reference" && <SimTag />}
-      </SecPageHeader>
+      />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
         <StatCard label="زوار بالداخل" value={k?.visitors_inside ?? 0} tone="success" />

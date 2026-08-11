@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import QRCode from "react-qr-code";
-import { FlaskConical, Plus, QrCode, Siren, Clock3, ShieldCheck, X } from "lucide-react";
+import { Plus, QrCode, Siren, Clock3, ShieldCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { NexusPage, NexusCard, NexusStat, NexusPill } from "@/components/nexus-frame";
@@ -124,18 +124,6 @@ function PtwPage() {
       }
       actions={
         <div className="flex flex-wrap gap-2">
-          {(data?.permits ?? []).some((p) => p.is_simulation) && (
-            <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 text-sm font-semibold text-amber-200">
-              <FlaskConical className="h-4 w-4" aria-hidden />
-              {data?.source === "reference"
-                ? ar
-                  ? "بيانات محاكاة · نسخة مرجعية"
-                  : "Simulation · reference copy"
-                : ar
-                  ? "بيانات محاكاة"
-                  : "Simulation data"}
-            </span>
-          )}
           {/* Governance: write actions render DISABLED for guests, with an
               explicit tooltip — never a dead click, never a hidden button.
               The page itself is a fully open public showcase (no sign-in

@@ -17,7 +17,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { FlaskConical } from "lucide-react";
 import {
   CC_ALERTS,
   CC_REGIONS,
@@ -314,16 +313,6 @@ export function NxTwinPage() {
             </ul>
           </div>
         </section>
-
-        {/* شفافية المحاكاة — الصفوف الحية تحل محلها فور وصولها. */}
-        <footer className="nx-tw-enter mt-5" style={{ ["--tw-si" as string]: 4 }}>
-          {(data?.simulation ?? true) && (
-            <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip-strong)] px-3 text-[12px] text-[color:var(--ink-2)]">
-              <FlaskConical className="h-3.5 w-3.5" aria-hidden />
-              {ar ? "بيانات محاكاة مرجعية" : "Reference simulation"}
-            </span>
-          )}
-        </footer>
       </div>
     </main>
   );

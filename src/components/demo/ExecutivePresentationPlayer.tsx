@@ -46,7 +46,6 @@ interface Scene {
   body_ar: string;
   body_en: string;
   accent: Accent;
-  showSimRibbon?: boolean;
   render?: () => React.JSX.Element;
 }
 
@@ -152,7 +151,6 @@ const SCENES: readonly Scene[] = [
     body_ar: "محاكاة مرجعية للمواقع والأصول، وتقارير تنفيذية جاهزة للمجلس.",
     body_en: "A reference simulation of sites and assets, with board-ready executive reports.",
     accent: "emerald",
-    showSimRibbon: true,
   },
   {
     id: "closing",
@@ -198,12 +196,6 @@ function SceneView({ scene, ar }: { scene: Scene; ar: boolean }) {
       <p className="max-w-prose text-sm leading-relaxed text-white/70 sm:text-[15px]">
         {ar ? scene.body_ar : scene.body_en}
       </p>
-
-      {scene.showSimRibbon && (
-        <span className="inline-flex w-fit items-center gap-1 rounded-full border border-[#3AE8FF]/35 bg-[#3AE8FF]/10 px-2.5 py-1 text-[12px] font-semibold text-[#3AE8FF]">
-          {ar ? "محاكاة · لقطة عامة" : "SIM · PUBLIC SNAPSHOT"}
-        </span>
-      )}
 
       {scene.render && <div className="mt-1">{scene.render()}</div>}
     </div>

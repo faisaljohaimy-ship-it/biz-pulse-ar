@@ -198,7 +198,7 @@ export function AgenticFlowCanvas({
           className="rounded-full border border-[#3AE8FF]/40 bg-[#3AE8FF]/10 px-3 py-1 text-[12px] text-[#3AE8FF] transition hover:bg-[#3AE8FF]/20 hover:text-white"
           title={ar ? "افتح مرجع الوكلاء" : "Open agents reference"}
         >
-          {ar ? "محاكاة مرجعية · بدون تنفيذ" : "Reference simulation · no execution"}
+          {ar ? "مرجع الوكلاء" : "Agents reference"}
         </Link>
       </div>
 

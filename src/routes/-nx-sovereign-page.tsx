@@ -216,8 +216,6 @@ export function NxSovereignPage() {
       </section>
 
       <footer className="nx-sv-wrap nx-sv-foot">
-        <span>{ar ? "بيانات محاكاة مرجعية" : "Reference simulation"}</span>
-        <span className="nx-sv-foot-rule" aria-hidden />
         <span>{ar ? "ما لم يُقَس يُقرأ «لم يُقَس»" : "unmeasured reads “not measured”"}</span>
       </footer>
     </main>

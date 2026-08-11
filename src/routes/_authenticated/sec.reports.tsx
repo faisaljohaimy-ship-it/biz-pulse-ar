@@ -215,7 +215,6 @@ function Reports() {
   };
 
   const serverList = (reports ?? []) as ReportRow[];
-  const usingReference = serverList.some((r) => r.id.startsWith("sim-rep-"));
   const list: Array<ReportRow | LocalReport> = [...localReports, ...serverList];
   const pdfBusy = mPdf.isPending || pdfPhase !== null;
   const phaseLabel =
@@ -232,13 +231,7 @@ function Reports() {
       <SecPageHeader
         title="التقارير"
         subtitle="تصدير الملخصات والتقارير من واجهة الأمن الصناعي (PDF عربي · Excel)"
-      >
-        {usingReference && (
-          <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[12px] font-medium text-amber-600 dark:text-amber-300">
-            سجل مرجعي · محاكاة
-          </span>
-        )}
-      </SecPageHeader>
+      />
 
       <PageBriefing
         routeKey="sec-reports"
@@ -334,11 +327,6 @@ function Reports() {
                     <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
                   )}
                   <span className="truncate">{r.title}</span>
-                  {(r.id.startsWith("sim-rep-") || r.meta?.simulated) && (
-                    <span className="shrink-0 rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[12px] text-amber-600 dark:text-amber-300">
-                      محاكاة
-                    </span>
-                  )}
                 </div>
                 <div className="mt-0.5 text-[12px] text-muted-foreground">
                   <span className="uppercase">{r.kind}</span> · {r.format.toUpperCase()}

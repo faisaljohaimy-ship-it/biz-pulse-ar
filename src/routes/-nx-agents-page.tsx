@@ -11,7 +11,7 @@
  * Four mandatory states: loading · empty · error · success (art. 14).
  */
 import * as React from "react";
-import { ArrowRight, Bot, FlaskConical, ShieldCheck } from "lucide-react";
+import { ArrowRight, Bot, ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -153,22 +153,11 @@ export function NxAgentsPage() {
               <Bot className="h-4 w-4 text-primary" aria-hidden="true" />
               <span>مسرح العمليات الحيّ</span>
             </Link>
-            {/* شارة المصدر — أيقونة القارورة تلازم المحاكاة كما في تذييل
-                /nx-flow، والصفوف الحية تُبدّل الشارة كلها لا لونها فقط. */}
-            {data ? (
-              <span
-                className={
-                  data.is_simulation
-                    ? "inline-flex items-center gap-1.5 rounded-full border border-nx-gold/50 px-3 py-1 text-[12px] font-semibold text-nx-gold"
-                    : "inline-flex items-center gap-1.5 rounded-full border border-nx-success/50 px-3 py-1 text-[12px] font-semibold text-nx-success"
-                }
-              >
-                {data.is_simulation ? (
-                  <FlaskConical className="h-3.5 w-3.5" aria-hidden />
-                ) : (
-                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-                )}
-                {data.is_simulation ? "بيانات محاكاة مرجعية" : "حقيقي · قراءة"}
+            {/* شارة المصدر — تظهر للصفوف الحية وحدها. */}
+            {data && !data.is_simulation ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-nx-success/50 px-3 py-1 text-[12px] font-semibold text-nx-success">
+                <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
+                حقيقي · قراءة
               </span>
             ) : null}
           </div>
@@ -262,7 +251,6 @@ export function NxAgentsPage() {
                 <bdi dir="ltr">{agents.length}</bdi> وكيلًا · نشِط الآن{" "}
                 <bdi dir="ltr">{activeCount}</bdi>
               </span>
-              {isSimulation ? <span>محاكاة حتمية — بذرة ثابتة</span> : null}
             </div>
 
             <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

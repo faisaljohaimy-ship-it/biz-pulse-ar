@@ -1,6 +1,6 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
-import { SecPageHeader, SampleBadge, severityClass } from "@/components/sec/sec-shell";
+import { SecPageHeader, severityClass } from "@/components/sec/sec-shell";
 
 export const Route = createFileRoute("/_authenticated/sec/risks")({
   errorComponent: RouteError,
@@ -68,12 +68,7 @@ const RISKS = [
 function Risks() {
   return (
     <div className="space-y-4">
-      <SecPageHeader
-        title="سجل المخاطر الأمنية"
-        subtitle="المخاطر التشغيلية للمنطقة الغربية"
-        badge="Sample"
-      />
-      <SampleBadge />
+      <SecPageHeader title="سجل المخاطر الأمنية" subtitle="المخاطر التشغيلية للمنطقة الغربية" />
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <table className="min-w-full text-sm">
           <thead className="bg-muted/40 text-xs text-muted-foreground">

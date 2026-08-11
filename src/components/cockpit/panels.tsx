@@ -98,7 +98,6 @@ export function PrimaryKpiStrip({ metrics }: { metrics: readonly MetricValue[] }
                   : undefined
               }
               updatedAt={metric.lastUpdatedAt}
-              simulation
               className={metric.status === "critical" ? "border-nx-critical/50" : undefined}
             />
             {level === "technical" ? (

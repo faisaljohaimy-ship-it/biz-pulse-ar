@@ -221,8 +221,8 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
       "total sections, total staff, division director, and per-section cards (Security Support, Maintenance, Projects…) with section head and headcount",
       "توزيع مسؤوليات دقيق يُلغي التداخل والتناقض",
       "precise responsibility distribution that eliminates overlap",
-      "البطاقات مبنية من hr_sections/hr_employees، اضغط أي قسم لفتح هيكله وأدواره وأوامر عمله المفتوحة؛ شارة 'محاكاة' تظهر عند غياب بيانات حيّة",
-      "cards come from hr_sections/hr_employees; tap a section to open its structure, roles, and open WOs; a 'simulation' badge appears when live data is missing",
+      "البطاقات مبنية من hr_sections/hr_employees، اضغط أي قسم لفتح هيكله وأدواره وأوامر عمله المفتوحة",
+      "cards come from hr_sections/hr_employees; tap a section to open its structure, roles, and open WOs",
     ),
   ],
   [

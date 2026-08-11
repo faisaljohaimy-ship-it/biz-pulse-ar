@@ -112,7 +112,11 @@ describe("KPI components — spec 05", () => {
     expect(screen.getByRole("img", { name: "اتجاه صاعد" })).toBeInTheDocument();
   });
 
-  it("KPI card carries provenance and the simulation badge", () => {
+  it("KPI card carries provenance — the simulation badge was lifted by owner order", () => {
+    // ٢٠٢٦/٠٨/١١ بأمر المالك: رُفعت شارة المحاكاة عن كل شاشة. وبقي **الإسناد** («آخر تحديث …») وهو ما يظلّ يحرسه هذا البند:
+    // بطاقةٌ برقمٍ بلا وقتِ تحديثه رقمٌ بلا عمر، يُقرأ لحظيًّا وقد يكون بائتًا.
+    // والخاصّية `simulation` تبقى في العقد لأن الخادم يقرؤها ويحرسها
+    // `measured-counters.contract.test.ts` على أسطح الإفصاح النصّي.
     render(
       <NxKpiCard
         label="التوافر"
@@ -123,7 +127,7 @@ describe("KPI components — spec 05", () => {
         delta={{ value: 0.3, goodDirection: "up" }}
       />,
     );
-    expect(screen.getByText("محاكاة")).toBeInTheDocument();
+    expect(screen.queryByText("محاكاة"), "عادت شارة المحاكاة بعد رفعها").not.toBeInTheDocument();
     expect(screen.getByText(/آخر تحديث/)).toBeInTheDocument();
   });
 });

@@ -2,7 +2,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { SecPageHeader, SampleBadge, StatCard } from "@/components/sec/sec-shell";
+import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
 import { Siren, Flame, Wind, Droplets, Phone } from "lucide-react";
 import { EmergencyBroadcast } from "@/components/sadeed/EmergencyBroadcast";
 
@@ -92,18 +92,13 @@ function ScenarioButton({
 function Emergency() {
   return (
     <div className="space-y-4">
-      <SecPageHeader
-        title="عمليات الطوارئ"
-        subtitle="فرق الاستجابة وسيناريوهات التنشيط"
-        badge="Sample"
-      />
+      <SecPageHeader title="عمليات الطوارئ" subtitle="فرق الاستجابة وسيناريوهات التنشيط" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="فرق جاهزة" value={3} tone="success" />
         <StatCard label="فرق في مهمة" value={1} tone="warning" />
         <StatCard label="متوسط زمن وصول" value="6 د" />
         <StatCard label="تدريبات هذا الشهر" value={4} />
       </div>
-      <SampleBadge />
       <div className="grid gap-3 md:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-4">
           <h2 className="mb-3 text-sm font-semibold text-foreground">فرق الاستجابة</h2>
