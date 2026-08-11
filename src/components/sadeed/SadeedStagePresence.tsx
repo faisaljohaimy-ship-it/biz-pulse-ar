@@ -31,6 +31,7 @@ import { useSadeedStore } from "@/lib/sadeed-core/store";
 import { useSadeedPresenceState } from "@/lib/sadeed/sadeed-state";
 import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { SadeedVideoAvatar } from "@/components/sadeed/SadeedVideoAvatar";
+import { SadeedWelcomeVideo } from "@/components/sadeed/SadeedWelcomeVideo";
 import { SadeedMuteToggle } from "@/components/sadeed/SadeedMuteToggle";
 import { SADEED_DISPLAY_NAME_AR, SADEED_DISPLAY_NAME_AR_PLAIN } from "@/lib/sadeed-core/branding";
 
@@ -78,6 +79,10 @@ export function SadeedStagePresence({ className }: SadeedStagePresenceProps) {
         className,
       )}
     >
+      {/* فيديو الترحيب يتصدّر البطاقة: ملصق قابل للنقر يبدأ التشغيل، وبقية
+          المحتوى يبقى ظاهرًا تحته. */}
+      <SadeedWelcomeVideo className="mb-5 sm:mb-6" />
+
       {/* هالة خافتة خلف الوجه — زينة صرفة، تحت النص لا فوقه. */}
       <span
         aria-hidden
