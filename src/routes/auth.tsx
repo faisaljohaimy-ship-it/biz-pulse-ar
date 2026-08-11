@@ -290,7 +290,7 @@ function ExecutiveAcceptanceStage({ isAr, onAccept }: { isAr: boolean; onAccept:
         <Link to="/" className="flex items-center gap-3">
           <span className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-2xl border border-primary/35 bg-primary/10 shadow-[0_0_30px_rgba(0,212,255,.2)]">
             <img
-              src="/brand-icon.png"
+              src="/sadeed-icon.png"
               alt={brandName(isAr)}
               className="h-full w-full object-cover"
             />

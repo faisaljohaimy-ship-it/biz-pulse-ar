@@ -130,7 +130,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex min-w-0 items-center gap-2">
             <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg shadow-glow">
               <img
-                src="/brand-icon.png"
+                src="/sadeed-icon.png"
                 alt={brandName(locale === "ar")}
                 className="h-full w-full object-cover"
               />
@@ -297,7 +297,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         <div className="flex items-center gap-3 px-4 py-4">
           <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-glow">
             <img
-              src="/brand-icon.png"
+              src="/sadeed-icon.png"
               alt={brandName(locale === "ar")}
               className="h-full w-full object-cover"
             />
