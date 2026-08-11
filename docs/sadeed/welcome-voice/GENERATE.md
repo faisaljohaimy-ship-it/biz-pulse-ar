@@ -6,16 +6,16 @@
 
 ## ١) الإعدادات القانونية (من `src/lib/sadeed/voice-config.ts`)
 
-| الإعداد | القيمة | المصدر |
-| --- | --- | --- |
-| Voice ID (صوت سَدِيد الحصري) | `izhopdR43PRI5gAmjXTj` | `SADEED_ELEVENLABS_VOICE_ID` |
-| Model | `eleven_multilingual_v2` | `SADEED_ELEVENLABS_MODEL` |
-| stability | `0.62` | `SADEED_ELEVENLABS_VOICE_SETTINGS` |
-| similarity_boost | `0.85` | ↑ |
-| style | `0.2` | ↑ |
-| use_speaker_boost | `true` | ↑ |
-| speed | `0.9` (تمهّل مقصود — بند «عدم السرعة في النطق») | ↑ |
-| output_format | `mp3_44100_128` | نفس صيغة `/api/sadeed/tts` الإنتاجية |
+| الإعداد                      | القيمة                                          | المصدر                               |
+| ---------------------------- | ----------------------------------------------- | ------------------------------------ |
+| Voice ID (صوت سَدِيد الحصري) | `izhopdR43PRI5gAmjXTj`                          | `SADEED_ELEVENLABS_VOICE_ID`         |
+| Model                        | `eleven_multilingual_v2`                        | `SADEED_ELEVENLABS_MODEL`            |
+| stability                    | `0.62`                                          | `SADEED_ELEVENLABS_VOICE_SETTINGS`   |
+| similarity_boost             | `0.85`                                          | ↑                                    |
+| style                        | `0.2`                                           | ↑                                    |
+| use_speaker_boost            | `true`                                          | ↑                                    |
+| speed                        | `0.9` (تمهّل مقصود — بند «عدم السرعة في النطق») | ↑                                    |
+| output_format                | `mp3_44100_128`                                 | نفس صيغة `/api/sadeed/tts` الإنتاجية |
 
 **ممنوع** أي صوت آخر أو مزوّد آخر أو `speechSynthesis`. سَدِيد لا يرسل
 `voiceId` بديلًا أبدًا.
@@ -79,7 +79,7 @@ file sadeed.mp3 && ffprobe -v error -show_entries format=duration -of csv=p=0 sa
 ## ٤) ثم التركيب
 
 ```bash
-bash scripts/sadeed-video.sh swap-voice sadeed.mp3
+bash scripts/sadeed-video.sh fit-voice sadeed.mp3
 ```
 
 السكربت يحاذي بداية الصوت إلى **2.236s**، ويطبّق fade in/out ‏50ms،
@@ -97,10 +97,11 @@ bash scripts/sadeed-video.sh swap-voice sadeed.mp3
 اسألني… وسأُجيبُكَ إجابةً سديدة.
 ```
 
-> ⚠ تقدير المدة المنطوقة لهذا النصّ ~١٢–١٦ ثانية عند speed 0.9 —
-> والهدف ٤٨٫٣ ± ١٫٠ ثانية، فبوابة 🛑 **ستتوقّف** وتطلب قرار المالك:
-> قصّ الفيديو / إبقاء بقية الفيديو صامتة / نصّ أطول.
-
+> ✅ **قرار المالك ٢٠٢٦/٠٨/١١: «قص الفيديو ليطابق النص».**
+> الأمر `fit-voice` ينفّذه آليًّا: يقيس مدة الصوت المولَّد D ويقصّ الفيديو
+> إلى ‏2.236s (مقدّمة حتى أول حركة شفاه) + D + ‏1.2s ذيل، بتلاشٍ بصري
+> 0.6s في الخاتمة وتثبيت 30fps. الصوت لا يُمطّ ولا يُقصّ.
+> اختُبر بصوت اصطناعي 14.03s ← مخرج 17.47s · 30fps · 524 إطارًا.
 
 ```text
 (فارغ — بانتظار نصّ المالك)

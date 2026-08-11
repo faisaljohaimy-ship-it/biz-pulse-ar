@@ -4,7 +4,8 @@
 #
 #   ./scripts/sadeed-video.sh inspect              تقرير ffprobe للمصدر والمخرج
 #   ./scripts/sadeed-video.sh brand                إعادة بناء طبقة الهوية + التصدير
-#   ./scripts/sadeed-video.sh swap-voice <mp3>     استبدال الصوت بصوت سَدِيد (مع بوابة المدة)
+#   ./scripts/sadeed-video.sh swap-voice <mp3>     استبدال الصوت بطول الفيديو الكامل (بوابة ±1s)
+#   ./scripts/sadeed-video.sh fit-voice  <mp3>      قرار المالك ٢٠٢٦/٠٨/١١: قصّ الفيديو ليطابق الصوت
 #
 # ملاحظة صدق: طبقة الهوية تغطّي علامة HeyGen ولا تمحوها من البكسلات؛
 # الفيديو النظيف الوحيد هو إعادة توليده من HeyGen بخطة مدفوعة.
@@ -88,6 +89,8 @@ cmd_swap_voice() { # $1 = sadeed.mp3
   diff=$(awk "BEGIN{d=$dur-$SPEECH_DUR; if (d<0) d=-d; printf \"%.2f\", d}")
   if awk "BEGIN{exit !( $diff > $DUR_TOLERANCE )}"; then
     echo "🛑 عدم تطابق: فرق ${diff}s"
+    echo "   قرار المالك ٢٠٢٦/٠٨/١١ لهذه الحال: القصّ يتبع الصوت — استعمل:"
+    echo "   $0 fit-voice $mp3"
     exit 1
   fi
   echo "✔ مدة الصوت ${dur}s ضمن ±${DUR_TOLERANCE}s من ${SPEECH_DUR}s"
@@ -111,9 +114,50 @@ cmd_swap_voice() { # $1 = sadeed.mp3
   cmd_inspect
 }
 
+# قرار المالك ٢٠٢٦/٠٨/١١ («قص الفيديو ليطابق النص»): القصّ مقودٌ بمدة
+# الملف الصوتي الفعلية لا برقم مخمَّن — يقيس D ثم يقصّ الفيديو إلى
+# (مقدّمة 2.236s حتى أول حركة شفاه) + D + (ذيل 1.2s) بتلاشٍ بصري 0.6s
+# في الخاتمة. الصوت لا يُمطّ ولا يُقصّ — القصّ على الفيديو وحده.
+cmd_fit_voice() { # $1 = sadeed.mp3
+  local mp3="${1:-}"
+  [[ -n "$mp3" && -f "$mp3" ]] || { echo "🛑 الاستعمال: fit-voice <sadeed.mp3>"; exit 1; }
+  [[ -f "$OUT" ]] || { echo "🛑 المخرج غير موجود — شغّل brand أولًا"; exit 1; }
+
+  local dur lead_s tail_s total vid_dur fade_v_st fade_a_st tmp
+  dur=$("$FFPROBE" -v error -show_entries format=duration -of csv=p=0 "$mp3")
+  lead_s=$(awk "BEGIN{printf \"%.3f\", $SPEECH_START_MS/1000}")
+  tail_s=1.2
+  vid_dur=$("$FFPROBE" -v error -show_entries format=duration -of csv=p=0 "$OUT")
+  total=$(awk "BEGIN{t=$lead_s+$dur+$tail_s; if (t>$vid_dur) t=$vid_dur; printf \"%.3f\", t}")
+  fade_v_st=$(awk "BEGIN{printf \"%.3f\", $total-0.6}")
+  fade_a_st=$(awk "BEGIN{printf \"%.3f\", $dur-0.05}")
+  tmp="$(dirname "$OUT")/.sadeed-welcome.fit.mp4"
+
+  local src_fps
+  src_fps=$("$FFPROBE" -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "$OUT")
+
+  echo "▶ قصّ الفيديو إلى ${total}s (مقدّمة ${lead_s}s + صوت ${dur}s + ذيل ${tail_s}s)…"
+  # القصّ + تلاشي الخاتمة يحتاجان إعادة ترميز (النسخ لا يقصّ على غير مفاتيح
+  # الإطارات ولا يطبّق fade). CRF 20 لمقطعٍ قصير — الحجم ينزل لا يرتفع.
+  # `fps=` صريحة من المصدر: بدونها أسقط الترميز المعدل من 30 إلى 25 —
+  # قِيس فعلًا (437 إطارًا بدل 524 على مقطع 17.48s) لا افتُرض.
+  "$FFMPEG" -y -v error \
+    -i "$OUT" -i "$mp3" \
+    -filter_complex "[0:v]trim=0:${total},setpts=PTS-STARTPTS,fps=${src_fps},fade=t=out:st=${fade_v_st}:d=0.6[v];[1:a]afade=t=in:st=0:d=0.05,afade=t=out:st=${fade_a_st}:d=0.05,adelay=${SPEECH_START_MS}:all=1,apad=whole_dur=${total},atrim=0:${total}[a]" \
+    -map "[v]" -map "[a]" \
+    -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p \
+    -c:a aac -b:a 128k -ar 44100 -ac 2 \
+    -movflags +faststart \
+    "$tmp"
+  mv "$tmp" "$OUT"
+  echo "✔ قُصّ الفيديو ليطابق الصوت — قرار المالك ٢٠٢٦/٠٨/١١"
+  cmd_inspect
+}
+
 case "${1:-}" in
   inspect)     cmd_inspect ;;
   brand)       cmd_brand ;;
   swap-voice)  shift; cmd_swap_voice "${1:-}" ;;
-  *) echo "الاستعمال: $0 {inspect|brand|swap-voice <sadeed.mp3>}"; exit 1 ;;
+  fit-voice)   shift; cmd_fit_voice "${1:-}" ;;
+  *) echo "الاستعمال: $0 {inspect|brand|swap-voice <sadeed.mp3>|fit-voice <sadeed.mp3>}"; exit 1 ;;
 esac
