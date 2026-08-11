@@ -31,11 +31,13 @@ import { useSadeedStore } from "@/lib/sadeed-core/store";
 import { useSadeedPresenceState } from "@/lib/sadeed/sadeed-state";
 import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { SadeedVideoAvatar } from "@/components/sadeed/SadeedVideoAvatar";
-import { SadeedWelcomeVideo } from "@/components/sadeed/SadeedWelcomeVideo";
 import { SadeedMuteToggle } from "@/components/sadeed/SadeedMuteToggle";
 import { SADEED_DISPLAY_NAME_AR, SADEED_DISPLAY_NAME_AR_PLAIN } from "@/lib/sadeed-core/branding";
 
 const PORTRAIT_SRC = "/sadeed-portrait.webp";
+
+/** خلفية البطاقة كاملةً (أمر المالك ٢٠٢٦/٠٨/١١). */
+const CARD_BG_SRC = "/sadeed-stage-poster.webp";
 
 /** الحالة بالكلمات لا باللون وحده (WCAG 2.2 §1.4.1). */
 const STATE_LABEL_AR: Record<string, string> = {
@@ -72,17 +74,37 @@ export function SadeedStagePresence({ className }: SadeedStagePresenceProps) {
       dir="rtl"
       aria-label={`المساعد ${SADEED_DISPLAY_NAME_AR_PLAIN}`}
       className={cn(
-        "relative mx-auto w-full max-w-[720px] overflow-hidden rounded-[1.75rem]",
-        "border border-[color:var(--hairline)] bg-[color:var(--surface-2)]",
+        "sd-stage-card relative mx-auto w-full max-w-[720px] overflow-hidden rounded-[1.75rem]",
+        "border border-[color:var(--hairline)]",
         "px-5 py-6 text-center shadow-[0_18px_48px_-24px_rgba(0,0,0,0.55)]",
         "sm:px-8 sm:py-8",
         className,
       )}
     >
-      {/* فيديو الترحيب يتصدّر البطاقة: ملصق قابل للنقر يبدأ التشغيل، وبقية
-          المحتوى يبقى ظاهرًا تحته. */}
-      <SadeedWelcomeVideo className="mb-5 sm:mb-6" />
+      {/* خلفية البطاقة كاملةً — صورة المالك ٢٠٢٦/٠٨/١١.
+          `alt=""` و`aria-hidden`: زينةٌ لا معلومة؛ كل ما تقوله الصورة مكتوبٌ
+          نصًّا في البطاقة نفسها، فوصفها لقارئ الشاشة تكرارٌ لا إفادة.
+          و`object-cover` تملأ البطاقة وتقصّ الفائض — الصورة عمودية
+          (‏941×1672) والبطاقة عريضة، فالقصّ حتميّ ومقصود.
 
+          **والضبابة شرطُ صدقٍ لا ذوقٍ (المادة ٢٧).** الصورة تحمل داخلها
+          لوحةَ مؤشّرات مرسومة: «١٢٨ مواقع» و«٣٤٢ دوريات» و«١٬٢٤٨ موظفون»
+          و«٩٤٫٢٪ مؤشر الأداء». قِيست مقروءةً تمامًا في اللقطتين قبل
+          الضبابة — فصارت أرقامًا تُقرأ قياسًا على الصفحة الأولى ولم يقع
+          قياسها، وهي بالضبط الفبركة التي تحرسها `measured-counters`. والحلّ
+          ليس حذف الصورة (أمر المالك صريح) بل نزع **المقروئية** مع إبقاء
+          **الهوية**: الضبابة تمحو الحروف الصغيرة ولا تمحو المشهد.
+          و`scale-110` تُخفي حافّة الضبابة الشفّافة عند أطراف البطاقة. */}
+      <img
+        src={CARD_BG_SRC}
+        alt=""
+        aria-hidden
+        draggable={false}
+        className="pointer-events-none absolute inset-0 h-full w-full scale-110 select-none object-cover blur-[5px]"
+      />
+      {/* الطبقة الحاجبة: بلا حجبٍ يهبط تباين النصّ فوق تفاصيل الصورة إلى ما
+          دون العتبة. تُقاس ولا تُقدَّر — انظر ملحوظة القياس في `styles.css`. */}
+      <span aria-hidden className="sd-stage-scrim pointer-events-none absolute inset-0" />
       {/* هالة خافتة خلف الوجه — زينة صرفة، تحت النص لا فوقه. */}
       <span
         aria-hidden
@@ -137,8 +159,13 @@ export function SadeedStagePresence({ className }: SadeedStagePresenceProps) {
           {STATE_LABEL_AR[presence] ?? STATE_LABEL_AR.idle}
         </p>
 
-        {/* الأفعال: عمود على الجوال وصفّ على الشاشات الأوسع. كل هدف ≥ ٤٤px
-            ارتفاعًا (‏min-h-12‏ = ‏48px‏) — §2.5.8.
+        {/* الأفعال: عمود على الجوال وصفّ على الشاشات الأوسع.
+            وارتفاع الهدف **مقيسٌ لا مُفترض**: `min-h-12` لا تصل ‏48px‏ هنا،
+            لأن أرضيّتَي اللمس في `styles.css` مكتوبتان **خارج الطبقات**
+            (`:where(button…) { min-block-size: 44px | 40px }`)، والقاعدة غير
+            المُطبَّقة تعلو `@layer utilities` مهما كانت النوعية — حتى بنوعية
+            `:where` الصفرية. فالمقيس ‏44px‏ على اللمس (‏pointer: coarse‏، وهو
+            الجوال الحقيقي) و‏40px‏ على الفأرة. و‏44px‏ يفي §2.5.5.
             و`flex-wrap` واجبة منذ ٢٠٢٦/٠٨/٠٩: صار السطح يعيش في العمود
             الأوسط من ثلاثة، فثلاثة أزرار في صفٍّ واحد تتجاوز عرض العمود
             (قِيس ٣١px فائضًا على ١٠٢٤px). تلتفّ فتنزل تحتها بدل أن تُقصّ. */}
