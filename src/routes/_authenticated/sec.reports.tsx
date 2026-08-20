@@ -23,10 +23,10 @@ import {
   Eye,
   PieChart,
   BarChart3,
-  TrendingUp,
 } from "lucide-react";
-import { DonutChart, BarSeries, RadialGauge } from "@/components/charts/premium-charts";
-import { InteractiveArea } from "@/components/charts/interactive-area";
+// ٢٠٢٦/٠٨/٢٠: حُذف بوكس «نشاط التوليد — ١٤ يومًا» بقرار المالك، وأُزيلت معه
+// استيرادات TrendingUp وRadialGauge وInteractiveArea التي كانت حصرية له.
+import { DonutChart, BarSeries } from "@/components/charts/premium-charts";
 import {
   generateDailyOperationsReport,
   getDailyOpsData,
@@ -377,24 +377,16 @@ function Reports() {
    ---------------------------------------------------------------- */
 function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
   const stats = useMemo(() => {
-    const dayMs = 86_400_000;
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-
+    // ٢٠٢٦/٠٨/٢٠: أُزيلت حسابات perDay/last7/freshness — كانت مخصّصة حصريًا
+    // لبوكس «نشاط التوليد — ١٤ يومًا» المحذوف بقرار المالك.
     const byFormat = new Map<string, number>();
     const byKind = new Map<string, number>();
-    const perDay = new Array(14).fill(0) as number[];
     let bytes = 0;
-    let last7 = 0;
 
     for (const r of rows) {
       byFormat.set(r.format, (byFormat.get(r.format) ?? 0) + 1);
       byKind.set(r.kind, (byKind.get(r.kind) ?? 0) + 1);
       bytes += r.size_bytes ?? 0;
-      const t = new Date(r.created_at).getTime();
-      const idx = 13 - Math.floor((startOfToday.getTime() + dayMs - t) / dayMs);
-      if (idx >= 0 && idx < 14) perDay[idx] += 1;
-      if (t >= startOfToday.getTime() - 6 * dayMs) last7 += 1;
     }
 
     const FORMAT_ACCENT: Record<string, string> = {
@@ -414,8 +406,6 @@ function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
     return {
       total: rows.length,
       bytes,
-      last7,
-      freshness: rows.length ? Math.round((last7 / rows.length) * 100) : 0,
       formats: [...byFormat.entries()].map(([label, value]) => ({
         label: label.toUpperCase(),
         value,
@@ -429,14 +419,14 @@ function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
           value,
           accent: KIND_ACCENT[i % KIND_ACCENT.length],
         })),
-      perDay,
     };
   }, [rows]);
 
   if (stats.total === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+    // ٢٠٢٦/٠٨/٢٠: الشبكة عمودان بعد حذف بوكس «نشاط التوليد — ١٤ يومًا» بقرار المالك.
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
           <PieChart className="h-4 w-4 text-primary" aria-hidden /> توزيع الصيغ المُصدَّرة
@@ -448,38 +438,17 @@ function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
       </div>
 
       <div className="rounded-xl border border-border bg-card p-4">
-        <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+        <div className="mb-1.5 flex items-center gap-2 text-sm font-medium text-foreground">
           <BarChart3 className="h-4 w-4 text-primary" aria-hidden /> التقارير حسب النوع
         </div>
+        {/* ٢٠٢٦/٠٨/٢٠: سطر توضيح بطلب المالك («ما المقصود بها؟») — يصف ما
+            يعدّه الرسم فعليًا: حقل kind في صفوف سجل التقارير المعروض أدناه. */}
+        <p className="mb-2 text-[12px] leading-5 text-muted-foreground">
+          توزيع تقارير السجل أدناه حسب حقل النوع (kind): «daily» تقارير العمليات اليومية بكل
+          نطاقاتها · «incident» تقارير البلاغات — وهو غير الصيغة (PDF/Excel) المعروضة في الرسم
+          المجاور.
+        </p>
         <BarSeries data={stats.kinds} height={150} />
-      </div>
-
-      <div className="rounded-xl border border-border bg-card p-4">
-        <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
-          <TrendingUp className="h-4 w-4 text-primary" aria-hidden /> نشاط التوليد — ١٤ يومًا
-        </div>
-        <InteractiveArea
-          points={stats.perDay.map((value, i) => {
-            const d = new Date();
-            d.setHours(0, 0, 0, 0);
-            d.setDate(d.getDate() - (13 - i));
-            return {
-              label: d.toLocaleDateString("ar-SA", { day: "numeric", month: "short" }),
-              value,
-            };
-          })}
-          accent="37, 99, 235"
-          height={96}
-          title="نشاط توليد التقارير"
-        />
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <RadialGauge value={stats.freshness} size={92} caption="حداثة السجل (٧ أيام)" />
-          <div className="text-end">
-            <div className="text-2xl font-black tabular-nums text-foreground">{stats.total}</div>
-            <div className="text-[12px] text-muted-foreground">إجمالي التقارير</div>
-            <div className="mt-1 text-[12px] text-muted-foreground">آخر ٧ أيام: {stats.last7}</div>
-          </div>
-        </div>
       </div>
     </div>
   );

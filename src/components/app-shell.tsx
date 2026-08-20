@@ -3,8 +3,6 @@ import {
   FileText,
   FolderOpen,
   Map as MapIcon,
-  LogOut,
-  LogIn,
   Radar,
   Siren,
   ExternalLink as ExternalLinkIcon,
@@ -310,7 +308,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
           <UserChip />
           <div className="ms-auto flex shrink-0 items-center gap-1.5">
             <LangIconToggle />
-            <SignOutIcon />
+            {/* أيقونة تسجيل الدخول/الخروج حُذفت بأمر المالك ٢٠٢٦/٠٨/٢٠
+                («حذف أي تسجيل دخول او خروج في النظام») — التصفّح ضيفٌ
+                مفتوح، ومسار /auth يبقى حيًّا لعمليات الكتابة دون زرٍّ ظاهر. */}
           </div>
         </div>
       </div>
@@ -327,36 +327,6 @@ function LangIconToggle() {
       aria-label={t("lang.label")}
     >
       {locale === "ar" ? "EN" : "AR"}
-    </button>
-  );
-}
-
-function SignOutIcon() {
-  const { user, signOut } = useAuth();
-  const { t } = useI18n();
-  // Guest (open browsing, no session): offer a way INTO the real login page
-  // instead of a no-op sign-out. Authenticated users get the sign-out action.
-  if (!user) {
-    return (
-      <Link
-        to="/auth"
-        search={{ redirect: typeof window !== "undefined" ? window.location.pathname : "/" }}
-        className="grid size-9 place-items-center rounded-full border border-sidebar-border bg-card text-muted-foreground transition hover:border-primary/50 hover:text-primary"
-        aria-label={t("auth.signin")}
-        title={t("auth.signin")}
-      >
-        <LogIn className="size-4" data-flip-rtl />
-      </Link>
-    );
-  }
-  return (
-    <button
-      onClick={() => signOut()}
-      className="grid size-9 place-items-center rounded-full border border-sidebar-border bg-card text-muted-foreground transition hover:border-destructive/50 hover:text-destructive"
-      aria-label={t("auth.signout")}
-      title={t("auth.signout")}
-    >
-      <LogOut className="size-4" data-flip-rtl />
     </button>
   );
 }

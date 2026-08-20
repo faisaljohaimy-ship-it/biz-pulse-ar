@@ -5,7 +5,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
-import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 
 export const Route = createFileRoute("/_authenticated/sec/facilities")({
   errorComponent: RouteError,
@@ -16,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/sec/facilities")({
 function Facilities() {
   const { user, loading: authLoading } = useAuth();
   const fetchOverview = useServerFn(getSecOverview);
-  const { data, dataUpdatedAt, isFetching } = useQuery({
+  const { data } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
     enabled: !authLoading,
@@ -24,9 +23,9 @@ function Facilities() {
   const sites = data?.sites ?? [];
   return (
     <div className="space-y-4">
-      <SecPageHeader title="حالة المواقع" subtitle={`${sites.length} موقعًا ضمن النطاق المصرح`}>
-        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_sites" />
-      </SecPageHeader>
+      {/* ٢٠٢٦/٠٨/٢٠ — بقرار المالك (الملاحظات الحمراء، الدفعة الخامسة): حُذفت
+          شارة LIVE من ترويسة هذه الواجهة؛ منطق الجلب والتحديث باقٍ كما هو. */}
+      <SecPageHeader title="حالة المواقع" subtitle={`${sites.length} موقعًا ضمن النطاق المصرح`} />
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {sites.map((s) => (
           <div key={s.id} className="rounded-xl border border-border bg-card p-4">

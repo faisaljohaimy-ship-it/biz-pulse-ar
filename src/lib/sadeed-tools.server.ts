@@ -1130,7 +1130,7 @@ export function buildSadeedTools(
           "/sec/patrols",
           "/sec/visitors",
           "/sec/cctv",
-          "/sec/kpi",
+          // «مؤشرات الأداء» /sec/kpi حُجبت ٢٠٢٦/٠٨/٢٠ — فتحها يرتدّ إلى /sec.
           "/sec/ai",
           "/sec/projects",
           "/sec/risks",

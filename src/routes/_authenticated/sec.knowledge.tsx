@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -59,6 +59,11 @@ import { useAuth } from "@/lib/auth-context";
 import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/sec/knowledge")({
+  // OWNER DIRECTIVE ٢٠٢٦/٠٨/٢٠ — «حذف الواجهة بالكامل». حُجبت
+  // (hidden-routes.ts) والملفات محفوظة بسياسة الإخفاء؛ ترتدّ إلى /sec.
+  beforeLoad: () => {
+    throw redirect({ to: "/sec" });
+  },
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: KbPage,

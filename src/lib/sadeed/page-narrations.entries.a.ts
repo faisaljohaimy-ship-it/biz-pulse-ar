@@ -3,6 +3,9 @@ import type { PageNarration } from "./page-narrations.base";
 import { n } from "./page-narrations.base";
 
 export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
+  // حُذفت صفوف «/sec/assets» و«/sec/kpi» و«/sec/safety» و«/sec/integrations»
+  // و«/sec/knowledge»: مسارات مخفية بأمر المالك ٢٠٢٦/٠٨/٢٠ (hidden-routes.ts)
+  // تُعيد التوجيه إلى /sec.
   // ── SEC command surface ─────────────────────────────────────────────
   [
     "/sec/incidents",
@@ -57,32 +60,6 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/sec/assets",
-    n(
-      "لوحة الأصول الأمنية",
-      "Security Assets",
-      "الحالة التشغيلية لكل أصل، الصيانة المستحقّة، والأصول المتعطلة",
-      "the operational status of every asset, due maintenance, and offline units",
-      "توفر تشغيلي أعلى وتقليل مباشر لأثر الأعطال",
-      "higher operational availability and a direct cut in outage impact",
-      "sec_assets يُحدَّث من الفحوصات الميدانية وتاريخ آخر معاينة last_inspected_at، وأي أصل متعطّل يولّد أمر عمل تلقائيًا في sec_work_orders",
-      "sec_assets is updated from field inspections and last_inspected_at, and any offline asset auto-generates a work order in sec_work_orders",
-    ),
-  ],
-  [
-    "/sec/kpi",
-    n(
-      "مؤشرات الأداء الأمنية",
-      "Security KPIs",
-      "الأرقام مباشرة من جداول القياس دون تدخّل يدوي",
-      "the numbers straight from measurement tables with no manual staging",
-      "قياس تنفيذي موثوق يقود قرارات الميزانية والتحسين",
-      "trustworthy executive measurement that steers budget and improvement decisions",
-      "كل مؤشر يعرض المصدر والاستعلام والفترة، ويُحتَسب لحظيًا من sec_* بلا تخزين وسيط، مع سقوف حمراء/صفراء/خضراء مقارنة بالمستهدف",
-      "each KPI shows source, query, and window, is computed live from sec_* with no intermediate store, and colored red/yellow/green against target",
-    ),
-  ],
-  [
     "/sec/exec",
     n(
       "غرفة القيادة التنفيذية للأمن",
@@ -119,19 +96,6 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
       "coordinated response that protects lives and assets within seconds",
       "أي حادثة severity='critical' تُطلق حدث enterprise_events.topic='sec.emergency.*'، تُنبّه الفرق، وتفتح تسلسل IS-٠٠٧ من الإخلاء وحتى إخطار الجهات",
       "any severity='critical' incident fires enterprise_events.topic='sec.emergency.*', alerts on-call teams, and opens the IS-007 flow from evacuation through authority notification",
-    ),
-  ],
-  [
-    "/sec/safety",
-    n(
-      "لوحة السلامة",
-      "Safety",
-      "مؤشرات السلامة، الحوادث المُبلَّغ عنها، والمراقبة الاستباقية",
-      "safety indicators, reported incidents, and proactive monitoring",
-      "بيئة عمل خالية من الإصابات والانقطاعات",
-      "an operating environment free of injuries and disruption",
-      "مؤشر السلامة = ١٠٠ − وزن الحوادث المفتوحة المصنّفة سلامة، مع تدرّج زمني ٧/٣٠/٩٠ يومًا لرصد الاتجاه",
-      "safety index = 100 − weighted open safety incidents, with 7/30/90-day trend windows",
     ),
   ],
   [
@@ -230,19 +194,6 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
-    "/sec/integrations",
-    n(
-      "لوحة تكاملات الأمن",
-      "Security Integrations",
-      "الأنظمة المرتبطة، حالة كل تكامل، وسجل المزامنة",
-      "connected systems, per-integration status, and sync history",
-      "تشغيل موحّد يمنع تشظّي البيانات",
-      "unified operation that prevents data fragmentation",
-      "كل تكامل يعرض آخر مزامنة، معدّل الأخطاء، ومصدر البيانات؛ فشل المزامنة يفتح أمر عمل ويُظهر شارة انقطاع فورًا",
-      "each integration shows last sync, error rate, and data source; a failed sync opens a WO and flips its badge to outage instantly",
-    ),
-  ],
-  [
     "/sec/access",
     n(
       "لوحة صلاحيات الوصول",
@@ -292,19 +243,6 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
       "controlled movement across sensitive facilities",
       "sec_vehicles + sec_gates تُطابق كل مرور مع تصريح ساري؛ عدم المطابقة يُصنَّف انتهاكاً في sec_activity_events",
       "sec_vehicles + sec_gates match every pass against a valid permit; a mismatch is classified as a violation in sec_activity_events",
-    ),
-  ],
-  [
-    "/sec/knowledge",
-    n(
-      "قاعدة معرفة الأمن",
-      "Security Knowledge",
-      "الإجراءات، السياسات، والدروس المستفادة",
-      "procedures, policies, and lessons learned",
-      "تعلّم مؤسسي متراكم يمنع تكرار الأخطاء",
-      "compounding institutional learning that prevents repeat errors",
-      "المستندات مفهرسة بتضمينات RAG لتُستشهَد داخل ردود سَدِيد مع رابط للمصدر والصفحة",
-      "documents are RAG-indexed so SADEED cites them inline with a link to source and page",
     ),
   ],
 ];

@@ -1,10 +1,11 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listPermits, getOmsKpis } from "@/lib/oms.functions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
-import { NewPermitDialog, PermitActions } from "@/components/sec/oms-dialogs";
+import { PermitActions } from "@/components/sec/oms-dialogs";
+import { ArrowRight } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/permits")({
@@ -25,6 +26,12 @@ type Permit = {
   approver: string | null;
 };
 
+/**
+ * توجيه المالك ٢٠٢٦/٠٨/٢٠ (الملاحظات الحمراء على «إدارة التصاريح» — الدفعة الخامسة):
+ * سهم رجوع إلى «صلاحيات دخول اليوم» (/sec/access)، وحذف زر «تصريح جديد» —
+ * أُزيل تركيبه واستيراده هنا فقط، و`NewPermitDialog` باقٍ في الملف المشترك
+ * oms-dialogs.tsx بلا مساس. إجراءات الاعتماد (`PermitActions`) كما هي.
+ */
 function Permits() {
   const fetchPermits = useServerFn(listPermits);
   const fetchKpis = useServerFn(getOmsKpis);
@@ -42,12 +49,19 @@ function Permits() {
 
   return (
     <div className="space-y-4">
+      {/* سهم الرجوع في RTL يشير إلى اليمين — جهة الرجوع، بهدف لمس ≥44px. */}
+      <Link
+        to="/sec/access"
+        className="inline-flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <ArrowRight aria-hidden className="h-4 w-4" />
+        صلاحيات دخول اليوم
+      </Link>
+
       <SecPageHeader
         title="إدارة التصاريح (Permit to Work)"
         subtitle={`${rows.length} تصريح — اعتماد متعدد المستويات`}
-      >
-        <NewPermitDialog />
-      </SecPageHeader>
+      />
 
       {kpis && (
         <div className="grid grid-cols-3 gap-3">

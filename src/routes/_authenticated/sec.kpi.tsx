@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview, pctOrUnmeasured, numOrUnmeasured } from "@/lib/sec.functions";
@@ -8,6 +8,11 @@ import { SecPageHeader, StatCard, SecLoading, SecError } from "@/components/sec/
 import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 
 export const Route = createFileRoute("/_authenticated/sec/kpi")({
+  // OWNER DIRECTIVE ٢٠٢٦/٠٨/٢٠ — «حذف الواجهة بالكامل». حُجبت
+  // (hidden-routes.ts) والملفات محفوظة بسياسة الإخفاء؛ ترتدّ إلى /sec.
+  beforeLoad: () => {
+    throw redirect({ to: "/sec" });
+  },
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: KPI,

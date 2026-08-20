@@ -8,22 +8,16 @@ import {
   KeyRound,
   Siren,
   Cctv,
-  Eye,
   History,
-  BarChart3,
-  FileBarChart,
   Clock,
   ClipboardCheck,
-  Boxes,
   Building2,
   Grid3x3,
-  Plug,
   Network,
   Wrench,
   FolderKanban,
   LayoutDashboard,
   Building,
-  BookOpen,
   OctagonAlert,
   CheckCircle2,
 } from "lucide-react";
@@ -53,19 +47,19 @@ const ITEMS: Item[] = [
   // (/sec/access) بأسهم انتقال. الصفحات نفسها حيّة لم تُمسّ.
   { to: "/sec/emergency", label: "الطوارئ", icon: Siren },
   { to: "/sec/cctv", label: "CCTV", icon: Cctv },
-  { to: "/sec/safety", label: "ملاحظات السلامة", icon: Eye },
   { to: "/sec/risks", label: "سجل المخاطر", icon: ShieldAlert },
   // نُقلت من الوحدة المستقلة /governance بقرار المالك ٢٠٢٦/٠٨/١٢ — الأيقونة نفسها من سجل الوحدات (المادة 13.5).
   { to: "/sec/governance", label: "الحوكمة", icon: ClipboardCheck },
-  { to: "/sec/kpi", label: "مؤشرات الأداء", icon: BarChart3 },
-  { to: "/sec/reports", label: "التقارير", icon: FileBarChart },
   { to: "/sec/shifts", label: "الورديات", icon: Clock },
-  { to: "/sec/assets", label: "حماية الأصول", icon: Boxes },
   { to: "/sec/facilities", label: "حالة المواقع", icon: Building2 },
   // `ListChecks` قائمة مهام؛ والخط الزمني تسلسلٌ في الزمن لا قائمة تُشطب.
   { to: "/sec/timeline", label: "الخط الزمني", icon: History },
-  { to: "/sec/knowledge", label: "مستودع المعرفة", icon: BookOpen },
-  { to: "/sec/integrations", label: "التكاملات", icon: Plug },
+  // ── دفعة ٢٠٢٦/٠٨/٢٠ (٣) ──
+  // حُجبت أربع شاشات بأمر المالك («حذف الواجهة بالكامل»): مستودع المعرفة،
+  // التكاملات (جاهزية التكامل)، حماية الأصول، مؤشرات الأداء — ومعها
+  // «ملاحظات السلامة» (بنصّه: سلامةٌ لا أمن صناعي). و«التقارير» بقيت شاشةً
+  // حيّة لكن مدخلها الشريط الجانبي وحده («الاكتفاء بوجودها في الشريط
+  // الجانبي الأيمن») فسقط بندها من هذا الشريط.
 ];
 
 export function SecSubNav() {

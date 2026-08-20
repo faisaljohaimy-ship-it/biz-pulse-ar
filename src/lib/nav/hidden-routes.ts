@@ -61,6 +61,17 @@ export const HIDDEN_ROUTES: ReadonlySet<string> = new Set([
   // إلى /sec لأنهما ابنتا قسمه لا شاشتين مستقلتين.
   "/sec/circles",
   "/sec/sections",
+
+  // ── دفعة ٢٠٢٦/٠٨/٢٠ (٣) — الصور الخامسة ──
+  // «حذف الواجهة بالكامل» ×٤: مستودع المعرفة، جاهزية التكامل، حماية
+  // الأصول، ومحرك مؤشرات الأداء (المالك: مع احتمالية مؤشرات مستقبلًا في
+  // الرئيسية). و«ملاحظات السلامة» بنصّ المالك: «متعلقة بالسلامة ولا تمت
+  // للأمن الصناعي بصلة». كلها بنات /sec فترتدّ إليه.
+  "/sec/knowledge",
+  "/sec/integrations",
+  "/sec/assets",
+  "/sec/safety",
+  "/sec/kpi",
 ]);
 
 export function isRouteHidden(path: string): boolean {

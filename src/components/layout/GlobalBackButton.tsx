@@ -1,7 +1,24 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useCanGoBack, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Home } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+
+/**
+ * متعقّب المسار السابق داخل التطبيق — على مستوى الوحدة عمدًا.
+ *
+ * الزوج يُركَّب مرتين (ترويسة القشرة + النسخة العائمة، وإحداهما مخفاة
+ * بـ`:has()`)، فلو حفظ كلٌّ منهما تاريخه لتضاعف الدفع. الحارس بسيط:
+ * لا يتحرّك السجل إلا حين يتغيّر المسار فعلًا، فالتركيب الثاني لا يرى
+ * تغيّرًا ولا يكتب شيئًا.
+ */
+let PREV_PATH: string | null = null;
+let LAST_PATH: string | null = null;
+function trackPath(pathname: string) {
+  if (pathname !== LAST_PATH) {
+    PREV_PATH = LAST_PATH;
+    LAST_PATH = pathname;
+  }
+}
 
 /**
  * Global back control — shown on every page except the home shell.
@@ -47,11 +64,31 @@ const ORB =
  * flexbox المساحة فيحاذي الزوجُ جيرانَه ويُفسحون له معًا — بلا رقمٍ يُصان
  * ولا تصادمٍ يُكتشف بعد حين.
  */
+/**
+ * ── قواعد الزوج بأمر المالك ٢٠٢٦/٠٨/٢٠ ──
+ *
+ * ① **الرجوع عند الحاجة فقط**: يظهر حين يوجد مُدخل تطبيقٍ سابق **يختلف عن
+ *    الرئيسية** — فالرجوع الذي يفعل فعل الهوم تكرارٌ يُكتفى عنه بالهوم
+ *    (مثال المالك: من صلاحيات الدخول إلى المقاولين تحتاج العودة؛ أما
+ *    القادم من الرئيسية فلا رجوع له غيرها).
+ * ② **الهوم ثابت مكانه لا يتحرّك**: خانة الرجوع محجوزة دائمًا وتُخفى
+ *    بـ`invisible` لا بإزالة العنصر — فاختفاء الرجوع لا يُزيح الهوم بكسلًا.
+ * ③ **على المستوى الأفقي نفسه، والرجوع على يسار الهوم**: الصفّ RTL
+ *    فالعنصر الأول (الهوم) يقع يمينًا والرجوع بعده يسارًا.
+ */
 export function BackHomeControls({ className = "" }: { className?: string } = {}) {
   const navigate = useNavigate();
   const canGoBack = useCanGoBack();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { locale } = useI18n();
   const isRtl = locale === "ar";
+
+  useEffect(() => {
+    trackPath(pathname);
+  }, [pathname]);
+
+  // الحاجة = مكدّس المسيّر يملك مُدخلًا سابقًا، وذلك المُدخل ليس الرئيسية.
+  const backNeeded = canGoBack && PREV_PATH !== null && PREV_PATH !== "/";
 
   const goBack = useCallback(() => {
     if (canGoBack) {
@@ -62,19 +99,7 @@ export function BackHomeControls({ className = "" }: { className?: string } = {}
   }, [canGoBack, navigate]);
 
   return (
-    <div className={`flex items-center gap-2 ${className}`} dir={isRtl ? "rtl" : "ltr"}>
-      <button
-        type="button"
-        onClick={goBack}
-        aria-label={isRtl ? "رجوع" : "Back"}
-        title={isRtl ? "رجوع" : "Back"}
-        className={ORB}
-      >
-        <ArrowRight
-          className={`relative size-[1.15rem] text-[color:var(--tone-cyan)] ${isRtl ? "" : "rotate-180"}`}
-          aria-hidden="true"
-        />
-      </button>
+    <div className={`flex items-center gap-2 ${className}`} dir="rtl">
       <button
         type="button"
         onClick={() => void navigate({ to: "/" })}
@@ -84,6 +109,20 @@ export function BackHomeControls({ className = "" }: { className?: string } = {}
       >
         <Home
           className="relative size-[1.15rem] text-[color:var(--tone-cyan)]"
+          aria-hidden="true"
+        />
+      </button>
+      <button
+        type="button"
+        onClick={goBack}
+        aria-label={isRtl ? "رجوع" : "Back"}
+        title={isRtl ? "رجوع" : "Back"}
+        aria-hidden={!backNeeded}
+        tabIndex={backNeeded ? 0 : -1}
+        className={`${ORB} ${backNeeded ? "" : "invisible pointer-events-none"}`}
+      >
+        <ArrowRight
+          className={`relative size-[1.15rem] text-[color:var(--tone-cyan)] ${isRtl ? "" : "rotate-180"}`}
           aria-hidden="true"
         />
       </button>

@@ -2,10 +2,10 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getSecOverview } from "@/lib/sec.functions";
+import { getSecOverview, type SecCctvAlert } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
-import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
-import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
+import { SecPageHeader, SecLoading, SecError } from "@/components/sec/sec-shell";
+import { AlertTriangle, OctagonAlert } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sec/cctv")({
   errorComponent: RouteError,
@@ -13,73 +13,115 @@ export const Route = createFileRoute("/_authenticated/sec/cctv")({
   component: CCTV,
 });
 
+// ٢٠٢٦/٠٨/٢٠ — إعادة بناء الصفحة بأمر المالك (الدفعة الخامسة، الملاحظات
+// الحمراء): الترويسة تحمل عدد الكاميرات النشطة، وحُذفت شارة LIVE وبطاقات
+// المؤشرات وكل المحتوى المتبقي — لم يبقَ سوى قسم «التنبيهات».
+
+// ٢٠٢٦/٠٨/٢٠ — كلمات نوع التنبيه العربية نفسها المستخدمة في نوافذ اللوحة
+// التنفيذية (sec-exec-kpis.functions.ts: ALERT_TYPE_AR) — لا تأليف أنواع؛
+// النوع غير المعروف يُعرض بنصّه كما ورد من المصدر.
+const ALERT_TYPE_AR: Record<string, string> = {
+  motion: "رصد حركة",
+  loitering: "تسكّع",
+  intrusion: "تسلل",
+  camera_offline: "انقطاع كاميرا",
+  tamper: "عبث بالكاميرا",
+};
+
+// ٢٠٢٦/٠٨/٢٠ — شارة نوع التنبيه بعرف لوحات السلامة (كلمة + شكل معًا، لا لون
+// وحده — WCAG 2.2 §1.4.1): تسلل = خطر (مثمّن أحمر)، وبقية الأنواع = تحذير
+// (مثلث كهرماني) — نفس معيار اللوحة التنفيذية (intrusion → danger).
+function AlertKindChip({ alertType }: { alertType: string }) {
+  const danger = alertType === "intrusion";
+  const Icon = danger ? OctagonAlert : AlertTriangle;
+  return (
+    <span
+      className={
+        danger
+          ? "inline-flex items-center gap-1 rounded-full border border-red-500/40 bg-red-500/15 px-2 py-0.5 text-[12px] font-semibold text-red-700 dark:text-red-300"
+          : "inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 text-[12px] font-semibold text-amber-700 dark:text-amber-300"
+      }
+    >
+      {/* aria-hidden: الكلمة المجاورة تنطق المعنى؛ الأيقونة شكل مساند فقط. */}
+      <Icon aria-hidden className="h-3.5 w-3.5 shrink-0" />
+      {danger ? "خطر" : "تحذير"} · {ALERT_TYPE_AR[alertType] ?? alertType}
+    </span>
+  );
+}
+
 function CCTV() {
   const { user, loading: authLoading } = useAuth();
   const fetchOverview = useServerFn(getSecOverview);
-  const { data, dataUpdatedAt, isFetching } = useQuery({
+  const overviewQ = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
+    // البوابة الوحيدة !authLoading — لا enabled: !!user على قراءة عرض.
     enabled: !authLoading,
   });
-  const rows = data?.cctv ?? [];
+
+  const rows: SecCctvAlert[] = overviewQ.data?.cctv ?? [];
+  // ٢٠٢٦/٠٨/٢٠ — خريطة الموقع من نفس مصدر الصفحة (sec_sites)؛ الغائب يُعرض
+  // «غير مسجّل» لا اسمًا مؤلّفًا (المادة ٢٧).
+  const siteById = new Map((overviewQ.data?.sites ?? []).map((s) => [s.id, s.name_ar]));
+  // ٢٠٢٦/٠٨/٢٠ — عدد الكاميرات النشطة بنفس اشتقاق البطاقة المحذوفة «كاميرات
+  // نشطة»: عدد الكاميرات المميّزة في صفوف التنبيهات. لا صفوف = لا قياس ⇐
+  // «لم يُقَس»، والصفر لا يُخترع (المادة ٢٧).
+  const activeCameras = rows.length ? new Set(rows.map((r) => r.camera_code)).size : null;
+  const isSim = rows.some((r) => r.id.startsWith("sim-"));
+
+  // ٢٠٢٦/٠٨/٢٠ — حالتا التحميل والخطأ محفوظتان بنمط صفحات sec المرجعي.
+  if (overviewQ.isLoading) return <SecLoading rows={6} />;
+  if (overviewQ.isError && !overviewQ.data)
+    return <SecError onRetry={() => void overviewQ.refetch()} />;
+
   return (
     <div className="space-y-4">
-      <SecPageHeader title="لوحة مراقبة CCTV" subtitle="تنبيهات الكاميرات الذكية">
-        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_cameras" />
-      </SecPageHeader>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard
-          label="تنبيهات جديدة"
-          value={rows.filter((r) => r.status === "new").length}
-          tone="warning"
-        />
-        <StatCard
-          label="مُستجاب لها"
-          value={rows.filter((r) => r.status === "acknowledged" || r.status === "resolved").length}
-          tone="success"
-        />
-        <StatCard
-          label="ثقة متوسطة"
-          value={
-            rows.length
-              ? `${Math.round((rows.reduce((s, r) => s + r.confidence, 0) / rows.length) * 100)}%`
-              : "—"
-          }
-        />
-        <StatCard label="كاميرات نشطة" value={new Set(rows.map((r) => r.camera_code)).size} />
-      </div>
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {rows.map((c) => (
-          <div key={c.id} className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold text-foreground">{c.alert_type}</div>
-              <span
-                className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(c.status)}`}
-              >
-                {c.status}
-              </span>
-            </div>
-            <div className="mt-1 text-xs text-muted-foreground">
-              {c.camera_code} · {c.ref}
-            </div>
-            <div className="mt-3 flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">ثقة الكشف</span>
-              <span className="font-semibold">{Math.round(c.confidence * 100)}%</span>
-            </div>
-            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-              <div className="h-full bg-primary" style={{ width: `${c.confidence * 100}%` }} />
-            </div>
-            <div className="mt-2 text-[12px] text-muted-foreground">
-              {new Date(c.detected_at).toLocaleString("ar-SA")}
-            </div>
-            {c.acknowledged_by && (
-              <div className="mt-1 text-[12px] text-muted-foreground">
-                استجاب: {c.acknowledged_by}
-              </div>
-            )}
+      {/* ٢٠٢٦/٠٨/٢٠ — العنوان الفرعي صار عدد الكاميرات النشطة (بدل «تنبيهات
+          الكاميرات الذكية»)، وشارة LIVE حُذفت. */}
+      <SecPageHeader
+        title="لوحة مراقبة CCTV"
+        subtitle={`عدد الكاميرات النشطة: ${activeCameras ?? "لم يُقَس"}`}
+        badge={isSim ? "محاكاة مرجعية" : undefined}
+      />
+
+      {/* ٢٠٢٦/٠٨/٢٠ — قسم «التنبيهات»: بطاقة لكل كاميرا أرسلت تنبيهًا من
+          صفوف الصفحة الحقيقية نفسها (sec_cctv_alerts عبر getSecOverview). */}
+      <section aria-label="التنبيهات">
+        <h2 className="mb-3 text-lg font-bold text-foreground">التنبيهات</h2>
+        {rows.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+            لا تنبيهات حالية
           </div>
-        ))}
-      </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {rows.map((c) => (
+              <div key={c.id} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="truncate text-sm font-semibold text-foreground">
+                    كاميرا {c.camera_code}
+                  </div>
+                  <AlertKindChip alertType={c.alert_type} />
+                </div>
+                <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                  <div>
+                    الموقع:{" "}
+                    <span className="font-medium text-foreground">
+                      {/* الموقع الغائب «غير مسجّل» — لا يُخترع (المادة ٢٧). */}
+                      {(c.site_id && siteById.get(c.site_id)) || "غير مسجّل"}
+                    </span>
+                  </div>
+                  <div>
+                    وقت التنبيه:{" "}
+                    <span className="font-medium text-foreground">
+                      {new Date(c.detected_at).toLocaleString("ar-SA")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

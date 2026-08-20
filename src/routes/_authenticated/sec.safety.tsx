@@ -1,8 +1,13 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { SecPageHeader, StatCard, severityClass } from "@/components/sec/sec-shell";
 
 export const Route = createFileRoute("/_authenticated/sec/safety")({
+  // OWNER DIRECTIVE ٢٠٢٦/٠٨/٢٠ — «حذف الواجهة بالكامل». حُجبت
+  // (hidden-routes.ts) والملفات محفوظة بسياسة الإخفاء؛ ترتدّ إلى /sec.
+  beforeLoad: () => {
+    throw redirect({ to: "/sec" });
+  },
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: Safety,

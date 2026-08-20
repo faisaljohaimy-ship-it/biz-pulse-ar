@@ -5,7 +5,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
 import { SecPageHeader, severityClass, SecLoading, SecError } from "@/components/sec/sec-shell";
-import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
 // أيقونات هذا الخط الزمني تُقرأ من نوع الحدث وتظهر بلا نصّ يشرحها، فتُطابق
 // أيقونات الوحدات نفسها: الدورية جولةٌ راجلة لا رادارًا، و`Camera` كاميرا
 // تصوير لا مراقبة، والتصريح وثيقة معتمَدة لا شارة.
@@ -28,7 +27,7 @@ type Ev = {
 function Timeline() {
   const { user, loading: authLoading } = useAuth();
   const fetchOverview = useServerFn(getSecOverview);
-  const { data, dataUpdatedAt, isFetching, isError, refetch } = useQuery({
+  const { data, isError, refetch } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
     enabled: !authLoading,
@@ -77,12 +76,12 @@ function Timeline() {
 
   return (
     <div className="space-y-4">
+      {/* ٢٠٢٦/٠٨/٢٠ — بقرار المالك (الملاحظات الحمراء، الدفعة الخامسة): حُذفت
+          شارة LIVE من ترويسة الخط الزمني؛ منطق الجلب والتحديث باقٍ كما هو. */}
       <SecPageHeader
         title="الخط الزمني للعمليات"
         subtitle={`${events.length} حدث — مرتّبة من الأحدث`}
-      >
-        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_overview" />
-      </SecPageHeader>
+      />
       <div className="rounded-xl border border-border bg-card p-4">
         <ol className="relative space-y-3 ps-6">
           <span className="absolute inset-y-0 start-2 w-px bg-border" aria-hidden />

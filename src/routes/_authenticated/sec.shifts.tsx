@@ -44,10 +44,13 @@ function Shifts() {
     <div className="space-y-4">
       <SecPageHeader title="إدارة الورديات" subtitle="جدول الورديات وأعداد الحرّاس" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {/* ٢٠٢٦/٠٨/٢٠ — بقرار المالك (الملاحظات الحمراء، الدفعة الخامسة): حُذفت
+            كلمة «سليم» من البطاقتين بإرجاع نغمتهما إلى default — لا حالة تحذير
+            حقيقية هنا تستدعي نغمة بديلة، والقيم والتلميحات باقية كما هي. */}
         <StatCard label="إجمالي الحرّاس" value={SHIFTS.reduce((s, x) => s + x.guards, 0)} />
-        <StatCard label="حاليّاً بالميدان" value={SHIFTS[0].guards} tone="success" />
+        <StatCard label="حاليّاً بالميدان" value={SHIFTS[0].guards} />
         <StatCard label="عدد الورديات" value={SHIFTS.length} />
-        <StatCard label="التغطية" value="100%" tone="success" />
+        <StatCard label="التغطية" value="100%" />
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         {SHIFTS.map((s) => (

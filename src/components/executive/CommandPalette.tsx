@@ -155,13 +155,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
         to: "/sec/exec",
         group: "Reports",
       },
-      {
-        id: "kpi",
-        title_ar: screenNameAr("/sec/kpi"),
-        title_en: screenNameEn("/sec/kpi"),
-        to: "/sec/kpi",
-        group: "Reports",
-      },
+      // «مؤشرات الأداء» /sec/kpi حُجبت بأمر المالك ٢٠٢٦/٠٨/٢٠ — سُحب بندها.
       {
         id: "health",
         title_ar: "صحة النظام",
