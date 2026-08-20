@@ -30,7 +30,9 @@ import { join } from "node:path";
 import { chromium } from "playwright";
 
 const BASE = (process.env.BASE_URL || "http://127.0.0.1:8080").replace(/\/$/, "");
-const ROUTES = (process.env.ROUTES || "/,/projects,/sec/governance,/sadeed,/sec").split(",").filter(Boolean);
+const ROUTES = (process.env.ROUTES || "/,/projects,/sec/governance,/sadeed,/sec")
+  .split(",")
+  .filter(Boolean);
 const STRICT_CONSOLE = process.env.STRICT_CONSOLE === "1";
 /**
  * الوضع الذي يُقاس فيه: `dark` · `light` · أو الافتراضي (ما يقرّره النظام).
