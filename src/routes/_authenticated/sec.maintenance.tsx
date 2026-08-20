@@ -5,7 +5,13 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { listWorkOrders, getOmsKpis } from "@/lib/oms.functions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
-import { NewWorkOrderDialog, WorkOrderActions } from "@/components/sec/oms-dialogs";
+import {
+  NewWorkOrderDialog,
+  WorkOrderActions,
+  WO_PRIORITY_AR,
+  WO_STATUS_AR,
+  WO_ASSET_KIND_AR,
+} from "@/components/sec/oms-dialogs";
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/maintenance")({
@@ -43,6 +49,16 @@ function Maintenance() {
     refetchInterval: 30_000,
   });
   const [filter, setFilter] = useState<"all" | "preventive" | "corrective" | "open">("all");
+
+  // ٢٠٢٦/٠٨/٢٠ — قرار المالك: بسط نسبة الإكمال ومقامها يظهران تحتها رقمًا صغيرًا،
+  // من الحِمل نفسه الذي حُسبت منه النسبة في deriveOmsKpis (المكتمل = الإجمالي − المفتوح؛
+  // completion_pct = المكتمل ÷ الإجمالي). وبلا قياس يُعرض «لم يُقَس» — المادة ٢٧:
+  // الصفر ليس بديلًا عن الغياب.
+  const woCompletionDetail =
+    kpis && kpis.work_orders.total > 0
+      ? `${kpis.work_orders.total - kpis.work_orders.open} من ${kpis.work_orders.total}`
+      : "لم يُقَس";
+
   const list = (data ?? []) as WO[];
   const rows = list.filter((r) => {
     if (filter === "all") return true;
@@ -68,6 +84,7 @@ function Maintenance() {
             label="نسبة الإكمال"
             value={`${kpis.work_orders.completion_pct}%`}
             tone="success"
+            hint={woCompletionDetail}
           />
         </div>
       )}
@@ -120,7 +137,10 @@ function Maintenance() {
                   )}
                 </td>
                 <td className="px-3 py-2">
-                  <div className="text-xs">{w.asset_kind || "—"}</div>
+                  {/* ٢٠٢٦/٠٨/٢٠ — نوع الأصل يُعرض بالعربية؛ الكود معرّف تقني يبقى */}
+                  <div className="text-xs">
+                    {w.asset_kind ? (WO_ASSET_KIND_AR[w.asset_kind] ?? w.asset_kind) : "—"}
+                  </div>
                   <div className="font-mono text-[12px] text-muted-foreground">
                     {w.asset_code ?? "—"}
                   </div>
@@ -133,17 +153,18 @@ function Maintenance() {
                   </span>
                 </td>
                 <td className="px-3 py-2">
+                  {/* ٢٠٢٦/٠٨/٢٠ — توحيد العرض بالعربية: اللون من القيمة المخزّنة والنص معرَّب */}
                   <span
                     className={`rounded-full border px-2 py-0.5 text-[12px] ${severityClass(w.priority)}`}
                   >
-                    {w.priority}
+                    {WO_PRIORITY_AR[w.priority] ?? w.priority}
                   </span>
                 </td>
                 <td className="px-3 py-2">
                   <span
                     className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(w.status)}`}
                   >
-                    {w.status}
+                    {WO_STATUS_AR[w.status] ?? w.status}
                   </span>
                 </td>
                 <td className="px-3 py-2 text-xs">{w.assigned_to ?? w.contractor ?? "—"}</td>

@@ -1,36 +1,10 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
-import { toast } from "sonner";
-import {
-  getAccessOverview,
-  createContractor,
-  updateContractorStatus,
-} from "@/lib/access.functions";
-import { userFacingError } from "@/lib/errors/user-facing-error";
-import { useAuth } from "@/lib/auth-context";
+import { getAccessOverview } from "@/lib/access.functions";
 import { SecPageHeader, StatCard, statusClass } from "@/components/sec/sec-shell";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Plus, Ban, Pause, Play } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/contractors")({
@@ -39,24 +13,15 @@ export const Route = createFileRoute("/_authenticated/sec/contractors")({
   component: ContractorsPage,
 });
 
-const PERMIT_TYPES = [
-  "hot_work",
-  "cold_work",
-  "confined_space",
-  "working_at_height",
-  "excavation",
-  "electrical",
-  "chemical",
-];
-
-/** صفوف المحاكاة المرجعية معرّفاتها sim-* — الكتابة عليها بلا معنى وترمي ZodError خامًا. */
-const SIM_ACTION_INFO = "هذه بيانات محاكاة مرجعية — الإجراء متاح على البيانات الحية فقط";
-const isSimRow = (id: string) => id.startsWith("sim-");
-
+/**
+ * توجيه المالك ٢٠٢٦/٠٨/٢٠ (الملاحظات الحمراء على «إدارة المقاولين»):
+ * سهم رجوع إلى «صلاحيات دخول اليوم» (/sec/access)، حذف زر «مقاول جديد»
+ * وحواره، وحذف أزرار «تعليق» و«حظر» من البطاقات جميعها — فتقاعدت إجراءات
+ * الكتابة ذات البوابة البشرية من هذا السطح وصارت البطاقات قراءةً فقط
+ * (ومعها «تفعيل»، إذ لا كتابة تبقى هنا). مسار القراءة المرن كما هو.
+ */
 function ContractorsPage() {
   const fetchOverview = useServerFn(getAccessOverview);
-  const { user } = useAuth();
-  const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["access-overview"],
     queryFn: () => fetchOverview(),
@@ -65,31 +30,18 @@ function ContractorsPage() {
   const contractors = data?.contractors ?? [];
   const k = data?.kpis;
 
-  const setStatusFn = useServerFn(updateContractorStatus);
-  const mStatus = useMutation({
-    mutationFn: ({
-      id,
-      status,
-      reason,
-    }: {
-      id: string;
-      status: "active" | "suspended" | "blacklisted";
-      reason?: string;
-    }) => setStatusFn({ data: { contractor_id: id, status, reason } }),
-    onSuccess: () => {
-      toast.success("تم تحديث الحالة");
-      qc.invalidateQueries({ queryKey: ["access-overview"] });
-    },
-    onError: (e: Error) => toast.error(userFacingError(e)),
-  });
-
   return (
     <div className="space-y-4">
-      <SecPageHeader title="إدارة المقاولين" subtitle={`${contractors.length} مقاول مسجّل`}>
-        <NewContractorDialog
-          onCreated={() => qc.invalidateQueries({ queryKey: ["access-overview"] })}
-        />
-      </SecPageHeader>
+      {/* سهم الرجوع في RTL يشير إلى اليمين — جهة الرجوع، بهدف لمس ≥44px. */}
+      <Link
+        to="/sec/access"
+        className="inline-flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <ArrowRight aria-hidden className="h-4 w-4" />
+        صلاحيات دخول اليوم
+      </Link>
+
+      <SecPageHeader title="إدارة المقاولين" subtitle={`${contractors.length} مقاول مسجّل`} />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="مقاولون نشطون" value={k?.contractors_active ?? 0} tone="success" />
@@ -186,222 +138,9 @@ function ContractorsPage() {
                 انتهاء التأمين: {new Date(c.insurance_expiry).toLocaleDateString("ar-SA")}
               </div>
             )}
-            <div className="mt-3 flex gap-1.5">
-              {c.status !== "active" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={!user}
-                  title={!user ? "يتطلب تسجيل الدخول" : undefined}
-                  onClick={() => {
-                    if (isSimRow(c.id)) {
-                      toast.info(SIM_ACTION_INFO);
-                      return;
-                    }
-                    mStatus.mutate({ id: c.id, status: "active" });
-                  }}
-                >
-                  {/* `RotateCcw` سهمُ **تراجع** — وهي أيقونة «الاسترجاع» في
-                      شاشات التنفيذ؛ والتفعيل ضدُّ «تعليق» المجاور، فأيقونته
-                      نظيرةُ `Pause`. */}
-                  <Play className="h-3 w-3 me-1" /> تفعيل
-                </Button>
-              )}
-              {c.status === "active" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={!user}
-                  title={!user ? "يتطلب تسجيل الدخول" : undefined}
-                  onClick={() => {
-                    if (isSimRow(c.id)) {
-                      toast.info(SIM_ACTION_INFO);
-                      return;
-                    }
-                    // بوابة تأكيد بشري: تعليق مقاول يوقف دخول عمالته — لا يقع بنقرة واحدة
-                    if (confirm(`تأكيد تعليق «${c.name}»؟ سيُمنع دخول عمالته حتى إعادة التفعيل.`))
-                      mStatus.mutate({ id: c.id, status: "suspended", reason: "تعليق إداري" });
-                  }}
-                >
-                  <Pause className="h-3 w-3 me-1" /> تعليق
-                </Button>
-              )}
-              {c.status !== "blacklisted" && (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  disabled={!user}
-                  title={!user ? "يتطلب تسجيل الدخول" : undefined}
-                  onClick={() => {
-                    if (isSimRow(c.id)) {
-                      toast.info(SIM_ACTION_INFO);
-                      return;
-                    }
-                    if (confirm(`تأكيد حظر «${c.name}» وإدراجه بالقائمة السوداء؟`))
-                      mStatus.mutate({
-                        id: c.id,
-                        status: "blacklisted",
-                        reason: "إدراج بالقائمة السوداء",
-                      });
-                  }}
-                >
-                  <Ban className="h-3 w-3 me-1" /> حظر
-                </Button>
-              )}
-            </div>
           </div>
         ))}
       </div>
     </div>
-  );
-}
-
-function NewContractorDialog({ onCreated }: { onCreated: () => void }) {
-  const { user } = useAuth();
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [contract_no, setContractNo] = useState("");
-  const [workers_count, setWorkers] = useState(0);
-  const [compliance_score, setCompliance] = useState(95);
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [permits, setPermits] = useState<string[]>([]);
-  const [expires_at, setExpires] = useState("");
-  const [insurance_expiry, setInsurance] = useState("");
-
-  const createFn = useServerFn(createContractor);
-  const m = useMutation({
-    mutationFn: () =>
-      createFn({
-        data: {
-          name,
-          contract_no,
-          workers_count,
-          compliance_score,
-          phone: phone || undefined,
-          email: email || undefined,
-          permit_types: permits,
-          expires_at: expires_at ? new Date(expires_at).toISOString() : undefined,
-          insurance_expiry: insurance_expiry ? new Date(insurance_expiry).toISOString() : undefined,
-          allowed_site_ids: [],
-          status: "active",
-        },
-      }),
-    onSuccess: () => {
-      toast.success("تم تسجيل المقاول");
-      setOpen(false);
-      setName("");
-      setContractNo("");
-      setWorkers(0);
-      setCompliance(95);
-      setPhone("");
-      setEmail("");
-      setPermits([]);
-      setExpires("");
-      setInsurance("");
-      onCreated();
-    },
-    onError: (e: Error) => toast.error(userFacingError(e)),
-  });
-
-  const togglePermit = (p: string) =>
-    setPermits((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" disabled={!user} title={!user ? "يتطلب تسجيل الدخول" : undefined}>
-          <Plus className="h-4 w-4 me-1" /> مقاول جديد
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>تسجيل مقاول</DialogTitle>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            m.mutate();
-          }}
-          className="grid gap-3 md:grid-cols-2"
-        >
-          <div className="space-y-1">
-            <Label>اسم الشركة *</Label>
-            <Input required value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label>رقم العقد *</Label>
-            <Input required value={contract_no} onChange={(e) => setContractNo(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label>عدد العمالة</Label>
-            <Input
-              type="number"
-              min={0}
-              value={workers_count}
-              onChange={(e) => setWorkers(Number(e.target.value))}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label>درجة الامتثال %</Label>
-            <Input
-              type="number"
-              min={0}
-              max={100}
-              value={compliance_score}
-              onChange={(e) => setCompliance(Number(e.target.value))}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label>الجوال</Label>
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label>البريد</Label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              dir="ltr"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label>انتهاء العقد</Label>
-            <Input type="date" value={expires_at} onChange={(e) => setExpires(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label>انتهاء التأمين</Label>
-            <Input
-              type="date"
-              value={insurance_expiry}
-              onChange={(e) => setInsurance(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1 md:col-span-2">
-            <Label>أنواع التصاريح المسموحة</Label>
-            <div className="flex flex-wrap gap-1.5">
-              {PERMIT_TYPES.map((p) => (
-                <button
-                  type="button"
-                  key={p}
-                  onClick={() => togglePermit(p)}
-                  className={`rounded-full border px-2.5 py-1 text-xs transition ${permits.includes(p) ? "border-primary bg-primary/15 text-primary" : "border-border bg-muted/40 text-muted-foreground hover:bg-muted"}`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-          <DialogFooter className="md:col-span-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              إلغاء
-            </Button>
-            <Button type="submit" disabled={m.isPending}>
-              {m.isPending ? "جارٍ الحفظ…" : "حفظ"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
   );
 }

@@ -3,7 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getExecKpis, pctOrUnmeasured, numOrUnmeasured } from "@/lib/sec.functions";
-import { SecPageHeader, StatCard, SecLoading, SecError } from "@/components/sec/sec-shell";
+import { SecPageHeader, SecLoading, SecError } from "@/components/sec/sec-shell";
+import { ExecDrilldownDialog } from "@/components/sec/ExecDrilldownDialog";
+import { useRegion } from "@/lib/region-context";
 
 export const Route = createFileRoute("/_authenticated/sec/exec")({
   errorComponent: RouteError,
@@ -11,7 +13,14 @@ export const Route = createFileRoute("/_authenticated/sec/exec")({
   component: ExecDashboard,
 });
 
+// إعادة بناء اللوحة التنفيذية من طرف إلى طرف — قرار المالك ٢٠٢٦/٠٨/٢٠
+// (الملاحظات الحمراء): كل بطاقة رقمية تُفتح على صفوفها الحقيقية عبر
+// ExecDrilldownDialog، وحُذف صندوق «الجاهزية التشغيلية» بمؤشرَي السلامة
+// والمخاطر، وبطاقات وقائية/تصحيحية والميزانية/المصروف وامتثال المقاولين.
 function ExecDashboard() {
+  // ٢٠٢٦/٠٨/٢٠ — العنوان الفرعي يتبع سياق المنطقة النشطة (useRegion)،
+  // بنفس عرف شارة المنطقة في الشريط الجانبي، بدل «جميع المناطق المصرح بها».
+  const { region } = useRegion();
   const fetch = useServerFn(getExecKpis);
   const {
     data: k,
@@ -26,7 +35,6 @@ function ExecDashboard() {
   if (isError) return <SecError onRetry={() => refetch()} />;
   if (isLoading || !k) return <SecLoading />;
 
-  const fmt = (n: number) => n.toLocaleString("ar-SA");
   // المادة ٢٧ — ما لم يُقَس يُعرض «لم يُقَس» ولا تُلوَّن له نغمة حكم:
   // `undefined` يعيد النغمة الافتراضية المحايدة بدل نجاح أو تحذير مُختلق.
   const pct = (n: number | null) => pctOrUnmeasured(n);
@@ -39,119 +47,135 @@ function ExecDashboard() {
     <div className="space-y-5">
       <SecPageHeader
         title="لوحة القيادة التنفيذية"
-        subtitle="إدارة الأمن الصناعي — مؤشرات الأداء التنفيذية لجميع المناطق المصرح بها"
+        subtitle={`إدارة الأمن الصناعي — مؤشرات الأداء التنفيذية للمنطقة ${region.shortAr}`}
       />
 
-      {/* Top Score */}
-      <div className="rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/10 via-card to-card p-6">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-primary">
-              الجاهزية التشغيلية
-            </div>
-            <div className="mt-1 text-5xl font-bold text-foreground">
-              {pct(k.executive_readiness)}
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              مركّب من صحة CCTV، التحكم بالدخول، امتثال المقاولين، الدوريات، ومؤشر السلامة
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-center">
-            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
-              <div className="text-[12px] text-emerald-600">مؤشر السلامة</div>
-              <div className="text-lg font-bold text-emerald-600">{pct(k.safety_index)}</div>
-            </div>
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
-              <div className="text-[12px] text-red-600">مؤشر المخاطر</div>
-              <div className="text-lg font-bold text-red-600">{pct(k.risk_index)}</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* حُذف صندوق «الجاهزية التشغيلية» (مع مؤشرَي السلامة والمخاطر)
+          بقرار المالك ٢٠٢٦/٠٨/٢٠ — الملاحظات الحمراء. */}
 
       <Section title="البلاغات">
-        <StatCard label="إجمالي البلاغات" value={k.incidents_total} />
-        <StatCard
+        <ExecDrilldownDialog
+          metric="incidents_total"
+          label="إجمالي البلاغات"
+          value={k.incidents_total}
+        />
+        <ExecDrilldownDialog
+          metric="incidents_open"
           label="مفتوحة"
           value={k.incidents_open}
           tone={k.incidents_open > 0 ? "warning" : "success"}
         />
-        <StatCard
+        <ExecDrilldownDialog
+          metric="incidents_critical"
           label="حرجة"
           value={k.incidents_critical}
           tone={k.incidents_critical > 0 ? "danger" : "success"}
         />
-        <StatCard
-          label="نسبة الحل"
+        {/* ٢٠٢٦/٠٨/٢٠ — «نسبة الحل» أعيدت تسميتها «نسبة حل البلاغات» */}
+        <ExecDrilldownDialog
+          metric="incidents_resolution"
+          label="نسبة حل البلاغات"
           value={pct(k.incidents_resolution_rate)}
           tone={toneGte(k.incidents_resolution_rate, 80)}
         />
-        <StatCard
-          label="زمن الاستجابة"
+        {/* ٢٠٢٦/٠٨/٢٠ — «زمن الاستجابة» أعيدت تسميتها «متوسط زمن الاستجابة» */}
+        <ExecDrilldownDialog
+          metric="mttr"
+          label="متوسط زمن الاستجابة"
           value={numOrUnmeasured(k.mttr_minutes, " د")}
           hint="MTTR — هدف ≤ 15 د"
           tone={toneLte(k.mttr_minutes, 15)}
         />
       </Section>
 
+      {/* حُذفت بطاقتا «وقائية» و«تصحيحية» بقرار المالك ٢٠٢٦/٠٨/٢٠ */}
       <Section title="الصيانة (أوامر العمل)">
-        <StatCard label="مفتوحة" value={k.wo_open} tone={k.wo_open > 0 ? "warning" : "success"} />
-        <StatCard label="مغلقة" value={k.wo_closed} tone="success" />
-        <StatCard label="وقائية" value={k.preventive_wo} />
-        <StatCard label="تصحيحية" value={k.corrective_wo} />
+        <ExecDrilldownDialog
+          metric="wo_open"
+          label="مفتوحة"
+          value={k.wo_open}
+          tone={k.wo_open > 0 ? "warning" : "success"}
+        />
+        <ExecDrilldownDialog metric="wo_closed" label="مغلقة" value={k.wo_closed} tone="success" />
       </Section>
 
+      {/* حُذفت بطاقتا «إجمالي الميزانية» و«المصروف» بقرار المالك ٢٠٢٦/٠٨/٢٠ */}
       <Section title="المشاريع">
-        <StatCard label="جارية" value={k.projects_in_progress} tone="warning" />
-        <StatCard label="مكتملة" value={k.projects_completed} tone="success" />
-        <StatCard label="إجمالي الميزانية" value={`${fmt(k.projects_budget_total)} ر.س`} />
-        <StatCard
-          label="المصروف"
-          value={`${fmt(k.projects_spent_total)} ر.س`}
-          hint={`${k.projects_budget_total ? Math.round((k.projects_spent_total / k.projects_budget_total) * 100) : 0}%`}
+        <ExecDrilldownDialog
+          metric="projects_in_progress"
+          label="جارية"
+          value={k.projects_in_progress}
+          tone="warning"
+        />
+        <ExecDrilldownDialog
+          metric="projects_completed"
+          label="مكتملة"
+          value={k.projects_completed}
+          tone="success"
         />
       </Section>
 
       <Section title="جاهزية الأنظمة الأمنية">
-        <StatCard
-          label="جاهزية CCTV"
+        {/* ٢٠٢٦/٠٨/٢٠ — «جاهزية CCTV» أعيدت تسميتها «الكاميرات المتصلة» */}
+        <ExecDrilldownDialog
+          metric="cameras_connected"
+          label="الكاميرات المتصلة"
           value={pct(k.cctv_health)}
           hint={`${k.cameras_online}/${k.cameras_total} متصلة`}
           tone={toneGte(k.cctv_health, 90)}
         />
-        <StatCard
-          label="التحكم بالدخول"
+        {/* ٢٠٢٦/٠٨/٢٠ — «التحكم بالدخول» أعيدت تسميتها «أنظمة التحكم بالدخول» */}
+        <ExecDrilldownDialog
+          metric="gates_online"
+          label="أنظمة التحكم بالدخول"
           value={pct(k.access_health)}
           hint={`${k.gates_online}/${k.gates_total} بوابة`}
           tone={toneGte(k.access_health, 90)}
         />
-        <StatCard
-          label="حساسات في إنذار"
-          value={k.sensors_alarming}
-          hint={`من ${k.sensors_total}`}
-          tone={k.sensors_alarming > 0 ? "danger" : "success"}
+        {/* ٢٠٢٦/٠٨/٢٠ — بدل «حساسات في إنذار»: بطاقة «عدد تنبيهات الكاميرات»
+            موصولة بمصدرها الحقيقي k.cctv_alerts_new (جدول تنبيهات CCTV) —
+            إعادة تسمية رقم الحساسات «تنبيهات كاميرات» كانت ستكون اختلاقًا
+            يخالف المادة ٢٧. */}
+        <ExecDrilldownDialog
+          metric="cctv_alerts_new"
+          label="عدد تنبيهات الكاميرات"
+          value={k.cctv_alerts_new}
+          tone={k.cctv_alerts_new > 0 ? "danger" : "success"}
         />
-        <StatCard
-          label="مواقع تشغيلية"
-          value={`${k.sites_operational}/${k.sites_total}`}
-          tone={k.sites_operational === k.sites_total ? "success" : "warning"}
-        />
+        {/* حُذفت بطاقة «مواقع تشغيلية» بقرار المالك ٢٠٢٦/٠٨/٢٠: معلومتها
+            مكررة في «حالة المواقع» /sec/facilities وبطاقات المناطق في
+            الصفحة الرئيسية. */}
       </Section>
 
+      {/* حُذفت بطاقة «امتثال المقاولين» بقرار المالك ٢٠٢٦/٠٨/٢٠ —
+          الامتثال يظهر قيمةً لكل مقاول داخل نافذة «مقاولون نشطون». */}
       <Section title="العمليات الميدانية">
-        <StatCard label="دوريات نشطة" value={k.patrols_active} tone="success" />
-        <StatCard
+        <ExecDrilldownDialog
+          metric="patrols_active"
+          label="دوريات نشطة"
+          value={k.patrols_active}
+          tone="success"
+        />
+        <ExecDrilldownDialog
+          metric="patrol_completion"
           label="إنجاز الدوريات"
           value={pct(k.patrol_completion)}
           tone={toneGte(k.patrol_completion, 90)}
         />
-        <StatCard label="زوّار بالداخل" value={k.visitors_inside} />
-        <StatCard label="تصاريح فعّالة" value={k.permits_active} />
-        <StatCard label="مقاولون نشطون" value={k.contractors_active} />
-        <StatCard
-          label="امتثال المقاولين"
-          value={pct(k.contractors_compliance)}
-          tone={toneGte(k.contractors_compliance, 90)}
+        <ExecDrilldownDialog
+          metric="visitors_inside"
+          label="زوّار بالداخل"
+          value={k.visitors_inside}
+        />
+        <ExecDrilldownDialog
+          metric="permits_active"
+          label="تصاريح فعّالة"
+          value={k.permits_active}
+        />
+        <ExecDrilldownDialog
+          metric="contractors_active"
+          label="مقاولون نشطون"
+          value={k.contractors_active}
         />
       </Section>
     </div>

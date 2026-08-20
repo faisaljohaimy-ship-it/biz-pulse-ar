@@ -53,7 +53,7 @@ import { generateIncidentReport } from "@/lib/oms-reports.functions";
 import { getSecOverview } from "@/lib/sec.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { userFacingError } from "@/lib/errors/user-facing-error";
+import { userFacingError, SESSION_ERROR_AR } from "@/lib/errors/user-facing-error";
 import { severityClass, statusClass } from "./sec-shell";
 import {
   Sparkles,
@@ -811,6 +811,45 @@ export function IncidentDrawer({
 // ─────────────────────────────────────────────────────────────────────────────
 // WORK ORDER — Create
 // ─────────────────────────────────────────────────────────────────────────────
+
+// ٢٠٢٦/٠٨/٢٠ — قرار المالك «توحيد الخيارات باللغة العربية»: القيم المخزّنة
+// (critical/open/camera…) عقود مع القاعدة فتبقى كما هي، والمعروض وحده يُعرَّب.
+// تشمل الخرائط قيم المحاكاة المرجعية (urgent/normal) كي لا يظهر بادج إنجليزي
+// في جدول الصيانة، وتُصدَّر ليستهلكها sec.maintenance.tsx من مصدر واحد.
+export const WO_PRIORITY_AR: Record<string, string> = {
+  critical: "حرِج",
+  urgent: "عاجل",
+  high: "عالٍ",
+  medium: "متوسط",
+  normal: "اعتيادي",
+  low: "منخفض",
+};
+
+export const WO_STATUS_AR: Record<string, string> = {
+  open: "مفتوح",
+  in_progress: "قيد التنفيذ",
+  closed: "مُغلَق",
+  cancelled: "ملغى",
+};
+
+export const WO_ASSET_KIND_AR: Record<string, string> = {
+  camera: "كاميرا",
+  cctv: "كاميرات المراقبة",
+  gate: "بوابة",
+  sensor: "مستشعر",
+  power: "تغذية كهربائية",
+  access: "تحكم بالدخول",
+  access_control: "تحكم بالدخول",
+  safety: "سلامة",
+  perimeter: "محيط أمني",
+  aerial: "طيران مسيّر",
+  alarm: "إنذار",
+  hvac: "تكييف وتهوية",
+  lighting: "إنارة",
+  vehicle: "مركبة",
+  incident_response: "استجابة لبلاغ",
+};
+
 export function NewWorkOrderDialog() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -825,6 +864,7 @@ export function NewWorkOrderDialog() {
     notes: "",
   });
   const qc = useQueryClient();
+  const { user } = useAuth();
   const getOverview = useServerFn(getSecOverview);
   const { data: overview, isLoading: assetsLoading } = useQuery({
     queryKey: ["sec-overview-assets"],
@@ -836,7 +876,25 @@ export function NewWorkOrderDialog() {
   const selectedAsset = assets.find((asset) => asset.code === form.asset_code);
   const fn = useServerFn(createWorkOrder);
   const m = useMutation({
-    mutationFn: () => fn({ data: form }),
+    // ٢٠٢٦/٠٨/٢٠ — تفعيل الإنشاء: كان النموذج يُرسَل كما هو، فتصل الحقول
+    // الاختيارية الفارغة نصًّا فارغًا "" ويُدرَج في due_at (عمود timestamptz)
+    // فيرفضه Postgres ويفشل الإنشاء كلما تُرك التاريخ فارغًا. تُطبَّع الفوارغ
+    // إلى undefined، ويُثبَّت الاستحقاق عند نهاية اليوم المحلي ثم ISO —
+    // فلا يُحسب أمرُ اليوم نفسه «متأخرًا» منذ لحظة إنشائه.
+    mutationFn: () =>
+      fn({
+        data: {
+          title_ar: form.title_ar,
+          kind: form.kind,
+          priority: form.priority,
+          asset_kind: form.asset_kind,
+          asset_code: form.asset_code || undefined,
+          assigned_to: form.assigned_to.trim() || undefined,
+          contractor: form.contractor.trim() || undefined,
+          due_at: form.due_at ? new Date(`${form.due_at}T23:59:59`).toISOString() : undefined,
+          notes: form.notes.trim() || undefined,
+        },
+      }),
     onSuccess: () => {
       toast.success("أُنشئ أمر العمل");
       qc.invalidateQueries({ queryKey: ["oms-work-orders"] });
@@ -848,6 +906,7 @@ export function NewWorkOrderDialog() {
         title_ar: "",
         asset_kind: "",
         asset_code: "",
+        due_at: "",
         notes: "",
       }));
     },
@@ -882,7 +941,8 @@ export function NewWorkOrderDialog() {
                 value={form.kind}
                 onValueChange={(v) => setForm({ ...form, kind: v as "preventive" | "corrective" })}
               >
-                <SelectTrigger>
+                {/* ٢٠٢٦/٠٨/٢٠ — min-h-11: هدف لمس ≥44px لعناصر نموذج الإنشاء */}
+                <SelectTrigger className="min-h-11">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -897,13 +957,14 @@ export function NewWorkOrderDialog() {
                 value={form.priority}
                 onValueChange={(v) => setForm({ ...form, priority: v as (typeof SEV)[number] })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-h-11">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  {/* ٢٠٢٦/٠٨/٢٠ — العرض بالعربية والقيمة المخزّنة عقد يبقى إنجليزيًّا */}
                   {SEV.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {s}
+                      {WO_PRIORITY_AR[s] ?? s}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -922,7 +983,7 @@ export function NewWorkOrderDialog() {
                   });
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-h-11">
                   <SelectValue
                     placeholder={assetsLoading ? "جاري تحميل الأصول…" : "اختر الأصل وكوده"}
                   />
@@ -943,7 +1004,11 @@ export function NewWorkOrderDialog() {
               {selectedAsset && (
                 <div className="flex flex-wrap gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-[12px] text-muted-foreground">
                   <span>
-                    النوع: <strong className="text-foreground">{selectedAsset.kind}</strong>
+                    {/* ٢٠٢٦/٠٨/٢٠ — عرض نوع الأصل بالعربية؛ الكود معرّف تقني يبقى كما هو */}
+                    النوع:{" "}
+                    <strong className="text-foreground">
+                      {WO_ASSET_KIND_AR[selectedAsset.kind] ?? selectedAsset.kind}
+                    </strong>
                   </span>
                   <span>
                     الكود:{" "}
@@ -967,12 +1032,28 @@ export function NewWorkOrderDialog() {
               />
             </div>
             <div className="col-span-2 grid gap-1.5">
-              <Label>تاريخ الاستحقاق</Label>
+              <Label htmlFor="wo-due-date">تاريخ الاستحقاق</Label>
+              {/* ٢٠٢٦/٠٨/٢٠ — قرار المالك «وضع تقويم في اختيار التاريخ»: لا يوجد
+                  ui/calendar أو ui/popover في المشروع، فالبديل المقرَّر مُدخل تاريخ
+                  أصيل يفتح تقويم المتصفح المنبثق بلا حزم جديدة، ومعاينة عربية
+                  بأسماء الشهور عبر لغة التطبيق ar-SA أسفل الحقل. */}
               <Input
-                type="datetime-local"
+                id="wo-due-date"
+                type="date"
+                className="min-h-11 cursor-pointer"
                 value={form.due_at}
                 onChange={(e) => setForm({ ...form, due_at: e.target.value })}
               />
+              {form.due_at && (
+                <div className="text-[12px] text-muted-foreground">
+                  {new Date(`${form.due_at}T12:00:00`).toLocaleDateString("ar-SA", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </div>
+              )}
             </div>
           </div>
           <div className="grid gap-1.5">
@@ -985,11 +1066,21 @@ export function NewWorkOrderDialog() {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button variant="outline" className="min-h-11" onClick={() => setOpen(false)}>
             إلغاء
           </Button>
           <Button
-            onClick={() => m.mutate()}
+            className="min-h-11"
+            onClick={() => {
+              // ٢٠٢٦/٠٨/٢٠ — زائر بلا جلسة: رسالة عربية محايدة (رسالة الجلسة
+              // المعتمدة في العقد) بدل إرسال طلب سيُرفض؛ لا عبارات مصادقة تقنية.
+              // النموذج المعبّأ + هذه الضغطة الصريحة هما بوابة التأكيد البشري.
+              if (!user) {
+                toast.info(SESSION_ERROR_AR);
+                return;
+              }
+              m.mutate();
+            }}
             disabled={
               m.isPending ||
               form.title_ar.length < 3 ||

@@ -50,6 +50,12 @@ export const ExecKpisSchema = z
     access_health: pctIntOrNull,
     sensors_total: nonNegInt,
     sensors_alarming: nonNegInt,
+    // ٢٠٢٦/٠٨/٢٠ — قرار المالك: بطاقة «عدد تنبيهات الكاميرات» تُغذّى من
+    // جدول تنبيهات CCTV نفسه (نفس معيار cctv_new في getSecOverview:
+    // status === "new") — لا من الحساسات، فإعادة تسمية رقم الحساسات
+    // «تنبيهات كاميرات» اختلاقٌ يخالف المادة ٢٧. sensors_alarming يبقى
+    // في العقد كما هو.
+    cctv_alerts_new: nonNegInt,
     sites_operational: nonNegInt,
     sites_total: nonNegInt,
     patrols_active: nonNegInt,
@@ -100,6 +106,12 @@ export type ExecKpiSources = {
     spent_sar: number;
     health: string;
   }[];
+  // ٢٠٢٦/٠٨/٢٠ — مصدر «عدد تنبيهات الكاميرات». اختياري عمدًا: بنّاء
+  // المحاكاة في showcase-simulation.server.ts ومستهلكو التقارير القدامى
+  // (snapshot.server.ts) يمرّرون المصادر الإحدى عشرة القديمة كما هي؛
+  // غيابه يُحتسب «صفر صفوف» وهو عدٌّ مقيس لا اختلاق (المادة ٢٧ — العدّ
+  // صفرُه صادق). getExecKpis وgetExecDrilldown يجلبانه فعليًا دائمًا.
+  cctv?: { status: string }[];
 };
 
 // Minimal shape of the authed Supabase client used by fetchExecKpiSources.
@@ -247,6 +259,8 @@ export function computeExecKpis(src: ExecKpiSources): ExecKpis {
     access_health: accessHealth,
     sensors_total: SEN.length,
     sensors_alarming: sensorsAlarming,
+    // نفس معيار `cctv_new` في getSecOverview (sec.functions.ts): status === "new".
+    cctv_alerts_new: (src.cctv ?? []).filter((c) => c.status === "new").length,
     sites_operational: S.filter((s) => s.status === "operational").length,
     sites_total: S.length,
     patrols_active: P.filter((p) => p.status === "active").length,
@@ -269,11 +283,21 @@ export const getExecKpis = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<ExecKpis> => {
     const { buildExecKpiSourcesSimulation, resilient } =
       await import("./exec/showcase-simulation.server");
+    const supabase = context.supabase as unknown as ExecKpiSupabase;
     const sources = await resilient(
       "exec-kpis",
-      () => fetchExecKpiSources(context.supabase as unknown as ExecKpiSupabase),
-      (s) => Object.values(s).every((rows) => rows.length === 0),
-      () => buildExecKpiSourcesSimulation(),
+      // ٢٠٢٦/٠٨/٢٠ — تنبيهات CCTV تُجلب هنا بجوار المصادر الإحدى عشرة لا
+      // داخل fetchExecKpiSources: عقد تلك الدالة (11 استعلامًا بإسقاطاتها
+      // الموثقة) محروس باختبار، ومستهلكوها الآخرون لا يحتاجون التنبيهات.
+      async () => {
+        const [base, cctv] = await Promise.all([
+          fetchExecKpiSources(supabase),
+          supabase.from("sec_cctv_alerts").select("status"),
+        ]);
+        return { ...base, cctv: (cctv.data ?? []) as { status: string }[] };
+      },
+      (s) => Object.values(s).every((rows) => Array.isArray(rows) && rows.length === 0),
+      () => ({ ...buildExecKpiSourcesSimulation(), cctv: buildExecCctvSimulation() }),
     );
     return computeExecKpis(sources);
   });
@@ -487,4 +511,763 @@ export const getExecTimeseries = createServerFn({ method: "GET" })
         avg_response_minutes: avg,
       },
     };
+  });
+
+// ============= EXECUTIVE DRILLDOWN =============
+// ٢٠٢٦/٠٨/٢٠ — قرار المالك (الملاحظات الحمراء): كل بطاقة رقمية في اللوحة
+// التنفيذية تُفتح على الصفوف الحقيقية خلف رقمها. المادة ٢٧ تحكم البناء:
+// كل مقياس يعيد نفس الصفوف التي عدّها computeExecKpis بنفس المعايير حرفيًّا
+// — لا عيّنة «مشابهة» ولا صفوف مزخرفة. المصدر الفارغ يعيد rows: []
+// ومجموعًا صادقًا (أو null لما لم يُقَس)، والمحاكاة المرجعية تُقدَّم فقط
+// حين تسقط القاعدة كلها — بنفس لحظة سقوط لوحة المؤشرات نفسها، فلا يرى
+// الزائر بطاقة تقول 0 ونافذة تعرض صفوفًا.
+
+export const EXEC_DRILL_METRICS = [
+  "incidents_total",
+  "incidents_open",
+  "incidents_critical",
+  "incidents_resolution",
+  "mttr",
+  "wo_open",
+  "wo_closed",
+  "projects_in_progress",
+  "projects_completed",
+  "cameras_connected",
+  "gates_online",
+  "cctv_alerts_new",
+  "patrols_active",
+  "patrol_completion",
+  "visitors_inside",
+  "permits_active",
+  "contractors_active",
+] as const;
+export type ExecDrillMetric = (typeof EXEC_DRILL_METRICS)[number];
+
+export interface ExecDrillRow {
+  id: string;
+  title_ar: string;
+  subtitle_ar?: string;
+  status_ar?: string;
+  tone?: "danger" | "warning" | "success" | "default";
+  value?: string;
+}
+
+export interface ExecDrilldown {
+  metric: ExecDrillMetric;
+  title_ar: string;
+  rows: ExecDrillRow[];
+  total: number | null;
+  note_ar?: string;
+  /** شارة الصدق: الصفوف من المحاكاة المرجعية لا من صفوف القاعدة الحية. */
+  is_simulation?: boolean;
+}
+
+// نفس جداول fetchExecKpiSources بإسقاطات موسَّعة (أسماء/عناوين) — أسماء
+// الأعمدة مطابقة حرفيًّا لما في supabase/migrations/20260621195540 و
+// 20260623130131؛ عمود خاطئ يُفرغ الاستعلام صامتًا. sites/sensors تبقيان
+// بإسقاط الحالة فقط: لا بطاقة لهما، لكن حضورهما يجعل معيار «القاعدة كلها
+// فارغة» مطابقًا لمعيار getExecKpis فلا تفترق البطاقة عن نافذتها.
+export type ExecDrillSources = {
+  incidents: {
+    id: string;
+    ref: string;
+    title_ar: string;
+    severity: string;
+    status: string;
+    response_minutes: number | null;
+  }[];
+  patrols: {
+    id: string;
+    ref: string;
+    team: string;
+    route: string;
+    status: string;
+    checkpoints_done: number;
+    checkpoints_total: number;
+  }[];
+  visitors: {
+    id: string;
+    ref: string;
+    full_name: string;
+    organization: string | null;
+    status: string;
+  }[];
+  permits: {
+    id: string;
+    ref: string;
+    work_type: string;
+    contractor: string;
+    risk_level: string;
+    status: string;
+  }[];
+  contractors: {
+    id: string;
+    ref: string;
+    name: string;
+    contract_no: string;
+    workers_count: number;
+    compliance_score: number;
+    status: string;
+  }[];
+  cameras: { id: string; code: string; status: string; health: number }[];
+  gates: { id: string; code: string; status: string; health: number }[];
+  workOrders: { id: string; ref: string; title_ar: string; kind: string; status: string }[];
+  projects: {
+    id: string;
+    ref: string;
+    name_ar: string;
+    contractor: string | null;
+    status: string;
+    progress: number;
+    health: string;
+  }[];
+  cctv: {
+    id: string;
+    ref: string;
+    camera_code: string;
+    alert_type: string;
+    status: string;
+    confidence: number;
+  }[];
+  sites: { status: string }[];
+  sensors: { status: string }[];
+};
+
+export async function fetchExecDrillSources(supabase: ExecKpiSupabase): Promise<ExecDrillSources> {
+  const q = (table: string, cols: string): Promise<{ data: unknown }> =>
+    supabase.from(table).select(cols);
+  const [
+    incidents,
+    patrols,
+    visitors,
+    permits,
+    contractors,
+    cameras,
+    gates,
+    workOrders,
+    projects,
+    cctv,
+    sites,
+    sensors,
+  ] = await Promise.all([
+    q("sec_incidents", "id,ref,title_ar,severity,status,response_minutes"),
+    q("sec_patrols", "id,ref,team,route,status,checkpoints_done,checkpoints_total"),
+    q("sec_visitors", "id,ref,full_name,organization,status"),
+    q("sec_permits", "id,ref,work_type,contractor,risk_level,status"),
+    q("sec_contractors", "id,ref,name,contract_no,workers_count,compliance_score,status"),
+    // لا عمود اسم في sec_cameras/sec_gates — `code` هو المعرّف المعروض.
+    q("sec_cameras", "id,code,status,health"),
+    q("sec_gates", "id,code,status,health"),
+    q("sec_work_orders", "id,ref,title_ar,kind,status"),
+    q("sec_projects", "id,ref,name_ar,contractor,status,progress,health"),
+    q("sec_cctv_alerts", "id,ref,camera_code,alert_type,status,confidence"),
+    q("sec_sites", "status"),
+    q("sec_sensors", "status"),
+  ]);
+  return {
+    incidents: (incidents.data ?? []) as ExecDrillSources["incidents"],
+    patrols: (patrols.data ?? []) as ExecDrillSources["patrols"],
+    visitors: (visitors.data ?? []) as ExecDrillSources["visitors"],
+    permits: (permits.data ?? []) as ExecDrillSources["permits"],
+    contractors: (contractors.data ?? []) as ExecDrillSources["contractors"],
+    cameras: (cameras.data ?? []) as ExecDrillSources["cameras"],
+    gates: (gates.data ?? []) as ExecDrillSources["gates"],
+    workOrders: (workOrders.data ?? []) as ExecDrillSources["workOrders"],
+    projects: (projects.data ?? []) as ExecDrillSources["projects"],
+    cctv: (cctv.data ?? []) as ExecDrillSources["cctv"],
+    sites: (sites.data ?? []) as ExecDrillSources["sites"],
+    sensors: (sensors.data ?? []) as ExecDrillSources["sensors"],
+  };
+}
+
+/* ── محاكاة النافذة التفصيلية ─────────────────────────────────────────────
+   تُشتق من نفس بنّاء المحاكاة الذي تسقط إليه المؤشرات
+   (buildExecKpiSourcesSimulation) صفًّا بصفّ، فالأعداد في النافذة تطابق
+   أرقام البطاقات المحاكاة دائمًا. صفوف ذلك البنّاء بلا أسماء (إسقاطات
+   عدّ فقط)، فالأسماء هنا محتوى عرضٍ حتمي بنفس صوت بقية المحاكاة —
+   وresilient يسِمها كلها is_simulation=true. */
+
+const pickSim = <T>(pool: readonly T[], i: number): T => pool[i % pool.length]!;
+
+const SIM_INCIDENT_TITLES = [
+  "تسرّب غاز محتمل — منطقة الخزانات",
+  "إنذار تسلق سياج — المحيط الشمالي",
+  "محاولة دخول ببطاقة منتهية",
+  "عدم ارتداء معدات الوقاية",
+  "انقطاع بث كاميرا مراقبة",
+  "بوابة عالقة في وضع الفتح",
+  "رصد حركة غير معتادة بعد الدوام",
+  "تجاوز سرعة داخل الموقع",
+] as const;
+const SIM_CONTRACTOR_NAMES = [
+  "شركة الإنشاءات المتقدمة",
+  "المقاول الوطني للطاقة",
+  "أعمال الارتفاعات المحدودة",
+  "شركة الصيانة الصناعية",
+  "صيانة الشبكات الموحدة",
+  "الحلول الكهروميكانيكية",
+  "النظافة والدعم اللوجستي",
+  "خدمات العزل والطلاء",
+] as const;
+const SIM_FIRST_NAMES = [
+  "خالد",
+  "سارة",
+  "فهد",
+  "نورة",
+  "عبدالله",
+  "ريم",
+  "سلطان",
+  "لمى",
+  "بدر",
+  "هند",
+  "ماجد",
+  "أفنان",
+] as const;
+const SIM_LAST_NAMES = [
+  "العتيبي",
+  "الحربي",
+  "القحطاني",
+  "الدوسري",
+  "الشهري",
+  "الشمري",
+  "الغامدي",
+  "المطيري",
+  "الزهراني",
+  "السبيعي",
+  "عسيري",
+  "الرشيدي",
+] as const;
+const SIM_PATROL_TEAMS = ["فريق الصقر", "فريق النمر", "فريق العقاب", "فريق الفهد"] as const;
+const SIM_PATROL_ROUTES = [
+  "المحيط الغربي",
+  "الحلقة الداخلية",
+  "المحيط الشمالي",
+  "بوابات الجنوب",
+  "المحيط الشرقي",
+] as const;
+const SIM_WO_PREVENTIVE = [
+  "صيانة وقائية لكاميرات المحيط",
+  "فحص دوري لبوابات الدخول",
+  "معايرة حساسات كشف التسلل",
+  "اختبار مولد الطوارئ",
+  "تنظيف عدسات الكاميرات الحرارية",
+  "فحص أنظمة الإنذار المبكر",
+] as const;
+const SIM_WO_CORRECTIVE = [
+  "إصلاح كاميرا متوقفة عن البث",
+  "استبدال قارئ بطاقات معطّل",
+  "إصلاح إنارة المحيط الجنوبي",
+  "معالجة عطل بوابة المقاولين",
+] as const;
+const SIM_PROJECT_NAMES = [
+  "توسعة نظام المراقبة للمنطقة الغربية",
+  "ترقية أنظمة التحكم بالدخول",
+  "شبكة كشف التسلل المحيطي",
+  "مركز القيادة الاحتياطي",
+  "أتمتة بوابات الشحن",
+] as const;
+const SIM_PERMIT_TYPES = [
+  "أعمال ساخنة",
+  "أعمال كهربائية",
+  "عمل على ارتفاع",
+  "دخول مساحة محصورة",
+] as const;
+const SIM_PERMIT_RISKS = ["high", "medium", "low"] as const;
+const SIM_VISITOR_ORGS = [
+  "شركة المراجعة الوطنية",
+  "هيئة التقييس الخليجية",
+  "مكتب الاستشارات الهندسية",
+  "الخدمات الطبية المساندة",
+  ...SIM_CONTRACTOR_NAMES,
+] as const;
+
+/** تنبيهات CCTV المحاكاة — مصدر واحد لمؤشر البطاقة ولصفوف النافذة معًا. */
+export function buildExecCctvSimulation(): ExecDrillSources["cctv"] {
+  return [
+    {
+      id: "sim-cv1",
+      ref: "CV-901",
+      camera_code: "CAM-E-12",
+      alert_type: "motion",
+      status: "new",
+      confidence: 0.92,
+    },
+    {
+      id: "sim-cv2",
+      ref: "CV-900",
+      camera_code: "CAM-PTZ-7",
+      alert_type: "loitering",
+      status: "new",
+      confidence: 0.81,
+    },
+    {
+      id: "sim-cv3",
+      ref: "CV-899",
+      camera_code: "CAM-N-4",
+      alert_type: "intrusion",
+      status: "dispatched",
+      confidence: 0.77,
+    },
+    {
+      id: "sim-cv4",
+      ref: "CV-898",
+      camera_code: "CAM-S-2",
+      alert_type: "camera_offline",
+      status: "resolved",
+      confidence: 1,
+    },
+  ];
+}
+
+export function buildExecDrillSourcesSimulation(kpi: ExecKpiSources): ExecDrillSources {
+  return {
+    incidents: kpi.incidents.map((r, i) => ({
+      id: `sim-drill-inc-${i + 1}`,
+      ref: `INC-${2400 + i}`,
+      title_ar: pickSim(SIM_INCIDENT_TITLES, i),
+      severity: r.severity,
+      status: r.status,
+      response_minutes: r.response_minutes,
+    })),
+    patrols: kpi.patrols.map((r, i) => ({
+      id: `sim-drill-pt-${i + 1}`,
+      ref: `PTR-${80 + i}`,
+      team: pickSim(SIM_PATROL_TEAMS, i),
+      route: pickSim(SIM_PATROL_ROUTES, i),
+      status: r.status,
+      checkpoints_done: r.checkpoints_done,
+      checkpoints_total: r.checkpoints_total,
+    })),
+    visitors: kpi.visitors.map((r, i) => ({
+      id: `sim-drill-vis-${i + 1}`,
+      ref: `VIS-${500 + i}`,
+      // زوج (اسم أول i، اسم أخير 7i+⌊i/12⌋) لا يتكرر قبل 144 صفًّا.
+      full_name: `${pickSim(SIM_FIRST_NAMES, i)} ${pickSim(SIM_LAST_NAMES, i * 7 + Math.floor(i / 12))}`,
+      organization: pickSim(SIM_VISITOR_ORGS, i),
+      status: r.status,
+    })),
+    permits: kpi.permits.map((r, i) => ({
+      id: `sim-drill-pm-${i + 1}`,
+      ref: `PTW-SIM-${String(i + 1).padStart(3, "0")}`,
+      work_type: pickSim(SIM_PERMIT_TYPES, i),
+      contractor: pickSim(SIM_CONTRACTOR_NAMES, i),
+      risk_level: pickSim(SIM_PERMIT_RISKS, i),
+      status: r.status,
+    })),
+    contractors: kpi.contractors.map((r, i) => ({
+      id: `sim-drill-con-${i + 1}`,
+      ref: `CTR-${11 + i}`,
+      name: pickSim(SIM_CONTRACTOR_NAMES, i),
+      contract_no: `C-2025-${String(i + 11).padStart(2, "0")}`,
+      workers_count: 15 + i * 9,
+      compliance_score: r.compliance_score,
+      status: r.status,
+    })),
+    cameras: kpi.cameras.map((r, i) => ({
+      id: `sim-drill-cam-${i + 1}`,
+      code: `CAM-${String(i + 1).padStart(3, "0")}`,
+      status: r.status,
+      health: r.health,
+    })),
+    gates: kpi.gates.map((r, i) => ({
+      id: `sim-drill-gate-${i + 1}`,
+      code: `GT-${String(i + 1).padStart(2, "0")}`,
+      status: r.status,
+      health: r.health,
+    })),
+    workOrders: kpi.workOrders.map((r, i) => ({
+      id: `sim-drill-wo-${i + 1}`,
+      ref: `WO-${1400 + i}`,
+      title_ar:
+        r.kind === "corrective" ? pickSim(SIM_WO_CORRECTIVE, i) : pickSim(SIM_WO_PREVENTIVE, i),
+      kind: r.kind,
+      status: r.status,
+    })),
+    projects: kpi.projects.map((r, i) => ({
+      id: `sim-drill-prj-${i + 1}`,
+      ref: `PRJ-${21 + i}`,
+      name_ar: pickSim(SIM_PROJECT_NAMES, i),
+      contractor: pickSim(SIM_CONTRACTOR_NAMES, i + 1),
+      status: r.status,
+      progress: r.progress,
+      health: r.health,
+    })),
+    cctv: buildExecCctvSimulation(),
+    sites: kpi.sites.map((s) => ({ status: s.status })),
+    sensors: kpi.sensors.map((s) => ({ status: s.status })),
+  };
+}
+
+/* ── حساب النافذة التفصيلية ─────────────────────────────────────────────── */
+
+const DRILL_TITLES_AR: Record<ExecDrillMetric, string> = {
+  incidents_total: "إجمالي البلاغات",
+  incidents_open: "البلاغات المفتوحة",
+  incidents_critical: "البلاغات الحرجة",
+  incidents_resolution: "نسبة حل البلاغات",
+  mttr: "متوسط زمن الاستجابة (MTTR)",
+  wo_open: "أوامر عمل مفتوحة",
+  wo_closed: "أوامر عمل مغلقة",
+  projects_in_progress: "مشاريع جارية",
+  projects_completed: "مشاريع مكتملة",
+  cameras_connected: "الكاميرات المتصلة",
+  gates_online: "أنظمة التحكم بالدخول",
+  cctv_alerts_new: "تنبيهات الكاميرات الجديدة",
+  patrols_active: "دوريات نشطة",
+  patrol_completion: "إنجاز الدوريات",
+  visitors_inside: "زوّار بالداخل",
+  permits_active: "تصاريح فعّالة",
+  contractors_active: "مقاولون نشطون",
+};
+
+const INCIDENT_STATUS_AR: Record<string, string> = {
+  open: "مفتوح",
+  investigating: "قيد التحقيق",
+  contained: "محتوى",
+  resolved: "محلول",
+  closed: "مغلق",
+};
+const SEVERITY_AR: Record<string, string> = {
+  critical: "حرجة",
+  high: "عالية",
+  medium: "متوسطة",
+  low: "منخفضة",
+};
+const WO_STATUS_AR: Record<string, string> = {
+  open: "مفتوح",
+  assigned: "مُسنَد",
+  "in-progress": "قيد التنفيذ",
+  in_progress: "قيد التنفيذ",
+  "on-hold": "معلّق",
+  closed: "مغلق",
+  cancelled: "ملغى",
+};
+const DEVICE_STATUS_AR: Record<string, string> = {
+  online: "متصلة",
+  offline: "غير متصلة",
+  degraded: "متدهورة",
+  maintenance: "قيد الصيانة",
+};
+const PATROL_STATUS_AR: Record<string, string> = {
+  scheduled: "مجدولة",
+  active: "نشطة",
+  completed: "مكتملة",
+  missed: "فائتة",
+};
+const ALERT_TYPE_AR: Record<string, string> = {
+  motion: "رصد حركة",
+  loitering: "تسكّع",
+  intrusion: "تسلل",
+  camera_offline: "انقطاع كاميرا",
+  tamper: "عبث بالكاميرا",
+};
+const RISK_AR: Record<string, string> = {
+  low: "منخفضة",
+  medium: "متوسطة",
+  high: "عالية",
+  critical: "حرجة",
+};
+
+// سقف العرض داخل النافذة: المجموع يبقى صادقًا على كامل المجموعة، والقصّ
+// يُصرَّح به في note_ar — لا يُقتطع الرقم نفسه أبدًا (المادة ٢٧).
+const MAX_DRILL_ROWS = 60;
+
+function incidentTone(i: { severity: string; status: string }): NonNullable<ExecDrillRow["tone"]> {
+  if (i.severity === "critical" && i.status !== "closed") return "danger";
+  if (i.status !== "resolved" && i.status !== "closed") return "warning";
+  return "success";
+}
+
+function incidentRow(i: ExecDrillSources["incidents"][number]): ExecDrillRow {
+  return {
+    id: i.id,
+    title_ar: i.title_ar,
+    subtitle_ar: `${i.ref} · خطورة ${SEVERITY_AR[i.severity] ?? i.severity}`,
+    status_ar: INCIDENT_STATUS_AR[i.status] ?? i.status,
+    tone: incidentTone(i),
+  };
+}
+
+function deviceRow(
+  d: { id: string; code: string; status: string; health: number },
+  kindAr: string,
+): ExecDrillRow {
+  return {
+    id: d.id,
+    title_ar: d.code,
+    subtitle_ar: kindAr,
+    // كلمة الحالة مع الشكل — الاتصال لا يُحمل على اللون وحده أبدًا.
+    status_ar: DEVICE_STATUS_AR[d.status] ?? d.status,
+    tone: d.status === "online" ? "success" : d.status === "offline" ? "danger" : "warning",
+    value: `${d.health}%`,
+  };
+}
+
+// المعطّل أولًا — هو ما فُتحت النافذة لأجله.
+const DEVICE_ORDER: Record<string, number> = { offline: 0, degraded: 1, maintenance: 2, online: 3 };
+const byDeviceStatus = (a: { status: string; code: string }, b: { status: string; code: string }) =>
+  (DEVICE_ORDER[a.status] ?? 9) - (DEVICE_ORDER[b.status] ?? 9) || a.code.localeCompare(b.code);
+
+export function computeExecDrilldown(
+  metric: ExecDrillMetric,
+  src: ExecDrillSources,
+): ExecDrilldown {
+  const simulated = (src as { is_simulation?: boolean }).is_simulation === true;
+  const finish = (rows: ExecDrillRow[], total: number | null, note_ar?: string): ExecDrilldown => {
+    const capped = rows.length > MAX_DRILL_ROWS;
+    const capNote = capped ? `يُعرض أول ${MAX_DRILL_ROWS} صفًا من أصل ${rows.length}` : undefined;
+    return {
+      metric,
+      title_ar: DRILL_TITLES_AR[metric],
+      rows: capped ? rows.slice(0, MAX_DRILL_ROWS) : rows,
+      total,
+      note_ar: [note_ar, capNote].filter(Boolean).join(" — ") || undefined,
+      ...(simulated ? { is_simulation: true } : {}),
+    };
+  };
+
+  const I = src.incidents;
+  switch (metric) {
+    // معايير البلاغات الأربعة منسوخة حرفيًّا من computeExecKpis — أي
+    // انحراف يجعل النافذة تعدّ غير ما عدّته البطاقة.
+    case "incidents_total":
+      return finish(I.map(incidentRow), I.length, `${I.length} بلاغًا مسجّلًا`);
+    case "incidents_open": {
+      const rows = I.filter((i) => i.status !== "resolved" && i.status !== "closed");
+      return finish(rows.map(incidentRow), rows.length, `${rows.length} بلاغًا غير مُغلق`);
+    }
+    case "incidents_critical": {
+      const rows = I.filter((i) => i.severity === "critical" && i.status !== "closed");
+      return finish(rows.map(incidentRow), rows.length, `${rows.length} بلاغًا حرجًا قائمًا`);
+    }
+    case "incidents_resolution": {
+      const done = I.filter((i) => i.status === "resolved" || i.status === "closed");
+      const rate = I.length ? Math.round((done.length / I.length) * 100) : null;
+      return finish(
+        done.map(incidentRow),
+        rate,
+        rate === null
+          ? "لا بلاغات مسجّلة — النسبة لم تُقَس"
+          : `${done.length} محلولة أو مغلقة من أصل ${I.length} — ${rate}%`,
+      );
+    }
+    case "mttr": {
+      const responded = I.filter((i) => i.response_minutes != null);
+      const avg = responded.length
+        ? Math.round(
+            responded.reduce((s, i) => s + (i.response_minutes ?? 0), 0) / responded.length,
+          )
+        : null;
+      return finish(
+        responded.map((i) => ({
+          ...incidentRow(i),
+          value: `${i.response_minutes} د`,
+          tone: (i.response_minutes ?? 0) <= 15 ? "success" : "warning",
+        })),
+        avg,
+        avg === null
+          ? "لا بلاغ بزمن استجابة مسجّل — المتوسط لم يُقَس"
+          : `متوسط ${avg} دقيقة عبر ${responded.length} بلاغًا (الهدف ≤ 15 د)`,
+      );
+    }
+    case "wo_open": {
+      const rows = src.workOrders.filter((w) => w.status !== "closed" && w.status !== "cancelled");
+      return finish(
+        rows.map((w) => ({
+          id: w.id,
+          title_ar: w.title_ar,
+          subtitle_ar: `${w.ref} · ${w.kind === "preventive" ? "وقائية" : "تصحيحية"}`,
+          status_ar: WO_STATUS_AR[w.status] ?? w.status,
+          tone: w.status === "on-hold" ? "warning" : "default",
+        })),
+        rows.length,
+        `${rows.length} أمر عمل قائمًا`,
+      );
+    }
+    case "wo_closed": {
+      const rows = src.workOrders.filter((w) => w.status === "closed");
+      return finish(
+        rows.map((w) => ({
+          id: w.id,
+          title_ar: w.title_ar,
+          subtitle_ar: `${w.ref} · ${w.kind === "preventive" ? "وقائية" : "تصحيحية"}`,
+          status_ar: "مغلق",
+          tone: "success",
+        })),
+        rows.length,
+        `${rows.length} أمر عمل مغلقًا`,
+      );
+    }
+    case "projects_in_progress":
+    case "projects_completed": {
+      const wanted = metric === "projects_completed" ? "completed" : "in-progress";
+      const rows = src.projects.filter((p) => p.status === wanted);
+      const toneOf = (h: string): ExecDrillRow["tone"] =>
+        h === "red"
+          ? "danger"
+          : h === "amber" || h === "watch"
+            ? "warning"
+            : h === "green" || h === "on_track" || h === "done"
+              ? "success"
+              : "default";
+      return finish(
+        rows.map((p) => ({
+          id: p.id,
+          title_ar: p.name_ar,
+          subtitle_ar: p.contractor ? `${p.ref} · ${p.contractor}` : p.ref,
+          status_ar: wanted === "completed" ? "مكتمل" : "جارٍ",
+          tone: wanted === "completed" ? "success" : toneOf(p.health),
+          value: `${p.progress}%`,
+        })),
+        rows.length,
+        wanted === "completed" ? `${rows.length} مشروعًا مكتملًا` : `${rows.length} مشروعًا جاريًا`,
+      );
+    }
+    case "cameras_connected": {
+      const online = src.cameras.filter((c) => c.status === "online").length;
+      return finish(
+        [...src.cameras].sort(byDeviceStatus).map((c) => deviceRow(c, "كاميرا مراقبة")),
+        online,
+        src.cameras.length
+          ? `${online} متصلة من أصل ${src.cameras.length} كاميرا`
+          : "لا كاميرات مسجّلة",
+      );
+    }
+    case "gates_online": {
+      const online = src.gates.filter((g) => g.status === "online").length;
+      return finish(
+        [...src.gates].sort(byDeviceStatus).map((g) => deviceRow(g, "بوابة تحكم بالدخول")),
+        online,
+        src.gates.length ? `${online} متصلة من أصل ${src.gates.length} بوابة` : "لا بوابات مسجّلة",
+      );
+    }
+    case "cctv_alerts_new": {
+      // نفس معيار cctv_new في getSecOverview: status === "new".
+      const rows = src.cctv.filter((c) => c.status === "new");
+      return finish(
+        rows.map((c) => ({
+          id: c.id,
+          title_ar: `${ALERT_TYPE_AR[c.alert_type] ?? c.alert_type} — ${c.camera_code}`,
+          subtitle_ar: c.ref,
+          status_ar: "جديد",
+          tone: c.alert_type === "intrusion" ? "danger" : "warning",
+          value: `ثقة ${Math.round(c.confidence * 100)}%`,
+        })),
+        rows.length,
+        `${rows.length} تنبيهًا جديدًا بانتظار الفرز`,
+      );
+    }
+    case "patrols_active": {
+      const rows = src.patrols.filter((p) => p.status === "active");
+      return finish(
+        rows.map((p) => ({
+          id: p.id,
+          title_ar: p.team,
+          subtitle_ar: `${p.ref} · ${p.route}`,
+          status_ar: "نشطة",
+          value: `${p.checkpoints_done}/${p.checkpoints_total} نقطة`,
+        })),
+        rows.length,
+        `${rows.length} دورية في الميدان الآن`,
+      );
+    }
+    case "patrol_completion": {
+      // الدوريات القابلة للقياس فقط (مقام > 0) — نفس معيار computeExecKpis.
+      const rows = src.patrols.filter((p) => p.checkpoints_total > 0);
+      const pct = rows.length
+        ? Math.round(
+            (rows.reduce((s, p) => s + p.checkpoints_done / p.checkpoints_total, 0) / rows.length) *
+              100,
+          )
+        : null;
+      return finish(
+        rows.map((p) => ({
+          id: p.id,
+          title_ar: p.team,
+          subtitle_ar: `${p.ref} · ${p.route}`,
+          status_ar: PATROL_STATUS_AR[p.status] ?? p.status,
+          tone: p.status === "completed" ? "success" : p.status === "missed" ? "danger" : "default",
+          value: `${p.checkpoints_done}/${p.checkpoints_total} نقطة`,
+        })),
+        pct,
+        pct === null
+          ? "لا دورية بنقاط تفتيش قابلة للقياس — النسبة لم تُقَس"
+          : `إنجاز ${pct}% عبر ${rows.length} دورية قابلة للقياس`,
+      );
+    }
+    case "visitors_inside": {
+      const rows = src.visitors.filter((v) => v.status === "inside" || v.status === "overdue");
+      return finish(
+        rows.map((v) => ({
+          id: v.id,
+          title_ar: v.full_name,
+          subtitle_ar: v.organization ? `${v.ref} · ${v.organization}` : v.ref,
+          status_ar: v.status === "overdue" ? "متأخر عن الخروج" : "بالداخل",
+          tone: v.status === "overdue" ? "warning" : "default",
+        })),
+        rows.length,
+        `${rows.length} زائرًا داخل المواقع الآن`,
+      );
+    }
+    case "permits_active": {
+      const rows = src.permits.filter((p) => p.status === "active" || p.status === "approved");
+      return finish(
+        rows.map((p) => ({
+          id: p.id,
+          title_ar: p.work_type,
+          subtitle_ar: `${p.ref} · ${p.contractor} · خطورة ${RISK_AR[p.risk_level] ?? p.risk_level}`,
+          status_ar: p.status === "approved" ? "معتمد" : "فعّال",
+          tone:
+            p.risk_level === "critical"
+              ? "danger"
+              : p.risk_level === "high"
+                ? "warning"
+                : "default",
+        })),
+        rows.length,
+        `${rows.length} تصريح عمل ساريًا`,
+      );
+    }
+    case "contractors_active": {
+      // قرار المالك: «من هم المقاولون» — الاسم هو العنوان، والامتثال قيمة
+      // الصف (عمود compliance_score موجود في sec_contractors).
+      const rows = src.contractors.filter((c) => c.status === "active");
+      return finish(
+        rows.map((c) => ({
+          id: c.id,
+          title_ar: c.name,
+          subtitle_ar: `${c.contract_no} · ${c.workers_count} عاملًا`,
+          status_ar: "نشط",
+          tone:
+            c.compliance_score >= 90 ? "success" : c.compliance_score < 75 ? "warning" : "default",
+          value: `الامتثال ${c.compliance_score}%`,
+        })),
+        rows.length,
+        `${rows.length} مقاولًا نشطًا`,
+      );
+    }
+  }
+}
+
+// قراءة عرض على شاشة يفتحها زائر ⇒ optionalSupabaseAuth (لا Unauthorized
+// للزائر أبدًا)، وresilient بنفس عقد لوحة المؤشرات: مهلة 4 ثوانٍ — فشل أو
+// timeout أو قاعدة فارغة كليًّا ⇐ محاكاة مرجعية موسومة، وصفوف القاعدة
+// الحية تفوز دائمًا متى وصلت.
+export const getExecDrilldown = createServerFn({ method: "GET" })
+  .middleware([optionalSupabaseAuth])
+  .inputValidator((input: { metric: ExecDrillMetric }) =>
+    z.object({ metric: z.enum(EXEC_DRILL_METRICS) }).parse(input),
+  )
+  .handler(async ({ context, data }): Promise<ExecDrilldown> => {
+    const { buildExecKpiSourcesSimulation, resilient } =
+      await import("./exec/showcase-simulation.server");
+    const sources = await resilient(
+      `exec-drill-${data.metric}`,
+      () => fetchExecDrillSources(context.supabase as unknown as ExecKpiSupabase),
+      // نفس معيار getExecKpis: المحاكاة فقط حين لا صفّ مرئيًّا في أي مصدر —
+      // فتتبدل البطاقات والنوافذ معًا لا كلٌّ على حدة.
+      (s) => Object.values(s).every((rows) => Array.isArray(rows) && rows.length === 0),
+      () => buildExecDrillSourcesSimulation(buildExecKpiSourcesSimulation()),
+    );
+    return computeExecDrilldown(data.metric, sources);
   });

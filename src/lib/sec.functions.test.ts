@@ -110,6 +110,9 @@ describe("computeExecKpis", () => {
       cameras_total: 3,
       cameras_online: 2,
       cctv_health: 53, // round((90+70+0)/3)
+      // أُضيف الحقل بأمر المالك ٢٠٢٦/٠٨/٢٠ (بطاقة «عدد تنبيهات الكاميرات») —
+      // العيّنة بلا مصدر تنبيهات، فالعدّ صفر تنبيهات فعليًّا لا غيابًا.
+      cctv_alerts_new: 0,
       gates_total: 2,
       gates_online: 2,
       access_health: 90,

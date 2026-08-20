@@ -6,10 +6,6 @@ import {
   ShieldAlert,
   Footprints,
   KeyRound,
-  UserCheck,
-  HardHat,
-  Car,
-  FileCheck2,
   Siren,
   Cctv,
   Eye,
@@ -49,13 +45,12 @@ const ITEMS: Item[] = [
   { to: "/sec/maintenance", label: "الصيانة", icon: Wrench },
   { to: "/sec/incidents", label: "البلاغات", icon: AlertTriangle },
   { to: "/sec/patrols", label: "الدوريات", icon: Footprints },
-  { to: "/sec/access", label: "التحكم بالدخول", icon: KeyRound },
-  { to: "/sec/visitors", label: "الزوار", icon: UserCheck },
-  { to: "/sec/contractors", label: "المقاولين", icon: HardHat },
-  { to: "/sec/vehicles", label: "المركبات", icon: Car },
-  // التصريح وثيقة **مُعتمَدة** لا شارة، والتقرير وثيقة ذات بيانات لا نصّ
-  // مجرّد — كما في سجل الوحدات الكانوني `lib/nav/modules.ts`.
-  { to: "/sec/permits", label: "التصاريح", icon: FileCheck2 },
+  // الاسم تبع إعادة تسمية الواجهة بأمر المالك ٢٠٢٦/٠٨/٢٠ (المادة 13.5:
+  // اسم واحد في كل سطح) — التاريخ اليومي يظهر في ترويسة الصفحة لا هنا.
+  { to: "/sec/access", label: "صلاحيات دخول اليوم", icon: KeyRound },
+  // «الزوار» و«المقاولين» و«المركبات» و«التصاريح» حُذفت من الشريط بأمر
+  // المالك ٢٠٢٦/٠٨/٢٠ — مدخلها صار بطاقات صفحة «صلاحيات دخول اليوم»
+  // (/sec/access) بأسهم انتقال. الصفحات نفسها حيّة لم تُمسّ.
   { to: "/sec/emergency", label: "الطوارئ", icon: Siren },
   { to: "/sec/cctv", label: "CCTV", icon: Cctv },
   { to: "/sec/safety", label: "ملاحظات السلامة", icon: Eye },

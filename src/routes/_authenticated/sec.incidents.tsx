@@ -5,7 +5,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { listIncidents, getOmsKpis } from "@/lib/oms.functions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
-import { NewIncidentDialog, IncidentDrawer } from "@/components/sec/oms-dialogs";
+// ٢٠٢٦/٠٨/٢٠ — بتوجيه المالك: حُذف زر «بلاغ جديد» من رأس الصفحة، فأُزيل استيراد NewIncidentDialog.
+import { IncidentDrawer } from "@/components/sec/oms-dialogs";
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/incidents")({
@@ -58,19 +59,15 @@ function Incidents() {
 
   return (
     <div className="space-y-4">
-      <SecPageHeader
-        title="إدارة البلاغات"
-        subtitle={`${list.length} بلاغ — متصل بسير العمل التنفيذي`}
-      >
-        <NewIncidentDialog />
-      </SecPageHeader>
+      {/* ٢٠٢٦/٠٨/٢٠ — بتوجيه المالك: حُذفت عبارة «متصل بسير العمل التنفيذي» من الوصف، وحُذف زر إنشاء البلاغ. */}
+      <SecPageHeader title="إدارة البلاغات" subtitle={`${list.length} بلاغ`} />
 
+      {/* ٢٠٢٦/٠٨/٢٠ — بتوجيه المالك: حُذفت بطاقة «معدل المخاطر»، والشبكة ثلاث بطاقات. */}
       {kpis && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           <StatCard label="مفتوحة" value={kpis.incidents.open} tone="warning" />
           <StatCard label="حرجة" value={kpis.incidents.critical} tone="danger" />
           <StatCard label="متوسط الاستجابة" value={`${kpis.incidents.avg_response_minutes} د`} />
-          <StatCard label="معدل المخاطر" value={`${kpis.incidents.avg_risk_score}/100`} />
         </div>
       )}
 
@@ -105,7 +102,7 @@ function Incidents() {
               <th className="px-3 py-2 text-start">الفئة</th>
               <th className="px-3 py-2 text-start">الخطورة</th>
               <th className="px-3 py-2 text-start">الحالة</th>
-              <th className="px-3 py-2 text-start">المخاطر</th>
+              {/* ٢٠٢٦/٠٨/٢٠ — بتوجيه المالك: حُذف عمود «المخاطر» من الجدول. */}
               <th className="px-3 py-2 text-start">الموكَّل</th>
               <th className="px-3 py-2 text-start">بُلِّغ</th>
             </tr>
@@ -143,7 +140,6 @@ function Incidents() {
                     {i.status}
                   </span>
                 </td>
-                <td className="px-3 py-2 text-xs">{i.ai_risk_score ?? "—"}</td>
                 <td className="px-3 py-2 text-xs text-muted-foreground">
                   {i.assigned_to ?? i.owner ?? "—"}
                 </td>
@@ -154,7 +150,8 @@ function Incidents() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-8 text-center">
+                {/* ٢٠٢٦/٠٨/٢٠ — colSpan صار 7 بعد حذف عمود «المخاطر». */}
+                <td colSpan={7} className="py-8 text-center">
                   <LiveStatus
                     variant="monitoring"
                     hint="قنوات البلاغات نشطة — لا حوادث مفتوحة"
