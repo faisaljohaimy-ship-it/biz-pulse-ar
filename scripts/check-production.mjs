@@ -22,7 +22,7 @@
  * رمز الخروج: 0 إن صمد كل حدّ، 1 إن سقط واحد.
  */
 const BASE = (process.env.PRODUCTION_URL || "").replace(/\/$/, "");
-const ROUTES = (process.env.ROUTES || "/,/sec,/risk").split(",").filter(Boolean);
+const ROUTES = (process.env.ROUTES || "/,/sec,/sec/governance").split(",").filter(Boolean);
 const ATTEMPTS = Number(process.env.ATTEMPTS || 5);
 
 if (!BASE) {

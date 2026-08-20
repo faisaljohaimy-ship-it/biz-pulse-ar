@@ -37,7 +37,9 @@ const GROUP_AR: Record<CmdGroup, string> = {
  * تكرار لسطح قائم ⇐ تُسحب · ③ سطح فريد ولا بديل له ⇐ تبقى.
  *
  * المسحوبة ومآلها:
- *   /nx-cockpit هي القمرة الكانونية الوحيدة (وحُذف سلفاها من النظام).
+ *   /nx-cockpit — قمرة القيادة التنفيذية حُجبت مع سلفها /cockpit بأمر
+ *     المالك ٢٠٢٦/٠٨/١٢، فسُحب بندها من هنا (اللوحة لا ترشّح بمخفيّ
+ *     hidden-routes تلقائيًّا — الحذف اليدوي هو الآلية).
  *     و`/exec` — بابٌ إلى أبواب قديمة، لا وحدة.
  *   /operations → `/nx-ops` (مسرح العمليات الحيّ).
  *   /exec → `/nx-flow` (رحلة الوكلاء مع فِن) — والاسم صار صادقًا: الصفحة
@@ -102,13 +104,6 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
         title_ar: screenNameAr("/"),
         title_en: screenNameEn("/"),
         to: "/",
-        group: "Navigate",
-      },
-      {
-        id: "cockpit",
-        title_ar: "قمرة القيادة التنفيذية",
-        title_en: "Executive Cockpit",
-        to: "/nx-cockpit",
         group: "Navigate",
       },
       {

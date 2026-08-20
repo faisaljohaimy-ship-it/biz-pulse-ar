@@ -8,7 +8,7 @@
  * always visible). Chat floats above her with backdrop blur and readability
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   AudioWaveform,
@@ -18,6 +18,7 @@ import {
   Mic,
   MicOff,
   Plus,
+  Presentation,
   RefreshCcw,
   Send,
   Sparkles,
@@ -71,6 +72,13 @@ import {
 // (`aria-label` و`title`): علامات التشكيل تُتهجّى حرفًا حرفًا في NVDA وVoiceOver.
 import { SADEED_DISPLAY_NAME_AR, SADEED_DISPLAY_NAME_AR_PLAIN } from "@/lib/sadeed-core/branding";
 import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
+// وضع العرض التنفيذي — نُقل من شاشة مركز القيادة المحجوبة (قرار المالك
+// ٢٠٢٦/٠٨/١٢) إلى زرّ في ترويسة هذه اللوحة. يُحمَّل كسولًا وجوبًا:
+// SadeedCopilot يُركَّب على كل صفحة، ومحرّك الوكلاء الرقميين يجب ألا يدخل
+// الحزمة الفورية (ميزانية الأداء).
+const SadeedExecutivePresentation = lazy(
+  () => import("@/components/sadeed/SadeedExecutivePresentation"),
+);
 // speakSadeed / speakablePageScript intentionally NOT imported — the panel-open
 // page intro stays silent; reply speech runs through the streaming TTS
 // pipeline below (Gemini Flash TTS via /api/sadeed/tts, gated on voice mode).
@@ -544,6 +552,10 @@ export function SadeedCopilot() {
       cancelled = true;
     };
   }, [isOpen, composerRef]);
+
+  // وضع العرض التنفيذي داخل اللوحة — طبقة تحت الترويسة تركّب
+  // SadeedExecutivePresentation (المحمَّل كسولًا) فوق مساحة المحادثة.
+  const [showPresentation, setShowPresentation] = useState(false);
 
   // Conversation Mode state
   const [convMode, setConvMode] = useState(false);
@@ -2148,6 +2160,31 @@ export function SadeedCopilot() {
                   {`${statusLabel} · ${convMode ? "صوت" : "نص"}`}
                 </span>
               </div>
+              {/* وضع العرض التنفيذي — الزر الذي ورث شاشة مركز القيادة
+                  المحجوبة (قرار المالك ٢٠٢٦/٠٨/١٢). فتحه يُنهي المخاطبة
+                  الصوتية ويوقف أي نطق جارٍ أولًا: قناة صوت واحدة، فلا
+                  يتداخل صوت سَدِيد مع أصوات وكلاء العرض. */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!showPresentation) {
+                    if (convMode) toggleConversationMode();
+                    else stopVoicePlayback();
+                  }
+                  setShowPresentation((v) => !v);
+                }}
+                aria-pressed={showPresentation}
+                aria-label="وضع العرض التنفيذي"
+                title="وضع العرض التنفيذي"
+                className={cn(
+                  "grid h-8 w-8 place-items-center rounded-md",
+                  showPresentation
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
+                )}
+              >
+                <Presentation className="h-4 w-4" aria-hidden />
+              </button>
               {/* الكتم داخل اللوحة أيضًا: اللوحة تغطي الصفحة حين تُفتح، فلو
                   كان الزر على الرئيسية وحدها لَغاب في اللحظة التي يتكلم فيها
                   المساعد فعلًا — وهي اللحظة التي يُطلب فيها الكتم. */}
@@ -2171,8 +2208,46 @@ export function SadeedCopilot() {
               </button>
             </header>
 
+            {/* طبقة وضع العرض التنفيذي — تحت الترويسة (تبقى الترويسة ظاهرة
+                وزرّها مضغوطًا)، فوق مساحة المحادثة، بخلفية صلبة بلغة ألوان
+                اللوحة نفسها كي لا تتسرب خلفية سَدِيد السينمائية خلف نصوص
+                العرض. المحتوى الفعلي محمَّل كسولًا (Suspense) حفاظًا على
+                ميزانية الحزمة الفورية. */}
+            {showPresentation && (
+              <div
+                dir="rtl"
+                className="relative z-20 flex min-h-0 flex-1 flex-col overflow-hidden bg-[linear-gradient(180deg,rgb(6,26,46),rgb(3,15,29))]"
+              >
+                <div className="flex items-center justify-between gap-2 border-b border-primary/15 px-4 py-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    وضع العرض التنفيذي
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowPresentation(false)}
+                    aria-label="عودة للمحادثة"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm text-muted-foreground transition-[background-color,color] hover:bg-primary/10 hover:text-primary"
+                  >
+                    <X className="h-4 w-4" aria-hidden />
+                    عودة للمحادثة
+                  </button>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto p-3">
+                  <Suspense
+                    fallback={
+                      <div dir="rtl" className="p-4 text-sm text-white/70">
+                        يجهّز وضع العرض…
+                      </div>
+                    }
+                  >
+                    <SadeedExecutivePresentation ar />
+                  </Suspense>
+                </div>
+              </div>
+            )}
+
             {/* Voice notice + Conversation Mode resume chip */}
-            {(convNotice || (convMode && convPaused)) && (
+            {!showPresentation && (convNotice || (convMode && convPaused)) && (
               <div className="relative z-10 flex flex-col items-center gap-2 px-4 py-2">
                 {convNotice && (
                   <div className="rounded-full bg-amber-500/15 px-3 py-1 text-[12px] text-amber-200 ring-1 ring-amber-400/40 backdrop-blur-md">
@@ -2192,11 +2267,13 @@ export function SadeedCopilot() {
             )}
 
             {/* Mobile-only compact SADEED top avatar */}
-            <SadeedTopAvatar />
+            {!showPresentation && <SadeedTopAvatar />}
 
-            {/* LAYER 3 — Messages (transparent so backdrop shows through) */}
+            {/* LAYER 3 — Messages (transparent so backdrop shows through).
+                أثناء وضع العرض تُخفى مساحة المحادثة (طبقة العرض هي flex-1
+                الوحيدة) — فتح العرض يكون قد أنهى المخاطبة الصوتية أصلًا. */}
 
-            {convMode ? (
+            {showPresentation ? null : convMode ? (
               <section
                 aria-label={`المخاطبة الصوتية مع ${SADEED_DISPLAY_NAME_AR_PLAIN}`}
                 className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-7 overflow-hidden px-6 py-8 text-center"
@@ -2312,15 +2389,16 @@ export function SadeedCopilot() {
               </div>
             )}
 
-            {!convMode && (
+            {!convMode && !showPresentation && (
               <div className="relative z-10">
                 <ExecutiveCard />
               </div>
             )}
 
             {/* LAYER 4 — Composer, pinned bottom + safe-area. Voice conversation
-              is driven by the mic button in the input row (no toolbar). */}
-            {!convMode && (
+              is driven by the mic button in the input row (no toolbar).
+              يُخفى أثناء وضع العرض التنفيذي (المسودة تبقى محفوظة في draft). */}
+            {!convMode && !showPresentation && (
               <div
                 className="relative z-10 border-t border-primary/15 bg-[linear-gradient(180deg,rgba(3,15,29,.48),rgba(3,15,29,.86))] p-3 backdrop-blur-xl"
                 style={{

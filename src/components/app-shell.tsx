@@ -6,14 +6,11 @@ import {
   Boxes,
   Building2,
   Cctv,
-  Compass,
   FileText,
   FolderKanban,
   FolderOpen,
   Footprints,
-  Gauge,
   Grid3x3,
-  Home,
   LayoutDashboard,
   Map as MapIcon,
   LogOut,
@@ -177,31 +174,17 @@ function useNavGroups(): NavGroup[] {
     return m ? { to: i.to, icon: m.icon, label: locale === "ar" ? m.ar : m.en } : i;
   };
   const groups: NavGroup[] = [
+    // مجموعة «الرئيسية» (مدخلا "/" و"/guide") حُذفت بأمر المالك ٢٠٢٦/٠٨/١٢
+    // («حذف الواجهتين هذي والاكتفاء بزر الهوم الموجود»): زرّ الرئيسية القائم
+    // في BackHomeControls/GlobalBackButton هو المدخل، والشريط لا يكرّره.
+    // صفحة /guide نفسها باقية حيّة — المحذوف مدخلها من الشريط لا الشاشة.
     {
-      label: ar("الرئيسية", "Home"),
-      items: [
-        { to: "/", icon: Home, label: ar("الرئيسية", "Home") },
-        // «خريطة النظام» (/guide) — الخريطة الدستورية للوحدات (المادة ٢١).
-        // كانت الصفحة بلا رابط وارد واحد في المنظومة كلها، فلا يبلغها إلا من
-        // يحفظ عنوانها. هذا مدخلها الدائم من الشريط الجانبي.
-        { to: "/guide", icon: Compass, label: ar("خريطة النظام", "System Map") },
-      ],
-    },
-    {
-      // وحدات كانونية خمس من `lib/nav/modules.ts` كانت غير قابلة للبلوغ من أي
-      // سطح تنقّل حيّ (لا الشريط الجانبي ولا الشريط العلوي ولا درج القمرة):
-      // /mission-control · /situation-room · /executive-map · /urgent-ops ·
-      // /boardroom. تُعرض هنا في مجموعتها الوظيفية، وأسماؤها وأيقوناتها
-      // تأتي من السجل عبر canon() فلا تنحرف عن الشبكة أو خريطة النظام.
+      // «مركز القيادة» (/mission-control) حُذف من هذه المجموعة بأمر المالك
+      // ٢٠٢٦/٠٨/١٢ — الشاشة حُجبت، ووضع العرض التنفيذي انتقل زرًّا في
+      // ترويسة لوحة سَدِيد.
       label: ar("القيادة والعمليات", "Command & Operations"),
       items: [
-        // الاسمان محروسان في screen-names.ts («مركز القيادة» و«غرفة العمليات»
-        // انحرفا سابقًا بين شاشتين)، فيُقرآن من المصدر ولا يُعاد كتابتهما.
-        {
-          to: "/mission-control",
-          icon: Gauge,
-          label: ar(screenNameAr("/mission-control"), screenNameEn("/mission-control")),
-        },
+        // الاسم محروس في screen-names.ts، فيُقرأ من المصدر ولا يُعاد كتابته.
         {
           to: "/situation-room",
           icon: Radar,

@@ -407,8 +407,12 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
         </div>
       </div>
 
-      {/* Live stage */}
-      <div className="mb-5 grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-[repeat(11,minmax(0,1fr))]">
+      {/* Live stage.
+          الأعمدة بـ`auto-fill` على عرض **الحاوية** لا كسور الشاشة: السطح
+          صار يعيش داخل لوحة سَدِيد (~٧٠٠px) على شاشةٍ عريضة، فكانت كسور
+          `xl:` تفرض ١١ عمودًا في عرضٍ لا يتّسع لها — قِيست الأسماء متراكبةً
+          غير مقروءة. `auto-fill` يستجيب للعرض الفعلي أيًّا كان مضيف السطح. */}
+      <div className="mb-5 grid grid-cols-[repeat(auto-fill,minmax(76px,1fr))] gap-3">
         {stageSpecs.map((s, i) => {
           const r = [aria, ic, ri, ca, cv, pt, em, vi, kb, rp, dt][i];
           const isActive = currentSpeakerId === s.id;
@@ -422,7 +426,9 @@ export function PresentationMode({ ar, overview, displayName }: Props) {
               )}
             >
               <AgentPulseIcon spec={s} state={r.state} size={56} ar={ar} />
-              <div className="mt-1.5 text-center">
+              {/* `w-full` شرط عمل `truncate`: بلا عرضٍ مقيَّد بخلية الشبكة
+                  يتمدّد الاسم فوق جيرانه بدل أن يُقتطع. */}
+              <div className="mt-1.5 w-full min-w-0 text-center">
                 <div className="truncate text-[12px] font-bold text-white">
                   {ar ? s.name_ar : s.name_en}
                 </div>

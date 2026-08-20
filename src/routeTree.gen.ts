@@ -178,6 +178,7 @@ import { Route as AuthenticatedSecKpiRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedSecKnowledgeRouteImport } from './routes/_authenticated/sec.knowledge'
 import { Route as AuthenticatedSecIntegrationsRouteImport } from './routes/_authenticated/sec.integrations'
 import { Route as AuthenticatedSecIncidentsRouteImport } from './routes/_authenticated/sec.incidents'
+import { Route as AuthenticatedSecGovernanceRouteImport } from './routes/_authenticated/sec.governance'
 import { Route as AuthenticatedSecFacilitiesRouteImport } from './routes/_authenticated/sec.facilities'
 import { Route as AuthenticatedSecExecRouteImport } from './routes/_authenticated/sec.exec'
 import { Route as AuthenticatedSecEmergencyRouteImport } from './routes/_authenticated/sec.emergency'
@@ -1089,6 +1090,12 @@ const AuthenticatedSecIncidentsRoute =
     path: '/incidents',
     getParentRoute: () => AuthenticatedSecRoute,
   } as any)
+const AuthenticatedSecGovernanceRoute =
+  AuthenticatedSecGovernanceRouteImport.update({
+    id: '/governance',
+    path: '/governance',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
 const AuthenticatedSecFacilitiesRoute =
   AuthenticatedSecFacilitiesRouteImport.update({
     id: '/facilities',
@@ -1403,6 +1410,7 @@ export interface FileRoutesByFullPath {
   '/sec/emergency': typeof AuthenticatedSecEmergencyRoute
   '/sec/exec': typeof AuthenticatedSecExecRoute
   '/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
+  '/sec/governance': typeof AuthenticatedSecGovernanceRoute
   '/sec/incidents': typeof AuthenticatedSecIncidentsRoute
   '/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
   '/sec/knowledge': typeof AuthenticatedSecKnowledgeRoute
@@ -1602,6 +1610,7 @@ export interface FileRoutesByTo {
   '/sec/emergency': typeof AuthenticatedSecEmergencyRoute
   '/sec/exec': typeof AuthenticatedSecExecRoute
   '/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
+  '/sec/governance': typeof AuthenticatedSecGovernanceRoute
   '/sec/incidents': typeof AuthenticatedSecIncidentsRoute
   '/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
   '/sec/knowledge': typeof AuthenticatedSecKnowledgeRoute
@@ -1805,6 +1814,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/emergency': typeof AuthenticatedSecEmergencyRoute
   '/_authenticated/sec/exec': typeof AuthenticatedSecExecRoute
   '/_authenticated/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
+  '/_authenticated/sec/governance': typeof AuthenticatedSecGovernanceRoute
   '/_authenticated/sec/incidents': typeof AuthenticatedSecIncidentsRoute
   '/_authenticated/sec/integrations': typeof AuthenticatedSecIntegrationsRoute
   '/_authenticated/sec/knowledge': typeof AuthenticatedSecKnowledgeRoute
@@ -2008,6 +2018,7 @@ export interface FileRouteTypes {
     | '/sec/emergency'
     | '/sec/exec'
     | '/sec/facilities'
+    | '/sec/governance'
     | '/sec/incidents'
     | '/sec/integrations'
     | '/sec/knowledge'
@@ -2207,6 +2218,7 @@ export interface FileRouteTypes {
     | '/sec/emergency'
     | '/sec/exec'
     | '/sec/facilities'
+    | '/sec/governance'
     | '/sec/incidents'
     | '/sec/integrations'
     | '/sec/knowledge'
@@ -2409,6 +2421,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/emergency'
     | '/_authenticated/sec/exec'
     | '/_authenticated/sec/facilities'
+    | '/_authenticated/sec/governance'
     | '/_authenticated/sec/incidents'
     | '/_authenticated/sec/integrations'
     | '/_authenticated/sec/knowledge'
@@ -3756,6 +3769,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecIncidentsRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
+    '/_authenticated/sec/governance': {
+      id: '/_authenticated/sec/governance'
+      path: '/governance'
+      fullPath: '/sec/governance'
+      preLoaderRoute: typeof AuthenticatedSecGovernanceRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
     '/_authenticated/sec/facilities': {
       id: '/_authenticated/sec/facilities'
       path: '/facilities'
@@ -4012,6 +4032,7 @@ interface AuthenticatedSecRouteChildren {
   AuthenticatedSecEmergencyRoute: typeof AuthenticatedSecEmergencyRoute
   AuthenticatedSecExecRoute: typeof AuthenticatedSecExecRoute
   AuthenticatedSecFacilitiesRoute: typeof AuthenticatedSecFacilitiesRoute
+  AuthenticatedSecGovernanceRoute: typeof AuthenticatedSecGovernanceRoute
   AuthenticatedSecIncidentsRoute: typeof AuthenticatedSecIncidentsRoute
   AuthenticatedSecIntegrationsRoute: typeof AuthenticatedSecIntegrationsRoute
   AuthenticatedSecKnowledgeRoute: typeof AuthenticatedSecKnowledgeRoute
@@ -4042,6 +4063,7 @@ const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
   AuthenticatedSecEmergencyRoute: AuthenticatedSecEmergencyRoute,
   AuthenticatedSecExecRoute: AuthenticatedSecExecRoute,
   AuthenticatedSecFacilitiesRoute: AuthenticatedSecFacilitiesRoute,
+  AuthenticatedSecGovernanceRoute: AuthenticatedSecGovernanceRoute,
   AuthenticatedSecIncidentsRoute: AuthenticatedSecIncidentsRoute,
   AuthenticatedSecIntegrationsRoute: AuthenticatedSecIntegrationsRoute,
   AuthenticatedSecKnowledgeRoute: AuthenticatedSecKnowledgeRoute,

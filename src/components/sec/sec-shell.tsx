@@ -17,6 +17,7 @@ import {
   BarChart3,
   FileBarChart,
   Clock,
+  ClipboardCheck,
   Boxes,
   Building2,
   Grid3x3,
@@ -59,6 +60,8 @@ const ITEMS: Item[] = [
   { to: "/sec/cctv", label: "CCTV", icon: Cctv },
   { to: "/sec/safety", label: "ملاحظات السلامة", icon: Eye },
   { to: "/sec/risks", label: "سجل المخاطر", icon: ShieldAlert },
+  // نُقلت من الوحدة المستقلة /governance بقرار المالك ٢٠٢٦/٠٨/١٢ — الأيقونة نفسها من سجل الوحدات (المادة 13.5).
+  { to: "/sec/governance", label: "الحوكمة", icon: ClipboardCheck },
   { to: "/sec/kpi", label: "مؤشرات الأداء", icon: BarChart3 },
   { to: "/sec/reports", label: "التقارير", icon: FileBarChart },
   { to: "/sec/shifts", label: "الورديات", icon: Clock },

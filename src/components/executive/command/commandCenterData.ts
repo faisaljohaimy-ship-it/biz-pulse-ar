@@ -136,9 +136,11 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
       { ar: "تحليل البيانات", en: "Data analytics", to: "/sec/kpi", icon: BarChart3 },
       { ar: "الأمن السيبراني", en: "Cybersecurity", to: "/sec", icon: ShieldCheck },
       {
+        // كانت تشير إلى /mission-control المحجوب (٢٠٢٦/٠٨/١٢) — والوجهة
+        // الصادقة لاسمها أصلًا هي شاشة المشاريع.
         ar: "إدارة المشاريع",
         en: "Project management",
-        to: "/mission-control",
+        to: "/sec/projects",
         icon: FolderKanban,
       },
     ],
@@ -163,8 +165,10 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
     modules: [
       { ar: "إنتاج الطاقة", en: "Energy production", to: "/operations", icon: Zap },
       { ar: "المرافق", en: "Utilities", to: "/sec", icon: Factory },
-      { ar: "السلامة", en: "Safety", to: "/risk", icon: ShieldAlert },
-      { ar: "الاستدامة", en: "Sustainability", to: "/governance", icon: Leaf },
+      // ‏/risk حُجبت و/governance انتقلت إلى /sec/governance (٢٠٢٦/٠٨/١٢) —
+      // «السلامة» إلى شاشة ملاحظات السلامة الحيّة، لا إلى مسار يرتدّ للرئيسية.
+      { ar: "السلامة", en: "Safety", to: "/sec/safety", icon: ShieldAlert },
+      { ar: "الاستدامة", en: "Sustainability", to: "/sec/governance", icon: Leaf },
       { ar: "جودة الهواء", en: "Air quality", to: "/situation-room", icon: Wind },
     ],
   },
@@ -188,7 +192,8 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
     modules: [
       { ar: "المجتمع", en: "Community", to: "/boardroom", icon: Users },
       { ar: "التعليم", en: "Education", to: "/knowledge", icon: GraduationCap },
-      { ar: "الصحة", en: "Health", to: "/risk", icon: HeartPulse },
+      // ‏/risk حُجبت (٢٠٢٦/٠٨/١٢) — «الصحة» إلى شاشة صحة المنظومة /health.
+      { ar: "الصحة", en: "Health", to: "/health", icon: HeartPulse },
       { ar: "البنية التحتية", en: "Infrastructure", to: "/digital-twin", icon: Building },
       { ar: "النقل الذكي", en: "Smart transport", to: "/executive-map", icon: Bus },
     ],

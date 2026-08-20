@@ -51,6 +51,10 @@ const EXTRA_SCREEN_NAMES: Readonly<Record<string, ScreenName>> = {
   "/exec": { ar: "محرك التنفيذ", en: "Execution Engine" },
   "/operations": { ar: "سجل التشغيل", en: "Operations Log" },
   "/sadeed": { ar: "سَدِيد", en: "SADEED" },
+  // «مركز القيادة» حُجب من MODULES بأمر المالك ٢٠٢٦/٠٨/١٢، والاسم يبقى
+  // محجوزًا هنا: حارس التفرّد في screen-names.test يضمن ألّا تدّعيه شاشة
+  // أخرى ما دام ملفّ الشاشة محفوظًا بسياسة الإخفاء.
+  "/mission-control": { ar: "مركز القيادة", en: "Mission Control" },
 };
 
 function buildScreenNames(): Readonly<Record<string, ScreenName>> {

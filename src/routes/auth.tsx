@@ -50,8 +50,9 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   const goNext = () => {
-    // بعد الدخول: القمرة الكانونية (كانت /command-center وحُذفت كليًّا).
-    const target = redirectTo && redirectTo.startsWith("/") ? redirectTo : "/nx-cockpit";
+    // بعد الدخول: الرئيسية. كانت الوجهة /nx-cockpit حتى حُجبت القمرة بأمر
+    // المالك ٢٠٢٦/٠٨/١٢ — الإبقاء عليها كان يضيف قفزة توجيه صامتة لكل دخول.
+    const target = redirectTo && redirectTo.startsWith("/") ? redirectTo : "/";
     navigate({ to: target, replace: true });
   };
 

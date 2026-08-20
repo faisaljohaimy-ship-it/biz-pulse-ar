@@ -622,17 +622,8 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "using the platform's tools from inside the assistant you already use",
     ),
   ],
-  [
-    "/nx-cockpit",
-    n(
-      "قمرة القيادة التنفيذية",
-      "NX Cockpit",
-      "مشهد القمرة الموحّد: المؤشرات والقرارات والوكلاء في إطار واحد",
-      "the unified cockpit view: indicators, decisions, and agents in one frame",
-      "قراءة الوضع كاملًا دون تنقّل بين الشاشات",
-      "reading the whole situation without hopping between screens",
-    ),
-  ],
+  // حُذف «/nx-cockpit» (قمرة القيادة التنفيذية): مسار مخفي بأمر المالك
+  // ٢٠٢٦/٠٨/١٢ (hidden-routes.ts) يُعيد التوجيه للرئيسية.
   [
     "/nx-ops",
     n(

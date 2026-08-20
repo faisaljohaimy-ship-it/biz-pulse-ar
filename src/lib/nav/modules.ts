@@ -14,16 +14,13 @@
 import {
   Bot,
   Boxes,
-  ClipboardCheck,
   FileBarChart,
   FileCheck2,
-  Gauge,
   LineChart,
   Map as MapIcon,
   Presentation,
   Radar,
   Shield,
-  ShieldAlert,
   Siren,
   Sparkles,
   Telescope,
@@ -42,7 +39,8 @@ export interface ModuleEntry {
 
 export const MODULES: readonly ModuleEntry[] = [
   { to: "/sec", ar: "الأمن الصناعي", en: "Industrial Security", icon: Shield },
-  { to: "/mission-control", ar: "مركز القيادة", en: "Mission Control", icon: Gauge },
+  // «مركز القيادة» (/mission-control) حُجب بأمر المالك ٢٠٢٦/٠٨/١٢ — وضع
+  // العرض التنفيذي وحده نجا، زرًّا في ترويسة لوحة سَدِيد.
   { to: "/situation-room", ar: "غرفة العمليات", en: "Situation Room", icon: Radar },
   { to: "/executive-map", ar: "الخريطة التنفيذية", en: "Executive Map", icon: MapIcon },
   // G7: the canonical name is «منصة عمليات الوكلاء» in every surface.
@@ -52,8 +50,10 @@ export const MODULES: readonly ModuleEntry[] = [
   // الشريط الجانبي، فقرأت الوحدتان بأيقونة واحدة. الوحدة تُصدِّر ملفات
   // (PDF/Excel) — فالوثيقة ذات البيانات هي دلالتها.
   { to: "/sec/reports", ar: "التقارير", en: "Reports", icon: FileBarChart },
-  { to: "/governance", ar: "الحوكمة", en: "Governance", icon: ClipboardCheck },
-  { to: "/risk", ar: "المخاطر", en: "Risk", icon: ShieldAlert },
+  // «الحوكمة» انتقلت من وحدة مستقلة إلى شريط الأمن الصناعي (/sec/governance)
+  // بأمر المالك ٢٠٢٦/٠٨/١٢ — مدخلها في SecSubNav لا هنا.
+  // و«المخاطر» (/risk — إدارة المخاطر المؤسسية) حُجبت بالأمر نفسه؛
+  // «سجل المخاطر» /sec/risks شاشة أخرى وباقية.
   { to: "/sec/maintenance", ar: "الصيانة", en: "Maintenance", icon: Wrench },
   // التصريح وثيقة **مُعتمَدة** لا ورقة نصّ: علامة الاعتماد هي ما يميّزه عن
   // أي مستند آخر في المنظومة.
@@ -81,10 +81,6 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
   "/sec": {
     ar: "المظلة التشغيلية للأمن الصناعي — المواقع والبلاغات والحوادث.",
     en: "The industrial-security umbrella — sites, incidents, alerts.",
-  },
-  "/mission-control": {
-    ar: "مركز القيادة الموحّد لكل المناطق في شاشة واحدة.",
-    en: "One unified command center across every region.",
   },
   "/situation-room": {
     ar: "غرفة العمليات الحيّة — المتابعة اللحظية والتصعيد.",
@@ -114,14 +110,8 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
     ar: "لوحات تحليلية تفاعلية بنمط Power BI مع تصدير.",
     en: "Interactive Power BI-style dashboards with export.",
   },
-  "/governance": {
-    ar: "الحوكمة والسياسات ومسارات الاعتماد.",
-    en: "Governance, policies and approval pipelines.",
-  },
-  "/risk": {
-    ar: "سجل المخاطر وتقييم الأثر والتخفيف.",
-    en: "The risk register — impact assessment and mitigation.",
-  },
+  // «الحوكمة» تسكن شريط الأمن الصناعي (/sec/governance) — غرضها يظهر في
+  // ترويسة صفحتها لا في شبكة الوحدات. و«المخاطر» /risk حُجبت ٢٠٢٦/٠٨/١٢.
   "/sec/maintenance": {
     ar: "أوامر الصيانة الوقائية والتصحيحية.",
     en: "Preventive and corrective maintenance orders.",

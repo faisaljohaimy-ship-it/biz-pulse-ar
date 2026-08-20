@@ -93,17 +93,9 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   // /assistant وخيوطها /assistant/$threadId معًا عبر مطابقة المقاطع.
 
   // ── Executive command / decision surfaces ───────────────────────────
-  [
-    "/mission-control",
-    n(
-      "مراقبة المهمة",
-      "Mission Control",
-      "الأهداف، التقدّم، والانحرافات",
-      "objectives, progress, and deviations",
-      "انضباط تنفيذ الأهداف الاستراتيجية",
-      "disciplined execution of strategic objectives",
-    ),
-  ],
+  // حُذف «/mission-control» (مركز القيادة): مسار مخفي بأمر المالك ٢٠٢٦/٠٨/١٢
+  // (hidden-routes.ts) يُعيد التوجيه للرئيسية — وضع العرض التنفيذي انتقل
+  // زرًّا في ترويسة لوحة سَدِيد.
   [
     "/situation-room",
     n(
@@ -172,17 +164,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
       "focus on decision, not raw data",
     ),
   ],
-  [
-    "/cockpit",
-    n(
-      "قمرة القيادة",
-      "Executive Cockpit",
-      "مؤشرات النظام والقرارات الحيّة",
-      "system indicators and live decisions",
-      "رؤية طيّار للمؤسسة كاملة",
-      "a pilot's view of the whole enterprise",
-    ),
-  ],
+  // حُذف «/cockpit» (قمرة القيادة): مسار مخفي بأمر المالك ٢٠٢٦/٠٨/١٢ —
+  // «حذف قمرة القيادة التنفيذية» يشمل السلف الحامل للاسم نفسه.
   [
     "/boardroom",
     n(
@@ -284,19 +267,12 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
       "deeper data investigations without heavy technical overhead",
     ),
   ],
+  // حُذف «/risk» (إدارة المخاطر المؤسسية): مسار مخفي بأمر المالك ٢٠٢٦/٠٨/١٢
+  // — «سجل المخاطر» /sec/risks شاشة أخرى ولها صفّها الخاص.
   [
-    "/risk",
-    n(
-      "لوحة المخاطر التنفيذية",
-      "Executive Risk",
-      "خريطة المخاطر ومسارات التخفيف",
-      "the risk map and mitigation paths",
-      "حوكمة استباقية لمخاطر المؤسسة",
-      "proactive governance of enterprise risk",
-    ),
-  ],
-  [
-    "/governance",
+    // «الحوكمة» انتقلت إلى شريط الأمن الصناعي بأمر المالك ٢٠٢٦/٠٨/١٢ —
+    // المفتاح هو المسار الحيّ الجديد، والعنوان القديم يعيد التوجيه إليه.
+    "/sec/governance",
     n(
       "الحوكمة",
       "Governance",

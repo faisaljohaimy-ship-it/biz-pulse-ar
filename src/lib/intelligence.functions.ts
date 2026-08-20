@@ -488,7 +488,9 @@ export const getPredictions = createServerFn({ method: "GET" })
         impact: dropping ? "high" : "low",
         horizonDays: 1,
         tone: dropping ? "rose" : "cyan",
-        route: "/cockpit",
+        // كانت /cockpit حتى حُجبت القمرة (٢٠٢٦/٠٨/١٢) — بطاقة الشذوذ تفتح
+        // محرك التنفيذ كبطاقة التوقّع الشقيقة، لا مسارًا يرتدّ للرئيسية.
+        route: "/execution",
       });
     }
 

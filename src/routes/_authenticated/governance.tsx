@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
@@ -8,6 +8,13 @@ import { governanceSystems, governancePolicies } from "@/lib/enterprise-domains"
 import { InlineAddForm, DeleteButton, EmptyState } from "@/components/crud-inline";
 
 export const Route = createFileRoute("/_authenticated/governance")({
+  // قرار المالك ٢٠٢٦/٠٨/١٢ — نافذة الحوكمة **نُقلت** (لا أُخفيت) إلى
+  // /sec/governance ضمن شريط الأمن الصناعي؛ العنوان القديم يحوّل إليها
+  // فلا يتيتّم رابط محفوظ. الملف يبقى وفق سياسة الإخفاء القائمة
+  // (src/lib/nav/hidden-routes.ts): المكوّن يعيش هنا ويستورده المسار الجديد.
+  beforeLoad: () => {
+    throw redirect({ to: "/sec/governance" });
+  },
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: GovernancePage,
@@ -120,7 +127,7 @@ const GOVERNANCE_REFERENCE_POLICIES = [
   },
 ];
 
-function GovernancePage() {
+export function GovernancePage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const { user } = useAuth();

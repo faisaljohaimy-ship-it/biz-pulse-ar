@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { NexusPage, NexusCard, NexusPill, NexusStat } from "@/components/nexus-frame";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
@@ -8,6 +8,12 @@ import { Siren, AlertTriangle, FileCheck, ClipboardList } from "lucide-react";
 import { PredictionsPanel } from "@/components/predictions-panel";
 
 export const Route = createFileRoute("/_authenticated/risk")({
+  // OWNER DIRECTIVE ٢٠٢٦/٠٨/١٢ — «حذف الواجهه بالكامل» (إدارة المخاطر
+  // المؤسسية). الشاشة حُجبت (hidden-routes.ts): الإخفاء سطرٌ والحذف
+  // أركيولوجيا. «سجل المخاطر» /sec/risks شاشة أخرى وباقية.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: RiskPage,

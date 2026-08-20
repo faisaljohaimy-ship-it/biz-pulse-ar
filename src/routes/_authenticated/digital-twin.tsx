@@ -138,7 +138,9 @@ const NODES: TwinNode[] = [
     angle: 240,
     icon: ShieldAlert,
     tone: "#f43f5e",
-    route: "/risk",
+    // كانت /risk حتى حُجبت إدارة المخاطر المؤسسية (٢٠٢٦/٠٨/١٢) —
+    // «سجل المخاطر» في الأمن الصناعي هو السطح الباقي للمخاطر.
+    route: "/sec/risks",
     kpi_ar: "إشارة حرجة",
     kpi_en: "critical",
     value: "2",

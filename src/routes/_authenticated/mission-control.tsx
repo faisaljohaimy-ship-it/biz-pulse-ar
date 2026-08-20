@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -52,6 +52,12 @@ import {
 import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/mission-control")({
+  // OWNER DIRECTIVE ٢٠٢٦/٠٨/١٢ — «حذف واجهة مركز القيادة بالكامل …
+  // والاكتفاء بنقل وضع العرض التنفيذي الى محادثة سديد». الشاشة حُجبت؛
+  // وضع العرض يعيش زرًّا في ترويسة لوحة سَدِيد (SadeedCopilot).
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   head: () => ({
     meta: [
       { title: "Mission Control — SADEED" },
