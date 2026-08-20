@@ -6,8 +6,8 @@ import { useMemo, useState } from "react";
 import { getTwinTree, type TwinTree } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
 import { RegionTwinScene, type TwinAsset } from "@/components/sec/RegionTwinScene";
-import { TWIN_PROFILES } from "@/components/sec/region-twin-profiles";
-import { DEFAULT_REGION_ID, REGIONS, type RegionId } from "@/lib/regions";
+import { useRegion } from "@/lib/region-context";
+import type { Region } from "@/lib/regions";
 import {
   ChevronRight,
   Network,
@@ -46,8 +46,9 @@ type Selected = { kind: SelectedKind; id: string } | null;
  * أصول المشهد من الشجرة المحمّلة: كاميرات وبوابات وحسّاسات المقدّمة.
  *
  * العدد محدود بـ١٤ لا لتقليل الرسم بل لأن ما فوقه يتراكم على المشهد
- * فيحجب البنى التي يُفترض أن يشير إليها. والحدّ **يُعلَن** أسفل المشهد
- * بدل أن يُقصّ بصمت — القصّ الصامت يُقرأ «هذا كل ما هناك».
+ * فيحجب البنى التي يُفترض أن يشير إليها. سطر الإعلان الذي كان أسفل
+ * المشهد («هضبة نجد … أبرز ١٤ أصلًا من …») حُذف بأمر المالك ٢٠٢٦/٠٨/٢٠
+ * («حذف هذا التعليق من التوأم الرقمي») — الحدّ باقٍ، والإعلان لا.
  */
 const SCENE_ASSET_CAP = 14;
 
@@ -97,9 +98,11 @@ function TwinPage() {
   });
   const [selected, setSelected] = useState<Selected>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set(["region"]));
-  const [sceneRegion, setSceneRegion] = useState<RegionId>(DEFAULT_REGION_ID);
-  const { shown: assets, total: assetTotal } = useMemo(() => sceneAssets(data), [data]);
-  const profile = TWIN_PROFILES[sceneRegion];
+  // بأمر المالك ٢٠٢٦/٠٨/٢٠ («حذف الفلاتر ووضع الفلتر على الوسطى لأننا في
+  // أيقونة الوسطى»): لا فلتر مناطق محليًّا — المشهد يتبع سياق المنطقة
+  // العام (مبدّل الشريط الجانبي) فلا يعرض منطقةً غير التي يقف عليها النظام.
+  const { region, regionId } = useRegion();
+  const { shown: assets } = useMemo(() => sceneAssets(data), [data]);
 
   const toggle = (key: string) => {
     setExpanded((prev) => {
@@ -120,48 +123,7 @@ function TwinPage() {
       {/* المشهد المرسوم — لا `transform` ولا `filter` على هذه الغلافات:
           أيٌّ منها يُسقط كل `position: fixed` في الصفحة إلى نفسه. */}
       <section className="rounded-xl border border-border bg-card p-3">
-        <div
-          role="tablist"
-          aria-label="اختيار المنطقة المعروضة"
-          className="mb-3 flex flex-wrap gap-2"
-        >
-          {REGIONS.map((region) => {
-            const active = region.id === sceneRegion;
-            return (
-              <button
-                key={region.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setSceneRegion(region.id)}
-                className={cn(
-                  "rounded-lg border px-3 py-1.5 text-sm transition-[background-color,border-color,color] duration-200",
-                  active
-                    ? "border-primary/60 bg-primary/15 text-foreground"
-                    : "border-border bg-transparent text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {region.shortAr}
-              </button>
-            );
-          })}
-        </div>
-
-        <RegionTwinScene regionId={sceneRegion} assets={assets} />
-
-        <p className="mt-2 text-xs text-muted-foreground">
-          {profile.terrainAr}
-          {" · "}
-          {assetTotal > 0 ? (
-            <>
-              {assetTotal > assets.length
-                ? `أبرز ${assets.length} أصلًا من ${assetTotal} مثبّتة على المشهد (غير السليمة أوّلًا)`
-                : `${assets.length} أصلًا مثبّتة على المشهد`}
-            </>
-          ) : (
-            "لم تصل أصول حيّة بعد — المشهد يعرض بنية المنطقة"
-          )}
-        </p>
+        <RegionTwinScene regionId={regionId} assets={assets} />
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[420px_1fr]">
@@ -173,9 +135,13 @@ function TwinPage() {
               ))}
             </div>
           ) : (
+            /* بأمر المالك ٢٠٢٦/٠٨/٢٠ («تعديل أسماء إدارة الأمن الصناعي
+               بالغربية إلى الوسطى»): اسم الإدارة يتبع المنطقة النشطة من
+               `regions.ts` عبر السياق العام، لا نصًّا مثبَّتًا على الغربية
+               في صفوف الخادم. */
             <TreeNode
               icon={Crown}
-              label={data.region.name_ar}
+              label={region.labelAr}
               count={data.circles.length}
               countLabel="دوائر"
               isExpanded={expanded.has("region")}
@@ -357,7 +323,7 @@ function TwinPage() {
           )}
         </div>
         <div className="rounded-xl border border-border bg-card p-4 min-h-[60vh]">
-          {data && <DetailsPanel tree={data} selected={selected} />}
+          {data && <DetailsPanel tree={data} selected={selected} region={region} />}
         </div>
       </div>
     </div>
@@ -481,7 +447,15 @@ function LeafNode({
   );
 }
 
-function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }) {
+function DetailsPanel({
+  tree,
+  selected,
+  region,
+}: {
+  tree: TwinTree;
+  selected: Selected;
+  region: Region;
+}) {
   if (!selected) {
     return (
       <div className="flex h-full flex-col items-center justify-center text-center">
@@ -509,7 +483,9 @@ function DetailsPanel({ tree, selected }: { tree: TwinTree; selected: Selected }
       0,
     );
     return (
-      <DetailFrame title={tree.region.name_ar} subtitle={tree.region.name_en} icon={Crown}>
+      /* الاسم من `regions.ts` عبر المنطقة النشطة (أمر المالك ٢٠٢٦/٠٨/٢٠)
+         لا من صفّ الخادم المثبَّت على الغربية. */
+      <DetailFrame title={region.labelAr} subtitle={region.labelEn} icon={Crown}>
         <Grid>
           <Cell label="الأقسام" value={tree.sections.length} />
           <Cell label="الدوائر" value={tree.circles.length} />

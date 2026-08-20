@@ -61,10 +61,10 @@ export const MODULES: readonly ModuleEntry[] = [
   // «الامتثال HCIS» (/hcis) حُذفت بالكامل بأمر المالك ٢٠٢٦/٠٨/٠٩ — لا إخفاء
   // ولا توجيه: الصفحة وأيقونتها ومسارها وطبقة بياناتها (src/lib/hcis)
   // اقتُلعت من الشجرة. لا يُعاد سطرها هنا إلا بأمر مالك جديد.
-  { to: "/urgent-ops", ar: "العاجل", en: "Urgent Ops", icon: Siren },
-  // قاعة المجلس = **العرض التنفيذي للقيادة** (كما في MODULE_PURPOSE أدناه)،
-  // لا مبنى. و`Building2` كانت أيقونة «الدوائر» في الشريط الجانبي أيضًا.
-  { to: "/boardroom", ar: "قاعة المجلس", en: "Boardroom", icon: Presentation },
+  // الاسم بأمر المالك ٢٠٢٦/٠٨/٢٠: «متابعة الأعمال العاجلة» بدل «العاجل».
+  { to: "/urgent-ops", ar: "متابعة الأعمال العاجلة", en: "Urgent Ops", icon: Siren },
+  // «قاعة المجلس» (/boardroom) حُجبت بأمر المالك ٢٠٢٦/٠٨/٢٠ — «حذف
+  // الواجهة بالكامل لتكرار المعلومات».
 
   // المسارات `/sadeed*` عقود توجيه حيّة تبقى كما هي؛ التسمية وحدها هي المعروضة.
   { to: "/sadeed", ar: "سَدِيد التنفيذي", en: "SADEED Engine", icon: Sparkles },
@@ -127,10 +127,6 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
   "/urgent-ops": {
     ar: "الأعمال العاجلة واتفاقيات الخدمة (SLA).",
     en: "Urgent operations and service-level agreements.",
-  },
-  "/boardroom": {
-    ar: "قاعة المجلس — العرض التنفيذي للقيادة.",
-    en: "The boardroom — the executive briefing for leadership.",
   },
   "/sadeed": {
     ar: "سَدِيد التنفيذي — المساعد الذكي الصوتي والنصي.",

@@ -25,8 +25,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
       "a unified overview of every security unit",
       "نقطة انطلاق واحدة لأي قرار أمني تنفيذي",
       "one launch point for any executive security decision",
-      "شبكة تبويبات (اللوحة التنفيذية · غرفة العمليات · التوأم الرقمي · الدوائر · الأقسام · المشاريع · أوامر العمل) تنقلك دون إعادة تحميل، وشارة LIVE موحّدة",
-      "a tab grid (Executive · Ops Room · Digital Twin · Circles · Sections · Projects · WOs) navigates without reload under one LIVE badge",
+      "شبكة تبويبات (اللوحة التنفيذية · التوأم الرقمي · المشاريع · أوامر العمل) تنقلك دون إعادة تحميل",
+      "a tab grid (Executive · Digital Twin · Projects · WOs) navigates without reload",
     ),
   ],
   // حُذف صفّ الغلاف «/_authenticated/sec»: الغلاف لا يملك مسارًا يقف عليه
@@ -166,17 +166,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   ],
   // حُذف «/cockpit» (قمرة القيادة): مسار مخفي بأمر المالك ٢٠٢٦/٠٨/١٢ —
   // «حذف قمرة القيادة التنفيذية» يشمل السلف الحامل للاسم نفسه.
-  [
-    "/boardroom",
-    n(
-      "قاعة مجلس الإدارة",
-      "Boardroom",
-      "لوحات جاهزة للعرض على مجلس الإدارة",
-      "board-ready dashboards",
-      "اجتماعات مجلس أقصر وأكثر إنتاجية",
-      "shorter and more productive board meetings",
-    ),
-  ],
+  // حُذف «/boardroom» (قاعة المجلس): مسار مخفي بأمر المالك ٢٠٢٦/٠٨/٢٠
+  // (hidden-routes.ts) — «حذف الواجهة بالكامل لتكرار المعلومات».
   [
     "/briefing",
     n(

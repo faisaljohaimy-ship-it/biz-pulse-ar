@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
@@ -10,6 +10,11 @@ import { getTwinTree } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/sec/circles")({
+  // OWNER DIRECTIVE ٢٠٢٦/٠٨/٢٠ — «حذف الواجهة بالكامل». حُجبت
+  // (hidden-routes.ts) وتعود إلى مظلّة قسمها /sec.
+  beforeLoad: () => {
+    throw redirect({ to: "/sec" });
+  },
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: Circles,

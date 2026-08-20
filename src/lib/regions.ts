@@ -45,7 +45,12 @@ export const REGIONS: readonly Region[] = [
   },
 ] as const;
 
-export const DEFAULT_REGION_ID: RegionId = "western";
+// الافتراضي «الوسطى» بأمر المالك ٢٠٢٦/٠٨/٢٠ («وضع الفلتر على الوسطى لأننا
+// في ايقونة الوسطى» + «تعديل أسماء إدارة الامن الصناعي بالغربية الى الوسطى»):
+// كان `western`، فكانت جلسة الزائر الجديد تفتح النظام كلّه على الغربية
+// وتُظهر أسماءها حيث يتوقّع المالك الوسطى. تغيير الافتراضي لا يمسّ دور
+// الملف مرجعًا جغرافيًّا وحيدًا — المناطق ذاتها كما هي.
+export const DEFAULT_REGION_ID: RegionId = "central";
 
 /**
  * Per-region accent colour (RGB triplet, used by the icon/sector pulse halos —

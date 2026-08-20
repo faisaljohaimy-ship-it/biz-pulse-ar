@@ -1489,7 +1489,9 @@ export function buildFabricRowsSimulation(now: number) {
       title_en: null,
       owner,
       department,
-      decision_route: kind === "decision" ? "/boardroom" : null,
+      // كانت /boardroom حتى حُجبت القاعة (٢٠٢٦/٠٨/٢٠) — القرار يُفتح على
+      // اللوحة التنفيذية.
+      decision_route: kind === "decision" ? "/sec/exec" : null,
     }),
   );
   const alertRows = AL.map(([severity, score, title, owner, route, source, hoursAgo], i) => ({

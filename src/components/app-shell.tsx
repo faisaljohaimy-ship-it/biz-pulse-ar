@@ -1,33 +1,12 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-  Activity,
-  BarChart3,
-  Bot,
-  Boxes,
-  Building2,
-  Cctv,
   FileText,
-  FolderKanban,
   FolderOpen,
-  Footprints,
-  Grid3x3,
-  LayoutDashboard,
   Map as MapIcon,
   LogOut,
   LogIn,
-  Menu,
-  Mic,
-  Plug,
   Radar,
-  RadioTower,
-  Settings,
-  Shield,
-  ShieldAlert,
-  ShieldUser,
   Siren,
-  Sparkles,
-  Waypoints,
-  Wrench,
   ExternalLink as ExternalLinkIcon,
 } from "lucide-react";
 import { useState, type ComponentType } from "react";
@@ -173,16 +152,19 @@ function useNavGroups(): NavGroup[] {
     const m = moduleByRoute(i.to);
     return m ? { to: i.to, icon: m.icon, label: locale === "ar" ? m.ar : m.en } : i;
   };
+  // ── أمر المالك ٢٠٢٦/٠٨/٢٠: «حذف جميع الازرار في الشريط الجانبي باستثناء
+  // (١- غرفة العمليات ٢- الخريطة التنفيذية ٣- العاجل ٤- التقارير ٥- الملفات)»
+  // مع إعادة تسمية «العاجل» ← «متابعة الأعمال العاجلة» (تسميتها في السجل
+  // الكانوني MODULES فتسري عبر canon هنا وفي كل سطح)، و«الملفات» ←
+  // «تحليل الملفات باستخدام الذكاء الاصطناعي» (ليست وحدة كانونية فتُسمّى هنا).
+  //
+  // ما خرج ليس شاشاتٍ محذوفة: /sec وبناتها تبقى حيّةً تُبلغ من بطاقات
+  // المناطق على الرئيسية ومن شريطها الداخلي SecSubNav؛ وسَدِيد من زرّه
+  // العائم؛ والإدارة/الإعدادات من مساراتها المباشرة. المحذوف أزرار الشريط.
+  // (وقاعة المجلس /boardroom حُجبت شاشةً كاملة بالأمر نفسه — hidden-routes.)
   const groups: NavGroup[] = [
-    // مجموعة «الرئيسية» (مدخلا "/" و"/guide") حُذفت بأمر المالك ٢٠٢٦/٠٨/١٢
-    // («حذف الواجهتين هذي والاكتفاء بزر الهوم الموجود»): زرّ الرئيسية القائم
-    // في BackHomeControls/GlobalBackButton هو المدخل، والشريط لا يكرّره.
-    // صفحة /guide نفسها باقية حيّة — المحذوف مدخلها من الشريط لا الشاشة.
     {
-      // «مركز القيادة» (/mission-control) حُذف من هذه المجموعة بأمر المالك
-      // ٢٠٢٦/٠٨/١٢ — الشاشة حُجبت، ووضع العرض التنفيذي انتقل زرًّا في
-      // ترويسة لوحة سَدِيد.
-      label: ar("القيادة والعمليات", "Command & Operations"),
+      label: "",
       items: [
         // الاسم محروس في screen-names.ts، فيُقرأ من المصدر ولا يُعاد كتابته.
         {
@@ -191,78 +173,13 @@ function useNavGroups(): NavGroup[] {
           label: ar(screenNameAr("/situation-room"), screenNameEn("/situation-room")),
         },
         { to: "/executive-map", icon: MapIcon, label: ar("الخريطة التنفيذية", "Executive Map") },
-        { to: "/urgent-ops", icon: Siren, label: ar("العاجل", "Urgent Ops") },
-        { to: "/boardroom", icon: Building2, label: ar("قاعة المجلس", "Boardroom") },
-      ],
-    },
-    {
-      label: ar("العمليات", "Operations"),
-      items: [
-        // The name comes from the registry: this row used to say «غرفة
-        // العمليات», which is /situation-room's name, so two sidebar entries
-        // read the same and landed elsewhere. See lib/nav/screen-names.ts.
-        { to: "/sec", icon: Activity, label: ar(screenNameAr("/sec"), screenNameEn("/sec")) },
-        // «اللوحة التنفيذية» لوحة مؤشرات لا تاج: `Crown` كانت تقول «امتياز»
-        // لا «لوحة»، وهي دلالة لا وجود لها في الشاشة نفسها.
-        { to: "/sec/exec", icon: LayoutDashboard, label: ar("اللوحة التنفيذية", "Exec Dashboard") },
-        { to: "/sec/circles", icon: Building2, label: ar("الدوائر", "Circles") },
-        { to: "/sec/sections", icon: Grid3x3, label: ar("الأقسام", "Sections") },
-        // `Rocket` = إطلاق، لا **إدارة** مشاريع. لوح المشاريع هو الدلالة.
-        { to: "/sec/projects", icon: FolderKanban, label: ar("المشاريع", "Projects") },
-        { to: "/sec/maintenance", icon: Wrench, label: ar("الصيانة", "Maintenance") },
-        // «الامتثال HCIS» (/hcis) DELETED by owner directive ٢٠٢٦/٠٨/٠٩ — the
-        // screen, its route, its icon and its data layer were removed from the
-        // tree entirely. This is a deletion, not a hide: no hidden-routes entry
-        // and no redirect stub exist for it.
-        // «تصاريح العمل الرقمية» (/ptw) HIDDEN by owner directive — غير قابلة
-        // للتطبيق حالياً. See src/lib/nav/hidden-routes.ts. Note /sec/permits
-        // («التصاريح») is a DIFFERENT screen and stays visible.
-        { to: "/sec/incidents", icon: ShieldAlert, label: ar("البلاغات", "Incidents") },
-        // الدورية جولةٌ راجلة، والرادار كشفٌ عن بُعد — و`Radar` أيقونة «غرفة
-        // العمليات» في السجل الكانوني، فقرأ البندان بأيقونة واحدة.
-        { to: "/sec/patrols", icon: Footprints, label: ar("الدوريات", "Patrols") },
-        // `Cctv` كاميرا مراقبة فعليًّا؛ `Camera` كاميرا تصوير.
-        { to: "/sec/cctv", icon: Cctv, label: ar("CCTV", "CCTV") },
-        { to: "/sec/kpi", icon: BarChart3, label: ar("مؤشرات الأداء", "KPIs") },
-        // الاسم نفسه («التوأم الرقمي») في السجل الكانوني يحمل `Boxes` — واسمٌ
-        // واحد بأيقونتين انحرافٌ في الهوية (المادة 13.5).
-        { to: "/sec/twin", icon: Boxes, label: ar("التوأم الرقمي", "Digital Twin") },
-      ],
-    },
-    {
-      label: ar("الذكاء", "Intelligence"),
-      items: [
-        { to: "/sadeed", icon: Sparkles, label: ar("سَدِيد", "SADEED") },
-        { to: "/voice", icon: Mic, label: ar("المساعد الصوتي", "Voice Assistant") },
-        { to: "/agents", icon: Bot, label: ar("منصة عمليات الوكلاء", "Agent Operations Platform") },
-        // هاتان الشاشتان كانتا موجودتين بلا رابط في أي سطح تنقّل، فلم يكن
-        // للمالك سبيل لبلوغهما إلا بكتابة العنوان يدويًا (بندا المراجعة 52 و54).
-        {
-          to: "/sadeed-analytics",
-          icon: BarChart3,
-          label: ar("تحليلات سَدِيد", "SADEED Analytics"),
-        },
-        { to: "/observability", icon: RadioTower, label: ar("الرصد والتكاليف", "Observability") },
-      ],
-    },
-    {
-      label: ar("المعرفة", "Knowledge"),
-      items: [
+        { to: "/urgent-ops", icon: Siren, label: ar("متابعة الأعمال العاجلة", "Urgent Ops") },
         { to: "/sec/reports", icon: FileText, label: ar("التقارير", "Reports") },
-        { to: "/integrations", icon: Plug, label: ar("التكاملات", "Integrations") },
-        // `Bot` أيقونة **منصة الوكلاء** نفسها أعلاه؛ وهذا البند رابطٌ لا وكيل —
-        // فِعلُه الوصل (MCP) لا التشغيل.
-        { to: "/connect", icon: Waypoints, label: ar("ربط الوكلاء (MCP)", "Agent Connect (MCP)") },
-        { to: "/files", icon: FolderOpen, label: ar("الملفات", "Files") },
-      ],
-    },
-    {
-      label: ar("الإدارة", "Administration"),
-      items: [
-        // `Shield` أيقونة وحدة **الأمن الصناعي** الكانونية؛ ولوحة الإدارة
-        // إدارةُ مستخدمين وأدوار لا وحدةُ أمن صناعي.
-        { to: "/admin", icon: ShieldUser, label: ar("لوحة الإدارة", "Admin Panel") },
-        { to: "/settings", icon: Settings, label: ar("الإعدادات", "Settings") },
+        {
+          to: "/files",
+          icon: FolderOpen,
+          label: ar("تحليل الملفات باستخدام الذكاء الاصطناعي", "AI File Analysis"),
+        },
       ],
     },
   ];
@@ -300,11 +217,15 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* Scrollable middle */}
       <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
-        {groups.map((g) => (
-          <div key={g.label} className="mb-5">
-            <div className="px-3 pb-2 text-[12px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
-              {g.label}
-            </div>
+        {groups.map((g, gi) => (
+          <div key={g.label || gi} className="mb-5">
+            {/* شريط الأزرار الخمسة بلا عناوين مجموعات (أمر المالك ٢٠٢٦/٠٨/٢٠)
+                — العنوان يُرسم فقط إن وُجد. */}
+            {g.label && (
+              <div className="px-3 pb-2 text-[12px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
+                {g.label}
+              </div>
+            )}
             <div className="space-y-1">
               {g.items.map((it, itemIndex) => {
                 const active = loc.pathname === it.to || loc.pathname.startsWith(it.to + "/");

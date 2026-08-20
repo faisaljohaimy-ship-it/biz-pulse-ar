@@ -1134,8 +1134,7 @@ export function buildSadeedTools(
           "/sec/ai",
           "/sec/projects",
           "/sec/risks",
-          "/sec/circles",
-          "/sec/sections",
+          // «الدوائر» و«الأقسام» حُجبتا ٢٠٢٦/٠٨/٢٠ — فتحهما يرتدّ إلى /sec.
           "/tasks",
           "/executive",
           "/sec/reports",

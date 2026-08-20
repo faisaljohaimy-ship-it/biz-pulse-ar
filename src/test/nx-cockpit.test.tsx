@@ -147,8 +147,9 @@ describe("executive cockpit — composition", () => {
 describe("executive cockpit — interactions", () => {
   it("selecting a region updates the recommendation, cards and announcement", async () => {
     await renderCockpit();
-    // Initial region is the app default (western) — its recommendation lands.
-    await screen.findByText(/المنطقة الغربية: يوصى/);
+    // المنطقة الأولى هي افتراضي النظام — صار «الوسطى» بأمر المالك ٢٠٢٦/٠٨/٢٠
+    // (DEFAULT_REGION_ID في regions.ts؛ كان `western`).
+    await screen.findByText(/المنطقة الوسطى: يوصى/);
 
     const cards = screen.getByTestId("region-metric-cards");
     const eastern = within(cards).getByRole("button", { name: /الشرقية/ });

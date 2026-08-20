@@ -67,7 +67,7 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       titleAr: "التَّوْأَمُ الرَّقْمِيُّ الأَمْنِيّ",
       titleEn: "Security Digital Twin",
       purposeAr:
-        "يَعْرِضُ نَمُوذَجًا هَرَمِيًّا تَفَاعُلِيًّا لِلدَّوَائِرِ وَالمَوَاقِعِ وَالمَبَانِي وَالأُصُولِ الأَمْنِيَّةِ فِي المِنْطَقَةِ الغَرْبِيَّة.",
+        "يَعْرِضُ نَمُوذَجًا هَرَمِيًّا تَفَاعُلِيًّا لِلدَّوَائِرِ وَالمَوَاقِعِ وَالمَبَانِي وَالأُصُولِ الأَمْنِيَّةِ فِي المِنْطَقَةِ المُخْتَارَة.",
       purposeEn:
         "An interactive hierarchy of authorised regions, sites, buildings, and security assets.",
       actionAr:
@@ -75,33 +75,8 @@ const SCRIPTS: ReadonlyArray<readonly [string, PageScript]> = [
       actionEn: "Walk the tree to inspect live asset counts and per-node operational status.",
     },
   ],
-  [
-    "/sec/circles",
-    {
-      titleAr: "الدَّوَائِرُ التَّشْغِيلِيَّة",
-      titleEn: "Operational Circles",
-      purposeAr:
-        "تُلَخِّصُ إِجْمَالِيَّ الدَّوَائِرِ وَالمَوَاقِعِ وَالمُوَظَّفِينَ مَعَ بِطَاقَاتٍ تَعْرِضُ المُدِيرَ وَالإِحْدَاثِيَّاتِ لِكُلِّ دَائِرَة.",
-      purposeEn:
-        "Totals for circles, sites, and headcount, with per-circle cards showing manager and coordinates.",
-      actionAr:
-        "اضْغُطْ إِحْدَاثِيَّاتِ أَيِّ دَائِرَةٍ لِفَتْحِهَا عَلَى الخَرِيطَةِ التَّنْفِيذِيَّة.",
-      actionEn: "Tap a circle's coordinates to open it on the executive map.",
-    },
-  ],
-  [
-    "/sec/sections",
-    {
-      titleAr: "الأَقْسَامُ الأَمْنِيَّة",
-      titleEn: "Security Sections",
-      purposeAr:
-        "تَعْرِضُ هَيْكَلَ الأَقْسَامِ الأَمْنِيَّةِ مَعَ رَئِيسِ كُلِّ قِسْمٍ وَعَدَدِ مُوَظَّفِيهِ وَإِسْنَادِ المَسْؤُولِيَّات.",
-      purposeEn:
-        "The security division structure — each section, its head, headcount, and responsibility mapping.",
-      actionAr: "افْتَحْ أَيَّ قِسْمٍ لِرُؤْيَةِ أَدْوَارِهِ وَأَوَامِرِ عَمَلِهِ المَفْتُوحَة.",
-      actionEn: "Open a section to see its roles and open work orders.",
-    },
-  ],
+  // حُذف «/sec/circles»: مسار مخفي بأمر المالك ٢٠٢٦/٠٨/٢٠ (hidden-routes.ts).
+  // حُذف «/sec/sections»: مسار مخفي بأمر المالك ٢٠٢٦/٠٨/٢٠ (hidden-routes.ts).
   [
     "/sec/projects",
     {

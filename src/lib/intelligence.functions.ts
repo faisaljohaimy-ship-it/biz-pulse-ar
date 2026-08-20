@@ -576,7 +576,9 @@ export const getPredictions = createServerFn({ method: "GET" })
         impact: "high",
         horizonDays: 2,
         tone: "violet",
-        route: "/boardroom",
+        // كانت /boardroom حتى حُجبت القاعة (٢٠٢٦/٠٨/٢٠) — توصية مراجعة
+        // المخاطر تفتح سجلّ المخاطر نفسه.
+        route: "/sec/risks",
       });
     }
 

@@ -1,58 +1,38 @@
 /**
  * Operations Room — `/situation-room`
  *
- * Phase 5 — calmer, more cinematic redesign over the existing War Room
- * runtime. Reuses `getBridgeState`, `getMissionTimeline`,
- * `getPredictedRisks`, `generateExecutiveBriefing`, `AgentRing`,
- * `MissionTimeline` and `BriefingStage`. Adds an
- * Executive Decision Engine column (Risks / Opportunities / Actions).
+ * ٢٠٢٦/٠٨/٢٠ — تقليص كبير بتوجيه المالك (لقطة شاشة مؤشَّرة):
+ * حُذفت جزيئة أدوار فريق العمليات، والمؤشر العام، وأوامر العمل المفتوحة،
+ * ومؤشر الامتثال، وثقة الذكاء الاصطناعي، والوكلاء النشطون، وأعلى ٣ فرص،
+ * وزرّا التوأم الرقمي ووضع العرض، وقسم «تعاون بين الوكلاء»، والخط الزمني
+ * للمهمة. وتحوّلت البلاغات المفتوحة والحرجة والدوريات النشطة والزوار
+ * داخل الموقع والتصاريح الفعّالة إلى بطاقات بارزة في منتصف الواجهة.
  *
- * No DB schema, no workflow, no agent logic changes.
+ * Reuses `getBridgeState`, `getPredictedRisks`, `generateExecutiveBriefing`
+ * and `BriefingStage`. No DB schema, no workflow, no agent logic changes.
  */
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ShieldCheck,
-  Activity,
   AlertTriangle,
+  OctagonAlert,
   Loader2,
   PlayCircle,
   TrendingUp,
   Users,
   FileCheck2,
-  Wrench,
-  Brain,
-  GaugeCircle,
-  HeartPulse,
-  Sparkles,
-  Map as MapIcon,
-  Presentation,
-  Eye,
-  ClipboardList,
-  FileBarChart,
-  ShieldAlert,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { cn } from "@/lib/utils";
-import {
-  getBridgeState,
-  getMissionTimeline,
-  type BridgeAgent,
-  type BridgeHealth,
-} from "@/lib/exec/bridge.functions";
-import {
-  generateExecutiveBriefing,
-  type BriefingSegment,
-  type ExecutiveBriefing,
-} from "@/lib/exec/briefing.functions";
+import { getBridgeState, type BridgeHealth } from "@/lib/exec/bridge.functions";
+import { generateExecutiveBriefing, type ExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { getPredictedRisks } from "@/lib/exec/predictive.functions";
 import { BriefingStage } from "@/components/bridge/BriefingStage";
-import { MissionTimeline } from "@/components/bridge/MissionTimeline";
 import { DecisionEngine } from "@/components/situation-room/DecisionEngine";
-import { AgentConversation } from "@/components/situation-room/AgentConversation";
 import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/situation-room")({
@@ -61,7 +41,8 @@ export const Route = createFileRoute("/_authenticated/situation-room")({
       { title: "غرفة العمليات — إدارة الأمن الصناعي" },
       {
         name: "description",
-        content: "غرفة عمليات حية لمتابعة الحوادث والتنبيهات والتصعيد وأدوار وكلاء الأمن الصناعي.",
+        // ٢٠٢٦/٠٨/٢٠ — أُزيل ذكر «أدوار الوكلاء» بعد حذف الجزيئة من الصفحة.
+        content: "غرفة عمليات حية لمتابعة الحوادث والتنبيهات فور حدوثها وتصنيفها حسب الخطورة.",
       },
     ],
   }),
@@ -125,7 +106,6 @@ function SituationRoomPage() {
 
   const getState = useServerFn(getBridgeState);
   const getRisks = useServerFn(getPredictedRisks);
-  const getTimeline = useServerFn(getMissionTimeline);
   const genBriefing = useServerFn(generateExecutiveBriefing);
 
   const state = useQuery({
@@ -144,24 +124,15 @@ function SituationRoomPage() {
     refetchIntervalInBackground: false,
   });
 
-  const [paused, setPaused] = useState(false);
-  const timeline = useQuery({
-    queryKey: ["situation-timeline"],
-    queryFn: () => getTimeline(),
-    refetchInterval: paused ? false : 10_000,
-    refetchOnWindowFocus: false,
-    refetchIntervalInBackground: false,
-  });
+  // ٢٠٢٦/٠٨/٢٠ — حُذف استعلام الخط الزمني للمهمة وحالة الإيقاف المؤقت مع حذف القسم.
 
   const [briefing, setBriefing] = useState<ExecutiveBriefing | null>(null);
-  const [spotlightSegment, setSpotlightSegment] = useState<BriefingSegment | null>(null);
 
   const startBriefing = useMutation({
     mutationFn: () => genBriefing(),
     onSuccess: (data) => setBriefing(data),
   });
 
-  const agents = useMemo(() => state.data?.agents ?? [], [state.data?.agents]);
   const health = state.data?.health;
   const threat = threatLevel(health?.score ?? 0);
 
@@ -177,14 +148,16 @@ function SituationRoomPage() {
         <div className="absolute -bottom-20 left-0 h-[280px] w-[280px] rounded-full bg-amber-400/[0.04] blur-[120px]" />
       </div>
 
-      <TopStatusBar ar={ar} health={health} loading={state.isLoading} threat={threat} />
+      <TopStatusBar ar={ar} loading={state.isLoading} threat={threat} />
 
-      <div className="relative grid grid-cols-1 gap-5 px-5 pb-5 lg:grid-cols-[280px_minmax(0,1fr)_380px]">
-        <OperationalHealthColumn ar={ar} health={health} loading={state.isLoading} />
-
-        {/* CENTER — role dashboard. No electronic characters or avatars. */}
-        <div className="relative flex min-h-[660px] flex-col justify-center gap-6">
-          <AgentRoleDashboard agents={agents} ar={ar} spotlight={spotlightSegment} />
+      {/* ٢٠٢٦/٠٨/٢٠ — حُذف عمود الصحة التشغيلية الجانبي (المؤشر العام، أوامر العمل
+          المفتوحة، مؤشر الامتثال، ثقة الذكاء الاصطناعي، وكلاء نشطون)، وانتقلت
+          مؤشراته الخمسة الباقية بطاقاتٍ إلى منتصف الواجهة. */}
+      <div className="relative grid grid-cols-1 gap-5 px-5 pb-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+        {/* CENTER — the five operational stat cards + briefing action */}
+        <div className="relative flex min-h-[480px] flex-col justify-center gap-6">
+          {/* ٢٠٢٦/٠٨/٢٠ — حُذفت جزيئة «أدوار فريق العمليات» (شبكة بطاقات الأدوار). */}
+          <OperationalStatCards ar={ar} health={health} loading={state.isLoading} />
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
@@ -207,23 +180,7 @@ function SituationRoomPage() {
               {ar ? "ابدأ الموجز التنفيذي · 60 ثانية" : "Begin Executive Briefing · 60s"}
             </button>
 
-            <Link
-              to="/sec/twin"
-              className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-cyan-400/30 bg-white/[0.03] px-5 py-3 text-sm uppercase tracking-[0.18em] text-cyan-100 hover:bg-cyan-400/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
-              aria-label={ar ? "افتح التوأم الرقمي" : "Open Digital Twin"}
-            >
-              <MapIcon className="h-4 w-4" />
-              {ar ? "التوأم الرقمي" : "Digital Twin"}
-            </Link>
-
-            <Link
-              to="/boardroom"
-              className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.02] px-5 py-3 text-sm uppercase tracking-[0.18em] text-white/80 hover:bg-white/[0.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-              aria-label={ar ? "وضع العرض التنفيذي" : "Presentation Mode"}
-            >
-              <Presentation className="h-4 w-4" />
-              {ar ? "وضع العرض" : "Presentation"}
-            </Link>
+            {/* ٢٠٢٦/٠٨/٢٠ — حُذف زرّا «التوأم الرقمي» و«وضع العرض» من هذه الصفحة. */}
           </div>
 
           {startBriefing.error && (
@@ -238,29 +195,14 @@ function SituationRoomPage() {
         </div>
       </div>
 
-      {/* BOTTOM — Living Executive Conversation + Mission Timeline */}
-      <div className="relative grid grid-cols-1 gap-5 px-5 pb-8 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
-        <AgentConversation ar={ar} />
-        <MissionTimeline
-          entries={timeline.data ?? []}
-          ar={ar}
-          loading={timeline.isFetching}
-          paused={paused}
-          onTogglePause={() => setPaused((p) => !p)}
-          onRefresh={() => timeline.refetch()}
-        />
-      </div>
+      {/* ٢٠٢٦/٠٨/٢٠ — حُذف قسم «تعاون بين الوكلاء» وحُذف «الخط الزمني للمهمة». */}
 
       {briefing && (
         <BriefingStage
           briefing={briefing}
           ar={ar}
           backTo={{ ar: screenNameAr("/situation-room"), en: screenNameEn("/situation-room") }}
-          onClose={() => {
-            setBriefing(null);
-            setSpotlightSegment(null);
-          }}
-          onSegmentChange={setSpotlightSegment}
+          onClose={() => setBriefing(null)}
         />
       )}
     </main>
@@ -273,12 +215,10 @@ function SituationRoomPage() {
 
 function TopStatusBar({
   ar,
-  health,
   loading,
   threat,
 }: {
   ar: boolean;
-  health?: BridgeHealth;
   loading: boolean;
   threat: ReturnType<typeof threatLevel>;
 }) {
@@ -296,9 +236,10 @@ function TopStatusBar({
             {ar ? "غرفة العمليات" : "Operations Room"}
           </div>
           <p className="mt-1 max-w-2xl text-xs leading-5 text-white/55">
+            {/* ٢٠٢٦/٠٨/٢٠ — اكتُفي بالجملة الأولى من الوصف وحُذفت البقية. */}
             {ar
-              ? "متابعة الحوادث والتنبيهات فور حدوثها، وتصنيفها حسب الخطورة، وتصعيد الحالات الحرجة وربطها بقنوات المراقبة."
-              : "Track incidents and alerts as they occur, classify severity, escalate critical cases, and connect monitoring channels."}
+              ? "متابعة الحوادث والتنبيهات فور حدوثها، وتصنيفها حسب الخطورة."
+              : "Track incidents and alerts as they occur, and classify severity."}
           </p>
         </div>
       </div>
@@ -341,10 +282,105 @@ function LiveClock({ ar }: { ar: boolean }) {
 }
 
 // ----------------------------------------------------------------------
-// LEFT — Operational Health column
+// CENTER — the five operational stat cards
+// (٢٠٢٦/٠٨/٢٠ — كانت صفوفًا صغيرة في عمود جانبي؛ صارت بطاقات بارزة في
+//  المنتصف بنمط StatCard المعتمد: تسمية/قيمة/نبرة، والحالة بالشكل والكلمة
+//  لا باللون وحده — مثمّن = خطر · مثلث = تحذير.)
 // ----------------------------------------------------------------------
 
-function OperationalHealthColumn({
+type CenterTone = "danger" | "warning" | "info" | "success";
+
+const CENTER_TONES: Record<
+  CenterTone,
+  {
+    card: string;
+    value: string;
+    iconCls: string;
+    badge?: string;
+    badgeEn?: string;
+    badgeCls?: string;
+  }
+> = {
+  danger: {
+    card: "border-red-500/50 bg-red-500/10",
+    value: "text-red-300",
+    iconCls: "text-red-400",
+    badge: "خطر",
+    badgeEn: "Danger",
+    badgeCls: "border-red-500/40 bg-red-500/15 text-red-300",
+  },
+  warning: {
+    card: "border-amber-500/50 bg-amber-500/10",
+    value: "text-amber-300",
+    iconCls: "text-amber-400",
+    badge: "تحذير",
+    badgeEn: "Warning",
+    badgeCls: "border-amber-500/40 bg-amber-500/15 text-amber-300",
+  },
+  info: {
+    card: "border-cyan-400/25 bg-white/[0.03]",
+    value: "text-cyan-200",
+    iconCls: "text-cyan-300",
+  },
+  success: {
+    card: "border-emerald-500/40 bg-emerald-500/[0.07]",
+    value: "text-emerald-200",
+    iconCls: "text-emerald-300",
+  },
+};
+
+/** المادة ٢٧ — الغياب يُعرض «لم يُقَس»، والصفر ليس بديلًا عن الغياب. */
+function statValue(loading: boolean, ar: boolean, v: number | null | undefined): string {
+  if (loading) return "—";
+  if (v == null) return ar ? "لم يُقَس" : "Not measured";
+  return String(v);
+}
+
+function CenterStatCard({
+  ar,
+  label,
+  labelEn,
+  value,
+  tone,
+  Icon,
+}: {
+  ar: boolean;
+  label: string;
+  labelEn: string;
+  value: string;
+  tone: CenterTone;
+  Icon: typeof AlertTriangle;
+}) {
+  const t = CENTER_TONES[tone];
+  return (
+    <div className={cn("rounded-2xl border p-4 backdrop-blur-xl", t.card)}>
+      <div className="flex min-w-0 items-start gap-1.5">
+        {/* aria-hidden: شارة الكلمة بجانب القيمة تنطق الحالة نصًّا. */}
+        <Icon aria-hidden className={cn("mt-0.5 h-4 w-4 shrink-0", t.iconCls)} />
+        {/* الاسم يلتفّ ولا يُبتر: `truncate` على عمودٍ خُمسيّ قِيست تقطع
+            «تصاريح فعّالة» إلى «تصار…» — والبطاقة عنوانها هويتها. */}
+        <div className="min-w-0 text-xs font-medium uppercase leading-snug tracking-wide text-white/60">
+          {ar ? label : labelEn}
+        </div>
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <div className={cn("text-3xl font-light tabular-nums", t.value)}>{value}</div>
+        {t.badge && (
+          <span
+            className={cn(
+              "rounded-full border px-2 py-0.5 text-[12px] font-semibold leading-none",
+              t.badgeCls,
+            )}
+          >
+            {ar ? t.badge : t.badgeEn}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OperationalStatCards({
   ar,
   health,
   loading,
@@ -353,347 +389,51 @@ function OperationalHealthColumn({
   health?: BridgeHealth;
   loading: boolean;
 }) {
-  const score = health?.score ?? 0;
-  const tone =
-    score >= 90
-      ? "text-emerald-300"
-      : score >= 70
-        ? "text-cyan-300"
-        : score >= 50
-          ? "text-amber-300"
-          : "text-rose-300";
-
-  return (
-    <aside
-      aria-label={ar ? "الصحة التشغيلية" : "Operational Health"}
-      className="flex flex-col gap-3 rounded-3xl border border-cyan-400/15 bg-[#0A1E33]/70 p-4 backdrop-blur-xl"
-    >
-      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-cyan-200/80">
-        {/* «الصحة التشغيلية» — و`Radio` بثٌّ لا صحّة. */}
-        <HeartPulse className="h-4 w-4" aria-hidden />
-        {ar ? "الصحة التشغيلية" : "Operational Health"}
-      </div>
-
-      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-center">
-        <div className="text-[12px] uppercase tracking-[0.16em] text-white/50">
-          {ar ? "المؤشر العام" : "Composite Score"}
-        </div>
-        <div className={cn("mt-1 text-5xl font-light tabular-nums", tone)}>
-          {loading ? "—" : Math.round(score)}
-          <span className="text-2xl text-white/30">/100</span>
-        </div>
-      </div>
-
-      <HealthRow
-        ar={ar}
-        loading={loading}
-        Icon={AlertTriangle}
-        tone="text-amber-200"
-        label_ar="بلاغات مفتوحة"
-        label_en="Open Incidents"
-        value={health?.open_incidents ?? 0}
-      />
-      <HealthRow
-        ar={ar}
-        loading={loading}
-        Icon={AlertTriangle}
-        tone="text-rose-300"
-        label_ar="حرجة"
-        label_en="Critical Alerts"
-        value={health?.critical_incidents ?? 0}
-      />
-      <HealthRow
-        ar={ar}
-        loading={loading}
-        Icon={ShieldCheck}
-        tone="text-cyan-200"
-        label_ar="دوريات نشطة"
-        label_en="Active Patrols"
-        value={health?.active_patrols ?? 0}
-      />
-      <HealthRow
-        ar={ar}
-        loading={loading}
-        Icon={Users}
-        tone="text-cyan-200"
-        label_ar="زوار داخل الموقع"
-        label_en="Visitors Onsite"
-        value={health?.visitors_onsite ?? 0}
-      />
-      <HealthRow
-        ar={ar}
-        loading={loading}
-        Icon={FileCheck2}
-        tone="text-emerald-200"
-        label_ar="تصاريح فعّالة"
-        label_en="Active Permits"
-        value={health?.active_permits ?? 0}
-      />
-      <HealthRow
-        ar={ar}
-        loading={loading}
-        Icon={Wrench}
-        tone="text-cyan-200"
-        label_ar="أوامر عمل مفتوحة"
-        label_en="Open Work Orders"
-        value={health?.open_work_orders ?? 0}
-      />
-      <HealthRow
-        ar={ar}
-        loading={loading}
-        Icon={GaugeCircle}
-        tone="text-emerald-200"
-        label_ar="مؤشر الامتثال"
-        label_en="Compliance Score"
-        value={`${health?.compliance_score ?? 0}%`}
-      />
-      <HealthRow
-        ar={ar}
-        loading={loading}
-        Icon={Brain}
-        tone="text-cyan-200"
-        label_ar="ثقة الذكاء الاصطناعي"
-        label_en="AI Confidence"
-        value={`${health?.ai_confidence ?? 0}%`}
-      />
-      <HealthRow
-        ar={ar}
-        loading={loading}
-        Icon={Sparkles}
-        tone="text-emerald-200"
-        label_ar="وكلاء نشطون"
-        label_en="Agents Online"
-        value={`${health?.agents_online ?? 0}/${health?.agents_total ?? 0}`}
-      />
-    </aside>
-  );
-}
-
-function HealthRow({
-  ar,
-  label_ar,
-  label_en,
-  value,
-  Icon,
-  tone,
-  loading,
-}: {
-  ar: boolean;
-  label_ar: string;
-  label_en: string;
-  value: number | string;
-  Icon: typeof Activity;
-  tone: string;
-  loading: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.015] px-3 py-2">
-      <div className="flex items-center gap-2 text-[13px] text-white/75">
-        <Icon className={cn("h-3.5 w-3.5", tone)} />
-        <span>{ar ? label_ar : label_en}</span>
-      </div>
-      <div className={cn("text-sm font-semibold tabular-nums", tone)}>{loading ? "—" : value}</div>
-    </div>
-  );
-}
-
-// ----------------------------------------------------------------------
-// CENTER — industrial-security agent roles
-// ----------------------------------------------------------------------
-
-const ROLE_META: Array<{
-  match: RegExp;
-  ar: string;
-  en: string;
-  descriptionAr: string;
-  descriptionEn: string;
-  Icon: typeof Activity;
-}> = [
-  {
-    match: /monitor|watch|cctv|camera|رصد|مراقب/i,
-    ar: "المراقبة الميدانية",
-    en: "Field monitoring",
-    descriptionAr: "رصد الكاميرات والحساسات والتنبيهات الحية.",
-    descriptionEn: "Monitors cameras, sensors, and live alerts.",
-    Icon: Eye,
-  },
-  {
-    match: /analy|intel|risk|تحلي|ذكاء|مخاطر/i,
-    ar: "تحليل المخاطر",
-    en: "Risk analysis",
-    descriptionAr: "تحليل الأنماط وتقدير درجة الخطورة والأثر.",
-    descriptionEn: "Analyzes patterns, severity, and impact.",
-    Icon: Brain,
-  },
-  {
-    match: /incident|response|escalat|بلاغ|حادث|تصعيد/i,
-    ar: "الحوادث والتصعيد",
-    en: "Incident escalation",
-    descriptionAr: "تنسيق الاستجابة وتصعيد الحالات الحرجة فوراً.",
-    descriptionEn: "Coordinates response and critical escalation.",
-    Icon: ShieldAlert,
-  },
-  {
-    match: /maintenance|work.?order|صيانة|أمر عمل/i,
-    ar: "الصيانة",
-    en: "Maintenance",
-    descriptionAr: "متابعة الأعطال وأوامر العمل الوقائية والتصحيحية.",
-    descriptionEn: "Tracks faults and preventive/corrective work.",
-    Icon: Wrench,
-  },
-  {
-    match: /compliance|audit|hcis|امتثال|تدقيق/i,
-    ar: "الامتثال والتدقيق",
-    en: "Compliance and audit",
-    descriptionAr: "مراجعة متطلبات HCIS والأدلة والإجراءات التصحيحية.",
-    descriptionEn: "Reviews HCIS controls, evidence, and actions.",
-    Icon: FileCheck2,
-  },
-  {
-    match: /report|brief|تقرير|موجز/i,
-    ar: "التقارير الأمنية",
-    en: "Security reporting",
-    descriptionAr: "إعداد الملخصات التنفيذية وتقارير العمليات.",
-    descriptionEn: "Prepares executive summaries and operations reports.",
-    Icon: FileBarChart,
-  },
-  {
-    match: /permit|access|identity|تصريح|دخول|هوية/i,
-    ar: "التصاريح والدخول",
-    en: "Permits and access",
-    descriptionAr: "مراجعة التصاريح وحركة الدخول والوصول للأصول.",
-    descriptionEn: "Reviews permits, access events, and asset entry.",
-    Icon: ClipboardList,
-  },
-];
-
-function roleFor(agent: BridgeAgent) {
-  const haystack = `${agent.id} ${agent.name} ${agent.goal ?? ""}`;
-  return (
-    ROLE_META.find((role) => role.match.test(haystack)) ?? {
-      match: /.*/,
-      ar: "دعم العمليات",
-      en: "Operations support",
-      descriptionAr: "تنسيق المهام ودعم فرق غرفة العمليات.",
-      descriptionEn: "Coordinates tasks and supports operations teams.",
-      Icon: Activity,
-    }
-  );
-}
-
-function statusText(status: BridgeAgent["status"], ar: boolean) {
-  const labels: Record<BridgeAgent["status"], [string, string]> = {
-    offline: ["غير متصل", "Offline"],
-    idle: ["جاهز", "Ready"],
-    monitoring: ["مراقبة", "Monitoring"],
-    waiting: ["بانتظار إجراء", "Waiting"],
-    thinking: ["تحليل", "Analyzing"],
-    searching: ["بحث", "Searching"],
-    analyzing: ["تحليل", "Analyzing"],
-    consulting: ["تنسيق", "Coordinating"],
-    executing: ["قيد التنفيذ", "Executing"],
-    speaking: ["تحديث مباشر", "Live update"],
-    completed: ["مكتمل", "Completed"],
-    escalated: ["مصعّد", "Escalated"],
-    warning: ["تحذير", "Warning"],
-    error: ["خطأ", "Error"],
-    recovery: ["استعادة", "Recovery"],
-  };
-  return labels[status][ar ? 0 : 1];
-}
-
-function AgentRoleDashboard({
-  agents,
-  ar,
-  spotlight,
-}: {
-  agents: BridgeAgent[];
-  ar: boolean;
-  spotlight: BriefingSegment | null;
-}) {
   return (
     <section
-      aria-label={ar ? "لوحة أدوار وكلاء غرفة العمليات" : "Operations agent role dashboard"}
-      className="rounded-3xl border border-cyan-400/20 bg-[#071A2E]/75 p-4 backdrop-blur-xl"
+      aria-label={ar ? "مؤشرات العمليات الرئيسة" : "Key operations indicators"}
+      className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
     >
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-base font-semibold text-white">
-            {ar ? "أدوار فريق غرفة العمليات" : "Operations Room roles"}
-          </h2>
-          <p className="mt-1 text-xs text-white/50">
-            {ar
-              ? "كل بطاقة توضّح مسؤولية الوكيل وحالته والمهمة الجارية."
-              : "Each card identifies the agent responsibility, state, and current task."}
-          </p>
-        </div>
-        <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-[12px] text-emerald-200">
-          {agents.filter((agent) => agent.enabled).length}/{agents.length} {ar ? "نشط" : "active"}
-        </span>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        {agents.slice(0, 8).map((agent) => {
-          const role = roleFor(agent);
-          const Icon = role.Icon;
-          const active =
-            spotlight?.speaker_id === agent.id || spotlight?.speaker_name === agent.name;
-          const warning = ["error", "warning", "escalated", "offline"].includes(agent.status);
-          return (
-            <article
-              key={agent.id}
-              className={cn(
-                "rounded-2xl border p-3 transition",
-                active
-                  ? "border-cyan-300/65 bg-cyan-400/10 shadow-[0_0_30px_rgba(34,211,238,.18)]"
-                  : warning
-                    ? "border-amber-400/25 bg-amber-400/[0.05]"
-                    : "border-white/10 bg-white/[0.025]",
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-200">
-                  <Icon className="h-5 w-5" aria-hidden />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="text-sm font-semibold text-white">{ar ? role.ar : role.en}</h3>
-                      <p className="mt-0.5 text-[12px] leading-4 text-white/50">
-                        {ar ? role.descriptionAr : role.descriptionEn}
-                      </p>
-                    </div>
-                    <span
-                      className={cn(
-                        "shrink-0 rounded-full border px-2 py-0.5 text-[12px]",
-                        warning
-                          ? "border-amber-400/30 bg-amber-400/10 text-amber-200"
-                          : "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
-                      )}
-                    >
-                      {statusText(agent.status, ar)}
-                    </span>
-                  </div>
-                  <div className="mt-2 truncate text-[12px] text-white/45">
-                    {agent.current_task ?? (ar ? "مراقبة مستمرة" : "Continuous monitoring")}
-                  </div>
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400"
-                      style={{ width: `${Math.round(agent.confidence * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </article>
-          );
-        })}
-        {agents.length === 0 && (
-          <div className="col-span-full rounded-2xl border border-dashed border-white/15 px-4 py-10 text-center text-sm text-white/45">
-            {ar ? "جاري تحميل أدوار فريق العمليات…" : "Loading operations roles…"}
-          </div>
-        )}
-      </div>
+      <CenterStatCard
+        ar={ar}
+        label="بلاغات مفتوحة"
+        labelEn="Open Incidents"
+        value={statValue(loading, ar, health?.open_incidents)}
+        tone="warning"
+        Icon={AlertTriangle}
+      />
+      <CenterStatCard
+        ar={ar}
+        label="بلاغات حرجة"
+        labelEn="Critical Alerts"
+        value={statValue(loading, ar, health?.critical_incidents)}
+        tone="danger"
+        Icon={OctagonAlert}
+      />
+      <CenterStatCard
+        ar={ar}
+        label="دوريات نشطة"
+        labelEn="Active Patrols"
+        value={statValue(loading, ar, health?.active_patrols)}
+        tone="info"
+        Icon={ShieldCheck}
+      />
+      <CenterStatCard
+        ar={ar}
+        label="زوار داخل الموقع"
+        labelEn="Visitors Onsite"
+        value={statValue(loading, ar, health?.visitors_onsite)}
+        tone="info"
+        Icon={Users}
+      />
+      <CenterStatCard
+        ar={ar}
+        label="تصاريح فعّالة"
+        labelEn="Active Permits"
+        value={statValue(loading, ar, health?.active_permits)}
+        tone="success"
+        Icon={FileCheck2}
+      />
     </section>
   );
 }

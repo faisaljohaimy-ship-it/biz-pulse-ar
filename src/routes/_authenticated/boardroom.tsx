@@ -1,5 +1,5 @@
 import { RouteError } from "@/components/route-boundaries";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -16,6 +16,12 @@ const boardroomQuery = queryOptions({
 });
 
 export const Route = createFileRoute("/_authenticated/boardroom")({
+  // OWNER DIRECTIVE ٢٠٢٦/٠٨/٢٠ — «حذف الواجهة بالكامل لتكرار المعلومات»:
+  // مؤشرات القاعة معروضة في اللوحة التنفيذية وغرفة العمليات. حُجبت
+  // (hidden-routes.ts) والملفات محفوظة بسياسة الإخفاء.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   loader: ({ context }) => context.queryClient.ensureQueryData(boardroomQuery),
   pendingComponent: () => (
     <div className="flex min-h-screen items-center justify-center bg-background">

@@ -712,7 +712,8 @@ html.safe-mode canvas {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation: shimmer-x 2.4s linear infinite;
+    /* أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن من هذي الواجهة ومن
+       جميع النظام»: أُزيلت لمعة `shimmer-x` الدائمة — التدرّج باقٍ ساكنًا. */
   }
 }
 
@@ -1083,7 +1084,8 @@ body {
     color-mix(in oklab, var(--primary) 55%, transparent) 50%,
     transparent 60%
   );
-  animation: orb-shimmer 20s ease-in-out infinite;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠: لا هايلايت يمرّ — طبقة اللمعة مطفأة كليًّا. */
+  display: none;
 }
 .nexus-orb:active .nexus-orb-disc {
   transform: scale(0.92);
@@ -1204,8 +1206,9 @@ body {
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
-  animation: nx-hotspot-edge-sweep 4.6s ease-in-out infinite;
-  animation-delay: var(--region-control-delay, 0s);
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن … من جميع النظام»:
+     أُطفئت لمعة الحافة الجارية `nx-hotspot-edge-sweep` مع حاملتها. */
+  display: none;
 }
 
 .nx-region-control-active {
@@ -1451,7 +1454,10 @@ body {
   pointer-events: none;
   background: linear-gradient(100deg, transparent 15%, rgba(111, 255, 233, 0.22), transparent 78%);
   mix-blend-mode: screen;
-  animation: nexus-window-scan 9s ease-in-out infinite;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن … من جميع النظام»:
+     شريط المسح الضوئي `nexus-window-scan` مطفأ كليًّا. (خيط السقف
+     `nexus-window-rail` باقٍ — نبضُ اتساعٍ لا ضوءٌ جارٍ.) */
+  display: none;
 }
 
 .nexus-floating-surface {
@@ -2311,8 +2317,9 @@ html.nx-presenting .nexus-app-shell {
     transparent 52%
   );
   opacity: 0.6;
-  animation: nx-holo-sweep 9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-  will-change: transform;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠: خطّ الضوء الماسح `nx-holo-sweep` أُزيل —
+     يبقى الشريط ساكنًا خافتًا ضمن أجواء الخلفية. */
+  will-change: auto;
 }
 
 @keyframes nx-holo-sweep {
@@ -2490,7 +2497,8 @@ body {
   transition:
     filter 320ms ease,
     background-position 320ms ease;
-  animation: sadeed-shimmer 6s ease-in-out infinite;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠: أُزيلت لمعة `sadeed-shimmer` الدورية عن اسم
+     العلامة — التدرّج والتوهّج باقيان ساكنَين. */
 }
 
 /* Arabic joins. `letter-spacing` would break the cursive connections and spell
@@ -2917,7 +2925,7 @@ body {
     rgba(10, 40, 64, 0.12) 47%,
     transparent 52%
   );
-  animation: nx-holo-sweep 9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠: لا مسح ضوئي في الوضع الفاتح كذلك. */
 }
 
 /* 4) بطاقة SADEED سماوية في الوضعين */
@@ -2956,40 +2964,16 @@ body {
   }
 }
 
-/* 1) لمعان زجاجي متحرك مستمر فوق كل بطاقة */
+/* 1) أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن … من جميع النظام»:
+   ذهب «اللمعان الزجاجي المتحرك المستمر فوق كل بطاقة» — لمعة
+   `nx-gloss-sweep` وتدرّجها الحامل لها (في الوضعين) — وبقي تنفّس التوهّج
+   `nx-glow-breathe` لأنه نبضُ ظلٍّ لا هايلايت جارٍ. */
 .holo-card,
 .nx-glass-e1,
 .nexus-card,
 .nexus-window,
 .sadeed-window {
-  background-image: linear-gradient(
-    115deg,
-    transparent 38%,
-    rgba(255, 255, 255, 0.22) 47%,
-    rgba(255, 255, 255, 0.42) 50%,
-    rgba(255, 255, 255, 0.22) 53%,
-    transparent 62%
-  );
-  background-repeat: no-repeat;
-  background-size: 220% 100%;
-  animation:
-    nx-gloss-sweep 7s linear infinite,
-    nx-glow-breathe 5.5s ease-in-out infinite;
-}
-
-.light .holo-card,
-.light .nx-glass-e1,
-.light .nexus-card,
-.light .nexus-window,
-.light .sadeed-window {
-  background-image: linear-gradient(
-    115deg,
-    transparent 38%,
-    rgba(255, 255, 255, 0.55) 47%,
-    rgba(255, 255, 255, 0.9) 50%,
-    rgba(255, 255, 255, 0.55) 53%,
-    transparent 62%
-  );
+  animation: nx-glow-breathe 5.5s ease-in-out infinite;
 }
 
 /* بطاقة شات SADEED — زجاج لامع دائم بحدّ متوهج */
@@ -3022,7 +3006,8 @@ body {
   );
   background-size: 220% 100%;
   background-repeat: no-repeat;
-  animation: nx-gloss-sweep 6s linear infinite;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠: لا لمعة تمرّ على الأيقونات — الطبقة مطفأة. */
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3668,7 +3653,9 @@ tbody tr:hover {
     rgba(186, 240, 255, 0.6) 52%,
     transparent 62%
   );
-  animation: sd-holo-gloss 7s var(--sd-arch-ease, cubic-bezier(0.4, 0, 0.2, 1)) infinite;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن … من جميع النظام»:
+     أُطفئ شريط اللمعان الجاري `sd-holo-gloss` عن كل الأسطح الزجاجية. */
+  display: none;
 }
 [data-slot="card"]:nth-of-type(2n)::after {
   animation-delay: 1.4s;
@@ -3863,15 +3850,18 @@ button:active,
   box-shadow: inset 0 -2px 0 0 var(--pv-edge);
 }
 
-/* loading shimmer — calm, not strobing */
-[data-slot="skeleton"],
-.animate-pulse {
+/* loading shimmer — calm, not strobing.
+   أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن من هذي الواجهة ومن جميع
+   النظام»: نُزع `.animate-pulse` من هاتين القاعدتين — كانت اللمعة البيضاء
+   تكتسح بطاقات الحالة الحرجة (كما في /urgent-ops) وهي زينة لا حالة. نبضة
+   الشفافية نفسها (حالة حيّة) باقية من Tailwind، ولمعة الهيكل العظمي باقية
+   لأنها لغة «جارٍ التحميل» — حالة لا زخرفة. */
+[data-slot="skeleton"] {
   position: relative;
   overflow: hidden;
 }
 
-[data-slot="skeleton"]::after,
-.animate-pulse::after {
+[data-slot="skeleton"]::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -4108,7 +4098,9 @@ tbody tr:hover {
   padding: 1.5px;
   background: var(--hx-iris);
   background-size: 320% 320%;
-  animation: hx-iris-drift 7s linear infinite;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن … من جميع النظام»
+     (ناسخ لتوجيه ٢٠٢٦/٠٨/٠٢ باللمعان المستمر): الحافة القزحية باقية
+     ساكنة — حركة `hx-iris-drift` أُزيلت من كل مواضعها. */
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -4144,9 +4136,13 @@ tbody tr:hover {
     transparent 66%
   );
   background-size: 220% 100%;
-  animation: hx-iris-drift 6.5s linear infinite;
   mix-blend-mode: screen;
   opacity: 0.75;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠: شريط اللمعان الجاري على البطاقات — وهو عين
+     «الهايلايت» المشكوّ منه في /urgent-ops — مطفأ كليًّا لا مجمّدًا،
+     لئلا يبقى خطّ ضوء ساكن على السطح. (يسكت معه خطّ المسح عند التحويم
+     `holo-scan` لأن حاملته هذه الطبقة نفسها.) */
+  display: none;
 }
 
 [data-slot="card"] > *,
@@ -4182,7 +4178,9 @@ a > svg,
   width: 45%;
   pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
-  animation: hx-gloss-run 4.2s ease-in-out infinite;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠: لمعة `hx-gloss-run` الجارية على الأيقونات
+     مطفأة كليًّا. */
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4312,25 +4310,10 @@ a > svg,
    طبيعي، مع زجاجية أوضح وعمق ثلاثي الأبعاد للبطاقات والأيقونات.
    ───────────────────────────────────────────────────────────────────────── */
 
-/* 1) إيقاع طبيعي موحّد */
-[data-slot="card"]::before,
-.holo-card::before,
-.nx-glass-e1::before,
-.sd-glass-surface::before,
-.spatial-window::before {
-  animation: hx-iris-drift 9s linear infinite !important;
-  animation-play-state: running !important;
-}
-
-[data-slot="card"]::after,
-.holo-card::after,
-.nx-glass-e1::after,
-.sd-glass-surface::after,
-.spatial-window::after {
-  animation: hx-iris-drift 8s linear infinite !important;
-  animation-play-state: running !important;
-}
-
+/* 1) إيقاع طبيعي موحّد
+   (أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن … من جميع النظام»:
+   حُذف فرضا `hx-iris-drift` على حافتي البطاقات وشريط لمعانها من هنا —
+   الحافة ساكنة والشريط مطفأ في موضعي تعريفهما أعلاه.) */
 .nx-icon,
 [data-holo-icon],
 button > svg,
@@ -4340,37 +4323,11 @@ a > svg,
   animation-play-state: running !important;
 }
 
-[data-holo-icon-wrap]::after {
-  animation: hx-gloss-run 6s ease-in-out infinite !important;
-  animation-play-state: running !important;
-}
-
-/* 2) الاستمرارية حتى مع تقليل الحركة (طلب المالك الصريح) */
-@media (prefers-reduced-motion: reduce) {
-  [data-slot="card"]::before,
-  [data-slot="card"]::after,
-  .holo-card::before,
-  .holo-card::after,
-  .nx-glass-e1::before,
-  .nx-glass-e1::after,
-  .sd-glass-surface::before,
-  .sd-glass-surface::after,
-  .spatial-window::before,
-  .spatial-window::after {
-    animation-duration: 9s !important;
-    animation-iteration-count: infinite !important;
-    animation-play-state: running !important;
-  }
-
-  .nx-icon,
-  [data-holo-icon] {
-    animation: hx-halo-breathe 5s ease-in-out infinite !important;
-  }
-
-  [data-holo-icon-wrap]::after {
-    animation: hx-gloss-run 6s ease-in-out infinite !important;
-  }
-}
+/* (أمر المالك ٢٠٢٦/٠٨/٢٠: حُذف فرض `hx-gloss-run` على لفافات الأيقونات،
+   وحُذفت معه كتلة «الاستمرارية مع تقليل الحركة» التي كانت تعيد تشغيل
+   الحافة والشريط واللمعة قسرًا تحت prefers-reduced-motion — لا هايلايت
+   يعود من أي باب. نبضة هالة الأيقونات `hx-halo-breathe` باقية في
+   موضعها أعلاه لأنها توهّج لا هايلايت جارٍ.) */
 
 /* 3) زجاجية أوضح + عمق ثلاثي الأبعاد */
 [data-slot="card"],
@@ -4445,28 +4402,11 @@ a > svg,
   inset: -2px !important;
   padding: 2px !important;
   filter: saturate(1.6) brightness(1.18) !important;
-  animation: hx-iris-drift 6.5s linear infinite !important;
-  animation-play-state: running !important;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠: الحافة ساكنة — لا `hx-iris-drift`. */
 }
 
-/* 2) لمعان زجاجي أوضح يمرّ باستمرار */
-[data-slot="card"]::after,
-.holo-card::after,
-.nx-glass-e1::after,
-.sd-glass-surface::after,
-.spatial-window::after {
-  background: linear-gradient(
-    100deg,
-    transparent 34%,
-    rgba(255, 255, 255, 0.8) 48%,
-    rgba(186, 230, 253, 0.6) 56%,
-    transparent 68%
-  ) !important;
-  background-size: 220% 100% !important;
-  opacity: 0.95 !important;
-  animation: hx-iris-drift 6s linear infinite !important;
-  animation-play-state: running !important;
-}
+/* 2) (أمر المالك ٢٠٢٦/٠٨/٢٠: حُذفت قاعدة «لمعان زجاجي أوضح يمرّ
+   باستمرار» — شريط اللمعان مطفأ في موضع تعريفه، ولا يُعاد رسمه هنا.) */
 
 /* 3) توهج خارجي دائم حول كل بطاقة/سطح زجاجي */
 [data-slot="card"],
@@ -4501,11 +4441,8 @@ a > svg,
     0 0 26px -4px rgba(56, 189, 248, 0.6) !important;
 }
 
-[data-holo-icon-wrap]::after {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent) !important;
-  animation: hx-gloss-run 5s ease-in-out infinite !important;
-  animation-play-state: running !important;
-}
+/* (أمر المالك ٢٠٢٦/٠٨/٢٠: حُذف فرض لمعة `hx-gloss-run` على لفافات
+   الأيقونات — الطبقة مطفأة في موضع تعريفها.) */
 
 /* ─────────────────────────────────────────────────────────────────────────
    OWNER DIRECTIVE (2026-08-02/7) — إعادة SADEED إلى المنتصف بخلفيته الرقمية
@@ -4572,22 +4509,9 @@ a > svg,
   animation-play-state: running !important;
 }
 
-/* الحافة الهولوغرافية واللمعان يبقيان لكن أسرع قليلًا */
-[data-slot="card"]::before,
-.holo-card::before,
-.nx-glass-e1::before,
-.sd-glass-surface::before,
-.spatial-window::before {
-  animation: hx-iris-drift 5s linear infinite !important;
-}
-
-[data-slot="card"]::after,
-.holo-card::after,
-.nx-glass-e1::after,
-.sd-glass-surface::after,
-.spatial-window::after {
-  animation: hx-iris-drift 4.6s linear infinite !important;
-}
+/* (أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن … من جميع النظام»:
+   حُذفت قاعدتا «الحافة واللمعان أسرع قليلًا» — لا `hx-iris-drift` على
+   حافة ولا شريط في أي طبقة.) */
 
 /* توهّج الرمز نفسه بلون الأيقونة لا بالسماوي الثابت */
 .nx-icon,
@@ -4725,26 +4649,18 @@ html:not([data-theme="dark"]) .sadeed-chat-scrim {
         var(--sec-mesh) 1px,
         transparent 1px,
         transparent 30px
-      ),
-    /* نبضة المسح الكهربائي التي تسري عبر الأسلاك */
-    linear-gradient(
-        95deg,
-        transparent 42%,
-        var(--sec-arc) 49%,
-        rgba(255, 255, 255, 0.55) 51%,
-        var(--sec-arc) 53%,
-        transparent 60%
       ) !important;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن … من جميع النظام»:
+     حُذفت طبقة «نبضة المسح الكهربائي» الجارية عبر الأسلاك مع حركتها
+     `sec-grid-scan` — الأسلاك والشبكة باقية ساكنة، ونبضة الحدّ اللونية
+     باقية لأنها خفقة لا ضوءٌ جارٍ. */
   background-size:
     100% 22px,
     44px 100%,
-    100% 100%,
-    52% 100% !important;
-  background-repeat: repeat, repeat, repeat, no-repeat !important;
-  background-blend-mode: normal, normal, normal, screen;
-  animation:
-    sec-grid-scan 3.2s linear infinite,
-    hx-edge-chroma-fast 2s ease-in-out infinite !important;
+    100% 100% !important;
+  background-repeat: repeat !important;
+  background-blend-mode: normal;
+  animation: hx-edge-chroma-fast 2s ease-in-out infinite !important;
   animation-play-state: running !important;
 }
 
@@ -4754,11 +4670,8 @@ html:not([data-theme="dark"]) .sadeed-chat-scrim {
   background-size:
     100% 12px,
     22px 100%,
-    100% 100%,
-    62% 100% !important;
-  animation:
-    sec-grid-scan 2.6s linear infinite,
-    hx-edge-chroma-fast 1.8s ease-in-out infinite !important;
+    100% 100% !important;
+  animation: hx-edge-chroma-fast 1.8s ease-in-out infinite !important;
 }
 
 /* بطاقة SADEED تحتفظ بخلفيتها الرقمية الخاصة — نضيف الأسلاك فقط فوقها */
@@ -5187,8 +5100,9 @@ html.dark .nx-holo-noise {
 .sd-glass-surface,
 .spatial-window,
 .nexus-card {
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠: `sec-grid-scan` أُزيلت من التركيبة — بقيت
+     الخفقتان (حدّ لوني + هالة) لأنهما نبضٌ لا هايلايت جارٍ. */
   animation:
-    sec-grid-scan 3.2s linear infinite,
     hx-edge-chroma-fast 2s ease-in-out infinite,
     sadeed-aura-breathe 3.2s ease-in-out infinite !important;
   animation-play-state: running !important;
@@ -5198,7 +5112,6 @@ html.dark .nx-holo-noise {
 .holo-icon,
 [data-holo-icon-wrap] {
   animation:
-    sec-grid-scan 2.6s linear infinite,
     hx-edge-chroma-fast 1.8s ease-in-out infinite,
     sadeed-aura-breathe 2.6s ease-in-out infinite !important;
   animation-play-state: running !important;
@@ -5280,8 +5193,10 @@ html.dark .nx-holo-noise {
     transparent 62%
   );
   background-size: 240% 100%;
-  animation: sadeed-tech-sweep 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   mix-blend-mode: screen;
+  /* أمر المالك ٢٠٢٦/٠٨/٢٠: مسح الضوء الدوري `sadeed-tech-sweep` مطفأ —
+     طبقةُ لمعةٍ خالصة لا تحمل حالة. */
+  display: none;
 }
 
 .sadeed-tech-noise {
@@ -7170,20 +7085,13 @@ html.dark .nx-holo-noise {
   stroke-width: 1;
 }
 
-/* لمعة عابرة على لوحات الحالة — إيقاع نبض المؤسسة نفسه ذهابًا وإيابًا,
-   مركّبة مع الدخول لأن البطاقة تحمل الصنفين معًا. */
+/* أمر المالك ٢٠٢٦/٠٨/٢٠ «إزالة الهايلايت انميشن … من جميع النظام»:
+   ذهبت لمعة `nxBpSheen` العابرة عن لوحات الحالة مع تدرّجها الحامل لها،
+   وبقي دخول اللوحة `nxTwEnter` — حركة دخول لا هايلايت دوري. (إطارات
+   `nxBpSheen` نفسها باقية بلا مستهلك عمدًا — إزالة إسنادٍ لا حذف تاريخ.) */
 .nx-tw-card {
-  background-image: linear-gradient(
-    115deg,
-    transparent 42%,
-    color-mix(in srgb, var(--ink) 8%, transparent) 50%,
-    transparent 58%
-  );
-  background-size: 240% 100%;
-  animation:
-    nxTwEnter 640ms var(--nx-ease-out) both,
-    nxBpSheen 5s ease-in-out infinite alternate;
-  animation-delay: calc(var(--tw-si, 0) * 90ms), calc(var(--pulse-i, 0) * 0.45s + 700ms);
+  animation: nxTwEnter 640ms var(--nx-ease-out) both;
+  animation-delay: calc(var(--tw-si, 0) * 90ms);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -9081,7 +8989,10 @@ html[data-nx-motion="off"] .nx-pulse-spark {
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   filter: drop-shadow(0 0 4px color-mix(in srgb, var(--orb) 70%, transparent));
-  animation: nxOrbRun var(--orb-beat) ease-in-out infinite alternate;
+  /* الضوء الجاري `nxOrbRun` أُوقف بأمر المالك ٢٠٢٦/٠٨/٢٠ («إزالة الهايلايت
+     انميشن … من جميع النظام») — ناسخٌ لقرار «نبضٌ يمضي ويعود» ٢٠٢٦/٠٨/٠٦
+     في شقّ الضوء الجوّال وحده؛ التنفّس `nxOrbBreathe` نبضٌ لا هايلايت ويبقى.
+     القوس اللوني يبقى ساكنًا هويةً للدائرة. */
   pointer-events: none;
 }
 
@@ -9152,7 +9063,8 @@ html[data-nx-motion="off"] .nx-pulse-spark {
   background-size: 42% 100%;
   background-repeat: no-repeat;
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tone-cyan) 70%, transparent));
-  animation: nxTickerSweep 3.6s ease-in-out infinite alternate;
+  /* ضوء الشريط الجوّال `nxTickerSweep` أُوقف بأمر المالك ٢٠٢٦/٠٨/٢٠
+     («إزالة الهايلايت انميشن … من جميع النظام») — الخطّ اللوني يبقى ساكنًا. */
   pointer-events: none;
 }
 

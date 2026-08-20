@@ -190,7 +190,8 @@ export const CC_REGIONS: Record<RegionId, CCRegionPanel> = {
       { ar: "البنية التحتية الذكية", en: "Smart infrastructure", pct: 90 },
     ],
     modules: [
-      { ar: "المجتمع", en: "Community", to: "/boardroom", icon: Users },
+      // كانت /boardroom حتى حُجبت القاعة (٢٠٢٦/٠٨/٢٠).
+      { ar: "المجتمع", en: "Community", to: "/sec", icon: Users },
       { ar: "التعليم", en: "Education", to: "/knowledge", icon: GraduationCap },
       // ‏/risk حُجبت (٢٠٢٦/٠٨/١٢) — «الصحة» إلى شاشة صحة المنظومة /health.
       { ar: "الصحة", en: "Health", to: "/health", icon: HeartPulse },

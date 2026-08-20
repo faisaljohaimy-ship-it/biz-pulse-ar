@@ -212,32 +212,10 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
       "the calendar reconciles recorded attendance with the approved plan, and any coverage gap raises an alert and suggests a qualified substitute",
     ),
   ],
-  [
-    "/sec/sections",
-    n(
-      "لوحة الأقسام الأمنية",
-      "Security Sections",
-      "إجمالي الأقسام، إجمالي الموظفين، مدير الإدارة، وبطاقات كل قسم (الإسناد الأمني، الصيانة، المشاريع…) مع رئيس القسم وعدد الموظفين",
-      "total sections, total staff, division director, and per-section cards (Security Support, Maintenance, Projects…) with section head and headcount",
-      "توزيع مسؤوليات دقيق يُلغي التداخل والتناقض",
-      "precise responsibility distribution that eliminates overlap",
-      "البطاقات مبنية من hr_sections/hr_employees، اضغط أي قسم لفتح هيكله وأدواره وأوامر عمله المفتوحة",
-      "cards come from hr_sections/hr_employees; tap a section to open its structure, roles, and open WOs",
-    ),
-  ],
-  [
-    "/sec/circles",
-    n(
-      "الدوائر التشغيلية",
-      "Operational Circles",
-      "إجمالي الدوائر، إجمالي الموظفين، إجمالي المواقع، ومواقع تشغيلية، مع بطاقات لكل دائرة تشمل المدير والموظفين والمواقع والإحداثيات",
-      "total circles, total staff, total sites, and operational sites, with per-circle cards showing manager, headcount, sites, and coordinates",
-      "قيادة جغرافية موحّدة للأمن الصناعي",
-      "unified geographic command over industrial security",
-      "sec_circles + sec_sites تُغذّي البطاقات، والإحداثيات تُفتح مباشرة على الخريطة التنفيذية؛ الأرقام تُحدَّث لحظيًا وتحمل شارة LIVE من sec_overview",
-      "sec_circles + sec_sites feed the cards, coordinates open on the executive map, and figures refresh live with a LIVE badge from sec_overview",
-    ),
-  ],
+  // حُذف «/sec/sections» (لوحة الأقسام): مسار مخفي بأمر المالك ٢٠٢٦/٠٨/٢٠
+  // (hidden-routes.ts) — «حذف الواجهة بالكامل».
+  // حُذف «/sec/circles» (الدوائر التشغيلية): مسار مخفي بأمر المالك ٢٠٢٦/٠٨/٢٠
+  // (hidden-routes.ts) — «حذف الواجهة بالكامل».
   [
     "/sec/ai",
     n(

@@ -20,18 +20,31 @@ const BLOCK = (selector: string) => {
 };
 
 describe("لغة الدائرة المشعّة — نبضٌ يمضي ويعود", () => {
-  it("كل حركة في الطبقة `alternate` بمنحنى `ease-in-out`", () => {
+  it("كل حركة نابضة في الطبقة `alternate` بمنحنى `ease-in-out`", () => {
     // `alternate` وحدها هي التي تعكس الاتجاه؛ بدونها يقفز الضوء من نهاية
     // المسار إلى أوّله — وهو ما طُلب صراحةً ألّا يكون.
-    for (const anim of ["nxOrbBreathe", "nxOrbRun", "nxTickerSweep", "nxDecisionBeat"]) {
+    //
+    // **وسقط الضوءان الجوّالان من القائمة بأمر مالكٍ ناسخ ٢٠٢٦/٠٨/٢٠**
+    // («إزالة الهايلايت انميشن … من جميع النظام»): `nxOrbRun` و`nxTickerSweep`
+    // ضوءان يجوبان المسار — هايلايت بعينه — فأُوقفا. النبض (`Breathe`/`Beat`)
+    // ليس هايلايت: لا يجوب، يتنفّس في مكانه، ويبقى على عقد ٢٠٢٦/٠٨/٠٦.
+    for (const anim of ["nxOrbBreathe", "nxDecisionBeat"]) {
       const use = CSS.match(new RegExp(`animation:[^;]*${anim}[^;]*;`));
       expect(use, `الحركة ${anim} غير مستعملة`).not.toBeNull();
       expect(use![0], `${anim} بلا alternate — تقفز ولا تعود`).toContain("alternate");
       expect(use![0], `${anim} بلا ease-in-out — تعود بحدّة لا بنَفَس`).toContain("ease-in-out");
     }
+    for (const anim of ["nxOrbRun", "nxTickerSweep"]) {
+      expect(
+        CSS.match(new RegExp(`animation:[^;]*${anim}[^;]*;`)),
+        `${anim} عاد يعمل — الهايلايت الجوّال محذوف بأمر المالك ٢٠٢٦/٠٨/٢٠`,
+      ).toBeNull();
+    }
   });
 
   it("الضوء الجاري `rotate` مستقلّة لا `transform` (المادة ٣٢)", () => {
+    // الإطارات باقية (خاملة) وإن أُوقف تشغيلها — فإن أُعيدت يومًا بأمر
+    // جديد وجدت قاعدتها الصحيحة بانتظارها.
     const run = BLOCK("@keyframes nxOrbRun");
     expect(run).toContain("rotate:");
     expect(run).not.toContain("transform:");

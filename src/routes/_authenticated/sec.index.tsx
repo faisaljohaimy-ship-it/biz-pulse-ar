@@ -1,13 +1,11 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
-import { SecLiveBadge } from "@/components/sec/SecLiveBadge";
-import { AlertTriangle, Radar, UserCheck, Camera } from "lucide-react";
-import { RefreshCw } from "lucide-react";
+import { AlertTriangle, Radar, Camera } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useRegion } from "@/lib/region-context";
 import { screenNameAr } from "@/lib/nav/screen-names";
@@ -19,11 +17,10 @@ export const Route = createFileRoute("/_authenticated/sec/")({
 });
 
 function OpsRoom() {
-  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { region } = useRegion();
   const fetchOverview = useServerFn(getSecOverview);
-  const { data, isLoading, dataUpdatedAt, isFetching } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
     queryFn: () => fetchOverview(),
     enabled: !authLoading,
@@ -32,22 +29,16 @@ function OpsRoom() {
 
   return (
     <div className="space-y-4">
+      {/* حُذفت شارة LIVE وزر «تحديث» من ترويسة الصفحة بقرار المالك ٢٠٢٦/٠٨/٢٠ — التحديث الدوري كل ٣٠ ثانية باقٍ داخليًا عبر refetchInterval */}
       <SecPageHeader
         title={`${screenNameAr("/sec")} — ${region.labelAr}`}
         subtitle="بيانات تشغيلية مقيّدة بالمؤسسة؛ وعند غياب الصفوف الحية تُعرض محاكاة مرجعية"
-      >
-        <SecLiveBadge dataUpdatedAt={dataUpdatedAt} isFetching={isFetching} source="sec_overview" />
-        <button
-          onClick={() => router.invalidate()}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-        >
-          <RefreshCw className="h-3.5 w-3.5" /> تحديث
-        </button>
-      </SecPageHeader>
+      />
 
       {isLoading || !data ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
-          {Array.from({ length: 10 }).map((_, i) => (
+          {/* عدد الهياكل ٧ ليطابق البطاقات المتبقية بعد حذف ثلاث بطاقات ٢٠٢٦/٠٨/٢٠ */}
+          {Array.from({ length: 7 }).map((_, i) => (
             <div key={i} className="h-24 animate-pulse rounded-xl bg-muted/40" />
           ))}
         </div>
@@ -66,7 +57,7 @@ function OpsRoom() {
               tone={data.counts.incidents_critical > 0 ? "danger" : "success"}
             />
             <StatCard label="دوريات نشطة" value={data.counts.patrols_active} tone="success" />
-            <StatCard label="زوّار بالداخل" value={data.counts.visitors_inside} />
+            {/* حُذفت ثلاث بطاقات بقرار المالك ٢٠٢٦/٠٨/٢٠: «زوّار بالداخل» و«مقاولون نشطون» و«سجل البلاغات المحمّل» */}
             <StatCard label="تصاريح فعّالة" value={data.counts.permits_active} />
             <StatCard
               label="تنبيهات CCTV جديدة"
@@ -78,8 +69,6 @@ function OpsRoom() {
               value={data.counts.assets_offline}
               tone={data.counts.assets_offline > 0 ? "warning" : "success"}
             />
-            <StatCard label="مقاولون نشطون" value={data.counts.contractors_active} />
-            <StatCard label="سجل البلاغات المحمّل" value={data.incidents.length} />
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -150,25 +139,7 @@ function OpsRoom() {
               </ul>
             </Panel>
 
-            <Panel icon={UserCheck} title="الزوار حالياً">
-              <ul className="divide-y divide-border">
-                {data.visitors.slice(0, 6).map((v) => (
-                  <li key={v.id} className="flex items-center justify-between py-2 text-sm">
-                    <div className="min-w-0">
-                      <div className="truncate font-medium text-foreground">{v.full_name}</div>
-                      <div className="text-[12px] text-muted-foreground">
-                        {v.organization ?? "—"} · مضيف: {v.host}
-                      </div>
-                    </div>
-                    <span
-                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[12px] font-medium ${statusClass(v.status)}`}
-                    >
-                      {v.status}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </Panel>
+            {/* حُذف بوكس «الزوار حالياً» مؤقتًا بقرار المالك ٢٠٢٦/٠٨/٢٠ («حذف بوكس الزوار حاليًا») — البيانات ما زالت تصل ضمن getSecOverview ويمكن إعادة العرض لاحقًا */}
           </div>
         </>
       )}

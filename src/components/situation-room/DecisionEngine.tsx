@@ -1,10 +1,12 @@
 /**
- * Executive Decision Engine card — renders Top-3 Risks, Opportunities
- * and Recommended Actions in three calm panels. Data only — no fabrication.
+ * Executive Decision Engine card — renders Top-3 Risks and Recommended
+ * Actions in calm panels. Data only — no fabrication.
+ *
+ * ٢٠٢٦/٠٨/٢٠ — حُذفت مجموعة «أعلى 3 فرص» بتوجيه المالك.
  */
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Sparkles, Target, Loader2 } from "lucide-react";
+import { AlertTriangle, Target, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   getExecutiveDecisions,
@@ -60,14 +62,7 @@ export function DecisionEngine({ ar }: Props) {
         loading={q.isLoading}
         items={q.data?.risks ?? []}
       />
-      <DecisionGroup
-        ar={ar}
-        title={{ ar: "أعلى 3 فرص", en: "Top 3 Opportunities" }}
-        Icon={Sparkles}
-        tone="text-emerald-300"
-        loading={q.isLoading}
-        items={q.data?.opportunities ?? []}
-      />
+      {/* ٢٠٢٦/٠٨/٢٠ — حُذفت مجموعة «أعلى 3 فرص». */}
       <DecisionGroup
         ar={ar}
         title={{ ar: "إجراءات موصى بها", en: "Recommended Actions" }}

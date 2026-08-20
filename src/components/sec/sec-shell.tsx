@@ -43,8 +43,8 @@ const ITEMS: Item[] = [
   // و`Camera` كاميرا تصوير لا كاميرا مراقبة، و`ShieldCheck` امتثالٌ لا أقسام.
   { to: "/sec/exec", label: "اللوحة التنفيذية", icon: LayoutDashboard },
   { to: "/sec/twin", label: "التوأم الرقمي", icon: Network },
-  { to: "/sec/circles", label: "الدوائر", icon: Building },
-  { to: "/sec/sections", label: "الأقسام", icon: Grid3x3 },
+  // «الدوائر» و«الأقسام» حُجبتا بأمر المالك ٢٠٢٦/٠٨/٢٠ («حذف الواجهة
+  // بالكامل») — hidden-routes.ts، ومساراهما يعودان إلى /sec.
   { to: "/sec/projects", label: "المشاريع", icon: FolderKanban },
   { to: "/sec/maintenance", label: "الصيانة", icon: Wrench },
   { to: "/sec/incidents", label: "البلاغات", icon: AlertTriangle },
