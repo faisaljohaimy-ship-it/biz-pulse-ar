@@ -24,9 +24,7 @@ const CSS = read("src/styles.css");
 
 describe("① الدرع مركّب من الجذر", () => {
   it("الجذر يستورد الدرع ويثبّته", () => {
-    expect(ROOT, "سقط استيراد الدرع من الجذر — تعود شارة المنصّة بصمت").toContain(
-      "badge-shield",
-    );
+    expect(ROOT, "سقط استيراد الدرع من الجذر — تعود شارة المنصّة بصمت").toContain("badge-shield");
     expect(ROOT).toContain("installExternalBadgeShield");
   });
 
