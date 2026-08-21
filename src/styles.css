@@ -10033,3 +10033,26 @@ html.light {
   position: relative;
   z-index: 1;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   طبقة قتل شارات المنصّات — أمر المالك ٢٠٢٦/٠٨/٢٠
+   («إزالة العلامة المائية Edit with Lovable نهائيًا … وأي علامة مستقبلًا»)
+
+   الشارة تُحقن من طبقة الاستضافة لا من كودنا، وقد تُرسم قبل أن يعمل درع
+   JavaScript (badge-shield.ts). هذه المحدِّدات تقتلها من أول رسم:
+   هويات صريحة لا يحملها أي عنصر شرعي في المنتج — فلا إصابة خاطئة ممكنة.
+   الدرع البرمجي فوقها يلتقط ما تبدّل اسمه أو حُقن بلا هوية.
+   ═══════════════════════════════════════════════════════════════════════ */
+#lovable-badge,
+[id^="lovable-badge"],
+[data-lovable-badge],
+#gpt-engineer-badge,
+.gpt-engineer-badge,
+a[href*="lovable.dev"][class*="badge"],
+a[href*="lovable.app"][class*="badge"],
+iframe[src*="lovable.dev"],
+iframe[src*="cdn.gpteng.co"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

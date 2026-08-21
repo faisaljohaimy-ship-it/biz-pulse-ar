@@ -382,9 +382,21 @@ function RootComponent() {
         /* ignore */
       }
     });
+    // درع العلامات الخارجية (أمر المالك ٢٠٢٦/٠٨/٢٠): أي شارة منصّة بناء
+    // تُحقن من طبقة الاستضافة («Edit with …») تُزال لحظة ظهورها — دائمًا.
+    let badgeShieldCleanup: (() => void) | undefined;
+    void import("@/lib/brand/badge-shield").then((m) => {
+      if (cancelled) return;
+      try {
+        badgeShieldCleanup = m.installExternalBadgeShield();
+      } catch {
+        /* الدرع لا يكسر التطبيق أبدًا */
+      }
+    });
     return () => {
       cancelled = true;
       cleanup?.();
+      badgeShieldCleanup?.();
     };
   }, []);
 
