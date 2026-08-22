@@ -14,16 +14,16 @@ import { BlueprintPage } from "./-blueprint-page";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "سَدِيد — إدارة الأمن الصناعي" },
+      { title: "SADEED AI — سَدِيد" },
       {
         name: "description",
         content:
-          "مركز قيادة تنفيذي موحّد للأمن الصناعي يعرض مؤشرات المناطق الأربع ويربطها بالتقارير والمخاطر ومنصة عمليات الوكلاء والمساعد التنفيذي سَدِيد.",
+          "SADEED AI — مركز قيادة تنفيذي موحّد للأمن الصناعي يعرض مؤشرات المناطق الأربع ويربطها بالتقارير والمخاطر ومنصة عمليات الوكلاء والمساعد التنفيذي سَدِيد.",
       },
-      { property: "og:title", content: "سَدِيد — إدارة الأمن الصناعي" },
+      { property: "og:title", content: "SADEED AI" },
       {
         property: "og:description",
-        content: "رؤية تنفيذية موحّدة للأداء والمشاريع والموارد والمخاطر عبر المناطق الأربع.",
+        content: "منظومة القرار والإنجاز الذكي للأمن الصناعي والتحول الرقمي.",
       },
       { property: "og:type", content: "website" },
     ],

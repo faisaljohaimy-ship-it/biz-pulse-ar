@@ -17,8 +17,9 @@
 // تقرأ `/sadeed-portrait.webp` — الصورة نفسها بالمقاس نفسه (1024×1536) في
 // ١٤٤ كيلوبايت. و`activate` أدناه يحذف كل مفتاح سوى هذا، فبغير رفع المفتاح
 // تبقى النسخة الثقيلة مخزَّنة عند كل تثبيت قائم إلى الأبد.
-const CACHE_NAME = "sadeed-static-v11-network-first-code";
-const PRECACHE = ["/sadeed-icon.png", "/sadeed-portrait.webp", "/manifest.webmanifest"];
+// v12: أيقونة جديدة بحرف S وخلفية أزرق سماوي بحري.
+const CACHE_NAME = "sadeed-static-v12-network-first-code";
+const PRECACHE = ["/sadeed-icon.png", "/favicon.png", "/sadeed-portrait.webp", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)));
