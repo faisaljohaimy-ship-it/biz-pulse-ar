@@ -13,6 +13,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { COMPANY_NAME, DOMAIN_URL, PRODUCT_NAME, SITE_NAME, SITE_TAGLINE } from "@/lib/domain";
+import sadeedOgAsset from "@/assets/sadeed-og.png.asset.json";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
@@ -139,67 +140,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "application-name", content: PRODUCT_NAME },
       { name: "google-site-verification", content: "ZMjRDSJhOrvRVKAbg8VWNjP8CICjLONLC3Jk6nKpsUQ" },
       { title: SITE_NAME },
-      // كانت هذه الثلاثة `"N"` — بقيّة تسمية مسحوبة قُصّت ولم تُستبدل،
-      // فخرجت للباحث ولمشاركات الروابط وصفًا من حرف واحد. المصدر الآن
-      // `SITE_TAGLINE` من `@/lib/domain`: اسم واحد لا يُعاد كتابته يدويًا.
+      // المعاينة الاجتماعية تظهر SADEED AI بدلاً من النسخة القديمة NEXIOS،
+      // مع خلفية رقمية عصرية باللون الأزرق السماوي البحري.
       {
         name: "description",
-        content: SITE_TAGLINE,
+        content: "SADEED AI — منظومة القرار والإنجاز الذكي للأمن الصناعي والتحول الرقمي.",
       },
-      { property: "og:title", content: SITE_NAME },
+      { property: "og:title", content: "SADEED AI" },
       {
         property: "og:description",
-        content: SITE_TAGLINE,
+        content: "منظومة القرار والإنجاز الذكي للأمن الصناعي والتحول الرقمي.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
-      // الملف كان `/sadeed-portrait.png` — ١٫٩٢ ميغابايت لصورة فوتوغرافية،
-      // وهو أثقل أصل في `public/` بفارق. وPNG ترميز خاطئ لصورة متدرّجة:
-      // النسخة WebP الموجودة أصلًا (`/sadeed-portrait.webp`) هي **الصورة
-      // نفسها بالمقاس نفسه** في ١٤٤ كيلوبايت — ٩٣٪ أخفّ. وإعادة ضغط PNG بلا
-      // فقد لا تُجدي: أصغر ناتج بلا فقد ٢٫٧٥ ميغابايت، أي **أكبر** من الأصل.
-      //
-      // والمقاسان المعلنان كانا خاطئين: 1128×1920 بينما الملف 1024×1536 —
-      // أي أن كل قارئ بطاقة اجتماعية كان يحجز إطارًا بنسبة غير نسبة الصورة.
-      { property: "og:image", content: `${DOMAIN_URL}/sadeed-portrait.webp` },
-      { property: "og:image:width", content: "1024" },
-      { property: "og:image:height", content: "1536" },
-      // الصورة صورة المساعد. النصّ البديل يذكر الاسم **مرّة واحدة**: بعد
-      // توحيد اسم المساعد باسم المنتج (قرار المالك ٢٠٢٦/٠٨/٠٩) صار تكراره
-      // على طرفَي الفاصل «سَدِيد · سَدِيد» — لغوٌ يُنطق مرّتين في قارئ
-      // الشاشة. فالاسم للمنتج، والمساعد يوصف بدوره.
-      { property: "og:image:alt", content: `${PRODUCT_NAME} — المساعد التنفيذي` },
+      { property: "og:image", content: `${DOMAIN_URL}${sadeedOgAsset.url}` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: `${PRODUCT_NAME} — SADEED AI` },
       { property: "og:site_name", content: COMPANY_NAME },
       { name: "twitter:card", content: "summary_large_image" },
-      {
-        name: "twitter:title",
-        content: SITE_NAME,
-      },
+      { name: "twitter:title", content: "SADEED AI" },
       {
         name: "twitter:description",
-        content: SITE_TAGLINE,
+        content: "منظومة القرار والإنجاز الذكي للأمن الصناعي والتحول الرقمي.",
       },
-      { name: "twitter:image", content: `${DOMAIN_URL}/sadeed-portrait.webp` },
-      { name: "twitter:image:alt", content: `${PRODUCT_NAME} — المساعد التنفيذي` },
-      // تكرار متعمَّد من نسخة Lovable القديمة: الإدخال الأخير هو ما يفوز
-      // في وسم واحد، فكان عنوان التبويب يعود لتسمية سابقة بعد كل رسم.
-      // الاثنان الآن `SITE_NAME` نفسه — التكرار صار بلا أثر بدل أن يكون
-      // ناسخًا صامتًا.
-      { title: SITE_NAME },
-      {
-        property: "og:title",
-        content: SITE_NAME,
-      },
-      {
-        property: "og:image",
-        content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/d113c6a3-3bac-46e4-bf53-293d05655ab1",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/d113c6a3-3bac-46e4-bf53-293d05655ab1",
-      },
+      { name: "twitter:image", content: `${DOMAIN_URL}${sadeedOgAsset.url}` },
+      { name: "twitter:image:alt", content: `${PRODUCT_NAME} — SADEED AI` },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
