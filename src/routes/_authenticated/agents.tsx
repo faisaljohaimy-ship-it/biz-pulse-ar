@@ -468,7 +468,7 @@ function AgentsOps() {
         title={locale === "ar" ? "منصة عمليات الوكلاء" : "Agent Operations Platform"}
         subtitle={
           locale === "ar"
-            ? "تشغيل، مراقبة، تدقيق، وتحكم — بيانات حية من قاعدة البيانات، ومحاكاة مرجعية موسومة عند غيابها."
+            ? "تشغيل، مراقبة، تدقيق، وتحكم — بيانات حية من قاعدة البيانات."
             : "Lifecycle, monitoring, audit & control — live data, with a labelled reference simulation when absent."
         }
         badge="Runtime"

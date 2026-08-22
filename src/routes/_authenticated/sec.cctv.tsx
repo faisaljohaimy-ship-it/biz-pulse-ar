@@ -67,7 +67,6 @@ function CCTV() {
   // نشطة»: عدد الكاميرات المميّزة في صفوف التنبيهات. لا صفوف = لا قياس ⇐
   // «لم يُقَس»، والصفر لا يُخترع (المادة ٢٧).
   const activeCameras = rows.length ? new Set(rows.map((r) => r.camera_code)).size : null;
-  const isSim = rows.some((r) => r.id.startsWith("sim-"));
 
   // ٢٠٢٦/٠٨/٢٠ — حالتا التحميل والخطأ محفوظتان بنمط صفحات sec المرجعي.
   if (overviewQ.isLoading) return <SecLoading rows={6} />;
@@ -81,7 +80,6 @@ function CCTV() {
       <SecPageHeader
         title="لوحة مراقبة CCTV"
         subtitle={`عدد الكاميرات النشطة: ${activeCameras ?? "لم يُقَس"}`}
-        badge={isSim ? "محاكاة مرجعية" : undefined}
       />
 
       {/* ٢٠٢٦/٠٨/٢٠ — قسم «التنبيهات»: بطاقة لكل كاميرا أرسلت تنبيهًا من

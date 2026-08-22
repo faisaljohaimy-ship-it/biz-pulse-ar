@@ -178,7 +178,6 @@ function Patrols() {
   const fetched = overviewQ.data?.patrols ?? [];
   // «بيانات لا تفرغ»: الجلب اكتمل والقائمة فارغة ⇐ تنهض المراجع المدمجة.
   const rows = overviewQ.data && fetched.length === 0 ? referencePatrols : fetched;
-  const isSim = rows.some((r) => r.id.startsWith("sim-"));
   const activeCount = rows.filter((r) => r.status === "active").length;
 
   if (overviewQ.isLoading) return <SecLoading rows={6} />;
@@ -190,7 +189,6 @@ function Patrols() {
       <SecPageHeader
         title="الدوريات الأمنية"
         subtitle={`${rows.length} دورية مسجّلة · ${activeCount} نشطة الآن`}
-        badge={isSim ? "محاكاة مرجعية" : undefined}
       >
         <SecLiveBadge
           dataUpdatedAt={overviewQ.dataUpdatedAt}

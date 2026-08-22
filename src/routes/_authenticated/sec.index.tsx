@@ -32,7 +32,7 @@ function OpsRoom() {
       {/* حُذفت شارة LIVE وزر «تحديث» من ترويسة الصفحة بقرار المالك ٢٠٢٦/٠٨/٢٠ — التحديث الدوري كل ٣٠ ثانية باقٍ داخليًا عبر refetchInterval */}
       <SecPageHeader
         title={`${screenNameAr("/sec")} — ${region.labelAr}`}
-        subtitle="بيانات تشغيلية مقيّدة بالمؤسسة؛ وعند غياب الصفوف الحية تُعرض محاكاة مرجعية"
+        subtitle="بيانات تشغيلية مقيّدة بالمؤسسة"
       />
 
       {isLoading || !data ? (

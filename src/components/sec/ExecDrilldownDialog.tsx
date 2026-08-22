@@ -155,14 +155,10 @@ export function ExecDrilldownDialog({
 
       <DialogContent dir="rtl" className="max-w-xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {data?.title_ar ?? label}
-            {data?.is_simulation && (
-              <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[12px] font-medium text-amber-600 dark:text-amber-400">
-                محاكاة مرجعية
-              </span>
-            )}
-          </DialogTitle>
+          {/* شارة «محاكاة مرجعية» رُفعت بموجب REQ-021 (٢٠٢٦/٠٨/٢١) —
+              «حذف جملة بيانات محاكاة المرجعية من جميع صفحات النظام».
+              حقل is_simulation باقٍ في العقد لمستهلكي التصدير المحروسين. */}
+          <DialogTitle>{data?.title_ar ?? label}</DialogTitle>
           <DialogDescription>
             {data?.note_ar ?? "الصفوف الحقيقية التي عُدّ منها رقم البطاقة"}
           </DialogDescription>
