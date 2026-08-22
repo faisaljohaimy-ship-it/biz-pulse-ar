@@ -1,0 +1,1288 @@
+{
+  "summary": {
+    "total": 161,
+    "pass": 144,
+    "fail": 0,
+    "error": 0,
+    "skip": 17,
+    "sim_phrase_pages": []
+  },
+  "results": [
+    {
+      "route": "/",
+      "kind": "live",
+      "final_path": "/",
+      "text_len": 1105,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/.lovable/oauth/consent",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/.mcp/invoke-tool/$tool",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/.mcp/list-tools",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/.well-known/oauth-protected-resource",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/admin",
+      "kind": "live",
+      "final_path": "/admin",
+      "text_len": 65,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/agents",
+      "kind": "live",
+      "final_path": "/agents",
+      "text_len": 65,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/agents-flow",
+      "kind": "hidden",
+      "final_path": "/agents",
+      "text_len": 2187,
+      "sim_phrase": false,
+      "expected": "/agents",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/agents-reference",
+      "kind": "live",
+      "final_path": "/agents",
+      "text_len": 654,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/ai-ops",
+      "kind": "live",
+      "final_path": "/ai-ops",
+      "text_len": 1153,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/analyst",
+      "kind": "live",
+      "final_path": "/analyst",
+      "text_len": 603,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/analytics",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 65,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/assistant/",
+      "kind": "live",
+      "final_path": "/assistant",
+      "text_len": 1214,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/assistant/$threadId",
+      "kind": "param",
+      "verdict": "SKIP",
+      "note": "مسار مُعلمَن بلا عينة صالحة"
+    },
+    {
+      "route": "/aup",
+      "kind": "live",
+      "final_path": "/aup",
+      "text_len": 1119,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/auth",
+      "kind": "live",
+      "final_path": "/auth",
+      "text_len": 838,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/bi",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 3479,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/blueprint",
+      "kind": "live",
+      "final_path": "/blueprint",
+      "text_len": 3480,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/boardroom",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 3479,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/book",
+      "kind": "live",
+      "final_path": "/book",
+      "text_len": 246,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/briefing",
+      "kind": "live",
+      "final_path": "/briefing",
+      "text_len": 975,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/chief-of-staff",
+      "kind": "live",
+      "final_path": "/chief-of-staff",
+      "text_len": 1137,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/cinematic-demo",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 1105,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/cockpit",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 3479,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/connect",
+      "kind": "live",
+      "final_path": "/connect",
+      "text_len": 1919,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/contact",
+      "kind": "live",
+      "final_path": "/contact",
+      "text_len": 230,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/cookie-policy",
+      "kind": "live",
+      "final_path": "/cookie-policy",
+      "text_len": 1061,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/crisis",
+      "kind": "live",
+      "final_path": "/crisis",
+      "text_len": 621,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/customers",
+      "kind": "live",
+      "final_path": "/customers",
+      "text_len": 4715,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/dashboard",
+      "kind": "live",
+      "final_path": "/dashboard",
+      "text_len": 2087,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/data-room",
+      "kind": "live",
+      "final_path": "/data-room",
+      "text_len": 888,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/decisions",
+      "kind": "live",
+      "final_path": "/decisions",
+      "text_len": 1651,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/demo",
+      "kind": "live",
+      "final_path": "/demo",
+      "text_len": 1204,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/demo-videos",
+      "kind": "live",
+      "final_path": "/demo-videos",
+      "text_len": 652,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/departments",
+      "kind": "live",
+      "final_path": "/departments",
+      "text_len": 1263,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/diagnostics",
+      "kind": "live",
+      "final_path": "/diagnostics",
+      "text_len": 440,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/digital-twin",
+      "kind": "live",
+      "final_path": "/digital-twin",
+      "text_len": 755,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/dpa",
+      "kind": "live",
+      "final_path": "/dpa",
+      "text_len": 2756,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/elevenlabs-status",
+      "kind": "live",
+      "final_path": "/elevenlabs-status",
+      "text_len": 463,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/email/unsubscribe",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/events",
+      "kind": "live",
+      "final_path": "/events",
+      "text_len": 456,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/exec",
+      "kind": "live",
+      "final_path": "/exec",
+      "text_len": 65,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/execution",
+      "kind": "live",
+      "final_path": "/execution",
+      "text_len": 430,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/executive",
+      "kind": "live",
+      "final_path": "/executive",
+      "text_len": 1374,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/executive-booking",
+      "kind": "live",
+      "final_path": "/executive-booking",
+      "text_len": 686,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/executive-briefing",
+      "kind": "live",
+      "final_path": "/executive-briefing",
+      "text_len": 953,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/executive-map",
+      "kind": "live",
+      "final_path": "/executive-map",
+      "text_len": 792,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/executive-reports",
+      "kind": "hidden",
+      "final_path": "/sec/reports",
+      "text_len": 897,
+      "sim_phrase": false,
+      "expected": "/sec/reports",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/executive-showcase",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 3480,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/fabric",
+      "kind": "live",
+      "final_path": "/fabric",
+      "text_len": 2287,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/files",
+      "kind": "live",
+      "final_path": "/files",
+      "text_len": 547,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/films",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 3480,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/forgotten",
+      "kind": "live",
+      "final_path": "/forgotten",
+      "text_len": 936,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/governance",
+      "kind": "live",
+      "final_path": "/sec/governance",
+      "text_len": 742,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/government-brief",
+      "kind": "live",
+      "final_path": "/government-brief",
+      "text_len": 1643,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/guide",
+      "kind": "live",
+      "final_path": "/guide",
+      "text_len": 1311,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/health",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/integrations",
+      "kind": "live",
+      "final_path": "/integrations",
+      "text_len": 65,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/investor",
+      "kind": "live",
+      "final_path": "/investor",
+      "text_len": 1576,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/knowledge",
+      "kind": "live",
+      "final_path": "/knowledge",
+      "text_len": 361,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/knowledge-hub",
+      "kind": "live",
+      "final_path": "/knowledge-hub",
+      "text_len": 553,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/knowledge-upload",
+      "kind": "live",
+      "final_path": "/knowledge-upload",
+      "text_len": 632,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/leads",
+      "kind": "live",
+      "final_path": "/leads",
+      "text_len": 322,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/learn",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 3479,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/learn/",
+      "kind": "live",
+      "final_path": "/",
+      "text_len": 3479,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/learn/$slug",
+      "kind": "param",
+      "verdict": "SKIP",
+      "note": "مسار مُعلمَن بلا عينة صالحة"
+    },
+    {
+      "route": "/live-dashboard",
+      "kind": "live",
+      "final_path": "/live-dashboard",
+      "text_len": 1890,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/login",
+      "kind": "live",
+      "final_path": "/",
+      "text_len": 3480,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/lovable/email/auth/preview",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/lovable/email/auth/webhook",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/lovable/email/queue/process",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/lovable/email/suppression",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/lovable/email/transactional/preview",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/lovable/email/transactional/send",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/marketplace",
+      "kind": "live",
+      "final_path": "/marketplace",
+      "text_len": 841,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/mcp",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/memory",
+      "kind": "live",
+      "final_path": "/memory",
+      "text_len": 813,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/mission-control",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 65,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/nx-agents",
+      "kind": "live",
+      "final_path": "/nx-agents",
+      "text_len": 2121,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/nx-atlas",
+      "kind": "live",
+      "final_path": "/nx-atlas",
+      "text_len": 1205,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/nx-cockpit",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 3480,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/nx-flow",
+      "kind": "live",
+      "final_path": "/nx-flow",
+      "text_len": 1285,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/nx-ops",
+      "kind": "live",
+      "final_path": "/nx-ops",
+      "text_len": 2138,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/nx-sovereign",
+      "kind": "live",
+      "final_path": "/nx-sovereign",
+      "text_len": 1200,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/nx-twin",
+      "kind": "live",
+      "final_path": "/nx-twin",
+      "text_len": 606,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/observability",
+      "kind": "live",
+      "final_path": "/observability",
+      "text_len": 672,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/operations",
+      "kind": "live",
+      "final_path": "/operations",
+      "text_len": 1097,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/orchestration",
+      "kind": "live",
+      "final_path": "/orchestration",
+      "text_len": 1135,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/outcomes",
+      "kind": "live",
+      "final_path": "/outcomes",
+      "text_len": 491,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/permits",
+      "kind": "live",
+      "final_path": "/",
+      "text_len": 3480,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/portfolio",
+      "kind": "live",
+      "final_path": "/portfolio",
+      "text_len": 1444,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/pricing",
+      "kind": "live",
+      "final_path": "/pricing",
+      "text_len": 830,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/privacy",
+      "kind": "live",
+      "final_path": "/privacy",
+      "text_len": 1434,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/prompts",
+      "kind": "live",
+      "final_path": "/prompts",
+      "text_len": 348,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/ptw",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 3479,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/rag-monitor",
+      "kind": "live",
+      "final_path": "/rag-monitor",
+      "text_len": 636,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/rag-search",
+      "kind": "live",
+      "final_path": "/rag-search",
+      "text_len": 313,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/readiness",
+      "kind": "live",
+      "final_path": "/readiness",
+      "text_len": 374,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/reports-agent",
+      "kind": "live",
+      "final_path": "/reports-agent",
+      "text_len": 780,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/request-demo",
+      "kind": "live",
+      "final_path": "/request-demo",
+      "text_len": 266,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/responsible-ai",
+      "kind": "live",
+      "final_path": "/responsible-ai",
+      "text_len": 1462,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/risk",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 3479,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/roi",
+      "kind": "live",
+      "final_path": "/roi",
+      "text_len": 998,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sadeed",
+      "kind": "live",
+      "final_path": "/sadeed",
+      "text_len": 453,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sadeed-analytics",
+      "kind": "live",
+      "final_path": "/sadeed-analytics",
+      "text_len": 1560,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sadeed-documents",
+      "kind": "live",
+      "final_path": "/sadeed-documents",
+      "text_len": 546,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sadeed/demo",
+      "kind": "live",
+      "final_path": "/sadeed/demo",
+      "text_len": 453,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sadeed/directive",
+      "kind": "live",
+      "final_path": "/sadeed/directive",
+      "text_len": 453,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec",
+      "kind": "live",
+      "final_path": "/sec",
+      "text_len": 1367,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/",
+      "kind": "live",
+      "final_path": "/sec",
+      "text_len": 1367,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/access",
+      "kind": "live",
+      "final_path": "/sec/access",
+      "text_len": 1325,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/ai",
+      "kind": "live",
+      "final_path": "/sec/ai",
+      "text_len": 894,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/assets",
+      "kind": "hidden",
+      "final_path": "/sec",
+      "text_len": 1367,
+      "sim_phrase": false,
+      "expected": "/sec",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/cctv",
+      "kind": "live",
+      "final_path": "/sec/cctv",
+      "text_len": 881,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/circles",
+      "kind": "hidden",
+      "final_path": "/sec",
+      "text_len": 1367,
+      "sim_phrase": false,
+      "expected": "/sec",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/contractors",
+      "kind": "live",
+      "final_path": "/sec/contractors",
+      "text_len": 1369,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/emergency",
+      "kind": "live",
+      "final_path": "/sec/emergency",
+      "text_len": 774,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/exec",
+      "kind": "live",
+      "final_path": "/sec/exec",
+      "text_len": 986,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/facilities",
+      "kind": "live",
+      "final_path": "/sec/facilities",
+      "text_len": 840,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/governance",
+      "kind": "live",
+      "final_path": "/sec/governance",
+      "text_len": 742,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/incidents",
+      "kind": "live",
+      "final_path": "/sec/incidents",
+      "text_len": 590,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/integrations",
+      "kind": "hidden",
+      "final_path": "/sec",
+      "text_len": 1367,
+      "sim_phrase": false,
+      "expected": "/sec",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/knowledge",
+      "kind": "hidden",
+      "final_path": "/sec",
+      "text_len": 1367,
+      "sim_phrase": false,
+      "expected": "/sec",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/kpi",
+      "kind": "hidden",
+      "final_path": "/sec",
+      "text_len": 1367,
+      "sim_phrase": false,
+      "expected": "/sec",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/maintenance",
+      "kind": "live",
+      "final_path": "/sec/maintenance",
+      "text_len": 1860,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/patrols",
+      "kind": "live",
+      "final_path": "/sec/patrols",
+      "text_len": 1335,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/permits",
+      "kind": "live",
+      "final_path": "/sec/permits",
+      "text_len": 1504,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/projects",
+      "kind": "live",
+      "final_path": "/sec/projects",
+      "text_len": 2079,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/reports",
+      "kind": "live",
+      "final_path": "/sec/reports",
+      "text_len": 1739,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/risks",
+      "kind": "live",
+      "final_path": "/sec/risks",
+      "text_len": 1139,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/safety",
+      "kind": "hidden",
+      "final_path": "/sec",
+      "text_len": 1367,
+      "sim_phrase": false,
+      "expected": "/sec",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/sections",
+      "kind": "hidden",
+      "final_path": "/sec",
+      "text_len": 1367,
+      "sim_phrase": false,
+      "expected": "/sec",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/shifts",
+      "kind": "live",
+      "final_path": "/sec/shifts",
+      "text_len": 862,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/timeline",
+      "kind": "live",
+      "final_path": "/sec/timeline",
+      "text_len": 2119,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/twin",
+      "kind": "live",
+      "final_path": "/sec/twin",
+      "text_len": 796,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/vehicles",
+      "kind": "live",
+      "final_path": "/sec/vehicles",
+      "text_len": 865,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sec/visitors",
+      "kind": "live",
+      "final_path": "/sec/visitors",
+      "text_len": 1070,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/security",
+      "kind": "live",
+      "final_path": "/security",
+      "text_len": 2956,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/security-center",
+      "kind": "live",
+      "final_path": "/security-center",
+      "text_len": 540,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/self-evolution",
+      "kind": "live",
+      "final_path": "/self-evolution",
+      "text_len": 470,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/settings",
+      "kind": "live",
+      "final_path": "/settings",
+      "text_len": 499,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/settings/microsoft",
+      "kind": "live",
+      "final_path": "/settings/microsoft",
+      "text_len": 499,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sitemap.xml",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/situation-room",
+      "kind": "live",
+      "final_path": "/situation-room",
+      "text_len": 605,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/sla",
+      "kind": "live",
+      "final_path": "/sla",
+      "text_len": 1787,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/subprocessors",
+      "kind": "live",
+      "final_path": "/subprocessors",
+      "text_len": 2061,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/tasks",
+      "kind": "live",
+      "final_path": "/tasks",
+      "text_len": 427,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/team",
+      "kind": "live",
+      "final_path": "/team",
+      "text_len": 421,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/terms",
+      "kind": "live",
+      "final_path": "/terms",
+      "text_len": 945,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/theater",
+      "kind": "hidden",
+      "final_path": "/",
+      "text_len": 1104,
+      "sim_phrase": false,
+      "expected": "/",
+      "verdict": "PASS"
+    },
+    {
+      "route": "/tool-health",
+      "kind": "live",
+      "final_path": "/tool-health",
+      "text_len": 393,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/tools",
+      "kind": "live",
+      "final_path": "/tools",
+      "text_len": 414,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/transformation",
+      "kind": "live",
+      "final_path": "/transformation",
+      "text_len": 518,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/trust",
+      "kind": "live",
+      "final_path": "/trust",
+      "text_len": 4618,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/tts",
+      "kind": "skip",
+      "verdict": "SKIP",
+      "note": "نقطة خادم/ملف — ليست شاشة"
+    },
+    {
+      "route": "/unsubscribe",
+      "kind": "live",
+      "final_path": "/unsubscribe",
+      "text_len": 139,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/urgent-ops",
+      "kind": "live",
+      "final_path": "/urgent-ops",
+      "text_len": 721,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/verify/permit/$permitId",
+      "kind": "live",
+      "final_path": "/verify/permit/PTW-2026-0001",
+      "text_len": 155,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/voice",
+      "kind": "live",
+      "final_path": "/voice",
+      "text_len": 453,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/voice-setup",
+      "kind": "live",
+      "final_path": "/voice-setup",
+      "text_len": 463,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    },
+    {
+      "route": "/workflows",
+      "kind": "live",
+      "final_path": "/workflows",
+      "text_len": 481,
+      "sim_phrase": false,
+      "verdict": "PASS"
+    }
+  ]
+}

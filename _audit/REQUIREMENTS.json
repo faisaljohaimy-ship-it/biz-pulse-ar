@@ -255,10 +255,10 @@
       "raw_ar": "حذف جملة بيانات محاكاة المرجعية من جميع صفحات النظام",
       "screen": "كل صفحات النظام",
       "route": "*",
-      "status": "OPEN",
-      "commit": "",
-      "verification_cmd": "شارة UI أزيلت سابقًا ثم أعادت دفعاتنا شارات «محاكاة مرجعية» صغيرة على الدوريات/CCTV/حوار اللوحة — يلزم مسح بقايا الشارات من الصفحات. تذييلات التصدير النصية تبقى (حارس المادة ٢٧: تقرير مصدَّر بلا إفصاح يدّعي أرقامًا حية)",
-      "evidence": "",
+      "status": "DONE",
+      "commit": "f90abd24",
+      "verification_cmd": "python3 _audit/crawl.py ← صفر صفحات تُظهر «محاكاة مرجعية» في النصّ المرئي؛ python3 _audit/checks.py ← C-SIM-PAGES-CLEAN + C-SIM-ALLOWLIST",
+      "evidence": "مُسحت الشارات من خمسة أسطح حية (sec.cctv · sec.patrols · sec.index · agents · ExecDrilldownDialog) في f90abd24؛ زاحف الموجة ٠ أثبت غياب العبارة عن كل الصفحات، وحارس المادة ٢٧ أخضر — تذييلات التصدير باقية عمدًا",
       "highlight_flag": false
     },
     {

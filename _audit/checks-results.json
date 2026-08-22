@@ -1,0 +1,67 @@
+{
+  "C-HIDDEN-SET": {
+    "desc": "قائمة الحجب تضم كل الشاشات المحذوفة بأمر المالك",
+    "verdict": "PASS",
+    "evidence": "22 مسارًا كلها مسجّلة"
+  },
+  "C-SIDEBAR-5": {
+    "desc": "الشريط الجانبي: ٥ أزرار معتمدة، لا دخول/خروج ولا مدخلات محذوفة",
+    "verdict": "PASS",
+    "evidence": "موجود 4/4 + غرفة العمليات=True | محظور باقٍ: []"
+  },
+  "C-SEC-STRIP": {
+    "desc": "شريط sec: بلا مدخلات محذوفة + الحوكمة فيه + «صلاحيات دخول اليوم»",
+    "verdict": "PASS",
+    "evidence": "محذوف باقٍ: [] | حوكمة=True | صلاحيات=True"
+  },
+  "C-SIM-ALLOWLIST": {
+    "desc": "العبارة محصورة في التصدير/الصدق/المحجوب/التعليقات — صفر صفحات عرض",
+    "verdict": "PASS",
+    "evidence": "36 ملفًا كلها ضمن النطاق المبرَّر"
+  },
+  "C-SIM-PAGES-CLEAN": {
+    "desc": "REQ-021: الصفحات الخمس المسحوبة منها الشارة نظيفة",
+    "verdict": "PASS",
+    "evidence": "cctv/patrols/index/agents/drill-dialog نظيفة"
+  },
+  "C-LIVE-FT": {
+    "desc": "حالة المواقع والخط الزمني بلا LIVE",
+    "verdict": "PASS",
+    "evidence": "صفر ورود"
+  },
+  "C-EXEC-DRILL": {
+    "desc": "اللوحة التنفيذية: حوار التفصيل مركّب وخادمه موجود + مؤشر CCTV",
+    "verdict": "PASS",
+    "evidence": "ExecDrilldownDialog+getExecDrilldown+cctv_alerts_new حاضرة"
+  },
+  "C-BACKHOME": {
+    "desc": "زوج الرجوع/الهوم: متتبّع المسار + خانة محجوزة (الهوم لا يقفز)",
+    "verdict": "PASS",
+    "evidence": "PREV_PATH + الخانة المحجوزة حاضران"
+  },
+  "C-BADGE-MOUNT": {
+    "desc": "درع العلامات الخارجية: استيراد الجذر + طبقة CSS القاتلة",
+    "verdict": "PASS",
+    "evidence": "الاستيراد والطبقة حاضران"
+  },
+  "C-HOME-SAUDI": {
+    "desc": "تعريف سَدِيد بالرئيسية: «جميع المناطق السعودية» بدل سرد المناطق",
+    "verdict": "PASS",
+    "evidence": "العبارة حاضرة وسرد المناطق غائب"
+  },
+  "C-GUARDS": {
+    "desc": "حرّاس العقود الخمسة (عدّادات المادة ٢٧ + النغمات + الدرع + الرجوع + الهوية)",
+    "verdict": "PASS",
+    "evidence": "\n RUN  v4.1.9 /home/user/biz-pulse-ar\n\n\n Test Files  5 passed (5)\n      Tests  56 passed (56)\n   Start at  15:28:52\n   Duration  4.00s (transform 413ms, setup 1.83s, import 686ms, tests 1.60s, environment 5.90s)\n\n"
+  },
+  "C-COMMITS": {
+    "desc": "كل الكوميتات المذكورة في السجل موجودة في تاريخ git",
+    "verdict": "PASS",
+    "evidence": "8 كوميتًا كلها موجودة"
+  },
+  "C-PRESENTATION": {
+    "desc": "زر وضع العرض التنفيذي داخل لوحة سَدِيد (بديل مركز القيادة)",
+    "verdict": "PASS",
+    "evidence": "الزر/المكوّن حاضر في SadeedCopilot"
+  }
+}
