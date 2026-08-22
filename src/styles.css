@@ -8,6 +8,78 @@
    تُستورد بعد الرموز لأنها تقرأ مُددها ومنحنياتها منها. */
 @import "./styles/icon-motion.css";
 
+/* ═══ خط أميري (Amiri) — النطاق (أ) التحريري، قرار المالك ═══
+   أميري للعناوين والأغلفة والتقارير والاقتباسات فقط؛ السانس
+   (IBM Plex Sans Arabic / Tajawal / Cairo) يبقى للجسم والأرقام والجداول.
+   الاستهلاك حصرًا عبر الرمز `--font-amiri` (فئة `font-amiri` المتولدة من
+   طبقة الرموز) — لا يُنثر اسم الخط في أي مكوّن.
+
+   الملفات subsets ذاتية الاستضافة تحت `/fonts/amiri/` (رخصة SIL OFL 1.1
+   بجوارها في `OFL-Amiri.txt` — لا Google Fonts): وجهان مودَعان
+   (Regular 400 · Bold 700) × نطاقان (عربي · لاتيني) مفصولان بـ
+   `unicode-range` فلا يُحمَّل العربي لصفحة لاتينية ولا العكس. ملف النطاق
+   العربي أُنتج بـ `--layout-features='*'` فبقي GSUB كاملًا (حروف الوصل
+   init/medi/fina/rlig/ccmp)، ويضم الأرقام والترقيم المشترك كاحتياط، لكن
+   `unicode-range` يقتصر عمدًا على الكتل العربية كي لا تجرّ مسافةٌ أو رقم
+   لاتيني تنزيل الملف العربي.
+
+   الوجهان المائلان (Italic/BoldItalic) أُسقطا من الإيداع توثيقًا لا سهوًا:
+   لا مستهلك لهما اليوم، والعربية لا مائل لها تقليديًا، وإسقاطهما أنزل
+   الحمولة من ‎545.6KB إلى ‎269.9KB تحت سقف المالك 600KB (subsets المائلَين
+   جاهزة خارج الريبو إن طُلبت لاحقًا).
+
+   المجموعات الأسلوبية ss01–ss08 موجودة في الملف ولا تُفعَّل — لا حاجة
+   مبرّرة الآن؛ بل يحيّدها الصنف المرافق أدناه لأن `body` يضبط
+   `font-feature-settings: "ss01", "cv11"` لخط السانس وهي خاصية موروثة
+   كانت ستُفعّل ss01 في أميري بصمت.
+
+   المقاييس الحرجة: صندوق سطر أميري ‎1.758em‎ (ascent‏ 1124 / descent
+   ‏−634 على 1000upm) — لذا يفرض الصنف المرافق `line-height: 1.8` حدًّا
+   أدنى كي لا يُقصّ الصاعد/النازل في العناوين والبطاقات والأزرار
+   (أدوات `leading-*` تبقى قادرة على التجاوز لأنها في طبقة أعلى). */
+
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/amiri/amiri-regular-arabic.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/amiri/amiri-regular-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0100-024F, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2190-21FF;
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/amiri/amiri-bold-arabic.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/amiri/amiri-bold-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0100-024F, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2190-21FF;
+}
+
+/* الصنف المرافق للفئة المتولدة `font-amiri`: صندوق السطر والتحييد —
+   انظر التعليق أعلاه. في طبقة components فتغلبه أدوات utilities عند الحاجة. */
+@layer components {
+  .font-amiri {
+    line-height: 1.8;
+    font-feature-settings: normal;
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* Off-screen animation freeze (see src/hooks/use-freeze-offscreen.ts). A
@@ -86,6 +158,9 @@ html.safe-mode canvas {
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "Space Grotesk", "DM Sans", system-ui, sans-serif;
   --font-arabic: "Cairo", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  /* أميري تحريري فقط (عناوين/أغلفة/تقارير/اقتباسات) — التفصيل في قسم
+     @font-face أعلى الملف. المصدر الوحيد للاستهلاك: فئة `font-amiri`. */
+  --font-amiri: "Amiri", "IBM Plex Sans Arabic", serif;
 }
 
 /* NEXUS Enterprise Design System 2.0 — Luxury Executive (Deep Midnight Cyan) */
