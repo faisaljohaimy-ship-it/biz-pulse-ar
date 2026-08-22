@@ -91,8 +91,16 @@ export function ReportViewer({ doc, className, idPrefix = "rv" }: ReportViewerPr
             {region.labelEn}
           </span>
         </p>
+        {/* عنوان المستند بخط النطاق التحريري (الفئة المتولدة من الرمز — لا
+            اسم خط هنا). **الفئة على span يلفّ العربي وحده لا على `h1` —
+            قِيس لا افتُرض:** قاعدة `.rv-doc-title { line-height: 1.35 }`
+            خارج الطبقات تغلب الصنف المرافق للفئة على العنوان نفسه، و1.35
+            دون صندوق حبر الخط ‎1.76em‎. على الـspan يقيس الصنف المرافق 1.8
+            فيتّسع سطر العربي لصاعده ونازله، ويبقى امتداد `rv-en` خارج
+            الـspan على سانس المستند بلا صنف إضافي — نفس قرار الرئيسية:
+            العربية نسخية واللاتينية على خطّها. */}
         <h1 className="rv-doc-title" id={titleId}>
-          {doc.titleAr}
+          <span className="font-amiri">{doc.titleAr}</span>
           <span className="rv-en" lang="en" dir="ltr">
             {doc.titleEn}
           </span>
@@ -114,11 +122,18 @@ export function ReportViewer({ doc, className, idPrefix = "rv" }: ReportViewerPr
             const sectionId = `${idPrefix}-s${sectionIndex}`;
             return (
               <section className="rv-section" key={sectionIndex} aria-labelledby={sectionId}>
+                {/* ترويسة القسم نسخية كذلك — الفئة على span العربي وحده
+                    (نفس قياس عنوان المستند: `:where(h1..h6)` خارج الطبقات
+                    تثبّت سطر العنوان 1.3 فتغلب الصنف المرافق). والرقم
+                    الترتيبي وامتداد `rv-en` خارج الـspan فيبقيان على سانس
+                    المستند: الأرقام خارج النطاق التحريري بقرار النطاق (أ).
+                    والـspan عنصر flex سليم: العنوان `display: flex` بمحاذاة
+                    baseline، والنص العاري كان عنصرًا مجهولًا قبله سواء. */}
                 <h2 className="rv-section-title" id={sectionId}>
                   <span className="rv-section-index" aria-hidden="true">
                     {sectionIndex + 1}
                   </span>
-                  {section.titleAr}
+                  <span className="font-amiri">{section.titleAr}</span>
                   <span className="rv-en" lang="en" dir="ltr">
                     {section.titleEn}
                   </span>

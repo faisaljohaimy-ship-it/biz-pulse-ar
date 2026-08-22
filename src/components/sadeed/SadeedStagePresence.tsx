@@ -192,8 +192,21 @@ export function SadeedStagePresence({ className }: SadeedStagePresenceProps) {
         </div>
 
         <div className="flex flex-col items-center gap-1">
-          <h2 className="text-3xl font-black leading-tight text-[color:var(--ink)] sm:text-4xl">
-            {SADEED_DISPLAY_NAME_AR}
+          {/* اسم الشخصية بخط النطاق التحريري — لمسة نسخية على الاسم وحده،
+              والجسم والحالة والأزرار تبقى سانس. المقاسان ‎2.125rem/2.5rem‎
+              هما ‎3xl/4xl‎ السابقان +١١–١٣٪: الخط النسخي أصغر بصريًّا من
+              مكافئه السانس عند نفس الرقم.
+
+              **الفئة على span داخلي لا على العنوان نفسه — قِيس لا افتُرض:**
+              قاعدة `:where(h1..h6) { line-height: 1.3 }` خارج الطبقات تغلب
+              الصنف المرافق للفئة (طبقة المكوّنات) على عنصر العنوان مهما
+              كانت النوعية، و1.3 دون صندوق حبر الخط ‎1.76em‎ — فتُقصّ الفتحة
+              فوق السين والكسرة تحت الدال بصريًّا. على الـspan لا منافس
+              مباشر، فيقيس 1.8 ويرفع صندوق سطر العنوان معه. والوزن: توجيه
+              البولد الشامل يقيس للـspan وزن 700 — وجه Bold المودَع الحقيقي.
+              لا مساس بطبقات `sd-holo-*`. */}
+          <h2 className="text-[2.125rem] text-[color:var(--ink)] sm:text-[2.5rem]">
+            <span className="font-amiri">{SADEED_DISPLAY_NAME_AR}</span>
           </h2>
           <p className="max-w-[46ch] text-sm text-[color:var(--ink-2)]">
             مساعدك التنفيذي للأمن الصناعي — اسأله بصوتك أو بالكتابة.

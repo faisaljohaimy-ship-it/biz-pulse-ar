@@ -190,8 +190,22 @@ function SceneView({ scene, ar }: { scene: Scene; ar: boolean }) {
         <span className={cn("h-1.5 w-1.5 rounded-full", a.dot)} />
         <span className="uppercase">{ar ? scene.kicker_ar : scene.kicker_en}</span>
       </div>
-      <h3 className="text-lg font-bold leading-snug text-white sm:text-2xl">
-        {ar ? scene.title_ar : scene.title_en}
+      {/* عنوان الشريحة: نسخي (الفئة المتولدة من الرمز) على العربية وحدها —
+          قرار النطاق (أ)؛ الإنجليزية تبقى على أدواتها السانس كما كانت.
+          المقاسان ‎1.25rem/1.7rem‎ هما ‎lg/2xl‎ +١١–١٣٪ (الخط النسخي أصغر
+          بصريًّا عند نفس الرقم).
+
+          **الفئة على span داخلي لا على `h3` — قِيس لا افتُرض:** قاعدة
+          `:where(h1..h6) { line-height: 1.3 }` خارج الطبقات تغلب الصنفَ
+          المرافق وأدوات `leading-*` معًا على عنصر العنوان، و1.3 دون صندوق
+          حبر الخط ‎1.76em‎ والعناوين تلتفّ على سطرين فتتراكب الصواعد على
+          النوازل. على الـspan يقيس الصنف المرافق 1.8 ويرفع صناديق الأسطر،
+          ويقيس الوزن 700 (وجه Bold المودَع) من توجيه البولد الشامل.
+          لا حركة جديدة: الغلاف المتحرّك القائم لم يُمسّ. */}
+      <h3
+        className={cn("text-white", ar ? "text-[1.25rem] sm:text-[1.7rem]" : "text-lg sm:text-2xl")}
+      >
+        {ar ? <span className="font-amiri">{scene.title_ar}</span> : scene.title_en}
       </h3>
       <p className="max-w-prose text-sm leading-relaxed text-white/70 sm:text-[15px]">
         {ar ? scene.body_ar : scene.body_en}
