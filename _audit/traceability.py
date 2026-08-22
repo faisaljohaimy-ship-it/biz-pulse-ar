@@ -152,16 +152,17 @@ for it in items:
         f"| {it['id']} | {it['source_paragraph']} | {esc(route) or '—'} "
         f"| {it['status']} | {esc('؛ '.join(ev_parts))} | {result} |")
 
-lines += [
-    "",
-    "## الحكم",
-    "",
-    ("**كل البنود القابلة للتحقق خضراء.** بندان بانتظار قرار المالك "
-     "(REQ-020 الهولوغرام، REQ-022 سهم سجل المخاطر) — لا يُخمَّنان."
-     if not overall_fail else
-     f"**بنود فاشلة تحتاج معالجة: {overall_fail}**"),
-    "",
-]
+pending = [it["id"] for it in items if it["status"] == "NEEDS-OWNER-DECISION"]
+if overall_fail:
+    verdict = f"**بنود فاشلة تحتاج معالجة: {overall_fail}**"
+elif pending:
+    verdict = ("**كل البنود القابلة للتحقق خضراء.** بانتظار قرار المالك: "
+               + "، ".join(pending) + " — لا تُخمَّن.")
+else:
+    verdict = ("**البنود الـ128 كلها منفَّذة وخضراء** — لا معلّق ولا فاشل. "
+               "آخر بندين (REQ-020 · REQ-022) نُفِّذا بأمر المالك "
+               "٢٠٢٦/٠٨/٢٢ «ينجز المتبقي الذي لم ينجز».")
+lines += ["", "## الحكم", "", verdict, ""]
 
 (ROOT / "TRACEABILITY.md").write_text("\n".join(lines))
 print(f"TRACEABILITY.md: {len(items)} صفًّا | فشل: {overall_fail or 'لا شيء'}")

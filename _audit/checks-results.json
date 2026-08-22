@@ -52,12 +52,12 @@
   "C-GUARDS": {
     "desc": "حرّاس العقود الخمسة (عدّادات المادة ٢٧ + النغمات + الدرع + الرجوع + الهوية)",
     "verdict": "PASS",
-    "evidence": "\n RUN  v4.1.9 /home/user/biz-pulse-ar\n\n\n Test Files  5 passed (5)\n      Tests  56 passed (56)\n   Start at  15:28:52\n   Duration  4.00s (transform 413ms, setup 1.83s, import 686ms, tests 1.60s, environment 5.90s)\n\n"
+    "evidence": "\n RUN  v4.1.9 /home/user/biz-pulse-ar\n\n\n Test Files  5 passed (5)\n      Tests  56 passed (56)\n   Start at  18:51:26\n   Duration  2.78s (transform 381ms, setup 1.19s, import 508ms, tests 1.05s, environment 4.05s)\n\n"
   },
   "C-COMMITS": {
     "desc": "كل الكوميتات المذكورة في السجل موجودة في تاريخ git",
     "verdict": "PASS",
-    "evidence": "8 كوميتًا كلها موجودة"
+    "evidence": "9 كوميتًا كلها موجودة"
   },
   "C-PRESENTATION": {
     "desc": "زر وضع العرض التنفيذي داخل لوحة سَدِيد (بديل مركز القيادة)",
