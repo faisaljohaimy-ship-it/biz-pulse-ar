@@ -72,3 +72,6 @@ playwright-report/
 blob-report/
 .audit-tmp/
 .probe*.mjs
+
+# مستند المالك الثقيل (docx + 78 لقطة) لا يدخل المستودع — نواتج التدقيق الصغيرة فقط
+_audit/doc/
