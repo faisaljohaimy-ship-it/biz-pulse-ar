@@ -58,7 +58,7 @@ import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { PRODUCT_BRAND } from "@/lib/domain";
@@ -301,7 +301,7 @@ export function BlueprintPage() {
                 const { tone, label } = regionStatus(region.id);
                 const ToneIcon = tone.icon;
                 return (
-                  <li key={region.id}>
+                  <li key={region.id} className="relative">
                     {/* كل منطقة تفتح على معلوماتها: الوجهة كانت القمرة
                         الموحّدة /nx-cockpit حتى حُجبت بأمر المالك ٢٠٢٦/٠٨/١٢،
                         فصارت مظلّة الأمن الصناعي /sec — والاختيار العام
@@ -361,6 +361,24 @@ export function BlueprintPage() {
                       >
                         {pct === undefined ? notMeasured : `${Math.round(pct)}%`}
                       </span>
+                    </Link>
+                    {/* REQ-022 (فقرة 846): «سهم في الكاردز يوديه لسجل المخاطر
+                        الأمنية». رابط مستقل أخٌ لرابط البطاقة — لا <a> داخل
+                        <a> — مطلَق الموضع داخل <li relative>، فالبطاقة كلها
+                        رابط أصلًا. ظاهر دائمًا بشفافية 60٪ تشتد عند
+                        hover/focus-visible (نمط سهم ExecDrilldownDialog):
+                        الظهور بالتمرير وحده لا وجود له على الجوال. */}
+                    <Link
+                      to="/sec/risks"
+                      aria-label={
+                        ar
+                          ? `سجل المخاطر الأمنية — ${region.labelAr}`
+                          : `Security risk register — ${region.labelEn}`
+                      }
+                      className="absolute bottom-1 end-1 z-[1] inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-[11px] font-bold text-[color:var(--ink-2)] opacity-60 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
+                    >
+                      {ar ? "سجل المخاطر" : "Risk register"}
+                      <ChevronLeft aria-hidden className="h-4 w-4 shrink-0" />
                     </Link>
                   </li>
                 );

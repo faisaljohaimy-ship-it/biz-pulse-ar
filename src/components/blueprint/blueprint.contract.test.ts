@@ -237,6 +237,35 @@ describe("المُخطَّط — الوصول", () => {
     expect(PAGE).toMatch(/nx-home-region[^"]*min-h-20/);
   });
 
+  it("بطاقة المنطقة تحمل مدخلًا دائم الظهور إلى سجل المخاطر الأمنية (REQ-022)", () => {
+    // أمر المالك الحرفي (فقرة 846): «حذف سجل المخاطر ووضع سهم في الكاردز
+    // يوديه لسجل المخاطر الأمنية». الشقّ الثاني يُحرَس هنا بثلاثة قيود يسهل
+    // خرقها بتعديل بريء لا يلتقطه tsc:
+    // ① الرابط داخل حلقة بطاقات المناطق لا في موضع آخر من الصفحة.
+    // ② لا <a> داخل <a>: البطاقة كلها رابط، فرابط السجل أخٌ له يُفتح بعد
+    //    إغلاقه — تعشيشه يُخرج HTML غير صالح يفكّكه المتصفح بصمت.
+    // ③ ظاهر دائمًا (قاعدة الجوال): أساسه شفافية 60٪ تشتد، لا إخفاء كامل
+    //    يكشفه التمرير — ما يظهر بالتمرير وحده لا وجود له على اللمس.
+    const at = PAGE.indexOf('to="/sec/risks"');
+    expect(at, "لا رابط إلى سجل المخاطر الأمنية في بطاقات المناطق").toBeGreaterThan(-1);
+    expect(at, "الرابط خارج حلقة بطاقات المناطق").toBeGreaterThan(PAGE.indexOf("REGIONS.map"));
+
+    const block = PAGE.slice(at, at + 900);
+    expect(block).toMatch(/aria-label=\{\s*ar\s*\?\s*`سجل المخاطر الأمنية — /);
+    expect(block).toContain("ChevronLeft");
+    expect(block).toContain("سجل المخاطر");
+    expect(block, "أرضية اللمس مفقودة").toContain("min-h-11");
+    expect(block, "لا حلقة تركيز ظاهرة").toContain("focus-visible:outline");
+    expect(block, "السهم فقد ظهوره الدائم").toContain("opacity-60");
+    expect(block, "السهم مخفيّ حتى التمرير — يغيب على اللمس").not.toContain("opacity-0");
+
+    // رابط البطاقة (`to="/sec"`) يُغلق قبل أن يُفتح رابط السجل.
+    const cardLink = PAGE.indexOf('to="/sec"');
+    expect(cardLink, "رابط البطاقة نفسه غير موجود").toBeGreaterThan(-1);
+    const cardLinkClose = PAGE.indexOf("</Link>", cardLink);
+    expect(cardLinkClose, "رابط السجل معشَّش داخل رابط البطاقة").toBeLessThan(at);
+  });
+
   it("الحالة النشطة لا تُقال باللون وحده", () => {
     // شارة نصّية تصحب التمييز اللوني — عمى الألوان لا يلغي القراءة.
     expect(PAGE).toMatch(/active && \(/);

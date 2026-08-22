@@ -24,7 +24,13 @@
  * `speechSynthesis` ممنوع في كل المسارات (عقيدة غير قابلة للتفاوض)، ولا
  * مزوّد ولا صوت يُبدَّل من هنا.
  */
-import { useCallback } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  type AnimationEvent as ReactAnimationEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { Mic, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSadeedStore } from "@/lib/sadeed-core/store";
@@ -67,6 +73,37 @@ export function SadeedStagePresence({ className }: SadeedStagePresenceProps) {
     } catch {
       /* لمسة لاحقة تعيد المحاولة */
     }
+  }, []);
+
+  // ── REQ-020: هولوغرام تفاعلي فوق الشخصية ──
+  // الحالة الساكنة مكتملة (تلوين + خطوط مسح + توهج قاعدي + لمعة دورية من
+  // CSS وحدها)؛ الإمالة والنبضة **إضافة حياة** لا شرط مظهر — فعلى الجوال
+  // بلا مؤشر يبقى الهولوغرام بكامل هيئته. الإمالة تُكتب متغيّرَي CSS على
+  // الإطار مباشرة (بلا إعادة رسم React لكل حركة مؤشر)، والقيم النهائية في
+  // `styles.css` — الأسلوب المضمّن يمرّر متغيّرات لا قيمًا.
+  const holoFrameRef = useRef<HTMLDivElement>(null);
+  const [holoPulsing, setHoloPulsing] = useState(false);
+
+  const tiltHologram = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+    const el = holoFrameRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    el.style.setProperty("--holo-ry", `${(px * 10).toFixed(2)}deg`);
+    el.style.setProperty("--holo-rx", `${(py * -8).toFixed(2)}deg`);
+  }, []);
+
+  const restHologram = useCallback(() => {
+    const el = holoFrameRef.current;
+    if (!el) return;
+    el.style.setProperty("--holo-rx", "0deg");
+    el.style.setProperty("--holo-ry", "0deg");
+  }, []);
+
+  const endHoloPulse = useCallback((e: ReactAnimationEvent<HTMLDivElement>) => {
+    if (e.animationName === "sd-holo-pulse") setHoloPulsing(false);
   }, []);
 
   return (
@@ -114,22 +151,44 @@ export function SadeedStagePresence({ className }: SadeedStagePresenceProps) {
       <div className="relative flex flex-col items-center gap-4 sm:gap-5">
         {/* الوجه: ‏128px‏ على الجوال و‏160px‏ على الشاشات الأوسع — حجمٌ يُرى
             من مسافة الجلوس، وهو المقصود بـ«الوضوح». الحلقة تشتدّ عند النطق،
-            والحالة مكتوبة تحتها فلا تُنقل بالحركة وحدها. */}
+            والحالة مكتوبة تحتها فلا تُنقل بالحركة وحدها.
+
+            REQ-020: الإطار الهولوغرامي يلفّ الدائرة وحدها — طبقة فوق
+            الشخصية نفسها لا فوق خلفية البطاقة. كل طبقات الزينة `aria-hidden`
+            و`pointer-events: none` (في CSS)، فلا تحجب لمسًا ولا تُقرأ آليًّا. */}
         <div
-          className={cn(
-            "relative h-32 w-32 shrink-0 overflow-hidden rounded-full border-2 bg-[#04070F]",
-            "transition-[border-color,box-shadow] duration-300 sm:h-40 sm:w-40",
-            speaking
-              ? "border-[color:var(--tone-emerald)] shadow-[0_0_36px_-4px_color-mix(in_srgb,var(--tone-emerald)_60%,transparent)]"
-              : "border-[color:var(--hairline)]",
-          )}
+          ref={holoFrameRef}
+          className={cn("sd-holo-frame shrink-0", holoPulsing && "is-pulsing")}
+          onPointerMove={tiltHologram}
+          onPointerLeave={restHologram}
+          onPointerCancel={restHologram}
+          onPointerDown={() => setHoloPulsing(true)}
+          onAnimationEnd={endHoloPulse}
         >
-          <SadeedVideoAvatar
-            poster={PORTRAIT_SRC}
-            className="absolute inset-0"
-            mediaStyle={{ objectFit: "cover", objectPosition: "center top" }}
-            active={speaking}
-          />
+          {/* التوهج القاعدي: قبل الدائرة في DOM فيُرسم خلفها ويمتد تحتها. */}
+          <span aria-hidden className="sd-holo-base" />
+          <div className="sd-holo-tilt">
+            <div
+              className={cn(
+                "relative h-32 w-32 overflow-hidden rounded-full border-2 bg-[#04070F]",
+                "transition-[border-color,box-shadow] duration-300 sm:h-40 sm:w-40",
+                speaking
+                  ? "border-[color:var(--tone-emerald)] shadow-[0_0_36px_-4px_color-mix(in_srgb,var(--tone-emerald)_60%,transparent)]"
+                  : "border-[color:var(--hairline)]",
+              )}
+            >
+              <SadeedVideoAvatar
+                poster={PORTRAIT_SRC}
+                className="absolute inset-0"
+                mediaStyle={{ objectFit: "cover", objectPosition: "center top" }}
+                active={speaking}
+              />
+              {/* طبقات الهولوغرام داخل الدائرة — يقصّها `overflow-hidden` القائم. */}
+              <span aria-hidden className="sd-holo-tint" />
+              <span aria-hidden className="sd-holo-scanlines" />
+              <span aria-hidden className="sd-holo-sweep" />
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col items-center gap-1">

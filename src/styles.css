@@ -9992,6 +9992,10 @@ html.light {
   --hairline-hover: rgba(125, 200, 240, 0.5);
   --surface: #04101a;
   --surface-2: #061a28;
+  /* REQ-020: سماويّ الهولوغرام. يُعرَّف هنا لا في المكوّن (طبقة رموز
+     البطاقة)، وقيمة واحدة تكفي الوضعين لأن البطاقة سطح داكن ذاتيّ فيهما —
+     التثبيت أعلاه هو ما يضمن ذلك، فاللون يُقرأ دائمًا فوق الأرضية نفسها. */
+  --sd-holo: #22d3ee;
 }
 
 /* الطبقة الحاجبة فوق الصورة وتحت المحتوى.
@@ -10032,6 +10036,146 @@ html.light {
 .sd-stage-card > *:not(img):not(.sd-stage-scrim) {
   position: relative;
   z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   REQ-020: هولوغرام سَدِيد التفاعلي («تعديلات على النظام v3» فقرة 835)
+
+   طبقة فوق **الشخصية نفسها** لا فوق خلفية البطاقة: التلوين والمسح داخل
+   دائرة الوجه (يقصّها `overflow-hidden` القائم)، والتوهج القاعدي تحتها
+   كأنها مُسقَطة من جهاز. المظهر كله **ساكن مكتمل** — قاعدة المشروع: ما
+   يظهر بالتمرير وحده لا وجود له على الجوال — والإمالة والنبضة إضافة حياة
+   فقط. الحركات transform/opacity حصرًا، واللون من `--sd-holo` وحده.
+   الحارس: `sadeed-hologram.contract.test.ts`.
+   ═══════════════════════════════════════════════════════════════════════ */
+.sd-holo-frame {
+  position: relative;
+}
+
+/* الإمالة تقرأ متغيّرين يكتبهما المؤشر على الإطار — المكوّن يمرّر متغيّرات
+   لا قيمًا نهائية (المادة ٣٣/قاعدة الأسلوب المضمّن). صفرهما الافتراضي هو
+   الحالة الساكنة المكتملة. */
+.sd-holo-tilt {
+  transform: perspective(640px) rotateX(var(--holo-rx, 0deg)) rotateY(var(--holo-ry, 0deg));
+  transition: transform 160ms ease-out;
+}
+
+/* التوهج القاعدي البيضاوي أسفل الشخصية — خلف الدائرة في ترتيب الرسم
+   (يسبقها في DOM)، ويمتد تحتها فيبدو مصدر الإسقاط. */
+.sd-holo-base {
+  position: absolute;
+  inset-inline: -10%;
+  bottom: -12px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    color-mix(in srgb, var(--sd-holo) 55%, transparent) 0%,
+    color-mix(in srgb, var(--sd-holo) 20%, transparent) 55%,
+    transparent 100%
+  );
+  filter: blur(6px);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+/* الشفافية السماوية فوق الصورة — `screen` تضيء ولا تعتم، فتصبغ الوجه
+   بسماويّ الإسقاط دون أن تطمسه. */
+.sd-holo-tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--sd-holo) 26%, transparent) 0%,
+    color-mix(in srgb, var(--sd-holo) 10%, transparent) 55%,
+    color-mix(in srgb, var(--sd-holo) 30%, transparent) 100%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* خطوط المسح الأفقية — سطر مضيء رفيع كل 4px. */
+.sd-holo-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--sd-holo) 16%, transparent) 0,
+    color-mix(in srgb, var(--sd-holo) 16%, transparent) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* لمعة المسح العمودية البطيئة — شريط يعبر الدائرة من أعلاها إلى أسفلها.
+   `transform` وحدها تتحرك؛ و`will-change` هنا تحديدًا لأنها الحركة
+   الدورية الوحيدة (لا تُعمَّم على الطبقات الساكنة). */
+.sd-holo-sweep {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 34%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--sd-holo) 32%, transparent) 50%,
+    transparent 100%
+  );
+  opacity: 0.7;
+  transform: translateY(-120%);
+  animation: sd-holo-sweep 5.5s linear infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+@keyframes sd-holo-sweep {
+  from {
+    transform: translateY(-120%);
+  }
+  to {
+    transform: translateY(420%);
+  }
+}
+
+/* نبضة التوهج عند النقر/اللمس — المكوّن يضيف `is-pulsing` عند
+   `pointerdown` ويرفعها عند `animationend`. scale/opacity فقط. */
+.sd-holo-frame.is-pulsing .sd-holo-base {
+  animation: sd-holo-pulse 0.6s ease-out;
+}
+
+@keyframes sd-holo-pulse {
+  0% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+}
+
+/* الحركات الدورية تتوقف لمن طلب سكونًا — والمظهر الساكن كامل بدونها،
+   فلا يفقد المستخدم شيئًا من المعنى. */
+@media (prefers-reduced-motion: reduce) {
+  .sd-holo-sweep {
+    animation: none;
+    opacity: 0;
+  }
+
+  .sd-holo-frame.is-pulsing .sd-holo-base {
+    animation: none;
+  }
+
+  .sd-holo-tilt {
+    transform: none;
+    transition: none;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
