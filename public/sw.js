@@ -19,7 +19,12 @@
 // تبقى النسخة الثقيلة مخزَّنة عند كل تثبيت قائم إلى الأبد.
 // v12: أيقونة جديدة بحرف S وخلفية أزرق سماوي بحري.
 const CACHE_NAME = "sadeed-static-v12-network-first-code";
-const PRECACHE = ["/sadeed-icon.png", "/favicon.png", "/sadeed-portrait.webp", "/manifest.webmanifest"];
+const PRECACHE = [
+  "/sadeed-icon.png",
+  "/favicon.png",
+  "/sadeed-portrait.webp",
+  "/manifest.webmanifest",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)));
