@@ -8,7 +8,7 @@
   "scope": "/",
   "display": "standalone",
   "background_color": "#04070F",
-  "theme_color": "#04070F",
+  "theme_color": "#0A3D62",
   "icons": [
     {
       "src": "/sadeed-icon.png",
