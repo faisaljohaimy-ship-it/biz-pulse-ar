@@ -41,6 +41,9 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/sec", ar: "الأمن الصناعي", en: "Industrial Security", icon: Shield },
   // «مركز القيادة» (/mission-control) حُجب بأمر المالك ٢٠٢٦/٠٨/١٢ — وضع
   // العرض التنفيذي وحده نجا، زرًّا في ترويسة لوحة سَدِيد.
+  // ٢٠٢٦/٠٨/٢٤ — دُمج محتوى «غرفة العمليات» في «النظرة العامة» /sec بقرار
+  // المالك؛ المسار يبقى إعادة توجيه إلى /sec، والاسم يبقى محجوزًا هنا مصدرًا
+  // وحيدًا لتسمية زر الشريط الجانبي (حارس التفرّد في screen-names.test).
   { to: "/situation-room", ar: "غرفة العمليات", en: "Situation Room", icon: Radar },
   { to: "/executive-map", ar: "الخريطة التنفيذية", en: "Executive Map", icon: MapIcon },
   // G7: the canonical name is «منصة عمليات الوكلاء» in every surface.

@@ -83,7 +83,9 @@ describe("البندان ٥٢ و٥٤ — الشاشتان حاضرتان في ا
 
 describe("الشريط الجانبي خمسة أزرار — أمر المالك ٢٠٢٦/٠٨/٢٠", () => {
   it("الأزرار الخمسة حاضرة ولا سادس لها", () => {
-    for (const to of ["/situation-room", "/executive-map", "/urgent-ops", "/sec/reports", "/files"])
+    // ٢٠٢٦/٠٨/٢٤ — زرّ «غرفة العمليات» صار يفتح «النظرة العامة» /sec بعد
+    // دمج الصفحتين بقرار المالك؛ التسمية والأيقونة كما هما.
+    for (const to of ["/sec", "/executive-map", "/urgent-ops", "/sec/reports", "/files"])
       expect(SHELL, `${to} سقط من الشريط`).toContain(`to: "${to}"`);
     // العدّ من نفس النمط الذي تُكتب به البنود — زرٌّ سادس يُكتب بنفسه.
     const entries = SHELL.match(/\bto: "\//g) ?? [];

@@ -96,17 +96,8 @@ export const ENTRIES_B: ReadonlyArray<readonly [string, PageNarration]> = [
   // حُذف «/mission-control» (مركز القيادة): مسار مخفي بأمر المالك ٢٠٢٦/٠٨/١٢
   // (hidden-routes.ts) يُعيد التوجيه للرئيسية — وضع العرض التنفيذي انتقل
   // زرًّا في ترويسة لوحة سَدِيد.
-  [
-    "/situation-room",
-    n(
-      "غرفة الموقف",
-      "Situation Room",
-      "مؤشرات الحالة، الأحداث الحرجة، وقرارات اللحظة",
-      "situation indicators, critical events, and in-the-moment decisions",
-      "قرار متزامن بين قادة الجهات",
-      "synchronized decisions across leadership functions",
-    ),
-  ],
+  // ٢٠٢٦/٠٨/٢٤ — حُذف صفّ «/situation-room»: الصفحة دُمجت في «النظرة العامة»
+  // /sec وصار مسارها إعادة توجيه، فلا شاشة تُروى.
   [
     "/crisis",
     n(
