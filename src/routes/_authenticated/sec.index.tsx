@@ -5,16 +5,28 @@ import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
-import { AlertTriangle, Radar, Camera } from "lucide-react";
+import { AlertTriangle, Radar, Camera, Target, TrendingUp } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useRegion } from "@/lib/region-context";
-import { screenNameAr } from "@/lib/nav/screen-names";
+import {
+  getExecutiveDecisions,
+  type DecisionItem,
+  type ExecutiveDecisions,
+} from "@/lib/exec/decisions.functions";
+import { getPredictedRisks } from "@/lib/exec/predictive.functions";
 
 export const Route = createFileRoute("/_authenticated/sec/")({
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
   component: OpsRoom,
 });
+
+const PRIORITY_LABEL_AR: Record<DecisionItem["priority"], string> = {
+  critical: "حرج",
+  high: "عالٍ",
+  medium: "متوسط",
+  low: "منخفض",
+};
 
 function OpsRoom() {
   const { user, loading: authLoading } = useAuth();
@@ -30,10 +42,8 @@ function OpsRoom() {
   return (
     <div className="space-y-4">
       {/* حُذفت شارة LIVE وزر «تحديث» من ترويسة الصفحة بقرار المالك ٢٠٢٦/٠٨/٢٠ — التحديث الدوري كل ٣٠ ثانية باقٍ داخليًا عبر refetchInterval */}
-      <SecPageHeader
-        title={`${screenNameAr("/sec")} — ${region.labelAr}`}
-        subtitle="بيانات تشغيلية مقيّدة بالمؤسسة"
-      />
+      {/* region.labelAr يتضمّن بادئة «الأمن الصناعي» أصلًا — فلا تُضاف مرة ثانية. */}
+      <SecPageHeader title={region.labelAr} subtitle="بيانات تشغيلية مقيّدة بالمؤسسة" />
 
       {isLoading || !data ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
@@ -70,6 +80,11 @@ function OpsRoom() {
               tone={data.counts.assets_offline > 0 ? "warning" : "success"}
             />
           </div>
+
+          {/* ٢٠٢٦/٠٨/٢٤ — العناصر الفريدة الثلاثة المنقولة من «غرفة العمليات»
+              بعد دمجها في «النظرة العامة» بقرار المالك. المصادر والمفاتيح
+              كما هي دون أي تغيير في المنطق. */}
+          <OpsRiskRow />
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Panel icon={AlertTriangle} title="آخر البلاغات">
@@ -162,6 +177,121 @@ function Panel({
         <Icon className="h-4 w-4 text-primary" /> {title}
       </div>
       {children}
+    </div>
+  );
+}
+
+/**
+ * صف المخاطر الثلاثي — منقول من «غرفة العمليات» إلى «النظرة العامة»
+ * بقرار المالك ٢٠٢٦/٠٨/٢٤. واجهة فقط: المصادر ومفاتيح react-query
+ * ومُدد التحديث كما كانت حرفيًا.
+ */
+function OpsRiskRow() {
+  const fetchDecisions = useServerFn(getExecutiveDecisions);
+  const fetchRisks = useServerFn(getPredictedRisks);
+
+  const decisions = useQuery<ExecutiveDecisions>({
+    queryKey: ["situation-decisions"],
+    queryFn: () => fetchDecisions(),
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: false,
+  });
+
+  const risks = useQuery({
+    queryKey: ["situation-risks"],
+    queryFn: () => fetchRisks(),
+    refetchInterval: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: false,
+  });
+
+  return (
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <Panel icon={AlertTriangle} title="أعلى 3 مخاطر">
+        <DecisionList loading={decisions.isLoading} items={decisions.data?.risks ?? []} />
+      </Panel>
+
+      <Panel icon={Target} title="إجراءات موصى بها">
+        <DecisionList loading={decisions.isLoading} items={decisions.data?.actions ?? []} />
+      </Panel>
+
+      <Panel icon={TrendingUp} title="مخاطر متوقعة">
+        {risks.isLoading ? (
+          <PanelSkeleton />
+        ) : (risks.data ?? []).length === 0 ? (
+          <EmptyNote />
+        ) : (
+          <ul className="space-y-2">
+            {(risks.data ?? []).slice(0, 3).map((r) => (
+              <li key={r.id} className="rounded-lg border border-border bg-muted/20 p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 text-sm font-medium text-foreground">{r.title_ar}</div>
+                  <span
+                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[12px] font-medium ${severityClass(r.severity)}`}
+                  >
+                    {r.severity}
+                  </span>
+                </div>
+                <p className="mt-1 line-clamp-2 text-[12.5px] leading-snug text-muted-foreground">
+                  {r.recommendation_ar}
+                </p>
+                <div className="mt-1 text-[12px] tabular-nums text-muted-foreground">
+                  ثقة {Math.round(r.confidence * 100)}% · {r.horizon_hours}h
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
+    </div>
+  );
+}
+
+function DecisionList({ loading, items }: { loading: boolean; items: DecisionItem[] }) {
+  if (loading) return <PanelSkeleton />;
+  if (items.length === 0) return <EmptyNote />;
+  return (
+    <ul className="space-y-2">
+      {items.map((it) => (
+        <li key={it.id} className="rounded-lg border border-border bg-muted/20 p-3">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 text-sm font-medium text-foreground">{it.title_ar}</div>
+            <span
+              className={`shrink-0 rounded-full border px-2 py-0.5 text-[12px] font-medium ${severityClass(it.priority)}`}
+            >
+              {PRIORITY_LABEL_AR[it.priority]}
+            </span>
+          </div>
+          {it.detail_ar && (
+            <p className="mt-1 line-clamp-2 text-[12.5px] leading-snug text-muted-foreground">
+              {it.detail_ar}
+            </p>
+          )}
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
+            <span className="tabular-nums">ثقة {Math.round(it.confidence * 100)}%</span>
+            {it.business_impact && <span className="truncate">· {it.business_impact}</span>}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PanelSkeleton() {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="h-16 animate-pulse rounded-lg bg-muted/40" />
+      ))}
+    </div>
+  );
+}
+
+function EmptyNote() {
+  return (
+    <div className="rounded-lg border border-border bg-muted/20 p-3 text-[13px] text-muted-foreground">
+      لا توجد بنود ذات أولوية حاليًا.
     </div>
   );
 }

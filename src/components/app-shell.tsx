@@ -48,7 +48,13 @@ import { BackHomeControls } from "@/components/layout/GlobalBackButton";
 import { TopUtilityBar } from "@/components/nav/TopUtilityBar";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 
-type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
+type NavItem = {
+  to: string;
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  /** طابق المسار تمامًا — لبنود لها صفحات أبناء لا تخصّها (مثل /sec). */
+  exact?: boolean;
+};
 type NavGroup = { label: string; items: NavItem[] };
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -160,16 +166,20 @@ function useNavGroups(): NavGroup[] {
   // المناطق على الرئيسية ومن شريطها الداخلي SecSubNav؛ وسَدِيد من زرّه
   // العائم؛ والإدارة/الإعدادات من مساراتها المباشرة. المحذوف أزرار الشريط.
   // (وقاعة المجلس /boardroom حُجبت شاشةً كاملة بالأمر نفسه — hidden-routes.)
+  // ٢٠٢٦/٠٨/٢٤ — دُمجت «غرفة العمليات» في «النظرة العامة»: الزر يفتح /sec
+  // داخل SecLayout فيظهر شريط التبويبات العلوي فورًا، والتسمية والأيقونة
+  // تبقيان كما هما (الاسم يُقرأ من screen-names ولا يُعاد كتابته). ولذلك
+  // يُستثنى هذا البند من canon: /sec في السجل الكانوني اسمه «الأمن الصناعي».
+  const opsRoom: NavItem = {
+    to: "/sec",
+    exact: true,
+    icon: Radar,
+    label: ar(screenNameAr("/situation-room"), screenNameEn("/situation-room")),
+  };
   const groups: NavGroup[] = [
     {
       label: "",
       items: [
-        // الاسم محروس في screen-names.ts، فيُقرأ من المصدر ولا يُعاد كتابته.
-        {
-          to: "/situation-room",
-          icon: Radar,
-          label: ar(screenNameAr("/situation-room"), screenNameEn("/situation-room")),
-        },
         { to: "/executive-map", icon: MapIcon, label: ar("الخريطة التنفيذية", "Executive Map") },
         { to: "/urgent-ops", icon: Siren, label: ar("متابعة الأعمال العاجلة", "Urgent Ops") },
         { to: "/sec/reports", icon: FileText, label: ar("التقارير", "Reports") },
@@ -181,7 +191,7 @@ function useNavGroups(): NavGroup[] {
       ],
     },
   ];
-  return groups.map((g) => ({ ...g, items: g.items.map(canon) }));
+  return groups.map((g) => ({ ...g, items: [opsRoom, ...g.items.map(canon)] }));
 }
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
@@ -226,7 +236,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
             )}
             <div className="space-y-1">
               {g.items.map((it, itemIndex) => {
-                const active = loc.pathname === it.to || loc.pathname.startsWith(it.to + "/");
+                const active = it.exact
+                  ? loc.pathname === it.to
+                  : loc.pathname === it.to || loc.pathname.startsWith(it.to + "/");
                 // External sister platform (Nusuk): the sidebar entry is a
                 // real anchor that opens the platform in a new tab directly.
                 const registryEntry = moduleByRoute(it.to);

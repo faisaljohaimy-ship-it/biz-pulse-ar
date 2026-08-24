@@ -115,7 +115,6 @@ describe("internal pages — icon chips carry the holographic edge", () => {
     "src/routes/cookie-policy.tsx",
     "src/routes/subprocessors.tsx",
     "src/routes/responsible-ai.tsx",
-    "src/routes/_authenticated/situation-room.tsx",
     "src/routes/_authenticated/learn.index.tsx",
   ];
 
@@ -128,16 +127,12 @@ describe("internal pages — icon chips carry the holographic edge", () => {
   it("semantic tint is preserved by re-tinting, not overwritten with cyan", () => {
     // Amber compliance chips stay amber; cyan learning chips stay cyan.
     expect(read("src/routes/trust.tsx")).toContain("[--nx-holo-rgb:251_191_36]");
-    expect(read("src/routes/_authenticated/situation-room.tsx")).toContain(
-      "[--nx-holo-rgb:34_211_238]",
-    );
+    // ٢٠٢٦/٠٨/٢٤ — صفحة /situation-room دُمجت في /sec وصارت إعادة توجيه،
+    // فلم يبقَ فيها رقاقة أيقونة تُفحص.
   });
 
   it("no icon chip kept its filled background", () => {
     expect(read("src/routes/trust.tsx")).not.toContain("rounded-lg bg-amber-400/10 text-amber-200");
-    expect(read("src/routes/_authenticated/situation-room.tsx")).not.toContain(
-      "rounded-2xl bg-cyan-400/10 ring-1",
-    );
   });
 });
 
