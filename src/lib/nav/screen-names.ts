@@ -45,6 +45,9 @@ const EXTRA_SCREEN_NAMES: Readonly<Record<string, ScreenName>> = {
   "/": { ar: "الرئيسية", en: "Home" },
   // Its own heading said «غرفة العمليات» while the command palette called it
   // «جسر تنفيذي» — a THIRD route claiming /situation-room's name.
+  // ٢٠٢٦/٠٨/٢٤ — «غرفة العمليات» /situation-room صارت إعادة توجيه إلى /sec
+  // بعد الدمج؛ الاسم يبقى مسجَّلًا لها لأنه لا يزال يُقرأ من هنا لتسمية زر
+  // الشريط الجانبي، ولأن screenNameAr ترمي على مسار غير معروف.
   "/sec/exec": { ar: "اللوحة التنفيذية", en: "Executive Dashboard" },
   "/sec/incidents": { ar: "البلاغات", en: "Incidents" },
   "/sec/kpi": { ar: "مؤشرات الأداء", en: "Live KPIs" },

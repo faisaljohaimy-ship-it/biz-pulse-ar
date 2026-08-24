@@ -9,7 +9,6 @@ import { SecOpsInsights } from "@/components/sec/sec-ops-insights";
 import { AlertTriangle, Radar, Camera } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useRegion } from "@/lib/region-context";
-import { screenNameAr } from "@/lib/nav/screen-names";
 
 export const Route = createFileRoute("/_authenticated/sec/")({
   errorComponent: RouteError,
@@ -31,10 +30,9 @@ function OpsRoom() {
   return (
     <div className="space-y-4">
       {/* حُذفت شارة LIVE وزر «تحديث» من ترويسة الصفحة بقرار المالك ٢٠٢٦/٠٨/٢٠ — التحديث الدوري كل ٣٠ ثانية باقٍ داخليًا عبر refetchInterval */}
-      <SecPageHeader
-        title={`${screenNameAr("/sec")} — ${region.labelAr}`}
-        subtitle="بيانات تشغيلية مقيّدة بالمؤسسة"
-      />
+      {/* region.labelAr يتضمّن بادئة «الأمن الصناعي» أصلًا — فلا تُضاف مرة
+          ثانية (قرار الكاتب الآخر المنسوب للمالك ٢٠٢٦/٠٨/٢٤، صين في الدمج). */}
+      <SecPageHeader title={region.labelAr} subtitle="بيانات تشغيلية مقيّدة بالمؤسسة" />
 
       {isLoading || !data ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
