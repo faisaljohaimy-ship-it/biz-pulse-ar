@@ -11,6 +11,7 @@ import {
   WO_PRIORITY_AR,
   WO_STATUS_AR,
   WO_ASSET_KIND_AR,
+  useLocalSimWorkOrders,
 } from "@/components/sec/oms-dialogs";
 import { LiveStatus } from "@/components/state/LiveStatus";
 
@@ -33,6 +34,8 @@ type WO = {
   contractor: string | null;
   due_at: string | null;
   source_incident_id: string | null;
+  /** صفوف المحاكاة المرجعية (من resilient أو من الإنشاء المحلي) موسومة بها. */
+  is_simulation?: boolean;
 };
 
 function Maintenance() {
@@ -59,7 +62,11 @@ function Maintenance() {
       ? `${kpis.work_orders.total - kpis.work_orders.open} من ${kpis.work_orders.total}`
       : "لم يُقَس";
 
-  const list = (data ?? []) as WO[];
+  // ٢٠٢٦/٠٨/٢٤ — أوامر العمل المنشأة محليًّا كمحاكاة مرجعية (زائر أو جلسة
+  // منتهية) تتصدّر القائمة فورًا، ولا تمحوها إعادة الجلب الدورية كل ٣٠ ثانية
+  // لأن مصدرها مخزن محلي لا استجابة الخادم.
+  const localSim = useLocalSimWorkOrders();
+  const list = [...localSim, ...((data ?? []) as WO[])];
   const rows = list.filter((r) => {
     if (filter === "all") return true;
     if (filter === "open") return r.status !== "closed" && r.status !== "cancelled";
@@ -131,7 +138,15 @@ function Maintenance() {
               <tr key={w.id} className="border-t border-border">
                 <td className="px-3 py-2 font-mono text-xs">{w.ref}</td>
                 <td className="px-3 py-2">
-                  <div>{w.title_ar}</div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span>{w.title_ar}</span>
+                    {/* وسم الصف المحاكى — شارة كهرمانية بنمط nexios-ui-patterns */}
+                    {w.is_simulation && (
+                      <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600">
+                        محاكاة مرجعية
+                      </span>
+                    )}
+                  </div>
                   {w.source_incident_id && (
                     <div className="text-[12px] text-violet-600">↩ من بلاغ</div>
                   )}

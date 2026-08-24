@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -51,13 +51,16 @@ import {
 } from "@/lib/oms.functions";
 import { generateIncidentReport } from "@/lib/oms-reports.functions";
 import { getSecOverview } from "@/lib/sec.functions";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { userFacingError, SESSION_ERROR_AR } from "@/lib/errors/user-facing-error";
+import { userFacingError, GENERIC_ERROR_AR, isSessionError } from "@/lib/errors/user-facing-error";
 import { severityClass, statusClass } from "./sec-shell";
 import {
   Sparkles,
   AlertTriangle,
+  CalendarDays,
   CheckCircle2,
   ShieldAlert,
   Wrench,
@@ -850,8 +853,92 @@ export const WO_ASSET_KIND_AR: Record<string, string> = {
   incident_response: "استجابة لبلاغ",
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WORK ORDER — إنشاء محاكاة مرجعية محلي (الطريقة المحفوظة: مصادَق أولًا ← بديل
+// عام عند 401/403)
+//
+// ٢٠٢٦/٠٨/٢٤ — إصلاح مرتدّ من V4: كان زرّ «إنشاء» يعرض للزائر رسالة الجلسة
+// (SESSION_ERROR_AR) ويرفض الإنشاء — خرق مزدوج للبند الثالث من الطريقة
+// المحفوظة. المسار الآن: جلسة صالحة ⇒ الكتابة الحقيقية كما هي خلف
+// requireSupabaseAuth؛ زائر أو جلسة منتهية (401/403) ⇒ يُنشأ أمر العمل محليًّا
+// كمحاكاة مرجعية موسومة is_simulation ويظهر فورًا في جدول الصيانة — **بلا أي
+// كتابة قاعدة بيانات**، مع toast صدق الكتابة بنمط SIM_ACTION_INFO في sec.access
+// (عبارة «محاكاة مرجعية» في toast فعل كتابة مسموحة — استثناء REQ-021 الصريح).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** نمط sec.access نفسه: صفوف المحاكاة معرّفاتها sim-* — الكتابة عليها بلا معنى. */
+const SIM_ACTION_INFO = "هذه بيانات محاكاة مرجعية — الإجراء متاح على البيانات الحية فقط";
+const isSimRow = (id: string) => id.startsWith("sim-");
+
+/** toast صدق الكتابة للإنشاء المحاكى — صادق: يظهر فورًا ولا يُحفَظ في القاعدة. */
+export const SIM_WO_CREATED_INFO =
+  "أُنشئ أمر العمل كمحاكاة مرجعية — يظهر في القائمة فورًا ولا يُحفَظ في قاعدة البيانات";
+
+/** صف أمر عمل مُنشأ محليًّا كمحاكاة مرجعية — نفس شكل صفوف جدول الصيانة. */
+export type LocalSimWorkOrder = {
+  id: string;
+  ref: string;
+  title_ar: string;
+  kind: string;
+  priority: string;
+  status: string;
+  asset_kind: string;
+  asset_code: string | null;
+  assigned_to: string | null;
+  contractor: string | null;
+  due_at: string | null;
+  notes: string | null;
+  opened_at: string;
+  source_incident_id: string | null;
+  is_simulation: true;
+};
+
+let localSimWorkOrders: LocalSimWorkOrder[] = [];
+const localSimListeners = new Set<() => void>();
+
+function addLocalSimWorkOrder(
+  input: Omit<LocalSimWorkOrder, "id" | "ref" | "status" | "opened_at" | "is_simulation">,
+): LocalSimWorkOrder {
+  const now = new Date();
+  const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(
+    now.getDate(),
+  ).padStart(2, "0")}`;
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  const row: LocalSimWorkOrder = {
+    ...input,
+    id: `sim-local-${now.getTime()}-${rand}`,
+    ref: `WO-SIM-${ymd}-${rand}`,
+    status: "open",
+    opened_at: now.toISOString(),
+    is_simulation: true,
+  };
+  localSimWorkOrders = [row, ...localSimWorkOrders];
+  localSimListeners.forEach((notify) => notify());
+  return row;
+}
+
+/**
+ * أوامر العمل المحاكاة المنشأة محليًّا في هذه الجلسة — يدمجها جدول الصيانة في
+ * رأس القائمة، فلا تمحوها إعادة الجلب الدورية لقائمة القاعدة.
+ */
+export function useLocalSimWorkOrders(): LocalSimWorkOrder[] {
+  return useSyncExternalStore(
+    (onStoreChange) => {
+      localSimListeners.add(onStoreChange);
+      return () => localSimListeners.delete(onStoreChange);
+    },
+    () => localSimWorkOrders,
+    () => localSimWorkOrders,
+  );
+}
+
+/** yyyy-MM-dd بالتوقيت المحلي — نفس صيغة قيمة حقل التاريخ السابقة، بلا تغيير عقد. */
+const toLocalYmd = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
 export function NewWorkOrderDialog() {
   const [open, setOpen] = useState(false);
+  const [dueOpen, setDueOpen] = useState(false);
   const [form, setForm] = useState({
     title_ar: "",
     kind: "corrective" as "preventive" | "corrective",
@@ -881,25 +968,57 @@ export function NewWorkOrderDialog() {
     // فيرفضه Postgres ويفشل الإنشاء كلما تُرك التاريخ فارغًا. تُطبَّع الفوارغ
     // إلى undefined، ويُثبَّت الاستحقاق عند نهاية اليوم المحلي ثم ISO —
     // فلا يُحسب أمرُ اليوم نفسه «متأخرًا» منذ لحظة إنشائه.
-    mutationFn: () =>
-      fn({
-        data: {
-          title_ar: form.title_ar,
-          kind: form.kind,
-          priority: form.priority,
-          asset_kind: form.asset_kind,
-          asset_code: form.asset_code || undefined,
-          assigned_to: form.assigned_to.trim() || undefined,
-          contractor: form.contractor.trim() || undefined,
-          due_at: form.due_at ? new Date(`${form.due_at}T23:59:59`).toISOString() : undefined,
-          notes: form.notes.trim() || undefined,
-        },
-      }),
-    onSuccess: () => {
-      toast.success("أُنشئ أمر العمل");
-      qc.invalidateQueries({ queryKey: ["oms-work-orders"] });
-      qc.invalidateQueries({ queryKey: ["sec-work-orders"] });
-      qc.invalidateQueries({ queryKey: ["oms-kpis"] });
+    //
+    // ٢٠٢٦/٠٨/٢٤ — الطريقة المحفوظة «مصادَق أولًا ← بديل عام عند 401/403»:
+    // جلسة صالحة ⇒ الكتابة الحقيقية عبر createWorkOrder كما هي. زائر أو جلسة
+    // منتهية (401/403 — يلتقطها isSessionError) ⇒ إنشاء محاكاة مرجعية محلي
+    // يظهر فورًا في القائمة — لا كتابة قاعدة بيانات، ولا عبارة مصادقة تُعرض.
+    mutationFn: async (): Promise<{ simulated: boolean }> => {
+      const due_at = form.due_at ? new Date(`${form.due_at}T23:59:59`).toISOString() : undefined;
+      if (user) {
+        try {
+          await fn({
+            data: {
+              title_ar: form.title_ar,
+              kind: form.kind,
+              priority: form.priority,
+              asset_kind: form.asset_kind,
+              asset_code: form.asset_code || undefined,
+              assigned_to: form.assigned_to.trim() || undefined,
+              contractor: form.contractor.trim() || undefined,
+              due_at,
+              notes: form.notes.trim() || undefined,
+            },
+          });
+          return { simulated: false };
+        } catch (e) {
+          // غير 401/403 (تحقق مدخلات، انقطاع…) ⇒ خطأ حقيقي يُعالَج في onError.
+          if (!isSessionError(e)) throw e;
+        }
+      }
+      addLocalSimWorkOrder({
+        title_ar: form.title_ar,
+        kind: form.kind,
+        priority: form.priority,
+        asset_kind: form.asset_kind,
+        asset_code: form.asset_code || null,
+        assigned_to: form.assigned_to.trim() || null,
+        contractor: form.contractor.trim() || null,
+        due_at: due_at ?? null,
+        notes: form.notes.trim() || null,
+        source_incident_id: null,
+      });
+      return { simulated: true };
+    },
+    onSuccess: ({ simulated }) => {
+      if (simulated) {
+        toast.info(SIM_WO_CREATED_INFO);
+      } else {
+        toast.success("أُنشئ أمر العمل");
+        qc.invalidateQueries({ queryKey: ["oms-work-orders"] });
+        qc.invalidateQueries({ queryKey: ["sec-work-orders"] });
+        qc.invalidateQueries({ queryKey: ["oms-kpis"] });
+      }
       setOpen(false);
       setForm((current) => ({
         ...current,
@@ -910,7 +1029,11 @@ export function NewWorkOrderDialog() {
         notes: "",
       }));
     },
-    onError: (e: Error) => toast.error(userFacingError(e)),
+    // رسالة عربية محايدة + زر إعادة محاولة — صفر ذكر لجلسة أو دخول أو مصادقة.
+    onError: () =>
+      toast.error(GENERIC_ERROR_AR, {
+        action: { label: "إعادة المحاولة", onClick: () => m.mutate() },
+      }),
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -1033,27 +1156,60 @@ export function NewWorkOrderDialog() {
             </div>
             <div className="col-span-2 grid gap-1.5">
               <Label htmlFor="wo-due-date">تاريخ الاستحقاق</Label>
-              {/* ٢٠٢٦/٠٨/٢٠ — قرار المالك «وضع تقويم في اختيار التاريخ»: لا يوجد
-                  ui/calendar أو ui/popover في المشروع، فالبديل المقرَّر مُدخل تاريخ
-                  أصيل يفتح تقويم المتصفح المنبثق بلا حزم جديدة، ومعاينة عربية
-                  بأسماء الشهور عبر لغة التطبيق ar-SA أسفل الحقل. */}
-              <Input
-                id="wo-due-date"
-                type="date"
-                className="min-h-11 cursor-pointer"
-                value={form.due_at}
-                onChange={(e) => setForm({ ...form, due_at: e.target.value })}
-              />
-              {form.due_at && (
-                <div className="text-[12px] text-muted-foreground">
-                  {new Date(`${form.due_at}T12:00:00`).toLocaleDateString("ar-SA", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </div>
-              )}
+              {/* ٢٠٢٦/٠٨/٢٤ — قرار المالك «وضع تقويم في اختيار التاريخ» (مرتدّ من
+                  V4): مُدخل التاريخ الأصيل استُبدل بمنتقٍ بصري Popover + Calendar
+                  (react-day-picker v9، عربي RTL) — الاختيار بنقرة من شبكة أيام.
+                  القيمة تبقى yyyy-MM-dd نفسها وتُثبَّت عند نهاية اليوم المحلي في
+                  mutationFn — لا تغيير على صيغة due_at ولا على المخطط. */}
+              <Popover open={dueOpen} onOpenChange={setDueOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="wo-due-date"
+                    type="button"
+                    variant="outline"
+                    className="min-h-11 w-full justify-between font-normal"
+                  >
+                    <span className={form.due_at ? undefined : "text-muted-foreground"}>
+                      {form.due_at
+                        ? new Date(`${form.due_at}T12:00:00`).toLocaleDateString("ar-SA", {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : "اختر التاريخ من التقويم"}
+                    </span>
+                    <CalendarDays className="h-4 w-4 opacity-60" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start" dir="rtl">
+                  <Calendar
+                    mode="single"
+                    selected={form.due_at ? new Date(`${form.due_at}T12:00:00`) : undefined}
+                    defaultMonth={form.due_at ? new Date(`${form.due_at}T12:00:00`) : undefined}
+                    onSelect={(day) => {
+                      setForm({ ...form, due_at: day ? toLocalYmd(day) : "" });
+                      setDueOpen(false);
+                    }}
+                  />
+                  {form.due_at && (
+                    <div className="border-t border-border p-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="min-h-11 w-full text-muted-foreground"
+                        onClick={() => {
+                          setForm({ ...form, due_at: "" });
+                          setDueOpen(false);
+                        }}
+                      >
+                        مسح التاريخ — بلا استحقاق
+                      </Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
           <div className="grid gap-1.5">
@@ -1071,16 +1227,10 @@ export function NewWorkOrderDialog() {
           </Button>
           <Button
             className="min-h-11"
-            onClick={() => {
-              // ٢٠٢٦/٠٨/٢٠ — زائر بلا جلسة: رسالة عربية محايدة (رسالة الجلسة
-              // المعتمدة في العقد) بدل إرسال طلب سيُرفض؛ لا عبارات مصادقة تقنية.
-              // النموذج المعبّأ + هذه الضغطة الصريحة هما بوابة التأكيد البشري.
-              if (!user) {
-                toast.info(SESSION_ERROR_AR);
-                return;
-              }
-              m.mutate();
-            }}
+            // ٢٠٢٦/٠٨/٢٤ — لا حاجز جلسة هنا: النموذج المعبّأ + هذه الضغطة
+            // الصريحة هما بوابة التأكيد البشري، وmutationFn يقرّر المسار
+            // (كتابة حقيقية أو محاكاة مرجعية محلية) دون أي عبارة مصادقة.
+            onClick={() => m.mutate()}
             disabled={
               m.isPending ||
               form.title_ar.length < 3 ||
@@ -1130,7 +1280,14 @@ export function WorkOrderActions({ id, status }: { id: string; status: string })
         <Button
           size="sm"
           variant="outline"
-          onClick={() => mA.mutate()}
+          onClick={() => {
+            // نمط sec.access: صفوف المحاكاة sim-* لا تُكتب — إفصاح بدل خطأ خام.
+            if (isSimRow(id)) {
+              toast.info(SIM_ACTION_INFO);
+              return;
+            }
+            mA.mutate();
+          }}
           disabled={mA.isPending || !user}
           title={user ? undefined : "الاعتماد قرار تشغيلي — سجّل الدخول أولًا"}
         >
@@ -1138,7 +1295,16 @@ export function WorkOrderActions({ id, status }: { id: string; status: string })
         </Button>
       )}
       {status !== "closed" && (
-        <Dialog open={openComplete} onOpenChange={setOpenComplete}>
+        <Dialog
+          open={openComplete}
+          onOpenChange={(next) => {
+            if (next && isSimRow(id)) {
+              toast.info(SIM_ACTION_INFO);
+              return;
+            }
+            setOpenComplete(next);
+          }}
+        >
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
               إكمال
