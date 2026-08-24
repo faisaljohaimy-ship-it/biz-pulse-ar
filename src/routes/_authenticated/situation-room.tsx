@@ -1,41 +1,38 @@
 /**
  * Operations Room — `/situation-room`
  *
+ * ٢٠٢٦/٠٨/٢٤ — «تعديلات إضافية V4» (١١٩١-١١٩٢): «نقل أعلى 3 مخاطر،
+ * إجراءات موصى بها، مخاطر متوقعة إلى نظرة عامة وحذف الباقي من الصفحة
+ * لأنه متكرر في النظرة العامة». الأقسام الثلاثة وزرّ «ابدأ الموجز
+ * التنفيذي» انتقلت إلى `SecOpsInsights` داخل نظرة عامة `/sec`
+ * (`src/components/sec/sec-ops-insights.tsx`)، والشاشة حُجبت
+ * (hidden-routes.ts) وتُعيد التوجيه إلى `/sec` — والملف باقٍ بسياسة
+ * المالك (الإخفاء يُبقي الكود). بطاقات KPI الخمس أدناه كانت المكرَّر
+ * في النظرة العامة، فبقيت هنا محفوظةً غير معروضة.
+ *
  * ٢٠٢٦/٠٨/٢٠ — تقليص كبير بتوجيه المالك (لقطة شاشة مؤشَّرة):
  * حُذفت جزيئة أدوار فريق العمليات، والمؤشر العام، وأوامر العمل المفتوحة،
  * ومؤشر الامتثال، وثقة الذكاء الاصطناعي، والوكلاء النشطون، وأعلى ٣ فرص،
  * وزرّا التوأم الرقمي ووضع العرض، وقسم «تعاون بين الوكلاء»، والخط الزمني
  * للمهمة. وتحوّلت البلاغات المفتوحة والحرجة والدوريات النشطة والزوار
  * داخل الموقع والتصاريح الفعّالة إلى بطاقات بارزة في منتصف الواجهة.
- *
- * Reuses `getBridgeState`, `getPredictedRisks`, `generateExecutiveBriefing`
- * and `BriefingStage`. No DB schema, no workflow, no agent logic changes.
  */
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import {
-  ShieldCheck,
-  AlertTriangle,
-  OctagonAlert,
-  Loader2,
-  PlayCircle,
-  TrendingUp,
-  Users,
-  FileCheck2,
-} from "lucide-react";
+import { ShieldCheck, AlertTriangle, OctagonAlert, Users, FileCheck2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { cn } from "@/lib/utils";
 import { getBridgeState, type BridgeHealth } from "@/lib/exec/bridge.functions";
-import { generateExecutiveBriefing, type ExecutiveBriefing } from "@/lib/exec/briefing.functions";
-import { getPredictedRisks } from "@/lib/exec/predictive.functions";
-import { BriefingStage } from "@/components/bridge/BriefingStage";
-import { DecisionEngine } from "@/components/situation-room/DecisionEngine";
 import { userFacingError } from "@/lib/errors/user-facing-error";
 
 export const Route = createFileRoute("/_authenticated/situation-room")({
+  // V4 (١١٩١-١١٩٢) ٢٠٢٦/٠٨/٢٤ — حُجبت (hidden-routes.ts): أقسامها الحيّة
+  // انتقلت إلى نظرة عامة الأمن الصناعي، فمن قصدها يقصد /sec.
+  beforeLoad: () => {
+    throw redirect({ to: "/sec" });
+  },
   head: () => ({
     meta: [
       { title: "غرفة العمليات — إدارة الأمن الصناعي" },
@@ -105,8 +102,6 @@ function SituationRoomPage() {
   const ar = locale === "ar";
 
   const getState = useServerFn(getBridgeState);
-  const getRisks = useServerFn(getPredictedRisks);
-  const genBriefing = useServerFn(generateExecutiveBriefing);
 
   const state = useQuery({
     queryKey: ["situation-state"],
@@ -116,22 +111,9 @@ function SituationRoomPage() {
     refetchIntervalInBackground: false,
   });
 
-  const risks = useQuery({
-    queryKey: ["situation-risks"],
-    queryFn: () => getRisks(),
-    refetchInterval: 5 * 60_000,
-    refetchOnWindowFocus: false,
-    refetchIntervalInBackground: false,
-  });
-
   // ٢٠٢٦/٠٨/٢٠ — حُذف استعلام الخط الزمني للمهمة وحالة الإيقاف المؤقت مع حذف القسم.
-
-  const [briefing, setBriefing] = useState<ExecutiveBriefing | null>(null);
-
-  const startBriefing = useMutation({
-    mutationFn: () => genBriefing(),
-    onSuccess: (data) => setBriefing(data),
-  });
+  // ٢٠٢٦/٠٨/٢٤ (V4 ١١٩١) — استعلام المخاطر المتوقعة ومحرك القرارات وزرّ
+  // الموجز التنفيذي انتقلت كلها إلى SecOpsInsights في نظرة عامة /sec.
 
   const health = state.data?.health;
   const threat = threatLevel(health?.score ?? 0);
@@ -153,58 +135,20 @@ function SituationRoomPage() {
       {/* ٢٠٢٦/٠٨/٢٠ — حُذف عمود الصحة التشغيلية الجانبي (المؤشر العام، أوامر العمل
           المفتوحة، مؤشر الامتثال، ثقة الذكاء الاصطناعي، وكلاء نشطون)، وانتقلت
           مؤشراته الخمسة الباقية بطاقاتٍ إلى منتصف الواجهة. */}
-      <div className="relative grid grid-cols-1 gap-5 px-5 pb-8 lg:grid-cols-[minmax(0,1fr)_380px]">
-        {/* CENTER — the five operational stat cards + briefing action */}
+      {/* ٢٠٢٦/٠٨/٢٤ (V4 ١١٩١) — العمود الأيمن (أعلى 3 مخاطر، إجراءات موصى
+          بها عبر DecisionEngine + مخاطر متوقعة PredictedRiskRail) وزرّ
+          «ابدأ الموجز التنفيذي» مع BriefingStage: انتقلت كلها إلى
+          SecOpsInsights في نظرة عامة /sec. بطاقات KPI الخمس أدناه هي
+          «الباقي المتكرر» الذي أُخفي مع الشاشة كلها. */}
+      <div className="relative grid grid-cols-1 gap-5 px-5 pb-8">
+        {/* CENTER — the five operational stat cards */}
         <div className="relative flex min-h-[480px] flex-col justify-center gap-6">
           {/* ٢٠٢٦/٠٨/٢٠ — حُذفت جزيئة «أدوار فريق العمليات» (شبكة بطاقات الأدوار). */}
           <OperationalStatCards ar={ar} health={health} loading={state.isLoading} />
-
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={() => startBriefing.mutate(undefined)}
-              disabled={startBriefing.isPending || state.isLoading}
-              className={cn(
-                "group relative inline-flex min-h-11 items-center gap-3 rounded-2xl px-7 py-4",
-                "bg-gradient-to-br from-cyan-400 to-cyan-500 text-[#04111F] shadow-[0_0_56px_rgba(0,212,255,0.5)]",
-                "text-sm font-semibold uppercase tracking-[0.2em]",
-                "hover:from-cyan-300 hover:to-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed",
-                "transition-[opacity] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200",
-              )}
-              aria-label={ar ? "ابدأ الموجز التنفيذي" : "Begin Executive Briefing"}
-            >
-              {startBriefing.isPending ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <PlayCircle className="h-5 w-5" />
-              )}
-              {ar ? "ابدأ الموجز التنفيذي · 60 ثانية" : "Begin Executive Briefing · 60s"}
-            </button>
-
-            {/* ٢٠٢٦/٠٨/٢٠ — حُذف زرّا «التوأم الرقمي» و«وضع العرض» من هذه الصفحة. */}
-          </div>
-
-          {startBriefing.error && (
-            <div className="text-sm text-rose-300">{userFacingError(startBriefing.error)}</div>
-          )}
-        </div>
-
-        {/* RIGHT — Executive Decision Engine + Predicted Risks */}
-        <div className="flex flex-col gap-4">
-          <DecisionEngine ar={ar} />
-          <PredictedRiskRail ar={ar} risks={risks.data ?? []} loading={risks.isLoading} />
         </div>
       </div>
 
       {/* ٢٠٢٦/٠٨/٢٠ — حُذف قسم «تعاون بين الوكلاء» وحُذف «الخط الزمني للمهمة». */}
-
-      {briefing && (
-        <BriefingStage
-          briefing={briefing}
-          ar={ar}
-          backTo={{ ar: screenNameAr("/situation-room"), en: screenNameEn("/situation-room") }}
-          onClose={() => setBriefing(null)}
-        />
-      )}
     </main>
   );
 }
@@ -440,79 +384,7 @@ function OperationalStatCards({
 
 // ----------------------------------------------------------------------
 // RIGHT — Predicted risks
+// ٢٠٢٦/٠٨/٢٤ (V4 ١١٩١) — نُقلت «مخاطر متوقعة» (PredictedRiskRail) إلى
+// SecOpsInsights في نظرة عامة /sec (src/components/sec/sec-ops-insights.tsx)
+// بأسلوب رموز الوضعين بدل خلفياتها الداكنة المكتوبة يدويًا هنا.
 // ----------------------------------------------------------------------
-
-function PredictedRiskRail({
-  ar,
-  risks,
-  loading,
-}: {
-  ar: boolean;
-  risks: Awaited<ReturnType<typeof getPredictedRisks>>;
-  loading: boolean;
-}) {
-  return (
-    <div className="rounded-3xl border border-cyan-400/15 bg-[#0A1E33]/70 p-4 backdrop-blur-xl">
-      <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-cyan-200/80">
-        <TrendingUp className="h-4 w-4" />
-        {ar ? "مخاطر متوقعة" : "Predicted Risks"}
-        {!loading && <span className="ml-auto text-white/40">{risks.length}</span>}
-      </div>
-      {loading && (
-        <div className="text-sm text-white/40">{ar ? "جاري التحليل…" : "Analyzing…"}</div>
-      )}
-      {!loading && risks.length === 0 && (
-        <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-3 text-[13px] text-emerald-200">
-          {ar
-            ? "لا تنبيهات متوقعة. الوضع ضمن المعدّل التشغيلي."
-            : "No predicted anomalies. Operations are within baseline."}
-        </div>
-      )}
-      <ul className="space-y-2">
-        {risks.slice(0, 3).map((r) => {
-          const tone =
-            r.severity === "high"
-              ? "border-rose-400/40 bg-rose-400/5"
-              : r.severity === "medium"
-                ? "border-amber-400/40 bg-amber-400/5"
-                : "border-cyan-400/30 bg-cyan-400/5";
-          const dot =
-            r.severity === "high"
-              ? "bg-rose-400"
-              : r.severity === "medium"
-                ? "bg-amber-400"
-                : "bg-cyan-300";
-          return (
-            <li key={r.id} className={cn("rounded-2xl border p-3", tone)}>
-              <div className="flex items-start gap-2">
-                <span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", dot)} />
-                <div className="min-w-0 flex-1">
-                  <div
-                    className={cn(
-                      "truncate text-[14px] font-semibold text-white",
-                      ar && "text-right",
-                    )}
-                  >
-                    {ar ? r.title_ar : r.title_en}
-                  </div>
-                  <div
-                    className={cn(
-                      "mt-1 line-clamp-2 text-[12.5px] text-white/65",
-                      ar && "text-right",
-                    )}
-                  >
-                    {ar ? r.recommendation_ar : r.recommendation_en}
-                  </div>
-                  <div className="mt-1 text-[12px] text-white/45 tabular-nums">
-                    {ar ? "ثقة" : "Conf."} {Math.round(r.confidence * 100)}%{" · "}
-                    {r.horizon_hours}h
-                  </div>
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}

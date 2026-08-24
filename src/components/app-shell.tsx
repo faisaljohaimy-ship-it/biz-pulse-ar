@@ -48,7 +48,18 @@ import { BackHomeControls } from "@/components/layout/GlobalBackButton";
 import { TopUtilityBar } from "@/components/nav/TopUtilityBar";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 
-type NavItem = { to: string; icon: ComponentType<{ className?: string }>; label: string };
+type NavItem = {
+  to: string;
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  /**
+   * V4 (١١٩٢) ٢٠٢٦/٠٨/٢٤ — زرٌّ يحمل اسم شاشةٍ غير وجهته: التسمية تُقرأ
+   * من السجل الكانوني لهذا المسار لا من وجهة الزر، فلا يُعيد `canon`
+   * تسميته باسم الوجهة؛ والتفعيل يصير بالمطابقة التامة كي لا يتوهّج
+   * الزرّ على بنات الوجهة التي لبعضها أزرارها الخاصة (مثل /sec/reports).
+   */
+  labelRoute?: string;
+};
 type NavGroup = { label: string; items: NavItem[] };
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -96,9 +107,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
 
-          {/* الرجوع/الرئيسية داخل الصفّ بجوار مدار النوافذ (قرار المالك
-              ٢٠٢٦/٠٨/٠٦): محاذاةٌ بالتخطيط لا بحسابٍ عائم — فيُفسح لهما
-              الصفّ بدل أن يجلسا فوق الشعار. */}
+          {/* خانة حجز مساحة للزوج المثبّت (V4 فقرة 1175): الزوج التفاعلي
+              واحد في الجذر بصنف nx-backhome-pin، وهذه البصمة تُبقي ممرّه
+              مفسوحًا في صفّ الترويسة فلا يجلس الشعار تحته. */}
           <BackHomeControls />
 
           <div className="flex min-w-0 items-center gap-2">
@@ -147,8 +158,9 @@ function useNavGroups(): NavGroup[] {
   // can never drift between the sidebar and the dashboard (constitution 13.5).
   // Routes not in the registry (sub-pages, admin) keep their own labels.
   const canon = (i: NavItem): NavItem => {
-    const m = moduleByRoute(i.to);
-    return m ? { to: i.to, icon: m.icon, label: locale === "ar" ? m.ar : m.en } : i;
+    // labelRoute (إن وُجد) هو صاحب الاسم لا الوجهة — انظر تعليق NavItem.
+    const m = moduleByRoute(i.labelRoute ?? i.to);
+    return m ? { ...i, icon: m.icon, label: locale === "ar" ? m.ar : m.en } : i;
   };
   // ── أمر المالك ٢٠٢٦/٠٨/٢٠: «حذف جميع الازرار في الشريط الجانبي باستثناء
   // (١- غرفة العمليات ٢- الخريطة التنفيذية ٣- العاجل ٤- التقارير ٥- الملفات)»
@@ -165,8 +177,13 @@ function useNavGroups(): NavGroup[] {
       label: "",
       items: [
         // الاسم محروس في screen-names.ts، فيُقرأ من المصدر ولا يُعاد كتابته.
+        // V4 (١١٩٢) ٢٠٢٦/٠٨/٢٤: «يكون الزر حق غرفة العمليات يفتح النظرة
+        // العامة ويبين شريط البار العلوي» — الوجهة صارت /sec (نظرة عامة
+        // الأمن الصناعي بشريطها العلوي SecSubNav)، والتسمية باقية من سجلّ
+        // /situation-room الكانوني (الشاشة نفسها حُجبت وترتدّ إلى /sec).
         {
-          to: "/situation-room",
+          to: "/sec",
+          labelRoute: "/situation-room",
           icon: Radar,
           label: ar(screenNameAr("/situation-room"), screenNameEn("/situation-room")),
         },
@@ -226,7 +243,11 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
             )}
             <div className="space-y-1">
               {g.items.map((it, itemIndex) => {
-                const active = loc.pathname === it.to || loc.pathname.startsWith(it.to + "/");
+                // زرّ باسم مستعار (labelRoute) يتفعّل بالمطابقة التامة فقط —
+                // وإلا توهّج مع زرّ /sec/reports معًا على صفحة التقارير.
+                const active =
+                  loc.pathname === it.to ||
+                  (!it.labelRoute && loc.pathname.startsWith(it.to + "/"));
                 // External sister platform (Nusuk): the sidebar entry is a
                 // real anchor that opens the platform in a new tab directly.
                 const registryEntry = moduleByRoute(it.to);

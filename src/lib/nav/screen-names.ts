@@ -55,6 +55,11 @@ const EXTRA_SCREEN_NAMES: Readonly<Record<string, ScreenName>> = {
   // محجوزًا هنا: حارس التفرّد في screen-names.test يضمن ألّا تدّعيه شاشة
   // أخرى ما دام ملفّ الشاشة محفوظًا بسياسة الإخفاء.
   "/mission-control": { ar: "مركز القيادة", en: "Mission Control" },
+  // «غرفة العمليات» حُجبت من MODULES بأمر المالك ٢٠٢٦/٠٨/٢٤ (V4 ١١٩١-١١٩٢)
+  // والاسم يبقى محجوزًا هنا لسببين: زرّ الشريط الجانبي ما زال يقرؤه ويفتح
+  // به نظرة عامة /sec، وحارس التفرّد يضمن ألّا تدّعيه شاشة أخرى ما دام
+  // ملفّ الشاشة محفوظًا بسياسة الإخفاء (يرتدّ إلى /sec).
+  "/situation-room": { ar: "غرفة العمليات", en: "Situation Room" },
 };
 
 function buildScreenNames(): Readonly<Record<string, ScreenName>> {

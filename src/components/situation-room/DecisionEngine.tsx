@@ -3,6 +3,10 @@
  * Actions in calm panels. Data only — no fabrication.
  *
  * ٢٠٢٦/٠٨/٢٠ — حُذفت مجموعة «أعلى 3 فرص» بتوجيه المالك.
+ * ٢٠٢٦/٠٨/٢٤ (V4 ١١٩١) — القسمان انتقلا إلى نظرة عامة /sec عبر
+ * `SecOpsInsights` (src/components/sec/sec-ops-insights.tsx) بأسلوب رموز
+ * الوضعين، وصفحة /situation-room حُجبت. هذا الملف محفوظ بسياسة الإخفاء
+ * (الملفات تبقى) وليس له مستهلك حيّ اليوم.
  */
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";

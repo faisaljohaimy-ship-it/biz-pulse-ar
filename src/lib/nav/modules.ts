@@ -19,7 +19,6 @@ import {
   LineChart,
   Map as MapIcon,
   Presentation,
-  Radar,
   Shield,
   Siren,
   Sparkles,
@@ -41,7 +40,10 @@ export const MODULES: readonly ModuleEntry[] = [
   { to: "/sec", ar: "الأمن الصناعي", en: "Industrial Security", icon: Shield },
   // «مركز القيادة» (/mission-control) حُجب بأمر المالك ٢٠٢٦/٠٨/١٢ — وضع
   // العرض التنفيذي وحده نجا، زرًّا في ترويسة لوحة سَدِيد.
-  { to: "/situation-room", ar: "غرفة العمليات", en: "Situation Room", icon: Radar },
+  // «غرفة العمليات» (/situation-room) حُجبت بأمر المالك ٢٠٢٦/٠٨/٢٤
+  // («تعديلات إضافية V4» ١١٩١-١١٩٢): أقسامها الحيّة انتقلت إلى نظرة عامة
+  // /sec والمسار يرتدّ إليها. الاسم يبقى محجوزًا في EXTRA_SCREEN_NAMES —
+  // زرّ الشريط الجانبي ما زال يحمله ويفتح /sec.
   { to: "/executive-map", ar: "الخريطة التنفيذية", en: "Executive Map", icon: MapIcon },
   // G7: the canonical name is «منصة عمليات الوكلاء» in every surface.
   { to: "/agents", ar: "منصة عمليات الوكلاء", en: "Agent Operations Platform", icon: Bot },

@@ -83,11 +83,21 @@ describe("البندان ٥٢ و٥٤ — الشاشتان حاضرتان في ا
 
 describe("الشريط الجانبي خمسة أزرار — أمر المالك ٢٠٢٦/٠٨/٢٠", () => {
   it("الأزرار الخمسة حاضرة ولا سادس لها", () => {
-    for (const to of ["/situation-room", "/executive-map", "/urgent-ops", "/sec/reports", "/files"])
+    // V4 (١١٩٢) ٢٠٢٦/٠٨/٢٤: الزرّ الأول صار يفتح /sec (النظرة العامة
+    // بشريطها العلوي) بدل /situation-room المحجوبة — والتسمية باقية
+    // «غرفة العمليات» تُقرأ من سجلّها الكانوني (التأكيد الثاني أدناه).
+    for (const to of ["/sec", "/executive-map", "/urgent-ops", "/sec/reports", "/files"])
       expect(SHELL, `${to} سقط من الشريط`).toContain(`to: "${to}"`);
     // العدّ من نفس النمط الذي تُكتب به البنود — زرٌّ سادس يُكتب بنفسه.
     const entries = SHELL.match(/\bto: "\//g) ?? [];
     expect(entries.length, "زرّ سادس دخل الشريط دون أمر مالك جديد").toBe(5);
+  });
+
+  it("زرّ /sec يحمل اسم غرفة العمليات من السجل الكانوني لا حرفيًّا (V4 ١١٩٢)", () => {
+    // التسمية تُقرأ من screen-names — كتابة الاسم حرفيًّا بجوار المسار
+    // يصطاده حارس screen-names.test؛ وهذا يضمن بقاء آلية القراءة نفسها.
+    expect(SHELL).toContain('labelRoute: "/situation-room"');
+    expect(SHELL).toContain('screenNameAr("/situation-room")');
   });
 });
 
