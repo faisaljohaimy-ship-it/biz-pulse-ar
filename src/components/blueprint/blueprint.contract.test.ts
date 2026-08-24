@@ -309,12 +309,15 @@ describe("المُخطَّط — الوصول", () => {
     expect(CSS).toMatch(/@media \(pointer: coarse\)[\s\S]{0,300}?min-block-size:\s*44px/);
     expect(CSS).toMatch(/@media \(pointer: fine\)[\s\S]{0,200}?min-block-size:\s*40px/);
 
-    // والرقاقات الباقية تحمل الأرضية صراحةً كذلك — حزامٌ فوق حمّالة.
-    // (كانت ثمانيَ رقاقة تذييل + رقاقة سجلّ المخاطر؛ بقيت الأخيرة.)
+    // والرقاقات — إن وُجدت — تحمل الأرضية صراحةً كذلك: حزامٌ فوق حمّالة.
+    // (كانت ثمانيَ رقاقة تذييل + رقاقة سجلّ المخاطر؛ ثم حُذفت الأخيرة مع
+    // لوحة «سجل المخاطر» بأمر المالك V4 — فقرة 846 — ٢٠٢٦/٠٨/٢٤، فلم تبقَ
+    // على الصفحة رقاقة. شرطُ العدد أُسقط لزوال موضوعه لا تخفيفًا: الحلقة
+    // باقية تُلزم أول رقاقة تعود، والأرضية غير المشروطة تحرسها قاعدتا
+    // المؤشّر أعلاه وأرضية سهم REQ-022 (`min-h-11`) في بنده.
     const chips = [...PAGE.matchAll(/className="nx-bp-card inline-flex ([^"]*)"/g)].map(
       (m) => m[1],
     );
-    expect(chips.length, "لا رقاقة — تغيّر الصنف فبطل الحارس").toBeGreaterThanOrEqual(1);
     for (const cls of chips) {
       expect(cls).toContain("min-h-[44px]");
       expect(cls).toContain("focus-visible:outline");
@@ -557,6 +560,39 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
     // الحذف حذفُ عرضٍ من الرئيسية لا إلغاءُ سطح: المكوّنان يبقيان حيَّين في
     // صفحة تحليلات سَدِيد، وعدّاد الوكلاء في `/nx-ops` و`/nx-flow`.
     expect(read("src/routes/_authenticated/sadeed-analytics.tsx")).toContain("<SadeedAnomalyStrip");
+  });
+
+  it("لوحة «سجل المخاطر» محذوفة من الرئيسية بلا تركة (أمر المالك V4 · فقرة 846 · ٢٠٢٦/٠٨/٢٤)", () => {
+    // الشقّ الأول من الأمر الحرفي «حذف سجل المخاطر»: الجدول التفصيلي
+    // (R-101..R-112 بأعمدة الخطر/المنطقة/الشدّة/الحالة) وترويسته وزرّ
+    // «افتح سجل المخاطر الكامل» وسطر المخاطر بلا إسناد. الشقّ الثاني —
+    // سهم البطاقات ← `/sec/risks` — هو البديل المعتمد ويحرسه بند REQ-022
+    // أعلاه كما هو. القياس على الكود منزوعَ التعليقات: توثيق الحذف نفسه
+    // يذكر الأسماء، فمطابقة النصّ الخام تُسقط الحارس على شرحٍ لا على سطح.
+    const code = PAGE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+    expect(code, "عاد زرّ السجل الكامل").not.toContain("افتح سجل المخاطر الكامل");
+    expect(code).not.toContain("Open the full risk register");
+    expect(code, "عاد رابط /risk من الرئيسية").not.toContain('to="/risk"');
+    expect(code, "عاد جدول السجل أو حاويته").not.toMatch(/nx-risk-(table|scroll|ref|title)/);
+    expect(code).not.toContain("sortedRiskRows");
+    expect(code, "عادت ملاحظة المخاطر بلا إسناد").not.toContain("بلا إسناد لمنطقة في المصدر");
+    // وعبارة «سجل المخاطر» لا ترد إلا في سياق سهم البطاقات: كل ورودٍ لها
+    // يقع داخل رابط `/sec/risks` نفسه — عودتُها خارجه ترويسةُ لوحةٍ تعود.
+    const linkAt = code.indexOf('to="/sec/risks"');
+    expect(linkAt, "سهم البطاقات نفسه غير موجود — سقط بديل اللوحة").toBeGreaterThan(-1);
+    const linkEnd = code.indexOf("</Link>", linkAt);
+    expect(linkEnd).toBeGreaterThan(linkAt);
+    for (let i = code.indexOf("سجل المخاطر"); i > -1; i = code.indexOf("سجل المخاطر", i + 1)) {
+      expect(i, "«سجل المخاطر» خارج سياق سهم البطاقات").toBeGreaterThan(linkAt);
+      expect(i, "«سجل المخاطر» خارج سياق سهم البطاقات").toBeLessThan(linkEnd);
+    }
+    // والحذف حذفُ لوحةٍ لا إلغاءُ بيانات: البطاقات المجمّعة «حسب الشدّة»
+    // و«حسب المنطقة» وتوصيات سَدِيد باقية تقرأ `getRiskBoard` نفسه —
+    // فالهوك ليس تركةً للجدول ولا يُحذف معه.
+    expect(code).toContain("getRiskBoard");
+    expect(code).toContain("countBySeverity");
+    expect(code).toContain("countByRegion");
+    expect(code).toContain("recommendations");
   });
 
   it("الوردة وأثر الفرجار محذوفان بلا تركة", () => {

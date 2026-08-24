@@ -58,7 +58,7 @@ import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { PRODUCT_BRAND } from "@/lib/domain";
@@ -72,7 +72,7 @@ import { STAT_TONES, type StatTone } from "@/components/sec/sec-shell";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
-import { REGIONS, REGION_ACCENT_HEX, getRegion, type RegionId } from "@/lib/regions";
+import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 import { SadeedStagePresence } from "@/components/sadeed/SadeedStagePresence";
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
@@ -139,7 +139,7 @@ export function BlueprintPage() {
     refetchInterval: 30_000,
   });
 
-  /** سجل المخاطر — نفس بوابة القراءة: `!authLoading` وحدها، لا `!!user`. */
+  /** لوحة المخاطر المجمّعة وتوصيات سَدِيد — نفس بوابة القراءة: `!authLoading` وحدها، لا `!!user`. */
   const { data: risk } = useQuery({
     queryKey: ["blueprint-risk-board"],
     queryFn: () => getRisks(),
@@ -159,8 +159,6 @@ export function BlueprintPage() {
 
   const counters = data?.counters;
   const notMeasured = ar ? "لم يُقَس" : "not measured";
-
-  const regionName = (id: RegionId) => (ar ? getRegion(id).shortAr : getRegion(id).shortEn);
 
   /** صفوف المناطق — تُقرأ في بطاقات المناطق وحالتها. */
   const regionRows = data?.regions ?? [];
@@ -192,20 +190,17 @@ export function BlueprintPage() {
      يُغري بإعادة التركيب. والعدّادات نفسها باقية في العقد، تقرؤها
      `/nx-ops` و`/nx-flow`. */
 
-  /* ── المخاطر (البند ١٢ب · «الاثنان معًا») ──────────────────────────────
-     البطاقات المجمّعة والجدول يقرآن **الصفوف نفسها**: العدّ مشتقٌّ من
-     `risk.rows` لا من حقل عدّ مستقل، فيستحيل أن تقول البطاقة رقمًا ويعرض
-     الجدول تحتها غيره. */
+  /* ── المخاطر — بطاقات مجمّعة فقط ──────────────────────────────────────
+     **حُذفت لوحة «سجل المخاطر» — الجدول التفصيلي وزرّ فتح السجل الكامل
+     وسطر المخاطر بلا إسناد — بأمر المالك V4 (فقرة 846) ٢٠٢٦/٠٨/٢٤.**
+     كان هنا «الاثنان معًا» (البند ١٢ب)؛ بقيت البطاقات وحدها، ومدخل السجل
+     المعتمد هو سهم بطاقات المناطق (REQ-022) ← `/sec/risks`.
+     والهوك `getRiskBoard` ليس تركةً للجدول: تقرؤه البطاقات المجمّعة
+     وتوصيات سَدِيد، والعدّ يبقى مشتقًّا من `risk.rows` لا من حقل مستقل. */
   const riskRows = risk?.rows ?? [];
   const riskMeasured = risk !== undefined;
   const countBySeverity = (s: RiskSeverity) => riskRows.filter((r) => r.severity === s).length;
   const countByRegion = (id: RegionId) => riskRows.filter((r) => r.region_id === id).length;
-  const unassignedRisks = riskRows.filter((r) => r.region_id === null).length;
-  const sortedRiskRows = [...riskRows].sort(
-    (a, b) =>
-      SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity) ||
-      a.ref.localeCompare(b.ref, "en"),
-  );
   const recommendations = risk?.recommendations ?? [];
   const riskSimulation = risk?.simulation ?? true;
 
@@ -488,9 +483,11 @@ export function BlueprintPage() {
           </section>
         </section>
 
-        {/* ════ ٣ · المخاطر — بطاقات مجمّعة + جدول تفصيلي ═════════════════
-            «الاثنان معًا» (اختيار المالك · البند ١٢ب). البطاقات والجدول
-            يقرآن الصفوف نفسها، فلا يتناقضان. */}
+        {/* ════ ٣ · المخاطر — بطاقات مجمّعة فقط ══════════════════════════
+            كان القسم «الاثنين معًا» (البند ١٢ب): بطاقات + جدول «سجل
+            المخاطر». حُذفت اللوحة — الجدول وزرّه وملاحظته — بأمر المالك V4
+            (فقرة 846) ٢٠٢٦/٠٨/٢٤، والمدخل المعتمد إلى السجل هو سهم بطاقات
+            المناطق (REQ-022) أعلاه ← `/sec/risks`. */}
         <section
           className="nx-bp-stage mt-8"
           style={{ ["--nx-bp-i" as string]: 7 }}
@@ -562,83 +559,6 @@ export function BlueprintPage() {
                 <div className="nx-dash-caption">{ar ? "مخاطرة مسجَّلة" : "logged risks"}</div>
               </div>
             ))}
-          </div>
-          {riskMeasured && unassignedRisks > 0 && (
-            <p className="nx-dash-empty mt-2">
-              {ar
-                ? `${unassignedRisks} مخاطرة بلا إسناد لمنطقة في المصدر — منطقتها تُقرأ «${notMeasured}» ولا تُخمَّن.`
-                : `${unassignedRisks} risk(s) carry no region in the source — their region reads “${notMeasured}” and is never guessed.`}
-            </p>
-          )}
-
-          {/* الجدول التفصيلي — رأس دلالي، والتمرير الأفقي داخل الحاوية
-              وحدها: الصفحة نفسها لا تُمرَّر أفقيًّا على 390px. */}
-          {/* وإلى جوار الرأس مدخلٌ إلى الوحدة نفسها: ما تعرضه هذه الصفحة
-              لقطةٌ للقراءة لا سجلٌّ يُتصرَّف فيه — لا فرز ولا تصفية ولا
-              تخفيف. و`/risk` كانت على بُعد ثلاث نقرات من الرئيسية (بطاقة
-              منطقة ← القمرة ← خريطة النظام ← المخاطر)، فصارت نقرةً واحدة
-              من الموضع الذي يسأل فيه القارئ عنها. */}
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-            <h3 className="nx-dash-subhead">{ar ? "سجل المخاطر" : "Risk register"}</h3>
-            <Link
-              to="/risk"
-              className="nx-bp-card inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 text-[13px] font-bold text-[color:var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
-            >
-              <ArrowRight aria-hidden data-flip-rtl className="h-4 w-4 shrink-0" />
-              {ar ? "افتح سجل المخاطر الكامل" : "Open the full risk register"}
-            </Link>
-          </div>
-          <div className="nx-risk-scroll nx-bp-card mt-2 overflow-x-auto rounded-2xl">
-            <table className="nx-risk-table">
-              <caption className="sr-only">
-                {ar
-                  ? "سجل المخاطر: الخطر والمنطقة والشدّة والحالة"
-                  : "Risk register: risk, region, severity, status"}
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">{ar ? "الخطر" : "Risk"}</th>
-                  <th scope="col">{ar ? "المنطقة" : "Region"}</th>
-                  <th scope="col">{ar ? "الشدّة" : "Severity"}</th>
-                  <th scope="col">{ar ? "الحالة" : "Status"}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedRiskRows.map((row) => {
-                  const tone = STAT_TONES[SEVERITY_TONE[row.severity]];
-                  const ToneIcon = tone.icon;
-                  return (
-                    <tr key={row.id}>
-                      <td>
-                        <span className="nx-risk-ref">{row.ref}</span>
-                        <span className="nx-risk-title">{row.title_ar}</span>
-                      </td>
-                      <td>
-                        {row.region_id ? (
-                          regionName(row.region_id)
-                        ) : (
-                          <span className="nx-dash-absent">{notMeasured}</span>
-                        )}
-                      </td>
-                      <td>
-                        <span className={`nx-dash-chip inline-flex border ${tone.badgeCls}`}>
-                          {ToneIcon && <ToneIcon aria-hidden className="h-3.5 w-3.5 shrink-0" />}
-                          {ar ? SEVERITY_LABEL[row.severity].ar : SEVERITY_LABEL[row.severity].en}
-                        </span>
-                      </td>
-                      <td>{row.status_ar}</td>
-                    </tr>
-                  );
-                })}
-                {sortedRiskRows.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="nx-dash-empty">
-                      {ar ? "لم تصل صفوف المخاطر بعد." : "No risk rows have arrived yet."}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
           </div>
         </section>
 
