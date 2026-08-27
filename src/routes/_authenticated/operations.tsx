@@ -22,7 +22,7 @@ import {
   Bot,
   Workflow,
   ShieldAlert,
-  Network,
+  ScrollText,
   Plug,
   Gauge,
   CheckCircle2,
@@ -759,7 +759,9 @@ function AuditCenter() {
     <Card className="bg-card/60 border-border/60 backdrop-blur p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Network className="size-4 text-primary" />
+          {/* `Network` تقول «شبكة» — مركز التدقيق سجلُّ مراجعة (`ScrollText`
+              كأيقونة فئة التدقيق في منصة الوكلاء). */}
+          <ScrollText className="size-4 text-primary" />
           <h3 className="text-sm font-semibold tracking-wide">Audit Center</h3>
           <Badge variant="outline" className="text-[12px]">
             immutable

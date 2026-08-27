@@ -143,6 +143,15 @@ describe("حضور المساعد في وسط الصفحة", () => {
     expect(stage).toContain("requestVoiceConversation");
   });
 
+  it("الوجه ظاهر — شخصية سَدِيد المرئية داخل البطاقة (بند المالك ٧)", () => {
+    // «بنفس وضوح التجربة السابقة»: وجهٌ يُرى، لا اسم وحده. الاسم يحرسه
+    // `amiri-scope.contract.test.ts` والتركيب على الرئيسية يحرسه
+    // `blueprint.contract.test.ts` — وهذا البند يسدّ الفجوة الباقية: سقوط
+    // الوجه من البطاقة لا يلتقطه tsc ولا أي حارس آخر.
+    expect(stage, "سقط SadeedVideoAvatar — البطاقة بلا وجه").toContain("SadeedVideoAvatar");
+    expect(stage, "سقطت صورة الوجه الاحتياطية (poster)").toContain("sadeed-portrait");
+  });
+
   it("الحالة مكتوبة بالكلمات ومعلَنة للقارئ الآلي", () => {
     expect(stage).toContain('aria-live="polite"');
     expect(stage).toContain("يتحدّث الآن");

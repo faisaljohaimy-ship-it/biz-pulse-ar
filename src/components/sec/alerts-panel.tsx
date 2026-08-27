@@ -8,7 +8,7 @@ import {
   Boxes,
   Cctv,
   FileCheck2,
-  ShieldAlert,
+  ShieldCheck,
   Filter,
   ArrowUpRight,
 } from "lucide-react";
@@ -309,7 +309,9 @@ export function AlertsPanel() {
       <ul className="max-h-[420px] overflow-y-auto divide-y divide-[color:var(--hairline-soft)]">
         {filtered.length === 0 && (
           <li className="px-4 py-10 text-center text-xs text-foreground/40 font-mono">
-            <ShieldAlert className="w-5 h-5 mx-auto mb-2 text-emerald-400/70" />
+            {/* حالة «كل شيء سليم» — درعُ الإنذار `ShieldAlert` كان يناقض
+                الرسالة تحته (لا تنبيهات = صفاء، لا تهديدًا). */}
+            <ShieldCheck className="w-5 h-5 mx-auto mb-2 text-emerald-400/70" />
             لا توجد تنبيهات مطابقة
           </li>
         )}

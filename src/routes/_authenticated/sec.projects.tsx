@@ -4,7 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getProjects, getCircles } from "@/lib/sec.functions";
 import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
-import { Rocket } from "lucide-react";
+// القاعدة الموثقة في sec-shell: `Rocket` تقول «إطلاق» لا «إدارة مشاريع» —
+// `FolderKanban` هي أيقونة المشاريع الكانونية نفسها في شريط /sec.
+import { FolderKanban } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/sec/projects")({
   errorComponent: RouteError,
@@ -61,7 +63,7 @@ function Projects() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <Rocket className="h-4 w-4 text-primary" />
+                  <FolderKanban className="h-4 w-4 text-primary" />
                   <h3 className="truncate font-semibold text-foreground">{p.name_ar}</h3>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">

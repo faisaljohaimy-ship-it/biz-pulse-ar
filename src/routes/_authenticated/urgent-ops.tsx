@@ -16,7 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ShieldCheck, Sparkles, CheckCircle2, XCircle } from "lucide-react";
+// `LifeBuoy` أيقونة الدعم/المساندة المتعارف عليها (القاعدة الموثقة في
+// dashboard) — `ShieldCheck` تقول «مُتحقَّق/ممتثِل» لا «طلب مساندة».
+import { LifeBuoy, Sparkles, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/urgent-ops")({
@@ -535,7 +537,7 @@ function UrgentOpsPage() {
         <Card className="border-border/60 bg-card/60">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
-              <ShieldCheck className="h-4 w-4" /> طلبات المساندة
+              <LifeBuoy className="h-4 w-4" /> طلبات المساندة
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">

@@ -47,8 +47,9 @@ import {
   ShieldAlert,
   BarChart3,
   Megaphone,
-  Headphones,
+  FileSearch,
   FileText,
+  ScrollText,
   Workflow,
   Network,
   Eye,
@@ -91,10 +92,13 @@ const CATEGORY_ICON: Record<string, typeof Bot> = {
   intelligence: BarChart3,
   monitoring: Activity,
   response: ShieldAlert,
-  audit: ShieldAlert,
+  // كانت `ShieldAlert` مكررة للاستجابة والتدقيق معًا فتفقد التمييز بينهما —
+  // التدقيق مراجعة سجلات (`ScrollText`)؛ و`Headphones` سماعات صوت لا
+  // استرجاع معرفة: `FileSearch` هي أيقونة بحث RAG نفسها في rag-search.
+  audit: ScrollText,
   orchestration: Workflow,
   notification: Megaphone,
-  rag: Headphones,
+  rag: FileSearch,
   twin: Network,
 };
 function iconFor(category?: string) {

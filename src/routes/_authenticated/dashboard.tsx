@@ -17,10 +17,10 @@ import {
   Footprints,
   Gauge,
   HardHat,
-  Hexagon,
   Map,
   Network,
   Radio,
+  Shield,
   ShieldAlert,
   SignalHigh,
   Siren,
@@ -126,8 +126,11 @@ const TIER_OPERATIONS: Node[] = [
   {
     // This tile said «مركز العمليات» — a third name for a route the sidebar
     // called «الأمن الصناعي» and the app shell called «غرفة العمليات».
+    // المادة 13.5: نفس المسار ونفس الاسم = نفس أيقونة سجل الوحدات (`Shield`
+    // لـ«الأمن الصناعي») — `Network` كانت تُقرأ «شبكة» وتتصادم مع أيقونة
+    // التوأم /sec/twin الكانونية.
     to: "/sec",
-    icon: Network,
+    icon: Shield,
     ar: screenNameAr("/sec"),
     en: screenNameEn("/sec"),
     tone: "primary",
@@ -160,7 +163,9 @@ const TIER_OPERATIONS: Node[] = [
     tone: "primary",
     hint: (k) => `${k?.cameras_online ?? 0}/${k?.cameras_total ?? 0} online`,
   },
-  { to: "/sec/twin", icon: Hexagon, ar: "التوأم الرقمي", en: "Digital Twin", tone: "secondary" },
+  // `Hexagon` شكل هندسي أصم؛ أيقونة /sec/twin الكانونية في شريط sec-shell
+  // هي `Network` (شبكة الأصول المترابطة).
+  { to: "/sec/twin", icon: Network, ar: "التوأم الرقمي", en: "Digital Twin", tone: "secondary" },
   {
     to: "/sec/maintenance",
     icon: Wrench,

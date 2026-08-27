@@ -6,7 +6,10 @@ import { getSecOverview, numOrUnmeasured } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
 import { SecOpsInsights } from "@/components/sec/sec-ops-insights";
-import { AlertTriangle, Radar, Camera } from "lucide-react";
+// تدقيق تعبيرية الأيقونات ٢٠٢٦/٠٨/٢٧ — القاعدة الموثقة في sec-shell:
+// الدوريات جولة راجلة (`Footprints` كأيقونة الشريط نفسها) لا كشفًا عن بُعد
+// (`Radar`)، والمراقبة `Cctv` لا كاميرا التصوير `Camera`.
+import { AlertTriangle, Footprints, Cctv } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useRegion } from "@/lib/region-context";
 
@@ -111,7 +114,7 @@ function OpsRoom() {
             </ul>
           </Panel>
 
-          <Panel icon={Radar} title="الدوريات النشطة">
+          <Panel icon={Footprints} title="الدوريات النشطة">
             <ul className="divide-y divide-border">
               {data.patrols.slice(0, 6).map((p) => (
                 <li key={p.id} className="flex items-center justify-between py-2 text-sm">
@@ -133,7 +136,7 @@ function OpsRoom() {
             </ul>
           </Panel>
 
-          <Panel icon={Camera} title="تنبيهات CCTV الأخيرة">
+          <Panel icon={Cctv} title="تنبيهات CCTV الأخيرة">
             <ul className="divide-y divide-border">
               {data.cctv.slice(0, 6).map((c) => (
                 <li key={c.id} className="flex items-center justify-between py-2 text-sm">

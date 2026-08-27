@@ -8,19 +8,24 @@ import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-
 import { RegionTwinScene, type TwinAsset } from "@/components/sec/RegionTwinScene";
 import { useRegion } from "@/lib/region-context";
 import type { Region } from "@/lib/regions";
+// تدقيق تعبيرية الأيقونات ٢٠٢٦/٠٨/٢٧ — القاعدة الموثقة في sec-shell نفسها:
+// `Camera` كاميرا تصوير لا مراقبة (الكانونية `Cctv`)، و`Radar` كشفٌ عن بُعد
+// لا جولة راجلة (الدوريات `Footprints` في كل الأسطح)، و`ShieldCheck` امتثالٌ
+// لا غرفة تحكم (`Monitor` — البطاقة نفسها تعدّ «الشاشات»)، و`KeyRound` مفتاح
+// **صلاحيات** الدخول لا البوابة المادية (`DoorOpen` كما في sec.access وتوصية
+// SEC-03)، و`Crown` امتياز لا منطقة جغرافية (`MapPin` كانونية RegionSwitcher).
 import {
   ChevronRight,
   Network,
   Building,
   Building2,
   Boxes,
-  Camera,
-  KeyRound,
+  Cctv,
+  DoorOpen,
   Activity,
-  Crown,
-  ShieldCheck,
-  Users,
-  Radar,
+  MapPin,
+  Monitor,
+  Footprints,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -140,7 +145,7 @@ function TwinPage() {
                `regions.ts` عبر السياق العام، لا نصًّا مثبَّتًا على الغربية
                في صفوف الخادم. */
             <TreeNode
-              icon={Crown}
+              icon={MapPin}
               label={region.labelAr}
               count={data.circles.length}
               countLabel="دوائر"
@@ -209,7 +214,7 @@ function TwinPage() {
                                     {b.cameras.map((cam) => (
                                       <LeafNode
                                         key={cam.id}
-                                        icon={Camera}
+                                        icon={Cctv}
                                         label={`${cam.code} · ${cam.kind}`}
                                         meta={`${cam.health}%`}
                                         tone={
@@ -233,7 +238,7 @@ function TwinPage() {
                                     {b.gates.map((g) => (
                                       <LeafNode
                                         key={g.id}
-                                        icon={KeyRound}
+                                        icon={DoorOpen}
                                         label={`${g.code} · ${g.kind}`}
                                         meta={`${g.events_today}/يوم`}
                                         tone={g.status === "online" ? "ok" : "warn"}
@@ -283,7 +288,7 @@ function TwinPage() {
                         {c.control_rooms.map((cr) => (
                           <LeafNode
                             key={cr.id}
-                            icon={ShieldCheck}
+                            icon={Monitor}
                             label={cr.name_ar}
                             meta={`${cr.operators_count} مشغل`}
                             tone={cr.status === "operational" ? "ok" : "warn"}
@@ -299,7 +304,7 @@ function TwinPage() {
                         {c.patrol_teams.map((pt) => (
                           <LeafNode
                             key={pt.id}
-                            icon={Radar}
+                            icon={Footprints}
                             label={pt.name_ar}
                             meta={`${pt.members_count} عضو`}
                             tone={
@@ -485,7 +490,7 @@ function DetailsPanel({
     return (
       /* الاسم من `regions.ts` عبر المنطقة النشطة (أمر المالك ٢٠٢٦/٠٨/٢٠)
          لا من صفّ الخادم المثبَّت على الغربية. */
-      <DetailFrame title={region.labelAr} subtitle={region.labelEn} icon={Crown}>
+      <DetailFrame title={region.labelAr} subtitle={region.labelEn} icon={MapPin}>
         <Grid>
           <Cell label="الأقسام" value={tree.sections.length} />
           <Cell label="الدوائر" value={tree.circles.length} />
@@ -621,7 +626,7 @@ function DetailsPanel({
       <DetailFrame
         title={cam.code}
         subtitle={`كاميرا ${cam.kind} · ${cam.resolution ?? "—"}`}
-        icon={Camera}
+        icon={Cctv}
       >
         <Grid>
           <Cell label="الحالة" value={cam.status} />
@@ -646,7 +651,7 @@ function DetailsPanel({
       .find((x) => x.id === selected.id);
     if (!g) return <Empty />;
     return (
-      <DetailFrame title={g.code} subtitle={`بوابة ${g.kind}`} icon={KeyRound}>
+      <DetailFrame title={g.code} subtitle={`بوابة ${g.kind}`} icon={DoorOpen}>
         <Grid>
           <Cell label="الحالة" value={g.status} />
           <Cell label="الصحة" value={`${g.health}%`} />
@@ -676,7 +681,7 @@ function DetailsPanel({
     const cr = tree.circles.flatMap((c) => c.control_rooms).find((x) => x.id === selected.id);
     if (!cr) return <Empty />;
     return (
-      <DetailFrame title={cr.name_ar} subtitle={cr.code} icon={ShieldCheck}>
+      <DetailFrame title={cr.name_ar} subtitle={cr.code} icon={Monitor}>
         <Grid>
           <Cell label="المشغلون" value={cr.operators_count} />
           <Cell label="الشاشات" value={cr.screens_count} />
@@ -690,7 +695,7 @@ function DetailsPanel({
     const pt = tree.circles.flatMap((c) => c.patrol_teams).find((x) => x.id === selected.id);
     if (!pt) return <Empty />;
     return (
-      <DetailFrame title={pt.name_ar} subtitle={pt.code} icon={Users}>
+      <DetailFrame title={pt.name_ar} subtitle={pt.code} icon={Footprints}>
         <Grid>
           <Cell label="القائد" value={pt.leader ?? "—"} />
           <Cell label="الأعضاء" value={pt.members_count} />

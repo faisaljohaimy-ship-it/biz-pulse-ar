@@ -5,6 +5,7 @@ import {
   AudioWaveform,
   CheckCircle2,
   KeyRound,
+  Mic,
   MinusCircle,
   RefreshCw,
   ShieldCheck,
@@ -124,7 +125,9 @@ export function CanonicalVoiceStatus() {
                 secondary="ELEVENLABS_API_KEY"
               />
               <StatusTile
-                Icon={Sparkles}
+                // `Sparkles` بريقٌ عام — البطاقة عن هوية **صوت** سَدِيد
+                // المعتمدة، والمايكروفون هو رمزها الأدق.
+                Icon={Mic}
                 title="الهوية الصوتية"
                 ok={voiceReady}
                 primary={diagnostics.voice.identity}
