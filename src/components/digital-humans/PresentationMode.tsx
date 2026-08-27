@@ -24,7 +24,9 @@ import { cn } from "@/lib/utils";
 export interface PresentationOverview {
   sites: number;
   incidents: number;
-  incidents_critical: number;
+  // ٢٠٢٦/٠٨/٢٧ — «لم يُقَس» (null) حين تكون شدة البلاغات غير مصنفة في
+  // المصدر (مجموعة «تقرير البلاغات» الحقيقية) — المادة ٢٧.
+  incidents_critical: number | null;
   incidents_open: number;
   patrols_active: number;
   permits_active: number;
@@ -44,6 +46,10 @@ type ScriptStep = {
 function buildScript(ov: PresentationOverview, ar: boolean, displayName: string): ScriptStep[] {
   void ar;
   const c = ov;
+  // المادة ٢٧: «لم يُقَس» لا يُروى صفرًا — حين تكون الشدة غير مصنفة لا
+  // يدّعي السرد «لا حوادث حرجة» ولا يختلق عددًا.
+  const critMeasured = c.incidents_critical != null;
+  const crit = c.incidents_critical ?? 0;
   const greetAr = `${displayName ? `أهلاً ${displayName}، ` : ""}أبدأ الإحاطة التنفيذية الآن.`;
   const greetEn = `${displayName ? `Welcome ${displayName}, ` : ""}starting your executive briefing now.`;
 
@@ -63,13 +69,17 @@ function buildScript(ov: PresentationOverview, ar: boolean, displayName: string)
       speakerId: "incident_commander",
       preState: "analyzing",
       text_ar:
-        c.incidents_critical > 0
-          ? `لدي ${c.incidents_critical} حادث حرج${c.topIncidentTitle ? ` — ${c.topIncidentTitle}` : ""}. أبدأ التحقق.`
-          : `لا توجد حوادث حرجة. ${c.incidents_open} حادث مفتوح قيد المعالجة الطبيعية.`,
+        crit > 0
+          ? `لدي ${crit} حادث حرج${c.topIncidentTitle ? ` — ${c.topIncidentTitle}` : ""}. أبدأ التحقق.`
+          : critMeasured
+            ? `لا توجد حوادث حرجة. ${c.incidents_open} حادث مفتوح قيد المعالجة الطبيعية.`
+            : `تصنيف الشدة لم يُقَس في المصدر. ${c.incidents_open} بلاغ مفتوح قيد المعالجة.`,
       text_en:
-        c.incidents_critical > 0
-          ? `${c.incidents_critical} critical incident${c.incidents_critical > 1 ? "s" : ""}${c.topIncidentTitle ? ` — ${c.topIncidentTitle}` : ""}. Validating now.`
-          : `No critical incidents. ${c.incidents_open} open incidents in normal handling.`,
+        crit > 0
+          ? `${crit} critical incident${crit > 1 ? "s" : ""}${c.topIncidentTitle ? ` — ${c.topIncidentTitle}` : ""}. Validating now.`
+          : critMeasured
+            ? `No critical incidents. ${c.incidents_open} open incidents in normal handling.`
+            : `Severity is not measured in the source. ${c.incidents_open} open incidents in handling.`,
     },
 
     // Workflow execution
@@ -77,11 +87,11 @@ function buildScript(ov: PresentationOverview, ar: boolean, displayName: string)
       speakerId: "emergency_coordinator",
       preState: "searching",
       text_ar:
-        c.incidents_critical > 0
+        crit > 0
           ? "أُطلق سير عمل الاستجابة الموحد وأخطر القيادة الميدانية."
           : "خطط الاستجابة جاهزة، لا حاجة لتفعيل سير عمل طارئ.",
       text_en:
-        c.incidents_critical > 0
+        crit > 0
           ? "Activating unified response workflow and notifying field command."
           : "Response plans are armed; no emergency workflow required.",
     },
@@ -167,13 +177,13 @@ function buildScript(ov: PresentationOverview, ar: boolean, displayName: string)
       speakerId: "aria",
       preState: "thinking",
       text_ar:
-        c.incidents_critical > 0
+        crit > 0
           ? "توصيتي: اعتماد التصعيد الفوري للحادث الحرج الآن."
           : c.assets_offline > 0
             ? "توصيتي: فتح أوامر عمل عاجلة لإعادة الأصول إلى الخدمة."
             : "توصيتي: مواصلة الوضع التشغيلي الحالي — لا حاجة لتدخل تنفيذي.",
       text_en:
-        c.incidents_critical > 0
+        crit > 0
           ? "My recommendation: approve immediate escalation of the critical incident."
           : c.assets_offline > 0
             ? "My recommendation: open priority work orders to restore offline assets."

@@ -139,7 +139,8 @@ const TIER_OPERATIONS: Node[] = [
     ar: "البلاغات والحوادث",
     en: "Incidents",
     tone: "rose",
-    hint: (k) => `${k?.incidents_open ?? 0} open · ${k?.incidents_critical ?? 0} critical`,
+    hint: (k) =>
+      `${k?.incidents_open ?? 0} open · ${k == null || k.incidents_critical != null ? `${k?.incidents_critical ?? 0} critical` : "critical not measured"}`,
   },
   {
     // `ShieldCheck` تقول «مُتحقَّق/ممتثِل»، والدورية جولةٌ راجلة في الميدان.
@@ -441,7 +442,11 @@ function OperationsCockpit() {
           <KpiStat
             label="Open Incidents"
             value={fmt(k?.incidents_open)}
-            sub={`${k?.incidents_critical ?? 0} critical`}
+            sub={
+              k == null || k.incidents_critical != null
+                ? `${k?.incidents_critical ?? 0} critical`
+                : "critical not measured"
+            }
             tone="rose"
           />
           <KpiStat

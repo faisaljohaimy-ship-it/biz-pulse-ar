@@ -31,7 +31,9 @@ function AIRec() {
     impact: "عالٍ" | "متوسط" | "منخفض";
     action: string;
   }[] = [];
-  if (data.counts.incidents_critical > 0)
+  // المادة ٢٧ (٢٠٢٦/٠٨/٢٧): «الحرجة» قد تكون غير مقيسة (null) — لا توصية
+  // تُبنى على عدٍّ لم يقع؛ التوصية فقط حين يكون العدّ مقيسًا وموجبًا.
+  if (data.counts.incidents_critical != null && data.counts.incidents_critical > 0)
     recs.push({
       title: `معالجة فورية لـ ${data.counts.incidents_critical} بلاغ حرج`,
       rationale: "بلاغات بدرجة حرجة لا تزال مفتوحة وتؤثر على المؤشرات التنفيذية.",

@@ -31,7 +31,9 @@ export const ExecKpisSchema = z
   .object({
     incidents_total: nonNegInt,
     incidents_open: nonNegInt,
-    incidents_critical: nonNegInt,
+    // ٢٠٢٦/٠٨/٢٧ — مجموعة «تقرير البلاغات» الحقيقية بلا شدة: عدّ الحرجة
+    // فوق صفوف لم تُقَس شدّتها «لم يُقَس» (null)، لا صفر (المادة ٢٧).
+    incidents_critical: nonNegIntOrNull,
     incidents_resolution_rate: pctIntOrNull,
     mttr_minutes: nonNegIntOrNull,
     preventive_wo: nonNegInt,
@@ -89,7 +91,8 @@ export function numOrUnmeasured(v: number | null | undefined, suffix = ""): stri
 }
 
 export type ExecKpiSources = {
-  incidents: { severity: string; status: string; response_minutes: number | null }[];
+  // الشدة قد تكون غير مقيسة (صفوف «تقرير البلاغات» الحقيقية) ⇒ null.
+  incidents: { severity: string | null; status: string; response_minutes: number | null }[];
   patrols: { status: string; checkpoints_done: number; checkpoints_total: number }[];
   visitors: { status: string }[];
   permits: { status: string }[];
@@ -194,7 +197,14 @@ export function computeExecKpis(src: ExecKpiSources): ExecKpis {
 
   const incOpen = I.filter((i) => i.status !== "resolved" && i.status !== "closed").length;
   const incClosed = I.length - incOpen;
-  const incCritical = I.filter((i) => i.severity === "critical" && i.status !== "closed").length;
+  // المادة ٢٧ (٢٠٢٦/٠٨/٢٧): بلاغات بلا شدة مقيسة (مجموعة «تقرير
+  // البلاغات» الحقيقية) لا تُعدّ حرجتها صفرًا — «لم يُقَس» (null). العدّ
+  // يبقى قياسًا حين تكون الشدة مقيسة أو حين لا بلاغ أصلًا (صفر صفوف صادق).
+  const severityMeasured = I.some((i) => i.severity != null);
+  const incCritical =
+    I.length === 0 || severityMeasured
+      ? I.filter((i) => i.severity === "critical" && i.status !== "closed").length
+      : null;
   // المادة ٢٧: بلا بلاغ زمنه مسجَّل لا يوجد متوسط استجابة — null لا صفر
   // (صفر دقيقة استجابة ادّعاء أداء مثالي، وهو أخطر من غياب الرقم).
   const responded = I.filter((i) => i.response_minutes != null);
@@ -225,9 +235,9 @@ export function computeExecKpis(src: ExecKpiSources): ExecKpis {
     : null;
   // بلا بلاغات لا توجد نسبة إغلاق (كان يُحسب 0/1 فيظهر 0% إنجاز مُختلق).
   const resolutionRate = I.length ? Math.round((incClosed / I.length) * 100) : null;
-  // المخاطر تستهلك صحة الكاميرات؛ الصفر المُختلق كان يضيف 50 نقطة خطر وهمية.
+  // المخاطر تستهلك صحة الكاميرات وعدّ الحرجة؛ أي طرف غير مقيس ⇒ غير مقيسة.
   const riskIndexRaw =
-    cctvHealth === null
+    cctvHealth === null || incCritical === null
       ? null
       : Math.min(100, incCritical * 15 + sensorsAlarming * 5 + (100 - cctvHealth) / 2);
   const safetyIndexRaw = riskIndexRaw === null ? null : Math.max(0, 100 - riskIndexRaw);
@@ -297,7 +307,17 @@ export const getExecKpis = createServerFn({ method: "GET" })
         return { ...base, cctv: (cctv.data ?? []) as { status: string }[] };
       },
       (s) => Object.values(s).every((rows) => Array.isArray(rows) && rows.length === 0),
-      () => ({ ...buildExecKpiSourcesSimulation(), cctv: buildExecCctvSimulation() }),
+      // ٢٠٢٦/٠٨/٢٧ — بلاغات البديل من مجموعة «تقرير البلاغات» الحقيقية
+      // (3,427 صفًّا: open=2,284 · closed=1,143 محسوبة من الصفوف؛ الشدة
+      // غير مقيسة ⇒ «الحرجة» null). بقية المصادر محاكاتها كما هي.
+      async () => {
+        const { REAL_EXEC_KPI_INCIDENTS } = await import("./exec/event-report.real.server");
+        return {
+          ...buildExecKpiSourcesSimulation(),
+          incidents: REAL_EXEC_KPI_INCIDENTS,
+          cctv: buildExecCctvSimulation(),
+        };
+      },
     );
     return computeExecKpis(sources);
   });
@@ -572,7 +592,8 @@ export type ExecDrillSources = {
     id: string;
     ref: string;
     title_ar: string;
-    severity: string;
+    // غير مقيسة في مجموعة «تقرير البلاغات» الحقيقية ⇒ null («غير مصنف»).
+    severity: string | null;
     status: string;
     response_minutes: number | null;
   }[];
@@ -972,7 +993,10 @@ const RISK_AR: Record<string, string> = {
 // يُصرَّح به في note_ar — لا يُقتطع الرقم نفسه أبدًا (المادة ٢٧).
 const MAX_DRILL_ROWS = 60;
 
-function incidentTone(i: { severity: string; status: string }): NonNullable<ExecDrillRow["tone"]> {
+function incidentTone(i: {
+  severity: string | null;
+  status: string;
+}): NonNullable<ExecDrillRow["tone"]> {
   if (i.severity === "critical" && i.status !== "closed") return "danger";
   if (i.status !== "resolved" && i.status !== "closed") return "warning";
   return "success";
@@ -982,7 +1006,8 @@ function incidentRow(i: ExecDrillSources["incidents"][number]): ExecDrillRow {
   return {
     id: i.id,
     title_ar: i.title_ar,
-    subtitle_ar: `${i.ref} · خطورة ${SEVERITY_AR[i.severity] ?? i.severity}`,
+    // شدة غير مقيسة تُقال كلمةً «غير مصنف» — لا تُخمَّن ولا تُخفى.
+    subtitle_ar: `${i.ref} · ${i.severity == null ? "الخطورة غير مصنفة" : `خطورة ${SEVERITY_AR[i.severity] ?? i.severity}`}`,
     status_ar: INCIDENT_STATUS_AR[i.status] ?? i.status,
     tone: incidentTone(i),
   };
@@ -1012,7 +1037,20 @@ export function computeExecDrilldown(
   metric: ExecDrillMetric,
   src: ExecDrillSources,
 ): ExecDrilldown {
-  const simulated = (src as { is_simulation?: boolean }).is_simulation === true;
+  // ٢٠٢٦/٠٨/٢٧ — البديل صار مركّبًا: بلاغات «تقرير البلاغات» **حقيقية**
+  // وبقية المصادر محاكاة. فوسم النافذة لمقاييس البلاغات يُقرأ من صفوفها
+  // نفسها (`is_simulation` على الصف) لا من علم الحاوية — وإلا وُصفت صفوف
+  // حقيقية بأنها محاكاة.
+  const containerSimulated = (src as { is_simulation?: boolean }).is_simulation === true;
+  const incidentMetric =
+    metric === "incidents_total" ||
+    metric === "incidents_open" ||
+    metric === "incidents_critical" ||
+    metric === "incidents_resolution" ||
+    metric === "mttr";
+  const simulated = incidentMetric
+    ? src.incidents.some((r) => (r as { is_simulation?: boolean }).is_simulation === true)
+    : containerSimulated;
   const finish = (rows: ExecDrillRow[], total: number | null, note_ar?: string): ExecDrilldown => {
     const capped = rows.length > MAX_DRILL_ROWS;
     const capNote = capped ? `يُعرض أول ${MAX_DRILL_ROWS} صفًا من أصل ${rows.length}` : undefined;
@@ -1037,6 +1075,11 @@ export function computeExecDrilldown(
       return finish(rows.map(incidentRow), rows.length, `${rows.length} بلاغًا غير مُغلق`);
     }
     case "incidents_critical": {
+      // نفس معيار computeExecKpis حرفيًّا: شدة غير مقيسة عبر المجموعة ⇒
+      // العدّ «لم يُقَس» (null) — لا صفر يوحي بغياب الحرج (المادة ٢٧).
+      if (I.length > 0 && !I.some((i) => i.severity != null)) {
+        return finish([], null, "الشدة غير مصنفة في المصدر — العدّ لم يُقَس");
+      }
       const rows = I.filter((i) => i.severity === "critical" && i.status !== "closed");
       return finish(rows.map(incidentRow), rows.length, `${rows.length} بلاغًا حرجًا قائمًا`);
     }
@@ -1267,7 +1310,16 @@ export const getExecDrilldown = createServerFn({ method: "GET" })
       // نفس معيار getExecKpis: المحاكاة فقط حين لا صفّ مرئيًّا في أي مصدر —
       // فتتبدل البطاقات والنوافذ معًا لا كلٌّ على حدة.
       (s) => Object.values(s).every((rows) => Array.isArray(rows) && rows.length === 0),
-      () => buildExecDrillSourcesSimulation(buildExecKpiSourcesSimulation()),
+      // ٢٠٢٦/٠٨/٢٧ — صفوف نافذة البلاغات من مجموعة «تقرير البلاغات»
+      // الحقيقية بهويتها (نفس صفوف getExecKpis البديلة صفًّا بصفّ، فلا
+      // تفترق البطاقة عن نافذتها)؛ بقية النوافذ محاكاتها كما هي.
+      async () => {
+        const { REAL_EXEC_DRILL_INCIDENTS } = await import("./exec/event-report.real.server");
+        return {
+          ...buildExecDrillSourcesSimulation(buildExecKpiSourcesSimulation()),
+          incidents: REAL_EXEC_DRILL_INCIDENTS,
+        };
+      },
     );
     return computeExecDrilldown(data.metric, sources);
   });

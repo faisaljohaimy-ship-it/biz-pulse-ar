@@ -267,7 +267,13 @@ export function SecError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-export function severityClass(sev: string) {
+/**
+ * ٢٠٢٦/٠٨/٢٧ — الشدة قد تكون غير مقيسة (صفوف «تقرير البلاغات» الحقيقية):
+ * `null`/`undefined` ⇒ رقاقة محايدة **بحدّ متقطع** — الشكل مع الكلمة
+ * («غير مصنف» يكتبها المستدعي)، لا اللون وحده (WCAG 2.2 §1.4.1).
+ */
+export function severityClass(sev: string | null | undefined) {
+  if (sev == null) return "border-dashed bg-muted text-muted-foreground border-border";
   switch (sev) {
     case "critical":
       return "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30";

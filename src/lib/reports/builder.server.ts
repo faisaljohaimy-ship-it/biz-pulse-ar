@@ -252,7 +252,8 @@ export async function buildExecPdf(
     { label: "Safety Index", value: pct(k.safety_index) },
     { label: "Risk Index", value: pct(k.risk_index) },
     { label: "Open Incidents", value: String(k.incidents_open) },
-    { label: "Critical Incidents", value: String(k.incidents_critical) },
+    // المادة ٢٧ (٢٠٢٦/٠٨/٢٧): «الحرجة» قد تكون غير مقيسة (شدة غير مصنفة).
+    { label: "Critical Incidents", value: num(k.incidents_critical) },
     { label: "Resolution Rate", value: pct(k.incidents_resolution_rate) },
     { label: "MTTR (min)", value: num(k.mttr_minutes) },
     { label: "Work Orders Open", value: String(k.wo_open) },
@@ -414,7 +415,7 @@ export function htmlSummaryFromSnapshot(
       <div style="font:12px/1.4 system-ui;color:#64748b;margin-bottom:16px">Generated ${new Date(snap.generatedAt).toUTCString()} · Window ${snap.range}</div>
       <table style="width:100%;border-collapse:collapse;font-family:system-ui">
         <tr>${cell("Executive Readiness", pct(k.executive_readiness))}${cell("Safety Index", pct(k.safety_index))}${cell("Risk Index", pct(k.risk_index))}</tr>
-        <tr>${cell("Open Incidents", k.incidents_open)}${cell("Critical Incidents", k.incidents_critical)}${cell("Resolution Rate", pct(k.incidents_resolution_rate))}</tr>
+        <tr>${cell("Open Incidents", k.incidents_open)}${cell("Critical Incidents", num(k.incidents_critical))}${cell("Resolution Rate", pct(k.incidents_resolution_rate))}</tr>
         <tr>${cell("Work Orders Open", k.wo_open)}${cell("CCTV Health", pct(k.cctv_health))}${cell("Patrol Completion", pct(k.patrol_completion))}</tr>
       </table>
       <p style="font:13px/1.6 system-ui;color:#334155;margin-top:16px">

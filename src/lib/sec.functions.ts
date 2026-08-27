@@ -24,8 +24,10 @@ export type SecIncident = {
   site_id: string | null;
   category: string;
   title_ar: string;
-  title_en: string;
-  severity: string;
+  // ٢٠٢٦/٠٨/٢٧ — صفوف «تقرير البلاغات» الحقيقية بلا عنوان إنجليزي ولا شدة:
+  // غير مقيسين ⇒ null، والشدة تُعرض «غير مصنف» (المادة ٢٧ — لا اختلاق).
+  title_en: string | null;
+  severity: string | null;
   status: string;
   owner: string | null;
   reported_at: string;
@@ -235,7 +237,9 @@ export type SecOverview = {
   counts: {
     sites: number;
     incidents_open: number;
-    incidents_critical: number;
+    // ٢٠٢٦/٠٨/٢٧ — «الحرجة» فوق صفوف لم تُقَس شدّتها «لم يُقَس» (null)
+    // لا صفرًا (المادة ٢٧). القيمة عدد حين تكون الشدة مقيسة.
+    incidents_critical: number | null;
     patrols_active: number;
     visitors_inside: number;
     permits_active: number;
@@ -259,7 +263,28 @@ export const getSecOverview = createServerFn({ method: "GET" })
         v.incidents.length === 0 &&
         v.patrols.length === 0 &&
         v.assets.length === 0,
-      () => buildSecOverviewSimulation(Date.now()),
+      // ٢٠٢٦/٠٨/٢٧ — أمر المالك: بلاغات البديل («آخر البلاغات» وعدّاداها)
+      // من مجموعة «تقرير البلاغات» الحقيقية (3,427 صفًّا فعليًّا):
+      // - القائمة أحدث 200 صف (مرآة سقف الاستعلام الحي)؛
+      // - `incidents_open` محسوب من كامل المجموعة (2,284)؛
+      // - `incidents_critical` **null ⇒ «لم يُقَس»**: المصدر بلا شدة،
+      //   والصفر ادّعاء قياس (المادة ٢٧).
+      // بقية النطاقات (دوريات/زوار/تصاريح/أصول/كاميرات…) محاكاتها كما هي؛
+      // الصفوف الحقيقية مجمّدة فلا يسمها `markSimulation`.
+      async () => {
+        const sim = buildSecOverviewSimulation(Date.now());
+        const { REAL_SEC_INCIDENTS, REAL_INCIDENT_COUNTS } =
+          await import("./exec/event-report.real.server");
+        return {
+          ...sim,
+          incidents: [...REAL_SEC_INCIDENTS],
+          counts: {
+            ...sim.counts,
+            incidents_open: REAL_INCIDENT_COUNTS.open,
+            incidents_critical: null,
+          },
+        };
+      },
     );
   });
 

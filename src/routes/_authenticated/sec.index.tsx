@@ -2,7 +2,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getSecOverview } from "@/lib/sec.functions";
+import { getSecOverview, numOrUnmeasured } from "@/lib/sec.functions";
 import { useAuth } from "@/lib/auth-context";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
 import { SecOpsInsights } from "@/components/sec/sec-ops-insights";
@@ -49,10 +49,18 @@ function OpsRoom() {
             value={data.counts.incidents_open}
             tone={data.counts.incidents_open > 0 ? "warning" : "default"}
           />
+          {/* المادة ٢٧ (٢٠٢٦/٠٨/٢٧): الشدة غير مقيسة في مجموعة «تقرير
+              البلاغات» الحقيقية ⇒ «لم يُقَس» بنغمة محايدة — لا صفر «سليم». */}
           <StatCard
             label="بلاغات حرجة"
-            value={data.counts.incidents_critical}
-            tone={data.counts.incidents_critical > 0 ? "danger" : "success"}
+            value={numOrUnmeasured(data.counts.incidents_critical)}
+            tone={
+              data.counts.incidents_critical == null
+                ? "default"
+                : data.counts.incidents_critical > 0
+                  ? "danger"
+                  : "success"
+            }
           />
           <StatCard label="دوريات نشطة" value={data.counts.patrols_active} tone="success" />
           {/* حُذفت ثلاث بطاقات بقرار المالك ٢٠٢٦/٠٨/٢٠: «زوّار بالداخل» و«مقاولون نشطون» و«سجل البلاغات المحمّل» */}
@@ -91,7 +99,7 @@ function OpsRoom() {
                   <span
                     className={`shrink-0 rounded-full border px-2 py-0.5 text-[12px] font-medium ${severityClass(i.severity)}`}
                   >
-                    {i.severity}
+                    {i.severity ?? "غير مصنف"}
                   </span>
                 </li>
               ))}

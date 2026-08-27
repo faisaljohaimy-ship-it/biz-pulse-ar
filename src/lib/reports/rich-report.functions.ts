@@ -289,9 +289,11 @@ export type IncidentRow = {
   title_ar: string;
   title_en: string | null;
   category: string;
-  severity: string;
+  // ٢٠٢٦/٠٨/٢٧ — غير مقيستين في مجموعة «تقرير البلاغات» الحقيقية ⇒ null
+  // (تُعرضان «—»/«غير مصنف» — المادة ٢٧، لا اختلاق).
+  severity: string | null;
   status: string;
-  priority: string;
+  priority: string | null;
   owner: string | null;
   site_id: string | null;
   reported_at: string;
@@ -1005,7 +1007,8 @@ export function composeRichReport(
   }
 
   if (wanted.has("incidents")) {
-    const sev = countBy(incidents, (i) => i.severity);
+    // شدة غير مقيسة تُحصى تحت مفتاحها الصريح «unclassified» لا تحت درجة مختلقة.
+    const sev = countBy(incidents, (i) => i.severity ?? "unclassified");
     sections.push({
       key: "incidents",
       title_ar: "البلاغات والحوادث",

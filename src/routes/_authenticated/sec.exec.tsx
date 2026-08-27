@@ -65,11 +65,19 @@ function ExecDashboard() {
           value={k.incidents_open}
           tone={k.incidents_open > 0 ? "warning" : "success"}
         />
+        {/* المادة ٢٧ (٢٠٢٦/٠٨/٢٧): الشدة غير مقيسة في مجموعة «تقرير
+            البلاغات» الحقيقية ⇒ «لم يُقَس» بنغمة محايدة، لا صفر «سليم». */}
         <ExecDrilldownDialog
           metric="incidents_critical"
           label="حرجة"
-          value={k.incidents_critical}
-          tone={k.incidents_critical > 0 ? "danger" : "success"}
+          value={numOrUnmeasured(k.incidents_critical)}
+          tone={
+            k.incidents_critical == null
+              ? undefined
+              : k.incidents_critical > 0
+                ? "danger"
+                : "success"
+          }
         />
         {/* ٢٠٢٦/٠٨/٢٠ — «نسبة الحل» أعيدت تسميتها «نسبة حل البلاغات» */}
         <ExecDrilldownDialog

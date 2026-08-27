@@ -41,7 +41,8 @@ function Timeline() {
       icon: AlertTriangle,
       title: `بلاغ: ${i.title_ar}`,
       sub: `${i.ref} · ${i.category}`,
-      sev: i.severity,
+      // شدة غير مقيسة (صفوف «تقرير البلاغات» الحقيقية) ⇒ بلا رقاقة شدة.
+      sev: i.severity ?? undefined,
     })),
     ...data.patrols
       .filter((p) => p.started_at)

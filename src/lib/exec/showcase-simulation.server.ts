@@ -2912,9 +2912,11 @@ export type OmsIncidentRow = {
   category: string;
   title_ar: string;
   title_en: string | null;
-  severity: string;
+  // ٢٠٢٦/٠٨/٢٧ — تصدير «تقرير البلاغات» الحقيقي لا يحمل شدة ولا أولوية:
+  // غير مقيستين ⇒ `null` وتُعرضان «غير مصنف» (المادة ٢٧ — لا اختلاق).
+  severity: string | null;
   status: string;
-  priority: string;
+  priority: string | null;
   owner: string | null;
   assigned_to: string | null;
   reported_at: string;
@@ -2931,6 +2933,10 @@ export type OmsIncidentRow = {
   executive_review: string | null;
   executive_reviewed_at: string | null;
   executive_reviewed_by: string | null;
+  // ٢٠٢٦/٠٨/٢٧ — الملف الحقيقي يحمل المدينة والمنطقة (معرّفات regions.ts)؛
+  // صفوف القاعدة القديمة وصفوف المحاكاة لا تحملهما ⇒ `null`.
+  city: string | null;
+  region_id: string | null;
 };
 
 export type OmsWorkOrderRow = {
@@ -3286,6 +3292,9 @@ export function buildOmsSimulation(now: number): OmsSimulation {
         executive_review: i === 0 ? "روجعت تنفيذيًّا — تُرفع خطة الاحتواء خلال ٢٤ ساعة." : null,
         executive_reviewed_at: i === 0 ? iso(reportedAt + 3 * H) : null,
         executive_reviewed_by: null,
+        // المحاكاة بلا إسناد مدينة/منطقة — الحقلان من الملف الحقيقي وحده.
+        city: null,
+        region_id: null,
       };
     },
   );

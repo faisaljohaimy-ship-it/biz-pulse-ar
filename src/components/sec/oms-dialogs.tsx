@@ -221,7 +221,8 @@ type IncRow = {
   ref: string;
   category: string;
   title_ar: string;
-  severity: string;
+  // ٢٠٢٦/٠٨/٢٧ — شدة غير مقيسة في صفوف «تقرير البلاغات» الحقيقية ⇒ null.
+  severity: string | null;
   status: string;
   priority?: string | null;
   owner: string | null;
@@ -500,7 +501,7 @@ export function IncidentDrawer({
                   <span
                     className={`rounded-full border px-2 py-0.5 text-[12px] ${severityClass(incident.severity)}`}
                   >
-                    {incident.severity}
+                    {incident.severity ?? "غير مصنف"}
                   </span>
                   <span
                     className={`rounded-full border px-2 py-0.5 text-[12px] ${statusClass(incident.status)}`}

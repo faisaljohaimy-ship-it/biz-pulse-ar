@@ -193,6 +193,11 @@ function buildAgentScript(
   }
 
   const c = ov.counts;
+  // المادة ٢٧ (٢٠٢٦/٠٨/٢٧): «الحرجة» قد تكون «لم يُقَس» (null — شدة غير
+  // مصنفة في مجموعة «تقرير البلاغات» الحقيقية): لا تُروى صفرًا ولا يُدّعى
+  // «لا حوادث حرجة» فوق عدٍّ لم يقع.
+  const critMeasured = c.incidents_critical != null;
+  const crit = c.incidents_critical ?? 0;
   const criticalIncident = ov.incidents.find(
     (i) => i.severity === "critical" && i.status !== "closed" && i.status !== "resolved",
   );
@@ -204,18 +209,22 @@ function buildAgentScript(
       name_en: agentName("security", "en"),
       initials: agentInitials("security"),
       icon: agentIcon("security"),
-      tone: c.incidents_critical > 0 ? "rose" : "cyan",
+      tone: crit > 0 ? "rose" : "cyan",
       status_ar: "تحليل الحوادث الحية…",
       status_en: "Analyzing live incidents…",
       finding_ar: `تم تحليل ${ov.incidents.length} حادث. ${
-        c.incidents_critical > 0
-          ? `يوجد ${c.incidents_critical} حادث حرج${criticalIncident?.title_ar ? ` — ${criticalIncident.title_ar}` : ""}.`
-          : "لا توجد حوادث حرجة."
+        crit > 0
+          ? `يوجد ${crit} حادث حرج${criticalIncident?.title_ar ? ` — ${criticalIncident.title_ar}` : ""}.`
+          : critMeasured
+            ? "لا توجد حوادث حرجة."
+            : "تصنيف الشدة لم يُقَس في المصدر."
       }`,
       finding_en: `${ov.incidents.length} incidents analysed. ${
-        c.incidents_critical > 0
-          ? `${c.incidents_critical} critical incident${c.incidents_critical > 1 ? "s" : ""} detected${criticalIncident?.title_en ? ` — ${criticalIncident.title_en}` : ""}.`
-          : "No critical incidents detected."
+        crit > 0
+          ? `${crit} critical incident${crit > 1 ? "s" : ""} detected${criticalIncident?.title_en ? ` — ${criticalIncident.title_en}` : ""}.`
+          : critMeasured
+            ? "No critical incidents detected."
+            : "Severity is not measured in the source."
       }`,
     },
     {
@@ -270,11 +279,11 @@ function buildAgentScript(
       status_ar: "إعداد الإحاطة التنفيذية…",
       status_en: "Preparing executive briefing…",
       finding_ar:
-        c.incidents_critical === 0 && c.assets_offline === 0
+        critMeasured && crit === 0 && c.assets_offline === 0
           ? "التقرير التنفيذي جاهز — الوضع التشغيلي مستقر."
           : "التقرير التنفيذي جاهز — يتضمن بنوداً تتطلب قراراً.",
       finding_en:
-        c.incidents_critical === 0 && c.assets_offline === 0
+        critMeasured && crit === 0 && c.assets_offline === 0
           ? "Executive report is ready — operational posture is stable."
           : "Executive report is ready — includes items requiring a decision.",
     },
@@ -290,14 +299,14 @@ function buildAgentScript(
     status_ar: "خلاصة سَدِيد",
     status_en: "SADEED conclusion",
     finding_ar:
-      c.incidents_critical > 0
-        ? `يلزم تدخل تنفيذي: ${c.incidents_critical} حادث حرج بانتظار القرار.`
+      crit > 0
+        ? `يلزم تدخل تنفيذي: ${crit} حادث حرج بانتظار القرار.`
         : c.assets_offline > 0
           ? `لا توجد حوادث حرجة. يُوصى بمتابعة ${c.assets_offline} أصل خارج الخدمة.`
           : "لا يوجد ما يستدعي تدخل الإدارة حالياً.",
     finding_en:
-      c.incidents_critical > 0
-        ? `Executive action required: ${c.incidents_critical} critical incident${c.incidents_critical > 1 ? "s" : ""} awaiting decision.`
+      crit > 0
+        ? `Executive action required: ${crit} critical incident${crit > 1 ? "s" : ""} awaiting decision.`
         : c.assets_offline > 0
           ? `No critical incidents. Recommend follow-up on ${c.assets_offline} offline asset${c.assets_offline > 1 ? "s" : ""}.`
           : "No executive intervention is required.",
@@ -941,7 +950,8 @@ function MissionControl() {
 
   const status: "stable" | "attention" | "critical" = useMemo(() => {
     if (!ov || !hasData) return "stable";
-    if (ov.counts.incidents_critical > 0) return "critical";
+    // «الحرجة» قد تكون «لم يُقَس» (null) — لا تُعامل خطرًا ولا سلامةً.
+    if ((ov.counts.incidents_critical ?? 0) > 0) return "critical";
     if (ov.counts.incidents_open > 3 || ov.counts.assets_offline > 0) return "attention";
     return "stable";
   }, [ov, hasData]);
@@ -950,15 +960,19 @@ function MissionControl() {
     if (!ov || !hasData)
       return ar ? "لا توجد سجلات تشغيلية حية متاحة." : "No live operational records available.";
     const c = ov.counts;
+    const crit = c.incidents_critical ?? 0;
     if (status === "critical") {
       return ar
-        ? `يوجد ${c.incidents_critical} حادث حرج يتطلب قراراً تنفيذياً، مع ${c.patrols_active} دورية نشطة.`
-        : `${c.incidents_critical} critical incident${c.incidents_critical > 1 ? "s" : ""} require executive decision, with ${c.patrols_active} patrols active.`;
+        ? `يوجد ${crit} حادث حرج يتطلب قراراً تنفيذياً، مع ${c.patrols_active} دورية نشطة.`
+        : `${crit} critical incident${crit > 1 ? "s" : ""} require executive decision, with ${c.patrols_active} patrols active.`;
     }
     if (status === "attention") {
+      // «لا حوادث حرجة» تُقال فقط حين يكون العدّ مقيسًا (المادة ٢٧).
+      const noCritAr = c.incidents_critical === 0 ? "لا حوادث حرجة. " : "";
+      const noCritEn = c.incidents_critical === 0 ? "No critical incidents. " : "";
       return ar
-        ? `لا حوادث حرجة. ${c.assets_offline} أصل خارج الخدمة و ${c.incidents_open} حادث مفتوح قيد المعالجة.`
-        : `No critical incidents. ${c.assets_offline} asset${c.assets_offline > 1 ? "s" : ""} offline and ${c.incidents_open} open incidents in progress.`;
+        ? `${noCritAr}${c.assets_offline} أصل خارج الخدمة و ${c.incidents_open} حادث مفتوح قيد المعالجة.`
+        : `${noCritEn}${c.assets_offline} asset${c.assets_offline > 1 ? "s" : ""} offline and ${c.incidents_open} open incidents in progress.`;
     }
     return ar
       ? `جميع الدوريات منفذة، الأصول قيد التشغيل، ولا توجد مخاطر مرتفعة.`
@@ -970,11 +984,12 @@ function MissionControl() {
       return [ar ? "لا توجد سجلات تشغيلية حية متاحة." : "No live operational records available."];
     const r: string[] = [];
     const c = ov.counts;
-    if (c.incidents_critical > 0)
+    const crit = c.incidents_critical ?? 0;
+    if (crit > 0)
       r.push(
         ar
-          ? `تصعيد ${c.incidents_critical} حادث حرج إلى قائد الموقع.`
-          : `Escalate ${c.incidents_critical} critical incident${c.incidents_critical > 1 ? "s" : ""} to the site commander.`,
+          ? `تصعيد ${crit} حادث حرج إلى قائد الموقع.`
+          : `Escalate ${crit} critical incident${crit > 1 ? "s" : ""} to the site commander.`,
       );
     if (c.assets_offline > 0)
       r.push(
@@ -1021,18 +1036,19 @@ function MissionControl() {
   const rosterSignals: RosterSignal[] = useMemo(() => {
     if (!ov || !hasData) return [];
     const c = ov.counts;
+    const crit = c.incidents_critical ?? 0;
     const top = ov.incidents.find((i) => i.severity === "critical") ?? ov.incidents[0];
     return [
       {
         id: "incident_commander",
-        state: c.incidents_critical > 0 ? "speaking" : "analyzing",
-        confidence: c.incidents_critical > 0 ? 0.97 : 0.86,
+        state: crit > 0 ? "speaking" : "analyzing",
+        confidence: crit > 0 ? 0.97 : 0.86,
         text_ar:
-          c.incidents_critical > 0
+          crit > 0
             ? `حادث حرج تحت إدارتي${top?.title_ar ? ` — ${top.title_ar}` : ""}.`
             : `${c.incidents_open} حادث مفتوح قيد المتابعة.`,
         text_en:
-          c.incidents_critical > 0
+          crit > 0
             ? `Critical incident under my command${top?.title_en ? ` — ${top.title_en}` : ""}.`
             : `${c.incidents_open} open incidents in active follow-up.`,
       },
@@ -1076,14 +1092,11 @@ function MissionControl() {
       },
       {
         id: "emergency_coordinator",
-        state: c.incidents_critical > 0 ? "speaking" : "idle",
-        confidence: c.incidents_critical > 0 ? 0.96 : 0.88,
-        text_ar:
-          c.incidents_critical > 0
-            ? "أُطلق سير عمل الاستجابة الموحد."
-            : "خطط الاستجابة جاهزة وغير مفعّلة.",
+        state: crit > 0 ? "speaking" : "idle",
+        confidence: crit > 0 ? 0.96 : 0.88,
+        text_ar: crit > 0 ? "أُطلق سير عمل الاستجابة الموحد." : "خطط الاستجابة جاهزة وغير مفعّلة.",
         text_en:
-          c.incidents_critical > 0
+          crit > 0
             ? "Activating unified response workflow."
             : "Response plans armed but not engaged.",
       },
@@ -1206,9 +1219,17 @@ function MissionControl() {
 
         {/* Cards */}
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {/* المادة ٢٧ (٢٠٢٦/٠٨/٢٧): شدة غير مصنفة في المصدر ⇒ «لم يُقَس»
+              لا صفرًا يوحي بالسلامة. */}
           <StatCard
             label={ar ? "تنبيهات حرجة" : "Critical Alerts"}
-            value={ov?.counts.incidents_critical ?? 0}
+            value={
+              ov && ov.counts.incidents_critical == null
+                ? ar
+                  ? "لم يُقَس"
+                  : "Not measured"
+                : (ov?.counts.incidents_critical ?? 0)
+            }
             icon={AlertTriangle}
             tone="rose"
             hint={ar ? "تتطلب قراراً فورياً" : "Require immediate action"}

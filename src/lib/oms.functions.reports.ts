@@ -39,6 +39,16 @@ import type {
  */
 const isSimulatedId = (id: string) => id.startsWith("sim-");
 
+/**
+ * معرّف صفٍّ من مجموعة «تقرير البلاغات» الحقيقية (`evr-<ref>`) —
+ * ٢٠٢٦/٠٨/٢٧. ليس UUID، فيُحلّ من المجموعة الحقيقية مباشرة ولا يمرّ
+ * بمسار المحاكاة ولا باستعلام القاعدة (الذي يرفض غير الـUUID).
+ */
+const isRealReportId = (id: string) => id.startsWith("evr-");
+
+/** معرّف غير قاعدي (محاكاة أو مجموعة حقيقية) — يُقبل في المدخلات بلا UUID. */
+const isNonDbId = (id: string) => isSimulatedId(id) || isRealReportId(id);
+
 // ============================================================================
 
 export const getEntityTimeline = createServerFn({ method: "POST" })
@@ -47,7 +57,7 @@ export const getEntityTimeline = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z
       .object({ entity_type: z.string(), entity_id: z.string().min(1).max(64) })
-      .refine((v) => isSimulatedId(v.entity_id) || z.string().uuid().safeParse(v.entity_id).success)
+      .refine((v) => isNonDbId(v.entity_id) || z.string().uuid().safeParse(v.entity_id).success)
       .parse(d),
   )
   .handler(async ({ data, context }): Promise<ActivityEvent[]> => {
@@ -58,6 +68,9 @@ export const getEntityTimeline = createServerFn({ method: "POST" })
       ) as unknown as ActivityEvent[];
     // كيان محاكاة ⇒ لا استعلام أصلًا: معرّفه غير موجود في القاعدة.
     if (isSimulatedId(data.entity_id)) return simTimeline();
+    // بلاغ من المجموعة الحقيقية: المصدر لا يحمل سجلّ أحداث — خطّ زمني
+    // فارغ حقيقةٌ لا فراغ (المادة ٢٧)، ولا يُخترع من محاكاة كيان آخر.
+    if (isRealReportId(data.entity_id)) return [];
     return resilient(
       "oms-entity-timeline",
       async () => {
@@ -103,7 +116,8 @@ export const getRecentActivity = createServerFn({ method: "GET" })
 
 type KpiIncident = {
   status: string;
-  severity: string;
+  // ٢٠٢٦/٠٨/٢٧ — الشدة غير مقيسة في مجموعة «تقرير البلاغات» الحقيقية.
+  severity: string | null;
   response_minutes: number | null;
   ai_risk_score: number | null;
 };
@@ -127,11 +141,19 @@ function deriveOmsKpis(
   now: number,
 ) {
   const open = incidents.filter((i) => i.status !== "closed" && i.status !== "resolved");
-  const critical = incidents.filter((i) => i.severity === "critical");
-  const closed = incidents.filter((i) => i.response_minutes != null);
-  const avgResp = closed.length
-    ? Math.round(closed.reduce((s, i) => s + (i.response_minutes ?? 0), 0) / closed.length)
-    : 0;
+  // المادة ٢٧ (٢٠٢٦/٠٨/٢٧): مجموعة «تقرير البلاغات» الحقيقية بلا شدة —
+  // «عدد الحرجة» فوق صفوفٍ لم تُقَس شدّتها ليس صفرًا بل «لم يُقَس» (null).
+  // العدّ يبقى قياسًا صحيحًا حين تكون الشدة مقيسة أو حين لا صفوف أصلًا.
+  const severityMeasured = incidents.some((i) => i.severity != null);
+  const critical =
+    incidents.length === 0 || severityMeasured
+      ? incidents.filter((i) => i.severity === "critical").length
+      : null;
+  // متوسط بلا عيّنة لا وجود له — null لا «0 دقيقة» (ادّعاء أداء مثالي).
+  const responded = incidents.filter((i) => i.response_minutes != null);
+  const avgResp = responded.length
+    ? Math.round(responded.reduce((s, i) => s + (i.response_minutes ?? 0), 0) / responded.length)
+    : null;
   const woOpen = workOrders.filter((w) => w.status !== "closed" && w.status !== "cancelled");
   const woOverdue = woOpen.filter((w) => w.due_at && new Date(w.due_at).getTime() < now);
   const completionPct = workOrders.length
@@ -142,18 +164,24 @@ function deriveOmsKpis(
       (p.status === "approved" || p.status === "active") && new Date(p.ends_at).getTime() > now,
   );
   const permPending = permits.filter((p) => p.status === "pending");
-  const avgRisk = incidents.length
-    ? Math.round(incidents.reduce((s, i) => s + (i.ai_risk_score ?? 40), 0) / incidents.length)
-    : 0;
-  const readiness = Math.max(
-    0,
-    Math.min(100, 100 - critical.length * 8 - woOverdue.length * 3 - Math.max(0, avgRisk - 50)),
-  );
+  // كانت `?? 40` تختلق درجة خطر لصفوفٍ لم تُحلَّل — المتوسط على المقيس وحده.
+  const scored = incidents.filter((i) => i.ai_risk_score != null);
+  const avgRisk = scored.length
+    ? Math.round(scored.reduce((s, i) => s + (i.ai_risk_score ?? 0), 0) / scored.length)
+    : null;
+  // مركّب من أطراف غير مقيسة غيرُ مقيس مثلها.
+  const readiness =
+    critical === null || avgRisk === null
+      ? null
+      : Math.max(
+          0,
+          Math.min(100, 100 - critical * 8 - woOverdue.length * 3 - Math.max(0, avgRisk - 50)),
+        );
   return {
     incidents: {
       total: incidents.length,
       open: open.length,
-      critical: critical.length,
+      critical,
       avg_response_minutes: avgResp,
       avg_risk_score: avgRisk,
     },
@@ -205,10 +233,14 @@ export const getOmsKpis = createServerFn({ method: "GET" })
       },
       // لا بلاغ ولا أمر عمل ولا تصريح = نافذة فارغة، لا «صفر مَقيس».
       (k) => k.incidents.total === 0 && k.work_orders.total === 0 && k.permits.total === 0,
-      () => {
+      // ٢٠٢٦/٠٨/٢٧ — بلاغات البديل من مجموعة «تقرير البلاغات» الحقيقية
+      // (3,427 صفًّا فعليًّا) لا من المحاكاة؛ أوامر العمل والتصاريح
+      // والنشاط تبقى محاكاتها كما هي (النطاق: البلاغات حصرًا).
+      async () => {
         const sim = buildOmsSimulation(now);
+        const { REAL_INCIDENTS } = await import("@/lib/exec/event-report.real.server");
         return deriveOmsKpis(
-          sim.incidents,
+          REAL_INCIDENTS as unknown as KpiIncident[],
           sim.work_orders,
           sim.permits,
           sim.activity.filter((e) => new Date(e.occurred_at).getTime() >= now - 24 * 3600 * 1000)
@@ -434,9 +466,7 @@ export const getIncidentDetail = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z
       .object({ incident_id: z.string().min(1).max(64) })
-      .refine(
-        (v) => isSimulatedId(v.incident_id) || z.string().uuid().safeParse(v.incident_id).success,
-      )
+      .refine((v) => isNonDbId(v.incident_id) || z.string().uuid().safeParse(v.incident_id).success)
       .parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -444,6 +474,12 @@ export const getIncidentDetail = createServerFn({ method: "POST" })
     const simRow = () =>
       buildOmsSimulation(Date.now()).incidents.find((i) => i.id === data.incident_id) ?? null;
     if (isSimulatedId(data.incident_id)) return simRow();
+    // ٢٠٢٦/٠٨/٢٧ — معرّف `evr-*` يُحلّ من مجموعة «تقرير البلاغات» الحقيقية:
+    // لا يمرّ بمسار المحاكاة ولا يُفقد على استعلام قاعدة يرفض غير الـUUID.
+    if (isRealReportId(data.incident_id)) {
+      const { findRealIncident } = await import("@/lib/exec/event-report.real.server");
+      return findRealIncident(data.incident_id);
+    }
     return resilient<OmsIncidentRow | null>(
       "oms-incident-detail",
       async () => {
@@ -471,7 +507,7 @@ export const getIncidentDetail = createServerFn({ method: "POST" })
 export const listIncidents = createServerFn({ method: "GET" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    const { buildOmsSimulation, resilient } = await import("@/lib/exec/showcase-simulation.server");
+    const { resilient } = await import("@/lib/exec/showcase-simulation.server");
     return resilient(
       "oms-incidents",
       async () => {
@@ -484,7 +520,15 @@ export const listIncidents = createServerFn({ method: "GET" })
         return (data ?? []) as unknown as OmsIncidentRow[];
       },
       (rows) => rows.length === 0,
-      () => buildOmsSimulation(Date.now()).incidents,
+      // ٢٠٢٦/٠٨/٢٧ — أمر المالك: بديل البلاغات هو مجموعة «تقرير البلاغات»
+      // الحقيقية لا `buildOmsSimulation().incidents`. أحدث 500 صف مرآةُ
+      // سقف الاستعلام الحي أعلاه؛ الصفوف مجمّدة فلا يسمها `markSimulation`
+      // — `is_simulation` غائب لأنها ليست محاكاة. صفوف القاعدة الحيّة
+      // تفوز دائمًا متى وصلت (`resilient` كما هو).
+      async () => {
+        const { REAL_INCIDENTS } = await import("@/lib/exec/event-report.real.server");
+        return REAL_INCIDENTS.slice(0, 500) as OmsIncidentRow[];
+      },
     );
   });
 

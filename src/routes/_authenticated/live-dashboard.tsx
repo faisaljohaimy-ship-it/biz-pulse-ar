@@ -217,7 +217,7 @@ function LiveExecutiveDashboard() {
     doc.text(`Range: last ${range} days   Generated: ${new Date().toISOString()}`, 14, 23);
     if (k) {
       doc.text(
-        `Open Incidents: ${k.incidents_open}   Critical: ${k.incidents_critical}   ` +
+        `Open Incidents: ${k.incidents_open}   Critical: ${k.incidents_critical ?? "not measured"}   ` +
           `Active Patrols: ${k.patrols_active}   Work Orders (open): ${k.wo_open}   ` +
           `Readiness: ${Math.round(k.executive_readiness ?? 0)}%   Risk: ${Math.round(k.risk_index ?? 0)}%`,
         14,
@@ -366,7 +366,11 @@ function LiveExecutiveDashboard() {
         <KpiCard
           label="Open Incidents"
           value={String(k?.incidents_open ?? "—")}
-          sub={`${k?.incidents_critical ?? 0} critical`}
+          sub={
+            k == null || k.incidents_critical != null
+              ? `${k?.incidents_critical ?? 0} critical`
+              : "critical not measured"
+          }
           tone="rose"
           icon={AlertTriangle}
         />

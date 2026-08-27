@@ -289,7 +289,13 @@ function HealthWall({
         value={pctOrUnmeasured(securityHealth)}
         tone={securityHealth === null ? "muted" : securityHealth >= 70 ? "ok" : "crit"}
         icon={ShieldAlert}
-        hint={kpis ? `${kpis.incidents_critical} critical` : undefined}
+        hint={
+          kpis
+            ? kpis.incidents_critical != null
+              ? `${kpis.incidents_critical} critical`
+              : "critical not measured"
+            : undefined
+        }
       />
       <HealthCard
         label="Database"
@@ -833,7 +839,7 @@ function KpiWall({ kpis }: { kpis: KpiShape }) {
     {
       label: "Incidents",
       value: kpis.incidents_total,
-      hint: `${kpis.incidents_open} open · ${kpis.incidents_critical} critical`,
+      hint: `${kpis.incidents_open} open · ${kpis.incidents_critical != null ? `${kpis.incidents_critical} critical` : "critical not measured"}`,
       icon: ShieldAlert,
     },
     {

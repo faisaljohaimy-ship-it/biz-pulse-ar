@@ -108,10 +108,16 @@ function KPI() {
       tone: data.counts.cctv_new === 0 ? "success" : ("danger" as const),
     },
     {
+      // المادة ٢٧ (٢٠٢٦/٠٨/٢٧): شدة غير مقيسة ⇒ «لم يُقَس» بنغمة محايدة.
       label: "بلاغات حرجة مفتوحة",
-      value: data.counts.incidents_critical,
+      value: numOrUnmeasured(data.counts.incidents_critical),
       target: "= 0",
-      tone: data.counts.incidents_critical === 0 ? "success" : ("danger" as const),
+      tone:
+        data.counts.incidents_critical === null
+          ? undefined
+          : data.counts.incidents_critical === 0
+            ? "success"
+            : ("danger" as const),
     },
     {
       label: "مواقع تشغيلية",

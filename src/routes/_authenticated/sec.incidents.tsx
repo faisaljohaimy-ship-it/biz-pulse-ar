@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { listIncidents, getOmsKpis } from "@/lib/oms.functions";
+import { numOrUnmeasured } from "@/lib/sec.functions";
+import { REGIONS } from "@/lib/regions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
 // ٢٠٢٦/٠٨/٢٠ — بتوجيه المالك: حُذف زر «بلاغ جديد» من رأس الصفحة، فأُزيل استيراد NewIncidentDialog.
 import { IncidentDrawer } from "@/components/sec/oms-dialogs";
@@ -20,7 +22,9 @@ type IncRow = {
   ref: string;
   category: string;
   title_ar: string;
-  severity: string;
+  // ٢٠٢٦/٠٨/٢٧ — صفوف «تقرير البلاغات» الحقيقية بلا شدة: null ⇒ رقاقة
+  // محايدة «غير مصنف» (المادة ٢٧ — لا اختلاق درجة لم تُقَس).
+  severity: string | null;
   status: string;
   priority: string | null;
   owner: string | null;
@@ -32,7 +36,13 @@ type IncRow = {
   response_minutes: number | null;
   corrective_actions: unknown;
   escalated: boolean;
+  // الملف الحقيقي يحمل المدينة والمنطقة؛ صفوف القاعدة القديمة بدونهما.
+  city?: string | null;
+  region_id?: string | null;
 };
+
+/** اسم المنطقة القصير من المرجع الجغرافي الوحيد `regions.ts`. */
+const REGION_SHORT_AR = new Map(REGIONS.map((r) => [r.id as string, r.shortAr]));
 
 function Incidents() {
   const fetchList = useServerFn(listIncidents);
@@ -66,8 +76,17 @@ function Incidents() {
       {kpis && (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
           <StatCard label="مفتوحة" value={kpis.incidents.open} tone="warning" />
-          <StatCard label="حرجة" value={kpis.incidents.critical} tone="danger" />
-          <StatCard label="متوسط الاستجابة" value={`${kpis.incidents.avg_response_minutes} د`} />
+          {/* المادة ٢٧: الشدة غير مقيسة في المصدر الحقيقي ⇒ «لم يُقَس»
+              بنغمة محايدة — لا صفر ولا إنذار مختلَق. */}
+          <StatCard
+            label="حرجة"
+            value={numOrUnmeasured(kpis.incidents.critical)}
+            tone={kpis.incidents.critical == null ? "default" : "danger"}
+          />
+          <StatCard
+            label="متوسط الاستجابة"
+            value={numOrUnmeasured(kpis.incidents.avg_response_minutes, " د")}
+          />
         </div>
       )}
 
@@ -103,7 +122,13 @@ function Incidents() {
               <th className="px-3 py-2 text-start">الخطورة</th>
               <th className="px-3 py-2 text-start">الحالة</th>
               {/* ٢٠٢٦/٠٨/٢٠ — بتوجيه المالك: حُذف عمود «المخاطر» من الجدول. */}
-              <th className="px-3 py-2 text-start">الموكَّل</th>
+              {/* ٢٠٢٦/٠٨/٢٧ — «المدينة» و«المنطقة» من ملف «تقرير البلاغات»
+                  الحقيقي («كما في الملف المرفق»)؛ وعمود «الموكَّل» صار
+                  «المنشئ» — الملف الحقيقي يسمّيه كذلك و`owner` يحمل منشئ
+                  البلاغ. */}
+              <th className="px-3 py-2 text-start">المدينة</th>
+              <th className="px-3 py-2 text-start">المنطقة</th>
+              <th className="px-3 py-2 text-start">المنشئ</th>
               <th className="px-3 py-2 text-start">بُلِّغ</th>
             </tr>
           </thead>
@@ -127,10 +152,12 @@ function Incidents() {
                 </td>
                 <td className="px-3 py-2 text-xs text-muted-foreground">{i.category}</td>
                 <td className="px-3 py-2">
+                  {/* شدة غير مقيسة ⇒ «غير مصنف» كلمةً وشكلًا (حدّ متقطع)
+                      لا لونًا وحده — ولا اختلاق درجة (المادة ٢٧). */}
                   <span
                     className={`rounded-full border px-2 py-0.5 text-[12px] ${severityClass(i.severity)}`}
                   >
-                    {i.severity}
+                    {i.severity ?? "غير مصنف"}
                   </span>
                 </td>
                 <td className="px-3 py-2">
@@ -140,8 +167,12 @@ function Incidents() {
                     {i.status}
                   </span>
                 </td>
+                <td className="px-3 py-2 text-xs text-muted-foreground">{i.city ?? "—"}</td>
                 <td className="px-3 py-2 text-xs text-muted-foreground">
-                  {i.assigned_to ?? i.owner ?? "—"}
+                  {i.region_id ? (REGION_SHORT_AR.get(i.region_id) ?? i.region_id) : "—"}
+                </td>
+                <td className="px-3 py-2 text-xs text-muted-foreground">
+                  {i.owner ?? i.assigned_to ?? "—"}
                 </td>
                 <td className="px-3 py-2 text-xs text-muted-foreground">
                   {new Date(i.reported_at).toLocaleString("ar-SA")}
@@ -150,8 +181,8 @@ function Incidents() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                {/* ٢٠٢٦/٠٨/٢٠ — colSpan صار 7 بعد حذف عمود «المخاطر». */}
-                <td colSpan={7} className="py-8 text-center">
+                {/* ٢٠٢٦/٠٨/٢٧ — colSpan صار 9 بعد إضافة «المدينة» و«المنطقة». */}
+                <td colSpan={9} className="py-8 text-center">
                   <LiveStatus
                     variant="monitoring"
                     hint="قنوات البلاغات نشطة — لا حوادث مفتوحة"
