@@ -422,6 +422,16 @@ function RootComponent() {
   const suppressOverlays = isPromo || isAccessGate || isAgentOperations || introActive;
   const suppressMarquee = isAccessGate || introActive;
   const suppressClock = isPromo;
+  /**
+   * الجرس ومبدّل الوضع: **الصفحة الرئيسية وحدها** (أمر المالك ٢٠٢٦/٠٨/٢٧
+   * «ثبّت زري التنبيهات والوضعين في أعلى صفحة النظام الرئيسية فقط»).
+   *
+   * كان الشريط V5 يُرسم على كل مسار، فيصير زرَّين عائمَين فوق كل شاشة
+   * داخلية، ويتراكب مبدّلاه على الرئيسية مع المبدّل الذي تركّبه الصفحة
+   * لنفسها (قيس الفارق: 8px). القيد هنا يحسم الأمرين معًا — وزوج
+   * الهوم/الرجوع يبقى على كل الصفحات كما هو، فهو تنقّلٌ لا تفضيل.
+   */
+  const showUtilityBar = pathname === "/";
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -449,7 +459,7 @@ function RootComponent() {
                   {!suppressOverlays && <SadeedWatermark />}
                   {!introActive && !isAccessGate && <HoloAmbience />}
                   {!introActive && !isAccessGate && <GlobalBackButton />}
-                  {!introActive && !isAccessGate && <GlobalUtilityBar />}
+                  {!introActive && !isAccessGate && showUtilityBar && <GlobalUtilityBar />}
 
                   <div className="relative z-10">
                     <RouteTransition>

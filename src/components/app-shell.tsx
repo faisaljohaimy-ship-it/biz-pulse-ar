@@ -45,7 +45,6 @@ import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
 import { BackHomeControls } from "@/components/layout/GlobalBackButton";
-import { UtilityBarSpacer } from "@/components/nav/TopUtilityBar";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 
 type NavItem = {
@@ -123,13 +122,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <SadeedName size="sm" />
           </div>
-          {/* OWNER DIRECTIVE: مبدّل الوضع يُحذف من الشريط العلوي ويبقى في
-              الشريط الجانبي وحده — كان مكرَّرًا في الموضعين. */}
-          {/* V5: الجرس والمبدّل صارا طبقةً مثبّتة واحدة في الجذر
-              (`GlobalUtilityBar`) تُرسم على كل الصفحات بما فيها الرئيسية.
-              هنا بصمة قدمٍ فقط كي لا يجلس مبدّل المؤسسة تحتها. */}
+          {/* أمر المالك ٢٠٢٦/٠٨/٢٧: الجرس والمبدّل في أعلى **الرئيسية
+              وحدها**. فلا شريط مثبّتًا فوق الشاشات الداخلية، وبصمة القدم
+              التي كانت تحجز ممرّه هنا سقطت معه — إبقاؤها فراغٌ ميت يزيح
+              مبدّل المؤسسة بلا سبب. */}
           <div className="flex items-center gap-2">
-            <UtilityBarSpacer />
             <OrgSwitcher compact />
           </div>
         </header>

@@ -59,7 +59,6 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, ChevronLeft } from "lucide-react";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { PRODUCT_BRAND } from "@/lib/domain";
 import { getCommandCenterState, type CommandSeverity } from "@/lib/exec/command-center.functions";
@@ -227,13 +226,11 @@ export function BlueprintPage() {
           والغبار النجمي بقي: صنفه `nx-op-dust` معرَّف في طبقة المسرح وله
           مستهلكون آخرون، ونسيجُه ساكن لا يدور. */}
 
-      {/* حُذف الشريط العلوي (قرار المالك ٢٠٢٦/٠٨/٠٩، البند ١٢). مبدّل الوضع
-          كان يركبه وحده على هذه الصفحة — وهي خارج القشرة فلا `TopUtilityBar`
-          لها — فبقي مركّبًا هنا وإلا سقط الوضع الفاتح (المادة ٣٢). */}
-      <div className="relative z-20 flex justify-end px-4 pt-3 sm:px-6">
-        <ThemeToggle />
-      </div>
-
+      {/* مبدّل الوضع لم يعد يُركَّب هنا (أمر المالك ٢٠٢٦/٠٨/٢٧): الشريط
+          المثبّت في الجذر يحمله مع الجرس في أعلى هذه الصفحة، فكان تركيبه
+          هنا ثانيةً يضع مبدّلَين متراكبَين بفارق 8px قِيس فعلًا. العلّة
+          القديمة («الصفحة خارج القشرة فلا شريط لها») بطلت — الشريط في
+          الجذر يبلغها. والوضع الفاتح ما زال مُدركًا (المادة ٣٢). */}
       <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-16 pt-4 sm:px-6">
         <header className="nx-bp-stage" style={{ ["--nx-bp-i" as string]: 0 }}>
           {/* رأس على زجاج: مع الفيلم بكامل سطوعه صار النص العاري فوق أومضاته
