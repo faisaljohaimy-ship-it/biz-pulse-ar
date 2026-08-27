@@ -134,14 +134,19 @@ describe("البندان ٥٧ و٥٨ — هوية داكنة ثابتة بلا �
     // المالك ذلك (٢٠٢٦/٠٨/٠٦) وطلب عودة المبدّل على الجوال وكل الأجهزة —
     // فالحارس يحرس القرار الجديد لا القديم.
     //
-    // موضعه `TopUtilityBar` لا الشريط الجانبي: القشرة تُركّب هذا الشريط
-    // مرّتين — في ترويسة الجوال وفي الشريط العلوي للشاشات الواسعة — بينما
-    // الشريط الجانبي على الجوال يُطوى داخل درج لا يُفتح إلا بنقرة.
+    // موضعه `TopUtilityBar` لا الشريط الجانبي (الجانبي على الجوال يُطوى داخل
+    // درج لا يُفتح إلا بنقرة). و**جولة V5** نقلت تركيبه: كان يُركَّب مرّتين
+    // داخل القشرة بسلوك `sticky` يفشل تحت سلفٍ `overflow-x-hidden` فيغيب عند
+    // السكرول، ويغيب كليًّا عن الرئيسية (خارج القشرة). صار طبقةً `fixed`
+    // واحدة في الجذر تُرسم على كل الصفحات — والقشرة تحجز ممرّها فقط.
     const bar = read("src/components/nav/TopUtilityBar.tsx");
     expect(bar).toContain("<ThemeToggle />");
-    // ترويسة الجوال (`md:hidden`) والشريط العريض كلاهما يُركّبه.
-    expect(SHELL.match(/<TopUtilityBar\s*\/>/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    expect(bar).toContain("export function GlobalUtilityBar");
+    expect(read("src/routes/__root.tsx")).toContain("<GlobalUtilityBar />");
+    expect(SHELL).toContain("UtilityBarSpacer");
+    expect(SHELL.match(/<TopUtilityBar\s*\/>/g)?.length ?? 0).toBe(0);
     expect(SHELL).toContain("md:hidden");
+
     // والصفحات خارج القشرة لها مبدّلها في متنها مباشرةً: الشريط العلوي
     // (`HomeTopNav`) الذي كان يحمله حُذف بقرار المالك ٢٠٢٦/٠٨/٠٩ (البند ١٢)،
     // ومبدّله لم يُحذف معه وإلا سقط الوضع الفاتح عن أكثر الصفحات زيارةً.
