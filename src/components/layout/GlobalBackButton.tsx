@@ -1,23 +1,9 @@
-import { useCallback, useEffect } from "react";
-import { useCanGoBack, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useCallback } from "react";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Home } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { drilldownParent } from "@/lib/nav/drilldowns";
 
-/**
- * متعقّب المسار السابق داخل التطبيق — على مستوى الوحدة عمدًا.
- *
- * الزوج التفاعلي يُركَّب مرّة واحدة في الجذر، لكن الحارس يبقى بسيطًا
- * ومحصّنًا ضد أي تركيب مزدوج مستقبلي: لا يتحرّك السجل إلا حين يتغيّر
- * المسار فعلًا، فأي تركيب ثانٍ لا يرى تغيّرًا ولا يكتب شيئًا.
- */
-let PREV_PATH: string | null = null;
-let LAST_PATH: string | null = null;
-function trackPath(pathname: string) {
-  if (pathname !== LAST_PATH) {
-    PREV_PATH = LAST_PATH;
-    LAST_PATH = pathname;
-  }
-}
 
 /**
  * **الرجوع لا يغادر النظام (إصلاح ٢٠٢٦/٠٨/٠٦).** كان الزر يستدعي
@@ -76,25 +62,19 @@ const ORB =
  */
 function BackHomePair({ className = "" }: { className?: string } = {}) {
   const navigate = useNavigate();
-  const canGoBack = useCanGoBack();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { locale } = useI18n();
   const isRtl = locale === "ar";
 
-  useEffect(() => {
-    trackPath(pathname);
-  }, [pathname]);
-
-  // الحاجة = مكدّس المسيّر يملك مُدخلًا سابقًا، وذلك المُدخل ليس الرئيسية.
-  const backNeeded = canGoBack && PREV_PATH !== null && PREV_PATH !== "/";
+  // الحاجة صفةُ مكان لا صفةُ رحلة (V5 · ملاحظات العميل): الشاشات التفصيلية
+  // وحدها لها أبٌ مكتوب في `drilldowns.ts`، وما عداها لا زرّ رجوع فيه.
+  const parent = drilldownParent(pathname);
+  const backNeeded = parent !== null;
 
   const goBack = useCallback(() => {
-    if (canGoBack) {
-      window.history.back();
-      return;
-    }
-    void navigate({ to: "/" });
-  }, [canGoBack, navigate]);
+    void navigate({ to: parent ?? "/" });
+  }, [parent, navigate]);
+
 
   return (
     <div className={`flex items-center gap-2 ${className}`} dir="rtl">

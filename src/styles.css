@@ -10302,6 +10302,20 @@ iframe[src*="cdn.gpteng.co"] {
   inset-inline-start: calc(var(--nx-shell-edge) + var(--nx-orb-size) + var(--nx-shell-gap));
 }
 
+/* الصفّ العلوي الموحّد — نفس المحور الأفقي لزوج الهوم/الرجوع بالقياس لا
+   بالتقريب (المتغيّرات نفسها)، لكن في جهة النهاية. طبقةٌ واحدة على كل
+   الصفحات، `fixed` فلا يبطلها سلفٌ `overflow-x-hidden`. */
+.nx-utilitybar-pin {
+  position: fixed;
+  z-index: 70;
+  top: calc(
+    env(safe-area-inset-top) + var(--nx-clockbar-h) + var(--nx-hairline-w) +
+      ((var(--nx-header-h) - var(--nx-orb-size)) / 2)
+  );
+  inset-inline-end: var(--nx-shell-edge);
+}
+
+
 /* فوق md يحلّ الشريط الجانبي في جهة البداية حيث يطفو الزوج المثبّت،
    فيُفسَح لرأسه بحشوة تعادل الارتفاع الذي يشغله الزوج (نصف فارق
    الترويسة + المدار + الفجوة) — إزاحةُ محتوًى بالحشو لا حسابُ موضعٍ

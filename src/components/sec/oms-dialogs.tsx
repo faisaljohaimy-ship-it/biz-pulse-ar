@@ -55,6 +55,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { ArabicDateField } from "@/components/ui/arabic-date-field";
+
 import { userFacingError, GENERIC_ERROR_AR, isSessionError } from "@/lib/errors/user-facing-error";
 import { severityClass, statusClass } from "./sec-shell";
 import {
@@ -244,7 +246,9 @@ export function IncidentDrawer({
   onOpenChange: (o: boolean) => void;
 }) {
   const qc = useQueryClient();
+  const { user: incidentUser } = useAuth();
   const open = !!incident;
+
   const fetchTimeline = useServerFn(getEntityTimeline);
   const { data: timeline } = useQuery({
     queryKey: ["oms-timeline", incident?.id],
@@ -319,25 +323,59 @@ export function IncidentDrawer({
   });
 
   const cw = useServerFn(createWorkOrder);
+  // V5 (ملاحظات العميل): «إنشاء أمر عمل» من البلاغ كان يفشل للزائر برسالة
+  // انتهاء الجلسة. الطريقة المحفوظة «مصادَق أولًا ← بديل عام عند 401/403»:
+  // جلسة صالحة ⇒ كتابة حقيقية؛ زائر أو جلسة منتهية ⇒ أمر محاكاة محلي يظهر
+  // فورًا في القائمة — لا كتابة قاعدة، ولا عبارة مصادقة تُعرض.
   const mWO = useMutation({
-    mutationFn: () =>
-      cw({
-        data: {
-          title_ar: `معالجة ${incident!.title_ar}`,
-          kind: "corrective",
-          priority: (incident!.priority ?? "high") as "low" | "medium" | "high" | "critical",
-          asset_kind: "incident_response",
-          assigned_to: incident!.assigned_to ?? incident!.owner ?? undefined,
-          source_incident_id: incident!.id,
-        },
-      }),
-    onSuccess: () => {
-      toast.success("أُنشئ أمر عمل من البلاغ");
-      qc.invalidateQueries({ queryKey: ["oms-work-orders"] });
+    mutationFn: async (): Promise<{ simulated: boolean }> => {
+      const title_ar = `معالجة ${incident!.title_ar}`;
+      const priority = (incident!.priority ?? "high") as "low" | "medium" | "high" | "critical";
+      const assigned_to = incident!.assigned_to ?? incident!.owner ?? undefined;
+      if (incidentUser) {
+        try {
+          await cw({
+            data: {
+              title_ar,
+              kind: "corrective",
+              priority,
+              asset_kind: "incident_response",
+              assigned_to,
+              source_incident_id: incident!.id,
+            },
+          });
+          return { simulated: false };
+        } catch (e) {
+          if (!isSessionError(e)) throw e;
+        }
+      }
+      addLocalSimWorkOrder({
+        title_ar,
+        kind: "corrective",
+        priority,
+        asset_kind: "incident_response",
+        asset_code: null,
+        assigned_to: assigned_to ?? null,
+        contractor: null,
+        due_at: null,
+        notes: null,
+        source_incident_id: incident!.id,
+      });
+      return { simulated: true };
+    },
+    onSuccess: ({ simulated }) => {
+      if (simulated) {
+        toast.info(SIM_WO_CREATED_INFO);
+      } else {
+        toast.success("أُنشئ أمر عمل من البلاغ");
+        qc.invalidateQueries({ queryKey: ["oms-work-orders"] });
+        qc.invalidateQueries({ queryKey: ["sec-work-orders"] });
+      }
       qc.invalidateQueries({ queryKey: ["oms-timeline", incident!.id] });
     },
     onError: (e: Error) => toast.error(userFacingError(e)),
   });
+
 
   // ── Executive Review ──
   const [execReview, setExecReview] = useState("");
@@ -1412,22 +1450,27 @@ export function NewPermitDialog() {
                 onChange={(e) => setForm({ ...form, contractor: e.target.value })}
               />
             </div>
-            <div className="grid gap-1.5">
-              <Label>يبدأ</Label>
-              <Input
-                type="datetime-local"
+            {/* V5: التقويم العربي RTL الموحّد بدل مُدخل المتصفّح الأصيل —
+                القيمة تبقى `yyyy-MM-ddTHH:mm` نفسها. */}
+            <div className="col-span-2 grid gap-1.5">
+              <Label htmlFor="permit-starts-at">يبدأ</Label>
+              <ArabicDateField
+                id="permit-starts-at"
+                withTime
                 value={form.starts_at}
-                onChange={(e) => setForm({ ...form, starts_at: e.target.value })}
+                onChange={(v) => setForm({ ...form, starts_at: v })}
               />
             </div>
-            <div className="grid gap-1.5">
-              <Label>ينتهي</Label>
-              <Input
-                type="datetime-local"
+            <div className="col-span-2 grid gap-1.5">
+              <Label htmlFor="permit-ends-at">ينتهي</Label>
+              <ArabicDateField
+                id="permit-ends-at"
+                withTime
                 value={form.ends_at}
-                onChange={(e) => setForm({ ...form, ends_at: e.target.value })}
+                onChange={(v) => setForm({ ...form, ends_at: v })}
               />
             </div>
+
           </div>
           <div className="grid gap-1.5">
             <Label>ملاحظات</Label>

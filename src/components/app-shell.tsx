@@ -45,7 +45,7 @@ import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
 import { BackHomeControls } from "@/components/layout/GlobalBackButton";
-import { TopUtilityBar } from "@/components/nav/TopUtilityBar";
+import { UtilityBarSpacer } from "@/components/nav/TopUtilityBar";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 
 type NavItem = {
@@ -125,20 +125,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           {/* OWNER DIRECTIVE: مبدّل الوضع يُحذف من الشريط العلوي ويبقى في
               الشريط الجانبي وحده — كان مكرَّرًا في الموضعين. */}
+          {/* V5: الجرس والمبدّل صارا طبقةً مثبّتة واحدة في الجذر
+              (`GlobalUtilityBar`) تُرسم على كل الصفحات بما فيها الرئيسية.
+              هنا بصمة قدمٍ فقط كي لا يجلس مبدّل المؤسسة تحتها. */}
           <div className="flex items-center gap-2">
-            <TopUtilityBar />
+            <UtilityBarSpacer />
             <OrgSwitcher compact />
           </div>
         </header>
         <main className="nexus-main min-w-0 flex-1">
           <div className="relative mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
-            {/* زر الرجوع صار واحدًا عامًّا في الجذر (قرار المالك ٢٠٢٦/٠٨/٠٥)
-                — فلم يبقَ هنا إلا شريط الأدوات على الشاشات الواسعة. */}
-            {loc.pathname !== "/" && (
-              <div className="sticky top-14 z-30 hidden w-full items-center justify-end gap-3 px-3 pt-3 md:top-3 md:flex md:px-4">
-                <TopUtilityBar />
-              </div>
-            )}
+
             {children}
           </div>
         </main>

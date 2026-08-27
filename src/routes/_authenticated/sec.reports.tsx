@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { SecPageHeader } from "@/components/sec/sec-shell";
 import { PageBriefing } from "@/components/clarity/PageBriefing";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -22,11 +21,11 @@ import {
   RefreshCw,
   Eye,
   PieChart,
-  BarChart3,
 } from "lucide-react";
 // ٢٠٢٦/٠٨/٢٠: حُذف بوكس «نشاط التوليد — ١٤ يومًا» بقرار المالك، وأُزيلت معه
 // استيرادات TrendingUp وRadialGauge وInteractiveArea التي كانت حصرية له.
-import { DonutChart, BarSeries } from "@/components/charts/premium-charts";
+import { DonutChart } from "@/components/charts/premium-charts";
+import { ArabicDateField } from "@/components/ui/arabic-date-field";
 import {
   generateDailyOperationsReport,
   getDailyOpsData,
@@ -264,14 +263,19 @@ function Reports() {
             </Select>
           </div>
           <div className="grid gap-1">
-            <label className="text-[12px] text-muted-foreground">التاريخ</label>
-            <Input
-              type="date"
+            <label htmlFor="reports-day" className="text-[12px] text-muted-foreground">
+              التاريخ
+            </label>
+            {/* V5: التقويم العربي RTL الموحّد — القيمة تبقى yyyy-MM-dd. */}
+            <ArabicDateField
+              id="reports-day"
               value={day}
-              onChange={(e) => setDay(e.target.value)}
-              className="w-44"
+              onChange={setDay}
+              clearable={false}
+              className="w-64"
             />
           </div>
+
           <Button onClick={() => mPdf.mutate()} disabled={pdfBusy} className="gap-1.5">
             <FileText className="h-4 w-4" />{" "}
             {pdfBusy ? (phaseLabel ?? "جارٍ التوليد…") : "توليد PDF"}
@@ -377,15 +381,14 @@ function Reports() {
    ---------------------------------------------------------------- */
 function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
   const stats = useMemo(() => {
-    // ٢٠٢٦/٠٨/٢٠: أُزيلت حسابات perDay/last7/freshness — كانت مخصّصة حصريًا
-    // لبوكس «نشاط التوليد — ١٤ يومًا» المحذوف بقرار المالك.
+    // ٢٠٢٦/٠٨/٢٠: أُزيلت حسابات perDay/last7/freshness مع بوكس «نشاط التوليد».
+    // V5 (ملاحظات العميل): أُزيل معها تجميع byKind وسلّم ألوانه — كان مخصّصًا
+    // حصريًا لبوكس «التقارير حسب النوع» المحذوف، فبقاؤه حسابٌ ميت.
     const byFormat = new Map<string, number>();
-    const byKind = new Map<string, number>();
     let bytes = 0;
 
     for (const r of rows) {
       byFormat.set(r.format, (byFormat.get(r.format) ?? 0) + 1);
-      byKind.set(r.kind, (byKind.get(r.kind) ?? 0) + 1);
       bytes += r.size_bytes ?? 0;
     }
 
@@ -395,13 +398,6 @@ function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
       excel: "16, 185, 129",
       csv: "245, 158, 11",
     };
-    const KIND_ACCENT = [
-      "37, 99, 235",
-      "6, 182, 212",
-      "139, 92, 246",
-      "16, 185, 129",
-      "245, 158, 11",
-    ];
 
     return {
       total: rows.length,
@@ -411,22 +407,14 @@ function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
         value,
         accent: FORMAT_ACCENT[label.toLowerCase()] ?? "100, 116, 139",
       })),
-      kinds: [...byKind.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([label, value], i) => ({
-          label,
-          value,
-          accent: KIND_ACCENT[i % KIND_ACCENT.length],
-        })),
     };
   }, [rows]);
 
   if (stats.total === 0) return null;
 
   return (
-    // ٢٠٢٦/٠٨/٢٠: الشبكة عمودان بعد حذف بوكس «نشاط التوليد — ١٤ يومًا» بقرار المالك.
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+    // V5: عمود واحد بعد حذف بوكس «التقارير حسب النوع» بقرار العميل.
+    <div className="grid grid-cols-1 gap-3">
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
           <PieChart className="h-4 w-4 text-primary" aria-hidden /> توزيع الصيغ المُصدَّرة
@@ -436,20 +424,7 @@ function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
           الحجم التراكمي: {Math.max(1, Math.round(stats.bytes / 1024))} KB
         </p>
       </div>
-
-      <div className="rounded-xl border border-border bg-card p-4">
-        <div className="mb-1.5 flex items-center gap-2 text-sm font-medium text-foreground">
-          <BarChart3 className="h-4 w-4 text-primary" aria-hidden /> التقارير حسب النوع
-        </div>
-        {/* ٢٠٢٦/٠٨/٢٠: سطر توضيح بطلب المالك («ما المقصود بها؟») — يصف ما
-            يعدّه الرسم فعليًا: حقل kind في صفوف سجل التقارير المعروض أدناه. */}
-        <p className="mb-2 text-[12px] leading-5 text-muted-foreground">
-          توزيع تقارير السجل أدناه حسب حقل النوع (kind): «daily» تقارير العمليات اليومية بكل
-          نطاقاتها · «incident» تقارير البلاغات — وهو غير الصيغة (PDF/Excel) المعروضة في الرسم
-          المجاور.
-        </p>
-        <BarSeries data={stats.kinds} height={150} />
-      </div>
     </div>
   );
 }
+

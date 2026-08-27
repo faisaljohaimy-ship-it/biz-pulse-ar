@@ -58,7 +58,7 @@ import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
 import { PRODUCT_BRAND } from "@/lib/domain";
@@ -483,11 +483,17 @@ export function BlueprintPage() {
           </section>
         </section>
 
-        {/* ════ ٣ · المخاطر — بطاقات مجمّعة فقط ══════════════════════════
-            كان القسم «الاثنين معًا» (البند ١٢ب): بطاقات + جدول «سجل
-            المخاطر». حُذفت اللوحة — الجدول وزرّه وملاحظته — بأمر المالك V4
-            (فقرة 846) ٢٠٢٦/٠٨/٢٤، والمدخل المعتمد إلى السجل هو سهم بطاقات
-            المناطق (REQ-022) أعلاه ← `/sec/risks`. */}
+        {/* ════ ٣ · المخاطر — بطاقة واحدة بسهم ═══════════════════════════
+            **جولة V5 (مراجعة العميل — الشركة السعودية للطاقة).** كان القسم
+            يعرض اثنتي عشرة بطاقة: أربعًا «حسب الشدّة» وثمانيًا «حسب
+            المنطقة». والملاحظة الحرفية: الرئيسية شاشةُ مدخلٍ لا شاشةُ
+            تحليل — العدّ المفصَّل مكانه `/sec/risks` نفسها، فتكراره هنا
+            يُطيل الصفحة على الجوال ويؤخّر الوصول إلى السجل.
+            فحُذفت **البطاقات الأربع الممنوعة** («حسب الشدّة») وشبكة
+            المناطق معها، وحلّ محلّها مدخلٌ واحد: بطاقة تحمل الإجمالي وسهمًا
+            إلى السجل الكامل. البيانات نفسها (`getRiskBoard`) باقية —
+            الحذف حذفُ عرضٍ لا إلغاءُ مصدر: توصيات سَدِيد أعلاه تقرأ الاستعلام
+            نفسه. */}
         <section
           className="nx-bp-stage mt-8"
           style={{ ["--nx-bp-i" as string]: 7 }}
@@ -499,68 +505,36 @@ export function BlueprintPage() {
             </h2>
           </div>
 
-          {/* حسب الشدّة — النغمة من `STAT_TONES`: الشكل (مثمّن/مثلث/دائرة)
-              والكلمة يحملان الشدّة، فبطاقةٌ عدّها صفرٌ تبقى مقروءة ولا
-              تحتاج لونًا يُفسَّر وحده. */}
-          <h3 className="nx-dash-subhead mt-4">{ar ? "حسب الشدّة" : "By severity"}</h3>
-          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {SEVERITY_ORDER.map((sev) => {
-              const tone = STAT_TONES[SEVERITY_TONE[sev]];
-              const ToneIcon = tone.icon;
-              const count = countBySeverity(sev);
-              return (
-                /* بلا `nx-bp-card` — انظر التعليل في بطاقات التوصيات: زجاجها
-                   خارج الطبقات فيمحو خلفية النغمة وحدّها. */
-                <div key={sev} className={`nx-risk-card rounded-2xl border p-4 ${tone.card}`}>
-                  <div className="flex items-center gap-1.5">
-                    {ToneIcon && (
-                      <ToneIcon aria-hidden className={`h-4 w-4 shrink-0 ${tone.iconCls}`} />
-                    )}
-                    <span className="nx-dash-label">
-                      {ar
-                        ? `مخاطر شدّتها ${SEVERITY_LABEL[sev].ar}`
-                        : `${SEVERITY_LABEL[sev].en} severity`}
-                    </span>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className={`nx-dash-value ${tone.value}`}>
-                      {riskMeasured ? (
-                        <span className="tabular-nums">{count}</span>
-                      ) : (
-                        <span className="nx-dash-absent">{notMeasured}</span>
-                      )}
-                    </span>
-                    {tone.badge && (
-                      <span className={`nx-dash-chip border ${tone.badgeCls}`}>{tone.badge}</span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* حسب المنطقة — الأسماء من `regions.ts`، لا حرف منها مكتوب هنا. */}
-          <h3 className="nx-dash-subhead mt-5">{ar ? "حسب المنطقة" : "By region"}</h3>
-          <div className="mt-2 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {REGIONS.map((region) => (
-              <div
-                key={region.id}
-                className="nx-bp-card nx-risk-region rounded-2xl p-3"
-                style={{ ["--bp-accent" as string]: REGION_ACCENT_HEX[region.id] }}
-              >
-                <div className="nx-dash-label">{ar ? region.shortAr : region.shortEn}</div>
-                <div className="nx-dash-value text-[color:var(--ink)]">
-                  {riskMeasured ? (
-                    <span className="tabular-nums">{countByRegion(region.id)}</span>
-                  ) : (
-                    <span className="nx-dash-absent">{notMeasured}</span>
-                  )}
-                </div>
-                <div className="nx-dash-caption">{ar ? "مخاطرة مسجَّلة" : "logged risks"}</div>
-              </div>
-            ))}
-          </div>
+          <Link
+            to="/sec/risks"
+            aria-label={ar ? "افتح سجل المخاطر" : "Open the risk register"}
+            className="nx-bp-card group mt-3 flex min-h-[4.5rem] items-center justify-between gap-4 rounded-2xl p-4 transition-colors hover:border-primary/50"
+          >
+            <span className="flex min-w-0 flex-col gap-1">
+              <span className="nx-dash-label">{ar ? "سجل المخاطر" : "Risk register"}</span>
+              <span className="nx-dash-caption">
+                {ar
+                  ? "كل المخاطر المسجَّلة بشدّتها ومنطقتها وحالة معالجتها"
+                  : "Every logged risk with severity, region and treatment"}
+              </span>
+            </span>
+            <span className="flex shrink-0 items-center gap-3">
+              <span className="nx-dash-value text-[color:var(--ink)]">
+                {riskMeasured ? (
+                  <span className="tabular-nums">{riskRows.length}</span>
+                ) : (
+                  <span className="nx-dash-absent">{notMeasured}</span>
+                )}
+              </span>
+              {/* السهم في RTL يشير إلى اليسار — جهة المضيّ قُدمًا. */}
+              <ArrowLeft
+                aria-hidden
+                className={`h-5 w-5 text-[color:var(--tone-cyan)] transition-transform group-hover:-translate-x-0.5 ${ar ? "" : "rotate-180"}`}
+              />
+            </span>
+          </Link>
         </section>
+
 
         {/* سجل القرارات الجاري — أصناف الشريط من طبقة المسرح نفسها.
 

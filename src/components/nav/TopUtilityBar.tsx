@@ -142,6 +142,31 @@ export function TopUtilityBar({ className }: { className?: string }) {
   );
 }
 
+/**
+ * الصفّ العلوي الموحّد (V5 · ملاحظات العميل) — الجرس والمبدّل مثبّتان في
+ * الجذر على **كل** الصفحات بما فيها الرئيسية، بطبقة `fixed` واحدة بجوار
+ * زوج الهوم/الرجوع. كان الشريط يُركَّب مرّتين داخل القشرة بسلوك `sticky`
+ * يفشل تحت سلفٍ `overflow-x-hidden`، فيغيب عند السكرول ويغيب كليًّا عن
+ * الرئيسية (خارج القشرة). طبقةٌ واحدة مثبّتة تُنهي الحالتين معًا.
+ */
+export function GlobalUtilityBar() {
+  return <TopUtilityBar className="nx-utilitybar-pin" />;
+}
+
+/**
+ * بصمة قدمٍ فقط في صفّ ترويسة القشرة — تحجز ممرّ الشريط المثبّت فلا يجلس
+ * مبدّل المؤسسة تحته. لا رسم ولا تفاعل ولا شجرة وصول.
+ */
+export function UtilityBarSpacer() {
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none invisible block h-11 w-[5.75rem] shrink-0"
+    />
+  );
+}
+
+
 function NotifRow({ n, ar, onNav }: { n: Notif; ar: boolean; onNav: () => void }) {
   const sev =
     n.severity === "critical"

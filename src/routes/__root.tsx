@@ -39,6 +39,8 @@ import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
 import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
 import { GlobalBackButton } from "@/components/layout/GlobalBackButton";
+import { GlobalUtilityBar } from "@/components/nav/TopUtilityBar";
+
 import { HoloAmbience } from "@/components/layout/HoloAmbience";
 import { RouteTransition } from "@/components/motion/RouteTransition";
 
@@ -447,6 +449,8 @@ function RootComponent() {
                   {!suppressOverlays && <SadeedWatermark />}
                   {!introActive && !isAccessGate && <HoloAmbience />}
                   {!introActive && !isAccessGate && <GlobalBackButton />}
+                  {!introActive && !isAccessGate && <GlobalUtilityBar />}
+
                   <div className="relative z-10">
                     <RouteTransition>
                       <Outlet />

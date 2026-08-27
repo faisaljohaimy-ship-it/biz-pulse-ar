@@ -3,20 +3,29 @@ import { applySadeedPronunciation } from "./pronunciation";
 /**
  * SADEED reply-channel contract.
  *
- * Rule: when Conversation Mode ("المخاطبة") is ON, every SADEED reply is
- * spoken — voice turn OR typed turn — so mobile users who type still hear
- * SADEED speak. When Conversation Mode is OFF, replies stay silent (visual
- * only), so opening the copilot or typing never causes surprise audio.
+ * **جولة V5 (مراجعة العميل).** كانت القاعدة: لا نطق إلا في «المخاطبة».
+ * والملاحظة الحرفية: المستخدم يفتح المساعد ويكتب فيقرأ ردًّا صامتًا، ولا
+ * يعرف أن للنظام صوتًا أصلًا — فالميزة موجودة ومحجوبة خلف مفتاحٍ لا يراه.
+ * القاعدة الجديدة: **سَدِيد ينطق كل ردّ افتراضيًّا** — صوتًا كان أم كتابةً،
+ * في كل المحادثات — ما لم يكن الكتم مفعّلًا.
+ *
+ * والكتم هو المفتاح الوحيد الذي يُسكِت: حالةٌ واحدة في `voice-mute` يملكها
+ * زرٌّ ظاهر ودائم، محفوظة بين الجلسات. فمن لا يريد صوتًا يكتم مرّة واحدة
+ * ولا يعود يُفاجأ؛ ومن لم يكتم يسمع. لا فرع ثالث.
  */
 export function shouldSpeakSadeedReply({
-  conversationMode,
+  conversationMode: _conversationMode,
   fromVoice: _fromVoice,
+  muted = false,
 }: {
-  conversationMode: boolean;
+  conversationMode?: boolean;
   fromVoice?: boolean;
+  /** حالة `isSadeedVoiceMuted()` لحظةَ الإرسال. */
+  muted?: boolean;
 }): boolean {
-  return conversationMode === true;
+  return muted !== true;
 }
+
 
 /** Convert a model reply into safe, natural speech without leaking visual
  * markup into ElevenLabs. This is a final client-side guard; the server also
