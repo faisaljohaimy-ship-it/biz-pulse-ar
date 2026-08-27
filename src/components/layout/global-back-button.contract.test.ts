@@ -44,10 +44,16 @@ describe("GlobalBackButton — الرجوع محبوس داخل مكدّس ال�
     expect(SRC).toContain("export function GlobalBackButton");
   });
 
-  it("يبنيَ القرار على مكدّس المسيّر لا على طول تاريخ التبويب", () => {
-    expect(SRC).toContain("useCanGoBack");
-    expect(SRC).toMatch(/if \(canGoBack\)/);
+  it("يبني القرار على خريطة الهرم لا على تاريخ التنقّل (V5)", () => {
+    // القرار التاريخي (`useCanGoBack` + آخر مسار) كان يُظهر الزر في كل واجهة
+    // رئيسية بمجرّد أي تنقّل سابق — وهي ملاحظة العميل. الرجوع صفةُ مكان:
+    // الشاشات التفصيلية وحدها لها أبٌ مكتوب، والنقل حتمي إليه.
+    expect(SRC).toContain("drilldownParent");
+    expect(CODE).not.toContain("useCanGoBack");
+    expect(CODE).not.toContain("window.history.back");
+    expect(CODE).toMatch(/backNeeded = parent !== null/);
   });
+
 
   it("لا يفحص window.history.length إطلاقًا", () => {
     // هذا هو السطر الذي سبّب العطل الأول. عودته تعيده.
