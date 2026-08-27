@@ -376,7 +376,6 @@ export function IncidentDrawer({
     onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
-
   // ── Executive Review ──
   const [execReview, setExecReview] = useState("");
   const er = useServerFn(setExecutiveReview);
@@ -1470,7 +1469,6 @@ export function NewPermitDialog() {
                 onChange={(v) => setForm({ ...form, ends_at: v })}
               />
             </div>
-
           </div>
           <div className="grid gap-1.5">
             <Label>ملاحظات</Label>

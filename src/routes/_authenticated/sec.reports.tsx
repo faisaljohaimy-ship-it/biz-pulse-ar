@@ -14,14 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  FileText,
-  FileSpreadsheet,
-  Download,
-  RefreshCw,
-  Eye,
-  PieChart,
-} from "lucide-react";
+import { FileText, FileSpreadsheet, Download, RefreshCw, Eye, PieChart } from "lucide-react";
 // ٢٠٢٦/٠٨/٢٠: حُذف بوكس «نشاط التوليد — ١٤ يومًا» بقرار المالك، وأُزيلت معه
 // استيرادات TrendingUp وRadialGauge وInteractiveArea التي كانت حصرية له.
 import { DonutChart } from "@/components/charts/premium-charts";
@@ -427,4 +420,3 @@ function ReportsAnalytics({ rows }: { rows: Array<ReportRow | LocalReport> }) {
     </div>
   );
 }
-

@@ -54,7 +54,6 @@ describe("GlobalBackButton — الرجوع محبوس داخل مكدّس ال�
     expect(CODE).toMatch(/backNeeded = parent !== null/);
   });
 
-
   it("لا يفحص window.history.length إطلاقًا", () => {
     // هذا هو السطر الذي سبّب العطل الأول. عودته تعيده.
     expect(CODE).not.toMatch(/history\.length/);

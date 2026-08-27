@@ -10,7 +10,6 @@ describe("SADEED reply modality", () => {
     expect(shouldSpeakSadeedReply({ conversationMode: false, muted: true })).toBe(false);
   });
 
-
   it("removes visual markup, raw links and citation tags from spoken replies", () => {
     expect(
       toSadeedSpeechText(
