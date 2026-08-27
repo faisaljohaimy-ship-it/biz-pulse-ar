@@ -1180,12 +1180,15 @@ export function SadeedCopilot() {
       const messageText = promptText;
 
       primeIOSAudio();
-      // Voice replies only for voice turns in Conversation Mode; typed
-      // messages (anywhere, any device) always get a text-only reply.
+      // V5 (مراجعة العميل): النطق افتراضيٌّ في كل المحادثات — صوتًا كان
+      // الدور أم كتابةً — والكتم وحده يُسكِته. الحالة تُقرأ من مصدرها
+      // الوحيد لحظةَ الإرسال، لا من نسخةٍ في حالة المكوّن.
       speakNextReplyRef.current = shouldSpeakSadeedReply({
         conversationMode: convModeRef.current,
         fromVoice: opts?.fromVoice,
+        muted: isSadeedVoiceMuted(),
       });
+
       setPendingReplyMode(speakNextReplyRef.current ? "voice" : "text");
       setDraft("");
       pendingSendAtRef.current = performance.now();
