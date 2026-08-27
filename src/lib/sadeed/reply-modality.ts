@@ -26,7 +26,6 @@ export function shouldSpeakSadeedReply({
   return muted !== true;
 }
 
-
 /** Convert a model reply into safe, natural speech without leaking visual
  * markup into ElevenLabs. This is a final client-side guard; the server also
  * asks the model for spoken prose when replyMode="voice". Article 22 §5:

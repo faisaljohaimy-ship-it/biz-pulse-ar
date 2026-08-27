@@ -4,7 +4,6 @@ import { ArrowRight, Home } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { drilldownParent } from "@/lib/nav/drilldowns";
 
-
 /**
  * **الرجوع لا يغادر النظام (إصلاح ٢٠٢٦/٠٨/٠٦).** كان الزر يستدعي
  * `window.history.back()` متى كان `window.history.length > 1`، وهذا الطول
@@ -74,7 +73,6 @@ function BackHomePair({ className = "" }: { className?: string } = {}) {
   const goBack = useCallback(() => {
     void navigate({ to: parent ?? "/" });
   }, [parent, navigate]);
-
 
   return (
     <div className={`flex items-center gap-2 ${className}`} dir="rtl">

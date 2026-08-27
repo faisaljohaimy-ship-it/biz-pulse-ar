@@ -166,7 +166,6 @@ export function UtilityBarSpacer() {
   );
 }
 
-
 function NotifRow({ n, ar, onNav }: { n: Notif; ar: boolean; onNav: () => void }) {
   const sev =
     n.severity === "critical"
