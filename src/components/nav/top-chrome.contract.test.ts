@@ -247,12 +247,8 @@ describe("⑥ المثبّت يعلو كل ما يُرسم فوق الصفحة",
     );
   });
 
-  it("ويبقى دون المقدّمة السينمائية — هي تملك الشاشة في ثلاثينيتها", () => {
-    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
-    const pair = zOf(css, ".nx-backhome-pin {");
-    const intro = code("src/components/intro/SadeedCinematicIntro.tsx");
-    const introZ = Number(/z-\[(\d+)\]/.exec(intro)?.[1] ?? NaN);
-    expect(Number.isFinite(introZ)).toBe(true);
-    expect(pair).toBeLessThan(introZ);
-  });
+  // كان هنا بندٌ يُلزم المثبَّت بالبقاء دون طبقة المقدّمة السينمائية
+  // (200). حُذفت المقدّمة بأمر المالك ٢٠٢٦/٠٨/٢٨، فلم يبقَ سقفٌ يقابله —
+  // وبندٌ يقيس ملفًّا محذوفًا يفشل لعلّةٍ لا صلة لها بما يحرسه. البند
+  // الباقي (فوق طبقات اللوحة) هو المُلزِم، وهو الذي أمسك العطل الحقيقي.
 });
