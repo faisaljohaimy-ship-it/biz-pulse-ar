@@ -221,6 +221,32 @@ describe("⑥ المثبّت يعلو كل ما يُرسم فوق الصفحة",
     ).toBeGreaterThan(highest);
   });
 
+  it("ولا توهّج على قشرة الأعلى — الطبقتان الزائفتان غير مولَّدتين", () => {
+    // أمر المالك ٢٠٢٦/٠٨/٢٨ (ج) «وأزل التوهج منها». والتوهّج طبقتان لا
+    // خاصية واحدة، قِيستا على الزرّ الحيّ قبل النزع:
+    //   ::before → radial-gradient + blur(4px) + حركة nxOrbBreathe
+    //   ::after  → conic-gradient + drop-shadow(0 0 4px)
+    // و`content: none` تمنع التوليد أصلًا؛ `display: none` تُبقيه مولَّدًا.
+    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const rule = css.match(
+      /:is\(\.nx-backhome-pin, \.nx-utilitybar-pin\)[^{]*::before,[\s\S]{0,200}?::after\s*\{[^}]*\}/,
+    )?.[0];
+    expect(rule, "سقطت قاعدة نزع التوهّج عن قشرة الأعلى").toBeTruthy();
+    expect(rule).toMatch(/content:\s*none/);
+    expect(rule, "display: none تُبقي الطبقة مولَّدةً وحركتَها محسوبة").not.toMatch(
+      /display:\s*none/,
+    );
+  });
+
+  it("والارتداد المطّاطي ممنوع — «سحب الشاشة» يزيح كل مثبَّت على اللمس", () => {
+    // السكرول العادي لا يحرّكه (مقيس)، لكن السحب بعد نهاية الصفحة يزيح
+    // إطار العرض نفسه فيتحرّك معه `position: fixed`. لا يظهر في سكرول برمجيّ.
+    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(css, "عاد الارتداد المطّاطي فعاد المثبَّت يتحرّك مع السحب").toMatch(
+      /html,\s*body\s*\{[^}]*overscroll-behavior-block:\s*none/,
+    );
+  });
+
   it("ويبقى دون المقدّمة السينمائية — هي تملك الشاشة في ثلاثينيتها", () => {
     const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
     const pair = zOf(css, ".nx-backhome-pin {");
