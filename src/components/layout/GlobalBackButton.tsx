@@ -1,8 +1,9 @@
 import { useCallback } from "react";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Home } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { drilldownParent } from "@/lib/nav/drilldowns";
+import { resolveBackTarget } from "@/lib/nav/drilldowns";
+import { isRouteHidden } from "@/lib/nav/hidden-routes";
 
 /**
  * **الرجوع لا يغادر النظام (إصلاح ٢٠٢٦/٠٨/٠٦).** كان الزر يستدعي
@@ -65,9 +66,15 @@ function BackHomePair({ className = "" }: { className?: string } = {}) {
   const { locale } = useI18n();
   const isRtl = locale === "ar";
 
-  // الحاجة صفةُ مكان لا صفةُ رحلة (V5 · ملاحظات العميل): الشاشات التفصيلية
-  // وحدها لها أبٌ مكتوب في `drilldowns.ts`، وما عداها لا زرّ رجوع فيه.
-  const parent = drilldownParent(pathname);
+  // الحاجة صفةُ مكان لا صفةُ رحلة (V5): الوجهة تُقرأ من الهرم لا من مكدّس
+  // التنقّل. وسجلّ المسارات يأتي من المُسيّر نفسه — فالأب المشتقّ يُقبل حين
+  // يكون شاشةً موجودة فعلًا، لا حين يبدو كذلك من شكل النصّ.
+  const router = useRouter();
+  const routeExists = useCallback(
+    (path: string) => Object.hasOwn(router.routesByPath, path),
+    [router],
+  );
+  const parent = resolveBackTarget(pathname, routeExists, isRouteHidden);
   const backNeeded = parent !== null;
 
   const goBack = useCallback(() => {

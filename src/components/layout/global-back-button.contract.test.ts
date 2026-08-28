@@ -44,14 +44,23 @@ describe("GlobalBackButton — الرجوع محبوس داخل مكدّس ال�
     expect(SRC).toContain("export function GlobalBackButton");
   });
 
-  it("يبني القرار على خريطة الهرم لا على تاريخ التنقّل (V5)", () => {
+  it("يبني القرار على الهرم لا على تاريخ التنقّل (V5)", () => {
     // القرار التاريخي (`useCanGoBack` + آخر مسار) كان يُظهر الزر في كل واجهة
-    // رئيسية بمجرّد أي تنقّل سابق — وهي ملاحظة العميل. الرجوع صفةُ مكان:
-    // الشاشات التفصيلية وحدها لها أبٌ مكتوب، والنقل حتمي إليه.
-    expect(SRC).toContain("drilldownParent");
+    // رئيسية بمجرّد أي تنقّل سابق — وهي ملاحظة العميل. الرجوع صفةُ مكان،
+    // والنقل حتمي إلى الأب لا إلى ما صادف أن كان قبله في المكدّس.
+    expect(SRC).toContain("resolveBackTarget");
     expect(CODE).not.toContain("useCanGoBack");
     expect(CODE).not.toContain("window.history.back");
     expect(CODE).toMatch(/backNeeded = parent !== null/);
+  });
+
+  it("والأب المشتقّ مسنودٌ بسجلّ المُسيّر والحجب — لا رجوع إلى 404 ولا إلى محجوب", () => {
+    // أمر المالك ٢٠٢٦/٠٨/٢٨ وسّع الزر إلى كل شاشة لها أب. الاشتقاق النصّي
+    // وحده يفتح بابين خطأ: مسار غير مسجّل، وشاشة حجبها المالك. الشرطان
+    // يُمرَّران من هنا، ومنطقهما مقيس في `drilldowns.test.ts`.
+    expect(CODE).toContain("router.routesByPath");
+    expect(CODE).toContain("isRouteHidden");
+    expect(CODE).toMatch(/resolveBackTarget\(pathname, routeExists, isRouteHidden\)/);
   });
 
   it("لا يفحص window.history.length إطلاقًا", () => {
@@ -109,8 +118,10 @@ describe("الزوج المثبّت — الهوم لا يتحرّك بكسلً�
   it("معفًى من حركة الدخول — لا «ظهور ونهوض» للهوم بعد كل تحميل", () => {
     // `nx-ico-rise` (icon-motion.css) تبدأ من opacity:0 + scale:0.92 +
     // translate 4px وتعلق حتى اكتمال الترطيب — قِيست 40.5px بإزاحة 5.8px.
-    // الإعفاء أعلى نوعيةً (0,2,0) من قاعدة `.nx-orb` العامة (0,1,0).
-    expect(CSS_CODE).toMatch(/\.nx-backhome-pin \.nx-orb\s*\{\s*animation: none;\s*\}/);
+    // الإعفاء يشمل الشريط مع الزوج منذ ٢٠٢٦/٠٨/٢٨؛ تفصيله في حارس
+    // `top-chrome.contract.test.ts` (③). المُلزِم هنا: الزوج داخله.
+    const exempt = CSS_CODE.match(/:is\([^)]*\)\s*:is\([^)]*\)\s*\{[^}]*animation:\s*none[^}]*\}/);
+    expect(exempt?.[0], "سقط إعفاء الزوج من حركة الدخول").toContain(".nx-backhome-pin");
   });
 
   it("خانة الرجوع محجوزة دائمًا — الإخفاء بـinvisible لا بإزالة العنصر", () => {

@@ -25,13 +25,64 @@ const DYNAMIC_PARENTS: ReadonlyArray<{ test: RegExp; parent: string }> = [
   { test: /^\/assistant\/[^/]+$/, parent: "/assistant" },
 ];
 
-/** أب المسار إن كان شاشة تفصيلية، وإلا `null` (فلا رجوع). */
+/** المسار بلا مائلة ختامية — `/sec/` و`/sec` مكانٌ واحد لا مكانان. */
+function normalize(pathname: string): string {
+  return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+}
+
+/** أب المسار إن كان شاشة تفصيلية مكتوبة أعلاه، وإلا `null`. */
 export function drilldownParent(pathname: string): string | null {
-  const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  const path = normalize(pathname);
   const direct = DRILLDOWN_PARENTS[path];
   if (direct) return direct;
   for (const rule of DYNAMIC_PARENTS) {
     if (rule.test.test(path)) return rule.parent;
   }
   return null;
+}
+
+/**
+ * وجهة الرجوع لأي مسار — **أمر المالك ٢٠٢٦/٠٨/٢٨**: «اضف زر للرجوع في
+ * الصفحات التي تحتاج لزر الرجوع».
+ *
+ * ── ما الذي تغيّر ولماذا ──
+ * كانت `drilldownParent` وحدها هي الحَكَم، وهي خريطة يدوية من **خمسة**
+ * مسارات. فقِيس على ١١ مسارًا × مقاسين: زرّ رجوعٍ ظاهر على مسار واحد فقط
+ * (`/sec/contractors`) — أي أن عشرة أحد عشر من الشاشات لا مخرج منها إلا
+ * الهوم. والخريطة اليدوية لا تُصلح هذا: كل شاشة جديدة تولد بلا رجوع حتى
+ * يتذكّر أحدٌ إضافتها، وهو تذكّرٌ لا يقع.
+ *
+ * فصار القرار ثلاث طبقات، الأولى تسبق ما بعدها:
+ *   ① **الخريطة اليدوية تسود** حيث الأب ليس هو السابق في المسار:
+ *      `/sec/contractors` أبوه `/sec/access` لا `/sec`.
+ *   ② **أبٌ مشتقّ من المسار** حين لا خريطة: يُقطع المقطع الأخير، ويُقبل
+ *      الناتج **بشرطين مقيسين لا مفترضين** — أن يكون مسارًا مسجّلًا في
+ *      مُسيّر التطبيق فعلًا (`routeExists`)، وألّا يكون محجوبًا
+ *      (`hidden-routes`). بغير الشرطين يصير الرجوع بابًا إلى 404 أو إلى
+ *      شاشةٍ حجبها المالك — وكلاهما أسوأ من غياب الزر.
+ *   ③ **الرئيسية** فيما بقي: شاشةٌ من مستوى واحد لا أب لها، مخرجها الهوم.
+ *
+ * والرئيسية نفسها تعيد `null` — لا رجوع من نقطة البداية، وخانة الزرّ تبقى
+ * محجوزة هناك بـ`invisible` كي لا يتزحزح الهوم (وهو الثابت المقيس).
+ *
+ * دالّة خالصة: وجود المسار يُحقن من الخارج، فتُختبر بلا مُسيّر ولا DOM.
+ */
+export function resolveBackTarget(
+  pathname: string,
+  routeExists: (path: string) => boolean,
+  isHidden: (path: string) => boolean,
+): string | null {
+  const path = normalize(pathname);
+  if (path === "" || path === "/") return null;
+
+  const mapped = drilldownParent(path);
+  if (mapped) return mapped;
+
+  const cut = path.lastIndexOf("/");
+  if (cut > 0) {
+    const derived = path.slice(0, cut);
+    if (!isHidden(derived) && routeExists(derived)) return derived;
+  }
+
+  return "/";
 }

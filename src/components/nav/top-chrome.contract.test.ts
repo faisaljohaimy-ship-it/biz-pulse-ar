@@ -57,8 +57,11 @@ describe("① زوج الهوم/الرجوع — على كل صفحة وبموض
   });
 
   it("وحركة الدخول معفاة عنه — لا «ينهض» متأخرًا بعد كل تحميل", () => {
-    const css = read("src/styles.css");
-    expect(css).toMatch(/\.nx-backhome-pin\s+\.nx-orb\s*\{\s*animation:\s*none/);
+    // الإعفاء اتّسع إلى الطبقتين معًا بأمر ٢٠٢٦/٠٨/٢٨ (تفصيله في ③)؛
+    // المُلزِم هنا أن الزوج ما زال داخله.
+    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const rule = css.match(/:is\([^)]*\)\s*:is\([^)]*\)\s*\{[^}]*animation:\s*none[^}]*\}/)?.[0];
+    expect(rule, "سقط إعفاء الزوج من حركة الدخول").toContain(".nx-backhome-pin");
   });
 });
 
@@ -93,5 +96,78 @@ describe("② الجرس والمبدّل — الرئيسية وحدها", () =
     expect(rule).toMatch(/var\(--nx-shell-edge\)/);
     // الطرف المقابل للهوم: هذا يبقيهما على مستوى أفقي واحد بلا تصادم.
     expect(rule).toMatch(/inset-inline-end/);
+  });
+});
+
+/**
+ * ③ أمر المالك ٢٠٢٦/٠٨/٢٨ — شقّان:
+ *   «ثبتها في الخلفية بدون أن تتحرك مع تحرك الشاشة **جميعها**»
+ *   «أضف زر للرجوع في الصفحات التي تحتاج لزر الرجوع … **مفعّلًا**»
+ *
+ * القياس هو ما فصل الشقّ الأول: السكرول لم يكن يحرّك شيئًا (١١ مسارًا ×
+ * مقاسين × أربع مواضع = 44 خلية، إحداثية واحدة في كلّها)، والحركة كانت
+ * حركة **الدخول** — الجرس ينزل 5.76px ويتلاشى داخلًا عند كل تحميل، لأن
+ * الإعفاء كان مكتوبًا على زوج الهوم وحده. والشقّ الثاني قِيس كذلك: زرّ
+ * رجوعٍ ظاهر على مسار واحد من أحد عشر.
+ */
+describe("③ لا حركة دخول على قشرة الأعلى، ورجوعٌ على كل شاشة لها أب", () => {
+  /** قاعدة الإعفاء الموحّدة: سلفٌ من الطبقتين + مدار. */
+  const exemption = () => {
+    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const m = css.match(/:is\([^)]*\)\s*:is\([^)]*\)\s*\{[^}]*animation:\s*none[^}]*\}/);
+    return m?.[0] ?? "";
+  };
+
+  it("الإعفاء يشمل الطبقتين معًا — الجرس والمبدّل لا يرثان النهوض", () => {
+    const rule = exemption();
+    expect(rule, "سقطت قاعدة إعفاء قشرة الأعلى من nx-ico-rise").not.toBe("");
+    expect(rule).toContain(".nx-backhome-pin");
+    expect(rule, "عاد الجرس والمبدّل إلى حركة الدخول — 5.76px مقيسة").toContain(
+      ".nx-utilitybar-pin",
+    );
+    expect(rule).toContain(".nx-orb");
+  });
+
+  it("ويُبطل ما تخلّفه الحركة من إزاحة ومقياس وشفافية، لا اسمها وحده", () => {
+    // `animation: none` وحدها تكفي ما دام لا أحد يكتب translate/scale
+    // مباشرة؛ إبطالها صراحةً يقطع الطريق على أي حركة أخرى تُضاف لاحقًا.
+    const rule = exemption();
+    expect(rule).toMatch(/translate:\s*none/);
+    expect(rule).toMatch(/scale:\s*none/);
+    expect(rule).toMatch(/opacity:\s*1/);
+  });
+
+  it("ولا تُنشئ الطبقتان كتلة احتواء تُبطل تثبيتهما", () => {
+    // `transform`/`filter`/`perspective` على المثبّت نفسه لا تكسر تثبيته،
+    // لكنها تُنشئ جذر خلفية جديدًا فيفرغ زجاج `backdrop-blur` من محتواه.
+    // وعلى أي سلفٍ لهما تكسر `fixed` نفسها فيعود الزر يتحرّك مع السكرول.
+    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    for (const pin of [".nx-backhome-pin {", ".nx-utilitybar-pin {"]) {
+      const block = css.slice(css.indexOf(pin));
+      const rule = block.slice(0, block.indexOf("}") + 1);
+      expect(rule, `${pin} اكتسب تحويلًا يُفرغ الزجاج`).not.toMatch(
+        /(^|[^-])(transform|perspective|filter):/,
+      );
+      expect(rule).not.toMatch(/will-change/);
+    }
+  });
+
+  it("وجهة الرجوع تُحسم في وحدة خالصة لا في المكوّن", () => {
+    const src = code("src/lib/nav/drilldowns.ts");
+    expect(src).toMatch(/export function resolveBackTarget/);
+    // الخريطة اليدوية تسبق الاشتقاق: أبٌ يخالف ترتيب المسار يبقى مصونًا.
+    const body = src.slice(src.indexOf("export function resolveBackTarget"));
+    expect(body.indexOf("drilldownParent")).toBeLessThan(body.indexOf("lastIndexOf"));
+    // والرئيسية تُستثنى قبل كل شيء — لا رجوع من نقطة البداية.
+    expect(body).toMatch(/path === "\/"\s*\)\s*return null/);
+  });
+
+  it("والزر مفعّل حين يوجد أب — لا خانة ميتة ولا مصيدة لوحة مفاتيح", () => {
+    const src = code("src/components/layout/GlobalBackButton.tsx");
+    expect(src).toMatch(/tabIndex=\{backNeeded \? 0 : -1\}/);
+    expect(src).toMatch(/aria-hidden=\{!backNeeded\}/);
+    // والإخفاء بـinvisible لا بإزالة العنصر — إزالته تزحزح الهوم.
+    expect(src).toContain('invisible pointer-events-none"');
+    expect(src).not.toMatch(/backNeeded\s*&&\s*\(?\s*</);
   });
 });
