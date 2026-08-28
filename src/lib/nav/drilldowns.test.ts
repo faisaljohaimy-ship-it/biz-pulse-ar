@@ -55,19 +55,29 @@ describe("resolveBackTarget — كل شاشة لها مخرج، ولا مخرج 
   });
 
   it("ويُرفض حين لا يكون مسارًا — الرجوع لا يفتح 404", () => {
-    // `/nope` غير مسجّل، فالأب المشتقّ ساقط والمخرج الرئيسية.
-    expect(back("/nope/deep")).toBe("/");
+    // `/nope` غير مسجّل، فالأب المشتقّ ساقط ولا زرّ.
+    expect(back("/nope/deep")).toBeNull();
   });
 
   it("ويُرفض حين يكون محجوبًا — الرجوع لا يفتح ما حجبه المالك", () => {
     // `/ptw` في hidden-routes، فلا يصلح وجهةً لأي ابنٍ له.
     expect(isRouteHidden("/ptw")).toBe(true);
-    expect(back("/ptw/anything")).toBe("/");
+    expect(back("/ptw/anything")).toBeNull();
   });
 
-  it("شاشة المستوى الواحد مخرجها الرئيسية", () => {
-    expect(back("/sec")).toBe("/");
-    expect(back("/governance")).toBe("/");
+  it("وشاشة المستوى الأوّل بلا زرّ — مخرجها الهوم نفسه فالرجوع تكرار", () => {
+    // نقض حارس الجودة ٢٠٢٦/٠٨/٢٨: كانت تُرجع `"/"` فصار على نحو ٥٠ شاشة
+    // زرّان متجاوران بفعلٍ واحد — يخالف أمر المالك ١١٧٥ («الرجوع الذي
+    // يفعل فعل الهوم تكرارٌ يُكتفى عنه بالهوم») والمادة ٢١ معًا.
+    expect(back("/sec")).toBeNull();
+    expect(back("/governance")).toBeNull();
+    expect(back("/settings")).toBeNull();
+  });
+
+  it("ولا يعيد «/» أبدًا — تلك وجهة الهوم لا وجهة الرجوع", () => {
+    for (const p of ["/sec", "/settings", "/files", "/nope/deep", "/ptw/x", "/sec/reports"]) {
+      expect(back(p), `${p} أعاد وجهة الهوم`).not.toBe("/");
+    }
   });
 
   it("المائلة الختامية لا تصنع مكانًا ثانيًا", () => {

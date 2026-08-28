@@ -170,4 +170,63 @@ describe("③ لا حركة دخول على قشرة الأعلى، ورجوعٌ
     expect(src).toContain('invisible pointer-events-none"');
     expect(src).not.toMatch(/backNeeded\s*&&\s*\(?\s*</);
   });
+
+  it("ولا يقصد الرجوعُ ما يقصده الهوم — تكرارٌ يخالف أمر ١١٧٥", () => {
+    // كُتبت الطبقة ③ أوّلًا `return "/"` فصار على شاشات المستوى الأوّل
+    // زرّان متجاوران بفعلٍ واحد. المُلزِم: من لا أب له لا زرّ له.
+    const body = code("src/lib/nav/drilldowns.ts").slice(
+      code("src/lib/nav/drilldowns.ts").indexOf("export function resolveBackTarget"),
+    );
+    expect(body, "الرجوع عاد يقصد الرئيسية فصار نسخةً من الهوم").not.toMatch(/\n\s*return "\/";/);
+  });
+});
+
+/**
+ * ⑥ ترتيب الطبقات — **حارسٌ وُلد من نقضٍ استحقّه** (٢٠٢٦/٠٨/٢٨).
+ *
+ * البند السابق كان يفحص `tabIndex` و`aria-hidden` في المصدر، فمرّ أخضر
+ * بينما زرّ الرجوع على `/assistant` **ظاهرٌ وغير قابل للنقر**: حاجب لوحة
+ * سَدِيد عند 105 وصندوقها عند 110 يعلوان مثبّتًا عند 70. أي أن الحارس كان
+ * يفحص غير ما يدّعي — يفحص أن الزرّ *مكتوبٌ* مفعّلًا لا أنه *يُصاب*.
+ *
+ * وقياس الإصابة الحقيقي يحتاج متصفّحًا، لكن **سببه البنيوي ساكنٌ يُقرأ**:
+ * ترتيب الطبقات. فيُحرس هنا رقميًّا — أي طبقةٍ تعلو المثبّت تُعيد العطل،
+ * وهذا يمسك صنف العطل كلّه لا حالته الواحدة.
+ */
+describe("⑥ المثبّت يعلو كل ما يُرسم فوق الصفحة", () => {
+  const zOf = (css: string, selector: string): number => {
+    const block = css.slice(css.indexOf(selector));
+    const rule = block.slice(0, block.indexOf("}") + 1);
+    return Number(/z-index:\s*(\d+)/.exec(rule)?.[1] ?? NaN);
+  };
+
+  it("طبقة الزوج والشريط واحدة — وإلّا مات أحدهما تحت حاجبٍ حيّ فوق الآخر", () => {
+    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const pair = zOf(css, ".nx-backhome-pin {");
+    const util = zOf(css, ".nx-utilitybar-pin {");
+    expect(Number.isFinite(pair)).toBe(true);
+    expect(pair).toBe(util);
+  });
+
+  it("وتعلو حاجب لوحة سَدِيد وصندوقها — العطل المقيس على /assistant", () => {
+    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const pair = zOf(css, ".nx-backhome-pin {");
+    const copilot = code("src/components/sadeed-core/SadeedCopilot.tsx");
+    const layers = [...copilot.matchAll(/\bz-\[(\d+)\]/g)].map((m) => Number(m[1]));
+    expect(layers.length, "لم تُقرأ طبقات اللوحة — تبدّلت صيغتها").toBeGreaterThan(0);
+    const highest = Math.max(...layers);
+    expect(
+      pair,
+      `المثبّت ${pair} تحت طبقة اللوحة ${highest} — الزرّ يُرسم ولا يُنقر`,
+    ).toBeGreaterThan(highest);
+  });
+
+  it("ويبقى دون المقدّمة السينمائية — هي تملك الشاشة في ثلاثينيتها", () => {
+    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const pair = zOf(css, ".nx-backhome-pin {");
+    const intro = code("src/components/intro/SadeedCinematicIntro.tsx");
+    const introZ = Number(/z-\[(\d+)\]/.exec(intro)?.[1] ?? NaN);
+    expect(Number.isFinite(introZ)).toBe(true);
+    expect(pair).toBeLessThan(introZ);
+  });
 });
