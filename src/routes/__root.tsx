@@ -37,6 +37,8 @@ import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsul
 import { SadeedWatermark } from "@/components/executive/SadeedWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
+import { hasSeenIntro, markIntroSeen } from "@/lib/sadeed/intro-seen";
+import { SadeedCinematicIntro } from "@/components/intro/SadeedCinematicIntro";
 import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
 import { GlobalBackButton } from "@/components/layout/GlobalBackButton";
 import { GlobalUtilityBar } from "@/components/nav/TopUtilityBar";
@@ -433,6 +435,32 @@ function RootComponent() {
    */
   const showUtilityBar = pathname === "/";
 
+  /**
+   * المقدّمة السينمائية — ٣٠ ثانية قبل الرئيسية (أمر المالك ٢٠٢٦/٠٨/٢٨).
+   *
+   * القرار يُتّخذ **بعد التركيب لا أثناء التصيير**: `sessionStorage`
+   * و`matchMedia` لا وجود لهما على الخادم، وقراءتهما في جسم المكوّن تُنتج
+   * تصييرًا أوّلًا يخالف الخادم (hydration mismatch). فالحالة تبدأ `false`
+   * في الجهتين، ثم يرفعها أثرٌ في العميل وحده.
+   *
+   * وثلاثة شروط تمنعها، كلٌّ لسبب مختلف:
+   *   ① **ليست الرئيسية** — «قبل الصفحة الرئيسية» يعني الرئيسية وحدها؛
+   *      ظهورها فوق شاشة داخلية اعتراضٌ لا مقدّمة.
+   *   ② **رُئيت في هذه الجلسة** — تُعرض مرّةً لا مع كل تنقّل.
+   *   ③ **الحركة المخفَّضة مطلوبة** — مقدّمةٌ سينمائيةٌ كاملةُ الحركة هي
+   *      عين ما يطلب المستخدم تعطيله؛ فتُتخطّى كليًّا لا تُبطّأ.
+   */
+  const [introOpen, setIntroOpen] = useState(false);
+  useEffect(() => {
+    if (!isHero) return;
+    if (hasSeenIntro()) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      markIntroSeen();
+      return;
+    }
+    setIntroOpen(true);
+  }, [isHero]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -473,9 +501,17 @@ function RootComponent() {
                   )}
                   <InstallAppBar />
                   {/* SADEED speaks ONLY inside Conversation Mode («مخاطبة») in the
-                      copilot panel, and via the homepage greeting button. No
-                      route auto-narration, no page greeters, and no cinematic
-                      welcome overlay — the homepage renders directly. */}
+                      copilot panel, via the homepage greeting button, and —
+                      since the owner's 2026/08/28 order — in the 30-second
+                      cinematic intro below. No route auto-narration and no page
+                      greeters: those remain banned.
+
+                      **هذا نسخٌ موثَّق لا تناقض.** كان مكتوبًا هنا «no cinematic
+                      welcome overlay — the homepage renders directly»، ونصّ
+                      المالك اليوم صريحٌ وأحدث: «مقدمة سينمائية في بداية النظام
+                      قبل الصفحة الرئيسية». فالأحدث يسود، ويبقى السطر القديم
+                      مذكورًا كي يُعرف أن القاعدة نُسخت ولم تُنسَ. */}
+                  {introOpen && <SadeedCinematicIntro onDone={() => setIntroOpen(false)} />}
                   <Toaster />
                 </SadeedProvider>
               </RegionProvider>
