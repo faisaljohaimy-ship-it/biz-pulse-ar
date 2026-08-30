@@ -222,7 +222,27 @@ export type SecProject = {
   ends_at: string | null;
   manager: string | null;
   contractor: string | null;
-  health: "green" | "amber" | "red";
+  /**
+   * **`null` صحّةٌ لم تُقَس، لا صحّةٌ سليمة (المادة ٢٧).**
+   *
+   * وُسِّع النوع عند استيراد تصدير المشاريع (٢٠٢٦/٠٨/٣٠): المصدر يصرّح
+   * بتصنيف المخاطر وتحليل التأخّر في **158 مشروعًا من 697** فقط. فلو بقي
+   * النوع ثلاثيًّا لَوجب اختيار لونٍ لـ539 مشروعًا لم يُقيَّم أيٌّ منها —
+   * و«أخضر» على مشروعٍ لم يُنظر فيه هو عين الادّعاء الذي تمنعه المادة.
+   */
+  health: "green" | "amber" | "red" | null;
+  /** منطقة العمليات كما في المصدر (COA/EOA/WOA/SOA/SEC) بالعربية. */
+  area_ar?: string | null;
+  /** موقع المشروع بالعربية. */
+  location_ar?: string | null;
+  /** خطّ الأعمال بالعربية. */
+  business_ar?: string | null;
+  /**
+   * يسمه `markSimulation` على كل بديل `resilient` غير مجمّد. مصرَّحٌ به في
+   * النوع كي تستطيع الصفحة عرض الشارة — بغيره يُعرض تصديرٌ تمثيلي كأنه
+   * قياسٌ حيّ، وهو ما تمنعه العقيدة.
+   */
+  is_simulation?: boolean;
 };
 
 export type SecOverview = {
@@ -487,8 +507,7 @@ async function fetchTwinTree(supabase: { from: (t: string) => any }): Promise<Tw
 export const getProjects = createServerFn({ method: "GET" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<SecProject[]> => {
-    const { buildSecProjectsSimulation, resilient } =
-      await import("./exec/showcase-simulation.server");
+    const { resilient } = await import("./exec/showcase-simulation.server");
     return resilient(
       "sec-projects",
       async () => {
@@ -499,7 +518,13 @@ export const getProjects = createServerFn({ method: "GET" })
         return (data ?? []) as SecProject[];
       },
       (rows) => rows.length === 0,
-      () => buildSecProjectsSimulation(Date.now()),
+      // ٢٠٢٦/٠٨/٣٠ — أمر المالك: بديل المشاريع صار مجموعة تصدير «Projects
+      // Data» (697 مشروعًا) بدل المولّد الاصطناعي. الصفوف الحيّة من القاعدة
+      // تظلّ تفوز متى وصلت؛ هذه تنهض حين تفرغ أو تتأخّر.
+      async () => {
+        const { REAL_SEC_PROJECTS } = await import("./exec/projects-report.real.server");
+        return [...REAL_SEC_PROJECTS];
+      },
     );
   });
 
