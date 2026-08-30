@@ -4,15 +4,21 @@
  * أمر المالك: «هذي بيانات المشاريع في قطاع الأمن الصناعي اعكسها في النظام».
  * المجموعة **697 مشروعًا** بأكواد مميّزة، في `projects-report.data.json`.
  *
- * ## لماذا تبقى موسومةً محاكاةً مرجعية (وهذا مُبلَّغ للمالك)
+ * ## بياناتٌ إنتاجية — الشارة مرفوعة بأمر المالك
  *
- * الصفوف هنا **لا تُجمَّد**، خلافًا لـ`event-report.real.server` — والفرق
- * مقصود: ذاك جاء بأمرٍ صريح («استبدال المحاكاة بتطبيق الملفات **الحقيقية
- * الحية**»)، وهذا مصدره ملفٌّ اسمه `Projects_Data_Dummy.xlsx` وبريده
- * `@demo-energy.example`. فبنيته حقيقية وقيمه تمثيلية. وترك
- * `markSimulation` يسمها هو ما يُبقي الشارة ظاهرة — والادّعاء بأنها قياسٌ
- * حيّ يخالف المادة ٢٧. تُرفع الشارة بأمرٍ صريح من المالك متى صارت المجموعة
- * إنتاجية.
+ * أُدرجت أوّلًا موسومةً «محاكاة مرجعية» لأن اسم الملفّ
+ * (`Projects_Data_Dummy.xlsx`) وبريده (`@demo-energy.example`) يقولان
+ * تمثيلًا، وسُئل المالك. **وأجاب ٢٠٢٦/٠٨/٣٠: «ارفع شارة المحاكاة، البيانات
+ * إنتاجية».** فصارت الصفوف مجمّدة كصفوف `event-report.real.server`.
+ *
+ * والتجميد هو الآلية لا الزينة: `walkSimulation` يتخطّى
+ * `Object.isFrozen(value)`، فلا يُضاف `is_simulation` إلى صفٍّ مجمّد —
+ * وتذييلات التصدير المحروسة تصف الحقيقة تلقائيًّا. ويحمي المرجعَ الثابت
+ * من أي تعديل عرضي في الوقت نفسه.
+ *
+ * **ولم يتغيّر شيء آخر بهذا الأمر:** ما لم يقسه المصدر يبقى `null` كما هو.
+ * «إنتاجية» تعني أن القيم حقيقية لا أن الحقول الغائبة صارت مقيسة — الصحّة
+ * ما زالت غير مقيسة في 539 صفًّا، والمقاول ما زال بلا عمود.
  *
  * ## الحقيقة الصارمة (المادة ٢٧) — ما لا يحمله المصدر
  *
@@ -78,28 +84,30 @@ const SOURCE: readonly ProjectsReportSourceRow[] = JSON.parse(
  * (`order("ends_at", { ascending: true })`)، وما لا نهاية له يُذيَّل بدل أن
  * يتصدّر بقيمةٍ فارغة.
  */
-export const REAL_SEC_PROJECTS: readonly SecProject[] = SOURCE.map(
-  (p) =>
-    ({
-      id: p.id,
-      ref: p.ref,
-      circle_id: null,
-      name_ar: p.name,
-      name_en: p.name,
-      kind: p.kind_ar,
-      status: p.status,
-      progress: p.progress,
-      budget_sar: p.budget_sar,
-      spent_sar: p.spent_sar,
-      starts_at: p.starts_at,
-      ends_at: p.ends_at,
-      manager: p.manager,
-      contractor: null,
-      health: p.health,
-      area_ar: p.area_ar,
-      location_ar: p.location_ar,
-      business_ar: p.business_ar,
-    }) satisfies SecProject,
+export const REAL_SEC_PROJECTS: readonly SecProject[] = SOURCE.map((p) =>
+  // التجميد صفًّا صفًّا: هو ما يمنع `markSimulation` من وسمها (يتخطّى
+  // `Object.isFrozen`). والتجميد على الكائن لا يمنع `sort` أدناه — هي
+  // تعيد ترتيب المراجع ولا تمسّ محتواها.
+  Object.freeze({
+    id: p.id,
+    ref: p.ref,
+    circle_id: null,
+    name_ar: p.name,
+    name_en: p.name,
+    kind: p.kind_ar,
+    status: p.status,
+    progress: p.progress,
+    budget_sar: p.budget_sar,
+    spent_sar: p.spent_sar,
+    starts_at: p.starts_at,
+    ends_at: p.ends_at,
+    manager: p.manager,
+    contractor: null,
+    health: p.health,
+    area_ar: p.area_ar,
+    location_ar: p.location_ar,
+    business_ar: p.business_ar,
+  } satisfies SecProject),
 ).sort((a, b) => {
   if (a.ends_at === b.ends_at) return a.ref.localeCompare(b.ref);
   if (!a.ends_at) return 1;

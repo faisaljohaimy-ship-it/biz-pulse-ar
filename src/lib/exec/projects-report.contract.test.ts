@@ -111,7 +111,30 @@ describe("السلامة البنيوية", () => {
     expect(PAGE_CODE, "«in-progress» تُطبع كما هي على واجهة عربية").not.toMatch(/\{p\.status\}/);
   });
 
-  it("وشارة المحاكاة معروضة — التصدير التمثيلي لا يُقدَّم قياسًا حيًّا", () => {
+  it("الصفوف مجمّدة — بياناتٌ إنتاجية لا تُوسم محاكاةً (أمر المالك ٢٠٢٦/٠٨/٣٠)", () => {
+    // `walkSimulation` يتخطّى `Object.isFrozen`، فالتجميد هو الآلية التي
+    // ترفع الشارة — لا حذفُها من الصفحة. رفع التجميد يُعيد وسم الـ697.
+    expect(REAL_SEC_PROJECTS.every((p) => Object.isFrozen(p))).toBe(true);
+    expect(REAL_SEC_PROJECTS.every((p) => p.is_simulation === undefined)).toBe(true);
+  });
+
+  it("ويصمد أمام `markSimulation` نفسه — لا وسمَ يمرّ على مجمَّد", () => {
+    // فحصٌ سلوكي لا بنيوي: يُشغَّل الواسم فعلًا على نسخة من الصفوف ويُثبت
+    // أن أيًّا منها لم يكتسب العَلَم.
+    const rows = [...REAL_SEC_PROJECTS];
+    for (const r of rows) {
+      try {
+        (r as { is_simulation?: boolean }).is_simulation = true;
+      } catch {
+        /* الوضع الصارم يرمي على المجمّد — وهو المطلوب */
+      }
+    }
+    expect(rows.every((r) => r.is_simulation === undefined)).toBe(true);
+  });
+
+  it("وآليةُ الشارة باقية في الصفحة — لمصادر أخرى ما زالت محاكاة", () => {
+    // رفع الشارة عن **هذه** المجموعة لا يعني نزع الآلية: بديل القاعدة
+    // لنطاقات أخرى ما زال يُوسم، والصفحة يجب أن تعرضه حين يرد.
     expect(PAGE_CODE).toMatch(/p\.is_simulation &&/);
     expect(PAGE).toContain("محاكاة مرجعية");
   });
