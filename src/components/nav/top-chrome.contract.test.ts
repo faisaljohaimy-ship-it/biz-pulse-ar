@@ -238,6 +238,31 @@ describe("⑥ المثبّت يعلو كل ما يُرسم فوق الصفحة",
     );
   });
 
+  it("والرمز نفسه ساكن — يغلب طبقة الهولو بـ!important", () => {
+    // العطل الذي أفلت من الإصلاح الأول: ثلاث قواعد عامّة في طبقة الهولو
+    // تفرض على `button > svg` توهّجَ drop-shadow ونبضةَ `hx-halo-breathe`
+    // اللانهائية بـ`!important`. فسكن المدار وبقي الرمز يتنفّس ويتوهّج.
+    // قاعدةٌ بـ`!important` لا يغلبها إلا `!important` أعلى نوعيةً.
+    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const rule = css.match(
+      /:is\(\.nx-backhome-pin, \.nx-utilitybar-pin\):is\([^)]*\)[\s\S]{0,120}?svg\s*\{[^}]*\}/,
+    )?.[0];
+    expect(rule, "سقطت قاعدة تسكين الرمز في قشرة الأعلى").toBeTruthy();
+    expect(rule, "التوهّج يعود بلا !important").toMatch(/filter:\s*none\s*!important/);
+    expect(rule, "النبضة تعود بلا !important").toMatch(/animation:\s*none\s*!important/);
+    // والنوعية مضاعفة نصًّا لا اعتمادًا على ترتيب الاستيراد.
+    expect(rule).toMatch(/:is\(\.nx-backhome-pin, \.nx-utilitybar-pin\):is\(/);
+  });
+
+  it("ولا يكبر رمز الهوم على الرئيسية — aria-current كان يقيسه 1.08", () => {
+    const css = read("src/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const rule = css.match(
+      /:is\(\.nx-backhome-pin, \.nx-utilitybar-pin\):is\([^)]*\)[\s\S]{0,120}?svg\s*\{[^}]*\}/,
+    )?.[0];
+    expect(rule).toMatch(/scale:\s*none/);
+    expect(rule).toMatch(/transition:\s*none/);
+  });
+
   it("والارتداد المطّاطي ممنوع — «سحب الشاشة» يزيح كل مثبَّت على اللمس", () => {
     // السكرول العادي لا يحرّكه (مقيس)، لكن السحب بعد نهاية الصفحة يزيح
     // إطار العرض نفسه فيتحرّك معه `position: fixed`. لا يظهر في سكرول برمجيّ.
