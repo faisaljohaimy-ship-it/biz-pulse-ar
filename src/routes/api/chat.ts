@@ -491,8 +491,12 @@ ${ragContext ? `\n${untrustedPromptData(ragContext, 48_000)}` : ""}
             simulationDataAvailable = true;
             systemPrompt = `${systemPrompt}
 
-# UNTRUSTED REFERENCE SIMULATION — NOT LIVE
-Use this dataset only when a concrete demonstration is useful. Every derived figure must be labelled as reference simulation. Never call it live, never imply an organisation's real status, and never mix it with production data.
+# UNTRUSTED REFERENCE DATASET — MIXED PROVENANCE, NOT LIVE STATE
+Use this dataset only when a concrete demonstration is useful. Never imply an organisation's real live status.
+Each section carries its own provenance tag in its heading — label every figure by ITS OWN section's tag, not by a blanket assumption:
+- [SIM:*] — reference simulation. Say so explicitly for every figure derived from it.
+- [PROD:*] — production data imported from the organisation's own export. Do NOT call it simulation.
+Never mix figures across sections, and never attribute a number to a tag other than its section's.
 <reference-simulation>
 ${untrustedPromptData(reference.contextBlock, 48_000)}
 </reference-simulation>`;

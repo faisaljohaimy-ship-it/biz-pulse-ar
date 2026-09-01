@@ -171,8 +171,23 @@ export async function buildSadeedContextSnapshot(
           )
           .join("\n"),
       );
+    } else {
+      // نفس علّة المشاريع: `sec_work_orders` فارغة، فشاشة الصيانة تعرض
+      // المحاكاة بينما كان سياق سَدِيد يخلو منها. والقسم موسومٌ [SIM:*]
+      // في متنه — فما يُشتقّ منه يبقى محاكاةً معلَنة لا واقعًا مُدّعى.
+      const [{ buildOmsSimulation }, { buildMaintenanceContextSection }] = await Promise.all([
+        import("@/lib/exec/showcase-simulation.server"),
+        import("@/lib/sadeed/projects-maintenance-context.server"),
+      ]);
+      sections.push(...buildMaintenanceContextSection(buildOmsSimulation(Date.now()).work_orders));
     }
 
+    // **المشاريع: القاعدة أوّلًا، ثم المجموعة المستوردة (٢٠٢٦/٠٨/٣١).**
+    // كان الشرط `if (projectsQ.data?.length)` وحده، و`sec_projects` فارغة —
+    // ولذلك يسقط `getProjects` إلى المستوردة أصلًا فتراها الشاشة. فكان
+    // سَدِيد وحده لا يرى ما يراه المستخدم أمامه: القسم يُتخطّى كليًّا على
+    // الفارغ. الآن يتبع السياقُ المصدرَ نفسه الذي تتبعه الشاشة، فلا يفترق
+    // جوابه عمّا تعرضه.
     if (projectsQ.data?.length) {
       const totalBudget = projectsQ.data.reduce((s, p) => s + Number(p.budget_sar), 0);
       const totalSpent = projectsQ.data.reduce((s, p) => s + Number(p.spent_sar), 0);
@@ -184,9 +199,18 @@ export async function buildSadeedContextSnapshot(
         projectsQ.data
           .filter((p) => p.status === "in-progress")
           .slice(0, 6)
-          .map((p) => `- ${p.name_ar} [${p.kind}] — ${p.progress}% — صحة: ${p.health} (${p.ref})`)
+          .map(
+            (p) =>
+              `- ${p.name_ar} [${p.kind}] — ${p.progress}% — صحة: ${p.health ?? "لم تُقَس"} (${p.ref})`,
+          )
           .join("\n"),
       );
+    } else {
+      const [{ REAL_SEC_PROJECTS }, { buildProjectsContextSection }] = await Promise.all([
+        import("@/lib/exec/projects-report.real.server"),
+        import("@/lib/sadeed/projects-maintenance-context.server"),
+      ]);
+      sections.push(...buildProjectsContextSection(REAL_SEC_PROJECTS));
     }
 
     if (camerasQ.data?.length) {

@@ -4,8 +4,14 @@
  */
 import {
   buildCommandCenterSimulation,
+  buildOmsSimulation,
   buildSecOverviewSimulation,
 } from "@/lib/exec/showcase-simulation.server";
+import { REAL_SEC_PROJECTS } from "@/lib/exec/projects-report.real.server";
+import {
+  buildMaintenanceContextSection,
+  buildProjectsContextSection,
+} from "@/lib/sadeed/projects-maintenance-context.server";
 
 const REGION_AR: Record<string, string> = {
   central: "الوسطى",
@@ -30,8 +36,15 @@ export function buildReferenceSimulationContext(now = Date.now()): ReferenceSimu
   );
 
   const lines = [
-    "DATA_MODE: REFERENCE_SIMULATION_ONLY",
-    "هذه بيانات محاكاة مرجعية للتجربة وليست حالة إنتاج حية. يجب وسم كل رقم مشتق منها بوضوح، ومنع خلطها بأي بيانات تشغيلية.",
+    "DATA_MODE: MIXED — كل قسم يحمل وسم أصله في عنوانه",
+    // **الوسم صار لكل قسم لا للكتلة (٢٠٢٦/٠٨/٣١).** كان السطر يعلن الكتلة
+    // كلَّها محاكاةً، وكان صادقًا يوم كانت كذلك. ثم دخلها قسم المشاريع
+    // **الإنتاجي** (أمر المالك ٢٠٢٦/٠٨/٣٠)، فصار الوسم الشامل يكذب في
+    // الاتجاه المعاكس: يجعل سَدِيد يصف بياناتٍ حقيقية بأنها محاكاة، فيُهدر
+    // مصداقيتها. والقاعدة الآن: `[SIM:*]` يُوسم محاكاةً، و`[PROD:*]` لا.
+    "أقسام موسومة [SIM:*] محاكاةٌ مرجعية — يجب وسم كل رقم مشتقّ منها بوضوح.",
+    "وأقسام موسومة [PROD:*] بياناتٌ إنتاجية — لا توصف بأنها محاكاة.",
+    "ولا تُخلط أرقام قسمٍ بأرقام آخر، ولا يُنسب رقمٌ إلى غير وسم قسمه.",
     `observed_at: ${observedAt}`,
     "scope: قطاع الأمن الصناعي — جميع المناطق (الوسطى، الغربية، الشرقية، الجنوبية)",
     "source: [SIM:SEC_OVERVIEW] + [SIM:COMMAND_CENTER]",
@@ -56,11 +69,15 @@ export function buildReferenceSimulationContext(now = Date.now()): ReferenceSimu
       return `- ${REGION_AR[region.region_id] ?? region.region_id}: امتثال ${compliance}؛ بلاغات مفتوحة ${incidents}؛ حالة ${region.severity}`;
     }),
     "",
-    "## البلاغات المفتوحة ذات الأولوية",
+    "## البلاغات المفتوحة ذات الأولوية [SIM:SEC_OVERVIEW]",
     ...openIncidents.map(
       (incident) =>
         `- ${incident.ref}: ${incident.title_ar}؛ الخطورة ${incident.severity}؛ الحالة ${incident.status}؛ الموقع ${siteById.get(incident.site_id ?? "") ?? "غير محدد"}`,
     ),
+    // المشاريع والصيانة — أمر المالك ٢٠٢٦/٠٨/٣١. المصدران مختلفا الأصل،
+    // وكلٌّ يحمل وسمه في عنوانه (انظر projects-maintenance-context).
+    ...buildProjectsContextSection(REAL_SEC_PROJECTS),
+    ...buildMaintenanceContextSection(buildOmsSimulation(now).work_orders),
   ];
 
   return { contextBlock: lines.join("\n"), observedAt, dataAvailable: true };
