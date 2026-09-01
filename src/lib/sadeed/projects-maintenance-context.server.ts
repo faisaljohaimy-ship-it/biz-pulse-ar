@@ -67,7 +67,19 @@ function topCounts(values: readonly (string | null | undefined)[], n: number): s
  * المجموعة المستوردة حين تفرغ. الحساب واحد في الحالتين فلا يفترق الرقم
  * بين مسار وآخر.
  */
-export function buildProjectsContextSection(projects: readonly SecProject[]): string[] {
+export function buildProjectsContextSection(
+  projects: readonly SecProject[],
+  /**
+   * تجاوزُ الوسم — لنداءٍ بلا `orgId` تُقدَّم **محاكاة** مشاريع لا مشاريع
+   * المؤسسة، فيجب أن تحمل وسمها الصحيح `[SIM:*]`. الوسم يتبع المصدر
+   * المُمرَّر لا اسم الدالّة: نفس البناء يخدم المصدرين، والكذب يقع حين
+   * يُوسم أحدهما بوسم الآخر.
+   */
+  origin: { provenance: string; note: string } = {
+    provenance: PROVENANCE_PRODUCTION,
+    note: "بياناتٌ إنتاجية من تصدير مشاريع الأمن الصناعي. لا تُوصف بأنها محاكاة.",
+  },
+): string[] {
   if (projects.length === 0) return [];
 
   const byStatus = (s: string) => projects.filter((p) => p.status === s).length;
@@ -83,8 +95,8 @@ export function buildProjectsContextSection(projects: readonly SecProject[]): st
 
   const lines = [
     "",
-    `## المشاريع ${PROVENANCE_PRODUCTION}`,
-    "provenance: بياناتٌ إنتاجية من تصدير مشاريع الأمن الصناعي. لا تُوصف بأنها محاكاة.",
+    `## المشاريع ${origin.provenance}`,
+    `provenance: ${origin.note}`,
     `- الإجمالي: ${projects.length}`,
     `- جارية: ${byStatus("in-progress")} · مكتملة: ${byStatus("completed")} · ملغاة: ${byStatus("cancelled")}`,
     // المادة ٢٧: غياب التقييم يُقال صراحةً ولا يُطوى خلف «سليم».

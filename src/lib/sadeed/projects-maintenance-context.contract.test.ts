@@ -29,10 +29,17 @@ const code = (p: string) =>
     .replace(/(^|[^:])\/\/.*$/gm, "$1");
 
 describe("سَدِيد يرى المشاريع والصيانة", () => {
-  it("قسم المشاريع حاضر بعدد المجموعة كاملةً لا بالمعروض منها", () => {
+  it("قسم المشاريع حاضر في كتلة الزائر (محاكاةً)", () => {
     expect(BLOCK).toContain("## المشاريع");
-    expect(BLOCK).toContain(`الإجمالي: ${REAL_SEC_PROJECTS.length}`);
+  });
+
+  it("والمسار المصادَق يعدّ المجموعة كاملةً لا المعروض منها", () => {
+    // 697 و539 أرقامُ **المجموعة الإنتاجية**، ومكانها المسار المصادَق.
+    // كانت تُفحص على كتلة الزائر قبل إغلاق التسريب — ووجودُها هناك كان
+    // هو العطل نفسه لا دليلَ صحّة.
+    const section = buildProjectsContextSection(REAL_SEC_PROJECTS).join("\n");
     expect(REAL_SEC_PROJECTS.length).toBe(697);
+    expect(section).toContain(`الإجمالي: ${REAL_SEC_PROJECTS.length}`);
   });
 
   it("وقسم الصيانة حاضر كذلك", () => {
@@ -44,12 +51,53 @@ describe("سَدِيد يرى المشاريع والصيانة", () => {
   });
 });
 
-describe("الوسم بالأصل — لا وسمَ شاملًا يكذب في أحد الاتجاهين", () => {
-  it("المشاريع موسومة إنتاجيةً لا محاكاة", () => {
+describe("بوابة المستأجر — مشاريع الإنتاج لا تبلغ نداءً بلا هوية", () => {
+  /**
+   * تصحيحُ تسريبٍ أُدخل في 29557456: كتلة الزائر (فرع `!liveDataAvailable`
+   * في `/api/chat`) كانت تحمل `REAL_SEC_PROJECTS` — أسماء مشاريع المؤسسة
+   * ومراجعها ومديريها وتصنيف تعثّرها — وصفحتُها نفسها خلف
+   * `_authenticated`. البنود أدناه تمنع عودته.
+   */
+  it("كتلة الزائر تحمل محاكاة مشاريع لا مشاريع المؤسسة", () => {
     const line = BLOCK.split("\n").find((l) => l.startsWith("## المشاريع"));
     expect(line, "قسم المشاريع مفقود").toBeTruthy();
-    expect(line).toContain("[PROD:");
-    expect(line, "بياناتٌ إنتاجية وُسمت محاكاةً").not.toContain("[SIM:");
+    expect(line, "بيانات إنتاجية تسرّبت إلى كتلة الزائر").not.toContain("[PROD:");
+    expect(line).toContain("[SIM:");
+  });
+
+  it("ولا مرجعُ مشروعٍ إنتاجيّ واحد يظهر فيها", () => {
+    // فحصٌ على المحتوى لا على الوسم: وسمٌ صحيح فوق بياناتٍ مسرَّبة يمرّ.
+    const realRefs = REAL_SEC_PROJECTS.slice(0, 60).map((p) => p.ref);
+    const leaked = realRefs.filter((ref) => BLOCK.includes(ref));
+    expect(leaked, `مراجع إنتاجية في كتلة الزائر: ${leaked.slice(0, 3).join(", ")}`).toEqual([]);
+  });
+
+  it("وبناء الوكلاء يقيّد الإنتاجية بوجود orgId", () => {
+    const brain = code("src/lib/sadeed/executive-brain/context.server.ts");
+    expect(brain).toMatch(/buildEnterpriseKnowledgeBlock\(\s*orgId/);
+    expect(brain).toMatch(/orgId\s*\n?\s*\?\s*buildProjectsContextSection\(REAL_SEC_PROJECTS\)/);
+    expect(brain, "الكتلة تُبنى بلا تمرير الهوية").toContain(
+      "buildEnterpriseKnowledgeBlock(req.orgId)",
+    );
+  });
+
+  it("والمصادَق وحده يأخذ المجموعة الإنتاجية", () => {
+    const ctx = code("src/lib/sadeed-context.server.ts");
+    expect(ctx).toMatch(/sections\.push\(\s*\.\.\.buildProjectsContextSection\(REAL_SEC_PROJECTS/);
+  });
+});
+
+describe("الوسم بالأصل — لا وسمَ شاملًا يكذب في أحد الاتجاهين", () => {
+  it("الوسم يتبع المصدر المُمرَّر لا اسم الدالّة", () => {
+    const simTagged = buildProjectsContextSection(REAL_SEC_PROJECTS.slice(0, 3), {
+      provenance: "[SIM:PROJECTS]",
+      note: "محاكاة",
+    }).join("\n");
+    expect(simTagged).toContain("[SIM:PROJECTS]");
+    expect(simTagged).not.toContain("[PROD:");
+    // والافتراضي يبقى إنتاجيًّا لمن يمرّر المجموعة الحقيقية بلا تجاوز.
+    const prodTagged = buildProjectsContextSection(REAL_SEC_PROJECTS.slice(0, 3)).join("\n");
+    expect(prodTagged).toContain("[PROD:PROJECTS_EXPORT]");
   });
 
   it("والصيانة موسومة محاكاةً لا إنتاجًا", () => {
@@ -79,8 +127,10 @@ describe("المادة ٢٧ داخل فم سَدِيد", () => {
   it("غير المقيس معلَنٌ بعدده لا مطويٌّ خلف «سليم»", () => {
     const unmeasured = REAL_SEC_PROJECTS.filter((p) => p.health === null).length;
     expect(unmeasured).toBe(539);
-    expect(BLOCK).toContain(`لم تُقَس ${unmeasured}`);
-    // ونصٌّ صريح يمنعه من تصنيفها من عنده.
+    const section = buildProjectsContextSection(REAL_SEC_PROJECTS).join("\n");
+    expect(section).toContain(`لم تُقَس ${unmeasured}`);
+    // ونصٌّ صريح يمنعه من تصنيفها من عنده — على المسارين معًا.
+    expect(section).toContain("لا تصفها سليمة ولا متعثّرة");
     expect(BLOCK).toContain("لا تصفها سليمة ولا متعثّرة");
   });
 

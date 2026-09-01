@@ -6,8 +6,8 @@ import {
   buildCommandCenterSimulation,
   buildOmsSimulation,
   buildSecOverviewSimulation,
+  buildSecProjectsSimulation,
 } from "@/lib/exec/showcase-simulation.server";
-import { REAL_SEC_PROJECTS } from "@/lib/exec/projects-report.real.server";
 import {
   buildMaintenanceContextSection,
   buildProjectsContextSection,
@@ -74,9 +74,20 @@ export function buildReferenceSimulationContext(now = Date.now()): ReferenceSimu
       (incident) =>
         `- ${incident.ref}: ${incident.title_ar}؛ الخطورة ${incident.severity}؛ الحالة ${incident.status}؛ الموقع ${siteById.get(incident.site_id ?? "") ?? "غير محدد"}`,
     ),
-    // المشاريع والصيانة — أمر المالك ٢٠٢٦/٠٨/٣١. المصدران مختلفا الأصل،
-    // وكلٌّ يحمل وسمه في عنوانه (انظر projects-maintenance-context).
-    ...buildProjectsContextSection(REAL_SEC_PROJECTS),
+    // المشاريع والصيانة — أمر المالك ٢٠٢٦/٠٨/٣١.
+    //
+    // **ومشاريعُ هنا محاكاةٌ لا إنتاج — تصحيحٌ لتسريبٍ أُدخل في 29557456.**
+    // هذه الكتلة تُبنى في فرع `!liveDataAvailable` من `/api/chat`، وهو
+    // الفرع الذي يخدم **الزائر بلا هوية**. وكانت الدفعة السابقة تضع فيه
+    // `REAL_SEC_PROJECTS` — أسماء مشاريع المؤسسة ومراجعها ومديريها
+    // وتصنيف تعثّرها — بينما صفحتها نفسها خلف `_authenticated`. فصار
+    // نداءٌ مجهول يستخرج ما لا تعرضه الشاشة له.
+    // المصادَق يأخذ الإنتاجية من `sadeed-context.server`، والزائر يأخذ
+    // محاكاةً موسومةً — فتبقى القدرة معروضةً بلا كشف.
+    ...buildProjectsContextSection(buildSecProjectsSimulation(now), {
+      provenance: "[SIM:PROJECTS]",
+      note: "محاكاة مرجعية لعرض القدرة — ليست مشاريع المؤسسة.",
+    }),
     ...buildMaintenanceContextSection(buildOmsSimulation(now).work_orders),
   ];
 
