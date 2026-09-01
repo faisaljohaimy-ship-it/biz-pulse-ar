@@ -13,6 +13,7 @@ import {
   buildMaintenanceContextSection,
   buildProjectsContextSection,
 } from "@/lib/sadeed/projects-maintenance-context.server";
+import { buildRecallBlock } from "@/lib/sadeed/projects-maintenance-recall.server";
 
 /**
  * قاعدة المعرفة الثابتة لكل الوكلاء — أمر المالك ٢٠٢٦/٠٩/٠١:
@@ -47,17 +48,27 @@ import {
  * **محاكاة المشاريع** موسومةً `[SIM:*]` — فيبقى الوكيل قادرًا على العرض
  * بلا كشف. والصيانة محاكاةٌ في الحالين فلا بوابة عليها.
  */
-function buildEnterpriseKnowledgeBlock(orgId?: string | null): string {
+function buildEnterpriseKnowledgeBlock(orgId?: string | null, question?: string): string {
+  const now = Date.now();
+  const projectPool = orgId ? REAL_SEC_PROJECTS : buildSecProjectsSimulation(now);
+  const orderPool = buildOmsSimulation(now).work_orders;
+  const projectTag = orgId ? "[PROD:PROJECTS_EXPORT]" : "[SIM:PROJECTS]";
   const projects = orgId
-    ? buildProjectsContextSection(REAL_SEC_PROJECTS)
-    : buildProjectsContextSection(buildSecProjectsSimulation(Date.now()), {
+    ? buildProjectsContextSection(projectPool)
+    : buildProjectsContextSection(projectPool, {
         provenance: "[SIM:PROJECTS]",
         note: "محاكاة مرجعية لعرض القدرة — ليست مشاريع المؤسسة.",
       });
-  const lines = [
-    ...projects,
-    ...buildMaintenanceContextSection(buildOmsSimulation(Date.now()).work_orders),
-  ];
+  const lines = [...projects, ...buildMaintenanceContextSection(orderPool)];
+  // استرجاع السؤال (٢٠٢٦/٠٩/٠١): مجلس الوكلاء كلُّه يرى السجلّات الكاملة
+  // لما يمسّه سؤال المهمة — من المصدر نفسه الذي تسمح به بوابة `orgId`.
+  if (question?.trim()) {
+    const recall = buildRecallBlock(question, projectPool, orderPool, {
+      projects: projectTag,
+      maintenance: "[SIM:MAINTENANCE]",
+    });
+    if (recall) lines.push("", recall);
+  }
   if (lines.length === 0) return "";
   return [
     "# ENTERPRISE DATA — دائمة ومستقلّة عن الجهاز والشاشة",
@@ -118,7 +129,7 @@ export function buildContextBlock(req: BrainRequest, memoryBlock: string): strin
   if (memoryBlock) parts.push(memoryBlock);
 
   // قبل سطر الإسناد مباشرةً: الوكيل يقرأ البيانات ثم يُؤمر بألّا يتجاوزها.
-  const enterprise = buildEnterpriseKnowledgeBlock(req.orgId);
+  const enterprise = buildEnterpriseKnowledgeBlock(req.orgId, req.question);
   if (enterprise) parts.push(enterprise);
 
   parts.push(

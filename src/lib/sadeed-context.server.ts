@@ -13,6 +13,12 @@ export type SadeedContextSnapshot = {
 
 export async function buildSadeedContextSnapshot(
   supabase: SupabaseClient,
+  /**
+   * سؤال الدورة الحالية — أمر المالك ٢٠٢٦/٠٩/٠١ («ليرد بجميع ما يُطلب»):
+   * حين يُمرَّر، تُحقن سجلّاتُ ما يمسّه من المشاريع والصيانة **كاملةَ
+   * الحقول** فوق الخلاصات. اختياريّ فلا يتغيّر سلوك مستدعٍ لا يملك سؤالًا.
+   */
+  question?: string,
 ): Promise<SadeedContextSnapshot> {
   const observedAt = new Date().toISOString();
   try {
@@ -266,6 +272,30 @@ export async function buildSadeedContextSnapshot(
       sections.push(
         `## الأصول الأمنية\nمتصلة: ${assetsQ.data.filter((a) => a.status === "online").length} — متوسط الصحة: ${avg}%`,
       );
+    }
+
+    // ── استرجاعٌ بحسب السؤال (٢٠٢٦/٠٩/٠١) ──
+    // الخلاصات أعلاه تجيب عن المجاميع؛ وهذا يجيب عن **المشروع بعينه**:
+    // سجلّات كاملة الحقول لما مسّه السؤال، من المصدر نفسه الذي تعرضه
+    // الشاشة — القاعدة حين تمتلئ، والمجموعة المستوردة/المحاكاة حين تفرغ.
+    if (question?.trim()) {
+      const [{ buildRecallBlock }, { REAL_SEC_PROJECTS }, { buildOmsSimulation }] =
+        await Promise.all([
+          import("@/lib/sadeed/projects-maintenance-recall.server"),
+          import("@/lib/exec/projects-report.real.server"),
+          import("@/lib/exec/showcase-simulation.server"),
+        ]);
+      const projectPool = projectsQ.data?.length
+        ? (projectsQ.data as import("@/lib/sec.functions").SecProject[])
+        : REAL_SEC_PROJECTS;
+      const orderPool = workOrdersQ.data?.length
+        ? workOrdersQ.data
+        : buildOmsSimulation(Date.now()).work_orders;
+      const recall = buildRecallBlock(question, projectPool, orderPool, {
+        projects: "[PROD:PROJECTS_EXPORT]",
+        maintenance: workOrdersQ.data?.length ? "[PROD:WORK_ORDERS]" : "[SIM:MAINTENANCE]",
+      });
+      if (recall) sections.push(recall);
     }
 
     return { contextBlock: sections.join("\n\n"), hasOperationalData: true, observedAt };

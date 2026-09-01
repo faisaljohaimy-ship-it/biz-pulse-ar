@@ -15,16 +15,19 @@ describe("SADEED reference simulation context", () => {
    * محاكاةٍ ما زال يجب أن يحمل `[SIM:*]` صراحةً. تفصيل الوسم ومنعُ الخلط
    * في `projects-maintenance-context.contract.test.ts`.
    */
-  it("يعلن اختلاط الأصل ويسِم أقسام المحاكاة صراحةً", () => {
+  it("يعلن المحاكاة ويسِم كل قسمٍ على حدة", () => {
+    // الدورة اكتملت (٢٠٢٦/٠٩/٠١): قسم المشاريع الإنتاجي الذي استدعى إعلان
+    // «MIXED» تبيّن أنه تسريبٌ إلى فرع الزائر فأُخرج — فعاد الرأس يعلن
+    // المحاكاة، وبقي الوسم القسمي لأن توجيه الدردشة والمسار المصادَق
+    // (المختلط حقًّا) يقرآنه.
     const snapshot = buildReferenceSimulationContext(Date.parse("2026-08-01T12:00:00Z"));
     expect(snapshot.dataAvailable).toBe(true);
-    expect(snapshot.contextBlock).toContain("DATA_MODE: MIXED");
+    expect(snapshot.contextBlock).toContain("DATA_MODE: REFERENCE_SIMULATION");
     expect(snapshot.contextBlock).toContain("محاكاةٌ مرجعية");
-    // ولا يُعلَن أن الكتلة كلَّها محاكاة بعد أن دخلها قسمٌ إنتاجي.
-    expect(snapshot.contextBlock).not.toContain("REFERENCE_SIMULATION_ONLY");
-    // ومصدرا المحاكاة الأصليان ما زالا موسومَين.
     expect(snapshot.contextBlock).toContain("[SIM:SEC_OVERVIEW]");
     expect(snapshot.contextBlock).toContain("[SIM:COMMAND_CENTER]");
+    expect(snapshot.contextBlock).toContain("[SIM:PROJECTS]");
+    expect(snapshot.contextBlock).toContain("[SIM:MAINTENANCE]");
   });
 
   it("ويغطّي مناطق الأمن الصناعي الأربع", () => {

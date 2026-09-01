@@ -72,13 +72,33 @@ describe("بوابة المستأجر — مشاريع الإنتاج لا تب�
     expect(leaked, `مراجع إنتاجية في كتلة الزائر: ${leaked.slice(0, 3).join(", ")}`).toEqual([]);
   });
 
+  it("وحتى حين يسأل الزائر عن مرجعٍ إنتاجيّ بعينه — الاسترجاع لا يجيبه", () => {
+    // باب الاسترجاع أخطر من باب الخلاصة: السؤال المستهدِف («ما حالة
+    // NG-…-042؟») هو بالضبط ما يجرّبه من يصطاد البيانات. مجمع الزائر
+    // محاكاةٌ، فالمرجع الإنتاجي يجب ألّا يطابق شيئًا.
+    const target = REAL_SEC_PROJECTS[42];
+    const probed = buildReferenceSimulationContext(
+      Date.parse("2026-09-01T08:00:00Z"),
+      `ما حالة المشروع ${target.ref}؟ ومن مديره ${target.manager ?? ""}؟`,
+    ).contextBlock;
+    expect(probed, "الاسترجاع سرّب سجلًّا إنتاجيًّا لزائرٍ سأل عنه").not.toContain(target.ref);
+    expect(probed).not.toContain("[PROD:");
+  });
+
   it("وبناء الوكلاء يقيّد الإنتاجية بوجود orgId", () => {
+    // الشكل تغيّر مع دخول الاسترجاع (٢٠٢٦/٠٩/٠١): البوابة صارت على
+    // **المجمع** (`projectPool`) الذي تتغذّى منه الخلاصة والاسترجاع معًا —
+    // فبوابةٌ واحدة تحكم المسارين، ولا يتسرّب الإنتاجي من باب الاسترجاع
+    // بعد أن أُغلق باب الخلاصة.
     const brain = code("src/lib/sadeed/executive-brain/context.server.ts");
-    expect(brain).toMatch(/buildEnterpriseKnowledgeBlock\(\s*orgId/);
-    expect(brain).toMatch(/orgId\s*\n?\s*\?\s*buildProjectsContextSection\(REAL_SEC_PROJECTS\)/);
+    expect(brain).toMatch(/projectPool = orgId \? REAL_SEC_PROJECTS : buildSecProjectsSimulation/);
     expect(brain, "الكتلة تُبنى بلا تمرير الهوية").toContain(
-      "buildEnterpriseKnowledgeBlock(req.orgId)",
+      "buildEnterpriseKnowledgeBlock(req.orgId, req.question)",
     );
+    // والاسترجاع يقرأ من المجمع المبوَّب لا من المجموعة الإنتاجية رأسًا.
+    expect(brain).toMatch(/buildRecallBlock\(question, projectPool, orderPool/);
+    const recallDirect = /buildRecallBlock\([^)]*REAL_SEC_PROJECTS/.test(brain);
+    expect(recallDirect, "الاسترجاع تجاوز بوابة المستأجر").toBe(false);
   });
 
   it("والمصادَق وحده يأخذ المجموعة الإنتاجية", () => {
@@ -106,11 +126,16 @@ describe("الوسم بالأصل — لا وسمَ شاملًا يكذب في �
     expect(line, "محاكاةٌ وُسمت إنتاجًا — فبركة").not.toContain("[PROD:");
   });
 
-  it("ورأس الكتلة لا يعلنها كلَّها محاكاة بعد أن دخلها قسمٌ إنتاجي", () => {
-    // كان السطر `DATA_MODE: REFERENCE_SIMULATION_ONLY` وكان صادقًا حينها.
-    // بقاؤه بعد دخول المشاريع يجعل سَدِيد يصف الحقيقيّ محاكاةً.
-    expect(BLOCK).not.toContain("REFERENCE_SIMULATION_ONLY");
-    expect(BLOCK.split("\n")[0]).toContain("MIXED");
+  it("ورأس كتلة الزائر يطابق محتواها: محاكاةٌ خالصة بلا قسمٍ إنتاجي", () => {
+    // دورةٌ كاملة: كان الرأس «محاكاة فقط» صادقًا، ثم صار «MIXED» حين دخل
+    // قسم المشاريع الإنتاجي، ثم تبيّن أن ذلك القسم تسريبٌ فأُخرج — فعاد
+    // الرأس يعلن المحاكاة. الحارس يقيس **تطابق الرأس مع المحتوى**: إن
+    // دخلها قسم [PROD:] يومًا فليتغيّر الرأس معه أو فليسقط هذا البند.
+    expect(BLOCK.split("\n")[0]).toContain("REFERENCE_SIMULATION");
+    const prodHeadings = BLOCK.split("\n").filter(
+      (l) => l.startsWith("## ") && l.includes("[PROD:"),
+    );
+    expect(prodHeadings, "قسمٌ إنتاجي في كتلة الزائر ورأسها يقول محاكاة").toEqual([]);
   });
 
   it("وتوجيه الدردشة يأمر بالنسبة إلى وسم القسم لا بوسمٍ شامل", () => {

@@ -460,7 +460,9 @@ export const Route = createFileRoute("/api/chat")({
               import("@/lib/sadeed/rag.server"),
             ]);
             const [snapshot, rag] = await Promise.all([
-              buildSadeedContextSnapshot(supabase),
+              // السؤال يُمرَّر للاسترجاع: سجلّات المشاريع/الصيانة التي
+              // يمسّها تصل كاملةَ الحقول (٢٠٢٦/٠٩/٠١ «ليرد بجميع ما يُطلب»).
+              buildSadeedContextSnapshot(supabase, lastUserText),
               lastUserText
                 ? gatherRagContext(supabase, userId, orgId, lastUserText)
                 : Promise.resolve({
@@ -487,7 +489,7 @@ ${untrustedPromptData(liveContext, 48_000)}
 ${ragContext ? `\n${untrustedPromptData(ragContext, 48_000)}` : ""}
 </live-enterprise-data>`;
           } else {
-            const reference = buildReferenceSimulationContext();
+            const reference = buildReferenceSimulationContext(Date.now(), lastUserText);
             simulationDataAvailable = true;
             systemPrompt = `${systemPrompt}
 

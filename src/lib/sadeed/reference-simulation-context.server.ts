@@ -12,6 +12,7 @@ import {
   buildMaintenanceContextSection,
   buildProjectsContextSection,
 } from "@/lib/sadeed/projects-maintenance-context.server";
+import { buildRecallBlock } from "@/lib/sadeed/projects-maintenance-recall.server";
 
 const REGION_AR: Record<string, string> = {
   central: "الوسطى",
@@ -26,7 +27,15 @@ export type ReferenceSimulationContext = {
   dataAvailable: true;
 };
 
-export function buildReferenceSimulationContext(now = Date.now()): ReferenceSimulationContext {
+export function buildReferenceSimulationContext(
+  now = Date.now(),
+  /**
+   * سؤال الدورة — حين يُمرَّر تُحقن سجلّات المحاكاة المطابقة كاملةَ الحقول
+   * (٢٠٢٦/٠٩/٠١ «ليرد بجميع ما يُطلب»). كتلة الزائر، فالمصادر محاكاةٌ
+   * كلُّها بالضرورة — بوابة المستأجر أعلاه لا تتغيّر بهذا.
+   */
+  question?: string,
+): ReferenceSimulationContext {
   const observedAt = new Date(now).toISOString();
   const overview = buildSecOverviewSimulation(now);
   const command = buildCommandCenterSimulation(now);
@@ -36,15 +45,15 @@ export function buildReferenceSimulationContext(now = Date.now()): ReferenceSimu
   );
 
   const lines = [
-    "DATA_MODE: MIXED — كل قسم يحمل وسم أصله في عنوانه",
-    // **الوسم صار لكل قسم لا للكتلة (٢٠٢٦/٠٨/٣١).** كان السطر يعلن الكتلة
-    // كلَّها محاكاةً، وكان صادقًا يوم كانت كذلك. ثم دخلها قسم المشاريع
-    // **الإنتاجي** (أمر المالك ٢٠٢٦/٠٨/٣٠)، فصار الوسم الشامل يكذب في
-    // الاتجاه المعاكس: يجعل سَدِيد يصف بياناتٍ حقيقية بأنها محاكاة، فيُهدر
-    // مصداقيتها. والقاعدة الآن: `[SIM:*]` يُوسم محاكاةً، و`[PROD:*]` لا.
-    "أقسام موسومة [SIM:*] محاكاةٌ مرجعية — يجب وسم كل رقم مشتقّ منها بوضوح.",
-    "وأقسام موسومة [PROD:*] بياناتٌ إنتاجية — لا توصف بأنها محاكاة.",
-    "ولا تُخلط أرقام قسمٍ بأرقام آخر، ولا يُنسب رقمٌ إلى غير وسم قسمه.",
+    // **تاريخ هذا الرأس دورةٌ كاملة، وذكرُها يمنع تكرارها.** وُلد
+    // `REFERENCE_SIMULATION_ONLY` صادقًا؛ ثم دخل قسمُ المشاريع الإنتاجي
+    // (٢٠٢٦/٠٨/٣١) فصار «MIXED» بوسمٍ لكل قسم؛ ثم تبيّن أن ذلك القسم كان
+    // **تسريبًا** — الكتلة تُبنى لفرع الزائر بلا هوية — فأُخرج، وعادت
+    // الكتلة محاكاةً خالصة. الوسم القسمي `[SIM:*]` باقٍ عمدًا: توجيه
+    // الدردشة يقرأه، والمسار المصادَق مختلطٌ حقًّا فالمفردات واحدة.
+    "DATA_MODE: REFERENCE_SIMULATION — كتلة الزائر: كل أقسامها موسومة [SIM:*]",
+    "هذه محاكاةٌ مرجعية للتجربة وليست حالة إنتاج حية. يجب وسم كل رقم مشتقّ",
+    "منها محاكاةً بوضوح، ولا تُخلط أرقام قسمٍ بأرقام آخر.",
     `observed_at: ${observedAt}`,
     "scope: قطاع الأمن الصناعي — جميع المناطق (الوسطى، الغربية، الشرقية، الجنوبية)",
     "source: [SIM:SEC_OVERVIEW] + [SIM:COMMAND_CENTER]",
@@ -90,6 +99,16 @@ export function buildReferenceSimulationContext(now = Date.now()): ReferenceSimu
     }),
     ...buildMaintenanceContextSection(buildOmsSimulation(now).work_orders),
   ];
+
+  if (question?.trim()) {
+    const recall = buildRecallBlock(
+      question,
+      buildSecProjectsSimulation(now),
+      buildOmsSimulation(now).work_orders,
+      { projects: "[SIM:PROJECTS]", maintenance: "[SIM:MAINTENANCE]" },
+    );
+    if (recall) lines.push("", recall);
+  }
 
   return { contextBlock: lines.join("\n"), observedAt, dataAvailable: true };
 }
