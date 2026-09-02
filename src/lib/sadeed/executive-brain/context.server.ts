@@ -5,6 +5,7 @@
  */
 import type { BrainRequest } from "./types";
 import { REAL_SEC_PROJECTS } from "@/lib/exec/projects-report.real.server";
+import { REAL_SEC_WORK_ORDERS } from "@/lib/exec/maintenance-report.real.server";
 import {
   buildOmsSimulation,
   buildSecProjectsSimulation,
@@ -12,6 +13,7 @@ import {
 import {
   buildMaintenanceContextSection,
   buildProjectsContextSection,
+  MAINTENANCE_IMPORT_ORIGIN,
 } from "@/lib/sadeed/projects-maintenance-context.server";
 import { buildRecallBlock } from "@/lib/sadeed/projects-maintenance-recall.server";
 
@@ -36,8 +38,10 @@ import { buildRecallBlock } from "@/lib/sadeed/projects-maintenance-recall.serve
  * بسؤال — الوكيل يعرف المشاريع وهو في شاشة الدوريات.
  *
  * ── والوسم لكل قسم ──
- * المشاريع إنتاجية `[PROD:*]` والصيانة محاكاة `[SIM:*]`، وكلٌّ يحمل وسمه
- * في متنه. الخلط في الاتجاهين خطأ (انظر `projects-maintenance-context`).
+ * المشاريع إنتاجية `[PROD:*]`، والصيانة المستوردة `[SIM:MAINTENANCE_IMPORT]`
+ * (موسومة محاكاةً حتى إقرار المالك بإنتاجيتها)، ومحاكاة الزائر `[SIM:*]` —
+ * وكلٌّ يحمل وسمه في متنه. الخلط في الاتجاهين خطأ
+ * (انظر `projects-maintenance-context`).
  *
  * ── وبوابة المستأجر: `orgId` ──
  * **مشاريع الإنتاج لا تبلغ نداءً بلا هوية.** صفحتها نفسها خلف
@@ -46,26 +50,32 @@ import { buildRecallBlock } from "@/lib/sadeed/projects-maintenance-recall.serve
  * نفسها المكتوبة في `BrainRequest.orgId` («بدونه تعيد حماية التسريب
  * كتلةً فارغة»): بوجوده تُقدَّم المجموعة الإنتاجية، وبغيابه تُقدَّم
  * **محاكاة المشاريع** موسومةً `[SIM:*]` — فيبقى الوكيل قادرًا على العرض
- * بلا كشف. والصيانة محاكاةٌ في الحالين فلا بوابة عليها.
+ * بلا كشف. **والصيانة منذ ٢٠٢٦/٠٩/٠٢ خلف البوابة نفسها**: تصدير SAP
+ * المستورد بيانات عملٍ من ملف المالك (مراجع أوامر ومواقع وظيفية وتكاليف)
+ * فلا يبلغ نداءً بلا هوية — الزائر يأخذ المحاكاة المولّدة كما كان.
  */
 function buildEnterpriseKnowledgeBlock(orgId?: string | null, question?: string): string {
   const now = Date.now();
   const projectPool = orgId ? REAL_SEC_PROJECTS : buildSecProjectsSimulation(now);
-  const orderPool = buildOmsSimulation(now).work_orders;
+  const orderPool = orgId ? REAL_SEC_WORK_ORDERS : buildOmsSimulation(now).work_orders;
   const projectTag = orgId ? "[PROD:PROJECTS_EXPORT]" : "[SIM:PROJECTS]";
+  const maintenanceTag = orgId ? MAINTENANCE_IMPORT_ORIGIN.provenance : "[SIM:MAINTENANCE]";
   const projects = orgId
     ? buildProjectsContextSection(projectPool)
     : buildProjectsContextSection(projectPool, {
         provenance: "[SIM:PROJECTS]",
         note: "محاكاة مرجعية لعرض القدرة — ليست مشاريع المؤسسة.",
       });
-  const lines = [...projects, ...buildMaintenanceContextSection(orderPool)];
+  const maintenance = orgId
+    ? buildMaintenanceContextSection(orderPool, MAINTENANCE_IMPORT_ORIGIN)
+    : buildMaintenanceContextSection(orderPool);
+  const lines = [...projects, ...maintenance];
   // استرجاع السؤال (٢٠٢٦/٠٩/٠١): مجلس الوكلاء كلُّه يرى السجلّات الكاملة
   // لما يمسّه سؤال المهمة — من المصدر نفسه الذي تسمح به بوابة `orgId`.
   if (question?.trim()) {
     const recall = buildRecallBlock(question, projectPool, orderPool, {
       projects: projectTag,
-      maintenance: "[SIM:MAINTENANCE]",
+      maintenance: maintenanceTag,
     });
     if (recall) lines.push("", recall);
   }

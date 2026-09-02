@@ -198,7 +198,8 @@ export type SecWorkOrder = {
   kind: "preventive" | "corrective";
   title_ar: string;
   title_en: string;
-  priority: string;
+  // `null` أولوية غير مقيسة في المصدر (تصدير SAP) — تُعرض «لم تُحدَّد».
+  priority: string | null;
   status: string;
   assigned_to: string | null;
   contractor: string | null;
@@ -531,7 +532,10 @@ export const getProjects = createServerFn({ method: "GET" })
 export const getWorkOrders = createServerFn({ method: "GET" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<SecWorkOrder[]> => {
-    const { buildOmsSimulation, resilient } = await import("./exec/showcase-simulation.server");
+    const { resilient } = await import("./exec/showcase-simulation.server");
+    // البديل: مجموعة تصدير SAP المستوردة (249 أمرًا، ٢٠٢٦/٠٩/٠٢) لا
+    // المحاكاة المولّدة — صفوفها موسومة `is_simulation` حتى إقرار المالك.
+    const { REAL_SEC_WORK_ORDERS } = await import("./exec/maintenance-report.real.server");
     return resilient(
       "sec-work-orders",
       async () => {
@@ -542,7 +546,7 @@ export const getWorkOrders = createServerFn({ method: "GET" })
         return (data ?? []) as SecWorkOrder[];
       },
       (rows) => rows.length === 0,
-      () => buildOmsSimulation(Date.now()).work_orders as unknown as SecWorkOrder[],
+      () => REAL_SEC_WORK_ORDERS as unknown as SecWorkOrder[],
     );
   });
 

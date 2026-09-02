@@ -19,7 +19,10 @@
  * القسمان **ليسا من طبيعة واحدة**، فلا يُوسمان وسمًا واحدًا:
  *   • **المشاريع إنتاجية** (أمر المالك ٢٠٢٦/٠٨/٣٠ «ارفع شارة المحاكاة،
  *     البيانات إنتاجية») — صفوفها مجمّدة ولا يسمها `markSimulation`.
- *   • **الصيانة محاكاة مرجعية** — مولّدة من `buildOmsSimulation`.
+ *   • **الصيانة مستوردة من تصدير SAP** (٢٠٢٦/٠٩/٠٢ «اعكس جميع بيانات
+ *     الصيانة المرفقة») وموسومة محاكاةً مرجعية حتى إقرار المالك
+ *     بإنتاجيتها — `MAINTENANCE_IMPORT_ORIGIN` أدناه؛ ومحاكاة الزائر
+ *     المولّدة من `buildOmsSimulation` باقية لفرع النداء بلا هوية.
  * ولذلك يحمل كل قسمٍ وسمَ أصله في متنه (`PROVENANCE`)، ويُلزَم سَدِيد بأن
  * ينسب كل رقمٍ إلى وسم قسمه لا إلى وسمٍ شامل للكتلة. الخلط في الاتجاهين
  * خطأ: أن يصف مشروعًا إنتاجيًّا بأنه محاكاة يُهدر مصداقية بيانات حقيقية،
@@ -46,6 +49,9 @@ type WorkOrderLike = {
   priority?: string | null;
   status: string;
   assigned_to?: string | null;
+  /** تحملها المجموعة المستوردة (من مجموعة التخطيط)؛ المحاكاة بلا مناطق. */
+  area_ar?: string | null;
+  asset_kind?: string | null;
 };
 
 /** أعلى `n` مفاتيح تكرارًا — للتوزيع حسب المنطقة والنظام. */
@@ -143,22 +149,58 @@ export function buildProjectsContextSection(
   return lines;
 }
 
-/** قسم الصيانة — محاكاة مرجعية، وموسومةٌ كذلك في متنه. */
-export function buildMaintenanceContextSection(orders: readonly WorkOrderLike[]): string[] {
+/**
+ * وسم مجموعة الصيانة المستوردة (تصدير SAP، ٢٠٢٦/٠٩/٠٢) — بياناتٌ من ملف
+ * المالك لكنها **ما زالت موسومة «محاكاة مرجعية»** لأن المالك لم يُقرّ
+ * إنتاجيتها بعد (سابقة المشاريع: الإقرار سبق رفع الشارة). فالوسم يقولها
+ * كما هي: مستوردة لا مولّدة، ومحاكاةٌ حتى الإقرار.
+ */
+export const MAINTENANCE_IMPORT_ORIGIN = {
+  provenance: "[SIM:MAINTENANCE_IMPORT]",
+  note:
+    "مجموعة أوامر صيانة مستوردة من تصدير SAP المرفق (249 أمرًا) — موسومة" +
+    " محاكاة مرجعية حتى إقرار المالك بإنتاجيتها. صِفها «بيانات الصيانة" +
+    " المستوردة» لا محاكاةً مولّدة ولا واقعًا إنتاجيًّا مؤكَّدًا.",
+} as const;
+
+/** قسم الصيانة — الوسم يتبع المصدر المُمرَّر؛ المولَّدة محاكاةٌ افتراضًا. */
+export function buildMaintenanceContextSection(
+  orders: readonly WorkOrderLike[],
+  origin: { provenance: string; note: string } = {
+    provenance: PROVENANCE_SIMULATION,
+    note: "محاكاة مرجعية. كل رقمٍ مشتقٍّ منها يُوسم محاكاةً صراحةً.",
+  },
+): string[] {
   if (orders.length === 0) return [];
   const openOrders = orders.filter((w) => w.status !== "closed" && w.status !== "cancelled");
   const lines = [
     "",
-    `## الصيانة وأوامر العمل ${PROVENANCE_SIMULATION}`,
-    "provenance: محاكاة مرجعية. كل رقمٍ مشتقٍّ منها يُوسم محاكاةً صراحةً.",
+    `## الصيانة وأوامر العمل ${origin.provenance}`,
+    `provenance: ${origin.note}`,
     `- الإجمالي: ${orders.length} · مفتوحة: ${openOrders.length}`,
     `- وقائية: ${orders.filter((w) => w.kind === "preventive").length} · تصحيحية: ${orders.filter((w) => w.kind === "corrective").length}`,
   ];
+  // المادة ٢٧: الأولوية غير المقيسة تُعدّ وتُسمّى — لا تُطوى في «متوسط».
+  const priorityUnmeasured = orders.filter((w) => w.priority == null).length;
+  if (priorityUnmeasured > 0)
+    lines.push(
+      `- أوامر بلا أولوية في المصدر: ${priorityUnmeasured} — قل «لم تُحدَّد» لا «متوسطة».`,
+    );
   const byPriority = topCounts(
     openOrders.map((w) => w.priority),
     4,
   );
   if (byPriority) lines.push(`- المفتوحة حسب الأولوية: ${byPriority}`);
+  const byArea = topCounts(
+    orders.map((w) => w.area_ar),
+    6,
+  );
+  if (byArea) lines.push(`- حسب منطقة العمليات: ${byArea}`);
+  const byAsset = topCounts(
+    orders.map((w) => w.asset_kind),
+    6,
+  );
+  if (byAsset) lines.push(`- حسب نوع الأصل: ${byAsset}`);
   if (openOrders.length) {
     lines.push("### أبرز أوامر العمل المفتوحة");
     lines.push(

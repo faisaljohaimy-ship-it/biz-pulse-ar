@@ -2949,7 +2949,9 @@ export type OmsWorkOrderRow = {
   kind: string;
   title_ar: string;
   title_en: string | null;
-  priority: string;
+  // ٢٠٢٦/٠٩/٠٢ — `null` أولوية غير مقيسة: تصدير SAP المستورد يترك 97 أمرًا
+  // (جلّها وقائية) بلا أولوية، والمادة ٢٧ تمنع اختلاق «متوسط» لها.
+  priority: string | null;
   status: string;
   assigned_to: string | null;
   contractor: string | null;

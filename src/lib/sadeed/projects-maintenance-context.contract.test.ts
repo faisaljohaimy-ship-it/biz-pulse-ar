@@ -12,10 +12,12 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildOmsSimulation } from "@/lib/exec/showcase-simulation.server";
 import { REAL_SEC_PROJECTS } from "@/lib/exec/projects-report.real.server";
+import { REAL_SEC_WORK_ORDERS } from "@/lib/exec/maintenance-report.real.server";
 import { buildReferenceSimulationContext } from "@/lib/sadeed/reference-simulation-context.server";
 import {
   buildMaintenanceContextSection,
   buildProjectsContextSection,
+  MAINTENANCE_IMPORT_ORIGIN,
 } from "@/lib/sadeed/projects-maintenance-context.server";
 
 const AT = Date.parse("2026-08-31T12:00:00Z");
@@ -104,6 +106,66 @@ describe("بوابة المستأجر — مشاريع الإنتاج لا تب�
   it("والمصادَق وحده يأخذ المجموعة الإنتاجية", () => {
     const ctx = code("src/lib/sadeed-context.server.ts");
     expect(ctx).toMatch(/sections\.push\(\s*\.\.\.buildProjectsContextSection\(REAL_SEC_PROJECTS/);
+  });
+});
+
+describe("بوابة المستأجر — الصيانة المستوردة خلفها كذلك (٢٠٢٦/٠٩/٠٢)", () => {
+  /**
+   * تصدير SAP المستورد بيانات عملٍ من ملف المالك: مراجع أوامر ومواقع
+   * وظيفية وتكاليف ومنشئون. شارته «محاكاة مرجعية» وسمُ عرضٍ لا إذنُ نشر —
+   * فيسلك مسلك مشاريع الإنتاج: المصادَق ومجلس الوكلاء (بهوية) يرونه،
+   * وكتلة الزائر تبقى على المحاكاة المولّدة.
+   */
+  it("لا مرجعُ أمرٍ مستورد واحد في كتلة الزائر", () => {
+    // المسح على **كامل** الـ249 لا عيّنة: حقنة تسريبٍ للخلاصة وحدها مرّت
+    // من تحت عيّنة أحدث 60 — قسم الزائر يعرض المفتوحة الثمانية وهي ليست
+    // بالضرورة من الأحدث إنشاءً. وكل مرجع SAP مستورد على نسق 66000xxxxxx،
+    // فمسحُ النسق يصطاد حتى صفًّا واحدًا أيًّا كان بابه.
+    const leaked = REAL_SEC_WORK_ORDERS.map((w) => w.ref).filter((ref) => BLOCK.includes(ref));
+    expect(leaked, `مراجع مستوردة في كتلة الزائر: ${leaked.slice(0, 3).join(", ")}`).toEqual([]);
+    expect(BLOCK).not.toMatch(/\b66000\d{6}\b/);
+    expect(BLOCK).not.toContain("[SIM:MAINTENANCE_IMPORT]");
+  });
+
+  it("وحتى حين يسأل الزائر عن أمرٍ مستورد بعينه — الاسترجاع لا يجيبه", () => {
+    const target = REAL_SEC_WORK_ORDERS[7];
+    const probed = buildReferenceSimulationContext(
+      Date.parse("2026-09-02T08:00:00Z"),
+      `تفاصيل أمر الصيانة ${target.ref} في الموقع ${target.asset_code}؟`,
+    ).contextBlock;
+    expect(probed, "الاسترجاع سرّب أمرًا مستوردًا لزائرٍ سأل عنه").not.toContain(target.ref);
+    expect(probed).not.toContain(target.asset_code ?? " ");
+  });
+
+  it("وبناء الوكلاء يقيّد مجمع الصيانة بوجود orgId — البوابة على المجمع", () => {
+    const brain = code("src/lib/sadeed/executive-brain/context.server.ts");
+    expect(brain).toMatch(
+      /orderPool = orgId \? REAL_SEC_WORK_ORDERS : buildOmsSimulation\(now\)\.work_orders/,
+    );
+    const recallDirect = /buildRecallBlock\([^)]*REAL_SEC_WORK_ORDERS/.test(brain);
+    expect(recallDirect, "استرجاع الصيانة تجاوز بوابة المستأجر").toBe(false);
+  });
+
+  it("والمصادَق يسقط إلى المجموعة المستوردة بوسم أصلها الصريح", () => {
+    const ctx = code("src/lib/sadeed-context.server.ts");
+    expect(ctx).toMatch(
+      /buildMaintenanceContextSection\(REAL_SEC_WORK_ORDERS, MAINTENANCE_IMPORT_ORIGIN\)/,
+    );
+    expect(ctx).toMatch(/maintenance-report\.real\.server/);
+  });
+
+  it("ووسم الاستيراد يقولها كما هي: مستوردة وموسومة محاكاةً حتى الإقرار", () => {
+    expect(MAINTENANCE_IMPORT_ORIGIN.provenance).toBe("[SIM:MAINTENANCE_IMPORT]");
+    const section = buildMaintenanceContextSection(
+      REAL_SEC_WORK_ORDERS,
+      MAINTENANCE_IMPORT_ORIGIN,
+    ).join("\n");
+    expect(section).toContain("[SIM:MAINTENANCE_IMPORT]");
+    expect(section).toContain("مستوردة");
+    expect(section).not.toContain("[PROD:");
+    expect(section).toContain(`الإجمالي: ${REAL_SEC_WORK_ORDERS.length}`);
+    // المادة ٢٧: الـ97 بلا أولوية معلَنة بعددها داخل فم سَدِيد.
+    expect(section).toContain("أوامر بلا أولوية في المصدر: 97");
   });
 });
 

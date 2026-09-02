@@ -173,19 +173,24 @@ export async function buildSadeedContextSnapshot(
           .slice(0, 6)
           .map(
             (w) =>
-              `- ${w.title_ar} [${w.kind}/${w.priority}] (${w.ref}) — ${w.assigned_to ?? "غير موكَّل"}`,
+              `- ${w.title_ar} [${w.kind}/${w.priority ?? "لم تُحدَّد"}] (${w.ref}) — ${w.assigned_to ?? "غير موكَّل"}`,
           )
           .join("\n"),
       );
     } else {
-      // نفس علّة المشاريع: `sec_work_orders` فارغة، فشاشة الصيانة تعرض
-      // المحاكاة بينما كان سياق سَدِيد يخلو منها. والقسم موسومٌ [SIM:*]
-      // في متنه — فما يُشتقّ منه يبقى محاكاةً معلَنة لا واقعًا مُدّعى.
-      const [{ buildOmsSimulation }, { buildMaintenanceContextSection }] = await Promise.all([
-        import("@/lib/exec/showcase-simulation.server"),
+      // نفس علّة المشاريع: `sec_work_orders` فارغة، فالسياق يتبع المصدر
+      // الذي تعرضه الشاشة نفسها — ومنذ ٢٠٢٦/٠٩/٠٢ هو مجموعة تصدير SAP
+      // المستوردة (249 أمرًا) لا المحاكاة المولّدة، بوسم أصلها الصريح.
+      const [
+        { REAL_SEC_WORK_ORDERS },
+        { buildMaintenanceContextSection, MAINTENANCE_IMPORT_ORIGIN },
+      ] = await Promise.all([
+        import("@/lib/exec/maintenance-report.real.server"),
         import("@/lib/sadeed/projects-maintenance-context.server"),
       ]);
-      sections.push(...buildMaintenanceContextSection(buildOmsSimulation(Date.now()).work_orders));
+      sections.push(
+        ...buildMaintenanceContextSection(REAL_SEC_WORK_ORDERS, MAINTENANCE_IMPORT_ORIGIN),
+      );
     }
 
     // **المشاريع: القاعدة أوّلًا، ثم المجموعة المستوردة (٢٠٢٦/٠٨/٣١).**
@@ -279,21 +284,21 @@ export async function buildSadeedContextSnapshot(
     // سجلّات كاملة الحقول لما مسّه السؤال، من المصدر نفسه الذي تعرضه
     // الشاشة — القاعدة حين تمتلئ، والمجموعة المستوردة/المحاكاة حين تفرغ.
     if (question?.trim()) {
-      const [{ buildRecallBlock }, { REAL_SEC_PROJECTS }, { buildOmsSimulation }] =
+      const [{ buildRecallBlock }, { REAL_SEC_PROJECTS }, { REAL_SEC_WORK_ORDERS }] =
         await Promise.all([
           import("@/lib/sadeed/projects-maintenance-recall.server"),
           import("@/lib/exec/projects-report.real.server"),
-          import("@/lib/exec/showcase-simulation.server"),
+          import("@/lib/exec/maintenance-report.real.server"),
         ]);
       const projectPool = projectsQ.data?.length
         ? (projectsQ.data as import("@/lib/sec.functions").SecProject[])
         : REAL_SEC_PROJECTS;
-      const orderPool = workOrdersQ.data?.length
-        ? workOrdersQ.data
-        : buildOmsSimulation(Date.now()).work_orders;
+      // مسبح الاسترجاع هو مصدر الشاشة نفسه: القاعدة حين تمتلئ، وتصدير
+      // SAP المستورد حين تفرغ (٢٠٢٦/٠٩/٠٢ — بدل المحاكاة المولّدة).
+      const orderPool = workOrdersQ.data?.length ? workOrdersQ.data : REAL_SEC_WORK_ORDERS;
       const recall = buildRecallBlock(question, projectPool, orderPool, {
         projects: "[PROD:PROJECTS_EXPORT]",
-        maintenance: workOrdersQ.data?.length ? "[PROD:WORK_ORDERS]" : "[SIM:MAINTENANCE]",
+        maintenance: workOrdersQ.data?.length ? "[PROD:WORK_ORDERS]" : "[SIM:MAINTENANCE_IMPORT]",
       });
       if (recall) sections.push(recall);
     }

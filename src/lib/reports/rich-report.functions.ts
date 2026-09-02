@@ -308,7 +308,8 @@ export type WorkOrderRow = {
   ref: string;
   title_ar: string;
   kind: string;
-  priority: string;
+  // `null` أولوية غير مقيسة في المصدر — `ar()` تعرضها «—».
+  priority: string | null;
   status: string;
   asset_kind: string;
   contractor: string | null;

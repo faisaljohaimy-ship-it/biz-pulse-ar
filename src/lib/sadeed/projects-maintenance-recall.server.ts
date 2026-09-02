@@ -41,6 +41,12 @@ export type RecallWorkOrder = {
   site_id?: string | null;
   opened_at?: string | null;
   due_at?: string | null;
+  /** تحملها مجموعة تصدير SAP المستوردة (٢٠٢٦/٠٩/٠٢) — رمز الموقع الوظيفي
+   * والمنطقة والملاحظات (المنشئ والمعدّة والتكاليف) تدخل المطابقة والعرض. */
+  asset_kind?: string | null;
+  asset_code?: string | null;
+  area_ar?: string | null;
+  notes?: string | null;
 };
 
 /** تطبيع عربي/لاتيني: همزات وتاء مربوطة وياء، وحذف التشكيل والتطويل. */
@@ -150,6 +156,10 @@ export function findWorkOrdersForQuestion(
       w.priority,
       w.status,
       w.assigned_to,
+      w.asset_kind,
+      w.asset_code,
+      w.area_ar,
+      w.notes,
     ]);
     if (score > 0) hits.push({ order: w, score });
   }
@@ -184,11 +194,21 @@ export function formatProjectRecord(p: SecProject): string {
 }
 
 export function formatWorkOrderRecord(w: RecallWorkOrder): string {
-  return [
+  const lines = [
     `- ${w.ref} | ${w.title_ar}`,
-    `  الحالة: ${w.status} · النوع: ${w.kind ?? "غير مصنّف"} · الأولوية: ${w.priority ?? "بلا أولوية"} · الموكَّل: ${w.assigned_to ?? "غير موكَّل"}`,
+    // «لم تُحدَّد» لا «بلا أولوية»: تصدير SAP يترك الحقل فارغًا، والفراغ
+    // غيابُ قياسٍ لا حكمًا بانعدام الأولوية (المادة ٢٧).
+    `  الحالة: ${w.status} · النوع: ${w.kind ?? "غير مصنّف"} · الأولوية: ${w.priority ?? "لم تُحدَّد"} · الموكَّل: ${w.assigned_to ?? "لم يُحدَّد في المصدر"}`,
     `  فُتح: ${w.opened_at ?? "لم يُحدَّد"} · الاستحقاق: ${w.due_at ?? "لم يُحدَّد"}`,
-  ].join("\n");
+  ];
+  const place = [
+    w.area_ar ? `المنطقة: ${w.area_ar}` : null,
+    w.asset_kind ? `الأصل: ${w.asset_kind}` : null,
+    w.asset_code ? `الموقع الوظيفي: ${w.asset_code}` : null,
+  ].filter(Boolean);
+  if (place.length) lines.push(`  ${place.join(" · ")}`);
+  if (w.notes) lines.push(`  ${w.notes}`);
+  return lines.join("\n");
 }
 
 const MAX_SHOWN = 12;

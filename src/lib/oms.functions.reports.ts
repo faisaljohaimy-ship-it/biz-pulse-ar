@@ -234,14 +234,18 @@ export const getOmsKpis = createServerFn({ method: "GET" })
       // لا بلاغ ولا أمر عمل ولا تصريح = نافذة فارغة، لا «صفر مَقيس».
       (k) => k.incidents.total === 0 && k.work_orders.total === 0 && k.permits.total === 0,
       // ٢٠٢٦/٠٨/٢٧ — بلاغات البديل من مجموعة «تقرير البلاغات» الحقيقية
-      // (3,427 صفًّا فعليًّا) لا من المحاكاة؛ أوامر العمل والتصاريح
-      // والنشاط تبقى محاكاتها كما هي (النطاق: البلاغات حصرًا).
+      // (3,427 صفًّا فعليًّا) لا من المحاكاة. و٢٠٢٦/٠٩/٠٢ — أوامر العمل
+      // من تصدير SAP المستورد (249 أمرًا) بأمر «اعكس جميع بيانات الصيانة
+      // المرفقة»؛ التصاريح والنشاط تبقى محاكاتها كما هي.
       async () => {
         const sim = buildOmsSimulation(now);
-        const { REAL_INCIDENTS } = await import("@/lib/exec/event-report.real.server");
+        const [{ REAL_INCIDENTS }, { REAL_SEC_WORK_ORDERS }] = await Promise.all([
+          import("@/lib/exec/event-report.real.server"),
+          import("@/lib/exec/maintenance-report.real.server"),
+        ]);
         return deriveOmsKpis(
           REAL_INCIDENTS as unknown as KpiIncident[],
-          sim.work_orders,
+          REAL_SEC_WORK_ORDERS as unknown as KpiWorkOrder[],
           sim.permits,
           sim.activity.filter((e) => new Date(e.occurred_at).getTime() >= now - 24 * 3600 * 1000)
             .length,
@@ -535,7 +539,7 @@ export const listIncidents = createServerFn({ method: "GET" })
 export const listWorkOrders = createServerFn({ method: "GET" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }) => {
-    const { buildOmsSimulation, resilient } = await import("@/lib/exec/showcase-simulation.server");
+    const { resilient } = await import("@/lib/exec/showcase-simulation.server");
     return resilient(
       "oms-work-orders",
       async () => {
@@ -548,7 +552,13 @@ export const listWorkOrders = createServerFn({ method: "GET" })
         return (data ?? []) as unknown as OmsWorkOrderRow[];
       },
       (rows) => rows.length === 0,
-      () => buildOmsSimulation(Date.now()).work_orders,
+      // ٢٠٢٦/٠٩/٠٢ — بديل جدول الصيانة هو مجموعة تصدير SAP المستوردة
+      // (249 أمرًا) لا المحاكاة المولّدة؛ صفوفها موسومة `is_simulation`
+      // صراحةً فتظهر شارة «محاكاة مرجعية» حتى إقرار المالك بالإنتاجية.
+      async () => {
+        const { REAL_SEC_WORK_ORDERS } = await import("@/lib/exec/maintenance-report.real.server");
+        return REAL_SEC_WORK_ORDERS as unknown as OmsWorkOrderRow[];
+      },
     );
   });
 

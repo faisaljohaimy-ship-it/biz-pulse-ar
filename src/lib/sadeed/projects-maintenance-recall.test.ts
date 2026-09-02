@@ -8,12 +8,14 @@
  */
 import { describe, expect, it } from "vitest";
 import { REAL_SEC_PROJECTS } from "@/lib/exec/projects-report.real.server";
+import { REAL_SEC_WORK_ORDERS } from "@/lib/exec/maintenance-report.real.server";
 import { buildOmsSimulation } from "@/lib/exec/showcase-simulation.server";
 import {
   buildRecallBlock,
   findProjectsForQuestion,
   findWorkOrdersForQuestion,
   formatProjectRecord,
+  formatWorkOrderRecord,
   normalizeText,
   tokenize,
 } from "./projects-maintenance-recall.server";
@@ -67,6 +69,47 @@ describe("«جميع ما يُطلب» — كل مشروعٍ من الـ697 قا
       const hits = findProjectsForQuestion(p.ref, REAL_SEC_PROJECTS);
       expect(hits[0]?.project.ref, `فشل استرجاع ${p.ref}`).toBe(p.ref);
     }
+  });
+});
+
+describe("«جميع ما يُطلب» — الصيانة المستوردة (٢٠٢٦/٠٩/٠٢) قابلة للاسترجاع كذلك", () => {
+  it("كل عاشر أمرٍ من الـ249 يُسترجع أوّلًا برقم SAP", () => {
+    for (let i = 0; i < REAL_SEC_WORK_ORDERS.length; i += 10) {
+      const w = REAL_SEC_WORK_ORDERS[i];
+      const hits = findWorkOrdersForQuestion(`ما حالة الأمر ${w.ref}؟`, REAL_SEC_WORK_ORDERS);
+      expect(hits[0]?.order.ref, `فشل استرجاع ${w.ref}`).toBe(w.ref);
+    }
+  });
+
+  it("ورمز الموقع الوظيفي يجلب أوامره", () => {
+    const target = REAL_SEC_WORK_ORDERS.find((w) => w.asset_code)!;
+    const hits = findWorkOrdersForQuestion(
+      `أوامر الموقع ${target.asset_code}`,
+      REAL_SEC_WORK_ORDERS,
+    );
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits[0].order.asset_code).toBe(target.asset_code);
+  });
+
+  it("والمنطقة تُحصي أوامرها كاملةً — العدّ على كل المطابقات", () => {
+    const eastern = REAL_SEC_WORK_ORDERS.filter((w) => w.area_ar === "الشرقية").length;
+    expect(eastern).toBe(168);
+    const hits = findWorkOrdersForQuestion(
+      "كم أمر صيانة في المنطقة الشرقية؟",
+      REAL_SEC_WORK_ORDERS,
+    );
+    expect(hits.length).toBeGreaterThanOrEqual(eastern);
+  });
+
+  it("والسجلّ الكامل يحمل الموقع والمنطقة والملاحظات، والغائب «لم يُحدَّد»", () => {
+    const w = REAL_SEC_WORK_ORDERS.find((x) => x.priority === null && x.notes)!;
+    const rec = formatWorkOrderRecord(w);
+    expect(rec).toContain(w.ref);
+    expect(rec).toContain("لم تُحدَّد");
+    expect(rec).toContain(w.asset_code ?? "");
+    expect(rec).toContain(w.area_ar ?? "");
+    expect(rec).toContain("أنشأه:");
+    expect(rec).not.toMatch(/\bnull\b|undefined/);
   });
 });
 

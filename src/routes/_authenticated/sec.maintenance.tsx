@@ -26,7 +26,8 @@ type WO = {
   ref: string;
   title_ar: string;
   kind: string;
-  priority: string;
+  /** `null` أولوية غير مقيسة في المصدر (تصدير SAP) — تُعرض «لم تُحدَّد». */
+  priority: string | null;
   status: string;
   asset_kind: string;
   asset_code: string | null;
@@ -172,7 +173,8 @@ function Maintenance() {
                   <span
                     className={`rounded-full border px-2 py-0.5 text-[12px] ${severityClass(w.priority)}`}
                   >
-                    {WO_PRIORITY_AR[w.priority] ?? w.priority}
+                    {/* المادة ٢٧: الفراغ في المصدر «لم تُحدَّد» — لا أولوية مختلَقة */}
+                    {w.priority ? (WO_PRIORITY_AR[w.priority] ?? w.priority) : "لم تُحدَّد"}
                   </span>
                 </td>
                 <td className="px-3 py-2">

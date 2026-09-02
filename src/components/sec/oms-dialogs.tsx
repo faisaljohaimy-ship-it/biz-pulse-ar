@@ -889,6 +889,10 @@ export const WO_ASSET_KIND_AR: Record<string, string> = {
   lighting: "إنارة",
   vehicle: "مركبة",
   incident_response: "استجابة لبلاغ",
+  // ٢٠٢٦/٠٩/٠٢ — أنواع مجموعة تصدير SAP المستوردة (من وصف الموقع الوظيفي).
+  control_room: "غرفة التحكم",
+  physical_security: "الأمن المادي",
+  facility: "منشأة",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
