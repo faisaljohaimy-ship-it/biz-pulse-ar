@@ -11,6 +11,62 @@ export type SadeedContextSnapshot = {
   observedAt: string;
 };
 
+/**
+ * سقف انتظار القاعدة قبل أول حرف — أمر المالك ٢٠٢٦/٠٩/٠٢ («اجعل تجاوب
+ * سَدِيد فوريًّا بدون تأخير»): استعلامات اللقطة الخمسة عشر كانت تُنتظر
+ * بلا حدّ، فقاعدةٌ معلّقة تعلّق أول حرفٍ معها. القيمة دون سقف `resilient`
+ * (4s) عمدًا — هذا مسار محادثة لا نافذة عرض.
+ */
+const SNAPSHOT_DB_DEADLINE_MS = 2_500;
+
+/**
+ * لقطة من مجموعات التصدير الإنتاجية وحدها — بديل «بيانات لا تفرغ» حين
+ * تتجاوز القاعدة سقفها الزمني أو تفشل: المشاريع الـ697 والصيانة الـ249
+ * والبلاغات الـ3,427 تعيش في وحدات الخادم لا في القاعدة، فبطء القاعدة
+ * لا يُفقر سَدِيد عنها — والأقسام الحيّة الغائبة غيابٌ مصرَّح به لا صمت.
+ */
+async function buildImportedDatasetsSnapshot(
+  question: string | undefined,
+  observedAt: string,
+  reason: "db-timeout" | "db-error" | "db-empty",
+): Promise<SadeedContextSnapshot> {
+  const [
+    { REAL_SEC_PROJECTS },
+    { REAL_SEC_WORK_ORDERS },
+    { REAL_INCIDENT_COUNTS },
+    { buildMaintenanceContextSection, buildProjectsContextSection, MAINTENANCE_PRODUCTION_ORIGIN },
+    { buildRecallBlock },
+  ] = await Promise.all([
+    import("@/lib/exec/projects-report.real.server"),
+    import("@/lib/exec/maintenance-report.real.server"),
+    import("@/lib/exec/event-report.real.server"),
+    import("@/lib/sadeed/projects-maintenance-context.server"),
+    import("@/lib/sadeed/projects-maintenance-recall.server"),
+  ]);
+  const sections: string[] = [
+    "## النطاق التشغيلي",
+    [
+      "- قطاع الأمن الصناعي — لقطة من مجموعات التصدير الإنتاجية",
+      reason === "db-timeout"
+        ? "- الأقسام الحيّة (مواقع/دوريات/كاميرات…) تجاوزت مهلة القاعدة هذه الدورة — قل «غير متاحة الآن» عنها ولا تختلقها."
+        : reason === "db-error"
+          ? "- تعذّرت قراءة الأقسام الحيّة (مواقع/دوريات/كاميرات…) هذه الدورة — قل «غير متاحة الآن» عنها ولا تختلقها."
+          : "- جداول القاعدة الحيّة (مواقع/دوريات/كاميرات…) فارغة — لا تختلق أقسامًا حيّة، وقل «لا صفوف حيّة» عند سؤالٍ عنها.",
+    ].join("\n"),
+    `## البلاغات [PROD:EVENT_REPORT]\nالإجمالي: ${REAL_INCIDENT_COUNTS.total} — مفتوحة: ${REAL_INCIDENT_COUNTS.open} — مغلقة: ${REAL_INCIDENT_COUNTS.closed}`,
+    buildMaintenanceContextSection(REAL_SEC_WORK_ORDERS, MAINTENANCE_PRODUCTION_ORIGIN).join("\n"),
+    buildProjectsContextSection(REAL_SEC_PROJECTS).join("\n"),
+  ];
+  if (question?.trim()) {
+    const recall = buildRecallBlock(question, REAL_SEC_PROJECTS, REAL_SEC_WORK_ORDERS, {
+      projects: "[PROD:PROJECTS_EXPORT]",
+      maintenance: "[PROD:MAINTENANCE_EXPORT]",
+    });
+    if (recall) sections.push(recall);
+  }
+  return { contextBlock: sections.join("\n\n"), hasOperationalData: true, observedAt };
+}
+
 export async function buildSadeedContextSnapshot(
   supabase: SupabaseClient,
   /**
@@ -22,23 +78,7 @@ export async function buildSadeedContextSnapshot(
 ): Promise<SadeedContextSnapshot> {
   const observedAt = new Date().toISOString();
   try {
-    const [
-      sectionsQ,
-      circlesQ,
-      sitesQ,
-      incidentsQ,
-      patrolsQ,
-      visitorsQ,
-      permitsQ,
-      contractorsQ,
-      assetsQ,
-      cctvQ,
-      camerasQ,
-      gatesQ,
-      sensorsQ,
-      workOrdersQ,
-      projectsQ,
-    ] = await Promise.all([
+    const queriesPromise = Promise.all([
       supabase.from("sec_sections").select("name_ar,head,staff_count"),
       supabase.from("sec_circles").select("name_ar,manager,staff_count"),
       supabase.from("sec_sites").select("code,name_ar,sensitivity,status,guards_count"),
@@ -74,6 +114,34 @@ export async function buildSadeedContextSnapshot(
         .select("ref,name_ar,kind,status,progress,budget_sar,spent_sar,health,ends_at")
         .order("ends_at", { ascending: true }),
     ]);
+    // السقف الزمني قبل أول حرف (٢٠٢٦/٠٩/٠٢): قاعدةٌ معلّقة لا تعلّق
+    // سَدِيد — بعد المهلة تُبنى اللقطة من مجموعات التصدير الإنتاجية.
+    const raced = await Promise.race([
+      queriesPromise,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), SNAPSHOT_DB_DEADLINE_MS)),
+    ]);
+    if (raced === null) {
+      // رفضٌ متأخر بعد هجر الانتظار يبقى بلا معالج — يُكتم صراحةً.
+      queriesPromise.catch(() => {});
+      return buildImportedDatasetsSnapshot(question, observedAt, "db-timeout");
+    }
+    const [
+      sectionsQ,
+      circlesQ,
+      sitesQ,
+      incidentsQ,
+      patrolsQ,
+      visitorsQ,
+      permitsQ,
+      contractorsQ,
+      assetsQ,
+      cctvQ,
+      camerasQ,
+      gatesQ,
+      sensorsQ,
+      workOrdersQ,
+      projectsQ,
+    ] = raced;
 
     const queryResults = [
       sectionsQ,
@@ -96,11 +164,11 @@ export async function buildSadeedContextSnapshot(
       (result) => Array.isArray(result.data) && result.data.length > 0,
     );
     if (!hasOperationalData) {
-      return {
-        contextBlock: "NO_INDUSTRIAL_SECURITY_DATA_AVAILABLE",
-        hasOperationalData: false,
-        observedAt,
-      };
+      // قاعدةٌ فارغة كليًّا ≠ «لا بيانات» (٢٠٢٦/٠٩/٠٢): المجموعات
+      // الإنتاجية المستوردة (مشاريع/صيانة/بلاغات) تعيش في الخادم وتعرضها
+      // الشاشات — فكان المصادَق يسقط هنا إلى محاكاة الزائر عمّا هو
+      // إنتاجي أمامه. اللقطة تُبنى منها ويُصرَّح بفراغ الجداول الحيّة.
+      return buildImportedDatasetsSnapshot(question, observedAt, "db-empty");
     }
 
     const sections: string[] = [];
@@ -306,11 +374,17 @@ export async function buildSadeedContextSnapshot(
 
     return { contextBlock: sections.join("\n\n"), hasOperationalData: true, observedAt };
   } catch {
-    return {
-      contextBlock: "INDUSTRIAL_SECURITY_DATA_FETCH_FAILED",
-      hasOperationalData: false,
-      observedAt,
-    };
+    // «بيانات لا تفرغ»: فشل القاعدة لا يعني غياب البيانات — المجموعات
+    // الإنتاجية تعيش في الخادم. البديل الأخير وحده يصرّح بالفشل.
+    try {
+      return await buildImportedDatasetsSnapshot(question, observedAt, "db-error");
+    } catch {
+      return {
+        contextBlock: "INDUSTRIAL_SECURITY_DATA_FETCH_FAILED",
+        hasOperationalData: false,
+        observedAt,
+      };
+    }
   }
 }
 

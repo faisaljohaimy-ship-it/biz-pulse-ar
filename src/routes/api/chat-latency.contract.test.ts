@@ -70,6 +70,57 @@ describe("لا انتظار لما لا يراه المستخدم", () => {
   });
 });
 
+describe("الإجابة الفورية من بيانات النظام — ٢٠٢٦/٠٩/٠٢", () => {
+  /**
+   * «اجعل سَدِيد يجاوب فورًا... كعدد المشاريع والصيانة والبلاغات»: طبقة
+   * `matchInstantDataAnswer` تجيب العدّ الصرف وسجلّ المرجع قبل النموذج.
+   * والمحروس هنا **بوابتها**: أرقامها إنتاجية، فتُستشار للمصادَق وحده —
+   * استشارتها لنداءٍ بلا هوية هي تسريبة 29557456 من بابٍ جديد.
+   */
+  it("الطبقة تُستشار داخل حارس userId وبعد المسار الفوري القائم", () => {
+    const fastAt = CHAT_CODE.indexOf("matchFastRecall(lastUserText)");
+    const instantAt = CHAT_CODE.indexOf("matchInstantDataAnswer");
+    expect(fastAt).toBeGreaterThan(-1);
+    expect(instantAt, "طبقة الإجابة الفورية غائبة").toBeGreaterThan(fastAt);
+    // الاستدعاء داخل `if (userId)` مباشرةً — لا بين حارسٍ وآخر.
+    const guarded = /if \(userId\) \{\s*const \{ matchInstantDataAnswer \}/.test(CHAT_CODE);
+    expect(guarded, "الإجابة الفورية الإنتاجية خرجت من بوابة المستأجر").toBe(true);
+  });
+
+  it("وتُبثّ بوسم مصدرها عبر القمع نفسه", () => {
+    expect(CHAT_CODE).toMatch(/streamFixed\(instant\.answer, "instant-data"\)/);
+  });
+});
+
+describe("لقطة السياق لا تنتظر قاعدةً معلّقة — ٢٠٢٦/٠٩/٠٢", () => {
+  const CTX = strip(readFileSync("src/lib/sadeed-context.server.ts", "utf8"));
+
+  it("استعلامات اللقطة تحت سقفٍ زمني يسبق أول حرف", () => {
+    expect(CTX).toMatch(/SNAPSHOT_DB_DEADLINE_MS = 2_500/);
+    expect(CTX).toMatch(/Promise\.race\(\[\s*queriesPromise/);
+  });
+
+  it("وتجاوز السقف أو فراغ القاعدة يسقط إلى مجموعات التصدير لا إلى «لا بيانات»", () => {
+    // كان الفراغ الكلي يعيد NO_INDUSTRIAL_SECURITY_DATA_AVAILABLE فيسقط
+    // المصادَق إلى محاكاة الزائر عن بياناتٍ إنتاجية تعرضها شاشته.
+    expect(CTX).toMatch(/buildImportedDatasetsSnapshot\(question, observedAt, "db-timeout"\)/);
+    expect(CTX).toMatch(/buildImportedDatasetsSnapshot\(question, observedAt, "db-empty"\)/);
+    expect(CTX).not.toContain("NO_INDUSTRIAL_SECURITY_DATA_AVAILABLE");
+  });
+});
+
+describe("وقت تشغيل الوكلاء يقرأ البيانات الكنسية — ٢٠٢٦/٠٩/٠٢", () => {
+  const RUNTIME = strip(readFileSync("src/lib/exec/agent-runtime.server.ts", "utf8"));
+
+  it("كتلة المعرفة تُحقن في نظام‑التوجيه ويُشغَّل النموذج بها", () => {
+    // «تجاوب الوكلاء فوري»: بدونها يجيب الوكيل أسئلة البيانات بجولات
+    // أدوات على جداول sec_* الفارغة — بطيئًا ثم «لا بيانات».
+    expect(RUNTIME).toMatch(/buildEnterpriseKnowledgeBlock\(orgId, goal\)/);
+    expect(RUNTIME).toMatch(/system: systemPromptWithData/);
+    expect(RUNTIME).not.toMatch(/system: systemPrompt,/);
+  });
+});
+
 describe("الثوابت التي لا يجوز أن يمسّها التسريع", () => {
   it("غياب المزوّد يُبَثّ ردًّا، لا يُرَدّ خطأً", () => {
     // الصياغة الأولى هنا كانت `expect(CHAT_CODE).not.toMatch(/status:\s*503/)`

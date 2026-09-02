@@ -437,6 +437,20 @@ export const Route = createFileRoute("/api/chat")({
           }
           const recall = matchFastRecall(lastUserText);
           if (recall) return streamFixed(recall.answer, "fast-recall");
+          // الإجابة الفورية من بيانات النظام — أمر المالك ٢٠٢٦/٠٩/٠٢
+          // («يجاوب فورًا... كعدد المشاريع والصيانة والبلاغات»): عدٌّ صرف
+          // أو سجلّ مرجعٍ حرفيّ يُحسب من المجموعات الكنسية ويُبثّ دون
+          // نموذج. **خلف بوابة المستأجر**: الأرقام إنتاجية، فلا تُستشار
+          // الطبقة لنداءٍ بلا هوية — الزائر يبقى على النموذج ومحاكاته.
+          if (userId) {
+            const { matchInstantDataAnswer } =
+              await import("@/lib/sadeed/instant-data-answers.server");
+            const instant = matchInstantDataAnswer(lastUserText);
+            if (instant) {
+              console.log("[api/chat] instant-data", { requestId, source: instant.source });
+              return streamFixed(instant.answer, "instant-data");
+            }
+          }
         }
 
         // Inject one and only one operational data mode: verified live rows OR

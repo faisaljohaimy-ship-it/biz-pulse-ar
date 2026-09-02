@@ -53,8 +53,15 @@ import { buildRecallBlock } from "@/lib/sadeed/projects-maintenance-recall.serve
  * بلا كشف. **والصيانة منذ ٢٠٢٦/٠٩/٠٢ خلف البوابة نفسها**: تصدير SAP
  * المستورد بيانات عملٍ من ملف المالك (مراجع أوامر ومواقع وظيفية وتكاليف)
  * فلا يبلغ نداءً بلا هوية — الزائر يأخذ المحاكاة المولّدة كما كان.
+ *
+ * ── وتصديرها (٢٠٢٦/٠٩/٠٢) ──
+ * «اجعل تجاوب الوكلاء فوريًّا بدون تأخير»: وقتُ تشغيل الوكلاء
+ * (`agent-runtime.server`) كان يجيب أسئلة البيانات بجولات أدوات على
+ * جداول `sec_*` الفارغة — جولات بطيئة تنتهي بـ«لا بيانات» عمّا تعرضه
+ * الشاشات. فصارت الكتلة تُصدَّر وتُحقن في نظام‑توجيهه (خلف `orgId`
+ * الملزَم هناك أصلًا)، فيجيب من أول خطوة بلا جولة أدوات.
  */
-function buildEnterpriseKnowledgeBlock(orgId?: string | null, question?: string): string {
+export function buildEnterpriseKnowledgeBlock(orgId?: string | null, question?: string): string {
   const now = Date.now();
   const projectPool = orgId ? REAL_SEC_PROJECTS : buildSecProjectsSimulation(now);
   const orderPool = orgId ? REAL_SEC_WORK_ORDERS : buildOmsSimulation(now).work_orders;
