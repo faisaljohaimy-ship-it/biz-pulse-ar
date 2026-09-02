@@ -179,17 +179,18 @@ export async function buildSadeedContextSnapshot(
       );
     } else {
       // نفس علّة المشاريع: `sec_work_orders` فارغة، فالسياق يتبع المصدر
-      // الذي تعرضه الشاشة نفسها — ومنذ ٢٠٢٦/٠٩/٠٢ هو مجموعة تصدير SAP
-      // المستوردة (249 أمرًا) لا المحاكاة المولّدة، بوسم أصلها الصريح.
+      // الذي تعرضه الشاشة نفسها — مجموعة تصدير SAP (249 أمرًا)، إنتاجيةٌ
+      // بإقرار المالك ٢٠٢٦/٠٩/٠٢ «ارفع شارة المحاكاة، بيانات الصيانة
+      // إنتاجية».
       const [
         { REAL_SEC_WORK_ORDERS },
-        { buildMaintenanceContextSection, MAINTENANCE_IMPORT_ORIGIN },
+        { buildMaintenanceContextSection, MAINTENANCE_PRODUCTION_ORIGIN },
       ] = await Promise.all([
         import("@/lib/exec/maintenance-report.real.server"),
         import("@/lib/sadeed/projects-maintenance-context.server"),
       ]);
       sections.push(
-        ...buildMaintenanceContextSection(REAL_SEC_WORK_ORDERS, MAINTENANCE_IMPORT_ORIGIN),
+        ...buildMaintenanceContextSection(REAL_SEC_WORK_ORDERS, MAINTENANCE_PRODUCTION_ORIGIN),
       );
     }
 
@@ -298,7 +299,7 @@ export async function buildSadeedContextSnapshot(
       const orderPool = workOrdersQ.data?.length ? workOrdersQ.data : REAL_SEC_WORK_ORDERS;
       const recall = buildRecallBlock(question, projectPool, orderPool, {
         projects: "[PROD:PROJECTS_EXPORT]",
-        maintenance: workOrdersQ.data?.length ? "[PROD:WORK_ORDERS]" : "[SIM:MAINTENANCE_IMPORT]",
+        maintenance: workOrdersQ.data?.length ? "[PROD:WORK_ORDERS]" : "[PROD:MAINTENANCE_EXPORT]",
       });
       if (recall) sections.push(recall);
     }

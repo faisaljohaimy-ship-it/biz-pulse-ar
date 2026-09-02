@@ -13,7 +13,7 @@ import {
 import {
   buildMaintenanceContextSection,
   buildProjectsContextSection,
-  MAINTENANCE_IMPORT_ORIGIN,
+  MAINTENANCE_PRODUCTION_ORIGIN,
 } from "@/lib/sadeed/projects-maintenance-context.server";
 import { buildRecallBlock } from "@/lib/sadeed/projects-maintenance-recall.server";
 
@@ -38,9 +38,9 @@ import { buildRecallBlock } from "@/lib/sadeed/projects-maintenance-recall.serve
  * بسؤال — الوكيل يعرف المشاريع وهو في شاشة الدوريات.
  *
  * ── والوسم لكل قسم ──
- * المشاريع إنتاجية `[PROD:*]`، والصيانة المستوردة `[SIM:MAINTENANCE_IMPORT]`
- * (موسومة محاكاةً حتى إقرار المالك بإنتاجيتها)، ومحاكاة الزائر `[SIM:*]` —
- * وكلٌّ يحمل وسمه في متنه. الخلط في الاتجاهين خطأ
+ * المشاريع والصيانة إنتاجيتان `[PROD:*]` (الصيانة بإقرار المالك
+ * ٢٠٢٦/٠٩/٠٢ «ارفع شارة المحاكاة، بيانات الصيانة إنتاجية»)، ومحاكاة
+ * الزائر `[SIM:*]` — وكلٌّ يحمل وسمه في متنه. الخلط في الاتجاهين خطأ
  * (انظر `projects-maintenance-context`).
  *
  * ── وبوابة المستأجر: `orgId` ──
@@ -59,7 +59,7 @@ function buildEnterpriseKnowledgeBlock(orgId?: string | null, question?: string)
   const projectPool = orgId ? REAL_SEC_PROJECTS : buildSecProjectsSimulation(now);
   const orderPool = orgId ? REAL_SEC_WORK_ORDERS : buildOmsSimulation(now).work_orders;
   const projectTag = orgId ? "[PROD:PROJECTS_EXPORT]" : "[SIM:PROJECTS]";
-  const maintenanceTag = orgId ? MAINTENANCE_IMPORT_ORIGIN.provenance : "[SIM:MAINTENANCE]";
+  const maintenanceTag = orgId ? MAINTENANCE_PRODUCTION_ORIGIN.provenance : "[SIM:MAINTENANCE]";
   const projects = orgId
     ? buildProjectsContextSection(projectPool)
     : buildProjectsContextSection(projectPool, {
@@ -67,7 +67,7 @@ function buildEnterpriseKnowledgeBlock(orgId?: string | null, question?: string)
         note: "محاكاة مرجعية لعرض القدرة — ليست مشاريع المؤسسة.",
       });
   const maintenance = orgId
-    ? buildMaintenanceContextSection(orderPool, MAINTENANCE_IMPORT_ORIGIN)
+    ? buildMaintenanceContextSection(orderPool, MAINTENANCE_PRODUCTION_ORIGIN)
     : buildMaintenanceContextSection(orderPool);
   const lines = [...projects, ...maintenance];
   // استرجاع السؤال (٢٠٢٦/٠٩/٠١): مجلس الوكلاء كلُّه يرى السجلّات الكاملة

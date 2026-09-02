@@ -17,7 +17,7 @@ import { buildReferenceSimulationContext } from "@/lib/sadeed/reference-simulati
 import {
   buildMaintenanceContextSection,
   buildProjectsContextSection,
-  MAINTENANCE_IMPORT_ORIGIN,
+  MAINTENANCE_PRODUCTION_ORIGIN,
 } from "@/lib/sadeed/projects-maintenance-context.server";
 
 const AT = Date.parse("2026-08-31T12:00:00Z");
@@ -109,12 +109,13 @@ describe("بوابة المستأجر — مشاريع الإنتاج لا تب�
   });
 });
 
-describe("بوابة المستأجر — الصيانة المستوردة خلفها كذلك (٢٠٢٦/٠٩/٠٢)", () => {
+describe("بوابة المستأجر — صيانة الإنتاج خلفها كذلك (٢٠٢٦/٠٩/٠٢)", () => {
   /**
-   * تصدير SAP المستورد بيانات عملٍ من ملف المالك: مراجع أوامر ومواقع
-   * وظيفية وتكاليف ومنشئون. شارته «محاكاة مرجعية» وسمُ عرضٍ لا إذنُ نشر —
-   * فيسلك مسلك مشاريع الإنتاج: المصادَق ومجلس الوكلاء (بهوية) يرونه،
-   * وكتلة الزائر تبقى على المحاكاة المولّدة.
+   * تصدير SAP بيانات عملٍ من ملف المالك: مراجع أوامر ومواقع وظيفية
+   * وتكاليف ومنشئون — وأقرّها المالك إنتاجيةً («ارفع شارة المحاكاة،
+   * بيانات الصيانة إنتاجية»)، فبابُها باب مشاريع الإنتاج نفسه: المصادَق
+   * ومجلس الوكلاء (بهوية) يرونها، وكتلة الزائر تبقى على المحاكاة
+   * المولّدة.
    */
   it("لا مرجعُ أمرٍ مستورد واحد في كتلة الزائر", () => {
     // المسح على **كامل** الـ249 لا عيّنة: حقنة تسريبٍ للخلاصة وحدها مرّت
@@ -124,7 +125,7 @@ describe("بوابة المستأجر — الصيانة المستوردة خل
     const leaked = REAL_SEC_WORK_ORDERS.map((w) => w.ref).filter((ref) => BLOCK.includes(ref));
     expect(leaked, `مراجع مستوردة في كتلة الزائر: ${leaked.slice(0, 3).join(", ")}`).toEqual([]);
     expect(BLOCK).not.toMatch(/\b66000\d{6}\b/);
-    expect(BLOCK).not.toContain("[SIM:MAINTENANCE_IMPORT]");
+    expect(BLOCK).not.toContain("[PROD:MAINTENANCE_EXPORT]");
   });
 
   it("وحتى حين يسأل الزائر عن أمرٍ مستورد بعينه — الاسترجاع لا يجيبه", () => {
@@ -149,20 +150,25 @@ describe("بوابة المستأجر — الصيانة المستوردة خل
   it("والمصادَق يسقط إلى المجموعة المستوردة بوسم أصلها الصريح", () => {
     const ctx = code("src/lib/sadeed-context.server.ts");
     expect(ctx).toMatch(
-      /buildMaintenanceContextSection\(REAL_SEC_WORK_ORDERS, MAINTENANCE_IMPORT_ORIGIN\)/,
+      /buildMaintenanceContextSection\(REAL_SEC_WORK_ORDERS, MAINTENANCE_PRODUCTION_ORIGIN\)/,
     );
     expect(ctx).toMatch(/maintenance-report\.real\.server/);
   });
 
-  it("ووسم الاستيراد يقولها كما هي: مستوردة وموسومة محاكاةً حتى الإقرار", () => {
-    expect(MAINTENANCE_IMPORT_ORIGIN.provenance).toBe("[SIM:MAINTENANCE_IMPORT]");
+  it("ووسم الإنتاج صريح، والمادة ٢٧ باقية داخله", () => {
+    // كان الوسم [SIM:MAINTENANCE_IMPORT] حتى إقرار المالك ٢٠٢٦/٠٩/٠٢
+    // «ارفع شارة المحاكاة، بيانات الصيانة إنتاجية» — فصار إنتاجيًّا،
+    // والإقرار على القيم لا على الغائب: عدّ «بلا أولوية» يبقى معلَنًا.
+    expect(MAINTENANCE_PRODUCTION_ORIGIN.provenance).toBe("[PROD:MAINTENANCE_EXPORT]");
     const section = buildMaintenanceContextSection(
       REAL_SEC_WORK_ORDERS,
-      MAINTENANCE_IMPORT_ORIGIN,
+      MAINTENANCE_PRODUCTION_ORIGIN,
     ).join("\n");
-    expect(section).toContain("[SIM:MAINTENANCE_IMPORT]");
-    expect(section).toContain("مستوردة");
-    expect(section).not.toContain("[PROD:");
+    expect(section).toContain("[PROD:MAINTENANCE_EXPORT]");
+    // النوتة نفسها تذكر «محاكاة» في سياق النفي («لا تُوصف بأنها محاكاة»)،
+    // فالحارس على الوسم لا على الكلمة.
+    expect(section).toContain("إنتاجية");
+    expect(section).not.toContain("[SIM:");
     expect(section).toContain(`الإجمالي: ${REAL_SEC_WORK_ORDERS.length}`);
     // المادة ٢٧: الـ97 بلا أولوية معلَنة بعددها داخل فم سَدِيد.
     expect(section).toContain("أوامر بلا أولوية في المصدر: 97");

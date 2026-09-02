@@ -90,15 +90,23 @@ describe("المادة ٢٧ — الغائب null معلَن لا مُختلَق
   });
 });
 
-describe("شارة المحاكاة — سابقة المشاريع: الإقرار قبل الرفع", () => {
-  it("كل صفّ موسوم is_simulation صراحةً وغير مجمّد", () => {
-    // التجميد هو آلية رفع الشارة (`markSimulation` يتخطّى المجمّد)، ورفعها
-    // قرار المالك وحده — كما قال في المشاريع «ارفع شارة المحاكاة» بعد
-    // سؤاله. صفٌّ مجمّد هنا يعني شارةً رُفعت بلا أمر.
+describe("بياناتٌ إنتاجية — الشارة مرفوعة بأمر المالك ٢٠٢٦/٠٩/٠٢", () => {
+  it("كل صفّ مجمّد وبلا وسم is_simulation", () => {
+    // كانت الصفوف موسومةً `is_simulation` وغير مجمّدة حتى يُقرّ المالك —
+    // **وأقرّ: «ارفع شارة المحاكاة، بيانات الصيانة إنتاجية».** فانقلب
+    // الحارس: التجميد هو ما يمنع `markSimulation` (يتخطّى المجمّد) من
+    // إعادة وسمها حين تمرّ بديلَ `resilient`، وصفٌّ غير مجمّد هنا يعني
+    // شارةً ستعود على بيانات أقرّها المالك إنتاجيةً.
     for (const w of REAL_SEC_WORK_ORDERS) {
-      expect(w.is_simulation).toBe(true);
-      expect(Object.isFrozen(w)).toBe(false);
+      expect("is_simulation" in w).toBe(false);
+      expect(Object.isFrozen(w)).toBe(true);
     }
+  });
+
+  it("والإقرار على القيم لا على الغائب — المادة ٢٧ باقية كما هي", () => {
+    // «إنتاجية» لا تجعل الفراغ مقيسًا: الأولوية الغائبة تبقى null.
+    expect(REAL_WORK_ORDER_COUNTS.priority_unmeasured).toBe(97);
+    expect(REAL_SEC_WORK_ORDERS.every((w) => w.closed_at === null)).toBe(true);
   });
 });
 

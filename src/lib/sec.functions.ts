@@ -534,7 +534,7 @@ export const getWorkOrders = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<SecWorkOrder[]> => {
     const { resilient } = await import("./exec/showcase-simulation.server");
     // البديل: مجموعة تصدير SAP المستوردة (249 أمرًا، ٢٠٢٦/٠٩/٠٢) لا
-    // المحاكاة المولّدة — صفوفها موسومة `is_simulation` حتى إقرار المالك.
+    // المحاكاة المولّدة — إنتاجيةٌ بإقرار المالك، صفوفها مجمّدة بلا شارة.
     const { REAL_SEC_WORK_ORDERS } = await import("./exec/maintenance-report.real.server");
     return resilient(
       "sec-work-orders",

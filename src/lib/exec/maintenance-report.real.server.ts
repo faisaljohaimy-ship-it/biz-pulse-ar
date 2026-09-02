@@ -4,13 +4,19 @@
  * أمر المالك: «اعكس جميع بيانات الصيانة المرفقة في النظام». المجموعة
  * **249 أمر عمل** بأرقام SAP مميّزة، في `maintenance-report.data.json`.
  *
- * ## موسومة محاكاةً مرجعية حتى إقرار المالك — سابقة المشاريع نفسها
+ * ## بياناتٌ إنتاجية — الشارة مرفوعة بأمر المالك
  *
- * اسم الملف (`MaintenanceDummy_Data.xlsx`) يقول تمثيلًا، ومجموعة المشاريع
- * قبلها أُدرجت موسومةً ثم قال المالك «ارفع شارة المحاكاة، البيانات
- * إنتاجية» فجُمّدت. هذه تسلك الطريق نفسه: الصفوف تحمل
- * `is_simulation: true` صراحةً (فتظهر شارة «محاكاة مرجعية» في الجدول)
- * و**لا تُجمَّد** — التجميد آلية رفع الشارة، ويبقى بيد المالك وحده.
+ * أُدرجت أوّلًا موسومةً «محاكاة مرجعية» لأن اسم الملف
+ * (`MaintenanceDummy_Data.xlsx`) يقول تمثيلًا — سابقة المشاريع نفسها.
+ * **وأقرّ المالك ٢٠٢٦/٠٩/٠٢: «ارفع شارة المحاكاة، بيانات الصيانة
+ * إنتاجية».** فأُزيل `is_simulation` وجُمّدت الصفوف كصفوف
+ * `projects-report.real.server`: التجميد هو الآلية لا الزينة —
+ * `walkSimulation` يتخطّى `Object.isFrozen`، فلا يُعاد وسم صفٍّ مجمّد
+ * حين يمرّ بديل `resilient` على `markSimulation`.
+ *
+ * **ولم يتغيّر شيء آخر بهذا الأمر:** «إنتاجية» تعني أن القيم حقيقية، لا
+ * أن الحقول الغائبة صارت مقيسة — الـ97 بلا أولوية والإغلاق بلا تاريخ
+ * والموكَّل بلا عمود تبقى `null` كما قاسها التصدير (المادة ٢٧).
  *
  * ## الخريطة الموثقة (تصدير SAP ← صفّ أمر العمل) — قياس التحويل
  *
@@ -90,7 +96,6 @@ const SOURCE: readonly MaintenanceReportSourceRow[] = JSON.parse(
 
 export type RealWorkOrderRow = OmsWorkOrderRow & {
   area_ar: string;
-  is_simulation: true;
 };
 
 /**
@@ -115,8 +120,11 @@ function buildNotes(r: MaintenanceReportSourceRow): string | null {
 }
 
 /** الترتيب: الأحدث إنشاءً أوّلًا — مرآة الاستعلام الحيّ (`opened_at` تنازليًّا). */
-export const REAL_SEC_WORK_ORDERS: readonly RealWorkOrderRow[] = SOURCE.map(
-  (r): RealWorkOrderRow => ({
+export const REAL_SEC_WORK_ORDERS: readonly RealWorkOrderRow[] = SOURCE.map((r) =>
+  // التجميد صفًّا صفًّا: هو ما يمنع `markSimulation` من وسمها (يتخطّى
+  // `Object.isFrozen`). والتجميد لا يمنع `sort` أدناه — هي تعيد ترتيب
+  // المراجع ولا تمسّ محتواها.
+  Object.freeze<RealWorkOrderRow>({
     id: r.id,
     ref: r.ref,
     site_id: null,
@@ -140,7 +148,6 @@ export const REAL_SEC_WORK_ORDERS: readonly RealWorkOrderRow[] = SOURCE.map(
     source_incident_id: null,
     attachments: [],
     area_ar: r.area_ar,
-    is_simulation: true,
   }),
 ).sort((a, b) => b.opened_at.localeCompare(a.opened_at) || a.ref.localeCompare(b.ref));
 
