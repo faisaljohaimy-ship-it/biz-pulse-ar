@@ -123,7 +123,10 @@ describe("Article 22 — system-prompt contract text", () => {
     expect(SADEED_RESPONSE_CONTRACT).toMatch(/1–3 concise sentences/i);
     expect(SADEED_RESPONSE_CONTRACT).toMatch(/400–900 words/i);
     expect(SADEED_RESPONSE_CONTRACT).toMatch(/explicit report \/ executive brief/i);
-    expect(SADEED_RESPONSE_CONTRACT).toContain("REFERENCE_SIMULATION_ONLY");
+    // أمر المالك ٢٠٢٦/٠٩/٠٣ («إزالة المحاكاة كاملًا»): بند المحاكاة
+    // المرجعية أُزيل من العقد وحلّ محلّه بند الأصل الإنتاجي [PROD:*].
+    expect(SADEED_RESPONSE_CONTRACT).not.toContain("REFERENCE_SIMULATION_ONLY");
+    expect(SADEED_RESPONSE_CONTRACT).toContain("[PROD:*]");
   });
 });
 

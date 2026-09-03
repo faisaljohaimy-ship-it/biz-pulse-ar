@@ -95,7 +95,6 @@ describe("③ الصفر قياسٌ والغياب `null`", () => {
       "src/routes/-nx-twin-page.tsx",
       "src/routes/-nx-atlas-page.tsx",
       "src/routes/-nx-sovereign-page.tsx",
-      "src/lib/sadeed/reference-simulation-context.server.ts",
       "src/lib/exec/command-center.functions.ts",
     ]) {
       const code = strip(read(file));

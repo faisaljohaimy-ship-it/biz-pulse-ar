@@ -9,7 +9,6 @@
 import { describe, expect, it } from "vitest";
 import { REAL_SEC_PROJECTS } from "@/lib/exec/projects-report.real.server";
 import { REAL_SEC_WORK_ORDERS } from "@/lib/exec/maintenance-report.real.server";
-import { buildOmsSimulation } from "@/lib/exec/showcase-simulation.server";
 import {
   buildRecallBlock,
   findProjectsForQuestion,
@@ -20,8 +19,10 @@ import {
   tokenize,
 } from "./projects-maintenance-recall.server";
 
-const PROV = { projects: "[PROD:PROJECTS_EXPORT]", maintenance: "[SIM:MAINTENANCE]" };
-const ORDERS = buildOmsSimulation(Date.parse("2026-09-01T08:00:00Z")).work_orders;
+const PROV = { projects: "[PROD:PROJECTS_EXPORT]", maintenance: "[PROD:MAINTENANCE_EXPORT]" };
+// أمر ٢٠٢٦/٠٩/٠٣ («إزالة المحاكاة كاملًا»): مجمع الصيانة في كل مسار هو
+// مجموعة تصدير SAP الإنتاجية — والاختبار يقيس على المجمع الفعلي نفسه.
+const ORDERS = REAL_SEC_WORK_ORDERS;
 
 describe("المطابقة — المرجع الحرفيّ يجلب سجلَّه بعينه", () => {
   it("سؤالٌ بمرجع مشروعٍ يعيد ذلك المشروع أوّلًا", () => {

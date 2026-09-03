@@ -24,11 +24,17 @@ const SNAPSHOT_DB_DEADLINE_MS = 2_500;
  * تتجاوز القاعدة سقفها الزمني أو تفشل: المشاريع الـ697 والصيانة الـ249
  * والبلاغات الـ3,427 تعيش في وحدات الخادم لا في القاعدة، فبطء القاعدة
  * لا يُفقر سَدِيد عنها — والأقسام الحيّة الغائبة غيابٌ مصرَّح به لا صمت.
+ *
+ * **ومصدَّرة (٢٠٢٦/٠٩/٠٣)** لفرع الزائر في `/api/chat` بسبب `anonymous`:
+ * أمر المالك «البيانات الإنتاجية المعكوسة مؤخرًا وليست المحاكاة، مع
+ * إزالة المحاكاة كاملًا» — فكتلة الزائر لم تعد محاكاةً مولّدة بل هذه
+ * المجموعات نفسها، وهي ما تعرضه شاشات العرض للزائر أصلًا عبر بدائل
+ * `resilient` المفتوحة (`optionalSupabaseAuth`).
  */
-async function buildImportedDatasetsSnapshot(
+export async function buildProductionDatasetsSnapshot(
   question: string | undefined,
   observedAt: string,
-  reason: "db-timeout" | "db-error" | "db-empty",
+  reason: "db-timeout" | "db-error" | "db-empty" | "anonymous",
 ): Promise<SadeedContextSnapshot> {
   const [
     { REAL_SEC_PROJECTS },
@@ -51,7 +57,9 @@ async function buildImportedDatasetsSnapshot(
         ? "- الأقسام الحيّة (مواقع/دوريات/كاميرات…) تجاوزت مهلة القاعدة هذه الدورة — قل «غير متاحة الآن» عنها ولا تختلقها."
         : reason === "db-error"
           ? "- تعذّرت قراءة الأقسام الحيّة (مواقع/دوريات/كاميرات…) هذه الدورة — قل «غير متاحة الآن» عنها ولا تختلقها."
-          : "- جداول القاعدة الحيّة (مواقع/دوريات/كاميرات…) فارغة — لا تختلق أقسامًا حيّة، وقل «لا صفوف حيّة» عند سؤالٍ عنها.",
+          : reason === "anonymous"
+            ? "- الأقسام الحيّة المرتبطة بجلسة (مواقع/دوريات/كاميرات…) تتطلب تسجيل الدخول — قلها عند سؤالٍ عنها ولا تختلقها."
+            : "- جداول القاعدة الحيّة (مواقع/دوريات/كاميرات…) فارغة — لا تختلق أقسامًا حيّة، وقل «لا صفوف حيّة» عند سؤالٍ عنها.",
     ].join("\n"),
     `## البلاغات [PROD:EVENT_REPORT]\nالإجمالي: ${REAL_INCIDENT_COUNTS.total} — مفتوحة: ${REAL_INCIDENT_COUNTS.open} — مغلقة: ${REAL_INCIDENT_COUNTS.closed}`,
     buildMaintenanceContextSection(REAL_SEC_WORK_ORDERS, MAINTENANCE_PRODUCTION_ORIGIN).join("\n"),
@@ -123,7 +131,7 @@ export async function buildSadeedContextSnapshot(
     if (raced === null) {
       // رفضٌ متأخر بعد هجر الانتظار يبقى بلا معالج — يُكتم صراحةً.
       queriesPromise.catch(() => {});
-      return buildImportedDatasetsSnapshot(question, observedAt, "db-timeout");
+      return buildProductionDatasetsSnapshot(question, observedAt, "db-timeout");
     }
     const [
       sectionsQ,
@@ -168,7 +176,7 @@ export async function buildSadeedContextSnapshot(
       // الإنتاجية المستوردة (مشاريع/صيانة/بلاغات) تعيش في الخادم وتعرضها
       // الشاشات — فكان المصادَق يسقط هنا إلى محاكاة الزائر عمّا هو
       // إنتاجي أمامه. اللقطة تُبنى منها ويُصرَّح بفراغ الجداول الحيّة.
-      return buildImportedDatasetsSnapshot(question, observedAt, "db-empty");
+      return buildProductionDatasetsSnapshot(question, observedAt, "db-empty");
     }
 
     const sections: string[] = [];
@@ -377,7 +385,7 @@ export async function buildSadeedContextSnapshot(
     // «بيانات لا تفرغ»: فشل القاعدة لا يعني غياب البيانات — المجموعات
     // الإنتاجية تعيش في الخادم. البديل الأخير وحده يصرّح بالفشل.
     try {
-      return await buildImportedDatasetsSnapshot(question, observedAt, "db-error");
+      return await buildProductionDatasetsSnapshot(question, observedAt, "db-error");
     } catch {
       return {
         contextBlock: "INDUSTRIAL_SECURITY_DATA_FETCH_FAILED",

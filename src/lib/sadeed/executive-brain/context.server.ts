@@ -7,10 +7,6 @@ import type { BrainRequest } from "./types";
 import { REAL_SEC_PROJECTS } from "@/lib/exec/projects-report.real.server";
 import { REAL_SEC_WORK_ORDERS } from "@/lib/exec/maintenance-report.real.server";
 import {
-  buildOmsSimulation,
-  buildSecProjectsSimulation,
-} from "@/lib/exec/showcase-simulation.server";
-import {
   buildMaintenanceContextSection,
   buildProjectsContextSection,
   MAINTENANCE_PRODUCTION_ORIGIN,
@@ -39,46 +35,35 @@ import { buildRecallBlock } from "@/lib/sadeed/projects-maintenance-recall.serve
  *
  * ── والوسم لكل قسم ──
  * المشاريع والصيانة إنتاجيتان `[PROD:*]` (الصيانة بإقرار المالك
- * ٢٠٢٦/٠٩/٠٢ «ارفع شارة المحاكاة، بيانات الصيانة إنتاجية»)، ومحاكاة
- * الزائر `[SIM:*]` — وكلٌّ يحمل وسمه في متنه. الخلط في الاتجاهين خطأ
+ * ٢٠٢٦/٠٩/٠٢ «ارفع شارة المحاكاة، بيانات الصيانة إنتاجية») — وكل قسمٍ
+ * يحمل وسمه في متنه، ووصفُ الإنتاجي محاكاةً خطأ كاختراع رقمٍ من خارجه
  * (انظر `projects-maintenance-context`).
  *
- * ── وبوابة المستأجر: `orgId` ──
- * **مشاريع الإنتاج لا تبلغ نداءً بلا هوية.** صفحتها نفسها خلف
- * `_authenticated`، وأسماء المشاريع ومراجعها ومديروها وتصنيف تعثّرها
- * بياناتُ عملٍ لا تُقدَّم لمن لم يُعرَّف. فالقاعدة هنا هي قاعدة هذه الطبقة
- * نفسها المكتوبة في `BrainRequest.orgId` («بدونه تعيد حماية التسريب
- * كتلةً فارغة»): بوجوده تُقدَّم المجموعة الإنتاجية، وبغيابه تُقدَّم
- * **محاكاة المشاريع** موسومةً `[SIM:*]` — فيبقى الوكيل قادرًا على العرض
- * بلا كشف. **والصيانة منذ ٢٠٢٦/٠٩/٠٢ خلف البوابة نفسها**: تصدير SAP
- * المستورد بيانات عملٍ من ملف المالك (مراجع أوامر ومواقع وظيفية وتكاليف)
- * فلا يبلغ نداءً بلا هوية — الزائر يأخذ المحاكاة المولّدة كما كان.
+ * ── بوابة `orgId` نُسخت — أمر المالك ٢٠٢٦/٠٩/٠٣ ──
+ * كانت الكتلة تقدّم محاكاةً مولّدة للنداء بلا هوية تحفّظًا. ثم أمر
+ * المالك: «البيانات الإنتاجية المعكوسة مؤخرًا وليست المحاكاة، مع إزالة
+ * المحاكاة كاملًا» — والمجموعات نفسها معروضة للزائر أصلًا في شاشات
+ * العرض المفتوحة (بدائل `resilient` على `optionalSupabaseAuth`)، فلم
+ * تكن البوابة تحجب إلا الوكلاء عمّا تعرضه الصفحات. فصار المصدر واحدًا
+ * لكل نداء: المجموعات الإنتاجية بوسم `[PROD:*]`، ولا محاكاة في المسار.
  *
  * ── وتصديرها (٢٠٢٦/٠٩/٠٢) ──
  * «اجعل تجاوب الوكلاء فوريًّا بدون تأخير»: وقتُ تشغيل الوكلاء
  * (`agent-runtime.server`) كان يجيب أسئلة البيانات بجولات أدوات على
  * جداول `sec_*` الفارغة — جولات بطيئة تنتهي بـ«لا بيانات» عمّا تعرضه
- * الشاشات. فصارت الكتلة تُصدَّر وتُحقن في نظام‑توجيهه (خلف `orgId`
- * الملزَم هناك أصلًا)، فيجيب من أول خطوة بلا جولة أدوات.
+ * الشاشات. فصارت الكتلة تُصدَّر وتُحقن في نظام‑توجيهه، فيجيب من أول
+ * خطوة بلا جولة أدوات.
  */
-export function buildEnterpriseKnowledgeBlock(orgId?: string | null, question?: string): string {
-  const now = Date.now();
-  const projectPool = orgId ? REAL_SEC_PROJECTS : buildSecProjectsSimulation(now);
-  const orderPool = orgId ? REAL_SEC_WORK_ORDERS : buildOmsSimulation(now).work_orders;
-  const projectTag = orgId ? "[PROD:PROJECTS_EXPORT]" : "[SIM:PROJECTS]";
-  const maintenanceTag = orgId ? MAINTENANCE_PRODUCTION_ORIGIN.provenance : "[SIM:MAINTENANCE]";
-  const projects = orgId
-    ? buildProjectsContextSection(projectPool)
-    : buildProjectsContextSection(projectPool, {
-        provenance: "[SIM:PROJECTS]",
-        note: "محاكاة مرجعية لعرض القدرة — ليست مشاريع المؤسسة.",
-      });
-  const maintenance = orgId
-    ? buildMaintenanceContextSection(orderPool, MAINTENANCE_PRODUCTION_ORIGIN)
-    : buildMaintenanceContextSection(orderPool);
+export function buildEnterpriseKnowledgeBlock(question?: string): string {
+  const projectPool = REAL_SEC_PROJECTS;
+  const orderPool = REAL_SEC_WORK_ORDERS;
+  const projectTag = "[PROD:PROJECTS_EXPORT]";
+  const maintenanceTag = MAINTENANCE_PRODUCTION_ORIGIN.provenance;
+  const projects = buildProjectsContextSection(projectPool);
+  const maintenance = buildMaintenanceContextSection(orderPool, MAINTENANCE_PRODUCTION_ORIGIN);
   const lines = [...projects, ...maintenance];
   // استرجاع السؤال (٢٠٢٦/٠٩/٠١): مجلس الوكلاء كلُّه يرى السجلّات الكاملة
-  // لما يمسّه سؤال المهمة — من المصدر نفسه الذي تسمح به بوابة `orgId`.
+  // لما يمسّه سؤال المهمة — من المجمعين الإنتاجيين نفسيهما.
   if (question?.trim()) {
     const recall = buildRecallBlock(question, projectPool, orderPool, {
       projects: projectTag,
@@ -90,8 +75,8 @@ export function buildEnterpriseKnowledgeBlock(orgId?: string | null, question?: 
   return [
     "# ENTERPRISE DATA — دائمة ومستقلّة عن الجهاز والشاشة",
     "هذه المجموعة تُبنى في الخادم ولا تتبع ما هو معروض على الشاشة. اعتمدها حتى",
-    "لو لم تكن الصفحة الحالية تعرضها. انسب كل رقم إلى وسم قسمه: [PROD:*] إنتاجي",
-    "لا يُوصف بأنه محاكاة، و[SIM:*] محاكاةٌ تُوسم صراحةً.",
+    "لو لم تكن الصفحة الحالية تعرضها. كل قسمٍ موسوم [PROD:*]: بيانات إنتاجية",
+    "من تصديرات المؤسسة — لا تُوصف بأنها محاكاة، ولا يُخترع رقم من خارجها.",
     ...lines,
   ].join("\n");
 }
@@ -146,7 +131,7 @@ export function buildContextBlock(req: BrainRequest, memoryBlock: string): strin
   if (memoryBlock) parts.push(memoryBlock);
 
   // قبل سطر الإسناد مباشرةً: الوكيل يقرأ البيانات ثم يُؤمر بألّا يتجاوزها.
-  const enterprise = buildEnterpriseKnowledgeBlock(req.orgId, req.question);
+  const enterprise = buildEnterpriseKnowledgeBlock(req.question);
   if (enterprise) parts.push(enterprise);
 
   parts.push(

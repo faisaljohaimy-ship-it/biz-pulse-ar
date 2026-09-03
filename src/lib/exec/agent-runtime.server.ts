@@ -428,7 +428,7 @@ export async function runAgent(
   // (يُرمى خطأ بدونه أعلاه)، فالكتلة الإنتاجية لا تُبنى لنداء بلا هوية.
   const { buildEnterpriseKnowledgeBlock } =
     await import("@/lib/sadeed/executive-brain/context.server");
-  const enterpriseData = buildEnterpriseKnowledgeBlock(orgId, goal);
+  const enterpriseData = buildEnterpriseKnowledgeBlock(goal);
   const systemPromptWithData = enterpriseData
     ? `${systemPrompt}\n\n${enterpriseData}`
     : systemPrompt;

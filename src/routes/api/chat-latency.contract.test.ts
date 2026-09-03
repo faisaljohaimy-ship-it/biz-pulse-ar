@@ -70,21 +70,22 @@ describe("لا انتظار لما لا يراه المستخدم", () => {
   });
 });
 
-describe("الإجابة الفورية من بيانات النظام — ٢٠٢٦/٠٩/٠٢", () => {
+describe("الإجابة الفورية من بيانات النظام — ٢٠٢٦/٠٩/٠٢ ثم ٢٠٢٦/٠٩/٠٣", () => {
   /**
    * «اجعل سَدِيد يجاوب فورًا... كعدد المشاريع والصيانة والبلاغات»: طبقة
    * `matchInstantDataAnswer` تجيب العدّ الصرف وسجلّ المرجع قبل النموذج.
-   * والمحروس هنا **بوابتها**: أرقامها إنتاجية، فتُستشار للمصادَق وحده —
-   * استشارتها لنداءٍ بلا هوية هي تسريبة 29557456 من بابٍ جديد.
+   * وُلدت خلف بوابة `userId` تحفّظًا، **ثم نسخ المالك البوابة بأمر
+   * ٢٠٢٦/٠٩/٠٣** («البيانات الإنتاجية وليست المحاكاة، مع إزالة المحاكاة
+   * كاملًا») — والمجموعات نفسها معروضة للزائر في شاشات العرض المفتوحة،
+   * فالطبقة تُستشار لكل نداءٍ اجتاز حارس النطاق.
    */
-  it("الطبقة تُستشار داخل حارس userId وبعد المسار الفوري القائم", () => {
+  it("الطبقة تُستشار لكل نداء، بعد المسار الفوري القائم وبلا بوابة هوية", () => {
     const fastAt = CHAT_CODE.indexOf("matchFastRecall(lastUserText)");
     const instantAt = CHAT_CODE.indexOf("matchInstantDataAnswer");
     expect(fastAt).toBeGreaterThan(-1);
     expect(instantAt, "طبقة الإجابة الفورية غائبة").toBeGreaterThan(fastAt);
-    // الاستدعاء داخل `if (userId)` مباشرةً — لا بين حارسٍ وآخر.
-    const guarded = /if \(userId\) \{\s*const \{ matchInstantDataAnswer \}/.test(CHAT_CODE);
-    expect(guarded, "الإجابة الفورية الإنتاجية خرجت من بوابة المستأجر").toBe(true);
+    const gated = /if \(userId\) \{\s*const \{ matchInstantDataAnswer \}/.test(CHAT_CODE);
+    expect(gated, "بوابة userId عادت بعد أن نسخها المالك — الزائر يعود للنموذج البطيء").toBe(false);
   });
 
   it("وتُبثّ بوسم مصدرها عبر القمع نفسه", () => {
@@ -103,8 +104,8 @@ describe("لقطة السياق لا تنتظر قاعدةً معلّقة — ٢
   it("وتجاوز السقف أو فراغ القاعدة يسقط إلى مجموعات التصدير لا إلى «لا بيانات»", () => {
     // كان الفراغ الكلي يعيد NO_INDUSTRIAL_SECURITY_DATA_AVAILABLE فيسقط
     // المصادَق إلى محاكاة الزائر عن بياناتٍ إنتاجية تعرضها شاشته.
-    expect(CTX).toMatch(/buildImportedDatasetsSnapshot\(question, observedAt, "db-timeout"\)/);
-    expect(CTX).toMatch(/buildImportedDatasetsSnapshot\(question, observedAt, "db-empty"\)/);
+    expect(CTX).toMatch(/buildProductionDatasetsSnapshot\(question, observedAt, "db-timeout"\)/);
+    expect(CTX).toMatch(/buildProductionDatasetsSnapshot\(question, observedAt, "db-empty"\)/);
     expect(CTX).not.toContain("NO_INDUSTRIAL_SECURITY_DATA_AVAILABLE");
   });
 });
@@ -115,7 +116,8 @@ describe("وقت تشغيل الوكلاء يقرأ البيانات الكنس�
   it("كتلة المعرفة تُحقن في نظام‑التوجيه ويُشغَّل النموذج بها", () => {
     // «تجاوب الوكلاء فوري»: بدونها يجيب الوكيل أسئلة البيانات بجولات
     // أدوات على جداول sec_* الفارغة — بطيئًا ثم «لا بيانات».
-    expect(RUNTIME).toMatch(/buildEnterpriseKnowledgeBlock\(orgId, goal\)/);
+    // (٢٠٢٦/٠٩/٠٣ — سقط وسيط orgId مع إزالة بوابة المحاكاة من الكتلة.)
+    expect(RUNTIME).toMatch(/buildEnterpriseKnowledgeBlock\(goal\)/);
     expect(RUNTIME).toMatch(/system: systemPromptWithData/);
     expect(RUNTIME).not.toMatch(/system: systemPrompt,/);
   });
