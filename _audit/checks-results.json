@@ -1,62 +1,62 @@
 {
- "C-HIDDEN-SET": {
-  "desc": "قائمة الحجب تضم كل الشاشات المحذوفة بأمر المالك",
-  "verdict": "PASS",
-  "evidence": "22 مسارًا كلها مسجّلة"
- },
- "C-SIDEBAR-5": {
-  "desc": "الشريط الجانبي: ٥ أزرار معتمدة، لا دخول/خروج ولا مدخلات محذوفة",
-  "verdict": "PASS",
-  "evidence": "موجود 4/4 + غرفة العمليات=True | محظور باقٍ: []"
- },
- "C-SEC-STRIP": {
-  "desc": "شريط sec: بلا مدخلات محذوفة + الحوكمة فيه + «صلاحيات دخول اليوم»",
-  "verdict": "PASS",
-  "evidence": "محذوف باقٍ: [] | حوكمة=True | صلاحيات=True"
- },
- "C-SIM-ALLOWLIST": {
-  "desc": "العبارة محصورة في التصدير/الصدق/المحجوب/التعليقات — صفر صفحات عرض",
-  "verdict": "FAIL",
-  "evidence": "خارج القائمة: ['src/components/sec/oms-dialogs.contract.test.ts', 'src/components/sec/oms-dialogs.tsx', 'src/components/sec/sec-ops-insights.tsx', 'src/lib/exec/maintenance-report.real.server.ts', 'src/lib/exec/projects-report.contract.test.ts', 'src/lib/exec/projects-report.real.server.ts', 'src/routes/_authenticated/sec.maintenance.tsx', 'src/routes/_authenticated/sec.projects.tsx']"
- },
- "C-SIM-PAGES-CLEAN": {
-  "desc": "REQ-021: الصفحات الخمس المسحوبة منها الشارة نظيفة",
-  "verdict": "PASS",
-  "evidence": "cctv/patrols/index/agents/drill-dialog نظيفة"
- },
- "C-LIVE-FT": {
-  "desc": "حالة المواقع والخط الزمني بلا LIVE",
-  "verdict": "PASS",
-  "evidence": "صفر ورود"
- },
- "C-EXEC-DRILL": {
-  "desc": "اللوحة التنفيذية: حوار التفصيل مركّب وخادمه موجود + مؤشر CCTV",
-  "verdict": "PASS",
-  "evidence": "ExecDrilldownDialog+getExecDrilldown+cctv_alerts_new حاضرة"
- },
- "C-BADGE-MOUNT": {
-  "desc": "درع العلامات الخارجية: استيراد الجذر + طبقة CSS القاتلة",
-  "verdict": "PASS",
-  "evidence": "الاستيراد والطبقة حاضران"
- },
- "C-HOME-SAUDI": {
-  "desc": "تعريف سَدِيد بالرئيسية: «جميع المناطق السعودية» بدل سرد المناطق",
-  "verdict": "PASS",
-  "evidence": "العبارة حاضرة وسرد المناطق غائب"
- },
- "C-GUARDS": {
-  "desc": "حرّاس العقود الخمسة (عدّادات المادة ٢٧ + النغمات + الدرع + إزالة القشرة + الهوية)",
-  "verdict": "PASS",
-  "evidence": "\n RUN  v4.1.9 /home/user/biz-pulse-ar\n\n\n Test Files  5 passed (5)\n      Tests  60 passed (60)\n   Start at  19:06:26\n   Duration  2.78s (transform 252ms, setup 1.09s, import 400ms, tests 1.10s, environment 3.96s)\n\n"
- },
- "C-COMMITS": {
-  "desc": "كل الكوميتات المذكورة في السجل موجودة في تاريخ git",
-  "verdict": "FAIL",
-  "evidence": "مفقود: ['37d7049', '3d8c2e7', '45a2fd7', '975e634', '9f17e34', 'a32cf4b', 'd03a5db']"
- },
- "C-PRESENTATION": {
-  "desc": "زر وضع العرض التنفيذي داخل لوحة سَدِيد (بديل مركز القيادة)",
-  "verdict": "PASS",
-  "evidence": "الزر/المكوّن حاضر في SadeedCopilot"
- }
+  "C-HIDDEN-SET": {
+    "desc": "قائمة الحجب تضم كل الشاشات المحذوفة بأمر المالك",
+    "verdict": "PASS",
+    "evidence": "22 مسارًا كلها مسجّلة"
+  },
+  "C-SIDEBAR-5": {
+    "desc": "الشريط الجانبي: ٥ أزرار معتمدة، لا دخول/خروج ولا مدخلات محذوفة",
+    "verdict": "PASS",
+    "evidence": "موجود 4/4 + غرفة العمليات=True | محظور باقٍ: []"
+  },
+  "C-SEC-STRIP": {
+    "desc": "شريط sec: بلا مدخلات محذوفة + الحوكمة فيه + «صلاحيات دخول اليوم»",
+    "verdict": "PASS",
+    "evidence": "محذوف باقٍ: [] | حوكمة=True | صلاحيات=True"
+  },
+  "C-SIM-ALLOWLIST": {
+    "desc": "العبارة محصورة في التصدير/الصدق/المحجوب/التعليقات — صفر صفحات عرض",
+    "verdict": "FAIL",
+    "evidence": "خارج القائمة: ['src/components/sec/oms-dialogs.contract.test.ts', 'src/components/sec/oms-dialogs.tsx', 'src/components/sec/sec-ops-insights.tsx', 'src/lib/exec/maintenance-report.real.server.ts', 'src/lib/exec/projects-report.contract.test.ts', 'src/lib/exec/projects-report.real.server.ts', 'src/routes/_authenticated/sec.maintenance.tsx', 'src/routes/_authenticated/sec.projects.tsx']"
+  },
+  "C-SIM-PAGES-CLEAN": {
+    "desc": "REQ-021: الصفحات الخمس المسحوبة منها الشارة نظيفة",
+    "verdict": "PASS",
+    "evidence": "cctv/patrols/index/agents/drill-dialog نظيفة"
+  },
+  "C-LIVE-FT": {
+    "desc": "حالة المواقع والخط الزمني بلا LIVE",
+    "verdict": "PASS",
+    "evidence": "صفر ورود"
+  },
+  "C-EXEC-DRILL": {
+    "desc": "اللوحة التنفيذية: حوار التفصيل مركّب وخادمه موجود + مؤشر CCTV",
+    "verdict": "PASS",
+    "evidence": "ExecDrilldownDialog+getExecDrilldown+cctv_alerts_new حاضرة"
+  },
+  "C-BADGE-MOUNT": {
+    "desc": "درع العلامات الخارجية: استيراد الجذر + طبقة CSS القاتلة",
+    "verdict": "PASS",
+    "evidence": "الاستيراد والطبقة حاضران"
+  },
+  "C-HOME-SAUDI": {
+    "desc": "تعريف سَدِيد بالرئيسية: «جميع المناطق السعودية» بدل سرد المناطق",
+    "verdict": "PASS",
+    "evidence": "العبارة حاضرة وسرد المناطق غائب"
+  },
+  "C-GUARDS": {
+    "desc": "حرّاس العقود الخمسة (عدّادات المادة ٢٧ + النغمات + الدرع + إزالة القشرة + الهوية)",
+    "verdict": "PASS",
+    "evidence": "\n RUN  v4.1.9 /home/user/biz-pulse-ar\n\n\n Test Files  5 passed (5)\n      Tests  60 passed (60)\n   Start at  19:06:26\n   Duration  2.78s (transform 252ms, setup 1.09s, import 400ms, tests 1.10s, environment 3.96s)\n\n"
+  },
+  "C-COMMITS": {
+    "desc": "كل الكوميتات المذكورة في السجل موجودة في تاريخ git",
+    "verdict": "FAIL",
+    "evidence": "مفقود: ['37d7049', '3d8c2e7', '45a2fd7', '975e634', '9f17e34', 'a32cf4b', 'd03a5db']"
+  },
+  "C-PRESENTATION": {
+    "desc": "زر وضع العرض التنفيذي داخل لوحة سَدِيد (بديل مركز القيادة)",
+    "verdict": "PASS",
+    "evidence": "الزر/المكوّن حاضر في SadeedCopilot"
+  }
 }
