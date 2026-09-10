@@ -36,7 +36,6 @@ import { pageBackdropFor } from "@/lib/nav/page-backdrops";
 import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 import { AuroraFantasyBackdrop } from "@/components/backdrops/AuroraFantasyBackdrop";
 import { useAuth } from "@/lib/auth-context";
-import { useTheme } from "@/lib/theme";
 import { useRegion } from "@/lib/region-context";
 
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
-import { BackHomeControls } from "@/components/layout/GlobalBackButton";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 
 type NavItem = {
@@ -106,11 +104,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
 
-          {/* خانة حجز مساحة للزوج المثبّت (V4 فقرة 1175): الزوج التفاعلي
-              واحد في الجذر بصنف nx-backhome-pin، وهذه البصمة تُبقي ممرّه
-              مفسوحًا في صفّ الترويسة فلا يجلس الشعار تحته. */}
-          <BackHomeControls />
-
+          {/* **سقطت خانة حجز الزوج المثبّت (أمر المالك ٢٠٢٦/٠٩/١٠).**
+              كانت بصمةَ قدمٍ صمّاء تُفسح ممرًّا لزوج الهوم/الرجوع العائم
+              فوقها فلا يجلس الشعار تحته. وقد أُزيل الزوج نفسه، فبقاؤها
+              فراغٌ ميت بعرض 96px يزيح الشعار عن حافّته بلا سبب. */}
           <div className="flex min-w-0 items-center gap-2">
             <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg shadow-glow">
               <img
@@ -122,10 +119,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <SadeedName size="sm" />
           </div>
-          {/* أمر المالك ٢٠٢٦/٠٨/٢٧: الجرس والمبدّل في أعلى **الرئيسية
-              وحدها**. فلا شريط مثبّتًا فوق الشاشات الداخلية، وبصمة القدم
-              التي كانت تحجز ممرّه هنا سقطت معه — إبقاؤها فراغٌ ميت يزيح
-              مبدّل المؤسسة بلا سبب. */}
+          {/* الجرس والمبدّل أُزيلا من النظام كاملًا (أمر المالك ٢٠٢٦/٠٩/١٠)،
+              فلم يبقَ في هذا الطرف إلا مبدّل المؤسسة. */}
           <div className="flex items-center gap-2">
             <OrgSwitcher compact />
           </div>

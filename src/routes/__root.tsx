@@ -38,8 +38,6 @@ import { SadeedWatermark } from "@/components/executive/SadeedWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
 import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
-import { GlobalBackButton } from "@/components/layout/GlobalBackButton";
-import { GlobalUtilityBar } from "@/components/nav/TopUtilityBar";
 
 import { HoloAmbience } from "@/components/layout/HoloAmbience";
 import { RouteTransition } from "@/components/motion/RouteTransition";
@@ -423,15 +421,13 @@ function RootComponent() {
   const suppressMarquee = isAccessGate || introActive;
   const suppressClock = isPromo;
   /**
-   * الجرس ومبدّل الوضع: **الصفحة الرئيسية وحدها** (أمر المالك ٢٠٢٦/٠٨/٢٧
-   * «ثبّت زري التنبيهات والوضعين في أعلى صفحة النظام الرئيسية فقط»).
+   * **سقط `showUtilityBar` مع الشريط نفسه (أمر المالك ٢٠٢٦/٠٩/١٠).**
    *
-   * كان الشريط V5 يُرسم على كل مسار، فيصير زرَّين عائمَين فوق كل شاشة
-   * داخلية، ويتراكب مبدّلاه على الرئيسية مع المبدّل الذي تركّبه الصفحة
-   * لنفسها (قيس الفارق: 8px). القيد هنا يحسم الأمرين معًا — وزوج
-   * الهوم/الرجوع يبقى على كل الصفحات كما هو، فهو تنقّلٌ لا تفضيل.
+   * كان يقيّد شريط الجرس والمبدّل بالرئيسية وحدها. وقد أُزيلت أيقونات
+   * تغيير الوضع والجرس والرجوع والهوم من النظام كاملًا بأمر المالك، فلم
+   * يبقَ للقيد مقيَّد — وشرطٌ بلا مشروط يُقرأ لاحقًا على أنه ميزةٌ معطّلة
+   * تنتظر إعادةَ وصلٍ، لا ميزةٌ محذوفة.
    */
-  const showUtilityBar = pathname === "/";
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -458,8 +454,12 @@ function RootComponent() {
                   {!suppressMarquee && <HeaderClockBar showClock={!suppressClock} />}
                   {!suppressOverlays && <SadeedWatermark />}
                   {!introActive && !isAccessGate && <HoloAmbience />}
-                  {!introActive && !isAccessGate && <GlobalBackButton />}
-                  {!introActive && !isAccessGate && showUtilityBar && <GlobalUtilityBar />}
+                  {/* أُزيلت هنا طبقتا قشرة الأعلى بأمر المالك ٢٠٢٦/٠٩/١٠
+                      («أزل علامات وأيقونات تغيير الوضع والجرس والرجوع
+                      والهوم من النظام كاملًا»): زوج الهوم/الرجوع المثبّت
+                      (`GlobalBackButton`) وشريط الجرس والمبدّل
+                      (`GlobalUtilityBar`). حُذف مكوّناهما لا مواضع تركيبهما
+                      وحدها — فلا يبقى ملفٌّ يتيمٌ يُعاد وصله بسهو. */}
 
                   <div className="relative z-10">
                     <RouteTransition>

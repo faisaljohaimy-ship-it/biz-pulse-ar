@@ -147,11 +147,11 @@ ok = ("ExecDrilldownDialog" in exec_src and "getExecDrilldown" in kpis_src
 check("C-EXEC-DRILL", "اللوحة التنفيذية: حوار التفصيل مركّب وخادمه موجود + مؤشر CCTV",
       ok, "ExecDrilldownDialog+getExecDrilldown+cctv_alerts_new حاضرة")
 
-# ── C-BACKHOME: زوج الرجوع/الهوم النظامي ──
-gb = read("src/components/layout/GlobalBackButton.tsx")
-ok = "PREV_PATH" in gb and "invisible pointer-events-none" in gb
-check("C-BACKHOME", "زوج الرجوع/الهوم: متتبّع المسار + خانة محجوزة (الهوم لا يقفز)",
-      ok, "PREV_PATH + الخانة المحجوزة حاضران")
+# ── C-BACKHOME: سقط الفحص بسقوط موضوعه ──
+# أُزيل زوج الرجوع/الهوم من النظام كاملًا (أمر المالك ٢٠٢٦/٠٩/١٠) وحُذف
+# ملفّه. والقراءة هنا على مستوى الوحدة، فبقاؤها كان يرفع FileNotFoundError
+# قبل تشغيل أي فحصٍ آخر — أي تُسقط بطارية التدقيق كلّها لا هذا البند وحده.
+# وحارس الإزالة في `src/components/nav/top-chrome.contract.test.ts`.
 
 # ── C-BADGE-MOUNT: درع العلامات مركّب من الجذر وطبقة CSS حاضرة ──
 root_src = read("src/routes/__root.tsx")
@@ -177,9 +177,12 @@ code, out = sh(
     "npx vitest run src/lib/exec/measured-counters.contract.test.ts "
     "src/components/sec/stat-tone.contract.test.ts "
     "src/lib/brand/badge-shield.contract.test.ts "
-    "src/components/layout/global-back-button.contract.test.ts "
+    # حلّ حارسُ الإزالة محلّ حارس زوج الرجوع: حُذف الزوج بأمر المالك
+    # ٢٠٢٦/٠٩/١٠ وحُذف حارسُه معه، و`vitest` يخرج بغير صفر على ملفٍّ
+    # غائب — فكان الفحص سيسقط أبدًا لعلّةٍ لا صلة لها بما يقيس.
+    "src/components/nav/top-chrome.contract.test.ts "
     "src/lib/brand/product-brand.contract.test.ts 2>&1 | tail -12")
-check("C-GUARDS", "حرّاس العقود الخمسة (عدّادات المادة ٢٧ + النغمات + الدرع + الرجوع + الهوية)",
+check("C-GUARDS", "حرّاس العقود الخمسة (عدّادات المادة ٢٧ + النغمات + الدرع + إزالة القشرة + الهوية)",
       code == 0 and "failed" not in out.lower(), out[-400:])
 
 # ── C-COMMITS: كل كوميت مُدّعى في السجل موجود فعلًا في التاريخ ──

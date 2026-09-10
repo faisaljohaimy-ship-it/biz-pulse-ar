@@ -1,18 +1,30 @@
 ---
 name: SADEED Premium Light Executive Directive v10.0
-description: Light-mode-only premium white glass design law for SADEED — palette, depth, typography, and the ban on dark mode/theme switches.
+description: Light-layer palette/depth/typography reference for SADEED. Superseded on the theme-switch question — no switch exists (owner order 2026-09-10) and the default is dark.
 type: design
 ---
 
 # SADEED — Premium Light Executive Edition (owner directive v10.0, 2026-08-02)
 
-**AMENDED 2026-08-02/6 by the owner:** light stays the permanent DEFAULT, but a
-manual light/dark switch is now required. `ThemeProvider` (`src/lib/theme.tsx`)
-starts at `light`, never detects the OS theme, and persists the user's explicit
-choice in `localStorage`. The single switch is the floating
-`src/components/layout/ThemeToggle.tsx`, mounted once in `__root.tsx` opposite
-`GlobalBackButton`. Do not re-add per-screen theme toggles (`HomeTopNav`,
-cockpit NavFooter, `app-shell.tsx`, settings) — one switch only.
+**SUPERSEDED 2026-09-10 by the owner — READ THIS BEFORE ANY THEME WORK.**
+The owner ordered: «أزل علامات وأيقونات تغيير الوضع والجرس والرجوع والهوم من
+النظام كاملًا». There is **NO theme switch anywhere in SADEED**, and
+`src/components/layout/ThemeToggle.tsx` no longer exists. **Do not recreate
+it** — not in `__root.tsx`, not per-screen, not in settings.
+
+What this file said before, and why it is now dangerous to follow: it _ordered_
+a manual switch to exist and named `ThemeToggle.tsx` mounted opposite
+`GlobalBackButton` as its home. Both files are deleted. A session that follows
+the old text rebuilds a control the owner removed by explicit order.
+
+Two further corrections to the text below: the permanent default is **dark**
+(`DEFAULT_THEME = "dark"` in `src/lib/theme.tsx`), not light — SADEED's identity
+was rebuilt dark on 2026-08-05; and the removal took the **control** only, so
+the two-mode token layer (`.light` / `.dark`) stays intact and governed by
+articles 32–34. The palette sections below still describe the light layer
+correctly and remain useful as the light-mode reference.
+
+The removal guard is `src/components/nav/top-chrome.contract.test.ts`.
 
 ## Palette (tokens at the tail of `src/styles.css`, block `SADEED — PREMIUM LIGHT EXECUTIVE LAYER`)
 

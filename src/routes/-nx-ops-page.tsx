@@ -18,7 +18,6 @@ import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
@@ -269,12 +268,10 @@ export function NxOpsPage() {
       <span aria-hidden className="nx-op-aurora nx-op-aurora--b" />
       <span aria-hidden className="nx-op-dust" />
 
-      {/* حُذف الشريط العلوي (قرار المالك ٢٠٢٦/٠٨/٠٩، البند ١٢)؛ ومبدّل الوضع
-          بقي — الصفحة خارج القشرة فلا مبدّل آخر لها (المادة ٣٢). */}
-      <div className="relative z-20 flex justify-end px-4 pt-3 sm:px-6">
-        <ThemeToggle />
-      </div>
-
+      {/* حُذف الشريط العلوي (قرار المالك ٢٠٢٦/٠٨/٠٩، البند ١٢)، ثم سقط
+          مبدّل الوضع معه بأمر ٢٠٢٦/٠٩/١٠ («أزل … تغيير الوضع … من النظام
+          كاملًا») — والصفّ الذي كان يحمله وحده سقط بسقوطه، فصفٌّ فارغ
+          حشوةٌ علوية بلا محتوى. */}
       <div className="relative mx-auto w-full max-w-[1360px] px-4 pb-16 pt-4 sm:px-6">
         {/* ── الترويسة ─────────────────────────────────────────────── */}
         <header className="nx-op-enter" style={{ ["--op-i" as string]: 0 }}>

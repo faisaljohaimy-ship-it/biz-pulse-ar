@@ -18,6 +18,19 @@ const read = (p: string) => readFileSync(p, "utf8");
 const SHELL = read("src/components/app-shell.tsx");
 const ROOT = read("src/routes/__root.tsx");
 const CSS_SRC = read("src/styles.css");
+/**
+ * المصدر منزوع التعليقات. **بندٌ سقط بسبب هذا فعلًا:** تعليقُ الجذر يشرح
+ * ما أُزيل ويسمّيه (`GlobalUtilityBar`)، فقراءةُ النصّ الخام تقرأ الشرح
+ * عودةً للشيء المشروح. الحارس يفحص الكود، والتعليق يبقى حرًّا في وصف ما
+ * كان — وهو أنفع ما فيه.
+ */
+const stripComments = (src: string) =>
+  src
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+const ROOT_CODE = stripComments(ROOT);
+const SHELL_CODE = stripComments(SHELL);
 
 describe("البند ٤٩ — شاشة الامتثال محذوفة، ولا أثر لـSAIS", () => {
   it("لا ذكر لـSAIS في أي مصدر تطبيقي", () => {
@@ -129,70 +142,60 @@ describe("البندان ٥٧ و٥٨ — هوية داكنة ثابتة بلا �
     }
   });
 
-  it("مبدّل الوضع — على الرئيسية وحدها (أمر المالك ٢٠٢٦/٠٨/٢٧ ناسخٌ لسابقه)", () => {
-    // تاريخ هذا البند ثلاث محطات، والحارس يحرس آخرها:
-    //   ٥٨ (قديم): حُذف المبدّل مع اعتماد الداكن هويةً ثابتة.
-    //   ٢٠٢٦/٠٨/٠٦: نقض المالك ذلك وطلبه «على الجوال وكل الأجهزة».
-    //   ٢٠٢٦/٠٨/٢٧: «ثبّت زري التنبيهات والوضعين في أعلى صفحة النظام
-    //     الرئيسية **فقط**» — فالنطاق ضاق إلى الرئيسية، وهذا هو النافذ.
-    //
-    // ما استدعى النسخ مقيس: جولة V5 جعلت الشريط طبقةً `fixed` في الجذر
-    // تُرسم على **كل** مسار، فصار زرّين عائمين فوق كل شاشة داخلية، وصار
-    // على الرئيسية مبدّلان متراكبان (فارق 8px، قِيس) لأن الصفحة تركّب
-    // مبدّلها بنفسها بعلّةٍ بطلت («خارج القشرة فلا شريط لها»).
-    //
-    // أثرٌ يخصّ المالك ومُبلَّغ به: الشاشات الداخلية صارت بلا مبدّل —
-    // والوضع محفوظ في `ThemeProvider` فيسري منها، لكن تبديله من داخلها
-    // غير ممكن حتى يقرّر المالك موضعًا بديلًا (الدرج الجانبي مثلًا).
-    const bar = read("src/components/nav/TopUtilityBar.tsx");
-    expect(bar).toContain("<ThemeToggle />");
-    expect(bar).toContain("export function GlobalUtilityBar");
+  /**
+   * **البند انقلب من «أين المبدّل» إلى «لا مبدّل» (أمر المالك ٢٠٢٦/٠٩/١٠).**
+   *
+   * محطّاته أربع، وهذه آخرها:
+   *   ٥٨ (قديم): حُذف المبدّل مع اعتماد الداكن هويةً ثابتة.
+   *   ٢٠٢٦/٠٨/٠٦: نقض المالك ذلك وطلبه «على الجوال وكل الأجهزة».
+   *   ٢٠٢٦/٠٨/٢٧: «في أعلى صفحة النظام الرئيسية **فقط**» — فضاق النطاق.
+   *   ٢٠٢٦/٠٩/١٠: «أزل علامات وأيقونات تغيير الوضع والجرس والرجوع والهوم
+   *     من النظام كاملًا» — فسقط الزرّ نفسه من كل سطح.
+   *
+   * وهذا البند هو النوع الذي وُجد هذا الملفّ لأجله: زرُّ وضعٍ يُضاف لا
+   * يكسر بناءً ولا اختبارًا: يظهر في الواجهة وحدها. فتفصيل الإزالة في
+   * `top-chrome.contract.test.ts`، وهنا المُلزِم أن السطوح الأربعة التي
+   * حملته يومًا لم يعُد أيٌّ منها يحمله.
+   */
+  it("لا مبدّل وضع في أي سطح — أُزيل من النظام كاملًا", () => {
+    expect(existsSync("src/components/layout/ThemeToggle.tsx"), "عاد ملفّ المبدّل").toBe(false);
+    expect(existsSync("src/components/nav/TopUtilityBar.tsx"), "عاد شريط الجرس").toBe(false);
 
-    const rootSrc = read("src/routes/__root.tsx");
-    expect(rootSrc).toContain("<GlobalUtilityBar />");
-    // القيد نفسه هو العقد: بلا شرط المسار يعود الشريط لكل الشاشات.
-    expect(rootSrc, "الشريط رُسم بلا قيد الرئيسية").toMatch(
-      /showUtilityBar\s*=\s*pathname\s*===\s*"\/"/,
-    );
-    expect(rootSrc).toMatch(/showUtilityBar\s*&&\s*<GlobalUtilityBar\s*\/>/);
+    expect(ROOT_CODE, "عاد شريط الجرس والمبدّل إلى الجذر").not.toContain("GlobalUtilityBar");
+    expect(ROOT_CODE, "بقي قيد مسارٍ لشريطٍ محذوف").not.toContain("showUtilityBar");
 
-    // ولا بصمة قدمٍ في القشرة لشريطٍ لم يعد يُرسم فوق شاشاتها.
-    expect(SHELL, "بصمة قدم ميتة في ترويسة القشرة").not.toContain("UtilityBarSpacer");
-    expect(SHELL.match(/<TopUtilityBar\s*\/>/g)?.length ?? 0).toBe(0);
+    expect(SHELL_CODE).not.toContain("UtilityBarSpacer");
+    expect(SHELL_CODE.match(/<TopUtilityBar\s*\/>/g)?.length ?? 0).toBe(0);
+    // ترويسة الجوال باقية على حالها — المحذوف ساكنُها لا هي.
     expect(SHELL).toContain("md:hidden");
 
-    // والرئيسية لا تركّب مبدّلًا ثانيًا فوق مبدّل الشريط (التراكب المقيس).
-    expect(read("src/routes/-blueprint-page.tsx"), "عاد المبدّل المكرر إلى الرئيسية").not.toContain(
-      "<ThemeToggle",
-    );
-
-    // صفحتا nx خارج القشرة ولا يبلغهما الشريط المقيَّد — فمبدّلهما في متنهما.
-    for (const p of ["src/routes/-nx-ops-page.tsx", "src/routes/-nx-flow-page.tsx"]) {
-      expect(read(p), `${p} بلا مبدّل وضع`).toContain("<ThemeToggle");
+    // السطوح الثلاثة التي كانت تركّب مبدّلها بنفسها خارج القشرة.
+    for (const p of [
+      "src/routes/-blueprint-page.tsx",
+      "src/routes/-nx-ops-page.tsx",
+      "src/routes/-nx-flow-page.tsx",
+    ]) {
+      expect(stripComments(read(p)), `${p} ما زال يركّب مبدّل وضع`).not.toContain("<ThemeToggle");
     }
   });
 
-  it("المبدّل زرّ حقيقي بهدف لمس ٤٤px يعمل باللمس والمؤشّر", () => {
-    // مبدّلٌ يظهر بالتمرير وحده لا وجود له على الجوال إطلاقًا.
-    const cmp = read("src/components/layout/ThemeToggle.tsx");
-    expect(cmp).toContain('type="button"');
-    expect(cmp).toContain("onClick={toggle}");
-    expect(cmp).toMatch(/aria-pressed=/);
-    expect(cmp).toMatch(/aria-label=/);
-    const rule = CSS_SRC.slice(CSS_SRC.indexOf(".nx-theme-toggle {"));
-    const body = rule.slice(0, rule.indexOf("\n}"));
-    expect(body).toContain("inline-size: 44px");
-    expect(body).toContain("block-size: 44px");
+  it("وطبقة الوضعين باقية — المحذوف العلامة لا نظام الألوان", () => {
+    // حدُّ الأمر: «أزل **علامات وأيقونات** تغيير الوضع». أمّا الوضعان
+    // نفساهما فبنيةُ ألوانٍ تحكمها المواد ٣٢–٣٤، وإسقاطها بحجّة أن زرّها
+    // ذهب توسيعٌ للأمر لا تنفيذٌ له.
+    expect(read("src/lib/theme.tsx")).toContain("export function ThemeProvider");
+    expect(ROOT).toContain("<ThemeProvider>");
+    // ومئات قواعد الوضعين قائمة — العدد يمسك الإسقاط الجملي لا الحرفَ.
+    const modeRules = (CSS_SRC.match(/^\.(light|dark) /gm) ?? []).length;
+    expect(modeRules, "قواعد الوضعين سقطت مع سقوط زرّها").toBeGreaterThan(100);
   });
 
-  it("الأيقونة تتبع صنف الجذر لا حالة React — فلا وميضة عند كل فتح", () => {
-    // الحالة تبدأ داكنة دائمًا لتطابق الخادم؛ الرسم منها يُظهر أيقونة الوضع
-    // الخطأ حتى يكتمل الترطيب لمن اختار الفاتح.
-    expect(CSS_SRC).toContain(".dark .nx-theme-ico--moon");
-    expect(CSS_SRC).toContain(".light .nx-theme-ico--sun");
-  });
-
-  it("الاختيار يُقرأ قبل أول رسم ويُحفظ", () => {
+  it("والاختيار المحفوظ ما زال يُقرأ قبل أول رسم — وهو الطريق الوحيد الباقي", () => {
+    // **بندٌ ازداد لزومًا بعد الإزالة لا نقص.** كان الزرّ كاتبًا والمفتاح
+    // ذاكرةً؛ فلمّا سقط الزرّ صار السكربت السابق لأول رسم هو الطريق
+    // **الوحيد** الذي يبلغ الوضعَ الفاتح — وعليه يقوم فحص Lottie في
+    // الوضعين (‏`tests/e2e/14-lottie-theme.spec.ts`). إسقاطه يجعل الفاتح
+    // غير قابل للبلوغ فتسقط معه المواد ٣٢–٣٤ بلا أمرٍ بذلك.
     expect(ROOT).toContain("localStorage.getItem('theme')");
     expect(read("src/lib/theme.tsx")).toContain("localStorage.setItem(THEME_KEY");
   });

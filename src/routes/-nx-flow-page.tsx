@@ -12,7 +12,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { BRAND_ASSISTANT } from "@/lib/domain";
 import { useAuth } from "@/lib/auth-context";
@@ -127,12 +126,10 @@ export function NxFlowPage() {
 
   return (
     <main className="relative min-h-screen bg-[color:var(--surface)] text-[color:var(--ink)]">
-      {/* حُذف الشريط العلوي (قرار المالك ٢٠٢٦/٠٨/٠٩، البند ١٢)؛ ومبدّل الوضع
-          بقي — الصفحة خارج القشرة فلا مبدّل آخر لها (المادة ٣٢). */}
-      <div className="relative z-20 flex justify-end px-4 pt-3 sm:px-6">
-        <ThemeToggle />
-      </div>
-
+      {/* حُذف الشريط العلوي (قرار المالك ٢٠٢٦/٠٨/٠٩، البند ١٢)، ثم سقط
+          مبدّل الوضع معه بأمر ٢٠٢٦/٠٩/١٠ («أزل … تغيير الوضع … من النظام
+          كاملًا») — والصفّ الذي كان يحمله وحده سقط بسقوطه، فصفٌّ فارغ
+          حشوةٌ علوية بلا محتوى. */}
       <div className="mx-auto w-full max-w-[1360px] px-4 pb-14 pt-4 sm:px-6">
         <header className="nx-fl-enter" style={{ ["--pulse-i" as string]: 0 }}>
           <p className="nx-fl-eyebrow">{ar ? "سَدِيد · غرفة العمليات" : "SADEED · Operations"}</p>

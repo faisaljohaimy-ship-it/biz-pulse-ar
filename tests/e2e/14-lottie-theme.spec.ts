@@ -63,9 +63,6 @@ const CHROME = process.env.NX_CHROME ?? "/opt/pw-browsers/chromium-1194/chrome-l
 
 test.use({ browserName: "chromium", launchOptions: { executablePath: CHROME } });
 
-/** التسمية من `ThemeToggle.tsx` حرفيًّا — لا نصًّا مُعادًا كتابته. */
-const THEME_TOGGLE = 'button[aria-label="تبديل الوضع الفاتح/الداكن"]';
-
 /** ثوابت العقد، مطابقة لما يُصدّره `LottieIcon.tsx`. */
 const STATE_ATTR = "data-nx-lottie";
 const ART_CLASS = "nx-lottie-art";
@@ -103,7 +100,8 @@ type Surface = {
  * **السطح تغيّر لأن صفحته حُذفت.** كان المقيس `/hcis`، وحُذفت الصفحة نهائيًّا
  * بقرار المالك ٢٠٢٦/٠٨/٠٩ فصارت 404 — و404 يحمل شريط الساعة أيضًا، فكان
  * الفحص «يمرّ» على صفحة خطأ. المقيس اليوم `/blueprint`: صفحة عامّة قائمة
- * تحمل شريط الساعة **ومبدّل الوضع** معًا، وكلاهما لازم هنا (`flipTheme`).
+ * تحمل شريط الساعة. (وكان يُشترط فيها حملُ مبدّل الوضع أيضًا، فسقط الشرط
+ * بسقوط المبدّل من النظام — `flipTheme` تُعيد الفتح على الوضع الآخر.)
  */
 const CLOCK_SURFACE_URL = "/blueprint";
 
@@ -126,14 +124,15 @@ const SURFACES: readonly Surface[] = [
  *
  * الكتابة في `localStorage` قبل التنقّل لا بعده: السكربت السابق للترطيب في
  * `__root.tsx` يقرؤه ويضع الصنف على `<html>`، فلا وميضة ولا سباق مع
- * `ThemeProvider`. والتبديل الحيّ يُفحص بالنقر لا بهذا (انظر `flipTheme`).
+ * `ThemeProvider`. و`flipTheme` تعيد الفتح بهذا الطريق نفسه بعد أن سقط
+ * المبدّل الذي كان يُنقر.
  */
 async function openAt(page: Page, url: string, theme: "dark" | "light") {
   await page.addInitScript((value) => {
     try {
       window.localStorage.setItem("theme", value as string);
     } catch {
-      /* تخزين محظور — يتكفّل `flipTheme` بالباقي. */
+      /* تخزين محظور — يسقط الوضع إلى الداكن الافتراضي. */
     }
   }, theme);
   await page.goto(url, { waitUntil: "domcontentloaded" });
@@ -141,15 +140,18 @@ async function openAt(page: Page, url: string, theme: "dark" | "light") {
 }
 
 /**
- * يقلب الوضع **بالمسار الحقيقي**: نقرٌ على المبدّل الذي يراه المستخدم.
- * قلبُه بكتابة الصنف مباشرةً كان سيُثبت أنّ CSS تعمل، لا أنّ الطريق إليها
- * موصول.
+ * يفتح السطح نفسه على الوضع الآخر.
+ *
+ * **كان نقرًا على المبدّل، وسقط المبدّل (أمر المالك ٢٠٢٦/٠٩/١٠).** وما
+ * يقيسه هذا الملفّ هو طلاء Lottie في الوضعين، لا الطريقَ إلى التبديل —
+ * فبقاء القياس على وضعين مطلوب، ووسيلةُ بلوغهما تتبع ما تبقّى في النظام.
+ *
+ * والفارق مصرَّح به لا مطويّ: البند السابق كان يُثبت أن **الطريق موصول**
+ * (زرٌّ يراه المستخدم يقلب الوضع)، وهذا يُثبت أن **الوضع الآخر مطليّ
+ * صحيحًا**. الأوّل لم يعد له موضوع، والثاني هو عقد المواد ٣٢–٣٤.
  */
 async function flipTheme(page: Page, to: "dark" | "light") {
-  const toggle = page.locator(THEME_TOGGLE).first();
-  await expect(toggle, "مبدّل الوضع غير موجود على هذه الشاشة").toBeVisible();
-  await toggle.click();
-  await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${to}\\b`));
+  await openAt(page, page.url(), to);
 }
 
 /** ينتظر أن يُعلن الغلاف عن نفسه مشتغلًا — لا مجرّد موجود. */

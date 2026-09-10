@@ -22,6 +22,18 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
  *
  * لا قراءة لتفضيل النظام: من لم يختر يحصل على الداكن — الهوية مصمَّمة
  * عليه (الفيلم والزجاج والتوهّجات). والفاتح اختيارٌ صريح يُحفظ.
+ *
+ * ## ولا مبدّل في الواجهة بعد ٢٠٢٦/٠٩/١٠
+ *
+ * أمر المالك: «أزل علامات وأيقونات تغيير الوضع والجرس والرجوع والهوم من
+ * النظام كاملًا». فسقط الزرّ وسقط معه `toggle`. **والمحرّك باقٍ عمدًا:**
+ * المأمور به إزالة العلامة، وطبقةُ الوضعين بنيةُ ألوانٍ تحكمها المواد
+ * ٣٢–٣٤ ولم تُمسّ — ولولا بقاء القراءة أدناه لصار الوضع الفاتح غير قابل
+ * للبلوغ أصلًا، فيسقط معه فحصه (`tests/e2e/14-lottie-theme.spec.ts`)
+ * وسقفُ المادة ٣٢ بلا أمرٍ بذلك.
+ *
+ * **وأثرٌ مُبلَّغ به:** من كان قد اختار الفاتح يبقى عليه بلا سبيلٍ في
+ * الواجهة لتغييره. مفتاح التخزين لم يُلمس — تصفيرُه قرارُ مالك.
  */
 export type Theme = "dark" | "light";
 
@@ -34,7 +46,6 @@ export const THEME_KEY = "theme";
 const ThemeCtx = createContext<{
   theme: Theme;
   setTheme: (t: Theme) => void;
-  toggle: () => void;
 } | null>(null);
 
 /** يكتب الوضع على الجذر — نقطة التطبيق الوحيدة، فلا يتنازع كاتبان. */
@@ -73,12 +84,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const toggle = useCallback(
-    () => setTheme(document.documentElement.classList.contains("light") ? "dark" : "light"),
-    [setTheme],
-  );
-
-  return <ThemeCtx.Provider value={{ theme, setTheme, toggle }}>{children}</ThemeCtx.Provider>;
+  // **سقط `toggle` مع الزرّ الذي كان يستدعيه (أمر المالك ٢٠٢٦/٠٩/١٠).**
+  // كان فعلَ التبديل نفسه، ومستدعيه الوحيد `ThemeToggle`. وإبقاؤه بعد
+  // حذف الزرّ يترك خطّافًا جاهزًا: أوّل من يريد مبدّلًا يجده موصولًا
+  // فيربط به زرًّا في سطرٍ واحد. أمّا `setTheme` فتبقى — بها يُضبط الوضع
+  // برمجيًّا، وهي طريق فحص Lottie في الوضعين (المواد ٣٢–٣٤).
+  return <ThemeCtx.Provider value={{ theme, setTheme }}>{children}</ThemeCtx.Provider>;
 }
 
 export function useTheme() {

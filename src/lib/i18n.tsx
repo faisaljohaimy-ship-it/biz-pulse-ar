@@ -41,7 +41,8 @@ const dict: Dict = {
   "nav.aiops": { ar: "عمليات الذكاء", en: "AI Operations" },
   "nav.orchestration": { ar: "تنسيق العمليات", en: "Orchestration" },
   "nav.boardroom": { ar: "قاعة المجلس", en: "Boardroom" },
-  "theme.toggle": { ar: "الوضع", en: "Theme" },
+  // سقط `theme.toggle` مع زرّه (أمر المالك ٢٠٢٦/٠٩/١٠): مفتاحُ ترجمةٍ بلا
+  // مستهلك يُقرأ سطحًا قائمًا، وأوّل من يبحث عن تسمية الوضع يجدها فيبني.
   "common.coming_soon": { ar: "قريباً", en: "Coming soon" },
   "common.new": { ar: "جديد", en: "New" },
   "common.save": { ar: "حفظ", en: "Save" },

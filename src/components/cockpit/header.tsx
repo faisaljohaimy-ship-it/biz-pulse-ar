@@ -5,7 +5,7 @@
  * (latency, error rate, inputs/outputs, last trace).
  */
 import * as React from "react";
-import { Bell, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SadeedWordmark } from "@/components/brand/SadeedWordmark";
 import { NxStatusIndicator } from "@/components/nx";
@@ -128,7 +128,8 @@ export interface CockpitHeaderProps {
 }
 
 export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
-  const { openDrawer, unreadCount } = useCockpit();
+  // سقط `useCockpit()` هنا مع الجرس: كان `openDrawer` و`unreadCount`
+  // يخدمان زرّ الإشعارات وحده في هذا المكوّن، فبقاؤهما بعده تفكيكٌ ميّت.
   return (
     <header data-testid="system-header" className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
@@ -152,26 +153,12 @@ export function CockpitHeader({ layers, onToggleNav }: CockpitHeaderProps) {
         </div>
         <div className="flex items-center gap-3">
           <NxStatusIndicator status="success" label="بث مباشر" live />
-          <button
-            type="button"
-            data-action="notifications.open"
-            aria-label={`فتح الإشعارات${unreadCount > 0 ? ` — ${unreadCount} غير مقروءة` : ""}`}
-            onClick={() => {
-              emitCockpitAction("notifications.open");
-              openDrawer({ type: "notifications" });
-            }}
-            className="nx-holo-icon rounded-nx-12 relative inline-flex size-11 items-center justify-center text-nx-pearl transition-[border-color] duration-[var(--nx-anim-fast)] hover:border-nx-cyan/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nx-cyan"
-          >
-            <Bell aria-hidden className="size-5" />
-            {unreadCount > 0 ? (
-              <span
-                aria-hidden
-                className="absolute -top-1 -start-1 inline-flex min-w-5 items-center justify-center rounded-full bg-nx-critical px-1 text-[12px] font-bold tabular-nums text-nx-obsidian"
-              >
-                {unreadCount}
-              </span>
-            ) : null}
-          </button>
+          {/* **جرسٌ ثانٍ سقط مع الأوّل (أمر المالك ٢٠٢٦/٠٩/١٠).** كان
+              هنا زرّ إشعارات كامل (مدار 44px + شارة غير المقروء + درج
+              الإشعارات) — نسخةٌ ثانية من جرس الشريط العلوي، وأمر «أزل
+              الجرس من النظام كاملًا» يشملها. ومساره `/nx-cockpit` محجوب
+              ويعيد التوجيه للرئيسية، فلم يكن يُرسم لمستخدم؛ بقاؤه كان
+              يجعل الإزالة ناقصةً في الشجرة لا في الشاشة. */}
           <VisionClock />
         </div>
       </div>
