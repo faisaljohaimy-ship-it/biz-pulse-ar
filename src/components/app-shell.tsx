@@ -40,7 +40,6 @@ import { useRegion } from "@/lib/region-context";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { TopChromeSpacer } from "@/components/nav/TopChrome";
 import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
@@ -105,12 +104,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
 
-          {/* خانة حجز قشرة الأعلى (أمر المالك ٢٠٢٦/٠٩/١١): الأزرار
-              المثبَّتة تطفو فوق هذا الصفّ بعد مدار النوافذ، وهنا يجلس
-              الشعار. والخانة **تتبع ما يُرسم فعلًا** — زرٌّ أم زرّان —
-              لأنها تقرأ قرار النطاق نفسه الذي يقرؤه المثبَّت، لا عرضًا
-              ثابتًا يترك فراغًا حين يغيب الرجوع. */}
-          <TopChromeSpacer />
+          {/* **سقطت خانة حجز قشرة الأعلى (٢٠٢٦/٠٩/١٢).** كانت تحجز هنا
+              عرض الأزرار لأنها كانت تطفو فوق هذا الصفّ فتحجب الشعار.
+              وقد نزلت الأزرار إلى الشريط العلوي نفسه (`TopBar`)، فلم يبقَ
+              فوق هذا الصفّ شيء يُفسَح له — وحجزٌ بلا محجوزٍ له فراغٌ يزيح
+              الشعار عن مكانه. */}
           <div className="flex min-w-0 items-center gap-2">
             <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg shadow-glow">
               <img

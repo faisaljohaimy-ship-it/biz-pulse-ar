@@ -27,6 +27,23 @@ const gregDateEn = new Intl.DateTimeFormat("en-GB-u-nu-latn", {
   timeZone: TZ,
   numberingSystem: "latn",
 });
+/**
+ * صيغةٌ مضغوطة دون sm — «11 Sep 2026» بدل «Friday, 11 September 2026».
+ *
+ * وليست تفضيلًا في الذوق: الشريط صار يحمل الأزرار إلى جانب الساعة (أمر
+ * المالك ٢٠٢٦/٠٩/١٢)، فقِيس الباقي لخانة الساعة على ٣٩٠ بكسل = 262، والنصّ
+ * الكامل 353. فإمّا أن يُقصّ التاريخ — وهو ما نهى عنه المالك ٢٠٢٦/٠٨/٠٦
+ * (المرفق IMG_9412) — أو يُختصر حتى يسع كاملًا. والاختصار يُبقي المعلومة
+ * التي تُقرأ من شريطٍ علويّ (اليوم والشهر والسنة)، ويُسقط اسم اليوم الذي
+ * لا يُبنى عليه قرار.
+ */
+const gregDateShortEn = new Intl.DateTimeFormat("en-GB-u-nu-latn", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: TZ,
+  numberingSystem: "latn",
+});
 const gregDateAr = new Intl.DateTimeFormat("ar-u-nu-latn", {
   weekday: "long",
   day: "numeric",
@@ -63,6 +80,7 @@ export function LiveClock({ variant = "chip", showArabic = true, className = "" 
   }, []);
 
   const dEn = gregDateEn.format(now);
+  const dEnShort = gregDateShortEn.format(now);
   const dAr = showArabic ? gregDateAr.format(now) : "";
   const t = timeFmt.format(now);
 
@@ -119,19 +137,25 @@ export function LiveClock({ variant = "chip", showArabic = true, className = "" 
       <span aria-hidden className="text-white/20">
         ·
       </span>
-      <span suppressHydrationWarning className="whitespace-nowrap text-white/80">
+      {/* سُلّم ثلاث درجات، كلٌّ منها مقيس على عرض الخانة الباقي بعد
+          الأزرار: المضغوط دون 640، والكامل فوقها، والعربي يُضاف فوق 768
+          (عند 640 بالضبط يقيس الكامل مع العربي 522 والخانة 512 — فيُقصّ). */}
+      <span suppressHydrationWarning className="whitespace-nowrap text-white/80 sm:hidden">
+        {dEnShort}
+      </span>
+      <span suppressHydrationWarning className="hidden whitespace-nowrap text-white/80 sm:inline">
         {dEn}
       </span>
       {showArabic && dAr && (
         <>
-          <span aria-hidden className="hidden text-white/20 sm:inline">
+          <span aria-hidden className="hidden text-white/20 md:inline">
             ·
           </span>
           <span
             suppressHydrationWarning
             dir="rtl"
             lang="ar"
-            className="hidden whitespace-nowrap text-white/70 sm:inline"
+            className="hidden whitespace-nowrap text-white/70 md:inline"
             style={{ fontFamily: '"IBM Plex Sans Arabic","Tajawal",ui-sans-serif,system-ui' }}
           >
             {dAr}

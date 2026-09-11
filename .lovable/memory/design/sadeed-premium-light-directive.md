@@ -6,13 +6,18 @@ type: design
 
 # SADEED — Premium Light Executive Edition (owner directive v10.0, 2026-08-02)
 
-**SUPERSEDED — READ THIS BEFORE ANY THEME WORK (current as of 2026-09-11).**
+**SUPERSEDED — READ THIS BEFORE ANY THEME WORK (current as of 2026-09-12).**
 
 There is exactly **ONE** theme switch in SADEED and it is **scoped to the home
 page only** (`/` and its alias `/blueprint`). Its single source is
-`src/components/nav/TopChrome.tsx`, mounted once in `__root.tsx`. **Do not add a
+`src/components/nav/TopBar.tsx`, mounted once in `__root.tsx`. **Do not add a
 second one** — not per-screen, not in settings, not in the shell header. A page
-that mounts its own toggle stacks it on the pinned one (measured: 8px apart).
+that mounts its own toggle stacks it on the bar's one (measured: 8px apart).
+
+It is a member of the top bar's flex row, **not a floating pin**. The floating
+layer was removed on 2026-09-12: its coordinates were fixed (measured three
+ways) but it was translucent glass over scrolling content, so page text passed
+_through_ the button. Do not re-introduce a floating control layer.
 
 History, so the old text below is not followed by mistake: this file once
 _ordered_ a switch to exist and named a `ThemeToggle.tsx` mounted opposite a
@@ -28,7 +33,7 @@ was rebuilt dark on 2026-08-05. The two-mode token layer (`.light` / `.dark`)
 is governed by articles 32–34 and is untouched by any of the above. The palette
 sections below remain the correct light-layer reference.
 
-The contract guard is `src/components/nav/top-chrome.contract.test.ts`.
+The contract guard is `src/components/nav/top-bar.contract.test.ts`.
 
 ## Palette (tokens at the tail of `src/styles.css`, block `SADEED — PREMIUM LIGHT EXECUTIVE LAYER`)
 

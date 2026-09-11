@@ -138,7 +138,7 @@ async function openAt(page: Page, url: string, theme: "dark" | "light") {
   await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`));
 }
 
-/** التسمية من `TopChrome.tsx` حرفيًّا — لا نصًّا مُعادًا كتابته. */
+/** التسمية من `TopBar.tsx` حرفيًّا — لا نصًّا مُعادًا كتابته. */
 const THEME_TOGGLE = 'button[aria-label="تبديل الوضع الفاتح/الداكن"]';
 
 /**

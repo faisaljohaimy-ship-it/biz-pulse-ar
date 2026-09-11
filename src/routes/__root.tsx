@@ -37,10 +37,8 @@ import { ArabianPeninsulaBackdrop } from "@/components/executive/ArabianPeninsul
 import { SadeedWatermark } from "@/components/executive/SadeedWatermark";
 import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
-import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
-
 import { HoloAmbience } from "@/components/layout/HoloAmbience";
-import { TopChrome } from "@/components/nav/TopChrome";
+import { TopBar } from "@/components/nav/TopBar";
 import { RouteTransition } from "@/components/motion/RouteTransition";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -450,22 +448,22 @@ function RootComponent() {
                   {!isHero && !isPromo && !isAccessGate && !isAgentOperations && !introActive && (
                     <GlobalPageBackdrop />
                   )}
-                  {/* Unified header: the scrolling marquee is removed (G3); the
-                      LIVE clock remains as this strip's only content. */}
-                  {!suppressMarquee && <HeaderClockBar showClock={!suppressClock} />}
                   {!suppressOverlays && <SadeedWatermark />}
                   {!introActive && !isAccessGate && <HoloAmbience />}
-                  {/* قشرة الأعلى المثبَّتة (أمر المالك ٢٠٢٦/٠٩/١١): المبدّل
-                      على الرئيسية، والهوم والرجوع على ما يحتاجهما. مكوّنٌ
-                      واحد يملك النطاقات الثلاثة — لا شرطَ مسارٍ هنا، فتلك
-                      البعثرة هي ما أنتج سابقًا مبدّلَين متراكبَين.
+                  {/* الشريط العلوي (أمر المالك ٢٠٢٦/٠٩/١٢): الساعة
+                      والأزرار الثلاثة في صفٍّ واحد مرسوم — لا طبقة عائمة.
+                      شريطان متراكبان كانا يسبقانه: هذا وطبقةُ الأقراص
+                      فوقه، فبعد أول تمريرة يمضي الشريط مع الصفحة وتبقى
+                      الأقراص شفّافةً يمرّ المحتوى عبرها. واحدٌ الآن.
 
                       **وخارج `RouteTransition` عمدًا**: بداخله يتحرّك مع
                       انتقال كل مسار، وهو عين «المتحرك» الذي مُنع.
 
-                      والاستثناءان يبقيان: المقدّمة تملك الشاشة وحدها،
-                      وبوّابة الدخول ليست صفحةَ نظامٍ يُتنقَّل منها. */}
-                  {!introActive && !isAccessGate && <TopChrome />}
+                      والنطاق نطاق المكوّنين معًا: `suppressMarquee` كان
+                      يُسقط الشريط على المقدّمة وبوّابة الدخول، والشرط نفسه
+                      كان يُسقط الأقراص — فالدمج لا يغيّر ظهور أيّهما.
+                      و`/promo` تُخفي الساعة وحدها وتُبقي الأزرار. */}
+                  {!suppressMarquee && <TopBar showClock={!suppressClock} />}
 
                   <div className="relative z-10">
                     <RouteTransition>

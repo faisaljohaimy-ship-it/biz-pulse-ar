@@ -151,7 +151,7 @@ check("C-EXEC-DRILL", "اللوحة التنفيذية: حوار التفصيل 
 # أُزيل زوج الرجوع/الهوم من النظام كاملًا (أمر المالك ٢٠٢٦/٠٩/١٠) وحُذف
 # ملفّه. والقراءة هنا على مستوى الوحدة، فبقاؤها كان يرفع FileNotFoundError
 # قبل تشغيل أي فحصٍ آخر — أي تُسقط بطارية التدقيق كلّها لا هذا البند وحده.
-# وحارس الإزالة في `src/components/nav/top-chrome.contract.test.ts`.
+# وحارس الإزالة في `src/components/nav/top-bar.contract.test.ts`.
 
 # ── C-BADGE-MOUNT: درع العلامات مركّب من الجذر وطبقة CSS حاضرة ──
 root_src = read("src/routes/__root.tsx")
@@ -180,7 +180,7 @@ code, out = sh(
     # حلّ حارسُ الإزالة محلّ حارس زوج الرجوع: حُذف الزوج بأمر المالك
     # ٢٠٢٦/٠٩/١٠ وحُذف حارسُه معه، و`vitest` يخرج بغير صفر على ملفٍّ
     # غائب — فكان الفحص سيسقط أبدًا لعلّةٍ لا صلة لها بما يقيس.
-    "src/components/nav/top-chrome.contract.test.ts "
+    "src/components/nav/top-bar.contract.test.ts "
     "src/lib/brand/product-brand.contract.test.ts 2>&1 | tail -12")
 check("C-GUARDS", "حرّاس العقود الخمسة (عدّادات المادة ٢٧ + النغمات + الدرع + إزالة القشرة + الهوية)",
       code == 0 and "failed" not in out.lower(), out[-400:])
