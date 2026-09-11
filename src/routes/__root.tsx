@@ -40,6 +40,7 @@ import { useIntroActive } from "@/lib/intro-store";
 import { HeaderClockBar } from "@/components/executive/HeaderClockBar";
 
 import { HoloAmbience } from "@/components/layout/HoloAmbience";
+import { TopChrome } from "@/components/nav/TopChrome";
 import { RouteTransition } from "@/components/motion/RouteTransition";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -454,12 +455,17 @@ function RootComponent() {
                   {!suppressMarquee && <HeaderClockBar showClock={!suppressClock} />}
                   {!suppressOverlays && <SadeedWatermark />}
                   {!introActive && !isAccessGate && <HoloAmbience />}
-                  {/* أُزيلت هنا طبقتا قشرة الأعلى بأمر المالك ٢٠٢٦/٠٩/١٠
-                      («أزل علامات وأيقونات تغيير الوضع والجرس والرجوع
-                      والهوم من النظام كاملًا»): زوج الهوم/الرجوع المثبّت
-                      (`GlobalBackButton`) وشريط الجرس والمبدّل
-                      (`GlobalUtilityBar`). حُذف مكوّناهما لا مواضع تركيبهما
-                      وحدها — فلا يبقى ملفٌّ يتيمٌ يُعاد وصله بسهو. */}
+                  {/* قشرة الأعلى المثبَّتة (أمر المالك ٢٠٢٦/٠٩/١١): المبدّل
+                      على الرئيسية، والهوم والرجوع على ما يحتاجهما. مكوّنٌ
+                      واحد يملك النطاقات الثلاثة — لا شرطَ مسارٍ هنا، فتلك
+                      البعثرة هي ما أنتج سابقًا مبدّلَين متراكبَين.
+
+                      **وخارج `RouteTransition` عمدًا**: بداخله يتحرّك مع
+                      انتقال كل مسار، وهو عين «المتحرك» الذي مُنع.
+
+                      والاستثناءان يبقيان: المقدّمة تملك الشاشة وحدها،
+                      وبوّابة الدخول ليست صفحةَ نظامٍ يُتنقَّل منها. */}
+                  {!introActive && !isAccessGate && <TopChrome />}
 
                   <div className="relative z-10">
                     <RouteTransition>

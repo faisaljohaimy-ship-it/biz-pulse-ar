@@ -40,6 +40,7 @@ import { useRegion } from "@/lib/region-context";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { TopChromeSpacer } from "@/components/nav/TopChrome";
 import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
@@ -104,10 +105,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
 
-          {/* **سقطت خانة حجز الزوج المثبّت (أمر المالك ٢٠٢٦/٠٩/١٠).**
-              كانت بصمةَ قدمٍ صمّاء تُفسح ممرًّا لزوج الهوم/الرجوع العائم
-              فوقها فلا يجلس الشعار تحته. وقد أُزيل الزوج نفسه، فبقاؤها
-              فراغٌ ميت بعرض 96px يزيح الشعار عن حافّته بلا سبب. */}
+          {/* خانة حجز قشرة الأعلى (أمر المالك ٢٠٢٦/٠٩/١١): الأزرار
+              المثبَّتة تطفو فوق هذا الصفّ بعد مدار النوافذ، وهنا يجلس
+              الشعار. والخانة **تتبع ما يُرسم فعلًا** — زرٌّ أم زرّان —
+              لأنها تقرأ قرار النطاق نفسه الذي يقرؤه المثبَّت، لا عرضًا
+              ثابتًا يترك فراغًا حين يغيب الرجوع. */}
+          <TopChromeSpacer />
           <div className="flex min-w-0 items-center gap-2">
             <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg shadow-glow">
               <img
@@ -119,8 +122,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <SadeedName size="sm" />
           </div>
-          {/* الجرس والمبدّل أُزيلا من النظام كاملًا (أمر المالك ٢٠٢٦/٠٩/١٠)،
-              فلم يبقَ في هذا الطرف إلا مبدّل المؤسسة. */}
+          {/* الجرس أُزيل ولم يُطلب رجوعه، والمبدّل صار على الرئيسية وحدها
+              (أمرا ٢٠٢٦/٠٩/١٠ و٢٠٢٦/٠٩/١١) — فلا شيء في هذا الطرف من
+              الشاشات الداخلية إلا مبدّل المؤسسة. */}
           <div className="flex items-center gap-2">
             <OrgSwitcher compact />
           </div>
