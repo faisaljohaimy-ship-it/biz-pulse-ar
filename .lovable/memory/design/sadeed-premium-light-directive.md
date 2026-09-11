@@ -15,7 +15,7 @@ second one** — not per-screen, not in settings, not in the shell header. A pag
 that mounts its own toggle stacks it on the pinned one (measured: 8px apart).
 
 History, so the old text below is not followed by mistake: this file once
-*ordered* a switch to exist and named a `ThemeToggle.tsx` mounted opposite a
+_ordered_ a switch to exist and named a `ThemeToggle.tsx` mounted opposite a
 `GlobalBackButton`. Both files are gone — the whole top chrome was removed on
 2026-09-10 («أزل … من النظام كاملًا»), then three of the four controls returned
 on 2026-09-11 with explicit scopes (theme on home; home button on pages that
