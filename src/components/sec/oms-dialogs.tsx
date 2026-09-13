@@ -38,6 +38,7 @@ import {
   sadeedAnalyzeIncident,
   getEntityTimeline,
   createWorkOrder,
+  getWorkOrderPermissions,
   approveWorkOrder,
   completeWorkOrder,
   createPermit,
@@ -50,7 +51,19 @@ import {
   getIncidentDetail,
 } from "@/lib/oms.functions";
 import { generateIncidentReport } from "@/lib/oms-reports.functions";
-import { getSecOverview } from "@/lib/sec.functions";
+import {
+  DEFAULT_ASSIGNEE_TEAM,
+  DEFAULT_CONTRACTOR,
+  FAULT_TYPES,
+} from "@/lib/work-orders/constants";
+import {
+  buildWorkOrderPayload,
+  createButtonLabel,
+  validateWorkOrderDraft,
+  ERR_RETURN_REASON_REQUIRED,
+  type WorkOrderDraft,
+} from "@/lib/work-orders/draft";
+import { ApprovalDecision } from "@/components/work-orders/ApprovalDecision";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
@@ -339,7 +352,13 @@ export function IncidentDrawer({
               title_ar,
               kind: "corrective",
               priority,
+              // ٢٠٢٦/٠٩/١٣ — الحقل صار إلزاميًّا بأمر المالك. وأمرُ عملٍ
+              // مشتقٌّ من بلاغ لا يُصرَّح فيه نوع العطل، فـ`other` هو
+              // الصادق — لا تخمينَ نوعٍ من نصّ البلاغ.
+              fault_type: "other",
               asset_kind: "incident_response",
+              assignee_team: DEFAULT_ASSIGNEE_TEAM,
+              contractor_name: DEFAULT_CONTRACTOR,
               assigned_to,
               source_incident_id: incident!.id,
             },
@@ -353,8 +372,11 @@ export function IncidentDrawer({
         title_ar,
         kind: "corrective",
         priority,
+        fault_type: "other",
         asset_kind: "incident_response",
         asset_code: null,
+        assignee_team: DEFAULT_ASSIGNEE_TEAM,
+        contractor_name: DEFAULT_CONTRACTOR,
         assigned_to: assigned_to ?? null,
         contractor: null,
         due_at: null,
@@ -924,8 +946,13 @@ export type LocalSimWorkOrder = {
   kind: string;
   priority: string;
   status: string;
+  /** ٢٠٢٦/٠٩/١٣ — نوع العطل حلّ محلّ الأصل في نافذة الإنشاء. */
+  fault_type: string;
   asset_kind: string;
   asset_code: string | null;
+  /** القيمتان المؤسسيتان الثابتتان — تُحملان في الصف المحاكى كما تُرسَلان. */
+  assignee_team: string;
+  contractor_name: string;
   assigned_to: string | null;
   contractor: string | null;
   due_at: string | null;
@@ -981,28 +1008,28 @@ const toLocalYmd = (d: Date) =>
 export function NewWorkOrderDialog() {
   const [open, setOpen] = useState(false);
   const [dueOpen, setDueOpen] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<WorkOrderDraft>({
     title_ar: "",
-    kind: "corrective" as "preventive" | "corrective",
-    priority: "medium" as (typeof SEV)[number],
-    asset_kind: "",
-    asset_code: "",
-    assigned_to: "",
-    contractor: "",
+    kind: "corrective",
+    priority: "medium",
+    fault_type: "",
     due_at: "",
     notes: "",
+    decision: "none",
   });
   const qc = useQueryClient();
   const { user } = useAuth();
-  const getOverview = useServerFn(getSecOverview);
-  const { data: overview, isLoading: assetsLoading } = useQuery({
-    queryKey: ["sec-overview-assets"],
-    queryFn: () => getOverview(),
-    enabled: open,
-    staleTime: 60_000,
+  // ٢٠٢٦/٠٩/١٣ — الصلاحية من `has_role` عبر الخادم، لا من حالة محلية: هو
+  // المصدر نفسه الذي يحرس الكتابة وtrigger القاعدة. والضيف لا يسأل أصلًا.
+  const readPermissions = useServerFn(getWorkOrderPermissions);
+  const { data: permissions } = useQuery({
+    queryKey: ["work-order-permissions"],
+    queryFn: () => readPermissions(),
+    enabled: open && !!user,
+    staleTime: 5 * 60_000,
   });
-  const assets = overview?.assets ?? [];
-  const selectedAsset = assets.find((asset) => asset.code === form.asset_code);
+  const canApproveWorkOrders = permissions?.canApproveWorkOrders === true;
+  const validationError = validateWorkOrderDraft(form);
   const fn = useServerFn(createWorkOrder);
   const m = useMutation({
     // ٢٠٢٦/٠٨/٢٠ — تفعيل الإنشاء: كان النموذج يُرسَل كما هو، فتصل الحقول
@@ -1016,38 +1043,34 @@ export function NewWorkOrderDialog() {
     // منتهية (401/403 — يلتقطها isSessionError) ⇒ إنشاء محاكاة مرجعية محلي
     // يظهر فورًا في القائمة — لا كتابة قاعدة بيانات، ولا عبارة مصادقة تُعرض.
     mutationFn: async (): Promise<{ simulated: boolean }> => {
-      const due_at = form.due_at ? new Date(`${form.due_at}T23:59:59`).toISOString() : undefined;
+      // الحمولة من `buildWorkOrderPayload` لا من الحقول المعروضة: الموكَّل
+      // والمقاول ثابتان مؤسسيان يُرسَلان فعلًا، وقراءتهما من واجهةٍ معطَّلة
+      // تجعل تعطيلًا يسقط يومًا يغيّر ما يُكتب في القاعدة.
+      const payload = buildWorkOrderPayload(form);
       if (user) {
         try {
-          await fn({
-            data: {
-              title_ar: form.title_ar,
-              kind: form.kind,
-              priority: form.priority,
-              asset_kind: form.asset_kind,
-              asset_code: form.asset_code || undefined,
-              assigned_to: form.assigned_to.trim() || undefined,
-              contractor: form.contractor.trim() || undefined,
-              due_at,
-              notes: form.notes.trim() || undefined,
-            },
-          });
+          await fn({ data: payload });
           return { simulated: false };
         } catch (e) {
           // غير 401/403 (تحقق مدخلات، انقطاع…) ⇒ خطأ حقيقي يُعالَج في onError.
           if (!isSessionError(e)) throw e;
         }
       }
+      // الضيف: محاكاة محلية بحالة «بانتظار الاعتماد» — ولا قرار اعتماد
+      // يصله أصلًا، فالمكوّن مخفيّ عنه.
       addLocalSimWorkOrder({
-        title_ar: form.title_ar,
-        kind: form.kind,
-        priority: form.priority,
-        asset_kind: form.asset_kind,
-        asset_code: form.asset_code || null,
-        assigned_to: form.assigned_to.trim() || null,
-        contractor: form.contractor.trim() || null,
-        due_at: due_at ?? null,
-        notes: form.notes.trim() || null,
+        title_ar: payload.title_ar,
+        kind: payload.kind,
+        priority: payload.priority,
+        fault_type: payload.fault_type,
+        asset_kind: "",
+        asset_code: null,
+        assignee_team: payload.assignee_team,
+        contractor_name: payload.contractor_name,
+        assigned_to: null,
+        contractor: null,
+        due_at: payload.due_at ?? null,
+        notes: payload.notes ?? null,
         source_incident_id: null,
       });
       return { simulated: true };
@@ -1065,10 +1088,10 @@ export function NewWorkOrderDialog() {
       setForm((current) => ({
         ...current,
         title_ar: "",
-        asset_kind: "",
-        asset_code: "",
+        fault_type: "",
         due_at: "",
         notes: "",
+        decision: "none",
       }));
     },
     // رسالة عربية محايدة + زر إعادة محاولة — صفر ذكر لجلسة أو دخول أو مصادقة.
@@ -1088,7 +1111,7 @@ export function NewWorkOrderDialog() {
         <DialogHeader>
           <DialogTitle>إنشاء أمر عمل</DialogTitle>
           <DialogDescription>
-            اختر الأصل من السجل؛ سيُربط نوع الأصل وكوده بأمر العمل تلقائياً ثم ينتظر الاعتماد.
+            حدّد نوع العطل؛ سيُوجَّه أمر العمل تلقائيًا إلى فريق الصيانة ثم ينتظر الاعتماد.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
@@ -1135,65 +1158,51 @@ export function NewWorkOrderDialog() {
                 </SelectContent>
               </Select>
             </div>
+            {/* ٢٠٢٦/٠٩/١٣ — «نوع العطل» حلّ محلّ «الأصل» بأمر المالك: لا
+                اختيارَ أصلٍ ولا ربطَ نوعه وكوده تلقائيًّا. المفتاح إنجليزيّ
+                يُخزَّن، والتسمية عربية تُعرض. */}
             <div className="col-span-2 grid gap-1.5">
-              <Label>الأصل *</Label>
+              <Label>نوع العطل *</Label>
               <Select
-                value={form.asset_code}
-                onValueChange={(code) => {
-                  const asset = assets.find((item) => item.code === code);
-                  setForm({
-                    ...form,
-                    asset_code: code,
-                    asset_kind: asset?.kind ?? "",
-                  });
-                }}
+                value={form.fault_type}
+                onValueChange={(v) => setForm({ ...form, fault_type: v })}
               >
                 <SelectTrigger className="min-h-11">
-                  <SelectValue
-                    placeholder={assetsLoading ? "جاري تحميل الأصول…" : "اختر الأصل وكوده"}
-                  />
+                  <SelectValue placeholder="اختر نوع العطل" />
                 </SelectTrigger>
                 <SelectContent>
-                  {assets.map((asset) => (
-                    <SelectItem key={asset.id} value={asset.code}>
-                      {asset.name_ar} — {asset.code}
+                  {FAULT_TYPES.map((fault) => (
+                    <SelectItem key={fault.key} value={fault.key}>
+                      {fault.label}
                     </SelectItem>
                   ))}
-                  {!assetsLoading && assets.length === 0 && (
-                    <SelectItem value="__no_assets__" disabled>
-                      لا توجد أصول مسجّلة
-                    </SelectItem>
-                  )}
                 </SelectContent>
               </Select>
-              {selectedAsset && (
-                <div className="flex flex-wrap gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-[12px] text-muted-foreground">
-                  <span>
-                    {/* ٢٠٢٦/٠٨/٢٠ — عرض نوع الأصل بالعربية؛ الكود معرّف تقني يبقى كما هو */}
-                    النوع:{" "}
-                    <strong className="text-foreground">
-                      {WO_ASSET_KIND_AR[selectedAsset.kind] ?? selectedAsset.kind}
-                    </strong>
-                  </span>
-                  <span>
-                    الكود:{" "}
-                    <strong className="font-mono text-foreground">{selectedAsset.code}</strong>
-                  </span>
-                </div>
-              )}
             </div>
+            {/* قيمتان مؤسسيتان ثابتتان: تُعرضان معطَّلتين وتُرسَلان من
+                الثوابت في `buildWorkOrderPayload` — لا تُقرآن من هنا. */}
             <div className="grid gap-1.5">
-              <Label>الموكَّل</Label>
+              <Label htmlFor="wo-assignee-team">الموكَّل</Label>
               <Input
-                value={form.assigned_to}
-                onChange={(e) => setForm({ ...form, assigned_to: e.target.value })}
+                id="wo-assignee-team"
+                value={DEFAULT_ASSIGNEE_TEAM}
+                readOnly
+                disabled
+                // القيمة أطول من الحقل على ٣٩٠ بكسل فتُقصّ بصريًّا؛ العنوان
+                // يُبقيها كاملةً في التلميح وفي شجرة الوصول معًا.
+                title={DEFAULT_ASSIGNEE_TEAM}
+                aria-label="الموكَّل — قيمة مؤسسية ثابتة"
               />
             </div>
             <div className="grid gap-1.5">
-              <Label>المقاول</Label>
+              <Label htmlFor="wo-contractor">المقاول</Label>
               <Input
-                value={form.contractor}
-                onChange={(e) => setForm({ ...form, contractor: e.target.value })}
+                id="wo-contractor"
+                value={DEFAULT_CONTRACTOR}
+                readOnly
+                disabled
+                title={DEFAULT_CONTRACTOR}
+                aria-label="المقاول — قيمة مؤسسية ثابتة"
               />
             </div>
             <div className="col-span-2 grid gap-1.5">
@@ -1261,7 +1270,19 @@ export function NewWorkOrderDialog() {
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
             />
+            {/* رسالة التحقّق تحت الملاحظات لأنها عنها: «إرجاع» يوجب سببًا. */}
+            {form.decision === "return" && validationError === ERR_RETURN_REASON_REQUIRED && (
+              <p className="text-[12px] text-amber-300">{ERR_RETURN_REASON_REQUIRED}</p>
+            )}
           </div>
+          {/* قرار الاعتماد — أسفل الملاحظات مباشرةً وفوق زرّ الإنشاء.
+              يُخفى كليًّا عن الضيف وغير المخوَّل، ولا يُعطَّل. */}
+          <ApprovalDecision
+            value={form.decision}
+            onChange={(decision) => setForm({ ...form, decision })}
+            canApprove={canApproveWorkOrders}
+            isGuest={!user}
+          />
         </div>
         <DialogFooter>
           <Button variant="outline" className="min-h-11" onClick={() => setOpen(false)}>
@@ -1273,14 +1294,9 @@ export function NewWorkOrderDialog() {
             // الصريحة هما بوابة التأكيد البشري، وmutationFn يقرّر المسار
             // (كتابة حقيقية أو محاكاة مرجعية محلية) دون أي عبارة مصادقة.
             onClick={() => m.mutate()}
-            disabled={
-              m.isPending ||
-              form.title_ar.length < 3 ||
-              form.asset_code.length === 0 ||
-              form.asset_kind.length === 0
-            }
+            disabled={m.isPending || validationError !== null}
           >
-            {m.isPending ? "جارٍ الحفظ…" : "إنشاء"}
+            {m.isPending ? "جارٍ الحفظ…" : createButtonLabel(form.decision)}
           </Button>
         </DialogFooter>
       </DialogContent>

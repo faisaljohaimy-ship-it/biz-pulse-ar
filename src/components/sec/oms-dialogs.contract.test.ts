@@ -128,6 +128,11 @@ describe("③ منتقي التقويم البصري مركّب على تاري�
 
   it("القيمة تبقى بصيغة yyyy-MM-dd وتُحوَّل لنهاية اليوم في الإرسال — عقد due_at كما هو", () => {
     expect(DIALOGS_CODE).toContain("toLocalYmd");
-    expect(WO_DIALOG).toContain("T23:59:59");
+    // ٢٠٢٦/٠٩/١٣ — التثبيت عند نهاية اليوم انتقل إلى `buildWorkOrderPayload`
+    // مع بناء الحمولة كلّها، فالبند يتبعه إلى موضعه الجديد ولا يسقط: العقد
+    // المحروس هو **أن التحويل يقع**، لا أن يقع في هذا الملفّ بعينه.
+    // (وقيمته مقيسة بالمساواة في `src/lib/work-orders/draft.test.ts`.)
+    expect(WO_DIALOG).toContain("buildWorkOrderPayload(form)");
+    expect(strip(read("src/lib/work-orders/draft.ts"))).toContain("T23:59:59");
   });
 });

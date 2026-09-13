@@ -9,6 +9,8 @@ import { z } from "zod";
 // for every action to feed the timeline and KPI engine.
 // ============================================================================
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import type { JsonValue } from "./oms.shared";
 export type { JsonValue, ActivityEvent } from "./oms.shared";
 
@@ -332,21 +334,78 @@ export const closeIncident = createServerFn({ method: "POST" })
 // WORK ORDERS
 // ============================================================================
 
+const FAULT_TYPE_KEYS = [
+  "electrical",
+  "hvac",
+  "plumbing",
+  "civil",
+  "cctv",
+  "access_control",
+  "gates_barriers",
+  "fire_alarm",
+  "lighting",
+  "network",
+  "other",
+] as const;
+
 const createWorkOrderSchema = z.object({
   title_ar: z.string().min(3).max(200),
   title_en: z.string().max(200).optional().default(""),
   kind: z.enum(["preventive", "corrective"]),
   priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
-  asset_kind: z.string().min(2).max(80),
+  // ٢٠٢٦/٠٩/١٣ — «نوع العطل» حلّ محلّ «الأصل» في نافذة الإنشاء. المفتاح
+  // إنجليزيّ ومقيَّد بالقائمة نفسها التي يقيّدها `check` في القاعدة.
+  fault_type: z.enum(FAULT_TYPE_KEYS),
+  // الأصل لم يعد يُلتقط من النافذة، ويبقى اختياريًّا للمنشئين الآخرين
+  // (مثل «تحويل بلاغ إلى أمر عمل» الذي يمرّر incident_response).
+  asset_kind: z.string().min(2).max(80).optional(),
   asset_code: z.string().max(80).optional(),
+  assignee_team: z.string().min(2).max(120),
+  contractor_name: z.string().min(2).max(120),
+  // العمودان القديمان يبقيان لمنشئٍ آخر: «إنشاء أمر عمل من البلاغ» يمرّر
+  // مالك البلاغ في `assigned_to`. نافذة الإنشاء لم تعد تلتقطهما.
   assigned_to: z.string().max(120).optional(),
   contractor: z.string().max(120).optional(),
   due_at: z.string().optional(),
   notes: z.string().max(2000).optional(),
+  decision: z.enum(["none", "approve", "return"]).default("none"),
   source_incident_id: z.string().uuid().nullable().optional(),
   site_id: z.string().uuid().nullable().optional(),
   building_id: z.string().uuid().nullable().optional(),
 });
+
+/** الدور الوحيد الذي يملك الاعتماد أو الإرجاع (أمر المالك ٢٠٢٦/٠٩/١٣). */
+const APPROVER_ROLE = "work_order_approver";
+
+/**
+ * هل يملك صاحب الجلسة الاعتماد؟ — تُقرأ من `has_role` على **جدول الأدوار
+ * المنفصل**، لا من `profiles` القابل لتعديل المستخدم (منع تصعيد صلاحية).
+ */
+async function canApprove(supabase: SupabaseClient<Database>, userId: string): Promise<boolean> {
+  const { data } = await supabase.rpc("has_role", {
+    _user_id: userId,
+    // الأنواع المولَّدة تُشتقّ من المخطط **الحيّ**، والترحيل الذي يضيف
+    // `work_order_approver` إلى تعداد `app_role` لم يُطبَّق بعد (المشروع
+    // موقوف — أُبلغ المالك). فالقالب يعبّر عن التعداد بعد التطبيق، ولا
+    // يغيّر ما يصل القاعدة: نصٌّ يُطابق قيمة التعداد حرفيًّا.
+    _role: APPROVER_ROLE as Database["public"]["Enums"]["app_role"],
+  });
+  return data === true;
+}
+
+/**
+ * صلاحية الاعتماد لواجهة المستخدم — **المصدر نفسه الذي يحرس الكتابة**.
+ *
+ * الواجهة لا تحتفظ بحالة صلاحية محلية: تسأل هذه النقطة، وهي تسأل
+ * `has_role` كما يسألها فرضُ الكتابة أدناه وtrigger القاعدة. مصدرٌ ثالث
+ * يعني يومًا يفترقون فيه، فيظهر الزرّ لمن تردّه القاعدة أو العكس.
+ */
+export const getWorkOrderPermissions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    return { canApproveWorkOrders: await canApprove(supabase, userId) };
+  });
 
 export const createWorkOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -355,6 +414,19 @@ export const createWorkOrder = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
     const actorName =
       (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+
+    // ── فرض الصلاحية على الخادم، فوق حاجز القاعدة لا بدلًا منه ────────────
+    // القاعدة تحرسها بـ`enforce_work_order_approval`، لكن ذلك الترحيل لم
+    // يُطبَّق بعد (المشروع موقوف — أُبلغ المالك). فبغير هذا الشرط يبقى
+    // المسار مكشوفًا حتى يُشغَّل الحاجز. وحين يُشغَّل يبقى الشرطان معًا:
+    // الخادم يردّ برسالة، والقاعدة تردّ من لا يمرّ بالخادم أصلًا.
+    if (data.decision !== "none" && !(await canApprove(supabase, userId))) {
+      throw new Error("not_authorized_to_approve");
+    }
+    const status =
+      data.decision === "approve" ? "approved" : data.decision === "return" ? "returned" : "open";
+    const decidedAt = data.decision === "none" ? null : new Date().toISOString();
+
     const ref = genRef("WO");
     const { data: row, error } = await supabase
       .from("sec_work_orders")
@@ -364,11 +436,24 @@ export const createWorkOrder = createServerFn({ method: "POST" })
         title_en: data.title_en || data.title_ar,
         kind: data.kind,
         priority: data.priority,
-        status: "open",
-        asset_kind: data.asset_kind,
+        status,
+        // ── قوالب ترحيل ٢٠٢٦/٠٩/١٣ ───────────────────────────────────────
+        // الأنواع في `integrations/supabase/types.ts` تُولَّد من المخطط
+        // **الحيّ**، والترحيل الذي يضيف هذه الأعمدة ويفكّ إلزام `asset_kind`
+        // لم يُطبَّق بعد (المشروع موقوف — أُبلغ المالك). فالقوالب تعبّر عن
+        // الشكل بعد التطبيق ولا تغيّر ما يصل القاعدة، **والإنشاء المصادَق
+        // يبقى معتمدًا على تطبيق الترحيل**. تسقط كلُّها من نفسها متى أُعيد
+        // توليد الأنواع، وبقاؤها بعدها خطأ يلتقطه المراجع لا المصرّف.
+        fault_type: data.fault_type as never,
+        asset_kind: (data.asset_kind ?? null) as unknown as string,
         asset_code: data.asset_code ?? null,
+        assignee_team: data.assignee_team as never,
+        contractor_name: data.contractor_name as never,
         assigned_to: data.assigned_to ?? null,
         contractor: data.contractor ?? null,
+        return_reason: (data.decision === "return" ? (data.notes ?? null) : null) as never,
+        approved_by: decidedAt ? userId : null,
+        approved_at: decidedAt,
         due_at: data.due_at ?? null,
         notes: data.notes ?? null,
         opened_at: new Date().toISOString(),
@@ -390,6 +475,8 @@ export const createWorkOrder = createServerFn({ method: "POST" })
       payload: {
         kind: data.kind,
         priority: data.priority,
+        fault_type: data.fault_type,
+        decision: data.decision,
         source_incident_id: data.source_incident_id ?? null,
       },
     });
