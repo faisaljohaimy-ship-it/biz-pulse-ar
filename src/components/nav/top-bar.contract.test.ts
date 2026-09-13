@@ -269,8 +269,19 @@ describe("⑥ الشكل — قرصٌ يسع الصفّ ولا يفيض عنه",
     expect(btn()).toMatch(/min-block-size:\s*var\(--nx-chrome-btn-size\)/);
   });
 
-  it("وفوق أدنى هدف لمسٍ مقبول (WCAG 2.5.8: ‏24×24)", () => {
-    expect(remVar("--nx-chrome-btn-size") * 16).toBeGreaterThanOrEqual(24);
+  it("ويبلغ أرضية اللمس التي يفرضها المشروع على نفسه — لا أرضية WCAG وحدها", () => {
+    // **درسٌ من عطلٍ بلغ الإنتاج (٢٠٢٦/٠٩/١٣).** كان هذا البند يقيس
+    // ‏WCAG 2.5.8 (‏24px) — وهي أدنى مما يفرضه `scripts/ui-audit.mjs`:
+    // ‏44px على أجهزة اللمس. فمرّ قرصٌ 40px، ومرّ على المكتب وسقط على
+    // الجوال، ولم يُكتشف إلا حين شُغِّل فحص الإنتاج أوّل مرّة فأعطى
+    // `target 40×40 (min 44)`.
+    //
+    // والأرضية تُقرأ من الفاحص نفسه لا تُكتب رقمًا ثانيًا هنا: رقمان
+    // لنفس القاعدة يفترقان يومًا، ويسبق الحارسُ الفاحصَ إلى الخطأ.
+    const audit = readFileSync("scripts/ui-audit.mjs", "utf8");
+    const floor = Number(/MIN_TARGET_TOUCH\s*=\s*(\d+)/.exec(audit)?.[1] ?? NaN);
+    expect(Number.isFinite(floor), "لم تُقرأ أرضية اللمس — تبدّلت صيغتها").toBe(true);
+    expect(remVar("--nx-chrome-btn-size") * 16).toBeGreaterThanOrEqual(floor);
   });
 
   it("ودائريّ لا مربّعًا مستديرًا — وإلّا خرجت حلقته عن حدّه", () => {

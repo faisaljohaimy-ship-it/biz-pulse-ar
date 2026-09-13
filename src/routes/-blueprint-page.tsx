@@ -377,7 +377,14 @@ export function BlueprintPage() {
                         <a> — مطلَق الموضع داخل <li relative>، فالبطاقة كلها
                         رابط أصلًا. ظاهر دائمًا بشفافية 60٪ تشتد عند
                         hover/focus-visible (نمط سهم ExecDrilldownDialog):
-                        الظهور بالتمرير وحده لا وجود له على الجوال. */}
+                        الظهور بالتمرير وحده لا وجود له على الجوال.
+
+                        ٢٠٢٦/٠٩/١٣ — ‏12px لا 11: `scripts/ui-audit.mjs` يفرض
+                        `MIN_FONT = 12`، وهذا الرابط كان يكسره على البطاقات
+                        الأربع في كل مقاسات المؤشّر. لم يظهر عامًا لأن فحص
+                        الإنتاج كان يتخطّى نفسه صامتًا؛ فلمّا شُغِّل أوّل مرّة
+                        أعطى `text 11px <A> "سجل المخاطر"` ×4 على ثلاثة
+                        مقاسات. */}
                     <Link
                       to="/sec/risks"
                       aria-label={
@@ -385,7 +392,7 @@ export function BlueprintPage() {
                           ? `سجل المخاطر الأمنية — ${region.labelAr}`
                           : `Security risk register — ${region.labelEn}`
                       }
-                      className="absolute bottom-1 end-1 z-[1] inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-[11px] font-bold text-[color:var(--ink-2)] opacity-60 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
+                      className="absolute bottom-1 end-1 z-[1] inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-[12px] font-bold text-[color:var(--ink-2)] opacity-60 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)]"
                     >
                       {ar ? "سجل المخاطر" : "Risk register"}
                       <ChevronLeft aria-hidden className="h-4 w-4 shrink-0" />
