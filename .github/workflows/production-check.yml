@@ -44,13 +44,24 @@ jobs:
           node-version: 22
           cache: npm
 
+      # ── سُلّم ثلاث درجات، وأدناها **مُودَعٌ في الملفّ** ────────────────────
+      # ظلّ هذا الفحص يمرّ أخضر وهو **يتخطّى كل خطوة فعلية** لأن متغيّر
+      # المستودع لم يُضبط قطّ — فكان «أخضر» يُقرأ نجاحًا وهو غياب. والأصل
+      # في التخطّي الصامت أنه أسوأ من الأحمر: لا يُنبّه أحدًا.
+      #
+      # والعنوان ليس سرًّا كي يُحفظ في المتغيّرات: هو النطاق المنشور علنًا،
+      # مقروءٌ من منصّة النشر نفسها (مشروع Lovable ‏`biz-pulse-ar`،
+      # ‏`is_published: true`). فإيداعُه هنا يجعل الفحص يعمل في كل مستنسخٍ
+      # للمستودع بلا إعدادٍ يدويّ، ويبقى `vars.PRODUCTION_URL` ومُدخل
+      # التشغيل اليدويّ فوقه لمن أراد هدفًا آخر (نطاق مخصّص، بيئة مرحلية).
       - name: Resolve production URL
         id: target
         env:
           INPUT_URL: ${{ inputs.url }}
           VAR_URL: ${{ vars.PRODUCTION_URL }}
+          DEFAULT_URL: https://biz-pulse-ar.lovable.app
         run: |
-          URL="${INPUT_URL:-$VAR_URL}"
+          URL="${INPUT_URL:-${VAR_URL:-$DEFAULT_URL}}"
           if [ -z "$URL" ]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
             echo "::warning::PRODUCTION_URL غير محدَّد — تخطّي فحص الإنتاج (غير حاجب). لتفعيله: Settings → Secrets and variables → Actions → Variables → PRODUCTION_URL"
