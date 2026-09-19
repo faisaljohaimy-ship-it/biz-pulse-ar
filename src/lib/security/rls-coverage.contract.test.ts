@@ -1,0 +1,138 @@
+/**
+ * تغطية RLS — الحارس الذي كان غيابُه هو العطل الحقيقي.
+ *
+ * ## ما حدث، وما يمنعه هذا الملفّ
+ *
+ * سبعة جداول حيّة عاشت شهورًا **بلا `enable row level security`**، تُقرأ
+ * عبر `optionalSupabaseAuth` — أي بعميل الزائر — وكلّها تحمل `org_id`.
+ * فالكشف كان **عابرًا للمؤسسات**: عضو مؤسسةٍ يقرأ تصاريح مؤسسةٍ أخرى.
+ *
+ * ولم يُسقط ذلك بناءً ولا نوعًا ولا اختبارًا: جدولٌ يُنشأ بلا سطر RLS
+ * كودٌ سليم في كل مقياس آليّ. واكتُشف بالمصادفة في تدقيقٍ يدويّ — وما
+ * يُكتشف بالمصادفة يتكرّر.
+ *
+ * **فالمحروس هنا القاعدة لا الحادثة:** أي جدولٍ جديد في `public` يجب أن
+ * يحمل RLS، وإلا سقط هذا الاختبار قبل الدفع. والسبعة لم تعُد استثناءً —
+ * صارت محكومةً بالقاعدة نفسها.
+ *
+ * ## ولماذا القراءة من الترحيلات لا من القاعدة
+ *
+ * القاعدة الحيّة خارج صلاحية جلسة التطوير. والترحيلات هي **مصدر الحقيقة
+ * المُعلَن** لما يجب أن يكون عليه المخطط، وهي ما يُراجَع في الدفعة. فحارسٌ
+ * هنا يمنع **إدخال** الثغرة؛ وأداةُ `supabase/preflight/rls_coverage_check.sql`
+ * تقيس **الواقع** على قاعدةٍ حيّة. الاثنان لازمان ولا يغني أحدهما.
+ */
+import { describe, expect, it } from "vitest";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const DIR = "supabase/migrations";
+const SQL = readdirSync(DIR)
+  .filter((f) => f.endsWith(".sql"))
+  .map((f) => readFileSync(join(DIR, f), "utf8"))
+  .join("\n");
+
+/** ملفّ الإصلاح وحده — ما يُحرَس فيه لا يُقرأ من جاره. */
+const FIX_FILE = "20260919120000_rls_ptw_hcis_tables.sql";
+const FIX = readFileSync(join(DIR, FIX_FILE), "utf8");
+
+/** كل جدولٍ أُنشئ في `public` عبر الترحيلات. */
+function declaredTables(): string[] {
+  const re = /create table\s+(?:if not exists\s+)?(?:public\.)?"?(\w+)"?/gi;
+  return [...new Set([...SQL.matchAll(re)].map((m) => m[1]))];
+}
+
+/** الجداول التي أُسقطت لاحقًا — لا يُطالَب المحذوف بحاجز. */
+function droppedTables(): Set<string> {
+  const re = /drop table\s+(?:if exists\s+)?(?:public\.)?"?(\w+)"?/gi;
+  return new Set([...SQL.matchAll(re)].map((m) => m[1]));
+}
+
+/** الجداول التي فُعِّل عليها RLS — نصًّا أو عبر `format()` في حلقة. */
+function rlsEnabled(): Set<string> {
+  const direct = [
+    ...SQL.matchAll(/alter table\s+(?:public\.)?"?(\w+)"?\s+enable row level security/gi),
+  ].map((m) => m[1]);
+
+  // الترحيل الديناميّ يُفعِّل عبر `format('alter table public.%I enable …')`
+  // على مصفوفة أسماء. فتُقرأ المصفوفة نفسها، وإلا ظنّ الحارس السبعة
+  // مكشوفةً بعد إغلاقها — حارسٌ يكذب في الاتجاه الآخر.
+  const dynamic: string[] = [];
+  if (/format\(\s*'alter table public\.%I enable row level security'/i.test(SQL)) {
+    for (const block of SQL.matchAll(/tables text\[\] :=\s*array\[([\s\S]*?)\]/gi)) {
+      for (const name of block[1].matchAll(/'(\w+)'/g)) dynamic.push(name[1]);
+    }
+  }
+  return new Set([...direct, ...dynamic]);
+}
+
+/**
+ * استثناءات مُعلَنة — **كلٌّ بسببه، ولا يُضاف إليها بلا سبب مكتوب.**
+ *
+ * فارغة اليوم عمدًا: السبعة أُغلقت بترحيل ٢٠٢٦/٠٩/١٩ ولم يبقَ مكشوف.
+ * وأي إضافةٍ هنا قرارُ مالكٍ يُكتب سببه بجانبه، لا تسكينٌ لاختبارٍ أحمر.
+ */
+const ALLOWED_WITHOUT_RLS: ReadonlyMap<string, string> = new Map();
+
+describe("تغطية RLS — لا جدول في public بلا حاجز", () => {
+  it("قائمة الجداول تُقرأ فعلًا — حارسٌ على قائمة فارغة لا يحرس شيئًا", () => {
+    expect(declaredTables().length).toBeGreaterThan(100);
+    expect(rlsEnabled().size).toBeGreaterThan(100);
+  });
+
+  it("كل جدولٍ حيّ عليه `enable row level security`", () => {
+    const dropped = droppedTables();
+    const enabled = rlsEnabled();
+    const exposed = declaredTables()
+      .filter((t) => !dropped.has(t))
+      .filter((t) => !enabled.has(t))
+      .filter((t) => !ALLOWED_WITHOUT_RLS.has(t))
+      .sort();
+
+    expect(
+      exposed,
+      `جداول بلا RLS — RLS المطفأ يعني لا قيد إطلاقًا، و«لا GRANT في الترحيل» ` +
+        `ليس حمايةً لأن Supabase تمنح anon افتراضيًّا على مستوى المخطط: ${exposed.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  it("والسبعة التي كُشفت صارت محكومةً بالقاعدة لا مستثناةً منها", () => {
+    const enabled = rlsEnabled();
+    for (const t of [
+      "permits",
+      "permit_approvals",
+      "permit_types",
+      "hcis_assessments",
+      "hcis_findings",
+      "hcis_inspections",
+      "hcis_requirements",
+    ]) {
+      expect(enabled.has(t), `${t} فقد حاجزه`).toBe(true);
+      expect(ALLOWED_WITHOUT_RLS.has(t), `${t} أُدرج في الاستثناءات بدل أن يُصلَح`).toBe(false);
+    }
+  });
+
+  it("وامتياز الزائر مسحوبٌ عنها — لا سياسةٌ وحدها", () => {
+    // سياسةٌ تُحذف يومًا تُعيد فتح الباب؛ ونزعُ الامتياز يجعل ذلك مستحيلًا
+    // لا محروسًا.
+    expect(FIX).toMatch(/revoke all on public\.%I from anon/);
+  });
+
+  it("وعزلُها بالمؤسسة لا بالمصادقة وحدها", () => {
+    // `to authenticated using (true)` يمنع الزائر ولا يمنع عضو مؤسسةٍ من
+    // قراءة مؤسسةٍ أخرى — وهو الكشف الأثقل هنا.
+    //
+    // **والقراءة من ملفّ الإصلاح وحده لا من الترحيلات مجتمعة.** أوّل صياغة
+    // فحصت النصّ المتّحد، فمرّت حقنةُ `using (true)` سليمةً: ترحيلُ عزل
+    // المستأجرين (٢٠٢٦/٠٦/٢٦) يحمل النمط نفسه حرفًا بحرف على جداول أخرى،
+    // فكان الحارس يجد مطابقةً في ملفٍّ لا يحرسه. حارسٌ يقرأ خارج نطاقه
+    // يمرّ على العطل الذي وُجد له.
+    expect(FIX).toMatch(/public\.is_org_member\(org_id, ''viewer''\)/);
+  });
+
+  it("ولكل ترحيلٍ يفعّل RLS تراجعٌ مرافق", () => {
+    const files = readdirSync(DIR).filter((f) => f.endsWith(".sql"));
+    expect(files).toContain("20260919120000_rls_ptw_hcis_tables.sql");
+    expect(files).toContain("20260919120001_rls_ptw_hcis_rollback.sql");
+  });
+});
