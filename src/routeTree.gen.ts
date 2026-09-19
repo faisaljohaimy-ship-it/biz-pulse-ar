@@ -161,6 +161,7 @@ import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
 import { Route as ApiChatHealthRouteImport } from './routes/api/chat.health'
 import { Route as ApiAgentsFleetRouteImport } from './routes/api/agents/fleet'
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
+import { Route as AuthenticatedSettingsAccessLogRouteImport } from './routes/_authenticated/settings.access-log'
 import { Route as AuthenticatedSecVisitorsRouteImport } from './routes/_authenticated/sec.visitors'
 import { Route as AuthenticatedSecVehiclesRouteImport } from './routes/_authenticated/sec.vehicles'
 import { Route as AuthenticatedSecTwinRouteImport } from './routes/_authenticated/sec.twin'
@@ -996,6 +997,12 @@ const AuthenticatedSettingsMicrosoftRoute =
     path: '/microsoft',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
+const AuthenticatedSettingsAccessLogRoute =
+  AuthenticatedSettingsAccessLogRouteImport.update({
+    id: '/access-log',
+    path: '/access-log',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedSecVisitorsRoute =
   AuthenticatedSecVisitorsRouteImport.update({
     id: '/visitors',
@@ -1428,6 +1435,7 @@ export interface FileRoutesByFullPath {
   '/sec/twin': typeof AuthenticatedSecTwinRoute
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
+  '/settings/access-log': typeof AuthenticatedSettingsAccessLogRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
@@ -1628,6 +1636,7 @@ export interface FileRoutesByTo {
   '/sec/twin': typeof AuthenticatedSecTwinRoute
   '/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/sec/visitors': typeof AuthenticatedSecVisitorsRoute
+  '/settings/access-log': typeof AuthenticatedSettingsAccessLogRoute
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
@@ -1832,6 +1841,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/twin': typeof AuthenticatedSecTwinRoute
   '/_authenticated/sec/vehicles': typeof AuthenticatedSecVehiclesRoute
   '/_authenticated/sec/visitors': typeof AuthenticatedSecVisitorsRoute
+  '/_authenticated/settings/access-log': typeof AuthenticatedSettingsAccessLogRoute
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
@@ -2036,6 +2046,7 @@ export interface FileRouteTypes {
     | '/sec/twin'
     | '/sec/vehicles'
     | '/sec/visitors'
+    | '/settings/access-log'
     | '/settings/microsoft'
     | '/api/agents/fleet'
     | '/api/chat/health'
@@ -2236,6 +2247,7 @@ export interface FileRouteTypes {
     | '/sec/twin'
     | '/sec/vehicles'
     | '/sec/visitors'
+    | '/settings/access-log'
     | '/settings/microsoft'
     | '/api/agents/fleet'
     | '/api/chat/health'
@@ -2439,6 +2451,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/twin'
     | '/_authenticated/sec/vehicles'
     | '/_authenticated/sec/visitors'
+    | '/_authenticated/settings/access-log'
     | '/_authenticated/settings/microsoft'
     | '/api/agents/fleet'
     | '/api/chat/health'
@@ -3650,6 +3663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsMicrosoftRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
+    '/_authenticated/settings/access-log': {
+      id: '/_authenticated/settings/access-log'
+      path: '/access-log'
+      fullPath: '/settings/access-log'
+      preLoaderRoute: typeof AuthenticatedSettingsAccessLogRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/sec/visitors': {
       id: '/_authenticated/sec/visitors'
       path: '/visitors'
@@ -4088,10 +4108,12 @@ const AuthenticatedSecRouteWithChildren =
   AuthenticatedSecRoute._addFileChildren(AuthenticatedSecRouteChildren)
 
 interface AuthenticatedSettingsRouteChildren {
+  AuthenticatedSettingsAccessLogRoute: typeof AuthenticatedSettingsAccessLogRoute
   AuthenticatedSettingsMicrosoftRoute: typeof AuthenticatedSettingsMicrosoftRoute
 }
 
 const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsAccessLogRoute: AuthenticatedSettingsAccessLogRoute,
   AuthenticatedSettingsMicrosoftRoute: AuthenticatedSettingsMicrosoftRoute,
 }
 

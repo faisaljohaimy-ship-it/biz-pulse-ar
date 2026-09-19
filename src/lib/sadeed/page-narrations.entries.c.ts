@@ -15,6 +15,17 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     ),
   ],
   [
+    "/settings/access-log",
+    n(
+      "سجلّ الدخول بالرقم الوظيفي",
+      "Staff number access log",
+      "من فتح النظام ومتى، بالرقم الوظيفي المصرَّح به",
+      "who opened the system and when, by the declared staff number",
+      "إسنادٌ للاستعمال لا تحقّقٌ من الهوية",
+      "usage attribution, not identity verification",
+    ),
+  ],
+  [
     "/admin",
     n(
       "لوحة المشرف",

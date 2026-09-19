@@ -40,6 +40,8 @@ import { useIntroActive } from "@/lib/intro-store";
 import { HoloAmbience } from "@/components/layout/HoloAmbience";
 import { TopBar } from "@/components/nav/TopBar";
 import { isOperationalRoute } from "@/lib/seo/operational-noindex";
+import { StaffNumberGate } from "@/components/access/StaffNumberGate";
+import { isGatedRoute } from "@/lib/access/staff-entry";
 import { RouteTransition } from "@/components/motion/RouteTransition";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -471,6 +473,14 @@ function RootComponent() {
                       تشغيلية يُولد ممنوعًا لا مفهرسًا. */}
                   {isOperationalRoute(pathname) && (
                     <meta name="robots" content="noindex, nofollow" />
+                  )}
+
+                  {/* لوحة الرقم الوظيفي (أمر المالك ٢٠٢٦/٠٩/١٩): تُسأل
+                      مرّة لكل جهاز على الشاشات التشغيلية، ثم تُفتح الصفحة
+                      المقصودة. والمقدّمة وبوّابة الدخول خارجها كالشريط:
+                      الأولى تملك الشاشة، والثانية ليست صفحة نظام. */}
+                  {!introActive && !isAccessGate && isGatedRoute(pathname) && (
+                    <StaffNumberGate path={pathname} />
                   )}
                   {!suppressMarquee && <TopBar showClock={!suppressClock} />}
 
