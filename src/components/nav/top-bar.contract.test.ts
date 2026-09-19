@@ -368,6 +368,32 @@ describe("⑧ لا طفو — البند الذي وُلد من ثلاث قيا�
     expect(rule(".nx-clock-slot {")).toMatch(/flex:\s*1\s+1\s+auto/);
   });
 
+  it("والدرجة المضغوطة رقميّة — «19 Sept 2026» لا تسع عند 375", () => {
+    // سقطت هذه على الموقع الحيّ لا في اختبار: فحص الإنتاج على
+    // `neexios.com` أعطى «clipped 27px» عند 375 و12 عند 390. والسبب أنّ
+    // رفع قرص اللمس 40 ← 44 أخذ من خانة الساعة ثمانية بكسلات — إصلاحٌ في
+    // طرف الصفّ كسر قاعدةً في طرفه الآخر.
+    //
+    // فيُحرَس **الشكل** لا الرقم: `month: "short"` يعطي حروفًا عرضُها
+    // يتبع اللغة والخطّ، و`2-digit` يعطي عرضًا ثابتًا مع `tabular-nums`.
+    const clock = code("src/components/LiveClock.tsx");
+    const short = /const gregDateShortEn[\s\S]*?\}\);/.exec(clock)?.[0] ?? "";
+    expect(short, "gregDateShortEn غير موجودة — أُعيدت تسميتها؟").not.toBe("");
+    expect(short).toMatch(/month:\s*"2-digit"/);
+    expect(short, "الشهر بالحروف لا يسع الخانة عند 375").not.toMatch(/month:\s*"short"/);
+    // والسنة تبقى: حذفها يوفّر عرضًا ويُفقد ما لا يُستنتج من شريطٍ علويّ.
+    expect(short).toMatch(/year:\s*"numeric"/);
+  });
+
+  it("وفجوة الشريحة أضيق دون sm — الصيغة وحدها تركت الفائض صفرًا", () => {
+    // الرقمية وحدها أعطت عند 360 بكسل فائضًا **صفرًا بالضبط**، وصفرٌ حدٌّ
+    // يقلبه أيّ تقريبٍ أو خطٍّ بديل لا هامشَ نجاح. فالفجوتان معًا شرطُ
+    // الصمود، وإسقاط إحداهما يُعيد القصّ بصمت.
+    const clock = code("src/components/LiveClock.tsx");
+    expect(clock).toMatch(/items-center gap-1 rounded-full/);
+    expect(clock).toMatch(/sm:gap-2/);
+  });
+
   it("ولا زرّ خارج الشريط — لا ورثةَ للطبقة العائمة", () => {
     // أي `.nx-chrome-btn` في مكوّنٍ غير الشريط يعني قرصًا يطفو من جديد.
     const bar = "src/components/nav/TopBar.tsx";

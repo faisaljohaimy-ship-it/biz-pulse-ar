@@ -487,6 +487,25 @@ export const createWorkOrder = createServerFn({ method: "POST" })
     return row;
   });
 
+/**
+ * اعتماد أمر عملٍ قائم — **كان معطوبًا عطلين، أحدهما يُخفي الآخر.**
+ *
+ * ① كان يكتب `in_progress` بشُرطةٍ سفلية، و`sec_work_orders_status_chk`
+ * يقبل `in-progress` بشَرطة. فكل نداءٍ يُردّ من القاعدة بانتهاك قيد —
+ * أي أن زرّ الاعتماد **لم يعمل قطّ**. وهذا هو العطل الظاهر.
+ *
+ * ② والأخطر ما كان يستره: `in-progress` ليست حالة اعتماد أصلًا. وترحيل
+ * ٢٠٢٦/٠٩/١٣ أضاف `approved` و`returned` **وحدهما** إلى نطاق
+ * `enforce_work_order_approval`. فلو صُحِّحت الشُرطة وحدها لمرّ الاعتماد
+ * بحالةٍ لا يحرسها الـtrigger — أي **اعتمادٌ بلا حاجز**، من أي حساب
+ * مصادَق. تصحيحُ الحرف كان سيحوّل عطلًا صاخبًا إلى ثغرةٍ صامتة.
+ *
+ * فالحالة المكتوبة `approved`، ويعود المسار تحت الحاجز الذي وُضع له.
+ *
+ * وشرط `canApprove` فوق الـtrigger لا بدلًا منه: القاعدة تردّ من يستدعي
+ * PostgREST مباشرةً، والخادم يردّ برسالةٍ مفهومة بدل استثناء قاعدة خام.
+ * وهو نفس الترتيب المطبَّق في `createWorkOrder` — مصدرٌ واحد لا ثالث.
+ */
 export const approveWorkOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -496,10 +515,13 @@ export const approveWorkOrder = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
     const actorName =
       (claims?.user_metadata as { name?: string } | undefined)?.name ?? claims?.email ?? "مستخدم";
+    if (!(await canApprove(supabase, userId))) {
+      throw new Error("not_authorized_to_approve");
+    }
     const { data: row, error } = await supabase
       .from("sec_work_orders")
       .update({
-        status: "in_progress",
+        status: "approved",
         approved_by: userId,
         approved_at: new Date().toISOString(),
       })
