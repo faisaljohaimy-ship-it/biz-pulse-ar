@@ -387,7 +387,17 @@ export function GovernancePage() {
         ) : (
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {policies.map((p) => (
-              <div key={p.id} className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+              // `min-w-0` على عنصر الشبكة: افتراضُه `min-width: auto` فلا
+              // يصغر تحت محتواه الأدنى. فكانت البطاقة 390px داخل خليةٍ
+              // عرضها 284، فتنزلق يسارًا ويخرج زرّ الحذف **كاملًا** خارج
+              // قاصّ `NexusCard` (‏`overflow-hidden`): لا يُرى ولا يُنقر.
+              // أسقطه فحص الإنتاج على `neexios.com` ولم يظهر محليًّا إلا
+              // بعد أن تُركت الصفحة تستقرّ — الصفوف المرجعية تتأخّر أربع
+              // ثوانٍ، وقياسٌ قبلها يقيس صفحةً فارغة ويمرّ سليمًا.
+              <div
+                key={p.id}
+                className="min-w-0 rounded-xl border border-white/5 bg-white/[0.02] p-4"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-white truncate">
