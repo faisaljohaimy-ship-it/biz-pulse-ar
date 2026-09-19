@@ -104,7 +104,19 @@ function Projects() {
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         {rows.map((p) => (
-          <div key={p.id} className="rounded-xl border border-border bg-card p-4">
+          // `min-w-0` على البطاقة نفسها — لا على ما بداخلها وحده.
+          //
+          // الداخل محروسٌ أصلًا (`min-w-0` على العمود و`truncate` على
+          // الاسم)، ولم يكفِ: البطاقة **عنصر شبكة**، و`min-width` الافتراضية
+          // له `auto` فلا يصغر تحت محتواه الأدنى. وقِيس: البطاقة 1055px داخل
+          // خليةٍ عرضها 343، فانزلقت إلى `left: -696` وخرجت شارة الحالة 679px
+          // خارج قاصّها. و`truncate` لا يعمل على عنصرٍ لا يُضيَّق أصلًا.
+          //
+          // وهو **نفس عطل بطاقات السياسات** في `/sec/governance` حرفًا
+          // (‏٢٠٢٦/٠٩/١٩). فُحص النمط على عشرين موضعًا مرشَّحًا فلم يقع إلا
+          // هنا وهناك — ولذلك لم تُرقَّع البقيّة: ترقيعٌ بلا قياسٍ هو ما
+          // يصنع هذا الصنف من العطل ابتداءً.
+          <div key={p.id} className="min-w-0 rounded-xl border border-border bg-card p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">

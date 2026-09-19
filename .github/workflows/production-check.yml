@@ -11,6 +11,17 @@
 #   • كل ست ساعات — يلتقط ما يتعطّل بعد النشر لا عنده
 #   • يدويًّا عند الطلب، مع إمكان تمرير نطاق آخر
 #
+# ⚠ **والتشغيل بعد الدفع يقيس البناء المنشور، وقد يكون سابقًا للدفعة.**
+# قِيس يوم ٢٠٢٦/٠٩/١٩: دُفع `470a439` الساعة 19:19، وزامنته Lovable في
+# 19:19:37 (‏`latest_commit_sha` يؤكّده) — **ولم تنشره**. فأعطى الفحص عند
+# 19:22 ثم 19:34 النتيجة نفسها حرفًا (27px/12px) وهي نتيجة البناء **السابق**.
+# ولمّا نُشر المشروع صراحةً ثم أُعيد الفحص على الـcommit نفسه: نجح.
+#
+# فالمزامنة ليست نشرًا، ومهلة التسعين ثانية تغطّي تفريغ حافّة لا إعادة بناءٍ
+# ونشرًا يدويًّا. ومعنى ذلك أن أحمر ما بعد الدفع قد يكون عن بناءٍ قديم، وأن
+# **أخضرَه لا يشهد للدفعة**. القاعدة العملية: بعد الدفع يُنشر المشروع، ثم
+# يُشغَّل هذا الفحص يدويًّا (‏`workflow_dispatch`) — وهو وحده ما يشهد.
+#
 # لا يُسقط أحمر لسبب خارج الشيفرة: إن غاب عنوان الإنتاج يتخطّى بهدوء
 # (نفس عرف الحارس غير الحاجب في deploy.yml).
 name: Production check
@@ -95,7 +106,7 @@ jobs:
         if: steps.target.outputs.configured == 'true'
         env:
           PRODUCTION_URL: ${{ steps.target.outputs.url }}
-          ROUTES: /,/sec,/sec/governance
+          ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance
         run: node scripts/check-production.mjs
 
       # ② الطبقة الثانية: الحدود التي لا توجد إلا بعد التخطيط — حجم النص،
@@ -108,7 +119,7 @@ jobs:
         if: steps.target.outputs.configured == 'true'
         env:
           BASE_URL: ${{ steps.target.outputs.url }}
-          ROUTES: /,/sec,/sec/governance
+          ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance
         run: node scripts/ui-audit.mjs
 
       - name: Summary
