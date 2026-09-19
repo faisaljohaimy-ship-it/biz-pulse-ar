@@ -12,6 +12,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { resolveSadeedGeminiRuntimes } from "@/lib/sadeed/gemini-provider.server";
 import { isInScope, OUT_OF_SCOPE_REPLY } from "@/lib/sadeed/response-contract";
+import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -132,6 +133,9 @@ export const Route = createFileRoute("/api/public/sadeed-ask")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // مفتاح الإيقاف الفوري أوّلًا — متزامن، قبل أي شبكة.
+        const off = aiDisabledResponse("chat");
+        if (off) return off;
         const runtimes = resolveSadeedGeminiRuntimes();
         if (!runtimes.length) {
           console.error("[public/sadeed-ask] missing Gemini provider key");
@@ -157,6 +161,8 @@ export const Route = createFileRoute("/api/public/sadeed-ask")({
         const rate = await enforceRateLimit(`pub-sadeed-ask:${ip}`, 12, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
+        const quota = await enforceAiQuota({ surface: "chat", identity: ip });
+        if (quota) return quota;
         if (!isInScope(data.question)) {
           return Response.json({
             text_ar: OUT_OF_SCOPE_REPLY,

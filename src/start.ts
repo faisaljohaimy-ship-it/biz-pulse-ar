@@ -5,7 +5,13 @@ import { renderErrorPage } from "./lib/error-page";
 
 /** Security response headers applied to every application response. */
 const SECURITY_HEADERS: Record<string, string> = {
-  "X-Frame-Options": "SAMEORIGIN",
+  // ٢٠٢٦/٠٩/١٨ — DENY لا SAMEORIGIN: شاشة قيادةٍ تنفيذية لا تُضمَّن في
+  // إطار، ولا حتى من أصلها. و`frame-ancestors 'none'` أدناه هو الضابط
+  // الفعليّ في المتصفّحات الحديثة؛ هذا الرأس للقديمة التي لا تقرأ CSP.
+  //
+  // **مُشغّل التراجع معروف:** إن توقّفت معاينة Lovable داخل المحرّر عن
+  // العرض فهذا سببها — تُعاد القيمتان إلى `SAMEORIGIN` و`'self'` بسطرين.
+  "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
@@ -17,7 +23,7 @@ const SECURITY_HEADERS: Record<string, string> = {
     "default-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
-    "frame-ancestors 'self'",
+    "frame-ancestors 'none'",
     "form-action 'self'",
     "script-src 'self' 'unsafe-inline' https:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",

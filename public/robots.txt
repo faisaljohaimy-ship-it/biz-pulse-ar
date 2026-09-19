@@ -1,6 +1,35 @@
+# سَدِيد — الفهرسة (أمر المالك ٢٠٢٦/٠٩/١٨، المرحلة ز)
+#
+# الجذر يبقى مفهرسًا: هو السطح التسويقي.
+# والمسارات التشغيلية تُمنع — شاشات عميلٍ مؤسسي لا تُعرض في نتائج البحث.
+#
+# و`robots.txt` **طلبٌ لا حاجز**: يمنع الزحف المهذّب ولا يمنع وصولًا.
+# الحجب الفعليّ مصادقةٌ وRLS. ومعه `noindex` في ترويسة كل مسار تشغيلي
+# (`src/lib/seo/operational-noindex.ts`) لأن صفحةً وصلها الزاحف من رابطٍ
+# خارجيّ تُفهرس رغم المنع هنا — الوسم وحده يمنع الإدراج.
+
 User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /auth/
+Disallow: /login
+Disallow: /sec
+Disallow: /sec/
+Disallow: /settings
+Disallow: /settings/
+Disallow: /assistant
+Disallow: /assistant/
+Disallow: /sadeed-analytics
+Disallow: /sadeed
+Disallow: /admin
+Disallow: /agents
+Disallow: /urgent-ops
+Disallow: /executive-reports
+Disallow: /boardroom
+Disallow: /files
+Disallow: /integrations
+Disallow: /governance
+Disallow: /ptw
+Disallow: /hajj
 
 Sitemap: https://neexios.com/sitemap.xml

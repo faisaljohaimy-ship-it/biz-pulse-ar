@@ -39,6 +39,7 @@ import { useRouterState } from "@tanstack/react-router";
 import { useIntroActive } from "@/lib/intro-store";
 import { HoloAmbience } from "@/components/layout/HoloAmbience";
 import { TopBar } from "@/components/nav/TopBar";
+import { isOperationalRoute } from "@/lib/seo/operational-noindex";
 import { RouteTransition } from "@/components/motion/RouteTransition";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
@@ -463,6 +464,14 @@ function RootComponent() {
                       يُسقط الشريط على المقدّمة وبوّابة الدخول، والشرط نفسه
                       كان يُسقط الأقراص — فالدمج لا يغيّر ظهور أيّهما.
                       و`/promo` تُخفي الساعة وحدها وتُبقي الأزرار. */}
+                  {/* منع الفهرسة على المسارات التشغيلية (أمر المالك
+                      ٢٠٢٦/٠٩/١٨). React 19 يرفع `<meta>` إلى الترويسة من
+                      أي موضع، فالوسم يُحقن من الجذر بقائمة بادئات واحدة
+                      بدل وسمِ مئة مسارٍ يدويًّا — ومسارٌ جديد تحت بادئة
+                      تشغيلية يُولد ممنوعًا لا مفهرسًا. */}
+                  {isOperationalRoute(pathname) && (
+                    <meta name="robots" content="noindex, nofollow" />
+                  )}
                   {!suppressMarquee && <TopBar showClock={!suppressClock} />}
 
                   <div className="relative z-10">

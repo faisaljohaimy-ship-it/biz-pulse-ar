@@ -17,6 +17,7 @@ import {
   validateChatRequest,
 } from "./-chat-guard";
 import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
+import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import { evaluateRagCoverage } from "@/lib/sadeed/rag.server";
 import { parseIntent, resolveModel } from "@/lib/sadeed-core/server/ai-router.server";
 import { SADEED_IDENTITY_PREAMBLE } from "@/lib/sadeed/identity";
@@ -249,6 +250,9 @@ export const Route = createFileRoute("/api/chat")({
         });
       },
       POST: async ({ request }) => {
+        // مفتاح الإيقاف الفوري أوّلًا — متزامن، قبل أي شبكة.
+        const off = aiDisabledResponse("chat");
+        if (off) return off;
         // One provider boundary by policy: native Google Gemini only.
         const googleKey = (
           process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
@@ -383,6 +387,11 @@ export const Route = createFileRoute("/api/chat")({
             requestId,
           );
         }
+        const quota = await enforceAiQuota({
+          surface: "chat",
+          identity: userId ?? `ip:${clientIp(request)}`,
+        });
+        if (quota) return quota;
 
         const provider = createGoogleGeminiProvider(googleKey);
         const model = provider(selectedModelId);

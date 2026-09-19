@@ -16,6 +16,7 @@ import { z } from "zod";
 import { resolveSadeedGeminiRuntimes } from "@/lib/sadeed/gemini-provider.server";
 import { revalidateSpeakableText } from "@/lib/sadeed/output/finalize";
 import { isInScope, OUT_OF_SCOPE_REPLY } from "@/lib/sadeed/response-contract";
+import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -91,6 +92,9 @@ export const Route = createFileRoute("/api/public/sadeed-stream")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // مفتاح الإيقاف الفوري أوّلًا — متزامن، قبل أي شبكة.
+        const off = aiDisabledResponse("chat");
+        if (off) return off;
         const runtimes = resolveSadeedGeminiRuntimes();
         if (!runtimes.length) {
           console.error("[public/sadeed-stream] missing Gemini provider key");
@@ -113,6 +117,8 @@ export const Route = createFileRoute("/api/public/sadeed-stream")({
         const rate = await enforceRateLimit(`pub-sadeed-stream:${ip}`, 20, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
+        const quota = await enforceAiQuota({ surface: "chat", identity: ip });
+        if (quota) return quota;
 
         if (!isInScope(question)) return sseText(OUT_OF_SCOPE_REPLY);
 

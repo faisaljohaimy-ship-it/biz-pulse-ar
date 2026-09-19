@@ -9,6 +9,7 @@
  */
 import { revalidateSpeakableText } from "@/lib/sadeed/output/finalize";
 import { createFileRoute } from "@tanstack/react-router";
+import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -33,6 +34,9 @@ export const Route = createFileRoute("/api/public/sadeed-explain")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // مفتاح الإيقاف الفوري أوّلًا — متزامن، قبل أي شبكة.
+        const off = aiDisabledResponse("chat");
+        if (off) return off;
         const geminiReady = Boolean(
           process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
         );
@@ -42,6 +46,8 @@ export const Route = createFileRoute("/api/public/sadeed-explain")({
         const rate = await enforceRateLimit(`pub-aria-explain:${ip}`, 6, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
+        const quota = await enforceAiQuota({ surface: "chat", identity: ip });
+        if (quota) return quota;
 
         let body: unknown;
         try {

@@ -10,6 +10,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -83,6 +84,9 @@ export const Route = createFileRoute("/api/public/sadeed-tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // مفتاح الإيقاف الفوري أوّلًا — متزامن، قبل أي شبكة.
+        const off = aiDisabledResponse("tts");
+        if (off) return off;
         try {
           const elevenKey = process.env.ELEVENLABS_API_KEY;
 
@@ -101,6 +105,8 @@ export const Route = createFileRoute("/api/public/sadeed-tts")({
           const rate = await enforceRateLimit(`pub-aria-tts:${ip}`, 30, 60);
           if (rate.unavailable) return rateLimitUnavailableResponse();
           if (!rate.allowed) return rateLimitResponse();
+          const quota = await enforceAiQuota({ surface: "tts", identity: ip });
+          if (quota) return quota;
 
           let text = parsed.data.text;
           // Greeting opener (Article 2): same server-side Makkah-clock

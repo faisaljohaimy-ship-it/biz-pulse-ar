@@ -11,6 +11,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
+import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import {
   ALLOWED_ELEVEN_VOICE_IDS,
   SADEED_ELEVENLABS_MODEL,
@@ -39,6 +40,9 @@ export const Route = createFileRoute("/api/sadeed/tts")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // مفتاح الإيقاف الفوري أوّلًا — متزامن، قبل أي شبكة.
+        const off = aiDisabledResponse("tts");
+        if (off) return off;
         const contentLength = Number(request.headers.get("content-length") ?? "0");
         if (Number.isFinite(contentLength) && contentLength > 24_000) {
           return jsonError("TTS request is too large.", 413);
@@ -62,6 +66,8 @@ export const Route = createFileRoute("/api/sadeed/tts")({
         if (userError || !userData.user) return jsonError("Authentication is invalid.", 401);
 
         const rate = await enforceRateLimit(`aria-tts:${userData.user.id}`, 40, 60);
+        const quota = await enforceAiQuota({ surface: "tts", identity: userData.user.id });
+        if (quota) return quota;
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return jsonError("SADEED voice rate limit exceeded.", 429);
 
