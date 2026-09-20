@@ -156,7 +156,53 @@ describe("⑤ القفل في النوع — ولا تنفع إعادة التس
   it("ولا يُبنى من عددٍ خام بلا الدالّة", () => {
     expect(compiles("export const p: MeasuredPercent = 50;").ok).toBe(false);
   });
+
+  it("وتمريرُه عبر وسيطٍ لا ينجّيه", () => {
+    expect(
+      compiles(
+        "const c: MeasuredPercent = measuredPercent(50);\nconst mid = c;\nexport const x = Math.round(mid * 100);",
+      ).ok,
+    ).toBe(false);
+  });
+
+  it("و`String(c)` يُترجَم بعد إضافة `toString` — **لكنّه لا يعطي رقمًا**", () => {
+    // قبل القفل التشغيليّ كان لا يُترجَم. وإضافةُ `toString` فتحت الترجمة
+    // وأغلقت الضرر: المخرَج علامةٌ صارخة لا نسبة. وتسجيلُ ذلك هنا أصدق
+    // من ادّعاء منعٍ لم يعد قائمًا.
+    expect(
+      compiles("const c: MeasuredPercent = measuredPercent(50);\nexport const x = String(c);").ok,
+    ).toBe(true);
+    expect(String(measuredPercent(50))).toContain("formatPercent");
+  });
 }, 120_000);
+
+describe("⑤ب ما لا يمنعه النوع يمنعه السلوك", () => {
+  // قِيس بالترجمة أنّ ثلاثة مسالك تمرّ من النوع: `${c}%` و`+c` و`as any`.
+  // والأوّل هو بعينه ما أنتج «estimated٪» على `/executive`. فتُغلق
+  // الأولَيان عند التشغيل، ويبقى `as any` خروجًا عامدًا لمراجعة البشر.
+  const p = measuredPercent(50);
+
+  it("**التحويل العدديّ الضمنيّ يرمي** — لا `NaN` صامتًا", () => {
+    // `+{}` يعطي `NaN` بلا صوت، فيُعرض «NaN%».
+    expect(() => +(p as unknown as number)).toThrow(/لا يُحوَّل عددًا ضمنيًّا/);
+  });
+
+  it("**والقالب النصّيّ يُظهر علامةً صارخة** لا رقمًا معقولًا", () => {
+    // نسبةٌ معقولةُ المظهر ومختلَقة أخطر من عطلٍ يُرى.
+    const out = `${p as unknown as string}%`;
+    expect(out).toContain("MeasuredPercent");
+    expect(out).toContain("formatPercent");
+    expect(out, "القالب أعطى رقمًا").not.toMatch(/^\d+%$/);
+  });
+
+  it("والمنسّق وحده يعطي النصّ الصحيح", () => {
+    expect(formatPercent(measured(p, ev, "derived"), true)).toBe("50%");
+  });
+
+  it("و`percentValue` يبقى المخرَج الصريح للحساب", () => {
+    expect(percentValue(p)).toBe(50);
+  });
+});
 
 /**
  * الشيفرة بلا تعليقات.

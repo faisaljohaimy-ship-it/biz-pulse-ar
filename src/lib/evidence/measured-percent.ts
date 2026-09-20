@@ -45,7 +45,30 @@ export function measuredPercent(value: number): MeasuredPercent {
   if (!Number.isFinite(value)) {
     throw new Error(`نسبةٌ غير محدودة (${value}) — ما لا يُقاس يُمثَّل غيابًا لا رقمًا`);
   }
-  return { [MEASURED_PERCENT]: Math.max(0, Math.min(100, value)) } as MeasuredPercent;
+  const pct = Math.max(0, Math.min(100, value));
+  // ── ما لا يمنعه النوع، يمنعه السلوك ────────────────────────────────────
+  // قِيس بالترجمة: النوع يمنع `Math.round(c * 100)` وإعادةَ التسمية
+  // والتمريرَ عبر وسيط و`String(c)`. ولا يمنع **ثلاثة**:
+  //   `${c}%` (قالب نصّيّ) · `+c` (تحويل أحاديّ) · `as any`.
+  // والأوّل هو بعينه ما أنتج «estimated٪» على `/executive`.
+  //
+  // فتُغلق الثغرتان الأوليان عند التشغيل:
+  //   • `valueOf` يرمي — فلا تحويلَ عدديًّا ضمنيًّا يعطي `NaN` صامتًا.
+  //   • `toString` يعطي علامةً صارخة لا رقمًا — فالقالب يُظهر عطلًا
+  //     يُرى فورًا بدل نسبةٍ معقولةِ المظهر ومختلَقة.
+  // و`as any` خروجٌ عامد لا يُحرَس بالنوع؛ يبقى لمراجعة البشر.
+  const boxed = {
+    [MEASURED_PERCENT]: pct,
+    valueOf() {
+      throw new Error("MeasuredPercent لا يُحوَّل عددًا ضمنيًّا — استعمل percentValue()");
+    },
+    toString() {
+      return "[MeasuredPercent — استعمل formatPercent()]";
+    },
+  };
+  Object.defineProperty(boxed, "valueOf", { enumerable: false });
+  Object.defineProperty(boxed, "toString", { enumerable: false });
+  return boxed as unknown as MeasuredPercent;
 }
 
 /** يبني نسبةً من نسبةٍ ٠..١ (‏`3/4` ⇒ ٧٥). */
