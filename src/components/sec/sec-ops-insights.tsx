@@ -50,6 +50,19 @@ const SEVERITY_LABEL: Record<PredictedRisk["severity"], { ar: string; en: string
   low: { ar: "منخفض", en: "Low" },
 };
 
+/**
+ * درجة اليقين — **مصطلحٌ لا نسبة مئوية.**
+ *
+ * كان يُعرض «ثقة ٨٧٪»، ومصدر الرقم على مسار النموذج رقمٌ يقوله النموذج
+ * عن نفسه، وعلى مسار المحاكاة ثابتٌ مكتوب. والنسبة توحي بدقّةٍ لا مصدر
+ * لها، فحلّ محلّها المصطلح ومعه **العدّات المرصودة نفسها**.
+ */
+const CONFIDENCE_LABEL: Record<PredictedRisk["confidence"], { ar: string; en: string }> = {
+  measured: { ar: "مقيس", en: "Measured" },
+  derived: { ar: "مشتقّ", en: "Derived" },
+  estimated: { ar: "تقديريّ", en: "Estimated" },
+};
+
 export function SecOpsInsights() {
   const { locale } = useI18n();
   const ar = locale === "ar";
@@ -281,7 +294,20 @@ function PredictedRiskList({ ar, items }: { ar: boolean; items: PredictedRisk[] 
                 {ar ? r.recommendation_ar : r.recommendation_en}
               </div>
               <div className="mt-0.5 text-[12px] tabular-nums text-muted-foreground">
-                {ar ? "ثقة" : "Conf."} {Math.round(r.confidence * 100)}%{" · "}
+                {/*
+                 * العدّات المرصودة تتقدّم المصطلح: هي ما يُبنى عليه القرار،
+                 * وكانت محجوبة خلف نسبةٍ مئوية لا أصل لها.
+                 */}
+                {r.signal ? (
+                  <>
+                    {ar
+                      ? `${r.signal.total7d} بلاغًا/7أ · حرج ${r.signal.critical7d} · آخر 24س ${r.signal.last24h}`
+                      : `${r.signal.total7d} inc/7d · ${r.signal.critical7d} crit · ${r.signal.last24h} in 24h`}
+                    {" · "}
+                  </>
+                ) : null}
+                {ar ? CONFIDENCE_LABEL[r.confidence].ar : CONFIDENCE_LABEL[r.confidence].en}
+                {" · "}
                 {r.horizon_hours}h
               </div>
             </div>

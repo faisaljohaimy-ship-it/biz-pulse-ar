@@ -10,6 +10,7 @@
  */
 import type { BridgeState, MissionTimelineEntry } from "./bridge.functions";
 import type { PredictedRisk } from "./predictive.functions";
+import type { Evidence } from "@/lib/evidence/evidence";
 import { agentName, type DigitalHumanId } from "@/lib/digital-humans/registry";
 import { REGIONS, type RegionId } from "@/lib/regions";
 import { sumMeasured } from "./measured-sum";
@@ -399,6 +400,20 @@ export function buildTimelineSimulation(now: number): MissionTimelineEntry[] {
 
 /* ── Predicted risks ────────────────────────────────────────────────────── */
 
+/**
+ * دليل المحاكاة المرجعية.
+ *
+ * البنود أدناه **مرجعٌ مدمج معلَن** («بيانات لا تفرغ»)، وأرقامها مكتوبة
+ * لا مقيسة. فتحمل دليلًا يقول ذلك صراحةً بدل أن تمرّ بلا إسناد إلى جوار
+ * بنودٍ مقيسة فتُقرأ مثلها. وثقتها `estimated` لا نسبةً مئوية.
+ */
+const SIM_EVIDENCE: Evidence = {
+  kind: "reference.builtin",
+  source: "buildRiskSimulation",
+  observedAt: "2026-01-01T00:00:00.000Z",
+  limitation: "مرجعٌ مدمج للعرض — لا يُقرأ قياسًا على منشأة",
+};
+
 export function buildRiskSimulation(): PredictedRisk[] {
   return markSimulation([
     {
@@ -410,9 +425,11 @@ export function buildRiskSimulation(): PredictedRisk[] {
         "Tomorrow's forecast exceeds 43°C between 14:00–17:00 with 3 hot-work permits scheduled.",
       recommendation_ar: "إزاحة التصاريح للفترة الصباحية وتفعيل دورات ترطيب إلزامية.",
       recommendation_en: "Shift permits to the morning window and enforce hydration cycles.",
-      confidence: 0.87,
+      confidence: "estimated",
       horizon_hours: 24,
       severity: "high",
+      evidence: [SIM_EVIDENCE],
+      narration: "reference",
     },
     {
       id: "sim-r2",
@@ -422,9 +439,11 @@ export function buildRiskSimulation(): PredictedRisk[] {
       why_en: "4 work orders and ~34 contractors converge on the east gate 06:30–08:00.",
       recommendation_ar: "فتح مسار تفتيش إضافي وتقديم تسجيل مسبق عبر رموز QR.",
       recommendation_en: "Open an extra screening lane and enable QR pre-registration.",
-      confidence: 0.78,
+      confidence: "estimated",
       horizon_hours: 18,
       severity: "medium",
+      evidence: [SIM_EVIDENCE],
+      narration: "reference",
     },
     {
       id: "sim-r3",
@@ -434,9 +453,11 @@ export function buildRiskSimulation(): PredictedRisk[] {
       why_en: "3 cameras in maintenance reduce north coverage 9% until tomorrow evening.",
       recommendation_ar: "دورية إضافية مؤقتة وتوجيه كاميرا PTZ-7 لتعويض الزاوية المكشوفة.",
       recommendation_en: "Temporary extra patrol and re-aim PTZ-7 to cover the gap.",
-      confidence: 0.92,
+      confidence: "estimated",
       horizon_hours: 30,
       severity: "medium",
+      evidence: [SIM_EVIDENCE],
+      narration: "reference",
     },
   ]);
 }
