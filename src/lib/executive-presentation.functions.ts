@@ -7,6 +7,8 @@
  * enterprise_event that downstream workers pick up.
  */
 import { createServerFn } from "@tanstack/react-start";
+import { measured, unmeasured, type Grounded } from "@/lib/evidence/evidence";
+import { percentFromRatio, type MeasuredPercent } from "@/lib/evidence/measured-percent";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { triggerWorkflow } from "@/lib/exec/workflow-engine.server";
@@ -29,7 +31,25 @@ export type PulseChip = {
 export type SystemPulse = {
   generated_at: string;
   chips: PulseChip[];
-  confidence: number; // 0-100 platform-wide operating confidence
+  /**
+   * ثقةُ التشغيل — **مقيسةٌ أو غائبةٌ حاملةً سببها.**
+   *
+   * كانت `number` تُعرض «N%» على `/live-dashboard`، ومصدرها متوسّطٌ
+   * مرجَّح **أطرافُه الأربعة كلُّها تُختلق عند غياب البيانات**:
+   *
+   *   • `0.25 * (critical > 0 ? 40 : openIncidents > 5 ? 70 : 95)`
+   *     — سُلَّمٌ مكتوب يحوّل **عدّادًا** إلى نسبةٍ بالفرض.
+   *   • `0.3 * aiRate` حيث `aiRate = aiTotal === 0 ? 100 : …` — **صفرُ
+   *     نداءات يُقرأ مئةً بالمئة**، وبقيّتُه سُلَّمُ كُمون مكتوب
+   *     (60/85/99).
+   *   • `toolFailPct = toolTotal ? … : 0` و`runsTotal = length || 1`
+   *     — صفرُ تنفيذاتٍ يُقرأ «صفر إخفاق» أي صحّةً تامّة.
+   *
+   * والقاعدة بلا تنفيذاتٍ منذ يوليو، فالمعروض كان رقمًا مصنوعًا بالكامل.
+   * وصار يُحسب من **النسب المرصودة وحدها**: ما لا عيّنةَ له يخرج من
+   * المتوسّط، ولا عيّنةَ إطلاقًا ⇐ «لم يُقَس».
+   */
+  confidence: Grounded<MeasuredPercent>;
 };
 
 function tone(v: number, warn: number, crit: number, inverse = false): PulseTone {
@@ -224,21 +244,35 @@ export const getSystemPulse = createServerFn({ method: "GET" })
       },
     ];
 
-    // Overall confidence: weighted health of AI + tools + runtime + security.
-    const conf = Math.max(
-      0,
-      Math.min(
-        100,
-        Math.round(
-          0.3 * aiRate +
-            0.25 * (100 - toolFailPct) +
-            0.2 * (100 - runsFailPct) +
-            0.25 * (critical > 0 ? 40 : openIncidents > 5 ? 70 : 95),
-        ),
-      ),
-    );
+    // ── ثقةُ التشغيل: من النسب المرصودة وحدها ───────────────────────────
+    // **لا سُلَّمَ مكتوبًا ولا طرفًا بلا عيّنة.** كلُّ طرفٍ هنا نسبةُ نجاحٍ
+    // حقيقية (منجَز ÷ إجمالي) ولا يدخل المتوسّط إلا إن كان له إجماليٌّ
+    // موجب — فغيابُ العيّنة يُخرج الطرف، لا يُدخله بقيمةٍ مُرضية.
+    const observed: Array<{ source: string; pct: number; n: number }> = [];
+    if (toolTotal > 0) {
+      observed.push({ source: "tool_executions", pct: 100 - toolFailPct, n: toolTotal });
+    }
+    if (runRows.length > 0) {
+      observed.push({ source: "agent_runs", pct: 100 - runsFailPct, n: runRows.length });
+    }
+    if (auditTotal > 0) {
+      observed.push({ source: "audit_logs", pct: 100 - auditFailPct, n: auditTotal });
+    }
 
-    return { generated_at: now, chips, confidence: conf };
+    const confidence: Grounded<MeasuredPercent> = observed.length
+      ? measured(
+          percentFromRatio(observed.reduce((sum, o) => sum + o.pct, 0) / observed.length / 100),
+          observed.map((o) => ({
+            kind: "db.query" as const,
+            source: o.source,
+            observedAt: now,
+            value: o.n,
+          })),
+          "derived",
+        )
+      : unmeasured("لا تنفيذات ولا تشغيلات ولا أحداث مرصودة — لا أساس لنسبة ثقة");
+
+    return { generated_at: now, chips, confidence };
   });
 
 // ---------- Live Pipelines (Runtime / Voice / Avatar) ----------

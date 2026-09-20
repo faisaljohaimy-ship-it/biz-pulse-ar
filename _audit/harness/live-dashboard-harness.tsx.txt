@@ -1,0 +1,25 @@
+import { createRoot } from "react-dom/client";
+import { SystemPulseStrip } from "@/components/executive/SystemPulseStrip";
+import { measured, unmeasured } from "@/lib/evidence/evidence";
+import { measuredPercent } from "@/lib/evidence/measured-percent";
+import "@/styles.css";
+
+const q = new URLSearchParams(location.search);
+const ar = q.get("lang") !== "en";
+const state = q.get("state") ?? "measured";
+const AT = new Date().toISOString();
+const conf =
+  state === "unmeasured"
+    ? unmeasured("لا تنفيذات ولا تشغيلات ولا أحداث مرصودة — لا أساس لنسبة ثقة")
+    : state === "zero"
+      ? measured(measuredPercent(0), [{ kind: "db.query", source: "tool_executions", observedAt: AT }], "derived")
+      : measured(measuredPercent(87), [{ kind: "db.query", source: "tool_executions", observedAt: AT }], "derived");
+
+document.documentElement.dir = ar ? "rtl" : "ltr";
+createRoot(document.getElementById("root")!).render(
+  <SystemPulseStrip
+    chips={[{ key: "k", label_ar: "أ", label_en: "A", status: "healthy", value: "99%", detail: "d", updated_at: AT }]}
+    confidence={conf}
+    ar={ar}
+  />,
+);

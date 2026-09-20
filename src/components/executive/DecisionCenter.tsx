@@ -9,22 +9,73 @@ import {
 } from "@/lib/executive-presentation.functions";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Check, Loader2, ShieldCheck, X, Workflow } from "lucide-react";
+import { measured, unmeasured, type Grounded } from "@/lib/evidence/evidence";
+import {
+  formatPercent,
+  percentFromRatio,
+  percentTone,
+  type MeasuredPercent,
+} from "@/lib/evidence/measured-percent";
 
-function ConfidencePill({ c }: { c: number | null }) {
-  if (c == null) return <span className="text-[12px] font-mono text-foreground/40">—</span>;
-  const pct = Math.round(c * 100);
-  const tone =
-    pct >= 85
-      ? "text-emerald-300 border-emerald-400/40 bg-emerald-500/10"
-      : pct >= 60
-        ? "text-amber-300 border-amber-400/40 bg-amber-500/10"
-        : "text-rose-300 border-rose-400/40 bg-rose-500/10";
+/**
+ * شارةُ ثقةِ القرار.
+ *
+ * ## ما كان
+ *
+ *   if (c == null) return <span>—</span>;
+ *   const pct = Math.round(c * 100);
+ *
+ * علّتان: **الشرطة** — والمادة ٢٧ تسمّيها بعينها مع الصفر وخطِّ الأساس
+ * المفترض، فالغياب يُقال «لم يُقَس» لا يُرسم خطًّا يُقرأ «لا ينطبق».
+ * و**الاسم `c`**: غُسل قبل الضرب فنجا من حارس الإقحام النصّيّ — وهو
+ * الدليل العمليّ على أن الحارس النصّيّ يُهزَم بإعادة تسمية.
+ *
+ * فصار المدخل `Grounded<MeasuredPercent>`: نوعٌ معتم لا يُضرب في مئة
+ * (خطأ ترجمة) ولا يُقحَم في JSX (خطأ ترجمة)، ولا يعبر إلا عبر
+ * `formatPercent`. وإعادةُ التسمية لا تنفع — النوع يسافر مع القيمة.
+ */
+function ConfidencePill({ value, ar = true }: { value: Grounded<MeasuredPercent>; ar?: boolean }) {
+  const tone = percentTone(value);
+  if (tone === "unmeasured") {
+    return (
+      <span className="text-[12px] font-mono text-foreground/40" title={unmeasuredReason(value)}>
+        {formatPercent(value, ar)}
+      </span>
+    );
+  }
+  const cls = {
+    good: "text-emerald-300 border-emerald-400/40 bg-emerald-500/10",
+    warn: "text-amber-300 border-amber-400/40 bg-amber-500/10",
+    bad: "text-rose-300 border-rose-400/40 bg-rose-500/10",
+  }[tone];
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[12px] font-mono ${tone}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[12px] font-mono ${cls}`}
     >
-      <ShieldCheck className="w-3 h-3" /> {pct}%
+      <ShieldCheck className="w-3 h-3" /> {formatPercent(value, ar)}
     </span>
+  );
+}
+
+/** سببُ الغياب للعرض في `title` — وهو ما يجعل «لم يُقَس» قابلًا للتشخيص. */
+function unmeasuredReason(value: Grounded<MeasuredPercent>): string | undefined {
+  return value.measured ? undefined : value.reason;
+}
+
+/**
+ * الرقم المخزَّن ⇐ تمثيلٌ مُسنَد.
+ *
+ * `finn_decisions.confidence` رقمٌ يقوله مولّدُ القرار عن نفسه، فدرجتُه
+ * `estimated` لا `measured`؛ و`null` غيابٌ يحمل سببه لا شرطة.
+ */
+function decisionConfidence(raw: number | null, observedAt: string): Grounded<MeasuredPercent> {
+  if (raw == null || !Number.isFinite(raw)) {
+    return unmeasured("القرار مخزَّن بلا درجة ثقة");
+  }
+  return measured(
+    percentFromRatio(raw),
+    [{ kind: "db.query", source: "finn_decisions", observedAt }],
+    "estimated",
   );
 }
 
@@ -144,7 +195,7 @@ export function DecisionCenter() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <StatusPill s={d.status} />
-                    <ConfidencePill c={d.confidence} />
+                    <ConfidencePill value={decisionConfidence(d.confidence, d.created_at)} />
                     {d.has_workflow && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-secondary/40 bg-secondary/10 text-secondary text-[12px] font-mono">
                         <Workflow className="w-3 h-3" /> workflow

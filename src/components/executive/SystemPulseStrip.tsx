@@ -1,4 +1,6 @@
 import type { PulseTone } from "@/lib/executive-presentation.functions";
+import type { Grounded } from "@/lib/evidence/evidence";
+import { formatPercent, percentTone, type MeasuredPercent } from "@/lib/evidence/measured-percent";
 
 const TONE_CLASS: Record<PulseTone, string> = {
   healthy:
@@ -20,6 +22,7 @@ const DOT_CLASS: Record<PulseTone, string> = {
 export function SystemPulseStrip({
   chips,
   confidence,
+  ar = true,
 }: {
   chips: {
     key: string;
@@ -29,7 +32,8 @@ export function SystemPulseStrip({
     value: string;
     detail: string;
   }[];
-  confidence: number;
+  confidence: Grounded<MeasuredPercent>;
+  ar?: boolean;
 }) {
   return (
     <section className="rounded-xl border border-white/5 bg-background/40 backdrop-blur-xl p-4">
@@ -44,10 +48,22 @@ export function SystemPulseStrip({
           <div className="text-[12px] font-mono uppercase tracking-widest text-foreground/50">
             Confidence
           </div>
+          {/*
+           * النبرةُ أربعٌ لا ثلاث: الغياب لونٌ محايد مستقلّ. وطيُّه مع
+           * «منخفض» يجعل «لم يُقَس» يُقرأ قياسًا رديئًا — وهما نقيضان.
+           */}
           <div
-            className={`text-2xl font-bold tabular-nums ${confidence >= 85 ? "text-emerald-300" : confidence >= 60 ? "text-amber-300" : "text-rose-300"}`}
+            className={`text-2xl font-bold ${
+              {
+                good: "text-emerald-300 tabular-nums",
+                warn: "text-amber-300 tabular-nums",
+                bad: "text-rose-300 tabular-nums",
+                unmeasured: "text-foreground/40 text-lg",
+              }[percentTone(confidence)]
+            }`}
+            title={confidence.measured ? undefined : confidence.reason}
           >
-            {confidence}%
+            {formatPercent(confidence, ar)}
           </div>
         </div>
       </div>
