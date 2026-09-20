@@ -430,15 +430,73 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
     expect(PRES).toMatch(/confidence: Grounded<MeasuredPercent>/);
   });
 
-  it("**ولا مقامَ قسمةٍ يعبر بوابةَ العيّنة**", () => {
-    // البند المنقوض: `auditTotal`/`runsTotal`/`agentTotal` تحمل `|| 1`،
-    // فتمريرُها يجعل الشرط صادقًا أبدًا ويقتل فرع «لم يُقَس».
+  /**
+   * أطرافُ الثقة **بشكلٍ مغلقٍ الطرفين** — لا بقائمةِ منعٍ بالتهجئة.
+   *
+   * نُقضت هذه الحراسة ثلاث مرّات متتابعة، وكلُّها العلّةُ نفسها: كُتبت
+   * **منعًا لصيغةٍ بعينها** فهُزمت بإعادة صياغتها.
+   *
+   *   ① `/n: (audit|runs|agent)Total/` ← أُفلت بـ`n: rows.length || 1`.
+   *   ② التقاطٌ مرتَّب `source` ثمّ `n` ← أُفلت بقلب الترتيب، والطرفُ
+   *      الكاذب **لم يُقرأ أصلًا** فلم يُسقِط شيئًا.
+   *   ③ تثبيتُ بدايةِ `n:` وحدها ← أُفلت بـ`.length || 1` من اليمين.
+   *   ④ قراءةُ الكائنات الحرفيّة ← أُفلت بـ`...extra` لا كائنَ له.
+   *
+   * فالمقيس هنا انقلب: **لا يُمنع ما يُعرف، بل يُشترط ما يجوز.** كلُّ
+   * عنصرٍ كائنٌ حرفيّ، ومفاتيحه **بالضبط** ثلاثة، وكلُّ قيمةٍ تطابق
+   * شكلًا مغلقًا `^…$`، **ولا تبقى في المصفوفة بقيّةٌ لم تُقرأ**.
+   * فما لم يُفهم يسقط بدل أن يُتجاهَل — وهذا هو الفرق الذي أُفلت منه
+   * أربع مرّات.
+   */
+  function pulseTerms(): Array<{ source: string; rows: string; pct: string }> {
     const call = PRES.slice(PRES.indexOf("pulseConfidence("));
     const args = call.slice(0, call.indexOf("now,"));
-    expect(args, "مقامٌ مصطنع دخل عيّنات الثقة").not.toMatch(/n: (audit|runs|agent)Total/);
-    expect(args).toMatch(/n: auditRows\.length/);
-    expect(args).toMatch(/n: runRows\.length/);
-    expect(args).toMatch(/n: toolRows\.length/);
+    const body = args.slice(args.indexOf("[") + 1, args.lastIndexOf("]"));
+
+    // **البقيّة تسقط.** أيُّ شيءٍ في المصفوفة ليس كائنًا حرفيًّا —
+    // ‏`...extra`، متغيّر، نداءُ دالّة — يبقى هنا فيُسقط الفحص.
+    const residue = body.replace(/\{[^{}]*\}/g, "").replace(/[\s,]/g, "");
+    expect(residue, `عنصرٌ في قائمة العيّنات ليس كائنًا حرفيًّا: «${residue}»`).toBe("");
+
+    const objs = [...body.matchAll(/\{[^{}]*\}/g)].map((m) => m[0]);
+    expect(objs.length, "لم تُقرأ أطرافُ الثقة").toBeGreaterThanOrEqual(3);
+
+    return objs.map((o) => {
+      const kv = new Map<string, string>();
+      for (const part of o.slice(1, -1).split(",")) {
+        if (!part.trim()) continue;
+        const m = /^\s*(\w+):\s*(.+?)\s*$/.exec(part);
+        expect(m, `خاصّيةٌ لا تُقرأ في «${o}»: «${part}»`).not.toBeNull();
+        kv.set(m![1], m![2]);
+      }
+      expect([...kv.keys()].sort(), `مفاتيحُ طرفٍ غيرُ المتوقَّعة: ${o}`).toEqual([
+        "n",
+        "pct",
+        "source",
+      ]);
+
+      // كلُّ قيمةٍ مغلقةٌ الطرفين: لا لاحقةَ `|| 1` ولا `+ 1`.
+      const source = /^"([a-z_]+)"$/.exec(kv.get("source")!);
+      const rows = /^(\w+)\.length$/.exec(kv.get("n")!);
+      const pct = /^100 - (\w+)$/.exec(kv.get("pct")!);
+      expect(source, `اسمُ مصدرٍ ليس نصًّا حرفيًّا: «${kv.get("source")}»`).not.toBeNull();
+      expect(rows, `العيّنة ليست طولَ صفوفٍ صِرفًا: «${kv.get("n")}»`).not.toBeNull();
+      expect(pct, `النسبة ليست معدّلًا محسوبًا: «${kv.get("pct")}»`).not.toBeNull();
+      return { source: source![1], rows: rows![1], pct: pct![1] };
+    });
+  }
+
+  it("**ولا مقامَ قسمةٍ يعبر بوابةَ العيّنة**", () => {
+    // `auditTotal`/`runsTotal`/`agentTotal` تحمل `|| 1`، وتمريرُها يجعل
+    // الشرط صادقًا أبدًا فيقتل فرع «لم يُقَس». والشكلُ المغلق يردّها:
+    // ليست `\w+.length`. ويردّ كذلك `rows.length || 1` — وهو ما أُفلت.
+    const terms = pulseTerms();
+    expect(terms.map((t) => t.rows)).toEqual(
+      expect.arrayContaining(["toolRows", "runRows", "auditRows"]),
+    );
+    for (const t of terms) {
+      expect(t.pct, `نسبةٌ مكتوبة لا محسوبة في «${t.source}»`).toMatch(/FailPct$/);
+    }
   });
 
   it("**واسمُ المصدر يطابق جدولَه فعلًا** — لا دليلَ يشهد لجدولٍ لم يُنتجه", () => {
@@ -464,30 +522,12 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
       if (t) rowsTable.set(m[1], t);
     }
 
-    const call = PRES.slice(PRES.indexOf("pulseConfidence("));
-    const args = call.slice(0, call.indexOf("now,"));
-
-    // **كلُّ كائنٍ يُقرأ، ولا يُلتقط بنمطٍ مرتَّب.** كُتب أوّلًا
-    // `/source: "…", n: (\w+)\.length/` فاشترط ترتيبًا بعينه، وأُفلت منه
-    // بـ`{ n: …, source: … }`: الطرف الكاذب لم يُقرأ أصلًا، والثلاثة
-    // السليمة أبقت العدّاد فوق الحدّ فمرّ الشرط. وهو عينُ الدرس ①–④ في
-    // ترويسة `measured-percent.ts` — الحارس النصّيّ يُهزَم بإعادة صياغة.
-    // فالمقيس الآن: **ما لا يُقرأ يسقط**، لا يُتجاهَل.
-    const objs = [...args.matchAll(/\{[^{}]*\}/g)].map((m) => m[0]);
-    expect(objs.length, "لم تُقرأ أطرافُ الثقة").toBeGreaterThanOrEqual(3);
-    for (const o of objs) {
-      const s = /source:\s*"([a-z_]+)"/.exec(o);
-      // **مُثبَّت على حدّ مفتاح.** بلا التثبيت يلتقط `n:` داخل أيّ مفتاح
-      // ينتهي بـ`n`، فيمرّ `{ source: "agent_runs", n: 999, when:
-      // agentRows.length }` ودليلُه كاذب. وخطرُه مستقبليٌّ أصلًا: أيّ
-      // حقلٍ يُضاف إلى `PulseSample` وينتهي اسمُه بـ`n` يفتحه.
-      const n = /(?:^|[{,\s])n:\s*(\w+)\.length/.exec(o);
-      expect(s, `طرفٌ بلا اسم مصدرٍ مقروء: ${o}`).not.toBeNull();
-      expect(n, `طرفٌ لا يقرأ طولَ صفوفٍ مباشرةً: ${o}`).not.toBeNull();
+    // الأطرافُ تُقرأ بالشكل المغلق أعلاه، فلا يدخل هنا طرفٌ لم يُفهم.
+    for (const t of pulseTerms()) {
       expect(
-        rowsTable.get(n![1]),
-        `الطرف «${s![1]}» يقرأ ${n![1]}، وهو من جدول «${rowsTable.get(n![1])}»`,
-      ).toBe(s![1]);
+        rowsTable.get(t.rows),
+        `الطرف «${t.source}» يقرأ ${t.rows}، وهو من جدول «${rowsTable.get(t.rows)}»`,
+      ).toBe(t.source);
     }
   });
 
