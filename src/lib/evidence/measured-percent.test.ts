@@ -439,6 +439,41 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
     expect(args).toMatch(/n: toolRows\.length/);
   });
 
+  it("**واسمُ المصدر يطابق جدولَه فعلًا** — لا دليلَ يشهد لجدولٍ لم يُنتجه", () => {
+    // نقضه الحارس: `runRows` من `workflow_runs` (الرابع في التفكيك)
+    // وكان الدليل يسمّيه `agent_runs`. الرقم صحيح والإسناد كاذب — وهو
+    // ما يمنعه عقد `evidence.ts`: المشتقُّ يقود إلى مصادره الحقيقية.
+    //
+    // ولم يسقط عليه حارس: `⑤د` يمرّر الأسماء بيده، و`⑥` كان يفحص
+    // `n: *Rows.length` ولا يفحص **مطابقة الاسم لمتغيّره**. فهذا يربطهما.
+    const destr = /const \[([^\]]+)\] = await Promise\.all\(\[/.exec(PRES);
+    expect(destr, "تعذّر إيجاد تفكيك الاستعلامات").not.toBeNull();
+    const vars = destr![1].split(",").map((s) => s.trim());
+    const tables = [...PRES.slice(destr!.index).matchAll(/\.from\("([a-z_]+)"\)/g)]
+      .map((m) => m[1])
+      .slice(0, vars.length);
+    expect(tables.length, "عدد الجداول لا يطابق عدد المتغيّرات").toBe(vars.length);
+    const varTable = new Map(vars.map((v, i) => [v, tables[i]]));
+
+    // متغيّرُ الصفوف ⇐ جدولُه، عبر متغيّر التفكيك.
+    const rowsTable = new Map<string, string>();
+    for (const m of PRES.matchAll(/const (\w+Rows) = \((\w+)\.data/g)) {
+      const t = varTable.get(m[2]);
+      if (t) rowsTable.set(m[1], t);
+    }
+
+    const call = PRES.slice(PRES.indexOf("pulseConfidence("));
+    const args = call.slice(0, call.indexOf("now,"));
+    const terms = [...args.matchAll(/source: "([a-z_]+)", n: (\w+)\.length/g)];
+    expect(terms.length, "لم تُقرأ أطرافُ الثقة").toBeGreaterThanOrEqual(3);
+    for (const [, source, rowsVar] of terms) {
+      expect(
+        rowsTable.get(rowsVar),
+        `الطرف «${source}» يقرأ ${rowsVar}، وهو من جدول «${rowsTable.get(rowsVar)}»`,
+      ).toBe(source);
+    }
+  });
+
   it("② لا شرطةَ للغياب في شارة القرار", () => {
     expect(PILL, "عادت الشرطة").not.toMatch(/return <span[^>]*>—<\/span>/);
     expect(PILL).toMatch(/formatPercent\(value, ar\)/);

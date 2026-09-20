@@ -256,7 +256,11 @@ export const getSystemPulse = createServerFn({ method: "GET" })
     const confidence = pulseConfidence(
       [
         { source: "tool_executions", n: toolRows.length, pct: 100 - toolFailPct },
-        { source: "agent_runs", n: runRows.length, pct: 100 - runsFailPct },
+        // `runRows` من **`workflow_runs`** لا `agent_runs`: الرابع في
+        // التفكيك (`:79`) يقابل الاستعلام الرابع. وكان مسمًّى `agent_runs`
+        // فيشهد الدليل لجدولٍ لم يُنتج صفًّا — والرقمُ صحيحٌ والإسنادُ
+        // كاذب، وهو ما جاءت هذه الدفعة تمنعه بعينه.
+        { source: "workflow_runs", n: runRows.length, pct: 100 - runsFailPct },
         { source: "audit_logs", n: auditRows.length, pct: 100 - auditFailPct },
       ],
       now,
