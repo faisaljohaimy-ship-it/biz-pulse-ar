@@ -35,8 +35,12 @@ import {
   STAFF_NUMBER_KEY,
   STAFF_NUMBER_MAX,
   normalizeStaffNumber,
+  ERR_REGION_REQUIRED,
+  validateEntry,
   validateStaffNumber,
 } from "@/lib/access/staff-entry";
+import { REGIONS, type RegionId } from "@/lib/regions";
+import { useRegion } from "@/lib/region-context";
 
 function readStored(): string | null {
   try {
@@ -52,26 +56,41 @@ export function StaffNumberGate({ path }: { readonly path: string }) {
   // الخادم لا يرى `localStorage`، والقراءة لا تقع إلا بعد التركيب.
   const [known, setKnown] = useState<string | null | undefined>(undefined);
   const [value, setValue] = useState("");
+  // `null` = «لم يُختَر بعد» لا «الوسطى». اختيارٌ مُسبَق يجعل الحقل يبدو
+  // مُجابًا، فيضغط المستخدم «دخول» وقد أسند نفسه لمنطقةٍ لم يقصدها —
+  // وذلك يفسد السجلّ بصمت بدل أن يمنعه.
+  const [regionChoice, setRegionChoice] = useState<RegionId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const record = useServerFn(recordStaffEntry);
+  const { setRegion } = useRegion();
 
   useEffect(() => {
     setKnown(readStored());
   }, []);
 
   const submit = useCallback(async () => {
-    const problem = validateStaffNumber(value);
+    // **الرقم والمنطقة معًا** — لا يُفتح الباب بأحدهما.
+    const problem = validateEntry({ staffNumber: value, region: regionChoice });
     if (problem) {
       setError(problem);
       return;
     }
     const staff = normalizeStaffNumber(value);
+    const region = regionChoice as RegionId;
     setBusy(true);
     try {
-      await record({ data: { staff_number: staff, path } });
+      await record({ data: { staff_number: staff, path, region } });
     } catch {
       /* السجلّ لا يحجب الدخول. */
+    }
+    // المنطقة المختارة تصير **نطاق الجلسة** فورًا: من صرّح أنه من الشرقية
+    // يفتح النظام على الشرقية. وبغير ذلك يختار المستخدم منطقةً في اللوحة
+    // ثم يرى الوسطى — فيصير الاختيار سؤالًا بلا أثر.
+    try {
+      setRegion(region);
+    } catch {
+      /* noop */
     }
     try {
       localStorage.setItem(STAFF_NUMBER_KEY, staff);
@@ -80,7 +99,7 @@ export function StaffNumberGate({ path }: { readonly path: string }) {
     }
     setBusy(false);
     setKnown(staff);
-  }, [value, path, record]);
+  }, [value, regionChoice, path, record, setRegion]);
 
   if (known !== null) return null;
 
@@ -134,10 +153,35 @@ export function StaffNumberGate({ path }: { readonly path: string }) {
           )}
         </div>
 
+        {/* ── المنطقة: **تحت الرقم الوظيفي** (أمر المالك ٢٠٢٦/٠٩/٢٠) ──── */}
+        <div className="mt-4 grid gap-2">
+          <Label htmlFor="staff-region" className="text-[#dff2fd]">
+            المنطقة
+          </Label>
+          <select
+            id="staff-region"
+            value={regionChoice ?? ""}
+            onChange={(e) => {
+              setRegionChoice((e.target.value || null) as RegionId | null);
+              if (error) setError(null);
+            }}
+            aria-invalid={error === ERR_REGION_REQUIRED ? true : undefined}
+            className="min-h-11 rounded-md border border-[#3AE8FF]/25 bg-[#04182a] px-3 text-[14px] text-[#dff2fd]"
+          >
+            {/* خيارٌ فارغ أوّلًا: القائمة لا تبدأ بمنطقةٍ تبدو مختارة. */}
+            <option value="">— اختر المنطقة —</option>
+            {REGIONS.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.shortAr}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <Button
           className="mt-4 min-h-11 w-full"
           onClick={() => void submit()}
-          disabled={busy || value.trim().length === 0}
+          disabled={busy || validateEntry({ staffNumber: value, region: regionChoice }) !== null}
         >
           {busy ? "جارٍ التسجيل…" : "دخول"}
         </Button>

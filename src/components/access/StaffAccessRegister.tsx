@@ -32,6 +32,7 @@ import {
   buildStaffRegisterDoc,
   distinctStaffCount,
   formatEntryStamp,
+  regionLabel,
   staffRegisterFileName,
 } from "@/lib/access/staff-register-pdf";
 import { toast } from "sonner";
@@ -81,7 +82,8 @@ export function StaffAccessRegister() {
       ? all.filter(
           (r) =>
             r.staff_number.includes(q) ||
-            (r.path ?? "").toLowerCase().includes(query.trim().toLowerCase()),
+            (r.path ?? "").toLowerCase().includes(query.trim().toLowerCase()) ||
+            regionLabel(r.region).includes(query.trim()),
         )
       : all;
     const dir = sortDir === "asc" ? 1 : -1;
@@ -271,6 +273,7 @@ export function StaffAccessRegister() {
                     dir={sortDir}
                     onClick={() => toggleSort("at")}
                   />
+                  <th className="px-3 py-2 text-start font-medium">المنطقة</th>
                   <th className="px-3 py-2 text-start font-medium">الوجهة</th>
                 </tr>
               </thead>

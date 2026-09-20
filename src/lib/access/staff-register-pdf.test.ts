@@ -11,9 +11,19 @@ import type { CalloutBlock, ProseBlock } from "@/lib/reports/pdf-rich";
 
 const period = buildPeriod(2026, 2);
 const rows: StaffEntry[] = [
-  { staff_number: "10254", entered_at: "2026-09-20T11:35:00.000Z", path: "/sec/maintenance" },
-  { staff_number: "10254", entered_at: "2026-09-19T05:02:00.000Z", path: "/ptw" },
-  { staff_number: "77001", entered_at: "2026-08-01T21:00:00.000Z", path: "/" },
+  {
+    staff_number: "10254",
+    entered_at: "2026-09-20T11:35:00.000Z",
+    path: "/sec/maintenance",
+    region: "central",
+  },
+  {
+    staff_number: "10254",
+    entered_at: "2026-09-19T05:02:00.000Z",
+    path: "/ptw",
+    region: "central",
+  },
+  { staff_number: "77001", entered_at: "2026-08-01T21:00:00.000Z", path: "/", region: "eastern" },
 ];
 
 describe("صيغة الطابع الزمني", () => {

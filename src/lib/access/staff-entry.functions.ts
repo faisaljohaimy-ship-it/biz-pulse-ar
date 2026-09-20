@@ -25,7 +25,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   normalizeStaffNumber,
-  validateStaffNumber,
+  validateEntry,
   STAFF_NUMBER_MAX,
   type StaffEntry,
 } from "./staff-entry";
@@ -33,6 +33,7 @@ import {
 const recordSchema = z.object({
   staff_number: z.string().min(1).max(64),
   path: z.string().max(300).default("/"),
+  region: z.string().max(32).optional(),
 });
 
 /**
@@ -45,14 +46,17 @@ export const recordStaffEntry = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{ stored: boolean; entered_at: string }> => {
     const entered_at = new Date().toISOString();
     const staff_number = normalizeStaffNumber(data.staff_number).slice(0, STAFF_NUMBER_MAX);
-    // تحقّقٌ على الخادم أيضًا: تحقّقُ الواجهة يُلتَفّ عليه بنداءٍ مباشر.
-    if (validateStaffNumber(staff_number) !== null) {
+    // ── تحقّقٌ على الخادم أيضًا، وبنفس القاعدة ────────────────────────────
+    // اللوحة تعطّل الزرّ، والتعطيل **ليس منعًا**: من ينادي الدالّة مباشرةً
+    // لا يمرّ باللوحة أصلًا. فالشرط هنا هو الحاجز، وهو نفسه الذي تقرؤه
+    // الواجهة — لا قاعدةٌ ثانية تفترق عنها.
+    if (validateEntry({ staffNumber: staff_number, region: data.region ?? null }) !== null) {
       return { stored: false, entered_at };
     }
     try {
       const { error } = await supabaseAdmin
         .from("staff_access_log" as never)
-        .insert({ staff_number, path: data.path, entered_at } as never);
+        .insert({ staff_number, path: data.path, entered_at, region: data.region } as never);
       return { stored: !error, entered_at };
     } catch {
       // الجدول غير مطبَّق بعد، أو القاعدة متعثّرة — لا يُمنع الدخول.
@@ -98,7 +102,7 @@ export const listStaffAccessPeriod = createServerFn({ method: "GET" })
     try {
       const { data: rows, error } = await supabaseAdmin
         .from("staff_access_log" as never)
-        .select("staff_number, entered_at, path")
+        .select("staff_number, entered_at, path, region")
         .gte("entered_at", period.startIso)
         .lt("entered_at", period.endIso)
         .order("entered_at", { ascending: false })
@@ -131,7 +135,7 @@ export const listStaffEntries = createServerFn({ method: "GET" })
     try {
       const { data: rows, error } = await supabaseAdmin
         .from("staff_access_log" as never)
-        .select("staff_number, entered_at, path")
+        .select("staff_number, entered_at, path, region")
         .order("entered_at", { ascending: false })
         .limit(data.limit);
       if (error) return { rows: [], available: false };

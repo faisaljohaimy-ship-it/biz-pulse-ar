@@ -21,6 +21,7 @@
  */
 import type { ReportDocument } from "@/lib/reports/pdf-rich";
 import type { StaffEntry } from "./staff-entry";
+import { REGIONS } from "@/lib/regions";
 import type { AccessPeriod } from "./staff-period";
 
 /** توقيت العرض الموحَّد للمنتج. */
@@ -129,11 +130,13 @@ export function buildStaffRegisterDoc(input: StaffRegisterDocInput): ReportDocum
             columns: [
               { header: "الرقم الوظيفي", key: "staff_number", weight: 1.1, align: "right" },
               { header: "التاريخ والوقت", key: "at", weight: 1.4, align: "right" },
-              { header: "الوجهة", key: "path", weight: 1.5, align: "left" },
+              { header: "المنطقة", key: "region", weight: 0.9, align: "right" },
+              { header: "الوجهة", key: "path", weight: 1.3, align: "left" },
             ],
             rows: rows.map((r) => ({
               staff_number: r.staff_number,
               at: formatEntryStamp(r.entered_at),
+              region: regionLabel(r.region),
               path: r.path || "/",
             })),
             note: `أُنشئ في ${formatEntryStamp(generatedAt.toISOString())} — بتوقيت الرياض.`,
@@ -142,6 +145,16 @@ export function buildStaffRegisterDoc(input: StaffRegisterDocInput): ReportDocum
       },
     ],
   };
+}
+
+/**
+ * اسم المنطقة العربي القصير، أو «—» لصفٍّ سابقٍ للحقل.
+ *
+ * لا يُملأ الفراغ بالافتراضي: صفٌّ دخل قبل وجود الاختيار لم تُعرف منطقته،
+ * وكتابة «الوسطى» فيه إسنادٌ لم يقع.
+ */
+export function regionLabel(id: string | null | undefined): string {
+  return REGIONS.find((r) => r.id === id)?.shortAr ?? "—";
 }
 
 /** اسم الملفّ المُنزَّل — يحمل الدورة فلا تختلط ملفّات نصفين. */

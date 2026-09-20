@@ -12,6 +12,8 @@ import {
   ERR_STAFF_LENGTH,
   ERR_STAFF_REQUIRED,
   STAFF_NUMBER_KEY,
+  STAFF_NUMBER_MAX,
+  STAFF_NUMBER_MIN,
   isGatedRoute,
   normalizeStaffNumber,
   validateStaffNumber,
@@ -27,10 +29,13 @@ describe("① التطبيع — رقمٌ واحد لا رقمان", () => {
     expect(normalizeStaffNumber("12345")).toBe("12345");
   });
 
-  it("والفراغات وعلامات الاتجاه والشُرَط تسقط", () => {
+  it("والفراغات وعلامات الاتجاه تسقط — **والشرطة لا تسقط**", () => {
     expect(normalizeStaffNumber("  102 54 ")).toBe("10254");
-    expect(normalizeStaffNumber("10-254")).toBe("10254");
     expect(normalizeStaffNumber("‏10254‎")).toBe("10254");
+    // كانت الشرطة تُبتلع، فكان «102-54» يصير «10254» ويمرّ دخولًا صحيحًا —
+    // حذفُ حرفٍ مرئيّ كتبه المستخدم، وتغييرُ رقمه بلا علمه. تبقى الآن
+    // فيردّها فحص «أرقام إنجليزية فقط».
+    expect(normalizeStaffNumber("102-54")).toBe("102-54");
   });
 });
 
@@ -47,13 +52,17 @@ describe("② التحقّق — برسائل عربية", () => {
 
   it("والطول خارج المدى مرفوض", () => {
     expect(validateStaffNumber("12")).toBe(ERR_STAFF_LENGTH);
-    expect(validateStaffNumber("1234567890123")).toBe(ERR_STAFF_LENGTH);
+    expect(validateStaffNumber("1234")).toBe(ERR_STAFF_LENGTH);
+    expect(validateStaffNumber("1234567")).toBe(ERR_STAFF_LENGTH);
   });
 
   it("والصحيح يمرّ — بالعربية كما باللاتينية", () => {
     expect(validateStaffNumber("10254")).toBeNull();
     expect(validateStaffNumber("١٠٢٥٤")).toBeNull();
-    expect(validateStaffNumber("123")).toBeNull();
+    // «123» كان يمرّ حين كان الحدّ ٣–١٢؛ وصار الحدّ خمسة أو ستة بأمر
+    // المالك ٢٠٢٦/٠٩/٢٠، فصار يُردّ. القاعدة الجديدة مُختبَرة في
+    // `staff-entry-rules.test.ts`.
+    expect(validateStaffNumber("102540")).toBeNull();
   });
 
   it("وكل رسالة عربية — لا نصّ تقنيّ يصل المستخدم", () => {
@@ -109,11 +118,17 @@ describe("④ إسنادٌ لا مصادقة — وهذا ما لا يجوز أ�
   });
 
   it("والتحقّق يُعاد على الخادم — تحقّق الواجهة يُلتَفّ عليه", () => {
-    expect(FN).toMatch(/validateStaffNumber\(staff_number\) !== null/);
+    expect(FN).toMatch(/validateEntry\(\{ staffNumber: staff_number/);
   });
 
   it("والقيد في القاعدة يطابق قاعدة الواجهة", () => {
-    expect(MIG).toMatch(/staff_number ~ '\^\[0-9\]\{3,12\}\$'/);
+    // **افترقا يومًا:** الواجهة صارت ٥–٦ (أمر المالك ٢٠٢٦/٠٩/٢٠) والقيد
+    // بقي ٣–١٢، فكان الخادم يقبل ما ترفضه الواجهة لمن ينادي الدالّة
+    // مباشرةً. شُدَّ القيد في ترحيل ٢٠٢٦/٠٩/٢٠ — والطرفان يُقرآن معًا هنا.
+    const tighten = read("supabase/migrations/20260920110000_staff_access_log_region.sql");
+    expect(tighten).toMatch(/staff_number ~ '\^\[0-9\]\{5,6\}\$'/);
+    expect(STAFF_NUMBER_MIN).toBe(5);
+    expect(STAFF_NUMBER_MAX).toBe(6);
   });
 });
 
