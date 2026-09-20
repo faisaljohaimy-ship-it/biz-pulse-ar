@@ -169,7 +169,10 @@ async function fetchBridgeState(
       const total = completed + failed;
       // لا تشغيلَ سابق ⇐ لا قياس. والرقم المكتوب هنا كان يُعرض نسبةً
       // على شاشةٍ تنفيذية بلا ما يسنده.
-      const confidence = total === 0 ? null : Math.max(0.4, completed / total);
+      // **ولا أرضيةَ ٠٫٤.** أُزيل `0.85` وبقي القاع، فكان وكيلٌ نجح صفرًا
+      // من ثمانية يُقرأ «٤٠٪» بحلقةٍ كهرمانية لا صفرًا أحمر — وخطُّ أساسٍ
+      // مفترَضٌ في القاع هو خطُّ الأساس نفسه الذي أُزيل من القمّة.
+      const confidence = total === 0 ? null : completed / total;
 
       let status: BridgeAgentStatus = d.enabled ? "monitoring" : "offline";
       if (last) {

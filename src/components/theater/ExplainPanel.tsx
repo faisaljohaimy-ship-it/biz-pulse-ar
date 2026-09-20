@@ -21,7 +21,7 @@ import {
   Gauge,
 } from "lucide-react";
 import type { NarratorLine } from "@/lib/narrator/event-narrator";
-import { UNMEASURED_TEXT_AR } from "@/lib/evidence/evidence";
+import { unmeasuredLabel } from "@/lib/evidence/evidence";
 import type { BridgeAgent } from "@/lib/exec/bridge.functions";
 import { cn } from "@/lib/utils";
 
@@ -186,7 +186,7 @@ export function ExplainPanel({ line, agent, ar, onClose }: Props) {
           <Lane
             icon={Gauge}
             label={ar ? "الثقة" : "Confidence"}
-            value={confidence === null ? UNMEASURED_TEXT_AR : `${confidence}%`}
+            value={confidence === null ? unmeasuredLabel(ar) : `${confidence}%`}
             tone={
               confidence === null
                 ? "neutral"

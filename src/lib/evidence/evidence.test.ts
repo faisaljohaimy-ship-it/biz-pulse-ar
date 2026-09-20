@@ -217,33 +217,48 @@ describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا",
   ];
 
   /**
-   * **كل سطحٍ مبرَّرٌ بمفرده** — لا قائمةٌ مجملة.
+   * **كل سطحٍ مبرَّرٌ بمفرده — وبرهانٌ يُفحَص لا نثرٌ يُقرأ.**
    *
-   * المفتاح مسار الملفّ، والقيمة سببُ بقائه. والفرق بين «مقيس» و«دَين»
-   * **في المصدر لا في الشكل**: كلاهما يكتب `* 100`.
+   * الصيغة الأولى اشترطت `why.trim().length > 10`: طولَ التبرير لا صدقَه.
+   * فمرّت ثلاثُ جملٍ **خاطئة** وبقي الاختبار أخضر — حارسٌ يقيس الشكل
+   * الذي أراد الخروج منه. فصار لكلّ سطحٍ `proof`: نمطٌ يجب أن يظهر في
+   * الملفّ نفسه، فالادّعاء يُكذَّب آليًّا إن لم يكن مصدره ما يقوله.
    */
-  const JUSTIFIED: Record<string, string> = {
-    // ── قياسٌ حقيقيّ: مخرَجُ مصنِّفٍ على صفٍّ في القاعدة ──────────────
-    "src/components/sec/alerts-panel.tsx": "sec_cctv_alerts.confidence — درجة كاشف",
-    "src/lib/sec-exec-kpis.functions.ts": "sec_cctv_alerts.confidence — درجة كاشف",
-    "src/lib/sadeed-context.server.ts": "sec_cctv_alerts.confidence — درجة كاشف",
-    "src/routes/_authenticated/sec.index.tsx": "sec_cctv_alerts.confidence — درجة كاشف",
-    "src/routes/_authenticated/sec.timeline.tsx": "sec_cctv_alerts.confidence — درجة كاشف",
-
-    // ── قياسٌ حقيقيّ: نسبة نجاح تشغيلات الوكيل، أو «لم يُقَس» ─────────
-    // أُصلحت في P0: كانت تسقط إلى `0.85` ثابتًا بلا تاريخ، وصارت `null`
-    // تُعرض «لم يُقَس». والضرب في مئة باقٍ لأن القيمة **تُقاس فعلًا**.
-    "src/components/bridge/AgentNode.tsx": "completed/total للتشغيلات — أو null",
-    "src/components/theater/ExplainPanel.tsx": "نفس المصدر — والاشتقاق من النبرة أُزيل",
-    "src/routes/_authenticated/theater.tsx": "متوسّط المقيس وحده — أو null",
+  const JUSTIFIED: Record<string, { why: string; proof: RegExp }> = {
+    // درجةُ مصنِّفٍ على صفٍّ في `sec_cctv_alerts` — قياسٌ حقيقيّ.
+    // والبرهان: الملفّ يذكر الكاميرا أو الجدول.
+    "src/components/sec/alerts-panel.tsx": {
+      why: "sec_cctv_alerts.confidence — درجة كاشف",
+      proof: /camera_code|sec_cctv_alerts/,
+    },
+    "src/lib/sec-exec-kpis.functions.ts": {
+      why: "sec_cctv_alerts.confidence — درجة كاشف (وتجهيزات `sim-` موسومة معها)",
+      proof: /camera_code|sec_cctv_alerts/,
+    },
+    "src/lib/sadeed-context.server.ts": {
+      why: "sec_cctv_alerts.confidence — درجة كاشف",
+      proof: /camera_code|sec_cctv_alerts/,
+    },
+    "src/routes/_authenticated/sec.index.tsx": {
+      why: "sec_cctv_alerts.confidence — درجة كاشف",
+      proof: /camera_code|sec_cctv_alerts/,
+    },
+    "src/routes/_authenticated/sec.timeline.tsx": {
+      why: "sec_cctv_alerts.confidence — درجة كاشف",
+      proof: /camera_code|sec_cctv_alerts/,
+    },
   };
 
   /**
    * دَينٌ **معلَن** لا استثناء — لكلٍّ سببه ومصدره.
    *
-   * كلّها من صنف P0-4، وعلاجها يمسّ أسطحًا خارج نطاق P0 المأذون.
-   * وإدراجُها هنا يُبقيها مرئية: إن عولج أحدها ولم تُحدَّث القائمة سقط
-   * الاختبار، فالقائمة لا تتعفّن صامتة.
+   * **وثلاثةٌ منها كانت في `JUSTIFIED` بوصفٍ غير صادق** وأُعيدت إلى هنا:
+   * قلتُ إنّ ثقة الوكلاء «نسبةُ نجاح تشغيلات» وهو صحيحٌ في الشيفرة
+   * ووحدَه لا يكفي — فـ`getBridgeState` مغلَّفة بـ`resilient()` تسقط إلى
+   * `buildBridgeSimulation()` التي تُعيد `ai_confidence: 0.93` وثقاتِ
+   * وكلاءَ مكتوبة. والقاعدة بلا تشغيلات منذ يوليو، فـ**المخدوم فعلًا هو
+   * المحاكاة**، و`/theater` بلا شارةِ محاكاةٍ إطلاقًا. فالمعروض رقمٌ
+   * مكتوبٌ بلا إفصاح، وتسميتُه «قياسًا» تبريرٌ لا يصدق على ما يُرى.
    */
   const DECLARED_DEBT: Record<string, string> = {
     "src/components/digital-humans/AgentRoster.tsx": "spec.baselineConfidence — خطُّ أساسٍ مكتوب",
@@ -255,6 +270,10 @@ describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا",
     "src/routes/_authenticated/investor.tsx": "finn_decisions.confidence — نفسه",
     "src/routes/_authenticated/analyst.tsx": "«بثقة ٩١٪» نصُّ سيناريو عرضٍ مكتوب",
     "src/lib/demo/timeline.ts": "«بثقة 0.92» نصُّ خطِّ زمنٍ تجريبيّ مكتوب",
+    // الثلاثة المُعادة من `JUSTIFIED` — المخدوم محاكاةٌ بلا شارة.
+    "src/components/bridge/AgentNode.tsx": "completed/total في الشيفرة — والمخدوم محاكاة بلا شارة",
+    "src/components/theater/ExplainPanel.tsx": "نفس المصدر — والمخدوم محاكاة بلا شارة",
+    "src/routes/_authenticated/theater.tsx": "ai_confidence — والمخدوم 0.93 مكتوبة بلا شارة",
   };
 
   function walk(dir: string): string[] {
@@ -302,8 +321,16 @@ describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا",
     }
   });
 
-  it("**ولكلّ سطحٍ سببٌ منصوص** — لا تبريرَ مجمل", () => {
-    for (const [f, why] of [...Object.entries(JUSTIFIED), ...Object.entries(DECLARED_DEBT)]) {
+  it("**وتبريرُ كل «قياسٍ حقيقيّ» يُفحَص في الملفّ** — لا يُصدَّق نثرُه", () => {
+    // الصيغة الأولى قاست طول النصّ فمرّت ثلاثُ جملٍ خاطئة. البرهان الآن
+    // نمطٌ يجب أن يظهر في الملفّ: الادّعاء يُكذَّب آليًّا إن كذب.
+    for (const [f, { why, proof }] of Object.entries(JUSTIFIED)) {
+      expect(why.trim().length, `${f} بلا سبب`).toBeGreaterThan(10);
+      expect(proof.test(readFileSync(f, "utf8")), `${f}: التبرير «${why}» لا يُثبته الملفّ`).toBe(
+        true,
+      );
+    }
+    for (const [f, why] of Object.entries(DECLARED_DEBT)) {
       expect(why.trim().length, `${f} بلا سبب`).toBeGreaterThan(10);
     }
   });
@@ -428,5 +455,57 @@ describe("ولا قيمةَ ثقةٍ مكتوبة خارج ما بُرِّر ص�
     ]) {
       expect(hasLiteral(f), `${f} عاد يحمل قيمةَ ثقةٍ مكتوبة`).toBe(false);
     }
+  });
+});
+
+describe("الاختلاقُ الذي لا يضرب في مئة", () => {
+  // العلّة البنيوية في المسحَين السابقَين: كلاهما يفحص **شكل** `* 100`
+  // أو `confidence: 0.X`. والاختلاق الحيّ الذي أفلت كان يكتب الرقم
+  // **مئويًّا من البداية** (`confidence: 82`) أو يولّده من عدّ
+  // (`20 + evidenceCount*12`) — فلا يضرب في شيء ولا يبدأ بفاصلة.
+  //
+  // فهذا فحصٌ ثالث على المواضع المقيسة بعينها، لا مسحٌ شكليّ رابع.
+
+  it("**لا ثقةٍ مئويةٍ مكتوبة** في مسار التوقّعات", () => {
+    const src = readFileSync("src/lib/intelligence.functions.ts", "utf8");
+    expect(src, "عادت قيمةٌ مئوية مكتوبة").not.toMatch(/confidence:\s*\d{2},/);
+    expect(src, "عادت دالّةُ عدّ صفوف").not.toMatch(/confidence:\s*Math\.min\(9\d,/);
+    expect(src).toMatch(/confidence: Confidence/);
+  });
+
+  it("ولا نسبةٍ مولَّدةٍ من عدّ في بطاقة سَدِيد التنفيذية", () => {
+    // `percent = 20 + evidenceCount*12 + availableCtx*5 - missingCtx*3`
+    // كان يُعرض «الثقة N%». وترويسة محرّكه تقول `NEVER fabricates`.
+    const card = readFileSync("src/components/sadeed-core/ExecutiveCard.tsx", "utf8");
+    expect(card, "عادت النسبة المولَّدة من عدّ").not.toMatch(/confidence\.percent/);
+    expect(card).toMatch(/evidence_strength/);
+  });
+
+  it("ولا أرضيةَ ثقةٍ مفترَضة في الجسر", () => {
+    // `Math.max(0.4, …)` قاعٌ يجعل وكيلًا نجح صفرًا يُقرأ ٤٠٪.
+    const bridge = readFileSync("src/lib/exec/bridge.functions.ts", "utf8");
+    expect(bridge, "عادت أرضية القاع").not.toMatch(/Math\.max\(0\.4, completed/);
+  });
+
+  it("وكلُّ سطحٍ يعرض الغياب يقوله **بلغة قارئه**", () => {
+    // `UNMEASURED_TEXT_AR` عربيٌّ وحده، وعرضُه على واجهةٍ إنجليزية خرقُ
+    // ثنائية اللغة — وقع في ثلاثة أسطح أصلحتها هذه الدفعة نفسها.
+    for (const f of [
+      "src/components/bridge/AgentNode.tsx",
+      "src/components/theater/ExplainPanel.tsx",
+      "src/routes/_authenticated/theater.tsx",
+    ]) {
+      const src = readFileSync(f, "utf8");
+      expect(src, `${f} يعرض العربيّ وحده`).not.toMatch(/UNMEASURED_TEXT_AR/);
+      expect(src).toMatch(/unmeasuredLabel\(/);
+    }
+  });
+
+  it("ولا ضربَ في مئة على مقياسٍ أصلًا ٠..١٠٠", () => {
+    // `overall_score` موصوفٌ «0-100 or -1» وكان يُضرب في مئة ⇒ ١٠٠٠٠٪،
+    // و‑١٠٠٪ عند المجهول. عطلُ `ai_confidence` نفسه ملفًّا واحدًا بعيدًا.
+    const se = readFileSync("src/routes/_authenticated/self-evolution.tsx", "utf8");
+    expect(se, "عاد ضربُ مقياسٍ مئويّ في مئة").not.toMatch(/overall_score \* 100/);
+    expect(se).toMatch(/overall_score < 0/);
   });
 });

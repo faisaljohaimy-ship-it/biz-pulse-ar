@@ -1,23 +1,31 @@
 import { chromium } from "playwright";
 const BASE = "http://127.0.0.1:5199/bs-harness.html";
+// `hasTouch`/`isMobile` ليسا زينة: بدونهما يجري 390 تحت `pointer: fine`
+// فتُطبَّق أرضيةُ 40px لا 44px (styles.css) — أي «سطحُ مكتبٍ بعرض 390»
+// لا هاتف، والقياس يشهد لما لم يُختبر.
 const VIEWPORTS = [
-  { name: "mobile-390", width: 390, height: 844 },
-  { name: "desktop-1280", width: 1280, height: 800 },
+  { name: "mobile-390", width: 390, height: 844, hasTouch: true, isMobile: true },
+  { name: "desktop-1280", width: 1280, height: 800, hasTouch: false, isMobile: false },
 ];
-const CASES = [
-  { lang: "ar", state: "measured" },
-  { lang: "ar", state: "unmeasured" },
-  { lang: "en", state: "measured" },
-  { lang: "en", state: "unmeasured" },
-];
+const CASES = [];
+for (const phase of ["segments", "recommendation"])
+  for (const lang of ["ar", "en"])
+    for (const state of ["measured", "unmeasured"]) CASES.push({ lang, state, phase });
 const browser = await chromium.launch({
   executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
 });
 let failures = [];
 for (const vp of VIEWPORTS) {
   for (const c of CASES) {
-    const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height } });
-    await page.goto(`${BASE}?lang=${c.lang}&state=${c.state}`, { waitUntil: "networkidle" });
+    const page = await browser.newPage({
+      viewport: { width: vp.width, height: vp.height },
+      hasTouch: vp.hasTouch,
+      isMobile: vp.isMobile,
+      deviceScaleFactor: vp.isMobile ? 3 : 1,
+    });
+    await page.goto(`${BASE}?lang=${c.lang}&state=${c.state}&phase=${c.phase}`, {
+      waitUntil: "networkidle",
+    });
     await page.waitForTimeout(900);
     const r = await page.evaluate(() => {
       const de = document.documentElement;
@@ -32,8 +40,20 @@ for (const vp of VIEWPORTS) {
       const conf = [...document.querySelectorAll("div")]
         .filter((d) => /الثقة|Confidence/.test(d.textContent || "") && d.children.length <= 3)
         .slice(-1)[0];
+      // أهدافُ اللمس: المكوّن فيه زرّان صغيران (إيقاف/إغلاق).
+      const small = [...document.querySelectorAll("button,a,[role=button]")]
+        .map((e) => {
+          const r = e.getBoundingClientRect();
+          return {
+            label: (e.getAttribute("aria-label") || e.textContent || "").trim().slice(0, 20),
+            w: Math.round(r.width),
+            h: Math.round(r.height),
+          };
+        })
+        .filter((b) => b.w > 0 && (b.w < 44 || b.h < 44));
       const txt = document.body.innerText;
       return {
+        smallTargets: small,
         hOverflow,
         tiny,
         confBlock: conf ? conf.innerText.replace(/\n/g, " | ").slice(0, 120) : null,
@@ -43,15 +63,27 @@ for (const vp of VIEWPORTS) {
         hasPercent: /\d+\s*[%٪]/.test(txt),
       };
     });
-    const id = `${vp.name}/${c.lang}/${c.state}`;
+    const id = `${vp.name}/${c.phase}/${c.lang}/${c.state}`;
     if (r.hOverflow > 0) failures.push(`${id}: horizontal overflow ${r.hOverflow}px`);
     if (r.tiny.length) failures.push(`${id}: text <12px -> ${JSON.stringify(r.tiny.slice(0, 3))}`);
     if (r.hasRawTable) failures.push(`${id}: RAW TABLE NAMES rendered`);
-    if (c.state === "unmeasured" && c.lang === "ar" && !r.hasUnmeasuredAr)
+    if (vp.hasTouch && r.smallTargets.length)
+      failures.push(`${id}: tap targets <44px -> ${JSON.stringify(r.smallTargets.slice(0, 3))}`);
+    if (
+      c.phase === "recommendation" &&
+      c.state === "unmeasured" &&
+      c.lang === "ar" &&
+      !r.hasUnmeasuredAr
+    )
       failures.push(`${id}: missing «لم يُقَس»`);
-    if (c.state === "unmeasured" && c.lang === "en" && !r.hasNotMeasuredEn)
+    if (
+      c.phase === "recommendation" &&
+      c.state === "unmeasured" &&
+      c.lang === "en" &&
+      !r.hasNotMeasuredEn
+    )
       failures.push(`${id}: missing "Not measured"`);
-    if (c.state === "unmeasured" && r.hasPercent)
+    if (c.phase === "recommendation" && c.state === "unmeasured" && r.hasPercent)
       failures.push(`${id}: percentage shown while unmeasured`);
     console.log(
       `${id.padEnd(34)} overflow=${r.hOverflow} tiny=${r.tiny.length} conf="${r.confBlock}"`,
@@ -65,4 +97,5 @@ if (failures.length) {
   console.log("FAIL:");
   failures.forEach((f) => console.log("  ✗ " + f));
   process.exit(1);
-} else console.log("PASS — 8 combinations measured, zero violations");
+} else
+  console.log(`PASS — ${VIEWPORTS.length * CASES.length} combinations measured, zero violations`);

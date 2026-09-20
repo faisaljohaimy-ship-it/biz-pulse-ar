@@ -4,7 +4,7 @@
  * + status). Status pill, halo animation, confidence ring.
  */
 import { cn } from "@/lib/utils";
-import { UNMEASURED_TEXT_AR } from "@/lib/evidence/evidence";
+import { unmeasuredLabel } from "@/lib/evidence/evidence";
 import type { BridgeAgent, BridgeAgentStatus } from "@/lib/exec/bridge.functions";
 import { findHuman } from "@/lib/digital-humans/registry";
 import { AgentPulseIcon } from "@/components/digital-humans/AgentPulseIcon";
@@ -184,7 +184,7 @@ export function AgentNode({ agent, ar, size = 96, spotlight, onClick }: Props) {
           <span>{ar ? status.ar : status.en}</span>
           <span className="text-white/30">·</span>
           <span className={pct === null ? "" : "tabular-nums"}>
-            {pct === null ? UNMEASURED_TEXT_AR : `${pct}%`}
+            {pct === null ? unmeasuredLabel(ar) : `${pct}%`}
           </span>
         </div>
         {agent.current_task && (

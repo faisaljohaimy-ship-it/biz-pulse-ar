@@ -42,7 +42,19 @@ export function ExecutiveCard() {
 
   const nextStep = env.steps[0];
   const approvalRequired = env.approval.required && env.approval.status !== "granted";
-  const confidencePct = Math.round(env.confidence.percent);
+  // **لا نسبةَ ثقةٍ مُختلَقة.** `percent` يُحسب
+  // `20 + evidenceCount*12 + availableCtx*5 - missingCtx*3` — رقمٌ يُولَد
+  // من **عدّ** ثم يُعرض نسبةً، وهو صنفُ `line.tone → 0.9` نفسه الذي
+  // أُزيل في هذه الدفعة. وترويسة محرّكه تقول `NEVER fabricates`.
+  // فيُعرض بدلها `evidence_strength`: رتبةٌ تصف عدد الأدلّة ولا تدّعي
+  // دقّةً مئوية.
+  const STRENGTH_AR: Record<string, string> = {
+    strong: "قوية",
+    moderate: "متوسطة",
+    weak: "ضعيفة",
+    none: "بلا أدلّة",
+  };
+  const strengthLabel = STRENGTH_AR[env.confidence.evidence_strength] ?? "بلا أدلّة";
 
   return (
     <section
@@ -79,9 +91,9 @@ export function ExecutiveCard() {
         <div className="rounded-md border border-border/40 bg-background/40 px-2 py-1.5">
           <dt className="mb-0.5 flex items-center gap-1 text-muted-foreground">
             <Gauge className="h-3 w-3" aria-hidden />
-            الثقة
+            قوّة الأدلّة
           </dt>
-          <dd className="font-medium text-foreground">{confidencePct}%</dd>
+          <dd className="font-medium text-foreground">{strengthLabel}</dd>
         </div>
       </dl>
 

@@ -80,6 +80,20 @@ export type Grounded<T> = GroundedValue<T> | UnmeasuredValue;
  */
 export { UNMEASURED_AR as UNMEASURED_TEXT_AR } from "@/lib/reports/report-document.types";
 import { UNMEASURED_AR } from "@/lib/reports/report-document.types";
+import { UNMEASURED_EN } from "@/lib/reports/report-model";
+export { UNMEASURED_EN };
+
+/**
+ * نصّ الغياب **بلغة القارئ**.
+ *
+ * `UNMEASURED_TEXT_AR` عربيٌّ وحده، وعرضُه على واجهةٍ إنجليزية خرقُ
+ * ثنائية اللغة — وقد وقع فعلًا في ثلاثة أسطح أُصلحت في هذه الدفعة
+ * نفسها بجوار `{ar ? … : …}` صريح. فصار الاختيار دالّةً واحدة لا
+ * تُنسى، والنصّان مقروءان من مصدريهما لا مكتوبَين هنا.
+ */
+export function unmeasuredLabel(ar: boolean): string {
+  return ar ? UNMEASURED_AR : UNMEASURED_EN;
+}
 
 /**
  * يبني ادّعاءً مقيسًا. **يرمي على دليلٍ غائبٍ أو غير صالح.**

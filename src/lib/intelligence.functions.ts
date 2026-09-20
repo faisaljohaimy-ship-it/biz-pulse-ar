@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { Confidence } from "@/lib/evidence/evidence";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
@@ -355,7 +356,16 @@ export type Prediction = {
   title_en: string;
   detail_ar: string;
   detail_en: string;
-  confidence: number; // 0-100
+  /**
+   * درجة اليقين — **مصطلحٌ لا نسبة مئوية.**
+   *
+   * كانت `number` وتُعرض «٨٢٪ ثقة» على `/boardroom` و`/chief-of-staff`.
+   * ومصدرها إمّا ثابتٌ مكتوب (82 · 88 · 79 · 84 · 90) أو
+   * `Math.min(95, 60 + tk.length / 5)` — **دالّةُ عددِ صفوف** لا قياسَ
+   * يقين. وأنماطُ حارس الثقة لا تراها لأنها تكتب الرقم مئويًّا من
+   * البداية فلا تضرب في مئة.
+   */
+  confidence: Confidence;
   impact: "low" | "medium" | "high" | "critical";
   horizonDays: number;
   tone: "emerald" | "cyan" | "amber" | "rose" | "violet";
@@ -463,7 +473,7 @@ export const getPredictions = createServerFn({ method: "GET" })
       title_en: `Forecast: ${forecast7} task completions next 7 days`,
       detail_ar: `الميل اليومي ${slope >= 0 ? "+" : ""}${slope.toFixed(2)} مهمة/يوم بناءً على آخر 14 يوماً.`,
       detail_en: `Daily trend ${slope >= 0 ? "+" : ""}${slope.toFixed(2)} tasks/day based on last 14 days.`,
-      confidence: Math.min(95, 60 + Math.round(Math.min(20, tk.length / 5))),
+      confidence: "estimated" as const,
       impact: slope < -0.5 ? "high" : "medium",
       horizonDays: 7,
       tone: slope >= 0 ? "emerald" : "amber",
@@ -484,7 +494,10 @@ export const getPredictions = createServerFn({ method: "GET" })
           : "Anomaly: completion rate spike today",
         detail_ar: `الانحراف المعياري ${anomalyZ.toFixed(2)} عن المعدل (${avgDone.toFixed(1)}/يوم).`,
         detail_en: `Z-score ${anomalyZ.toFixed(2)} from baseline (${avgDone.toFixed(1)}/day).`,
-        confidence: Math.min(96, 70 + Math.round(Math.abs(anomalyZ) * 8)),
+        // هذه وحدها مشتقّة من قياس: `anomalyZ` درجةُ شذوذٍ محسوبة من
+        // معدّلات الإنجاز المرصودة. أمّا تحويلها إلى «٧٠ + |z|×٨ ٪» فكان
+        // تحويلًا اعتباطيًّا يُلبس القياسَ دقّةً مئوية لا يملكها.
+        confidence: "derived" as const,
         impact: dropping ? "high" : "low",
         horizonDays: 1,
         tone: dropping ? "rose" : "cyan",
@@ -503,7 +516,7 @@ export const getPredictions = createServerFn({ method: "GET" })
         title_en: "Rising alert pressure — executive intervention likely",
         detail_ar: `معدل التنبيهات يرتفع بمعدل ${alertSlope.toFixed(2)}/يوم على مدى أسبوعين.`,
         detail_en: `Alert intake rising at ${alertSlope.toFixed(2)}/day over 2 weeks.`,
-        confidence: 82,
+        confidence: "estimated" as const,
         impact: "high",
         horizonDays: 5,
         tone: "rose",
@@ -520,7 +533,7 @@ export const getPredictions = createServerFn({ method: "GET" })
         title_en: `${silent.length} strategic items silent ≥ 10 days`,
         detail_ar: "أعد إسناد مالك جديد قبل أن تتحول إلى متأخرات حرجة.",
         detail_en: "Re-assign owners before they escalate into critical overdue.",
-        confidence: 88,
+        confidence: "estimated" as const,
         impact: silent.length >= 8 ? "critical" : "high",
         horizonDays: 14,
         tone: "rose",
@@ -537,7 +550,7 @@ export const getPredictions = createServerFn({ method: "GET" })
         title_en: `${overdue.length} overdue items risk cascading dependencies`,
         detail_ar: "احتمال تأثير سلسلة على القرارات والمبادرات المرتبطة.",
         detail_en: "High probability of cascade onto linked decisions and initiatives.",
-        confidence: 79,
+        confidence: "estimated" as const,
         impact: "high",
         horizonDays: 10,
         tone: "amber",
@@ -555,7 +568,7 @@ export const getPredictions = createServerFn({ method: "GET" })
         title_en: `Ready opportunity: ${top.title_en ?? top.title}`,
         detail_ar: `${openRecs.length} توصية AI مفتوحة بانتظار قرار تنفيذي.`,
         detail_en: `${openRecs.length} open AI recommendations awaiting executive sign-off.`,
-        confidence: 84,
+        confidence: "estimated" as const,
         impact: top.impact === "critical" || top.impact === "high" ? "high" : "medium",
         horizonDays: 7,
         tone: "emerald",
@@ -572,7 +585,7 @@ export const getPredictions = createServerFn({ method: "GET" })
         title_en: "Recommendation: convene executive risk review within 48h",
         detail_ar: `${openRisks.length} مخاطر مفتوحة و ${al.filter((a) => !a.resolved_at).length} تنبيه نشط يتطلب توافقاً تنفيذياً.`,
         detail_en: `${openRisks.length} open risks and ${al.filter((a) => !a.resolved_at).length} active alerts require executive alignment.`,
-        confidence: 90,
+        confidence: "estimated" as const,
         impact: "high",
         horizonDays: 2,
         tone: "violet",

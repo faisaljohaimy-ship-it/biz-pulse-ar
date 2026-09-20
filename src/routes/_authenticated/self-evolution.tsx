@@ -2,6 +2,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 // SADEED Self-Evolution — Operator UI (analyze-only report renderer).
 // Bilingual AR/EN. No autonomous mutations. Full-sweep readout.
 import { createFileRoute } from "@tanstack/react-router";
+import { unmeasuredLabel } from "@/lib/evidence/evidence";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -302,7 +303,15 @@ function SelfEvolutionPage() {
                     Release decision: {report.readiness.decision}
                   </div>
                   <Badge variant="outline">
-                    {Math.round(report.readiness.overall_score * 100)}%
+                    {/*
+                     * `overall_score` أصلًا ٠..١٠٠ (`production/types.ts`:
+                     * «0-100 or -1 when unknown»). وضربُه في مئة كان يعطي
+                     * حتى ١٠٠٠٠٪، و‑١٠٠٪ عند المجهول حيث تجب «لم يُقَس» —
+                     * عطلُ وحدةِ القياس نفسه الذي أُصلح في `ai_confidence`.
+                     */}
+                    {report.readiness.overall_score < 0
+                      ? unmeasuredLabel(false)
+                      : `${Math.round(report.readiness.overall_score)}%`}
                   </Badge>
                 </div>
                 {report.readiness.blockers.length > 0 && (

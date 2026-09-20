@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { CONFIDENCE_LABEL } from "@/lib/evidence/confidence-labels";
 import { Sparkles, TrendingUp, AlertTriangle, Lightbulb, ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { usePredictions } from "@/lib/use-fabric";
@@ -69,7 +70,7 @@ export function PredictionsPanel({ compact = false }: { compact?: boolean }) {
               <div className="mt-2 flex items-center gap-1.5 flex-wrap">
                 <NexusPill tone={p.tone}>{p.kind}</NexusPill>
                 <NexusPill tone="cyan">
-                  {p.confidence}% {ar ? "ثقة" : "conf"}
+                  {ar ? CONFIDENCE_LABEL[p.confidence].ar : CONFIDENCE_LABEL[p.confidence].en}
                 </NexusPill>
                 <NexusPill tone={p.impact === "critical" || p.impact === "high" ? "rose" : "amber"}>
                   {p.impact}

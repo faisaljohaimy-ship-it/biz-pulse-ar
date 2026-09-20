@@ -1,4 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
+import { CONFIDENCE_LABEL } from "@/lib/evidence/confidence-labels";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -241,7 +242,7 @@ function ChiefOfStaffPage() {
                 <div className="flex items-center justify-between">
                   <NexusPill tone="violet">#{i + 1}</NexusPill>
                   <span className="text-[12px] font-bold tracking-widest text-violet-300/80">
-                    {r.confidence}% {ar ? "ثقة" : "CONF"}
+                    {ar ? CONFIDENCE_LABEL[r.confidence].ar : CONFIDENCE_LABEL[r.confidence].en}
                   </span>
                 </div>
                 <div className="mt-2 text-sm font-medium text-white line-clamp-3">
