@@ -464,13 +464,24 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
 
     const call = PRES.slice(PRES.indexOf("pulseConfidence("));
     const args = call.slice(0, call.indexOf("now,"));
-    const terms = [...args.matchAll(/source: "([a-z_]+)", n: (\w+)\.length/g)];
-    expect(terms.length, "لم تُقرأ أطرافُ الثقة").toBeGreaterThanOrEqual(3);
-    for (const [, source, rowsVar] of terms) {
+
+    // **كلُّ كائنٍ يُقرأ، ولا يُلتقط بنمطٍ مرتَّب.** كُتب أوّلًا
+    // `/source: "…", n: (\w+)\.length/` فاشترط ترتيبًا بعينه، وأُفلت منه
+    // بـ`{ n: …, source: … }`: الطرف الكاذب لم يُقرأ أصلًا، والثلاثة
+    // السليمة أبقت العدّاد فوق الحدّ فمرّ الشرط. وهو عينُ الدرس ①–④ في
+    // ترويسة `measured-percent.ts` — الحارس النصّيّ يُهزَم بإعادة صياغة.
+    // فالمقيس الآن: **ما لا يُقرأ يسقط**، لا يُتجاهَل.
+    const objs = [...args.matchAll(/\{[^{}]*\}/g)].map((m) => m[0]);
+    expect(objs.length, "لم تُقرأ أطرافُ الثقة").toBeGreaterThanOrEqual(3);
+    for (const o of objs) {
+      const s = /source:\s*"([a-z_]+)"/.exec(o);
+      const n = /n:\s*(\w+)\.length/.exec(o);
+      expect(s, `طرفٌ بلا اسم مصدرٍ مقروء: ${o}`).not.toBeNull();
+      expect(n, `طرفٌ لا يقرأ طولَ صفوفٍ مباشرةً: ${o}`).not.toBeNull();
       expect(
-        rowsTable.get(rowsVar),
-        `الطرف «${source}» يقرأ ${rowsVar}، وهو من جدول «${rowsTable.get(rowsVar)}»`,
-      ).toBe(source);
+        rowsTable.get(n![1]),
+        `الطرف «${s![1]}» يقرأ ${n![1]}، وهو من جدول «${rowsTable.get(n![1])}»`,
+      ).toBe(s![1]);
     }
   });
 
