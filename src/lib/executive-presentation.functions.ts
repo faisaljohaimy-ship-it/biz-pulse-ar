@@ -255,13 +255,13 @@ export const getSystemPulse = createServerFn({ method: "GET" })
     // لعيّنةٍ لا وجود لها. فيُقرأ الطول من الصفوف نفسها.
     const confidence = pulseConfidence(
       [
-        { source: "tool_executions", n: toolRows.length, pct: 100 - toolFailPct },
-        // `runRows` من **`workflow_runs`** لا `agent_runs`: الرابع في
-        // التفكيك (`:79`) يقابل الاستعلام الرابع. وكان مسمًّى `agent_runs`
-        // فيشهد الدليل لجدولٍ لم يُنتج صفًّا — والرقمُ صحيحٌ والإسنادُ
-        // كاذب، وهو ما جاءت هذه الدفعة تمنعه بعينه.
-        { source: "workflow_runs", n: runRows.length, pct: 100 - runsFailPct },
-        { source: "audit_logs", n: auditRows.length, pct: 100 - auditFailPct },
+        // **`data` نفسه، لا متغيّرٌ وسيط.** الوسيط يُحشى (`?? [{…}]`)
+        // فيُعطي «١٠٠٪» على قاعدةٍ خاوية — وقِيس ذلك نافذًا. والمصدر
+        // هنا على بُعد حقلٍ واحدٍ من الاستعلام الذي أنتجه.
+        { source: "tool_executions", rows: tools.data },
+        // الرابع في التفكيك (`:79`) هو `workflow_runs` لا `agent_runs`.
+        { source: "workflow_runs", rows: runs.data },
+        { source: "audit_logs", rows: audits.data },
       ],
       now,
     );

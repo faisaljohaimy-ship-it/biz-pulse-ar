@@ -268,13 +268,18 @@ describe("⑤ب ما لا يمنعه النوع يمنعه السلوك", () => 
  */
 describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ فعلًا", () => {
   const AT2 = "2026-09-20T12:00:00.000Z";
+  /** صفوفٌ حقيقية: `ok` ناجحة و`failed` فاشلة — لا عددٌ يُسلَّم. */
+  const rows = (ok: number, failed = 0) => [
+    ...Array.from({ length: ok }, () => ({ status: "completed" })),
+    ...Array.from({ length: failed }, () => ({ status: "failed" })),
+  ];
 
   it("**قاعدةٌ خاوية ⇐ «لم يُقَس»** لا «١٠٠٪»", () => {
     const c = pulseConfidence(
       [
-        { source: "tool_executions", n: 0, pct: 100 },
-        { source: "agent_runs", n: 0, pct: 100 },
-        { source: "audit_logs", n: 0, pct: 100 },
+        { source: "tool_executions", rows: [] },
+        { source: "agent_runs", rows: [] },
+        { source: "audit_logs", rows: [] },
       ],
       AT2,
     );
@@ -285,11 +290,10 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
   });
 
   it("ولا دليلَ يشهد لعيّنةٍ لا وجود لها", () => {
-    // العلّة المنقوضة: `n: 1` من `auditRows.length || 1` — دليلٌ مُختلَق.
     const c = pulseConfidence(
       [
-        { source: "tool_executions", n: 4, pct: 100 },
-        { source: "audit_logs", n: 0, pct: 100 },
+        { source: "tool_executions", rows: rows(4) },
+        { source: "audit_logs", rows: [] },
       ],
       AT2,
     );
@@ -300,12 +304,12 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
     }
   });
 
-  it("**والمتوسّط مرجَّحٌ بـ`n`** — لا يزن طرفٌ بعيّنةٍ كطرفٍ بألف", () => {
+  it("**والمتوسّط مرجَّحٌ بعدد الصفوف** — لا يزن طرفٌ بعيّنةٍ كطرفٍ بألف", () => {
     // غير مرجَّح: (100+0)/2 = 50. مرجَّح: (100·999 + 0·1)/1000 = 99.9 ⇒ 100.
     const c = pulseConfidence(
       [
-        { source: "tool_executions", n: 999, pct: 100 },
-        { source: "audit_logs", n: 1, pct: 0 },
+        { source: "tool_executions", rows: rows(999) },
+        { source: "audit_logs", rows: rows(0, 1) },
       ],
       AT2,
     );
@@ -316,8 +320,8 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
   it("وطرفٌ واحدٌ مرصود يُقاس وحده", () => {
     const c = pulseConfidence(
       [
-        { source: "agent_runs", n: 8, pct: 75 },
-        { source: "audit_logs", n: 0, pct: 100 },
+        { source: "agent_runs", rows: rows(6, 2) },
+        { source: "audit_logs", rows: [] },
       ],
       AT2,
     );
@@ -325,10 +329,23 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
   });
 
   it("وصفرُ نجاحٍ على عيّناتٍ حقيقية يُقاس صفرًا — لا يُطوى غيابًا", () => {
-    const c = pulseConfidence([{ source: "agent_runs", n: 8, pct: 0 }], AT2);
+    const c = pulseConfidence([{ source: "agent_runs", rows: rows(0, 8) }], AT2);
     expect(isMeasured(c)).toBe(true);
     expect(formatPercent(c, true)).toBe("0%");
     expect(percentTone(c)).toBe("bad");
+  });
+
+  it("**ولا سبيلَ إلى تسليم رقمٍ** — العقد لا يقبل `n` ولا `pct`", () => {
+    // خمسُ نقوضٍ أثبتت أنّ حارسًا نصّيًّا عليهما يُهزَم بإعادة صياغة.
+    // فأُزيلا من النوع: التزوير اليوم يلزمه تزويرُ الصفوف نفسها.
+    // ولا يرمي: يُهمَل الحقلان إهمالًا تامًّا فيعود «لم يُقَس» — وهو
+    // أصدق من الرمي، لأن الحالة ليست عطلًا بل **غيابَ رصد**.
+    const bad = { source: "x", n: 1, pct: 100 } as unknown as Parameters<
+      typeof pulseConfidence
+    >[0][number];
+    const c = pulseConfidence([bad], AT2);
+    expect(isMeasured(c), "رقمٌ مُسلَّمٌ عند النداء صار قياسًا").toBe(false);
+    expect(formatPercent(c, true)).toBe("لم يُقَس");
   });
 });
 
@@ -448,7 +465,7 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
    * فما لم يُفهم يسقط بدل أن يُتجاهَل — وهذا هو الفرق الذي أُفلت منه
    * أربع مرّات.
    */
-  function pulseTerms(): Array<{ source: string; rows: string; pct: string }> {
+  function pulseTerms(): Array<{ source: string; rows: string }> {
     const call = PRES.slice(PRES.indexOf("pulseConfidence("));
     const args = call.slice(0, call.indexOf("now,"));
     const body = args.slice(args.indexOf("[") + 1, args.lastIndexOf("]"));
@@ -470,54 +487,34 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
         kv.set(m![1], m![2]);
       }
       expect([...kv.keys()].sort(), `مفاتيحُ طرفٍ غيرُ المتوقَّعة: ${o}`).toEqual([
-        "n",
-        "pct",
+        "rows",
         "source",
       ]);
 
-      // كلُّ قيمةٍ مغلقةٌ الطرفين: لا لاحقةَ `|| 1` ولا `+ 1`.
+      // كلُّ قيمةٍ مغلقةٌ الطرفين.
       const source = /^"([a-z_]+)"$/.exec(kv.get("source")!);
-      const rows = /^(\w+)\.length$/.exec(kv.get("n")!);
-      const pct = /^100 - (\w+)$/.exec(kv.get("pct")!);
+      const rows = /^(\w+)\.data$/.exec(kv.get("rows")!);
       expect(source, `اسمُ مصدرٍ ليس نصًّا حرفيًّا: «${kv.get("source")}»`).not.toBeNull();
-      expect(rows, `العيّنة ليست طولَ صفوفٍ صِرفًا: «${kv.get("n")}»`).not.toBeNull();
-      expect(pct, `النسبة ليست معدّلًا محسوبًا: «${kv.get("pct")}»`).not.toBeNull();
-      return { source: source![1], rows: rows![1], pct: pct![1] };
+      expect(rows, `الصفوف ليست جوابَ استعلامٍ صِرفًا: «${kv.get("rows")}»`).not.toBeNull();
+      return { source: source![1], rows: rows![1] };
     });
   }
 
-  it("**ولا مقامَ قسمةٍ يعبر بوابةَ العيّنة**", () => {
-    // `auditTotal`/`runsTotal`/`agentTotal` تحمل `|| 1`، وتمريرُها يجعل
-    // الشرط صادقًا أبدًا فيقتل فرع «لم يُقَس». والشكلُ المغلق يردّها:
-    // ليست `\w+.length`. ويردّ كذلك `rows.length || 1` — وهو ما أُفلت.
+  it("**ولا رقمَ يُسلَّم عند النداء** — الصفوفُ تُسلَّم والحسابُ داخليّ", () => {
+    // خمسُ نقوضٍ متتابعة أثبتت أنّ حارسًا نصّيًّا على `n`/`pct` يُهزَم
+    // بإعادة صياغة: `rows.length || 1` · `pct: 100` · `FailPct = 0` ·
+    // تعريفٌ مكرّر مُظلِّل · شَرَكٌ نصّيّ يخدع `codeOf`. فلم يعد يُحرس
+    // النصّ: **أُزيل الحقلان من النوع**، فلا موضعَ يُكتب فيه رقمٌ أصلًا.
     const terms = pulseTerms();
-    expect(terms.map((t) => t.rows)).toEqual(
-      expect.arrayContaining(["toolRows", "runRows", "auditRows"]),
-    );
+    expect(terms.map((t) => t.rows)).toEqual(expect.arrayContaining(["tools", "runs", "audits"]));
 
-    // **يُحلّ التعريفان، ولا يُصدَّق اسمٌ.** كان هنا `toMatch(/FailPct$/)`
-    // ورسالتُه تدّعي تمييز «مكتوبة» من «محسوبة» — وهو يطابق **لاحقةَ
-    // اسم**. قِيس: `const toolFailPct = 0;` يمرّ والبوابة خضراء. وهو
-    // صنفُ «أربعة حصرًا» و«عبر `any`»: رسالةٌ أوسع ممّا تقيس.
-    //
-    // وكذلك `n`: الـ`|| 1` لم يُغلَق بل **انتقل إلى افتراض المصفوفة**
-    // (`tools.data ?? [{…}]`)، فيقرأ الحارس `toolRows.length` ويرضى،
-    // وتعود «١٠٠٪ بدليلٍ لصفٍّ معدوم» من سطرٍ واحدٍ فوق مرماه.
-    for (const t of terms) {
-      const rowsDef = new RegExp(`const ${t.rows} = \\(([^)]*)\\)`).exec(PRES);
-      expect(rowsDef, `لا يُعثر على تعريف «${t.rows}»`).not.toBeNull();
-      expect(
-        rowsDef![1].trim(),
-        `صفوفُ «${t.source}» لها افتراضٌ غيرُ فارغ: «${rowsDef![1].trim()}»`,
-      ).toMatch(/^\w+\.data \?\? \[\]$/);
-
-      const pctDef = new RegExp(`const ${t.pct} = ([^;]*);`).exec(PRES);
-      expect(pctDef, `لا يُعثر على تعريف «${t.pct}»`).not.toBeNull();
-      expect(
-        pctDef![1].trim(),
-        `نسبةُ «${t.source}» ليست قسمةً مرصودة: «${pctDef![1].trim()}»`,
-      ).toMatch(/^(?:\w+ \? )?\(\w+ \* 100\) \/ \w+(?: : 0)?$/);
-    }
+    // والعقدُ في النوع: `PulseSample` لا يقبل عددًا ولا نسبة.
+    const PC = codeOf("src/lib/evidence/pulse-confidence.ts");
+    expect(PC, "عاد حقلٌ عدديٌّ إلى عقد العيّنة").not.toMatch(/\bn:\s*number/);
+    expect(PC, "عادت نسبةٌ تُسلَّم عند النداء").not.toMatch(/\bpct:\s*number/);
+    expect(PC, "عاد مُميِّزُ الإخفاق يُسلَّم").not.toMatch(/isFailure/);
+    expect(PC).toMatch(/rows: readonly/);
+    expect(PC, "العدّ لا يُحسب داخليًّا").toMatch(/n: rows\.length/);
   });
 
   it("**واسمُ المصدر يطابق جدولَه فعلًا** — لا دليلَ يشهد لجدولٍ لم يُنتجه", () => {
@@ -536,18 +533,14 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
     expect(tables.length, "عدد الجداول لا يطابق عدد المتغيّرات").toBe(vars.length);
     const varTable = new Map(vars.map((v, i) => [v, tables[i]]));
 
-    // متغيّرُ الصفوف ⇐ جدولُه، عبر متغيّر التفكيك.
-    const rowsTable = new Map<string, string>();
-    for (const m of PRES.matchAll(/const (\w+Rows) = \((\w+)\.data/g)) {
-      const t = varTable.get(m[2]);
-      if (t) rowsTable.set(m[1], t);
-    }
-
-    // الأطرافُ تُقرأ بالشكل المغلق أعلاه، فلا يدخل هنا طرفٌ لم يُفهم.
+    // **ولا وسيطَ بينهما الآن.** كان الطرف يقرأ `*Rows` فيلزم حلُّ
+    // حلقتين (‏`*Rows ← var ← جدول`)، وكانت الحلقة الأولى موضعَ الحشو
+    // (‏`data ?? [{…}]`). وصار يقرأ `var.data` مباشرةً — فالمصدر على
+    // بُعد حقلٍ واحدٍ من الاستعلام الذي أنتجه.
     for (const t of pulseTerms()) {
       expect(
-        rowsTable.get(t.rows),
-        `الطرف «${t.source}» يقرأ ${t.rows}، وهو من جدول «${rowsTable.get(t.rows)}»`,
+        varTable.get(t.rows),
+        `الطرف «${t.source}» يقرأ ${t.rows}.data، وهو من جدول «${varTable.get(t.rows)}»`,
       ).toBe(t.source);
     }
   });

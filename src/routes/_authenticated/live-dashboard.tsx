@@ -32,6 +32,7 @@ import { getExecKpis } from "@/lib/sec.functions";
 import { getExecTimeseries } from "@/lib/sec.functions";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { queryEvidence } from "@/lib/evidence/gate";
+import { UNMEASURED_TEXT_AR } from "@/lib/evidence/evidence";
 import { getSystemPulse, getBusinessKpis } from "@/lib/executive-presentation.functions";
 import { EnterpriseActivityFeed } from "@/components/events/EventTimeline";
 import { SystemPulseStrip } from "@/components/executive/SystemPulseStrip";
@@ -75,6 +76,20 @@ const RANGE_LABEL: Record<RangeKey, { ar: string; en: string }> = {
   "90": { ar: "٩٠ يومًا", en: "90d" },
 };
 
+/**
+ * نسبةٌ للعرض — **والغياب يُقال لا يُختلق.**
+ *
+ * قِيس على هذه الصفحة حرفيًّا «`Resolution null%`»: الشرط كان على
+ * `ts` وهو موجود، والحقل `resolution_rate` هو `null` — ففُحص الغلاف
+ * دون المحتوى. وأخواتها `?? 0` تُظهر الغياب **«0%»**، والصفر قياسٌ لا
+ * غياب. والشرطة `—` تسمّيها المادة ٢٧ بعينها.
+ */
+function pctText(v: number | null | undefined, suffix = "%"): string {
+  return v == null || !Number.isFinite(v) ? UNMEASURED_TEXT_AR : `${Math.round(v)}${suffix}`;
+}
+const absentTone = (v: number | null | undefined) =>
+  v == null || !Number.isFinite(v) ? ("unmeasured" as const) : null;
+
 function KpiCard({
   label,
   value,
@@ -85,7 +100,7 @@ function KpiCard({
   label: string;
   value: string;
   sub?: string;
-  tone?: "primary" | "secondary" | "rose" | "amber" | "emerald";
+  tone?: "primary" | "secondary" | "rose" | "amber" | "emerald" | "unmeasured";
   icon: React.ComponentType<{ className?: string }>;
 }) {
   const toneMap = {
@@ -94,6 +109,8 @@ function KpiCard({
     rose: "text-rose-400 border-rose-400/30",
     amber: "text-amber-400 border-amber-400/30",
     emerald: "text-emerald-400 border-emerald-400/30",
+    // **الغياب نبرةٌ مستقلّة** — لا يرث لونَ قياسٍ سليم.
+    unmeasured: "text-foreground/40 border-white/10",
   } as const;
   return (
     <div className={`rounded-xl border bg-background/40 backdrop-blur-xl p-4 ${toneMap[tone]}`}>
@@ -376,15 +393,15 @@ function LiveExecutiveDashboard() {
         />
         <KpiCard
           label="Resolution Rate"
-          value={ts ? `${ts.totals.resolution_rate}%` : "—"}
+          value={pctText(ts?.totals.resolution_rate)}
           sub={`last ${range}d`}
-          tone="emerald"
+          tone={absentTone(ts?.totals.resolution_rate) ?? "emerald"}
           icon={ShieldCheck}
         />
         <KpiCard
           label="Active Patrols"
           value={String(k?.patrols_active ?? "—")}
-          sub={`${Math.round(k?.patrol_completion ?? 0)}% completion`}
+          sub={`${pctText(k?.patrol_completion)} completion`}
           tone="secondary"
           icon={Activity}
         />
@@ -397,18 +414,16 @@ function LiveExecutiveDashboard() {
         />
         <KpiCard
           label="Avg Response"
-          value={
-            ts?.totals.avg_response_minutes != null ? `${ts.totals.avg_response_minutes}m` : "—"
-          }
+          value={pctText(ts?.totals.avg_response_minutes, "m")}
           sub="critical + high"
-          tone="primary"
+          tone={absentTone(ts?.totals.avg_response_minutes) ?? "primary"}
           icon={Gauge}
         />
         <KpiCard
           label="Readiness"
-          value={`${Math.round(k?.executive_readiness ?? 0)}%`}
-          sub={`risk ${Math.round(k?.risk_index ?? 0)}%`}
-          tone="primary"
+          value={pctText(k?.executive_readiness)}
+          sub={`risk ${pctText(k?.risk_index)}`}
+          tone={absentTone(k?.executive_readiness) ?? "primary"}
           icon={Download}
         />
       </section>
@@ -538,9 +553,7 @@ function LiveExecutiveDashboard() {
               <dt className="text-foreground/50">Resolved</dt>
               <dd className="text-emerald-400 text-end">{ts?.totals.incidents_resolved ?? "—"}</dd>
               <dt className="text-foreground/50">Resolution</dt>
-              <dd className="text-emerald-400 text-end">
-                {ts ? `${ts.totals.resolution_rate}%` : "—"}
-              </dd>
+              <dd className="text-emerald-400 text-end">{pctText(ts?.totals.resolution_rate)}</dd>
               <dt className="text-foreground/50">WO opened</dt>
               <dd className="text-amber-400 text-end">{ts?.totals.work_orders_opened ?? "—"}</dd>
               <dt className="text-foreground/50">WO closed</dt>

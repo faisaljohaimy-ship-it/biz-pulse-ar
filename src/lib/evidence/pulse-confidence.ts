@@ -16,24 +16,49 @@
 import { measured, unmeasured, type Grounded } from "./evidence";
 import { percentFromRatio, type MeasuredPercent } from "./measured-percent";
 
-/** طرفٌ مرصود: مصدرٌ وعددُ عيّناتٍ **خام** ونسبةُ نجاح. */
-export type PulseSample = { source: string; n: number; pct: number };
+/** الحالات المعدودة إخفاقًا — **قاعدةٌ واحدة هنا، لا مُميِّزٌ يُسلَّم.** */
+const FAILED = new Set(["failed", "error"]);
 
 /**
- * ثقةُ التشغيل من الأطراف المرصودة — **ما لا عيّنةَ له لا يدخل.**
+ * طرفٌ مرصود — **مصدرٌ وصفوفُه الخام كما عادت من القاعدة.**
  *
- * و`n` هنا **عددُ الصفوف لا مقامُ القسمة**: تمريرُ مقامٍ يحمل `|| 1` هو
- * بعينه ما جعل الفرع الفارغ ميتًا.
+ * كان النوع `{ source; n: number; pct: number }`، فكان المتَّصلُ يُسلّم
+ * **نتيجةً** لا **رصدًا**، وأُفلت منه ثلاثًا: `n: rows.length || 1` ·
+ * `pct: 100` · و`FailPct` مُعرَّفًا صفرًا. وكلُّ علاجٍ نصّيٍّ هُزم
+ * بإعادة صياغة — خمس مرّات متتابعة.
  *
- * **والمتوسّط مرجَّحٌ بعدد العيّنات.** طرفٌ بعيّنةٍ واحدة كان يزن ثلثَ
- * الرقم كطرفٍ بألف، و`n` يُكتب في الدليل ولا يدخل الحساب — فيُقرأ
- * ترجيحًا وليس به.
+ * فلم يبقَ للمتَّصل ما يُسلّمه إلا **ما قرأته القاعدة**: لا عدٌّ ولا
+ * نسبةٌ ولا مُميِّزُ إخفاق. وقِيس أنّ الثلاثة كانت منافذ:
+ *
+ *   • عددًا ونسبةً ⇐ يُزوَّران بكتابةٍ مباشرة.
+ *   • مُميِّزًا (‏`isFailure`) ⇐ `r.status === "__never__"` يُعطي «١٠٠٪»
+ *     دائمًا بشكلٍ سليمٍ تمامًا. فصارت القاعدة هنا، واحدةً للجميع.
+ *   • ومصفوفةً محشوّة (‏`data ?? [{…}]`) ⇐ تُعطي «١٠٠٪» على قاعدةٍ
+ *     خاوية. فصار المُسلَّم **`data` نفسه** بما فيه `null`، ويُعالَج
+ *     الغيابُ هنا — فلا موضعَ حشوٍ عند النداء أصلًا.
+ *
+ * ولتزوير الرقم اليوم يلزم تزويرُ **جواب القاعدة**، لا وسمٌ عند النداء.
  */
+export type PulseSample = {
+  readonly source: string;
+  readonly rows: readonly { readonly status?: string | null }[] | null | undefined;
+};
+
 export function pulseConfidence(
   samples: readonly PulseSample[],
   observedAt: string,
 ): Grounded<MeasuredPercent> {
-  const observed = samples.filter((s) => s.n > 0 && Number.isFinite(s.pct));
+  const observed = samples
+    .map((s) => {
+      const rows = s.rows ?? [];
+      const failed = rows.filter((r) => FAILED.has(r.status ?? "")).length;
+      return {
+        source: s.source,
+        n: rows.length,
+        pct: rows.length ? 100 - (failed * 100) / rows.length : 0,
+      };
+    })
+    .filter((o) => o.n > 0);
   if (observed.length === 0) {
     return unmeasured("لا تنفيذات ولا تشغيلات ولا أحداث مرصودة — لا أساس لنسبة ثقة");
   }
