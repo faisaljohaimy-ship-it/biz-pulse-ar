@@ -197,19 +197,32 @@ describe("نصّ الغياب — أربع نسخ قائمة يجب ألّا ت�
   });
 });
 
-describe("لا «ثقة ٪» مختلَقة في أي سطح — بمسحٍ شاملٍ لا بقائمة شمول", () => {
-  // كانت القائمة **شمولًا**: أربعة ملفّات واسمٌ يقول «أي سطح». وذلك عين
-  // العلّة التي يسمّيها هذا المستودع مرارًا (اختبار RLS بصلاحية superuser ·
-  // نسخ `UNMEASURED_AR` الأربع): حارسٌ مسمّاه أوسع ممّا يقيس، فتُقرأ
-  // خضرتُه شهادةً لما لم يُفحَص. وقد أثبت ذلك عمليًّا: مرّ بينما
-  // `speak-agent.ts` **ينطق** النسبة على الشاشة نفسها.
+describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا", () => {
+  // ## تاريخُ هذا الحارس، لأنه يشرح شكله
   //
-  // فصار المسح شاملًا لـ`src/**`، والاستثناء **صريحًا ومُبرَّرًا**:
-  // ثقةُ كاشفٍ (CCTV) قياسٌ حقيقيّ يُخرجه مصنِّف، وعرضُها نسبةً صادق.
-  // والمحظور هو ثقةٌ **مختلَقة**: يقولها نموذجٌ عن نفسه، أو تُكتب ثابتًا،
-  // أو تُشتقّ من رقمٍ آخر معروضٍ بجوارها.
+  // كُتب أوّلًا بقائمة **شمول**: أربعة ملفّات واسمٌ يقول «أي سطح». فمرّ
+  // بينما `speak-agent.ts` ينطق النسبة. ثمّ صار مسحًا شاملًا بنمطٍ واحد
+  // `/confidence \* 100/` — فمرّ بينما **أحد عشر سطحًا** تكتبها بصياغاتٍ
+  // أخرى (`ai_confidence * 100` · `(x ?? 0) * 100` · «بثقة ٩١٪» نصًّا).
+  // العلّة انتقلت من قائمة الملفّات إلى الـregex، ولم تُحَلّ.
+  //
+  // فصار **يفشل مغلقًا**: كلّ تطابقٍ يجب أن يكون في أحد سجلَّين معلَنين،
+  // وأيّ تطابقٍ غير مسجَّل يُسقط الاختبار. فالسطح الجديد لا يمرّ بالسكوت.
 
-  /** قياسٌ حقيقيّ: درجةُ كاشفٍ على صفٍّ في `sec_cctv_alerts`. */
+  const PATTERNS = [
+    /confidence[^\n]{0,40}\*\s*100/i,
+    /\*\s*100[^\n]{0,40}confidence/i,
+    /بثقة\s*[\d٠-٩]+/,
+    /ثقة\s*[\d٠-٩]+\s*[٪%]/,
+  ];
+
+  /**
+   * قياسٌ حقيقيّ — يُستثنى بحقّ.
+   *
+   * `sec_cctv_alerts.confidence` درجةُ مصنِّفٍ على صفٍّ في القاعدة: مخرَجُ
+   * كاشفٍ لا رقمٌ يُكتب. وعرضُها نسبةً **صادق**، ومنعُها يخسر معلومةً
+   * حقيقية. الفرق عن المحظور ليس في الشكل بل في المصدر.
+   */
   const MEASURED_DETECTOR = [
     "src/components/sec/alerts-panel.tsx",
     "src/lib/sec-exec-kpis.functions.ts",
@@ -219,17 +232,29 @@ describe("لا «ثقة ٪» مختلَقة في أي سطح — بمسحٍ شا
   ];
 
   /**
-   * دَينٌ **معلَن** لا استثناء: ثقةُ أسطول الوكلاء مصدرها
-   * `spec.baselineConfidence` — خطُّ أساسٍ مكتوب. عرضُها نسبةً اختلاقٌ
-   * من صنف P0-4 نفسه، ونُطقُها أُزيل في هذه الدفعة. وما بقي **عرضٌ**
-   * في أسطح الأسطول، مُدرَجٌ هنا صراحةً كي يبقى مرئيًّا حتى يُعالَج.
+   * دَينٌ **معلَن** لا استثناء.
+   *
+   * ثقةُ الوكلاء مصدرها `spec.baselineConfidence` — خطُّ أساسٍ مكتوب؛
+   * و`health.ai_confidence` و`d.confidence` من المصنف نفسه؛ و«بثقة ٩١٪»
+   * في `analyst` و«74%» في `demo/timeline` نصوصُ سيناريو مكتوبة.
+   * كلّها من صنف P0-4 نفسه، وعلاجها خارج نطاق P0 المأذون.
+   *
+   * وإدراجُها هنا **يُبقيها مرئية**: إن عولج أحدها ولم تُحدَّث القائمة
+   * سقط الاختبار — فالقائمة لا تتعفّن صامتة.
    */
   const DECLARED_DEBT = [
     "src/components/bridge/AgentNode.tsx",
-    "src/components/digital-humans/AgentRoster.tsx",
-    "src/components/situation-room/AgentConversation.tsx",
     "src/components/cockpit/overlays.tsx",
     "src/components/cockpit/sadeed-panel.tsx",
+    "src/components/digital-humans/AgentRoster.tsx",
+    "src/components/situation-room/AgentConversation.tsx",
+    "src/components/theater/ExplainPanel.tsx",
+    "src/lib/demo/timeline.ts",
+    "src/lib/exec/bridge.functions.ts",
+    "src/lib/executive-presentation.functions.ts",
+    "src/routes/_authenticated/analyst.tsx",
+    "src/routes/_authenticated/investor.tsx",
+    "src/routes/_authenticated/theater.tsx",
   ];
 
   function walk(dir: string): string[] {
@@ -240,29 +265,47 @@ describe("لا «ثقة ٪» مختلَقة في أي سطح — بمسحٍ شا
     });
   }
 
-  const OFFENDERS = walk("src")
-    .filter((f) => !MEASURED_DETECTOR.includes(f) && !DECLARED_DEBT.includes(f))
-    .filter((f) => /confidence \* 100/.test(readFileSync(f, "utf8")));
+  /** أسطرُ شيفرةٍ فقط: التوثيق يقتبس المحظور ليشرحه. */
+  function matches(file: string): boolean {
+    return readFileSync(file, "utf8")
+      .split("\n")
+      .filter((l) => {
+        const t = l.trim();
+        return !t.startsWith("//") && !t.startsWith("*");
+      })
+      .some((l) => PATTERNS.some((p) => p.test(l)));
+  }
 
-  it("لا سطحَ جديد يعرض نسبة ثقة مختلَقة", () => {
-    expect(OFFENDERS, `أسطحٌ جديدة: ${OFFENDERS.join(", ")}`).toEqual([]);
+  const ALL = walk("src").filter(matches);
+  const REGISTERED = new Set([...MEASURED_DETECTOR, ...DECLARED_DEBT]);
+
+  it("**لا سطحَ غير مسجَّل** — الحارس يفشل مغلقًا", () => {
+    const rogue = ALL.filter((f) => !REGISTERED.has(f));
+    expect(rogue, `أسطحٌ غير مسجَّلة: ${rogue.join(", ")}`).toEqual([]);
   });
 
-  it("**ولا نسبةَ ثقةٍ تُنطق** — في أي ملفّ نطق", () => {
+  it("ولا نسبةَ ثقةٍ تُنطق — في أي ملفّ نطق", () => {
     // المنطوق أشدّ أثرًا: لا شارة معه ولا مصدر. وهذا ما فات الحارس أوّلًا.
-    const spoken = walk("src")
-      .filter((f) => /speak|voice|tts/i.test(f))
-      .filter((f) => /confidence \* 100/.test(readFileSync(f, "utf8")));
+    const spoken = ALL.filter((f) => /speak|voice|tts|narrat/i.test(f));
     expect(spoken, `نطقٌ لنسبة ثقة: ${spoken.join(", ")}`).toEqual([]);
   });
 
-  it("والدَّين المعلَن يبقى معلَنًا — يسقط الاختبار إن عُولج ولم تُحدَّث القائمة", () => {
-    // قائمةٌ تُترك بعد معالجة ما فيها تصير كذبًا صامتًا في الاتجاه الآخر.
-    for (const f of DECLARED_DEBT) {
-      expect(
-        /confidence \* 100/.test(readFileSync(f, "utf8")),
-        `${f} لم يعد يعرض النسبة — احذفه من DECLARED_DEBT`,
-      ).toBe(true);
+  it("والأسطح المُصلَحة لا تعود", () => {
+    for (const f of [
+      "src/components/sec/sec-ops-insights.tsx",
+      "src/components/situation-room/DecisionEngine.tsx",
+      "src/components/bridge/BriefingStage.tsx",
+      "src/lib/exec/briefing.functions.ts",
+      "src/lib/digital-humans/speak-agent.ts",
+    ]) {
+      expect(matches(f), `${f} عاد يعرض نسبة ثقة`).toBe(false);
+    }
+  });
+
+  it("والسجلّان لا يتعفّنان — كل مسجَّلٍ ما زال مطابقًا", () => {
+    // قائمةٌ تبقى بعد معالجة ما فيها كذبٌ صامت في الاتجاه الآخر.
+    for (const f of [...MEASURED_DETECTOR, ...DECLARED_DEBT]) {
+      expect(matches(f), `${f} لم يعد يطابق — احذفه من السجلّ`).toBe(true);
     }
   });
 

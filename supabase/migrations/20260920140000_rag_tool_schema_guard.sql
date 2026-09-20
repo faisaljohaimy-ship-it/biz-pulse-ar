@@ -46,9 +46,16 @@
 do $$
 declare
   -- الأداة ← الكائن الذي لا تعمل بدونه.
+  -- الأداة ← الكائن الذي لا تعمل بدونه. والثالثة مُدرَجة بتابعها المقيس
+  -- لا بافتراضه: `rag.search_verified` أداةُ **قراءة** بلا مفتاح `writes`،
+  -- فكانت تخرج من العدّ فيمرّ الحكم مطلقًا فوق ثغرةٍ معلومة. وقِيس على
+  -- الإنتاج ٢٠٢٦/٠٩/٢٠ أنّ منفّذها يستدعي `sec_kb_hybrid_search` على
+  -- `sec_knowledge_articles` ويسجّل في `rag_query_log` — وثلاثتها حاضرة،
+  -- فهي مفعَّلة **بحقّ** لا بسهو. وإدراجُها يجعل الشهادة تشملها.
   deps constant jsonb := jsonb_build_object(
     'rag.propose_candidate', 'public.rag_candidates',
-    'rag.record_gap',        'public.rag_gaps'
+    'rag.record_gap',        'public.rag_gaps',
+    'rag.search_verified',   'public.rag_query_log'
   );
   tool_id  text;
   dep_name text;

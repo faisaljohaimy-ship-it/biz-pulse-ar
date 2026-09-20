@@ -537,9 +537,11 @@ export const APPROVAL_TTL_MS = 7 * 24 * 60 * 60 * 1000;
  * مجهولًا: من أغلق الطلب سؤالٌ يجب أن يُجاب بعد شهر.
  */
 export async function expireStaleApprovals(
-  supabase: SupabaseClient<Database>,
   maxAgeMs = APPROVAL_TTL_MS,
 ): Promise<{ expired: number; ids: string[] }> {
+  // **بلا معامل عميل.** كان يأخذ `supabase` ولا يستعمله بعد أن صار الأثر
+  // يُكتب بمفتاح الخدمة — توقيعٌ يوحي بأن عميل النداء يحكم، وهو لا يحكم.
+  // وتوقيعٌ يَعِد بما لا يفي به يُضلّل قارئه قبل أن يُضلّل مستدعيه.
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = supabaseAdmin as any;
