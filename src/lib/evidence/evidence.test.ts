@@ -27,7 +27,7 @@ import {
 const dbRow: Evidence = {
   kind: "db.query",
   source: "sec_incidents",
-  entity: { type: "incident", id: "INC-1" },
+  entity: { kind: "incident", id: "INC-1" },
   observedAt: "2026-09-20T10:00:00.000Z",
 };
 
@@ -151,6 +151,21 @@ describe("لا نظام موازٍ — FR-19: «single source of truth — do no
     for (const k of ["reference.builtin", "derived.computed", "human.attested"]) {
       expect(GATE, `الصنف ${k} ليس في الاتحاد القانونيّ`).toContain(`"${k}"`);
     }
+  });
+
+  it("و`EntityRef` يتكلّم مفردات الأنطولوجيا لا نصًّا حرًّا", () => {
+    // كُتب `type: string` أوّلًا، وفي المستودع أنطولوجيا قائمة تسمّي هذه
+    // الكيانات نفسها في اتحادٍ مغلق (`person` · `site` · `asset` ·
+    // `incident` · `evidence` …). ونصٌّ حرٌّ بجوارها مفرداتٌ ثانية: تتّفقان
+    // بالعادة لا بالنوع، فيمرّ `"incidents"` و`"Incident"` بلا صوت.
+    const GATE = readFileSync("src/lib/evidence/gate.ts", "utf8");
+    expect(GATE).toMatch(/readonly kind: EntityKind;/);
+    expect(GATE).toMatch(
+      /import type \{ EntityKind \} from "@\/lib\/sadeed\/knowledge-graph\/types"/,
+    );
+    expect(GATE, "نصٌّ حرٌّ عاد إلى EntityRef").not.toMatch(
+      /interface EntityRef \{[\s\S]*?type: string/,
+    );
   });
 });
 

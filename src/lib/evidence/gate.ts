@@ -15,6 +15,12 @@
  * See docs/SADEED_ENGINEERING_CONSTITUTION.md § FR-19.
  */
 
+// نوعٌ خالص بلا اعتماديّة واحدة، فـ`import type` يُمحى عند البناء: لا
+// كلفةَ تشغيلٍ على وحدةٍ يستوردها كل سطح عرض.
+import type { EntityKind } from "@/lib/sadeed/knowledge-graph/types";
+
+export type { EntityKind };
+
 export type EvidenceKind =
   | "db.query" // Data from a Supabase `sec_*` / product table
   | "runtime.probe" // Live runtime health probe result
@@ -32,9 +38,18 @@ export type EvidenceKind =
   | "derived.computed" // Computed from other evidence — MUST carry its inputs
   | "human.attested"; // Human input attributed to a named actor
 
-/** An entity in the industrial ontology: `facility` · `asset` · `incident` … */
+/**
+ * A reference to an entity in the industrial security ontology.
+ *
+ * `kind` is the ontology's own closed union (`person` · `site` · `asset` ·
+ * `incident` · `evidence` …), NOT a free-form string. It was written as
+ * `type: string` first — and a free string beside a closed union already
+ * naming these very kinds is a second vocabulary for one thing: `"incident"`
+ * here and `"Incident"` or `"incidents"` there, agreeing only by habit.
+ * The ontology is the single vocabulary; a typo is now a type error.
+ */
 export interface EntityRef {
-  readonly type: string;
+  readonly kind: EntityKind;
   readonly id: string;
 }
 

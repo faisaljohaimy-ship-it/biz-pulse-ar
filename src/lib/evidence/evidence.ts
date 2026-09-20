@@ -38,7 +38,7 @@
  */
 import { hasEvidence, type Evidence } from "./gate";
 
-export type { Evidence, EntityRef, EvidenceKind } from "./gate";
+export type { Evidence, EntityRef, EvidenceKind, EntityKind } from "./gate";
 
 /**
  * درجة اليقين — مصطلحاتٌ ثلاث لا مقياسٌ عدديّ.
