@@ -7,8 +7,9 @@
  * enterprise_event that downstream workers pick up.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { measured, unmeasured, type Grounded } from "@/lib/evidence/evidence";
-import { percentFromRatio, type MeasuredPercent } from "@/lib/evidence/measured-percent";
+import { type Grounded } from "@/lib/evidence/evidence";
+import { type MeasuredPercent } from "@/lib/evidence/measured-percent";
+import { pulseConfidence } from "@/lib/evidence/pulse-confidence";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { triggerWorkflow } from "@/lib/exec/workflow-engine.server";
@@ -248,29 +249,18 @@ export const getSystemPulse = createServerFn({ method: "GET" })
     // **لا سُلَّمَ مكتوبًا ولا طرفًا بلا عيّنة.** كلُّ طرفٍ هنا نسبةُ نجاحٍ
     // حقيقية (منجَز ÷ إجمالي) ولا يدخل المتوسّط إلا إن كان له إجماليٌّ
     // موجب — فغيابُ العيّنة يُخرج الطرف، لا يُدخله بقيمةٍ مُرضية.
-    const observed: Array<{ source: string; pct: number; n: number }> = [];
-    if (toolTotal > 0) {
-      observed.push({ source: "tool_executions", pct: 100 - toolFailPct, n: toolTotal });
-    }
-    if (runRows.length > 0) {
-      observed.push({ source: "agent_runs", pct: 100 - runsFailPct, n: runRows.length });
-    }
-    if (auditTotal > 0) {
-      observed.push({ source: "audit_logs", pct: 100 - auditFailPct, n: auditTotal });
-    }
-
-    const confidence: Grounded<MeasuredPercent> = observed.length
-      ? measured(
-          percentFromRatio(observed.reduce((sum, o) => sum + o.pct, 0) / observed.length / 100),
-          observed.map((o) => ({
-            kind: "db.query" as const,
-            source: o.source,
-            observedAt: now,
-            value: o.n,
-          })),
-          "derived",
-        )
-      : unmeasured("لا تنفيذات ولا تشغيلات ولا أحداث مرصودة — لا أساس لنسبة ثقة");
+    // **العدّاداتُ الخام لا المقسومات.** `auditTotal` و`runsTotal` يحملان
+    // `|| 1` لأنهما مقاماتُ قسمةٍ للشرائح — وتمريرُهما هنا يجعل الشرط
+    // صادقًا أبدًا على قاعدةٍ فارغة، فيُختلق «١٠٠٪» ويحمل دليلًا يشهد
+    // لعيّنةٍ لا وجود لها. فيُقرأ الطول من الصفوف نفسها.
+    const confidence = pulseConfidence(
+      [
+        { source: "tool_executions", n: toolRows.length, pct: 100 - toolFailPct },
+        { source: "agent_runs", n: runRows.length, pct: 100 - runsFailPct },
+        { source: "audit_logs", n: auditRows.length, pct: 100 - auditFailPct },
+      ],
+      now,
+    );
 
     return { generated_at: now, chips, confidence };
   });

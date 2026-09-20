@@ -72,6 +72,13 @@ function decisionConfidence(raw: number | null, observedAt: string): Grounded<Me
   if (raw == null || !Number.isFinite(raw)) {
     return unmeasured("القرار مخزَّن بلا درجة ثقة");
   }
+  // **خارجُ المدى غيابٌ لا قصّ.** الحقل عقدُه كسرٌ ٠..١، وصفٌّ يحمل `82`
+  // (وهي حالةٌ واقعة في هذا المستودع) كان يُضرب في مئة فيُعرض «8200%» —
+  // عطلٌ صارخ. وقصُّه صمتًا إلى «100%» يحوّل الصارخ إلى مطمئنّ، وهو
+  // نقيضُ المقصود: الرقم يصير أجملَ كلّما زاد فساده.
+  if (raw < 0 || raw > 1) {
+    return unmeasured(`درجةُ ثقةٍ خارج المدى (${raw}) — الحقل عقدُه كسرٌ بين ٠ و١`);
+  }
   return measured(
     percentFromRatio(raw),
     [{ kind: "db.query", source: "finn_decisions", observedAt }],

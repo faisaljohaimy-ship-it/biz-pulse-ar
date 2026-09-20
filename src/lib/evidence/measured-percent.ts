@@ -13,12 +13,22 @@
  *      لأن الاسم غُسل إلى `c` قبل الضرب.
  *
  * والدرس أنّ الحارس النصّيّ يُهزَم بإعادة تسمية. فالقفل هنا في **النوع**:
- * القيمة كائنٌ معتمٌ بمفتاحٍ فريد، فـ
  *
  *   • `Math.round(p * 100)` ⇐ **خطأ ترجمة** (لا حساب على كائن).
  *   • `{p}%` في JSX ⇐ **خطأ ترجمة** (الكائن ليس `ReactNode`).
+ *   • `p.value * 100` ⇐ **خطأ ترجمة** (الحقل `unknown` لا `number`).
+ *   • `{ __brand: "MeasuredPercent", value: 99 }` ⇐ **خطأ ترجمة** (لا سكَّ
+ *     من عدم: النوع يشترط مفتاحًا رمزيًّا لا يملكه إلا هذا الملفّ).
  *
  * وإعادةُ التسمية لا تنفع: النوع يسافر مع القيمة لا مع الاسم.
+ *
+ * ## والحقلُ مقروءٌ على السلك، معتمٌ في النوع
+ *
+ * هاتان حاجتان تتجاذبان: العبور إلى العميل يشترط حقلًا **معدودًا**
+ * يحمله `JSON.stringify`؛ ومنعُ العلّة يشترط حقلًا **لا يُحسب عليه**.
+ * فالجمع بينهما: الحقل موجودٌ ومعدودٌ في التشغيل، ونوعُه `unknown` —
+ * ينجو من التسلسل ولا يُضرب في مئة. والمفتاح الرمزيّ **نوعٌ بلا وجودٍ
+ * في التشغيل**: يمنع السكّ عند الترجمة ولا يظهر في الحمولة.
  *
  * ## والقيمة لا تُبنى إلا من عددٍ محدود
  *
@@ -27,48 +37,92 @@
  */
 import { type Grounded, isMeasured, unmeasuredLabel } from "./evidence";
 
-// رمزٌ حقيقيّ لا `declare`: الأخير نوعٌ بلا وجودٍ عند التشغيل، فيُخفق
-// البناء بـ`MEASURED_PERCENT is not defined`. وهذا يجمع الأمرين —
-// مفتاحٌ موجود فعلًا، ونوعٌ فريدٌ لا يُزوَّر.
-const MEASURED_PERCENT: unique symbol = Symbol("MeasuredPercent");
+/**
+ * العلامة **نصٌّ لا رمز** — لأن القيمة تعبر حدّ الخادم.
+ *
+ * كُتبت أوّلًا بمفتاح `unique symbol`، وقِيس أنّ `JSON.stringify` **يُسقط
+ * المفاتيح الرمزية**: يصل الكائن إلى العميل `{}` فيُعرض «NaN%». وهذا
+ * أسوأ من الرقم المختلَق الذي جاء هذا الملفّ ليمنعه.
+ *
+ * ولم يكشفه المرفأ لأنه يبني القيمة في العملية نفسها ولا يعبر بها سلكًا
+ * — وهو عين علّة «المرفأ يقيس أقلّ ممّا يدّعي».
+ *
+ * فصارت العلامة حقلًا نصّيًّا ينجو من التسلسل، ويبقى المنعُ قائمًا:
+ * الحساب على كائنٍ خطأُ ترجمة، وإقحامُه في JSX خطأُ ترجمة. وتزويرُها
+ * يتطلّب كتابة الحقل صراحةً — فعلٌ عامدٌ يُرى في المراجعة، كـ`as any`.
+ */
+/**
+ * مفتاحٌ رمزيٌّ **للنوع وحده** — لا وجود له في التشغيل ولا في الحمولة.
+ *
+ * `declare const` يعني أنّ المترجم يعرفه ولا يُولَّد له شيء. فلا يستطيع
+ * أيُّ كائنٍ حرفيٍّ خارج هذا الملفّ أن يوفّره، وبذلك **يُسدّ السكّ**:
+ * `{ __brand: "MeasuredPercent", value: 99 }` لا يُسنَد إلى النوع.
+ * والموضع الوحيد الذي يتجاوزه تحويلٌ صريح في `measuredPercent` — سطرٌ
+ * واحدٌ مقصودٌ يُرى في المراجعة، وهو عينُ ما يُراد: مدخلٌ واحد لا غير.
+ */
+declare const MINT: unique symbol;
 
-/** نسبةٌ ٠..١٠٠ مقيسة. معتمةٌ عمدًا — انظر ترويسة الملفّ. */
-export type MeasuredPercent = { readonly [MEASURED_PERCENT]: number };
+export interface MeasuredPercent {
+  readonly __brand: "MeasuredPercent";
+  readonly [MINT]: true;
+  // **ولا حقلَ `value` هنا قصدًا.** الكائن يحمله في التشغيل ويعبر به
+  // السلك، والنوعُ لا يُعلنه — فـ`c.value * 100` خطأُ ترجمة («لا وجود
+  // للخاصّية»)، و`percentValue` هو المنفذ الوحيد إليه.
+  //
+  // وكُتب أوّلًا `value: unknown`، فرفضه مُتحقّقُ التسلسل في
+  // TanStack Start: `ValidateSerializableMapped` يقرأ `unknown` «قد لا
+  // يقبل التسلسل» فيسقط `getSystemPulse` كلُّه. والحذف أقوى من التعتيم:
+  // لا يُقرأ الحقل أصلًا بدل أن يُقرأ مُعتمًا.
+}
 
 /**
- * يبني نسبةً مقيسة من عددٍ ٠..١٠٠. **يرمي على غير المحدود.**
+ * حارسا التشغيل — **غير قابلَين للعدّ فلا يظهران في التسلسل.**
  *
- * الرمي مقصود: `NaN` يمرّ في الحساب صامتًا ويُعرض «NaN%»، وذلك عطلُ
- * برمجةٍ في زيّ قياس.
+ * قِيس بالترجمة أنّ ثلاثة مسالك تنفذ من النوع: `${p}%` و`+p` و`as any`.
+ * والأوّل بعينه ما أنتج «ثقة estimated٪» على `/executive`. فيُغلق
+ * الأوّلان هنا بالسلوك، ويبقى `as any` خروجًا عامدًا يراه المراجع.
+ *
+ * و`enumerable: false` شرطٌ لا زينة: خاصّيةٌ معدودة تحمل دالّة يُسقطها
+ * `JSON.stringify` بصمت، لكنّها تُغيّر شكل الكائن في المقارنات البنيوية.
+ * والحارسان **لا يعبران السلك** — وهذا مقبول: ما ينجو هو العلامة نفسها،
+ * و`percentValue` يفحص الشكل عند الوصول. أمّا `${p}` على قيمةٍ وصلت من
+ * الخادم فيعطي `[object Object]` — ليس صارخًا كالعلامة، ولكنّه ليس رقمًا
+ * معقولًا، وهو المطلوب: **لا يُختلق رقم**.
  */
+const RAW_GUARDS: PropertyDescriptorMap = {
+  valueOf: {
+    enumerable: false,
+    value(): never {
+      throw new Error(
+        "نسبةٌ مقيسة لا يُحوَّل عددًا ضمنيًّا — استُدعِ percentValue للحساب أو formatPercent للعرض",
+      );
+    },
+  },
+  toString: {
+    enumerable: false,
+    value(): string {
+      return "[MeasuredPercent — لا يُعرض خامًا؛ استُدعِ formatPercent]";
+    },
+  },
+};
+
+/** يبني نسبةً مقيسة من عددٍ ٠..١٠٠. **يرمي على غير المحدود.** */
 export function measuredPercent(value: number): MeasuredPercent {
   if (!Number.isFinite(value)) {
     throw new Error(`نسبةٌ غير محدودة (${value}) — ما لا يُقاس يُمثَّل غيابًا لا رقمًا`);
   }
-  const pct = Math.max(0, Math.min(100, value));
-  // ── ما لا يمنعه النوع، يمنعه السلوك ────────────────────────────────────
-  // قِيس بالترجمة: النوع يمنع `Math.round(c * 100)` وإعادةَ التسمية
-  // والتمريرَ عبر وسيط و`String(c)`. ولا يمنع **ثلاثة**:
-  //   `${c}%` (قالب نصّيّ) · `+c` (تحويل أحاديّ) · `as any`.
-  // والأوّل هو بعينه ما أنتج «estimated٪» على `/executive`.
-  //
-  // فتُغلق الثغرتان الأوليان عند التشغيل:
-  //   • `valueOf` يرمي — فلا تحويلَ عدديًّا ضمنيًّا يعطي `NaN` صامتًا.
-  //   • `toString` يعطي علامةً صارخة لا رقمًا — فالقالب يُظهر عطلًا
-  //     يُرى فورًا بدل نسبةٍ معقولةِ المظهر ومختلَقة.
-  // و`as any` خروجٌ عامد لا يُحرَس بالنوع؛ يبقى لمراجعة البشر.
-  const boxed = {
-    [MEASURED_PERCENT]: pct,
-    valueOf() {
-      throw new Error("MeasuredPercent لا يُحوَّل عددًا ضمنيًّا — استعمل percentValue()");
-    },
-    toString() {
-      return "[MeasuredPercent — استعمل formatPercent()]";
-    },
-  };
-  Object.defineProperty(boxed, "valueOf", { enumerable: false });
-  Object.defineProperty(boxed, "toString", { enumerable: false });
-  return boxed as unknown as MeasuredPercent;
+  const p = { __brand: "MeasuredPercent", value: Math.max(0, Math.min(100, value)) };
+  Object.defineProperties(p, RAW_GUARDS);
+  // **مدخلُ السكّ الوحيد.** المفتاح الرمزيّ نوعٌ بلا تشغيل، فالتحويل هنا
+  // هو ما يمنع سواه من السكّ — ولذلك يبقى سطرًا واحدًا مسمًّى.
+  return Object.freeze(p) as unknown as MeasuredPercent;
+}
+
+/** هل الكائن نسبةً صالحة؟ يُستعمل عند حدود الثقة (تسلسل · تخزين). */
+export function isMeasuredPercent(v: unknown): v is MeasuredPercent {
+  if (typeof v !== "object" || v === null) return false;
+  const o = v as { __brand?: unknown; value?: unknown };
+  return o.__brand === "MeasuredPercent" && Number.isFinite(o.value);
 }
 
 /** يبني نسبةً من نسبةٍ ٠..١ (‏`3/4` ⇒ ٧٥). */
@@ -82,7 +136,14 @@ export function percentFromRatio(ratio: number): MeasuredPercent {
  * مسمًّى صراحةً كي يظهر في المراجعة: من يستدعيه يخرج من الحماية عامدًا.
  */
 export function percentValue(p: MeasuredPercent): number {
-  return p[MEASURED_PERCENT];
+  // **يُفحص الشكل ولا يُفترض.** القيمة تعبر حدّ الخادم، وما يصل مشوّهًا
+  // كان يُعطي `NaN` صامتًا ثم «NaN%» على الشاشة. فالإخفاق هنا صريح.
+  if (!isMeasuredPercent(p)) {
+    throw new Error("قيمةٌ ليست نسبةً مقيسة — تالفةٌ أو فُقدت علامتُها في التسلسل");
+  }
+  // `isMeasuredPercent` فحص `Number.isFinite` على الحقل، فالتحويل هنا
+  // مُسنَدٌ إلى فحصٍ وقع لا إلى ثقةٍ في النوع.
+  return (p as unknown as { value: number }).value;
 }
 
 /** نصُّ العرض: «٨٧٪» حين تُقاس، و«لم يُقَس»/«Not measured» حين لا تُقاس. */
