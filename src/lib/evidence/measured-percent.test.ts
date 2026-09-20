@@ -494,8 +494,29 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
     expect(terms.map((t) => t.rows)).toEqual(
       expect.arrayContaining(["toolRows", "runRows", "auditRows"]),
     );
+
+    // **يُحلّ التعريفان، ولا يُصدَّق اسمٌ.** كان هنا `toMatch(/FailPct$/)`
+    // ورسالتُه تدّعي تمييز «مكتوبة» من «محسوبة» — وهو يطابق **لاحقةَ
+    // اسم**. قِيس: `const toolFailPct = 0;` يمرّ والبوابة خضراء. وهو
+    // صنفُ «أربعة حصرًا» و«عبر `any`»: رسالةٌ أوسع ممّا تقيس.
+    //
+    // وكذلك `n`: الـ`|| 1` لم يُغلَق بل **انتقل إلى افتراض المصفوفة**
+    // (`tools.data ?? [{…}]`)، فيقرأ الحارس `toolRows.length` ويرضى،
+    // وتعود «١٠٠٪ بدليلٍ لصفٍّ معدوم» من سطرٍ واحدٍ فوق مرماه.
     for (const t of terms) {
-      expect(t.pct, `نسبةٌ مكتوبة لا محسوبة في «${t.source}»`).toMatch(/FailPct$/);
+      const rowsDef = new RegExp(`const ${t.rows} = \\(([^)]*)\\)`).exec(PRES);
+      expect(rowsDef, `لا يُعثر على تعريف «${t.rows}»`).not.toBeNull();
+      expect(
+        rowsDef![1].trim(),
+        `صفوفُ «${t.source}» لها افتراضٌ غيرُ فارغ: «${rowsDef![1].trim()}»`,
+      ).toMatch(/^\w+\.data \?\? \[\]$/);
+
+      const pctDef = new RegExp(`const ${t.pct} = ([^;]*);`).exec(PRES);
+      expect(pctDef, `لا يُعثر على تعريف «${t.pct}»`).not.toBeNull();
+      expect(
+        pctDef![1].trim(),
+        `نسبةُ «${t.source}» ليست قسمةً مرصودة: «${pctDef![1].trim()}»`,
+      ).toMatch(/^(?:\w+ \? )?\(\w+ \* 100\) \/ \w+(?: : 0)?$/);
     }
   });
 

@@ -41,12 +41,16 @@ function Lane({
   icon: typeof FileText;
   label: string;
   value: string;
-  tone?: "neutral" | "critical" | "good";
+  tone?: "neutral" | "critical" | "good" | "unmeasured";
 }) {
+  // **والغياب نبرةٌ رابعة.** كان يُطوى في `neutral` — وهي نبرةُ ٦٠٪
+  // المقيسة نفسها، فيُقرأ «لم يُقَس» قياسًا متوسّطًا. والقاعدة مطبَّقة
+  // في `SystemPulseStrip`، وتُركت هنا فتفرّق السطحان في الشيء نفسه.
   const tones: Record<string, string> = {
     neutral: "border-white/10 text-white/85",
     critical: "border-rose-400/40 text-rose-100",
     good: "border-emerald-400/40 text-emerald-100",
+    unmeasured: "border-white/5 text-white/40",
   };
   return (
     <div className={cn("rounded-xl border bg-white/[0.025] p-3 backdrop-blur", tones[tone])}>
@@ -189,7 +193,7 @@ export function ExplainPanel({ line, agent, ar, onClose }: Props) {
             value={confidence === null ? unmeasuredLabel(ar) : `${confidence}%`}
             tone={
               confidence === null
-                ? "neutral"
+                ? "unmeasured"
                 : confidence >= 75
                   ? "good"
                   : confidence < 55

@@ -89,13 +89,17 @@ function HealthChip({
   icon: typeof Activity;
   label: string;
   value: string | number;
-  tone?: "cyan" | "amber" | "rose" | "emerald";
+  tone?: "cyan" | "amber" | "rose" | "emerald" | "unmeasured";
 }) {
+  // **والغياب نبرةٌ مستقلّة.** كان `?? 0` يعطيه `cyan` — لونَ نسبةٍ
+  // مقيسةٍ دون ٧٥٪ نفسه، فيُقرأ الغيابُ قياسًا متوسّطًا والنصُّ وحده
+  // يفرّق. والقاعدة مطبَّقة في `SystemPulseStrip` ومتروكةٌ هنا.
   const tones: Record<string, string> = {
     cyan: "border-cyan-400/30 text-cyan-100",
     amber: "border-amber-400/40 text-amber-100",
     rose: "border-rose-400/40 text-rose-100",
     emerald: "border-emerald-400/40 text-emerald-100",
+    unmeasured: "border-white/5 text-white/40",
   };
   return (
     <div
@@ -337,7 +341,13 @@ function TheaterPage() {
                 ? unmeasuredLabel(ar)
                 : `${Math.round(health.ai_confidence * 100)}%`
             }
-            tone={(health?.ai_confidence ?? 0) > 0.75 ? "emerald" : "cyan"}
+            tone={
+              health?.ai_confidence == null
+                ? "unmeasured"
+                : health.ai_confidence > 0.75
+                  ? "emerald"
+                  : "cyan"
+            }
           />
         </section>
 
