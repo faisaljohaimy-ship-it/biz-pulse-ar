@@ -60,6 +60,62 @@ export const recordStaffEntry = createServerFn({ method: "POST" })
     }
   });
 
+/** سقف الصفوف المقروءة في الدورة الواحدة. */
+const PERIOD_ROW_CAP = 5000;
+
+const periodSchema = z.object({ period: z.string().min(1).max(16) });
+
+export interface StaffAccessPeriodResult {
+  readonly rows: StaffEntry[];
+  /** هل الجدول قائمٌ ومقروء؟ `false` = الترحيل غير مطبَّق أو القاعدة متعثّرة. */
+  readonly available: boolean;
+  /** مفتاح الدورة المقروءة فعلًا. */
+  readonly period: string;
+  /** بلغ السقف ⇒ القائمة ناقصة، ويجب أن يُقال. */
+  readonly truncated: boolean;
+}
+
+/**
+ * سجلّ دورةٍ واحدة — **خلف مصادقة**، ومحدودٌ بنافذة الدورة في القاعدة.
+ *
+ * النطاق يُبنى من `parsePeriodKey` لا من نصّ المستخدم: المفتاح يُقرأ إلى
+ * تاريخين أو يُردّ، فلا يصل نصٌّ خام إلى مُرشِّح الاستعلام.
+ *
+ * والترشيح في القاعدة لا في المتصفّح: قائمةٌ تُجلب كاملةً ثم تُقصّ في
+ * العميل تُحمّل الشبكة سجلَّ سنواتٍ لتعرض نصف سنة، وتكسر السقف بلا داعٍ.
+ *
+ * **ولا محاكاة هنا بحالٍ.** بقيّة نوافذ العرض تنهض بمحاكاة مرجعية حين
+ * تصمت القاعدة («بيانات لا تفرغ»)، وهذا السجلّ **مستثنى صراحةً**: صفٌّ
+ * مختلَق في سجلّ دخولٍ يُقرأ إثباتًا على شخص. فإمّا صفوفٌ حقيقية وإمّا
+ * إعلانُ أن السجلّ غير مفعَّل — ولا ثالث.
+ */
+export const listStaffAccessPeriod = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => periodSchema.parse(d))
+  .handler(async ({ data }): Promise<StaffAccessPeriodResult> => {
+    const { parsePeriodKey, currentPeriod } = await import("./staff-period");
+    const period = parsePeriodKey(data.period) ?? currentPeriod();
+    try {
+      const { data: rows, error } = await supabaseAdmin
+        .from("staff_access_log" as never)
+        .select("staff_number, entered_at, path")
+        .gte("entered_at", period.startIso)
+        .lt("entered_at", period.endIso)
+        .order("entered_at", { ascending: false })
+        .limit(PERIOD_ROW_CAP);
+      if (error) return { rows: [], available: false, period: period.key, truncated: false };
+      const list = (rows ?? []) as unknown as StaffEntry[];
+      return {
+        rows: list,
+        available: true,
+        period: period.key,
+        truncated: list.length >= PERIOD_ROW_CAP,
+      };
+    } catch {
+      return { rows: [], available: false, period: period.key, truncated: false };
+    }
+  });
+
 const listSchema = z.object({ limit: z.number().int().min(1).max(500).default(200) });
 
 /**

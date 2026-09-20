@@ -127,13 +127,38 @@ describe("⑤ عقود لا تُكسر", () => {
     expect(down).toContain("drop table if exists public.staff_access_log");
   });
 
-  it("وصفحة السجلّ تميّز ثلاث حالات لا حالتين", () => {
+  it("وسجلّ الدخول يميّز حالاته ولا يخلطها", () => {
     // صفر صفوفٍ بلا تمييز يجعل «لم يدخل أحد» و«السجلّ غير مفعَّل» شيئًا
     // واحدًا — وهما نقيضان (قاعدة ج-٥ في برمت المالك).
-    const page = read("src/routes/_authenticated/settings.access-log.tsx");
-    expect(page).toContain("السجلّ غير مفعَّل بعد");
-    expect(page).toContain("لا دخول مسجَّل بعد");
-    expect(page).toContain("تعذّر جلب السجلّ");
+    //
+    // **والقراءة من المكوّن لا من الصفحة** بعد نقل القائمة إلى مركز
+    // الملفّات (أمر المالك ٢٠٢٦/٠٩/٢٠): الحالات صارت في
+    // `StaffAccessRegister`، وتقرأه الصفحتان كلتاهما.
+    const reg = read("src/components/access/StaffAccessRegister.tsx");
+    expect(reg).toContain("السجلّ غير مفعَّل بعد");
+    expect(reg).toContain("لا دخول مسجَّل في هذه الدورة.");
+    expect(reg).toContain("تعذّر جلب السجلّ");
+    // والرابعة: بحثٌ بلا نتائج ≠ دورةٌ بلا دخول.
+    expect(reg).toContain("لا نتائج تطابق البحث");
+  });
+
+  it("والقائمة مصدرٌ واحد في موضعين — لا نسختان", () => {
+    // نسختان لسجلٍّ واحد تفترقان يومًا، فتُقرأ إحداهما ناقصة ولا يُعرف
+    // أيّهما الصحيحة. الموضعان يستوردان المكوّن نفسه.
+    for (const page of [
+      "src/routes/_authenticated/files.tsx",
+      "src/routes/_authenticated/settings.access-log.tsx",
+    ]) {
+      expect(read(page), `${page} لا يقدّم السجلّ المشترك`).toContain("StaffAccessRegister");
+    }
+  });
+
+  it("ولا محاكاة في سجلّ الدخول — استثناءٌ من «بيانات لا تفرغ»", () => {
+    // صفٌّ مختلَق هنا يُقرأ إثباتًا على شخص وقد يُطبع ويُحتجّ به.
+    const reg = read("src/components/access/StaffAccessRegister.tsx");
+    expect(reg).not.toMatch(/REFERENCE_|buildPtwSimulation|is_simulation/);
+    const pdf = read("src/lib/access/staff-register-pdf.ts");
+    expect(pdf).toMatch(/isSimulation:\s*false/);
   });
 
   it("واللوحة مركَّبة في الجذر بنطاقها", () => {

@@ -106,7 +106,7 @@ jobs:
         if: steps.target.outputs.configured == 'true'
         env:
           PRODUCTION_URL: ${{ steps.target.outputs.url }}
-          ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance
+          ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance,/files
         run: node scripts/check-production.mjs
 
       # ② الطبقة الثانية: الحدود التي لا توجد إلا بعد التخطيط — حجم النص،
@@ -119,7 +119,7 @@ jobs:
         if: steps.target.outputs.configured == 'true'
         env:
           BASE_URL: ${{ steps.target.outputs.url }}
-          ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance
+          ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance,/files
         run: node scripts/ui-audit.mjs
 
       - name: Summary

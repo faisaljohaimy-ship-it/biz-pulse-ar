@@ -10,6 +10,7 @@ import { PageHeader, Section } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { userFacingError } from "@/lib/errors/user-facing-error";
+import { StaffAccessRegister } from "@/components/access/StaffAccessRegister";
 
 export const Route = createFileRoute("/_authenticated/files")({
   errorComponent: RouteError,
@@ -155,6 +156,15 @@ function FilesPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ── سجلّ الدخول بالرقم الوظيفي (أمر المالك ٢٠٢٦/٠٩/٢٠) ──────────
+          موضعُه مركز الملفّات لأنه **مستند مراجعة** يُحفظ ويُصدَّر، لا
+          إعدادٌ يُضبط. والمكوّن نفسه يُقدَّم في `/settings/access-log`:
+          نسختان لقائمةٍ واحدة تفترقان يومًا، فتُقرأ إحداهما ناقصة ولا
+          يُعرف أيّهما الصحيحة. */}
+      <div className="rounded-2xl border border-border bg-card/60 p-4">
+        <StaffAccessRegister />
       </div>
     </Section>
   );
