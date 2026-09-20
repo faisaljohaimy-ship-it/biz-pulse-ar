@@ -509,3 +509,76 @@ describe("الاختلاقُ الذي لا يضرب في مئة", () => {
     expect(se).toMatch(/overall_score < 0/);
   });
 });
+
+describe("الصنفُ لا الموضع — إقحامُ ثقةٍ بجوار علامة نسبة", () => {
+  // **العلّة التي تكرّرت ثلاث مرّات:** كلُّ حارسٍ سابق يمسك موضعًا أو
+  // شكلًا، فينجو الصنف. وآخرها أنّ تحويل `Prediction.confidence` إلى
+  // اتحادِ سلاسل ترك مستهلكًا ثالثًا يكتب `ثقة ${p.confidence}٪` —
+  // فعُرض **«ثقة estimated٪»** على `/executive`، وهو مسارٌ حيّ.
+  //
+  // و`tsc` عاجزٌ بنيويًّا: إقحام اتحادِ سلاسلَ في قالبٍ نصّيّ صحيحٌ
+  // نوعيًّا. فالصمت هنا ليس سلامة، والحارس يجب أن يمسك **الشكل الدلاليّ**:
+  // قيمةُ ثقةٍ مُقحَمة وعلامةُ نسبةٍ تليها مباشرةً — أينما كانت.
+
+  const INTERPOLATED_PCT = [
+    /\$\{[^}]*\bconfidence\b[^}]*\}\s*[%٪]/i, // `${x.confidence}%`
+    /\{[^}]*\.confidence\s*\}\s*[%٪]/i, // JSX: {p.confidence}%
+  ];
+
+  function walkSrc(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const full = `${dir}/${e.name}`;
+      if (e.isDirectory()) return walkSrc(full);
+      return /\.(ts|tsx)$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) ? [full] : [];
+    });
+  }
+
+  /**
+   * ما يُقحم **رقمًا** لا مصطلحًا.
+   *
+   * الفرق جوهريّ: `${pct}%` حيث `pct` عددٌ يُنتج «٧٢٪» — قد يكون دَينًا
+   * مُعلَنًا لكنّه نصٌّ مفهوم. أمّا `${p.confidence}٪` حيث النوع اتحادُ
+   * سلاسل فيُنتج **«estimated٪»** — لا معنى له بأي لغة. والحارس هنا
+   * لصنف الثاني؛ والأوّل محكومٌ بسجلّ الدَّين أعلاه.
+   */
+  const NUMERIC_INTERPOLATION = new Set([
+    "src/components/sec/alerts-panel.tsx",
+    "src/lib/sec-exec-kpis.functions.ts",
+    "src/lib/sadeed-context.server.ts",
+    "src/routes/_authenticated/sec.index.tsx",
+    "src/routes/_authenticated/sec.timeline.tsx",
+    "src/components/cockpit/overlays.tsx",
+    "src/components/digital-humans/AgentRoster.tsx",
+    "src/components/theater/ExplainPanel.tsx",
+    "src/routes/_authenticated/cockpit.tsx",
+  ]);
+
+  it("**لا ملفَّ يُقحم مصطلحَ ثقةٍ بجوار علامة نسبة**", () => {
+    const offenders = walkSrc("src")
+      .filter((f) => {
+        const src = readFileSync(f, "utf8");
+        const lines = src.split("\n").filter((l) => {
+          const t = l.trim();
+          return !t.startsWith("//") && !t.startsWith("*");
+        });
+        return lines.some((l) => INTERPOLATED_PCT.some((p) => p.test(l)));
+      })
+      .filter((f) => !NUMERIC_INTERPOLATION.has(f));
+    expect(offenders, `إقحامُ ثقةٍ بعلامة نسبة: ${offenders.join(", ")}`).toEqual([]);
+  });
+
+  it("وكلُّ مستهلكٍ لـ`Prediction` يعرض المصطلح لا يُقحمه في نسبة", () => {
+    // النوع تغيّر من `number` إلى اتحادِ سلاسل، و`tsc` لا يرى الفرق داخل
+    // قالبٍ نصّيّ. فيُحصى المستهلكون بالبحث لا بالذاكرة — كان ثلاثةً
+    // وظننتُهم اثنين، فعُرض «estimated٪» على `/executive`.
+    const consumers = walkSrc("src").filter((f) =>
+      /usePredictions|predictions\?\./.test(readFileSync(f, "utf8")),
+    );
+    expect(consumers.length, "لا مستهلك — تغيّر اسم الخطّاف؟").toBeGreaterThanOrEqual(3);
+    for (const f of consumers) {
+      const src = readFileSync(f, "utf8");
+      if (!/\.confidence/.test(src)) continue;
+      expect(src, `${f} يعرض الثقة بلا CONFIDENCE_LABEL`).toMatch(/CONFIDENCE_LABEL/);
+    }
+  });
+});

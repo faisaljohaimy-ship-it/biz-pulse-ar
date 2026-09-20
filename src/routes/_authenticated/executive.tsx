@@ -1,4 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
+import { CONFIDENCE_LABEL } from "@/lib/evidence/confidence-labels";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -507,7 +508,7 @@ function ExecutiveCommandCenter() {
                 <div className="flex items-center justify-between gap-2">
                   <NexusPill tone={p.tone}>{p.kind}</NexusPill>
                   <span className="text-[12px] text-slate-400">
-                    {ar ? `ثقة ${p.confidence}٪` : `${p.confidence}% conf`}
+                    {ar ? CONFIDENCE_LABEL[p.confidence].ar : CONFIDENCE_LABEL[p.confidence].en}
                   </span>
                 </div>
                 <div className="mt-1.5 text-xs font-semibold text-slate-100">
