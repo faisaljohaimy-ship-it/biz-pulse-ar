@@ -327,3 +327,106 @@ describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا",
     }
   });
 });
+
+describe("ولا قيمةَ ثقةٍ مكتوبة خارج ما بُرِّر صراحةً", () => {
+  // الفحص الأوّل يمسك **العرض** (`* 100`)؛ وهذا يمسك **المصدر**:
+  // `confidence: 0.85` مكتوبةً في الشيفرة. والاثنان لا يتداخلان: قيمةٌ
+  // مكتوبة قد تُعرض في ملفٍّ آخر، فلا يراها فحصُ العرض في موضع كتابتها.
+
+  const LITERAL = /confidence["']?\s*[:=]\s*0?\.[0-9]+/i;
+
+  /**
+   * قوالبُ موجِّهات — **ليست قيمًا بل أمثلةُ مخطّط**.
+   *
+   * `"confidence": 0.0` داخل نصّ JSON يُعطى للنموذج ليملأه. لا تُعرض
+   * ولا تُقرأ قياسًا؛ وحذفُها يكسر عقد الردّ.
+   */
+  const PROMPT_SCHEMA: Record<string, string> = {
+    "src/lib/sadeed/executive-brain/reasoning.server.ts": "مثال مخطّط في نصّ موجِّه",
+    "src/lib/sadeed/thinking-loop.server.ts": "مثال مخطّط في نصّ موجِّه",
+  };
+
+  /**
+   * محاكاةٌ مرجعية **معلَنة** — عقيدة «بيانات لا تفرغ».
+   *
+   * موسومة `is_simulation` وتُعرض بشارتها حيث تلزم، فهي إفصاحٌ لا ادّعاء.
+   * والفرق عن الاختلاق أنّ القارئ يُخبَر أنّها محاكاة.
+   */
+  const DECLARED_SIMULATION: Record<string, string> = {
+    "src/lib/exec/showcase-simulation.server.ts": "markSimulation — بيانات عرض موسومة",
+    "src/lib/sec-exec-kpis.functions.ts": "تجهيزات `sim-` موسومة",
+    "src/lib/simulation/exec-scenario.server.ts": "سيناريو محاكاة معلَن",
+    "src/routes/_authenticated/mission-control.tsx": "تجهيزات شاشة عرض",
+  };
+
+  /** دَينٌ معلَن: قيمٌ مكتوبة تُعرض كأنها قياس. */
+  const LITERAL_DEBT: Record<string, string> = {
+    "src/lib/digital-humans/registry.ts": "baselineConfidence — خطُّ أساسٍ لكل شخصية",
+    "src/components/cockpit/repository.ts": "بذرة لوحة القمرة",
+    "src/lib/exec/conversation.functions.ts": "احتياطيّ حتميّ بثقة مكتوبة",
+    "src/lib/sadeed/insight-engine.server.ts": "ثقةُ استنتاجٍ مكتوبة",
+    "src/lib/sadeed/adaptive-preferences.ts": "عتبة تفضيلات",
+    "src/lib/sadeed/learning/pattern-miner.server.ts": "عتبة تنقيب أنماط",
+  };
+
+  const REGISTERED_LITERAL = new Set([
+    ...Object.keys(PROMPT_SCHEMA),
+    ...Object.keys(DECLARED_SIMULATION),
+    ...Object.keys(LITERAL_DEBT),
+  ]);
+
+  function walkAll(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const full = `${dir}/${e.name}`;
+      if (e.isDirectory()) return walkAll(full);
+      return /\.(ts|tsx)$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) ? [full] : [];
+    });
+  }
+
+  function hasLiteral(f: string): boolean {
+    return readFileSync(f, "utf8")
+      .split("\n")
+      .filter((l) => {
+        const t = l.trim();
+        return !t.startsWith("//") && !t.startsWith("*");
+      })
+      .some((l) => LITERAL.test(l));
+  }
+
+  const WITH_LITERAL = walkAll("src").filter(hasLiteral);
+
+  it("**كل قيمةٍ مكتوبة مسجَّلة** — والجديدة تُسقط الاختبار", () => {
+    const rogue = WITH_LITERAL.filter((f) => !REGISTERED_LITERAL.has(f));
+    expect(rogue, `قيمُ ثقةٍ مكتوبة غير مبرَّرة: ${rogue.join(", ")}`).toEqual([]);
+  });
+
+  it("ولكلٍّ سببٌ منصوص", () => {
+    for (const [f, why] of [
+      ...Object.entries(PROMPT_SCHEMA),
+      ...Object.entries(DECLARED_SIMULATION),
+      ...Object.entries(LITERAL_DEBT),
+    ]) {
+      expect(why.trim().length, `${f} بلا سبب`).toBeGreaterThan(10);
+    }
+  });
+
+  it("والسجلّ لا يتعفّن", () => {
+    for (const f of REGISTERED_LITERAL) {
+      expect(hasLiteral(f), `${f} لم يعد يحوي قيمةً مكتوبة — احذفه`).toBe(true);
+    }
+  });
+
+  it("**ولا قيمةَ مكتوبة في مسار الموجز أو المخاطر** — وهما ما أُصلح", () => {
+    for (const f of [
+      "src/lib/exec/briefing.functions.ts",
+      "src/lib/exec/briefing-confidence.ts",
+      "src/lib/exec/predictive.functions.ts",
+      "src/lib/exec/risk-grounding.ts",
+      "src/lib/exec/decisions.functions.ts",
+      "src/lib/exec/bridge.functions.ts",
+      "src/components/theater/ExplainPanel.tsx",
+    ]) {
+      expect(hasLiteral(f), `${f} عاد يحمل قيمةَ ثقةٍ مكتوبة`).toBe(false);
+    }
+  });
+});
