@@ -12,6 +12,7 @@
  * one-click 60s briefing.
  */
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { UNMEASURED_TEXT_AR } from "@/lib/evidence/evidence";
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -329,7 +330,13 @@ function TheaterPage() {
           <HealthChip
             icon={Brain}
             label={ar ? "ثقة الذكاء" : "AI Confidence"}
-            value={`${Math.round((health?.ai_confidence ?? 0) * 100)}%`}
+            // `null` = لا وكيل له تشغيلٌ يُقاس. ولا يُملأ بصفرٍ يُقرأ
+            // «ثقة معدومة» وهو «لا قياس».
+            value={
+              health?.ai_confidence == null
+                ? UNMEASURED_TEXT_AR
+                : `${Math.round(health.ai_confidence * 100)}%`
+            }
             tone={(health?.ai_confidence ?? 0) > 0.75 ? "emerald" : "cyan"}
           />
         </section>

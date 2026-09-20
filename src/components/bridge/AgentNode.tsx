@@ -4,6 +4,7 @@
  * + status). Status pill, halo animation, confidence ring.
  */
 import { cn } from "@/lib/utils";
+import { UNMEASURED_TEXT_AR } from "@/lib/evidence/evidence";
 import type { BridgeAgent, BridgeAgentStatus } from "@/lib/exec/bridge.functions";
 import { findHuman } from "@/lib/digital-humans/registry";
 import { AgentPulseIcon } from "@/components/digital-humans/AgentPulseIcon";
@@ -88,7 +89,9 @@ function pickPersona(name: string): string {
 export function AgentNode({ agent, ar, size = 96, spotlight, onClick }: Props) {
   const persona = findHuman(pickPersona(agent.name)) ?? findHuman("risk_intelligence")!;
   const status = STATUS_LABEL[agent.status];
-  const pct = Math.round(agent.confidence * 100);
+  // `null` = لا تشغيلَ سابق يُقاس. ولا يُملأ برقمٍ مطمئن.
+  const pct = agent.confidence === null ? null : Math.round(agent.confidence * 100);
+  const ring = agent.confidence ?? 0;
 
   return (
     <button
@@ -145,15 +148,17 @@ export function AgentNode({ agent, ar, size = 96, spotlight, onClick }: Props) {
             fill="none"
             stroke="currentColor"
             className={cn(
-              agent.confidence >= 0.85
-                ? "text-emerald-300"
-                : agent.confidence >= 0.6
-                  ? "text-cyan-300"
-                  : "text-amber-300",
+              agent.confidence === null
+                ? "text-white/25"
+                : agent.confidence >= 0.85
+                  ? "text-emerald-300"
+                  : agent.confidence >= 0.6
+                    ? "text-cyan-300"
+                    : "text-amber-300",
             )}
             strokeWidth="3"
             strokeLinecap="round"
-            strokeDasharray={`${(agent.confidence * 289).toFixed(1)} 289`}
+            strokeDasharray={`${(ring * 289).toFixed(1)} 289`}
           />
         </svg>
       </div>
@@ -178,7 +183,9 @@ export function AgentNode({ agent, ar, size = 96, spotlight, onClick }: Props) {
           <status.Icon className="h-3 w-3" />
           <span>{ar ? status.ar : status.en}</span>
           <span className="text-white/30">·</span>
-          <span className="tabular-nums">{pct}%</span>
+          <span className={pct === null ? "" : "tabular-nums"}>
+            {pct === null ? UNMEASURED_TEXT_AR : `${pct}%`}
+          </span>
         </div>
         {agent.current_task && (
           <div className="mt-1 line-clamp-2 text-[12px] leading-tight text-white/55">

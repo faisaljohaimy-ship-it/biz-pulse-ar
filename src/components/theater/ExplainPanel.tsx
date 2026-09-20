@@ -21,6 +21,7 @@ import {
   Gauge,
 } from "lucide-react";
 import type { NarratorLine } from "@/lib/narrator/event-narrator";
+import { UNMEASURED_TEXT_AR } from "@/lib/evidence/evidence";
 import type { BridgeAgent } from "@/lib/exec/bridge.functions";
 import { cn } from "@/lib/utils";
 
@@ -69,9 +70,11 @@ export function ExplainPanel({ line, agent, ar, onClose }: Props) {
       : "Detected automatically from the live operations stream.");
   const result = ar ? line.result_ar : line.result_en;
   const awaiting = ar ? "بانتظار الأدلة" : "Awaiting evidence";
-  const confidence = agent
-    ? Math.round((agent.confidence ?? 0) * 100)
-    : Math.round((line.tone === "success" ? 0.9 : line.tone === "critical" ? 0.55 : 0.7) * 100);
+  // **لا ثقةَ مشتقّة من نبرة السطر.** كانت تُختلق من `line.tone`
+  // (‏`success → 0.9` · `critical → 0.55` · وإلا `0.7`): رقمٌ يُولَد من
+  // وصفٍ لغويّ ثم يُعرض نسبةً كأنه قياس. وبلا وكيلٍ ذي تاريخ لا قياس
+  // أصلًا، فتُعرض «لم يُقَس».
+  const confidence = agent?.confidence == null ? null : Math.round(agent.confidence * 100);
   const businessImpact =
     line.severity === "critical" || line.tone === "critical"
       ? ar
@@ -183,8 +186,16 @@ export function ExplainPanel({ line, agent, ar, onClose }: Props) {
           <Lane
             icon={Gauge}
             label={ar ? "الثقة" : "Confidence"}
-            value={`${confidence}%`}
-            tone={confidence >= 75 ? "good" : confidence < 55 ? "critical" : "neutral"}
+            value={confidence === null ? UNMEASURED_TEXT_AR : `${confidence}%`}
+            tone={
+              confidence === null
+                ? "neutral"
+                : confidence >= 75
+                  ? "good"
+                  : confidence < 55
+                    ? "critical"
+                    : "neutral"
+            }
           />
           <Lane
             icon={BookOpen}

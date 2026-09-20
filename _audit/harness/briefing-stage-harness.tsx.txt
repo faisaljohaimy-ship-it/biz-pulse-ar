@@ -1,0 +1,43 @@
+import { createRoot } from "react-dom/client";
+import { BriefingStage } from "@/components/bridge/BriefingStage";
+import "@/styles.css";
+
+const mk = (measured: boolean) => ({
+  total_seconds: 0,
+  generated_at: new Date().toISOString(),
+  segments: [],
+  recommendation: {
+    title_ar: "تعزيز الدوريات في المنطقة الشرقية خلال الأربع والعشرين ساعة القادمة",
+    title_en: "Reinforce eastern-region patrols over the next twenty-four hours",
+    rationale_ar:
+      "بناءً على 12 بلاغًا مفتوحًا و4 دوريات نشطة و1 تصريح عالي الخطورة، يُوصى بالتنسيق المباشر بين قيادة الحوادث والدوريات.",
+    rationale_en:
+      "Based on 12 open incidents, 4 active patrols and 1 high-risk permit, coordinate incident command with patrol leads.",
+    confidence: measured
+      ? {
+          measured: true as const,
+          value: "derived" as const,
+          confidence: "derived" as const,
+          evidence: [
+            {
+              kind: "db.query" as const,
+              source: "sec_incidents,sec_patrols,sec_permits",
+              observedAt: new Date().toISOString(),
+            },
+          ],
+        }
+      : { measured: false as const, reason: "لا مشاهدات تشغيلية مرصودة — لا يمكن إثبات درجة ثقة" },
+    horizon_hours: 24,
+  },
+});
+
+const params = new URLSearchParams(location.search);
+const ar = params.get("lang") !== "en";
+const measured = params.get("state") !== "unmeasured";
+document.documentElement.dir = ar ? "rtl" : "ltr";
+document.documentElement.lang = ar ? "ar" : "en";
+
+createRoot(document.getElementById("root")!).render(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  <BriefingStage briefing={mk(measured) as any} ar={ar} onClose={() => {}} backTo={{ ar: "رجوع", en: "Back" }} />,
+);

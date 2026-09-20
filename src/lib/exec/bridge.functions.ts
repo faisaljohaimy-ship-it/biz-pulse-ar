@@ -30,8 +30,14 @@ export type BridgeAgent = {
   goal: string | null;
   enabled: boolean;
   status: BridgeAgentStatus;
-  /** 0..1 confidence derived from recent run success ratio. */
-  confidence: number;
+  /**
+   * نسبةُ نجاحِ آخر التشغيلات — **أو `null` حين لا تشغيلَ يُقاس.**
+   *
+   * كانت تسقط إلى `0.85` ثابتًا عند غياب التاريخ: رقمٌ مكتوب يُعرض
+   * كأنه قياس، ويرفع متوسّط `ai_confidence` معه. و«لا تاريخ» ليست
+   * «ثقةٌ عالية» — هي **لا قياس** (المادة ٢٧).
+   */
+  confidence: number | null;
   /** Latest current task line, or null when idle. */
   current_task: string | null;
   last_run_at: string | null;
@@ -48,7 +54,16 @@ export type BridgeHealth = {
   active_permits: number;
   open_work_orders: number;
   compliance_score: number;
-  ai_confidence: number;
+  /**
+   * متوسّط ما قِيس من الوكلاء على مقياس **٠..١** — `null` حين لا وكيل
+   * له تاريخ.
+   *
+   * كان يُعاد مضروبًا في مئة (‏`Math.round(avg * 100)`) بينما المحاكاة
+   * تعيد `0.93` والمستهلك (`theater.tsx`) يضرب في مئة ويقارن بـ`0.75`.
+   * فكان المسار الحيّ يعرض **٨٥٠٠٪** والمحاكاة ٩٣٪ — عطلٌ لا يظهر ما
+   * دامت المحاكاة هي المخدومة. المقياس الآن واحدٌ في المسارين.
+   */
+  ai_confidence: number | null;
   agents_online: number;
   agents_total: number;
 };
@@ -152,10 +167,9 @@ async function fetchBridgeState(
       const completed = recent.filter((r) => r.status === "completed").length;
       const failed = recent.filter((r) => r.status === "failed").length;
       const total = completed + failed;
-      const confidence =
-        total === 0
-          ? 0.85 // baseline when no history
-          : Math.max(0.4, completed / total);
+      // لا تشغيلَ سابق ⇐ لا قياس. والرقم المكتوب هنا كان يُعرض نسبةً
+      // على شاشةٍ تنفيذية بلا ما يسنده.
+      const confidence = total === 0 ? null : Math.max(0.4, completed / total);
 
       let status: BridgeAgentStatus = d.enabled ? "monitoring" : "offline";
       if (last) {
@@ -222,9 +236,15 @@ async function fetchBridgeState(
           contractors.reduce((s, c) => s + (c.compliance_score ?? 0), 0) / contractors.length,
         )
       : 0;
-    const aiConfidence = agents.length
-      ? Math.round((agents.reduce((s, a) => s + a.confidence, 0) / agents.length) * 100)
-      : 0;
+    // المتوسّط على **المقيس وحده**: إدخالُ غير المقيس بقيمةٍ مفترَضة يصنع
+    // رقمًا يبدو مقيسًا وهو خليطٌ من قياسٍ وافتراض. ولا مقيسَ إطلاقًا ⇐
+    // `null` لا صفر: الصفر ثقةٌ معدومة، والغياب لا حكم.
+    const measuredAgents = agents.filter(
+      (a): a is (typeof agents)[number] & { confidence: number } => a.confidence !== null,
+    );
+    const aiConfidence = measuredAgents.length
+      ? measuredAgents.reduce((s, a) => s + a.confidence, 0) / measuredAgents.length
+      : null;
 
     // Composite health: 100 minus weighted incident pressure, floored at 35.
     const incidentPenalty =

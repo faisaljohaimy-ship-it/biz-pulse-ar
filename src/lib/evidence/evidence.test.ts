@@ -217,45 +217,45 @@ describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا",
   ];
 
   /**
-   * قياسٌ حقيقيّ — يُستثنى بحقّ.
+   * **كل سطحٍ مبرَّرٌ بمفرده** — لا قائمةٌ مجملة.
    *
-   * `sec_cctv_alerts.confidence` درجةُ مصنِّفٍ على صفٍّ في القاعدة: مخرَجُ
-   * كاشفٍ لا رقمٌ يُكتب. وعرضُها نسبةً **صادق**، ومنعُها يخسر معلومةً
-   * حقيقية. الفرق عن المحظور ليس في الشكل بل في المصدر.
+   * المفتاح مسار الملفّ، والقيمة سببُ بقائه. والفرق بين «مقيس» و«دَين»
+   * **في المصدر لا في الشكل**: كلاهما يكتب `* 100`.
    */
-  const MEASURED_DETECTOR = [
-    "src/components/sec/alerts-panel.tsx",
-    "src/lib/sec-exec-kpis.functions.ts",
-    "src/lib/sadeed-context.server.ts",
-    "src/routes/_authenticated/sec.index.tsx",
-    "src/routes/_authenticated/sec.timeline.tsx",
-  ];
+  const JUSTIFIED: Record<string, string> = {
+    // ── قياسٌ حقيقيّ: مخرَجُ مصنِّفٍ على صفٍّ في القاعدة ──────────────
+    "src/components/sec/alerts-panel.tsx": "sec_cctv_alerts.confidence — درجة كاشف",
+    "src/lib/sec-exec-kpis.functions.ts": "sec_cctv_alerts.confidence — درجة كاشف",
+    "src/lib/sadeed-context.server.ts": "sec_cctv_alerts.confidence — درجة كاشف",
+    "src/routes/_authenticated/sec.index.tsx": "sec_cctv_alerts.confidence — درجة كاشف",
+    "src/routes/_authenticated/sec.timeline.tsx": "sec_cctv_alerts.confidence — درجة كاشف",
+
+    // ── قياسٌ حقيقيّ: نسبة نجاح تشغيلات الوكيل، أو «لم يُقَس» ─────────
+    // أُصلحت في P0: كانت تسقط إلى `0.85` ثابتًا بلا تاريخ، وصارت `null`
+    // تُعرض «لم يُقَس». والضرب في مئة باقٍ لأن القيمة **تُقاس فعلًا**.
+    "src/components/bridge/AgentNode.tsx": "completed/total للتشغيلات — أو null",
+    "src/components/theater/ExplainPanel.tsx": "نفس المصدر — والاشتقاق من النبرة أُزيل",
+    "src/routes/_authenticated/theater.tsx": "متوسّط المقيس وحده — أو null",
+  };
 
   /**
-   * دَينٌ **معلَن** لا استثناء.
+   * دَينٌ **معلَن** لا استثناء — لكلٍّ سببه ومصدره.
    *
-   * ثقةُ الوكلاء مصدرها `spec.baselineConfidence` — خطُّ أساسٍ مكتوب؛
-   * و`health.ai_confidence` و`d.confidence` من المصنف نفسه؛ و«بثقة ٩١٪»
-   * في `analyst` و«74%» في `demo/timeline` نصوصُ سيناريو مكتوبة.
-   * كلّها من صنف P0-4 نفسه، وعلاجها خارج نطاق P0 المأذون.
-   *
-   * وإدراجُها هنا **يُبقيها مرئية**: إن عولج أحدها ولم تُحدَّث القائمة
-   * سقط الاختبار — فالقائمة لا تتعفّن صامتة.
+   * كلّها من صنف P0-4، وعلاجها يمسّ أسطحًا خارج نطاق P0 المأذون.
+   * وإدراجُها هنا يُبقيها مرئية: إن عولج أحدها ولم تُحدَّث القائمة سقط
+   * الاختبار، فالقائمة لا تتعفّن صامتة.
    */
-  const DECLARED_DEBT = [
-    "src/components/bridge/AgentNode.tsx",
-    "src/components/cockpit/overlays.tsx",
-    "src/components/cockpit/sadeed-panel.tsx",
-    "src/components/digital-humans/AgentRoster.tsx",
-    "src/components/situation-room/AgentConversation.tsx",
-    "src/components/theater/ExplainPanel.tsx",
-    "src/lib/demo/timeline.ts",
-    "src/lib/exec/bridge.functions.ts",
-    "src/lib/executive-presentation.functions.ts",
-    "src/routes/_authenticated/analyst.tsx",
-    "src/routes/_authenticated/investor.tsx",
-    "src/routes/_authenticated/theater.tsx",
-  ];
+  const DECLARED_DEBT: Record<string, string> = {
+    "src/components/digital-humans/AgentRoster.tsx": "spec.baselineConfidence — خطُّ أساسٍ مكتوب",
+    "src/components/cockpit/overlays.tsx": "snapshot.sadeed.confidence — مصدرٌ غير مقيس",
+    "src/components/cockpit/sadeed-panel.tsx": "sadeed.confidence — مصدرٌ غير مقيس",
+    "src/components/situation-room/AgentConversation.tsx": "ثقةُ دور ومُخرَجٍ من نموذج",
+    "src/lib/executive-presentation.functions.ts":
+      "finn_decisions.confidence — رقمٌ مخزَّن بلا إسناد",
+    "src/routes/_authenticated/investor.tsx": "finn_decisions.confidence — نفسه",
+    "src/routes/_authenticated/analyst.tsx": "«بثقة ٩١٪» نصُّ سيناريو عرضٍ مكتوب",
+    "src/lib/demo/timeline.ts": "«بثقة 0.92» نصُّ خطِّ زمنٍ تجريبيّ مكتوب",
+  };
 
   function walk(dir: string): string[] {
     return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
@@ -277,7 +277,7 @@ describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا",
   }
 
   const ALL = walk("src").filter(matches);
-  const REGISTERED = new Set([...MEASURED_DETECTOR, ...DECLARED_DEBT]);
+  const REGISTERED = new Set([...Object.keys(JUSTIFIED), ...Object.keys(DECLARED_DEBT)]);
 
   it("**لا سطحَ غير مسجَّل** — الحارس يفشل مغلقًا", () => {
     const rogue = ALL.filter((f) => !REGISTERED.has(f));
@@ -302,9 +302,15 @@ describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا",
     }
   });
 
+  it("**ولكلّ سطحٍ سببٌ منصوص** — لا تبريرَ مجمل", () => {
+    for (const [f, why] of [...Object.entries(JUSTIFIED), ...Object.entries(DECLARED_DEBT)]) {
+      expect(why.trim().length, `${f} بلا سبب`).toBeGreaterThan(10);
+    }
+  });
+
   it("والسجلّان لا يتعفّنان — كل مسجَّلٍ ما زال مطابقًا", () => {
     // قائمةٌ تبقى بعد معالجة ما فيها كذبٌ صامت في الاتجاه الآخر.
-    for (const f of [...MEASURED_DETECTOR, ...DECLARED_DEBT]) {
+    for (const f of [...Object.keys(JUSTIFIED), ...Object.keys(DECLARED_DEBT)]) {
       expect(matches(f), `${f} لم يعد يطابق — احذفه من السجلّ`).toBe(true);
     }
   });
