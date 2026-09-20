@@ -11,6 +11,13 @@ import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-midd
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 // اسم المساعد المعروض من مصدره الوحيد (قرار المالك ٢٠٢٦/٠٨/٠٩).
 import { BRAND_ASSISTANT } from "@/lib/domain";
+import type { Confidence, Grounded } from "@/lib/evidence/evidence";
+import {
+  briefingConfidence,
+  spokenConfidenceAr,
+  spokenConfidenceEn,
+  type BriefingSignal,
+} from "./briefing-confidence";
 
 export type BriefingSegment = {
   /** Seconds offset from briefing start. */
@@ -35,7 +42,15 @@ export type ExecutiveBriefing = {
     title_en: string;
     rationale_ar: string;
     rationale_en: string;
-    confidence: number;
+    /**
+     * درجة اليقين — **مشتقّة من المرصود، أو غائبة حاملةً سببها.**
+     *
+     * كانت `number`: `Number(parsed.confidence ?? 0.8)` على مسار النموذج
+     * (رقمٌ يقوله النموذج عن نفسه)، و`0.78/0.86` ثابتَين على المسار
+     * الحتميّ. وكان سَدِيد **ينطقها**، فتصل أذنَ مسؤولٍ نسبةٌ بلا أصل.
+     * والسياسة الآن في `./briefing-confidence`.
+     */
+    confidence: Grounded<Confidence>;
     horizon_hours: number;
   };
 };
@@ -107,6 +122,17 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
       (p) => p.risk_level === "high" && ["approved", "active", "in_progress"].includes(p.status),
     ).length;
 
+    // ── أساس الثقة: ما رُصد فعلًا، ولحظةُ رصده ──────────────────────────
+    // يُبنى هنا قبل أي استدعاء نموذج، فيكون مدخلَ الثقة على المسارين
+    // معًا — ولا يبقى للنموذج طريقٌ يحقن منه رقمًا.
+    const observedAt = new Date().toISOString();
+    const signal: BriefingSignal = {
+      openIncidents: open.length,
+      criticalIncidents: critical.length,
+      activePatrols,
+      highRiskPermits: openHighRiskPermits,
+    };
+
     const segments: BriefingSegment[] = [];
 
     const postureAr = critical.length
@@ -174,7 +200,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
 
       const prompt =
         `You are SADEED, executive industrial-security assistant for all authorised regions and sites. Read these agent findings and the operational snapshot. ` +
-        `Return STRICT JSON with keys title_ar, title_en, rationale_ar, rationale_en, confidence (0..1), horizon_hours (integer). ` +
+        `Return STRICT JSON with keys title_ar, title_en, rationale_ar, rationale_en, horizon_hours (integer). ` +
         `Be specific, non-technical, executive-tone. No tables, no markdown.\n\n` +
         `Snapshot: open=${open.length} critical=${critical.length} patrols=${activePatrols} permits_high=${openHighRiskPermits}.\n\n` +
         `Findings:\n${findings}`;
@@ -192,7 +218,9 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
         title_en: String(parsed.title_en ?? "Maintain current posture"),
         rationale_ar: String(parsed.rationale_ar ?? ""),
         rationale_en: String(parsed.rationale_en ?? ""),
-        confidence: Math.max(0, Math.min(1, Number(parsed.confidence ?? 0.8))),
+        // **لا تُقرأ `parsed.confidence`.** صياغةُ النموذج مقبولة،
+        // أمّا درجة اليقين فتُشتقّ من العدّات المرصودة وحدها.
+        confidence: briefingConfidence(signal, observedAt),
         horizon_hours: Math.max(1, Math.min(168, Math.round(Number(parsed.horizon_hours ?? 24)))),
       };
     } catch (err) {
@@ -211,7 +239,7 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
         title_en: focus.en,
         rationale_ar: `بناءً على ${open.length} بلاغًا مفتوحًا و${activePatrols} دورية نشطة و${openHighRiskPermits} تصريحًا عالي الخطورة، يُوصى بالتنسيق المباشر بين قيادة الحوادث والدوريات خلال الـ24 ساعة القادمة.`,
         rationale_en: `Based on ${open.length} open incidents, ${activePatrols} active patrols, and ${openHighRiskPermits} high-risk permits, coordinate Incident Command with patrol leads for the next 24 hours.`,
-        confidence: critical.length > 0 ? 0.78 : 0.86,
+        confidence: briefingConfidence(signal, observedAt),
         horizon_hours: 24,
       };
       console.warn("[briefing] Gemini unavailable, used deterministic recommendation:", err);
@@ -222,8 +250,10 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
       at: 55,
       speaker_id: "aria",
       speaker_name: BRAND_ASSISTANT.nameAr,
-      text_ar: `التوصية: ${recommendation.title_ar}. مستوى الثقة ${Math.round(recommendation.confidence * 100)}٪.`,
-      text_en: `Recommendation: ${recommendation.title_en}. Confidence ${Math.round(recommendation.confidence * 100)}%.`,
+      // النسبة المنطوقة حُذفت: كانت تُنطق ولا أصل لها. وما يُنطق الآن
+      // **وصفُ كيفِ عُرف** — أو تصريحٌ بأن الثقة لا تُثبت.
+      text_ar: `التوصية: ${recommendation.title_ar}. ${spokenConfidenceAr(recommendation.confidence)}`,
+      text_en: `Recommendation: ${recommendation.title_en}. ${spokenConfidenceEn(recommendation.confidence)}`,
     });
 
     // Persist the briefing (signed-in users only; guests get an ephemeral one).

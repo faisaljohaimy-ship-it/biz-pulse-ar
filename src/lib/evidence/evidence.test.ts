@@ -10,7 +10,7 @@
  * FR-19 نصًّا («do not fork»). فصار الانشقاق يُسقط الاختبار.
  */
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { hasEvidence } from "./gate";
 import {
   UNMEASURED_TEXT_AR,
@@ -197,23 +197,81 @@ describe("نصّ الغياب — أربع نسخ قائمة يجب ألّا ت�
   });
 });
 
-describe("لا «ثقة ٪» تعود إلى أي سطح", () => {
-  // كانت الشاشة الواحدة تعرض «ثقة ٨٧٪» في لوح و«ثقة ٧٢٪» في المجاور:
-  // الأولى رقمٌ يقوله نموذجٌ عن نفسه أو ثابتٌ مكتوب، والثانية `score`
-  // مقسومًا على مئة — ولا واحدة منهما قياس.
-  const SURFACES = [
-    "src/components/sec/sec-ops-insights.tsx",
-    "src/components/situation-room/DecisionEngine.tsx",
+describe("لا «ثقة ٪» مختلَقة في أي سطح — بمسحٍ شاملٍ لا بقائمة شمول", () => {
+  // كانت القائمة **شمولًا**: أربعة ملفّات واسمٌ يقول «أي سطح». وذلك عين
+  // العلّة التي يسمّيها هذا المستودع مرارًا (اختبار RLS بصلاحية superuser ·
+  // نسخ `UNMEASURED_AR` الأربع): حارسٌ مسمّاه أوسع ممّا يقيس، فتُقرأ
+  // خضرتُه شهادةً لما لم يُفحَص. وقد أثبت ذلك عمليًّا: مرّ بينما
+  // `speak-agent.ts` **ينطق** النسبة على الشاشة نفسها.
+  //
+  // فصار المسح شاملًا لـ`src/**`، والاستثناء **صريحًا ومُبرَّرًا**:
+  // ثقةُ كاشفٍ (CCTV) قياسٌ حقيقيّ يُخرجه مصنِّف، وعرضُها نسبةً صادق.
+  // والمحظور هو ثقةٌ **مختلَقة**: يقولها نموذجٌ عن نفسه، أو تُكتب ثابتًا،
+  // أو تُشتقّ من رقمٍ آخر معروضٍ بجوارها.
+
+  /** قياسٌ حقيقيّ: درجةُ كاشفٍ على صفٍّ في `sec_cctv_alerts`. */
+  const MEASURED_DETECTOR = [
+    "src/components/sec/alerts-panel.tsx",
+    "src/lib/sec-exec-kpis.functions.ts",
+    "src/lib/sadeed-context.server.ts",
+    "src/routes/_authenticated/sec.index.tsx",
+    "src/routes/_authenticated/sec.timeline.tsx",
   ];
 
-  it("لا `confidence * 100` في أي سطح عرض", () => {
-    for (const f of SURFACES) {
-      expect(readFileSync(f, "utf8"), `${f} أعاد النسبة`).not.toMatch(/confidence \* 100/);
+  /**
+   * دَينٌ **معلَن** لا استثناء: ثقةُ أسطول الوكلاء مصدرها
+   * `spec.baselineConfidence` — خطُّ أساسٍ مكتوب. عرضُها نسبةً اختلاقٌ
+   * من صنف P0-4 نفسه، ونُطقُها أُزيل في هذه الدفعة. وما بقي **عرضٌ**
+   * في أسطح الأسطول، مُدرَجٌ هنا صراحةً كي يبقى مرئيًّا حتى يُعالَج.
+   */
+  const DECLARED_DEBT = [
+    "src/components/bridge/AgentNode.tsx",
+    "src/components/digital-humans/AgentRoster.tsx",
+    "src/components/situation-room/AgentConversation.tsx",
+    "src/components/cockpit/overlays.tsx",
+    "src/components/cockpit/sadeed-panel.tsx",
+  ];
+
+  function walk(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const full = `${dir}/${e.name}`;
+      if (e.isDirectory()) return walk(full);
+      return /\.(ts|tsx)$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) ? [full] : [];
+    });
+  }
+
+  const OFFENDERS = walk("src")
+    .filter((f) => !MEASURED_DETECTOR.includes(f) && !DECLARED_DEBT.includes(f))
+    .filter((f) => /confidence \* 100/.test(readFileSync(f, "utf8")));
+
+  it("لا سطحَ جديد يعرض نسبة ثقة مختلَقة", () => {
+    expect(OFFENDERS, `أسطحٌ جديدة: ${OFFENDERS.join(", ")}`).toEqual([]);
+  });
+
+  it("**ولا نسبةَ ثقةٍ تُنطق** — في أي ملفّ نطق", () => {
+    // المنطوق أشدّ أثرًا: لا شارة معه ولا مصدر. وهذا ما فات الحارس أوّلًا.
+    const spoken = walk("src")
+      .filter((f) => /speak|voice|tts/i.test(f))
+      .filter((f) => /confidence \* 100/.test(readFileSync(f, "utf8")));
+    expect(spoken, `نطقٌ لنسبة ثقة: ${spoken.join(", ")}`).toEqual([]);
+  });
+
+  it("والدَّين المعلَن يبقى معلَنًا — يسقط الاختبار إن عُولج ولم تُحدَّث القائمة", () => {
+    // قائمةٌ تُترك بعد معالجة ما فيها تصير كذبًا صامتًا في الاتجاه الآخر.
+    for (const f of DECLARED_DEBT) {
+      expect(
+        /confidence \* 100/.test(readFileSync(f, "utf8")),
+        `${f} لم يعد يعرض النسبة — احذفه من DECLARED_DEBT`,
+      ).toBe(true);
     }
   });
 
   it("وتسمية الدرجة مصدرٌ واحد لا نسخة لكل سطح", () => {
-    for (const f of SURFACES) {
+    for (const f of [
+      "src/components/sec/sec-ops-insights.tsx",
+      "src/components/situation-room/DecisionEngine.tsx",
+      "src/components/bridge/BriefingStage.tsx",
+    ]) {
       const src = readFileSync(f, "utf8");
       expect(src, `${f} يعرّف نسخةً محلّية`).not.toMatch(/const CONFIDENCE_LABEL/);
       expect(src).toMatch(/from "@\/lib\/evidence\/confidence-labels"/);

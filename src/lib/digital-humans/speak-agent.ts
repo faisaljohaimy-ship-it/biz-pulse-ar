@@ -130,14 +130,17 @@ export function speakRuntimeAgent(
 /** Tap-to-speak adapter used by the live Executive Bridge agent ring. */
 export function speakAgent(agent: BridgeAgent, ar: boolean): void {
   const speaker = resolveAgentSpeaker({ id: agent.id, name: agent.name });
-  const pct = Math.round(agent.confidence * 100);
+  // **لا نسبةَ ثقةٍ تُنطق.** كانت «بثقة ٨٧ بالمئة»، ومصدرها
+  // `spec.baselineConfidence` — خطُّ أساسٍ مكتوب يُنعَّم بدفعات، لا قياس.
+  // والمنطوق أشدّ أثرًا من المعروض: لا شارة معه ولا مصدر، ويسمعه المسؤول
+  // قرارًا. فيبقى وصف الحالة، ويسقط الرقم الذي لا أصل له.
   const statusAr = STATUS_AR[agent.status] ?? "في وضع المراقبة";
   const statusEn = STATUS_EN[agent.status] ?? "monitoring";
   const task = cleanForSpeech(agent.current_task, 500);
   const last = cleanForSpeech(agent.last_run_status, 120);
   const text = ar
-    ? `أنا ${speaker.name_ar}، ${speaker.title_ar}. ${statusAr} بثقة ${pct} بالمئة.${task ? ` مهمتي الحالية: ${task}.` : ""}${last ? ` آخر تنفيذ: ${last}.` : ""}`
-    : `I am ${speaker.name_en}, ${speaker.title_en}. I am ${statusEn} with ${pct} percent confidence.${task ? ` Current task: ${task}.` : ""}${last ? ` Last run: ${last}.` : ""}`;
+    ? `أنا ${speaker.name_ar}، ${speaker.title_ar}. ${statusAr}.${task ? ` مهمتي الحالية: ${task}.` : ""}${last ? ` آخر تنفيذ: ${last}.` : ""}`
+    : `I am ${speaker.name_en}, ${speaker.title_en}. I am ${statusEn}.${task ? ` Current task: ${task}.` : ""}${last ? ` Last run: ${last}.` : ""}`;
 
   void speakAs(speaker, { text, lang: ar ? "ar" : "en" }).promise.catch((error) => {
     console.warn("[agent-voice] tap narration failed", error);

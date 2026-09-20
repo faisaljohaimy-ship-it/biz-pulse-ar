@@ -30,6 +30,41 @@ export type ExecuteToolResult = {
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_RETRY = { max: 2, baseMs: 750 };
 
+/** قرارات المنع قبل التنفيذ — تُسجَّل كلُّها في الأثر. */
+export type DenialDecision = "disabled" | "unauthorized" | "misconfigured";
+
+/**
+ * يسجّل **قرار منع**، لا إخفاقَ تنفيذ.
+ *
+ * الأثر قبل هذا كان يحمل نتائج التنفيذ وحدها (`tool.execute.*`)؛ أمّا من
+ * حاول أداةً فمُنع فلم يترك سطرًا. والمحاولة المرفوضة أدلّ أمنيًّا من
+ * الناجحة: تكرارُها من فاعلٍ واحد هو ما يُقرأ محاولةَ تصعيدِ صلاحيات،
+ * وغيابُها يجعل ذلك غير مرئيّ بالكامل.
+ *
+ * ولا يرمي: تسجيلُ المنع لا يجوز أن يمنع المنع نفسه من الوقوع.
+ */
+async function auditDenial(
+  supabase: SupabaseClient<Database>,
+  params: {
+    toolId: string;
+    actorId: string;
+    orgId: string | null;
+    decision: DenialDecision;
+    detail: string | null;
+  },
+): Promise<void> {
+  await audit(supabase, {
+    actor_id: params.actorId,
+    org_id: params.orgId,
+    action: `tool.denied.${params.decision}`,
+    resource_type: "tool",
+    resource_id: params.toolId,
+    status: "denied",
+    source: "tool-orchestrator",
+    metadata: { decision: params.decision, detail: params.detail },
+  });
+}
+
 async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
   return await Promise.race([
     p,
@@ -109,17 +144,54 @@ export async function executeTool(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: reg, error: regErr } = await (supabase as any)
     .from("tool_registry")
-    .select("id, enabled, permissions, requires_approval, rollback_kind")
+    .select("id, enabled, permissions, requires_approval, rollback_kind, metadata")
     .eq("id", toolId)
     .maybeSingle();
   if (regErr || !reg) throw new Error(`Tool not registered: ${toolId}`);
-  if (!reg.enabled) throw new Error(`Tool disabled: ${toolId}`);
+  if (!reg.enabled) {
+    // السبب يُنقل مع الرفض — «Tool disabled» وحدها لا تقول **لماذا**،
+    // فيُقرأ تعطيلُ حارسِ المخطّط (تابعٌ غائب) كأنه قرار تشغيليّ، ويُبحث
+    // عن العلّة في غير موضعها. الحارس `20260920140000` يكتب السبب في
+    // `metadata.disabled_reason`، وهنا يُقرأ.
+    const reason = (reg.metadata as Record<string, unknown> | null)?.disabled_reason;
+    await auditDenial(supabase, {
+      toolId,
+      actorId,
+      orgId,
+      decision: "disabled",
+      detail: typeof reason === "string" ? reason : null,
+    });
+    throw new Error(
+      `Tool disabled: ${toolId}${typeof reason === "string" && reason ? ` — ${reason}` : ""}`,
+    );
+  }
 
   // 2) Permission check
   const permissions = Array.isArray(reg.permissions) ? reg.permissions : [];
-  if (!permissions.length) throw new Error(`Tool ${toolId} has no permissions configured`);
+  if (!permissions.length) {
+    await auditDenial(supabase, {
+      toolId,
+      actorId,
+      orgId,
+      decision: "misconfigured",
+      detail: "no permissions configured",
+    });
+    throw new Error(`Tool ${toolId} has no permissions configured`);
+  }
   const allowed = await hasAnyRole(supabase, actorId, permissions);
-  if (!allowed) throw new Error(`Forbidden: missing role for ${toolId}`);
+  if (!allowed) {
+    // **قرارُ منعٍ يُسجَّل.** كان يُرمى بلا أثر: من حاول أداةً لا يملك
+    // دورها لم يترك سطرًا واحدًا. والمحاولة المرفوضة أدلّ أمنيًّا من
+    // الناجحة — تكرارُها من فاعلٍ واحد هو ما يُقرأ تصعيدَ صلاحيات.
+    await auditDenial(supabase, {
+      toolId,
+      actorId,
+      orgId,
+      decision: "unauthorized",
+      detail: `required one of: ${permissions.join(", ")}`,
+    });
+    throw new Error(`Forbidden: missing role for ${toolId}`);
+  }
 
   // 3) Find executor + validate input
   const exec = getExecutor(toolId);
@@ -442,6 +514,100 @@ export async function rollbackExecution(
  * Mark executions stuck in "running" for longer than maxAgeMs as failed.
  * Runs as an admin maintenance job. Returns count reaped.
  */
+/** مهلة الاعتماد الافتراضية — سبعة أيام. */
+export const APPROVAL_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * يُنهي انتظار الاعتمادات التي تجاوزت مهلتها — **ولا ينفّذ منها شيئًا.**
+ *
+ * ## العلّة التي وُلد منها
+ *
+ * `reapStaleExecutions` يحصد `status = 'running'` وحده، فالمعلَّق
+ * للاعتماد بلا حاصدٍ ولا مهلة. وقِيس في الإنتاج: ثلاثة تنفيذات معلَّقة
+ * منذ ٢٠٢٦/٠٧/٠٧ — شهران ونصف بلا قرار، وطابورُ تفويضٍ لا يراقبه أحد
+ * هو حارسٌ نائم.
+ *
+ * ## والانتهاء ليس اعتمادًا
+ *
+ * `expired` تُغلق الانتظار وتترك الفعل **غير منفَّذ**. والخلط بينها وبين
+ * `approved` يقلب الحارس إلى بابٍ يفتح نفسه بمرور الوقت — وهو أسوأ من
+ * غياب الحارس، لأنّه يُقرأ حراسةً.
+ *
+ * وكلّ انتقالٍ يُكتب في الأثر بفاعلٍ مسمًّى (`system:approval-ttl`) لا
+ * مجهولًا: من أغلق الطلب سؤالٌ يجب أن يُجاب بعد شهر.
+ */
+export async function expireStaleApprovals(
+  supabase: SupabaseClient<Database>,
+  maxAgeMs = APPROVAL_TTL_MS,
+): Promise<{ expired: number; ids: string[] }> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = supabaseAdmin as any;
+  const cutoff = new Date(Date.now() - maxAgeMs).toISOString();
+
+  const { data: stale, error: readError } = await admin
+    .from("tool_executions")
+    .select("id, tool_id, actor_id, org_id, correlation_id")
+    .eq("status", "pending_approval")
+    .lt("created_at", cutoff);
+  // **قراءةٌ فاشلة ليست «صفر منتهٍ».** بلا هذا التفكيك يعود
+  // `{ expired: 0 }` فيُقرأ «لا شيء تجاوز مهلته» وهو «لم نستطع النظر» —
+  // وهما نقيضان (المادة ٢٧)، والخلط بينهما في دفعةٍ موضوعُها أن الصفر
+  // ليس غيابًا يكون قد أعاد العلّة في الأداة التي تعالجها.
+  if (readError) throw new Error(`Failed to read pending approvals: ${readError.message}`);
+
+  const rows = (stale ?? []) as Array<{
+    id: string;
+    tool_id: string;
+    actor_id: string | null;
+    org_id: string | null;
+    correlation_id: string | null;
+  }>;
+  if (!rows.length) return { expired: 0, ids: [] };
+
+  const ids = rows.map((r) => r.id);
+  const { error } = await admin
+    .from("tool_executions")
+    .update({
+      status: "expired",
+      error: "Approval window elapsed without a human decision",
+      finished_at: new Date().toISOString(),
+    })
+    .in("id", ids)
+    // شرطٌ مكرَّر عمدًا: لو اعتُمد الطلب بين القراءة والكتابة فلا يُداس
+    // قرارُ بشرٍ بانتهاءِ مهلة.
+    .eq("status", "pending_approval");
+  if (error) throw new Error(`Failed to expire approvals: ${error.message}`);
+
+  // سطرٌ لكلّ طلب لا سطرٌ للدفعة: الأثر يُسأل عن طلبٍ بعينه.
+  //
+  // **والكتابة بمفتاح الخدمة لا بعميل النداء.** سياسة `audit_logs_org_insert`
+  // تشترط `actor_id IS NOT NULL AND actor_id = auth.uid()`؛ وفاعلُ الانتهاء
+  // نظامٌ لا إنسان، فـ`actor_id: null` يُرفض صامتًا مع عميلٍ مصادَق —
+  // فيمضي الانتهاء بلا أثرٍ إطلاقًا، وهو نقيض الغرض. والجداول نفسها
+  // تُعالَج بـ`admin` أصلًا في هذه الدالّة.
+  for (const r of rows) {
+    await audit(admin, {
+      actor_id: null,
+      org_id: r.org_id,
+      action: "tool.approval.expired",
+      resource_type: "tool_execution",
+      resource_id: r.id,
+      status: "expired",
+      source: "system:approval-ttl",
+      correlation_id: r.correlation_id,
+      metadata: {
+        tool_id: r.tool_id,
+        requested_by: r.actor_id,
+        cutoff,
+        executed: false,
+        note: "المهلة تُنهي الانتظار ولا تنفّذ — ليست اعتمادًا.",
+      },
+    });
+  }
+  return { expired: ids.length, ids };
+}
+
 export async function reapStaleExecutions(
   supabase: SupabaseClient<Database>,
   maxAgeMs = 5 * 60_000,

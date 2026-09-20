@@ -17,6 +17,37 @@ export type AuditEntry = {
 };
 
 /**
+ * حالة صحّة الأثر — **كم مرّة أخفقت الكتابة، ومتى، ولماذا.**
+ *
+ * الكتابة لا ترمي عمدًا (أثرٌ يكسر العملية التي يرصدها أسوأ من غيابه).
+ * لكنّ الإخفاق كان يذهب إلى `console.error` وحده: فلو رفضت RLS الإدراج،
+ * أو غاب عمود، لاستمرّ النظام يعمل **بلا أثرٍ إطلاقًا** ولا شيء يقول ذلك
+ * — ويُقرأ جدولٌ فارغ «لم يقع شيء» وهو «لم يُسجَّل شيء». وهما نقيضان.
+ *
+ * فصار الإخفاق حالةً تُقرأ: يعدّها فحص الصحّة ويُظهرها بدل أن تُبتلع.
+ */
+let auditFailures = 0;
+let lastAuditFailure: { at: string; message: string } | null = null;
+
+export function auditHealth(): {
+  readonly failures: number;
+  readonly lastFailure: { at: string; message: string } | null;
+} {
+  return { failures: auditFailures, lastFailure: lastAuditFailure };
+}
+
+/** للاختبار وحده — يعيد العدّاد إلى الصفر. */
+export function resetAuditHealth(): void {
+  auditFailures = 0;
+  lastAuditFailure = null;
+}
+
+function recordAuditFailure(message: string): void {
+  auditFailures += 1;
+  lastAuditFailure = { at: new Date().toISOString(), message };
+}
+
+/**
  * Persist a structured audit record into the immutable trail. Failures never
  * throw — audit must not break the underlying operation. The enterprise event
  * bus also mirrors events into this table via trigger; direct calls are for
@@ -46,8 +77,12 @@ export async function audit(supabase: SupabaseClient<Database>, entry: AuditEntr
     if (entry.org_id) row.org_id = entry.org_id;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any).from("audit_logs").insert(row);
-    if (error) console.error("[audit] insert failed", error.message);
+    if (error) {
+      recordAuditFailure(error.message);
+      console.error("[audit] insert failed", error.message);
+    }
   } catch (err) {
+    recordAuditFailure(err instanceof Error ? err.message : String(err));
     console.error("[audit] threw", err);
   }
 }

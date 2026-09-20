@@ -9,6 +9,8 @@ import { useEffect, useState } from "react";
 import { X, Pause, Play, Sparkles, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ExecutiveBriefing, BriefingSegment } from "@/lib/exec/briefing.functions";
+import { isMeasured, UNMEASURED_TEXT_AR } from "@/lib/evidence/evidence";
+import { CONFIDENCE_LABEL } from "@/lib/evidence/confidence-labels";
 
 interface Props {
   briefing: ExecutiveBriefing;
@@ -167,8 +169,45 @@ export function BriefingStage({ briefing, ar, onClose, backTo, onSegmentChange }
                 <div className="text-[12px] uppercase tracking-wider text-white/50">
                   {ar ? "الثقة" : "Confidence"}
                 </div>
-                <div className="text-xl font-semibold text-emerald-200 tabular-nums">
-                  {Math.round(briefing.recommendation.confidence * 100)}%
+                {/*
+                 * كانت نسبةً مئوية مصدرها رقمٌ يقوله النموذج عن نفسه أو
+                 * ثابتٌ مكتوب. والغياب يُعلَن صراحةً «لم يُقَس» ولا
+                 * يُملأ برقمٍ مطمئن — وحالةُ الدليل تُعرض تحتها.
+                 */}
+                <div
+                  className={cn("text-xl font-semibold text-emerald-200", ar && "font-arabic")}
+                  dir={ar ? "rtl" : "ltr"}
+                >
+                  {isMeasured(briefing.recommendation.confidence)
+                    ? ar
+                      ? CONFIDENCE_LABEL[briefing.recommendation.confidence.value].ar
+                      : CONFIDENCE_LABEL[briefing.recommendation.confidence.value].en
+                    : // الغياب بلغة القارئ: `UNMEASURED_TEXT_AR` عربيّ وحده،
+                      // وعرضُه على واجهةٍ إنجليزية خرقُ ثنائية اللغة.
+                      ar
+                      ? UNMEASURED_TEXT_AR
+                      : "Not measured"}
+                </div>
+                {/*
+                 * **لا أسماء جداول هنا.** كان يُعرض
+                 * `"sec_incidents,sec_patrols,sec_permits"` تحت «الثقة»
+                 * لمسؤولٍ تنفيذيّ — تسريبُ مخطّطٍ لا بيانُ مصدر. والمصدر
+                 * يُقال بلغة العمل، وبالعربية والإنجليزية معًا.
+                 */}
+                <div
+                  className={cn(
+                    "mt-1 max-w-[24ch] text-[12px] leading-snug text-white/60",
+                    ar && "font-arabic text-right",
+                  )}
+                  dir={ar ? "rtl" : "ltr"}
+                >
+                  {isMeasured(briefing.recommendation.confidence)
+                    ? ar
+                      ? "من البلاغات والدوريات والتصاريح المرصودة"
+                      : "From recorded incidents, patrols and permits"
+                    : ar
+                      ? "لا مشاهدات تشغيلية مرصودة"
+                      : "No operational observations recorded"}
                 </div>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2">
