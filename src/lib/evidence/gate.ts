@@ -20,7 +20,23 @@ export type EvidenceKind =
   | "runtime.probe" // Live runtime health probe result
   | "cert.public" // Public certificate / registry (link required)
   | "audit.log" // Immutable audit log entry
-  | "external.api"; // Verified third-party API response
+  | "external.api" // Verified third-party API response
+  // ── widened for the grounding layer (`./evidence.ts`) ──────────────
+  // FR-19 names this module the single source of truth and forbids
+  // forking it. The grounding layer needed three source classes this
+  // union did not name, so the union is widened HERE rather than a
+  // second `Evidence` type being declared beside it. Purely additive:
+  // no consumer reads `.kind` (only `source`/`observedAt`/`href`), so
+  // no existing surface changes behaviour.
+  | "reference.builtin" // Built-in reference simulation («بيانات لا تفرغ»)
+  | "derived.computed" // Computed from other evidence — MUST carry its inputs
+  | "human.attested"; // Human input attributed to a named actor
+
+/** An entity in the industrial ontology: `facility` · `asset` · `incident` … */
+export interface EntityRef {
+  readonly type: string;
+  readonly id: string;
+}
 
 export interface Evidence {
   readonly kind: EvidenceKind;
@@ -32,6 +48,10 @@ export interface Evidence {
   readonly href?: string;
   /** Optional exact value the badge is claiming. */
   readonly value?: string | number;
+  /** The specific entity this evidence is about, when it is about one. */
+  readonly entity?: EntityRef;
+  /** A known limit in the evidence, carried to whatever is built on it. */
+  readonly limitation?: string;
 }
 
 export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
