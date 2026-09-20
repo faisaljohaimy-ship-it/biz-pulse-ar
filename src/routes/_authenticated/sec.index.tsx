@@ -9,9 +9,11 @@ import { SecOpsInsights } from "@/components/sec/sec-ops-insights";
 // تدقيق تعبيرية الأيقونات ٢٠٢٦/٠٨/٢٧ — القاعدة الموثقة في sec-shell:
 // الدوريات جولة راجلة (`Footprints` كأيقونة الشريط نفسها) لا كشفًا عن بُعد
 // (`Radar`)، والمراقبة `Cctv` لا كاميرا التصوير `Camera`.
-import { AlertTriangle, Footprints, Cctv } from "lucide-react";
+import { AlertTriangle, Footprints, Cctv, Building2, Layers } from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useRegion } from "@/lib/region-context";
+import { regionSim } from "@/lib/sec/region-sim-data";
+import { useMemo } from "react";
 
 export const Route = createFileRoute("/_authenticated/sec/")({
   errorComponent: RouteError,
@@ -21,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/sec/")({
 
 function OpsRoom() {
   const { user, loading: authLoading } = useAuth();
-  const { region } = useRegion();
+  const { region, regionId } = useRegion();
   const fetchOverview = useServerFn(getSecOverview);
   const { data, isLoading } = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
@@ -29,6 +31,30 @@ function OpsRoom() {
     enabled: !authLoading,
     refetchInterval: 30_000,
   });
+
+  /**
+   * ── العدّادات من مجموعة المنطقة، لا من الإجمالي العالميّ ──────────────
+   *
+   * **العطل الذي أُغلق هنا:** كانت الترويسة تكتب «الأمن الصناعي — المنطقة
+   * الوسطى» ثم تعرض تحتها عدّادات `getSecOverview()` **بلا وسيط منطقة** —
+   * فالمناطق الأربع تعطي الأرقام نفسها تحت أربعة عناوين. وذلك أسوأ من رقمٍ
+   * عشوائيّ: عنوانٌ يقول «الوسطى» فوق رقمٍ عالميّ **يُقرأ إثباتًا** عنها،
+   * ولا يملك القارئ ما يكشف به الخطأ.
+   *
+   * ولا يُصلَح بترشيح القاعدة: `sec_*` بلا عمود منطقة، ولا مسار إليها عبر
+   * `site_id → sec_sites` لأن `sec_circles` نفسه بلا منطقة ودوائره
+   * المبذورة كلّها غربية — فترشيح «الوسطى» يعطي **صفرًا** لا بياناتها.
+   * وهذا مُصرَّحٌ به في `REGION_STRATEGY.sec_overview` بوصفه `reference`.
+   *
+   * فتُقدَّم مجموعة `regionSim(regionId)` — وهي ما صُنعت له حرفًا («Used by
+   * /sec pages when a region is active») ولم تُوصَل بصفحةٍ واحدة قبل اليوم.
+   * وبها تتبدّل الأرقام مع المنطقة تبدّلًا **متّسقًا** لا عشوائيًّا.
+   *
+   * وبلا شارة محاكاة على الشاشة — أمر المالك ٢٠٢٦/٠٨/١١ صريح، والإفصاح
+   * يبقى في المُصدَّر وفي ردود سَدِيد.
+   */
+  const sim = useMemo(() => regionSim(regionId), [regionId]);
+  const counts = sim.counts;
 
   return (
     <div className="space-y-4">
@@ -46,40 +72,82 @@ function OpsRoom() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
-          <StatCard label="مواقع" value={data.counts.sites} hint="إجمالي المواقع المصرح بها" />
+          <StatCard label="مواقع" value={counts.sites} hint="إجمالي المواقع المصرح بها" />
           <StatCard
             label="بلاغات مفتوحة"
-            value={data.counts.incidents_open}
-            tone={data.counts.incidents_open > 0 ? "warning" : "default"}
+            value={counts.incidents_open}
+            tone={counts.incidents_open > 0 ? "warning" : "default"}
           />
           {/* المادة ٢٧ (٢٠٢٦/٠٨/٢٧): الشدة غير مقيسة في مجموعة «تقرير
               البلاغات» الحقيقية ⇒ «لم يُقَس» بنغمة محايدة — لا صفر «سليم». */}
           <StatCard
             label="بلاغات حرجة"
-            value={numOrUnmeasured(data.counts.incidents_critical)}
+            value={numOrUnmeasured(counts.incidents_critical)}
             tone={
-              data.counts.incidents_critical == null
+              counts.incidents_critical == null
                 ? "default"
-                : data.counts.incidents_critical > 0
+                : counts.incidents_critical > 0
                   ? "danger"
                   : "success"
             }
           />
-          <StatCard label="دوريات نشطة" value={data.counts.patrols_active} tone="success" />
+          <StatCard label="دوريات نشطة" value={counts.patrols_active} tone="success" />
           {/* حُذفت ثلاث بطاقات بقرار المالك ٢٠٢٦/٠٨/٢٠: «زوّار بالداخل» و«مقاولون نشطون» و«سجل البلاغات المحمّل» */}
-          <StatCard label="تصاريح فعّالة" value={data.counts.permits_active} />
+          <StatCard label="تصاريح فعّالة" value={counts.permits_active} />
           <StatCard
             label="تنبيهات CCTV جديدة"
-            value={data.counts.cctv_new}
-            tone={data.counts.cctv_new > 0 ? "warning" : "default"}
+            value={counts.cctv_new}
+            tone={counts.cctv_new > 0 ? "warning" : "default"}
           />
           <StatCard
             label="أصول متعطلة/متدنية"
-            value={data.counts.assets_offline}
-            tone={data.counts.assets_offline > 0 ? "warning" : "success"}
+            value={counts.assets_offline}
+            tone={counts.assets_offline > 0 ? "warning" : "success"}
           />
         </div>
       )}
+
+      {/* ── دوائر المنطقة وأقسامها — هويّتها التي تميّزها عن أخواتها ─────
+          «كل ما يختصّ بالوسطى في بطاقة الوسطى» (أمر المالك ٢٠٢٦/٠٩/٢٠).
+          والدوائر هنا **حقيقية الانتماء** لا موزَّعة عشوائيًّا: الرياض
+          والخرج وسدير والوشم للوسطى، والجبيل والدمام والظهران للشرقية،
+          وجازان وأبها ونجران للجنوبية، وينبع ورابغ وجدة للغربية. فتبديل
+          المنطقة يبدّل الدوائر تبديلًا يعرفه من يعمل في الشركة. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel icon={Building2} title={`دوائر ${region.shortAr} (${sim.circles.length})`}>
+          <ul className="divide-y divide-border">
+            {sim.circles.map((c) => (
+              <li key={c.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <div className="min-w-0">
+                  <div className="truncate font-medium text-foreground">{c.name_ar}</div>
+                  <div className="text-[12px] text-muted-foreground">
+                    {c.manager} · {c.sites_count} موقعًا
+                  </div>
+                </div>
+                <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[12px] tabular-nums text-muted-foreground">
+                  {c.staff_count} موظفًا
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+
+        <Panel icon={Layers} title={`أقسام ${region.shortAr}`}>
+          <ul className="divide-y divide-border">
+            {sim.sections.map((s) => (
+              <li key={s.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <div className="min-w-0">
+                  <div className="truncate font-medium text-foreground">{s.name_ar}</div>
+                  <div className="text-[12px] text-muted-foreground">{s.head}</div>
+                </div>
+                <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[12px] tabular-nums text-muted-foreground">
+                  {s.staff_count} موظفًا
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      </div>
 
       {/* «تعديلات إضافية V4» (١١٩١) ٢٠٢٦/٠٨/٢٤ — أعلى 3 مخاطر · إجراءات
           موصى بها · مخاطر متوقعة + زر «ابدأ الموجز التنفيذي»، منقولة من

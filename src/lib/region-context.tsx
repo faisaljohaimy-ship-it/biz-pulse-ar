@@ -21,6 +21,7 @@ import {
   type Region,
   type RegionId,
 } from "./regions";
+import { REGION_PARAM, resolveRegionScope } from "./regions/region-scope";
 
 // Semantic accent tokens driven by the active region. Setting these inline on
 // :root overrides both the light and dark stylesheet values, so every
@@ -49,17 +50,43 @@ const STORAGE_KEY = "nexios.region";
 export function RegionProvider({ children }: { children: ReactNode }) {
   const [regionId, setRegionState] = useState<RegionId>(DEFAULT_REGION_ID);
 
-  // Rehydrate from localStorage on mount (client-only; SSR-safe).
+  /**
+   * الاستئناف: **العنوان أوّلًا ثمّ التفضيل المحفوظ.**
+   *
+   * كان التخزين وحده هو المرجع، فرابطٌ يُرسَل من مديرٍ في الشرقية إلى
+   * زميلٍ في الجنوبية يفتح عند كلٍّ منهما على منطقةٍ مختلفة — **نفس
+   * الرابط يعطي رقمين**، فتستحيل الإحالة إلى شاشةٍ بعينها.
+   *
+   * ويُتحقَّق من وسيط العنوان قبل قبوله (`resolveRegionScope`): نصٌّ
+   * مجهول يسقط إلى التفضيل ثمّ الافتراضي، ولا يُمرَّر إلى استعلام.
+   */
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(STORAGE_KEY) as RegionId | null;
-      if (stored && REGIONS.some((r) => r.id === stored)) {
-        setRegionState(stored);
-      }
+      const fromUrl = new URLSearchParams(window.location.search).get(REGION_PARAM);
+      const fromStorage = window.localStorage.getItem(STORAGE_KEY);
+      setRegionState(resolveRegionScope({ fromUrl, fromStorage }));
     } catch {
-      /* localStorage may be unavailable — silently keep default */
+      /* نافذة محظورة أو تخزين معطّل — يبقى الافتراضي */
     }
   }, []);
+
+  /**
+   * ومزامنة العنوان مع المنطقة الفاعلة — بـ`replaceState` لا `push`.
+   *
+   * `push` يُكدّس مدخلًا في تاريخ التصفّح عند كل تبديل، فيصير زرّ الرجوع
+   * يتنقّل بين المناطق بدل أن يرجع إلى الصفحة السابقة — وهو سلوكٌ يكسر
+   * توقّع المستخدم ويكسر زرّ الرجوع في الشريط العلوي معه.
+   */
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get(REGION_PARAM) === regionId) return;
+      url.searchParams.set(REGION_PARAM, regionId);
+      window.history.replaceState(window.history.state, "", url.toString());
+    } catch {
+      /* noop */
+    }
+  }, [regionId]);
 
   // Drive the whole system's colour from the active region: the pulse halo
   // (--nx-region-rgb) AND every semantic accent token, so all system chrome and
