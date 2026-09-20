@@ -196,3 +196,27 @@ describe("نصّ الغياب — أربع نسخ قائمة يجب ألّا ت�
     expect(UNMEASURED_TEXT_AR).toBe("لم يُقَس");
   });
 });
+
+describe("لا «ثقة ٪» تعود إلى أي سطح", () => {
+  // كانت الشاشة الواحدة تعرض «ثقة ٨٧٪» في لوح و«ثقة ٧٢٪» في المجاور:
+  // الأولى رقمٌ يقوله نموذجٌ عن نفسه أو ثابتٌ مكتوب، والثانية `score`
+  // مقسومًا على مئة — ولا واحدة منهما قياس.
+  const SURFACES = [
+    "src/components/sec/sec-ops-insights.tsx",
+    "src/components/situation-room/DecisionEngine.tsx",
+  ];
+
+  it("لا `confidence * 100` في أي سطح عرض", () => {
+    for (const f of SURFACES) {
+      expect(readFileSync(f, "utf8"), `${f} أعاد النسبة`).not.toMatch(/confidence \* 100/);
+    }
+  });
+
+  it("وتسمية الدرجة مصدرٌ واحد لا نسخة لكل سطح", () => {
+    for (const f of SURFACES) {
+      const src = readFileSync(f, "utf8");
+      expect(src, `${f} يعرّف نسخةً محلّية`).not.toMatch(/const CONFIDENCE_LABEL/);
+      expect(src).toMatch(/from "@\/lib\/evidence\/confidence-labels"/);
+    }
+  });
+});

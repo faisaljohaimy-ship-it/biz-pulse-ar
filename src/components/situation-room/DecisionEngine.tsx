@@ -12,6 +12,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Target, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CONFIDENCE_LABEL } from "@/lib/evidence/confidence-labels";
 import {
   getExecutiveDecisions,
   type DecisionItem,
@@ -138,8 +139,9 @@ function DecisionGroup({
                   <span className="rounded-full bg-white/[0.04] px-2 py-0.5 uppercase tracking-wider">
                     {ar ? PRIORITY_LABEL[it.priority].ar : PRIORITY_LABEL[it.priority].en}
                   </span>
-                  <span className="tabular-nums">
-                    {ar ? "ثقة" : "Conf."} {Math.round(it.confidence * 100)}%
+                  {/* مصطلحٌ لا نسبة — النسبة كانت `score` مقسومًا على مئة. */}
+                  <span>
+                    {ar ? CONFIDENCE_LABEL[it.confidence].ar : CONFIDENCE_LABEL[it.confidence].en}
                   </span>
                   {it.business_impact && (
                     <span className="truncate text-white/45">· {it.business_impact}</span>

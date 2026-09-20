@@ -12,6 +12,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
+import type { Confidence } from "@/lib/evidence/evidence";
 
 export type DecisionItem = {
   id: string;
@@ -21,8 +22,20 @@ export type DecisionItem = {
   detail_en: string | null;
   /** 0..100 ranking score */
   score: number;
-  /** 0..1 confidence */
-  confidence: number;
+  /**
+   * درجة اليقين — **مصطلحٌ لا نسبة مئوية.**
+   *
+   * كانت `number` تُعرض «ثقة ٧٢٪»، ومصدرها إمّا `0.9` ثابتًا مكتوبًا
+   * (بنود البلاغات)، أو `Math.max(0.5, score / 100)` — وهي **إعادةُ عرضِ
+   * `score` نفسه مقسومًا على مئة**. فلم تكن تحمل معلومةً واحدة زائدة على
+   * `score`، وكانت تُرسم كأنها قياسٌ مستقلّ. والنسبة توحي بدقّةٍ لا مصدر
+   * لها (المادة ٢٧).
+   *
+   * فصارت تصف **كيف عُرف** البند: ما جاء من صفّ بلاغٍ مرصود `derived`،
+   * وما جاء من أرقام الإحاطة التنفيذية (احتمالٌ أو أولويةٌ يكتبها معدّها)
+   * `estimated`. و`measured` لا تقع هنا: ترتيبُ قرارٍ استنتاجٌ لا قياس.
+   */
+  confidence: Confidence;
   priority: "low" | "medium" | "high" | "critical";
   business_impact: string | null;
   operational_impact: string | null;
@@ -141,7 +154,7 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
           detail_ar: i.ai_summary,
           detail_en: i.ai_summary,
           score,
-          confidence: 0.9,
+          confidence: "derived" as const,
           priority: SEV_PRIORITY[sev] ?? "medium",
           business_impact: i.category,
           operational_impact: i.status,
@@ -158,7 +171,7 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
         detail_ar: null,
         detail_en: null,
         score,
-        confidence: Math.max(0.5, score / 100),
+        confidence: "estimated" as const,
         priority: (r.level as DecisionItem["priority"]) ?? priorityFromScore(score),
         business_impact: null,
         operational_impact: null,
@@ -178,7 +191,7 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
           detail_ar: null,
           detail_en: null,
           score,
-          confidence: Math.max(0.5, score / 100),
+          confidence: "estimated" as const,
           priority: priorityFromScore(score),
           business_impact: null,
           operational_impact: null,
@@ -198,7 +211,7 @@ export const getExecutiveDecisions = createServerFn({ method: "GET" })
           detail_ar: null,
           detail_en: null,
           score,
-          confidence: Math.max(0.55, score / 100),
+          confidence: "estimated" as const,
           priority: priorityFromScore(score),
           business_impact: null,
           operational_impact: null,

@@ -33,6 +33,7 @@ import {
   type ExecutiveDecisions,
 } from "@/lib/exec/decisions.functions";
 import { getPredictedRisks, type PredictedRisk } from "@/lib/exec/predictive.functions";
+import { CONFIDENCE_LABEL } from "@/lib/evidence/confidence-labels";
 import { generateExecutiveBriefing, type ExecutiveBriefing } from "@/lib/exec/briefing.functions";
 import { userFacingError } from "@/lib/errors/user-facing-error";
 
@@ -48,19 +49,6 @@ const SEVERITY_LABEL: Record<PredictedRisk["severity"], { ar: string; en: string
   high: { ar: "عالٍ", en: "High" },
   medium: { ar: "متوسط", en: "Medium" },
   low: { ar: "منخفض", en: "Low" },
-};
-
-/**
- * درجة اليقين — **مصطلحٌ لا نسبة مئوية.**
- *
- * كان يُعرض «ثقة ٨٧٪»، ومصدر الرقم على مسار النموذج رقمٌ يقوله النموذج
- * عن نفسه، وعلى مسار المحاكاة ثابتٌ مكتوب. والنسبة توحي بدقّةٍ لا مصدر
- * لها، فحلّ محلّها المصطلح ومعه **العدّات المرصودة نفسها**.
- */
-const CONFIDENCE_LABEL: Record<PredictedRisk["confidence"], { ar: string; en: string }> = {
-  measured: { ar: "مقيس", en: "Measured" },
-  derived: { ar: "مشتقّ", en: "Derived" },
-  estimated: { ar: "تقديريّ", en: "Estimated" },
 };
 
 export function SecOpsInsights() {
@@ -259,8 +247,13 @@ function DecisionList({ ar, items }: { ar: boolean; items: DecisionItem[] }) {
                 </div>
               )}
               <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
-                <span className="tabular-nums">
-                  {ar ? "ثقة" : "Conf."} {Math.round(it.confidence * 100)}%
+                {/*
+                 * كانت «ثقة ٧٢٪»، وهي `score` نفسه مقسومًا على مئة — رقمٌ
+                 * واحد يُعرض مرّتين، وأحدهما بزيّ قياسٍ مستقلّ. فصار
+                 * المصطلح، وهو نفسه المعروض في لوح المخاطر المجاور.
+                 */}
+                <span>
+                  {ar ? CONFIDENCE_LABEL[it.confidence].ar : CONFIDENCE_LABEL[it.confidence].en}
                 </span>
                 {it.business_impact && <span className="truncate">· {it.business_impact}</span>}
               </div>
