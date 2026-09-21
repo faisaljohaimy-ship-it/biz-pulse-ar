@@ -62,12 +62,26 @@ export const Route = createFileRoute("/_authenticated/situation-room")({
   notFoundComponent: () => <div className="p-8">Not found</div>,
 });
 
-function threatLevel(score: number): {
-  key: "secure" | "normal" | "elevated" | "critical";
+/**
+ * مستوى التهديد — **والغيابُ ليس «حرجًا».**
+ *
+ * كان `health?.score ?? 0` يُمرَّر هنا، و`score` صار `number | null`،
+ * فقراءةٌ مرفوضة تعطي صفرًا ⇒ **«حرج» بنبضةٍ حمراء** بينما البطاقاتُ
+ * تحته تقول «لم يُقَس». إنذارٌ مختلَق من فشلِ قراءة.
+ */
+function threatLevel(score: number | null): {
+  key: "secure" | "normal" | "elevated" | "critical" | "unmeasured";
   ar: string;
   en: string;
   tone: string;
 } {
+  if (score == null)
+    return {
+      key: "unmeasured",
+      ar: "لم يُقَس",
+      en: "Not measured",
+      tone: "bg-white/5 text-foreground/40 ring-white/10",
+    };
   if (score >= 90)
     return {
       key: "secure",
@@ -116,7 +130,7 @@ function SituationRoomPage() {
   // الموجز التنفيذي انتقلت كلها إلى SecOpsInsights في نظرة عامة /sec.
 
   const health = state.data?.health;
-  const threat = threatLevel(health?.score ?? 0);
+  const threat = threatLevel(health?.score ?? null);
 
   return (
     <main

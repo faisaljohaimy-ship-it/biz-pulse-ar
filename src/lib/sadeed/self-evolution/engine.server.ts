@@ -298,7 +298,8 @@ export async function runSelfEvolution(
     stage(
       "validate",
       validatePassed ? "pass" : "fail",
-      `readiness_score=${readinessScore.toFixed(2)}`,
+      // `toFixed(2)` يكتب «87.00» فيُقرأ كسرًا ٠..١ — والرقم ٠..١٠٠.
+      `readiness_score=${readinessScore < 0 ? "unmeasured" : `${Math.round(readinessScore)}/100`}`,
       t,
     ),
   );

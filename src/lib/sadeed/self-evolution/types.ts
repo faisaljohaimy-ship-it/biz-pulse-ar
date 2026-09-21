@@ -73,5 +73,12 @@ export interface EvolutionReport {
   readonly deferred: ReadonlyArray<string>;
   readonly reasons: ReadonlyArray<string>;
   readonly invariants: EvolutionInvariants;
-  readonly readinessScore: number; // 0..1
+  /**
+   * **٠..١٠٠، و`-1` حين لا يُقاس** — لا كسرًا ٠..١.
+   *
+   * كُتب هنا `// 0..1` فقُرئ كسرًا وضُرب في مئة في أربعة مواضع ⇒
+   * «٨٧٠٠٪»، و«‑١٠٠٪» عند المجهول. تعليقٌ كاذبٌ على نوعٍ يقود العطل
+   * إلى كلّ مستهلك.
+   */
+  readonly readinessScore: number;
 }

@@ -515,9 +515,16 @@ describe("الاختلاقُ الذي لا يضرب في مئة", () => {
   it("ولا ضربَ في مئة على مقياسٍ أصلًا ٠..١٠٠", () => {
     // `overall_score` موصوفٌ «0-100 or -1» وكان يُضرب في مئة ⇒ ١٠٠٠٠٪،
     // و‑١٠٠٪ عند المجهول. عطلُ `ai_confidence` نفسه ملفًّا واحدًا بعيدًا.
+    // **والثلاثةُ لا موضعٌ واحد.** أُصلح `overall_score` وحده فبقي
+    // `readinessScore` و`readiness_score` — وهو **الرقم نفسه** يُرسم في
+    // البطاقة نفسها، فأجابت الشاشةُ جوابين: «٨٧٠٠٪» و«٨٧٪».
     const se = readFileSync("src/routes/_authenticated/self-evolution.tsx", "utf8");
-    expect(se, "عاد ضربُ مقياسٍ مئويّ في مئة").not.toMatch(/overall_score \* 100/);
-    expect(se).toMatch(/overall_score < 0/);
+    for (const field of ["overall_score", "readinessScore", "readiness_score"]) {
+      expect(se, `عاد ضربُ «${field}» في مئة وهو ٠..١٠٠`).not.toMatch(
+        new RegExp(`${field} \\* 100`),
+      );
+      expect(se, `«${field}» لا يميّز المجهول`).toMatch(new RegExp(`${field} < 0`));
+    }
   });
 });
 

@@ -193,7 +193,12 @@ function SelfEvolutionPage() {
                     {new Date(c.started_at).toLocaleString()}
                   </span>
                   <span className="text-slate-500">·</span>
-                  <span className="text-slate-300">{Math.round(c.readiness_score * 100)}%</span>
+                  {/* ٠..١٠٠ أصلًا — والضربُ في مئة يعطي «٨٧٠٠٪». */}
+                  <span className="text-slate-300">
+                    {c.readiness_score < 0
+                      ? unmeasuredLabel(false)
+                      : `${Math.round(c.readiness_score)}%`}
+                  </span>
                   <span className="text-slate-500">·</span>
                   <span className="text-slate-300">
                     issues {c.issues_count}
@@ -224,12 +229,23 @@ function SelfEvolutionPage() {
                   <div className="text-xs uppercase tracking-wide text-slate-400">
                     Readiness score
                   </div>
+                  {/*
+                   * **الرقمُ نفسه الذي يُرسم أسفل البطاقة.** كان يُضرب
+                   * في مئة هنا ولا يُضرب هناك، فتُجيب الشاشةُ الواحدة
+                   * جوابين: «٨٧٠٠٪» و«٨٧٪». و`-1` يعطي «‑١٠٠٪» حيث
+                   * تجب «لم يُقَس».
+                   */}
                   <div className="text-2xl font-bold">
-                    {Math.round(report.readinessScore * 100)}%
+                    {report.readinessScore < 0
+                      ? unmeasuredLabel(false)
+                      : `${Math.round(report.readinessScore)}%`}
                   </div>
                 </div>
               </div>
-              <Progress value={report.readinessScore * 100} className="h-1.5 mt-3" />
+              <Progress
+                value={report.readinessScore < 0 ? 0 : report.readinessScore}
+                className="h-1.5 mt-3"
+              />
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {report.reasons.map((r) => (
                   <Badge key={r} variant="outline" className="text-[12px]">
