@@ -412,6 +412,48 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
     }
   });
 
+  it("**ومصدرٌ معلَنٌ لم يُقرأ يمنع القياس كلَّه** — لا متوسّطَ من الناجي", () => {
+    // نقضه الحارس: كان `s.rows ?? []` داخل الوحدة المكتوبة لقتله.
+    // مصدرٌ مرفوض ⇒ `[]` ⇒ `n=0` ⇒ **يُسقطه الترشيح صامتًا** ⇒ يُحسب
+    // المتوسّط من الناجي وحده ⇒ «١٠٠٪» موسومةً `measured`.
+    const ok = [{ status: "succeeded" }];
+    const blind = pulseConfidence(
+      [
+        { source: "tool_executions", rows: null },
+        { source: "workflow_runs", rows: ok },
+      ],
+      AT2,
+    );
+    expect(isMeasured(blind), "قِيس على أطرافٍ بعضُها مجهول").toBe(false);
+    if (!blind.measured) expect(blind.reason).toMatch(/لم يُقرأ/);
+
+    // و`undefined` كذلك — كلاهما «لم يُقرأ».
+    expect(
+      isMeasured(
+        pulseConfidence(
+          [
+            { source: "tool_executions", rows: undefined },
+            { source: "workflow_runs", rows: ok },
+          ],
+          AT2,
+        ),
+      ),
+    ).toBe(false);
+
+    // ومصدرٌ **مقروءٌ وخاوٍ** لا يمنع — ذاك قياسٌ لا غياب.
+    expect(
+      isMeasured(
+        pulseConfidence(
+          [
+            { source: "tool_executions", rows: [] },
+            { source: "workflow_runs", rows: ok },
+          ],
+          AT2,
+        ),
+      ),
+    ).toBe(true);
+  });
+
   it("**وفشلُ الاستعلام ليس صفرًا سليمًا** — `data: null` غيابٌ لا خواء", () => {
     // نقضه الحارس بالقياس الحيّ: `data ?? []` يطمس الفرق بين «لا صفوف»
     // و«لم يُقرأ». فشلُ الاستعلام أو منعُ RLS كان يعطي `critical = 0`
@@ -594,9 +636,11 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
 
       // كلُّ قيمةٍ مغلقةٌ الطرفين.
       const source = /^"([a-z_]+)"$/.exec(kv.get("source")!);
-      const rows = /^(\w+)\.data$/.exec(kv.get("rows")!);
+      // **`rowsOf(var)` لا `var.data`.** الخام يطمس الفشل: `data: null`
+      // يصير `[]` فيُسقَط الطرفُ صامتًا ويُحسب المتوسّط من الناجي وحده.
+      const rows = /^rowsOf\((\w+)\)$/.exec(kv.get("rows")!);
       expect(source, `اسمُ مصدرٍ ليس نصًّا حرفيًّا: «${kv.get("source")}»`).not.toBeNull();
-      expect(rows, `الصفوف ليست جوابَ استعلامٍ صِرفًا: «${kv.get("rows")}»`).not.toBeNull();
+      expect(rows, `الصفوف لا تمرّ بـrowsOf فيُطمس فشلُها: «${kv.get("rows")}»`).not.toBeNull();
       return { source: source![1], rows: rows![1] };
     });
   }

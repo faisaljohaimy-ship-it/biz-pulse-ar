@@ -271,9 +271,13 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         key: "api",
         label_ar: "الواجهات",
         label_en: "API",
-        status: auditFailPct == null ? "unknown" : tone(auditFailPct, 2, 10, true),
-        value: shown(auditFailPct == null ? null : Math.round(100 - auditFailPct)),
-        detail: `${shown(auditTotal, "")} events · ${shown(auditFail, "")} errors`,
+        // **لا نسبةَ نجاحٍ من `audit_logs`.** عمودُه `DEFAULT 'recorded'`
+        // ويكتبه التطبيق بنفسه — عدّادُ استعمالٍ لا دلالةَ نجاحٍ فيه.
+        // وقد أُخرج لذلك من مصادر الثقة، ثمّ بقي يقود **شريحةً خضراء
+        // ١٠٠٪** بالحساب نفسه. فالمعروض الآن حجمُ النشاط لا صحّتُه.
+        status: auditTotal == null ? "unknown" : "healthy",
+        value: shown(auditTotal, ""),
+        detail: `${shown(auditTotal, "")} events / 24h · ${shown(auditFail, "")} errors`,
         updated_at: now,
       },
     ];
@@ -293,9 +297,9 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         // **`data` نفسه، لا متغيّرٌ وسيط.** الوسيط يُحشى (`?? [{…}]`)
         // فيُعطي «١٠٠٪» على قاعدةٍ خاوية — وقِيس ذلك نافذًا. والمصدر
         // هنا على بُعد حقلٍ واحدٍ من الاستعلام الذي أنتجه.
-        { source: "tool_executions", rows: tools.data },
+        { source: "tool_executions", rows: rowsOf(tools) },
         // الرابع في التفكيك (`:79`) هو `workflow_runs` لا `agent_runs`.
-        { source: "workflow_runs", rows: runs.data },
+        { source: "workflow_runs", rows: rowsOf(runs) },
       ],
       now,
     );

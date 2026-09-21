@@ -136,13 +136,27 @@ export function pulseConfidence(
   samples: readonly PulseSample[],
   observedAt: string,
 ): Grounded<MeasuredPercent> {
+  // **مصدرٌ معلَنٌ لم يُقرأ يمنع القياس كلَّه.**
+  //
+  // كان `s.rows ?? []` هنا — العلّةُ التي كُتبت هذه الوحدة لقتلها، حيّةً
+  // داخلها. فمصدرٌ مرفوضٌ (‏`null`) يصير `[]` ⇒ `n = 0` ⇒ **يُسقطه
+  // `filter(o => o.n > 0)` صامتًا** ⇒ يُحسب المتوسّط من الناجي وحده ⇒
+  // «١٠٠٪» موسومةً `measured` بدليلٍ يستشهد بصفٍّ واحد.
+  //
+  // والفرقُ جوهريّ: «لا صفوف» قياسٌ، و«لم يُقرأ» غياب. وادّعاءُ قياسٍ
+  // على أطرافٍ بعضُها مجهول **ادّعاءُ حصرٍ** — وهو الخطأ الذي تكرّر في
+  // هذه السلسلة أكثر من أيّ غيره.
+  const unread = samples.find((s) => s.rows == null);
+  if (unread) {
+    return unmeasured(
+      `مصدرٌ معلَنٌ لم يُقرأ: «${unread.source}» — لا يُدَّعى قياسٌ على أطرافٍ مجهولة`,
+    );
+  }
+
   const observed = samples
     .map((s) => {
-      // **مصدرٌ بلا مفرداتِ مصيرٍ خطأُ برمجة، لا بياناتٌ ناقصة.** وهو
-      // ما وقع بـ`audit_logs`: جدولٌ لا دلالةَ نجاحٍ فيه أُدخل مصدرَ ثقة.
-      // والإسقاطُ الصامت يُخفيه، فيُرمى صريحًا ويسقط في الاختبار.
       // **مصدرٌ بلا مفرداتِ مصيرٍ خطأُ برمجة** — يرميه `outcomeOf`.
-      const rows = s.rows ?? [];
+      const rows = s.rows as readonly { readonly status?: string | null }[];
       const ok = rows.filter((r) => outcomeOf(s.source, r.status) === "ok").length;
       const bad = rows.filter((r) => outcomeOf(s.source, r.status) === "bad").length;
       // المقام: المنتهي معلومُ المصير وحده. والمعلَّقُ يخرج من الكسر.

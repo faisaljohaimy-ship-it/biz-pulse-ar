@@ -141,15 +141,18 @@ function TheaterPage() {
   const health = bridgeQuery.data?.health;
   const agents = useMemo(() => bridgeQuery.data?.agents ?? [], [bridgeQuery.data?.agents]);
 
-  const healthScore = health?.score ?? 0;
+  // **ولا `?? 0`.** صحّةٌ لم تُحسب ليست صفرًا ولا مئة — هي غياب.
+  const healthScore = health?.score ?? null;
   const tone =
-    healthScore >= 85
-      ? "emerald"
-      : healthScore >= 70
-        ? "cyan"
-        : healthScore >= 50
-          ? "amber"
-          : "rose";
+    healthScore == null
+      ? "unmeasured"
+      : healthScore >= 85
+        ? "emerald"
+        : healthScore >= 70
+          ? "cyan"
+          : healthScore >= 50
+            ? "amber"
+            : "rose";
 
   const aliveState = useMemo(() => {
     if (conductor.presenting) return "speaking" as const;
@@ -302,14 +305,30 @@ function TheaterPage() {
           <HealthChip
             icon={ShieldCheck}
             label={ar ? "الصحة التشغيلية" : "Mission Health"}
-            value={`${Math.round(healthScore)}`}
+            value={healthScore == null ? unmeasuredLabel(ar) : `${Math.round(healthScore)}`}
             tone={tone}
           />
           <HealthChip
             icon={AlertTriangle}
             label={ar ? "بلاغات حرجة" : "Critical"}
-            value={health?.critical_incidents ?? "—"}
-            tone={(health?.critical_incidents ?? 0) > 0 ? "rose" : "emerald"}
+            /*
+             * **الشرطةُ غيابٌ والنبرةُ تُخالفها.** كان `?? "—"` يرسم
+             * شرطةً تمنعها المادة ٢٧، و`?? 0` يعطيها **أخضر** — فبطاقةٌ
+             * تقول «لا أعرف» ولونُها يقول «سليم». ومنعُ RLS على
+             * `sec_incidents` يعطي `[]` ⇒ صفرًا ⇒ أخضر.
+             */
+            value={
+              health?.critical_incidents == null
+                ? unmeasuredLabel(ar)
+                : `${health.critical_incidents}`
+            }
+            tone={
+              health?.critical_incidents == null
+                ? "unmeasured"
+                : health.critical_incidents > 0
+                  ? "rose"
+                  : "emerald"
+            }
           />
           <HealthChip
             icon={Activity}

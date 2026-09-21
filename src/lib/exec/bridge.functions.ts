@@ -5,7 +5,7 @@
  * `sec_patrols`, `enterprise_events`) — no mocks, no fabrication.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { outcomeOf } from "@/lib/evidence/pulse-confidence";
+import { countOf, outcomeOf, rowsOf } from "@/lib/evidence/pulse-confidence";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type BridgeAgentStatus =
@@ -46,10 +46,10 @@ export type BridgeAgent = {
 };
 
 export type BridgeHealth = {
-  /** 0..100 — composite operational health. */
-  score: number;
-  open_incidents: number;
-  critical_incidents: number;
+  /** 0..100 — composite operational health. `null` = مصدرٌ لم يُقرأ. */
+  score: number | null;
+  open_incidents: number | null;
+  critical_incidents: number | null;
   active_patrols: number;
   visitors_onsite: number;
   active_permits: number;
@@ -149,7 +149,10 @@ async function fetchBridgeState(
       finished_at: string | null;
       goal_override: string | null;
     }>;
-    const incidents = (incidentsRes.data ?? []) as Array<{ severity: string; status: string }>;
+    // **`?? []` يطمس الفشل.** منعُ RLS على `sec_incidents` كان يعطي
+    // `[]` ⇒ `critical = 0` ⇒ شريحةٌ **خضراء** و`score = 100`: العطلُ
+    // في زيّ السلامة. والغيابُ يُقال.
+    const incidents = rowsOf(incidentsRes) as Array<{ severity: string; status: string }> | null;
     const patrols = (patrolsRes.data ?? []) as Array<{ status: string }>;
     const visitors = (visitorsRes.data ?? []) as Array<{ status: string }>;
     const permits = (permitsRes.data ?? []) as Array<{ status: string }>;
@@ -229,8 +232,10 @@ async function fetchBridgeState(
       };
     });
 
-    const critical = incidents.filter((i) => i.severity === "critical").length;
-    const high = incidents.filter((i) => i.severity === "high").length;
+    const critical = incidents ? incidents.filter((i) => i.severity === "critical").length : null;
+    const high = incidents ? incidents.filter((i) => i.severity === "high").length : null;
+    const otherIncidents =
+      incidents && critical != null && high != null ? incidents.length - critical - high : null;
     const agentsOnline = agents.filter((a) => a.enabled).length;
     const visitorsOnsite = visitors.filter((v) =>
       ["checked_in", "onsite", "active"].includes(v.status),
@@ -259,14 +264,19 @@ async function fetchBridgeState(
       : null;
 
     // Composite health: 100 minus weighted incident pressure, floored at 35.
-    const incidentPenalty =
-      critical * 12 + high * 5 + Math.max(0, incidents.length - critical - high) * 2;
-    const score = Math.max(35, Math.min(100, 100 - incidentPenalty));
+    // **ولا قاعَ مفترضًا.** كان `Math.max(35, …)` يمنع الرقم من النزول
+    // تحت ٣٥ مهما بلغ الضغط — خطُّ أساسٍ مفترَضٌ في القاع، وهو بعينه ما
+    // أُزيل من القمّة ويمنعه التعليق على بُعد أسطر من هنا.
+    // وبلاغاتٌ لم تُقرأ ⇒ لا صحّةَ مركّبة، لا «مئة».
+    const score =
+      incidents == null || critical == null || high == null || otherIncidents == null
+        ? null
+        : Math.max(0, Math.min(100, 100 - (critical * 12 + high * 5 + otherIncidents * 2)));
 
     return {
       health: {
         score,
-        open_incidents: incidents.length,
+        open_incidents: countOf(incidents),
         critical_incidents: critical,
         active_patrols: patrols.length,
         visitors_onsite: visitorsOnsite,
