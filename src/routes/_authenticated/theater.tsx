@@ -117,6 +117,20 @@ function HealthChip({
   );
 }
 
+/**
+ * عدُّ شريحةٍ — **الغيابُ يُقال ولونُه مستقلّ.**
+ *
+ * كانت الأربعُ `?? "—"` بلا نبرة، فترسم شرطةً تمنعها المادة ٢٧ بلونٍ
+ * `cyan` افتراضيّ يُقرأ قياسًا. ولم تكن تنفذ قبل هذه الدفعة لأن الحقول
+ * كانت `number`؛ فلمّا صارت `number | null` صار الـ`??` حيًّا — **نكسةٌ
+ * أحدثها الإصلاح نفسه**. ودالّةٌ واحدة تمنع افتراقَها ثانيةً.
+ */
+function chipCount(v: number | null | undefined, ar: boolean) {
+  return v == null
+    ? { value: unmeasuredLabel(ar), tone: "unmeasured" as const }
+    : { value: `${v}`, tone: undefined };
+}
+
 function TheaterPage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
@@ -333,22 +347,22 @@ function TheaterPage() {
           <HealthChip
             icon={Activity}
             label={ar ? "بلاغات مفتوحة" : "Open Incidents"}
-            value={health?.open_incidents ?? "—"}
+            {...chipCount(health?.open_incidents, ar)}
           />
           <HealthChip
             icon={Radio}
             label={ar ? "دوريات نشطة" : "Active Patrols"}
-            value={health?.active_patrols ?? "—"}
+            {...chipCount(health?.active_patrols, ar)}
           />
           <HealthChip
             icon={Users}
             label={ar ? "زوار حاليون" : "Visitors Onsite"}
-            value={health?.visitors_onsite ?? "—"}
+            {...chipCount(health?.visitors_onsite, ar)}
           />
           <HealthChip
             icon={FileCheck2}
             label={ar ? "تصاريح فعّالة" : "Active Permits"}
-            value={health?.active_permits ?? "—"}
+            {...chipCount(health?.active_permits, ar)}
           />
           <HealthChip
             icon={Brain}

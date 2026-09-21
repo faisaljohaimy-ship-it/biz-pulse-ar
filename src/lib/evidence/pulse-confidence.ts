@@ -104,6 +104,17 @@ export function rowsOf<T>(res: { data: T[] | null; error: unknown }): T[] | null
   return res.error ? null : (res.data ?? []);
 }
 
+/**
+ * **فراغٌ لغرض بوابة الاحتياط** — لا صفوفَ **أو** لم يُقرأ.
+ *
+ * حين صارت العدّادات `number | null`، صار `=== 0` **كاذبًا أبدًا** عند
+ * خطأ امتياز — فتُنزَع محاكاةُ `resilient()` في الحالة التي وُضعت لها
+ * بالضبط. نكسةٌ أحدثها إصلاحُ الصدق نفسه، وتنقض طبقة «بيانات لا تفرغ».
+ */
+export function isBlank(n: number | null | undefined): boolean {
+  return n == null || n === 0;
+}
+
 /** عدُّ صفوفٍ قد تكون غائبة. */
 export function countOf(rows: readonly unknown[] | null): number | null {
   return rows ? rows.length : null;

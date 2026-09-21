@@ -23,7 +23,14 @@ import {
   percentValue,
   type MeasuredPercent,
 } from "./measured-percent";
-import { countOf, outcomeOf, pulseConfidence, rowsOf, settledRate } from "./pulse-confidence";
+import {
+  countOf,
+  isBlank,
+  outcomeOf,
+  pulseConfidence,
+  rowsOf,
+  settledRate,
+} from "./pulse-confidence";
 
 const AT = "2026-09-20T10:00:00.000Z";
 const ev = [{ kind: "db.query" as const, source: "tool_executions", observedAt: AT }];
@@ -412,6 +419,17 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
     }
   });
 
+  it("**وبوابةُ الاحتياط تعدّ «لم يُقرأ» فراغًا** — لا تُنزع المحاكاة عند الفشل", () => {
+    // نكسةٌ أحدثها إصلاحُ الصدق: لمّا صارت العدّادات `number | null`
+    // صار `=== 0` كاذبًا أبدًا عند خطأ امتياز، فتُنزَع محاكاةُ
+    // `resilient()` في الحالة التي وُضعت لها بالضبط.
+    expect(isBlank(0), "الصفرُ المقروء فراغٌ لغرض البوابة").toBe(true);
+    expect(isBlank(null), "«لم يُقرأ» حُسب امتلاءً").toBe(true);
+    expect(isBlank(undefined)).toBe(true);
+    expect(isBlank(12), "بياناتٌ حيّة حُسبت فراغًا").toBe(false);
+    expect(isBlank(1)).toBe(false);
+  });
+
   it("**ومصدرٌ معلَنٌ لم يُقرأ يمنع القياس كلَّه** — لا متوسّطَ من الناجي", () => {
     // نقضه الحارس: كان `s.rows ?? []` داخل الوحدة المكتوبة لقتله.
     // مصدرٌ مرفوض ⇒ `[]` ⇒ `n=0` ⇒ **يُسقطه الترشيح صامتًا** ⇒ يُحسب
@@ -654,10 +672,14 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
     expect(terms.map((t) => t.rows)).toEqual(expect.arrayContaining(["tools", "runs"]));
 
     // والعقدُ في النوع: `PulseSample` لا يقبل عددًا ولا نسبة.
+    // **مقصورٌ على إعلان العقد.** كان يمسح الملفّ كلَّه فسقط على وسيطٍ
+    // اسمُه `n` في دالّةٍ أخرى — حارسٌ نصّيّ يلتقط ما لا يحرسه.
     const PC = codeOf("src/lib/evidence/pulse-confidence.ts");
-    expect(PC, "عاد حقلٌ عدديٌّ إلى عقد العيّنة").not.toMatch(/\bn:\s*number/);
-    expect(PC, "عادت نسبةٌ تُسلَّم عند النداء").not.toMatch(/\bpct:\s*number/);
-    expect(PC, "عاد مُميِّزُ الإخفاق يُسلَّم").not.toMatch(/isFailure/);
+    const decl = PC.slice(PC.indexOf("export type PulseSample"));
+    const contract = decl.slice(0, decl.indexOf("};") + 2);
+    expect(contract, "عاد حقلٌ عدديٌّ إلى عقد العيّنة").not.toMatch(/\bn:\s*number/);
+    expect(contract, "عادت نسبةٌ تُسلَّم عند النداء").not.toMatch(/\bpct:\s*number/);
+    expect(contract, "عاد مُميِّزُ الإخفاق يُسلَّم").not.toMatch(/isFailure/);
     expect(PC, "عاد المقام إلى الكلّ لا إلى المنتهي").toMatch(/const settled = ok \+ bad/);
     expect(PC).toMatch(/rows: readonly/);
     expect(PC, "العدّ لا يُحسب داخليًّا").toMatch(/n: settled/);

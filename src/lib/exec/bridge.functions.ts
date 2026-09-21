@@ -5,7 +5,7 @@
  * `sec_patrols`, `enterprise_events`) — no mocks, no fabrication.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { countOf, outcomeOf, rowsOf } from "@/lib/evidence/pulse-confidence";
+import { countOf, isBlank, outcomeOf, rowsOf } from "@/lib/evidence/pulse-confidence";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type BridgeAgentStatus =
@@ -50,10 +50,10 @@ export type BridgeHealth = {
   score: number | null;
   open_incidents: number | null;
   critical_incidents: number | null;
-  active_patrols: number;
-  visitors_onsite: number;
-  active_permits: number;
-  open_work_orders: number;
+  active_patrols: number | null;
+  visitors_onsite: number | null;
+  active_permits: number | null;
+  open_work_orders: number | null;
   /** `null` = لا مقاولَ له درجةٌ مقيسة — غيابٌ لا صفر. */
   compliance_score: number | null;
   /**
@@ -83,11 +83,16 @@ export const getBridgeState = createServerFn({ method: "GET" })
     return resilient(
       "bridge-state",
       () => fetchBridgeState(context.supabase),
+      // **الغيابُ فراغٌ لغرض هذه البوابة، لا قيمةٌ تُقارَن بصفر.**
+      // صارت الحقول `number | null` في هذه الدفعة، فـ`=== 0` يصير
+      // **كاذبًا أبدًا** عند خطأ امتياز — فتُنزَع محاكاةُ `resilient()`
+      // في الحالة التي وُضعت لها بالضبط. والقاعدة: لا صفوفَ **أو** لم
+      // يُقرأ ⇒ فراغ.
       (v) =>
         v.agents.length === 0 &&
-        v.health.open_incidents === 0 &&
-        v.health.active_patrols === 0 &&
-        v.health.active_permits === 0,
+        isBlank(v.health.open_incidents) &&
+        isBlank(v.health.active_patrols) &&
+        isBlank(v.health.active_permits),
       () => buildBridgeSimulation(Date.now()),
     );
   });
@@ -153,11 +158,15 @@ async function fetchBridgeState(
     // `[]` ⇒ `critical = 0` ⇒ شريحةٌ **خضراء** و`score = 100`: العطلُ
     // في زيّ السلامة. والغيابُ يُقال.
     const incidents = rowsOf(incidentsRes) as Array<{ severity: string; status: string }> | null;
-    const patrols = (patrolsRes.data ?? []) as Array<{ status: string }>;
-    const visitors = (visitorsRes.data ?? []) as Array<{ status: string }>;
-    const permits = (permitsRes.data ?? []) as Array<{ status: string }>;
-    const workOrders = (workOrdersRes.data ?? []) as Array<{ status: string }>;
-    const contractors = (contractorsRes.data ?? []) as Array<{ compliance_score: number | null }>;
+    // **والقاعدة تسري على الإخوة الخمسة.** أُعلنت أعلاه لـ`incidents`
+    // وحدها، فبقي خمسةٌ تحتها بـ`?? []` — قراءةٌ مرفوضة تُعرض **صفرًا
+    // مقيسًا** على صفّ الشرائح نفسه الذي يقول بجواره «لم يُقَس».
+    // شاشةٌ واحدة بجوابين، وهو عينُ ما نُقضت به الجولة السابقة.
+    const patrols = rowsOf(patrolsRes) as Array<{ status: string }> | null;
+    const visitors = rowsOf(visitorsRes) as Array<{ status: string }> | null;
+    const permits = rowsOf(permitsRes) as Array<{ status: string }> | null;
+    const workOrders = rowsOf(workOrdersRes) as Array<{ status: string }> | null;
+    const contractors = rowsOf(contractorsRes) as Array<{ compliance_score: number | null }> | null;
 
     const runsByAgent = new Map<string, typeof runs>();
     for (const r of runs) {
@@ -237,22 +246,23 @@ async function fetchBridgeState(
     const otherIncidents =
       incidents && critical != null && high != null ? incidents.length - critical - high : null;
     const agentsOnline = agents.filter((a) => a.enabled).length;
-    const visitorsOnsite = visitors.filter((v) =>
-      ["checked_in", "onsite", "active"].includes(v.status),
-    ).length;
-    const activePermits = permits.filter((p) =>
-      ["active", "approved", "in_progress"].includes(p.status),
-    ).length;
-    const openWorkOrders = workOrders.filter(
-      (w) => w.status !== "closed" && w.status !== "cancelled",
-    ).length;
+    const visitorsOnsite = visitors
+      ? visitors.filter((v) => ["checked_in", "onsite", "active"].includes(v.status)).length
+      : null;
+    const activePermits = permits
+      ? permits.filter((p) => ["active", "approved", "in_progress"].includes(p.status)).length
+      : null;
+    const openWorkOrders = workOrders
+      ? workOrders.filter((w) => w.status !== "closed" && w.status !== "cancelled").length
+      : null;
     // **المتوسّط على المقيس وحده** — والقاعدة مكتوبةٌ على بُعد سطرين
     // لأجل `aiConfidence`، وكانت منقوضةً هنا: `?? 0` يُدخل غيرَ المقيس
     // بقيمةٍ مفترَضة فيصير الرقم خليطًا من قياسٍ وافتراضٍ يبدو مقيسًا.
-    const scored = contractors.filter((c) => c.compliance_score != null);
-    const complianceScore = scored.length
-      ? Math.round(scored.reduce((s, c) => s + (c.compliance_score as number), 0) / scored.length)
-      : null;
+    const scored = (contractors ?? []).filter((c) => c.compliance_score != null);
+    const complianceScore =
+      contractors && scored.length
+        ? Math.round(scored.reduce((s, c) => s + (c.compliance_score as number), 0) / scored.length)
+        : null;
     // المتوسّط على **المقيس وحده**: إدخالُ غير المقيس بقيمةٍ مفترَضة يصنع
     // رقمًا يبدو مقيسًا وهو خليطٌ من قياسٍ وافتراض. ولا مقيسَ إطلاقًا ⇐
     // `null` لا صفر: الصفر ثقةٌ معدومة، والغياب لا حكم.
@@ -278,7 +288,7 @@ async function fetchBridgeState(
         score,
         open_incidents: countOf(incidents),
         critical_incidents: critical,
-        active_patrols: patrols.length,
+        active_patrols: countOf(patrols),
         visitors_onsite: visitorsOnsite,
         active_permits: activePermits,
         open_work_orders: openWorkOrders,
