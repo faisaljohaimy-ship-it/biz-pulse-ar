@@ -59,7 +59,7 @@ function ReportsAgentPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `nexios-reports-${Date.now()}.csv`;
+    a.download = `sadeed-reports-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };

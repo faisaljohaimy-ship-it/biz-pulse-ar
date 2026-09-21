@@ -93,12 +93,20 @@ const RANGE_LABEL: Record<RangeKey, { ar: string; en: string }> = {
 const PAGE_AR = false;
 const ABSENT = unmeasuredLabel(PAGE_AR);
 
-function pctText(v: number | null | undefined, suffix = "%"): string {
+function pctText(v: number | null | undefined, suffix = "%", loading = false): string {
+  if (loading) return MEASURING;
   return v == null || !Number.isFinite(v) ? ABSENT : `${Math.round(v)}${suffix}`;
 }
 
+/**
+ * **والتحميل ليس غيابًا.** أوّلُ إطارٍ يراه كلُّ زائر لا بيانات فيه
+ * بعد، وعرضُ «لم يُقَس» حينها ادّعاءُ قياسٍ لم يُحاوَل. فله نصُّه.
+ */
+const MEASURING = "…";
+
 /** عدٌّ للعرض — **والغياب يُقال لا يُرسم شرطةً** (المادة ٢٧). */
-function countText(v: number | null | undefined): string {
+function countText(v: number | null | undefined, loading = false): string {
+  if (loading) return MEASURING;
   return v == null || !Number.isFinite(v) ? ABSENT : String(v);
 }
 const absentTone = (v: number | null | undefined) =>
@@ -199,6 +207,9 @@ function LiveExecutiveDashboard() {
   });
 
   const k = kpisQ.data;
+  // التحميلُ حالةٌ ثالثة بين القياس والغياب.
+  const busy = kpisQ.isPending;
+  const tsBusy = tsQ.isPending;
   const ts = tsQ.data;
 
   const filteredPoints = useMemo(() => {
@@ -234,7 +245,7 @@ function LiveExecutiveDashboard() {
       const ws2 = XLSX.utils.json_to_sheet(kpiRows);
       XLSX.utils.book_append_sheet(wb, ws2, "KPIs");
     }
-    XLSX.writeFile(wb, `nexios-executive-${range}d-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(wb, `sadeed-executive-${range}d-${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 
   async function exportPdf() {
@@ -277,7 +288,7 @@ function LiveExecutiveDashboard() {
         `${p.day}  ${countText(p.incidents_total).padStart(3)}  ${countText(p.incidents_critical).padStart(3)}  ` +
           `${countText(p.incidents_high).padStart(3)}  ${countText(p.incidents_resolved).padStart(3)}  ` +
           `${countText(p.work_orders_opened).padStart(3)}  ${countText(p.work_orders_closed).padStart(3)}  ` +
-          `${String(p.patrols_completed).padStart(5)}   ${countText(p.avg_response_minutes)}`,
+          `${countText(p.patrols_completed).padStart(5)}   ${countText(p.avg_response_minutes)}`,
         14,
         y,
       );
@@ -287,7 +298,7 @@ function LiveExecutiveDashboard() {
         y = 20;
       }
     }
-    doc.save(`nexios-executive-${range}d-${new Date().toISOString().slice(0, 10)}.pdf`);
+    doc.save(`sadeed-executive-${range}d-${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
   // لافتات المحاور تُقرأ كنصّ — أرضية ١٢px تسري عليها كما تسري على المتن.
@@ -400,47 +411,50 @@ function LiveExecutiveDashboard() {
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         <KpiCard
           label="Open Incidents"
-          value={countText(k?.incidents_open)}
-          sub={
-            k == null || k.incidents_critical != null
-              ? `${k?.incidents_critical ?? 0} critical`
-              : `critical ${ABSENT}`
-          }
+          value={countText(k?.incidents_open, busy)}
+          /*
+           * **بطاقةٌ واحدة لا تُجيب جوابين.** كان الشرط
+           * `k == null || k.incidents_critical != null` يقصر الغياب على
+           * فرع الحقل وحده، فغيابُ الصفّ كلِّه يسقط في `?? 0`: القيمة
+           * «Not measured» والسطرُ تحتها **«0 critical»** — و«صفرُ حوادثَ
+           * حرجة» مختلَقًا على لوحة أمنٍ تنفيذية هو أسوأ اتجاهٍ للخطأ.
+           */
+          sub={`critical ${countText(k?.incidents_critical, busy)}`}
           tone="rose"
           icon={AlertTriangle}
         />
         <KpiCard
           label="Resolution Rate"
-          value={pctText(ts?.totals.resolution_rate)}
+          value={pctText(ts?.totals.resolution_rate, "%", tsBusy)}
           sub={`last ${range}d`}
           tone={absentTone(ts?.totals.resolution_rate) ?? "emerald"}
           icon={ShieldCheck}
         />
         <KpiCard
           label="Active Patrols"
-          value={countText(k?.patrols_active)}
-          sub={`${pctText(k?.patrol_completion)} completion`}
+          value={countText(k?.patrols_active, busy)}
+          sub={`${pctText(k?.patrol_completion, "%", busy)} completion`}
           tone="secondary"
           icon={Activity}
         />
         <KpiCard
           label="Work Orders"
-          value={countText(k?.wo_open)}
+          value={countText(k?.wo_open, busy)}
           sub={ts ? `${ts.totals.work_orders_closed} closed / ${range}d` : "open"}
           tone="amber"
           icon={Wrench}
         />
         <KpiCard
           label="Avg Response"
-          value={pctText(ts?.totals.avg_response_minutes, "m")}
+          value={pctText(ts?.totals.avg_response_minutes, "m", tsBusy)}
           sub="critical + high"
           tone={absentTone(ts?.totals.avg_response_minutes) ?? "primary"}
           icon={Gauge}
         />
         <KpiCard
           label="Readiness"
-          value={pctText(k?.executive_readiness)}
-          sub={`risk ${pctText(k?.risk_index)}`}
+          value={pctText(k?.executive_readiness, "%", busy)}
+          sub={`risk ${pctText(k?.risk_index, "%", busy)}`}
           tone={absentTone(k?.executive_readiness) ?? "primary"}
           icon={Download}
         />

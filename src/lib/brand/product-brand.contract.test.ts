@@ -153,8 +153,16 @@ function stringLiterals(src: string): string[] {
  *   `nexios.region`      storage key
  *   `nexios:demo-status` DOM event name
  *   `nexios://workspace` internal URI scheme
+ *
+ * **ولا يشمل اسمَ ملفٍّ يُنزَّل.** كان النمط يبتلع `nexios-executive-…`
+ * في `live-dashboard.tsx` فيمرّ اسمُ تصديرٍ **يراه المالك في تنزيلاته
+ * ويحيله** كأنه مفتاحُ آلة. والفئاتُ المعلنة أعلاه — مفتاحُ تخزين ·
+ * حدثُ DOM · مخطّطُ URI — لا واحدةَ منها اسمُ ملفّ. فاستُثنيت صراحةً.
  */
 const MACHINE_TOKEN = /(?:nexus|nexios)(?:[-.:]{1,3}\/?\/?[a-z0-9_-]+)+/gi;
+/** أسماءُ الملفّات المصدَّرة نصُّ عرضٍ لا معرّف — لا يُعفيها `MACHINE_TOKEN`. */
+const EXPORT_FILENAME =
+  /(?:nexus|nexios)-[a-z0-9-]*\$\{|(?:nexus|nexios)-[a-z0-9-]*\.(?:xlsx|pdf|csv|docx|pptx)/gi;
 /** The production domain and any URL on it. Category D — a live contract. */
 const DOMAIN_TOKEN =
   /(?:https?:\/\/|[a-z0-9._%+-]+@)?[a-z0-9-]*\.?n[e]?exios\.(?:com|lovable\.cloud)[^\s"'<]*/gi;
@@ -165,6 +173,9 @@ const COMPONENT_ID = /<?\b(?:Nexus|Nexios)[A-Z][A-Za-z]*\b\s*\/?>?/g;
 
 const isIdentifierish = (lit: string) => {
   if (/^[@./~]/.test(lit)) return true; // module specifier
+  // اسمُ الملفّ المصدَّر يُفحص قبل أيّ إعفاء — وإلّا ابتلعه `MACHINE_TOKEN`.
+  EXPORT_FILENAME.lastIndex = 0;
+  if (EXPORT_FILENAME.test(lit)) return false;
   const residue = lit
     .replace(DOMAIN_TOKEN, " ")
     .replace(SOURCE_PATH, " ")
