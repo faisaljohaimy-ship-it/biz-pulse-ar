@@ -5,6 +5,7 @@
  * `sec_patrols`, `enterprise_events`) — no mocks, no fabrication.
  */
 import { createServerFn } from "@tanstack/react-start";
+import { outcomeOf } from "@/lib/evidence/pulse-confidence";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type BridgeAgentStatus =
@@ -164,8 +165,13 @@ async function fetchBridgeState(
     const agents: BridgeAgent[] = defs.map((d) => {
       const recent = (runsByAgent.get(d.id) ?? []).slice(0, 8);
       const last = recent[0] ?? null;
-      const completed = recent.filter((r) => r.status === "completed").length;
-      const failed = recent.filter((r) => r.status === "failed").length;
+      // **المفرداتُ من مصدرٍ واحد.** كان هنا `"completed"` وحدها، والكاتب
+      // (`agent-runtime.server.ts`) يكتب `"succeeded"` — فوكيلٌ نجح سبعًا
+      // من ثمانٍ يُقرأ **صفرًا** بحلقةٍ حمراء: إخفاقٌ مختلَق، وهو أسوأ من
+      // خطّ الأساس `0.85` الذي أُزيل. والسطرُ ٱلتالي في هذا الملفّ نفسه
+      // كان يعرف الاثنتين — مفردةٌ واحدة في موضعين تفترق.
+      const completed = recent.filter((r) => outcomeOf("agent_runs", r.status) === "ok").length;
+      const failed = recent.filter((r) => outcomeOf("agent_runs", r.status) === "bad").length;
       const total = completed + failed;
       // لا تشغيلَ سابق ⇐ لا قياس. والرقم المكتوب هنا كان يُعرض نسبةً
       // على شاشةٍ تنفيذية بلا ما يسنده.

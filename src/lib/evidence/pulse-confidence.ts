@@ -34,8 +34,10 @@ import { percentFromRatio, type MeasuredPercent } from "./measured-percent";
  * و`'error'` لم يكن قيمةً مشروعةً في أيٍّ من القيدين — نصفُ المجموعة
  * ميتٌ لا يطابق شيئًا.
  *
- * فالقاعدة الآن قاعدةُ `bridge.functions.ts`: **المقام تشغيلاتٌ منتهيةٌ
- * معلومةُ المصير وحدها.** وما لم يُحسم بعدُ لا يُحسب نجاحًا ولا إخفاقًا
+ * فالقاعدة الآن: **المقام تشغيلاتٌ منتهيةٌ معلومةُ المصير وحدها.**
+ * (كُتب هنا أنها «قاعدةُ `bridge.functions.ts`» فقِيس ذلك وصفًا كاذبًا:
+ * مقامُ الجسر كان `completed + failed` ويُسقط `succeeded` — وهي منتهيةٌ
+ * معلومة. فالمفرداتُ صارت مُصدَّرةً من هنا ويقرؤها الجسر، لا العكس.) وما لم يُحسم بعدُ لا يُحسب نجاحًا ولا إخفاقًا
  * — يخرج من الكسر كلِّه. ومنصّةٌ كلُّها عالقة تعود «لم يُقَس»، وهو صدقٌ:
  * لا مصيرَ رُصد.
  *
@@ -43,7 +45,7 @@ import { percentFromRatio, type MeasuredPercent } from "./measured-percent";
  * تسليمُها كان `isFailure` وقِيس نافذًا (‏`r.status === "__never__"`
  * يُعطي ١٠٠٪ بشكلٍ سليمٍ تمامًا).
  */
-const OUTCOMES: Record<
+export const OUTCOMES: Record<
   string,
   { readonly ok: readonly string[]; readonly bad: readonly string[] }
 > = {
@@ -65,6 +67,27 @@ const OUTCOMES: Record<
  * وما يحرسه حينئذٍ اختبارُ سلوكٍ يستدعي الدالّة بصفوفٍ حقيقية، لا نصٌّ
  * يصف نفسه.
  */
+/**
+ * مصيرُ صفٍّ واحد — **مُصدَّرة كي لا تتكرّر المفردات فتفترق.**
+ *
+ * قِيس أنّ `bridge.functions.ts:167` يعدّ `"completed"` وحدها نجاحًا
+ * بينما الكاتب `agent-runtime.server.ts:463` يكتب `"succeeded"` —
+ * فوكيلٌ نجح سبعًا من ثمانٍ كان يُقرأ **صفرًا** بحلقةٍ حمراء. والملفّ
+ * نفسه يعرف الاثنتين في سطرٍ آخر. فالمفردةُ الواحدة في موضعين تفترق،
+ * وهذه هي علّةُ «أربع نسخ من `UNMEASURED_AR`» بعينها.
+ */
+export function outcomeOf(
+  source: string,
+  status: string | null | undefined,
+): "ok" | "bad" | "pending" {
+  const v = OUTCOMES[source];
+  if (!v) throw new Error(`مصدرٌ بلا مفرداتِ مصير: «${source}»`);
+  const st = status ?? "";
+  if (v.ok.includes(st)) return "ok";
+  if (v.bad.includes(st)) return "bad";
+  return "pending";
+}
+
 export type PulseSample = {
   readonly source: string;
   readonly rows: readonly { readonly status?: string | null }[] | null | undefined;
@@ -79,13 +102,10 @@ export function pulseConfidence(
       // **مصدرٌ بلا مفرداتِ مصيرٍ خطأُ برمجة، لا بياناتٌ ناقصة.** وهو
       // ما وقع بـ`audit_logs`: جدولٌ لا دلالةَ نجاحٍ فيه أُدخل مصدرَ ثقة.
       // والإسقاطُ الصامت يُخفيه، فيُرمى صريحًا ويسقط في الاختبار.
-      const vocab = OUTCOMES[s.source];
-      if (!vocab) {
-        throw new Error(`مصدرُ ثقةٍ بلا مفرداتِ مصير: «${s.source}» — لا يُعرف نجاحُه من إخفاقه`);
-      }
+      // **مصدرٌ بلا مفرداتِ مصيرٍ خطأُ برمجة** — يرميه `outcomeOf`.
       const rows = s.rows ?? [];
-      const ok = rows.filter((r) => vocab.ok.includes(r.status ?? "")).length;
-      const bad = rows.filter((r) => vocab.bad.includes(r.status ?? "")).length;
+      const ok = rows.filter((r) => outcomeOf(s.source, r.status) === "ok").length;
+      const bad = rows.filter((r) => outcomeOf(s.source, r.status) === "bad").length;
       // المقام: المنتهي معلومُ المصير وحده. والمعلَّقُ يخرج من الكسر.
       const settled = ok + bad;
       return { source: s.source, n: settled, pct: settled ? (ok * 100) / settled : 0 };

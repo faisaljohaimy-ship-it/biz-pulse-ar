@@ -7,7 +7,7 @@
  * enterprise_event that downstream workers pick up.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { type Grounded } from "@/lib/evidence/evidence";
+import { type Grounded, UNMEASURED_EN } from "@/lib/evidence/evidence";
 import { type MeasuredPercent } from "@/lib/evidence/measured-percent";
 import { pulseConfidence } from "@/lib/evidence/pulse-confidence";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -120,12 +120,15 @@ export const getSystemPulse = createServerFn({ method: "GET" })
     const aiLatency = aiRows.length
       ? Math.round(aiRows.reduce((s, r) => s + (r.latency_ms ?? 0), 0) / aiRows.length)
       : 0;
-    const aiRate = aiTotal === 0 ? 100 : aiLatency > 8000 ? 60 : aiLatency > 4000 ? 85 : 99;
+    // **صفرُ نداءاتٍ ليس مئةً بالمئة.** كان `aiTotal === 0 ? 100`،
+    // فقاعدةٌ خاوية تُعرض «AI 100%» بجوار «CONFIDENCE — لم يُقَس»:
+    // المقياس نفسه يُجاب جوابين في شاشةٍ واحدة.
+    const aiRate = aiTotal === 0 ? null : aiLatency > 8000 ? 60 : aiLatency > 4000 ? 85 : 99;
 
     const toolRows = (tools.data ?? []) as { status: string; duration_ms: number | null }[];
     const toolTotal = toolRows.length;
     const toolFail = toolRows.filter((r) => r.status === "failed").length;
-    const toolFailPct = toolTotal ? (toolFail * 100) / toolTotal : 0;
+    const toolFailPct = toolTotal ? (toolFail * 100) / toolTotal : null;
     const toolAvg = toolRows.length
       ? Math.round(toolRows.reduce((s, r) => s + (r.duration_ms ?? 0), 0) / toolRows.length)
       : 0;
@@ -135,14 +138,14 @@ export const getSystemPulse = createServerFn({ method: "GET" })
       (r) => r.status === "running" || r.status === "queued",
     ).length;
     const agentFail = agentRows.filter((r) => r.status === "failed").length;
-    const agentTotal = agentRows.length || 1;
-    const agentFailPct = (agentFail * 100) / agentTotal;
+    const agentTotal = agentRows.length;
+    const agentFailPct = agentTotal ? (agentFail * 100) / agentTotal : null;
 
     const runRows = (runs.data ?? []) as { status: string }[];
     const runsRunning = runRows.filter((r) => r.status === "running").length;
     const runsFailed = runRows.filter((r) => r.status === "failed").length;
-    const runsTotal = runRows.length || 1;
-    const runsFailPct = (runsFailed * 100) / runsTotal;
+    const runsTotal = runRows.length;
+    const runsFailPct = runsTotal ? (runsFailed * 100) / runsTotal : null;
 
     const incRows = (incidents.data ?? []) as { severity: string; status: string }[];
     const critical = incRows.filter((i) => i.severity === "critical").length;
@@ -150,8 +153,10 @@ export const getSystemPulse = createServerFn({ method: "GET" })
 
     const auditRows = (audits.data ?? []) as { status: string | null }[];
     const auditFail = auditRows.filter((a) => a.status === "failed" || a.status === "error").length;
-    const auditTotal = auditRows.length || 1;
-    const auditFailPct = (auditFail * 100) / auditTotal;
+    // **لا مقامَ مصطنعًا.** `auditRows.length || 1` كان يطبع «1 events»
+    // على جدولٍ فارغ ويُعطي «API 100%» — الاختلاقُ المُسنَد بعينه.
+    const auditTotal = auditRows.length;
+    const auditFailPct = auditTotal ? (auditFail * 100) / auditTotal : null;
 
     const memRows = memory.data ?? [];
     const memActive = memRows.length;
@@ -166,8 +171,8 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         key: "ai",
         label_ar: "الذكاء الاصطناعي",
         label_en: "AI",
-        status: !aiKeyReady ? "critical" : tone(aiRate, 95, 90),
-        value: `${aiRate}%`,
+        status: !aiKeyReady ? "critical" : aiRate == null ? "unknown" : tone(aiRate, 95, 90),
+        value: shown(aiRate),
         detail: `${aiTotal} calls · ${aiLatency}ms avg`,
         updated_at: now,
       },
@@ -175,7 +180,7 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         key: "runtime",
         label_ar: "وقت التشغيل",
         label_en: "Runtime",
-        status: tone(runsFailPct, 5, 15, true),
+        status: runsFailPct == null ? "unknown" : tone(runsFailPct, 5, 15, true),
         value: `${runsRunning}`,
         detail: `${runsRunning} running · ${runsFailed} failed / 24h`,
         updated_at: now,
@@ -184,8 +189,8 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         key: "tools",
         label_ar: "الأدوات",
         label_en: "Tools",
-        status: tone(toolFailPct, 2, 10, true),
-        value: `${Math.round(100 - toolFailPct)}%`,
+        status: toolFailPct == null ? "unknown" : tone(toolFailPct, 2, 10, true),
+        value: shown(toolFailPct == null ? null : Math.round(100 - toolFailPct)),
         detail: `${toolTotal} exec · ${toolAvg}ms avg`,
         updated_at: now,
       },
@@ -193,7 +198,7 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         key: "agents",
         label_ar: "الوكلاء",
         label_en: "Agents",
-        status: tone(agentFailPct, 5, 15, true),
+        status: agentFailPct == null ? "unknown" : tone(agentFailPct, 5, 15, true),
         value: `${agentActive}`,
         detail: `${agentActive} active · ${agentFail} failed`,
         updated_at: now,
@@ -238,8 +243,8 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         key: "api",
         label_ar: "الواجهات",
         label_en: "API",
-        status: tone(auditFailPct, 2, 10, true),
-        value: `${Math.round(100 - auditFailPct)}%`,
+        status: auditFailPct == null ? "unknown" : tone(auditFailPct, 2, 10, true),
+        value: shown(auditFailPct == null ? null : Math.round(100 - auditFailPct)),
         detail: `${auditTotal} events · ${auditFail} errors`,
         updated_at: now,
       },
@@ -471,8 +476,22 @@ export type BusinessKpi = {
   label_en: string;
   value: string;
   delta?: string;
-  tone: "primary" | "emerald" | "amber" | "rose" | "secondary";
+  /** `unmeasured` نبرةٌ مستقلّة للغياب — لا يرث لونَ قياسٍ سليم. */
+  tone: "primary" | "emerald" | "amber" | "rose" | "secondary" | "unmeasured";
 };
+
+/**
+ * نصُّ بطاقةٍ أو شريحة — **والغياب يُقال لا يُختلق.**
+ *
+ * قِيس على `/live-dashboard` أنّ قاعدةً خاوية تُعطي على **شاشةٍ واحدة**:
+ * `RESOLUTION 100%` و`AVAILABILITY 100%` و`AI 100%` و`TOOLS 100%` و
+ * `API 100%` بجوار `CONFIDENCE ← لم يُقَس` و`RESOLUTION RATE ← لم يُقَس`.
+ * فالمقياس الواحد يُجاب جوابين متناقضين في الشاشة نفسها (المادة ٢١)،
+ * وأحدهما مختلَق (المادة ٢٧): `: 100` و`|| 1` على صفر صفوف.
+ */
+function shown(v: number | null, suffix = "%"): string {
+  return v == null ? UNMEASURED_EN : `${v}${suffix}`;
+}
 
 export type BusinessKpiSet = {
   kpis: BusinessKpi[];
@@ -519,10 +538,11 @@ export const getBusinessKpis = createServerFn({ method: "GET" })
 
     const incRows = incidents.data ?? [];
     const resolved = incRows.filter((i) => i.status === "resolved" || i.status === "closed").length;
-    const resolutionRate = incRows.length ? Math.round((resolved * 100) / incRows.length) : 100;
+    const resolutionRate = incRows.length ? Math.round((resolved * 100) / incRows.length) : null;
     const avgResponse = (() => {
       const arr = incRows.map((i) => i.response_minutes ?? 0).filter((n) => n > 0);
-      return arr.length ? Math.round(arr.reduce((s, n) => s + n, 0) / arr.length) : 0;
+      // صفرُ دقائقَ استجابةٍ هو **أفضلُ قيمةٍ ممكنة** مُختلَقة، لا غياب.
+      return arr.length ? Math.round(arr.reduce((s, n) => s + n, 0) / arr.length) : null;
     })();
 
     const patRows = patrols.data ?? [];
@@ -535,17 +555,18 @@ export const getBusinessKpis = createServerFn({ method: "GET" })
             patRows.length) *
             100,
         )
-      : 0;
+      : null;
 
     const runRows = runs.data ?? [];
     const runOk = runRows.filter(
       (r) => r.status === "succeeded" || r.status === "completed",
     ).length;
-    const automation = runRows.length ? Math.round((runOk * 100) / runRows.length) : 0;
+    // صفرُ تشغيلاتٍ ليس «صفر أتمتة» — هو لا قياس.
+    const automation = runRows.length ? Math.round((runOk * 100) / runRows.length) : null;
 
     const toolRows = tools.data ?? [];
     const toolOk = toolRows.filter((r) => r.status === "succeeded").length;
-    const availability = toolRows.length ? Math.round((toolOk * 100) / toolRows.length) : 100;
+    const availability = toolRows.length ? Math.round((toolOk * 100) / toolRows.length) : null;
 
     const agentRows = agents.data ?? [];
     const decisionAcc = agentRows.length
@@ -554,50 +575,50 @@ export const getBusinessKpis = createServerFn({ method: "GET" })
             100) /
             agentRows.length,
         )
-      : 0;
+      : null;
 
     const kpis: BusinessKpi[] = [
       {
         key: "availability",
         label_ar: "الجاهزية",
         label_en: "Availability",
-        value: `${availability}%`,
-        tone: "emerald",
+        value: shown(availability),
+        tone: availability == null ? "unmeasured" : "emerald",
       },
       {
         key: "resolution",
         label_ar: "معدل الحل",
         label_en: "Resolution",
-        value: `${resolutionRate}%`,
-        tone: "primary",
+        value: shown(resolutionRate),
+        tone: resolutionRate == null ? "unmeasured" : "primary",
       },
       {
         key: "response",
         label_ar: "زمن الاستجابة",
         label_en: "Response",
-        value: `${avgResponse}m`,
-        tone: "amber",
+        value: shown(avgResponse, "m"),
+        tone: avgResponse == null ? "unmeasured" : "amber",
       },
       {
         key: "automation",
         label_ar: "الأتمتة",
         label_en: "Automation",
-        value: `${automation}%`,
-        tone: "secondary",
+        value: shown(automation),
+        tone: automation == null ? "unmeasured" : "secondary",
       },
       {
         key: "adoption",
         label_ar: "التبنّي",
         label_en: "Adoption",
-        value: `${patrolCompletion}%`,
-        tone: "primary",
+        value: shown(patrolCompletion),
+        tone: patrolCompletion == null ? "unmeasured" : "primary",
       },
       {
         key: "decision",
         label_ar: "دقة القرار",
         label_en: "Decision Accuracy",
-        value: `${decisionAcc}%`,
-        tone: "emerald",
+        value: shown(decisionAcc),
+        tone: decisionAcc == null ? "unmeasured" : "emerald",
       },
     ];
 

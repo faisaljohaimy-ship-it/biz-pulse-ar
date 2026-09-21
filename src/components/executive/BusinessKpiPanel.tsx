@@ -6,6 +6,9 @@ const TONE: Record<BusinessKpi["tone"], string> = {
   emerald: "text-emerald-400 border-emerald-400/30",
   amber: "text-amber-400 border-amber-400/30",
   rose: "text-rose-400 border-rose-400/30",
+  // **الغياب نبرةٌ مستقلّة** — لا يرث لونَ قياسٍ سليم، وإلا قُرئ «لم
+  // يُقَس» قياسًا جيّدًا بلونٍ أخضر.
+  unmeasured: "text-foreground/40 border-white/10",
 };
 
 export function BusinessKpiPanel({ data }: { data: BusinessKpiSet }) {
