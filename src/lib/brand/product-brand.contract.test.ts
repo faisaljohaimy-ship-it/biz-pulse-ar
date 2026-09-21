@@ -24,7 +24,7 @@
  * reads directly. Comments are stripped first — a comment explaining which name
  * was retired is documentation, not a leak.
  */
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -160,9 +160,16 @@ function stringLiterals(src: string): string[] {
  * حدثُ DOM · مخطّطُ URI — لا واحدةَ منها اسمُ ملفّ. فاستُثنيت صراحةً.
  */
 const MACHINE_TOKEN = /(?:nexus|nexios)(?:[-.:]{1,3}\/?\/?[a-z0-9_-]+)+/gi;
-/** أسماءُ الملفّات المصدَّرة نصُّ عرضٍ لا معرّف — لا يُعفيها `MACHINE_TOKEN`. */
-const EXPORT_FILENAME =
-  /(?:nexus|nexios)-[a-z0-9-]*\$\{|(?:nexus|nexios)-[a-z0-9-]*\.(?:xlsx|pdf|csv|docx|pptx)/gi;
+/**
+ * اسمُ ملفٍّ **يراه المستخدم في نافذة التنزيل** — نصُّ عرضٍ لا معرّف،
+ * فلا يُعفيه `MACHINE_TOKEN`.
+ *
+ * **وأيُّ امتدادٍ، لا قائمةٌ منها.** كُتبت أوّلًا
+ * `(xlsx|pdf|csv|docx|pptx)` فأفلت `nexios-briefing.txt` — وقِيس ذلك
+ * على النمط **المشحون** لا على نسخةٍ في مِجَسّ؛ وقياسُ نسخةٍ هو عينُ
+ * علّة «المرفأ يقيس أقلّ ممّا يدّعي».
+ */
+const EXPORT_FILENAME = /(?:nexus|nexios)-[a-z0-9-]*(?:\$\{[^}]*\})?[a-z0-9-]*\.[a-z0-9]{2,6}\b/gi;
 /** The production domain and any URL on it. Category D — a live contract. */
 const DOMAIN_TOKEN =
   /(?:https?:\/\/|[a-z0-9._%+-]+@)?[a-z0-9-]*\.?n[e]?exios\.(?:com|lovable\.cloud)[^\s"'<]*/gi;
@@ -171,15 +178,41 @@ const SOURCE_PATH = /[\w/.-]+\.(?:ts|tsx|mjs|json|md|sql)\b/g;
 /** React component identifiers, including inside JSX-in-a-string test names. */
 const COMPONENT_ID = /<?\b(?:Nexus|Nexios)[A-Z][A-Za-z]*\b\s*\/?>?/g;
 
+/**
+ * هل يشير النصّ إلى ملفٍّ **قائمٍ فعلًا** في الشجرة؟
+ *
+ * هذا هو الفرق بين «عقدٍ حيّ» و«رابطٍ ميت»: الأوّل ينكسر بإعادة
+ * التسمية، والثاني مكسورٌ سلفًا. ويُقاس ولا يُفترض من شكل المسار.
+ */
+function referencedFileExists(lit: string): boolean {
+  const raw = lit.replace(/^@\//, "src/").replace(/^\.?\//, "");
+  const candidates = [raw, `public/${raw}`, `src/assets/${raw.split("/").pop() ?? ""}`];
+  return candidates.some((c) => {
+    try {
+      return existsSync(c) && statSync(c).isFile();
+    } catch {
+      return false;
+    }
+  });
+}
+
 const isIdentifierish = (lit: string) => {
-  // **قبل إعفاء «مُحدِّد الوحدة»، وباستثناءٍ واحدٍ معلَن.** كُتبت هذه
-  // الجملة أوّلًا «بلا استثناء» وتحتها `!lit.startsWith("/")` — فكانت
-  // أوسع من فعلها، وهي العلّة نفسها التي تُنقض بها الحرّاس. والاستثناء
-  // **مسارُ أصلٍ منشور** (يبدأ بـ`/`): تغييرُ نصّه وحده يعطي 404، وهو
-  // موصوفٌ بقياسه في ترويسة `EXPORT_FILENAME` أعلاه. فما عداه يُفحص
-  // قبل الإعفاء: `./…` و`~/…` كانا يُفلتان قبل هذا الترتيب.
+  // **قبل أيّ إعفاء، وبشرطٍ يُقاس لا بشكلٍ يُفترض.**
+  //
+  // كُتبت هذه الجملة مرّتين كاذبةً: أوّلًا «بلا استثناء» وتحتها إعفاءٌ
+  // سابقٌ لها؛ ثمّ باستثناء `!lit.startsWith("/")` مُبرَّرٍ بأنّ المسار
+  // المطلق **أصلٌ منشور** «تغييرُ نصّه يعطي 404» — وذلك **قياسٌ لم
+  // يقع**، وقد نُقض: لا `public/briefs/` ولا `public/decks/` في الشجرة.
+  // وكان موضوعُ ذلك الإعفاء الوحيد تسعةَ أسماءِ تنزيلٍ تحمل العلامة
+  // المتقاعدة أمام مستثمرٍ وجهةٍ حكومية — أي **ما وُجد الحارس لأجله
+  // بعينه**، فكان يُبطله لا يُقيّده.
+  //
+  // فالشرطُ الآن **وجودُ الملفّ**، وهو يُقاس: مرجعٌ إلى ملفٍّ قائم عقدٌ
+  // حيّ (‏`public/fonts/nexios-arabic.ttf` · واصفُ أصلِ Lovable) وتغييرُ
+  // نصّه وحده يعطي 404 فعلًا؛ ومرجعٌ إلى ملفٍّ معدوم لا عقدَ له يُصان.
+  // الشكلُ يُفترض، والوجودُ يُقاس.
   EXPORT_FILENAME.lastIndex = 0;
-  if (!lit.startsWith("/") && EXPORT_FILENAME.test(lit)) return false;
+  if (EXPORT_FILENAME.test(lit) && !referencedFileExists(lit)) return false;
   if (/^[@./~]/.test(lit)) return true; // module specifier
   const residue = lit
     .replace(DOMAIN_TOKEN, " ")

@@ -40,7 +40,7 @@ const SECTIONS: Section[] = [
       {
         title: "Investor Deck V2 (Series A)",
         titleAr: "العرض الاستثماري V2",
-        href: "/decks/nexus-investor-deck-v2.pptx",
+        href: "/decks/sadeed-investor-deck-v2.pptx",
         kind: "pdf",
         note: "PPTX · 14 slides",
         noteAr: "PPTX · 14 شريحة",
@@ -48,7 +48,7 @@ const SECTIONS: Section[] = [
       {
         title: "Final Readiness Audit",
         titleAr: "تدقيق الجاهزية النهائي",
-        href: "/briefs/nexus-final-readiness-audit.pdf",
+        href: "/briefs/sadeed-final-readiness-audit.pdf",
         kind: "pdf",
       },
       { title: "ROI Model", titleAr: "نموذج العائد", href: "/roi", kind: "page" },
@@ -63,13 +63,13 @@ const SECTIONS: Section[] = [
       {
         title: "Government Executive Brief (EN)",
         titleAr: "الملف الحكومي التنفيذي (EN)",
-        href: "/briefs/nexus-government-brief-en.pdf",
+        href: "/briefs/sadeed-government-brief-en.pdf",
         kind: "pdf",
       },
       {
         title: "الملف الحكومي التنفيذي (AR)",
         titleAr: "الملف الحكومي التنفيذي (عربي)",
-        href: "/briefs/nexus-government-brief-ar.pdf",
+        href: "/briefs/sadeed-government-brief-ar.pdf",
         kind: "pdf",
       },
       {

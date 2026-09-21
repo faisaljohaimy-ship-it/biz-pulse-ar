@@ -39,8 +39,8 @@ function GovernmentBriefPage() {
   const isAr = locale === "ar";
 
   const pdfHref = isAr
-    ? "/briefs/nexus-government-brief-ar.pdf"
-    : "/briefs/nexus-government-brief-en.pdf";
+    ? "/briefs/sadeed-government-brief-ar.pdf"
+    : "/briefs/sadeed-government-brief-en.pdf";
 
   const sections = isAr
     ? [
@@ -162,8 +162,8 @@ function GovernmentBriefPage() {
             <a
               href={
                 isAr
-                  ? "/briefs/nexus-government-brief-en.pdf"
-                  : "/briefs/nexus-government-brief-ar.pdf"
+                  ? "/briefs/sadeed-government-brief-en.pdf"
+                  : "/briefs/sadeed-government-brief-ar.pdf"
               }
               download
               className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-400/30 px-6 py-3 text-sm text-amber-200/90 transition hover:bg-amber-400/5"
