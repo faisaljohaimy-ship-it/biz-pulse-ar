@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { X, Pause, Play, Sparkles, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ExecutiveBriefing, BriefingSegment } from "@/lib/exec/briefing.functions";
-import { isMeasured, UNMEASURED_TEXT_AR } from "@/lib/evidence/evidence";
+import { isMeasured, unmeasuredLabel } from "@/lib/evidence/evidence";
 import { CONFIDENCE_LABEL } from "@/lib/evidence/confidence-labels";
 
 interface Props {
@@ -182,11 +182,10 @@ export function BriefingStage({ briefing, ar, onClose, backTo, onSegmentChange }
                     ? ar
                       ? CONFIDENCE_LABEL[briefing.recommendation.confidence.value].ar
                       : CONFIDENCE_LABEL[briefing.recommendation.confidence.value].en
-                    : // الغياب بلغة القارئ: `UNMEASURED_TEXT_AR` عربيّ وحده،
-                      // وعرضُه على واجهةٍ إنجليزية خرقُ ثنائية اللغة.
-                      ar
-                      ? UNMEASURED_TEXT_AR
-                      : "Not measured"}
+                    : // الغياب بلغة القارئ، من **مصدرٍ واحد**: كُتب هنا
+                      // `"Not measured"` نصًّا، وهي نسخةٌ خامسة من ثابتٍ
+                      // تصف `evidence.ts` بعينها خطرَ تكراره.
+                      unmeasuredLabel(ar)}
                 </div>
                 {/*
                  * **لا أسماء جداول هنا.** كان يُعرض

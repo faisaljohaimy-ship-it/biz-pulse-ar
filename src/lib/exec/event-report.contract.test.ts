@@ -96,31 +96,39 @@ describe("② صفر اختلاق — المادة ٢٧", () => {
     }
   });
 
-  it("الصفوف المركّبة: severity/priority/كل حقل غير مقيس = null، والأعلام false", async () => {
-    const { REAL_INCIDENTS, REAL_INCIDENT_COUNTS } = await import("./event-report.real.server");
-    expect(REAL_INCIDENTS).toHaveLength(3427);
-    expect(REAL_INCIDENT_COUNTS).toEqual({ total: 3427, open: 2284, closed: 1143 });
-    for (const row of REAL_INCIDENTS) {
-      expect(row.severity).toBeNull();
-      expect(row.priority).toBeNull();
-      expect(row.resolved_at).toBeNull();
-      expect(row.response_minutes).toBeNull();
-      expect(row.root_cause).toBeNull();
-      expect(row.ai_summary).toBeNull();
-      expect(row.ai_risk_score).toBeNull();
-      expect(row.aria_auto_analyzed).toBe(false);
-      expect(row.escalated).toBe(false);
-      expect(row.corrective_actions).toEqual([]);
-      expect(row.attachments).toEqual([]);
-      // الملف الحقيقي يحمل المدينة والمنطقة — لا تسقطان في الخريطة.
-      expect(typeof row.city).toBe("string");
-      expect(["central", "western", "eastern", "southern"]).toContain(row.region_id);
-    }
-    // مرتّبة من الأحدث — نفس ترتيب استعلام القاعدة الحي.
-    for (let i = 1; i < REAL_INCIDENTS.length; i++) {
-      expect(REAL_INCIDENTS[i - 1]!.reported_at >= REAL_INCIDENTS[i]!.reported_at).toBe(true);
-    }
-  });
+  // **مهلةٌ خاصّة لا رقمٌ اعتباطيّ.** هذا الاختبار يحمّل ٣٤٢٧ صفًّا،
+  // ويمرّ منفردًا في أقلّ من ثانيتين — ويتجاوز ٥ ثوانٍ تحت حِمل المجموعة
+  // الكاملة. فكان الأمرُ المُلزِم غيرَ أخضرَ حتميًّا، وذلك يجمّد الإنتاج
+  // بفشلٍ لا علاقة له بالمقيس.
+  it(
+    "الصفوف المركّبة: severity/priority/كل حقل غير مقيس = null، والأعلام false",
+    { timeout: 30_000 },
+    async () => {
+      const { REAL_INCIDENTS, REAL_INCIDENT_COUNTS } = await import("./event-report.real.server");
+      expect(REAL_INCIDENTS).toHaveLength(3427);
+      expect(REAL_INCIDENT_COUNTS).toEqual({ total: 3427, open: 2284, closed: 1143 });
+      for (const row of REAL_INCIDENTS) {
+        expect(row.severity).toBeNull();
+        expect(row.priority).toBeNull();
+        expect(row.resolved_at).toBeNull();
+        expect(row.response_minutes).toBeNull();
+        expect(row.root_cause).toBeNull();
+        expect(row.ai_summary).toBeNull();
+        expect(row.ai_risk_score).toBeNull();
+        expect(row.aria_auto_analyzed).toBe(false);
+        expect(row.escalated).toBe(false);
+        expect(row.corrective_actions).toEqual([]);
+        expect(row.attachments).toEqual([]);
+        // الملف الحقيقي يحمل المدينة والمنطقة — لا تسقطان في الخريطة.
+        expect(typeof row.city).toBe("string");
+        expect(["central", "western", "eastern", "southern"]).toContain(row.region_id);
+      }
+      // مرتّبة من الأحدث — نفس ترتيب استعلام القاعدة الحي.
+      for (let i = 1; i < REAL_INCIDENTS.length; i++) {
+        expect(REAL_INCIDENTS[i - 1]!.reported_at >= REAL_INCIDENTS[i]!.reported_at).toBe(true);
+      }
+    },
+  );
 
   it("الصفوف الحقيقية لا تُوسم محاكاة — markSimulation يتخطاها (مجمّدة)", async () => {
     const { REAL_INCIDENTS, REAL_SEC_INCIDENTS, REAL_EXEC_DRILL_INCIDENTS } =

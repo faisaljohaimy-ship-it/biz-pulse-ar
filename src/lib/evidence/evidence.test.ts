@@ -489,16 +489,27 @@ describe("الاختلاقُ الذي لا يضرب في مئة", () => {
 
   it("وكلُّ سطحٍ يعرض الغياب يقوله **بلغة قارئه**", () => {
     // `UNMEASURED_TEXT_AR` عربيٌّ وحده، وعرضُه على واجهةٍ إنجليزية خرقُ
-    // ثنائية اللغة — وقع في ثلاثة أسطح أصلحتها هذه الدفعة نفسها.
-    for (const f of [
-      "src/components/bridge/AgentNode.tsx",
-      "src/components/theater/ExplainPanel.tsx",
-      "src/routes/_authenticated/theater.tsx",
-    ]) {
-      const src = readFileSync(f, "utf8");
-      expect(src, `${f} يعرض العربيّ وحده`).not.toMatch(/UNMEASURED_TEXT_AR/);
-      expect(src).toMatch(/unmeasuredLabel\(/);
-    }
+    // ثنائية اللغة.
+    //
+    // **وكان هنا قائمةُ ثلاثة ملفّاتٍ مكتوبة**، فأصلحَتها هذه الدفعة
+    // وأنشأت رابعها (`live-dashboard.tsx`) والحارسُ لا يراه — قائمةٌ
+    // جامدة تشهد لما فيها لا لما تقوله. فصار **مسحًا لكلّ `src/**`**:
+    // أيُّ سطحٍ يستورد النصّ العربيّ وحده يسقط، مهما كان جديدًا.
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+        const full = `${dir}/${e.name}`;
+        if (e.isDirectory()) return walk(full);
+        return /\.(ts|tsx)$/.test(e.name) && !/\.test\.tsx?$/.test(e.name) ? [full] : [];
+      });
+    // **الشيفرةُ لا النثر.** التوثيق هنا يقتبس الاسمَ ليشرح الخرق،
+    // وحارسٌ يقرأ الملفّ خامًا يسقط على الشرح كما يسقط على العلّة.
+    const strip = (src: string) =>
+      src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+    const offenders = walk("src")
+      .filter((f) => /UNMEASURED_TEXT_AR/.test(strip(readFileSync(f, "utf8"))))
+      // مصدرُ الثابت ومُعيدُ تصديره ليسا سطحَ عرض.
+      .filter((f) => !/evidence\/evidence\.ts$|report-document\.types\.ts$/.test(f));
+    expect(offenders, `أسطحٌ تعرض العربيّ وحده: ${offenders.join(" · ")}`).toEqual([]);
   });
 
   it("ولا ضربَ في مئة على مقياسٍ أصلًا ٠..١٠٠", () => {

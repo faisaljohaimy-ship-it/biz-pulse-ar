@@ -32,7 +32,7 @@ import { getExecKpis } from "@/lib/sec.functions";
 import { getExecTimeseries } from "@/lib/sec.functions";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { queryEvidence } from "@/lib/evidence/gate";
-import { UNMEASURED_TEXT_AR } from "@/lib/evidence/evidence";
+import { unmeasuredLabel } from "@/lib/evidence/evidence";
 import { getSystemPulse, getBusinessKpis } from "@/lib/executive-presentation.functions";
 import { EnterpriseActivityFeed } from "@/components/events/EventTimeline";
 import { SystemPulseStrip } from "@/components/executive/SystemPulseStrip";
@@ -77,15 +77,29 @@ const RANGE_LABEL: Record<RangeKey, { ar: string; en: string }> = {
 };
 
 /**
- * نسبةٌ للعرض — **والغياب يُقال لا يُختلق.**
+ * الغيابُ على هذه الصفحة — **يُقال ولا يُختلق ولا يُرسم شرطةً.**
  *
- * قِيس على هذه الصفحة حرفيًّا «`Resolution null%`»: الشرط كان على
- * `ts` وهو موجود، والحقل `resolution_rate` هو `null` — ففُحص الغلاف
- * دون المحتوى. وأخواتها `?? 0` تُظهر الغياب **«0%»**، والصفر قياسٌ لا
- * غياب. والشرطة `—` تسمّيها المادة ٢٧ بعينها.
+ * قِيس هنا حرفيًّا «`Resolution null%`»: الشرط كان على `ts` وهو موجود،
+ * والحقل `resolution_rate` هو `null` — ففُحص الغلاف دون المحتوى.
+ * وأخواتها `?? 0` تُظهر الغياب **«0%»**، والصفر قياسٌ لا غياب.
+ * والشرطة `—` تسمّيها المادة ٢٧ بعينها.
+ *
+ * **ولغةُ الصفحة إنجليزية** رغم `dir="rtl"`: كلُّ لافتاتها
+ * (`Resolution Rate` · `Active Patrols` · `Avg Response`) إنجليزية.
+ * فكُتب الغيابُ أوّلًا `UNMEASURED_TEXT_AR` فظهر «لم يُقَس» عربيًّا تحت
+ * لافتةٍ إنجليزية، وبجواره «critical not measured» إنجليزيًّا — مفردتا
+ * غيابٍ بلغتين في شريطٍ واحد. والمصدر الآن واحدٌ ولغةٌ واحدة.
  */
+const PAGE_AR = false;
+const ABSENT = unmeasuredLabel(PAGE_AR);
+
 function pctText(v: number | null | undefined, suffix = "%"): string {
-  return v == null || !Number.isFinite(v) ? UNMEASURED_TEXT_AR : `${Math.round(v)}${suffix}`;
+  return v == null || !Number.isFinite(v) ? ABSENT : `${Math.round(v)}${suffix}`;
+}
+
+/** عدٌّ للعرض — **والغياب يُقال لا يُرسم شرطةً** (المادة ٢٧). */
+function countText(v: number | null | undefined): string {
+  return v == null || !Number.isFinite(v) ? ABSENT : String(v);
 }
 const absentTone = (v: number | null | undefined) =>
   v == null || !Number.isFinite(v) ? ("unmeasured" as const) : null;
@@ -248,7 +262,7 @@ function LiveExecutiveDashboard() {
       `Incidents: ${ts.totals.incidents}   Resolved: ${ts.totals.incidents_resolved}   ` +
         `Resolution: ${ts.totals.resolution_rate}%   WO opened: ${ts.totals.work_orders_opened}   ` +
         `WO closed: ${ts.totals.work_orders_closed}   Patrols: ${ts.totals.patrols_completed}   ` +
-        `Avg response: ${ts.totals.avg_response_minutes ?? "—"} min`,
+        `Avg response: ${pctText(ts.totals.avg_response_minutes, " min")}`,
       14,
       48,
     );
@@ -263,7 +277,7 @@ function LiveExecutiveDashboard() {
         `${p.day}  ${String(p.incidents_total).padStart(3)}  ${String(p.incidents_critical).padStart(3)}  ` +
           `${String(p.incidents_high).padStart(3)}  ${String(p.incidents_resolved).padStart(3)}  ` +
           `${String(p.work_orders_opened).padStart(3)}  ${String(p.work_orders_closed).padStart(3)}  ` +
-          `${String(p.patrols_completed).padStart(5)}   ${p.avg_response_minutes ?? "—"}`,
+          `${String(p.patrols_completed).padStart(5)}   ${countText(p.avg_response_minutes)}`,
         14,
         y,
       );
@@ -362,7 +376,11 @@ function LiveExecutiveDashboard() {
       {/* Executive System Pulse */}
       {pulseQ.data && (
         <div className="mb-6">
-          <SystemPulseStrip chips={pulseQ.data.chips} confidence={pulseQ.data.confidence} />
+          <SystemPulseStrip
+            chips={pulseQ.data.chips}
+            confidence={pulseQ.data.confidence}
+            ar={PAGE_AR}
+          />
         </div>
       )}
 
@@ -382,11 +400,11 @@ function LiveExecutiveDashboard() {
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         <KpiCard
           label="Open Incidents"
-          value={String(k?.incidents_open ?? "—")}
+          value={countText(k?.incidents_open)}
           sub={
             k == null || k.incidents_critical != null
               ? `${k?.incidents_critical ?? 0} critical`
-              : "critical not measured"
+              : `critical ${ABSENT}`
           }
           tone="rose"
           icon={AlertTriangle}
@@ -400,14 +418,14 @@ function LiveExecutiveDashboard() {
         />
         <KpiCard
           label="Active Patrols"
-          value={String(k?.patrols_active ?? "—")}
+          value={countText(k?.patrols_active)}
           sub={`${pctText(k?.patrol_completion)} completion`}
           tone="secondary"
           icon={Activity}
         />
         <KpiCard
           label="Work Orders"
-          value={String(k?.wo_open ?? "—")}
+          value={countText(k?.wo_open)}
           sub={ts ? `${ts.totals.work_orders_closed} closed / ${range}d` : "open"}
           tone="amber"
           icon={Wrench}
@@ -549,22 +567,26 @@ function LiveExecutiveDashboard() {
             <div className="text-sm font-semibold mb-3">ملخص الفترة</div>
             <dl className="grid grid-cols-2 gap-y-2 text-xs font-mono">
               <dt className="text-foreground/50">Incidents</dt>
-              <dd className="text-primary text-end">{ts?.totals.incidents ?? "—"}</dd>
+              <dd className="text-primary text-end">{countText(ts?.totals.incidents)}</dd>
               <dt className="text-foreground/50">Resolved</dt>
-              <dd className="text-emerald-400 text-end">{ts?.totals.incidents_resolved ?? "—"}</dd>
+              <dd className="text-emerald-400 text-end">
+                {countText(ts?.totals.incidents_resolved)}
+              </dd>
               <dt className="text-foreground/50">Resolution</dt>
               <dd className="text-emerald-400 text-end">{pctText(ts?.totals.resolution_rate)}</dd>
               <dt className="text-foreground/50">WO opened</dt>
-              <dd className="text-amber-400 text-end">{ts?.totals.work_orders_opened ?? "—"}</dd>
+              <dd className="text-amber-400 text-end">
+                {countText(ts?.totals.work_orders_opened)}
+              </dd>
               <dt className="text-foreground/50">WO closed</dt>
-              <dd className="text-emerald-400 text-end">{ts?.totals.work_orders_closed ?? "—"}</dd>
+              <dd className="text-emerald-400 text-end">
+                {countText(ts?.totals.work_orders_closed)}
+              </dd>
               <dt className="text-foreground/50">Patrols</dt>
-              <dd className="text-secondary text-end">{ts?.totals.patrols_completed ?? "—"}</dd>
+              <dd className="text-secondary text-end">{countText(ts?.totals.patrols_completed)}</dd>
               <dt className="text-foreground/50">Avg response</dt>
               <dd className="text-primary text-end">
-                {ts?.totals.avg_response_minutes != null
-                  ? `${ts.totals.avg_response_minutes}m`
-                  : "—"}
+                {pctText(ts?.totals.avg_response_minutes, "m")}
               </dd>
             </dl>
           </div>

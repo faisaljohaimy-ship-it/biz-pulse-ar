@@ -270,7 +270,7 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
   const AT2 = "2026-09-20T12:00:00.000Z";
   /** صفوفٌ حقيقية: `ok` ناجحة و`failed` فاشلة — لا عددٌ يُسلَّم. */
   const rows = (ok: number, failed = 0) => [
-    ...Array.from({ length: ok }, () => ({ status: "completed" })),
+    ...Array.from({ length: ok }, () => ({ status: "succeeded" })),
     ...Array.from({ length: failed }, () => ({ status: "failed" })),
   ];
 
@@ -279,7 +279,7 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
       [
         { source: "tool_executions", rows: [] },
         { source: "agent_runs", rows: [] },
-        { source: "audit_logs", rows: [] },
+        { source: "workflow_runs", rows: [] },
       ],
       AT2,
     );
@@ -293,7 +293,7 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
     const c = pulseConfidence(
       [
         { source: "tool_executions", rows: rows(4) },
-        { source: "audit_logs", rows: [] },
+        { source: "workflow_runs", rows: [] },
       ],
       AT2,
     );
@@ -309,7 +309,7 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
     const c = pulseConfidence(
       [
         { source: "tool_executions", rows: rows(999) },
-        { source: "audit_logs", rows: rows(0, 1) },
+        { source: "workflow_runs", rows: rows(0, 1) },
       ],
       AT2,
     );
@@ -321,7 +321,7 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
     const c = pulseConfidence(
       [
         { source: "agent_runs", rows: rows(6, 2) },
-        { source: "audit_logs", rows: [] },
+        { source: "workflow_runs", rows: [] },
       ],
       AT2,
     );
@@ -335,12 +335,59 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
     expect(percentTone(c)).toBe("bad");
   });
 
+  it("**والمعلَّقُ ليس نجاحًا** — منصّةٌ عالقةٌ كليًّا تعود «لم يُقَس»", () => {
+    // نقضه الحارس: الصيغة كانت «غيرُ الفاشل ÷ الكلّ»، فكلُّ حالةٍ غير
+    // `failed` تُحسب نجاحًا — ومنصّةٌ كلُّها `queued` تُقرأ «١٠٠٪»
+    // وجوابُ القاعدة صادقٌ تمامًا.
+    const stuck = ["queued", "running", "pending_approval", "waiting_approval"].map((status) => ({
+      status,
+    }));
+    const c = pulseConfidence([{ source: "tool_executions", rows: stuck }], AT2);
+    expect(isMeasured(c), "المعلَّقُ حُسب نجاحًا").toBe(false);
+    expect(formatPercent(c, true)).toBe("لم يُقَس");
+  });
+
+  it("ولا الملغى ولا المنتهية مهلتُه ولا المرفوض", () => {
+    for (const status of ["rejected", "cancelled", "expired", "superseded", "rolled_back"]) {
+      const c = pulseConfidence([{ source: "tool_executions", rows: [{ status }] }], AT2);
+      expect(isMeasured(c), `«${status}» حُسب نجاحًا`).toBe(false);
+    }
+  });
+
+  it("ولا الحالةُ الغائبة", () => {
+    const c = pulseConfidence(
+      [{ source: "tool_executions", rows: [{ status: null }, { status: undefined }, {}] }],
+      AT2,
+    );
+    expect(isMeasured(c), "حالةٌ غائبة حُسبت نجاحًا").toBe(false);
+  });
+
+  it("**والمقام منتهٍ معلومُ المصير وحده** — لا الكلّ", () => {
+    // ٣ ناجحة · ١ فاشلة · ٦ معلّقة ⇒ 3/4 = ٧٥٪، لا 3/10 ولا 9/10.
+    const rows = [
+      ...Array.from({ length: 3 }, () => ({ status: "succeeded" })),
+      { status: "failed" },
+      ...Array.from({ length: 6 }, () => ({ status: "queued" })),
+    ];
+    const c = pulseConfidence([{ source: "tool_executions", rows }], AT2);
+    expect(formatPercent(c, true)).toBe("75%");
+    if (c.measured) expect(c.evidence[0].value, "المقام ضمّ المعلَّق").toBe(4);
+  });
+
+  it("**ومصدرٌ بلا مفرداتِ مصيرٍ يرمي** — لا يُسقَط صامتًا", () => {
+    // `audit_logs` عمودُه `DEFAULT 'recorded'` — عدّادُ استعمالٍ لا
+    // دلالةَ نجاح. وأربعون صفًّا منه كانت تُعطي «١٠٠٪» بدليلٍ صادق.
+    expect(() =>
+      pulseConfidence([{ source: "audit_logs", rows: [{ status: "recorded" }] }], AT2),
+    ).toThrow(/بلا مفرداتِ مصير/);
+  });
+
   it("**ولا سبيلَ إلى تسليم رقمٍ** — العقد لا يقبل `n` ولا `pct`", () => {
     // خمسُ نقوضٍ أثبتت أنّ حارسًا نصّيًّا عليهما يُهزَم بإعادة صياغة.
     // فأُزيلا من النوع: التزوير اليوم يلزمه تزويرُ الصفوف نفسها.
     // ولا يرمي: يُهمَل الحقلان إهمالًا تامًّا فيعود «لم يُقَس» — وهو
     // أصدق من الرمي، لأن الحالة ليست عطلًا بل **غيابَ رصد**.
-    const bad = { source: "x", n: 1, pct: 100 } as unknown as Parameters<
+    const bad = { source: "tool_executions", n: 1, pct: 100 } as unknown as Parameters<
       typeof pulseConfidence
     >[0][number];
     const c = pulseConfidence([bad], AT2);
@@ -476,7 +523,7 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
     expect(residue, `عنصرٌ في قائمة العيّنات ليس كائنًا حرفيًّا: «${residue}»`).toBe("");
 
     const objs = [...body.matchAll(/\{[^{}]*\}/g)].map((m) => m[0]);
-    expect(objs.length, "لم تُقرأ أطرافُ الثقة").toBeGreaterThanOrEqual(3);
+    expect(objs.length, "لم تُقرأ أطرافُ الثقة").toBeGreaterThanOrEqual(2);
 
     return objs.map((o) => {
       const kv = new Map<string, string>();
@@ -506,15 +553,16 @@ describe("⑥ المسارُ الحيّ — البلاغان مُغلَقان ف
     // تعريفٌ مكرّر مُظلِّل · شَرَكٌ نصّيّ يخدع `codeOf`. فلم يعد يُحرس
     // النصّ: **أُزيل الحقلان من النوع**، فلا موضعَ يُكتب فيه رقمٌ أصلًا.
     const terms = pulseTerms();
-    expect(terms.map((t) => t.rows)).toEqual(expect.arrayContaining(["tools", "runs", "audits"]));
+    expect(terms.map((t) => t.rows)).toEqual(expect.arrayContaining(["tools", "runs"]));
 
     // والعقدُ في النوع: `PulseSample` لا يقبل عددًا ولا نسبة.
     const PC = codeOf("src/lib/evidence/pulse-confidence.ts");
     expect(PC, "عاد حقلٌ عدديٌّ إلى عقد العيّنة").not.toMatch(/\bn:\s*number/);
     expect(PC, "عادت نسبةٌ تُسلَّم عند النداء").not.toMatch(/\bpct:\s*number/);
     expect(PC, "عاد مُميِّزُ الإخفاق يُسلَّم").not.toMatch(/isFailure/);
+    expect(PC, "عاد المقام إلى الكلّ لا إلى المنتهي").toMatch(/const settled = ok \+ bad/);
     expect(PC).toMatch(/rows: readonly/);
-    expect(PC, "العدّ لا يُحسب داخليًّا").toMatch(/n: rows\.length/);
+    expect(PC, "العدّ لا يُحسب داخليًّا").toMatch(/n: settled/);
   });
 
   it("**واسمُ المصدر يطابق جدولَه فعلًا** — لا دليلَ يشهد لجدولٍ لم يُنتجه", () => {
