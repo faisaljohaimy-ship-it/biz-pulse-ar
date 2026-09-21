@@ -23,7 +23,7 @@ import {
   percentValue,
   type MeasuredPercent,
 } from "./measured-percent";
-import { pulseConfidence } from "./pulse-confidence";
+import { outcomeOf, pulseConfidence, settledRate } from "./pulse-confidence";
 
 const AT = "2026-09-20T10:00:00.000Z";
 const ev = [{ kind: "db.query" as const, source: "tool_executions", observedAt: AT }];
@@ -372,6 +372,44 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
     const c = pulseConfidence([{ source: "tool_executions", rows }], AT2);
     expect(formatPercent(c, true)).toBe("75%");
     if (c.measured) expect(c.evidence[0].value, "المقام ضمّ المعلَّق").toBe(4);
+  });
+
+  it("**والصفُّ الواحد جوابٌ واحد** — الشريحةُ والمؤشّرُ والثقةُ لا تفترق", () => {
+    // نقضه الحارس بالقياس الحيّ: عشرةُ تنفيذاتٍ كلُّها `queued` كانت
+    // تُقرأ «TOOLS 100%» شريحةً و«AVAILABILITY 0%» مؤشّرًا و«لم يُقَس»
+    // ثقةً — ثلاثةُ أجوبةٍ على صفٍّ واحد وشاشةٍ واحدة. فالمعلَّقُ كان
+    // نجاحًا هنا وإخفاقًا هناك وغيابًا ثالثًا.
+    const cases: Array<[string, { status: string }[]]> = [
+      ["خاوية", []],
+      ["كلُّها معلّقة", Array.from({ length: 10 }, () => ({ status: "queued" }))],
+      [
+        "٨ معلّقة · ١ ناجح · ١ فاشل",
+        [
+          ...Array.from({ length: 8 }, () => ({ status: "running" })),
+          { status: "succeeded" },
+          { status: "failed" },
+        ],
+      ],
+    ];
+    for (const [name, rows] of cases) {
+      const rate = settledRate("tool_executions", rows);
+      const conf = pulseConfidence([{ source: "tool_executions", rows }], AT2);
+      expect(conf.measured, `«${name}»: الثقةُ تفترق عن المؤشّر`).toBe(rate != null);
+    }
+    expect(settledRate("tool_executions", [])).toBeNull();
+    expect(settledRate("tool_executions", [{ status: "queued" }])).toBeNull();
+    expect(settledRate("tool_executions", [{ status: "succeeded" }, { status: "failed" }])).toBe(
+      50,
+    );
+  });
+
+  it("و`outcomeOf` تصنّف المعلَّق ثالثًا لا نجاحًا ولا إخفاقًا", () => {
+    expect(outcomeOf("agent_runs", "succeeded")).toBe("ok");
+    expect(outcomeOf("agent_runs", "completed")).toBe("ok");
+    expect(outcomeOf("agent_runs", "failed")).toBe("bad");
+    for (const st of ["queued", "running", "cancelled", null, undefined]) {
+      expect(outcomeOf("agent_runs", st), `«${st}» صُنّف حسمًا`).toBe("pending");
+    }
   });
 
   it("**ومصدرٌ بلا مفرداتِ مصيرٍ يرمي** — لا يُسقَط صامتًا", () => {

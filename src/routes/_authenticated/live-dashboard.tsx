@@ -250,7 +250,7 @@ function LiveExecutiveDashboard() {
       doc.text(
         `Open Incidents: ${k.incidents_open}   Critical: ${k.incidents_critical ?? "not measured"}   ` +
           `Active Patrols: ${k.patrols_active}   Work Orders (open): ${k.wo_open}   ` +
-          `Readiness: ${Math.round(k.executive_readiness ?? 0)}%   Risk: ${Math.round(k.risk_index ?? 0)}%`,
+          `Readiness: ${pctText(k.executive_readiness)}   Risk: ${pctText(k.risk_index)}`,
         14,
         30,
       );
@@ -260,7 +260,7 @@ function LiveExecutiveDashboard() {
     doc.setFontSize(9);
     doc.text(
       `Incidents: ${ts.totals.incidents}   Resolved: ${ts.totals.incidents_resolved}   ` +
-        `Resolution: ${ts.totals.resolution_rate}%   WO opened: ${ts.totals.work_orders_opened}   ` +
+        `Resolution: ${pctText(ts.totals.resolution_rate)}   WO opened: ${ts.totals.work_orders_opened}   ` +
         `WO closed: ${ts.totals.work_orders_closed}   Patrols: ${ts.totals.patrols_completed}   ` +
         `Avg response: ${pctText(ts.totals.avg_response_minutes, " min")}`,
       14,
@@ -274,9 +274,9 @@ function LiveExecutiveDashboard() {
     y += 5;
     for (const p of filteredPoints.slice(-40)) {
       doc.text(
-        `${p.day}  ${String(p.incidents_total).padStart(3)}  ${String(p.incidents_critical).padStart(3)}  ` +
-          `${String(p.incidents_high).padStart(3)}  ${String(p.incidents_resolved).padStart(3)}  ` +
-          `${String(p.work_orders_opened).padStart(3)}  ${String(p.work_orders_closed).padStart(3)}  ` +
+        `${p.day}  ${countText(p.incidents_total).padStart(3)}  ${countText(p.incidents_critical).padStart(3)}  ` +
+          `${countText(p.incidents_high).padStart(3)}  ${countText(p.incidents_resolved).padStart(3)}  ` +
+          `${countText(p.work_orders_opened).padStart(3)}  ${countText(p.work_orders_closed).padStart(3)}  ` +
           `${String(p.patrols_completed).padStart(5)}   ${countText(p.avg_response_minutes)}`,
         14,
         y,

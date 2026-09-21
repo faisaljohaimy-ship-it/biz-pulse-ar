@@ -4,6 +4,7 @@
  * + status). Status pill, halo animation, confidence ring.
  */
 import { cn } from "@/lib/utils";
+import { outcomeOf } from "@/lib/evidence/pulse-confidence";
 import { unmeasuredLabel } from "@/lib/evidence/evidence";
 import type { BridgeAgent, BridgeAgentStatus } from "@/lib/exec/bridge.functions";
 import { findHuman } from "@/lib/digital-humans/registry";
@@ -192,12 +193,19 @@ export function AgentNode({ agent, ar, size = 96, spotlight, onClick }: Props) {
             {agent.current_task}
           </div>
         )}
-        {!agent.current_task && agent.last_run_status === "completed" && agent.last_run_at && (
-          <div className="mt-1 flex items-center justify-center gap-1 text-[12px] text-emerald-300/80">
-            <CheckCircle2 className="h-3 w-3" />
-            <span>{ar ? "آخر مهمة مكتملة" : "Last task complete"}</span>
-          </div>
-        )}
+        {/*
+         * `last_run_status` خامٌ من القاعدة، والكاتب نوعُه
+         * `"succeeded" | "failed"` — فـ`=== "completed"` فرعٌ **ميت**
+         * في المسار الحيّ وفي المحاكاة معًا. والمفرداتُ من مصدرٍ واحد.
+         */}
+        {!agent.current_task &&
+          outcomeOf("agent_runs", agent.last_run_status) === "ok" &&
+          agent.last_run_at && (
+            <div className="mt-1 flex items-center justify-center gap-1 text-[12px] text-emerald-300/80">
+              <CheckCircle2 className="h-3 w-3" />
+              <span>{ar ? "آخر مهمة مكتملة" : "Last task complete"}</span>
+            </div>
+          )}
       </div>
     </button>
   );

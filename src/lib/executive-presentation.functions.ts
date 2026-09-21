@@ -9,7 +9,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { type Grounded, UNMEASURED_EN } from "@/lib/evidence/evidence";
 import { type MeasuredPercent } from "@/lib/evidence/measured-percent";
-import { pulseConfidence } from "@/lib/evidence/pulse-confidence";
+import { outcomeOf, pulseConfidence, settledRate } from "@/lib/evidence/pulse-confidence";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { triggerWorkflow } from "@/lib/exec/workflow-engine.server";
@@ -127,8 +127,7 @@ export const getSystemPulse = createServerFn({ method: "GET" })
 
     const toolRows = (tools.data ?? []) as { status: string; duration_ms: number | null }[];
     const toolTotal = toolRows.length;
-    const toolFail = toolRows.filter((r) => r.status === "failed").length;
-    const toolFailPct = toolTotal ? (toolFail * 100) / toolTotal : null;
+    const toolOkPct = settledRate("tool_executions", toolRows);
     const toolAvg = toolRows.length
       ? Math.round(toolRows.reduce((s, r) => s + (r.duration_ms ?? 0), 0) / toolRows.length)
       : 0;
@@ -137,15 +136,13 @@ export const getSystemPulse = createServerFn({ method: "GET" })
     const agentActive = agentRows.filter(
       (r) => r.status === "running" || r.status === "queued",
     ).length;
-    const agentFail = agentRows.filter((r) => r.status === "failed").length;
-    const agentTotal = agentRows.length;
-    const agentFailPct = agentTotal ? (agentFail * 100) / agentTotal : null;
+    const agentFail = agentRows.filter((r) => outcomeOf("agent_runs", r.status) === "bad").length;
+    const agentOkPct = settledRate("agent_runs", agentRows);
 
     const runRows = (runs.data ?? []) as { status: string }[];
     const runsRunning = runRows.filter((r) => r.status === "running").length;
-    const runsFailed = runRows.filter((r) => r.status === "failed").length;
-    const runsTotal = runRows.length;
-    const runsFailPct = runsTotal ? (runsFailed * 100) / runsTotal : null;
+    const runsFailed = runRows.filter((r) => outcomeOf("workflow_runs", r.status) === "bad").length;
+    const runsOkPct = settledRate("workflow_runs", runRows);
 
     const incRows = (incidents.data ?? []) as { severity: string; status: string }[];
     const critical = incRows.filter((i) => i.severity === "critical").length;
@@ -180,7 +177,7 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         key: "runtime",
         label_ar: "وقت التشغيل",
         label_en: "Runtime",
-        status: runsFailPct == null ? "unknown" : tone(runsFailPct, 5, 15, true),
+        status: runsOkPct == null ? "unknown" : tone(runsOkPct, 95, 85),
         value: `${runsRunning}`,
         detail: `${runsRunning} running · ${runsFailed} failed / 24h`,
         updated_at: now,
@@ -189,8 +186,8 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         key: "tools",
         label_ar: "الأدوات",
         label_en: "Tools",
-        status: toolFailPct == null ? "unknown" : tone(toolFailPct, 2, 10, true),
-        value: shown(toolFailPct == null ? null : Math.round(100 - toolFailPct)),
+        status: toolOkPct == null ? "unknown" : tone(toolOkPct, 98, 90),
+        value: shown(toolOkPct),
         detail: `${toolTotal} exec · ${toolAvg}ms avg`,
         updated_at: now,
       },
@@ -198,7 +195,7 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         key: "agents",
         label_ar: "الوكلاء",
         label_en: "Agents",
-        status: agentFailPct == null ? "unknown" : tone(agentFailPct, 5, 15, true),
+        status: agentOkPct == null ? "unknown" : tone(agentOkPct, 95, 85),
         value: `${agentActive}`,
         detail: `${agentActive} active · ${agentFail} failed`,
         updated_at: now,
@@ -558,24 +555,14 @@ export const getBusinessKpis = createServerFn({ method: "GET" })
       : null;
 
     const runRows = runs.data ?? [];
-    const runOk = runRows.filter(
-      (r) => r.status === "succeeded" || r.status === "completed",
-    ).length;
-    // صفرُ تشغيلاتٍ ليس «صفر أتمتة» — هو لا قياس.
-    const automation = runRows.length ? Math.round((runOk * 100) / runRows.length) : null;
+    // صفرُ تشغيلاتٍ ليس «صفر أتمتة» — هو لا قياس. والمعلَّقُ ليس إخفاقًا.
+    const automation = settledRate("workflow_runs", runRows);
 
     const toolRows = tools.data ?? [];
-    const toolOk = toolRows.filter((r) => r.status === "succeeded").length;
-    const availability = toolRows.length ? Math.round((toolOk * 100) / toolRows.length) : null;
+    const availability = settledRate("tool_executions", toolRows);
 
     const agentRows = agents.data ?? [];
-    const decisionAcc = agentRows.length
-      ? Math.round(
-          (agentRows.filter((r) => r.status === "succeeded" || r.status === "completed").length *
-            100) /
-            agentRows.length,
-        )
-      : null;
+    const decisionAcc = settledRate("agent_runs", agentRows);
 
     const kpis: BusinessKpi[] = [
       {
@@ -583,7 +570,7 @@ export const getBusinessKpis = createServerFn({ method: "GET" })
         label_ar: "الجاهزية",
         label_en: "Availability",
         value: shown(availability),
-        tone: availability == null ? "unmeasured" : "emerald",
+        tone: availability == null ? "unmeasured" : availability >= 95 ? "emerald" : "amber",
       },
       {
         key: "resolution",

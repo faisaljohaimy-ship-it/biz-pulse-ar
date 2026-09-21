@@ -54,7 +54,8 @@ export type BridgeHealth = {
   visitors_onsite: number;
   active_permits: number;
   open_work_orders: number;
-  compliance_score: number;
+  /** `null` = لا مقاولَ له درجةٌ مقيسة — غيابٌ لا صفر. */
+  compliance_score: number | null;
   /**
    * متوسّط ما قِيس من الوكلاء على مقياس **٠..١** — `null` حين لا وكيل
    * له تاريخ.
@@ -240,11 +241,13 @@ async function fetchBridgeState(
     const openWorkOrders = workOrders.filter(
       (w) => w.status !== "closed" && w.status !== "cancelled",
     ).length;
-    const complianceScore = contractors.length
-      ? Math.round(
-          contractors.reduce((s, c) => s + (c.compliance_score ?? 0), 0) / contractors.length,
-        )
-      : 0;
+    // **المتوسّط على المقيس وحده** — والقاعدة مكتوبةٌ على بُعد سطرين
+    // لأجل `aiConfidence`، وكانت منقوضةً هنا: `?? 0` يُدخل غيرَ المقيس
+    // بقيمةٍ مفترَضة فيصير الرقم خليطًا من قياسٍ وافتراضٍ يبدو مقيسًا.
+    const scored = contractors.filter((c) => c.compliance_score != null);
+    const complianceScore = scored.length
+      ? Math.round(scored.reduce((s, c) => s + (c.compliance_score as number), 0) / scored.length)
+      : null;
     // المتوسّط على **المقيس وحده**: إدخالُ غير المقيس بقيمةٍ مفترَضة يصنع
     // رقمًا يبدو مقيسًا وهو خليطٌ من قياسٍ وافتراض. ولا مقيسَ إطلاقًا ⇐
     // `null` لا صفر: الصفر ثقةٌ معدومة، والغياب لا حكم.

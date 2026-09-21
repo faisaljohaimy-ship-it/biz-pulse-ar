@@ -88,6 +88,24 @@ export function outcomeOf(
   return "pending";
 }
 
+/**
+ * نسبةُ نجاحٍ على **المنتهي معلومِ المصير** — من المفردات الواحدة.
+ *
+ * كان كلُّ سطحٍ يعدّ الحالات بيده (`r.status === "failed"`)، فأعطى الصفُّ
+ * الواحد **ثلاثة أجوبة**: عشرةُ تنفيذاتٍ كلُّها `queued` كانت تُقرأ
+ * «TOOLS 100%» في الشريحة و«AVAILABILITY 0%» في المؤشّر و«لم يُقَس» في
+ * الثقة. فالمعلَّقُ نجاحٌ هنا وإخفاقٌ هناك وغيابٌ ثالثًا — على شاشةٍ
+ * واحدة. والمقام الآن `ok + bad` في الثلاثة، والمعلَّقُ خارجَها جميعًا.
+ */
+export function settledRate(
+  source: string,
+  rows: readonly { status?: string | null }[],
+): number | null {
+  const ok = rows.filter((r) => outcomeOf(source, r.status) === "ok").length;
+  const bad = rows.filter((r) => outcomeOf(source, r.status) === "bad").length;
+  return ok + bad === 0 ? null : Math.round((ok * 100) / (ok + bad));
+}
+
 export type PulseSample = {
   readonly source: string;
   readonly rows: readonly { readonly status?: string | null }[] | null | undefined;
