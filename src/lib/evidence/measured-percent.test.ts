@@ -23,7 +23,7 @@ import {
   percentValue,
   type MeasuredPercent,
 } from "./measured-percent";
-import { outcomeOf, pulseConfidence, settledRate } from "./pulse-confidence";
+import { countOf, outcomeOf, pulseConfidence, rowsOf, settledRate } from "./pulse-confidence";
 
 const AT = "2026-09-20T10:00:00.000Z";
 const ev = [{ kind: "db.query" as const, source: "tool_executions", observedAt: AT }];
@@ -410,6 +410,22 @@ describe("⑤د ثقةُ النبض — الفرعُ الفارغ مبلوغٌ �
     for (const st of ["queued", "running", "cancelled", null, undefined]) {
       expect(outcomeOf("agent_runs", st), `«${st}» صُنّف حسمًا`).toBe("pending");
     }
+  });
+
+  it("**وفشلُ الاستعلام ليس صفرًا سليمًا** — `data: null` غيابٌ لا خواء", () => {
+    // نقضه الحارس بالقياس الحيّ: `data ?? []` يطمس الفرق بين «لا صفوف»
+    // و«لم يُقرأ». فشلُ الاستعلام أو منعُ RLS كان يعطي `critical = 0`
+    // فتُصبغ الشريحة **خضراء** — طمسُ الفشل في زيّ السلامة، وأسوأ
+    // اتجاهٍ للخطأ على لوحة أمن. والمادة ٢٧: نظامٌ لم يُشغَّل قط يُقرأ
+    // كذلك، لا نظامًا سليمًا خاملًا.
+    expect(rowsOf({ data: null, error: { message: "permission denied" } })).toBeNull();
+    expect(rowsOf({ data: [], error: { code: "42501" } })).toBeNull();
+    expect(countOf(rowsOf({ data: null, error: new Error("x") }))).toBeNull();
+
+    // والنجاحُ الخاوي يبقى صفرًا مقيسًا — الصفر قياسٌ لا غياب.
+    expect(rowsOf({ data: null, error: null })).toEqual([]);
+    expect(countOf(rowsOf({ data: [], error: null }))).toBe(0);
+    expect(countOf(rowsOf({ data: [{ a: 1 }, { a: 2 }], error: null }))).toBe(2);
   });
 
   it("**ومصدرٌ بلا مفرداتِ مصيرٍ يرمي** — لا يُسقَط صامتًا", () => {

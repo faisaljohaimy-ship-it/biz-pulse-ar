@@ -9,7 +9,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { type Grounded, UNMEASURED_EN } from "@/lib/evidence/evidence";
 import { type MeasuredPercent } from "@/lib/evidence/measured-percent";
-import { outcomeOf, pulseConfidence, settledRate } from "@/lib/evidence/pulse-confidence";
+import {
+  countOf,
+  outcomeOf,
+  pulseConfidence,
+  rowsOf,
+  settledRate,
+} from "@/lib/evidence/pulse-confidence";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { triggerWorkflow } from "@/lib/exec/workflow-engine.server";
@@ -114,49 +120,64 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         .limit(2000),
     ]);
 
-    const aiRows = (aiUsage.data ?? []) as { latency_ms: number | null; total_tokens: number }[];
-    const aiTotal = aiRows.length;
+    const aiRows = rowsOf(aiUsage) as { latency_ms: number | null; total_tokens: number }[] | null;
+    const aiTotal = countOf(aiRows);
     // Health signal for AI = presence of traffic + latency band (no status col in ai_usage).
-    const aiLatency = aiRows.length
-      ? Math.round(aiRows.reduce((s, r) => s + (r.latency_ms ?? 0), 0) / aiRows.length)
-      : 0;
+    const aiLatency =
+      aiRows && aiRows.length
+        ? Math.round(aiRows.reduce((s, r) => s + (r.latency_ms ?? 0), 0) / aiRows.length)
+        : null;
     // **صفرُ نداءاتٍ ليس مئةً بالمئة.** كان `aiTotal === 0 ? 100`،
     // فقاعدةٌ خاوية تُعرض «AI 100%» بجوار «CONFIDENCE — لم يُقَس»:
     // المقياس نفسه يُجاب جوابين في شاشةٍ واحدة.
-    const aiRate = aiTotal === 0 ? null : aiLatency > 8000 ? 60 : aiLatency > 4000 ? 85 : 99;
+    const aiRate =
+      aiTotal == null || aiTotal === 0 || aiLatency == null
+        ? null
+        : aiLatency > 8000
+          ? 60
+          : aiLatency > 4000
+            ? 85
+            : 99;
 
-    const toolRows = (tools.data ?? []) as { status: string; duration_ms: number | null }[];
-    const toolTotal = toolRows.length;
-    const toolOkPct = settledRate("tool_executions", toolRows);
-    const toolAvg = toolRows.length
-      ? Math.round(toolRows.reduce((s, r) => s + (r.duration_ms ?? 0), 0) / toolRows.length)
-      : 0;
+    const toolRows = rowsOf(tools) as { status: string; duration_ms: number | null }[] | null;
+    const toolTotal = countOf(toolRows);
+    const toolOkPct = toolRows ? settledRate("tool_executions", toolRows) : null;
+    const toolAvg =
+      toolRows && toolRows.length
+        ? Math.round(toolRows.reduce((s, r) => s + (r.duration_ms ?? 0), 0) / toolRows.length)
+        : null;
 
-    const agentRows = (agents.data ?? []) as { status: string }[];
-    const agentActive = agentRows.filter(
-      (r) => r.status === "running" || r.status === "queued",
-    ).length;
-    const agentFail = agentRows.filter((r) => outcomeOf("agent_runs", r.status) === "bad").length;
-    const agentOkPct = settledRate("agent_runs", agentRows);
+    const agentRows = rowsOf(agents) as { status: string }[] | null;
+    const agentActive = agentRows
+      ? agentRows.filter((r) => r.status === "running" || r.status === "queued").length
+      : null;
+    const agentFail = agentRows
+      ? agentRows.filter((r) => outcomeOf("agent_runs", r.status) === "bad").length
+      : null;
+    const agentOkPct = agentRows ? settledRate("agent_runs", agentRows) : null;
 
-    const runRows = (runs.data ?? []) as { status: string }[];
-    const runsRunning = runRows.filter((r) => r.status === "running").length;
-    const runsFailed = runRows.filter((r) => outcomeOf("workflow_runs", r.status) === "bad").length;
-    const runsOkPct = settledRate("workflow_runs", runRows);
+    const runRows = rowsOf(runs) as { status: string }[] | null;
+    const runsRunning = runRows ? runRows.filter((r) => r.status === "running").length : null;
+    const runsFailed = runRows
+      ? runRows.filter((r) => outcomeOf("workflow_runs", r.status) === "bad").length
+      : null;
+    const runsOkPct = runRows ? settledRate("workflow_runs", runRows) : null;
 
-    const incRows = (incidents.data ?? []) as { severity: string; status: string }[];
-    const critical = incRows.filter((i) => i.severity === "critical").length;
-    const openIncidents = incRows.length;
+    const incRows = rowsOf(incidents) as { severity: string; status: string }[] | null;
+    const critical = incRows ? incRows.filter((i) => i.severity === "critical").length : null;
+    const openIncidents = countOf(incRows);
 
-    const auditRows = (audits.data ?? []) as { status: string | null }[];
-    const auditFail = auditRows.filter((a) => a.status === "failed" || a.status === "error").length;
+    const auditRows = rowsOf(audits) as { status: string | null }[] | null;
+    const auditFail = auditRows
+      ? auditRows.filter((a) => a.status === "failed" || a.status === "error").length
+      : null;
     // **لا مقامَ مصطنعًا.** `auditRows.length || 1` كان يطبع «1 events»
     // على جدولٍ فارغ ويُعطي «API 100%» — الاختلاقُ المُسنَد بعينه.
-    const auditTotal = auditRows.length;
-    const auditFailPct = auditTotal ? (auditFail * 100) / auditTotal : null;
+    const auditTotal = countOf(auditRows);
+    const auditFailPct = auditTotal && auditFail != null ? (auditFail * 100) / auditTotal : null;
 
-    const memRows = memory.data ?? [];
-    const memActive = memRows.length;
+    const memRows = rowsOf(memory);
+    const memActive = countOf(memRows);
 
     // Voice / Avatar readiness: verify configured secrets exist server-side.
     const voiceReady = Boolean(process.env.ELEVENLABS_API_KEY);
@@ -170,7 +191,7 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         label_en: "AI",
         status: !aiKeyReady ? "critical" : aiRate == null ? "unknown" : tone(aiRate, 95, 90),
         value: shown(aiRate),
-        detail: `${aiTotal} calls · ${aiLatency}ms avg`,
+        detail: `${shown(aiTotal, "")} calls · ${shown(aiLatency, "ms")} avg`,
         updated_at: now,
       },
       {
@@ -178,8 +199,8 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         label_ar: "وقت التشغيل",
         label_en: "Runtime",
         status: runsOkPct == null ? "unknown" : tone(runsOkPct, 95, 85),
-        value: `${runsRunning}`,
-        detail: `${runsRunning} running · ${runsFailed} failed / 24h`,
+        value: shown(runsRunning, ""),
+        detail: `${shown(runsRunning, "")} running · ${shown(runsFailed, "")} failed / 24h`,
         updated_at: now,
       },
       {
@@ -188,7 +209,7 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         label_en: "Tools",
         status: toolOkPct == null ? "unknown" : tone(toolOkPct, 98, 90),
         value: shown(toolOkPct),
-        detail: `${toolTotal} exec · ${toolAvg}ms avg`,
+        detail: `${shown(toolTotal, "")} exec · ${shown(toolAvg, "ms")} avg`,
         updated_at: now,
       },
       {
@@ -196,8 +217,8 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         label_ar: "الوكلاء",
         label_en: "Agents",
         status: agentOkPct == null ? "unknown" : tone(agentOkPct, 95, 85),
-        value: `${agentActive}`,
-        detail: `${agentActive} active · ${agentFail} failed`,
+        value: shown(agentActive, ""),
+        detail: `${shown(agentActive, "")} active · ${shown(agentFail, "")} failed`,
         updated_at: now,
       },
       {
@@ -222,18 +243,28 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         key: "memory",
         label_ar: "الذاكرة",
         label_en: "Memory",
-        status: memActive > 0 ? "healthy" : "warning",
-        value: `${memActive}`,
-        detail: `${memActive} entries updated / 24h`,
+        status: memActive == null ? "unknown" : memActive > 0 ? "healthy" : "warning",
+        value: shown(memActive, ""),
+        detail: `${shown(memActive, "")} entries updated / 24h`,
         updated_at: now,
       },
       {
         key: "security",
         label_ar: "الأمن",
         label_en: "Security",
-        status: critical > 0 ? "critical" : openIncidents > 5 ? "warning" : "healthy",
-        value: `${critical}`,
-        detail: `${critical} critical · ${openIncidents} open`,
+        // **فشلُ الاستعلام ليس «صفرَ حوادثَ حرجة».** كان `data: null`
+        // يصير `[]` فيصير العدّاد صفرًا فتصير الشريحة **خضراء** — طمسُ
+        // الفشل في زيّ السلامة، وأسوأ اتجاهٍ للخطأ على لوحة أمن.
+        status:
+          critical == null || openIncidents == null
+            ? "unknown"
+            : critical > 0
+              ? "critical"
+              : openIncidents > 5
+                ? "warning"
+                : "healthy",
+        value: shown(critical, ""),
+        detail: `${shown(critical, "")} critical · ${shown(openIncidents, "")} open`,
         updated_at: now,
       },
       {
@@ -242,7 +273,7 @@ export const getSystemPulse = createServerFn({ method: "GET" })
         label_en: "API",
         status: auditFailPct == null ? "unknown" : tone(auditFailPct, 2, 10, true),
         value: shown(auditFailPct == null ? null : Math.round(100 - auditFailPct)),
-        detail: `${auditTotal} events · ${auditFail} errors`,
+        detail: `${shown(auditTotal, "")} events · ${shown(auditFail, "")} errors`,
         updated_at: now,
       },
     ];

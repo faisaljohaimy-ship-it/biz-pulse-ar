@@ -172,10 +172,13 @@ const SOURCE_PATH = /[\w/.-]+\.(?:ts|tsx|mjs|json|md|sql)\b/g;
 const COMPONENT_ID = /<?\b(?:Nexus|Nexios)[A-Z][A-Za-z]*\b\s*\/?>?/g;
 
 const isIdentifierish = (lit: string) => {
-  if (/^[@./~]/.test(lit)) return true; // module specifier
-  // اسمُ الملفّ المصدَّر يُفحص قبل أيّ إعفاء — وإلّا ابتلعه `MACHINE_TOKEN`.
+  // **قبل أيّ إعفاء — بلا استثناء.** كُتبت هذه الجملة وتحتها إعفاءُ
+  // «مُحدِّد الوحدة» سابقٌ لها، فأفلت `"./nexios-export.csv"` و
+  // `"~/nexios-report.pdf"`. جملةٌ أوسع من فعلها، وهي العلّة نفسها
+  // التي نُقضت مرارًا — فصار الفحص أوّلَ سطرٍ فعلًا.
   EXPORT_FILENAME.lastIndex = 0;
-  if (EXPORT_FILENAME.test(lit)) return false;
+  if (!lit.startsWith("/") && EXPORT_FILENAME.test(lit)) return false;
+  if (/^[@./~]/.test(lit)) return true; // module specifier
   const residue = lit
     .replace(DOMAIN_TOKEN, " ")
     .replace(SOURCE_PATH, " ")
