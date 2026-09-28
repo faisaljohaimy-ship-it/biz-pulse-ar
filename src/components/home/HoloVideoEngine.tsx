@@ -58,6 +58,20 @@ const NOISE_URI =
 export const HoloVideoEngine = memo(function HoloVideoEngine() {
   return (
     <div aria-hidden dir="ltr" className="nx-hv pointer-events-none fixed inset-0 z-0">
+      {/*
+       * طبقاتُ العمق — **ساكنةٌ كلُّها**، وتسميتُها `.nx-hv-*` تُدخلها
+       * تحت حارس «بلا حركة» نفسه: عودةُ أيّ `animation` إليها تُسقطه،
+       * فيعود معه موجِبُ WCAG 2.2.2 قبل أن تعود الحركة.
+       *
+       * والعمقُ من تدرّجاتٍ وقناعٍ لا من فيلم: شفقٌ خافت من رموز النبرة،
+       * وشبكةُ مسحٍ تتلاشى نحو الأطراف فلا تصير ورقًا مسطَّرًا خلف الحبر،
+       * وخطُّ أفقٍ واحد، وتعتيمُ أطراف. وكلُّها من طبقة الرموز فتنقلب مع
+       * الوضع — الفاتح لا يُطلى بلوحٍ أسود (المواد ٣٢–٣٤).
+       */}
+      <span className="nx-hv-aurora" />
+      <span className="nx-hv-grid" />
+      <span className="nx-hv-horizon" />
+      <span className="nx-hv-vignette" />
       <span className="nx-hv-noise" style={{ backgroundImage: `url("${NOISE_URI}")` }} />
     </div>
   );

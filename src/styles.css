@@ -5805,6 +5805,10 @@ html.dark .nx-holo-noise {
    ولها سقوط `--tone-cyan` — وهي اليوم قيمة ساكنة بعد أن توقّفت عيّنة
    الفيديو الحية عن كتابة `--live-rgb`. */
 .nx-hv {
+  /* **قصُّ الطبقات إلى إطار العرض.** الطبقات أبناءٌ مطلقون داخل
+     `fixed inset-0` فلا تتجاوزه بحسابها؛ والقصّ يجعل ذلك بنيويًّا لا
+     محسوبًا — فلا سكرول أفقيّ من طبقةِ خلفيةٍ مهما أُضيف إليها. */
+  overflow: hidden;
   background:
     radial-gradient(
       58% 52% at 50% 46%,
@@ -10378,4 +10382,111 @@ html.light .nx-topbar.nx-clock-bar {
 html,
 body {
   overscroll-behavior-block: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   طبقاتُ العمق فوق `.nx-hv` — عمقٌ سينمائيّ **ساكن**
+
+   تُسمّى `.nx-hv-*` قصدًا: حارسُ `holo-background.contract.test.ts`
+   يلتقط `/\.nx-hv[\w-]*/`، فالتسمية تُدخلها **تحت الحماية القائمة**
+   بدل أن تلتفّ عليها — أيُّ `animation` أو `transition` يُضاف إليها
+   يومًا يسقط الحارس.
+
+   الحركة ممنوعة هنا بقرارٍ موثَّق: طبقةُ خلفيةٍ متحرّكة خلف بلاغات
+   أمنٍ حرجة تُشتّت وتوجب زرَّ إيقافٍ (WCAG 2.2.2)، وحارسُ
+   `holo-background.contract.test.ts` يمنع `<video>` وملفَّ الخلفية.
+   فالعمق هنا من **طبقاتٍ ساكنة** لا من إطاراتٍ تتحرّك: شفقٌ خافت،
+   وشبكةُ مسحٍ تتلاشى، وخطُّ أفقٍ واحد. وكلُّها من طبقة الرموز —
+   فتنقلب مع الوضع ولا تطلي الفاتحَ بلوحٍ أسود.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ① الشفق — ثلاث بؤرٍ خافتة تكسر تسطيح اللوح وتوحي بالعمق. */
+.nx-hv-aurora {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      64% 48% at 16% 10%,
+      color-mix(in oklab, var(--tone-cyan) 16%, transparent),
+      transparent 64%
+    ),
+    radial-gradient(
+      56% 44% at 86% 18%,
+      color-mix(in oklab, var(--tone-blue) 12%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      96% 62% at 50% 104%,
+      color-mix(in oklab, var(--surface-2) 88%, transparent),
+      transparent 72%
+    );
+}
+
+/* ② شبكةُ المسح — دقّةٌ تنفيذية، تتلاشى نحو الأطراف فلا تُشوّش الحبر.
+      القناع هو ما يمنعها من أن تصير ورقًا مسطَّرًا خلف النصّ. */
+.nx-hv-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--hairline-soft) 58%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--hairline-soft) 58%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 68px 68px;
+  -webkit-mask-image: radial-gradient(66% 56% at 50% 40%, #000 0%, transparent 76%);
+  mask-image: radial-gradient(66% 56% at 50% 40%, #000 0%, transparent 76%);
+  opacity: 0.42;
+}
+
+/* ③ خطُّ الأفق — توهّجٌ واحد يفصل السماء عن الهضبة. */
+.nx-hv-horizon {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 28%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--tone-cyan) 38%, transparent) 22%,
+    color-mix(in srgb, var(--tone-cyan) 52%, transparent) 50%,
+    color-mix(in srgb, var(--tone-cyan) 38%, transparent) 78%,
+    transparent
+  );
+  box-shadow: 0 0 34px 2px color-mix(in srgb, var(--tone-cyan) 18%, transparent);
+}
+
+/* ④ تعتيمُ الأطراف — يجمع البصر إلى المتن بلا إطارٍ مرسوم. */
+.nx-hv-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    78% 66% at 50% 44%,
+    transparent 38%,
+    color-mix(in srgb, var(--surface) 62%, transparent) 100%
+  );
+}
+
+/* «قلّل الشفافية» يُسقط الزينة ويُبقي القراءة. */
+@media (prefers-reduced-transparency: reduce) {
+  .nx-hv-aurora,
+  .nx-hv-grid,
+  .nx-hv-horizon {
+    display: none;
+  }
+}
+
+/* «الألوان القسرية» تُسقط الطبقة كلَّها — النظام يرسم سطحَه بنفسه. */
+@media (forced-colors: active) {
+  .nx-hv-aurora,
+  .nx-hv-grid,
+  .nx-hv-horizon,
+  .nx-hv-vignette {
+    display: none;
+  }
 }
