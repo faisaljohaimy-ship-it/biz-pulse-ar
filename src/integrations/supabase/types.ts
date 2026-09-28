@@ -320,6 +320,30 @@ export type Database = {
           },
         ]
       }
+      ai_usage_log: {
+        Row: {
+          id: number
+          identity: string
+          occurred_at: string
+          surface: string
+          units: number
+        }
+        Insert: {
+          id?: number
+          identity: string
+          occurred_at?: string
+          surface: string
+          units?: number
+        }
+        Update: {
+          id?: number
+          identity?: string
+          occurred_at?: string
+          surface?: string
+          units?: number
+        }
+        Relationships: []
+      }
       aria_attachment_scans: {
         Row: {
           claimed_mime: string
@@ -5067,6 +5091,7 @@ export type Database = {
           name_ar: string
           name_en: string
           org_id: string
+          region: string | null
           staff_count: number
           updated_at: string
         }
@@ -5080,6 +5105,7 @@ export type Database = {
           name_ar: string
           name_en: string
           org_id?: string
+          region?: string | null
           staff_count?: number
           updated_at?: string
         }
@@ -5093,6 +5119,7 @@ export type Database = {
           name_ar?: string
           name_en?: string
           org_id?: string
+          region?: string | null
           staff_count?: number
           updated_at?: string
         }
@@ -7178,6 +7205,30 @@ export type Database = {
           },
         ]
       }
+      staff_access_log: {
+        Row: {
+          entered_at: string
+          id: number
+          path: string
+          region: string | null
+          staff_number: string
+        }
+        Insert: {
+          entered_at?: string
+          id?: number
+          path?: string
+          region?: string | null
+          staff_number: string
+        }
+        Update: {
+          entered_at?: string
+          id?: number
+          path?: string
+          region?: string | null
+          staff_number?: string
+        }
+        Relationships: []
+      }
       support_requests: {
         Row: {
           assigned_to: string | null
@@ -8018,12 +8069,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -8047,11 +8098,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -8072,11 +8123,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -8097,11 +8148,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -8114,11 +8165,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
