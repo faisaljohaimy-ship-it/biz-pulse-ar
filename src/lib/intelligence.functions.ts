@@ -281,11 +281,13 @@ export type TwinSignals = {
   agents: number;
   integrations: number;
   automations: number;
-  documents: number;
+  /** `null` = فشلُ العدّ — لا «صفرَ وثائق». */
+  documents: number | null;
   criticalRisks: number;
   boardActions: number;
   intelligenceSignals: number;
-  executionVelocity: number; // 0-100
+  /** ٠..١٠٠، و`null` حين لا مقامَ يُقاس عليه — لا خطَّ أساسٍ مفترضًا. */
+  executionVelocity: number | null;
   generatedAt: string;
 };
 
@@ -325,12 +327,12 @@ export const getTwinSignals = createServerFn({ method: "GET" })
     const done14 = tk.filter(
       (t) => t.status === "done" && new Date(t.updated_at).getTime() >= cutoff,
     ).length;
+    // **ولا خطَّ أساسٍ مفترضًا.** كان صفرُ المهامِ المنشأة يعطي «٧٠٪»
+    // سرعةَ تنفيذٍ من عدم — رقمٌ لا مصدرَ له يُرسم نسبةً على
+    // `/digital-twin`. و«٧٠» ليست قياسًا ولا صفرًا: هي افتراض.
+    // فما لا مقامَ له لا يُقاس (المادة ٢٧ · §07 «لا تُزيَّف القيم»).
     const executionVelocity =
-      created14 === 0
-        ? done14 > 0
-          ? 100
-          : 70
-        : Math.min(100, Math.round((done14 / created14) * 100));
+      created14 === 0 ? null : Math.min(100, Math.round((done14 / created14) * 100));
 
     return {
       departments,
@@ -338,7 +340,8 @@ export const getTwinSignals = createServerFn({ method: "GET" })
       agents,
       integrations,
       automations,
-      documents: docs.count ?? 0,
+      // فشلُ العدّ ليس «صفرَ وثائق» — `count` يعود `null` عند الخطأ.
+      documents: docs.count ?? null,
       criticalRisks,
       boardActions,
       intelligenceSignals,

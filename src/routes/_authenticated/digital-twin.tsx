@@ -3,9 +3,21 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/lib/i18n";
+import { unmeasuredLabel } from "@/lib/evidence/evidence";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { PredictionsPanel } from "@/components/predictions-panel";
 import { getTwinSignals, type TwinSignals } from "@/lib/intelligence.functions";
+
+/**
+ * عدٌّ/نسبةٌ للعرض — **والغياب يُقال لا يُختلق** (المادة ٢٧ · §07).
+ *
+ * `String(null)` يعطي «null» و`${null}%` يعطي «null%»، ولا يمسكهما
+ * `tsc` لأن القالب يقبل `null`. وهو صنفُ العطل الذي قِيس على
+ * `/live-dashboard` («Resolution null%»)، فيُغلق هنا بدالّةٍ واحدة.
+ */
+function twinValue(v: number | null | undefined, ar: boolean, suffix = ""): string {
+  return v == null || !Number.isFinite(v) ? unmeasuredLabel(ar) : `${v}${suffix}`;
+}
 import {
   Boxes,
   Building2,
@@ -226,11 +238,11 @@ function DigitalTwinPage() {
       agents: String(signals.agents || NODES.find((n) => n.id === "agents")!.value),
       integ: String(signals.integrations || NODES.find((n) => n.id === "integ")!.value),
       flows: String(signals.automations),
-      know: String(signals.documents),
+      know: twinValue(signals.documents, ar),
       risk: String(signals.criticalRisks),
       board: String(signals.boardActions),
       intel: String(signals.intelligenceSignals),
-      exec: `${signals.executionVelocity}%`,
+      exec: twinValue(signals.executionVelocity, ar, "%"),
     };
     return NODES.map((n) => ({ ...n, value: map[n.id] ?? n.value }));
   }, [signals]);
@@ -350,21 +362,21 @@ function DigitalTwinPage() {
     {
       label_ar: "إنتاجية الأتمتة",
       label_en: "Automation Throughput",
-      value: signals ? `${signals.automations}/wk` : "—",
+      value: signals ? twinValue(signals.automations, ar, "/wk") : unmeasuredLabel(ar),
       tone: "#f59e0b",
       icon: Zap,
     },
     {
       label_ar: "سرعة التنفيذ",
       label_en: "Execution Velocity",
-      value: signals ? `${signals.executionVelocity}%` : "—",
+      value: signals ? twinValue(signals.executionVelocity, ar, "%") : unmeasuredLabel(ar),
       tone: "#34d399",
       icon: TrendingUp,
     },
     {
       label_ar: "إشارات حية",
       label_en: "Live Signals",
-      value: signals ? String(signals.intelligenceSignals) : "—",
+      value: signals ? twinValue(signals.intelligenceSignals, ar) : unmeasuredLabel(ar),
       tone: "#67e8f9",
       icon: Activity,
     },

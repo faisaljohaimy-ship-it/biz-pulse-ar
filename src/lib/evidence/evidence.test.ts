@@ -512,6 +512,27 @@ describe("الاختلاقُ الذي لا يضرب في مئة", () => {
     expect(offenders, `أسطحٌ تعرض العربيّ وحده: ${offenders.join(" · ")}`).toEqual([]);
   });
 
+  it("**ولا خطَّ أساسٍ مفترضًا في سرعة التنفيذ** — §07 «لا تُزيَّف القيم»", () => {
+    // كان `created14 === 0 ? (done14 > 0 ? 100 : 70)` يعطي «٧٠٪» من عدم
+    // على `/digital-twin` — رقمٌ لا مصدرَ له، وليس صفرًا ولا قياسًا.
+    const intel = readFileSync("src/lib/intelligence.functions.ts", "utf8");
+    expect(intel, "عاد خطُّ الأساس المفترض ٧٠/١٠٠").not.toMatch(/done14 > 0\s*\n?\s*\?\s*100/);
+    expect(intel).toMatch(/created14 === 0 \? null/);
+    expect(intel, "عاد عدُّ الوثائق يُقرأ صفرًا عند الفشل").not.toMatch(/docs\.count \?\? 0/);
+
+    // ومسارُ «لا قياس» في محرّك التطوّر يعيد `-1` كما يعلن عقدُه، لا `0`.
+    const eng = readFileSync("src/lib/sadeed/self-evolution/engine.server.ts", "utf8");
+    expect(eng, "عاد readinessScore صفرًا على مسار readiness_unavailable").not.toMatch(
+      /readinessScore: 0,/,
+    );
+
+    // ولا يُقحَم `null` في نصّ عرضٍ على التوأم — `${null}%` = «null%».
+    const twin = readFileSync("src/routes/_authenticated/digital-twin.tsx", "utf8");
+    expect(twin, "إقحامٌ خامٌ يعطي «null%»").not.toMatch(/\$\{signals\.executionVelocity\}%/);
+    expect(twin, "عادت الشرطة مكان الغياب").not.toMatch(/: "—",/);
+    expect(twin).toMatch(/twinValue\(/);
+  });
+
   it("ولا ضربَ في مئة على مقياسٍ أصلًا ٠..١٠٠", () => {
     // `overall_score` موصوفٌ «0-100 or -1» وكان يُضرب في مئة ⇒ ١٠٠٠٠٪،
     // و‑١٠٠٪ عند المجهول. عطلُ `ai_confidence` نفسه ملفًّا واحدًا بعيدًا.

@@ -217,7 +217,10 @@ export async function runSelfEvolution(
       deferred,
       reasons: ["readiness_unavailable"],
       invariants: INVARIANTS,
-      readinessScore: 0,
+      // **`-1` لا `0`.** العقد في `types.ts` يعلن `-1` حين لا يُقاس،
+      // وكان هذا المسار — وهو الأحوج إليه — يعيد صفرًا فيُعرض
+      // «Readiness 0%» بجوار شارة `readiness_unavailable`.
+      readinessScore: -1,
     };
   }
 
