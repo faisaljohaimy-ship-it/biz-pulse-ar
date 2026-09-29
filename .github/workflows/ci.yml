@@ -74,6 +74,13 @@ jobs:
         run: npm run build
       - name: Enforce performance budget
         run: npm run check:performance
+      # أرضية التباين فوق فيلم الخلفية — بمحرّكٍ حقيقيّ على الناتج المبنيّ.
+      # قراءة الرموز نصًّا صرّحت بـ٤٫٩٠:١ والنافذ ٣٫٥٤:١؛ التعاقب يُسأل عنه
+      # المتصفّح لا الملفّ. ويسقط على الهبوط وحده، لا على التحسّن.
+      - name: Contrast floor over the background film (real engine)
+        run: |
+          npx playwright install --with-deps chromium
+          npm run check:contrast
       - name: Smoke check bundle
         run: test -d dist || test -d .output
 
