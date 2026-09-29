@@ -18,6 +18,7 @@
  */
 import { readFileSync, statSync } from "node:fs";
 import { act, render, screen, fireEvent } from "@testing-library/react";
+import postcss, { type Declaration } from "postcss";
 import { afterEach, describe, expect, it } from "vitest";
 import { HoloVideoEngine } from "./HoloVideoEngine";
 
@@ -34,6 +35,44 @@ const SHEET = CSS.replace(/\/\*[\s\S]*?\*\//g, "");
 
 /** كل كتل قواعد `.nx-hv*` كما هي في الملف — على أي عمق من التداخل. */
 const HV_RULES = SHEET.match(/\.nx-hv[\w-]*[^{}]*\{[^{}]*\}/g) ?? [];
+
+/**
+ * الملفّ **كما يراه محلِّل CSS**، لا كما يراه `indexOf`.
+ *
+ * **الدرس الذي وُلد منه هذا السطر.** كان كلُّ فحصٍ هنا يقرأ النصّ، وقِيس
+ * أنّ ذلك عمًى تامّ عن أخطر ما يقع: تعليقٌ في `styles.css` احتوى صيغةً
+ * منتهيةً بنجمةٍ ثمّ شرطة، فأُغلق قبل أوانه، فابتلع استردادُ المحلِّل
+ * **قاعدة `.nx-hv-film` كاملةً** — تصريحاتُها الستّة محمولةٌ تحت محدِّدٍ
+ * هو نصُّ التعليق، فلا تطابق شيئًا. والقاعدة لم تصل متصفّحًا قطّ،
+ * والحارسُ أخضر، وtsc راضٍ، والبناء ناجح.
+ *
+ * فالقاعدة المكتسَبة: **ما لا يراه المحلِّل لا يراه المتصفّح** — وأخته
+ * المكتسَبة في الجلسة نفسها: الطفرةُ التي لا يُتحقَّق من وقوعها ليست
+ * طفرة. كلتاهما فرعٌ عن أصلٍ واحد: لا يُشهَد لأثرٍ لم يُقَس أثره.
+ */
+const AST = postcss.parse(CSS, { from: "src/styles.css" });
+
+/**
+ * تصريحاتُ **القاعدة الأساسية** كما حلّلها المحلِّل — `null` إن لم تُوجد.
+ *
+ * «الأساسية» أي في الجذر لا داخل `@media`: للاسم الواحد قاعدتان أحيانًا،
+ * إحداهما `display: none` تحت تفضيلٍ وصوليّ. وأخذُ الأخيرة كان يُعطي
+ * تلك، فيُقرأ غيابُ `opacity` عطلًا وليس بعطل — والمقصود هنا هو القاعدة
+ * التي تُعرّف الطبقة لا التي تُخفيها.
+ */
+function parsedRule(selector: string): Record<string, string> | null {
+  let out: Record<string, string> | null = null;
+  AST.walkRules((r) => {
+    if (r.parent?.type !== "root") return;
+    if (r.selector.replace(/\s+/g, " ").trim() !== selector) return;
+    out = Object.fromEntries(
+      r.nodes
+        .filter((n) => n.type === "decl")
+        .map((n) => [(n as Declaration).prop, (n as Declaration).value]),
+    );
+  });
+  return out;
+}
 
 /**
  * تفضيلُ الحركة مُصطنعًا — **الاستعلام يُقرأ لا يُفترض.**
@@ -301,18 +340,91 @@ describe("③ سطحٌ يحفظ قراءة الحبر — في الوضعين م
     ).toBe(true);
   });
 
-  it("الفيلم مقصوصٌ إلى الإطار — وأخفتُ في الفاتح", () => {
+  it("**قواعد الخلفية تصل المحلِّل** — لا محدِّدَ فاسدًا ولا قاعدةً مبتلَعة", () => {
+    // **البند الذي كان غائبًا، وغيابُه أعمى كلَّ ما عداه.** قاعدةُ
+    // `.nx-hv-film` كانت تُحمل تحت محدِّدٍ هو نصُّ تعليقٍ أُغلق قبل أوانه
+    // (‏`*/` داخل صيغةٍ مكتوبة بين شرطتَي تحديد)، فلم تصل متصفّحًا قطّ —
+    // والفيلم يُعرض بوضوحٍ كامل بلا `object-fit` ولا `position`، وكلُّ
+    // أرقام الأرضية أعلاه كانت تصف قاعدةً لا وجود لها في الناتج.
+    //
+    // فيُفحص شيئان: أنّ كلَّ محدِّدٍ يمسّ الطبقة **محدِّدٌ سليم** لا نصُّ
+    // نثرٍ، وأنّ قواعد الطبقة الأساسية تحمل تصريحاتها فعلًا.
+    const bad: string[] = [];
+    AST.walkRules((r) => {
+      const sel = r.selector.replace(/\s+/g, " ").trim();
+      if (!sel.includes("nx-hv")) return;
+      // محدِّدٌ سليم يبدأ بنقطةٍ أو مُعرِّفٍ أو نقطتين، ولا يحمل نصًّا عربيًّا
+      // ولا علامةً اقتباسٍ خلفية — وتلك بصمةُ تعليقٍ تسرّب.
+      if (!/^[.#:[a-zA-Z]/.test(sel) || /[`*؀-ۿ]/.test(sel)) bad.push(sel.slice(0, 70));
+    });
+    expect(bad, "محدِّدٌ فاسد يحمل قواعد الخلفية — تعليقٌ أُغلق قبل أوانه").toEqual([]);
+
+    // والقواعد الأساسية تحمل تصريحاتها: الغياب هنا هو العطل بعينه.
+    for (const [sel, prop] of [
+      [".nx-hv-film", "opacity"],
+      [".nx-hv-scrim", "background"],
+      [".nx-hv", "background"],
+      [".nx-hv-noise", "opacity"],
+    ] as const) {
+      const decls = parsedRule(sel);
+      expect(decls, `${sel} لا يراها المحلِّل — فلا يراها المتصفّح`).not.toBeNull();
+      expect(decls![prop], `${sel} بلا ${prop} في الناتج المحلَّل`).toBeTruthy();
+    }
+    // والفيلم خاصّةً: الخصائص التي تجعله طبقةَ خلفيةٍ لا عنصرًا في السياق.
+    const film = parsedRule(".nx-hv-film")!;
+    expect(film["position"]).toBe("absolute");
+    expect(film["object-fit"]).toBe("cover");
+    expect(film["opacity"]).toBe("var(--hv-film-opacity)");
+  });
+
+  it("الفيلم مقصوصٌ إلى الإطار، ووضوحُه من الرمز لا من القاعدة", () => {
     // `object-fit` غير `cover` يشوّه النسبة أو يترك أشرطةً على الشاشات
     // العريضة — والملفّ رأسيّ 576×1024 فالفرق ليس نظريًّا.
     const body = ruleBody(".nx-hv-film {");
     expect(body, "لا قاعدة `.nx-hv-film` أصلًا — الصنف مكتوبٌ بلا تعريف").toContain(
       "object-fit: cover",
     );
-    // والفاتح أخفت: لوحٌ أبيض خلف حبرٍ داكن يحتمل أقلّ من الداكن.
-    const dark = filmOpacity();
-    const lightOp = ruleBody(".light .nx-hv-film {").match(/opacity:\s*([\d.]+)/);
-    expect(lightOp, "لا وضوح خاصٌّ بالوضع الفاتح").not.toBeNull();
-    expect(Number(lightOp![1]), "الفاتح ليس أخفت من الداكن").toBeLessThan(dark);
+    // **وقيمةٌ حرفيّة هنا تكسر الأمر:** كان `.light .nx-hv-film` قاعدةً
+    // تقرأ صنف `html` وحده، فلا تملك صفحةٌ تفرض سطحًا داكنًا أن تُخالفها.
+    // فصار الوضوح رمزًا يُورَّث، والقاعدة تقرؤه ولا تكتبه.
+    expect(body, "وضوحٌ حرفيّ في القاعدة — الصفحة لا تقدر أن تُثبّته").toContain(
+      "opacity: var(--hv-film-opacity)",
+    );
+    expect(SHEET, "قاعدةُ وضعٍ عادت تكتب الوضوح من فوق الرمز").not.toContain(".light .nx-hv-film");
+  });
+
+  it("الفاتح أوضحُ من الداكن — **قرار المالك ٢٠٢٦/٠٩/٢٨**", () => {
+    // **البند مقلوبٌ عمدًا.** كان يشترط أن يكون الفاتح أخفت، وأمرَ المالك
+    // بنقيضه: «اجعل نسبة وضوح الفيديو الخلفي في الوضع الفاتح ٨٠٪». وذلك
+    // ليس تنازلًا وصوليًّا: لوحٌ أبيض تحت حبرٍ **داكن** يحتمل من الصورة
+    // أكثر ممّا يحتمله لوحٌ داكن تحت حبرٍ فاتح — وهو ما يقيسه بند الأرضية
+    // أدناه في الوضعين معًا. فهذا البند يحرس الاتجاه، وذاك يحرس الرقم.
+    expect(modeOpacity(".light"), "الفاتح لم يعد ٨٠٪ كما أمر المالك").toBe(0.8);
+    expect(modeOpacity(".light")).toBeGreaterThan(modeOpacity(":root"));
+  });
+
+  it("الصفحتان الدائمتا الدكنة تُثبّتان الوضوح مع السطح — وإلّا ٢٫٤٩:١", () => {
+    // **العطل الذي أحدثه الأمر لولا هذا البند.** الصفحتان تفرضان
+    // `--surface: #04070d` لأنهما لا تبيضّان أبدًا، لكنّ صنف `.light`
+    // على `html` يبقى مطابقًا — فيرفع الوضع الفاتح الفيلم عليهما إلى ٨٠٪
+    // فوق سطحٍ داكن تحت حبرٍ فاتح. قِيس: **٢٫٤٩:١**.
+    //
+    // فالرمزان يُثبَّتان في العقدة نفسها، ويُفحص ذلك لا يُفترض: نزعُ
+    // أحدهما غدًا لا يمسكه tsc ولا البناء ولا عينٌ تقرأ الـdiff.
+    for (const page of BARE_PAGES) {
+      const style = styleObjectPinning(page);
+      expect(style, `${page}: السطح مثبَّتٌ والوضوح متروكٌ للوضع — ٨٠٪ فوق سطحٍ داكن`).toMatch(
+        /"--hv-film-opacity"[^:]*:\s*"([\d.]+)"/,
+      );
+      const pinned = Number(style.match(/"--hv-film-opacity"[^:]*:\s*"([\d.]+)"/)![1]);
+      expect(pinned, `${page}: الوضوح المثبَّت أعلى من قيمة الداكن`).toBeLessThanOrEqual(
+        modeOpacity(":root"),
+      );
+      // والغطاء معهما: الأرضية حاصلُ ضربهما، فتثبيتُ أحدهما نصفُ تثبيت.
+      expect(style, `${page}: الغطاء متروكٌ للوضع بينما السطح مثبَّت`).toMatch(
+        /"--hv-scrim-mix"[^:]*:\s*"\d+%"/,
+      );
+    }
   });
 
   it("**أرضية التباين** — الحبر فوق الفيلم يجتاز AA عند أسطع بكسل", () => {
@@ -329,17 +441,46 @@ describe("③ سطحٌ يحفظ قراءة الحبر — في الوضعين م
     // الأبيض فوق السطح بوضوح الفيلم، ثم الغطاء فوقه، ثم الحبر بشفافيّته
     // كما تكتبها الصفحتان — ويُطلب ٤٫٥:١. فأيُّ رفعٍ لوضوح الفيلم أو خفضٍ
     // للغطاء أو تخفيفٍ للحبر يُسقط البند بالرقم الذي يعنيه.
-    const surface = forcedSurface();
-    const film = filmOpacity();
-    const scrim = scrimRatio();
-    const pearl = tokenHex("--nx-pearl");
-    const alpha = bareInkAlpha();
+    // **الإطاران الأسوأ معًا، لا الأبيض وحده.** الأبيض الناصع (YMAX=255)
+    // أسوأُ ما يكون تحت حبرٍ فاتح، والأسود (YMIN=16، ومع التمدّد ٠)
+    // أسوأُ ما يكون تحت حبرٍ داكن. وكلاهما مرصودٌ في الملفّ.
+    const floorAt = (surf: Rgb, filmOp: number, scrimMix: number, ink: Rgb, inkAlpha: number) =>
+      Math.min(
+        ...[0, 255].map((y) => {
+          const overFilm = mix([y, y, y], surf, filmOp);
+          const overScrim = mix(surf, overFilm, scrimMix);
+          return contrast(mix(ink, overScrim, inkAlpha), overScrim);
+        }),
+      );
 
-    // أسوأ إطار: بكسلٌ أبيض ناصع — مرصودٌ في الملفّ (YMAX = 255).
-    const overFilm = mix([255, 255, 255], surface, film);
-    const overScrim = mix(surface, overFilm, scrim);
-    const ink = mix(pearl, overScrim, alpha);
-    expect(contrast(ink, overScrim), "الحبر فوق الفيلم دون أرضية AA").toBeGreaterThanOrEqual(4.5);
+    // ① الصفحتان الدائمتا الدكنة — بقيمها المثبَّتة لا بقيم الوضع.
+    expect(
+      floorAt(forcedSurface(), filmOpacity(), scrimRatio(), tokenHex("--nx-pearl"), bareInkAlpha()),
+      "الحبر العاري فوق الفيلم دون أرضية AA",
+    ).toBeGreaterThanOrEqual(4.5);
+
+    // ② **الوضع الفاتح — وهو حيث يقع فعلًا: `/` و`/blueprint`.**
+    //
+    // وكانت هنا قائمةٌ مكتوبة باليد `["--ink","--ink-2"]`، فمرّ البند
+    // وسقط المتن: `-blueprint-page` تكتب اسم المنطقة بـ`--ink-3` **عاريًا
+    // فوق الطبقة** — `.nx-home-region` لا تكتب خلفيةً عمدًا لأن خلفية
+    // النغمة هي ما يفرّق «خطر» عن «تحذير». فهبط إلى ٢٫٨٢:١، وبقي الحارس
+    // أخضر لأنّ الرمز الساقط لم يكن في القائمة.
+    //
+    // فالرموز تُشتقّ من الصفحة كما اشتُقّ نظيرُها الداكن من الصفحتين، ولا
+    // تُكتب هنا. والقياس **كأن كلَّ حبرٍ عارٍ**: مَن يقع داخل بطاقة فله
+    // سندٌ إضافي، فالشرط أشدّ من الواقع ولا يُعطي نجاحًا كاذبًا أبدًا.
+    const lightSurface = modeToken(".light", "--surface");
+    const lightFilm = modeOpacity(".light");
+    const lightScrim = modeScrim(".light");
+    const inks = inkTokensOn("src/routes/-blueprint-page.tsx");
+    expect(inks.length, "لا رموز حبرٍ في صفحة الواجهة — البند صار فارغًا").toBeGreaterThan(1);
+    for (const ink of inks) {
+      expect(
+        floorAt(lightSurface, lightFilm, lightScrim, modeToken(".light", ink), 1),
+        `${ink} في الوضع الفاتح دون أرضية AA عند وضوح ${lightFilm}`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
 
     // ولا يُدَّعى أنّ الحساب محكمٌ إن لم يكن الغطاء مُركَّبًا فعلًا فوق
     // الفيلم: بلا العنصر في الشجرة، ما سبق حسابٌ على طبقةٍ لا وجود لها.
@@ -470,17 +611,154 @@ function ruleBody(selector: string): string {
   return SHEET.slice(at, SHEET.indexOf("\n}", at));
 }
 
-function filmOpacity(): number {
-  const m = ruleBody(".nx-hv-film {").match(/opacity:\s*([\d.]+)/);
-  expect(m, "الفيلم بلا وضوح معرَّف").not.toBeNull();
+/**
+ * كتلةُ رموزِ وضعٍ بعينها — `:root` للداكن و`.light` للفاتح.
+ *
+ * **تُنتقى بمحتواها لا بترتيبها.** للملفّ خمسُ كتل `:root` وعشراتُ كتل
+ * `.light`، فـ«الأولى» تصيب كتلةً أخرى تمامًا — وهو ما وقع أوّل مرّة.
+ * فالمنتقاة هي التي تُعلن `--hv-film-opacity`، **ويُشترط أن تُعلن
+ * `--surface` معها**: الرمزان يُقاس أحدهما على الآخر، فافتراقُهما إلى
+ * كتلتين يجعل الحساب يخلط سطحَ وضعٍ بوضوحِ وضعٍ آخر بلا أن يظهر.
+ */
+function modeBlock(selector: string): string {
+  const found = [...SHEET.matchAll(new RegExp(`\\n${selector.replace(".", "\\.")} \\{`, "g"))]
+    .map((m) => SHEET.slice(m.index, SHEET.indexOf("\n}", m.index)))
+    .filter((b) => b.includes("--hv-film-opacity:"));
+  expect(found.length, `لا كتلة رموزٍ واحدة للمحدِّد ${selector} تُعلن وضوح الفيلم`).toBe(1);
+  expect(found[0], `${selector}: وضوح الفيلم في كتلةٍ غير كتلة السطح`).toMatch(/--surface:/);
+  return found[0];
+}
+
+function modeToken(selector: string, name: string): Rgb {
+  const m = modeBlock(selector).match(new RegExp(`${name}:\\s*(#[0-9a-fA-F]{6})`));
+  expect(m, `${selector} بلا تعريفٍ حرفيّ للرمز ${name}`).not.toBeNull();
+  return hexToRgb(m![1]);
+}
+
+function modeOpacity(selector: string): number {
+  const m = modeBlock(selector).match(/--hv-film-opacity:\s*([\d.]+)/);
+  expect(m, `${selector} بلا وضوحٍ لفيلم الخلفية`).not.toBeNull();
   return Number(m![1]);
 }
 
-/** نسبةُ الغطاء من `color-mix(in srgb, var(--surface) N%, transparent)`. */
-function scrimRatio(): number {
-  const m = ruleBody(".nx-hv-scrim {").match(/var\(--surface\)\s+(\d+)%/);
-  expect(m, "الغطاء بلا نسبةِ مزجٍ من السطح").not.toBeNull();
+/**
+ * كائنُ الأسلوب الذي تفرض فيه الصفحةُ السطحَ — **العقدة الواحدة.**
+ *
+ * السطح والوضوح والغطاء ثلاثةٌ تُقاس مضروبةً بعضها في بعض، ففرضُها في
+ * عقدتين مختلفتين يجعل الوراثة تخلط قيمَ وضعَين في حسابٍ واحد. والبحثُ
+ * في الملفّ كلّه كان يقبل ذلك صامتًا.
+ */
+function styleObjectPinning(page: string): string {
+  const src = readFileSync(page, "utf8");
+  const at = src.indexOf('"--surface"');
+  expect(at, `${page} لم يعد يفرض سطحًا`).toBeGreaterThan(-1);
+  return src.slice(src.lastIndexOf("{", at), src.indexOf("}", at) + 1);
+}
+
+function modeScrim(selector: string): number {
+  const m = modeBlock(selector).match(/--hv-scrim-mix:\s*(\d+)%/);
+  expect(m, `${selector} بلا نسبةِ غطاء`).not.toBeNull();
   return Number(m![1]) / 100;
+}
+
+/**
+ * رموزُ الحبر التي تكتبها صفحةٌ بعينها — **تُعدّ لا تُفترض.**
+ *
+ * الأصلُ المكتسَب (المادة ٣٣): «مَن ركّب قاعدةً بصرية شاملة وجب عليه أن
+ * **يعدّ** العناصر المشمولة فعلًا لا أن يفترض الشمول». وقد افترضتُ
+ * `--ink` و`--ink-2` فسقط `--ink-3` من بين أصابعي والحارسُ أخضر.
+ *
+ * ويُضمّ إليها ما تكتبه أصنافُ اللوحة في طبقة الأنماط (`.nx-dash-*`)،
+ * فهي حبرٌ على الصفحة نفسها وإن لم يُكتب رمزُه في الـJSX.
+ *
+ * ## الحدُّ الباقي — **معدودٌ ومؤرَّخ، لا مذكورٌ في سطر**
+ *
+ * الاشتقاق يغطّي عائلة `--ink*` وحدها؛ وأدواتُ اللون المباشرة
+ * (`text-red-700` وأخواتها في رقاقات النغمة) خارجه. وذلك **قرارُ نطاقٍ
+ * هندسيّ لا تطبيقُ مادة** — وقد سمّيتُه أوّلًا «المادة ٣٠» وكان نسبةً
+ * خاطئة: نصُّها في الفحص الأخضر الذي لا يحمرّ، لا في تضييق نطاقٍ تفاديًا
+ * لعيبٍ سابق.
+ *
+ * وسببُ الحدّ أنّ تلك الرقاقات **ساقطةٌ قبل الفيلم أصلًا** — مقيسةً
+ * ٢٠٢٦/٠٩/٢٩ في الوضع الفاتح: أحمر ٣٫٩٤ · كهرماني ٣٫٥٢ · زمرّدي ٣٫٦٧
+ * بلا فيلمٍ إطلاقًا. فإدخالُها هنا يجعل حارسَ هذا التغيير يحمرّ على عيبٍ
+ * يسبقه ولا يقدر على إصلاحه: بلوغُها الأرضية يحتاج غطاءً ٩٦٫٦٪ و١٠٠٪
+ * و١٠٠٪ — أي إلغاء الفيلم.
+ *
+ * **وهي بعد اليوم واقعةٌ لا نظرية:** قاعدةُ الفيلم لم تكن تُشحن قطّ، فلم
+ * تكن تقع على شاشة. ومع هذا الإصلاح تقع. فالحدُّ **أمرُ عملٍ مفتوح على
+ * لوحة النغمات في الفاتح، لا استثناءٌ دائم** — ومتى أُصلحت اللوحة وُسِّع
+ * الاشتقاق إلى أدوات اللون وسقط هذا التعليق معها.
+ */
+function inkTokensOn(page: string): string[] {
+  const src = readFileSync(page, "utf8");
+  const dash = [...SHEET.matchAll(/\.nx-dash-[\w-]*\s*\{[^{}]*color:\s*var\((--ink[\w-]*)\)/g)];
+  const found = new Set([
+    ...[...src.matchAll(/var\((--ink[\w-]*)\)/g)].map((m) => m[1]),
+    ...dash.map((m) => m[1]),
+  ]);
+  return [...found].sort();
+}
+
+/**
+ * **الدَّين المعدود — بأرقامه وتاريخه، وبلا بندٍ يحرسه عمدًا.**
+ *
+ * رقاقات النغمة في الوضع الفاتح (`text-red-700` · `text-amber-700` ·
+ * `text-emerald-700`، ‏12px/700) مقيسةٌ ٢٠٢٦/٠٩/٢٩ **بلا فيلمٍ إطلاقًا**:
+ * ٣٫٩٤ · ٣٫٥٢ · ٣٫٦٧ — ساقطةٌ دون AA قبل هذا العمل كلِّه. ومع الفيلم
+ * ٢٫٥٢ · ٢٫٣٠ · ٢٫٣٨، ولا يرفعها الغطاء دون إلغاء الفيلم (تحتاج ٩٦٫٦٪
+ * و١٠٠٪ و١٠٠٪).
+ *
+ * **ولم يُكتب لها بندٌ هنا، وذلك قرارٌ لا سهو.** كُتب أوّلًا بندٌ يمسح
+ * `sec-shell.tsx` بحثًا عن أصناف اللون كي «لا ينمو الدَّين صامتًا»، فقِيس
+ * فالتقط ثلاثة عشر صنفًا أكثرها أيقوناتٌ وقيمٌ ووضعٌ داكن لا علاقة لها
+ * بالرقاقات — حارسٌ يطابق **شكلًا لا معنى**، وهي العلّة التي قُتلت في
+ * هذه الجلسة أكثر من مرّة. وبندٌ لا يُحسن نطاقَه أسوأ من لا بند.
+ *
+ * وبندٌ يؤكّد أن ٣٫٩٤ أصغر من ٤٫٥ **لا يقدر أن يحمرّ أبدًا** — وذاك هو
+ * الفحص الأخضر الذي لا يُثبت شيئًا بعينه.
+ *
+ * فالدَّين **أمرُ عملٍ مفتوح على لوحة النغمات في الوضع الفاتح**، مرفوعٌ
+ * إلى المالك بأرقامه. ومتى أُصلحت اللوحة وُسِّع `inkTokensOn` إلى أدوات
+ * اللون وسقط هذا التعليق معها.
+ */
+
+/**
+ * الوضوحُ النافذُ على الصفحتين العاريتين — **المثبَّت فيهما، لا الموروث.**
+ *
+ * الصفحتان تُثبّتانه مع السطح، فقراءةُ رمز الوضع هنا كانت ستقيس قيمةً لا
+ * تصل إليهما — وتُخفي بالضبط العطل الذي وُضع هذا كلُّه لأجله.
+ */
+function filmOpacity(): number {
+  const vals = BARE_PAGES.map((p) => {
+    const m = readFileSync(p, "utf8").match(/"--hv-film-opacity"[^:]*:\s*"([\d.]+)"/);
+    expect(m, `${p} لم يعد يُثبّت وضوح الفيلم`).not.toBeNull();
+    return Number(m![1]);
+  });
+  expect(new Set(vals).size, "الصفحتان تُثبّتان وضوحين مختلفين — يلزم حسابان").toBe(1);
+  return vals[0];
+}
+
+/**
+ * نسبةُ الغطاء النافذة على الصفحتين الدائمتي الدكنة — **المثبَّتة فيهما.**
+ *
+ * صارت رمزًا كالوضوح للسبب نفسه: الأرضية حاصلُ ضربهما، فتثبيتُ أحدهما
+ * وترْكُ الآخر لرمز الوضع يضع نصف المعادلة تحت وضعٍ ونصفها تحت آخر.
+ */
+function scrimRatio(): number {
+  expect(ruleBody(".nx-hv-scrim {"), "نسبةٌ حرفيّة في قاعدة الغطاء").toContain(
+    "var(--surface) var(--hv-scrim-mix)",
+  );
+  const vals = BARE_PAGES.map((p) => {
+    // **في كائن الأسلوب نفسه الذي يفرض السطح** — لا في أيّ موضعٍ من الملفّ.
+    // الثلاثة (السطح والوضوح والغطاء) عقدةٌ واحدة، وافتراقُها إلى عقدتين
+    // يجعل الوراثة تخلط قيمَ وضعَين في حسابٍ واحد.
+    const m = styleObjectPinning(p).match(/"--hv-scrim-mix"[^:]*:\s*"(\d+)%"/);
+    expect(m, `${p} لا يُثبّت نسبة الغطاء مع السطح في العقدة نفسها`).not.toBeNull();
+    return Number(m![1]) / 100;
+  });
+  expect(new Set(vals).size, "الصفحتان تُثبّتان نسبتين مختلفتين — يلزم حسابان").toBe(1);
+  return vals[0];
 }
 
 function hexToRgb(hex: string): Rgb {

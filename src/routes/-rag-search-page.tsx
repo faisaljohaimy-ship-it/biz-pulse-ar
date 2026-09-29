@@ -54,10 +54,15 @@ export function RagSearchPage() {
 
   return (
     <div dir="rtl" className="min-h-dvh bg-nx-obsidian text-nx-pearl">
-      {/* الخلفية الحية (قرار المالك ٢٠٢٦/٠٨/٠٥) — سطح داكن مثبَّت للغطاء. */}
+      {/* الخلفية الحية (قرار المالك ٢٠٢٦/٠٨/٠٥) — سطح داكن مثبَّت للغطاء.
+          ووضوحُ الفيلم مثبَّتٌ معه في العقدة نفسها: الصفحة دائمة الدكنة،
+          فرفعُ الوضع الفاتح للفيلم إلى ٨٠٪ هنا يضع صورةً ساطعة تحت حبرٍ
+          فاتح — ٢٫٤٩:١ مقيسة. مَن يفرض السطح يفرض الوضوح معه. */}
       <div
         style={{
           ["--surface" as string]: "#04070d",
+          ["--hv-film-opacity" as string]: "0.34",
+          ["--hv-scrim-mix" as string]: "40%",
           ["--live" as string]: "rgb(var(--live-rgb, 34 211 238))",
         }}
       >
