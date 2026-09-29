@@ -52,11 +52,23 @@ describe("لغة الدائرة المشعّة — نبضٌ يمضي ويعود"
 
   it("اللون يُمرَّر متغيّرًا لا قيمةً نهائية (المادة ٣٤ بند ٣)", () => {
     // أسلوبٌ مضمّن بقيمة نهائية يُعفي حامله من كل قاعدة عامة بصمت.
-    expect(SHELL).toContain('["--orb-accent" as string]');
-    expect(SHELL).not.toMatch(/style=\{\{\s*background:\s*["'`]#/);
-    for (const hue of ["--tone-cyan", "--tone-blue", "--tone-violet", "--tone-emerald"]) {
-      expect(SHELL, `اللكنة ${hue} مفقودة من دورة ألوان الشريط الجانبي`).toContain(hue);
+    //
+    // **وسقطت دوائر الشريط النابضة بأمر المالك ٢٠٢٦/٠٩/٢٩** — تصميم لوحة
+    // القيادة الجديد أيقوناتٌ خطّية بلا دوائر، فذهبت `--orb-accent` ودورة
+    // النبرات من الشريط. ولم تذهب القاعدة: الشريط الجديد يمرّ لون المنطقة
+    // متغيّرًا (`--region-tint`) لا قيمةً نهائية، ويُفحص هو الآن. والدوائر
+    // نفسها باقية حيث بقيت (`/guide`)، فقواعدها في الطبقة تُفحص أعلاه.
+    const SIDEBAR = readFileSync("src/components/nav/SystemSidebar.tsx", "utf8");
+    for (const [name, src] of [
+      ["app-shell", SHELL],
+      ["SystemSidebar", SIDEBAR],
+    ] as const) {
+      expect(src, `${name}: لونٌ نهائيّ في أسلوبٍ مضمّن`).not.toMatch(
+        /style=\{\{\s*(background|color)\w*:\s*["'`]#/,
+      );
     }
+    expect(SIDEBAR).toContain('["--region-tint" as string]: REGION_ACCENT_HEX[r.id]');
+    expect(SIDEBAR).toContain("bg-[color:var(--region-tint)]");
   });
 });
 

@@ -316,21 +316,49 @@ describe("⑥ الشكل — قرصٌ يسع الصفّ ولا يفيض عنه",
   });
 });
 
-describe("⑦ ما لم يُطلب لم يعُد — الجرس", () => {
-  it("لا ملفّ شريط أدوات ولا جرس في أي سطح", () => {
-    // الأمر عدّ ثلاثة ولم يعدّ الجرس. وعودةٌ جزئية يسهل أن تُقرأ لاحقًا
-    // «رجّع القشرة» فيعود معها ما لم يُطلب — وهذا البند يمنعها.
+/**
+ * **⑦ الجرس — عاد بأمرٍ صريح، في موضعٍ واحد وبعدّادٍ مقيس.**
+ *
+ *   ٢٠٢٦/٠٩/١١: «الجرس لم يُذكر فلم يعُد» — فكان هذا البند حارسَ غياب.
+ *   ٢٠٢٦/٠٩/٢٩: تصميم لوحة القيادة، وسُئل المالك عن الجرس فأجاب: «أعده
+ *     بعدّاد الأعمال العاجلة».
+ *
+ * **ولم يُترك البند يمرّ على جرسٍ في ملفٍّ لا يقرؤه.** وُضع الجرس أوّلًا في
+ * `SystemHeader.tsx` فبقي البند القديم أخضر لأن قائمته لا تشمله — التفافٌ
+ * صامت لا امتثال. فأُعيدت كتابته يحرس الأمر الجديد نفسه: الجرس في ترويسة
+ * النظام وحدها، يفتح الأعمال العاجلة ويعدّ `urgent_open`، ولا شارة بصفرٍ
+ * حين لا يصل الرقم. وما عدا ذلك باقٍ على حظره.
+ */
+describe("⑦ الجرس — في ترويسة النظام وحدها، بعدّاد الأعمال العاجلة", () => {
+  it("لا ملفّ شريط أدوات ولا جرسٌ خارج ترويسة النظام", () => {
     expect(existsSync(join(root, "src/components/nav/TopUtilityBar.tsx"))).toBe(false);
     for (const p of [
       "src/components/nav/TopBar.tsx",
       "src/routes/__root.tsx",
       "src/components/app-shell.tsx",
       "src/components/cockpit/header.tsx",
+      "src/routes/-blueprint-page.tsx",
     ]) {
       const src = code(p);
-      expect(src, `${p} أعاد الجرس`).not.toMatch(/<Bell[\s/>]/);
+      expect(src, `${p} يرسم جرسًا بنفسه`).not.toMatch(/<Bell[\s/>]/);
       expect(src, `${p} يستورد Bell`).not.toMatch(/\bBell\b[^"]*from "lucide-react"/);
     }
+  });
+
+  it("وفي ترويسة النظام جرسٌ واحد يفتح الأعمال العاجلة ويعدّ المقيس", () => {
+    const header = code("src/components/nav/SystemHeader.tsx");
+    expect(header.match(/<Bell[\s/>]/g)?.length, "جرسٌ واحد لا اثنان").toBe(1);
+    expect(header).toContain('to="/urgent-ops"');
+    expect(header).toContain("counters.urgent_open");
+    // الغياب لا يُرسم صفرًا: الشارة مشروطة بعددٍ وصل وأكبر من صفر.
+    expect(header).toMatch(/count != null && count > 0 &&/);
+    // والتسمية لا تدّعي «إشعارات» — لا صندوق إشعارات يُقرأ في النظام.
+    expect(header).not.toMatch(/إشعار/);
+    // **ورقمُ المحاكاة يقول إنه محاكاة على الشارة نفسها (المادة ٦).** كان
+    // الجرس يُظهر «9» من `sim-ca-*` كأنه حيّ، وتعليقه يقول «مقيسٌ فعلًا».
+    expect(header).toContain("data?.simulation");
+    expect(header).toMatch(/simulated && <span>/);
+    expect(header).toContain("محاكاة مرجعية");
   });
 
   it("ولا درج إشعارات في ترويسة القمرة", () => {

@@ -13,6 +13,7 @@ import { existsSync, globSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { HIDDEN_ROUTES, isRouteHidden } from "@/lib/nav/hidden-routes";
 import { MODULES, MODULE_PURPOSE } from "@/lib/nav/modules";
+import { systemNavDestinations } from "@/lib/nav/system-nav";
 
 const read = (p: string) => readFileSync(p, "utf8");
 const SHELL = read("src/components/app-shell.tsx");
@@ -55,6 +56,7 @@ describe("البند ٤٩ — شاشة الامتثال محذوفة، ولا أ
     expect(MODULES.some((m) => m.to === "/hcis")).toBe(false);
     expect(MODULE_PURPOSE["/hcis"]).toBeUndefined();
     expect(SHELL).not.toContain('to: "/hcis"');
+    expect(systemNavDestinations()).not.toContain("/hcis");
   });
 
   it("الحذف حذفٌ لا إخفاء — لا ملفّ مسار ولا جذع توجيه ولا طبقة بيانات", () => {
@@ -87,6 +89,8 @@ describe("البندان ٥٢ و٥٤ — الشاشتان حاضرتان في ا
   ] as const) {
     it(`«${ar}» حاضرة في السجل الكانوني وحيّة — والشريط خارجها بأمر المالك`, () => {
       expect(SHELL, `${to} عاد إلى الشريط دون أمر مالك جديد`).not.toContain(`to: "${to}"`);
+      // والشريط صار سجلًّا مستقلًّا — فيُفحص هو أيضًا لا القشرة وحدها.
+      expect(systemNavDestinations(), `${to} دخل سجل الشريط`).not.toContain(to);
       expect(MODULES.some((m) => m.to === to)).toBe(true);
       expect(MODULE_PURPOSE[to], `${to} بلا سطر غرض`).toBeDefined();
       expect(isRouteHidden(to)).toBe(false);
@@ -94,23 +98,28 @@ describe("البندان ٥٢ و٥٤ — الشاشتان حاضرتان في ا
   }
 });
 
-describe("الشريط الجانبي خمسة أزرار — أمر المالك ٢٠٢٦/٠٨/٢٠", () => {
-  it("الأزرار الخمسة حاضرة ولا سادس لها", () => {
-    // V4 (١١٩٢) ٢٠٢٦/٠٨/٢٤: الزرّ الأول صار يفتح /sec (النظرة العامة
-    // بشريطها العلوي) بدل /situation-room المحجوبة — والتسمية باقية
-    // «غرفة العمليات» تُقرأ من سجلّها الكانوني (التأكيد الثاني أدناه).
-    for (const to of ["/sec", "/executive-map", "/urgent-ops", "/sec/reports", "/files"])
-      expect(SHELL, `${to} سقط من الشريط`).toContain(`to: "${to}"`);
-    // العدّ من نفس النمط الذي تُكتب به البنود — زرٌّ سادس يُكتب بنفسه.
-    const entries = SHELL.match(/\bto: "\//g) ?? [];
-    expect(entries.length, "زرّ سادس دخل الشريط دون أمر مالك جديد").toBe(5);
+/**
+ * **الشريط الجانبي — المحطّة الثانية.**
+ *
+ *   ٢٠٢٦/٠٨/٢٠: «حذف جميع الأزرار في الشريط الجانبي باستثناء خمسة».
+ *   ٢٠٢٦/٠٩/٢٩: تطبيق تصميم لوحة القيادة «مع تفعيل جميع الأيقونات»،
+ *     والشريط «في النظام كلّه» — ناسخٌ صريح للخمسة.
+ *
+ * فالحارس يحرس المحطّة الأخيرة: القائمة في سجلٍّ واحد (`SYSTEM_NAV`)، ولا
+ * قائمة ثانية في القشرة. وتفصيل الوجهات في `system-nav.contract.test.ts`.
+ */
+describe("الشريط الجانبي من سجلٍّ واحد — أمر المالك ٢٠٢٦/٠٩/٢٩", () => {
+  it("القشرة تركّب الشريط الموحَّد ولا تكتب قائمتها", () => {
+    expect(SHELL_CODE).toContain("<SystemSidebarNav");
+    expect(SHELL_CODE.match(/\bto: "\//g) ?? [], "قائمة ثانية عادت إلى القشرة").toEqual([]);
   });
 
-  it("زرّ /sec يحمل اسم غرفة العمليات من السجل الكانوني لا حرفيًّا (V4 ١١٩٢)", () => {
-    // التسمية تُقرأ من screen-names — كتابة الاسم حرفيًّا بجوار المسار
-    // يصطاده حارس screen-names.test؛ وهذا يضمن بقاء آلية القراءة نفسها.
-    expect(SHELL).toContain('labelRoute: "/situation-room"');
-    expect(SHELL).toContain('screenNameAr("/situation-room")');
+  it("الاسم المحروس يُقرأ من السجل الكانوني لا حرفيًّا", () => {
+    // نمط V4 (١١٩٢) نفسه، على «مركز القيادة» هذه المرّة: الاسم لمساره
+    // المحجوب، والوجهة بديله الحيّ.
+    const nav = read("src/lib/nav/system-nav.ts");
+    expect(nav).toContain('labelRoute: "/mission-control"');
+    expect(read("src/components/nav/SystemSidebar.tsx")).toContain("screenNameAr(item.labelRoute)");
   });
 });
 

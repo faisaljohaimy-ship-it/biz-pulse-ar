@@ -61,6 +61,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
+import { SystemSidebar } from "@/components/nav/SystemSidebar";
+import { SystemHeader } from "@/components/nav/SystemHeader";
+import { CommandPalette } from "@/components/executive/CommandPalette";
 import { PRODUCT_BRAND } from "@/lib/domain";
 import { getCommandCenterState, type CommandSeverity } from "@/lib/exec/command-center.functions";
 import { getRiskBoard, type RiskSeverity } from "@/lib/exec/risk-board.functions";
@@ -207,9 +210,16 @@ export function BlueprintPage() {
 
   return (
     <main
-      className="nx-bp-surface relative min-h-screen overflow-hidden bg-[color:var(--surface)] text-[color:var(--ink)]"
+      className="nx-bp-surface relative flex min-h-screen overflow-x-clip bg-[color:var(--surface)] text-[color:var(--ink)]"
       data-pending={isPending || undefined}
     >
+      {/* الشريط الجانبي للنظام (أمر المالك ٢٠٢٦/٠٩/٢٩) — المكوّن نفسه في قشرة
+          النظام. و`overflow-x-clip` لا `overflow-hidden`: الثانية تجعل `main`
+          حاويةَ سكرول فيفقد الشريط لصوقه (`sticky`) ويمضي مع الصفحة. ولوحة
+          الأوامر تُركَّب هنا لأن القشرة لا تركّبها على `/` — وبدونها يصير زرّ
+          البحث في الترويسة ميتًا. */}
+      <SystemSidebar />
+      <CommandPalette />
       {/* الأساس الهولوغرامي الحي: الفيلم الصامت + الغطاء + النسيج — كل ما
           فوقه من زجاج يرى حركته عبر backdrop-filter، وتوهّجاته ترث لونها
           من عيّنة الفيديو الحية (--live-rgb). */}
@@ -231,7 +241,10 @@ export function BlueprintPage() {
           الصفحة نطاقُه الوحيد، لكن مصدره `TopBar` المركَّب في الجذر.
           وتركيبه هنا ثانيةً يضع مبدّلَين متراكبَين بفارق 8px — قِيس فعلًا
           حين كانت الصفحة تركّب مبدّلها بعلّة «خارج القشرة فلا شريط لها». */}
-      <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-16 pt-4 sm:px-6">
+      <div className="relative mx-auto w-full min-w-0 max-w-[1280px] flex-1 px-4 pb-16 pt-4 sm:px-6">
+        <div className="-mx-4 -mt-4 mb-4 sm:-mx-6">
+          <SystemHeader withMenu />
+        </div>
         <header className="nx-bp-stage" style={{ ["--nx-bp-i" as string]: 0 }}>
           {/* رأس على زجاج: مع الفيلم بكامل سطوعه صار النص العاري فوق أومضاته
               دون 4.5:1 — القشرة الزجاجية تعيد التباين والفيلم يبقى ظاهرًا حولها. */}
@@ -326,7 +339,7 @@ export function BlueprintPage() {
                       search={{ region: region.id }}
                       onClick={() => setRegion(region.id)}
                       aria-label={ar ? `افتح معلومات ${region.labelAr}` : `Open ${region.labelEn}`}
-                      className={`nx-home-region flex min-h-20 items-center gap-3 rounded-2xl border p-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)] ${tone.card}`}
+                      className={`nx-home-region flex min-h-20 items-center gap-3 rounded-2xl border p-3 pb-11 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-cyan)] ${tone.card}`}
                       style={{
                         ["--bp-accent" as string]: REGION_ACCENT_HEX[region.id],
                         ["--pulse-i" as string]: i + 4,
@@ -372,6 +385,10 @@ export function BlueprintPage() {
                         {pct === undefined ? notMeasured : `${Math.round(pct)}%`}
                       </span>
                     </Link>
+                    {/* `pb-11` على البطاقة يحجز لهذا الرابط صفًّا بارتفاع لمسه
+                        (44px) — بعد تركيب الشريط الجانبي (٢٠٢٦/٠٩/٢٩) ضاق العمود
+                        فصارت رقاقة «الحالية» تقع تحت الرابط المطلَق. رُئي
+                        بلقطةٍ على 1280 لا باختبار. */}
                     {/* REQ-022 (فقرة 846): «سهم في الكاردز يوديه لسجل المخاطر
                         الأمنية». رابط مستقل أخٌ لرابط البطاقة — لا <a> داخل
                         <a> — مطلَق الموضع داخل <li relative>، فالبطاقة كلها

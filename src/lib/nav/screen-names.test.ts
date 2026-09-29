@@ -30,6 +30,10 @@ const ROOT = resolve(__dirname, "../../..");
 /** Files that declare navigation ITEM LISTS — where a name is a label. */
 const NAV_SURFACES = [
   "src/components/app-shell.tsx",
+  // الشريط الجانبي للنظام (٢٠٢٦/٠٩/٢٩): سجلُّه ومكوّنه سطحا تنقّل.
+  "src/lib/nav/system-nav.ts",
+  "src/components/nav/SystemSidebar.tsx",
+  "src/components/nav/SystemHeader.tsx",
   "src/components/sec/sec-shell.tsx",
   "src/components/executive/CommandPalette.tsx",
   "src/routes/_authenticated/dashboard.tsx",

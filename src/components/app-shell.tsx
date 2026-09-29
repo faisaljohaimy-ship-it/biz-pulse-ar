@@ -1,35 +1,7 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import {
-  FileText,
-  FolderOpen,
-  Map as MapIcon,
-  Radar,
-  Siren,
-  ExternalLink as ExternalLinkIcon,
-} from "lucide-react";
-import { useState, type ComponentType } from "react";
-import { cn } from "@/lib/utils";
+import { useLocation } from "@tanstack/react-router";
+import { useState } from "react";
 
-/**
- * لكنات دوائر الأيقونات — تدور على عناصر الشريط فيأخذ كلٌّ لونه.
- *
- * لونٌ واحد لكل الأيقونات يجعل الشريط جدارًا سماويًّا لا يُميَّز فيه عنصر
- * عن جاره إلا بالنص؛ والتفاوت يجعل الموضع نفسه علامةً تُحفظ بالعين.
- * أسماء رموز من طبقة الرموز لا قيمًا نهائية (المادة ٣٣).
- */
-const ORB_HUES = [
-  "var(--tone-cyan)",
-  "var(--tone-blue)",
-  "var(--tone-violet)",
-  "var(--tone-emerald)",
-  "var(--tone-amber)",
-] as const;
-
-/** إيقاع النبض بالثواني — يتفاوت قليلًا فلا تخفق الأيقونات دفعةً واحدة. */
-const ORB_BEATS = ["1.05s", "1.2s", "0.95s", "1.35s", "1.12s"] as const;
 import { useI18n } from "@/lib/i18n";
-import { moduleByRoute, moduleExternalUrl } from "@/lib/nav/modules";
-import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { brandName } from "@/lib/domain";
 import { SadeedName, SadeedWordmark } from "@/components/brand/SadeedWordmark";
 import { pageBackdropFor } from "@/lib/nav/page-backdrops";
@@ -38,26 +10,13 @@ import { AuroraFantasyBackdrop } from "@/components/backdrops/AuroraFantasyBackd
 import { useAuth } from "@/lib/auth-context";
 import { useRegion } from "@/lib/region-context";
 
-import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OrgSwitcher } from "@/components/org/org-switcher";
 import { RegionSwitcher } from "@/components/RegionSwitcher";
 import { NexusOrb } from "@/components/executive/NexusOrb";
+import { SystemSidebarCard, SystemSidebarNav } from "@/components/nav/SystemSidebar";
+import { SystemHeader } from "@/components/nav/SystemHeader";
 import { CommandPalette } from "@/components/executive/CommandPalette";
-
-type NavItem = {
-  to: string;
-  icon: ComponentType<{ className?: string }>;
-  label: string;
-  /**
-   * V4 (١١٩٢) ٢٠٢٦/٠٨/٢٤ — زرٌّ يحمل اسم شاشةٍ غير وجهته: التسمية تُقرأ
-   * من السجل الكانوني لهذا المسار لا من وجهة الزر، فلا يُعيد `canon`
-   * تسميته باسم الوجهة؛ والتفعيل يصير بالمطابقة التامة كي لا يتوهّج
-   * الزرّ على بنات الوجهة التي لبعضها أزرارها الخاصة (مثل /sec/reports).
-   */
-  labelRoute?: string;
-};
-type NavGroup = { label: string; items: NavItem[] };
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { locale } = useI18n();
@@ -81,7 +40,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="absolute bottom-[-160px] end-[-10%] h-[420px] w-[420px] rounded-full bg-accent/20 blur-3xl" />
       </div>
 
-      <aside className="nexus-sidebar hidden shrink-0 border-e border-sidebar-border glass-sidebar md:flex md:w-56 md:flex-col lg:w-60 xl:w-64 2xl:w-72">
+      {/* **مثبَّتٌ مع سندٍ لا عمودٌ يمضي مع الصفحة** (٢٠٢٦/٠٩/٢٩). كان طولُه
+          طولَ المحتوى فيمضي مع السكرول، فتختفي قائمة التنقّل بعد أول تمريرة
+          (قِيس رأسه عند ‎-1147). `body` حاوية السكرول فلا يلصق `sticky`، فالعلاج
+          علاج الشريط العلوي: `fixed` (`.nx-sysnav`) وسندٌ بالعرض نفسه.
+          والسند `nexus-sidebar-spacer` يتبع كل قاعدة عرضٍ وإظهار على الشريط
+          (الأفقي 56px · ‏2200px فأعرض · وضع العرض) — يحرسه عقد الشريط. */}
+      <div
+        aria-hidden
+        className="nexus-sidebar-spacer hidden shrink-0 md:block md:w-56 lg:w-60 xl:w-64 2xl:w-72"
+      />
+      <aside className="nexus-sidebar nx-sysnav z-20 hidden border-e border-sidebar-border glass-sidebar md:flex md:w-56 md:flex-col lg:w-60 xl:w-64 2xl:w-72">
         <SidebarBody />
       </aside>
 
@@ -95,10 +64,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 controls="nexus-mobile-nav"
               />
             </SheetTrigger>
+            {/* زرّ الإغلاق يُرسم قبل المحتوى بطبقة z-10، ورأسُ الشريط اللاصق
+                بعده بالطبقة نفسها فيغطّيه — رُئي بلقطة على 390: النقطة في
+                مركز الزرّ تعيد عنصرًا آخر. فيُرفع الزرّ فوق الرأس هنا. */}
             <SheetContent
               id="nexus-mobile-nav"
               side="right"
-              className="w-72 glass-sidebar p-0 text-sidebar-foreground"
+              className="nx-sysnav-sheet w-72 glass-sidebar p-0 text-sidebar-foreground [&>.nexus-window-close]:z-20"
             >
               <SidebarBody onNavigate={() => setOpen(false)} />
             </SheetContent>
@@ -127,6 +99,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <OrgSwitcher compact />
           </div>
         </header>
+        {/* ترويسة النظام (بحث · جرس · رسائل · تطبيقات · مساعدة · المستخدم) على
+            الشاشات العريضة؛ الجوال له ترويسته أعلاه بالدرج. **ولا `sticky`:**
+            كُتب ثم قِيس عند ‎-1347 بعد السكرول — `body` حاوية السكرول فلا يلصق
+            شيء، ولو لصق لوقع تحت الشريط العلوي المثبَّت. */}
+        <div className="hidden md:block">
+          <SystemHeader />
+        </div>
         <main className="nexus-main min-w-0 flex-1">
           <div className="relative mx-auto w-full max-w-[1680px] 2xl:max-w-[2040px] [@media(min-width:2200px)]:max-w-[2400px]">
             {children}
@@ -140,61 +119,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function useNavGroups(): NavGroup[] {
-  const { locale } = useI18n();
-  const ar = (arText: string, enText: string) => (locale === "ar" ? arText : enText);
-  // Single source of truth: any nav item whose route is a canonical module
-  // takes its label + icon from the module registry, so a module's identity
-  // can never drift between the sidebar and the dashboard (constitution 13.5).
-  // Routes not in the registry (sub-pages, admin) keep their own labels.
-  const canon = (i: NavItem): NavItem => {
-    // labelRoute (إن وُجد) هو صاحب الاسم لا الوجهة — انظر تعليق NavItem.
-    const m = moduleByRoute(i.labelRoute ?? i.to);
-    return m ? { ...i, icon: m.icon, label: locale === "ar" ? m.ar : m.en } : i;
-  };
-  // ── أمر المالك ٢٠٢٦/٠٨/٢٠: «حذف جميع الازرار في الشريط الجانبي باستثناء
-  // (١- غرفة العمليات ٢- الخريطة التنفيذية ٣- العاجل ٤- التقارير ٥- الملفات)»
-  // مع إعادة تسمية «العاجل» ← «متابعة الأعمال العاجلة» (تسميتها في السجل
-  // الكانوني MODULES فتسري عبر canon هنا وفي كل سطح)، و«الملفات» ←
-  // «تحليل الملفات باستخدام الذكاء الاصطناعي» (ليست وحدة كانونية فتُسمّى هنا).
-  //
-  // ما خرج ليس شاشاتٍ محذوفة: /sec وبناتها تبقى حيّةً تُبلغ من بطاقات
-  // المناطق على الرئيسية ومن شريطها الداخلي SecSubNav؛ وسَدِيد من زرّه
-  // العائم؛ والإدارة/الإعدادات من مساراتها المباشرة. المحذوف أزرار الشريط.
-  // (وقاعة المجلس /boardroom حُجبت شاشةً كاملة بالأمر نفسه — hidden-routes.)
-  const groups: NavGroup[] = [
-    {
-      label: "",
-      items: [
-        // الاسم محروس في screen-names.ts، فيُقرأ من المصدر ولا يُعاد كتابته.
-        // V4 (١١٩٢) ٢٠٢٦/٠٨/٢٤: «يكون الزر حق غرفة العمليات يفتح النظرة
-        // العامة ويبين شريط البار العلوي» — الوجهة صارت /sec (نظرة عامة
-        // الأمن الصناعي بشريطها العلوي SecSubNav)، والتسمية باقية من سجلّ
-        // /situation-room الكانوني (الشاشة نفسها حُجبت وترتدّ إلى /sec).
-        {
-          to: "/sec",
-          labelRoute: "/situation-room",
-          icon: Radar,
-          label: ar(screenNameAr("/situation-room"), screenNameEn("/situation-room")),
-        },
-        { to: "/executive-map", icon: MapIcon, label: ar("الخريطة التنفيذية", "Executive Map") },
-        { to: "/urgent-ops", icon: Siren, label: ar("متابعة الأعمال العاجلة", "Urgent Ops") },
-        { to: "/sec/reports", icon: FileText, label: ar("التقارير", "Reports") },
-        {
-          to: "/files",
-          icon: FolderOpen,
-          label: ar("تحليل الملفات باستخدام الذكاء الاصطناعي", "AI File Analysis"),
-        },
-      ],
-    },
-  ];
-  return groups.map((g) => ({ ...g, items: g.items.map(canon) }));
-}
-
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
-  const { t, locale } = useI18n();
-  const loc = useLocation();
-  const groups = useNavGroups();
+  const { locale } = useI18n();
   return (
     <div className="flex h-full flex-col bg-sidebar">
       {/* Sticky header — org identity + region switcher */}
@@ -220,98 +146,15 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
-      {/* Scrollable middle */}
-      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
-        {groups.map((g, gi) => (
-          <div key={g.label || gi} className="mb-5">
-            {/* شريط الأزرار الخمسة بلا عناوين مجموعات (أمر المالك ٢٠٢٦/٠٨/٢٠)
-                — العنوان يُرسم فقط إن وُجد. */}
-            {g.label && (
-              <div className="px-3 pb-2 text-[12px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
-                {g.label}
-              </div>
-            )}
-            <div className="space-y-1">
-              {g.items.map((it, itemIndex) => {
-                // زرّ باسم مستعار (labelRoute) يتفعّل بالمطابقة التامة فقط —
-                // وإلا توهّج مع زرّ /sec/reports معًا على صفحة التقارير.
-                const active =
-                  loc.pathname === it.to ||
-                  (!it.labelRoute && loc.pathname.startsWith(it.to + "/"));
-                // External sister platform (Nusuk): the sidebar entry is a
-                // real anchor that opens the platform in a new tab directly.
-                const registryEntry = moduleByRoute(it.to);
-                const externalUrl = registryEntry ? moduleExternalUrl(registryEntry) : null;
-                if (externalUrl) {
-                  const ItIcon = it.icon;
-                  return (
-                    <a
-                      key={it.to}
-                      href={externalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="يُفتح في نافذة جديدة"
-                      onClick={onNavigate}
-                      className="group relative flex h-11 cursor-pointer items-center gap-3 rounded-xl px-3 text-sm font-medium text-sidebar-foreground/75 transition-[background-color,color,transform] hover:bg-sidebar-accent/40 hover:text-sidebar-foreground active:scale-[0.98]"
-                    >
-                      <span
-                        className="nx-orb grid size-8 shrink-0 place-items-center rounded-lg transition-colors"
-                        style={{
-                          ["--orb-accent" as string]: ORB_HUES[itemIndex % ORB_HUES.length],
-                          ["--orb-speed" as string]: ORB_BEATS[itemIndex % ORB_BEATS.length],
-                        }}
-                      >
-                        <ItIcon className="size-4" aria-hidden />
-                      </span>
-                      <span className="truncate">{it.label}</span>
-                      <ExternalLinkIcon
-                        className="ms-auto size-3.5 shrink-0 text-primary/70"
-                        aria-hidden
-                      />
-                    </a>
-                  );
-                }
-                return (
-                  <Link
-                    key={it.to}
-                    to={it.to}
-                    onClick={onNavigate}
-                    className={cn(
-                      "group relative flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-[background-color,color]",
-                      active
-                        ? "bg-gradient-to-l from-primary/15 to-transparent text-sidebar-foreground"
-                        : "text-sidebar-foreground/75 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground",
-                    )}
-                  >
-                    {active && (
-                      <span
-                        aria-hidden
-                        className="absolute inset-y-2 end-0 w-1 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary)/0.6)]"
-                      />
-                    )}
-                    <span
-                      className={cn(
-                        "nx-orb grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
-                        active
-                          ? "nx-icon-pulse bg-primary/15 text-primary"
-                          : "bg-muted/30 text-muted-foreground group-hover:bg-muted/50 group-hover:text-foreground",
-                      )}
-                      data-orb-active={active || undefined}
-                      style={{
-                        ["--orb-accent" as string]: ORB_HUES[itemIndex % ORB_HUES.length],
-                        ["--orb-speed" as string]: ORB_BEATS[itemIndex % ORB_BEATS.length],
-                      }}
-                    >
-                      <it.icon className="nx-icon-soft size-4" />
-                    </span>
-                    <span className="min-w-0 flex-1 truncate">{it.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </nav>
+      {/* القائمة من السجل الواحد `SYSTEM_NAV` — أمر المالك ٢٠٢٦/٠٩/٢٩ نسخ
+          شريط الأزرار الخمسة (٢٠٢٦/٠٨/٢٠) بعناصر التصميم العشرين في النظام
+          كلّه. والمكوّن نفسه يُركَّب على الرئيسية، فلا نسختان تفترقان. */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
+        <SystemSidebarNav onNavigate={onNavigate} />
+        <div className="mt-4">
+          <SystemSidebarCard />
+        </div>
+      </div>
 
       {/* Sticky footer — user chip + round icon actions */}
       <div className="sticky bottom-0 border-t border-sidebar-border bg-sidebar/95 px-3 py-3 backdrop-blur">

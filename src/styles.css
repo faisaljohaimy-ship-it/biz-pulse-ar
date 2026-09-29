@@ -879,7 +879,10 @@ body {
   .nexus-mobile-header {
     display: none !important;
   }
-  .nexus-sidebar {
+  /* السند يتبع الشريط في كل قاعدة عرضٍ وإظهار — وإلا غطّى الشريطُ المثبَّت
+     المحتوى أو ترك فجوةً (قِيس ٦٦٧×٣٧٥ و٨٤٤×٣٩٠، ٢٠٢٦/٠٩/٢٩). */
+  .nexus-sidebar,
+  .nexus-sidebar-spacer {
     display: flex !important;
     width: 56px !important;
     flex-direction: column;
@@ -907,7 +910,8 @@ body {
 
 /* ── 4K / ultrawide tuning ────────────────────────────────────── */
 @media (min-width: 2200px) {
-  .nexus-sidebar {
+  .nexus-sidebar,
+  .nexus-sidebar-spacer {
     width: 22rem !important;
   }
 }
@@ -2324,6 +2328,7 @@ html.nx-scrolling *::after {
    this class-only mode still delivers the same clean, enlarged display.
    ═══════════════════════════════════════════════════════════════════ */
 html.nx-presenting .nexus-sidebar,
+html.nx-presenting .nexus-sidebar-spacer,
 html.nx-presenting .nexus-mobile-header,
 html.nx-presenting [aria-label="Beta preview banner"],
 html.nx-presenting [data-nx-presentation-hide] {
@@ -10308,6 +10313,25 @@ html.light .nx-topbar.nx-clock-bar {
    فانكشف خطٌّ فارغ تحت الشريط أو اختفت أول سطور كل صفحة. */
 .nx-topbar-spacer {
   block-size: calc(env(safe-area-inset-top) + var(--nx-clockbar-h) + var(--nx-hairline-w));
+}
+
+/* الشريط الجانبي للنظام (أمر المالك ٢٠٢٦/٠٩/٢٩) — **مثبَّتٌ لا لاصق.**
+   كُتب أوّلًا `sticky` وادُّعي لصوقه، فقِيس: بعد سكرول 961px صار رأسه عند
+   ‎-908. السبب أن `html` و`body` عليهما `overflow-x: hidden` فيصير `body`
+   حاويةَ السكرول ولا يتحرّك — درسُ الشريط العلوي نفسه (CLAUDE.md، البند ٣).
+   فالعلاج علاجه: `fixed` مع سندٍ في المسار بالعرض نفسه (في المكوّن)، والإزاحة
+   من **المتغيّرات نفسها** التي يقرؤها سند الشريط العلوي. */
+.nx-sysnav {
+  position: fixed;
+  inset-block: calc(env(safe-area-inset-top) + var(--nx-clockbar-h) + var(--nx-hairline-w)) 0;
+  inset-inline-start: 0;
+}
+
+/* درج القائمة على الجوال يبدأ **تحت** الشريط العلوي لا تحته: رُئي بلقطة على
+   390 أن زرّ إغلاقه يختبئ خلف الشريط المثبَّت. الإزاحة من المتغيّرات نفسها. */
+.nx-sysnav-sheet {
+  inset-block-start: calc(env(safe-area-inset-top) + var(--nx-clockbar-h) + var(--nx-hairline-w));
+  block-size: auto;
 }
 
 /* خانتا الطرفين: عضوان في الصفّ لا طبقتان فوقه — تأخذان عرضهما ويبقى
