@@ -5458,6 +5458,55 @@ html.dark .nx-holo-noise {
    المقاسين. و`minmax(0, …)` واجبة: بغير حدٍّ أدنى صفري يتمدّد العمود بمحتواه
    (جدول أو شريط منزلق) فيدفع الصفحة إلى تمرير أفقي على ٣٩٠px. */
 
+/* لوحة الرئيسية (أمر المالك ٢٠٢٦/٠٩/٢٩ — `HomeDashboard.tsx`).
+   الألوان كلّها متغيّرات: الأسلوب المضمّن يمرّر `--bar-pct` و`--slice-tone`
+   و`--health-tone` و`--region-tint`، والقيمة النهائية تُكتب هنا وحدها. */
+.nx-home-bar {
+  inline-size: var(--bar-pct, 0%);
+}
+.nx-home-donut-track {
+  stroke: var(--hairline);
+}
+.nx-home-donut-slice {
+  stroke: var(--slice-tone, var(--ink-3));
+}
+.nx-home-donut-value {
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 900;
+}
+.nx-home-donut-caption {
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 600;
+}
+.nx-home-health {
+  color: var(--health-tone, var(--ink-3));
+}
+/* نصٌّ وأيقونات على السطح المعتم وحده — لا زجاج يمرّ الفيلم تحته فيُسقط
+   تباين الأرقام (درس `.nx-bp-head-scrim`). */
+.nx-home-kpi,
+.nx-home-panel {
+  background-color: var(--surface);
+}
+/* حلقة التركيز بقاعدةٍ خارج الطبقات لا بأدوات Tailwind: القاعدة العامة
+   `:where(button, a, …):focus-visible` (قرب «selection + active navigation»)
+   خارج الطبقات أيضًا فتغلب أي أداة مطبَّقة مهما تأخّرت، فكانت الأصناف
+   المكتوبة ميتة ويُرسم `--pv-edge` بتباين 1.60:1 على الفاتح (قاسه حارس
+   الجودة). النوعية هنا (صنف + شبه صنف) تعلو `:where(…)` الصفرية.
+   `--tone-cyan` على `--surface`: 5.36 فاتحًا و9.47 داكنًا (≥ 3:1). */
+.nx-home-kpi:focus-visible,
+.nx-home-more:focus-visible,
+.nx-home-retry:focus-visible {
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: 2px;
+}
+/* الانتظار شكلٌ ساكن لا نصّ — ولا نبض: الحركة الدائمة تحتاج مخرجًا. */
+.nx-home-skeleton {
+  display: block;
+  background: var(--chip-strong);
+}
+
 .nx-home-triad {
   display: grid;
   /* `minmax(0, 1fr)` لا `auto`: مسار الشبكة التلقائي حجمه الأساسي

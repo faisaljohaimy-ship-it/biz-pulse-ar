@@ -54,6 +54,12 @@
  * `/sadeed` ولا `/sec/kpi` ولا `/sec/incidents` ولا `/urgent-ops` — تُبلَغ
  * كلّها من الشريط الجانبي وخريطة النظام في بقيّة القشرة، لا من هنا.
  * وإعادةُ أيٍّ منها إضافةٌ لم تُطلَب، لا تنفيذٌ للأمر.
+ *
+ * **ثم طُلبت (٢٠٢٦/٠٩/٢٩).** أمر المالك بتطبيق تصميم لوحة القيادة «مع تفعيل
+ * جميع الأيقونات» أعاد إلى الصفحة الشريط الجانبي والترويسة، ومؤشراتٍ سبعة
+ * ولوحات تشغيل كلُّ واحدٍ منها رابطٌ إلى شاشته (`HomeDashboard.tsx`). وبقي
+ * بأمره نفسه: العنوان، وتوصيات سَدِيد، وسجل القرارات، وسطر الإفصاح. وبقي
+ * بلا مساس: بطاقة المخاطر الواحدة (V5)، وغياب لوحات الوكلاء الثلاث.
  */
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
@@ -77,6 +83,7 @@ import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 import { SadeedStagePresence } from "@/components/sadeed/SadeedStagePresence";
+import { HomeKpiRow, HomeOperations } from "@/components/home/HomeDashboard";
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
 const STAGE_AR: Record<string, string> = {
@@ -298,6 +305,11 @@ export function BlueprintPage() {
           </div>
         </header>
 
+        {/* ════ المؤشرات السبعة (أمر المالك ٢٠٢٦/٠٩/٢٩ — تصميم لوحة القيادة)
+            كل مؤشر رابطٌ إلى شاشته، ومصدره قراءةٌ قائمة؛ ما لم يُقَس يُقرأ
+            «لم يُقَس». التفصيل في `HomeDashboard.tsx`. */}
+        <HomeKpiRow />
+
         {/* ════ صدر الصفحة — ثلاثة أعمدة (أمر المالك ٢٠٢٦/٠٨/٠٩) ═══════════
             المناطق `start` · سَدِيد وسطًا · تحليلاته وتنبيهاته `end`.
             الشبكة معرَّفة في `.nx-home-triad` بأعمدة منطقية لا فيزيائية،
@@ -505,6 +517,10 @@ export function BlueprintPage() {
           </section>
         </section>
 
+        {/* ════ لوحات التشغيل (أمر المالك ٢٠٢٦/٠٩/٢٩): الخريطة وحالة الأنظمة ·
+            البلاغات والدوريات والكاميرات · الامتثال حسب المنطقة. */}
+        <HomeOperations />
+
         {/* ════ ٣ · المخاطر — بطاقة واحدة بسهم ═══════════════════════════
             **جولة V5 (مراجعة العميل — الشركة السعودية للطاقة).** كان القسم
             يعرض اثنتي عشرة بطاقة: أربعًا «حسب الشدّة» وثمانيًا «حسب
@@ -603,9 +619,14 @@ export function BlueprintPage() {
               الحلّ رفعُ الحبر درجةً ووضعُ حشوة السطح تحته (نفس علاج
               `.nx-bp-head-scrim`)، لا تعتيمُ الفيلم. */}
             <span className="nx-bp-note text-[12px] text-[color:var(--ink-2)]">
+              {/* **كان السطر يقول «الأرقام من مصدر النظام الحيّ» — بلا ذكرٍ
+                  للمحاكاة**، ولوحات الرئيسية كلّها تنهض من المحاكاة المرجعية
+                  متى لم يصل المصدر الحيّ (`resilient()`). وهو الإفصاح الوحيد
+                  الباقي بعد رفع الشارات (٢٠٢٦/٠٨/١١)، فلا يصحّ أن يدّعي الحياة.
+                  نقضه حارس الجودة ٢٠٢٦/٠٩/٢٩. */}
               {ar
-                ? "الأرقام من مصدر النظام الحيّ. ما لا يصل منه يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
-                : "Figures come from the live system source. Whatever does not arrive reads “not measured” — never a substituted zero."}
+                ? "الأرقام من مصدر النظام الحيّ متى وصل، وإلا فمن محاكاةٍ مرجعية مدمجة. ما لا يُقاس يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
+                : "Figures come from the live system source when it responds, otherwise from a built-in reference simulation. Whatever is not measured reads “not measured” — never a substituted zero."}
             </span>
           </div>
         </footer>
