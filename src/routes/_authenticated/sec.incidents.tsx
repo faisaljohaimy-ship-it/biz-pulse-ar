@@ -7,8 +7,9 @@ import { listIncidents, getOmsKpis } from "@/lib/oms.functions";
 import { numOrUnmeasured } from "@/lib/sec.functions";
 import { REGIONS } from "@/lib/regions";
 import { SecPageHeader, StatCard, severityClass, statusClass } from "@/components/sec/sec-shell";
-// ٢٠٢٦/٠٨/٢٠ — بتوجيه المالك: حُذف زر «بلاغ جديد» من رأس الصفحة، فأُزيل استيراد NewIncidentDialog.
-import { IncidentDrawer } from "@/components/sec/oms-dialogs";
+// ٢٠٢٦/٠٩/٢٩ — أعاد المالك زرّ «بلاغ جديد» إلى رأس الصفحة (كان محذوفًا منذ
+// ٢٠٢٦/٠٨/٢٠) ومعه تحديد موقع المُبلِّغ بخرائط Google.
+import { IncidentDrawer, NewIncidentDialog } from "@/components/sec/oms-dialogs";
 import { LiveStatus } from "@/components/state/LiveStatus";
 
 export const Route = createFileRoute("/_authenticated/sec/incidents")({
@@ -70,7 +71,9 @@ function Incidents() {
   return (
     <div className="space-y-4">
       {/* ٢٠٢٦/٠٨/٢٠ — بتوجيه المالك: حُذفت عبارة «متصل بسير العمل التنفيذي» من الوصف، وحُذف زر إنشاء البلاغ. */}
-      <SecPageHeader title="إدارة البلاغات" subtitle={`${list.length} بلاغ`} />
+      <SecPageHeader title="إدارة البلاغات" subtitle={`${list.length} بلاغ`}>
+        <NewIncidentDialog />
+      </SecPageHeader>
 
       {/* ٢٠٢٦/٠٨/٢٠ — بتوجيه المالك: حُذفت بطاقة «معدل المخاطر»، والشبكة ثلاث بطاقات. */}
       {kpis && (

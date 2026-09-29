@@ -15,8 +15,8 @@
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, CircleHelp, LayoutGrid, Menu, MessageSquare, Search } from "lucide-react";
-import { useState } from "react";
+import { Bell, CircleHelp, LayoutGrid, Menu, MessageSquare, Search, Siren } from "lucide-react";
+import { Suspense, lazy, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { MODULES } from "@/lib/nav/modules";
@@ -25,8 +25,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SystemSidebarCard, SystemSidebarNav } from "@/components/nav/SystemSidebar";
 
+/**
+ * زرّ أيقونة الترويسة. **حلقة التركيز في `.nx-icon-btn` (styles.css) لا في
+ * أدوات Tailwind:** القاعدة العامة `:where(button, a, …):focus-visible` خارج
+ * الطبقات فتغلب الأدوات المطبَّقة، فكانت الحلقة `--pv-edge` بتباين 1.60:1 على
+ * الفاتح (قاسه حارس الجودة) — عيبٌ لازم الترويسة منذ المرحلة ١.
+ */
 const ICON_BTN =
-  "relative grid size-11 shrink-0 place-items-center rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--chip-strong)] hover:text-[color:var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-blue)]";
+  "nx-icon-btn relative grid size-11 shrink-0 place-items-center rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--chip-strong)] hover:text-[color:var(--ink)]";
 
 /** لوحة الأوامر الواحدة تستمع لهذا الحدث — لا نسخةٌ ثانية منها هنا. */
 function openCommandPalette() {
@@ -80,6 +86,44 @@ function UrgentBell({ ar }: { ar: boolean }) {
   );
 }
 
+/**
+ * «بلّغ» — بلاغ أمني جديد من أي صفحة (أمر المالك ٢٠٢٦/٠٩/٢٩).
+ *
+ * النموذج يُحمَّل **عند أول ضغطة** لا مع الترويسة: الترويسة في كل صفحة،
+ * والنموذج يجرّ الحوارات ودوالّ الخادم — وحِملٌ في كل صفحة لزرٍّ يُضغط أحيانًا
+ * يكسر ميزانية الأداء بلا مقابل.
+ */
+const LazyNewIncidentDialog = lazy(() =>
+  import("@/components/sec/oms-dialogs").then((m) => ({ default: m.NewIncidentDialog })),
+);
+
+function QuickReport({ ar }: { ar: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const label = ar ? "بلّغ الآن — بلاغ أمني جديد" : "Report now — new security incident";
+  return (
+    <>
+      <button
+        type="button"
+        aria-label={label}
+        title={label}
+        onClick={() => {
+          setLoaded(true);
+          setOpen(true);
+        }}
+        className={`${ICON_BTN} nx-quick-report`}
+      >
+        <Siren aria-hidden className="size-5" />
+      </button>
+      {loaded && (
+        <Suspense fallback={null}>
+          <LazyNewIncidentDialog open={open} onOpenChange={setOpen} withTrigger={false} />
+        </Suspense>
+      )}
+    </>
+  );
+}
+
 function AppsMenu({ ar }: { ar: boolean }) {
   return (
     <Popover>
@@ -101,7 +145,7 @@ function AppsMenu({ ar }: { ar: boolean }) {
               <li key={m.to}>
                 <Link
                   to={m.to}
-                  className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-[13px] font-medium text-[color:var(--ink-2)] hover:bg-[color:var(--chip-strong)] hover:text-[color:var(--ink)]"
+                  className="nx-focus-ring flex min-h-11 items-center gap-2 rounded-lg px-2 text-[13px] font-medium text-[color:var(--ink-2)] hover:bg-[color:var(--chip-strong)] hover:text-[color:var(--ink)]"
                 >
                   <Icon aria-hidden className="size-4 shrink-0 text-[color:var(--tone-blue)]" />
                   <span className="truncate">{ar ? m.ar : m.en}</span>
@@ -130,7 +174,7 @@ function UserChip({ ar }: { ar: boolean }) {
       to="/settings"
       aria-label={ar ? `حساب ${name} — الإعدادات` : `${name} — settings`}
       title={ar ? `حساب ${name} — الإعدادات` : `${name} — settings`}
-      className="flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 hover:bg-[color:var(--chip-strong)]"
+      className="nx-focus-ring flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 hover:bg-[color:var(--chip-strong)]"
     >
       {meta.avatar_url ? (
         <img src={meta.avatar_url} alt="" className="size-9 shrink-0 rounded-full object-cover" />
@@ -198,7 +242,7 @@ export function SystemHeader({ withMenu = false }: { withMenu?: boolean }) {
       <button
         type="button"
         onClick={openCommandPalette}
-        className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface-2)] px-3 text-start text-[14px] text-[color:var(--ink-3)] hover:border-[color:var(--tone-blue)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--tone-blue)] md:max-w-xl"
+        className="nx-focus-ring flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface-2)] px-3 text-start text-[14px] text-[color:var(--ink-3)] hover:border-[color:var(--tone-blue)] md:max-w-xl"
       >
         <Search aria-hidden className="size-5 shrink-0" />
         <span className="truncate">
@@ -211,6 +255,7 @@ export function SystemHeader({ withMenu = false }: { withMenu?: boolean }) {
         </kbd>
       </button>
       <div className="ms-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <QuickReport ar={ar} />
         <UrgentBell ar={ar} />
         <Link
           to="/assistant"

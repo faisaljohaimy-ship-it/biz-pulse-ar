@@ -46,6 +46,16 @@ const createIncidentSchema = z.object({
   owner: z.string().max(120).optional(),
   assigned_to: z.string().max(120).optional(),
   notes: z.string().max(2000).optional(),
+  // موقع المُبلِّغ من المتصفح (أمر المالك ٢٠٢٦/٠٩/٢٩). يُتحقَّق من نطاقَي
+  // الإحداثيين هنا لا في العميل وحده — المدخل لا يُصدَّق لأنه جاء من نموذجنا.
+  location: z
+    .object({
+      lat: z.number().finite().min(-90).max(90),
+      lng: z.number().finite().min(-180).max(180),
+      accuracy_m: z.number().finite().nonnegative().max(100_000),
+      captured_at: z.string().datetime(),
+    })
+    .optional(),
 });
 
 export const createIncident = createServerFn({ method: "POST" })
@@ -91,6 +101,8 @@ export const createIncident = createServerFn({ method: "POST" })
         priority: data.priority,
         ai_risk_score,
         notes: data.notes ?? null,
+        // يُحفظ في حمولة حدث التسجيل (jsonb) — بلا ترحيلٍ ولا عمودٍ جديد.
+        location: data.location ?? null,
       },
     });
 

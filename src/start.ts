@@ -16,8 +16,12 @@ const SECURITY_HEADERS: Record<string, string> = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
   "Cross-Origin-Resource-Policy": "same-site",
+  // ٢٠٢٦/٠٩/٢٩ — `geolocation=(self)` لا `()`: أمر المالك «اربط قوقل ماب
+  // بموقع المستخدم ليحدد موقعه بالضبط عند البلاغات». للأصل نفسه وحده —
+  // لا لإطار خرائط Google المضمَّن ولا لأي أصلٍ ثالث — والمتصفح يسأل
+  // المستخدم إذنه عند أول ضغطٍ على «حدّد موقعي».
   "Permissions-Policy":
-    "camera=(), microphone=(self), geolocation=(), payment=(), usb=(), interest-cohort=()",
+    "camera=(), microphone=(self), geolocation=(self), payment=(), usb=(), interest-cohort=()",
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   "Content-Security-Policy": [
     "default-src 'self'",

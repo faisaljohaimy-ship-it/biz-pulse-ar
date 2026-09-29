@@ -1,4 +1,10 @@
 import { useState, useSyncExternalStore } from "react";
+import {
+  LocationCapture,
+  ReportedLocation,
+  readReportedLocation,
+  type CapturedLocation,
+} from "@/components/geo/LocationCapture";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -91,8 +97,29 @@ const SEV = ["low", "medium", "high", "critical"] as const;
 // ─────────────────────────────────────────────────────────────────────────────
 // INCIDENT — Create
 // ─────────────────────────────────────────────────────────────────────────────
-export function NewIncidentDialog() {
-  const [open, setOpen] = useState(false);
+/**
+ * نموذج «بلاغ جديد» — مُعاد بأمر المالك ٢٠٢٦/٠٩/٢٩ («الاثنان»): زرٌّ في رأس
+ * `/sec/incidents`، وزرّ «بلّغ» في ترويسة النظام يفتح النموذج نفسه من أي
+ * صفحة (مُتحكَّمًا فيه، بلا زرّه — `withTrigger={false}`).
+ */
+export function NewIncidentDialog({
+  open: openProp,
+  onOpenChange,
+  withTrigger = true,
+}: {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  withTrigger?: boolean;
+} = {}) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = (v: boolean) => {
+    onOpenChange?.(v);
+    if (openProp === undefined) setOpenState(v);
+  };
+  // الكتابة خلف المصادقة (`requireSupabaseAuth`): الزائر يُقال له ذلك قبل
+  // أن يملأ النموذج، لا بعد أن يضغط «تسجيل» فيأتيه خطأ.
+  const { user: reporter } = useAuth();
   const [form, setForm] = useState({
     category: "intrusion",
     title_ar: "",
@@ -103,10 +130,13 @@ export function NewIncidentDialog() {
     assigned_to: "",
     notes: "",
   });
+  // موقع المُبلِّغ (أمر المالك ٢٠٢٦/٠٩/٢٩) — لا يُؤخذ إلا بزرّ «حدّد موقعي»،
+  // ولا يمنع غيابُه الإرسال: إضافةٌ لا شرط.
+  const [location, setLocation] = useState<CapturedLocation | null>(null);
   const qc = useQueryClient();
   const fn = useServerFn(createIncident);
   const m = useMutation({
-    mutationFn: (data: typeof form) => fn({ data }),
+    mutationFn: (data: typeof form) => fn({ data: { ...data, location: location ?? undefined } }),
     onSuccess: () => {
       toast.success("تم تسجيل البلاغ");
       qc.invalidateQueries({ queryKey: ["oms-incidents"] });
@@ -114,16 +144,19 @@ export function NewIncidentDialog() {
       qc.invalidateQueries({ queryKey: ["oms-activity"] });
       setOpen(false);
       setForm({ ...form, title_ar: "", title_en: "", notes: "" });
+      setLocation(null);
     },
     onError: (e: Error) => toast.error(userFacingError(e)),
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="gap-1.5">
-          <AlertTriangle className="h-3.5 w-3.5" /> بلاغ جديد
-        </Button>
-      </DialogTrigger>
+      {withTrigger && (
+        <DialogTrigger asChild>
+          <Button size="sm" className="min-h-11 gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5" /> بلاغ جديد
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-lg" dir="rtl">
         <DialogHeader>
           <DialogTitle>تسجيل بلاغ أمني</DialogTitle>
@@ -132,6 +165,15 @@ export function NewIncidentDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
+          {!reporter && (
+            <p role="note" className="rounded-lg border p-3 text-[13px]">
+              تسجيل البلاغ يتطلّب حسابًا —{" "}
+              <a href="/auth" className="font-semibold text-primary underline">
+                سجّل الدخول
+              </a>{" "}
+              ثم عُد إليه.
+            </p>
+          )}
           <div className="grid gap-1.5">
             <Label>عنوان البلاغ *</Label>
             <Input
@@ -214,12 +256,19 @@ export function NewIncidentDialog() {
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
             />
           </div>
+          <div className="grid gap-1.5">
+            <Label>موقع البلاغ</Label>
+            <LocationCapture value={location} onChange={setLocation} />
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
             إلغاء
           </Button>
-          <Button onClick={() => m.mutate(form)} disabled={m.isPending || form.title_ar.length < 3}>
+          <Button
+            onClick={() => m.mutate(form)}
+            disabled={!reporter || m.isPending || form.title_ar.length < 3}
+          >
             {m.isPending ? "جارٍ الحفظ…" : "تسجيل البلاغ"}
           </Button>
         </DialogFooter>
@@ -526,6 +575,11 @@ export function IncidentDrawer({
     onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
+  // موقع المُبلِّغ من حدث التسجيل — يُقرأ بتحقّق لا بافتراض شكل الحمولة.
+  const reportedLocation = readReportedLocation(
+    (timeline ?? []).find((e) => e.event === "registered")?.payload,
+  );
+
   // Latest SADEED event for recommendations
   const latestSadeed = (timeline ?? []).find(
     (e) => e.event === "aria_analyzed" || e.event === "aria_auto_analyzed",
@@ -582,6 +636,7 @@ export function IncidentDrawer({
             </SheetHeader>
 
             <div className="mt-4 space-y-4 text-sm">
+              {reportedLocation && <ReportedLocation location={reportedLocation} />}
               <div className="rounded-lg border border-border bg-card p-3 text-xs">
                 <div className="grid grid-cols-2 gap-2">
                   <div>

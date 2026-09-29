@@ -5502,7 +5502,9 @@ html.dark .nx-holo-noise {
    `--tone-cyan` على `--surface`: 5.36 فاتحًا و9.47 داكنًا (≥ 3:1). */
 .nx-home-kpi:focus-visible,
 .nx-home-more:focus-visible,
-.nx-home-retry:focus-visible {
+.nx-home-retry:focus-visible,
+.nx-icon-btn:focus-visible,
+.nx-focus-ring:focus-visible {
   outline: 2px solid var(--tone-cyan);
   outline-offset: 2px;
 }
