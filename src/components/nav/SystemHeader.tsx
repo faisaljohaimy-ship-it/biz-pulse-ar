@@ -73,13 +73,14 @@ function UrgentBell({ ar }: { ar: boolean }) {
           data-simulated={simulated || undefined}
           className={
             simulated
-              ? // المحاكاة شارةٌ مخطّطة كهرمانية بحرف «م» — تُرى لا تُستنتج.
+              ? // المحاكاة شارةٌ مخطّطة كهرمانية — **بلا حرف «م»** بأمر المالك
+                // ٢٠٢٦/٠٩/٢٩ («ازل حرف الميم»)، تبعًا لرفعه الشارات من كل شاشة
+                // ٢٠٢٦/٠٨/١١. والإفصاح باقٍ نصًّا في `title`/`aria-label`.
                 "absolute -end-2 -top-1.5 flex min-w-5 items-center gap-0.5 rounded-full border border-dashed border-[color:var(--tone-amber)] bg-[color:var(--surface)] px-1 text-[12px] font-bold leading-5 text-[color:var(--tone-amber)]"
               : "absolute -end-1 -top-1 grid min-w-5 place-items-center rounded-full bg-[color:var(--tone-rose)] px-1 text-[12px] font-bold leading-5 text-[color:var(--surface)]"
           }
         >
           {count > 99 ? "99+" : count}
-          {simulated && <span>{ar ? "م" : "sim"}</span>}
         </span>
       )}
     </Link>
