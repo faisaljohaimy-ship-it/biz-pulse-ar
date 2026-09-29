@@ -2,8 +2,8 @@ import { useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { useI18n } from "@/lib/i18n";
-import { brandName } from "@/lib/domain";
-import { SadeedName, SadeedWordmark } from "@/components/brand/SadeedWordmark";
+import { SadeedName } from "@/components/brand/SadeedWordmark";
+import { SadeedLockup, SadeedMark } from "@/components/brand/SadeedMark";
 import { pageBackdropFor } from "@/lib/nav/page-backdrops";
 import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 import { AuroraFantasyBackdrop } from "@/components/backdrops/AuroraFantasyBackdrop";
@@ -82,14 +82,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               فوق هذا الصفّ شيء يُفسَح له — وحجزٌ بلا محجوزٍ له فراغٌ يزيح
               الشعار عن مكانه. */}
           <div className="flex min-w-0 items-center gap-2">
-            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg shadow-glow">
-              <img
-                src="/sadeed-icon.png"
-                alt={brandName(locale === "ar")}
-                className="h-full w-full object-cover"
-              />
-              <span className="absolute inset-0 rounded-lg animate-pulse-ring" />
-            </div>
+            {/* العلامة المتّجهة (٢٠٢٦/٠٩/٢٩) — `SadeedMark.tsx`. */}
+            <SadeedMark className="size-8" />
             <SadeedName size="sm" />
           </div>
           {/* الجرس أُزيل ولم يُطلب رجوعه، والمبدّل صار على الرئيسية وحدها
@@ -126,19 +120,11 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
       {/* Sticky header — org identity + region switcher */}
       <div className="sticky top-0 z-10 border-b border-sidebar-border bg-sidebar/95 backdrop-blur">
         <div className="flex items-center gap-3 px-4 py-4">
-          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-glow">
-            <img
-              src="/sadeed-icon.png"
-              alt={brandName(locale === "ar")}
-              className="h-full w-full object-cover"
-            />
-            <span className="absolute inset-0 rounded-xl animate-pulse-ring" />
-          </div>
-          <div className="min-w-0 flex-1">
-            {/* The mark, not a string. Every previous rename failed here because
-                this slot held a hard-coded literal that no locale could reach. */}
-            <SadeedWordmark size="sm" showDescriptor />
-          </div>
+          {/* العلامة واسمها ووصفها من مصدرٍ واحد (`SadeedLockup`) — والاسم لا
+              يُكتب نصًّا هنا: كل إعادة تسمية سابقة سقطت في هذه الخانة لأنها
+              حملت نصًّا ثابتًا لا تبلغه اللغة. وفي الشريط الضيّق (56px) يُخفى
+              النصّ وتبقى العلامة (`.nx-lockup-text` في styles.css). */}
+          <SadeedLockup ar={locale === "ar"} />
         </div>
         <div className="space-y-2 px-3 pb-3">
           <OrgSwitcher />

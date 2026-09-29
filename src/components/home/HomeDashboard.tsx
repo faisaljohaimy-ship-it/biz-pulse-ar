@@ -29,6 +29,9 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   Activity,
   AlertTriangle,
+  Building2,
+  Lightbulb,
+  ShieldCheck,
   Camera,
   CheckCircle2,
   ChevronLeft,
@@ -45,13 +48,15 @@ import {
 import { useMemo, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
-import { REGIONS, REGION_ACCENT_HEX } from "@/lib/regions";
+import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 import { getSecOverview } from "@/lib/sec.functions";
 import { getOmsKpis } from "@/lib/oms.functions.reports";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
 import { getRiskBoard } from "@/lib/exec/risk-board.functions";
 import { getIntegrationsOverview, type ProviderStatus } from "@/lib/integrations-hub.functions";
-import { RegionPulseMap } from "@/components/map/RegionPulseMap";
+import { ArabianPeninsulaMap, type ArabiaQuickStat } from "@/components/map/ArabianPeninsulaMap";
+import { useSadeed } from "@/lib/sadeed-core/hooks/useSadeed";
+import { PRODUCT_BRAND } from "@/lib/domain";
 
 /* ── القراءات — مفاتيح مشتركة مع شاشاتها فلا طلبان للبيانات نفسها ────── */
 
@@ -151,6 +156,10 @@ const HEALTH_ORDER: ProviderStatus["health"][] = [
   "not_configured",
 ];
 
+/** ألوان هوية لفئات البلاغات — لا أحمر ولا كهرماني ولا أخضر: تلك معانٍ
+ *  محجوزة (خطر · تحذير · سليم)، وفئة البلاغ ليست حكمًا. */
+const CATEGORY_TONES = ["--tone-blue", "--tone-cyan", "--tone-violet"] as const;
+
 const fmtNum = (n: number, ar: boolean) => n.toLocaleString(ar ? "ar-SA" : "en-US");
 const fmtTime = (iso: string | null, ar: boolean) =>
   iso
@@ -180,6 +189,9 @@ interface Kpi {
    * تعذّر وصول، و«لم يُقَس» قراءةٌ وصلت بلا قياس (المادتان ١٤ و٢٧).
    */
   readonly status: ReadStatus;
+  /** لون هوية الأيقونة — أزرق/سماوي/بنفسجي فقط (الأحمر والكهرماني والأخضر
+   *  معانٍ محجوزة للحالة، والمؤشر هنا عدٌّ لا حكم). */
+  readonly tone: (typeof CATEGORY_TONES)[number];
 }
 
 type ReadStatus = "loading" | "error" | "ready";
@@ -199,6 +211,7 @@ export function HomeKpiRow() {
     // عدٌّ تعرضه وجهته بالرقم نفسه — بطاقة «نشطة» في `/sec/permits`.
     {
       id: "permits",
+      tone: "--tone-violet",
       ar: "التصاريح النشطة",
       en: "Active permits",
       value: oms.data ? oms.data.permits.active : null,
@@ -209,6 +222,7 @@ export function HomeKpiRow() {
     },
     {
       id: "incidents",
+      tone: "--tone-blue",
       ar: "البلاغات المفتوحة",
       en: "Open incidents",
       value: counts ? counts.incidents_open : null,
@@ -219,6 +233,7 @@ export function HomeKpiRow() {
     },
     {
       id: "risks",
+      tone: "--tone-violet",
       ar: "مخاطر عالية",
       en: "High risks",
       value: risk.data ? risk.data.rows.filter((r) => r.severity === "high").length : null,
@@ -229,6 +244,7 @@ export function HomeKpiRow() {
     },
     {
       id: "patrols",
+      tone: "--tone-cyan",
       ar: "الدوريات النشطة",
       en: "Active patrols",
       value: counts ? counts.patrols_active : null,
@@ -239,6 +255,7 @@ export function HomeKpiRow() {
     },
     {
       id: "cctv",
+      tone: "--tone-blue",
       ar: "تنبيهات كاميرات جديدة",
       en: "New camera alerts",
       value: counts ? counts.cctv_new : null,
@@ -249,6 +266,7 @@ export function HomeKpiRow() {
     },
     {
       id: "guards",
+      tone: "--tone-cyan",
       // الاسم يقول ما يُعدّ: الحرّاس المسجَّلون على المواقع — لا «على رأس
       // العمل»، فلا مصدر للحضور الفعلي في النظام.
       ar: "حرّاس المواقع",
@@ -261,6 +279,7 @@ export function HomeKpiRow() {
     },
     {
       id: "assets",
+      tone: "--tone-violet",
       ar: "أصول خارج الخدمة",
       en: "Assets offline",
       value: counts ? counts.assets_offline : null,
@@ -310,9 +329,10 @@ export function HomeKpiRow() {
                 <span className="flex items-center justify-between gap-2">
                   <span
                     aria-hidden
-                    className="grid size-8 shrink-0 place-items-center rounded-lg bg-[color:var(--chip-strong)] text-[color:var(--tone-blue)]"
+                    className="nx-home-kpi-icon grid size-10 shrink-0 place-items-center rounded-xl"
+                    style={{ ["--kpi-tone" as string]: `var(${k.tone})` }}
                   >
-                    <Icon className="size-4" />
+                    <Icon className="size-5" />
                   </span>
                   {k.status === "loading" ? (
                     // هيكلٌ لا نصّ: الانتظار يُرى شكلًا ولا يُقرأ حكمًا.
@@ -504,8 +524,6 @@ export function HomeOperations() {
         name: ar ? s.name_ar : s.name_en,
         lat: s.lat,
         lng: s.lng,
-        // لا مقياس صحّةٍ للموقع في المصدر — `null` لا «سليم» (المادة ٢٧).
-        health: null,
       })),
     [sec.data, ar],
   );
@@ -524,6 +542,62 @@ export function HomeOperations() {
     return { region, pct: row && row.compliance_pct !== null ? row.compliance_pct : null };
   });
 
+  const complianceByRegion: Partial<Record<RegionId, number>> = {};
+  for (const c of compliance) if (c.pct !== null) complianceByRegion[c.region.id] = c.pct;
+
+  // الخريطة تجمع قراءتين (المواقع والامتثال): خطأ أيٍّ منهما خطأ، وانتظار
+  // أيٍّ منهما انتظار — فلا يُقرأ الغائب «لم يُقَس» وهو لم يصل بعد.
+  const mapStatus = statusOf({
+    isPending: sec.isPending || state.isPending,
+    isError: sec.isError || state.isError,
+  });
+  const sites = sec.data?.sites;
+  const quickStats: ArabiaQuickStat[] = [
+    {
+      key: "sites",
+      ar: "المواقع",
+      en: "Sites",
+      value: sites ? sites.length : null,
+      icon: <Building2 className="size-5" />,
+    },
+    {
+      key: "guards",
+      ar: "حرّاس المواقع",
+      en: "Site guards",
+      value: sites && sites.length ? sites.reduce((n, x) => n + x.guards_count, 0) : null,
+      icon: <UserRound className="size-5" />,
+    },
+    {
+      key: "assets",
+      ar: "الأصول المسجَّلة",
+      en: "Registered assets",
+      value: sec.data ? sec.data.assets.length : null,
+      icon: <Wrench className="size-5" />,
+    },
+    {
+      key: "cctv",
+      ar: "تنبيهات الكاميرات",
+      en: "Camera alerts",
+      value: sec.data ? sec.data.cctv.length : null,
+      icon: <Camera className="size-5" />,
+    },
+  ];
+
+  // فئات البلاغات — من الصفوف الواصلة نفسها (أحدث ما يعيده المصدر لا
+  // كامل السجل)، ويُقال عددها في العنوان فلا يُقرأ توزيعًا للسجل كلّه.
+  const incidentRows = sec.data?.incidents ?? [];
+  const byCategory = new Map<string, number>();
+  for (const i of incidentRows) byCategory.set(i.category, (byCategory.get(i.category) ?? 0) + 1);
+  const ranked = [...byCategory.entries()].sort((a, b) => b[1] - a[1]);
+  const top = ranked.slice(0, 3);
+  const rest = ranked.slice(3).reduce((n, [, v]) => n + v, 0);
+  const categorySlices = [
+    ...top.map(([label, value], i) => ({ key: label, label, value, tone: CATEGORY_TONES[i] })),
+    ...(rest > 0
+      ? [{ key: "other", label: ar ? "أخرى" : "Other", value: rest, tone: "--ink-3" }]
+      : []),
+  ];
+
   const providers = integrations.data?.providers ?? [];
   const healthSlices = HEALTH_ORDER.map((h) => ({
     key: h,
@@ -533,65 +607,128 @@ export function HomeOperations() {
 
   return (
     <>
-      {/* ── الخريطة + حالة الأنظمة ───────────────────────────────────── */}
-      <div className="nx-home-row mt-8 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      {/* ── الخريطة وبجانبها حالة الأنظمة وفئات البلاغات (كما في التصميم:
+          الخريطة شاشةٌ عريضة ولوحةٌ إلى جانبها) ───────────────────────── */}
+      <div className="nx-home-row mt-8 grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="min-w-0">
-          <RegionPulseMap
+          <ArabianPeninsulaMap
+            status={mapStatus}
+            onRetry={() => {
+              void sec.refetch();
+              void state.refetch();
+            }}
             sites={mapSites}
-            loading={sec.isPending}
-            error={sec.isError ? (ar ? "تعذّر تحميل المواقع" : "Sites unavailable") : null}
+            compliance={complianceByRegion}
+            quickStats={quickStats}
             ar={ar}
           />
         </div>
 
-        <Panel
-          id="nx-home-systems"
-          title={ar ? "حالة الأنظمة" : "Systems status"}
-          to="/integrations"
-          moreAr="مركز التكاملات"
-          moreEn="Integrations"
-          ar={ar}
-        >
-          <PanelBody
-            q={integrations}
+        <div className="grid min-w-0 gap-4">
+          <Panel
+            id="nx-home-systems"
+            title={ar ? "حالة الأنظمة" : "Systems status"}
+            to="/integrations"
+            moreAr="مركز التكاملات"
+            moreEn="Integrations"
             ar={ar}
-            isEmpty={providers.length === 0}
-            empty={ar ? "لا أنظمة مرتبطة لعرض حالتها." : "No connected systems."}
           >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-              <Donut
-                slices={healthSlices}
-                total={providers.length}
-                centerAr="الأنظمة"
-                centerEn="systems"
-                ar={ar}
-              />
-              <ul className="grid min-w-0 flex-1 gap-1.5">
-                {providers.slice(0, 6).map((p) => {
-                  const v = HEALTH_VIEW[p.health];
-                  const Icon = v.icon;
-                  return (
+            <PanelBody
+              q={integrations}
+              ar={ar}
+              isEmpty={providers.length === 0}
+              empty={ar ? "لا أنظمة مرتبطة لعرض حالتها." : "No connected systems."}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <Donut
+                  slices={healthSlices}
+                  total={providers.length}
+                  centerAr="الأنظمة"
+                  centerEn="systems"
+                  ar={ar}
+                />
+                <ul className="grid min-w-0 flex-1 gap-1.5">
+                  {providers.slice(0, 6).map((p) => {
+                    const v = HEALTH_VIEW[p.health];
+                    const Icon = v.icon;
+                    return (
+                      <li
+                        key={p.id}
+                        className="flex min-w-0 items-center justify-between gap-2 text-[13px]"
+                      >
+                        <span className="truncate text-[color:var(--ink)]">
+                          {ar ? p.name_ar : p.name}
+                        </span>
+                        <span
+                          className="nx-home-health inline-flex shrink-0 items-center gap-1 text-[12px] font-bold"
+                          style={{ ["--health-tone" as string]: `var(${v.tone})` }}
+                        >
+                          <Icon aria-hidden className="size-4" />
+                          {ar ? v.ar : v.en}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </PanelBody>
+          </Panel>
+          <Panel
+            id="nx-home-categories"
+            // العدد في العنوان حين تصل القراءة وحدها: عند الخطأ كان يُقرأ «آخر ٠»
+            // — صفرٌ هو غيابٌ لا قياس. وبلا تمييزٍ عدديّ يتبدّل بالعدد: «(٢٠٠)».
+            title={
+              statusOf(sec) === "ready"
+                ? ar
+                  ? `فئات أحدث البلاغات (${fmtNum(incidentRows.length, ar)})`
+                  : `Latest incidents by category (${incidentRows.length})`
+                : ar
+                  ? "فئات أحدث البلاغات"
+                  : "Latest incidents by category"
+            }
+            to="/sec/incidents"
+            moreAr="كل البلاغات"
+            moreEn="All incidents"
+            ar={ar}
+          >
+            <PanelBody
+              q={sec}
+              ar={ar}
+              isEmpty={incidentRows.length === 0}
+              empty={ar ? "لا بلاغات لتوزيعها." : "No incidents to break down."}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <Donut
+                  slices={categorySlices}
+                  total={incidentRows.length}
+                  centerAr="الإجمالي"
+                  centerEn="total"
+                  ar={ar}
+                />
+                <ul className="grid min-w-0 flex-1 gap-1.5">
+                  {categorySlices.map((c) => (
                     <li
-                      key={p.id}
+                      key={c.key}
                       className="flex min-w-0 items-center justify-between gap-2 text-[13px]"
                     >
-                      <span className="truncate text-[color:var(--ink)]">
-                        {ar ? p.name_ar : p.name}
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          aria-hidden
+                          className="nx-home-swatch size-2.5 shrink-0 rounded-full"
+                          style={{ ["--slice-tone" as string]: `var(${c.tone})` }}
+                        />
+                        <span className="truncate text-[color:var(--ink)]">{c.label}</span>
                       </span>
-                      <span
-                        className="nx-home-health inline-flex shrink-0 items-center gap-1 text-[12px] font-bold"
-                        style={{ ["--health-tone" as string]: `var(${v.tone})` }}
-                      >
-                        <Icon aria-hidden className="size-4" />
-                        {ar ? v.ar : v.en}
+                      <span className="shrink-0 font-bold tabular-nums text-[color:var(--ink-2)]">
+                        {`${Math.round((c.value / incidentRows.length) * 100)}%`}
                       </span>
                     </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </PanelBody>
-        </Panel>
+                  ))}
+                </ul>
+              </div>
+            </PanelBody>
+          </Panel>
+        </div>
       </div>
 
       {/* ── البلاغات · الدوريات · الكاميرات ──────────────────────────── */}
@@ -794,5 +931,51 @@ export function HomeOperations() {
         </Panel>
       </div>
     </>
+  );
+}
+
+/**
+ * أسئلة سَدِيد السريعة — كما في التصميم تحت بطاقة المساعد. كل زرّ يفتح
+ * لوحة سَدِيد الواحدة ويرسل السؤال عبر الواجهة الكانونية (`useSadeed`):
+ * لا دردشة ثانية ولا استدعاء مزوّد من المكوّن.
+ */
+const QUICK_ASKS: { ar: string; en: string; icon: LucideIcon }[] = [
+  { ar: "ملخّص الحالة الأمنية اليوم", en: "Today's security summary", icon: ShieldCheck },
+  { ar: "ما أبرز المخاطر اليوم؟", en: "What are today's top risks?", icon: ShieldAlert },
+  { ar: "تقرير دوريات المناطق", en: "Regional patrols report", icon: RouteIcon },
+  { ar: "مقترحات لتحسين الجاهزية", en: "Readiness improvements", icon: Lightbulb },
+];
+
+export function SadeedQuickAsk() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+  const { open, ask } = useSadeed();
+  return (
+    <div className="mt-3" aria-labelledby="nx-quick-ask-heading">
+      <p id="nx-quick-ask-heading" className="text-[12px] font-bold text-[color:var(--ink-3)]">
+        {ar ? `اسأل ${PRODUCT_BRAND.assistantName}` : `Ask ${PRODUCT_BRAND.en.name}`}
+      </p>
+      <ul className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {QUICK_ASKS.map((q) => {
+          const Icon = q.icon;
+          const text = ar ? q.ar : q.en;
+          return (
+            <li key={q.en}>
+              <button
+                type="button"
+                onClick={() => {
+                  open({ focus: true });
+                  ask(text);
+                }}
+                className="nx-home-ask flex min-h-11 w-full items-center gap-2 rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface)] px-3 text-start text-[13px] font-semibold text-[color:var(--ink)] hover:border-[color:var(--tone-blue)]"
+              >
+                <Icon aria-hidden className="size-4 shrink-0 text-[color:var(--tone-blue)]" />
+                <span className="min-w-0 flex-1">{text}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

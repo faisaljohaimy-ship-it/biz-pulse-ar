@@ -168,6 +168,13 @@ describe("الصدق العددي — المادة ٢٧", () => {
     expect(CODE).not.toContain("على رأس العمل");
   });
 
+  it("عنوان فئات البلاغات لا يحمل عددًا قبل وصول القراءة", () => {
+    // عند السقوط كان يُقرأ «آخر ٠ بلاغًا» — صفرٌ هو غياب.
+    const at = CODE.indexOf('id="nx-home-categories"');
+    const block = CODE.slice(at, at + 600);
+    expect(block).toMatch(/statusOf\(sec\) === "ready"/);
+  });
+
   it("«الجاهزية التنفيذية» لا تعود — حذف المالك صندوقها ٢٠٢٦/٠٨/٢٠", () => {
     expect(CODE).not.toContain("executive_readiness");
     expect(CODE).not.toContain("الجاهزية التنفيذية");
@@ -202,8 +209,10 @@ describe("طبقة الرموز — المواد ٣٣ و٣٤ وWCAG §1.4.11", (
     ).toBe(true);
   });
 
-  it("الخريطة من المكوّن القائم، والمناطق من `regions.ts`", () => {
-    expect(CODE).toContain("<RegionPulseMap");
+  it("الخريطة خريطة شبه الجزيرة المولَّدة، والمناطق من `regions.ts`", () => {
+    // أمر المالك ٢٠٢٦/٠٩/٢٩: «اجعل إحداثيات الموقع رسمة خريطة شبه الجزيرة».
+    expect(CODE).toContain("<ArabianPeninsulaMap");
+    expect(CODE).not.toContain("<RegionPulseMap");
     expect(CODE).toContain("REGIONS.map");
     expect(CODE).not.toMatch(/"(الوسطى|الغربية|الشرقية|الجنوبية)"/);
   });

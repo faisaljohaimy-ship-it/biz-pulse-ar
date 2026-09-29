@@ -20,6 +20,7 @@ import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { SYSTEM_NAV, type SystemNavLeaf } from "@/lib/nav/system-nav";
 import { useSadeedStore } from "@/lib/sadeed-core/state/sadeed-store";
 import { brandName } from "@/lib/domain";
+import { SadeedLockup } from "@/components/brand/SadeedMark";
 
 /** الاسم: من السجل الكانوني إن كان محروسًا، وإلا من العنصر نفسه. */
 function labelOf(item: SystemNavLeaf | { ar: string; en: string }, ar: boolean): string {
@@ -209,6 +210,11 @@ export function SystemSidebarCard() {
  * فلا يلصق شيءٌ به — قِيس. والسند بالعرض نفسه يحجز مكانه في الصفّ، فلا
  * يغطّي الشريطُ المحتوى ولا ينكشف تحته فراغ.
  */
+function SidebarBrand() {
+  const { locale } = useI18n();
+  return <SadeedLockup ar={locale === "ar"} />;
+}
+
 export function SystemSidebar() {
   return (
     <>
@@ -221,6 +227,10 @@ export function SystemSidebar() {
         data-nx-presentation-hide
         className="nx-sysnav z-20 hidden border-e border-[color:var(--hairline)] bg-[color:var(--surface)] lg:flex lg:w-64 lg:flex-col xl:w-72"
       >
+        {/* الهوية أعلى الشريط كما في التصميم — العلامة المتّجهة واسمها. */}
+        <div className="border-b border-[color:var(--hairline)] px-4 py-3">
+          <SidebarBrand />
+        </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
           <SystemSidebarNav />
         </div>

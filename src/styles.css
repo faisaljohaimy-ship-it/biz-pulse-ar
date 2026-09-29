@@ -887,6 +887,11 @@ body {
     width: 56px !important;
     flex-direction: column;
   }
+  /* الشريط 56px يحمل العلامة وحدها — كان وصف الهوية يفيض خارجه فوق المحتوى
+     (قِيس على ٦٦٧ الأفقي، ٢٠٢٦/٠٩/٢٩). والاسم باقٍ للقارئات في `aria`. */
+  .nexus-sidebar .nx-lockup-text {
+    display: none;
+  }
   /* Hide group labels + nav text → icon-only rail with tooltips on hover */
   .nexus-sidebar nav > div > div:first-child {
     display: none;
@@ -5501,10 +5506,177 @@ html.dark .nx-holo-noise {
   outline: 2px solid var(--tone-cyan);
   outline-offset: 2px;
 }
+/* بطاقات بظلٍّ ناعم ورفعةٍ خفيفة عند التمرير — بخاصية `translate` المستقلّة
+   لا `transform` (المادة ٣٢). والرفعة زينة: الحالة الساكنة مكتملة بلا تمرير. */
+.nx-home-kpi,
+.nx-home-panel {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 8px 24px -12px rgba(15, 23, 42, 0.18);
+}
+/* الرفعة لمن لم يطلب تقليل الحركة وحده — شرطٌ في الاستعلام نفسه لا كتلةُ
+   إلغاءٍ لاحقة (الطبقة بلا حركةٍ تلقائية، فلا كتلة `reduce` فيها). */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .nx-home-kpi {
+    transition:
+      translate 0.2s var(--nx-ease-out),
+      border-color 0.2s var(--nx-ease-out);
+  }
+  .nx-home-kpi:hover {
+    translate: 0 -2px;
+  }
+}
+/* بلاطة الأيقونة بلون هويتها — الرمز بلونه الكامل على غسلةٍ منه (١٦٪)،
+   فلا تُمحى الأيقونة بلون خلفيتها (المادة ٣٤ بند ٦). */
+.nx-home-kpi-icon {
+  color: var(--kpi-tone);
+  background: color-mix(in srgb, var(--kpi-tone) 16%, transparent);
+}
+.nx-home-swatch {
+  background: var(--slice-tone);
+}
+.nx-home-ask:focus-visible {
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: 2px;
+}
 /* الانتظار شكلٌ ساكن لا نصّ — ولا نبض: الحركة الدائمة تحتاج مخرجًا. */
 .nx-home-skeleton {
   display: block;
   background: var(--chip-strong);
+}
+
+/* ── علامة سَدِيد (`SadeedMark.tsx`) — ألوانها رموزٌ هنا لا في المكوّن.
+   درعٌ متدرّج من الأزرق الملكي إلى السماوي العميق، والحرف فاتحٌ في الوضعين:
+   الدرع أرضيته الذاتية، فلا يتبع الحرفُ `--ink` فيسودّ على الأزرق في الفاتح.
+   **طرف التدرّج `#0e7490` لا `#22d3ee`:** السماوي الفاتح أسقط 52٪ من بكسلات
+   الحرف دون 3:1 (قاسها حارس الجودة بالبكسل، والأدنى 1.51). الطرفان الآن
+   6.7:1 و5.4:1 مع `--nx-mark-glyph`، والتوهّج السماوي باقٍ في الظلّ. */
+.nx-mark {
+  --nx-mark-a: #1d4ed8;
+  --nx-mark-b: #0e7490;
+  --nx-mark-glyph: #f5faff;
+  filter: drop-shadow(0 4px 10px rgba(34, 211, 238, 0.28));
+}
+.nx-mark-glyph {
+  fill: var(--nx-mark-glyph);
+}
+@media (forced-colors: active) {
+  .nx-mark {
+    filter: none;
+  }
+  .nx-mark-glyph {
+    fill: Canvas;
+  }
+}
+
+/* ── خريطة شبه الجزيرة العربية (`ArabianPeninsulaMap.tsx`) ─────────────────
+   شاشةٌ داكنة ذاتيّة في الوضعين — المبدأ نفسه في `.sd-stage-card`: الرموز
+   تُثبَّت هنا (طبقة الرموز) فيقرأ كل نسلها `var(--ink)` بلا سطرٍ يتغيّر،
+   والتوهّج يُقرأ على الليل. والإقليم يمرّ لونه متغيّرًا (`--region-tint`). */
+.nx-arabia {
+  --ink: #e9f6ff;
+  --ink-2: rgba(216, 240, 252, 0.86);
+  --ink-3: rgba(216, 240, 252, 0.72);
+  --chip: rgba(6, 26, 40, 0.72);
+  --chip-strong: rgba(6, 26, 40, 0.9);
+  --hairline: rgba(125, 200, 240, 0.3);
+  --surface: #050d18;
+  /* نبرتا الشاشة الداكنة باسمٍ محلّي — لا يُعاد تعريف `--tone-*` هنا: لكل
+     طيف حالة درجتان في طبقة الرموز فقط (عقد الوضعين). */
+  --arabia-accent: #22d3ee;
+  --arabia-accent-2: #60a5fa;
+  --arabia-chip-bg: rgba(5, 13, 24, 0.86);
+  --arabia-tab-active: rgba(59, 130, 246, 0.35);
+  --arabia-sea: #030912;
+  --arabia-land: #0f1b2b;
+  --arabia-land-edge: rgba(125, 200, 240, 0.18);
+  --arabia-border: rgba(233, 246, 255, 0.85);
+  background:
+    radial-gradient(120% 90% at 50% 45%, rgba(34, 211, 238, 0.08), transparent 60%),
+    var(--arabia-sea);
+  border-color: var(--hairline);
+  color: var(--ink);
+}
+/* العلاج نفسه في `.sd-stage-card`: قاعدة `h2 { color: var(--sd-ink) }` غير
+   المطبَّقة في طبقة تغلب أداة اللون، فكان العنوان حبرًا داكنًا على الليل
+   (قِيس ‎rgb(17,24,39) في الفاتح). قاعدةٌ أعلى نوعيةً مقصورةٌ على الشاشة. */
+.nx-arabia :is(h1, h2, h3) {
+  color: var(--ink);
+}
+.nx-arabia-neighbour {
+  fill: var(--arabia-land);
+  stroke: var(--arabia-land-edge);
+  stroke-width: 1;
+}
+.nx-arabia-province {
+  fill: var(--region-tint);
+  fill-opacity: 0.2;
+  stroke: var(--region-tint);
+  stroke-width: 1.4;
+  stroke-opacity: 0.9;
+  filter: drop-shadow(0 0 5px var(--region-tint));
+  transition:
+    fill-opacity 0.25s var(--nx-ease-out),
+    opacity 0.25s var(--nx-ease-out);
+}
+.nx-arabia-province[data-focus] {
+  fill-opacity: 0.4;
+}
+.nx-arabia-province[data-dim] {
+  opacity: 0.28;
+}
+.nx-arabia-border {
+  fill: none;
+  stroke: var(--arabia-border);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.nx-arabia-site-halo {
+  fill: var(--region-tint);
+  fill-opacity: 0.22;
+}
+.nx-arabia-site {
+  fill: var(--ink);
+  stroke: var(--region-tint);
+  stroke-width: 3;
+}
+.nx-arabia-chip {
+  background: var(--arabia-chip-bg);
+  border-color: var(--region-tint);
+  box-shadow: 0 0 18px -6px var(--region-tint);
+  transition: opacity 0.25s var(--nx-ease-out);
+}
+.nx-arabia-chip[data-dim] {
+  opacity: 0.45;
+}
+.nx-arabia-tab {
+  color: var(--ink-2);
+  background: var(--chip);
+  border: 1px solid var(--hairline);
+}
+.nx-arabia-tab[aria-pressed="true"] {
+  color: var(--ink);
+  background: var(--arabia-tab-active);
+  border-color: var(--arabia-accent-2);
+}
+.nx-arabia-stats > div {
+  background: var(--chip);
+  border: 1px solid var(--hairline);
+}
+.nx-arabia-chip:focus-visible,
+.nx-arabia-tab:focus-visible {
+  outline: 2px solid var(--arabia-accent);
+  outline-offset: 2px;
+}
+@media (forced-colors: active) {
+  .nx-arabia-province {
+    filter: none;
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+  .nx-arabia-border {
+    stroke: CanvasText;
+  }
 }
 
 .nx-home-triad {

@@ -83,7 +83,7 @@ import { useI18n } from "@/lib/i18n";
 import { useRegion } from "@/lib/region-context";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 import { SadeedStagePresence } from "@/components/sadeed/SadeedStagePresence";
-import { HomeKpiRow, HomeOperations } from "@/components/home/HomeDashboard";
+import { HomeKpiRow, HomeOperations, SadeedQuickAsk } from "@/components/home/HomeDashboard";
 
 /** مراحل خط القرارات — أسماؤها العربية المعتمدة. */
 const STAGE_AR: Record<string, string> = {
@@ -446,6 +446,9 @@ export function BlueprintPage() {
             style={{ ["--nx-bp-i" as string]: 2 }}
           >
             <SadeedStagePresence />
+            {/* أسئلة سريعة تحت المساعد كما في التصميم (٢٠٢٦/٠٩/٢٩) — تفتح
+                لوحة سَدِيد الواحدة وترسل السؤال. */}
+            <SadeedQuickAsk />
           </section>
 
           {/* ── يسارًا (end) · توصيات سَدِيد ─────────────────────────────
