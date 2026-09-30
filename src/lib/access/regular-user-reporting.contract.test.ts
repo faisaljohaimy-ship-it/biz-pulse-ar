@@ -173,12 +173,49 @@ describe("تشديد الامتيازات — ما قِيس على الإنتا�
     "utf8",
   );
 
-  it("كل امتيازٍ يُنزع ثم تُمنح القراءة وحدها", () => {
+  /** كل `grant` في النصّ، بمسافاتٍ موحَّدة وبلا فاصلة منقوطة. */
+  const grants = (src: string) =>
+    [...src.matchAll(/\bgrant\b[^;]*;/gi)].map((m) =>
+      m[0].replace(/\s+/g, " ").replace(/;$/, "").trim().toLowerCase(),
+    );
+  /** مخالفات التشديد — فارغةٌ حين يصحّ النصّ. */
+  const violations = (src: string) => {
+    const g = grants(src);
+    const out: string[] = [];
+    const staff = g.filter((s) => s.includes("staff_accounts"));
+    if (
+      JSON.stringify(staff) !==
+      JSON.stringify(["grant select on public.staff_accounts to authenticated"])
+    )
+      out.push(`staff_accounts: ${JSON.stringify(staff)}`);
+    for (const s of g) {
+      if (s.includes("handle_new_staff_account")) out.push(s);
+      if (s.includes("member_creation_event_ok") && /\bto\b.*\b(public|anon)\b/.test(s))
+        out.push(s);
+    }
+    return out;
+  };
+
+  it("كل امتيازٍ يُنزع ثم تُمنح القراءة وحدها — ولا منحَ آخر إطلاقًا", () => {
     const revoke = H.indexOf("revoke all on public.staff_accounts from anon, authenticated");
     const grant = H.indexOf("grant select on public.staff_accounts to authenticated");
     expect(revoke).toBeGreaterThan(-1);
     expect(grant, "القراءة تُمنح بعد النزع لا قبله").toBeGreaterThan(revoke);
-    expect(H).not.toMatch(/grant [^;]*(truncate|insert|update|delete)[^;]*staff_accounts/i);
+    expect(violations(H)).toEqual([]);
+  });
+
+  it("والفاحص يرى الانتكاس حين يكون (المادة ٣٠)", () => {
+    // حقنُ حارس الجودة: كل سطرٍ منها بقي أخضر أمام الفحص السابق.
+    for (const bad of [
+      "grant all on public.staff_accounts to authenticated;",
+      "grant all privileges on public.staff_accounts to authenticated;",
+      "grant select, references, trigger, maintain on public.staff_accounts to authenticated;",
+      "grant select on public.staff_accounts to anon;",
+      "grant execute on function public.handle_new_staff_account() to authenticated;",
+      "grant execute on function public.member_creation_event_ok(text, uuid, text) to anon;",
+    ]) {
+      expect(violations(`${H}\n${bad}`), bad).not.toEqual([]);
+    }
   });
 
   it("دالّة حدث الإنشاء للمصادَق وحده، ودالّة الـtrigger لأحد", () => {
@@ -192,8 +229,12 @@ describe("تشديد الامتيازات — ما قِيس على الإنتا�
 
   it("والتراجع مقابلٌ في الـcommit نفسه", () => {
     expect(HRB).toContain("grant select, truncate, references, trigger on public.staff_accounts");
+    expect(HRB).toContain("current_setting('server_version_num')::int >= 170000");
     expect(HRB).toContain(
       "grant execute on function public.member_creation_event_ok(text, uuid, text) to anon",
+    );
+    expect(HRB).toContain(
+      "grant execute on function public.handle_new_staff_account() to public, anon, authenticated",
     );
   });
 });

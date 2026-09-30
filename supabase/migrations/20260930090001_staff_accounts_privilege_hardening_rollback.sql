@@ -7,6 +7,8 @@
 -- لسببٍ مثبت، ويُبلَّغ المالك.
 --
 -- idempotent: `grant` متكرّر بلا أثر. MAINTAIN موجود على Postgres 17 وحده.
+-- **الترتيب:** يُشغَّل قبل `20260929210001` لا بعده — ذاك يُسقط الدالّتين فيفشل
+-- `grant execute` هنا.
 -- ═══════════════════════════════════════════════════════════════════════════
 
 grant select, truncate, references, trigger on public.staff_accounts to authenticated;
