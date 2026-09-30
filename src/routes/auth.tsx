@@ -27,11 +27,21 @@ import {
   recordExecutiveAcceptance,
 } from "@/lib/access/executive-acceptance";
 import { toast } from "sonner";
+import {
+  signupErrorMessage,
+  signupMetadata,
+  validateSignup,
+  type SignupErrors,
+  type SignupFields,
+} from "@/lib/access/signup";
+import { STAFF_NUMBER_KEY } from "@/lib/access/staff-entry";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; mode?: "signup" } => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+    // «مستخدم جديد» مباشرةً من رابط (نموذج البلاغ للزائر يوجّه إليه).
+    mode: search.mode === "signup" ? ("signup" as const) : undefined,
   }),
   component: AuthPage,
 });
@@ -41,9 +51,15 @@ function AuthPage() {
   const { locale } = useI18n();
   const isAr = locale === "ar";
   const navigate = useNavigate();
-  const { redirect: redirectTo } = Route.useSearch();
+  const { redirect: redirectTo, mode: initialMode } = Route.useSearch();
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode ?? "signin");
+  // `?mode=signup` (من ملاحظة نماذج الإنشاء) يتخطّى بوابة العرض التنفيذي: الزائر
+  // جاء ليُنشئ حسابًا ويسجّل بلاغًا، لا ليشاهد عرض التفعيل المؤسسي — قاسه حارس
+  // الجودة: كان يهبط على «شاهد النظام أولًا» بلا تبويبٍ ولا نموذج.
   const [accepted, setAccepted] = useState(() =>
-    typeof window === "undefined" ? false : hasExecutiveAcceptance(window.localStorage),
+    typeof window === "undefined"
+      ? false
+      : initialMode === "signup" || hasExecutiveAcceptance(window.localStorage),
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -211,56 +227,98 @@ function AuthPage() {
             <span className="h-px flex-1 bg-white/10" />
           </div>
 
-          <form onSubmit={handleEmail} className="space-y-4">
-            <div>
-              <Label htmlFor="email" className="text-xs text-white/60">
-                {isAr ? "البريد المؤسسي" : "Work email"}
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className="mt-1.5 h-12"
-                autoComplete="email"
-                inputMode="email"
-              />
-            </div>
-            <div>
-              <Label htmlFor="password" className="text-xs text-white/60">
-                {isAr ? "كلمة المرور" : "Password"}
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                minLength={8}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="mt-1.5 h-12"
-                autoComplete="current-password"
-              />
-            </div>
-            <Button type="submit" disabled={busy} className="h-12 w-full text-sm font-black">
-              {busy ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <KeyRound className="h-4 w-4" />
-              )}
-              {isAr ? "دخول مساحة القيادة" : "Enter command workspace"}
-            </Button>
-          </form>
+          {/* تبويبا الدخول والتسجيل (أمر المالك ٢٠٢٦/٠٩/٢٩: «تحت خانة مستخدم جديد»). */}
+          <div
+            role="tablist"
+            aria-label={isAr ? "نوع الدخول" : "Access type"}
+            className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-white/10 p-1"
+          >
+            {(
+              [
+                ["signin", isAr ? "تسجيل الدخول" : "Sign in"],
+                ["signup", isAr ? "مستخدم جديد" : "New user"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={mode === key}
+                onClick={() => setMode(key)}
+                className={`nx-focus-ring min-h-11 rounded-lg text-sm font-black transition-colors ${
+                  // الرمزان لا `bg-primary`: كان التبويب المحدَّد 3.68:1 في الفاتح
+                  // (قاسه حارس الجودة) — `--tone-blue` تحت `--surface` ≥ 4.5 في الوضعين.
+                  mode === key
+                    ? "bg-[color:var(--tone-blue)] text-[color:var(--surface)]"
+                    : "text-white/65 hover:text-white"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {mode === "signup" ? (
+            <SignupForm isAr={isAr} onSignedIn={goNext} />
+          ) : (
+            <form onSubmit={handleEmail} className="space-y-4">
+              <div>
+                <Label htmlFor="email" className="text-xs text-white/60">
+                  {isAr ? "البريد المؤسسي" : "Work email"}
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className="mt-1.5 h-12"
+                  autoComplete="email"
+                  inputMode="email"
+                />
+              </div>
+              <div>
+                <Label htmlFor="password" className="text-xs text-white/60">
+                  {isAr ? "كلمة المرور" : "Password"}
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  minLength={8}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="mt-1.5 h-12"
+                  autoComplete="current-password"
+                />
+              </div>
+              <Button type="submit" disabled={busy} className="h-12 w-full text-sm font-black">
+                {busy ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <KeyRound className="h-4 w-4" />
+                )}
+                {isAr ? "دخول مساحة القيادة" : "Enter command workspace"}
+              </Button>
+            </form>
+          )}
 
           <div className="mt-5 grid gap-2 border-t border-white/8 pt-4 text-center">
-            <Link
-              to="/request-demo"
-              className="text-xs font-semibold text-primary hover:text-[#3AE8FF]"
+            {/* كان «اطلب تفعيلًا مؤسسيًا» ← /request-demo. وبأمر المالك ٢٠٢٦/٠٩/٢٩
+                صار التسجيل ذاتيًّا فوريًّا، فالرابط القديم يناقض النموذج فوقه. */}
+            <button
+              type="button"
+              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+              className="nx-focus-ring min-h-11 text-xs font-semibold text-primary hover:text-[#3AE8FF]"
             >
-              {isAr
-                ? "ليس لديك حساب؟ اطلب تفعيلًا مؤسسيًا"
-                : "No account? Request enterprise activation"}
-            </Link>
+              {mode === "signup"
+                ? isAr
+                  ? "لديك حساب؟ سجّل الدخول"
+                  : "Have an account? Sign in"
+                : isAr
+                  ? "ليس لديك حساب؟ أنشئ حسابًا — مستخدم جديد"
+                  : "No account? Create one — new user"}
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -470,5 +528,150 @@ function GoogleIcon() {
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"
       />
     </svg>
+  );
+}
+
+/**
+ * «مستخدم جديد» — الاسم والرقم الوظيفي والبريد وكلمة المرور.
+ *
+ * التفعيل فوري بقرار المالك: العضوية (`operator`) من trigger القاعدة، والقدرة
+ * على تسجيل البلاغ وأمر العمل والتصريح من سياسات RLS — لا من هذا النموذج.
+ * وإن كان تأكيد البريد مفعّلًا في المشروع فلا جلسة قبل التأكيد، فيُقال ذلك.
+ */
+function SignupForm({ isAr, onSignedIn }: { isAr: boolean; onSignedIn: () => void }) {
+  const [f, setF] = useState<SignupFields>({
+    name: "",
+    staffNumber: "",
+    email: "",
+    password: "",
+    confirm: "",
+  });
+  const [errors, setErrors] = useState<SignupErrors>({});
+  const [busy, setBusy] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const set = (k: keyof SignupFields) => (e: { target: { value: string } }) =>
+    setF({ ...f, [k]: e.target.value });
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const errs = validateSignup(f);
+    setErrors(errs);
+    if (Object.keys(errs).length) return;
+    setBusy(true);
+    try {
+      const meta = signupMetadata(f);
+      // الرقم مسجَّلٌ بحسابٍ آخر؟ — يُسأل قبل الإنشاء فلا يُنشأ حسابٌ بلا رقمه.
+      // تعذّر السؤال (الدالّة غير مطبَّقة بعد) لا يمنع التسجيل: الرقم نسبةٌ لا شرط.
+      const { data: available, error: rpcError } = await (
+        supabase.rpc as unknown as (
+          fn: string,
+          args: Record<string, unknown>,
+        ) => Promise<{ data: boolean | null; error: unknown }>
+      )("staff_number_available", { _num: meta.staff_number });
+      if (!rpcError && available === false) {
+        setErrors({ staffNumber: "هذا الرقم الوظيفي مسجَّلٌ بحسابٍ آخر" });
+        return;
+      }
+      const { data, error } = await supabase.auth.signUp({
+        email: f.email.trim(),
+        password: f.password,
+        options: { data: meta, emailRedirectTo: `${window.location.origin}/auth` },
+      });
+      if (error) throw error;
+      try {
+        window.localStorage.setItem(STAFF_NUMBER_KEY, meta.staff_number);
+      } catch {
+        /* التخزين المحلّي تفضيلٌ لا شرط */
+      }
+      if (data.session) {
+        toast.success(isAr ? "أُنشئ حسابك — مرحبًا بك" : "Account created — welcome");
+        onSignedIn();
+      } else {
+        setSentTo(f.email.trim());
+      }
+    } catch (error) {
+      toast.error(signupErrorMessage(error instanceof Error ? error.message : String(error)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (sentTo) {
+    return (
+      <div
+        role="status"
+        className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-white/80"
+      >
+        <p className="font-black text-white">{isAr ? "تحقّق من بريدك" : "Check your email"}</p>
+        <p className="mt-1.5 leading-relaxed">
+          {isAr
+            ? `أرسلنا رابط تأكيد إلى ${sentTo}. افتحه ثم عُد لتسجيل الدخول — بعدها تستطيع تسجيل البلاغات وأوامر العمل والتصاريح.`
+            : `We sent a confirmation link to ${sentTo}. Open it, then sign in to file reports, work orders and permits.`}
+        </p>
+      </div>
+    );
+  }
+
+  const field = (
+    k: keyof SignupFields,
+    label: string,
+    props: Record<string, string | number | boolean>,
+  ) => (
+    <div>
+      <Label htmlFor={`su-${k}`} className="text-xs text-white/60">
+        {label}
+      </Label>
+      <Input
+        id={`su-${k}`}
+        value={f[k]}
+        onChange={set(k)}
+        aria-invalid={errors[k] ? true : undefined}
+        aria-describedby={errors[k] ? `su-${k}-err` : undefined}
+        className="nx-focus-ring mt-1.5 h-12"
+        {...props}
+      />
+      {errors[k] && (
+        <p id={`su-${k}-err`} role="alert" className="mt-1 text-[12px] text-amber-300">
+          {errors[k]}
+        </p>
+      )}
+    </div>
+  );
+
+  return (
+    <form onSubmit={submit} noValidate className="space-y-4">
+      {field("name", isAr ? "الاسم الكامل" : "Full name", { autoComplete: "name", required: true })}
+      {field("staffNumber", isAr ? "الرقم الوظيفي" : "Staff number", {
+        inputMode: "numeric",
+        autoComplete: "off",
+        required: true,
+        dir: "ltr",
+      })}
+      {field("email", isAr ? "البريد الإلكتروني" : "Email", {
+        type: "email",
+        inputMode: "email",
+        autoComplete: "email",
+        required: true,
+      })}
+      {field("password", isAr ? "كلمة المرور (٨ أحرف على الأقل)" : "Password (8+ characters)", {
+        type: "password",
+        autoComplete: "new-password",
+        required: true,
+      })}
+      {field("confirm", isAr ? "تأكيد كلمة المرور" : "Confirm password", {
+        type: "password",
+        autoComplete: "new-password",
+        required: true,
+      })}
+      <Button type="submit" disabled={busy} className="h-12 w-full text-sm font-black">
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Fingerprint className="h-4 w-4" />}
+        {isAr ? "إنشاء الحساب" : "Create account"}
+      </Button>
+      <p className="text-[12px] leading-relaxed text-white/75">
+        {isAr
+          ? "بعد إنشاء الحساب تستطيع تسجيل البلاغات الأمنية وأوامر عمل الصيانة وطلبات التصاريح باسمك. الرقم الوظيفي يُحفظ مع حسابك للنسبة."
+          : "Once created, you can file security reports, maintenance work orders and permit requests under your name."}
+      </p>
+    </form>
   );
 }

@@ -157,7 +157,7 @@ describe("مدخلا البلاغ — «الاثنان» بأمر المالك �
   });
 
   it("الزائر يُقال له قبل الملء، والإرسال معطَّل بلا حساب", () => {
-    expect(DIALOG).toContain("تسجيل البلاغ يتطلّب حسابًا");
+    expect(DIALOG).toContain('<GuestAccountNote what="تسجيل البلاغ" />');
     expect(DIALOG).toMatch(/disabled=\{!reporter \|\|/);
     expect(DIALOG).toContain("<LocationCapture value={location} onChange={setLocation} />");
   });

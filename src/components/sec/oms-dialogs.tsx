@@ -98,6 +98,27 @@ const SEV = ["low", "medium", "high", "critical"] as const;
 // INCIDENT — Create
 // ─────────────────────────────────────────────────────────────────────────────
 /**
+ * ملاحظة الزائر في نماذج الإنشاء الثلاثة — تُقال قبل الملء لا بعد الإرسال.
+ * بأمر المالك ٢٠٢٦/٠٩/٢٩ صار للمستخدم العادي أن يُنشئ البلاغ وأمر العمل
+ * والتصريح بعد التسجيل، فالملاحظة تدلّه على «مستخدم جديد» لا على الدخول وحده.
+ */
+function GuestAccountNote({ what }: { what: string }) {
+  return (
+    <p role="note" className="rounded-lg border p-3 text-[13px]">
+      {what} يتطلّب حسابًا —{" "}
+      <a href="/auth" className="nx-focus-ring font-semibold text-primary underline">
+        سجّل الدخول
+      </a>{" "}
+      أو{" "}
+      <a href="/auth?mode=signup" className="nx-focus-ring font-semibold text-primary underline">
+        أنشئ حسابًا جديدًا
+      </a>{" "}
+      بالرقم الوظيفي والبريد.
+    </p>
+  );
+}
+
+/**
  * نموذج «بلاغ جديد» — مُعاد بأمر المالك ٢٠٢٦/٠٩/٢٩ («الاثنان»): زرٌّ في رأس
  * `/sec/incidents`، وزرّ «بلّغ» في ترويسة النظام يفتح النموذج نفسه من أي
  * صفحة (مُتحكَّمًا فيه، بلا زرّه — `withTrigger={false}`).
@@ -165,15 +186,7 @@ export function NewIncidentDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
-          {!reporter && (
-            <p role="note" className="rounded-lg border p-3 text-[13px]">
-              تسجيل البلاغ يتطلّب حسابًا —{" "}
-              <a href="/auth" className="font-semibold text-primary underline">
-                سجّل الدخول
-              </a>{" "}
-              ثم عُد إليه.
-            </p>
-          )}
+          {!reporter && <GuestAccountNote what="تسجيل البلاغ" />}
           <div className="grid gap-1.5">
             <Label>عنوان البلاغ *</Label>
             <Input
@@ -283,6 +296,8 @@ export function NewIncidentDialog({
 type IncRow = {
   id: string;
   ref: string;
+  /** مُنشئ البلاغ — يُقرأ به حدث التسجيل الصحيح (`select("*")` يعيده). */
+  created_by?: string | null;
   category: string;
   title_ar: string;
   // ٢٠٢٦/٠٨/٢٧ — شدة غير مقيسة في صفوف «تقرير البلاغات» الحقيقية ⇒ null.
@@ -576,9 +591,17 @@ export function IncidentDrawer({
   });
 
   // موقع المُبلِّغ من حدث التسجيل — يُقرأ بتحقّق لا بافتراض شكل الحمولة.
-  const reportedLocation = readReportedLocation(
-    (timeline ?? []).find((e) => e.event === "registered")?.payload,
-  );
+  // حدث التسجيل **الذي كتبه صاحب البلاغ، والأقدم** — لا أوّلَ ما في خطٍّ
+  // زمنيّ مرتّب تنازليًّا: ذاك كان يعرض أحدث حدثٍ مسجَّل، ولو كتبه غيره بموقعٍ
+  // مختلق (قاسه حارس الجودة). والقاعدة تمنعه أصلًا (`member_creation_event_ok`)،
+  // وهذا حزامٌ فوق الحمّالة لما سبق الترحيل.
+  const registration = (timeline ?? [])
+    .filter(
+      (e) =>
+        e.event === "registered" && (!incident?.created_by || e.actor_id === incident.created_by),
+    )
+    .sort((a, b) => String(a.occurred_at).localeCompare(String(b.occurred_at)))[0];
+  const reportedLocation = readReportedLocation(registration?.payload);
 
   // Latest SADEED event for recommendations
   const latestSadeed = (timeline ?? []).find(
@@ -1170,6 +1193,7 @@ export function NewWorkOrderDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
+          {!user && <GuestAccountNote what="إنشاء أمر العمل" />}
           <div className="grid gap-1.5">
             <Label>العنوان *</Label>
             <Input
@@ -1349,7 +1373,7 @@ export function NewWorkOrderDialog() {
             // الصريحة هما بوابة التأكيد البشري، وmutationFn يقرّر المسار
             // (كتابة حقيقية أو محاكاة مرجعية محلية) دون أي عبارة مصادقة.
             onClick={() => m.mutate()}
-            disabled={m.isPending || validationError !== null}
+            disabled={!user || m.isPending || validationError !== null}
           >
             {m.isPending ? "جارٍ الحفظ…" : createButtonLabel(form.decision)}
           </Button>
@@ -1450,6 +1474,7 @@ export function WorkOrderActions({ id, status }: { id: string; status: string })
 // ─────────────────────────────────────────────────────────────────────────────
 export function NewPermitDialog() {
   const [open, setOpen] = useState(false);
+  const { user: requester } = useAuth();
   const [form, setForm] = useState({
     work_type: "hot_work",
     contractor: "",
@@ -1480,6 +1505,7 @@ export function NewPermitDialog() {
           <DialogTitle>طلب تصريح عمل</DialogTitle>
         </DialogHeader>
         <div className="grid gap-3">
+          {!requester && <GuestAccountNote what="طلب التصريح" />}
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">
               <Label>نوع العمل</Label>
@@ -1557,7 +1583,9 @@ export function NewPermitDialog() {
         <DialogFooter>
           <Button
             onClick={() => m.mutate()}
-            disabled={!form.contractor || !form.starts_at || !form.ends_at || m.isPending}
+            disabled={
+              !requester || !form.contractor || !form.starts_at || !form.ends_at || m.isPending
+            }
           >
             إرسال
           </Button>
