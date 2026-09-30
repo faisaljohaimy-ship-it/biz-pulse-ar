@@ -159,6 +159,45 @@ describe("التراجع المقابل في الـcommit نفسه — ومتم�
   });
 });
 
+describe("تشديد الامتيازات — ما قِيس على الإنتاج بعد التطبيق", () => {
+  // قِيس: `authenticated=rDxtm` على `staff_accounts` بعد التطبيق، و`truncate`
+  // مسموحٌ تحت `role authenticated` — RLS لا يسري على TRUNCATE.
+  const H = sql(
+    readFileSync(
+      "supabase/migrations/20260930090000_staff_accounts_privilege_hardening.sql",
+      "utf8",
+    ),
+  );
+  const HRB = readFileSync(
+    "supabase/migrations/20260930090001_staff_accounts_privilege_hardening_rollback.sql",
+    "utf8",
+  );
+
+  it("كل امتيازٍ يُنزع ثم تُمنح القراءة وحدها", () => {
+    const revoke = H.indexOf("revoke all on public.staff_accounts from anon, authenticated");
+    const grant = H.indexOf("grant select on public.staff_accounts to authenticated");
+    expect(revoke).toBeGreaterThan(-1);
+    expect(grant, "القراءة تُمنح بعد النزع لا قبله").toBeGreaterThan(revoke);
+    expect(H).not.toMatch(/grant [^;]*(truncate|insert|update|delete)[^;]*staff_accounts/i);
+  });
+
+  it("دالّة حدث الإنشاء للمصادَق وحده، ودالّة الـtrigger لأحد", () => {
+    expect(H).toContain(
+      "revoke all on function public.member_creation_event_ok(text, uuid, text) from public, anon",
+    );
+    expect(H).toContain(
+      "revoke all on function public.handle_new_staff_account() from public, anon, authenticated",
+    );
+  });
+
+  it("والتراجع مقابلٌ في الـcommit نفسه", () => {
+    expect(HRB).toContain("grant select, truncate, references, trigger on public.staff_accounts");
+    expect(HRB).toContain(
+      "grant execute on function public.member_creation_event_ok(text, uuid, text) to anon",
+    );
+  });
+});
+
 describe("نموذج «مستخدم جديد»", () => {
   const ok = {
     name: "فيصل الغامدي",
