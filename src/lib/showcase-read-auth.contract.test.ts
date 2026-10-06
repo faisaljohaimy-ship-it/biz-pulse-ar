@@ -55,6 +55,14 @@ function middlewareOf(source: string, fnName: string): string {
 const DISPLAY_READS: Array<[file: string, fn: string, window: string]> = [
   ["oms.functions.reports.ts", "listIncidents", "/sec/incidents — جدول البلاغات"],
   ["oms.functions.reports.ts", "listWorkOrders", "/sec/maintenance — أوامر العمل"],
+  ["maint.functions.ts", "listMaintOrders", "/sec/maintenance — أوامر الصيانة التصحيحية"],
+  ["maint.functions.ts", "getMaintSummary", "/sec/maintenance — المؤشرات والتحليلات"],
+  ["maint.functions.ts", "getMaintOrder", "/sec/maintenance — درج تفاصيل الأمر"],
+  [
+    "maint.functions.ts",
+    "getMaintStaffDirectory",
+    "/sec/maintenance — دليل الإسناد (فارغ لغير المدير)",
+  ],
   ["oms.functions.reports.ts", "listPermits", "/sec/permits — التصاريح"],
   ["oms.functions.reports.ts", "getOmsKpis", "بطاقات الرأس فوق الشاشات الثلاث"],
   ["oms.functions.reports.ts", "getIncidentDetail", "درج تفاصيل البلاغ"],

@@ -32,7 +32,9 @@ const woStart = DIALOGS_CODE.indexOf("export function NewWorkOrderDialog");
 const woEnd = DIALOGS_CODE.indexOf("export function WorkOrderActions");
 const WO_DIALOG = DIALOGS_CODE.slice(woStart, woEnd);
 
-const MAINTENANCE = strip(read("src/routes/_authenticated/sec.maintenance.tsx"));
+// ٢٠٢٦/١٠/٠٦ — جدول أوامر `sec_work_orders` نُقل كما هو إلى تبويب «من البلاغات»
+// حين أُعيد بناء صفحة الصيانة على سجل الصيانة التصحيحية؛ العقد يتبعه.
+const MAINTENANCE = strip(read("src/components/sec/maint/IncidentWorkOrdersTab.tsx"));
 const CALENDAR = read("src/components/ui/calendar.tsx");
 
 describe("① لا نص مصادقة ظاهرًا في مسار الإنشاء", () => {

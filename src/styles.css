@@ -5537,6 +5537,22 @@ html.dark .nx-holo-noise {
 .nx-home-swatch {
   background: var(--slice-tone);
 }
+
+/* صفحة الصيانة (`sec.maintenance.tsx` · `components/sec/maint/`) — المراحل
+   الثماني مقاطع، والممتلئ منها بلون الحالة الممرَّر متغيّرًا (`--seg-tone`):
+   أزرق مفتوح · كهرماني موقوف · زمردي مُنجز. والرقم بجانب الشريط يحمل المعنى
+   — اللون لا يحمله وحده. */
+.nx-maint-seg {
+  background: var(--chip-strong);
+}
+.nx-maint-seg.is-on,
+.nx-maint-bar {
+  background: var(--seg-tone, var(--tone-blue));
+}
+.nx-maint-col {
+  block-size: var(--col-pct, 0%);
+  min-block-size: 2px;
+}
 .nx-home-ask:focus-visible {
   outline: 2px solid var(--tone-cyan);
   outline-offset: 2px;
