@@ -154,4 +154,15 @@ describe("سكربت الاستيراد — البيانات الحقيقية خ
     expect(SRC).toContain('from "../src/lib/maintenance/cm-log-rules.ts"');
     expect(SRC).toContain("on conflict (org_id, source, source_row) do update");
   });
+
+  it("إعادة الاستيراد لا تمسح ما كتبه سير العمل — ومنه تاريخ الإنجاز", () => {
+    // قِيس على الإنتاج: أمرٌ أغلقه مسؤول ثم أُعيد صفّه من الملف فمُسح تاريخ إنجازه.
+    expect(SRC).toContain(
+      'const WORKFLOW_OWNED = ["status", "stage", "hold_reason", "completed_at"]',
+    );
+    expect(SRC).toContain("!WORKFLOW_OWNED.includes(c)");
+    expect(SRC).toContain(
+      "case when maint_orders.imported_untouched then excluded.${c} else maint_orders.${c} end",
+    );
+  });
 });

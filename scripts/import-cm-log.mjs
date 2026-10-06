@@ -10,8 +10,14 @@
  * الواجهة — مصدرٌ واحد.
  *
  * idempotent: `on conflict (org_id, source, source_row) do update` — إعادة
- * التشغيل تُحدّث الصفّ نفسه، ولا تمسّ ما تقدّم فيه الفني بعد الاستيراد
- * (المرحلة والإسناد يُحفظان إن كان الصفّ قد خرج من مرحلة الاستيراد).
+ * التشغيل تُحدّث الصفّ نفسه، ولا تمسّ ما تقدّم فيه الفني بعد الاستيراد:
+ * **أعمدة سير العمل** (`WORKFLOW_OWNED`) تُحفظ متى خرج الصفّ من مرحلة الاستيراد
+ * (`imported_untouched = false`).
+ *
+ * درسٌ مقيس على الإنتاج (٢٠٢٦/١٠/٠٦): أغلق مسؤولٌ أمرًا مستوردًا من الواجهة،
+ * ثم أُعيد إرسال صفّه من الملف فمسح `completed_at` (الملف بلا تاريخ إنجاز
+ * للموقوف) مع أن المرحلة والحالة حُفظتا — فصار الأمر «مُنجزًا» بلا تاريخ. أُعيد
+ * التاريخ من سجلّ أحداثه، وصار `completed_at` من أعمدة سير العمل.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve, relative, isAbsolute } from "node:path";
@@ -114,6 +120,12 @@ const CAST = {
   delay_penalty: "numeric",
 };
 
+/**
+ * أعمدةٌ يملكها سير العمل بعد أول تحديثٍ من الفني أو المدير — إعادة الاستيراد
+ * لا تكتب فوقها (`maint_advance_stage`/`maint_set_status` هي التي تكتبها).
+ */
+const WORKFLOW_OWNED = ["status", "stage", "hold_reason", "completed_at"];
+
 const size = Number(batchArg) || 150;
 mkdirSync(out, { recursive: true });
 let files = 0;
@@ -127,12 +139,13 @@ from (values
 ${values}
 ) as v(${COLS.join(", ")})
 on conflict (org_id, source, source_row) do update set
-${COLS.filter((c) => !["source_row", "stage", "hold_reason", "status"].includes(c))
+${COLS.filter((c) => c !== "source_row" && !WORKFLOW_OWNED.includes(c))
   .map((c) => `  ${c} = excluded.${c}`)
   .join(",\n")},
-  status = case when maint_orders.imported_untouched then excluded.status else maint_orders.status end,
-  stage = case when maint_orders.imported_untouched then excluded.stage else maint_orders.stage end,
-  hold_reason = case when maint_orders.imported_untouched then excluded.hold_reason else maint_orders.hold_reason end;
+${WORKFLOW_OWNED.map(
+  (c) =>
+    `  ${c} = case when maint_orders.imported_untouched then excluded.${c} else maint_orders.${c} end`,
+).join(",\n")};
 `;
   writeFileSync(resolve(out, `batch-${String(++files).padStart(2, "0")}.sql`), sql);
 }
