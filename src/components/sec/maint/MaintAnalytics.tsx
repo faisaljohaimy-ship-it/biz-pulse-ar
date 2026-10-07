@@ -169,7 +169,7 @@ export default function MaintAnalytics({ data }: { data: A }) {
         title="الطلب والإنجاز شهريًّا"
         hint="العمود الأزرق: طلبات الشهر · الأخضر: ما أُنجز منها"
       >
-        <div className="flex h-44 items-end gap-1 overflow-x-auto pb-6" role="list">
+        <div className="flex h-44 items-end gap-1 overflow-x-auto px-2 pb-6" role="list">
           {data.monthly.map((m, i) => (
             <div
               key={m.month}
@@ -193,7 +193,7 @@ export default function MaintAnalytics({ data }: { data: A }) {
               {(data.monthly.length <= 8 || i % 2 === 0) && (
                 <span
                   aria-hidden
-                  className="absolute -bottom-5 whitespace-nowrap text-[10px] tabular-nums text-[color:var(--ink-3)]"
+                  className="absolute -bottom-5 whitespace-nowrap text-[12px] tabular-nums text-[color:var(--ink-3)]"
                 >
                   {MONTHS.format(new Date(`${m.month}-15T12:00:00`))}
                 </span>

@@ -140,7 +140,7 @@ function Kpi({
           <Icon className="size-5" />
         </span>
         {badge && (
-          <span className="rounded-full border border-red-500/50 bg-red-500/10 px-1.5 text-[11px] font-bold text-red-700 dark:text-red-300">
+          <span className="rounded-full border border-red-500/50 bg-red-500/10 px-1.5 text-[12px] font-bold text-red-700 dark:text-red-300">
             {badge}
           </span>
         )}

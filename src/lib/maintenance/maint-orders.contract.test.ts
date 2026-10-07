@@ -210,6 +210,20 @@ describe("البيانات الحقيقية لا تدخل المستودع ول�
     }
   });
 
+  it("لا نصّ دون ١٢px في الصيانة — أرضية ui-audit على الإنتاج (رسبت ٢٠٢٦/١٠/٠٧ بشارة 11px)", () => {
+    for (const f of [
+      "src/routes/_authenticated/sec.maintenance.tsx",
+      ...readdirSync("src/components/sec/maint").map((n) => `src/components/sec/maint/${n}`),
+    ]) {
+      expect(readFileSync(f, "utf8"), f).not.toMatch(/text-\[(?:[0-9]|1[01])(?:\.\d+)?px\]/);
+    }
+    // عنوان الشهر (12px) أعرض من عموده: بلا حشوة يُقصّ أوّلها عند حافة البداية
+    // في RTL حيث لا يصل السكرول — فيُقرأ «١١» «١» (نقض الحارس ٢٠٢٦/١٠/٠٧).
+    expect(readFileSync("src/components/sec/maint/MaintAnalytics.tsx", "utf8")).toContain(
+      "overflow-x-auto px-2 pb-6",
+    );
+  });
+
   it("لا محاكاة في الصيانة — الملف محذوف ولا مرجع له (أمر المالك ٢٠٢٦/١٠/٠٦)", () => {
     expect(existsSync("src/lib/maintenance/maint-simulation.ts")).toBe(false);
     for (const f of [

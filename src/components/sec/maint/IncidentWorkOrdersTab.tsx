@@ -141,7 +141,7 @@ export default function IncidentWorkOrdersTab() {
                     <span>{w.title_ar}</span>
                     {/* وسم الصف المحاكى — شارة كهرمانية بنمط nexios-ui-patterns */}
                     {w.is_simulation && (
-                      <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600">
+                      <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[12px] text-amber-600">
                         محاكاة مرجعية
                       </span>
                     )}
