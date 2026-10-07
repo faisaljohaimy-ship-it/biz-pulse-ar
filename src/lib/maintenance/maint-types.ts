@@ -8,13 +8,14 @@ import type { HoldReason, OrderStatus, Stage, SystemCode } from "@/lib/maintenan
 export interface MaintOrder {
   id: string;
   ref: string;
-  source: "cm_log" | "app";
+  source: "cm_log" | "app" | "sap";
   city: string | null;
   site: string | null;
   system: SystemCode | null;
   component: string | null;
   description: string | null;
-  priority: "low" | "medium" | "high" | "critical";
+  /** `null` ⇐ المصدر لا يحمل أولوية — «لم تُحدَّد» (المادة ٢٧). */
+  priority: "low" | "medium" | "high" | "critical" | null;
   status: OrderStatus;
   stage: Stage;
   stage_basis: "import_evidence" | "workflow";
@@ -41,8 +42,24 @@ export interface MaintOrder {
   assigned_to: string | null;
   assigned_to_name: string | null;
   assigned_to_staff: string | null;
+  /** مُسنَدٌ أم لا — حقيقة تشغيلية تبقى للزائر، وهوية الفني وحدها تُحجب. */
+  is_assigned: boolean;
   created_at: string;
   updated_at: string;
+  kind: "corrective" | "preventive";
+  region: "central" | "western" | "eastern" | "southern" | null;
+  functional_location: string | null;
+  equipment: string | null;
+  planner_group: string | null;
+  plan_generated: boolean;
+  sla_text: string | null;
+  sap_system_status: string | null;
+  notification: string | null;
+  maintenance_plan: string | null;
+  maintenance_cycle: string | null;
+  planned_cost: number | null;
+  /** القارئ عضوٌ في المؤسسة؟ — وإلا حجب العرض الأسماء والأرقام والملاحظات. */
+  viewer_is_member: boolean;
 }
 
 export interface MaintEvent {
@@ -76,8 +93,13 @@ export interface MaintKpis {
   penalties: number | null;
   sap_pending: number;
   unassigned_active: number;
+  preventive_total: number;
+  preventive_done: number;
+  pm_compliance: number | null;
   first_request: string | null;
   last_request: string | null;
+  viewer_is_member: boolean;
+  public_read_open: boolean;
 }
 
 export interface KeyCount {
@@ -87,6 +109,8 @@ export interface KeyCount {
 
 export interface MaintAnalytics {
   by_system: Array<KeyCount & { done: number; active: number }>;
+  by_region: Array<KeyCount & { done: number; active: number; preventive: number }>;
+  by_kind: Array<KeyCount & { done: number; active: number }>;
   by_city: Array<KeyCount & { active: number; on_time: number | null }>;
   by_hold_reason: KeyCount[];
   monthly: Array<{ month: string; requested: number; completed: number }>;
@@ -95,8 +119,8 @@ export interface MaintAnalytics {
   repeat_failures: Array<{ site: string; component: string; n: number }>;
 }
 
-/** مصدر ما يُعرض: القاعدة الحية، أو المحاكاة المرجعية الموسومة (زائر/عطل). */
-export type MaintSource = "database" | "reference";
+/** مصدر ما يُعرض: القاعدة الحية وحدها — لا محاكاة (أمر المالك ٢٠٢٦/١٠/٠٦). */
+export type MaintSource = "database";
 
 export interface MaintSummary {
   source: MaintSource;

@@ -155,6 +155,11 @@ describe("سكربت الاستيراد — البيانات الحقيقية خ
     expect(SRC).toContain("on conflict (org_id, source, source_row) do update");
   });
 
+  it("المنطقة الغربية والأولوية فراغٌ صريح لا «متوسطة» مختلقة", () => {
+    expect(SRC).toContain("imported_untouched, region, priority,");
+    expect(SRC).toContain("'import_evidence', true, 'western', null::text,");
+  });
+
   it("إعادة الاستيراد لا تمسح ما كتبه سير العمل — ومنه تاريخ الإنجاز", () => {
     // قِيس على الإنتاج: أمرٌ أغلقه مسؤول ثم أُعيد صفّه من الملف فمُسح تاريخ إنجازه.
     expect(SRC).toContain(

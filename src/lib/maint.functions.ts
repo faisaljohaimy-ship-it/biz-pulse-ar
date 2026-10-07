@@ -1,14 +1,19 @@
 /**
- * خادم صفحة الصيانة — أوامر العمل من `maint_orders` (ترحيل `20261006120000`).
+ * خادم صفحة الصيانة — أوامر العمل من `maint_orders`: سجل الصيانة التصحيحية
+ * (CM) وتصدير SAP PM، بيانات فعلية لا محاكاة (أمر المالك ٢٠٢٦/١٠/٠٦: «ازل
+ * بيانات المحاكاة واعتمد هذه البيانات المرفقة كبيانات فعلية وحقيقية»).
  *
- * **القراءة** `optionalSupabaseAuth`: الزائر لا يُستعلَم له شيء أصلًا — يرى
- * المحاكاة المرجعية الموسومة (قرار المالك: البيانات الحقيقية خلف الدخول).
- * والمسجَّل يقرأ بعميله الخاضع لـRLS؛ وعند العطل أو المهلة (٤ ثوانٍ) تنهض
- * المحاكاة موسومة. و**الفراغ لا يُحكم من نتيجة فلتر**: بحثٌ بلا نتائج لمسجَّلٍ
- * حالةٌ فارغة صادقة، لا سببٌ لعرض محاكاة.
+ * **القراءة** `optionalSupabaseAuth` — والقاعدة تقرّر ما يُرى لا هذا الملف:
+ * العضو يرى مؤسسته كاملة؛ والزائر يرى الأوامر في **نافذة القراءة العامة** (حتى
+ * 2027-04-06، `maint_public_read_open()`) بلا أسماء ولا أرقام وظيفية ولا ملاحظات
+ * — العرض `maint_orders_v` يحجبها لغير الأعضاء. وبعد النافذة يعود العرض فارغًا
+ * للزائر، فتدعوه الصفحة للدخول.
+ *
+ * **لا محاكاة ولا بديل:** العطل أو المهلة (٤ ثوانٍ) ⇐ خطأٌ عربي ترفعه الدالّة
+ * فتعرضه الصفحة بزرّ «أعد المحاولة». والفراغ فراغٌ صادق.
  *
  * **الكتابة** `requireSupabaseAuth` وكلها دوالّ القاعدة (`maint_*`) — هي التي
- * تقرّر الفاعل المسموح والانتقال الصالح، لا هذا الملف.
+ * تقرّر الفاعل المسموح والانتقال الصالح.
  *
  * `types.ts` لا يُعاد توليده في هذا المستودع، فالعميل يُقرأ بلا مخطّط مولَّد
  * (`SupabaseClient` عامّ) والأنواع من `maint-types.ts`.
@@ -52,6 +57,7 @@ export function maintErrorMessage(raw: string | undefined): string {
   if (/hold reason required/i.test(m)) return "اختر سبب الإيقاف.";
   if (/order is closed/i.test(m)) return "هذا الأمر مغلق — لا يتغيّر بعد إغلاقه.";
   if (/assignee is not a member/i.test(m)) return "الفني المختار ليس عضوًا في المؤسسة.";
+  if (/invalid region/i.test(m)) return "اختر منطقة من المناطق الأربع.";
   if (/invalid due date/i.test(m)) return "تاريخ الاستحقاق يجب أن يكون اليوم أو بعده، خلال سنة.";
   if (/site and description are required/i.test(m)) return "اكتب الموقع ووصف العطل.";
   if (/invalid/i.test(m)) return "قيمة غير صالحة — راجع الحقول.";
@@ -59,10 +65,15 @@ export function maintErrorMessage(raw: string | undefined): string {
 }
 
 // ── القراءة ───────────────────────────────────────────────────────────────
+/** خطأ قراءةٍ تعرضه الصفحة كما هو — عربيٌّ محايد بلا تفاصيل تقنية. */
+const READ_FAILED = "تعذّر تحميل بيانات الصيانة الآن — أعد المحاولة.";
+
 const listInput = z.object({
   tab: z.enum(["active", "history"]),
   q: z.string().trim().max(80).optional(),
-  system: z.enum(["CCTV", "GATE", "ACS", "VISIT"]).optional(),
+  system: z.enum(["CCTV", "GATE", "ACS", "VISIT", "CONTROL", "PIDS"]).optional(),
+  kind: z.enum(["corrective", "preventive"]).optional(),
+  region: z.enum(["central", "western", "eastern", "southern"]).optional(),
   city: z.string().trim().max(20).optional(),
   status: z.enum(["open", "on_hold", "completed", "cancelled"]).optional(),
   holdReason: z.string().trim().max(30).optional(),
@@ -73,143 +84,96 @@ const listInput = z.object({
 });
 export type MaintListInput = z.input<typeof listInput>;
 
-/** فلترة المحاكاة بالقواعد نفسها — فيتصرّف الزائر كالمسجَّل. */
-function filterSim(rows: MaintOrder[], d: z.output<typeof listInput>): MaintPage {
-  const q = d.q?.toLowerCase();
-  const filtered = rows
-    .filter((r) => (d.tab === "active" ? r.status === "open" || r.status === "on_hold" : true))
-    .filter((r) => !d.system || r.system === d.system)
-    .filter((r) => !d.city || r.city === d.city)
-    .filter((r) => !d.status || r.status === d.status)
-    .filter((r) => !d.holdReason || (r.hold_reason ?? "unclassified") === d.holdReason)
-    .filter((r) => !d.unassigned || !r.assigned_to)
-    .filter(
-      (r) => !q || [r.ref, r.site, r.component, r.city].some((v) => v?.toLowerCase().includes(q)),
-    );
-  const sorted =
-    d.tab === "active"
-      ? filtered.sort((a, b) => (b.overdue_days ?? 0) - (a.overdue_days ?? 0))
-      : filtered.sort((a, b) => (b.requested_at ?? "").localeCompare(a.requested_at ?? ""));
-  return {
-    source: "reference",
-    rows: sorted.slice(d.page * d.pageSize, (d.page + 1) * d.pageSize),
-    total: sorted.length,
-  };
-}
-
-async function simPage(d: z.output<typeof listInput>): Promise<MaintPage> {
-  const { buildMaintOrdersSimulation } = await import("@/lib/maintenance/maint-simulation");
-  return filterSim(buildMaintOrdersSimulation(), d);
-}
-
-const hasFilters = (d: z.output<typeof listInput>) =>
-  !!(d.q || d.system || d.city || d.status || d.holdReason || d.mine || d.unassigned);
-
 export const listMaintOrders = createServerFn({ method: "POST" })
   .middleware([optionalSupabaseAuth])
   .inputValidator((d: unknown) => listInput.parse(d))
   .handler(async ({ data, context }): Promise<MaintPage> => {
-    if (!context.userId) return simPage(data);
+    const db = untyped(context.supabase);
+    let q = db.from("maint_orders_v").select("*", { count: "exact" });
+    q =
+      data.tab === "active"
+        ? q.in("status", ["open", "on_hold"])
+        : data.status
+          ? q.eq("status", data.status)
+          : q;
+    if (data.system) q = q.eq("system", data.system);
+    if (data.kind) q = q.eq("kind", data.kind);
+    if (data.region) q = q.eq("region", data.region);
+    if (data.city) q = q.eq("city", data.city);
+    if (data.holdReason)
+      q =
+        data.holdReason === "unclassified"
+          ? q.is("hold_reason", null)
+          : q.eq("hold_reason", data.holdReason);
+    if (data.unassigned) q = q.eq("is_assigned", false);
+    // «أوامري» للمسجَّل وحده — والزائر لا مُعرِّف له فلا يُفلتر به.
+    if (data.mine && context.userId)
+      q = q.or(`assigned_to.eq.${context.userId},created_by.eq.${context.userId}`);
+    if (data.q) {
+      // الفاصلة والأقواس تكسر صيغة `or` في PostgREST — تُنزع من البحث.
+      const t = data.q.replace(/[,()*%]/g, " ").trim();
+      if (t)
+        q = q.or(
+          `ref.ilike.*${t}*,site.ilike.*${t}*,component.ilike.*${t}*,description.ilike.*${t}*,functional_location.ilike.*${t}*`,
+        );
+    }
+    q =
+      data.tab === "active"
+        ? q.order("overdue_days", { ascending: false, nullsFirst: false })
+        : q.order("requested_at", { ascending: false, nullsFirst: false });
+    const from = data.page * data.pageSize;
     try {
-      const db = untyped(context.supabase);
-      let q = db.from("maint_orders_v").select("*", { count: "exact" });
-      q =
-        data.tab === "active"
-          ? q.in("status", ["open", "on_hold"])
-          : data.status
-            ? q.eq("status", data.status)
-            : q;
-      if (data.system) q = q.eq("system", data.system);
-      if (data.city) q = q.eq("city", data.city);
-      if (data.holdReason)
-        q =
-          data.holdReason === "unclassified"
-            ? q.is("hold_reason", null)
-            : q.eq("hold_reason", data.holdReason);
-      if (data.unassigned) q = q.is("assigned_to", null);
-      if (data.mine) q = q.or(`assigned_to.eq.${context.userId},created_by.eq.${context.userId}`);
-      if (data.q) {
-        // الفاصلة والأقواس تكسر صيغة `or` في PostgREST — تُنزع من البحث.
-        const s = data.q.replace(/[,()*%]/g, " ").trim();
-        if (s) q = q.or(`ref.ilike.*${s}*,site.ilike.*${s}*,component.ilike.*${s}*`);
-      }
-      q =
-        data.tab === "active"
-          ? q.order("overdue_days", { ascending: false, nullsFirst: false })
-          : q.order("requested_at", { ascending: false, nullsFirst: false });
-      const from = data.page * data.pageSize;
       const res = await withTimeout(q.range(from, from + data.pageSize - 1));
       if (res.error) throw new Error(res.error.message);
-      const total = res.count ?? 0;
-      // الجدول خاوٍ تمامًا (لم يُستورد بعد) ⇐ المحاكاة، كما في `getMaintSummary`؛
-      // أمّا فلترٌ بلا نتائج أو «لا أوامر نشطة» في جدولٍ ممتلئ ⇐ فارغٌ صادق.
-      if (total === 0 && !hasFilters(data)) {
-        const probe = await withTimeout(
-          db.from("maint_orders_v").select("id", { count: "exact", head: true }),
-        );
-        if (!probe.error && (probe.count ?? 0) === 0) return simPage(data);
-      }
-      return { source: "database", rows: (res.data ?? []) as MaintOrder[], total };
+      return { source: "database", rows: (res.data ?? []) as MaintOrder[], total: res.count ?? 0 };
     } catch (e) {
-      console.error(
-        "[maint] list unavailable — serving reference simulation:",
-        (e as Error).message,
-      );
-      return simPage(data);
+      console.error("[maint] list failed:", (e as Error).message);
+      throw new Error(READ_FAILED);
     }
   });
 
 export const getMaintSummary = createServerFn({ method: "GET" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<MaintSummary> => {
-    const sim = async () =>
-      (await import("@/lib/maintenance/maint-simulation")).buildMaintSummarySimulation();
-    if (!context.userId) return sim();
+    const db = untyped(context.supabase);
     try {
-      const db = untyped(context.supabase);
       const [k, a] = await withTimeout(
         Promise.all([db.rpc("maint_kpis"), db.rpc("maint_analytics")]),
       );
       if (k.error || a.error) throw new Error((k.error ?? a.error)?.message);
-      const kpis = k.data as MaintKpis;
-      if (!kpis || kpis.total === 0) return sim();
-      return { source: "database", kpis, analytics: a.data as MaintAnalytics };
+      return {
+        source: "database",
+        kpis: k.data as MaintKpis,
+        analytics: a.data as MaintAnalytics,
+      };
     } catch (e) {
-      console.error(
-        "[maint] summary unavailable — serving reference simulation:",
-        (e as Error).message,
-      );
-      return sim();
+      console.error("[maint] summary failed:", (e as Error).message);
+      throw new Error(READ_FAILED);
     }
   });
 
 export const getMaintOrder = createServerFn({ method: "POST" })
   .middleware([optionalSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().min(1).max(64) }).parse(d))
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(
     async ({ data, context }): Promise<{ order: MaintOrder | null; events: MaintEvent[] }> => {
-      if (data.id.startsWith("sim-") || !context.userId) {
-        const { buildMaintOrdersSimulation } = await import("@/lib/maintenance/maint-simulation");
-        return {
-          order: buildMaintOrdersSimulation().find((r) => r.id === data.id) ?? null,
-          events: [],
-        };
-      }
-      if (!z.string().uuid().safeParse(data.id).success) return { order: null, events: [] };
       const db = untyped(context.supabase);
       const [o, e] = await withTimeout(
         Promise.all([
           db.from("maint_orders_v").select("*").eq("id", data.id).maybeSingle(),
-          db
-            .from("maint_order_events")
-            .select(
-              "id, event, from_stage, to_stage, from_status, to_status, hold_reason, note, actor_id, created_at",
-            )
-            .eq("order_id", data.id)
-            .order("created_at", { ascending: true }),
+          // الخط الزمني للأعضاء وحدهم (القاعدة تحجبه عن الزائر) — حجبُه ليس عطلًا.
+          context.userId
+            ? db
+                .from("maint_order_events")
+                .select(
+                  "id, event, from_stage, to_stage, from_status, to_status, hold_reason, note, actor_id, created_at",
+                )
+                .eq("order_id", data.id)
+                .order("created_at", { ascending: true })
+            : Promise.resolve({ data: [], error: null }),
         ]),
       );
-      if (o.error) throw new Error(maintErrorMessage(o.error.message));
+      if (o.error) throw new Error(READ_FAILED);
       return {
         order: (o.data as MaintOrder | null) ?? null,
         events: (e.data ?? []) as MaintEvent[],
@@ -237,10 +201,7 @@ async function callRpc(supabase: unknown, fn: string, args: Record<string, unkno
   return data as unknown;
 }
 
-const realId = z
-  .string()
-  .uuid()
-  .refine((v) => !v.startsWith("sim-"), "simulation rows are read-only");
+const realId = z.string().uuid();
 
 export const createMaintOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -249,7 +210,9 @@ export const createMaintOrder = createServerFn({ method: "POST" })
       .object({
         site: z.string().trim().min(2).max(200),
         city: z.string().trim().max(20).optional(),
-        system: z.enum(["CCTV", "GATE", "ACS", "VISIT"]),
+        region: z.enum(["central", "western", "eastern", "southern"]).optional(),
+        system: z.enum(["CCTV", "GATE", "ACS", "VISIT", "CONTROL", "PIDS"]),
+        kind: z.enum(["corrective", "preventive"]).default("corrective"),
         component: z.string().trim().max(120).optional(),
         description: z.string().trim().min(5).max(2000),
         priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
@@ -261,10 +224,12 @@ export const createMaintOrder = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const ref = await callRpc(context.supabase, "maint_create_order", {
+    const ref = await callRpc(context.supabase, "maint_create_order_v2", {
       _site: data.site,
       _city: data.city ?? null,
+      _region: data.region ?? null,
       _system: data.system,
+      _kind: data.kind,
       _component: data.component ?? null,
       _description: data.description,
       _priority: data.priority,

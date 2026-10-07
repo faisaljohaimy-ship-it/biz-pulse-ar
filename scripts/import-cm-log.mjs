@@ -132,8 +132,11 @@ let files = 0;
 for (let b = 0; b < orders.length; b += size) {
   const chunk = orders.slice(b, b + size);
   const values = chunk.map((o) => `(${COLS.map((c) => lit(o[c])).join(", ")})`).join(",\n");
-  const sql = `insert into public.maint_orders (org_id, source, stage_basis, imported_untouched, ${COLS.join(", ")})
-select '00000000-0000-0000-0000-000000000001'::uuid, 'cm_log', 'import_evidence', true,
+  // المنطقة «الغربية» بدليلٍ مكتوب (أسماء المواقع «Western Region»، والمشترك مع
+  // SAP كلّه WOA)، والأولوية فراغٌ صريح — السجل لا يحمل أولوية، فلا تُختلق
+  // «متوسطة» من القيمة الافتراضية للعمود (ترحيل 20261006190000).
+  const sql = `insert into public.maint_orders (org_id, source, stage_basis, imported_untouched, region, priority, ${COLS.join(", ")})
+select '00000000-0000-0000-0000-000000000001'::uuid, 'cm_log', 'import_evidence', true, 'western', null::text,
   ${COLS.map((c) => (CAST[c] ? `v.${c}::${CAST[c]}` : `v.${c}`)).join(", ")}
 from (values
 ${values}

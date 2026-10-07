@@ -2,7 +2,7 @@
  * تبويب «التحليلات» — يُحمَّل عند فتحه. أشرطة CSS بلا مكتبة رسوم (ميزانية
  * الحزمة)، وكل رقمٍ مكتوبٌ بجانب شريطه: الطول زينة، والرقم هو المعلومة.
  *
- * ما يقرؤه مهندس الصيانة هنا: أين يتركّز العطل (النظام · المدينة · المكوّن ·
+ * ما يقرؤه مهندس الصيانة هنا: أين يتركّز العطل (النظام · المنطقة · النوع · المكوّن ·
  * الموقع)، ولماذا تتوقف الأوامر النشطة، وهل يلحق الإنجاز بالطلب شهرًا بشهر،
  * و**الأعطال المتكررة** — المكوّن نفسه في الموقع نفسه خلال ٣٠ يومًا، أوضح
  * مرشّحٍ للصيانة الوقائية أو الاستبدال بدل الإصلاح المتكرر.
@@ -11,7 +11,17 @@ import type { ReactNode } from "react";
 import { Repeat } from "lucide-react";
 import type { MaintAnalytics as A } from "@/lib/maintenance/maint-types";
 import { type SystemCode } from "@/lib/maintenance/cm-log-rules";
-import { SYSTEM_TONE, cityAr, fmt, fmt1, holdAr, systemAr } from "@/components/sec/maint/maint-ui";
+import type { RegionId } from "@/lib/regions";
+import {
+  KIND_AR,
+  SYSTEM_TONE,
+  cityAr,
+  fmt,
+  fmt1,
+  holdAr,
+  regionAr,
+  systemAr,
+} from "@/components/sec/maint/maint-ui";
 
 function Panel({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
@@ -63,6 +73,8 @@ function Bar({
 const MONTHS = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", { month: "numeric", year: "2-digit" });
 
 export default function MaintAnalytics({ data }: { data: A }) {
+  const maxRegion = Math.max(0, ...data.by_region.map((r) => r.n));
+  const maxKind = Math.max(0, ...data.by_kind.map((r) => r.n));
   const maxSys = Math.max(0, ...data.by_system.map((r) => r.n));
   const maxCity = Math.max(0, ...data.by_city.map((r) => r.n));
   const maxHold = Math.max(0, ...data.by_hold_reason.map((r) => r.n));
@@ -72,6 +84,36 @@ export default function MaintAnalytics({ data }: { data: A }) {
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <Panel title="الأوامر حسب المنطقة" hint="المنجز والنشط، وعدد الوقائية منها">
+        <ul className="grid gap-3">
+          {data.by_region.map((r) => (
+            <Bar
+              key={r.key ?? "none"}
+              label={regionAr(r.key as RegionId | null)}
+              value={r.n}
+              max={maxRegion}
+              tone="--tone-emerald"
+              extra={`· منجز ${fmt(r.done)} · نشط ${fmt(r.active)} · وقائية ${fmt(r.preventive)}`}
+            />
+          ))}
+        </ul>
+      </Panel>
+
+      <Panel title="وقائية أم تصحيحية؟" hint="كلّما زادت الوقائية قلّ العطل المفاجئ">
+        <ul className="grid gap-3">
+          {data.by_kind.map((r) => (
+            <Bar
+              key={r.key ?? "none"}
+              label={r.key ? KIND_AR[r.key as keyof typeof KIND_AR] : "غير محدّد"}
+              value={r.n}
+              max={maxKind}
+              tone={r.key === "preventive" ? "--tone-violet" : "--tone-amber"}
+              extra={`· منجز ${fmt(r.done)} · نشط ${fmt(r.active)}`}
+            />
+          ))}
+        </ul>
+      </Panel>
+
       <Panel title="الطلبات حسب النظام" hint="المنجز من الإجمالي، والنشط الآن">
         <ul className="grid gap-3">
           {data.by_system.map((r) => (

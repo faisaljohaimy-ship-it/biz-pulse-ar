@@ -51,8 +51,11 @@ import {
   fmtDate,
   fmtSar,
   holdAr,
+  KIND_AR,
+  regionAr,
   systemAr,
 } from "@/components/sec/maint/maint-ui";
+import { creatorFallback } from "@/components/sec/maint/MaintOrderCard";
 import { cn } from "@/lib/utils";
 
 const SELECT =
@@ -88,6 +91,7 @@ export function MaintOrderSheet({
     queryKey: ["maint", "order", id, user?.id ?? null],
     queryFn: () => fetchOrder({ data: { id: id as string } }),
     enabled: !!id,
+    retry: false,
   });
   const o = detail.data?.order ?? order;
 
@@ -133,11 +137,10 @@ export function MaintOrderSheet({
   const busy = mAdvance.isPending || mAssign.isPending || mStatus.isPending;
 
   if (!o) return null;
-  const isSim = o.id.startsWith("sim-");
   const isManager = staff.length > 0;
   const isAssignee = !!user && o.assigned_to === user.id;
   const active = o.status === "open" || o.status === "on_hold";
-  const canWork = !isSim && !!user && active && (isManager || isAssignee);
+  const canWork = !!user && active && (isManager || isAssignee);
   const next = nextStage(o.stage);
   const techNext = next && next !== "closed" ? next : null;
   const events = detail.data?.events ?? [];
@@ -153,8 +156,9 @@ export function MaintOrderSheet({
                 {o.component ?? o.description ?? "أمر عمل"}
               </SheetTitle>
               <SheetDescription className="text-start">
-                <bdi className="font-mono">{o.ref}</bdi> · {systemAr(o.system)} · {o.site ?? "—"} ·{" "}
-                {cityAr(o.city)}
+                <bdi className="font-mono">{o.ref}</bdi> · {systemAr(o.system)} · {KIND_AR[o.kind]}{" "}
+                · {o.site ?? o.functional_location ?? "—"} ·{" "}
+                {o.city ? cityAr(o.city) : regionAr(o.region)}
               </SheetDescription>
             </div>
           </div>
@@ -204,26 +208,35 @@ export function MaintOrderSheet({
             </ol>
             {o.stage_basis === "import_evidence" && active && (
               <p className="mt-3 rounded-lg bg-[color:var(--chip)] p-2 text-[12px] leading-relaxed text-[color:var(--ink-2)]">
-                المرحلة مستنتجة من ملاحظة الفني في سجل الصيانة: ملاحظةٌ تطلب قطعة أو اعتمادًا ⇐
-                «بانتظار قطع غيار» · تشخيصٌ جارٍ ⇐ «الفني في الموقع» · ملاحظةٌ فنية أخرى ⇐ «تم
-                التشخيص» · بلا ملاحظة ⇐ «مسجَّل». تُصحَّح بأول تحديثٍ من الفني أو المدير.
+                {o.source === "sap"
+                  ? "المرحلة من حالة الأمر في SAP: «قيد التنفيذ» (مُطلق وكلفته مرحَّلة) ⇐ «الفني في الموقع» — أدنى ما يسنده الدليل؛ «مخطّط» ⇐ «مسجَّل». تُصحَّح بأول تحديثٍ من الفني أو المدير."
+                  : "المرحلة مستنتجة من ملاحظة الفني في سجل الصيانة: ملاحظةٌ تطلب قطعة أو اعتمادًا ⇐ «بانتظار قطع غيار» · تشخيصٌ جارٍ ⇐ «الفني في الموقع» · ملاحظةٌ فنية أخرى ⇐ «تم التشخيص» · بلا ملاحظة ⇐ «مسجَّل». تُصحَّح بأول تحديثٍ من الفني أو المدير."}
               </p>
             )}
           </section>
 
           <section aria-label="المسؤولون" className="grid gap-1.5">
-            <PersonLine
-              label="المُنشئ"
-              name={o.created_by_name}
-              staff={o.created_by_staff}
-              emptyText={o.source === "cm_log" ? "مستورد من سجل الصيانة" : "غير معروف"}
-            />
-            <PersonLine
-              label="الفني المُسنَد"
-              name={o.assigned_to_name}
-              staff={o.assigned_to_staff}
-              emptyText="غير مُسنَد بعد"
-            />
+            {o.viewer_is_member ? (
+              <>
+                <PersonLine
+                  label="المُنشئ"
+                  name={o.created_by_name}
+                  staff={o.created_by_staff}
+                  emptyText={creatorFallback(o)}
+                />
+                <PersonLine
+                  label="الفني المُسنَد"
+                  name={o.assigned_to_name}
+                  staff={o.assigned_to_staff}
+                  emptyText="غير مُسنَد بعد"
+                />
+              </>
+            ) : (
+              <p className="text-[12px] text-[color:var(--ink-3)]">
+                أسماء المُنشئ والفني وأرقامهم الوظيفية تظهر لأعضاء المنشأة المسجَّلين — حمايةً
+                للبيانات الشخصية.
+              </p>
+            )}
           </section>
 
           <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -260,6 +273,64 @@ export function MaintOrderSheet({
             />
           </dl>
 
+          {(o.functional_location || o.sap_system_status || o.maintenance_plan) && (
+            <section aria-label="بيانات SAP">
+              <h3 className="mb-2 text-sm font-black text-[color:var(--ink)]">من SAP</h3>
+              <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {o.functional_location && (
+                  <Fact
+                    label="الموقع الوظيفي"
+                    value={<bdi className="font-mono">{o.functional_location}</bdi>}
+                  />
+                )}
+                {o.equipment && (
+                  <Fact
+                    label="رقم المعدّة"
+                    value={<bdi className="font-mono">{o.equipment}</bdi>}
+                  />
+                )}
+                {o.planner_group && (
+                  <Fact
+                    label="مجموعة التخطيط"
+                    value={`${o.planner_group} · ${regionAr(o.region)}`}
+                  />
+                )}
+                {o.sla_text && (
+                  <Fact label="نافذة الاستجابة (SLA)" value={<bdi>{o.sla_text}</bdi>} />
+                )}
+                {o.sap_system_status && (
+                  <Fact
+                    label="حالة النظام"
+                    value={<bdi className="font-mono">{o.sap_system_status}</bdi>}
+                  />
+                )}
+                {o.notification && (
+                  <Fact label="الإشعار" value={<bdi className="font-mono">{o.notification}</bdi>} />
+                )}
+                {o.maintenance_plan && (
+                  <Fact
+                    label="خطة الصيانة"
+                    value={
+                      <>
+                        <bdi className="font-mono">{o.maintenance_plan}</bdi>
+                        {o.maintenance_cycle && ` · ${o.maintenance_cycle}`}
+                      </>
+                    }
+                  />
+                )}
+                {o.planned_cost !== null && (
+                  <Fact label="الكلفة المخطّطة" value={fmtSar(o.planned_cost)} />
+                )}
+              </dl>
+            </section>
+          )}
+
+          {!o.viewer_is_member && (
+            <p className="text-[12px] text-[color:var(--ink-3)]">
+              ملاحظات الفنيين والخط الزمني تظهر لأعضاء المنشأة المسجَّلين.
+            </p>
+          )}
+
           {(o.description || o.notes) && (
             <section aria-label="الوصف والملاحظات" className="space-y-2">
               {o.description && (
@@ -284,9 +355,9 @@ export function MaintOrderSheet({
             className="space-y-3 rounded-2xl border border-[color:var(--hairline)] p-4"
           >
             <h3 className="text-sm font-black text-[color:var(--ink)]">تحديث الأمر</h3>
-            {isSim || !user ? (
+            {!user ? (
               <p className="text-[13px] text-[color:var(--ink-2)]">
-                هذه محاكاة مرجعية للعرض. سجّل الدخول لرؤية أوامر العمل الحقيقية وتحديثها.
+                سجّل الدخول لتحديث مرحلة الأمر — التحديث للفني المُسنَد أو مدير الصيانة.
               </p>
             ) : !active ? (
               <p className="text-[13px] text-[color:var(--ink-2)]">

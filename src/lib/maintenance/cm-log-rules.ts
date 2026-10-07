@@ -76,12 +76,15 @@ export function nextStage(stage: Stage): Stage | null {
 }
 
 // ── الأنظمة والمدن ─────────────────────────────────────────────────────────
-export type SystemCode = "CCTV" | "GATE" | "ACS" | "VISIT";
+/** أنظمة سجل CM الأربعة، ومعها نظاما تصدير SAP (غرفة التحكم · كشف التسلّل). */
+export type SystemCode = "CCTV" | "GATE" | "ACS" | "VISIT" | "CONTROL" | "PIDS";
 export const SYSTEM_AR: Record<SystemCode, string> = {
   CCTV: "كاميرات المراقبة",
   GATE: "البوابات والحواجز",
   ACS: "التحكم في الدخول",
   VISIT: "زيارة فنية",
+  CONTROL: "غرفة التحكم والطاقة",
+  PIDS: "كشف التسلّل المحيطي",
 };
 
 export const CITY_AR: Record<string, string> = {

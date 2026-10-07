@@ -1,8 +1,11 @@
 /**
- * الصيانة — أوامر عمل الصيانة التصحيحية (أمر المالك ٢٠٢٦/١٠/٠٦).
+ * الصيانة — أوامر العمل التصحيحية والوقائية (أمر المالك ٢٠٢٦/١٠/٠٦).
  *
- * المصدر: «سجل الصيانة التصحيحية» الحقيقي (١٧٩٥ طلبًا منذ ٢٠٢٥/٠٤) مستوردًا إلى
- * `maint_orders` خلف الدخول، وما يُنشأ من هنا. الزائر يرى محاكاة مرجعية موسومة.
+ * المصدر بيانات فعلية وحدها في `maint_orders`: «سجل الصيانة التصحيحية» (١٧٩٥
+ * طلبًا، الغربية) وتصدير SAP PM (٢٣٢ أمرًا للمناطق الأخرى، والسبعة عشر المشتركة
+ * مربوطة بصفوف السجل لا مكرّرة)، وما يُنشأ من هنا. **لا محاكاة** — الزائر يقرأ
+ * الأوامر في نافذة القراءة العامة حتى 2027-04-06 بلا بيانات شخصية، وبعدها يُدعى
+ * للدخول؛ والعطل خطأٌ عربي بزرّ إعادة لا بديلٌ مصطنع.
  *
  * التصميم لمشرف صيانة في الميدان، من الجوال أولًا:
  *  ١. مؤشرات ستّة تُقرأ في ثانية (النشط · المتأخر · متوسط الإنجاز · نسبة الإنجاز ·
@@ -18,11 +21,13 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Banknote,
+  CalendarSync,
   ChevronLeft,
   ChevronRight,
   CircleCheck,
   FileWarning,
   Gauge,
+  Lock,
   OctagonAlert,
   Search,
   Timer,
@@ -41,7 +46,6 @@ import {
   type MaintListInput,
 } from "@/lib/maint.functions";
 import {
-  CITY_AR,
   SYSTEM_AR,
   STATUS_AR,
   type OrderStatus,
@@ -65,6 +69,7 @@ import {
   holdAr,
 } from "@/components/sec/maint/maint-ui";
 import { cn } from "@/lib/utils";
+import { REGIONS, type RegionId } from "@/lib/regions";
 
 const MaintAnalytics = lazy(() => import("@/components/sec/maint/MaintAnalytics"));
 const IncidentWorkOrdersTab = lazy(() => import("@/components/sec/maint/IncidentWorkOrdersTab"));
@@ -89,20 +94,22 @@ const CONTROL =
 interface Filters {
   q: string;
   system: SystemCode | "";
-  city: string;
   status: OrderStatus | "";
   holdReason: string;
   mine: boolean;
   unassigned: boolean;
+  kind: "corrective" | "preventive" | "";
+  region: RegionId | "";
 }
 const NO_FILTERS: Filters = {
   q: "",
   system: "",
-  city: "",
   status: "",
   holdReason: "",
   mine: false,
   unassigned: false,
+  kind: "",
+  region: "",
 };
 
 function Kpi({
@@ -165,7 +172,7 @@ function KpiStrip({ s, loading }: { s: MaintSummary | undefined; loading: boolea
   const pct = (v: number | null | undefined) =>
     v === null || v === undefined ? "لم يُقَس" : `${fmt1(v)}٪`;
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
       <Kpi
         icon={Wrench}
         tone="--tone-blue"
@@ -214,6 +221,18 @@ function KpiStrip({ s, loading }: { s: MaintSummary | undefined; loading: boolea
             : k
               ? `من ${fmt(k.on_time_basis)} أمرًا مُنجزًا`
               : undefined
+        }
+        loading={loading}
+      />
+      <Kpi
+        icon={CalendarSync}
+        tone="--tone-emerald"
+        label="الالتزام بالصيانة الوقائية"
+        value={pct(k?.pm_compliance)}
+        hint={
+          k && k.preventive_total > 0
+            ? `${fmt(k.preventive_done)} من ${fmt(k.preventive_total)} أمرًا وقائيًّا (بلا الملغى)`
+            : undefined
         }
         loading={loading}
       />
@@ -345,17 +364,27 @@ function FilterBar({
           />
         </label>
         <select
-          aria-label="المدينة"
-          value={f.city}
-          onChange={(e) => set({ city: e.target.value })}
+          aria-label="المنطقة"
+          value={f.region}
+          onChange={(e) => set({ region: e.target.value as RegionId | "" })}
           className={CONTROL}
         >
-          <option value="">كل المدن</option>
-          {Object.entries(CITY_AR).map(([k, v]) => (
-            <option key={k} value={k}>
-              {v}
+          <option value="">كل المناطق</option>
+          {REGIONS.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.shortAr}
             </option>
           ))}
+        </select>
+        <select
+          aria-label="نوع الصيانة"
+          value={f.kind}
+          onChange={(e) => set({ kind: e.target.value as Filters["kind"] })}
+          className={CONTROL}
+        >
+          <option value="">التصحيحية والوقائية</option>
+          <option value="corrective">تصحيحية</option>
+          <option value="preventive">وقائية</option>
         </select>
         {tab === "history" && (
           <select
@@ -537,6 +566,9 @@ function Maintenance() {
     queryFn: () => fetchSummary(),
     enabled: !authLoading,
     refetchInterval: 60_000,
+    // المادة ١٤: مهلة الخادم ٤ ثوانٍ هي السقف. إعادة react-query الافتراضية
+    // (٣× بتراجع) كانت تُبقي الهيكل ~٢٥ ثانية قبل «تعذّر» — والإعادة بيد المستخدم.
+    retry: false,
   });
   const staff = useQuery({
     queryKey: ["maint", "staff", uid],
@@ -551,11 +583,12 @@ function Maintenance() {
       tab: listTab,
       q: filters.q || undefined,
       system: filters.system || undefined,
-      city: filters.city || undefined,
       status: listTab === "history" ? filters.status || undefined : undefined,
       holdReason: filters.holdReason || undefined,
       mine: filters.mine || undefined,
       unassigned: filters.unassigned || undefined,
+      kind: filters.kind || undefined,
+      region: filters.region || undefined,
       page,
       pageSize: PAGE_SIZE[listTab],
     }),
@@ -566,20 +599,15 @@ function Maintenance() {
     queryFn: () => fetchList({ data: input }),
     enabled: !authLoading && (tab === "active" || tab === "history"),
     placeholderData: keepPreviousData,
+    retry: false,
   });
 
   const s = summary.data;
-  // المادة ٦: شارة «بيانات حقيقية» لا تعلو محاكاةً — يكفي أن يكون أحد المصدرين
-  // (الملخّص أو القائمة) مرجعيًّا لتُوسم الصفحة كلّها مرجعية (نقض حارس الجودة).
-  const sources = [
-    s?.source,
-    tab === "active" || tab === "history" ? list.data?.source : undefined,
-  ];
-  const source = sources.includes("reference")
-    ? "reference"
-    : sources.includes("database")
-      ? "database"
-      : undefined;
+  // لا محاكاة (أمر المالك ٢٠٢٦/١٠/٠٦): ما يُعرض من القاعدة وحدها. والزائر يقرأ
+  // في نافذة القراءة العامة بلا بيانات شخصية؛ وبعدها يُدعى للدخول.
+  const isMember = s?.kpis.viewer_is_member ?? false;
+  const publicOpen = s?.kpis.public_read_open ?? false;
+  const guestLocked = !!s && !user && !publicOpen;
   const rows = list.data?.rows ?? [];
   const activeCount = s ? s.kpis.open + s.kpis.on_hold : null;
 
@@ -588,161 +616,200 @@ function Maintenance() {
       <SecPageHeader
         title="الصيانة"
         subtitle={
-          s
-            ? `أوامر العمل التصحيحية — ${fmt(s.kpis.total)} طلبًا من ${fmtDate(s.kpis.first_request)} إلى ${fmtDate(s.kpis.last_request)}`
-            : "أوامر العمل التصحيحية لأنظمة الأمن: الكاميرات والبوابات والتحكم في الدخول"
+          s && s.kpis.total > 0
+            ? `أوامر العمل التصحيحية والوقائية — ${fmt(s.kpis.total)} أمرًا من ${fmtDate(s.kpis.first_request)} إلى ${fmtDate(s.kpis.last_request)}`
+            : "أوامر العمل التصحيحية والوقائية لأنظمة الأمن في المناطق الأربع"
         }
       >
         <div className="flex flex-wrap items-center gap-2">
-          {source && <SourceBadge source={source} />}
+          {s && s.kpis.total > 0 && <SourceBadge />}
           <NewMaintOrderDialog />
         </div>
       </SecPageHeader>
 
-      {source === "reference" && (
+      {s && !isMember && publicOpen && (
         <p
           role="note"
-          className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-[13px] text-amber-900 dark:text-amber-100"
+          className="flex flex-wrap items-center gap-1.5 rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface)] p-3 text-[13px] text-[color:var(--ink-2)]"
         >
-          {user
-            ? "تعذّر الوصول إلى سجل الصيانة الآن — المعروض محاكاة مرجعية موسومة، وتعود البيانات الحقيقية تلقائيًّا."
-            : "المعروض محاكاة مرجعية للعرض. سجلّ الصيانة الحقيقي يظهر بعد تسجيل الدخول."}
+          <Lock aria-hidden className="size-4 shrink-0 text-[color:var(--ink-3)]" />
+          قراءةٌ عامة حتى ٦ أبريل ٢٠٢٧ — أسماء الموظفين وأرقامهم الوظيفية وملاحظات الفنيين تظهر
+          للأعضاء بعد
+          <a
+            href="/auth"
+            className="nx-focus-ring font-bold text-[color:var(--tone-blue)] underline"
+          >
+            تسجيل الدخول
+          </a>
+          .
         </p>
       )}
 
-      {summary.isError && !s ? (
-        <SummaryError onRetry={() => summary.refetch()} />
-      ) : (
-        <KpiStrip s={s} loading={!s} />
-      )}
-      {s && (
-        <Attention
-          s={s}
-          onPick={(p, t) => {
-            setTab(t);
-            setF({ ...NO_FILTERS, ...p });
-          }}
-        />
-      )}
-
-      <div
-        role="tablist"
-        aria-label="أقسام الصيانة"
-        className="flex gap-1 overflow-x-auto rounded-2xl border border-[color:var(--hairline)] bg-[color:var(--surface)] p-1"
-      >
-        {TABS.map(([t, label]) => (
-          <button
-            key={t}
-            type="button"
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => {
-              setTab(t);
-              setPage(0);
-            }}
-            className={cn(
-              "nx-focus-ring min-h-11 flex-1 whitespace-nowrap rounded-xl px-3 text-[14px] font-bold",
-              tab === t
-                ? "bg-[color:var(--tone-blue)] text-[color:var(--surface)]"
-                : "text-[color:var(--ink-2)] hover:bg-[color:var(--chip-strong)]",
-            )}
-          >
-            {label}
-            {t === "active" && activeCount !== null && (
-              <span className="ms-1.5 tabular-nums opacity-90">({fmt(activeCount)})</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {(tab === "active" || tab === "history") && (
-        <div role="tabpanel" className="space-y-3">
-          <FilterBar f={filters} set={setF} tab={listTab} signedIn={!!user} />
-
-          {list.isError ? (
-            <div
-              role="alert"
-              className="flex flex-wrap items-center gap-2 rounded-xl border border-[color:var(--hairline)] p-4 text-[13px]"
+      {guestLocked && (
+        <div
+          role="note"
+          className="rounded-2xl border border-[color:var(--hairline)] bg-[color:var(--surface)] p-6 text-center"
+        >
+          <Lock aria-hidden className="mx-auto size-8 text-[color:var(--ink-3)]" />
+          <p className="mt-2 text-[15px] font-bold text-[color:var(--ink)]">
+            انتهت فترة القراءة العامة — بيانات الصيانة للأعضاء.
+          </p>
+          <p className="mt-1 text-[13px] text-[color:var(--ink-2)]">
+            <a
+              href="/auth"
+              className="nx-focus-ring font-bold text-[color:var(--tone-blue)] underline"
             >
-              تعذّر تحميل الأوامر الآن.
-              <button
-                type="button"
-                onClick={() => list.refetch()}
-                className="nx-home-retry inline-flex min-h-11 items-center rounded-lg border border-[color:var(--hairline)] px-3 font-bold"
-              >
-                أعد المحاولة
-              </button>
-            </div>
-          ) : !list.data ? (
-            <div aria-busy className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 6 }, (_, i) => (
-                <span key={i} aria-hidden className="nx-home-skeleton h-52 rounded-2xl" />
-              ))}
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[color:var(--hairline)] p-8 text-center text-[14px] text-[color:var(--ink-2)]">
-              {JSON.stringify(filters) !== JSON.stringify(NO_FILTERS)
-                ? "لا أوامر تطابق هذه الفلاتر."
-                : tab === "active"
-                  ? "لا أوامر نشطة — كل الطلبات مُنجزة أو ملغاة."
-                  : "لا أوامر في السجل بعد."}
-            </div>
+              سجّل الدخول
+            </a>{" "}
+            أو{" "}
+            <a
+              href="/auth?mode=signup"
+              className="nx-focus-ring font-bold text-[color:var(--tone-blue)] underline"
+            >
+              أنشئ حسابًا جديدًا
+            </a>{" "}
+            بالرقم الوظيفي والبريد.
+          </p>
+        </div>
+      )}
+
+      {!guestLocked && (
+        <>
+          {summary.isError && !s ? (
+            <SummaryError onRetry={() => summary.refetch()} />
           ) : (
-            <>
-              <p className="text-[12px] text-[color:var(--ink-3)]" aria-live="polite">
-                {fmt(list.data.total)} أمرًا
-                {tab === "active" ? " — الأطول تأخّرًا أولًا" : " — الأحدث أولًا"}
-              </p>
-              {tab === "active" ? (
-                <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {rows.map((o) => (
-                    <li key={o.id} className="min-w-0">
-                      <MaintOrderCard order={o} onOpen={() => setSelected(o)} />
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <ul className="grid gap-2">
-                  {rows.map((o) => (
-                    <HistoryRow key={o.id} o={o} onOpen={() => setSelected(o)} />
-                  ))}
-                </ul>
-              )}
-              <Pager
-                page={page}
-                total={list.data.total}
-                size={PAGE_SIZE[listTab]}
-                onPage={setPage}
-              />
-            </>
+            <KpiStrip s={s} loading={!s} />
           )}
-        </div>
-      )}
+          {s && (
+            <Attention
+              s={s}
+              onPick={(p, t) => {
+                setTab(t);
+                setF({ ...NO_FILTERS, ...p });
+              }}
+            />
+          )}
 
-      {tab === "analytics" && (
-        <div role="tabpanel">
-          <Suspense
-            fallback={<span aria-hidden className="nx-home-skeleton block h-96 rounded-2xl" />}
+          <div
+            role="tablist"
+            aria-label="أقسام الصيانة"
+            className="flex gap-1 overflow-x-auto rounded-2xl border border-[color:var(--hairline)] bg-[color:var(--surface)] p-1"
           >
-            {s ? (
-              <MaintAnalytics data={s.analytics} />
-            ) : summary.isError ? (
-              <SummaryError onRetry={() => summary.refetch()} />
-            ) : (
-              <span aria-hidden className="nx-home-skeleton block h-96 rounded-2xl" />
-            )}
-          </Suspense>
-        </div>
-      )}
+            {TABS.map(([t, label]) => (
+              <button
+                key={t}
+                type="button"
+                role="tab"
+                aria-selected={tab === t}
+                onClick={() => {
+                  setTab(t);
+                  setPage(0);
+                }}
+                className={cn(
+                  "nx-focus-ring min-h-11 flex-1 whitespace-nowrap rounded-xl px-3 text-[14px] font-bold",
+                  tab === t
+                    ? "bg-[color:var(--tone-blue)] text-[color:var(--surface)]"
+                    : "text-[color:var(--ink-2)] hover:bg-[color:var(--chip-strong)]",
+                )}
+              >
+                {label}
+                {t === "active" && activeCount !== null && (
+                  <span className="ms-1.5 tabular-nums opacity-90">({fmt(activeCount)})</span>
+                )}
+              </button>
+            ))}
+          </div>
 
-      {tab === "incidents" && (
-        <div role="tabpanel">
-          <Suspense
-            fallback={<span aria-hidden className="nx-home-skeleton block h-96 rounded-2xl" />}
-          >
-            <IncidentWorkOrdersTab />
-          </Suspense>
-        </div>
+          {(tab === "active" || tab === "history") && (
+            <div role="tabpanel" className="space-y-3">
+              <FilterBar f={filters} set={setF} tab={listTab} signedIn={!!user} />
+
+              {list.isError ? (
+                <div
+                  role="alert"
+                  className="flex flex-wrap items-center gap-2 rounded-xl border border-[color:var(--hairline)] p-4 text-[13px]"
+                >
+                  تعذّر تحميل الأوامر الآن.
+                  <button
+                    type="button"
+                    onClick={() => list.refetch()}
+                    className="nx-home-retry inline-flex min-h-11 items-center rounded-lg border border-[color:var(--hairline)] px-3 font-bold"
+                  >
+                    أعد المحاولة
+                  </button>
+                </div>
+              ) : !list.data ? (
+                <div aria-busy className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <span key={i} aria-hidden className="nx-home-skeleton h-52 rounded-2xl" />
+                  ))}
+                </div>
+              ) : rows.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[color:var(--hairline)] p-8 text-center text-[14px] text-[color:var(--ink-2)]">
+                  {JSON.stringify(filters) !== JSON.stringify(NO_FILTERS)
+                    ? "لا أوامر تطابق هذه الفلاتر."
+                    : tab === "active"
+                      ? "لا أوامر نشطة — كل الطلبات مُنجزة أو ملغاة."
+                      : "لا أوامر في السجل بعد."}
+                </div>
+              ) : (
+                <>
+                  <p className="text-[12px] text-[color:var(--ink-3)]" aria-live="polite">
+                    {fmt(list.data.total)} أمرًا
+                    {tab === "active" ? " — الأطول تأخّرًا أولًا" : " — الأحدث أولًا"}
+                  </p>
+                  {tab === "active" ? (
+                    <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                      {rows.map((o) => (
+                        <li key={o.id} className="min-w-0">
+                          <MaintOrderCard order={o} onOpen={() => setSelected(o)} />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <ul className="grid gap-2">
+                      {rows.map((o) => (
+                        <HistoryRow key={o.id} o={o} onOpen={() => setSelected(o)} />
+                      ))}
+                    </ul>
+                  )}
+                  <Pager
+                    page={page}
+                    total={list.data.total}
+                    size={PAGE_SIZE[listTab]}
+                    onPage={setPage}
+                  />
+                </>
+              )}
+            </div>
+          )}
+
+          {tab === "analytics" && (
+            <div role="tabpanel">
+              <Suspense
+                fallback={<span aria-hidden className="nx-home-skeleton block h-96 rounded-2xl" />}
+              >
+                {s ? (
+                  <MaintAnalytics data={s.analytics} />
+                ) : summary.isError ? (
+                  <SummaryError onRetry={() => summary.refetch()} />
+                ) : (
+                  <span aria-hidden className="nx-home-skeleton block h-96 rounded-2xl" />
+                )}
+              </Suspense>
+            </div>
+          )}
+
+          {tab === "incidents" && (
+            <div role="tabpanel">
+              <Suspense
+                fallback={<span aria-hidden className="nx-home-skeleton block h-96 rounded-2xl" />}
+              >
+                <IncidentWorkOrdersTab />
+              </Suspense>
+            </div>
+          )}
+        </>
       )}
 
       <MaintOrderSheet

@@ -6,6 +6,7 @@
 import { MapPin } from "lucide-react";
 import type { MaintOrder } from "@/lib/maintenance/maint-types";
 import {
+  KindBadge,
   OverdueBadge,
   PersonLine,
   StageBar,
@@ -14,8 +15,17 @@ import {
   cityAr,
   fmt,
   fmtDate,
+  regionAr,
   systemAr,
 } from "@/components/sec/maint/maint-ui";
+
+/** من أين جاء الأمر حين لا اسم ولا رقم لمنشئه — بلا اسمٍ مختلق. */
+export function creatorFallback(o: MaintOrder): string {
+  if (o.plan_generated) return "مولَّد آليًّا من خطة الصيانة الوقائية";
+  if (o.source === "cm_log") return "مستورد من سجل الصيانة";
+  if (o.source === "sap") return "مستورد من SAP";
+  return "غير معروف";
+}
 
 export function MaintOrderCard({ order: o, onOpen }: { order: MaintOrder; onOpen: () => void }) {
   return (
@@ -31,6 +41,7 @@ export function MaintOrderCard({ order: o, onOpen }: { order: MaintOrder; onOpen
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <bdi className="font-mono text-[12px] text-[color:var(--ink-3)]">{o.ref}</bdi>
             <span className="text-[12px] text-[color:var(--ink-3)]">{systemAr(o.system)}</span>
+            <KindBadge kind={o.kind} />
           </span>
           <span className="mt-0.5 block truncate text-[15px] font-bold text-[color:var(--ink)]">
             {o.component ?? o.description ?? "عطل غير موصوف"}
@@ -38,7 +49,8 @@ export function MaintOrderCard({ order: o, onOpen }: { order: MaintOrder; onOpen
           <span className="mt-0.5 flex min-w-0 items-center gap-1 text-[12px] text-[color:var(--ink-2)]">
             <MapPin aria-hidden className="size-3.5 shrink-0" />
             <span className="truncate">
-              {o.site ?? "موقع غير محدّد"} · {cityAr(o.city)}
+              {o.site ?? o.functional_location ?? "موقع غير محدّد"} ·{" "}
+              {o.city ? cityAr(o.city) : regionAr(o.region)}
             </span>
           </span>
         </span>
@@ -57,18 +69,26 @@ export function MaintOrderCard({ order: o, onOpen }: { order: MaintOrder; onOpen
       </span>
 
       <span className="mt-auto grid w-full gap-1 border-t border-[color:var(--hairline-soft)] pt-2">
-        <PersonLine
-          label="المُنشئ"
-          name={o.created_by_name}
-          staff={o.created_by_staff}
-          emptyText={o.source === "cm_log" ? "مستورد من سجل الصيانة" : "غير معروف"}
-        />
-        <PersonLine
-          label="الفني"
-          name={o.assigned_to_name}
-          staff={o.assigned_to_staff}
-          emptyText="غير مُسنَد بعد"
-        />
+        {o.viewer_is_member ? (
+          <>
+            <PersonLine
+              label="المُنشئ"
+              name={o.created_by_name}
+              staff={o.created_by_staff}
+              emptyText={creatorFallback(o)}
+            />
+            <PersonLine
+              label="الفني"
+              name={o.assigned_to_name}
+              staff={o.assigned_to_staff}
+              emptyText="غير مُسنَد بعد"
+            />
+          </>
+        ) : (
+          <span className="text-[12px] text-[color:var(--ink-3)]">
+            المُنشئ والفني يظهران لأعضاء المنشأة المسجَّلين
+          </span>
+        )}
         <span className="text-[12px] text-[color:var(--ink-3)]">
           طُلب {fmtDate(o.requested_at)}
           {o.stage_basis === "import_evidence" &&

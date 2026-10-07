@@ -44,6 +44,8 @@ create function public.is_org_member(_org uuid, _min_role public.org_role defaul
    when 'manager' then m.role in ('manager','admin','owner') when 'admin' then m.role in ('admin','owner') when 'owner' then m.role='owner' end) $$;
 create function public.has_role(_user_id uuid, _role public.app_role) returns boolean language sql stable security definer set search_path to 'public' as $$ select exists (select 1 from public.user_roles where user_id=_user_id and role=_role) $$;
 create function public.current_org_id() returns uuid language sql stable security definer set search_path to 'public' as $$ select org_id from public.org_members where user_id=auth.uid() limit 1 $$;
+-- تشديد الإنتاج `20260626140444`: فحص العضوية لا يُنفَّذ من الزائر — قبل الترحيل.
+revoke execute on function public.is_org_member(uuid, public.org_role) from anon, public;
 
 
 -- مؤسستان. M مدير · T فني (operator) · A مشغّل · V مشاهد · X مشغّل في مؤسسة أخرى.
@@ -68,6 +70,12 @@ insert into public.staff_accounts values
 \ir ../migrations/20261006120000_maint_orders.sql
 \ir ../migrations/20261006120000_maint_orders.sql
 -- (مرّتين: idempotent)
+\ir ../migrations/20261006190000_maint_orders_sap_public.sql
+\ir ../migrations/20261006190000_maint_orders_sap_public.sql
+-- (مرّتين: idempotent) — ثم تُغلق نافذة القراءة العامة لحالات العزل الأصلية،
+-- وتُفتح في القسم الأخير لاختبار ما يراه الزائر وما لا يراه.
+create or replace function public.maint_public_read_open() returns boolean
+  language sql stable set search_path to 'public' as $$ select false $$;
 
 -- صفوف مستوردة بصيغة سكربت الاستيراد نفسها (بيانات اصطناعية).
 insert into public.maint_orders (org_id, source, stage_basis, imported_untouched, ref, source_row, city, site, system, component, status, stage, hold_reason, requested_at, due_at, completed_at, maintenance_cost, spares_cost, delay_penalty, notes)
@@ -98,9 +106,9 @@ end $$;
 -- ── الزائر: لا شيء ─────────────────────────────────────────────────────────
 begin; set local role anon;
 select pg_temp.t('anon select maint_orders', 'select count(*) from public.maint_orders', false);
-select pg_temp.t('anon select maint_orders_v', 'select count(*) from public.maint_orders_v', false);
+select pg_temp.eq('anon reads nothing from the view when the window is closed', 'select count(*)::text from public.maint_orders_v', '0');
 select pg_temp.t('anon select events', 'select count(*) from public.maint_order_events', false);
-select pg_temp.t('anon maint_kpis', 'select public.maint_kpis()', false);
+select pg_temp.eq('anon kpis total 0 when the window is closed', $q$select public.maint_kpis()->>'total'$q$, '0');
 select pg_temp.t('anon maint_create_order', $q$select public.maint_create_order('S','JEDDAH','CCTV','c','description','high',null)$q$, false);
 select pg_temp.t('anon truncate', 'truncate public.maint_orders cascade', false);
 select pg_temp.t('anon maint_staff_directory', 'select * from public.maint_staff_directory()', false);
@@ -202,4 +210,84 @@ select pg_temp.eq('relacl maint_orders: authenticated=r only, no anon',
   $q$select (select string_agg(a, ',' order by a) from unnest(relacl::text[]) a where a ~ '^(anon|authenticated)=') from pg_class where oid='public.maint_orders'::regclass$q$,
   'authenticated=r/' || current_user);
 select pg_temp.eq('no SECURITY DEFINER maint_* function executable by anon',
-  $q$select count(*)::text from pg_proc where proname like 'maint\_%' and has_function_privilege('anon', oid, 'execute')$q$, '0');
+  $q$select count(*)::text from pg_proc where proname like 'maint\_%' and prosecdef and has_function_privilege('anon', oid, 'execute')$q$, '0');
+select pg_temp.eq('anon may execute only the read-side invoker functions',
+  $q$select string_agg(proname, ',' order by proname) from pg_proc where proname like 'maint\_%' and has_function_privilege('anon', oid, 'execute')$q$,
+  'maint_analytics,maint_kpis,maint_public_read_open,maint_stage_pct');
+select pg_temp.eq('anon may execute is_org_member (the view calls it as the reader)',
+  $q$select has_function_privilege('anon', 'public.is_org_member(uuid, public.org_role)', 'execute')::text$q$, 'true');
+
+-- ══ نافذة القراءة العامة مفتوحة (حتى 2027-04-06 في الترحيل) ═══════════════════
+create or replace function public.maint_public_read_open() returns boolean
+  language sql stable set search_path to 'public' as $$ select true $$;
+-- أمر SAP منشئه موظفٌ مسجَّل برقمه الوظيفي (T = 10254) — يُربط اسمه للأعضاء وحدهم.
+insert into public.maint_orders (org_id, source, ref, source_row, kind, region, system, component, status, stage, sap_wo, entered_by_staff, planner_group, notes)
+values ('00000000-0000-0000-0000-000000000001', 'sap', '12345678901', 7, 'preventive', 'eastern', 'CONTROL', 'Screen Monitor', 'completed', 'closed', '12345678901', '10254', 'EOA', 'private note');
+
+-- القيم المتوقعة تُحسب بصلاحية المشغّل قبل تبديل الدور.
+select count(*)::text as org1_rows from public.maint_orders where org_id = '00000000-0000-0000-0000-000000000001' \gset
+select count(*)::text as org1_notes from public.maint_orders where notes is not null and org_id = '00000000-0000-0000-0000-000000000001' \gset
+select count(*)::text as org1_unassigned from public.maint_orders where status in ('open', 'on_hold') and assigned_to is null and org_id = '00000000-0000-0000-0000-000000000001' \gset
+select count(*)::text as org1_assigned from public.maint_orders where assigned_to is not null and org_id = '00000000-0000-0000-0000-000000000001' \gset
+begin; set local role anon;
+select pg_temp.eq('anon sees exactly the operational org rows',
+  'select count(*)::text from public.maint_orders_v', :'org1_rows');
+select pg_temp.eq('anon sees no other-org row', $q$select count(*)::text from public.maint_orders_v where org_id <> '00000000-0000-0000-0000-000000000001'$q$, '0');
+select pg_temp.eq('anon sees no personal data (names, staff numbers, user ids, notes)',
+  $q$select count(*)::text from public.maint_orders_v where notes is not null or created_by is not null or created_by_name is not null or created_by_staff is not null or assigned_to is not null or assigned_to_name is not null or assigned_to_staff is not null$q$, '0');
+select pg_temp.eq('anon kpis: real total, not a member, window open',
+  $q$select (public.maint_kpis()->>'total')||'/'||(public.maint_kpis()->>'viewer_is_member')||'/'||(public.maint_kpis()->>'public_read_open')$q$,
+  :'org1_rows' || '/false/true');
+select pg_temp.eq('anon unassigned_active is the real count (masking does not fake «no technician»)',
+  $q$select public.maint_kpis()->>'unassigned_active'$q$, :'org1_unassigned');
+select pg_temp.eq('anon sees which orders are assigned, not by whom',
+  'select count(*)::text from public.maint_orders_v where is_assigned', :'org1_assigned');
+select pg_temp.eq('anon is_org_member is false (no uid)',
+  $q$select public.is_org_member('00000000-0000-0000-0000-000000000001', 'viewer')::text$q$, 'false');
+select pg_temp.eq('anon analytics by region (eastern group present)', $q$select (public.maint_analytics()->'by_region' @> '[{"key":"eastern"}]')::text$q$, 'true');
+select pg_temp.t('anon still cannot read the base table', 'select count(*) from public.maint_orders', false);
+select pg_temp.t('anon still cannot read the timeline', 'select count(*) from public.maint_order_events', false);
+select pg_temp.t('anon cannot create (v2)', $q$select public.maint_create_order_v2('S','JEDDAH','western','CCTV','corrective','c','description','high',null)$q$, false);
+rollback;
+
+begin; set local role authenticated; set local request.jwt.claim.sub = 'a0000000-0000-0000-0000-00000000000d';
+select pg_temp.eq('member sees the SAP creator linked by staff number', $q$select created_by_staff||'/'||created_by_name from public.maint_orders_v where ref='12345678901'$q$, '10254/فني أول');
+select pg_temp.eq('member sees notes', $q$select count(*)::text from public.maint_orders_v where notes is not null and org_id='00000000-0000-0000-0000-000000000001'$q$,
+  :'org1_notes');
+select pg_temp.eq('pm compliance from preventive rows', $q$select public.maint_kpis()->>'pm_compliance'$q$, '100.0');
+rollback;
+
+begin; set local role authenticated; set local request.jwt.claim.sub = 'a0000000-0000-0000-0000-00000000000e';
+select pg_temp.eq('X (other org) reads org1 publicly but masked', $q$select count(*)::text from public.maint_orders_v where org_id='00000000-0000-0000-0000-000000000001' and (notes is not null or created_by_staff is not null)$q$, '0');
+select pg_temp.eq('X sees its own org unmasked', $q$select count(*)::text from public.maint_orders_v where org_id='00000000-0000-0000-0000-000000000009' and viewer_is_member$q$, '1');
+rollback;
+
+begin; set local role authenticated; set local request.jwt.claim.sub = 'a0000000-0000-0000-0000-00000000000c';
+select pg_temp.t('A creates a preventive order in the eastern region (v2)', $q$select public.maint_create_order_v2('Reference Site 4','','eastern','CONTROL','preventive','UPS','monthly check of UPS','high',null)$q$, true);
+select pg_temp.eq('v2 order stored with region and kind', $q$select region||'/'||kind||'/'||system from public.maint_orders where description='monthly check of UPS'$q$, 'eastern/preventive/CONTROL');
+select pg_temp.t('A invalid region (v2)', $q$select public.maint_create_order_v2('Reference Site 4','','north','CCTV','corrective','x','camera down now','high',null)$q$, false);
+select pg_temp.t('A old 7-arg create still works (wrapper)', $q$select public.maint_create_order('Reference Site 5','JEDDAH','GATE','Arm Barrier','barrier stuck open','medium',null)$q$, true);
+rollback;
+
+-- الترحيل يُعاد فيصحّح أولوية صفّ سجلٍّ مختلَقة ويضعه في الغربية (idempotent).
+update public.maint_orders set priority = 'medium', region = null where source = 'cm_log' and org_id = '00000000-0000-0000-0000-000000000001';
+\ir ../migrations/20261006190000_maint_orders_sap_public.sql
+select pg_temp.eq('CM rows: no fabricated priority, western region after re-run',
+  $q$select count(*)::text from public.maint_orders where source='cm_log' and org_id='00000000-0000-0000-0000-000000000001' and (priority is not null or region is distinct from 'western')$q$, '0');
+
+-- ══ التراجع يُغلق القراءة العامة ويعيد تشديد الإنتاج (تطبيق ← تراجع ← تطبيق ← تراجع) ══
+\ir ../migrations/20261006190001_maint_orders_sap_public_rollback.sql
+\ir ../migrations/20261006190000_maint_orders_sap_public.sql
+\ir ../migrations/20261006190001_maint_orders_sap_public_rollback.sql
+\ir ../migrations/20261006190001_maint_orders_sap_public_rollback.sql
+select pg_temp.eq('after rollback: anon executes nothing (maint_* and is_org_member)',
+  $q$select count(*)::text from pg_proc where (proname like 'maint\_%' or proname = 'is_org_member') and pronamespace = 'public'::regnamespace and has_function_privilege('anon', oid, 'execute')$q$, '0');
+begin; set local role anon;
+select pg_temp.t('after rollback: anon cannot read the view', 'select count(*) from public.maint_orders_v', false);
+select pg_temp.t('after rollback: anon cannot read kpis', 'select public.maint_kpis()', false);
+rollback;
+begin; set local role authenticated; set local request.jwt.claim.sub = 'a0000000-0000-0000-0000-00000000000d';
+select pg_temp.eq('after rollback: member still reads org1 (original view)',
+  $q$select count(*)::text from public.maint_orders_v$q$, :'org1_rows');
+select pg_temp.eq('after rollback: member kpis work (original body)', $q$select public.maint_kpis()->>'total'$q$, :'org1_rows');
+rollback;

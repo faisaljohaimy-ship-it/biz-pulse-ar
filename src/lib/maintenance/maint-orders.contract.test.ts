@@ -4,15 +4,11 @@
  * فاعلٍ تبتلعها NULL (قِيست: مشغّلٌ غير مُسنَد قدّم أمرًا)، أو عرضٌ يتجاوز RLS بلا
  * شرط عضوية، أو أوزان مراحل تفترق بين القاعدة والواجهة، أو بياناتٌ حقيقية
  * تتسرّب إلى المستودع أو إلى الزائر. السلوك نفسه قِيس على Postgres حقيقي
- * (`supabase/preflight/maint_orders_check.sql`: ٥٩ حالة).
+ * (`supabase/preflight/maint_orders_check.sql`: ٨٧ حالة).
  */
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { STAGES, STAGE_PCT } from "@/lib/maintenance/cm-log-rules";
-import {
-  buildMaintOrdersSimulation,
-  buildMaintSummarySimulation,
-} from "@/lib/maintenance/maint-simulation";
 
 const MIG = readFileSync("supabase/migrations/20261006120000_maint_orders.sql", "utf8");
 const RB = readFileSync("supabase/migrations/20261006120001_maint_orders_rollback.sql", "utf8");
@@ -135,9 +131,9 @@ describe("نقض حارس الجودة الثاني — لا يعود", () => {
   });
 
   const PAGE = readFileSync("src/routes/_authenticated/sec.maintenance.tsx", "utf8");
-  it("الشارة مرجعية متى كان أيّ المصدرين مرجعيًّا", () => {
-    expect(PAGE).toContain('sources.includes("reference")');
-    expect(PAGE).not.toContain("const source = s?.source ?? list.data?.source");
+  it("لا شارة محاكاة ولا مصدرٌ مرجعي — البيانات فعلية وحدها", () => {
+    expect(PAGE).not.toMatch(/محاكاة مرجعية|"reference"/);
+    expect(PAGE).toContain("<SourceBadge />");
   });
 
   it("فشل الملخّص رسالةٌ وزرّ إعادة لا هيكلٌ أبدي", () => {
@@ -160,7 +156,22 @@ describe("نقض حارس الجودة الثاني — لا يعود", () => {
   it("«بلا فني مُسنَد» يفلتر فعلًا", () => {
     expect(PAGE).toContain('onPick({ unassigned: true }, "active")');
     const FN = readFileSync("src/lib/maint.functions.ts", "utf8");
-    expect(FN).toContain('q = q.is("assigned_to", null)');
+    // على `is_assigned` لا `assigned_to`: هوية الفني محجوبة عن الزائر، فالفلتر
+    // عليها يعدّ كل أمرٍ نشط «بلا فني» (نقض الحارس ٢٠٢٦/١٠/٠٦ — المادة ٢٧).
+    expect(FN).toContain('q = q.eq("is_assigned", false)');
+    expect(FN).not.toContain('q.is("assigned_to", null)');
+    const MIG = readFileSync(
+      "supabase/migrations/20261006190000_maint_orders_sap_public.sql",
+      "utf8",
+    );
+    expect(MIG).toContain("(o.assigned_to is not null) as is_assigned");
+    expect(MIG).toContain("and not is_assigned)");
+  });
+
+  it("الخطأ يظهر خلال مهلة الخادم — لا إعادة محاولة تلقائية تُطيل الهيكل (المادة ١٤)", () => {
+    expect(PAGE.match(/retry: false/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    const SHEET = readFileSync("src/components/sec/maint/MaintOrderSheet.tsx", "utf8");
+    expect(SHEET).toContain("retry: false");
   });
 });
 
@@ -187,7 +198,9 @@ describe("البيانات الحقيقية لا تدخل المستودع ول�
     const files = [
       "src/lib/maintenance/cm-log-rules.test.ts",
       "src/lib/maintenance/cm-log-rules.ts",
-      "src/lib/maintenance/maint-simulation.ts",
+      "src/lib/maintenance/sap-export-rules.ts",
+      "src/lib/maintenance/sap-export-rules.test.ts",
+      "scripts/import-sap-export.mjs",
       "src/components/sec/maint/NewMaintOrderDialog.tsx",
       "supabase/preflight/maint_orders_check.sql",
     ];
@@ -197,25 +210,36 @@ describe("البيانات الحقيقية لا تدخل المستودع ول�
     }
   });
 
-  it("المحاكاة اصطناعية بالكامل وموسومة: لا موقع حقيقي ولا SAP ولا اسم", () => {
-    const rows = buildMaintOrdersSimulation(Date.UTC(2026, 9, 6));
-    expect(rows.length).toBe(40);
-    for (const r of rows) {
-      expect(r.id.startsWith("sim-")).toBe(true);
-      expect(r.site).toMatch(/^موقع مرجعي \d$/);
-      expect(r.sap_wo).toBeNull();
-      expect(r.created_by_name).toBeNull();
-      expect(r.notes).toContain("محاكاة");
+  it("لا محاكاة في الصيانة — الملف محذوف ولا مرجع له (أمر المالك ٢٠٢٦/١٠/٠٦)", () => {
+    expect(existsSync("src/lib/maintenance/maint-simulation.ts")).toBe(false);
+    for (const f of [
+      "src/lib/maint.functions.ts",
+      "src/routes/_authenticated/sec.maintenance.tsx",
+      "src/components/sec/maint/MaintOrderSheet.tsx",
+      "src/components/sec/maint/maint-ui.tsx",
+    ]) {
+      expect(readFileSync(f, "utf8"), f).not.toMatch(/maint-simulation|Simulation\(|is_simulation/);
     }
-    const s = buildMaintSummarySimulation(Date.UTC(2026, 9, 6));
-    expect(s.source).toBe("reference");
-    expect(s.kpis.total).toBe(40);
-    expect(s.kpis.open + s.kpis.on_hold).toBe(12);
+    // نصّ العرض نفسه: لا يُقال للزائر «محاكاة» فوق بيانات فعلية، ولا حارس صفوف `sim-`.
+    for (const f of [
+      "src/components/sec/maint/MaintOrderSheet.tsx",
+      "src/components/sec/maint/MaintOrderCard.tsx",
+      "src/components/sec/maint/MaintAnalytics.tsx",
+    ]) {
+      expect(readFileSync(f, "utf8"), f).not.toMatch(/محاكاة|"sim-"/);
+    }
   });
 
-  it("الخادم لا يستعلم للزائر أصلًا، والكتابة كلّها خلف المصادقة", () => {
+  it("القراءة من القاعدة للجميع والعطل خطأٌ صريح، والكتابة كلّها خلف المصادقة", () => {
     const FN = readFileSync("src/lib/maint.functions.ts", "utf8");
-    expect(FN.match(/if \(!context\.userId\) return/g)?.length).toBeGreaterThanOrEqual(3);
+    // لا مسار للزائر يتجاوز القاعدة: العرض يقرّر ما يُرى، والعطل يُرفع لا يُستبدل.
+    for (const r of ["listMaintOrders", "getMaintSummary"]) {
+      const at = FN.indexOf(`export const ${r}`);
+      const body = FN.slice(at, FN.indexOf("export const", at + 10));
+      expect(body, r).not.toMatch(/if \(!context\.userId\) return/);
+      expect(body, r).toContain("throw new Error(READ_FAILED)");
+    }
+    expect(FN.match(/throw new Error\(READ_FAILED\)/g)?.length).toBeGreaterThanOrEqual(3);
     for (const w of [
       "createMaintOrder",
       "assignMaintOrder",
@@ -225,12 +249,14 @@ describe("البيانات الحقيقية لا تدخل المستودع ول�
       const at = FN.indexOf(`export const ${w}`);
       expect(FN.slice(at, at + 200), w).toContain(".middleware([requireSupabaseAuth])");
     }
+    expect(FN).toContain('"maint_create_order_v2"');
   });
 
-  it("الصفحة توسم المصدر وتقول للزائر لماذا يرى محاكاة", () => {
+  it("الزائر يقرأ في النافذة ويُقال له ما يُحجب، وبعدها يُدعى للدخول", () => {
     const PAGE = readFileSync("src/routes/_authenticated/sec.maintenance.tsx", "utf8");
-    expect(PAGE).toContain("<SourceBadge source={source} />");
-    expect(PAGE).toContain("سجلّ الصيانة الحقيقي يظهر بعد تسجيل الدخول");
+    expect(PAGE).toContain("قراءةٌ عامة حتى ٦ أبريل ٢٠٢٧");
+    expect(PAGE).toContain("انتهت فترة القراءة العامة");
+    expect(PAGE).toContain("const guestLocked = !!s && !user && !publicOpen;");
     // البوابة الوحيدة لاستعلامات العرض `!authLoading` (لا `enabled: !!user`).
     expect(PAGE).not.toMatch(/enabled:\s*!!user/);
   });

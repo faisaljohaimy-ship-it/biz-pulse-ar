@@ -7,10 +7,13 @@
  */
 import {
   Ban,
+  CalendarSync,
   Cctv,
   CircleCheck,
   DoorClosed,
   KeyRound,
+  MonitorCog,
+  Radar,
   OctagonAlert,
   TriangleAlert,
   UserRound,
@@ -31,12 +34,15 @@ import {
   type SystemCode,
 } from "@/lib/maintenance/cm-log-rules";
 import { cn } from "@/lib/utils";
+import { getRegion, type RegionId } from "@/lib/regions";
 
 export const SYSTEM_ICON: Record<SystemCode, LucideIcon> = {
   CCTV: Cctv,
   GATE: DoorClosed,
   ACS: KeyRound,
   VISIT: Wrench,
+  CONTROL: MonitorCog,
+  PIDS: Radar,
 };
 
 /** لون هوية كل نظام — رمزٌ يُمرَّر متغيّرًا. */
@@ -45,6 +51,8 @@ export const SYSTEM_TONE: Record<SystemCode, string> = {
   GATE: "--tone-cyan",
   ACS: "--tone-emerald",
   VISIT: "--tone-violet",
+  CONTROL: "--tone-amber",
+  PIDS: "--tone-rose",
 };
 
 const NUM = new Intl.NumberFormat("ar-SA");
@@ -250,17 +258,32 @@ export function PersonLine({
   );
 }
 
-/** شارة المصدر — حيّ من القاعدة، أو محاكاة مرجعية (كهرمانية بنمط nexios-ui-patterns). */
-export function SourceBadge({ source }: { source: "database" | "reference" }) {
-  return source === "database" ? (
-    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/50 bg-emerald-500/10 px-2 py-0.5 text-[12px] font-bold text-emerald-700 dark:text-emerald-300">
-      <CircleCheck aria-hidden className="size-3.5" />
-      بيانات حقيقية — سجل الصيانة
+/** شارة المصدر — بيانات فعلية وحدها: سجل الصيانة وتصدير SAP (لا محاكاة). */
+export function SourceBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-[color:var(--hairline)] px-2 py-0.5 text-[12px] font-bold text-[color:var(--ink-2)]">
+      <CircleCheck aria-hidden className="size-3.5 text-[color:var(--tone-emerald)]" />
+      بيانات فعلية — سجل الصيانة وSAP
     </span>
-  ) : (
-    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[12px] font-bold text-amber-700 dark:text-amber-300">
-      <TriangleAlert aria-hidden className="size-3.5" />
-      محاكاة مرجعية
+  );
+}
+
+export const KIND_AR: Record<"corrective" | "preventive", string> = {
+  corrective: "تصحيحية",
+  preventive: "وقائية",
+};
+
+/** المنطقة بتسميتها المختصرة من `regions.ts` — المرجع الجغرافي الوحيد. */
+export const regionAr = (r: RegionId | null | undefined) =>
+  r ? getRegion(r).shortAr : "غير محدّدة";
+
+/** شارة النوع — الوقائية بأيقونة دورة، والتصحيحية بمفتاح. النصّ يقول النوع. */
+export function KindBadge({ kind }: { kind: "corrective" | "preventive" }) {
+  const Icon = kind === "preventive" ? CalendarSync : Wrench;
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-[color:var(--hairline)] px-2 py-0.5 text-[12px] font-bold text-[color:var(--ink-2)]">
+      <Icon aria-hidden className="size-3.5" />
+      {KIND_AR[kind]}
     </span>
   );
 }

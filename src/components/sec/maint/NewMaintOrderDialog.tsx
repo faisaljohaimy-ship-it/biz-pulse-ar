@@ -25,7 +25,9 @@ import { ArabicDateField } from "@/components/ui/arabic-date-field";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { createMaintOrder } from "@/lib/maint.functions";
-import { CITY_AR, SYSTEM_AR, type SystemCode } from "@/lib/maintenance/cm-log-rules";
+import { SYSTEM_AR, type SystemCode } from "@/lib/maintenance/cm-log-rules";
+import { REGIONS, type RegionId } from "@/lib/regions";
+import { useRegion } from "@/lib/region-context";
 import { SYSTEM_ICON } from "@/components/sec/maint/maint-ui";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +58,8 @@ const COMPONENTS: Record<SystemCode, string[]> = {
     "Push Button Switch",
   ],
   VISIT: ["Site Visit"],
+  CONTROL: ["Screen Monitor", "Workstation", "UPS", "Power Supply", "Network Video Recorder"],
+  PIDS: ["Microwave Sensor", "Fence Sensor", "Radar"],
 };
 const PRIORITY: Array<["low" | "medium" | "high" | "critical", string]> = [
   ["low", "منخفضة"],
@@ -101,7 +105,9 @@ export function NewMaintOrderDialog() {
   const [system, setSystem] = useState<SystemCode>("CCTV");
   const [component, setComponent] = useState("");
   const [site, setSite] = useState("");
-  const [city, setCity] = useState("");
+  const { regionId } = useRegion();
+  const [region, setRegion] = useState<RegionId>(regionId);
+  const [kind, setKind] = useState<"corrective" | "preventive">("corrective");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<(typeof PRIORITY)[number][0]>("medium");
   const [dueAt, setDueAt] = useState("");
@@ -113,7 +119,8 @@ export function NewMaintOrderDialog() {
           system,
           component: component || undefined,
           site,
-          city: city || undefined,
+          region,
+          kind,
           description,
           priority,
           dueAt: dueAt || undefined,
@@ -181,7 +188,7 @@ export function NewMaintOrderDialog() {
         >
           <fieldset>
             <legend className="mb-1.5 text-sm font-medium">النظام</legend>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {(Object.keys(SYSTEM_AR) as SystemCode[]).map((s) => {
                 const Icon = SYSTEM_ICON[s];
                 return (
@@ -240,17 +247,16 @@ export function NewMaintOrderDialog() {
               />
             </div>
             <div>
-              <Label htmlFor="mo-city">المدينة</Label>
+              <Label htmlFor="mo-region">المنطقة</Label>
               <select
-                id="mo-city"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
+                id="mo-region"
+                value={region}
+                onChange={(e) => setRegion(e.target.value as RegionId)}
                 className={cn(FIELD, "mt-1.5")}
               >
-                <option value="">—</option>
-                {Object.entries(CITY_AR).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v}
+                {REGIONS.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.shortAr}
                   </option>
                 ))}
               </select>
@@ -269,6 +275,28 @@ export function NewMaintOrderDialog() {
               className="nx-focus-ring mt-1.5 min-h-24"
             />
           </div>
+
+          <fieldset>
+            <legend className="mb-1.5 text-sm font-medium">نوع الصيانة</legend>
+            <div className="grid grid-cols-2 gap-1.5">
+              {(["corrective", "preventive"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={kind === k}
+                  onClick={() => setKind(k)}
+                  className={cn(
+                    "nx-focus-ring min-h-11 rounded-lg border text-[13px] font-bold",
+                    kind === k
+                      ? "border-[color:var(--tone-blue)] bg-[color:var(--tone-blue)] text-[color:var(--surface)]"
+                      : "border-[color:var(--hairline)] text-[color:var(--ink)]",
+                  )}
+                >
+                  {k === "corrective" ? "تصحيحية — عطلٌ قائم" : "وقائية — فحصٌ دوري"}
+                </button>
+              ))}
+            </div>
+          </fieldset>
 
           <fieldset>
             <legend className="mb-1.5 text-sm font-medium">الأولوية</legend>
