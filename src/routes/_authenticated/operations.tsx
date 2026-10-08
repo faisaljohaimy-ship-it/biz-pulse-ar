@@ -94,8 +94,8 @@ function useLiveRows<T>(
     let alive = true;
     setLoading(true);
     const refetch = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (build(supabase.from(table)) as any).then(({ data }: { data: T[] | null }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table union too wide
+      (build(supabase.from(table) as any) as any).then(({ data }: { data: T[] | null }) => {
         if (alive) {
           setRows(data ?? []);
           setLoading(false);
