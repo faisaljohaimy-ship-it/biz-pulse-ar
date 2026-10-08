@@ -3631,6 +3631,225 @@ export type Database = {
           },
         ]
       }
+      maint_order_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event: string
+          from_stage: string | null
+          from_status: string | null
+          hold_reason: string | null
+          id: number
+          note: string | null
+          order_id: string
+          org_id: string
+          to_stage: string | null
+          to_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event: string
+          from_stage?: string | null
+          from_status?: string | null
+          hold_reason?: string | null
+          id?: never
+          note?: string | null
+          order_id: string
+          org_id: string
+          to_stage?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event?: string
+          from_stage?: string | null
+          from_status?: string | null
+          hold_reason?: string | null
+          id?: never
+          note?: string | null
+          order_id?: string
+          org_id?: string
+          to_stage?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maint_order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "maint_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maint_order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "maint_orders_v"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maint_order_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      maint_orders: {
+        Row: {
+          assigned_to: string | null
+          boq_item: string | null
+          city: string | null
+          completed_at: string | null
+          component: string | null
+          created_at: string
+          created_by: string | null
+          delay_penalty: number | null
+          description: string | null
+          due_at: string | null
+          entered_by_staff: string | null
+          equipment: string | null
+          functional_location: string | null
+          hold_reason: string | null
+          id: string
+          imported_untouched: boolean
+          kind: string
+          maintenance_cost: number | null
+          maintenance_cycle: string | null
+          maintenance_plan: string | null
+          notes: string | null
+          notification: string | null
+          org_id: string
+          plan_generated: boolean
+          planned_cost: number | null
+          planner_group: string | null
+          po: string | null
+          priority: string | null
+          qty: number | null
+          ref: string
+          region: string | null
+          requested_at: string | null
+          sap_system_status: string | null
+          sap_wo: string | null
+          service_cost: number | null
+          site: string | null
+          sla_text: string | null
+          source: string
+          source_row: number | null
+          spares_cost: number | null
+          stage: string
+          stage_basis: string
+          status: string
+          system: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          boq_item?: string | null
+          city?: string | null
+          completed_at?: string | null
+          component?: string | null
+          created_at?: string
+          created_by?: string | null
+          delay_penalty?: number | null
+          description?: string | null
+          due_at?: string | null
+          entered_by_staff?: string | null
+          equipment?: string | null
+          functional_location?: string | null
+          hold_reason?: string | null
+          id?: string
+          imported_untouched?: boolean
+          kind?: string
+          maintenance_cost?: number | null
+          maintenance_cycle?: string | null
+          maintenance_plan?: string | null
+          notes?: string | null
+          notification?: string | null
+          org_id: string
+          plan_generated?: boolean
+          planned_cost?: number | null
+          planner_group?: string | null
+          po?: string | null
+          priority?: string | null
+          qty?: number | null
+          ref: string
+          region?: string | null
+          requested_at?: string | null
+          sap_system_status?: string | null
+          sap_wo?: string | null
+          service_cost?: number | null
+          site?: string | null
+          sla_text?: string | null
+          source?: string
+          source_row?: number | null
+          spares_cost?: number | null
+          stage?: string
+          stage_basis?: string
+          status?: string
+          system?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          boq_item?: string | null
+          city?: string | null
+          completed_at?: string | null
+          component?: string | null
+          created_at?: string
+          created_by?: string | null
+          delay_penalty?: number | null
+          description?: string | null
+          due_at?: string | null
+          entered_by_staff?: string | null
+          equipment?: string | null
+          functional_location?: string | null
+          hold_reason?: string | null
+          id?: string
+          imported_untouched?: boolean
+          kind?: string
+          maintenance_cost?: number | null
+          maintenance_cycle?: string | null
+          maintenance_plan?: string | null
+          notes?: string | null
+          notification?: string | null
+          org_id?: string
+          plan_generated?: boolean
+          planned_cost?: number | null
+          planner_group?: string | null
+          po?: string | null
+          priority?: string | null
+          qty?: number | null
+          ref?: string
+          region?: string | null
+          requested_at?: string | null
+          sap_system_status?: string | null
+          sap_wo?: string | null
+          service_cost?: number | null
+          site?: string | null
+          sla_text?: string | null
+          source?: string
+          source_row?: number | null
+          spares_cost?: number | null
+          stage?: string
+          stage_basis?: string
+          status?: string
+          system?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maint_orders_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           citations: Json | null
@@ -7229,6 +7448,24 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_accounts: {
+        Row: {
+          created_at: string
+          staff_number: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          staff_number: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          staff_number?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       support_requests: {
         Row: {
           assigned_to: string | null
@@ -7877,7 +8114,71 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      maint_orders_v: {
+        Row: {
+          age_days: number | null
+          assigned_to: string | null
+          assigned_to_name: string | null
+          assigned_to_staff: string | null
+          boq_item: string | null
+          city: string | null
+          completed_at: string | null
+          component: string | null
+          created_at: string | null
+          created_by: string | null
+          created_by_name: string | null
+          created_by_staff: string | null
+          delay_days: number | null
+          delay_penalty: number | null
+          description: string | null
+          due_at: string | null
+          equipment: string | null
+          functional_location: string | null
+          hold_reason: string | null
+          id: string | null
+          is_assigned: boolean | null
+          kind: string | null
+          maintenance_cost: number | null
+          maintenance_cycle: string | null
+          maintenance_plan: string | null
+          notes: string | null
+          notification: string | null
+          org_id: string | null
+          overdue_days: number | null
+          plan_generated: boolean | null
+          planned_cost: number | null
+          planner_group: string | null
+          po: string | null
+          priority: string | null
+          progress_pct: number | null
+          qty: number | null
+          ref: string | null
+          region: string | null
+          requested_at: string | null
+          sap_system_status: string | null
+          sap_wo: string | null
+          service_cost: number | null
+          site: string | null
+          sla_text: string | null
+          source: string | null
+          spares_cost: number | null
+          stage: string | null
+          stage_basis: string | null
+          status: string | null
+          system: string | null
+          updated_at: string | null
+          viewer_is_member: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maint_orders_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_org_invitation: { Args: { _token: string }; Returns: string }
@@ -7952,6 +8253,71 @@ export type Database = {
           _min_role?: Database["public"]["Enums"]["org_role"]
           _org: string
         }
+        Returns: boolean
+      }
+      maint_advance_stage: {
+        Args: { _note: string; _order: string; _to_stage: string }
+        Returns: undefined
+      }
+      maint_analytics: { Args: never; Returns: Json }
+      maint_assign: {
+        Args: { _assignee: string; _order: string }
+        Returns: undefined
+      }
+      maint_create_order: {
+        Args: {
+          _city: string
+          _component: string
+          _description: string
+          _due_at: string
+          _priority: string
+          _site: string
+          _system: string
+        }
+        Returns: string
+      }
+      maint_create_order_v2: {
+        Args: {
+          _city: string
+          _component: string
+          _description: string
+          _due_at: string
+          _kind: string
+          _priority: string
+          _region: string
+          _site: string
+          _system: string
+        }
+        Returns: string
+      }
+      maint_is_manager: { Args: { _org: string }; Returns: boolean }
+      maint_kpis: { Args: never; Returns: Json }
+      maint_public_read_open: { Args: never; Returns: boolean }
+      maint_set_status: {
+        Args: {
+          _hold_reason: string
+          _note: string
+          _order: string
+          _status: string
+        }
+        Returns: undefined
+      }
+      maint_staff_directory: {
+        Args: never
+        Returns: {
+          display_name: string
+          org_role: string
+          staff_number: string
+          user_id: string
+        }[]
+      }
+      maint_stage_pct: {
+        Args: { _stage: string; _status: string }
+        Returns: number
+      }
+      maint_stage_rank: { Args: { _stage: string }; Returns: number }
+      member_creation_event_ok: {
+        Args: { _entity_id: string; _entity_type: string; _event: string }
         Returns: boolean
       }
       microsoft_sync_dispatch: { Args: never; Returns: number }
@@ -8031,6 +8397,7 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      staff_number_available: { Args: { _num: string }; Returns: boolean }
       unaccent: { Args: { "": string }; Returns: string }
     }
     Enums: {

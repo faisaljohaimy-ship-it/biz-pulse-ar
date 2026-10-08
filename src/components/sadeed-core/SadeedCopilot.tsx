@@ -11,12 +11,19 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  SADEED_ACCEPT,
+  fileToPart,
+  isTextFile,
+  validateFiles,
+} from "./sadeed-attachments";
+import {
   AudioWaveform,
   Check,
   Copy,
   MessageCircle,
   Mic,
   MicOff,
+  Paperclip,
   Plus,
   Presentation,
   RefreshCcw,
@@ -1173,11 +1180,46 @@ export function SadeedCopilot() {
     textarea.style.height = `${Math.min(textarea.scrollHeight, 128)}px`;
   }, [draft, composerRef]);
 
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadNote, setUploadNote] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // الإيداع في قاعدة المعرفة: الملفات النصّية تُقسَّم وتُفهرَس لتصير مرجعًا
+  // مستشهَدًا به. للمسجّلين فقط — الزائر يقرأ سَدِيد ملفّه دون إيداع.
+  const depositTextFiles = useCallback(async (files: File[]) => {
+    const textFiles = files.filter(isTextFile);
+    if (!textFiles.length) return;
+    try {
+      const { enqueueKnowledgeIngest } = await import("@/lib/sadeed/knowledge-upload.functions");
+      let saved = 0;
+      for (const f of textFiles) {
+        const text = (await f.text()).slice(0, 2_000_000);
+        if (!text.trim()) continue;
+        await enqueueKnowledgeIngest({
+          data: {
+            title: f.name.slice(0, 300),
+            text,
+            mime_type: f.type || "text/plain",
+            size_bytes: f.size,
+            tags: ["sadeed-upload", (f.name.split(".").pop() ?? "txt").toLowerCase().slice(0, 40)],
+          },
+        });
+        saved++;
+      }
+      if (saved) setUploadNote(`أُودع ${saved} ملف في قاعدة معرفة النظام`);
+    } catch {
+      setUploadNote("قرأ سَدِيد الملفات؛ الإيداع في قاعدة المعرفة يتطلّب تسجيل الدخول");
+    }
+  }, []);
+
   const submit = useCallback(
     async (textOverride?: string, opts?: { fromVoice?: boolean }) => {
+      const files = textOverride === undefined ? pendingFiles : [];
       const promptText = (textOverride ?? draft).trim();
-      if (!promptText || isBusy) return;
-      const messageText = promptText;
+      if ((!promptText && files.length === 0) || isBusy) return;
+      const messageText =
+        promptText ||
+        "اقرأ الملفات المرفقة، لخّص محتواها، صنّفها حسب النوع والموضوع، واستخرج أهم البيانات في جدول مرتّب، ثم بيّن أين أُودعت في النظام.";
 
       primeIOSAudio();
       // V5 (مراجعة العميل): النطق افتراضيٌّ في كل المحادثات — صوتًا كان
@@ -1191,9 +1233,17 @@ export function SadeedCopilot() {
 
       setPendingReplyMode(speakNextReplyRef.current ? "voice" : "text");
       setDraft("");
+      setPendingFiles([]);
+      setUploadNote(null);
       pendingSendAtRef.current = performance.now();
       try {
-        await chat.sendMessage({ text: messageText });
+        if (files.length > 0) {
+          const parts = await Promise.all(files.map(fileToPart));
+          await chat.sendMessage({ text: messageText, files: parts });
+          void depositTextFiles(files);
+        } else {
+          await chat.sendMessage({ text: messageText });
+        }
       } catch (error) {
         console.error("[SadeedCopilot] sendMessage failed:", error);
       }
@@ -1202,7 +1252,7 @@ export function SadeedCopilot() {
         composerRef.current?.focus({ preventScroll: true });
       });
     },
-    [draft, isBusy, chat, composerRef],
+    [draft, isBusy, chat, composerRef, pendingFiles],
   );
 
   // Quick commands (Phase 2 §4). A search-style command focuses the composer
@@ -2438,6 +2488,27 @@ export function SadeedCopilot() {
                   </div>
                 )}
                 {/* Quick-command chips removed by request — slash commands remain via "/". */}
+                {(pendingFiles.length > 0 || uploadNote) && (
+                  <div className="mb-2 flex flex-wrap items-center gap-1.5 text-xs" dir="rtl">
+                    {pendingFiles.map((f, i) => (
+                      <span
+                        key={`${f.name}-${i}`}
+                        className="inline-flex items-center gap-1 rounded-lg border border-primary/25 bg-primary/10 px-2 py-1 text-foreground"
+                      >
+                        <Paperclip className="h-3 w-3" aria-hidden />
+                        <span className="max-w-[140px] truncate">{f.name}</span>
+                        <button
+                          type="button"
+                          aria-label={`إزالة ${f.name}`}
+                          onClick={() => setPendingFiles((p) => p.filter((_, j) => j !== i))}
+                        >
+                          <X className="h-3 w-3" aria-hidden />
+                        </button>
+                      </span>
+                    ))}
+                    {uploadNote && <span className="text-muted-foreground">{uploadNote}</span>}
+                  </div>
+                )}
                 <form
                   className="flex items-end gap-2"
                   onSubmit={(e) => {
@@ -2472,6 +2543,34 @@ export function SadeedCopilot() {
                       <Mic className="h-4 w-4" aria-hidden />
                     )}
                   </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept={SADEED_ACCEPT}
+                    className="hidden"
+                    onChange={(e) => {
+                      const list = Array.from(e.target.files ?? []);
+                      e.target.value = "";
+                      const { ok, rejected } = validateFiles([...pendingFiles, ...list]);
+                      setPendingFiles(ok);
+                      setUploadNote(rejected.length ? rejected.join(" · ") : null);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="إرفاق ملفات"
+                    title="إرفاق ملفات — يقرؤها سَدِيد ويودعها مرتّبة في النظام"
+                    className="nexus-field relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/25 bg-background/70 text-foreground hover:border-primary/50 hover:bg-primary/10"
+                  >
+                    <Paperclip className="h-4 w-4" aria-hidden />
+                    {pendingFiles.length > 0 && (
+                      <span className="absolute -top-1 -end-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] text-primary-foreground">
+                        {pendingFiles.length}
+                      </span>
+                    )}
+                  </button>
                   <textarea
                     ref={composerRef}
                     value={draft}
@@ -2494,7 +2593,7 @@ export function SadeedCopilot() {
                   <button
                     type={isBusy ? "button" : "submit"}
                     onClick={isBusy ? stopResponse : undefined}
-                    disabled={!isBusy && !draft.trim()}
+                    disabled={!isBusy && !draft.trim() && pendingFiles.length === 0}
                     aria-label={isBusy ? "إيقاف الرد" : "إرسال"}
                     className={cn(
                       "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",
