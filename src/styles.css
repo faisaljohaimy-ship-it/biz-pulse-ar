@@ -10862,3 +10862,18 @@ body {
     display: none;
   }
 }
+
+/* iOS stability (2026-10-08): touch devices crash ("a problem repeatedly
+   occurred") under ~70 GPU filters + ~60 infinite animations on the home page.
+   Keep colour/borders/box-shadow glows; drop compositing-heavy layers. */
+@media (pointer: coarse) {
+  body *:not(svg *):not(img) {
+    filter: none !important;
+  }
+  body *,
+  body *::before,
+  body *::after {
+    animation-iteration-count: 1 !important;
+    will-change: auto !important;
+  }
+}

@@ -49,6 +49,9 @@ const STORAGE_KEY = "nexios.region";
 
 export function RegionProvider({ children }: { children: ReactNode }) {
   const [regionId, setRegionState] = useState<RegionId>(DEFAULT_REGION_ID);
+  // لا مزامنة للعنوان قبل قراءة المنطقة منه — وإلا كُتب الافتراضي فوق
+  // `?region=western` ثم أُعيد، فيتأرجح العنوان عند كل دخول (عطل iOS المتكرر).
+  const [hydrated, setHydrated] = useState(false);
 
   /**
    * الاستئناف: **العنوان أوّلًا ثمّ التفضيل المحفوظ.**
@@ -68,6 +71,7 @@ export function RegionProvider({ children }: { children: ReactNode }) {
     } catch {
       /* نافذة محظورة أو تخزين معطّل — يبقى الافتراضي */
     }
+    setHydrated(true);
   }, []);
 
   /**
@@ -78,6 +82,7 @@ export function RegionProvider({ children }: { children: ReactNode }) {
    * توقّع المستخدم ويكسر زرّ الرجوع في الشريط العلوي معه.
    */
   useEffect(() => {
+    if (!hydrated) return;
     try {
       const url = new URL(window.location.href);
       if (url.searchParams.get(REGION_PARAM) === regionId) return;
@@ -86,7 +91,7 @@ export function RegionProvider({ children }: { children: ReactNode }) {
     } catch {
       /* noop */
     }
-  }, [regionId]);
+  }, [regionId, hydrated]);
 
   // Drive the whole system's colour from the active region: the pulse halo
   // (--nx-region-rgb) AND every semantic accent token, so all system chrome and
