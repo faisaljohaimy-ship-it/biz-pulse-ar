@@ -11,12 +11,19 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  SADEED_ACCEPT,
+  fileToPart,
+  isTextFile,
+  validateFiles,
+} from "./sadeed-attachments";
+import {
   AudioWaveform,
   Check,
   Copy,
   MessageCircle,
   Mic,
   MicOff,
+  Paperclip,
   Plus,
   Presentation,
   RefreshCcw,
@@ -1172,6 +1179,38 @@ export function SadeedCopilot() {
     textarea.style.height = "auto";
     textarea.style.height = `${Math.min(textarea.scrollHeight, 128)}px`;
   }, [draft, composerRef]);
+
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadNote, setUploadNote] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // الإيداع في قاعدة المعرفة: الملفات النصّية تُقسَّم وتُفهرَس لتصير مرجعًا
+  // مستشهَدًا به. للمسجّلين فقط — الزائر يقرأ سَدِيد ملفّه دون إيداع.
+  const depositTextFiles = useCallback(async (files: File[]) => {
+    const textFiles = files.filter(isTextFile);
+    if (!textFiles.length) return;
+    try {
+      const { enqueueKnowledgeIngest } = await import("@/lib/sadeed/knowledge-upload.functions");
+      let saved = 0;
+      for (const f of textFiles) {
+        const text = (await f.text()).slice(0, 2_000_000);
+        if (!text.trim()) continue;
+        await enqueueKnowledgeIngest({
+          data: {
+            title: f.name.slice(0, 300),
+            text,
+            mime_type: f.type || "text/plain",
+            size_bytes: f.size,
+            tags: ["sadeed-upload", (f.name.split(".").pop() ?? "txt").toLowerCase().slice(0, 40)],
+          },
+        });
+        saved++;
+      }
+      if (saved) setUploadNote(`أُودع ${saved} ملف في قاعدة معرفة النظام`);
+    } catch {
+      setUploadNote("قرأ سَدِيد الملفات؛ الإيداع في قاعدة المعرفة يتطلّب تسجيل الدخول");
+    }
+  }, []);
 
   const submit = useCallback(
     async (textOverride?: string, opts?: { fromVoice?: boolean }) => {
