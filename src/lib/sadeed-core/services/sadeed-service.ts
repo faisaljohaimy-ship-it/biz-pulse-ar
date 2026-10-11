@@ -11,6 +11,7 @@
  */
 import { DefaultChatTransport } from "ai";
 import type { SadeedRouteHint } from "../types/sadeed";
+import { windowChatMessages } from "./chat-window";
 import { supabase } from "@/integrations/supabase/client";
 
 let cachedHint: SadeedRouteHint | null = null;
@@ -113,7 +114,14 @@ export function createSadeedTransport() {
       return {
         api,
         headers: out,
-        body: { ...(body ?? {}), messages, id, replyMode: cachedReplyMode },
+        // نافذة لا السجلّ كاملًا: سقف الخادم 24 رسالة، والمرفقات القديمة
+        // كانت تُعاد رفعًا كل دور (`chat-window.ts`).
+        body: {
+          ...(body ?? {}),
+          messages: windowChatMessages(messages),
+          id,
+          replyMode: cachedReplyMode,
+        },
       };
     },
   });

@@ -14,6 +14,7 @@ import {
   SADEED_ACCEPT,
   fileToPart,
   isTextFile,
+  serverMediaType,
   validateFiles,
 } from "./sadeed-attachments";
 import {
@@ -1199,7 +1200,7 @@ export function SadeedCopilot() {
           data: {
             title: f.name.slice(0, 300),
             text,
-            mime_type: f.type || "text/plain",
+            mime_type: serverMediaType(f) ?? "text/plain",
             size_bytes: f.size,
             tags: ["sadeed-upload", (f.name.split(".").pop() ?? "txt").toLowerCase().slice(0, 40)],
           },
@@ -2531,7 +2532,7 @@ export function SadeedCopilot() {
                         : `المخاطبة الصوتية — تحدّث وسيردّ ${SADEED_DISPLAY_NAME_AR_PLAIN} صوتاً دون كتابة`
                     }
                     className={cn(
-                      "grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-[border-color,background-color,color,box-shadow]",
+                      "grid h-11 w-11 shrink-0 place-items-center rounded-xl border transition-[border-color,background-color,color,box-shadow]",
                       convMode
                         ? "border-emerald-400/55 bg-emerald-400/15 text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,.35)]"
                         : "nexus-field border-primary/25 bg-background/70 text-foreground hover:border-primary/50 hover:bg-primary/10",
@@ -2562,11 +2563,11 @@ export function SadeedCopilot() {
                     onClick={() => fileInputRef.current?.click()}
                     aria-label="إرفاق ملفات"
                     title="إرفاق ملفات — يقرؤها سَدِيد ويودعها مرتّبة في النظام"
-                    className="nexus-field relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/25 bg-background/70 text-foreground hover:border-primary/50 hover:bg-primary/10"
+                    className="nexus-field relative grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-primary/25 bg-background/70 text-foreground hover:border-primary/50 hover:bg-primary/10"
                   >
                     <Paperclip className="h-4 w-4" aria-hidden />
                     {pendingFiles.length > 0 && (
-                      <span className="absolute -top-1 -end-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] text-primary-foreground">
+                      <span className="absolute -top-1.5 -end-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[12px] leading-none text-primary-foreground">
                         {pendingFiles.length}
                       </span>
                     )}
@@ -2596,7 +2597,7 @@ export function SadeedCopilot() {
                     disabled={!isBusy && !draft.trim() && pendingFiles.length === 0}
                     aria-label={isBusy ? "إيقاف الرد" : "إرسال"}
                     className={cn(
-                      "grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",
+                      "grid h-11 w-11 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--nx-cyan-3),var(--nx-cyan))] text-primary-foreground shadow-[0_0_22px_rgba(0,212,255,.28)]",
                       "transition-[transform,filter,opacity] hover:scale-[1.03] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40",
                     )}
                   >

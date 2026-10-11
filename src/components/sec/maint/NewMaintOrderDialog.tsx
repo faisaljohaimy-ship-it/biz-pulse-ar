@@ -77,11 +77,7 @@ function useMyIdentity(userId: string | null) {
     let live = true;
     void Promise.all([
       supabase.from("profiles").select("display_name").eq("user_id", userId).maybeSingle(),
-      (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> })
-        .from("staff_accounts")
-        .select("staff_number")
-        .eq("user_id", userId)
-        .maybeSingle(),
+      supabase.from("staff_accounts").select("staff_number").eq("user_id", userId).maybeSingle(),
     ]).then(([p, s]) => {
       if (!live) return;
       setMe({

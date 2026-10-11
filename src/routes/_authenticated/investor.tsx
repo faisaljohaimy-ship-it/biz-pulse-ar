@@ -86,7 +86,7 @@ function useLiveRows<T>(
     setLoading(true);
     (async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = (await (build(supabase.from(table)) as any)) as { data: T[] | null };
+      const { data } = (await (build(supabase.from(table) as any) as any)) as { data: T[] | null };
       if (!alive) return;
       setRows(data ?? []);
       setLoading(false);
@@ -96,7 +96,7 @@ function useLiveRows<T>(
       .channel(`live:${table}:${Math.random().toString(36).slice(2, 8)}`)
       .on("postgres_changes", { event: "*", schema: "public", table }, () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (build(supabase.from(table)) as any).then(({ data }: { data: T[] | null }) => {
+        (build(supabase.from(table) as any) as any).then(({ data }: { data: T[] | null }) => {
           if (alive) setRows(data ?? []);
         });
       })
