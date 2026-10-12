@@ -236,3 +236,27 @@ describe("الرئيسية تركّب اللوحة وتُفصح بصدق", () =>
     expect(code, "عاد السطر يدّعي أن كل رقم حيّ").not.toContain("الأرقام من مصدر النظام الحيّ. ");
   });
 });
+
+/* ── نصّ الحلقة يُرى مضروبًا في نسبة رسمها إلى viewBox ───────────────── */
+
+/** الحجم المرئي لنصّ SVG: الحجم المصرَّح × (عرض الرسم ÷ عرض viewBox). */
+function donutTextPx(code: string, css: string, cls: string): number {
+  const svg = /<svg viewBox="0 0 (\d+) \d+" className="size-(\d+)[^"]*"/.exec(code);
+  const decl = new RegExp(`\\.${cls}\\s*\\{[^}]*?font-size:\\s*([\\d.]+)px`).exec(css);
+  if (!svg || !decl) return NaN;
+  return Number(decl[1]) * ((Number(svg[2]) * 4) / Number(svg[1]));
+}
+
+describe("نصوص الحلقة فوق أرضية 12px مرئيًّا (ui-audit)", () => {
+  it("الفحص يحمرّ على المزروع: 12px داخل viewBox 120 مرسوم 112px", () => {
+    const seeded = `<svg viewBox="0 0 120 120" className="size-28 shrink-0"`;
+    expect(donutTextPx(seeded, ".x { font-size: 12px; }", "x")).toBeCloseTo(11.2, 5);
+  });
+
+  it("الوسم والقيمة يُريان ≥12px", () => {
+    for (const cls of ["nx-home-donut-caption", "nx-home-donut-value"]) {
+      const px = donutTextPx(CODE, CSS, cls);
+      expect(px, cls).toBeGreaterThanOrEqual(12);
+    }
+  });
+});

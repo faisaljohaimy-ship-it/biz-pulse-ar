@@ -5480,9 +5480,11 @@ html.dark .nx-holo-noise {
   font-size: 22px;
   font-weight: 900;
 }
+/* الحجم بوحدات viewBox (120) والحلقة تُرسَم 112px (size-28)، فيُضرب في
+   112/120: 12 كانت تُرى 11.2px تحت أرضية 12px. 13 ⇐ 12.13px مرئيًّا. */
 .nx-home-donut-caption {
   color: var(--ink-3);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 .nx-home-health {
