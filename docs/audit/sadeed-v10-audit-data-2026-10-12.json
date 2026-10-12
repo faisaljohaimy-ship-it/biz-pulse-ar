@@ -1,0 +1,3100 @@
+{
+"counts_status": {
+"IMPLEMENTED": 44,
+"MISSING": 42,
+"PARTIAL": 101,
+"BROKEN": 34,
+"UNVERIFIED": 12
+},
+"counts_severity": {
+"none": 42,
+"P1": 20,
+"P2": 116,
+"P3": 54,
+"P0": 1
+},
+"rows": [
+{
+"id": "CHAT-01",
+"area": "CHAT",
+"requirement": "Client transport: authenticated-first, then automatic guest retry on 401/403 (saved repair method f413ffa); no auth wording shown",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "Nothing blocking. Minor: a transient GoTrue/network failure in supabase.auth.getUser() also returns 401 (chat.ts:331-338), so a valid user is silently downgraded to the guest path (no tools, no live data) with no notice.",
+"correction": "Optional: return 503-class (retryable) instead of 401 when userError is a network/5xx error, so only a genuinely invalid token triggers the guest fallback.",
+"verifier": ""
+},
+{
+"id": "CHAT-02",
+"area": "CHAT",
+"requirement": "Real incremental streaming (token or sentence) so the first visible text arrives before the whole generation finishes",
+"status": "MISSING",
+"severity": "P1",
+"gap": "Time to first byte equals the total turn time. Users see only 'سَدِيد يفكّر…' for the whole turn. Voice cannot start until the full answer exists. The owner-approved sentence streaming is not built.",
+"correction": "Step 1 (keeps the safe-output gateway, small change): return createUIMessageStreamResponse right away and move the context/model work inside an async execute(). Write a 'start' chunk plus transient data-status parts ('يجمع السياق…', 'يحلّل…') so headers and bytes flow at once. The final text still goes through finalizeSadeedOutput as a single delta. Step 2 (owner flag, e.g. SADEED_SENTENCE_STREAM): streamText, then per-sentence pre-checks, with a final whole-text gateway pass that can replace what was shown. Any change here needs the four 2026-10-11 controls.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "CHAT-03",
+"area": "CHAT",
+"requirement": "Cancel/stop: user stop aborts client and server work and does not leave side effects running",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Stop is cosmetic for the server if request.signal does not propagate. Tool writes already done in earlier steps are not undone. Stopped turns are still persisted as answers.",
+"correction": "Pass request.signal into embedText/httpFetch and into supabase builders (.abortSignal()). Check request.signal.aborted between stages and skip persistence when aborted. Confirm the Workers compatibility flag for request.signal.",
+"verifier": ""
+},
+{
+"id": "CHAT-04",
+"area": "CHAT",
+"requirement": "Automatic retry (layer 2, client half): 2 backed-off retries for transient failures only, without duplicating work",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Retries hit non-retryable statuses (wasting the shared guest bucket) while real provider failures get no retry. The user-facing promise of an automatic reconnect is false.",
+"correction": "Retry only on network errors, 408 and 5xx (except ai_disabled), never on 4xx or 429. For provider errors, emit messageMetadata {retryable:true, errorCode} and let the client auto-retry on that. Do not persist provider-error lines as answers.",
+"verifier": ""
+},
+{
+"id": "CHAT-05",
+"area": "CHAT",
+"requirement": "Idempotency of side-effecting tool calls across retry/regenerate",
+"status": "MISSING",
+"severity": "P1",
+"gap": "Duplicate incidents, work orders, tasks or emails/SMS after a retry or 'إعادة توليد الرد'. This is a data-integrity risk.",
+"correction": "The client generates one turn id per user message, sends it as x-aria-request-id and reuses it on regenerate and auto-retry. Writer tools record (user_id, turn_id, tool) and return the prior result on a repeat. Alternatively, hide 'regenerate' when the last turn executed a writer.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "CHAT-06",
+"area": "CHAT",
+"requirement": "Connection interruption: a dropped connection degrades gracefully and resumes or retries once",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Long idle connections may be cut by intermediaries (not measured). Each recovery re-pays the full cost and repeats side effects.",
+"correction": "Covered by CHAT-02 step 1 (early headers plus periodic data-heartbeat parts) and CHAT-05 (idempotency). Resumable streams can come later if needed.",
+"verifier": ""
+},
+{
+"id": "CHAT-07",
+"area": "CHAT",
+"requirement": "Accurate error states: neutral Arabic message with a retry button; no auth/technical wording, no raw codes",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "Arabic users see English sentences or codes like 'daily_identity_cap' / 'ai_disabled' / 'rate_limit_unavailable'. The Arabic quota text written for them is thrown away. This breaks CLAUDE.md saved-method rule 3 and Article 3 (Arabic first).",
+"correction": "Client: one pure mapper, toArabicChatError(raw, status). It prefers message_ar, maps known codes/statuses to Arabic lines, and falls back to CONNECTION_ERROR_AR for anything without Arabic script. Server: Arabic text in chatJsonError for user-facing statuses, with the English code kept in a separate 'code' field.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "CHAT-08",
+"area": "CHAT",
+"requirement": "Provider routing, fallback and cooldown (layer 2, server half: 'تبريد المزوّد الفاشل ... المحاولة التالية تذهب لمزوّد آخر مهيأ')",
+"status": "MISSING",
+"severity": "P2",
+"gap": "The layer CLAUDE.md lists as preserved does not exist. A Gemini model outage or quota exhaustion means every model turn returns the mapped error line, with no alternate model and no cooldown.",
+"correction": "Owner decision (see conflicts). Within the Gemini-only policy: a configured secondary Gemini model id, plus an in-isolate or KV cooldown after 429/5xx/timeout, so the next attempt goes to the secondary. Otherwise amend CLAUDE.md and the copilot comment.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "CHAT-09",
+"area": "CHAT",
+"requirement": "Guaranteed reply / no 503 to the user (layer 1)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "A DB/RPC outage makes every chat a 503, including no-model answers (scope guard, fast recall, instant data) that cost nothing.",
+"correction": "When rate or quota checks are unavailable, still serve the deterministic paths and the local guaranteed reply as a 200 stream. Keep fail-closed only for the paid model call.",
+"verifier": ""
+},
+{
+"id": "CHAT-10",
+"area": "CHAT",
+"requirement": "Timeouts per stage, plus a client budget (no infinite 'thinking')",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "A hung provider or DB call keeps the user on 'يفكّر…' indefinitely, and auto-retry never fires because no error is raised.",
+"correction": "Client: signal = AbortSignal.any([init.signal, controller.signal]), with a budget larger than the server deadline. Server: one turn deadline, AbortSignal.any([request.signal, AbortSignal.timeout(T)]), passed to generateText and the RAG stage, with supabase abortSignal on the pre-model RPCs. The RAG stage raced like the snapshot.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "CHAT-11",
+"area": "CHAT",
+"requirement": "Context window / history management",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "Nothing blocking. The client sends 20 messages and the server keeps 12, so up to 8 messages are uploaded and dropped. There is no summary of dropped turns.",
+"correction": "Optional: align the client window to the server's 12 merged turns, or add a rolling summary.",
+"verifier": ""
+},
+{
+"id": "CHAT-12",
+"area": "CHAT",
+"requirement": "Memory persistence and recall (finn_memory / aria_conversations) feeding later turns",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Cross-turn memory works only if the flag is on and the memory RPC works, and neither is confirmed. The Article 26 capture job's sources (aria_conversations / aria_learning_log) receive nothing from chat.",
+"correction": "Fix the aria_match_* bodies to finn_* in a reviewed migration (data-engineer), or move to a single retrieval RPC. Write chat turns to the table the capture job reads, or point the job at finn_interactions. Use waitUntil for the writes (CHAT-15).",
+"verifier": ""
+},
+{
+"id": "CHAT-13",
+"area": "CHAT",
+"requirement": "Conversation continuity across reloads (threads/messages)",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Reloading the page loses the whole conversation. Thread history is never written or loaded.",
+"correction": "For authenticated users, create or reuse a threads row (UUID) and send it as threadId. On mount, load the last N messages from messages. Guests: sessionStorage. Then the existing persistence block becomes live.",
+"verifier": ""
+},
+{
+"id": "CHAT-14",
+"area": "CHAT",
+"requirement": "Pre-model context retrieval (RAG) grounded, org-scoped and observable",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "Chat answers get no document grounding. Regulatory questions fall to the gateway's 'غير متوفر' unless the HCIS reference rows load (finalize.ts evidence rule). There are two divergent retrieval systems in one turn: 768-d aria_match_* before the model, and 1536-d hybrid via the tool.",
+"correction": "Pick one path (owner/architect). Either fix the aria_match_* SQL bodies to finn_* with an org filter, or route pre-model retrieval through retrieveWithEvidenceGate with orgId. Add a stage deadline and a rag_query_log row per attempt. Remove the dead branch, or inject RAG regardless of liveDataAvailable.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "CHAT-15",
+"area": "CHAT",
+"requirement": "Post-response work lifecycle on Workers (persistence/telemetry must complete or be explicitly best-effort)",
+"status": "UNVERIFIED",
+"severity": "P2",
+"gap": "Workers do not guarantee unawaited promises once the response is done, so telemetry and memory rows may be silently lost. The actual loss rate is not measured.",
+"correction": "Expose the Workers ExecutionContext to the handler and wrap the persistence in ctx.waitUntil(...). Alternatively, await the persistence inside the stream's execute() after text-end.",
+"verifier": ""
+},
+{
+"id": "CHAT-16",
+"area": "CHAT",
+"requirement": "Untrusted retrieved/live context sanitization before the prompt and in the output gateway",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "A poisoned KB or document chunk reaches the model with its override phrasing intact, and the gateway's injection check has no input.",
+"correction": "Pass every retrieved excerpt through safeExcerpt / sanitizeRetrievedContent before it enters the prompt. Pass retrievedDocs (the excerpts) to finalizeSadeedOutput.",
+"verifier": ""
+},
+{
+"id": "CHAT-17",
+"area": "CHAT",
+"requirement": "Output gateway reports executed tool actions truthfully",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "The user is told an action awaits approval when it already ran, which invites a repeat (duplicate email, SMS or permit decision; see CHAT-05).",
+"correction": "Build trusted receipts from successful tool results of the same request (tool name, ok, ref/id) and pass them as executionReceipt/action to finalize. Alternatively, have the gateway exempt claims backed by a same-turn ok tool result.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "CHAT-18",
+"area": "CHAT",
+"requirement": "TTFT and per-stage latency telemetry",
+"status": "MISSING",
+"severity": "P2",
+"gap": "The owner's main complaint (speed) cannot be measured, and control ④ of the 2026-10-11 answer-path exception (before/after measurement in the commit) cannot be met with real data.",
+"correction": "Record t0 at handler entry. Measure each stage (body, auth, org, rate, quota, ctx, rag, prefs, model, finalize). Emit a Server-Timing header and a structured log line. Write the real total to finn_interactions.latency_ms. Once streaming exists, set firstTokenAt on the first delta. Add a workflow_dispatch benchmark against the preview.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "CHAT-19",
+"area": "CHAT",
+"requirement": "Caching (prompt prefix / provider context cache / response cache)",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Every turn pays full prefill for about 45k chars or more (guest), and more for authenticated turns with 31 tool definitions (14.6k chars measured). Any implicit provider prefix caching is defeated by design.",
+"correction": "Keep the static SYSTEM_PROMPT plus tools as a byte-stable prefix and append the runtime clock block at the end (or as the final system section). Consider a Gemini explicit cache for the static part. This needs an owner ruling on the 'at the very start' placement (see conflicts).",
+"verifier": ""
+},
+{
+"id": "CHAT-20",
+"area": "CHAT",
+"requirement": "Simple-request fast path (Article 22 §3: deterministic answer before the model, under 400ms)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "The '<400ms' promise depends on 3-5 DB/Auth round trips that have no timeout (CHAT-10).",
+"correction": "Run the text-only matchers right after validation, behind one combined rate-limit RPC, before the auth/org lookups. Do not charge the AI quota for no-model replies.",
+"verifier": ""
+},
+{
+"id": "CHAT-21",
+"area": "CHAT",
+"requirement": "Critical-path parallelism before the model call",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Avoidable round trips: rate limit and 2 quota checks could be one RPC or parallel. getUser plus org_members could be a local JWT verify plus one query. Preferences and HCIS could join the snapshot Promise.all.",
+"correction": "Merge rate and quota into one RPC (or Promise.all). Use auth.getClaims (local JWKS) and run the org lookup in parallel with rate/quota. Move loadAdaptivePreferenceBlock and the HCIS read into the existing Promise.all.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "CHAT-22",
+"area": "CHAT",
+"requirement": "Guest path and rate limiting (per-visitor fairness)",
+"status": "PARTIAL",
+"severity": "P1",
+"gap": "If the env var is unset, a few concurrent demo visitors exhaust a single global guest bucket within minutes.",
+"correction": "On Cloudflare, trust cf-connecting-ip by default (the platform sets it). Keep X-Forwarded-For trust behind the env var. Expose a trust_proxy boolean in /api/chat/health so production can be checked.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "CHAT-23",
+"area": "CHAT",
+"requirement": "Reply-mode contract matches the channel (typed text vs spoken)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Typed executive reports get compressed into spoken prose by default.",
+"correction": "Owner decision. Recommended: separate 'speak it' from the 'voice contract'. Typed turns send replyMode 'text', and speech is derived client-side with toSadeedSpeechText (which already exists). The voice contract applies only to mic turns.",
+"verifier": ""
+},
+{
+"id": "CHAT-24",
+"area": "CHAT",
+"requirement": "Model call configuration proportional to the request (tools/steps per intent)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Large fixed prompt overhead and up to 12 sequential model round trips before any byte reaches the user.",
+"correction": "Subset tools by intent (read-only set for informational questions), lower the default step cap, set per-step timeouts, and route copilot submits through sadeedBrain so the hint is current.",
+"verifier": ""
+},
+{
+"id": "CHAT-25",
+"area": "CHAT",
+"requirement": "Voice conversation never dies (layer 3)",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None for continuity. Retry classification issues are covered in CHAT-04.",
+"correction": "None.",
+"verifier": ""
+},
+{
+"id": "CHAT-26",
+"area": "CHAT",
+"requirement": "Request validation and payload limits at the chat API",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "English error texts are covered in CHAT-07. Magic-byte inspection of attachments is not wired: src/lib/security/file-inspection.server.ts is imported only by its own test.",
+"correction": "Optional: run inspectSadeedAttachment on the last-message file parts.",
+"verifier": ""
+},
+{
+"id": "CHAT-27",
+"area": "CHAT",
+"requirement": "Explicit deep (Council) review reachable when requested",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "The council is unreachable from the UI. The capability is kept but dormant.",
+"correction": "Owner decision: add an explicit 'مراجعة معمّقة' action that sets replyMode 'deep', or document it as API-only.",
+"verifier": ""
+},
+{
+"id": "CHAT-28",
+"area": "CHAT",
+"requirement": "Capability readiness = OR across capable keys (/api/chat/health)",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "ok is always true and provider reachability is not probed, which is acceptable for a key-presence probe. rag_ready is the simplest way to confirm SADEED_GEMINI_RAG_READY in production (not done from this sandbox: prod domains are blocked).",
+"correction": "None. The lead can read rag_ready from production health to settle CHAT-12/CHAT-14.",
+"verifier": ""
+},
+{
+"id": "INGEST-01",
+"area": "INGEST",
+"requirement": "PDF (text layer) is extracted with structure, chunked, embedded and usable later",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Line breaks (hasEOL) and page boundaries are lost. RTL item order is not handled (not measured). A PDF attached in chat never reaches the knowledge base. No server-side extraction.",
+"correction": "Extract per page ({page,text}) and honor hasEOL. Carry the page into chunk metadata. Route chat PDFs through the same extractor and deposit them.",
+"verifier": ""
+},
+{
+"id": "INGEST-02",
+"area": "INGEST",
+"requirement": "Scanned/image-only PDF gets OCR during ingestion",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Scanned SOPs cannot be ingested at all.",
+"correction": "Add a server-side OCR fallback (Gemini file-to-text) when the text layer is empty, marked metadata.ocr=true.",
+"verifier": ""
+},
+{
+"id": "INGEST-03",
+"area": "INGEST",
+"requirement": "DOCX is extracted with headings and tables and accepted in every entry point",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Structure is lost on the knowledge page, and DOCX is rejected in chat.",
+"correction": "Use mammoth convertToHtml and convert to markdown so tables and headings survive. Accept DOCX in chat through server extraction and deposit it.",
+"verifier": ""
+},
+{
+"id": "INGEST-04",
+"area": "INGEST",
+"requirement": "Legacy .doc is handled explicitly",
+"status": "MISSING",
+"severity": "P3",
+"gap": "No conversion and no tailored Arabic guidance.",
+"correction": "Show the Arabic message 'حوّل الملف إلى DOCX' or convert on the server.",
+"verifier": ""
+},
+{
+"id": "INGEST-05",
+"area": "INGEST",
+"requirement": "TXT is ingested faithfully, including the encoding",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Windows-1256 Arabic text becomes U+FFFD mojibake with no detection. There is no end-to-end test.",
+"correction": "Detect the encoding: retry with TextDecoder('windows-1256') when the replacement-character ratio is high.",
+"verifier": ""
+},
+{
+"id": "INGEST-06",
+"area": "INGEST",
+"requirement": "RTF is supported or rejected cleanly",
+"status": "MISSING",
+"severity": "P3",
+"gap": "Depending on the browser, RTF is either rejected or ingested as raw markup.",
+"correction": "Reject RTF explicitly, or strip RTF on the server.",
+"verifier": ""
+},
+{
+"id": "INGEST-07",
+"area": "INGEST",
+"requirement": "Markdown ingested with structure",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Chunking ignores headings.",
+"correction": "Split chunks on headings and keep the heading path in metadata.",
+"verifier": ""
+},
+{
+"id": "INGEST-08",
+"area": "INGEST",
+"requirement": "HTML converted to text or rejected",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Tags and scripts become knowledge chunks. The accept list and extractText disagree.",
+"correction": "Strip HTML to text, or reject it. Align the accept attribute with extractText.",
+"verifier": ""
+},
+{
+"id": "INGEST-09",
+"area": "INGEST",
+"requirement": "CSV ingested in a table-aware way",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Header context is lost per chunk. Arabic Excel CSVs (cp1256) are garbled.",
+"correction": "Use row-group chunks that repeat the header row, plus an encoding fallback.",
+"verifier": ""
+},
+{
+"id": "INGEST-10",
+"area": "INGEST",
+"requirement": "XLSX/XLS supported in the canonical path",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Spreadsheets reach knowledge only through the legacy path, which has its own defects (INGEST-17 and INGEST-30).",
+"correction": "Move sheet extraction into the canonical path (enqueueKnowledgeIngest/hook).",
+"verifier": ""
+},
+{
+"id": "INGEST-11",
+"area": "INGEST",
+"requirement": "JSON ingested meaningfully",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "No flattening by key path. Model acceptance is unverified.",
+"correction": "Flatten into key-path lines before chunking. Verify Gemini MIME support or send the content as text.",
+"verifier": ""
+},
+{
+"id": "INGEST-12",
+"area": "INGEST",
+"requirement": "XML handled",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Raw markup goes into chunks, and the paths behave differently.",
+"correction": "Strip tags to text, or reject.",
+"verifier": ""
+},
+{
+"id": "INGEST-13",
+"area": "INGEST",
+"requirement": "PPTX supported",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Training and SOP decks cannot be ingested.",
+"correction": "Extract slide text and notes on the server, recording the slide number as the page.",
+"verifier": ""
+},
+{
+"id": "INGEST-14",
+"area": "INGEST",
+"requirement": "Images (PNG/JPG/WEBP) are read, and OCR text is indexed",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "There is no OCR-to-knowledge, and image content is lost after one turn.",
+"correction": "Optionally OCR an attached image on the server into a deposited document.",
+"verifier": ""
+},
+{
+"id": "INGEST-15",
+"area": "INGEST",
+"requirement": "Audio files can be transcribed into knowledge",
+"status": "MISSING",
+"severity": "P3",
+"gap": "Recorded briefings cannot become knowledge.",
+"correction": "Add an audio upload that transcribes, then ingests the transcript (if the owner wants it).",
+"verifier": ""
+},
+{
+"id": "INGEST-16",
+"area": "INGEST",
+"requirement": "Source-code files handled by an explicit policy",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "The two paths behave differently, and no policy is stated.",
+"correction": "Decide on a policy (owner) and enforce one allowlist across both paths.",
+"verifier": ""
+},
+{
+"id": "INGEST-17",
+"area": "INGEST",
+"requirement": "One canonical ingestion pipeline (one chunker, limit, readiness rule)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Limits, chunking, readiness and dedupe diverge by entry point.",
+"correction": "Retire ingestSadeedDocument and point /sadeed-documents uploads at enqueueKnowledgeIngest. Archive rag-ingest per the 2026/10/11 decision to build on the finn_* tables.",
+"verifier": ""
+},
+{
+"id": "INGEST-18",
+"area": "INGEST",
+"requirement": "Real file-signature (magic-byte) validation before storage, extraction or model",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Any bytes labelled application/pdf reach Gemini or storage.",
+"correction": "Run inspectSadeedAttachment on the server: in /api/chat for file parts, and on the stored object before ingest. Set allowed_mime_types on the buckets.",
+"verifier": ""
+},
+{
+"id": "INGEST-19",
+"area": "INGEST",
+"requirement": "Size limits enforced consistently at every layer",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "No byte cap exists on knowledge uploads or in storage, and the advertised limit is false.",
+"correction": "Cap bytes on the client, set the bucket file_size_limit, and stream-limit the chat body.",
+"verifier": ""
+},
+{
+"id": "INGEST-20",
+"area": "INGEST",
+"requirement": "Originals stored reliably, linked to their document, retrievable and never orphaned",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Originals can be silently missing, are never downloadable, and can be orphaned.",
+"correction": "Surface storage failures, slice the title to 300 characters, add a source-download action, and add a bucket lifecycle sweep for objects with no row.",
+"verifier": ""
+},
+{
+"id": "INGEST-21",
+"area": "INGEST",
+"requirement": "Large documents are processed asynchronously",
+"status": "MISSING",
+"severity": "P2",
+"gap": "The 'enqueue' naming is misleading: everything runs synchronously. Wall-clock time and platform timeout behaviour were not measured.",
+"correction": "Persist a job and return immediately. Process in a background task (waitUntil or a queue) with a server-side status.",
+"verifier": ""
+},
+{
+"id": "INGEST-22",
+"area": "INGEST",
+"requirement": "The privileged hook secret is never sent to an origin derived from request input",
+"status": "UNVERIFIED",
+"severity": "P2",
+"gap": "If Host can be spoofed, an authenticated user can exfiltrate CRON_HOOK_SECRET. The call is also a Worker subrequest to itself.",
+"correction": "Call the ingest core in-process as a shared function instead of over HTTP, or pin the base URL from env.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "INGEST-23",
+"area": "INGEST",
+"requirement": "Truthful, granular progress",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "No per-chunk progress, and the stats payload is heavy.",
+"correction": "Store processed/total chunks on the row, and count with 'embedding is not null' in SQL.",
+"verifier": ""
+},
+{
+"id": "INGEST-24",
+"area": "INGEST",
+"requirement": "Idempotent, atomic de-duplication",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Concurrent duplicates and re-extraction variance both slip through.",
+"correction": "Add a partial unique index on (org_id, user_id, revision_hash) WHERE status in ('pending','processing','ready'), and collapse internal whitespace in the hash normalization.",
+"verifier": ""
+},
+{
+"id": "INGEST-25",
+"area": "INGEST",
+"requirement": "The chunk upsert has a matching unique constraint in production",
+"status": "UNVERIFIED",
+"severity": "P1",
+"gap": "If the index is not unique, every knowledge-upload and chat-deposit ingest ends 'failed'. Which path produced the 8 'ready' prod documents was not measured.",
+"correction": "If the index is not unique, add a UNIQUE index on (document_id, chunk_index) after checking for duplicates.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "INGEST-26",
+"area": "INGEST",
+"requirement": "Retries and recovery for failed or stuck ingests",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Rows get stuck pending or processing, and failed rows pile up.",
+"correction": "Mark the row failed before throwing. Add a retry action and a cron sweeper that fails stale rows.",
+"verifier": ""
+},
+{
+"id": "INGEST-27",
+"area": "INGEST",
+"requirement": "Page numbers preserved for citations",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Citations cannot point to a page or section.",
+"correction": "Record per-page offsets during extraction, map each chunk to a page range, and include it in the citation tag.",
+"verifier": ""
+},
+{
+"id": "INGEST-28",
+"area": "INGEST",
+"requirement": "Document versioning and replacement",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Old and revised SOPs coexist, and both are 'ready'.",
+"correction": "Add replace(document_id) that re-ingests in place, or a superseded_by/is_current flag that retrieval filters on.",
+"verifier": ""
+},
+{
+"id": "INGEST-29",
+"area": "INGEST",
+"requirement": "Deletion removes row, chunks and storage object, after confirmation",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "A failed row delete leaves a row pointing at a deleted file. There is no human confirmation gate.",
+"correction": "Delete the row first (returning storage_path), then the object, checking both errors. Add a confirm dialog.",
+"verifier": ""
+},
+{
+"id": "INGEST-30",
+"area": "INGEST",
+"requirement": "Status 'ready' only after complete, verified indexing",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "The legacy path reports 'ready' with missing vectors and truncated text. 'Ready' is never proven retrievable.",
+"correction": "Fold the legacy path into the hook (INGEST-17). Define 'ready' as all chunks embedded plus a self-retrieval probe that finds the document's own chunk.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "INGEST-31",
+"area": "INGEST",
+"requirement": "Lossless, structure-aware chunking",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "It has no awareness of headings, pages or tables. The overlap is a raw character tail and can split words. The only contextual header is the title, inside the embedding prompt.",
+"correction": "Split on structure boundaries, overlap on word boundaries, and prepend a short section header to each chunk.",
+"verifier": ""
+},
+{
+"id": "INGEST-32",
+"area": "INGEST",
+"requirement": "Efficient embedding with cost and abuse controls",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Paid embedding runs per user are unbounded (dedupe blocks only identical text).",
+"correction": "Use embedGeminiBatch, and add a per-user ingest rate limit plus an AI quota.",
+"verifier": ""
+},
+{
+"id": "INGEST-33",
+"area": "INGEST",
+"requirement": "Indexing makes chunks retrievable (ANN sized to corpus, lexical index)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "An 'indexed' chunk can be missed by ANN search, and there is no lexical fallback.",
+"correction": "Drop or replace the ivfflat with HNSW (or exact scan below a size threshold). Add a tsvector(normalize_ar) column with a GIN index.",
+"verifier": ""
+},
+{
+"id": "INGEST-34",
+"area": "INGEST",
+"requirement": "Ingested documents are searchable and reach answers",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "No ingested chunk content reaches any answer or search result. The 8 prod documents and 18 chunks are inert.",
+"correction": "Recreate the match function over finn_document_chunks/finn_documents, filtering by org and status='ready'. Log to rag_query_log. This touches the answer path, so the owner's four controls apply.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "INGEST-35",
+"area": "INGEST",
+"requirement": "User-facing ingest statements are truthful (Article 27)",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "False readiness claims, a fake empty state, and a prompt that invites the model to fabricate a deposit location.",
+"correction": "Show 'indexed, not yet retrievable' until retrieval is verified. Add an error state. Remove the deposit-location request from the prompt, or pass the real deposit result. Fix the button title.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "INGEST-36",
+"area": "INGEST",
+"requirement": "Attachment content remains usable in follow-up turns",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "A question one turn later about an attached PDF or image has no access to its content.",
+"correction": "Deposit every attachment through extraction, and inject its retrieved chunks on later turns.",
+"verifier": ""
+},
+{
+"id": "INGEST-37",
+"area": "INGEST",
+"requirement": "The output gateway does not destroy attachment-derived answers",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "Summaries of attached HCIS documents are refused, and extracted dates and numbers are corrupted. The default attach prompt asks for a data table.",
+"correction": "Treat current-turn attachments as evidence (tag [ATT:filename]) and tighten RE_PHONE (KSA phone shapes only). This is the answer path, so the owner's four controls apply.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "INGEST-38",
+"area": "INGEST",
+"requirement": "Pre-model short-circuits respect attachments",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "A user who attaches their own incident log and asks for a count gets the system dataset count, and the file is ignored.",
+"correction": "Skip the instant-data and fast-recall paths when the last user message contains file parts.",
+"verifier": ""
+},
+{
+"id": "INGEST-39",
+"area": "INGEST",
+"requirement": "Quarantine and scan ledger for attachments (as documented)",
+"status": "MISSING",
+"severity": "P3",
+"gap": "Dead database objects, and documentation that contradicts the code.",
+"correction": "Either wire the scan ledger into the new server-side inspection (INGEST-18) or mark these objects deprecated in the docs.",
+"verifier": ""
+},
+{
+"id": "INGEST-40",
+"area": "INGEST",
+"requirement": "Guest attachment policy matches the charter",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Code and the governing charter conflict.",
+"correction": "An owner decision is needed (see conflicts). Either hide or disable attach for guests, or amend the charter.",
+"verifier": ""
+},
+{
+"id": "INGEST-41",
+"area": "INGEST",
+"requirement": "Zip-bomb and decompression protection",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Client-side self-DoS is possible, and the server checks will be absent if extraction moves to the server.",
+"correction": "Apply inspectZip limits before any server-side Office extraction, and add client byte and page caps.",
+"verifier": ""
+},
+{
+"id": "INGEST-42",
+"area": "INGEST",
+"requirement": "Provenance: ingested text is bound to the uploaded file",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Once retrieval works, a fabricated upload becomes citable 'evidence' (Article 25).",
+"correction": "Extract on the server from the stored object and store the file sha256. Keep user uploads uncitable for regulatory claims until verified.",
+"verifier": ""
+},
+{
+"id": "INGEST-43",
+"area": "INGEST",
+"requirement": "Ingested knowledge is tenant-scoped consistently (Article 32)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Org scoping is inconsistent, and legacy chunks can be mis-tenanted or rejected.",
+"correction": "Scope retrieval by org_id plus a membership check. Make the legacy path go away (INGEST-17).",
+"verifier": ""
+},
+{
+"id": "INGEST-44",
+"area": "INGEST",
+"requirement": "Route-level tests cover enqueue, hook, delete and legacy ingest",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Defects such as INGEST-25, INGEST-26 and INGEST-29 are untested.",
+"correction": "Add hook tests with a mocked supabaseAdmin and fetch (onConflict, tail-delete error, secret missing, partial failure).",
+"verifier": ""
+},
+{
+"id": "INGEST-45",
+"area": "INGEST",
+"requirement": "Ingest page is Arabic-first/RTL",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Violates the Arabic-first rule.",
+"correction": "Make Arabic primary, set dir='rtl', and keep English secondary.",
+"verifier": ""
+},
+{
+"id": "RAG-01",
+"area": "RAG",
+"requirement": "Automatic chat retrieval (gatherRagContext) grounds answers in the user's documents, the knowledge base and memory",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "Uploaded documents (8 docs and 18 embedded chunks in prod) and finn_knowledge (46 rows) can never reach an answer. With the flag OFF, retrieval is skipped. With the flag ON, every turn spends an embedding call plus 3 failing RPCs for nothing. The production value of the flag was not measured.",
+"correction": "Write a migration that replaces the aria_match_documents, aria_match_knowledge and aria_match_memory bodies so they read finn_document_chunks/finn_documents, finn_knowledge and finn_memory, adding an explicit _org_id parameter and filter. Apply it to prod before Publish. Follow the owner's 2026/10/11 answer-path controls: a small step, tests, qa-guardian clearance, before/after measurement. Make a failed RPC visible in telemetry (rag_query_log or finn_incidents) instead of only console.warn.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "RAG-02",
+"area": "RAG",
+"requirement": "Retrieved tenant knowledge reaches the model for every authenticated caller",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "When an authenticated user has no operational data, the retrieved context is silently dropped, but its citations still count as available evidence in the output gateway.",
+"correction": "Capture `const hadLiveData = snapshot.hasOperationalData` before the else-branch mutates liveDataAvailable, and inject <tenant-knowledge> whenever ragContext is non-empty. Pass as evidence only the citations whose text was actually injected.",
+"verifier": "**Verifier corrected** BROKEN/P1 → PARTIAL/P3: The precondition is effectively unreachable. For authenticated users buildSadeedContextSnapshot returns hasOperationalData:true on timeout (sadeed-context.server.ts:131-134), DB-empty and DB-error (384-388) via buildProductionDatasetsSnapshot. It return"
+},
+{
+"id": "RAG-03",
+"area": "RAG",
+"requirement": "Semantic search on the documents page (/sadeed-documents)",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "Document search returns an error on every query in prod (or an empty list when no key is configured). It is never usable.",
+"correction": "Same RPC fix as RAG-01. Also pass org_id so the search is limited to the current tenant.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "RAG-04",
+"area": "RAG",
+"requirement": "Chat tool search_knowledge (hybrid retrieval + evidence gate) returns a structured outcome on gate rejection",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "Whenever evidence is insufficient, the model receives a tool exception instead of the honest 'insufficient_evidence' signal.",
+"correction": "Replace the call with `const { error } = await supabase.rpc(...); if (error) console.warn(...)`, or remove it entirely (see RAG-05 / Article 26).",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "RAG-05",
+"area": "RAG",
+"requirement": "Gap ledger and read-side capture (Article 26: scheduled job only; never inside a request path; EXECUTE revoked from anon/authenticated)",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "Capture is not running at all. The code also contradicts Article 26 (capture inside a user request, with authenticated execute).",
+"correction": "Remove the gap write from the chat tool path. Decide where the gap ledger lives under the finn_* evolution (owner), and implement capture as a scheduled job with EXECUTE revoked from anon/authenticated.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "RAG-06",
+"area": "RAG",
+"requirement": "Lexical + exact + vector hybrid search with fusion (RRF) on the corpora the chat actually uses",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Uploaded documents and finn_knowledge have no lexical arm, so Arabic exact terms and directive codes depend entirely on embedding similarity.",
+"correction": "Add a tsvector column (simple config over normalize_ar(content)) with a GIN index and a trigram index on finn_document_chunks. Build a finn_hybrid_search RPC that reuses the RRF CTE pattern of sec_kb_hybrid_search, with org_id required.",
+"verifier": ""
+},
+{
+"id": "RAG-07",
+"area": "RAG",
+"requirement": "Query embedding dimension matches the stored embedding column on every retrieval path",
+"status": "UNVERIFIED",
+"severity": "P1",
+"gap": "The production dimension of sec_knowledge_articles.embedding, and the column the prod hybrid function reads, were not measured.",
+"correction": "Measure the column type in prod. Then route every sec_knowledge retrieval through one embedder whose dimension matches the column, and retire the other path.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "RAG-08",
+"area": "RAG",
+"requirement": "Tenant (org) isolation in finn/aria retrieval functions",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "A user who belongs to several orgs would get their own documents from org A while working in org B, because the functions filter by user only. Isolation depends on unmeasured RLS semantics (permissive OR between the owner and tenant policies) rather than on an explicit org predicate.",
+"correction": "When rewriting the RPCs (RAG-01), add `_org_id uuid` and filter `AND c.org_id = _org_id` (and on finn_knowledge if it is tenant data). Fail closed when _org_id is null.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "RAG-09",
+"area": "RAG",
+"requirement": "sec_kb_hybrid_search and sec_kb_search scope results to the caller's org; NULL org is not a broad search",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Whether cross-org published articles are visible with a NULL org depends on sec_knowledge_articles RLS in prod, which was not measured. Whether anon EXECUTE is intended is not documented.",
+"correction": "Owner decision on whether global and other-org published articles are meant to be public. If not, make _org_id required (raise when it is null), revoke anon EXECUTE, and add an org parameter to sec_kb_search.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "RAG-10",
+"area": "RAG",
+"requirement": "Prompt-injection defenses on retrieved and uploaded content (delimiting, sanitizing, instruction hierarchy)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Uploaded document text and memory enter the system prompt raw apart from angle-bracket escaping. Document titles are interpolated inside [DOC:…] tags unescaped except for <>.",
+"correction": "Run safeExcerpt over every excerpt in gatherRagContext, pass the retrieved texts to finalize as retrievedDocs, and flag (without dropping) injection patterns at ingestion.",
+"verifier": ""
+},
+{
+"id": "RAG-11",
+"area": "RAG",
+"requirement": "Citations in answers are validated against the passages actually supplied",
+"status": "PARTIAL",
+"severity": "P1",
+"gap": "Invented tags pass when they sit beside one real tag. Correct answers that cite only the directive code, or only tool results, are refused.",
+"correction": "Require every cited tag to be known (strip or refuse the unknown ones). Add the tool-result citations returned to the model to evidence.available. Map SEC-xx codes to the KB tags supplied for them. Put only the cited subset into the envelope.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "RAG-12",
+"area": "RAG",
+"requirement": "Sources and citations are shown to the user (source attribution UI)",
+"status": "MISSING",
+"severity": "P2",
+"gap": "The user cannot see or open the sources behind an answer. Attribution exists only if the model writes the tags inline.",
+"correction": "Render envelope.citations as source chips (title plus excerpt, with a link to the document through getSadeedDocumentUrl) under the assistant message in SadeedCopilot.",
+"verifier": ""
+},
+{
+"id": "RAG-13",
+"area": "RAG",
+"requirement": "Grounding coverage metric is accurate",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Gives false 'grounded' results. The metric is emitted but nothing consumes it.",
+"correction": "Match the exact tag string (normalized) instead of separate substrings.",
+"verifier": ""
+},
+{
+"id": "RAG-14",
+"area": "RAG",
+"requirement": "Uncertainty and insufficient-evidence statements instead of fabrication",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Non-regulatory claims carry no evidence requirement. The gate refusal text exists but is not used. Low-similarity passages (≥0.40) in the chat path are injected without a confidence statement.",
+"correction": "Expose per-passage similarity as a confidence band in the prompt, and use evidenceGateRefusal when the tool gate rejects.",
+"verifier": ""
+},
+{
+"id": "RAG-15",
+"area": "RAG",
+"requirement": "Reranking of retrieved candidates",
+"status": "MISSING",
+"severity": "P3",
+"gap": "No precision stage after recall.",
+"correction": "Defer until recall is measured. If needed, use a lightweight rerank over the top 20 with a latency budget.",
+"verifier": ""
+},
+{
+"id": "RAG-16",
+"area": "RAG",
+"requirement": "Context budgeting for retrieved passages",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "No global prompt-token budget. RAG text shares one 48k slot with live data inside the same block.",
+"correction": "Compute a per-turn token budget and allocate it per block, logging the actual sizes.",
+"verifier": ""
+},
+{
+"id": "RAG-17",
+"area": "RAG",
+"requirement": "Conflict detection between sources (and between operational data and rules)",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Conflicting documents or editions are given to the model without any marker.",
+"correction": "Group retrieved passages by source and revision. When the same source has several revisions, or the same directive has divergent passages, emit a 'CONFLICT' note in the prompt.",
+"verifier": ""
+},
+{
+"id": "RAG-18",
+"area": "RAG",
+"requirement": "Version-aware retrieval and cache invalidation",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Superseded revisions remain retrievable alongside current ones.",
+"correction": "In the rewritten RPC, keep only the latest revision per source (or official first), and expose the revision or date in the citation.",
+"verifier": ""
+},
+{
+"id": "RAG-19",
+"area": "RAG",
+"requirement": "Metadata filters (category, tags, jurisdiction, official flag) available to retrieval",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "The chat path cannot narrow by domain or jurisdiction, although constitution.ts item 25(a,b) requires jurisdiction-aware grounding.",
+"correction": "Add an optional category/jurisdiction input to search_knowledge and to the rewritten finn RPC.",
+"verifier": ""
+},
+{
+"id": "RAG-20",
+"area": "RAG",
+"requirement": "Arabic/English normalization for retrieval",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Diacritics and alef/ya/ta-marbuta variants are not handled on the corpus where uploads live.",
+"correction": "Reuse normalize_ar in the finn hybrid RPC (RAG-06).",
+"verifier": ""
+},
+{
+"id": "RAG-21",
+"area": "RAG",
+"requirement": "Retrieval telemetry: every attempt written to rag_query_log (runtime constitution 31(e))",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "No retrieval was ever observable. It is unknown whether this is flag-off, missing org, or insert failures (not measured).",
+"correction": "Log every path (including early returns and the auto-RAG path) and check {error} from the insert.",
+"verifier": ""
+},
+{
+"id": "RAG-22",
+"area": "RAG",
+"requirement": "RAG rate limiting (runtime constitution 31(g) rateLimitRag)",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Embedding and hybrid-search calls are unbounded per user apart from any chat-level limiter.",
+"correction": "Call rateLimitRag(supabase, userId) at the start of retrieveWithEvidenceGate and gatherRagContext, returning gate_result 'rate_limited'.",
+"verifier": ""
+},
+{
+"id": "RAG-23",
+"area": "RAG",
+"requirement": "Retrieval latency is bounded before the model call",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "No tight retrieval deadline comparable to the 4 s display-read race. Actual latency was not measured (no prod access, no benchmark workflow).",
+"correction": "Race retrieval against a fixed budget, for example 2-3 s, falling back to empty context. Pass request.signal through, and make the last_used_at update fire-and-forget.",
+"verifier": ""
+},
+{
+"id": "RAG-24",
+"area": "RAG",
+"requirement": "ANN index parameters are appropriate for the corpus size",
+"status": "UNVERIFIED",
+"severity": "P2",
+"gap": "Once retrieval is fixed, an index scan could return far fewer than k results. The planner's choice of plan (seq scan or index scan) on 18 rows was not measured.",
+"correction": "Drop the ivfflat index until the corpus is roughly in the thousands (or switch to HNSW), or set ivfflat.probes inside the RPC.",
+"verifier": ""
+},
+{
+"id": "RAG-25",
+"area": "RAG",
+"requirement": "rag_enabled gate: ≥30 measured questions, recall@5 ≥0.85, citation precision ≥0.95, measured on the real corpus",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Nothing measures the production retrieval paths (sec_kb_hybrid_search, finn_*). Under Article 27 the recall and citation precision are 'not measured'. The gate cannot be legitimately opened as built.",
+"correction": "Port the harness to the retrieval RPC chosen under the finn_* evolution. Add paraphrased probes derived from seed content (not authored answers) to measure recall beyond title matching, and record the results in an eval ledger.",
+"verifier": ""
+},
+{
+"id": "RAG-26",
+"area": "RAG",
+"requirement": "Article 25 poisoning barrier: model output never enters the corpus; promotion to verified only via a DB trigger",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Under the finn_* evolution there is no DB-enforced barrier yet. Today safety rests on the absence of a write path, not on a trigger.",
+"correction": "Before any verified or official flag on finn_* becomes writable from the app, add the same-org grounded-or-admin trigger on finn_documents.is_official.",
+"verifier": ""
+},
+{
+"id": "RAG-27",
+"area": "RAG",
+"requirement": "Article 27 numeric honesty in RAG metrics (null, not zero, when unmeasured)",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None material. The synthetic similarity:1 is cosmetic metadata.",
+"correction": "Optionally set similarity to null for unscored deterministic rows.",
+"verifier": ""
+},
+{
+"id": "RAG-28",
+"area": "RAG",
+"requirement": "Legacy /rag-search page (edge function rag-retrieve) safe while its schema is unapplied",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Dead code path tied to a schema the owner chose not to apply. Whether the edge function is deployed was not measured.",
+"correction": "Owner decision: retire it, or repoint it to the finn_* RPC.",
+"verifier": ""
+},
+{
+"id": "RAG-29",
+"area": "RAG",
+"requirement": "Automated tests cover the live retrieval path",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Breakages from the table renames and the tool crash are invisible to the gate.",
+"correction": "Add unit tests with an rpc mock (error handling, prompt injection, gate outcomes). Add a preflight SQL check that runs every aria_match_*/sec_kb_* function under `set local role authenticated` (plpgsql/sql bodies are only resolved at call time).",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "RAG-30",
+"area": "RAG",
+"requirement": "Deterministic HCIS reference grounding (finn_knowledge source 'hcis/%')",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Guests may get no HCIS rows, so a regulatory claim gets refused as insufficient evidence. Tag mismatches are possible when titles contain brackets or newlines.",
+"correction": "Build the citation tag with the same sanitizer used in the prompt, and confirm the intended anon visibility of hcis/% rows.",
+"verifier": ""
+},
+{
+"id": "UX-01",
+"area": "UX",
+"requirement": "Mic is activated only by an explicit user gesture, on every chat surface",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "getUserMedia runs after the greeting plays (2028 playConversationGreeting), not synchronously inside the tap. Covered by UX-09.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-02",
+"area": "UX",
+"requirement": "Permission denial and capture failures are handled with clear Arabic guidance",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Every other DOMException (NotFoundError = no mic, NotReadableError = mic in use, AbortError) falls into one message, 'تأكد من HTTPS وإذن المتصفح', which is misleading on an HTTPS site where permission is granted. Nothing queries navigator.permissions beforehand.",
+"correction": "Map NotFoundError, NotReadableError and OverconstrainedError to their own Arabic messages. Optionally pre-check permissions.query({name:'microphone'}) and show the re-enable hint before prompting.",
+"verifier": ""
+},
+{
+"id": "UX-03",
+"area": "UX",
+"requirement": "Recording and transcribing states are visible",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None found in code. Not visually verified on a device.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-04",
+"area": "UX",
+"requirement": "Saved repair method: /api/sadeed/transcribe, then /api/public/sadeed-transcribe on 401/403",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "The code path is correct, but no client test exercises the fallback. The only test that references the public path is src/lib/governance/ai-quota.contract.test.ts.",
+"correction": "Add a contract test for the client fallback sequence.",
+"verifier": ""
+},
+{
+"id": "UX-05",
+"area": "UX",
+"requirement": "Voice errors never show auth wording or raw technical text (CLAUDE.md rule 3: /authenticat|unauthor|token/i plus a neutral Arabic message)",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "English sentences and snake_case codes appear in the conversation notice.",
+"correction": "Map the known error codes and HTTP statuses to Arabic messages and fall back to a neutral Arabic line for anything else. Add 'token' to the filter.",
+"verifier": ""
+},
+{
+"id": "UX-06",
+"area": "UX",
+"requirement": "Arabic and English speech are both recognised",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Browsers that use the SpeechRecognition path (no MediaRecorder) recognise only Arabic, so English utterances come out wrong.",
+"correction": "Route SpeechRecognition-only browsers to recorded capture where possible, or pick lang from the UI language.",
+"verifier": ""
+},
+{
+"id": "UX-07",
+"area": "UX",
+"requirement": "User can edit the transcript before it is sent",
+"status": "MISSING",
+"severity": "P3",
+"gap": "No review or edit step before a voice turn is sent.",
+"correction": "Owner decision (see conflicts). Option: add a dictation mode that fills the draft and does not auto-send.",
+"verifier": ""
+},
+{
+"id": "UX-08",
+"area": "UX",
+"requirement": "Stop, cancel and retry for voice capture",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None found in code.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-09",
+"area": "UX",
+"requirement": "Voice works within iOS Safari constraints",
+"status": "UNVERIFIED",
+"severity": "P2",
+"gap": "Not tested on a device; no TTFT or audio test can run here. getUserMedia is called after asynchronous greeting playback, not inside the tap.",
+"correction": "Run a device test on iOS Safari 17/18, in a browser tab and as a home-screen app.",
+"verifier": ""
+},
+{
+"id": "UX-10",
+"area": "UX",
+"requirement": "Graceful fallback when voice capture is unsupported",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None found.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-11",
+"area": "UX",
+"requirement": "No browser TTS (speechSynthesis) anywhere",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-12",
+"area": "UX",
+"requirement": "Attachment picker with multiple files and a type filter that mirrors the server guard",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None for type and size.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-13",
+"area": "UX",
+"requirement": "Drag-and-drop or paste attachments into the chat composer",
+"status": "MISSING",
+"severity": "P3",
+"gap": "The paperclip picker is the only way to attach; no drop or paste of screenshots.",
+"correction": "Add a drop zone and paste handler on the composer that both go through validateFiles.",
+"verifier": ""
+},
+{
+"id": "UX-14",
+"area": "UX",
+"requirement": "Upload progress and processing/indexing progress for chat attachments",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "No per-file read or upload progress and no indexing status link.",
+"correction": "Show per-file 'جارٍ القراءة' chips and a deposit status with a link to the library row.",
+"verifier": ""
+},
+{
+"id": "UX-15",
+"area": "UX",
+"requirement": "Attachments can be removed before sending",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-16",
+"area": "UX",
+"requirement": "Attachment content inspection (magic bytes / real type) beyond the declared media type",
+"status": "MISSING",
+"severity": "P2",
+"gap": "A file declared as PDF or PNG with arbitrary bytes passes to the model.",
+"correction": "Call inspectSadeedAttachment on decoded bytes in the chat guard for the last user message.",
+"verifier": ""
+},
+{
+"id": "UX-17",
+"area": "UX",
+"requirement": "Honest wording about where attachments are deposited (Article 27)",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "For PDFs and images nothing is deposited. For text files the deposit has not happened yet when the model answers. The prompt therefore invites a made-up deposit location.",
+"correction": "Remove the deposit clause from the default prompt and the tooltip, or deposit first and pass the real result. State plainly that PDFs and images are read but not stored.",
+"verifier": ""
+},
+{
+"id": "UX-18",
+"area": "UX",
+"requirement": "Attachments stay associated with the conversation across turns",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "A follow-up such as 'what about page 3 of the PDF I sent?' reaches the model without the file content.",
+"correction": "Persist attachments (for example in the private aria-attachments bucket, with ownership checks) and reattach them on request, or tell the user the file is read only for the turn it was sent with.",
+"verifier": ""
+},
+{
+"id": "UX-19",
+"area": "UX",
+"requirement": "Attachment send errors are surfaced and the user can retry",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "A read failure silently loses the typed text and the files. Validation errors are not shown in Arabic.",
+"correction": "Restore draft and pendingFiles on a pre-send failure and show an Arabic notice. Map guard errors to Arabic.",
+"verifier": ""
+},
+{
+"id": "UX-20",
+"area": "UX",
+"requirement": "PDF export entry points: whole chat and a single answer",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None found.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-21",
+"area": "UX",
+"requirement": "Export includes the citations/sources behind the answer and validates them",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Neither the chat UI nor the PDF shows sources, and no step validates them. Production citations are always empty anyway, because aria_match_documents is broken.",
+"correction": "Carry metadata.citations into ExportableMessage, render a 'المصادر' section (title, document, chunk), and mark answers without verified sources as 'بلا مصدر موثّق'.",
+"verifier": ""
+},
+{
+"id": "UX-22",
+"area": "UX",
+"requirement": "PDF keeps numbers and symbols faithful (no meaning change; Article 27)",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "Comparisons are lost and a negative value can print as positive in an exported executive report.",
+"correction": "Substitute before filtering: − to '-', ≥ to '>=' or 'لا يقل عن', ≤ to '<=', →/← to '<-'/'->', ✓/✗ to 'نعم'/'لا', € to 'EUR'. Never silently drop a character that carries meaning.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "UX-23",
+"area": "UX",
+"requirement": "PDF uses the requested palette #38BDF8 #2563EB #F0F9FF #22D3EE #34D399 #FFFFFF #F8FAFC #0F172A",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-24",
+"area": "UX",
+"requirement": "Header and title render without clipping or overlap",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "Most exports with a real question have a clipped, overlapping title.",
+"correction": "Wrap the title to at most 2 lines with wrap(); shrink to 16pt when needed; reserve the brand area (start the title below it or limit maxW to CONTENT_W-60).",
+"verifier": ""
+},
+{
+"id": "UX-25",
+"area": "UX",
+"requirement": "Report metadata: date in the operating timezone and an executive summary",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "No Asia/Riyadh (+03) time and no summary section.",
+"correction": "Format the date in Asia/Riyadh. Optionally add a summary built from the first heading or 'الخلاصة' section of the last answer, without generating new content.",
+"verifier": ""
+},
+{
+"id": "UX-26",
+"area": "UX",
+"requirement": "Limitations notice and page numbers on every page",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-27",
+"area": "UX",
+"requirement": "Arabic shaping and bidi are correct in the PDF",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None for shaping. Text-extraction side effects are covered by UX-31.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-28",
+"area": "UX",
+"requirement": "Markdown tables keep their columns in the PDF",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "There is no grid. A row with an empty cell is printed misaligned, which misattributes data.",
+"correction": "Render real columns (equal or measured widths, right-to-left order), keep empty cells as '—', bold the header row, and wrap inside cells.",
+"verifier": ""
+},
+{
+"id": "UX-29",
+"area": "UX",
+"requirement": "Other Markdown elements (code, ordered lists, links) render faithfully",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Code is parsed as Markdown and drawn in a proportional font; list numbering is lost.",
+"correction": "Track fence state and print code lines verbatim in a shaded box; keep ordinal numbers; move URLs into the sources section.",
+"verifier": ""
+},
+{
+"id": "UX-30",
+"area": "UX",
+"requirement": "Embedded font covers the glyphs the PDF needs",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "Arabic-Indic digits are still converted to Western digits (sanitize 74-75) even though the glyphs exist. Latin text uses non-embedded standard Helvetica (pdffonts: emb=no).",
+"correction": "Optional: embed a Latin font for consistent rendering and PDF/A.",
+"verifier": ""
+},
+{
+"id": "UX-31",
+"area": "UX",
+"requirement": "Exported PDF text can be searched, copied and read by assistive technology",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Weak in-PDF search and copy quality, and no structure tags.",
+"correction": "Add an ActualText or ToUnicode mapping to base letters per run if feasible, or document the limitation.",
+"verifier": ""
+},
+{
+"id": "UX-32",
+"area": "UX",
+"requirement": "Download works on iOS Safari",
+"status": "UNVERIFIED",
+"severity": "P2",
+"gap": "Not tested on a device. iOS home-screen and WebView blob downloads are a known risk.",
+"correction": "Use navigator.share({files}) when canShare allows it, and fall back to opening the blob in a new tab on iOS standalone.",
+"verifier": ""
+},
+{
+"id": "UX-33",
+"area": "UX",
+"requirement": "Export contains no hidden instructions, tool output or secrets",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None found.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-34",
+"area": "UX",
+"requirement": "Export is bounded in size and time",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "Not measured in a real mobile browser.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-35",
+"area": "UX",
+"requirement": "Knowledge upload flow: picking, size handling, storing the original",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "No multi-file upload, an unenforced size claim, and a silent storage failure.",
+"correction": "Enforce the stated size before parsing, report storage failure in Arabic, and accept multiple files in a queue.",
+"verifier": ""
+},
+{
+"id": "UX-36",
+"area": "UX",
+"requirement": "Library shows ingest status with live polling",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None for status.",
+"correction": "None needed.",
+"verifier": ""
+},
+{
+"id": "UX-37",
+"area": "UX",
+"requirement": "UI separates 'uploaded/embedded' from 'actually searchable/citable' (Article 27)",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "The UI states that documents can be cited when the retrieval path cannot return them.",
+"correction": "Show 'مُفهرَس — الاسترجاع غير مفعّل' unless a live retrieval probe (repaired function plus flag) returns the document. Repair aria_match_documents to read finn_* (needs owner and answer-path approval).",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "UX-38",
+"area": "UX",
+"requirement": "Document semantic search on /sadeed-documents works",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "Every search fails.",
+"correction": "Repoint the function body to finn_document_chunks and finn_documents with an org filter, via an idempotent migration applied with owner approval. Until then, hide or disable search with an honest message.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "UX-39",
+"area": "UX",
+"requirement": "Library shows timestamps and versions",
+"status": "MISSING",
+"severity": "P3",
+"gap": "No upload date, size or version.",
+"correction": "Render created_at in Arabic locale and Riyadh time, plus size; show the revision for official documents.",
+"verifier": ""
+},
+{
+"id": "UX-40",
+"area": "UX",
+"requirement": "Preview or open the original document",
+"status": "MISSING",
+"severity": "P3",
+"gap": "The user cannot check what was ingested.",
+"correction": "Add an 'عرض' action that uses the signed URL from getSadeedDocumentUrl, plus a chunk text preview.",
+"verifier": ""
+},
+{
+"id": "UX-41",
+"area": "UX",
+"requirement": "Library filters, search and pagination",
+"status": "MISSING",
+"severity": "P3",
+"gap": "Documents after the 100th are invisible and the list cannot be filtered by status or type.",
+"correction": "Add status and type filters and cursor pagination.",
+"verifier": ""
+},
+{
+"id": "UX-42",
+"area": "UX",
+"requirement": "Library list shows a distinct error state, not a false empty state",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "A query failure tells the user they have no documents, against the ui-patterns rule of mandatory error states and Article 27.",
+"correction": "Add an isError branch with an Arabic error and a retry button calling refetch; keep 'retry: false' semantics consistent.",
+"verifier": ""
+},
+{
+"id": "UX-43",
+"area": "UX",
+"requirement": "Failed ingests can be retried",
+"status": "MISSING",
+"severity": "P3",
+"gap": "Re-uploading is the only option.",
+"correction": "Add a 'إعادة المعالجة' action that re-enqueues from storage_path or the stored text.",
+"verifier": ""
+},
+{
+"id": "UX-44",
+"area": "UX",
+"requirement": "Delete is confirmed by a human, accessible and safe (CLAUDE.md: every write action behind human confirmation)",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "An irreversible delete with no confirmation, no accessible name and no error feedback.",
+"correction": "Add an AlertDialog confirmation in Arabic, an aria-label 'حذف المستند', an onError Arabic toast, and delete the row first and the storage object after (or soft-delete).",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "UX-45",
+"area": "UX",
+"requirement": "Knowledge library UI is Arabic-first and does not expose internal identifiers",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "Breaks the Arabic-first rule, and shows aria-* identifiers as display text against the CLAUDE.md naming rule.",
+"correction": "Make the copy Arabic-first with English secondary (microcopy-polisher/content-localizer) and remove endpoint names from the UI.",
+"verifier": ""
+},
+{
+"id": "UX-46",
+"area": "UX",
+"requirement": "Library navigation and permissions match ownership",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "The UI does not show who owns a document and does not gate delete by role or ownership.",
+"correction": "Return user_id and the caller's role, show the owner, and allow delete only for the owner or an org manager. Verify the policy with set local role.",
+"verifier": ""
+},
+{
+"id": "UI-01",
+"area": "UI",
+"requirement": "The chat panel is placed correctly and fits at 390x844, 768x1024, 1280x800 and 1920x1080 with no horizontal page overflow",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None observed in emulation.",
+"correction": "None.",
+"verifier": ""
+},
+{
+"id": "UI-02",
+"area": "UI",
+"requirement": "The composer stays reachable while the mobile virtual keyboard is open (visualViewport, dvh, interactive-widget)",
+"status": "UNVERIFIED",
+"severity": "P2",
+"gap": "Nothing handles the visual viewport, so on iOS the header and transcript probably pan off screen when the keyboard is open. Not measured on a device.",
+"correction": "Size the dock from window.visualViewport (height plus offsetTop) using a CSS variable, or add interactive-widget=resizes-content to the viewport meta and test on iOS/Android. Consider skipping autofocus on coarse pointers.",
+"verifier": ""
+},
+{
+"id": "UI-03",
+"area": "UI",
+"requirement": "Arabic RTL layout direction for the chat panel (mirroring, logical positioning)",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "The Send glyph (lucide Send, 2803) is not mirrored for RTL (cosmetic).",
+"correction": "Optional: add rtl:-scale-x-100 to the Send icon.",
+"verifier": ""
+},
+{
+"id": "UI-04",
+"area": "UI",
+"requirement": "Mixed Arabic/Latin (bidi) text in on-screen replies renders in the correct order",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "On-screen replies do not get the bidi treatment the PDF export gets. Latin-led paragraphs and ISO dates or codes are misordered.",
+"correction": "Add a [&_p,&_li,&_td]:[unicode-bidi:plaintext] rule (or dir=\"auto\" via react-markdown components) to the message prose, and isolate code/date tokens. Reuse the arabic-text.ts logic for display where needed.",
+"verifier": ""
+},
+{
+"id": "UI-05",
+"area": "UI",
+"requirement": "Long attachment filenames in composer chips wrap or truncate safely and stay discoverable",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Sighted users cannot see the full filename (no title or tooltip). No overflow occurs.",
+"correction": "Add title={f.name} on the chip, or a tooltip, and consider a middle ellipsis that keeps the extension.",
+"verifier": ""
+},
+{
+"id": "UI-06",
+"area": "UI",
+"requirement": "Citations, long URLs and markdown tables wrap inside reply bubbles without clipping",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "A table with more or wider columns has no overflow-x wrapper, and the aside is overflow-hidden (2344), so it would clip rather than scroll. Not measured beyond 6 columns.",
+"correction": "Optional hardening: wrap tables in an overflow-x-auto container via react-markdown components.",
+"verifier": ""
+},
+{
+"id": "UI-07",
+"area": "UI",
+"requirement": "Citations shown as distinct, structured source elements (not only free text)",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Any citation is whatever the model writes in markdown. No source chips, links to documents or pages, or verification badge.",
+"correction": "Render source/citation parts (or tool results) as a source list under the answer, with truncation plus a title, a keyboard-reachable link, and RTL layout.",
+"verifier": ""
+},
+{
+"id": "UI-08",
+"area": "UI",
+"requirement": "Loading/busy state while a reply is generated",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "The busy state is not announced to screen readers (see UI-11).",
+"correction": "See UI-11.",
+"verifier": ""
+},
+{
+"id": "UI-09",
+"area": "UI",
+"requirement": "Empty state for a new conversation",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None.",
+"correction": "None.",
+"verifier": ""
+},
+{
+"id": "UI-10",
+"area": "UI",
+"requirement": "Error state uses neutral Arabic text, never shows auth jargon, and offers a retry button",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "The error bubble was not rendered visually. The retry button is px-2 py-1 text-xs and relies on the global 40/44px floor.",
+"correction": "None required. Add a persistent-500 visual test.",
+"verifier": ""
+},
+{
+"id": "UI-11",
+"area": "UI",
+"requirement": "Screen readers are told about new replies and the busy state (live region or role=log)",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Screen reader users get no announcement when an answer arrives or fails.",
+"correction": "Add role=\"log\" aria-live=\"polite\" to the transcript container, or a dedicated sr-only status announcing 'جارٍ التفكير' and 'وصل الرد' (avoid reading every streamed delta).",
+"verifier": ""
+},
+{
+"id": "UI-12",
+"area": "UI",
+"requirement": "Modal semantics and focus containment while the scrim isolates the page",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "Keyboard focus leaves the visually modal panel and lands on obscured page controls (WCAG 2.4.3/2.4.11). Screen readers can browse the page behind it.",
+"correction": "Use role=\"dialog\" aria-modal=\"true\" with a focus trap (or set inert on the app root while open), keeping an aria-labelledby title.",
+"verifier": ""
+},
+{
+"id": "UI-13",
+"area": "UI",
+"requirement": "Escape closes the panel (after leaving voice mode)",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "Keyboard users cannot dismiss the panel with Escape.",
+"correction": "In the keydown handler: if voice mode is on, toggle it off; otherwise call closePanel().",
+"verifier": ""
+},
+{
+"id": "UI-14",
+"area": "UI",
+"requirement": "Focus returns to the launcher (or the invoking control) when the panel closes",
+"status": "MISSING",
+"severity": "P3",
+"gap": "After closing, focus falls to <body> and keyboard context is lost.",
+"correction": "Keep a ref to the opener and call focus() after collapse (in rAF).",
+"verifier": ""
+},
+{
+"id": "UI-15",
+"area": "UI",
+"requirement": "Initial focus goes into the panel on open",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "On touch devices this may open the keyboard immediately (see UI-02).",
+"correction": "Optionally skip on pointer: coarse.",
+"verifier": ""
+},
+{
+"id": "UI-16",
+"area": "UI",
+"requirement": "Every icon-only control in the panel has an Arabic accessible name",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "The slash-command options and tool parts were not exercised by axe.",
+"correction": "None.",
+"verifier": ""
+},
+{
+"id": "UI-17",
+"area": "UI",
+"requirement": "Touch targets of at least 44px on touch devices",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "The 44px rule only holds on coarse pointers; mouse targets are 40px by design (see owner decisions).",
+"correction": "None, unless the owner requires 44 for every pointer.",
+"verifier": ""
+},
+{
+"id": "UI-18",
+"area": "UI",
+"requirement": "12px minimum text size in the chat panel and on the knowledge page",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None measured.",
+"correction": "None.",
+"verifier": ""
+},
+{
+"id": "UI-19",
+"area": "UI",
+"requirement": "prefers-reduced-motion stops non-essential motion in the chat surface",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Icon glow pulses forever for users who asked for reduced motion.",
+"correction": "Add @media (prefers-reduced-motion: reduce){button > svg, a > svg, .nx-icon, .holo-icon, [data-holo-icon], [data-slot=button] > svg {animation:none !important}} after line 4658. This needs owner sign-off because the breathe animation was kept by owner directive.",
+"verifier": ""
+},
+{
+"id": "UI-20",
+"area": "UI",
+"requirement": "Text contrast in dark theme (chat panel)",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "Only representative nodes were sampled. axe cannot resolve the layered glass.",
+"correction": "None.",
+"verifier": ""
+},
+{
+"id": "UI-21",
+"area": "UI",
+"requirement": "Text and icon contrast in light theme (chat panel), per Articles 32-34: the second theme is a correctness surface",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "In light mode the chat header (product name, status, mute control) fails WCAG 1.4.3 and 1.4.11.",
+"correction": "Move the header, composer and backdrop surfaces to tokens (--surface/--glass-*) with a .light variant, or scope dark tokens to .sadeed-window if the owner wants the panel always dark. Do not mix the two.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "UI-22",
+"area": "UI",
+"requirement": "Article 33: no color outside the token layer in the chat panel",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "Direct cause of UI-21. It also exempts the panel from global theme rules without anyone noticing.",
+"correction": "Replace the literals with --surface/--glass-*/--tone-* tokens, and add a contract test banning rgba()/hex literals in SadeedCopilot class strings.",
+"verifier": ""
+},
+{
+"id": "UI-23",
+"area": "UI",
+"requirement": "Slash-command menu follows a complete ARIA listbox/combobox pattern",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Screen reader and keyboard users get a listbox they cannot navigate as a listbox. The options are reachable only via Tab.",
+"correction": "Either drop the listbox/option roles (plain buttons in a group) or implement a combobox with activedescendant and arrow keys.",
+"verifier": ""
+},
+{
+"id": "UI-24",
+"area": "UI",
+"requirement": "Enter-to-send does not fire during IME composition, and Shift+Enter inserts a newline",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Composition-based keyboards (CJK, and some Android predictive modes) can send early. Low impact for Arabic layouts.",
+"correction": "Add if (e.nativeEvent.isComposing || e.keyCode === 229) return;",
+"verifier": ""
+},
+{
+"id": "UI-25",
+"area": "UI",
+"requirement": "The /knowledge-upload page is Arabic-first (constitution) and its copy is accurate",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "An English-led UI on an RTL page, internal endpoint names exposed, and two different upload limits shown.",
+"correction": "Localize every string to ar-SA (content-localizer and microcopy-polisher), remove the endpoint and pipeline internals, and show one accurate limit taken from knowledge-ingest-core.",
+"verifier": ""
+},
+{
+"id": "UI-26",
+"area": "UI",
+"requirement": "Deleting a knowledge document requires human confirmation (CLAUDE.md: every write action sits behind a human confirmation gate)",
+"status": "MISSING",
+"severity": "P2",
+"gap": "One stray tap permanently deletes an ingested document.",
+"correction": "Add an AlertDialog with an Arabic confirmation that names the document title, or a short undo window.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "UI-27",
+"area": "UI",
+"requirement": "The icon-only delete button on /knowledge-upload has an accessible name",
+"status": "MISSING",
+"severity": "P2",
+"gap": "Screen readers announce just 'button' for a destructive action.",
+"correction": "Add aria-label={`حذف ${d.title}`} and aria-hidden on the icon.",
+"verifier": ""
+},
+{
+"id": "UI-28",
+"area": "UI",
+"requirement": "/knowledge-upload has distinct loading, empty, error and success states, with progress announced",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Errors look like 'no documents' (Article 27 honesty), loading is long with no deadline, and progress is not announced.",
+"correction": "Add an isError branch with an Arabic message plus a retry button, retry:false or a short deadline (as in sec.maintenance), and role=status on the progress card.",
+"verifier": ""
+},
+{
+"id": "UI-29",
+"area": "UI",
+"requirement": "Long filenames, titles and errors wrap correctly on /knowledge-upload",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Full names cannot be discovered, and Arabic error text breaks badly.",
+"correction": "Add title={name}, and use break-words or [overflow-wrap:anywhere] instead of break-all.",
+"verifier": ""
+},
+{
+"id": "UI-30",
+"area": "UI",
+"requirement": "Logical (RTL-safe) spacing on /knowledge-upload",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "In RTL the gap lands between the icon and the button edge, not between the icon and the text.",
+"correction": "Use me-2 (or rely on the Button's gap).",
+"verifier": ""
+},
+{
+"id": "UI-31",
+"area": "UI",
+"requirement": "The /sadeed and /assistant routes render the shared chat surface without overflow",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "The chat behind the gate was not exercised on these routes. The gate is a separate feature.",
+"correction": "None.",
+"verifier": ""
+},
+{
+"id": "UI-32",
+"area": "UI",
+"requirement": "Header content is readable at phone width (status/context label)",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "The page-context label is effectively hidden on phones.",
+"correction": "Move the less-used controls (presentation, export) into an overflow menu under 480px, or show the context on a second line.",
+"verifier": ""
+},
+{
+"id": "UI-33",
+"area": "UI",
+"requirement": "Verification on real iPhone Safari/WebKit",
+"status": "UNVERIFIED",
+"severity": "P2",
+"gap": "iOS-specific keyboard, dvh, safe-area and backdrop-filter behaviour is unverified.",
+"correction": "Run the probe on WebKit or a real device before declaring mobile readiness.",
+"verifier": ""
+},
+{
+"id": "SEC-01",
+"area": "SEC",
+"requirement": "Guest/anonymous readers must never receive personal identifiers (creator/technician names, employee numbers) — CLAUDE.md «الصيانة» §2 (masking via maint_orders_v)",
+"status": "BROKEN",
+"severity": "P0",
+"gap": "This bundled export goes around the DB view masking. A visitor who asks about a specific work order gets the creator's employee or ID number in the model's context, and nothing tells the model to withhold it. The data file is also committed to git, against «البيانات الحقيقية لا تدخل git».",
+"correction": "Remove created_by from the bundled notes (or drop the field from the JSON) whenever audience is anonymous or a non-member. Pass an audience flag into buildRecallBlock and formatWorkOrderRecord and strip notes for guests. Apply the same rule to the sec.functions fallback. Have the owner decide whether to purge maintenance-report.data.json from the repo or replace it with a redacted copy. RELEASE-BLOCKING.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "SEC-02",
+"area": "SEC",
+"requirement": "Privileged hook secret (CRON_HOOK_SECRET) must only be sent to a trusted, fixed origin",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "The destination host comes from the incoming request URL. Whether a client can set it (Host or forwarded-host handling on the Lovable/Workers runtime) was not measured. If it can, the secret goes to an attacker-chosen host, which is SSRF plus secret exfiltration. A hung hook also blocks the server fn until the platform limit.",
+"correction": "Call the ingest core in-process (it is already pure: knowledge-ingest-core.ts), or use a configured constant origin such as SITE_URL. Add AbortSignal.timeout().",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "SEC-03",
+"area": "SEC",
+"requirement": "Authentication on chat route: verified bearer → user; guests allowed without RAG/tools/persistence (CLAUDE.md fallback pattern)",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "none",
+"correction": "none",
+"verifier": ""
+},
+{
+"id": "SEC-04",
+"area": "SEC",
+"requirement": "Authentication on voice/transcribe/TTS routes (authenticated first, public fallback rate-limited)",
+"status": "IMPLEMENTED",
+"severity": "P3",
+"gap": "voice-token uses verifySupabaseUser, not verifySupabaseExecutive, so any signed-in user can mint ElevenLabs tokens (hook-auth.server.ts comment intends executives for paid minting). Public transcribe calls formData() before the size check.",
+"correction": "Decide whether voice-token should require verifySupabaseExecutive. Precheck content-length on public transcribe.",
+"verifier": ""
+},
+{
+"id": "SEC-05",
+"area": "SEC",
+"requirement": "Cron/background hooks authorized with a timing-safe shared secret",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "The length check exits early, so the secret length leaks (minor). The ingest hook runs as supabaseAdmin on any document_id once the secret is known, which is by design.",
+"correction": "Optional: compare HMAC digests to hide length.",
+"verifier": ""
+},
+{
+"id": "SEC-06",
+"area": "SEC",
+"requirement": "Per-identity rate limiting for guests (no single shared bucket; IP not spoofable)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "One abuser can exhaust guest chat for all visitors (or legitimate demo traffic trips 429). If proxy trust is enabled, the XFF-first order lets an attacker rotate buckets. Prod env value not measured.",
+"correction": "Prefer cf-connecting-ip (trusted on Workers) before XFF in chat.ts clientIp, matching sadeed-incident.ts:35-40. Confirm the prod TRUST_PROXY_HEADERS value.",
+"verifier": ""
+},
+{
+"id": "SEC-07",
+"area": "SEC",
+"requirement": "Document-level access control in chat retrieval (user + org scoping)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Chat RAG cannot work in prod. Isolation rests entirely on RLS (tenant_isolation exists on finn_documents/chunks per prod facts), with no defensive org filter in the function body.",
+"correction": "Rewrite the RPCs against finn_* with explicit `org_id = _org_id` AND RLS (invoker), add _org_id params, and surface RPC errors as telemetry rather than silent empties. Per the owner decision of 2026-10-11, evolve finn_* rather than apply 20260728*.",
+"verifier": "**Verifier corrected** BROKEN/P1 → PARTIAL/P2: Retrieval is broken (42P01, swallowed at rag.server.ts:108-110), but that is RAG-01. No access-control failure is shown: the functions are SECURITY INVOKER (default on 20260625235058:59-72) and prod has owner and tenant_isolation RLS (lead). The missing"
+},
+{
+"id": "SEC-08",
+"area": "SEC",
+"requirement": "Constitution Art. 31: every retrieval goes through retrieveWithEvidenceGate (injection screen, sanitize/PII redaction, rag_query_log, rateLimitRag)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "The primary answer path breaks Art. 31 (c)(d)(e)(f)(g). Retrieved text enters the prompt without PII redaction.",
+"correction": "Route chat retrieval through retrieveWithEvidenceGate, or apply sanitizeRetrievedContent/redactPii plus logging to gatherRagContext output. Wire rateLimitRag or delete it.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "SEC-09",
+"area": "SEC",
+"requirement": "Service-role retrieval must remain tenant-scoped",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "With the service role, RLS is bypassed and isolation depends solely on the SQL body's _org_id predicate of sec_kb_hybrid_search, a prod-only function that is not in the repo migrations and whose body filter was not verified in this pass.",
+"correction": "Run the knowledge agent with the caller's JWT client, or verify and pin the _org_id predicate in a contract or preflight check.",
+"verifier": ""
+},
+{
+"id": "SEC-10",
+"area": "SEC",
+"requirement": "RAG gap capture works and fails safely (rag_record_gap_for_org)",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "The knowledge-search tool throws a TypeError instead of returning its gate result. Gap capture never records anything.",
+"correction": "Replace .catch with `const {error} = await …; if (error) log`. Create rag_gaps on prod through an owner-approved migration, or remove the RPC calls.",
+"verifier": ""
+},
+{
+"id": "SEC-11",
+"area": "SEC",
+"requirement": "RLS / tenant isolation on every table the chat/knowledge path touches",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Constitution Art. 32 requires FORCE RLS plus a RESTRICTIVE policy. Whether the prod policies are restrictive or forced was not measured. Policies for finn_knowledge, finn_memory, finn_interactions, threads and messages were not in the provided facts. Migrations cannot rebuild prod RLS (CLAUDE.md 2026-09-20 lesson).",
+"correction": "Lead to measure pg_class.relforcerowsecurity and pg_policies.permissive for these tables. Add a preflight under `set local role authenticated`.",
+"verifier": ""
+},
+{
+"id": "SEC-12",
+"area": "SEC",
+"requirement": "Prompt-injection resistance: system-prompt hierarchy and delimiting of retrieved/uploaded content",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "No INJECTION_PATTERNS screen on the chat RAG path (only inside retrieveWithEvidenceGate). User-uploaded file parts go to Gemini as raw files with no 'untrusted' framing (they are user-authored, so the risk is lower). No adversarial test suite was found in this pass.",
+"correction": "Apply the retrieve.server INJECTION_PATTERNS to retrieved chunks before prompt assembly. Add regression prompts.",
+"verifier": ""
+},
+{
+"id": "SEC-13",
+"area": "SEC",
+"requirement": "Upload validation and parser resource limits (size, MIME, pages, decompression bombs)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "No server-side magic-byte inspection of chat attachments. Raw knowledge files of any size or type can be stored in aria-documents (bounded only by the project-wide storage limit, not measured). Client and server attachment limits disagree (8/16 vs 10/20 MiB).",
+"correction": "Set bucket file_size_limit and allowed_mime_types (owner-approved config). Wire inspectSadeedAttachment into the chat guard or delete it. Add a file.size cap before extraction. Align the limits.",
+"verifier": ""
+},
+{
+"id": "SEC-14",
+"area": "SEC",
+"requirement": "Ingestion limits are consistent and bounded on every ingest path",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "The legacy server fn bypasses the new 250k limit. Large inputs mean many sequential embed calls, each with a 15s timeout and 2 retries, so the server fn can run until the platform limit and burn embedding quota.",
+"correction": "Apply KNOWLEDGE_MAX_TEXT_CHARS and the shared chunk/concurrency core to ingestSadeedDocument, or retire it in favor of enqueueKnowledgeIngest.",
+"verifier": ""
+},
+{
+"id": "SEC-15",
+"area": "SEC",
+"requirement": "Legacy document semantic search works and does not leak DB internals",
+"status": "BROKEN",
+"severity": "P1",
+"gap": "Search on /sadeed-documents fails in prod and exposes schema names.",
+"correction": "Fix the RPC (see SEC-07) and map errors to the neutral Arabic message.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "SEC-16",
+"area": "SEC",
+"requirement": "Deletion removes document row, chunks and storage object atomically / consistently",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "If the row delete fails or RLS silently refuses it, the object is gone but the row and chunks remain (dangling). A storage removal failure leaves an orphan object. Cascade in prod is unverified.",
+"correction": "Delete the row first with .select() to confirm deletion, then remove the object and log failures. Measure the prod FK (pg_constraint confdeltype='c').",
+"verifier": ""
+},
+{
+"id": "SEC-17",
+"area": "SEC",
+"requirement": "Storage object access confined to owner (signed URLs, client-supplied storage_path)",
+"status": "UNVERIFIED",
+"severity": "P3",
+"gap": "Prod storage.objects policies were not measured. With them, a forged storage_path cannot be signed, but the row still records an arbitrary path.",
+"correction": "Validate storage_path.startsWith(`${userId}/`) server-side. Measure prod storage policies.",
+"verifier": ""
+},
+{
+"id": "SEC-18",
+"area": "SEC",
+"requirement": "No secrets in client bundle or repo; only publishable values are VITE_-prefixed",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "none",
+"correction": "none",
+"verifier": ""
+},
+{
+"id": "SEC-19",
+"area": "SEC",
+"requirement": "CORS on public routes (no wildcard cross-origin access to AI endpoints)",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "Non-browser abuse is bounded only by rate limits (see SEC-06).",
+"correction": "none",
+"verifier": ""
+},
+{
+"id": "SEC-20",
+"area": "SEC",
+"requirement": "Safe logging and telemetry (no full prompts/document text/PII in logs)",
+"status": "IMPLEMENTED",
+"severity": "P3",
+"gap": "finn_incidents stores the raw provider error message (500 chars, chat.ts:827). No retention/TTL job for finn_interactions or messages was found in this pass.",
+"correction": "Apply redactTelemetryText to the incident detail. Owner to set a retention policy.",
+"verifier": ""
+},
+{
+"id": "SEC-21",
+"area": "SEC",
+"requirement": "Chat PDF export: client-side, exports only what the user saw",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "none",
+"correction": "none",
+"verifier": ""
+},
+{
+"id": "SEC-22",
+"area": "SEC",
+"requirement": "Timeouts, cancellation and retry on chat/RAG/ingest calls",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Embedding calls are not tied to request.signal, so a client abort does not cancel them. The knowledge-ingest hook fetch has no timeout (SEC-02). Worst-case pre-model latency was not measured (no TTFT telemetry; see hypotheses).",
+"correction": "Thread request.signal into embedText, and add AbortSignal.timeout to the hook fetch.",
+"verifier": ""
+},
+{
+"id": "SEC-23",
+"area": "SEC",
+"requirement": "Request body bounded before auth/rate-limit work",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "A body with no Content-Length (chunked) is read unbounded up to platform limits. Guests can make the server parse up to 24 MiB JSON before being rate limited.",
+"correction": "Read the body with a streaming byte cap, and run the cheap IP or user rate limit before parsing large bodies.",
+"verifier": ""
+},
+{
+"id": "SEC-24",
+"area": "SEC",
+"requirement": "Client cache isolation across sign-out / user switch",
+"status": "UNVERIFIED",
+"severity": "P2",
+"gap": "Cached react-query data from user A may render for user B in the same tab after a switch, until refetch. Impact not exercised.",
+"correction": "On SIGNED_OUT or user change, call queryClient.clear(). Add Cache-Control: no-store to AI responses.",
+"verifier": ""
+},
+{
+"id": "SEC-25",
+"area": "SEC",
+"requirement": "Guest public-read window for maintenance closes 2027-04-06 00:00+03, enforced in DB",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "The DB window is correct, but SEC-01 bypasses it: bundled export data reaches guests outside the view and without masking or a time window.",
+"correction": "See SEC-01.",
+"verifier": ""
+},
+{
+"id": "SEC-26",
+"area": "SEC",
+"requirement": "Duplicate-ingest dedupe is race-free",
+"status": "PARTIAL",
+"severity": "P3",
+"gap": "Concurrent uploads of the same file can both ingest, giving duplicate chunks that skew retrieval. This is integrity, not a security risk.",
+"correction": "Add a partial unique index on (org_id,user_id,revision_hash) where status in ('pending','processing','ready'), through owner-approved DDL.",
+"verifier": ""
+},
+{
+"id": "QA-01",
+"area": "QA",
+"requirement": "An end-to-end test for the journey 'upload a knowledge document, then ask about it and get an answer'",
+"status": "MISSING",
+"severity": "P2",
+"gap": "The core upload→ask path is broken in production and no test, contract check or CI job can detect it. Ingest is tested only as pure functions.",
+"correction": "Add a contract test listing every RPC and table the chat path depends on (aria_match_memory, aria_match_knowledge, aria_match_documents, finn_*). Add an integration test that runs ingest→retrieve against a schema dumped from production rather than built from migrations. Gate the RAG flag on that test passing.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "QA-02",
+"area": "QA",
+"requirement": "CI verifies database objects against the real production schema, not only against migration files",
+"status": "MISSING",
+"severity": "P2",
+"gap": "A green CI result says nothing about production. A run with no Postgres skips silently and still passes. Whether the GitHub runner actually has Postgres was not checked (CI logs not read).",
+"correction": "Make the preflight fail rather than skip when Postgres is missing in CI. Add a scheduled, read-only schema-drift probe against production (to_regclass/to_regprocedure on every object the code references, and a check that function bodies do not mention renamed tables).",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "QA-03",
+"area": "QA",
+"requirement": "Tests covering Arabic and English answers on the model path",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Language parity of the final answer, citations and the safe-gateway rendering is never tested end to end.",
+"correction": "Add a handler-level vitest that mocks the Gemini provider (MockLanguageModel) and posts one Arabic and one English question. Assert the reply language, X-SADEED-Reply-Source=safe-gateway, and that the metadata carries requestId and citations.",
+"verifier": ""
+},
+{
+"id": "QA-04",
+"area": "QA",
+"requirement": "Streaming and time-to-first-token (TTFT) behaviour is tested and measured",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "There is no TTFT test and no harness to take the before/after measurement that the owner's 2026/10/11 decision requires before turning on the 'sentence-by-sentence' streaming flag.",
+"correction": "Add a harness that records client TTFB (first SSE chunk) and total time per request against a mock provider with controllable latency. Use it to measure buffered vs sentence streaming before the flag is enabled.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "QA-05",
+"area": "QA",
+"requirement": "Microphone and speech-to-text journey tests",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Microphone capture, transcription, the 401/403→public fallback, and the 'voice conversation never stops' retry layer have no executable test.",
+"correction": "Add a unit test for the transcribe client that mocks fetch returning 401 and asserts a retry against /api/public/sadeed-transcribe with no Authorization header. Add a jsdom test with a stubbed MediaRecorder for the capture loop.",
+"verifier": ""
+},
+{
+"id": "QA-06",
+"area": "QA",
+"requirement": "Attachment and upload validation tests",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Client and server limits are tested, but storage-side limits are neither enforced nor tested.",
+"correction": "Add a production-schema probe test asserting storage.buckets.file_size_limit and allowed_mime_types for every upload bucket, once the owner has set the limits.",
+"verifier": ""
+},
+{
+"id": "QA-07",
+"area": "QA",
+"requirement": "Server-side file-content inspection is wired into upload paths, so its tests protect live code",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "A tested inspection module protects nothing: the tests give false assurance.",
+"correction": "Either wire it into sadeed-docs-ingest and the attachment intake, or delete the module and its test. This is an owner or security decision.",
+"verifier": ""
+},
+{
+"id": "QA-08",
+"area": "QA",
+"requirement": "Tests for chat-to-PDF export and the Arabic bidi layout",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None in functional coverage. There is no performance guard; see the baselines.",
+"correction": "Optional: add a performance smoke assertion (for example 80 messages under 2 s on CI) to catch regressions.",
+"verifier": ""
+},
+{
+"id": "QA-09",
+"area": "QA",
+"requirement": "Tenant-isolation and security tests executed against the live RLS",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "No CI job runs the cross-tenant test against a real database. The constitution's Article 32 'definition of done' ('zero cross-tenant hits in E2E') is not measured.",
+"correction": "Provide LIVE credentials for a staging project, or run a nightly read-only job using two synthetic tenants under `set local role authenticated`.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "QA-10",
+"area": "QA",
+"requirement": "Prompt-injection tests on retrieved context and user input",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Injection defences are untested, and the main retrieval path has no screening at all.",
+"correction": "Add unit tests for detectInjection and untrustedPromptData (delimiter escaping, truncation). Add a handler test that seeds a document chunk with 'ignore previous instructions' and asserts the system prompt keeps it inside the untrusted block and the gateway output does not obey it.",
+"verifier": "**Verifier corrected** MISSING/P1 → PARTIAL/P2: Narrow fact true: no test references detectInjection, INJECTION_PATTERNS, sanitizeRetrievedContent or untrustedPromptData. But 'injection defences are untested' is overstated: finalize.test.ts:261 and pipeline.test.ts:215 (OUT-014, injected document as"
+},
+{
+"id": "QA-11",
+"area": "QA",
+"requirement": "Tests for citation correctness ([DOC:]/[KB:] tags match retrieved evidence) and measured retrieval quality",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Citation tagging and coverage scoring are unverified. Recall@5 and citation precision are not measured (Article 27).",
+"correction": "Add unit tests for evaluateRagCoverage (tag present/absent, a fabricated tag). Keep the live evaluation gated until the corpus reaches 30 or more seed-verbatim anchors.",
+"verifier": ""
+},
+{
+"id": "QA-12",
+"area": "QA",
+"requirement": "The Playwright E2E suite runs in CI",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Most E2E journeys (demo, voice tour, rate limit, health) are never executed automatically.",
+"correction": "Add a `test:e2e` script and a nightly job running all specs against a preview deployment.",
+"verifier": ""
+},
+{
+"id": "QA-13",
+"area": "QA",
+"requirement": "Request/correlation IDs flow from the client through the server to telemetry",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "Logs cannot be joined to the interaction or retrieval rows by request ID.",
+"correction": "Pass correlationId: requestId into the tool runtime and the retrieval log. Add request_id to finn_interactions (schema change, owner-gated).",
+"verifier": ""
+},
+{
+"id": "QA-14",
+"area": "QA",
+"requirement": "Per-stage server timings (auth, rate, quota, snapshot, RAG embed and RPC, prefs, model, finalize)",
+"status": "MISSING",
+"severity": "P2",
+"gap": "End-to-end and per-stage server latency cannot be measured, and stored latency_ms systematically under-reports.",
+"correction": "Set t0 at handler entry. Wrap each stage in a mark() helper and emit Server-Timing plus one structured log line per request. Store total_ms and pre_model_ms (owner-gated column).",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "QA-15",
+"area": "QA",
+"requirement": "TTFT telemetry (first_token_ms)",
+"status": "MISSING",
+"severity": "P2",
+"gap": "The column exists but is always null. Article 24(b)'s first-token→sentence1 ceiling of 250 ms is measured against a meaningless first-token event.",
+"correction": "Record client TTFB (first SSE chunk) and send it to the server, or move to a streamText path where onChunk sets firstTokenAt. Until then, store first_token_ms as null with an explicit reason instead of implying it was measured.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "QA-16",
+"area": "QA",
+"requirement": "rag_query_log records every retrieval attempt (constitution Articles 31(e) and 32)",
+"status": "BROKEN",
+"severity": "P2",
+"gap": "The retrieval telemetry table is disconnected from the main path. Zero rows are consistent with the flag being off, but the flag's production value was not measured here.",
+"correction": "Log every gatherRagContext attempt (route 'chat-auto', with latency, hits, max_similarity and correlation_id), and log the flag-off and no-org rejections to structured logs.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "QA-17",
+"area": "QA",
+"requirement": "Error tracking and alerting",
+"status": "MISSING",
+"severity": "P2",
+"gap": "There is no aggregated error rate, no alerting, and anonymous failures are invisible.",
+"correction": "Ship structured JSON logs to a log drain (Cloudflare Logpush or similar) and alert on the counts of model_error and 429/503 responses. Record anonymous errors with a hashed identity.",
+"verifier": ""
+},
+{
+"id": "QA-18",
+"area": "QA",
+"requirement": "The health endpoint /api/chat/health reflects real readiness",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "The endpoint would report rag_ready: true while aria_match_documents raises 42P01, and nothing in CI reads it.",
+"correction": "Add a deep mode (for example ?deep=1, rate-limited) that runs to_regprocedure checks and a 1-row RPC dry call, and add it to production-check.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "QA-19",
+"area": "QA",
+"requirement": "CI static, test and build gates",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None for static gates. Note that the dead-code scan is advisory only.",
+"correction": "None.",
+"verifier": ""
+},
+{
+"id": "QA-20",
+"area": "QA",
+"requirement": "A production latency, TTFT, retrieval and error-rate benchmark or probe",
+"status": "MISSING",
+"severity": "P2",
+"gap": "TTFT, retrieval latency, indexing time, throughput and production error/timeout rates are not measured anywhere.",
+"correction": "See the architecture findings for the proposed probe and instrumentation. They are not implemented: the work touches the answer path and production data, so it needs owner approval.",
+"verifier": "**Verified** (adversarial pass)."
+},
+{
+"id": "QA-21",
+"area": "QA",
+"requirement": "A guard on the pre-model latency chain (number of sequential round-trips)",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "There are 7 strictly sequential network round-trips before the model call (8 with RAG on, 9 with HCIS). The three rate and quota RPCs, and org_members with the prefs read, could run in parallel. None of this is guarded or timed.",
+"correction": "Combine the rate and quota checks into one RPC or use Promise.all, start loadAdaptivePreferenceBlock in parallel with the snapshot, and add a contract test on the stage graph.",
+"verifier": ""
+},
+{
+"id": "QA-22",
+"area": "QA",
+"requirement": "The guest rate-limit key is per client, with a test",
+"status": "PARTIAL",
+"severity": "P2",
+"gap": "One noisy guest can exhaust chat for every guest, or, with the env set, a guest can rotate a spoofed XFF value to bypass the limit.",
+"correction": "Prefer cf-connecting-ip on Cloudflare and add a unit test for clientIp covering both env states.",
+"verifier": ""
+},
+{
+"id": "QA-23",
+"area": "QA",
+"requirement": "Chat window bounds request size and message count (shipped today)",
+"status": "IMPLEMENTED",
+"severity": "none",
+"gap": "None.",
+"correction": "None.",
+"verifier": ""
+},
+{
+"id": "QA-24",
+"area": "QA",
+"requirement": "Ingest and indexing observability (per-document timings, embedding failures, chunk counts)",
+"status": "UNVERIFIED",
+"severity": "P2",
+"gap": "Indexing time and the embed failure rate are not measured. Whether the hook logs them was not verified.",
+"correction": "Have the hook log extract, chunk, embed and insert durations with document_id and requestId. Optionally persist processing_ms (schema change, owner-gated).",
+"verifier": ""
+},
+{
+"id": "QA-25",
+"area": "QA",
+"requirement": "Performance regression benchmarks committed for the hot pure functions (chunker, hash, bidi, PDF, window)",
+"status": "MISSING",
+"severity": "P3",
+"gap": "Regressions in client-side PDF build time (536 ms p50 for 80 messages) or in the chunker would go unnoticed.",
+"correction": "Move the scratch suite into the repo as vitest bench with loose ceilings.",
+"verifier": ""
+}
+],
+"owner_items": {
+"CHAT": [
+"Streaming vs safe-output gateway: chat.ts:765-768 ('GLOBAL SAFE OUTPUT … Option A', buffer the full turn) vs the owner's 2026-10-11 decision (CLAUDE.md:229) for sentence-by-sentence streaming behind a flag, measured before activation. The flag does not exist. The owner must decide how whole-text gateway rules (exec-claim, evidence, exfiltration) behave once text is already on screen: retract and replace, or hold back the first sentence until it passes. Proposed low-risk first step that keeps Option A: early headers plus status parts (CHAT-02 step 1).",
+"Layer 2 of 'سَدِيد لا يتعطل' (CLAUDE.md: failed provider cooled, next attempt goes to another configured provider) conflicts with the code's 'native Google Gemini only' policy (chat.ts:256; ai-router.server.ts). No cooldown exists, yet SadeedCopilot.tsx:1861 claims it does. The owner must either authorise a same-vendor fallback model with cooldown or amend CLAUDE.md layer 2.",
+"'لا 503 أبدًا' (layer 1) vs fail-closed cost control (rate-limit.server.ts:15-20; ai-quota.server.ts quota_unavailable): a DB/RPC outage makes chat return 503 even for no-model answers. chat-latency.contract.test.ts deliberately limits the 'never 503' guard to the no-key branch. The owner must state which wins for no-model and fixed replies.",
+"Clock block placement: chat.ts:747-763 and makkah-clock.ts:5-6 cite 'المادة ٢ (مادة صلبة)' requiring <SADEED_RUNTIME> at the very start of every turn. SADEED_CONSTITUTION.md:58 Article 2 is 'Supremacy' and the constitution has no time clause (grep). Putting the clock first prevents caching of the 42.6k-char static prefix. The owner should confirm whether 'at the start' is binding, or whether 'server-derived every turn, at the end' satisfies the rule.",
+"V5 'سَدِيد ينطق كل ردّ افتراضيًّا' (reply-modality.ts:5-13) makes every typed turn replyMode 'voice', which applies the voice-only contract (no Markdown/tables, 1-3 sentences, 700 tokens). That conflicts with SYSTEM_PROMPT 'Do not collapse a requested report' (chat.ts:208) and with the new chat-to-PDF export. Decision needed: decouple 'speak' from 'voice contract'?",
+"Retrieval governance: the code constitution Art 31 (src/lib/sadeed/constitution.ts:46) mandates retrieveWithEvidenceGate, 1536-d hybrid, rag_query_log and rateLimitRag for every retrieval. The chat pre-model path uses 768-d aria_match_* (broken in production) and CLAUDE.md 2026-10-11 chose 'evolve finn_* tables instead of applying 20260728*'. The owner/architect must pick the single retrieval path for chat, and decide whether the code-constitution article or the 2026-10-11 decision governs.",
+"Measurement control ④ of the 2026-10-11 answer-path exception (before/after measurement in the commit) cannot currently be met with real numbers: no TTFT telemetry, first_token_ms is always null, no benchmark workflow, and the sandbox cannot reach production. The owner should decide what counts as acceptable measurement for the first latency changes (mocked-latency unit models vs preview runs) until CHAT-18 telemetry ships.",
+"Write actions inside chat: CLAUDE.md says 'أي إجراء كتابة أو طوارئ خلف بوابة تأكيد بشري', yet chat write tools (sec_create_incident, sec_decide_permit, send_executive_email/sms, create_task…) execute directly inside generateText based on the current message. The gateway then tells the user the action 'requires approval' (CHAT-17). The owner must state which is authoritative: a confirmation gate before execution, or truthful receipts after execution.",
+"Guest fairness: TRUST_PROXY_HEADERS is unset in all repo docs and config, so by default all guests share one bucket (12 per 5 min, 120 per day). Its production value is unknown. The owner/lead should confirm the value, or approve trusting Cloudflare's cf-connecting-ip by default.",
+"Doc drift for docs-keeper: instant-data-answers.server.ts:27-31 still says the layer runs only for authenticated callers (overridden 2026-09-03). sadeed-service.test.ts:82 and SadeedCopilot.tsx:1861 reference 'retry/cooling layers' that do not exist server-side."
+],
+"INGEST": [
+"Attachment charter (docs/SADEED_ATTACHMENT_CONSTITUTION.md, Article 24 attachments, 'law governing any rebuild') versus current code. §1/§3: anonymous users MAY NOT upload, but the composer attach button is unconditional and /api/chat accepts guest file parts. §6.5: the transport MUST reject non-https/non-storage URLs, but the code accepts ONLY data: URLs. §2: a server-side upload function with MIME gate, 25MB/10 files, 30/60s rate limit and aria_actions_log audit — none of it exists. Owner must choose: rebuild to the charter, or amend it.",
+"Article 25 (anti-poisoning) versus user uploads as evidence. gatherRagContext turns any user-uploaded chunk into a [DOC:] citation that satisfies the output gateway's regulatory evidence gate. Once aria_match_documents is repaired, an unverified, client-extracted upload (which could be fabricated) would be cited as evidence. Decide whether user uploads are citable before verification or admin approval, and whether they are private per user or shared per org (Article 32 requires org-scoped retrieval; the current RPC is user-only).",
+"Article 31 (constitution.ts:46) mandates that all retrieval go through retrieveWithEvidenceGate at 1536 dims over sec_kb_hybrid_search. File ingestion writes 768-dim finn_document_chunks, consumed only by the non-gated gatherRagContext. The owner's 2026/10/11 decision ('develop finn_* tables instead of applying 20260728*') leaves open which corpus and dimension is canonical for uploads. This needs an explicit ruling before the retrieval fix.",
+"Repairing aria_match_documents (a CREATE OR REPLACE on prod) and fixing the output-gateway PII and evidence rules both touch the answer path. Under the 2026/10/11 exception they need all four controls: small step, tests, nexios-qa-guardian clearance, and a before/after measurement in the commit. The DB change must also follow the push, migrate, verify under set local role, then Publish order.",
+"CLAUDE.md requires 'أي إجراء كتابة … خلف بوابة تأكيد بشري', but document deletion on /knowledge-upload and /sadeed-documents is one click with no confirmation.",
+"Legacy /sadeed-documents (ingestSadeedDocument) is still linked from the marketplace and enterprise search, and it violates the 250k limit, readiness and dedupe invariants. Owner to decide: retire it or route it through the canonical hook.",
+"Article 27 truthfulness: the UI texts 'SADEED can now cite this document', 'Citation Ready: Yes' and 'up to 50MB', the attach-button promise to deposit every file, and the default attach prompt asking the model where files were deposited all assert things that are false today. They should be corrected even before retrieval is fixed."
+],
+"RAG": [
+"Two constitutions use different article numbers. The runtime prompt constitution src/lib/sadeed/constitution.ts numbers RAG items as 25 (jurisdiction), 31 (RAG protocol: 1536-dim only, everything through retrieveWithEvidenceGate, rateLimitRag, sanitize) and 32 (RESTRICTIVE RLS isolation). SADEED_CONSTITUTION.md uses 25 (poisoning barrier), 26 (read-side capture), 27 (numeric honesty), 31 (second surface) and 32 (two-writer class). Code comments cite 'Article 31/32' in the runtime sense. The owner should decide which numbering is canonical.",
+"CLAUDE.md is stale. It says the RAG anchor has 21 items and the gate is 'structurally closed'. The code holds 41 anchors under an owner growth decision dated 2026/08/05 (src/lib/rag/evaluation.ts:37-48; migration 20260805120000_rag_corpus_growth.sql — whether it is applied in prod was not measured). The docs need updating or the decision needs restating.",
+"The 2026/10/11 decision to evolve the finn_* tables instead of applying 20260728* leaves orphans targeting the unapplied schema: the measurement harness (rag_measure.sql → rag_hybrid_search), the rag-retrieve edge function and /rag-search, rag.propose_candidate (rag_candidates), rag_record_gap_for_org (rag_gaps), and the Article 25 promotion trigger. The owner must choose for each one: port it to finn_*/sec_kb_* or retire it.",
+"Article 26 conflict: rag_record_gap_for_org is called inside the chat request path (sadeed-tools.server.ts:514), and authenticated holds EXECUTE in prod. Article 26 requires no capture in a request path and EXECUTE revoked from anon/authenticated. Removing the call is low-risk, but the gap ledger's home under finn_* needs an owner decision.",
+"Embedding-dimension policy conflict: the runtime constitution item 31(a) mandates 1536-dim exclusively, but prod finn_document_chunks is vector(768) and ingestion writes at 768. Fixing aria_match_documents in place keeps 768. Re-embedding at 1536 needs a column migration plus a re-embed of the corpus. The owner should choose.",
+"Fixing aria_match_* (CREATE OR REPLACE on functions on the answer path, applied to prod) falls under the owner's 2026/10/11 'نعم بضوابط' answer-path exception (small step + tests + qa-guardian + before/after measurement). Under CLAUDE.md's 'schema + UI together' rule it must be applied to prod before Publish.",
+"sec_kb_hybrid_search returns other orgs' and global published articles when _org_id is NULL, and in prod anon holds EXECUTE (the repo migration grants only authenticated). The owner must decide whether published knowledge articles are intentionally public or cross-tenant.",
+"The production value of SADEED_GEMINI_RAG_READY was not measured. With it ON today, each authenticated turn pays an embedding round trip plus 3 failing RPCs. With it OFF, all retrieval (and memory writes) is skipped. Either way the uploaded-knowledge feature shipped today cannot affect answers."
+],
+"UX": [
+"Delete with no confirmation on /knowledge-upload and /sadeed-documents conflicts with CLAUDE.md 'أي إجراء كتابة أو طوارئ خلف بوابة تأكيد بشري'. It is a straight fix, but the owner should confirm the delete policy: only the owner or a manager may delete, and whether to soft-delete.",
+"The 'Citation Ready / SADEED can now cite this document' claim conflicts with Article 27 while aria_match_documents is broken in production and SADEED_GEMINI_RAG_READY gates RAG. Repairing the function to read finn_* is a production schema change on the answer path. It falls under the 2026-10-11 'نعم بضوابط' exception (small step, tests, qa-guardian clearance, before/after measurement) and the decision to evolve finn_* instead of applying 20260728*. It needs owner sign-off and migrate-then-publish ordering.",
+"The /knowledge-upload page is English-first and shows internal 'aria-docs-ingest' and '/api/public/hooks/…' strings. This conflicts with the Arabic-first constitution and with the CLAUDE.md rule that aria-*/finn-* are invocation keys, not display text.",
+"Editable transcript before send versus the current voice-first auto-submit conversation mode is a product choice the owner should make.",
+"PDF conventions are owner preferences: export timestamp in UTC (now) or Asia/Riyadh, and Arabic-Indic digits converted to Western in the PDF (now) or kept. The font covers them, as measured.",
+"The composer tooltip and default file prompt promise to deposit 'every file' in the system, but only text-like files are deposited. The owner should choose between honest wording and server-side extraction/deposit for PDFs and images, which means more storage of user files.",
+"Showing citations in the UI and the PDF requires client rendering of metadata.citations. That is not the server answer path, but it changes what is shown as 'sources'. Today the citations would always be empty because of the broken RPC, so it should follow the RPC repair."
+],
+"UI": [
+"A directive mentions a 'permanent light-mode direction', which conflicts with CLAUDE.md Articles 32-34 (both modes are a correctness surface, and every check runs twice). It also conflicts with the boot script default of dark (__root.tsx:279-283, d = t!=='light'). Not resolved here. Note that light mode of the chat panel is currently broken (UI-21, title 1.04:1), so a light-only direction would make that a launch blocker.",
+"Reduced motion vs the owner-retained glow: the owner kept 'nx-glow-breathe'/'hx-halo-breathe' (styles.css:3100-3108 comments). As implemented with !important (styles.css:4650-4658, plus animation-play-state: running forced inside the reduce block at 4661-4671), it overrides prefers-reduced-motion. The owner must decide whether the reduced-motion preference beats the directive (recommended for WCAG 2.2.2).",
+"Touch-target policy: the token layer sets 44px only for pointer:coarse and 40px for pointer:fine (styles.css:2551-2568). The audit brief asks for 44px targets. The owner must decide whether 44px applies to mouse pointers too.",
+"Chat panel identity vs Article 33: the panel is deliberately 'cinematic dark' (SadeedPanelBackdrop #04070F) but uses theme-token text. The owner must choose between (a) the panel is always dark, with dark tokens scoped to .sadeed-window, or (b) the panel follows the theme with tokenised surfaces. Either way the literal colors break Article 33.",
+"/knowledge-upload is English-first and shows internal endpoint names. That contradicts the Arabic-first constitution unless the owner classifies it as an internal admin tool exempt from the rule.",
+"Two upload limits are shown on /knowledge-upload ('up to 50MB' and the 250k-character hint), while the production buckets have no size limit. The owner and product must decide the single advertised limit."
+],
+"SEC": [
+"RELEASE-BLOCKING (SEC-01): guest chat and the sec work-orders fallback serve creator employee or ID numbers from git-tracked maintenance-report.data.json. This conflicts with CLAUDE.md «الصيانة» §2 (identity masked for non-members) and with «البيانات الحقيقية لا تدخل git». Owner decides whether to redact or purge the file from git history. Purging history needs explicit approval and conflicts with the 'no history rewrite' rule, so redact going forward at minimum.",
+"Constitution Art. 31 requires every retrieval to go through retrieveWithEvidenceGate at 1536 dims, but the main /api/chat path uses gatherRagContext at 768 dims with no gate. The owner's 2026-10-11 decision to 'evolve finn_* rather than apply 20260728*' implies keeping the 768-dim finn_* stack. Art. 31 needs an amendment, or the chat path must move to the gate. Either way it touches the answer path, under the 4-condition exception (small step, tests, qa-guardian, before/after measurement).",
+"CLAUDE.md layer 1 says /api/chat never returns 503, yet chat.ts:382 returns 503 when check_rate_limit is unavailable (fail-closed quota) and chat.ts:315 returns 503 when Supabase config is missing. The owner must choose between fail-closed abuse protection and the guaranteed local reply.",
+"Creating rag_gaps, or fixing the aria_match_* bodies to read finn_* with org predicates, is schema change on production. It is not destructive, but it touches DB functions on the answer path. Needs owner sign-off and the CLAUDE.md order: migrate → verify under set local role anon/authenticated → Publish.",
+"Bucket-level file_size_limit and allowed_mime_types on uploads, aria-documents and aria-attachments* are security settings that need explicit owner approval per CLAUDE.md «يبقى خلف موافقة صريحة».",
+"Prod env TRUST_PROXY_HEADERS value is unknown. If unset, all guests share one chat bucket of 12 requests per 5 minutes globally. The owner or lead should confirm the value and accept or reject the shared-bucket behavior for the public demo.",
+"Retention policy for finn_interactions, messages and storage objects is undefined (no TTL or job found). PDPL implies a decision is needed."
+],
+"QA": [
+"Streaming conflict. The safe-output gateway (buffered generateText plus one delta, chat.ts:765-770) makes TTFT equal total time. CLAUDE.md (2026/10/11) allows 'sentence-by-sentence' streaming only behind a flag 'measured before enabling', and no measurement harness exists. Building one touches the answer path, so it needs the four approved controls: small step, tests, nexios-qa-guardian, before/after numbers in the commit.",
+"Retrieval-stack conflict. The constitution's Article 31 as written in src/lib/sadeed/constitution.ts:46 says all retrieval goes through retrieveWithEvidenceGate at 1536 dims, every attempt is logged, and sanitizeRetrievedContent and rateLimitRag apply. The live default path gatherRagContext is 768-dim aria_match_* with no log, sanitize or rate limit. CLAUDE.md's 2026/10/11 decision to 'develop the existing finn_* tables' fits the 768-dim finn_document_chunks (vector(768)), not Article 31(a). The owner must say which is canonical; the constitution text or the code must change, and logging the 'Amended Articles' entry is the owner's.",
+"Article 24(b)'s voice-latency ceiling (first-token→sentence1 ≤ 250 ms) is computed client-side against a 'first token' that, with buffering, is the whole reply. The metric definition needs an owner decision.",
+"A production latency probe that POSTs to /api/chat uses provider quota and cost, and writes finn_interactions and messages rows, i.e. real data. It needs owner approval and a synthetic tenant or user. The existing E2E_TEST_* secrets could be reused.",
+"Adding telemetry columns (request_id, total_ms, pre_model_ms, stage_ms) to finn_interactions is a production schema change. Per CLAUDE.md, migrations are not the source of truth and must be applied before Publish.",
+"The CI rag-preflight validates the 20260728 migration schema, which was never applied and was superseded by the 2026/10/11 decision. It also exits 0 without Postgres. Its green result attests nothing about production. The owner should decide whether to retire it or retarget it at a production-schema drift probe.",
+"src/lib/security/file-inspection.server.ts is tested but wired nowhere. The owner or security lead must decide whether to wire it into the ingest and attachment intake, or delete it.",
+"TRUST_PROXY_HEADERS in production is unknown. If unset, all guests share one chat bucket of 12 requests per 5 minutes. If set, a spoofable first x-forwarded-for entry wins over cf-connecting-ip. The lead or owner should confirm the production env and the intended behaviour."
+]
+},
+"architecture_findings": {
+"CHAT": [
+"Critical path (code trace, HEAD ea9a947): SadeedCopilot.submit (SadeedCopilot.tsx:1288-1328) calls chat.sendMessage directly (bypassing sadeedBrain), then useChat singleton (sadeed-provider.tsx:51), then DefaultChatTransport with windowChatMessages(20) (sadeed-service.ts:99-128), then sadeedAuthedFetch (Bearer, falling back to anonymous on 401/403), then POST /api/chat (chat.ts:252). There: kill switch → validateChatRequest (body) → [auth: getUser → org_members] → check_rate_limit → quota global → quota identity → scope guard / fast recall / instant data (fixed stream) → [auth: snapshot(15 queries, 2.5s race) ‖ RAG(embed→aria_match_*×3→finn_memory update)] or [guest: production datasets] → [HCIS finn_knowledge read] → [deep: council 50s] → tools(31) → adaptive prefs → runtime clock prepended → generateText(Gemini 3.6 flash, ≤12 steps, maxRetries 2) → finalizeSadeedOutput → sealEnvelope → single text-delta plus metadata → fire-and-forget persistence.",
+"Latency MODEL (from code, not measured). Guest model turn: T_first_byte ≈ upload + 3×RTT_db (rate, quota-global, quota-id) + [cold isolate: dataset module load/parse] + T_gemini(full buffered generation: prefill of a system prompt of about 51-61k chars, then all output tokens; 700-token cap when replyMode=voice, the default) + finalize (sync, CPU). Authenticated turn: upload + RTT_auth(getUser) + RTT_db(org_members) + 3×RTT_db + max(snapshot ≤2.5s, RAG[flag on]: RTT_gemini_embed (≤3×15s) + RTT_rpc + RTT_db_update) + [HCIS: RTT_db] + RTT_db(prefs) + Σ_steps(T_gemini_step + tool DB RTTs) (≤12 steps). Fast path: guest 3 RTTs, authenticated 5 RTTs, plus a match under 1ms. Voice time to first audio = T_first_byte + first-sentence TTS. Because the response is buffered, time to first byte equals total turn time on every model path.",
+"Network vs local stages: network = Supabase Auth getUser; PostgREST org_members; 3 RPCs (check_rate_limit); 15 snapshot queries (parallel); Gemini embed; 3 aria_match RPCs; finn_memory update; finn_knowledge HCIS read; finn_adaptive_preferences read; Gemini generate (×steps); tool DB calls. Local = JSON validation, sanitizeHistory, scope/fast-recall/instant matchers, production datasets block, convertToModelMessages, finalize/seal.",
+"The 'safe output gateway' (finalize.ts) is regex-based over the full model text (exec-claim, secret leak, exfiltration, KPI/time/evidence rules). This is the root reason streaming was removed. Per-token streaming is incompatible with it as written; per-sentence streaming would need a retract/replace path for whole-text rules.",
+"The output gateway is not connected to tool execution: chat.ts never reads gen.steps/toolResults and passes no receipts. Executed writes can therefore be relabelled 'requires approval' (measured on 2 of 3 phrasings), and write tools run without any confirmation gate inside the turn.",
+"The chat path holds two divergent retrieval systems: pre-model vector RAG (768-d, aria_match_*, user-only filter, broken in production with 42P01 per lead, swallowed errors, no rag_query_log) and the search_knowledge tool via retrieveWithEvidenceGate (hybrid sec_kb_hybrid_search, evidence gate, rag_query_log). The code constitution Art 31 mandates only the latter.",
+"Persistence designed for continuity is disconnected: the singleton chat id 'sadeed-singleton' fails the UUID check, so threads/messages are never written; /assistant/$threadId ignores its param; no client storage. Memory (finn_memory) depends on SADEED_GEMINI_RAG_READY plus a likely-broken RPC. aria_conversations/aria_learning_log have no writer.",
+"Resilience layers vs code: layer 1 (no-key local reply) exists; layer 2 client retry exists but is misclassified, and the server cooldown/alternate provider does not exist (Gemini-only policy); layer 3 voice continuity exists. A DB/RPC outage still yields a 503 through fail-closed rate limit/quota, even for no-model answers.",
+"Client 30s timeout is ineffective for chat because AI SDK v6 always supplies init.signal (index.mjs:14208/14619) and sadeedAuthedFetch prefers it (sadeed-service.ts:46,59). Combined with the unbounded generateText and DB calls, a hang has no upper bound.",
+"Prompt economics (measured locally, chars not tokens): base SYSTEM_PROMPT 42,600 chars + runtime block 2,485 + guest datasets 5,912-16,191, plus 31 tools (14,652 chars of description and schema) for authenticated turns, plus live data/RAG up to 48k each. A volatile clock block at offset 0 prevents prefix reuse.",
+"Minor correctness: runtime block labels every authenticated user user_role 'manager' (chat.ts:758) regardless of orgRole. The instant-data module header still says guests are excluded (instant-data-answers.server.ts:27-31), contrary to the code and the 2026-09-03 order. Citations/coverage metadata are sent but not rendered by the copilot (no 'citations' use in SadeedCopilot.tsx). grounded=false (client-controllable) re-enables the simulation line for KPI questions via finalize (finalize.ts RE_KPI branch), despite simulation being removed from chat."
+],
+"INGEST": [
+"Trace (canonical): /knowledge-upload extracts text in the browser (pdf.js, mammoth, File.text), uploads the original straight to the private aria-documents bucket (best effort, errors ignored), then calls enqueueKnowledgeIngest (requireSupabaseAuth). That inserts a finn_documents row (status 'pending'), runs a non-atomic dedupe, and makes a synchronous HTTP self-call with x-cron-secret to /api/public/hooks/sadeed-docs-ingest. The hook (service role) runs chunkText (1600/200), then Gemini embedContent per chunk (768 dims, concurrency 4), upserts finn_document_chunks, and marks the document 'ready'. Only extracted text crosses to the server; the server never reads the stored bytes.",
+"Search is the dead end: the only chunk-level consumer is aria_match_documents. It is reached by chat (gatherRagContext, gated by SADEED_GEMINI_RAG_READY) and by /sadeed-documents search, and it fails in prod with 42P01. So all ingestion currently produces zero retrievable knowledge. The working hybrid search (sec_kb_hybrid_search) reads sec_knowledge_articles, which has no file-upload path; it is fed only by seeding plus kbEmbedMissing.",
+"Three live writers plus one dead one write divergent corpora. (1) The hook path: 250k cap, no-loss chunker, dedupe. (2) The legacy ingestSadeedDocument behind /sadeed-documents (still linked from marketplace and enterprise search): 2M cap, 900/120 chunker that silently truncates past 400 chunks, null embeddings allowed with status 'ready', no revision_hash, chunk org_id left to the default org. (3) Chat depositTextFiles, which reuses (1) for text types only. (4) Dead: supabase/functions/rag-ingest targets rag_documents/rag_chunks at 1536 dims, with no caller and tables absent in prod.",
+"Chat attachments are model-only and ephemeral. Allowlisted PDF, image, text, CSV, MD and JSON files go as inline base64 data URLs to Gemini for the current turn. Later turns see only '[Attachment metadata]'. Only text types are deposited, and only after the reply completes. No signature validation: the existing src/lib/security/file-inspection.server.ts is unused, and the aria-attachments-quarantine bucket and aria_attachment_scans table have no code references.",
+"The answer-path gateway collides with attachments (measured). finalizeSadeedOutput's regulatory gate never counts attachments as evidence, so summaries of attached SEC documents are refused. Its RE_PHONE PII redaction rewrites ISO dates, decimal series and reference numbers to '[هاتف محجوب]'. The pre-model instant-data short-circuit ignores file parts.",
+"Status semantics overclaim. 'Citation Ready' is defined as 'all chunks embedded' (getKnowledgeChunkStats) and the page prints 'SADEED can now cite this document', yet no retrieval check exists. 'Async/enqueue' is a synchronous request chain: for a 250k-char document that is 179–249 sequential-at-width-4 embedding calls, with no job record, sweeper or document-level retry.",
+"Limits are unified only for extracted text (250,000 chars, enforced at four layers). Byte limits are absent on the knowledge page, the advertised 50MB is unenforced, and prod buckets have file_size_limit and allowed_mime_types NULL. Chat client and server caps differ (8/16MB versus 10/20MiB), and the 24MB body cap relies on the Content-Length header.",
+"The hook invocation sends CRON_HOOK_SECRET to an origin derived from the incoming request URL instead of a pinned base URL or an in-process call. Exploitability depends on the platform's Host handling, which was not measured.",
+"Production schema for the chunk upsert target is unknown. The hook's ON CONFLICT (document_id, chunk_index) needs a unique index that no migration creates. If prod's index is non-unique, every hook ingest fails with 42P10. The 8 'ready' prod documents could have come from the legacy path; model_version distribution would show which."
+],
+"RAG": [
+"Three retrieval stacks coexist and do not share a contract. (1) Automatic chat RAG: gatherRagContext uses 768-dim legacy embeddings and the aria_match_* RPCs over the finn_* tables. It is vector-only, fails closed on flag/org, and RPC errors only produce console.warn (src/lib/sadeed/rag.server.ts:82-213). (2) Governed path: retrieveWithEvidenceGate embeds at 1536 dims and calls sec_kb_hybrid_search (RRF over dense, FTS and trigram) over sec_knowledge_articles, with an evidence gate. It is reached only from the search_knowledge chat tool and the rag.search_verified agent tool (src/lib/sadeed/rag/retrieve.server.ts). (3) Legacy sec_kb_search uses 768-dim kb-embed (kbSemanticSearch, agent kb.search). A fourth, unapplied stack (rag-retrieve edge function → rag_hybrid_search, 20260728*) sits behind a VITE flag. The runtime constitution (src/lib/sadeed/constitution.ts item 31) says ALL retrieval must go through retrieveWithEvidenceGate at 1536 dims. Stacks 1 and 3 violate that.",
+"The ingestion pipeline shipped today (knowledge-ingest-core, sadeed-docs-ingest hook, knowledge-upload page) writes finn_documents/finn_document_chunks at vector(768). The only retrieval reader of those chunks is aria_match_documents, which fails in prod with 42P01. Ingestion therefore feeds a dead end: 8 documents and 18 chunks that no answer can ever use.",
+"chat.ts has a control-flow bug: the guest/no-live-data branch sets liveDataAvailable=true (chat.ts:532), which makes the 'UNTRUSTED TENANT KNOWLEDGE' injection (chat.ts:544-552) unreachable. RAG text reaches the model only when the authenticated caller also has operational data. Its citations are still handed to the output gateway as available evidence (chat.ts:843).",
+"Citation enforcement lives in the output gateway (finalize.ts:440-460). It is regex-triggered (regulatory claims only), it lets invented tags through whenever one real tag is present (measured), it refuses correct bare 'SEC-xx' citations (measured), and it ignores tool-sourced citations because evidence.available = ragCitations only. No UI renders citations (SadeedCopilot.tsx reads only metadata.envelope, for speech).",
+"Injection defense is layered but uneven. Untrusted blocks are delimited, <> is escaped and an instruction hierarchy is stated (chat.ts:109-113, 516-551). sanitizeRetrievedContent and safeExcerpt are applied only to tool outputs. The auto-RAG contextBlock and uploaded content are not sanitized, and finalize's retrievedDocs injection check is never fed by chat.ts.",
+"The gap-capture path is both broken and non-constitutional. search_knowledge calls rag_record_gap_for_org with `.rpc(...).catch(...)`. supabase-js builders have no .catch (measured: TypeError), so every non-passed gate outcome turns into a tool exception. The target table rag_gaps is absent in prod. The call sits inside a user request path, which Article 26 forbids.",
+"Isolation in retrieval relies on RLS rather than explicit predicates. gatherRagContext gates on orgId but never passes it. aria_match_documents filters by user only (repo body). aria_match_knowledge is unfiltered. sec_kb_search has no org parameter. sec_kb_hybrid_search treats a NULL org as 'all orgs', and in prod anon has EXECUTE on it.",
+"Observability is absent: rag_query_log has 0 rows in prod. The auto-RAG path never logs, early returns skip logging, and insert {error} results are ignored. firstTokenAt is a const null (chat.ts:718), so no TTFT is recorded either.",
+"The measurement and gate machinery (src/lib/rag/evaluation.ts, tuning.ts, supabase/preflight/rag_measure.sql) is sound on Article 27 semantics (null rather than 0) but measures an unapplied schema (rag_hybrid_search). No runner targets the production RPCs, so recall and citation precision for production are 'not measured'."
+],
+"UX": [
+"One composer: /sadeed, /assistant and /assistant/$threadId (src/routes/_authenticated/*) all render CanonicalSadeedRoute, which portals the single SadeedCopilot (SadeedCopilot.tsx:2815-2820). Its mic button only toggles voice conversation mode (2716-2742); there is no dictate-to-draft mode.",
+"Voice capture order: MediaRecorder with local VAD, an RMS analyser and a 30 s cap (1576-1727), then transcribeVoiceBlob calls /api/sadeed/transcribe and falls back to /api/public/sadeed-transcribe on 401/403/429/5xx (1525-1541). The browser SpeechRecognition path (ar-SA) is used only without MediaRecorder or outside conversation mode. transcribeVoiceBlob returns early unless convModeRef is true (1512).",
+"Chat attachments are never stored. They travel as inline base64 data-URL parts in the /api/chat POST (fileToPart, sadeed-attachments.ts:81-99). Both client (chat-window.ts) and server (-chat-guard.ts:123-128) reduce older turns to metadata text. Text-like files are additionally deposited into finn_documents via enqueueKnowledgeIngest, and only after chat.sendMessage resolves (SadeedCopilot.tsx:1315-1316).",
+"The content inspector inspectSadeedAttachment (src/lib/security/file-inspection.server.ts) is used only by its own test. The chat guard trusts the declared mediaType and the data-URL prefix.",
+"Export pipeline: UIMessage → displayTextOf/exportableOf (SadeedCopilot.tsx:344-359) → toPdfMessages (chat-export.ts:19) → buildChatPdf (pdf-lib + fontkit, embedded IBM Plex Sans Arabic subset, non-embedded standard Helvetica for Latin; pdffonts emb=no) → blob and anchor download. There is no sources stage. The server's metadata.citations (chat.ts:972-976) is dropped by the client, which reads only metadata.envelope (SadeedCopilot.tsx:1089).",
+"sanitizePdfText is an allow-list (chat-pdf.ts:63-78) that deletes any character outside the Arabic and WinAnsi ranges. Deleting rather than substituting is the root cause of the sign and comparison loss in UX-22.",
+"The chat server's safe-output path emits the whole reply as a single text-delta (chat.ts:965-970), so the composer's 'streaming' is one chunk on that path.",
+"Two document UIs share the same server functions: /knowledge-upload (upload, status, delete) and /sadeed-documents (list, delete, semantic search). Both list through RLS only (documents.functions.ts:54-65). Search and chat RAG both depend on aria_match_documents (documents.functions.ts:202, rag.server.ts:105), which is broken in production.",
+"Bundle constraint: total JS is 9.87/10.00 MiB (about 133 KB headroom). The PDF engine is already lazy (chat-export dynamic import, chat-pdf imports pdf-lib and fontkit dynamically). Any table or PDF improvements must stay in lazy chunks."
+],
+"UI": [
+"The chat panel (SadeedCopilot.tsx:2336-2820) is portalled to <body> as a centered dock (z-110) over a blurred scrim (z-105) on every breakpoint. It is declared role=complementary, not as a dialog, so it looks modal but is not modal semantically. That accounts for UI-12, UI-13 and UI-14.",
+"/sadeed and /assistant open the same SadeedCopilot panel (measured asideOpen=true), so the chat surface is a single component. Fixes in SadeedCopilot.tsx apply to all three entry points.",
+"The panel mixes two color systems: hard-coded dark surfaces (backdrop #04070F at :373, header/composer rgba gradients at :2354/:2653) and theme-token text (text-foreground, --ink/--chip in SadeedMuteToggle). Dark mode is coherent; light mode flips the text to dark ink on the still-dark surfaces, giving a 1.04:1 title. This is a whole class of bug, not a single defect.",
+"Accessibility floors are set once at the token layer (styles.css:2521-2590): Arabic line-height, a 44px coarse / 40px fine touch floor via :where() with zero specificity, a focus-visible ring, and a global reduced-motion kill. Later decorative rules with !important and higher specificity (styles.css:4650-4658, button > svg { hx-halo-breathe infinite !important }) override the reduced-motion floor, so the floors work as defaults, not guarantees.",
+"Transcript rendering is memoised react-markdown with remark-gfm (no MessageResponse), as the constitution requires. Bidi is left to the inherited dir=rtl, with no per-paragraph plaintext isolation. The UAX#9 work shipped today covers only the PDF path (src/lib/reports/arabic-text.ts).",
+"/knowledge-upload is a standalone, English-led admin page outside the nexios-ui-patterns state conventions: no error branch, no deadline, no live region, and a destructive action without confirmation.",
+"Local preview method (reproducible, read-only): copy .output to the scratchpad, patch only the scratch copy's compatibility_date to 2026-08-06 (the local workerd supports up to 2026-08-06), run wrangler dev on 127.0.0.1:4319 under a restart supervisor (wrangler crashed once mid-run), and in Playwright abort every non-127.0.0.1 request and mock /api/chat with an AI SDK v6 UI-message SSE stream. No production calls were made from the browser. The repo was left unmodified (git status clean)."
+],
+"SEC": [
+"Two parallel retrieval stacks. /api/chat uses gatherRagContext (rag.server.ts: 768-dim, aria_match_* RPCs, vector-only, no evidence gate, no rag_query_log, no PII sanitize). Tools and the orchestrator use retrieveWithEvidenceGate (rag/retrieve.server.ts: 1536-dim, sec_kb_hybrid_search RRF, injection screen, logging). The constitution (Art. 31) names only the second. In prod both are inert: the first because the aria_match_* bodies point at renamed tables (42P01), the second because SADEED_GEMINI_RAG_READY gates it and rag_query_log has 0 rows.",
+"RAG failure is silent by design. gatherRagContext turns RPC errors into console.warn plus empty context (rag.server.ts:108-110), so the prod 42P01 never reaches the user, telemetry or rag_query_log. Breakage is undetectable without log scraping.",
+"Guest chat context is built from git-bundled 'real' export JSON (maintenance-report.data.json, projects, event report) instead of the masked DB view. Whatever privacy masking the DB applies (maint_orders_v) does not cover this path, and that is the root cause of SEC-01.",
+"Tenant scoping in /api/chat is derived server-side: org comes from org_members matched with app_metadata.current_org, and RAG fails closed on ambiguity. The service-role orchestrator path (agents.ts:418) shifts isolation from RLS to the SQL body's _org_id predicate.",
+"Privileged ingest runs through an HTTP self-call carrying CRON_HOOK_SECRET to an origin derived from the request (knowledge-upload.functions.ts:118). The ingest core is already pure (knowledge-ingest-core.ts), so an in-process call would remove both the secret hop and the missing-timeout risk.",
+"Rate limiting is DB-backed (check_rate_limit through supabaseAdmin) and fails closed (503). The chat guest identity collapses to one global 'shared' key unless TRUST_PROXY_HEADERS=true, and when enabled it prefers spoofable XFF over cf-connecting-ip, the reverse of the order used by sadeed-incident.ts and the public routes.",
+"Security helpers exist but are unwired: src/lib/security/file-inspection.server.ts (zip-ratio/Office structure inspection) is imported only by its test, and rateLimitRag (rag/sanitize.server.ts:70) has no callers.",
+"Storage defense is entirely policy-based. Prod buckets have no size or MIME limits, and the knowledge-upload client uploads the raw file with no size cap before server validation of the extracted text."
+],
+"QA": [
+"The /api/chat model path is fully buffered. generateText (chat.ts:795) runs to completion with stopWhen stepCountIs(12) and maxRetries 2. The output then passes the finalizeSadeedOutput gateway and goes out as one text-delta (chat.ts:965-970). All fixed paths (local guaranteed reply chat.ts:285, scope-guard, fast-recall and instant-data chat.ts:422) are also single deltas. So the user's TTFT equals total server time; this is a deliberate 'Option A' (chat.ts:765-768).",
+"The pre-model chain for an authenticated, grounded, text-mode turn has 11 awaits on every turn, plus 2 conditional ones: validateChatRequest/request.json (295), auth.getUser (331), org_members (345), enforceRateLimit RPC (380), enforceAiQuota with 2 sequential check_rate_limit RPCs (390; ai-quota.server.ts:182,204), instant-data import (462), module imports (489), Promise.all[snapshot raced vs deadline, rag: embed then 3 aria_match_* RPCs] (493), conditional HCIS finn_knowledge read (574), conditional deep council runAgentMission with a 50 s timeout (650), tools import (695), loadAdaptivePreferenceBlock (725), convertToModelMessages (798). That is 7 strictly sequential network round-trips (8 with RAG on, 9 with HCIS). A guest turn has 3 (rate plus 2 quota) before the production snapshot.",
+"Telemetry undercounts. startAt is set at chat.ts:717, after every pre-model stage, so finn_interactions.latency_ms (chat.ts:889) and the 'buffered finish' log omit auth, rate, quota, snapshot and RAG time. first_token_ms is always null (const at :718). finn_interactions has no request_id. Guest turns write no interaction or incident rows (the `if (userId)` gate at :821 and :861).",
+"Retrieval observability is disconnected. rag_query_log is written only by retrieveWithEvidenceGate.finish (retrieve.server.ts:136-157), on the search_knowledge tool and agent paths. The default chat retrieval, gatherRagContext (rag.server.ts:82-110), uses a different stack (768-dim embeddings.server.ts:9, aria_match_* RPCs, no injection screen, no sanitizeRetrievedContent, no rateLimitRag, no log). That contradicts the constitution's Article 31 as stated in src/lib/sadeed/constitution.ts:46 (1536 dims, every retrieval through retrieveWithEvidenceGate, every attempt logged).",
+"The RAG embedding call does have a deadline: httpJson with timeoutMs 15_000 and retries 2 (gemini-embeddings.server.ts:98-108). It is not bound to request.signal, and the total worst case including retries was not measured.",
+"/api/chat/health (src/routes/api/chat.health.ts) only reflects environment variables (ok: true hard-coded, rag_ready = env flag). It cannot detect the production 42P01 on aria_match_documents. Production-check does not call it: ROUTES defaults to '/,/sec,/sec/governance' (check-production.mjs:25).",
+"CI coverage: ci.yml runs static checks, vitest, npm audit, build plus the budget, contrast, and rag-preflight. The rag-preflight targets the unapplied 20260728 migrations and exits 0 with no Postgres (rag-preflight.sh:21-23). The security-gate runs only 2 of 14 Playwright specs, gated by secrets. production-check.yml covers HTML and UI floors only. No workflow benchmarks latency, TTFT, retrieval or error rates. Several 'contract' tests (chat-latency.contract.test.ts, rag-tool-dependency.contract.test.ts, sadeed-attachments.test.ts) use readFileSync to read source text: they guard structure, not runtime behaviour.",
+"The test inventory, by journey. Knowledge upload→ask: ingest pure functions only (knowledge-ingest-core.test.ts), no retrieval or answer test. Arabic/English: deterministic layers only. Streaming: structural contract only. Mic/STT: none for capture or transcribe fallback; TTS and voice config are covered. Upload: client/server mirror covered (sadeed-attachments, -chat-guard, chat-window.e2e), storage limits not. PDF: covered (chat-pdf, chat-export ×2, arabic-text, pdf-rich). Isolation: live test skipped (rls-isolation skipIf !LIVE), static coverage plus the rag-edge-core negative test. Injection: none. Citations: rank-metric fixtures only; the live evaluation is skipped.",
+"src/lib/security/file-inspection.server.ts (the hypothesis gave the wrong path, src/lib/sadeed/...) is imported only by its own test, so it is dead in production.",
+"Measured local cost notes. chunkText is negligible (≤3.9 ms max even at 250k characters), but the 200-character overlap inflates embedding input by about 1.18–1.21× (sumChunkChars/chars). A 250k-character document yields 226–241 chunks, below MAX_CHUNKS_PER_DOCUMENT=400, so 250k is not cap-bound. buildChatPdf scales about linearly: about 31 ms for 2 messages, 139 ms for 20, 536 ms for 80 (p50, Node on 4 vCPU). It runs client-side via downloadChatPdf, so on mobile main threads it is probably slower, but that was not measured.",
+"Not measurable from this session, per Article 27: production TTFT, end-to-end chat latency, retrieval latency, indexing (embedding) time, throughput, and production error or timeout rates. The reasons: there is no production network (sandbox policy), no provider keys, rag_query_log has 0 rows, first_token_ms is always null, and latency_ms excludes the pre-model stages.",
+"Proposed measurement, not implemented. (a) Server instrumentation in /api/chat: t0 at handler entry; a mark() around validate, getUser, org_members, rate, quota (both RPCs), snapshot, rag.embed, rag.rpc, hcis, prefs, model, finalize. Emit a Server-Timing header and one structured JSON log per request with requestId. Persist total_ms and pre_model_ms plus request_id (owner-gated columns). (b) Make gatherRagContext write rag_query_log (route 'chat-auto', correlation_id=requestId, latency, hits, max_similarity) and log the flag-off and no-org rejections. (c) TTFT: in the client transport, record performance.now() at fetch start and at the first SSE chunk, and post it with requestId; if a sentence-streaming flag is added, set the server firstTokenAt in streamText onChunk. (d) Ingest hook: log extract, chunk, embed and insert durations, chunk count and embed failures per document. (e) A GitHub Actions workflow 'latency-probe.yml' (workflow_dispatch plus a nightly cron, run after Publish): sign in a synthetic user with the existing E2E_TEST_EMAIL/PASSWORD secrets; POST N≥30 fixed Arabic and N≥30 fixed English questions to /api/chat with x-aria-request-id; record TTFB, total and X-SADEED-Reply-Source; call /api/chat/health; write p50/p95 and error/timeout counts to the job summary and an artifact; enforce thresholds only after a baseline exists. (f) A server-side alternative: a pg_cron or SQL view computing daily p50/p95 from finn_interactions.latency_ms and rag_query_log.latency_ms, and error rate as finn_incidents(model_error)/finn_interactions."
+]
+},
+"baselines": {
+"CHAT": [
+{
+"metric": "Static SYSTEM_PROMPT size (after template substitution)",
+"value": "42,600 chars",
+"method": "Vite SSR loader (cacheDir in scratchpad) imported identity/index.ts + response-contract.ts; extracted the SYSTEM_PROMPT template from src/routes/api/chat.ts and substituted the constants",
+"sample": "HEAD ea9a947, local, 1 run (deterministic)"
+},
+{
+"metric": "Runtime clock block + MAKKAH_TIME_DIRECTIVE size",
+"value": "2,485 chars",
+"method": "buildSadeedRuntimeBlock(...) + MAKKAH_TIME_DIRECTIVE via Vite SSR loader",
+"sample": "local, 1 run"
+},
+{
+"metric": "Guest production-datasets context block size",
+"value": "5,912 chars (generic questions 'مرحبا', 'حلل أوامر الصيانة المفتوحة'); 16,191 chars ('ما حالة المشاريع المتأخرة في المنطقة الغربية؟'); all below the 48k cap",
+"method": "buildProductionDatasetsSnapshot(question, now, 'anonymous') via Vite SSR loader",
+"sample": "3 questions × 2 runs, local"
+},
+{
+"metric": "Guest datasets snapshot build time",
+"value": "warm 2.5-3.6 ms; first call 437-488 ms (includes Vite on-the-fly transform and JSON parse; NOT equal to a production cold start)",
+"method": "performance.now() around buildProductionDatasetsSnapshot",
+"sample": "local Node 22, 2 process runs, 6 calls each"
+},
+{
+"metric": "Authenticated tool payload",
+"value": "31 tools; 3,648 description chars; 11,004 JSON-schema chars",
+"method": "buildSadeedTools(stub, uuid) then ai.asSchema(inputSchema).jsonSchema serialized",
+"sample": "local, 1 run"
+},
+{
+"metric": "Fast-path matcher CPU (isInScope + matchFastRecall + matchInstantDataAnswer)",
+"value": "matchInstantDataAnswer 0.008-0.617 ms per call ('كم عدد المشاريع' → projects-count; 'كم عدد البلاغات المفتوحة' → incidents-count; 'حلل أداء الصيانة' → null; 'ما هو الطقس اليوم في باريس' → out of scope)",
+"method": "performance.now() around a single call each, via Vite SSR loader",
+"sample": "4 questions, 1 call each, local. End-to-end fast-path latency (with 3-5 network RTTs) NOT measured"
+},
+{
+"metric": "Output gateway on executed-action wording",
+"value": "2 of 3 executed-action phrasings converted to approval_required ('تم الإرسال…', 'تم الاعتماد…'); 'تم تسجيل البلاغ…' passed through",
+"method": "finalizeSadeedOutput({modelText, no executionReceipt}) via Vite SSR loader (scratch script gate.mjs)",
+"sample": "3 phrasings, local"
+},
+{
+"metric": "Targeted chat tests",
+"value": "6 files / 33 tests passed (3.44s)",
+"method": "npx vitest run src/routes/api/-chat-guard.test.ts src/routes/api/chat-council-gate.test.ts src/routes/api/chat-latency.contract.test.ts src/lib/sadeed-core/services/",
+"sample": "HEAD ea9a947, local; git status clean before and after"
+},
+{
+"metric": "TTFT / end-to-end chat latency / Gemini latency / token counts",
+"value": "not measured",
+"method": "Not measurable from this session: production domains blocked by sandbox, no provider keys, and server code records first_token_ms=null",
+"sample": "n/a"
+}
+],
+"INGEST": [
+{
+"metric": "Canonical chunker output for max-size text (250,000 chars)",
+"value": "179 chunks (single Arabic paragraph), 249 (3,000-char pages split by blank lines), 187 (120-char paragraphs). Capped count equals uncapped (0 chunks dropped). Max chunk 1,600/1,600/1,584 chars. Chunking time 1.8–3.4 ms.",
+"method": "esbuild bundle of src/lib/sadeed/knowledge-ingest-core.ts run under Node 22 from the scratchpad (measure.mjs)",
+"sample": "4 synthetic inputs, single run each (local, not production)"
+},
+{
+"metric": "Embedding HTTP calls per max-size document in the hook",
+"value": "179–249 calls (one embedContent per chunk, concurrency 4). embedGeminiBatch (100 per call) is unused here.",
+"method": "Chunk counts above combined with code path sadeed-docs-ingest.ts:124-132",
+"sample": "Derived from the 3 max-size synthetic layouts; per-call latency not measured"
+},
+{
+"metric": "Legacy chunker (documents.functions.ts) truncation",
+"value": "2,000,000-char input gives 400 chunks holding 1,248,678 chars including overlap, so at least 751,322 input chars are silently dropped. Max chunk 3,122 chars against a 900 target. A 250,000-char input gives 84 chunks, max 3,122.",
+"method": "Verbatim copy of the pure chunkText (lines 12-50) run under Node in the scratchpad (measure-legacy.mjs)",
+"sample": "2 synthetic PDF-like inputs (3,000-char pages without sentence punctuation)"
+},
+{
+"metric": "Output gateway effect on attachment-derived answers",
+"value": "3 of 3 cases altered. Summary with 'SEC-03' becomes 'غير متوفر في المصادر الموثوقة المتاحة.'; summary with '[DOC:policy.pdf]' gets the same replacement; table cells '2026-10-12', '12.5 13.7 14.2' and '4500012345' all become '[هاتف محجوب]'.",
+"method": "esbuild bundle of src/lib/sadeed/output/finalize.ts; finalizeSadeedOutput with evidence=[] and liveDataAvailable=true, then renderForUI (fin.mjs)",
+"sample": "3 hand-written model outputs"
+},
+{
+"metric": "Pre-model short-circuit hijack of attachment turns",
+"value": "Bare count questions: 3 of 3 answered by instant-data (incidents-count, projects-count, maintenance-count). Prompts referencing 'الملف المرفق': 0 of 4 hijacked. Scope guard: 8 of 8 attachment prompts in scope.",
+"method": "esbuild bundles of instant-data-answers.server.ts and response-contract.ts (ida.mjs, ida2.mjs, scope.mjs)",
+"sample": "15 Arabic/English prompts"
+},
+{
+"metric": "Dedupe fingerprint sensitivity",
+"value": "An extra space inside a line changes the sha256 (true), so re-extraction spacing variance defeats dedupe",
+"method": "knowledgeRevisionHash on two strings differing by one intra-line space",
+"sample": "1 pair"
+},
+{
+"metric": "Ingestion unit tests",
+"value": "4 files, 52 tests passed (knowledge-ingest-core, sadeed-attachments, file-inspection, gemini-embeddings)",
+"method": "npx vitest run on the 4 files (vitest 4.1.9)",
+"sample": "Run on HEAD ea9a947, 2026-10-12"
+},
+{
+"metric": "Not measured (Article 27)",
+"value": "Not measured: ingestion wall-clock and embedding latency; Gemini acceptance of inline text/markdown and application/json; whether prod finn_document_chunks(document_id, chunk_index) is UNIQUE; prod FK cascade; prod values of SADEED_GEMINI_RAG_READY and TRUST_PROXY_HEADERS; which code path produced the 8 prod documents; platform Host-header handling.",
+"method": "n/a",
+"sample": "n/a"
+}
+],
+"RAG": [
+{
+"metric": "RAG + output-gateway unit tests",
+"value": "8 files, 141 tests passed (4.37 s)",
+"method": "npx vitest run src/lib/rag src/lib/sadeed/output --reporter=dot",
+"sample": "src/lib/rag/*.test.ts (4) + src/lib/sadeed/output/*.test.ts (4) on HEAD ea9a947"
+},
+{
+"metric": "supabase-js rpc builder has .catch",
+"value": "typeof catch = undefined; calling .catch throws 'TypeError b.catch is not a function'",
+"method": "Scratch node script creating a client with the repo's @supabase/supabase-js (postgrest-js 2.108.2) and calling sb.rpc('rag_record_gap_for_org',…).catch",
+"sample": "1 call; no network needed (the throw is synchronous)"
+},
+{
+"metric": "finalizeSadeedOutput citation validation",
+"value": "known+invented tag → status 'answer' (invented tag displayed); invented only → 'insufficient_evidence'; bare 'SEC-02' with KB evidence present → 'insufficient_evidence'; untagged claim → 'answer'",
+"method": "esbuild-bundled scratch probe calling finalizeSadeedOutput with evidence.available=[{tag:'[KB:الأسوار الأمنية]'}]",
+"sample": "5 synthetic model outputs, liveDataAvailable=true"
+},
+{
+"metric": "evaluateRagCoverage false-positive",
+"value": "text '[kb:x] … الأسوار الأمنية' (wrong tag) → status 'grounded', coverageRatio 1",
+"method": "Same scratch probe",
+"sample": "1 synthetic answer, 1 citation"
+},
+{
+"metric": "Test files referencing the live retrieval path",
+"value": "0",
+"method": "grep -rln 'gatherRagContext|aria_match_documents|retrieveWithEvidenceGate|sec_kb_hybrid_search' src --include=*.test.ts",
+"sample": "Entire src tree"
+},
+{
+"metric": "Retrieval TTFT / latency / recall@5 / citation precision",
+"value": "not measured",
+"method": "Production domains are blocked by the sandbox network policy, provider keys are absent, and no harness targets the prod RPCs",
+"sample": "n/a"
+}
+],
+"UX": [
+{
+"metric": "Embedded Arabic font glyph coverage (nexios-arabic.ttf)",
+"value": "736 glyphs. Full coverage of 0621-064A (42/42), harakat (8/8), Arabic-Indic digits (10/10), extended digits (10/10), ، ؛ ؟ ٪ ٫ ٬ ـ (7/7), Persian letters (6/6), ﷺ ﷲ ﷼ (3/3), PF-B FE70-FEFC (140/140), ASCII (95/95)",
+"method": "fontkit.create().hasGlyphForCodePoint in a scratch vitest (audit/UX/pdf.audit.test.ts)",
+"sample": "public/fonts/nexios-arabic.ttf at HEAD ea9a947"
+},
+{
+"metric": "sanitizePdfText symbol fidelity",
+"value": "'≥ 30 · ≤ 5 · −5 · → · ✓ · ✗ · € · ٪50 · ٫ · ﷼ 100 · ⚠️ · © · °C' became ' 30 ·  5 · 5 · · · ·  · ٪50 · ٫ · ﷼ 100 · · © · °C'",
+"method": "Direct call in the scratch vitest",
+"sample": "One synthetic string"
+},
+{
+"metric": "Chat PDF generation time and size (short)",
+"value": "1,242 ms cold, 17,593 B, 1 page",
+"method": "performance.now() around buildChatPdf in jsdom/vitest (Node), including the first dynamic import of pdf-lib and fontkit",
+"sample": "1 Q and 1 A with heading, list, 3-row table, links, quote, code fence"
+},
+{
+"metric": "Chat PDF generation time and size (long)",
+"value": "387 ms warm, 174,936 B, 22 pages, not truncated",
+"method": "Same harness",
+"sample": "80 messages (40 Q&A pairs of the same content)"
+},
+{
+"metric": "Export title length versus layout",
+"value": "86 characters at 20pt, single line; it overflows the left page edge and overlaps the brand mark",
+"method": "exportTitle() output, then pdftoppm -r 80 and visual inspection of out/chat-1.png, confirmed by pdftotext",
+"sample": "Question of 93 characters"
+},
+{
+"metric": "PDF text extractability",
+"value": "Page 1: 522 Presentation-Form-B characters, 0 base Arabic letters (U+0621-064A)",
+"method": "pdftotext -raw with a Python codepoint count",
+"sample": "sample-chat.pdf"
+},
+{
+"metric": "PDF fonts",
+"value": "IBMPlexSansArabic regular and bold are embedded (CID, Identity-H). Helvetica and Helvetica-Bold are not embedded (Type 1, WinAnsi)",
+"method": "pdffonts",
+"sample": "sample-chat.pdf"
+},
+{
+"metric": "TTFT, transcription latency, iOS device behaviour",
+"value": "Not measured",
+"method": "Not possible here: the sandbox blocks the production domains and provider keys are unavailable",
+"sample": "n/a"
+}
+],
+"UI": [
+{
+"metric": "Chat panel geometry (aside WxH)",
+"value": "374x726 @390x844; 737x760 @768x1024; 760x688 @1280x800; 760x760 @1920x1080",
+"method": "Playwright getBoundingClientRect on aside[role=complementary], Chromium 1194, local preview of .output (HEAD ea9a947 build)",
+"sample": "8 runs (4 viewports x dark/light)"
+},
+{
+"metric": "Composer bottom vs viewport height",
+"value": "770/844, 877/1024, 729/800, 905/1080; 431/480 at the 390x480 short-viewport proxy",
+"method": "Playwright textarea rect",
+"sample": "8 runs plus 1 proxy run"
+},
+{
+"metric": "Horizontal page overflow (scrollWidth - clientWidth)",
+"value": "0 on /, the open panel, /assistant, /sadeed and /knowledge-upload",
+"method": "document.documentElement scrollWidth - clientWidth",
+"sample": "8 home/panel runs; routes at 390 and 1280 in both themes"
+},
+{
+"metric": "Panel control sizes",
+"value": "All 44x44 on touch emulation (390, 768). On fine pointer (1280, 1920): h-8/h-7 buttons 40x40, explicit h-11 buttons 44x44",
+"method": "Playwright boundingBox of each visible button/textarea in the aside",
+"sample": "8 runs, 12 controls each"
+},
+{
+"metric": "Visible text nodes under 12px inside the panel",
+"value": "0",
+"method": "TreeWalker plus computed font-size",
+"sample": "8 runs x 3 states (empty, typed, reply)"
+},
+{
+"metric": "Contrast, dark theme (390 @2x)",
+"value": "title 16.83:1; status 15.94:1; assistant bubble 16.42:1",
+"method": "Pixel-sampled dominant background from an element screenshot vs computed text color (WCAG relative luminance)",
+"sample": "1 node each"
+},
+{
+"metric": "Contrast, light theme (390 @2x)",
+"value": "title 1.04:1; status 3.89:1; assistant bubble 9.85:1",
+"method": "Same pixel-sampling method",
+"sample": "1 node each"
+},
+{
+"metric": "axe-core color-contrast on the panel",
+"value": "Inconclusive: 0 to 1 violations (NaN background), 35 to 55 'incomplete' nodes, because of translucent and backdrop-filter layers",
+"method": "axe-core (repo node_modules) injected, rule color-contrast",
+"sample": "390 and 1280, both themes, empty and reply states"
+},
+{
+"metric": "Infinite animations in the panel under prefers-reduced-motion: reduce",
+"value": "11 elements (lucide icons, hx-halo-breathe 3.2s infinite)",
+"method": "Playwright reducedMotion 'reduce' with matchMedia confirmed true; computed animation-iteration-count",
+"sample": "1 run at 390x844 dark"
+},
+{
+"metric": "Escape closes panel",
+"value": "No (panel still open in 8/8 runs)",
+"method": "keyboard.press('Escape') then count aside",
+"sample": "8 runs"
+},
+{
+"metric": "Focus containment",
+"value": "Escapes: composer, then 'إرسال', then BODY, then the page theme toggle and nav links behind the scrim",
+"method": "Repeated Tab with activeElement inside/outside the aside",
+"sample": "1280x800, both themes"
+},
+{
+"metric": "Attachment chip filename visibility",
+"value": "140px visible of 535px scrollWidth; title attribute null",
+"method": "setInputFiles with a 90+ character Arabic filename",
+"sample": "8 runs"
+},
+{
+"metric": "Live TTFT / model latency",
+"value": "not measured",
+"method": "Not possible: production domains are blocked from the sandbox, there are no provider keys, and /api/chat was mocked",
+"sample": "none"
+}
+],
+"SEC": [
+{
+"metric": "Targeted security test files (chat guard, file inspection, webhook signatures)",
+"value": "3 files, 19 tests passed (1.81s)",
+"method": "npx vitest run src/routes/api/-chat-guard.test.ts src/lib/security/file-inspection.server.test.ts src/lib/sadeed/webhook-signatures.server.test.ts",
+"sample": "HEAD ea9a947, local sandbox, 2026-10-12"
+},
+{
+"metric": "PostgrestFilterBuilder.catch availability (rpc builder)",
+"value": "typeof catch = undefined; calling .catch throws TypeError",
+"method": "node probe in scratchpad/audit/sec/probe.mjs importing node_modules/@supabase/postgrest-js/dist/index.mjs (v2.108.2)",
+"sample": "1 builder instance, no network"
+},
+{
+"metric": "Personal identifiers in bundled maintenance export",
+"value": "249 rows; created_by non-null in 249; 20 distinct values (13 numeric of length 5–6; 7 shaped 2 letters + 10 digits)",
+"method": "node JSON scan of src/lib/exec/maintenance-report.data.json (values not printed, shapes only); git check-ignore shows file is tracked",
+"sample": "whole file"
+},
+{
+"metric": "Hard-coded secret patterns in repo",
+"value": "0 hits",
+"method": "grep -E for sk-/AIza/eyJ JWT/sb_secret_/ghp_/AKIA/re_/SG. over src public scripts supabase .github",
+"sample": "HEAD ea9a947 working tree"
+},
+{
+"metric": "Access-Control-Allow-Origin occurrences in server code",
+"value": "0",
+"method": "grep -rn over src/routes src/lib (non-test)",
+"sample": "HEAD ea9a947"
+},
+{
+"metric": "Live TTFT / auth-path latency",
+"value": "not measured",
+"method": "production domains blocked by sandbox network policy; no provider keys locally",
+"sample": "n/a"
+}
+],
+"QA": [
+{
+"metric": "chunkText ms, Arabic 50k chars, paragraphs 300–900 chars",
+"value": "54 chunks; p50 0.076 ms, p95 0.938 ms (max 2.228)",
+"method": "vitest node env, scratch config rooted at the repo (alias @→src), performance.now(), 2 warm-up runs, nearest-rank percentiles; Node v22.22.0, 4 vCPU Intel Xeon (sandbox)",
+"sample": "n=25 runs, deterministic PRNG text"
+},
+{
+"metric": "chunkText ms, Arabic 50k chars, PDF-page paragraphs 3000–3500 chars",
+"value": "45 chunks; p50 0.065 ms, p95 0.071 ms",
+"method": "same as above",
+"sample": "n=25"
+},
+{
+"metric": "chunkText ms, Arabic 250k chars, paragraphs 300–900",
+"value": "241 chunks (max length 1596); p50 0.341 ms, p95 3.183 ms",
+"method": "same",
+"sample": "n=25"
+},
+{
+"metric": "chunkText ms, Arabic 250k chars, PDF-page paragraphs",
+"value": "228 chunks (max length 1600); p50 0.277 ms, p95 0.550 ms",
+"method": "same",
+"sample": "n=25"
+},
+{
+"metric": "chunkText ms, English 50k chars (paragraphs / PDF-page)",
+"value": "45 / 45 chunks; p50 0.062 / 0.060 ms, p95 0.068 / 0.078 ms",
+"method": "same",
+"sample": "n=25 each"
+},
+{
+"metric": "chunkText ms, English 250k chars (paragraphs / PDF-page)",
+"value": "235 / 226 chunks; p50 0.346 / 0.347 ms, p95 0.707 / 2.287 ms",
+"method": "same",
+"sample": "n=25 each"
+},
+{
+"metric": "Chunk overlap inflation (sum of chunk chars / input chars)",
+"value": "1.18–1.21× (e.g. Arabic 250k: 297,669 / 249,669 = 1.19)",
+"method": "derived from the chunkText runs above",
+"sample": "8 configurations"
+},
+{
+"metric": "knowledgeRevisionHash ms on 250k chars",
+"value": "Arabic (460,852 UTF-8 bytes): p50 3.797 ms, p95 11.513 ms; English (250,000 bytes): p50 1.906 ms, p95 3.149 ms",
+"method": "Web Crypto SHA-256 via the repo function, node env, 1 warm-up",
+"sample": "n=25 per language"
+},
+{
+"metric": "layoutArabicLine throughput",
+"value": "p50 73,925 lines/s (min 72,216, max 75,178); average line 62 chars; 1–18 segments per line",
+"method": "8 representative mixed Arabic/English/digit/URL/markdown lines, 2,000 warm-up calls, 5,000 lines per repeat",
+"sample": "10 repeats"
+},
+{
+"metric": "buildChatPdf, 2 messages",
+"value": "warm p50 30.8 ms, p95 46.1 ms; 18,410 bytes; first call in process 358 ms (includes font/JIT cold start)",
+"method": "repo fonts public/fonts/nexios-arabic(-bold).ttf, Arabic markdown with heading, bullets, table and mixed Latin, fixed generatedAt",
+"sample": "1 cold + n=12 warm"
+},
+{
+"metric": "buildChatPdf, 20 messages (8,920 chars)",
+"value": "p50 139.2 ms, p95 189.2 ms; 78,095 bytes",
+"method": "same",
+"sample": "n=12 warm"
+},
+{
+"metric": "buildChatPdf, 80 messages (35,718 chars)",
+"value": "p50 535.9 ms, p95 625.2 ms; 271,547 bytes",
+"method": "same",
+"sample": "n=12 warm"
+},
+{
+"metric": "windowChatMessages, 200 messages",
+"value": "200→20 messages; p50 2.06 µs, p95 2.78 µs",
+"method": "20 user turns carrying file parts, 200 warm-up calls",
+"sample": "n=500"
+},
+{
+"metric": "Request body size, 8 MiB raw attachment history (4 earlier user turns × 2 MiB PDF), 17 messages",
+"value": "11,190,000 → 5,060 bytes (−99.95%); server guard ok → ok",
+"method": "JSON.stringify({messages, replyMode}) before and after windowChatMessages; validateChatRequest on a real Request with content-length",
+"sample": "1 deterministic case"
+},
+{
+"metric": "Request body size, same history, 31 messages",
+"value": "11,193,913 → 5,698 bytes (−99.95%); messages 31→20; server guard 400 (over MAX_MESSAGES=24) → ok",
+"method": "same",
+"sample": "1 deterministic case"
+},
+{
+"metric": "Static: awaits before the provider call in /api/chat (authenticated, grounded, text mode)",
+"value": "11 unconditional awaits (+2 conditional: HCIS at :574, deep council at :650); 7 strictly sequential network round-trips: getUser :331, org_members :345, rate RPC :380, quota global RPC (ai-quota.server.ts:182), quota identity RPC (:204), [snapshot∥rag] :493, prefs :725. 8 with RAG on (embed then RPC inside rag.server.ts:98-106). Guest: 3 network RPCs plus the production snapshot.",
+"method": "code reading of src/routes/api/chat.ts lines 252-810 and ai-quota.server.ts:170-226",
+"sample": "HEAD ea9a947"
+},
+{
+"metric": "Production TTFT, end-to-end latency, retrieval latency, indexing time, throughput, error/timeout rate",
+"value": "not measured",
+"method": "Not measurable from this session: production domains are blocked by sandbox policy, there are no provider keys, rag_query_log has 0 rows, first_token_ms is always null, and finn_interactions.latency_ms excludes pre-model stages",
+"sample": "none"
+}
+]
+},
+"research": {
+"dimensions": [
+{
+"dimension": "1. Time-to-first-token / perceived responsiveness & streaming",
+"chatgpt": "OpenAI API supports streaming over server-sent events (stream=true). New work is pointed at the Responses API and its typed streaming events. Streaming lowers perceived latency but does not shorten generation. No official TTFT or latency figures found: not published. The official platform.openai.com guide could not be fetched here, so this comes from search summaries and SDK-doc mirrors.",
+"gemini": "The Gemini API documents two methods, generateContent and streamGenerateContent (ai.google.dev text-generation page). Firebase AI Logic's streaming guide presents streaming as a way to show partial output sooner. No latency or TTFT figures published. Firebase also notes that Gemini 2.5 models shut down in October 2026.",
+"claude": "Messages API: set \"stream\": true for SSE. Events include message_start, content_block deltas (text, input_json, thinking), ping, and error events. An overloaded_error in the stream corresponds to HTTP 529. The Python, TypeScript and PHP SDKs offer stream helpers. Fine-grained tool streaming is described as lowering latency. The streaming docs give no TTFT or latency figures: not published.",
+"sources": [
+"https://platform.claude.com/docs/en/build-with-claude/streaming",
+"https://ai.google.dev/gemini-api/docs/text-generation",
+"https://firebase.google.com/docs/ai-logic/stream-responses",
+"https://www.mintlify.com/openai/openai-python/concepts/streaming (SDK-doc mirror; official OpenAI page not reachable)"
+]
+},
+{
+"dimension": "2. Cancellation / stop generation",
+"chatgpt": "API: POST /responses/{response_id}/cancel works only on responses created with background=true that are still queued or in_progress. Completed or failed responses cannot be cancelled. The ChatGPT UI 'stop' control was not found in an official help article in this pass (not verified).",
+"gemini": "No official cancel endpoint or Gemini app 'stop response' documentation found in this pass (not verified).",
+"claude": "The streaming docs have no cancel section and no server-side cancel endpoint for a streaming Message was found. They document recovery after an interrupted stream instead. For Claude 4.5 and earlier, put the partial response in a continuation request as an assistant prefill. For Claude 4.6 and later, send a user message telling the model to continue. Tool-use and thinking blocks cannot be partially recovered. In the apps' voice mode, a 'Stop' button exits voice mode (web/Desktop). In hands-free mode, the user can interrupt Claude by starting to speak.",
+"sources": [
+"https://developers.openai.com/api/reference/python/resources/responses/methods/cancel",
+"https://developers.openai.com/api/docs/guides/background",
+"https://platform.claude.com/docs/en/build-with-claude/streaming#error-recovery",
+"https://support.claude.com/en/articles/11101966-use-voice-mode"
+]
+},
+{
+"dimension": "3. Context management & conversation continuity (context windows, memory)",
+"chatgpt": "Per-plan ChatGPT context windows could not be confirmed from an official page; the pricing and help pages were unreachable. Third-party sources disagree. Instant model: Free 8K, 16K or 27K; Plus 32K or 54K; Pro/Enterprise 128K. Thinking: about 256K on paid plans and 400K on Pro. Memory (Memory FAQ) has two controls. 'Saved memories' are details the user explicitly asks it to keep; 'reference chat history' draws on past chats. A newer automatic memory system can be switched back to legacy saved memories. Temporary Chats neither use nor create memories. Deleting a chat does not delete memories saved from it.",
+"gemini": "Google's Gemini Apps limits table, as reported in Sept 2025 coverage, lists 32K tokens with no AI plan and 1M tokens on Google AI Pro and Ultra. Deep Think on Ultra is capped at 192K. The 128K figure for AI Plus is third-party only and unconfirmed. Notebooks in Gemini (Google blog, April 2026) are personal knowledge bases. They hold moved chats, custom instructions and files, and sync with NotebookLM. At launch they were for AI Plus/Pro/Ultra on web only. A per-notebook memory option is reported by third parties only. The official 'past chats/personal context' help page was not retrieved.",
+"claude": "API: Opus 5.5, Opus 5, Opus 4.8/4.7/4.6, Sonnet 5.5, Sonnet 5, Sonnet 4.6, Haiku 5.5, Fable 5/5.1 and Mythos 5/5.1/Preview have a 1M-token context window by default, with no beta header. These models allow up to 128K output tokens. Other models, including Sonnet 4.5 (deprecated), have 200K. Server-side compaction is in beta for 4.6+ models; context editing can clear old tool results and thinking blocks. claude.ai may manage context on a rolling FIFO basis. Apps: memory is stored by topic. It is on by default for Free, Pro and Max and off by default for Team and Enterprise, and each project has its own memory. Paid plans can search past chats (shown as RAG tool calls). Incognito chats are left out of history and memory.",
+"sources": [
+"https://platform.claude.com/docs/en/build-with-claude/context-windows",
+"https://support.claude.com/en/articles/11817273-use-claude-s-chat-search-and-memory-to-build-on-previous-context",
+"https://support.claude.com/en/articles/12260368-use-incognito-chats",
+"https://help.openai.com/en/articles/8590148-memory-faq",
+"https://blog.google/innovation-and-ai/products/gemini-app/notebooks-gemini-notebooklm/",
+"https://www.searchenginejournal.com/google-publishes-exact-gemini-usage-limits-across-all-tiers/555433/ (secondary, reproduces Google's limits table)",
+"https://www.ai-toolbox.co/chatgpt-models/chatgpt-context-window-token-limits-2026 (third-party; conflicting)"
+]
+},
+{
+"dimension": "4. Knowledge retrieval / document-grounded answers",
+"chatgpt": "Projects hold files. Two versions of the File Uploads FAQ give different limits. Older: Plus 20 files per project; Pro, Team, Edu and Business 40. Newer: Free 5; Go and Plus 25; Edu, Pro, Business and Enterprise 40. API: the file search tool attaches file_citation annotations (file id, filename, index) to output text.",
+"gemini": "App: Notebooks in Gemini sync sources both ways with NotebookLM (April 2026). API: Grounding with Google Search returns groundingMetadata for grounded answers. The Gemini API File Search tool was not covered in this pass.",
+"claude": "Projects have a knowledge base. When project knowledge nears the context limit, Claude switches to RAG mode automatically. Anthropic says this expands capacity 'up to 10x', with no setup, on Pro, Max, Team and Enterprise. API: citations work on document and search_result blocks, so RAG chunks can be grounded and cited.",
+"sources": [
+"https://support.claude.com/en/articles/11473015-retrieval-augmented-generation-rag-for-projects",
+"https://support.claude.com/en/articles/9517075-what-are-projects",
+"https://platform.claude.com/docs/en/build-with-claude/citations",
+"https://help.openai.com/en/articles/8555545-file-uploads-faq (via search summary; versions conflict)",
+"https://ai.google.dev/gemini-api/docs/grounding",
+"https://blog.google/innovation-and-ai/products/gemini-app/notebooks-gemini-notebooklm/"
+]
+},
+{
+"dimension": "5. File uploads & multimodal inputs — formats and size/count limits",
+"chatgpt": "The File Uploads FAQ was read only through search summaries, but its figures matched across every version found. 512MB hard limit per file. Text and document files are capped at 2M tokens each; this cap does not apply to spreadsheets. CSV and spreadsheets: about 50MB, depending on row size. Images: 20MB each. Caps: 25GB per end user and 100GB per organization. Up to 80 files every 3 hours, and Free users get 3 uploads per day. OpenAI says it may lower these limits at peak hours.",
+"gemini": "Gemini app (help article 14903178): up to 10 files per prompt, with each file in a folder counting toward that. Videos up to 2GB; other supported files up to 100MB. Total video length of 5 minutes comes from a university mirror of Google's text and is unconfirmed on the official page. A Google AI plan raises the limits. Rolling quotas show a 'limit for chats with files' message. Gemini API: the Files API allows 2GB per file and 20GB per project, and files are deleted after 48 hours. PDFs up to 1,000 pages, at 258 tokens per page. Sources disagree on the inline request limit: 20MB, 50MB for PDFs, or 100MB.",
+"claude": "Apps (article updated July 23, 2026). Documents: PDF, DOCX, CSV, TXT, HTML, ODT, RTF, EPUB, JSON and XLSX; XLSX needs code execution enabled. Images: JPEG, PNG, GIF, WebP. In chat: 500MB per file, up to 20 files per chat, images up to 8000x8000 px. PDFs up to 1,000 pages: 100 pages or fewer get text and visual analysis, 101–1,000 pages text only, and longer PDFs are rejected. Project files: 30MB each, with unlimited count as long as the total fits the context window (text only, except multimodal PDFs). Conflict: the 'Create and edit files' article gives 30MB per file for uploads and downloads. API: up to 600 images or PDF pages per request (100 on 200K-context models); request-size limits can be hit before token limits.",
+"sources": [
+"https://support.claude.com/en/articles/8241126-upload-files-to-claude",
+"https://support.claude.com/en/articles/12111783-create-and-edit-files-with-claude",
+"https://platform.claude.com/docs/en/build-with-claude/context-windows",
+"https://help.openai.com/en/articles/8555545-file-uploads-faq (via search summary)",
+"https://support.google.com/gemini/answer/14903178 (via search snippet)",
+"https://services.newschool.edu/TDClient/32/Portal/KB/Article/1366/Upload-Analyze-Files-in-Gemini-Apps (mirror, video-length figure)",
+"https://ai.google.dev/gemini-api/docs/document-processing",
+"https://ai.google.dev/gemini-api/docs/file-input-methods"
+]
+},
+{
+"dimension": "6. Arabic support",
+"chatgpt": "No official OpenAI language-support list or Arabic statement could be retrieved; the help center was unreachable here. Third-party guides say Arabic text is supported, and a community report says voice performance on Arabic dialects is weak. Neither is official. Treat as not verified.",
+"gemini": "No official Gemini Apps language page was retrieved. Google's Oct 2024 blog expanded Gemini Live to 40+ languages on Android, with up to two languages per device. The launch list did not include Arabic, and none of the snippets retrieved confirms Arabic explicitly. One reviewer (Android Authority) reported Arabic recognition worked but mixed dialect and formal registers; that is anecdotal. Not verified.",
+"claude": "The multilingual doc gives Arabic scores relative to English (100%) on human-translated MMLU, zero-shot CoT with extended thinking: 97.2% for Claude Sonnet 4.5 (deprecated) and 92.5% for Haiku 4.5. No figures are published for the current models. Arabic is NOT on the mobile dictation list (12 languages) or the in-app display-language list. Voice mode supports 'many more languages' but names none, and non-English voice is in beta.",
+"sources": [
+"https://platform.claude.com/docs/en/build-with-claude/multilingual-support",
+"https://support.claude.com/en/articles/10065434-use-dictation-on-claude-mobile",
+"https://support.claude.com/en/articles/10769299-how-to-use-claude-in-your-preferred-language",
+"https://blog.google/products/gemini/gemini-live-extensions-language-expansion/",
+"https://www.androidauthority.com/gemini-live-multi-language-test-3536159/ (anecdotal)"
+]
+},
+{
+"dimension": "7. Long-document handling",
+"chatgpt": "Each text or document file is capped at 2M tokens at ingest, but how much is used in a chat depends on the plan's context window, and those per-plan figures conflict and could not be confirmed officially. No official page-count limit found. Projects can hold files for ongoing work.",
+"gemini": "API: PDFs up to 1,000 pages at 258 tokens per page. Native vision reads text, images, charts and tables. The Files API takes 2GB per file and keeps files for 48 hours. App: 1M-token context on AI Pro and Ultra versus 32K without a plan (secondary reproduction of Google's table). An Android Authority report says the consumer app does not deliver its stated context in practice; that claim is unofficial.",
+"claude": "API: 1M-token context on current models and up to 600 PDF pages or images per request. Compaction (beta) and context editing support long sessions. If input exceeds the window, the API returns 400 'prompt is too long'. On 4.5+ models, generation that hits the limit stops with stop_reason model_context_window_exceeded. Apps: PDFs up to 1,000 pages, with only the first 100 pages analysed visually. Project RAG expands capacity about 10x. The docs warn that recall degrades as context grows ('context rot').",
+"sources": [
+"https://platform.claude.com/docs/en/build-with-claude/context-windows",
+"https://support.claude.com/en/articles/8241126-upload-files-to-claude",
+"https://ai.google.dev/gemini-api/docs/document-processing",
+"https://help.openai.com/en/articles/8555545-file-uploads-faq (via search summary)",
+"https://mezha.ua/en/news/google-limits-gemini-memory-311951/ (unofficial claim)"
+]
+},
+{
+"dimension": "8. Voice input / transcription & voice mode",
+"chatgpt": "ChatGPT has a voice mode, but the official Voice Mode FAQ was not retrieved, so its languages, limits and Arabic dictation support are not verified. Audio transcription API models were not covered in this pass.",
+"gemini": "Gemini Live is the voice conversation mode. Google's Oct 2024 blog expanded it to 40+ languages on Android, with up to two languages per device. The current official language list was not retrieved.",
+"claude": "Voice mode is in beta on every plan (Free, Pro, Max, Team, Enterprise) on mobile, Desktop and web. It offers push-to-talk and a hands-free mode where speaking interrupts Claude. Text transcripts are saved to chat history, and voice counts toward usage limits. It is not available in Cowork or Claude Code, which offer dictation only. Enterprise owners must contact Support to disable it. Mobile dictation covers 12 languages (EN, FR, DE, HI, IT, JA, KO, PT, RU, ES, TR, UK), not Arabic, and non-English dictation is in beta.",
+"sources": [
+"https://support.claude.com/en/articles/11101966-use-voice-mode",
+"https://support.claude.com/en/articles/10065434-use-dictation-on-claude-mobile",
+"https://blog.google/products/gemini/gemini-live-extensions-language-expansion/"
+]
+},
+{
+"dimension": "9. Citations & source traceability",
+"chatgpt": "API (Responses API reference): output text carries annotations of four types. file_citation gives file_id, filename and index. url_citation gives start/end char indices, title and url. container_file_citation adds container_id, and file_path is the fourth. How ChatGPT search shows sources was not verified from official help in this pass.",
+"gemini": "API grounding with Google Search returns groundingMetadata. It contains webSearchQueries, groundingChunks (web uri and title) and groundingSupports, which map text segments to chunk indices for inline citations. The metadata is present only when the answer is actually grounded. File Search citation format was not covered.",
+"claude": "Citations are GA on all active models; ZDR-eligible except Covered Models; available on Claude API, Bedrock, Google Cloud and Microsoft Foundry. Document types are plain text, PDF and custom content. Location types: char_location (text), page_location (PDF) and content_block_location (custom content). Plain text and PDFs are chunked into sentences automatically. cited_text does not count toward output tokens. Citations cannot be combined with structured outputs; the API returns 400. search_result blocks can also be cited.",
+"sources": [
+"https://platform.claude.com/docs/en/build-with-claude/citations",
+"https://developers.openai.com/api/reference/typescript/resources/responses",
+"https://ai.google.dev/gemini-api/docs/grounding"
+]
+},
+{
+"dimension": "10. Export & report generation",
+"chatgpt": "Canvas has a Download button. Documents export to PDF, Markdown (.md) or Word (.docx); code exports with the extension for its language. Source is a regional mirror of the canvas help article. No official deep research export to PDF was found; only third-party extensions, which are not verified.",
+"gemini": "Official help 14184041: Share & export → 'Export to Docs' saves a new Google Doc in Drive, and 'Draft in Gmail' needs a Gmail account. Options vary by availability and Workspace settings, and you must be signed in. Third parties say export works one response at a time, with no native full-conversation export, and that bold formatting can break in Docs. Canvas and Deep Research export specifics were not verified in this pass.",
+"claude": "With 'code execution and file creation' turned on, Claude can create and edit .xlsx, .pptx, .docx and .pdf files in a sandbox. Files can be downloaded or saved to Google Drive. This is available on all plans across web, Desktop and Mobile; Team and Enterprise owners control it, and network access is off by default for them. Limit: 30MB per file. Artifacts are separate. Word and PowerPoint add-ins edit selections while keeping formatting. If no format is named, Claude may produce an artifact instead of a file.",
+"sources": [
+"https://help-lb.openai.com/en/articles/9930697-what-is-the-canvas-feature-in-chatgpt-and-how-do-i-use-it (regional mirror of OpenAI help)",
+"https://support.google.com/gemini/answer/14184041",
+"https://support.claude.com/en/articles/12111783-create-and-edit-files-with-claude",
+"https://support.claude.com/en/articles/17153992-what-are-artifacts-and-how-do-i-use-them"
+]
+},
+{
+"dimension": "11. Reliability / error recovery / status pages",
+"chatgpt": "status.openai.com shows separate API and ChatGPT components, incident history, and email/RSS subscriptions; this description comes from a university knowledge-base article. The official File Uploads FAQ says limits may be lowered at peak hours. Official error-retry guidance was not retrieved.",
+"gemini": "The Gemini API's status is on the Google AI Studio status page; the official URL was not confirmed in this pass. The Gemini app enforces rolling quotas and shows a 'limit for chats with files' message that resets after a while. No official uptime figures found.",
+"claude": "Status page: status.claude.com. API streams can carry error events, for example overloaded_error, which corresponds to HTTP 529. The streaming docs give capture-and-resume recovery guidance. If input is too long, the API returns 400 invalid_request_error; on 4.5+ models, generation that reaches the window limit returns stop_reason model_context_window_exceeded. Anthropic publishes no official uptime SLA figure in the pages read.",
+"sources": [
+"https://status.openai.com/",
+"https://cedarville.teamdynamix.com/TDClient/2045/Portal/KB/Article/169153/OpenAI-Status-Page (secondary description)",
+"https://status.claude.com/",
+"https://platform.claude.com/docs/en/build-with-claude/streaming",
+"https://platform.claude.com/docs/en/build-with-claude/context-windows",
+"https://support.google.com/gemini/answer/14903178"
+]
+},
+{
+"dimension": "12. Security / privacy / access control (enterprise)",
+"chatgpt": "From OpenAI's business-data page. Qualifying organizations set their own retention for business data, and the API Platform offers zero data retention. Data is encrypted with AES-256 at rest and TLS 1.2+ in transit, and Enterprise Key Management is available. Eligible ChatGPT Enterprise, Edu, Healthcare and API customers can keep content at rest in the US, Europe, UK, Japan, Canada, South Korea, Singapore, Australia, India or the UAE. In-region GPU inference is available in the US or Europe. OpenAI says it does not train on business data by default: 'We do not train on your business data or conversations.' A third-party summary lists the covered products as Business, Enterprise, Healthcare, Edu, Teachers and the API, with training only on explicit opt-in. Per a third-party comparison, Business has SAML SSO but no SCIM, RBAC or residency; Enterprise has them. Not verified on an official page.",
+"gemini": "Gemini in Workspace apps (Gmail, Docs, Drive and others) uses your content to answer prompts but not to train or improve Gemini or other generative models. It does not keep prompts or outputs without permission. Consumer Gemini on a personal account may use activity to improve services, including training, and a subset of chats is reviewed by humans. Workspace Labs falls under personal-account terms. Gemini data regions and client-side encryption were not verified in this pass.",
+"claude": "Enterprise includes SSO, domain capture, SCIM (Entra syncs about every 40 minutes), role-based permissions, audit logs, the Compliance API (activity logs, chats, files) and an optional US-only inference. Custom retention can be set by the Primary Owner or Owner, with a 30-day minimum. Without it, data is kept indefinitely. It covers chats and projects but not Claude Design, Managed Agents, Cowork cloud sessions or scheduled tasks. Shortening retention schedules deletion immediately, and retention changes are written to audit logs. The public-sector FAQ says Enterprise data is not used for training. A separate 30-day retention rule applies to 'Covered Models', including for ZDR setups.",
+"sources": [
+"https://openai.com/business-data/",
+"https://www.securityweek.com/openai-turns-to-security-to-sell-chatgpt-enterprise/",
+"https://conductatlas.com/platform/openai/openai-enterprise-privacy/default-exclusion-of-business-data-from-model-training/ (third-party summary)",
+"https://www.spotdev.co.uk/blog/chatgpt-business-vs-enterprise-governance-gap (third-party)",
+"https://support.google.com/docs/answer/14615114",
+"https://support.claude.com/en/articles/10440198-configure-custom-data-retention-controls-for-enterprise-plans",
+"https://support.claude.com/en/articles/9797531-what-is-the-enterprise-plan",
+"https://support.claude.com/en/articles/13756069-public-sector-faqs",
+"https://support.claude.com/en/articles/15425996-data-retention-practices-for-covered-models"
+]
+},
+{
+"dimension": "13. UI accessibility statements",
+"chatgpt": "No official OpenAI accessibility statement, VPAT/ACR or WCAG conformance claim was found in this pass. Not published or not located.",
+"gemini": "No Gemini app accessibility statement or VPAT was found in this pass; a dedicated search turned up nothing official from Google. Not located.",
+"claude": "No Anthropic accessibility statement or VPAT/ACR was found in this pass; search results were third-party WCAG tools only. Not located.",
+"sources": []
+}
+],
+"caveats": [
+"Access limits: help.openai.com, platform.openai.com, support.google.com and ai.google.dev could not be fetched from this environment (DNS failure / proxy CONNECT 403). OpenAI and Google cells therefore come from search-engine summaries of those official pages, regional mirrors (help-lb.openai.com) or a few labelled third-party sources, and are lower-confidence than the Anthropic cells. The Anthropic cells come from pages on platform.claude.com and support.claude.com fetched directly.",
+"Not published: none of the three vendors' docs found give TTFT or latency figures, uptime SLAs or accessibility conformance statements. Third-party uptime tracker figures were left out on purpose.",
+"ChatGPT per-plan context windows conflict across third-party sources (Free 8K/16K/27K; Plus 32K/54K; Pro/Enterprise 128K; Thinking ~256K paid, 400K Pro). The official pricing page could not be reached. Treat these as unverified.",
+"Two versions of the ChatGPT project file-count limits exist. Older: Plus 20; Pro/Team/Edu/Business 40. Newer: Free 5; Go/Plus 25; Edu/Pro/Business/Enterprise 40. Which one is live could not be confirmed.",
+"Claude upload size conflict: the Upload Files article (updated 2026-07-23) says 500MB per file in chat and 30MB for project files. The 'Create and edit files' article says 30MB per file for uploads and downloads.",
+"Gemini: total video length of 5 minutes per prompt comes from a university mirror of Google's help text and was not seen on the official page. The Gemini API inline request limit is reported as 20MB, 50MB (PDF) or 100MB depending on source. The AI Plus 128K context figure is third-party only.",
+"Gemini Apps context figures (32K without a plan; 1M on AI Pro/Ultra; Deep Think 192K) come from Sept 2025 secondary reproductions of Google's limits table and may be outdated by Oct 2026.",
+"Arabic is not confirmed in any official voice or dictation language list for the three platforms. For Claude it is explicitly absent from the dictation and display-language lists. Claude's Arabic text benchmark (97.2% / 92.5% of English) applies only to Sonnet 4.5 (deprecated) and Haiku 4.5, not current models.",
+"Model names are as written in the vendor docs read on 2026-10-12 (e.g., Claude Opus 5.5, Sonnet 5.5, Haiku 5.5, Fable 5.1, Mythos 5.1). Firebase says Gemini 2.5 models shut down in October 2026, so older Gemini model-specific limits may no longer apply.",
+"Not covered within the ~30-call budget: OpenAI transcription API formats and limits; the ChatGPT Voice Mode FAQ; ChatGPT and Gemini UI 'stop generating' docs; the Gemini API File Search tool; Gemini data residency and client-side encryption; Gemini Canvas/Deep Research export; ChatGPT deep research export. These are marked 'not verified', not filled in.",
+"No files were written to the repo. No notes were saved to the scratchpad."
+]
+}
+}
