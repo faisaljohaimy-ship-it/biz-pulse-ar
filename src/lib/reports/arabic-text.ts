@@ -116,16 +116,89 @@ function shapeWord(word: string): string {
   return String.fromCodePoint(...out);
 }
 
-const AR_RUN = /[\u0621-\u064A\u0640]+/g;
+const AR_RUN = /[ء-يـ]+/g;
 const RTL_CHAR = /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
-const NEUTRAL = /^[\s\u060C\u061B\u061F.,:;!?()%\u00AB\u00BB\-\u2013\u2014\u00B7\u2022/]+$/;
-const AR_SCRIPT_SPLIT =
-  /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]+|[^\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]+/g;
 
 /** One draw-ready piece of a line: `ar` picks the Arabic font (fontkit
  *  path — content in LOGICAL order, fontkit's bidi flips it) vs the Latin
  *  font (digits/ASCII — drawn verbatim, immune to fontkit's bidi). */
 export type ArabicSegment = { ar: boolean; text: string };
+
+/** Bidi classes we resolve — the subset of UAX #9 a report line needs. */
+type BidiClass = "R" | "L" | "EN" | "ES" | "ET" | "CS" | "ON";
+
+function bidiClass(ch: string): BidiClass {
+  if (RTL_CHAR.test(ch)) return "R";
+  if (/[0-9]/.test(ch)) return "EN";
+  if (/\p{L}/u.test(ch)) return "L";
+  if (ch === "+" || ch === "-") return "ES";
+  if (/[%$#°‰€£]/.test(ch)) return "ET";
+  if (/[,.:/\u00A0]/.test(ch)) return "CS";
+  return "ON"; // whitespace, brackets, quotes, other punctuation
+}
+
+/** Paired punctuation that is drawn mirrored at an RTL level (rule L4). */
+const MIRROR: Record<string, string> = {
+  "(": ")",
+  ")": "(",
+  "[": "]",
+  "]": "[",
+  "{": "}",
+  "}": "{",
+  "<": ">",
+  ">": "<",
+  "«": "»",
+  "»": "«",
+};
+
+/**
+ * Embedding levels for an RTL paragraph (level 1), per UAX #9 rules
+ * W2/W4–W7 (numbers and their separators), N1/N2 (neutrals) and I2.
+ * Resolving per CHARACTER — not per whitespace token — is what keeps a
+ * space between an Arabic word and a number on the correct side, and a
+ * bracket around the right item (the previous token grouping glued
+ * «SEC-18في» and moved a count to another clause of a compliance line).
+ */
+function resolveLevels(chars: string[]): number[] {
+  const t: BidiClass[] = chars.map(bidiClass);
+  const n = t.length;
+  const strongBefore = (i: number): "R" | "L" => {
+    for (let k = i - 1; k >= 0; k--) if (t[k] === "R" || t[k] === "L") return t[k] as "R" | "L";
+    return "R"; // sos = paragraph direction
+  };
+  // W4: one ES/CS between two EN joins the number (1-2, 3.5, 10:30).
+  for (let i = 1; i < n - 1; i++) {
+    if ((t[i] === "ES" || t[i] === "CS") && t[i - 1] === "EN" && t[i + 1] === "EN") t[i] = "EN";
+  }
+  // W5: a sequence of ET touching a number becomes part of it (87%, $5).
+  for (let i = 0; i < n; i++) {
+    if (t[i] !== "ET") continue;
+    let j = i;
+    while (j < n && t[j] === "ET") j++;
+    if ((i > 0 && t[i - 1] === "EN") || (j < n && t[j] === "EN")) {
+      for (let k = i; k < j; k++) t[k] = "EN";
+    }
+    i = j - 1;
+  }
+  // W6: leftover separators are neutral. W7: EN after an L is L (SEC-18).
+  for (let i = 0; i < n; i++) if (t[i] === "ES" || t[i] === "ET" || t[i] === "CS") t[i] = "ON";
+  for (let i = 0; i < n; i++) if (t[i] === "EN" && strongBefore(i) === "L") t[i] = "L";
+  // N1/N2: a neutral run takes the direction of its neighbours when they
+  // agree (EN counts as R), otherwise the paragraph's (R).
+  const dir = (c: BidiClass) => (c === "L" ? "L" : "R");
+  for (let i = 0; i < n; i++) {
+    if (t[i] !== "ON") continue;
+    let j = i;
+    while (j < n && t[j] === "ON") j++;
+    const before = i > 0 ? dir(t[i - 1]!) : "R";
+    const after = j < n ? dir(t[j]!) : "R";
+    const resolved: BidiClass = before === after ? before : "R";
+    for (let k = i; k < j; k++) t[k] = resolved;
+    i = j - 1;
+  }
+  // I2 at an odd (RTL) base: R stays 1, L and EN rise to 2.
+  return t.map((c) => (c === "R" ? 1 : 2));
+}
 
 /**
  * Shape + lay out a mixed Arabic/Latin/digit line for manual placement.
@@ -133,52 +206,45 @@ export type ArabicSegment = { ar: boolean; text: string };
  * the total yourself). Arabic segment CONTENT stays in logical order on
  * purpose — fontkit applies its own bidi reversal per RTL run, so
  * pre-reversed content would come out backwards (the exact defect this
- * replaces; see header comment).
+ * replaces; see header comment). Spaces, punctuation, Latin and digits are
+ * Latin-font segments, already in visual order and mirrored where needed.
+ * A line with no Arabic at all is a left-to-right paragraph, kept verbatim.
  */
 export function layoutArabicLine(input: string): ArabicSegment[] {
   const stripped = input.replace(HARAKAT, "");
   // Shape every Arabic letter-run into presentation forms, logical order.
   const shaped = stripped.replace(AR_RUN, (w) => shapeWord(w));
+  if (!shaped) return [];
+  if (!RTL_CHAR.test(shaped)) return [{ ar: false, text: shaped }];
 
-  // Tokenize, classify, group into direction runs.
-  const tokens = shaped.split(/(\s+)/).filter((t) => t.length > 0);
-  type Run = { rtl: boolean; parts: string[] };
-  const runs: Run[] = [];
-  let current: Run | null = null;
-  for (const tok of tokens) {
-    const prevRtl: boolean = current ? current.rtl : true;
-    const rtl: boolean = RTL_CHAR.test(tok) || (NEUTRAL.test(tok) ? prevRtl : false);
-    if (!current || current.rtl !== rtl) {
-      current = { rtl, parts: [tok] };
-      runs.push(current);
-    } else {
-      current.parts.push(tok);
-    }
+  const chars = Array.from(shaped);
+  const levels = resolveLevels(chars);
+  // L2: reverse each level-2 run, then the whole line (level ≥ 1).
+  const order = chars.map((_, i) => i);
+  for (let i = 0; i < order.length; i++) {
+    if (levels[order[i]!] < 2) continue;
+    let j = i;
+    while (j < order.length && levels[order[j]!]! >= 2) j++;
+    const run = order.slice(i, j).reverse();
+    order.splice(i, j - i, ...run);
+    i = j - 1;
   }
+  order.reverse();
+  // L4: mirror paired punctuation resolved RTL.
+  const visual = order.map((i) =>
+    levels[i] === 1 && MIRROR[chars[i]!] ? MIRROR[chars[i]!]! : chars[i]!,
+  );
 
-  // Emit runs in reverse (RTL base direction). Inside an RTL run the
-  // script sub-segments are ALSO emitted in reverse so their left-to-right
-  // placement reads right-to-left — while each sub-segment's content stays
-  // logical (Arabic → fontkit flips it; digits/ASCII → drawn verbatim, so
-  // numbers keep most-significant-first without any digit protection).
+  // Group by font. An Arabic group is handed to fontkit in logical order
+  // (its visual chars reversed back); everything else is drawn as placed.
   const segments: ArabicSegment[] = [];
-  const push = (ar: boolean, text: string) => {
+  for (const ch of visual) {
+    const ar = RTL_CHAR.test(ch);
     const last = segments[segments.length - 1];
-    if (last && last.ar === ar) last.text += text;
-    else segments.push({ ar, text });
-  };
-  for (const run of runs.reverse()) {
-    if (!run.rtl) {
-      push(false, run.parts.join(""));
-      continue;
-    }
-    // Mirror paired punctuation: fontkit's reversal flips positions but
-    // not glyphs, so a logical "(" must be handed over as ")".
-    const text = run.parts.join("").replace(/[()]/g, (c) => (c === "(" ? ")" : "("));
-    const subs = text.match(AR_SCRIPT_SPLIT);
-    if (!subs) continue;
-    for (const sub of subs.reverse()) push(RTL_CHAR.test(sub), sub);
+    if (last && last.ar === ar) last.text += ch;
+    else segments.push({ ar, text: ch });
   }
+  for (const seg of segments) if (seg.ar) seg.text = Array.from(seg.text).reverse().join("");
   return segments;
 }
 

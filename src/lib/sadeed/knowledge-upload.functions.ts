@@ -6,12 +6,17 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import {
+  KNOWLEDGE_MAX_TEXT_CHARS,
+  knowledgeRevisionHash,
+  pickDuplicateDocument,
+} from "@/lib/sadeed/knowledge-ingest-core";
 
 const BUCKET = "aria-documents";
 
 const EnqueueInput = z.object({
   title: z.string().trim().min(1).max(300),
-  text: z.string().min(1).max(2_000_000),
+  text: z.string().min(1).max(KNOWLEDGE_MAX_TEXT_CHARS),
   storage_path: z.string().max(500).optional(),
   mime_type: z.string().max(200).optional(),
   size_bytes: z.number().int().nonnegative().optional(),
@@ -25,7 +30,11 @@ export const enqueueKnowledgeIngest = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
+    const revisionHash = await knowledgeRevisionHash(data.text);
+
     // 1. Create the document row under the user's RLS scope (status=pending).
+    //    Inserted *before* the duplicate check so the check can be scoped by
+    //    this row's own org_id (assigned by the database), never by a guess.
     const { data: doc, error: insErr } = await supabase
       .from("finn_documents")
       .insert({
@@ -37,13 +46,71 @@ export const enqueueKnowledgeIngest = createServerFn({ method: "POST" })
         size_bytes: data.size_bytes ?? data.text.length,
         page_count: data.page_count ?? 0,
         status: "pending",
+        revision_hash: revisionHash,
         tags: data.tags ?? [],
       })
-      .select("id")
+      .select("id, org_id, created_at")
       .single();
     if (insErr || !doc) throw new Error(insErr?.message ?? "create_failed");
 
-    // 2. Invoke the public ingest hook with the CRON_HOOK_SECRET.
+    // 2. De-duplicate: the same user re-uploading the same normalized text in
+    //    the same org gets the existing ready (or still in-progress) document
+    //    back instead of a second row and a second paid embedding run. Scoped
+    //    by user_id AND org_id, so another org's document is never returned.
+    //    Earliest wins (see pickDuplicateDocument), so two simultaneous
+    //    identical uploads cannot both drop their rows. Known limitation: this
+    //    is not atomic — two uploads whose inserts are not yet visible to each
+    //    other can both proceed; closing that needs a unique index migration.
+    const { data: existing, error: dupErr } = await supabase
+      .from("finn_documents")
+      .select("id, status, created_at")
+      .eq("user_id", userId)
+      .eq("org_id", doc.org_id)
+      .eq("revision_hash", revisionHash)
+      .in("status", ["ready", "processing", "pending"])
+      .neq("id", doc.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (dupErr) {
+      await supabase
+        .from("finn_documents")
+        .update({
+          status: "failed",
+          error: `duplicate_check_failed: ${dupErr.message}`.slice(0, 500),
+        })
+        .eq("id", doc.id);
+      throw new Error(dupErr.message);
+    }
+    const duplicate = pickDuplicateDocument(existing ?? [], Date.now(), doc);
+    if (duplicate) {
+      // Drop the row this call just created; if that is refused, leave it
+      // terminal ("failed") with a clear reason rather than "pending".
+      // RLS may refuse a delete silently (no error, zero rows), so the
+      // returned row count — not the absence of an error — proves it.
+      const { data: dropped, error: dropErr } = await supabase
+        .from("finn_documents")
+        .delete()
+        .eq("id", doc.id)
+        .select("id");
+      if (dropErr || !dropped?.length) {
+        await supabase
+          .from("finn_documents")
+          .update({
+            status: "failed",
+            error: `نسخة مكررة من مستند قائم بالنص نفسه (duplicate_of: ${duplicate.id})`,
+          })
+          .eq("id", doc.id);
+      }
+      return {
+        document_id: duplicate.id,
+        deduped: true as const,
+        status: duplicate.status,
+        hook_status: 0,
+        hook_body: null as string | null,
+      };
+    }
+
+    // 3. Invoke the public ingest hook with the CRON_HOOK_SECRET.
     const secret = process.env.CRON_HOOK_SECRET;
     if (!secret) throw new Error("cron_hook_secret_not_configured");
 
@@ -65,13 +132,17 @@ export const enqueueKnowledgeIngest = createServerFn({ method: "POST" })
       hookStatus = res.status;
       hookBody = (await res.text().catch(() => "")) || null;
       if (!res.ok) {
+        // The hook marks the row "failed" itself, with a clear reason, on
+        // every path where it has the document; keep that reason and only
+        // fill in the paths where it could not (auth, unknown document).
         await supabase
           .from("finn_documents")
           .update({
             status: "failed",
             error: `hook_${res.status}: ${hookBody ?? ""}`.slice(0, 500),
           })
-          .eq("id", doc.id);
+          .eq("id", doc.id)
+          .neq("status", "failed");
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -82,7 +153,13 @@ export const enqueueKnowledgeIngest = createServerFn({ method: "POST" })
       throw new Error(`hook_invoke_failed: ${msg}`);
     }
 
-    return { document_id: doc.id, hook_status: hookStatus, hook_body: hookBody };
+    return {
+      document_id: doc.id,
+      deduped: false as const,
+      status: hookStatus >= 200 && hookStatus < 300 ? "ready" : "failed",
+      hook_status: hookStatus,
+      hook_body: hookBody,
+    };
   });
 
 // Bilingual chunk stats for the progress UI.

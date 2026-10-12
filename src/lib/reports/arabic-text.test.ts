@@ -58,3 +58,37 @@ describe("layoutArabicLine — presentation forms + visual segment layout", () =
     expect(toArabicDigits("2026/07/20")).toBe("٢٠٢٦/٠٧/٢٠");
   });
 });
+
+describe("layoutArabicLine — اتجاه الأسطر المختلطة (UAX #9)", () => {
+  /** ما يرسمه الملف فعلًا من اليسار: fontkit يقلب كل مقطع عربي. */
+  const drawn = (line: string) =>
+    layoutArabicLine(line)
+      .map((s) => (s.ar ? Array.from(s.text).reverse().join("") : s.text))
+      .join("");
+  /** كلمة عربية كما تُرى: مشكَّلة ثم مقلوبة. */
+  const w = (word: string) => Array.from(shapeArabic(word)).reverse().join("");
+
+  it("المسافة تبقى في جهتها بين الكلمة العربية والرقم", () => {
+    expect(drawn("يوجد 5 تصاريح نشطة")).toBe(`${w("نشطة")} ${w("تصاريح")} 5 ${w("يوجد")}`);
+    expect(drawn("راجع SEC-18 اليوم")).toBe(`${w("اليوم")} SEC-18 ${w("راجع")}`);
+    expect(drawn("نسبة الإنجاز 87% من الخطة")).toBe(
+      `${w("الخطة")} ${w("من")} 87% ${w("الإنجاز")} ${w("نسبة")}`,
+    );
+  });
+
+  it("العدد لا يغيّر موضعه، والقوس يحيط بالبند الصحيح", () => {
+    expect(drawn("المتأخرة: 3 (SEC-18 و SAF-02)")).toBe(
+      `(SAF-02 ${w("و")} SEC-18) 3 :${w("المتأخرة")}`,
+    );
+  });
+
+  it("الأقواس تنعكس في السياق العربي", () => {
+    expect(drawn("رد سديد (مولد بالذكاء الاصطناعي)")).toBe(
+      `(${w("الاصطناعي")} ${w("بالذكاء")} ${w("مولد")}) ${w("سديد")} ${w("رد")}`,
+    );
+  });
+
+  it("السطر اللاتيني الخالص فقرة يسارية تبقى كما هي", () => {
+    expect(layoutArabicLine("Hello world.")).toEqual([{ ar: false, text: "Hello world." }]);
+  });
+});

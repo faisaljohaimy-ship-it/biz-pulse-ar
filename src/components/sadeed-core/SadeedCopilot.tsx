@@ -21,6 +21,8 @@ import {
   AudioWaveform,
   Check,
   Copy,
+  FileDown,
+  Loader2,
   MessageCircle,
   Mic,
   MicOff,
@@ -80,6 +82,10 @@ import {
 // (`aria-label` و`title`): علامات التشكيل تُتهجّى حرفًا حرفًا في NVDA وVoiceOver.
 import { SADEED_DISPLAY_NAME_AR, SADEED_DISPLAY_NAME_AR_PLAIN } from "@/lib/sadeed-core/branding";
 import { ToolInvocation } from "@/components/ai-elements/tool-invocation";
+import type { UIMessage } from "ai";
+// تصدير PDF — الأنواع وحدها ثابتة؛ الوحدة نفسها (ومحرّك `chat-pdf` خلفها)
+// تُحمَّل ديناميكيًّا عند النقر فلا تكبر الحزمة الأولى.
+import type { ExportableMessage } from "./chat-export";
 // وضع العرض التنفيذي — نُقل من شاشة مركز القيادة المحجوبة (قرار المالك
 // ٢٠٢٦/٠٨/١٢) إلى زرّ في ترويسة هذه اللوحة. يُحمَّل كسولًا وجوبًا:
 // SadeedCopilot يُركَّب على كل صفحة، ومحرّك الوكلاء الرقميين يجب ألا يدخل
@@ -293,6 +299,9 @@ const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
 const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = `${SADEED_DISPLAY_NAME_AR} يفكّر…`;
+const EXPORT_ERROR_AR = "تعذّر تجهيز ملف PDF الآن — أعد المحاولة بعد لحظات.";
+const EXPORT_BUSY_AR = "يجهّز ملف PDF…";
+const EXPORT_DONE_AR = "تم تجهيز ملف PDF.";
 const STILL_SRC = "/sadeed-portrait.webp";
 
 // Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,
@@ -330,6 +339,24 @@ function sanitiseAssistantText(raw: string): string {
   t = t.replace(/\bat\s+[\w$.<>]+\s*\([^)]*:\d+:\d+\)/g, "");
   t = t.replace(/\berror:\s*[^\n]{0,200}/gi, ERROR_MASK_AR);
   return t.trim();
+}
+
+/** النصّ المعروض لرسالة — مصدرٌ واحد للعرض والتصدير، فلا يفترق ما يُصدَّر
+ *  عمّا يُرى: نصّ المستخدم الخام، ورد المساعد بعد المنقّي ونزع التشكيل. */
+function displayTextOf(m: UIMessage): string {
+  const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+  return m.role === "user" ? raw : stripTashkeel(sanitiseAssistantText(raw));
+}
+
+/** ما يُصدَّر من رسالة: نصّها المعروض وأسماء مرفقاتها — لا أجزاء أدوات ولا
+ *  بيانات ملفات. */
+function exportableOf(m: UIMessage): ExportableMessage {
+  const attachments = m.parts.flatMap((p) => (p.type === "file" && p.filename ? [p.filename] : []));
+  return {
+    role: m.role,
+    text: displayTextOf(m),
+    ...(attachments.length ? { attachments } : {}),
+  };
 }
 
 /** Panel backdrop — dark surface with an optional emerald aurora when in
@@ -440,6 +467,18 @@ export function SadeedCopilot() {
 
   const [draft, setDraft] = useState("");
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  // تصدير PDF: "chat" للمحادثة كاملة أو معرّف الرد؛ والمرجع يمنع النقر المزدوج
+  // قبل أن تصل الحالة إلى الرسم.
+  const [exportingKey, setExportingKey] = useState<string | null>(null);
+  const exportingRef = useRef(false);
+  // إشعار التصدير مستقلّ عن إشعارات الصوت: يظهر في وضع العرض أيضًا، ويُعلَن
+  // عبر منطقة حيّة دائمة التركيب (لا تُقرأ إشعارات حلقة الصوت فوق صوت سَدِيد).
+  const [exportNotice, setExportNotice] = useState<{
+    tone: "done" | "error";
+    text: string;
+  } | null>(null);
+  const [exportAnnouncement, setExportAnnouncement] = useState("");
+  const exportNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [health, setHealth] = useState<"unknown" | "ok" | "down">("unknown");
   // null = unknown; false = endpoint reachable but no AI provider key on this
   // deployment → show an elegant "not activated yet" notice instead of errors.
@@ -1190,13 +1229,35 @@ export function SadeedCopilot() {
   const depositTextFiles = useCallback(async (files: File[]) => {
     const textFiles = files.filter(isTextFile);
     if (!textFiles.length) return;
+    // الحدّ والرسالة من مصدرهما الوحيد (`knowledge-ingest-core`) — كان هذا
+    // المستدعي يقصّ عند 2,000,000 فيرفضه تحقّق الخادم (250,000) ويُعرض رفضه
+    // «يتطلّب تسجيل الدخول» لمستخدمٍ مسجَّل. وكل ملفٍّ مستقلّ: فشل واحدٍ لا
+    // يوقف بقية الدفعة.
+    let modules;
     try {
-      const { enqueueKnowledgeIngest } = await import("@/lib/sadeed/knowledge-upload.functions");
-      let saved = 0;
-      for (const f of textFiles) {
-        const text = (await f.text()).slice(0, 2_000_000);
+      modules = await Promise.all([
+        import("@/lib/sadeed/knowledge-upload.functions"),
+        import("@/lib/sadeed/knowledge-ingest-core"),
+        import("@/lib/errors/user-facing-error"),
+      ]);
+    } catch {
+      setUploadNote("قرأ سَدِيد الملفات؛ تعذّر إيداعها في قاعدة المعرفة الآن.");
+      return;
+    }
+    const [{ enqueueKnowledgeIngest }, core, { isSessionError }] = modules;
+    let saved = 0;
+    let deduped = 0;
+    let sessionBlocked = false;
+    const problems: string[] = [];
+    for (const f of textFiles) {
+      try {
+        const text = await f.text();
         if (!text.trim()) continue;
-        await enqueueKnowledgeIngest({
+        if (text.length > core.KNOWLEDGE_MAX_TEXT_CHARS) {
+          problems.push(`${f.name}: ${core.knowledgeTooLargeMessage(text.length)}`);
+          continue;
+        }
+        const res = await enqueueKnowledgeIngest({
           data: {
             title: f.name.slice(0, 300),
             text,
@@ -1205,12 +1266,23 @@ export function SadeedCopilot() {
             tags: ["sadeed-upload", (f.name.split(".").pop() ?? "txt").toLowerCase().slice(0, 40)],
           },
         });
-        saved++;
+        if (res.deduped) deduped++;
+        else saved++;
+      } catch (error) {
+        if (isSessionError(error)) {
+          sessionBlocked = true;
+          break;
+        }
+        problems.push(`${f.name}: ${core.INGEST_FAILED_MESSAGE}`);
       }
-      if (saved) setUploadNote(`أُودع ${saved} ملف في قاعدة معرفة النظام`);
-    } catch {
-      setUploadNote("قرأ سَدِيد الملفات؛ الإيداع في قاعدة المعرفة يتطلّب تسجيل الدخول");
     }
+    const parts: string[] = [];
+    if (saved) parts.push(`أُودع ${saved} ملف في قاعدة معرفة النظام`);
+    if (deduped) parts.push(`${deduped} ملف موجود مسبقًا بالنص نفسه`);
+    if (sessionBlocked)
+      parts.push("قرأ سَدِيد الملفات؛ الإيداع في قاعدة المعرفة يتطلّب تسجيل الدخول");
+    parts.push(...problems);
+    if (parts.length) setUploadNote(parts.join(" · "));
   }, []);
 
   const submit = useCallback(
@@ -1367,6 +1439,73 @@ export function SadeedCopilot() {
       setCopiedMessageId(null);
     }
   }, []);
+
+  const flashExportNotice = useCallback((tone: "done" | "error", text: string) => {
+    setExportNotice({ tone, text });
+    setExportAnnouncement(text);
+    if (exportNoticeTimerRef.current) clearTimeout(exportNoticeTimerRef.current);
+    exportNoticeTimerRef.current = setTimeout(() => {
+      setExportNotice(null);
+      setExportAnnouncement("");
+    }, 5000);
+  }, []);
+
+  const runExport = useCallback(
+    async (key: string, messages: ExportableMessage[], kind: "chat" | "answer") => {
+      // المرجع وحده يمنع التكرار — لا `disabled` أصليّ أثناء التجهيز كي لا
+      // يفقد مستخدم لوحة المفاتيح أو قارئ الشاشة موضع تركيزه على الزرّ.
+      if (exportingRef.current) return;
+      exportingRef.current = true;
+      setExportingKey(key);
+      if (exportNoticeTimerRef.current) clearTimeout(exportNoticeTimerRef.current);
+      setExportNotice(null);
+      setExportAnnouncement(EXPORT_BUSY_AR);
+      try {
+        const { downloadChatPdf } = await import("./chat-export");
+        await downloadChatPdf(messages, kind);
+        flashExportNotice("done", EXPORT_DONE_AR);
+      } catch {
+        // رسالة عربية محايدة — لا تفاصيل تقنية ولا عبارات مصادقة.
+        flashExportNotice("error", EXPORT_ERROR_AR);
+      } finally {
+        exportingRef.current = false;
+        setExportingKey(null);
+      }
+    },
+    [flashExportNotice],
+  );
+
+  const canExportChat = useMemo(
+    () =>
+      !isBusy &&
+      chat.messages.some(
+        (m) => (m.role === "user" || m.role === "assistant") && displayTextOf(m).trim().length > 0,
+      ),
+    [chat.messages, isBusy],
+  );
+
+  const exportChat = useCallback(() => {
+    if (!canExportChat) return;
+    void runExport("chat", chat.messages.map(exportableOf), "chat");
+  }, [canExportChat, chat.messages, runExport]);
+
+  /** الرد ومعه سؤال المستخدم الذي سبقه مباشرة. */
+  const exportAnswer = useCallback(
+    (index: number) => {
+      const answer = chat.messages[index];
+      if (!answer || answer.role !== "assistant") return;
+      let question: UIMessage | undefined;
+      for (let i = index - 1; i >= 0; i -= 1) {
+        if (chat.messages[i].role === "user") {
+          question = chat.messages[i];
+          break;
+        }
+      }
+      const picked = question ? [question, answer] : [answer];
+      void runExport(answer.id, picked.map(exportableOf), "answer");
+    },
+    [chat.messages, runExport],
+  );
 
   const transcribeVoiceBlob = useCallback(
     async (blob: Blob, mimeType: string) => {
@@ -1948,6 +2087,7 @@ export function SadeedCopilot() {
       stopListening();
       stopVoicePlayback();
       if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current);
+      if (exportNoticeTimerRef.current) clearTimeout(exportNoticeTimerRef.current);
     },
     [stopListening, stopVoicePlayback],
   );
@@ -1972,13 +2112,13 @@ export function SadeedCopilot() {
   const messageList = useMemo(
     () => (
       <ul className="space-y-3">
-        {chat.messages.map((m) => {
-          const raw = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+        {chat.messages.map((m, index) => {
           const mine = m.role === "user";
           // SADEED's on-screen text stays clean: tashkeel is stripped for
           // display while the spoken path (toSadeedSpeechText → /api/sadeed/tts,
           // diacritized server-side) keeps full diacritics for pronunciation.
-          const text = mine ? raw : stripTashkeel(sanitiseAssistantText(raw));
+          // displayTextOf هو نفسه مصدر نصّ التصدير إلى PDF.
+          const text = displayTextOf(m);
           const hasNonTextWork = m.parts.some(
             (part) => part.type.startsWith("tool-") || part.type === "tool-invocation",
           );
@@ -2027,6 +2167,20 @@ export function SadeedCopilot() {
                         <Check className="h-3.5 w-3.5" aria-hidden />
                       ) : (
                         <Copy className="h-3.5 w-3.5" aria-hidden />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => exportAnswer(index)}
+                      aria-disabled={exportingKey !== null}
+                      aria-label="تصدير هذا الرد PDF"
+                      title={exportingKey === m.id ? "يجهّز الملف…" : "تصدير PDF"}
+                      className="grid h-11 min-h-11 w-11 min-w-11 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-foreground aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
+                    >
+                      {exportingKey === m.id ? (
+                        <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden />
+                      ) : (
+                        <FileDown className="h-3.5 w-3.5" aria-hidden />
                       )}
                     </button>
                     {m.id === lastAssistantMessageId && (
@@ -2120,6 +2274,8 @@ export function SadeedCopilot() {
       copiedMessageId,
       lastAssistantMessageId,
       copyMessage,
+      exportingKey,
+      exportAnswer,
       retry,
       toggleConversationMode,
     ],
@@ -2243,6 +2399,24 @@ export function SadeedCopilot() {
                   كان الزر على الرئيسية وحدها لَغاب في اللحظة التي يتكلم فيها
                   المساعد فعلًا — وهي اللحظة التي يُطلب فيها الكتم. */}
               <SadeedMuteToggle className="h-11 w-11 min-w-11 px-0" />
+              {/* تصدير المحادثة PDF — معطّل أصليًّا بلا رسالة قابلة للتصدير أو
+                  أثناء توليد رد (لا يُصدَّر رد ناقص). أثناء التجهيز يبقى قابلًا
+                  للتركيز (`aria-disabled` + مرجع يمنع التكرار) فلا يضيع التركيز. */}
+              <button
+                type="button"
+                onClick={exportChat}
+                disabled={!canExportChat}
+                aria-disabled={!canExportChat || exportingKey !== null}
+                aria-label="تصدير المحادثة PDF"
+                title={exportingKey === "chat" ? "يجهّز الملف…" : "تصدير المحادثة PDF"}
+                className="grid h-11 min-h-11 w-11 min-w-11 place-items-center rounded-md text-muted-foreground hover:bg-primary/10 hover:text-primary aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
+              >
+                {exportingKey === "chat" ? (
+                  <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden />
+                ) : (
+                  <FileDown className="h-4 w-4" aria-hidden />
+                )}
+              </button>
               <button
                 type="button"
                 onClick={startNewChat}
@@ -2261,6 +2435,28 @@ export function SadeedCopilot() {
                 <X className="h-4 w-4" aria-hidden />
               </button>
             </header>
+
+            {/* إعلان التصدير لقارئ الشاشة: منطقة حيّة مركّبة دائمًا خارج كل
+                شرط (حتى تُعلَن تغيّراتها)، ولا يكتب فيها إلا مسار التصدير. */}
+            <div role="status" aria-live="polite" className="sr-only">
+              {exportAnnouncement}
+            </div>
+            {/* إشعار التصدير المرئي — فوق وضع العرض وخارج شرطه، كي لا يفشل
+                تصديرٌ من وضع العرض بصمت. بلا role: الإعلان في المنطقة أعلاه. */}
+            {exportNotice && (
+              <div className="relative z-30 flex justify-center px-4 py-2">
+                <div
+                  className={cn(
+                    "rounded-full px-3 py-1 text-[12px] backdrop-blur-md",
+                    exportNotice.tone === "error"
+                      ? "bg-amber-500/15 text-amber-200 ring-1 ring-amber-400/40"
+                      : "bg-emerald-500/25 text-emerald-100 ring-1 ring-emerald-400/60",
+                  )}
+                >
+                  {exportNotice.text}
+                </div>
+              </div>
+            )}
 
             {/* طبقة وضع العرض التنفيذي — تحت الترويسة (تبقى الترويسة ظاهرة
                 وزرّها مضغوطًا)، فوق مساحة المحادثة، بخلفية صلبة بلغة ألوان

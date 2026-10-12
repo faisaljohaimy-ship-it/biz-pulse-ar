@@ -61,3 +61,23 @@ describe("مرفقات سَدِيد — مرآة حارس الخادم", () => {
     ]);
   });
 });
+
+describe("إيداع المرفقات النصية — المستدعي الثاني لحدّ المعرفة (المادة ٣١)", () => {
+  const copilot = readFileSync("src/components/sadeed-core/SadeedCopilot.tsx", "utf8");
+  const start = copilot.indexOf("const depositTextFiles = useCallback(");
+  const deposit = copilot.slice(start, copilot.indexOf("const submit = useCallback(", start));
+
+  it("الحدّ من مصدره الوحيد لا رقمٌ محليّ يخالفه", () => {
+    expect(start).toBeGreaterThan(0);
+    expect(deposit).not.toMatch(/\d_\d{3}_\d{3}/);
+    expect(deposit).toContain("core.KNOWLEDGE_MAX_TEXT_CHARS");
+    expect(deposit).toContain("core.knowledgeTooLargeMessage(");
+  });
+
+  it("رسالة تسجيل الدخول لخطأ جلسةٍ فعليّ وحده، وكل ملفٍّ مستقلّ", () => {
+    expect(deposit).toMatch(/catch \(error\) \{\s*if \(isSessionError\(error\)\)/);
+    expect(deposit.indexOf("for (const f of textFiles)")).toBeLessThan(
+      deposit.indexOf("try {\n        const text"),
+    );
+  });
+});

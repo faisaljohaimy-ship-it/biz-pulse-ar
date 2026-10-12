@@ -7,7 +7,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   UploadCloud,
   FileText,
@@ -24,6 +24,15 @@ import {
   getKnowledgeChunkStats,
 } from "@/lib/sadeed/knowledge-upload.functions";
 import { listSadeedDocuments, deleteSadeedDocument } from "@/lib/sadeed/documents.functions";
+import {
+  INGEST_EXPIRED_MESSAGE,
+  INGEST_MISSING_MESSAGE,
+  KNOWLEDGE_MAX_TEXT_CHARS,
+  ingestPollVerdict,
+  knowledgeErrorForDisplay,
+  knowledgeLimitHint,
+  knowledgeTooLargeMessage,
+} from "@/lib/sadeed/knowledge-ingest-core";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -92,6 +101,10 @@ type ActiveJob = {
   phase: Phase;
   documentId?: string;
   error?: string;
+  /** Arabic notice when the same text was already ingested (no new row). */
+  notice?: string;
+  /** Page clock when the job entered "ingesting" (ceiling + missing-row check). */
+  startedAt?: number;
 };
 
 function KnowledgeUploadCenter() {
@@ -99,6 +112,9 @@ function KnowledgeUploadCenter() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [job, setJob] = useState<ActiveJob | null>(null);
+  // Bumped by a timer so the ingesting-phase ceiling is re-checked even when
+  // the library listing stops changing.
+  const [clock, setClock] = useState(0);
 
   const enqueueFn = useServerFn(enqueueKnowledgeIngest);
   const statsFn = useServerFn(getKnowledgeChunkStats);
@@ -112,12 +128,14 @@ function KnowledgeUploadCenter() {
     staleTime: 15_000,
   });
 
-  // Live stats for the active job (polls every 5s while ingesting).
+  // Live stats for the active job: polled while ingesting, fetched (once)
+  // for a finished job too — a duplicate of a ready document jumps straight
+  // to "done" and would otherwise show all-zero stats beside "Ingested".
   const statsQ = useQuery({
     queryKey: ["knowledge-upload", "stats", job?.documentId],
     queryFn: () => statsFn({ data: { document_id: job!.documentId! } }),
-    enabled: !!job?.documentId && job.phase === "ingesting",
-    refetchInterval: 15000,
+    enabled: !!job?.documentId && (job.phase === "ingesting" || job.phase === "done"),
+    refetchInterval: job?.phase === "ingesting" ? 15000 : false,
     refetchIntervalInBackground: false,
   });
 
@@ -131,6 +149,15 @@ function KnowledgeUploadCenter() {
     try {
       const { text, pages } = await extractText(file);
       if (!text.trim()) throw new Error("No extractable text. / لا يمكن استخراج النص.");
+      // Same limit the server enforces — say so before uploading anything.
+      if (text.length > KNOWLEDGE_MAX_TEXT_CHARS) {
+        setJob({
+          fileName: file.name,
+          phase: "error",
+          error: knowledgeTooLargeMessage(text.length),
+        });
+        return;
+      }
 
       let storagePath: string | undefined;
       const { data: u } = await supabase.auth.getUser();
@@ -155,7 +182,32 @@ function KnowledgeUploadCenter() {
         },
       });
 
-      setJob({ fileName: file.name, phase: "ingesting", documentId: res.document_id });
+      if (res.deduped) {
+        // Nothing new was created: drop the file we just stored (best effort).
+        if (storagePath) {
+          void supabase.storage
+            .from(BUCKET)
+            .remove([storagePath])
+            .catch(() => undefined);
+        }
+        setJob({
+          fileName: file.name,
+          phase: res.status === "ready" ? "done" : "ingesting",
+          documentId: res.document_id,
+          startedAt: Date.now(),
+          notice:
+            res.status === "ready"
+              ? "هذا المستند مرفوع ومُعالَج مسبقًا بالنص نفسه، فلم تُنشأ نسخة مكررة."
+              : "هذا المستند قيد المعالجة بالفعل بالنص نفسه، فلم تُنشأ نسخة مكررة.",
+        });
+      } else {
+        setJob({
+          fileName: file.name,
+          phase: "ingesting",
+          documentId: res.document_id,
+          startedAt: Date.now(),
+        });
+      }
       qc.invalidateQueries({ queryKey: ["knowledge-upload", "docs"] });
     } catch (e) {
       const msg = userFacingError(e);
@@ -163,16 +215,36 @@ function KnowledgeUploadCenter() {
     }
   };
 
-  // When the polled document is ready/partial/failed, finalize the job state.
-  const docs = docsQ.data ?? [];
-  if (job?.phase === "ingesting" && job.documentId) {
-    const live = docs.find((d) => d.id === job.documentId);
-    if (live && (live.status === "ready" || live.status === "partial")) {
-      setTimeout(() => setJob({ ...job, phase: "done" }), 0);
-    } else if (live && live.status === "failed") {
-      setTimeout(() => setJob({ ...job, phase: "error", error: live.error ?? "ingest_failed" }), 0);
+  // Finalize an ingesting job from the polled library row: ready/partial →
+  // done, failed → error, and — so the page can never spin forever on a row
+  // nothing will update (e.g. a duplicate of a run whose Worker died) — a
+  // ceiling equal to the server's de-dup window, plus a vanished-row check.
+  // The in-progress duplicate notice is cleared on every terminal state.
+  const docsData = docsQ.data;
+  const docsFetchedAt = docsQ.dataUpdatedAt;
+  useEffect(() => {
+    if (job?.phase !== "ingesting" || !job.documentId) return;
+    const startedAt = job.startedAt ?? Date.now();
+    const live = (docsData ?? []).find((d) => d.id === job.documentId);
+    const verdict = ingestPollVerdict({ live, listFetchedAt: docsFetchedAt, startedAt });
+    if (verdict === "waiting") {
+      const timer = setTimeout(() => setClock((c) => c + 1), 30_000);
+      return () => clearTimeout(timer);
     }
-  }
+    if (verdict === "done") {
+      setJob({ ...job, phase: "done", notice: undefined });
+      return;
+    }
+    const error =
+      verdict === "failed"
+        ? knowledgeErrorForDisplay(live?.error)
+        : verdict === "expired"
+          ? INGEST_EXPIRED_MESSAGE
+          : INGEST_MISSING_MESSAGE;
+    setJob({ ...job, phase: "error", error, notice: undefined });
+  }, [job, docsData, docsFetchedAt, clock]);
+
+  const docs = docsData ?? [];
 
   const stats = statsQ.data ?? {
     total: 0,
@@ -221,6 +293,7 @@ function KnowledgeUploadCenter() {
         <UploadCloud className="h-10 w-10 mx-auto text-primary mb-3" />
         <p className="font-semibold">Drop a file here, or click to choose</p>
         <p className="text-xs text-muted-foreground mt-1">PDF · DOCX · TXT · MD (up to 50MB)</p>
+        <p className="text-xs text-muted-foreground mt-1">{knowledgeLimitHint()}</p>
         <input
           ref={fileRef}
           type="file"
@@ -267,7 +340,7 @@ function KnowledgeUploadCenter() {
 
           <PhaseStepper phase={job.phase} />
 
-          {(job.phase === "ingesting" || job.phase === "done") && (
+          {(job.phase === "ingesting" || (job.phase === "done" && statsQ.data)) && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
               <Stat label="Chunks" value={stats.total} />
               <Stat label="Embedded" value={`${stats.embedded}/${stats.total || 0}`} />
@@ -282,8 +355,10 @@ function KnowledgeUploadCenter() {
                 icon={
                   stats.citation_ready ? (
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                  ) : (
+                  ) : job.phase === "ingesting" ? (
                     <Loader2 className="h-3.5 w-3.5 text-primary animate-spin" />
+                  ) : (
+                    <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
                   )
                 }
               />
@@ -292,6 +367,12 @@ function KnowledgeUploadCenter() {
 
           {stats.total > 0 && <BilingualBar ar={stats.ar} en={stats.en} mixed={stats.mixed} />}
 
+          {job.notice && (
+            <div className="flex items-start gap-2 text-sm text-primary bg-primary/10 border border-primary/30 rounded-lg p-3">
+              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>{job.notice}</span>
+            </div>
+          )}
           {job.phase === "error" && (
             <div className="flex items-start gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-lg p-3">
               <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -344,7 +425,11 @@ function KnowledgeUploadCenter() {
                   {d.summary && (
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{d.summary}</p>
                   )}
-                  {d.error && <p className="text-xs text-destructive mt-1 break-all">{d.error}</p>}
+                  {d.error && (
+                    <p className="text-xs text-destructive mt-1 break-all">
+                      {knowledgeErrorForDisplay(d.error)}
+                    </p>
+                  )}
                 </div>
                 <Button
                   variant="ghost"
