@@ -38,13 +38,7 @@ export type AgentId =
   | (string & { readonly __agentId?: unique symbol });
 
 export type ExecutionPolicy =
-  | "sequential"
-  | "parallel"
-  | "conditional"
-  | "fallback"
-  | "retry"
-  | "skip"
-  | "human_approval";
+  "sequential" | "parallel" | "conditional" | "fallback" | "retry" | "skip" | "human_approval";
 
 export interface RetryPolicy {
   max_attempts: number;

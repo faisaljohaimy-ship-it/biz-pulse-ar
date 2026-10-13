@@ -144,9 +144,7 @@ export async function fetchCommandCenterLive(supabase: {
       id: p.id,
       title_ar: p.proposal_ar,
       stage: (p.status === "معتمد" ? "approved" : "proposed") as
-        | "proposed"
-        | "prepared"
-        | "approved",
+        "proposed" | "prepared" | "approved",
       severity: sevOfImpact(p.impact),
       agent_ar: `SADEED — ${p.area}`,
       created_at: p.created_at,

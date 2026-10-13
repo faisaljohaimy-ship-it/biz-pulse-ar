@@ -4,9 +4,7 @@
  * signal (alert). Deterministic; consumed by EyeEngine + HeadEngine.
  */
 export type AttentionTarget =
-  | { kind: "camera" }
-  | { kind: "ui"; x: number; y: number; label?: string }
-  | { kind: "away" };
+  { kind: "camera" } | { kind: "ui"; x: number; y: number; label?: string } | { kind: "away" };
 
 class AttentionEngine {
   private target: AttentionTarget = { kind: "camera" };

@@ -107,14 +107,7 @@ export function arabicNumberWords(n: number): string {
  * ─────────────────────────────────────────────────────────────────────── */
 
 export type ArabicNumberKind =
-  | "auto"
-  | "cardinal"
-  | "decimal"
-  | "percent"
-  | "time"
-  | "riyal"
-  | "scaled"
-  | "year";
+  "auto" | "cardinal" | "decimal" | "percent" | "time" | "riyal" | "scaled" | "year";
 
 /** Feminine ones (minutes/hours agree in the feminine when counting دقيقة). */
 const ONES_F = ["", "واحدة", "اثنتان", "ثلاث", "أربع", "خمس", "ست", "سبع", "ثمان", "تسع"];

@@ -44,13 +44,12 @@ import type { SadeedScene as SadeedSceneT } from "@/components/digital-humans/r3
 // renders in the browser. The SSR branch makes the `import()` dead code so
 // Vite excludes the Three.js chunk from the server bundle (Vercel build-memory
 // guard); the server renders nothing for the WebGL scene.
-const SadeedScene = lazy(
-  (): Promise<{ default: typeof SadeedSceneT }> =>
-    import.meta.env.SSR
-      ? Promise.resolve({ default: (() => null) as unknown as typeof SadeedSceneT })
-      : import("@/components/digital-humans/r3f/SadeedScene").then((m) => ({
-          default: m.SadeedScene,
-        })),
+const SadeedScene = lazy((): Promise<{ default: typeof SadeedSceneT }> =>
+  import.meta.env.SSR
+    ? Promise.resolve({ default: (() => null) as unknown as typeof SadeedSceneT })
+    : import("@/components/digital-humans/r3f/SadeedScene").then((m) => ({
+        default: m.SadeedScene,
+      })),
 );
 import { StoryCard } from "@/components/theater/StoryCard";
 import { ConnectionLines } from "@/components/theater/ConnectionLines";

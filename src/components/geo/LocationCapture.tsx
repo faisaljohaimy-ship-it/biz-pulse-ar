@@ -187,9 +187,7 @@ export function LocationCapture({
  */
 export function readReportedLocation(payload: unknown): CapturedLocation | null {
   const loc = (payload as { location?: unknown } | null | undefined)?.location as
-    | Partial<CapturedLocation>
-    | null
-    | undefined;
+    Partial<CapturedLocation> | null | undefined;
   if (!loc) return null;
   const { lat, lng, accuracy_m, captured_at } = loc;
   if (typeof lat !== "number" || !Number.isFinite(lat) || lat < -90 || lat > 90) return null;

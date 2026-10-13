@@ -31,11 +31,10 @@ import type { TwinScene3D as TwinScene3DT } from "./TwinScene3D";
  * يجعل `import()` كودًا ميتًا في بناء الخادم، فلا يدخل `three` حزمة SSR
  * أصلًا (النمط نفسه المعتمد في `theater.tsx`).
  */
-const TwinScene3D = lazy(
-  (): Promise<{ default: typeof TwinScene3DT }> =>
-    import.meta.env.SSR
-      ? Promise.resolve({ default: (() => null) as unknown as typeof TwinScene3DT })
-      : import("./TwinScene3D").then((m) => ({ default: m.TwinScene3D })),
+const TwinScene3D = lazy((): Promise<{ default: typeof TwinScene3DT }> =>
+  import.meta.env.SSR
+    ? Promise.resolve({ default: (() => null) as unknown as typeof TwinScene3DT })
+    : import("./TwinScene3D").then((m) => ({ default: m.TwinScene3D })),
 );
 
 /** حدّ خطأ صامت: يستبدل المشهد الثلاثي بالمرسوم ولا يُسقط الصفحة. */

@@ -7,11 +7,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
 export type SearchSource =
-  | "incident"
-  | "work_order"
-  | "kb_article"
-  | "aria_document"
-  | "knowledge_doc";
+  "incident" | "work_order" | "kb_article" | "aria_document" | "knowledge_doc";
 
 export type SearchHit = {
   id: string;

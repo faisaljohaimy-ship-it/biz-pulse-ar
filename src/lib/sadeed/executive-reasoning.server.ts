@@ -144,8 +144,7 @@ export async function collectEvidence(
   if (!orgId) return { intent, sources, block: "" };
 
   let admin:
-    | Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"]
-    | null = null;
+    Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"] | null = null;
   try {
     ({ supabaseAdmin: admin } = await import("@/integrations/supabase/client.server"));
   } catch {

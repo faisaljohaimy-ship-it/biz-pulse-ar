@@ -9,14 +9,7 @@ export interface ColorSwatch {
   readonly name: string;
   readonly hex: string;
   readonly role:
-    | "primary"
-    | "secondary"
-    | "accent"
-    | "skin"
-    | "hair"
-    | "attire"
-    | "glow"
-    | "background";
+    "primary" | "secondary" | "accent" | "skin" | "hair" | "attire" | "glow" | "background";
 }
 
 export interface FaceSignature {

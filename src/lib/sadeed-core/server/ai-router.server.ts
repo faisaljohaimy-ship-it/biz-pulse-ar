@@ -2,12 +2,7 @@
 import { resolveGoogleGeminiModel } from "@/lib/ai-gateway.server";
 
 export type SadeedIntent =
-  | "general"
-  | "executive"
-  | "long-context"
-  | "writing"
-  | "engineering"
-  | "unknown";
+  "general" | "executive" | "long-context" | "writing" | "engineering" | "unknown";
 
 export type Vendor = "google";
 

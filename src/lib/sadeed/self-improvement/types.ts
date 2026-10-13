@@ -3,19 +3,9 @@
 export type TriState = "pass" | "fail" | "unknown";
 export type ConfidenceBucket = "low" | "medium" | "high" | "unknown";
 export type ImprovementStatus =
-  | "proposed"
-  | "under_review"
-  | "approved"
-  | "rejected"
-  | "scheduled"
-  | "unknown";
+  "proposed" | "under_review" | "approved" | "rejected" | "scheduled" | "unknown";
 export type GapKind =
-  | "knowledge"
-  | "capability"
-  | "performance"
-  | "quality"
-  | "reliability"
-  | "unknown";
+  "knowledge" | "capability" | "performance" | "quality" | "reliability" | "unknown";
 export type ApprovalDecision = "approve" | "reject" | "defer" | "unknown";
 export type EngineDecision = "GO" | "NO_GO" | "GO_WITH_KNOWN_LIMITATIONS" | "UNKNOWN";
 

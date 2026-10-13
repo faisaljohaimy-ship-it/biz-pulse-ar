@@ -41,9 +41,7 @@ export type DrawerTopic =
 export type WorkflowId = "initiative-create" | "sector-report";
 
 export type CockpitOverlay =
-  | { kind: "drawer"; topic: DrawerTopic }
-  | { kind: "modal"; workflow: WorkflowId }
-  | null;
+  { kind: "drawer"; topic: DrawerTopic } | { kind: "modal"; workflow: WorkflowId } | null;
 
 export type SnapshotState =
   | { state: "loading" }

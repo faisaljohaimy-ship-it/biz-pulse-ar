@@ -11,13 +11,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export type NxPipelineStage =
-  | "request"
-  | "analysis"
-  | "retrieval"
-  | "recommendation"
-  | "approval"
-  | "execution"
-  | "result";
+  "request" | "analysis" | "retrieval" | "recommendation" | "approval" | "execution" | "result";
 
 export const PIPELINE_STAGE_LABEL: Record<NxPipelineStage, string> = {
   request: "الطلب",

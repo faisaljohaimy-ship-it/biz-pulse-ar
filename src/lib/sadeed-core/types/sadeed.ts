@@ -49,12 +49,7 @@ export interface SadeedOpenOptions {
 
 // ─── AI Router ──────────────────────────────────────────────────────────
 export type SadeedIntent =
-  | "general"
-  | "executive"
-  | "long-context"
-  | "writing"
-  | "engineering"
-  | "unknown";
+  "general" | "executive" | "long-context" | "writing" | "engineering" | "unknown";
 
 export interface SadeedRouteHint {
   intent: SadeedIntent;
@@ -66,12 +61,7 @@ export interface SadeedRouteHint {
 
 // ─── Conversation lifecycle ─────────────────────────────────────────────
 export type SadeedTurnStatus =
-  | "idle"
-  | "queued"
-  | "streaming"
-  | "completed"
-  | "cancelled"
-  | "failed";
+  "idle" | "queued" | "streaming" | "completed" | "cancelled" | "failed";
 
 export interface SadeedTurn {
   id: string;

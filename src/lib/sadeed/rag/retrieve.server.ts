@@ -32,12 +32,7 @@ export type RagHit = {
 };
 
 export type GateResult =
-  | "passed"
-  | "below_threshold"
-  | "no_citations"
-  | "injection_blocked"
-  | "rate_limited"
-  | "error";
+  "passed" | "below_threshold" | "no_citations" | "injection_blocked" | "rate_limited" | "error";
 
 export type RagRetrievalOutcome = {
   hits: RagHit[];

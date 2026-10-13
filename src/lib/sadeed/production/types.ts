@@ -14,13 +14,7 @@ export type Severity = "info" | "notice" | "warn" | "error" | "critical";
 export interface Gate {
   id: string;
   category:
-    | "system"
-    | "testing"
-    | "observability"
-    | "audit"
-    | "security"
-    | "performance"
-    | "resilience";
+    "system" | "testing" | "observability" | "audit" | "security" | "performance" | "resilience";
   label: string;
   status: GateStatus;
   detail?: string;

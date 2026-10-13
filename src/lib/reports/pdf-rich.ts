@@ -101,12 +101,7 @@ export type CalloutBlock = {
 };
 
 export type ReportBlock =
-  | ProseBlock
-  | TableBlock
-  | ChartBlock
-  | FigureBlock
-  | KpiGridBlock
-  | CalloutBlock;
+  ProseBlock | TableBlock | ChartBlock | FigureBlock | KpiGridBlock | CalloutBlock;
 
 export type ReportSection = { id?: string; title: string; blocks: ReportBlock[] };
 

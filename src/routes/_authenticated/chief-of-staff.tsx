@@ -49,9 +49,7 @@ function ChiefOfStaffPage() {
             ? "هذا الشهر"
             : "This month",
     tone: (a.severity === "critical" ? "rose" : a.severity === "high" ? "amber" : "cyan") as
-      | "rose"
-      | "amber"
-      | "cyan",
+      "rose" | "amber" | "cyan",
     route: a.route ?? "/dashboard",
   }));
 

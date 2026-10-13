@@ -7,12 +7,7 @@ import { Inbox, Filter, Clock, ShieldOff, Building2, AlertCircle } from "lucide-
 import { Card } from "@/components/ui/card";
 
 export type EmptyReason =
-  | "no-rows"
-  | "filtered"
-  | "waiting"
-  | "permission"
-  | "org-missing"
-  | "error";
+  "no-rows" | "filtered" | "waiting" | "permission" | "org-missing" | "error";
 
 const META: Record<EmptyReason, { icon: typeof Inbox; tone: string }> = {
   "no-rows": { icon: Inbox, tone: "text-muted-foreground" },

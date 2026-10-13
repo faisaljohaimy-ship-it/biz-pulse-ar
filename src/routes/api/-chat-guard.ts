@@ -90,9 +90,7 @@ export function attachmentAsText(filename: string, mediaType: string, url: strin
     return null;
   }
   const truncated = decoded.length > MAX_ATTACHMENT_TEXT_CHARS;
-  const body = decoded
-    .slice(0, MAX_ATTACHMENT_TEXT_CHARS)
-    .replace(/<\/?attachment[^>]*>/gi, "");
+  const body = decoded.slice(0, MAX_ATTACHMENT_TEXT_CHARS).replace(/<\/?attachment[^>]*>/gi, "");
   const kind = type === "text/csv" ? "table (CSV)" : type === "application/json" ? "JSON" : "text";
   const safeName = filename.replace(/["<>]/g, "");
   return `<attachment name="${safeName}" kind="${kind}"${truncated ? ' truncated="true"' : ""}>

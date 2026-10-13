@@ -75,8 +75,7 @@ export async function mintReceipt(claims: ReceiptClaims, secret: string): Promis
 }
 
 export type ReceiptVerdict =
-  | { ok: true }
-  | { ok: false; reason: "malformed" | "expired" | "signature_mismatch" };
+  { ok: true } | { ok: false; reason: "malformed" | "expired" | "signature_mismatch" };
 
 /**
  * Verify a receipt against the claims the SERVER independently reconstructs

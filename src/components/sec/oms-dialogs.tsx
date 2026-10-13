@@ -609,8 +609,7 @@ export function IncidentDrawer({
   );
   const sadeedRecs =
     (latestSadeed?.payload as
-      | { recommendations?: string[]; immediate_actions?: string[] }
-      | undefined) ?? {};
+      { recommendations?: string[]; immediate_actions?: string[] } | undefined) ?? {};
 
   const actions = Array.isArray(incident?.corrective_actions)
     ? (incident!.corrective_actions as Array<{

@@ -7,12 +7,7 @@ import { SADEED_ELEVENLABS_VOICE_ID } from "@/lib/sadeed/voice-config";
 export type AgentLocale = "ar" | "en";
 
 export type AgentPersonality =
-  | "executive"
-  | "analytical"
-  | "field"
-  | "vigilant"
-  | "advisory"
-  | "narrative";
+  "executive" | "analytical" | "field" | "vigilant" | "advisory" | "narrative";
 
 export interface VoiceProfile {
   /** Voice ID for the future TTS provider (e.g. ElevenLabs voice_id). */

@@ -4,17 +4,10 @@ export type FirstImpressionStage = "cold" | "fade_in" | "settled" | "greeted";
 export type EngagementLevel = "dormant" | "attentive" | "active" | "committed" | "disengaged";
 
 export type AcceptanceStep =
-  | "welcome"
-  | "system_health"
-  | "top_risks"
-  | "recommendations"
-  | "ask_next";
+  "welcome" | "system_health" | "top_risks" | "recommendations" | "ask_next";
 
 export type TrustSignal =
-  | "evidence_linked"
-  | "confidence_known"
-  | "unavailable_stated"
-  | "no_fabrication";
+  "evidence_linked" | "confidence_known" | "unavailable_stated" | "no_fabrication";
 
 export type ResponseMode = "brief" | "detailed";
 

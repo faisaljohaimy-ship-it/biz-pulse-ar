@@ -6,14 +6,7 @@
  * Singleton — imported everywhere as `avatarStateManager`.
  */
 export type AvatarState =
-  | "idle"
-  | "listening"
-  | "thinking"
-  | "speaking"
-  | "explaining"
-  | "warning"
-  | "success"
-  | "closed";
+  "idle" | "listening" | "thinking" | "speaking" | "explaining" | "warning" | "success" | "closed";
 
 export type Emotion =
   | "neutral"

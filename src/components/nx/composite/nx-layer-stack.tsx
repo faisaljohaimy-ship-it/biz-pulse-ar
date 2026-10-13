@@ -11,11 +11,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export type NxStackLayerId =
-  | "executive-shell"
-  | "intelligence"
-  | "platform"
-  | "agents"
-  | "output-gateway";
+  "executive-shell" | "intelligence" | "platform" | "agents" | "output-gateway";
 
 export const STACK_LAYER_LABEL: Record<NxStackLayerId, string> = {
   "executive-shell": "الصدفة التنفيذية",

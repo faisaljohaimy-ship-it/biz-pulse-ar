@@ -63,8 +63,7 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
   const insights: Insight[] = [];
 
   let admin:
-    | Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"]
-    | null = null;
+    Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"] | null = null;
   try {
     ({ supabaseAdmin: admin } = await import("@/integrations/supabase/client.server"));
   } catch {

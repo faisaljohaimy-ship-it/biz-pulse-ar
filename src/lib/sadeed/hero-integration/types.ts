@@ -4,14 +4,7 @@
 import type { AudioState, VoiceLang } from "../live-voice/types";
 
 export type HeroPresence =
-  | "boot"
-  | "idle"
-  | "greeting"
-  | "listening"
-  | "thinking"
-  | "speaking"
-  | "interrupted"
-  | "error";
+  "boot" | "idle" | "greeting" | "listening" | "thinking" | "speaking" | "interrupted" | "error";
 
 export type HeroGlow = "dim" | "ambient" | "attentive" | "focused" | "radiant" | "alert";
 

@@ -11,9 +11,7 @@ export const GEMINI_EMBEDDING_MIN_DIMS = 128;
 export const GEMINI_EMBEDDING_MAX_DIMS = 3072;
 
 export type GeminiEmbeddingPurpose =
-  | "retrieval-query"
-  | "retrieval-document"
-  | "semantic-similarity";
+  "retrieval-query" | "retrieval-document" | "semantic-similarity";
 
 export type GeminiEmbeddingOptions = {
   dimensions: number;

@@ -12,12 +12,7 @@ export type RiskLevel = "critical" | "high" | "medium" | "low" | "info";
 export type PriorityLevel = "P0" | "P1" | "P2" | "P3" | "INFO";
 export type ReliabilityLevel = "high" | "medium" | "low" | "unknown";
 export type DecisionMode =
-  | "recommend"
-  | "act_now"
-  | "delay"
-  | "escalate"
-  | "gather_more_info"
-  | "no_action";
+  "recommend" | "act_now" | "delay" | "escalate" | "gather_more_info" | "no_action";
 
 export interface RiskSignal {
   level: RiskLevel;

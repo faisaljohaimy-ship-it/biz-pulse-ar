@@ -14,13 +14,7 @@ export type AgentCategory = "compliance" | "ptw" | "operations" | "reporting" | 
 
 /** Actions that always require an explicit human confirmation gate. */
 export type GatedAction =
-  | "write"
-  | "delete"
-  | "deploy"
-  | "broadcast"
-  | "ptw_issue"
-  | "ptw_suspend"
-  | "pii_access";
+  "write" | "delete" | "deploy" | "broadcast" | "ptw_issue" | "ptw_suspend" | "pii_access";
 
 export interface SkillDescriptor {
   readonly id: string;
