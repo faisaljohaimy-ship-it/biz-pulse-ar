@@ -1,8 +1,10 @@
+import type { ErrorComponentProps } from "@tanstack/react-router";
 import { useRouter, Link } from "@tanstack/react-router";
 import { AlertTriangle, Home, RotateCw } from "lucide-react";
 import { userFacingError } from "@/lib/errors/user-facing-error";
 
-export function RouteError({ error, reset }: { error: Error; reset: () => void }) {
+export function RouteError({ error: rawError, reset }: ErrorComponentProps) {
+  const error = rawError instanceof Error ? rawError : new Error(String(rawError));
   const router = useRouter();
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-6">
