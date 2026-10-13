@@ -138,6 +138,11 @@ function validateMessages(value: unknown): ChatBody["messages"] | string {
         fileBytes += parsedFile.bytes;
         if (fileCount > MAX_FILES) return "Too many attachments.";
         if (fileBytes > MAX_FILE_TOTAL_BYTES) return "Attachment total exceeds 20 MiB.";
+        const textual = attachmentAsText(part.filename, part.mediaType, part.url);
+        if (textual) {
+          parts.push({ type: "text", text: textual });
+          continue;
+        }
         parts.push({
           type: "file",
           filename: part.filename,
