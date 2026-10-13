@@ -1717,7 +1717,7 @@
 {
 "id": "UI-22",
 "area": "UI",
-"requirement": "Article 33: no color outside the token layer in the chat panel",
+"requirement": "Articles 33–34: no color outside the token layer in the chat panel",
 "status": "BROKEN",
 "severity": "P2",
 "gap": "Direct cause of UI-21. It also exempts the panel from global theme rules without anyone noticing.",
@@ -2240,7 +2240,7 @@
 "requirement": "TTFT telemetry (first_token_ms)",
 "status": "MISSING",
 "severity": "P2",
-"gap": "The column exists but is always null. Article 24(b)'s first-token→sentence1 ceiling of 250 ms is measured against a meaningless first-token event.",
+"gap": "The column exists but is always null. The first-token→sentence1 ceiling of 250 ms that stream-sentence-flusher.ts attributes to runtime Article 24(b) is measured against a meaningless first-token event.",
 "correction": "Record client TTFB (first SSE chunk) and send it to the server, or move to a streamText path where onChunk sets firstTokenAt. Until then, store first_token_ms as null with an explicit reason instead of implying it was measured.",
 "verifier": "**Verified** (adversarial pass): Facts confirmed (chat.ts:718, 890; client firstTokenAt = arrival of the single delta, SadeedCopilot.tsx:1118). Writing null for an unmeasured TTFT is the honest Article 27 behaviour, not a malfunction, so this is MISSING telemetry rather than BROKEN."
 },
@@ -2390,7 +2390,7 @@
 "A directive mentions a 'permanent light-mode direction', which conflicts with CLAUDE.md Articles 32-34 (both modes are a correctness surface, and every check runs twice). It also conflicts with the boot script default of dark (__root.tsx:279-283, d = t!=='light'). Not resolved here. Note that light mode of the chat panel is currently broken (UI-21, title 1.04:1), so a light-only direction would make that a launch blocker.",
 "Reduced motion vs the owner-retained glow: the owner kept 'nx-glow-breathe'/'hx-halo-breathe' (styles.css:3100-3108 comments). As implemented with !important (styles.css:4650-4658, plus animation-play-state: running forced inside the reduce block at 4661-4671), it overrides prefers-reduced-motion. The owner must decide whether the reduced-motion preference beats the directive (recommended for WCAG 2.2.2).",
 "Touch-target policy: the token layer sets 44px only for pointer:coarse and 40px for pointer:fine (styles.css:2551-2568). The audit brief asks for 44px targets. The owner must decide whether 44px applies to mouse pointers too.",
-"Chat panel identity vs Article 33: the panel is deliberately 'cinematic dark' (SadeedPanelBackdrop #04070F) but uses theme-token text. The owner must choose between (a) the panel is always dark, with dark tokens scoped to .sadeed-window, or (b) the panel follows the theme with tokenised surfaces. Either way the literal colors break Article 33.",
+"Chat panel identity vs Articles 33–34: the panel is deliberately 'cinematic dark' (SadeedPanelBackdrop #04070F) but uses theme-token text. The owner must choose between (a) the panel is always dark, with dark tokens scoped to .sadeed-window, or (b) the panel follows the theme with tokenised surfaces. Either way the literal colors break Articles 33–34.",
 "/knowledge-upload is English-first and shows internal endpoint names. That contradicts the Arabic-first constitution unless the owner classifies it as an internal admin tool exempt from the rule.",
 "Two upload limits are shown on /knowledge-upload ('up to 50MB' and the 250k-character hint), while the production buckets have no size limit. The owner and product must decide the single advertised limit."
 ],
@@ -2406,7 +2406,7 @@
 "QA": [
 "Streaming conflict. The safe-output gateway (buffered generateText plus one delta, chat.ts:765-770) makes TTFT equal total time. CLAUDE.md (2026/10/11) allows 'sentence-by-sentence' streaming only behind a flag 'measured before enabling', and no measurement harness exists. Building one touches the answer path, so it needs the four approved controls: small step, tests, nexios-qa-guardian, before/after numbers in the commit.",
 "Retrieval-stack conflict. The constitution's Article 31 as written in src/lib/sadeed/constitution.ts:46 says all retrieval goes through retrieveWithEvidenceGate at 1536 dims, every attempt is logged, and sanitizeRetrievedContent and rateLimitRag apply. The live default path gatherRagContext is 768-dim aria_match_* with no log, sanitize or rate limit. CLAUDE.md's 2026/10/11 decision to 'develop the existing finn_* tables' fits the 768-dim finn_document_chunks (vector(768)), not Article 31(a). The owner must say which is canonical; the constitution text or the code must change, and logging the 'Amended Articles' entry is the owner's.",
-"Article 24(b)'s voice-latency ceiling (first-token→sentence1 ≤ 250 ms) is computed client-side against a 'first token' that, with buffering, is the whole reply. The metric definition needs an owner decision.",
+"The voice-latency ceiling that stream-sentence-flusher.ts attributes to runtime Article 24(b) (first-token→sentence1 ≤ 250 ms) is computed client-side against a 'first token' that, with buffering, is the whole reply. The metric definition needs an owner decision.",
 "A production latency probe that POSTs to /api/chat uses provider quota and cost, and writes finn_interactions and messages rows, i.e. real data. It needs owner approval and a synthetic tenant or user. The existing E2E_TEST_* secrets could be reused.",
 "Adding telemetry columns (request_id, total_ms, pre_model_ms, stage_ms) to finn_interactions is a production schema change. Per CLAUDE.md, migrations are not the source of truth and must be applied before Publish.",
 "The CI rag-preflight validates the 20260728 migration schema, which was never applied and was superseded by the 2026/10/11 decision. It also exits 0 without Postgres. Its green result attests nothing about production. The owner should decide whether to retire it or retarget it at a production-schema drift probe.",
