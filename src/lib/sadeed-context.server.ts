@@ -372,11 +372,23 @@ export async function buildSadeedContextSnapshot(
         : REAL_SEC_PROJECTS;
       // مسبح الاسترجاع هو مصدر الشاشة نفسه: القاعدة حين تمتلئ، وتصدير
       // SAP المستورد حين تفرغ (٢٠٢٦/٠٩/٠٢ — بدل المحاكاة المولّدة).
-      const orderPool = workOrdersQ.data?.length ? workOrdersQ.data : REAL_SEC_WORK_ORDERS;
-      const recall = buildRecallBlock(question, projectPool, orderPool, {
-        projects: "[PROD:PROJECTS_EXPORT]",
-        maintenance: workOrdersQ.data?.length ? "[PROD:WORK_ORDERS]" : "[PROD:MAINTENANCE_EXPORT]",
-      });
+      const liveOrderRows = workOrdersQ.data?.length ? workOrdersQ.data : null;
+      const liveOrders = liveOrderRows !== null;
+      const orderPool = liveOrderRows ?? REAL_SEC_WORK_ORDERS;
+      // الموكَّل يُكشف لصفوف القاعدة الحيّة وحدها (SEC-01): قرأها عميل
+      // المستدعي تحت RLS، وخلاصة «أهم أوامر العمل النشطة» أعلاه تطبعه —
+      // فلا يرى النموذج الأمرَ نفسه مُسمًّى ومحجوبًا في كتلة واحدة. والتصدير
+      // المضمَّن محجوبٌ لكل جمهور (الافتراضي).
+      const recall = buildRecallBlock(
+        question,
+        projectPool,
+        orderPool,
+        {
+          projects: "[PROD:PROJECTS_EXPORT]",
+          maintenance: liveOrders ? "[PROD:WORK_ORDERS]" : "[PROD:MAINTENANCE_EXPORT]",
+        },
+        { revealAssignee: liveOrders },
+      );
       if (recall) sections.push(recall);
     }
 

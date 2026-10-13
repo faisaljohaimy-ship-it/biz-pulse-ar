@@ -535,6 +535,9 @@ export const getWorkOrders = createServerFn({ method: "GET" })
     const { resilient } = await import("./exec/showcase-simulation.server");
     // البديل: مجموعة تصدير SAP المستوردة (249 أمرًا، ٢٠٢٦/٠٩/٠٢) لا
     // المحاكاة المولّدة — إنتاجيةٌ بإقرار المالك، صفوفها مجمّدة بلا شارة.
+    // وهي بلا هوية أشخاص لأي نداء (SEC-01، ٢٠٢٦/١٠/١٣): لا منشئ، والموكَّل
+    // والمعتمِد والمقاول `null`، والملاحظات محجوبة — يحرسه
+    // `maintenance-identity.contract.test.ts` على الحمولة نفسها.
     const { REAL_SEC_WORK_ORDERS } = await import("./exec/maintenance-report.real.server");
     return resilient(
       "sec-work-orders",

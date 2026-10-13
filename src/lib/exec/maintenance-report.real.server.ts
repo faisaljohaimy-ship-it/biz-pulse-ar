@@ -46,8 +46,12 @@
  *   للمُغلَقة — الحالة مقيسة والتاريخ غير مقيس، ولا يُستعار من «التاريخ
  *   المرجعي» لأن دلالته في SAP غير محسومة هنا.
  * - **`assigned_to` والمقاول**: لا عمود موكَّل في التصدير — «Entered by»
- *   منشئ الأمر لا منفّذه، فيبقى في الملاحظات «أنشأه: …» ويظهر عمود
- *   الموكَّل «—» صادقًا.
+ *   منشئ الأمر لا منفّذه، ويظهر عمود الموكَّل «—» صادقًا.
+ * - **المنشئ (SEC-01، أُغلق ٢٠٢٦/١٠/١٣)**: كان «Entered by» يُكتب في الملاحظات
+ *   «أنشأه: …» فيبلغ الزائر من خارج حجب `maint_orders_v`. **حُذف حقل
+ *   `created_by` من الملف المضمَّن**، ولا سطر منشئ في الملاحظات، والملاحظات
+ *   تمرّ بـ`stripPersonIdentity` دفاعًا في العمق. والقيم السابقة باقية في
+ *   تاريخ git (إعادة كتابة التاريخ محظورة).
  * - **`site_id`/`building_id`**: لا ربط بمواقع `sec_sites` — رمز الموقع
  *   الوظيفي هو العنوان الحقيقي وقد نُقل كما هو.
  *
@@ -63,9 +67,13 @@
  * وحدها: الوحدة لا تُستورد إلا ديناميكيًّا داخل معالجات دوال الخادم.
  */
 import rawMaintenance from "./maintenance-report.data.json?raw";
+import { stripPersonIdentity } from "@/lib/maintenance/person-identity.server";
 import type { OmsWorkOrderRow } from "./showcase-simulation.server";
 
-/** صفّ المصدر كما خرج من التحويل المطبَّع. */
+/**
+ * صفّ المصدر كما خرج من التحويل المطبَّع — **بلا حقل هوية شخص**: لا
+ * `created_by` (SEC-01)، فقراءته خطأ تجميع لا قيمة صامتة.
+ */
 export type MaintenanceReportSourceRow = {
   id: string;
   ref: string;
@@ -83,7 +91,6 @@ export type MaintenanceReportSourceRow = {
   equipment_desc: string | null;
   opened_at: string;
   due_at: string | null;
-  created_by: string | null;
   notification_desc: string | null;
   cycle_text: string | null;
   planned_cost_sar: number;
@@ -99,12 +106,13 @@ export type RealWorkOrderRow = OmsWorkOrderRow & {
 };
 
 /**
- * الملاحظات من المقيس وحده: المنشئ والمعدّة والبلاغ ودورة الصيانة ونافذة
- * الأولوية والتكاليف حين سُجّلت — لا سطر لحقلٍ غائب.
+ * الملاحظات من المقيس وحده: المجموعة والمعدّة والبلاغ ودورة الصيانة ونافذة
+ * الأولوية والتكاليف حين سُجّلت — لا سطر لحقلٍ غائب، **ولا هوية شخص**:
+ * لا سطر منشئ (SEC-01)، والناتج يمرّ بـ`stripPersonIdentity` فلا يحمل بديلُ
+ * العرض للزائر هويةً ولو دخلت من حقلٍ آخر في تصديرٍ لاحق.
  */
 function buildNotes(r: MaintenanceReportSourceRow): string | null {
   const parts: string[] = [];
-  if (r.created_by) parts.push(`أنشأه: ${r.created_by}`);
   parts.push(`المجموعة المخططة: ${r.area_code} (${r.area_ar})`);
   if (r.equipment)
     parts.push(`المعدّة: ${r.equipment}${r.equipment_desc ? ` (${r.equipment_desc})` : ""}`);
@@ -116,7 +124,8 @@ function buildNotes(r: MaintenanceReportSourceRow): string | null {
     parts.push(`التكلفة المخططة: ${r.planned_cost_sar.toLocaleString("en-US")} ر.س`);
   if (r.actual_cost_sar > 0)
     parts.push(`التكلفة الفعلية: ${r.actual_cost_sar.toLocaleString("en-US")} ر.س`);
-  return parts.length ? parts.join(" · ") : null;
+  const notes = stripPersonIdentity(parts.join(" · "));
+  return notes ? notes : null;
 }
 
 /** الترتيب: الأحدث إنشاءً أوّلًا — مرآة الاستعلام الحيّ (`opened_at` تنازليًّا). */

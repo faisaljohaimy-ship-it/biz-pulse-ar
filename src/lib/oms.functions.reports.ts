@@ -555,7 +555,8 @@ export const listWorkOrders = createServerFn({ method: "GET" })
       // ٢٠٢٦/٠٩/٠٢ — بديل جدول الصيانة هو مجموعة تصدير SAP المستوردة
       // (249 أمرًا) لا المحاكاة المولّدة. إنتاجيةٌ بإقرار المالك في اليوم
       // نفسه («ارفع شارة المحاكاة، بيانات الصيانة إنتاجية») — صفوفها
-      // مجمّدة فيتخطّاها `markSimulation` ولا شارة عليها.
+      // مجمّدة فيتخطّاها `markSimulation` ولا شارة عليها. وبلا هوية أشخاص
+      // لأي نداء (SEC-01) — يحرسه `maintenance-identity.contract.test.ts`.
       async () => {
         const { REAL_SEC_WORK_ORDERS } = await import("@/lib/exec/maintenance-report.real.server");
         return REAL_SEC_WORK_ORDERS as unknown as OmsWorkOrderRow[];

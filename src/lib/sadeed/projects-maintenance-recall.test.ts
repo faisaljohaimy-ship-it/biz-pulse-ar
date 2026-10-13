@@ -109,7 +109,11 @@ describe("«جميع ما يُطلب» — الصيانة المستوردة (٢
     expect(rec).toContain("لم تُحدَّد");
     expect(rec).toContain(w.asset_code ?? "");
     expect(rec).toContain(w.area_ar ?? "");
-    expect(rec).toContain("أنشأه:");
+    // SEC-01 (٢٠٢٦/١٠/١٣): كان البند يُلزم «أنشأه:» في السجلّ — أي يحرس
+    // التسرّب. انقلب: لا هوية منشئ، والملاحظات باقية بحقائقها. والتأكيد
+    // بوليانيّ فلا يطبع الفشلُ نصَّ السجلّ.
+    expect(rec.includes("أنشأه")).toBe(false);
+    expect(rec).toContain("المجموعة المخططة:");
     expect(rec).not.toMatch(/\bnull\b|undefined/);
   });
 });

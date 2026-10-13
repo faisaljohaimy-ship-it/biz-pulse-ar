@@ -29,6 +29,7 @@
  * بالعدد الكلي وتوزيع الحالات على **كل** المطابقات، ثم تعرض أوّل 12 سجلًّا
  * — فالعدّ دقيق ولو قُصّ العرض.
  */
+import { stripPersonIdentity } from "@/lib/maintenance/person-identity.server";
 import type { SecProject } from "@/lib/sec.functions";
 
 export type RecallWorkOrder = {
@@ -37,17 +38,40 @@ export type RecallWorkOrder = {
   kind?: string | null;
   priority?: string | null;
   status: string;
+  /** هوية الموكَّل **لا تُعرض ولا تُطابَق** افتراضًا (SEC-01): يبقى منها
+   * «مُسنَد أم لا» وحده — الحجب يُسقط الهوية لا الحقيقة. وتُكشف فقط بـ
+   * `RecallAudience.revealAssignee` (انظره). */
   assigned_to?: string | null;
   site_id?: string | null;
   opened_at?: string | null;
   due_at?: string | null;
   /** تحملها مجموعة تصدير SAP المستوردة (٢٠٢٦/٠٩/٠٢) — رمز الموقع الوظيفي
-   * والمنطقة والملاحظات (المنشئ والمعدّة والتكاليف) تدخل المطابقة والعرض. */
+   * والمنطقة والملاحظات (المعدّة والبلاغ والتكاليف) تدخل المطابقة والعرض،
+   * والملاحظات تمرّ بـ`stripPersonIdentity` قبل كليهما. */
   asset_kind?: string | null;
   asset_code?: string | null;
   area_ar?: string | null;
   notes?: string | null;
 };
+
+/**
+ * جمهور سجلّات الصيانة — هل تظهر هوية الموكَّل وتصير مفتاح بحث؟
+ *
+ * **الافتراضي الحجب** (يفشل مغلقًا): قاعدة المالك («الصيانة» §2،
+ * `maint_orders_v`) تحجب الهوية عن غير الأعضاء، والمجمعات المضمَّنة (تصدير
+ * SAP) تبلغ الزائر في دردشة الضيف وكتلة الوكلاء والجواب الفوري.
+ *
+ * `revealAssignee: true` **لصفوفٍ قرأها عميلُ المستدعي نفسه من القاعدة الحيّة
+ * تحت RLS** وحدها (`[PROD:WORK_ORDERS]` في `sadeed-context.server`): القاعدة
+ * قرّرت أنه يراها، فالكشف لا يتجاوز ما تمنحه — وخلاصة «أهم أوامر العمل
+ * النشطة» في الكتلة نفسها تطبعها، فحجبها هنا وحدها يعطي النموذج جوابين
+ * متناقضين عن الأمر نفسه، ويُفقد العضوَ البحث بالفنّي.
+ *
+ * والملاحظات تمرّ بـ`stripPersonIdentity` لكل جمهور: مصدرها في الاسترجاع
+ * التصدير المضمَّن وحده (القراءة الحيّة لا تختار `notes`)، فلا هوية عضوٍ
+ * يُفقدها الحجب.
+ */
+export type RecallAudience = { revealAssignee?: boolean };
 
 /** تطبيع عربي/لاتيني: همزات وتاء مربوطة وياء، وحذف التشكيل والتطويل. */
 export function normalizeText(input: string): string {
@@ -149,22 +173,26 @@ export function findProjectsForQuestion(
 export function findWorkOrdersForQuestion(
   question: string,
   orders: readonly RecallWorkOrder[],
+  audience: RecallAudience = {},
 ): Array<{ order: RecallWorkOrder; score: number }> {
   const tokens = tokenize(question);
   if (tokens.length === 0) return [];
   const hits: Array<{ order: RecallWorkOrder; score: number }> = [];
   for (const w of orders) {
+    // لا هوية شخص في حقول المطابقة لجمهورٍ محجوب (SEC-01): مطابقةٌ على رقم
+    // منشئ أو اسم موكَّل تؤكّد للسائل وجوده وإن لم يُطبع — فالموكَّل خارجها
+    // إلا لمن تكشفه له القاعدة، والملاحظات تدخلها بعد الحجب.
     const score = scoreAgainst(tokens, [
       w.ref,
       w.title_ar,
       w.kind,
       w.priority,
       w.status,
-      w.assigned_to,
+      audience.revealAssignee ? w.assigned_to : null,
       w.asset_kind,
       w.asset_code,
       w.area_ar,
-      w.notes,
+      w.notes ? stripPersonIdentity(w.notes) : null,
     ]);
     if (score > 0) hits.push({ order: w, score });
   }
@@ -198,12 +226,18 @@ export function formatProjectRecord(p: SecProject): string {
   ].join("\n");
 }
 
-export function formatWorkOrderRecord(w: RecallWorkOrder): string {
+export function formatWorkOrderRecord(w: RecallWorkOrder, audience: RecallAudience = {}): string {
+  const assignee = w.assigned_to
+    ? audience.revealAssignee
+      ? w.assigned_to
+      : "مُسنَد (الهوية محجوبة)"
+    : "لم يُحدَّد في المصدر";
   const lines = [
     `- ${w.ref} | ${w.title_ar}`,
     // «لم تُحدَّد» لا «بلا أولوية»: تصدير SAP يترك الحقل فارغًا، والفراغ
     // غيابُ قياسٍ لا حكمًا بانعدام الأولوية (المادة ٢٧).
-    `  الحالة: ${w.status} · النوع: ${w.kind ?? "غير مصنّف"} · الأولوية: ${w.priority ?? "لم تُحدَّد"} · الموكَّل: ${w.assigned_to ?? "لم يُحدَّد في المصدر"}`,
+    // والموكَّل لجمهورٍ محجوب حقيقةٌ لا هوية (SEC-01): «مُسنَد» دون اسمٍ ولا رقم.
+    `  الحالة: ${w.status} · النوع: ${w.kind ?? "غير مصنّف"} · الأولوية: ${w.priority ?? "لم تُحدَّد"} · الموكَّل: ${assignee}`,
     `  فُتح: ${w.opened_at ?? "لم يُحدَّد"} · الاستحقاق: ${w.due_at ?? "لم يُحدَّد"}`,
   ];
   const place = [
@@ -212,7 +246,8 @@ export function formatWorkOrderRecord(w: RecallWorkOrder): string {
     w.asset_code ? `الموقع الوظيفي: ${w.asset_code}` : null,
   ].filter(Boolean);
   if (place.length) lines.push(`  ${place.join(" · ")}`);
-  if (w.notes) lines.push(`  ${w.notes}`);
+  const notes = w.notes ? stripPersonIdentity(w.notes) : "";
+  if (notes) lines.push(`  ${notes}`);
   return lines.join("\n");
 }
 
@@ -222,18 +257,21 @@ const MAX_SHOWN = 12;
  * كتلة الاسترجاع لدورةٍ واحدة — تُبنى فقط حين يمسّ السؤالُ شيئًا.
  * `provenance` يمرّره المتّصل: الوسم يتبع المصدر لا هذه الدالّة — واليوم
  * (بعد أمر ٢٠٢٦/٠٩/٠٣) كل المجمعات إنتاجية `[PROD:*]`، أو صفوف القاعدة
- * الحيّة `[PROD:WORK_ORDERS]` حين تمتلئ.
+ * الحيّة `[PROD:WORK_ORDERS]` حين تمتلئ. و`audience` يمرّره المتّصل كذلك:
+ * الافتراضي الحجب، والكشف لصفوف القاعدة الحيّة المقروءة تحت RLS المستدعي
+ * وحدها (انظر `RecallAudience`).
  */
 export function buildRecallBlock(
   question: string,
   projects: readonly SecProject[],
   orders: readonly RecallWorkOrder[],
   provenance: { projects: string; maintenance: string },
+  audience: RecallAudience = {},
 ): string {
   const trimmed = question.trim();
   if (!trimmed) return "";
   const projectHits = findProjectsForQuestion(trimmed, projects);
-  const orderHits = findWorkOrdersForQuestion(trimmed, orders);
+  const orderHits = findWorkOrdersForQuestion(trimmed, orders, audience);
   if (projectHits.length === 0 && orderHits.length === 0) return "";
 
   const parts: string[] = [
@@ -257,7 +295,7 @@ export function buildRecallBlock(
     parts.push(
       `## أوامر صيانة مطابقة ${provenance.maintenance}`,
       `المطابقات الكلية: ${orderHits.length}${orderHits.length > MAX_SHOWN ? ` — المعروض أوّل ${MAX_SHOWN}` : ""}`,
-      ...orderHits.slice(0, MAX_SHOWN).map((h) => formatWorkOrderRecord(h.order)),
+      ...orderHits.slice(0, MAX_SHOWN).map((h) => formatWorkOrderRecord(h.order, audience)),
     );
   }
   return parts.join("\n");

@@ -66,11 +66,21 @@ describe("المادة ٢٧ — الغائب null معلَن لا مُختلَق
     expect(REAL_SEC_WORK_ORDERS.every((w) => w.closed_at === null)).toBe(true);
   });
 
-  it("ولا موكَّل مُختلَق — التصدير بلا عمود موكَّل، والمنشئ في الملاحظات", () => {
+  it("ولا موكَّل مُختلَق ولا هوية منشئ — التصدير بلا عمود موكَّل، والمنشئ محذوف (SEC-01)", () => {
+    // كان هذا البند يُلزم «أنشأه:» في الـ249 كلّها — أي يحرس التسرّب نفسه.
+    // انقلب ٢٠٢٦/١٠/١٣: لا سطر منشئ في أي صفّ، والحقائق باقية (المجموعة
+    // المخططة في كل صفّ) — الحجب يُسقط الهوية لا الحقيقة. والعدّ بالأرقام
+    // لا بنصّ الملاحظات، فالفشل لا يطبع قيمة.
+    expect(REAL_SEC_WORK_ORDERS.length).toBe(249);
     expect(REAL_SEC_WORK_ORDERS.every((w) => w.assigned_to === null)).toBe(true);
     expect(REAL_SEC_WORK_ORDERS.every((w) => w.contractor === null)).toBe(true);
-    const withCreator = REAL_SEC_WORK_ORDERS.filter((w) => w.notes?.includes("أنشأه:"));
-    expect(withCreator.length).toBe(249);
+    expect(REAL_SEC_WORK_ORDERS.every((w) => !("created_by" in w))).toBe(true);
+    const withCreator = REAL_SEC_WORK_ORDERS.filter((w) => w.notes?.includes("أنشأه"));
+    expect(withCreator.length).toBe(0);
+    const withPlannerGroup = REAL_SEC_WORK_ORDERS.filter((w) =>
+      w.notes?.includes("المجموعة المخططة:"),
+    );
+    expect(withPlannerGroup.length).toBe(249);
   });
 
   it("والتواريخ بدقة المصدر (يوم بلا وقت مختلَق)، والاستحقاق غائب في 6", () => {
