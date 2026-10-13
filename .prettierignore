@@ -34,5 +34,7 @@ src/routes/\[.well-known\]/
 
 # تقرير التدقيق مولَّد (gen_sections + assemble): جداوله العريضة لا تستقرّ تحت
 # prettier (تشغيلتان متتاليتان تختلفان)، فيدخل autoformat على main في تناوب.
-# يملك المولّد شكله — كما المولّدات أعلاه.
-docs/audit/
+# يملك المولّد شكله — كما المولّدات أعلاه. الاستثناء بالاسم لا بالمجلّد،
+# فما يُكتب يدويًّا في docs/audit/ يبقى تحت التنسيق.
+docs/audit/SADEED_V10_AUDIT_*.md
+docs/audit/sadeed-v10-audit-data-*.json

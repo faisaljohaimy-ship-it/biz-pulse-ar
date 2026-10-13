@@ -32,7 +32,7 @@
 "severity": "P1",
 "gap": "Time to first byte equals the total turn time. Users see only 'سَدِيد يفكّر…' for the whole turn. Voice cannot start until the full answer exists. The owner-approved sentence streaming is not built.",
 "correction": "Step 1 (keeps the safe-output gateway, small change): return createUIMessageStreamResponse right away and move the context/model work inside an async execute(). Write a 'start' chunk plus transient data-status parts ('يجمع السياق…', 'يحلّل…') so headers and bytes flow at once. The final text still goes through finalizeSadeedOutput as a single delta. Step 2 (owner flag, e.g. SADEED_SENTENCE_STREAM): streamText, then per-sentence pre-checks, with a final whole-text gateway pass that can replace what was shown. Any change here needs the four 2026-10-11 controls.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed. chat.ts:795-810 buffered generateText (stepCountIs(12)); Response is built at chat.ts:985 only after generateText, finalize and sealEnvelope, so headers wait for the whole turn; chat.ts:965-970 writes one text-delta. Fixed paths chat.ts:281-288 and 417-430 do the same. grep for SENTENCE_STREAM|sentenceStream|streamText|'جملة بجملة' in src returns nothing; the only hit is CLAUDE.md:229."
 },
 {
 "id": "CHAT-03",
@@ -62,7 +62,7 @@
 "severity": "P1",
 "gap": "Duplicate incidents, work orders, tasks or emails/SMS after a retry or 'إعادة توليد الرد'. This is a data-integrity risk.",
 "correction": "The client generates one turn id per user message, sends it as x-aria-request-id and reuses it on regenerate and auto-retry. Writer tools record (user_id, turn_id, tool) and return the prior result on a repeat. Alternatively, hide 'regenerate' when the last turn executed a writer.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: 31 tool() entries in sadeed-tools.server.ts. Writers insert without dedupe: create_task at 134-150, sec_create_incident genRef at 599-619. The outbound idempotency_key is derived from a fresh crypto.randomUUID() on every call (outbound-messaging.server.ts:441,452), so a repeat call means a repeat send. x-aria-request-id is read only at -chat-guard.ts:41 and is never set by sadeed-service.ts. The main vector is the manual regenerate button (SadeedCopilot.tsx:2186-2195). Auto-retry (1874-1885) fires only on transport/HTTP errors, because model errors come back as a 200 with mapped text, so it can duplicate only after a mid-turn disconnect."
 },
 {
 "id": "CHAT-06",
@@ -82,7 +82,7 @@
 "severity": "P2",
 "gap": "Arabic users see English sentences or codes like 'daily_identity_cap' / 'ai_disabled' / 'rate_limit_unavailable'. The Arabic quota text written for them is thrown away. This breaks CLAUDE.md saved-method rule 3 and Article 3 (Arabic first).",
 "correction": "Client: one pure mapper, toArabicChatError(raw, status). It prefers message_ar, maps known codes/statuses to Arabic lines, and falls back to CONNECTION_ERROR_AR for anything without Arabic script. Server: Arabic text in chatJsonError for user-facing statuses, with the English code kept in a separate 'code' field.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Facts confirmed. Guard strings are English (-chat-guard.ts:59-211). chat.ts:315 and 385 are English. rate-limit.server.ts:24-30 returns {error:'rate_limit_unavailable'}. ai-quota.server.ts:54-61 returns {error:code,message_ar}. DefaultChatTransport throws Error(response.text()) (node_modules/ai/dist/index.mjs:14210-14213), and SadeedCopilot.tsx:2230-2231 then shows parsed.error, i.e. the code. message_ar is never read in the copilot. Non-JSON errors are shown raw after the vendor mask (2239-2240). This is an Arabic-first UX defect with no auth wording leaked, so P2 rather than P1."
 },
 {
 "id": "CHAT-08",
@@ -92,7 +92,7 @@
 "severity": "P2",
 "gap": "The layer CLAUDE.md lists as preserved does not exist. A Gemini model outage or quota exhaustion means every model turn returns the mapped error line, with no alternate model and no cooldown.",
 "correction": "Owner decision (see conflicts). Within the Gemini-only policy: a configured secondary Gemini model id, plus an in-isolate or KV cooldown after 429/5xx/timeout, so the next attempt goes to the secondary. Otherwise amend CLAUDE.md and the copilot comment.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: Gemini-only (chat.ts:256; ai-router.server.ts:38-44 ignores intent and providers; one model in ai-gateway.server.ts:9). The only retry is maxRetries:2 on the same model (chat.ts:805). No cooldown code exists; the SadeedCopilot.tsx:1859-1861 comment is false. Correction: x-aria-long-context is not parsed by the server at all (it is only sent, at sadeed-service.ts:108). Single-provider is explicit policy (docs/SADEED_GEMINI_RAG_RUNBOOK.md says there is no inference path to another provider), so this is doc/code drift plus a robustness gap rather than a broken invariant: P2, owner decision."
 },
 {
 "id": "CHAT-09",
@@ -112,7 +112,7 @@
 "severity": "P1",
 "gap": "A hung provider or DB call keeps the user on 'يفكّر…' indefinitely, and auto-retry never fires because no error is raised.",
 "correction": "Client: signal = AbortSignal.any([init.signal, controller.signal]), with a budget larger than the server deadline. Server: one turn deadline, AbortSignal.any([request.signal, AbortSignal.timeout(T)]), passed to generateText and the RAG stage, with supabase abortSignal on the pre-model RPCs. The RAG stage raced like the snapshot.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed. The AI SDK 6.0.282 always passes abortSignal to fetch (index.mjs:14208, and response.abortController.signal at 14619), so `init.signal ?? controller.signal` (sadeed-service.ts:46,59) never selects the 30s controller; that timer is dead for chat. On the server, generateText gets only request.signal (chat.ts:806). getUser (331), org_members (345), rate (380), quota (390), the HCIS read (574-579) and prefs (725) have no deadline. Bounded stages: snapshot at 2.5s (sadeed-context.server.ts:20,127-135) and embeddings (gemini-embeddings.server.ts:107-108, timeoutMs 15000, retries 2)."
 },
 {
 "id": "CHAT-11",
@@ -152,7 +152,7 @@
 "severity": "P1",
 "gap": "Chat answers get no document grounding. Regulatory questions fall to the gateway's 'غير متوفر' unless the HCIS reference rows load (finalize.ts evidence rule). There are two divergent retrieval systems in one turn: 768-d aria_match_* before the model, and 1536-d hybrid via the tool.",
 "correction": "Pick one path (owner/architect). Either fix the aria_match_* SQL bodies to finn_* with an org filter, or route pre-model retrieval through retrieveWithEvidenceGate with orgId. Add a stage deadline and a rag_query_log row per attempt. Remove the dead branch, or inject RAG regardless of liveDataAvailable.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Core claims confirmed. Vector-only 768 (embeddings.server.ts:9). Gated at rag.server.ts:96. aria_match_* at 102-106. Errors only console.warn (108-110). User-only filter (20260625235058:69). No gate and no rag_query_log on the chat path. Overstated sub-point: the dead branch chat.ts:544-552 rarely matters, because buildSadeedContextSnapshot returns hasOperationalData:true on DB timeout, empty or error via buildProductionDatasetsSnapshot (sadeed-context.server.ts:131-134, 384-388). RAG text is therefore normally injected at chat.ts:520; it is dropped only on a double failure."
 },
 {
 "id": "CHAT-15",
@@ -182,7 +182,7 @@
 "severity": "P1",
 "gap": "The user is told an action awaits approval when it already ran, which invites a repeat (duplicate email, SMS or permit decision; see CHAT-05).",
 "correction": "Build trusted receipts from successful tool results of the same request (tool name, ok, ref/id) and pass them as executionReceipt/action to finalize. Alternatively, have the gateway exempt claims backed by a same-turn ok tool result.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Reproduced with a scratch esbuild probe of finalizeSadeedOutput (audit/verifier/probe-finalize.ts). 'تم الإرسال إلى المالك بنجاح عبر البريد.' and 'تم الاعتماد للتصريح PTW-1001…' both became approval_required/unbacked-execution-claim (finalize.ts:411-416, RE_EXEC_CLAIM 160-161). 'تم تسجيل البلاغ…' passed as answer. chat.ts:839-848 passes no action or executionReceipt and never reads gen.steps. The tools do execute: the direct owner send at sadeed-tools.server.ts:337-347, and the sec_decide_permit update at ~897 for platform admins."
 },
 {
 "id": "CHAT-18",
@@ -192,7 +192,7 @@
 "severity": "P2",
 "gap": "The owner's main complaint (speed) cannot be measured, and control ④ of the 2026-10-11 answer-path exception (before/after measurement in the commit) cannot be met with real data.",
 "correction": "Record t0 at handler entry. Measure each stage (body, auth, org, rate, quota, ctx, rag, prefs, model, finalize). Emit a Server-Timing header and a structured log line. Write the real total to finn_interactions.latency_ms. Once streaming exists, set firstTokenAt on the first delta. Add a workflow_dispatch benchmark against the preview.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed. `const firstTokenAt = null` (chat.ts:718), so first_token_ms is always null (890). startAt (717) is set after auth, rate, quota, context, RAG and HCIS. onTelemetry (sadeed-brain.ts:39) has no callers. Client latency goes to console.log and an in-memory VoiceTimeline (SadeedCopilot.tsx:1015-1025). This is observability, not correctness: a before/after TTFB can still be taken with a scripted preview fetch, so P2."
 },
 {
 "id": "CHAT-19",
@@ -222,7 +222,7 @@
 "severity": "P2",
 "gap": "Avoidable round trips: rate limit and 2 quota checks could be one RPC or parallel. getUser plus org_members could be a local JWT verify plus one query. Preferences and HCIS could join the snapshot Promise.all.",
 "correction": "Merge rate and quota into one RPC (or Promise.all). Use auth.getClaims (local JWKS) and run the org lookup in parallel with rate/quota. Move loadAdaptivePreferenceBlock and the HCIS read into the existing Promise.all.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Sequence confirmed: getUser 331 → org_members 345 → check_rate_limit 380 → quota global then identity (ai-quota.server.ts:182-224, sequential) → Promise.all snapshot‖RAG 493 → conditional HCIS 574 → prefs 725 → generateText 795. Guests make 3 network calls. Constitution Art 28(e) concerns route SSR server-fn fan-out, not this handler, so the citation is misapplied. This is a latency improvement, P2."
 },
 {
 "id": "CHAT-22",
@@ -232,7 +232,7 @@
 "severity": "P1",
 "gap": "If the env var is unset, a few concurrent demo visitors exhaust a single global guest bucket within minutes.",
 "correction": "On Cloudflare, trust cf-connecting-ip by default (the platform sets it). Keep X-Forwarded-For trust behind the env var. Expose a trust_proxy boolean in /api/chat/health so production can be checked.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed. clientIp returns 'shared' unless TRUST_PROXY_HEADERS=true (chat.ts:91-100). Only chat.ts and sadeed-transcribe.ts:15 read the variable; no config or doc in the repo sets it. Guests get 12 requests per 300s (chat.ts:381) plus a 120/day identity quota (ai-quota.server.ts:113-115), all on 'ip:shared'. The production value of the env var is not measured."
 },
 {
 "id": "CHAT-23",
@@ -512,7 +512,7 @@
 "severity": "P2",
 "gap": "If Host can be spoofed, an authenticated user can exfiltrate CRON_HOOK_SECRET. The call is also a Worker subrequest to itself.",
 "correction": "Call the ingest core in-process as a shared function instead of over HTTP, or pin the base URL from env.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Code confirmed (knowledge-upload.functions.ts:117-131: origin taken from getRequest().url, x-cron-secret sent, no timeout). Exploitability is not measured. The default Lovable target is Cloudflare (vite.config.ts:16-17), where a Worker receives only hostnames routed to it, so an attacker-chosen origin is platform-constrained; the expected risk is lower than P1."
 },
 {
 "id": "INGEST-23",
@@ -542,7 +542,7 @@
 "severity": "P1",
 "gap": "If the index is not unique, every knowledge-upload and chat-deposit ingest ends 'failed'. Which path produced the 8 'ready' prod documents was not measured.",
 "correction": "If the index is not unique, add a UNIQUE index on (document_id, chunk_index) after checking for duplicates.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: onConflict 'document_id,chunk_index' at sadeed-docs-ingest.ts:155-159. The repo has only a non-unique index (20260625235058:45). The only UNIQUE(document_id,chunk_index) is in the unapplied 20260728093300_rag_chunks.sql:64, which targets a different table. The lead's prod listing marks UNIQUE only on finn_documents. Not measured; the suggested pg_indexes and model_version queries would settle it."
 },
 {
 "id": "INGEST-26",
@@ -592,7 +592,7 @@
 "severity": "P1",
 "gap": "The legacy path reports 'ready' with missing vectors and truncated text. 'Ready' is never proven retrievable.",
 "correction": "Fold the legacy path into the hook (INGEST-17). Define 'ready' as all chunks embedded plus a self-retrieval probe that finds the document's own chunk.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed on the live legacy path (sadeed-documents.tsx:93 → ingestSadeedDocument). documents.functions.ts:146 stores a null embedding when embed fails. 160-167 sets 'ready' unconditionally. 49 silently caps at slice(0,400) chunks, while the input allows 2,000,000 chars (91). citation_ready only checks that chunks are embedded (knowledge-upload.functions.ts:194)."
 },
 {
 "id": "INGEST-31",
@@ -632,7 +632,7 @@
 "severity": "P1",
 "gap": "No ingested chunk content reaches any answer or search result. The 8 prod documents and 18 chunks are inert.",
 "correction": "Recreate the match function over finn_document_chunks/finn_documents, filtering by org and status='ready'. Log to rag_query_log. This touches the answer path, so the owner's four controls apply.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Facts confirmed: rag.server.ts:96/105/108-110, documents.functions.ts:202-207, rag_query_log at 0 rows. Downgraded from P0. Retrieval is deliberately flag-gated and fails closed: docs/SADEED_GEMINI_RAG_RUNBOOK.md:33,49 says keep SADEED_GEMINI_RAG_READY=false. There is no leak or data corruption, and chat still answers. The broken RPC blocks enabling the flag, and the false-readiness UI is tracked as INGEST-35. The prod flag value can be read from public GET /api/chat/health rag_ready (chat.health.ts:23)."
 },
 {
 "id": "INGEST-35",
@@ -642,7 +642,7 @@
 "severity": "P1",
 "gap": "False readiness claims, a fake empty state, and a prompt that invites the model to fabricate a deposit location.",
 "correction": "Show 'indexed, not yet retrievable' until retrieval is verified. Add an error state. Remove the deposit-location request from the prompt, or pass the real deposit result. Fix the button title.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed. knowledge-upload.tsx:385 'can now cite' and 353 'Citation Ready'. 295 says 'up to 50MB' with no file.size check. docs = docsData ?? [] (247) with no isError branch, so a fetch error renders the empty state (402-405). SadeedCopilot.tsx:2761 title; 1295 prompt asks where files were deposited. Deposit runs after `await chat.sendMessage` (1315-1316), and only isTextFile files are deposited (1230)."
 },
 {
 "id": "INGEST-36",
@@ -662,7 +662,7 @@
 "severity": "P1",
 "gap": "Summaries of attached HCIS documents are refused, and extracted dates and numbers are corrupted. The default attach prompt asks for a data table.",
 "correction": "Treat current-turn attachments as evidence (tag [ATT:filename]) and tighten RE_PHONE (KSA phone shapes only). This is the answer path, so the owner's four controls apply.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Reproduced: 'SEC-03…' with no evidence → insufficient_evidence; '2026-10-12', '12.5 13.7 14.2' and '4500012345' → '[هاتف محجوب]'. This is broader than attachments. RE_PHONE (finalize.ts:174), applied in the default answer path (464), corrupts ISO dates and long numeric refs in every model answer, including maintenance answers that cite WO numbers or dates."
 },
 {
 "id": "INGEST-38",
@@ -752,7 +752,7 @@
 "severity": "P1",
 "gap": "Uploaded documents (8 docs and 18 embedded chunks in prod) and finn_knowledge (46 rows) can never reach an answer. With the flag OFF, retrieval is skipped. With the flag ON, every turn spends an embedding call plus 3 failing RPCs for nothing. The production value of the flag was not measured.",
 "correction": "Write a migration that replaces the aria_match_documents, aria_match_knowledge and aria_match_memory bodies so they read finn_document_chunks/finn_documents, finn_knowledge and finn_memory, adding an explicit _org_id parameter and filter. Apply it to prod before Publish. Follow the owner's 2026/10/11 answer-path controls: a small step, tests, qa-guardian clearance, before/after measurement. Make a failed RPC visible in telemetry (rag_query_log or finn_incidents) instead of only console.warn.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Document chunks cannot reach answers: confirmed at rag.server.ts:96-110. aria_match_memory also reads aria_memory (20260625224354), and 20260730205748 renamed memory→finn_memory. Overstatements: finn_knowledge HCIS rows do reach answers through a direct read (chat.ts:566-617, .like('source','hcis/%')); knowledge-upload.functions.ts:171 is a stats SELECT, not a write. Downgraded from P0 because retrieval is flag-gated by design (runbook) and fails closed."
 },
 {
 "id": "RAG-02",
@@ -762,7 +762,7 @@
 "severity": "P3",
 "gap": "When an authenticated user has no operational data, the retrieved context is silently dropped, but its citations still count as available evidence in the output gateway.",
 "correction": "Capture `const hadLiveData = snapshot.hasOperationalData` before the else-branch mutates liveDataAvailable, and inject <tenant-knowledge> whenever ragContext is non-empty. Pass as evidence only the citations whose text was actually injected.",
-"verifier": "**Verifier corrected** BROKEN/P1 → PARTIAL/P3: The precondition is effectively unreachable. For authenticated users buildSadeedContextSnapshot returns hasOperationalData:true on timeout (sadeed-context.server.ts:131-134), DB-empty and DB-error (384-388) via buildProductionDatasetsSnapshot. It return"
+"verifier": "**Verifier corrected** BROKEN/P1 → PARTIAL/P3: The precondition is effectively unreachable. For authenticated users buildSadeedContextSnapshot returns hasOperationalData:true on timeout (sadeed-context.server.ts:131-134), DB-empty and DB-error (384-388) via buildProductionDatasetsSnapshot. It returns false only if that bundled fallback also throws (389-394), in which case chat.ts:527 calls it again outside any try. So RAG text is injected at chat.ts:520 whenever retrieved, and chat.ts:544-552 is dead code only."
 },
 {
 "id": "RAG-03",
@@ -772,7 +772,7 @@
 "severity": "P1",
 "gap": "Document search returns an error on every query in prod (or an empty list when no key is configured). It is never usable.",
 "correction": "Same RPC fix as RAG-01. Also pass org_id so the search is limited to the current tenant.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: documents.functions.ts:187-207 calls aria_match_documents and throws on error; the RPC fails 42P01 in prod (lead). The UI shows a generic Arabic error via userFacingError (sadeed-documents.tsx:274; user-facing-error.ts) and silently returns [] when no Gemini key is set (192)."
 },
 {
 "id": "RAG-04",
@@ -782,7 +782,7 @@
 "severity": "P2",
 "gap": "Whenever evidence is insufficient, the model receives a tool exception instead of the honest 'insufficient_evidence' signal.",
 "correction": "Replace the call with `const { error } = await supabase.rpc(...); if (error) console.warn(...)`, or remove it entirely (see RAG-05 / Article 26).",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Reproduced with supabase-js 2.108.2 (audit/verifier/probe-catch.mjs): the rpc builder has `then` but `typeof catch === 'undefined'`, and calling it throws 'b.catch is not a function'. With the flag off, the gate returns gate_result 'error' (retrieve.server.ts:124-133), so every non-passed call throws inside execute (sadeed-tools.server.ts:509-515). The builder is lazy, so the RPC is never sent. The model gets a tool error instead of the structured reason; there is no data effect, so P2."
 },
 {
 "id": "RAG-05",
@@ -792,7 +792,7 @@
 "severity": "P2",
 "gap": "Capture is not running at all. The code also contradicts Article 26 (capture inside a user request, with authenticated execute).",
 "correction": "Remove the gap write from the chat tool path. Decide where the gap ledger lives under the finn_* evolution (owner), and implement capture as a scheduled job with EXECUTE revoked from anon/authenticated.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Capture is not running: true. Correction: the chat-tool call (sadeed-tools.server.ts:513-515) never sends the RPC, because the .catch TypeError fires before the lazy builder's then. The agent tool rag.record_gap (tool-registry.server.ts:999-1013) is auto-disabled by 20260920140000 when rag_gaps is absent; whether that migration is applied in prod was not re-measured here. The Article 26 conflict is real in code intent but inert, so P2."
 },
 {
 "id": "RAG-06",
@@ -812,7 +812,7 @@
 "severity": "P1",
 "gap": "The production dimension of sec_knowledge_articles.embedding, and the column the prod hybrid function reads, were not measured.",
 "correction": "Measure the column type in prod. Then route every sec_knowledge retrieval through one embedder whose dimension matches the column, and retire the other path.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed in the repo. kb-embed.server.ts produces 768-d vectors (its header calls them a '768-dim sec_knowledge compatibility index') and feeds sec_kb_search (kb.functions.ts:365; tool-registry.server.ts:914-921). The canonical embedder is 1536 (rag/embed.server.ts:13). The repo column is vector(1536) with HNSW (20260629004257:55,84), and sec_kb_search takes an untyped `_query vector` (105-107). The kb-embed comment hints at an out-of-repo 768 column; the prod column type is not measured."
 },
 {
 "id": "RAG-08",
@@ -822,7 +822,7 @@
 "severity": "P2",
 "gap": "A user who belongs to several orgs would get their own documents from org A while working in org B, because the functions filter by user only. Isolation depends on unmeasured RLS semantics (permissive OR between the owner and tenant policies) rather than on an explicit org predicate.",
 "correction": "When rewriting the RPCs (RAG-01), add `_org_id uuid` and filter `AND c.org_id = _org_id` (and on finn_knowledge if it is tenant data). Fail closed when _org_id is null.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed. orgId is never passed (rag.server.ts:103-105). aria_match_documents filters user only (20260625235058:69). aria_match_knowledge has no filter (20260625224354). These functions are currently non-executable in prod, and tenant_isolation RLS exists (lead), so the missing explicit org predicate is a latent multi-org issue that matters once the functions are repaired: P2."
 },
 {
 "id": "RAG-09",
@@ -832,7 +832,7 @@
 "severity": "P2",
 "gap": "Whether cross-org published articles are visible with a NULL org depends on sec_knowledge_articles RLS in prod, which was not measured. Whether anon EXECUTE is intended is not documented.",
 "correction": "Owner decision on whether global and other-org published articles are meant to be public. If not, make _org_id required (raise when it is null), revoke anon EXECUTE, and add an org parameter to sec_kb_search.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Predicate confirmed (20260727213148:87). Repo grants are authenticated and service_role only (158-159), against anon EXECUTE in prod (lead). sec_kb_search has no org parameter (20260629004257:105-136). Repo RLS is kb_art_read_authenticated (20260629004257:66). Results are published reference articles and the cross-org exposure is unmeasured, so P2."
 },
 {
 "id": "RAG-10",
@@ -852,7 +852,7 @@
 "severity": "P1",
 "gap": "Invented tags pass when they sit beside one real tag. Correct answers that cite only the directive code, or only tool results, are refused.",
 "correction": "Require every cited tag to be known (strip or refuse the unknown ones). Add the tool-result citations returned to the model to evidence.available. Map SEC-xx codes to the KB tags supplied for them. Put only the cited subset into the envelope.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Reproduced. One known tag plus '[KB:توجيه مختلق 99]' → answer, with the invented tag displayed (finalize.ts:445-448 refuses only when every tag is unknown). A bare 'SEC-02' with KB evidence available → insufficient_evidence. evidence.available = ragCitations only (chat.ts:843); tool citations are excluded."
 },
 {
 "id": "RAG-12",
@@ -1032,7 +1032,7 @@
 "severity": "P2",
 "gap": "Breakages from the table renames and the tool crash are invisible to the gate.",
 "correction": "Add unit tests with an rpc mock (error handling, prompt injection, gate outcomes). Add a preflight SQL check that runs every aria_match_*/sec_kb_* function under `set local role authenticated` (plpgsql/sql bodies are only resolved at call time).",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: grep of *.test.ts/*.spec.ts in src and tests finds no reference to gatherRagContext, aria_match_documents, retrieveWithEvidenceGate or sec_kb_hybrid_search. src/test/rag-live-eval.test.ts is skipIf(!live) and targets unapplied rag_* edge functions. This is a test-coverage gap, and the underlying defects are tracked separately, so P2."
 },
 {
 "id": "RAG-30",
@@ -1262,7 +1262,7 @@
 "severity": "P1",
 "gap": "Comparisons are lost and a negative value can print as positive in an exported executive report.",
 "correction": "Substitute before filtering: − to '-', ≥ to '>=' or 'لا يقل عن', ≤ to '<=', →/← to '<-'/'->', ✓/✗ to 'نعم'/'لا', € to 'EUR'. Never silently drop a character that carries meaning.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Reproduced (audit/verifier/probe-pdf.ts). sanitizePdfText('≥ 30 · ≤ 5 · −5 · → · ✓ · ✗ · €') gives ' 30 ·  5 · 5 · · · · ', and 'والتغير −3%' gives 'والتغير 3%'. Cause: UNDRAWABLE and SAFE_CHAT at chat-pdf.ts:57-64; U+2212, ≥, ≤ and € fall outside SAFE_CHAR."
 },
 {
 "id": "UX-23",
@@ -1412,7 +1412,7 @@
 "severity": "P1",
 "gap": "The UI states that documents can be cited when the retrieval path cannot return them.",
 "correction": "Show 'مُفهرَس — الاسترجاع غير مفعّل' unless a live retrieval probe (repaired function plus flag) returns the document. Repair aria_match_documents to read finn_* (needs owner and answer-path approval).",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed; this duplicates INGEST-35/34. citation_ready = chunks.length>0 && all embedded (knowledge-upload.functions.ts:194). The banner is at knowledge-upload.tsx:385. Retrieval is flag-gated and uses an RPC that fails in prod."
 },
 {
 "id": "UX-38",
@@ -1422,7 +1422,7 @@
 "severity": "P1",
 "gap": "Every search fails.",
 "correction": "Repoint the function body to finn_document_chunks and finn_documents with an org filter, via an idempotent migration applied with owner approval. Until then, hide or disable search with an honest message.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Duplicate of RAG-03, confirmed (documents.functions.ts:202-207). The UI renders the generic Arabic userFacingError, not the raw message (sadeed-documents.tsx:274)."
 },
 {
 "id": "UX-39",
@@ -1482,7 +1482,7 @@
 "severity": "P2",
 "gap": "An irreversible delete with no confirmation, no accessible name and no error feedback.",
 "correction": "Add an AlertDialog confirmation in Arabic, an aria-label 'حذف المستند', an onError Arabic toast, and delete the row first and the storage object after (or soft-delete).",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed. One-click delete at knowledge-upload.tsx:437 and sadeed-documents.tsx:318. No aria-label on the icon button. delMut has no onError (142-145; sadeed-documents 105-108). The storage remove result is ignored and runs before the row delete (documents.functions.ts:77-81). This is a human-initiated delete of the user's own document, so UX/safety P2 rather than P1."
 },
 {
 "id": "UX-45",
@@ -1712,7 +1712,7 @@
 "severity": "P1",
 "gap": "In light mode the chat header (product name, status, mute control) fails WCAG 1.4.3 and 1.4.11.",
 "correction": "Move the header, composer and backdrop surfaces to tokens (--surface/--glass-*) with a .light variant, or scope dark tokens to .sadeed-window if the owner wants the panel always dark. Do not mix the two.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Code confirmed: the header has a hard-coded dark gradient (SadeedCopilot.tsx:2354) and the backdrop is '#04070F' (373), while the title is text-foreground (2367) and the status text-muted-foreground. The CSS has no .light override for the header. Screenshot scratchpad/audit/UI/light-390-header-2x.png shows a near-invisible 'سَدِيد' and a white mute ring with no visible icon, which violates CLAUDE.md theme rule 6. I did not re-measure the pixel ratios."
 },
 {
 "id": "UI-22",
@@ -1762,7 +1762,7 @@
 "severity": "P2",
 "gap": "One stray tap permanently deletes an ingested document.",
 "correction": "Add an AlertDialog with an Arabic confirmation that names the document title, or a short undo window.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Duplicate of UX-44, confirmed at knowledge-upload.tsx:434-442. It is a human-clicked delete, so P2."
 },
 {
 "id": "UI-27",
@@ -1842,7 +1842,7 @@
 "severity": "P0",
 "gap": "This bundled export goes around the DB view masking. A visitor who asks about a specific work order gets the creator's employee or ID number in the model's context, and nothing tells the model to withhold it. The data file is also committed to git, against «البيانات الحقيقية لا تدخل git».",
 "correction": "Remove created_by from the bundled notes (or drop the field from the JSON) whenever audience is anonymous or a non-member. Pass an audience flag into buildRecallBlock and formatWorkOrderRecord and strip notes for guests. Apply the same rule to the sec.functions fallback. Have the owner decide whether to purge maintenance-report.data.json from the repo or replace it with a redacted copy. RELEASE-BLOCKING.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Measured in a scratch node run without printing values: maintenance-report.data.json has 249 rows, 249 with non-null created_by, 20 distinct values. Of those, 13 are numeric with 5–6 digits and 7 have the shape AA+10 digits. buildNotes puts 'أنشأه: <id>' in notes (maintenance-report.real.server.ts:107). formatWorkOrderRecord prints notes (recall.server.ts:215), notes are a match field (167), and the result reaches the guest chat (chat.ts:527-531). getWorkOrders (sec.functions.ts:532-551, optionalSupabaseAuth+resilient) returns the same rows to visitors. This conflicts with the owner decision of 2026-10-07 ② to hide employee numbers. Note: contract tests lock this behaviour (maintenance-report.contract.test.ts:72-73 expects all 249 notes to contain 'أنشأه:'; projects-maintenance-recall.test.ts:112), so a fix must update them."
 },
 {
 "id": "SEC-02",
@@ -1852,7 +1852,7 @@
 "severity": "P2",
 "gap": "The destination host comes from the incoming request URL. Whether a client can set it (Host or forwarded-host handling on the Lovable/Workers runtime) was not measured. If it can, the secret goes to an attacker-chosen host, which is SSRF plus secret exfiltration. A hung hook also blocks the server fn until the platform limit.",
 "correction": "Call the ingest core in-process (it is already pure: knowledge-ingest-core.ts), or use a configured constant origin such as SITE_URL. Add AbortSignal.timeout().",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Code confirmed (knowledge-upload.functions.ts:117-131: request-derived origin, fetch with no signal or timeout). As with INGEST-22, Host spoofing on the default Cloudflare target is platform-constrained and not measured, so P2."
 },
 {
 "id": "SEC-03",
@@ -1902,7 +1902,7 @@
 "severity": "P2",
 "gap": "Chat RAG cannot work in prod. Isolation rests entirely on RLS (tenant_isolation exists on finn_documents/chunks per prod facts), with no defensive org filter in the function body.",
 "correction": "Rewrite the RPCs against finn_* with explicit `org_id = _org_id` AND RLS (invoker), add _org_id params, and surface RPC errors as telemetry rather than silent empties. Per the owner decision of 2026-10-11, evolve finn_* rather than apply 20260728*.",
-"verifier": "**Verifier corrected** BROKEN/P1 → PARTIAL/P2: Retrieval is broken (42P01, swallowed at rag.server.ts:108-110), but that is RAG-01. No access-control failure is shown: the functions are SECURITY INVOKER (default on 20260625235058:59-72) and prod has owner and tenant_isolation RLS (lead). The missing"
+"verifier": "**Verifier corrected** BROKEN/P1 → PARTIAL/P2: Retrieval is broken (42P01, swallowed at rag.server.ts:108-110), but that is RAG-01. No access-control failure is shown: the functions are SECURITY INVOKER (default on 20260625235058:59-72) and prod has owner and tenant_isolation RLS (lead). The missing explicit org predicate is a defensive gap (RAG-08), not BROKEN access control."
 },
 {
 "id": "SEC-08",
@@ -1912,7 +1912,7 @@
 "severity": "P2",
 "gap": "The primary answer path breaks Art. 31 (c)(d)(e)(f)(g). Retrieved text enters the prompt without PII redaction.",
 "correction": "Route chat retrieval through retrieveWithEvidenceGate, or apply sanitizeRetrievedContent/redactPii plus logging to gatherRagContext output. Wire rateLimitRag or delete it.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed. The gate is used at sadeed-tools.server.ts:499-503, tool-registry.server.ts:965-969 and orchestrator/agents.ts:417-419. gatherRagContext has no injection screen, no sanitize, and no rag_query_log write. rateLimitRag (sanitize.server.ts:70) has zero callers. The chat-path retrieval is currently flag-off and failing, and finalize redactPii still masks phones and emails on output, so the exposure is latent: P2."
 },
 {
 "id": "SEC-09",
@@ -1982,7 +1982,7 @@
 "severity": "P1",
 "gap": "Search on /sadeed-documents fails in prod and exposes schema names.",
 "correction": "Fix the RPC (see SEC-07) and map errors to the neutral Arabic message.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Search failure confirmed (documents.functions.ts:207 throws error.message). The schema-name 'leak' only reaches the server-fn error payload of an authenticated caller; the UI shows the generic Arabic userFacingError (sadeed-documents.tsx:274). P1 is for the broken search; the leak aspect alone would be P3."
 },
 {
 "id": "SEC-16",
@@ -2102,7 +2102,7 @@
 "severity": "P2",
 "gap": "The core upload→ask path is broken in production and no test, contract check or CI job can detect it. Ingest is tested only as pure functions.",
 "correction": "Add a contract test listing every RPC and table the chat path depends on (aria_match_memory, aria_match_knowledge, aria_match_documents, finn_*). Add an integration test that runs ingest→retrieve against a schema dumped from production rather than built from migrations. Gate the RAG flag on that test passing.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: knowledge-ingest-core.test.ts has 33 cases, all pure functions. 173 tracked test files, and none references gatherRagContext, aria_match_documents, sadeed-docs-ingest or knowledge-upload. A missing test is not itself P0; the broken path is tracked under RAG-01/INGEST-34."
 },
 {
 "id": "QA-02",
@@ -2112,7 +2112,7 @@
 "severity": "P2",
 "gap": "A green CI result says nothing about production. A run with no Postgres skips silently and still passes. Whether the GitHub runner actually has Postgres was not checked (CI logs not read).",
 "correction": "Make the preflight fail rather than skip when Postgres is missing in CI. Add a scheduled, read-only schema-drift probe against production (to_regclass/to_regprocedure on every object the code references, and a check that function bodies do not mention renamed tables).",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: rag-preflight.sh:21-24 prints a warning and exits 0 with no Postgres, and loads the unapplied 20260728* migrations. Validating repo migrations is by design: CLAUDE.md says migrations are not prod truth and the preflight asks 'do migrations rebuild protection'. A prod schema-drift check simply does not exist, so MISSING rather than BROKEN."
 },
 {
 "id": "QA-03",
@@ -2132,7 +2132,7 @@
 "severity": "P2",
 "gap": "There is no TTFT test and no harness to take the before/after measurement that the owner's 2026/10/11 decision requires before turning on the 'sentence-by-sentence' streaming flag.",
 "correction": "Add a harness that records client TTFB (first SSE chunk) and total time per request against a mock provider with controllable latency. Use it to measure buffered vs sentence streaming before the flag is enabled.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: chat-latency.contract.test.ts has 12 it() blocks, all readFileSync source checks (lines 27-30). No TTFB or incremental-delta test exists. Test gap, P2."
 },
 {
 "id": "QA-05",
@@ -2182,7 +2182,7 @@
 "severity": "P2",
 "gap": "No CI job runs the cross-tenant test against a real database. The constitution's Article 32 'definition of done' ('zero cross-tenant hits in E2E') is not measured.",
 "correction": "Provide LIVE credentials for a staging project, or run a nightly read-only job using two synthetic tenants under `set local role authenticated`.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: rls-isolation.test.ts:56 is describe.skipIf(!LIVE). ci.yml:123-165 runs only the 11-security-gap-closure and 05-command-center-auth specs, and only when E2E secrets exist. Test gap, P2."
 },
 {
 "id": "QA-10",
@@ -2192,7 +2192,7 @@
 "severity": "P2",
 "gap": "Injection defences are untested, and the main retrieval path has no screening at all.",
 "correction": "Add unit tests for detectInjection and untrustedPromptData (delimiter escaping, truncation). Add a handler test that seeds a document chunk with 'ignore previous instructions' and asserts the system prompt keeps it inside the untrusted block and the gateway output does not obey it.",
-"verifier": "**Verifier corrected** MISSING/P1 → PARTIAL/P2: Narrow fact true: no test references detectInjection, INJECTION_PATTERNS, sanitizeRetrievedContent or untrustedPromptData. But 'injection defences are untested' is overstated: finalize.test.ts:261 and pipeline.test.ts:215 (OUT-014, injected document as"
+"verifier": "**Verifier corrected** MISSING/P1 → PARTIAL/P2: Narrow fact true: no test references detectInjection, INJECTION_PATTERNS, sanitizeRetrievedContent or untrustedPromptData. But 'injection defences are untested' is overstated: finalize.test.ts:261 and pipeline.test.ts:215 (OUT-014, injected document asks for a secret and an action, expecting refusal) test the output-gateway injection guard. The gatherRagContext screening gap is real."
 },
 {
 "id": "QA-11",
@@ -2232,7 +2232,7 @@
 "severity": "P2",
 "gap": "End-to-end and per-stage server latency cannot be measured, and stored latency_ms systematically under-reports.",
 "correction": "Set t0 at handler entry. Wrap each stage in a mark() helper and emit Server-Timing plus one structured log line per request. Store total_ms and pre_model_ms (owner-gated column).",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: startAt is set at chat.ts:717 after validation, auth, org, rate, quota, snapshot/RAG, HCIS and tool build. latency_ms (889) and the 'buffered finish' log (812-816) therefore under-report. There is no Server-Timing header. Observability: P2."
 },
 {
 "id": "QA-15",
@@ -2242,7 +2242,7 @@
 "severity": "P2",
 "gap": "The column exists but is always null. Article 24(b)'s first-token→sentence1 ceiling of 250 ms is measured against a meaningless first-token event.",
 "correction": "Record client TTFB (first SSE chunk) and send it to the server, or move to a streamText path where onChunk sets firstTokenAt. Until then, store first_token_ms as null with an explicit reason instead of implying it was measured.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Facts confirmed (chat.ts:718, 890; client firstTokenAt = arrival of the single delta, SadeedCopilot.tsx:1118). Writing null for an unmeasured TTFT is the honest Article 27 behaviour, not a malfunction, so this is MISSING telemetry rather than BROKEN."
 },
 {
 "id": "QA-16",
@@ -2252,7 +2252,7 @@
 "severity": "P2",
 "gap": "The retrieval telemetry table is disconnected from the main path. Zero rows are consistent with the flag being off, but the flag's production value was not measured here.",
 "correction": "Log every gatherRagContext attempt (route 'chat-auto', with latency, hits, max_similarity and correlation_id), and log the flag-off and no-org rejections to structured logs.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: the only writer is finish() (retrieve.server.ts:136-157). The missing-org and flag-off returns (113-134) run before finish. gatherRagContext never logs. The 0 prod rows are consistent with the flag being off. Telemetry: P2."
 },
 {
 "id": "QA-17",
@@ -2272,7 +2272,7 @@
 "severity": "P2",
 "gap": "The endpoint would report rag_ready: true while aria_match_documents raises 42P01, and nothing in CI reads it.",
 "correction": "Add a deep mode (for example ?deep=1, rate-limited) that runs to_regprocedure checks and a 1-row RPC dry call, and add it to production-check.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Confirmed: chat.health.ts always returns ok:true with env booleans and no DB/RPC probe, and check-production.mjs:25 defaults to '/,/sec,/sec/governance'. The endpoint does publicly expose rag_ready, so the prod flag value can be read without DB access."
 },
 {
 "id": "QA-19",
@@ -2292,7 +2292,7 @@
 "severity": "P2",
 "gap": "TTFT, retrieval latency, indexing time, throughput and production error/timeout rates are not measured anywhere.",
 "correction": "See the architecture findings for the proposed probe and instrumentation. They are not implemented: the work touches the answer path and production data, so it needs owner approval.",
-"verifier": "**Verified** (adversarial pass)."
+"verifier": "**Verified** (adversarial pass): Consistent with the lead's facts (production-check.yml runs only check-production and ui-audit), with firstTokenAt always null and latency_ms excluding pre-model stages. No latency workflow exists in .github/workflows. Observability: P2."
 },
 {
 "id": "QA-21",
