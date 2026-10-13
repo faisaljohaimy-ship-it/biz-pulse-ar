@@ -8,12 +8,13 @@ import { userFacingError } from "@/lib/errors/user-facing-error";
 import { useEffect } from "react";
 
 interface Props {
-  error: Error;
+  error: unknown;
   reset: () => void;
   routeLabel?: string;
 }
 
-export function RouteErrorBoundary({ error, reset, routeLabel }: Props) {
+export function RouteErrorBoundary({ error: rawError, reset, routeLabel }: Props) {
+  const error = rawError instanceof Error ? rawError : new Error(String(rawError));
   const router = useRouter();
 
   useEffect(() => {
