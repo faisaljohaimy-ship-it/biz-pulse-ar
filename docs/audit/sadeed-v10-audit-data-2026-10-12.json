@@ -1712,7 +1712,7 @@
 "severity": "P1",
 "gap": "In light mode the chat header (product name, status, mute control) fails WCAG 1.4.3 and 1.4.11.",
 "correction": "Move the header, composer and backdrop surfaces to tokens (--surface/--glass-*) with a .light variant, or scope dark tokens to .sadeed-window if the owner wants the panel always dark. Do not mix the two.",
-"verifier": "**Verified** (adversarial pass): Code confirmed: the header has a hard-coded dark gradient (SadeedCopilot.tsx:2354) and the backdrop is '#04070F' (373), while the title is text-foreground (2367) and the status text-muted-foreground. The CSS has no .light override for the header. Screenshot scratchpad/audit/UI/light-390-header-2x.png shows a near-invisible 'سَدِيد' and a white mute ring with no visible icon, which violates CLAUDE.md theme rule 6. I did not re-measure the pixel ratios."
+"verifier": "**Verified** (adversarial pass): Code confirmed: the header has a hard-coded dark gradient (SadeedCopilot.tsx:2354) and the backdrop is '#04070F' (373), while the title is text-foreground (2367) and the status text-muted-foreground. The CSS has no .light override for the header. Screenshot session scratch suite (not committed): audit/UI/light-390-header-2x.png shows a near-invisible 'سَدِيد' and a white mute ring with no visible icon, which violates CLAUDE.md theme rule 6. I did not re-measure the pixel ratios."
 },
 {
 "id": "UI-22",
@@ -2780,7 +2780,7 @@
 {
 "metric": "PostgrestFilterBuilder.catch availability (rpc builder)",
 "value": "typeof catch = undefined; calling .catch throws TypeError",
-"method": "node probe in scratchpad/audit/sec/probe.mjs importing node_modules/@supabase/postgrest-js/dist/index.mjs (v2.108.2)",
+"method": "node probe in session scratch suite (not committed): audit/sec/probe.mjs importing node_modules/@supabase/postgrest-js/dist/index.mjs (v2.108.2)",
 "sample": "1 builder instance, no network"
 },
 {
