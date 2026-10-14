@@ -92,8 +92,8 @@
 }
 
 /* ══ SAFE MODE — the crash-loop breaker's recovery shell (constitution art. 13).
-   The pre-hydration script in __root.tsx adds `html.safe-mode` after 2 unfinished
-   boots. Until now NOTHING honoured it, so the "recovered" page rendered
+   The pre-hydration script in __root.tsx adds `html.safe-mode` after 2 unclean
+   exits (crashes). Until now NOTHING honoured it, so the "recovered" page rendered
    identically and crashed again → iOS Safari's fatal "A problem repeatedly
    occurred". Safe mode must therefore strip EVERY GPU-heavy effect so the shell
    becomes a static, un-crashable page: no animation, no transition, no filter,
@@ -113,6 +113,16 @@ html.safe-mode *::after {
 html.safe-mode video,
 html.safe-mode canvas {
   display: none !important;
+}
+/* One filter survives safe-mode: the SADEED stage-card background blur is a
+   truth condition, not decoration (المادة ٢٧). The image carries drawn,
+   unmeasured numbers (١٢٨ مواقع · ٣٤٢ دوريات · ١٬٢٤٨ موظفون · ٩٤٫٢٪) that the
+   blur makes unreadable; the reset above would show them as if measured. The
+   touch block at the end of this file exempts the same element by name. One
+   5px blur on a ~395×569 image is cheap, and (0,2,2) beats the (0,1,1) reset.
+   Guard: src/components/sadeed/sadeed-stage-background.contract.test.ts. */
+html.safe-mode .sd-stage-card > img {
+  filter: blur(5px) !important;
 }
 
 @theme inline {
@@ -10867,15 +10877,128 @@ body {
 
 /* iOS stability (2026-10-08): touch devices crash ("a problem repeatedly
    occurred") under ~70 GPU filters + ~60 infinite animations on the home page.
-   Keep colour/borders/box-shadow glows; drop compositing-heavy layers. */
+   Keep colour/borders/box-shadow glows; drop compositing-heavy layers.
+
+   ── P0 ٢٠٢٦/١٠/١٤: عاد الانهيار على آيفون المالك، فقِيست هذه الكتلة نفسها ──
+   على محاكاة iPhone 14 Pro (‏DPR 3، ‎(pointer: coarse)‎ مطابق) تركت الكتلة
+   بصيغتها الأولى: ١٥ مرشّحًا ظاهرًا (الصور ومسارات SVG كانت مستثناة)،
+   وطبقتَي مزج، و٢٨ حركةً جارية منها ٢٥ لانهائية. وللّانهائية سببان مقيسان:
+
+   ١. **النوعية.** المحدِّد العامّ هنا (0,0,1)، والقواعد التي أراد تقييدها
+      `!important` بنوعية أعلى — `[data-slot="button"] > svg` (0,1,1) و
+      `.nx-icon` (0,1,0) تفرض `hx-halo-breathe infinite !important` — و
+      `!important` أمام `!important` تحسمها النوعية. فبقيت ٢٤ أيقونة تتنفّس.
+   ٢. **`body::after` ليس من أبناء body.** طبقة «الضوء المحيط» ثابتة بحجم
+      ‎657×924‎ تحمل `blur(8px)` و`will-change` وحركة لانهائية — وهي أثقل
+      طبقة في الصفحة، والمحدِّد العامّ لا يبلغها أصلًا.
+
+   فيحمل المحدِّد **وزنَ معرِّف** بـ`:not(#nx-coarse)` — معرِّفٌ لا يحمله
+   عنصر، فالشرط صادق دائمًا ويضيف (1,0,0) — ليعلو كل قاعدة صنفيّة دون أن
+   تُسمّى واحدةً واحدة. والمرشّحات تسقط عن الصور وSVG كذلك، بعنصرٍ واحد
+   مستثنى بالاسم: خلفية بطاقة سَدِيد، لأن ضبابتها **شرط صدق لا زينة**
+   (المادة ٢٧ — الصورة تحمل أرقامًا مرسومة لم تُقَس، وحارسها
+   `sadeed-stage-background.contract.test.ts`). وسطح المكتب لا يمسّه شيء
+   هنا: كل ما في الكتلة تحت `(pointer: coarse)`. */
 @media (pointer: coarse) {
-  body *:not(svg *):not(img) {
+  /* قاعدة مستقلة: الاستثناء محدِّدٌ مركّب داخل `:not()`، ومتصفّحٌ لا يفهمه
+     يُسقط القائمة التي هو فيها كاملةً — فلا يُسقط معه ما بعده. */
+  body *:not(#nx-coarse):not(.sd-stage-card > img) {
     filter: none !important;
   }
-  body *,
-  body *::before,
-  body *::after {
+  body *:not(#nx-coarse),
+  body *:not(#nx-coarse)::before,
+  body *:not(#nx-coarse)::after,
+  body:not(#nx-coarse)::after {
     animation-iteration-count: 1 !important;
     will-change: auto !important;
+    mix-blend-mode: normal !important;
   }
+  body *:not(#nx-coarse)::before,
+  body *:not(#nx-coarse)::after,
+  body:not(#nx-coarse)::after {
+    filter: none !important;
+  }
+}
+
+/* ── اللمس: الفيلم وحده طبقةَ الوسائط الكاملة (P0 ٢٠٢٦/١٠/١٤) ──────────────
+   قِيس على المحاكاة نفسها: ١٢ طبقة بملء الشاشة داخل سلفٍ ثابت فوق فيلم
+   يفكّ ترميزه باستمرار، وطبقة مزجٍ `overlay` بملء الشاشة فوقه (النسيج) —
+   والمزج فوق فيديو يُخرج الفيديو من مساره المباشر إلى سطحٍ وسيط كل إطار.
+
+   فيبقى على اللمس ما يحمل معنى، ويسقط ما هو نسيج:
+   • يبقى: سطح `.nx-hv` (لون الصفحة)، والفيلم (قرار المالك D6)، والغطاء
+     `.nx-hv-scrim` (أرضية التباين المقيسة ٤٫٥:١ — ليس زينة)، وخطّ الأفق
+     الرفيع (ليس بملء الشاشة).
+   • يسقط: الشفق والشبكة والنسيج وتعتيم الأطراف في طبقة الفيلم، وطبقة
+     الأجواء العامّة كلّها (شفقٌ وشبكة ومسح وحبيبات بوضوح ٠٫٠٦)، وطبقة
+     «الضوء المحيط» `body::after` (شفقٌ مضبَّب بحجم يفوق الشاشة)، وعلامة
+     سَدِيد المائية الثابتة (صورة ‎1024×1536‎ تُفكّ كاملةً لتُرسم بوضوح ٠٫١٤
+     تحت قناعٍ شعاعيّ — وهي الوسيط الثابت الآخر الوحيد بجانب الفيلم).
+
+   ومسارات خريطة المناطق فقدت توهّج `drop-shadow` بالكتلة السابقة، فيعوَّض
+   بالحدّ نفسه من الرمز نفسه (`--region-tint`) أعرض وأتمّ وضوحًا — فتبقى
+   حدود المنطقة مقروءة بلا مرشّح. */
+@media (pointer: coarse) {
+  body:not(#nx-coarse)::after,
+  .nx-holo-ambience,
+  .nx-hv-aurora,
+  .nx-hv-grid,
+  .nx-hv-vignette,
+  .nx-hv-noise,
+  .aria-watermark {
+    display: none !important;
+  }
+  .nx-arabia-province {
+    stroke-width: 2;
+    stroke-opacity: 1;
+  }
+}
+
+/* ── لوحة سَدِيد على اللمس وفي الوضع الآمن: لا انفجار تركيب عند الفتح ────────
+   (P0 ٢٠٢٦/١٠/١٤). قِيس على محاكاة iPhone 14 Pro (‏DPR 3) بالكتلتين أعلاه:
+   الرئيسية ٦ حركات (~٧ ميغابايت سطوحًا)، وبعد فتح اللوحة بثلاث ثوانٍ ٦٥ حركة
+   جارية منها ٦٤ مركَّبة (~٢٠٢ ميغابايت حدًّا أعلى) — طبقتا التوقيع المائلتان
+   ‎852×1008‎ وحدهما ~٢٩٫٥ ميغابايت لكلٍّ، ولا تهدأ قبل ~٣٣ ثانية، وتعود عند كل
+   فتح لأن اللوحة تُعيد تركيب الخلفية. ومعها ترتفع عناصر مرشّح الخلفية من ٢
+   إلى ٦ (~٢٠ ميغابايت)، أكبرها غطاءٌ بملء الشاشة يضبّب الفيلم الحيّ تحته —
+   فيُعاد حساب الضبابة مع كل إطار فيديو.
+
+   فعلى اللمس وفي الوضع الآمن:
+   • طبقات نصّ التوقيع وحقل الحروف (`.sd-sig-layer`) لا تُرسم، والوهج
+     (`.sd-sig-glow`) ساكن — فيبقى التدرّج الشعاعيّ وحده هويّةً للنافذة.
+     **والمحدِّدان عامّان لا محصوران في اللوحة:** `/connect` يركّب الخلفية
+     نفسها (`routes/connect.tsx`، `intensity={1.2}`) فيفقد طبقات نصّ التوقيع
+     كذلك على اللمس وفي الوضع الآمن. حصرها في `.sadeed-window .sd-sig-layer`
+     إن كان على `/connect` أن يحتفظ بالتوقيع على الجوال قرارٌ مفتوح للمالك أو
+     المراجع، لا يحسمه الكود صامتًا.
+   • لا مرشّح خلفية على الغطاء ولا النافذة ولا شيءٍ داخلها. والنافذة نفسها
+     مغطّاة بخلفيتها المعتمة، فالضبابة تحتها لم تكن تُرى أصلًا.
+   • الغطاء يعوَّض عن ضبابته بعتمةٍ من الرمز (`--background` بنسبة ٨٥٪)،
+     فتنقلب مع الوضع ويبقى عزل اللوحة عن الصفحة.
+   ووزن المعرِّف `:not(#nx-coarse)` لأن قواعد زجاجٍ عامّة تفرض مرشّح الخلفية
+   بـ`!important` على أصنافٍ قد تقع داخل النافذة. وسطح المكتب لا يمسّه شيء:
+   الكتلة تحت `(pointer: coarse)`، والوضع الآمن يُسقط المرشّحات أصلًا في أوّل
+   الملف. الحارس: `sadeed-panel-touch.contract.test.tsx`. */
+@media (pointer: coarse) {
+  .sd-sig-layer:not(#nx-coarse) {
+    display: none !important;
+  }
+  .sd-sig-glow:not(#nx-coarse) {
+    animation: none !important;
+  }
+  .sadeed-chat-scrim:not(#nx-coarse),
+  .sadeed-window:not(#nx-coarse),
+  .sadeed-window:not(#nx-coarse) * {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .sadeed-chat-scrim:not(#nx-coarse) {
+    background: color-mix(in srgb, var(--background) 85%, transparent) !important;
+  }
+}
+html.safe-mode .sd-sig-layer {
+  display: none !important;
+}
+html.safe-mode .sadeed-chat-scrim {
+  background: color-mix(in srgb, var(--background) 85%, transparent) !important;
 }

@@ -48,9 +48,14 @@ class AvatarBrain {
     this.started = true;
     avatarAnimationQueue.setConsumer((ev) => {
       // Queue consumer is a no-op besides updating state — the renderer
-      // pulls frames from the state manager continuously.
+      // pulls frames from the state manager on its own cadence.
       void ev;
     });
+    // `start()` only arms the renderer. Frames flow while it has a
+    // subscriber and the page is visible — per display frame on desktop,
+    // ≤ 20/s on touch or reduced motion (see avatar-renderer.ts). The
+    // brain therefore never needs to stop it on hide/show; `shutdown()`
+    // is for the lifecycle's last unmount only.
     avatarRenderer.start();
   }
 

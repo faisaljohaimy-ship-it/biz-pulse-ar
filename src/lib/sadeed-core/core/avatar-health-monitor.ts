@@ -12,7 +12,12 @@
  */
 import { avatarAnimationQueue } from "./avatar-animation-queue";
 import { avatarLifecycle } from "./avatar-lifecycle";
-import { avatarPerformanceEngine, type PerfSample } from "./avatar-performance-engine";
+import {
+  avatarPerformanceEngine,
+  dropThresholdMs,
+  type PerfSample,
+  type SampleCadence,
+} from "./avatar-performance-engine";
 import { avatarStateManager, type AvatarState, type Emotion } from "./avatar-state-manager";
 import { executivePresence, type PresenceSnapshot } from "./executive-presence";
 
@@ -30,6 +35,29 @@ export interface HealthSnapshot {
   presence: PresenceSnapshot | null;
   perf: PerfSample | null;
   ts: number;
+}
+
+/**
+ * The smoothed fps below which the avatar is 'degraded', per the cadence the
+ * sample was measured under. Full cadence keeps the historical 24 fps. The
+ * reduced cadence (touch / reduced motion, ~15 Hz by design — P0 2026-10-14)
+ * is degraded only when its average interval exceeds the late threshold
+ * (`dropThresholdMs('reduced')`, 75 ms ⇒ ~13.3 fps); judged against 24 fps it
+ * read 'degraded' on every phone.
+ */
+export function fpsFloor(cadence: SampleCadence): number {
+  return cadence === "reduced" ? 1000 / dropThresholdMs("reduced") : 24;
+}
+
+/** Pure health verdict from the runtime state and the latest perf sample. */
+export function assessHealth(running: boolean, perf: PerfSample | null): HealthLevel {
+  if (!running) return "unhealthy";
+  const fps = perf?.fps ?? 0;
+  if (perf && fps > 0 && fps < fpsFloor(perf.cadence)) return "degraded";
+  if (perf && perf.totalFrames > 60 && perf.droppedFrames / perf.totalFrames > 0.2) {
+    return "degraded";
+  }
+  return "healthy";
 }
 
 class AvatarHealthMonitor {
@@ -65,13 +93,7 @@ class AvatarHealthMonitor {
     const running = avatarLifecycle.isRunning();
     const fps = perf?.fps ?? 0;
     const dropped = perf?.droppedFrames ?? 0;
-    const level: HealthLevel = !running
-      ? "unhealthy"
-      : fps > 0 && fps < 24
-        ? "degraded"
-        : perf && perf.totalFrames > 60 && dropped / perf.totalFrames > 0.2
-          ? "degraded"
-          : "healthy";
+    const level = assessHealth(running, perf);
     return {
       level,
       running,

@@ -3,26 +3,49 @@
  * single AvatarRenderer rAF loop.
  *
  * Read-only: subscribes to renderer frames, samples inter-frame delta,
- * derives instantaneous + smoothed FPS, and flags dropped frames
- * (dt > 33ms ≈ under 30fps). Never mutates renderer state, never spawns
- * a second rAF, never issues LLM/network calls.
+ * derives instantaneous + smoothed FPS, and flags dropped frames against the
+ * renderer's DECLARED cadence (see `dropThresholdMs`). Never mutates renderer
+ * state, never spawns a second rAF, never issues LLM/network calls.
+ *
+ * Cadence (P0 2026-10-14): on touch devices and under reduced motion the
+ * renderer ticks every REDUCED_FRAME_INTERVAL_MS plus the next display frame
+ * (~15 Hz) on purpose. Judged against the 60 Hz 33 ms threshold every such
+ * frame counted as dropped and the EMA settled near 15 fps, so the health
+ * snapshot read 'degraded' on 100% of phones. Each sample therefore carries
+ * the cadence it was measured under, and the thresholds follow it.
  *
  * Consumers: HUD/devtools telemetry and AvatarHealthMonitor.
  */
-import { avatarRenderer, type AvatarFrame } from "./avatar-renderer";
+import { REDUCED_FRAME_INTERVAL_MS, avatarRenderer, type AvatarFrame } from "./avatar-renderer";
+
+/** The cadence a sample was measured under — the renderer's `full` or `reduced`. */
+export type SampleCadence = "full" | "reduced";
 
 export interface PerfSample {
   fps: number; // smoothed EMA
   instantFps: number; // 1000/dt
   dt: number; // ms since previous frame
-  droppedFrames: number; // cumulative frames with dt > 33ms
+  droppedFrames: number; // cumulative frames with dt > dropThresholdMs(cadence)
   totalFrames: number;
   ts: number;
+  cadence: SampleCadence;
 }
 
 type Listener = (s: PerfSample) => void;
 
-const DROP_THRESHOLD_MS = 33;
+/** Full cadence: a frame is late past ~2 display frames (under 30 fps). */
+const FULL_DROP_THRESHOLD_MS = 33;
+/**
+ * Reduced cadence: a tick is due REDUCED_FRAME_INTERVAL_MS after the last one,
+ * aligned to the next display frame (≤ ~17 ms later). Late = 1.5× the interval.
+ */
+const REDUCED_DROP_THRESHOLD_MS = REDUCED_FRAME_INTERVAL_MS * 1.5;
+
+/** The inter-frame delta past which a frame counts as dropped, per cadence. */
+export function dropThresholdMs(cadence: SampleCadence): number {
+  return cadence === "reduced" ? REDUCED_DROP_THRESHOLD_MS : FULL_DROP_THRESHOLD_MS;
+}
+
 const EMA_ALPHA = 0.1;
 
 class AvatarPerformanceEngine {
@@ -76,7 +99,9 @@ class AvatarPerformanceEngine {
     const dt = Math.max(1, ts - this.lastTs);
     this.lastTs = ts;
     this.total += 1;
-    if (dt > DROP_THRESHOLD_MS) this.dropped += 1;
+    // Frames arrive only while the renderer runs, i.e. at `full` or `reduced`.
+    const cadence: SampleCadence = avatarRenderer.cadence() === "reduced" ? "reduced" : "full";
+    if (dt > dropThresholdMs(cadence)) this.dropped += 1;
     const instant = 1000 / dt;
     this.ema = this.ema + EMA_ALPHA * (instant - this.ema);
     const sample: PerfSample = {
@@ -86,6 +111,7 @@ class AvatarPerformanceEngine {
       droppedFrames: this.dropped,
       totalFrames: this.total,
       ts,
+      cadence,
     };
     this.last = sample;
     this.listeners.forEach((l) => {

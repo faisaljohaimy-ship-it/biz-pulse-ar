@@ -554,6 +554,18 @@ export function SadeedCopilot() {
     [],
   );
 
+  // P0 2026-10-14 (iOS Safari «حدثت مشكلة بشكل متكرر»): announce the open
+  // panel on <html> so heavy page layers can stand down beneath it — on touch
+  // and in safe-mode the background film pauses while this is set (consumer:
+  // HoloVideoEngine, SADEED_PANEL_ATTR; bound by
+  // sadeed-panel-touch.contract.test.tsx). An attribute, not a theme class.
+  useEffect(() => {
+    if (!isOpen) return;
+    const root = document.documentElement;
+    root.setAttribute("data-sadeed-panel", "open");
+    return () => root.removeAttribute("data-sadeed-panel");
+  }, [isOpen]);
+
   // Health probe + TLS preconnect + iOS audio unlock + composer focus on open.
   // INVARIANT-9 (speed): unlock everything BEFORE the user's first keystroke
   // so the first turn pays zero setup latency.

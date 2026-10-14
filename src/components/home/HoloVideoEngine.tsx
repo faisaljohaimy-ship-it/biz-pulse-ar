@@ -42,9 +42,20 @@
  * `useEffect`، والسطحُ الساكن (الشفق والشبكة والأفق والنسيج) يرسم
  * الصفحة فورًا ويبقى تحته — فإن تعذّر الفيلم بقيت الخلفية كاملة.
  *
+ * ## والفيلم يقف تحت لوحة سَدِيد على اللمس (P0 ٢٠٢٦/١٠/١٤)
+ *
+ * قِيس على محاكاة iPhone 14 Pro: الفيلم يبقى يفكّ ترميزه تحت غطاء اللوحة،
+ * فكلّ إطار فيديو يعيد تركيب ما فوقه. فتحت `(pointer: coarse)` أو
+ * `html.safe-mode`، ما دامت اللوحة مفتوحة (`data-sadeed-panel="open"` على
+ * `<html>`، يكتبه `SadeedCopilot`)، يُوقف الفيلم على إطاره، ويُستأنف عند
+ * الإغلاق إن كان يعمل حين أُوقف (لا يُشغَّل فيلمٌ منعه الجهاز). وسطح المكتب
+ * لا يمسّه شيء. وفي الوضع الآمن لا يُركَّب الفيلم أصلًا. الحارس:
+ * `src/components/sadeed-core/sadeed-panel-touch.contract.test.tsx`.
+ *
  * **الاسم يبقى `HoloVideoEngine` عقدًا حيًّا:** ثلاث صفحات تستورده.
  */
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
+import { isSafeMode } from "@/lib/sadeed/self-healing/crash-loop";
 
 /** نسيج حبيبي دقيق — SVG turbulence مضمّن، لا أصل شبكي (CSP آمن). */
 const NOISE_URI =
@@ -57,20 +68,89 @@ const PLAYBACK_RATE = 0.5;
 const FILM_SRC = "/sadeed-home-bg.mp4";
 
 /**
+ * إشارة «لوحة سَدِيد مفتوحة» على `<html>` — يكتبها `SadeedCopilot` بالنصّ
+ * نفسه، ويربط الحارسُ الطرفين.
+ */
+export const SADEED_PANEL_ATTR = "data-sadeed-panel";
+
+/** الجهاز الذي يُوقف عليه الفيلم تحت اللوحة — نصّ كتل اللمس في `styles.css`. */
+export const FILM_HOLD_QUERY = "(pointer: coarse)";
+
+/**
+ * يُوقف الفيلم ما دامت اللوحة مفتوحة على اللمس أو في الوضع الآمن، ويستأنفه
+ * حين يزول الشرط — **إن كان يعمل حين أُوقف**. فيلمٌ ساكن قبل الإيقاف (وضع
+ * توفير الطاقة على iOS يمنع التشغيل التلقائيّ فيقف على إطاره) لا يُشغَّل عند
+ * الإغلاق: لمسة الإغلاق قد تحمل تفعيل المستخدم بعدُ، فيبدأ الفيلم رغم سياسة
+ * الجهاز. والتشغيل التلقائيّ الذي يصل والإيقاف قائم (اللوحة مفتوحة عند
+ * التركيب) يُوقف حين يبدأ ويُستأنف عند الإغلاق: كان سيعمل لولا اللوحة.
+ */
+function holdFilmUnderPanel(video: HTMLVideoElement): () => void {
+  const root = document.documentElement;
+  const touch = typeof window.matchMedia === "function" ? window.matchMedia(FILM_HOLD_QUERY) : null;
+  let held = false;
+  /** هل يُستأنف عند زوال الإيقاف؟ — كان يعمل حين أُوقف، أو بدأ في أثنائه. */
+  let resumeOnRelease = false;
+  const sync = () => {
+    const hold =
+      root.getAttribute(SADEED_PANEL_ATTR) === "open" && (touch?.matches === true || isSafeMode());
+    if (hold === held) return;
+    held = hold;
+    if (hold) {
+      resumeOnRelease = !video.paused;
+      if (resumeOnRelease) video.pause();
+      return;
+    }
+    if (!resumeOnRelease) return;
+    resumeOnRelease = false;
+    // `play()` قد يُرفض (وضع توفير الطاقة يمنع التشغيل التلقائيّ): يبقى الإطار.
+    const resumed = video.play() as Promise<void> | undefined;
+    resumed?.catch(() => {});
+  };
+  // التشغيل التلقائيّ يصل بعد التركيب: إن بدأ والإيقاف قائم أُوقف، وصار له استئناف.
+  const onPlay = () => {
+    if (!held) return;
+    resumeOnRelease = true;
+    video.pause();
+  };
+  // `class` لأن الوضع الآمن قد يُدخل في أثناء الجلسة (المعالج الدائم).
+  const observer = new MutationObserver(sync);
+  observer.observe(root, { attributes: true, attributeFilter: [SADEED_PANEL_ATTR, "class"] });
+  touch?.addEventListener?.("change", sync);
+  video.addEventListener("play", onPlay);
+  sync();
+  return () => {
+    observer.disconnect();
+    touch?.removeEventListener?.("change", sync);
+    video.removeEventListener("play", onPlay);
+  };
+}
+
+/**
  * خلفية واحدة للنظام كلّه. `memo` لأن الناتج لا يتبدّل بإعادة رسم الصفحة
  * الحاضنة — والحالة الوحيدة فيه تفضيلُ الحركة، لا شيء من خارجها.
  */
 export const HoloVideoEngine = memo(function HoloVideoEngine() {
   // يُركَّب بعد أوّل رسمة فقط، ولمن لم يطلب تقليل الحركة. والاستماع
   // لـ`change` يعني أن تبديل التفضيل أثناء الجلسة يفكّ الفيلم فورًا.
+  // ولا يُركَّب في الوضع الآمن: إقلاع التعافي قشرةٌ ساكنة، و`display: none`
+  // في الأنماط يُخفي العنصر ولا يمنع `preload="auto"` من تنزيل الفيلم
+  // (‎576×1024‎ H.264) وتخزينه — فلا يُنشأ عنصر الوسائط أصلًا.
   const [film, setFilm] = useState(false);
   useEffect(() => {
     const q = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setFilm(!q.matches);
+    const sync = () => setFilm(!q.matches && !isSafeMode());
     sync();
     q.addEventListener("change", sync);
     return () => q.removeEventListener("change", sync);
   }, []);
+
+  // اللمس: لا فكّ ترميزٍ تحت لوحة سَدِيد (انظر رأس الملف).
+  const filmRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = filmRef.current;
+    if (!film || !video) return;
+    return holdFilmUnderPanel(video);
+  }, [film]);
 
   return (
     <div aria-hidden dir="ltr" className="nx-hv pointer-events-none fixed inset-0 z-0">
@@ -85,6 +165,7 @@ export const HoloVideoEngine = memo(function HoloVideoEngine() {
        */}
       {film && (
         <video
+          ref={filmRef}
           className="nx-hv-film"
           src={FILM_SRC}
           autoPlay

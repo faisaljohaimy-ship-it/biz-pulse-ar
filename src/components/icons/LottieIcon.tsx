@@ -87,6 +87,14 @@
  *     يرى الشجرة كاملة، فتكفي مشيةٌ واحدة.
  *   • **لا مشغّل أصلًا عند السكون** — لا حركةٌ بمدّة صفر. وهو نفس ما
  *     يفعله `RouteTransition` حين يُطلب السكون.
+ *   • **لا حلقة على اللمس — الإطار الأوّل وحده** (P0 ٢٠٢٦/١٠/١٤، سفاري iOS
+ *     «حدثت مشكلة بشكل متكرر»). قِيس على محاكاة iPhone 14 Pro: مؤشّر الساعة
+ *     الحيّ وحده يطلب ‎59.8‎ إطارًا/ث إلى الأبد، وكل إطار يكتب سمات SVG فيعيد
+ *     الأنماط والتخطيط. فتحت `(pointer: coarse)` يُبنى المشغّل ويُرسم الإطار ٠
+ *     (‏`loadAnimation` يرسمه متزامنًا مع `autoplay: false`) **ولا `play()`
+ *     أبدًا**: عدّاد المشغّلات العاملة في `lottie_light` يبقى صفرًا، فلا
+ *     يُطلب إطار واحد. والفنّ يبقى هو الظاهر — الهويّة كما هي، والحركة وحدها
+ *     تسقط. أمّا مفاتيح السكون الأربعة أعلاه فأشدّ من هذا: لا مشغّل أصلًا.
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { AnimationItem } from "lottie-web";
@@ -217,6 +225,17 @@ function readStill(): boolean {
   return false;
 }
 
+/**
+ * مفتاح «الإطار الأوّل» — جهاز اللمس. نصّ الاستعلام هو نصّ كتلة الاستقرار في
+ * آخر `styles.css` وعارض الأفاتار، فما تعدّه الأنماط لمسًا يعدّه المكوّن كذلك.
+ */
+export const LOTTIE_FROZEN_QUERY = "(pointer: coarse)";
+
+function readFrozen(): boolean {
+  if (typeof window.matchMedia !== "function") return false;
+  return window.matchMedia(LOTTIE_FROZEN_QUERY).matches;
+}
+
 export type LottieIconProps = {
   /**
    * أيقونة lucide الساكنة. تُصيَّر على الخادم وفي أول رسمٍ على العميل،
@@ -266,13 +285,18 @@ export function LottieIcon({
    * أيّ واحدة منها تُسقط الصفحة بـ500 في التصيير الخادمي.
    */
   const [still, setStill] = useState(true);
+  /** لمس: يُرسم الإطار الأوّل ولا يُشغَّل (انظر ④ في الرأس). */
+  const [frozen, setFrozen] = useState(false);
   const [playing, setPlaying] = useState(false);
 
   // ① مفاتيح السكون — تُقرأ فورًا ثم تُراقَب حيًّا. من أطفأ الحركة يجدها
   //   مطفأة في اللحظة نفسها، لا بعد إعادة تحميل.
   useEffect(() => {
     const root = document.documentElement;
-    const sync = () => setStill(readStill());
+    const sync = () => {
+      setStill(readStill());
+      setFrozen(readFrozen());
+    };
     sync();
 
     const observer = new MutationObserver(sync);
@@ -285,6 +309,7 @@ export function LottieIcon({
         ? [
             window.matchMedia("(prefers-reduced-motion: reduce)"),
             window.matchMedia("(forced-colors: active)"),
+            window.matchMedia(LOTTIE_FROZEN_QUERY),
           ]
         : [];
     for (const query of queries) query.addEventListener?.("change", sync);
@@ -333,6 +358,10 @@ export function LottieIcon({
         );
       }
       setPlaying(true);
+
+      // ⑤ اللمس: الإطار ٠ مرسومٌ منذ `loadAnimation`، ولا `play()` ولا مراقب
+      //   عبور — فلا يُطلب إطار واحد ما عاش المكوّن.
+      if (frozen) return;
 
       if (typeof IntersectionObserver === "undefined") {
         anim.play();
@@ -408,7 +437,8 @@ export function LottieIcon({
         anim.addEventListener("error", (reason: unknown) => {
           warnOnce(`تعثّر إطار في ${key}`, reason);
         });
-        if (bounce) anim.addEventListener("complete", onComplete);
+        // الارتداد حلقةٌ بعينها — لا يُعلَّق على اللمس، فلا يُعيد `play()` أحد.
+        if (bounce && !frozen) anim.addEventListener("complete", onComplete);
         if (speed !== 1) anim.setSpeed(speed);
       } catch (reason) {
         onFailed(reason);
@@ -449,7 +479,7 @@ export function LottieIcon({
       }
       setPlaying(false);
     };
-  }, [still, src, animationData, bounce, speed]);
+  }, [still, frozen, src, animationData, bounce, speed]);
 
   const semantics = label
     ? ({ role: "img", "aria-label": label } as const)

@@ -17,6 +17,25 @@
  *
  * `prefers-reduced-motion`: all motion freezes to a static, still frame.
  *
+ * Touch and `html.safe-mode` (P0 2026-10-14, iOS Safari «حدثت مشكلة بشكل
+ * متكرر»): "cheap to paint on mobile" was measured false. On iPhone 14 Pro
+ * emulation (DPR 3) every panel open started 65 running animations, 64 of them
+ * composited — the two rotated `.sig` layers alone are 852×1008 CSS px (about
+ * 29.5 MB each at DPR 3) — for ~25 s, and the panel remounts this backdrop on
+ * every open. So the moving parts carry STABLE classes (`SIG_LAYER_CLASS`,
+ * `SIG_GLOW_CLASS`) that the global rules at the end of `styles.css` target:
+ * under `(pointer: coarse)` and `html.safe-mode` the text layers and glyph
+ * field are not rendered and the glow is static, leaving only the radial
+ * gradient. Desktop keeps the full signature. Guard:
+ * `src/components/sadeed-core/sadeed-panel-touch.contract.test.tsx`.
+ *
+ * Scope: those rules are GLOBAL, not panel-only. `/connect`
+ * (`routes/connect.tsx`, `intensity={1.2}`) renders this same backdrop and so
+ * also loses its signature text layers on touch and in safe-mode. Scoping them
+ * to `.sadeed-window .sd-sig-layer`, if `/connect` should keep the signature on
+ * phones, is an open call for the owner or a reviewer — the code does not
+ * decide it silently.
+ *
  * The SAME wordmark is reused, fainter, in generated PDFs and the loading
  * screen (see `sadeedSignatureSvgMarkup`) so the identity is unified across every
  * touchpoint.
@@ -24,6 +43,16 @@
 import { useId } from "react";
 import { cn } from "@/lib/utils";
 import { SADEED_SIGNATURE_WORDMARK } from "@/lib/sadeed/signature";
+
+/**
+ * Stable hook on every moving text layer (both `.sig` layers and the glyph
+ * field). The per-instance `useId` classes cannot be targeted from
+ * `styles.css`; this one is, and touch / safe-mode drop it (`display: none`).
+ */
+export const SIG_LAYER_CLASS = "sd-sig-layer";
+
+/** Stable hook on the edge glow: kept on touch, but static (`animation: none`). */
+export const SIG_GLOW_CLASS = "sd-sig-glow";
 
 type SadeedSignatureBackdropProps = {
   className?: string;
@@ -61,7 +90,7 @@ export function SadeedSignatureBackdrop({
       }}
     >
       {/* Rear signature layer — larger, softer, drifts slower. */}
-      <div className={`${uid}-sig ${uid}-back`} aria-hidden>
+      <div className={`${SIG_LAYER_CLASS} ${uid}-sig ${uid}-back`} aria-hidden>
         {Array.from({ length: 8 }).map((_, i) => (
           <span key={i} className={`${uid}-line`}>
             {row.repeat(6)}
@@ -70,7 +99,7 @@ export function SadeedSignatureBackdrop({
       </div>
 
       {/* Front signature layer — tighter, brighter, drifts the other way. */}
-      <div className={`${uid}-sig ${uid}-front`} aria-hidden>
+      <div className={`${SIG_LAYER_CLASS} ${uid}-sig ${uid}-front`} aria-hidden>
         {Array.from({ length: 6 }).map((_, i) => (
           <span key={i} className={`${uid}-line`}>
             {row.repeat(5)}
@@ -80,7 +109,7 @@ export function SadeedSignatureBackdrop({
 
       {/* Individually moving letters add visible depth without distracting from
           the conversation. Positions and timings are deterministic for SSR. */}
-      <div className={`${uid}-glyph-field`} aria-hidden>
+      <div className={`${SIG_LAYER_CLASS} ${uid}-glyph-field`} aria-hidden>
         {floatingGlyphs.map((letter, i) => (
           <span key={`${letter}-${i}`} className={`${uid}-glyph`}>
             {letter}
@@ -91,7 +120,7 @@ export function SadeedSignatureBackdrop({
       {/* Emerald edge glow — vignette that lifts the frame's corners. */}
       {glow && (
         <div
-          className={`${uid}-glow`}
+          className={`${SIG_GLOW_CLASS} ${uid}-glow`}
           style={{
             background:
               "radial-gradient(140% 120% at 50% 50%, transparent 55%, rgba(16,185,129,0.10) 82%, rgba(16,185,129,0.16) 100%)",

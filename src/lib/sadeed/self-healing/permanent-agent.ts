@@ -22,9 +22,18 @@
  *   - Never throws to the host page; failures are swallowed.
  */
 
+import { BOOT_ATTEMPTS_KEY } from "./crash-loop";
+
 const HEAL_FLAG = "nexios-heal-run";
 const HEAL_QUERY = "heal";
-const BOOT_KEY = "nexios-boot-attempts";
+const BOOT_KEY = BOOT_ATTEMPTS_KEY;
+/**
+ * Memory-check cadence only. The heartbeat does NOT forgive boot strikes: it
+ * runs on wall-clock time and checks visibility only at the instant it
+ * fires, so a tab loaded in the background would be forgiven ~1 s into its
+ * visible life. Forgiveness belongs to `armHealthyBootReset` (crash-loop.ts),
+ * which counts visible uptime (guarded by crash-loop-breaker.contract.test.ts).
+ */
 const HEARTBEAT_MS = 30_000;
 
 let installed = false;
@@ -81,8 +90,11 @@ function enterSafeMode(reason: string): void {
 
 function hardHeal(reason: string): void {
   void purgeCachesAndSW().finally(() => {
-    // Clear volatile boot state so the next mount starts fresh.
-    safe(() => sessionStorage.removeItem(BOOT_KEY));
+    // The boot counter is deliberately KEPT. Clearing it here made the healed
+    // reload boot with n=1 — i.e. OUT of safe-mode — straight back into the
+    // crash it was healing. Kept, the reload boots with n>=2 and the
+    // pre-hydration breaker re-applies `html.safe-mode`; the counter is
+    // forgiven only by visible uptime (armHealthyBootReset, crash-loop.ts).
     safe(() => sessionStorage.removeItem("nexios-welcome"));
     reloadWithHeal(reason);
   });
@@ -99,8 +111,9 @@ export function installPermanentHealer(): (() => void) | undefined {
 
   const attempts = Number(safe(() => sessionStorage.getItem(BOOT_KEY)) ?? "0") || 0;
   if (attempts >= 3) {
-    // The pre-hydration breaker already promoted us to safe-mode after 2.
-    // A 3rd attempt means safe-mode alone was not enough — do a hard heal.
+    // The counter holds unclean exits only (clean reloads leave it as is).
+    // The pre-hydration breaker already promoted us to safe-mode at 2; a 3rd
+    // strike means a crash even under safe-mode — do a hard heal.
     hardHeal(`boot_attempts=${attempts}`);
     return undefined;
   }
@@ -146,9 +159,8 @@ export function installPermanentHealer(): (() => void) | undefined {
   const heartbeat = window.setInterval(() => {
     if (document.visibilityState !== "visible") return;
     checkMemory();
-    // Reset the pre-hydration attempt counter every healthy minute; if the
-    // page stays visible & interactive, previous strikes are forgiven.
-    safe(() => sessionStorage.removeItem(BOOT_KEY));
+    // No boot-counter reset here (see HEARTBEAT_MS): a wall-clock tick is not
+    // visible uptime. `armHealthyBootReset` alone forgives strikes.
   }, HEARTBEAT_MS);
 
   window.addEventListener("error", onError);

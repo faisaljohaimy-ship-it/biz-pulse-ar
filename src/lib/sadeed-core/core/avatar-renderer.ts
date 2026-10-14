@@ -5,6 +5,22 @@
  * tick. React components subscribe via `avatarRenderer.subscribe(fn)` and
  * receive frames without owning any animation math themselves. There is
  * exactly ONE renderer in the app.
+ *
+ * ## Cadence — درس ٢٠٢٦/١٠/١٤ (P0: سفاري iOS «حدثت مشكلة بشكل متكرر»)
+ *
+ * قِيس على محاكاة iPhone 14 Pro: هذه الحلقة تطلب إطارًا كل ‎~16ms‎ إلى الأبد
+ * (‎59.8‎ طلب/ث)، ومستهلكوها كلّهم تشخيصيّون (`realtimeAnimation` ←
+ * `executivePresence` ← حلقة القياس، و`avatarPerformanceEngine`) — لا مكوّن
+ * مرئيّ واحد يرسم منها. فالحلقة تعمل بثلاثة شروط لا بواحد:
+ *
+ *   ١. **مشترك واحد على الأقل.** بلا مشترك لا إطار يُحسب ولا طلب يُعلَّق؛
+ *      وأوّل اشتراك يوقظها.
+ *   ٢. **صفحة ظاهرة.** `document.hidden` ⇐ لا إطار ولا مؤقّت، وتعود عند
+ *      `visibilitychange`.
+ *   ٣. **الإيقاع بحسب الجهاز.** تحت `(pointer: coarse)` أو
+ *      `prefers-reduced-motion` نبضةٌ كل ‎≥50ms‎ (‎≤20‎ إطارًا/ث) ولا طلب معلّق
+ *      بينها، فيسكن مؤقّت العرض. وسطح المكتب بلا تقليل الحركة: إطارٌ لكل
+ *      إطار عرض — كما كان حرفًا.
  */
 import { attentionEngine } from "./attention-engine";
 import { avatarStateManager, type AvatarState, type Emotion } from "./avatar-state-manager";
@@ -16,6 +32,7 @@ import { headEngine, type HeadChannel } from "./head-engine";
 import { idleEngine } from "./idle-engine";
 import { lipSyncEngine } from "./lip-sync-engine";
 import { transitionEngine } from "./transition-engine";
+import { isSafeMode } from "@/lib/sadeed/self-healing/crash-loop";
 
 export interface AvatarFrame {
   state: AvatarState;
@@ -35,11 +52,35 @@ export interface AvatarFrame {
 
 type Subscriber = (frame: AvatarFrame) => void;
 
+/** أقصر فاصل بين نبضتين في الإيقاع المخفَّض: ‎50ms‎ ⇐ ‎≤20‎ إطارًا/ث. */
+export const REDUCED_FRAME_INTERVAL_MS = 50;
+
+/**
+ * الاستعلامان اللذان يخفّضان الإيقاع — `(pointer: coarse)` بنصّ كتلة الاستقرار
+ * في آخر `styles.css` نفسه، فما تعدّه الأنماط جهاز لمس تعدّه الحلقة كذلك.
+ */
+export const REDUCED_CADENCE_QUERIES = [
+  "(pointer: coarse)",
+  "(prefers-reduced-motion: reduce)",
+] as const;
+
+/**
+ * - `stopped`: لم تبدأ، أو أُوقفت، أو رفضها الوضع الآمن.
+ * - `paused`: بدأت، لكن لا مشترك أو الصفحة مخفيّة — لا طلب إطار ولا مؤقّت.
+ * - `full`: نبضة لكل إطار عرض (سطح المكتب).
+ * - `reduced`: ‎≤20‎ نبضة/ث (لمس أو تقليل حركة).
+ */
+export type RendererCadence = "stopped" | "paused" | "full" | "reduced";
+
 class AvatarRenderer {
   private frame: AvatarFrame = this.seed();
   private subs = new Set<Subscriber>();
   private raf: number | null = null;
+  /** مؤقّت الإيقاع المخفَّض — بين نبضتين لا طلب إطار معلّق، بل هذا وحده. */
+  private timer: ReturnType<typeof setTimeout> | null = null;
   private running = false;
+  private reduced = false;
+  private unwatch: (() => void) | null = null;
 
   private seed(): AvatarFrame {
     return {
@@ -61,21 +102,28 @@ class AvatarRenderer {
 
   start(): void {
     if (this.running || typeof window === "undefined") return;
+    // Article XIII: under `html.safe-mode` the crash-loop breaker asked for a
+    // static shell. This loop runs every frame forever (measured ~60 forced
+    // layouts/s with Lottie on iPhone emulation), so it must not start —
+    // subscribers keep the seed frame.
+    if (isSafeMode()) return;
     this.running = true;
-    const loop = (t: number) => {
-      if (!this.running) return;
-      this.tick(t);
-      this.raf = window.requestAnimationFrame(loop);
-    };
-    this.raf = window.requestAnimationFrame(loop);
+    this.unwatch = this.watchEnvironment();
+    this.wake();
   }
 
   stop(): void {
     this.running = false;
-    if (this.raf !== null && typeof window !== "undefined") {
-      window.cancelAnimationFrame(this.raf);
-    }
-    this.raf = null;
+    this.unwatch?.();
+    this.unwatch = null;
+    this.sleep();
+  }
+
+  /** الإيقاع النافذ الآن — للاختبارات وأدوات التشخيص، لا يغيّر شيئًا. */
+  cadence(): RendererCadence {
+    if (!this.running) return "stopped";
+    if (!this.wantsFrames()) return "paused";
+    return this.reduced ? "reduced" : "full";
   }
 
   getFrame(): AvatarFrame {
@@ -85,7 +133,82 @@ class AvatarRenderer {
   subscribe(fn: Subscriber): () => void {
     this.subs.add(fn);
     fn(this.frame);
-    return () => this.subs.delete(fn);
+    // أوّل مشترك هو ما يجعل الإطار جديرًا بالحساب.
+    this.wake();
+    return () => {
+      this.subs.delete(fn);
+      if (!this.wantsFrames()) this.sleep();
+    };
+  }
+
+  /** الشروط الثلاثة في رأس الملف: بدأت، ولها مشترك، والصفحة ظاهرة. */
+  private wantsFrames(): boolean {
+    if (!this.running || this.subs.size === 0) return false;
+    return !(typeof document !== "undefined" && document.hidden);
+  }
+
+  /** يسلّح النبضة التالية — ما لم تكن واحدةٌ معلّقة أو لا أحد يحتاجها. */
+  private wake(): void {
+    if (this.raf !== null || this.timer !== null || !this.wantsFrames()) return;
+    this.raf = window.requestAnimationFrame(this.loop);
+  }
+
+  /** ينزع كلّ معلّق: طلب الإطار ومؤقّت الإيقاع المخفَّض معًا. */
+  private sleep(): void {
+    if (this.raf !== null && typeof window !== "undefined") {
+      window.cancelAnimationFrame(this.raf);
+    }
+    this.raf = null;
+    if (this.timer !== null) clearTimeout(this.timer);
+    this.timer = null;
+  }
+
+  private readonly loop = (t: number): void => {
+    this.raf = null;
+    if (!this.running) return;
+    // Safe-mode can also be entered mid-session (permanent healer, memory
+    // pressure). The class is never removed within a page life, so stop
+    // for good. `classList.contains` reads no layout.
+    if (isSafeMode()) {
+      this.stop();
+      return;
+    }
+    // أُخفيت الصفحة أو غادر آخر مشترك منذ التسليح: لا نبضة ولا تالية لها.
+    if (!this.wantsFrames()) return;
+    this.tick(t);
+    if (this.reduced) {
+      // ‎≤20‎ إطارًا/ث: الفاصل يمضي بلا طلب إطار معلّق، ثم تُحاذى النبضة
+      // إلى إطار العرض التالي — فالفارق بين نبضتين ‎≥50ms‎ دائمًا.
+      this.timer = setTimeout(() => {
+        this.timer = null;
+        this.wake();
+      }, REDUCED_FRAME_INTERVAL_MS);
+    } else {
+      this.raf = window.requestAnimationFrame(this.loop);
+    }
+  };
+
+  /**
+   * يقرأ الإيقاع ويراقب تبدّله حيًّا: الإخفاء والإظهار، وتبديل تفضيل الحركة
+   * أو جهاز الإدخال أثناء الجلسة. كلّ تبدّلٍ يُعيد التسليح من الصفر.
+   */
+  private watchEnvironment(): () => void {
+    const queries =
+      typeof window.matchMedia === "function"
+        ? REDUCED_CADENCE_QUERIES.map((q) => window.matchMedia(q))
+        : [];
+    const sync = () => {
+      this.reduced = queries.some((q) => q.matches);
+      this.sleep();
+      this.wake();
+    };
+    this.reduced = queries.some((q) => q.matches);
+    document.addEventListener("visibilitychange", sync);
+    for (const q of queries) q.addEventListener?.("change", sync);
+    return () => {
+      document.removeEventListener("visibilitychange", sync);
+      for (const q of queries) q.removeEventListener?.("change", sync);
+    };
   }
 
   private tick(nowMs: number): void {

@@ -19,6 +19,7 @@ import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
+import { armHealthyBootReset } from "@/lib/sadeed/self-healing/crash-loop";
 
 // ── SADEED Singleton ────────────────────────────────────────────────────
 // ONE SADEED. Do not add a second copilot at the root. See
@@ -205,11 +206,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         // Article XIII — Crash-Loop Breaker (iOS Safari OOM recovery).
-        // Increments a boot-attempt counter before hydration; on 2+
-        // consecutive unfinished boots the shell enters safe-mode: skip the
-        // intro video and mark <html> so heavy scenes can opt out. A clean
-        // React mount resets the counter (see RootComponent effect below).
-        children: `(function(){try{var ss=window.sessionStorage;var k='nexios-boot-attempts';var n=parseInt(ss.getItem(k)||'0',10);if(!isFinite(n)||n<0)n=0;n++;ss.setItem(k,String(n));if(n>=2){ss.setItem('nexios-welcome','complete:v4');ss.setItem('nexios-safe-mode','1');document.documentElement.classList.add('safe-mode');}if(n>=3){try{if('caches' in window){caches.keys().then(function(ks){ks.forEach(function(c){caches.delete(c);});});}if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});});}}catch(_){}}}catch(e){}})();`,
+        // Counts UNCLEAN exits before hydration; at 2+ strikes the shell
+        // enters safe-mode: skip the intro video and mark <html> so heavy
+        // scenes can opt out. The counter is reset only after
+        // HEALTHY_UPTIME_MS of visible uptime, not at React commit (see
+        // RootComponent effect below and crash-loop.ts).
+        // Unclean-exit detection (P0 2026-10-14): 'nexios-alive' is '1' while
+        // the page is visible and removed on pagehide / hidden. Still '1' at
+        // boot ⇒ the last life died without pagehide (iOS jetsam) ⇒ a strike
+        // whatever its uptime: n = max(n, 1) + 1, i.e. safe-mode on the reload
+        // after the first crash. A CLEAN boot leaves n unchanged: counting
+        // every boot (`n+1`) put two quick pull-to-refreshes, a fast OAuth
+        // round-trip or an error-boundary reload into safe-mode, on desktop
+        // too. Contract and lesson: crash-loop.ts (ALIVE_KEY).
+        children: `(function(){try{var ss=window.sessionStorage;var k='nexios-boot-attempts';var a='nexios-alive';var n=parseInt(ss.getItem(k)||'0',10);if(!isFinite(n)||n<0)n=0;n=ss.getItem(a)==='1'?Math.max(n,1)+1:n;ss.setItem(k,String(n));var up=function(){try{if(document.visibilityState==='visible')ss.setItem(a,'1');else ss.removeItem(a);}catch(_){}};var down=function(){try{ss.removeItem(a);}catch(_){}};up();window.addEventListener('pagehide',down);window.addEventListener('pageshow',up);document.addEventListener('visibilitychange',up);if(n>=2){ss.setItem('nexios-welcome','complete:v4');ss.setItem('nexios-safe-mode','1');document.documentElement.classList.add('safe-mode');}if(n>=3){try{if('caches' in window){caches.keys().then(function(ks){ks.forEach(function(c){caches.delete(c);});});}if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});});}}catch(_){}}}catch(e){}})();`,
       },
 
       {
@@ -322,14 +332,14 @@ function RootComponent() {
   useEffect(() => {
     let cleanup: (() => void) | undefined;
     let cancelled = false;
-    // Article XIII — Crash-Loop Breaker: React reached commit, so this boot
-    // is healthy. Reset the pre-hydration attempt counter so a future crash
-    // gets its own fresh 2-strike budget.
-    try {
-      window.sessionStorage.removeItem("nexios-boot-attempts");
-    } catch {
-      /* ignore */
-    }
+    // Article XIII — Crash-Loop Breaker. Reaching React commit does NOT make
+    // this boot healthy: iOS jetsam kills the page AFTER hydration (video,
+    // image decode, rAF loops), and clearing the counter here reset the
+    // strike count on every boot, so safe-mode never engaged and Safari
+    // reached its fatal "problem repeatedly occurred" page (P0 2026-10-14).
+    // The counter is cleared only after HEALTHY_UPTIME_MS of visible uptime
+    // (see crash-loop.ts); unmounting before that keeps the strike.
+    const disarmHealthyBoot = armHealthyBootReset();
     import("@/lib/sadeed/self-healing/watchdog").then((m) => {
       if (cancelled) return;
       cleanup = m.installSadeedWatchdog();
@@ -365,6 +375,7 @@ function RootComponent() {
     });
     return () => {
       cancelled = true;
+      disarmHealthyBoot();
       cleanup?.();
       badgeShieldCleanup?.();
     };
