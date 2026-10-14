@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.103",
+    "@ai-sdk/openai-compatible": "^3.0.68",
     "@ai-sdk/react": "^3.0.193",
     "@elevenlabs/react": "^1.6.3",
     "@hookform/resolvers": "^5.2.2",
