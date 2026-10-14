@@ -801,22 +801,42 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
         let rawModelText = "";
         let generationErrorText: string | null = null;
         try {
-          const gen = await generateText({
-            model,
-            system: systemPrompt,
-            messages: await convertToModelMessages(uiMessages, {
-              tools,
-              ignoreIncompleteToolCalls: true,
-            }),
+          const backup = await import("@/lib/sadeed/backup-provider.server");
+          const modelMessages = await convertToModelMessages(uiMessages, {
             tools,
-            toolChoice: "auto",
-            stopWhen: stepCountIs(12),
-            maxRetries: 2,
-            abortSignal: request.signal,
-            // Gemini 3.6 deprecates temperature/top-p/top-k controls. Keep
-            // quality in the prompt, evidence gate and tool policy instead.
-            maxOutputTokens: replyMode === "voice" ? 700 : 16_000,
+            ignoreIncompleteToolCalls: true,
           });
+          const run = (m: typeof model, retries: number) =>
+            generateText({
+              model: m,
+              system: systemPrompt,
+              messages: modelMessages,
+              tools,
+              toolChoice: "auto",
+              stopWhen: stepCountIs(8),
+              maxRetries: retries,
+              abortSignal: request.signal,
+              // Gemini 3.6 deprecates temperature/top-p/top-k controls. Keep
+              // quality in the prompt, evidence gate and tool policy instead.
+              maxOutputTokens: replyMode === "voice" ? 700 : 16_000,
+            });
+          const backupModel = backup.createSadeedBackupModel();
+          let gen: Awaited<ReturnType<typeof run>>;
+          if (backupModel && backup.primaryCoolingDown()) {
+            gen = await run(backupModel as unknown as typeof model, 1);
+          } else {
+            try {
+              // No SDK retries on the direct key: a quota 429 carries a
+              // multi-hour Retry-After that left the chat "thinking" forever.
+              gen = await run(model, 0);
+            } catch (primaryError) {
+              if (!backupModel || !backup.shouldUseBackup(primaryError)) throw primaryError;
+              const msg = String(primaryError instanceof Error ? primaryError.message : primaryError);
+              if (/quota|429|resource_exhausted/i.test(msg)) backup.coolPrimary();
+              console.warn("[api/chat] primary failed → backup", { requestId, error: msg.slice(0, 200) });
+              gen = await run(backupModel as unknown as typeof model, 1);
+            }
+          }
           rawModelText = gen.text;
           console.log("[api/chat] buffered finish", {
             requestId,
