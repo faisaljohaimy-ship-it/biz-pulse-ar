@@ -831,9 +831,14 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               gen = await run(model, 0);
             } catch (primaryError) {
               if (!backupModel || !backup.shouldUseBackup(primaryError)) throw primaryError;
-              const msg = String(primaryError instanceof Error ? primaryError.message : primaryError);
+              const msg = String(
+                primaryError instanceof Error ? primaryError.message : primaryError,
+              );
               if (/quota|429|resource_exhausted/i.test(msg)) backup.coolPrimary();
-              console.warn("[api/chat] primary failed → backup", { requestId, error: msg.slice(0, 200) });
+              console.warn("[api/chat] primary failed → backup", {
+                requestId,
+                error: msg.slice(0, 200),
+              });
               gen = await run(backupModel as unknown as typeof model, 1);
             }
           }
