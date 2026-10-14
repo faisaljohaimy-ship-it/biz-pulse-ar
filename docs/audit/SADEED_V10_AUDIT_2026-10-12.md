@@ -4,12 +4,14 @@
 
 `origin/main` is now followed by docs-only commits: `d34db30` (docs/audit/* and a `.prettierignore` entry) and this report's commit. Application code is identical to `ea9a947`.
 
+**Point in time.** The findings, matrix and baselines describe `ea9a947`. Changes after the audit are recorded only in dated status notes (2026-10-13: SEC-01 closed in code by `5b2bca5`, see §0, §9.1, WS-0 and §12); application code on `main` is no longer identical to `ea9a947`.
+
 ---
 
 ## 0. Executive summary
 
 - **Verdict: not ready against the Phase 14 Definition of Done.** Of the owner's 12 Definition-of-Done behaviours, 0 are met, 5 are partially met and 7 are not met. After verification the 233 rows hold **1 P0, 20 P1, 116 P2, 54 P3 and 42 with no defect**; 34 rows are BROKEN, 101 PARTIAL, 42 MISSING, 12 UNVERIFIED and 44 IMPLEMENTED.
-- **Release blocker — SEC-01 (P0, verified).** Anonymous visitors can receive maintenance-order creator employee/ID numbers. `src/lib/exec/maintenance-report.real.server.ts` writes `أنشأه: <created_by>` into `notes` from the git-tracked `src/lib/exec/maintenance-report.data.json` (249 rows, all with `created_by`, 20 distinct identifiers, tracked since 2026-09-02). Those notes reach the guest chat context (`chat.ts` guest branch → `buildRecallBlock` → `formatWorkOrderRecord`) and the `sec.functions` `getWorkOrders` fallback, outside the masking view `maint_orders_v` (SEC-01, SEC-25). Two contract tests currently lock this behaviour, so the fix must update them. **Owner decisions 2026-10-13:** §9.2 decided (C: code direct-to-main, database changes behind explicit approval); §9.1 deferred («لا تبدأ الآن»), so WS-0 has not started and SEC-01 remains live in production. When the owner approves §9.1, execution starts at **WS-0 (this hotfix)**; production DB changes (§9.3) gate WS-4, WS-5, WS-7, WS-8 and WS-10.
+- **Release blocker at audit time — SEC-01 (P0, verified; closed in code 2026-10-13, see §9.1).** As audited, anonymous visitors could receive maintenance-order creator employee/ID numbers. `src/lib/exec/maintenance-report.real.server.ts` wrote `أنشأه: <created_by>` into `notes` from the git-tracked `src/lib/exec/maintenance-report.data.json` (249 rows, all with `created_by`, 20 distinct identifiers, tracked since 2026-09-02). Those notes reached the guest chat context (`chat.ts` guest branch → `buildRecallBlock` → `formatWorkOrderRecord`) and the `sec.functions` `getWorkOrders` fallback, outside the masking view `maint_orders_v` (SEC-01, SEC-25). Two contract tests then locked this behaviour; the fix reversed them. **Owner decisions 2026-10-13:** §9.2 decided (C: code direct-to-main, database changes behind explicit approval); §9.1 was first deferred («لا تبدأ الآن») and then approved the same day as the first corrective wave. **WS-0 is closed in code** (options A+B; publish requested, owner spot-check pending; see the status note at the end of §9.1). Production DB changes (§9.3) gate WS-4, WS-5, WS-7, WS-8 and WS-10.
 - **Uploaded knowledge cannot reach any answer** (RAG-01, INGEST-34, CHAT-14; all P1. The verifier downgraded RAG-01 and INGEST-34 from P0 because retrieval is flag-gated and fails closed; CHAT-14 was P1 and held.) In production `aria_match_documents` was called and failed with `42P01 relation "public.aria_document_chunks" does not exist`; `aria_match_documents` (called) and `aria_match_knowledge` (source read: it queries the absent `aria_knowledge`) still read pre-rename table names; `aria_match_memory` was not called, though the migrations show the same pattern. The error is swallowed to `console.warn`, `rag_query_log` has 0 rows, and the 8 ready documents / 18 embedded chunks are inert. Library search fails on every query (RAG-03, UX-38, SEC-15).
 - **The UI says the opposite** (INGEST-35, UX-37; P1). `/knowledge-upload` prints "Citation Ready: Yes" and "SADEED can now cite this document", advertises an unenforced "up to 50MB", and shows "no documents" when the list query fails (UX-42). The composer promises to deposit every attached file, but PDFs and images are never deposited (UX-17).
 - **Every chat turn is fully buffered** (CHAT-02, P1). `generateText` runs to completion, the safe-output gateway rewrites the full text, and the reply is emitted as one `text-delta`; even the HTTP headers wait for the whole turn. Before the model call an authenticated turn makes 7 strictly sequential network round trips (8 with RAG on, 9 with the HCIS read); a guest turn makes 3 (QA-21). The owner-approved "sentence by sentence behind a flag" streaming does not exist.
@@ -993,6 +995,30 @@ Fifteen items, deduplicated from the auditors' lists. Each gives the options and
 
 **Owner decision (2026-10-13, AskUserQuestion): «لا تبدأ الآن» — not started.** WS-0 is deferred. SEC-01 stays open and live in production: anonymous visitors can still receive the 20 creator identifiers through the guest chat context and the `getWorkOrders` fallback. It remains the only release-blocking finding until the owner approves a fix.
 
+**Superseded the same day (2026-10-13, AskUserQuestion): «نعم، الموجة الأولى (موصى به)».** The owner approved the fix as the first corrective wave.
+
+**Status 2026-10-13 — closed in code for the maintenance export (A + B).** Commit `5b2bca5` is on `main`. Release facts, and only those that were established:
+
+- Lovable's `latest_commit_sha` read `2d9b013`, a bot formatting commit on top of `5b2bca5`, so the push was synced.
+- Publish was **requested** (deployment `a15eab85`, about 18:39 UTC). Its completion was not confirmed from this sandbox.
+- The manual `production-check.yml` run `38448643443` (`workflow_dispatch` on `2d9b013`, 18:40–18:50 UTC) passed. That check measures the live HTML contract and UI limits; it does not identify which commit is being served, so it does not by itself attest this release.
+- The owner's spot-check of a guest work-order question in production (§11, WS-0 · release) is **pending**. The production domains are blocked from this sandbox.
+
+- **B:** `maintenance-report.data.json` no longer has a `created_by` field (249 lines removed; every other byte unchanged), and `buildNotes` writes no creator line.
+- **A:** all notes pass through `stripPersonIdentity` (`src/lib/maintenance/person-identity.server.ts`) before display *and before matching*. The recall block shows an assignee only as «مُسنَد (الهوية محجوبة)» by default; identity is revealed only for live `sec_work_orders` rows, which the caller's client already read under RLS (`RecallAudience` in `projects-maintenance-recall.server.ts`).
+- **Surfaces:** the audit named two (guest chat context, `getWorkOrders` fallback). The fix found and closed three more on the same path: the agents' knowledge block, the instant reference answer, and the `listWorkOrders` fallback.
+- **Before/after (commit message):** 28 of 28 fixed guest questions leaked before; 51 «أنشأه:» lines in the guest context and 51 in the agents' context; 249 rows in the fallback. After: 0 in each. `nexios-qa-guardian` measured 56/56 → 0 independently, and 0 of the 20 identifiers in the built bundle.
+- **Guard:** `src/lib/exec/maintenance-identity.contract.test.ts` (15 cases) with planted violations (Article 30). Six mutations, each removing one protection layer, each turned tests red (13/1/5/2/1/3).
+- **Not done (C):** the bundled export still backs the fallback; moving these reads to `maint_orders_v` stays under the page-by-page decision of 2026-10-07.
+- **Still disclosed:** the 20 identifiers remain in git history since 2026-09-02, because history rewrite is forbidden.
+
+**Two other exports are out of SEC-01's scope and stay visible by owner decision** (2026-10-13, AskUserQuestion: «المراجعة وجدت تسرّبين من نوع SEC-01 نفسه … ماذا أفعل؟»; options «حجبها عن الزائر في الموجة التالية (موصى به)» and «تبقى ظاهرة»; chosen: «تبقى ظاهرة»):
+
+- the project manager in `projects-report.data.json`: 688 of 697 rows, 10 distinct names;
+- the incident operator (`owner`) in `event-report.data.json`: 3,427 rows, 12 distinct names.
+
+The question said «١٨٨ مشروعًا» in error; the measured figure is 688, and the owner was told the correct number. This is an accepted exposure by the owner's decision, limited to these two exports, not an open defect.
+
 ### 9.2 Deployment authority: PHASE 15.2 "deploy only with explicit authorization" vs the direct-to-main policy (2026-08-01)
 
 **Facts.** CLAUDE.md's Mandatory Direct-to-Main Delivery Policy pushes every task that passes the gate straight to `origin/main`, then Publishes and verifies, with no PR and no new approval request. It declares itself governing over any conflicting instruction. The new PHASE 15.2 requires explicit authorization before deploying. Both cannot hold for the same change.
@@ -1289,6 +1315,7 @@ All changes are non-destructive unless noted. Each one, including the bucket lim
   - The commit message records the before/after count of identifier matches in the guest context for a fixed set of WO questions (before > 0, after = 0).
 - **Effort:** S.
 - **Depends on:** §9.1, §9.2.
+- **Status (2026-10-13): closed in code** — `5b2bca5` on `main`; publish requested; production check passed but does not attest the served build; owner spot-check pending. Three more surfaces were closed than this plan listed. See the status note at the end of §9.1.
 
 ### WS-1 — Knowledge pages: truthful status, real error states, safe delete, Arabic-first
 
@@ -1630,11 +1657,12 @@ Each line: missing item → owner action → test after access.
 ## 12. Resume pointer
 
 - **Status 2026-10-13: no workstream has started.** §9.2 is decided (C: code direct-to-main, database behind explicit approval). §9.1 is deferred by the owner («لا تبدأ الآن»). The plan starts at **WS-0 (SEC-01 hotfix)** once the owner approves §9.1 (option A, ideally with B). The report recommends that no other workstream ships first; starting another workstream earlier is the owner's call.
+- **Superseded later on 2026-10-13:** the owner approved §9.1 («نعم، الموجة الأولى (موصى به)»), and **WS-0 is closed in code** (`5b2bca5`, A + B). Its release items are in the status note at the end of §9.1: publish requested, owner spot-check pending. The next workstream is the owner's call.
 - **Decisions needed, per workstream:**
 
   | Workstream | Decisions |
   |---|---|
-  | WS-0 | §9.1 (deferred 2026-10-13), §9.2 (decided: C) |
+  | WS-0 | §9.1 (deferred, then approved 2026-10-13 — closed in code), §9.2 (decided: C) |
   | WS-1 | §9.14 (delete policy, single limit); the confirmation dialog can proceed regardless |
   | WS-2 | §9.9 |
   | WS-3 | §9.8, plus §9.3 if a ledger table is chosen |
