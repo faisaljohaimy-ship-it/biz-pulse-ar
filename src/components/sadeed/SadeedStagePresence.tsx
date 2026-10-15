@@ -23,6 +23,23 @@
  * فينطق المساعد من مساره الوحيد: الخادم `‎/api/sadeed/tts`‎ عبر `SadeedAudioBus`.
  * `speechSynthesis` ممنوع في كل المسارات (عقيدة غير قابلة للتفاوض)، ولا
  * مزوّد ولا صوت يُبدَّل من هنا.
+ *
+ * ── الهيئة المدمجة (`variant="compact"`) — «مركز القيادة» ٢٠٢٦/١٠/١٣ ──
+ * بطاقة «SADEED AI» في صدر الرئيسية يمينًا (المواصفة §4.5): الوجه نفسه
+ * (الصورة نفسها، لا شخصية جديدة) مقصوصًا على الرأس والكتفين، والعنوان
+ * والوصف، وشارة حضورٍ **صادقة**، وتحتها ما يمرّره المضيف (التحية). والزرّان
+ * الصوتيان تحت الوجه: طلب المخاطبة وكتم الصوت — الطريقان أنفسهما.
+ *
+ * والشارة لا تدّعي اتصالًا لم يُقَس (المادة ٢٧): «متصل الآن» حين يقول فحص
+ * `‎/api/chat/health`‎ إن مزوّد الذكاء جاهز — والجاهزية OR عبر المفاتيح القادرة،
+ * يطويها الخادم في `key_present` — وإلا الحال الصادق: ردود محلية فقط، أو لم
+ * يُتحقَّق. والفحص يقرؤه المضيف ويمرّره (`connection`): هذا المكوّن لا يطلب
+ * شبكةً ولا يستورد وحدة دردشة. وحين ينطق المساعد أو يُصغي تحلّ حاله محلّ
+ * حال الاتصال في الشارة نفسها — منطوقةً للقارئ الآلي (`aria-live`).
+ *
+ * والمدمجة كتلةٌ في مجرى البطاقة كالمسرح: لا تثبيت ولا تكديس ولا ارتفاع
+ * بحجم الشاشة. وألوانها وقصّ الوجه في `styles/home/home-sadeed.css` —
+ * الأسلوب المضمّن لا يحمل قيمةً نهائية.
  */
 import {
   useCallback,
@@ -30,15 +47,23 @@ import {
   useState,
   type AnimationEvent as ReactAnimationEvent,
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
 } from "react";
-import { Mic, MessageSquare } from "lucide-react";
+import { CircleDashed, Mic, MessageSquare, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSadeedStore } from "@/lib/sadeed-core/store";
 import { useSadeedPresenceState } from "@/lib/sadeed/sadeed-state";
 import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { SadeedVideoAvatar } from "@/components/sadeed/SadeedVideoAvatar";
 import { SadeedMuteToggle } from "@/components/sadeed/SadeedMuteToggle";
-import { SADEED_DISPLAY_NAME_AR, SADEED_DISPLAY_NAME_AR_PLAIN } from "@/lib/sadeed-core/branding";
+import { SadeedMark } from "@/components/brand/SadeedMark";
+import { PRODUCT_BRAND } from "@/lib/domain";
+import {
+  SADEED_DISPLAY_NAME_AR,
+  SADEED_DISPLAY_NAME_AR_PLAIN,
+  SADEED_DISPLAY_NAME_EN,
+} from "@/lib/sadeed-core/branding";
+import "@/styles/home/home-sadeed.css";
 
 const PORTRAIT_SRC = "/sadeed-portrait.webp";
 
@@ -52,12 +77,58 @@ const STATE_LABEL_AR: Record<string, string> = {
   thinking: "يفكّر…",
   speaking: "يتحدّث الآن",
 };
+const STATE_LABEL_EN: Record<string, string> = {
+  idle: "Ready",
+  listening: "Listening to you",
+  thinking: "Thinking…",
+  speaking: "Speaking now",
+};
+
+/**
+ * حال اتصال المساعد بمزوّد الذكاء كما قاسها المضيف من `‎/api/chat/health`‎:
+ *   checking — الفحص لم يعد بعد (انتظار، لا حكم)؛
+ *   ready    — الخادم أبلغ بمزوّدٍ جاهز ⇐ «متصل الآن»؛
+ *   local    — الخادم حيّ بلا مزوّد ⇐ يبثّ ردًّا محليًّا صادقًا (الطبقة ١)؛
+ *   unknown  — الفحص تعذّر ⇐ لا يُدّعى اتصالٌ ولا انقطاع.
+ */
+export type SadeedConnection = "checking" | "ready" | "local" | "unknown";
+
+/** الكلمة والشكل معًا (§1.4.1): نقطة = متصل · مثلث = تحذير · دائرة متقطّعة = لم يُقَس. */
+const CONNECTION_VIEW: Record<
+  SadeedConnection,
+  { ar: string; en: string; icon: "dot" | "triangle" | "dashed" }
+> = {
+  checking: { ar: "يتحقّق من الاتصال…", en: "Checking connection…", icon: "dashed" },
+  ready: { ar: "متصل الآن", en: "Connected now", icon: "dot" },
+  local: { ar: "ردود محلية فقط", en: "Local replies only", icon: "triangle" },
+  unknown: { ar: "تعذّر التحقق من الاتصال", en: "Connection not verified", icon: "dashed" },
+};
 
 export interface SadeedStagePresenceProps {
   className?: string;
+  /**
+   * `stage` (الافتراضي): بطاقة المسرح المتوسّطة كما كانت.
+   * `compact`: بطاقة «SADEED AI» في صدر الرئيسية (المواصفة §4.5).
+   */
+  variant?: "stage" | "compact";
+  /** المدمجة: لغة الواجهة — النصّ عربيّ `rtl` في العربية. */
+  ar?: boolean;
+  /** المدمجة: معرّف عنوان «SADEED AI» لتعنون به البطاقة المضيفة نفسها. */
+  headingId?: string;
+  /** المدمجة: حال الاتصال المقيسة من فحص الصحّة (يقرؤها المضيف). */
+  connection?: SadeedConnection;
+  /** المدمجة: ما يُرسم تحت الشارة — تحية المضيف. */
+  children?: ReactNode;
 }
 
-export function SadeedStagePresence({ className }: SadeedStagePresenceProps) {
+export function SadeedStagePresence({
+  className,
+  variant = "stage",
+  ar = true,
+  headingId,
+  connection = "checking",
+  children,
+}: SadeedStagePresenceProps) {
   const presence = useSadeedPresenceState();
   const requestVoiceConversation = useSadeedStore((s) => s.requestVoiceConversation);
   const setMode = useSadeedStore((s) => s.setMode);
@@ -105,6 +176,97 @@ export function SadeedStagePresence({ className }: SadeedStagePresenceProps) {
   const endHoloPulse = useCallback((e: ReactAnimationEvent<HTMLDivElement>) => {
     if (e.animationName === "sd-holo-pulse") setHoloPulsing(false);
   }, []);
+
+  if (variant === "compact") {
+    // حال الصوت أولى بالشارة متى وقعت (يُصغي · يفكّر · يتحدّث) — حدثٌ جارٍ
+    // الآن؛ وفي السكون تقول الشارة حال الاتصال المقيسة.
+    const voiceLabel = (ar ? STATE_LABEL_AR : STATE_LABEL_EN)[presence];
+    const view = CONNECTION_VIEW[connection];
+    const pillState = live ? "voice" : connection;
+    const pillIcon = live ? "dot" : view.icon;
+    const pillLabel = live && voiceLabel ? voiceLabel : ar ? view.ar : view.en;
+    const name = ar ? SADEED_DISPLAY_NAME_AR_PLAIN : SADEED_DISPLAY_NAME_EN;
+
+    return (
+      <div
+        dir={ar ? "rtl" : "ltr"}
+        className={cn("nx-sd-compact", className)}
+        data-speaking={speaking ? "" : undefined}
+      >
+        {/* الوجه والزرّان الصوتيان — عمود البداية (يمينًا في العربية). */}
+        <div className="nx-sd-compact-figure">
+          <div
+            ref={holoFrameRef}
+            className={cn("sd-holo-frame", holoPulsing && "is-pulsing")}
+            onPointerMove={tiltHologram}
+            onPointerLeave={restHologram}
+            onPointerCancel={restHologram}
+            onPointerDown={() => setHoloPulsing(true)}
+            onAnimationEnd={endHoloPulse}
+          >
+            <span aria-hidden className="sd-holo-base" />
+            <div className="sd-holo-tilt">
+              {/* الصورة نفسها مقصوصةً على الرأس والكتفين في CSS
+                  (`.nx-sd-portrait-media`) — لا أسلوب مضمّن بقيمة نهائية. */}
+              <div className="nx-sd-portrait">
+                <SadeedVideoAvatar
+                  poster={PORTRAIT_SRC}
+                  className="absolute inset-0"
+                  mediaClassName="nx-sd-portrait-media"
+                  active={speaking}
+                />
+                <span aria-hidden className="sd-holo-tint" />
+                <span aria-hidden className="sd-holo-scanlines" />
+                <span aria-hidden className="sd-holo-sweep" />
+              </div>
+            </div>
+          </div>
+          <div className="nx-sd-voice">
+            <button
+              type="button"
+              onPointerDown={unlockAudio}
+              onClick={() => {
+                unlockAudio();
+                requestVoiceConversation();
+              }}
+              aria-label={ar ? `تحدّث مع ${name}` : `Talk to ${name}`}
+              title={ar ? `تحدّث مع ${name}` : `Talk to ${name}`}
+              className="nx-sd-voice-btn"
+            >
+              <Mic aria-hidden />
+            </button>
+            <SadeedMuteToggle className="nx-sd-mute size-11 px-0" />
+          </div>
+        </div>
+
+        <div className="nx-sd-compact-id">
+          <h2 id={headingId} className="nx-sd-compact-title">
+            {/* الاسم اللاتيني سطرٌ `ltr`: العلامة يسار الاسم كما في الصورة. */}
+            <span dir="ltr" className="nx-sd-compact-brand">
+              <SadeedMark className="nx-sd-compact-mark" />
+              <span>{`${PRODUCT_BRAND.en.name} AI`}</span>
+            </span>
+          </h2>
+          <p className="nx-sd-compact-sub">
+            {ar ? "المساعد التنفيذي للأمن الصناعي" : "Executive industrial-security assistant"}
+          </p>
+          {/* الحالة نصٌّ حيّ يُعلَن للقارئ الآلي عند تبدّله: «يتحدّث الآن» حين
+              ينطق، وحال الاتصال المقيسة في السكون. الشكل زينةٌ مصاحبة. */}
+          <p aria-live="polite" className="nx-sd-pill" data-state={pillState}>
+            {pillIcon === "dot" ? (
+              <span aria-hidden className="nx-sd-pill-dot" />
+            ) : pillIcon === "triangle" ? (
+              <TriangleAlert aria-hidden className="nx-sd-pill-icon" />
+            ) : (
+              <CircleDashed aria-hidden className="nx-sd-pill-icon" />
+            )}
+            {pillLabel}
+          </p>
+          {children}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section

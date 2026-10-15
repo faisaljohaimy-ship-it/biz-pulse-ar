@@ -10,29 +10,67 @@
  *     تُرسم شارةٌ بصفر — الصفر قياسٌ لا غياب (المادة ٢٧).
  *   • **الرسائل**: لا صندوق رسائل؛ الوجهة محادثات سَدِيد.
  *   • **التطبيقات**: قائمةٌ من السجل الكانوني `MODULES` — كلُّها حيّة.
- *   • **مبدّل الوضع** ليس هنا: مصدره الواحد `TopBar` (عقد `open-changelog`).
+ *   • **مبدّل الوضع — هنا على الرئيسية وحدها** (مركز القيادة، أمر المالك
+ *     ٢٠٢٦/١٠/١٣): بين التطبيقات والمساعدة كما في الصورة. نطاقه يقرّره
+ *     `resolveChromeSlots` في `TopBar.tsx` (`showTheme`) — المصدر الواحد —
+ *     والشريط العلوي لم يعد يرسم مبدّلًا، فلا مبدّلان على صفحة.
+ *
+ * **والترتيب يتبع حاويته:** على الرئيسية تُركَّب الترويسة في صفٍّ `ltr`
+ * (قرار المالك D5) فتُرسم يسارًا ← يمينًا كما في الصورة — البحث يسارًا
+ * والمستخدم يمينًا. والأوراق التي تحمل نصًّا (البحث وبطاقة المستخدم) تعلن
+ * اتجاه لغتها بنفسها، فلا يقلب ترتيبُ الصفّ نصَّها العربي.
+ *
+ * **والهيئة هيئة الصورة** (أمر المالك ٢٠٢٦/١٠/١٤ «طبق الصورة بحذافيرها»):
+ * حقل بحثٍ مستدير بعدستين، وأقراصٌ مستديرة فاتحة للأيقونات (الجرس أزرق
+ * ممتلئ وشارته حمراء، ثم الرسائل والتطبيقات والشمس والمساعدة)، ثم بطاقة
+ * المستخدم: الصورة بنقطة حضورٍ خضراء، والاسم الأول والدور. القرص المرسوم
+ * ٣٦px داخل هدف لمسٍ ٤٤px (المواصفة §3.7) — والأنماط في
+ * `styles/home/home-chrome.css` بطبقة الرموز وحدها. والشعار على الرئيسية:
+ * في رأس الشريط الجانبي على الشاشات العريضة، وهنا حين يختفي الشريط.
  */
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, CircleHelp, LayoutGrid, Menu, MessageSquare, Search, Siren } from "lucide-react";
+import {
+  Bell,
+  Grid3x3,
+  Menu,
+  MessageCircleMore,
+  MessageCircleQuestionMark,
+  Moon,
+  Search,
+  Siren,
+  Sun,
+  UserRound,
+} from "lucide-react";
 import { Suspense, lazy, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme";
 import { MODULES } from "@/lib/nav/modules";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
+import { listMyOrgs, type OrgRole } from "@/lib/org/org.functions";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { SystemSidebarCard, SystemSidebarNav } from "@/components/nav/SystemSidebar";
+import {
+  SadeedWingLockup,
+  SystemSidebarCard,
+  SystemSidebarNav,
+} from "@/components/nav/SystemSidebar";
+import { useChromeSlots } from "@/components/nav/TopBar";
+import "@/styles/home/home-chrome.css";
 
 /**
  * زرّ أيقونة الترويسة. **حلقة التركيز في `.nx-icon-btn` (styles.css) لا في
  * أدوات Tailwind:** القاعدة العامة `:where(button, a, …):focus-visible` خارج
  * الطبقات فتغلب الأدوات المطبَّقة، فكانت الحلقة `--pv-edge` بتباين 1.60:1 على
  * الفاتح (قاسه حارس الجودة) — عيبٌ لازم الترويسة منذ المرحلة ١.
+ *
+ * والقرص المرسوم (٣٦px) طبقةٌ زائفة داخل الزرّ (`.nx-hdr-btn::before`)، والزرّ
+ * نفسه ٤٤×٤٤ — هدف اللمس أوسع من الرسم كما تسمح المواصفة §3.7.
  */
 const ICON_BTN =
-  "nx-icon-btn relative grid size-11 shrink-0 place-items-center rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--chip-strong)] hover:text-[color:var(--ink)]";
+  "nx-icon-btn nx-hdr-btn relative grid shrink-0 place-items-center text-[color:var(--ink)]";
 
 /** لوحة الأوامر الواحدة تستمع لهذا الحدث — لا نسخةٌ ثانية منها هنا. */
 function openCommandPalette() {
@@ -66,18 +104,21 @@ function UrgentBell({ ar }: { ar: boolean }) {
       : `Open urgent work: ${count}${simEn}`;
   return (
     <Link to="/urgent-ops" aria-label={label} title={label} className={ICON_BTN}>
-      <Bell aria-hidden className="size-5" />
+      {/* الجرس أزرق ممتلئ كما في الصورة — اللون والملء من `.nx-hdr-bell`. */}
+      <Bell aria-hidden className="nx-hdr-bell size-5" />
       {count != null && count > 0 && (
         <span
           aria-hidden
           data-simulated={simulated || undefined}
+          // الموضع أعلى يمين القرص كما رُسم (`.nx-hdr-badge`)، فيزيائيًّا لا
+          // منطقيًّا: الشارة على كتف الجرس في الصفحتين، لا تنقلب بلغة الصفّ.
           className={
             simulated
               ? // المحاكاة شارةٌ مخطّطة كهرمانية — **بلا حرف «م»** بأمر المالك
                 // ٢٠٢٦/٠٩/٢٩ («ازل حرف الميم»)، تبعًا لرفعه الشارات من كل شاشة
                 // ٢٠٢٦/٠٨/١١. والإفصاح باقٍ نصًّا في `title`/`aria-label`.
-                "absolute -end-2 -top-1.5 flex min-w-5 items-center gap-0.5 rounded-full border border-dashed border-[color:var(--tone-amber)] bg-[color:var(--surface)] px-1 text-[12px] font-bold leading-5 text-[color:var(--tone-amber)]"
-              : "absolute -end-1 -top-1 grid min-w-5 place-items-center rounded-full bg-[color:var(--tone-rose)] px-1 text-[12px] font-bold leading-5 text-[color:var(--surface)]"
+                "nx-hdr-badge flex min-w-5 items-center gap-0.5 rounded-full border border-dashed border-[color:var(--tone-amber)] bg-[color:var(--surface)] px-1 text-[12px] font-bold leading-5 text-[color:var(--tone-amber)]"
+              : "nx-hdr-badge grid min-w-5 place-items-center rounded-full bg-[color:var(--tone-rose)] px-1 text-[12px] font-bold leading-5 text-[color:var(--surface)]"
           }
         >
           {count > 99 ? "99+" : count}
@@ -135,7 +176,7 @@ function AppsMenu({ ar }: { ar: boolean }) {
           title={ar ? "وحدات النظام" : "System modules"}
           className={ICON_BTN}
         >
-          <LayoutGrid aria-hidden className="size-5" />
+          <Grid3x3 aria-hidden className="size-5" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-2" dir={ar ? "rtl" : "ltr"}>
@@ -160,35 +201,118 @@ function AppsMenu({ ar }: { ar: boolean }) {
   );
 }
 
+/**
+ * مبدّل الوضع — **النسخة الوحيدة في النظام**، على الرئيسية وحدها.
+ *
+ * الأيقونتان مرسومتان معًا ويُظهر `home-chrome.css` ما يوافق صنف الجذر: الرسم
+ * من حالة React يُظهر أيقونة الوضع الخطأ حتى يكتمل الترطيب — وميضةٌ على كل
+ * فتح. **والأيقونة أيقونة الوضع القائم** كما في الصورة: الشمس في الفاتح
+ * (الافتراض منذ N1)، والقمر في الداكن. والزرّ زرُّ الترويسة نفسه (`ICON_BTN`)
+ * بحلقة تركيزه وأرضية لمسه 44px.
+ */
+function HeaderThemeSwitch({ ar }: { ar: boolean }) {
+  const { toggle } = useTheme();
+  const label = ar ? "تبديل الوضع الفاتح/الداكن" : "Toggle light/dark mode";
+  return (
+    <button type="button" onClick={toggle} aria-label={label} title={label} className={ICON_BTN}>
+      <Sun aria-hidden className="nx-hdr-theme-sun size-5" />
+      <Moon aria-hidden className="nx-hdr-theme-moon size-5" />
+    </button>
+  );
+}
+
+/** دور العضوية بلسانيه — من مصدرٍ حقيقي وحده (`org_members.role`). */
+const ROLE_LABEL: Record<OrgRole, { ar: string; en: string }> = {
+  owner: { ar: "مالك المؤسسة", en: "Organization owner" },
+  admin: { ar: "مسؤول النظام", en: "Administrator" },
+  manager: { ar: "مدير", en: "Manager" },
+  operator: { ar: "مشغّل", en: "Operator" },
+  viewer: { ar: "مشاهد", en: "Viewer" },
+};
+
+/** البادئات التي لا تقوم اسمًا وحدها: «عبد الله» اسمٌ أوّل واحد لا «عبد». */
+const NAME_PREFIXES: ReadonlySet<string> = new Set(["عبد", "ابو", "أبو"]);
+
+/**
+ * الاسم الأول لصاحب الجلسة وحده (قرار المالك N4) — من اسمه في حسابه، لا من
+ * بريده ولا من اسم غيره. وبلا اسمٍ في الحساب لا يُختلق اسم: «حسابي».
+ */
+function firstNameOf(fullName: string | undefined | null): string | null {
+  const parts = (fullName ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return null;
+  if (NAME_PREFIXES.has(parts[0]) && parts[1]) return `${parts[0]} ${parts[1]}`;
+  return parts[0];
+}
+
+/**
+ * بطاقة المستخدم كما في الصورة: الصورة يمينًا بنقطة حضورٍ خضراء، وبجانبها
+ * الاسم والدور.
+ *
+ * **لا اسمٌ مخترَع ولا دورٌ مخترَع** (المواصفة §3.11، N4): الزائر «زائر» /
+ * «زائر النظام»؛ والمسجَّل اسمه الأول ودوره في مؤسسته الحالية — من عضويته
+ * (`listMyOrgs`، المفتاح نفسه الذي يقرؤه مبدّل المؤسسة فلا طلبان) — وإلا سقط
+ * سطر الدور ولم يُخمَّن. والنقطة الخضراء حضور الجلسة المفتوحة على هذه الشاشة.
+ */
 function UserChip({ ar }: { ar: boolean }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const meta = (user?.user_metadata ?? {}) as {
     full_name?: string;
     name?: string;
     avatar_url?: string;
   };
-  // لا اسمٌ مخترَع ولا دورٌ مخترَع: الزائر «زائر»، والدور لا مصدر له.
-  const name = meta.full_name || meta.name || user?.email || (ar ? "زائر" : "Guest");
-  const initial = name.trim().charAt(0) || "؟";
+  const fetchOrgs = useServerFn(listMyOrgs);
+  // قراءة حساب صاحب الجلسة لا قراءة عرض: الزائر لا عضوية له فلا تُطلب.
+  const { data: orgs } = useQuery({
+    queryKey: ["my-orgs", user?.id ?? "anon"],
+    queryFn: () => fetchOrgs(),
+    staleTime: 60_000,
+    enabled: !authLoading && user != null,
+  });
+  const membership = orgs?.find((o) => o.is_current) ?? orgs?.[0];
+  const roleLabel = membership ? ROLE_LABEL[membership.role] : undefined;
+
+  const first = firstNameOf(meta.full_name || meta.name);
+  const name = user ? (first ?? (ar ? "حسابي" : "My account")) : ar ? "زائر" : "Guest";
+  const role = user
+    ? roleLabel
+      ? ar
+        ? roleLabel.ar
+        : roleLabel.en
+      : null
+    : ar
+      ? "زائر النظام"
+      : "System guest";
+  // الاسم المقروء يحوي النصّ المرئي بترتيبه (WCAG 2.5.3).
+  const label = [name, role, ar ? "الإعدادات" : "settings"].filter(Boolean).join(" — ");
+  const initial = first?.charAt(0);
+
   return (
     <Link
       to="/settings"
-      aria-label={ar ? `حساب ${name} — الإعدادات` : `${name} — settings`}
-      title={ar ? `حساب ${name} — الإعدادات` : `${name} — settings`}
-      className="nx-focus-ring flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-2 hover:bg-[color:var(--chip-strong)]"
+      aria-label={label}
+      title={label}
+      dir={ar ? "rtl" : "ltr"}
+      className="nx-focus-ring nx-hdr-user flex min-w-0 items-center"
     >
-      {meta.avatar_url ? (
-        <img src={meta.avatar_url} alt="" className="size-9 shrink-0 rounded-full object-cover" />
-      ) : (
-        <span
-          aria-hidden
-          className="grid size-9 shrink-0 place-items-center rounded-full bg-[color:var(--tone-blue)] text-[14px] font-bold text-[color:var(--surface)]"
-        >
-          {initial}
-        </span>
-      )}
-      <span className="hidden min-w-0 truncate text-[14px] font-semibold text-[color:var(--ink)] xl:block">
-        {name}
+      <span className="nx-hdr-avatar" aria-hidden>
+        {user && meta.avatar_url ? (
+          <img
+            src={meta.avatar_url}
+            alt=""
+            width={44}
+            height={44}
+            className="nx-hdr-avatar-img"
+          />
+        ) : user && initial ? (
+          <span className="nx-hdr-avatar-initial">{initial}</span>
+        ) : (
+          <UserRound className="nx-hdr-avatar-glyph" />
+        )}
+        <span className="nx-hdr-presence" />
+      </span>
+      <span className="nx-hdr-user-text">
+        <span className="nx-hdr-user-name">{name}</span>
+        {role ? <span className="nx-hdr-user-role">{role}</span> : null}
       </span>
     </Link>
   );
@@ -215,13 +339,18 @@ function MobileMenu({ ar }: { ar: boolean }) {
           <Menu aria-hidden className="size-5" />
         </button>
       </SheetTrigger>
+      {/* الدرج يخرج من اليسار في اللغتين: الزرّ لا يُركَّب إلا على الرئيسية
+          (`withMenu`)، وشريطها يسارًا وزرّه أوّل الصفّ يسارًا (قرار المالك
+          D5) — فالدرج يخرج من حيث الزرّ ومن حيث الشريط على الشاشة العريضة،
+          وصفوفه بهيئة الشريط نفسه (`side="left"`). */}
       <SheetContent
-        side={ar ? "right" : "left"}
+        side="left"
+        dir={ar ? "rtl" : "ltr"}
         className="nx-sysnav-sheet w-80 overflow-y-auto bg-[color:var(--surface)] p-3"
       >
         <SheetTitle className="sr-only">{ar ? "القائمة الرئيسية" : "Main menu"}</SheetTitle>
         <div className="pt-8">
-          <SystemSidebarNav onNavigate={() => setOpen(false)} />
+          <SystemSidebarNav side="left" onNavigate={() => setOpen(false)} />
           <div className="mt-4">
             <SystemSidebarCard />
           </div>
@@ -234,28 +363,45 @@ function MobileMenu({ ar }: { ar: boolean }) {
 export function SystemHeader({ withMenu = false }: { withMenu?: boolean }) {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  // القرار الواحد (`resolveChromeSlots`): المبدّل للرئيسية وحدها، والهوم لكل
+  // صفحةٍ غيرها — فغياب الهوم هو «نحن على الرئيسية» بلا شرط مسارٍ ثانٍ هنا.
+  const { showTheme, showHome } = useChromeSlots();
+  const onHome = !showHome;
   return (
     <header
       data-nx-presentation-hide
-      className="flex items-center gap-2 border-b border-[color:var(--hairline)] bg-[color:var(--surface)] px-3 py-2 sm:gap-3 sm:px-4"
+      data-chrome={onHome ? "home" : undefined}
+      // الفجوات والحافّة أضيق دون `sm`: مبدّل الوضع زاد الصفّ زرًّا (44px)،
+      // فلولا التضييق ضاق زرّ البحث على ٣٧٥ دون أرضية اللمس 44 (حُسب: ٣٩px).
+      // والقشرة لا ترسم هذه الترويسة دون `md` أصلًا، فالأثر على الرئيسية وحدها.
+      className="nx-hdr flex items-center gap-1.5 border-b border-[color:var(--hairline)] bg-[color:var(--surface)] px-2 py-2 sm:gap-3 sm:px-4"
     >
       {withMenu && <MobileMenu ar={ar} />}
+      {/* الشعار في الترويسة حين يختفي الشريط وحده (md–lg): على الشاشة العريضة
+          يحمله رأس الشريط بمحاذاة هذا الصفّ، ودون md لا يتّسع الصفّ له. */}
+      {onHome && <SadeedWingLockup className="nx-hdr-brand" />}
       <button
         type="button"
         onClick={openCommandPalette}
-        className="nx-focus-ring flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface-2)] px-3 text-start text-[14px] text-[color:var(--ink-3)] hover:border-[color:var(--tone-blue)] md:max-w-xl"
+        dir={ar ? "rtl" : "ltr"}
+        className="nx-focus-ring nx-hdr-search flex min-w-0 flex-1 items-center gap-2 px-3 text-start text-[14px] text-[color:var(--ink-3)]"
       >
-        <Search aria-hidden className="size-5 shrink-0" />
+        <Search aria-hidden className="nx-hdr-search-ico size-5 shrink-0" />
         <span className="truncate">
           {ar
-            ? "ابحث في النظام… (مواقع · أحداث · تقارير)"
-            : "Search the system… (sites · events · reports)"}
+            ? "ابحث في النظام … ( مواقع, أفراد, حوادث, كاميرات, تقارير)"
+            : "Search the system … (sites, people, incidents, cameras, reports)"}
         </span>
-        <kbd className="ms-auto hidden whitespace-nowrap rounded border border-[color:var(--hairline)] px-1.5 text-[12px] sm:inline">
-          Ctrl K
-        </kbd>
+        {onHome ? (
+          // العدسة الثانية في طرف الحقل كما رُسمت (الصورة بلا اختصار لوحة).
+          <Search aria-hidden className="nx-hdr-search-end ms-auto size-4 shrink-0" />
+        ) : (
+          <kbd className="ms-auto hidden whitespace-nowrap rounded border border-[color:var(--hairline)] px-1.5 text-[12px] sm:inline">
+            Ctrl K
+          </kbd>
+        )}
       </button>
-      <div className="ms-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+      <div className="nx-hdr-tools ms-auto flex shrink-0 items-center gap-1 sm:gap-2">
         <QuickReport ar={ar} />
         <UrgentBell ar={ar} />
         <Link
@@ -264,16 +410,17 @@ export function SystemHeader({ withMenu = false }: { withMenu?: boolean }) {
           title={ar ? "محادثات سَدِيد" : "SADEED conversations"}
           className={`${ICON_BTN} hidden sm:grid`}
         >
-          <MessageSquare aria-hidden className="size-5" />
+          <MessageCircleMore aria-hidden className="size-5" />
         </Link>
         <AppsMenu ar={ar} />
+        {showTheme && <HeaderThemeSwitch ar={ar} />}
         <Link
           to="/guide"
           aria-label={ar ? "دليل النظام" : "System guide"}
           title={ar ? "دليل النظام" : "System guide"}
           className={`${ICON_BTN} hidden sm:grid`}
         >
-          <CircleHelp aria-hidden className="size-5" />
+          <MessageCircleQuestionMark aria-hidden className="size-5" />
         </Link>
         <UserChip ar={ar} />
       </div>

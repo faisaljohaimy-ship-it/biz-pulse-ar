@@ -281,17 +281,21 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <script
-          // يسبق أول رسم: يقرأ الاختيار المحفوظ ويضع الصنف، والافتراضي داكن —
-          // هوية سَدِيد داكنة، والافتراضي الفاتح كان يُغرق نصوص القمرة (قرار ٢٠٢٦/٠٨/٠٥).
+          // يسبق أول رسم: يقرأ الاختيار المحفوظ ويضع الصنف، **والافتراضي فاتح**
+          // — قرار المالك N1 (٢٠٢٦/١٠/١٤، «الفاتح كما في الصورة (موصى به)»)
+          // ناسخًا «الداكن افتراضيًّا» (٢٠٢٦/٠٨/٠٥ ثم D1 ٢٠٢٦/١٠/١٣). والداكن
+          // باقٍ وضعًا كاملًا بضغطة واحدة، يُحفظ ويُحترم.
           dangerouslySetInnerHTML={{
             __html:
               // الاختيار المحفوظ يُقرأ هنا — قبل أول رسم — لا في مزوّد
-              // React: قراءته بعد الترطيب تعني أن من اختار الفاتح يرى وميضة
-              // داكنة كاملة عند كل فتح. والافتراضي داكن بلا كشفٍ عن تفضيل
-              // نظام التشغيل: من لم يختر يحصل على هوية سَدِيد كما صُمِّمت.
+              // React: قراءته بعد الترطيب تعني أن من اختار الداكن يرى وميضة
+              // فاتحة كاملة عند كل فتح. والقاعدة «فاتح ما لم يُحفظ `dark`
+              // صراحةً»: قيمةٌ تالفة أو غائبة أو تخزينٌ محجوب ⇐ الافتراضي،
+              // كما يقرّره `resolveStoredTheme` في `lib/theme.tsx` حرفًا —
+              // ولا كشفَ عن تفضيل نظام التشغيل.
               "(function(){try{var r=document.documentElement;" +
               "var t=localStorage.getItem('theme');" +
-              "var d=t!=='light';" +
+              "var d=t==='dark';" +
               "r.classList.toggle('light',!d);r.classList.toggle('dark',d);" +
               "r.style.colorScheme=d?'dark':'light';}" +
               // **سقطت من هنا قراءة `nx-holo-bg` (قرار المالك ٢٠٢٦/٠٨/٠٩).**
@@ -310,7 +314,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
               // في styles.css و`icon-motion.css` و`LottieIcon`. والسمة
               // `data-nx-motion` تبقى سطحَ تحكّم عاملًا، بلا كاتب في
               // الواجهة اليوم.
-              "catch(e){document.documentElement.classList.add('dark');}})();",
+              // والتخزين المحجوب يرمي قبل وضع أي صنف، فيضع الاحتياطيُّ
+              // الافتراضيَّ نفسه — فاتحًا مع مخطّط ألوانه.
+              "catch(e){var h=document.documentElement;" +
+              "h.classList.add('light');h.style.colorScheme='light';}})();",
           }}
         />
         <HeadContent />

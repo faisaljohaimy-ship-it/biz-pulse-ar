@@ -46,6 +46,11 @@
  *   ① **المبدّل — الرئيسية وحدها** («في أعلى الصفحة الرئيسية»). والرئيسية
  *      مسارَان لصفحةٍ واحدة (`/` و`/blueprint` يصيّران `BlueprintPage`
  *      نفسه)، فالنطاق الصفحة لا العنوان.
+ *      **ومكانه صفّ ترويسة النظام لا هذا الشريط** (مركز القيادة، أمر المالك
+ *      ٢٠٢٦/١٠/١٣ — «طبّق هذا الشكل بالتمام والكمال»: الشمس بين التطبيقات
+ *      والمساعدة كما في الصورة). فالقرار هنا (`showTheme`) والرسم في
+ *      `SystemHeader` وحده — **وهذا الشريط لا يرسم مبدّلًا أصلًا**، فلا
+ *      مبدّلان على صفحةٍ واحدة بنيويًّا لا بشرطٍ يُنسى.
  *   ② **الهوم — كل صفحةٍ ليست الرئيسية.** الحاجة مقيسة لا مقدَّرة: الشريط
  *      الجانبي خمسة أزرار ليس فيها الرئيسية (أمر المالك ٢٠٢٦/٠٨/٢٠)،
  *      والشعار ليس رابطًا، ولوحة الأوامر بلا زرٍّ ظاهر فلا تُفتح باللمس.
@@ -55,10 +60,9 @@
  */
 import { useCallback } from "react";
 import { useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
-import { ArrowRight, Home, Moon, Sun } from "lucide-react";
+import { ArrowRight, Home } from "lucide-react";
 import { LiveClock } from "@/components/LiveClock";
 import { useI18n } from "@/lib/i18n";
-import { useTheme } from "@/lib/theme";
 import { resolveBackTarget } from "@/lib/nav/drilldowns";
 import { isRouteHidden } from "@/lib/nav/hidden-routes";
 
@@ -79,7 +83,10 @@ export type ChromeSlots = {
   showHome: boolean;
   /** الرجوع: ما له أبٌ يختلف عن الهوم — الوجهة نفسها لا مجرّد راية. */
   backTarget: string | null;
-  /** المبدّل: الرئيسية وحدها. */
+  /**
+   * المبدّل: الرئيسية وحدها — ويرسمه صفّ ترويسة النظام (`SystemHeader`) لا
+   * هذا الشريط (مركز القيادة ٢٠٢٦/١٠/١٣). مبدّلٌ واحد على الصفحة.
+   */
   showTheme: boolean;
 };
 
@@ -103,7 +110,11 @@ export function resolveChromeSlots(
   };
 }
 
-function useChromeSlots(): ChromeSlots {
+/**
+ * القرار نفسه للمكوّنات: الشريط يقرأ منه الهوم والرجوع، وترويسة النظام تقرأ
+ * منه المبدّل — مصدرٌ واحد لا شرطا مسارٍ في ملفّين يفترقان يومًا.
+ */
+export function useChromeSlots(): ChromeSlots {
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -125,9 +136,9 @@ interface TopBarProps {
 export function TopBar({ showClock = true }: TopBarProps) {
   const navigate = useNavigate();
   const { locale } = useI18n();
-  const { toggle } = useTheme();
   const ar = locale === "ar";
-  const { showHome, backTarget, showTheme } = useChromeSlots();
+  // `showTheme` لا يُقرأ هنا: المبدّل في صفّ ترويسة النظام على الرئيسية.
+  const { showHome, backTarget } = useChromeSlots();
 
   const goHome = useCallback(() => void navigate({ to: "/" }), [navigate]);
   const goBack = useCallback(() => {
@@ -136,7 +147,7 @@ export function TopBar({ showClock = true }: TopBarProps) {
 
   // شريطٌ بلا ساعةٍ ولا زرّ سطحٌ مرسوم بلا مضمون — ويحجز سنده ارتفاعًا لا
   // شيء فيه. فلا يُركَّب أصلًا.
-  if (!showClock && !showHome && !backTarget && !showTheme) return null;
+  if (!showClock && !showHome && !backTarget) return null;
 
   return (
     <>
@@ -158,24 +169,8 @@ export function TopBar({ showClock = true }: TopBarProps) {
             الرقم نفسه، فلو كُتب مرّتين افترقا يومًا بصمت وانكشف تحت
             الشريط خطٌّ فارغ أو اختفت أول سطور الصفحة. */}
         <div className="nx-clock-row relative flex items-center">
-          {/* جهة اليسار: التفضيل — المبدّل على الرئيسية وحدها. */}
-          {showTheme && (
-            <div className="nx-topbar-slot pointer-events-auto">
-              <button
-                type="button"
-                onClick={toggle}
-                aria-label={ar ? "تبديل الوضع الفاتح/الداكن" : "Toggle light/dark mode"}
-                title={ar ? "تبديل الوضع الفاتح/الداكن" : "Toggle light/dark mode"}
-                className="nx-chrome-btn"
-              >
-                {/* الأيقونتان مرسومتان معًا، ويُظهر `styles.css` ما يوافق
-                    صنف الجذر. الرسم من الحالة كان يُظهر أيقونة الوضع الخطأ
-                    حتى يكتمل الترطيب — وميضةٌ على كل فتح لمن اختار الفاتح. */}
-                <Sun className="nx-chrome-ico nx-chrome-ico--sun" aria-hidden />
-                <Moon className="nx-chrome-ico nx-chrome-ico--moon" aria-hidden />
-              </button>
-            </div>
-          )}
+          {/* (جهة اليسار كانت للمبدّل على الرئيسية. انتقل إلى صفّ ترويسة
+              النظام — مركز القيادة ٢٠٢٦/١٠/١٣ — فلا يُرسم هنا أصلًا.) */}
 
           {showClock ? (
             <div className="nx-clock-slot pointer-events-auto">

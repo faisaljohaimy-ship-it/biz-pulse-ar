@@ -7,7 +7,9 @@
  * الطريقة الوحيدة لمنع عودتها.
  */
 import { readFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
 import { describe, expect, it } from "vitest";
+import { DEFAULT_THEME, resolveStoredTheme, type Theme } from "@/lib/theme";
 
 const ROOT = readFileSync("src/routes/__root.tsx", "utf8");
 const CSS = readFileSync("src/styles.css", "utf8");
@@ -23,10 +25,11 @@ describe("عقد الهوية — المادة ٣٢: الصنف ذو الكات�
     expect(htmlTag).not.toMatch(/className\s*=\s*["'{][^}"']*\b(light|dark)\b/);
   });
 
-  it("يقرأ الاختيار المحفوظ قبل أول رسم، والافتراضي داكن", () => {
-    // قراءةُ الاختيار في مزوّد React بدل السكربت تعني وميضةً داكنة كاملة
-    // عند كل فتح لمن اختار الفاتح. والافتراضي داكن بلا كشفٍ عن تفضيل نظام
-    // التشغيل: من لم يختر يحصل على هوية سَدِيد كما صُمِّمت.
+  it("يقرأ الاختيار المحفوظ قبل أول رسم، والافتراضي فاتح (N1)", () => {
+    // قراءةُ الاختيار في مزوّد React بدل السكربت تعني وميضةً كاملة بالوضع
+    // الآخر عند كل فتح لمن اختار غير الافتراضي. ولا كشفَ عن تفضيل نظام
+    // التشغيل: الافتراضي قرارُ مالك (N1) لا استنتاج. والافتراضي نفسه
+    // يُثبَت سلوكيًّا في الكتلة التالية لا بنصٍّ هنا.
     expect(ROOT).toMatch(/localStorage\.getItem\(['"]theme['"]\)/);
     expect(ROOT).toMatch(/classList\.toggle\(['"]dark['"]/);
     expect(ROOT).toMatch(/classList\.toggle\(['"]light['"]/);
@@ -39,10 +42,132 @@ describe("عقد الهوية — المادة ٣٢: الصنف ذو الكات�
     expect(THEME_CODE).toMatch(/export type Theme = "dark" \| "light"/);
     expect(THEME_CODE).toMatch(/function apply\(theme: Theme\)/);
     expect(THEME_CODE).toMatch(/localStorage\.setItem\(THEME_KEY/);
-    // حالةٌ أوّلية داكنة دائمًا — أي اشتقاقها من DOM يُنتج اختلاف ترطيب.
+    // حالةٌ أوّلية من الافتراضي دائمًا — أي اشتقاقها من DOM يُنتج اختلاف ترطيب.
     expect(THEME_CODE).toMatch(/useState<Theme>\(DEFAULT_THEME\)/);
+    // والمزامنة بعد التركيب تمرّ بالقاعدة الواحدة نفسها التي يُقارَن بها
+    // السكربت أدناه — لا نسخةً ثالثة مكتوبة في المزوّد.
+    expect(THEME_CODE).toMatch(/resolveStoredTheme\(stored\)/);
     const applyCount = (THEME_CODE.match(/classList\.toggle/g) ?? []).length;
     expect(applyCount, "الصنف يُكتب في أكثر من موضع").toBe(2);
+  });
+});
+
+/**
+ * **الافتراضي فاتح — قرار المالك N1 (٢٠٢٦/١٠/١٤)، ناسخ «الداكن افتراضيًّا».**
+ *
+ * الحارس السابق كان يفحص **وجود** `classList.toggle('dark'…)` في السكربت،
+ * فكان يمرّ على الافتراضيَّين معًا: قلبُ `t!=='light'` إلى `t==='dark'` لا
+ * يغيّر سطرًا يقرؤه. والافتراضي سلوكٌ لا نصّ، فيُقاس هنا بتشغيل **السكربت
+ * الفعلي** المستخرَج من `__root.tsx` على جذرٍ وتخزينٍ مزيّفين، لكل قيمةٍ
+ * مخزَّنة ممكنة — ثم بزرع النسخة القديمة لإثبات أن الحارس يسقط عليها
+ * (المادة ٣٠).
+ */
+describe("عقد الافتراضي — N1: الفاتح عند أول زيارة، والمحفوظ يُحترم", () => {
+  /** نصّ السكربت المانع كما يصل المتصفّح: سلسلة الحروف المضمومة بـ`+`. */
+  const prePaintScript = (() => {
+    const expr = ROOT.match(/__html:([\s\S]*?),?\s*\}\}\s*\/>/)?.[1] ?? "";
+    // التعليقات بين الأجزاء قد تحوي علامات اقتباس — تُنزع أولًا.
+    const code = expr.replace(/^[ \t]*\/\/.*$/gm, "");
+    return [...code.matchAll(/"((?:[^"\\]|\\.)*)"/g)]
+      .map((m) => JSON.parse(`"${m[1]}"`) as string)
+      .join("");
+  })();
+
+  /** «محجوب»: تخزينٌ يرمي عند القراءة، كما في التصفّح الخاص المقيَّد. */
+  type Stored = string | null | "محجوب";
+
+  /** يشغّل نصّ سكربتٍ على جذرٍ مزيّف ويعيد الوضع الذي رسمه قبل أول رسم. */
+  const paint = (script: string, stored: Stored) => {
+    const classes = new Set<string>();
+    const root = {
+      classList: {
+        add: (c: string) => void classes.add(c),
+        toggle: (c: string, on: boolean) => void (on ? classes.add(c) : classes.delete(c)),
+      },
+      style: { colorScheme: "" },
+    };
+    const localStorage = {
+      getItem: () => {
+        if (stored === "محجوب") throw new Error("SecurityError");
+        return stored;
+      },
+    };
+    runInNewContext(script, { document: { documentElement: root }, localStorage });
+    const painted: Theme | "متنازع" | "بلا صنف" =
+      classes.has("light") && classes.has("dark")
+        ? "متنازع"
+        : classes.has("light")
+          ? "light"
+          : classes.has("dark")
+            ? "dark"
+            : "بلا صنف";
+    return { painted, scheme: root.style.colorScheme };
+  };
+
+  /** النسخة المنسوخة حرفًا (قبل N1) — مزروعةً ليسقط عليها الحارس. */
+  const PLANTED_DARK_DEFAULT =
+    "(function(){try{var r=document.documentElement;" +
+    "var t=localStorage.getItem('theme');" +
+    "var d=t!=='light';" +
+    "r.classList.toggle('light',!d);r.classList.toggle('dark',d);" +
+    "r.style.colorScheme=d?'dark':'light';}" +
+    "catch(e){document.documentElement.classList.add('dark');}})();";
+
+  it("السكربت يُستخرج فعلًا (وإلا لم يفحص البند شيئًا)", () => {
+    // حارسٌ صامت يمرّ إلى الأبد لو تغيّرت صيغة الضمّ فعاد النصّ فارغًا.
+    expect(prePaintScript).toContain("localStorage.getItem('theme')");
+    expect(prePaintScript).toContain("catch(e)");
+  });
+
+  it("الافتراضي المعلَن فاتح", () => {
+    expect(DEFAULT_THEME).toBe("light");
+  });
+
+  it("أول زيارة (لا اختيار محفوظ) ⇐ فاتح بمخطّط ألوان فاتح", () => {
+    expect(paint(prePaintScript, null)).toEqual({ painted: "light", scheme: "light" });
+  });
+
+  it("الاختيار المحفوظ يُحترم في الاتجاهين — والداكن باقٍ وضعًا كاملًا", () => {
+    expect(paint(prePaintScript, "dark")).toEqual({ painted: "dark", scheme: "dark" });
+    expect(paint(prePaintScript, "light")).toEqual({ painted: "light", scheme: "light" });
+  });
+
+  it("قيمة تالفة أو تخزينٌ محجوب ⇐ الافتراضي، لا الداكن", () => {
+    for (const junk of ["", "Dark", "auto", "system"]) {
+      expect(paint(prePaintScript, junk).painted, `القيمة «${junk}»`).toBe("light");
+    }
+    // الاحتياطيّ في `catch` كان يضيف `dark` — نسخةٌ ثانية للافتراضي تفلت
+    // من أي حارسٍ يقرأ السطر الرئيسي وحده.
+    expect(paint(prePaintScript, "محجوب").painted).toBe("light");
+  });
+
+  it("السكربت والمزوّد قاعدة واحدة — فلا قفزة وضعٍ بعد الترطيب", () => {
+    // السكربت يرسم أولًا، ثم يقرأ المزوّد المفتاح نفسه بعد التركيب ويطبّق
+    // ما يراه. افتراقهما = أول رسمٍ بوضع ثم قفزةٌ إلى الآخر.
+    for (const stored of [null, "light", "dark", "", "auto"]) {
+      expect(paint(prePaintScript, stored).painted, `القيمة ${String(stored)}`).toBe(
+        resolveStoredTheme(stored),
+      );
+    }
+  });
+
+  it("زرعٌ أحمر (المادة ٣٠): السكربت القديم يسقط على كل فحصٍ أعلاه", () => {
+    // لو عاد `t!=='light'` أو احتياطيّ `add('dark')` لسقطت البنود أعلاه —
+    // يُثبَت هنا بتشغيل الفاحص نفسه على النسخة المزروعة.
+    expect(paint(PLANTED_DARK_DEFAULT, null).painted).toBe("dark");
+    expect(paint(PLANTED_DARK_DEFAULT, "محجوب").painted).toBe("dark");
+    expect(paint(PLANTED_DARK_DEFAULT, "auto").painted).not.toBe(resolveStoredTheme("auto"));
+    // وفي الوقت نفسه كان يحترم المحفوظ — فالفارق كلّه في الافتراضي.
+    expect(paint(PLANTED_DARK_DEFAULT, "light").painted).toBe("light");
+    expect(paint(PLANTED_DARK_DEFAULT, "dark").painted).toBe("dark");
+  });
+
+  it("زرعٌ أحمر: سكربتٌ يكتب الصنفين معًا يُكشف لا يمرّ فاتحًا", () => {
+    // فاحصٌ يسأل «هل `light` موجود؟» وحده يمرّ على جذرٍ يحمل الصنفين.
+    const both =
+      "document.documentElement.classList.add('light');" +
+      "document.documentElement.classList.add('dark');";
+    expect(paint(both, null).painted).toBe("متنازع");
   });
 });
 

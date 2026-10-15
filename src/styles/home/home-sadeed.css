@@ -1,0 +1,545 @@
+/* ============================================================================
+   home-sadeed.css — بطاقة «SADEED AI» في «مركز القيادة» (المواصفة §4.5)
+   ----------------------------------------------------------------------------
+   يستورده `HomeSadeedCard.tsx` و`SadeedStagePresence.tsx` (الهيئة المدمجة)،
+   وكلاهما في حزمة الرئيسية المقتطَعة وحدها — فلا يكبر سطر في الأنماط
+   المشتركة (§3.8).
+
+   ① **التشريح كما في الصورة** (البطاقة عربية `rtl`، والصدر يسارًا ← يمينًا):
+     الوجه وزرّا الصوت في عمود البداية (يمينًا)، والعنوان والوصف والشارة
+     والتحية بجانبه، ثم ستّ رقاقات في عمودين، ثم صندوق الكتابة: الإرسال في
+     جهة البداية والإرفاق في نهاية الحقل.
+
+   ② **سطحٌ فاتح في الفاتح وداكنٌ في الداكن** — لا شاشة داكنة ذاتية كبطاقة
+     المسرح: الصورة الداكنة نفسها في بلاطة الوجه وحدها، وكل ما عداها يقرأ
+     رموز الصفحة (`--surface` · `--ink*` · `--hairline*` · `--tone-*` ·
+     `--glass-*`). لا لون خارج طبقة الرموز (المادة ٣٣).
+
+   ③ **العرض يُقاس على البطاقة لا على النافذة.** البطاقة ≈ ٢/٧ من الصدر على
+     المكتب (~288px على 1280 · ~361px على 1536) وعرض العمود كاملًا دونه،
+     فحاوية الاستعلام (`nx-home-sadeed`) تكبّر الوجه والعنوان حين يتّسع العرض.
+
+   ④ نصف القطر عند التركيز مثبَّتٌ هنا بنوعيّة صنفٍ + شبه صنف: القاعدة العامّة
+     `:focus-visible` خارج الطبقات تكتب `border-radius: 6px` فتربّع الأزرار
+     المستديرة. وكل هدف ≥ 44px، وكل نصّ ≥ 12px.
+   ============================================================================ */
+
+/* ── البطاقة: حاوية الاستعلام، وغسلةٌ زرقاء خفيفة من أعلاها كما في الصورة ──
+   لون السطح وظلّه من `.nx-home-panel` (styles.css)؛ هنا الغسلة فوقه. */
+.nx-home-sadeed {
+  container: nx-home-sadeed / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-inline-size: 0;
+  padding: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  color: var(--ink);
+  background-image: linear-gradient(
+    172deg,
+    color-mix(in srgb, var(--tone-blue) 9%, transparent) 0%,
+    transparent 64%
+  );
+}
+
+/* ── الهيئة المدمجة: الوجه بجانب الهوية ─────────────────────────────────── */
+.nx-sd-compact {
+  /* سماويّ الهولوغرام من رمز الهوية — طبقات `sd-holo-*` تقرأ `--sd-holo`. */
+  --sd-holo: var(--tone-cyan);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+}
+
+.nx-sd-compact-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* بلاطة الوجه: نسبة ٦:٧ (رأسٌ وكتفان)، وحدٌّ يشتدّ زمرديًّا عند النطق —
+   والحال مكتوبةٌ في الشارة، فلا يحملها اللون وحده. */
+.nx-sd-portrait {
+  position: relative;
+  overflow: hidden;
+  inline-size: 84px;
+  aspect-ratio: 6 / 7;
+  border: 2px solid color-mix(in srgb, var(--tone-blue) 32%, var(--hairline));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--tone-blue) 22%, var(--surface));
+}
+
+.nx-sd-compact[data-speaking] .nx-sd-portrait {
+  border-color: var(--tone-emerald);
+  box-shadow: 0 0 28px -6px color-mix(in srgb, var(--tone-emerald) 60%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nx-sd-portrait {
+    transition:
+      border-color 0.3s var(--nx-ease-out),
+      box-shadow 0.3s var(--nx-ease-out);
+  }
+}
+
+/* قصّ الصورة نفسها (1024×1536، الشخص واقفًا) على الرأس والكتفين: تُغطّي
+   البلاطة من أعلاها، ثم تُكبَّر 3.3× حول نقطةٍ محسوبة فيقع في الإطار المقطع
+   x 345–655 · y 50–412 من الأصل — من الخوذة إلى الياقة، **ودون شارة الكتف**
+   (شعار جهةٍ أخرى، قرار المالك D4). خاصّية `scale` المستقلّة لا `transform`
+   (§5)، والنسب مئويّة فتصحّ لأي عرضٍ بالنسبة نفسها. */
+.nx-sd-portrait-media {
+  object-fit: cover;
+  object-position: 50% 0%;
+  scale: 3.3;
+  transform-origin: 48.3% 6%;
+}
+
+/* ── زرّا الصوت تحت الوجه: طلب المخاطبة وكتم الصوت ──────────────────────── */
+.nx-sd-voice {
+  display: flex;
+  gap: 8px;
+}
+
+.nx-sd-voice-btn,
+.nx-sd-compact .nx-sd-mute {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--tone-blue) 34%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone-blue) 12%, var(--surface));
+  color: var(--tone-blue);
+  cursor: pointer;
+}
+
+.nx-sd-voice-btn svg {
+  inline-size: 20px;
+  block-size: 20px;
+}
+
+/* المكتوم بحبرٍ محايد: الأيقونة المشطوبة والتسمية تقولان الحال، وهذا تأكيد. */
+.nx-sd-compact .nx-sd-mute[aria-pressed="true"] {
+  border-color: var(--hairline);
+  background: color-mix(in srgb, var(--ink) 6%, var(--surface));
+  color: var(--ink-2);
+}
+
+@media (hover: hover) {
+  .nx-sd-voice-btn:hover,
+  .nx-sd-compact .nx-sd-mute:hover {
+    border-color: color-mix(in srgb, var(--tone-blue) 60%, transparent);
+    background: color-mix(in srgb, var(--tone-blue) 20%, var(--surface));
+  }
+}
+
+/* ── الهوية: العنوان والوصف والشارة والتحية ─────────────────────────────── */
+.nx-sd-compact-id {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+/* نوعيّة الصنف تعلو قاعدة `h2` العامّة خارج الطبقات (لونها `--sd-ink`). */
+.nx-sd-compact-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.nx-sd-compact-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.nx-sd-compact-mark {
+  inline-size: 26px;
+  block-size: 26px;
+}
+
+.nx-sd-compact-sub {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* الشارة: كلمةٌ وشكل ولون معًا (§1.4.1) — نقطة = متصل/يتكلّم · مثلث =
+   ردود محلية · دائرة متقطّعة = لم يُتحقَّق. */
+.nx-sd-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 28px;
+  margin: 2px 0 0;
+  padding-inline: 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 5%, var(--surface));
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.nx-sd-pill[data-state="ready"],
+.nx-sd-pill[data-state="voice"] {
+  border-color: color-mix(in srgb, var(--tone-emerald) 34%, transparent);
+  background: color-mix(in srgb, var(--tone-emerald) 10%, var(--surface));
+  color: var(--tone-emerald);
+}
+
+.nx-sd-pill[data-state="local"] {
+  border-color: color-mix(in srgb, var(--tone-amber) 34%, transparent);
+  background: color-mix(in srgb, var(--tone-amber) 10%, var(--surface));
+  color: var(--tone-amber);
+}
+
+.nx-sd-pill-dot {
+  flex: none;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.nx-sd-pill-icon {
+  flex: none;
+  inline-size: 14px;
+  block-size: 14px;
+}
+
+/* النبض للمحادثة الجارية وحدها، ولمن لم يطلب تقليل الحركة. */
+@media (prefers-reduced-motion: no-preference) {
+  .nx-sd-pill[data-state="voice"] .nx-sd-pill-dot {
+    animation: nx-sd-pill-pulse 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes nx-sd-pill-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* التحية: فقاعةٌ من جهة الوجه (زاويتها البادئة العليا حادّة). */
+.nx-sd-greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-self: stretch;
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  border-start-start-radius: 4px;
+  background: var(--surface);
+  box-shadow: var(--glass-lift);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.nx-sd-greeting-hello {
+  font-weight: 800;
+}
+
+.nx-sd-greeting-ask {
+  font-weight: 700;
+}
+
+/* ── الرقاقات الستّ: عمودان دائمًا ─────────────────────────────────────────
+   `margin-block-start: auto` تجمعها مع صندوق الكتابة في قاع البطاقة حين
+   يمدّها صفّ الصدر إلى ارتفاع الخريطة: الأسئلة المقترحة فوق الحقل مباشرةً. */
+.nx-sd-chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: auto 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nx-sd-chips > li {
+  display: flex;
+  min-inline-size: 0;
+}
+
+.nx-sd-chip {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-inline-size: 0;
+  min-block-size: 44px;
+  padding: 6px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px var(--glass-shade);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: start;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .nx-sd-chip:hover {
+    border-color: color-mix(in srgb, var(--tone-blue) 55%, transparent);
+    background: color-mix(in srgb, var(--tone-blue) 6%, var(--surface));
+  }
+}
+
+/* بلاطة الرمز: نبرة الهوية على غسلةٍ منها — لا أحمر ولا كهرماني: الرقاقة
+   سؤالٌ لا حكم (§3.5). */
+.nx-sd-chip-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--tone-blue) 14%, transparent);
+  color: var(--tone-blue);
+}
+
+.nx-sd-chip-icon svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+.nx-sd-chip-label {
+  min-inline-size: 0;
+  overflow-wrap: break-word;
+}
+
+/* ── صندوق الكتابة: الإرسال في البداية، والحقل بإرفاقه في نهايته ───────── */
+.nx-sd-composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nx-sd-send {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 48px;
+  block-size: 48px;
+  min-inline-size: 48px;
+  min-block-size: 48px;
+  padding: 0;
+  border: 1px solid var(--tone-blue);
+  border-radius: 999px;
+  background: var(--tone-blue);
+  box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--tone-blue) 70%, transparent);
+  color: var(--surface);
+  cursor: pointer;
+}
+
+.nx-sd-send svg {
+  inline-size: 22px;
+  block-size: 22px;
+}
+
+/* السهم يشير إلى جهة الكتابة: يسارًا في العربية. */
+.nx-home-sadeed[dir="rtl"] .nx-sd-send svg {
+  scale: -1 1;
+}
+
+@media (hover: hover) {
+  .nx-sd-send:hover {
+    background: color-mix(in srgb, var(--tone-blue) 86%, var(--ink));
+  }
+}
+
+.nx-sd-field {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 4px;
+  min-inline-size: 0;
+  min-block-size: 48px;
+  padding-inline: 12px 2px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+/* الحلقة على الحقل كلّه لا على النصّ داخله. */
+.nx-sd-field:focus-within {
+  border-color: var(--tone-blue);
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: 2px;
+}
+
+/* القواعد العامّة للحقول في styles.css تكتب الخلفية والحدّ واللون بـ`!important`
+   على `textarea` — والحقل هنا شفّافٌ داخل إطاره، فتُغلب بنوعيّةٍ أعلى. */
+.nx-sd-field .nx-sd-input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  min-block-size: 44px;
+  max-block-size: 120px;
+  padding: 11px 0;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--ink) !important;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+  resize: none;
+  field-sizing: content;
+}
+
+.nx-sd-field .nx-sd-input:focus,
+.nx-sd-field .nx-sd-input:focus-visible {
+  outline: none;
+}
+
+.nx-sd-field .nx-sd-input::placeholder {
+  color: var(--ink-3);
+  opacity: 1;
+}
+
+.nx-sd-attach {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 44px;
+  block-size: 44px;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.nx-sd-attach svg {
+  inline-size: 20px;
+  block-size: 20px;
+}
+
+@media (hover: hover) {
+  .nx-sd-attach:hover {
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+    color: var(--ink);
+  }
+}
+
+/* ── التركيز: حلقة السماوي بنصف قطر العنصر نفسه ────────────────────────── */
+.nx-sd-chip:focus-visible,
+.nx-sd-attach:focus-visible {
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+.nx-sd-send:focus-visible,
+.nx-sd-voice-btn:focus-visible,
+.nx-sd-compact .nx-sd-mute:focus-visible {
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+/* ── البطاقة الأعرض: وجهٌ وعنوانٌ أكبر ─────────────────────────────────── */
+@container nx-home-sadeed (min-width: 300px) {
+  .nx-sd-portrait {
+    inline-size: 96px;
+  }
+  .nx-sd-compact-title {
+    font-size: 21px;
+  }
+  .nx-sd-compact-mark {
+    inline-size: 30px;
+    block-size: 30px;
+  }
+  .nx-sd-compact-sub {
+    font-size: 13px;
+  }
+  /* قِيست أطول التسميات («تقرير دوريات المنطقة») 101px على 12 و110 على 13،
+     وعمود التسمية في رقاقة البطاقة على 1536 (~160px) ~110px: فـ12.5 تُبقيها
+     سطرًا واحدًا كما في الصورة، و13 من 360px. */
+  .nx-sd-chip {
+    font-size: 12.5px;
+  }
+}
+
+@container nx-home-sadeed (min-width: 360px) {
+  .nx-sd-chip {
+    font-size: 13px;
+  }
+}
+
+@container nx-home-sadeed (min-width: 520px) {
+  .nx-sd-portrait {
+    inline-size: 112px;
+  }
+  .nx-sd-compact-title {
+    font-size: 24px;
+  }
+  .nx-sd-greeting {
+    align-self: flex-start;
+    min-inline-size: 16rem;
+    max-inline-size: 28rem;
+  }
+}
+
+/* ── السطوح البديلة (§5): الشفافية المخفَّضة والألوان القسرية ───────────── */
+@media (prefers-reduced-transparency: reduce) {
+  .nx-home-sadeed {
+    background-image: none;
+  }
+  .nx-sd-chip-icon {
+    background: color-mix(in srgb, var(--tone-blue) 14%, var(--surface));
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-home-sadeed,
+  .nx-sd-greeting,
+  .nx-sd-chip,
+  .nx-sd-field,
+  .nx-sd-pill,
+  .nx-sd-portrait {
+    border-color: CanvasText;
+  }
+  .nx-sd-send,
+  .nx-sd-voice-btn,
+  .nx-sd-attach,
+  .nx-sd-compact .nx-sd-mute {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    box-shadow: none;
+  }
+  .nx-sd-chip-icon {
+    background: Canvas;
+    color: CanvasText;
+  }
+  .nx-sd-pill-dot {
+    background: CanvasText;
+  }
+  .nx-sd-field:focus-within {
+    outline-color: Highlight;
+  }
+}
