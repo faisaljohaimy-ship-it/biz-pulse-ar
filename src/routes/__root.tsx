@@ -211,6 +211,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         // scenes can opt out. The counter is reset only after
         // HEALTHY_UPTIME_MS of visible uptime, not at React commit (see
         // RootComponent effect below and crash-loop.ts).
+        // Once per document (2026-10-15): the router can re-render the head
+        // scripts on a client-side redirect (a guest opening /ptw is sent to
+        // "/"), which re-executes this inline script in the SAME document. It
+        // then found its own 'nexios-alive' flag and counted a crash, so the
+        // first visit landed in safe-mode (production check run 493). A
+        // window flag makes every later execution in that document a no-op;
+        // a real reload or crash gets a fresh window.
         // Unclean-exit detection (P0 2026-10-14): 'nexios-alive' is '1' while
         // the page is visible and removed on pagehide / hidden. Still '1' at
         // boot ⇒ the last life died without pagehide (iOS jetsam) ⇒ a strike
@@ -219,7 +226,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         // every boot (`n+1`) put two quick pull-to-refreshes, a fast OAuth
         // round-trip or an error-boundary reload into safe-mode, on desktop
         // too. Contract and lesson: crash-loop.ts (ALIVE_KEY).
-        children: `(function(){try{var ss=window.sessionStorage;var k='nexios-boot-attempts';var a='nexios-alive';var n=parseInt(ss.getItem(k)||'0',10);if(!isFinite(n)||n<0)n=0;n=ss.getItem(a)==='1'?Math.max(n,1)+1:n;ss.setItem(k,String(n));var up=function(){try{if(document.visibilityState==='visible')ss.setItem(a,'1');else ss.removeItem(a);}catch(_){}};var down=function(){try{ss.removeItem(a);}catch(_){}};up();window.addEventListener('pagehide',down);window.addEventListener('pageshow',up);document.addEventListener('visibilitychange',up);if(n>=2){ss.setItem('nexios-welcome','complete:v4');ss.setItem('nexios-safe-mode','1');document.documentElement.classList.add('safe-mode');}if(n>=3){try{if('caches' in window){caches.keys().then(function(ks){ks.forEach(function(c){caches.delete(c);});});}if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});});}}catch(_){}}}catch(e){}})();`,
+        children: `(function(){try{if(window.__nxBootCounted)return;window.__nxBootCounted=1;var ss=window.sessionStorage;var k='nexios-boot-attempts';var a='nexios-alive';var n=parseInt(ss.getItem(k)||'0',10);if(!isFinite(n)||n<0)n=0;n=ss.getItem(a)==='1'?Math.max(n,1)+1:n;ss.setItem(k,String(n));var up=function(){try{if(document.visibilityState==='visible')ss.setItem(a,'1');else ss.removeItem(a);}catch(_){}};var down=function(){try{ss.removeItem(a);}catch(_){}};up();window.addEventListener('pagehide',down);window.addEventListener('pageshow',up);document.addEventListener('visibilitychange',up);if(n>=2){ss.setItem('nexios-welcome','complete:v4');ss.setItem('nexios-safe-mode','1');document.documentElement.classList.add('safe-mode');}if(n>=3){try{if('caches' in window){caches.keys().then(function(ks){ks.forEach(function(c){caches.delete(c);});});}if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});});}}catch(_){}}}catch(e){}})();`,
       },
 
       {

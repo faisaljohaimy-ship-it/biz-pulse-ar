@@ -60,7 +60,7 @@ const STYLES_SRC = readFileSync("src/styles.css", "utf8");
 /** السكربت السابق للترطيب كما يُشحن — يُقرأ من المصدر لا من نسخة. */
 const PRE_HYDRATION_SCRIPT = (() => {
   const match = ROOT_SRC.match(
-    /children: `(\(function\(\)\{try\{var ss=window\.sessionStorage;[^`]*)`/,
+    /children: `(\(function\(\)\{try\{(?:if\(window\.__nxBootCounted\)return;window\.__nxBootCounted=1;)?var ss=window\.sessionStorage;[^`]*)`/,
   );
   return match?.[1] ?? "";
 })();
@@ -116,6 +116,13 @@ function killPageListeners(): void {
     target.removeEventListener(type, listener, options);
   }
   pageListeners = [];
+  // مستندٌ جديد ⇐ نافذةٌ جديدة: علَم «عُدَّ هذا المستند» لا يعبر الإقلاع.
+  newDocument();
+}
+
+/** علَم «مرّةً لكل مستند» يعيش على النافذة؛ الإقلاع الجديد يبدأ بلا علَم. */
+function newDocument(): void {
+  delete (window as { __nxBootCounted?: number }).__nxBootCounted;
 }
 
 /** يشغّل السكربت ويسجّل كل مستمعٍ يضيفه على النافذة والمستند. */
@@ -144,6 +151,7 @@ function runPageScript(script: string): void {
 beforeEach(() => {
   vi.useFakeTimers();
   window.sessionStorage.clear();
+  newDocument();
   document.documentElement.classList.remove(SAFE_MODE_CLASS);
   visibility = "visible";
   Object.defineProperty(document, "visibilityState", {
@@ -348,6 +356,30 @@ function leaveCleanly(page: { disarm: () => void }): void {
 }
 
 describe("③ دورة الأعطال — السكربت السابق للترطيب كما يُشحن", () => {
+  it("مرّةً واحدة لكل مستند: إعادة تنفيذه في المستند نفسه (توجيهٌ من العميل) لا تُحسب انهيارًا", () => {
+    // فحص الإنتاج 493 (٢٠٢٦/١٠/١٥): زائرٌ يفتح /ptw فيُعاد توجيهه من العميل إلى «/»،
+    // والموجّه يعيد رسم سكربتات الرأس فيُنفَّذ السكربت ثانيةً في المستند نفسه —
+    // فيجد علَم حياته هو ويعدّها ضربة ⇐ الوضع الآمن من أوّل زيارة.
+    expect(PRE_HYDRATION_SCRIPT).toContain("if(window.__nxBootCounted)return;");
+    runPageScript(PRE_HYDRATION_SCRIPT);
+    runPageScript(PRE_HYDRATION_SCRIPT); // المستند نفسه: لا newDocument()
+    expect(window.sessionStorage.getItem(BOOT_ATTEMPTS_KEY)).toBe("0");
+    expect(document.documentElement.classList.contains(SAFE_MODE_CLASS)).toBe(false);
+
+    // الانتهاك المزروع (المادة ٣٠): السكربت بلا حارس المستند يبلغ الوضع الآمن.
+    window.sessionStorage.clear();
+    newDocument();
+    const unguarded = PRE_HYDRATION_SCRIPT.replace(
+      "if(window.__nxBootCounted)return;window.__nxBootCounted=1;",
+      "",
+    );
+    expect(unguarded).not.toBe(PRE_HYDRATION_SCRIPT);
+    runPageScript(unguarded);
+    runPageScript(unguarded);
+    expect(window.sessionStorage.getItem(BOOT_ATTEMPTS_KEY)).toBe("2");
+    expect(document.documentElement.classList.contains(SAFE_MODE_CLASS)).toBe(true);
+  });
+
   it("السكربت مقروء ويتكلّم بالثوابت المشتركة", () => {
     expect(PRE_HYDRATION_SCRIPT.length).toBeGreaterThan(0);
     expect(PRE_HYDRATION_SCRIPT).toContain(`'${BOOT_ATTEMPTS_KEY}'`);
