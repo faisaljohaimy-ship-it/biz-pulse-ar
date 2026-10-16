@@ -16,7 +16,7 @@ import {
   getChatRequestId,
   validateChatRequest,
 } from "./-chat-guard";
-import { enforceRateLimit, rateLimitUnavailableResponse } from "@/lib/governance/rate-limit.server";
+import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
 import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import { evaluateRagCoverage } from "@/lib/sadeed/rag.server";
 import { parseIntent, resolveModel } from "@/lib/sadeed-core/server/ai-router.server";
@@ -239,6 +239,41 @@ ${SADEED_RESPONSE_CONTRACT}
 
 ${SADEED_LIVE_INTELLIGENCE_DOCTRINE}`;
 
+/** الردّ المضمون حين لا مزوّد: ما جرى وما بقي ممكنًا، بلا رقمٍ ولا اسم مورّد. */
+const LOCAL_NO_PROVIDER_AR =
+  "لا أستطيع الوصول إلى محرّك التحليل في هذه اللحظة، " +
+  "ولن أعرض أرقامًا أو استنتاجات غير متحقّقة. " +
+  "يمكنني الآن فتح الشاشة التي تريدها أو شرح ما تعنيه مؤشّراتها، " +
+  "وسأعاود المحاولة تلقائيًّا بعد لحظات.";
+
+/**
+ * الردّ المضمون حين يتعذّر التحقّق من الحصّة (٢٠٢٦/١٠/١٦). كان المعالج يعيد
+ * ‏503 بجسم `rate_limit_unavailable` فتعرضه الفقاعة رمزًا إنجليزيًّا أحمر. والآن:
+ * لا نداء للنموذج المدفوع بلا حصّةٍ متحقَّقة (الحماية مغلقة كما كانت)، ولا خطأ
+ * أمام المستخدم — ردٌّ محلّيٌّ صادق (الطبقة الأولى من «سَدِيد لا يتعطل»).
+ */
+const LOCAL_QUOTA_UNVERIFIED_AR =
+  "خدمة التحليل مزدحمةٌ في هذه اللحظة، ولن أعرض أرقامًا أو استنتاجات غير متحقّقة. " +
+  "أعد إرسال سؤالك بعد لحظات، أو افتح الشاشة التي تريدها مباشرةً من القائمة.";
+
+/** مهلة كل فحصٍ في القاعدة قبل الردّ — فلا يعلق سؤالٌ على قاعدةٍ لا تردّ. */
+const CHAT_GATE_DEADLINE_MS = 1_500;
+
+function localGuaranteedReply(rid: string, text: string, source: string): Response {
+  const localStream = createUIMessageStream({
+    execute: ({ writer }) => {
+      const id = `sadeed-local-${rid}`;
+      writer.write({ type: "text-start", id });
+      writer.write({ type: "text-delta", id, delta: text });
+      writer.write({ type: "text-end", id });
+    },
+  });
+  return createUIMessageStreamResponse({
+    stream: localStream,
+    headers: { ...responseHeaders(rid), "X-SADEED-Reply-Source": source },
+  });
+}
+
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
@@ -273,23 +308,7 @@ export const Route = createFileRoute("/api/chat")({
           // ولأن المخاطَب مديرٌ تنفيذي لا مشغّل نظام، فالرسالة تقول ما جرى
           // وما تبقّى ممكنًا، لا اسم مورّد ولا متغيّر بيئة.
           // والصدق يبقى شرطًا: لا رقم ولا ادعاء تشغيلي بلا مصدر.
-          const localText =
-            "لا أستطيع الوصول إلى محرّك التحليل في هذه اللحظة، " +
-            "ولن أعرض أرقامًا أو استنتاجات غير متحقّقة. " +
-            "يمكنني الآن فتح الشاشة التي تريدها أو شرح ما تعنيه مؤشّراتها، " +
-            "وسأعاود المحاولة تلقائيًّا بعد لحظات.";
-          const localStream = createUIMessageStream({
-            execute: ({ writer }) => {
-              const id = `sadeed-local-${rid}`;
-              writer.write({ type: "text-start", id });
-              writer.write({ type: "text-delta", id, delta: localText });
-              writer.write({ type: "text-end", id });
-            },
-          });
-          return createUIMessageStreamResponse({
-            stream: localStream,
-            headers: { ...responseHeaders(rid), "X-SADEED-Reply-Source": "local-guaranteed" },
-          });
+          return localGuaranteedReply(rid, LOCAL_NO_PROVIDER_AR, "local-guaranteed");
         }
 
         const guard = await validateChatRequest(request);
@@ -376,13 +395,21 @@ export const Route = createFileRoute("/api/chat")({
         // Anonymous IP headers are trusted only behind an explicitly
         // configured proxy; otherwise all anonymous traffic shares a key.
         const rateKey = userId ? `chat:${userId}` : `chat:ip:${clientIp(request)}`;
+        const gate = { deadlineMs: CHAT_GATE_DEADLINE_MS };
         const rate = userId
-          ? await enforceRateLimit(rateKey, 40, 60)
-          : await enforceRateLimit(rateKey, 12, 300);
-        if (rate.unavailable) return rateLimitUnavailableResponse();
+          ? await enforceRateLimit(rateKey, 40, 60, gate)
+          : await enforceRateLimit(rateKey, 12, 300, gate);
+        if (rate.unavailable) {
+          console.warn("[api/chat] rate gate unavailable — local guaranteed reply", { requestId });
+          return localGuaranteedReply(
+            requestId,
+            LOCAL_QUOTA_UNVERIFIED_AR,
+            "local-quota-unverified",
+          );
+        }
         if (!rate.allowed) {
           return jsonError(
-            "SADEED is temporarily rate limited. Please retry shortly.",
+            "سَدِيد يستقبل طلباتٍ كثيرة الآن — أعد المحاولة بعد دقيقة.",
             429,
             requestId,
           );
@@ -390,7 +417,16 @@ export const Route = createFileRoute("/api/chat")({
         const quota = await enforceAiQuota({
           surface: "chat",
           identity: userId ?? `ip:${clientIp(request)}`,
+          deadlineMs: CHAT_GATE_DEADLINE_MS,
         });
+        if (quota && quota.status === 503) {
+          console.warn("[api/chat] quota gate unavailable — local guaranteed reply", { requestId });
+          return localGuaranteedReply(
+            requestId,
+            LOCAL_QUOTA_UNVERIFIED_AR,
+            "local-quota-unverified",
+          );
+        }
         if (quota) return quota;
 
         const provider = createGoogleGeminiProvider(googleKey);

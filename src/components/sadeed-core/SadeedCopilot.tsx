@@ -67,6 +67,7 @@ import {
 } from "@/lib/sadeed/output/client-consumer";
 import { stripTashkeel } from "@/lib/sadeed/tashkeel";
 import { VENDOR_MASK_RE } from "@/lib/sadeed/vendor-mask";
+import { chatErrorText } from "@/lib/sadeed-core/services/chat-error-text";
 import { chooseSadeedRecorderMime, recorderFileExtension } from "@/lib/sadeed/media-recorder";
 import {
   advanceSadeedVoiceActivity,
@@ -297,7 +298,6 @@ function rmsLevel(samples: Float32Array): number {
 
 const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
-const CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 const THINKING_AR = `${SADEED_DISPLAY_NAME_AR} يفكّر…`;
 const EXPORT_ERROR_AR = "تعذّر تجهيز ملف PDF الآن — أعد المحاولة بعد لحظات.";
 const EXPORT_BUSY_AR = "يجهّز ملف PDF…";
@@ -2229,28 +2229,8 @@ export function SadeedCopilot() {
             <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
               <div className="flex items-start gap-2">
                 <span className="leading-relaxed">
-                  {(() => {
-                    const raw = (chat.error?.message || "").trim();
-                    if (!raw) return CONNECTION_ERROR_AR;
-                    // Extract server-provided reason from `{ok:false,error:"..."}` payloads
-                    try {
-                      const parsed = JSON.parse(raw) as {
-                        error?: string;
-                      };
-                      // Saved repair method (Lovable): never surface
-                      // auth jargon — show the neutral retry line.
-                      if (parsed?.error && !/authenticat|unauthor|token/i.test(parsed.error))
-                        return parsed.error;
-                      if (parsed?.error) return CONNECTION_ERROR_AR;
-                    } catch {
-                      /* not JSON — fall through */
-                    }
-                    // القناع المشترك نفسه لا نسخة ثانية: كانت هنا نسخةٌ
-                    // افترقت فعلًا عن الأولى (`gpt-[\w.-]+` مقابل
-                    // `gpt-\d[\w.-]*`)، فيمسح أحدهما ما لا يمسحه الآخر.
-                    const safe = raw.replace(VENDOR_MASK_RE, "").trim();
-                    return safe || CONNECTION_ERROR_AR;
-                  })()}
+                  {/* عربيٌّ دائمًا: لا رمز خادم ولا جملة إنجليزية (chat-error-text.ts). */}
+                  {chatErrorText(chat.error?.message)}
                 </span>
                 <button
                   type="button"

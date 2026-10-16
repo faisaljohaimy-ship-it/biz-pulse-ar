@@ -159,6 +159,8 @@ export interface AiQuotaOptions {
   readonly identity: string;
   /** حجم تقديريّ (أحرف النصّ مثلًا) — للمحاسبة لا للحجب. */
   readonly units?: number;
+  /** مهلة كل نداء قاعدة (مللي ثانية) — تجاوزها «غير متاح» مغلقًا، بلا انتظار مفتوح. */
+  readonly deadlineMs?: number;
 }
 
 /**
@@ -168,7 +170,7 @@ export interface AiQuotaOptions {
  * الدقيقة، وهذه تحدّ الفاتورة في اليوم.
  */
 export async function enforceAiQuota(opts: AiQuotaOptions): Promise<Response | null> {
-  const { surface, identity, units = 1 } = opts;
+  const { surface, identity, units = 1, deadlineMs } = opts;
   const ar = SURFACE_AR[surface];
 
   const disabled = aiDisabledResponse(surface);
@@ -183,6 +185,7 @@ export async function enforceAiQuota(opts: AiQuotaOptions): Promise<Response | n
     `ai-daily-global:${surface}:${today}`,
     limits.global,
     DAY_SECONDS,
+    { deadlineMs },
   );
   if (globalGate.unavailable) {
     return arabicResponse(
@@ -205,6 +208,7 @@ export async function enforceAiQuota(opts: AiQuotaOptions): Promise<Response | n
     `ai-daily-id:${surface}:${today}:${identity}`,
     limits.perIdentity,
     DAY_SECONDS,
+    { deadlineMs },
   );
   if (identityGate.unavailable) {
     return arabicResponse(
