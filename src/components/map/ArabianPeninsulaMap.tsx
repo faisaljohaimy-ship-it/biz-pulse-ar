@@ -6,7 +6,7 @@
  * **رسمٌ لا مكتبة.** الهندسة مولَّدة سلفًا في `arabia-geometry.ts` من
  * Natural Earth (ملك عام) — لا بلاطات من شبكة خارجية، ولا حزمة خرائط تثقل
  * ميزانية الأداء، ولا ثيمٌ لا يتبع طبقة الرموز. والخريطة الجغرافية الكاملة
- * تبقى في موضعها: `/executive-map` (زرّ التوسيع في سكّة التحكّم).
+ * تبقى في موضعها: `/executive-map` (البوصلة في سكّة التحكّم).
  *
  * **شاشةٌ داكنة في الوضعين** كلوحة غرفة العمليات: رموزها مثبَّتة في
  * `.nx-arabia` (كما تُثبَّت على الصفحتين الداكنتين دائمًا)، فالتوهّج يُقرأ
@@ -16,27 +16,46 @@
  * ويُعلن. وعدد مواقع المنطقة يُحسب بالقاعدة نفسها التي لوّنت المنطقة (أقرب
  * مرساة)، فلا يختلف الرقم عن اللون. وما لم يُقَس يُقرأ «لم يُقَس».
  *
- * ## تخطيط مركز القيادة (أمر المالك ٢٠٢٦/١٠/١٣ — المواصفة §4.4)
+ * ## «طبّق الصورة بحذافيرها» (قرار المالك ٢٠٢٦/١٠/١٤ — N1–N4)
  *
- * كل ما ترسمه الصورة طافيًا فوق الخريطة يُوضع **بجانبها أو تحتها في مسار
- * التدفّق العادي** — لا طبقة مطلقة فوق الرسم (عقد الهندسة: اللافتات الطافية
- * حجبت ٣ من ٤ مواقع):
+ * الصورة ترسم الخريطة **مسرحًا** يملأ البطاقة: الشريط فوقها، والسكّتان على
+ * بحرَيها، و«إحصائيات سريعة» على البحر الأحمر، وفقاعات المناطق الأربع فوق
+ * مناطقها. فالبطاقة العريضة (≥ 720px، استعلام حاوية) شبكةٌ واحدة يقع الرسم
+ * في خلاياها كلّها والأدوات في حوافّها — **ترتيب شبكة لا طبقة مطلقة فوق
+ * الرسم**. وما دون ذلك (الجوال واللوح الضيّق) تدفّقٌ عادي: الشريط ثم الرسم
+ * ثم الفقاعات شبكةً تحته ثم السكّتان ثم الإحصاءات.
  *
- *   الشريط العلوي:  تبويبات العرض (يسارًا، يمرّرها المستدعي) · رقاقات المناطق
- *   الجسم:          سكّة التحكّم (تكبير · تصغير · إعادة ضبط · توسيع) · الرسم
- *                   · سكّة الطبقات (يمينًا، يمرّرها المستدعي)
- *   الذيل:          «إحصائيات سريعة» · بطاقات المناطق الأربع
+ * **عقد «لا شيء يحجب المواقع» محفوظٌ بترتيب الرسم لا بالمكان:** كانت
+ * اللافتات الطافية تحجب ٣ من ٤ مواقع (قِيست بالبكسل). هنا الفقاعات طبقةٌ
+ * شقيقة للرسم، **والمواقع طبقةٌ فوقها** — فالموقع الحيّ يُرى ولو وقع تحت
+ * فقاعة. والأدوات على الحوافّ فوق البحر، لا على المملكة، في الإطار الكامل.
  *
- * الترتيب يسارًا ← يمينًا كما في الصورة (قرار المالك D5)، فالحاويات
- * `dir="ltr"` ترتيبًا فقط، وكل ورقة تعلن اتجاه لغتها.
+ * **المنظور:** الصورة ترسم المملكة مائلةً (منظورًا منخفضًا)، فتُضغط الهندسة
+ * رأسيًّا بمعامل `TILT` عند الرسم وحده — الإسقاط نفسه وعقده (المدن في
+ * مناطقها) لا يُمسّان، والمواقع والمراكز تُضغط بالمعامل نفسه فتبقى مكانها.
  *
- * **التكبير حقيقي:** يتغيّر `viewBox` نفسه لا مقياسُ صورة — فالخطوط
- * والنقاط تُعاد رسمًا بدقّتها. ومركز التكبير المنطقةُ المُبرَزة إن وُجدت
- * (فالرقاقة تنقل العرض إليها)، وإلا مركز المملكة. والانتقال حركةٌ قصيرة
- * تسقط إلى القفز المباشر تحت تقليل الحركة ووضع الأمان.
+ * **التكبير حقيقي:** يتغيّر `viewBox` نفسه لا مقياسُ صورة — فالخطوط تُعاد
+ * رسمًا بدقّتها، والفقاعات والمواقع تتبعه بمتغيّرات CSS يكتبها الإطار نفسه
+ * في كل خطوة. ومركز التكبير المنطقةُ المُبرَزة، وإلا مركز المملكة. والانتقال
+ * حركةٌ قصيرة تسقط إلى القفز المباشر تحت تقليل الحركة ووضع الأمان.
  */
 import { Link } from "@tanstack/react-router";
-import { Maximize2, Minus, Plus, RotateCcw } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronRight,
+  CircleCheck,
+  Compass,
+  Factory,
+  Info,
+  Layers,
+  Minus,
+  OctagonAlert,
+  Plus,
+  Scan,
+  TriangleAlert,
+  type LucideIcon,
+} from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 import { useRegion } from "@/lib/region-context";
@@ -72,6 +91,24 @@ export interface ArabiaQuickStat {
    * الدخول من مؤشرات اللوحة التنفيذية) — وإلا يتبع حال الخريطة.
    */
   readonly status?: ArabiaStatus;
+  /** `true` ⇐ القيمة من المحاكاة المرجعية، فتُعلن «محاكاة» (قرار N2). */
+  readonly simulated?: boolean;
+  /** شاشة الرقم — يصير الإحصاء رابطًا إليها. */
+  readonly to?: string;
+}
+
+/** نبرة الشارة كما رُسمت — تُرسم شكلًا وكلمةً معًا لا لونًا وحده (WCAG §1.4.1). */
+export type ArabiaTone = "danger" | "warning" | "healthy" | "info";
+
+/** فقاعة منطقة على الخريطة كما رُسمت: الرقم وسهمه والشارتان والتغيّر. */
+export interface ArabiaBubble {
+  readonly regionId: RegionId;
+  readonly value: number;
+  /** `null` ⇐ «لم يُقَس» (قيمةٌ حيّة لا تُزيَّن بتغيّرٍ محاكى). */
+  readonly change: { readonly dir: "up" | "down"; readonly pct: number } | null;
+  readonly badges: readonly { readonly count: number; readonly tone: ArabiaTone }[];
+  /** `true` ⇐ مرجعٌ موسوم: شارة «محاكاة» ظاهرة على الفقاعة. */
+  readonly simulated: boolean;
 }
 
 interface Props {
@@ -89,6 +126,20 @@ interface Props {
   readonly viewTabs?: ReactNode;
   /** سكّة الطبقات يمين الرسم — المستدعي يملكها ويملك إظهارها. */
   readonly layersRail?: ReactNode;
+  /** زرّ الطبقات في سكّة التحكّم — يبدّل سكّة المستدعي نفسها. */
+  readonly layersToggle?: {
+    readonly open: boolean;
+    readonly onToggle: () => void;
+    readonly controls: string;
+  };
+  /** فقاعات المناطق الأربع (الصورة) — بترتيب `REGIONS` أو بأي ترتيب. */
+  readonly bubbles?: readonly ArabiaBubble[];
+  /** ما يعدّه رقم الفقاعة الكبير — يُقرأ للقارئات («الأفراد»). */
+  readonly bubbleMetric?: { readonly ar: string; readonly en: string };
+  /** زرّ «المزيد» في شريط الإحصاءات (السهم المرسوم). */
+  readonly quickMore?: { readonly to: string; readonly ar: string; readonly en: string };
+  /** المواقع المرسومة من المحاكاة لا من القاعدة — يُقال في وصف الرسم. */
+  readonly sitesSimulated?: boolean;
 }
 
 /** أقرب مرساة — القاعدة نفسها التي ضمّت المناطق الإدارية عند التوليد. */
@@ -106,13 +157,20 @@ function nearestRegion(lat: number, lng: number): RegionId {
 }
 
 /**
- * إطار العرض مقصوصٌ على المملكة وهامشٍ حولها — الهندسة تشمل الجوار حتى
- * اليمن وعُمان، وعرضها كاملةً بعرض الصفحة أعطى خريطةً بطول ١١٠٠px أغلبها
- * بحر (رُئي بلقطة على 1440). حدود المملكة في الإطار: x ‎53–745 · y ‎67–634.
+ * معامل المنظور: الصورة ترسم المملكة 580×322px داخل بطاقة 932×400 — أعرض
+ * من الإسقاط المستوي بنسبة ٠٫٦٨ رأسيًّا. يُطبَّق على الرسم وحده.
  */
-const CROP = { x: 20, y: 35, w: 770, h: 630 } as const;
+const TILT = 0.678;
 
-/* ── التكبير: إطار عرضٍ يضيق حول مركزٍ ويبقى داخل الإطار المقصوص ───────── */
+/**
+ * الإطار الكامل بوحدات الرسم المضغوطة — مشتقٌّ من موضع المملكة في الصورة:
+ * حدودها (x ‎53.5–744.5 · y ‎67.6–633.5 قبل الضغط) تقع على 195–775 × 38–360
+ * من بطاقةٍ 932×400. فنسبته نسبة البطاقة نفسها (٢٫٣٣)، والجوار حتى البحرين
+ * يملأ ما حول المملكة كما في الصورة.
+ */
+const FULL: Box = { x: -178.8, y: 0.6, w: 1110.3, h: 476.5 };
+
+/* ── التكبير: إطار عرضٍ يضيق حول مركزٍ ويبقى داخل الإطار الكامل ───────── */
 
 /** درجات التكبير — الأولى الإطار كاملًا. */
 const ZOOM_STEPS = [1, 1.5, 2, 3] as const;
@@ -126,10 +184,13 @@ interface Box {
   readonly h: number;
 }
 
-const FULL: Box = { x: CROP.x, y: CROP.y, w: CROP.w, h: CROP.h };
 const boxText = (b: Box) =>
   `${b.x.toFixed(1)} ${b.y.toFixed(1)} ${b.w.toFixed(1)} ${b.h.toFixed(1)}`;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+/** متغيّرات الإطار التي تتبعها الفقاعات والمواقع (`home-map.css`). */
+const VB_VARS = ["--vb-x", "--vb-y", "--vb-w", "--vb-h"] as const;
+const boxVars = (b: Box) => [b.x, b.y, b.w, b.h].map((v) => v.toFixed(2));
 
 /** مركز كل منطقة: منتصف الصندوق المحيط بمناطقها الإدارية — يُحسب مرّة. */
 let centres: Record<RegionId, { x: number; y: number }> | null = null;
@@ -150,8 +211,8 @@ function regionCentre(id: RegionId): { x: number; y: number } {
     for (const r of REGIONS) {
       const b = acc[r.id];
       out[r.id] = b
-        ? { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }
-        : { x: CROP.x + CROP.w / 2, y: CROP.y + CROP.h / 2 };
+        ? { x: (b.x0 + b.x1) / 2, y: ((b.y0 + b.y1) / 2) * TILT }
+        : { x: FULL.x + FULL.w / 2, y: FULL.y + FULL.h / 2 };
     }
     centres = out;
   }
@@ -161,25 +222,44 @@ function regionCentre(id: RegionId): { x: number; y: number } {
 /** الإطار المطلوب لدرجة تكبيرٍ ومنطقةٍ مُبرَزة. */
 function viewBoxFor(zoom: number, focus: RegionId | "all"): Box {
   if (zoom <= 1) return FULL;
-  const w = CROP.w / zoom;
-  const h = CROP.h / zoom;
+  const w = FULL.w / zoom;
+  const h = FULL.h / zoom;
   const c =
-    focus === "all" ? { x: CROP.x + CROP.w / 2, y: CROP.y + CROP.h / 2 } : regionCentre(focus);
+    focus === "all" ? { x: FULL.x + FULL.w / 2, y: FULL.y + FULL.h / 2 } : regionCentre(focus);
   return {
-    x: clamp(c.x - w / 2, CROP.x, CROP.x + CROP.w - w),
-    y: clamp(c.y - h / 2, CROP.y, CROP.y + CROP.h - h),
+    x: clamp(c.x - w / 2, FULL.x, FULL.x + FULL.w - w),
+    y: clamp(c.y - h / 2, FULL.y, FULL.y + FULL.h - h),
     w,
     h,
   };
 }
 
 /**
+ * ركن الفقاعة الأعلى الأيسر بوحدات الرسم المضغوطة — مواضع الصورة نفسها
+ * (الغربية على ساحل الحجاز، الوسطى أعلى الوسط، الشرقية على الخليج)، إلا
+ * الجنوبية: منطقتها في هذا الرسم جنوب الغرب (عسير وجازان ونجران) لا الربع
+ * الخالي كما لوّنته الصورة — فاللون يتبع قاعدة عدّ المواقع لا المولِّد —
+ * فتقع فقاعتها على منطقتها. والمواضع مختارةٌ خارج مواقع المحاكاة الأربعة.
+ */
+const BUBBLE_ANCHOR: Record<RegionId, { x: number; y: number }> = {
+  western: { x: -10.8, y: 124.5 },
+  central: { x: 287.0, y: 80.4 },
+  eastern: { x: 637.3, y: 145.9 },
+  southern: { x: 351.3, y: 281.7 },
+};
+
+/**
  * ينقل `viewBox` من الإطار المعروض إلى المطلوب بحركةٍ قصيرة، كتابةً مباشرة
- * على العنصر (لا إعادة رسمٍ لـReact في كل إطار). React يكتب الهدف عند
+ * على العنصر (لا إعادة رسمٍ لـReact في كل إطار)، ومعه متغيّرات الإطار على
+ * طبقة الرسم فتتبعه الفقاعات والمواقع في الخطوة نفسها. React يكتب الهدف عند
  * الالتزام، وهذا الأثر يعيده إلى نقطة البدء قبل الرسم ثم يسير إليه — فلا
  * وميض. وتحت تقليل الحركة أو وضع الأمان يبقى ما كتبه React: قفزٌ مباشر.
  */
-function useViewBoxMotion(svgRef: RefObject<SVGSVGElement | null>, target: Box) {
+function useViewBoxMotion(
+  svgRef: RefObject<SVGSVGElement | null>,
+  layerRef: RefObject<HTMLDivElement | null>,
+  target: Box,
+) {
   const shown = useRef<Box>(target);
   useLayoutEffect(() => {
     const svg = svgRef.current;
@@ -192,6 +272,13 @@ function useViewBoxMotion(svgRef: RefObject<SVGSVGElement | null>, target: Box) 
       shown.current = target;
       return;
     }
+    const write = (b: Box) => {
+      svg.setAttribute("viewBox", boxText(b));
+      const layer = layerRef.current;
+      if (!layer) return;
+      const vals = boxVars(b);
+      VB_VARS.forEach((name, i) => layer.style.setProperty(name, vals[i]));
+    };
     const t0 = performance.now();
     let raf = 0;
     const step = (now: number) => {
@@ -204,13 +291,13 @@ function useViewBoxMotion(svgRef: RefObject<SVGSVGElement | null>, target: Box) 
         h: from.h + (target.h - from.h) * e,
       };
       shown.current = k < 1 ? b : target;
-      svg.setAttribute("viewBox", boxText(shown.current));
+      write(shown.current);
       if (k < 1) raf = requestAnimationFrame(step);
     };
-    svg.setAttribute("viewBox", boxText(from));
+    write(from);
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [svgRef, target]);
+  }, [svgRef, layerRef, target]);
 }
 
 /** نصّ القيمة حين لا تكون القراءة جاهزة — `null` حين تكون. */
@@ -219,6 +306,17 @@ function waitText(status: ArabiaStatus, ar: boolean): string | null {
   if (status === "error") return ar ? "تعذّر التحميل" : "Unavailable";
   return null;
 }
+
+/** الأرقام كما كُتبت في الصورة: لاتينية بفاصل الآلاف («1,341» · «214»). */
+const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
+
+/** شكل الشارة وكلمتها لكل نبرة — المثلث الأحمر في الصورة يُرسم مثمّنًا (§3.5). */
+const TONE_VIEW: Record<ArabiaTone, { icon: LucideIcon; ar: string; en: string }> = {
+  danger: { icon: OctagonAlert, ar: "خطر", en: "danger" },
+  warning: { icon: TriangleAlert, ar: "تحذير", en: "warning" },
+  healthy: { icon: CircleCheck, ar: "سليم", en: "healthy" },
+  info: { icon: Info, ar: "معلومة", en: "info" },
+};
 
 export function ArabianPeninsulaMap({
   status,
@@ -229,15 +327,28 @@ export function ArabianPeninsulaMap({
   ar,
   viewTabs,
   layersRail,
+  layersToggle,
+  bubbles,
+  bubbleMetric,
+  quickMore,
+  sitesSimulated,
 }: Props) {
-  const { setRegion } = useRegion();
-  const [focus, setFocus] = useState<RegionId | "all">("all");
+  const { regionId, setRegion } = useRegion();
+  /**
+   * المنطقة المُبرَزة: ما اختاره الزائر هنا، وإلا المنطقة الفاعلة في النظام
+   * (الوسطى افتراضًا — كما ترسمها الصورة مضغوطةً). والإبراز الافتراضي لا
+   * يُخفت غيرها: الصورة ترسم المناطق الأربع متّقدة.
+   */
+  const [picked, setPicked] = useState<RegionId | "all" | null>(null);
+  const focus: RegionId | "all" = picked ?? regionId;
+  const dimOthers = picked !== null && picked !== "all";
   const [zoomAt, setZoomAt] = useState(0);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const layerRef = useRef<HTMLDivElement | null>(null);
   const textDir = ar ? "rtl" : "ltr";
   const zoom = ZOOM_STEPS[zoomAt];
   const target = useMemo(() => viewBoxFor(zoom, focus), [zoom, focus]);
-  useViewBoxMotion(svgRef, target);
+  useViewBoxMotion(svgRef, layerRef, target);
 
   const { plotted, outside, byRegion } = useMemo(() => {
     const inside: Array<ArabiaSite & { x: number; y: number; region: RegionId }> = [];
@@ -249,7 +360,8 @@ export function ArabianPeninsulaMap({
       }
       const lat = s.lat as number;
       const lng = s.lng as number;
-      inside.push({ ...s, ...projectArabia(lat, lng), region: nearestRegion(lat, lng) });
+      const p = projectArabia(lat, lng);
+      inside.push({ ...s, x: p.x, y: p.y * TILT, region: nearestRegion(lat, lng) });
     }
     const counts = {} as Record<RegionId, number>;
     for (const r of REGIONS) counts[r.id] = 0;
@@ -262,81 +374,71 @@ export function ArabianPeninsulaMap({
   const pending = waitText(status, ar);
   /** رقمٌ من قراءةٍ أخرى تعذّر — يُقال ومعه إعادة المحاولة (المادة ١٤). */
   const statsFailed = status !== "error" && quickStats.some((s) => s.status === "error");
-  /** النقطة تكبر مع التكبير بجذره — تُرى أوضح ولا تغطّي جاراتها. */
-  const dotScale = 1 / Math.sqrt(zoom);
+  const simulatedStats = quickStats.filter(
+    (s) => s.simulated && (s.status ?? status) !== "loading",
+  );
+  const liveStats = quickStats.filter(
+    (s) => !s.simulated && (s.status ?? status) === "ready" && s.value !== null,
+  );
   const zoomWord = zoom.toLocaleString(ar ? "ar-SA" : "en-US");
+  const vb = boxVars(target);
+  const simWord = ar ? "محاكاة" : "Simulated";
+
+  /* ── رقاقات المناطق — تبرز منطقةً وتنقل مركز التكبير إليها ───────────── */
+  const chips = (
+    <div
+      role="group"
+      dir={textDir}
+      aria-label={ar ? "إبراز منطقة" : "Highlight a region"}
+      className="nx-arabia-tabs"
+    >
+      {(["all", ...REGIONS.map((r) => r.id)] as const).map((id) => {
+        const region = REGIONS.find((r) => r.id === id);
+        const label = region
+          ? ar
+            ? region.shortAr
+            : region.shortEn
+          : ar
+            ? "جميع المناطق"
+            : "All regions";
+        return (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={focus === id}
+            onClick={() => setPicked(id)}
+            className="nx-arabia-tab"
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <section
       aria-labelledby="nx-arabia-title"
       dir={textDir}
-      className="nx-arabia overflow-hidden rounded-2xl border p-3 sm:p-4"
+      className="nx-arabia overflow-hidden rounded-2xl border"
     >
       <h2
         id="nx-arabia-title"
-        className={viewTabs ? "sr-only" : "text-[15px] font-black text-[color:var(--ink)]"}
+        className={viewTabs ? "sr-only" : "nx-arabia-heading text-[15px] font-black"}
       >
         {ar ? "خريطة المواقع — شبه الجزيرة العربية" : "Sites map — Arabian Peninsula"}
       </h2>
 
-      {/* ── الشريط العلوي: تبويبات العرض يسارًا · رقاقات المناطق يمينًا ── */}
-      <div dir="ltr" className="nx-arabia-bar">
-        {viewTabs}
-        {/* رقاقات المناطق — تبرز منطقةً ولا تُخفي غيرها، وتنقل مركز التكبير
-            إليها. */}
-        <div
-          role="group"
-          dir={textDir}
-          aria-label={ar ? "إبراز منطقة" : "Highlight a region"}
-          className="nx-arabia-tabs"
-        >
-          {(["all", ...REGIONS.map((r) => r.id)] as const).map((id) => {
-            const region = REGIONS.find((r) => r.id === id);
-            const label = region
-              ? ar
-                ? region.shortAr
-                : region.shortEn
-              : ar
-                ? "جميع المناطق"
-                : "All regions";
-            return (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={focus === id}
-                onClick={() => setFocus(id)}
-                className="nx-arabia-tab min-h-11 px-3 text-[12px] font-bold"
-              >
-                {label}
-              </button>
-            );
-          })}
+      {/* ── المسرح: الشريط · سكّة التحكّم · الرسم · سكّة الطبقات · الإحصاءات.
+          الترتيب يسارًا ← يمينًا كما في الصورة (D5)، فالحاوية `ltr` ترتيبًا
+          وكل ورقة تعلن اتجاه لغتها. ترتيب الشجرة هو ترتيب التنقّل بلوحة
+          المفاتيح: الشريط ثم اليسار ثم الرسم ثم اليمين ثم الذيل. ─────── */}
+      <div dir="ltr" className="nx-arabia-stage" data-rail={layersToggle?.open || undefined}>
+        <div dir="ltr" className="nx-arabia-bar">
+          {viewTabs}
+          {chips}
         </div>
-      </div>
 
-      {status === "error" && (
-        <div
-          role="alert"
-          dir={textDir}
-          className="nx-arabia-alert flex flex-wrap items-center gap-2 text-[13px]"
-        >
-          <span className="text-[color:var(--ink-2)]">
-            {ar
-              ? "تعذّر تحميل المواقع الآن — الخريطة بلا نقاط."
-              : "Sites could not load — the map shows no points."}
-          </span>
-          <button
-            type="button"
-            onClick={onRetry}
-            className="nx-arabia-tab min-h-11 px-3 text-[12px] font-bold"
-          >
-            {ar ? "أعد المحاولة" : "Retry"}
-          </button>
-        </div>
-      )}
-
-      {/* ── الجسم: سكّة التحكّم · الرسم · سكّة الطبقات ─────────────────── */}
-      <div dir="ltr" className="nx-arabia-body">
         <div
           role="group"
           dir={textDir}
@@ -345,11 +447,30 @@ export function ArabianPeninsulaMap({
         >
           <button
             type="button"
+            onClick={() => setZoomAt(0)}
+            aria-label={ar ? "ملاءمة العرض — المملكة كاملة" : "Fit view — whole Kingdom"}
+            title={ar ? "ملاءمة العرض" : "Fit view"}
+            className="nx-arabia-ctl"
+          >
+            <Scan aria-hidden />
+          </button>
+          <Link
+            to="/executive-map"
+            aria-label={ar ? "الخريطة التنفيذية — الخريطة الجغرافية كاملة" : "Executive map"}
+            title={ar ? "الخريطة التنفيذية" : "Executive map"}
+            className="nx-arabia-ctl"
+            data-round=""
+          >
+            <Compass aria-hidden />
+          </Link>
+          <button
+            type="button"
             onClick={() => setZoomAt((z) => Math.min(ZOOM_STEPS.length - 1, z + 1))}
             disabled={zoomAt === ZOOM_STEPS.length - 1}
             aria-label={ar ? "تكبير" : "Zoom in"}
             title={ar ? "تكبير" : "Zoom in"}
             className="nx-arabia-ctl"
+            data-pair="start"
           >
             <Plus aria-hidden />
           </button>
@@ -360,179 +481,292 @@ export function ArabianPeninsulaMap({
             aria-label={ar ? "تصغير" : "Zoom out"}
             title={ar ? "تصغير" : "Zoom out"}
             className="nx-arabia-ctl"
+            data-pair="end"
           >
             <Minus aria-hidden />
           </button>
-          <button
-            type="button"
-            onClick={() => setZoomAt(0)}
-            disabled={zoomAt === 0}
-            aria-label={ar ? "إعادة ضبط العرض" : "Reset view"}
-            title={ar ? "إعادة ضبط العرض" : "Reset view"}
-            className="nx-arabia-ctl"
-          >
-            <RotateCcw aria-hidden />
-          </button>
-          <Link
-            to="/executive-map"
-            aria-label={ar ? "توسيع — الخريطة التنفيذية" : "Expand — executive map"}
-            title={ar ? "الخريطة التنفيذية" : "Executive map"}
-            className="nx-arabia-ctl"
-          >
-            <Maximize2 aria-hidden />
-          </Link>
+          {layersToggle && (
+            <button
+              type="button"
+              onClick={layersToggle.onToggle}
+              aria-pressed={layersToggle.open}
+              aria-controls={layersToggle.controls}
+              aria-label={ar ? "طبقات الخريطة" : "Map layers"}
+              title={ar ? "طبقات الخريطة" : "Map layers"}
+              className="nx-arabia-ctl"
+            >
+              <Layers aria-hidden />
+            </button>
+          )}
           {/* مستوى التكبير للقارئات — قبل الرسم لا بعده، ولا طبقة فوقه. */}
           <span aria-live="polite" className="sr-only">
             {ar ? `مستوى التكبير ${zoomWord}×` : `Zoom level ${zoomWord}×`}
           </span>
         </div>
 
-        <div className="nx-arabia-canvas" aria-busy={status === "loading" || undefined}>
-          <svg
-            ref={svgRef}
-            viewBox={boxText(target)}
-            role="img"
-            aria-label={
-              pending !== null
-                ? ar
-                  ? `خريطة شبه الجزيرة العربية — ${pending}`
-                  : `Arabian Peninsula map — ${pending}`
-                : ar
-                  ? `خريطة شبه الجزيرة العربية: ${plotted.length} موقعًا على المناطق الأربع`
-                  : `Arabian Peninsula map: ${plotted.length} sites across the four regions`
-            }
-          >
-            <path d={NEIGHBOUR_LAND_PATH} className="nx-arabia-neighbour" />
-            {SAUDI_PROVINCES.map((p) => (
-              <path
-                key={p.id}
-                d={p.d}
-                className="nx-arabia-province"
-                data-dim={(focus !== "all" && focus !== p.region) || undefined}
-                data-focus={focus === p.region || undefined}
-                style={{ ["--region-tint" as string]: REGION_ACCENT_HEX[p.region] }}
-              >
-                <title>{ar ? p.ar : p.en}</title>
-              </path>
-            ))}
-            <path d={SAUDI_BORDER_PATH} className="nx-arabia-border" />
-            {plotted.map((s) => (
-              <g key={s.id} style={{ ["--region-tint" as string]: REGION_ACCENT_HEX[s.region] }}>
-                <circle cx={s.x} cy={s.y} r={11 * dotScale} className="nx-arabia-site-halo" />
-                <circle cx={s.x} cy={s.y} r={5 * dotScale} className="nx-arabia-site">
-                  <title>{s.name}</title>
-                </circle>
+        <div
+          ref={layerRef}
+          className="nx-arabia-canvas"
+          aria-busy={status === "loading" || undefined}
+          style={{
+            ["--vb-x" as string]: vb[0],
+            ["--vb-y" as string]: vb[1],
+            ["--vb-w" as string]: vb[2],
+            ["--vb-h" as string]: vb[3],
+            ["--plot-ratio" as string]: (FULL.w / FULL.h).toFixed(4),
+          }}
+        >
+          <div className="nx-arabia-plot">
+            <svg
+              ref={svgRef}
+              viewBox={boxText(target)}
+              preserveAspectRatio="xMidYMid slice"
+              role="img"
+              aria-label={
+                pending !== null
+                  ? ar
+                    ? `خريطة شبه الجزيرة العربية — ${pending}`
+                    : `Arabian Peninsula map — ${pending}`
+                  : ar
+                    ? `خريطة شبه الجزيرة العربية: ${plotted.length} موقعًا على المناطق الأربع${sitesSimulated ? " (محاكاة)" : ""}`
+                    : `Arabian Peninsula map: ${plotted.length} sites across the four regions${sitesSimulated ? " (simulated)" : ""}`
+              }
+            >
+              <g transform={`scale(1 ${TILT})`}>
+                <path d={NEIGHBOUR_LAND_PATH} className="nx-arabia-neighbour" />
+                {SAUDI_PROVINCES.map((p) => (
+                  <path
+                    key={p.id}
+                    d={p.d}
+                    className="nx-arabia-province"
+                    data-dim={(dimOthers && focus !== p.region) || undefined}
+                    data-focus={focus === p.region || undefined}
+                    style={{ ["--region-tint" as string]: REGION_ACCENT_HEX[p.region] }}
+                  >
+                    <title>{ar ? p.ar : p.en}</title>
+                  </path>
+                ))}
+                <path d={SAUDI_BORDER_PATH} className="nx-arabia-border" />
               </g>
+            </svg>
+          </div>
+
+          {/* فقاعات المناطق — طبقةٌ شقيقة للرسم لا داخله، وتحت طبقة المواقع.
+              على البطاقة الضيّقة شبكةٌ تحت الرسم. */}
+          {bubbles && bubbles.length > 0 && (
+            <ol
+              dir={textDir}
+              aria-label={ar ? "المناطق الأربع" : "The four regions"}
+              className="nx-arabia-bubbles"
+            >
+              {REGIONS.map((r) => {
+                const b = bubbles.find((x) => x.regionId === r.id);
+                if (!b) return null;
+                const at = BUBBLE_ANCHOR[r.id];
+                const fx = (at.x - target.x) / target.w;
+                const fy = (at.y - target.y) / target.h;
+                return (
+                  <li
+                    key={r.id}
+                    className="nx-arabia-bubble-slot"
+                    data-out={fx < -0.02 || fx > 0.92 || fy < -0.02 || fy > 0.86 || undefined}
+                    style={{
+                      ["--ux" as string]: at.x,
+                      ["--uy" as string]: at.y,
+                      ["--region-tint" as string]: REGION_ACCENT_HEX[r.id],
+                    }}
+                  >
+                    <RegionBubble
+                      id={r.id}
+                      name={ar ? r.shortAr : r.shortEn}
+                      labelAr={r.labelAr}
+                      labelEn={r.labelEn}
+                      bubble={b}
+                      metric={bubbleMetric}
+                      sitesCount={byRegion[r.id]}
+                      compliance={compliance[r.id]}
+                      dim={dimOthers && focus !== r.id}
+                      ar={ar}
+                      notMeasured={notMeasured}
+                      pending={pending}
+                      simWord={simWord}
+                      onGo={() => setRegion(r.id)}
+                    />
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+
+          {/* المواقع — **فوق الفقاعات**: الموقع الحيّ لا تحجبه لافتة. زخرفيةٌ
+              للقارئات (العدد في وصف الرسم)، واسم كل موقعٍ تلميحٌ عند المرور. */}
+          <ul aria-hidden className="nx-arabia-pins">
+            {plotted.map((s) => (
+              <li
+                key={s.id}
+                title={s.name}
+                className="nx-arabia-pin"
+                style={{
+                  ["--ux" as string]: s.x.toFixed(1),
+                  ["--uy" as string]: s.y.toFixed(1),
+                  ["--region-tint" as string]: REGION_ACCENT_HEX[s.region],
+                }}
+              >
+                <Factory />
+              </li>
             ))}
-          </svg>
+          </ul>
         </div>
 
         {layersRail}
-      </div>
 
-      {/* ── الذيل: «إحصائيات سريعة» يسارًا · المناطق الأربع يمينًا ─────────
-          **مفتاح المناطق تحت الخريطة لا لافتاتٌ فوقها.** كانت اللافتات تطفو
-          على مواضعها فقِيست بالبكسل: تتراكب الوسطى والغربية (16×17px عند
-          1280) وتحجب ٣ من ٤ نقاط مواقع. والمواقع بياناتٌ حيّة قد تقع في أي
-          موضع، فلا موضعَ ثابتًا للافتة يضمن ألّا يغطّيها. فالرسم للمواقع
-          وحدها، والمفتاح يربط اللون بالاسم والأرقام ويفتح المنطقة. وما ترسمه
-          الصورة لكل منطقة من بلاغاتٍ ونسب تغيّر لا يُقاس (البلاغ بلا منطقة)،
-          فتحلّ محلّه المواقع والامتثال. */}
-      <div dir="ltr" className="nx-arabia-foot">
+        {/* ── «إحصائيات سريعة» — أسفل اليسار على البحر كما في الصورة ───── */}
         <div dir={textDir} className="nx-arabia-quick">
           <div className="nx-arabia-quick-head">
             <h3 id="nx-arabia-quick-title" className="nx-arabia-quick-title">
               {ar ? "إحصائيات سريعة" : "Quick stats"}
             </h3>
-            {statsFailed && (
-              <button
-                type="button"
-                onClick={onRetry}
-                className="nx-arabia-tab min-h-11 px-3 text-[12px] font-bold"
+            {simulatedStats.length > 0 && (
+              <span
+                className="nx-arabia-sim"
+                data-inline=""
+                title={
+                  ar
+                    ? "محاكاة مرجعية بأرقام التصميم — الحيّ يحلّ محلّها متى وصل"
+                    : "Reference simulation — live values replace it on arrival"
+                }
               >
+                {liveStats.length > 0
+                  ? ar
+                    ? `محاكاة عدا ${liveStats.map((s) => s.ar).join(" و")}`
+                    : `Simulated except ${liveStats.map((s) => s.en).join(", ")}`
+                  : simWord}
+              </span>
+            )}
+            {(statsFailed || status === "error") && (
+              <button type="button" onClick={onRetry} className="nx-arabia-tab" data-quiet="">
                 {ar ? "أعد المحاولة" : "Retry"}
               </button>
             )}
           </div>
           {/* إحصاءات سريعة — من القراءات نفسها التي تغذّي المؤشرات. */}
-          <dl aria-labelledby="nx-arabia-quick-title" className="nx-arabia-quick-list">
-            {quickStats.map((s) => {
-              const wait = waitText(s.status ?? status, ar);
-              const quiet = wait !== null || s.value === null;
-              return (
-                <div key={s.key} className="nx-arabia-quick-item">
-                  <dt className="nx-arabia-quick-label">
-                    <span aria-hidden className="nx-arabia-quick-icon">
-                      {s.icon}
-                    </span>
-                    {ar ? s.ar : s.en}
-                  </dt>
-                  <dd className="nx-arabia-quick-value" data-quiet={quiet || undefined}>
-                    {wait ??
-                      (s.value === null
-                        ? notMeasured
-                        : s.value.toLocaleString(ar ? "ar-SA" : "en-US"))}
-                  </dd>
-                </div>
-              );
-            })}
-          </dl>
+          <div className="nx-arabia-quick-strip">
+            {quickMore && (
+              <Link
+                to={quickMore.to}
+                aria-label={ar ? quickMore.ar : quickMore.en}
+                title={ar ? quickMore.ar : quickMore.en}
+                className="nx-arabia-quick-more"
+              >
+                <ChevronRight aria-hidden />
+              </Link>
+            )}
+            <dl aria-labelledby="nx-arabia-quick-title" className="nx-arabia-quick-list">
+              {quickStats.map((s) => {
+                const own = s.status ?? status;
+                const loading = own === "loading";
+                const wait = loading ? waitText(own, ar) : null;
+                const quiet = wait !== null || s.value === null;
+                const valueText =
+                  wait ?? (s.value === null ? notMeasured : fmt(s.value));
+                const label = ar ? s.ar : s.en;
+                const body = (
+                  <>
+                    <dt className="nx-arabia-quick-label">
+                      <span aria-hidden className="nx-arabia-quick-icon">
+                        {s.icon}
+                      </span>
+                      {label}
+                    </dt>
+                    <dd
+                      className="nx-arabia-quick-value"
+                      data-quiet={quiet || undefined}
+                      data-sim={(!loading && s.simulated) || undefined}
+                    >
+                      {loading ? (
+                        <>
+                          <span aria-hidden className="nx-arabia-wait" />
+                          <span className="sr-only">{wait}</span>
+                        </>
+                      ) : (
+                        <span dir="ltr">{valueText}</span>
+                      )}
+                      {!loading && s.simulated && (
+                        <span className="sr-only">{ar ? " (محاكاة)" : " (simulated)"}</span>
+                      )}
+                    </dd>
+                  </>
+                );
+                return s.to ? (
+                  <Link key={s.key} to={s.to} className="nx-arabia-quick-item" data-link="">
+                    {body}
+                  </Link>
+                ) : (
+                  <div key={s.key} className="nx-arabia-quick-item">
+                    {body}
+                  </div>
+                );
+              })}
+            </dl>
+          </div>
         </div>
 
-        <ul dir={textDir} className="nx-arabia-regions">
-          {REGIONS.map((r) => (
-            <li key={r.id} style={{ ["--region-tint" as string]: REGION_ACCENT_HEX[r.id] }}>
-              <RegionChip
-                id={r.id}
-                name={ar ? r.shortAr : r.shortEn}
-                labelAr={r.labelAr}
-                labelEn={r.labelEn}
-                sitesCount={byRegion[r.id]}
-                compliance={compliance[r.id]}
-                dim={focus !== "all" && focus !== r.id}
-                ar={ar}
-                notMeasured={notMeasured}
-                pending={pending}
-                onGo={() => setRegion(r.id)}
-              />
-            </li>
-          ))}
-        </ul>
+        {/* ── الحواشي: الخطأ والمرفوض والإفصاح — أسفل الوسط، صغيرةٌ هادئة ── */}
+        <div dir={textDir} className="nx-arabia-notes">
+          {status === "error" && (
+            <div role="alert" className="nx-arabia-alert">
+              <span>
+                {ar
+                  ? "تعذّر تحميل المواقع الآن — الخريطة بلا نقاط."
+                  : "Sites could not load — the map shows no points."}
+              </span>
+              {!quickStats.length && (
+                <button type="button" onClick={onRetry} className="nx-arabia-tab" data-quiet="">
+                  {ar ? "أعد المحاولة" : "Retry"}
+                </button>
+              )}
+            </div>
+          )}
+          {outside > 0 && (
+            <p className="nx-arabia-note">
+              {ar
+                ? `${outside} موقعًا بإحداثيات خارج المملكة لم يُرسم.`
+                : `${outside} site(s) with coordinates outside the Kingdom were not drawn.`}
+            </p>
+          )}
+          <p className="nx-arabia-note">
+            {ar
+              ? "رسم تمثيلي من بيانات Natural Earth — ليست حدودًا رسمية"
+              : "Representative drawing from Natural Earth — not official borders"}
+          </p>
+        </div>
       </div>
-
-      {outside > 0 && (
-        <p className="nx-arabia-note">
-          {ar
-            ? `${outside} موقعًا بإحداثيات خارج المملكة لم يُرسم.`
-            : `${outside} site(s) with coordinates outside the Kingdom were not drawn.`}
-        </p>
-      )}
-      <p className="nx-arabia-note">
-        {ar
-          ? "رسم تمثيلي من بيانات Natural Earth — ليست حدودًا رسمية"
-          : "Representative drawing from Natural Earth — not official borders"}
-      </p>
     </section>
   );
 }
 
-function RegionChip({
+function RegionBubble({
   id,
   name,
   labelAr,
   labelEn,
+  bubble,
+  metric,
   sitesCount,
   compliance,
   dim,
   ar,
   notMeasured,
   pending,
+  simWord,
   onGo,
 }: {
   id: RegionId;
   name: string;
   labelAr: string;
   labelEn: string;
+  bubble: ArabiaBubble;
+  metric: { readonly ar: string; readonly en: string } | undefined;
   sitesCount: number;
   compliance: number | undefined;
   dim: boolean;
@@ -540,43 +774,81 @@ function RegionChip({
   notMeasured: string;
   /** نصّ التحميل/الخطأ — يحلّ محلّ عدد المواقع فلا يُقرأ صفرًا. */
   pending: string | null;
+  simWord: string;
   onGo: () => void;
 }) {
-  // التحميل والخطأ يحلّان محلّ الرقمين معًا — لا «لم يُقَس» لقراءةٍ لم تصل.
-  const sitesText = pending ?? sitesCount.toLocaleString(ar ? "ar-SA" : "en-US");
-  // «٪» العربية مع الأرقام الهندية — كما في صفّ المؤشرات، لا رقمان بخطّين في رقاقةٍ واحدة.
+  // الحيّ في التلميح والوصف: عدد المواقع المرسومة والامتثال المقيس. التحميل
+  // والخطأ يحلّان محلّ الرقمين معًا — لا «لم يُقَس» لقراءةٍ لم تصل.
+  const sitesText = pending ?? fmt(sitesCount);
   const complianceText =
-    pending ??
-    (compliance === undefined
-      ? notMeasured
-      : `${Math.round(compliance).toLocaleString(ar ? "ar-SA" : "en-US")}${ar ? "٪" : "%"}`);
+    pending ?? (compliance === undefined ? notMeasured : `${fmt(compliance)}%`);
+  const change = bubble.change;
+  const changeText = change
+    ? `${change.dir === "up" ? "↑" : "↓"} ${fmt(change.pct)}%`
+    : notMeasured;
+  const metricText = metric ? (ar ? metric.ar : metric.en) : "";
+  const badgesText = bubble.badges
+    .map((b) => `${ar ? TONE_VIEW[b.tone].ar : TONE_VIEW[b.tone].en} ${fmt(b.count)}`)
+    .join(ar ? "، " : ", ");
+  const spoken = [
+    ar ? `افتح ${labelAr}` : `Open ${labelEn}`,
+    `${name}: ${metricText ? `${metricText} ` : ""}${fmt(bubble.value)}`,
+    badgesText,
+    `${ar ? "التغيّر" : "Change"} ${changeText}`,
+    bubble.simulated ? (ar ? "محاكاة مرجعية" : "reference simulation") : null,
+    ar
+      ? `المواقع ${sitesText} · الامتثال ${complianceText}`
+      : `sites ${sitesText} · compliance ${complianceText}`,
+  ]
+    .filter(Boolean)
+    .join(" — ");
+  const Arrow = change?.dir === "down" ? ArrowDown : ArrowUp;
   return (
     <Link
       to="/sec"
       search={{ region: id }}
       onClick={onGo}
-      aria-label={
+      aria-label={spoken}
+      title={
         ar
-          ? `افتح ${labelAr} — المواقع ${sitesText} · الامتثال ${complianceText}`
-          : `Open ${labelEn} — sites ${sitesText} · compliance ${complianceText}`
+          ? `${labelAr} — المواقع ${sitesText} · الامتثال ${complianceText}${bubble.simulated ? " — أرقام الفقاعة محاكاة مرجعية" : ""}`
+          : `${labelEn} — sites ${sitesText} · compliance ${complianceText}`
       }
       data-dim={dim || undefined}
-      className="nx-arabia-chip flex min-h-11 flex-col border px-3 py-1.5"
+      className="nx-arabia-bubble"
     >
-      <span className="flex items-center gap-1.5 text-[13px] font-black text-[color:var(--ink)]">
-        <span aria-hidden className="size-2 rounded-full bg-[color:var(--region-tint)]" />
-        {name}
+      {bubble.simulated && (
+        <span aria-hidden className="nx-arabia-sim">
+          {simWord}
+        </span>
+      )}
+      <span className="nx-arabia-bubble-name">{name}</span>
+      <span className="nx-arabia-bubble-value">
+        <Arrow aria-hidden className="nx-arabia-bubble-arrow" />
+        <span dir="ltr">{fmt(bubble.value)}</span>
       </span>
-      {/* السطران يلتفّان في البطاقة الضيّقة بدل أن يتجاوزاها. */}
-      <span className="flex flex-wrap items-baseline gap-x-2 text-[12px] text-[color:var(--ink-2)]">
-        <span>
-          {ar ? "المواقع" : "Sites"}{" "}
-          <b className="tabular-nums text-[color:var(--ink)]">{sitesText}</b>
-        </span>
-        <span>
-          {ar ? "الامتثال" : "Compliance"}{" "}
-          <b className="tabular-nums text-[color:var(--ink)]">{complianceText}</b>
-        </span>
+      <span className="nx-arabia-bubble-badges">
+        {bubble.badges.map((b, i) => {
+          const Icon = TONE_VIEW[b.tone].icon;
+          return (
+            <span key={i} className="nx-arabia-badge" data-tone={b.tone}>
+              <span aria-hidden className="nx-arabia-badge-icon">
+                <Icon />
+              </span>
+              <span dir="ltr">{fmt(b.count)}</span>
+            </span>
+          );
+        })}
+      </span>
+      <span className="nx-arabia-bubble-change" data-absent={change ? undefined : ""}>
+        {change ? (
+          <span dir="ltr">
+            <Arrow aria-hidden />
+            {`${fmt(change.pct)}%`}
+          </span>
+        ) : (
+          notMeasured
+        )}
       </span>
     </Link>
   );

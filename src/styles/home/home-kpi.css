@@ -11,22 +11,26 @@
      حين يزور المستخدم الرئيسية أولًا.
 
    ② **التشريح كما في الصورة بحذافيره** (قرار المالك N2 ٢٠٢٦/١٠/١٤؛ البطاقة
-     عربية `rtl` والصفّ يسارًا ← يمينًا): بطاقةٌ بيضاء ~172×96 بحدٍّ شعري،
-     التسمية أعلى اليمين والرقم تحتها، وبلاطة الرمز 48px يسارًا، وفي السطر
-     الأخير المنحنى الصغير يمينًا وسهم التغيّر يسارًا. المقاسات مقيسة على
-     بكسلات الصورة (1536×1024): الحشوة 9/11، والبلاطة على بُعد 9 من الأعلى،
-     وفجوة 12 بين البلاطة والسطر الأخير.
+     عربية `rtl` والصفّ يسارًا ← يمينًا). مقيسٌ على بكسلات الصورة (1536×1024،
+     ٢٠٢٦/١٠/١٥): بطاقةٌ بيضاء ~174×96 بحدٍّ شعري وفجوة 10 · بلاطة الرمز 48
+     على بُعد 11 من اليسار و9 من الأعلى، والرمز داخلها ~30px حبرًا · التسمية
+     سطرٌ واحد أعلى اليمين على بُعد 10 من الحافّة · الرقم (أرقامٌ بارتفاع
+     ~16px ⇐ 22px) تحتها **محاذًى يمينًا** · وفي السطر الأخير المنحنى الصغير
+     (~80×18) يمينًا تحت الرقم وينتهي على بُعد 9 من القاع، وسهم التغيّر ونسبته
+     يسارًا تحت البلاطة.
 
    ③ **اللون نبرةٌ تُترجم إلى رموز** (`data-tone`): أخضر · أحمر (مثمّن) ·
-     برتقالي (مثلث) · أزرقان. كل نبرة تكتب أربعة متغيّرات — لون الرمز والمنحنى
-     (`--kpi-tone`) ولون التغيّر (`--kpi-change`) ولون الرقم (`--kpi-value`)
-     وغسلة البلاطة — من رموز الطبقة وحدها (المادة ٣٣). والدرجات مقيسة:
-     الرمز ≥ 3:1 على أشدّ غسلته (WCAG 2.2 §1.4.11)، والتغيّر ≥ 4.5:1 على
-     السطح، في الوضعين. فدرجات الصورة الزاهية (البرتقالي 2.3:1 والأخضر 2.7:1)
-     عُمِّقت إلى أقرب رمزٍ يعبر العتبة.
+     برتقالي (مثلث) · أزرق · أزرق سماوي · أزرق فاتح — كما رُسمت. كل نبرة تكتب
+     متغيّرات من رموز الطبقة وحدها (المادة ٣٣): لون الرمز (`--kpi-tone`)
+     ولون المنحنى (`--kpi-line`) ولون التغيّر (`--kpi-change`) ولون الرقم
+     (`--kpi-value`) وغسلة البلاطة. والدرجات مقيسة: الرمز ≥ 3:1 على أشدّ
+     غسلته (WCAG 2.2 §1.4.11)، ونصّ التغيّر ≥ 4.5:1 على السطح، في الوضعين —
+     فأخضر الصورة (3.1:1) وبرتقاليّها (2.6:1) أُخذ منهما أقرب مزجٍ يعبر العتبة
+     (أخضر 4.5:1 · برتقالي محمرّ 5.1:1)، والمنحنى زينةٌ مخفيّة عن القارئ فيأخذ
+     درجة الصورة الزاهية.
 
    ④ **العرض يُقاس على البطاقة لا على النافذة.** سبع بطاقات على 1280 مع
-     الشريط الجانبي تعطي ~136px للبطاقة، وعلى 1536 ~172px: حاوية استعلام على
+     الشريط الجانبي تعطي ~136px للبطاقة، وعلى 1536 ~173px: حاوية استعلام على
      الخليّة (`container-type`) تُنزل الرقم تحت التسمية بعرضٍ كامل وتصغّر
      البلاطة حين تضيق، فلا يُقصّ رقمٌ من أربع خانات.
 
@@ -52,9 +56,11 @@
   }
 }
 
+/* سبعٌ في صفٍّ واحد، وفجوة الصورة 10px. */
 @media (min-width: 1280px) {
   .nx-home-kpis {
     grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 10px;
   }
 }
 
@@ -66,18 +72,25 @@
 }
 
 /* ── البطاقة ─────────────────────────────────────────────────────────────
-   السطح `--surface` والظلّ الناعم من `.nx-home-kpi` (styles.css). */
+   السطح `--surface` والظلّ الناعم من `.nx-home-kpi` (styles.css).
+   الشبكة بعمودين: الأيمن (البداية في `rtl`) للتسمية والرقم والمنحنى، والأيسر
+   للبلاطة وسطر التغيّر. والصفّ الأخير `1fr` يأخذ ما بقي من الارتفاع الثابت
+   فيستقرّ المنحنى والتغيّر على قاع البطاقة كما رُسما. */
 .nx-home-kpi-card {
-  /* الكحلي المرسوم للتسمية والرقم: الحبر مائلًا إلى الأزرق الملكي — يتبع
-     الوضع لأن الرمزين ينقلبان معه (#121f3f فاتحًا، 16:1 على الأبيض). */
+  /* الكحلي المرسوم للتسمية: الحبر مائلًا إلى الأزرق الملكي — يتبع الوضع لأن
+     الرمزين ينقلبان معه (16:1 على الأبيض). والرقم أعمق منه قليلًا كما رُسم. */
   --kpi-navy: color-mix(in srgb, var(--ink) 86%, var(--sd-royal));
-  /* الأحمر الداكن لرقمَي الحوادث والمخاطر كما رُسما (#a32226، 7.4:1). */
+  --kpi-ink: color-mix(in srgb, var(--ink) 92%, var(--sd-royal));
+  /* الأحمر الداكن لرقمَي الحوادث والمخاطر كما رُسما (7.4:1). */
   --kpi-alarm: color-mix(in srgb, var(--sd-ruby) 72%, var(--ink));
   --kpi-tone: var(--sd-azure);
-  --kpi-change: var(--tone-emerald);
-  --kpi-value: var(--kpi-navy);
-  /* الغسلة معتمةٌ ممزوجةٌ بالسطح لا شفّافة: الفيلم لا يمرّ تحت الرمز. */
-  --kpi-wash-a: color-mix(in srgb, var(--kpi-tone) 6%, var(--surface));
+  --kpi-line: var(--kpi-tone);
+  /* أخضر التغيّر: منتصف الزمرّدين — أقرب ما يعبر 4.5:1 إلى أخضر الصورة. */
+  --kpi-change: color-mix(in srgb, var(--sd-emerald) 50%, var(--tone-emerald));
+  --kpi-value: var(--kpi-ink);
+  /* الغسلة معتمةٌ ممزوجةٌ بالسطح لا شفّافة: الفيلم لا يمرّ تحت الرمز.
+     فاتحةٌ في الركن الأعلى وأشدّ في الأسفل كما رُسمت. */
+  --kpi-wash-a: color-mix(in srgb, var(--kpi-tone) 5%, var(--surface));
   --kpi-wash-b: color-mix(in srgb, var(--kpi-tone) 14%, var(--surface));
 
   position: relative;
@@ -89,10 +102,11 @@
     "label icon"
     "value icon"
     "chart change";
-  column-gap: 8px;
+  column-gap: 5px;
   min-inline-size: 0;
   min-block-size: 96px;
-  padding: 9px 11px;
+  padding-block: 8px;
+  padding-inline: 9px 10px;
   border: 1px solid var(--hairline);
   border-radius: 12px;
   color: var(--ink);
@@ -109,9 +123,11 @@
   --kpi-change: var(--sd-ruby);
   --kpi-value: var(--kpi-alarm);
 }
+/* برتقالي المثلث كما رُسم: الكهرماني مائلًا إلى الياقوتي (3.2:1 على غسلته)،
+   ونصّ تغيّره برتقاليٌّ محمرّ أعمق (5.1:1). والأعمدة من الكهرماني إلى الأحمر. */
 .nx-home-kpi-card[data-tone="warning"] {
-  --kpi-tone: color-mix(in srgb, var(--sd-amber) 55%, var(--tone-amber));
-  --kpi-change: var(--tone-amber);
+  --kpi-tone: color-mix(in srgb, var(--sd-amber) 70%, var(--sd-ruby));
+  --kpi-change: color-mix(in srgb, var(--tone-amber) 70%, var(--sd-ruby));
   --kpi-value: var(--kpi-alarm);
   --kpi-bar-from: var(--sd-amber);
   --kpi-bar-to: var(--sd-ruby);
@@ -119,13 +135,18 @@
 .nx-home-kpi-card[data-tone="blue"] {
   --kpi-tone: var(--sd-azure);
 }
+/* السيارة أزرقُ مائل إلى السماوي (3.3:1 على غسلته). */
+.nx-home-kpi-card[data-tone="cyan"] {
+  --kpi-tone: color-mix(in srgb, var(--sd-azure) 60%, var(--sd-cyan));
+}
 .nx-home-kpi-card[data-tone="sky"] {
   --kpi-tone: var(--sd-azure-soft);
 }
 
 .dark .nx-home-kpi-card {
-  --kpi-wash-a: color-mix(in srgb, var(--kpi-tone) 14%, var(--surface));
+  --kpi-wash-a: color-mix(in srgb, var(--kpi-tone) 12%, var(--surface));
   --kpi-wash-b: color-mix(in srgb, var(--kpi-tone) 24%, var(--surface));
+  --kpi-change: var(--tone-emerald);
 }
 .dark .nx-home-kpi-card[data-tone="ok"] {
   --kpi-tone: var(--tone-emerald);
@@ -136,11 +157,15 @@
 }
 .dark .nx-home-kpi-card[data-tone="warning"] {
   --kpi-tone: var(--tone-amber);
+  --kpi-change: var(--tone-amber);
   --kpi-bar-from: var(--tone-amber);
   --kpi-bar-to: var(--tone-rose);
 }
 .dark .nx-home-kpi-card[data-tone="blue"] {
   --kpi-tone: var(--tone-blue);
+}
+.dark .nx-home-kpi-card[data-tone="cyan"] {
+  --kpi-tone: var(--tone-cyan);
 }
 
 /* قاعدة التركيز العامّة `:where(button, a, …):focus-visible` تكتب
@@ -157,41 +182,64 @@
   }
 }
 
+/* ── رموزٌ ومنحنياتٌ ساكنة حادّة كما رُسمت ─────────────────────────────────
+   طبقة الهولو العامّة تفرض على كل `a svg` و`a > svg` توهّجَ `drop-shadow`
+   مزدوجًا (سماويًّا ثابتًا على المنحنى) ونبضة شفافية لا نهائية (0.55↔1)
+   بـ`!important` (styles.css: «Global icon glow» و«توهّج الرمز نفسه»)، وتكبيرًا
+   عند التمرير — فيُرى المنحنى باهتًا يتنفّس بهالةٍ سماوية والرمز مغبّشًا،
+   والصورة رموزٌ ومنحنياتٌ حادّة ساكنة. والعلاج علاج الترويسة نفسه
+   (`home-chrome.css`): `!important` بنوعيّةٍ أعلى (0,2,1 فوق 0,1,2)، محصورٌ
+   ببطاقات المؤشرات فلا يتغيّر رمزٌ في صفحةٍ أخرى. */
+.nx-home-kpi-card.nx-home-kpi-card svg {
+  filter: none !important;
+  animation: none !important;
+  animation-play-state: paused !important;
+  transform: none !important;
+  scale: none;
+  opacity: 1;
+  transition: none;
+}
+
 /* ── شارة «محاكاة» — وسمٌ صغير على ركن البطاقة (المادة ٦، قرار N2) ────────
    يركب الحافّة العليا عند ركن البداية (فوق التسمية، بعيدًا عن البلاطة)،
-   فلا يزيح شيئًا من تشريح الصورة. معتمٌ على السطح، ونصّه الكهرماني 5:1. */
+   فلا يزيح شيئًا من تشريح الصورة ولا يغطّي حرفًا منه. معتمٌ على السطح،
+   ونصّه الكهرماني ≥ 4.5:1 في الوضعين. */
 .nx-home-kpi-sim {
   position: absolute;
-  inset-block-start: -8px;
-  inset-inline-start: 10px;
-  padding-inline: 6px;
-  border: 1px solid color-mix(in srgb, var(--tone-amber) 45%, var(--surface));
+  inset-block-start: -7px;
+  inset-inline-start: 9px;
+  padding-inline: 5px;
+  border: 1px solid color-mix(in srgb, var(--tone-amber) 35%, var(--surface));
   border-radius: 999px;
   background: var(--surface);
   color: var(--tone-amber);
   font-size: 12px;
   font-weight: 700;
-  line-height: 15px;
+  line-height: 13px;
   white-space: nowrap;
   pointer-events: none;
 }
 
-/* ── التسمية: 13px كحلية في سطرٍ واحد على عرض الصورة ─────────────────── */
+/* ── التسمية: سطرٌ واحد كحليّ أعلى اليمين ─────────────────────────────────
+   عرضها في الصورة 66–87px؛ 12.5px بالوزن العامّ (700، توجيه المالك
+   ٢٠٢٦/٠٨/٠٢) يعطي 62–95px فتسعها خانتها (~98px) سطرًا واحدًا. */
 .nx-home-kpi-label {
   grid-area: label;
   align-self: start;
   min-inline-size: 0;
-  margin-block-start: 6px;
-  font-size: 13px;
+  margin-block-start: 5px;
+  font-size: 12.5px;
   font-weight: 700;
   line-height: 18px;
   color: var(--kpi-navy);
   text-wrap: balance;
 }
 
-/* ── الرقم: 22px بأرقامٍ جدولية (§5) — كحليّ، وأحمرُ داكن للحوادث والمخاطر ─
-   الوحدة الحيّة «من M» عنصرٌ مستقلّ في صفٍّ يلتفّ، فإن ضاق العمود نزلت كاملةً
-   تحت الرقم بدل أن تفيض إلى عمود البلاطة. */
+/* ── الرقم: 22px بأرقامٍ جدولية (§5) محاذًى يمينًا تحت التسمية ────────────
+   كحليٌّ عميق، وأحمرُ داكن للحوادث والمخاطر. الأرقام في عنصرٍ `ltr` داخلي
+   والحاوية باتجاه البطاقة، فيستقرّ الرقم على حافّة البداية كما رُسم. والوحدة
+   الحيّة «من M» عنصرٌ مستقلّ في صفٍّ يلتفّ، فإن ضاق العمود نزلت كاملةً تحت
+   الرقم بدل أن تفيض إلى عمود البلاطة. */
 .nx-home-kpi-value {
   grid-area: value;
   align-self: start;
@@ -199,10 +247,12 @@
   flex-wrap: wrap;
   align-items: baseline;
   min-inline-size: 0;
-  margin-block-start: 7px;
+  margin-block-start: 8px;
+  margin-inline-start: 2px;
   font-size: 22px;
   font-weight: 800;
-  line-height: 26px;
+  line-height: 24px;
+  letter-spacing: -0.01em;
   color: var(--kpi-value);
   font-variant-numeric: tabular-nums;
 }
@@ -211,6 +261,7 @@
   font-size: 13px;
   font-weight: 700;
   line-height: 1.4;
+  letter-spacing: 0;
   color: var(--ink-2);
   white-space: nowrap;
 }
@@ -224,8 +275,8 @@
   grid-area: value;
   align-self: start;
   inline-size: 64px;
-  block-size: 24px;
-  margin-block-start: 8px;
+  block-size: 22px;
+  margin-block-start: 9px;
   border-radius: 6px;
 }
 
@@ -242,51 +293,63 @@
   block-size: 48px;
   border-radius: 14px;
   color: var(--kpi-tone);
-  background: linear-gradient(145deg, var(--kpi-wash-a), var(--kpi-wash-b));
+  background: linear-gradient(150deg, var(--kpi-wash-a), var(--kpi-wash-b));
 }
 
+/* الرمز ~30px حبرًا كما رُسم (الشبكة 24 تملؤها الأشكال بين 70٪ و93٪). */
 .nx-home-kpi-glyph {
-  inline-size: 28px;
-  block-size: 28px;
+  inline-size: 34px;
+  block-size: 34px;
 }
 
-/* ── المنحنى الصغير: أسفل اليمين تحت الرقم، بعرض الصورة (~84px) ─────── */
+/* ── المنحنى الصغير: أسفل اليمين تحت الرقم (~80×18 كما رُسم) ─────────── */
 .nx-home-kpi-chart {
   grid-area: chart;
   align-self: end;
   justify-self: start;
   display: block;
-  inline-size: calc(100% - 10px);
+  inline-size: calc(100% - 14px);
   max-inline-size: 104px;
-  block-size: 18px;
-  margin-block-start: 12px;
+  block-size: 20px;
+  margin-block-start: 4px;
+  margin-inline-start: 2px;
   overflow: visible;
 }
 
 .nx-home-kpi-line {
   fill: none;
-  stroke: var(--kpi-tone);
+  stroke: var(--kpi-line);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .nx-home-kpi-stop-top {
-  stop-color: var(--kpi-tone);
-  stop-opacity: 0.24;
+  stop-color: var(--kpi-line);
+  stop-opacity: 0.3;
 }
 
 .nx-home-kpi-stop-bottom {
-  stop-color: var(--kpi-tone);
+  stop-color: var(--kpi-line);
   stop-opacity: 0;
 }
 
+/* أعمدة «المخاطر الحرجة» باهتةٌ كما رُسمت: برتقاليٌّ فاتح يسارًا إلى أحمر
+   ورديّ يمينًا — الدرجة نفسها بشفافيةٍ لا لونٌ جديد. */
+.nx-home-kpi-bar {
+  opacity: 0.78;
+}
+
+.dark .nx-home-kpi-bar {
+  opacity: 0.92;
+}
+
 .nx-home-kpi-stop-from {
-  stop-color: var(--kpi-bar-from, var(--kpi-tone));
+  stop-color: var(--kpi-bar-from, var(--kpi-line));
 }
 
 .nx-home-kpi-stop-to {
-  stop-color: var(--kpi-bar-to, var(--kpi-tone));
+  stop-color: var(--kpi-bar-to, var(--kpi-line));
 }
 
 /* ── سطر التغيّر: أسفل اليسار تحت البلاطة — سهمٌ ونسبة بلون النبرة ───────
@@ -299,8 +362,9 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  margin-block-start: 12px;
-  font-size: 13px;
+  margin-block: 4px 1px;
+  margin-inline-end: 1px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 18px;
   color: var(--kpi-change);
@@ -335,8 +399,8 @@
       "label icon"
       "value value"
       "chart change";
-    column-gap: 6px;
-    padding-inline: 9px;
+    column-gap: 5px;
+    padding-inline: 8px;
   }
   .nx-home-kpi-label {
     align-self: center;
@@ -350,8 +414,8 @@
     border-radius: 12px;
   }
   .nx-home-kpi-glyph {
-    inline-size: 24px;
-    block-size: 24px;
+    inline-size: 28px;
+    block-size: 28px;
   }
   .nx-home-kpi-value {
     margin-block-start: 4px;
@@ -360,9 +424,12 @@
   .nx-home-kpi-wait {
     margin-block-start: 6px;
   }
-  .nx-home-kpi-chart,
+  .nx-home-kpi-chart {
+    margin-block-start: 6px;
+  }
   .nx-home-kpi-change {
-    margin-block-start: 8px;
+    margin-block-start: 6px;
+    font-size: 13px;
   }
 }
 

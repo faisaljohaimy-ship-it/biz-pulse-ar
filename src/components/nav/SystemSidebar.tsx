@@ -210,7 +210,10 @@ export function SystemSidebarNav({
           className={cn(ROW, ROW_IDLE, "nx-sysnav-row--sadeed")}
           data-nav-id={item.id}
         >
-          <Icon aria-hidden className="nx-sysnav-ico size-5 shrink-0 text-[color:var(--tone-blue)]" />
+          <Icon
+            aria-hidden
+            className="nx-sysnav-ico size-5 shrink-0 text-[color:var(--tone-blue)]"
+          />
           <span dir={textDir} className="nx-sysnav-label min-w-0 flex-1 truncate">
             {label}
           </span>

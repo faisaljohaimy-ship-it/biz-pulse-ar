@@ -1,0 +1,703 @@
+/* ============================================================================
+   home-chrome.css — ترويسة النظام وشريطه الجانبي «كما في الصورة»
+   (قرارات المالك D5 وN1–N4، ٢٠٢٦/١٠/١٣–١٤؛ المواصفة §4.1–٤.٢)
+   ----------------------------------------------------------------------------
+   يستورده `SystemHeader.tsx` و`SystemSidebar.tsx`. والمكوّنان في القشرة أيضًا،
+   فالقواعد هنا على ثلاث درجات:
+     ① **مشتركة** — أصنافٌ لا يحملها غير المكوّنين (`.nx-hdr*`، `.nx-wing-*`،
+        `.nx-sysnav-card*`، `.nx-sysnav-list`): الترويسة ترويسةٌ واحدة في كل
+        صفحة، وبطاقة الختام بطاقةٌ واحدة في الدرج والقشرة والرئيسية.
+     ② **الرئيسية** — `[data-chrome="home"]` على الترويسة: الحواشي والمقاسات
+        المقيسة على بكسلات الصورة (1536×1024).
+     ③ **الشريط يسارًا** — `[data-side="left"]` على الشريط وقائمته: هيئة الصورة
+        (لوحٌ مجمَّع، حبّة نشطة متدرّجة، الاسم بجانب الأيقونة). شريط القشرة في
+        بقية الصفحات (`data-side="start"`) لا يتغيّر.
+
+   المقاسات من الصورة نفسها: صفّ الترويسة 64px بسطحٍ أبيض مائل إلى الأزرق وحافّة
+   شعرية؛ حقل البحث 596×36 مستديرٌ يبدأ عند x=268؛ أقراص الأيقونات 36px بخطوة
+   54px؛ الصورة الرمزية 46px؛ صفوف الشريط بخطوة 42px في اللوح و45px خارجه،
+   والحبّة النشطة 40px؛ بطاقة الختام 194×72.
+
+   **ولا لون خارج طبقة الرموز** (المادة ٣٣): كل لون هنا مزيجٌ من رموزٍ قائمة
+   (`--sd-*` · `--ink*` · `--surface` · `--hairline` · `--tone-*` · `--nx-*`)
+   بـ`color-mix` — فينقلب مع الوضع حيث تنقلب رموزه، ويثبت حيث تثبت (بطاقة
+   الغسق من رموز الهوية الثابتة `--nx-*`، داكنةٌ في الوضعين كما رُسمت).
+
+   **وهدف اللمس أوسع من الرسم** (المواصفة §3.7): القرص المرسوم 36px والزرّ
+   44×44؛ وحقل البحث المرسوم 36px داخل زرٍّ 44px. والرسم طبقةٌ زائفة خلف
+   المحتوى (`::before`)، فلا يتغيّر الرسم بتغيّر الهدف.
+   ============================================================================ */
+
+/* ── الرموز المشتقّة: تُعلن على جذور المكوّنات فتقرأ رموز وضعها ─────────── */
+.nx-hdr,
+.nx-sysnav,
+.nx-sysnav-nav,
+.nx-sysnav-sheet,
+.nx-wing-lockup {
+  /* سطح الصفّ والشريط: أبيض مائل إلى الأزرق (#f6f9fe فاتحًا كما قِيس #f5f9fe). */
+  --chrome-tint: color-mix(in srgb, var(--sd-azure) 60%, var(--sd-cyan));
+  --chrome-surface: color-mix(in srgb, var(--chrome-tint) 5%, var(--surface));
+  /* بئر الحقل والأقراص (#e8f3fc ↔ المرسوم #e9f2fb). */
+  --chrome-well: color-mix(in srgb, var(--chrome-tint) 10%, var(--surface));
+  --chrome-well-soft: color-mix(in srgb, var(--chrome-tint) 7%, var(--surface));
+  --chrome-well-strong: color-mix(in srgb, var(--chrome-tint) 16%, var(--surface));
+  /* الحافّة الشعرية تحت الصفّ (#e4edf6 مقيسة). */
+  --chrome-line: color-mix(in srgb, var(--sd-azure) 12%, var(--hairline));
+  /* الكحلي المرسوم للنصوص والرموز (#13234a فاتحًا؛ أزرق فاتح في الداكن). */
+  --chrome-navy: color-mix(in srgb, var(--ink) 82%, var(--sd-royal));
+  /* جناح الشعار والجرس: الأزرق الملكي كما رُسما. */
+  --chrome-wing: color-mix(in srgb, var(--sd-royal) 82%, var(--ink));
+  --chrome-bell: color-mix(in srgb, var(--sd-azure) 75%, var(--sd-royal));
+  --chrome-shade: color-mix(in srgb, var(--sd-royal) 30%, transparent);
+}
+
+.dark .nx-hdr,
+.dark .nx-sysnav,
+.dark .nx-sysnav-nav,
+.dark .nx-sysnav-sheet,
+.dark .nx-wing-lockup {
+  /* في الداكن `--sd-royal` سماويّ فاتح، فالجناح والجرس بأطياف الداكن نفسها. */
+  --chrome-wing: var(--tone-blue);
+  --chrome-bell: var(--tone-blue);
+  --chrome-shade: color-mix(in srgb, var(--nx-obsidian) 70%, transparent);
+}
+
+/* ── رموزٌ ساكنة حادّة كما رُسمت ─────────────────────────────────────────
+   طبقة الهولو العامّة تفرض على كل `button > svg` و`a > svg` توهّجَ
+   `drop-shadow` مزدوجًا ونبضة شفافية لا نهائية (0.55↔1) بـ`!important`
+   (styles.css، «Icons: perpetual holographic halo») — فتُرى رموز الترويسة
+   والشريط باهتةً بهالة، والصورة رموزٌ كحلية حادّة. والعلاج علاج الشريط
+   العلوي نفسه (`.nx-chrome-btn.nx-chrome-btn > svg`): `!important` بنوعيّةٍ
+   أعلى (0,2,1 فوق 0,0,2)، محصورٌ بالرئيسية — الترويسة بسِمة `data-chrome`
+   والقائمة بجهتها — فلا يتغيّر رمزٌ في صفحةٍ أخرى. */
+.nx-hdr[data-chrome="home"] svg,
+.nx-sysnav[data-side="left"] svg,
+.nx-sysnav-nav[data-side="left"] svg {
+  filter: none !important;
+  animation: none !important;
+}
+
+/* ══ ① الترويسة ═════════════════════════════════════════════════════════ */
+
+.nx-hdr {
+  position: relative;
+  box-sizing: border-box;
+  min-block-size: 64px;
+  gap: 6px;
+  padding: 0 8px;
+  background-color: var(--chrome-surface);
+  border-bottom: 1px solid var(--chrome-line);
+  box-shadow: 0 8px 14px -14px var(--chrome-shade);
+  color: var(--chrome-navy);
+}
+
+@media (min-width: 640px) {
+  .nx-hdr {
+    gap: 10px;
+    padding-inline: 16px;
+  }
+}
+
+/* الرئيسية: صفٌّ 64px؛ البحث يبدأ عند x=268 والصورة الرمزية تنتهي عند 1508
+   (الشريط 224 ⇐ حاشية 44 يسارًا و28 يمينًا على المكتب). */
+.nx-hdr[data-chrome="home"] {
+  block-size: 64px;
+}
+
+@media (min-width: 1280px) {
+  .nx-hdr[data-chrome="home"] {
+    padding-inline: 44px 28px;
+  }
+}
+
+/* الشعار في الترويسة حين يختفي الشريط وحده (md–lg) — المكوّن نفسه. */
+.nx-hdr .nx-hdr-brand {
+  display: none;
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .nx-hdr .nx-hdr-brand {
+    display: inline-flex;
+    margin-inline-end: 6px;
+  }
+}
+
+/* ── حقل البحث: الرسم 36px مستديرٌ داخل هدفٍ 44px ─────────────────────── */
+.nx-hdr-search {
+  position: relative;
+  isolation: isolate;
+  flex: 1 1 auto;
+  block-size: 44px;
+  min-block-size: 44px;
+  gap: 10px;
+  padding-inline: 14px 16px;
+  border-radius: 999px;
+  color: var(--ink-3);
+  font-size: 14px;
+  line-height: 1.3;
+  max-inline-size: 36rem;
+}
+
+.nx-hdr-search::before {
+  content: "";
+  position: absolute;
+  inset: 4px 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-color: var(--chrome-well);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-azure) 5%, var(--chrome-well));
+  transition: background-color 0.15s var(--nx-ease-out);
+}
+
+.nx-hdr-search:hover::before {
+  background-color: var(--chrome-well-strong);
+}
+
+/* العدسة الأولى (طرف البداية) أغمق، والثانية في الطرف الآخر أخفّ وأصغر. */
+.nx-hdr-search-ico {
+  color: color-mix(in srgb, var(--chrome-navy) 78%, var(--ink-3));
+}
+
+.nx-hdr-search-end {
+  color: var(--ink-3);
+}
+
+/* على الجوال يضيق الحقل (~120px)، فالعدسة الثانية تأخذ نصف ما بقي للنصّ. */
+@media (max-width: 639.98px) {
+  .nx-hdr-search-end {
+    display: none;
+  }
+}
+
+/* على الرئيسية: عرض الحقل المرسوم (596px) لا كامل الصفّ — والفراغ بعده
+   يدفع الأيقونات إلى طرفها كما رُسم. */
+.nx-hdr[data-chrome="home"] .nx-hdr-search {
+  flex: 0 1 596px;
+  max-inline-size: 596px;
+}
+
+/* ── الأدوات: أقراصٌ 36px بخطوة 54px ─────────────────────────────────── */
+.nx-hdr-tools {
+  gap: 6px;
+}
+
+@media (min-width: 640px) {
+  .nx-hdr-tools {
+    gap: 10px;
+  }
+}
+
+/* لا `display` هنا: الظهور ملك أدوات الصنف (`lg:hidden` · `hidden sm:grid`)،
+   وقاعدةٌ خارج الطبقات تكتبه كانت ستُظهر ما أُخفي. */
+.nx-hdr-btn {
+  position: relative;
+  isolation: isolate;
+  inline-size: 44px;
+  block-size: 44px;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  border-radius: 999px;
+  color: var(--chrome-navy);
+}
+
+.nx-hdr-btn::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  z-index: -1;
+  border-radius: inherit;
+  background-color: var(--chrome-well);
+  transition: background-color 0.15s var(--nx-ease-out);
+}
+
+.nx-hdr-btn:hover::before {
+  background-color: var(--chrome-well-strong);
+}
+
+.nx-hdr-btn > svg {
+  inline-size: 20px;
+  block-size: 20px;
+  stroke-width: 2;
+}
+
+/* الجرس أزرق ممتلئ كما رُسم — والمطرقة الصغيرة تمتلئ معه. */
+.nx-hdr-bell {
+  color: var(--chrome-bell);
+  fill: currentColor;
+}
+
+/* الشارة على كتف الجرس أعلى يمين القرص — فيزيائيًّا لا منطقيًّا: لا تنقلب
+   بلغة الصفّ. حمراء والرقم أبيض (4.8:1)، وتنفصل عن القرص بحلقة السطح. */
+.nx-hdr-badge {
+  position: absolute;
+  top: 1px;
+  left: 24px;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-inline-size: 18px;
+  block-size: 18px;
+  padding-inline: 4px;
+  border-radius: 999px;
+  background-color: var(--sd-ruby);
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--chrome-surface);
+}
+
+.dark .nx-hdr-badge {
+  background-color: var(--tone-rose);
+}
+
+/* الرقم من المحاكاة المرجعية شارةٌ مخطّطة كهرمانية (المادة ٦) — بلا حرف. */
+.nx-hdr-badge[data-simulated] {
+  border: 1px dashed var(--tone-amber);
+  background-color: var(--surface);
+  color: var(--tone-amber);
+}
+
+/* مبدّل الوضع: أيقونة الوضع القائم من صنف الجذر لا من حالة React. */
+.nx-hdr-theme-moon {
+  display: none;
+}
+
+.dark .nx-hdr-theme-sun {
+  display: none;
+}
+
+.dark .nx-hdr-theme-moon {
+  display: block;
+}
+
+/* ── المستخدم: الاسم والدور ثم الصورة الرمزية بنقطة حضور ─────────────── */
+.nx-hdr-user {
+  gap: 12px;
+  min-block-size: 46px;
+  padding: 0 2px;
+  border-radius: 999px;
+  color: var(--chrome-navy);
+  text-decoration: none;
+}
+
+/* الفاصل بعد قرص المساعدة (31px مقيسة = فجوة 10 + 21) — يُكتب على القرص
+   السابق للبطاقة لا على البطاقة: البطاقة تعلن `dir` لغتها فيقلب
+   `margin-inline-*` جهته عليها، والقرص يرث اتجاه الصفّ (`ltr` على الرئيسية،
+   `rtl` في القشرة) فيقع الفاصل بين الاثنين في الحالين. و`:dir()` لا يصلح هنا:
+   مُحوِّل CSS يترجمه إلى محدِّدات سِمة `[dir]` يطابقها الجذر `rtl` والصفّ `ltr`
+   معًا — قِيس الهامش على الجهة الخطأ. */
+@media (min-width: 1024px) {
+  .nx-hdr-tools > .nx-hdr-btn:nth-last-child(2) {
+    margin-inline-end: 21px;
+  }
+}
+
+.nx-hdr-avatar {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 46px;
+  block-size: 46px;
+  border-radius: 999px;
+  background-color: var(--chrome-well-strong);
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 3px var(--chrome-line);
+  color: var(--chrome-navy);
+}
+
+.nx-hdr-avatar-img {
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.nx-hdr-avatar-initial {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.nx-hdr-avatar-glyph {
+  inline-size: 24px;
+  block-size: 24px;
+}
+
+.nx-hdr-presence {
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  inline-size: 11px;
+  block-size: 11px;
+  border-radius: 999px;
+  background-color: var(--sd-emerald);
+  box-shadow: 0 0 0 2px var(--chrome-surface);
+}
+
+/* النصّ من lg فما فوق: دونه يضيق الصفّ عن البحث فتبقى الصورة وحدها،
+   والاسم والدور في اسمها المقروء. */
+.nx-hdr-user-text {
+  display: none;
+  min-inline-size: 0;
+  gap: 3px;
+  text-align: start;
+}
+
+@media (min-width: 1024px) {
+  .nx-hdr-user-text {
+    display: grid;
+    /* عرض كتلة الاسم المرسومة (71px): «زائر» أقصر من الاسم المرسوم، فلولا
+       الأرضية لانزاحت الأقراص الخمسة يمينًا عن مواضعها. */
+    min-inline-size: 72px;
+  }
+}
+
+.nx-hdr-user-name,
+.nx-hdr-user-role {
+  overflow: hidden;
+  max-inline-size: 11rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.nx-hdr-user-name {
+  color: var(--chrome-navy);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.nx-hdr-user-role {
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+/* ══ الشعار: جناح + «SADEED» + «Industrial Security AI OS» ═══════════════ */
+.nx-wing-lockup {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 9px;
+  color: var(--chrome-navy);
+  white-space: nowrap;
+}
+
+.nx-wing-lockup-mark {
+  color: var(--chrome-wing);
+}
+
+.nx-wing-lockup-text {
+  display: grid;
+  gap: 3px;
+}
+
+.nx-wing-lockup-name {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+}
+
+.nx-wing-lockup-tag {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+/* ══ ② الشريط الجانبي ══════════════════════════════════════════════════ */
+
+/* مشترك: القائمة صفوفٌ بفجوة 4px (ما كانه `space-y-1` قبل اللوح المجمَّع). */
+.nx-sysnav-nav,
+.nx-sysnav-list {
+  display: grid;
+  gap: 4px;
+}
+
+.nx-sysnav-scroll {
+  scrollbar-width: thin;
+}
+
+/* ── الشريط يسارًا (الرئيسية) ───────────────────────────────────────────
+   النوعية مضاعفة عن قصد: `home-layout.css` (حزمة الرئيسية، تُحمَّل بعد هذا
+   الملف) يكتب حدًّا أيمن على `.nx-sysnav[data-side="left"]` — والحدّ هنا
+   طبقةٌ تبدأ تحت رأس الشريط، فيُقرأ الرأس والترويسة صفًّا واحدًا كما رُسما. */
+.nx-sysnav.nx-sysnav[data-side="left"] {
+  border-right: 0;
+  background-color: var(--chrome-surface);
+  color: var(--chrome-navy);
+}
+
+.nx-sysnav[data-side="left"]::after {
+  content: "";
+  position: absolute;
+  top: 64px;
+  right: 0;
+  bottom: 0;
+  inline-size: 1px;
+  background-color: var(--chrome-line);
+  box-shadow: 4px 0 14px 0 var(--chrome-shade);
+  pointer-events: none;
+}
+
+/* الرأس بارتفاع صفّ الترويسة وسطحه وحافّته: x=22 للجناح كما رُسم. */
+.nx-sysnav[data-side="left"] .nx-sysnav-brand {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  block-size: 64px;
+  padding: 0 2px 0 26px;
+  border-bottom: 1px solid var(--chrome-line);
+  background-color: var(--chrome-surface);
+  box-shadow: 0 8px 14px -14px var(--chrome-shade);
+}
+
+.nx-sysnav[data-side="left"] .nx-sysnav-scroll {
+  /* الحبّة النشطة x 17–217 كما رُسمت (16–217 في شريطٍ 230). */
+  padding: 16px 7px 6px 17px;
+  scrollbar-color: var(--chrome-line) transparent;
+}
+
+.nx-sysnav[data-side="left"] .nx-sysnav-foot {
+  padding: 6px 12px 12px 18px;
+}
+
+/* القائمة يسارًا — في الشريط وفي درج الجوال معًا. */
+.nx-sysnav-nav[data-side="left"] {
+  gap: 6px;
+}
+
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-list {
+  gap: 5px;
+}
+
+/* اللوح المجمَّع الفاتح (x 22–214 مقيسًا) — الصفوف داخله بخطوة 42px. */
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-box {
+  gap: 2px;
+  margin: 0 2px 0 6px;
+  padding: 4px 0;
+  border-radius: 12px;
+  background-color: var(--chrome-well-soft);
+}
+
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-row {
+  min-block-size: 40px;
+  gap: 18px;
+  padding: 0 12px 0 20px;
+  border-radius: 9px;
+  color: var(--chrome-navy);
+  font-size: 15px;
+  font-weight: 700;
+  /* `[aria-current="page"]` العامّة تكتب خطًّا سفليًّا داخليًّا — ليس في الصورة. */
+  box-shadow: none;
+}
+
+@media (pointer: coarse) {
+  .nx-sysnav-nav[data-side="left"] .nx-sysnav-row {
+    min-block-size: 44px;
+  }
+}
+
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-box .nx-sysnav-row,
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-row--sadeed {
+  padding-left: 14px;
+}
+
+/* الاسم بجانب الأيقونة كما رُسم: الاسم يعلن لغته (`rtl`) فبدايته يمينه، والصورة
+   تبدؤه من يساره عند x=76 لكل الصفوف. */
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-label {
+  text-align: left;
+}
+
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-ico {
+  stroke-width: 2.25;
+}
+
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-chev {
+  color: var(--ink-3);
+}
+
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-row:hover {
+  background-color: var(--chrome-well-strong);
+}
+
+/* سَدِيد AI: صفٌّ بلوحٍ فاتح خاصّ به (x 23–212). */
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-row--sadeed {
+  /* `w-full` مع هامشٍ يفيض بعرض الهامش — العرض هنا من الشبكة لا من 100%. */
+  inline-size: auto;
+  margin: 0 2px 0 6px;
+  background-color: var(--chrome-well);
+}
+
+/* الحبّة النشطة: أزرق متدرّج من اليسار (الأعمق، تحت الاسم) إلى اليمين،
+   والحبر `--surface` — أبيض على ≥ #2563eb في الفاتح (≥ 5.2:1 تحت الاسم)،
+   وكحليّ على السماويّ في الداكن. */
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-row.nx-sysnav-row--active {
+  background-image: linear-gradient(
+    90deg,
+    var(--sd-royal) 0%,
+    var(--sd-azure) 55%,
+    var(--sd-azure-soft) 100%
+  );
+  color: var(--surface);
+  font-size: 16px;
+  box-shadow: 0 10px 18px -12px color-mix(in srgb, var(--sd-azure) 80%, transparent);
+}
+
+/* أيقونة الرئيسية ممتلئة في الحبّة كما رُسمت. */
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-row--active[data-nav-id="home"] .nx-sysnav-ico {
+  fill: currentColor;
+}
+
+/* الأبناء (المناطق · المرافق): أصغر درجة، والإزاحة من `ps-8` تحت الأيقونة. */
+.nx-sysnav-nav[data-side="left"] .nx-sysnav-sub .nx-sysnav-row {
+  gap: 12px;
+  padding-left: 12px;
+  font-size: 14px;
+}
+
+/* ── الشاشة الأقصر من الصورة ─────────────────────────────────────────────
+   الصورة 1024px بلا شريطٍ علويّ، فيتّسع الشريط لعشرين صفًّا وبطاقته (960px).
+   والنظام يرسم فوقها شريط الساعة (`--nx-clockbar-h`، 53px)، فتفيض القائمة
+   61px وتغيب «الإعدادات» تحت البطاقة — قِيس على 1536×1024. فدون 1100px ارتفاعًا
+   تُضمّ الفجوات وحدها (الصفوف 40px كما هي، أرضية الفأرة): 821px في 825px. */
+@media (min-width: 1024px) and (max-height: 1099px) {
+  .nx-sysnav[data-side="left"] .nx-sysnav-scroll {
+    padding-top: 7px;
+    padding-bottom: 0;
+  }
+
+  .nx-sysnav[data-side="left"] .nx-sysnav-foot {
+    padding-top: 2px;
+    padding-bottom: 8px;
+  }
+
+  .nx-sysnav[data-side="left"] .nx-sysnav-nav {
+    gap: 4px;
+  }
+
+  .nx-sysnav[data-side="left"] .nx-sysnav-list {
+    gap: 2px;
+  }
+
+  .nx-sysnav[data-side="left"] .nx-sysnav-box {
+    gap: 0;
+    padding-block: 3px;
+  }
+}
+
+/* ══ ③ بطاقة الختام — «معاً نحو بيئة آمنة» فوق أفقٍ عند الغسق ════════════
+   سطحٌ داكن ذاتيّ في الوضعين كما رُسمت: سماءٌ من رموز الهوية الثابتة
+   (`--nx-ink` · `--nx-pearl` · `--nx-layer-analytics`) تُظلم يسارًا أسفل
+   (#40566f) وتفتح يمينًا أعلى (#556f92) — وأفتح نقطةٍ فيها تحت النصّ
+   تبقي `--nx-pearl` فوق 4.5:1 (4.78:1 مقيسًا بالحساب). */
+.nx-sysnav-card {
+  --card-sky-mix: color-mix(in srgb, var(--nx-pearl) 58%, var(--nx-layer-analytics));
+  --card-sky-low: color-mix(in srgb, var(--nx-ink) 62%, var(--card-sky-mix));
+  --card-sky-high: color-mix(in srgb, var(--nx-ink) 48%, var(--card-sky-mix));
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  block-size: 72px;
+  border-radius: 10px;
+  background-color: var(--card-sky-low);
+  background-image:
+    radial-gradient(
+      34% 60% at 100% 0%,
+      color-mix(in srgb, var(--nx-pearl) 14%, transparent),
+      transparent 100%
+    ),
+    linear-gradient(to bottom left, var(--card-sky-high), var(--card-sky-low));
+  box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--nx-ink) 70%, transparent);
+  color: var(--nx-pearl);
+}
+
+/* الأفق يلصق بأسفل اليسار بعرض البطاقة (SVG بقصٍّ `xMinYMax slice`). */
+.nx-sysnav-card-skyline {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  inline-size: 100%;
+  block-size: 22px;
+  color: color-mix(in srgb, var(--nx-ink) 72%, var(--card-sky-low));
+}
+
+/* النخلة يسارًا (x 47–72 مقيسة) — بلا سيفين، انحرافٌ مقصود (§2.1). */
+.nx-sysnav-card-palm {
+  position: absolute;
+  top: 11px;
+  left: 27px;
+  z-index: 1;
+  color: var(--nx-pearl);
+}
+
+.nx-sysnav-card-text {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 12px 13px 0 58px;
+}
+
+/* العبارة 92px عرضًا كما رُسمت (x 90–182) — 14px تبلغها بخطّ النظام. */
+.nx-sysnav-card-title {
+  margin: 0 19px 0 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 21px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nx-sysnav-card-org {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 7px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.nx-sysnav-card-dot {
+  flex: none;
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 999px;
+  background-color: var(--sd-emerald);
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--nx-pearl) 70%, transparent);
+}
+
+/* ══ الحركة والألوان القسرية ════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .nx-hdr-btn::before,
+  .nx-hdr-search::before {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-hdr-btn::before,
+  .nx-hdr-search::before {
+    border: 1px solid ButtonText;
+  }
+
+  .nx-sysnav-nav[data-side="left"] .nx-sysnav-row.nx-sysnav-row--active {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .nx-sysnav-card,
+  .nx-hdr-badge {
+    border: 1px solid CanvasText;
+  }
+}

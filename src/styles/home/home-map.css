@@ -1,29 +1,29 @@
 /* ============================================================================
-   home-map.css — بطاقة الخريطة في «مركز القيادة» (المواصفة §4.4)
+   home-map.css — بطاقة الخريطة في «مركز القيادة» (قرار المالك N1–N4، ٢٠٢٦/١٠/١٤)
    ----------------------------------------------------------------------------
    يستورده `ArabianPeninsulaMap.tsx` (ومعه `HomeMapCard.tsx`)، وكلاهما في حزمة
    الرئيسية المقتطَعة وحدها — فلا يكبر سطر في الأنماط المشتركة (§3.8).
 
-   ① **شاشةٌ داكنة في الوضعين.** `.nx-arabia` (styles.css) تثبّت الحبر والرقاقة
-     والحدّ والسطح على الليل. وما تستعمله البطاقة فوق ذلك يُشتقّ هنا من رموزها
-     نفسها بـ`color-mix` — لا لون جديد، ولا رمزٌ من الصفحة يتسرّب إلى الشاشة
-     (‏`--hairline-hover` في الفاتح رماديٌّ للأبيض، لا يُرى على الليل).
+   ① **شاشةٌ داكنة في الوضعين.** `.nx-arabia` (styles.css) تثبّت الحبر والسطح
+     والحدّ على الليل. وما تستعمله البطاقة فوق ذلك يُشتقّ هنا بـ`color-mix` من
+     رموزٍ ثابتة في الوضعين: حبر الشاشة وسطحها المثبَّتان، وألوان «اللوح
+     الساطع» `--stage-*` (ثابتةٌ في طبقة الرموز) — فالبطاقة نفسها في الوضعين
+     ولا رمزٌ من الصفحة يتسرّب إليها (‏`--tone-*` تُعمَّق في الفاتح للأبيض).
 
-   ② **لا طبقة فوق الرسم.** كل ما ترسمه الصورة طافيًا فوق الخريطة هنا في مسار
-     التدفّق: الشريط فوقها، والسكّتان بجانبيها، والإحصاءات والمناطق تحتها.
+   ② **مسرحٌ لا طبقات طافية.** على البطاقة العريضة (≥ 720px) الرسم يملأ
+     خلايا الشبكة كلّها والأدوات في حوافّها — ترتيب شبكة. والفقاعات طبقةٌ
+     شقيقة للرسم، **والمواقع فوقها** فلا تحجب لافتةٌ موقعًا. ودونها تدفّقٌ عادي.
 
-   ③ **العرض يُقاس على البطاقة لا على النافذة.** البطاقة ≈ ٥/٧ من الصدر على
-     المكتب وعرض العمود كاملًا دونه، فاستعلام الحاوية (`nx-arabia`) يقرّر:
-     السكّتان بجانب الرسم من 600px، وتحته دونها.
+   ③ **الأهداف ≥ 40px بالفأرة و≥ 44px باللمس، والوجه المرسوم أصغر.** الصورة
+     ترسم الأقراص 34–36px؛ الحدّ الشفّاف (`background-clip: padding-box`)
+     يوسّع صندوق النقر دون الوجه، فيقيس `ui-audit` الصندوق والعين ترى الصورة.
 
-   ④ نصف القطر والحدّ هنا لا بأدوات Tailwind: قاعدة التركيز العامّة
-     `:where(a, button, …):focus-visible` خارج الطبقات وتفرض نصف قطرها، فتغلب
-     أي أداة مطبَّقة في طبقة. وكلّ هدف ≥ 44px، وكلّ نصّ ≥ 12px.
+   ④ نصف القطر والحدّ هنا لا بأدوات Tailwind: قاعدة التركيز العامّة خارج
+     الطبقات وتفرض نصف قطرها، فتغلب أي أداة مطبَّقة في طبقة. وكلّ نصّ ≥ 12px.
 
-   ⑤ التوهّج نيونٌ أقوى من الرموز نفسها (`--region-tint`)، ونبضه بطيء على
-     المنطقة المُبرَزة وحدها، ويسكن تحت تقليل الحركة، ويسقط تحت وضع الأمان
-     (styles.css يُسقط المرشّحات والحركة كلّها) إلى خطٍّ أعرض يحفظ التمييز،
-     وتحت الألوان القسرية إلى ألوان النظام.
+   ⑤ التوهّج نيون: خطٌّ أبيض نحيل فوق توهّجٍ بلون المنطقة (`--region-tint`)،
+     ونبضه بطيء على المنطقة المُبرَزة وحدها، ويسكن تحت تقليل الحركة، ويسقط
+     تحت وضع الأمان إلى خطٍّ أعرض، وتحت الألوان القسرية إلى ألوان النظام.
    ============================================================================ */
 
 /* ── الشاشة: حاوية الاستعلام ورموزها المشتقّة ─────────────────────────── */
@@ -31,13 +31,38 @@
   container: nx-arabia / inline-size;
   display: flex;
   flex-direction: column;
-  gap: 12px;
   --hairline-hover: color-mix(in srgb, var(--arabia-accent) 62%, transparent);
   --chip-hover: color-mix(in srgb, var(--arabia-accent-2) 18%, transparent);
   /* لوحٌ زجاجيّ على الليل — الإحصاءات والسكّتان وأزرار التحكّم. */
-  --arabia-panel: color-mix(in srgb, var(--surface) 74%, transparent);
-  /* رمزٌ داكن على بلاطةٍ ساطعة (WCAG §1.4.11): السطح المحلّي نفسه. */
-  --arabia-glyph: var(--surface);
+  --arabia-panel: color-mix(in srgb, var(--surface) 80%, transparent);
+  --arabia-panel-line: color-mix(in srgb, var(--arabia-accent-2) 26%, transparent);
+  /* بحرٌ كحليّ وأرضٌ رمادية مائلة إلى الأزرق كما في الصورة. */
+  --arabia-deep: color-mix(in srgb, var(--arabia-sea) 85%, var(--stage-blue));
+  --arabia-ground: color-mix(in srgb, var(--arabia-land) 82%, var(--ink));
+  /* ألوان البلاطات كما رُسمت — ثابتةٌ في الوضعين. */
+  --arabia-blue: var(--stage-blue);
+  --arabia-blue-deep: color-mix(in srgb, var(--stage-blue) 80%, var(--surface));
+  --arabia-green: color-mix(in srgb, var(--stage-emerald) 82%, var(--arabia-sea));
+  --arabia-amber: var(--stage-amber);
+  --arabia-red: color-mix(in srgb, var(--stage-rose) 70%, var(--sd-ruby));
+  --arabia-up: color-mix(in srgb, var(--stage-emerald) 70%, var(--ink));
+  --arabia-arrow: color-mix(in srgb, var(--arabia-accent) 55%, var(--arabia-accent-2));
+  /* رمزٌ داكن على بلاطةٍ ساطعة، وفاتحٌ على الداكنة (WCAG §1.4.11 ≥ 3:1). */
+  --arabia-glyph-dark: var(--surface);
+  --arabia-glyph-light: var(--ink);
+  /* الشارة الكهرمانية: ساطعةٌ ثابتة على الليل (≈ ٩:١). */
+  --arabia-sim: var(--stage-amber);
+  /* الأهداف: 40px بالفأرة، و44px باللمس (أدناه). */
+  --arabia-hit: 40px;
+  background:
+    radial-gradient(70% 80% at 52% 46%, color-mix(in srgb, var(--arabia-accent) 9%, transparent), transparent 70%),
+    var(--arabia-deep);
+}
+
+@media (pointer: coarse) {
+  .nx-arabia {
+    --arabia-hit: 44px;
+  }
 }
 
 /* البطاقة تملأ خليّتها في الصدر، فتتساوى مع بطاقة سَدِيد ارتفاعًا. */
@@ -51,11 +76,30 @@
   min-inline-size: 0;
 }
 
-.nx-arabia-note {
+.nx-arabia-heading {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--ink-3);
+  padding: 12px 12px 0;
+  color: var(--ink);
+}
+
+/* ── المسرح: تدفّقٌ عادي على الضيّق، وشبكةٌ واحدة على العريض (أدناه) ───── */
+.nx-arabia-stage {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  min-block-size: 0;
+}
+
+/* الأدوات فوق الرسم في ترتيب الرسم (الرسم يعزل طبقاته). */
+.nx-arabia-bar,
+.nx-arabia-controls,
+.nx-home-map-layers,
+.nx-arabia-quick,
+.nx-arabia-notes {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── الشريط العلوي: تبويبات العرض يسارًا · رقاقات المناطق يمينًا ─────── */
@@ -64,65 +108,78 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 12px;
+  gap: 6px 12px;
 }
 
 .nx-arabia-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 0;
 }
 
-/* الأرضية 44px هنا لا بأداة `min-h-11`: قاعدة الأهداف العامّة
-   `:where(button, a[href]) { min-block-size: 40px }` خارج الطبقات فتغلب أي
-   أداةٍ مطبَّقة في طبقة — قِيست الرقاقات 40px قبل هذا السطر. */
-.nx-arabia .nx-arabia-tab,
-.nx-arabia .nx-arabia-chip {
-  min-block-size: 44px;
-  border-radius: 10px;
+/* القرص: صندوق نقرٍ كامل ووجهٌ 36px بحدٍّ شفّاف (③). */
+.nx-arabia .nx-arabia-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--arabia-hit);
+  padding-inline: 14px;
+  border: calc((var(--arabia-hit) - 36px) / 2) solid transparent;
+  border-inline-width: 3px;
+  border-radius: 12px;
+  background-clip: padding-box;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s var(--nx-ease-out),
+    box-shadow 0.2s var(--nx-ease-out);
 }
 
 /* الداكن: أقراصٌ زجاجية على الليل. */
-.nx-arabia-bar .nx-arabia-tab {
-  background: var(--arabia-panel);
+.nx-arabia .nx-arabia-tab:not([aria-pressed="true"]) {
+  background-color: var(--arabia-panel);
   color: var(--ink);
-  border: 1px solid var(--hairline);
-  transition:
-    background-color 0.2s var(--nx-ease-out),
-    border-color 0.2s var(--nx-ease-out);
+  box-shadow: inset 0 0 0 1px var(--arabia-panel-line);
 }
 
-/* الفاتح: أقراصٌ فاتحة بحبرٍ داكن كما في الصورة (التباين ≈ ٩:١). */
+/* الفاتح: أقراصٌ فاتحة بحبرٍ كحليّ كما في الصورة (≈ ١٣:١). */
 .light .nx-arabia-bar .nx-arabia-tab:not([aria-pressed="true"]) {
-  background: color-mix(in srgb, var(--ink) 94%, var(--surface));
-  color: color-mix(in srgb, var(--arabia-accent-2) 28%, var(--surface));
-  border-color: transparent;
+  background-color: color-mix(in srgb, var(--ink) 95%, var(--surface));
+  color: color-mix(in srgb, var(--surface) 80%, var(--arabia-accent-2));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 70%, transparent);
 }
 
 @media (hover: hover) {
-  .nx-arabia-bar .nx-arabia-tab:not([aria-pressed="true"]):hover {
-    border-color: var(--hairline-hover);
+  .nx-arabia .nx-arabia-tab:not([aria-pressed="true"]):hover {
+    box-shadow: inset 0 0 0 1px var(--hairline-hover);
   }
 }
 
-/* المُبرَزة: أزرقٌ مشبع بحبر الشاشة (≈ ٥:١) وتوهّجٌ خفيف. */
-.nx-arabia-bar .nx-arabia-tab[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--arabia-accent-2) 62%, var(--surface));
-  border-color: var(--arabia-accent-2);
+/* المُبرَزة: أزرقٌ مشبع بحبرٍ فاتح (≈ ٤٫٧:١) وحلقةٌ سماوية كما رُسمت. */
+.nx-arabia .nx-arabia-tab[aria-pressed="true"] {
+  background-color: var(--arabia-blue-deep);
   color: var(--ink);
-  box-shadow: 0 0 16px -4px var(--arabia-accent-2);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--arabia-blue) 60%, var(--ink)),
+    0 0 0 2px color-mix(in srgb, var(--arabia-blue) 45%, transparent);
 }
 
-/* تبويبات العرض — مقطعٌ زجاجيّ والنشط قرصٌ فاتح بحبرٍ أزرق داكن (≈ ٧:١). */
+/* زرّ «أعد المحاولة» خارج الشريط — قرصٌ زجاجيّ صغير. */
+.nx-arabia .nx-arabia-tab[data-quiet] {
+  padding-inline: 10px;
+  font-size: 12px;
+}
+
+/* تبويبات العرض — مقطعٌ زجاجيّ والنشط قرصٌ فاتح بحبرٍ أزرق (≈ ٥:١). */
 .nx-home-map-views {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--hairline);
-  border-radius: 13px;
-  background: var(--arabia-panel);
+  border: 1px solid var(--arabia-panel-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
 }
 
 .nx-home-map-view {
@@ -130,20 +187,25 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-block-size: 44px;
-  padding-inline: 12px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  font-size: 13px;
+  min-block-size: var(--arabia-hit);
+  padding-inline: 18px;
+  border: 3px solid transparent;
+  border-radius: 11px;
+  background-clip: padding-box;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.3;
-  color: var(--ink-2);
+  color: var(--ink);
   text-decoration: none;
   white-space: nowrap;
   transition:
     background-color 0.2s var(--nx-ease-out),
     color 0.2s var(--nx-ease-out);
+}
+
+/* الفاصل الرأسيّ بين المقطعين غير النشطين كما رُسم. */
+.nx-home-map-view + .nx-home-map-view:not([aria-current="true"]) {
+  box-shadow: -1px 0 0 0 var(--arabia-panel-line);
 }
 
 .nx-home-map-view svg {
@@ -155,55 +217,61 @@
 @media (hover: hover) {
   a.nx-home-map-view:hover,
   button.nx-home-map-view:hover {
-    background: var(--chip-hover);
-    color: var(--ink);
+    background-color: var(--chip-hover);
   }
 }
 
 .nx-home-map-view[aria-current="true"] {
-  background: var(--ink);
-  color: color-mix(in srgb, var(--arabia-accent-2) 45%, var(--surface));
-  box-shadow: 0 0 14px -6px var(--ink);
+  background-color: var(--ink);
+  color: color-mix(in srgb, var(--stage-blue) 75%, var(--surface));
+  box-shadow: 0 1px 6px -2px color-mix(in srgb, var(--surface) 60%, transparent);
 }
 
-/* «طبقات» مضغوطًا: السكّة ظاهرة — حلقةٌ هادئة لا قرصٌ ثانٍ ينافس العرض النشط. */
+/* «طبقات» مضغوطًا: السكّة ظاهرة — خطٌّ سفليّ هادئ لا قرصٌ ثانٍ. */
 .nx-home-map-view[aria-pressed="true"] {
-  color: var(--ink);
-  background: var(--chip-hover);
-  box-shadow: inset 0 0 0 1px var(--hairline-hover);
+  background-color: color-mix(in srgb, var(--arabia-accent-2) 10%, transparent);
 }
 
-/* ── الجسم: سكّة التحكّم · الرسم · سكّة الطبقات ───────────────────────── */
-.nx-arabia-body {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: stretch;
-  gap: 12px;
-  min-block-size: 0;
-}
-
+/* ── سكّة التحكّم: أقراصٌ 34px داكنة (③) ──────────────────────────────── */
 .nx-arabia-controls {
   display: flex;
   flex: none;
-  flex-direction: column;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 0;
 }
 
 .nx-arabia-ctl {
   display: grid;
   place-items: center;
-  inline-size: 44px;
-  block-size: 44px;
-  min-inline-size: 44px;
-  min-block-size: 44px;
+  inline-size: var(--arabia-hit);
+  block-size: var(--arabia-hit);
+  min-inline-size: var(--arabia-hit);
+  min-block-size: var(--arabia-hit);
   padding: 0;
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
+  border: calc((var(--arabia-hit) - 34px) / 2) solid transparent;
+  border-radius: 13px;
   background: var(--arabia-panel);
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px var(--arabia-panel-line);
   color: var(--ink);
-  transition:
-    background-color 0.2s var(--nx-ease-out),
-    border-color 0.2s var(--nx-ease-out);
+  transition: background-color 0.2s var(--nx-ease-out);
+}
+
+.nx-arabia-ctl[data-round] {
+  border-radius: 50%;
+}
+
+/* التكبير والتصغير قرصٌ واحد مشطور كما رُسم. */
+.nx-arabia-ctl[data-pair="start"] {
+  border-block-end-width: 0;
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.nx-arabia-ctl[data-pair="end"] {
+  border-block-start-width: 0;
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
 }
 
 .nx-arabia-ctl svg {
@@ -213,41 +281,275 @@
 
 @media (hover: hover) {
   .nx-arabia-ctl:not(:disabled):hover {
-    border-color: var(--hairline-hover);
-    background: var(--chip-hover);
+    background-color: color-mix(in srgb, var(--arabia-accent-2) 22%, var(--surface));
   }
 }
 
+/* المعطّل يبقى قرصًا مرسومًا والرمز وحده يخفت (الصورة ترسمه كاملًا). */
 .nx-arabia-ctl:disabled {
-  opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* الرسم: يملأ ما بين السكّتين، ويُسقَف ارتفاعه فيتوسّط على البحر عرضًا. */
+.nx-arabia-ctl:disabled svg {
+  opacity: 0.45;
+}
+
+.nx-arabia-ctl[aria-pressed="true"] {
+  background-color: color-mix(in srgb, var(--arabia-accent-2) 24%, var(--surface));
+}
+
+/* ── الرسم: لوحٌ بنسبة الإطار، وفوقه الفقاعات ثم المواقع ─────────────── */
 .nx-arabia-canvas {
+  position: relative;
+  isolation: isolate;
+  min-inline-size: 0;
+  /* نسبة اللوح المرئي — تساوي نسبة الإطار على العريض (لا قصّ). */
+  --plot-ar: var(--plot-ratio);
+}
+
+.nx-arabia-plot {
+  position: relative;
+  aspect-ratio: var(--plot-ar);
+}
+
+.nx-arabia-plot > svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/* موضع الفقاعة والموقع من إطار العرض نفسه: ما يُرى من الإطار عرضًا
+   (`--vis-*`) ثم النسبة المئوية — فيتبعان التكبير في كل خطوة. */
+.nx-arabia-pin,
+.nx-arabia-bubble-slot {
+  --vis-w: calc(var(--vb-h) * var(--plot-ar));
+  --vis-x: calc(var(--vb-x) + (var(--vb-w) - var(--vis-w)) / 2);
+  --slot-left: calc((var(--ux) - var(--vis-x)) / var(--vis-w) * 100%);
+  --slot-top: calc((var(--uy) - var(--vb-y)) / var(--vb-h) * 100%);
+}
+
+.nx-arabia-pins {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 2;
+  aspect-ratio: var(--plot-ar);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  pointer-events: none;
+}
+
+/* الموقع: دائرةٌ 24px بلون منطقته وتوهّجها، ورمز منشأةٍ فاتح. */
+.nx-arabia-pin {
+  position: absolute;
+  inset-inline-start: var(--slot-left);
+  inset-block-start: var(--slot-top);
+  display: grid;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  margin-inline-start: -12px;
+  margin-block-start: -12px;
+  border: 2px solid color-mix(in srgb, var(--region-tint) 45%, var(--ink));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--region-tint) 42%, var(--surface));
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--region-tint) 22%, transparent),
+    0 0 14px 2px color-mix(in srgb, var(--region-tint) 70%, transparent);
+  color: var(--ink);
+  pointer-events: auto;
+}
+
+.nx-arabia-pin svg {
+  inline-size: 13px;
+  block-size: 13px;
+}
+
+/* ── فقاعات المناطق: الضيّق شبكةٌ تحت الرسم ────────────────────────────── */
+.nx-arabia-bubbles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nx-arabia-bubble-slot {
   display: flex;
-  flex: 1 1 0;
-  align-items: center;
-  justify-content: center;
   min-inline-size: 0;
 }
 
-.nx-arabia-canvas > svg {
-  display: block;
-  inline-size: 100%;
-  block-size: auto;
-  max-block-size: 400px;
+.nx-arabia-bubble {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-inline-size: 0;
+  padding: 9px 10px 7px;
+  border: 1px solid color-mix(in srgb, var(--region-tint) 48%, transparent);
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--surface) 84%, var(--region-tint)) 88%,
+    transparent
+  );
+  box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--surface) 90%, transparent);
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    border-color 0.2s var(--nx-ease-out),
+    opacity 0.25s var(--nx-ease-out);
 }
 
-/* سكّة الطبقات — يملكها `HomeMapCard`، وموضعها من استعلام الحاوية هنا. */
+/* الصورة تصفّ الفقاعة من اليسار: الاسم والرقم والشارتان على حافّتها اليسرى. */
+.nx-arabia-bubble {
+  direction: ltr;
+}
+
+.nx-arabia-bubble-name {
+  direction: rtl;
+  font-size: 15.5px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.nx-arabia-bubble-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.nx-arabia-bubble-arrow {
+  flex: none;
+  inline-size: 15px;
+  block-size: 15px;
+  color: var(--arabia-arrow);
+  stroke-width: 3.2;
+}
+
+.nx-arabia-bubble-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.nx-arabia-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.nx-arabia-badge-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: 5px;
+  background: var(--badge-tone);
+  color: var(--arabia-glyph-light);
+}
+
+.nx-arabia-badge-icon svg {
+  inline-size: 11px;
+  block-size: 11px;
+  stroke-width: 2.6;
+}
+
+.nx-arabia-badge[data-tone="danger"] {
+  --badge-tone: var(--arabia-red);
+}
+.nx-arabia-badge[data-tone="warning"] {
+  --badge-tone: var(--arabia-amber);
+}
+.nx-arabia-badge[data-tone="warning"] .nx-arabia-badge-icon {
+  color: var(--arabia-glyph-dark);
+}
+.nx-arabia-badge[data-tone="healthy"] {
+  --badge-tone: var(--arabia-green);
+}
+.nx-arabia-badge[data-tone="info"] {
+  --badge-tone: var(--arabia-blue);
+}
+
+.nx-arabia-bubble-change {
+  align-self: center;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--arabia-up);
+  font-variant-numeric: tabular-nums;
+}
+
+.nx-arabia-bubble-change > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.nx-arabia-bubble-change svg {
+  inline-size: 13px;
+  block-size: 13px;
+  stroke-width: 2.6;
+}
+
+.nx-arabia-bubble-change[data-absent] {
+  direction: rtl;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.nx-arabia-bubble[data-dim] {
+  opacity: 0.55;
+}
+
+@media (hover: hover) {
+  .nx-arabia-bubble:hover {
+    border-color: var(--region-tint);
+  }
+}
+
+/* ── شارة «محاكاة» (المادة ٦، N2) — تركب حافّة الفقاعة أو تجاور العنوان ── */
+.nx-arabia-sim {
+  padding-inline: 5px;
+  border: 1px solid color-mix(in srgb, var(--arabia-sim) 40%, var(--surface));
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--arabia-sim);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+.nx-arabia-bubble > .nx-arabia-sim {
+  position: absolute;
+  inset-block-start: -8px;
+  inset-inline-end: 8px;
+  direction: rtl;
+  pointer-events: none;
+}
+
+/* ── سكّة الطبقات — يملكها `HomeMapCard`، وموضعها من المسرح هنا ────────── */
 .nx-home-map-layers {
   flex: none;
-  align-self: flex-start;
-  inline-size: 164px;
-  padding: 6px;
-  border: 1px solid var(--hairline);
-  border-radius: 14px;
-  background: var(--arabia-panel);
+  padding: 5px;
+  border: 1px solid var(--arabia-panel-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
 }
 
 .nx-home-map-layers[hidden] {
@@ -255,9 +557,9 @@
 }
 
 .nx-home-map-layers ul {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -266,13 +568,13 @@
 .nx-home-map-layer {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-block-size: 44px;
-  padding-inline: 8px;
-  border-radius: 10px;
+  gap: 9px;
+  min-block-size: var(--arabia-hit);
+  padding-inline: 6px;
+  border-radius: 9px;
   font-size: 13px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.25;
   color: var(--ink);
   text-decoration: none;
   transition: background-color 0.2s var(--nx-ease-out);
@@ -284,94 +586,139 @@
   }
 }
 
-/* بلاطةٌ ساطعة برمزٍ داكن — النبرة هويةٌ لا حكم (أزرق · سماوي). */
+/* بلاطةٌ بلونها المرسوم ورمزٌ يقابلها ≥ 3:1 (WCAG §1.4.11). */
 .nx-home-map-layer[data-tone="blue"] {
-  --layer-tone: var(--arabia-accent-2);
+  --layer-tone: var(--arabia-blue);
 }
-
-.nx-home-map-layer[data-tone="cyan"] {
-  --layer-tone: var(--arabia-accent);
+.nx-home-map-layer[data-tone="green"] {
+  --layer-tone: var(--arabia-green);
+}
+.nx-home-map-layer[data-tone="amber"] {
+  --layer-tone: var(--arabia-amber);
+  --layer-glyph: var(--arabia-glyph-dark);
+}
+.nx-home-map-layer[data-tone="red"] {
+  --layer-tone: var(--arabia-red);
 }
 
 .nx-home-map-layer-icon {
   display: grid;
   flex: none;
   place-items: center;
-  inline-size: 28px;
-  block-size: 28px;
-  border-radius: 8px;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: 6px;
   background: var(--layer-tone);
-  color: var(--arabia-glyph);
-  box-shadow: 0 0 12px -4px var(--layer-tone);
+  color: var(--layer-glyph, var(--arabia-glyph-light));
+  box-shadow: 0 0 10px -3px var(--layer-tone);
 }
 
 .nx-home-map-layer-icon svg {
-  inline-size: 16px;
-  block-size: 16px;
+  inline-size: 14px;
+  block-size: 14px;
+  stroke-width: 2.4;
 }
 
-/* ── الذيل: «إحصائيات سريعة» يسارًا · المناطق الأربع يمينًا ───────────── */
-.nx-arabia-foot {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
-}
-
+/* ── «إحصائيات سريعة» ───────────────────────────────────────────────────── */
 .nx-arabia-quick {
   container: nx-arabia-quick / inline-size;
-  padding: 10px 12px;
-  border: 1px solid var(--hairline);
-  border-radius: 14px;
-  background: var(--arabia-panel);
+  padding: 8px 10px 6px;
+  border: 1px solid var(--arabia-panel-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
 }
 
 .nx-arabia-quick-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 6px 8px;
 }
 
 .nx-arabia-quick-title {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   line-height: 1.4;
   color: var(--ink);
 }
 
+.nx-arabia-quick-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-block-start: 6px;
+  padding: 2px 4px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--arabia-accent-2) 7%, transparent);
+  box-shadow: inset 0 1px 0 0 var(--arabia-panel-line);
+}
+
+/* السهم المرسوم: دائرةٌ 32px داخل صندوق نقرٍ كامل (③). */
+.nx-arabia-quick-more {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--arabia-hit);
+  block-size: var(--arabia-hit);
+  border: calc((var(--arabia-hit) - 32px) / 2) solid transparent;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--arabia-accent-2) 16%, var(--surface));
+  background-clip: padding-box;
+  color: var(--ink);
+}
+
+.nx-arabia-quick-more svg {
+  inline-size: 17px;
+  block-size: 17px;
+}
+
 .nx-arabia-quick-list {
   display: grid;
+  flex: 1 1 auto;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 8px 0 0;
+  gap: 2px;
+  margin: 0;
+  min-inline-size: 0;
 }
 
 .nx-arabia-quick-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
+  gap: 1px;
   min-inline-size: 0;
+  min-block-size: var(--arabia-hit);
+  padding: 3px 2px;
+  border-radius: 9px;
+  color: inherit;
   text-align: center;
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .nx-arabia-quick-item[data-link]:hover {
+    background: var(--chip-hover);
+  }
 }
 
 .nx-arabia-quick-label {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   font-size: 12px;
   font-weight: 700;
-  line-height: 1.35;
-  color: var(--ink-3);
+  line-height: 1.3;
+  color: var(--ink-2);
+  white-space: nowrap;
 }
 
 .nx-arabia-quick-icon {
   display: grid;
   place-items: center;
-  color: var(--ink-2);
+  color: color-mix(in srgb, var(--arabia-accent) 45%, var(--ink));
 }
 
 .nx-arabia-quick-icon svg {
@@ -382,147 +729,262 @@
 .nx-arabia-quick-value {
   margin: 0;
   font-size: 17px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.3;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
-/* الغياب نصٌّ هادئ لا رقمٌ كبير: «لم يُقَس» و«تعذّر التحميل» ليسا قياسًا. */
+/* الغياب نصٌّ هادئ لا رقمٌ كبير: «لم يُقَس» ليس قياسًا. */
 .nx-arabia-quick-value[data-quiet] {
   font-size: 12px;
-  font-weight: 700;
   line-height: 1.5;
   color: var(--ink-3);
 }
 
-@container nx-arabia-quick (min-width: 340px) {
+/* الانتظار هيكلٌ لا نصّ — يُرى شكلًا ويُقرأ للقارئات. */
+.nx-arabia-wait {
+  display: block;
+  inline-size: 34px;
+  block-size: 14px;
+  margin-block: 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
+}
+
+@container nx-arabia-quick (min-width: 250px) {
   .nx-arabia-quick-list {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-.nx-arabia-regions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.nx-arabia-regions > li {
+/* ── الحواشي: الخطأ والمرفوض والإفصاح ─────────────────────────────────── */
+.nx-arabia-notes {
   display: flex;
-  min-inline-size: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
-.nx-arabia .nx-arabia-regions .nx-arabia-chip {
-  flex: 1 1 auto;
-  justify-content: center;
-  min-inline-size: 0;
-  border-radius: 12px;
+.nx-arabia-alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  font-size: 13px;
+  color: var(--ink-2);
 }
 
-/* ── التوهّج: نيونٌ أقوى من رموز المنطقة نفسها ─────────────────────────
-   الخطوط لا تكبر مع التكبير (`non-scaling-stroke`) — حدٌّ نحيل يبقى نحيلًا.
-   والتعبئة أخفّ من قبل: ظلّا التوهّج يُرسمان تحت التعبئة الشفّافة فيضيئانها
-   (قِيس باللقطة: الداخل يُقرأ بنصف الإشباع)، فالداخل ليلٌ والحدّ نيون. */
-.nx-arabia-canvas .nx-arabia-neighbour {
+.nx-arabia-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+/* ── التوهّج: نيونٌ بلون المنطقة وخطٌّ أبيض نحيل فوقه ──────────────────
+   الخطوط لا تكبر مع التكبير (`non-scaling-stroke`). والتعبئة شفّافةٌ مشبعة
+   كما رُسمت: داخل المنطقة يتّقد بلونها، وحدودها الداخلية خيوطٌ مضيئة. */
+.nx-arabia-plot .nx-arabia-neighbour {
+  fill: var(--arabia-ground);
+  stroke: color-mix(in srgb, var(--ink) 16%, transparent);
+  stroke-width: 0.8px;
   vector-effect: non-scaling-stroke;
 }
 
-.nx-arabia-canvas .nx-arabia-province {
-  fill-opacity: 0.1;
-  stroke-width: 1.6px;
+.nx-arabia-plot .nx-arabia-province {
+  fill-opacity: 0.3;
+  stroke-width: 1.1px;
+  stroke-opacity: 0.95;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 2px var(--region-tint))
-    drop-shadow(0 0 9px color-mix(in srgb, var(--region-tint) 70%, transparent));
+  filter: drop-shadow(0 0 1.5px var(--region-tint))
+    drop-shadow(0 0 7px color-mix(in srgb, var(--region-tint) 75%, transparent));
 }
 
-.nx-arabia-canvas .nx-arabia-province[data-focus] {
-  fill-opacity: 0.2;
+.nx-arabia-plot .nx-arabia-province[data-focus] {
+  fill-opacity: 0.42;
   animation: nx-arabia-bloom 3.2s var(--nx-ease-out) infinite alternate;
 }
 
-/* الخافتة بلا توهّج — فالمُبرَزة وحدها تتّقد. */
-.nx-arabia-canvas .nx-arabia-province[data-dim] {
+/* الخافتة (حين يختار الزائر منطقةً) بلا توهّج — فالمُبرَزة وحدها تتّقد. */
+.nx-arabia-plot .nx-arabia-province[data-dim] {
+  opacity: 0.4;
   filter: none;
 }
 
-.nx-arabia-canvas .nx-arabia-border {
-  stroke-width: 2px;
+.nx-arabia-plot .nx-arabia-border {
+  stroke: color-mix(in srgb, var(--ink) 80%, transparent);
+  stroke-width: 1.3px;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--arabia-accent) 55%, transparent));
-}
-
-.nx-arabia-canvas .nx-arabia-site {
-  stroke-width: 2.5px;
-  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--arabia-accent) 60%, transparent));
 }
 
 @keyframes nx-arabia-bloom {
   from {
-    stroke-opacity: 0.7;
+    stroke-opacity: 0.75;
   }
   to {
     stroke-opacity: 1;
-    stroke-width: 2.6px;
+    stroke-width: 2.2px;
   }
 }
 
-/* ── البطاقة الضيّقة (اللوح الرأسي والجوال): السكّتان تحت الشريط والرسم ── */
-@container nx-arabia (max-width: 599px) {
-  .nx-arabia-body {
-    flex-wrap: wrap;
+/* ── الضيّق: اللوح أقلّ عرضًا فيُقصّ البحر جانبيه (`slice`) ───────────── */
+@container nx-arabia (max-width: 719px) {
+  .nx-arabia-canvas {
+    --plot-ar: 1.85;
   }
   .nx-arabia-controls {
-    flex-basis: 100%;
-    flex-direction: row;
+    order: 1;
   }
   .nx-arabia-canvas {
-    flex-basis: 100%;
+    order: 0;
   }
-  .nx-home-map-layers {
-    flex-basis: 100%;
-    inline-size: auto;
+  .nx-arabia-bar {
+    order: -1;
   }
-  .nx-home-map-layers ul {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .nx-home-map-layers,
+  .nx-arabia-quick,
+  .nx-arabia-notes {
+    order: 2;
   }
 }
 
-@container nx-arabia (min-width: 520px) and (max-width: 599px) {
-  .nx-home-map-layers ul {
+@container nx-arabia (min-width: 520px) and (max-width: 719px) {
+  .nx-home-map-layers ul,
+  .nx-arabia-bubbles {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-@container nx-arabia (min-width: 560px) and (max-width: 719px) {
-  .nx-arabia-regions {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-/* البطاقة العريضة: الإحصاءات يسارًا والمناطق ٢×٢ يمينًا بارتفاعٍ واحد. */
+/* ── العريض: مسرحٌ واحد كما في الصورة ─────────────────────────────────── */
 @container nx-arabia (min-width: 720px) {
-  .nx-arabia-foot {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: stretch;
+  .nx-arabia-stage {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "bar bar bar"
+      "ctl . layers"
+      "quick notes layers";
+    gap: 8px 12px;
+    padding: 8px 10px 10px;
+  }
+
+  .nx-arabia-bar {
+    grid-area: bar;
+  }
+
+  .nx-arabia-controls {
+    grid-area: ctl;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-self: start;
+    margin-block-start: 6px;
+  }
+
+  .nx-home-map-layers {
+    grid-area: layers;
+    align-self: start;
+    inline-size: 116px;
+    margin-block-start: 4px;
+  }
+
+  .nx-home-map-layers ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nx-arabia-quick {
+    grid-area: quick;
+    align-self: end;
+    justify-self: start;
+    inline-size: max-content;
+    min-inline-size: 272px;
+    max-inline-size: 330px;
+  }
+
+  .nx-arabia-notes {
+    grid-area: notes;
+    align-self: end;
+    justify-self: end;
+    align-items: flex-end;
+  }
+
+  .nx-arabia-notes .nx-arabia-note {
+    padding: 0 8px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+  }
+
+  /* الرسم يملأ البطاقة إلى حوافّها (الهامش السالب = حشوة المسرح)، ويتوسّط
+     رأسيًّا حين تطول البطاقة عنه؛ وما حوله بحرُ البطاقة نفسه. */
+  .nx-arabia-canvas {
+    grid-area: 1 / 1 / -1 / -1;
+    align-self: center;
+    margin: -8px -10px -10px;
+  }
+
+  .nx-arabia-plot > svg {
+    overflow: visible;
+  }
+
+  .nx-arabia-pins {
+    overflow: visible;
+  }
+
+  /* الفقاعات فوق الرسم في لوحٍ بنسبته، وكلٌّ في موضعه المرسوم — مقيّدةً
+     بين السكّتين والشريط فلا تقع تحت أداة. */
+  .nx-arabia-bubbles {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: 1;
+    display: block;
+    aspect-ratio: var(--plot-ar);
+    margin: 0;
+    pointer-events: none;
+  }
+
+  .nx-arabia-bubble-slot {
+    position: absolute;
+    left: clamp(60px, var(--slot-left), calc(100% - var(--slot-reserve, 112px)));
+    top: clamp(50px, var(--slot-top), calc(100% - 118px));
+    inline-size: 94px;
+    pointer-events: auto;
+  }
+
+  .nx-arabia-stage[data-rail] .nx-arabia-bubble-slot {
+    --slot-reserve: 236px;
+  }
+
+  .nx-arabia-bubble-slot[data-out] {
+    display: none;
   }
 }
 
 /* ── التركيز: حلقةٌ سماوية مرئية على الليل ───────────────────────────── */
-.nx-arabia :is(.nx-arabia-ctl, .nx-home-map-view, .nx-home-map-layer):focus-visible {
+.nx-arabia
+  :is(
+    .nx-arabia-ctl,
+    .nx-arabia-tab,
+    .nx-home-map-view,
+    .nx-home-map-layer,
+    .nx-arabia-bubble,
+    .nx-arabia-quick-item,
+    .nx-arabia-quick-more
+  ):focus-visible {
   outline: 2px solid var(--arabia-accent);
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 
 /* ── السطوح البديلة ───────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .nx-arabia-canvas .nx-arabia-province[data-focus] {
+  .nx-arabia-plot .nx-arabia-province[data-focus] {
     animation: none;
-    stroke-width: 2.4px;
+    stroke-width: 2px;
   }
 }
 
@@ -530,52 +992,67 @@
   .nx-arabia {
     --arabia-panel: var(--surface);
   }
+  .nx-arabia-bubble,
+  .nx-arabia-quick,
+  .nx-home-map-layers,
+  .nx-home-map-views {
+    background: var(--surface);
+  }
 }
 
 /* وضع الأمان يُسقط المرشّحات والحركة كلّها (styles.css) — فيُعوَّض التوهّج
    بخطٍّ أعرض وتعبئةٍ أكثف تحفظ تمييز المناطق بلا كلفة رسم. */
-html.safe-mode .nx-arabia-canvas .nx-arabia-province {
-  stroke-width: 2.2px;
-  fill-opacity: 0.3;
+html.safe-mode .nx-arabia-plot .nx-arabia-province {
+  stroke-width: 2px;
+  fill-opacity: 0.4;
 }
 
-html.safe-mode .nx-arabia-canvas .nx-arabia-province[data-focus] {
-  fill-opacity: 0.45;
+html.safe-mode .nx-arabia-plot .nx-arabia-province[data-focus] {
+  fill-opacity: 0.55;
+}
+
+html.safe-mode .nx-arabia-pin {
+  box-shadow: none;
 }
 
 @media (forced-colors: active) {
-  .nx-arabia-canvas .nx-arabia-province,
-  .nx-arabia-canvas .nx-arabia-border {
+  .nx-arabia-plot .nx-arabia-province,
+  .nx-arabia-plot .nx-arabia-border {
     filter: none;
     animation: none;
   }
-  .nx-arabia-canvas .nx-arabia-province {
+  .nx-arabia-plot .nx-arabia-province {
     fill: Canvas;
     stroke: CanvasText;
   }
-  .nx-arabia-canvas .nx-arabia-province[data-focus] {
+  .nx-arabia-plot .nx-arabia-province[data-focus] {
     fill: Highlight;
     fill-opacity: 0.35;
     stroke-width: 3px;
   }
   .nx-arabia-ctl,
-  .nx-arabia-bar .nx-arabia-tab,
+  .nx-arabia .nx-arabia-tab,
   .nx-home-map-view,
-  .nx-home-map-layer {
-    border: 1px solid ButtonText;
+  .nx-home-map-layer,
+  .nx-arabia-bubble,
+  .nx-arabia-quick-more {
+    border-color: ButtonText;
     background: ButtonFace;
     color: ButtonText;
     box-shadow: none;
   }
-  .nx-arabia-bar .nx-arabia-tab[aria-pressed="true"],
+  .nx-arabia .nx-arabia-tab[aria-pressed="true"],
   .nx-home-map-view[aria-current="true"],
-  .nx-home-map-view[aria-pressed="true"] {
+  .nx-home-map-view[aria-pressed="true"],
+  .nx-arabia-ctl[aria-pressed="true"] {
     forced-color-adjust: none;
     border-color: Highlight;
     background: Highlight;
     color: HighlightText;
   }
-  .nx-home-map-layer-icon {
+  .nx-home-map-layer-icon,
+  .nx-arabia-badge-icon,
+  .nx-arabia-pin {
     border: 1px solid CanvasText;
     background: Canvas;
     color: CanvasText;
@@ -583,7 +1060,8 @@ html.safe-mode .nx-arabia-canvas .nx-arabia-province[data-focus] {
   }
   .nx-arabia-quick,
   .nx-home-map-layers,
-  .nx-home-map-views {
+  .nx-home-map-views,
+  .nx-arabia-sim {
     border-color: CanvasText;
     background: Canvas;
   }

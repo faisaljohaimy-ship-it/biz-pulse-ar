@@ -94,11 +94,13 @@ import "@/styles/home/home-kpi.css";
 
 /**
  * نبرة البطاقة كما رُسمت: درعٌ أخضر · مثمّنٌ أحمر (خطر — مثلث الصورة الأحمر
- * يُرسم مثمّنًا، عرف لوحات السلامة) · مثلثٌ برتقالي (تحذير) · وأزرقان للعدّ.
- * والنبرة تُترجم في `home-kpi.css` إلى رموزٍ وحدها (لون الرمز وغسلة البلاطة
- * ولون التغيّر ولون الرقم) — فاللون لا يُكتب هنا، والشكل والكلمة يحملان المعنى.
+ * يُرسم مثمّنًا، عرف لوحات السلامة) · مثلثٌ برتقالي (تحذير) · وثلاث زرقات
+ * للعدّ كما رُسمت (الأفراد والأصول أزرق · السيارة أزرق سماوي · الكاميرا أزرق
+ * فاتح). والنبرة تُترجم في `home-kpi.css` إلى رموزٍ وحدها (لون الرمز وغسلة
+ * البلاطة ولون التغيّر ولون الرقم) — فاللون لا يُكتب هنا، والشكل والكلمة
+ * يحملان المعنى.
  */
-type KpiTone = "ok" | "danger" | "warning" | "blue" | "sky";
+type KpiTone = "ok" | "danger" | "warning" | "blue" | "cyan" | "sky";
 
 interface Kpi {
   readonly id: RefKpiId;
@@ -219,7 +221,7 @@ export function HomeKpiRow() {
     },
     {
       id: "patrols",
-      tone: "sky",
+      tone: "cyan",
       en: "Active patrols",
       enDrawn: "Active patrols",
       value: counts ? counts.patrols_active : null,
@@ -357,14 +359,12 @@ function KpiCard({ k, ar }: { k: Kpi; ar: boolean }) {
       {loading ? (
         // هيكلٌ لا نصّ: الانتظار يُرى شكلًا ولا يُقرأ حكمًا.
         <span aria-hidden className="nx-home-skeleton nx-home-kpi-wait" />
-      ) : simulated ? (
-        <span className="nx-home-kpi-value" dir="ltr">
-          {valueText}
-        </span>
       ) : (
+        // الحاوية باتجاه البطاقة فيستقرّ الرقم على حافّة البداية (يمينًا) كما
+        // رُسم، والأرقام وحدها `ltr` فلا تنقلب «96%» ولا «5,997».
         <span className="nx-home-kpi-value">
-          <span dir="ltr">{fmtKpi(chosen.value)}</span>
-          {liveUnit && (
+          <span dir="ltr">{simulated ? valueText : fmtKpi(chosen.value)}</span>
+          {!simulated && liveUnit && (
             <span className="nx-home-kpi-unit" data-spaced={k.unit?.spaced ? "" : undefined}>
               {liveUnit}
             </span>
@@ -423,8 +423,9 @@ function KpiMiniChart({ series, form }: { series: readonly number[]; form: RefKp
   const min = Math.min(...series);
 
   if (form === "bars") {
+    // أعمدةٌ رفيعة بفجواتٍ أعرض منها كما رُسمت (~3px وفجوة ~3px).
     const step = CHART_W / series.length;
-    const bw = step * 0.5;
+    const bw = step * 0.44;
     return (
       <svg
         viewBox={`0 0 ${CHART_W} ${CHART_H}`}
@@ -447,15 +448,18 @@ function KpiMiniChart({ series, form }: { series: readonly number[]; form: RefKp
           </linearGradient>
         </defs>
         {series.map((v, i) => {
-          const h = max > 0 ? Math.max(2, (v / max) * (CHART_H - 1)) : 2;
+          // القاع نفسه الذي ينتهي عنده المنحنى الخطّي، فتستقرّ البطاقات على خطٍّ واحد.
+          const base = CHART_H - 1;
+          const h = max > 0 ? Math.max(2, (v / max) * (base - 1)) : 2;
           return (
             <rect
               key={i}
               x={i * step + (step - bw) / 2}
-              y={CHART_H - h}
+              y={base - h}
               width={bw}
               height={h}
               rx="0.6"
+              className="nx-home-kpi-bar"
               fill={`url(#${uid}-bars)`}
             />
           );
@@ -466,7 +470,7 @@ function KpiMiniChart({ series, form }: { series: readonly number[]; form: RefKp
 
   const span = max - min || 1;
   const top = 2;
-  const bottom = 4;
+  const bottom = 2;
   const pts = series.map(
     (v, i) =>
       [
@@ -508,14 +512,14 @@ function GlyphSvg({ className, children }: { className?: string; children: React
   );
 }
 
-/** درعٌ بسهمٍ نازل — «الحالة الأمنية العامة». */
+/** درعٌ عريض بقمّةٍ وسطى وسهمٍ نازل — «الحالة الأمنية العامة». */
 function ShieldGlyph({ className }: { className?: string }) {
   return (
     <GlyphSvg className={className}>
       <path
         fill="currentColor"
         fillRule="evenodd"
-        d="M12 1.6 20.4 4.8V11c0 5.4-3.6 9.7-8.4 11.4C7.2 20.7 3.6 16.4 3.6 11V4.8Z M10.55 6.4h2.9v4.1h3.2L12 16.3 7.35 10.5h3.2Z"
+        d="M12 1.8 21 4.2V12.2c0 4.9-3.6 8.9-9 10.6-5.4-1.7-9-5.7-9-10.6V4.2Z M10.6 6.9h2.8v4.1h3.6L12 16.7 7 11h3.6Z"
       />
     </GlyphSvg>
   );
@@ -547,13 +551,13 @@ function TriangleGlyph({ className }: { className?: string }) {
   );
 }
 
-/** ثلاثة أشخاص — «إجمالي الأفراد». */
+/** ثلاثة أشخاص برؤوسٍ كبيرة، الأوسط أمامهما — «إجمالي الأفراد». */
 function PeopleGlyph({ className }: { className?: string }) {
   return (
     <GlyphSvg className={className}>
       <path
         fill="currentColor"
-        d="M12 3.6a3.4 3.4 0 1 1 0 6.8 3.4 3.4 0 0 1 0-6.8Z M5.5 6.7a2.45 2.45 0 1 1 0 4.9 2.45 2.45 0 0 1 0-4.9Z M18.5 6.7a2.45 2.45 0 1 1 0 4.9 2.45 2.45 0 0 1 0-4.9Z M7.2 20.4V19c0-2.85 2.15-5.1 4.8-5.1s4.8 2.25 4.8 5.1v1.4Z M.8 19.5v-.9c0-2.6 2-4.6 4.6-4.6.7 0 1.4.15 2 .45-1 1.25-1.6 2.8-1.6 4.45v.6Z M23.2 19.5v-.9c0-2.6-2-4.6-4.6-4.6-.7 0-1.4.15-2 .45 1 1.25 1.6 2.8 1.6 4.45v.6Z"
+        d="M12 2.9a3.3 3.3 0 1 1 0 6.6 3.3 3.3 0 0 1 0-6.6Z M5.2 4.4a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2Z M18.8 4.4a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2Z M6.4 16.3c0-3.05 2.5-5.4 5.6-5.4s5.6 2.35 5.6 5.4v1.6c0 .9-.7 1.6-1.6 1.6H8c-.9 0-1.6-.7-1.6-1.6Z M.9 15.5c0-2.5 1.9-4.3 4.4-4.3.5 0 1 .07 1.45.2-.95 1.3-1.5 2.9-1.5 4.6v.7H2c-.6 0-1.1-.5-1.1-1.2Z M23.1 15.5c0-2.5-1.9-4.3-4.4-4.3-.5 0-1 .07-1.45.2.95 1.3 1.5 2.9 1.5 4.6v.7H22c.6 0 1.1-.5 1.1-1.2Z"
       />
     </GlyphSvg>
   );
@@ -572,26 +576,42 @@ function CarGlyph({ className }: { className?: string }) {
   );
 }
 
-/** كاميرا مراقبة على حاملها — «الكاميرات العاملة». */
+/**
+ * كاميرا مراقبة كما رُسمت — «الكاميرات العاملة»: غطاءٌ مصمت مستدير الطرف،
+ * وتحته شفةٌ رفيعة، وعلى يمينه حاملٌ مثلثيّ مفرّغ (خطٌّ بلون الرمز نفسه).
+ */
 function CctvGlyph({ className }: { className?: string }) {
   return (
     <GlyphSvg className={className}>
       <path
         fill="currentColor"
-        d="M2.7 7.6c-.32-1.2.4-2.43 1.6-2.74l12.9-3.4c1.2-.32 2.43.4 2.74 1.6l1.02 3.88c.32 1.2-.4 2.43-1.6 2.74L6.46 13.08c-1.2.32-2.43-.4-2.74-1.6Z M12.3 11.2l2.05-.5 1.2 5h4.15v-1.9h2v7.8h-2v-3.9H14.8c-.68 0-1.27-.46-1.45-1.12Z"
+        d="M3.8 4.3 18.8 3.5c.75-.04 1.15.82.68 1.38l-3.9 4.6c-.6.7-1.4 1.12-2.3 1.22l-9.1 1.4C2.6 12.35 1.2 11.15 1.2 9.6V6.9c0-1.4 1.15-2.53 2.6-2.6Z M5.1 14.5l9.3-1.35c.55-.08.9.55.55.98l-1.05 1.3c-.35.43-.85.7-1.4.74l-6.1.5c-.75.06-1.3-.5-1.3-1.2Z"
+      />
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinejoin="round"
+        d="M19.9 7.4 21.2 20.4 13.9 15.5Z"
       />
     </GlyphSvg>
   );
 }
 
-/** ثلاثة أبراجٍ على قاعدة — «الأصول الحرجة». النوافذ ثقوبٌ بلفٍّ معاكس. */
+/**
+ * ثلاثة أبراجٍ مقوّسة الرؤوس على قاعدة — «الأصول الحرجة». النوافذ ثقوبٌ
+ * (`evenodd`) تُظهر غسلة البلاطة: أربعٌ في الأوسط وواحدةٌ في كل جانب.
+ */
 function BuildingGlyph({ className }: { className?: string }) {
   return (
     <GlyphSvg className={className}>
       <path
         fill="currentColor"
-        d="M9 21V5.2C9 3.43 10.34 2 12 2s3 1.43 3 3.2V21Z M3 21v-9.6c0-1.44 1.12-2.6 2.5-2.6S8 9.96 8 11.4V21Z M16 21v-9.6c0-1.44 1.12-2.6 2.5-2.6S21 9.96 21 11.4V21Z M2 20.2h20V22H2Z M10.3 5.6v1.6h1.2V5.6Z M12.5 5.6v1.6h1.2V5.6Z M10.3 8.9v1.6h1.2V8.9Z M12.5 8.9v1.6h1.2V8.9Z M10.3 12.2v1.6h1.2v-1.6Z M12.5 12.2v1.6h1.2v-1.6Z M10.3 15.5v1.6h1.2v-1.6Z M12.5 15.5v1.6h1.2v-1.6Z M4.85 11.9v1.7h1.3v-1.7Z M4.85 15.3v1.7h1.3v-1.7Z M17.85 11.9v1.7h1.3v-1.7Z M17.85 15.3v1.7h1.3v-1.7Z"
+        fillRule="evenodd"
+        d="M8.6 20.4V4.4C8.6 2.5 10.1 1 12 1s3.4 1.5 3.4 3.4v16Z M2.4 20.4v-9.6c0-1.6 1.25-2.9 2.8-2.9S8 9.2 8 10.8v9.6Z M16 20.4v-9.6c0-1.6 1.25-2.9 2.8-2.9s2.8 1.3 2.8 2.9v9.6Z M10.5 4h3v2.4h-3Z M10.5 8h3v2.4h-3Z M10.5 12h3v2.4h-3Z M10.5 16h3v2.6h-3Z M4 11.4h2.4v2h-2.4Z M17.6 11.4h2.4v2h-2.4Z"
       />
+      {/* القاعدة شكلٌ مستقلّ: لو شاركت الأبراج `evenodd` لصار تداخلهما ثقبًا. */}
+      <path fill="currentColor" d="M.8 19.6h22.4v1.8H.8Z" />
     </GlyphSvg>
   );
 }

@@ -1,39 +1,39 @@
 /**
- * بطاقة الخريطة — صدر الرئيسية يسارًا (≈ ٥/٧ من الصفّ، المواصفة §4.4).
+ * بطاقة الخريطة — صدر الرئيسية يسارًا (≈ ٥/٧ من الصفّ، المواصفة §4.4)، كما
+ * رسمتها صورة المالك «بحذافيرها» (قرارات N1–N4، ٢٠٢٦/١٠/١٤).
  *
  * **شاشةٌ داكنة في الوضعين** (`.nx-arabia`): رموز الحبر والسطح مثبَّتة محليًّا،
  * فلا أداة `text-white`/`bg-white` هنا — جسر الوضع الفاتح يعيد تعريفهما.
  *
- * التشريح كما في الصورة، في مسار التدفّق العادي لا فوق الرسم:
+ * التشريح كما في الصورة (`ArabianPeninsulaMap` يرتّبه مسرحًا):
  *   • الشريط العلوي — تبويبات العرض يسارًا: «خريطة السعودية» (العرض الحالي)
  *     · «مخطط صناعي» (← `/sec/twin`) · «طبقات» (يُظهر سكّة الطبقات ويخفيها)؛
- *     ورقاقات المناطق يمينًا (`aria-pressed`) من `<ArabianPeninsulaMap>`.
- *   • الجسم — سكّة التحكّم (تكبير حقيقي على `viewBox` · توسيع ←
- *     `/executive-map`) · الرسم · سكّة الطبقات الثماني، كلٌّ رابطٌ إلى شاشته.
- *   • الذيل — «إحصائيات سريعة» وبطاقات المناطق الأربع (← `/sec?region=…`).
+ *     ورقاقات المناطق يمينًا والوسطى مُبرَزةً (المنطقة الفاعلة افتراضًا).
+ *   • يسارًا سكّة التحكّم: ملاءمة · البوصلة (← `/executive-map`) · تكبير ·
+ *     تصغير · الطبقات.
+ *   • على الرسم فقاعات المناطق الأربع، ويمينًا سكّة الطبقات الثماني، وأسفل
+ *     اليسار «إحصائيات سريعة» بأرقامها الأربعة وسهمها.
  *
- * **الأرقام من مصادرها (المادة ٢٧):** المواقع من `getSecOverview`، والكاميرات
- * ونقاط الدخول من مؤشرات اللوحة التنفيذية (`cameras_total` · `gates_total`)،
- * والامتثال لكل منطقة من `getCommandCenterState` — والصفر قياس، فالفحص
- * `!== null` لا `> 0`. والمرافق لا عدّ لها في أي قراءةٍ هنا: «لم يُقَس».
- * ولكلّ رقمٍ حال قراءته: التحميل والخطأ لا يُقرآن «لم يُقَس».
+ * **الأرقام (N2، المادة ٢٧):** كل رقمٍ مرسوم يُعرض كما رُسم من المحاكاة
+ * المرجعية (`home-reference.ts`) تحت شارة «محاكاة» ظاهرة، **والحيّ يفوز
+ * تلقائيًّا** عبر `chooseLive` متى أعادت قراءته قيمةً مقيسة حيّة. وفقاعات
+ * المناطق مرجعٌ دائمًا: لا توزيع على المناطق مقيسٌ اليوم (`liveOf` — «الخريطة»)،
+ * والحيّ لكل منطقة (المواقع المرسومة والامتثال) في تلميح الفقاعة ووصفها.
+ * التحميل هيكلٌ والخطأ مرجعٌ موسوم بإعادة محاولة — لا يُقرأ أيٌّ منهما قياسًا.
  *
- * **أيقونات الطبقات من الصورة**، إلا المخاطر والحوادث: ترسمهما الصورة مثلثًا
- * أحمر، والمثلث شكل «تحذير» والأحمر معنى «خطر» (§3.5) — والطبقة فئةٌ لا حكم.
- * فتأخذان رمزيهما في الشريط الجانبي (درعٌ منبِّه · صفّارة) بنبرة هوية.
+ * **ألوان الطبقات كما رُسمت** (أزرق · أخضر · كهرماني · أحمر)، والمثلث الأحمر
+ * في الصورة يُرسم مثمّنًا (§3.5: الأحمر معنى «خطر» وشكله المثمّن).
  */
 import { Link } from "@tanstack/react-router";
 import {
   Building2,
   Cctv,
-  Hexagon,
-  Layers,
+  CircleDot,
   LockKeyhole,
   MapPin,
-  MapPinned,
+  Move,
+  OctagonAlert,
   Shield,
-  ShieldAlert,
-  Siren,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -42,16 +42,22 @@ import { useI18n } from "@/lib/i18n";
 import { REGIONS, type RegionId } from "@/lib/regions";
 import {
   ArabianPeninsulaMap,
+  type ArabiaBubble,
   type ArabiaQuickStat,
   type ArabiaSite,
 } from "@/components/map/ArabianPeninsulaMap";
 import { useHomeReads } from "@/components/home/home-reads";
-import { statusOf } from "@/components/home/home-primitives";
+import { statusOf, type ReadStatus } from "@/components/home/home-primitives";
+import {
+  HOME_REFERENCE,
+  chooseLive,
+  liveOf,
+  type RefQuickStatId,
+} from "@/components/home/home-reference";
 
 /**
- * طبقات الخريطة الثماني كما في الصورة — كلّ طبقةٍ رابطٌ إلى شاشتها الحيّة.
- * النبرة هويةٌ لا حكم: أزرق أو سماوي فقط (الأحمر والكهرماني والأخضر معانٍ
- * محجوزة للحالة)، والسماوي حيث رسمت الصورة لونًا غير الأزرق.
+ * طبقات الخريطة الثماني كما في الصورة — كلّ طبقةٍ رابطٌ إلى شاشتها الحيّة،
+ * وبلاطتها بلونها المرسوم.
  */
 interface MapLayer {
   readonly key: string;
@@ -59,7 +65,7 @@ interface MapLayer {
   readonly en: string;
   readonly to: string;
   readonly icon: LucideIcon;
-  readonly tone: "blue" | "cyan";
+  readonly tone: "blue" | "green" | "amber" | "red";
 }
 
 const LAYERS: readonly MapLayer[] = [
@@ -68,11 +74,11 @@ const LAYERS: readonly MapLayer[] = [
     ar: "المرافق",
     en: "Facilities",
     to: "/sec/facilities",
-    icon: MapPin,
+    icon: CircleDot,
     tone: "blue",
   },
   { key: "cameras", ar: "الكاميرات", en: "Cameras", to: "/sec/cctv", icon: Cctv, tone: "blue" },
-  { key: "patrols", ar: "الدوريات", en: "Patrols", to: "/sec/patrols", icon: Shield, tone: "cyan" },
+  { key: "patrols", ar: "الدوريات", en: "Patrols", to: "/sec/patrols", icon: MapPin, tone: "green" },
   {
     key: "access",
     ar: "نقاط الدخول",
@@ -87,21 +93,36 @@ const LAYERS: readonly MapLayer[] = [
     ar: "الأصول",
     en: "Assets",
     to: "/sec/maintenance",
-    icon: Hexagon,
-    tone: "cyan",
+    icon: Shield,
+    tone: "amber",
   },
-  { key: "risks", ar: "المخاطر", en: "Risks", to: "/sec/risks", icon: ShieldAlert, tone: "cyan" },
+  {
+    key: "risks",
+    ar: "المخاطر",
+    en: "Risks",
+    to: "/sec/risks",
+    icon: OctagonAlert,
+    tone: "red",
+  },
   {
     key: "incidents",
     ar: "الحوادث",
     en: "Incidents",
     to: "/sec/incidents",
-    icon: Siren,
-    tone: "cyan",
+    icon: OctagonAlert,
+    tone: "red",
   },
 ];
 
 const LAYERS_ID = "nx-home-map-layers";
+
+/** رمز كل إحصاءٍ سريع ووجهته — بترتيب الصورة (الأيمن أولًا). */
+const QUICK_VIEW: Record<RefQuickStatId, { en: string; icon: LucideIcon; to: string }> = {
+  "entry-points": { en: "Entry points", icon: LockKeyhole, to: "/sec/access" },
+  cameras: { en: "Cameras", icon: Cctv, to: "/sec/cctv" },
+  sites: { en: "Sites", icon: Move, to: "/executive-map" },
+  facilities: { en: "Facilities", icon: Building2, to: "/sec/facilities" },
+};
 
 export function HomeMapCard() {
   const { locale } = useI18n();
@@ -110,6 +131,7 @@ export function HomeMapCard() {
   const { sec, state, execKpis } = useHomeReads();
   /** سكّة الطبقات ظاهرةٌ ابتداءً كما في الصورة، و«طبقات» تبدّلها. */
   const [layersOpen, setLayersOpen] = useState(true);
+  const toggleLayers = () => setLayersOpen((open) => !open);
 
   const mapSites: ArabiaSite[] = useMemo(
     () =>
@@ -139,42 +161,47 @@ export function HomeMapCard() {
     isError: sec.isError || state.isError,
   });
 
+  /* ── فقاعات المناطق: مرجعٌ دائمًا (لا توزيع مقيس على المناطق) ─────────── */
+  const bubbles: ArabiaBubble[] = HOME_REFERENCE.map.regions.map((r) => ({
+    regionId: r.regionId,
+    value: r.value,
+    change: r.change,
+    badges: r.badges.map((b) => ({ count: b.count, tone: b.drawn })),
+    simulated: HOME_REFERENCE.map.is_simulation,
+  }));
+
+  /* ── «إحصائيات سريعة»: الحيّ يفوز متى قِيس، وإلا المرجع الموسوم ─────── */
   const kpis = execKpis.data;
-  const quickStats: ArabiaQuickStat[] = [
-    {
-      // لا عدّ للمرافق في أي قراءةٍ تصل الرئيسية — «لم يُقَس» لا رقمٌ مؤلَّف.
-      key: "facilities",
-      ar: "المرافق",
-      en: "Facilities",
-      value: null,
-      status: "ready",
-      icon: <Building2 />,
-    },
-    {
-      key: "sites",
-      ar: "المواقع",
-      en: "Sites",
-      value: sec.data ? sec.data.sites.length : null,
-      status: statusOf(sec),
-      icon: <MapPinned />,
-    },
-    {
-      key: "cameras",
-      ar: "الكاميرات",
-      en: "Cameras",
-      value: kpis ? kpis.cameras_total : null,
-      status: statusOf(execKpis),
-      icon: <Cctv />,
-    },
-    {
-      key: "gates",
-      ar: "نقاط الدخول",
-      en: "Entry points",
+  const secLive = liveOf.sec(sec.data);
+  const execLive = liveOf.execKpis(kpis);
+  const live: Record<RefQuickStatId, { value: number | null; isLive: boolean; st: ReadStatus }> = {
+    "entry-points": {
       value: kpis ? kpis.gates_total : null,
-      status: statusOf(execKpis),
-      icon: <LockKeyhole />,
+      isLive: execLive,
+      st: statusOf(execKpis),
     },
-  ];
+    cameras: { value: kpis ? kpis.cameras_total : null, isLive: execLive, st: statusOf(execKpis) },
+    sites: { value: sec.data ? sec.data.counts.sites : null, isLive: secLive, st: statusOf(sec) },
+    // لا عدّ للمرافق في أي قراءةٍ تصل الرئيسية — المرجع الموسوم دائمًا.
+    facilities: { value: null, isLive: false, st: "ready" },
+  };
+  const quickStats: ArabiaQuickStat[] = HOME_REFERENCE.map.quickStats.map((ref) => {
+    const l = live[ref.id];
+    const view = QUICK_VIEW[ref.id];
+    const Icon = view.icon;
+    const chosen = chooseLive(l.st === "ready" ? l.value : null, l.st === "ready" && l.isLive, ref);
+    return {
+      key: ref.id,
+      ar: ref.labelAr,
+      en: view.en,
+      value: chosen.value,
+      simulated: chosen.simulated,
+      // الخطأ لا يحمل رقمًا حيًّا: المرجع الموسوم مكانه ومعه إعادة المحاولة.
+      status: l.st,
+      to: view.to,
+      icon: <Icon />,
+    };
+  });
 
   /* ── تبويبات العرض: الترتيب يسارًا ← يمينًا كما في الصورة، والنصّ بلغته ── */
   const viewTabs = (
@@ -196,10 +223,9 @@ export function HomeMapCard() {
         dir={textDir}
         aria-pressed={layersOpen}
         aria-controls={LAYERS_ID}
-        onClick={() => setLayersOpen((open) => !open)}
+        onClick={toggleLayers}
         className="nx-home-map-view"
       >
-        <Layers aria-hidden />
         {ar ? "طبقات" : "Layers"}
       </button>
     </div>
@@ -242,11 +268,16 @@ export function HomeMapCard() {
           void execKpis.refetch();
         }}
         sites={mapSites}
+        sitesSimulated={sec.data !== undefined && !secLive}
         compliance={complianceByRegion}
         quickStats={quickStats}
+        quickMore={{ to: "/sec", ar: "كل الإحصائيات — الأمن الصناعي", en: "All statistics" }}
+        bubbles={bubbles}
+        bubbleMetric={{ ar: "الأفراد", en: "Personnel" }}
         ar={ar}
         viewTabs={viewTabs}
         layersRail={layersRail}
+        layersToggle={{ open: layersOpen, onToggle: toggleLayers, controls: LAYERS_ID }}
       />
     </div>
   );

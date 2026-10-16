@@ -69,8 +69,7 @@ import "@/styles/home/home-chrome.css";
  * والقرص المرسوم (٣٦px) طبقةٌ زائفة داخل الزرّ (`.nx-hdr-btn::before`)، والزرّ
  * نفسه ٤٤×٤٤ — هدف اللمس أوسع من الرسم كما تسمح المواصفة §3.7.
  */
-const ICON_BTN =
-  "nx-icon-btn nx-hdr-btn relative grid shrink-0 place-items-center text-[color:var(--ink)]";
+const ICON_BTN = "nx-icon-btn nx-hdr-btn relative grid shrink-0 place-items-center";
 
 /** لوحة الأوامر الواحدة تستمع لهذا الحدث — لا نسخةٌ ثانية منها هنا. */
 function openCommandPalette() {
@@ -109,17 +108,14 @@ function UrgentBell({ ar }: { ar: boolean }) {
       {count != null && count > 0 && (
         <span
           aria-hidden
+          // الموضع أعلى يمين القرص كما رُسم، فيزيائيًّا لا منطقيًّا: الشارة على
+          // كتف الجرس في الصفحتين، لا تنقلب بلغة الصفّ. واللون من
+          // `.nx-hdr-badge` (home-chrome.css): أحمر والرقم أبيض كما في الصورة.
+          // **والمحاكاة شارةٌ مخطّطة كهرمانية** (`data-simulated`) — **بلا حرف
+          // «م»** بأمر المالك ٢٠٢٦/٠٩/٢٩ («ازل حرف الميم»)، تبعًا لرفعه الشارات
+          // من كل شاشة ٢٠٢٦/٠٨/١١. والإفصاح باقٍ نصًّا في `title`/`aria-label`.
           data-simulated={simulated || undefined}
-          // الموضع أعلى يمين القرص كما رُسم (`.nx-hdr-badge`)، فيزيائيًّا لا
-          // منطقيًّا: الشارة على كتف الجرس في الصفحتين، لا تنقلب بلغة الصفّ.
-          className={
-            simulated
-              ? // المحاكاة شارةٌ مخطّطة كهرمانية — **بلا حرف «م»** بأمر المالك
-                // ٢٠٢٦/٠٩/٢٩ («ازل حرف الميم»)، تبعًا لرفعه الشارات من كل شاشة
-                // ٢٠٢٦/٠٨/١١. والإفصاح باقٍ نصًّا في `title`/`aria-label`.
-                "nx-hdr-badge flex min-w-5 items-center gap-0.5 rounded-full border border-dashed border-[color:var(--tone-amber)] bg-[color:var(--surface)] px-1 text-[12px] font-bold leading-5 text-[color:var(--tone-amber)]"
-              : "nx-hdr-badge grid min-w-5 place-items-center rounded-full bg-[color:var(--tone-rose)] px-1 text-[12px] font-bold leading-5 text-[color:var(--surface)]"
-          }
+          className="nx-hdr-badge"
         >
           {count > 99 ? "99+" : count}
         </span>
@@ -296,13 +292,7 @@ function UserChip({ ar }: { ar: boolean }) {
     >
       <span className="nx-hdr-avatar" aria-hidden>
         {user && meta.avatar_url ? (
-          <img
-            src={meta.avatar_url}
-            alt=""
-            width={44}
-            height={44}
-            className="nx-hdr-avatar-img"
-          />
+          <img src={meta.avatar_url} alt="" width={46} height={46} className="nx-hdr-avatar-img" />
         ) : user && initial ? (
           <span className="nx-hdr-avatar-initial">{initial}</span>
         ) : (
@@ -371,10 +361,10 @@ export function SystemHeader({ withMenu = false }: { withMenu?: boolean }) {
     <header
       data-nx-presentation-hide
       data-chrome={onHome ? "home" : undefined}
-      // الفجوات والحافّة أضيق دون `sm`: مبدّل الوضع زاد الصفّ زرًّا (44px)،
-      // فلولا التضييق ضاق زرّ البحث على ٣٧٥ دون أرضية اللمس 44 (حُسب: ٣٩px).
-      // والقشرة لا ترسم هذه الترويسة دون `md` أصلًا، فالأثر على الرئيسية وحدها.
-      className="nx-hdr flex items-center gap-1.5 border-b border-[color:var(--hairline)] bg-[color:var(--surface)] px-2 py-2 sm:gap-3 sm:px-4"
+      // السطح والحافّة والارتفاع (64px) والحواشي في `.nx-hdr` — مقيسةٌ على
+      // الصورة. والفجوات أضيق دون `sm`: لولا التضييق ضاق زرّ البحث على ٣٧٥ دون
+      // أرضية اللمس 44. والقشرة لا ترسم هذه الترويسة دون `md` أصلًا.
+      className="nx-hdr flex items-center"
     >
       {withMenu && <MobileMenu ar={ar} />}
       {/* الشعار في الترويسة حين يختفي الشريط وحده (md–lg): على الشاشة العريضة
@@ -384,7 +374,8 @@ export function SystemHeader({ withMenu = false }: { withMenu?: boolean }) {
         type="button"
         onClick={openCommandPalette}
         dir={ar ? "rtl" : "ltr"}
-        className="nx-focus-ring nx-hdr-search flex min-w-0 flex-1 items-center gap-2 px-3 text-start text-[14px] text-[color:var(--ink-3)]"
+        // الحقل المرسوم (36px مستديرًا) طبقةٌ داخل هدفٍ 44px — `.nx-hdr-search`.
+        className="nx-focus-ring nx-hdr-search flex min-w-0 items-center text-start"
       >
         <Search aria-hidden className="nx-hdr-search-ico size-5 shrink-0" />
         <span className="truncate">
@@ -401,8 +392,13 @@ export function SystemHeader({ withMenu = false }: { withMenu?: boolean }) {
           </kbd>
         )}
       </button>
-      <div className="nx-hdr-tools ms-auto flex shrink-0 items-center gap-1 sm:gap-2">
-        <QuickReport ar={ar} />
+      {/* الأقراص كما رُسمت يسارًا ← يمينًا: الجرس · الرسائل · التطبيقات ·
+          الشمس · المساعدة، ثم المستخدم. **و«بلّغ» خارج الرئيسية وحدها:** الصورة
+          بلا زرّه («طبق الصورة بحذافيرها»، ٢٠٢٦/١٠/١٤ — آخر نصٍّ للمالك على
+          الرئيسية، المادة ٣٥)، وهو باقٍ في ترويسة كل صفحةٍ غيرها وفي رأس صفحة
+          البلاغات — فالمدخلان («الاثنان»، ٢٠٢٦/٠٩/٢٩) قائمان. */}
+      <div className="nx-hdr-tools ms-auto flex shrink-0 items-center">
+        {!onHome && <QuickReport ar={ar} />}
         <UrgentBell ar={ar} />
         <Link
           to="/assistant"

@@ -24,11 +24,15 @@
  * `speechSynthesis` ممنوع في كل المسارات (عقيدة غير قابلة للتفاوض)، ولا
  * مزوّد ولا صوت يُبدَّل من هنا.
  *
- * ── الهيئة المدمجة (`variant="compact"`) — «مركز القيادة» ٢٠٢٦/١٠/١٣ ──
- * بطاقة «SADEED AI» في صدر الرئيسية يمينًا (المواصفة §4.5): الوجه نفسه
- * (الصورة نفسها، لا شخصية جديدة) مقصوصًا على الرأس والكتفين، والعنوان
- * والوصف، وشارة حضورٍ **صادقة**، وتحتها ما يمرّره المضيف (التحية). والزرّان
- * الصوتيان تحت الوجه: طلب المخاطبة وكتم الصوت — الطريقان أنفسهما.
+ * ── الهيئة المدمجة (`variant="compact"`) — «مركز القيادة» ٢٠٢٦/١٠/١٤ ──
+ * بطاقة «SADEED AI» في صدر الرئيسية يمينًا (المواصفة §4.5) **كما رُسمت**:
+ * عمود الهوية (الشعار الأزرق المستدير و«SADEED AI» والوصف والشارة والتحية)
+ * في جهة النهاية، وشخصية المخطّط (الغترة وسمّاعة الرأس — قرار N4) في الركن
+ * العلوي من جهة البداية تنزف خارج حافّة البطاقة كما في الصورة. والصورة من
+ * بيان صور الرئيسية وحده (`HOME_IMAGES.persona`، قرار N3) بأبعادها الصريحة
+ * ونصّها البديل «صورة توضيحية…» — لا فيديو ولا صورة أخرى. والزرّان الصوتيان
+ * (طلب المخاطبة وكتم الصوت — الطريقان أنفسهما) قرصان صغيران عند قاعدة الصورة:
+ * الصوت لم يتغيّر، صوت سَدِيد الذكوري من الخادم وحده.
  *
  * والشارة لا تدّعي اتصالًا لم يُقَس (المادة ٢٧): «متصل الآن» حين يقول فحص
  * `‎/api/chat/health`‎ إن مزوّد الذكاء جاهز — والجاهزية OR عبر المفاتيح القادرة،
@@ -37,9 +41,10 @@
  * شبكةً ولا يستورد وحدة دردشة. وحين ينطق المساعد أو يُصغي تحلّ حاله محلّ
  * حال الاتصال في الشارة نفسها — منطوقةً للقارئ الآلي (`aria-live`).
  *
- * والمدمجة كتلةٌ في مجرى البطاقة كالمسرح: لا تثبيت ولا تكديس ولا ارتفاع
- * بحجم الشاشة. وألوانها وقصّ الوجه في `styles/home/home-sadeed.css` —
- * الأسلوب المضمّن لا يحمل قيمةً نهائية.
+ * والمدمجة كتلةٌ في مجرى البطاقة كالمسرح: لا تثبيت ولا ارتفاع بحجم الشاشة.
+ * الصورة وحدها مرسومةٌ في ركنها (مقيَّدةٌ بالكتلة نفسها، والبطاقة تقصّ ما
+ * ينزف منها)، وعمود الهوية يحجز عرضها فلا تغطّي نصًّا. وألوانها ومقاساتها
+ * في `styles/home/home-sadeed.css` — الأسلوب المضمّن لا يحمل قيمةً نهائية.
  */
 import {
   useCallback,
@@ -56,7 +61,7 @@ import { useSadeedPresenceState } from "@/lib/sadeed/sadeed-state";
 import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { SadeedVideoAvatar } from "@/components/sadeed/SadeedVideoAvatar";
 import { SadeedMuteToggle } from "@/components/sadeed/SadeedMuteToggle";
-import { SadeedMark } from "@/components/brand/SadeedMark";
+import { HOME_IMAGES } from "@/components/home/home-images";
 import { PRODUCT_BRAND } from "@/lib/domain";
 import {
   SADEED_DISPLAY_NAME_AR,
@@ -186,73 +191,42 @@ export function SadeedStagePresence({
     const pillIcon = live ? "dot" : view.icon;
     const pillLabel = live && voiceLabel ? voiceLabel : ar ? view.ar : view.en;
     const name = ar ? SADEED_DISPLAY_NAME_AR_PLAIN : SADEED_DISPLAY_NAME_EN;
+    const persona = HOME_IMAGES.persona;
 
     return (
       <div
         dir={ar ? "rtl" : "ltr"}
         className={cn("nx-sd-compact", className)}
         data-speaking={speaking ? "" : undefined}
+        data-live={live ? "" : undefined}
       >
-        {/* الوجه والزرّان الصوتيان — عمود البداية (يمينًا في العربية). */}
-        <div className="nx-sd-compact-figure">
-          <div
-            ref={holoFrameRef}
-            className={cn("sd-holo-frame", holoPulsing && "is-pulsing")}
-            onPointerMove={tiltHologram}
-            onPointerLeave={restHologram}
-            onPointerCancel={restHologram}
-            onPointerDown={() => setHoloPulsing(true)}
-            onAnimationEnd={endHoloPulse}
-          >
-            <span aria-hidden className="sd-holo-base" />
-            <div className="sd-holo-tilt">
-              {/* الصورة نفسها مقصوصةً على الرأس والكتفين في CSS
-                  (`.nx-sd-portrait-media`) — لا أسلوب مضمّن بقيمة نهائية. */}
-              <div className="nx-sd-portrait">
-                <SadeedVideoAvatar
-                  poster={PORTRAIT_SRC}
-                  className="absolute inset-0"
-                  mediaClassName="nx-sd-portrait-media"
-                  active={speaking}
-                />
-                <span aria-hidden className="sd-holo-tint" />
-                <span aria-hidden className="sd-holo-scanlines" />
-                <span aria-hidden className="sd-holo-sweep" />
-              </div>
-            </div>
-          </div>
-          <div className="nx-sd-voice">
-            <button
-              type="button"
-              onPointerDown={unlockAudio}
-              onClick={() => {
-                unlockAudio();
-                requestVoiceConversation();
-              }}
-              aria-label={ar ? `تحدّث مع ${name}` : `Talk to ${name}`}
-              title={ar ? `تحدّث مع ${name}` : `Talk to ${name}`}
-              className="nx-sd-voice-btn"
-            >
-              <Mic aria-hidden />
-            </button>
-            <SadeedMuteToggle className="nx-sd-mute size-11 px-0" />
-          </div>
-        </div>
-
+        {/* عمود الهوية أوّلًا في الشجرة (العنوان قبل الصورة للقارئ الآلي)،
+            ومكانه المرسوم جهة النهاية — يحجز عرض الصورة بهامشه في CSS. */}
         <div className="nx-sd-compact-id">
           <h2 id={headingId} className="nx-sd-compact-title">
-            {/* الاسم اللاتيني سطرٌ `ltr`: العلامة يسار الاسم كما في الصورة. */}
+            {/* الاسم اللاتيني سطرٌ `ltr`: الشعار المستدير يسار الاسم كما في
+                الصورة — قرص اللكنة وفيه شريطان متناقصان فوق رأس مثلث، مقيسة
+                على قصّة المخطّط بمقياس 10×. */}
             <span dir="ltr" className="nx-sd-compact-brand">
-              <SadeedMark className="nx-sd-compact-mark" />
-              <span>{`${PRODUCT_BRAND.en.name} AI`}</span>
+              <span aria-hidden className="nx-sd-compact-logo">
+                <svg viewBox="0 0 28 28" focusable="false" className="nx-sd-compact-logo-glyph">
+                  <path
+                    d="M7.2 8.6H20.8A1.15 1.15 0 0 1 20.8 10.9H7.2A1.15 1.15 0 0 1 7.2 8.6ZM9.2 13H18.8A1.15 1.15 0 0 1 18.8 15.3H9.2A1.15 1.15 0 0 1 9.2 13ZM11.3 17.3H16.7C17.3 17.3 17.6 17.9 17.2 18.4L14.6 20.9C14.3 21.2 13.7 21.2 13.4 20.9L10.8 18.4C10.4 17.9 10.7 17.3 11.3 17.3Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+              <span className="nx-sd-compact-name">{`${PRODUCT_BRAND.en.name} AI`}</span>
             </span>
           </h2>
           <p className="nx-sd-compact-sub">
             {ar ? "المساعد التنفيذي للأمن الصناعي" : "Executive industrial-security assistant"}
           </p>
           {/* الحالة نصٌّ حيّ يُعلَن للقارئ الآلي عند تبدّله: «يتحدّث الآن» حين
-              ينطق، وحال الاتصال المقيسة في السكون. الشكل زينةٌ مصاحبة. */}
+              ينطق، وحال الاتصال المقيسة في السكون. الشكل زينةٌ مصاحبة — بعد
+              الكلمة في الشجرة فيقع يسارها كما رُسمت النقطة. */}
           <p aria-live="polite" className="nx-sd-pill" data-state={pillState}>
+            <span className="nx-sd-pill-label">{pillLabel}</span>
             {pillIcon === "dot" ? (
               <span aria-hidden className="nx-sd-pill-dot" />
             ) : pillIcon === "triangle" ? (
@@ -260,9 +234,40 @@ export function SadeedStagePresence({
             ) : (
               <CircleDashed aria-hidden className="nx-sd-pill-icon" />
             )}
-            {pillLabel}
           </p>
           {children}
+        </div>
+
+        {/* الشخصية كما رُسمت (N4) — صورة توضيحية من البيان، بأبعادها. */}
+        <div className="nx-sd-compact-figure">
+          <img
+            src={persona.src}
+            width={persona.width}
+            height={persona.height}
+            alt={persona.alt}
+            loading={persona.loading}
+            decoding="async"
+            draggable={false}
+            className="nx-sd-persona"
+          />
+        </div>
+
+        {/* الصوت: طلب المخاطبة وكتم الصوت — قرصان عند قاعدة الصورة. */}
+        <div className="nx-sd-voice">
+          <button
+            type="button"
+            onPointerDown={unlockAudio}
+            onClick={() => {
+              unlockAudio();
+              requestVoiceConversation();
+            }}
+            aria-label={ar ? `تحدّث مع ${name}` : `Talk to ${name}`}
+            title={ar ? `تحدّث مع ${name}` : `Talk to ${name}`}
+            className="nx-sd-voice-btn"
+          >
+            <Mic aria-hidden />
+          </button>
+          <SadeedMuteToggle className="nx-sd-mute" />
         </div>
       </div>
     );
