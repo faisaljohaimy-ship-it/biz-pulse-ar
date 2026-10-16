@@ -30,7 +30,7 @@
  * خبر. ونمط المشروع المحفوظ: لا عبارة تقنية تُعرض، بل رسالة عربية محايدة
  * تقول ما حدث ومتى يعود.
  */
-import { enforceRateLimit } from "./rate-limit.server";
+import { degradedAllowance, enforceRateLimit } from "./rate-limit.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const DAY_SECONDS = 86_400;
@@ -228,5 +228,51 @@ export async function enforceAiQuota(opts: AiQuotaOptions): Promise<Response | n
   }
 
   void recordUsage(surface, identity, units);
+  return null;
+}
+
+/**
+ * الحصّة **المحدودة** حين يتعذّر المخزن (VIBE 5.1): الدلاء نفسها بأسمائها،
+ * لكن في ذاكرة المعزول وبنصف السقوف — حدٌّ لا تحقّق. تُستدعى من الدردشة وحدها
+ * بعد أن يعيد `enforceAiQuota` «غير متاح» أو يكون القاطع مفتوحًا، فلا تُنفق
+ * مهلتين على مخزنٍ معروفٍ عطله. لا تكتب سجلّ استهلاك (لا قاعدة).
+ */
+export function degradedAiQuota(
+  surface: AiSurface,
+  identity: string,
+  now = Date.now(),
+): Response | null {
+  const ar = SURFACE_AR[surface];
+  const limits = LIMITS[surface];
+  const today = dayKey();
+  const retry = secondsUntilMidnight();
+  const globalGate = degradedAllowance(
+    `ai-daily-global:${surface}:${today}`,
+    limits.global,
+    DAY_SECONDS,
+    now,
+  );
+  if (!globalGate.allowed) {
+    return arabicResponse(
+      429,
+      "daily_global_cap",
+      `بلغ النظام سقفه المحدود من طلبات ${ar} ريثما يعود التحقّق. أعد المحاولة لاحقًا.`,
+      retry,
+    );
+  }
+  const identityGate = degradedAllowance(
+    `ai-daily-id:${surface}:${today}:${identity}`,
+    limits.perIdentity,
+    DAY_SECONDS,
+    now,
+  );
+  if (!identityGate.allowed) {
+    return arabicResponse(
+      429,
+      "daily_identity_cap",
+      `بلغت حصّتك المحدودة من طلبات ${ar} ريثما يعود التحقّق. تعود الحصّة بعد منتصف الليل.`,
+      retry,
+    );
+  }
   return null;
 }

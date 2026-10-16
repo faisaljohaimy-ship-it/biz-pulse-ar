@@ -16,8 +16,23 @@ import {
   getChatRequestId,
   validateChatRequest,
 } from "./-chat-guard";
-import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
-import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
+import {
+  degradedAllowance,
+  enforceRateLimit,
+  gateDegradedMode,
+  rateLimitStorageState,
+} from "@/lib/governance/rate-limit.server";
+import {
+  aiDisabledResponse,
+  degradedAiQuota,
+  enforceAiQuota,
+} from "@/lib/governance/ai-quota.server";
+import {
+  acquireModelSlot,
+  acquireRequest,
+  fingerprint,
+  inflightModelCalls,
+} from "@/lib/governance/request-guards.server";
 import { evaluateRagCoverage } from "@/lib/sadeed/rag.server";
 import { parseIntent, resolveModel } from "@/lib/sadeed-core/server/ai-router.server";
 import { SADEED_IDENTITY_PREAMBLE } from "@/lib/sadeed/identity";
@@ -259,6 +274,23 @@ const LOCAL_QUOTA_UNVERIFIED_AR =
 /** مهلة كل فحصٍ في القاعدة قبل الردّ — فلا يعلق سؤالٌ على قاعدةٍ لا تردّ. */
 const CHAT_GATE_DEADLINE_MS = 1_500;
 
+/** حدود الدقيقة كما كانت: المسجَّل 40 في 60 ث، والزائر 12 في 300 ث. */
+const CHAT_RATE = {
+  user: { max: 40, windowSeconds: 60 },
+  guest: { max: 12, windowSeconds: 300 },
+} as const;
+
+const CHAT_RATE_LIMITED_AR = "سَدِيد يستقبل طلباتٍ كثيرة الآن — أعد المحاولة بعد دقيقة.";
+const CHAT_SERVER_BUSY_AR = "سَدِيد مشغول بطلباتٍ أخرى الآن — أعد المحاولة بعد ثوانٍ.";
+const CHAT_DUPLICATE_AR = "طلبك السابق قيد المعالجة — انتظر لحظة.";
+
+/**
+ * كيف مرّ الطلب من البوّابة (VIBE 5.1): `verified` = المخزن أجاب؛ `degraded` =
+ * المخزن معطّل والطلب مرّ بحدود الذاكرة (نصف السقوف). يُكتب في ترويسة الردّ
+ * `X-SADEED-Gate` وفي السجلّ، فيُقاس التدهور لا يُخمَّن.
+ */
+type GateMode = "verified" | "degraded";
+
 /** الحصّة «غير متاحة» برمزها لا بحالتها وحدها — فمفتاح الإيقاف (503 أيضًا) لا يُخلط بها. */
 async function isQuotaUnavailable(res: Response): Promise<boolean> {
   if (res.status !== 503) return false;
@@ -405,40 +437,71 @@ export const Route = createFileRoute("/api/chat")({
 
         // Anonymous IP headers are trusted only behind an explicitly
         // configured proxy; otherwise all anonymous traffic shares a key.
+        const identity = userId ?? `ip:${clientIp(request)}`;
         const rateKey = userId ? `chat:${userId}` : `chat:ip:${clientIp(request)}`;
+        const limit = userId ? CHAT_RATE.user : CHAT_RATE.guest;
         const gate = { deadlineMs: CHAT_GATE_DEADLINE_MS };
-        const rate = userId
-          ? await enforceRateLimit(rateKey, 40, 60, gate)
-          : await enforceRateLimit(rateKey, 12, 300, gate);
+        const rateLimited = (retryAfterSeconds: number) =>
+          jsonError(CHAT_RATE_LIMITED_AR, 429, requestId, {
+            code: "rate_limited",
+            retryAfterSeconds,
+          });
+        const closedPolicyReply = (which: "rate" | "quota") => {
+          console.warn(
+            `[api/chat] ${which} gate unavailable — closed policy, local guaranteed reply`,
+            {
+              requestId,
+              event: "gate.closed",
+            },
+          );
+          return localGuaranteedReply(
+            requestId,
+            LOCAL_QUOTA_UNVERIFIED_AR,
+            "local-quota-unverified",
+          );
+        };
+
+        // ── البوّابة حين لا يُجيب المخزن (VIBE 5.1) ───────────────────────────
+        // قِيس ٢٠٢٦/١٠/١٦: القاعدة لم تردّ، فكان كل سؤالٍ 503 `rate_limit_unavailable`.
+        // السياسة الآن (`SADEED_GATE_DEGRADED_MODE`، الافتراض `bounded`): المخزن
+        // معطّل ⇐ يمرّ الطلب بحدودٍ في ذاكرة المعزول — نصف السقوف نفسها — لا بلا
+        // حدّ؛ و`closed` يعيد سلوك ما قبل: ردٌّ محلّيٌّ صادق بلا نموذج. والقاطع
+        // في `enforceRateLimit` يجعل «غير متاح» فوريًّا بعد فشلين، فلا يدفع كل
+        // طلبٍ مهلتين على مخزنٍ معروفٍ عطله.
+        const rate = await enforceRateLimit(rateKey, limit.max, limit.windowSeconds, gate);
+        let gateMode: GateMode = "verified";
         if (rate.unavailable) {
-          console.warn("[api/chat] rate gate unavailable — local guaranteed reply", { requestId });
-          return localGuaranteedReply(
-            requestId,
-            LOCAL_QUOTA_UNVERIFIED_AR,
-            "local-quota-unverified",
-          );
+          if (gateDegradedMode() === "closed") return closedPolicyReply("rate");
+          const bounded = degradedAllowance(rateKey, limit.max, limit.windowSeconds);
+          if (!bounded.allowed) return rateLimited(bounded.retryAfterSeconds);
+          gateMode = "degraded";
+        } else if (!rate.allowed) {
+          return rateLimited(60);
         }
-        if (!rate.allowed) {
-          return jsonError(
-            "سَدِيد يستقبل طلباتٍ كثيرة الآن — أعد المحاولة بعد دقيقة.",
-            429,
-            requestId,
-          );
+        if (gateMode === "verified") {
+          const quota = await enforceAiQuota({
+            surface: "chat",
+            identity,
+            deadlineMs: CHAT_GATE_DEADLINE_MS,
+          });
+          if (quota && (await isQuotaUnavailable(quota))) {
+            if (gateDegradedMode() === "closed") return closedPolicyReply("quota");
+            const bounded = degradedAiQuota("chat", identity);
+            if (bounded) return bounded;
+            gateMode = "degraded";
+          } else if (quota) return quota;
+        } else {
+          // المخزن معطّل فعلًا: لا نُنفق مهلتين أخريين على الحصّة اليومية — حدودها في الذاكرة.
+          const bounded = degradedAiQuota("chat", identity);
+          if (bounded) return bounded;
         }
-        const quota = await enforceAiQuota({
-          surface: "chat",
-          identity: userId ?? `ip:${clientIp(request)}`,
-          deadlineMs: CHAT_GATE_DEADLINE_MS,
-        });
-        if (quota && (await isQuotaUnavailable(quota))) {
-          console.warn("[api/chat] quota gate unavailable — local guaranteed reply", { requestId });
-          return localGuaranteedReply(
+        if (gateMode === "degraded") {
+          console.warn("[api/chat] gate degraded — in-memory bounds", {
             requestId,
-            LOCAL_QUOTA_UNVERIFIED_AR,
-            "local-quota-unverified",
-          );
+            event: "gate.degraded",
+            storage: rateLimitStorageState().state,
+          });
         }
-        if (quota) return quota;
 
         const provider = createGoogleGeminiProvider(googleKey);
         const model = provider(selectedModelId);
@@ -472,7 +535,11 @@ export const Route = createFileRoute("/api/chat")({
             });
             return createUIMessageStreamResponse({
               stream,
-              headers: { ...responseHeaders(requestId), "X-SADEED-Reply-Source": tag },
+              headers: {
+                ...responseHeaders(requestId),
+                "X-SADEED-Reply-Source": tag,
+                "X-SADEED-Gate": gateMode,
+              },
             });
           };
           if (!isInScope(lastUserText)) {
@@ -514,6 +581,39 @@ export const Route = createFileRoute("/api/chat")({
             }
           }
         }
+
+        // ── حارسا الطلب (VIBE 5.1): لا تكرارٌ جارٍ، ولا تزاحمٌ فوق السقف ──────
+        // بعد المسارات الفورية (لا تكلّف شيئًا) وقبل أيّ قراءة قاعدة أو نموذج.
+        // يُحرَّران في `finally` بعد انتهاء النموذج؛ ولكل مدخلٍ عمرٌ أقصى يشفي تسرّبًا.
+        const requestKey = fingerprint(identity, threadId ?? null, lastUserText ?? "");
+        const releaseRequest = acquireRequest(requestKey);
+        if (!releaseRequest) {
+          console.warn("[api/chat] duplicate request while in flight", {
+            requestId,
+            event: "chat.duplicate_request",
+          });
+          return jsonError(CHAT_DUPLICATE_AR, 429, requestId, {
+            code: "duplicate_request",
+            retryAfterSeconds: 3,
+          });
+        }
+        const releaseSlot = acquireModelSlot();
+        if (!releaseSlot) {
+          releaseRequest();
+          console.warn("[api/chat] model concurrency cap reached", {
+            requestId,
+            event: "chat.busy",
+            inflight: inflightModelCalls(),
+          });
+          return jsonError(CHAT_SERVER_BUSY_AR, 503, requestId, {
+            code: "busy",
+            retryAfterSeconds: 5,
+          });
+        }
+        const releaseGuards = () => {
+          releaseSlot();
+          releaseRequest();
+        };
 
         // Inject one and only one operational data mode. Since the owner's
         // 2026/09/03 order («البيانات الإنتاجية وليست المحاكاة، مع إزالة
@@ -765,6 +865,8 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           liveDataAvailable,
           toolsEnabled: !!tools,
           rag: ragCounts,
+          gate: gateMode,
+          inflight: inflightModelCalls(),
         });
 
         // ─── Latency measurement ───────────────────────────────────────
@@ -881,7 +983,10 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               const msg = String(
                 primaryError instanceof Error ? primaryError.message : primaryError,
               );
-              if (/quota|429|resource_exhausted/i.test(msg)) backup.coolPrimary();
+              if (/quota|429|resource_exhausted/i.test(msg)) {
+                // تحترم `Retry-After` من المزوّد، محصورةً بين 30 ث و10 د (VIBE 5.1).
+                backup.coolPrimary(backup.primaryCooldownFor(primaryError));
+              }
               console.warn("[api/chat] primary failed → backup", {
                 requestId,
                 error: msg.slice(0, 200),
@@ -913,6 +1018,9 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
                   console.error("[api/chat] finn_incidents insert failed:", insErr.message);
               });
           }
+        } finally {
+          // تحرير حارسَي الطلب فور انتهاء النموذج — ما بعده (البثّ) لحظيّ.
+          releaseGuards();
         }
 
         // Finalize through the output gateway → SafeSadeedOutput (never raw).
@@ -1068,6 +1176,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           headers: {
             ...responseHeaders(requestId),
             "X-SADEED-Reply-Source": "safe-gateway",
+            "X-SADEED-Gate": gateMode,
           },
         });
       },

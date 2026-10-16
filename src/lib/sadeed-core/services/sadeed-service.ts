@@ -28,6 +28,47 @@ export function setPendingReplyMode(mode: "text" | "voice") {
   cachedReplyMode = mode;
 }
 
+// ── إعادة المحاولة التلقائية: تراجعٌ زمنيّ بتشويش، واحترام `Retry-After` ────
+// الخادم يرسل `Retry-After` على 429/503 (حدّ المعدّل، مشغول، الحصّة). العميل
+// يقرؤها من آخر ردّ بوابة ويبني عليها مهلة الإعادة؛ وما فوق عشر ثوانٍ ليس
+// «تعذّرًا مؤقتًا» يُعاد تلقائيًّا — يُعرض للمستخدم بزرّ إعادة المحاولة.
+let lastGateRetryAfterMs: number | null = null;
+
+/** آخر `Retry-After` قرأه العميل من ردّ بوابة (429/503)، بالمللي ثانية. */
+export function lastGateRetryAfter(): number | null {
+  return lastGateRetryAfterMs;
+}
+
+function noteGateResponse(res: Response): void {
+  if (res.status !== 429 && res.status !== 503) {
+    lastGateRetryAfterMs = null;
+    return;
+  }
+  const raw = res.headers.get("retry-after");
+  const seconds = raw ? Number(raw.trim()) : Number.NaN;
+  lastGateRetryAfterMs = Number.isFinite(seconds) ? Math.max(0, Math.round(seconds * 1000)) : null;
+}
+
+export const AUTO_RETRY_BASE_MS = 1_200;
+export const AUTO_RETRY_JITTER_MS = 400;
+export const AUTO_RETRY_MAX_HINT_MS = 10_000;
+
+/**
+ * مهلة الإعادة التلقائية رقم `attempt` (1 أو 2): الأساس 1.2 ث × المحاولة، لا
+ * يقلّ عن تلميح الخادم، زائد تشويشٍ عشوائي حتى 400 مللي ثانية فلا تتزامن
+ * أجهزةٌ كثيرة على الثانية نفسها. `null` = لا إعادة تلقائية (التلميح طويل).
+ */
+export function computeAutoRetryDelayMs(
+  attempt: number,
+  hintMs: number | null,
+  random: number = Math.random(),
+): number | null {
+  if (hintMs !== null && hintMs > AUTO_RETRY_MAX_HINT_MS) return null;
+  const base = AUTO_RETRY_BASE_MS * Math.max(1, attempt);
+  const jitter = Math.floor(Math.min(1, Math.max(0, random)) * AUTO_RETRY_JITTER_MS);
+  return Math.max(base, hintMs ?? 0) + jitter;
+}
+
 // Authenticated fetch — attaches the Supabase Bearer token so /api/chat's
 // guard accepts the request. Without this the chat is silently rejected 401
 // and the user sees no reply. 30s hard timeout guarantees no infinite wait.
@@ -60,6 +101,7 @@ export async function sadeedAuthedFetch(input: RequestInfo | URL, init: RequestI
         cache: "no-store",
       });
     }
+    noteGateResponse(res);
     return res;
   } finally {
     clearTimeout(timer);

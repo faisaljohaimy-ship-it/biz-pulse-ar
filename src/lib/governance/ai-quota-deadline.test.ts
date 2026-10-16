@@ -1,6 +1,9 @@
 /**
  * مهلة الحصّة اليومية (R09، ٢٠٢٦/١٠/١٦): دلو السقف العام صفٌّ يكتب عليه كل طلب،
  * فقد يعلق وحده تحت الضغط بينما دلو المعدّل سريع. المهلة تمرّ إلى بوّابتيه كلتيهما.
+ *
+ * ومنذ VIBE 5.1: بلا خيار تعمل المهلة الافتراضية (2000) لكل بوّابة، وتوجد
+ * `degradedAiQuota` — السقوف نفسها بنصف قيمتها في ذاكرة المعزول حين يتعذّر المخزن.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -29,14 +32,21 @@ vi.mock("@/integrations/supabase/client.server", () => {
   };
 });
 
-import { enforceAiQuota } from "./ai-quota.server";
+import { degradedAiQuota, enforceAiQuota } from "./ai-quota.server";
+import { RATE_LIMIT_DEFAULT_DEADLINE_MS, resetRateLimitStateForTests } from "./rate-limit.server";
 
 beforeEach(() => {
   vi.useFakeTimers();
+  resetRateLimitStateForTests();
   db.hangOn = "";
   db.calls = [];
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 });
-afterEach(() => vi.useRealTimers());
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
 
 async function settleWithin(promise: Promise<Response | null>, ms: number) {
   let settled: Response | null | "pending" = "pending";
@@ -65,14 +75,35 @@ describe("enforceAiQuota — المهلة تبلغ البوّابتين", () => 
     expect(db.calls.some((k) => k.startsWith("ai-daily-global:"))).toBe(true);
   });
 
-  it("الانتهاك المزروع (المادة ٣٠): بلا مهلة تبقى معلّقة", async () => {
+  it("بلا خيار ⇐ المهلة الافتراضية لكل بوّابة، لا تعليق", async () => {
     db.hangOn = "ai-daily-global:";
     const p = enforceAiQuota({ surface: "chat", identity: "ip:3" });
-    expect(await settleWithin(p, 60_000)).toBe("pending");
+    expect(await settleWithin(p, RATE_LIMIT_DEFAULT_DEADLINE_MS - 1)).toBe("pending");
+    const res = await settleWithin(p, 1);
+    expect((res as Response).status).toBe(503);
   });
 
   it("القاعدة السريعة: تمرّ بلا رفض", async () => {
     const p = enforceAiQuota({ surface: "chat", identity: "ip:4", deadlineMs: 1_500 });
     expect(await settleWithin(p, 10)).toBeNull();
+  });
+});
+
+describe("degradedAiQuota — السقوف نفسها بنصفها في الذاكرة", () => {
+  it("حصّة الهوية للدردشة 120 ⇐ 60 تمرّ والـ61 تُرفض برسالةٍ عربية ورمزها", async () => {
+    for (let i = 1; i <= 60; i++) expect(degradedAiQuota("chat", "ip:9"), `طلب ${i}`).toBeNull();
+    const res = degradedAiQuota("chat", "ip:9");
+    expect(res).not.toBeNull();
+    expect(res!.status).toBe(429);
+    const body = (await res!.json()) as { error: string; message_ar: string };
+    expect(body.error).toBe("daily_identity_cap");
+    expect(body.message_ar).toContain("المحدودة");
+    expect(res!.headers.get("Retry-After")).toMatch(/^\d+$/);
+    expect(db.calls, "لا قاعدة في المسار المحدود").toHaveLength(0);
+  });
+
+  it("هويةٌ أخرى لها دلوها، والسقف العام مشترك", () => {
+    expect(degradedAiQuota("chat", "ip:a")).toBeNull();
+    expect(degradedAiQuota("chat", "ip:b")).toBeNull();
   });
 });

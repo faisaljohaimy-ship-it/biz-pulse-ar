@@ -22,10 +22,19 @@ export const CHAT_CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد ا
 /** لحظة ازدحام: صادقة، تقول ما جرى ومتى يعود، بلا رمز. */
 export const CHAT_BUSY_AR = "سَدِيد يستقبل طلباتٍ كثيرة الآن — أعد المحاولة بعد دقيقة.";
 
+/** الخادم مشغول بطلباتٍ أخرى (سقف التزامن) — يعود خلال ثوانٍ. */
+export const CHAT_SERVER_BUSY_AR = "سَدِيد مشغول بطلباتٍ أخرى الآن — أعد المحاولة بعد ثوانٍ.";
+/** الطلب نفسه ما زال قيد المعالجة (نقرٌ مزدوج أو إعادة محاولة مبكرة). */
+export const CHAT_DUPLICATE_AR = "طلبك السابق قيد المعالجة — انتظر لحظة.";
+
 const KNOWN_CODES: Readonly<Record<string, string>> = Object.freeze({
   rate_limited: CHAT_BUSY_AR,
   rate_limit_unavailable: "تعذّر التحقّق من الطلب لحظيًّا — أعد المحاولة بعد لحظات.",
   quota_unavailable: "تعذّر التحقّق من الطلب لحظيًّا — أعد المحاولة بعد لحظات.",
+  busy: CHAT_SERVER_BUSY_AR,
+  duplicate_request: CHAT_DUPLICATE_AR,
+  daily_global_cap: "بلغ النظام سقفه اليومي — تُستأنف الخدمة بعد منتصف الليل.",
+  daily_identity_cap: "تجاوزت حصّتك اليومية — تعود الحصّة بعد منتصف الليل.",
 });
 
 const AUTH_SHAPED = /authenticat|unauthor|token|jwt|bearer|api[\s_-]?key/i;
@@ -44,9 +53,12 @@ export function chatErrorText(raw: string | null | undefined): string {
   const text = (raw ?? "").trim();
   if (!text) return CHAT_CONNECTION_ERROR_AR;
   try {
-    const parsed = JSON.parse(text) as { error?: unknown; message_ar?: unknown };
+    const parsed = JSON.parse(text) as { error?: unknown; message_ar?: unknown; code?: unknown };
     const fromServer = safeArabic(parsed?.message_ar);
     if (fromServer) return fromServer;
+    if (typeof parsed?.code === "string" && KNOWN_CODES[parsed.code.trim()]) {
+      return KNOWN_CODES[parsed.code.trim()];
+    }
     if (typeof parsed?.error === "string") {
       const known = KNOWN_CODES[parsed.error.trim()];
       if (known) return known;

@@ -38,7 +38,12 @@ import {
 } from "lucide-react";
 import { useSadeedChat } from "@/lib/sadeed-core/provider";
 import { useSadeedStore } from "@/lib/sadeed-core/store";
-import { pingChat, setPendingReplyMode } from "@/lib/sadeed-core/services/sadeed-service";
+import {
+  computeAutoRetryDelayMs,
+  lastGateRetryAfter,
+  pingChat,
+  setPendingReplyMode,
+} from "@/lib/sadeed-core/services/sadeed-service";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { cn } from "@/lib/utils";
 // Lean markdown renderer — the heavy MessageResponse (streamdown → shiki +
@@ -1886,15 +1891,20 @@ export function SadeedCopilot() {
   useEffect(() => {
     if (!hasError) return;
     if (autoRetryRef.current < 2) {
-      autoRetryRef.current += 1;
-      const attempt = autoRetryRef.current;
-      if (convModeRef.current) {
-        setConvNotice(`تعذّر مؤقت في الرد — إعادة المحاولة تلقائيًا (${attempt}/2)…`);
+      // تراجعٌ بتشويش واحترامٌ لـ`Retry-After` (VIBE 5.1): تلميحٌ أطول من عشر
+      // ثوانٍ ليس تعذّرًا مؤقتًا — لا إعادة تلقائية، ويبقى زرّ إعادة المحاولة.
+      const delay = computeAutoRetryDelayMs(autoRetryRef.current + 1, lastGateRetryAfter());
+      if (delay !== null) {
+        autoRetryRef.current += 1;
+        const attempt = autoRetryRef.current;
+        if (convModeRef.current) {
+          setConvNotice(`تعذّر مؤقت في الرد — إعادة المحاولة تلقائيًا (${attempt}/2)…`);
+        }
+        const t = window.setTimeout(() => {
+          void regenerateRef.current?.();
+        }, delay);
+        return () => window.clearTimeout(t);
       }
-      const t = window.setTimeout(() => {
-        void regenerateRef.current?.();
-      }, 1200 * attempt);
-      return () => window.clearTimeout(t);
     }
     if (convModeRef.current) {
       speakNextReplyRef.current = false;
