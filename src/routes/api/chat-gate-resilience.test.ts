@@ -43,6 +43,7 @@ const gates = vi.hoisted(() => ({
   quota: null as Response | null,
   modelCalls: 0,
   rateOptions: [] as unknown[],
+  quotaOptions: [] as unknown[],
 }));
 
 vi.mock("@/lib/governance/rate-limit.server", () => ({
@@ -54,7 +55,10 @@ vi.mock("@/lib/governance/rate-limit.server", () => ({
 
 vi.mock("@/lib/governance/ai-quota.server", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  enforceAiQuota: async () => gates.quota,
+  enforceAiQuota: async (opts: unknown) => {
+    gates.quotaOptions.push(opts);
+    return gates.quota;
+  },
 }));
 
 vi.mock("ai", async (importOriginal) => ({
@@ -96,6 +100,7 @@ beforeEach(() => {
   gates.quota = null;
   gates.modelCalls = 0;
   gates.rateOptions = [];
+  gates.quotaOptions = [];
 });
 
 const HAS_ARABIC = /[؀-ۿ]/;
@@ -140,6 +145,20 @@ describe("حصّةٌ لا يُتحقَّق منها ⇐ ردٌّ محليٌّ ص
     await post();
     expect(gates.rateOptions[0]).toEqual({ deadlineMs: expect.any(Number) });
     expect((gates.rateOptions[0] as { deadlineMs: number }).deadlineMs).toBeLessThanOrEqual(2_000);
+  });
+
+  it("الحصّة تُستدعى بمهلة كذلك (R08)", async () => {
+    await post();
+    const opts = gates.quotaOptions[0] as { deadlineMs?: number };
+    expect(opts?.deadlineMs, "enforceAiQuota بلا مهلة").toEqual(expect.any(Number));
+    expect(opts.deadlineMs as number).toBeLessThanOrEqual(2_000);
+  });
+
+  it("503 مفتاح الإيقاف ليس «حصّة غير متاحة» — لا يُستبدل بردٍّ محلّي", async () => {
+    gates.quota = new Response(JSON.stringify({ error: "ai_disabled" }), { status: 503 });
+    const res = await post();
+    expect(res.status).toBe(503);
+    expect(gates.modelCalls).toBe(0);
   });
 
   it("المسار السليم كما هو: يصل النموذج", async () => {

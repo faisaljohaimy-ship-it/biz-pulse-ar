@@ -253,11 +253,22 @@ const LOCAL_NO_PROVIDER_AR =
  * أمام المستخدم — ردٌّ محلّيٌّ صادق (الطبقة الأولى من «سَدِيد لا يتعطل»).
  */
 const LOCAL_QUOTA_UNVERIFIED_AR =
-  "خدمة التحليل مزدحمةٌ في هذه اللحظة، ولن أعرض أرقامًا أو استنتاجات غير متحقّقة. " +
-  "أعد إرسال سؤالك بعد لحظات، أو افتح الشاشة التي تريدها مباشرةً من القائمة.";
+  "تعذّر التحقّق من الخدمة لحظيًّا، ولن أعرض أرقامًا أو استنتاجات غير متحقّقة. " +
+  "أعد إرسال سؤالك بعد لحظات، أو افتح الشاشة من القائمة.";
 
 /** مهلة كل فحصٍ في القاعدة قبل الردّ — فلا يعلق سؤالٌ على قاعدةٍ لا تردّ. */
 const CHAT_GATE_DEADLINE_MS = 1_500;
+
+/** الحصّة «غير متاحة» برمزها لا بحالتها وحدها — فمفتاح الإيقاف (503 أيضًا) لا يُخلط بها. */
+async function isQuotaUnavailable(res: Response): Promise<boolean> {
+  if (res.status !== 503) return false;
+  try {
+    const body = (await res.clone().json()) as { error?: unknown };
+    return body?.error === "quota_unavailable";
+  } catch {
+    return false;
+  }
+}
 
 function localGuaranteedReply(rid: string, text: string, source: string): Response {
   const localStream = createUIMessageStream({
@@ -419,7 +430,7 @@ export const Route = createFileRoute("/api/chat")({
           identity: userId ?? `ip:${clientIp(request)}`,
           deadlineMs: CHAT_GATE_DEADLINE_MS,
         });
-        if (quota && quota.status === 503) {
+        if (quota && (await isQuotaUnavailable(quota))) {
           console.warn("[api/chat] quota gate unavailable — local guaranteed reply", { requestId });
           return localGuaranteedReply(
             requestId,

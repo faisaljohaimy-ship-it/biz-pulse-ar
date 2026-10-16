@@ -59,6 +59,17 @@ describe("نصّ خطأ الدردشة — عربيٌّ دائمًا ولا رم
     }
   });
 
+  it("اسم المزوّد يُمسح من العربية قبل العرض (R16)", () => {
+    const shown = chatErrorText(
+      JSON.stringify({ error: "x", message_ar: "تعذّر الردّ من Gemini الآن." }),
+    );
+    expect(shown).not.toMatch(/gemini/i);
+    expect(HAS_ARABIC.test(shown)).toBe(true);
+    // الانتهاك المزروع: بلا القناع يصل الاسم.
+    const unmasked = (t: string) => t.trim();
+    expect(unmasked("تعذّر الردّ من Gemini الآن.")).toMatch(/gemini/i);
+  });
+
   it("الانتهاك المزروع (المادة ٣٠): السلوك القديم كان يمرّر الرمز كما هو", () => {
     // نسخةٌ حرفيّة من منطق الفقاعة قبل الإصلاح.
     const old = (raw: string) => {
