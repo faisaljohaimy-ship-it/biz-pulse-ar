@@ -949,13 +949,20 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
 
         let rawModelText = "";
         let generationErrorText: string | null = null;
+        let inferencePath: "hosted" | "local" = "hosted";
+        let servedModelId = selectedModelId;
         try {
           const backup = await import("@/lib/sadeed/backup-provider.server");
+          const localInference = await import("@/lib/sadeed/local-inference.server");
           const modelMessages = await convertToModelMessages(uiMessages, {
             tools,
             ignoreIncompleteToolCalls: true,
           });
-          const run = (m: typeof model, retries: number) =>
+          const run = (
+            m: typeof model,
+            retries: number,
+            abortSignal: AbortSignal = request.signal,
+          ) =>
             generateText({
               model: m,
               system: systemPrompt,
@@ -964,20 +971,20 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               toolChoice: "auto",
               stopWhen: stepCountIs(8),
               maxRetries: retries,
-              abortSignal: request.signal,
+              abortSignal,
               // Gemini 3.6 deprecates temperature/top-p/top-k controls. Keep
               // quality in the prompt, evidence gate and tool policy instead.
               maxOutputTokens: replyMode === "voice" ? 700 : 16_000,
             });
           const backupModel = backup.createSadeedBackupModel();
-          let gen: Awaited<ReturnType<typeof run>>;
-          if (backupModel && backup.primaryCoolingDown()) {
-            gen = await run(backupModel as unknown as typeof model, 1);
-          } else {
+          const runHosted = async () => {
+            if (backupModel && backup.primaryCoolingDown()) {
+              return run(backupModel as unknown as typeof model, 1);
+            }
             try {
               // No SDK retries on the direct key: a quota 429 carries a
               // multi-hour Retry-After that left the chat "thinking" forever.
-              gen = await run(model, 0);
+              return await run(model, 0);
             } catch (primaryError) {
               if (!backupModel || !backup.shouldUseBackup(primaryError)) throw primaryError;
               const msg = String(
@@ -991,7 +998,72 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
                 requestId,
                 error: msg.slice(0, 200),
               });
-              gen = await run(backupModel as unknown as typeof model, 1);
+              return run(backupModel as unknown as typeof model, 1);
+            }
+          };
+
+          // ── الاستدلال المحليّ الاختياري (مطفأ افتراضيًّا) ──────────────
+          // الراية مطفأة ⇐ `runHosted()` وحده، كما كان حرفًا. ومفعّلة ⇐ إمّا
+          // أوّلًا (`primary`) والمستضاف بديلٌ له، أو بديلًا أخيرًا
+          // (`fallback`) بعد المستضاف واحتياطه. نفس الرسائل والأدوات والعقد؛
+          // ومهلةٌ صلبة، وتبريدٌ بعد الفشل، ولا يُطبع عنوانٌ ولا مفتاح.
+          const localConfig = localInference.resolveLocalInference();
+          if (!localConfig.enabled && localConfig.reason === "invalid") {
+            console.warn("[api/chat] local inference config rejected", {
+              requestId,
+              problems: localConfig.problems,
+            });
+          }
+          const local =
+            localConfig.enabled && !localInference.localInferenceCoolingDown() ? localConfig : null;
+          const runLocal = async (config: NonNullable<typeof local>) => {
+            const t0 = Date.now();
+            try {
+              const result = await run(
+                localInference.createLocalInferenceModel(config) as unknown as typeof model,
+                config.maxRetries,
+                localInference.localInferenceSignal(config, request.signal),
+              );
+              inferencePath = "local";
+              servedModelId = `local:${config.modelId}`;
+              console.log("[api/chat] local inference ok", {
+                requestId,
+                mode: config.mode,
+                host: config.hostClass,
+                latencyMs: Date.now() - t0,
+              });
+              return result;
+            } catch (localError) {
+              if (!request.signal.aborted) localInference.coolLocalInference();
+              console.warn("[api/chat] local inference failed", {
+                requestId,
+                mode: config.mode,
+                reason: localInference.describeLocalInferenceError(localError),
+                latencyMs: Date.now() - t0,
+              });
+              throw localError;
+            }
+          };
+
+          let gen: Awaited<ReturnType<typeof run>>;
+          if (local?.mode === "primary") {
+            try {
+              gen = await runLocal(local);
+            } catch (localError) {
+              if (request.signal.aborted) throw localError;
+              gen = await runHosted();
+            }
+          } else {
+            try {
+              gen = await runHosted();
+            } catch (hostedError) {
+              if (!local || request.signal.aborted) throw hostedError;
+              try {
+                gen = await runLocal(local);
+              } catch {
+                // الرسالة المعروضة تبقى رسالة المسار المستضاف كما كانت.
+                throw hostedError;
+              }
             }
           }
           rawModelText = gen.text;
@@ -999,6 +1071,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             requestId,
             textChars: rawModelText.length,
             latencyMs: Date.now() - startAt,
+            inference: inferencePath,
           });
         } catch (error) {
           const errMsg = error instanceof Error ? error.message : String(error);
@@ -1074,7 +1147,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
                 thread_id: threadId ?? null,
                 question: redactTelemetryText(q).slice(0, 4000),
                 answer: redactTelemetryText(a).slice(0, 8000),
-                model: selectedModelId,
+                model: servedModelId,
                 latency_ms: Date.now() - startAt,
                 first_token_ms: firstTokenAt ? firstTokenAt - startAt : null,
                 device_class: deviceClass,
@@ -1177,6 +1250,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             ...responseHeaders(requestId),
             "X-SADEED-Reply-Source": "safe-gateway",
             "X-SADEED-Gate": gateMode,
+            "X-SADEED-Inference-Path": inferencePath,
           },
         });
       },
