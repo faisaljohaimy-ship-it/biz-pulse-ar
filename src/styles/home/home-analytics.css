@@ -1,0 +1,1016 @@
+/* ============================================================================
+   home-analytics.css — صفّ التحليلات في «مركز القيادة» (المواصفة §4.7، وN1/N2)
+   ----------------------------------------------------------------------------
+   يستورده `HomeAnalyticsRow.tsx` وحده، فيُحمَّل مع حزمة الرئيسية المقتطَعة ولا
+   يكبّر الأنماط المشتركة (ميزانية الأداء، المواصفة §3.8).
+
+   ① **لا لون هنا إلا من طبقة الرموز** (المادة ٣٣) — `--ink*` · `--surface*` ·
+     `--chip*` · `--hairline*` · `--tone-*` · `--glass-*` ورموز الهوية القائمة
+     (`--sd-*`)، ومزجها بـ`color-mix`. الأسلوب المضمّن يمرّر متغيّرات فقط
+     (`--region-tint` · `--bar-pct` · `--y` · `--n`)، والقيمة النهائية هنا.
+
+   ② **المقاسات مقيسة على بكسلات الصورة** (1536×1024): البطاقات بنسب
+     368 · 365 · 253 · 270 وارتفاع 161 · الرأس 22px والعنوان 15px · أعمدة
+     المناطق بمبنى ~29×28 والاسم والنسبة والشريط (~65×7) وسطر التغيّر · الرسم
+     البياني 80px من «250» إلى «0» وتحته الأشهر · الحلقة ~111px بسماكة ~18
+     ومفتاحها بخطوة 22px · صفوف الأنظمة بخطوة ~21px على شريطٍ باهت.
+
+   ③ **الرأس معكوس عن صفّ التشغيل كما رُسم**: العنوان يسارًا والأداة يمينًا
+     (`row-reverse` في البطاقة `rtl`)، والمحتوى نفسه عربيّ `rtl`.
+
+   ④ **الوضع الداكن ليس قشرة** (المواد ٣٢–٣٤): كل لونٍ رمزٌ ينقلب، وما يحتاج
+     قيمةً أخرى في الداكن يُعاد تعريفه تحت `.dark`.
+
+   ⑤ الأهداف ≥ 44px لمسًا: «عرض الكل» وقائمتا الفترة وجهٌ مرسوم (22–24px) داخل
+     هدفٍ بارتفاعه الكامل بهامشٍ سالب لا يزيح الإيقاع. وكل نصٍّ ≥ 12px كما
+     يُرى (المحاور HTML لا نصّ SVG مكبَّر).
+   ============================================================================ */
+
+/* ── الصفّ ─────────────────────────────────────────────────────────────── */
+.nx-ana-quad {
+  /* الكحلي المرسوم للعناوين والأرقام (كحليٌّ فاتحًا؛ فاتحٌ مزرقّ داكنًا). */
+  --ana-navy: color-mix(in srgb, var(--ink) 82%, var(--sd-royal));
+  --ana-ink: color-mix(in srgb, var(--ink) 90%, var(--sd-royal));
+  /* رماديّ الأسماء والمحاور المائل إلى الأزرق. */
+  --ana-slate: color-mix(in srgb, var(--ink-3) 86%, var(--sd-royal));
+  --ana-muted: color-mix(in srgb, var(--ink-3) 88%, var(--surface));
+  --ana-line: color-mix(in srgb, var(--sd-royal) 6%, var(--hairline-soft));
+  --ana-pill: color-mix(in srgb, var(--sd-azure-soft) 10%, var(--surface));
+  --ana-pill-ink: color-mix(in srgb, var(--sd-royal) 82%, var(--ink));
+  --ana-lift: 0 1px 2px var(--glass-shade);
+  /* أخضر التغيّر و«يعمل»: منتصف الزمرّدين — يعبر 4.5:1 كصفّ المؤشرات. */
+  --ana-up: color-mix(in srgb, var(--sd-emerald) 50%, var(--tone-emerald));
+  --ana-ok: var(--sd-emerald);
+  --ana-warn: var(--sd-amber);
+  --ana-bad: var(--sd-ruby);
+  /* خطّا الرسم كما رُسما — درجتان تعبران 3:1 على الأبيض (WCAG 1.4.11). */
+  --ana-risk: var(--sd-amber);
+  --ana-incident: var(--sd-ruby);
+  --ana-bar-a: var(--sd-azure);
+  --ana-bar-b: color-mix(in srgb, var(--sd-azure-soft) 82%, var(--surface));
+  --ana-grid: color-mix(in srgb, var(--ana-line) 70%, transparent);
+  --ana-row: color-mix(in srgb, var(--sd-azure-soft) 4%, var(--surface));
+  /* شرائح الأنواع — ألوان هوية زرقاء متمايزة الإضاءة، و«أخرى» رماديّ مزرقّ. */
+  --ana-slice-0: var(--sd-azure-soft);
+  --ana-slice-1: var(--sd-cyan);
+  --ana-slice-2: var(--sd-royal);
+  --ana-slice-3: color-mix(in srgb, var(--sd-azure-soft) 40%, var(--surface));
+  --ana-slice-other: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--ink) 52%, var(--surface)) 82%,
+    var(--sd-royal)
+  );
+}
+
+/* رسومٌ ساكنة حادّة كما رُسمت. طبقة الهولو العامّة تفرض على كل `a > svg`
+   و`a svg` توهّجَ `drop-shadow` سماويًّا مزدوجًا ونبضةً لا نهائية بـ`!important`
+   (styles.css: «توهّج الرمز نفسه» و«Global icon glow») وتكبيرًا عند التمرير —
+   فتُرى الحلقة والأعمدة والمباني مغبّشةً بهالة. العلاج علاج صفّ المؤشرات
+   والترويسة نفسه: `!important` بنوعيّةٍ أعلى (0,2,1)، محصورٌ بهذا الصفّ. */
+.nx-ana-quad.nx-ana-quad svg {
+  filter: none !important;
+  animation: none !important;
+  animation-play-state: paused !important;
+  transform: none !important;
+  scale: none;
+  opacity: 1;
+  transition: none;
+}
+
+/* نسب البطاقات المرسومة حين يتّسع الصفّ لها؛ ودونه أربعٌ متساوية (من
+   `.nx-home-quad`) كي لا تضيق الحلقة ومفتاحها. */
+@media (min-width: 1500px) {
+  .nx-home-quad.nx-ana-quad {
+    grid-template-columns:
+      minmax(0, 368fr) minmax(0, 365fr) minmax(0, 253fr)
+      minmax(0, 270fr);
+  }
+}
+
+/* ── البطاقة: سطحٌ أبيض بحدٍّ خفيف ونصف قطر 14px ─────────────────────────
+   نوعيّة صنفين لتعلو `.nx-home-panel` (styles.css) — السطح والظلّ منه. */
+.nx-home-panel.nx-ana-card {
+  container: nx-ana-card / inline-size;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  padding: 9px 12px 10px;
+  border: 1px solid var(--ana-line);
+  border-radius: 14px;
+  color: var(--ana-navy);
+}
+
+/* ── الرأس: العنوان يسارًا والأداة يمينًا كما رُسم ───────────────────────── */
+.nx-ana-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 8px;
+  min-block-size: 24px;
+}
+
+/* حين لا يسع السطرُ العنوانَ وشارته والأداة (أربعٌ متساوية على 1280) تنزل
+   الأداة سطرًا وتبقى يمينًا — لا يُقصّ العنوان. الهامش التلقائي على جهتها
+   اليسرى فيزيائيًّا: `end` في `rtl` المعكوس، و`start` في `ltr`. */
+.nx-ana-head > :not(.nx-ana-heading) {
+  margin-inline-start: auto;
+}
+
+.nx-ana-card[dir="rtl"] .nx-ana-head > :not(.nx-ana-heading) {
+  margin-inline-start: 0;
+  margin-inline-end: auto;
+}
+
+.nx-ana-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-inline-size: 0;
+}
+
+.nx-ana-card[dir="rtl"] .nx-ana-head,
+.nx-ana-card[dir="rtl"] .nx-ana-heading {
+  flex-direction: row-reverse;
+}
+
+.nx-ana-title {
+  min-inline-size: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 22px;
+  color: var(--ana-navy);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* شارة «محاكاة» (المادة ٦، N2) — بهيئة وسم صفّي المؤشرات والتشغيل. */
+.nx-ana-sim {
+  flex: none;
+  padding-inline: 6px;
+  border: 1px solid color-mix(in srgb, var(--tone-amber) 35%, var(--surface));
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--tone-amber);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+/* «عرض الكل ›» — قرصٌ 22px داخل هدفٍ 44px. */
+.nx-ana-more {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-block-size: 44px;
+  margin-block: -10px;
+  border-radius: 999px;
+  color: var(--ana-pill-ink);
+  text-decoration: none;
+}
+
+.nx-ana-more-face {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  block-size: 22px;
+  padding-inline: 12px 9px;
+  border-radius: 999px;
+  background: var(--ana-pill);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.nx-ana-more-face svg {
+  flex: none;
+  inline-size: 13px;
+  block-size: 13px;
+  stroke-width: 2.6;
+}
+
+.nx-ana-more:focus-visible {
+  border-radius: 999px;
+}
+
+@media (hover: hover) {
+  .nx-ana-more:hover .nx-ana-more-face {
+    background: color-mix(in srgb, var(--sd-azure-soft) 18%, var(--surface));
+  }
+}
+
+/* ── قائمة الفترة: وجهٌ مرسوم 24px و`<select>` شفّاف فوقه بهدفٍ 44px ────── */
+.nx-ana-pick {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+
+.nx-ana-pick-face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-inline-size: 92px;
+  block-size: 24px;
+  padding-inline: 12px 9px;
+  border: 1px solid var(--ana-line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--ana-lift);
+  color: var(--ana-slate);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.nx-ana-pick-face svg {
+  flex: none;
+  inline-size: 13px;
+  block-size: 13px;
+  stroke-width: 2.4;
+  color: var(--ana-navy);
+}
+
+.nx-ana-pick-select {
+  position: absolute;
+  inset: -10px 0;
+  inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+  /* ١٦px تمنع تكبير iOS عند التركيز؛ الوجه المرسوم هو ما يُرى. */
+  font-size: 16px;
+  appearance: none;
+}
+
+.nx-ana-pick:focus-within .nx-ana-pick-face {
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .nx-ana-pick:hover .nx-ana-pick-face {
+    border-color: var(--hairline-hover);
+  }
+}
+
+/* ── الجسم والحالات ─────────────────────────────────────────────────────── */
+.nx-ana-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-block-size: 0;
+}
+
+.nx-ana-empty {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.nx-ana-failed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  margin-block-start: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.nx-ana-retry {
+  min-block-size: 44px;
+  padding-inline: 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.nx-ana-retry:focus-visible {
+  border-radius: 10px;
+}
+
+.nx-ana-wait {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 6px;
+  margin-block-start: 8px;
+}
+
+.nx-ana-wait[data-count="4"] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.nx-ana-wait-item {
+  min-block-size: 18px;
+  border-radius: 8px;
+}
+
+.nx-ana-wait[data-count="4"] .nx-ana-wait-item,
+.nx-ana-wait[data-count="1"] .nx-ana-wait-item {
+  min-block-size: 104px;
+}
+
+/* ── ١) أداء المناطق: أربعة أعمدة بترتيب `REGIONS` (الأوّل يمينًا) ──────── */
+.nx-ana-regions {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nx-ana-regions > li {
+  display: flex;
+  min-inline-size: 0;
+}
+
+.nx-ana-region {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  min-inline-size: 0;
+  padding-block: 3px 2px;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.nx-ana-region:focus-visible {
+  border-radius: 10px;
+}
+
+@media (hover: hover) {
+  .nx-ana-region:hover {
+    background: var(--chip-hover);
+  }
+}
+
+/* المبنى بلون المنطقة — ممزوجًا بالحبر في الفاتح فيعبر 3:1 على الأبيض
+   (الأزرق 6.4 · السماوي 3.3 · الأخضر 4.2 · الكهرماني 4.1)، وساطعًا في الداكن. */
+.nx-ana-region-glyph {
+  flex: none;
+  inline-size: 31px;
+  block-size: 29px;
+  overflow: visible;
+  fill: none;
+  stroke: color-mix(in srgb, var(--region-tint) 70%, var(--ink));
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nx-ana-region-name {
+  max-inline-size: 100%;
+  margin-block-start: 4px;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 18px;
+  color: var(--ana-navy);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nx-ana-region-value {
+  margin-block-start: 2px;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 22px;
+  color: var(--ana-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nx-ana-region-value[data-absent] {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ana-muted);
+}
+
+/* الشريط: مسارٌ مصبوغ بلون المنطقة وامتلاءٌ بها — لونٌ هويّة لا حكم.
+   يمتلئ من اليسار كما رُسم (ذيل «الجنوبية» الفاتح يمينًا). */
+.nx-ana-region-bar {
+  display: block;
+  inline-size: min(78%, 70px);
+  block-size: 8px;
+  margin-block-start: 5px;
+  direction: ltr;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--region-tint) 24%, var(--surface));
+}
+
+.nx-ana-region-bar[data-absent] {
+  background: transparent;
+}
+
+.nx-ana-region-fill {
+  display: block;
+  inline-size: var(--bar-pct, 0%);
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--region-tint);
+}
+
+.nx-ana-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-block-start: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 15px;
+  color: var(--ana-up);
+  white-space: nowrap;
+}
+
+.nx-ana-change svg {
+  flex: none;
+  inline-size: 12px;
+  block-size: 12px;
+  stroke-width: 2.8;
+}
+
+.nx-ana-change[data-absent] {
+  color: var(--ana-muted);
+  font-weight: 600;
+}
+
+/* ── ٢) الرسم البياني: محور الأرقام يسارًا والزمن يسارًا ← يمينًا ───────────
+   شبكةٌ واحدة: المفتاح يشارك الرسم خليّته (تكديسٌ في المسار لا تموضعٌ
+   مطلق) ويعلوه يمينًا عند خطّ «250» كما رُسم. */
+.nx-ana-chart {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: 24px minmax(0, 1fr);
+  grid-template-rows: 80px auto;
+  grid-template-areas:
+    "y plot"
+    ". x";
+  column-gap: 6px;
+  row-gap: 8px;
+  margin: 12px 0 0;
+}
+
+.nx-ana-legend {
+  z-index: 1;
+  display: flex;
+  grid-area: plot;
+  align-self: start;
+  justify-self: end;
+  gap: 22px;
+  margin: -8px 4px 0 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.nx-ana-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  color: var(--ana-slate);
+  white-space: nowrap;
+}
+
+.nx-ana-legend-dot {
+  flex: none;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--ana-risk);
+}
+
+.nx-ana-legend-dot[data-series="incidents"] {
+  background: var(--ana-incident);
+}
+
+.nx-ana-yaxis {
+  position: relative;
+  grid-area: y;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nx-ana-yaxis > li {
+  position: absolute;
+  inset-block-start: calc((1 - var(--y, 0)) * 100%);
+  inset-inline-end: 0;
+  translate: 0 -50%;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 14px;
+  color: var(--ana-slate);
+  font-variant-numeric: tabular-nums;
+}
+
+.nx-ana-plot {
+  display: block;
+  grid-area: plot;
+  min-inline-size: 0;
+  block-size: 80px;
+  border-radius: 6px;
+}
+
+.nx-ana-plot:focus-visible {
+  border-radius: 6px;
+}
+
+.nx-ana-plot svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.nx-ana-gridline {
+  stroke: var(--ana-grid);
+  stroke-width: 1px;
+}
+
+.nx-ana-bar {
+  stroke-width: 6.5px;
+  stroke-linecap: round;
+}
+
+.nx-ana-bar-stop-a {
+  stop-color: var(--ana-bar-a);
+}
+
+.nx-ana-bar-stop-b {
+  stop-color: var(--ana-bar-b);
+}
+
+.nx-ana-line {
+  fill: none;
+  stroke: var(--ana-risk);
+  stroke-width: 1.75px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nx-ana-line[data-series="incidents"] {
+  stroke: var(--ana-incident);
+  stroke-opacity: 0.85;
+}
+
+/* النقطة قطعةٌ صفرية الطول بغطاءٍ دائري: حلقةٌ بلون السطح ثم لون السلسلة. */
+.nx-ana-dot-ring {
+  fill: none;
+  stroke: var(--surface);
+  stroke-width: 9px;
+  stroke-linecap: round;
+}
+
+.nx-ana-dot {
+  fill: none;
+  stroke: var(--ana-risk);
+  stroke-width: 6px;
+  stroke-linecap: round;
+}
+
+.nx-ana-dot[data-series="incidents"] {
+  stroke: var(--ana-incident);
+}
+
+.nx-ana-xaxis {
+  display: grid;
+  grid-area: x;
+  grid-template-columns: repeat(var(--n, 12), minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nx-ana-xaxis > li {
+  display: flex;
+  justify-content: center;
+  min-inline-size: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--ana-slate);
+  white-space: nowrap;
+}
+
+/* اثنا عشر شهرًا لا تتّسع لها خانةٌ ~25px بخطّ 12px: شهرٌ ويُترك شهر، وتُعرض
+   كلّها حين تتّسع البطاقة، وكل ثالثٍ حين تضيق. */
+.nx-ana-xaxis[data-n="12"] > li[data-odd] {
+  visibility: hidden;
+}
+
+@container nx-ana-card (min-width: 520px) {
+  .nx-ana-xaxis[data-n="12"] > li[data-odd] {
+    visibility: visible;
+  }
+}
+
+@container nx-ana-card (max-width: 300px) {
+  .nx-ana-xaxis[data-n="12"] > li {
+    visibility: hidden;
+  }
+  .nx-ana-xaxis[data-n="12"] > li[data-third] {
+    visibility: visible;
+  }
+  .nx-ana-xaxis[data-n="6"] > li[data-odd] {
+    visibility: hidden;
+  }
+}
+
+/* ── ٣) أنواع الحوادث: المفتاح يمينًا والحلقة يسارًا كما رُسما ──────────── */
+.nx-ana-types {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-block-start: 4px;
+}
+
+/* المفتاح بعرض الصورة تقريبًا: في البطاقة العريضة (اللوح والجوال) لا تبتعد
+   النسبة عن اسمها، ويتوسّط المفتاحُ والحلقة البطاقةَ معًا. */
+.nx-ana-types-legend {
+  display: grid;
+  flex: 0 1 230px;
+  gap: 6px;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* الصفّ (`rtl`): النسبة يمينًا، والاسم ملاصقًا لنقطته يسارًا. */
+.nx-ana-types-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 6px;
+  min-block-size: 16px;
+}
+
+.nx-ana-types-pct {
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 16px;
+  color: var(--ana-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.nx-ana-types-label {
+  justify-self: end;
+  max-inline-size: 100%;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--ana-slate);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nx-ana-types-dot {
+  inline-size: 9px;
+  block-size: 9px;
+  border-radius: 50%;
+  background: var(--ana-slice-0);
+}
+
+.nx-ana-types-dot[data-tone="1"] {
+  background: var(--ana-slice-1);
+}
+
+.nx-ana-types-dot[data-tone="2"] {
+  background: var(--ana-slice-2);
+}
+
+.nx-ana-types-dot[data-tone="3"] {
+  background: var(--ana-slice-3);
+}
+
+.nx-ana-types-dot[data-tone="other"] {
+  background: var(--ana-slice-other);
+}
+
+/* الحلقة رابطٌ إلى سجل البلاغات، والرقم ووسمه نصٌّ HTML في خليّتها نفسها
+   (تكديسٌ في الشبكة): يلتفّ الوسم داخل الفتحة ولا يصغر تحت 12px. */
+.nx-ana-donut {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 108px;
+  block-size: 108px;
+  border-radius: 50%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.nx-ana-donut > * {
+  grid-area: 1 / 1;
+}
+
+.nx-ana-donut:focus-visible {
+  border-radius: 50%;
+}
+
+.nx-ana-donut svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.nx-ana-donut-track {
+  fill: none;
+  stroke: var(--chip-strong);
+}
+
+.nx-ana-donut-slice {
+  fill: none;
+  stroke: var(--ana-slice-0);
+}
+
+.nx-ana-donut-slice[data-tone="1"] {
+  stroke: var(--ana-slice-1);
+}
+
+.nx-ana-donut-slice[data-tone="2"] {
+  stroke: var(--ana-slice-2);
+}
+
+.nx-ana-donut-slice[data-tone="3"] {
+  stroke: var(--ana-slice-3);
+}
+
+.nx-ana-donut-slice[data-tone="other"] {
+  stroke: var(--ana-slice-other);
+}
+
+.nx-ana-donut-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-inline-size: 64px;
+  text-align: center;
+}
+
+.nx-ana-donut-num {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 24px;
+  color: var(--ana-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.nx-ana-donut-cap {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 14px;
+  color: var(--ana-slate);
+}
+
+@media (hover: hover) {
+  .nx-ana-donut:hover .nx-ana-donut-track {
+    stroke: var(--chip-hover);
+  }
+}
+
+/* البطاقة الأضيق: الحلقة تصغر قبل أن يُقصّ اسمٌ في المفتاح (12px أرضيةٌ لا
+   تنزل). والاستعلام على عرض المحتوى (البطاقة − 26px): على 1536 بطاقتها
+   ~248px ⇐ 222 ⇐ حلقة 92px ومفتاحٌ يسع «دخول غير مصرح» (75px) كاملًا؛ وعلى
+   1280 (أربعٌ متساوية ~244 ⇐ 218) 84px. */
+@container nx-ana-card (max-width: 246px) {
+  .nx-ana-types {
+    gap: 8px;
+  }
+  .nx-ana-types-row {
+    column-gap: 4px;
+  }
+  .nx-ana-types-dot {
+    inline-size: 8px;
+    block-size: 8px;
+  }
+  .nx-ana-donut {
+    inline-size: 92px;
+    block-size: 92px;
+  }
+  .nx-ana-donut-center {
+    max-inline-size: 56px;
+  }
+}
+
+@container nx-ana-card (max-width: 220px) {
+  .nx-ana-donut {
+    inline-size: 84px;
+    block-size: 84px;
+  }
+  .nx-ana-donut-center {
+    max-inline-size: 50px;
+  }
+  .nx-ana-donut-num {
+    font-size: 18px;
+    line-height: 21px;
+  }
+}
+
+/* ── ٤) حالة الأنظمة: النسبة يمينًا · الاسم · الحالة · الشكل يسارًا ───────── */
+.nx-ana-sys {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nx-ana-sys-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto 10px;
+  align-items: center;
+  column-gap: 8px;
+  min-block-size: 19.5px;
+  padding-inline: 8px;
+  border-radius: 6px;
+  background: var(--ana-row);
+}
+
+.nx-ana-sys-value {
+  min-inline-size: 30px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 18px;
+  color: var(--ana-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nx-ana-sys-value[data-absent] {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ana-muted);
+}
+
+.nx-ana-sys-name {
+  overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--ana-slate);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nx-ana-sys-state {
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 18px;
+  color: var(--ana-up);
+  white-space: nowrap;
+}
+
+.nx-ana-sys-state[data-verdict="warning"] {
+  color: color-mix(in srgb, var(--ana-warn) 70%, var(--ink));
+}
+
+.nx-ana-sys-state[data-verdict="danger"] {
+  color: var(--ana-bad);
+}
+
+.nx-ana-sys-state[data-verdict="neutral"] {
+  font-weight: 700;
+  color: var(--ana-muted);
+}
+
+/* الشكل يحمل الحكم مع الكلمة (§3.5): دائرة · مثلث · مثمّن · متقطّعة. */
+.nx-ana-verdict {
+  inline-size: 10px;
+  block-size: 10px;
+  overflow: visible;
+}
+
+.nx-ana-verdict-shape {
+  fill: var(--ana-ok);
+}
+
+.nx-ana-verdict[data-verdict="warning"] .nx-ana-verdict-shape {
+  fill: var(--ana-warn);
+}
+
+.nx-ana-verdict[data-verdict="danger"] .nx-ana-verdict-shape {
+  fill: var(--ana-bad);
+}
+
+.nx-ana-verdict-ring {
+  fill: none;
+  stroke: var(--ana-muted);
+  stroke-width: 1.4;
+  stroke-dasharray: 2 1.6;
+}
+
+/* ── الوضع الداكن ───────────────────────────────────────────────────────── */
+.dark .nx-ana-quad {
+  --ana-line: var(--hairline-soft);
+  --ana-pill: color-mix(in srgb, var(--sd-azure-soft) 12%, var(--surface));
+  --ana-pill-ink: var(--sd-azure-soft);
+  --ana-muted: var(--ink-3);
+  --ana-up: var(--tone-emerald);
+  --ana-ok: var(--tone-emerald);
+  --ana-warn: var(--tone-amber);
+  --ana-bad: var(--tone-rose);
+  --ana-risk: var(--tone-amber);
+  --ana-incident: var(--tone-rose);
+  --ana-bar-a: var(--tone-blue);
+  --ana-bar-b: color-mix(in srgb, var(--tone-blue) 45%, var(--surface));
+  --ana-row: color-mix(in srgb, var(--sd-azure-soft) 6%, var(--surface));
+  --ana-slice-0: var(--tone-blue);
+  --ana-slice-1: var(--tone-cyan);
+  --ana-slice-2: color-mix(in srgb, var(--tone-blue) 50%, var(--surface));
+  --ana-slice-3: color-mix(in srgb, var(--tone-cyan) 42%, var(--surface));
+  --ana-slice-other: color-mix(in srgb, var(--ink) 40%, var(--surface));
+}
+
+.dark .nx-ana-region-glyph {
+  stroke: color-mix(in srgb, var(--region-tint) 82%, var(--ink));
+}
+
+.dark .nx-ana-region-bar {
+  background: color-mix(in srgb, var(--region-tint) 20%, var(--surface));
+}
+
+.dark .nx-ana-pick-face {
+  background: color-mix(in srgb, var(--surface) 92%, var(--ink));
+  box-shadow: inset 0 0 0 1px var(--hairline-soft);
+}
+
+.dark .nx-ana-sys-state[data-verdict="warning"] {
+  color: var(--tone-amber);
+}
+
+/* ── السطوح البديلة (§5): الشفافية المخفَّضة والألوان القسرية ───────────── */
+@media (prefers-reduced-transparency: reduce) {
+  .nx-ana-region:hover {
+    background: var(--surface-2);
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-home-panel.nx-ana-card,
+  .nx-ana-more-face,
+  .nx-ana-pick-face,
+  .nx-ana-sim,
+  .nx-ana-sys-row {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+  }
+  .nx-ana-region-glyph,
+  .nx-ana-line,
+  .nx-ana-gridline,
+  .nx-ana-donut-slice,
+  .nx-ana-donut-track,
+  .nx-ana-verdict-ring {
+    stroke: CanvasText;
+  }
+  .nx-ana-dot {
+    stroke: CanvasText;
+  }
+  .nx-ana-dot-ring {
+    stroke: Canvas;
+  }
+  .nx-ana-bar-stop-a,
+  .nx-ana-bar-stop-b {
+    stop-color: CanvasText;
+  }
+  .nx-ana-region-bar {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+  .nx-ana-region-fill,
+  .nx-ana-legend-dot,
+  .nx-ana-types-dot {
+    background: CanvasText;
+  }
+  .nx-ana-verdict-shape {
+    fill: CanvasText;
+  }
+}

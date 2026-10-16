@@ -81,12 +81,16 @@ function ChipGlyph({ kind }: { kind: GlyphKind }) {
   );
 }
 
-/** سهم الإرسال المرسوم: رأس طائرةٍ ورقية نحو اليمين بشقّه في المنتصف. */
+/**
+ * سهم الإرسال كما رُسم (مقيسٌ على المخطّط بمقياس 8×، بكسلٌ لكل وحدة عند
+ * 20px): طائرةٌ ورقية من فوق نحو اليمين — جسمٌ مثلّثٌ كبير رأسه يمينًا، وذيلٌ
+ * مثلّثٌ صغير رأسه يسارًا، بينهما شقٌّ قائم.
+ */
 function SendGlyph() {
   return (
-    <svg viewBox="0 0 24 24" focusable="false" aria-hidden className="nx-sd-send-glyph">
+    <svg viewBox="0 0 20 20" focusable="false" aria-hidden className="nx-sd-send-glyph">
       <path
-        d="M4.2 3.4L21 11.2C21.7 11.5 21.7 12.5 21 12.8L4.2 20.6C3.5 20.9 2.8 20.2 3.1 19.5L5.9 12.8H12.2V11.2H5.9L3.1 4.5C2.8 3.8 3.5 3.1 4.2 3.4Z"
+        d="M8.3 1.7L19.5 9.3C20 9.7 20 10.3 19.5 10.7L8.3 18.3ZM.7 10L6.9 7.1V12.9Z"
         fill="currentColor"
       />
     </svg>

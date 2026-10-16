@@ -1,90 +1,347 @@
 /* ============================================================================
-   home-ops.css — صفّ التشغيل في «مركز القيادة» (المواصفة §4.6)
+   home-ops.css — صفّ التشغيل في «مركز القيادة» (المواصفة §4.6، وقرارا N2/N3)
    ----------------------------------------------------------------------------
    يستورده `HomeOpsRow.tsx` وحده، فيُحمَّل مع حزمة الرئيسية المقتطَعة ولا
    يكبّر الأنماط المشتركة (ميزانية الأداء، المواصفة §3.8).
 
-   ① **لا لون هنا إلا من طبقة الرموز** (المادة ٣٣). الأسلوب المضمّن يمرّر
-     متغيّرات فقط (`--ops-tone` · `--chip-tone` · `--split-tone`)، والقيمة
-     النهائية تُكتب هنا. والغسلات والحدود `color-mix` من الرمز نفسه.
+   ① **لا لون هنا إلا من طبقة الرموز** (المادة ٣٣) — `--ink*` · `--surface*` ·
+     `--chip*` · `--hairline*` · `--tone-*` · `--glass-*` ورموز الهوية القائمة
+     (`--sd-*` · `--stage-*`)، ومزجها بـ`color-mix`. الأسلوب المضمّن يمرّر
+     متغيّرًا واحدًا (`--ops-tone`)، والقيمة النهائية هنا.
 
-   ② **بلاطات الكاميرات شاشةٌ داكنة في الوضعين** (§3.4). تُعاد تسمية رموز
-     الحبر والسطح والحدّ محلّيًّا كما تفعل `.nx-arabia`، لكن من الزوج الثابت
-     في طبقة الرموز نفسها (`--stage-ink` · `--stage-paper` — لا ينقلبان مع
-     الوضع) لا من قيمٍ جديدة؛ فكل نسلٍ يقرأ `var(--ink)` يُقرأ على الليل.
-     ولا يُعاد تعريف `--tone-*`: الرقاقة تمزج نغمتها بالحبر المحلّي فيبقى
-     تباينها فوق 4.5:1 على الليل في الوضعين.
+   ② **المقاسات مقيسة على بكسلات الصورة** (1536×1024): البطاقات بنسب
+     352 · 320 · 307 · 267، والرأس 22px، وصفّ القائمة 50px بصورته 52×39
+     (الحوادث 41×39)، والرقاقة 19px، وخريطة الدوريات 290×199 وفوقها عمود
+     الأرقام بعرض 115px، وإطار الكاميرا 122×80 (السفلي 122×87).
 
-   ③ **العرض يُقاس على البطاقة لا على النافذة.** البطاقة ~212px على 1280
-     و~276px على 1536 (أربعٌ في الصفّ مع الشريط)، وأعرض على اللوح والجوال
-     (اثنتان أو واحدة). فاستعلامات الحاوية تقرّر: رقاقة الصفّ بجانبه أو تحته،
-     وبلاطات الكاميرات ٢×٢ أو شرائط، والحلقة بجانب الأرقام كبيرةً أو صغيرة.
+   ③ **الوضع الداكن ليس قشرة** (المواد ٣٢–٣٤): كل لونٍ هنا رمزٌ ينقلب، وما
+     يحتاج قيمةً أخرى في الداكن يُعاد تعريفه تحت `.dark` — الرقاقات تصير
+     غسلاتٍ بنصٍّ ساطع، والخريطة أرضًا ليلية بشوارع أفتح منها ودبابيس فاتحة.
+     وإطار الكاميرا شاشةٌ داكنة في الوضعين من الزوج الثابت
+     (`--stage-ink` · `--stage-paper`).
 
-   ④ الأهداف: الروابط تأخذ أرضيتها من القاعدة العامّة
-     `:where(a[href]) { min-block-size: 40px | 44px }` (فأرة | لمس) — لا
-     تُكتب هنا أرضيةٌ أدنى تغلبها. وحلقة التركيز من `.nx-focus-ring` المشتركة
-     خارج الطبقات، ونصف قطرها مثبَّتٌ هنا بنوعيّة أعلى من `border-radius:
-     inherit` في القاعدة العامّة. وكل نصٍّ ≥ 12px.
+   ④ الأهداف: الروابط تأخذ أرضيتها من القاعدة العامّة (40px فأرة · 44px لمس).
+     وما رُسم أصغر (قرص «عرض الكل» 22px · زرّ التوسيع 30px · «إدارة الدوريات»
+     28px) وجهٌ مرسوم داخل هدفٍ بحجمه الكامل، بهامشٍ سالب لا يزيح الإيقاع.
+     ونصف قطر حلقة التركيز مثبَّتٌ بنوعيّةٍ أعلى من `border-radius: inherit`
+     العامّة. وكل نصٍّ ≥ 12px.
    ============================================================================ */
 
-/* ── الصفوف (المخاطر · الحوادث) ────────────────────────────────────────── */
-.nx-ops-body {
-  container: nx-ops / inline-size;
+/* ── الصفّ: نسب البطاقات المرسومة على المكتب ───────────────────────────── */
+.nx-ops-quad {
+  /* الكحلي المرسوم للعناوين والأرقام (كحليٌّ فاتحًا؛ فاتحٌ مزرقّ داكنًا). */
+  --ops-navy: color-mix(in srgb, var(--ink) 82%, var(--sd-royal));
+  /* رماديّ المكان المائل إلى الأزرق كما قِيس (104,106,131). */
+  --ops-slate: color-mix(in srgb, var(--ink-3) 86%, var(--sd-royal));
+  /* رماديّ الزمن والوسم — أفتح قليلًا، وفوق 4.5:1 على السطح. */
+  --ops-muted: color-mix(in srgb, var(--ink-3) 88%, var(--surface));
+  --ops-line: color-mix(in srgb, var(--sd-royal) 6%, var(--hairline-soft));
+  /* فاصل الصفوف كما قِيس (249,250,254 على الأبيض) — أخفت من حدّ البطاقة. */
+  --ops-divider: color-mix(in srgb, var(--sd-royal) 4%, var(--surface));
+  --ops-pill: color-mix(in srgb, var(--sd-azure-soft) 10%, var(--surface));
+  --ops-pill-ink: color-mix(in srgb, var(--sd-royal) 82%, var(--ink));
+  --ops-up: var(--sd-emerald);
+  --ops-lift: 0 1px 2px var(--glass-shade), 0 4px 12px -6px var(--glass-shade);
 }
 
+/* المقيس على الصورة: البطاقات 351 · 322 · 307 · 267 بفواصل 10px (240→1518)،
+   فالفاصل الأفقي هنا 10px لهذا الصفّ وحده — والفاصل بين الصفوف ملك الحاوية. */
+@media (min-width: 1280px) {
+  .nx-home-quad.nx-ops-quad {
+    grid-template-columns:
+      minmax(0, 352fr) minmax(0, 321fr) minmax(0, 307fr)
+      minmax(0, 267fr);
+    column-gap: 10px;
+  }
+}
+
+/* ── البطاقة: سطحٌ أبيض بحدٍّ خفيف ونصف قطر 14px ─────────────────────────
+   نوعيّة صنفين لتعلو `.nx-home-panel` (styles.css) — السطح والظلّ منه.
+   الإيقاع المقيس: مركز العنوان على 18px من الحافة، وأوّل صفّ على 34px،
+   وارتفاع البطاقة ≈ 250px (591→841) — والوسم الواجب (N3) داخله. */
+.nx-home-panel.nx-ops-card {
+  container: nx-ops-card / inline-size;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  padding: 7px 12px 5px;
+  border: 1px solid var(--ops-line);
+  border-radius: 14px;
+  color: var(--ops-navy);
+}
+
+/* ── الرأس: العنوان يمينًا، «عرض الكل ‹» قرصًا يسارًا ─────────────────── */
+.nx-ops-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 22px;
+}
+
+.nx-ops-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-inline-size: 0;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 22px;
+  color: var(--ops-navy);
+}
+
+.nx-ops-title > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* رمز «أبرز المخاطر»: لوحٌ أزرق ممتلئ بأسطرٍ من لون السطح. */
+.nx-ops-head-glyph {
+  flex: none;
+  inline-size: 15px;
+  block-size: 17px;
+}
+
+.nx-ops-head-glyph-body,
+.nx-ops-head-glyph-clip {
+  fill: var(--sd-azure);
+}
+
+.nx-ops-head-glyph-clip {
+  stroke: var(--surface);
+  stroke-width: 1;
+}
+
+.nx-ops-head-glyph-line {
+  fill: none;
+  stroke: var(--surface);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* شارة «محاكاة» (المادة ٦، N2) — بهيئة وسم صفّ المؤشرات نفسها. */
+.nx-ops-sim-slot {
+  display: flex;
+  flex: none;
+  min-inline-size: 0;
+}
+
+.nx-ops-sim {
+  flex: none;
+  padding-inline: 6px;
+  border: 1px solid color-mix(in srgb, var(--tone-amber) 35%, var(--surface));
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--tone-amber);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+/* الهدف بحجمه الكامل، والقرص المرسوم (22px) داخله؛ الهامش السالب يُبقي
+   الرأس بارتفاع القرص كما رُسم. */
+.nx-ops-more {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  margin-block: -11px;
+  margin-inline-start: auto;
+  min-block-size: 44px;
+  border-radius: 999px;
+  color: var(--ops-pill-ink);
+  text-decoration: none;
+}
+
+/* القرص المرسوم ≈ 68×21 بنصٍّ متوسط الوزن؛ والنصّ هنا 12px (أرضية القراءة)
+   فالحشو والفجوة أضيق ليقترب العرض من المرسوم. */
+.nx-ops-more-face {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  block-size: 22px;
+  padding-inline: 10px 7px;
+  border-radius: 999px;
+  background: var(--ops-pill);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.nx-ops-more-face svg {
+  flex: none;
+  inline-size: 12px;
+  block-size: 12px;
+  stroke-width: 2.6;
+}
+
+.nx-ops-flip {
+  rotate: 180deg;
+}
+
+.nx-ops-more:focus-visible {
+  border-radius: 999px;
+}
+
+@media (hover: hover) {
+  .nx-ops-more:hover .nx-ops-more-face {
+    background: color-mix(in srgb, var(--sd-azure-soft) 18%, var(--surface));
+  }
+}
+
+/* ── الجسم والوسم ───────────────────────────────────────────────────────── */
+.nx-ops-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-block-size: 0;
+  margin-block-start: 4px;
+}
+
+/* وسم N3 — سطرٌ واحد هادئ في أسفل البطاقة، يملأ الهامش السفلي المرسوم
+   (≈ 14–30px تحت آخر صفّ) ولا يضيف ارتفاعًا يُذكر. */
+.nx-ops-caption {
+  margin: 3px 0 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14px;
+  color: var(--ops-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nx-ops-empty {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.nx-ops-failed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  margin-block-start: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.nx-ops-retry {
+  min-block-size: 44px;
+  padding-inline: 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.nx-ops-retry:focus-visible {
+  border-radius: 10px;
+}
+
+/* هيكل الانتظار — صفوفٌ وإطاراتٌ ساكنة بأحجامها المرسومة. */
+.nx-ops-wait {
+  display: grid;
+  gap: 9px;
+  margin-block-start: 4px;
+}
+
+.nx-ops-wait-item {
+  block-size: 41px;
+  border-radius: 8px;
+}
+
+.nx-ops-wait[data-kind="tile"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 7px;
+  margin: 0;
+}
+
+.nx-ops-wait[data-kind="tile"] .nx-ops-wait-item {
+  block-size: 80px;
+  border-radius: 6px;
+}
+
+/* ── القوائم (المخاطر · الحوادث) ──────────────────────────────────────────
+   الصفّ كما رُسم (البطاقة `rtl`): الصورة يمينًا، والعنوان والمكان، ثم
+   الرقاقة فوق الزمن يسارًا. والفاصل خطٌّ باهت بين الصفوف. */
 .nx-ops-list {
   display: grid;
-  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* الصفّ كما في الصورة (البطاقة `rtl`): البلاطة في البداية، والعنوان والمكان
-   في الوسط، والرقاقة والوقت في النهاية. */
+/* الفاصل المرسوم أخفت من حدّ البطاقة: غسلةٌ زرقاء ≈ 3% فوق السطح. */
+.nx-ops-list > li + li {
+  border-block-start: 1px solid var(--ops-divider);
+}
+
+/* الخطوة المقيسة بين الصفوف ≈ 50px (الصور على 631 · 680 · 730 · 782)؛ هنا
+   48 + الفاصل = 49 كي يتّسع أسفل البطاقة لوسم N3 دون أن تطول. */
 .nx-ops-row {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
-  grid-template-areas: "tile main aside";
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  grid-template-areas: "media main aside";
   align-items: center;
-  column-gap: 10px;
-  row-gap: 6px;
-  padding: 6px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  color: var(--ink);
+  column-gap: 9px;
+  min-block-size: 48px;
+  padding-block: 4px;
+  border-radius: 8px;
+  color: inherit;
   text-decoration: none;
 }
 
+.nx-ops-list[data-kind="incident"] .nx-ops-row {
+  grid-template-columns: 41px minmax(0, 1fr) auto;
+}
+
 .nx-ops-row:focus-visible {
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 @media (hover: hover) {
   .nx-ops-row:hover {
     background: var(--chip-hover);
-    border-color: var(--hairline-soft);
   }
 }
 
-/* ── بلاطة الفئة: غسلةٌ من لون الهوية والرمز بلونه الكامل ──────────────────
-   الفاتح: نبرةٌ عميقة على غسلةٍ فاتحة (رمزٌ داكن)، والداكن: نبرةٌ مشبعة على
-   غسلةٍ زجاجية (رمزٌ ساطع) — الرموز نفسها تنقلب، فلا قاعدة لكل وضع. */
+.nx-ops-media {
+  grid-area: media;
+  display: flex;
+}
+
+.nx-ops-thumb {
+  display: block;
+  inline-size: 100%;
+  block-size: 39px;
+  object-fit: cover;
+  border-radius: 5px;
+  background: var(--chip-strong);
+}
+
+/* بلاطة الفئة للصفوف الحيّة: غسلةٌ من لون الهوية والرمز بلونه الكامل. */
 .nx-ops-tile {
-  grid-area: tile;
   display: grid;
   place-items: center;
-  inline-size: 40px;
-  block-size: 40px;
-  border-radius: 12px;
+  inline-size: 100%;
+  block-size: 39px;
+  border-radius: 5px;
   color: var(--ops-tone, var(--tone-blue));
   background: color-mix(in srgb, var(--ops-tone, var(--tone-blue)) 14%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ops-tone, var(--tone-blue)) 26%, transparent);
 }
 
 .nx-ops-tile svg {
-  inline-size: 20px;
-  block-size: 20px;
+  inline-size: 19px;
+  block-size: 19px;
 }
 
 .nx-ops-main {
@@ -95,13 +352,13 @@
   min-inline-size: 0;
 }
 
-.nx-ops-title {
+.nx-ops-row-title {
   display: -webkit-box;
   overflow: hidden;
   font-size: 13px;
-  font-weight: 800;
-  line-height: 1.45;
-  color: var(--ink);
+  font-weight: 700;
+  line-height: 18px;
+  color: var(--ops-navy);
   overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -109,30 +366,16 @@
 }
 
 .nx-ops-meta {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-inline-size: 0;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--ink-3);
-}
-
-.nx-ops-meta svg {
-  flex: none;
-  inline-size: 14px;
-  block-size: 14px;
-}
-
-.nx-ops-meta > span {
-  min-inline-size: 0;
   overflow: hidden;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17px;
+  color: var(--ops-slate);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* الطرف الآخر: الرقاقة فوق الوقت، محاذاةً إلى نهاية السطر. */
+/* الطرف الآخر: الرقاقة فوق الزمن، محاذاةً إلى نهاية السطر (يسارًا). */
 .nx-ops-aside {
   grid-area: aside;
   display: flex;
@@ -144,471 +387,722 @@
 
 .nx-ops-time {
   font-size: 12px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--ink-3);
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--ops-muted);
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
-/* البطاقة الضيّقة (~212px على 1280): الرقاقة والوقت سطرٌ تحت العنوان، فلا
-   يُضغط العنوان إلى عمودٍ من ستين بكسلًا بجانب رقاقةٍ عرضها تسعون. */
-@container nx-ops (max-width: 259px) {
-  .nx-ops-row {
-    grid-template-columns: 40px minmax(0, 1fr);
-    grid-template-areas:
-      "tile main"
-      "tile aside";
-    align-items: start;
-  }
-  .nx-ops-aside {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-start;
-    column-gap: 8px;
-  }
-}
-
-/* ── الرقاقة: شكلٌ وكلمة، واللون ثالثهما لا وحيدهما (WCAG 2.2 §1.4.1) ─────
-   النصّ والرمز نغمةٌ ممزوجة بالحبر: داكنةٌ على الفاتح، وساطعةٌ على الداكن
-   وعلى بلاطة الكاميرا (حبرها المحلّي فاتح) — فوق 4.5:1 في الأحوال الثلاث. */
+/* ── الرقاقة: الكلمة كما رُسمت + شكل `STAT_TONES` ─────────────────────────
+   الفاتح كما رُسم: خطرٌ أحمر مصمت بنصٍّ أبيض، وتحذيرٌ كهرماني فاتح بنصٍّ
+   بنّي، ومتابعةٌ زرقاء فاتحة، وسليمٌ أخضر فاتح — كلٌّ فوق 4.5:1. */
 .nx-ops-chip {
+  --ops-chip-bg: var(--chip-strong);
+  --ops-chip-fg: var(--ink-2);
+  --ops-chip-glyph: currentColor;
+  --ops-chip-mark: var(--ops-chip-bg);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   max-inline-size: 100%;
-  padding: 1px 8px;
-  border: 1px solid color-mix(in srgb, var(--chip-tone, var(--ink-3)) 42%, transparent);
+  block-size: 19px;
+  padding-inline: 9px 7px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--chip-tone, var(--ink-3)) 12%, var(--surface));
-  color: color-mix(in srgb, var(--chip-tone, var(--ink-3)) 65%, var(--ink));
+  background: var(--ops-chip-bg);
+  color: var(--ops-chip-fg);
   font-size: 12px;
   font-weight: 700;
-  line-height: 1.6;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.nx-ops-chip-word {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nx-ops-chip[data-status="danger"] {
+  --ops-chip-bg: var(--sd-ruby);
+  --ops-chip-fg: var(--stage-paper);
+  --ops-chip-glyph: var(--stage-paper);
+  --ops-chip-mark: var(--sd-ruby);
+}
+
+.nx-ops-chip[data-status="warning"] {
+  --ops-chip-bg: color-mix(in srgb, var(--stage-amber) 46%, var(--stage-paper));
+  --ops-chip-fg: color-mix(in srgb, var(--stage-amber) 34%, var(--stage-ink));
+  --ops-chip-glyph: var(--ops-chip-fg);
+}
+
+.nx-ops-chip[data-status="info"] {
+  --ops-chip-bg: color-mix(in srgb, var(--sd-azure-soft) 27%, var(--stage-paper));
+  --ops-chip-fg: color-mix(in srgb, var(--sd-royal) 74%, var(--stage-ink));
+  --ops-chip-glyph: var(--sd-azure);
+  --ops-chip-mark: var(--stage-paper);
+}
+
+.nx-ops-chip[data-status="healthy"] {
+  --ops-chip-bg: color-mix(in srgb, var(--stage-emerald) 34%, var(--stage-paper));
+  --ops-chip-fg: color-mix(in srgb, var(--stage-emerald) 40%, var(--stage-ink));
+  --ops-chip-glyph: var(--sd-emerald);
+  --ops-chip-mark: var(--stage-paper);
 }
 
 /* «لم يُقَس» وما لا تعرفه الخريطة: دائرةٌ متقطّعة وحدٌّ متقطّع (عرف §3.5). */
-.nx-ops-chip[data-dashed] {
-  border-style: dashed;
+.nx-ops-chip[data-status="neutral"] {
+  border: 1px dashed var(--hairline);
 }
 
-.nx-ops-chip svg {
+.nx-ops-glyph {
   flex: none;
-  inline-size: 14px;
-  block-size: 14px;
+  inline-size: 12px;
+  block-size: 12px;
+  overflow: visible;
 }
 
-.nx-ops-chip > span {
-  min-inline-size: 0;
-  text-wrap: balance;
+.nx-ops-glyph-shape {
+  fill: var(--ops-chip-glyph, currentColor);
+  stroke: var(--ops-chip-glyph, currentColor);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
 }
 
-/* ── الدوريات الميدانية ────────────────────────────────────────────────────
-   كما في الصورة: الأرقام في البداية (يمينًا)، والمرئيّ في النهاية (يسارًا)
-   بطول البطاقة. والمرئيّ هنا حلقة إنجاز نقاط التفتيش بدل خريطة المسار —
-   لا هندسة مسار في المخطط (§9). */
+.nx-ops-glyph-mark {
+  fill: none;
+  stroke: var(--ops-chip-mark, var(--surface));
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nx-ops-glyph-ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-dasharray: 2 1.6;
+}
+
+/* ── الدوريات الميدانية: الخريطة بعرض البطاقة، وعمود الأرقام فوقها يمينًا ──
+   الثلاثة في خليّة شبكةٍ واحدة (لا تموضعٌ مطلق): الخريطة تملؤها، وزرّ
+   التوسيع في ركنها الأيسر الأسفل، والعمود في ركنها الأيمن. */
 .nx-ops-patrol {
-  container: nx-ops-patrol / inline-size;
+  display: grid;
+  flex: 1 1 auto;
+  grid-template: "stack" minmax(0, 1fr) / minmax(0, 1fr);
+  min-block-size: 190px;
 }
 
-.nx-ops-patrol-grid {
+.nx-ops-patrol > * {
+  grid-area: stack;
+}
+
+.nx-ops-patrol-map {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 0;
+  border-radius: 10px;
+}
+
+.nx-ops-patrol-expand {
+  z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "total visual"
-    "split visual"
-    "cta visual";
-  grid-template-rows: auto 1fr auto;
-  gap: 10px 12px;
-  align-items: start;
+  place-items: center;
+  align-self: end;
+  justify-self: end;
+  inline-size: 44px;
+  block-size: 44px;
+  margin-block-end: -1px;
+  margin-inline-end: -1px;
+  border-radius: 10px;
+  color: var(--ops-navy);
+  text-decoration: none;
+}
+
+.nx-ops-patrol-expand-face {
+  display: grid;
+  place-items: center;
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--ops-lift);
+}
+
+.nx-ops-patrol-expand-face svg {
+  inline-size: 16px;
+  block-size: 16px;
+  stroke-width: 2.4;
+}
+
+/* العمود المرسوم ≈ 118px — وأرضية 12px لكلمة «قيد التنفيذ» تحتاج 120 كي لا
+   تُقصّ. */
+.nx-ops-patrol-aside {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  justify-self: start;
+  gap: 5px;
+  inline-size: 122px;
+  margin-block: 5px 6px;
+  margin-inline-start: 4px;
+}
+
+.nx-ops-patrol-total,
+.nx-ops-patrol-split {
+  display: flex;
+  flex-direction: column;
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: var(--ops-lift);
+  color: inherit;
+  text-decoration: none;
 }
 
 .nx-ops-patrol-total {
-  grid-area: total;
-  display: flex;
-  flex-direction: column;
   gap: 2px;
-  padding: 4px 6px;
-  border-radius: 12px;
-  color: var(--ink);
-  text-decoration: none;
+  padding: 6px 9px 5px;
 }
 
 .nx-ops-patrol-label {
   font-size: 12px;
-  font-weight: 700;
-  line-height: 1.4;
-  color: var(--ink-2);
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--ops-navy);
+  white-space: nowrap;
+}
+
+.nx-ops-patrol-figure {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
 }
 
 .nx-ops-patrol-value {
-  font-size: 26px;
-  font-weight: 900;
-  line-height: 1.2;
-  color: var(--ink);
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 29px;
+  color: var(--ops-navy);
   font-variant-numeric: tabular-nums;
 }
 
 .nx-ops-patrol-sub {
   font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--ink-3);
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--ops-muted);
 }
 
-/* موضع النسبة في الصورة: دائرةٌ متقطّعة = لم يُقَس (§3.5)، كسطر المؤشرات. */
 .nx-ops-change {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-block-start: 2px;
+  gap: 3px;
   font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--ink-3);
+  font-weight: 700;
+  line-height: 16px;
+  color: var(--ops-up);
+  white-space: nowrap;
 }
 
 .nx-ops-change svg {
   flex: none;
-  inline-size: 14px;
-  block-size: 14px;
+  inline-size: 13px;
+  block-size: 13px;
+  stroke-width: 2.6;
 }
 
-.nx-ops-patrol-visual {
-  grid-area: visual;
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.nx-ops-change[data-absent] {
+  color: var(--ops-muted);
+}
+
+.nx-ops-patrol-split {
+  flex: 1 1 auto;
   justify-content: center;
-  gap: 4px;
-  padding: 8px;
-  border: 1px solid var(--hairline-soft);
-  border-radius: 14px;
-  background: var(--chip);
-  color: var(--ink);
-  text-align: center;
-  text-decoration: none;
+  padding: 3px 8px 3px 9px;
 }
 
-/* الحلقة والنسبة في خليّةٍ واحدة مكدّستين بالشبكة — لا تموضعٌ مطلق، والنصّ
-   بالبكسل الحقيقي لا داخل viewBox يُحجَّم. */
-.nx-ops-ring {
-  display: grid;
-  place-items: center;
-  inline-size: 96px;
-  block-size: 96px;
-}
-
-.nx-ops-ring > * {
-  grid-area: 1 / 1;
-}
-
-.nx-ops-ring svg {
-  inline-size: 100%;
-  block-size: 100%;
-}
-
-.nx-ops-ring-track {
-  stroke: var(--hairline);
-}
-
-.nx-ops-ring-arc {
-  stroke: var(--tone-blue);
-  stroke-linecap: round;
-}
-
-.nx-ops-ring-value {
-  font-size: 18px;
-  font-weight: 900;
-  line-height: 1;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.nx-ops-ring-caption {
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.4;
-  color: var(--ink-2);
-}
-
-.nx-ops-ring-count {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--ink-3);
-  font-variant-numeric: tabular-nums;
-}
-
-.nx-ops-ring-absent {
-  inline-size: 40px;
-  block-size: 40px;
-  color: var(--ink-3);
-}
-
-.nx-ops-split {
-  grid-area: split;
-  display: grid;
-  gap: 2px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
+/* خطوة الصفوف المرسومة ≈ 26px. */
 .nx-ops-split-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 6px;
-  border-radius: 10px;
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.4;
-  text-decoration: none;
-}
-
-.nx-ops-split-row svg {
-  flex: none;
-  inline-size: 16px;
-  block-size: 16px;
-  color: var(--split-tone, var(--ink-3));
+  gap: 7px;
+  min-block-size: 25px;
 }
 
 .nx-ops-split-count {
-  margin-inline-start: auto;
-  font-weight: 900;
+  flex: none;
+  min-inline-size: 24px;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--ops-navy);
   font-variant-numeric: tabular-nums;
+  text-align: end;
 }
 
-.nx-ops-cta {
-  grid-area: cta;
-  display: inline-flex;
+.nx-ops-split-label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--ops-slate);
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* نقطة التقسيم بشكل حكمها (دائرة · مثلث · مثمّن) وبلون الصورة. */
+.nx-ops-dot {
+  inline-size: 12px;
+  block-size: 12px;
+}
+
+.nx-ops-dot .nx-ops-glyph-mark {
+  display: none;
+}
+
+.nx-ops-dot[data-status="healthy"] {
+  --ops-chip-glyph: var(--stage-emerald);
+}
+
+.nx-ops-dot[data-status="warning"] {
+  --ops-chip-glyph: var(--stage-amber);
+}
+
+.nx-ops-dot[data-status="danger"] {
+  --ops-chip-glyph: var(--stage-rose);
+}
+
+.nx-ops-dot[data-status="info"] {
+  --ops-chip-glyph: var(--sd-azure-soft);
+}
+
+.nx-ops-dot[data-status="neutral"] {
+  color: var(--ops-muted);
+}
+
+.nx-ops-patrol-none {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+/* «إدارة الدوريات»: وجهٌ 98×28 يمينًا، في هدفٍ بارتفاعه الكامل. */
+.nx-ops-patrol-cta {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  align-self: flex-start;
   min-block-size: 44px;
-  padding: 0 12px;
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
-  background: var(--chip);
-  color: var(--tone-blue);
-  font-size: 13px;
-  font-weight: 800;
+  margin-block: -8px;
+  border-radius: 10px;
+  color: var(--ops-navy);
   text-decoration: none;
 }
 
-.nx-ops-cta svg {
+.nx-ops-patrol-cta-face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  block-size: 28px;
+  padding-inline: 10px;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--ops-lift);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.nx-ops-patrol-cta-face svg {
   flex: none;
-  inline-size: 18px;
-  block-size: 18px;
+  inline-size: 15px;
+  block-size: 15px;
 }
 
 .nx-ops-patrol-total:focus-visible,
-.nx-ops-split-row:focus-visible,
-.nx-ops-cta:focus-visible {
-  border-radius: 12px;
+.nx-ops-patrol-split:focus-visible {
+  border-radius: 9px;
 }
 
-.nx-ops-patrol-visual:focus-visible {
-  border-radius: 14px;
+.nx-ops-patrol-expand:focus-visible,
+.nx-ops-patrol-cta:focus-visible {
+  border-radius: 10px;
+}
+
+.nx-ops-patrol-aside .nx-ops-wait {
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1 1 auto;
+  margin: 0;
+}
+
+.nx-ops-patrol-aside .nx-ops-wait-item {
+  block-size: auto;
+  min-block-size: 56px;
+  border-radius: 9px;
 }
 
 @media (hover: hover) {
   .nx-ops-patrol-total:hover,
-  .nx-ops-split-row:hover {
-    background: var(--chip-hover);
-  }
-  .nx-ops-patrol-visual:hover,
-  .nx-ops-cta:hover {
-    border-color: var(--hairline-hover);
-  }
-}
-
-/* البطاقة الضيّقة: الحلقة صغيرةً بجانب الإجمالي، والتقسيم والزرّ بعرضها. */
-@container nx-ops-patrol (max-width: 259px) {
-  .nx-ops-patrol-grid {
-    grid-template-areas:
-      "total visual"
-      "split split"
-      "cta cta";
-    grid-template-rows: auto auto auto;
-  }
-  .nx-ops-patrol-visual {
-    padding: 6px;
-  }
-  .nx-ops-ring {
-    inline-size: 64px;
-    block-size: 64px;
-  }
-  .nx-ops-ring-value {
-    font-size: 14px;
+  .nx-ops-patrol-split:hover,
+  .nx-ops-patrol-expand:hover .nx-ops-patrol-expand-face,
+  .nx-ops-patrol-cta:hover .nx-ops-patrol-cta-face {
+    box-shadow:
+      var(--ops-lift),
+      0 0 0 1px var(--hairline-hover);
   }
 }
 
-/* ── كاميرات مباشرة: بطاقات حالة بهيئة إطار فيديو — شاشة داكنة في الوضعين ── */
+/* ── خريطة المسارات (`PatrolRouteMap`) — كل لونٍ رمز، وينقلب مع الوضع ───── */
+/* المقيس على الصورة: أرضٌ (237,239,245) وشوارع بيضاء ناعمة، ومساراتٌ سماوية
+   رفيعة (≈ 75,149,212 بعد التنعيم)، ودبابيس كحلية (≈ 17,52,94) وأوّلها فحمي. */
+.nx-patrol-map {
+  --pm-ground: color-mix(
+    in srgb,
+    var(--sd-royal) 3%,
+    color-mix(in srgb, var(--ink) 5%, var(--surface))
+  );
+  --pm-street: color-mix(in srgb, var(--surface) 72%, var(--pm-ground));
+  --pm-route: color-mix(in srgb, var(--sd-azure-soft) 50%, var(--sd-cyan));
+  --pm-route-deep: color-mix(in srgb, var(--sd-azure) 72%, var(--sd-cyan));
+  --pm-route-glow: color-mix(in srgb, var(--pm-route) 22%, transparent);
+  --pm-pin: color-mix(in srgb, var(--sd-ink) 62%, var(--sd-royal));
+  --pm-pin-deep: color-mix(in srgb, var(--sd-ink) 92%, var(--sd-royal));
+  --pm-glyph: var(--surface);
+  --pm-ok: var(--stage-emerald);
+  --pm-late: var(--stage-rose);
+  --pm-info: var(--sd-azure);
+  --pm-park: color-mix(in srgb, var(--stage-emerald) 30%, var(--pm-ground));
+  --pm-water: color-mix(in srgb, var(--sd-azure-soft) 42%, var(--pm-ground));
+}
+
+.pm-ground {
+  fill: var(--pm-ground);
+}
+
+.pm-tint {
+  fill: color-mix(in srgb, var(--tone-violet) 16%, var(--pm-ground));
+}
+
+.pm-tint[data-tone="rose"] {
+  fill: color-mix(in srgb, var(--tone-rose) 14%, var(--pm-ground));
+}
+
+.pm-tint[data-tone="emerald"] {
+  fill: color-mix(in srgb, var(--stage-emerald) 22%, var(--pm-ground));
+}
+
+.pm-park {
+  fill: var(--pm-park);
+}
+
+.pm-water {
+  fill: var(--pm-water);
+}
+
+.pm-street {
+  fill: none;
+  stroke: var(--pm-street);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.pm-street-mid {
+  stroke-width: 2.2;
+}
+
+.pm-street-major {
+  stroke-width: 3.4;
+}
+
+.pm-trail {
+  fill: none;
+  stroke: var(--pm-pin-deep);
+  stroke-width: 1.3;
+  stroke-dasharray: 1.6 2;
+  stroke-linecap: round;
+}
+
+.pm-trail-pin {
+  fill: var(--pm-pin-deep);
+}
+
+/* الخطّ رفيعٌ بهالةٍ خفيفة كما رُسم: طبقة هالة عريضة شفّافة تحت الخطّ. */
+.pm-route-glow {
+  fill: none;
+  stroke: var(--pm-route-glow);
+  stroke-width: 3.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pm-route {
+  fill: none;
+  stroke: var(--pm-route);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pm-node {
+  fill: var(--surface);
+  stroke: var(--pm-route);
+  stroke-width: 1;
+}
+
+.pm-node-solid {
+  fill: var(--pm-route-deep);
+  stroke: none;
+}
+
+.pm-check {
+  fill: var(--pm-ground);
+  stroke: var(--pm-ok);
+  stroke-width: 1.8;
+}
+
+.pm-check[data-tone="late"] {
+  stroke: var(--pm-late);
+}
+
+.pm-check[data-tone="info"] {
+  stroke: var(--pm-info);
+}
+
+.pm-ping circle {
+  fill: var(--pm-info);
+}
+
+.pm-ping-mark {
+  fill: var(--pm-glyph);
+}
+
+.pm-pin-body {
+  fill: var(--pm-pin);
+  filter: drop-shadow(0 1px 1.2px var(--glass-shade));
+}
+
+.pm-pin-deep .pm-pin-body {
+  fill: var(--pm-pin-deep);
+}
+
+.pm-pin-glyph {
+  color: var(--pm-glyph);
+}
+
+/* ── كاميرات مباشرة: صورٌ توضيحية ٢×٢ وشريط تسمية داكن بنقطةٍ حمراء ─────
+   الإطار شاشةٌ داكنة في الوضعين (`--stage-*` لا ينقلب)، فالنصّ فاتحٌ عليه
+   دائمًا بتباينٍ فوق 7:1. والنقطة زينةٌ كما رُسمت لا ادّعاء بثّ: الوسم
+   «صورة توضيحية — لا بثّ مرتبط» ظاهرٌ تحت الشبكة، وكلمة «مباشر» لا تُكتب. */
+/* المقيس: إطارات 124px بفاصل 6px أفقيًّا و8px رأسيًّا، تبدأ على 42px من
+   الحافة وتنتهي على 219px — وتحتها الوسم في الهامش المرسوم الفارغ. والبطاقة
+   أضيق حشوًا جانبيًّا (7px) كي تبلغ الإطارات عرضها المرسوم. */
+.nx-home-panel.nx-ops-card.nx-ops-card-cams {
+  padding-inline: 8px;
+}
+
 .nx-ops-cams {
-  container: nx-ops-cams / inline-size;
-}
-
-.nx-ops-cam-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
+  gap: 8px 6px;
+  margin: 8px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.nx-ops-cam-grid > li {
+.nx-ops-cams > li {
   display: flex;
   min-inline-size: 0;
 }
 
 .nx-ops-cam {
-  /* رموز الشاشة الداكنة محلّيًّا (②) — من الزوج الثابت لا من قيمٍ جديدة. */
-  --ink: var(--stage-paper);
-  --ink-2: color-mix(in srgb, var(--stage-paper) 86%, transparent);
-  --ink-3: color-mix(in srgb, var(--stage-paper) 74%, transparent);
-  --surface: var(--stage-ink);
-  --chip: color-mix(in srgb, var(--stage-paper) 10%, transparent);
-  --hairline: color-mix(in srgb, var(--stage-paper) 24%, transparent);
-  position: relative;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 6px;
   min-inline-size: 0;
-  aspect-ratio: 16 / 11;
-  padding: 10px 10px 0;
   overflow: hidden;
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--stage-paper) 3%, transparent) 0 1px,
-      transparent 1px 3px
-    ),
-    radial-gradient(
-      120% 90% at 50% 35%,
-      color-mix(in srgb, var(--tone-cyan) 18%, transparent),
-      transparent 70%
-    ),
-    var(--stage-ink);
-  color: var(--ink);
+  border-radius: 6px;
+  background: var(--stage-ink);
   text-decoration: none;
 }
 
-/* زوايا العدسة — زينةٌ ساكنة في الحواشي، لا طبقة فوق المحتوى: المحتوى
-   مموضعٌ نسبيًّا بعدها في الشجرة فيُرسم فوقها. */
-.nx-ops-cam::before {
-  --vf: color-mix(in srgb, var(--stage-paper) 42%, transparent);
-  content: "";
-  position: absolute;
-  inset: 4px;
-  pointer-events: none;
-  background:
-    linear-gradient(var(--vf), var(--vf)) left top / 10px 1px no-repeat,
-    linear-gradient(var(--vf), var(--vf)) left top / 1px 10px no-repeat,
-    linear-gradient(var(--vf), var(--vf)) right top / 10px 1px no-repeat,
-    linear-gradient(var(--vf), var(--vf)) right top / 1px 10px no-repeat,
-    linear-gradient(var(--vf), var(--vf)) left bottom / 10px 1px no-repeat,
-    linear-gradient(var(--vf), var(--vf)) left bottom / 1px 10px no-repeat,
-    linear-gradient(var(--vf), var(--vf)) right bottom / 10px 1px no-repeat,
-    linear-gradient(var(--vf), var(--vf)) right bottom / 1px 10px no-repeat;
-}
-
-.nx-ops-cam > * {
-  position: relative;
-}
-
 .nx-ops-cam:focus-visible {
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
-@media (hover: hover) {
-  .nx-ops-cam:hover {
-    border-color: color-mix(in srgb, var(--tone-cyan) 60%, var(--hairline));
-  }
+.nx-ops-cam-img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
 }
 
-.nx-ops-cam-head {
+.nx-ops-cam-label {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 6px;
-}
-
-.nx-ops-cam-code {
-  display: inline-flex;
+  flex: 1 0 auto;
   align-items: center;
   gap: 4px;
-  min-inline-size: 0;
+  min-block-size: 21px;
+  padding: 0 6px 1px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--stage-ink) 78%, var(--stage-ink-2)),
+    var(--stage-ink)
+  );
+  color: var(--stage-paper);
   font-size: 12px;
-  font-weight: 800;
-  line-height: 1.5;
-  color: var(--ink);
+  font-weight: 600;
+  line-height: 16px;
 }
 
-.nx-ops-cam-code svg {
+.nx-ops-cam-dot {
   flex: none;
-  inline-size: 16px;
-  block-size: 16px;
-  color: var(--ink-2);
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--stage-rose);
 }
 
-.nx-ops-cam-alert {
-  display: flex;
-  min-inline-size: 0;
-}
-
-/* شريط التسمية أسفل الإطار — موضع «مباشر» في الصورة: الموقع والوقت، بلا
-   ادّعاء بثّ. */
-.nx-ops-cam-foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2px 8px;
-  margin-block-start: auto;
-  margin-inline: -10px;
-  padding: 4px 10px 6px;
-  border-block-start: 1px solid var(--hairline);
-  background: color-mix(in srgb, var(--stage-ink) 72%, transparent);
-}
-
-.nx-ops-cam-site {
+.nx-ops-cam-name {
   min-inline-size: 0;
   overflow: hidden;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.5;
-  color: var(--ink);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.nx-ops-cam-time {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--ink-3);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+@media (hover: hover) {
+  .nx-ops-cam:hover {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tone-cyan) 60%, transparent);
+  }
 }
 
-/* البطاقة الضيّقة (~212px على 1280): أربعة شرائط بعرضها بدل ٢×٢ من مئة
-   بكسل — الإطار يتّسع ولا يُقصّ نصّه. */
-@container nx-ops-cams (max-width: 271px) {
-  .nx-ops-cam-grid {
-    grid-template-columns: minmax(0, 1fr);
+/* ── الوضع الداكن ───────────────────────────────────────────────────────── */
+.dark .nx-ops-quad {
+  --ops-line: var(--hairline-soft);
+  --ops-divider: color-mix(in srgb, var(--hairline-soft) 70%, transparent);
+  --ops-pill: color-mix(in srgb, var(--sd-azure-soft) 12%, var(--surface));
+  --ops-pill-ink: var(--sd-azure-soft);
+  --ops-up: var(--tone-emerald);
+  --ops-muted: var(--ink-3);
+}
+
+.dark .nx-ops-chip[data-status="danger"] {
+  --ops-chip-bg: color-mix(in srgb, var(--stage-rose) 80%, var(--stage-ink));
+  --ops-chip-mark: var(--ops-chip-bg);
+}
+
+.dark .nx-ops-chip[data-status="warning"] {
+  --ops-chip-bg: color-mix(in srgb, var(--stage-amber) 20%, var(--surface));
+  --ops-chip-fg: var(--tone-amber);
+}
+
+.dark .nx-ops-chip[data-status="info"] {
+  --ops-chip-bg: color-mix(in srgb, var(--sd-azure-soft) 18%, var(--surface));
+  --ops-chip-fg: var(--sd-azure-soft);
+  --ops-chip-glyph: var(--sd-azure-soft);
+  --ops-chip-mark: var(--ops-chip-bg);
+}
+
+.dark .nx-ops-chip[data-status="healthy"] {
+  --ops-chip-bg: color-mix(in srgb, var(--stage-emerald) 18%, var(--surface));
+  --ops-chip-fg: var(--tone-emerald);
+  --ops-chip-glyph: var(--tone-emerald);
+  --ops-chip-mark: var(--ops-chip-bg);
+}
+
+.dark .nx-patrol-map {
+  --pm-ground: color-mix(in srgb, var(--sd-azure-soft) 6%, var(--surface));
+  --pm-street: color-mix(in srgb, var(--ink) 14%, var(--pm-ground));
+  --pm-pin: color-mix(in srgb, var(--ink) 86%, var(--sd-royal));
+  --pm-pin-deep: var(--ink);
+  --pm-park: color-mix(in srgb, var(--stage-emerald) 22%, var(--pm-ground));
+  --pm-water: color-mix(in srgb, var(--sd-azure-soft) 26%, var(--pm-ground));
+}
+
+.dark .nx-ops-patrol-total,
+.dark .nx-ops-patrol-split,
+.dark .nx-ops-patrol-cta-face,
+.dark .nx-ops-patrol-expand-face {
+  background: color-mix(in srgb, var(--surface) 92%, var(--ink));
+  box-shadow:
+    var(--ops-lift),
+    inset 0 0 0 1px var(--hairline-soft);
+}
+
+/* ── الرأس الضيّق: العنوان لا يُقصّ ─────────────────────────────────────────
+   العنوان + «محاكاة» + «عرض الكل» يحتاج من عرض المحتوى (قِيس بخطّ الصفحة):
+   المخاطر 234 · الحوادث 241 · الدوريات 251 · الكاميرات 230. والاستعلام يقيس
+   صندوق المحتوى، فدون 252px (230 للكاميرات) تنزل خانة الشارة سطرًا كاملًا
+   تحت العنوان — والشارة ظاهرةٌ بحجمها — ويبقى العنوان و«عرض الكل» معًا. */
+@container nx-ops-card (max-width: 251px) {
+  .nx-ops-card:not(.nx-ops-card-cams) .nx-ops-head {
+    flex-wrap: wrap;
+    row-gap: 3px;
   }
-  .nx-ops-cam {
-    aspect-ratio: auto;
+  .nx-ops-card:not(.nx-ops-card-cams) .nx-ops-sim-slot {
+    flex-basis: 100%;
+    order: 3;
+  }
+}
+
+@container nx-ops-card (max-width: 229px) {
+  .nx-ops-card-cams .nx-ops-head {
+    flex-wrap: wrap;
+    row-gap: 3px;
+  }
+  .nx-ops-card-cams .nx-ops-sim-slot {
+    flex-basis: 100%;
+    order: 3;
+  }
+  /* الإطار ≈ 94px على 1280: الاسم يلتفّ سطرين ولا يُقصّ. */
+  .nx-ops-cam-name {
+    display: -webkit-box;
+    line-height: 14px;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  .nx-ops-cam-label {
+    padding-block: 3px;
+  }
+}
+
+/* ── البطاقة الضيّقة (≈240px على 1280): العمود أضيق والأرقام أصغر قليلًا ──
+   «قيد التنفيذ» 50px بخطّ الصفحة: الحشو والفجوات أضيق كي تبقى كاملة. */
+@container nx-ops-card (max-width: 259px) {
+  .nx-ops-patrol-aside {
+    inline-size: 108px;
+  }
+  .nx-ops-patrol-value {
+    font-size: 24px;
+  }
+  /* «إجمالي الدوريات اليوم» 100px لا يسعها سطرٌ في عمود 108px — تلتفّ. */
+  .nx-ops-patrol-total {
+    padding-inline: 7px;
+  }
+  .nx-ops-patrol-label {
+    white-space: normal;
+  }
+  .nx-ops-patrol-split {
+    padding-inline: 6px;
+  }
+  .nx-ops-split-row {
+    gap: 4px;
+  }
+  .nx-ops-split-count {
+    min-inline-size: 20px;
+  }
+  .nx-ops-dot {
+    inline-size: 10px;
+    block-size: 10px;
+  }
+  .nx-ops-row {
+    column-gap: 7px;
   }
 }
 
@@ -617,42 +1111,56 @@
   .nx-ops-tile {
     background: color-mix(in srgb, var(--ops-tone, var(--tone-blue)) 14%, var(--surface));
   }
-  .nx-ops-cam {
-    --ink-2: var(--stage-paper);
-    --ink-3: var(--stage-paper);
-    background: var(--stage-ink);
-  }
-  .nx-ops-cam-foot {
+  .nx-ops-cam-label {
     background: var(--stage-ink);
   }
 }
 
 @media (forced-colors: active) {
-  .nx-ops-row,
-  .nx-ops-cam,
-  .nx-ops-cta,
-  .nx-ops-patrol-visual {
-    border: 1px solid CanvasText;
-  }
-  .nx-ops-tile,
-  .nx-ops-chip {
+  .nx-home-panel.nx-ops-card,
+  .nx-ops-more-face,
+  .nx-ops-chip,
+  .nx-ops-sim,
+  .nx-ops-patrol-total,
+  .nx-ops-patrol-split,
+  .nx-ops-patrol-cta-face,
+  .nx-ops-patrol-expand-face,
+  .nx-ops-tile {
     border: 1px solid CanvasText;
     background: Canvas;
     color: CanvasText;
     box-shadow: none;
   }
-  .nx-ops-cam,
-  .nx-ops-cam-foot {
+  .nx-ops-glyph-shape,
+  .nx-ops-head-glyph-body,
+  .nx-ops-head-glyph-clip {
+    fill: CanvasText;
+    stroke: CanvasText;
+  }
+  .nx-ops-glyph-mark,
+  .nx-ops-head-glyph-line {
+    stroke: Canvas;
+  }
+  .nx-ops-cam {
+    border: 1px solid CanvasText;
+  }
+  .nx-ops-cam-label {
     background: Canvas;
     color: CanvasText;
   }
-  .nx-ops-cam::before {
+  .nx-ops-cam-dot {
+    background: CanvasText;
+  }
+  .pm-route,
+  .pm-check,
+  .pm-node {
+    stroke: CanvasText;
+  }
+  .pm-route-glow {
     display: none;
   }
-  .nx-ops-ring-track {
-    stroke: GrayText;
-  }
-  .nx-ops-ring-arc {
-    stroke: Highlight;
+  .pm-pin-body,
+  .pm-node-solid {
+    fill: CanvasText;
   }
 }

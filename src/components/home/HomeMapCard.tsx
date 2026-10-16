@@ -29,11 +29,11 @@ import {
   Building2,
   Cctv,
   CircleDot,
+  Hexagon,
   LockKeyhole,
   MapPin,
   Move,
   OctagonAlert,
-  Shield,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -78,7 +78,14 @@ const LAYERS: readonly MapLayer[] = [
     tone: "blue",
   },
   { key: "cameras", ar: "الكاميرات", en: "Cameras", to: "/sec/cctv", icon: Cctv, tone: "blue" },
-  { key: "patrols", ar: "الدوريات", en: "Patrols", to: "/sec/patrols", icon: MapPin, tone: "green" },
+  {
+    key: "patrols",
+    ar: "الدوريات",
+    en: "Patrols",
+    to: "/sec/patrols",
+    icon: MapPin,
+    tone: "green",
+  },
   {
     key: "access",
     ar: "نقاط الدخول",
@@ -93,7 +100,7 @@ const LAYERS: readonly MapLayer[] = [
     ar: "الأصول",
     en: "Assets",
     to: "/sec/maintenance",
-    icon: Shield,
+    icon: Hexagon,
     tone: "amber",
   },
   {

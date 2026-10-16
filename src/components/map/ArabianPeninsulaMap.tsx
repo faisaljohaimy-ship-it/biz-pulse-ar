@@ -20,7 +20,7 @@
  *
  * الصورة ترسم الخريطة **مسرحًا** يملأ البطاقة: الشريط فوقها، والسكّتان على
  * بحرَيها، و«إحصائيات سريعة» على البحر الأحمر، وفقاعات المناطق الأربع فوق
- * مناطقها. فالبطاقة العريضة (≥ 720px، استعلام حاوية) شبكةٌ واحدة يقع الرسم
+ * مناطقها. فالبطاقة العريضة (≥ 640px، استعلام حاوية) شبكةٌ واحدة يقع الرسم
  * في خلاياها كلّها والأدوات في حوافّها — **ترتيب شبكة لا طبقة مطلقة فوق
  * الرسم**. وما دون ذلك (الجوال واللوح الضيّق) تدفّقٌ عادي: الشريط ثم الرسم
  * ثم الفقاعات شبكةً تحته ثم السكّتان ثم الإحصاءات.
@@ -47,16 +47,24 @@ import {
   CircleCheck,
   Compass,
   Factory,
+  Frame,
   Info,
   Layers,
   Minus,
   OctagonAlert,
   Plus,
-  Scan,
   TriangleAlert,
   type LucideIcon,
 } from "lucide-react";
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import {
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { REGIONS, REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
 import { useRegion } from "@/lib/region-context";
 import { REGION_MARKERS } from "@/components/executive/region-markers";
@@ -169,6 +177,132 @@ const TILT = 0.678;
  * يملأ ما حول المملكة كما في الصورة.
  */
 const FULL: Box = { x: -178.8, y: 0.6, w: 1110.3, h: 476.5 };
+
+/**
+ * ترتيب رسم المناطق — توهّج المرسومة لاحقًا يقع على حدود سابقتها، فتُرسم
+ * الجنوبية أخيرًا والوسطى قبلها: الصورة ترسم حدّ الجنوبية خيطًا برتقاليًّا
+ * متّقدًا على جاراتها، وحدّ الوسطى خيطًا أزرق على الغربية. المناطق من
+ * `REGIONS` نفسها (لا اسم منطقة هنا)، والرتبة رتبة رسمٍ لا ترتيب عرض.
+ */
+const DRAW_RANK: Record<RegionId, number> = { eastern: 0, western: 1, central: 2, southern: 3 };
+const DRAW_ORDER: readonly RegionId[] = [...REGIONS]
+  .sort((a, b) => DRAW_RANK[a.id] - DRAW_RANK[b.id])
+  .map((r) => r.id);
+
+/**
+ * مدى تذويب حافّتي بيانات الجوار بوحدات الرسم: بياناته من 0 إلى ‎≈921‎
+ * عرضًا، والإطار الكامل من ‎−178.8‎ إلى ‎931.5‎.
+ */
+const FADE = { left: [-16, 28], right: [884, 924] } as const;
+
+/** المناطق الإدارية لكل منطقة — تُجمع مرّةً عند التحميل. */
+const PROVINCES_BY_REGION = {} as Record<RegionId, readonly (typeof SAUDI_PROVINCES)[number][]>;
+for (const r of REGIONS) {
+  PROVINCES_BY_REGION[r.id] = SAUDI_PROVINCES.filter((p) => p.region === r.id);
+}
+
+/**
+ * **أضواء المدن وخيوط الطرق — زخرفةٌ جغرافية لا بيانات.** الصورة ترسم
+ * المملكة «ليلًا» بأضواء مدنها وشبكة طرقها؛ فتُرسم هنا مدنٌ حقيقية بإحداثياتها
+ * عبر الإسقاط نفسه، وطرقٌ كبرى خطوطًا مستقيمة بينها (تقريبٌ بصري). لا تُعدّ
+ * ولا تُقرأ ولا تُنقر، ولا يُفهم منها موقعٌ تشغيلي: المواقع وحدها دوائرُ
+ * برموز المنشآت. وكلّها **داخل الرسم نفسه** — لا طبقة فوقه.
+ */
+const CITY_LIGHTS: ReadonlyArray<
+  readonly [key: string, lat: number, lng: number, size: 1 | 2 | 3]
+> = [
+  ["riyadh", 24.71, 46.68, 3],
+  ["jeddah", 21.49, 39.19, 3],
+  ["makkah", 21.39, 39.86, 3],
+  ["madinah", 24.47, 39.61, 3],
+  ["dammam", 26.42, 50.09, 3],
+  ["khobar", 26.22, 50.2, 2],
+  ["jubail", 27.0, 49.65, 2],
+  ["hofuf", 25.36, 49.59, 2],
+  ["hafar", 28.43, 45.97, 2],
+  ["khafji", 28.44, 48.49, 1],
+  ["buraidah", 26.36, 43.98, 2],
+  ["unaizah", 26.08, 43.99, 1],
+  ["hail", 27.51, 41.72, 2],
+  ["tabuk", 28.38, 36.57, 2],
+  ["ula", 26.61, 37.92, 1],
+  ["yanbu", 24.09, 38.06, 2],
+  ["taif", 21.27, 40.42, 2],
+  ["bahah", 20.01, 41.47, 1],
+  ["abha", 18.25, 42.51, 2],
+  ["khamis", 18.3, 42.73, 2],
+  ["jazan", 16.89, 42.55, 2],
+  ["najran", 17.49, 44.13, 2],
+  ["sakaka", 29.97, 40.21, 1],
+  ["arar", 30.98, 41.04, 1],
+  ["qurayyat", 31.33, 37.34, 1],
+  ["dawasir", 20.46, 44.78, 1],
+  ["kharj", 24.16, 47.33, 2],
+  ["bisha", 20.0, 42.61, 1],
+  ["majmaah", 25.9, 45.34, 1],
+  ["duba", 27.35, 35.69, 1],
+  ["rabigh", 22.8, 39.03, 1],
+  ["lith", 20.15, 40.27, 1],
+  ["qunfudhah", 19.13, 41.08, 1],
+  ["sharurah", 17.47, 47.11, 1],
+  ["haradh", 24.15, 49.07, 1],
+  ["wajh", 26.24, 36.45, 1],
+  ["tayma", 27.63, 38.55, 1],
+  ["dawadmi", 24.51, 44.39, 1],
+  ["rafha", 29.63, 43.49, 1],
+  ["turaif", 31.67, 38.66, 1],
+];
+
+/** الطرق الكبرى سلاسلَ مدن — كلّ سلسلةٍ خطٌّ واحد. */
+const ROAD_CHAINS: ReadonlyArray<readonly string[]> = [
+  ["jeddah", "makkah", "taif", "dawadmi", "riyadh", "haradh", "hofuf", "dammam", "khobar"],
+  ["dammam", "jubail", "khafji"],
+  ["riyadh", "dammam"],
+  ["riyadh", "majmaah", "buraidah", "hail", "sakaka", "qurayyat"],
+  ["majmaah", "hafar", "rafha", "arar", "turaif", "qurayyat"],
+  ["buraidah", "unaizah", "madinah", "jeddah"],
+  ["madinah", "ula", "tayma", "tabuk", "duba", "wajh", "yanbu", "rabigh", "jeddah"],
+  ["hail", "tayma"],
+  ["jeddah", "lith", "qunfudhah", "jazan"],
+  ["taif", "bahah", "abha", "khamis", "najran", "sharurah"],
+  ["abha", "jazan"],
+  ["riyadh", "kharj", "dawasir", "najran"],
+  ["dawasir", "bisha", "khamis"],
+];
+
+const CITY_AT: Readonly<Record<string, { x: number; y: number; size: 1 | 2 | 3 }>> =
+  Object.fromEntries(
+    CITY_LIGHTS.map(([key, lat, lng, size]) => {
+      const p = projectArabia(lat, lng);
+      return [key, { x: p.x, y: p.y * TILT, size }];
+    }),
+  );
+
+/**
+ * حبيبات النسيج — نقاطٌ ثابتة في بلاطةٍ 96×96 (مولِّدٌ حتمي، فلا يختلف رسم
+ * الخادم عن العميل): ضوءٌ متناثر يُقرأ «أرضًا ليلًا» لا شبكةً منتظمة.
+ */
+const SPECKS: ReadonlyArray<{ x: number; y: number; r: number }> = (() => {
+  let seed = 20261014;
+  const next = () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  return Array.from({ length: 28 }, () => ({
+    x: Math.round(next() * 960) / 10,
+    y: Math.round(next() * 960) / 10,
+    r: Math.round((0.45 + next() * 0.9) * 100) / 100,
+  }));
+})();
+
+const ROADS_D = ROAD_CHAINS.map((chain) =>
+  chain
+    .filter((key) => key in CITY_AT)
+    .map(
+      (key, i) => `${i === 0 ? "M" : "L"}${CITY_AT[key].x.toFixed(1)} ${CITY_AT[key].y.toFixed(1)}`,
+    )
+    .join(" "),
+).join(" ");
 
 /* ── التكبير: إطار عرضٍ يضيق حول مركزٍ ويبقى داخل الإطار الكامل ───────── */
 
@@ -345,6 +479,8 @@ export function ArabianPeninsulaMap({
   const [zoomAt, setZoomAt] = useState(0);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const layerRef = useRef<HTMLDivElement | null>(null);
+  /** بادئة معرّفات التدرّجات — نقيّةٌ لـ`url(#…)` (‏`useId` يحمل رموزًا). */
+  const uid = `nx-arabia-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const textDir = ar ? "rtl" : "ltr";
   const zoom = ZOOM_STEPS[zoomAt];
   const target = useMemo(() => viewBoxFor(zoom, focus), [zoom, focus]);
@@ -452,7 +588,7 @@ export function ArabianPeninsulaMap({
             title={ar ? "ملاءمة العرض" : "Fit view"}
             className="nx-arabia-ctl"
           >
-            <Scan aria-hidden />
+            <Frame aria-hidden />
           </button>
           <Link
             to="/executive-map"
@@ -532,21 +668,130 @@ export function ArabianPeninsulaMap({
                     : `Arabian Peninsula map: ${plotted.length} sites across the four regions${sitesSimulated ? " (simulated)" : ""}`
               }
             >
+              {/* تعبئة كل منطقة تدرّجٌ معتم من لونها إلى ليل البحر (لكل منطقةٍ
+                  إدارية مركزها الأسطع)، وهالة أضواء المدن. الألوان كلّها من
+                  `--region-tint` ورموز الشاشة في `home-map.css`. */}
+              <defs>
+                {REGIONS.map((r) => (
+                  <radialGradient
+                    key={r.id}
+                    id={`${uid}-${r.id}`}
+                    cx="50%"
+                    cy="42%"
+                    r="72%"
+                    style={{ ["--region-tint" as string]: REGION_ACCENT_HEX[r.id] }}
+                  >
+                    <stop offset="0" className="nx-arabia-fill-hi" />
+                    <stop offset="1" className="nx-arabia-fill-lo" />
+                  </radialGradient>
+                ))}
+                <radialGradient id={`${uid}-glow`}>
+                  <stop offset="0" className="nx-arabia-glow-core" />
+                  <stop offset="1" className="nx-arabia-glow-edge" />
+                </radialGradient>
+                {/* حافّتا بيانات الجوار (‎33°E‎ يسارًا وطرفها يمينًا) تذوبان في
+                    البحر بدل خطٍّ رأسيٍّ قاطع — الإطار أعرض من البيانات. */}
+                <linearGradient
+                  id={`${uid}-fade-l`}
+                  gradientUnits="userSpaceOnUse"
+                  x1={FADE.left[0]}
+                  x2={FADE.left[1]}
+                  y1="0"
+                  y2="0"
+                >
+                  <stop offset="0" className="nx-arabia-fade-solid" />
+                  <stop offset="1" className="nx-arabia-fade-clear" />
+                </linearGradient>
+                <linearGradient
+                  id={`${uid}-fade-r`}
+                  gradientUnits="userSpaceOnUse"
+                  x1={FADE.right[0]}
+                  x2={FADE.right[1]}
+                  y1="0"
+                  y2="0"
+                >
+                  <stop offset="0" className="nx-arabia-fade-clear" />
+                  <stop offset="1" className="nx-arabia-fade-solid" />
+                </linearGradient>
+                <pattern id={`${uid}-speckle`} width="96" height="96" patternUnits="userSpaceOnUse">
+                  {SPECKS.map((p, i) => (
+                    <circle key={i} cx={p.x} cy={p.y} r={p.r} className="nx-arabia-speck" />
+                  ))}
+                </pattern>
+              </defs>
               <g transform={`scale(1 ${TILT})`}>
                 <path d={NEIGHBOUR_LAND_PATH} className="nx-arabia-neighbour" />
-                {SAUDI_PROVINCES.map((p) => (
-                  <path
-                    key={p.id}
-                    d={p.d}
-                    className="nx-arabia-province"
-                    data-dim={(dimOthers && focus !== p.region) || undefined}
-                    data-focus={focus === p.region || undefined}
-                    style={{ ["--region-tint" as string]: REGION_ACCENT_HEX[p.region] }}
+                <rect
+                  x={FADE.left[0] - 600}
+                  y={-400}
+                  width={FADE.left[1] - FADE.left[0] + 600}
+                  height={1700}
+                  fill={`url(#${uid}-fade-l)`}
+                  className="nx-arabia-fade"
+                />
+                <rect
+                  x={FADE.right[0]}
+                  y={-400}
+                  width={FADE.right[1] - FADE.right[0] + 600}
+                  height={1700}
+                  fill={`url(#${uid}-fade-r)`}
+                  className="nx-arabia-fade"
+                />
+                {/* كل منطقةٍ زمرةٌ واحدة بتوهّجٍ واحد بلونها — أربعة مرشّحات
+                    لا ثلاثة عشر، والتعبئة معتمة فلا يطفو التوهّج على داخلها.
+                    **الحافّة النيون:** تُرسم مناطقها الإدارية أولًا خطًّا عريضًا
+                    بلونها ثم تُعبَّأ فوقه، فتغطّي التعبئةُ نصفَه الداخلي وحدودَها
+                    البينية، ولا يبقى منه إلا ما خارج المنطقة — خيطٌ ساطع على
+                    محيطها وحده كما رُسم، والحدود الداخلية خيوطٌ نحيلة. */}
+                {DRAW_ORDER.map((id) => (
+                  <g
+                    key={id}
+                    className="nx-arabia-region"
+                    data-dim={(dimOthers && focus !== id) || undefined}
+                    data-focus={focus === id || undefined}
+                    fill={`url(#${uid}-${id})`}
+                    style={{ ["--region-tint" as string]: REGION_ACCENT_HEX[id] }}
                   >
-                    <title>{ar ? p.ar : p.en}</title>
-                  </path>
+                    {PROVINCES_BY_REGION[id].map((p) => (
+                      <path key={p.id} d={p.d} className="nx-arabia-rim" />
+                    ))}
+                    {PROVINCES_BY_REGION[id].map((p) => (
+                      <path key={p.id} d={p.d} className="nx-arabia-province">
+                        <title>{ar ? p.ar : p.en}</title>
+                      </path>
+                    ))}
+                  </g>
                 ))}
+                <path
+                  d={SAUDI_BORDER_PATH}
+                  fill={`url(#${uid}-speckle)`}
+                  className="nx-arabia-speckle"
+                />
                 <path d={SAUDI_BORDER_PATH} className="nx-arabia-border" />
+              </g>
+              {/* خيوط الطرق وأضواء المدن — زخرفةٌ جغرافية (انظر `CITY_LIGHTS`). */}
+              <path d={ROADS_D} className="nx-arabia-roads" />
+              <g className="nx-arabia-lights">
+                {CITY_LIGHTS.map(([key]) => {
+                  const c = CITY_AT[key];
+                  return (
+                    <g key={key}>
+                      <circle
+                        cx={c.x}
+                        cy={c.y}
+                        r={2.4 + c.size * 2.2}
+                        fill={`url(#${uid}-glow)`}
+                        className="nx-arabia-halo"
+                      />
+                      <circle
+                        cx={c.x}
+                        cy={c.y}
+                        r={0.5 + c.size * 0.45}
+                        className="nx-arabia-light"
+                      />
+                    </g>
+                  );
+                })}
               </g>
             </svg>
           </div>
@@ -667,8 +912,7 @@ export function ArabianPeninsulaMap({
                 const loading = own === "loading";
                 const wait = loading ? waitText(own, ar) : null;
                 const quiet = wait !== null || s.value === null;
-                const valueText =
-                  wait ?? (s.value === null ? notMeasured : fmt(s.value));
+                const valueText = wait ?? (s.value === null ? notMeasured : fmt(s.value));
                 const label = ar ? s.ar : s.en;
                 const body = (
                   <>
