@@ -21,6 +21,8 @@ Status: **target**, not current. The current state is in `SADEED_INDEPENDENCE_AS
 | Scheduled jobs            | pg_cron on the owned project, targets `https://neexios.com/api/public/hooks/*` with `x-cron-secret` from Vault                                        | Replaces the stale `lovable.app` targets.                                                                                                                                                                                                             |
 | Observability             | `/api/public/health` (db, rate-limit store, breaker, gemini, build), Cloudflare Worker logs, GitHub Actions summaries, `finn_actions_log` audit trail | Alerting: a scheduled `production-check` that fails when `db` or `rate_limit_storage` is down for two consecutive runs (to be added).                                                                                                                 |
 
+Hosting alternative already connected: the Vercel project `biz-pulse-ar` (today previews only — `main` disabled in `vercel.json`, no backend environment; `SADEED_INDEPENDENCE_ASSESSMENT.md` §1 addendum). Either Cloudflare Workers or Vercel can be the target host; the choice is the owner's and must be exclusive per domain (`docs/DEPLOYMENT.md`). The rest of this document assumes Cloudflare Workers.
+
 ## 2. Request path (target)
 
 ```

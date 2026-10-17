@@ -14,6 +14,8 @@ What the system **is** today, read from the repository at the release candidate 
 | Hosting    | Lovable Publish (manual) → `https://neexios.com`; GitHub Actions Cloudflare deploy exists but has never run                                                                                                        | `.github/workflows/deploy.yml`, `production-check.yml`                                                        |
 | CI         | GitHub Actions `ci.yml` (static · test · build · rag-preflight · advisory E2E), `production-check.yml`, `production-smoke.yml`, `backend-health.yml`                                                               | `.github/workflows/`                                                                                          |
 
+Hosting note (2026-10-17): a Vercel project `biz-pulse-ar` is also connected to the repository and builds SSO-protected **previews** for every pushed branch (`vercel.json` disables `main`; no backend environment configured — `/api/public/health` on a preview reports `db: not_configured`). It is not a production path today; see `SADEED_INDEPENDENCE_ASSESSMENT.md` §1 addendum.
+
 ## 2. Request flow for the assistant (`POST /api/chat`)
 
 1. Kill switch `SADEED_AI_DISABLED` (synchronous, before any network) → 503 `ai_disabled`.
