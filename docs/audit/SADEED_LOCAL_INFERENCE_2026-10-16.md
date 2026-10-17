@@ -6,20 +6,20 @@ GPU Readiness · Zero-Cost First». الفرع: `feature/sadeed-local-inference`
 
 ## 1. ما وُجد في المستودع (Phase A — مؤكَّد من الكود)
 
-| البند | الواقع |
-| --- | --- |
-| الإطار | TanStack Start 1.168 + React 19 + Vite 7؛ البناء Nitro ⇐ Cloudflare Workers (`.output/server/wrangler.json`، `nodejs_compat`)؛ الناشر Lovable (مزامنة من GitHub ثم Publish صريح) |
-| البيانات | Supabase (مشروع Lovable Cloud `jhutlofapjfjjeajawie`)؛ المصادقة Supabase Auth؛ RLS في القاعدة؛ عميل الخادم `src/integrations/supabase/client.server.ts` (service role) |
-| مزوّد الذكاء | `ai` v6 + `@ai-sdk/google` — `gemini-3.6-flash` (القائمة البيضاء في `src/lib/ai-gateway.server.ts`، `GEMINI_MODEL` يُقبل منها فقط)؛ السياسة في `src/lib/sadeed-core/server/ai-router.server.ts` «Gemini وحده» |
-| الاحتياط القائم | `src/lib/sadeed/backup-provider.server.ts` — بوّابة Lovable AI عبر `@ai-sdk/openai-compatible` (`google/gemini-3-flash-preview`) عند 429/5xx/حصّة، مع تبريد المفتاح المباشر |
-| مسار الدردشة | العميل `SadeedCopilot.tsx` ⇐ `createSadeedTransport` (`sadeed-service.ts`، `DefaultChatTransport` إلى `/api/chat`، مصادَق أوّلًا ثم مجهول عند 401/403) ⇐ `src/routes/api/chat.ts` (`POST`): مفتاح الإيقاف ⇐ تحقّق الطلب (`-chat-guard.ts`) ⇐ الجلسة/المؤسسة ⇐ حدّ المعدّل + الحصّة اليومية ⇐ المسارات الفورية (نطاق/استرجاع سريع/إجابة فورية من البيانات) ⇐ السياق الحيّ وRAG (للمسجَّل) ⇐ `generateText` (مُجمَّع كاملًا، ليس بثًّا رمزًا رمزًا) ⇐ بوّابة الإخراج الآمن (`finalizeSadeedOutput`) ⇐ بثّ النصّ الآمن بصيغة UIMessage |
-| الاسترجاع والذاكرة | `src/lib/sadeed/rag.server.ts` (+ `gemini-embeddings.server.ts`)، جداول `finn_*`؛ **حالة RAG: غير مطبَّق على الإنتاج** (`docs/audit/SADEED_V10_AUDIT_2026-10-12.md`) |
-| الأدوات | `src/lib/sadeed-tools.server.ts` (`buildSadeedTools`) للمسجَّل فقط |
-| مسارات أخرى تستدعي النموذج | `api/sadeed/chat.ts`، `api/public/sadeed-ask.ts`، `sadeed-stream.ts`، `sadeed-explain.ts`، `lib/mcp/tools/ask-sadeed.ts`، النسخ الصوتي `gemini-transcription.server.ts` |
-| أسماء متغيّرات البيئة (بلا قيم) | `GEMINI_API_KEY` / `GOOGLE_GENERATIVE_AI_API_KEY`، `GEMINI_MODEL`، `GEMINI_EMBEDDING_MODEL`، `GEMINI_TRANSCRIBE_MODEL`، `LOVABLE_API_KEY`، `ELEVENLABS_API_KEY`، `SUPABASE_URL`، `SUPABASE_PUBLISHABLE_KEY`، `SUPABASE_SERVICE_ROLE_KEY`، `SADEED_MAX_OUTPUT_TOKENS`، `SADEED_AI_DISABLED`، `SADEED_CHAT_DAILY_PER_IDENTITY`، `SADEED_CHAT_DAILY_GLOBAL`، `TRUST_PROXY_HEADERS` |
-| GPU / نقطة محليّة قائمة | **لا شيء**: لا `nvidia-smi`، لا `/dev/nvidia*`، لا Ollama، لا منفذ 11434، ولا ذكر في الكود |
-| اختناقات الكمون (من الكود) | (أ) `generateText` مُجمَّع: أوّل بايت = نهاية التوليد؛ (ب) مجلس العشرة اختياري (`replyMode: "deep"`) — خارج الافتراضي؛ (ج) بوّابات القاعدة تسبق النموذج (عولجت في VIBE 5.1: مهلة افتراضية + قاطع)؛ (د) للمسجَّل: `auth.getUser` + `org_members` + بناء السياق قبل النموذج؛ (هـ) لا إعادة محاولة في الـSDK على المفتاح المباشر عمدًا (Retry-After طويل) |
-| الاختبارات القائمة | vitest: 169 ملفًّا / 2285 اختبارًا قبل هذا العمل (عقود سلوكية ونصّية على مسار الدردشة والصوت) |
+| البند                           | الواقع                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| الإطار                          | TanStack Start 1.168 + React 19 + Vite 7؛ البناء Nitro ⇐ Cloudflare Workers (`.output/server/wrangler.json`، `nodejs_compat`)؛ الناشر Lovable (مزامنة من GitHub ثم Publish صريح)                                                                                                                                                                                                                                                                                                                                                    |
+| البيانات                        | Supabase (مشروع Lovable Cloud `jhutlofapjfjjeajawie`)؛ المصادقة Supabase Auth؛ RLS في القاعدة؛ عميل الخادم `src/integrations/supabase/client.server.ts` (service role)                                                                                                                                                                                                                                                                                                                                                              |
+| مزوّد الذكاء                    | `ai` v6 + `@ai-sdk/google` — `gemini-3.6-flash` (القائمة البيضاء في `src/lib/ai-gateway.server.ts`، `GEMINI_MODEL` يُقبل منها فقط)؛ السياسة في `src/lib/sadeed-core/server/ai-router.server.ts` «Gemini وحده»                                                                                                                                                                                                                                                                                                                       |
+| الاحتياط القائم                 | `src/lib/sadeed/backup-provider.server.ts` — بوّابة Lovable AI عبر `@ai-sdk/openai-compatible` (`google/gemini-3-flash-preview`) عند 429/5xx/حصّة، مع تبريد المفتاح المباشر                                                                                                                                                                                                                                                                                                                                                         |
+| مسار الدردشة                    | العميل `SadeedCopilot.tsx` ⇐ `createSadeedTransport` (`sadeed-service.ts`، `DefaultChatTransport` إلى `/api/chat`، مصادَق أوّلًا ثم مجهول عند 401/403) ⇐ `src/routes/api/chat.ts` (`POST`): مفتاح الإيقاف ⇐ تحقّق الطلب (`-chat-guard.ts`) ⇐ الجلسة/المؤسسة ⇐ حدّ المعدّل + الحصّة اليومية ⇐ المسارات الفورية (نطاق/استرجاع سريع/إجابة فورية من البيانات) ⇐ السياق الحيّ وRAG (للمسجَّل) ⇐ `generateText` (مُجمَّع كاملًا، ليس بثًّا رمزًا رمزًا) ⇐ بوّابة الإخراج الآمن (`finalizeSadeedOutput`) ⇐ بثّ النصّ الآمن بصيغة UIMessage |
+| الاسترجاع والذاكرة              | `src/lib/sadeed/rag.server.ts` (+ `gemini-embeddings.server.ts`)، جداول `finn_*`؛ **حالة RAG: غير مطبَّق على الإنتاج** (`docs/audit/SADEED_V10_AUDIT_2026-10-12.md`)                                                                                                                                                                                                                                                                                                                                                                |
+| الأدوات                         | `src/lib/sadeed-tools.server.ts` (`buildSadeedTools`) للمسجَّل فقط                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| مسارات أخرى تستدعي النموذج      | `api/sadeed/chat.ts`، `api/public/sadeed-ask.ts`، `sadeed-stream.ts`، `sadeed-explain.ts`، `lib/mcp/tools/ask-sadeed.ts`، النسخ الصوتي `gemini-transcription.server.ts`                                                                                                                                                                                                                                                                                                                                                             |
+| أسماء متغيّرات البيئة (بلا قيم) | `GEMINI_API_KEY` / `GOOGLE_GENERATIVE_AI_API_KEY`، `GEMINI_MODEL`، `GEMINI_EMBEDDING_MODEL`، `GEMINI_TRANSCRIBE_MODEL`، `LOVABLE_API_KEY`، `ELEVENLABS_API_KEY`، `SUPABASE_URL`، `SUPABASE_PUBLISHABLE_KEY`، `SUPABASE_SERVICE_ROLE_KEY`، `SADEED_MAX_OUTPUT_TOKENS`، `SADEED_AI_DISABLED`، `SADEED_CHAT_DAILY_PER_IDENTITY`، `SADEED_CHAT_DAILY_GLOBAL`، `TRUST_PROXY_HEADERS`                                                                                                                                                     |
+| GPU / نقطة محليّة قائمة         | **لا شيء**: لا `nvidia-smi`، لا `/dev/nvidia*`، لا Ollama، لا منفذ 11434، ولا ذكر في الكود                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| اختناقات الكمون (من الكود)      | (أ) `generateText` مُجمَّع: أوّل بايت = نهاية التوليد؛ (ب) مجلس العشرة اختياري (`replyMode: "deep"`) — خارج الافتراضي؛ (ج) بوّابات القاعدة تسبق النموذج (عولجت في VIBE 5.1: مهلة افتراضية + قاطع)؛ (د) للمسجَّل: `auth.getUser` + `org_members` + بناء السياق قبل النموذج؛ (هـ) لا إعادة محاولة في الـSDK على المفتاح المباشر عمدًا (Retry-After طويل)                                                                                                                                                                              |
+| الاختبارات القائمة              | vitest: 169 ملفًّا / 2285 اختبارًا قبل هذا العمل (عقود سلوكية ونصّية على مسار الدردشة والصوت)                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ## 2. المعمارية المنفَّذة (Phase B/C)
 
@@ -50,13 +50,13 @@ GPU Readiness · Zero-Cost First». الفرع: `feature/sadeed-local-inference`
 
 ## 3. الملفّات المتغيّرة
 
-| الملف | السبب |
-| --- | --- |
-| `src/lib/sadeed/local-inference.server.ts` (جديد) | المحوّل والإعداد والتحقّق والتبريد وأوصاف الأخطاء |
-| `src/routes/api/chat.ts` | دمج المحوّل في مسار التوليد (`runHosted`/`runLocal`)، الترويسة، وتسجيل النموذج المقدَّم في `finn_interactions` كـ`local:<model>` |
-| `src/lib/sadeed/local-inference.server.test.ts` (جديد) | 15 اختبارًا |
-| `src/routes/api/chat-local-inference.test.ts` (جديد) | 9 اختبارات سلوكية |
-| `docs/audit/SADEED_LOCAL_INFERENCE_2026-10-16.md` (هذا) | التقرير |
+| الملف                                                   | السبب                                                                                                                            |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/sadeed/local-inference.server.ts` (جديد)       | المحوّل والإعداد والتحقّق والتبريد وأوصاف الأخطاء                                                                                |
+| `src/routes/api/chat.ts`                                | دمج المحوّل في مسار التوليد (`runHosted`/`runLocal`)، الترويسة، وتسجيل النموذج المقدَّم في `finn_interactions` كـ`local:<model>` |
+| `src/lib/sadeed/local-inference.server.test.ts` (جديد)  | 15 اختبارًا                                                                                                                      |
+| `src/routes/api/chat-local-inference.test.ts` (جديد)    | 9 اختبارات سلوكية                                                                                                                |
+| `docs/audit/SADEED_LOCAL_INFERENCE_2026-10-16.md` (هذا) | التقرير                                                                                                                          |
 
 ## 4. التشغيل محليًّا
 
@@ -77,19 +77,18 @@ npm run build && npm run preview
 
 ## 5. نتائج البوابة
 
-tsc 0 · eslint 0 أخطاء (33 تحذيرًا قديمة) · prettier نظيف · vitest **171 ملفًّا،
-2309 ناجحًا، 28 متخطًّى** · `npm run build` ناجح · ميزانية الأداء داخل السقوف
+tsc 0 · eslint 0 أخطاء (33 تحذيرًا قديمة) · prettier نظيف · vitest **178 ملفًّا، 2353 ناجحًا، 28 متخطًّى** (بعد إعادة التأسيس فوق 91e2544؛ قبلها 171/2309) · `npm run build` ناجح · ميزانية الأداء داخل السقوف
 (أكبر أصل JS ‏1.20/1.40 MiB، 626 ملفًّا).
 
 ## 6. القياس (Phase D)
 
-| القياس | النتيجة |
-| --- | --- |
-| TTFT/الكمون الكلّي للمزوّد القائم من بيئة الجلسة | **لم يُقَس** — لا مفتاح مزوّد في بيئة الجلسة، ومنافذ الإنتاج محجوبة |
-| p50/p95 الإنتاج من `finn_interactions` | **لم يُقَس** — قاعدة الإنتاج لا تردّ (504) يوم القياس |
-| TTFT/الكمون/الإنتاجية للمحرّك المحليّ | **NOT TESTED** — لا GPU ولا Ollama في البيئة، وتنزيل النماذج محجوب (ollama.com/HF/registry) |
-| استهلاك GPU والذاكرة | **NOT TESTED** |
-| سلامة البروتوكول (رسائل، عربية، أدوات، بثّ، مهلة، إلغاء) | **مقيسة باختبارات** عبر الـSDK الحقيقي فوق `fetch` مزروع (15 + 9) |
+| القياس                                                   | النتيجة                                                                                     |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| TTFT/الكمون الكلّي للمزوّد القائم من بيئة الجلسة         | **لم يُقَس** — لا مفتاح مزوّد في بيئة الجلسة، ومنافذ الإنتاج محجوبة                         |
+| p50/p95 الإنتاج من `finn_interactions`                   | **لم يُقَس** — قاعدة الإنتاج لا تردّ (504) يوم القياس                                       |
+| TTFT/الكمون/الإنتاجية للمحرّك المحليّ                    | **NOT TESTED** — لا GPU ولا Ollama في البيئة، وتنزيل النماذج محجوب (ollama.com/HF/registry) |
+| استهلاك GPU والذاكرة                                     | **NOT TESTED**                                                                              |
+| سلامة البروتوكول (رسائل، عربية، أدوات، بثّ، مهلة، إلغاء) | **مقيسة باختبارات** عبر الـSDK الحقيقي فوق `fetch` مزروع (15 + 9)                           |
 
 **تحسينات كمونٍ آمنة مرصودة (غير منفَّذة هنا، تحتاج ضوابط المالك الأربعة):**
 بثّ النصّ جملةً جملةً بعد بوّابة الإخراج (قرار المالك ٢٠٢٦/١٠/١١: خلف راية تُقاس)؛
