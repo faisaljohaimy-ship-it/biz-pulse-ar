@@ -31,11 +31,6 @@ for (const vp of VIEWPORTS) {
         } catch {
           /* noop */
         }
-        try {
-          window.localStorage.removeItem("aria_intro_seen_v1");
-        } catch {
-          /* noop */
-        }
       });
 
       const start = Date.now();

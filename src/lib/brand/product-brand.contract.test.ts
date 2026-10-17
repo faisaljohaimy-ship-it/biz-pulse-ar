@@ -96,12 +96,6 @@ const ALLOWED_TECHNICAL = new Set([
   // and still in flight, silently breaking outbound approvals in production.
   "src/lib/sadeed/outbound-messaging.server.ts",
   "src/lib/sadeed/outbound-messaging.crypto.test.ts",
-  // Category D — `nexios://workspace/<id>` is a persisted deep-link scheme and
-  // `nexios.shell` is the localStorage prefix under which every saved workspace
-  // already lives. Renaming either orphans existing user state.
-  "src/sadeed/runtime/executive/workspace.ts",
-  "src/sadeed/runtime/executive/persistence.ts",
-  "src/sadeed/runtime/executive/executive.test.ts",
   // ── الاستثناء المُلغى ٢٠٢٦/٠٨/٠٦ ──
   // كانت أربعة ملفات معفاة هنا لأجل مجلّد SharePoint «NEXIOS Reports»: تقرأ
   // الإعفاء أنه «مسار تخزين لا اسم عرض»، وكان نصفه صحيحًا — والنصف الآخر أن

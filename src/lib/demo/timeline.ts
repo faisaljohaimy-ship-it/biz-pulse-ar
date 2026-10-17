@@ -27,7 +27,6 @@ export type DemoUiAction =
   | { kind: "navigate"; to: string }
   | { kind: "focus"; selector: string }
   | { kind: "highlight"; module: DemoModule }
-  | { kind: "aria-speak"; ref?: string }
   | { kind: "none" };
 
 export interface DemoStep {

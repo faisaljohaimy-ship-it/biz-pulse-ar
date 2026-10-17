@@ -11,7 +11,7 @@ export type TrustSignal =
 
 export type ResponseMode = "brief" | "detailed";
 
-export type HandoffKind = "voice_to_text" | "text_to_voice" | "aria_to_operator" | "demo_to_free";
+export type HandoffKind = "voice_to_text" | "text_to_voice" | "demo_to_free";
 
 export interface ExecutiveGreetingInput {
   readonly userDisplayName?: string;
