@@ -31,6 +31,12 @@ const SPENDERS: ReadonlyArray<readonly [string, string]> = [
   ["src/routes/api/public/sadeed-ask.ts", "chat"],
   ["src/routes/api/public/sadeed-explain.ts", "chat"],
   ["src/routes/api/chat.ts", "chat"],
+  // المرحلة ب-٢ من مهمّة الجاهزية (٢٠٢٦/١٠/١٧): أربع نقاط كانت تصل النموذج
+  // بحدّ الدقيقة وحده — بلا مفتاح إيقاف ولا سقف يومي.
+  ["src/routes/api/sadeed/chat.ts", "chat"],
+  ["src/routes/api/sadeed/transcribe.ts", "stt"],
+  ["src/routes/api/voice-stt.ts", "stt"],
+  ["src/routes/api/learn/sadeed-teach.ts", "chat"],
 ];
 
 describe("① كل نقطة تُنفق مالًا محروسة بالحصّة اليومية", () => {
@@ -76,9 +82,12 @@ describe("① كل نقطة تُنفق مالًا محروسة بالحصّة ا
 
   it("ولا نقطة تستدعي مزوّدًا خارج هذه القائمة بلا حصّة", () => {
     // الحارس يتقادم إن أُضيفت نقطةٌ سادسة تنفق مالًا ولم تُدرج. القائمة
-    // تُشتقّ من الشيفرة لا تُكتب يدويًّا: كل ملفّ يستدعي مزوّدًا شبكيًّا.
+    // تُشتقّ من الشيفرة لا تُكتب يدويًّا: كل ملفّ يستدعي مزوّدًا شبكيًّا —
+    // بعنوانه المباشر، أو عبر الـSDK (`generateText(`)، أو عبر وحدات المكتبة
+    // التي تغلّفه (`resolveSadeedGeminiRuntime`، `transcribeWithGemini(`).
+    // النمط الأوّل وحده ترك أربع نقاط خارج الحارس حتى ٢٠٢٦/١٠/١٧.
     const found = execSync(
-      "grep -rl 'api.elevenlabs.io\\|generativelanguage.googleapis.com\\|api.anthropic.com' src/routes/api --include=*.ts || true",
+      "grep -rlE 'api\\.elevenlabs\\.io|generativelanguage\\.googleapis\\.com|api\\.anthropic\\.com|generateText\\(|resolveSadeedGeminiRuntime|transcribeWithGemini\\(' src/routes/api --include=*.ts || true",
       { encoding: "utf8" },
     )
       .split("\n")

@@ -1,6 +1,7 @@
 /** Authenticated SADEED speech-to-text — native Google Gemini only. */
 import { createFileRoute } from "@tanstack/react-router";
 import { verifySupabaseUser } from "@/lib/hook-auth.server";
+import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -17,11 +18,21 @@ export const Route = createFileRoute("/api/voice-stt")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // مفتاح الإيقاف الفوري أوّلًا — متزامن، قبل أي شبكة.
+        const off = aiDisabledResponse("stt");
+        if (off) return off;
         const auth = await verifySupabaseUser(request);
         if (auth instanceof Response) return auth;
         const rate = await enforceRateLimit(`voice-stt:${auth.userId}`, 60, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
+        // السقفان اليوميان (الهوية والمشروع) قبل أي نداء نموذج؛ يفشلان مغلقين.
+        const quota = await enforceAiQuota({
+          surface: "stt",
+          identity: auth.userId,
+          deadlineMs: 2_000,
+        });
+        if (quota) return quota;
 
         const form = await request.formData().catch(() => null);
         const audio = form?.get("audio");

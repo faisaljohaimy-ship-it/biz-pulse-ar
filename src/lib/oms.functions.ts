@@ -126,18 +126,21 @@ export const createIncident = createServerFn({ method: "POST" })
     // ── Auto SADEED analysis (Gemini with timeout + heuristic fallback) ──
     try {
       const { sadeedAnalyseIncident } = await import("./oms-sadeed.server");
-      const analysis = await sadeedAnalyseIncident({
-        ref,
-        category: data.category,
-        title_ar: data.title_ar,
-        title_en: data.title_en || data.title_ar,
-        severity: data.severity,
-        priority: data.priority,
-        status: "open",
-        assigned_to: data.assigned_to ?? null,
-        owner: data.owner ?? null,
-        notes: data.notes ?? null,
-      });
+      const analysis = await sadeedAnalyseIncident(
+        {
+          ref,
+          category: data.category,
+          title_ar: data.title_ar,
+          title_en: data.title_en || data.title_ar,
+          severity: data.severity,
+          priority: data.priority,
+          status: "open",
+          assigned_to: data.assigned_to ?? null,
+          owner: data.owner ?? null,
+          notes: data.notes ?? null,
+        },
+        { identity: context.userId },
+      );
       await supabase
         .from("sec_incidents")
         .update({

@@ -8,6 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
+import { assertAiQuota } from "@/lib/governance/ai-quota.server";
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 // اسم المساعد المعروض من مصدره الوحيد (قرار المالك ٢٠٢٦/٠٨/٠٩).
 import { BRAND_ASSISTANT } from "@/lib/domain";
@@ -190,6 +191,13 @@ export const generateExecutiveBriefing = createServerFn({ method: "POST" })
     // 45–55s: SADEED merge — recommendation via Gemini
     let recommendation: ExecutiveBriefing["recommendation"];
     try {
+      // مفتاح الإيقاف والسقفان اليوميان قبل النموذج — المنع يسقط إلى التوصية
+      // الحتميّة في `catch` أدناه (زائرٌ يستدعي هذه الدالة عند كل موجز).
+      await assertAiQuota({
+        surface: "chat",
+        identity: context.userId ?? "guest:briefing",
+        deadlineMs: 2_000,
+      });
       const runtime = resolveSadeedGeminiRuntime();
       const findings = agentsToSpeak
         .map((a) => {
