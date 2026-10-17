@@ -12,9 +12,10 @@
  * ## ما يفعله هذا الملف الآن
  *
  * 1. **مهلة افتراضية** لكل نداء (‏2 ث) — لا نداءَ بلا حدّ ولو نسي المستدعي.
- * 2. **قاطع دارة** لمخزن المعدّل: فشلان متتاليان يفتحانه 30 ث، فتعود النداءات
- *    «غير متاح» **فورًا** بلا انتظار؛ وبعد المهلة يمرّ **فحصٌ واحد** (نصف مفتوح)،
- *    فإن نجح أُغلق القاطع وعاد التحقّق الحقيقي، وإن فشل أُعيد فتحه.
+ * 2. **قاطع دارة** لمخزن المعدّل: خمسة فشلٍ متتالية خلال 60 ث (دستور الهندسة §3)
+ *    تفتحه 30 ث، فتعود النداءات «غير متاح» **فورًا** بلا انتظار؛ وبعد المهلة يمرّ
+ *    **فحصٌ واحد** (نصف مفتوح)، فإن نجح أُغلق القاطع وعاد التحقّق الحقيقي، وإن
+ *    فشل أُعيد فتحه.
  * 3. **حصّةٌ محدودة في الذاكرة** يلجأ إليها المستدعي حين يكون المخزن غير متاح
  *    (`degradedAllowance`): نصف السقف الأصلي، لكل معزول (isolate) على حدة.
  *    ليست بديلًا عن المخزن — هي **حدٌّ** يمنع أن يصير السطح بلا حدّ أثناء
@@ -42,8 +43,13 @@ export type RateLimitDecision = {
 
 export const RATE_LIMIT_DEFAULT_DEADLINE_MS = 2_000;
 
-/** فشلان متتاليان يفتحان القاطع — الأوّل قد يكون عارضًا، والثاني نمط. */
-export const BREAKER_FAILURE_THRESHOLD = 2;
+/**
+ * خمسة فشلٍ متتالية خلال 60 ث تفتح القاطع — نصّ دستور الهندسة §3
+ * (`docs/SADEED_ENGINEERING_CONSTITUTION.md`: «5 consecutive failures … within 60s»).
+ * فشلٌ أقدم من النافذة لا يُحتسب في السلسلة: عطلان عارضان في ساعتين ليسا نمطًا.
+ */
+export const BREAKER_FAILURE_THRESHOLD = 5;
+export const BREAKER_FAILURE_WINDOW_MS = 60_000;
 /** مدّة الفتح قبل فحصٍ واحد نصف مفتوح. */
 export const BREAKER_OPEN_MS = 30_000;
 
@@ -78,6 +84,10 @@ function breakerShouldSkip(now: number): boolean {
 }
 
 function noteFailure(now: number, reason: string, detail: Record<string, unknown>): void {
+  if (breaker.lastFailureAt !== null && now - breaker.lastFailureAt > BREAKER_FAILURE_WINDOW_MS) {
+    // انقطعت السلسلة: الفشل السابق أقدم من نافذة الستّين ثانية.
+    breaker.consecutiveFailures = 0;
+  }
   breaker.consecutiveFailures += 1;
   breaker.lastFailureAt = now;
   breaker.probing = false;
@@ -223,15 +233,21 @@ export function degradedAllowance(
 export type GateDegradedMode = "bounded" | "closed";
 
 /**
- * سياسة الدردشة حين يتعذّر المخزن: `bounded` (الافتراض) = تمرّ بحدود الذاكرة؛
- * `closed` = ردٌّ محليّ صادق بلا نموذج (سلوك ما قبل VIBE 5.1). متغيّر بيئة لا نشر.
+ * سياسة الدردشة حين يتعذّر المخزن: `closed` (الافتراض) = ردٌّ محليّ صادق بلا
+ * نموذج — صفر إنفاق بلا حصّة متحقَّقة؛ `bounded` = تمرّ بحدود الذاكرة (نصف
+ * السقوف لكل معزول) ويصل النموذج. متغيّر بيئة لا نشر.
+ *
+ * الافتراض `closed` بقرار الحارس (نقض 91e2544): تمرير الإنفاق بلا تحقّق قرارُ
+ * فوترة للمالك (المادة ٨)، فلا يُتّخذ افتراضًا؛ إقراره = `SADEED_GATE_DEGRADED_MODE=bounded`
+ * في بيئة الخادم، بلا نشر. التجاوب الفوري متحقّق في الحالتين (القاطع يجعل
+ * «غير متاح» فوريًّا)؛ الفرق هو هل يصل النموذج أم لا.
  */
 export function gateDegradedMode(
   env: Record<string, string | undefined> = process.env,
 ): GateDegradedMode {
-  return (env.SADEED_GATE_DEGRADED_MODE ?? "").trim().toLowerCase() === "closed"
-    ? "closed"
-    : "bounded";
+  return (env.SADEED_GATE_DEGRADED_MODE ?? "").trim().toLowerCase() === "bounded"
+    ? "bounded"
+    : "closed";
 }
 
 /** للاختبارات وحدها: يعيد القاطع والدلاء إلى الصفر. */

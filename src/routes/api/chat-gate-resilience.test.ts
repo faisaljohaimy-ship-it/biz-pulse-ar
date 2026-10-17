@@ -45,6 +45,8 @@ vi.mock("@/integrations/supabase/client.server", () => ({
 const gates = vi.hoisted(() => ({
   rate: { allowed: true, unavailable: false } as { allowed: boolean; unavailable?: boolean },
   quota: null as Response | null,
+  /** حين يُضبط: يُستبدل بالحصّة المحدودة الحقيقية (لاختبار أن المعالج يعيد رفضها). */
+  degradedQuota: null as null | (() => Response | null),
   modelCalls: 0,
   rateOptions: [] as unknown[],
   quotaOptions: [] as unknown[],
@@ -58,13 +60,20 @@ vi.mock("@/lib/governance/rate-limit.server", async (importOriginal) => ({
   },
 }));
 
-vi.mock("@/lib/governance/ai-quota.server", async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
-  enforceAiQuota: async (opts: unknown) => {
-    gates.quotaOptions.push(opts);
-    return gates.quota;
-  },
-}));
+vi.mock("@/lib/governance/ai-quota.server", async (importOriginal) => {
+  const original = await importOriginal<{
+    degradedAiQuota: (...a: unknown[]) => Response | null;
+  }>();
+  return {
+    ...original,
+    enforceAiQuota: async (opts: unknown) => {
+      gates.quotaOptions.push(opts);
+      return gates.quota;
+    },
+    degradedAiQuota: (...args: unknown[]) =>
+      gates.degradedQuota ? gates.degradedQuota() : original.degradedAiQuota(...args),
+  };
+});
 
 vi.mock("ai", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
@@ -100,6 +109,7 @@ async function post(
 beforeEach(async () => {
   gates.rate = { allowed: true, unavailable: false };
   gates.quota = null;
+  gates.degradedQuota = null;
   gates.modelCalls = 0;
   gates.rateOptions = [];
   gates.quotaOptions = [];
@@ -120,7 +130,22 @@ afterEach(() => {
 
 const HAS_ARABIC = /[؀-ۿ]/;
 
-describe("المخزن معطّل — السياسة المحدودة (الافتراض)", () => {
+describe("المخزن معطّل — السياسة المحدودة (SADEED_GATE_DEGRADED_MODE=bounded، بإقرار المالك)", () => {
+  beforeEach(() => vi.stubEnv("SADEED_GATE_DEGRADED_MODE", "bounded"));
+
+  it("الحصّة المحدودة ترفض ⇐ المعالج يعيد رفضها وصفر نداء نموذج (الانتهاك المزروع V15)", async () => {
+    gates.rate = { allowed: false, unavailable: true };
+    gates.degradedQuota = () =>
+      new Response(JSON.stringify({ error: "daily_identity_cap", message_ar: "سقف." }), {
+        status: 429,
+        headers: { "Retry-After": "60" },
+      });
+    const res = await post();
+    expect(res.status).toBe(429);
+    expect(((await res.json()) as { error: string }).error).toBe("daily_identity_cap");
+    expect(gates.modelCalls, "نموذجٌ استُدعي رغم رفض الحصّة المحدودة").toBe(0);
+  });
+
   it("لقطة المالك: ‏200 بردٍّ عربي من النموذج، موسومًا degraded، ولا رمز", async () => {
     gates.rate = { allowed: false, unavailable: true };
     const res = await post();
@@ -159,21 +184,21 @@ describe("المخزن معطّل — السياسة المحدودة (الاف�
   });
 });
 
-describe("المخزن معطّل — السياسة المغلقة (بيئة)", () => {
-  it("‏SADEED_GATE_DEGRADED_MODE=closed ⇐ ردٌّ محليّ صادق ولا نداء للنموذج", async () => {
-    vi.stubEnv("SADEED_GATE_DEGRADED_MODE", "closed");
+describe("المخزن معطّل — السياسة المغلقة (الافتراض بلا متغيّر بيئة)", () => {
+  it("بلا متغيّر ⇐ ردٌّ محليّ صادق موسومًا closed ولا نداء للنموذج", async () => {
     gates.rate = { allowed: false, unavailable: true };
     const res = await post();
     expect(res.status).toBe(200);
     expect(res.headers.get("X-SADEED-Reply-Source")).toBe("local-quota-unverified");
+    expect(res.headers.get("X-SADEED-Gate")).toBe("closed");
     const body = await res.text();
     expect(body).not.toContain("rate_limit_unavailable");
     expect(HAS_ARABIC.test(body)).toBe(true);
     expect(gates.modelCalls, "نموذج مدفوع استُدعي بلا حصّةٍ متحقَّقة").toBe(0);
   });
 
-  it("المغلقة تشمل الحصّة غير المتاحة أيضًا", async () => {
-    vi.stubEnv("SADEED_GATE_DEGRADED_MODE", "closed");
+  it("المغلقة تشمل الحصّة غير المتاحة أيضًا، وقيمةٌ مجهولة تبقى مغلقة", async () => {
+    vi.stubEnv("SADEED_GATE_DEGRADED_MODE", "open-please");
     gates.quota = new Response(JSON.stringify({ error: "quota_unavailable" }), { status: 503 });
     const res = await post();
     expect(res.status).toBe(200);

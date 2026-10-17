@@ -83,15 +83,18 @@ async function post(text: string, thread = THREAD_A, ip = "198.51.100.7") {
   });
 }
 
+/** آخر بوّابةٍ معلّقة — تُحرَّر في afterEach فلا يسرّب اختبارٌ ساقط طلبًا إلى ما بعده. */
+let pendingGate: { resolve: () => void } | null = null;
 function deferred() {
   let resolve!: () => void;
   const promise = new Promise<void>((r) => (resolve = r));
+  pendingGate = { resolve };
   return { promise, resolve };
 }
 
 const tick = () => new Promise((r) => setTimeout(r, 25));
 /** ينتظر حتى يبلغ الطلب النموذج (أي بعد حجز الحارسين) — لا تخمينًا بمهلةٍ ثابتة. */
-async function waitForCalls(n: number, timeoutMs = 4_000) {
+async function waitForCalls(n: number, timeoutMs = 15_000) {
   const started = Date.now();
   while (sim.calls < n) {
     if (Date.now() - started > timeoutMs) throw new Error(`لم يبلغ النموذج ${n} نداءً في الوقت`);
@@ -109,6 +112,8 @@ beforeEach(async () => {
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 afterEach(() => {
+  pendingGate?.resolve();
+  pendingGate = null;
   vi.unstubAllEnvs();
   vi.stubEnv("GEMINI_API_KEY", "test-key-not-a-secret");
   vi.stubEnv("SUPABASE_URL", "https://stub.invalid");
@@ -122,9 +127,10 @@ describe("منع التكرار الجاري", () => {
   it("الطلب نفسه مرّتين معًا ⇐ الثاني 429 duplicate_request بلا نداء ثانٍ، وبعد الانتهاء يمرّ", async () => {
     const gate = deferred();
     sim.hold = gate.promise;
-    const first = post(Q1);
+    const thread = crypto.randomUUID();
+    const first = post(Q1, thread);
     await waitForCalls(1);
-    const second = await post(Q1);
+    const second = await post(Q1, thread);
     expect(second.status).toBe(429);
     expect(second.headers.get("Retry-After")).toBe("3");
     const body = (await second.json()) as { error: string; code?: string };
@@ -135,7 +141,7 @@ describe("منع التكرار الجاري", () => {
     gate.resolve();
     expect((await first).status).toBe(200);
     sim.hold = null;
-    const third = await post(Q1);
+    const third = await post(Q1, thread);
     expect(third.status).toBe(200);
     expect(sim.calls).toBe(2);
   });

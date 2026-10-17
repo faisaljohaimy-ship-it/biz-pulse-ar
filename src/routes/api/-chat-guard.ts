@@ -56,6 +56,8 @@ export type ChatJsonErrorExtras = {
   code?: string;
   /** يضيف ترويسة `Retry-After` بالثواني — فيحترمها العميل في إعادة المحاولة. */
   retryAfterSeconds?: number;
+  /** ترويساتٌ إضافية (مثل `X-SADEED-Gate`) — لا تتجاوز ترويسات الأمان الثابتة. */
+  headers?: Record<string, string>;
 };
 
 export function chatJsonError(
@@ -64,7 +66,10 @@ export function chatJsonError(
   requestId: string,
   extras: ChatJsonErrorExtras = {},
 ): Response {
-  const headers: Record<string, string> = chatResponseHeaders(requestId);
+  const headers: Record<string, string> = {
+    ...(extras.headers ?? {}),
+    ...chatResponseHeaders(requestId),
+  };
   if (extras.retryAfterSeconds !== undefined) {
     headers["Retry-After"] = String(Math.max(1, Math.round(extras.retryAfterSeconds)));
   }
