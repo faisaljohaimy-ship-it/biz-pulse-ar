@@ -1,7 +1,7 @@
 /**
  * SADEED Voice Timeline — a single append-only ring buffer for every
- * event in the audio pipeline. Populated from audio-bus, useSadeedSpeech,
- * SadeedCopilot, aria-voice, and the voice-policy assertion.
+ * event in the audio pipeline. Populated from audio-bus, SadeedCopilot,
+ * aria-voice, and the voice-policy assertion.
  *
  * In the browser console:
  *   __dumpSadeedTimeline()          → console.table + copy JSON to clipboard

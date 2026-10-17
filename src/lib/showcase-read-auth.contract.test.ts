@@ -79,7 +79,6 @@ const DISPLAY_READS: Array<[file: string, fn: string, window: string]> = [
   ["executive-presentation.functions.ts", "listPendingDecisions", "مركز القرارات — العرض"],
   ["executive-presentation.functions.ts", "getExecutiveTimeline", "الخط الزمني التنفيذي"],
   ["exec/decisions.functions.ts", "getExecutiveDecisions", "غرفة العمليات — محرّك القرارات"],
-  ["exec/conversation.functions.ts", "getAgentConversation", "غرفة العمليات — حوار الوكلاء"],
   ["sec-exec-kpis.functions.ts", "getExecTimeseries", "السلسلة الزمنية التنفيذية"],
   ["runtime/execution-timeline.functions.ts", "getExecutionTimeline", "درج الخط الزمني للتنفيذ"],
   ["enterprise-search.functions.ts", "enterpriseSearch", "/knowledge-hub — البحث"],

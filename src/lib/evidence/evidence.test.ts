@@ -264,7 +264,6 @@ describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا",
     "src/components/digital-humans/AgentRoster.tsx": "spec.baselineConfidence — خطُّ أساسٍ مكتوب",
     "src/components/cockpit/overlays.tsx": "snapshot.sadeed.confidence — مصدرٌ غير مقيس",
     "src/components/cockpit/sadeed-panel.tsx": "sadeed.confidence — مصدرٌ غير مقيس",
-    "src/components/situation-room/AgentConversation.tsx": "ثقةُ دور ومُخرَجٍ من نموذج",
     "src/lib/executive-presentation.functions.ts":
       "finn_decisions.confidence — رقمٌ مخزَّن بلا إسناد",
     "src/routes/_authenticated/investor.tsx": "finn_decisions.confidence — نفسه",
@@ -390,7 +389,6 @@ describe("ولا قيمةَ ثقةٍ مكتوبة خارج ما بُرِّر ص�
   const LITERAL_DEBT: Record<string, string> = {
     "src/lib/digital-humans/registry.ts": "baselineConfidence — خطُّ أساسٍ لكل شخصية",
     "src/components/cockpit/repository.ts": "بذرة لوحة القمرة",
-    "src/lib/exec/conversation.functions.ts": "احتياطيّ حتميّ بثقة مكتوبة",
     "src/lib/sadeed/insight-engine.server.ts": "ثقةُ استنتاجٍ مكتوبة",
     "src/lib/sadeed/adaptive-preferences.ts": "عتبة تفضيلات",
     "src/lib/sadeed/learning/pattern-miner.server.ts": "عتبة تنقيب أنماط",

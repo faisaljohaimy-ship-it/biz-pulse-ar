@@ -12,7 +12,11 @@
  * WHAT IT LOCKS
  *   1. Every shipped greeting constant is SADEED-clean in its display AND its
  *      diacritized TTS twin.
- *   2. Every greeting COMPOSER stays clean when its inputs are contaminated.
+ *   2. The voice sanitizer stays clean when its inputs are contaminated. (The
+ *      composer case beside it, `composeExecutiveGreeting`, went with that
+ *      composer on 2026-10-17 — it had no production importer since
+ *      2026-08-06. A new greeting composer gets its contaminated-input case
+ *      here.)
  *   3. Every text→voice boundary (`revalidateSpeakableText`, the TTS adapter,
  *      the output gateway's `ttsText`, the speech normaliser) scrubs the old
  *      name — so an API caller cannot make SADEED say it.
@@ -39,7 +43,6 @@ import {
 } from "@/lib/sadeed/output/finalize";
 import { synthesizeSafeSpeech, type SpeakExecutor } from "@/lib/sadeed/output/tts-adapter.server";
 import { normalizeSadeedSpeechText } from "@/lib/sadeed/sadeed-speech-normalize";
-import { composeExecutiveGreeting } from "@/lib/sadeed/acceptance-experience/executive-greeting.server";
 import { sanitizeVoice } from "@/lib/sadeed/presence/voice";
 import type { Actor } from "@/sadeed/shell";
 
@@ -117,26 +120,6 @@ describe("SADEED greeting regression — the shipped greetings", () => {
 });
 
 describe("SADEED greeting regression — composed greetings", () => {
-  it("the executive greeting stays clean when its inputs are contaminated", () => {
-    for (const lang of ["ar", "en"] as const) {
-      const composed = composeExecutiveGreeting({
-        lang,
-        userDisplayName: EN_OLD,
-        systemHealth: "amber",
-        topAlerts: [`${AR_OLD} تنبيه`, `${EN_OLD} alert`],
-        priorities: [`${AR_OLD} أولوية`],
-      });
-      // The composer itself interpolates freely; the guard is what ships.
-      expectSadeedClean(
-        `executive greeting (${lang}) display`,
-        enforceSadeedIdentity(composed.text),
-      );
-      const spoken = revalidateSpeakableText(composed.text);
-      expect(spoken.ok).toBe(true);
-      expectSadeedClean(`executive greeting (${lang}) voice`, spoken.text);
-    }
-  });
-
   it("the voice sanitizer never re-introduces the retired name", () => {
     for (const { label, text } of CONTAMINATED_GREETINGS) {
       expectSadeedClean(

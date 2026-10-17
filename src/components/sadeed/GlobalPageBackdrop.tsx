@@ -1,6 +1,7 @@
 /**
  * GlobalPageBackdrop — cinematic SADEED hologram backdrop for every page
- * EXCEPT the homepage (which uses HomeVideoBackdrop). Fixed, non-interactive,
+ * EXCEPT the homepage (which draws its own: HoloVideoEngine inside
+ * `-blueprint-page.tsx`). Fixed, non-interactive,
  * behind all content. Cropped exactly like the reference: face high-in-frame,
  * body fading into the dark deck.
  */

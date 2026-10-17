@@ -6,6 +6,11 @@
  * يستدعيها الزائر، ومشغّل الوكلاء، وتحليل البلاغ، والمحرّك التنفيذي، وأداة
  * MCP. لم يكن عليها مفتاح إيقاف ولا سقف يومي. المحروس هنا: كل موضعٍ يستدعي
  * `generateText(` في `src/lib` يسبقه نداء بوّابة، والقائمة تُشتقّ من الشيفرة.
+ *
+ * (حُذفت `exec/conversation.functions.ts` في تنظيف ٢٠٢٦/١٠/١٧ فخرجت من القائمتين
+ * أدناه: لا مستورد لها منذ أُزيل «تعاون الوكلاء» من غرفة العمليات ٢٠٢٦/٠٨/٢٠.
+ * وإن عادت بنداء نموذج أسقطها الفحص المشتقّ «ولا وحدة تستدعي النموذج خارج هذه
+ * القائمة».)
  */
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
@@ -18,7 +23,6 @@ const strip = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^[ \t]
 const INTERNAL_SPENDERS: ReadonlyArray<readonly [string, "quota" | "kill-switch"]> = [
   // زائرٌ يستدعيها: مفتاح الإيقاف والسقفان اليوميان معًا.
   ["src/lib/exec/predictive.functions.ts", "quota"],
-  ["src/lib/exec/conversation.functions.ts", "quota"],
   ["src/lib/exec/briefing.functions.ts", "quota"],
   ["src/lib/exec/agent-runtime.server.ts", "quota"],
   ["src/lib/oms-sadeed.server.ts", "quota"],
@@ -106,10 +110,9 @@ describe("① كل وحدة مكتبة تستدعي نموذجًا تمرّ با
 });
 
 describe("② البوّابة ترمي، والمستدعي يسقط إلى بديله لا إلى النموذج", () => {
-  it("دوال العرض الثلاث تفحص الحصّة داخل `try` الذي يملك البديل الحتميّ", () => {
+  it("دالّتا العرض تفحصان الحصّة داخل `try` الذي يملك البديل الحتميّ", () => {
     for (const path of [
       "src/lib/exec/predictive.functions.ts",
-      "src/lib/exec/conversation.functions.ts",
       "src/lib/exec/briefing.functions.ts",
     ]) {
       const src = strip(read(path));
