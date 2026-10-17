@@ -12,7 +12,6 @@ dist
 dist-ssr
 .output
 .vercel
-.vinxi
 .tanstack/**
 .nitro
 *.local
@@ -52,8 +51,8 @@ dist-ssr
 # then refused to install and every CI step after "Install" was skipped.
 #
 # Ignoring the others means a tool may still generate one locally, but
-# `git add -A` can no longer commit it. The matching assertion lives in
-# src/lib/build/lockfile.contract.test.ts.
+# `git add -A` can no longer commit it. (The former lockfile contract test was
+# removed in f1e0bab97; no test asserts this today.)
 bun.lock
 bun.lockb
 pnpm-lock.yaml

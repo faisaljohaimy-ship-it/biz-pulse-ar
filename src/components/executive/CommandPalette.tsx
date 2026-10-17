@@ -59,9 +59,11 @@ const GROUP_AR: Record<CmdGroup, string> = {
  * السجل بعد، فعناوينها هنا مطابقة لعناوين ملفات مساراتها.
  */
 
-// The cinema entry opens the ExecutiveCinema MODAL via this handler — it does
-// not navigate to /cinematic-demo, which is hidden. Without a handler the
-// entry is omitted entirely rather than dead-ending on a hidden route.
+// The cinema entry runs this handler — it does not navigate to
+// /cinematic-demo, which is hidden. Without a handler the entry is omitted
+// entirely rather than dead-ending on a hidden route. No mount passes one
+// today: the ExecutiveCinema modal it used to open was deleted (2026-10-17),
+// so the entry never renders.
 export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } = {}) {
   const { locale } = useI18n();
   const ar = locale === "ar";

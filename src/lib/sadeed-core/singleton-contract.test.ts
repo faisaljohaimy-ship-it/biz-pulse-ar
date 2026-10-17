@@ -32,7 +32,6 @@ describe("SADEED singleton release contract", () => {
   it("routes every authenticated voice caller to the canonical endpoint", () => {
     for (const caller of [
       "src/components/sadeed-core/SadeedCopilot.tsx",
-      "src/hooks/useSadeedSpeech.ts",
       "src/routes/_authenticated/tts.tsx",
     ]) {
       const contents = source(caller);

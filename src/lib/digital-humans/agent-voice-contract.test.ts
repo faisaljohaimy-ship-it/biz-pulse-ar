@@ -92,28 +92,3 @@ describe("specialist voice release contract", () => {
     expect(client).toMatch(/status === 401 \|\| res\.status === 403/);
   });
 });
-
-describe("homepage backdrop artwork", () => {
-  // The homepage backdrop is a permanent cinematic toroid image
-  // (HomeVideoBackdrop). The former gesture-gated greeting film was retired
-  // per directive; this contract tracks the shipped design: a real,
-  // LCP-prioritized backdrop asset the component actually references —
-  // never a placeholder.
-  it("ships a purpose-built, LCP-prioritized backdrop the component references", () => {
-    // Guard the REAL asset weight recorded in the manifest, not the pointer
-    // file's size — a placeholder swap would drop this far below a real
-    // cinematic image.
-    const manifest = JSON.parse(source("src/assets/nexios-home-toroid.png.asset.json")) as {
-      size?: number;
-    };
-    expect(typeof manifest.size).toBe("number");
-    expect(manifest.size!).toBeGreaterThan(200_000);
-
-    const backdrop = source("src/components/home/HomeVideoBackdrop.tsx");
-    // Permanent artwork is the toroid image, priority-fetched for LCP.
-    expect(backdrop).toContain("nexios-home-toroid.png.asset.json");
-    expect(backdrop).toContain('fetchPriority="high"');
-    // The greeting film was retired — the backdrop must not reference it.
-    expect(backdrop).not.toContain("home-bg.mp4.asset.json");
-  });
-});

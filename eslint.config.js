@@ -11,7 +11,6 @@ export default tseslint.config(
       "dist",
       ".output",
       ".vercel",
-      ".vinxi",
       ".claude",
       // مخلّفات الفحص المؤقتة (سكربتات تحقيق تُكتب وتُرمى، مُستثناة في
       // `.gitignore` أصلًا). بقاؤها هنا كان يُنتج ٤٢ خطأ تنسيقٍ على ملفّاتٍ

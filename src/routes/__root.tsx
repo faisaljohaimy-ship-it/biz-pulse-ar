@@ -473,8 +473,9 @@ function RootComponent() {
                     <ArabianPeninsulaBackdrop />
                   )}
                   {/* Global SADEED hologram backdrop for every non-home page.
-                      Homepage owns its own HomeVideoBackdrop; the agent
-                      operations platform deliberately uses a clean background. */}
+                      Homepage draws its own (HoloVideoEngine inside the
+                      blueprint page); the agent operations platform
+                      deliberately uses a clean background. */}
                   {!isHero && !isPromo && !isAccessGate && !isAgentOperations && !introActive && (
                     <GlobalPageBackdrop />
                   )}

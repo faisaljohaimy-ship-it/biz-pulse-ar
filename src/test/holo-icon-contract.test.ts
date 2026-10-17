@@ -88,24 +88,6 @@ describe("adoption — icon controls carry no glass fill", () => {
   });
 });
 
-describe("agent nodes — glass removed, status colour preserved", () => {
-  const ring = read("src/components/executive/AgentRing.tsx");
-
-  it("the agent pip no longer carries a frosted disc", () => {
-    expect(ring).not.toContain("bg-[#061A2E]/75 backdrop-blur-md");
-  });
-
-  it("keeps the per-status edge + halo (tone), so status is still readable", () => {
-    expect(ring).toContain("tone.ring");
-    expect(ring).toContain("tone.glow");
-  });
-
-  it("the glyph glows in the agent's OWN status colour, and the node dips", () => {
-    expect(ring).toContain("drop-shadow(0 0 6px ${tone.stroke})");
-    expect(ring).toContain("active:scale-95");
-  });
-});
-
 describe("internal pages — icon chips carry the holographic edge", () => {
   const pages = [
     "src/routes/trust.tsx",

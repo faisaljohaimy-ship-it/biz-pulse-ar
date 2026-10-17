@@ -27,4 +27,3 @@ PLAYWRIGHT_BASE_URL=https://neexios.com npm run test:e2e   # ضد الإنتاج
 | 5   | `05-command-center-auth.spec.ts` | حماية `/command-center` بالمصادقة                            |
 | 6   | `06-simulation-ribbon.spec.ts`   | شارة المحاكاة تظهر على جميع الشاشات                          |
 | 7   | `07-health-endpoint.spec.ts`     | `/api/public/health` صحيح الشكل                              |
-| 8   | `08-hajj-prime.spec.ts`          | فتح/إغلاق منصة نُسك الحج                                     |
