@@ -20,6 +20,8 @@ vi.mock("@/integrations/supabase/client.server", () => ({
 }));
 
 import {
+  BREAKER_FAILURE_THRESHOLD,
+  BREAKER_FAILURE_WINDOW_MS,
   BREAKER_OPEN_MS,
   DEGRADED_MAX_KEYS,
   RATE_LIMIT_DEFAULT_DEADLINE_MS,
@@ -50,10 +52,10 @@ async function settle<T>(promise: Promise<T>, ms: number): Promise<T | "pending"
   return settled;
 }
 
-/** يفتح القاطع بفشلين (مهلتين) ويعيد عدد نداءات القاعدة عندها. */
+/** يفتح القاطع بخمسة فشلٍ (مهلات) ويعيد عدد نداءات القاعدة عندها. */
 async function openBreaker(): Promise<number> {
   rpc.mode = "hang";
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < BREAKER_FAILURE_THRESHOLD; i++) {
     const r = await settle(enforceRateLimit("k", 10, 60), RATE_LIMIT_DEFAULT_DEADLINE_MS);
     expect(r).toEqual({ allowed: false, unavailable: true });
   }
@@ -81,24 +83,35 @@ describe("المهلة الافتراضية", () => {
 });
 
 describe("القاطع", () => {
-  it("فشلان يفتحانه؛ والنداء الثالث فوريٌّ بلا لمس القاعدة", async () => {
+  it("خمسة فشلٍ تفتحه (دستور الهندسة §3)؛ والنداء السادس فوريٌّ بلا لمس القاعدة", async () => {
     const callsAtOpen = await openBreaker();
-    expect(callsAtOpen).toBe(2);
+    expect(callsAtOpen).toBe(BREAKER_FAILURE_THRESHOLD);
     const r = await settle(enforceRateLimit("k", 10, 60), 0);
     expect(r).toEqual({ allowed: false, unavailable: true });
-    expect(rpc.calls).toBe(2);
+    expect(rpc.calls).toBe(BREAKER_FAILURE_THRESHOLD);
   });
 
-  it("خطأ القاعدة يُحتسب فشلًا، ويفشل مغلقًا", async () => {
+  it("أربعة فشلٍ لا تفتحه، وفشلٌ خامس بعد أكثر من 60 ث يبدأ سلسلةً جديدة", async () => {
+    rpc.mode = "hang";
+    for (let i = 0; i < BREAKER_FAILURE_THRESHOLD - 1; i++) {
+      await settle(enforceRateLimit("k", 10, 60), RATE_LIMIT_DEFAULT_DEADLINE_MS);
+    }
+    expect(rateLimitStorageState().state).toBe("closed");
+    expect(rateLimitStorageState().consecutiveFailures).toBe(BREAKER_FAILURE_THRESHOLD - 1);
+    await vi.advanceTimersByTimeAsync(BREAKER_FAILURE_WINDOW_MS + 1);
+    await settle(enforceRateLimit("k", 10, 60), RATE_LIMIT_DEFAULT_DEADLINE_MS);
+    expect(rateLimitStorageState().state).toBe("closed");
+    expect(rateLimitStorageState().consecutiveFailures).toBe(1);
+  });
+
+  it("خطأ القاعدة يُحتسب فشلًا، ويفشل مغلقًا، وخمسةٌ منه تفتح القاطع", async () => {
     rpc.mode = "error";
-    expect(await settle(enforceRateLimit("k", 10, 60), 0)).toEqual({
-      allowed: false,
-      unavailable: true,
-    });
-    expect(await settle(enforceRateLimit("k", 10, 60), 0)).toEqual({
-      allowed: false,
-      unavailable: true,
-    });
+    for (let i = 0; i < BREAKER_FAILURE_THRESHOLD; i++) {
+      expect(await settle(enforceRateLimit("k", 10, 60), 0)).toEqual({
+        allowed: false,
+        unavailable: true,
+      });
+    }
     expect(rateLimitStorageState().state).toBe("open");
   });
 
@@ -111,10 +124,10 @@ describe("القاطع", () => {
     const bystander = enforceRateLimit("b", 10, 60);
     expect(await settle(bystander, 0)).toEqual({ allowed: false, unavailable: true });
     expect(await settle(probe, 0)).toEqual({ allowed: true });
-    expect(rpc.calls).toBe(3);
+    expect(rpc.calls).toBe(BREAKER_FAILURE_THRESHOLD + 1);
     expect(rateLimitStorageState().state).toBe("closed");
     expect(await settle(enforceRateLimit("c", 10, 60), 0)).toEqual({ allowed: true });
-    expect(rpc.calls).toBe(4);
+    expect(rpc.calls).toBe(BREAKER_FAILURE_THRESHOLD + 2);
   });
 
   it("فشل الفحص يعيد الفتح مدّةً كاملة", async () => {
@@ -126,13 +139,13 @@ describe("القاطع", () => {
       allowed: false,
       unavailable: true,
     });
-    expect(rpc.calls).toBe(3);
+    expect(rpc.calls).toBe(BREAKER_FAILURE_THRESHOLD + 1);
     expect(rateLimitStorageState().state).toBe("open");
     expect(await settle(enforceRateLimit("b", 10, 60), 0)).toEqual({
       allowed: false,
       unavailable: true,
     });
-    expect(rpc.calls).toBe(3);
+    expect(rpc.calls).toBe(BREAKER_FAILURE_THRESHOLD + 1);
   });
 
   it("لقطة الحالة أعدادٌ وطوابع لا غير", () => {
@@ -174,10 +187,23 @@ describe("الحصّة المحدودة في الذاكرة", () => {
     expect(degradedAllowance("first", 2, 60).allowed).toBe(true);
   });
 
-  it("سياسة التدهور من البيئة: الافتراض bounded، و«closed» وحدها تغلق", () => {
-    expect(gateDegradedMode({})).toBe("bounded");
+  it("سياسة التدهور من البيئة: الافتراض closed (قرار فوترةٍ للمالك)، و«bounded» وحدها تفتح", () => {
+    expect(gateDegradedMode({})).toBe("closed");
+    expect(gateDegradedMode({ SADEED_GATE_DEGRADED_MODE: "bounded" })).toBe("bounded");
+    expect(gateDegradedMode({ SADEED_GATE_DEGRADED_MODE: " BOUNDED " })).toBe("bounded");
     expect(gateDegradedMode({ SADEED_GATE_DEGRADED_MODE: "closed" })).toBe("closed");
-    expect(gateDegradedMode({ SADEED_GATE_DEGRADED_MODE: " CLOSED " })).toBe("closed");
-    expect(gateDegradedMode({ SADEED_GATE_DEGRADED_MODE: "off" })).toBe("bounded");
+    expect(gateDegradedMode({ SADEED_GATE_DEGRADED_MODE: "on" })).toBe("closed");
+    expect(gateDegradedMode({ SADEED_GATE_DEGRADED_MODE: "" })).toBe("closed");
+  });
+
+  it("السقف العام المحدود مشترك: 2500 هوية تمرّ والـ2501 تُرفض (الانتهاك المزروع V34)", () => {
+    // نصف السقف اليومي العام للدردشة (5000) = 2500 — دلوٌ واحد لكل الهويات.
+    const key = "ai-daily-global:chat:2026-10-17";
+    for (let i = 1; i <= 2500; i++) {
+      expect(degradedAllowance(key, 5_000, 86_400).allowed, `هوية ${i}`).toBe(true);
+    }
+    const over = degradedAllowance(key, 5_000, 86_400);
+    expect(over.allowed).toBe(false);
+    expect(over.remaining).toBe(0);
   });
 });

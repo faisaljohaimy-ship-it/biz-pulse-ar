@@ -13,6 +13,7 @@
 import { z } from "zod";
 import { generateText } from "ai";
 import { SADEED_VOICE_CONTRACT, sanitizeVoice } from "./voice";
+import { assertAiEnabled } from "@/lib/governance/ai-quota.server";
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 
 export const ExplanationRequestSchema = z.object({
@@ -105,6 +106,8 @@ export async function explainRecommendation(
     deadline: req.deadline ?? "this week",
   });
 
+  // دفاعٌ ثانٍ خلف مسار `/api/public/sadeed-explain` المحروس: مطفأ ⇐ يُرمى قبل أي نداء.
+  assertAiEnabled("chat");
   const runtime = resolveSadeedGeminiRuntime();
   const { text: raw } = await generateText({
     model: runtime.provider(runtime.modelId),

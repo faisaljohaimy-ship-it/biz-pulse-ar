@@ -67,14 +67,19 @@ type Handler = (args: { request: Request }) => Promise<Response>;
 const THREAD_A = "11111111-1111-4111-8111-111111111111";
 const THREAD_B = "22222222-2222-4222-8222-222222222222";
 
-async function post(text: string, thread = THREAD_A, ip = "198.51.100.7") {
+async function post(
+  text: string,
+  thread = THREAD_A,
+  ip = "198.51.100.7",
+  extraHeaders: Record<string, string> = {},
+) {
   const mod = (await import("@/routes/api/chat")) as unknown as {
     Route: { options: { server: { handlers: { POST: Handler } } } };
   };
   return mod.Route.options.server.handlers.POST({
     request: new Request("http://local/api/chat", {
       method: "POST",
-      headers: { "content-type": "application/json", "x-forwarded-for": ip },
+      headers: { "content-type": "application/json", "x-forwarded-for": ip, ...extraHeaders },
       body: JSON.stringify({
         messages: [{ id: "m1", role: "user", parts: [{ type: "text", text }] }],
         threadId: thread,
@@ -83,15 +88,18 @@ async function post(text: string, thread = THREAD_A, ip = "198.51.100.7") {
   });
 }
 
+/** آخر بوّابةٍ معلّقة — تُحرَّر في afterEach فلا يسرّب اختبارٌ ساقط طلبًا إلى ما بعده. */
+let pendingGate: { resolve: () => void } | null = null;
 function deferred() {
   let resolve!: () => void;
   const promise = new Promise<void>((r) => (resolve = r));
+  pendingGate = { resolve };
   return { promise, resolve };
 }
 
 const tick = () => new Promise((r) => setTimeout(r, 25));
 /** ينتظر حتى يبلغ الطلب النموذج (أي بعد حجز الحارسين) — لا تخمينًا بمهلةٍ ثابتة. */
-async function waitForCalls(n: number, timeoutMs = 4_000) {
+async function waitForCalls(n: number, timeoutMs = 15_000) {
   const started = Date.now();
   while (sim.calls < n) {
     if (Date.now() - started > timeoutMs) throw new Error(`لم يبلغ النموذج ${n} نداءً في الوقت`);
@@ -109,6 +117,8 @@ beforeEach(async () => {
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 afterEach(() => {
+  pendingGate?.resolve();
+  pendingGate = null;
   vi.unstubAllEnvs();
   vi.stubEnv("GEMINI_API_KEY", "test-key-not-a-secret");
   vi.stubEnv("SUPABASE_URL", "https://stub.invalid");
@@ -122,11 +132,14 @@ describe("منع التكرار الجاري", () => {
   it("الطلب نفسه مرّتين معًا ⇐ الثاني 429 duplicate_request بلا نداء ثانٍ، وبعد الانتهاء يمرّ", async () => {
     const gate = deferred();
     sim.hold = gate.promise;
-    const first = post(Q1);
+    const thread = crypto.randomUUID();
+    const first = post(Q1, thread);
     await waitForCalls(1);
-    const second = await post(Q1);
+    const second = await post(Q1, thread);
     expect(second.status).toBe(429);
     expect(second.headers.get("Retry-After")).toBe("3");
+    expect(second.headers.get("X-SADEED-Gate")).toBe("verified");
+    expect(second.headers.get("X-SADEED-Auth")).toBe("anonymous");
     const body = (await second.json()) as { error: string; code?: string };
     expect(body.code).toBe("duplicate_request");
     expect(/[؀-ۿ]/.test(body.error)).toBe(true);
@@ -135,7 +148,7 @@ describe("منع التكرار الجاري", () => {
     gate.resolve();
     expect((await first).status).toBe(200);
     sim.hold = null;
-    const third = await post(Q1);
+    const third = await post(Q1, thread);
     expect(third.status).toBe(200);
     expect(sim.calls).toBe(2);
   });
@@ -166,6 +179,21 @@ describe("منع التكرار الجاري", () => {
     }
     expect(sim.calls).toBe(4);
   });
+
+  it("هوية الزائر من `cf-connecting-ip` لا من `x-forwarded-for` المزوَّر: عنوانان مختلفان في XFF وهوية حافّة واحدة ⇐ تكرار", async () => {
+    const gate = deferred();
+    sim.hold = gate.promise;
+    const edge = { "cf-connecting-ip": "203.0.113.9" };
+    const first = post(Q1, THREAD_A, "10.0.0.1", edge);
+    await waitForCalls(1);
+    // لو قُرئ XFF أوّلًا لصار هذا «زائرًا آخر» ومرّ إلى النموذج ثانيةً.
+    const spoofed = await post(Q1, THREAD_A, "10.0.0.2", edge);
+    expect(spoofed.status).toBe(429);
+    expect(((await spoofed.json()) as { code?: string }).code).toBe("duplicate_request");
+    expect(sim.calls).toBe(1);
+    gate.resolve();
+    expect((await first).status).toBe(200);
+  });
 });
 
 describe("سقف التزامن", () => {
@@ -178,6 +206,8 @@ describe("سقف التزامن", () => {
     const second = await post(Q2);
     expect(second.status).toBe(503);
     expect(second.headers.get("Retry-After")).toBe("5");
+    expect(second.headers.get("X-SADEED-Gate")).toBe("verified");
+    expect(second.headers.get("X-SADEED-Auth")).toBe("anonymous");
     const body = (await second.json()) as { error: string; code?: string };
     expect(body.code).toBe("busy");
     expect(/[؀-ۿ]/.test(body.error)).toBe(true);

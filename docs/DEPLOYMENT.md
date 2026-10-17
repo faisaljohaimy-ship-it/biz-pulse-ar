@@ -8,7 +8,7 @@
 Claude Code → git push origin main → GitHub Actions → Verify → Cloudflare Workers → neexios.com
 ```
 
-يبقى Vercel هدفاً يدوياً اختيSADEEDً فقط؛ `vercel.json` يعطّل نشر `main`
+يبقى Vercel هدفاً يدوياً اختيارياً فقط؛ `vercel.json` يعطّل نشر `main`
 التلقائي لمنع نشر الفرع الإنتاجي نفسه إلى مزودين في الوقت ذاته.
 
 ---
@@ -30,6 +30,13 @@ Claude Code → git push origin main → GitHub Actions → Verify → Cloudflar
 `vite.config.ts` يتحول إلى preset Vercel عندما تكون `VERCEL=1`، لكن
 `vercel.json` يضبط `git.deploymentEnabled.main: false`. لا تفعّل النشر التلقائي
 إلا بعد قرار تحويل رسمي وإيقاف مسار Cloudflare لتفادي بيئتي إنتاج متنافستين.
+
+**النشر الصريح عبر GitHub (أُضيف ٢٠٢٦/١٠/١٧):** `.github/workflows/deploy-vercel.yml`
+يُشغَّل يدويًّا فقط (`workflow_dispatch`)؛ `production` يحتاج كتابة `deploy` في مُدخل
+التأكيد؛ وبعد النشر يقرأ `/api/public/live` ويحمرّ إن لم يطابق ختم البناء الـcommit
+المتوقَّع. متطلّباته: `VERCEL_TOKEN` سرًّا، و`VERCEL_ORG_ID` و`VERCEL_PROJECT_ID`
+متغيّرين في GitHub؛ ومتغيّرات التشغيل على مشروع Vercel لا في git (الجدول الكامل في
+`docs/operations/SADEED_MIGRATION_RUNBOOK.md` §1b). لم يُشغَّل بعد.
 
 ---
 

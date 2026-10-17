@@ -6,6 +6,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { buildStamp } from "@/lib/build/build-info.server";
 
 type SubsystemStatus = "ok" | "degraded" | "down" | "unknown";
 interface Subsystem {
@@ -17,6 +18,12 @@ interface Subsystem {
 const VERSION = process.env.APP_VERSION ?? "1.5.1";
 /** أقصى انتظارٍ لفحص القاعدة — أطول من مهلة بوّابة الدردشة قليلًا، وأقصر من صبر المراقب. */
 export const HEALTH_DB_DEADLINE_MS = 2_500;
+
+/**
+ * معرّف البناء (مهمّة الجاهزية ٢٠٢٦/١٠/١٧): يُقرأ من `@/lib/build/build-info.server`
+ * المشترك مع `/api/public/live` — به يشهد فحص الإنتاج أيَّ commit يخدمه الموقع فعلًا.
+ */
+export { BUILD_INFO } from "@/lib/build/build-info.server";
 
 export const Route = createFileRoute("/api/public/health")({
   server: {
@@ -113,6 +120,7 @@ export const Route = createFileRoute("/api/public/health")({
           {
             status: worst === "down" ? "down" : worst === "degraded" ? "degraded" : "ok",
             version: VERSION,
+            build: buildStamp(),
             timestamp: new Date().toISOString(),
             uptime_hint: "stateless-worker",
             subsystems,

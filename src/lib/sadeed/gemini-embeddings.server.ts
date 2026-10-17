@@ -5,6 +5,7 @@
  * callers must re-embed the whole compared corpus before enabling retrieval.
  */
 import { httpJson } from "@/lib/api/http.server";
+import { assertAiEnabled } from "@/lib/governance/ai-quota.server";
 
 export const GEMINI_EMBEDDING_MODEL = "gemini-embedding-2";
 export const GEMINI_EMBEDDING_MIN_DIMS = 128;
@@ -87,6 +88,8 @@ export async function embedGeminiText(
   input: string,
   options: GeminiEmbeddingOptions,
 ): Promise<{ vector: number[]; usageTokens: number; model: string } | null> {
+  // مفتاح الإيقاف يشمل التضمين أيضًا: نداءٌ مدفوع (المرحلة ب-٢).
+  assertAiEnabled("chat");
   validateDimensions(options.dimensions);
   const key = resolveGeminiApiKey();
   if (!key) throw new Error("GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY missing");
@@ -120,6 +123,7 @@ export async function embedGeminiBatch(
   inputs: readonly string[],
   options: GeminiEmbeddingOptions,
 ): Promise<{ vectors: Array<number[] | null>; usageTokens: number; model: string }> {
+  assertAiEnabled("chat");
   validateDimensions(options.dimensions);
   const key = resolveGeminiApiKey();
   if (!key) throw new Error("GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY missing");

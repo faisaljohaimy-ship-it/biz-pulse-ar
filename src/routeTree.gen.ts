@@ -178,6 +178,7 @@ import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
 import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
 import { Route as ApiLearnSadeedTeachRouteImport } from './routes/api/learn/sadeed-teach'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
+import { Route as ApiPublicLiveRouteImport } from './routes/api/public/live'
 import { Route as ApiPublicOsOverviewRouteImport } from './routes/api/public/os-overview'
 import { Route as ApiPublicPermitVerifyRouteImport } from './routes/api/public/permit-verify'
 import { Route as ApiPublicSadeedAskRouteImport } from './routes/api/public/sadeed-ask'
@@ -1098,6 +1099,11 @@ const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicLiveRoute = ApiPublicLiveRouteImport.update({
+  id: '/api/public/live',
+  path: '/api/public/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOsOverviewRoute = ApiPublicOsOverviewRouteImport.update({
   id: '/api/public/os-overview',
   path: '/api/public/os-overview',
@@ -1444,6 +1450,7 @@ export interface FileRoutesByFullPath {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/learn/sadeed-teach': typeof ApiLearnSadeedTeachRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/live': typeof ApiPublicLiveRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
   '/api/public/sadeed-ask': typeof ApiPublicSadeedAskRoute
@@ -1645,6 +1652,7 @@ export interface FileRoutesByTo {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/learn/sadeed-teach': typeof ApiLearnSadeedTeachRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/live': typeof ApiPublicLiveRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
   '/api/public/sadeed-ask': typeof ApiPublicSadeedAskRoute
@@ -1850,6 +1858,7 @@ export interface FileRoutesById {
   '/api/heygen/token': typeof ApiHeygenTokenRoute
   '/api/learn/sadeed-teach': typeof ApiLearnSadeedTeachRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/live': typeof ApiPublicLiveRoute
   '/api/public/os-overview': typeof ApiPublicOsOverviewRoute
   '/api/public/permit-verify': typeof ApiPublicPermitVerifyRoute
   '/api/public/sadeed-ask': typeof ApiPublicSadeedAskRoute
@@ -2055,6 +2064,7 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/learn/sadeed-teach'
     | '/api/public/health'
+    | '/api/public/live'
     | '/api/public/os-overview'
     | '/api/public/permit-verify'
     | '/api/public/sadeed-ask'
@@ -2256,6 +2266,7 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/learn/sadeed-teach'
     | '/api/public/health'
+    | '/api/public/live'
     | '/api/public/os-overview'
     | '/api/public/permit-verify'
     | '/api/public/sadeed-ask'
@@ -2460,6 +2471,7 @@ export interface FileRouteTypes {
     | '/api/heygen/token'
     | '/api/learn/sadeed-teach'
     | '/api/public/health'
+    | '/api/public/live'
     | '/api/public/os-overview'
     | '/api/public/permit-verify'
     | '/api/public/sadeed-ask'
@@ -2562,6 +2574,7 @@ export interface RootRouteChildren {
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
   ApiLearnSadeedTeachRoute: typeof ApiLearnSadeedTeachRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
+  ApiPublicLiveRoute: typeof ApiPublicLiveRoute
   ApiPublicOsOverviewRoute: typeof ApiPublicOsOverviewRoute
   ApiPublicPermitVerifyRoute: typeof ApiPublicPermitVerifyRoute
   ApiPublicSadeedAskRoute: typeof ApiPublicSadeedAskRoute
@@ -3782,6 +3795,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/live': {
+      id: '/api/public/live'
+      path: '/api/public/live'
+      fullPath: '/api/public/live'
+      preLoaderRoute: typeof ApiPublicLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/os-overview': {
       id: '/api/public/os-overview'
       path: '/api/public/os-overview'
@@ -4350,6 +4370,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,
   ApiLearnSadeedTeachRoute: ApiLearnSadeedTeachRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
+  ApiPublicLiveRoute: ApiPublicLiveRoute,
   ApiPublicOsOverviewRoute: ApiPublicOsOverviewRoute,
   ApiPublicPermitVerifyRoute: ApiPublicPermitVerifyRoute,
   ApiPublicSadeedAskRoute: ApiPublicSadeedAskRoute,

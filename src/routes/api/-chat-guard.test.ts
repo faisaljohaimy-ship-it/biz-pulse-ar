@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateChatRequest } from "./-chat-guard";
+import { chatJsonError, validateChatRequest } from "./-chat-guard";
 
 function chatRequest(body: unknown) {
   return new Request("https://example.test/api/chat", {
@@ -147,5 +147,34 @@ describe("chat request guard", () => {
       }),
     );
     expect(result.ok).toBe(false);
+  });
+});
+
+describe("chatJsonError", () => {
+  it("extra headers never override the fixed security headers (M17)", async () => {
+    const res = chatJsonError("x", 429, "rid-1234567890", {
+      code: "rate_limited",
+      retryAfterSeconds: 2.4,
+      headers: {
+        "X-SADEED-Gate": "verified",
+        "Cache-Control": "public, max-age=600",
+        "X-SADEED-Request-ID": "forged",
+        "X-Content-Type-Options": "none",
+        "Referrer-Policy": "unsafe-url",
+      },
+    });
+    expect(res.status).toBe(429);
+    expect(res.headers.get("X-SADEED-Gate")).toBe("verified");
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+    expect(res.headers.get("X-SADEED-Request-ID")).toBe("rid-1234567890");
+    expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(res.headers.get("Referrer-Policy")).toBe("no-referrer");
+    expect(res.headers.get("Retry-After")).toBe("2");
+    expect(await res.json()).toEqual({
+      ok: false,
+      error: "x",
+      code: "rate_limited",
+      requestId: "rid-1234567890",
+    });
   });
 });

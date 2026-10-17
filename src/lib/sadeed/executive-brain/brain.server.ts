@@ -25,6 +25,7 @@
 
 import { composeReasoning } from "./reasoning.server";
 import { generateText } from "ai";
+import { assertAiEnabled } from "@/lib/governance/ai-quota.server";
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 import { buildContextBlock } from "./context.server";
 import {
@@ -54,6 +55,9 @@ async function callModel(
   question: string,
 ): Promise<ModelCallResult> {
   try {
+    // مفتاح الإيقاف قبل النموذج — المحرّك يُستدعى من مسار الدردشة المحروس
+    // بالحصّة، فهنا دفاعٌ ثانٍ: مطفأ ⇐ `ok: false` بلا نداء مزوّد.
+    assertAiEnabled("chat");
     const runtime = resolveSadeedGeminiRuntime();
     const { text: raw } = await generateText({
       model: runtime.provider(runtime.modelId),

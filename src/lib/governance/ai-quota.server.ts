@@ -276,3 +276,60 @@ export function degradedAiQuota(
   }
   return null;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// البوّابة في مواضع الاستدعاء الداخلية — دوال الخادم ووحدات المكتبة التي
+// تستدعي نموذجًا من غير مسار HTTP يعيد `Response` للمستخدم (المرحلة ب-٢ من
+// مهمّة الجاهزية الإنتاجية ٢٠٢٦/١٠/١٧).
+//
+// قِيس أن ستّة مواضع تصل Gemini بلا مفتاح إيقاف ولا سقف يومي: دوال العرض
+// التنفيذي الثلاث (زائرٌ يستدعيها)، ومشغّل الوكلاء، وتحليل البلاغ، والمحرّك
+// التنفيذي. كلّها تملك بديلًا حتميًّا في `catch` قائم، فالبوّابة ترمي
+// `AiGateError` بدل أن تعيد `Response`: المستدعي يسقط إلى بديله بلا نداء
+// مزوّد، ولا يتغيّر سلوكه حين البوّابة مفتوحة.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AiGateCode =
+  "ai_disabled" | "quota_unavailable" | "daily_global_cap" | "daily_identity_cap";
+
+/** منعٌ من البوّابة الداخلية؛ `code` هو الرمز نفسه الذي تحمله ردود HTTP. */
+export class AiGateError extends Error {
+  readonly code: AiGateCode;
+  readonly surface: AiSurface;
+  constructor(code: AiGateCode, surface: AiSurface) {
+    super(`SADEED AI gate (${surface}): ${code}`);
+    this.name = "AiGateError";
+    this.code = code;
+    this.surface = surface;
+  }
+}
+
+/** مفتاح الإيقاف وحده — متزامن، بلا شبكة. يُرمى قبل أي نداء مزوّد. */
+export function assertAiEnabled(surface: AiSurface): void {
+  if (aiKillSwitchOn()) throw new AiGateError("ai_disabled", surface);
+}
+
+/**
+ * مفتاح الإيقاف ثم السقفان اليوميان (نفس `enforceAiQuota`، نفس الدلاء، نفس
+ * الترتيب) — ويفشل مغلقًا: تعذّر المخزن منعٌ لا سماح. المستدعي يسقط إلى
+ * بديله الحتميّ ولا يُنفق على نداءٍ لم يُتحقَّق من حصّته.
+ */
+export async function assertAiQuota(opts: AiQuotaOptions): Promise<void> {
+  const blocked = await enforceAiQuota(opts);
+  if (!blocked) return;
+  let code: AiGateCode = "quota_unavailable";
+  try {
+    const body = (await blocked.json()) as { error?: unknown };
+    if (
+      body.error === "ai_disabled" ||
+      body.error === "daily_global_cap" ||
+      body.error === "daily_identity_cap" ||
+      body.error === "quota_unavailable"
+    ) {
+      code = body.error;
+    }
+  } catch {
+    /* جسمٌ غير متوقَّع — يبقى «غير متاح» وهو منع. */
+  }
+  throw new AiGateError(code, opts.surface);
+}

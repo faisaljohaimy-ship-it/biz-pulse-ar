@@ -3,6 +3,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { generateText, tool, stepCountIs, type ToolSet } from "ai";
 import { z } from "zod";
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
+import { AiGateError, assertAiQuota } from "@/lib/governance/ai-quota.server";
 import { getExecutor, listExecutorIds } from "./tool-registry.server";
 import { executeTool } from "./tool-orchestrator.server";
 import { audit } from "./audit.server";
@@ -386,6 +387,24 @@ export async function runAgent(
   );
 
   // 4) Run the bounded LLM loop.
+  // مفتاح الإيقاف والسقفان اليوميان قبل أي نداء نموذج (المرحلة ب-٢): تشغيلٌ
+  // ممنوع يُسجَّل فاشلًا برمزه ويعود بلا إنفاق — للمجدوَل والمباشر سواء.
+  try {
+    await assertAiQuota({ surface: "chat", identity: actorId, deadlineMs: 2_000 });
+  } catch (err) {
+    const code = err instanceof AiGateError ? err.code : "ai_gate_error";
+    await failRun(supabase, runId, actorId, `SADEED AI gate: ${code}`);
+    return {
+      runId,
+      status: "failed",
+      summary:
+        code === "ai_disabled"
+          ? "SADEED AI is disabled by operations"
+          : "SADEED AI quota gate blocked this run",
+      steps: 0,
+      error: code,
+    };
+  }
   let geminiRuntime: ReturnType<typeof resolveSadeedGeminiRuntime>;
   try {
     geminiRuntime = resolveSadeedGeminiRuntime();

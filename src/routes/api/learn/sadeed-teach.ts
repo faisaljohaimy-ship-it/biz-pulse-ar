@@ -14,6 +14,7 @@ import {
 import { revalidateSpeakableText } from "@/lib/sadeed/output/finalize";
 import { createClient } from "@supabase/supabase-js";
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
+import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import {
   enforceRateLimit,
   rateLimitResponse,
@@ -24,6 +25,9 @@ export const Route = createFileRoute("/api/learn/sadeed-teach")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // مفتاح الإيقاف الفوري أوّلًا — متزامن، قبل أي شبكة.
+        const off = aiDisabledResponse("chat");
+        if (off) return off;
         let runtime: ReturnType<typeof resolveSadeedGeminiRuntime>;
         try {
           runtime = resolveSadeedGeminiRuntime();
@@ -50,6 +54,13 @@ export const Route = createFileRoute("/api/learn/sadeed-teach")({
         const rate = await enforceRateLimit(`learn-teach:${userId}`, 30, 60);
         if (rate.unavailable) return rateLimitUnavailableResponse();
         if (!rate.allowed) return rateLimitResponse();
+        // السقفان اليوميان (الهوية والمشروع) قبل أي نداء نموذج؛ يفشلان مغلقين.
+        const quota = await enforceAiQuota({
+          surface: "chat",
+          identity: userId,
+          deadlineMs: 2_000,
+        });
+        if (quota) return quota;
 
         const body = (await request.json().catch(() => null)) as {
           messages?: UIMessage[];

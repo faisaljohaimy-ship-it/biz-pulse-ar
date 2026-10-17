@@ -7,6 +7,7 @@
  */
 import { generateText } from "ai";
 import { createFileRoute } from "@tanstack/react-router";
+import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import {
   clientBucketKey,
   enforceRateLimit,
@@ -121,9 +122,10 @@ async function handlePost(request: Request): Promise<Response> {
 
   // Sliding-window rate limit (shared project limiter). Fails CLOSED and
   // CLEANLY — a limiter backend outage yields 503, never an uncaught 500.
+  const bucketKey = clientBucketKey(request, "sadeed-chat");
   let rate: { allowed: boolean; unavailable?: boolean };
   try {
-    rate = await enforceRateLimit(clientBucketKey(request, "sadeed-chat"), 30, 60);
+    rate = await enforceRateLimit(bucketKey, 30, 60);
   } catch {
     return rateLimitUnavailableResponse();
   }
@@ -131,6 +133,10 @@ async function handlePost(request: Request): Promise<Response> {
   if (!rate.allowed) {
     return jsonError("سَدِيد مشغول حالياً. حاول بعد قليل.", 429);
   }
+  // السقفان اليوميان (الهوية والمشروع) قبل أي نداء نموذج (المرحلة ب-٢)؛ يفشلان
+  // مغلقين. الهوية عنوان المصدر كما يراه الحدّ — لا معرّفًا يرسله العميل.
+  const quota = await enforceAiQuota({ surface: "chat", identity: bucketKey, deadlineMs: 2_000 });
+  if (quota) return quota;
 
   let body: unknown;
   try {
@@ -257,7 +263,12 @@ export const Route = createFileRoute("/api/sadeed/chat")({
             "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
           },
         }),
-      POST: async ({ request }: { request: Request }) => handlePost(request),
+      POST: async ({ request }: { request: Request }) => {
+        // مفتاح الإيقاف الفوري أوّلًا — متزامن، قبل أي شبكة (المرحلة ب-٢).
+        const off = aiDisabledResponse("chat");
+        if (off) return off;
+        return handlePost(request);
+      },
     },
   },
 });

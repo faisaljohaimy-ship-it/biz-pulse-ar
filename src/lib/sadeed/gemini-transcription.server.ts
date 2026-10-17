@@ -4,6 +4,7 @@ import {
   normalizeGeminiTranscript,
 } from "@/lib/sadeed/gemini-audio";
 import { resolveGoogleGeminiModel } from "@/lib/ai-gateway.server";
+import { assertAiEnabled } from "@/lib/governance/ai-quota.server";
 
 export const MAX_GEMINI_AUDIO_BYTES = 12 * 1024 * 1024;
 export const GEMINI_AUDIO_TYPES = new Set([
@@ -28,6 +29,8 @@ export async function transcribeWithGemini(
   audio: Blob,
   options: { signal?: AbortSignal; languageHint?: "ar" | "en" | "unknown" } = {},
 ): Promise<GeminiTranscription> {
+  // دفاعٌ ثانٍ خلف مسارات النسخ الثلاثة المحروسة: مطفأ ⇐ يُرمى قبل قراءة المفتاح.
+  assertAiEnabled("stt");
   const apiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY)?.trim();
   if (!apiKey) throw new Error("Gemini transcription is not configured");
   if (!audio.size || audio.size > MAX_GEMINI_AUDIO_BYTES) {

@@ -272,17 +272,20 @@ export const sadeedAnalyzeIncident = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const { sadeedAnalyseIncident } = await import("./oms-sadeed.server");
-    const analysis = await sadeedAnalyseIncident({
-      ref: inc.ref,
-      category: inc.category,
-      title_ar: inc.title_ar,
-      title_en: inc.title_en,
-      severity: inc.severity,
-      priority: inc.priority ?? "medium",
-      status: inc.status,
-      assigned_to: inc.assigned_to,
-      owner: inc.owner,
-    });
+    const analysis = await sadeedAnalyseIncident(
+      {
+        ref: inc.ref,
+        category: inc.category,
+        title_ar: inc.title_ar,
+        title_en: inc.title_en,
+        severity: inc.severity,
+        priority: inc.priority ?? "medium",
+        status: inc.status,
+        assigned_to: inc.assigned_to,
+        owner: inc.owner,
+      },
+      { identity: context.userId },
+    );
 
     await context.supabase
       .from("sec_incidents")

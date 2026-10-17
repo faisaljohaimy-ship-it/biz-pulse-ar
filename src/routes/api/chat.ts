@@ -105,10 +105,14 @@ function sanitizeHistory(msgs: UIMessage[]): UIMessage[] {
 
 function clientIp(request: Request): string {
   if (process.env.TRUST_PROXY_HEADERS?.trim().toLowerCase() !== "true") return "shared";
-  const xff = request.headers.get("x-forwarded-for");
+  // الترتيب أمنيّ لا شكليّ: على حافّة Cloudflare يكتب الوكيل `cf-connecting-ip`
+  // ولا يستطيع العميل تزويره، أمّا `x-forwarded-for` فيضيف الوكيل عنوانه إلى ما
+  // يرسله العميل فيبقى أوّلُ عنصر بيده — فقراءته أوّلًا تمنح الزائر دلوًا جديدًا
+  // بكل طلب وتُسقط الحدّ والتكرار. المرتّب نفسه في `clientBucketKey` وبقيّة النقاط
+  // العامة؛ هذا المسار وحده كان مقلوبًا (تدقيق ٢٠٢٦/١٠/١٧، SEC-1C-02).
   const candidate =
-    xff?.split(",")[0]?.trim() ||
     request.headers.get("cf-connecting-ip")?.trim() ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip")?.trim() ||
     "shared";
   return /^[0-9a-f:.]{3,64}$/i.test(candidate) ? candidate : "shared";
@@ -273,6 +277,8 @@ const LOCAL_QUOTA_UNVERIFIED_AR =
 
 /** مهلة كل فحصٍ في القاعدة قبل الردّ — فلا يعلق سؤالٌ على قاعدةٍ لا تردّ. */
 const CHAT_GATE_DEADLINE_MS = 1_500;
+/** مهلة قراءات السياق للمسجَّل (الاسترجاع والتفضيلات): تجاوزها = سياقٌ أقلّ، لا تعليق. */
+const CONTEXT_DB_DEADLINE_MS = 2_500;
 
 /** حدود الدقيقة كما كانت: المسجَّل 40 في 60 ث، والزائر 12 في 300 ث. */
 const CHAT_RATE = {
@@ -291,6 +297,29 @@ const CHAT_DUPLICATE_AR = "طلبك السابق قيد المعالجة — ا�
  */
 type GateMode = "verified" | "degraded";
 
+/** حال الجلسة في هذا الطلب: زائر، أو متحقَّقة، أو تعذّر التحقّق فخُدم زائرًا. */
+type AuthState = "anonymous" | "verified" | "unverified";
+
+const DEADLINE_HIT = Symbol("chat-deadline");
+
+/** يسابق وعدًا (أو thenable من supabase) بمهلة؛ التجاوز يعيد `DEADLINE_HIT` لا استثناء. */
+async function withDeadline<T>(
+  pending: PromiseLike<T>,
+  deadlineMs: number,
+): Promise<T | typeof DEADLINE_HIT> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      Promise.resolve(pending),
+      new Promise<typeof DEADLINE_HIT>((resolve) => {
+        timer = setTimeout(() => resolve(DEADLINE_HIT), deadlineMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** الحصّة «غير متاحة» برمزها لا بحالتها وحدها — فمفتاح الإيقاف (503 أيضًا) لا يُخلط بها. */
 async function isQuotaUnavailable(res: Response): Promise<boolean> {
   if (res.status !== 503) return false;
@@ -302,7 +331,12 @@ async function isQuotaUnavailable(res: Response): Promise<boolean> {
   }
 }
 
-function localGuaranteedReply(rid: string, text: string, source: string): Response {
+function localGuaranteedReply(
+  rid: string,
+  text: string,
+  source: string,
+  extraHeaders: Record<string, string> = {},
+): Response {
   const localStream = createUIMessageStream({
     execute: ({ writer }) => {
       const id = `sadeed-local-${rid}`;
@@ -313,7 +347,7 @@ function localGuaranteedReply(rid: string, text: string, source: string): Respon
   });
   return createUIMessageStreamResponse({
     stream: localStream,
-    headers: { ...responseHeaders(rid), "X-SADEED-Reply-Source": source },
+    headers: { ...extraHeaders, ...responseHeaders(rid), "X-SADEED-Reply-Source": source },
   });
 }
 
@@ -389,32 +423,58 @@ export const Route = createFileRoute("/api/chat")({
         let userId: string | null = null;
         let orgId: string | null = null;
         let orgRole: OrgRole | null = null;
+        let authState: AuthState = "anonymous";
         if (authHeader) {
-          const { data: userData, error: userError } = await supabase.auth.getUser();
-          if (userError || !userData.user) {
+          // مهلةٌ على التحقّق من الجلسة (VIBE 5.1): خدمة مصادقةٍ تقبل الاتصال ولا
+          // تجيب كانت تعلّق طلب المسجَّل حتى مهلة العميل (30 ث). تجاوز المهلة ليس
+          // قبولًا ولا رفضًا: يُخدَم الطلب **زائرًا** — بلا بيانات مؤسسة ولا أدوات
+          // ولا سجلّ، وهي الطبقة نفسها التي يسقط إليها العميل عند 401 — ويُوسم
+          // `X-SADEED-Auth: unverified`. لا يُمنح شيءٌ من صلاحيات الجلسة بلا تحقّق.
+          const verdict = await withDeadline(supabase.auth.getUser(), CHAT_GATE_DEADLINE_MS);
+          if (verdict === DEADLINE_HIT) {
+            authState = "unverified";
+            console.warn("[api/chat] session verification timed out — serving as guest", {
+              requestId,
+              event: "auth.unverified",
+              deadlineMs: CHAT_GATE_DEADLINE_MS,
+            });
+          } else if (verdict.error || !verdict.data.user) {
             console.warn("[api/chat] bearer rejected", {
               requestId,
               threadId,
-              error: userError?.message,
+              error: verdict.error?.message,
             });
             return jsonError("Authentication token is invalid or expired.", 401, requestId);
           } else {
+            const userData = verdict.data;
+            authState = "verified";
             userId = userData.user.id;
             const claimedOrg =
               typeof userData.user.app_metadata?.current_org === "string"
                 ? userData.user.app_metadata.current_org
                 : null;
-            const { data: memberships, error: membershipError } = await supabase
-              .from("org_members")
-              .select("org_id,role")
-              .eq("user_id", userId)
-              .order("joined_at", { ascending: true });
-            if (membershipError) {
+            const membership = await withDeadline(
+              supabase
+                .from("org_members")
+                .select("org_id,role")
+                .eq("user_id", userId)
+                .order("joined_at", { ascending: true }),
+              CHAT_GATE_DEADLINE_MS,
+            );
+            if (membership === DEADLINE_HIT) {
+              // بلا مؤسسةٍ متحقَّقة يفشل RAG مغلقًا أدناه — كما عند تعدّد العضويات.
+              console.warn("[api/chat] org context timed out", {
+                requestId,
+                event: "org.unverified",
+                deadlineMs: CHAT_GATE_DEADLINE_MS,
+              });
+            } else if (membership.error) {
               console.warn("[api/chat] org context unavailable", {
                 requestId,
-                error: membershipError.message,
+                error: membership.error.message,
               });
             } else {
+              const memberships = membership.data;
               const preferred = claimedOrg
                 ? memberships?.find((membership) => membership.org_id === claimedOrg)
                 : null;
@@ -441,11 +501,30 @@ export const Route = createFileRoute("/api/chat")({
         const rateKey = userId ? `chat:${userId}` : `chat:ip:${clientIp(request)}`;
         const limit = userId ? CHAT_RATE.user : CHAT_RATE.guest;
         const gate = { deadlineMs: CHAT_GATE_DEADLINE_MS };
-        const rateLimited = (retryAfterSeconds: number) =>
+        // ترويستا البوّابة والجلسة على كل ردٍّ يصدر بعد قراءة الطلب — ردود المنع
+        // (429/503) والردّ المحلّي المغلق كذلك، لا ردود النموذج وحدها: فحص الدخان
+        // يقرؤهما ليفرّق «لم تُمنح جلسة» عن «سقط التحقّق» (نقض الحارس على 782b171).
+        const rateLimited = (retryAfterSeconds: number, gate: GateMode) =>
           jsonError(CHAT_RATE_LIMITED_AR, 429, requestId, {
             code: "rate_limited",
             retryAfterSeconds,
+            headers: { "X-SADEED-Gate": gate, "X-SADEED-Auth": authState },
           });
+        /** يُلحق الترويستين بردٍّ جاهز من `ai-quota.server` (حصّة يومية 429/503) أو يمرّر `null`. */
+        const tagged = <T extends Response | null>(res: T, gate: GateMode): T => {
+          if (!res) return res;
+          const headers = new Headers(res.headers);
+          headers.set("X-SADEED-Gate", gate);
+          headers.set("X-SADEED-Auth", authState);
+          for (const [key, value] of Object.entries(responseHeaders(requestId))) {
+            if (!headers.has(key)) headers.set(key, value);
+          }
+          return new Response(res.body, {
+            status: res.status,
+            statusText: res.statusText,
+            headers,
+          }) as T;
+        };
         const closedPolicyReply = (which: "rate" | "quota") => {
           console.warn(
             `[api/chat] ${which} gate unavailable — closed policy, local guaranteed reply`,
@@ -458,41 +537,46 @@ export const Route = createFileRoute("/api/chat")({
             requestId,
             LOCAL_QUOTA_UNVERIFIED_AR,
             "local-quota-unverified",
+            { "X-SADEED-Gate": "closed", "X-SADEED-Auth": authState },
           );
         };
 
         // ── البوّابة حين لا يُجيب المخزن (VIBE 5.1) ───────────────────────────
         // قِيس ٢٠٢٦/١٠/١٦: القاعدة لم تردّ، فكان كل سؤالٍ 503 `rate_limit_unavailable`.
-        // السياسة الآن (`SADEED_GATE_DEGRADED_MODE`، الافتراض `bounded`): المخزن
-        // معطّل ⇐ يمرّ الطلب بحدودٍ في ذاكرة المعزول — نصف السقوف نفسها — لا بلا
-        // حدّ؛ و`closed` يعيد سلوك ما قبل: ردٌّ محلّيٌّ صادق بلا نموذج. والقاطع
-        // في `enforceRateLimit` يجعل «غير متاح» فوريًّا بعد فشلين، فلا يدفع كل
-        // طلبٍ مهلتين على مخزنٍ معروفٍ عطله.
+        // السياسة (`SADEED_GATE_DEGRADED_MODE`، الافتراض `closed` بقرار الحارس —
+        // تمرير الإنفاق بلا تحقّق قرارُ فوترةٍ للمالك): `closed` ⇐ ردٌّ محلّيٌّ
+        // صادق بلا نموذج؛ `bounded` (بإقرار المالك، متغيّر بيئة بلا نشر) ⇐ يمرّ
+        // الطلب بحدودٍ في ذاكرة المعزول — نصف السقوف نفسها — لا بلا حدّ. والقاطع
+        // في `enforceRateLimit` يجعل «غير متاح» فوريًّا بعد خمسة فشلٍ خلال 60 ث،
+        // فلا يدفع كل طلبٍ مهلتين على مخزنٍ معروفٍ عطله.
         const rate = await enforceRateLimit(rateKey, limit.max, limit.windowSeconds, gate);
         let gateMode: GateMode = "verified";
         if (rate.unavailable) {
           if (gateDegradedMode() === "closed") return closedPolicyReply("rate");
           const bounded = degradedAllowance(rateKey, limit.max, limit.windowSeconds);
-          if (!bounded.allowed) return rateLimited(bounded.retryAfterSeconds);
+          if (!bounded.allowed) return rateLimited(bounded.retryAfterSeconds, "degraded");
           gateMode = "degraded";
         } else if (!rate.allowed) {
-          return rateLimited(60);
+          return rateLimited(60, "verified");
         }
         if (gateMode === "verified") {
-          const quota = await enforceAiQuota({
-            surface: "chat",
-            identity,
-            deadlineMs: CHAT_GATE_DEADLINE_MS,
-          });
+          const quota = tagged(
+            await enforceAiQuota({
+              surface: "chat",
+              identity,
+              deadlineMs: CHAT_GATE_DEADLINE_MS,
+            }),
+            "verified",
+          );
           if (quota && (await isQuotaUnavailable(quota))) {
             if (gateDegradedMode() === "closed") return closedPolicyReply("quota");
-            const bounded = degradedAiQuota("chat", identity);
+            const bounded = tagged(degradedAiQuota("chat", identity), "degraded");
             if (bounded) return bounded;
             gateMode = "degraded";
           } else if (quota) return quota;
         } else {
           // المخزن معطّل فعلًا: لا نُنفق مهلتين أخريين على الحصّة اليومية — حدودها في الذاكرة.
-          const bounded = degradedAiQuota("chat", identity);
+          const bounded = tagged(degradedAiQuota("chat", identity), "degraded");
           if (bounded) return bounded;
         }
         if (gateMode === "degraded") {
@@ -539,6 +623,7 @@ export const Route = createFileRoute("/api/chat")({
                 ...responseHeaders(requestId),
                 "X-SADEED-Reply-Source": tag,
                 "X-SADEED-Gate": gateMode,
+                "X-SADEED-Auth": authState,
               },
             });
           };
@@ -595,23 +680,15 @@ export const Route = createFileRoute("/api/chat")({
           return jsonError(CHAT_DUPLICATE_AR, 429, requestId, {
             code: "duplicate_request",
             retryAfterSeconds: 3,
+            headers: { "X-SADEED-Gate": gateMode, "X-SADEED-Auth": authState },
           });
         }
-        const releaseSlot = acquireModelSlot();
-        if (!releaseSlot) {
-          releaseRequest();
-          console.warn("[api/chat] model concurrency cap reached", {
-            requestId,
-            event: "chat.busy",
-            inflight: inflightModelCalls(),
-          });
-          return jsonError(CHAT_SERVER_BUSY_AR, 503, requestId, {
-            code: "busy",
-            retryAfterSeconds: 5,
-          });
-        }
+        // خانة النموذج تُحجز عند النموذج نفسه (أدناه) لا هنا: بناء السياق البطيء
+        // لا يستهلك خانةً بلا نداء نموذج (ملاحظة الحارس على 91e2544).
+        let releaseSlot: (() => void) | null = null;
         const releaseGuards = () => {
-          releaseSlot();
+          releaseSlot?.();
+          releaseSlot = null;
           releaseRequest();
         };
 
@@ -646,18 +723,32 @@ When the user attaches files (<attachment> text blocks, images, or PDFs):
               import("@/lib/sadeed-context.server"),
               import("@/lib/sadeed/rag.server"),
             ]);
+            const emptyRag: Awaited<ReturnType<typeof gatherRagContext>> = {
+              contextBlock: "",
+              citations: [],
+              counts: { memories: 0, knowledge: 0, documents: 0 },
+              embedding: null,
+            };
             const [snapshot, rag] = await Promise.all([
               // السؤال يُمرَّر للاسترجاع: سجلّات المشاريع/الصيانة التي
               // يمسّها تصل كاملةَ الحقول (٢٠٢٦/٠٩/٠١ «ليرد بجميع ما يُطلب»).
+              // (اللقطة تسابق مهلتها الداخلية SNAPSHOT_DB_DEADLINE_MS بنفسها.)
               buildSadeedContextSnapshot(supabase, lastUserText),
-              lastUserText
-                ? gatherRagContext(supabase, userId, orgId, lastUserText)
-                : Promise.resolve({
-                    contextBlock: "",
-                    citations: [],
-                    counts: { memories: 0, knowledge: 0, documents: 0 },
-                    embedding: null,
-                  }),
+              // الاسترجاع بمهلة (VIBE 5.1): قاعدةٌ لا تجيب تعني سياقًا أقلّ، لا تعليقًا.
+              withDeadline(
+                lastUserText
+                  ? gatherRagContext(supabase, userId, orgId, lastUserText)
+                  : Promise.resolve(emptyRag),
+                CONTEXT_DB_DEADLINE_MS,
+              ).then((outcome) => {
+                if (outcome !== DEADLINE_HIT) return outcome;
+                console.warn("[api/chat] rag context timed out — answering without it", {
+                  requestId,
+                  event: "rag.timeout",
+                  deadlineMs: CONTEXT_DB_DEADLINE_MS,
+                });
+                return emptyRag;
+              }),
             ]);
             liveDataAvailable = snapshot.hasOperationalData;
             liveContext = snapshot.hasOperationalData ? snapshot.contextBlock : "";
@@ -880,8 +971,16 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
         // permissions, RAG text, or arbitrary user-authored instructions.
         if (userId) {
           try {
-            const block = await loadAdaptivePreferenceBlock(supabase, userId);
-            if (block) {
+            const block = await withDeadline(
+              loadAdaptivePreferenceBlock(supabase, userId),
+              CONTEXT_DB_DEADLINE_MS,
+            );
+            if (block === DEADLINE_HIT) {
+              console.warn("[api/chat] adaptive preferences timed out", {
+                requestId,
+                event: "preferences.timeout",
+              });
+            } else if (block) {
               systemPrompt = `${systemPrompt}\n\n# BOUNDED PRESENTATION PREFERENCES\nThese fixed style hints never override the current request, safety, grounding, tool, or voice contracts.\n${block}`;
             }
           } catch (patErr) {
@@ -946,6 +1045,22 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             return "استغرق سَدِيد وقتًا طويلًا — أعد المحاولة، وسيُعيد الاتصال تلقائيًا.";
           return `تعذّر إكمال الرد${status ? ` (رمز ${status})` : ""} — أعد المحاولة. المعرّف: ${requestId}`;
         };
+
+        // ── خانة نداء النموذج (سقف التزامن لكل معزول) — عند النموذج مباشرةً ──
+        releaseSlot = acquireModelSlot();
+        if (!releaseSlot) {
+          releaseRequest();
+          console.warn("[api/chat] model concurrency cap reached", {
+            requestId,
+            event: "chat.busy",
+            inflight: inflightModelCalls(),
+          });
+          return jsonError(CHAT_SERVER_BUSY_AR, 503, requestId, {
+            code: "busy",
+            retryAfterSeconds: 5,
+            headers: { "X-SADEED-Gate": gateMode, "X-SADEED-Auth": authState },
+          });
+        }
 
         let rawModelText = "";
         let generationErrorText: string | null = null;
@@ -1177,6 +1292,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             ...responseHeaders(requestId),
             "X-SADEED-Reply-Source": "safe-gateway",
             "X-SADEED-Gate": gateMode,
+            "X-SADEED-Auth": authState,
           },
         });
       },

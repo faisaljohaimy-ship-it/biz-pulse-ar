@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  # البوّابة الإجرائية للإصدار (٢٠٢٦/١٠/١٧): حماية الفرع غير متاحة على خطّة
+  # المستودع الحالية، فيُشغَّل الفحص يدويًّا على فرع الإصلاح قبل دمجه في main —
+  # «CI أخضر على الـSHA المدفوع» شرطٌ يُقاس لا يُفترض.
+  workflow_dispatch:
 
 # ── لماذا وظائف متوازية لا وظيفة واحدة ────────────────────────────────────
 # كانت `verify` وظيفةً واحدة تجمع التثبيت والفحص والبناء وفحوص Postgres،
@@ -34,6 +38,9 @@ jobs:
         run: npm run typecheck
       - name: Lint
         run: npm run lint
+      # فحص الأسرار كان في السلسلة المحلّية وحدها، فدفعات الكاتب الآلي تتجاوزه.
+      - name: Secret scan
+        run: npm run check:secrets
       - name: Dead-code scan (advisory)
         run: npm run check:deadcode || true
 
@@ -53,8 +60,9 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Unit tests
         run: npm test
+      # الأمر نفسه الذي تشغّله السلسلة المحلّية (`npm run check`) — لا نسخة ثانية.
       - name: Production dependency audit
-        run: npm audit --omit=dev --audit-level=high
+        run: npm run check:audit
 
   build:
     name: build (bundle · budget)

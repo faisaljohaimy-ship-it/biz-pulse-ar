@@ -1,0 +1,167 @@
+# نشرٌ مستقلّ عبر GitHub → Vercel — لا يمرّ بـLovable ولا ينفق رصيدها.
+#
+#   workflow_dispatch → vercel deploy (البناء على Vercel بإعدادات المشروع نفسها
+#   التي تبني المعاينات) → قراءة /api/public/live من النشرة ومطابقة ختم البناء
+#   بالـcommit المنشور → حكمٌ أخضر/أحمر في الخلاصة.
+#
+# ── لماذا يدويّ فقط ──
+# المزامنة ليست نشرًا (CLAUDE.md)، والدمج لا يقترن بالنشر: `vercel.json` يعطّل
+# نشر `main` التلقائي عمدًا (`git.deploymentEnabled.main: false`)، وهذا الملفّ هو
+# خطوة النشر الصريحة التي تقع بطلبٍ وبعد موافقة المالك. نشر `production` يحتاج
+# إلى كتابة `deploy` في مُدخل التأكيد.
+#
+# ── المتطلّبات (Settings → Secrets and variables → Actions) ──
+#   Secret   VERCEL_TOKEN        — رمز وصول Vercel لحساب المالك (Account Settings → Tokens)
+#   Variable VERCEL_ORG_ID       — معرّف الفريق (team_…)، ويُقبل كـSecret أيضًا
+#   Variable VERCEL_PROJECT_ID   — معرّف المشروع (prj_…)، ويُقبل كـSecret أيضًا
+#   Secret   VERCEL_AUTOMATION_BYPASS_SECRET — اختياري؛ لقراءة نشرةٍ خلف حماية SSO
+#            أثناء التحقّق (Project → Settings → Deployment Protection → Protection Bypass for Automation)
+#
+# ── متغيّرات التشغيل: على مشروع Vercel لا هنا ──
+# (Project → Settings → Environment Variables؛ القائمة الكاملة والمقابلة في
+# docs/operations/SADEED_MIGRATION_RUNBOOK.md §1): SUPABASE_URL ·
+# SUPABASE_PUBLISHABLE_KEY · SUPABASE_SERVICE_ROLE_KEY · GEMINI_API_KEY ·
+# ELEVENLABS_API_KEY · CRON_HOOK_SECRET · PUBLIC_SITE_URL · SADEED_* · RESEND_* ·
+# LOVABLE_API_KEY وMICROSOFT_* ما دامت تكاملات Lovable قائمة. لا سرّ في git.
+#
+# ── ما لا يفعله ──
+# لا يغيّر DNS ولا إعدادات الحماية ولا متغيّرات البيئة؛ لا يمسّ القاعدة؛ غياب
+# الرموز يُسقطه أحمر بوضوح (تشغيلٌ يدويّ طُلب فلم يتمّ — لا تخطٍّ صامت).
+name: Deploy to Vercel
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "الوجهة: preview (افتراضي) أو production"
+        required: true
+        type: choice
+        options:
+          - preview
+          - production
+        default: preview
+      confirm:
+        description: "اكتب deploy لتأكيد نشر production (يُتجاهل للمعاينة)"
+        required: false
+        type: string
+      expected_sha:
+        description: "الـcommit الذي يجب أن تخدمه النشرة (افتراضيًّا الـcommit المشغَّل منه)"
+        required: false
+        type: string
+
+concurrency:
+  group: deploy-vercel-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ inputs.target == 'production' && 'production' || 'preview' }}
+    permissions:
+      contents: read
+    env:
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Guard production
+        if: inputs.target == 'production' && inputs.confirm != 'deploy'
+        run: |
+          echo "::error::نشر production يحتاج إلى كتابة deploy في مُدخل التأكيد — لم يُنفَّذ شيء."
+          exit 1
+
+      - name: Check credentials
+        env:
+          TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          missing=0
+          check() { if [ -n "$2" ]; then echo "  ✓ $1 = set"; else echo "  ✗ $1 = EMPTY"; missing=1; fi; }
+          check VERCEL_TOKEN "$TOKEN"
+          check VERCEL_ORG_ID "$VERCEL_ORG_ID"
+          check VERCEL_PROJECT_ID "$VERCEL_PROJECT_ID"
+          if [ "$missing" = "1" ]; then
+            echo "::error::رموز Vercel ناقصة — أضف VERCEL_TOKEN (Secret) وVERCEL_ORG_ID وVERCEL_PROJECT_ID (Variables) ثم أعد التشغيل."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # البناء يقع على Vercel (installCommand/buildCommand من vercel.json، والـpreset
+      # `vercel` من vite.config.ts عند VERCEL=1). SADEED_BUILD_SHA يثبّت ختم البناء على
+      # الـcommit المنشور ولو غاب VERCEL_GIT_COMMIT_SHA عن رفعٍ من سطر الأوامر.
+      - name: Deploy
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          TARGET: ${{ inputs.target }}
+        run: |
+          set -euo pipefail
+          FLAGS=(--yes --token "$VERCEL_TOKEN" --build-env "SADEED_BUILD_SHA=$GITHUB_SHA")
+          if [ "$TARGET" = "production" ]; then FLAGS+=(--prod); fi
+          # الإصدار الرئيسي مثبَّت (قِيست الأعلام --prod/--yes/--token/--build-env على 64.5.0).
+          URL="$(npx --yes vercel@64 deploy "${FLAGS[@]}" 2> >(tee vercel-deploy.log >&2))"
+          if [ -z "$URL" ]; then
+            echo "::error::لم يُطبع عنوان النشرة — راجع vercel-deploy.log أعلاه."
+            exit 1
+          fi
+          echo "النشرة: $URL"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      # الشهادة لا الظنّ: النشرة تقول أيّ commit تخدم. مختلف ⇐ أحمر. غياب الختم
+      # مع 401 ⇐ حماية SSO (أضف VERCEL_AUTOMATION_BYPASS_SECRET أو افحص من نطاق مخصّص).
+      - name: Verify build stamp on the deployment
+        id: verify
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          EXPECTED_SHA: ${{ inputs.expected_sha || github.sha }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -u
+          H=(-H 'cache-control: no-cache')
+          if [ -n "$BYPASS" ]; then H+=(-H "x-vercel-protection-bypass: $BYPASS"); fi
+          SHA=""; CODE=""
+          for i in 1 2 3 4 5; do
+            CODE="$(curl -sS -o live.json -w '%{http_code}' --max-time 20 "${H[@]}" "$DEPLOY_URL/api/public/live" || echo 000)"
+            SHA="$(node -e 'const fs=require("fs");try{const j=JSON.parse(fs.readFileSync("live.json","utf8"));process.stdout.write(j.build&&j.build.sha?String(j.build.sha):"")}catch{process.stdout.write("")}')"
+            if [ -n "$SHA" ]; then break; fi
+            sleep $((i * 10))
+          done
+          echo "http=$CODE" >> "$GITHUB_OUTPUT"
+          echo "served_sha=$SHA" >> "$GITHUB_OUTPUT"
+          if [ -z "$SHA" ]; then
+            echo "::error::لا ختم بناء من $DEPLOY_URL/api/public/live (HTTP $CODE). 401/403 ⇐ حماية SSO على نطاقات vercel.app؛ غير ذلك ⇐ النشرة لا تردّ."
+            exit 1
+          fi
+          case "$SHA" in
+            "$EXPECTED_SHA"*) echo "✓ النشرة تخدم $SHA — يطابق المتوقَّع" ;;
+            *) echo "::error::النشرة تخدم $SHA والمتوقَّع $EXPECTED_SHA"; exit 1 ;;
+          esac
+
+      - name: Summary
+        if: always()
+        env:
+          TARGET: ${{ inputs.target }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          SERVED: ${{ steps.verify.outputs.served_sha }}
+          HTTP: ${{ steps.verify.outputs.http }}
+          EXPECTED_SHA: ${{ inputs.expected_sha || github.sha }}
+        run: |
+          {
+            if [ "${{ job.status }}" = "success" ]; then
+              echo "### ✓ نشر Vercel ($TARGET) — ${DEPLOY_URL:-—}"
+            else
+              echo "### ✗ نشر Vercel ($TARGET) لم يكتمل — ${DEPLOY_URL:-لا نشرة}"
+            fi
+            echo ""
+            echo "| البند | القيمة |"
+            echo "| --- | --- |"
+            echo "| الـcommit المتوقَّع | \`$EXPECTED_SHA\` |"
+            echo "| الـcommit المخدوم | \`${SERVED:-غير معروف}\` |"
+            echo "| /api/public/live | HTTP ${HTTP:-—} |"
+            echo ""
+            echo "التراجع: Vercel → Deployments → النشرة السابقة الناجحة → Promote to Production، أو \`vercel rollback\` (docs/operations/SADEED_ROLLBACK_RUNBOOK.md)."
+          } >> "$GITHUB_STEP_SUMMARY"

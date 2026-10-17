@@ -14,6 +14,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
+import { assertAiQuota } from "@/lib/governance/ai-quota.server";
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 import type { Confidence, Evidence } from "@/lib/evidence/evidence";
 import {
@@ -58,7 +59,7 @@ export const getPredictedRisks = createServerFn({ method: "GET" })
     const { buildRiskSimulation, resilient } = await import("./showcase-simulation.server");
     return resilient(
       "predicted-risks",
-      () => fetchPredictedRisks(context.supabase),
+      () => fetchPredictedRisks(context.supabase, context.userId ?? "guest:predictive"),
       () => false,
       () => buildRiskSimulation(),
     );
@@ -67,6 +68,8 @@ export const getPredictedRisks = createServerFn({ method: "GET" })
 async function fetchPredictedRisks(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sb: any,
+  /** هوية الحصّة اليومية: المستخدم، أو دلو الزوّار لهذه النافذة. */
+  quotaIdentity: string,
 ): Promise<PredictedRisk[]> {
   {
     const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
@@ -167,6 +170,9 @@ async function fetchPredictedRisks(
 
     // Try Gemini for executive language; fall back deterministically.
     try {
+      // مفتاح الإيقاف والسقفان اليوميان قبل النموذج — المنع يسقط إلى البطاقات
+      // الحتميّة أعلاه (زائرٌ يستدعي هذه الدالة، فلا إنفاق بلا حصّة متحقَّقة).
+      await assertAiQuota({ surface: "chat", identity: quotaIdentity, deadlineMs: 2_000 });
       const runtime = resolveSadeedGeminiRuntime();
       const signal = anomalies
         .map(
