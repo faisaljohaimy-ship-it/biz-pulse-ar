@@ -6,6 +6,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { buildStamp } from "@/lib/build/build-info.server";
 
 type SubsystemStatus = "ok" | "degraded" | "down" | "unknown";
 interface Subsystem {
@@ -19,17 +20,10 @@ const VERSION = process.env.APP_VERSION ?? "1.5.1";
 export const HEALTH_DB_DEADLINE_MS = 2_500;
 
 /**
- * معرّف البناء (مهمّة الجاهزية ٢٠٢٦/١٠/١٧): `scripts/write-build-info.mjs` يكتب
- * `public/build-info.json` قبل كل بناء، وVite يدمجه هنا وقت البناء عبر
- * `import.meta.glob` — فغيابه (منشئٌ لم يشغّل `prebuild`) يعطي `null` صادقًا لا
- * خطأ استيراد. به يشهد فحص الإنتاج أيَّ commit يخدمه الموقع فعلًا.
+ * معرّف البناء (مهمّة الجاهزية ٢٠٢٦/١٠/١٧): يُقرأ من `@/lib/build/build-info.server`
+ * المشترك مع `/api/public/live` — به يشهد فحص الإنتاج أيَّ commit يخدمه الموقع فعلًا.
  */
-type BuildInfo = { sha?: string; short?: string; ref?: string; builtAt?: string; source?: string };
-const BUILD_INFO_FILES = import.meta.glob("/public/build-info.json", {
-  eager: true,
-  import: "default",
-}) as Record<string, BuildInfo | undefined>;
-export const BUILD_INFO: BuildInfo | null = Object.values(BUILD_INFO_FILES)[0] ?? null;
+export { BUILD_INFO } from "@/lib/build/build-info.server";
 
 export const Route = createFileRoute("/api/public/health")({
   server: {
@@ -126,14 +120,7 @@ export const Route = createFileRoute("/api/public/health")({
           {
             status: worst === "down" ? "down" : worst === "degraded" ? "degraded" : "ok",
             version: VERSION,
-            build: BUILD_INFO
-              ? {
-                  sha: BUILD_INFO.sha ?? "unknown",
-                  ref: BUILD_INFO.ref ?? "unknown",
-                  built_at: BUILD_INFO.builtAt ?? null,
-                  source: BUILD_INFO.source ?? "unknown",
-                }
-              : null,
+            build: buildStamp(),
             timestamp: new Date().toISOString(),
             uptime_hint: "stateless-worker",
             subsystems,

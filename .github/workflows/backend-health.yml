@@ -1,0 +1,75 @@
+# إنذار الخلفية — يقيس ما لا يقيسه فحص الإنتاج.
+#
+# `production-check.yml` يشهد لعقد HTML وحدود الواجهة، وكان يمرّ أخضر والقاعدة
+# موقوفة (٢٠٢٦/١٠/١٦–١٧: 504 أكثر من ستّ ساعات بلا إنذار واحد). هذا الفحص يسأل
+# `/api/public/health` كل ستّ ساعات ويحمرّ حين تسقط القاعدة أو مخزن حدّ المعدّل —
+# فالأحمر هنا **هو** الإنذار (بريد GitHub للمالك)، لا ضجيجًا: الخلفية الساقطة
+# ليست عيب شيفرة لكنها عطلٌ يجب أن يراه أحد. يُفصل عن فحص الإنتاج عمدًا كي يبقى
+# ذاك شاهدًا على الشيفرة وهذا شاهدًا على التشغيل.
+name: Backend health
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "عنوان الإنتاج (اتركه فارغًا لاستعمال متغيّر المستودع)"
+        required: false
+        type: string
+
+concurrency:
+  group: backend-health
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Resolve production URL
+        id: target
+        env:
+          INPUT_URL: ${{ inputs.url }}
+          VAR_URL: ${{ vars.PRODUCTION_URL }}
+          DEFAULT_URL: https://neexios.com
+        run: |
+          URL="${INPUT_URL:-${VAR_URL:-$DEFAULT_URL}}"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "الهدف: $URL"
+
+      - name: Probe /api/public/live and /api/public/health
+        env:
+          PRODUCTION_URL: ${{ steps.target.outputs.url }}
+        run: |
+          LIVE="$(curl -sS --max-time 20 -o /dev/null -w '%{http_code}' -H 'cache-control: no-cache' "$PRODUCTION_URL/api/public/live" || echo 000)"
+          echo "live=$LIVE"
+          BODY="$(curl -sS --max-time 25 -H 'cache-control: no-cache' "$PRODUCTION_URL/api/public/health" || true)"
+          printf '%s' "$BODY" > health.json
+          node - <<'EOF'
+          const fs = require("fs");
+          let j = null;
+          try { j = JSON.parse(fs.readFileSync("health.json", "utf8")); } catch {}
+          const lines = ["### صحّة الخلفية", ""];
+          if (!j || !j.subsystems) {
+            lines.push("✗ `/api/public/health` لم يُجب بجسمٍ مفهوم — الموقع أو العامل لا يردّ.");
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
+            console.error("health: no parsable body");
+            process.exit(1);
+          }
+          lines.push("| التبعية | الحالة | التفصيل |", "| --- | --- | --- |");
+          for (const [name, s] of Object.entries(j.subsystems)) {
+            lines.push(`| ${name} | ${s.status} | ${(s.detail ?? "") + (s.latency_ms != null ? ` (${s.latency_ms} ms)` : "")} |`);
+          }
+          lines.push("", `الـcommit المخدوم: \`${j.build && j.build.sha ? j.build.sha : "غير معروف"}\` · الحالة الكلّية: \`${j.status}\``);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
+          console.log(lines.join("\n"));
+          const db = j.subsystems.db && j.subsystems.db.status;
+          const store = j.subsystems.rate_limit_storage && j.subsystems.rate_limit_storage.status;
+          if (db === "down" || store === "down" || j.status === "down") {
+            console.error(`backend down: db=${db} rate_limit_storage=${store} status=${j.status}`);
+            process.exit(1);
+          }
+          EOF
