@@ -46,7 +46,9 @@ const ref =
   env.VERCEL_GIT_COMMIT_REF ||
   git("rev-parse --abbrev-ref HEAD") ||
   "unknown";
-const porcelain = source === "git" ? git("status --porcelain") : "";
+// «معدَّل» يعني تغييرًا في ملفٍّ متعقَّب؛ الملفّات غير المتعقَّبة (مسودّة، ناتج أداة)
+// لا تجعل البناء مختلفًا عن الـcommit (ملاحظة الحارس على 5fd7fd122).
+const porcelain = source === "git" ? git("status --porcelain --untracked-files=no") : "";
 
 const info = {
   sha,

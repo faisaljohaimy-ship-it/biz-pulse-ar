@@ -109,6 +109,7 @@ jobs:
       #    النشر (انظر أعلاه)؛ ومعه حكمٌ: مختلف ⇐ أحمر. الغياب تحذير لا سقوط:
       #    بناءٌ أقدم من هذه الميزة أو منشئٌ لم يشغّل `prebuild`.
       - name: Build identifier
+        id: build
         if: steps.target.outputs.configured == 'true'
         env:
           PRODUCTION_URL: ${{ steps.target.outputs.url }}
@@ -165,7 +166,9 @@ jobs:
           elif [ "${{ job.status }}" = "success" ]; then
             echo "### ✓ الإنتاج سليم — ${{ steps.target.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
             echo "عقد HTML المُقدَّم وحدود الواجهة صامدة على الموقع الحيّ." >> "$GITHUB_STEP_SUMMARY"
+            echo "الـcommit المخدوم: \`${{ steps.build.outputs.build_sha || 'غير معروف' }}\`" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "### ✗ الإنتاج سقط في فحص — ${{ steps.target.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
             echo "راجع سجلّ الخطوة التي رسبت أعلاه." >> "$GITHUB_STEP_SUMMARY"
+            echo "الـcommit المخدوم: \`${{ steps.build.outputs.build_sha || 'غير معروف' }}\`" >> "$GITHUB_STEP_SUMMARY"
           fi

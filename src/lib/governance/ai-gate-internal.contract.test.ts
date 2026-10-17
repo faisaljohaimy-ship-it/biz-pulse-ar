@@ -54,6 +54,35 @@ describe("① كل وحدة مكتبة تستدعي نموذجًا تمرّ با
     expect(gateAt, `${path} يفحص البوّابة بعد نداء المزوّد`).toBeLessThan(callAt);
   });
 
+  it("ولكل دالّةٍ تستدعي المزوّد بوّابتها — لا بوّابةٌ واحدة أوّل الملفّ تغطّي ما بعدها (طفرة الحارس M5)", () => {
+    // الفحص السابق قارن أوّل بوّابة بأوّل نداء في الملفّ كلّه، فحذفُ البوّابة من
+    // الدالّة الثانية في `gemini-embeddings.server.ts` بقي أخضر. هنا تُقطَّع كل وحدة
+    // إلى دوالّها المسمّاة، وكل دالّةٍ تحمل نداء مزوّد يجب أن تحمل بوّابةً قبله.
+    const PROVIDER_CALL = /generateText\(|await fetch\(|await httpJson/;
+    let checked = 0;
+    for (const [path] of INTERNAL_SPENDERS) {
+      const src = strip(read(path));
+      const starts = [...src.matchAll(/^(?:export )?(?:async )?function \w+\(/gm)].map(
+        (m) => m.index ?? 0,
+      );
+      for (const [i, start] of starts.entries()) {
+        const end = starts[i + 1] ?? src.length;
+        const body = src.slice(start, end);
+        const callAt = body.search(PROVIDER_CALL);
+        if (callAt < 0) continue;
+        checked += 1;
+        const gateAt = body.search(GATE_CALL);
+        const name = /function (\w+)\(/.exec(body)?.[1] ?? "?";
+        expect(gateAt, `${path}: الدالّة ${name} تستدعي المزوّد بلا بوّابة`).toBeGreaterThan(-1);
+        expect(gateAt, `${path}: الدالّة ${name} تفحص البوّابة بعد نداء المزوّد`).toBeLessThan(
+          callAt,
+        );
+      }
+    }
+    // التضمين وحده دالّتان؛ الرقم يمنع أن يتقادم النمط فلا يُفحص شيء.
+    expect(checked, "لم تُقطَّع أي دالّة — النمط تقادم").toBeGreaterThanOrEqual(9);
+  });
+
   it("ولا وحدة تستدعي النموذج خارج هذه القائمة", () => {
     const found = execSync(
       "grep -rlE 'generateText\\(|generativelanguage\\.googleapis\\.com' src/lib --include=*.ts || true",

@@ -158,6 +158,13 @@ describe("النسخ الصوتي `transcribeWithGemini` والشرح `explainRe
     );
     expect(fetchSpy).not.toHaveBeenCalled();
 
+    // التضمين: الدالّتان كلتاهما (طفرة الحارس M5 — حذف البوّابة من الثانية وحدها).
+    const embeddings = await import("@/lib/sadeed/gemini-embeddings.server");
+    const opts = { dimensions: 768, purpose: "document" } as never;
+    await rejectsWithCode(embeddings.embedGeminiText("نصّ", opts), "ai_disabled");
+    await rejectsWithCode(embeddings.embedGeminiBatch(["نصّ"], opts), "ai_disabled");
+    expect(fetchSpy).not.toHaveBeenCalled();
+
     const { explainRecommendation } = await import("@/lib/sadeed/presence/explanation.server");
     await rejectsWithCode(
       explainRecommendation({
