@@ -191,6 +191,10 @@ describe("المخزن معطّل — السياسة المغلقة (الافت�
     expect(res.status).toBe(200);
     expect(res.headers.get("X-SADEED-Reply-Source")).toBe("local-quota-unverified");
     expect(res.headers.get("X-SADEED-Gate")).toBe("closed");
+    // الزائر بلا Bearer: الردّ المغلق يحمل حال الجلسة كغيره — فحص الدخان يقرؤها
+    // ليُثبت أن لا صلاحية مُنحت (نقض الحارس على 782b171، البند ٢).
+    expect(res.headers.get("X-SADEED-Auth")).toBe("anonymous");
+    expect(res.headers.get("X-SADEED-Request-ID")).toMatch(/\S/);
     const body = await res.text();
     expect(body).not.toContain("rate_limit_unavailable");
     expect(HAS_ARABIC.test(body)).toBe(true);
@@ -208,18 +212,30 @@ describe("المخزن معطّل — السياسة المغلقة (الافت�
 });
 
 describe("ما لم يتغيّر", () => {
-  it("السقف اليومي المبلوغ فعلًا (‏429) يبقى رفضًا — الحماية لم تُرخَ", async () => {
-    gates.quota = new Response(JSON.stringify({ error: "daily_identity_cap" }), { status: 429 });
+  it("السقف اليومي المبلوغ فعلًا (‏429) يبقى رفضًا — الحماية لم تُرخَ، والردّ موسوم", async () => {
+    gates.quota = new Response(JSON.stringify({ error: "daily_identity_cap" }), {
+      status: 429,
+      headers: { "Retry-After": "3600", "Content-Type": "application/json; charset=utf-8" },
+    });
     const res = await post();
     expect(res.status).toBe(429);
     expect(gates.modelCalls).toBe(0);
+    // ردّ الحصّة يأتي من `ai-quota.server` بلا ترويسات البوّابة؛ المعالج يُلحقها
+    // ويحفظ ما جاء به (Retry-After وجسمه) — ولا يُسقط ترويسات الأمان.
+    expect(res.headers.get("X-SADEED-Gate")).toBe("verified");
+    expect(res.headers.get("X-SADEED-Auth")).toBe("anonymous");
+    expect(res.headers.get("Retry-After")).toBe("3600");
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+    expect(((await res.json()) as { error: string }).error).toBe("daily_identity_cap");
   });
 
-  it("الحدّ المؤقت المبلوغ (‏429) رسالته عربية ورمزه ثابت وترويسة Retry-After حاضرة", async () => {
+  it("الحدّ المؤقت المبلوغ (‏429) رسالته عربية ورمزه ثابت وترويسات Retry-After والبوّابة والجلسة حاضرة (M16)", async () => {
     gates.rate = { allowed: false };
     const res = await post();
     expect(res.status).toBe(429);
     expect(res.headers.get("Retry-After")).toBe("60");
+    expect(res.headers.get("X-SADEED-Gate")).toBe("verified");
+    expect(res.headers.get("X-SADEED-Auth")).toBe("anonymous");
     const body = (await res.json()) as { error: string; code?: string };
     expect(HAS_ARABIC.test(body.error)).toBe(true);
     expect(body.error).not.toMatch(/rate limited/i);

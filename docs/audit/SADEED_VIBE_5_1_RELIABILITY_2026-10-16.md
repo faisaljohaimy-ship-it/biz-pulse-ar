@@ -44,7 +44,7 @@
 | `src/routes/api/chat.ts`                             | كتلة البوّابة في `POST`                                       | المخزن معطّل ⇐ `bounded`: يمرّ بحدود الذاكرة ويصل النموذج موسومًا `X-SADEED-Gate: degraded`؛ ما فوق الحدّ ⇐ 429 عربي بـ`Retry-After` ورمز `rate_limited`؛ `closed`: الردّ المحلّي الصادق كما كان. لا مهلتين إضافيتين على الحصّة حين يُعرف عطل المخزن |
 |                                                      | قبل بناء السياق                                               | حارسا الطلب: تكرار ⇐ 429 `duplicate_request` (‏Retry-After 3)؛ تزاحم ⇐ 503 `busy` (‏Retry-After 5). يُحرَّران في `finally` بعد النموذج                                                                                                               |
 |                                                      | مسار الاحتياط                                                 | `coolPrimary(primaryCooldownFor(err))` — يحترم `Retry-After` من المزوّد محصورًا [30 ث، 10 د]                                                                                                                                                         |
-|                                                      | ترويسات الردّ                                                 | `X-SADEED-Gate` على كل ردّ (verified/degraded)، والسجلّ `event: gate.degraded`                                                                                                                                                                       |
+|                                                      | ترويسات الردّ                                                 | `X-SADEED-Gate` (verified/degraded/closed) و`X-SADEED-Auth` على كل ردٍّ بعد قراءة الطلب — بما فيه الردّ المحلّي المغلق وردود 429/503 — والسجلّ `event: gate.degraded`                                                                                |
 | `src/routes/api/-chat-guard.ts`                      | `chatJsonError`                                               | وسيطٌ اختياري `{ code, retryAfterSeconds }` ⇐ حقل `code` وترويسة `Retry-After`                                                                                                                                                                       |
 | `src/lib/sadeed/backup-provider.server.ts`           | `retryAfterMs`, `primaryCooldownFor`                          | قراءة `Retry-After` (ثوانٍ أو تاريخ HTTP) من خطأ الـSDK بلا رمي                                                                                                                                                                                      |
 | `src/lib/sadeed-core/services/sadeed-service.ts`     | `computeAutoRetryDelayMs`, `lastGateRetryAfter`               | تراجعٌ 1.2 ث × المحاولة + تشويش ≤ 400 مللي ثانية، لا يقلّ عن تلميح الخادم؛ تلميح > 10 ث ⇐ لا إعادة تلقائية                                                                                                                                           |
@@ -172,8 +172,9 @@
 | `org_members`                                     | بلا مهلة                               | مهلة 1.5 ث؛ التجاوز ⇐ لا مؤسسة (RAG يفشل مغلقًا كما عند تعدّد العضويات)                                                                                               |
 | `gatherRagContext` و`loadAdaptivePreferenceBlock` | بلا مهلة                               | مهلة 2.5 ث لكلٍّ؛ التجاوز ⇐ سياقٌ أقلّ لا تعليق (`rag.timeout` / `preferences.timeout` في السجلّ)                                                                     |
 
-ترويسة `X-SADEED-Auth` (anonymous/verified/unverified) على كل ردّ، فيُقاس حال
-الجلسة لا يُخمَّن. الاختبار `chat-auth-deadline.test.ts` (5): مصادقةٌ معلّقة ⇐ 200
+ترويسة `X-SADEED-Auth` (anonymous/verified/unverified) على كل ردٍّ يصدر بعد قراءة
+الطلب — ردود النموذج والمسارات الفورية والردّ المحلّي المغلق وردود المنع 429/503
+(لا على 503 مفتاح الإيقاف الذي يسبق قراءة الطلب) — فيُقاس حال الجلسة لا يُخمَّن. الاختبار `chat-auth-deadline.test.ts` (5): مصادقةٌ معلّقة ⇐ 200
 زائرًا خلال المهلة **بلا أدوات** ولا استعلام مؤسسة؛ Bearer تالف ⇐ 401؛ جلسةٌ
 سليمة ومؤسسةٌ معلّقة ⇐ 200 verified؛ استرجاعٌ وتفضيلاتٌ معلّقة ⇐ 200 بلا سياق؛
 الزائر anonymous.

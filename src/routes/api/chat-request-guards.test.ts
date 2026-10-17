@@ -133,6 +133,8 @@ describe("منع التكرار الجاري", () => {
     const second = await post(Q1, thread);
     expect(second.status).toBe(429);
     expect(second.headers.get("Retry-After")).toBe("3");
+    expect(second.headers.get("X-SADEED-Gate")).toBe("verified");
+    expect(second.headers.get("X-SADEED-Auth")).toBe("anonymous");
     const body = (await second.json()) as { error: string; code?: string };
     expect(body.code).toBe("duplicate_request");
     expect(/[؀-ۿ]/.test(body.error)).toBe(true);
@@ -184,6 +186,8 @@ describe("سقف التزامن", () => {
     const second = await post(Q2);
     expect(second.status).toBe(503);
     expect(second.headers.get("Retry-After")).toBe("5");
+    expect(second.headers.get("X-SADEED-Gate")).toBe("verified");
+    expect(second.headers.get("X-SADEED-Auth")).toBe("anonymous");
     const body = (await second.json()) as { error: string; code?: string };
     expect(body.code).toBe("busy");
     expect(/[؀-ۿ]/.test(body.error)).toBe(true);

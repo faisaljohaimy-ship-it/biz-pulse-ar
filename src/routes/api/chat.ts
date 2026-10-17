@@ -497,12 +497,30 @@ export const Route = createFileRoute("/api/chat")({
         const rateKey = userId ? `chat:${userId}` : `chat:ip:${clientIp(request)}`;
         const limit = userId ? CHAT_RATE.user : CHAT_RATE.guest;
         const gate = { deadlineMs: CHAT_GATE_DEADLINE_MS };
+        // ترويستا البوّابة والجلسة على كل ردٍّ يصدر بعد قراءة الطلب — ردود المنع
+        // (429/503) والردّ المحلّي المغلق كذلك، لا ردود النموذج وحدها: فحص الدخان
+        // يقرؤهما ليفرّق «لم تُمنح جلسة» عن «سقط التحقّق» (نقض الحارس على 782b171).
         const rateLimited = (retryAfterSeconds: number, gate: GateMode) =>
           jsonError(CHAT_RATE_LIMITED_AR, 429, requestId, {
             code: "rate_limited",
             retryAfterSeconds,
-            headers: { "X-SADEED-Gate": gate },
+            headers: { "X-SADEED-Gate": gate, "X-SADEED-Auth": authState },
           });
+        /** يُلحق الترويستين بردٍّ جاهز من `ai-quota.server` (حصّة يومية 429/503) أو يمرّر `null`. */
+        const tagged = <T extends Response | null>(res: T, gate: GateMode): T => {
+          if (!res) return res;
+          const headers = new Headers(res.headers);
+          headers.set("X-SADEED-Gate", gate);
+          headers.set("X-SADEED-Auth", authState);
+          for (const [key, value] of Object.entries(responseHeaders(requestId))) {
+            if (!headers.has(key)) headers.set(key, value);
+          }
+          return new Response(res.body, {
+            status: res.status,
+            statusText: res.statusText,
+            headers,
+          }) as T;
+        };
         const closedPolicyReply = (which: "rate" | "quota") => {
           console.warn(
             `[api/chat] ${which} gate unavailable — closed policy, local guaranteed reply`,
@@ -515,7 +533,7 @@ export const Route = createFileRoute("/api/chat")({
             requestId,
             LOCAL_QUOTA_UNVERIFIED_AR,
             "local-quota-unverified",
-            { "X-SADEED-Gate": "closed" },
+            { "X-SADEED-Gate": "closed", "X-SADEED-Auth": authState },
           );
         };
 
@@ -538,20 +556,23 @@ export const Route = createFileRoute("/api/chat")({
           return rateLimited(60, "verified");
         }
         if (gateMode === "verified") {
-          const quota = await enforceAiQuota({
-            surface: "chat",
-            identity,
-            deadlineMs: CHAT_GATE_DEADLINE_MS,
-          });
+          const quota = tagged(
+            await enforceAiQuota({
+              surface: "chat",
+              identity,
+              deadlineMs: CHAT_GATE_DEADLINE_MS,
+            }),
+            "verified",
+          );
           if (quota && (await isQuotaUnavailable(quota))) {
             if (gateDegradedMode() === "closed") return closedPolicyReply("quota");
-            const bounded = degradedAiQuota("chat", identity);
+            const bounded = tagged(degradedAiQuota("chat", identity), "degraded");
             if (bounded) return bounded;
             gateMode = "degraded";
           } else if (quota) return quota;
         } else {
           // المخزن معطّل فعلًا: لا نُنفق مهلتين أخريين على الحصّة اليومية — حدودها في الذاكرة.
-          const bounded = degradedAiQuota("chat", identity);
+          const bounded = tagged(degradedAiQuota("chat", identity), "degraded");
           if (bounded) return bounded;
         }
         if (gateMode === "degraded") {
@@ -655,7 +676,7 @@ export const Route = createFileRoute("/api/chat")({
           return jsonError(CHAT_DUPLICATE_AR, 429, requestId, {
             code: "duplicate_request",
             retryAfterSeconds: 3,
-            headers: { "X-SADEED-Gate": gateMode },
+            headers: { "X-SADEED-Gate": gateMode, "X-SADEED-Auth": authState },
           });
         }
         // خانة النموذج تُحجز عند النموذج نفسه (أدناه) لا هنا: بناء السياق البطيء
@@ -1033,7 +1054,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           return jsonError(CHAT_SERVER_BUSY_AR, 503, requestId, {
             code: "busy",
             retryAfterSeconds: 5,
-            headers: { "X-SADEED-Gate": gateMode },
+            headers: { "X-SADEED-Gate": gateMode, "X-SADEED-Auth": authState },
           });
         }
 

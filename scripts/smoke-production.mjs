@@ -200,6 +200,14 @@ if (a1.ok && a1.status === 401) {
   );
 } else if (a1.ok && a1.status === 200 && a1.source === "local-guaranteed") {
   note("A1 auth", "warn", "لا مفتاح مزوّد على الخادم — الردّ المحلّي يسبق فحص الجلسة");
+} else if (a1.ok && a1.status === 200 && a1.source === "local-quota-unverified") {
+  // الخلفية موقوفة: المخزن لا يجيب فالبوّابة مغلقة وردٌّ محلّي بلا نموذج. حالة بنية
+  // تحتية لا عيب شيفرة — ولا صلاحية مُنحت (X-SADEED-Auth لا تكون verified هنا).
+  note(
+    "A1 auth",
+    a1.auth === "verified" ? "fail" : "warn",
+    `البوّابة مغلقة (gate=${a1.gate ?? "—"}, auth=${a1.auth ?? "—"}) — ردٌّ محلّي بلا نموذج خلال ${a1.totalMs} مللي ثانية؛ degraded (infra): المخزن معطّل، ولا صلاحية جلسةٍ مُنحت`,
+  );
 } else {
   note(
     "A1 auth",
