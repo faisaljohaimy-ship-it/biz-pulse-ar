@@ -67,14 +67,19 @@ type Handler = (args: { request: Request }) => Promise<Response>;
 const THREAD_A = "11111111-1111-4111-8111-111111111111";
 const THREAD_B = "22222222-2222-4222-8222-222222222222";
 
-async function post(text: string, thread = THREAD_A, ip = "198.51.100.7") {
+async function post(
+  text: string,
+  thread = THREAD_A,
+  ip = "198.51.100.7",
+  extraHeaders: Record<string, string> = {},
+) {
   const mod = (await import("@/routes/api/chat")) as unknown as {
     Route: { options: { server: { handlers: { POST: Handler } } } };
   };
   return mod.Route.options.server.handlers.POST({
     request: new Request("http://local/api/chat", {
       method: "POST",
-      headers: { "content-type": "application/json", "x-forwarded-for": ip },
+      headers: { "content-type": "application/json", "x-forwarded-for": ip, ...extraHeaders },
       body: JSON.stringify({
         messages: [{ id: "m1", role: "user", parts: [{ type: "text", text }] }],
         threadId: thread,
@@ -173,6 +178,21 @@ describe("منع التكرار الجاري", () => {
       expect(r.status).toBe(200);
     }
     expect(sim.calls).toBe(4);
+  });
+
+  it("هوية الزائر من `cf-connecting-ip` لا من `x-forwarded-for` المزوَّر: عنوانان مختلفان في XFF وهوية حافّة واحدة ⇐ تكرار", async () => {
+    const gate = deferred();
+    sim.hold = gate.promise;
+    const edge = { "cf-connecting-ip": "203.0.113.9" };
+    const first = post(Q1, THREAD_A, "10.0.0.1", edge);
+    await waitForCalls(1);
+    // لو قُرئ XFF أوّلًا لصار هذا «زائرًا آخر» ومرّ إلى النموذج ثانيةً.
+    const spoofed = await post(Q1, THREAD_A, "10.0.0.2", edge);
+    expect(spoofed.status).toBe(429);
+    expect(((await spoofed.json()) as { code?: string }).code).toBe("duplicate_request");
+    expect(sim.calls).toBe(1);
+    gate.resolve();
+    expect((await first).status).toBe(200);
   });
 });
 

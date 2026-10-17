@@ -105,10 +105,14 @@ function sanitizeHistory(msgs: UIMessage[]): UIMessage[] {
 
 function clientIp(request: Request): string {
   if (process.env.TRUST_PROXY_HEADERS?.trim().toLowerCase() !== "true") return "shared";
-  const xff = request.headers.get("x-forwarded-for");
+  // الترتيب أمنيّ لا شكليّ: على حافّة Cloudflare يكتب الوكيل `cf-connecting-ip`
+  // ولا يستطيع العميل تزويره، أمّا `x-forwarded-for` فيضيف الوكيل عنوانه إلى ما
+  // يرسله العميل فيبقى أوّلُ عنصر بيده — فقراءته أوّلًا تمنح الزائر دلوًا جديدًا
+  // بكل طلب وتُسقط الحدّ والتكرار. المرتّب نفسه في `clientBucketKey` وبقيّة النقاط
+  // العامة؛ هذا المسار وحده كان مقلوبًا (تدقيق ٢٠٢٦/١٠/١٧، SEC-1C-02).
   const candidate =
-    xff?.split(",")[0]?.trim() ||
     request.headers.get("cf-connecting-ip")?.trim() ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip")?.trim() ||
     "shared";
   return /^[0-9a-f:.]{3,64}$/i.test(candidate) ? candidate : "shared";
