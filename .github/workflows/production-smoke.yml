@@ -25,6 +25,10 @@ on:
         required: false
         type: boolean
         default: false
+      expected_sha:
+        description: "الـcommit الذي يجب أن يخدمه الموقع (اتركه فارغًا للشهادة بلا حكم)"
+        required: false
+        type: string
 
 concurrency:
   group: production-smoke
@@ -58,6 +62,7 @@ jobs:
           PRODUCTION_URL: ${{ steps.target.outputs.url }}
           EXHAUSTIVE: ${{ inputs.exhaustive && '1' || '' }}
           STRICT: ${{ inputs.strict && '1' || '' }}
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
         run: node scripts/smoke-production.mjs
 
       - name: Summary

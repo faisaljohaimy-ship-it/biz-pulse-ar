@@ -37,6 +37,10 @@ on:
         description: "عنوان الإنتاج (اتركه فارغًا لاستعمال متغيّر المستودع)"
         required: false
         type: string
+      expected_sha:
+        description: "الـcommit الذي يجب أن يخدمه الموقع — يحوّل شهادة معرّف البناء إلى حكم"
+        required: false
+        type: string
 
 concurrency:
   group: production-check
@@ -99,6 +103,36 @@ jobs:
       - name: Install
         if: steps.target.outputs.configured == 'true'
         run: npm ci --no-audit --no-fund
+
+      # ⓪ معرّف البناء: أيّ commit يخدمه الموقع فعلًا (مهمّة الجاهزية ٢٠٢٦/١٠/١٧).
+      #    بلا `expected_sha` شهادةٌ تُطبع ولا تحكم — فالتشغيل بعد الدفع قد يسبق
+      #    النشر (انظر أعلاه)؛ ومعه حكمٌ: مختلف ⇐ أحمر. الغياب تحذير لا سقوط:
+      #    بناءٌ أقدم من هذه الميزة أو منشئٌ لم يشغّل `prebuild`.
+      - name: Build identifier
+        if: steps.target.outputs.configured == 'true'
+        env:
+          PRODUCTION_URL: ${{ steps.target.outputs.url }}
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          BODY="$(curl -sS --max-time 20 -H 'cache-control: no-cache' "$PRODUCTION_URL/api/public/health" || true)"
+          SHA="$(printf '%s' "$BODY" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);process.stdout.write(j.build&&j.build.sha?String(j.build.sha):"")}catch{process.stdout.write("")}})')"
+          if [ -z "$SHA" ]; then
+            BI="$(curl -sS --max-time 20 "$PRODUCTION_URL/build-info.json" || true)"
+            SHA="$(printf '%s' "$BI" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);process.stdout.write(j.sha?String(j.sha):"")}catch{process.stdout.write("")}})')"
+          fi
+          if [ -z "$SHA" ] || [ "$SHA" = "unknown" ]; then
+            echo "::warning::لا معرّف بناء على الموقع — المنشئ لم يشغّل prebuild أو البناء المنشور أقدم من هذه الميزة"
+            echo "build_sha=" >> "$GITHUB_OUTPUT"
+          else
+            echo "الموقع يخدم: $SHA"
+            echo "build_sha=$SHA" >> "$GITHUB_OUTPUT"
+            if [ -n "$EXPECTED_SHA" ]; then
+              case "$SHA" in
+                "$EXPECTED_SHA"*) echo "✓ يطابق المتوقَّع" ;;
+                *) echo "::error::الموقع يخدم $SHA والمتوقَّع $EXPECTED_SHA — نشرٌ لم يقع أو سبقته دفعة"; exit 1 ;;
+              esac
+            fi
+          fi
 
       # ① الطبقة الأولى: ما يُقدَّم من الخادم — الحالة · سكربت الثيم ·
       #    العلامة · الأنماط. سريعة ولا تحتاج متصفحًا.

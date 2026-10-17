@@ -17,8 +17,12 @@
  * الخروج: 1 عند أيّ «fail». قاعدةٌ معطّلة تُكتب «degraded (infra)» لا «fail» — إلا
  * مع STRICT=1 — لأنها ليست عيبَ شيفرة، وهذا الفحص لا يكذب في الاتجاهين.
  *
+ *   B1 معرّف البناء          — أيّ commit يخدمه الموقع (`/api/public/health` أو
+ *                              `/build-info.json`)؛ مع `EXPECTED_SHA` يصير حكمًا.
+ *
  *   PRODUCTION_URL=https://example.com node scripts/smoke-production.mjs
  *   EXHAUSTIVE=1 STRICT=1 PRODUCTION_URL=… node scripts/smoke-production.mjs
+ *   EXPECTED_SHA=<sha> PRODUCTION_URL=… node scripts/smoke-production.mjs
  */
 import { writeFileSync } from "node:fs";
 
@@ -173,6 +177,50 @@ if (!h1.ok) {
       "H1 public/health",
       "pass",
       `http ${h1.status} في ${h1.ms} مللي ثانية — db=${dbStatus}${s.db?.detail ? ` (${s.db.detail})` : ""} · rate_limit_storage=${storageStatus} (${s.rate_limit_storage.detail ?? ""}) · gemini=${s.gemini?.status}`,
+    );
+  }
+}
+
+// ── B1 معرّف البناء ─────────────────────────────────────────────────────────
+// يشهد أيَّ commit يخدمه الموقع: من `/api/public/health` (مدمجٌ وقت البناء) أو من
+// الملفّ الثابت `/build-info.json`. `EXPECTED_SHA` (اختياري) يحوّل الشهادة إلى
+// حكم: مطابق ⇐ pass، مختلف ⇐ fail. غيابه كلّه ⇐ warn: المنشئ لم يشغّل `prebuild`
+// أو البناء أقدم — لا رقم يُخمَّن.
+{
+  const expected = (process.env.EXPECTED_SHA || "").trim().toLowerCase();
+  let build =
+    h1.ok && h1.json?.build && typeof h1.json.build.sha === "string" ? h1.json.build : null;
+  let origin = "health";
+  if (!build) {
+    const bi = await getJson("/build-info.json", 10_000);
+    if (bi.ok && bi.status === 200 && typeof bi.json?.sha === "string") {
+      build = bi.json;
+      origin = "static";
+    }
+  }
+  if (!build || build.sha === "unknown") {
+    note(
+      "B1 build-id",
+      expected ? "fail" : "warn",
+      build
+        ? `معرّف البناء «unknown» — المنشئ لم يجد git ولا متغيّر SHA (source=${build.source ?? "—"})`
+        : "لا معرّف بناء — المنشئ لم يشغّل prebuild أو البناء المنشور أقدم من هذه الدفعة",
+    );
+  } else if (expected) {
+    const sha = String(build.sha).toLowerCase();
+    const match = sha.startsWith(expected) || expected.startsWith(sha);
+    note(
+      "B1 build-id",
+      match ? "pass" : "fail",
+      match
+        ? `الموقع يخدم ${sha.slice(0, 9)} (${build.ref ?? "—"}, ${build.builtAt ?? build.built_at ?? "—"}) = المتوقَّع`
+        : `الموقع يخدم ${sha.slice(0, 9)} والمتوقَّع ${expected.slice(0, 9)} — نشرٌ لم يقع أو سبقته دفعة`,
+    );
+  } else {
+    note(
+      "B1 build-id",
+      "info",
+      `الموقع يخدم ${String(build.sha).slice(0, 9)} (${build.ref ?? "—"}, ${build.builtAt ?? build.built_at ?? "—"}, عبر ${origin})`,
     );
   }
 }

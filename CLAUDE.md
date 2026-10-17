@@ -414,7 +414,19 @@
 - `MessageResponse` (streamdown/shiki/mermaid) ممنوع في SadeedCopilot —
   يكسر ميزانية الأداء؛ يبقى `react-markdown + remark-gfm`.
 - البوابة قبل أي دفع: tsc ثم lint ثم الاختبارات ثم `npm run build` مع
-  `scripts/check-performance-budget.mjs`.
+  `scripts/check-performance-budget.mjs`، ثم `npm run check:secrets` ثم
+  `npm run check:audit` (‏`npm audit --omit=dev --audit-level=high` — الأمر
+  نفسه في CI؛ غيابه محليًّا ترك `main` أحمر 36 تشغيلًا متتاليًا دون أن يراه
+  أحد، ٢٠٢٦/٠٩/٢٨–١٠/١٧). و`npm run check` يجمعها كلّها.
+- **معرّف البناء** (٢٠٢٦/١٠/١٧): `prebuild` يكتب `public/build-info.json`
+  (خارج git) ويُدمج في `/api/public/health` حقلَ `build`؛ فحص الإنتاج وفحص
+  الدخان يقرآنه، ومع `expected_sha` يحكمان. غيابه = المنشئ لم يشغّل
+  `npm run build` (بل `vite build` مباشرةً) — يُبلَّغ تحذيرًا لا يُخمَّن.
+- **CI لا يعمل على فروع الميزات إلا يدويًّا** (‏`workflow_dispatch` على
+  `ci.yml`)، وحماية الفرع **غير متاحة** على خطّة المستودع الحالية (المستودع
+  خاص؛ ‏GitHub تردّ 403 «Upgrade to GitHub Pro or make this repository
+  public»). فالبوّابة إجرائية: دفع فرع الإصلاح ← تشغيل CI عليه ← أخضر على
+  الـSHA نفسه ← دمج تقدّمي خطّي ← Publish ← فحص الإنتاج بـ`expected_sha`.
 
 ## Mandatory Direct-to-Main Delivery Policy
 

@@ -48,6 +48,7 @@ afterAll(() => vi.unstubAllEnvs());
 type Handler = (args: { request: Request }) => Promise<Response>;
 type Body = {
   status: string;
+  build: { sha: string; ref: string; built_at: string | null; source: string } | null;
   subsystems: Record<string, { status: string; detail?: string; latency_ms?: number }>;
 };
 async function get() {
@@ -85,6 +86,20 @@ describe("مخزن حدّ المعدّل في فحص الصحّة", () => {
     expect(body.subsystems.rate_limit_storage.status).toBe("down");
     expect(body.subsystems.rate_limit_storage.detail).toContain("breaker=open");
     expect(body.subsystems.rate_limit_storage.detail).toContain("degraded_mode=bounded");
+  });
+});
+
+describe("معرّف البناء", () => {
+  it("حقل `build` حاضرٌ دائمًا: ختم البناء إن كُتب، وإلا null صادق لا رقم مختلَق", async () => {
+    const { body } = await get();
+    expect("build" in body).toBe(true);
+    if (body.build) {
+      expect(body.build.sha).toMatch(/^([0-9a-f]{7,40}|unknown)$/i);
+      expect(typeof body.build.ref).toBe("string");
+      expect(typeof body.build.source).toBe("string");
+    } else {
+      expect(body.build).toBeNull();
+    }
   });
 });
 

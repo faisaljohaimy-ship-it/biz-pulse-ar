@@ -18,6 +18,19 @@ const VERSION = process.env.APP_VERSION ?? "1.5.1";
 /** أقصى انتظارٍ لفحص القاعدة — أطول من مهلة بوّابة الدردشة قليلًا، وأقصر من صبر المراقب. */
 export const HEALTH_DB_DEADLINE_MS = 2_500;
 
+/**
+ * معرّف البناء (مهمّة الجاهزية ٢٠٢٦/١٠/١٧): `scripts/write-build-info.mjs` يكتب
+ * `public/build-info.json` قبل كل بناء، وVite يدمجه هنا وقت البناء عبر
+ * `import.meta.glob` — فغيابه (منشئٌ لم يشغّل `prebuild`) يعطي `null` صادقًا لا
+ * خطأ استيراد. به يشهد فحص الإنتاج أيَّ commit يخدمه الموقع فعلًا.
+ */
+type BuildInfo = { sha?: string; short?: string; ref?: string; builtAt?: string; source?: string };
+const BUILD_INFO_FILES = import.meta.glob("/public/build-info.json", {
+  eager: true,
+  import: "default",
+}) as Record<string, BuildInfo | undefined>;
+export const BUILD_INFO: BuildInfo | null = Object.values(BUILD_INFO_FILES)[0] ?? null;
+
 export const Route = createFileRoute("/api/public/health")({
   server: {
     handlers: {
@@ -113,6 +126,14 @@ export const Route = createFileRoute("/api/public/health")({
           {
             status: worst === "down" ? "down" : worst === "degraded" ? "degraded" : "ok",
             version: VERSION,
+            build: BUILD_INFO
+              ? {
+                  sha: BUILD_INFO.sha ?? "unknown",
+                  ref: BUILD_INFO.ref ?? "unknown",
+                  built_at: BUILD_INFO.builtAt ?? null,
+                  source: BUILD_INFO.source ?? "unknown",
+                }
+              : null,
             timestamp: new Date().toISOString(),
             uptime_hint: "stateless-worker",
             subsystems,
