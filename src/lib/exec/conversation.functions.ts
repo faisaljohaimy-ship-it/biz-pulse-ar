@@ -15,6 +15,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
+import { assertAiQuota } from "@/lib/governance/ai-quota.server";
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 
 // ---------------------------------------------------------------------------
@@ -255,6 +256,13 @@ export const getAgentConversation = createServerFn({ method: "GET" })
     // Synthesize through the canonical Gemini runtime.
     let synthesis: ConversationSynthesis;
     try {
+      // مفتاح الإيقاف والسقفان اليوميان قبل النموذج — المنع يسقط إلى الخلاصة
+      // الحتميّة في `catch` أدناه (زائرٌ يستدعي هذه الدالة بلا ذاكرة مخبّأة).
+      await assertAiQuota({
+        surface: "chat",
+        identity: context.userId ?? "guest:conversation",
+        deadlineMs: 2_000,
+      });
       const runtime = resolveSadeedGeminiRuntime();
 
       const findings = turns

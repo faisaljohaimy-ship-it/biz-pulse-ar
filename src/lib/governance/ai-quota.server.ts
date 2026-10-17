@@ -30,7 +30,7 @@
  * خبر. ونمط المشروع المحفوظ: لا عبارة تقنية تُعرض، بل رسالة عربية محايدة
  * تقول ما حدث ومتى يعود.
  */
-import { enforceRateLimit } from "./rate-limit.server";
+import { degradedAllowance, enforceRateLimit } from "./rate-limit.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const DAY_SECONDS = 86_400;
@@ -159,6 +159,8 @@ export interface AiQuotaOptions {
   readonly identity: string;
   /** حجم تقديريّ (أحرف النصّ مثلًا) — للمحاسبة لا للحجب. */
   readonly units?: number;
+  /** مهلة كل نداء قاعدة (مللي ثانية) — تجاوزها «غير متاح» مغلقًا، بلا انتظار مفتوح. */
+  readonly deadlineMs?: number;
 }
 
 /**
@@ -168,7 +170,7 @@ export interface AiQuotaOptions {
  * الدقيقة، وهذه تحدّ الفاتورة في اليوم.
  */
 export async function enforceAiQuota(opts: AiQuotaOptions): Promise<Response | null> {
-  const { surface, identity, units = 1 } = opts;
+  const { surface, identity, units = 1, deadlineMs } = opts;
   const ar = SURFACE_AR[surface];
 
   const disabled = aiDisabledResponse(surface);
@@ -183,6 +185,7 @@ export async function enforceAiQuota(opts: AiQuotaOptions): Promise<Response | n
     `ai-daily-global:${surface}:${today}`,
     limits.global,
     DAY_SECONDS,
+    { deadlineMs },
   );
   if (globalGate.unavailable) {
     return arabicResponse(
@@ -205,6 +208,7 @@ export async function enforceAiQuota(opts: AiQuotaOptions): Promise<Response | n
     `ai-daily-id:${surface}:${today}:${identity}`,
     limits.perIdentity,
     DAY_SECONDS,
+    { deadlineMs },
   );
   if (identityGate.unavailable) {
     return arabicResponse(
@@ -225,4 +229,107 @@ export async function enforceAiQuota(opts: AiQuotaOptions): Promise<Response | n
 
   void recordUsage(surface, identity, units);
   return null;
+}
+
+/**
+ * الحصّة **المحدودة** حين يتعذّر المخزن (VIBE 5.1): الدلاء نفسها بأسمائها،
+ * لكن في ذاكرة المعزول وبنصف السقوف — حدٌّ لا تحقّق. تُستدعى من الدردشة وحدها
+ * بعد أن يعيد `enforceAiQuota` «غير متاح» أو يكون القاطع مفتوحًا، فلا تُنفق
+ * مهلتين على مخزنٍ معروفٍ عطله. لا تكتب سجلّ استهلاك (لا قاعدة).
+ */
+export function degradedAiQuota(
+  surface: AiSurface,
+  identity: string,
+  now = Date.now(),
+): Response | null {
+  const ar = SURFACE_AR[surface];
+  const limits = LIMITS[surface];
+  const today = dayKey();
+  const retry = secondsUntilMidnight();
+  const globalGate = degradedAllowance(
+    `ai-daily-global:${surface}:${today}`,
+    limits.global,
+    DAY_SECONDS,
+    now,
+  );
+  if (!globalGate.allowed) {
+    return arabicResponse(
+      429,
+      "daily_global_cap",
+      `بلغ النظام سقفه المحدود من طلبات ${ar} ريثما يعود التحقّق. أعد المحاولة لاحقًا.`,
+      retry,
+    );
+  }
+  const identityGate = degradedAllowance(
+    `ai-daily-id:${surface}:${today}:${identity}`,
+    limits.perIdentity,
+    DAY_SECONDS,
+    now,
+  );
+  if (!identityGate.allowed) {
+    return arabicResponse(
+      429,
+      "daily_identity_cap",
+      `بلغت حصّتك المحدودة من طلبات ${ar} ريثما يعود التحقّق. تعود الحصّة بعد منتصف الليل.`,
+      retry,
+    );
+  }
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// البوّابة في مواضع الاستدعاء الداخلية — دوال الخادم ووحدات المكتبة التي
+// تستدعي نموذجًا من غير مسار HTTP يعيد `Response` للمستخدم (المرحلة ب-٢ من
+// مهمّة الجاهزية الإنتاجية ٢٠٢٦/١٠/١٧).
+//
+// قِيس أن ستّة مواضع تصل Gemini بلا مفتاح إيقاف ولا سقف يومي: دوال العرض
+// التنفيذي الثلاث (زائرٌ يستدعيها)، ومشغّل الوكلاء، وتحليل البلاغ، والمحرّك
+// التنفيذي. كلّها تملك بديلًا حتميًّا في `catch` قائم، فالبوّابة ترمي
+// `AiGateError` بدل أن تعيد `Response`: المستدعي يسقط إلى بديله بلا نداء
+// مزوّد، ولا يتغيّر سلوكه حين البوّابة مفتوحة.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AiGateCode =
+  "ai_disabled" | "quota_unavailable" | "daily_global_cap" | "daily_identity_cap";
+
+/** منعٌ من البوّابة الداخلية؛ `code` هو الرمز نفسه الذي تحمله ردود HTTP. */
+export class AiGateError extends Error {
+  readonly code: AiGateCode;
+  readonly surface: AiSurface;
+  constructor(code: AiGateCode, surface: AiSurface) {
+    super(`SADEED AI gate (${surface}): ${code}`);
+    this.name = "AiGateError";
+    this.code = code;
+    this.surface = surface;
+  }
+}
+
+/** مفتاح الإيقاف وحده — متزامن، بلا شبكة. يُرمى قبل أي نداء مزوّد. */
+export function assertAiEnabled(surface: AiSurface): void {
+  if (aiKillSwitchOn()) throw new AiGateError("ai_disabled", surface);
+}
+
+/**
+ * مفتاح الإيقاف ثم السقفان اليوميان (نفس `enforceAiQuota`، نفس الدلاء، نفس
+ * الترتيب) — ويفشل مغلقًا: تعذّر المخزن منعٌ لا سماح. المستدعي يسقط إلى
+ * بديله الحتميّ ولا يُنفق على نداءٍ لم يُتحقَّق من حصّته.
+ */
+export async function assertAiQuota(opts: AiQuotaOptions): Promise<void> {
+  const blocked = await enforceAiQuota(opts);
+  if (!blocked) return;
+  let code: AiGateCode = "quota_unavailable";
+  try {
+    const body = (await blocked.json()) as { error?: unknown };
+    if (
+      body.error === "ai_disabled" ||
+      body.error === "daily_global_cap" ||
+      body.error === "daily_identity_cap" ||
+      body.error === "quota_unavailable"
+    ) {
+      code = body.error;
+    }
+  } catch {
+    /* جسمٌ غير متوقَّع — يبقى «غير متاح» وهو منع. */
+  }
+  throw new AiGateError(code, opts.surface);
 }

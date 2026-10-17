@@ -53,12 +53,18 @@ describe("لا نصّ مستخدم يفقد حرفًا عند العرض", () =>
   it("الردّ المضمون يخاطب مديرًا لا مشغّل نظام", () => {
     // «فعّل متغيّر البيئة» تعليمةُ نشرٍ لا جوابُ مساعد. والصدق يبقى شرطًا:
     // لا رقم بلا مصدر (المادة ٢٧).
+    // النصّ صار ثابتًا مسمّى يشترك فيه كل ردٍّ مضمون (٢٠٢٦/١٠/١٦) — يُقرأ
+    // باسمه، ومعه ردّ «الحصّة غير المتحقَّقة» بالشروط نفسها.
     const chat = readFileSync("src/routes/api/chat.ts", "utf8");
-    const i = chat.indexOf("const localText");
-    const block = chat.slice(i, i + 420);
-    expect(block).not.toMatch(/API_KEY|متغيّر البيئة|env\b/i);
-    expect(block).toMatch(/لن أعرض أرقامًا|غير متحقّقة/);
+    for (const name of ["const LOCAL_NO_PROVIDER_AR", "const LOCAL_QUOTA_UNVERIFIED_AR"]) {
+      const i = chat.indexOf(name);
+      expect(i, `لم يُعثر على ${name}`).toBeGreaterThan(-1);
+      const block = chat.slice(i, i + 420);
+      expect(block).not.toMatch(/API_KEY|متغيّر البيئة|env\b/i);
+      expect(block).toMatch(/لن أعرض أرقامًا|غير متحقّقة/);
+    }
     // ويبقى مفيدًا: يعرض ما يستطيع فعله الآن لا مجرّد اعتذار.
-    expect(block).toMatch(/يمكنني/);
+    const i = chat.indexOf("const LOCAL_NO_PROVIDER_AR");
+    expect(chat.slice(i, i + 420)).toMatch(/يمكنني/);
   });
 });

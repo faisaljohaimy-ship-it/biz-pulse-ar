@@ -17,6 +17,8 @@ npx tsc --noEmit                                  # صفر أخطاء
 npx eslint .                                      # كامل الريبو — صفر أخطاء
 npx vitest run                                    # كل الاختبارات
 npm run build && node scripts/check-performance-budget.mjs
+npm run check:secrets                             # 0 نتائج على الملفات المتعقَّبة
+npm run check:audit                               # npm audit --omit=dev --audit-level=high — خرج 0 (الأمر نفسه في CI)
 ```
 
 ## 2) فحص المحظورات (كلها صفر نتائج — أي نتيجة = نقض بالملف والسطر)

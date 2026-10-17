@@ -139,8 +139,14 @@ describe("الثوابت التي لا يجوز أن يمسّها التسريع
     expect(at, "لم يُعثر على فرع غياب المزوّد").toBeGreaterThan(-1);
     expect(end, "لم يُعثر على نهاية الفرع").toBeGreaterThan(at);
     const branch = CHAT_CODE.slice(at, end);
-    expect(branch).toContain("createUIMessageStreamResponse");
+    // البثّ صار في دالةٍ مشتركة (٢٠٢٦/١٠/١٦): الفرع يناديها، وهي تبثّ.
+    expect(branch).toContain("localGuaranteedReply(");
     expect(branch).not.toMatch(/jsonError\(/);
+    const fnAt = CHAT_CODE.indexOf("function localGuaranteedReply(");
+    expect(fnAt, "لم يُعثر على الدالة المشتركة").toBeGreaterThan(-1);
+    const fn = CHAT_CODE.slice(fnAt, CHAT_CODE.indexOf("\n}\n", fnAt));
+    expect(fn).toContain("createUIMessageStreamResponse");
+    expect(fn).not.toMatch(/jsonError\(|status:\s*5\d\d/);
   });
 
   it("النصّ المعروض يمرّ بالتصفية قبل الإرسال", () => {

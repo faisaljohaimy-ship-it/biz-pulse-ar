@@ -1,0 +1,85 @@
+# فحص دخان مسار سَدِيد على الإنتاج (VIBE 5.1).
+#
+# يكمّل `production-check.yml` (عقد HTML وحدود الواجهة) بما لا يفحصه ذاك:
+# صحّة القاعدة ومخزن حدّ المعدّل، والمصادقة التي لا تُتجاوز، وسؤالٌ عربيّ
+# حقيقي عبر `/api/chat`، ومنع التكرار الجاري، وسقف المعدّل اختياريًّا.
+#
+# يُشغَّل يدويًّا فقط: كل تشغيلٍ ينفق نداءَي نموذجٍ على الأقل (وحتى تسعة مع
+# `exhaustive`). ويقيس البناء **المنشور** — فيُشغَّل بعد Publish لا بعد الدفع.
+name: Production smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "عنوان الإنتاج (اتركه فارغًا لاستعمال متغيّر المستودع)"
+        required: false
+        type: string
+      exhaustive:
+        description: "اختبار سقف المعدّل بسبعة طلبات (ينفق نداءات نموذج)"
+        required: false
+        type: boolean
+        default: false
+      strict:
+        description: "اعتبار القاعدة المعطّلة سقوطًا لا تدهورًا"
+        required: false
+        type: boolean
+        default: false
+      expected_sha:
+        description: "الـcommit الذي يجب أن يخدمه الموقع (اتركه فارغًا للشهادة بلا حكم)"
+        required: false
+        type: string
+
+concurrency:
+  group: production-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Resolve production URL
+        id: target
+        env:
+          INPUT_URL: ${{ inputs.url }}
+          VAR_URL: ${{ vars.PRODUCTION_URL }}
+          DEFAULT_URL: https://neexios.com
+        run: |
+          URL="${INPUT_URL:-${VAR_URL:-$DEFAULT_URL}}"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "الهدف: $URL"
+
+      - name: Smoke the live chat path
+        env:
+          PRODUCTION_URL: ${{ steps.target.outputs.url }}
+          EXHAUSTIVE: ${{ inputs.exhaustive && '1' || '' }}
+          STRICT: ${{ inputs.strict && '1' || '' }}
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: node scripts/smoke-production.mjs
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ -f smoke-summary.md ]; then
+            cat smoke-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### ✗ فحص الدخان لم يكتب خلاصة — راجع سجلّ الخطوة" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-result
+          path: |
+            smoke-result.json
+            smoke-summary.md
+          if-no-files-found: ignore

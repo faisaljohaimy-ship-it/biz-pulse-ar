@@ -5,6 +5,7 @@
 // blocks incident registration.
 // ============================================================================
 import { generateText } from "ai";
+import { assertAiQuota } from "@/lib/governance/ai-quota.server";
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 
 export type SadeedIncidentInput = {
@@ -90,10 +91,17 @@ Return RAW JSON only.`;
 
 export async function sadeedAnalyseIncident(
   inc: SadeedIncidentInput,
-  opts: { timeoutMs?: number } = {},
+  opts: { timeoutMs?: number; /** هوية الحصّة اليومية (معرّف المستدعي). */ identity?: string } = {},
 ): Promise<SadeedIncidentAnalysis> {
   const timeoutMs = opts.timeoutMs ?? 12_000;
   try {
+    // مفتاح الإيقاف والسقفان اليوميان قبل النموذج — المنع يسقط إلى التحليل
+    // الاستدلاليّ في `catch` أدناه بلا نداء مزوّد.
+    await assertAiQuota({
+      surface: "chat",
+      identity: opts.identity ?? "oms:incident",
+      deadlineMs: 2_000,
+    });
     const runtime = resolveSadeedGeminiRuntime();
     const userPayload = {
       ref: inc.ref,

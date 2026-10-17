@@ -1,6 +1,7 @@
 import { sendLovableEmail } from "@lovable.dev/email-js";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createFileRoute } from "@tanstack/react-router";
+import { timingSafeStringEqual } from "@/lib/hook-auth.server";
 
 const MAX_RETRIES = 5;
 const DEFAULT_BATCH_SIZE = 10;
@@ -80,8 +81,10 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
           return Response.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        // مقارنةٌ ثابتة الزمن (كما في verifyCronHookSecret): `!==` تُسرّب طول
+        // التطابق بالتوقيت على سرٍّ بصلاحية الخدمة (تدقيق ٢٠٢٦/١٠/١٧، SEC-1C-08).
         const token = authHeader.slice("Bearer ".length).trim();
-        if (token !== supabaseServiceKey) {
+        if (!timingSafeStringEqual(token, supabaseServiceKey)) {
           return Response.json({ error: "Forbidden" }, { status: 403 });
         }
 

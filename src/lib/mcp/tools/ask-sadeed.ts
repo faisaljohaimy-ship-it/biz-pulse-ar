@@ -22,6 +22,15 @@ export default defineTool({
       (ctx?.isAuthenticated?.() && (ctx.getUserId?.() || ctx.getClientId?.())) ||
       ctx?.getClientId?.() ||
       "anon";
+    // مفتاح الإيقاف أوّلًا — متزامن، قبل أي شبكة (المرحلة ب-٢).
+    const { aiDisabledResponse, enforceAiQuota } = await import("@/lib/governance/ai-quota.server");
+    const off = aiDisabledResponse("chat");
+    if (off) {
+      return {
+        content: [{ type: "text", text: "SADEED is disabled by operations (ai_disabled)." }],
+        isError: true,
+      };
+    }
     try {
       const { enforceRateLimit, rateLimitResponse, rateLimitUnavailableResponse } =
         await import("@/lib/governance/rate-limit.server");
@@ -48,6 +57,21 @@ export default defineTool({
             text: `Rate limit check failed: ${e instanceof Error ? e.message : String(e)}`,
           },
         ],
+        isError: true,
+      };
+    }
+
+    // السقفان اليوميان (الهوية والمشروع) بعد حدّ الدقيقة وقبل النموذج؛ يفشل مغلقًا.
+    const quota = await enforceAiQuota({ surface: "chat", identity: callerKey, deadlineMs: 2_000 });
+    if (quota) {
+      let code = "quota_unavailable";
+      try {
+        code = String(((await quota.json()) as { error?: unknown }).error ?? code);
+      } catch {
+        /* الرمز الافتراضي منعٌ كذلك. */
+      }
+      return {
+        content: [{ type: "text", text: `SADEED quota gate blocked this call (${code}).` }],
         isError: true,
       };
     }

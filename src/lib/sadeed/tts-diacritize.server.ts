@@ -51,10 +51,14 @@ function ruleBased(text: string): string {
 
 async function viaGemini(text: string, signal?: AbortSignal): Promise<string | null> {
   try {
-    const [{ generateText }, { resolveSadeedGeminiRuntime }] = await Promise.all([
-      import("ai"),
-      import("@/lib/sadeed/gemini-provider.server"),
-    ]);
+    const [{ generateText }, { resolveSadeedGeminiRuntime }, { assertAiEnabled }] =
+      await Promise.all([
+        import("ai"),
+        import("@/lib/sadeed/gemini-provider.server"),
+        import("@/lib/governance/ai-quota.server"),
+      ]);
+    // دفاعٌ ثانٍ خلف مسارَي الصوت المحروسين: مطفأ ⇐ بلا تشكيل بالنموذج (يعود null).
+    assertAiEnabled("tts");
     const runtime = resolveSadeedGeminiRuntime();
     const result = await generateText({
       model: runtime.provider(runtime.modelId),

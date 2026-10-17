@@ -76,3 +76,7 @@ blob-report/
 # مستند المالك الثقيل (docx + 78 لقطة) لا يدخل المستودع — نواتج التدقيق الصغيرة فقط
 _audit/doc/
 __pycache__/
+
+# معرّف البناء — يكتبه `prebuild` (scripts/write-build-info.mjs) عند كل بناء،
+# ويُقدَّم على /build-info.json ويُدمج في /api/public/health. يتغيّر مع كل commit.
+public/build-info.json

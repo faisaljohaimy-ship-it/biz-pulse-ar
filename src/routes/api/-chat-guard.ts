@@ -51,10 +51,31 @@ export function chatResponseHeaders(requestId: string): Record<string, string> {
   };
 }
 
-export function chatJsonError(error: string, status: number, requestId: string): Response {
+export type ChatJsonErrorExtras = {
+  /** رمزٌ ثابت للمراقبة والعميل (`busy`، `duplicate_request`، `rate_limited`…). */
+  code?: string;
+  /** يضيف ترويسة `Retry-After` بالثواني — فيحترمها العميل في إعادة المحاولة. */
+  retryAfterSeconds?: number;
+  /** ترويساتٌ إضافية (مثل `X-SADEED-Gate`) — لا تتجاوز ترويسات الأمان الثابتة. */
+  headers?: Record<string, string>;
+};
+
+export function chatJsonError(
+  error: string,
+  status: number,
+  requestId: string,
+  extras: ChatJsonErrorExtras = {},
+): Response {
+  const headers: Record<string, string> = {
+    ...(extras.headers ?? {}),
+    ...chatResponseHeaders(requestId),
+  };
+  if (extras.retryAfterSeconds !== undefined) {
+    headers["Retry-After"] = String(Math.max(1, Math.round(extras.retryAfterSeconds)));
+  }
   return Response.json(
-    { ok: false, error, requestId },
-    { status, headers: chatResponseHeaders(requestId) },
+    { ok: false, error, ...(extras.code ? { code: extras.code } : {}), requestId },
+    { status, headers },
   );
 }
 
