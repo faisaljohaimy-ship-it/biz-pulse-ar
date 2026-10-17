@@ -11,6 +11,7 @@ import {
   knowledgeRevisionHash,
   pickDuplicateDocument,
 } from "@/lib/sadeed/knowledge-ingest-core";
+import { resolveSelfCallOrigin } from "@/lib/sadeed/self-call-origin.server";
 
 const BUCKET = "aria-documents";
 
@@ -114,9 +115,10 @@ export const enqueueKnowledgeIngest = createServerFn({ method: "POST" })
     const secret = process.env.CRON_HOOK_SECRET;
     if (!secret) throw new Error("cron_hook_secret_not_configured");
 
+    // الأصل من البيئة حين تُضبط (PUBLIC_SITE_URL / SITE_URL) لا من الطلب وحده —
+    // فالسرّ لا يُرسَل إلى مضيفٍ انحرف على الحافّة (SEC-1C-06).
     const req = getRequest();
-    const base = new URL(req.url);
-    const hookUrl = `${base.origin}/api/public/hooks/sadeed-docs-ingest`;
+    const hookUrl = `${resolveSelfCallOrigin(req.url)}/api/public/hooks/sadeed-docs-ingest`;
 
     let hookStatus = 0;
     let hookBody: string | null = null;
