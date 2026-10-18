@@ -90,7 +90,7 @@
     105deg,
     transparent 38%,
     color-mix(in oklab, var(--tone-cyan) 22%, transparent) 46%,
-    color-mix(in oklab, white 42%, transparent) 50%,
+    color-mix(in oklab, var(--nx-white) 42%, transparent) 50%,
     color-mix(in oklab, var(--tone-cyan) 22%, transparent) 54%,
     transparent 62%
   );
