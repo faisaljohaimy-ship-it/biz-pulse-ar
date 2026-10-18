@@ -119,17 +119,26 @@ export interface MaintAnalytics {
   repeat_failures: Array<{ site: string; component: string; n: number }>;
 }
 
-/** مصدر ما يُعرض: القاعدة الحية وحدها — لا محاكاة (أمر المالك ٢٠٢٦/١٠/٠٦). */
-export type MaintSource = "database";
+/**
+ * مصدر ما يُعرض — لا محاكاة في الحالين (أمر المالك ٢٠٢٦/١٠/٠٦):
+ * - `database`: القاعدة الحية.
+ * - `export`: حين لا تجيب القاعدة — أوامر تصدير SAP PM الحقيقية المضمَّنة (249) بلا هوية،
+ *   موسومةً بتاريخ التصدير (قرار المالك ٢٠٢٦/١٠/١٨، `maint-export-fallback.server.ts`).
+ */
+export type MaintSource = "database" | "export";
 
 export interface MaintSummary {
   source: MaintSource;
+  /** تاريخ لقطة التصدير (`YYYY-MM-DD`) — حين `source = "export"` وحده. */
+  exportDate?: string;
   kpis: MaintKpis;
   analytics: MaintAnalytics;
 }
 
 export interface MaintPage {
   source: MaintSource;
+  /** تاريخ لقطة التصدير (`YYYY-MM-DD`) — حين `source = "export"` وحده. */
+  exportDate?: string;
   rows: MaintOrder[];
   total: number;
 }

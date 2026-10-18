@@ -27,6 +27,7 @@ import {
   CircleCheck,
   FileWarning,
   Gauge,
+  History,
   Lock,
   OctagonAlert,
   Search,
@@ -600,11 +601,17 @@ function Maintenance() {
     enabled: !authLoading && (tab === "active" || tab === "history"),
     placeholderData: keepPreviousData,
     retry: false,
+    // نسخة التصدير بديلٌ مؤقّت: يُعاد السؤال كل دقيقة فتعود القاعدة الحية متى أجابت
+    // (كالملخّص)، والقاعدة الحية لا تُعاد آليًّا.
+    refetchInterval: (q) => (q.state.data?.source === "export" ? 60_000 : false),
   });
 
   const s = summary.data;
-  // لا محاكاة (أمر المالك ٢٠٢٦/١٠/٠٦): ما يُعرض من القاعدة وحدها. والزائر يقرأ
-  // في نافذة القراءة العامة بلا بيانات شخصية؛ وبعدها يُدعى للدخول.
+  // لا محاكاة (أمر المالك ٢٠٢٦/١٠/٠٦): ما يُعرض من القاعدة، أو — حين لا تجيب — من نسخة
+  // تصدير SAP PM الحقيقية موسومةً بتاريخها (قرار ٢٠٢٦/١٠/١٨). والزائر يقرأ في نافذة القراءة
+  // العامة بلا بيانات شخصية؛ وبعدها يُدعى للدخول.
+  const exportMode = s?.source === "export" || list.data?.source === "export";
+  const exportDate = s?.exportDate ?? list.data?.exportDate;
   const isMember = s?.kpis.viewer_is_member ?? false;
   const publicOpen = s?.kpis.public_read_open ?? false;
   const guestLocked = !!s && !user && !publicOpen;
@@ -622,12 +629,37 @@ function Maintenance() {
         }
       >
         <div className="flex flex-wrap items-center gap-2">
-          {s && s.kpis.total > 0 && <SourceBadge />}
+          {s && s.kpis.total > 0 && <SourceBadge source={s.source} exportDate={s.exportDate} />}
           <NewMaintOrderDialog />
         </div>
       </SecPageHeader>
 
-      {s && !isMember && publicOpen && (
+      {exportMode && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center gap-2 rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface)] p-3 text-[13px] text-[color:var(--ink-2)]"
+        >
+          <History aria-hidden className="size-4 shrink-0 text-[color:var(--tone-amber)]" />
+          <span className="min-w-0 flex-1">
+            القاعدة الحية لا تجيب الآن — المعروض أوامر تصدير SAP PM المعتمد بتاريخ{" "}
+            {fmtDate(exportDate)}
+            {s?.source === "export" ? ` (${fmt(s.kpis.total)} أمرًا)` : ""}، بلا أسماء، والمؤشرات
+            محسوبة منه كما في تاريخه. تعود البيانات الحية تلقائيًّا حين تجيب القاعدة.
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              void summary.refetch();
+              void list.refetch();
+            }}
+            className="nx-home-retry inline-flex min-h-11 items-center rounded-lg border border-[color:var(--hairline)] px-3 font-bold"
+          >
+            أعد المحاولة
+          </button>
+        </div>
+      )}
+
+      {s && s.source === "database" && !isMember && publicOpen && (
         <p
           role="note"
           className="flex flex-wrap items-center gap-1.5 rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface)] p-3 text-[13px] text-[color:var(--ink-2)]"
@@ -680,7 +712,7 @@ function Maintenance() {
           ) : (
             <KpiStrip s={s} loading={!s} />
           )}
-          {s && (
+          {s && s.source === "database" && (
             <Attention
               s={s}
               onPick={(p, t) => {
@@ -722,7 +754,7 @@ function Maintenance() {
 
           {(tab === "active" || tab === "history") && (
             <div role="tabpanel" className="space-y-3">
-              <FilterBar f={filters} set={setF} tab={listTab} signedIn={!!user} />
+              <FilterBar f={filters} set={setF} tab={listTab} signedIn={!!user && !exportMode} />
 
               {list.isError ? (
                 <div

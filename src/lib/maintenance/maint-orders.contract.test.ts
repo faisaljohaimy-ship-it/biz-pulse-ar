@@ -131,9 +131,24 @@ describe("نقض حارس الجودة الثاني — لا يعود", () => {
   });
 
   const PAGE = readFileSync("src/routes/_authenticated/sec.maintenance.tsx", "utf8");
-  it("لا شارة محاكاة ولا مصدرٌ مرجعي — البيانات فعلية وحدها", () => {
+  it("لا شارة محاكاة ولا مصدرٌ مرجعي — البيانات فعلية وحدها، والشارة تقول مصدرها", () => {
     expect(PAGE).not.toMatch(/محاكاة مرجعية|"reference"/);
-    expect(PAGE).toContain("<SourceBadge />");
+    expect(PAGE).toContain("<SourceBadge source={s.source} exportDate={s.exportDate} />");
+    const UI = readFileSync("src/components/sec/maint/maint-ui.tsx", "utf8");
+    expect(UI).toContain("نسخة تصدير SAP PM — {fmtDate(exportDate)}");
+  });
+
+  it("نسخة التصدير معلنةٌ في الصفحة، ولا تُعرض عليها أدوات الإسناد ولا «أوامري» (قرار ٢٠٢٦/١٠/١٨)", () => {
+    expect(PAGE).toContain("القاعدة الحية لا تجيب الآن — المعروض أوامر تصدير SAP PM المعتمد");
+    expect(PAGE).toMatch(/\{s && s\.source === "database" && \(\s*<Attention/);
+    expect(PAGE).toContain("signedIn={!!user && !exportMode}");
+    // البديل مؤقّت: يُعاد السؤال فتعود القاعدة الحية متى أجابت.
+    expect(PAGE).toContain(
+      'refetchInterval: (q) => (q.state.data?.source === "export" ? 60_000 : false)',
+    );
+    const SHEET = readFileSync("src/components/sec/maint/MaintOrderSheet.tsx", "utf8");
+    expect(SHEET).toContain("enabled: !!id && !isExportOrder({ id })");
+    expect(SHEET).toContain("نسخة التصدير للقراءة وحدها");
   });
 
   it("فشل الملخّص رسالةٌ وزرّ إعادة لا هيكلٌ أبدي", () => {
@@ -200,6 +215,8 @@ describe("البيانات الحقيقية لا تدخل المستودع ول�
       "src/lib/maintenance/cm-log-rules.ts",
       "src/lib/maintenance/sap-export-rules.ts",
       "src/lib/maintenance/sap-export-rules.test.ts",
+      "src/lib/maintenance/maint-export-fallback.server.ts",
+      "src/lib/maintenance/maint-export-fallback.test.ts",
       "scripts/import-sap-export.mjs",
       "src/components/sec/maint/NewMaintOrderDialog.tsx",
       "supabase/preflight/maint_orders_check.sql",
@@ -231,9 +248,17 @@ describe("البيانات الحقيقية لا تدخل المستودع ول�
       "src/routes/_authenticated/sec.maintenance.tsx",
       "src/components/sec/maint/MaintOrderSheet.tsx",
       "src/components/sec/maint/maint-ui.tsx",
+      "src/lib/maintenance/maint-export-fallback.server.ts",
     ]) {
       expect(readFileSync(f, "utf8"), f).not.toMatch(/maint-simulation|Simulation\(|is_simulation/);
     }
+    // البديل يقرأ التصدير الحقيقي وحده — لا مرجع محاكاة ولا `resilient` ولا وسم.
+    const FB = readFileSync("src/lib/maintenance/maint-export-fallback.server.ts", "utf8").replace(
+      /^\s*(\/\/|\*|\/\*\*).*$/gm,
+      "",
+    );
+    expect(FB).toContain('from "@/lib/exec/maintenance-report.real.server"');
+    expect(FB).not.toMatch(/showcase-simulation|resilient\(|markSimulation|is_simulation/);
     // نصّ العرض نفسه: لا يُقال للزائر «محاكاة» فوق بيانات فعلية، ولا حارس صفوف `sim-`.
     for (const f of [
       "src/components/sec/maint/MaintOrderSheet.tsx",
@@ -244,14 +269,24 @@ describe("البيانات الحقيقية لا تدخل المستودع ول�
     }
   });
 
-  it("القراءة من القاعدة للجميع والعطل خطأٌ صريح، والكتابة كلّها خلف المصادقة", () => {
+  it("القاعدة أوّلًا للجميع؛ وعطلها ⇐ تصدير SAP الحقيقي أو خطأٌ صريح، والكتابة كلّها خلف المصادقة", () => {
     const FN = readFileSync("src/lib/maint.functions.ts", "utf8");
-    // لا مسار للزائر يتجاوز القاعدة: العرض يقرّر ما يُرى، والعطل يُرفع لا يُستبدل.
-    for (const r of ["listMaintOrders", "getMaintSummary"]) {
+    // لا مسار للزائر يتجاوز القاعدة: العرض يقرّر ما يُرى. والعطل وحده يستدعي البديل (قرار المالك
+    // ٢٠٢٦/١٠/١٨) — بعد سؤال القاعدة لا قبله — وحيث لا بديل يُرفع الخطأ العربي.
+    for (const [r, call, fb] of [
+      ["listMaintOrders", "withTimeout(q.range(", "maintExportPage(data)"],
+      ["getMaintSummary", 'db.rpc("maint_kpis")', "maintExportSummary()"],
+    ] as const) {
       const at = FN.indexOf(`export const ${r}`);
       const body = FN.slice(at, FN.indexOf("export const", at + 10));
       expect(body, r).not.toMatch(/if \(!context\.userId\) return/);
-      expect(body, r).toContain("throw new Error(READ_FAILED)");
+      expect(body, r).toContain('await import("@/lib/maintenance/maint-export-fallback.server")');
+      expect(body.indexOf(call), `${r}: القاعدة أوّلًا`).toBeGreaterThan(-1);
+      expect(body.indexOf(call), `${r}: البديل بعد القاعدة`).toBeLessThan(body.indexOf(fb));
+      expect(body.indexOf("} catch (e) {"), `${r}: البديل في مسار العطل وحده`).toBeLessThan(
+        body.indexOf(fb),
+      );
+      expect(body, r).toMatch(/if \(fallback\) return fallback;\s*throw new Error\(READ_FAILED\);/);
     }
     expect(FN.match(/throw new Error\(READ_FAILED\)/g)?.length).toBeGreaterThanOrEqual(3);
     for (const w of [

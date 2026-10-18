@@ -11,6 +11,7 @@ import {
   Cctv,
   CircleCheck,
   DoorClosed,
+  History,
   KeyRound,
   MonitorCog,
   Radar,
@@ -33,6 +34,7 @@ import {
   type Stage,
   type SystemCode,
 } from "@/lib/maintenance/cm-log-rules";
+import type { MaintOrder, MaintSource } from "@/lib/maintenance/maint-types";
 import { cn } from "@/lib/utils";
 import { getRegion, type RegionId } from "@/lib/regions";
 
@@ -258,15 +260,31 @@ export function PersonLine({
   );
 }
 
-/** شارة المصدر — بيانات فعلية وحدها: سجل الصيانة وتصدير SAP (لا محاكاة). */
-export function SourceBadge() {
+/**
+ * شارة المصدر — بيانات فعلية في الحالين (لا محاكاة): القاعدة الحية (سجل الصيانة وSAP)،
+ * أو — حين لا تجيب — نسخة تصدير SAP PM بتاريخها، بأيقونة ساعة لا علامة صحّ: حقيقيةٌ لكنها
+ * ليست حيّة (قرار المالك ٢٠٢٦/١٠/١٨).
+ */
+export function SourceBadge({ source, exportDate }: { source: MaintSource; exportDate?: string }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-[color:var(--hairline)] px-2 py-0.5 text-[12px] font-bold text-[color:var(--ink-2)]">
-      <CircleCheck aria-hidden className="size-3.5 text-[color:var(--tone-emerald)]" />
-      بيانات فعلية — سجل الصيانة وSAP
+      {source === "export" ? (
+        <>
+          <History aria-hidden className="size-3.5 text-[color:var(--tone-amber)]" />
+          نسخة تصدير SAP PM — {fmtDate(exportDate)}
+        </>
+      ) : (
+        <>
+          <CircleCheck aria-hidden className="size-3.5 text-[color:var(--tone-emerald)]" />
+          بيانات فعلية — سجل الصيانة وSAP
+        </>
+      )}
     </span>
   );
 }
+
+/** صفّ تصدير SAP في البديل (`real-wo-…`) لا صفّ القاعدة — لا تفاصيل تُجلب له ولا كتابة عليه. */
+export const isExportOrder = (o: Pick<MaintOrder, "id">) => o.id.startsWith("real-wo-");
 
 export const KIND_AR: Record<"corrective" | "preventive", string> = {
   corrective: "تصحيحية",

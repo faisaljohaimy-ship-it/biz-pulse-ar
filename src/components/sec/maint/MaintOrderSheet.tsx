@@ -51,6 +51,7 @@ import {
   fmtDate,
   fmtSar,
   holdAr,
+  isExportOrder,
   KIND_AR,
   regionAr,
   systemAr,
@@ -90,7 +91,8 @@ export function MaintOrderSheet({
   const detail = useQuery({
     queryKey: ["maint", "order", id, user?.id ?? null],
     queryFn: () => fetchOrder({ data: { id: id as string } }),
-    enabled: !!id,
+    // صفّ تصدير SAP في البديل ليس صفّ القاعدة (معرّفه ليس UUID): كلّ ما يُعرف عنه في يد الصفحة.
+    enabled: !!id && !isExportOrder({ id }),
     retry: false,
   });
   const o = detail.data?.order ?? order;
@@ -325,10 +327,17 @@ export function MaintOrderSheet({
             </section>
           )}
 
-          {!o.viewer_is_member && (
+          {isExportOrder(o) ? (
             <p className="text-[12px] text-[color:var(--ink-3)]">
-              ملاحظات الفنيين والخط الزمني تظهر لأعضاء المنشأة المسجَّلين.
+              من نسخة تصدير SAP PM — لا تحمل ملاحظات الفنيين ولا الخط الزمني ولا الإسناد، وتُحدَّث
+              الأوامر من القاعدة الحية حين تجيب.
             </p>
+          ) : (
+            !o.viewer_is_member && (
+              <p className="text-[12px] text-[color:var(--ink-3)]">
+                ملاحظات الفنيين والخط الزمني تظهر لأعضاء المنشأة المسجَّلين.
+              </p>
+            )
           )}
 
           {(o.description || o.notes) && (
@@ -355,7 +364,11 @@ export function MaintOrderSheet({
             className="space-y-3 rounded-2xl border border-[color:var(--hairline)] p-4"
           >
             <h3 className="text-sm font-black text-[color:var(--ink)]">تحديث الأمر</h3>
-            {!user ? (
+            {isExportOrder(o) ? (
+              <p className="text-[13px] text-[color:var(--ink-2)]">
+                نسخة التصدير للقراءة وحدها — يُحدَّث الأمر من القاعدة الحية حين تجيب.
+              </p>
+            ) : !user ? (
               <p className="text-[13px] text-[color:var(--ink-2)]">
                 سجّل الدخول لتحديث مرحلة الأمر — التحديث للفني المُسنَد أو مدير الصيانة.
               </p>
