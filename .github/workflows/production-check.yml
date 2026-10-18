@@ -41,9 +41,14 @@ on:
         description: "الـcommit الذي يجب أن يخدمه الموقع — يحوّل شهادة معرّف البناء إلى حكم"
         required: false
         type: string
+      share_url:
+        description: "رابط مشاركة Vercel لمعاينةٍ محميّة — يقصر الفحص على اللقطة الحيّة والتسجيل"
+        required: false
+        type: string
 
 concurrency:
-  group: production-check
+  # لكل فرعٍ مجموعته: فحص معاينةٍ على فرعها لا يُلغي فحص الإنتاج الجاري على main.
+  group: production-check-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -110,7 +115,7 @@ jobs:
       #    بناءٌ أقدم من هذه الميزة أو منشئٌ لم يشغّل `prebuild`.
       - name: Build identifier
         id: build
-        if: steps.target.outputs.configured == 'true'
+        if: steps.target.outputs.configured == 'true' && inputs.share_url == ''
         env:
           PRODUCTION_URL: ${{ steps.target.outputs.url }}
           EXPECTED_SHA: ${{ inputs.expected_sha }}
@@ -138,7 +143,7 @@ jobs:
       # ① الطبقة الأولى: ما يُقدَّم من الخادم — الحالة · سكربت الثيم ·
       #    العلامة · الأنماط. سريعة ولا تحتاج متصفحًا.
       - name: Served-HTML contract
-        if: steps.target.outputs.configured == 'true'
+        if: steps.target.outputs.configured == 'true' && inputs.share_url == ''
         env:
           PRODUCTION_URL: ${{ steps.target.outputs.url }}
           ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance,/files
@@ -151,7 +156,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: UI floors on the live site
-        if: steps.target.outputs.configured == 'true'
+        if: steps.target.outputs.configured == 'true' && inputs.share_url == ''
         env:
           BASE_URL: ${{ steps.target.outputs.url }}
           ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance,/files
@@ -160,6 +165,13 @@ jobs:
       # ③ شاهدٌ مرئيّ لا حَكَم: لقطاتٌ وحقائق DOM من الموقع الحيّ (الشريط المتحرّك
       #    يتحرّك؟ اللوحة في رأس الشريط الجانبي؟ أيّ صورةٍ في بطاقة سَدِيد؟) —
       #    لأن «الحدود صامدة» لا تقول ما يراه العميل. لا تُسقط الفحص؛ الحكم أعلاه.
+      # المعاينة المحميّة: رابط المشاركة يُخفى من السجلّ قبل أي استعمال، ويُسجَّل فيلم البانر.
+      - name: Mask share link
+        if: inputs.share_url != ''
+        env:
+          SHARE_URL: ${{ inputs.share_url }}
+        run: echo "::add-mask::$SHARE_URL"
+
       - name: Live snapshot (screenshots + DOM facts)
         if: always() && steps.target.outputs.configured == 'true'
         continue-on-error: true
@@ -167,6 +179,8 @@ jobs:
           BASE_URL: ${{ steps.target.outputs.url }}
           OUT_DIR: live-shots
           ROUTES: /,/sec,/sec/incidents,/files
+          SHARE_URL: ${{ inputs.share_url }}
+          RECORD: ${{ inputs.share_url != '' && '1' || '' }}
         run: node scripts/live-snapshot.mjs
 
       - name: Upload live snapshot
