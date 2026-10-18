@@ -136,8 +136,8 @@ function UrgentBell({ ar }: { ar: boolean }) {
   // الشارة نفسها لا في تعليقٍ فوقها (المادة ٦). كُتب هنا أوّلًا «مقيسٌ فعلًا»
   // فقِيس ردّ الخادم ومعرّفاته `sim-ca-*`: رقمُ محاكاة يُقرأ كأنه حيّ.
   const simulated = data?.simulation ?? false;
-  const simAr = simulated ? " (محاكاة مرجعية)" : "";
-  const simEn = simulated ? " (reference simulation)" : "";
+  const simAr = simulated ? " (بيانات مرجعية، ليست حيّة)" : "";
+  const simEn = simulated ? " (reference data, not live)" : "";
   const label = ar
     ? count == null
       ? "الأعمال العاجلة — لم يُقَس"

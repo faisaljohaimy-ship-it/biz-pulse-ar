@@ -139,10 +139,14 @@ export default function IncidentWorkOrdersTab() {
                 <td className="px-3 py-2">
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span>{w.title_ar}</span>
-                    {/* وسم الصف المحاكى — شارة كهرمانية بنمط nexios-ui-patterns */}
+                    {/* وسم الصف المرجعي — شارة كهرمانية بنمط nexios-ui-patterns، ولفظها
+                        «مرجعي» لا «محاكاة» (أمر المالك ٢٠٢٦/١٠/١٨) والعنوان يقول إنه ليس حيًّا. */}
                     {w.is_simulation && (
-                      <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[12px] text-amber-600">
-                        محاكاة مرجعية
+                      <span
+                        title="بيانات مرجعية — ليست حيّة"
+                        className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[12px] text-amber-600"
+                      >
+                        مرجعي
                       </span>
                     )}
                   </div>

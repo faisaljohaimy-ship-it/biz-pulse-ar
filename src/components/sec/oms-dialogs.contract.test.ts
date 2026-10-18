@@ -101,9 +101,10 @@ describe("② السقوط عند 401/403 إلى إنشاء محاكاة مرج�
     expect(afterSim).not.toContain("supabase.");
   });
 
-  it("جدول الصيانة يدمج المخزن المحلي ويعرض وسم «محاكاة مرجعية»", () => {
+  it("جدول الصيانة يدمج المخزن المحلي ويعرض وسم «مرجعي» بأنه ليس حيًّا", () => {
     expect(MAINTENANCE).toContain("useLocalSimWorkOrders");
-    expect(MAINTENANCE).toContain("محاكاة مرجعية");
+    expect(MAINTENANCE).toContain('title="بيانات مرجعية — ليست حيّة"');
+    expect(MAINTENANCE).toMatch(/>\s*مرجعي\s*</);
     expect(MAINTENANCE).toMatch(/is_simulation/);
   });
 });
