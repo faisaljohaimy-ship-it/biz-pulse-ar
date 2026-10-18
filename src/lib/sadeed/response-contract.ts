@@ -120,22 +120,10 @@ const IN_SCOPE = [
   "governance",
   "الصيانة",
   "maintenance",
-  // The platform's own records — projects, sites, regions, work orders, Hajj ops.
-  // Missing before 2026-10-18, so «كم عدد المشاريع في المدينة؟» was refused.
-  "مشروع",
-  "مشاريع",
-  "project",
-  "موقع",
-  "مواقع",
-  "site",
-  "منطقة",
-  "المناطق",
-  "region",
-  "أمر عمل",
-  "أوامر العمل",
-  "work order",
-  "الحج",
-  "hajj",
+  // No generic nouns here (project/site/region/Hajj…): an in-scope hit returns
+  // BEFORE the off-domain check, so «من فاز بمباراة كرة القدم في المنطقة الشرقية؟»
+  // passed as in-scope (guardian veto N1, 2026-10-18). Platform questions without a
+  // domain word stay in scope by default — only explicit off-domain terms refuse.
   // Self / meta
   "من أنت",
   "ما المنصة",
