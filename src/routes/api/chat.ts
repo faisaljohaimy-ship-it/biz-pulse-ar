@@ -626,7 +626,7 @@ export const Route = createFileRoute("/api/chat")({
               await import("@/lib/sadeed/llm/zero-cost-router.server");
             const routed = matchZeroCostAnswer(lastUserText, {
               signedIn: authState === "verified",
-              engineAvailable: plan.mode === "llm",
+              engineAvailable: plan.mode === "llm" && gate !== "closed",
               deferCommandsToEngine: plan.mode === "llm" && Boolean(userId) && gate !== "closed",
             });
             if (routed) {

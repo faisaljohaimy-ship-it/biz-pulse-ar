@@ -366,6 +366,23 @@ describe("(d) البوّابة المغلقة — الحتميّ يُخدَم ق
     expect(res.headers.get("X-SADEED-Gate")).toBe("closed");
     expect(sim.modelCalls).toBe(0);
   });
+
+  it("والمساعدة فيها لا تَعِد بإحالة الأسئلة إلى المحرّك ولو كان مهيّأً — فالتحليل يأخذ الردّ المغلق", async () => {
+    stubEnv({ GEMINI_API_KEY: "test-key-not-a-secret" });
+    sim.rate = { allowed: false, unavailable: true };
+    const ar = await post("ماذا تستطيع؟");
+    expect(ar.res.headers.get("X-SADEED-Reply-Source")).toBe("zero-cost-router");
+    expect(ar.res.headers.get("X-SADEED-Gate")).toBe("closed");
+    const arText = await shown(ar.res);
+    expect(arText).not.toMatch(/يُحال إلى محرّك التحليل/);
+    expect(arText).toContain("دون محرّك التحليل اللغوي");
+    const en = await post("What can you do?");
+    expect(en.res.headers.get("X-SADEED-Gate")).toBe("closed");
+    const enText = await shown(en.res);
+    expect(enText).not.toMatch(/goes to the language analysis engine/);
+    expect(enText).toContain("without the language analysis engine");
+    expect(sim.modelCalls).toBe(0);
+  });
 });
 
 describe("(e) البوّابة الاحتياطية — بطلبٍ صريح وحده", () => {

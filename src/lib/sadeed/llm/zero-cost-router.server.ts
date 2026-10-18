@@ -177,7 +177,7 @@ export function helpReply(locale: ZeroCostLocale, options: HelpOptions): string 
     lines.push(
       options.engineAvailable
         ? "Any other analytical question goes to the language analysis engine."
-        : "Open-ended analysis needs the language analysis engine, which is not enabled right now.",
+        : "Open-ended analysis needs the language analysis engine, which is not available right now.",
     );
     return lines.join("\n");
   }
@@ -193,7 +193,7 @@ export function helpReply(locale: ZeroCostLocale, options: HelpOptions): string 
   lines.push(
     options.engineAvailable
       ? "وأيّ سؤالٍ تحليليٍّ آخر يُحال إلى محرّك التحليل اللغوي."
-      : "أمّا التحليل المفتوح فيحتاج محرّك التحليل اللغوي، وهو غير مفعّل الآن.",
+      : "أمّا التحليل المفتوح فيحتاج محرّك التحليل اللغوي، وهو غير متاح الآن.",
   );
   return lines.join("\n");
 }

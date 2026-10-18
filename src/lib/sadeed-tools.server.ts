@@ -32,6 +32,7 @@ import {
   writeConfirmationArgsHash,
   writeConfirmationAvailable,
 } from "@/lib/sadeed/write-confirmation.server";
+import { buildMakkahMoment } from "@/lib/sadeed/makkah-clock";
 
 function genRef(prefix: string) {
   const d = new Date();
@@ -172,11 +173,72 @@ function writtenEntity(result: Record<string, unknown>): Record<string, string> 
   return Object.keys(entity).length ? entity : undefined;
 }
 
+// ── ملخّص التأكيد يُقرأ ويُنطق (المادة ٢٢ §٥) ─────────────────────────────────
+// يُعرض `action_summary` للمستخدم ويُنطق بصوت سَدِيد، فلا معرّفَ خامًا فيه (يُنطق
+// «ثلاثةfاثنانb…»)، ولا ISO بتوقيت UTC (يُقرأ السادسة وهو التاسعة بتوقيت مكة)، ولا
+// قيمةَ تعدادٍ إنجليزية وسط العربية، والصفة توافق موصوفها.
+
+/** مؤنّثة: تتبع «الأولوية» و«الخطورة». */
 const LEVEL_AR: Record<string, string> = {
   low: "منخفضة",
   medium: "متوسطة",
   high: "عالية",
   critical: "حرجة",
+};
+/** مذكّرة: تتبع «الأثر» و«مستوى الخطر» — «الأثر: عالية» خطأٌ يُقرأ ويُنطق. */
+const LEVEL_M_AR: Record<string, string> = {
+  low: "منخفض",
+  medium: "متوسط",
+  high: "عالٍ",
+  critical: "حرج",
+};
+// القيم التي تسمّيها أوصاف المخطّطات، ومعها ما ترسله شاشات الإدخال — بكلمات
+// `oms-dialogs.tsx` وكتالوج تصاريح العمل نفسها حيث وُجدت (لا تُستورد من ملفّات
+// الواجهة كي لا تُسحب حزمتها إلى الخادم). وما لا يُعرف يُعرض كما كُتب.
+const INCIDENT_CATEGORY_AR: Record<string, string> = {
+  intrusion: "اختراق محيط",
+  fire: "حريق",
+  leak: "تسرّب",
+  gas_leak: "تسرّب غاز",
+  access: "تحكم بالدخول",
+  theft: "سرقة",
+  safety: "سلامة",
+  cctv: "كاميرات المراقبة",
+  perimeter: "محيط أمني",
+  other: "أخرى",
+};
+const ASSET_KIND_AR: Record<string, string> = {
+  camera: "كاميرا",
+  cctv: "كاميرات المراقبة",
+  gate: "بوابة",
+  sensor: "مستشعر",
+  access: "تحكم بالدخول",
+  access_control: "تحكم بالدخول",
+  fence: "سياج",
+  perimeter: "محيط أمني",
+  fire_system: "منظومة مكافحة الحريق",
+  alarm: "إنذار",
+  other: "أخرى",
+};
+const PERMIT_WORK_TYPE_AR: Record<string, string> = {
+  hot_work: "عمل ساخن",
+  confined_space: "دخول مكان مغلق",
+  electrical: "أعمال كهربائية",
+  electrical_isolation: "عزل كهربائي",
+  height: "عمل على ارتفاع",
+  working_at_height: "عمل على ارتفاع",
+  excavation: "حفر",
+  lifting: "رفع ثقيل",
+  restricted_area: "منطقة محظورة",
+  general: "أعمال عامة",
+};
+/** كلمات نوع التنبيه نفسها في `sec-exec-kpis.functions.ts` (‏ALERT_TYPE_AR). */
+const CCTV_ALERT_TYPE_AR: Record<string, string> = {
+  motion: "رصد حركة",
+  loitering: "تسكّع",
+  intrusion: "تسلل",
+  camera_offline: "انقطاع كاميرا",
+  tamper: "عبث بالكاميرا",
 };
 const TASK_STATUS_AR: Record<string, string> = {
   todo: "قيد الانتظار",
@@ -212,8 +274,162 @@ function clip(value: unknown, max = 120): string {
   return s.length > max ? `${s.slice(0, max - 1)}…` : s;
 }
 
+/** مفتاح القيمة كما تكتبه النماذج والشاشات: «hot-work» و«Hot Work» و«hot_work» واحد. */
+function enumKey(value: unknown): string {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+}
+
 function label(map: Record<string, string>, value: unknown): string {
-  return map[String(value)] ?? clip(value, 40);
+  return map[String(value)] ?? map[enumKey(value)] ?? clip(value, 40);
+}
+
+/**
+ * موعدٌ بتوقيت مكة المكرمة بصيغةٍ عربية: «20 أكتوبر 2026، 9:00 صباحًا» (المادة ٢).
+ * التاريخ من `buildMakkahMoment` نفسه (ميلاديّ بأرقامٍ لاتينية، فيحوّلها مسار النطق
+ * كلماتٍ)، والساعة بنظام الاثنتي عشرة كما في جملة الافتتاح. ما لا يُقرأ ⇐ `null`.
+ */
+function makkahDateTime(iso: unknown): { date: string; time: string } | null {
+  if (typeof iso !== "string" || !iso.trim()) return null;
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return null;
+  const { dateG, time } = buildMakkahMoment(at);
+  const [h, min] = time.split(":").map(Number);
+  if (!Number.isInteger(h) || !Number.isInteger(min)) return null;
+  const hour = h % 24;
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  const period = hour < 12 ? "صباحًا" : "مساءً";
+  return { date: dateG, time: `${hour12}:${String(min).padStart(2, "0")} ${period}` };
+}
+
+const MAKKAH_TIME_SUFFIX = "بتوقيت مكة المكرمة";
+
+/** «25 أكتوبر 2026، 12:00 مساءً بتوقيت مكة المكرمة»، أو `null` فيُسقط المستدعي الجزء. */
+function makkahWhen(iso: unknown): string | null {
+  const at = makkahDateTime(iso);
+  return at ? `${at.date}، ${at.time} ${MAKKAH_TIME_SUFFIX}` : null;
+}
+
+/** «من … إلى …» بتوقيت مكة؛ اليوم الواحد لا يُكرَّر تاريخه، والطرف التالف يسقط وحده. */
+function makkahSpan(from: unknown, to: unknown): string | null {
+  const start = makkahDateTime(from);
+  const end = makkahDateTime(to);
+  if (start && end) {
+    const until = start.date === end.date ? end.time : `${end.date}، ${end.time}`;
+    return `من ${start.date}، ${start.time} إلى ${until} ${MAKKAH_TIME_SUFFIX}`;
+  }
+  if (start) return `من ${start.date}، ${start.time} ${MAKKAH_TIME_SUFFIX}`;
+  if (end) return `حتى ${end.date}، ${end.time} ${MAKKAH_TIME_SUFFIX}`;
+  return null;
+}
+
+/** وصف السجلّ القائم في الملخّص: من صفّه، وبلا معرّفٍ أبدًا حين يتعذّر. */
+const EXISTING_RECORD = {
+  task: {
+    table: "tasks",
+    columns: "title",
+    fallback: "المهمة المحدّدة",
+    render: (row: Record<string, unknown>) => {
+      const title = clip(row.title, 80);
+      return title ? `المهمة «${title}»` : null;
+    },
+  },
+  incident: {
+    table: "sec_incidents",
+    columns: "title_ar",
+    fallback: "البلاغ المحدّد",
+    render: (row: Record<string, unknown>) => {
+      const title = clip(row.title_ar, 80);
+      return title ? `البلاغ «${title}»` : null;
+    },
+  },
+  work_order: {
+    table: "sec_work_orders",
+    columns: "title_ar",
+    fallback: "أمر العمل المحدّد",
+    render: (row: Record<string, unknown>) => {
+      const title = clip(row.title_ar, 80);
+      return title ? `أمر العمل «${title}»` : null;
+    },
+  },
+  permit: {
+    table: "sec_permits",
+    columns: "work_type,contractor",
+    fallback: "تصريح العمل المحدّد",
+    render: (row: Record<string, unknown>) => {
+      const type = clip(row.work_type, 40) ? ` (${label(PERMIT_WORK_TYPE_AR, row.work_type)})` : "";
+      const contractor = clip(row.contractor, 80);
+      const forWhom = contractor ? ` للمقاول «${contractor}»` : "";
+      return type || forWhom ? `تصريح العمل${type}${forWhom}` : null;
+    },
+  },
+  visitor: {
+    table: "sec_visitors",
+    columns: "full_name",
+    fallback: "الزائر المحدّد",
+    render: (row: Record<string, unknown>) => {
+      const name = clip(row.full_name, 80);
+      return name ? `الزائر «${name}»` : null;
+    },
+  },
+  cctv_alert: {
+    table: "sec_cctv_alerts",
+    columns: "alert_type,camera_code",
+    fallback: "تنبيه الكاميرا المحدّد",
+    render: (row: Record<string, unknown>) => {
+      // نوعٌ لا تعرفه الخريطة لا يُطبع إنجليزيًّا؛ ورمز الكاميرا مرجعها المعروض في شاشتها.
+      const type = CCTV_ALERT_TYPE_AR[enumKey(row.alert_type)];
+      const camera = clip(row.camera_code, 40);
+      if (type) return `تنبيه «${type}»${camera ? ` من الكاميرا ${camera}` : ""}`;
+      return camera ? `تنبيه الكاميرا ${camera}` : null;
+    },
+  },
+} satisfies Record<
+  string,
+  {
+    table: string;
+    columns: string;
+    fallback: string;
+    render: (row: Record<string, unknown>) => string | null;
+  }
+>;
+
+const RECORD_LABEL_TIMEOUT_MS = 1500;
+
+/**
+ * يصف سجلًّا قائمًا تستهدفه أداة كتابة بقراءةٍ واحدة رخيصة بعميل الطلب نفسه (تحت
+ * RLS، وبمرشّحات الكتابة نفسها)، في خطوة الاقتراح وحدها، بمهلة. تعذّر القراءة أو
+ * فراغها أو تجاوز المهلة ⇐ العبارة المحايدة («البلاغ المحدّد») بلا معرّف. لا كتابة.
+ */
+async function describeExisting(
+  supabase: SupabaseClient,
+  kind: keyof typeof EXISTING_RECORD,
+  match: Record<string, string>,
+): Promise<string> {
+  const spec = EXISTING_RECORD[kind];
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    let query = supabase.from(spec.table).select(spec.columns);
+    for (const [column, value] of Object.entries(match)) query = query.eq(column, value);
+    const read = Promise.resolve(query.limit(1)).then(
+      ({ data, error }) => {
+        const row: unknown = !error && Array.isArray(data) ? data[0] : null;
+        return row && typeof row === "object" ? (row as Record<string, unknown>) : null;
+      },
+      () => null,
+    );
+    const timedOut = new Promise<null>((resolve) => {
+      timer = setTimeout(() => resolve(null), RECORD_LABEL_TIMEOUT_MS);
+    });
+    const row = await Promise.race([read, timedOut]);
+    return (row && spec.render(row)) || spec.fallback;
+  } catch {
+    return spec.fallback;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export type SadeedToolRuntimeContext = {
@@ -252,11 +468,13 @@ export function buildSadeedTools(
    * الأدوات — ومنها أدوات المستخدم (المهام والذاكرة والتنبيهات) التي لا أثر أمنيًّا
    * لها — مطالبةٌ دائمة في سجلّ الاقتراحات تُكتب قبل الكتابة؛ و`ledger` يعني أن
    * الأداة تكتب أثرها في `sec_activity_events` أيضًا فيُفحص فيه الرقم العابر.
+   * و`summary` نصٌّ أو دالّةٌ تبنيه عند عرضه وحده: وصف السجلّ القائم يُقرأ في خطوة
+   * الاقتراح، لا في التنفيذ ولا حين لا يُعرض ملخّص.
    */
   async function confirmedWrite<R extends { ok: boolean }>(
     toolName: GatedWriteTool,
     input: Record<string, unknown>,
-    ctx: { orgId: string | null; ledger: boolean; summary: string },
+    ctx: { orgId: string | null; ledger: boolean; summary: string | (() => Promise<string>) },
     write: (nonce: string) => Promise<R>,
   ): Promise<(R & { executed: boolean; next_step?: string }) | ConfirmationRefusal> {
     const unavailable = (
@@ -290,6 +508,14 @@ export function buildSadeedTools(
       }
     }
 
+    let summaryText: string | null = null;
+    const summary = async (): Promise<string> => {
+      if (summaryText === null) {
+        summaryText = typeof ctx.summary === "string" ? ctx.summary : await ctx.summary();
+      }
+      return summaryText;
+    };
+
     const propose = async (
       status: "requires_confirmation" | "confirmation_required_from_user",
       reason?: string,
@@ -300,7 +526,7 @@ export function buildSadeedTools(
         const signed = await signWriteConfirmation(subject);
         if (!signed.ok) return unavailable();
         const details = await sealConfirmationDetails(
-          { args: input, summary: ctx.summary },
+          { args: input, summary: await summary() },
           { userId, tool: toolName, nonce: signed.nonce, argsHash },
         );
         if (!details) return unavailable();
@@ -326,7 +552,7 @@ export function buildSadeedTools(
         ok: false,
         executed: false,
         status,
-        action_summary: ctx.summary,
+        action_summary: await summary(),
         expires_at: expiresAt,
         ...(reason ? { reason } : {}),
         next_step:
@@ -464,7 +690,10 @@ export function buildSadeedTools(
           {
             orgId: runtime.orgId ?? null,
             ledger: false,
-            summary: `إنشاء مهمة «${clip(args.title)}» — الأولوية: ${label(LEVEL_AR, args.priority)}${args.due_at ? ` — الاستحقاق: ${args.due_at}` : ""}`,
+            summary: async () => {
+              const due = makkahWhen(args.due_at);
+              return `إنشاء مهمة «${clip(args.title)}» — الأولوية: ${label(LEVEL_AR, args.priority)}${due ? ` — الاستحقاق: ${due}` : ""}`;
+            },
           },
           async () => {
             const { data, error } = await supabase
@@ -761,7 +990,7 @@ export function buildSadeedTools(
           {
             orgId: runtime.orgId ?? null,
             ledger: false,
-            summary: `تسجيل ${label(MEMORY_KIND_AR, args.kind)} «${clip(args.title)}» — الأثر: ${label(LEVEL_AR, args.impact)}${args.owner ? ` — المسؤول: ${clip(args.owner, 60)}` : ""}`,
+            summary: `تسجيل ${label(MEMORY_KIND_AR, args.kind)} «${clip(args.title)}» — الأثر: ${label(LEVEL_M_AR, args.impact)}${args.owner ? ` — المسؤول: ${clip(args.owner, 60)}` : ""}`,
           },
           async () => {
             const key = `aria-${Date.now().toString(36)}`;
@@ -827,7 +1056,8 @@ export function buildSadeedTools(
           {
             orgId: runtime.orgId ?? null,
             ledger: false,
-            summary: `تغيير حالة المهمة ${args.task_id} إلى «${label(TASK_STATUS_AR, args.status)}»`,
+            summary: async () =>
+              `تغيير حالة ${await describeExisting(supabase, "task", { id: args.task_id, user_id: userId })} إلى «${label(TASK_STATUS_AR, args.status)}»`,
           },
           async () => {
             const { data, error } = await supabase
@@ -913,7 +1143,7 @@ export function buildSadeedTools(
           {
             orgId: runtime.orgId ?? null,
             ledger: false,
-            summary: `رفع تنبيه استخباري «${clip(args.title)}» — الخطورة: ${label(LEVEL_AR, args.severity)} — أثر الأعمال: ${args.business_impact_score}/100`,
+            summary: `رفع تنبيه استخباري «${clip(args.title)}» — الخطورة: ${label(LEVEL_AR, args.severity)} — أثر الأعمال: ${args.business_impact_score} من 100`,
           },
           async () => {
             const { data, error } = await supabase
@@ -972,7 +1202,7 @@ export function buildSadeedTools(
           {
             orgId: org_id,
             ledger: true,
-            summary: `تسجيل بلاغ أمني «${clip(args.title_ar)}» — الفئة: ${clip(args.category, 40)} — الخطورة: ${label(LEVEL_AR, args.severity)} — الأولوية: ${label(LEVEL_AR, args.priority)}`,
+            summary: `تسجيل بلاغ أمني «${clip(args.title_ar)}» — الفئة: ${label(INCIDENT_CATEGORY_AR, args.category)} — الخطورة: ${label(LEVEL_AR, args.severity)} — الأولوية: ${label(LEVEL_AR, args.priority)}`,
           },
           async (confirmation_nonce) => {
             const ref = genRef("INC");
@@ -1041,10 +1271,10 @@ export function buildSadeedTools(
           };
         const { id, ...patch } = args;
         const changes = [
-          patch.status ? `الحالة ← «${label(INCIDENT_STATUS_AR, patch.status)}»` : null,
-          patch.priority ? `الأولوية ← ${label(LEVEL_AR, patch.priority)}` : null,
-          patch.assigned_to ? `المسند إليه ← ${clip(patch.assigned_to, 60)}` : null,
-          patch.root_cause ? `السبب الجذري ← «${clip(patch.root_cause, 80)}»` : null,
+          patch.status ? `الحالة إلى «${label(INCIDENT_STATUS_AR, patch.status)}»` : null,
+          patch.priority ? `الأولوية إلى ${label(LEVEL_AR, patch.priority)}` : null,
+          patch.assigned_to ? `المسند إليه: ${clip(patch.assigned_to, 60)}` : null,
+          patch.root_cause ? `السبب الجذري: «${clip(patch.root_cause, 80)}»` : null,
         ].filter(Boolean);
         return confirmedWrite(
           "sec_update_incident",
@@ -1052,7 +1282,8 @@ export function buildSadeedTools(
           {
             orgId: org_id,
             ledger: true,
-            summary: `تحديث البلاغ ${id}: ${changes.length ? changes.join(" — ") : "بلا تغيير محدّد"}`,
+            summary: async () =>
+              `تحديث ${await describeExisting(supabase, "incident", { id })}: ${changes.length ? changes.join(" — ") : "بلا تغيير محدّد"}`,
           },
           async (confirmation_nonce) => {
             const { data, error } = await supabase
@@ -1130,7 +1361,12 @@ export function buildSadeedTools(
           {
             orgId: org_id,
             ledger: true,
-            summary: `إنشاء أمر عمل ${args.kind === "preventive" ? "وقائي" : "تصحيحي"} «${clip(args.title_ar)}» — الأصل: ${clip(args.asset_kind, 40)}${args.asset_code ? ` (${clip(args.asset_code, 40)})` : ""} — الأولوية: ${label(LEVEL_AR, args.priority)}${args.source_incident_id ? ` — مرتبط بالبلاغ ${args.source_incident_id}` : ""}`,
+            summary: async () => {
+              const linked = args.source_incident_id
+                ? ` — مرتبط ب${await describeExisting(supabase, "incident", { id: args.source_incident_id })}`
+                : "";
+              return `إنشاء أمر عمل ${args.kind === "preventive" ? "وقائي" : "تصحيحي"} «${clip(args.title_ar)}» — الأصل: ${label(ASSET_KIND_AR, args.asset_kind)}${args.asset_code ? ` (${clip(args.asset_code, 40)})` : ""} — الأولوية: ${label(LEVEL_AR, args.priority)}${linked}`;
+            },
           },
           async (confirmation_nonce) => {
             const ref = genRef("WO");
@@ -1200,7 +1436,8 @@ export function buildSadeedTools(
           {
             orgId: org_id,
             ledger: true,
-            summary: `إغلاق أمر العمل ${id} بملاحظات الإنجاز «${clip(completion_notes, 100)}» — ويُحوَّل البلاغ المرتبط به (إن وُجد) إلى «محتوى»`,
+            summary: async () =>
+              `إغلاق ${await describeExisting(supabase, "work_order", { id })} بملاحظات الإنجاز «${clip(completion_notes, 100)}» — ويُحوَّل البلاغ المرتبط به (إن وُجد) إلى «محتوى»`,
           },
           async (confirmation_nonce) => {
             const { data, error } = await supabase
@@ -1313,7 +1550,10 @@ export function buildSadeedTools(
           {
             orgId: org_id,
             ledger: true,
-            summary: `إنشاء تصريح عمل (${clip(args.work_type, 40)}) للمقاول «${clip(args.contractor, 80)}» — مستوى الخطر: ${label(LEVEL_AR, args.risk_level)} — من ${args.starts_at} إلى ${args.ends_at}`,
+            summary: async () => {
+              const span = makkahSpan(args.starts_at, args.ends_at);
+              return `إنشاء تصريح عمل (${label(PERMIT_WORK_TYPE_AR, args.work_type)}) للمقاول «${clip(args.contractor, 80)}» — مستوى الخطر: ${label(LEVEL_M_AR, args.risk_level)}${span ? ` — ${span}` : ""}`;
+            },
           },
           async (confirmation_nonce) => {
             const ref = genRef("PTW");
@@ -1377,7 +1617,8 @@ export function buildSadeedTools(
           {
             orgId: org_id,
             ledger: true,
-            summary: `${decision === "approved" ? "اعتماد" : "رفض"} تصريح العمل ${id}${note ? ` — ملاحظة: «${clip(note, 80)}»` : ""}`,
+            summary: async () =>
+              `${decision === "approved" ? "اعتماد" : "رفض"} ${await describeExisting(supabase, "permit", { id })}${note ? ` — ملاحظة: «${clip(note, 80)}»` : ""}`,
           },
           async (confirmation_nonce) => {
             const { data, error } = await supabase
@@ -1581,7 +1822,12 @@ export function buildSadeedTools(
         return confirmedWrite(
           "sec_checkout_visitor",
           args,
-          { orgId: org_id, ledger: true, summary: `تسجيل خروج الزائر ${id}` },
+          {
+            orgId: org_id,
+            ledger: true,
+            summary: async () =>
+              `تسجيل خروج ${await describeExisting(supabase, "visitor", { id })}`,
+          },
           async (confirmation_nonce) => {
             const { data, error } = await supabase
               .from("sec_visitors")
@@ -1663,7 +1909,8 @@ export function buildSadeedTools(
           {
             orgId: org_id,
             ledger: true,
-            summary: `فرز تنبيه الكاميرا ${id} إلى «${label(CCTV_STATUS_AR, status)}»${notes ? ` — ملاحظات: «${clip(notes, 80)}»` : ""}`,
+            summary: async () =>
+              `فرز ${await describeExisting(supabase, "cctv_alert", { id })} إلى «${label(CCTV_STATUS_AR, status)}»${notes ? ` — ملاحظات: «${clip(notes, 80)}»` : ""}`,
           },
           async (confirmation_nonce) => {
             const { data, error } = await supabase

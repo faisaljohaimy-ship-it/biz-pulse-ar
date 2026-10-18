@@ -15,6 +15,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { asSchema, convertToModelMessages, generateText, stepCountIs, type UIMessage } from "ai";
 import { MockLanguageModelV3 } from "ai/test";
+import { toSadeedSpeechText } from "@/lib/sadeed/reply-modality";
+import { hasForbiddenFiller } from "@/lib/sadeed/response-contract";
 
 const SECRET = "test-secret-that-is-longer-than-thirty-two-characters";
 
@@ -859,5 +861,250 @@ describe("execution_status chat tool", () => {
       {},
     );
     expect(result).toMatchObject({ ok: false, error: "missing_org_context" });
+  });
+});
+
+// ── الملخّص يُعرض ويُنطق (المادة ٢٢ §٥): لا معرّف، ولا ISO، ولا تعدادٌ إنجليزي ──
+describe("action summaries — readable on screen and in the SADEED voice", () => {
+  const EXISTING = {
+    task: "3f2e1d0c-9b8a-4765-8432-10fedcba9876",
+    incident: "4a3b2c1d-0e9f-4a8b-9c7d-6e5f4a3b2c1d",
+    workOrder: "6c5b4a39-2817-4f6e-8d5c-4b3a29180f7e",
+    permit: "8e7d6c5b-4a39-4281-8f0e-9d8c7b6a5948",
+    visitor: "9f8e7d6c-5b4a-4392-8a1b-0c9d8e7f6a5b",
+    cctv: "1b2c3d4e-5f60-4718-8293-a4b5c6d7e8f9",
+  };
+  /** الأدوات الأربع عشرة بوسائط واقعية: معرّفات UUID، ومواعيد ISO بتوقيت UTC، وتعدادات إنجليزية. */
+  const CASES: Array<{ tool: string; args: Row }> = [
+    {
+      tool: "create_task",
+      args: { title: "مراجعة خطة الإخلاء", priority: "high", due_at: "2026-10-25T09:00:00Z" },
+    },
+    { tool: "update_task_status", args: { task_id: EXISTING.task, status: "done" } },
+    {
+      tool: "record_executive_decision",
+      args: {
+        title: "اعتماد ميزانية تحديث كاميرات البوابات",
+        kind: "decision",
+        owner: "إدارة الأمن الصناعي",
+        impact: "high",
+      },
+    },
+    {
+      tool: "create_intelligence_alert",
+      args: {
+        title: "تكرار محاولات دخول غير مصرّح عند البوابة الشرقية",
+        severity: "high",
+        business_impact_score: 70,
+      },
+    },
+    { tool: "sec_create_incident", args: INCIDENT },
+    {
+      tool: "sec_update_incident",
+      args: { id: EXISTING.incident, status: "investigating", priority: "high" },
+    },
+    {
+      tool: "sec_create_work_order",
+      args: {
+        title_ar: "إصلاح كاميرا البوابة الشمالية",
+        kind: "corrective",
+        priority: "high",
+        asset_kind: "camera",
+        source_incident_id: EXISTING.incident,
+      },
+    },
+    {
+      tool: "sec_close_work_order",
+      args: { id: EXISTING.workOrder, completion_notes: "استُبدلت الكاميرا واختُبر البث" },
+    },
+    {
+      tool: "sec_create_permit",
+      args: {
+        work_type: "hot-work",
+        contractor: "مقاول الصيانة الميكانيكية",
+        risk_level: "high",
+        starts_at: "2026-10-20T06:00:00Z",
+        ends_at: "2026-10-20T14:00:00Z",
+      },
+    },
+    {
+      tool: "sec_decide_permit",
+      args: { id: EXISTING.permit, decision: "approved", note: "استوفى متطلبات السلامة" },
+    },
+    {
+      tool: "sec_schedule_patrol",
+      args: { team: "الفريق أ", route: "السور الشرقي", checkpoints_total: 10 },
+    },
+    {
+      tool: "sec_register_visitor",
+      args: { full_name: "زائر وفد المقاول", host: "إدارة المشاريع", organization: "شركة المقاول" },
+    },
+    { tool: "sec_checkout_visitor", args: { id: EXISTING.visitor } },
+    {
+      tool: "sec_triage_cctv_alert",
+      args: { id: EXISTING.cctv, status: "dispatched", notes: "أُرسل فريق الاستجابة" },
+    },
+  ];
+  /** وصف السجلات القائمة كما يعيده عميل الطلب (تحت RLS). */
+  const LABEL_ROWS: Record<string, { data: unknown; error: unknown }> = {
+    tasks: { data: [{ title: "مراجعة خطة الإخلاء" }], error: null },
+    sec_incidents: { data: [{ title_ar: "حريق في البوابة الشمالية" }], error: null },
+    sec_work_orders: { data: [{ title_ar: "إصلاح كاميرا البوابة الشمالية" }], error: null },
+    sec_permits: {
+      data: [{ work_type: "hot_work", contractor: "مقاول الصيانة الميكانيكية" }],
+      error: null,
+    },
+    sec_visitors: { data: [{ full_name: "زائر وفد المقاول" }], error: null },
+    sec_cctv_alerts: { data: [{ alert_type: "intrusion", camera_code: "CAM-N-01" }], error: null },
+  };
+  const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  const ISO = /\d{4}-\d{2}-\d{2}T|\dZ\b/;
+  /** قيم التعداد التي تترجمها خرائط الأدوات — لا تُطبع ولا تُنطق إنجليزية وسط العربية. */
+  const ENUM_WORDS =
+    /\b(?:low|medium|high|critical|todo|in_progress|done|blocked|decision|commitment|milestone|risk|opportunity|open|investigating|contained|resolved|closed|triaged|dispatched|false_positive|preventive|corrective|approved|rejected|intrusion|fire|leak|access|theft|safety|other|camera|cctv|gate|sensor|fence|fire[-_]system|hot[-_]work|confined[-_]space|electrical|height|excavation|general)\b/i;
+  /** رمز الكاميرا مرجعها المعروض في شاشتها — الحرف اللاتيني الوحيد المسموح. */
+  const CAMERA_CODE = /CAM-N-(?:01|واحد)/g;
+
+  async function firstSummaries(
+    readResults: Record<string, { data: unknown; error: unknown }>,
+  ): Promise<Record<string, string>> {
+    const out: Record<string, string> = {};
+    for (const c of CASES) {
+      const result = await call(await request(fakeRls(readResults), "طلب"), c.tool, c.args);
+      expect(result, c.tool).toMatchObject({ executed: false, status: "requires_confirmation" });
+      out[c.tool] = String(result.action_summary);
+    }
+    return out;
+  }
+
+  function expectSpeakable(tool: string, summary: string) {
+    const spoken = toSadeedSpeechText(summary);
+    for (const [form, text] of [
+      ["shown", summary],
+      ["spoken", spoken],
+    ] as const) {
+      const where = `${tool} (${form}): ${text}`;
+      expect(text, where).not.toMatch(UUID);
+      expect(text, where).not.toMatch(ISO);
+      expect(text, where).not.toMatch(ENUM_WORDS);
+      // الأسهم تصل الصوت حرفًا (نقض المدقّق، المادة ٢٢ النطق).
+      expect(text, where).not.toMatch(/[←→]/);
+      expect(text.replace(CAMERA_CODE, ""), where).not.toMatch(/[A-Za-z]/);
+      expect(hasForbiddenFiller(text), where).toBe(false);
+      expect(text.split("\n").length, where).toBeLessThanOrEqual(2);
+    }
+  }
+
+  it("all fourteen first-call summaries carry no raw id, no ISO time and no English enum — shown or spoken", async () => {
+    expect(new Set(CASES.map((c) => c.tool)).size).toBe(14);
+    const summaries = await firstSummaries(LABEL_ROWS);
+    for (const [tool, summary] of Object.entries(summaries)) expectSpeakable(tool, summary);
+
+    // الهدف يُسمّى من صفّه، لا من معرّفه.
+    expect(summaries.update_task_status).toBe(
+      "تغيير حالة المهمة «مراجعة خطة الإخلاء» إلى «مكتملة»",
+    );
+    expect(summaries.sec_update_incident).toBe(
+      "تحديث البلاغ «حريق في البوابة الشمالية»: الحالة إلى «قيد التحقيق» — الأولوية إلى عالية",
+    );
+    expect(summaries.sec_create_work_order).toContain("— الأصل: كاميرا —");
+    expect(summaries.sec_create_work_order).toContain("مرتبط بالبلاغ «حريق في البوابة الشمالية»");
+    expect(summaries.sec_close_work_order).toMatch(
+      /^إغلاق أمر العمل «إصلاح كاميرا البوابة الشمالية» /,
+    );
+    expect(summaries.sec_decide_permit).toBe(
+      "اعتماد تصريح العمل (عمل ساخن) للمقاول «مقاول الصيانة الميكانيكية» — ملاحظة: «استوفى متطلبات السلامة»",
+    );
+    expect(summaries.sec_checkout_visitor).toBe("تسجيل خروج الزائر «زائر وفد المقاول»");
+    expect(summaries.sec_triage_cctv_alert).toMatch(
+      /^فرز تنبيه «تسلل» من الكاميرا CAM-N-01 إلى «أُرسلت له استجابة»/,
+    );
+
+    // المواعيد بتوقيت مكة المكرمة (06:00Z هي التاسعة صباحًا)، وتُقال كذلك.
+    expect(summaries.create_task).toContain(
+      "الاستحقاق: 25 أكتوبر 2026، 12:00 مساءً بتوقيت مكة المكرمة",
+    );
+    expect(summaries.sec_create_permit).toBe(
+      "إنشاء تصريح عمل (عمل ساخن) للمقاول «مقاول الصيانة الميكانيكية» — مستوى الخطر: عالٍ — من 20 أكتوبر 2026، 9:00 صباحًا إلى 5:00 مساءً بتوقيت مكة المكرمة",
+    );
+    const spokenPermit = toSadeedSpeechText(summaries.sec_create_permit!);
+    expect(spokenPermit).toContain("التاسعة تمامًا صباحًا");
+    expect(spokenPermit).toContain("الخامسة تمامًا مساءً");
+
+    // الصفة توافق موصوفها: الأثر ومستوى الخطر مذكّران، والأولوية والخطورة مؤنّثتان.
+    expect(summaries.record_executive_decision).toContain("الأثر: عالٍ");
+    expect(summaries.sec_create_incident).toContain(
+      "الفئة: حريق — الخطورة: عالية — الأولوية: متوسطة",
+    );
+    expect(summaries.create_intelligence_alert).toContain(
+      "الخطورة: عالية — أثر الأعمال: 70 من 100",
+    );
+  });
+
+  it("an unreadable or empty record falls back to a neutral phrase — never the id", async () => {
+    const denied = { data: null, error: { message: "permission denied" } };
+    const unreadable = Object.fromEntries(Object.keys(LABEL_ROWS).map((table) => [table, denied]));
+    for (const reads of [unreadable, {}]) {
+      const summaries = await firstSummaries(reads);
+      for (const [tool, summary] of Object.entries(summaries)) expectSpeakable(tool, summary);
+      expect(summaries.update_task_status).toBe("تغيير حالة المهمة المحدّدة إلى «مكتملة»");
+      expect(summaries.sec_update_incident).toMatch(/^تحديث البلاغ المحدّد: /);
+      expect(summaries.sec_create_work_order).toContain("مرتبط بالبلاغ المحدّد");
+      expect(summaries.sec_close_work_order).toMatch(/^إغلاق أمر العمل المحدّد /);
+      expect(summaries.sec_decide_permit).toMatch(/^اعتماد تصريح العمل المحدّد — /);
+      expect(summaries.sec_checkout_visitor).toBe("تسجيل خروج الزائر المحدّد");
+      expect(summaries.sec_triage_cctv_alert).toMatch(/^فرز تنبيه الكاميرا المحدّد إلى /);
+    }
+  });
+
+  it("the record is read for the proposal only: confirming reads nothing and executes the same arguments", async () => {
+    const reads: string[] = [];
+    const counted = new Proxy(LABEL_ROWS, {
+      get(target, table: string) {
+        reads.push(table);
+        return target[table];
+      },
+    });
+    const rls = fakeRls(counted);
+    const visitor = { id: EXISTING.visitor };
+    const proposed = await call(
+      await request(rls, "سجّل خروج الزائر"),
+      "sec_checkout_visitor",
+      visitor,
+    );
+    expect(proposed.action_summary).toBe("تسجيل خروج الزائر «زائر وفد المقاول»");
+    expect(reads).toEqual(["sec_visitors"]);
+    expect(rls.writes).toHaveLength(0);
+
+    const done = await call(await request(rls, "نعم"), "sec_checkout_visitor", visitor);
+    expect(done).toMatchObject({ ok: true, executed: true });
+    expect(reads).toEqual(["sec_visitors"]);
+    expect(businessWrites(rls, "sec_visitors")).toHaveLength(1);
+  });
+
+  it("an unreadable date is omitted, not printed; free text the user typed stays as typed", async () => {
+    const task = await call(await request(fakeRls(), "أضف مهمة"), "create_task", {
+      title: "مراجعة خطة الإخلاء",
+      priority: "low",
+      due_at: "غدًا صباحًا",
+    });
+    expect(task.action_summary).toBe("إنشاء مهمة «مراجعة خطة الإخلاء» — الأولوية: منخفضة");
+
+    const permit = await call(await request(fakeRls(), "أصدر تصريحًا"), "sec_create_permit", {
+      work_type: "Hot Work",
+      contractor: "مقاول الصيانة",
+      risk_level: "critical",
+      starts_at: "2026-10-20T21:30:00Z",
+      ends_at: "not-a-date",
+    });
+    expect(permit.action_summary).toBe(
+      "إنشاء تصريح عمل (عمل ساخن) للمقاول «مقاول الصيانة» — مستوى الخطر: حرج — من 21 أكتوبر 2026، 12:30 صباحًا بتوقيت مكة المكرمة",
+    );
+
+    const incident = await call(await request(fakeRls(), "سجّل بلاغ"), "sec_create_incident", {
+      ...INCIDENT,
+      category: "تسرّب زيت من المضخة",
+    });
+    expect(String(incident.action_summary)).toContain("الفئة: تسرّب زيت من المضخة —");
   });
 });
