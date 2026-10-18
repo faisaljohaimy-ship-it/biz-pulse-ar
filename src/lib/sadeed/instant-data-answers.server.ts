@@ -175,32 +175,90 @@ function isPureCountQuestion(tokens: string[], entity: readonly string[]): boole
   return tokens.every((t) => known.has(t));
 }
 
-function projectsAnswer(tokens: string[]): string {
-  const c = REAL_PROJECT_COUNTS;
-  if (contains(tokens, ["جاري", "جاريه", "الجاريه"])) return `المشاريع الجارية ${c.in_progress}.`;
-  if (contains(tokens, ["مكتمل", "مكتمله", "المكتمله"])) return `المشاريع المكتملة ${c.completed}.`;
-  if (contains(tokens, ["ملغي", "ملغيه", "الملغاه", "ملغاه"]))
-    return `المشاريع الملغاة ${c.cancelled}.`;
-  return `المشاريع ${c.total}: جارية ${c.in_progress} · مكتملة ${c.completed} · ملغاة ${c.cancelled}.`;
+/** الكيانات التي يُجاب عدُّها فورًا — مشتركة بين المطابق العربي والموجّه الحتمي الإنجليزي. */
+export type InstantCountEntity = "project" | "maintenance" | "incident";
+
+/** الحالات المسمّاة؛ ما لا يخصّ الكيان منها يسقط إلى الإجمالي بتوزيعه. */
+export type InstantCountStatus =
+  "in_progress" | "completed" | "cancelled" | "open" | "closed" | "preventive" | "corrective";
+
+/**
+ * الحالة التي يسمّيها السؤال العربي لكيانٍ بعينه — بترتيب الفحص الأصلي نفسه
+ * (أوّل حالةٍ تطابق تفوز)، و`null` يعني الإجمالي.
+ */
+function arabicStatus(entity: InstantCountEntity, tokens: string[]): InstantCountStatus | null {
+  const checks: ReadonlyArray<readonly [InstantCountStatus, readonly string[]]> =
+    entity === "project"
+      ? [
+          ["in_progress", ["جاري", "جاريه", "الجاريه"]],
+          ["completed", ["مكتمل", "مكتمله", "المكتمله"]],
+          ["cancelled", ["ملغي", "ملغيه", "الملغاه", "ملغاه"]],
+        ]
+      : entity === "maintenance"
+        ? [
+            ["preventive", ["وقائي", "وقائيه", "الوقائيه"]],
+            ["corrective", ["تصحيحي", "تصحيحيه", "التصحيحيه"]],
+            ["closed", ["مغلق", "مغلقه", "المغلقه"]],
+            ["open", ["مفتوح", "مفتوحه", "المفتوحه"]],
+          ]
+        : [
+            ["open", ["مفتوح", "مفتوحه", "المفتوحه"]],
+            ["closed", ["مغلق", "مغلقه", "المغلقه"]],
+          ];
+  return checks.find(([, words]) => contains(tokens, words))?.[0] ?? null;
 }
 
-function maintenanceAnswer(tokens: string[]): string {
-  const c = REAL_WORK_ORDER_COUNTS;
-  if (contains(tokens, ["وقائي", "وقائيه", "الوقائيه"]))
-    return `أوامر الصيانة الوقائية ${c.preventive}.`;
-  if (contains(tokens, ["تصحيحي", "تصحيحيه", "التصحيحيه"]))
-    return `أوامر الصيانة التصحيحية ${c.corrective}.`;
-  if (contains(tokens, ["مغلق", "مغلقه", "المغلقه"])) return `أوامر الصيانة المغلقة ${c.closed}.`;
-  if (contains(tokens, ["مفتوح", "مفتوحه", "المفتوحه"]))
-    return `أوامر الصيانة غير المغلقة ${c.open + c.in_progress}: قيد التنفيذ ${c.in_progress} · مفتوحة ${c.open}.`;
-  return `أوامر الصيانة ${c.total}: مغلقة ${c.closed} · قيد التنفيذ ${c.in_progress} · مفتوحة ${c.open}.`;
-}
-
-function incidentsAnswer(tokens: string[]): string {
+/**
+ * جواب العدّ من العدّادات الكنسية — **المصدر الوحيد للأرقام في اللغتين**:
+ * المطابق العربي هنا والموجّه الحتمي الإنجليزي (`llm/zero-cost-router.server`)
+ * يقرآن الدالة نفسها، فلا رقم منسوخ يتعفّن في موضعٍ ثانٍ. حالةٌ لا تخصّ
+ * الكيان تعيد الإجمالي بتوزيعه — كما كان الجواب العربي منذ البداية.
+ */
+export function renderInstantCount(
+  entity: InstantCountEntity,
+  status: InstantCountStatus | null,
+  locale: "ar" | "en",
+): string {
+  const en = locale === "en";
+  if (entity === "project") {
+    const c = REAL_PROJECT_COUNTS;
+    if (status === "in_progress")
+      return en ? `Projects in progress: ${c.in_progress}.` : `المشاريع الجارية ${c.in_progress}.`;
+    if (status === "completed")
+      return en ? `Completed projects: ${c.completed}.` : `المشاريع المكتملة ${c.completed}.`;
+    if (status === "cancelled")
+      return en ? `Cancelled projects: ${c.cancelled}.` : `المشاريع الملغاة ${c.cancelled}.`;
+    return en
+      ? `Projects: ${c.total} — in progress ${c.in_progress} · completed ${c.completed} · cancelled ${c.cancelled}.`
+      : `المشاريع ${c.total}: جارية ${c.in_progress} · مكتملة ${c.completed} · ملغاة ${c.cancelled}.`;
+  }
+  if (entity === "maintenance") {
+    const c = REAL_WORK_ORDER_COUNTS;
+    if (status === "preventive")
+      return en
+        ? `Preventive maintenance orders: ${c.preventive}.`
+        : `أوامر الصيانة الوقائية ${c.preventive}.`;
+    if (status === "corrective")
+      return en
+        ? `Corrective maintenance orders: ${c.corrective}.`
+        : `أوامر الصيانة التصحيحية ${c.corrective}.`;
+    if (status === "closed")
+      return en ? `Closed maintenance orders: ${c.closed}.` : `أوامر الصيانة المغلقة ${c.closed}.`;
+    if (status === "open")
+      return en
+        ? `Maintenance orders not closed: ${c.open + c.in_progress} — in progress ${c.in_progress} · open ${c.open}.`
+        : `أوامر الصيانة غير المغلقة ${c.open + c.in_progress}: قيد التنفيذ ${c.in_progress} · مفتوحة ${c.open}.`;
+    return en
+      ? `Maintenance work orders: ${c.total} — closed ${c.closed} · in progress ${c.in_progress} · open ${c.open}.`
+      : `أوامر الصيانة ${c.total}: مغلقة ${c.closed} · قيد التنفيذ ${c.in_progress} · مفتوحة ${c.open}.`;
+  }
   const c = REAL_INCIDENT_COUNTS;
-  if (contains(tokens, ["مفتوح", "مفتوحه", "المفتوحه"])) return `البلاغات المفتوحة ${c.open}.`;
-  if (contains(tokens, ["مغلق", "مغلقه", "المغلقه"])) return `البلاغات المغلقة ${c.closed}.`;
-  return `البلاغات ${c.total}: مفتوحة ${c.open} · مغلقة ${c.closed}.`;
+  if (status === "open") return en ? `Open incidents: ${c.open}.` : `البلاغات المفتوحة ${c.open}.`;
+  if (status === "closed")
+    return en ? `Closed incidents: ${c.closed}.` : `البلاغات المغلقة ${c.closed}.`;
+  return en
+    ? `Incidents: ${c.total} — open ${c.open} · closed ${c.closed}.`
+    : `البلاغات ${c.total}: مفتوحة ${c.open} · مغلقة ${c.closed}.`;
 }
 
 /** مرجع SAP لأمر صيانة — النسق الحرفي للمجموعة المستوردة. */
@@ -243,13 +301,16 @@ export function matchInstantDataAnswer(question: string): InstantDataAnswer | nu
 
   if (!COUNT_INTENT.test(` ${normalized} `)) return null;
   if (contains(tokens, VOCAB.project) && isPureCountQuestion(tokens, VOCAB.project)) {
-    return { answer: projectsAnswer(tokens), source: "projects-count" };
+    const answer = renderInstantCount("project", arabicStatus("project", tokens), "ar");
+    return { answer, source: "projects-count" };
   }
   if (contains(tokens, VOCAB.incident) && isPureCountQuestion(tokens, VOCAB.incident)) {
-    return { answer: incidentsAnswer(tokens), source: "incidents-count" };
+    const answer = renderInstantCount("incident", arabicStatus("incident", tokens), "ar");
+    return { answer, source: "incidents-count" };
   }
   if (contains(tokens, VOCAB.maintenance) && isPureCountQuestion(tokens, VOCAB.maintenance)) {
-    return { answer: maintenanceAnswer(tokens), source: "maintenance-count" };
+    const answer = renderInstantCount("maintenance", arabicStatus("maintenance", tokens), "ar");
+    return { answer, source: "maintenance-count" };
   }
   return null;
 }

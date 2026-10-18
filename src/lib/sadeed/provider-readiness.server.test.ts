@@ -67,6 +67,70 @@ describe("SADEED provider readiness", () => {
     expect(status.voice.ready).toBe(true);
   });
 
+  it("an OpenAI key alone is still not ready — the adapter needs both explicit switches", () => {
+    // مفتاحٌ حاضر ليس إذنًا: بلا `SADEED_LLM_PROVIDER=openai` يبقى المختار Gemini.
+    const keyOnly = inspectSadeedProviderReadiness({
+      ...COMPLETE,
+      GEMINI_API_KEY: undefined,
+      OPENAI_API_KEY: "openai-key-with-enough-length",
+      SADEED_OPENAI_ENABLED: "true",
+    });
+    expect(keyOnly.intelligence.ready).toBe(false);
+    expect(keyOnly.intelligence.provider).toBeNull();
+    expect(keyOnly.llm).toMatchObject({ mode: "zero_cost", selected: "gemini" });
+
+    const notEnabled = inspectSadeedProviderReadiness({
+      ...COMPLETE,
+      SADEED_LLM_PROVIDER: "openai",
+      OPENAI_API_KEY: "openai-key-with-enough-length",
+    });
+    expect(notEnabled.intelligence.ready).toBe(false);
+    expect(notEnabled.intelligence.missing).toEqual(["SADEED_OPENAI_ENABLED=true"]);
+    expect(notEnabled.llm.mode).toBe("zero_cost");
+    // ولا يُستبدل به Gemini الحاضر في COMPLETE.
+    expect(notEnabled.intelligence.provider).toBeNull();
+  });
+
+  it("with SADEED_LLM_PROVIDER=openai and SADEED_OPENAI_ENABLED=true the adapter is ready", () => {
+    const key = "openai-key-with-enough-length";
+    const status = inspectSadeedProviderReadiness({
+      ...COMPLETE,
+      SADEED_LLM_PROVIDER: "openai",
+      SADEED_OPENAI_ENABLED: "true",
+      OPENAI_API_KEY: key,
+    });
+    expect(status.intelligence).toEqual({ ready: true, provider: "openai", missing: [] });
+    expect(status.llm).toEqual({
+      mode: "llm",
+      selected: "openai",
+      backupEnabled: false,
+      zeroCostReady: true,
+    });
+    expect(status.ready).toBe(true);
+    expect(JSON.stringify(status)).not.toContain(key);
+  });
+
+  it("SADEED_LLM_PROVIDER=none is the zero-cost mode: no engine, deterministic layers ready", () => {
+    const status = inspectSadeedProviderReadiness({ ...COMPLETE, SADEED_LLM_PROVIDER: "none" });
+    expect(status.intelligence.ready).toBe(false);
+    expect(status.intelligence.missing).toEqual(["SADEED_LLM_PROVIDER"]);
+    expect(status.llm).toMatchObject({ mode: "zero_cost", selected: "none", zeroCostReady: true });
+  });
+
+  it("the metered backup is reported only when the owner opts in by name", () => {
+    const keyOnly = inspectSadeedProviderReadiness({
+      ...COMPLETE,
+      LOVABLE_API_KEY: "lovable-key-with-enough-len",
+    });
+    expect(keyOnly.llm.backupEnabled).toBe(false);
+    const optedIn = inspectSadeedProviderReadiness({
+      ...COMPLETE,
+      LOVABLE_API_KEY: "lovable-key-with-enough-len",
+      SADEED_BACKUP_PROVIDER: "lovable",
+    });
+    expect(optedIn.llm.backupEnabled).toBe(true);
+  });
+
   it("accepts the native Google Generative AI key alias", () => {
     const status = inspectSadeedProviderReadiness({
       ...COMPLETE,

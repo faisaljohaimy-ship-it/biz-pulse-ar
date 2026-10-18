@@ -1,70 +1,68 @@
 # SADEED — AI Architecture
 
+> هذه الوثيقة تصف **ما يفعله الكود فعلًا** (قِيس ٢٠٢٦/١٠/١٨). النسخة السابقة كانت
+> تقول «Lovable AI Gateway، الافتراض `openai/gpt-5`، والاحتياط `gemini-1.5-flash`» —
+> ولم يكن شيء من ذلك صحيحًا: لم يوجد أيّ مسار إلى OpenAI، والمزوّد كان Gemini مباشرةً.
+
 ## Charter v10.0 (Enforced)
 
-1. **No fabrication.** Every operational statement must trace back to a tool result.
+1. **No fabrication.** Every operational statement must trace back to a tool result or a bundled production dataset.
 2. **Bilingual AR/EN.** Output language matches request locale, with RTL-safe formatting.
-3. **Forensic traceability.** Every step writes `audit_logs`, `tool_executions`, `enterprise_events`, `workflow_step_runs`, all linked by `correlation_id`.
-4. **Schema-aware.** Tool inputs validated against `z.enum` table allowlists and per-table column whitelists; a malformed call cannot reach the database.
-5. **Human-in-the-loop for critical actions.** Tools with `needsApproval: true` (incident escalation, emergency dispatch, irreversible deletes) require explicit approval before execution.
+3. **Forensic traceability.** Agent steps write `tool_executions`, `workflow_step_runs`, `enterprise_events`, `audit_logs`, linked by `correlation_id`.
+4. **Schema-aware.** Tool inputs are validated with zod; `sql.read` uses a table allowlist, a per-table column whitelist, and an `org_id` filter.
+5. **Human-in-the-loop for writes.** Agent tools flagged `tool_registry.requires_approval` wait for an admin decision on `/exec`.
 
-## Gateway
+## 1. Zero-cost first (owner order 2026/10/18)
 
-- **Provider**: Lovable AI Gateway (OpenAI-compatible).
-- **Helper**: `src/lib/ai-gateway.server.ts` — uses `@ai-sdk/openai-compatible`.
-- **Default model**: `openai/gpt-5` (Charter v10.0 prompts omit `temperature` for gpt-5 family).
-- **Fallback**: `google/gemini-1.5-flash` when payload size or cost dictates.
+The assistant's core answers do **not** depend on a paid model. `/api/chat` answers these deterministically, with no model call and no AI-quota spend:
 
-## Agent Runtime
+| Layer            | Source                                          | Example                                                           |
+| ---------------- | ----------------------------------------------- | ----------------------------------------------------------------- |
+| Scope guard      | `src/lib/sadeed/response-contract.ts`           | out-of-scope question → one fixed line                            |
+| Fast recall      | `matchFastRecall`                               | identity questions                                                |
+| Instant data     | `src/lib/sadeed/instant-data-answers.server.ts` | «كم عدد المشاريع؟» — counted from the bundled production datasets |
+| Zero-cost router | `src/lib/sadeed/llm/zero-cost-router.server.ts` | help/commands, English counts, "open the maintenance page"        |
 
-- Entry: `POST /api/public/hooks/run-agent` (Zod-validated, hook-secret-gated).
-- Engine: `src/lib/exec/agent-runtime.server.ts`.
-- Uses `supabaseAdmin` for orchestration writes (RLS would block service-internal bookkeeping otherwise).
-- Step loop: model call → tool selection → tool execution (registry-bounded) → write step_run + tool_execution + event + audit_log → repeat until `stopWhen` or terminal state.
-- Final: writes `aria_reports` row + emits final `enterprise_event`.
+These layers run even when no model is configured and when the rate-limit store is down under the `closed` policy. A request that genuinely needs language reasoning gets an honest reply saying the analysis engine is not enabled, plus examples of supported commands — never a guessed answer.
 
-## Tool Registry
+Deterministic answers are **not** AI reasoning and are not presented as such.
 
-`src/lib/exec/tool-registry.server.ts` — every tool is a `tool({ description, inputSchema, execute })`:
+## 2. Provider plan — one explicit choice, no silent switching
 
-- `sql.read` — read-only, `z.enum` of allowed `sec_*` tables, per-table column whitelist.
-- `kb.search` — HNSW vector search over `sec_knowledge_articles`.
-- `incident.create` / `patrol.assign` / `permit.issue` — mutation tools, all with `needsApproval`.
-- `m365.outlook.send`, `m365.sharepoint.upload`, `m365.teams.post_message` — credentialed integrations.
+`src/lib/sadeed/llm/provider-plan.server.ts` resolves the model for `/api/chat`:
 
-## Memory & RAG
+| `SADEED_LLM_PROVIDER`                            | Requires                                                                                                | Result                                                                   |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| unset / `gemini`                                 | `GEMINI_API_KEY` (or `GOOGLE_GENERATIVE_AI_API_KEY`)                                                    | Google Gemini direct (`src/lib/ai-gateway.server.ts`, allowlisted model) |
+| `openai`                                         | `OPENAI_API_KEY` **and** `SADEED_OPENAI_ENABLED=true`; optional `SADEED_OPENAI_MODEL` from an allowlist | OpenAI via `@ai-sdk/openai` (server only)                                |
+| `none`                                           | —                                                                                                       | zero-cost mode: deterministic layers only                                |
+| anything else / selected provider not configured | —                                                                                                       | zero-cost mode (never another vendor)                                    |
 
-- **Short-term**: `aria_memory` (per-user, RLS-scoped) — last N turns, JSON facts.
-- **Long-term**: `pulse_memory` — operational state cache refreshed by Pulse Engine.
-- **RAG**: `aria_documents` + `aria_document_chunks` (1536-dim embeddings, HNSW) for SOP/policy retrieval; `sec_knowledge_articles` for the Industrial Security Repository.
-- **Ingest hook**: `POST /api/public/hooks/sadeed-docs-ingest` — bilingual chunking with overlap, embedding via gateway.
+- **Optional backup** (Lovable AI Gateway, Gemini model): only when `SADEED_BACKUP_PROVIDER=lovable` and `LOVABLE_API_KEY` are set. It is metered, so it is off by default — no silent fallback to a paid path.
+- The vendor and model that actually produced an answer are logged and persisted; the reply carries `X-SADEED-Reply-Source` (`model`, `model-backup`, `instant-data`, `zero-cost`, …).
+- **GPT is not active** until the owner supplies a key and both flags. No test or deployment calls a paid API.
 
-## Multi-Agent Orchestration
+Other AI surfaces (executive briefing, agent runtime, MCP `ask_sadeed`, transcription, embeddings) still use Gemini directly through `resolveSadeedGeminiRuntime(s)`. Voice stays exclusive (ElevenLabs server TTS); embeddings stay on Gemini (1536-dim index) — changing them would require re-indexing.
 
-14 seeded agents in `agent_definitions` (Executive Briefer, CCTV Analyst, Compliance Officer, Asset Health Inspector, Emergency Coordinator, etc.). Each agent:
+## 3. Agent runtime
 
-- Has a charter-v10.0-compliant system prompt
-- Declares its tool allowlist
-- Routes through the unified `/api/public/hooks/run-agent` endpoint
-- Produces correlation-id-linked artifacts
+- Entry: `POST /api/public/hooks/run-agent` (cron secret, or org manager+ bearer) and the `/agents` / `/exec` server functions.
+- Engine: `src/lib/exec/agent-runtime.server.ts`: model loop with a step cap and an overall deadline; stops when the run is cancelled.
+- Tools: `src/lib/exec/tool-registry.server.ts` through `tool-orchestrator.server.ts` (timeouts; retries only for idempotent tools; approval gate from `tool_registry.requires_approval`).
+- An approved action runs once, on the same `tool_executions` row; a run with pending approvals leaves its workflow `waiting_approval`.
 
-## Pulse Engine
+## 4. Memory & RAG
 
-`src/lib/pulse.functions.ts` — 6-second cycle aggregating live KPIs from `sec_*` tables into `pulse_kpis`, `pulse_crises`, `pulse_execution`. Powers the dashboard cockpit + Living Narrator.
+- Tenant knowledge: `finn_*` tables, retrieved by `gatherRagContext` for signed-in users, injected as untrusted data.
+- The `20260728*` RAG migrations are **not applied** in production (see CLAUDE.md); no recall or citation figure exists.
 
-## Voice
+## 5. Voice
 
-- **TTS**: ElevenLabs via `/api/tts` (Zod-validated, rate-limited).
-- **STT**: ElevenLabs via `/api/voice-token` + browser SDK.
-
-## Avatar
-
-- **Default**: R3F procedural bust (`HologramFace.tsx`) — gaze tracking, audio-driven lip-sync, executive identity. No external credentials.
-- **Optional**: HeyGen LiveAvatar (`HeygenAvatarProvider.tsx`) — gated on `HEYGEN_API_KEY`. Currently returns 401/410 against legacy endpoints; see `KNOWN_EXTERNAL_DEPENDENCIES.md`.
+- **TTS**: ElevenLabs via `/api/sadeed/tts` → `/api/public/sadeed-tts` (male SADEED voice only; `speechSynthesis` banned).
+- **STT**: `/api/sadeed/transcribe` → `/api/public/sadeed-transcribe`.
 
 ## Anti-Patterns Explicitly Banned
 
-- Prompt-only "must use tool X" rules. Tool requirements are enforced in code via `z.enum` input schemas — model cannot route around them.
-- Hidden retry/repair LLM passes that mutate the answer.
-- Distillation that re-enters memory as pseudo-facts.
-- `service_role` for routine application reads.
+- Prompt-only "must use tool X" rules — enforced in code via schemas.
+- Silent provider switching across cost classes.
+- `service_role` reads for routine user requests without an explicit `org_id` filter.

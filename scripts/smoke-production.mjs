@@ -229,6 +229,14 @@ if (!h1.ok) {
 const h2 = await getJson("/api/chat/health");
 if (h2.ok && h2.json?.ok === true && h2.json.key_present === true) {
   note("H2 chat/health", "pass", `المزوّد مهيّأ (${h2.json.provider}) في ${h2.ms} مللي ثانية`);
+} else if (h2.ok && h2.json?.ok === true && h2.json.mode === "zero_cost") {
+  // الوضع الحتمي بلا تكلفة (٢٠٢٦/١٠/١٨) حالةٌ مقصودة لا عطل: العدّ والمرجع والمساعدة
+  // والتنقّل تعمل بلا مفتاح، وما يحتاج التحليل اللغوي يُجاب بردٍّ صادق. تحذيرٌ لا سقوط.
+  note(
+    "H2 chat/health",
+    "warn",
+    `وضع بلا تكلفة — لا محرّك تحليل مهيّأ (selected=${h2.json.selected ?? "—"})؛ الطبقات الحتمية جاهزة`,
+  );
 } else {
   note("H2 chat/health", "fail", h2.ok ? `http ${h2.status}: ${h2.text.slice(0, 120)}` : h2.error);
 }

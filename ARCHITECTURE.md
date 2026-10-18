@@ -20,14 +20,17 @@
             └────────────┬───────────────────────────┬─────────┘
                          │                           │
                          ▼                           ▼
-            ┌────────────────────────┐   ┌─────────────────────┐
-            │ Supabase Postgres 15   │   │ Lovable AI Gateway  │
-            │ + pgvector + pg_cron   │   │ (OpenAI-compatible) │
-            │ • RLS RESTRICTIVE      │   │ • gpt-5 default     │
-            │ • 81 tables            │   │ • gemini fallback   │
-            │ • HNSW index on KB     │   │ • streaming + tools │
-            └────────────────────────┘   └─────────────────────┘
+            ┌────────────────────────┐   ┌──────────────────────────┐
+            │ Supabase Postgres 15   │   │ Model plan (AI_ARCH §2)  │
+            │ + pgvector + pg_cron   │   │ • zero-cost layers first │
+            │ • RLS RESTRICTIVE      │   │ • Gemini direct (default)│
+            │ • 81 tables            │   │ • OpenAI: opt-in, off    │
+            │ • HNSW index on KB     │   │ • backup: opt-in, off    │
+            └────────────────────────┘   └──────────────────────────┘
 ```
+
+The AI box is described exactly in `AI_ARCHITECTURE.md`: replies are buffered (no
+token streaming), and no paid provider is called unless the owner configures it.
 
 ## 2. Module Boundaries
 
@@ -47,14 +50,14 @@
 
 ```
 Client (Run Agent button)
-  → POST /api/public/hooks/run-agent   (HMAC + Zod)
+  → POST /api/public/hooks/run-agent   (cron secret or manager+ bearer, Zod)
   → agent-runtime.server.ts
      ├ writes workflow_runs (status=running)
      ├ resolves agent from agent_definitions
-     ├ loops:  tool_registry → tool_executions
+     ├ loops:  tool_registry → tool_executions (approval-gated writes)
      ├ writes audit_logs (actor=auth.uid())
      ├ emits enterprise_events
-     └ persists aria_reports
+     └ persists finn_reports; workflow_runs → waiting_approval when actions await a human
   ← JSON { correlation_id, run_id, summary }
 ```
 

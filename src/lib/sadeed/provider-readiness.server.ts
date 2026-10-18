@@ -1,11 +1,26 @@
+import {
+  describeProviderPlan,
+  type SadeedLlmSelection,
+} from "@/lib/sadeed/llm/provider-plan.server";
+
 export type SadeedProviderCapability = {
   ready: boolean;
   provider: string | null;
   missing: string[];
 };
 
+/** وضع محرّك الدردشة كما تقرّره خطة المحرّك — وسومٌ لا قيم. */
+export type SadeedLlmReadiness = {
+  mode: "llm" | "zero_cost";
+  selected: SadeedLlmSelection;
+  backupEnabled: boolean;
+  /** الطبقات الحتمية بلا تكلفة (العدّ والمرجع والمساعدة والتنقّل) جاهزةٌ دائمًا. */
+  zeroCostReady: true;
+};
+
 export type SadeedProviderReadiness = {
   ready: boolean;
+  llm: SadeedLlmReadiness;
   database: SadeedProviderCapability;
   intelligence: SadeedProviderCapability;
   voice: SadeedProviderCapability;
@@ -42,12 +57,34 @@ export function inspectSadeedProviderReadiness(
     ["SUPABASE_SERVICE_ROLE_KEY", configured(env.SUPABASE_SERVICE_ROLE_KEY, 20)],
   ]);
 
-  const geminiReady =
-    configured(env.GEMINI_API_KEY, 20) || configured(env.GOOGLE_GENERATIVE_AI_API_KEY, 20);
-  const intelligenceProvider = geminiReady ? "google-gemini" : null;
-  const intelligence = capability(intelligenceProvider, [
-    ["GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY", intelligenceProvider !== null],
-  ]);
+  // جاهزية الذكاء = المحرّك **المختار** مهيّأ (CLAUDE.md، القاعدة ٤: OR عبر مفاتيح
+  // القدرة نفسها). مفتاح مورّدٍ آخر ليس جاهزيةً — لا استبدال صامت؛ والمحوّل
+  // الاختياري يلزمه إذنا `SADEED_LLM_PROVIDER=openai` و`SADEED_OPENAI_ENABLED=true`.
+  const plan = describeProviderPlan(env);
+  let intelligence: SadeedProviderCapability;
+  if (plan.selected === "openai") {
+    const keyReady = configured(env.OPENAI_API_KEY, 20);
+    const enabled = env.SADEED_OPENAI_ENABLED?.trim() === "true";
+    intelligence = capability(keyReady && enabled ? "openai" : null, [
+      ["OPENAI_API_KEY", keyReady],
+      ["SADEED_OPENAI_ENABLED=true", enabled],
+    ]);
+  } else if (plan.selected === "gemini") {
+    const geminiReady =
+      configured(env.GEMINI_API_KEY, 20) || configured(env.GOOGLE_GENERATIVE_AI_API_KEY, 20);
+    intelligence = capability(geminiReady ? "google-gemini" : null, [
+      ["GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY", geminiReady],
+    ]);
+  } else {
+    // `none` (قرار تشغيل) أو قيمةٌ غير صالحة: لا محرّك، والوضع الحتمي يعمل.
+    intelligence = capability(null, [["SADEED_LLM_PROVIDER", false]]);
+  }
+  const llm: SadeedLlmReadiness = {
+    mode: plan.mode,
+    selected: plan.selected,
+    backupEnabled: plan.backup_enabled,
+    zeroCostReady: true,
+  };
 
   // Owner voice policy: the audible SADEED voice is exclusively ElevenLabs Layan.
   const elevenReady = configured(env.ELEVENLABS_API_KEY, 20);
@@ -94,6 +131,7 @@ export function inspectSadeedProviderReadiness(
   };
   return {
     ready: Object.values(result).every((item) => item.ready),
+    llm,
     ...result,
   };
 }

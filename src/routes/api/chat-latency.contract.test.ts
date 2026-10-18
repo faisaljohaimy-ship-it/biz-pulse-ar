@@ -41,8 +41,12 @@ describe("المجلس خارج المسار الافتراضي", () => {
   });
 
   it("لا يُستدعى إلا بطلبٍ صريح", () => {
-    // الشرط الذي كان `if (lastUserText)` وحده.
-    expect(CHAT_CODE).toMatch(/if \(lastUserText && replyMode === "deep"\)/);
+    // الشرط الذي كان `if (lastUserText)` وحده. وخلف Gemini وحده (٢٠٢٦/١٠/١٨):
+    // المجلس يبني نموذجه من مفتاح Gemini لا من خطة المحرّك — فلا يُنفق على مورّدٍ
+    // لم يُختر حين يكون المختار المحوّل الاختياري.
+    expect(CHAT_CODE).toMatch(
+      /if \(lastUserText && replyMode === "deep" && plan\.selected === "gemini"\)/,
+    );
   });
 
   it("والطلب الصريح **ممكن** — وإلّا فهو حذفٌ صامت لا بوّابة", () => {
@@ -134,13 +138,24 @@ describe("الثوابت التي لا يجوز أن يمسّها التسريع
     // والمحروس فعلًا شرطٌ أضيق وأصدق: **فرع غياب المزوّد** يبثّ نصًّا،
     // ولا يردّ رمز خطأ. أمّا 503 عند نقص الإعدادات فحالةٌ أخرى — عطلُ
     // تهيئةٍ لا انقطاعُ ذكاء — ولا يشملها هذا العهد.
-    const at = CHAT_CODE.indexOf("if (!googleKey)");
-    const end = CHAT_CODE.indexOf("validateChatRequest", at);
+    //
+    // **وصار الفرع «الوضع الحتمي بلا تكلفة» (٢٠٢٦/١٠/١٨):** كان `if (!googleKey)`
+    // في رأس المعالج يعيد سطرًا ثابتًا قبل كل طبقة. الآن يُقرَّر بخطة المحرّك،
+    // ويأتي **بعد** الطبقات الحتمية و**قبل** الحصّة والنموذج — فلا يُنفق شيئًا.
+    const at = CHAT_CODE.indexOf('if (plan.mode === "zero_cost")');
+    const end = CHAT_CODE.indexOf("enforceAiQuota(", at);
     expect(at, "لم يُعثر على فرع غياب المزوّد").toBeGreaterThan(-1);
     expect(end, "لم يُعثر على نهاية الفرع").toBeGreaterThan(at);
-    const branch = CHAT_CODE.slice(at, end);
+    expect(
+      CHAT_CODE.indexOf("deterministicReply(gateMode)"),
+      "الفرع يسبق الطبقات الحتمية",
+    ).toBeLessThan(at);
+    expect(at, "الفرع بعد نداء النموذج").toBeLessThan(CHAT_CODE.indexOf("generateText("));
+    expect(CHAT_CODE, "السطر الثابت المبكّر عاد قبل الطبقات").not.toContain("if (!googleKey)");
+    const branch = CHAT_CODE.slice(at, CHAT_CODE.indexOf("const primary", at));
     // البثّ صار في دالةٍ مشتركة (٢٠٢٦/١٠/١٦): الفرع يناديها، وهي تبثّ.
     expect(branch).toContain("localGuaranteedReply(");
+    expect(branch).toContain("zeroCostUnsupportedReply(");
     expect(branch).not.toMatch(/jsonError\(/);
     const fnAt = CHAT_CODE.indexOf("function localGuaranteedReply(");
     expect(fnAt, "لم يُعثر على الدالة المشتركة").toBeGreaterThan(-1);
@@ -151,5 +166,37 @@ describe("الثوابت التي لا يجوز أن يمسّها التسريع
 
   it("النصّ المعروض يمرّ بالتصفية قبل الإرسال", () => {
     expect(CHAT_CODE).toContain("safeDisplayText");
+  });
+});
+
+describe("الصفر تكلفة أوّلًا — ترتيب المسار (أمر المالك ٢٠٢٦/١٠/١٨)", () => {
+  it("الطبقات الحتمية تسبق الحصّة اليومية — الجواب الذي لا يُنفق لا يستهلكها", () => {
+    const detAt = CHAT_CODE.indexOf("deterministicReply(gateMode)");
+    const quotaAt = CHAT_CODE.indexOf("enforceAiQuota(");
+    const rateAt = CHAT_CODE.indexOf("enforceRateLimit(");
+    expect(detAt, "الطبقات الحتمية غائبة").toBeGreaterThan(-1);
+    expect(rateAt, "حدّ الدقيقة يسبق الطبقات الحتمية").toBeLessThan(detAt);
+    expect(detAt, "الحصّة تُفحص قبل الجواب الحتمي").toBeLessThan(quotaAt);
+  });
+
+  it("البوّابة المغلقة تجرّب الحتميّ قبل ردّها المحلّي، ولا تُسقطه", () => {
+    expect(CHAT_CODE).toMatch(
+      /\(await deterministicReply\("closed"\)\) \?\? closedPolicyReply\("rate"\)/,
+    );
+  });
+
+  it("معرفة المستأجر المسترجعة لا تسقط حين يُرفع علم البيانات الحيّة في فرع المجموعات", () => {
+    expect(CHAT_CODE).toContain("if (ragContext && !ragIncluded)");
+    expect(CHAT_CODE).not.toContain("if (ragContext && !liveDataAvailable)");
+  });
+
+  it("دور النموذج تحت سقفٍ زمني يجمع إلغاء الطلب والمهلة", () => {
+    expect(CHAT_CODE).toMatch(/MODEL_TURN_DEADLINE_MS = 45_000/);
+    expect(CHAT_CODE).toMatch(/MODEL_TURN_DEADLINE_DEEP_MS = 75_000/);
+    expect(CHAT_CODE).toMatch(
+      /AbortSignal\.any\(\[request\.signal, AbortSignal\.timeout\(turnDeadlineMs\)\]\)/,
+    );
+    expect(CHAT_CODE).toMatch(/abortSignal: turnSignal/);
+    expect(CHAT_CODE).toMatch(/name === "TimeoutError" \|\| name === "AbortError"/);
   });
 });

@@ -4,6 +4,13 @@
  * When the direct Gemini key is exhausted (free-tier quota 429) or the vendor
  * fails transiently, the same turn is answered through the Lovable AI Gateway
  * with a Gemini model — the user never sees a quota error or an endless spinner.
+ *
+ * **اختياريّ صريح لا افتراضيّ — أمر المالك ٢٠٢٦/١٠/١٨** («لا سقوط صامت إلى
+ * مزوّد بعدّاد»): البوّابة مزوّدٌ مدفوع، فلا تُبنى إلا حين يطلبها المالك بالاسم
+ * (`SADEED_BACKUP_PROVIDER=lovable`) ومفتاحها حاضر. وجود المفتاح وحده — وهو
+ * مستعمل أيضًا لموصِّلات المؤسسة — لم يعد إذنًا بالإنفاق على التحليل.
+ * والقرار الكامل (ومنه «المزوّد الأساسي Gemini وحده») في
+ * `src/lib/sadeed/llm/provider-plan.server.ts`؛ هذا الفحص دفاعٌ ثانٍ عند البناء.
  */
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
@@ -22,8 +29,19 @@ export function shouldUseBackup(error: unknown): boolean {
   );
 }
 
-export function createSadeedBackupModel() {
-  const key = process.env.LOVABLE_API_KEY?.trim();
+type EnvLike = Record<string, string | undefined>;
+
+/** هل طلب المالك البوّابة الاحتياطية صراحةً ومفتاحها حاضر؟ (أسماء وحضور فقط، لا قيم.) */
+export function isSadeedBackupEnabled(env: EnvLike = process.env): boolean {
+  return (
+    env.SADEED_BACKUP_PROVIDER?.trim().toLowerCase() === "lovable" &&
+    Boolean(env.LOVABLE_API_KEY?.trim())
+  );
+}
+
+export function createSadeedBackupModel(env: EnvLike = process.env) {
+  if (!isSadeedBackupEnabled(env)) return null;
+  const key = env.LOVABLE_API_KEY?.trim();
   if (!key) return null;
   const provider = createOpenAICompatible({
     name: "lovable",
