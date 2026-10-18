@@ -110,8 +110,30 @@ const SAFE_ERROR_LINE = "تعذّر إكمال الرد بأمان الآن — 
 const SIMULATION_DISCLOSURE = "بيانات محاكاة مرجعية — وليست حالة تشغيلية حية.";
 
 // ── Detectors (textual layer — ADDITIONAL to the policy above) ──────────────
-const RE_EXFIL_INPUT =
-  /(system|developer)\s*(prompt|message|instructions?)|(reveal|show|print|repeat|dump|leak)[^.]*(prompt|instruction|system)|(اكشف|أظهر|اعرض|اطبع|كرر|ما|أعطني)[^.]*(تعليمات|التعليمات|تعليماتك|البرومبت|النظام(ية)?)|(المادة|القسم|العنوان|السطر|رقم)[^.]*(تعليمات|النظام|prompt|instruction)/i;
+/**
+ * A request to DISCLOSE the assistant's own instructions — not a question that
+ * merely contains «ما» or «النظام». The previous pattern treated the bare
+ * interrogative «ما» and the bare nouns «النظام»/«تعليمات» as disclosure intent,
+ * so «ما التصاريح … في النظام؟», «اعرض لوحة النظام» and «ما تعليمات السلامة؟» were
+ * refused — after the model call had been paid for (DEF-02, 2026-10-18).
+ *
+ * Now a disclosure needs an explicit TARGET: the assistant's own instructions
+ * (تعليماتك · التعليمات الداخلية · موجّه/برومبت) or, after a strong copy verb
+ * (اكشف/اطبع/كرّر/انسخ/سرّب), «تعليمات النظام». The output-side marker check
+ * (`outputLeaksSystem`) stays the backstop for anything this misses.
+ */
+const AR_OWN_INSTRUCTIONS =
+  "(?:تعليماتك|تعليمات(?:ك)?\\s+(?:الداخلية|النظامية|السرية)|التعليمات\\s+الداخلية|تعليمات\\s+النظام\\s+الداخلية|موج\\u0651?ه(?:ك)?\\s+(?:النظام|الداخلي)|البرومبت|برومبت(?:ك)?)";
+const RE_EXFIL_INPUT = new RegExp(
+  [
+    "(?:system|developer)\\s*(?:prompt|message|instructions?)",
+    "(?:reveal|show|print|repeat|dump|leak)\\b[^.?!\\n]{0,30}\\b(?:your|the)\\s+(?:hidden\\s+|internal\\s+|initial\\s+)?(?:prompt|instructions)",
+    `(?:اكشف|أظهر|اظهر|اعرض|اطبع|كرر|كرّر|انسخ|أعطني|اعطني|سرّب|سرب|ما|ماهي|ما\\s+هي|وش|ايش)[^.؟?!\\n]{0,40}${AR_OWN_INSTRUCTIONS}`,
+    "(?:اكشف|اطبع|كرر|كرّر|انسخ|سرّب|سرب)[^.؟?!\\n]{0,20}تعليمات\\s+النظام",
+    `(?:المادة|القسم|العنوان|السطر|رقم)[^.؟?!\\n]{0,40}(?:${AR_OWN_INSTRUCTIONS}|\\b(?:your|system)\\s+(?:prompt|instructions?))`,
+  ].join("|"),
+  "i",
+);
 /**
  * Verbatim fragments of the SERVER-SIDE system prompt. Any of them appearing in
  * a model turn means the instructions leaked, so the turn is refused whole
@@ -157,8 +179,20 @@ const RE_INJECTION_DOC =
   /ignore (all )?previous instructions|disregard (the )?(above|prior)|reveal (the )?secret|exfiltrate|execute the action|تجاهل[^.]*التعليمات|تخطَّ?[^.]*التعليمات|اكشف[^.]*السر|نفّذ[^.]*الأمر/i;
 const RE_SECRET_LEAK =
   /\bsk-[A-Za-z0-9]{12,}\b|\b(api[_-]?key|secret|password|token)\s*[:=]\s*\S+|BEGIN (RSA |EC )?PRIVATE KEY|xi-api-key/i;
+/**
+ * A model turn that CLAIMS a gated action ran (send, broadcast, evacuate, pay).
+ * «تم التنفيذ» and «تم الاعتماد» are ordinary status prose for projects and
+ * permits («تم التنفيذ بنسبة 75%», «تم الاعتماد من مدير الموقع») — matching them
+ * replaced real answers with the approval line (DEF-03, 2026-10-18).
+ */
 const RE_EXEC_CLAIM =
-  /(تم|تمّ)\s*(الإرسال|الاعتماد|التنفيذ|الإخلاء|البثّ|الدفع)|has been (sent|approved|executed|dispatched|broadcast)|successfully (sent|approved|executed|dispatched)/i;
+  /(تم|تمّ)\s*(الإرسال|الإخلاء|البثّ|البث|الدفع)|has been (sent|dispatched|broadcast)|successfully (sent|dispatched|broadcast)/i;
+/**
+ * Under an injected document ANY execution claim is suspect — the broad form
+ * (with «التنفيذ»/«الاعتماد») stays for that branch only.
+ */
+const RE_EXEC_CLAIM_UNDER_INJECTION =
+  /(تم|تمّ)\s*(الإرسال|الاعتماد|التنفيذ|الإخلاء|البثّ|البث|الدفع)|has been (sent|approved|executed|dispatched|broadcast)|successfully (sent|approved|executed|dispatched)/i;
 // A regulatory CLAIM needs a citation only when it is specific and citable —
 // a bare mention of "الامتثال/compliance/توجيه" is a normal domain answer and
 // must NOT be forced into insufficient_evidence (avoids over-refusal, §11).
@@ -171,7 +205,16 @@ const RE_NEEDS_TIME =
 const RE_KPI = /\bkpi\b|مؤشر|المؤشرات|نسبة الامتثال|النسبة|metric|الأداء/i;
 const RE_CITED_TAG = /\[(?:DOC|KB|SEC|SAF|HCIS)[:-][^\]]+\]|\bSEC-\d+\b|\bSAF-\d+\b/gi;
 
-const RE_PHONE = /\+?\d[\d\s().-]{7,}\d/g;
+/**
+ * A phone-number SHAPE, not any digit run: international (+ or 00 then 8–13
+ * digits) or a Saudi mobile/landline (05x/01x then 7 digits). The previous
+ * generic pattern redacted SAP order numbers, ISO dates and numeric ranges
+ * («أمر العمل 66000123456 … منذ 2026-09-14» ⇒ «[هاتف محجوب] … [هاتف محجوب]»,
+ * DEF-04, 2026-10-18). Separators are space or hyphen only, and a digit-dot-digit
+ * seam (a decimal) is never part of a match; a sentence's closing dot is fine.
+ */
+const RE_PHONE =
+  /(?<!\w|\d\.)(?:\+|00)\d{1,3}[\s-]?(?:\d[\s-]?){7,12}\d(?!\w|\.\d)|(?<!\w|\d\.)0(?:5\d|1\d)(?:[\s-]?\d){7}(?!\w|\.\d)/g;
 const RE_EMAIL = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
 
 function requestsSystemDisclosure(t: string): boolean {
@@ -218,7 +261,13 @@ function redactPii(text: string): { text: string; pii: PiiClass } {
  * them pass untouched. Both names stay on the LEFT-HAND SIDE for as long as a
  * stored row can still carry them (ROLLBACK.md — «الدرس»).
  */
-const RE_LEGACY_NAME_AR = /\u0622\u0631\u064A\u0627|\u0627\u0631\u064A\u0627/g;
+/**
+ * Word-bounded like the FINN rule below: the bare pattern rewrote the «-اريا»
+ * ending of ordinary adverbs («إداريا» ⇒ «إدسَدِيد», «جاريا» ⇒ «جسَدِيد») in both
+ * display and speech (DEF-15, 2026-10-18). One clitic is captured and re-emitted.
+ */
+const RE_LEGACY_NAME_AR =
+  /(?<![ء-ي])([وفبلك]?)(?:\u0622\u0631\u064A\u0627|\u0627\u0631\u064A\u0627)(?![ء-ي])/g;
 const RE_LEGACY_NAME_EN = /\bA\u0052IA\b/gi;
 /**
  * The Arabic form of the SECOND retired name, exactly as the APPLIED migration
@@ -273,7 +322,7 @@ export function enforceSadeedIdentity(text: string): string {
       .replace(RE_SELF_INTRO_EN, " ")
       // Owner directive 2026-08-09: the displayed assistant name is the brand
       // itself — «سَدِيد» in Arabic prose, «SADEED» in Latin prose.
-      .replace(RE_LEGACY_NAME_AR, "سَدِيد")
+      .replace(RE_LEGACY_NAME_AR, "$1سَدِيد")
       .replace(RE_LEGACY_NAME_EN, "SADEED")
       // The second retired name — the one the un-migrated rows still carry.
       // `$1` re-emits the captured Arabic clitic («وفِن» ⇒ «وسَدِيد»).
@@ -354,7 +403,7 @@ export function finalizeSadeedOutput(req: SadeedOutputRequest): SafeSadeedOutput
     // (g) Indirect injection + any raw secret leak → safe refusal.
     if (
       RE_SECRET_LEAK.test(model) ||
-      (injectionInDocs(req.retrievedDocs) && RE_EXEC_CLAIM.test(model))
+      (injectionInDocs(req.retrievedDocs) && RE_EXEC_CLAIM_UNDER_INJECTION.test(model))
     ) {
       return make("refusal", REFUSAL_INJECTION, "indirect-injection-blocked", { orgId });
     }
