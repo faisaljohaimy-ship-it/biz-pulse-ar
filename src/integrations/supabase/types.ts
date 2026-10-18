@@ -1171,6 +1171,45 @@ export type Database = {
           },
         ]
       }
+      cron_job_run_details_archive: {
+        Row: {
+          command: string | null
+          database: string | null
+          end_time: string | null
+          job_pid: number | null
+          jobid: number | null
+          return_message: string | null
+          runid: number | null
+          start_time: string | null
+          status: string | null
+          username: string | null
+        }
+        Insert: {
+          command?: string | null
+          database?: string | null
+          end_time?: string | null
+          job_pid?: number | null
+          jobid?: number | null
+          return_message?: string | null
+          runid?: number | null
+          start_time?: string | null
+          status?: string | null
+          username?: string | null
+        }
+        Update: {
+          command?: string | null
+          database?: string | null
+          end_time?: string | null
+          job_pid?: number | null
+          jobid?: number | null
+          return_message?: string | null
+          runid?: number | null
+          start_time?: string | null
+          status?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
