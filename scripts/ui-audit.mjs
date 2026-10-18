@@ -103,6 +103,23 @@ const collect = ({ minFont, minTarget }) => {
   const smallText = [];
   const smallTargets = [];
   let min = Infinity;
+  const de = document.documentElement;
+
+  // **توقيع الإخفاء البصري** (`sr-only` ورابط التخطّي قبل التركيز): ‏`clip-path: inset(50%)`،
+  // أو `clip: rect(0 0 0 0)` في صيغتها القديمة — على العنصر أو سلفه. التوقيع بعينه لا صِغَر
+  // الصندوق: صندوقٌ انهار إلى 1px بخطأٍ يبقى يُقاس.
+  const underHidingSignature = (el) => {
+    for (let p = el; p && p !== de; p = p.parentElement) {
+      const ps = getComputedStyle(p);
+      if (
+        ps.clipPath === "inset(50%)" ||
+        /^rect\(0(px)?,? ?0(px)?,? ?0(px)?,? ?0(px)?\)$/.test(ps.clip)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   for (const el of document.querySelectorAll("body *")) {
     const cs = getComputedStyle(el);
@@ -177,22 +194,34 @@ const collect = ({ minFont, minTarget }) => {
     // orb's `orb-wake` — reports a compliant 44px button as 31px and fails the
     // run on a purely decorative effect. offsetWidth/offsetHeight are the hit
     // area at rest, which is what the touch-target floor is actually about.
-    const tw = el.offsetWidth || box.width;
-    const th = el.offsetHeight || box.height;
+    let tw = el.offsetWidth || box.width;
+    let th = el.offsetHeight || box.height;
+    // **المخفيّ بتوقيع الإخفاء يُقاس مركَّزًا لا ساكنًا.** رابط «تخطَّ إلى المحتوى» مخفيٌّ
+    // بصريًّا حتى يُركَّز عليه: ساكنًا 1×1 بتصميمه، ومركَّزًا هو الهدف الذي يبلغه مستخدم لوحة
+    // المفاتيح. قِيس ساكنًا فأسقط فحص الإنتاج #523 في ٥٦/٥٦ (٢٠٢٦/١٠/١٨). لا يُعفى: يُقاس في
+    // الحالة التي يُستعمل فيها، فإن صغُر مركَّزًا سقط.
+    let focused = false;
+    if (isControl && underHidingSignature(el)) {
+      el.focus({ preventScroll: true });
+      tw = el.offsetWidth;
+      th = el.offsetHeight;
+      focused = true;
+      el.blur();
+    }
     if (isControl && (tw < minTarget || th < minTarget)) {
       if (smallTargets.length < 8) {
+        const label = (el.getAttribute("aria-label") || el.textContent || "").trim().slice(0, 34);
         smallTargets.push({
           tag: el.tagName,
           w: Math.round(tw),
           h: Math.round(th),
-          label: (el.getAttribute("aria-label") || el.textContent || "").trim().slice(0, 34),
+          label: focused ? `${label} (مركَّزًا)` : label,
         });
       }
     }
   }
 
   // ① الصفحة تُمرَّر أفقيًّا: `scrollWidth` يتجاوز `clientWidth`.
-  const de = document.documentElement;
   const overflow = de.scrollWidth - de.clientWidth;
 
   // ② المحتوى مقصوص خارج الشاشة — وهذا ما كان يفلت.
@@ -245,18 +274,7 @@ const collect = ({ minFont, minTarget }) => {
     // الرئيسية على المقاسات الثمانية (`SPAN.nx-bp-title` ‏101px، ٢٠٢٦/١٠/١٧)
     // وهو سليم. والاستثناء بتوقيع الإخفاء نفسه لا بصِغَر القاصّ: صندوقٌ انهار
     // إلى 1px بخطأٍ يبقى يُقاس — جُرّب الاتجاهان على صفحاتٍ مزروعة.
-    let hiddenByDesign = false;
-    for (let p = el; p && p !== de; p = p.parentElement) {
-      const ps = getComputedStyle(p);
-      if (
-        ps.clipPath === "inset(50%)" ||
-        /^rect\(0(px)?,? ?0(px)?,? ?0(px)?,? ?0(px)?\)$/.test(ps.clip)
-      ) {
-        hiddenByDesign = true;
-        break;
-      }
-    }
-    if (hiddenByDesign) continue;
+    if (underHidingSignature(el)) continue;
 
     // **المتحرّك لا يُحاكَم بلقطة.** شريط القرارات اللافّ يضع عناصره خارج
     // قاصّها في كل لحظة، والحركة هي ما يُدخلها — فقياسها في إطار واحد يعطي
