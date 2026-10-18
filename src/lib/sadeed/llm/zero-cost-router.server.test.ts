@@ -78,7 +78,10 @@ describe("المساعدة", () => {
     expect(helpReply("ar", MEMBER)).toMatch(/الموافقات المعلّقة/);
     expect(helpReply("en", MEMBER)).toMatch(/pending approvals/);
     expect(helpReply("ar", GUEST)).toMatch(/غير متاح الآن/);
-    expect(helpReply("ar", { signedIn: false, engineAvailable: true })).not.toMatch(/غير مفعّل/);
+    expect(helpReply("ar", { signedIn: false, engineAvailable: true })).not.toMatch(/غير متاح/);
+    expect(helpReply("ar", { signedIn: false, engineAvailable: true })).toMatch(
+      /يُحال إلى محرّك التحليل اللغوي/,
+    );
     expect(helpReply("en", { signedIn: false, engineAvailable: true })).toMatch(
       /goes to the language analysis engine/,
     );

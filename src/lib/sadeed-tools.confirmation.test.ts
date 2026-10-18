@@ -1057,6 +1057,31 @@ describe("action summaries — readable on screen and in the SADEED voice", () =
     }
   });
 
+  it("a label read that never answers falls back after its deadline — the proposal never hangs and never shows the id", async () => {
+    // قراءةٌ لا تجيب أبدًا (طبقة «المسجَّل لا يعلق»): بلا مهلة `describeExisting` كان الاقتراح
+    // يعلق حتى مهلة الدور كلّها. نقض الحارس على 25ca8297 — فحصٌ يحمرّ إن أُزيل السباق.
+    const base = fakeRls(LABEL_ROWS);
+    const hanging = {
+      ...base,
+      client: {
+        from(table: string) {
+          const chain = base.client.from(table) as unknown as Record<string, unknown>;
+          if (table === "sec_visitors") chain.then = () => new Promise(() => {});
+          return chain;
+        },
+      } as unknown as SupabaseClient,
+    };
+    const started = Date.now();
+    const proposed = await call(
+      await request(hanging, "سجّل خروج الزائر"),
+      "sec_checkout_visitor",
+      { id: EXISTING.visitor },
+    );
+    expect(proposed).toMatchObject({ executed: false, status: "requires_confirmation" });
+    expect(proposed.action_summary).toBe("تسجيل خروج الزائر المحدّد");
+    expect(Date.now() - started).toBeGreaterThanOrEqual(1_400);
+  }, 10_000);
+
   it("the record is read for the proposal only: confirming reads nothing and executes the same arguments", async () => {
     const reads: string[] = [];
     const counted = new Proxy(LABEL_ROWS, {
