@@ -8,7 +8,9 @@ import {
   MAINTENANCE_REPORT_DATE,
   MAINTENANCE_REPORT_ROWS,
 } from "@/lib/exec/maintenance-report.real.server";
+import { liveOf } from "@/components/home/home-reference";
 import {
+  EXPORT_AS_OF,
   PUBLIC_READ_CLOSES_AT,
   exportOrder,
   maintExportPage,
@@ -25,10 +27,21 @@ const all = (tab: "active" | "history"): { rows: MaintOrder[]; total: number } =
 describe("بديل الصيانة — تصدير SAP PM الحقيقي حين لا تجيب القاعدة", () => {
   const sum = maintExportSummary(OPEN);
 
-  it("موسومٌ بمصدره وتاريخ لقطته", () => {
+  it("موسومٌ بمصدره وتاريخ اعتماده وآخر تاريخٍ فيه — ولا يُعدّ حيًّا في الرئيسية", () => {
     expect(sum?.source).toBe("export");
     expect(sum?.exportDate).toBe(MAINTENANCE_REPORT_DATE);
-    expect(all("active")).toMatchObject({ source: "export", exportDate: MAINTENANCE_REPORT_DATE });
+    expect(all("active")).toMatchObject({
+      source: "export",
+      exportDate: MAINTENANCE_REPORT_DATE,
+      exportAsOf: EXPORT_AS_OF,
+    });
+    // آخر تاريخٍ في الملف يُحسب من الصفوف، ويسبق الاعتماد.
+    const latest = MAINTENANCE_REPORT_ROWS.map((r) => r.opened_at)
+      .sort()
+      .at(-1);
+    expect(EXPORT_AS_OF).toBe(latest);
+    expect(EXPORT_AS_OF < MAINTENANCE_REPORT_DATE).toBe(true);
+    expect(liveOf.maint(sum ?? undefined)).toBe(false);
   });
 
   it("الحالة على الخريطة المصحَّحة: PLAN الوقائية الـ13 ملغاة لا مفتوحة", () => {
@@ -63,25 +76,21 @@ describe("بديل الصيانة — تصدير SAP PM الحقيقي حين ل
       avg_delay_late: null,
       penalties: null,
       spares_cost: null,
-      unassigned_active: 0,
+      // الإسناد غير مقيس ⇐ null لا صفر (نقض الحارس N1).
+      unassigned_active: null,
       sap_pending: 0,
     });
     expect(sum?.analytics.by_city).toEqual([]);
   });
 
-  it("التأخير يُحسب من تاريخ التصدير لا من اليوم، والأطول تأخّرًا أولًا", () => {
+  it("التأخير يُحسب حتى آخر تاريخٍ في الملف — لا اليوم ولا تاريخ الاعتماد — والأطول أولًا", () => {
     const { rows, total } = all("active");
     expect(total).toBe(13);
     for (const o of rows) {
       expect(o.status).toBe("open");
       const due = o.due_at;
       expect(o.overdue_days).toBe(
-        due
-          ? Math.max(
-              0,
-              Math.round((Date.parse(MAINTENANCE_REPORT_DATE) - Date.parse(due)) / DAY_MS),
-            )
-          : null,
+        due ? Math.max(0, Math.round((Date.parse(EXPORT_AS_OF) - Date.parse(due)) / DAY_MS)) : null,
       );
     }
     const od = rows.map((o) => o.overdue_days ?? -1);
@@ -103,6 +112,7 @@ describe("بديل الصيانة — تصدير SAP PM الحقيقي حين ل
         assigned_to: null,
         assigned_to_name: null,
         assigned_to_staff: null,
+        is_assigned: null,
         viewer_is_member: false,
       });
     }
@@ -119,6 +129,19 @@ describe("بديل الصيانة — تصدير SAP PM الحقيقي حين ل
     expect(out).not.toContain("4417");
     expect(out).not.toContain("Planted Person");
     expect(out).not.toContain("فلان");
+  });
+
+  it("الكلفة الصفرية في الملف «غير مسجّلة» لا صفر، والموجبة تعبر كما هي (المادة ٣٠)", () => {
+    const base = MAINTENANCE_REPORT_ROWS[0];
+    const zero = exportOrder({ ...base, actual_cost_sar: 0, planned_cost_sar: 0 }, EXPORT_AS_OF);
+    expect(zero.maintenance_cost).toBeNull();
+    expect(zero.planned_cost).toBeNull();
+    const paid = exportOrder(
+      { ...base, actual_cost_sar: 1234, planned_cost_sar: 900 },
+      EXPORT_AS_OF,
+    );
+    expect(paid.maintenance_cost).toBe(1234);
+    expect(paid.planned_cost).toBe(900);
   });
 
   it("بعد نافذة القراءة العامة لا بديل لأحد — يعود خطأ الصفحة لا البيانات", () => {

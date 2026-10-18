@@ -5,7 +5,8 @@
  * طلبًا، الغربية) وتصدير SAP PM (٢٣٢ أمرًا للمناطق الأخرى، والسبعة عشر المشتركة
  * مربوطة بصفوف السجل لا مكرّرة)، وما يُنشأ من هنا. **لا محاكاة** — الزائر يقرأ
  * الأوامر في نافذة القراءة العامة حتى 2027-04-06 بلا بيانات شخصية، وبعدها يُدعى
- * للدخول؛ والعطل خطأٌ عربي بزرّ إعادة لا بديلٌ مصطنع.
+ * للدخول. والعطل: أوامر تصدير SAP PM الحقيقية موسومةً بتاريخ اعتمادها وآخر تاريخٍ فيها
+ * (قرار المالك ٢٠٢٦/١٠/١٨)، وبعد نافذة القراءة العامة خطأٌ عربي بزرّ إعادة — لا بديلٌ مصطنع.
  *
  * التصميم لمشرف صيانة في الميدان، من الجوال أولًا:
  *  ١. مؤشرات ستّة تُقرأ في ثانية (النشط · المتأخر · متوسط الإنجاز · نسبة الإنجاز ·
@@ -285,8 +286,10 @@ function Attention({
   onPick: (f: Partial<Filters>, tab: Tab) => void;
 }) {
   const k = s.kpis;
+  // `null` = الإسناد غير مقيس في المصدر — لا شريحة «بلا فني» عنه.
+  const unassigned = k.unassigned_active ?? 0;
   const holds = s.analytics.by_hold_reason.slice(0, 4);
-  if (!k.unassigned_active && !k.sap_pending && holds.length === 0) return null;
+  if (!unassigned && !k.sap_pending && holds.length === 0) return null;
   const chip =
     "nx-focus-ring inline-flex min-h-11 items-center gap-1.5 rounded-xl border px-3 text-[13px] font-bold";
   return (
@@ -296,14 +299,14 @@ function Attention({
     >
       <h2 className="mb-2 text-[13px] font-black text-[color:var(--ink)]">يحتاج انتباهك</h2>
       <div className="flex flex-wrap gap-2">
-        {k.unassigned_active > 0 && (
+        {unassigned > 0 && (
           <button
             type="button"
             onClick={() => onPick({ unassigned: true }, "active")}
             className={cn(chip, "border-[color:var(--hairline)] text-[color:var(--ink)]")}
           >
             <UserRoundX aria-hidden className="size-4 text-[color:var(--tone-rose)]" />
-            {fmt(k.unassigned_active)} أمرًا نشطًا بلا فني مُسنَد
+            {fmt(unassigned)} أمرًا نشطًا بلا فني مُسنَد
           </button>
         )}
         {k.sap_pending > 0 && (
@@ -612,6 +615,7 @@ function Maintenance() {
   // العامة بلا بيانات شخصية؛ وبعدها يُدعى للدخول.
   const exportMode = s?.source === "export" || list.data?.source === "export";
   const exportDate = s?.exportDate ?? list.data?.exportDate;
+  const exportAsOf = s?.exportAsOf ?? list.data?.exportAsOf;
   const isMember = s?.kpis.viewer_is_member ?? false;
   const publicOpen = s?.kpis.public_read_open ?? false;
   const guestLocked = !!s && !user && !publicOpen;
@@ -630,7 +634,7 @@ function Maintenance() {
       >
         <div className="flex flex-wrap items-center gap-2">
           {s && s.kpis.total > 0 && <SourceBadge source={s.source} exportDate={s.exportDate} />}
-          <NewMaintOrderDialog />
+          <NewMaintOrderDialog unavailable={exportMode} />
         </div>
       </SecPageHeader>
 
@@ -641,10 +645,11 @@ function Maintenance() {
         >
           <History aria-hidden className="size-4 shrink-0 text-[color:var(--tone-amber)]" />
           <span className="min-w-0 flex-1">
-            القاعدة الحية لا تجيب الآن — المعروض أوامر تصدير SAP PM المعتمد بتاريخ{" "}
+            القاعدة الحية لا تجيب الآن — المعروض أوامر تصدير SAP PM الذي اعتُمد في{" "}
             {fmtDate(exportDate)}
-            {s?.source === "export" ? ` (${fmt(s.kpis.total)} أمرًا)` : ""}، بلا أسماء، والمؤشرات
-            محسوبة منه كما في تاريخه. تعود البيانات الحية تلقائيًّا حين تجيب القاعدة.
+            {s?.source === "export" ? ` (${fmt(s.kpis.total)} أمرًا)` : ""}، بلا أسماء، والأيام
+            محسوبة حتى آخر تاريخٍ فيه ({fmtDate(exportAsOf)}). تعود البيانات الحية تلقائيًّا حين
+            تجيب القاعدة.
           </span>
           <button
             type="button"

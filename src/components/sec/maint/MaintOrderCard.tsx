@@ -15,6 +15,7 @@ import {
   cityAr,
   fmt,
   fmtDate,
+  isExportOrder,
   regionAr,
   systemAr,
 } from "@/components/sec/maint/maint-ui";
@@ -86,7 +87,9 @@ export function MaintOrderCard({ order: o, onOpen }: { order: MaintOrder; onOpen
           </>
         ) : (
           <span className="text-[12px] text-[color:var(--ink-3)]">
-            المُنشئ والفني يظهران لأعضاء المنشأة المسجَّلين
+            {isExportOrder(o)
+              ? "نسخة التصدير لا تحمل المُنشئ ولا الفني"
+              : "المُنشئ والفني يظهران لأعضاء المنشأة المسجَّلين"}
           </span>
         )}
         <span className="text-[12px] text-[color:var(--ink-3)]">

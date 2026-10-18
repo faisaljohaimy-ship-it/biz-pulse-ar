@@ -271,7 +271,7 @@ export function SourceBadge({ source, exportDate }: { source: MaintSource; expor
       {source === "export" ? (
         <>
           <History aria-hidden className="size-3.5 text-[color:var(--tone-amber)]" />
-          نسخة تصدير SAP PM — {fmtDate(exportDate)}
+          نسخة تصدير SAP PM — اعتُمد {fmtDate(exportDate)}
         </>
       ) : (
         <>

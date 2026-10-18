@@ -135,11 +135,19 @@ describe("نقض حارس الجودة الثاني — لا يعود", () => {
     expect(PAGE).not.toMatch(/محاكاة مرجعية|"reference"/);
     expect(PAGE).toContain("<SourceBadge source={s.source} exportDate={s.exportDate} />");
     const UI = readFileSync("src/components/sec/maint/maint-ui.tsx", "utf8");
-    expect(UI).toContain("نسخة تصدير SAP PM — {fmtDate(exportDate)}");
+    // تاريخ الاعتماد لا الاستخراج — «اعتُمد» تقولها الشارة (ملاحظة الحارس ٦ على c3444ef6d).
+    expect(UI).toContain("نسخة تصدير SAP PM — اعتُمد {fmtDate(exportDate)}");
   });
 
   it("نسخة التصدير معلنةٌ في الصفحة، ولا تُعرض عليها أدوات الإسناد ولا «أوامري» (قرار ٢٠٢٦/١٠/١٨)", () => {
-    expect(PAGE).toContain("القاعدة الحية لا تجيب الآن — المعروض أوامر تصدير SAP PM المعتمد");
+    expect(PAGE).toContain(
+      "القاعدة الحية لا تجيب الآن — المعروض أوامر تصدير SAP PM الذي اعتُمد في",
+    );
+    expect(PAGE).toContain("محسوبة حتى آخر تاريخٍ فيه ({fmtDate(exportAsOf)})");
+    // لا إنشاء على قاعدةٍ لا تجيب — الزرّ معطّل يقول لماذا (ملاحظة الحارس ٨).
+    expect(PAGE).toContain("<NewMaintOrderDialog unavailable={exportMode} />");
+    const DIALOG = readFileSync("src/components/sec/maint/NewMaintOrderDialog.tsx", "utf8");
+    expect(DIALOG).toContain("disabled={unavailable}");
     expect(PAGE).toMatch(/\{s && s\.source === "database" && \(\s*<Attention/);
     expect(PAGE).toContain("signedIn={!!user && !exportMode}");
     // البديل مؤقّت: يُعاد السؤال فتعود القاعدة الحية متى أجابت.
@@ -149,6 +157,31 @@ describe("نقض حارس الجودة الثاني — لا يعود", () => {
     const SHEET = readFileSync("src/components/sec/maint/MaintOrderSheet.tsx", "utf8");
     expect(SHEET).toContain("enabled: !!id && !isExportOrder({ id })");
     expect(SHEET).toContain("نسخة التصدير للقراءة وحدها");
+    // صفّ التصدير بلا أسماء لأي قارئ — لا «تظهر للأعضاء» عنه (ملاحظة الحارس ٣).
+    expect(SHEET).toMatch(/isExportOrder\(o\)\s*\?\s*"نسخة التصدير لا تحمل أسماء/);
+    const CARD = readFileSync("src/components/sec/maint/MaintOrderCard.tsx", "utf8");
+    expect(CARD).toMatch(/isExportOrder\(o\)\s*\?\s*"نسخة التصدير لا تحمل المُنشئ ولا الفني"/);
+  });
+
+  it("لوحة المدينة الفارغة تقول «لم تُقَس» لا قائمةً خرساء — وتسقط على المزروع (نقض الحارس N2)", () => {
+    const ANA = readFileSync("src/components/sec/maint/MaintAnalytics.tsx", "utf8");
+    /** لوحة «حسب المدينة» تعرض فرعًا فارغًا قبل القائمة. */
+    const cityPanelHasEmpty = (src: string) => {
+      const at = src.indexOf('title="الطلبات حسب المدينة"');
+      const panel = src.slice(at, src.indexOf("</Panel>", at));
+      return /data\.by_city\.length === 0 \?/.test(panel) && panel.includes("لم تُقَس");
+    };
+    expect(cityPanelHasEmpty(ANA)).toBe(true);
+    const planted = ANA.replace("data.by_city.length === 0 ?", "false ?");
+    expect(planted).not.toBe(ANA);
+    expect(cityPanelHasEmpty(planted)).toBe(false);
+  });
+
+  it("الإسناد غير المقيس لا يصير «لا أمر بلا فني»: النوع يقبل null والصفحة تطويه (نقض الحارس N1)", () => {
+    const TYPES = readFileSync("src/lib/maintenance/maint-types.ts", "utf8");
+    expect(TYPES).toContain("is_assigned: boolean | null;");
+    expect(TYPES).toContain("unassigned_active: number | null;");
+    expect(PAGE).toContain("const unassigned = k.unassigned_active ?? 0;");
   });
 
   it("فشل الملخّص رسالةٌ وزرّ إعادة لا هيكلٌ أبدي", () => {

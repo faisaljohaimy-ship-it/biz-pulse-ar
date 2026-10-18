@@ -130,18 +130,24 @@ export default function MaintAnalytics({ data }: { data: A }) {
       </Panel>
 
       <Panel title="الطلبات حسب المدينة" hint="ونسبة الالتزام بالموعد في المنجز">
-        <ul className="grid gap-3">
-          {data.by_city.map((r) => (
-            <Bar
-              key={r.key ?? "none"}
-              label={cityAr(r.key)}
-              value={r.n}
-              max={maxCity}
-              tone="--tone-cyan"
-              extra={`· بالموعد ${r.on_time === null ? "لم يُقَس" : `${fmt1(r.on_time)}٪`}`}
-            />
-          ))}
-        </ul>
+        {data.by_city.length === 0 ? (
+          <p className="text-[13px] text-[color:var(--ink-3)]">
+            لا مدينة مسجّلة في هذه الطلبات — لم تُقَس.
+          </p>
+        ) : (
+          <ul className="grid gap-3">
+            {data.by_city.map((r) => (
+              <Bar
+                key={r.key ?? "none"}
+                label={cityAr(r.key)}
+                value={r.n}
+                max={maxCity}
+                tone="--tone-cyan"
+                extra={`· بالموعد ${r.on_time === null ? "لم يُقَس" : `${fmt1(r.on_time)}٪`}`}
+              />
+            ))}
+          </ul>
+        )}
       </Panel>
 
       <Panel

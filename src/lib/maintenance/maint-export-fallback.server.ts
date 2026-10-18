@@ -5,7 +5,7 @@
  * Cloud لا تجيب (504 على `select now()`). فسُئل المالك (AskUserQuestion) واختار بنصّه
  * «Real-file fallback (Recommended)»: أوامر تصدير SAP PM الحقيقية الـ249 المضمَّنة في
  * المستودع (`maintenance-report.data.json`، المعتمدة إنتاجيةً ٢٠٢٦/٠٩/٠٢) بلا هوية أشخاص،
- * موسومةً بتاريخ التصدير، وتعود القاعدة الحية تلقائيًّا متى أجابت. وهو ينسخ في هذه الصفحة
+ * موسومةً بتاريخ اعتمادها، وتعود القاعدة الحية تلقائيًّا متى أجابت. وهو ينسخ في هذه الصفحة
  * وحدها قاعدة ٢٠٢٦/١٠/٠٦ «العطل ⇐ خطأ بإعادة محاولة» — والخطأ باقٍ حيث لا بديل (أدناه).
  *
  * ## ما هو، وما ليس هو
@@ -16,15 +16,19 @@
  *
  * ## مرآة القاعدة لا تقدير
  * الحقول المحسوبة تتبع تعريفاتها في `maint_orders_v` و`maint_kpis()` و`maint_analytics()`
- * (`20261006190000_maint_orders_sap_public.sql`) — والحارس يقارنها. والتاريخ المرجعي **تاريخ
- * التصدير لا اليوم**: لقطةٌ تُقرأ في لحظتها، فلا يُعدّ أمرٌ متأخرًا مئات الأيام لمجرّد أن
- * القاعدة لم تُجب. والحالة على الخريطة المصحَّحة في `sap-export-rules.ts` (`sapStatus`):
+ * (`20261006190000_maint_orders_sap_public.sql`) — والحارس يقارنها، إلا ما لا يحمله التصدير
+ * (أدناه). والتاريخ المرجعي **آخر تاريخٍ مسجّل في الملف** (`EXPORT_AS_OF`)، لا اليوم ولا تاريخ
+ * الاعتماد: تاريخ الاستخراج من SAP غير مسجّل، وكل أمرٍ نشطٍ في الملف كان نشطًا يقينًا في آخر
+ * تاريخٍ فيه — فالتأخير والعمر محسوبان إليه صادقان، ولا يُعدّ أمرٌ متأخرًا مئات الأيام لمجرّد
+ * أن القاعدة لم تُجب أو أن الاعتماد تأخّر (نقض الحارس على c3444ef6d، الملاحظة ٦). والحالة
+ * على الخريطة المصحَّحة في `sap-export-rules.ts` (`sapStatus`):
  * PLAN في هذا التصدير هي الأوامر الوقائية الـ13 المغلقة في SAP بلا إنجاز وعليها علامة حذف
  * ⇐ «ملغاة» لا «مفتوحة» (الملف المضمَّن سبق التصحيح فسمّاها `open`).
  *
  * ## ما لا يحمله التصدير — لا يُخترع (المادة ٢٧)
  * تاريخ الإنجاز الفعلي (فالتأخير والالتزام بالموعد `null`)، والإسناد (لا عمود موكَّل:
- * فلا «بلا فني» ولا «أوامري» — نتيجتهما فارغة ومؤشرهما صفر لا يُعرض)، والمدينة، والغرامات،
+ * `is_assigned` و`unassigned_active` ‏`null` «غير مقيس» لا «غير مُسنَد» ولا صفر — نقض الحارس
+ * N1 — و«بلا فني» و«أوامري» بلا نتيجة)، والمدينة، والغرامات،
  * وحالة نظام SAP. والكلفة الصفرية في الملف المضمَّن لا تميّز «صفرًا مسجَّلًا» من «فارغ» ⇐
  * `null` «غير مسجّلة»، ولا يتغيّر بها مجموع.
  *
@@ -55,6 +59,15 @@ import { plannerRegion, sapFacilityName, sapSystem } from "./sap-export-rules";
 
 /** نهاية نافذة القراءة العامة — `maint_public_read_open()` حرفًا. */
 export const PUBLIC_READ_CLOSES_AT = Date.parse("2027-04-06T00:00:00+03:00");
+
+/**
+ * آخر تاريخٍ مسجّل في التصدير (أحدث تاريخ طلب) — مرجع الأيام (رأس الوحدة). يُحسب من الصفوف
+ * لا يُكتب، فلا يتعفّن إن تبدّل الملف.
+ */
+export const EXPORT_AS_OF = MAINTENANCE_REPORT_ROWS.reduce(
+  (max, r) => (r.opened_at > max ? r.opened_at : max),
+  "",
+);
 
 const DAY_MS = 86_400_000;
 /** `a - b` بالأيام لتاريخين `YYYY-MM-DD` — طرح `date` في Postgres. */
@@ -121,7 +134,8 @@ export function exportOrder(r: MaintenanceReportSourceRow, asOf: string): MaintO
     assigned_to: null,
     assigned_to_name: null,
     assigned_to_staff: null,
-    is_assigned: false,
+    // لا عمود موكَّل في التصدير: «غير مقيس» لا «غير مُسنَد» (نقض الحارس N1).
+    is_assigned: null,
     created_at: at,
     updated_at: at,
     kind: r.kind,
@@ -190,8 +204,9 @@ export function exportKpis(rows: readonly MaintOrder[], publicReadOpen: boolean)
     sap_pending: count(
       (o) => o.source === "cm_log" && o.sap_wo === null && o.status === "completed",
     ),
-    // الإسناد غير مقيس في التصدير (لا عمود موكَّل) — صفرٌ لا يُعرض، لا «بلا فني» مختلَق.
-    unassigned_active: 0,
+    // الإسناد غير مقيس في التصدير (لا عمود موكَّل) ⇐ `null`: الصفر كان يقول «لا أمر نشط بلا
+    // فني» عن ملفٍّ لا يعرف الإسناد أصلًا (نقض الحارس N1).
+    unassigned_active: null,
     preventive_total: preventive,
     preventive_done: preventiveDone,
     pm_compliance: rate(preventiveDone, preventive),
@@ -409,14 +424,19 @@ export function exportList(
 /** أوامر التصدير كما يراها غير العضو، أو `null` بعد نافذة القراءة العامة. */
 function exportRows(now: number): MaintOrder[] | null {
   if (now >= PUBLIC_READ_CLOSES_AT) return null;
-  return MAINTENANCE_REPORT_ROWS.map((r) => exportOrder(r, MAINTENANCE_REPORT_DATE));
+  return MAINTENANCE_REPORT_ROWS.map((r) => exportOrder(r, EXPORT_AS_OF));
 }
 
 /** صفحة القائمة من التصدير — `null` حين لا بديل (بعد النافذة). */
 export function maintExportPage(d: ExportListQuery, now = Date.now()): MaintPage | null {
   const rows = exportRows(now);
   if (!rows) return null;
-  return { source: "export", exportDate: MAINTENANCE_REPORT_DATE, ...exportList(rows, d) };
+  return {
+    source: "export",
+    exportDate: MAINTENANCE_REPORT_DATE,
+    exportAsOf: EXPORT_AS_OF,
+    ...exportList(rows, d),
+  };
 }
 
 /** الملخّص من التصدير — `null` حين لا بديل (بعد النافذة). */
@@ -426,6 +446,7 @@ export function maintExportSummary(now = Date.now()): MaintSummary | null {
   return {
     source: "export",
     exportDate: MAINTENANCE_REPORT_DATE,
+    exportAsOf: EXPORT_AS_OF,
     kpis: exportKpis(rows, true),
     analytics: exportAnalytics(rows),
   };

@@ -42,8 +42,11 @@ export interface MaintOrder {
   assigned_to: string | null;
   assigned_to_name: string | null;
   assigned_to_staff: string | null;
-  /** مُسنَدٌ أم لا — حقيقة تشغيلية تبقى للزائر، وهوية الفني وحدها تُحجب. */
-  is_assigned: boolean;
+  /**
+   * مُسنَدٌ أم لا — حقيقة تشغيلية تبقى للزائر، وهوية الفني وحدها تُحجب. و`null` = غير مقيس:
+   * مصدرٌ بلا عمود موكَّل (نسخة تصدير SAP) لا يُقال فيه «غير مُسنَد» (المادة ٢٧).
+   */
+  is_assigned: boolean | null;
   created_at: string;
   updated_at: string;
   kind: "corrective" | "preventive";
@@ -92,7 +95,8 @@ export interface MaintKpis {
   spares_cost: number | null;
   penalties: number | null;
   sap_pending: number;
-  unassigned_active: number;
+  /** `null` حين لا يحمل المصدر الإسناد أصلًا — لا صفر يُقرأ «لا أمر بلا فني». */
+  unassigned_active: number | null;
   preventive_total: number;
   preventive_done: number;
   pm_compliance: number | null;
@@ -123,22 +127,33 @@ export interface MaintAnalytics {
  * مصدر ما يُعرض — لا محاكاة في الحالين (أمر المالك ٢٠٢٦/١٠/٠٦):
  * - `database`: القاعدة الحية.
  * - `export`: حين لا تجيب القاعدة — أوامر تصدير SAP PM الحقيقية المضمَّنة (249) بلا هوية،
- *   موسومةً بتاريخ التصدير (قرار المالك ٢٠٢٦/١٠/١٨، `maint-export-fallback.server.ts`).
+ *   موسومةً بتاريخ اعتماده وبآخر تاريخٍ فيه (قرار المالك ٢٠٢٦/١٠/١٨،
+ *   `maint-export-fallback.server.ts`).
  */
 export type MaintSource = "database" | "export";
 
 export interface MaintSummary {
   source: MaintSource;
-  /** تاريخ لقطة التصدير (`YYYY-MM-DD`) — حين `source = "export"` وحده. */
+  /** تاريخ اعتماد التصدير (`YYYY-MM-DD`) — حين `source = "export"` وحده. ليس تاريخ استخراجه. */
   exportDate?: string;
+  /**
+   * آخر تاريخٍ مسجّل في التصدير (`YYYY-MM-DD`): الأيام (التأخير والعمر) محسوبة حتى هذا اليوم،
+   * لأن تاريخ الاستخراج من SAP غير مسجّل — وكل أمرٍ نشطٍ في الملف كان نشطًا فيه يقينًا.
+   */
+  exportAsOf?: string;
   kpis: MaintKpis;
   analytics: MaintAnalytics;
 }
 
 export interface MaintPage {
   source: MaintSource;
-  /** تاريخ لقطة التصدير (`YYYY-MM-DD`) — حين `source = "export"` وحده. */
+  /** تاريخ اعتماد التصدير (`YYYY-MM-DD`) — حين `source = "export"` وحده. ليس تاريخ استخراجه. */
   exportDate?: string;
+  /**
+   * آخر تاريخٍ مسجّل في التصدير (`YYYY-MM-DD`): الأيام (التأخير والعمر) محسوبة حتى هذا اليوم،
+   * لأن تاريخ الاستخراج من SAP غير مسجّل — وكل أمرٍ نشطٍ في الملف كان نشطًا فيه يقينًا.
+   */
+  exportAsOf?: string;
   rows: MaintOrder[];
   total: number;
 }
