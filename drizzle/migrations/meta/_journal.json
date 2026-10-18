@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792344064149,
+      "tag": "0000_archive_and_purge_cron_job_run_details",
+      "breakpoints": true
+    }
+  ]
+}
