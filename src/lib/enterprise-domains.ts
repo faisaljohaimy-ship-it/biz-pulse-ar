@@ -135,7 +135,7 @@ type AnyRow = { id: string };
  * «حذفٍ» لا يقع.
  */
 const SIM_ID_PREFIX = "sim-";
-const SIM_ROW_MESSAGE_AR = "هذه بيانات محاكاة مرجعية — الإجراء متاح على البيانات الحية فقط";
+const SIM_ROW_MESSAGE_AR = "هذه بيانات مرجعية (ليست حيّة) — الإجراء متاح على البيانات الحية فقط";
 
 class SimulationRowError extends Error {
   constructor() {

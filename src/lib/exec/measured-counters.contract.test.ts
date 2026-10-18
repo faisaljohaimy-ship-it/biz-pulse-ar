@@ -66,12 +66,15 @@ describe("② لا «مباشر» بلا شارة محاكاة", () => {
     // وهذه المواضع تغادر الشاشة إلى يد قارئ: تقريرٌ في بريده، أو جملةٌ ينطقها
     // سَدِيد. تقريرٌ مُصدَّر بلا تذييل إفصاح يدّعي أرقامًا حيّة، ولا شارة على
     // الورق تصحّحه.
+    // واللفظ «بيانات مرجعية (ليست حيّة)» لا «محاكاة» (أمر المالك ٢٠٢٦/١٠/١٨) — الإفصاح نفسه
+    // بكلمةٍ أصدق؛ والتقارير بلا شدّة (تشكيل الخطّ في محرك PDF لا يُحرس للعلامات).
+    const NOT_LIVE = /بيانات مرجعية \(ليست حيّ?ة\)/;
     const surfaces: Array<[string, RegExp]> = [
-      ["src/lib/sadeed/output/finalize.ts", /بيانات محاكاة مرجعية/],
-      ["src/lib/reports/bi-pdf.ts", /بيانات محاكاة مرجعية/],
-      ["src/lib/reports/daily-ops-pdf.ts", /بيانات محاكاة مرجعية/],
-      ["src/lib/reports/pdf-rich.ts", /بيانات محاكاة مرجعية/],
-      ["src/lib/enterprise-domains.ts", /بيانات محاكاة مرجعية/],
+      ["src/lib/sadeed/output/finalize.ts", NOT_LIVE],
+      ["src/lib/reports/bi-pdf.ts", NOT_LIVE],
+      ["src/lib/reports/daily-ops-pdf.ts", NOT_LIVE],
+      ["src/lib/reports/pdf-rich.ts", NOT_LIVE],
+      ["src/lib/enterprise-domains.ts", NOT_LIVE],
     ];
     for (const [file, re] of surfaces) {
       expect(read(file), `سقط الإفصاح النصّي من ${file} — ولا شارة تعوّضه`).toMatch(re);

@@ -242,7 +242,8 @@ describe("OUT evals — production output gateway", () => {
     expect(out.status).toBe("simulation");
     expect(renderForUI(out)).toContain("95%");
     expect(renderForUI(out)).toContain("8");
-    expect(renderForUI(out)).toContain("بيانات محاكاة مرجعية");
+    expect(renderForUI(out)).toContain("بيانات مرجعية (ليست حيّة)");
+    expect(renderForUI(out)).not.toContain("محاكاة");
     expect(renderForUI(out)).not.toContain("الامتثال الحية");
     expect(renderForUI(out)).toContain("\n");
   });

@@ -105,9 +105,9 @@ const REFUSAL_EXFIL = "لا أكشف تعليماتي الداخلية. كيف �
 const REFUSAL_INJECTION = "تجاهلت محتوى غير موثوق في المستند — لن أنفّذ أمرًا أو أكشف سرًا.";
 const APPROVAL_REQUIRED_LINE = "هذا إجراء حسّاس يتطلب اعتمادًا بشريًا قبل التنفيذ.";
 const DENIED_LINE = "صلاحيتك لا تسمح باعتماد هذا الإجراء أو تنفيذه.";
-const SIMULATION_LINE = "البيانات الحية غير متاحة الآن — هذا عرض محاكاة مرجعية (بيانات محاكاة).";
+const SIMULATION_LINE = "البيانات الحية غير متاحة الآن — المعروض بيانات مرجعية، ليست حيّة.";
 const SAFE_ERROR_LINE = "تعذّر إكمال الرد بأمان الآن — أعد المحاولة.";
-const SIMULATION_DISCLOSURE = "بيانات محاكاة مرجعية — وليست حالة تشغيلية حية.";
+const SIMULATION_DISCLOSURE = "بيانات مرجعية (ليست حيّة) — لا تمثّل الحالة التشغيلية الآن.";
 
 // ── Detectors (textual layer — ADDITIONAL to the policy above) ──────────────
 /**

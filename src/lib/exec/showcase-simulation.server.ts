@@ -2191,7 +2191,7 @@ export function buildKbSimulation(now: number) {
       related_agents: [],
       keywords_ar: kw,
       keywords_en: kw,
-      body_ar: `${summary_ar}\n\nيُطبق هذا المستند ضمن منظومة الامتثال لتوجيهات الهيئة العليا للأمن الصناعي، ويُراجع سنويًا أو عند صدور تحديث تنظيمي. جميع البيانات المعروضة محاكاة مرجعية موسومة is_simulation = true.`,
+      body_ar: `${summary_ar}\n\nيُطبق هذا المستند ضمن منظومة الامتثال لتوجيهات الهيئة العليا للأمن الصناعي، ويُراجع سنويًا أو عند صدور تحديث تنظيمي. جميع البيانات المعروضة بيانات مرجعية (ليست حيّة) موسومة is_simulation = true.`,
       body_en: null,
       version: "2.0",
       owner: "قسم الامتثال HCIS",
@@ -2479,7 +2479,7 @@ export function buildReportsRegistrySimulation(now: number) {
         range_from: `${d}T00:00:00.000Z`,
         range_to: null,
         generated_by: null,
-        generated_by_name: "محرك المحاكاة المرجعية",
+        generated_by_name: "محرك البيانات المرجعية",
         created_at: iso(now - (i + 1) * 24 * H + 18 * H),
         meta: { simulated: true, date: d },
       };

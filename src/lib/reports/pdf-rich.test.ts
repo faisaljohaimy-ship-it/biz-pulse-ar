@@ -330,7 +330,7 @@ describe("الجداول — محاذاة يمينًا وترويسة متكرّ
 
 describe("شارة المحاكاة — على كل صفحة، بلا خيار إلغاء", () => {
   const isWatermark = (item: PlannedItem) =>
-    item.type === "text" && item.text === "محاكاة" && item.rotate === 45;
+    item.type === "text" && item.text === "مرجعي" && item.rotate === 45;
   const isStrip = (item: PlannedItem) =>
     item.type === "text" && item.text.includes("is_simulation = true");
 
