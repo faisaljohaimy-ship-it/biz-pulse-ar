@@ -115,6 +115,9 @@ export const REAL_SEC_PROJECTS: readonly SecProject[] = SOURCE.map((p) =>
   return a.ends_at.localeCompare(b.ends_at);
 });
 
+/** تاريخ اعتماد التصدير (أمر المالك ٢٠٢٦/٠٨/٣٠) — لا تاريخ استخراجه؛ يُوسم به كل جوابٍ يقرأ هذه اللقطة. */
+export const PROJECTS_REPORT_DATE = "2026-08-30";
+
 /**
  * عدّادات المجموعة كاملةً — تُحسب مرّةً هنا لا في الصفحة، فبطاقات الإحصاء
  * تصف الـ697 لا الصفحةَ المعروضة منها.

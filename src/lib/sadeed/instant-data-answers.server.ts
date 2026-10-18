@@ -23,19 +23,35 @@
  * يحمل تحليلًا (لماذا/قارن/حلّل) أو قيدًا (موقعًا، مديرًا، مدةً) ليس
  * عدًّا صرفًا ولا يُختطف.
  *
- * ## بوابة المستأجر
+ * ## لكل نداء — والبوابة نُسخت
  *
- * الأرقام والسجلّات هنا **إنتاجية**، والوحدة لا ترى هوية النداء — فالبوابة
- * على المستدعي: `/api/chat` لا يستشيرها إلا لنداءٍ مصادَق (`userId`)،
- * والزائر يبقى على مسار النموذج بمحاكاته الموسومة. حارسها في
- * `chat-latency.contract.test.ts`.
+ * وُلدت الطبقة خلف بوابة `userId` في `/api/chat`، **ونسخها المالك
+ * ٢٠٢٦/٠٩/٠٣** («البيانات الإنتاجية المعكوسة وليست المحاكاة»): المجموعات
+ * نفسها معروضة للزائر في الشاشات المفتوحة. وهي لا تنفق نموذجًا ولا تقرأ
+ * قاعدة، فتُجيب **حتى حين يتعذّر مخزن الحدّ** والسياسة مغلقة (DEF-10،
+ * ٢٠٢٦/١٠/١٨). حارسها في `chat-latency.contract.test.ts`.
+ *
+ * ## لقطةٌ لا قراءةٌ حيّة — والتاريخ في الجواب (DEF-18)
+ *
+ * الأرقام من تصديرٍ معتمد، لا من القاعدة الحيّة؛ فكل جوابٍ يحمل «حسب التصدير
+ * المعتمد في <التاريخ>» — رقمٌ بلا تاريخ يُقرأ حالًا، وهو ليس كذلك. والتاريخ تاريخ
+ * اعتماد المالك للتصدير، لا تاريخ استخراجه (غير مسجّل) — فالعبارة «المعتمد في» لا
+ * «تصدير <التاريخ>» (ملاحظة الحارس ٦ على c3444ef6d). وأوامر
+ * PLAN في تصدير الصيانة **ملغاة** لا مفتوحة (الخريطة المصحَّحة في
+ * `sap-export-rules.ts`: أُغلقت في SAP دون إنجاز وعليها علامة حذف)، والملف
+ * المضمَّن سبق التصحيح فسمّاها `open` — كما يقرؤها بديل صفحة الصيانة.
  */
-import { REAL_PROJECT_COUNTS, REAL_SEC_PROJECTS } from "@/lib/exec/projects-report.real.server";
 import {
+  PROJECTS_REPORT_DATE,
+  REAL_PROJECT_COUNTS,
+  REAL_SEC_PROJECTS,
+} from "@/lib/exec/projects-report.real.server";
+import {
+  MAINTENANCE_REPORT_DATE,
   REAL_SEC_WORK_ORDERS,
   REAL_WORK_ORDER_COUNTS,
 } from "@/lib/exec/maintenance-report.real.server";
-import { REAL_INCIDENT_COUNTS } from "@/lib/exec/event-report.real.server";
+import { EVENT_REPORT_DATE, REAL_INCIDENT_COUNTS } from "@/lib/exec/event-report.real.server";
 import {
   formatProjectRecord,
   formatWorkOrderRecord,
@@ -175,61 +191,112 @@ function isPureCountQuestion(tokens: string[], entity: readonly string[]): boole
   return tokens.every((t) => known.has(t));
 }
 
+/** «حسب التصدير المعتمد في <التاريخ>» على سطر الجواب نفسه — اللقطة تُقرأ بتاريخها لا حالًا. */
+const asOf = (line: string, date: string) => `${line} — حسب التصدير المعتمد في ${date}.`;
+
 function projectsAnswer(tokens: string[]): string {
   const c = REAL_PROJECT_COUNTS;
-  if (contains(tokens, ["جاري", "جاريه", "الجاريه"])) return `المشاريع الجارية ${c.in_progress}.`;
-  if (contains(tokens, ["مكتمل", "مكتمله", "المكتمله"])) return `المشاريع المكتملة ${c.completed}.`;
-  if (contains(tokens, ["ملغي", "ملغيه", "الملغاه", "ملغاه"]))
-    return `المشاريع الملغاة ${c.cancelled}.`;
-  return `المشاريع ${c.total}: جارية ${c.in_progress} · مكتملة ${c.completed} · ملغاة ${c.cancelled}.`;
+  const line = contains(tokens, ["جاري", "جاريه", "الجاريه"])
+    ? `المشاريع الجارية ${c.in_progress}`
+    : contains(tokens, ["مكتمل", "مكتمله", "المكتمله"])
+      ? `المشاريع المكتملة ${c.completed}`
+      : contains(tokens, ["ملغي", "ملغيه", "الملغاه", "ملغاه"])
+        ? `المشاريع الملغاة ${c.cancelled}`
+        : `المشاريع ${c.total}: جارية ${c.in_progress} · مكتملة ${c.completed} · ملغاة ${c.cancelled}`;
+  return asOf(line, PROJECTS_REPORT_DATE);
 }
+
+/** PLAN في الملف المضمَّن (`status: "open"`) ملغاة — رأس الوحدة؛ فالمفتوح فعلًا قيد التنفيذ وحده. */
+const WO_CANCELLED = REAL_WORK_ORDER_COUNTS.open;
+const WO_CANCELLED_PREVENTIVE = REAL_SEC_WORK_ORDERS.filter(
+  (w) => w.status === "open" && w.kind === "preventive",
+).length;
 
 function maintenanceAnswer(tokens: string[]): string {
   const c = REAL_WORK_ORDER_COUNTS;
-  if (contains(tokens, ["وقائي", "وقائيه", "الوقائيه"]))
-    return `أوامر الصيانة الوقائية ${c.preventive}.`;
-  if (contains(tokens, ["تصحيحي", "تصحيحيه", "التصحيحيه"]))
-    return `أوامر الصيانة التصحيحية ${c.corrective}.`;
-  if (contains(tokens, ["مغلق", "مغلقه", "المغلقه"])) return `أوامر الصيانة المغلقة ${c.closed}.`;
-  if (contains(tokens, ["مفتوح", "مفتوحه", "المفتوحه"]))
-    return `أوامر الصيانة غير المغلقة ${c.open + c.in_progress}: قيد التنفيذ ${c.in_progress} · مفتوحة ${c.open}.`;
-  return `أوامر الصيانة ${c.total}: مغلقة ${c.closed} · قيد التنفيذ ${c.in_progress} · مفتوحة ${c.open}.`;
+  const line = contains(tokens, ["وقائي", "وقائيه", "الوقائيه"])
+    ? `أوامر الصيانة الوقائية ${c.preventive}، منها ${WO_CANCELLED_PREVENTIVE} ملغاة`
+    : contains(tokens, ["تصحيحي", "تصحيحيه", "التصحيحيه"])
+      ? `أوامر الصيانة التصحيحية ${c.corrective}`
+      : contains(tokens, ["ملغي", "ملغيه", "الملغاه", "ملغاه"])
+        ? `أوامر الصيانة الملغاة ${WO_CANCELLED}`
+        : contains(tokens, ["مغلق", "مغلقه", "المغلقه"])
+          ? `أوامر الصيانة المغلقة ${c.closed + WO_CANCELLED}: مكتملة ${c.closed} · ملغاة ${WO_CANCELLED}`
+          : contains(tokens, ["مكتمل", "مكتمله", "المكتمله"])
+            ? `أوامر الصيانة المكتملة ${c.closed}`
+            : contains(tokens, ["مفتوح", "مفتوحه", "المفتوحه", "جاري", "جاريه", "الجاريه"])
+              ? `أوامر الصيانة المفتوحة ${c.in_progress}، كلّها قيد التنفيذ`
+              : `أوامر الصيانة ${c.total}: مكتملة ${c.closed} · قيد التنفيذ ${c.in_progress} · ملغاة ${WO_CANCELLED}`;
+  return asOf(line, MAINTENANCE_REPORT_DATE);
 }
 
 function incidentsAnswer(tokens: string[]): string {
   const c = REAL_INCIDENT_COUNTS;
-  if (contains(tokens, ["مفتوح", "مفتوحه", "المفتوحه"])) return `البلاغات المفتوحة ${c.open}.`;
-  if (contains(tokens, ["مغلق", "مغلقه", "المغلقه"])) return `البلاغات المغلقة ${c.closed}.`;
-  return `البلاغات ${c.total}: مفتوحة ${c.open} · مغلقة ${c.closed}.`;
+  const line = contains(tokens, ["مفتوح", "مفتوحه", "المفتوحه"])
+    ? `البلاغات المفتوحة ${c.open}`
+    : contains(tokens, ["مغلق", "مغلقه", "المغلقه"])
+      ? `البلاغات المغلقة ${c.closed}`
+      : `البلاغات ${c.total}: مفتوحة ${c.open} · مغلقة ${c.closed}`;
+  return asOf(line, EVENT_REPORT_DATE);
 }
 
 /** مرجع SAP لأمر صيانة — النسق الحرفي للمجموعة المستوردة. */
 const SAP_ORDER = /\b(66000\d{6})\b/;
 
 /**
+ * قيم السجلّ كما تُقرأ في جوابٍ بلا نموذج: لا مفتاحٌ إنجليزي خام، و`open` المضمَّنة
+ * (PLAN) «ملغى» على الخريطة المصحَّحة — لا «مفتوح» يناقض صفحة الصيانة.
+ */
+const WO_STATUS_SHOWN: Record<string, string> = {
+  closed: "مُنجَز",
+  in_progress: "قيد التنفيذ",
+  open: "ملغى (أُغلق في SAP دون إنجاز)",
+};
+const WO_KIND_SHOWN: Record<string, string> = { preventive: "وقائية", corrective: "تصحيحية" };
+const WO_PRIORITY_SHOWN: Record<string, string> = { high: "عالٍ", medium: "متوسط" };
+
+/**
  * سؤال مرجعٍ حرفيّ: يحمل مرجعًا موجودًا فعلًا في المجموعة، وبقية السؤال
- * استفهام حالة/تفاصيل لا تحليل. الجواب سجلّه الكامل (≤٥ أسطر — درجة
- * «معقّد» في عقد الاختصار، والمرجع المسؤول عنها).
+ * استفهام حالة/تفاصيل لا تحليل. الجواب سجلّه الكامل وسطر مصدره (≤٦ أسطر —
+ * درجة «معقّد» في عقد الاختصار، والمرجع المسؤول عنها).
  */
 function matchRecordLookup(raw: string, normalized: string): InstantDataAnswer | null {
   const sap = SAP_ORDER.exec(normalized);
   if (sap) {
     const order = REAL_SEC_WORK_ORDERS.find((w) => w.ref === sap[1]);
-    if (order) return { answer: formatWorkOrderRecord(order), source: "record-lookup" };
+    if (order) {
+      const shown = {
+        ...order,
+        status: WO_STATUS_SHOWN[order.status] ?? order.status,
+        kind: order.kind ? (WO_KIND_SHOWN[order.kind] ?? order.kind) : order.kind,
+        priority: order.priority
+          ? (WO_PRIORITY_SHOWN[order.priority] ?? order.priority)
+          : order.priority,
+      };
+      return {
+        answer: `${formatWorkOrderRecord(shown)}\n  المصدر: تصدير SAP PM المعتمد في ${MAINTENANCE_REPORT_DATE}.`,
+        source: "record-lookup",
+      };
+    }
   }
   // مراجع المشاريع (مثل NG-PSS-23-CO-002): مطابقة حرفية ضد المجموعة —
   // لا نمط عام قد يلتقط ما ليس مرجعًا.
   const upper = raw.toUpperCase();
   if (/[A-Z]\w*-/.test(upper)) {
     const project = REAL_SEC_PROJECTS.find((p) => upper.includes(p.ref.toUpperCase()));
-    if (project) return { answer: formatProjectRecord(project), source: "record-lookup" };
+    if (project) {
+      return {
+        answer: `${formatProjectRecord(project)}\n  المصدر: تصدير المشاريع المعتمد في ${PROJECTS_REPORT_DATE}.`,
+        source: "record-lookup",
+      };
+    }
   }
   return null;
 }
 
 /**
  * المدخل الوحيد — `null` يعني: ليس سؤالًا فوريًّا، أكمل لمسار النموذج.
- * **لا يُستدعى إلا لنداءٍ مصادَق** (بوابة المستأجر في `/api/chat`).
+ * يُستشار لكل نداء، وحين تكون البوّابة مغلقة أيضًا (رأس الوحدة).
  */
 export function matchInstantDataAnswer(question: string): InstantDataAnswer | null {
   const trimmed = question.trim();

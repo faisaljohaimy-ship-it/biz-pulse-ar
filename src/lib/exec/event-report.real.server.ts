@@ -97,6 +97,9 @@ export const REAL_INCIDENTS: readonly OmsIncidentRow[] = Object.freeze(
     ),
 );
 
+/** تاريخ اعتماد التصدير (أمر المالك ٢٠٢٦/٠٨/٢٧) — لا تاريخ استخراجه؛ يُوسم به كل جوابٍ يقرأ هذه اللقطة. */
+export const EVENT_REPORT_DATE = "2026-08-27";
+
 /** عدّادات محسوبة من الصفوف نفسها — لا أرقام مكتوبة يدويًّا. */
 export const REAL_INCIDENT_COUNTS = Object.freeze({
   total: REAL_INCIDENTS.length,

@@ -8,12 +8,17 @@
  * والأرقام تُقاس ضد العدّادات الكنسية نفسها لا ضد أرقام منسوخة تتعفّن.
  */
 import { describe, expect, it } from "vitest";
-import { REAL_PROJECT_COUNTS, REAL_SEC_PROJECTS } from "@/lib/exec/projects-report.real.server";
 import {
+  PROJECTS_REPORT_DATE,
+  REAL_PROJECT_COUNTS,
+  REAL_SEC_PROJECTS,
+} from "@/lib/exec/projects-report.real.server";
+import {
+  MAINTENANCE_REPORT_DATE,
   REAL_SEC_WORK_ORDERS,
   REAL_WORK_ORDER_COUNTS,
 } from "@/lib/exec/maintenance-report.real.server";
-import { REAL_INCIDENT_COUNTS } from "@/lib/exec/event-report.real.server";
+import { EVENT_REPORT_DATE, REAL_INCIDENT_COUNTS } from "@/lib/exec/event-report.real.server";
 import { hasForbiddenFiller } from "@/lib/sadeed/response-contract";
 import { matchInstantDataAnswer } from "./instant-data-answers.server";
 
@@ -71,6 +76,49 @@ describe("سؤال المرجع الحرفيّ يُجاب بسجلّه الكا�
     expect(hit?.source).toBe("record-lookup");
     expect(hit!.answer).toContain(target.ref);
     expect(hit!.answer).toContain(target.title_ar);
+  });
+});
+
+describe("لقطةٌ بتاريخها، والملغاة ملغاة (DEF-18، ٢٠٢٦/١٠/١٨)", () => {
+  /** الجواب يحمل تاريخ لقطته — رقمٌ بلا تاريخ يُقرأ حالًا وهو ليس كذلك. */
+  const carriesAsOf = (answer: string, date: string) => answer.includes(`المعتمد في ${date}`);
+
+  it("كل جواب عدٍّ يحمل تاريخ تصديره — والفحص يسقط على جوابٍ بلا تاريخ (المادة ٣٠)", () => {
+    const cases: Array<[string, string]> = [
+      ["كم عدد المشاريع؟", PROJECTS_REPORT_DATE],
+      ["كم مشروع جاري حالياً؟", PROJECTS_REPORT_DATE],
+      ["عدد أوامر الصيانة في النظام", MAINTENANCE_REPORT_DATE],
+      ["كم صيانة وقائية لدينا؟", MAINTENANCE_REPORT_DATE],
+      ["كم عدد البلاغات المفتوحة؟", EVENT_REPORT_DATE],
+    ];
+    for (const [q, date] of cases) {
+      const hit = matchInstantDataAnswer(q);
+      expect(hit, q).not.toBeNull();
+      expect(carriesAsOf(hit!.answer, date), q).toBe(true);
+    }
+    expect(carriesAsOf(`المشاريع ${REAL_PROJECT_COUNTS.total}.`, PROJECTS_REPORT_DATE)).toBe(false);
+  });
+
+  it("أوامر PLAN الـ13 ملغاة لا مفتوحة — مرآة بديل صفحة الصيانة", () => {
+    const cancelled = REAL_SEC_WORK_ORDERS.filter((w) => w.status === "open").length;
+    expect(cancelled).toBe(13);
+    const all = matchInstantDataAnswer("عدد أوامر الصيانة في النظام")!.answer;
+    expect(all).toContain(`ملغاة ${cancelled}`);
+    expect(all).not.toMatch(/مفتوحة \d/);
+    const open = matchInstantDataAnswer("كم أمر صيانة مفتوح؟")!.answer;
+    expect(open).toContain(`المفتوحة ${REAL_WORK_ORDER_COUNTS.in_progress}`);
+    expect(open).toContain("قيد التنفيذ");
+  });
+
+  it("سجلّ أمرٍ PLAN يقول «ملغى» بالعربية لا مفتاحًا خامًا، ويذكر مصدره وتاريخه", () => {
+    const plan = REAL_SEC_WORK_ORDERS.find((w) => w.status === "open")!;
+    const hit = matchInstantDataAnswer(`تفاصيل ${plan.ref}`)!;
+    expect(hit.answer).toContain("الحالة: ملغى");
+    expect(hit.answer).not.toMatch(/الحالة: (open|closed|in_progress)\b/);
+    expect(hit.answer).not.toMatch(/النوع: (preventive|corrective)\b/);
+    expect(hit.answer).toContain(`تصدير SAP PM المعتمد في ${MAINTENANCE_REPORT_DATE}`);
+    const project = matchInstantDataAnswer(`ما حالة المشروع ${REAL_SEC_PROJECTS[7].ref}؟`)!;
+    expect(project.answer).toContain(`تصدير المشاريع المعتمد في ${PROJECTS_REPORT_DATE}`);
   });
 });
 

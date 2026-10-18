@@ -525,19 +525,94 @@ export const Route = createFileRoute("/api/chat")({
             headers,
           }) as T;
         };
-        const closedPolicyReply = (which: "rate" | "quota") => {
+        const uiMessages = sanitizeHistory(messages as UIMessage[]);
+        const lastUserText = getMessageText(
+          [...uiMessages].reverse().find((m) => m.role === "user"),
+        );
+
+        // Article 22 — deterministic response contract runs BEFORE any model
+        // work: an out-of-scope question gets the one fixed line, and a
+        // recurring FAQ answers instantly (no model call, sub-second). The
+        // model path below inherits the same scope/brevity rules through
+        // SADEED_RESPONSE_CONTRACT baked into SYSTEM_PROMPT.
+        //
+        // والمسارات الثلاثة لا تُنفق نموذجًا ولا تقرأ قاعدة، فتُجاب حين تُغلق
+        // البوّابة أيضًا (DEF-10، ٢٠٢٦/١٠/١٨): قِيس والمخزن لا يردّ أن «كم عدد
+        // المشاريع؟» و«من أنت؟» أخذا السطر المغلق نفسه. وذلك السطر بلا حدٍّ أصلًا،
+        // فما يحلّ محلّه لا يفتح إنفاقًا ولا قراءة.
+        const zeroCostReply = async (gateHeader: GateMode | "closed") => {
+          if (!lastUserText) return null;
+          const streamFixed = (text: string, tag: string) => {
+            const stream = createUIMessageStream({
+              execute: ({ writer }) => {
+                const id = `sadeed-${tag}-${requestId}`;
+                writer.write({ type: "text-start", id });
+                writer.write({ type: "text-delta", id, delta: text });
+                writer.write({ type: "text-end", id });
+              },
+            });
+            return createUIMessageStreamResponse({
+              stream,
+              headers: {
+                ...responseHeaders(requestId),
+                "X-SADEED-Reply-Source": tag,
+                "X-SADEED-Gate": gateHeader,
+                "X-SADEED-Auth": authState,
+              },
+            });
+          };
+          if (!isInScope(lastUserText)) {
+            // Out-of-scope is a policy decision owned by the output gateway —
+            // route it through finalizeSadeedOutput so the public exit is guarded
+            // by the same funnel as every other output (never a raw string).
+            const safe = finalizeSadeedOutput({
+              userText: lastUserText,
+              modelText: "",
+              actor: { userId, appRoles: [], orgRole, orgId },
+              evidence: { available: [] },
+              liveDataAvailable: false,
+              trustedClockISO: null,
+              isSimulationEnv: false,
+            });
+            return streamFixed(renderForUI(safe), "scope-guard");
+          }
+          const recall = matchFastRecall(lastUserText);
+          if (recall) return streamFixed(recall.answer, "fast-recall");
+          // الإجابة الفورية من بيانات النظام — أمر المالك ٢٠٢٦/٠٩/٠٢
+          // («يجاوب فورًا... كعدد المشاريع والصيانة والبلاغات»): عدٌّ صرف
+          // أو سجلّ مرجعٍ حرفيّ يُحسب من المجموعات الإنتاجية ويُبثّ دون
+          // نموذج.
+          //
+          // **ولكل نداءٍ، لا للمصادَق وحده — أمر المالك ٢٠٢٦/٠٩/٠٣**
+          // («البيانات الإنتاجية المعكوسة وليست المحاكاة، مع إزالة
+          // المحاكاة كاملًا»): بوابة `userId` التي وُضعت هنا تحفّظًا
+          // نُسخت بهذا الأمر — والمجموعات نفسها تصل الزائر أصلًا من
+          // شاشات العرض المفتوحة (بدائل `resilient` على
+          // `optionalSupabaseAuth`)، فلم تكن البوابة تحجب إلا الدردشة
+          // عمّا تعرضه الصفحة المجاورة.
+          const { matchInstantDataAnswer } =
+            await import("@/lib/sadeed/instant-data-answers.server");
+          const instant = matchInstantDataAnswer(lastUserText);
+          if (instant) {
+            console.log("[api/chat] instant-data", { requestId, source: instant.source });
+            return streamFixed(instant.answer, "instant-data");
+          }
+          return null;
+        };
+        const closedPolicyReply = async (which: "rate" | "quota") => {
           console.warn(
-            `[api/chat] ${which} gate unavailable — closed policy, local guaranteed reply`,
+            `[api/chat] ${which} gate unavailable — closed policy, zero-cost reply or local guaranteed reply`,
             {
               requestId,
               event: "gate.closed",
             },
           );
-          return localGuaranteedReply(
-            requestId,
-            LOCAL_QUOTA_UNVERIFIED_AR,
-            "local-quota-unverified",
-            { "X-SADEED-Gate": "closed", "X-SADEED-Auth": authState },
+          return (
+            (await zeroCostReply("closed")) ??
+            localGuaranteedReply(requestId, LOCAL_QUOTA_UNVERIFIED_AR, "local-quota-unverified", {
+              "X-SADEED-Gate": "closed",
+              "X-SADEED-Auth": authState,
+            })
           );
         };
 
@@ -587,6 +662,9 @@ export const Route = createFileRoute("/api/chat")({
           });
         }
 
+        const zeroCost = await zeroCostReply(gateMode);
+        if (zeroCost) return zeroCost;
+
         const provider = createGoogleGeminiProvider(googleKey);
         const model = provider(selectedModelId);
         console.log("[api/chat] provider", {
@@ -596,76 +674,6 @@ export const Route = createFileRoute("/api/chat")({
           intent: parseIntent(intentHeader),
           anonymous: isAnonymous,
         });
-
-        const uiMessages = sanitizeHistory(messages as UIMessage[]);
-        const lastUserText = getMessageText(
-          [...uiMessages].reverse().find((m) => m.role === "user"),
-        );
-
-        // Article 22 — deterministic response contract runs BEFORE any model
-        // work: an out-of-scope question gets the one fixed line, and a
-        // recurring FAQ answers instantly (no model call, sub-second). The
-        // model path below inherits the same scope/brevity rules through
-        // SADEED_RESPONSE_CONTRACT baked into SYSTEM_PROMPT.
-        if (lastUserText) {
-          const streamFixed = (text: string, tag: string) => {
-            const stream = createUIMessageStream({
-              execute: ({ writer }) => {
-                const id = `sadeed-${tag}-${requestId}`;
-                writer.write({ type: "text-start", id });
-                writer.write({ type: "text-delta", id, delta: text });
-                writer.write({ type: "text-end", id });
-              },
-            });
-            return createUIMessageStreamResponse({
-              stream,
-              headers: {
-                ...responseHeaders(requestId),
-                "X-SADEED-Reply-Source": tag,
-                "X-SADEED-Gate": gateMode,
-                "X-SADEED-Auth": authState,
-              },
-            });
-          };
-          if (!isInScope(lastUserText)) {
-            // Out-of-scope is a policy decision owned by the output gateway —
-            // route it through finalizeSadeedOutput so the public exit is guarded
-            // by the same funnel as every other output (never a raw string).
-            const safe = finalizeSadeedOutput({
-              userText: lastUserText,
-              modelText: "",
-              actor: { userId, appRoles: [], orgRole, orgId },
-              evidence: { available: [] },
-              liveDataAvailable: false,
-              trustedClockISO: null,
-              isSimulationEnv: false,
-            });
-            return streamFixed(renderForUI(safe), "scope-guard");
-          }
-          const recall = matchFastRecall(lastUserText);
-          if (recall) return streamFixed(recall.answer, "fast-recall");
-          // الإجابة الفورية من بيانات النظام — أمر المالك ٢٠٢٦/٠٩/٠٢
-          // («يجاوب فورًا... كعدد المشاريع والصيانة والبلاغات»): عدٌّ صرف
-          // أو سجلّ مرجعٍ حرفيّ يُحسب من المجموعات الإنتاجية ويُبثّ دون
-          // نموذج.
-          //
-          // **ولكل نداءٍ، لا للمصادَق وحده — أمر المالك ٢٠٢٦/٠٩/٠٣**
-          // («البيانات الإنتاجية المعكوسة وليست المحاكاة، مع إزالة
-          // المحاكاة كاملًا»): بوابة `userId` التي وُضعت هنا تحفّظًا
-          // نُسخت بهذا الأمر — والمجموعات نفسها تصل الزائر أصلًا من
-          // شاشات العرض المفتوحة (بدائل `resilient` على
-          // `optionalSupabaseAuth`)، فلم تكن البوابة تحجب إلا الدردشة
-          // عمّا تعرضه الصفحة المجاورة.
-          {
-            const { matchInstantDataAnswer } =
-              await import("@/lib/sadeed/instant-data-answers.server");
-            const instant = matchInstantDataAnswer(lastUserText);
-            if (instant) {
-              console.log("[api/chat] instant-data", { requestId, source: instant.source });
-              return streamFixed(instant.answer, "instant-data");
-            }
-          }
-        }
 
         // ── حارسا الطلب (VIBE 5.1): لا تكرارٌ جارٍ، ولا تزاحمٌ فوق السقف ──────
         // بعد المسارات الفورية (لا تكلّف شيئًا) وقبل أيّ قراءة قاعدة أو نموذج.
