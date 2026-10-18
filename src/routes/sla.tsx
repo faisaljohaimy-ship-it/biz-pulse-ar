@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
-import { DOMAIN_URL } from "@/lib/domain";
+import { DOMAIN_URL, SITE_OG_IMAGE } from "@/lib/domain";
 import { TrustShell, SectionTitle, Card, Bullets } from "@/components/trust-shell";
 import { Gauge, Timer, TimerReset, BadgeCheck, LifeBuoy, AlertTriangle } from "lucide-react";
 
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/sla")({
         content: "99.9% uptime, severity tiers, response times, and service credits.",
       },
       { property: "og:url", content: `${DOMAIN_URL}/sla` },
-      { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
+      { property: "og:image", content: `${DOMAIN_URL}${SITE_OG_IMAGE}` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/sla` }],
   }),

@@ -13,8 +13,14 @@ import {
 // watchdog.client is loaded dynamically inside useEffect (client-only module)
 
 import appCss from "../styles.css?url";
-import { COMPANY_NAME, DOMAIN_URL, PRODUCT_NAME, SITE_NAME, SITE_TAGLINE } from "@/lib/domain";
-import sadeedOgAsset from "@/assets/sadeed-og.png.asset.json";
+import {
+  COMPANY_NAME,
+  DOMAIN_URL,
+  PRODUCT_NAME,
+  SITE_NAME,
+  SITE_OG_IMAGE,
+  SITE_TAGLINE,
+} from "@/lib/domain";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
@@ -45,6 +51,7 @@ import { isOperationalRoute } from "@/lib/seo/operational-noindex";
 import { StaffNumberGate } from "@/components/access/StaffNumberGate";
 import { isGatedRoute } from "@/lib/access/staff-entry";
 import { RouteTransition } from "@/components/motion/RouteTransition";
+import { SystemChrome, chromeModeFor } from "@/components/nav/SystemChrome";
 
 import { DemoModeProvider } from "@/lib/demo/demo-controller";
 import { RegionProvider } from "@/lib/region-context";
@@ -158,7 +165,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: DOMAIN_URL },
-      { property: "og:image", content: `${DOMAIN_URL}${sadeedOgAsset.url}` },
+      { property: "og:image", content: `${DOMAIN_URL}${SITE_OG_IMAGE}` },
+      { property: "og:image:type", content: "image/jpeg" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { property: "og:image:alt", content: `${PRODUCT_NAME} — SADEED AI` },
@@ -169,7 +177,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "twitter:description",
         content: "منظومة القرار والإنجاز الذكي للأمن الصناعي والتحول الرقمي.",
       },
-      { name: "twitter:image", content: `${DOMAIN_URL}${sadeedOgAsset.url}` },
+      { name: "twitter:image", content: `${DOMAIN_URL}${SITE_OG_IMAGE}` },
       { name: "twitter:image:alt", content: `${PRODUCT_NAME} — SADEED AI` },
     ],
     links: [
@@ -180,19 +188,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700;800&family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
-      // كانت الثلاثة تشير إلى `/sadeed-portrait.png` — **١٫٩٢ ميغابايت**،
-      // يجلبها المتصفّح على كل صفحة ليرسم أيقونة تبويب بحجم ١٦ بكسل.
-      // وهي أثقل أصلٍ في `public/` بفارق، وخارج رادار
-      // `check-performance-budget.mjs` لأن فحص الوسائط يقتصر على الصوت
-      // والفيديو — فمرّت بلا أن يلحظها أحد.
-      //
-      // و`sadeed-icon.png` هو **علامة المنتج** الرقمية العصرية: يستعمله
-      // `app-shell` في الترويسة والشريط الجانبي، وهو `logo` في بيانات
-      // schema.org أدناه. أي أن التصحيح يوحّد الهوية ويخفّف معًا: أيقونة
-      // التبويب كانت صورةَ المساعد لا علامةَ المنتج.
-      { rel: "icon", type: "image/png", href: "/sadeed-icon.png" },
-      { rel: "apple-touch-icon", href: "/sadeed-icon.png" },
-      { rel: "shortcut icon", type: "image/png", href: "/favicon.png" },
+      // العلامة الخارجية: الرمز السداسي «S» من لوحتَي المالك (أمر ٢٠٢٦/١٠/١٨ R5:
+      // «اجعل علامة سديد الموجودة بالمرفق هي العلامة الخارجية لرابط النظام
+      // والتطبيق»). `/favicon.ico` في الجذر بثلاثة إطارات 16/32/48 — المتصفّحات
+      // والزواحف تطلبه دون رابط، وكان يعيد 404. وPNG ‏32 و16 للتبويب (16 مرسومٌ
+      // بالبكسل من الشكل نفسه: اللامع يصير بقعةً عند 16)، و180 معتمٌ لـiOS (يملأ
+      // الشفافية بالأسود). **والأسماء جديدة عمدًا:** المتصفّحات وiOS تخزّن الأيقونة
+      // بعنوانها، فإعادة استعمال عنوانٍ قديم تُبقي العلامة السابقة على كل جهاز.
+      // ودرس سلفها باقٍ: صورة المساعد (1.92 MB) ثم أيقونة 834 KB كانتا أيقونةَ
+      // التبويب خارج رادار `check-performance-budget.mjs` (يفحص الصوت والفيديو
+      // وحدهما) — والطقم كلّه هنا دون 8 KB للتبويب.
+      { rel: "icon", href: "/favicon.ico", sizes: "16x16 32x32 48x48" },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        href: "/brand/icons/sadeed-favicon-32.png",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "16x16",
+        href: "/brand/icons/sadeed-favicon-16.png",
+      },
+      {
+        rel: "apple-touch-icon",
+        sizes: "180x180",
+        href: "/brand/icons/sadeed-apple-touch-180.png",
+      },
       { rel: "manifest", href: "/manifest.webmanifest" },
     ],
     scripts: [
@@ -237,7 +260,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: COMPANY_NAME,
           legalName: COMPANY_NAME,
           url: DOMAIN_URL,
-          logo: `${DOMAIN_URL}/sadeed-icon.png`,
+          logo: `${DOMAIN_URL}/brand/icons/sadeed-icon-512.png`,
           description:
             "Enterprise AI Operating System for Government, Enterprise, and Sovereign Digital Transformation.",
           areaServed: ["SA", "AE", "KW", "QA", "BH", "OM"],
@@ -429,7 +452,16 @@ function RootComponent() {
   }, [pathname, navigate]);
 
   const isPromo = pathname.startsWith("/promo");
-  const isHero = pathname === "/" || pathname === "";
+  /**
+   * قشرة النظام الواحدة (أمر المالك ٢٠٢٦/١٠/١٨): الرئيسية وكل صفحةٍ تحت
+   * `_authenticated` تلبسها، والحكم من **المطابقات** لا من العنوان — العنوان
+   * يتبدّل قبلها أثناء الانتقال، فشرطٌ يخلطهما يفكّ القشرة لحظةً بين صفحتين.
+   * والنصّ المنتقى نصٌّ لا مصفوفة، فلا إعادة رسمٍ على كل تحديثٍ للحالة.
+   */
+  const chromeMode = useRouterState({
+    select: (s) => chromeModeFor(s.matches.map((m) => m.routeId)),
+  });
+  const isSystemRoute = chromeMode !== "none";
   const isAccessGate = pathname.startsWith("/auth");
   const isAgentOperations =
     pathname === "/agents" || pathname === "/agents-flow" || pathname === "/agents-reference";
@@ -466,19 +498,20 @@ function RootComponent() {
             <DemoModeProvider>
               <RegionProvider>
                 <SadeedProvider>
-                  {/* Deepest ambient layer on EVERY page (incl. home): the
-                      Arabian Peninsula, light-green pulse, four sector borders
-                      in sky-blue, the active sector's border pulsing. */}
-                  {!isHero && !introActive && !isAccessGate && !isAgentOperations && (
+                  {/* الخلفيتان الجغرافية والصورية للصفحات العامّة وحدها: صفحات
+                      النظام (الرئيسية والداخلية) تلبس خلفية القشرة الواحدة
+                      (`HoloVideoEngine` داخل `SystemChrome`) — أمر المالك
+                      ٢٠٢٦/١٠/١٨ «بنفس تخطيط وهيئة الصفحة الرئيسية»، والرئيسية
+                      لم تحمل أيًّا منهما قط. ومنصّة عمليات الوكلاء بخلفيةٍ
+                      نظيفة عمدًا. */}
+                  {!isSystemRoute && !introActive && !isAccessGate && !isAgentOperations && (
                     <ArabianPeninsulaBackdrop />
                   )}
-                  {/* Global SADEED hologram backdrop for every non-home page.
-                      Homepage draws its own (HoloVideoEngine inside the
-                      blueprint page); the agent operations platform
-                      deliberately uses a clean background. */}
-                  {!isHero && !isPromo && !isAccessGate && !isAgentOperations && !introActive && (
-                    <GlobalPageBackdrop />
-                  )}
+                  {!isSystemRoute &&
+                    !isPromo &&
+                    !isAccessGate &&
+                    !isAgentOperations &&
+                    !introActive && <GlobalPageBackdrop />}
                   {!suppressOverlays && <SadeedWatermark />}
                   {!introActive && !isAccessGate && <HoloAmbience />}
                   {/* الشريط العلوي (أمر المالك ٢٠٢٦/٠٩/١٢): الساعة
@@ -512,10 +545,15 @@ function RootComponent() {
                   )}
                   {!suppressMarquee && <TopBar showClock={!suppressClock} />}
 
+                  {/* قشرة النظام **خارج** `RouteTransition` (الخيار H): الصفحة
+                      وحدها تتحرّك مع الانتقال، والشريط والترويسة والخلفية تبقى
+                      مركَّبةً لا تومض ولا تقفز. والصفحات العامّة بلا قشرة. */}
                   <div className="relative z-10">
-                    <RouteTransition>
-                      <Outlet />
-                    </RouteTransition>
+                    <SystemChrome mode={chromeMode}>
+                      <RouteTransition>
+                        <Outlet />
+                      </RouteTransition>
+                    </SystemChrome>
                   </div>
                   {!isAccessGate && copilotReady && (
                     <Suspense fallback={null}>

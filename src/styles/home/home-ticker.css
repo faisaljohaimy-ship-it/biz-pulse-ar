@@ -1,0 +1,273 @@
+/* ============================================================================
+   home-ticker.css — «مزايا سَدِيد»: الشريط المتحرك فوق البانر (أمر المالك ٢٠٢٦/١٠/١٨ R3)
+   ----------------------------------------------------------------------------
+   يستورده `HomeTicker.tsx` وحده (حزمة الرئيسية المقتطَعة).
+
+   ① **الحركة الدائمة الوحيدة في صفوف الرئيسية، بنصّ المالك** («الشريط الإعلاني
+     المتحرك باستمرار»): نسخ «لا حركة دائمة» (M1) لهذا الشريط وحده. وهي اختيارٌ لا
+     افتراض: داخل `prefers-reduced-motion: no-preference` وتحت
+     `html:not([data-nx-motion="off"]):not(.safe-mode)`، وعلى `[data-run]` وحده (بعد
+     القياس وقراءة التفضيل). `translate` على المُركِّب — لا `transform` (المادة ٣٢) ولا
+     خاصية تخطيط ولا قناع (`mask-image` فوق ابنٍ يتحرّك دائمًا يعيد تركيب القناع كل
+     إطار، وهو درس iOS ٢٠٢٦/١٠/١٤) — فالحافّتان طبقتان ساكنتان بلون السطح.
+   ② **الحال الأساسية ساكنة** (ما يراه من طلب السكون): النسخة المقروءة وحدها تُمرَّر
+     أفقيًّا داخل الشريط بلا نسخٍ مطابقة ولا زرّ إيقاف. والارتفاع ثابتٌ في الحالين —
+     الإطار نفسه، فلا قفزة تخطيط حين تبدأ الحركة.
+   ③ **التوقّف تجميدٌ في المكان** (`animation-play-state`) لا عودةٌ إلى البداية: الزرّ
+     (`[data-paused]`)، والفأرة فوق الشريط، والتركيز داخله، وخروجه من الإطار.
+   ④ لا لون إلا من طبقة الرموز (المادة ٣٣)، والنصّ 14px (أرضية 12px)، والزرّ ≥ 44px.
+   الحارس: `src/components/home/home-ticker.contract.test.ts`.
+   ============================================================================ */
+
+.nx-ticker {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  /* 44px للزرّ داخل حدّين شعريين. */
+  block-size: 46px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink-2);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
+    0 8px 24px -14px color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+/* النافذة تقصّ المسار والحافّتين على استدارة الشريط (داخل حدّه): زاويةٌ مربّعة هنا
+   كانت ترسم الحافّة فوق منحنى الحدّ حين يغيب الزرّ في الحال الساكنة. */
+.nx-ticker-window {
+  position: relative;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
+  border-radius: 11px;
+}
+
+/* حافّتان تذوبان في السطح: طبقتان ساكنتان فوق المسار لا قناعٌ عليه (①). */
+.nx-ticker-window::before,
+.nx-ticker-window::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  z-index: 1;
+  inline-size: 24px;
+  pointer-events: none;
+}
+
+.nx-ticker-window::before {
+  left: 0;
+  background: linear-gradient(to right, var(--surface), transparent);
+}
+
+.nx-ticker-window::after {
+  right: 0;
+  background: linear-gradient(to left, var(--surface), transparent);
+}
+
+/* ② الحال الساكنة: تمريرٌ أفقيّ داخل الشريط، والصفحة لا تتحرّك جانبيًّا. */
+.nx-ticker-view {
+  block-size: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-hover) transparent;
+}
+
+/* المنطقة قابلةٌ للتركيز (التمرير بالأسهم، والتوقّف): حلقتها داخل النافذة المقصوصة. */
+.nx-ticker-view:focus-visible {
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: -3px;
+}
+
+/* هامش البداية على المسار لا حاشيةٌ على النسخ: النسبة في الإزاحة من صندوق المسار
+   (الهامش خارجه)، فتبقى نسخةً بالتمام — وحاشيةٌ في كل نسخة كانت تجعل الفراغ بعد آخر
+   فاصلٍ 32px لا 16px، «تعثّرةً» تُرى عند الوصلة مرّةً في كل دورة. */
+.nx-ticker-track {
+  display: flex;
+  inline-size: max-content;
+  block-size: 100%;
+  margin-inline-start: 16px;
+}
+
+/* النسخ متطابقة البناء والعرض، والإيقاع واحدٌ داخلها وعبر الوصلة: نصٌّ، 16px، فاصل،
+   16px — فلا يُرى أين تنتهي نسخةٌ وتبدأ أختها. */
+.nx-ticker-copy {
+  display: flex;
+  flex: none;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nx-ticker-copy[aria-hidden="true"] {
+  display: none;
+}
+
+/* البند بارتفاع الشريط كاملًا (`block-size: 100%`) لا بارتفاع سطره: وصول الخطّ العربي
+   (تبديل الخطّ) كان يكبّر صندوق السطر 20 ← 24px فيُزيح البنود 1–3px — إزاحة تخطيطٍ
+   قِيست (٠٫٠١ على 1536 و٠٫٠١٨ على 390، ٢٠٢٦/١٠/١٨). */
+.nx-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  block-size: 100%;
+  padding-inline-end: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* الفاصل: سداسيّ صغير صدى رمز سَدِيد — زخرفةٌ بلا نصّ، فلا يقرؤه القارئ. */
+.nx-ticker-item::after {
+  content: "";
+  flex: none;
+  inline-size: 9px;
+  block-size: 10px;
+  background: var(--sd-azure);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+/* الحال الساكنة قائمةٌ تنتهي: لا فاصل بعد آخر بند. ومع الحركة يعود (أدناه) — هو جسر
+   الوصلة إلى النسخة التالية. */
+.nx-ticker-item:last-child::after {
+  display: none;
+}
+
+/* زرّ «إيقاف الحركة» في طرف الشريط — خارج اللوحة. مخفيٌّ في الحال الساكنة (لا شيء
+   يُوقَف)، ويظهر مع الحركة (أدناه). */
+.nx-ticker-toggle {
+  display: none;
+  flex: none;
+  place-items: center;
+  inline-size: 44px;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding: 0;
+  border: 0;
+  border-inline-start: 1px solid var(--hairline);
+  border-start-end-radius: 11px;
+  border-end-end-radius: 11px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.nx-ticker-toggle svg {
+  inline-size: 18px;
+  block-size: 18px;
+}
+
+/* الحالة بالرمز (إيقاف ⇄ تشغيل) وبـ`aria-pressed` — واللون تأكيدٌ لا حاملٌ وحيد. */
+.nx-ticker-toggle[aria-pressed="true"] {
+  color: var(--sd-azure);
+}
+
+@media (hover: hover) {
+  .nx-ticker-toggle:hover {
+    background: var(--chip-hover);
+    color: var(--ink);
+  }
+}
+
+/* ── ① الحركة: نسخةٌ واحدة في كل دورة، والاتجاه من اللغة ─────────────────────
+   العربية: المسار يبدأ عند الحافّة اليمنى وينزاح يمينًا، فتدخل كل عبارة من اليسار
+   بطرفها الأيمن — أوّلها. والإنجليزية بعكسها. والنسبة من عرض المسار
+   (`--nx-ticker-n` نسخًا متطابقة) فالإزاحة نسخةٌ بالتمام. */
+@keyframes nxTickerRtl {
+  to {
+    translate: calc(100% / var(--nx-ticker-n, 2)) 0;
+  }
+}
+
+@keyframes nxTickerLtr {
+  to {
+    translate: calc(-100% / var(--nx-ticker-n, 2)) 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-nx-motion="off"]):not(.safe-mode) .nx-ticker-view {
+    overflow: hidden;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode) .nx-ticker-copy[aria-hidden="true"] {
+    display: flex;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode) .nx-ticker-item:last-child::after {
+    display: block;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode) .nx-ticker-toggle {
+    display: grid;
+  }
+
+  /* خصائص مفصّلة لا الاختصار: `animation` المختصرة تعيد `animation-play-state` إلى
+     `running` بنوعيّة هذا المحدِّد (0,4,1) فتغلب قواعد الإيقاف أدناه (0,3,0) — قِيس:
+     ضُغط الزرّ فبقي الشريط يجري (٢٠٢٦/١٠/١٨). */
+  html:not([data-nx-motion="off"]):not(.safe-mode) .nx-ticker-track[data-run] {
+    animation-name: nxTickerRtl;
+    animation-duration: var(--nx-ticker-s, 60s);
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[dir="ltr"]
+    .nx-ticker-track[data-run] {
+    animation-name: nxTickerLtr;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  html:not([data-nx-motion="off"]) .nx-ticker-toggle {
+    transition:
+      background-color 0.2s var(--nx-ease-out),
+      color 0.2s var(--nx-ease-out);
+  }
+}
+
+/* ③ التوقّف تجميدٌ في المكان: الزرّ، وخارج الإطار، والتركيز داخل الشريط. */
+.nx-ticker:is([data-paused], [data-offscreen]) .nx-ticker-track,
+.nx-ticker-view:focus-within .nx-ticker-track {
+  animation-play-state: paused;
+}
+
+/* والفأرة فوقه — المؤشّر الدقيق وحده: على اللمس يبقى «المرور» عالقًا بعد النقر. */
+@media (hover: hover) {
+  .nx-ticker-view:hover .nx-ticker-track {
+    animation-play-state: paused;
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-ticker {
+    border-color: CanvasText;
+  }
+
+  .nx-ticker-window::before,
+  .nx-ticker-window::after {
+    display: none;
+  }
+
+  .nx-ticker-item::after {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .nx-ticker-toggle {
+    border-inline-start-color: ButtonText;
+    color: ButtonText;
+  }
+}
+
+/* إعلانٌ لا يضيف للورق شيئًا. */
+@media print {
+  .nx-ticker {
+    display: none;
+  }
+}

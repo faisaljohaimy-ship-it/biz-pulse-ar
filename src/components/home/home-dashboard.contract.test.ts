@@ -23,8 +23,21 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import postcss, { type AtRule, type Root } from "postcss";
 import { describe, expect, it } from "vitest";
 import { isRouteHidden } from "@/lib/nav/hidden-routes";
+import { SADEED_PORTRAIT_SIZE, SADEED_PORTRAIT_SRC } from "@/lib/sadeed/portrait";
 import { HOME_IMAGES, ILLUSTRATIVE_LABEL } from "./home-images";
 import { refKpi } from "./home-reference";
+
+/** أبعاد WebP من ترويسته (VP8X · VP8L · VP8) — أبعاد الملف لا ما يُكتب عنه. */
+function webpDims(bytes: Buffer): { width: number; height: number } {
+  const chunk = bytes.toString("latin1", 12, 16);
+  if (chunk === "VP8X")
+    return { width: 1 + bytes.readUIntLE(24, 3), height: 1 + bytes.readUIntLE(27, 3) };
+  if (chunk === "VP8L") {
+    const bits = bytes.readUInt32LE(21);
+    return { width: 1 + (bits & 0x3fff), height: 1 + ((bits >>> 14) & 0x3fff) };
+  }
+  return { width: bytes.readUInt16LE(26) & 0x3fff, height: bytes.readUInt16LE(28) & 0x3fff };
+}
 
 const read = (f: string) => readFileSync(f, "utf8");
 const strip = (s: string) =>
@@ -1059,6 +1072,37 @@ describe("الصدق العددي — المادة ٢٧", () => {
   // معلَّق، وبديله: كل صورةٍ من بيانها وحده بأبعادها ونصّها البديل وكسلها،
   // والوسم «صورة توضيحية — لا بثّ مرتبط» ظاهرٌ على بطاقتها، والفيديو باقٍ محظورًا
   // في الصفوف (الفيلم خلف التصميم وحده، D6).
+  it("الشخصية صورة الشات بوت نفسها — ثابتٌ واحد بأبعاد الملف الحقيقية (أمر المالك ٢٠٢٦/١٠/١٨)", () => {
+    // «قم بتعديل الصوره لسديد بنفس الصورة الموجودة فالشات بوت» — لا قصّةٌ مشتقّة ولا نسخةٌ منسوخة.
+    const manifest = src("home-images.ts");
+    const bound = (code: string) =>
+      /\bpersona:\s*\{[^}]*\bsrc:\s*SADEED_PORTRAIT_SRC\s*,/.test(code);
+    const sized = (code: string) =>
+      /\bpersona:\s*\{[^}]*\bwidth:\s*SADEED_PORTRAIT_SIZE\.width\s*,\s*height:\s*SADEED_PORTRAIT_SIZE\.height\b/.test(
+        code,
+      );
+    expect(HOME_IMAGES.persona.src).toBe(SADEED_PORTRAIT_SRC);
+    expect(bound(manifest), "الشخصية بنصٍّ منسوخ لا بالثابت المشترك").toBe(true);
+    expect(sized(manifest), "الشخصية بأبعادٍ مرسومة لا بأبعاد الملف").toBe(true);
+    expect(webpDims(readFileSync(`public${SADEED_PORTRAIT_SRC}`))).toEqual({
+      ...SADEED_PORTRAIT_SIZE,
+    });
+    expect(
+      readdirSync("public/home").filter((f) => /^persona/i.test(f)),
+      "قصّةٌ مشتقّة",
+    ).toEqual([]);
+    // يحمرّ على المزروع (المادة ٣٠): نصٌّ منسوخ، وقصّةٌ مشتقّة، وعرضٌ مرسوم.
+    const literal = manifest.replace(/src:\s*SADEED_PORTRAIT_SRC/, 'src: "/sadeed-portrait.webp"');
+    expect(literal).not.toBe(manifest);
+    expect(bound(literal)).toBe(false);
+    expect(
+      bound(manifest.replace(/src:\s*SADEED_PORTRAIT_SRC/, 'src: "/home/persona-sadeed-294.webp"')),
+    ).toBe(false);
+    expect(sized(manifest.replace(/width:\s*SADEED_PORTRAIT_SIZE\.width/, "width: 147"))).toBe(
+      false,
+    );
+  });
+
   it("ولا صورة كاميرا: الصور توضيحيةٌ موسومة من بيانها، ولا فيديو (N3)", () => {
     // صفّ الهوية مستثنًى بنصّ قرار المالك (المواصفة ١٠ §2.3: B2 «As is» وB3
     // «Water motion»): لوحتاه علامة المالك كما هي لا صورٌ توضيحية، وحلقة الماء
@@ -1078,7 +1122,9 @@ describe("الصدق العددي — المادة ٢٧", () => {
     expect(images.length).toBeGreaterThan(0);
     for (const [key, img] of images) {
       expect(img.alt, key).toContain("صورة توضيحية");
-      expect(img.src, key).toMatch(/^\/home\/[\w-]+\.webp$/);
+      // الشخصية وحدها صورة الشات بوت نفسها (أمر المالك ٢٠٢٦/١٠/١٨، R2) — بالثابت المشترك.
+      if (key === "persona") expect(img.src, key).toBe(SADEED_PORTRAIT_SRC);
+      else expect(img.src, key).toMatch(/^\/home\/[\w-]+\.webp$/);
     }
     // صور اللقطات (كاميرا · خطر · حادث) تحمل الوسم كاملًا، وهي تحت الطيّ فكسولة.
     const shots = images.filter(([key]) => /^(?:cam|risk|incident)-/.test(key));

@@ -25,6 +25,9 @@
  * - **مفتاح الحركة الواحد**: `data-nx-motion="off"` يُسكِتها كما يُسكِت
  *   النبضات والفيلم — مفتاحٌ واحد للصفحة كلّها، لا مفتاحٌ لكل طبقة.
  *   ويُقرأ تفضيل النظام كذلك.
+ * - **شجرةٌ واحدة على الجهتين** (عطل الترطيب #418، قِيس ٢٠٢٦/١٠/١٨): السكون
+ *   يُقرَّر بعد التركيب لا في أول رسم، والغلاف لا يغيب عنه أبدًا. انظر
+ *   التفصيل عند `still` أدناه.
  * - **RTL**: محور الدفع يتبع اتجاه الوثيقة، فالانتقال في العربية يمضي في
  *   اتجاه القراءة لا عكسه.
  * - **الأجهزة الضعيفة**: تُختصر المدد وتُلغى الضبابة.
@@ -155,6 +158,17 @@ function buildVariants(family: Family, dirSign: number, lowEnd: boolean): Varian
   }
 }
 
+/**
+ * وضعُ السكون: الهيئة نفسها في البداية والنهاية والخروج، بلا مدّة — فالغلاف
+ * حاضرٌ في الشجرة ولا يتحرّك منه شيء.
+ */
+const STILL_POSE = { opacity: 1, x: 0, y: 0, scale: 1, scaleY: 1 } as const;
+const STILL_VARIANTS: Variants = {
+  initial: STILL_POSE,
+  animate: { ...STILL_POSE, transition: { duration: 0 } },
+  exit: { ...STILL_POSE, transition: { duration: 0 } },
+};
+
 /** جهازٌ ضعيف: ذاكرة ≤2GB، أو نوى قليلة حين لا تتوفّر قراءة الذاكرة. */
 function detectLowEnd(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -172,10 +186,12 @@ export function RouteTransition({ children }: { children: ReactNode }) {
   // فلا اختلاف بين أول رسمٍ على الجهتين.
   const [lowEnd, setLowEnd] = useState(false);
   const [switchedOff, setSwitchedOff] = useState(false);
+  const [mounted, setMounted] = useState(false);
   /** مرجع الغلاف — يُنزع عنه المرشّح الباقي عند انتهاء الحركة (انظر أدناه). */
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setLowEnd(detectLowEnd()), []);
+  useEffect(() => setMounted(true), []);
 
   // مفتاح الحركة الواحد يُقرأ من الجذر ويُراقَب: من أطفأ الحركة على صفحة
   // يجدها مطفأة على كل صفحة، وفورًا لا بعد إعادة تحميل.
@@ -188,21 +204,41 @@ export function RouteTransition({ children }: { children: ReactNode }) {
     return () => mo.disconnect();
   }, []);
 
-  const still = switchedOff || systemReduced;
+  /* السكون يُقرَّر **بعد التركيب** — وهذا علاجُ عطل الترطيب #418.
 
-  if (still) {
-    // لا AnimatePresence إطلاقًا حين يُطلب السكون: الحضور وحده يؤخّر تركيب
-    // الشاشة التالية بمقدار الخروج، وهو تأخيرٌ بلا مقابل هنا.
-    return <>{children}</>;
+     `useReducedMotion()` يعيد `null` على الخادم (لا نافذة) و`true` في أول
+     رسمٍ على العميل حين يطلب النظام تقليل الحركة. وكان السكون يُعيد
+     `<>{children}</>` بدل الغلاف، فيرسل الخادم `<div>` ويرسم العميل غيره:
+     عدمُ تطابقٍ على **كل مسار** يُسقط HTML الخادم ويُعيد بناء الشجرة.
+     قِيس: خطأ ترطيبٍ واحد على `/` و`/sec` و`/files` تحت `reduce`، للزائر
+     ولمن خزّن رقمه الوظيفي، وصفرٌ بدونه.
+
+     فالعلاج من القاعدة نفسها التي تحكم `lowEnd` و`switchedOff` أعلاه: أول
+     رسمٍ يطابق الخادم، ثم يُقرأ الجهاز. **والغلاف لا يغيب عن الشجرة أبدًا**:
+     تبديل نوع العنصر بعد التركيب كان سيهدم الصفحة كلّها ويبنيها من جديد —
+     الثمن نفسه الذي يدفعه العطل. السكون يبدّل المتغيّرات وحدها. */
+  const still = mounted && (switchedOff || systemReduced === true);
+
+  /* ومفتاح الغلاف لا يتقدّم في السكون. `AnimatePresence` لا يرى عندها
+     تبدّلًا فلا خروج ولا انتظار ولا إعادة تركيب — والشاشة التالية تُرسم
+     في مكانها فورًا، وهو ما كان الإرجاع المبكّر يضمنه («الحضور وحده يؤخّر
+     التركيب بمقدار الخروج»). ويتقدّم المفتاح عند **التنقّل** وحده، لا عند
+     تبدّل التفضيل: إطفاء الحركة أو إعادتها لا يهدم الصفحة المفتوحة.
+     (ضبطُ الحالة أثناء الرسم عند تغيّر مُدخَل — النمط الموثّق في React.) */
+  const [motionKey, setMotionKey] = useState(pathname);
+  const [seenPath, setSeenPath] = useState(pathname);
+  if (seenPath !== pathname) {
+    setSeenPath(pathname);
+    if (!still) setMotionKey(pathname);
   }
 
   const dirSign = locale === "ar" ? -1 : 1;
-  const variants = buildVariants(routeFamily(pathname), dirSign, lowEnd);
+  const variants = still ? STILL_VARIANTS : buildVariants(routeFamily(pathname), dirSign, lowEnd);
 
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
-        key={pathname}
+        key={motionKey}
         ref={wrapRef}
         variants={variants}
         initial="initial"

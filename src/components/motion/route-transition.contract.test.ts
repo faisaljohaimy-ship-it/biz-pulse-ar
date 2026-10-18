@@ -14,6 +14,17 @@ const ROOT = readFileSync("src/routes/__root.tsx", "utf8");
 /** التعليق يشرح المحظور ويسمّيه — الحارس يفحص الكود وحده. */
 const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "");
 
+/** عقد السكون: بعد التركيب، والغلاف حاضر، والمفتاح ثابتٌ فيه، والمتغيّرات ساكنة. */
+function stillContract(code: string): string[] {
+  const out: string[] = [];
+  if (!/const still = mounted && \(switchedOff \|\| systemReduced === true\);/.test(code))
+    out.push("mounted");
+  if (/return <>\{children\}<\/>/.test(code)) out.push("wrapper");
+  if (!/if \(!still\) setMotionKey\(pathname\);/.test(code)) out.push("key");
+  if (!/const variants = still \? STILL_VARIANTS :/.test(code)) out.push("variants");
+  return out;
+}
+
 describe("تنويع الحركة — لكل عائلة شاشات حركتها", () => {
   it("كل عائلة تُصنَّف بالبادئة فلا تُنسى شاشة جديدة", () => {
     expect(routeFamily("/")).toBe("home");
@@ -59,8 +70,20 @@ describe("قيود الأداء والوصول", () => {
     expect(CODE).toContain("data-nx-motion");
     expect(CODE).toContain("MutationObserver");
     expect(CODE).toContain("useReducedMotion");
-    // وحين يُطلب السكون لا يبقى AnimatePresence: حضوره وحده يؤخّر التركيب.
-    expect(CODE).toMatch(/if \(still\) \{\s*return <>\{children\}<\/>;/);
+    // والسكون يُقرَّر **بعد التركيب** والغلاف لا يغيب (عطل الترطيب #418، ٢٠٢٦/١٠/١٨): الإرجاع
+    // المبكّر بالأبناء وحدهم كان يرسم على العميل تحت تقليل الحركة شجرةً غير شجرة الخادم على كل
+    // مسار. والمفتاح لا يتقدّم في السكون — فلا خروج ولا انتظار، كما كان الإرجاع المبكّر يضمن.
+    expect(stillContract(CODE)).toEqual([]);
+  });
+
+  it("المزروع: سكونٌ في أول رسم بإرجاعٍ مبكّر، أو مفتاحٌ يتقدّم في السكون — يُلتقطان (المادة ٣٠)", () => {
+    const early = CODE.replace(
+      /const still = [^;]+;/,
+      "const still = switchedOff || systemReduced;\n  if (still) {\n    return <>{children}</>;\n  }",
+    );
+    expect(stillContract(early)).toEqual(expect.arrayContaining(["mounted", "wrapper"]));
+    const keyed = CODE.replace("if (!still) setMotionKey(pathname);", "setMotionKey(pathname);");
+    expect(stillContract(keyed)).toEqual(["key"]);
   });
 
   it("أول رسم لا يتحرّك (لا وميضة ولا إزاحة تخطيط)", () => {

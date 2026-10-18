@@ -1,0 +1,65 @@
+/* ============================================================================
+   brand-plate.css — لوحة هوية سَدِيد في زاوية الشريط (أمر المالك ٢٠٢٦/١٠/١٨)
+   ----------------------------------------------------------------------------
+   يستورده `components/brand/SadeedPlateLockup.tsx` وحده.
+
+   ① اللوحة صورة المالك كما هي في الوضعين: لا فلتر ولا قلب ولا صنف ثيم.
+     والقطع محكَم الإطار (زواياه شفّافة)، فلا مستطيل فاتح على الشريط الداكن.
+   ② العرض متغيّر لكل نوع (`--nx-plate-w`): ‏208 شريطًا · 176 ترويسةً · 256
+     درجًا — يطابق `PLATE_WIDTH` في المكوّن (ومنه `sizes`). واللوحة مرنة تملأ
+     خليّتها حتى سقفها، والخليّة يقرّرها مستهلكها. ولتغيير السقف قاعدةٌ بصنف
+     على الرابط (`.خلية .nx-plate-link`) — قواعد الأنواع هنا بنوعية صنفٍ واحد
+     (`:where`) فتغلبها، أمّا أدوات Tailwind فداخل طبقة وهذا الملف خارجها.
+   ③ النسبة مكتوبة (2086 / 593) فلا قفزة تخطيط قبل وصول الصورة.
+   ④ لا لون إلا ألوان النظام في `forced-colors` — حدٌّ يُبقي الهدف ظاهرًا.
+   ============================================================================ */
+
+.nx-plate-link {
+  --nx-plate-w: 208px;
+  display: block;
+  inline-size: 100%;
+  max-inline-size: var(--nx-plate-w);
+}
+
+.nx-plate-link:where([data-variant="header"]) {
+  --nx-plate-w: 176px;
+}
+
+.nx-plate-link:where([data-variant="drawer"]) {
+  --nx-plate-w: 256px;
+}
+
+/* زوايا اللوحة نفسها (نصف قطر ≈112 من 2086×593) فتلتفّ حلقة التركيز عليها.
+   ومعها `:focus-visible` لأن قاعدتين عامّتين في styles.css تكتبان نصف القطر
+   عند التركيز (`4px` و`inherit`) بنوعية صنفٍ واحد — فتربح الأخيرة ترتيبًا. */
+.nx-plate-link,
+.nx-plate-link:focus-visible {
+  border-radius: 5.4% / 19%;
+}
+
+/* `[aria-current="page"]` العامّة تكتب خطًّا سفليًّا داخليًّا — ليس في اللوحة. */
+.nx-plate-link[aria-current="page"] {
+  box-shadow: none;
+}
+
+.nx-plate-img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: 2086 / 593;
+}
+
+.nx-emblem {
+  object-fit: contain;
+}
+
+@media (forced-colors: active) {
+  .nx-plate-link {
+    outline: 1px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  .nx-plate-link.nx-plate-link:focus-visible {
+    outline: 3px solid Highlight;
+  }
+}

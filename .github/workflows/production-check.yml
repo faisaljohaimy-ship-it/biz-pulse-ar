@@ -41,9 +41,14 @@ on:
         description: "الـcommit الذي يجب أن يخدمه الموقع — يحوّل شهادة معرّف البناء إلى حكم"
         required: false
         type: string
+      share_url:
+        description: "رابط مشاركة Vercel لمعاينةٍ محميّة — يقصر الفحص على اللقطة الحيّة والتسجيل"
+        required: false
+        type: string
 
 concurrency:
-  group: production-check
+  # لكل فرعٍ مجموعته: فحص معاينةٍ على فرعها لا يُلغي فحص الإنتاج الجاري على main.
+  group: production-check-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -94,6 +99,14 @@ jobs:
             echo "الهدف: $URL"
           fi
 
+      # المعاينة المحميّة: رابط المشاركة يُخفى من السجلّ **قبل أيّ خطوةٍ تحمله** في بيئتها —
+      # ترويسة كل خطوة تطبع بيئتها، فخطوة الحدود أدناه كانت ستطبعه لو سبقت الإخفاء.
+      - name: Mask share link
+        if: inputs.share_url != ''
+        env:
+          SHARE_URL: ${{ inputs.share_url }}
+        run: echo "::add-mask::$SHARE_URL"
+
       # الانتشار على الحافة ليس فوريًّا. الفحص فور الدفع يقيس التوقيت لا
       # الصحّة، فيُنتظر قبله — وللفحص نفسه تراجع أسّي بخمس محاولات.
       - name: Wait for edge propagation
@@ -110,7 +123,7 @@ jobs:
       #    بناءٌ أقدم من هذه الميزة أو منشئٌ لم يشغّل `prebuild`.
       - name: Build identifier
         id: build
-        if: steps.target.outputs.configured == 'true'
+        if: steps.target.outputs.configured == 'true' && inputs.share_url == ''
         env:
           PRODUCTION_URL: ${{ steps.target.outputs.url }}
           EXPECTED_SHA: ${{ inputs.expected_sha }}
@@ -138,7 +151,7 @@ jobs:
       # ① الطبقة الأولى: ما يُقدَّم من الخادم — الحالة · سكربت الثيم ·
       #    العلامة · الأنماط. سريعة ولا تحتاج متصفحًا.
       - name: Served-HTML contract
-        if: steps.target.outputs.configured == 'true'
+        if: steps.target.outputs.configured == 'true' && inputs.share_url == ''
         env:
           PRODUCTION_URL: ${{ steps.target.outputs.url }}
           ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance,/files
@@ -150,17 +163,48 @@ jobs:
         if: steps.target.outputs.configured == 'true'
         run: npx playwright install --with-deps chromium
 
+      # وتُقاس على المعاينة المحميّة أيضًا (برابط المشاركة) — فتُمسَك الحدود قبل النشر لا بعده.
       - name: UI floors on the live site
         if: steps.target.outputs.configured == 'true'
         env:
           BASE_URL: ${{ steps.target.outputs.url }}
           ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance,/files
+          SHARE_URL: ${{ inputs.share_url }}
         run: node scripts/ui-audit.mjs
+
+      # ③ شاهدٌ مرئيّ لا حَكَم: لقطاتٌ وحقائق DOM من الموقع الحيّ (الشريط المتحرّك
+      #    يتحرّك؟ اللوحة في رأس الشريط الجانبي؟ أيّ صورةٍ في بطاقة سَدِيد؟) —
+      #    لأن «الحدود صامدة» لا تقول ما يراه العميل. لا تُسقط الفحص؛ الحكم أعلاه.
+      # وفي المعاينة المحميّة يُسجَّل فيلم البانر دورةً كاملة.
+      - name: Live snapshot (screenshots + DOM facts)
+        if: always() && steps.target.outputs.configured == 'true'
+        continue-on-error: true
+        env:
+          BASE_URL: ${{ steps.target.outputs.url }}
+          OUT_DIR: live-shots
+          ROUTES: /,/sec,/sec/incidents,/files
+          SHARE_URL: ${{ inputs.share_url }}
+          RECORD: ${{ inputs.share_url != '' && '1' || '' }}
+        run: node scripts/live-snapshot.mjs
+
+      - name: Upload live snapshot
+        if: always() && steps.target.outputs.configured == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-snapshot
+          path: live-shots/
+          retention-days: 14
+          if-no-files-found: ignore
 
       - name: Summary
         if: always()
+        env:
+          PREVIEW: ${{ inputs.share_url != '' && '1' || '' }}
         run: |
-          if [ "${{ steps.target.outputs.configured }}" != "true" ]; then
+          if [ -n "$PREVIEW" ]; then
+            echo "### معاينة محميّة — ${{ steps.target.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "لقطاتٌ حيّة وحقائق DOM وتسجيلٌ فقط (الأثر live-snapshot) — لا عقد HTML ولا حدود الواجهة على صفحةٍ محميّة." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.target.outputs.configured }}" != "true" ]; then
             echo "### فحص الإنتاج — متخطّى" >> "$GITHUB_STEP_SUMMARY"
             echo "متغيّر \`PRODUCTION_URL\` غير محدَّد في المستودع." >> "$GITHUB_STEP_SUMMARY"
           elif [ "${{ job.status }}" = "success" ]; then

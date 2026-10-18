@@ -35,6 +35,11 @@ const ROUTES = (process.env.ROUTES || "/,/projects,/sec/governance,/sadeed,/sec"
   .filter(Boolean);
 const STRICT_CONSOLE = process.env.STRICT_CONSOLE === "1";
 /**
+ * معاينةٌ محميّة (Vercel): رابط المشاركة يُفتح مرّةً في كل سياق فيحمل كل طلبٍ بعده ملفّ
+ * الدخول — كما في `live-snapshot.mjs`. وبلا رابطٍ لا شيء.
+ */
+const SHARE_URL = process.env.SHARE_URL || "";
+/**
  * الوضع الذي يُقاس فيه: `dark` · `light` · أو الافتراضي (ما يقرّره النظام).
  * المادتان ٣٢–٣٤: الوضع الثاني سطح صحّة لا قشرة، وكل فحص يُشغَّل مرتين.
  * وهو ذو أثر مقيس على الأرضيات: قواعد `.light` تسبق العامة في نوعية
@@ -340,6 +345,14 @@ for (const vp of VIEWPORTS) {
         /* التخزين محجوب — يبقى الوضع الافتراضي */
       }
     }, THEME);
+  }
+  if (SHARE_URL) {
+    const gate = await ctx.newPage();
+    try {
+      await gate.goto(SHARE_URL, { waitUntil: "load", timeout: 90_000 });
+    } finally {
+      await gate.close();
+    }
   }
   for (const route of ROUTES) {
     const page = await ctx.newPage();

@@ -109,9 +109,22 @@ describe("البندان ٥٢ و٥٤ — الشاشتان حاضرتان في ا
  * قائمة ثانية في القشرة. وتفصيل الوجهات في `system-nav.contract.test.ts`.
  */
 describe("الشريط الجانبي من سجلٍّ واحد — أمر المالك ٢٠٢٦/٠٩/٢٩", () => {
+  /**
+   * **والقشرة صارت واحدة (أمر المالك ٢٠٢٦/١٠/١٨):** «اجعل جميع صفحات النظام بنفس تخطيط
+   * وهيئة الصفحة الرئيسية». فلم تعد القشرة الداخلية (`app-shell`) تركّب الشريط — تركّبه
+   * `SystemChrome` مرّةً في الجذر حول كل صفحة نظام، والشريط يركّب القائمة الموحَّدة.
+   * والمحروس هو هو: سجلٌّ واحد، ولا قائمة مكتوبة في أيٍّ من القشرتين.
+   */
   it("القشرة تركّب الشريط الموحَّد ولا تكتب قائمتها", () => {
-    expect(SHELL_CODE).toContain("<SystemSidebarNav");
-    expect(SHELL_CODE.match(/\bto: "\//g) ?? [], "قائمة ثانية عادت إلى القشرة").toEqual([]);
+    const chrome = stripComments(read("src/components/nav/SystemChrome.tsx"));
+    const sidebar = stripComments(read("src/components/nav/SystemSidebar.tsx"));
+    expect(chrome, "القشرة لا تركّب الشريط").toContain("<SystemSidebar />");
+    expect(sidebar, "الشريط لا يركّب القائمة الموحَّدة").toContain("<SystemSidebarNav />");
+    const secondList = (code: string) => code.match(/\bto: "\//g) ?? [];
+    expect(secondList(chrome), "قائمة ثانية في القشرة").toEqual([]);
+    expect(secondList(SHELL_CODE), "قائمة ثانية عادت إلى القشرة الداخلية").toEqual([]);
+    // يحمرّ على المزروع (المادة ٣٠): قائمةٌ مكتوبة في القشرة.
+    expect(secondList(`${chrome}\nconst ITEMS = [{ to: "/sec" }];`)).toHaveLength(1);
   });
 
   it("الاسم المحروس يُقرأ من السجل الكانوني لا حرفيًّا", () => {
@@ -143,12 +156,20 @@ describe("البندان ٥٧ و٥٨ — هوية داكنة ثابتة بلا �
     // العطل المُبلَّغ: «الرئيسية مثبّتة داكنة برمجيًّا». الفرض يقع بكتابة
     // صنف الوضع في الترميز أو بإضافته من مكوّن صفحة — والسكربت السابق
     // لأول رسم هو الموضع الوحيد المسموح، وهو في الجذر.
-    const pages = ["src/routes/-blueprint-page.tsx", "src/components/app-shell.tsx"];
+    const pages = [
+      "src/routes/-blueprint-page.tsx",
+      "src/components/app-shell.tsx",
+      // القشرة الواحدة حول كل صفحة نظام (٢٠٢٦/١٠/١٨) — لا تفرض وضعًا كذلك.
+      "src/components/nav/SystemChrome.tsx",
+    ];
+    const forcing = /classList\.(add|toggle)\(\s*["'](dark|light)["']/;
     for (const p of pages) {
-      expect(read(p), `${p} يفرض صنف وضع`).not.toMatch(
-        /classList\.(add|toggle)\(\s*["'](dark|light)["']/,
-      );
+      expect(read(p), `${p} يفرض صنف وضع`).not.toMatch(forcing);
     }
+    // يحمرّ على المزروع (المادة ٣٠): قشرةٌ تفرض الداكن عند تركيبها.
+    expect(
+      `${read("src/components/nav/SystemChrome.tsx")}\ndocument.documentElement.classList.add("dark");`,
+    ).toMatch(forcing);
   });
 
   /**
@@ -181,14 +202,37 @@ describe("البندان ٥٧ و٥٨ — هوية داكنة ثابتة بلا �
       "src/routes/-nx-ops-page.tsx",
       "src/routes/-nx-flow-page.tsx",
       "src/components/app-shell.tsx",
+      "src/components/nav/SystemChrome.tsx",
     ]) {
       expect(stripComments(read(p)), `${p} يركّب مبدّلًا ثانيًا`).not.toContain("<ThemeToggle");
     }
+    // يحمرّ على المزروع (المادة ٣٠): مبدّلٌ ثانٍ في القشرة الواحدة.
+    expect(
+      `${stripComments(read("src/components/nav/SystemChrome.tsx"))}\n<ThemeToggle />`,
+    ).toContain("<ThemeToggle");
 
     // والجرس لم يُذكر في أمر العودة فلم يعُد.
     expect(existsSync("src/components/nav/TopUtilityBar.tsx"), "عاد شريط الجرس").toBe(false);
     expect(SHELL_CODE.match(/<TopUtilityBar\s*\/>/g)?.length ?? 0).toBe(0);
-    expect(SHELL).toContain("md:hidden");
+    // **كان: `expect(SHELL).toContain("md:hidden")`** — ترويسة الجوال في القشرة الداخلية
+    // (`.nexus-mobile-header md:hidden`) سطحٌ لا يحمل المبدّل. وسقطت تلك الترويسة مع القشرة
+    // القديمة (أمر المالك ٢٠٢٦/١٠/١٨ «اجعل جميع صفحات النظام بنفس تخطيط وهيئة الصفحة
+    // الرئيسية»)، فبقي سطحٌ واحد: ترويسة النظام بدرجها **في كل صفحة** — بلا خاصيّة
+    // `withMenu` تُسقط الدرج من صفحةٍ دون أخرى — والمبدّل فيها خانةٌ للرئيسية وحدها.
+    const header = stripComments(read("src/components/nav/SystemHeader.tsx"));
+    const drawerAlways = (code: string) =>
+      /^\s*<MobileMenu ar=\{ar\} \/>\s*$/m.test(code) && !/\bwithMenu\b/.test(code);
+    expect(SHELL_CODE, "عادت ترويسة الجوال إلى القشرة الداخلية").not.toContain(
+      "nexus-mobile-header",
+    );
+    expect(drawerAlways(header), "الدرج مشروطٌ في الترويسة").toBe(true);
+    // يحمرّ على المزروع (المادة ٣٠): ترويسة جوالٍ ثانية في القشرة، ودرجٌ مشروط.
+    expect(
+      `${SHELL_CODE}\n<header className="nexus-mobile-header sticky top-0 z-40 md:hidden" />`,
+    ).toContain("nexus-mobile-header");
+    const gated = header.replace("<MobileMenu ar={ar} />", "{withMenu && <MobileMenu ar={ar} />}");
+    expect(gated).not.toBe(header);
+    expect(drawerAlways(gated)).toBe(false);
   });
 
   it("جسر الوضع الفاتح قائم — وإلا عاد المبدّل بعطله", () => {

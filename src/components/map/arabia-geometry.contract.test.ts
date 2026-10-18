@@ -135,19 +135,34 @@ describe("المصدر وتسميته", () => {
     expect(map).toContain("isInsideSaudi");
   });
 
+  /**
+   * **والمكوّن الثاني تبدّل (أمر المالك ٢٠٢٦/١٠/١٨ R4):** «انقل المستطيل الصغير
+   * الذي يحتوي على العبارة … فالزاوية التي تعلو النافذة الجانبية». فخرجت لوحة الشعار
+   * القديمة (`SadeedMark.tsx`) من الشجرة بلا مستورد، وحلّت محلّها `SadeedPlateLockup.tsx`
+   * — والقاعدة نفسها عليها: لا لون سداسي ولا تعبئة بيضاء ولا أسلوبٌ مضمّن بقيمة نهائية.
+   * والملفّ المحذوف لا يُقرأ (‏`readFileSync` يرمي)، ولا يعود إلى القائمة.
+   */
+  const colourViolations = (code: string): string[] => [
+    ...(code.match(/#[0-9a-fA-F]{3,8}\b/g) ?? []),
+    ...(code.match(/fill=["'](?:white|#f{3}|#f{6})["']/gi) ?? []),
+    ...(code.match(/style=\{\{[^}]*\}\}/g) ?? []).filter((inline) => !/--[a-z-]+/.test(inline)),
+  ];
+
   it("لا لون سداسي ولا تعبئة بيضاء في المكوّنين", () => {
     for (const f of [
       "src/components/map/ArabianPeninsulaMap.tsx",
-      "src/components/brand/SadeedMark.tsx",
+      "src/components/brand/SadeedPlateLockup.tsx",
     ]) {
       const code = readFileSync(f, "utf8")
         .replace(/\/\*[\s\S]*?\*\//g, "")
         .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
         .replace(/(^|[^:])\/\/.*$/gm, "$1");
-      expect(code.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [], f).toEqual([]);
-      expect(code, f).not.toMatch(/fill=["'](?:white|#f{3}|#f{6})["']/i);
-      for (const inline of code.match(/style=\{\{[^}]*\}\}/g) ?? [])
-        expect(inline).toMatch(/--[a-z-]+/);
+      expect(colourViolations(code), f).toEqual([]);
     }
+    // يحمرّ على المزروع (المادة ٣٠): لونٌ سداسي، وتعبئةٌ بيضاء، وأسلوبٌ بقيمة نهائية.
+    expect(colourViolations('const c = "#0A3D62";')).toEqual(["#0A3D62"]);
+    expect(colourViolations('<path fill="white" />')).toEqual(['fill="white"']);
+    expect(colourViolations('<div style={{ color: "red" }} />')).toHaveLength(1);
+    expect(colourViolations('<div style={{ ["--tint" as string]: x }} />')).toEqual([]);
   });
 });

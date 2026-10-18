@@ -16,6 +16,17 @@ const read = (p: string) => readFileSync(p, "utf8");
 
 const PANELS = read("src/components/blueprint/InstrumentPanels.tsx");
 const PAGE = read("src/routes/-blueprint-page.tsx");
+const CHROME = read("src/components/nav/SystemChrome.tsx");
+const ROOT = read("src/routes/__root.tsx");
+
+/** المداخل البنيوية في القشرة الواحدة: الشريط ولوحة الأوامر فيها، والجذر يركّبها. */
+function entranceGaps(chrome: string, root: string): string[] {
+  const out: string[] = [];
+  for (const tag of ["<SystemSidebar />", "<CommandPalette />"])
+    if (!chrome.includes(tag)) out.push(tag);
+  if (!/<SystemChrome\b/.test(root)) out.push("root");
+  return out;
+}
 const PULSE = read("src/components/pulse/PulseGlyph.tsx");
 const CSS = read("src/styles.css");
 
@@ -493,16 +504,15 @@ const ARRANGEMENT = [
   "nx-ana-card",
   "nx-home-close",
   "nx-home-brand",
+  "nx-ticker",
+  "nx-brand-stage",
   "nx-brand",
-  "nx-brand-link",
 ];
 /**
- * الاستثناء الوحيد المسمّى: لوحة الشعار فوق البانر دون 900px (المواصفة ١٠ §2.3
- * B1: «Below 900 px the mark sits above the banner»). ترتيبٌ بصريّ لا يفصل
- * التركيز عن العرض: الصفّ لا يحمل إلا عنصرين يُركَّزان بترتيب DOM نفسه — رابط الشعار
- * ثم زرّ إيقاف حركة الماء (WCAG 2.2.2) — يُحرس معه.
+ * لا استثناء بعد اليوم: لوحة الشعار خرجت من صفّ الهوية إلى رأس الشريط الجانبي (٢٠٢٦/١٠/١٨، R4)،
+ * فسقط ترتيبها البصريّ فوق البانر — والصفّ شريطٌ ثم بانرٌ بترتيب DOM نفسه.
  */
-const ARRANGEMENT_ALLOWED = new Set([".nx-brand-link { order: -1 }"]);
+const ARRANGEMENT_ALLOWED = new Set<string>();
 /**
  * مسارات الشبكة بلا حدٍّ أدنى صفري، أو موضعٌ فيزيائي، على شبكات الصفوف المسمّاة —
  * `repeat(n, minmax(0, …))` و`minmax(0, …)` وحدهما مقبولان.
@@ -1125,10 +1135,16 @@ describe("المُخطَّط — الوصول", () => {
     expect(row, "صفّ المؤشرات غير موجود").not.toBe("");
     expect(row).toMatch(/kpis\.map\(\(k(?:,\s*\w+)?\) =>\s*\(\s*<li\b[^>]*>\s*<KpiCard\b/);
     expect(rootOf(card), "بطاقة المؤشر لم تعد رابطًا في كل حال — سقطت الطبقة الثابتة").toBe("Link");
-    // والمداخل المركَّبة في الصفحة نفسها: الشريط ولوحة الأوامر (زرّ البحث).
+    // والمداخل البنيوية — الشريط ولوحة الأوامر (زرّ البحث) — **في القشرة الواحدة** لا في الصفحة
+    // (٢٠٢٦/١٠/١٨، «اجعل جميع صفحات النظام بنفس تخطيط وهيئة الصفحة الرئيسية»): `SystemChrome`
+    // يركّبهما، والجذر يركّبه مرّةً لكل مسار.
     const page = stripComments(PAGE);
-    expect(page).toContain('<SystemSidebar side="left" />');
-    expect(page).toContain("<CommandPalette />");
+    expect(entranceGaps(CHROME, ROOT)).toEqual([]);
+    // يحمرّ على المزروع: قشرةٌ بلا لوحة أوامر، أو جذرٌ لا يركّبها.
+    expect(entranceGaps(CHROME.replace("<CommandPalette />", ""), ROOT)).toEqual([
+      "<CommandPalette />",
+    ]);
+    expect(entranceGaps(CHROME, ROOT.replace(/<SystemChrome\b/g, "<Fragment"))).toEqual(["root"]);
     // ولا مدخل مبنيّ على عنصرٍ غير تفاعلي — في السطح كلّه لا الصفحة وحدها
     // (المادة ٣١). والقارئ رأى كل وسم: عدد الروابط بالمسح يساوي عددها بالنصّ.
     const files = [...HOME_SURFACE.keys()].filter((f) => f.endsWith(".tsx"));
@@ -1420,15 +1436,24 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
       const reorders = arrangementReorders(css).filter((r) => !ARRANGEMENT_ALLOWED.has(r));
       expect(reorders, `${file}: ترتيبٌ بصريّ على الصفوف`).toEqual([]);
     }
-    // والاستثناء قائمٌ فعلًا، وصفّ الهوية لا يحمل إلا عنصرين يُركَّزان: رابط الشعار ثم
-    // زرّ إيقاف الماء — وعنصرٌ ثالث أو ترتيبٌ آخر يُحمّره.
+    // وصفّ الهوية بلا ترتيبٍ بصريّ، وما يُركَّز فيه بترتيب DOM: منطقة الشريط (تمرير بالأسهم في
+    // السكون، وإيقافٌ بالتركيز) ثم زرّ إيقاف الحركة — والبانر نفسه بلا عنصرٍ يُركَّز.
     const brandCss = HOME_CSS.get("src/styles/home/home-brand.css") ?? "";
-    expect(arrangementReorders(brandCss)).toEqual([...ARRANGEMENT_ALLOWED]);
+    expect(arrangementReorders(brandCss)).toEqual([]);
+    expect(arrangementReorders(`${brandCss}\n.nx-ticker { order: 1 }`)).toEqual([
+      ".nx-ticker { order: 1 }",
+    ]);
     const brandRow = stripComments(surfaceFile("HomeBrandRow.tsx"));
+    const ticker = stripComments(surfaceFile("HomeTicker.tsx"));
     const focusables = (code: string) => code.match(/<(?:Link|a|button)\b/g) ?? [];
-    expect(focusables(brandRow)).toEqual(["<Link", "<button"]);
-    expect(focusables(`${brandRow}\n<a href="/x">x</a>`)).not.toEqual(["<Link", "<button"]);
-    expect(brandRow, "عنصرٌ قابلٌ للتركيز خارج الروابط").not.toMatch(/tabIndex=\{?["']?0/);
+    const focusStops = (code: string) => code.match(/tabIndex=\{?["']?0\b/g) ?? [];
+    expect(focusables(brandRow)).toEqual([]);
+    expect(focusables(ticker)).toEqual(["<button"]);
+    expect(focusStops(brandRow), "عنصرٌ قابلٌ للتركيز في البانر").toEqual([]);
+    expect(focusStops(ticker)).toHaveLength(1);
+    expect(ticker).toMatch(/className="nx-ticker-view" role="region"[^>]*tabIndex=\{0\}/);
+    expect(focusStops(`${ticker}\n<span tabIndex={0} />`)).toHaveLength(2);
+    expect(focusables(`${brandRow}\n<a href="/x">x</a>`)).not.toEqual([]);
 
     // يحمرّ على المزروع (المادة ٣٠): الصدر مقلوبًا، وأداة `order-*`، وقاعدة
     // ترتيبٍ على بطاقة الصدر، و`dense` على الشبكة.

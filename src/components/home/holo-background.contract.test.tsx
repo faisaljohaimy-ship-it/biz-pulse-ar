@@ -142,6 +142,18 @@ function mountFilm(): HTMLVideoElement {
   return video as HTMLVideoElement;
 }
 
+const CHROME_FILE = "src/components/nav/SystemChrome.tsx";
+
+/** مواضع الطبقة: القشرة بمفتاح الفيلم، وصفحتا الوكلاء والبحث بلا مفتاح. */
+function mountGaps(chrome = readFileSync(CHROME_FILE, "utf8")): string[] {
+  const out: string[] = [];
+  if (!chrome.includes("<HoloVideoEngine film={film} />")) out.push(CHROME_FILE);
+  for (const page of ["src/routes/-nx-agents-page.tsx", "src/routes/-rag-search-page.tsx"]) {
+    if (!readFileSync(page, "utf8").includes("<HoloVideoEngine />")) out.push(page);
+  }
+  return out;
+}
+
 describe("① الفيلم موجود — صامتًا وأبطأ من أصله (أمر المالك ٢٠٢٦/٠٩/٢٨)", () => {
   it("الأصل موجودٌ فعلًا على القرص وبحجمٍ معقول", () => {
     // `src` إلى ملفٍ غائب يعطي خلفيةً فارغة بلا خطأ بناءٍ ولا خطأ نوع:
@@ -544,16 +556,18 @@ describe("③ سطحٌ يحفظ قراءة الحبر — في الوضعين م
     }
   });
 
-  it("الطبقة مُركَّبة في الصفحات الثلاث التي تستهلكها", () => {
-    // الاسم عقدٌ حيّ عبر ثلاث صفحات: إعادة تسميته أو إسقاطه من إحداها
-    // تترك تلك الصفحة بلا خلفية — ولا يمسكه tsc إن بقي الاستيراد.
-    for (const page of [
-      "src/routes/-blueprint-page.tsx",
-      "src/routes/-nx-agents-page.tsx",
-      "src/routes/-rag-search-page.tsx",
-    ]) {
-      expect(readFileSync(page, "utf8"), `${page} بلا خلفية`).toContain("<HoloVideoEngine />");
-    }
+  it("الطبقة مُركَّبة حيث تُستهلك: القشرة الواحدة وصفحتان", () => {
+    // الاسم عقدٌ حيّ: إعادة تسميته أو إسقاطه من أحد مواضعه تترك صفحاته بلا خلفية — ولا يمسكه
+    // tsc إن بقي الاستيراد. وصفحة الرئيسية لم تعد تركّبه: **القشرة الواحدة** (`SystemChrome`)
+    // تركّبه لكل مسارٍ فيها، والفيلم للرئيسية وحدها (`film`) — ٢٠٢٦/١٠/١٨، «اجعل جميع صفحات
+    // النظام بنفس تخطيط وهيئة الصفحة الرئيسية».
+    expect(mountGaps()).toEqual([]);
+    // يحمرّ على المزروع (المادة ٣٠): قشرةٌ أسقطت الطبقة، أو ركّبتها بلا مفتاح الفيلم.
+    const chrome = readFileSync(CHROME_FILE, "utf8");
+    expect(mountGaps(chrome.replace("<HoloVideoEngine film={film} />", ""))).toEqual([CHROME_FILE]);
+    expect(
+      mountGaps(chrome.replace("<HoloVideoEngine film={film} />", "<HoloVideoEngine />")),
+    ).toEqual([CHROME_FILE]);
   });
 });
 

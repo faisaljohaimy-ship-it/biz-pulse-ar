@@ -24,7 +24,16 @@
  * وبطاقة سَدِيد يمينًا، وصفّ المؤشرات يبدأ من اليسار. فالحاويات هنا ترتيبٌ
  * فقط تحت `dir="ltr"`، **وكل بطاقة وورقة تعلن اتجاه لغتها** (`dir="rtl"`):
  * لا يُقلب نصٌّ عربيّ لينقلب الترتيب. والتنقّل بلوحة المفاتيح يتبع الترتيب
- * المرئي نفسه لأن ترتيب DOM هو ترتيب الرسم. وبقية الصفحات على شريطها الأيمن.
+ * المرئي نفسه لأن ترتيب DOM هو ترتيب الرسم.
+ *
+ * ## القشرة ليست هنا (أمر المالك ٢٠٢٦/١٠/١٨)
+ *
+ * «اجعل جميع صفحات النظام بنفس تخطيط وهيئة الصفحة الرئيسية» — فالشريط
+ * والترويسة ولوحة الأوامر والخلفية (`HoloVideoEngine` بفيلمها) انتقلت إلى
+ * `SystemChrome` تلفّ هذه الصفحة وكل صفحة نظام من الجذر، مرّةً واحدة خارج
+ * انتقال المسارات. وهذه الصفحة محتواها وحده: العنوان المخفيّ والصفوف.
+ * (ونسخ الأمرُ عبارةَ D5 «وبقية الصفحات على شريطها الأيمن»: الشريط يسارًا في
+ * كل صفحة.)
  *
  * ## الصفوف بترتيبها (المواصفة §4.0)
  *
@@ -49,10 +58,6 @@
  * الذيل هو الطبقة الوحيدة الباقية بعد رفع الشارات (٢٠٢٦/٠٨/١١) — يقول إن
  * الأرقام من المصدر الحيّ متى وصل وإلا فمن المحاكاة المرجعية المدمجة.
  */
-import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
-import { SystemSidebar } from "@/components/nav/SystemSidebar";
-import { SystemHeader } from "@/components/nav/SystemHeader";
-import { CommandPalette } from "@/components/executive/CommandPalette";
 import { PRODUCT_BRAND } from "@/lib/domain";
 import { useI18n } from "@/lib/i18n";
 import { HomeBrandRow } from "@/components/home/HomeBrandRow";
@@ -72,82 +77,63 @@ export function BlueprintPage() {
   const textDir = ar ? "rtl" : "ltr";
 
   return (
-    <main
-      // الصفّ الأعلى (الشريط · العمود) يسارًا ← يمينًا كما في الصورة: السند
-      // أوّل الصفّ فيقع يسارًا، والترويسة ترث الترتيب نفسه.
-      dir="ltr"
-      className="nx-bp-surface relative flex min-h-screen overflow-x-clip bg-[color:var(--surface)] text-[color:var(--ink)]"
-    >
-      {/* الشريط الجانبي للنظام — المكوّن نفسه في القشرة، **يسارًا هنا وحدها**
-          (D5). و`overflow-x-clip` لا `overflow-hidden`: الثانية تجعل `main`
-          حاويةَ سكرول. ولوحة الأوامر تُركَّب هنا لأن القشرة لا تركّبها على
-          `/` — وبدونها يصير زرّ البحث في الترويسة ميتًا. */}
-      <SystemSidebar side="left" />
-      <CommandPalette />
-      {/* الأساس الهولوغرامي الحي: الفيلم الصامت + الغطاء + النسيج (D6 — يبقى
-          الفيلم خلف التصميم بقواعده المحروسة). البطاقات فوقه بزجاجها وسطوحها. */}
-      <HoloVideoEngine />
+    // المحتوى وحده تحت ترويسة القشرة: الصفوف يسارًا ← يمينًا كما في الصورة
+    // (D5)، وكل ورقةٍ تعلن لغتها. والقشرة (الشريط · الترويسة · الخلفية بفيلمها
+    // · لوحة الأوامر) تلفّ الصفحة من الجذر — `SystemChrome`.
+    <main dir="ltr" className="relative min-w-0">
+      {/* العنوان للقارئات والمخطّط: اسم المنتج بلسانيه من مصدره الواحد.
+          مخفيٌّ بصريًّا (الصورة بلا عنوان بطل) وباقٍ في الشجرة. والفئة
+          `font-amiri` على span داخلي لا على `h1` (عقد نطاق الخط) — والخط
+          كان يُحمَّل على الرئيسية أصلًا، فلا كلفة جديدة. */}
+      <h1 dir={textDir} className="sr-only">
+        <span className="nx-bp-title font-amiri text-[1.12em]">{PRODUCT_BRAND.ar.name}</span>{" "}
+        <span className="nx-bp-title tracking-[0.06em]">{PRODUCT_BRAND.en.name}</span>
+      </h1>
 
-      <div className="relative min-w-0 flex-1">
-        {/* الترويسة بعرض العمود كاملًا: البحث يسارًا · الأيقونات · المستخدم
-            يمينًا (§4.1). ومبدّل الوضع الواحد فيها على الرئيسية — الشريط
-            العلوي لم يعد يرسمه. */}
-        <SystemHeader withMenu />
+      <div dir="ltr" className="nx-home-arrange mx-auto w-full max-w-[1440px] px-4 pb-16 pt-4">
+        {/* ════ الهوية: شريط المزايا ثم لوحة سَدِيد بعرض العمود، وفيلمها السينمائي
+              والاسم والسطر نصًّا فوقها (أوامر المالك ٢٠٢٦/١٠/١٧–١٨ — المواصفة §2.3). */}
+        <HomeBrandRow />
 
-        {/* العنوان للقارئات والمخطّط: اسم المنتج بلسانيه من مصدره الواحد.
-            مخفيٌّ بصريًّا (الصورة بلا عنوان بطل) وباقٍ في الشجرة. والفئة
-            `font-amiri` على span داخلي لا على `h1` (عقد نطاق الخط) — والخط
-            كان يُحمَّل على الرئيسية أصلًا، فلا كلفة جديدة. */}
-        <h1 dir={textDir} className="sr-only">
-          <span className="nx-bp-title font-amiri text-[1.12em]">{PRODUCT_BRAND.ar.name}</span>{" "}
-          <span className="nx-bp-title tracking-[0.06em]">{PRODUCT_BRAND.en.name}</span>
-        </h1>
+        {/* ════ المؤشرات السبعة — يبدأ الصفّ من اليسار (§4.3). */}
+        <HomeKpiRow />
 
-        <div dir="ltr" className="nx-home-arrange mx-auto w-full max-w-[1440px] px-4 pb-16 pt-4">
-          {/* ════ الهوية: البانر وسطًا ولوحة الشعار في الزاوية اليمنى، بماءٍ
-              سينمائي مصيَّر (أمر المالك ٢٠٢٦/١٠/١٧ — المواصفة §2.3). */}
-          <HomeBrandRow />
-
-          {/* ════ المؤشرات السبعة — يبدأ الصفّ من اليسار (§4.3). */}
-          <HomeKpiRow />
-
-          {/* ════ الصدر: الخريطة يسارًا ≈ ٥/٧ · سَدِيد يمينًا ≈ ٢/٧ (§4.4–٤.٥).
+        {/* ════ الصدر: الخريطة يسارًا ≈ ٥/٧ · سَدِيد يمينًا ≈ ٢/٧ (§4.4–٤.٥).
               يتراصّان دون 1280 بالترتيب نفسه: الخريطة ثم سَدِيد. */}
-          <div className="nx-home-hero">
-            <HomeMapCard />
-            <HomeSadeedCard />
-          </div>
+        <div className="nx-home-hero">
+          <HomeMapCard />
+          <HomeSadeedCard />
+        </div>
 
-          {/* ════ التشغيل: أبرز المخاطر · الحوادث النشطة · الدوريات · الكاميرات. */}
-          <HomeOpsRow />
+        {/* ════ التشغيل: أبرز المخاطر · الحوادث النشطة · الدوريات · الكاميرات. */}
+        <HomeOpsRow />
 
-          {/* ════ التحليلات: أداء المناطق · الصيانة شهريًّا · أنواع الحوادث ·
+        {/* ════ التحليلات: أداء المناطق · الصيانة شهريًّا · أنواع الحوادث ·
               حالة الأنظمة. */}
-          <HomeAnalyticsRow />
+        <HomeAnalyticsRow />
 
-          {/* ════ الخاتمة: فعلان واضحان — سؤال سَدِيد أو الانتقال إلى الأمن
+        {/* ════ الخاتمة: فعلان واضحان — سؤال سَدِيد أو الانتقال إلى الأمن
               الصناعي (أمر المالك ٢٠٢٦/١٠/١٧). */}
-          <HomeClosingBand />
+        <HomeClosingBand />
 
-          {/* الفاصل بالحبر الثالث ممزوجًا (خطٌّ هادئ لا نصّ)، والسطر بالحبر
+        {/* الفاصل بالحبر الثالث ممزوجًا (خطٌّ هادئ لا نصّ)، والسطر بالحبر
               الثاني: كان بأخفّ الدرجات فهبط تباينه فوق قوس الفيلم إلى ١٫٤٢:١،
               فرُفع درجةً — ولا يعود. والأحبار الثلاثة مسمّاةٌ في الصفحة فيقيسها
               فحص تباين الخلفية (`check-background-contrast.mjs`). */}
-          <footer
-            dir={textDir}
-            className="nx-bp-stage border-t border-[color:color-mix(in_srgb,var(--ink-3)_30%,transparent)] pt-3"
-          >
-            {/* السطر على الفيلم مباشرةً، فحشوة السطح تحته (`.nx-bp-note`) تحفظ
+        <footer
+          dir={textDir}
+          className="nx-bp-stage border-t border-[color:color-mix(in_srgb,var(--ink-3)_30%,transparent)] pt-3"
+        >
+          {/* السطر على الفيلم مباشرةً، فحشوة السطح تحته (`.nx-bp-note`) تحفظ
                 تباينه — لا تعتيمُ الفيلم. وهو الإفصاح الوحيد الباقي بعد رفع
                 الشارات (٢٠٢٦/٠٨/١١): لا يصحّ أن يدّعي الحياة وحدها — نقضه
                 حارس الجودة ٢٠٢٦/٠٩/٢٩ حين قال «الأرقام من مصدر النظام الحيّ». */}
-            <p className="nx-bp-note inline-block text-[12px] text-[color:var(--ink-2)]">
-              {ar
-                ? "الأرقام من مصدر النظام الحيّ متى وصل، وإلا فمن محاكاةٍ مرجعية مدمجة. ما لا يُقاس يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
-                : "Figures come from the live system source when it responds, otherwise from a built-in reference simulation. Whatever is not measured reads “not measured” — never a substituted zero."}
-            </p>
-          </footer>
-        </div>
+          <p className="nx-bp-note inline-block text-[12px] text-[color:var(--ink-2)]">
+            {ar
+              ? "الأرقام من مصدر النظام الحيّ متى وصل، وإلا فمن محاكاةٍ مرجعية مدمجة. ما لا يُقاس يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
+              : "Figures come from the live system source when it responds, otherwise from a built-in reference simulation. Whatever is not measured reads “not measured” — never a substituted zero."}
+          </p>
+        </footer>
       </div>
     </main>
   );

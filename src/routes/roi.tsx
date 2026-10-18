@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { DOMAIN_URL } from "@/lib/domain";
+import { DOMAIN_URL, SITE_OG_IMAGE } from "@/lib/domain";
 import { ArrowLeft, TrendingUp, TrendingDown, Clock, Shield, Zap, DollarSign } from "lucide-react";
 
 export const Route = createFileRoute("/roi")({
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/roi")({
         content: "Executive-grade ROI model for the autonomous enterprise.",
       },
       { property: "og:url", content: `${DOMAIN_URL}/roi` },
-      { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
+      { property: "og:image", content: `${DOMAIN_URL}${SITE_OG_IMAGE}` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/roi` }],
   }),

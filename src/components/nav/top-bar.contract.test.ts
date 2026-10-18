@@ -191,12 +191,54 @@ describe("③ «ثابتة» — شريطٌ مثبَّت بسندٍ يحجز م�
 });
 
 describe("④ الطبقات — يعلو القشرة ويبقى دون لوحة سَدِيد", () => {
-  const z = () => Number(/z-index:\s*(\d+)/.exec(rule(".nx-topbar {"))?.[1] ?? NaN);
+  /** طبقة الشريط من قاعدته في ورقةٍ مُعطاة — فيُجرَّب الكاشف على ورقةٍ مزروعة. */
+  const zOf = (css: string) => {
+    const at = css.indexOf(".nx-topbar {");
+    const body = at === -1 ? "" : css.slice(at, css.indexOf("}", at) + 1);
+    return Number(/z-index:\s*(\d+)/.exec(body)?.[1] ?? NaN);
+  };
+  const z = () => zOf(CSS);
 
-  it("فوق ترويسة الجوال — وإلا اختفى الشريط خلفها", () => {
-    const header = /nexus-mobile-header[^"]*\bz-(\d+)\b/.exec(code("src/components/app-shell.tsx"));
-    expect(header, "لم تُقرأ طبقة ترويسة الجوال — تبدّلت صيغتها").not.toBeNull();
-    expect(z()).toBeGreaterThan(Number(header![1]));
+  /**
+   * **فوق القشرة كلّها — لا فوق ترويسة الجوال وحدها.** كان البند يقارن طبقة الشريط
+   * بطبقة `.nexus-mobile-header` (40) في `app-shell`؛ وسقطت تلك الترويسة مع القشرة
+   * القديمة بأمر المالك ٢٠٢٦/١٠/١٨: «اجعل جميع صفحات النظام بنفس تخطيط وهيئة الصفحة
+   * الرئيسية». والترويسة الواحدة اليوم مثبَّتةٌ دون 1024 (z 30) والشريط الجانبي (z-20)
+   * **داخل** غلاف الجذر `relative z-10` — سياق تكديسٍ واحد عند 10 على مستوى الجذر.
+   * فالسؤال الصحيح (CRITIC should-fix 3) ليس رقمًا داخل الغلاف بل موضعٌ وطبقةٌ في الجذر:
+   * الشريط **خارج** الغلاف وقبله، وطبقته أعلى من طبقة الغلاف — فيعلو كل ما فيه مهما
+   * كبرت أرقامه هناك. وطرفه الآخر (دون صندوق لوحة سَدِيد) في البند التالي.
+   */
+  it("فوق القشرة كلّها — خارج غلافها في الجذر وبطبقةٍ أعلى منه", () => {
+    const root = code("src/routes/__root.tsx");
+    const layering = (src: string, css: string) => {
+      const wrapper = /<div className="relative z-(\d+)">/.exec(src);
+      const bar = src.indexOf("<TopBar");
+      const chrome = src.indexOf("<SystemChrome");
+      return {
+        outside: bar > -1 && wrapper !== null && bar < (wrapper.index ?? -1),
+        wraps: wrapper !== null && chrome > (wrapper.index ?? Infinity),
+        above: wrapper !== null && zOf(css) > Number(wrapper[1]),
+      };
+    };
+    expect(layering(root, CSS), "الشريط داخل غلاف القشرة أو تحته").toEqual({
+      outside: true,
+      wraps: true,
+      above: true,
+    });
+    // ويحمرّ على المزروع (المادة ٣٠): طبقةٌ عند 10 تساوي الغلاف فتتراكب بترتيب DOM،
+    // وشريطٌ نُقل داخل الغلاف.
+    const flat = CSS.replace(/(\.nx-topbar \{[^}]*?z-index:\s*)\d+/, "$110");
+    expect(flat).not.toBe(CSS);
+    expect(layering(root, flat).above).toBe(false);
+    const inside = root
+      .replace(/\{!suppressMarquee && <TopBar showClock=\{!suppressClock\} \/>\}/, "")
+      .replace(
+        '<div className="relative z-10">',
+        '<div className="relative z-10">\n<TopBar showClock={!suppressClock} />',
+      );
+    expect(inside).not.toBe(root);
+    expect(layering(inside, CSS).outside).toBe(false);
   });
 
   it("بين حاجب لوحة سَدِيد وصندوقها — والطرفان مقيسان لا مقدَّران", () => {
@@ -332,17 +374,28 @@ describe("⑥ الشكل — قرصٌ يسع الصفّ ولا يفيض عنه",
 describe("⑦ الجرس — في ترويسة النظام وحدها، بعدّاد الأعمال العاجلة", () => {
   it("لا ملفّ شريط أدوات ولا جرسٌ خارج ترويسة النظام", () => {
     expect(existsSync(join(root, "src/components/nav/TopUtilityBar.tsx"))).toBe(false);
+    /** جرسٌ مرسوم أو مستورد — الكاشف نفسه على كل ملفّ وعلى المزروع. */
+    const bells = (src: string) => [
+      ...(src.match(/<Bell[\s/>]/g) ?? []),
+      ...(src.match(/\bBell\b[^"]*from "lucide-react"/g) ?? []),
+    ];
     for (const p of [
       "src/components/nav/TopBar.tsx",
       "src/routes/__root.tsx",
       "src/components/app-shell.tsx",
       "src/components/cockpit/header.tsx",
       "src/routes/-blueprint-page.tsx",
+      // القشرة الواحدة وقائمة الحساب (أمر المالك ٢٠٢٦/١٠/١٨ «اجعل جميع صفحات النظام
+      // بنفس تخطيط وهيئة الصفحة الرئيسية»): تركّبان الترويسة ولا ترسمان جرسًا ثانيًا.
+      "src/components/nav/SystemChrome.tsx",
+      "src/components/nav/AccountMenu.tsx",
     ]) {
-      const src = code(p);
-      expect(src, `${p} يرسم جرسًا بنفسه`).not.toMatch(/<Bell[\s/>]/);
-      expect(src, `${p} يستورد Bell`).not.toMatch(/\bBell\b[^"]*from "lucide-react"/);
+      expect(bells(code(p)), `${p} يرسم جرسًا أو يستورده بنفسه`).toEqual([]);
     }
+    // يحمرّ على المزروع (المادة ٣٠): جرسٌ ثانٍ في قائمة الحساب، واستيراده.
+    const account = code("src/components/nav/AccountMenu.tsx");
+    expect(bells(`${account}\n<Bell aria-hidden className="size-5" />`)).toHaveLength(1);
+    expect(bells(`import { Bell, Globe } from "lucide-react";\n${account}`)).toHaveLength(1);
   });
 
   it("وفي ترويسة النظام جرسٌ واحد يفتح الأعمال العاجلة ويعدّ المقيس", () => {
@@ -427,11 +480,21 @@ describe("⑧ لا طفو — البند الذي وُلد من ثلاث قيا�
   });
 
   it("ولا زرّ خارج الشريط — لا ورثةَ للطبقة العائمة", () => {
-    // أي `.nx-chrome-btn` في مكوّنٍ غير الشريط يعني قرصًا يطفو من جديد.
+    // أي `.nx-chrome-btn` في مكوّنٍ غير الشريط يعني قرصًا يطفو من جديد. والقشرة الواحدة
+    // وقائمة الحساب (٢٠٢٦/١٠/١٨) أعضاءٌ في القائمة: أزرارهما أزرار الترويسة لا الشريط.
     const bar = "src/components/nav/TopBar.tsx";
-    for (const p of ["src/routes/__root.tsx", "src/components/app-shell.tsx"]) {
+    for (const p of [
+      "src/routes/__root.tsx",
+      "src/components/app-shell.tsx",
+      "src/components/nav/SystemChrome.tsx",
+      "src/components/nav/AccountMenu.tsx",
+    ]) {
       expect(code(p), `${p} أعاد قرصًا خارج الشريط`).not.toContain("nx-chrome-btn");
     }
     expect(code(bar)).toContain("nx-chrome-btn");
+    // يحمرّ على المزروع (المادة ٣٠): قرصٌ في القشرة.
+    expect(
+      `${code("src/components/nav/SystemChrome.tsx")}\n<button className="nx-chrome-btn" />`,
+    ).toContain("nx-chrome-btn");
   });
 });

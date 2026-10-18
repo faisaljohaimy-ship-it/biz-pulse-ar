@@ -191,6 +191,8 @@ html.safe-mode .sd-stage-card > img {
   /* الأغمق في النظام (القمرة والأدراج) — سماويّ بحريّ لا كحليّ: ٢٠٦° · ١٩٫٤٩:١ */
   --nx-obsidian: #010e18;
   --nx-ink: #04111f;
+  /* كحليّ لوحة سَدِيد — حبر الاسم والسطر فوق البانر الفاتح في الوضعين (٢٠٢٦/١٠/١٨) */
+  --nx-navy: #0b2a6f;
   --nx-pearl: #eaf8ff;
   --nx-gold: #f5c560;
   --nx-white: #ffffff;
@@ -535,19 +537,6 @@ html.safe-mode .sd-stage-card > img {
       0 8px 32px -12px rgba(2, 8, 20, 0.55);
   }
 
-  .glass-sidebar {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--nx-bg-1) 92%, transparent),
-      color-mix(in srgb, var(--nx-bg-2) 80%, transparent)
-    );
-    /* Radius discipline: the sidebar's own gradient is 80–92% opaque, so
-       the backdrop blur only tints the remaining sliver — blur(12) reads
-       identical to blur(32) here but costs a third per scroll frame
-       (backdrop-filter re-blurs on EVERY frame while content scrolls). */
-    backdrop-filter: blur(12px);
-    border-right: 1px solid color-mix(in srgb, var(--nx-cyan) 12%, transparent);
-  }
   .glass-card {
     background: var(--gradient-glass), color-mix(in srgb, var(--nx-card) 55%, var(--nx-bg-2));
     backdrop-filter: blur(20px) saturate(150%);
@@ -649,62 +638,11 @@ body {
   overflow-x: auto;
 }
 
-/* ── Executive Cockpit (mobile landscape) ─────────────────────────
-   When phone is rotated, we abandon the stacked-mobile UI and render
-   a compact desktop-style cockpit: collapsed icon rail + hidden mobile
-   top header + slim overlay dock. Activated automatically by orientation
-   and viewport height. */
-@media (orientation: landscape) and (max-width: 1023px) and (max-height: 540px) {
-  .nexus-mobile-header {
-    display: none !important;
-  }
-  /* السند يتبع الشريط في كل قاعدة عرضٍ وإظهار — وإلا غطّى الشريطُ المثبَّت
-     المحتوى أو ترك فجوةً (قِيس ٦٦٧×٣٧٥ و٨٤٤×٣٩٠، ٢٠٢٦/٠٩/٢٩). */
-  .nexus-sidebar,
-  .nexus-sidebar-spacer {
-    display: flex !important;
-    width: 56px !important;
-    flex-direction: column;
-  }
-  /* الشريط 56px يحمل العلامة وحدها — كان وصف الهوية يفيض خارجه فوق المحتوى
-     (قِيس على ٦٦٧ الأفقي، ٢٠٢٦/٠٩/٢٩). والاسم باقٍ للقارئات في `aria`. */
-  .nexus-sidebar .nx-lockup-text {
-    display: none;
-  }
-  /* وبطاقة الختام («معاً نحو بيئة آمنة») نصٌّ بعرض الشريط الكامل: في 56px لا
-     يبقى منها إلا شريحة 28px يفيض اسم الجهة منها 86px (قاسه ui-audit على
-     ٨٤٤×٣٩٠ في الشاشات الداخلية، ٢٠٢٦/١٠/١٨). تُخفى كما يُخفى وصف الهوية. */
-  .nexus-sidebar .nx-sysnav-card {
-    display: none;
-  }
-  /* Hide group labels + nav text → icon-only rail with tooltips on hover */
-  .nexus-sidebar nav > div > div:first-child {
-    display: none;
-  }
-  .nexus-sidebar nav a > span {
-    display: none !important;
-  }
-  .nexus-sidebar nav a {
-    justify-content: center;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-  }
-  .nexus-sidebar nav {
-    padding: 0.5rem 0.25rem;
-  }
-  .nexus-main > div {
-    padding: 0.5rem 0.75rem !important;
-  }
-  /* Compact overlay chrome */
-}
-
-/* ── 4K / ultrawide tuning ────────────────────────────────────── */
-@media (min-width: 2200px) {
-  .nexus-sidebar,
-  .nexus-sidebar-spacer {
-    width: 22rem !important;
-  }
-}
+/* (الشريط الأفقي 56px للجوال المُدار — شريط القشرة القديمة وسنده وأيقوناته
+   وبطاقته — وقاعدة ‏22rem فوق ‏2200px، سقطت مع قشرة الصفحات الداخلية القديمة:
+   أمر المالك ٢٠٢٦/١٠/١٨ «اجعل جميع صفحات النظام بنفس تخطيط وهيئة الصفحة
+   الرئيسية». الجوال المُدار يلبس الترويسة ودرجها كالرئيسية، والشريط ‏224px في
+   كل عرض — `styles/home/home-chrome.css`.) */
 
 /* ── Reduced motion: kill orbital spins + node float for accessibility/perf ── */
 
@@ -815,90 +753,9 @@ body {
   }
 }
 
-/* ── Nexus Orb (Command Node) ────────────────────────────────────── */
-@keyframes orb-breathe {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.06);
-  }
-}
-@keyframes orb-wake {
-  0% {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.08);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@keyframes orb-pip {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.85;
-  }
-}
-
-.nexus-orb {
-  animation: orb-wake 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.nexus-orb-halo {
-  background: radial-gradient(
-    closest-side,
-    color-mix(in oklab, var(--primary) 35%, transparent) 0%,
-    transparent 70%
-  );
-  animation: orb-breathe 3s ease-in-out infinite;
-}
-.nexus-orb[data-open="true"] .nexus-orb-halo {
-  background: radial-gradient(
-    closest-side,
-    color-mix(in oklab, var(--secondary) 45%, transparent) 0%,
-    transparent 70%
-  );
-}
-.nexus-orb-shimmer::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    115deg,
-    transparent 40%,
-    color-mix(in oklab, var(--primary) 55%, transparent) 50%,
-    transparent 60%
-  );
-  /* أمر المالك ٢٠٢٦/٠٨/٢٠: لا هايلايت يمرّ — طبقة اللمعة مطفأة كليًّا. */
-  display: none;
-}
-.nexus-orb:active .nexus-orb-disc {
-  transform: scale(0.92);
-  transition: transform 120ms ease-out;
-}
-.nexus-orb-pip {
-  animation: orb-pip 2.2s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nexus-orb,
-  .nexus-orb-halo,
-  .nexus-orb-shimmer::before,
-  .nexus-orb-pip {
-    animation: none !important;
-  }
-}
+/* (زرّ «عقدة القيادة» `NexusOrb` وإطاراته الثلاثة `orb-breathe`/`orb-wake`/
+   `orb-pip` سقطت مع درج القشرة القديمة — حامله الوحيد، أمر المالك ٢٠٢٦/١٠/١٨.
+   درج الترويسة (`SystemHeader`) هو الدرج الوحيد.) */
 
 /* ══════════════════════════════════════════════════════════════════════════
    SADEED cinematic pulses — gentle glow on active icons + sector color-breathe.
@@ -1400,24 +1257,6 @@ body {
   text-wrap: balance;
 }
 
-.nexus-sidebar {
-  box-shadow:
-    18px 0 80px -46px rgba(0, 212, 255, 0.28),
-    inset -1px 0 0 rgba(255, 255, 255, 0.025);
-}
-
-[dir="rtl"] .nexus-sidebar {
-  box-shadow:
-    -18px 0 80px -46px rgba(0, 212, 255, 0.28),
-    inset 1px 0 0 rgba(255, 255, 255, 0.025);
-}
-
-.nexus-mobile-header {
-  box-shadow:
-    0 16px 40px -30px rgba(0, 212, 255, 0.55),
-    inset 0 -1px 0 rgba(58, 232, 255, 0.08);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .nexus-identity-aurora,
   .nexus-command-chip {
@@ -1683,18 +1522,12 @@ html.nx-scrolling *::after {
    platform allows; on iOS Safari — where element fullscreen is blocked —
    this class-only mode still delivers the same clean, enlarged display.
    ═══════════════════════════════════════════════════════════════════ */
-html.nx-presenting .nexus-sidebar,
-html.nx-presenting .nexus-sidebar-spacer,
-html.nx-presenting .nexus-mobile-header,
 html.nx-presenting [aria-label="Beta preview banner"],
 html.nx-presenting [data-nx-presentation-hide] {
   display: none !important;
 }
 html.nx-presenting {
   font-size: 112%;
-}
-html.nx-presenting .nexus-app-shell {
-  background: #02060d;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -2079,11 +1912,6 @@ body {
   opacity: 0 !important;
 }
 
-/* قشرة التطبيق: الخلفية الكحلية شبه الشفافة تصبح بيضاء صافية. */
-.light .nexus-app-shell {
-  background-color: #ffffff;
-}
-
 /* طبقات الأجواء الهولوغرامية (شفق/شبكة/مسح/ضجيج) مصمَّمة لتُضيء فوق
    الأسود. فوق الأبيض تتحوّل إلى ضباب سماوي يكسر «النظام كامل أبيض». */
 .light .nx-holo-aurora,
@@ -2100,8 +1928,7 @@ body {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-/* الشريط الجانبي والنوافذ الزجاجية. */
-.light .glass-sidebar,
+/* النوافذ الزجاجية. */
 .light .glass {
   background: #ffffff;
   border-color: rgba(0, 0, 0, 0.12);
@@ -2129,7 +1956,6 @@ body {
 .light .nx-glass-e1,
 .light .nexus-card,
 .light .glass,
-.light .glass-sidebar,
 .light .nx-clock-bar {
   background: linear-gradient(
     145deg,
@@ -2245,8 +2071,7 @@ body {
    الإزاحة على الصفحة الحيّة: الترويسة عند ٤٠ بدل ٣٧، والزوج أعلى مدار
    النوافذ بثلاثة بكسلات في الفاتح بينما يطابقه في الداكن. حدّه السفلي
    وحده يُرسم في `.light .nx-clock-bar` أعلاه. */
-.light .glass,
-.light .glass-sidebar {
+.light .glass {
   border-width: 2px !important;
   border-style: solid !important;
   border-color: rgba(12, 42, 68, 0.42) !important;
@@ -2601,7 +2426,6 @@ body {
 .nexus-window,
 .sadeed-window,
 .nexus-floating-surface,
-.glass-sidebar,
 .nexus-toast,
 [data-slot="card"] {
   background: var(--sd-glass) !important;
@@ -3800,7 +3624,6 @@ html.dark .nexus-card,
 html.dark .nexus-window,
 html.dark .sadeed-window,
 html.dark .nexus-floating-surface,
-html.dark .glass-sidebar,
 html.dark .nexus-toast,
 html.dark .spatial-window,
 html.dark [data-slot="card"] {
@@ -4178,9 +4001,9 @@ html.dark .nx-holo-noise {
    لا `transform` (المادة ٣٢). والرفعة زينة: الحالة الساكنة مكتملة بلا تمرير. */
 .nx-home-kpi,
 .nx-home-panel {
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.06),
-    0 8px 24px -12px rgba(15, 23, 42, 0.18);
+  /* الظلّ الناعم رمزٌ واحد (`--nx-card-shadow`، آخر الملف) تقرؤه بطاقات الصفحات
+     الداخلية أيضًا — هيئةٌ واحدة لا قيمتان تفترقان (أمر المالك ٢٠٢٦/١٠/١٨). */
+  box-shadow: var(--nx-card-shadow);
 }
 /* الرفعة لمن لم يطلب تقليل الحركة وحده — شرطٌ في الاستعلام نفسه لا كتلةُ
    إلغاءٍ لاحقة (الطبقة بلا حركةٍ تلقائية، فلا كتلة `reduce` فيها). */
@@ -4227,30 +4050,6 @@ html.dark .nx-holo-noise {
 .nx-home-skeleton {
   display: block;
   background: var(--chip-strong);
-}
-
-/* ── علامة سَدِيد (`SadeedMark.tsx`) — ألوانها رموزٌ هنا لا في المكوّن.
-   درعٌ متدرّج من الأزرق الملكي إلى السماوي العميق، والحرف فاتحٌ في الوضعين:
-   الدرع أرضيته الذاتية، فلا يتبع الحرفُ `--ink` فيسودّ على الأزرق في الفاتح.
-   **طرف التدرّج `#0e7490` لا `#22d3ee`:** السماوي الفاتح أسقط 52٪ من بكسلات
-   الحرف دون 3:1 (قاسها حارس الجودة بالبكسل، والأدنى 1.51). الطرفان الآن
-   6.7:1 و5.4:1 مع `--nx-mark-glyph`، والتوهّج السماوي باقٍ في الظلّ. */
-.nx-mark {
-  --nx-mark-a: #1d4ed8;
-  --nx-mark-b: #0e7490;
-  --nx-mark-glyph: #f5faff;
-  filter: drop-shadow(0 4px 10px rgba(34, 211, 238, 0.28));
-}
-.nx-mark-glyph {
-  fill: var(--nx-mark-glyph);
-}
-@media (forced-colors: active) {
-  .nx-mark {
-    filter: none;
-  }
-  .nx-mark-glyph {
-    fill: Canvas;
-  }
 }
 
 /* ── خريطة شبه الجزيرة العربية (`ArabianPeninsulaMap.tsx`) ─────────────────
@@ -7166,14 +6965,8 @@ html.dark .nx-holo-noise {
   color: var(--nx-pearl);
 }
 
-html.dark .nexus-window,
-html.dark .glass-sidebar {
+html.dark .nexus-window {
   background-image: none !important;
-}
-
-html.dark .glass-sidebar {
-  /* الشريط الجانبي المصمت — أعمق من الأساس بدرجة فيقرأ حدًّا للمساحة. */
-  background-color: rgb(3 25 42 / 0.97) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -9295,4 +9088,145 @@ html.safe-mode .sd-sig-layer {
 }
 html.safe-mode .sadeed-chat-scrim {
   background: color-mix(in srgb, var(--background) 85%, transparent) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   هيئة البطاقة الواحدة — بطاقات الصفحات الداخلية بهيئة بطاقات الرئيسية
+   (أمر المالك ٢٠٢٦/١٠/١٨: «اجعل جميع صفحات النظام بنفس تخطيط وهيئة الصفحة
+   الرئيسية»؛ والمهمّة اللاحقة: الخلفيات والمسافات والعناوين والبطاقات والحدود
+   والظلال وأسلوب الأيقونات — **بالرموز والمكوّنات المشتركة وحدها**).
+   ───────────────────────────────────────────────────────────────────────────
+   ① **الرموز** — `--nx-card-radius` و`--nx-card-shadow` يقرؤهما الطرفان: بطاقة
+     الرئيسية (`.nx-home-panel`، أعلى الملف) وسطح الصفحات الداخلية `.nx-surface`
+     (تحمله المكوّنات المشتركة: رأس الصفحة وبطاقة المؤشر وبطاقة الإطار …).
+   ② **الأسر المشتركة** (`.holo-card` · `.nexus-card` · `.nx-glass` · `.nx-glass-e1`
+     · `.spatial-window` · `.glass` · بطاقة shadcn `[data-slot="card"]`) داخل محتوى
+     الصفحات الداخلية (`.nexus-main` — يرسمه `AppShell` وحده) تأخذ هيئة الرئيسية:
+     سطحٌ معتم (`--surface`)، وحدٌّ شعريّ (`--hairline`)، ونصف قطر 16، وظلٌّ ناعم —
+     **بلا** شبكة «SEC-GRID» ولا لمعةٍ مائلة ولا حلقةٍ لونية نابضة ولا هالةٍ تتنفّس.
+     تلك كانت هيئة القشرة القديمة؛ وبطاقات الرئيسية ساكنةٌ معتمة («لا زجاج يمرّ
+     الفيلم تحته فيُسقط تباين الأرقام»). والنطاق `.nexus-main` عمدًا: الرئيسية
+     تملك أنماطها، وواجهات العرض (`/nx-*`) وأسطح النوافذ المنبثقة خارجه.
+     والنوعيّة (0,3,1) و`!important` لأن قواعد الأسر السابقة نفسها `!important`
+     بنوعيّةٍ تبلغ (0,2,1) — فهذه الطبقة تعلوها يقينًا لا ترتيبًا.
+   ③ **الأيقونات** حادّة كأيقونات الرئيسية وقشرتها: لا توهّج `drop-shadow` ولا نبضة
+     شفافية دائمة على رموز الروابط والأزرار داخل الصفحات الداخلية (WCAG 2.2.2:
+     حركةٌ دائمة بلا مخرج)، ولا شبكة ولا حلقة نابضة على بلاطات `.nx-holo-icon`.
+   ④ **لا يُمسّ معنى الحالات**: نغمات «خطر/تحذير/سليم» تُرسم على سطحٍ معتم
+     (`StatCard`) فتظهر الآن في الخلفية كما في الحدّ والأيقونة والنصّ والشارة —
+     كانت حشوة الزجاج العامّة (`.nx-glass`) تمحو غسلة الخلفية.
+   ⑤ **الشارة النغمية** (`.nx-tonal[data-tone]` — `NexusPill` وبلاطات «لماذا/ماذا
+     بعد» وزرّ الإجراء التالي): وصفة شارة الرئيسية (`.nx-ops-sim`) — حدٌّ ونصٌّ من
+     رمز النبرة على سطحٍ معتم بلمسةٍ منها 6% — فتعبر 4.5:1 في الوضعين (أدناها
+     الكهرماني الفاتح 4.6:1، محسوبًا على `--surface`؛ والحشوة معتمة فلا تتبدّل
+     بأرضية ما تحتها).
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --nx-card-radius: 16px;
+  --nx-card-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px -12px rgba(15, 23, 42, 0.18);
+}
+
+/* سطح الصفحات الداخلية — هيئة بطاقة الرئيسية لمن يحمله من المكوّنات المشتركة. */
+.nx-surface {
+  border: 1px solid var(--hairline);
+  border-radius: var(--nx-card-radius);
+  background-color: var(--surface);
+  box-shadow: var(--nx-card-shadow);
+  color: var(--ink);
+}
+
+/* الإبراز (`NexusCard glow`): حلقةٌ هادئة من نبرة السماوي فوق الظلّ نفسه — لا وهجٌ
+   نابض. */
+.nx-surface[data-glow] {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tone-cyan) 35%, transparent),
+    var(--nx-card-shadow);
+}
+
+/* ⑤ الشارة النغمية — رمز النبرة يمرّ متغيّرًا (`--nx-tonal`) لا قيمةً نهائية. */
+.nx-tonal {
+  --nx-tonal: var(--tone-cyan);
+  border: 1px solid color-mix(in srgb, var(--nx-tonal) 35%, var(--surface));
+  background-color: color-mix(in srgb, var(--nx-tonal) 6%, var(--surface));
+  color: var(--nx-tonal);
+}
+.nx-tonal[data-tone="amber"] {
+  --nx-tonal: var(--tone-amber);
+}
+.nx-tonal[data-tone="rose"] {
+  --nx-tonal: var(--tone-rose);
+}
+.nx-tonal[data-tone="emerald"] {
+  --nx-tonal: var(--tone-emerald);
+}
+.nx-tonal[data-tone="violet"] {
+  --nx-tonal: var(--tone-violet);
+}
+.nx-tonal[data-tone="slate"] {
+  --nx-tonal: var(--ink-2);
+}
+button.nx-tonal:hover {
+  background-color: color-mix(in srgb, var(--nx-tonal) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--nx-tonal) 55%, var(--surface));
+}
+
+html:is(.light, .dark)
+  .nexus-main
+  :is(
+    .holo-card,
+    .nexus-card,
+    .nx-glass,
+    .nx-glass-e1,
+    .spatial-window,
+    .glass,
+    [data-slot="card"]
+  ) {
+  border: 1px solid var(--hairline) !important;
+  border-radius: var(--nx-card-radius) !important;
+  background-color: var(--surface) !important;
+  background-image: none !important;
+  box-shadow: var(--nx-card-shadow) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  animation: none !important;
+}
+
+/* التمرير لا يرفع البطاقة ولا يُشعل حدّها — بطاقات الرئيسية ساكنة؛ والروابط
+   داخلها تحمل حالة تمريرها بنفسها. */
+html:is(.light, .dark)
+  .nexus-main
+  :is(
+    .holo-card,
+    .nexus-card,
+    .nx-glass,
+    .nx-glass-e1,
+    .spatial-window,
+    .glass,
+    [data-slot="card"]
+  ):hover {
+  border-color: var(--hairline) !important;
+  box-shadow: var(--nx-card-shadow) !important;
+  transform: none !important;
+}
+
+/* اللمعة المائلة وخطّ الضوء طبقتان زائفتان على الأسر — ليستا في الرئيسية. */
+html:is(.light, .dark)
+  .nexus-main
+  :is(.holo-card, .nx-glass-e1, .spatial-window, [data-slot="card"])::before,
+html:is(.light, .dark)
+  .nexus-main
+  :is(.holo-card, .nx-glass-e1, .spatial-window, [data-slot="card"])::after {
+  display: none !important;
+}
+
+/* ③ الأيقونات حادّة: نوعيّة (0,2,1) تعلو طبقة الهولو العامّة (0,1,1). */
+.nexus-main :is(a, button, [data-slot="button"]) > svg,
+.nexus-main .nx-icon {
+  filter: none !important;
+  animation: none !important;
+}
+
+.nexus-main .nx-holo-icon {
+  background-image: none !important;
+  animation: none !important;
 }

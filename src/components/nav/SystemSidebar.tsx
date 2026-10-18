@@ -1,5 +1,5 @@
 /**
- * الشريط الجانبي للنظام — **نسخةٌ واحدة تُركَّب في القشرة وفي الرئيسية.**
+ * الشريط الجانبي للنظام — **نسخةٌ واحدة، تركّبها قشرة النظام وحدها.**
  *
  * أمر المالك ٢٠٢٦/٠٩/٢٩: الشريط في النظام كلّه، بعناصر التصميم العشرين.
  * العناصر تُقرأ من `SYSTEM_NAV` وحده، والمناطق من `REGIONS` وحدها،
@@ -9,18 +9,22 @@
  * الوضعين (الشريط لا يقرأ الفيلم تحته)، والعنصر النشط لوحٌ بنبرة
  * `--tone-blue` حبرُه `--surface` — ٦٫٧:١ في الفاتح ونحو ٧:١ في الداكن.
  *
- * ## الرئيسية «كما في الصورة» (قرارا المالك D5 وN4، ٢٠٢٦/١٠/١٣–١٤)
+ * ## يسارًا في كل صفحة (D5 وN4 ٢٠٢٦/١٠/١٣–١٤، ممدودين بأمر ٢٠٢٦/١٠/١٨)
  *
- * على الرئيسية (`side="left"`) يُرسم الشريط كما في مخطّط مركز القيادة:
+ * كان الشريط يسارًا على الرئيسية وحدها («كما في الصورة حرفيًّا») وعلى جهة
+ * البداية في بقية الصفحات. ثم أمر المالك ٢٠٢٦/١٠/١٨: «اجعل جميع صفحات النظام
+ * بنفس تخطيط وهيئة الصفحة الرئيسية» — فسقطت الجهة الثانية (`start`) وصار
+ * الشريط شريطًا واحدًا بهيئة مخطّط مركز القيادة في كل صفحة:
  *   • **الصفّ يسارًا ← يمينًا**: الأيقونة على حافّة الشاشة يسارًا، والاسم
  *     بجانبها، والسهم في الطرف الأيمن. والاسم نفسه يعلن لغته (`dir`)، فلا
  *     يُقلب نصٌّ عربي لينقلب الترتيب — القاعدة نفسها في `-blueprint-page`.
  *   • ثلاثة صفوف أولى طليقة (الرئيسية · مركز القيادة · سَدِيد AI)، ثم **لوحٌ
  *     مجمَّع** فاتح يحمل بقية الأقسام — `.nx-sysnav-box`.
- *   • رأس الشريط شعار الجناح وكلمة SADEED بارتفاع صفّ الترويسة نفسه (64px)
- *     وحافّته — فيُقرأ الاثنان صفًّا واحدًا كما رُسما.
- * والأنماط كلّها في `styles/home/home-chrome.css` مقيّدةً بـ`[data-side="left"]`
- * فلا يتغيّر شريط القشرة في بقية الصفحات (جهة البداية، يمينًا في العربية).
+ *   • رأس الشريط **لوحة الهوية** «SADEED · Industrial Security AI OS» (أمر
+ *     المالك ٢٠٢٦/١٠/١٨ — `SadeedPlateLockup`)، بخانةٍ مقيسة للوحة 3:1 بعرض
+ *     الشريط.
+ * والأنماط كلّها في `styles/home/home-chrome.css`، ومحدِّد الجهة
+ * `[data-side="left"]` باقٍ مكتوبًا على الشريط وسنده وقائمته — قيمةٌ واحدة.
  */
 import { Link, useLocation } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
@@ -32,9 +36,7 @@ import { useRegion } from "@/lib/region-context";
 import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
 import { SYSTEM_NAV, type SystemNavItem, type SystemNavLeaf } from "@/lib/nav/system-nav";
 import { useSadeedStore } from "@/lib/sadeed-core/state/sadeed-store";
-import { PRODUCT_BRAND } from "@/lib/domain";
-import { SadeedLockup } from "@/components/brand/SadeedMark";
-import { SadeedWingMark } from "@/components/brand/SadeedWingMark";
+import { SadeedPlateLockup } from "@/components/brand/SadeedPlateLockup";
 import { PalmSilhouette, SkylineSilhouette } from "@/components/brand/SkylineSilhouette";
 import "@/styles/home/home-chrome.css";
 
@@ -78,21 +80,13 @@ function splitPrimary(items: readonly SystemNavItem[]) {
 }
 
 /**
- * جهة الشريط:
- *   • `start` (الافتراض) — طرف الكتابة المنطقي: يمينًا في العربية.
- *   • `left` — **يسارًا فيزيائيًّا في اللغتين**، للرئيسية وحدها: قرار المالك
- *     D5 (٢٠٢٦/١٠/١٣) «كما في الصورة حرفيًّا» — الشريط يسارًا والترتيب
- *     يسارًا ← يمينًا، والنصّ داخله عربيّ `rtl` كما هو.
+ * القائمة — في الشريط (≥1024) وفي درج الترويسة (دونه)، بالهيئة نفسها.
+ *
+ * **جهةٌ واحدة: يسارًا فيزيائيًّا في اللغتين.** كانت هنا جهتان — `start`
+ * للقشرة و`left` للرئيسية (D5) — وسقطت الأولى بأمر المالك ٢٠٢٦/١٠/١٨ «بنفس
+ * تخطيط وهيئة الصفحة الرئيسية». فالصفّ يسارًا ← يمينًا، والنصّ داخله بلغته.
  */
-export type SystemSidebarSide = "start" | "left";
-
-export function SystemSidebarNav({
-  onNavigate,
-  side = "start",
-}: {
-  onNavigate?: () => void;
-  side?: SystemSidebarSide;
-}) {
+export function SystemSidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { locale } = useI18n();
   const ar = locale === "ar";
   /** اتجاه لغة الاسم — يُكتب على كل اسم فلا يقلبه ترتيبُ الصفّ (D5). */
@@ -242,10 +236,10 @@ export function SystemSidebarNav({
   return (
     <nav
       aria-label={ar ? "التنقّل الرئيسي" : "Main navigation"}
-      // على الرئيسية الصفّ يسارًا ← يمينًا (D5): الأيقونة على حافّة الشاشة
-      // كما رُسمت. وفي القشرة يبقى الاتجاه موروثًا (البداية، يمينًا بالعربية).
-      dir={side === "left" ? "ltr" : undefined}
-      data-side={side}
+      // الصفّ يسارًا ← يمينًا في كل صفحة (D5 ممدودًا ٢٠٢٦/١٠/١٨): الأيقونة على
+      // حافّة الشاشة كما رُسمت، والاسم يعلن لغته بنفسه.
+      dir="ltr"
+      data-side="left"
       className="nx-sysnav-nav"
     >
       <div className="nx-sysnav-list">{primary.map(renderItem)}</div>
@@ -288,69 +282,46 @@ export function SystemSidebarCard() {
 }
 
 /**
- * شعار الرئيسية كما رُسم (قرار المالك N4): الجناح + «SADEED» +
- * «Industrial Security AI OS». الاسم من مصدره الواحد (`PRODUCT_BRAND`)، والجناح
- * `currentColor` فلونه من `.nx-wing-lockup` في طبقة الرموز.
- *
- * يُرسم في رأس الشريط على الشاشات العريضة، وفي الترويسة نفسها حين يختفي
- * الشريط (`SystemHeader`) — نسخةٌ واحدة لا اثنتان تفترقان.
- */
-export function SadeedWingLockup({ className }: { className?: string }) {
-  return (
-    <span dir="ltr" lang="en" className={cn("nx-wing-lockup", className)}>
-      <SadeedWingMark size={52} className="nx-wing-lockup-mark" />
-      <span className="nx-wing-lockup-text">
-        <span className="nx-wing-lockup-name">{PRODUCT_BRAND.en.name}</span>
-        <span className="nx-wing-lockup-tag">Industrial Security AI OS</span>
-      </span>
-    </span>
-  );
-}
-
-/**
  * الشريط الكامل للشاشات العريضة — **مثبَّتٌ مع سندٍ في المسار.**
  *
  * `fixed` لا `sticky`: `body` حاوية السكرول (سلفه `overflow-x: hidden`)
  * فلا يلصق شيءٌ به — قِيس. والسند بالعرض نفسه يحجز مكانه في الصفّ، فلا
  * يغطّي الشريطُ المحتوى ولا ينكشف تحته فراغ.
+ *
+ * الجهة تُكتب سمةً (`data-side="left"`) على الشريط **وسنده معًا**، وقواعدها في
+ * `styles/home/home-chrome.css` تسمّي الاثنين في المحدِّد نفسه — فلا يفترقان
+ * (عقد «السند يتبع الشريط»). والعرض نفسه مكتوبٌ على الاثنين (`lg:w-56` =
+ * 14rem، القاعدة نفسها في الأنماط). والسند أوّل عضوٍ في صفّ القشرة `ltr`،
+ * فيقع يسارًا في كل صفحة.
  */
-function SidebarBrand({ side }: { side: SystemSidebarSide }) {
-  const { locale } = useI18n();
-  if (side === "left") return <SadeedWingLockup />;
-  return <SadeedLockup ar={locale === "ar"} />;
-}
-
-/**
- * الجهة تُكتب سمةً (`data-side`) على الشريط **وسنده معًا**، وقواعدها في
- * `styles/home/home-layout.css` تسمّي الاثنين في المحدِّد نفسه — فلا يفترقان
- * (عقد «السند يتبع الشريط»). والسند عضوٌ في صفّ الصفحة، فيقع يسارًا لأنه
- * أوّل صفٍّ `ltr` على الرئيسية.
- */
-export function SystemSidebar({ side = "start" }: { side?: SystemSidebarSide }) {
+export function SystemSidebar() {
   const { locale } = useI18n();
   return (
     <>
       <div
         aria-hidden
         data-nx-presentation-hide
-        className="nx-sysnav-spacer hidden shrink-0 lg:block lg:w-64 xl:w-72"
-        data-side={side}
+        className="nx-sysnav-spacer hidden shrink-0 lg:block lg:w-56"
+        data-side="left"
       />
+      {/* السطح والحافّة من `.nx-sysnav[data-side="left"]` (home-chrome.css): سطح
+          القشرة المعتم، والخطّ الفاصل طبقةٌ تبدأ تحت صفّ الترويسة. */}
       <aside
         data-nx-presentation-hide
-        className="nx-sysnav z-20 hidden border-e border-[color:var(--hairline)] bg-[color:var(--surface)] lg:flex lg:w-64 lg:flex-col xl:w-72"
-        data-side={side}
-        // اتجاه اللغة على الشريط نفسه: قد يُركَّب في صفٍّ `ltr` (الرئيسية،
-        // D5)، وقائمته تبقى بترتيبها العربي لا يقلبها ترتيب الصفحة.
+        className="nx-sysnav z-20 hidden lg:flex lg:w-56 lg:flex-col"
+        data-side="left"
+        // اتجاه اللغة على الشريط نفسه: يُركَّب في صفٍّ `ltr` (D5)، وقائمته
+        // تبقى بترتيبها العربي لا يقلبها ترتيب الصفحة.
         dir={locale === "ar" ? "rtl" : "ltr"}
       >
-        {/* الهوية أعلى الشريط — على الرئيسية شعار الجناح بارتفاع صفّ
-            الترويسة وحافّته، فيُقرآن صفًّا واحدًا كما في الصورة. */}
-        <div className="nx-sysnav-brand border-b border-[color:var(--hairline)] px-4 py-3">
-          <SidebarBrand side={side} />
+        {/* لوحة الهوية في الزاوية التي تعلو الشريط (أمر المالك ٢٠٢٦/١٠/١٨) —
+            الخانة مقيسة للوحة 3:1 بعرض الشريط (`.nx-sysnav-brand` في
+            home-chrome.css)، والصورة من مكوّنها الواحد. */}
+        <div className="nx-sysnav-brand border-b border-[color:var(--hairline)]">
+          <SadeedPlateLockup variant="sidebar" />
         </div>
         <div className="nx-sysnav-scroll min-h-0 flex-1 overflow-y-auto px-3 py-4">
-          <SystemSidebarNav side={side} />
+          <SystemSidebarNav />
         </div>
         <div className="nx-sysnav-foot px-3 pb-4">
           <SystemSidebarCard />

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
-import { DOMAIN_URL } from "@/lib/domain";
+import { DOMAIN_URL, SITE_OG_IMAGE } from "@/lib/domain";
 import {
   ArrowLeft,
   Building2,
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/customers")({
           "Enterprise success stories: before / after, KPIs, ROI, revenue and operational impact.",
       },
       { property: "og:url", content: `${DOMAIN_URL}/customers` },
-      { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
+      { property: "og:image", content: `${DOMAIN_URL}${SITE_OG_IMAGE}` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/customers` }],
   }),
