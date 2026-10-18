@@ -194,8 +194,13 @@ jobs:
 
       - name: Summary
         if: always()
+        env:
+          PREVIEW: ${{ inputs.share_url != '' && '1' || '' }}
         run: |
-          if [ "${{ steps.target.outputs.configured }}" != "true" ]; then
+          if [ -n "$PREVIEW" ]; then
+            echo "### معاينة محميّة — ${{ steps.target.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "لقطاتٌ حيّة وحقائق DOM وتسجيلٌ فقط (الأثر live-snapshot) — لا عقد HTML ولا حدود الواجهة على صفحةٍ محميّة." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.target.outputs.configured }}" != "true" ]; then
             echo "### فحص الإنتاج — متخطّى" >> "$GITHUB_STEP_SUMMARY"
             echo "متغيّر \`PRODUCTION_URL\` غير محدَّد في المستودع." >> "$GITHUB_STEP_SUMMARY"
           elif [ "${{ job.status }}" = "success" ]; then

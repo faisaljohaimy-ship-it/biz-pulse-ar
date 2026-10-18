@@ -1,69 +1,36 @@
 /**
- * Remotion entry — حلقات «الماء السينمائي» للوحة هوية سَدِيد على الرئيسية
- * (أمر المالك ٢٠٢٦/١٠/١٧: «اجعلها تتحرك بحركة مائية سينمائية عصرية»).
+ * Remotion entry — فيلم بانر سَدِيد السينمائي على الرئيسية.
  *
- * أداةُ بناءٍ عابرة، لا كودَ تطبيق: تُصيَّر الحلقات مرّةً إلى `public/media/brand/`
- * ويعرضها المتصفّح فيلمًا صامتًا فوق الصورة الساكنة نفسها (`HomeBrandRow`).
- * فلا مظلِّل ولا WebGL في حزمة التطبيق، والحركة بكلفة فكّ ترميزٍ لا حساب.
+ * أمر المالك ٢٠٢٦/١٠/١٨ بنصّه («SADEED AI OS — CINEMATIC MOTION GRAPHICS VIDEO ENGINE»): «Replace
+ * the static banner artwork in that exact location with the new cinematic experience». فحلّ هذا
+ * الفيلم محلّ حلقات «الماء السينمائي» الثلاث (أمر ٢٠٢٦/١٠/١٧) وتركيبها `BrandWater` — حُذفت
+ * مخرجاتها من `public/` ومصدرها معها، وتاريخها في RENDER.md.
  *
- * المصادر الأصلية بدقّتها الكاملة في `brand/assets/` (WebP بجودة 92 من ملفّي
- * المالك PNG 2172×724)، وتُقرأ عبر `--public-dir=brand/assets`.
+ * أداةُ بناءٍ عابرة، لا كودَ تطبيق: يُصيَّر الفيلم مرّةً إلى `public/media/brand/` ويعرضه المتصفّح
+ * صامتًا فوق اللوحة الساكنة نفسها (`HomeBrandRow`)، والاسم والسطر HTML فوقهما. فلا مظلِّل ولا
+ * WebGL في حزمة التطبيق، والحركة بكلفة فكّ ترميزٍ لا حساب.
  *
- * التصيير: المسار العامل فعلًا وأوامره في `RENDER.md` — تسلسل PNG بلا ضياع من
- * `chrome-headless-shell` بـ`--gl=swangle`، ثم ترميزٌ بجودةٍ ثابتة عبر الحلقة
- * (Chromium 141 الكامل لا يصيّر: أسقط الوضع المقطوع الرأس القديم). والتثبيت في
- * مجلّدٍ عابر من registry.npmjs.org — لا يُنشأ قفلٌ ثانٍ في المستودع.
+ * المصادر في `brand/assets/` وتُقرأ عبر `--public-dir=brand/assets`: لوحة المالك بلا نصّها
+ * (`sadeed-banner-clean.webp`) والرمز مقطوعًا منها (`sadeed-emblem.webp`). والمناطق وألوانها
+ * وخريطة المملكة من مصادر التطبيق نفسها (`@/lib/regions` · `@/components/map/arabia-geometry`،
+ * عبر الاسم المستعار في `remotion.config.ts`) — لا نسخة ثانية.
  *
- * ثلاث تراكيب للبانر وحده — كلّها 3:1 كالأصل، بأبعادٍ زوجية لـH.264، 30 إطارًا/ث،
- * ودورة 6 ثوانٍ مغلقة في المحتوى (انظر `BrandWater.tsx` وقياس الوصلة في RENDER.md):
- *   • `BrandBanner2172` (2172×724) — دقّة اللوحة الأصلية نفسها. أُضيفت ٢٠٢٦/١٠/١٨ حين
- *     صار البانر بعرض العمود كاملًا (أمر المالك R3 «على امتداد الصفحة»): على حاسوبٍ
- *     بكثافة 2× يُرسم 1170–1394px نقطيًّا، أي 2340–2788 بكسلًا فعليًّا، فكانت حلقة
- *     1608 تُكبَّر 1.5–1.7× فوق صورةٍ أحدّ منها (2172) ويلين نصّ اللوحة لحظة يظهر الفيلم؛
- *   • `BrandBanner1600` (1608×536) — المكتب بكثافة 1× وما يقاربها؛
- *   • `BrandBanner800` (804×268) — الجوال واللوح الصغير.
- * والاختيار بينها بالحاجة المقيسة لا باستعلام عرض (`pickFilm` في `HomeBrandRow`).
- * **وتركيب لوحة الشعار (`BrandMark640`) حُذف** مع خروج اللوحة من صفّ الهوية (R4 نقلها
- * إلى رأس الشريط الجانبي بلا فيلم)؛ وأصلها `assets/sadeed-mark.webp` باقٍ مصدرًا للوحة
- * R4 المشتقّة منه.
+ * تركيبٌ واحد 1608×536 (3:1 كاللوحة، أبعادٌ زوجية لـH.264)، 30 إطارًا/ث، 24 ث؛ ودرجة الجوال 804
+ * تُصغَّر من التسلسل نفسه. المسار العامل وأوامره وقياس الوصلة في `RENDER.md`.
  */
 import React from "react";
 import { Composition, registerRoot } from "remotion";
-import { BrandWater } from "./BrandWater";
-
-const FPS = 30;
-const LOOP_SECONDS = 6;
+import { FILM_FPS, FILM_FRAMES, SadeedFilm } from "./SadeedFilm";
 
 const Root: React.FC = () => (
-  <>
-    <Composition
-      id="BrandBanner2172"
-      component={BrandWater}
-      width={2172}
-      height={724}
-      fps={FPS}
-      durationInFrames={FPS * LOOP_SECONDS}
-      defaultProps={{ src: "sadeed-banner.webp", strength: 1.4 }}
-    />
-    <Composition
-      id="BrandBanner1600"
-      component={BrandWater}
-      width={1608}
-      height={536}
-      fps={FPS}
-      durationInFrames={FPS * LOOP_SECONDS}
-      defaultProps={{ src: "sadeed-banner.webp", strength: 1.4 }}
-    />
-    <Composition
-      id="BrandBanner800"
-      component={BrandWater}
-      width={804}
-      height={268}
-      fps={FPS}
-      durationInFrames={FPS * LOOP_SECONDS}
-      defaultProps={{ src: "sadeed-banner.webp", strength: 1.4 }}
-    />
-  </>
+  <Composition
+    id="SadeedFilm"
+    component={SadeedFilm}
+    width={1608}
+    height={536}
+    fps={FILM_FPS}
+    durationInFrames={FILM_FRAMES}
+  />
 );
 
 registerRoot(Root);
