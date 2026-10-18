@@ -110,8 +110,17 @@ describe("② البُعدان اللذان لا يوجدان في حدّ الد
     expect(QUOTA).toMatch(/DAY_SECONDS\s*=\s*86_?400/);
   });
 
-  it("والعامّ يُفحص قبل الهوية — لا استعلام لكل زائر بعد استنفاده", () => {
-    expect(QUOTA.indexOf("ai-daily-global:")).toBeLessThan(QUOTA.indexOf("ai-daily-id:"));
+  it("والهوية تُفحص قبل العامّ — الهوية الممنوعة لا تستهلك الدلو المشترك", () => {
+    // كان العكس («لا استعلام لكل زائر بعد استنفاد العامّ»)، فكان كل طلبٍ يأكل
+    // من السقف العام قبل أن يُسأل عن هويته: عنوانٌ واحد بعد بلوغ حصّته يظلّ
+    // يستنفد سقف المشروع حتى يُغلقه على الجميع (٢٠٢٦/١٠/١٨). والترتيب يُقاس
+    // في الدالّتين كلتيهما: الحقيقية (`enforceRateLimit`) والمحدودة (`degradedAllowance`).
+    const real = QUOTA.slice(QUOTA.indexOf("export async function enforceAiQuota"));
+    expect(real.indexOf("ai-daily-id:")).toBeGreaterThan(-1);
+    expect(real.indexOf("ai-daily-id:")).toBeLessThan(real.indexOf("ai-daily-global:"));
+    const degraded = QUOTA.slice(QUOTA.indexOf("export function degradedAiQuota"));
+    expect(degraded.indexOf("ai-daily-id:")).toBeGreaterThan(-1);
+    expect(degraded.indexOf("ai-daily-id:")).toBeLessThan(degraded.indexOf("ai-daily-global:"));
   });
 
   it("والمفتاح يحمل تاريخ اليوم — وإلا انزلقت النافذة ولم تُصفَّر", () => {

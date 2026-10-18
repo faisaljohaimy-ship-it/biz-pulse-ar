@@ -1,13 +1,30 @@
 name: CI Verification
 
+# ── سياسة التشغيل (أمر المالك ٢٠٢٦/١٠/١٨) ─────────────────────────────────
+# الفحص **الكامل** مرّةً في الأسبوع: الجمعة 18:00 بتوقيت الرياض = 15:00 UTC
+# (لا توقيت صيفي في السعودية، فالإزاحة ثابتة +3 طوال السنة)، ويدويًّا متى طُلب
+# (`workflow_dispatch`). وعلى الدفع إلى main وطلبات الدمج تجري **بوّابة ما قبل
+# النشر الخفيفة** وحدها:
+#   · static — التثبيت، الأنواع، lint، فحص الأسرار (فحص الشيفرة الميّتة الاستشاري
+#     في الكامل وحده)؛
+#   · test   — اختبارات الوحدة وتدقيق تبعيات الإنتاج؛
+#   · build  — البناء وميزانية الأداء (أرضية التباين بمتصفّح Playwright في الكامل
+#     وحده).
+# و`rag-preflight` و`security-gap-closure-e2e` في التشغيل الكامل وحده. و`deploy`
+# يبقى على الدفع إلى main وحده ويحتاج البوّابة الخفيفة لا غير.
+# شرط «الكامل» واحدٌ مكرّر حرفيًّا في كل موضع:
+#   github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 on:
   push:
     branches: [main]
   pull_request:
   # البوّابة الإجرائية للإصدار (٢٠٢٦/١٠/١٧): حماية الفرع غير متاحة على خطّة
   # المستودع الحالية، فيُشغَّل الفحص يدويًّا على فرع الإصلاح قبل دمجه في main —
-  # «CI أخضر على الـSHA المدفوع» شرطٌ يُقاس لا يُفترض.
+  # «CI أخضر على الـSHA المدفوع» شرطٌ يُقاس لا يُفترض. والتشغيل اليدوي كامل.
   workflow_dispatch:
+  # الفحص الكامل الأسبوعي: الجمعة 15:00 UTC = 18:00 بتوقيت الرياض.
+  schedule:
+    - cron: "0 15 * * 5"
 
 # ── لماذا وظائف متوازية لا وظيفة واحدة ────────────────────────────────────
 # كانت `verify` وظيفةً واحدة تجمع التثبيت والفحص والبناء وفحوص Postgres،
@@ -42,6 +59,7 @@ jobs:
       - name: Secret scan
         run: npm run check:secrets
       - name: Dead-code scan (advisory)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: npm run check:deadcode || true
 
   test:
@@ -86,6 +104,7 @@ jobs:
       # قراءة الرموز نصًّا صرّحت بـ٤٫٩٠:١ والنافذ ٣٫٥٤:١؛ التعاقب يُسأل عنه
       # المتصفّح لا الملفّ. ويسقط على الهبوط وحده، لا على التحسّن.
       - name: Contrast floor over the background film (real engine)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
           npx playwright install --with-deps chromium
           npm run check:contrast
@@ -94,6 +113,8 @@ jobs:
 
   rag-preflight:
     name: rag preflight (real Postgres)
+    # التشغيل الكامل وحده (الأسبوعي أو اليدوي).
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 13
     permissions:
@@ -109,11 +130,12 @@ jobs:
       - name: RAG preflight (isolation + privilege on real Postgres)
         run: npm run check:rag
 
-  # Article 21 — Continuous security gate. The Article 19 E2E spec is a
-  # blocking check on every push/PR. If it fails, the merge is blocked and
-  # an incident is opened against the deployed public sink so ARIA sees the
-  # regression in the operational incident stream — not just in CI logs.
+  # Article 21 — security gate. The Article 19 E2E spec. Since the owner order
+  # of 2026/10/18 it runs on the FULL suite only (weekly schedule +
+  # workflow_dispatch), not on every push/PR — it never gated deploy anyway
+  # (advisory when credentials are absent, and not in deploy's needs).
   security-gap-closure-e2e:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs: [static, test, build]
     # Bind to the production environment so this gate can read secrets whether
@@ -185,9 +207,12 @@ jobs:
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     # Constitution Article X: the OPTIONAL backup Cloudflare deploy. It gates on
-    # الفحوص الأربعة (E2E استشاري). deploy.yml skips quietly and stays GREEN
+    # البوّابة الخفيفة (E2E استشاري). deploy.yml skips quietly and stays GREEN
     # when its secrets are absent — primary deployment is Lovable's pipeline, so
     # a missing deploy secret never blocks CI or reds the run.
-    needs: [static, test, build, rag-preflight]
+    # أُزيل `rag-preflight` من `needs` (٢٠٢٦/١٠/١٨): صار يجري في التشغيل الكامل
+    # وحده فيُتخطّى على الدفع، ووظيفةٌ تحتاج وظيفةً متخطّاة تُتخطّى معها — فكان
+    # بقاؤه سيُسقط النشر الاحتياطي في كل دفعة.
+    needs: [static, test, build]
     uses: ./.github/workflows/deploy.yml
     secrets: inherit

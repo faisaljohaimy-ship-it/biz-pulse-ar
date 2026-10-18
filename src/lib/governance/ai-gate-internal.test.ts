@@ -90,19 +90,21 @@ describe("assertAiEnabled / assertAiQuota", () => {
   it("المفتاح ساكن والدلاء تسمح ⇐ تمرّ، والدلاء هي دلاء HTTP نفسها", async () => {
     expect(() => assertAiEnabled("chat")).not.toThrow();
     await expect(assertAiQuota({ surface: "chat", identity: "u1" })).resolves.toBeUndefined();
-    expect(db.calls[0]).toMatch(/^ai-daily-global:chat:\d{4}-\d{2}-\d{2}$/);
-    expect(db.calls[1]).toMatch(/^ai-daily-id:chat:\d{4}-\d{2}-\d{2}:u1$/);
+    expect(db.calls[0]).toMatch(/^ai-daily-id:chat:\d{4}-\d{2}-\d{2}:u1$/);
+    expect(db.calls[1]).toMatch(/^ai-daily-global:chat:\d{4}-\d{2}-\d{2}$/);
   });
 
-  it("السقف العام مبلوغ ⇐ daily_global_cap قبل سؤال الهوية", async () => {
+  it("السقف العام مبلوغ ⇐ daily_global_cap بعد أن مرّت الهوية", async () => {
     db.answer = (key) => !key.startsWith("ai-daily-global:");
     await rejectsWithCode(assertAiQuota({ surface: "chat", identity: "u1" }), "daily_global_cap");
-    expect(db.calls).toHaveLength(1);
+    expect(db.calls).toHaveLength(2);
   });
 
-  it("سقف الهوية مبلوغ ⇐ daily_identity_cap", async () => {
+  it("سقف الهوية مبلوغ ⇐ daily_identity_cap قبل سؤال الدلو العام (لا استهلاك له)", async () => {
     db.answer = (key) => !key.startsWith("ai-daily-id:");
     await rejectsWithCode(assertAiQuota({ surface: "chat", identity: "u1" }), "daily_identity_cap");
+    expect(db.calls).toHaveLength(1);
+    expect(db.calls.some((k) => k.startsWith("ai-daily-global:"))).toBe(false);
   });
 
   it("المخزن يخطئ ⇐ quota_unavailable: منعٌ لا سماح", async () => {

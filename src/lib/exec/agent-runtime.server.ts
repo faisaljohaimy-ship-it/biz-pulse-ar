@@ -1,11 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { generateText, tool, stepCountIs, type ToolSet } from "ai";
+import { generateText, tool, stepCountIs, type StopCondition, type ToolSet } from "ai";
 import { z } from "zod";
 import { resolveSadeedGeminiRuntime } from "@/lib/sadeed/gemini-provider.server";
 import { AiGateError, assertAiQuota } from "@/lib/governance/ai-quota.server";
 import { getExecutor, listExecutorIds } from "./tool-registry.server";
-import { executeTool } from "./tool-orchestrator.server";
+import {
+  AGENT_RUN_TRIGGER_EVENT,
+  executeTool,
+  settleAgentWorkflowRun,
+  tallyApprovalState,
+} from "./tool-orchestrator.server";
 import { audit } from "./audit.server";
 import { publishEvent } from "./event-bus.server";
 import { hasAnyPlatformRole } from "@/lib/authz.server";
@@ -27,11 +32,96 @@ export type RunAgentParams = z.infer<typeof RunAgentParamsSchema>;
 
 export type RunAgentResult = {
   runId: string;
-  status: "succeeded" | "failed";
+  status: "succeeded" | "failed" | "cancelled";
   summary: string;
   steps: number;
   error?: string;
+  /** أفعالٌ أُحيلت إلى الاعتماد البشري ولم تُحسم عند انتهاء التشغيل. */
+  pendingApprovals?: number;
 };
+
+/**
+ * سقفٌ زمنيّ لتشغيل الوكيل كاملًا. كان لكل أداة مهلتها ولا سقف للحلقة:
+ * خمسون خطوة × نداء نموذج × أدوات تُعاد — تشغيلٌ قد لا ينتهي في وقتٍ معلوم.
+ */
+export const AGENT_RUN_DEADLINE_MS = 180_000;
+
+/**
+ * الحالات الحيّة. الكتابة الختامية (نجاح/فشل) مشروطةٌ بها، فلا تمحو
+ * إلغاءً وقع أثناء الحلقة — `agent_runs` لا يعرف غير
+ * queued/running/succeeded/failed/cancelled.
+ */
+const LIVE_RUN_STATUSES = ["queued", "running"];
+
+/**
+ * شرط إيقاف يقرأ حالة التشغيل بعد كل خطوة: الإلغاء من الواجهة كان يكتب
+ * `cancelled` ولا يوقف شيئًا — تمضي الحلقة وتكتب فوقه `succeeded`. قراءةٌ
+ * رخيصة بعميل التسجيل نفسه (مفتاح الخدمة). تعذّر القراءة لا يُقرأ إلغاءً؛
+ * السقف الزمنيّ هو ما يحدّ التشغيل حينها.
+ */
+export function stopWhenRunCancelled(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+  runId: string,
+): StopCondition<ToolSet> {
+  return async () => {
+    try {
+      const { data, error } = await admin
+        .from("agent_runs")
+        .select("status")
+        .eq("id", runId)
+        .maybeSingle();
+      if (error) return false;
+      return data?.status === "cancelled";
+    } catch {
+      return false;
+    }
+  };
+}
+
+/**
+ * يُلغي تشغيلًا **ما دام حيًّا** — النصف الآخر من سباق الإلغاء والختام.
+ * الإلغاء من الواجهة كان يقرأ الحالة ثم يكتب `cancelled` بلا شرط، فتشغيلٌ
+ * انتهى بين القراءة والكتابة يُقرأ «أُلغي» وقد نجح أو فشل فعلًا. يعيد
+ * `false` حين لم يعد حيًّا؛ وخطأ الكتابة يُرمى.
+ */
+export async function cancelLiveAgentRun(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  client: any,
+  runId: string,
+): Promise<boolean> {
+  const { data, error } = await client
+    .from("agent_runs")
+    .update({
+      status: "cancelled",
+      error: "Cancelled by operator",
+      finished_at: new Date().toISOString(),
+    })
+    .eq("id", runId)
+    .in("status", LIVE_RUN_STATUSES)
+    .select("id");
+  if (error) throw new Error(error.message);
+  return Array.isArray(data) && data.length > 0;
+}
+
+/** معرّفات التنفيذات التي عادت `pending_approval` في هذا التشغيل (بلا تكرار). */
+function pendingApprovalIds(stepRecords: StepRecord[]): string[] {
+  const ids = new Set<string>();
+  for (const step of stepRecords) {
+    for (const call of step.toolCalls) {
+      if (call.approvalStatus === "pending_approval" && call.executionId) ids.add(call.executionId);
+    }
+  }
+  return [...ids];
+}
+
+/** سطرٌ صادق يُلحق بالملخّص: الفعل المعلَّق لم يقع، ولا يُقرأ «تمّ». */
+function approvalNote(count: number): string {
+  return [
+    `إجراءات بانتظار الاعتماد البشري: ${count} — لم تُنفَّذ بعد.`,
+    `Actions awaiting human approval: ${count} — not executed yet.`,
+  ].join("\n");
+}
 
 type AgentDef = {
   id: string;
@@ -184,7 +274,7 @@ export async function runAgent(
         workflow_id: workflowId,
         org_id: orgId,
         triggered_by: actorId,
-        trigger_event: "agent.invoke",
+        trigger_event: AGENT_RUN_TRIGGER_EVENT,
         trigger_payload: { agentId, agentRunId: runId, goal },
         context_json: { correlationId },
         status: "running",
@@ -289,6 +379,9 @@ export async function runAgent(
                 input,
                 actorId,
                 orgId,
+                // يربط التنفيذ بغلافه عمودًا (لا JSON) — فتسوية الغلاف بعد
+                // الاعتماد تجده مباشرةً.
+                workflowRunId,
                 agentRunId: runId,
                 correlationId,
               });
@@ -428,7 +521,7 @@ export async function runAgent(
     ``,
     `ABSOLUTE RULES (Executive Runtime Charter v10):`,
     `1. NEVER fabricate data, metrics, counts, percentages, names, IDs, dates, or statuses. Every number or fact in your final answer MUST come from a tool result returned in THIS run.`,
-    `2. If a tool call returns { ok: false } or an error, DO NOT invent the data it would have returned. Either retry the tool with a corrected payload, or state explicitly in the final summary: "Data unavailable — <tool> failed: <reason>".`,
+    `2. If a tool call returns { ok: false } or an error, DO NOT invent the data it would have returned. Either retry the tool with a corrected payload, or state explicitly in the final summary: "Data unavailable — <tool> failed: <reason>". NEVER retry a call whose error says "outcome unknown, not retried": its side effect (mail, message, record) may already have happened — report it as "outcome unknown" instead.`,
     `3. The database uses bilingual schemas. ALL security tables are prefixed sec_* (sec_incidents, sec_sites, sec_work_orders, sec_patrols, sec_permits, sec_visitors, sec_assets, sec_contractors). Tables named "incidents", "sites", "work_orders" DO NOT EXIST — never query them.`,
     `4. Column names are bilingual: use title_en/title_ar (not "title"), name_en/name_ar (not "name"), company_name_en/company_name_ar (not "company_name"). Check the sql.read description for exact columns before calling it.`,
     `5. Validate every tool payload against its schema before sending. Repair malformed JSON. Reject unknown fields.`,
@@ -452,6 +545,21 @@ export async function runAgent(
     ? `${systemPrompt}\n\n${enterpriseData}`
     : systemPrompt;
 
+  // السقف الزمنيّ للتشغيل كاملًا يُلغي نداء النموذج الجاري عند انقضائه.
+  const deadline = new AbortController();
+  const deadlineTimer = setTimeout(() => deadline.abort(), AGENT_RUN_DEADLINE_MS);
+  const lifecycle: LifecycleContext = {
+    admin,
+    runId,
+    agentId,
+    actorId,
+    orgId,
+    correlationId,
+    workflowRunId,
+    startedAt,
+    stepRecords,
+  };
+
   try {
     const result = await generateText({
       model: geminiRuntime.provider(geminiRuntime.modelId),
@@ -459,7 +567,8 @@ export async function runAgent(
       prompt: ctxData ? `${goal}\n\nContext:\n${JSON.stringify(ctxData, null, 2)}` : goal,
       tools,
       toolChoice: "auto",
-      stopWhen: stepCountIs(50),
+      stopWhen: [stepCountIs(50), stopWhenRunCancelled(admin, runId)],
+      abortSignal: deadline.signal,
       maxRetries: 1,
       maxOutputTokens: 1500,
       onStepFinish: ({ text, finishReason }) => {
@@ -474,18 +583,43 @@ export async function runAgent(
     });
 
     const finishedAt = new Date().toISOString();
-    const summary = result.text?.trim() || "(no summary produced)";
+    const modelSummary = result.text?.trim() || "(no summary produced)";
 
-    await admin
+    // أفعالٌ أُحيلت إلى الاعتماد: التشغيل يكتمل، لكن الفعل لم يقع — فلا
+    // يُكتب «نجح» عاريًا. العدد من القاعدة إن أمكن (قرارٌ قد يقع أثناء
+    // الحلقة)، وإلا ممّا رآه التشغيل نفسه.
+    const pendingIds = pendingApprovalIds(stepRecords);
+    let awaitingApproval = 0;
+    if (pendingIds.length) {
+      const tally = await tallyApprovalState(admin, correlationId, orgId);
+      awaitingApproval = tally ? tally.unresolved : pendingIds.length;
+    }
+    const summary =
+      awaitingApproval > 0 ? `${modelSummary}\n\n${approvalNote(awaitingApproval)}` : modelSummary;
+
+    // مشروطةٌ بحالةٍ حيّة: إلغاءٌ وقع أثناء الحلقة يبقى إلغاءً.
+    const { data: finalized, error: finalizeError } = await admin
       .from("agent_runs")
       .update({
         status: "succeeded",
         summary,
         steps: stepRecords.length,
-        audit_json: { correlationId, steps: stepRecords, usage: result.usage },
+        audit_json: {
+          correlationId,
+          steps: stepRecords,
+          usage: result.usage,
+          pendingApprovals: { count: awaitingApproval, executionIds: pendingIds },
+        },
         finished_at: finishedAt,
       })
-      .eq("id", runId);
+      .eq("id", runId)
+      .in("status", LIVE_RUN_STATUSES)
+      .select("id");
+    if (finalizeError) {
+      console.error("[agent-runtime] agent_runs finalize failed:", finalizeError.message);
+    } else if (!Array.isArray(finalized) || finalized.length === 0) {
+      return await finishCancelled(lifecycle);
+    }
 
     await audit(admin, {
       actor_id: actorId,
@@ -493,13 +627,24 @@ export async function runAgent(
       action: "agent.run.success",
       resource_type: "agent_run",
       resource_id: runId,
-      metadata: { agentId, steps: stepRecords.length, workflowRunId },
+      metadata: {
+        agentId,
+        steps: stepRecords.length,
+        workflowRunId,
+        pendingApprovals: awaitingApproval,
+      },
       correlation_id: correlationId,
       duration_ms: Date.now() - new Date(startedAt).getTime(),
     });
     await publishEvent(admin, {
       topic: `agent.succeeded.${agentId}`,
-      payload: { runId, agentId, steps: stepRecords.length, workflowRunId },
+      payload: {
+        runId,
+        agentId,
+        steps: stepRecords.length,
+        workflowRunId,
+        pendingApprovals: awaitingApproval,
+      },
       source: "agent.runtime",
       actor_id: actorId,
       org_id: orgId,
@@ -510,25 +655,56 @@ export async function runAgent(
     });
 
     if (workflowRunId) {
-      await admin
-        .from("workflow_runs")
-        .update({
-          status: "succeeded",
-          finished_at: finishedAt,
-          current_step: null,
-        })
-        .eq("id", workflowRunId);
-      await publishEvent(admin, {
-        topic: "workflow.completed",
-        payload: { workflowRunId, agentId, agentRunId: runId, steps: stepRecords.length },
-        source: "agent.runtime",
-        actor_id: actorId,
-        org_id: orgId,
-        correlation_id: correlationId,
-        subject_type: "workflow_run",
-        subject_id: workflowRunId,
-        duration_ms: Date.now() - new Date(startedAt).getTime(),
-      });
+      if (pendingIds.length) {
+        // الغلاف ينتظر القرار البشري (مسموحٌ في قيد workflow_runs) بدل
+        // `succeeded` يُقرأ «نُفّذ كل شيء».
+        await admin
+          .from("workflow_runs")
+          .update({ status: "waiting_approval", current_step: "agent.awaiting_approval" })
+          .eq("id", workflowRunId)
+          .eq("status", "running");
+        await publishEvent(admin, {
+          topic: "workflow.waiting_approval",
+          payload: {
+            workflowRunId,
+            agentId,
+            agentRunId: runId,
+            pendingApprovals: awaitingApproval,
+            executionIds: pendingIds,
+          },
+          source: "agent.runtime",
+          severity: "notice",
+          actor_id: actorId,
+          org_id: orgId,
+          correlation_id: correlationId,
+          subject_type: "workflow_run",
+          subject_id: workflowRunId,
+        });
+        // قرارٌ وقع أثناء الحلقة لا يترك الغلاف منتظرًا ما لا ينتظره:
+        // التسوية نفسها التي يجريها الاعتماد (لا تنقل شيئًا ما دام معلَّق).
+        await settleAgentWorkflowRun({ workflowRunId, correlationId, orgId });
+      } else {
+        await admin
+          .from("workflow_runs")
+          .update({
+            status: "succeeded",
+            finished_at: finishedAt,
+            current_step: null,
+          })
+          .eq("id", workflowRunId)
+          .eq("status", "running");
+        await publishEvent(admin, {
+          topic: "workflow.completed",
+          payload: { workflowRunId, agentId, agentRunId: runId, steps: stepRecords.length },
+          source: "agent.runtime",
+          actor_id: actorId,
+          org_id: orgId,
+          correlation_id: correlationId,
+          subject_type: "workflow_run",
+          subject_id: workflowRunId,
+          duration_ms: Date.now() - new Date(startedAt).getTime(),
+        });
+      }
     }
 
     // Persist a bilingual executive report tied to this run.
@@ -565,6 +741,7 @@ export async function runAgent(
               executionId: c.executionId ?? null,
             })),
           ),
+          pending_approvals: awaitingApproval,
           summary_en: summary,
           summary_ar: summary,
           correlationId,
@@ -579,10 +756,26 @@ export async function runAgent(
       status: "succeeded",
       summary,
       steps: stepRecords.length,
+      ...(awaitingApproval > 0 ? { pendingApprovals: awaitingApproval } : {}),
     };
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    await failRun(supabase, runId, actorId, msg, stepRecords, orgId, correlationId, startedAt);
+    const msg = deadline.signal.aborted
+      ? `Agent run exceeded its ${AGENT_RUN_DEADLINE_MS / 1000}s deadline`
+      : err instanceof Error
+        ? err.message
+        : String(err);
+    const recorded = await failRun(
+      supabase,
+      runId,
+      actorId,
+      msg,
+      stepRecords,
+      orgId,
+      correlationId,
+      startedAt,
+    );
+    // لم يعد حيًّا: أُلغي — والإلغاء لا يُكتب فوقه فشل.
+    if (!recorded) return await finishCancelled(lifecycle);
     await publishEvent(admin, {
       topic: `agent.failed.${agentId}`,
       payload: { runId, agentId, error: msg, workflowRunId },
@@ -602,7 +795,8 @@ export async function runAgent(
           error: msg,
           finished_at: new Date().toISOString(),
         })
-        .eq("id", workflowRunId);
+        .eq("id", workflowRunId)
+        .eq("status", "running");
       await publishEvent(admin, {
         topic: "workflow.failed",
         payload: { workflowRunId, agentId, agentRunId: runId, error: msg },
@@ -622,9 +816,103 @@ export async function runAgent(
       steps: stepRecords.length,
       error: msg,
     };
+  } finally {
+    clearTimeout(deadlineTimer);
   }
 }
 
+type LifecycleContext = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any;
+  runId: string;
+  agentId: string;
+  actorId: string;
+  orgId: string;
+  correlationId: string;
+  workflowRunId: string | null;
+  startedAt: string;
+  stepRecords: StepRecord[];
+};
+
+/**
+ * ختام تشغيلٍ أُلغي أثناء الحلقة. الحالة تبقى `cancelled` بتوقيت انتهائها،
+ * وتُحفظ أدلّة الخطوات التي وقعت فعلًا — كلّ كتابةٍ مشروطةٌ بـ`cancelled`
+ * فلا تغيّر الحالة نفسها.
+ */
+async function finishCancelled(ctx: LifecycleContext): Promise<RunAgentResult> {
+  const { admin, runId, agentId, actorId, orgId, correlationId, workflowRunId, stepRecords } = ctx;
+  const finishedAt = new Date().toISOString();
+  await admin
+    .from("agent_runs")
+    .update({
+      steps: stepRecords.length,
+      audit_json: { correlationId, steps: stepRecords, cancelled: true },
+    })
+    .eq("id", runId)
+    .eq("status", "cancelled");
+  // المُلغي يكتب `finished_at` عادةً؛ وهذا لمن ألغى بغيره.
+  await admin
+    .from("agent_runs")
+    .update({ finished_at: finishedAt })
+    .eq("id", runId)
+    .eq("status", "cancelled")
+    .is("finished_at", null);
+  await audit(admin, {
+    actor_id: actorId,
+    org_id: orgId,
+    action: "agent.run.cancelled",
+    resource_type: "agent_run",
+    resource_id: runId,
+    metadata: { agentId, steps: stepRecords.length, workflowRunId },
+    correlation_id: correlationId,
+    duration_ms: Date.now() - new Date(ctx.startedAt).getTime(),
+  });
+  await publishEvent(admin, {
+    topic: `agent.cancelled.${agentId}`,
+    payload: { runId, agentId, steps: stepRecords.length, workflowRunId },
+    source: "agent.runtime",
+    severity: "notice",
+    actor_id: actorId,
+    org_id: orgId,
+    correlation_id: correlationId,
+    subject_type: "agent_run",
+    subject_id: runId,
+  });
+  if (workflowRunId) {
+    await admin
+      .from("workflow_runs")
+      .update({
+        status: "cancelled",
+        error: "Agent run cancelled by operator",
+        finished_at: finishedAt,
+        current_step: null,
+      })
+      .eq("id", workflowRunId)
+      .eq("status", "running");
+    await publishEvent(admin, {
+      topic: "workflow.cancelled",
+      payload: { workflowRunId, agentId, agentRunId: runId },
+      source: "agent.runtime",
+      severity: "notice",
+      actor_id: actorId,
+      org_id: orgId,
+      correlation_id: correlationId,
+      subject_type: "workflow_run",
+      subject_id: workflowRunId,
+    });
+  }
+  return {
+    runId,
+    status: "cancelled",
+    summary: "Cancelled by operator",
+    steps: stepRecords.length,
+  };
+}
+
+/**
+ * يسجّل الفشل — **ما دام التشغيل حيًّا**. يعيد `false` حين لا يكون (أُلغي)،
+ * فلا يُكتب فوق الإلغاء فشلٌ ولا أثرُ فشل.
+ */
 async function failRun(
   _supabase: SupabaseClient<Database>,
   runId: string,
@@ -634,11 +922,11 @@ async function failRun(
   orgId?: string,
   correlationId?: string,
   startedAt?: string,
-) {
+): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = supabaseAdmin as any;
-  await admin
+  const { data: applied, error: updateError } = await admin
     .from("agent_runs")
     .update({
       status: "failed",
@@ -647,7 +935,11 @@ async function failRun(
       audit_json: { steps: stepRecords },
       finished_at: new Date().toISOString(),
     })
-    .eq("id", runId);
+    .eq("id", runId)
+    .in("status", LIVE_RUN_STATUSES)
+    .select("id");
+  // تعذّر الكتابة نفسها لا يُقرأ إلغاءً: يمضي مسار الفشل كما كان.
+  if (!updateError && (!Array.isArray(applied) || applied.length === 0)) return false;
   await audit(admin, {
     actor_id: actorId,
     org_id: orgId ?? null,
@@ -658,4 +950,5 @@ async function failRun(
     correlation_id: correlationId ?? null,
     duration_ms: startedAt ? Date.now() - new Date(startedAt).getTime() : null,
   });
+  return true;
 }

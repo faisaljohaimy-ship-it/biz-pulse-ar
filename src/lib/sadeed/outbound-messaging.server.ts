@@ -849,9 +849,11 @@ export async function approveSadeedOutboundMessageInternal(input: {
  * the full audit ledger, and the immutable `approval.auto_approved` bypass
  * marker per send. Live sends still require provider credentials
  * (Resend/Twilio/Outlook), so this alone can never dispatch anything.
- * Default is ON for this owner-only path. SADEED_DIRECT_SEND_ENABLED=false is
- * the deployment kill switch; SADEED_OUTBOUND_AUTO_APPROVE remains a supported
- * legacy alias.
+ * Default is OFF: `isSadeedOwnerDirectSendEnabled` returns true only when
+ * SADEED_DIRECT_SEND_ENABLED (or a legacy alias such as
+ * SADEED_OUTBOUND_AUTO_APPROVE) is set to "true" (trimmed, case-insensitive);
+ * missing, empty or any other value fails closed and the reviewed approval
+ * flow applies.
  */
 export function sadeedAutoApproveEnabled(): boolean {
   return isSadeedOwnerDirectSendEnabled();

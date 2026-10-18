@@ -5,9 +5,18 @@ import { apiError } from "@/lib/api";
 import { httpFetch, httpJson } from "@/lib/api/http.server";
 
 /**
- * Tool execution context passed to every executor. Supabase client is
- * already authenticated as the caller (RLS applies) unless the executor
- * explicitly opts into elevated privileges through `loadAdmin()`.
+ * Tool execution context passed to every executor.
+ *
+ * `supabase` is **whatever client the caller of `executeTool` passed** — it is
+ * NOT guaranteed to be RLS-bound. Server functions pass the signed-in user's
+ * client (RLS applies), but the cron/hook path (`/api/public/hooks/run-agent`)
+ * runs the agent with the service-role client, which bypasses RLS entirely.
+ * Every executor that reads or writes tenant data must therefore scope by
+ * `ctx.orgId` itself (and fail closed when it is missing) instead of relying
+ * on row-level security to do it. The table-touching executors here do
+ * (sql.read, kb.search, sec.*, rag.*). `supabase.invoke_edge_function` cannot:
+ * it hands the same client's credentials to code outside this file, so on the
+ * service-role path the edge function itself is the only tenant boundary.
  */
 export type ToolContext = {
   supabase: SupabaseClient<Database>;
@@ -31,6 +40,15 @@ export type ToolExecutor = {
   disabled?: boolean;
   /** Optional rich description; surfaced to the LLM via the AI SDK tool. */
   description?: string;
+  /**
+   * Whether repeating the call is harmless (read-only). The orchestrator
+   * retries timeouts/transient errors ONLY for idempotent calls; anything
+   * with a side effect (send, post, upload, insert, update, non-GET HTTP)
+   * runs exactly once, because a timeout there means "outcome unknown", not
+   * "did not happen". A function form decides per input (e.g. rest.http GET).
+   * Missing = not idempotent (fail safe: never duplicate a side effect).
+   */
+  idempotent?: boolean | ((input: unknown) => boolean);
   execute: (input: unknown, ctx: ToolContext) => Promise<ToolResult>;
   rollback?: (rollbackPayload: Record<string, unknown> | null, ctx: ToolContext) => Promise<void>;
 };
@@ -61,6 +79,7 @@ async function lovableConnector(connectorKeyEnv: string, gateway: string) {
 
 const outlookSendMail: ToolExecutor = {
   id: "m365.outlook.send_mail",
+  idempotent: false,
   input: z.object({
     to: z.array(z.string().email()).min(1),
     subject: z.string().min(1).max(300),
@@ -88,6 +107,8 @@ const outlookSendMail: ToolExecutor = {
       headers: c.headers,
       body: JSON.stringify({ message, saveToSentItems: true }),
       label: "tool outlook sendMail",
+      // A retried POST can send the same mail twice.
+      retries: 0,
     });
     return { output: { sent: true, recipients: data.to.length } };
   },
@@ -95,6 +116,7 @@ const outlookSendMail: ToolExecutor = {
 
 const teamsPost: ToolExecutor = {
   id: "m365.teams.post_message",
+  idempotent: false,
   input: z.object({
     teamId: z.string().min(1),
     channelId: z.string().min(1),
@@ -113,6 +135,7 @@ const teamsPost: ToolExecutor = {
         headers: c.headers,
         body: JSON.stringify({ body: { contentType: "html", content: data.content } }),
         label: "tool teams post",
+        retries: 0,
       },
     );
     return { output: { messageId: json.id ?? null } };
@@ -121,6 +144,7 @@ const teamsPost: ToolExecutor = {
 
 const sharepointUpload: ToolExecutor = {
   id: "m365.sharepoint.upload_file",
+  idempotent: false,
   input: z.object({
     siteId: z.string().min(1),
     filename: z.string().min(1).max(255),
@@ -148,6 +172,7 @@ const sharepointUpload: ToolExecutor = {
         },
         body: bin,
         label: "tool sharepoint upload",
+        retries: 0,
       },
     );
     if (!res.ok) {
@@ -166,6 +191,7 @@ const sharepointUpload: ToolExecutor = {
 
 const graphGetUser: ToolExecutor = {
   id: "m365.graph.get_user",
+  idempotent: true,
   input: z.object({ userId: z.string().min(1) }),
   async execute(input) {
     const data = input as z.infer<typeof graphGetUser.input>;
@@ -196,6 +222,8 @@ async function resolveActorOrgId(ctx: ToolContext): Promise<string> {
 
 const restHttp: ToolExecutor = {
   id: "rest.http",
+  // GET is a read; every other verb may change upstream state.
+  idempotent: (input) => (input as { method?: unknown } | null)?.method === "GET",
   input: z.object({
     method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
     url: z.string().url(),
@@ -219,6 +247,8 @@ const restHttp: ToolExecutor = {
       headers: data.headers,
       body: data.body == null ? undefined : JSON.stringify(data.body),
       label: `tool rest ${data.method}`,
+      // Non-GET: one attempt — a transport retry could repeat the side effect.
+      ...(data.method === "GET" ? {} : { retries: 0 }),
     });
     const text = await res.text();
     let parsed: unknown = text;
@@ -239,6 +269,7 @@ const restHttp: ToolExecutor = {
 
 const webhookDispatch: ToolExecutor = {
   id: "webhook.dispatch",
+  idempotent: false,
   input: z.object({
     url: z.string().url(),
     payload: z.record(z.string(), z.unknown()),
@@ -256,6 +287,7 @@ const webhookDispatch: ToolExecutor = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data.payload),
       label: "tool webhook dispatch",
+      retries: 0,
     });
     if (!res.ok) {
       throw apiError("upstream_failed", `Webhook dispatch failed (${res.status})`, {
@@ -649,6 +681,7 @@ const filterOp = z.object({
 
 const sqlRead: ToolExecutor = {
   id: "sql.read",
+  idempotent: true,
   input: z.object({
     table: z.enum(ALLOWED_TABLE_NAMES),
     // "*" selects every column. Otherwise must be valid identifier tokens.
@@ -669,6 +702,11 @@ const sqlRead: ToolExecutor = {
   }),
   async execute(input, ctx) {
     const data = input as z.infer<typeof sqlRead.input>;
+    // Tenant scope is mandatory and comes from the verified context, never
+    // from the model's filters. The cron/hook path hands this tool the
+    // service-role client (RLS bypassed), so without this filter one org's
+    // agent could read every org's rows. No org ⇒ refuse before any query.
+    const orgId = await resolveActorOrgId(ctx);
     const cols = TABLE_COLUMNS[data.table];
     if (!cols) {
       throw new Error(`Table ${data.table} not in sql.read allowlist`);
@@ -703,6 +741,9 @@ const sqlRead: ToolExecutor = {
     } else {
       q = client.from(data.table).select(selected.join(","));
     }
+    // Applied before (and independently of) any model-supplied filter: a
+    // model filter on org_id can only narrow this further, never widen it.
+    q = q.eq("org_id", orgId);
 
     for (const [k, raw] of Object.entries(data.filters ?? {})) {
       if (raw !== null && typeof raw === "object" && "op" in (raw as object)) {
@@ -761,7 +802,7 @@ const sqlRead: ToolExecutor = {
     };
   },
   description:
-    `Read rows from a whitelisted public.sec_* table via PostgREST. ` +
+    `Read rows from a whitelisted public.sec_* table via PostgREST, always scoped to the current organization. ` +
     `Use enum 'table' (must be exact). Columns must exist on that table; use ["*"] to fetch all. ` +
     `Filters accept either plain values (= equality) or {op,value} with op in [eq,neq,gt,gte,lt,lte,like,ilike,in,is]. ` +
     `Bilingual columns are name_ar/name_en, title_ar/title_en — there is no "name" or "title". ` +
@@ -773,6 +814,8 @@ const sqlRead: ToolExecutor = {
 
 const edgeInvoke: ToolExecutor = {
   id: "supabase.invoke_edge_function",
+  // An edge function may write anything; never assume a retry is safe.
+  idempotent: false,
   input: z.object({
     name: z
       .string()
@@ -795,6 +838,7 @@ const edgeInvoke: ToolExecutor = {
 
 const secCreateIncident: ToolExecutor = {
   id: "sec.create_incident",
+  idempotent: false,
   input: z.object({
     category: z.string().min(2).max(80).default("other"),
     title_ar: z.string().min(3).max(200),
@@ -853,20 +897,52 @@ const secCreateIncident: ToolExecutor = {
   async rollback(payload, ctx) {
     const id = (payload as { incidentId?: string } | null)?.incidentId;
     if (!id) return;
+    const orgId = await resolveActorOrgId(ctx);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: rbErr } = await (ctx.supabase as any)
       .from("sec_incidents")
       .update({ status: "closed", root_cause: "Rolled back by agent runtime" })
-      .eq("id", id);
+      .eq("id", id)
+      .eq("org_id", orgId);
     // A failed rollback silently leaves the incident open — surface it.
     if (rbErr) console.error("[tool-registry] incident rollback failed:", rbErr.message);
   },
 };
 
+/** Semantic kb.search over-fetches so the tenant post-filter can still fill `limit`. */
+const KB_SCOPE_OVERFETCH = 4;
+const KB_SCOPE_POOL_MAX = 40;
+
+type KbHit = { id?: unknown } & Record<string, unknown>;
+
+/**
+ * Keeps only the RPC hits whose article is in this run's org scope, checked
+ * by id against `sec_knowledge_articles` with the org filter. Order is kept.
+ * A failed check throws — an unverifiable hit is never returned.
+ */
+async function keepKbHitsInOrgScope(
+  ctx: ToolContext,
+  hits: KbHit[],
+  orgScope: string,
+): Promise<KbHit[]> {
+  const ids = hits.map((hit) => hit.id).filter((id): id is string => typeof id === "string");
+  if (!ids.length) return [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (ctx.supabase as any)
+    .from("sec_knowledge_articles")
+    .select("id")
+    .in("id", ids)
+    .or(orgScope);
+  if (error) throw new Error(`kb.search scope check failed: ${error.message}`);
+  const allowed = new Set(((data ?? []) as Array<{ id: string }>).map((row) => row.id));
+  return hits.filter((hit) => typeof hit.id === "string" && allowed.has(hit.id));
+}
+
 const kbSearch: ToolExecutor = {
   id: "kb.search",
+  idempotent: true,
   description:
-    "Search the Industrial Security Knowledge Repository (sec_knowledge_articles). Returns the top matching bilingual SOPs/policies/procedures with doc_code and summary. Use whenever the user asks 'what is the procedure for X', 'which SOP applies', or needs official policy guidance.",
+    "Search the Industrial Security Knowledge Repository (sec_knowledge_articles), scoped to the current organization plus global articles. Returns the top matching bilingual SOPs/policies/procedures with doc_code and summary. Use whenever the user asks 'what is the procedure for X', 'which SOP applies', or needs official policy guidance.",
   input: z.object({
     query: z.string().min(2).max(500),
     category_code: z
@@ -907,6 +983,12 @@ const kbSearch: ToolExecutor = {
   }),
   async execute(input, ctx) {
     const data = input as { query: string; category_code?: string; limit: number };
+    // Same tenant rule as sql.read: the client may be service-role (cron/hook
+    // path), so RLS is no guarantee here. In scope = what the read policy
+    // grants a member: the verified org's own articles plus global ones
+    // (org_id IS NULL). No org ⇒ refuse before embedding or querying.
+    const orgId = await resolveActorOrgId(ctx);
+    const orgScope = `org_id.is.null,org_id.eq.${orgId}`;
     const { embedText } = await import("@/lib/kb-embed.server");
     let vec: number[] | null = null;
     try {
@@ -916,14 +998,18 @@ const kbSearch: ToolExecutor = {
     }
 
     if (vec) {
+      // `sec_kb_search` has no org predicate and returns no org_id (changing
+      // that is a schema change). Over-fetch, then keep only hits whose
+      // article is re-matched by id inside the org scope.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: rows, error } = await (ctx.supabase as any).rpc("sec_kb_search", {
         _query: vec,
         _category_code: data.category_code ?? null,
-        _limit: data.limit,
+        _limit: Math.min(data.limit * KB_SCOPE_OVERFETCH, KB_SCOPE_POOL_MAX),
       });
       if (error) throw new Error(`kb.search failed: ${error.message}`);
-      return { output: { mode: "semantic", hits: rows ?? [] } };
+      const hits = await keepKbHitsInOrgScope(ctx, (rows ?? []) as KbHit[], orgScope);
+      return { output: { mode: "semantic", hits: hits.slice(0, data.limit) } };
     }
 
     // Keyword fallback (sanitize PostgREST filter chars)
@@ -934,6 +1020,8 @@ const kbSearch: ToolExecutor = {
       .from("sec_knowledge_articles")
       .select("doc_code, title_ar, title_en, summary_ar, summary_en, risk_level, priority")
       .eq("status", "published")
+      // Separate `or` groups are ANDed by PostgREST: (org scope) AND (match).
+      .or(orgScope)
       .or(
         [
           `title_ar.ilike.%${kq}%`,
@@ -953,6 +1041,7 @@ const kbSearch: ToolExecutor = {
 
 const ragSearchVerified: ToolExecutor = {
   id: "rag.search_verified",
+  idempotent: true,
   description:
     "Search only the current tenant's verified industrial-security corpus through hybrid retrieval and the SADEED evidence gate. A passed result always has at least two citations.",
   input: z.object({
@@ -998,6 +1087,7 @@ const ragSearchVerified: ToolExecutor = {
 
 const ragRecordGap: ToolExecutor = {
   id: "rag.record_gap",
+  idempotent: false,
   description:
     "Record an unanswered industrial-security question in the current tenant's knowledge backlog. This never creates retrievable knowledge.",
   input: z.object({ query: z.string().trim().min(3).max(2000) }),
@@ -1020,6 +1110,7 @@ async function sha256(value: string): Promise<string> {
 
 const ragProposeCandidate: ToolExecutor = {
   id: "rag.propose_candidate",
+  idempotent: false,
   description:
     "Save a proposed Q&A for administrator review. It is always stored unverified and is never returned by retrieval until separately approved or ingested from an authoritative source.",
   input: z.object({
@@ -1061,6 +1152,7 @@ const ragProposeCandidate: ToolExecutor = {
 
 const secUpdateWorkOrder: ToolExecutor = {
   id: "sec.update_work_order",
+  idempotent: false,
   input: z.object({
     id: z.string().uuid(),
     status: z.string().optional(),
@@ -1074,17 +1166,26 @@ const secUpdateWorkOrder: ToolExecutor = {
     if (!Object.keys(patch).length) {
       throw new Error("No fields to update");
     }
+    // Same tenant rule as sql.read: the client may be service-role, so the
+    // row must be matched inside the verified org — never by id alone.
+    const orgId = await resolveActorOrgId(ctx);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: before } = await (ctx.supabase as any)
+    const { data: before, error: readError } = await (ctx.supabase as any)
       .from("sec_work_orders")
       .select("status,assigned_to")
       .eq("id", data.id)
+      .eq("org_id", orgId)
       .maybeSingle();
+    if (readError) throw new Error(`update_work_order failed: ${readError.message}`);
+    // An update that matches nothing must not be reported as `ok: true`.
+    if (!before)
+      throw new Error("update_work_order failed: work order not found in this organization");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (ctx.supabase as any)
       .from("sec_work_orders")
       .update(patch)
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .eq("org_id", orgId);
     if (error) throw new Error(`update_work_order failed: ${error.message}`);
     return {
       output: { ok: true },
@@ -1097,8 +1198,13 @@ const secUpdateWorkOrder: ToolExecutor = {
       before?: { status?: string; assigned_to?: string | null };
     } | null;
     if (!p?.id || !p.before) return;
+    const orgId = await resolveActorOrgId(ctx);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (ctx.supabase as any).from("sec_work_orders").update(p.before).eq("id", p.id);
+    await (ctx.supabase as any)
+      .from("sec_work_orders")
+      .update(p.before)
+      .eq("id", p.id)
+      .eq("org_id", orgId);
   },
 };
 
@@ -1144,6 +1250,13 @@ const REGISTRY: Record<string, ToolExecutor> = Object.fromEntries(
 
 export function getExecutor(toolId: string): ToolExecutor | null {
   return REGISTRY[toolId] ?? null;
+}
+
+/** Resolves the executor's `idempotent` flag for one concrete input; unset ⇒ false. */
+export function isIdempotentCall(executor: ToolExecutor, input: unknown): boolean {
+  const flag = executor.idempotent;
+  if (typeof flag === "function") return flag(input) === true;
+  return flag === true;
 }
 
 export function listExecutorIds(): string[] {

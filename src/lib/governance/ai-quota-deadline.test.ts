@@ -56,27 +56,28 @@ async function settleWithin(promise: Promise<Response | null>, ms: number) {
 }
 
 describe("enforceAiQuota — المهلة تبلغ البوّابتين", () => {
-  it("البوّابة العامة معلّقة ⇐ ‏503 quota_unavailable عند المهلة", async () => {
-    db.hangOn = "ai-daily-global:";
+  it("بوّابة الهوية معلّقة ⇐ ‏503 quota_unavailable عند المهلة، والعامة لم تُمسّ", async () => {
+    db.hangOn = "ai-daily-id:";
     const p = enforceAiQuota({ surface: "chat", identity: "ip:1", deadlineMs: 1_500 });
     expect(await settleWithin(p, 1_499)).toBe("pending");
     const res = await settleWithin(p, 1);
     expect(res).not.toBe("pending");
     expect((res as Response).status).toBe(503);
     expect(((await (res as Response).json()) as { error: string }).error).toBe("quota_unavailable");
+    expect(db.calls.some((k) => k.startsWith("ai-daily-global:"))).toBe(false);
   });
 
-  it("العامة تمرّ وبوّابة الهوية معلّقة ⇐ ‏503 بعد مهلتها", async () => {
-    db.hangOn = "ai-daily-id:";
+  it("الهوية تمرّ والبوّابة العامة معلّقة ⇐ ‏503 بعد مهلتها", async () => {
+    db.hangOn = "ai-daily-global:";
     const p = enforceAiQuota({ surface: "chat", identity: "ip:2", deadlineMs: 1_500 });
     const res = await settleWithin(p, 1_600);
     expect(res).not.toBe("pending");
     expect((res as Response).status).toBe(503);
-    expect(db.calls.some((k) => k.startsWith("ai-daily-global:"))).toBe(true);
+    expect(db.calls.some((k) => k.startsWith("ai-daily-id:"))).toBe(true);
   });
 
   it("بلا خيار ⇐ المهلة الافتراضية لكل بوّابة، لا تعليق", async () => {
-    db.hangOn = "ai-daily-global:";
+    db.hangOn = "ai-daily-id:";
     const p = enforceAiQuota({ surface: "chat", identity: "ip:3" });
     expect(await settleWithin(p, RATE_LIMIT_DEFAULT_DEADLINE_MS - 1)).toBe("pending");
     const res = await settleWithin(p, 1);

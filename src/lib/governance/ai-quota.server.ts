@@ -21,8 +21,12 @@
  *
  * ## الترتيب مقصود
  *
- * مفتاح الإيقاف أولًا (قراءة بيئة، بلا شبكة)، ثم السقف العام، ثم سقف
- * الهوية. فحين يُغلق النظام كلُّه لا نُنفق استعلامًا لكل زائر.
+ * مفتاح الإيقاف أولًا (قراءة بيئة، بلا شبكة)، ثم سقف الهوية، ثم السقف
+ * العام. كان العامّ أوّلًا («لا استعلام لكل زائر بعد استنفاده»)، لكنّ كل
+ * طلبٍ يمرّ به **يستهلك** من دلوه المشترك قبل أن يُسأل عن هويته: فعنوانٌ
+ * واحد يطرق النقاط العامة بعد بلوغ حصّته يظلّ يأكل السقف العام (5000) حتى
+ * يُغلق الخدمة على الجميع. والآن الهوية الممنوعة تُردّ قبل أن تمسّ ميزانية
+ * المشروع — ولا يستهلك العامَّ إلا طلبٌ مسموحٌ لصاحبه (٢٠٢٦/١٠/١٨).
  *
  * ## الرسائل عربية — والسبب ليس الذوق
  *
@@ -35,8 +39,13 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const DAY_SECONDS = 86_400;
 
-/** الأسطح الثلاثة التي تُنفق مالًا، وتكلفتها تختلف فتختلف سقوفها. */
-export type AiSurface = "tts" | "stt" | "chat";
+/**
+ * الأسطح التي تُنفق مالًا، وتكلفتها تختلف فتختلف سقوفها. و`kb` (تضمين سؤال
+ * البحث الدلالي في المعرفة) سطحٌ مستقلّ لا يُحسب على `chat`: صفحة المعرفة
+ * تستدعيه مع كل حرف، فلو شارك المساعدَ دلوَيه لاستنفد بحثُ مستخدمٍ حصّتَه من
+ * المساعد، ولأغلق بحثُ قلّةٍ السقفَ العام على الجميع (مراجعة ٢٠٢٦/١٠/١٨).
+ */
+export type AiSurface = "tts" | "stt" | "chat" | "kb";
 
 /**
  * مفتاح الإيقاف الفوري — متغيّر بيئة لا نشر.
@@ -49,6 +58,7 @@ const SURFACE_AR: Record<AiSurface, string> = {
   tts: "الصوت",
   stt: "النسخ الصوتي",
   chat: "المساعد",
+  kb: "البحث الدلالي",
 };
 
 function arabicResponse(status: number, code: string, message: string, retryAfter: number) {
@@ -99,7 +109,9 @@ function cap(envVar: string, fallback: number): number {
  * السقوف الافتراضية — مُقدَّرة بالتكلفة النسبية لا بالتساوي.
  *
  * ElevenLabs تُحاسَب بالأحرف وهي الأغلى، فسقفها الأضيق. وGemini أرخص
- * بمراتب فسقفها أوسع. وكلّها تُضبط من البيئة بلا نشر متى تبدّل الواقع.
+ * بمراتب فسقفها أوسع. وتضمين سؤال قصير أرخص من التوليد بمراتب، والصفحة
+ * تطلبه مع كل حرف (≈٢٠ نداءً للسؤال الواحد) فسقف هويته أوسع، ودلوه العام
+ * منفصل عن المساعد. وكلّها تُضبط من البيئة بلا نشر متى تبدّل الواقع.
  */
 const LIMITS: Record<AiSurface, { perIdentity: number; global: number }> = {
   tts: {
@@ -113,6 +125,10 @@ const LIMITS: Record<AiSurface, { perIdentity: number; global: number }> = {
   chat: {
     perIdentity: cap("SADEED_CHAT_DAILY_PER_IDENTITY", 120),
     global: cap("SADEED_CHAT_DAILY_GLOBAL", 5_000),
+  },
+  kb: {
+    perIdentity: cap("SADEED_KB_DAILY_PER_IDENTITY", 400),
+    global: cap("SADEED_KB_DAILY_GLOBAL", 10_000),
   },
 };
 
@@ -141,7 +157,9 @@ function dayKey(): string {
  * الجدول `ai_usage_log` يأتي بترحيلٍ مرافق لم يُطبَّق بعد (القاعدة خارج
  * صلاحية جلسة التطوير). فالكتابة تُحاط بـtry وتُبتلع: لا يجوز أن يسقط
  * نداءُ مستخدمٍ لأن سطر محاسبةٍ لم يُكتب. وتشتغل من نفسها لحظة وجود
- * الجدول، بلا نشر ثانٍ.
+ * الجدول، بلا نشر ثانٍ. وقيد `surface` في ترحيله لا يعرف `kb` بعد، فسطور
+ * البحث الدلالي تُرفض بصمت حتى يُوسَّع القيد بترحيلٍ بإذن المالك — والحجب
+ * لا يتأثّر، فهو على `check_rate_limit` لا على هذا الجدول.
  */
 async function recordUsage(surface: AiSurface, identity: string, units: number): Promise<void> {
   try {
@@ -180,30 +198,8 @@ export async function enforceAiQuota(opts: AiQuotaOptions): Promise<Response | n
   const today = dayKey();
   const retry = secondsUntilMidnight();
 
-  // السقف العام أوّلًا: حين يُستنفد لا معنى لسؤال الهوية.
-  const globalGate = await enforceRateLimit(
-    `ai-daily-global:${surface}:${today}`,
-    limits.global,
-    DAY_SECONDS,
-    { deadlineMs },
-  );
-  if (globalGate.unavailable) {
-    return arabicResponse(
-      503,
-      "quota_unavailable",
-      `تعذّر التحقّق من حصّة ${ar} الآن. أعد المحاولة بعد قليل.`,
-      60,
-    );
-  }
-  if (!globalGate.allowed) {
-    return arabicResponse(
-      429,
-      "daily_global_cap",
-      `بلغ النظام سقفه اليومي من طلبات ${ar}. تُستأنف الخدمة بعد منتصف الليل.`,
-      retry,
-    );
-  }
-
+  // سقف الهوية أوّلًا: الهوية الممنوعة تُردّ قبل أن تستهلك من الدلو العام
+  // المشترك، فلا يقدر عنوانٌ واحد على استنفاد سقف المشروع وإغلاقه على الجميع.
   const identityGate = await enforceRateLimit(
     `ai-daily-id:${surface}:${today}:${identity}`,
     limits.perIdentity,
@@ -227,6 +223,29 @@ export async function enforceAiQuota(opts: AiQuotaOptions): Promise<Response | n
     );
   }
 
+  const globalGate = await enforceRateLimit(
+    `ai-daily-global:${surface}:${today}`,
+    limits.global,
+    DAY_SECONDS,
+    { deadlineMs },
+  );
+  if (globalGate.unavailable) {
+    return arabicResponse(
+      503,
+      "quota_unavailable",
+      `تعذّر التحقّق من حصّة ${ar} الآن. أعد المحاولة بعد قليل.`,
+      60,
+    );
+  }
+  if (!globalGate.allowed) {
+    return arabicResponse(
+      429,
+      "daily_global_cap",
+      `بلغ النظام سقفه اليومي من طلبات ${ar}. تُستأنف الخدمة بعد منتصف الليل.`,
+      retry,
+    );
+  }
+
   void recordUsage(surface, identity, units);
   return null;
 }
@@ -246,20 +265,7 @@ export function degradedAiQuota(
   const limits = LIMITS[surface];
   const today = dayKey();
   const retry = secondsUntilMidnight();
-  const globalGate = degradedAllowance(
-    `ai-daily-global:${surface}:${today}`,
-    limits.global,
-    DAY_SECONDS,
-    now,
-  );
-  if (!globalGate.allowed) {
-    return arabicResponse(
-      429,
-      "daily_global_cap",
-      `بلغ النظام سقفه المحدود من طلبات ${ar} ريثما يعود التحقّق. أعد المحاولة لاحقًا.`,
-      retry,
-    );
-  }
+  // الترتيب نفسه في `enforceAiQuota`: الهوية الممنوعة لا تعدّ على الدلو العام.
   const identityGate = degradedAllowance(
     `ai-daily-id:${surface}:${today}:${identity}`,
     limits.perIdentity,
@@ -271,6 +277,20 @@ export function degradedAiQuota(
       429,
       "daily_identity_cap",
       `بلغت حصّتك المحدودة من طلبات ${ar} ريثما يعود التحقّق. تعود الحصّة بعد منتصف الليل.`,
+      retry,
+    );
+  }
+  const globalGate = degradedAllowance(
+    `ai-daily-global:${surface}:${today}`,
+    limits.global,
+    DAY_SECONDS,
+    now,
+  );
+  if (!globalGate.allowed) {
+    return arabicResponse(
+      429,
+      "daily_global_cap",
+      `بلغ النظام سقفه المحدود من طلبات ${ar} ريثما يعود التحقّق. أعد المحاولة لاحقًا.`,
       retry,
     );
   }
@@ -311,7 +331,7 @@ export function assertAiEnabled(surface: AiSurface): void {
 
 /**
  * مفتاح الإيقاف ثم السقفان اليوميان (نفس `enforceAiQuota`، نفس الدلاء، نفس
- * الترتيب) — ويفشل مغلقًا: تعذّر المخزن منعٌ لا سماح. المستدعي يسقط إلى
+ * الترتيب: الهوية ثم العام) — ويفشل مغلقًا: تعذّر المخزن منعٌ لا سماح. المستدعي يسقط إلى
  * بديله الحتميّ ولا يُنفق على نداءٍ لم يُتحقَّق من حصّته.
  */
 export async function assertAiQuota(opts: AiQuotaOptions): Promise<void> {

@@ -45,6 +45,43 @@ describe("secret guard — credential content", () => {
     expect(scanText("a.ts", jwt)).toContain("JWT / service-role-style token");
   });
 
+  it("catches modern provider key shapes the legacy patterns missed", () => {
+    // Planted strings are assembled at runtime so no literal key shape exists
+    // in this file (it is also skipped by the CLI scan).
+    const body = (n: number) => "Ab3_x-Yz9".repeat(Math.ceil(n / 9)).slice(0, n);
+    for (const scope of ["proj", "svcacct", "admin"]) {
+      expect(scanText("a.ts", `OPENAI=sk-${scope}-${body(40)}`)).toContain(
+        "OpenAI project/service/admin key (sk-proj-/sk-svcacct-/sk-admin-…)",
+      );
+    }
+    expect(scanText("a.ts", "k = 'sk-" + "ant-api03-" + body(40) + "'")).toContain(
+      "Anthropic API key (sk-ant-…)",
+    );
+    expect(scanText("a.ts", "sb_" + "secret_" + body(32))).toContain(
+      "Supabase secret key (sb_secret_…)",
+    );
+    expect(scanText("a.ts", "re_" + "AbCd2345" + "_" + "XyZw6789".repeat(3))).toContain(
+      "Resend API key (re_…)",
+    );
+    expect(scanText("a.ts", "sk_" + "0123456789abcdef".repeat(3))).toContain(
+      "ElevenLabs API key (sk_…)",
+    );
+  });
+
+  it("does NOT flag public keys, stubs, or look-alike identifiers", () => {
+    // The publishable key is public by design and ships in the client bundle.
+    expect(scanText("a.ts", "sb_" + "publishable_" + "A".repeat(32))).toHaveLength(0);
+    // Test stubs and prose that only name the prefix.
+    expect(scanText("a.test.ts", "SUPABASE_SECRET_KEY=sb_" + "secret_stub")).toHaveLength(0);
+    expect(scanText("README.md", "prefixes: sk-proj-, sk-ant-, re_, sb_secret_")).toHaveLength(0);
+    // snake_case identifiers starting with `re_` and short/non-hex `sk_` names.
+    expect(
+      scanText("a.ts", "const re_rendered_components = re_validate_subscription();"),
+    ).toHaveLength(0);
+    expect(scanText("a.ts", "sk_" + "z".repeat(48))).toHaveLength(0);
+    expect(scanText("a.ts", "sk_" + "a".repeat(20))).toHaveLength(0);
+  });
+
   it("flags a pg_dump database dump inside a .sql file", () => {
     expect(
       scanText("x.sql", "-- PostgreSQL database dump\nCOPY public.users FROM stdin;"),

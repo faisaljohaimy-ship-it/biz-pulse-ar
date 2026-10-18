@@ -71,6 +71,9 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
             .from("org_members")
             .select("user_id, org_id")
             .in("role", ["admin", "owner"])
+            // Deterministic actor: the longest-standing admin/owner, not
+            // whichever row the planner happens to return first.
+            .order("joined_at", { ascending: true })
             .limit(1)
             .maybeSingle();
           actorId = member?.user_id ?? null;
