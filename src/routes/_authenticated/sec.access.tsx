@@ -33,7 +33,7 @@ export const Route = createFileRoute("/_authenticated/sec/access")({
 });
 
 /** صفوف المحاكاة المرجعية معرّفاتها sim-* — الكتابة عليها بلا معنى وترمي ZodError خامًا. */
-const SIM_ACTION_INFO = "هذه بيانات محاكاة مرجعية — الإجراء متاح على البيانات الحية فقط";
+const SIM_ACTION_INFO = "هذه بيانات مرجعية (ليست حيّة) — الإجراء متاح على البيانات الحية فقط";
 const isSimRow = (id: string) => id.startsWith("sim-");
 
 /**

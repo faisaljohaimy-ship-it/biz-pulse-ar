@@ -6,9 +6,12 @@
  * تُقاس ضد العدّادات الكنسية لا ضد أرقامٍ منسوخة، والروابط ضد سجلّ الشاشات نفسه.
  */
 import { describe, expect, it } from "vitest";
-import { REAL_PROJECT_COUNTS } from "@/lib/exec/projects-report.real.server";
-import { REAL_WORK_ORDER_COUNTS } from "@/lib/exec/maintenance-report.real.server";
-import { REAL_INCIDENT_COUNTS } from "@/lib/exec/event-report.real.server";
+import { PROJECTS_REPORT_DATE, REAL_PROJECT_COUNTS } from "@/lib/exec/projects-report.real.server";
+import {
+  MAINTENANCE_REPORT_DATE,
+  REAL_WORK_ORDER_COUNTS,
+} from "@/lib/exec/maintenance-report.real.server";
+import { EVENT_REPORT_DATE, REAL_INCIDENT_COUNTS } from "@/lib/exec/event-report.real.server";
 import { isRouteHidden } from "@/lib/nav/hidden-routes";
 import { SCREEN_NAMES } from "@/lib/nav/screen-names";
 import { isVendorSafe } from "@/lib/sadeed/vendor-mask";
@@ -113,19 +116,28 @@ describe("العدّ بالإنجليزية — العدّادات الكنسي�
 
   it("الحالات التي يدعمها المطابق العربي", () => {
     expect(matchEnglishCount("how many projects are in progress")).toBe(
-      `Projects in progress: ${REAL_PROJECT_COUNTS.in_progress}.`,
+      `Projects in progress: ${REAL_PROJECT_COUNTS.in_progress} — per the approved export of ${PROJECTS_REPORT_DATE}.`,
     );
     expect(matchEnglishCount("number of completed projects")).toBe(
-      `Completed projects: ${REAL_PROJECT_COUNTS.completed}.`,
+      `Completed projects: ${REAL_PROJECT_COUNTS.completed} — per the approved export of ${PROJECTS_REPORT_DATE}.`,
     );
     expect(matchEnglishCount("How many open incidents?")).toBe(
-      `Open incidents: ${REAL_INCIDENT_COUNTS.open}.`,
+      `Open incidents: ${REAL_INCIDENT_COUNTS.open} — per the approved export of ${EVENT_REPORT_DATE}.`,
     );
     expect(matchEnglishCount("how many closed incidents")).toBe(
-      `Closed incidents: ${REAL_INCIDENT_COUNTS.closed}.`,
+      `Closed incidents: ${REAL_INCIDENT_COUNTS.closed} — per the approved export of ${EVENT_REPORT_DATE}.`,
     );
-    expect(matchEnglishCount("number of preventive work orders")).toBe(
-      `Preventive maintenance orders: ${REAL_WORK_ORDER_COUNTS.preventive}.`,
+    expect(matchEnglishCount("number of preventive work orders")).toMatch(
+      new RegExp(
+        `^Preventive maintenance orders: ${REAL_WORK_ORDER_COUNTS.preventive}, of which \\d+ cancelled — per the approved export of ${MAINTENANCE_REPORT_DATE}\\.$`,
+      ),
+    );
+    // PLAN في الملف المضمَّن ملغاة لا مفتوحة (الخريطة المصحَّحة) — كما في الجواب العربي.
+    expect(matchEnglishCount("how many open work orders")).toBe(
+      `Open maintenance orders: ${REAL_WORK_ORDER_COUNTS.in_progress}, all in progress — per the approved export of ${MAINTENANCE_REPORT_DATE}.`,
+    );
+    expect(matchEnglishCount("how many cancelled work orders")).toBe(
+      `Cancelled maintenance orders: ${REAL_WORK_ORDER_COUNTS.open} — per the approved export of ${MAINTENANCE_REPORT_DATE}.`,
     );
     expect(matchEnglishCount("How many maintenance work orders do we have?")).toContain(
       String(REAL_WORK_ORDER_COUNTS.total),

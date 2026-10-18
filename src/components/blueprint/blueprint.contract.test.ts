@@ -1656,34 +1656,58 @@ describe("المُخطَّط — أرضيّتا القراءة واللمس", ()
     expect(audit).toMatch(/parseFloat\(cs\.fontSize\) \* scale/);
   });
 
-  it("الفحص الميداني يستثني المخفيّ بصريًّا بتوقيع إخفائه لا بصِغَر قاصّه", () => {
+  it("الفحص الميداني: توقيع الإخفاء لا صِغَر القاصّ — يُعفي من القصّ، ويُقاس به الهدف مركَّزًا", () => {
     // العنوان المخفيّ في الرئيسية (`sr-only` وفيه span الاسمين) كان يُقاس على
     // صندوقه ذي البكسل الواحد فيسقط ‏101px في المقاسات الثمانية (٢٠٢٦/١٠/١٧).
     // الاستثناء **توقيعان بأعيانهما** لا أكثر: `inset()` عامّةً يُعمي الفحص عن
     // الكشف بالقصّ (منحنيات المؤشرات تبدأ `inset(0 100% 0 0)`)، واستثناءٌ بالحجم
     // يُعميه عن بطاقةٍ انهارت إلى 1px بخطأ. جُرّب الاتجاهان في متصفّح حقيقي.
+    //
+    // ورابط التخطّي (`.nx-skip-link`) أسقط فحص الإنتاج #523 في ٥٦/٥٦ (٢٠٢٦/١٠/١٨): قِيس ساكنًا
+    // 1×1 وهو بتصميمه مخفيٌّ حتى التركيز. فأرضيّة الهدف تقيس المخفيّ بالتوقيع **مركَّزًا** —
+    // لا تُعفيه — وأرضيّة الخطّ لا تُعفي شيئًا.
     const audit = read("scripts/ui-audit.mjs");
     const SIGNATURE =
       'ps.clipPath === "inset(50%)" || /^rect\\(0(px)?,? ?0(px)?,? ?0(px)?,? ?0(px)?\\)$/.test(ps.clip)';
     const condition = (src: string) =>
-      /const ps = getComputedStyle\(p\);\s*if \(([\s\S]*?)\) \{\s*hiddenByDesign = true;/
+      /const underHidingSignature = \(el\) => \{[\s\S]*?const ps = getComputedStyle\(p\);\s*if \(([\s\S]*?)\) \{\s*return true;/
         .exec(src)?.[1]
         .replace(/\s+/g, " ")
         .trim() ?? null;
     const sized = (src: string) => /\.(?:width|height)\s*<=?\s*\d/.test(src);
+    const textFloor = (src: string) =>
+      src.slice(src.indexOf("if (ownText"), src.indexOf("const inlineTextLink"));
+    const targetFloor = (src: string) =>
+      src.slice(src.indexOf("const isControl"), src.indexOf("const clipperOf"));
+    const clipCheck = (src: string) => src.slice(src.indexOf("const clipperOf"));
     expect(condition(audit)).toBe(SIGNATURE);
     expect(sized(audit), "استثناءٌ بالحجم").toBe(false);
-    // والاستثناء في فحص القصّ وحده — لا في أرضيّتي الخطّ والهدف قبله.
-    expect(audit.indexOf("hiddenByDesign")).toBeGreaterThan(audit.indexOf("const clipperOf"));
-    // يحمرّ على المزروع (المادة ٣٠): أيّ `inset()` · أيّ `clip-path` · استثناءٌ بالحجم.
+    expect(clipCheck(audit)).toContain("if (underHidingSignature(el)) continue;");
+    expect(targetFloor(audit)).toMatch(
+      /if \(isControl && underHidingSignature\(el\)\) \{\s*el\.focus\(\{ preventScroll: true \}\);/,
+    );
+    expect(targetFloor(audit)).toContain("el.blur();");
+    expect(targetFloor(audit), "أرضية الهدف لا تتخطّى المخفيّ").not.toContain("continue");
+    expect(textFloor(audit), "أرضية الخطّ لا تُعفي المخفيّ").not.toContain("underHidingSignature");
+    // يحمرّ على المزروع (المادة ٣٠): أيّ `inset()` · أيّ `clip-path` · استثناءٌ بالحجم ·
+    // تخطّي الهدف المخفيّ · قياسه بلا تركيز · إعفاء نصّه من أرضية الخطّ.
     const anyInset = audit.replace(
       'ps.clipPath === "inset(50%)"',
       'ps.clipPath.startsWith("inset(")',
     );
     const anyClip = audit.replace('ps.clipPath === "inset(50%)"', 'ps.clipPath !== "none"');
     const bySize = audit.replace(
-      "if (hiddenByDesign) continue;",
-      "if (hiddenByDesign || r.width < 2) continue;",
+      "if (underHidingSignature(el)) continue;",
+      "if (underHidingSignature(el) || r.width < 2) continue;",
+    );
+    const skipsTarget = audit.replace(
+      "if (isControl && underHidingSignature(el)) {",
+      "if (isControl && underHidingSignature(el)) {\n      continue;",
+    );
+    const noFocus = audit.replace("el.focus({ preventScroll: true });", "");
+    const textExempt = audit.replace(
+      "if (ownText) {",
+      "if (ownText && !underHidingSignature(el)) {",
     );
     for (const planted of [anyInset, anyClip]) {
       expect(planted).not.toBe(audit);
@@ -1691,6 +1715,12 @@ describe("المُخطَّط — أرضيّتا القراءة واللمس", ()
     }
     expect(bySize).not.toBe(audit);
     expect(sized(bySize)).toBe(true);
+    expect(skipsTarget).not.toBe(audit);
+    expect(targetFloor(skipsTarget)).toContain("continue");
+    expect(noFocus).not.toBe(audit);
+    expect(targetFloor(noFocus)).not.toMatch(/el\.focus\(/);
+    expect(textExempt).not.toBe(audit);
+    expect(textFloor(textExempt)).toContain("underHidingSignature");
   });
 
   it("شريط العدّادات ومسطرة الوحدة محذوفان بلا تركة (قرار المالك ٢٠٢٦/٠٨/٠٩)", () => {

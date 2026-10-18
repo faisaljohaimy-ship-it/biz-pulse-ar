@@ -92,7 +92,11 @@ function useMyIdentity(userId: string | null) {
   return me;
 }
 
-export function NewMaintOrderDialog() {
+/**
+ * `unavailable`: القاعدة لا تجيب والصفحة على نسخة التصدير — الإنشاء كتابةٌ ستفشل، فالزرّ معطّل
+ * ويقول لماذا بدل خطأ عامّ بعد ملء النموذج (ملاحظة الحارس ٨ على c3444ef6d).
+ */
+export function NewMaintOrderDialog({ unavailable = false }: { unavailable?: boolean } = {}) {
   const { user } = useAuth();
   const me = useMyIdentity(user?.id ?? null);
   const qc = useQueryClient();
@@ -139,7 +143,11 @@ export function NewMaintOrderDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="h-11 gap-1.5 font-bold">
+        <Button
+          className="h-11 gap-1.5 font-bold"
+          disabled={unavailable}
+          title={unavailable ? "الإنشاء يعود حين تجيب القاعدة الحية" : undefined}
+        >
           <Plus className="size-4" /> أمر عمل جديد
         </Button>
       </DialogTrigger>

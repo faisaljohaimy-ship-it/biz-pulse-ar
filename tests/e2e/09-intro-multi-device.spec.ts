@@ -18,8 +18,15 @@ const VIEWPORTS: readonly Vp[] = [
   { name: "desktop-1920", width: 1920, height: 1080, expectFit: "contain" },
 ];
 
+/**
+ * **معطَّل: لا سطح يُختبر.** المقدّمة السينمائية أُزيلت بأمر المالك ٢٠٢٦/٠٨/٢٨ (‏a42c89d02
+ * «revert(intro)»)، فهذا الملف يُسقط كل تشغيلٍ شامل على ميزةٍ غير موجودة (اكتُشف ٢٠٢٦/١٠/١٨ قبل
+ * أول تشغيل لـweekly-regression.yml). لا يُحذف: وثيقتا الحوكمة
+ * `docs/SADEED_INTRO_CONSTITUTION.md` و`docs/SADEED_ENGINEERING_CONSTITUTION.md` تسمّيانه،
+ * وتحديثهما قرار المالك. يعود بإزالة `.skip` إن عادت المقدّمة.
+ */
 for (const vp of VIEWPORTS) {
-  test.describe(`intro @ ${vp.name}`, () => {
+  test.describe.skip(`intro @ ${vp.name}`, () => {
     test.use({ viewport: { width: vp.width, height: vp.height } });
 
     test("renders per constitution", async ({ page, context }) => {

@@ -703,8 +703,8 @@ export const REPORT_CLASSIFICATION_META: Record<ReportClassification, LocalizedT
 
 /** إفصاح المحاكاة — النصّ نفسه الذي يذيّل `bi-pdf.ts` اليوم. */
 export const SIMULATION_NOTICE: LocalizedText = {
-  ar: "بيانات محاكاة مرجعية — is_simulation = true",
-  en: "Reference simulation data — is_simulation = true",
+  ar: "بيانات مرجعية (ليست حية) — is_simulation = true",
+  en: "Reference data (not live) — is_simulation = true",
 };
 
 export const LIVE_NOTICE: LocalizedText = {

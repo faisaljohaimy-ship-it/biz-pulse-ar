@@ -4,12 +4,21 @@
  * أمر المالك ٢٠٢٦/١٠/١٨ («SADEED AI OS — CINEMATIC MOTION GRAPHICS VIDEO ENGINE»): ستّة مشاهد
  * في موضع البانر نفسه، حلقةٌ بلا قفزة، والنصّ المهمّ HTML لا مخبوزًا في الإطارات.
  *
+ * وأمره الثاني في اليوم نفسه («Replace existing cartoon-style illustrations … with premium,
+ * realistic industrial energy visuals … Never fabricate photographs of real facilities»): القصّة
+ * بين الإطفاء والهبوط **لقطاتٌ واقعية لمنشآتٍ متخيَّلة عامّة** (مولَّدة: لا موقعَ حقيقيًّا، ولا
+ * نصّ ولا شعار ولا أشخاص فيها) بحركة كاميرا هادئة (تكبيرٌ ≤ 1.08 وانسيابٌ خفيف) وذوبانٍ ليّن
+ * وضبابٍ جوّيّ ودرجةٍ باردة نحو الكحلي والسماوي: مجمّعٌ صناعي ← خطوط نقل ← محطّة تحويل ← محطّة
+ * توليد يحلّ عليها الليل وتصل منشآتها شبكةُ رصدٍ رقيقة (خطوطٌ تُرسم وعُقدٌ تنبض) ← ومن عقدتها
+ * يولد الرمز ثم يهبط في اللوحة كما كان. لا HUD ولا رقم ولا اسم (المادة ٢٧).
+ *
  * مدخل الملفّ هو المشهد السادس مستقرًّا (اللوحة نفسها بلا نصّ) — فالإطار 0 هو الملصق، والقصّة
  * تجري في دورةٍ: سكون ← المشهد ١ ← … ← ٥ ← سكون. كل حركةٍ دائمة دوريّةٌ على 720 إطارًا
  * (أعدادٌ صحيحة من الدورات) فالإطار 720 هو الإطار 0.
  *
- * الإحداثيات كلّها بكسلات اللوحة الأمّ 2172×724، والحاوية تُصغَّر إلى إطار التركيب.
- * لا رقم ولا اسم ولا «بثّ حيّ»: المدن نقاطٌ توضيحية والألوان من `regions.ts` (المادة ٢٧).
+ * الإحداثيات كلّها بكسلات اللوحة الأمّ 2172×724، والحاوية تُصغَّر إلى إطار التركيب. واللقطات
+ * معايناتٌ 1280×543 (‏21:9) تُقصّ 3:1 فتُكبَّر 1.26–1.36× في درجة 1608 — لينةٌ قليلًا؛ ومعرّفات
+ * توليدها وخطوة استبدالها بالدقّة الكاملة في `RENDER.md`.
  */
 import type { CSSProperties, FC } from "react";
 import {
@@ -21,15 +30,6 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { REGION_ACCENT_HEX, type RegionId } from "@/lib/regions";
-import {
-  ARABIA_VIEWBOX,
-  NEIGHBOUR_LAND_PATH,
-  SAUDI_BORDER_PATH,
-  SAUDI_PROVINCES,
-  projectArabia,
-} from "@/components/map/arabia-geometry";
-import { Landscape } from "./SadeedFilmLandscape";
 
 export const FILM_FPS = 30;
 export const FILM_SECONDS = 24;
@@ -43,7 +43,11 @@ const CY = H / 2;
 /** الرمز في اللوحة: مقطوعٌ مربّعًا 483px مركزه (1760.5، 362.5) — موضع الهبوط في المشهد ٥. */
 const EMBLEM = { x: 1519, y: 121, size: 483, cx: 1760.5, cy: 362.5 } as const;
 
-/** حدود المشاهد بالثواني — والصفحة تقرأ الحدّين الأوّل والأخير لتزامن النصّ. */
+/**
+ * حدود المشاهد بالثواني — والصفحة تقرأ الحدّين الأوّل والأخير لتزامن النصّ. وبينهما: `dimEnd`
+ * اكتمل الإطفاء وانكشفت اللقطة الأولى · `s1End` و`s2End` منتصف ذوبان اللقطة ١←٢ و٢←٣ · `s3End`
+ * يحلّ الليل على محطّة التوليد وتُرسم الشبكة · `s4End` يبدأ الهبوط · `s5End` السكون.
+ */
 export const ACT = {
   holdEnd: 7.5,
   dimEnd: 8.6,
@@ -100,24 +104,6 @@ function quad(p0: Pt, c: Pt, p1: Pt, u: number): Pt {
     x: v * v * p0.x + 2 * v * u * c.x + u * u * p1.x,
     y: v * v * p0.y + 2 * v * u * c.y + u * u * p1.y,
   };
-}
-
-/** مسدّسٌ رأسه للأعلى (كإطار الرمز) — نقاطه، ومحيطه للتتبّع. */
-function hexPoints(cx: number, cy: number, r: number): Pt[] {
-  return Array.from({ length: 6 }, (_, k) => ({
-    x: cx + r * Math.cos(TAU * (k / 6) - Math.PI / 2),
-    y: cy + r * Math.sin(TAU * (k / 6) - Math.PI / 2),
-  }));
-}
-
-function pointOnPolygon(pts: Pt[], u: number): Pt {
-  const n = pts.length;
-  const seg = (u * n) % n;
-  const i = Math.floor(seg);
-  const f = seg - i;
-  const a = pts[i];
-  const b = pts[(i + 1) % n];
-  return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
 }
 
 const box = (x: number, y: number, w: number, h: number): CSSProperties => ({
@@ -364,482 +350,449 @@ const PlateLayer: FC<{ t: number }> = ({ t }) => {
   );
 };
 
-/* ─────────────────────── المشهد ١ — انبثاق ذكيّ ─────────────────────── */
+/* ───────────── المشاهد ١–٤ — لقطاتٌ واقعية بحركة كاميرا هادئة ───────────── */
 
-const Rays: FC<{ cx: number; cy: number; t: number; opacity: number; size?: number }> = ({
-  cx,
-  cy,
-  t,
-  opacity,
-  size = 1500,
-}) => {
-  if (opacity <= 0) return null;
-  const spin = (t / FILM_SECONDS) * 36;
-  return (
-    <div
-      style={{
-        ...box(cx - size / 2, cy - size / 2, size, size),
-        opacity,
-        borderRadius: "50%",
-        background:
-          "repeating-conic-gradient(from 0deg, rgba(120,210,255,0.0) 0deg 9deg, rgba(150,225,255,0.20) 12deg, rgba(120,210,255,0.0) 15deg 26deg)",
-        maskImage:
-          "radial-gradient(closest-side, rgba(0,0,0,0.95) 8%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0) 100%)",
-        WebkitMaskImage:
-          "radial-gradient(closest-side, rgba(0,0,0,0.95) 8%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0) 100%)",
-        transform: `rotate(${spin}deg)`,
-        mixBlendMode: "screen",
-        filter: "blur(2px)",
-      }}
-    />
-  );
+/** منتصف ذوبان اللقطة ٣←٤ — لا حدّ له في `ACT`: الليل والشبكة يجريان على اللقطة الرابعة نفسها. */
+const POWER_CUT = 16.4;
+/** الذوبان بين لقطتين (ث). */
+const DISSOLVE = 0.8;
+
+type Cam = { s: number; x: number; y: number };
+
+type Shot = {
+  /** في `brand/assets/` (‏`--public-dir`) — معاينةٌ مولَّدة، ومعرّف توليدها في `RENDER.md`. */
+  src: string;
+  /** يبدأ رسمها ويكتمل ظهورها (ث): بينهما تذوب فوق سابقتها. */
+  from: number;
+  full: number;
+  /** آخر لحظةٍ تُرسم فيها — وقد غطّتها اللاحقة أو اللوحة كلّها. */
+  until: number;
+  /** نافذة القصّ 3:1 من الأصل 21:9: الموضع العمودي (0 أعلى · 1 أسفل). */
+  crop: number;
+  /** مرتكز الكاميرا (بكسلات الإطار). */
+  origin: Pt;
+  /** الكاميرا من `from` إلى `until`: مقياسٌ ≤ 1.08 وانسيابٌ بالبكسل. */
+  a: Cam;
+  b: Cam;
+  /** خطّ الأفق في الإطار — مرتكز الضباب الجوّيّ. */
+  horizon: number;
+  /** انكشافٌ من تحت اللوحة الخافتة: تركيزٌ وتعريضٌ يكتملان بين اللحظتين. */
+  reveal?: readonly [number, number];
+  /** يحلّ عليها الليل وتُرسم فوقها الشبكة (المشهد ٥). */
+  network?: true;
 };
 
-const Emergence: FC<{ t: number }> = ({ t }) => {
-  if (t < ACT.dimEnd - 0.3 || t > ACT.s1End + 0.6) return null;
-  const glassIn = ramp(t, ACT.dimEnd - 0.2, ACT.dimEnd + 0.9, outSoft);
-  const out = ramp(t, ACT.s1End - 0.4, ACT.s1End + 0.5);
-  const traceA = ramp(t, 9.0, 10.15);
-  const traceB = ramp(t, 9.25, 10.35);
-  const emb = ramp(t, 9.85, 10.7, outSoft);
-  const R = 238;
-  const hexA = hexPoints(CX, CY, R);
-  const hexB = hexPoints(CX, CY, R - 26);
-  const lenA = 6 * R;
-  const lenB = 6 * (R - 26);
-  const headA = pointOnPolygon(hexA, traceA);
-  const headB = pointOnPolygon(hexB, traceB);
-  const size = 470 * (0.94 + 0.06 * emb) * (1 + 0.1 * out);
-  return (
-    <div style={{ ...box(0, 0, W, H), opacity: 1 - out }}>
-      {/* سطح الزجاج المضيء */}
-      <div
-        style={{
-          ...box(CX - 900, CY - 285, 1800, 570),
-          borderRadius: 60,
-          opacity: glassIn,
-          transform: `scale(${0.94 + 0.06 * glassIn + 0.08 * out})`,
-          background:
-            "linear-gradient(180deg, rgba(235,246,255,0.20) 0%, rgba(150,200,255,0.08) 46%, rgba(120,180,255,0.14) 100%)",
-          border: "2px solid rgba(170,230,255,0.55)",
-          boxShadow:
-            "inset 0 2px 0 rgba(255,255,255,0.55), inset 0 0 90px rgba(90,170,255,0.32), 0 0 120px rgba(60,150,255,0.35)",
-        }}
-      />
-      <Rays cx={CX} cy={CY} t={t} opacity={0.75 * ramp(t, 9.5, 10.4) * (1 - out)} />
-      {/* تتبّع الحافّة بضوءٍ سماويّ ثم يتجسّد الرمز */}
-      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={box(0, 0, W, H)}>
-        <defs>
-          <filter id="trace" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="6" />
-          </filter>
-        </defs>
-        {[
-          { pts: hexA, len: lenA, p: traceA, head: headA, w: 4 },
-          { pts: hexB, len: lenB, p: traceB, head: headB, w: 2.5 },
-        ].map((h, i) =>
-          h.p > 0 ? (
-            <g key={i} opacity={1 - emb * 0.65}>
-              <polygon
-                points={h.pts.map((p) => `${p.x},${p.y}`).join(" ")}
-                fill="none"
-                stroke="#62e6ff"
-                strokeWidth={h.w * 3}
-                strokeLinejoin="round"
-                strokeDasharray={`${h.len * h.p} ${h.len}`}
-                filter="url(#trace)"
-                opacity={0.8}
-              />
-              <polygon
-                points={h.pts.map((p) => `${p.x},${p.y}`).join(" ")}
-                fill="none"
-                stroke="#e6fbff"
-                strokeWidth={h.w}
-                strokeLinejoin="round"
-                strokeDasharray={`${h.len * h.p} ${h.len}`}
-              />
-              {h.p < 1 ? (
-                <>
-                  <circle
-                    cx={h.head.x}
-                    cy={h.head.y}
-                    r={22}
-                    fill="#7feaff"
-                    opacity={0.7}
-                    filter="url(#trace)"
-                  />
-                  <circle cx={h.head.x} cy={h.head.y} r={5} fill="#ffffff" />
-                </>
-              ) : null}
-            </g>
-          ) : null,
-        )}
-      </svg>
-      {emb > 0 ? (
-        <>
-          <Img
-            src={staticFile("sadeed-emblem.webp")}
-            style={{
-              ...box(CX - size / 2, CY - size / 2, size, size),
-              opacity: 0.85 * emb,
-              filter: "blur(22px) brightness(1.6)",
-              mixBlendMode: "screen",
-            }}
-          />
-          <Img
-            src={staticFile("sadeed-emblem.webp")}
-            style={{
-              ...box(CX - size / 2, CY - size / 2, size, size),
-              opacity: emb,
-              filter: `brightness(${1 + 0.7 * (1 - ramp(t, 9.85, 11.0))})`,
-            }}
-          />
-        </>
-      ) : null}
-    </div>
-  );
-};
-
-/* ─────────────────── المشهد ٣ — شبكة الذكاء على الخريطة ─────────────────── */
-
-type City = { lat: number; lng: number; region: RegionId };
-
-/** نقاطٌ توضيحية لمدنٍ صناعية — لا بيانات ولا أعداد (المادة ٢٧). */
-const CITIES: readonly City[] = [
-  { lat: 21.49, lng: 39.19, region: "western" },
-  { lat: 21.39, lng: 39.86, region: "western" },
-  { lat: 24.52, lng: 39.57, region: "western" },
-  { lat: 24.09, lng: 38.06, region: "western" },
-  { lat: 26.42, lng: 50.09, region: "eastern" },
-  { lat: 27.0, lng: 49.65, region: "eastern" },
-  { lat: 25.38, lng: 49.59, region: "eastern" },
-  { lat: 18.22, lng: 42.51, region: "southern" },
-  { lat: 16.89, lng: 42.55, region: "southern" },
-  { lat: 17.49, lng: 44.13, region: "southern" },
-  { lat: 26.36, lng: 43.98, region: "central" },
-  { lat: 24.15, lng: 47.31, region: "central" },
+const SHOTS: readonly Shot[] = [
+  {
+    // ١ مجمّعٌ صناعيّ واسع يتكشّف تحت اللوحة الخافتة — دفعٌ بطيء نحو قلبه وانسيابٌ جانبيّ.
+    src: "industrial/1-industrial.jpg",
+    from: ACT.holdEnd + 0.4,
+    full: ACT.holdEnd + 0.4,
+    until: ACT.s1End + DISSOLVE / 2,
+    crop: 0.75,
+    origin: { x: 1020, y: 420 },
+    a: { s: 1.02, x: 16, y: 0 },
+    b: { s: 1.075, x: -18, y: -8 },
+    horizon: 150,
+    reveal: [ACT.holdEnd + 0.5, ACT.dimEnd + 0.6],
+  },
+  {
+    // ٢ خطوط نقلٍ عالية الجهد عبر الكثبان — انسيابٌ جانبيّ نحو الأفق.
+    src: "industrial/2-transmission.jpg",
+    from: ACT.s1End - DISSOLVE / 2,
+    full: ACT.s1End + DISSOLVE / 2,
+    until: ACT.s2End + DISSOLVE / 2,
+    crop: 0.55,
+    origin: { x: CX, y: 470 },
+    a: { s: 1.045, x: 34, y: 0 },
+    b: { s: 1.065, x: -34, y: 0 },
+    horizon: 575,
+  },
+  {
+    // ٣ محطّة تحويلٍ خلف سياجها — تراجعٌ بطيء، وحركةٌ أقلّ لأن شبكة السياج دقيقة.
+    src: "industrial/3-substation.jpg",
+    from: ACT.s2End - DISSOLVE / 2,
+    full: ACT.s2End + DISSOLVE / 2,
+    until: POWER_CUT + DISSOLVE / 2,
+    crop: 0.35,
+    origin: { x: 1300, y: 330 },
+    a: { s: 1.06, x: 0, y: 0 },
+    b: { s: 1.025, x: 0, y: 0 },
+    horizon: 470,
+  },
+  {
+    // ٤ محطّة توليدٍ عند الغسق ← ٥ يحلّ الليل وتصل الشبكة منشآتها: دفعٌ واحدٌ مرتكزه العقدة
+    // نفسها، فلا تتحرّك في الإطار — ومنها يولد الرمز.
+    src: "industrial/4-power.jpg",
+    from: POWER_CUT - DISSOLVE / 2,
+    full: POWER_CUT + DISSOLVE / 2,
+    until: ACT.s5End,
+    crop: 0.6,
+    origin: { x: CX, y: CY },
+    a: { s: 1.0, x: 0, y: 0 },
+    b: { s: 1.08, x: 0, y: 0 },
+    horizon: 395,
+    network: true,
+  },
 ];
-const CORE = { lat: 24.71, lng: 46.68 };
-const REGION_ORDER: readonly RegionId[] = ["central", "western", "eastern", "southern"];
 
-const MAP_SCALE = 660 / ARABIA_VIEWBOX.height;
-const MAP_X = CX - (ARABIA_VIEWBOX.width * MAP_SCALE) / 2 + 30;
-const MAP_Y = CY - (ARABIA_VIEWBOX.height * MAP_SCALE) / 2 + 2;
+const glide = Easing.bezier(0.37, 0, 0.63, 1);
+const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
 
-function toMap(lat: number, lng: number): Pt {
-  const p = projectArabia(lat, lng);
-  return { x: MAP_X + p.x * MAP_SCALE, y: MAP_Y + p.y * MAP_SCALE };
-}
-
-const NetworkMap: FC<{ t: number }> = ({ t }) => {
-  const a = ACT.s2End - 0.3;
-  if (t < a || t > ACT.s3End + 0.6) return null;
-  const vis = ramp(t, a, a + 0.6);
-  const converge = ramp(t, ACT.s3End - 0.75, ACT.s3End + 0.25, Easing.in(Easing.cubic));
-  const border = ramp(t, a + 0.1, a + 1.4);
-  const core = toMap(CORE.lat, CORE.lng);
-  const sc = 1 - 0.55 * converge;
-  return (
-    <div
-      style={{
-        ...box(0, 0, W, H),
-        opacity: vis * (1 - converge),
-        transform: `scale(${sc})`,
-        transformOrigin: `${core.x}px ${core.y}px`,
-      }}
-    >
-      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={box(0, 0, W, H)}>
-        <defs>
-          <filter id="mapGlow" x="-10%" y="-10%" width="120%" height="120%">
-            <feGaussianBlur stdDeviation="5" />
-          </filter>
-          <filter id="nodeGlow" x="-200%" y="-200%" width="500%" height="500%">
-            <feGaussianBlur stdDeviation="7" />
-          </filter>
-          <radialGradient id="mapHalo">
-            <stop offset="0%" stopColor="#3f9bff" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#3f9bff" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-        {/* شبكة إحداثياتٍ خافتة تنساب — طابع «غرفة الذكاء» */}
-        <g opacity={0.5 * vis}>
-          {Array.from({ length: 23 }, (_, i) => {
-            const x = ((i * 100 + t * 14) % 2300) - 60;
-            return (
-              <line
-                key={`v${i}`}
-                x1={x}
-                y1={0}
-                x2={x}
-                y2={H}
-                stroke="rgba(120,190,255,0.10)"
-                strokeWidth={1}
-              />
-            );
-          })}
-          {Array.from({ length: 8 }, (_, i) => (
-            <line
-              key={`h${i}`}
-              x1={0}
-              y1={i * 100 + 12}
-              x2={W}
-              y2={i * 100 + 12}
-              stroke="rgba(120,190,255,0.10)"
-              strokeWidth={1}
-            />
-          ))}
-          <ellipse cx={CX} cy={CY} rx={620} ry={330} fill="url(#mapHalo)" />
-        </g>
-        <g transform={`translate(${MAP_X} ${MAP_Y}) scale(${MAP_SCALE})`}>
-          <path
-            d={NEIGHBOUR_LAND_PATH}
-            fill="none"
-            stroke="rgba(140,200,255,0.16)"
-            strokeWidth={1.1}
-          />
-          {SAUDI_PROVINCES.map((p) => {
-            const idx = REGION_ORDER.indexOf(p.region);
-            const fill = ramp(t, a + 0.7 + idx * 0.3, a + 1.4 + idx * 0.3);
-            const breath = 0.75 + 0.25 * wave(t, 12, idx * 1.4);
-            return (
-              <path
-                key={p.id}
-                d={p.d}
-                fill={REGION_ACCENT_HEX[p.region]}
-                fillOpacity={0.46 * fill * breath}
-                style={{ mixBlendMode: "screen" }}
-                stroke="rgba(190,235,255,0.55)"
-                strokeWidth={1.3}
-                strokeOpacity={fill}
-              />
-            );
-          })}
-          <path
-            d={SAUDI_BORDER_PATH}
-            fill="none"
-            stroke="#5fe3ff"
-            strokeWidth={9}
-            pathLength={1}
-            strokeDasharray={`${border} 1`}
-            filter="url(#mapGlow)"
-            opacity={0.75}
-          />
-          <path
-            d={SAUDI_BORDER_PATH}
-            fill="none"
-            stroke="#e8fcff"
-            strokeWidth={2.6}
-            pathLength={1}
-            strokeDasharray={`${border} 1`}
-          />
-        </g>
-        {CITIES.map((c, i) => {
-          const p = toMap(c.lat, c.lng);
-          const color = REGION_ACCENT_HEX[c.region];
-          const on = ramp(t, a + 0.9 + i * 0.07, a + 1.3 + i * 0.07);
-          const arc = ramp(t, a + 1.25 + i * 0.06, a + 2.05 + i * 0.06);
-          const ctrl = { x: (p.x + core.x) / 2, y: Math.min(p.y, core.y) - 70 - (i % 3) * 18 };
-          const n = 28;
-          const pts = Array.from({ length: n + 1 }, (_, j) => quad(p, ctrl, core, (j / n) * arc));
-          const comet = frac((t - (a + 2.0)) / 1.3 + i * 0.083);
-          const showComet = t > a + 2.0 ? 1 : 0;
-          const cp = quad(p, ctrl, core, comet);
-          const ring = frac(t / 1.6 + i * 0.13);
-          return (
-            <g key={i} opacity={on}>
-              {arc > 0 ? (
-                <polyline
-                  points={pts.map((q) => `${q.x},${q.y}`).join(" ")}
-                  fill="none"
-                  stroke={color}
-                  strokeOpacity={0.85}
-                  strokeWidth={2.8}
-                  strokeDasharray="6 6"
-                />
-              ) : null}
-              {showComet ? (
-                <>
-                  <circle
-                    cx={cp.x}
-                    cy={cp.y}
-                    r={12}
-                    fill={color}
-                    opacity={0.8}
-                    filter="url(#nodeGlow)"
-                  />
-                  <circle cx={cp.x} cy={cp.y} r={3.6} fill="#ffffff" />
-                </>
-              ) : null}
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={6 + 22 * ring}
-                fill="none"
-                stroke={color}
-                strokeWidth={1.6}
-                opacity={0.7 * (1 - ring)}
-              />
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={14}
-                fill={color}
-                opacity={0.85}
-                filter="url(#nodeGlow)"
-              />
-              <circle cx={p.x} cy={p.y} r={4.8} fill="#ffffff" />
-            </g>
-          );
-        })}
-        {/* نواة الذكاء: حلقاتٌ هادئة ومسدّسٌ يدور — جسرٌ إلى المشهد ٤ */}
-        <g opacity={ramp(t, a + 1.0, a + 1.6)}>
-          {[0, 1, 2].map((k) => {
-            const r = frac(t / 1.8 + k / 3);
-            return (
-              <circle
-                key={k}
-                cx={core.x}
-                cy={core.y}
-                r={14 + 70 * r}
-                fill="none"
-                stroke="#9feaff"
-                strokeWidth={2}
-                opacity={0.75 * (1 - r)}
-              />
-            );
-          })}
-          <polygon
-            points={hexPoints(core.x, core.y, 30 + 18 * converge)
-              .map((q) => `${q.x},${q.y}`)
-              .join(" ")}
-            fill="rgba(110,200,255,0.18)"
-            stroke="#e6fbff"
-            strokeWidth={2.4}
-            transform={`rotate(${(t / FILM_SECONDS) * 360} ${core.x} ${core.y})`}
-          />
-          <circle
-            cx={core.x}
-            cy={core.y}
-            r={18 + 50 * converge}
-            fill="#9feaff"
-            opacity={0.55}
-            filter="url(#nodeGlow)"
-          />
-        </g>
-      </svg>
-    </div>
-  );
-};
-
-/* ───────────── المشهد ٤ والمشهد ٥ — الرمز بطلًا ثم هبوطه في اللوحة ───────────── */
-
-const HeroEmblem: FC<{ t: number }> = ({ t }) => {
-  const start = ACT.s3End - 0.35;
-  if (t < start || t > ACT.s5End + 0.3) return null;
-  const appear = ramp(t, start, start + 0.85, outSoft);
-  const land = ramp(t, ACT.s4End, ACT.s4End + 1.25);
-  const fade = ramp(t, ACT.s4End + 1.15, ACT.s5End - 0.05);
-  // يولد من نواة الخريطة ويصعد إلى المركز، ثم يهبط في موضعه من اللوحة.
-  const core = toMap(CORE.lat, CORE.lng);
-  const size = 520 + (EMBLEM.size - 520) * land;
-  const bx = core.x + (CX - core.x) * appear;
-  const by = core.y + (CY - core.y) * appear;
-  const cx = bx + (EMBLEM.cx - bx) * land;
-  const cy = by + (EMBLEM.cy - by) * land;
-  const sc = 0.6 + 0.4 * appear;
-  const turn = interpolate(t, [start, start + 1.3, start + 2.0], [-40, 7, 0], {
+/** الكاميرا في لحظةٍ من اللقطة — محصورةً بحيث تغطّي الصورة الإطار كلّه دائمًا. */
+function camera(shot: Shot, t: number): Cam {
+  const u = interpolate(t, [shot.from, shot.until], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
-    easing: Easing.bezier(0.22, 1, 0.36, 1),
+    easing: glide,
   });
-  const sway =
-    4 *
-    Math.sin((TAU * (t - (start + 2.0))) / 2.4) *
-    ramp(t, start + 2.0, start + 2.4) *
-    (1 - land);
-  const rotY = turn + sway;
-  const sweep = ramp(t, start + 1.2, start + 2.2, Easing.inOut(Easing.quad));
-  const heroOnly = 1 - land;
-  const vis = appear * (1 - fade);
+  const s = lerp(shot.a.s, shot.b.s, u);
+  const k = s - 1;
+  const { x: ox, y: oy } = shot.origin;
+  return {
+    s,
+    x: Math.min(ox * k, Math.max(-(W - ox) * k, lerp(shot.a.x, shot.b.x, u))),
+    y: Math.min(oy * k, Math.max(-(H - oy) * k, lerp(shot.a.y, shot.b.y, u))),
+  };
+}
+
+/** الدرجة الباردة: صورةٌ أهدأ تشبّعًا، ثم تبريدٌ بالضرب، ثم رفعُ الأسود نحو الكحلي. */
+const GRADE = "saturate(0.8) contrast(1.09) brightness(0.94)";
+const COOL: CSSProperties = { background: "#a9c4ef", mixBlendMode: "multiply", opacity: 0.55 };
+const NAVY: CSSProperties = { background: "#0a2a66", mixBlendMode: "screen", opacity: 0.4 };
+
+const ShotLayer: FC<{ shot: Shot; t: number }> = ({ shot, t }) => {
+  if (t < shot.from || t > shot.until) return null;
+  const opacity = shot.full > shot.from ? ramp(t, shot.from, shot.full) : 1;
+  const cam = camera(shot, t);
+  const src = staticFile(shot.src);
+  const fit: CSSProperties = {
+    ...box(0, 0, W, H),
+    objectFit: "cover",
+    objectPosition: `50% ${shot.crop * 100}%`,
+  };
+  const r = shot.reveal ? ramp(t, shot.reveal[0], shot.reveal[1], outSoft) : 1;
+  const focus =
+    r < 1 ? ` blur(${(4 * (1 - r)).toFixed(2)}px) brightness(${(0.6 + 0.4 * r).toFixed(3)})` : "";
+  const night = shot.network ? ramp(t, ACT.s3End, ACT.s3End + 1.1) : 0;
+  const h = shot.horizon;
+  const drift = 26 * (t - shot.from);
   return (
-    <div style={{ ...box(0, 0, W, H), opacity: vis }}>
-      <Rays cx={cx} cy={cy} t={t} opacity={0.6 * heroOnly * appear} size={1300} />
-      {/* انعكاس الأرضية: صورةٌ مقلوبة تذوب */}
+    <div style={{ ...box(0, 0, W, H), opacity, overflow: "hidden", isolation: "isolate" }}>
       <div
         style={{
-          ...box(cx - size / 2, cy + size / 2 - 6, size, size * 0.42),
-          overflow: "hidden",
-          opacity: 0.22 * heroOnly,
-          maskImage: "linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0))",
-          WebkitMaskImage: "linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0))",
+          ...box(0, 0, W, H),
+          transformOrigin: `${shot.origin.x}px ${shot.origin.y}px`,
+          transform: `translate(${cam.x.toFixed(2)}px, ${cam.y.toFixed(2)}px) scale(${cam.s.toFixed(5)})`,
         }}
       >
+        <Img src={src} style={{ ...fit, filter: GRADE + focus }} />
+        <div style={{ ...box(0, 0, W, H), ...COOL }} />
+        <div style={{ ...box(0, 0, W, H), ...NAVY }} />
+        {night > 0 ? (
+          <>
+            {/* الليل: خفوتٌ أزرق، ثم تعود الأضواء وحدها بتوهّجٍ بارد (عتبةٌ بالتباين ثم تليين) */}
+            <div
+              style={{
+                ...box(0, 0, W, H),
+                background: "#3a5da6",
+                mixBlendMode: "multiply",
+                opacity: 0.72 * night,
+              }}
+            />
+            <Img
+              src={src}
+              style={{
+                ...fit,
+                filter: "brightness(0.7) contrast(3.4) saturate(0.4) blur(2.6px)",
+                mixBlendMode: "screen",
+                opacity: night,
+              }}
+            />
+          </>
+        ) : null}
+        {/* ضبابٌ جوّيّ على خطّ الأفق: كتلتان تنجرفان بسرعتين مختلفتين — عمقٌ خفيف */}
+        <div
+          style={{
+            ...box(0, 0, W, H),
+            mixBlendMode: "screen",
+            background: [
+              `radial-gradient(1100px 150px at ${(640 + drift).toFixed(1)}px ${h}px, rgba(170,215,255,0.11), rgba(170,215,255,0) 70%)`,
+              `radial-gradient(900px 120px at ${(1640 - 0.6 * drift).toFixed(1)}px ${h + 46}px, rgba(170,215,255,0.08), rgba(170,215,255,0) 70%)`,
+              `linear-gradient(180deg, rgba(150,205,255,0) ${h - 170}px, rgba(150,205,255,0.13) ${h}px, rgba(150,205,255,0.04) ${h + 130}px, rgba(150,205,255,0) ${h + 260}px)`,
+            ].join(", "),
+          }}
+        />
+        {shot.network ? <Network t={t} /> : null}
+      </div>
+    </div>
+  );
+};
+
+/* ───────── المشهد ٥ — شبكة رصدٍ رقيقة تصل المنشآت، ومن عقدتها يولد الرمز ───────── */
+
+const NET = { cyan: "#62e6ff", core: "#e9fbff", green: "#3fe0a8", greenCore: "#dcfff1" } as const;
+
+/** عقدة الشبكة: مرتكز كاميرا اللقطة الرابعة في مركز الإطار — ومنها يولد الرمز. */
+const HUB: Pt = { x: CX, y: CY };
+
+/** منحنى كاتمول-روم عبر النقاط، عيّناتٍ متقاربة — للرسم وللحزم معًا. */
+function spline(points: readonly Pt[], per = 24): Pt[] {
+  const P = [points[0], ...points, points[points.length - 1]];
+  const out: Pt[] = [];
+  for (let i = 1; i < P.length - 2; i++) {
+    const [p0, p1, p2, p3] = [P[i - 1], P[i], P[i + 1], P[i + 2]];
+    for (let j = 0; j < per; j++) {
+      const u = j / per;
+      const c = (a: number, b: number, c2: number, d: number) =>
+        0.5 *
+        (2 * b +
+          (-a + c2) * u +
+          (2 * a - 5 * b + 4 * c2 - d) * u * u +
+          (-a + 3 * b - 3 * c2 + d) * u * u * u);
+      out.push({ x: c(p0.x, p1.x, p2.x, p3.x), y: c(p0.y, p1.y, p2.y, p3.y) });
+    }
+  }
+  out.push(points[points.length - 1]);
+  return out;
+}
+
+type Trace = { pts: Pt[]; lens: number[] };
+
+function trace(pts: Pt[]): Trace {
+  const lens = [0];
+  for (let i = 1; i < pts.length; i++) {
+    lens.push(lens[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
+  }
+  return { pts, lens };
+}
+
+/** النقطة عند كسرٍ من طول المسار. */
+function pointAt(tr: Trace, u: number): Pt {
+  const target = Math.max(0, Math.min(1, u)) * tr.lens[tr.lens.length - 1];
+  let i = 1;
+  while (i < tr.lens.length - 1 && tr.lens[i] < target) i++;
+  const f = (target - tr.lens[i - 1]) / (tr.lens[i] - tr.lens[i - 1] || 1);
+  return { x: lerp(tr.pts[i - 1].x, tr.pts[i].x, f), y: lerp(tr.pts[i - 1].y, tr.pts[i].y, f) };
+}
+
+/** المسار مرسومًا حتى كسرٍ من طوله — «يُرسم» الخطّ بضوءٍ يتقدّم. */
+function partial(tr: Trace, u: number): string {
+  const target = u * tr.lens[tr.lens.length - 1];
+  const head = pointAt(tr, u);
+  const body = tr.pts.filter((_, i) => tr.lens[i] < target);
+  return [...body, head]
+    .map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)},${p.y.toFixed(1)}`)
+    .join(" ");
+}
+
+type Station = Pt & { green?: boolean };
+
+/**
+ * عُقد رصدٍ عند قواعد منشآت اللقطة الرابعة (بكسلات الإطار قبل حركة الكاميرا، مقيسةً على المعاينة
+ * بشبكة 50px) — نقاطٌ توضيحية لا بيانات ولا أسماء. يسارها: أعمدة الإنارة البعيدة، والمبنى المضاء،
+ * وقاعة التوربينات؛ ويمينها: ساحة المحوّلات، والمباني، والأضواء البعيدة.
+ */
+const LEFT: readonly Station[] = [
+  { x: 312, y: 430 },
+  { x: 500, y: 424, green: true },
+  { x: 725, y: 418 },
+];
+const RIGHT: readonly Station[] = [
+  { x: 2081, y: 432 },
+  { x: 1754, y: 426, green: true },
+  { x: 1291, y: 420 },
+];
+
+type Link = Trace & {
+  at: number;
+  dur: number;
+  green?: boolean;
+  stations: { p: Station; u: number }[];
+};
+
+/** جذعٌ أرضيّ من طرف الإطار عبر منشآته إلى العقدة — بسرعةٍ ثابتة، فالعقدة تضيء حين يبلغها. */
+function trunk(edge: Pt, stations: readonly Station[], bend: Pt, at: number, dur: number): Link {
+  const per = 24;
+  const tr = trace(spline([edge, ...stations, bend, HUB], per));
+  const total = tr.lens[tr.lens.length - 1];
+  return {
+    ...tr,
+    at,
+    dur,
+    stations: stations.map((p, k) => ({ p, u: tr.lens[(k + 1) * per] / total })),
+  };
+}
+
+/** قوسٌ من منشأةٍ إلى العقدة يعلو إلى `apex`. */
+function arc(from: Pt, apex: number, at: number, dur: number, green?: boolean): Link {
+  const c = { x: (from.x + HUB.x) / 2, y: 2 * apex - (from.y + HUB.y) / 2 };
+  const pts = Array.from({ length: 49 }, (_, j) => quad(from, c, HUB, j / 48));
+  return { ...trace(pts), at, dur, green, stations: [] };
+}
+
+const TRUNKS: readonly Link[] = [
+  trunk({ x: -40, y: 470 }, LEFT, { x: 930, y: 404 }, 18.0, 1.2),
+  trunk({ x: W + 40, y: 455 }, RIGHT, { x: 1190, y: 400 }, 18.1, 1.2),
+];
+const ARCS: readonly Link[] = [
+  arc(LEFT[0], 150, 18.75, 0.95, true),
+  arc(RIGHT[0], 120, 18.85, 1.0),
+  arc(LEFT[2], 290, 19.0, 0.6),
+  arc(RIGHT[1], 262, 19.05, 0.7),
+];
+
+const Pulse: FC<{ p: Pt; on: number; t: number; green?: boolean; big?: boolean }> = ({
+  p,
+  on,
+  t,
+  green,
+  big,
+}) => {
+  if (on <= 0) return null;
+  const tone = green ? NET.green : NET.cyan;
+  const ring = frac(t / 1.7 + (p.x % 97) / 97);
+  const k = big ? 1.5 : 1;
+  return (
+    <g opacity={on}>
+      <circle
+        cx={p.x}
+        cy={p.y}
+        r={(6 + 20 * ring) * k}
+        fill="none"
+        stroke={tone}
+        strokeWidth={1.4}
+        opacity={0.6 * (1 - ring)}
+      />
+      <circle cx={p.x} cy={p.y} r={11 * k} fill={tone} opacity={0.5} filter="url(#netGlow)" />
+      <circle cx={p.x} cy={p.y} r={4.2 * k} fill={green ? NET.greenCore : NET.core} />
+    </g>
+  );
+};
+
+const Network: FC<{ t: number }> = ({ t }) => {
+  const vis =
+    ramp(t, ACT.s3End + 0.35, ACT.s3End + 0.8) * (1 - ramp(t, ACT.s4End - 0.1, ACT.s4End + 0.4));
+  if (vis <= 0) return null;
+  // العقدة تشتدّ حين تكتمل المسارات إليها، ثم تخبو والرمز يولد منها.
+  const hubOn = ramp(t, 18.9, 19.3);
+  const swell = ramp(t, 19.0, 19.55) * (1 - ramp(t, 19.7, 20.3));
+  return (
+    <svg
+      width={W}
+      height={H}
+      viewBox={`0 0 ${W} ${H}`}
+      style={{ ...box(0, 0, W, H), opacity: vis }}
+    >
+      <defs>
+        <filter id="netGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3.2" />
+        </filter>
+        <radialGradient id="netHalo">
+          <stop offset="0%" stopColor="#bff4ff" stopOpacity="0.85" />
+          <stop offset="45%" stopColor="#62e6ff" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#62e6ff" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      {[...TRUNKS, ...ARCS].map((l, i) => {
+        const p = interpolate(t, [l.at, l.at + l.dur], [0, 1], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        });
+        if (p <= 0) return null;
+        const d = partial(l, p);
+        const tone = l.green ? NET.green : NET.cyan;
+        const head = pointAt(l, p);
+        // حزمةٌ تجري إلى العقدة بعد اكتمال الخطّ — واحدةٌ في كل مسار.
+        const flow = t > l.at + l.dur ? frac((t - l.at - l.dur) / 1.5 + i * 0.17) : -1;
+        const packet = flow >= 0 ? pointAt(l, flow) : null;
+        return (
+          <g key={i}>
+            <path
+              d={d}
+              fill="none"
+              stroke={tone}
+              strokeWidth={7}
+              strokeOpacity={0.3}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              filter="url(#netGlow)"
+            />
+            <path
+              d={d}
+              fill="none"
+              stroke={l.green ? NET.greenCore : NET.core}
+              strokeWidth={1.9}
+              strokeOpacity={0.88}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {p < 1 ? <circle cx={head.x} cy={head.y} r={3.4} fill={NET.core} /> : null}
+            {packet ? (
+              <g opacity={Math.sin(Math.PI * flow)}>
+                <circle
+                  cx={packet.x}
+                  cy={packet.y}
+                  r={8}
+                  fill={tone}
+                  opacity={0.55}
+                  filter="url(#netGlow)"
+                />
+                <circle cx={packet.x} cy={packet.y} r={2.6} fill={NET.core} />
+              </g>
+            ) : null}
+            {l.stations.map((s, k) => (
+              <Pulse
+                key={k}
+                p={s.p}
+                green={s.p.green}
+                t={t}
+                on={ramp(t, l.at + s.u * l.dur, l.at + s.u * l.dur + 0.35, outSoft)}
+              />
+            ))}
+          </g>
+        );
+      })}
+      <circle
+        cx={HUB.x}
+        cy={HUB.y}
+        r={30 + 70 * swell}
+        fill="url(#netHalo)"
+        opacity={hubOn * (0.5 + 0.5 * swell)}
+      />
+      <Pulse p={HUB} on={hubOn * (1 - ramp(t, 19.6, 20.2))} t={t} big />
+    </svg>
+  );
+};
+
+/* ───────── المشهد ٥ — الرمز يولد من عقدة الشبكة ثم يهبط في موضعه من اللوحة ───────── */
+
+const HeroEmblem: FC<{ t: number }> = ({ t }) => {
+  const start = ACT.s4End - 1.3;
+  if (t < start || t > ACT.s5End + 0.3) return null;
+  const appear = ramp(t, start, start + 0.9, outSoft);
+  const land = ramp(t, ACT.s4End, ACT.s4End + 1.25);
+  const fade = ramp(t, ACT.s4End + 1.15, ACT.s5End - 0.05);
+  // يولد من العقدة في مركز الإطار صاعدًا قليلًا، ثم يهبط في موضعه من اللوحة كما كان.
+  const size = 520 + (EMBLEM.size - 520) * land;
+  const cx = CX + (EMBLEM.cx - CX) * land;
+  const cy = CY + 18 * (1 - appear) + (EMBLEM.cy - CY) * land;
+  const sc = 0.86 + 0.14 * appear;
+  const heroOnly = 1 - land;
+  return (
+    <div style={{ ...box(0, 0, W, H), opacity: appear * (1 - fade) }}>
+      <div style={{ ...box(cx - size / 2, cy - size / 2, size, size), transform: `scale(${sc})` }}>
         <Img
           src={staticFile("sadeed-emblem.webp")}
           style={{
-            width: size,
-            height: size,
-            transform: `scaleY(-1) scale(${sc})`,
-            transformOrigin: "50% 50%",
+            ...box(0, 0, size, size),
+            filter: "blur(26px) brightness(1.5)",
+            opacity: 0.75 * heroOnly,
+            mixBlendMode: "screen",
           }}
         />
+        <Img src={staticFile("sadeed-emblem.webp")} style={box(0, 0, size, size)} />
       </div>
-      <div style={{ ...box(cx - size / 2, cy - size / 2, size, size), perspective: 1500 }}>
-        <div
-          style={{
-            width: size,
-            height: size,
-            transform: `scale(${sc}) rotateY(${rotY}deg)`,
-          }}
-        >
-          <Img
-            src={staticFile("sadeed-emblem.webp")}
-            style={{
-              ...box(0, 0, size, size),
-              filter: "blur(26px) brightness(1.5)",
-              opacity: 0.75 * heroOnly,
-              mixBlendMode: "screen",
-            }}
-          />
-          <Img src={staticFile("sadeed-emblem.webp")} style={box(0, 0, size, size)} />
-          {/* موجة الطاقة: نسخةٌ مضيئة من الرمز نفسه تظهر في نطاقٍ مائل يعبره مرّة */}
-          <Img
-            src={staticFile("sadeed-emblem.webp")}
-            style={{
-              ...box(0, 0, size, size),
-              filter: "brightness(1.9) saturate(1.25) hue-rotate(-8deg)",
-              maskImage: `linear-gradient(105deg, rgba(0,0,0,0) ${sweep * 160 - 40}%, rgba(0,0,0,1) ${sweep * 160 - 22}%, rgba(0,0,0,0) ${sweep * 160 - 4}%)`,
-              WebkitMaskImage: `linear-gradient(105deg, rgba(0,0,0,0) ${sweep * 160 - 40}%, rgba(0,0,0,1) ${sweep * 160 - 22}%, rgba(0,0,0,0) ${sweep * 160 - 4}%)`,
-              opacity: sweep > 0 && sweep < 1 ? 1 : 0,
-            }}
-          />
-        </div>
-      </div>
-      {/* أضواءٌ تدور حول الرمز في المشهد ٤ */}
-      <svg
-        width={W}
-        height={H}
-        viewBox={`0 0 ${W} ${H}`}
-        style={{ ...box(0, 0, W, H), opacity: heroOnly }}
-      >
-        <defs>
-          <filter id="orbit" x="-200%" y="-200%" width="500%" height="500%">
-            <feGaussianBlur stdDeviation="5" />
-          </filter>
-        </defs>
-        {[0, 1, 2].map((k) => {
-          const ang = TAU * ((t - start) / 3.2 + k / 3);
-          const ox = cx + Math.cos(ang) * size * 0.62;
-          const oy = cy + Math.sin(ang) * size * 0.2;
-          const front = Math.sin(ang) > 0 ? 1 : 0.45;
-          return (
-            <g key={k} opacity={appear * front}>
-              <circle cx={ox} cy={oy} r={11} fill="#7feaff" opacity={0.7} filter="url(#orbit)" />
-              <circle cx={ox} cy={oy} r={3} fill="#ffffff" />
-            </g>
-          );
-        })}
-      </svg>
     </div>
   );
 };
@@ -873,10 +826,11 @@ export const SadeedFilm: FC = () => {
     <AbsoluteFill style={{ background: "#030d27", overflow: "hidden" }}>
       <div style={{ ...box(0, 0, W, H), transform: `scale(${width / W})`, transformOrigin: "0 0" }}>
         <DeepBlue t={t} />
+        {/* اللقطات تحت اللوحة: تنكشف حين تشفّ، وتغطّيها اللوحة حين تعود — ذوبانٌ بلا قفزة */}
+        {SHOTS.map((shot) => (
+          <ShotLayer key={shot.src} shot={shot} t={t} />
+        ))}
         <PlateLayer t={t} />
-        <Emergence t={t} />
-        <Landscape t={t} start={ACT.s1End} end={ACT.s2End} />
-        <NetworkMap t={t} />
         <HeroEmblem t={t} />
         <Vignette t={t} />
       </div>

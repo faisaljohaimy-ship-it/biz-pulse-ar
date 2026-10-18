@@ -39,11 +39,11 @@ function SimulationBadge() {
     <p className="rv-sim-badge" data-simulation="true">
       <span className="rv-sim-dot" aria-hidden="true" />
       <span className="rv-sim-text">
-        محاكاة مرجعية · البيانات موسومة <code className="rv-sim-code">is_simulation = true</code>{" "}
+        بيانات مرجعية، ليست حيّة · موسومة <code className="rv-sim-code">is_simulation = true</code>{" "}
         ولا تمثّل عميلًا حقيقيًّا
       </span>
       <span className="rv-en" lang="en" dir="ltr">
-        Reference simulation — not customer data
+        Reference data (not live) — not customer data
       </span>
     </p>
   );
@@ -65,7 +65,7 @@ export function ReportViewer({ doc, className, idPrefix = "rv" }: ReportViewerPr
   const titleId = `${idPrefix}-title`;
   const headerLine = `${doc.titleAr} · ${region.labelAr}`;
   const footerLine = doc.isSimulation
-    ? `${doc.periodAr} · محاكاة مرجعية (is_simulation = true)`
+    ? `${doc.periodAr} · بيانات مرجعية، ليست حيّة (is_simulation = true)`
     : doc.periodAr;
 
   return (
@@ -157,7 +157,7 @@ export function ReportViewer({ doc, className, idPrefix = "rv" }: ReportViewerPr
         </p>
         {doc.isSimulation ? (
           <p className="rv-foot-line rv-foot-sim">
-            هذا التقرير مبنيّ على محاكاة مرجعية موسومة <code>is_simulation = true</code>.
+            هذا التقرير مبنيّ على بيانات مرجعية ليست حيّة، موسومة <code>is_simulation = true</code>.
           </p>
         ) : null}
       </footer>

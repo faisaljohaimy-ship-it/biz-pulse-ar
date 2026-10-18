@@ -397,7 +397,7 @@ function UrgentOpsPage() {
     const prev = tasks;
     setTasks((cur) => cur.map((t) => (t.id === id ? { ...t, status } : t)));
     if (id.startsWith("sim-")) {
-      toast.success(`نُقلت المهمة إلى «${status}» (محاكاة مرجعية)`);
+      toast.success(`نُقلت المهمة إلى «${status}» (بيانات مرجعية — لا يُحفَظ)`);
       return;
     }
     const { error } = await supabase.from("urgent_tasks").update({ status }).eq("id", id);
@@ -413,7 +413,7 @@ function UrgentOpsPage() {
     const prev = requests;
     setRequests((cur) => cur.map((r) => (r.id === id ? { ...r, assigned_to } : r)));
     if (id.startsWith("sim-")) {
-      toast.success(`أُسند الطلب إلى ${assigned_to} (محاكاة مرجعية)`);
+      toast.success(`أُسند الطلب إلى ${assigned_to} (بيانات مرجعية — لا يُحفَظ)`);
       return;
     }
     const { error } = await supabase.from("support_requests").update({ assigned_to }).eq("id", id);
@@ -431,7 +431,7 @@ function UrgentOpsPage() {
     setProposals((cur) => cur.map((p) => (p.id === id ? { ...p, status, decided_by } : p)));
     const successMsg = status === "معتمد" ? "اعتُمد المقترح" : "رُفض المقترح";
     if (id.startsWith("sim-")) {
-      toast.success(`${successMsg} (محاكاة مرجعية)`);
+      toast.success(`${successMsg} (بيانات مرجعية — لا يُحفَظ)`);
       return;
     }
     const { error } = await supabase

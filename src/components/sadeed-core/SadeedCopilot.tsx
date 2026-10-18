@@ -303,7 +303,8 @@ function rmsLevel(samples: Float32Array): number {
 }
 
 const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
-const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا. تم تسجيل المحاولة وستُعاد المعالجة تلقائيًا.";
+/** بلا وعدٍ لا يفي به كود: لا تسجيل ولا إعادة آلية خلف هذا السطر (DEF-24، ٢٠٢٦/١٠/١٨). */
+const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا — أعد المحاولة.";
 const THINKING_AR = `${SADEED_DISPLAY_NAME_AR} يفكّر…`;
 const EXPORT_ERROR_AR = "تعذّر تجهيز ملف PDF الآن — أعد المحاولة بعد لحظات.";
 const EXPORT_BUSY_AR = "يجهّز ملف PDF…";
@@ -344,7 +345,9 @@ function sanitiseAssistantText(raw: string): string {
   // الاختبار — وهو ما سمح أصلًا بوصول جملة مكسورة إلى الشاشة.
   t = t.replace(VENDOR_MASK_RE, "");
   t = t.replace(/\bat\s+[\w$.<>]+\s*\([^)]*:\d+:\d+\)/g, "");
-  t = t.replace(/\berror:\s*[^\n]{0,200}/gi, ERROR_MASK_AR);
+  // سطر خطأٍ تقنيّ خام وحده (`Error:`/`TypeError:` في أوّل السطر) — لا كل «error:» في نثرٍ
+  // صحيح: «Human error: 40% of incidents» كانت تُستبدل كلّها (DEF-24).
+  t = t.replace(/^[ \t]*(?:[A-Z][A-Za-z]*)?Error:[^\n]{0,200}$/gm, ERROR_MASK_AR);
   return t.trim();
 }
 

@@ -49,7 +49,7 @@ function Shifts() {
       <SecPageHeader
         title="إدارة الورديات"
         subtitle="جدول الورديات وأعداد الحرّاس"
-        badge="محاكاة مرجعية"
+        badge="بيانات مرجعية (ليست حيّة)"
       />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {/* ٢٠٢٦/٠٨/٢٠ — بقرار المالك (الملاحظات الحمراء، الدفعة الخامسة): حُذفت

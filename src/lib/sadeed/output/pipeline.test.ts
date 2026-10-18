@@ -200,7 +200,7 @@ describe("OUT evals through the production output path", () => {
     );
     expect(env.status).toBe("simulation");
     expect(env.displayText).toContain("95%");
-    expect(env.displayText).toContain("بيانات محاكاة مرجعية");
+    expect(env.displayText).toContain("بيانات مرجعية (ليست حيّة)");
   });
 
   it("OUT-013 PII → redacted (no phone/email in bytes)", async () => {

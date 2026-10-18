@@ -12,10 +12,13 @@
      (`:where`) فتغلبها، أمّا أدوات Tailwind فداخل طبقة وهذا الملف خارجها.
    ③ النسبة مكتوبة (2086 / 593) فلا قفزة تخطيط قبل وصول الصورة.
    ④ لا لون إلا ألوان النظام في `forced-colors` — حدٌّ يُبقي الهدف ظاهرًا.
+   ⑤ الوهج (أمر المالك ٢٠٢٦/١٠/١٨) حول الصورة لا عليها — آخر الملف.
    ============================================================================ */
 
 .nx-plate-link {
   --nx-plate-w: 208px;
+  position: relative;
+  isolation: isolate;
   display: block;
   inline-size: 100%;
   max-inline-size: var(--nx-plate-w);
@@ -53,7 +56,116 @@
   object-fit: contain;
 }
 
+/* ══ ⑤ الوهج — «continuously luminous … electric-blue outer glow, secondary cyan
+   highlights, slow continuous illumination cycle, occasional subtle luminous sweep»
+   (أمر المالك ٢٠٢٦/١٠/١٨). الصورة لا تُمسّ: الهالة طبقةٌ تحتها (`::before`)، والمسحة شريطٌ
+   ضيّق داخل غلافٍ يقصّه على زوايا اللوحة (`.nx-plate-sheen`). ولا يتحرّك إلا `opacity`
+   و`transform` (يركّبهما المتصفّح بلا إعادة رسم)، على لوحةٍ عرضها 176–256px. ══════════ */
+.nx-plate-link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow:
+    0 0 16px 1px color-mix(in oklab, var(--tone-blue) 55%, transparent),
+    0 0 5px 0 color-mix(in oklab, var(--tone-cyan) 60%, transparent);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.nx-plate-sheen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.nx-plate-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    color-mix(in oklab, var(--tone-cyan) 22%, transparent) 46%,
+    color-mix(in oklab, var(--nx-white) 42%, transparent) 50%,
+    color-mix(in oklab, var(--tone-cyan) 22%, transparent) 54%,
+    transparent 62%
+  );
+  opacity: 0;
+  transform: translateX(-130%);
+}
+
+/* التحويم والتركيز يرفعان الهالة رفعًا هادئًا — طبقةٌ ثابتة على الرابط لا على المتحرّكة. */
+.nx-plate-link {
+  transition: box-shadow 220ms ease;
+}
+
+.nx-plate-link:hover,
+.nx-plate-link[aria-current="page"]:hover {
+  box-shadow: 0 0 22px 2px color-mix(in oklab, var(--tone-blue) 38%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-nx-motion="off"]) .nx-plate-link::before {
+    animation: nx-plate-breathe 6.5s ease-in-out infinite;
+  }
+
+  html:not([data-nx-motion="off"]) .nx-plate-sheen::after {
+    animation: nx-plate-sweep 14s linear 3s infinite;
+  }
+}
+
+/* تنفّسٌ بطيء لا وميض: 0.45 ↔ 0.95 على 6.5 ث (أبطأ بكثير من حدّ الوميض WCAG 2.3.1). */
+@keyframes nx-plate-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 0.95;
+  }
+}
+
+/* مسحةٌ واحدة كل 14 ث تعبر في نحو 1.4 ث، وسائر الدورة سكون. */
+@keyframes nx-plate-sweep {
+  0%,
+  86% {
+    opacity: 0;
+    transform: translateX(-130%);
+  }
+
+  88% {
+    opacity: 1;
+  }
+
+  96% {
+    opacity: 0.9;
+    transform: translateX(130%);
+  }
+
+  97%,
+  100% {
+    opacity: 0;
+    transform: translateX(130%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-plate-link {
+    transition: none;
+  }
+}
+
 @media (forced-colors: active) {
+  .nx-plate-link::before,
+  .nx-plate-sheen {
+    display: none;
+  }
+
   .nx-plate-link {
     outline: 1px solid CanvasText;
     outline-offset: 2px;

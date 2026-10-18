@@ -405,7 +405,8 @@ describe("شارة المحاكاة", () => {
     const container = renderDoc();
     const badge = container.querySelector(".rv-sim-badge");
     expect(badge).toBeTruthy();
-    expect(badge?.textContent).toContain("محاكاة مرجعية");
+    expect(badge?.textContent).toContain("بيانات مرجعية");
+    expect(badge?.textContent, "الشارة لم تعد تقول إن البيانات ليست حيّة").toContain("ليست حيّة");
     expect(badge?.textContent).toContain("is_simulation = true");
     expect(container.querySelector(".rv-doc")?.getAttribute("data-simulation")).toBe("true");
   });

@@ -227,7 +227,7 @@ function BiPage() {
       <PageBriefing
         routeKey="bi"
         what="لوحات التحليل التنفيذية — اتجاهات التشغيل والامتثال وأداء اتفاقيات الخدمة بنمط Power BI."
-        dataSource="sec_incidents · hcis_compliance_status — ومحاكاة مرجعية عند صمت القاعدة"
+        dataSource="sec_incidents · hcis_compliance_status — وبيانات مرجعية (ليست حيّة) عند صمت القاعدة"
         actions={[
           "رشّح بالفترة والإدارة والحدّة — كل الرسوم تُعاد من نفس الصفوف",
           "صدّر اللوحة الحالية إلى PDF أو Excel",

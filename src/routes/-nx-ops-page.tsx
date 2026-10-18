@@ -490,8 +490,8 @@ export function NxOpsPage() {
         >
           <span className="text-[12px] text-[color:var(--ink-3)]">
             {ar
-              ? "الصفوف الحية تحل محل المحاكاة فور وصولها. ما لا يصل يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
-              : "Live rows replace simulation on arrival. What does not arrive reads “not measured” — never zero."}
+              ? "الصفوف الحية تحل محل البيانات المرجعية فور وصولها. ما لا يصل يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
+              : "Live rows replace reference data on arrival. What does not arrive reads “not measured” — never zero."}
           </span>
         </footer>
       </div>

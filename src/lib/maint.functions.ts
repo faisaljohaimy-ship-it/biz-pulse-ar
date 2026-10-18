@@ -9,8 +9,11 @@
  * — العرض `maint_orders_v` يحجبها لغير الأعضاء. وبعد النافذة يعود العرض فارغًا
  * للزائر، فتدعوه الصفحة للدخول.
  *
- * **لا محاكاة ولا بديل:** العطل أو المهلة (٤ ثوانٍ) ⇐ خطأٌ عربي ترفعه الدالّة
- * فتعرضه الصفحة بزرّ «أعد المحاولة». والفراغ فراغٌ صادق.
+ * **لا محاكاة.** العطل أو المهلة (٤ ثوانٍ) ⇐ أوامر تصدير SAP PM الحقيقية المضمَّنة
+ * (249، بلا هوية، `source: "export"` بتاريخها) — قرار المالك ٢٠٢٦/١٠/١٨ «Real-file
+ * fallback»، والتفصيل في `maintenance/maint-export-fallback.server.ts`. وحيث لا بديل (بعد
+ * نافذة القراءة العامة) ⇐ خطأٌ عربي تعرضه الصفحة بزرّ «أعد المحاولة». والفراغ فراغٌ صادق:
+ * القاعدة التي تجيب بلا صفوف لا تُستبدل.
  *
  * **الكتابة** `requireSupabaseAuth` وكلها دوالّ القاعدة (`maint_*`) — هي التي
  * تقرّر الفاعل المسموح والانتقال الصالح.
@@ -128,6 +131,9 @@ export const listMaintOrders = createServerFn({ method: "POST" })
       return { source: "database", rows: (res.data ?? []) as MaintOrder[], total: res.count ?? 0 };
     } catch (e) {
       console.error("[maint] list failed:", (e as Error).message);
+      const { maintExportPage } = await import("@/lib/maintenance/maint-export-fallback.server");
+      const fallback = maintExportPage(data);
+      if (fallback) return fallback;
       throw new Error(READ_FAILED);
     }
   });
@@ -148,6 +154,9 @@ export const getMaintSummary = createServerFn({ method: "GET" })
       };
     } catch (e) {
       console.error("[maint] summary failed:", (e as Error).message);
+      const { maintExportSummary } = await import("@/lib/maintenance/maint-export-fallback.server");
+      const fallback = maintExportSummary();
+      if (fallback) return fallback;
       throw new Error(READ_FAILED);
     }
   });

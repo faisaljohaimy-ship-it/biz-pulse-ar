@@ -175,5 +175,5 @@ export function periodLabelAr(period: ReportPeriod): string {
 
 /** وسم مصدر البيانات — يُكتب صريحًا في الجدول وعلى كل شريحة. */
 export function simulationLabelAr(isSimulation: boolean): string {
-  return isSimulation ? "بيانات محاكاة مرجعية — is_simulation = true" : "بيانات تشغيل حيّة";
+  return isSimulation ? "بيانات مرجعية (ليست حية) — is_simulation = true" : "بيانات تشغيل حيّة";
 }

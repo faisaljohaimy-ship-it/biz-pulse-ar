@@ -218,7 +218,7 @@ export async function buildBiPdf(input: BiPdfInput, fonts: DailyOpsFonts): Promi
 
   /* Constitutional footer */
   page.drawRectangle({ x: 0, y: 30, width: W, height: 0.5, color: emerald, opacity: 0.6 });
-  const footer = layoutArabicLine("بيانات محاكاة مرجعية — is_simulation = true · سَدِيد");
+  const footer = layoutArabicLine("بيانات مرجعية (ليست حية) — is_simulation = true · سَدِيد");
   const totalF = footer.reduce((s, seg) => s + segWidth(seg, 7.5, false), 0);
   let fx = W - MARGIN - totalF;
   for (const seg of footer) {

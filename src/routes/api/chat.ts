@@ -523,22 +523,6 @@ export const Route = createFileRoute("/api/chat")({
             headers,
           }) as T;
         };
-        const closedPolicyReply = (which: "rate" | "quota") => {
-          console.warn(
-            `[api/chat] ${which} gate unavailable — closed policy, local guaranteed reply`,
-            {
-              requestId,
-              event: "gate.closed",
-            },
-          );
-          return localGuaranteedReply(
-            requestId,
-            LOCAL_QUOTA_UNVERIFIED_AR,
-            "local-quota-unverified",
-            { "X-SADEED-Gate": "closed", "X-SADEED-Auth": authState },
-          );
-        };
-
         const uiMessages = sanitizeHistory(messages as UIMessage[]);
         const lastUserText = getMessageText(
           [...uiMessages].reverse().find((m) => m.role === "user"),
@@ -552,7 +536,9 @@ export const Route = createFileRoute("/api/chat")({
         //
         // **وقبل الحصّة اليومية لا بعدها (٢٠٢٦/١٠/١٨):** الجواب الحتميّ لا يُنفق
         // شيئًا، فلا يستهلك حصّة الذكاء — وحدّ الدقيقة وحده يسبقه. ويُجرَّب أيضًا
-        // حين يتعذّر المخزن والسياسة مغلقة، قبل الردّ المغلق (`gate` = `closed`).
+        // حين يتعذّر المخزن والسياسة مغلقة، قبل الردّ المغلق (`gate` = `closed`):
+        // قِيس والمخزن لا يردّ أن «كم عدد المشاريع؟» و«من أنت؟» أخذا السطر المغلق نفسه
+        // (DEF-10). وذلك السطر بلا حدٍّ أصلًا، فما يحلّ محلّه لا يفتح إنفاقًا ولا قراءة.
         const deterministicReply = async (gate: GateMode | "closed"): Promise<Response | null> => {
           if (!lastUserText) return null;
           const streamFixed = (text: string, tag: string) => {
@@ -636,6 +622,22 @@ export const Route = createFileRoute("/api/chat")({
           }
           return null;
         };
+        const closedPolicyReply = async (which: "rate" | "quota") => {
+          console.warn(
+            `[api/chat] ${which} gate unavailable — closed policy, zero-cost reply or local guaranteed reply`,
+            {
+              requestId,
+              event: "gate.closed",
+            },
+          );
+          return (
+            (await deterministicReply("closed")) ??
+            localGuaranteedReply(requestId, LOCAL_QUOTA_UNVERIFIED_AR, "local-quota-unverified", {
+              "X-SADEED-Gate": "closed",
+              "X-SADEED-Auth": authState,
+            })
+          );
+        };
 
         // ── البوّابة حين لا يُجيب المخزن (VIBE 5.1) ───────────────────────────
         // قِيس ٢٠٢٦/١٠/١٦: القاعدة لم تردّ، فكان كل سؤالٍ 503 `rate_limit_unavailable`.
@@ -648,11 +650,7 @@ export const Route = createFileRoute("/api/chat")({
         const rate = await enforceRateLimit(rateKey, limit.max, limit.windowSeconds, gate);
         let gateMode: GateMode = "verified";
         if (rate.unavailable) {
-          if (gateDegradedMode() === "closed") {
-            // الطبقات الحتمية لا تُنفق شيئًا: جوابها يُخدَم موسومًا `closed`، وما
-            // لا يُجاب حتميًّا يبقى على الردّ المغلق كما هو.
-            return (await deterministicReply("closed")) ?? closedPolicyReply("rate");
-          }
+          if (gateDegradedMode() === "closed") return closedPolicyReply("rate");
           const bounded = degradedAllowance(rateKey, limit.max, limit.windowSeconds);
           if (!bounded.allowed) return rateLimited(bounded.retryAfterSeconds, "degraded");
           gateMode = "degraded";
@@ -715,7 +713,8 @@ export const Route = createFileRoute("/api/chat")({
             "verified",
           );
           if (quota && (await isQuotaUnavailable(quota))) {
-            // الطبقات الحتمية جُرّبت أعلاه فلم تطابق — فالردّ المغلق كما هو.
+            // البوّابة المغلقة لا تبلغ المحرّك: `closedPolicyReply` يجرّب الطبقات الحتمية
+            // موسومةً `closed` — فما كان مؤجَّلًا للمحرّك (مساعدة المسجَّل وتنقّله) يُخدَم حتميًّا.
             if (gateDegradedMode() === "closed") return closedPolicyReply("quota");
             const bounded = tagged(degradedAiQuota("chat", identity), "degraded");
             if (bounded) return bounded;

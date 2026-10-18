@@ -13,7 +13,8 @@ export const Route = createFileRoute("/nx-agents")({
       { title: "منظومة الوكلاء الثلاثة عشر · NX Agents — سَدِيد" },
       {
         name: "description",
-        content: "منظومة وكلاء سَدِيد المتخصّصة — قراءة فقط، محاكاة مرجعية موسومة.",
+        content:
+          "منظومة وكلاء سَدِيد المتخصّصة — قراءة فقط، وبيانات مرجعية موسومة ما لم يصل المصدر الحيّ.",
       },
       { name: "robots", content: "noindex" },
     ],

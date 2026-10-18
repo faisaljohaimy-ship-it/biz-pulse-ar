@@ -301,13 +301,13 @@ export function NxAgentsPage() {
             </ul>
 
             {isSimulation ? (
-              <NxPanel title="سجل نشاط المحاكاة" density="operations">
+              <NxPanel title="سجل نشاط مرجعي (ليس حيًّا)" density="operations">
                 {events.length === 0 ? (
-                  <p className="text-xs text-nx-pearl/56">يبدأ البثّ الحيّ بعد لحظة…</p>
+                  <p className="text-xs text-nx-pearl/56">يبدأ العرض المرجعي بعد لحظة…</p>
                 ) : (
                   <ul
                     role="log"
-                    aria-label="نشاط الوكلاء المباشر"
+                    aria-label="نشاط الوكلاء المرجعي (ليس حيًّا)"
                     className="flex flex-col gap-1.5"
                   >
                     {events.slice(0, 8).map((e) => (

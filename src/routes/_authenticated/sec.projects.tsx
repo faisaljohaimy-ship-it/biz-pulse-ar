@@ -138,8 +138,11 @@ function Projects() {
                       تصدير المشاريع بنيتُه حقيقية وقيمه تمثيلية، فيُعرض موسومًا
                       حتى تُربط المجموعة الإنتاجية. */}
                   {p.is_simulation && (
-                    <span className="shrink-0 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600">
-                      محاكاة مرجعية
+                    <span
+                      className="shrink-0 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[12px] text-amber-600"
+                      title="بيانات مرجعية — ليست حيّة"
+                    >
+                      بيانات مرجعية
                     </span>
                   )}
                 </div>

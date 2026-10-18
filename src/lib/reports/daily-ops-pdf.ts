@@ -431,7 +431,7 @@ export async function buildDailyOpsPdf(
   const footerText =
     data.source === "database"
       ? "بيانات حية من قاعدة البيانات — is_simulation = false · سَدِيد"
-      : "بيانات محاكاة مرجعية — is_simulation = true · سَدِيد";
+      : "بيانات مرجعية (ليست حية) — is_simulation = true · سَدِيد";
   const footerSegs = layoutArabicLine(footerText);
   pages.forEach((p, i) => {
     p.drawRectangle({ x: 0, y: 30, width: W, height: 0.5, color: emerald, opacity: 0.6 });

@@ -120,6 +120,10 @@ const IN_SCOPE = [
   "governance",
   "الصيانة",
   "maintenance",
+  // No generic nouns here (project/site/region/Hajj…): an in-scope hit returns
+  // BEFORE the off-domain check, so «من فاز بمباراة كرة القدم في المنطقة الشرقية؟»
+  // passed as in-scope (guardian veto N1, 2026-10-18). Platform questions without a
+  // domain word stay in scope by default — only explicit off-domain terms refuse.
   // Self / meta
   "من أنت",
   "ما المنصة",
@@ -138,10 +142,12 @@ const OUT_OF_SCOPE = [
   "رياضة",
   "football",
   "soccer",
-  "match ",
-  "سياسة",
+  "match",
+  // «سياسة» (policy) and bare «رئيس» (head of a unit) are ordinary domain words —
+  // politics is caught by the unambiguous terms only.
   "انتخابات",
-  "رئيس",
+  "رئيس الوزراء",
+  "رئيس الجمهورية",
   "politics",
   "election",
   "دين",
@@ -179,7 +185,7 @@ const OUT_OF_SCOPE = [
   "بيتكوين",
   "bitcoin",
   "أسهم",
-  "شعر",
+  // bare «شعر» is also the verb "felt" (شَعَر الموظف بدوار) — the poem nouns suffice.
   "قصيدة",
   "نكتة",
   "joke",
@@ -187,6 +193,24 @@ const OUT_OF_SCOPE = [
 ] as const;
 
 const normalize = (s: string) => s.toLowerCase().replace(/[أإآ]/g, "ا").replace(/\s+/g, " ").trim();
+
+/**
+ * Whole-token matcher for an off-domain term. Substring matching refused real
+ * questions (DEF-14, 2026-10-18): «دين» inside «المدينة», «شعر» inside «مشعر»,
+ * «رئيس» inside «الرئيسية». An Arabic term matches only between non-letters, with
+ * one optional clitic (و/ف/ب/ل/ك) and the article — JavaScript's `\b` is ASCII-only
+ * and never fires at an Arabic/Arabic seam. A Latin term uses `\b`.
+ */
+function offDomainTerm(term: string): RegExp {
+  const t = normalize(term);
+  const body = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/ /g, "\\s+");
+  if (/^[a-z]/.test(t)) return new RegExp(`\\b${body}\\b`);
+  // The leading boundary CONSUMES one non-letter instead of a lookbehind: the
+  // browser-parse floor bans lookbehind outside proven-server files, and a
+  // boolean test does not need the match position.
+  return new RegExp(`(?:^|[^ء-ي])[وفبلك]?(?:ال)?${body}(?![ء-ي])`);
+}
+const OUT_OF_SCOPE_RE = OUT_OF_SCOPE.map(offDomainTerm);
 
 /** A short bare opener ("مرحبا", "أهلا", "hi") is a greeting, never off-topic. */
 function isGreeting(t: string): boolean {
@@ -206,13 +230,17 @@ export function isInScope(message: string): boolean {
   if (isGreeting(t)) return true;
   const inHit = IN_SCOPE.some((k) => t.includes(normalize(k)));
   if (inHit) return true;
-  const outHit = OUT_OF_SCOPE.some((k) => t.includes(normalize(k)));
+  const outHit = OUT_OF_SCOPE_RE.some((re) => re.test(t));
   return !outHit;
 }
 
 /* ── Fast recall ────────────────────────────────────────────────────────── */
 
 export type FastRecallHit = { answer: string; source: string };
+
+/** The whole message is an identity question — anchored at both ends. */
+const RE_IDENTITY_QUESTION =
+  /^(?:(?:من|ما|مين|وش)\s+(?:هو\s+|هي\s+)?(?:انت|انتي|انتم|سديد|sadeed|finn|فين)(?:\s+يا\s+(?:سديد|sadeed))?|عر\u0651?ف(?:ني)?\s+(?:ب)?نفسك|who\s+are\s+you|what\s+are\s+you)\s*[؟?!.]*$/;
 
 /** Recurring identity FAQ answered instantly with no model call. Regulatory
  *  facts never bypass retrieval: they require current, citable evidence. */
@@ -221,7 +249,11 @@ const FAST_RECALL: Array<{ test: (t: string) => boolean; answer: string; source:
     // Who is SADEED
     // `finn`/«فين» يبقيان طرفًا أيسر: المستخدم الذي تعوّد الاسم السابق ما زال
     // يسأل به، والمُطبِّع يخفض الحالة فلا حاجة للراية i.
-    test: (t) => /(من|ما).*(انت|sadeed|سديد|finn|فين)|who are you/.test(t),
+    //
+    // الجملة كلّها سؤال هويةٍ لا جزءٌ منها (DEF-01، ٢٠٢٦/١٠/١٨): النمط القديم غير المرسى
+    // `(من|ما).*(انت|…)` طابق «انت» داخل «كانت/انتهت/الإنترنت» و«فين» داخل «الموظفين»،
+    // فأجاب «ما التصاريح التي انتهت اليوم؟» بـ«أنا سَدِيد». ونصّ مرفقٍ ملحق يكسر الإرساء.
+    test: (t) => RE_IDENTITY_QUESTION.test(t),
     answer: "أنا سَدِيد — مساعد الأمن الصناعي التنفيذي.",
     source: "sadeed-identity",
   },

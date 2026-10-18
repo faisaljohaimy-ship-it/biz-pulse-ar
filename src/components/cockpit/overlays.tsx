@@ -316,7 +316,7 @@ function DrawerBody({ topic, snapshot }: { topic: DrawerTopic; snapshot: Cockpit
       return (
         <div className="flex flex-col gap-3">
           <p className="text-xs text-nx-pearl/56">
-            توزيع المخاطر على المناطق الأربع — محاكاة مرجعية موسومة.
+            توزيع المخاطر على المناطق الأربع — بيانات مرجعية موسومة، ليست حيّة.
           </p>
           <ul className="flex flex-col gap-2">
             {snapshot.regions.map((region) => (
@@ -448,7 +448,7 @@ function InitiativeCreateForm({ onDone }: { onDone: () => void }) {
         });
         setSubmitting(false);
         if (result) {
-          toast.success(`أُنشئت المبادرة في المحاكاة — ${result.correlationId}`);
+          toast.success(`أُنشئت المبادرة في بيئة البيانات المرجعية — ${result.correlationId}`);
           onDone();
         }
       }}
@@ -497,7 +497,7 @@ function InitiativeCreateForm({ onDone }: { onDone: () => void }) {
       </fieldset>
       {error ? <p className="text-xs text-nx-critical">{error}</p> : null}
       <p className="text-[12px] text-nx-pearl/64">
-        الإنشاء يسجَّل في بيئة المحاكاة المرجعية فقط، ويمر عبر بوابة الاعتماد قبل أي تنفيذ.
+        الإنشاء يسجَّل في بيئة البيانات المرجعية فقط، ويمر عبر بوابة الاعتماد قبل أي تنفيذ.
       </p>
       <NxButton
         type="submit"
@@ -516,7 +516,7 @@ function SectorReportBody({ snapshot }: { snapshot: CockpitSnapshot }) {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-xs text-nx-pearl/56">
-        ملخص أداء المناطق الأربع — يولَّد من لقطة المحاكاة الحالية.
+        ملخص أداء المناطق الأربع — يولَّد من لقطة البيانات المرجعية الحالية (ليست حيّة).
       </p>
       <table className="w-full text-sm">
         <thead>
@@ -541,7 +541,7 @@ function SectorReportBody({ snapshot }: { snapshot: CockpitSnapshot }) {
         </tbody>
       </table>
       <p className="text-[12px] text-nx-pearl/64">
-        محاكاة مرجعية موسومة — التقرير الرسمي يصدر من وحدة التقارير.
+        بيانات مرجعية موسومة، ليست حيّة — التقرير الرسمي يصدر من وحدة التقارير.
       </p>
       <a
         href="/sec/reports"

@@ -306,7 +306,7 @@ describe("chooseLive — الحيّ يفوز، ولا يحمل تغيّرًا م
     expect(labelOf(k, true)).toBe("الأصول الحرجة");
     expect(labelOf(k, false)).toBe("أصول خارج الخدمة");
     expect(labelOf({ labelAr: "س" }, false)).toBe("س");
-    expect(SIMULATION_BADGE_AR).toBe("محاكاة");
+    expect(SIMULATION_BADGE_AR).toBe("مرجعي");
     expect(CHANGE_NOT_MEASURED_AR).toBe("لم يُقَس");
   });
 });

@@ -1038,16 +1038,16 @@ describe("الصدق العددي — المادة ٢٧", () => {
     // كذلك — التصريح وتمرير الخاصيّة (`simWord={simWord}`) لا يرسمان شيئًا.
     expect(src("HomeDashboard.tsx")).toMatch(/const badge = ar \? SIMULATION_BADGE_AR\b/);
     expect(jsxChild(src("HomeDashboard.tsx"), "badge")).toBeGreaterThan(0);
-    expect(MAP).toMatch(/const simWord = ar \? "محاكاة" : "Simulated";/);
+    expect(MAP).toMatch(/const simWord = ar \? "مرجعي" : "Reference";/);
     expect(jsxChild(MAP, "simWord")).toBeGreaterThan(0);
   });
 
   it("والفحص يحمرّ حين يبقى الاستيراد ويُحذف الرسم (المادة ٣٠)", () => {
-    const ops = plant(src("HomeOpsRow.tsx"), '{ar ? SIMULATION_BADGE_AR : "Simulated"}', "{null}");
+    const ops = plant(src("HomeOpsRow.tsx"), '{ar ? SIMULATION_BADGE_AR : "Reference"}', "{null}");
     expect(badgeUses(ops)).toBe(0);
     const kpi = plant(
       src("HomeDashboard.tsx"),
-      'const badge = ar ? SIMULATION_BADGE_AR : "Simulated";',
+      'const badge = ar ? SIMULATION_BADGE_AR : "Reference";',
       'const badge = "";',
     );
     expect(badgeUses(kpi)).toBe(0);
@@ -1261,8 +1261,8 @@ describe("الرئيسية تركّب اللوحة وتُفصح بصدق", () =>
     expect(removedSurfaces(PAGE_CODE + CODE)).toEqual([]);
   });
 
-  it("سطر الإفصاح يذكر المحاكاة ولا يدّعي الحياة وحدها (المادة ٦)", () => {
-    expect(PAGE_CODE).toContain("وإلا فمن محاكاةٍ مرجعية مدمجة");
+  it("سطر الإفصاح يذكر البيانات المرجعية ولا يدّعي الحياة وحدها (المادة ٦)", () => {
+    expect(PAGE_CODE).toContain("وإلا فمن بياناتٍ مرجعية مدمجة");
     expect(PAGE_CODE, "عاد السطر يدّعي أن كل رقم حيّ").not.toContain(
       "الأرقام من مصدر النظام الحيّ. ",
     );

@@ -442,6 +442,105 @@
   font-size: 13px;
 }
 
+/* ── «دخول الموظفين» — مدخل الدخول للزائر (أمر المالك ٢٠٢٦/١٠/١٨) ──────────────
+   حبّةٌ بأيقونة بطاقة الهوية واسمها، بجوار بطاقة المستخدم. الرموز وحدها (المادة ٣٣):
+   حدٌّ وغسلةٌ من `--tone-blue`، والنصّ `--chrome-navy` الذي يقلبه الوضعان. وهجٌ هادئ
+   عند التمرير والتركيز فقط — لا حركة دائمة. هدف اللمس 44px. */
+.nx-hdr-login {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border: 1px solid color-mix(in oklab, var(--tone-blue) 45%, var(--hairline));
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--tone-blue) 8%, var(--chrome-surface));
+  color: var(--chrome-navy);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.nx-hdr-login:hover,
+.nx-hdr-login:focus-visible {
+  border-color: var(--tone-blue);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--tone-cyan) 22%, transparent),
+    0 0 16px color-mix(in oklab, var(--tone-blue) 32%, transparent);
+}
+
+.nx-hdr-login-ico {
+  flex: none;
+  inline-size: 18px;
+  block-size: 18px;
+  color: var(--tone-blue);
+}
+
+/* دون 1024 يضيق الصفّ: قرصٌ 44px كأقراص الأدوات، والاسم مخفيٌّ بصريًّا بتوقيع الإخفاء
+   باقٍ اسمَه المقروء. ودون 640 لا مكان له في الصفّ أصلًا (فاض 24px قرصًا على 390) فيُخفى،
+   ويقوم مقامه صفّ الدرج باسمه كاملًا — والدرج لا يُظهره إلا هناك. */
+@media (max-width: 1023.98px) {
+  .nx-hdr .nx-hdr-login {
+    justify-content: center;
+    inline-size: 44px;
+    min-inline-size: 44px;
+    padding-inline: 0;
+  }
+
+  .nx-hdr .nx-hdr-login-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 639.98px) {
+  .nx-hdr .nx-hdr-login {
+    display: none;
+  }
+}
+
+.nx-hdr-login--drawer {
+  display: flex;
+  justify-content: center;
+  inline-size: 100%;
+  margin-block: 4px 12px;
+}
+
+@media (min-width: 640px) {
+  .nx-hdr-login--drawer {
+    display: none;
+  }
+}
+
+/* الفاصل المرسوم بعد قرص المساعدة ينتقل إلى ما قبل الحبّة حين تظهر (الزائر وحده). */
+@media (min-width: 1024px) {
+  .nx-hdr-tools > .nx-hdr-btn:has(+ .nx-hdr-login) {
+    margin-inline-end: 21px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-hdr-login {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-hdr-login {
+    border-color: ButtonText;
+  }
+}
+
 /* ══ الصفّ على الجوال (دون 640) — مقيسٌ لا مقدَّر ═══════════════════════════
    القائمة 44 · الهوية 72 · البحث · الأدوات (بلّغ/الشمس · الجرس · التطبيقات ·
    المستخدم). فاض الصفّ 19px على 375 بفجواتٍ 6 وحاشيةٍ 8 وصورةٍ رمزية 46 وحقلٍ

@@ -294,20 +294,25 @@ const LEARN_LESSONS: SimLesson[] = [
     category: "core",
     title_ar: "سَدِيد في القرار التنفيذي",
     title_en: "SADEED for Executive Decisions",
-    subtitle_ar: "كيف يستمد سَدِيد معلوماته من المحاكاة وقاعدة البيانات",
-    subtitle_en: "How SADEED grounds answers in the simulation and database",
+    subtitle_ar: "كيف يستمد سَدِيد معلوماته من البيانات المرجعية وقاعدة البيانات",
+    subtitle_en: "How SADEED grounds answers in reference data and the database",
     summary_ar:
-      "تعلّم كيف يجيب سَدِيد باختصار واعتمادًا على المحاكاة وقاعدة البيانات فقط، وكيف يستخدم أدوات الامتثال والتصاريح، ومتى يُرسل البريد والرسائل نيابة عنك.",
+      "تعلّم كيف يجيب سَدِيد باختصار واعتمادًا على البيانات المرجعية وقاعدة البيانات فقط، وكيف يستخدم أدوات الامتثال والتصاريح، ومتى يُرسل البريد والرسائل نيابة عنك.",
     summary_en:
-      "Learn how SADEED answers concisely grounded only in the simulation and database, how it uses compliance and permit tools, and when it sends email and SMS on your behalf.",
+      "Learn how SADEED answers concisely grounded only in reference data and the database, how it uses compliance and permit tools, and when it sends email and SMS on your behalf.",
     quiz: [
       {
         prompt_ar: "من أين يستمد سَدِيد معلوماته؟",
         prompt_en: "Where does SADEED source its information?",
-        options_ar: ["المحاكاة وقاعدة البيانات فقط", "الإنترنت المفتوح", "تخمينات عامة"],
-        options_en: ["Simulation and database only", "The open internet", "General guesses"],
+        options_ar: ["البيانات المرجعية وقاعدة البيانات فقط", "الإنترنت المفتوح", "تخمينات عامة"],
+        options_en: [
+          "Reference data and the database only",
+          "The open internet",
+          "General guesses",
+        ],
         correct_index: 0,
-        explanation_ar: "سَدِيد مقيّد بالمحاكاة وقاعدة البيانات فقط لضمان دقّة وموثوقية الإجابات.",
+        explanation_ar:
+          "سَدِيد مقيّد بالبيانات المرجعية وقاعدة البيانات فقط لضمان دقّة وموثوقية الإجابات.",
       },
     ],
   },
@@ -358,7 +363,7 @@ export async function seedSystemCoverage(
       user_id: userId,
       severity: rng.pick(["low", "medium", "medium", "high", "critical"]),
       title: t,
-      detail: "تنبيه استباقي مولّد من محاكاة النظام.",
+      detail: "تنبيه استباقي مولّد من البيانات المرجعية للنظام.",
       business_impact_score: rng.int(35, 95),
       owner: `مسؤول ${rng.int(1, 6)}`,
       metadata: { sim_seed: seed },

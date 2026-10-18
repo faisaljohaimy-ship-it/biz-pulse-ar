@@ -23,19 +23,35 @@
  * يحمل تحليلًا (لماذا/قارن/حلّل) أو قيدًا (موقعًا، مديرًا، مدةً) ليس
  * عدًّا صرفًا ولا يُختطف.
  *
- * ## بوابة المستأجر
+ * ## لكل نداء — والبوابة نُسخت
  *
- * الأرقام والسجلّات هنا **إنتاجية**، والوحدة لا ترى هوية النداء — فالبوابة
- * على المستدعي: `/api/chat` لا يستشيرها إلا لنداءٍ مصادَق (`userId`)،
- * والزائر يبقى على مسار النموذج بمحاكاته الموسومة. حارسها في
- * `chat-latency.contract.test.ts`.
+ * وُلدت الطبقة خلف بوابة `userId` في `/api/chat`، **ونسخها المالك
+ * ٢٠٢٦/٠٩/٠٣** («البيانات الإنتاجية المعكوسة وليست المحاكاة»): المجموعات
+ * نفسها معروضة للزائر في الشاشات المفتوحة. وهي لا تنفق نموذجًا ولا تقرأ
+ * قاعدة، فتُجيب **حتى حين يتعذّر مخزن الحدّ** والسياسة مغلقة (DEF-10،
+ * ٢٠٢٦/١٠/١٨). حارسها في `chat-latency.contract.test.ts`.
+ *
+ * ## لقطةٌ لا قراءةٌ حيّة — والتاريخ في الجواب (DEF-18)
+ *
+ * الأرقام من تصديرٍ معتمد، لا من القاعدة الحيّة؛ فكل جوابٍ يحمل «حسب التصدير
+ * المعتمد في <التاريخ>» — رقمٌ بلا تاريخ يُقرأ حالًا، وهو ليس كذلك. والتاريخ تاريخ
+ * اعتماد المالك للتصدير، لا تاريخ استخراجه (غير مسجّل) — فالعبارة «المعتمد في» لا
+ * «تصدير <التاريخ>» (ملاحظة الحارس ٦ على c3444ef6d). وأوامر
+ * PLAN في تصدير الصيانة **ملغاة** لا مفتوحة (الخريطة المصحَّحة في
+ * `sap-export-rules.ts`: أُغلقت في SAP دون إنجاز وعليها علامة حذف)، والملف
+ * المضمَّن سبق التصحيح فسمّاها `open` — كما يقرؤها بديل صفحة الصيانة.
  */
-import { REAL_PROJECT_COUNTS, REAL_SEC_PROJECTS } from "@/lib/exec/projects-report.real.server";
 import {
+  PROJECTS_REPORT_DATE,
+  REAL_PROJECT_COUNTS,
+  REAL_SEC_PROJECTS,
+} from "@/lib/exec/projects-report.real.server";
+import {
+  MAINTENANCE_REPORT_DATE,
   REAL_SEC_WORK_ORDERS,
   REAL_WORK_ORDER_COUNTS,
 } from "@/lib/exec/maintenance-report.real.server";
-import { REAL_INCIDENT_COUNTS } from "@/lib/exec/event-report.real.server";
+import { EVENT_REPORT_DATE, REAL_INCIDENT_COUNTS } from "@/lib/exec/event-report.real.server";
 import {
   formatProjectRecord,
   formatWorkOrderRecord,
@@ -183,8 +199,8 @@ export type InstantCountStatus =
   "in_progress" | "completed" | "cancelled" | "open" | "closed" | "preventive" | "corrective";
 
 /**
- * الحالة التي يسمّيها السؤال العربي لكيانٍ بعينه — بترتيب الفحص الأصلي نفسه
- * (أوّل حالةٍ تطابق تفوز)، و`null` يعني الإجمالي.
+ * الحالة التي يسمّيها السؤال العربي لكيانٍ بعينه — أوّل حالةٍ تطابق تفوز، بترتيب الفحص
+ * المعتمد لكل كيان، و`null` يعني الإجمالي.
  */
 function arabicStatus(entity: InstantCountEntity, tokens: string[]): InstantCountStatus | null {
   const checks: ReadonlyArray<readonly [InstantCountStatus, readonly string[]]> =
@@ -198,8 +214,10 @@ function arabicStatus(entity: InstantCountEntity, tokens: string[]): InstantCoun
         ? [
             ["preventive", ["وقائي", "وقائيه", "الوقائيه"]],
             ["corrective", ["تصحيحي", "تصحيحيه", "التصحيحيه"]],
+            ["cancelled", ["ملغي", "ملغيه", "الملغاه", "ملغاه"]],
             ["closed", ["مغلق", "مغلقه", "المغلقه"]],
-            ["open", ["مفتوح", "مفتوحه", "المفتوحه"]],
+            ["completed", ["مكتمل", "مكتمله", "المكتمله"]],
+            ["open", ["مفتوح", "مفتوحه", "المفتوحه", "جاري", "جاريه", "الجاريه"]],
           ]
         : [
             ["open", ["مفتوح", "مفتوحه", "المفتوحه"]],
@@ -209,10 +227,25 @@ function arabicStatus(entity: InstantCountEntity, tokens: string[]): InstantCoun
 }
 
 /**
+ * «حسب التصدير المعتمد في <التاريخ>» على سطر الجواب نفسه — اللقطة تُقرأ بتاريخها لا حالًا
+ * (DEF-18)؛ وبالإنجليزية العبارة نفسها.
+ */
+const asOf = (line: string, date: string, en: boolean) =>
+  en
+    ? `${line} — per the approved export of ${date}.`
+    : `${line} — حسب التصدير المعتمد في ${date}.`;
+
+/** PLAN في الملف المضمَّن (`status: "open"`) ملغاة — رأس الوحدة؛ فالمفتوح فعلًا قيد التنفيذ وحده. */
+const WO_CANCELLED = REAL_WORK_ORDER_COUNTS.open;
+const WO_CANCELLED_PREVENTIVE = REAL_SEC_WORK_ORDERS.filter(
+  (w) => w.status === "open" && w.kind === "preventive",
+).length;
+
+/**
  * جواب العدّ من العدّادات الكنسية — **المصدر الوحيد للأرقام في اللغتين**:
  * المطابق العربي هنا والموجّه الحتمي الإنجليزي (`llm/zero-cost-router.server`)
  * يقرآن الدالة نفسها، فلا رقم منسوخ يتعفّن في موضعٍ ثانٍ. حالةٌ لا تخصّ
- * الكيان تعيد الإجمالي بتوزيعه — كما كان الجواب العربي منذ البداية.
+ * الكيان تعيد الإجمالي بتوزيعه.
  */
 export function renderInstantCount(
   entity: InstantCountEntity,
@@ -222,72 +255,156 @@ export function renderInstantCount(
   const en = locale === "en";
   if (entity === "project") {
     const c = REAL_PROJECT_COUNTS;
-    if (status === "in_progress")
-      return en ? `Projects in progress: ${c.in_progress}.` : `المشاريع الجارية ${c.in_progress}.`;
-    if (status === "completed")
-      return en ? `Completed projects: ${c.completed}.` : `المشاريع المكتملة ${c.completed}.`;
-    if (status === "cancelled")
-      return en ? `Cancelled projects: ${c.cancelled}.` : `المشاريع الملغاة ${c.cancelled}.`;
-    return en
-      ? `Projects: ${c.total} — in progress ${c.in_progress} · completed ${c.completed} · cancelled ${c.cancelled}.`
-      : `المشاريع ${c.total}: جارية ${c.in_progress} · مكتملة ${c.completed} · ملغاة ${c.cancelled}.`;
+    const line =
+      status === "in_progress"
+        ? en
+          ? `Projects in progress: ${c.in_progress}`
+          : `المشاريع الجارية ${c.in_progress}`
+        : status === "completed"
+          ? en
+            ? `Completed projects: ${c.completed}`
+            : `المشاريع المكتملة ${c.completed}`
+          : status === "cancelled"
+            ? en
+              ? `Cancelled projects: ${c.cancelled}`
+              : `المشاريع الملغاة ${c.cancelled}`
+            : en
+              ? `Projects: ${c.total} — in progress ${c.in_progress} · completed ${c.completed} · cancelled ${c.cancelled}`
+              : `المشاريع ${c.total}: جارية ${c.in_progress} · مكتملة ${c.completed} · ملغاة ${c.cancelled}`;
+    return asOf(line, PROJECTS_REPORT_DATE, en);
   }
   if (entity === "maintenance") {
     const c = REAL_WORK_ORDER_COUNTS;
-    if (status === "preventive")
-      return en
-        ? `Preventive maintenance orders: ${c.preventive}.`
-        : `أوامر الصيانة الوقائية ${c.preventive}.`;
-    if (status === "corrective")
-      return en
-        ? `Corrective maintenance orders: ${c.corrective}.`
-        : `أوامر الصيانة التصحيحية ${c.corrective}.`;
-    if (status === "closed")
-      return en ? `Closed maintenance orders: ${c.closed}.` : `أوامر الصيانة المغلقة ${c.closed}.`;
-    if (status === "open")
-      return en
-        ? `Maintenance orders not closed: ${c.open + c.in_progress} — in progress ${c.in_progress} · open ${c.open}.`
-        : `أوامر الصيانة غير المغلقة ${c.open + c.in_progress}: قيد التنفيذ ${c.in_progress} · مفتوحة ${c.open}.`;
-    return en
-      ? `Maintenance work orders: ${c.total} — closed ${c.closed} · in progress ${c.in_progress} · open ${c.open}.`
-      : `أوامر الصيانة ${c.total}: مغلقة ${c.closed} · قيد التنفيذ ${c.in_progress} · مفتوحة ${c.open}.`;
+    const line =
+      status === "preventive"
+        ? en
+          ? `Preventive maintenance orders: ${c.preventive}, of which ${WO_CANCELLED_PREVENTIVE} cancelled`
+          : `أوامر الصيانة الوقائية ${c.preventive}، منها ${WO_CANCELLED_PREVENTIVE} ملغاة`
+        : status === "corrective"
+          ? en
+            ? `Corrective maintenance orders: ${c.corrective}`
+            : `أوامر الصيانة التصحيحية ${c.corrective}`
+          : status === "cancelled"
+            ? en
+              ? `Cancelled maintenance orders: ${WO_CANCELLED}`
+              : `أوامر الصيانة الملغاة ${WO_CANCELLED}`
+            : status === "closed"
+              ? en
+                ? `Closed maintenance orders: ${c.closed + WO_CANCELLED} — completed ${c.closed} · cancelled ${WO_CANCELLED}`
+                : `أوامر الصيانة المغلقة ${c.closed + WO_CANCELLED}: مكتملة ${c.closed} · ملغاة ${WO_CANCELLED}`
+              : status === "completed"
+                ? en
+                  ? `Completed maintenance orders: ${c.closed}`
+                  : `أوامر الصيانة المكتملة ${c.closed}`
+                : status === "open" || status === "in_progress"
+                  ? en
+                    ? `Open maintenance orders: ${c.in_progress}, all in progress`
+                    : `أوامر الصيانة المفتوحة ${c.in_progress}، كلّها قيد التنفيذ`
+                  : en
+                    ? `Maintenance work orders: ${c.total} — completed ${c.closed} · in progress ${c.in_progress} · cancelled ${WO_CANCELLED}`
+                    : `أوامر الصيانة ${c.total}: مكتملة ${c.closed} · قيد التنفيذ ${c.in_progress} · ملغاة ${WO_CANCELLED}`;
+    return asOf(line, MAINTENANCE_REPORT_DATE, en);
   }
   const c = REAL_INCIDENT_COUNTS;
-  if (status === "open") return en ? `Open incidents: ${c.open}.` : `البلاغات المفتوحة ${c.open}.`;
-  if (status === "closed")
-    return en ? `Closed incidents: ${c.closed}.` : `البلاغات المغلقة ${c.closed}.`;
-  return en
-    ? `Incidents: ${c.total} — open ${c.open} · closed ${c.closed}.`
-    : `البلاغات ${c.total}: مفتوحة ${c.open} · مغلقة ${c.closed}.`;
+  const line =
+    status === "open"
+      ? en
+        ? `Open incidents: ${c.open}`
+        : `البلاغات المفتوحة ${c.open}`
+      : status === "closed"
+        ? en
+          ? `Closed incidents: ${c.closed}`
+          : `البلاغات المغلقة ${c.closed}`
+        : en
+          ? `Incidents: ${c.total} — open ${c.open} · closed ${c.closed}`
+          : `البلاغات ${c.total}: مفتوحة ${c.open} · مغلقة ${c.closed}`;
+  return asOf(line, EVENT_REPORT_DATE, en);
 }
 
 /** مرجع SAP لأمر صيانة — النسق الحرفي للمجموعة المستوردة. */
 const SAP_ORDER = /\b(66000\d{6})\b/;
 
 /**
+ * قيم السجلّ كما تُقرأ في جوابٍ بلا نموذج: لا مفتاحٌ إنجليزي خام، و`open` المضمَّنة
+ * (PLAN) «ملغى» على الخريطة المصحَّحة — لا «مفتوح» يناقض صفحة الصيانة.
+ */
+const WO_STATUS_SHOWN: Record<string, string> = {
+  closed: "مُنجَز",
+  in_progress: "قيد التنفيذ",
+  open: "ملغى (أُغلق في SAP دون إنجاز)",
+};
+const WO_KIND_SHOWN: Record<string, string> = { preventive: "وقائية", corrective: "تصحيحية" };
+const WO_PRIORITY_SHOWN: Record<string, string> = { high: "عالٍ", medium: "متوسط" };
+/** أنواع الأصل في التصدير بعربيّة `WO_ASSET_KIND_AR` نفسها (الحارس يقارنهما) — لا مفتاح خام. */
+const WO_ASSET_KIND_SHOWN: Record<string, string> = {
+  cctv: "كاميرات المراقبة",
+  access_control: "تحكم بالدخول",
+  perimeter: "محيط أمني",
+  control_room: "غرفة التحكم",
+  physical_security: "الأمن المادي",
+  facility: "منشأة",
+};
+
+/**
+ * المصدر على السطر الأوّل لا سطرًا سادسًا: السجلّ «معقّد ← ٥ أسطر» في عقد الاختصار (المادة ٢٢،
+ * نقض الحارس N2). والسجلّ نفسه من المُنسِّق المشترك مع كتلة الاسترجاع، فلا يُمسّ.
+ */
+const withSource = (record: string, source: string) => {
+  const [first, ...rest] = record.split("\n");
+  return [`${first} · ${source}`, ...rest].join("\n");
+};
+
+/**
  * سؤال مرجعٍ حرفيّ: يحمل مرجعًا موجودًا فعلًا في المجموعة، وبقية السؤال
- * استفهام حالة/تفاصيل لا تحليل. الجواب سجلّه الكامل (≤٥ أسطر — درجة
- * «معقّد» في عقد الاختصار، والمرجع المسؤول عنها).
+ * استفهام حالة/تفاصيل لا تحليل. الجواب سجلّه الكامل ومصدره على سطره الأوّل (≤٥ أسطر —
+ * درجة «معقّد» في عقد الاختصار، والمرجع المسؤول عنها).
  */
 function matchRecordLookup(raw: string, normalized: string): InstantDataAnswer | null {
   const sap = SAP_ORDER.exec(normalized);
   if (sap) {
     const order = REAL_SEC_WORK_ORDERS.find((w) => w.ref === sap[1]);
-    if (order) return { answer: formatWorkOrderRecord(order), source: "record-lookup" };
+    if (order) {
+      const shown = {
+        ...order,
+        status: WO_STATUS_SHOWN[order.status] ?? order.status,
+        kind: order.kind ? (WO_KIND_SHOWN[order.kind] ?? order.kind) : order.kind,
+        priority: order.priority
+          ? (WO_PRIORITY_SHOWN[order.priority] ?? order.priority)
+          : order.priority,
+        asset_kind: order.asset_kind
+          ? (WO_ASSET_KIND_SHOWN[order.asset_kind] ?? order.asset_kind)
+          : order.asset_kind,
+      };
+      return {
+        answer: withSource(
+          formatWorkOrderRecord(shown),
+          `تصدير SAP PM المعتمد في ${MAINTENANCE_REPORT_DATE}`,
+        ),
+        source: "record-lookup",
+      };
+    }
   }
   // مراجع المشاريع (مثل NG-PSS-23-CO-002): مطابقة حرفية ضد المجموعة —
   // لا نمط عام قد يلتقط ما ليس مرجعًا.
   const upper = raw.toUpperCase();
   if (/[A-Z]\w*-/.test(upper)) {
     const project = REAL_SEC_PROJECTS.find((p) => upper.includes(p.ref.toUpperCase()));
-    if (project) return { answer: formatProjectRecord(project), source: "record-lookup" };
+    if (project) {
+      return {
+        answer: withSource(
+          formatProjectRecord(project),
+          `تصدير المشاريع المعتمد في ${PROJECTS_REPORT_DATE}`,
+        ),
+        source: "record-lookup",
+      };
+    }
   }
   return null;
 }
 
 /**
  * المدخل الوحيد — `null` يعني: ليس سؤالًا فوريًّا، أكمل لمسار النموذج.
- * **لا يُستدعى إلا لنداءٍ مصادَق** (بوابة المستأجر في `/api/chat`).
+ * يُستشار لكل نداء، وحين تكون البوّابة مغلقة أيضًا (رأس الوحدة).
  */
 export function matchInstantDataAnswer(question: string): InstantDataAnswer | null {
   const trimmed = question.trim();

@@ -225,6 +225,74 @@ describe("المخزن معطّل — السياسة المغلقة (الافت�
   });
 });
 
+/** نصّ الردّ المبثوث كما تعرضه الواجهة — مجموع `text-delta`. */
+async function shownText(res: Response): Promise<string> {
+  let shown = "";
+  for (const line of (await res.text()).split("\n")) {
+    if (!line.startsWith("data: ")) continue;
+    try {
+      const ev = JSON.parse(line.slice(6)) as { type?: string; delta?: string };
+      if (ev.type === "text-delta" && typeof ev.delta === "string") shown += ev.delta;
+    } catch {
+      /* [DONE] */
+    }
+  }
+  return shown;
+}
+
+describe("المسارات الصفرية الكلفة لا تنتظر المخزن (DEF-10، ٢٠٢٦/١٠/١٨)", () => {
+  // قِيس قبل الإصلاح والمخزن لا يردّ: «كم عدد المشاريع؟» و«من أنت؟» وسؤالٌ خارج
+  // النطاق أخذت كلّها السطر المغلق «تعذّر التحقّق…» — وهي لا تُنفق نموذجًا ولا تقرأ قاعدة.
+  it("العدّ الفوري يُجاب والبوّابة مغلقة: الرقم وتاريخ التصدير، وصفر نداء نموذج", async () => {
+    gates.rate = { allowed: false, unavailable: true };
+    const { REAL_PROJECT_COUNTS, PROJECTS_REPORT_DATE } =
+      await import("@/lib/exec/projects-report.real.server");
+    const res = await post("كم عدد المشاريع؟");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("instant-data");
+    expect(res.headers.get("X-SADEED-Gate")).toBe("closed");
+    expect(res.headers.get("X-SADEED-Auth")).toBe("anonymous");
+    const shown = await shownText(res);
+    expect(shown).toContain(String(REAL_PROJECT_COUNTS.total));
+    expect(shown).toContain(`حسب التصدير المعتمد في ${PROJECTS_REPORT_DATE}`);
+    expect(gates.modelCalls).toBe(0);
+  });
+
+  it("وخارج النطاق يأخذ سطر النطاق لا سطر التعذّر، موسومًا closed", async () => {
+    gates.rate = { allowed: false, unavailable: true };
+    const res = await post("ما نتيجة مباراة كرة القدم أمس؟");
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("scope-guard");
+    expect(res.headers.get("X-SADEED-Gate")).toBe("closed");
+    expect(gates.modelCalls).toBe(0);
+  });
+
+  it("والحصّة غير المتاحة كالمعدّل: العدّ الفوري يُجاب ولا يُنفَق شيء", async () => {
+    gates.quota = new Response(JSON.stringify({ error: "quota_unavailable" }), { status: 503 });
+    const res = await post("كم عدد البلاغات المفتوحة؟");
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("instant-data");
+    // الحتميّ يسبق الحصّة اليومية (لا يُنفق منها شيئًا): لا يسألها أصلًا، فالوسم
+    // وسمُ بوّابة المعدّل التي فُحصت فعلًا — لا «مغلقة» لحصّةٍ لم تُسأل.
+    expect(gates.quotaOptions).toHaveLength(0);
+    expect(res.headers.get("X-SADEED-Gate")).toBe("verified");
+    expect(gates.modelCalls).toBe(0);
+  });
+
+  it("وما يحتاج النموذج يبقى على السطر المغلق — لا يُفتح إنفاقٌ بلا تحقّق", async () => {
+    gates.rate = { allowed: false, unavailable: true };
+    const res = await post("ما إجراءات السلامة الواجبة قبل تصريح عمل ساخن في محطة تحويل؟");
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("local-quota-unverified");
+    expect(gates.modelCalls).toBe(0);
+  });
+
+  it("والبوّابة السليمة كما كانت: العدّ الفوري موسومًا verified بعد الفحص لا قبله", async () => {
+    const res = await post("كم عدد المشاريع؟");
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("instant-data");
+    expect(res.headers.get("X-SADEED-Gate")).toBe("verified");
+    expect(gates.rateOptions).toHaveLength(1);
+    expect(gates.modelCalls).toBe(0);
+  });
+});
+
 describe("ما لم يتغيّر", () => {
   it("السقف اليومي المبلوغ فعلًا (‏429) يبقى رفضًا — الحماية لم تُرخَ، والردّ موسوم", async () => {
     gates.quota = new Response(JSON.stringify({ error: "daily_identity_cap" }), {

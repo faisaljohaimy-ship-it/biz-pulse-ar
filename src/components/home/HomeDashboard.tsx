@@ -272,7 +272,7 @@ function KpiCard({ k, ar }: { k: Kpi; ar: boolean }) {
   const changeText = change
     ? `${change.dir === "up" ? "↑" : "↓"} ${fmtKpi(change.pct)}%`
     : notMeasured;
-  const badge = ar ? SIMULATION_BADGE_AR : "Simulated";
+  const badge = ar ? SIMULATION_BADGE_AR : "Reference";
   const sub = !simulated && k.sub ? (ar ? k.sub.ar : k.sub.en) : null;
   const Glyph = k.glyph;
 
@@ -285,7 +285,7 @@ function KpiCard({ k, ar }: { k: Kpi; ar: boolean }) {
         `${label}: ${valueText}`,
         sub,
         `${ar ? "التغيّر" : "Change"}: ${changeText}`,
-        simulated ? (ar ? "محاكاة مرجعية" : "reference simulation") : null,
+        simulated ? (ar ? "بيانات مرجعية (ليست حيّة)" : "reference data (not live)") : null,
         failed ? (ar ? "تعذّر التحميل" : "Unavailable") : null,
       ]
         .filter(Boolean)
@@ -294,8 +294,8 @@ function KpiCard({ k, ar }: { k: Kpi; ar: boolean }) {
     ? label
     : simulated
       ? ar
-        ? `${label} — محاكاة مرجعية بأرقام التصميم${failed ? " (تعذّر التحميل)" : ""}؛ المصدر الحيّ: ${k.sourceAr}`
-        : `${label} — reference simulation`
+        ? `${label} — بيانات مرجعية بأرقام التصميم، ليست حيّة${failed ? " (تعذّر التحميل)" : ""}؛ المصدر الحيّ: ${k.sourceAr}`
+        : `${label} — reference data (not live)`
       : ar
         ? `${label} — ${k.sourceAr}${sub ? ` (${sub})` : ""}`
         : label;

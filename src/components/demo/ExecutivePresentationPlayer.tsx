@@ -148,8 +148,8 @@ const SCENES: readonly Scene[] = [
     kicker_en: "Twin · Reports",
     title_ar: "التوأم الرقمي الحيّ.",
     title_en: "The live digital twin.",
-    body_ar: "محاكاة مرجعية للمواقع والأصول، وتقارير تنفيذية جاهزة للمجلس.",
-    body_en: "A reference simulation of sites and assets, with board-ready executive reports.",
+    body_ar: "بيانات مرجعية للمواقع والأصول، وتقارير تنفيذية جاهزة للمجلس.",
+    body_en: "Reference data for sites and assets, with board-ready executive reports.",
     accent: "emerald",
   },
   {

@@ -180,8 +180,16 @@ describe("الصفر تكلفة أوّلًا — ترتيب المسار (أمر
   });
 
   it("البوّابة المغلقة تجرّب الحتميّ قبل ردّها المحلّي، ولا تُسقطه", () => {
+    // الردّ المغلق نفسه يجرّب الطبقات الحتمية موسومةً `closed` قبل سطره المحلّي (DEF-10)،
+    // ومساراه (المعدّل والحصّة) يمرّان به.
     expect(CHAT_CODE).toMatch(
-      /\(await deterministicReply\("closed"\)\) \?\? closedPolicyReply\("rate"\)/,
+      /const closedPolicyReply = async[\s\S]{0,400}\(await deterministicReply\("closed"\)\) \?\?\s*localGuaranteedReply\(/,
+    );
+    expect(CHAT_CODE).toContain(
+      'if (gateDegradedMode() === "closed") return closedPolicyReply("rate");',
+    );
+    expect(CHAT_CODE).toContain(
+      'if (gateDegradedMode() === "closed") return closedPolicyReply("quota");',
     );
   });
 

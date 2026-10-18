@@ -130,8 +130,8 @@ export function BlueprintPage() {
                 حارس الجودة ٢٠٢٦/٠٩/٢٩ حين قال «الأرقام من مصدر النظام الحيّ». */}
           <p className="nx-bp-note inline-block text-[12px] text-[color:var(--ink-2)]">
             {ar
-              ? "الأرقام من مصدر النظام الحيّ متى وصل، وإلا فمن محاكاةٍ مرجعية مدمجة. ما لا يُقاس يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
-              : "Figures come from the live system source when it responds, otherwise from a built-in reference simulation. Whatever is not measured reads “not measured” — never a substituted zero."}
+              ? "الأرقام من مصدر النظام الحيّ متى وصل، وإلا فمن بياناتٍ مرجعية مدمجة. ما لا يُقاس يُقرأ «لم يُقَس» — لا يُستبدل بصفر."
+              : "Figures come from the live system source when it responds, otherwise from built-in reference data. Whatever is not measured reads “not measured” — never a substituted zero."}
           </p>
         </footer>
       </div>

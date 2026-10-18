@@ -101,6 +101,15 @@ const SOURCE: readonly MaintenanceReportSourceRow[] = JSON.parse(
   rawMaintenance,
 ) as MaintenanceReportSourceRow[];
 
+/**
+ * صفوف التصدير كما هي (بلا هوية شخص) — يقرؤها بديل صفحة الصيانة حين لا تجيب القاعدة
+ * (`maint-export-fallback.server.ts`، قرار المالك ٢٠٢٦/١٠/١٨).
+ */
+export const MAINTENANCE_REPORT_ROWS = SOURCE;
+
+/** تاريخ اعتماد التصدير إنتاجيًّا (أمر المالك ٢٠٢٦/٠٩/٠٢) — تاريخ اللقطة الذي يُوسم به البديل. */
+export const MAINTENANCE_REPORT_DATE = "2026-09-02";
+
 export type RealWorkOrderRow = OmsWorkOrderRow & {
   area_ar: string;
 };

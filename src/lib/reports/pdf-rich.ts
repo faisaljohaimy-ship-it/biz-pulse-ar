@@ -797,7 +797,7 @@ export function planReport(doc: ReportDocument, ctx: PlanContext): LayoutPlan {
 
   /* ── تذييل + شارة المحاكاة على كل صفحة ── */
   const total = pages.length;
-  const simText = "بيانات محاكاة مرجعية — is_simulation = true";
+  const simText = "بيانات مرجعية (ليست حية) — is_simulation = true";
   pages.forEach((p, i) => {
     p.items.push({ type: "rect", x: 0, y: H - 6, width: W, height: 6, tone: "emerald" });
     p.items.push({
@@ -850,7 +850,7 @@ export function planReport(doc: ReportDocument, ctx: PlanContext): LayoutPlan {
       });
       p.items.push({
         type: "text",
-        text: "محاكاة",
+        text: "مرجعي",
         rightX: W / 2 + 150,
         y: H / 2 - 120,
         size: 72,

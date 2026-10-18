@@ -36,6 +36,39 @@ describe("Article 22 — scope lock", () => {
     expect(isInScope("")).toBe(true);
   });
 
+  it("DEF-14: off-domain terms match whole tokens — «المدينة/مشعر/الرئيسية/سياسة» are domain words", () => {
+    for (const q of [
+      "كم عدد المشاريع في المدينة المنورة؟",
+      "ما الوضع في مشعر منى؟",
+      "اعرض الصفحة الرئيسية",
+      "ما سياسة الشركة في الزيارات؟",
+      "شعر الموظف بدوار أثناء المناوبة",
+    ]) {
+      expect(isInScope(q), q).toBe(true);
+    }
+    // controls: the unambiguous off-domain terms still refuse, with clitics too.
+    expect(isInScope("وش رأيك في الدين؟")).toBe(false);
+    expect(isInScope("اكتب قصيدة عن البحر")).toBe(false);
+    expect(isInScope("من هو رئيس الوزراء؟")).toBe(false);
+  });
+
+  it("no generic noun opens the scope: an off-domain question that names a region/site/project still refuses (veto N1)", () => {
+    // Each passed as in-scope when «منطقة/موقع/مشروع/الحج/project/site» were IN_SCOPE
+    // terms: an in-scope hit returns before the off-domain check (planted, Article 30).
+    for (const q of [
+      "من فاز بمباراة كرة القدم في المنطقة الشرقية؟",
+      "ما أفضل موقع لمشاهدة مباريات كرة القدم؟",
+      "best football site?",
+      "سعر بيتكوين في المنطقة الوسطى",
+      "اكتب قصيدة عن مشروع الحج",
+      "ما رأيك في الانتخابات في المنطقة؟",
+      "نكتة عن موقع العمل",
+      "joke about the project",
+    ]) {
+      expect(isInScope(q), q).toBe(false);
+    }
+  });
+
   it("lets ambiguous text through to the model (high-precision blocking)", () => {
     // No off-domain signal, no in-domain keyword → pass to the model path.
     expect(isInScope("أعطني ملخص الوضع الحالي")).toBe(true);
@@ -76,6 +109,21 @@ describe("Article 22 — fast recall (recurring FAQs answer with no model)", () 
     expect(matchFastRecall("من هو finn؟")!.answer).toBe(
       "أنا سَدِيد — مساعد الأمن الصناعي التنفيذي.",
     );
+  });
+
+  it("DEF-01: only a whole identity question is answered locally — not «انتهت/كانت/الموظفين»", () => {
+    for (const q of [
+      "ما التصاريح التي انتهت اليوم؟",
+      "من كانت آخر زيارة للموقع؟",
+      "ما عدد الموظفين في الوردية؟",
+      "ما حالة الإنترنت في غرفة التحكم؟",
+      "من أنت؟\n\nنص مرفق: تقرير طويل عن الحوادث",
+    ]) {
+      expect(matchFastRecall(q), q).toBeNull();
+    }
+    for (const q of ["من أنت يا سديد؟", "عرّف بنفسك", "مين انت"]) {
+      expect(matchFastRecall(q)?.source, q).toBe("sadeed-identity");
+    }
   });
 
   it("every fast-recall answer obeys brevity: one line, ≤25 words, zero filler", () => {
