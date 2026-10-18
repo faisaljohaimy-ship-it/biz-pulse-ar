@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useI18n } from "@/lib/i18n";
 import { submitLead } from "@/lib/leads.functions";
-import { DOMAIN_URL, PRODUCT_BRAND } from "@/lib/domain";
+import { DOMAIN_URL, PRODUCT_BRAND, SITE_OG_IMAGE } from "@/lib/domain";
 import {
   ArrowLeft,
   Briefcase,
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/executive-briefing")({
         content: "Private live walkthrough for executives, investors, and government leaders.",
       },
       { property: "og:url", content: `${DOMAIN_URL}/executive-briefing` },
-      { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
+      { property: "og:image", content: `${DOMAIN_URL}${SITE_OG_IMAGE}` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/executive-briefing` }],
   }),

@@ -1,86 +1,102 @@
 /**
- * صفّ الهوية — لوحتا المالك **كما هما**، فوقهما ماءٌ سينمائي (أمر المالك
- * ٢٠٢٦/١٠/١٧ بنصّه: «ضع هذه الصور المرفقة كعلامة كما هي واحدة فالزاوية اليمين في اعلى الصفحة الرئيسية والاخرى فالمنتصف واجعلها تتحرك بحركة مائية سينيمائية عصرية»؛
- * وبقرار AskUserQuestion في اليوم نفسه: لوحة الشعار «منظومة
- * القرار والإنجاز الذكي» في الزاوية اليمنى العليا، والبانر «سَدِيد | SADEED» في
- * وسط أعلى الصفحة — صفٌّ تحت الترويسة وفوق المؤشرات).
+ * صفّ الهوية — شريط «مزايا سَدِيد» المتحرك، وتحته لوحة المالك **كما هي** بعرض العمود
+ * كاملًا، فوقها ماءٌ سينمائي.
+ *
+ * ## الأوامر
+ *
+ * • ٢٠٢٦/١٠/١٧: «ضع هذه الصور المرفقة كعلامة كما هي … واجعلها تتحرك بحركة مائية
+ *   سينيمائية عصرية» — البانر «سَدِيد | SADEED» في وسط أعلى الصفحة.
+ * • ٢٠٢٦/١٠/١٨ (R3) بنصّه: «اجعل المستطيل الذي يتوسط الشاشة لعلامة سديد كما فالمرفق على
+ *   امتداد الصفحة متناسقاً مع العناصر وكون الشريط الإعلاني المتحرك باستمرار يعلو علامة
+ *   سديد الموجودة فالمرفق» — فالبانر بعرض العمود نفسه (حافّتا صفّ المؤشرات والبطاقات
+ *   تحته، بلا رقمٍ يُزامَن: ابنٌ في شبكة `.nx-home-arrange`)، والشريط فوقه
+ *   (`HomeTicker`).
+ * • وموجّه المرحلة في اليوم نفسه — مهمّةٌ للمالك **كما نقلها منسّق البناء بصياغته، لا
+ *   بنصّ المالك**: إطارٌ مستقبليّ حول البانر (تدرّج أزرق كهربائي/سماوي، إضاءة زجاج
+ *   محسوبة، عمق) وتوهّجٌ محيطٌ ينجرف ببطء خلفه، دون أن يغطّي مؤشّرًا أو محتوى تشغيليًّا.
+ * • ولوحة الشعار «منظومة القرار والإنجاز الذكي» **خرجت من هذا الصفّ** (R4: إلى رأس
+ *   الشريط الجانبي بعبارةٍ جديدة) — ومعها رابطها وصورها وحلقتها وتركيبها في Remotion.
  *
  * ## الصورة أوّلًا، والفيلم فوقها
  *
- * كل لوحة `<img>` من ملفّ المالك نفسه (WebP على ثلاث درجات، `srcset`) — هي
- * ما يُرسم من أوّل إطار وما يُقرأ (نصّ بديل بما كُتب على اللوحة) وما يبقى لمن
- * لا فيلم له. وفوقها `<video>` صامتٌ يُركَّب **بعد أوّل رسمة** ولمن:
- *   • لم يطلب تقليل الحركة (`prefers-reduced-motion`)، ولم يُطفئ الحركة
- *     بمفتاح النظام (`html[data-nx-motion="off"]`)، وليس في الوضع الآمن؛
- *   • ولم يطلب توفير البيانات (`navigator.connection.saveData`).
- * والفيلم حلقةُ ماءٍ مصيَّرة مرّةً بـRemotion (`remotion/brand/`) فوق الصورة
- * نفسها — انكسارٌ وتموّجات كاوية وبريقٌ على القمم (بلا لمعةٍ ماسحة)، بلا صوتٍ في الحاوية —
- * فكلفته في المتصفّح فكّ ترميزٍ لا حساب. يقف خارج الإطار، ويقف تحت لوحة سَدِيد
- * على اللمس بقاعدة فيلم الخلفية نفسها (`holdFilmUnderPanel`)، وإن تعذّر
- * تحميله زال وبقيت الصورة.
+ * اللوحة `<img>` من ملفّ المالك نفسه (WebP على أربع درجات حتى دقّته الأصلية 2172،
+ * `srcset`) — هي ما يُرسم من أوّل إطار وما يُقرأ (نصٌّ بديل بما كُتب على اللوحة) وما
+ * يبقى لمن لا فيلم له. وفوقها `<video>` صامتٌ يُركَّب **بعد `load` والخمول** ولمن:
+ *   • لم يطلب تقليل الحركة (`prefers-reduced-motion`)، ولم يُطفئ الحركة بمفتاح النظام
+ *     (`html[data-nx-motion="off"]`)، وليس في الوضع الآمن؛
+ *   • ولم يطلب توفير البيانات (`navigator.connection.saveData`)؛
+ *   • ولم يُوقف الحركة بزرّ «إيقاف الحركة» في طرف الشريط (WCAG 2.2.2).
+ * والحلقة تُختار **بالحاجة المقيسة** (`pickFilm`: عرض اللوحة المرسوم × كثافة الشاشة)
+ * لا باستعلام عرض — فلا تُكبَّر حلقةٌ فوق صورةٍ أحدّ منها فيلين نصّ اللوحة العربي
+ * والإنجليزي لحظة يظهر الفيلم. يقف خارج الإطار، وتحت لوحة سَدِيد على اللمس
+ * (`holdFilmUnderPanel`)، وإن تعذّر زال وبقيت الصورة.
  *
- * ## لا ادّعاء
+ * ## لا ادّعاء، ولا كتابة على اللوحة
  *
- * اللوحتان تحملان نصّهما كما كتبه المالك ولا يُضاف هنا رقمٌ ولا شعار ولا
- * شريك. والبريق الذي يتبع المؤشّر (`--gx`/`--gy`) متغيّرٌ يُمرَّر لا قيمةٌ
- * نهائية (المادة ٣٣).
+ * اللوحة تحمل نصّها كما كتبه المالك؛ لا يُضاف فوقها نصٌّ ولا رقمٌ ولا لمعةٌ ماسحة
+ * (حذفها المالك من النظام كلّه ٢٠٢٦/٠٨/٢٠). والإطار والتوهّج **حولها** لا عليها،
+ * والبريق الذي يتبع المؤشّر (`--gx`/`--gy`) متغيّرٌ يُمرَّر لا قيمةٌ نهائية (المادة ٣٣).
  */
-import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { Link } from "@tanstack/react-router";
-import { Pause, Play } from "lucide-react";
+import { useEffect, useRef, useState, type PointerEvent, type RefObject } from "react";
 import { useI18n } from "@/lib/i18n";
 import { isSafeMode } from "@/lib/sadeed/self-healing/crash-loop";
 import { holdFilmUnderPanel } from "@/components/home/HoloVideoEngine";
+import { HomeTicker } from "@/components/home/HomeTicker";
 import "@/styles/home/home-brand.css";
 
-/** نسبة اللوحتين كما رُسمتا (PNG 2172×724 = 3:1). */
+/** نسبة اللوحة كما رُسمت (PNG 2172×724 = 3:1). */
 export const BRAND_RATIO = { width: 2172, height: 724 } as const;
 
-/** فوقه يُعرض البانر بعرضه الكامل وتُختار حلقته العريضة. */
-export const BRAND_WIDE_QUERY = "(min-width: 900px)";
+/** حلقات الماء المصيَّرة (`remotion/brand/`) — عرض كل حلقة بالبكسل ومصدرها. */
+export const BRAND_FILMS = [
+  { width: 804, src: "/media/brand/sadeed-banner-800.mp4" },
+  { width: 1608, src: "/media/brand/sadeed-banner-1600.mp4" },
+  { width: 2172, src: "/media/brand/sadeed-banner-2172.mp4" },
+] as const;
+
+export type BrandFilm = (typeof BRAND_FILMS)[number];
+
+/** أقصى تكبيرٍ مقبول لحلقةٍ فوق حاجتها قبل الانتقال إلى الأكبر. */
+export const FILM_UPSCALE_LIMIT = 1.15;
+
+/**
+ * الحلقة بالحاجة: عرض اللوحة المرسوم × كثافة الشاشة (سقفها 2 — ما فوقها لا تفصله العين
+ * على هذا الحجم، والجوال بكثافة 3 يبقى على حلقته الخفيفة). أصغر حلقةٍ لا تُكبَّر فوق
+ * `FILM_UPSCALE_LIMIT`، وإلا الكبرى (دقّة اللوحة الأصلية).
+ */
+export function pickFilm(cssWidth: number, dpr: number): BrandFilm {
+  const need = Math.max(0, cssWidth) * Math.min(Math.max(dpr || 1, 1), 2);
+  return (
+    BRAND_FILMS.find((film) => film.width * FILM_UPSCALE_LIMIT >= need) ??
+    BRAND_FILMS[BRAND_FILMS.length - 1]
+  );
+}
 
 type Plate = {
   readonly posters: Readonly<Record<number, string>>;
-  readonly films: { readonly wide: string; readonly narrow: string };
   readonly sizes: string;
   readonly ar: string;
   readonly en: string;
 };
 
-/** لوحتا الهوية: صورٌ من ملفّي المالك وحلقتاهما المصيَّرتان. */
-export const HOME_BRAND: { readonly banner: Plate; readonly mark: Plate } = {
+/** لوحة الهوية: صورٌ من ملفّ المالك (حتى دقّته الأصلية) ونصّها البديل بما كُتب عليها. */
+export const HOME_BRAND: { readonly banner: Plate } = {
   banner: {
     posters: {
       800: "/home/brand/sadeed-banner-800.webp",
       1200: "/home/brand/sadeed-banner-1200.webp",
       1600: "/home/brand/sadeed-banner-1600.webp",
+      2172: "/home/brand/sadeed-banner-2172.webp",
     },
-    films: {
-      wide: "/media/brand/sadeed-banner-1600.mp4",
-      narrow: "/media/brand/sadeed-banner-800.mp4",
-    },
-    // عرض البانر المرسوم فعلًا (قِيس على 390–1920): ‏800 فوق 1608، وبين 900
-    // و1608 ما يبقى بعد حاشيتي الشعار والشريط الجانبي — لا 800 ثابتة تُنزّل
-    // نسخة 1600 على شاشات DPR2 بين 900 و1600.
+    // عرض اللوحة المرسوم = عمود المحتوى ناقص الإطار (حلقة 6px من 768 وفوق، و4px دونه،
+    // وحدٌّ شعري على كل جانب). والعمود: `max-w-[1440px]` بحاشيتي `px-4` في
+    // `-blueprint-page.tsx` (‏1408 من 1664px فوق)، وبعد الشريط الجانبي من 1024 — عرضه
+    // الرمز `--nx-sysnav-w: 14rem` في `home-chrome.css` (‏`100vw − 256`) — و`100vw − 32`
+    // دونه. تغيّرُ أيٍّ منها يغيّر هذا السطر في الدفعة نفسها.
     sizes:
-      "(min-width: 1608px) 800px, (min-width: 1530px) calc(100vw - 808px), (min-width: 1177px) calc(66vw - 288px), (min-width: 1024px) calc(100vw - 688px), (min-width: 900px) calc(100vw - 464px), calc(100vw - 32px)",
+      "(min-width: 1664px) 1394px, (min-width: 1024px) calc(100vw - 270px), (min-width: 768px) calc(100vw - 46px), calc(100vw - 42px)",
     ar: "سَدِيد | SADEED — مساعد ذكاء اصطناعي يعطي رؤية تنفيذية على الأمن الصناعي في جميع المناطق السعودية.",
     en: "SADEED — an AI assistant giving executive visibility over industrial security across all Saudi regions.",
-  },
-  mark: {
-    posters: {
-      320: "/home/brand/sadeed-mark-320.webp",
-      480: "/home/brand/sadeed-mark-480.webp",
-      640: "/home/brand/sadeed-mark-640.webp",
-    },
-    films: {
-      wide: "/media/brand/sadeed-mark-640.mp4",
-      narrow: "/media/brand/sadeed-mark-640.mp4",
-    },
-    // عرض لوحة الشعار: clamp(200px, 17vw, 260px) عريضًا، و180 ضيّقًا.
-    sizes: "(min-width: 1530px) 260px, (min-width: 1177px) 17vw, (min-width: 900px) 200px, 180px",
-    ar: "SADEED — منظومة القرار والإنجاز الذكي",
-    en: "SADEED — the intelligent decision and delivery system",
   },
 };
 
@@ -120,9 +136,9 @@ type IdleWindow = Window & {
 };
 
 /**
- * هل استقرّت الصفحة؟ — بعد حدث `load` وخمول المتصفّح. الحلقتان ~1.3 MB على الجوال،
- * وكانتا تُطلبان مع الترطيب فتنافسان الصورة الكبرى (LCP) والخطوط والحزم على شبكةٍ
- * بطيئة (Lighthouse ٢٠٢٦/١٠/١٨: طُلبتا قبل رسم البانر). الصورة الساكنة تُرى حتى ذلك.
+ * هل استقرّت الصفحة؟ — بعد حدث `load` وخمول المتصفّح. الحلقات تُطلب بعدها، فلا تنافس
+ * الصورة الكبرى (LCP) والخطوط والحزم على شبكةٍ بطيئة (Lighthouse ٢٠٢٦/١٠/١٨: طُلبت
+ * قبل رسم البانر). الصورة الساكنة تُرى حتى ذلك.
  */
 function useSettled(): boolean {
   const [settled, setSettled] = useState(false);
@@ -146,23 +162,49 @@ function useSettled(): boolean {
   return settled;
 }
 
-/** مفتاح «إيقاف حركة الماء» — تفضيلٌ لهذا المتصفّح وحده، والتخزين المحجوب لا يكسر شيئًا. */
+/**
+ * مفتاح «إيقاف الحركة» — تفضيلٌ لهذا المتصفّح وحده، والتخزين المحجوب لا يكسر شيئًا. الاسم
+ * نفسه منذ كان يوقف الماء وحده: من أوقفه قبلُ يبقى موقوفًا (الشريط والتوهّج معه الآن).
+ */
 const PAUSE_KEY = "nx-brand-motion";
 
 /**
- * إيقاف الحلقتين بيد المستخدم (WCAG 2.2.2 «Pause, Stop, Hide»): حلقتان بلا نهاية
- * فوق نصّ اللوحتين، ومفتاح النظام `data-nx-motion` بلا كاتبٍ في الواجهة اليوم —
- * فلا مخرج إلا تفضيل نظام التشغيل. يُقرأ بعد التركيب فلا يختلف HTML الخادم.
+ * واجهة الإيقاف خارج هذا الصفّ — **مجمَّدة بين مسارات البناء (٢٠٢٦/١٠/١٨)**: فيلم الخلفية
+ * (`HoloVideoEngine`) وغيره يقرؤون حال الزرّ الواحد من سمةٍ على الجذر وحدثٍ على النافذة،
+ * لا من هذا الملف. السمة `data-nx-motion-paused="1"` حين يُوقف وتُحذف حين يُستأنف،
+ * والحدث `nx:motion-pause` بـ`{ paused }` عند كل تبدّل وعند استعادة التفضيل المحفوظ.
+ * **كاتبُ السمة هذا الملف وحده** (المادة ٣٢).
  */
-function usePausedPreference(): [boolean, (next: boolean) => void] {
+export const MOTION_PAUSE_EVENT = "nx:motion-pause";
+
+function announcePause(paused: boolean): void {
+  const root = document.documentElement;
+  if (paused) root.dataset.nxMotionPaused = "1";
+  else delete root.dataset.nxMotionPaused;
+  window.dispatchEvent(new CustomEvent(MOTION_PAUSE_EVENT, { detail: { paused } }));
+}
+
+/**
+ * إيقاف الحركة كلّها بيد المستخدم (WCAG 2.2.2 «Pause, Stop, Hide»): شريطٌ يجري بلا نهاية،
+ * وحلقة ماءٍ فوق نصّ اللوحة، وتوهّجٌ ينجرف خلف إطارها، وفيلم الخلفية عبر الواجهة أعلاه —
+ * ومفتاح النظام `data-nx-motion` بلا كاتبٍ في الواجهة اليوم. يُقرأ بعد التركيب فلا يختلف
+ * HTML الخادم، و`known` يقول متى قُرئ: قبله لا حركة تبدأ، فمن أوقفها لا يرى منها إطارًا.
+ */
+function usePausedPreference(): [boolean, (next: boolean) => void, boolean] {
   const [paused, setPaused] = useState(false);
+  const [known, setKnown] = useState(false);
   useEffect(() => {
     try {
       setPaused(localStorage.getItem(PAUSE_KEY) === "paused");
     } catch {
       /* التخزين محجوب — تبقى الحركة */
     }
+    setKnown(true);
   }, []);
+  // الحال إلى الواجهة المجمَّدة: عند استعادة المحفوظ ثم عند كل تبدّل.
+  useEffect(() => {
+    if (known) announcePause(paused);
+  }, [known, paused]);
   const update = (next: boolean) => {
     setPaused(next);
     try {
@@ -172,19 +214,35 @@ function usePausedPreference(): [boolean, (next: boolean) => void] {
       /* التخزين محجوب — يسري الاختيار في هذه الزيارة وحدها */
     }
   };
-  return [paused, update];
+  return [paused, update, known];
 }
 
-function BrandFilm({ plate, play }: { plate: Plate; play: boolean }) {
+/** هل الصفّ خارج الإطار؟ — فيقف الشريط والتوهّج (الفيلم يراقب نفسه). */
+function useOffscreen(ref: RefObject<HTMLElement | null>): boolean {
+  const [offscreen, setOffscreen] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const watcher = new IntersectionObserver(([entry]) => {
+      if (entry) setOffscreen(!entry.isIntersecting);
+    });
+    watcher.observe(el);
+    return () => watcher.disconnect();
+  }, [ref]);
+  return offscreen;
+}
+
+function BrandFilm({ artRef, play }: { artRef: RefObject<HTMLDivElement | null>; play: boolean }) {
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(false);
   const [src, setSrc] = useState<string | null>(null);
   const ref = useRef<HTMLVideoElement>(null);
 
-  // الحلقة بعرض الشاشة عند التركيب: العريضة فوق 900px وإلا الضيّقة.
+  // الحلقة بحاجة اللوحة المرسومة عند التركيب: عرضها × كثافة الشاشة (`pickFilm`).
   useEffect(() => {
-    setSrc(window.matchMedia(BRAND_WIDE_QUERY).matches ? plate.films.wide : plate.films.narrow);
-  }, [plate]);
+    const width = artRef.current?.getBoundingClientRect().width ?? window.innerWidth;
+    setSrc(pickFilm(width, window.devicePixelRatio).src);
+  }, [artRef]);
 
   // الفيلم يظهر حين يُعرض إطاره فعلًا — لا يُعوَّل على شفافية ما قبل الإطار
   // الأوّل في كل محرّك (قِيست في Chromium وحده).
@@ -258,9 +316,10 @@ function BrandFilm({ plate, play }: { plate: Plate; play: boolean }) {
   );
 }
 
-function BrandPlate({ kind, ar, play }: { kind: "banner" | "mark"; ar: boolean; play: boolean }) {
-  const plate = HOME_BRAND[kind];
+function BrandPlate({ ar, play }: { ar: boolean; play: boolean }) {
+  const plate = HOME_BRAND.banner;
   const ref = useRef<HTMLElement>(null);
+  const artRef = useRef<HTMLDivElement>(null);
   const widths = Object.keys(plate.posters)
     .map(Number)
     .sort((a, b) => a - b);
@@ -278,21 +337,29 @@ function BrandPlate({ kind, ar, play }: { kind: "banner" | "mark"; ar: boolean; 
   };
 
   return (
-    <figure ref={ref} dir="ltr" data-kind={kind} className="nx-brand" onPointerMove={onMove}>
-      <img
-        src={largest}
-        srcSet={srcSet}
-        sizes={plate.sizes}
-        width={BRAND_RATIO.width}
-        height={BRAND_RATIO.height}
-        alt={ar ? plate.ar : plate.en}
-        decoding="async"
-        fetchPriority={kind === "banner" ? "high" : "auto"}
-        className="nx-brand-poster"
-      />
-      <BrandFilm plate={plate} play={play} />
-      <span aria-hidden className="nx-brand-glare" />
-    </figure>
+    // المسرح: التوهّج المحيط خلف الإطار (طبقةٌ سفلى في سياق تكديسٍ معزول) — ظلٌّ
+    // يذوب حول اللوحة لا عليها، ولا يبلغ الشريط وصفّ المؤشرات إلا أثرًا (نحو 3%)،
+    // والمؤشرات بعده في DOM مرسومةٌ فوقه.
+    <div className="nx-brand-stage">
+      <span aria-hidden className="nx-brand-halo" />
+      <figure ref={ref} dir="ltr" data-kind="banner" className="nx-brand" onPointerMove={onMove}>
+        <div ref={artRef} className="nx-brand-art">
+          <img
+            src={largest}
+            srcSet={srcSet}
+            sizes={plate.sizes}
+            width={BRAND_RATIO.width}
+            height={BRAND_RATIO.height}
+            alt={ar ? plate.ar : plate.en}
+            decoding="async"
+            fetchPriority="high"
+            className="nx-brand-poster"
+          />
+          <BrandFilm artRef={artRef} play={play} />
+          <span aria-hidden className="nx-brand-glare" />
+        </div>
+      </figure>
+    </div>
   );
 }
 
@@ -300,39 +367,25 @@ export function HomeBrandRow() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const allowed = useFilmAllowed();
-  const [paused, setPaused] = usePausedPreference();
+  const [paused, setPaused, known] = usePausedPreference();
   const settled = useSettled();
   const play = allowed && !paused && settled;
-  const pauseLabel = ar ? "إيقاف حركة الماء" : "Pause water motion";
+  const ref = useRef<HTMLElement>(null);
+  const offscreen = useOffscreen(ref);
   return (
-    // الترتيب `ltr` كصفوف الرئيسية (D5): البانر وسطًا والشعار في الزاوية
-    // اليمنى **فيزيائيًّا** في اللغتين — موضعه من أمر المالك لا من اتجاه الكتابة.
-    <section aria-label={ar ? "هوية سَدِيد" : "SADEED brand"} dir="ltr" className="nx-home-brand">
-      <BrandPlate kind="banner" ar={ar} play={play} />
-      {/* لوحة الشعار رابطُ الرئيسية كعُرف الشعارات. **واسمه مكتوبٌ صريحًا:**
-          `<figure>` داخل الرابط يقطع أخذ الاسم من النصّ البديل، فقاس Chromium
-          اسمًا فارغًا (WCAG 2.4.4 · 4.1.2). والاسم يحوي نصّ اللوحة المرئي (2.5.3). */}
-      <Link
-        to="/"
-        className="nx-brand-link"
-        aria-label={ar ? `${HOME_BRAND.mark.ar} — الرئيسية` : `${HOME_BRAND.mark.en} — Home`}
-      >
-        <BrandPlate kind="mark" ar={ar} play={play} />
-      </Link>
-      {/* إيقاف الحلقتين (WCAG 2.2.2) — في الحاشية المقابلة للشعار، خارج اللوحتين
-          فلا يُكتب شيءٌ فوق علامة المالك (B2)، ولا يظهر حيث لا حركة أصلًا. */}
-      {allowed && (
-        <button
-          type="button"
-          className="nx-brand-toggle nx-focus-ring"
-          aria-pressed={paused}
-          aria-label={pauseLabel}
-          title={pauseLabel}
-          onClick={() => setPaused(!paused)}
-        >
-          {paused ? <Play aria-hidden /> : <Pause aria-hidden />}
-        </button>
-      )}
+    // الترتيب `ltr` كصفوف الرئيسية (D5)، والشريط يعلن لغته بنفسه. الشريط أوّلًا في
+    // DOM كما على الشاشة — ثم اللوحة بعرض العمود.
+    <section
+      ref={ref}
+      aria-label={ar ? "هوية سَدِيد" : "SADEED brand"}
+      dir="ltr"
+      className="nx-home-brand"
+      data-run={known || undefined}
+      data-paused={paused || undefined}
+      data-offscreen={offscreen || undefined}
+    >
+      <HomeTicker paused={paused} offscreen={offscreen} ready={known} onPausedChange={setPaused} />
+      <BrandPlate ar={ar} play={play} />
     </section>
   );
 }

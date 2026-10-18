@@ -52,7 +52,18 @@
  * لا يمسّه شيء. وفي الوضع الآمن لا يُركَّب الفيلم أصلًا. الحارس:
  * `src/components/sadeed-core/sadeed-panel-touch.contract.test.tsx`.
  *
- * **الاسم يبقى `HoloVideoEngine` عقدًا حيًّا:** ثلاث صفحات تستورده.
+ * ## والفيلم للرئيسية وحدها، والسطح لكل صفحة (أمر المالك ٢٠٢٦/١٠/١٨)
+ *
+ * «اجعل جميع صفحات النظام بنفس تخطيط وهيئة الصفحة الرئيسية»: الطبقة تُركَّب
+ * مرّةً واحدة في قشرة النظام (`SystemChrome`) خلف كل صفحة، فتصير الخلفية
+ * خلفيةً واحدة لا خلفيات. و`film` يقرّر الفيلم وحده: على الرئيسية `true`،
+ * وعلى الصفحات الداخلية `false` — السطح الساكن كاملًا (الغطاء والشفق والشبكة
+ * والأفق والتعتيم والنسيج) بلا `<video>`. لِمَ لا فيلم تحت الجداول: فحص
+ * التباين (`check-background-contrast.mjs`) يقيس أحبار الرئيسية وحدها فوقه،
+ * وفكّ ترميز حلقةٍ تحت جداول البيانات يعيد تركيب كل إطار سكرول.
+ * والافتراض `true` فالصفحتان العامّتان (`/nx-agents` · `/rag-search`) كما هما.
+ *
+ * **الاسم يبقى `HoloVideoEngine` عقدًا حيًّا:** القشرة وصفحتان تستورده.
  */
 import { memo, useEffect, useRef, useState } from "react";
 import { isSafeMode } from "@/lib/sadeed/self-healing/crash-loop";
@@ -77,12 +88,27 @@ export const SADEED_PANEL_ATTR = "data-sadeed-panel";
 export const FILM_HOLD_QUERY = "(pointer: coarse)";
 
 /**
- * يُوقف الفيلم ما دامت اللوحة مفتوحة على اللمس أو في الوضع الآمن، ويستأنفه
- * حين يزول الشرط — **إن كان يعمل حين أُوقف**. فيلمٌ ساكن قبل الإيقاف (وضع
- * توفير الطاقة على iOS يمنع التشغيل التلقائيّ فيقف على إطاره) لا يُشغَّل عند
- * الإغلاق: لمسة الإغلاق قد تحمل تفعيل المستخدم بعدُ، فيبدأ الفيلم رغم سياسة
- * الجهاز. والتشغيل التلقائيّ الذي يصل والإيقاف قائم (اللوحة مفتوحة عند
- * التركيب) يُوقف حين يبدأ ويُستأنف عند الإغلاق: كان سيعمل لولا اللوحة.
+ * «إيقاف الحركة» الواحد على الرئيسية — **واجهةٌ مجمَّدة بين المسارات**: زرّ الحركة
+ * (مسار البانر) يكتب `data-nx-motion-paused="1"` على `<html>` حين يوقف، ويرفعها
+ * حين يستأنف، ويطلق على `window` الحدث `nx:motion-pause` (`detail.paused`).
+ * فيقف فيلم الخلفية معه (WCAG 2.2.2: مخرجٌ واحد لكل حركةٍ دائمة على الصفحة).
+ * **ولا زرّ هنا ولا حالة محفوظة** — قرار المالك ٢٠٢٦/٠٨/٠٩ باقٍ: المكوّن يقرأ
+ * السمة كما يقرأ إشارة اللوحة، لا يملك مفتاحًا.
+ */
+export const MOTION_PAUSED_ATTR = "data-nx-motion-paused";
+export const MOTION_PAUSE_EVENT = "nx:motion-pause";
+
+/**
+ * يُوقف الفيلم ما دامت اللوحة مفتوحة على اللمس أو في الوضع الآمن، **أو ما دامت
+ * الحركة موقوفةً بزرّها** (`MOTION_PAUSED_ATTR`)، ويستأنفه حين تزول الأسباب كلّها
+ * — **إن كان يعمل حين أُوقف**. فيلمٌ ساكن قبل الإيقاف (وضع توفير الطاقة على iOS
+ * يمنع التشغيل التلقائيّ فيقف على إطاره) لا يُشغَّل عند الإغلاق: لمسة الإغلاق قد
+ * تحمل تفعيل المستخدم بعدُ، فيبدأ الفيلم رغم سياسة الجهاز. والتشغيل التلقائيّ
+ * الذي يصل والإيقاف قائم (اللوحة مفتوحة أو الحركة موقوفة عند التركيب) يُوقف حين
+ * يبدأ ويُستأنف عند الزوال: كان سيعمل لولا السبب.
+ *
+ * والأسباب **سببٌ واحد مجمَّع لا متحكّمان**: لو أوقف كلٌّ منها الفيلم بمعزل لاستأنفه
+ * إغلاقُ اللوحة والحركة ما زالت موقوفة.
  */
 // مُصدَّرة لأن حلقتَي الهوية على الرئيسية (`HomeBrandRow`) فيلمان صامتان بالقاعدة
 // نفسها — طبقةٌ واحدة لا نسخةٌ ثانية (المادة ٣١).
@@ -94,7 +120,9 @@ export function holdFilmUnderPanel(video: HTMLVideoElement): () => void {
   let resumeOnRelease = false;
   const sync = () => {
     const hold =
-      root.getAttribute(SADEED_PANEL_ATTR) === "open" && (touch?.matches === true || isSafeMode());
+      root.getAttribute(MOTION_PAUSED_ATTR) === "1" ||
+      (root.getAttribute(SADEED_PANEL_ATTR) === "open" &&
+        (touch?.matches === true || isSafeMode()));
     if (hold === held) return;
     held = hold;
     if (hold) {
@@ -114,44 +142,79 @@ export function holdFilmUnderPanel(video: HTMLVideoElement): () => void {
     resumeOnRelease = true;
     video.pause();
   };
-  // `class` لأن الوضع الآمن قد يُدخل في أثناء الجلسة (المعالج الدائم).
+  // `class` لأن الوضع الآمن قد يُدخل في أثناء الجلسة (المعالج الدائم). والحدث مع
+  // السمة: المراقِب يصل في مهمّةٍ دقيقة لاحقة، والحدث متزامن — والمزامنة متساوية
+  // القوى، فلا يضرّ وصولهما معًا.
   const observer = new MutationObserver(sync);
-  observer.observe(root, { attributes: true, attributeFilter: [SADEED_PANEL_ATTR, "class"] });
+  observer.observe(root, {
+    attributes: true,
+    attributeFilter: [SADEED_PANEL_ATTR, MOTION_PAUSED_ATTR, "class"],
+  });
   touch?.addEventListener?.("change", sync);
+  window.addEventListener(MOTION_PAUSE_EVENT, sync);
   video.addEventListener("play", onPlay);
   sync();
   return () => {
     observer.disconnect();
     touch?.removeEventListener?.("change", sync);
+    window.removeEventListener(MOTION_PAUSE_EVENT, sync);
     video.removeEventListener("play", onPlay);
   };
 }
 
 /**
- * خلفية واحدة للنظام كلّه. `memo` لأن الناتج لا يتبدّل بإعادة رسم الصفحة
- * الحاضنة — والحالة الوحيدة فيه تفضيلُ الحركة، لا شيء من خارجها.
+ * يحرّر مفكّك الترميز فور فكّ الفيلم — لا عند جمع المهملات.
+ *
+ * الفيلم يُفكّ عند مغادرة الرئيسية إلى صفحةٍ داخلية (القشرة باقية، والفيلم
+ * للرئيسية وحدها)، ثم يُركَّب من جديد عند العودة. وعنصر وسائط منزوعٌ من الشجرة
+ * يحتفظ بمفكّكه ومخزنه المؤقّت حتى يُجمع — وعلى iOS ذاكرةٌ تُحتسب على الصفحة
+ * (درس P0 ٢٠٢٦/١٠/١٤). فنزعُ المصدر ثم `load()` يفرغ الحِمل الآن. والفحص
+ * بـ`canPlayType` قدرةٌ لا متصفّح بعينه: ما لا يشغّل MP4 لا مفكّك له.
  */
-export const HoloVideoEngine = memo(function HoloVideoEngine() {
+function releaseFilm(video: HTMLVideoElement): void {
+  if (video.canPlayType("video/mp4") === "") return;
+  video.removeAttribute("src");
+  video.load();
+}
+
+/**
+ * خلفية واحدة للنظام كلّه. `memo` لأن الناتج لا يتبدّل بإعادة رسم الصفحة
+ * الحاضنة — والحالتان فيه تفضيلُ الحركة و`film` الممرَّرة، لا شيء غيرهما.
+ *
+ * `film` (الافتراض `true`): هل يُركَّب الفيلم أصلًا. `false` ⇐ السطح الساكن
+ * وحده بطبقاته كلّها — لا عنصر وسائط ولا تحميل ولا فكّ ترميز.
+ */
+export const HoloVideoEngine = memo(function HoloVideoEngine({
+  film: filmWanted = true,
+}: {
+  film?: boolean;
+}) {
   // يُركَّب بعد أوّل رسمة فقط، ولمن لم يطلب تقليل الحركة. والاستماع
   // لـ`change` يعني أن تبديل التفضيل أثناء الجلسة يفكّ الفيلم فورًا.
   // ولا يُركَّب في الوضع الآمن: إقلاع التعافي قشرةٌ ساكنة، و`display: none`
   // في الأنماط يُخفي العنصر ولا يمنع `preload="auto"` من تنزيل الفيلم
   // (‎576×1024‎ H.264) وتخزينه — فلا يُنشأ عنصر الوسائط أصلًا.
-  const [film, setFilm] = useState(false);
+  const [motionOk, setMotionOk] = useState(false);
   useEffect(() => {
     const q = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setFilm(!q.matches && !isSafeMode());
+    const sync = () => setMotionOk(!q.matches && !isSafeMode());
     sync();
     q.addEventListener("change", sync);
     return () => q.removeEventListener("change", sync);
   }, []);
+  const film = filmWanted && motionOk;
 
-  // اللمس: لا فكّ ترميزٍ تحت لوحة سَدِيد (انظر رأس الملف).
+  // اللمس: لا فكّ ترميزٍ تحت لوحة سَدِيد (انظر رأس الملف)، ولا حركة حين يوقفها
+  // زرّها الواحد. وعند الفكّ يُحرَّر المفكّك فورًا (`releaseFilm`).
   const filmRef = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const video = filmRef.current;
     if (!film || !video) return;
-    return holdFilmUnderPanel(video);
+    const stopHold = holdFilmUnderPanel(video);
+    return () => {
+      stopHold();
+      releaseFilm(video);
+    };
   }, [film]);
 
   return (

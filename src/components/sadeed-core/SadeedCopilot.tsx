@@ -92,6 +92,7 @@ import type { UIMessage } from "ai";
 // تصدير PDF — الأنواع وحدها ثابتة؛ الوحدة نفسها (ومحرّك `chat-pdf` خلفها)
 // تُحمَّل ديناميكيًّا عند النقر فلا تكبر الحزمة الأولى.
 import type { ExportableMessage } from "./chat-export";
+import { SADEED_PORTRAIT_SRC } from "@/lib/sadeed/portrait";
 // وضع العرض التنفيذي — نُقل من شاشة مركز القيادة المحجوبة (قرار المالك
 // ٢٠٢٦/٠٨/١٢) إلى زرّ في ترويسة هذه اللوحة. يُحمَّل كسولًا وجوبًا:
 // SadeedCopilot يُركَّب على كل صفحة، ومحرّك الوكلاء الرقميين يجب ألا يدخل
@@ -307,7 +308,8 @@ const THINKING_AR = `${SADEED_DISPLAY_NAME_AR} يفكّر…`;
 const EXPORT_ERROR_AR = "تعذّر تجهيز ملف PDF الآن — أعد المحاولة بعد لحظات.";
 const EXPORT_BUSY_AR = "يجهّز ملف PDF…";
 const EXPORT_DONE_AR = "تم تجهيز ملف PDF.";
-const STILL_SRC = "/sadeed-portrait.webp";
+/** صورة سَدِيد الواحدة — المصدر نفسه لبطاقة الرئيسية (`@/lib/sadeed/portrait`). */
+const STILL_SRC = SADEED_PORTRAIT_SRC;
 
 // Module-scope reply-dedupe: survives React StrictMode double-invoke, remounts,
 // and provider re-renders. Any second speak(replyId) for the same id is dropped
@@ -383,7 +385,7 @@ function SadeedPanelBackdrop({ convMode, caption }: { convMode: boolean; caption
           default text chat keeps the clean signature backdrop. */}
       {convMode && (
         <img
-          src={"/sadeed-portrait.webp"}
+          src={STILL_SRC}
           alt=""
           draggable={false}
           className="absolute inset-0 h-full w-full object-cover object-[center_top] opacity-60"

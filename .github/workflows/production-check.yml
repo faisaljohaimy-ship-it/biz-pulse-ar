@@ -157,6 +157,27 @@ jobs:
           ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance,/files
         run: node scripts/ui-audit.mjs
 
+      # ③ شاهدٌ مرئيّ لا حَكَم: لقطاتٌ وحقائق DOM من الموقع الحيّ (الشريط المتحرّك
+      #    يتحرّك؟ اللوحة في رأس الشريط الجانبي؟ أيّ صورةٍ في بطاقة سَدِيد؟) —
+      #    لأن «الحدود صامدة» لا تقول ما يراه العميل. لا تُسقط الفحص؛ الحكم أعلاه.
+      - name: Live snapshot (screenshots + DOM facts)
+        if: always() && steps.target.outputs.configured == 'true'
+        continue-on-error: true
+        env:
+          BASE_URL: ${{ steps.target.outputs.url }}
+          OUT_DIR: live-shots
+          ROUTES: /,/sec,/sec/incidents,/files
+        run: node scripts/live-snapshot.mjs
+
+      - name: Upload live snapshot
+        if: always() && steps.target.outputs.configured == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-snapshot
+          path: live-shots/
+          retention-days: 14
+          if-no-files-found: ignore
+
       - name: Summary
         if: always()
         run: |

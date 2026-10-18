@@ -4,6 +4,15 @@ export const DOMAIN_URL =
   "https://neexios.com";
 
 /**
+ * صورة معاينة الرابط (og:image / twitter:image) — مسارٌ تحت `public/` يُلحق
+ * بـ`DOMAIN_URL`. لوحة البانر كما رسمها المالك، 1200×630 JPEG (أمر المالك
+ * ٢٠٢٦/١٠/١٨ R5: «اجعل علامة سديد … العلامة الخارجية لرابط النظام والتطبيق»).
+ * مصدرٌ واحد لكل مسار: عشرة مسارات تسويقية كانت تشير إلى صورة معاينةٍ لا ملفّ
+ * لها في `public/` (404).
+ */
+export const SITE_OG_IMAGE = "/brand/og/sadeed-og-1200x630.jpg";
+
+/**
  * هوية المنتج — المصدر المركزي الوحيد.
  *
  * OWNER DIRECTIVE 2026-08-01 (second): the brand is «سَدِيد» / «SADEED».

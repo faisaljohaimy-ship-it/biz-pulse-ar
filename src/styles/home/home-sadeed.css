@@ -108,41 +108,80 @@
   text-align: center;
 }
 
+/* الشخصية **صورة الشات بوت نفسها** (أمر المالك ٢٠٢٦/١٠/١٨ — انظر
+   `HOME_IMAGES.persona` و`lib/sadeed/portrait.ts`): الملف ‎1024×1536‎ كما هو، لا
+   قصّة منه. فالإطار نافذةٌ تقصّ ما حولها، والصورة داخلها مكبَّرةٌ بنسبتها
+   الأصلية حتى يملأ النافذةَ ما فوق الصدر — الخوذة والوجه والكتفان بوزن
+   الشخصية السابقة (الوجه من الحاجب إلى الذقن ثلث الارتفاع، والخوذة تحت الحافّة
+   العليا بقليل، والكتفان حيث يقع القرصان الصوتيان).
+   `--sdc-frame-*` ركنُ النافذة وعرضها **كسورًا من الصورة**، مقيسةً على بكسلها:
+   x ‏383 · y ‏40 · العرض ‏254 من ‏1024 (تاج الخوذة عند الصفّ ‏67 ⇐ ‏7.8٪ من النافذة،
+   تحت ذوبان الحافّة العليا ‏7٪). والارتفاع لا يُكتب: تتبعه نسبة النافذة
+   (147:200، و118:161 في الضيّقة) ونسبة الصورة من بُعدَيها في البيان — فلا مطّ،
+   والضيّقة تصغر معها بالكسور نفسها. وتبديل الصورة يعني إعادة قياس الثلاثة. */
 .nx-sd-compact-figure {
+  --sdc-frame-x: calc(383 / 1024);
+  --sdc-frame-y: calc(40 / 1536);
+  --sdc-frame-w: calc(254 / 1024);
+  /* درجات الذوبان: منحنى ناعم الطرفين (0 · 16 · 50 · 84 · 100٪) فلا يُرى خطّ
+     بدايةٍ ولا نهاية — والقناع بالشفافية وحدها، لا لون. */
+  --sdc-fade-1: color-mix(in srgb, currentColor 16%, transparent);
+  --sdc-fade-2: color-mix(in srgb, currentColor 50%, transparent);
+  --sdc-fade-3: color-mix(in srgb, currentColor 84%, transparent);
+  /* الحافّة الداخلية (جهة العمود): يسارًا في العربية، يمينًا في الإنجليزية. */
+  --sdc-fade-dir: to right;
+
   position: absolute;
   z-index: 0;
   inset-block-start: -3px;
   inset-inline-start: calc(-10px - var(--sdc-persona-bleed));
   inline-size: var(--sdc-persona-w);
   block-size: var(--sdc-persona-h);
+  overflow: hidden;
   pointer-events: none;
-}
-
-/* الصورة تذوب في السطح من حافّتيها الداخليّتين (جهة العمود والقاع) فلا
-   يُرى خطّ التحام — في الفاتح كما رُسمت تقريبًا، وأعمق في الداكن حيث خلفيتها
-   الفاتحة أبعد عن السطح. القناع بالشفافية وحدها (`transparent` ↔
-   `currentColor` معتم)، لا لون. */
-.nx-sd-persona {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-  object-fit: cover;
-  user-select: none;
+  /* الصورة تذوب في السطح من ثلاث حوافّ فلا يُرى خطّ التحام: الداخلية (ثلثها
+     تقريبًا) والقاع (ربعه، حيث القرصان) ولمسةٌ في الأعلى — النافذة تبدأ تحت
+     حافّة البطاقة بسبع بكسلات، وأرضية الصورة داكنة فكانت سترسم خطًّا هناك.
+     والحافّة الخارجية تقصّها البطاقة نفسها (النزف). والقناع واحدٌ في الوضعين:
+     الأرضية الداكنة تقارب سطح الداكن، والمنحنى الناعم يُخفي الالتحام في الفاتح. */
   mask-image:
-    linear-gradient(to right, transparent 0, currentColor 10%),
-    linear-gradient(to top, transparent 0, currentColor 9%);
+    linear-gradient(
+      var(--sdc-fade-dir),
+      transparent 0,
+      var(--sdc-fade-1) 8%,
+      var(--sdc-fade-2) 16%,
+      var(--sdc-fade-3) 24%,
+      currentColor 32%
+    ),
+    linear-gradient(
+      to top,
+      transparent 0,
+      var(--sdc-fade-1) 6%,
+      var(--sdc-fade-2) 12%,
+      var(--sdc-fade-3) 18%,
+      currentColor 24%
+    ),
+    linear-gradient(to bottom, transparent 0, var(--sdc-fade-2) 3.5%, currentColor 7%);
   mask-composite: intersect;
 }
 
-.nx-sd-compact[dir="ltr"] .nx-sd-persona {
-  mask-image:
-    linear-gradient(to left, transparent 0, currentColor 10%),
-    linear-gradient(to top, transparent 0, currentColor 9%);
+.nx-sd-compact[dir="ltr"] .nx-sd-compact-figure {
+  --sdc-fade-dir: to left;
 }
 
-.dark .nx-sd-persona {
-  mask-image: radial-gradient(ellipse 62% 58% at 58% 44%, currentColor 58%, transparent 100%);
-  filter: saturate(0.9) brightness(0.92);
+/* نوعيّة صنفين: `.nexus-main :where(img…) { max-width: 100% }` في styles.css
+   كانت ستحبس الصورة المكبَّرة في عرض النافذة. والموضع فيزيائيّ عمدًا
+   (`inset` و`translate`): النافذة منطقةٌ من الصورة، والصورة لا تنعكس في
+   العربية. والإزاحة كسورٌ من الصورة نفسها (نسب `translate` إلى صندوقها). */
+.nx-sd-compact-figure > .nx-sd-persona {
+  position: absolute;
+  inset: 0 auto auto 0;
+  display: block;
+  inline-size: calc(100% / var(--sdc-frame-w));
+  max-inline-size: none;
+  block-size: auto;
+  translate: calc(-100% * var(--sdc-frame-x)) calc(-100% * var(--sdc-frame-y));
+  user-select: none;
 }
 
 /* ── الهوية: الشعار المستدير و«SADEED AI» والوصف ─────────────────────────
@@ -621,10 +660,10 @@
   .nx-home-panel.nx-home-sadeed {
     background-image: none;
   }
-  .nx-sd-persona,
-  .nx-sd-compact[dir="ltr"] .nx-sd-persona,
-  .dark .nx-sd-persona {
+  /* بلا ذوبان: الصورة لوحٌ معتم بحوافّ مستديرة لا شبحٌ نصف شفّاف. */
+  .nx-sd-compact-figure {
     mask-image: none;
+    border-radius: 12px;
   }
 }
 

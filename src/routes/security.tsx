@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
-import { DOMAIN_URL } from "@/lib/domain";
+import { DOMAIN_URL, SITE_OG_IMAGE } from "@/lib/domain";
 import { TrustShell, SectionTitle, Card, Bullets } from "@/components/trust-shell";
 import {
   Lock,
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/security")({
         content: "Encryption, identity, audit, BCP/DR and incident response controls.",
       },
       { property: "og:url", content: `${DOMAIN_URL}/security` },
-      { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
+      { property: "og:image", content: `${DOMAIN_URL}${SITE_OG_IMAGE}` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/security` }],
   }),

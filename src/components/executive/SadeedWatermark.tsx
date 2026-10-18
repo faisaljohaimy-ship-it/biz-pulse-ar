@@ -1,3 +1,5 @@
+import { SADEED_PORTRAIT_SRC } from "@/lib/sadeed/portrait";
+
 /**
  * SadeedWatermark — global SADEED presence rendered behind every route.
  * Mounted once in the app shell (src/routes/__root.tsx). Sits at z-index 0
@@ -20,7 +22,7 @@ export function SadeedWatermark() {
       }}
     >
       <img
-        src={"/sadeed-portrait.webp"}
+        src={SADEED_PORTRAIT_SRC}
         alt=""
         loading="lazy"
         decoding="async"

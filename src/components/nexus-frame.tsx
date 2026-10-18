@@ -1,64 +1,22 @@
+/**
+ * إطار الصفحات التنفيذية المشترك — `NexusPage` و`NexusCard` وأخواتهما.
+ *
+ * **بهيئة الرئيسية** (أمر المالك ٢٠٢٦/١٠/١٨ «اجعل جميع صفحات النظام بنفس تخطيط
+ * وهيئة الصفحة الرئيسية»، ومهمّته اللاحقة: الخلفيات والعناوين والبطاقات والحدود
+ * والظلال بالرموز والمكوّنات المشتركة وحدها). كان الإطار يرسم لكل صفحة خلفيةً
+ * داكنة خاصة (`bg-[#04060f]` وحقل نجومٍ وجزيئاتٍ متحرّكة دائمًا وخطوطَ مسحٍ وصورةٍ
+ * فوتوغرافية)، فتقرأ كل صفحةٍ تنفيذية لوحًا أسود داخل القشرة — وفي الوضع الفاتح
+ * لوحًا رماديًّا موحلًا من جسر الأسطح الداكنة. **والخلفية اليوم خلفية القشرة
+ * الواحدة** (`HoloVideoEngine` في `SystemChrome`)، والبطاقة بطاقة الرئيسية
+ * (`.nx-surface`: سطحٌ معتم وحدٌّ شعريّ ونصف قطر 16 وظلٌّ ناعم)، والعنوان بحبر
+ * الرموز. وما يميّز الصفحة وظيفيًّا باقٍ: شريط الحالة، و«لماذا/ماذا بعد»،
+ * والشارات بنغماتها.
+ */
 import type { ReactNode } from "react";
-import { useMemo } from "react";
-import { GlossyImageBackdrop } from "@/components/backdrops/GlossyImageBackdrop";
 import { ArrowRight, Sparkles, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { formatRelativeTime, type PulseStatus } from "@/lib/enterprise-pulse";
-
-/* ───────────────────────── Ambient layers ───────────────────────── */
-
-function ParticleField() {
-  const dots = useMemo(
-    () =>
-      Array.from({ length: 36 }).map((_, i) => ({
-        left: (Math.sin(i * 12.9898) * 43758.5453) % 1,
-        size: (i % 5 === 0 ? 2 : 1) + (i % 3),
-        delay: (i % 11) * 0.9,
-        dur: 9 + (i % 7) * 1.4,
-      })),
-    [],
-  );
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {dots.map((d, i) => (
-        <span
-          key={i}
-          className="absolute bottom-0 rounded-full bg-cyan-300/70"
-          style={{
-            left: `${Math.abs(d.left) * 100}%`,
-            width: d.size,
-            height: d.size,
-            filter: "blur(0.4px)",
-            boxShadow: "0 0 8px rgba(34,211,238,0.8)",
-            animation: `drift-up ${d.dur}s linear ${d.delay}s infinite`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function Starfield() {
-  const stars = useMemo(
-    () =>
-      Array.from({ length: 60 }).map((_, i) => {
-        const x = Math.abs((Math.sin(i * 92.13) * 43758.5453) % 1) * 100;
-        const y = Math.abs((Math.cos(i * 17.7) * 43758.5453) % 1) * 100;
-        return { x, y, r: i % 6 === 0 ? 1.4 : 0.6, o: 0.2 + (i % 5) * 0.12 };
-      }),
-    [],
-  );
-  return (
-    <svg className="pointer-events-none absolute inset-0 h-full w-full">
-      {stars.map((s, i) => (
-        // currentColor لا أبيض صريح: حقل النجوم يرث لون محيطه فيبقى
-        // مرئيًّا في الوضعين بدل أن يذوب في خلفية بيضاء (المادة ٣٤).
-        <circle key={i} cx={`${s.x}%`} cy={`${s.y}%`} r={s.r} fill="currentColor" opacity={s.o} />
-      ))}
-    </svg>
-  );
-}
 
 /* ───────────────────────────── Page ─────────────────────────────── */
 
@@ -74,7 +32,6 @@ export function NexusPage({
   nextAction,
   why,
   whatNext,
-  backdropImage,
 }: {
   eyebrow?: string;
   title: string;
@@ -87,70 +44,28 @@ export function NexusPage({
   nextAction?: { label: string; onClick: () => void };
   why?: string;
   whatNext?: string;
-  /** Optional glossy photographic backdrop for this page. */
+  /**
+   * @deprecated لا أثر له منذ ٢٠٢٦/١٠/١٨ — الخلفية خلفية القشرة الواحدة، والصور
+   * الفوتوغرافية الداكنة لكل صفحة سقطت معها (كانت تكسر الوضع الفاتح). يبقى مقبولًا
+   * كي لا تُعاد كتابة الصفحات المستدعية واحدةً واحدة.
+   */
   backdropImage?: string;
 }) {
   return (
-    <div className="relative isolate min-h-[calc(100vh-3.5rem)] overflow-hidden bg-[#04060f] text-slate-200">
-      {/* Background field — **زينة الوضع الداكن، لا قشرة الصفحة.**
-
-          كانت الصورة وحدها موسومة `nx-backdrop`، أمّا إخوتها (لطخات الضباب
-          والتظليل الأسود عند ٥٥٪ والنجوم وخطوط المسح) فلا. فيُخفى الغلاف
-          في الوضع الفاتح وتبقى الطبقات المعتمة فوقه: صفحةٌ سوداء يكتب فوقها
-          حبرٌ داكن — وهو ما يُرى في المرفق IMG_9412. الوسم على الحاوية
-          يُسقط الحقل كلّه دفعةً واحدة (القاعدة عند `.light .nx-backdrop`). */}
-      <div className="nx-backdrop pointer-events-none absolute inset-0">
-        {backdropImage && (
-          <GlossyImageBackdrop src={backdropImage} className="z-0" opacity={0.38} />
-        )}
-        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-cyan-500/15 blur-[120px]" />
-        <div className="absolute -top-24 right-1/4 h-96 w-96 rounded-full bg-blue-600/20 blur-[120px]" />
-        <div className="absolute bottom-0 left-1/2 h-80 w-[80%] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[120px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.10),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(59,130,246,0.08),transparent_55%)]" />
-        <div
-          className="absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(34,211,238,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.4) 1px, transparent 1px)",
-            backgroundSize: "44px 44px",
-            maskImage: "radial-gradient(ellipse at center, black 30%, transparent 80%)",
-          }}
-        />
-        <Starfield />
-        <ParticleField />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%)",
-          }}
-        />
-        <div className="scanlines absolute inset-0 opacity-40 mix-blend-overlay" />
-      </div>
-
-      <div className="relative z-10 p-4 md:p-8 space-y-6">
+    <div className="relative isolate text-[color:var(--ink)]">
+      <div className="relative space-y-6 p-4 md:p-8">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             {eyebrow && (
-              <div className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[0.35em] text-cyan-300/80">
-                <span className="h-1 w-1 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.9)]" />
+              <div className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[0.2em] text-[color:var(--tone-cyan)]">
+                <span aria-hidden className="h-1 w-1 rounded-full bg-[color:var(--tone-cyan)]" />
                 {eyebrow}
               </div>
             )}
-            {/* العنوان كان `from-white via-cyan-100 to-white` فوق قصٍّ شفّاف.
-                و`white` في الوضع الفاتح يُقلَب إلى حبرٍ داكن عبر جسر الرموز،
-                بينما `cyan-100` يبقى فاتحًا — فيخرج تدرّج داكن·فاتح·داكن
-                يقرؤه العين على أنه عنوان مطموس. يُقرأ اللون الآن من `--ink`
-                و`--tone-cyan`، وهما معرَّفان في الوضعين معًا فلا يحتاج
-                العنوان جسرًا يصحّ في أحدهما دون الآخر. */}
-            <h1
-              className="mt-1 bg-clip-text text-2xl font-bold tracking-tight text-transparent md:text-3xl"
-              style={{
-                backgroundImage:
-                  "linear-gradient(to right, var(--ink), var(--tone-cyan) 50%, var(--ink))",
-              }}
-            >
+            {/* العنوان بحبر الرموز وسُلّم رؤوس الصفحات المشتركة (24px/800، كرأس
+                صفحات الأمن الصناعي) — لا تدرّجًا مقصوصًا: الرئيسية عناوينها حبرٌ
+                صريح، والتدرّج كان يُخفض تباين نصفه الأوسط. */}
+            <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[color:var(--ink)]">
               {title}
             </h1>
             {subtitle && (
@@ -206,7 +121,7 @@ export function ExecutiveStatusBar({
           ? "صحي"
           : "HEALTHY";
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.02] px-4 py-2.5 text-[12px] text-slate-400 backdrop-blur-sm">
+    <div className="nx-surface flex flex-wrap items-center gap-3 px-4 py-2.5 text-[12px] text-[color:var(--ink-2)]">
       {status && (
         <div className="flex items-center gap-2">
           <span
@@ -231,26 +146,29 @@ export function ExecutiveStatusBar({
       )}
       {lastRefreshed && (
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-500">{ar ? "آخر تحديث:" : "Updated:"}</span>
-          <span className="font-medium text-slate-300">
+          <span className="text-[color:var(--ink-3)]">{ar ? "آخر تحديث:" : "Updated:"}</span>
+          <span className="font-medium text-[color:var(--ink)]">
             {formatRelativeTime(lastRefreshed, ar ? "ar" : "en")}
           </span>
         </div>
       )}
       {owner && (
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-500">{ar ? "المسؤول:" : "Owner:"}</span>
-          <span className="font-medium text-slate-300">{owner}</span>
+          <span className="text-[color:var(--ink-3)]">{ar ? "المسؤول:" : "Owner:"}</span>
+          <span className="font-medium text-[color:var(--ink)]">{owner}</span>
         </div>
       )}
       {nextAction && (
+        // هدف لمسٍ 44px (كان ~26px)، وألوانه من وصفة الشارة النغمية (`.nx-tonal`).
         <button
+          type="button"
           onClick={nextAction.onClick}
-          className="ms-auto inline-flex items-center gap-1.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-wider text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-400/20"
+          data-tone="cyan"
+          className="nx-tonal nx-focus-ring ms-auto inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold uppercase tracking-wider"
         >
-          <Target className="h-3 w-3" />
+          <Target aria-hidden className="h-3 w-3" />
           {nextAction.label}
-          <ArrowRight className="h-3 w-3" />
+          <ArrowRight aria-hidden className="h-3 w-3 rtl:-scale-x-100" />
         </button>
       )}
     </div>
@@ -263,28 +181,36 @@ export function WhyWhatNext({ why, whatNext }: { why?: string; whatNext?: string
   return (
     <div className="grid gap-3 md:grid-cols-2">
       {why && (
-        <div className="flex items-start gap-3 rounded-2xl border border-violet-400/20 bg-violet-500/[0.05] p-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-violet-400/30 bg-violet-400/10 text-violet-300">
+        <div className="nx-surface flex items-start gap-3 p-4">
+          <div
+            aria-hidden
+            data-tone="violet"
+            className="nx-tonal flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+          >
             <Sparkles className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <div className="text-[12px] font-bold uppercase tracking-[0.25em] text-violet-300/80">
+            <div className="text-[12px] font-bold uppercase tracking-[0.25em] text-[color:var(--tone-violet)]">
               {ar ? "لماذا يحدث ذلك" : "Why this is happening"}
             </div>
-            <p className="mt-1 text-sm leading-relaxed text-slate-200">{why}</p>
+            <p className="mt-1 text-sm leading-relaxed text-[color:var(--ink)]">{why}</p>
           </div>
         </div>
       )}
       {whatNext && (
-        <div className="flex items-start gap-3 rounded-2xl border border-cyan-400/25 bg-cyan-500/[0.05] p-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10 text-cyan-300">
+        <div className="nx-surface flex items-start gap-3 p-4">
+          <div
+            aria-hidden
+            data-tone="cyan"
+            className="nx-tonal flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+          >
             <Target className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <div className="text-[12px] font-bold uppercase tracking-[0.25em] text-cyan-300/80">
+            <div className="text-[12px] font-bold uppercase tracking-[0.25em] text-[color:var(--tone-cyan)]">
               {ar ? "الإجراء الموصى به" : "Recommended next action"}
             </div>
-            <p className="mt-1 text-sm leading-relaxed text-slate-200">{whatNext}</p>
+            <p className="mt-1 text-sm leading-relaxed text-[color:var(--ink)]">{whatNext}</p>
           </div>
         </div>
       )}
@@ -302,20 +228,24 @@ export function NexusCard({
   glow?: boolean;
 }) {
   return (
+    // بطاقة الرئيسية (`.nx-surface`) — كانت لوحًا كحليًّا صريحًا (`bg-[#06101f]/70`)
+    // بحافّةٍ هولوغرامية وخطّ ضوءٍ ولمعةٍ عند التمرير ورفعةٍ، فتقرأ لوحًا رماديًّا
+    // موحلًا في الوضع الفاتح. و`glow` يبقى إبرازًا بحلقةٍ من النبرة (`data-glow`).
     <div
-      className={cn(
-        "holo-edge group relative overflow-hidden rounded-2xl border border-cyan-400/15 bg-[#06101f]/70 p-5 backdrop-blur-xl transition-[transform,border-color] duration-300 hover:-translate-y-0.5 hover:border-cyan-300/35",
-        glow && "shadow-exec",
-        className,
-      )}
+      data-glow={glow || undefined}
+      className={cn("nx-surface group relative overflow-hidden p-5", className)}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
-      <div className="pointer-events-none absolute -inset-x-12 -top-12 h-32 -rotate-12 bg-gradient-to-r from-transparent via-cyan-300/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       <div className="relative">{children}</div>
     </div>
   );
 }
 
+/**
+ * الشارة بوصفة شارة الرئيسية (`.nx-tonal` في styles.css: حدٌّ ونصٌّ من رمز النبرة
+ * على سطحٍ معتم بلمسةٍ منها). كانت درجات ٣٠٠ على حشوةٍ من درجة ٤٠٠، والجسر الفاتح
+ * يعمّق كلًّا منهما على حدة — فقيس الكهرماني 4.3:1 والسماوي 4.4:1 (axe 4.10،
+ * ٢٠٢٦/١٠/١٨). النبرة والكلمة باقيتان كما هما.
+ */
 export function NexusPill({
   tone = "cyan",
   children,
@@ -323,20 +253,10 @@ export function NexusPill({
   tone?: "cyan" | "amber" | "rose" | "emerald" | "violet" | "slate";
   children: ReactNode;
 }) {
-  const tones: Record<string, string> = {
-    cyan: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
-    amber: "border-amber-400/30 bg-amber-400/10 text-amber-300",
-    rose: "border-rose-400/30 bg-rose-400/10 text-rose-300",
-    emerald: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
-    violet: "border-violet-400/30 bg-violet-400/10 text-violet-300",
-    slate: "border-slate-500/30 bg-slate-500/10 text-slate-300",
-  };
   return (
     <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12px] font-semibold uppercase tracking-wider",
-        tones[tone],
-      )}
+      data-tone={tone}
+      className="nx-tonal inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-semibold uppercase tracking-wider"
     >
       {children}
     </span>
@@ -354,20 +274,21 @@ export function NexusStat({
   hint?: string;
   tone?: "cyan" | "emerald" | "amber" | "rose" | "violet";
 }) {
+  // الرقم بلون رمز النبرة (`--tone-*`) — الطبقة نفسها في الوضعين، لا درجات اللوحة.
   const colors: Record<string, string> = {
-    cyan: "text-cyan-300",
-    emerald: "text-emerald-300",
-    amber: "text-amber-300",
-    rose: "text-rose-300",
-    violet: "text-violet-300",
+    cyan: "text-[color:var(--tone-cyan)]",
+    emerald: "text-[color:var(--tone-emerald)]",
+    amber: "text-[color:var(--tone-amber)]",
+    rose: "text-[color:var(--tone-rose)]",
+    violet: "text-[color:var(--tone-violet)]",
   };
   return (
     <NexusCard>
-      <div className="text-[12px] font-semibold uppercase tracking-widest text-slate-400">
+      <div className="text-[12px] font-semibold uppercase tracking-widest text-[color:var(--ink-2)]">
         {label}
       </div>
       <div className={cn("mt-2 text-2xl font-bold", colors[tone])}>{value}</div>
-      {hint && <div className="mt-1 text-[12px] text-slate-500">{hint}</div>}
+      {hint && <div className="mt-1 text-[12px] text-[color:var(--ink-3)]">{hint}</div>}
     </NexusCard>
   );
 }

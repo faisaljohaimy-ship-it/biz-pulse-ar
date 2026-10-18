@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ExecutivePresentationPlayer } from "@/components/demo/ExecutivePresentationPlayer";
+import { SadeedEmblem } from "@/components/brand/SadeedPlateLockup";
 import {
   clearExecutiveAcceptance,
   hasExecutiveAcceptance,
@@ -348,11 +349,9 @@ function ExecutiveAcceptanceStage({ isAr, onAccept }: { isAr: boolean; onAccept:
       <header className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-8">
         <Link to="/" className="flex items-center gap-3">
           <span className="relative grid h-11 w-11 place-items-center overflow-hidden rounded-2xl border border-primary/35 bg-primary/10 shadow-[0_0_30px_rgba(0,212,255,.2)]">
-            <img
-              src="/sadeed-icon.png"
-              alt={brandName(isAr)}
-              className="h-full w-full object-cover"
-            />
+            {/* الرمز السداسي زخرفيّ: الاسم مكتوبٌ بجانبه داخل الرابط نفسه، فنصٌّ
+                بديلٌ هنا كان يجعل اسم الرابط «سَدِيد سَدِيد …». */}
+            <SadeedEmblem decorative className="size-9" />
           </span>
           <span>
             {/* الاسم يتبع اللغة — والتباعد للاتيني فقط: يقطع وصلات العربية. */}

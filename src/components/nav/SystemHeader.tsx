@@ -15,18 +15,23 @@
  *     `resolveChromeSlots` في `TopBar.tsx` (`showTheme`) — المصدر الواحد —
  *     والشريط العلوي لم يعد يرسم مبدّلًا، فلا مبدّلان على صفحة.
  *
- * **والترتيب يتبع حاويته:** على الرئيسية تُركَّب الترويسة في صفٍّ `ltr`
- * (قرار المالك D5) فتُرسم يسارًا ← يمينًا كما في الصورة — البحث يسارًا
- * والمستخدم يمينًا. والأوراق التي تحمل نصًّا (البحث وبطاقة المستخدم) تعلن
- * اتجاه لغتها بنفسها، فلا يقلب ترتيبُ الصفّ نصَّها العربي.
+ * **والترتيب يتبع حاويته:** تُركَّب الترويسة في صفّ القشرة `ltr` (قرار المالك
+ * D5، ممدودًا إلى كل صفحة بأمر ٢٠٢٦/١٠/١٨) فتُرسم يسارًا ← يمينًا كما في
+ * الصورة — البحث يسارًا والمستخدم يمينًا. والأوراق التي تحمل نصًّا (البحث
+ * وبطاقة المستخدم) تعلن اتجاه لغتها بنفسها، فلا يقلب ترتيبُ الصفّ نصَّها العربي.
  *
- * **والهيئة هيئة الصورة** (أمر المالك ٢٠٢٦/١٠/١٤ «طبق الصورة بحذافيرها»):
- * حقل بحثٍ مستدير بعدستين، وأقراصٌ مستديرة فاتحة للأيقونات (الجرس أزرق
- * ممتلئ وشارته حمراء، ثم الرسائل والتطبيقات والشمس والمساعدة)، ثم بطاقة
- * المستخدم: الصورة بنقطة حضورٍ خضراء، والاسم الأول والدور. القرص المرسوم
- * ٣٦px داخل هدف لمسٍ ٤٤px (المواصفة §3.7) — والأنماط في
- * `styles/home/home-chrome.css` بطبقة الرموز وحدها. والشعار على الرئيسية:
- * في رأس الشريط الجانبي على الشاشات العريضة، وهنا حين يختفي الشريط.
+ * **والهيئة هيئة الصورة في كل صفحة** (أمرا المالك ٢٠٢٦/١٠/١٤ «طبق الصورة
+ * بحذافيرها» و٢٠٢٦/١٠/١٨ «بنفس تخطيط وهيئة الصفحة الرئيسية»): حقل بحثٍ مستدير
+ * بعدستين، وأقراصٌ مستديرة فاتحة للأيقونات (الجرس أزرق ممتلئ وشارته حمراء، ثم
+ * الرسائل والتطبيقات والشمس والمساعدة)، ثم بطاقة المستخدم: الصورة بنقطة حضورٍ
+ * خضراء، والاسم الأول والدور — وهي زرّ قائمة الحساب (`AccountMenu`: اللغة ·
+ * المنطقة · المؤسسة · الإعدادات). القرص المرسوم ٣٦px داخل هدف لمسٍ ٤٤px
+ * (المواصفة §3.7) — والأنماط في `styles/home/home-chrome.css` بطبقة الرموز
+ * وحدها. ولوحة الهوية في رأس الشريط الجانبي على الشاشات العريضة، وهنا حين
+ * يختفي الشريط (768–1023)، وفي رأس الدرج.
+ *
+ * **والفروق الباقية فروق خانات لا هيئة** (قرارات المالك): المبدّل على الرئيسية
+ * وحدها، و«بلّغ» على غيرها وحدها — يقرّرهما `useChromeSlots()`.
  */
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -41,7 +46,6 @@ import {
   Search,
   Siren,
   Sun,
-  UserRound,
 } from "lucide-react";
 import { Suspense, lazy, useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -49,14 +53,12 @@ import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
 import { MODULES } from "@/lib/nav/modules";
 import { getCommandCenterState } from "@/lib/exec/command-center.functions";
-import { listMyOrgs, type OrgRole } from "@/lib/org/org.functions";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import {
-  SadeedWingLockup,
-  SystemSidebarCard,
-  SystemSidebarNav,
-} from "@/components/nav/SystemSidebar";
+import { SadeedEmblem, SadeedPlateLockup } from "@/components/brand/SadeedPlateLockup";
+import { SadeedName } from "@/components/brand/SadeedWordmark";
+import { SystemSidebarCard, SystemSidebarNav } from "@/components/nav/SystemSidebar";
+import { AccountMenu } from "@/components/nav/AccountMenu";
 import { useChromeSlots } from "@/components/nav/TopBar";
 import "@/styles/home/home-chrome.css";
 
@@ -217,103 +219,13 @@ function HeaderThemeSwitch({ ar }: { ar: boolean }) {
   );
 }
 
-/** دور العضوية بلسانيه — من مصدرٍ حقيقي وحده (`org_members.role`). */
-const ROLE_LABEL: Record<OrgRole, { ar: string; en: string }> = {
-  owner: { ar: "مالك المؤسسة", en: "Organization owner" },
-  admin: { ar: "مسؤول النظام", en: "Administrator" },
-  manager: { ar: "مدير", en: "Manager" },
-  operator: { ar: "مشغّل", en: "Operator" },
-  viewer: { ar: "مشاهد", en: "Viewer" },
-};
-
-/** البادئات التي لا تقوم اسمًا وحدها: «عبد الله» اسمٌ أوّل واحد لا «عبد». */
-const NAME_PREFIXES: ReadonlySet<string> = new Set(["عبد", "ابو", "أبو"]);
-
 /**
- * الاسم الأول لصاحب الجلسة وحده (قرار المالك N4) — من اسمه في حسابه، لا من
- * بريده ولا من اسم غيره. وبلا اسمٍ في الحساب لا يُختلق اسم: «حسابي».
- */
-function firstNameOf(fullName: string | undefined | null): string | null {
-  const parts = (fullName ?? "").trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return null;
-  if (NAME_PREFIXES.has(parts[0]) && parts[1]) return `${parts[0]} ${parts[1]}`;
-  return parts[0];
-}
-
-/**
- * بطاقة المستخدم كما في الصورة: الصورة يمينًا بنقطة حضورٍ خضراء، وبجانبها
- * الاسم والدور.
- *
- * **لا اسمٌ مخترَع ولا دورٌ مخترَع** (المواصفة §3.11، N4): الزائر «زائر» /
- * «زائر النظام»؛ والمسجَّل اسمه الأول ودوره في مؤسسته الحالية — من عضويته
- * (`listMyOrgs`، المفتاح نفسه الذي يقرؤه مبدّل المؤسسة فلا طلبان) — وإلا سقط
- * سطر الدور ولم يُخمَّن. والنقطة الخضراء حضور الجلسة المفتوحة على هذه الشاشة.
- */
-function UserChip({ ar }: { ar: boolean }) {
-  const { user, loading: authLoading } = useAuth();
-  const meta = (user?.user_metadata ?? {}) as {
-    full_name?: string;
-    name?: string;
-    avatar_url?: string;
-  };
-  const fetchOrgs = useServerFn(listMyOrgs);
-  // قراءة حساب صاحب الجلسة لا قراءة عرض: الزائر لا عضوية له فلا تُطلب.
-  const { data: orgs } = useQuery({
-    queryKey: ["my-orgs", user?.id ?? "anon"],
-    queryFn: () => fetchOrgs(),
-    staleTime: 60_000,
-    enabled: !authLoading && user != null,
-  });
-  const membership = orgs?.find((o) => o.is_current) ?? orgs?.[0];
-  const roleLabel = membership ? ROLE_LABEL[membership.role] : undefined;
-
-  const first = firstNameOf(meta.full_name || meta.name);
-  const name = user ? (first ?? (ar ? "حسابي" : "My account")) : ar ? "زائر" : "Guest";
-  const role = user
-    ? roleLabel
-      ? ar
-        ? roleLabel.ar
-        : roleLabel.en
-      : null
-    : ar
-      ? "زائر النظام"
-      : "System guest";
-  // الاسم المقروء يحوي النصّ المرئي بترتيبه (WCAG 2.5.3).
-  const label = [name, role, ar ? "الإعدادات" : "settings"].filter(Boolean).join(" — ");
-  const initial = first?.charAt(0);
-
-  return (
-    <Link
-      to="/settings"
-      aria-label={label}
-      title={label}
-      dir={ar ? "rtl" : "ltr"}
-      className="nx-focus-ring nx-hdr-user flex min-w-0 items-center"
-    >
-      <span className="nx-hdr-avatar" aria-hidden>
-        {user && meta.avatar_url ? (
-          <img src={meta.avatar_url} alt="" width={46} height={46} className="nx-hdr-avatar-img" />
-        ) : user && initial ? (
-          <span className="nx-hdr-avatar-initial">{initial}</span>
-        ) : (
-          <UserRound className="nx-hdr-avatar-glyph" />
-        )}
-        <span className="nx-hdr-presence" />
-      </span>
-      <span className="nx-hdr-user-text">
-        <span className="nx-hdr-user-name">{name}</span>
-        {role ? <span className="nx-hdr-user-role">{role}</span> : null}
-      </span>
-    </Link>
-  );
-}
-
-/**
- * زرّ القائمة للشاشات الضيّقة — حيث يختفي الشريط الجانبي.
+ * زرّ القائمة للشاشات الضيّقة (دون 1024) — حيث يختفي الشريط الجانبي.
  *
  * رُئي غيابه بلقطةٍ على 390: الرئيسية بلا شريطٍ ولا طريقٍ إليه، فعناصر
- * التصميم العشرون لا تُبلغ من الجوال. والقشرة لها درجُها، فالزرّ هنا لمن
- * يطلبه (`withMenu`) — الرئيسية — لا لكل سطح فيتكرّر الدرج.
+ * التصميم العشرون لا تُبلغ من الجوال. **وهو الدرج الوحيد في النظام** منذ
+ * القشرة الواحدة (٢٠٢٦/١٠/١٨): درج القشرة القديمة (`NexusOrb`، من اليمين)
+ * سقط معها، فلا درجان يفترقان.
  */
 function MobileMenu({ ar }: { ar: boolean }) {
   const [open, setOpen] = useState(false);
@@ -329,28 +241,30 @@ function MobileMenu({ ar }: { ar: boolean }) {
           <Menu aria-hidden className="size-5" />
         </button>
       </SheetTrigger>
-      {/* الدرج يخرج من اليسار في اللغتين: الزرّ لا يُركَّب إلا على الرئيسية
-          (`withMenu`)، وشريطها يسارًا وزرّه أوّل الصفّ يسارًا (قرار المالك
-          D5) — فالدرج يخرج من حيث الزرّ ومن حيث الشريط على الشاشة العريضة،
-          وصفوفه بهيئة الشريط نفسه (`side="left"`). */}
+      {/* الدرج يخرج من اليسار في اللغتين: الشريط يسارًا في كل صفحة وزرّه أوّل
+          الصفّ يسارًا (D5 ممدودًا) — فالدرج يخرج من حيث الزرّ ومن حيث الشريط
+          على الشاشة العريضة، وصفوفه بهيئة الشريط نفسه، ورأسه لوحة الهوية. */}
       <SheetContent
         side="left"
         dir={ar ? "rtl" : "ltr"}
         className="nx-sysnav-sheet w-80 overflow-y-auto bg-[color:var(--surface)] p-3"
       >
         <SheetTitle className="sr-only">{ar ? "القائمة الرئيسية" : "Main menu"}</SheetTitle>
-        <div className="pt-8">
-          <SystemSidebarNav side="left" onNavigate={() => setOpen(false)} />
-          <div className="mt-4">
-            <SystemSidebarCard />
-          </div>
+        {/* اللوحة في طرف البداية وزرّ الإغلاق في طرف النهاية — صفٌّ واحد لا
+            يتراكبان (`.nx-drawer-brand` يحجز للزرّ مكانه). */}
+        <div className="nx-drawer-brand">
+          <SadeedPlateLockup variant="drawer" />
+        </div>
+        <SystemSidebarNav onNavigate={() => setOpen(false)} />
+        <div className="mt-4">
+          <SystemSidebarCard />
         </div>
       </SheetContent>
     </Sheet>
   );
 }
 
-export function SystemHeader({ withMenu = false }: { withMenu?: boolean }) {
+export function SystemHeader() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   // القرار الواحد (`resolveChromeSlots`): المبدّل للرئيسية وحدها، والهوم لكل
@@ -358,68 +272,85 @@ export function SystemHeader({ withMenu = false }: { withMenu?: boolean }) {
   const { showTheme, showHome } = useChromeSlots();
   const onHome = !showHome;
   return (
-    <header
-      data-nx-presentation-hide
-      data-chrome={onHome ? "home" : undefined}
-      // السطح والحافّة والارتفاع (64px) والحواشي في `.nx-hdr` — مقيسةٌ على
-      // الصورة. والفجوات أضيق دون `sm`: لولا التضييق ضاق زرّ البحث على ٣٧٥ دون
-      // أرضية اللمس 44. والقشرة لا ترسم هذه الترويسة دون `md` أصلًا.
-      className="nx-hdr flex items-center"
-    >
-      {withMenu && <MobileMenu ar={ar} />}
-      {/* الشعار في الترويسة حين يختفي الشريط وحده (md–lg): على الشاشة العريضة
-          يحمله رأس الشريط بمحاذاة هذا الصفّ، ودون md لا يتّسع الصفّ له. */}
-      {onHome && <SadeedWingLockup className="nx-hdr-brand" />}
-      <button
-        type="button"
-        onClick={openCommandPalette}
-        dir={ar ? "rtl" : "ltr"}
-        // الحقل المرسوم (36px مستديرًا) طبقةٌ داخل هدفٍ 44px — `.nx-hdr-search`.
-        className="nx-focus-ring nx-hdr-search flex min-w-0 items-center text-start"
+    <>
+      {/* سند الترويسة المثبَّتة دون 1024 (`.nx-hdr-spacer`): يحجز ارتفاعها في
+          المسار فلا يبدأ المحتوى خلفها — نمط الشريط العلوي نفسه. */}
+      <div aria-hidden data-nx-presentation-hide className="nx-hdr-spacer" />
+      <header
+        data-nx-presentation-hide
+        // هيئة القشرة الواحدة في كل صفحة (أمر المالك ٢٠٢٦/١٠/١٨) — الحواشي
+        // والمقاسات المقيسة على الصورة مقيّدةٌ بهذه السمة في home-chrome.css.
+        data-chrome="system"
+        // السطح والحافّة والارتفاع (64px) والحواشي في `.nx-hdr` — مقيسةٌ على
+        // الصورة. والفجوات أضيق دون `sm`: لولا التضييق ضاق زرّ البحث على ٣٧٥ دون
+        // أرضية اللمس 44. **ومثبَّتةٌ دون 1024** تحت الشريط العلوي: درجها وبحثها
+        // و«بلّغ» وقائمة الحساب لا تمضي مع السكرول (ترويسة الجوال القديمة كانت
+        // لاصقة؛ و`sticky` لا يلصق هنا لأن `body` حاوية السكرول — درس الشريط).
+        className="nx-hdr flex items-center"
       >
-        <Search aria-hidden className="nx-hdr-search-ico size-5 shrink-0" />
-        <span className="truncate">
-          {ar
-            ? "ابحث في النظام … ( مواقع, أفراد, حوادث, كاميرات, تقارير)"
-            : "Search the system … (sites, people, incidents, cameras, reports)"}
+        <MobileMenu ar={ar} />
+        {/* الهوية على الجوال (دون 768): الرمز السداسي واسم المنتج نصًّا — ترويسة
+            الجوال القديمة كانت تحملهما، فلا تُترك الصفحات الداخلية بلا هوية. والرمز
+            زخرفيّ لأن الاسم بجانبه مقروء. */}
+        <span className="nx-hdr-mark">
+          <SadeedEmblem decorative className="nx-hdr-mark-emblem" />
+          <SadeedName size="sm" className="nx-hdr-mark-name" />
         </span>
-        {onHome ? (
-          // العدسة الثانية في طرف الحقل كما رُسمت (الصورة بلا اختصار لوحة).
+        {/* لوحة الهوية في الترويسة حين يختفي الشريط وحده (768–1023): على الشاشة
+            العريضة يحملها رأس الشريط، ودون 768 الرمز والاسم أعلاه (واللوحة في الدرج). */}
+        <SadeedPlateLockup variant="header" className="nx-hdr-brand" />
+        <button
+          type="button"
+          onClick={openCommandPalette}
+          dir={ar ? "rtl" : "ltr"}
+          // الاختصار لم يسقط بسقوط شارته المرئية: لوحة الأوامر تفتح بـCtrl/⌘+K،
+          // ويُعلَن هنا للتقنيات المساعدة.
+          aria-keyshortcuts="Control+K Meta+K"
+          // الحقل المرسوم (36px مستديرًا) طبقةٌ داخل هدفٍ 44px — `.nx-hdr-search`.
+          // ودون 640 قرصٌ بعدسته وحدها (النصّ مخفيٌّ بصريًّا باقٍ اسمًا مقروءًا) —
+          // ليتّسع الصفّ للهوية.
+          className="nx-focus-ring nx-hdr-search flex min-w-0 items-center text-start"
+        >
+          <Search aria-hidden className="nx-hdr-search-ico size-5 shrink-0" />
+          <span className="nx-hdr-search-label truncate">
+            {ar
+              ? "ابحث في النظام … ( مواقع, أفراد, حوادث, كاميرات, تقارير)"
+              : "Search the system … (sites, people, incidents, cameras, reports)"}
+          </span>
+          {/* العدسة الثانية في طرف الحقل كما رُسمت (الصورة بلا اختصار لوحة). */}
           <Search aria-hidden className="nx-hdr-search-end ms-auto size-4 shrink-0" />
-        ) : (
-          <kbd className="ms-auto hidden whitespace-nowrap rounded border border-[color:var(--hairline)] px-1.5 text-[12px] sm:inline">
-            Ctrl K
-          </kbd>
-        )}
-      </button>
-      {/* الأقراص كما رُسمت يسارًا ← يمينًا: الجرس · الرسائل · التطبيقات ·
+        </button>
+        {/* الأقراص كما رُسمت يسارًا ← يمينًا: الجرس · الرسائل · التطبيقات ·
           الشمس · المساعدة، ثم المستخدم. **و«بلّغ» خارج الرئيسية وحدها:** الصورة
           بلا زرّه («طبق الصورة بحذافيرها»، ٢٠٢٦/١٠/١٤ — آخر نصٍّ للمالك على
           الرئيسية، المادة ٣٥)، وهو باقٍ في ترويسة كل صفحةٍ غيرها وفي رأس صفحة
           البلاغات — فالمدخلان («الاثنان»، ٢٠٢٦/٠٩/٢٩) قائمان. */}
-      <div className="nx-hdr-tools ms-auto flex shrink-0 items-center">
-        {!onHome && <QuickReport ar={ar} />}
-        <UrgentBell ar={ar} />
-        <Link
-          to="/assistant"
-          aria-label={ar ? "محادثات سَدِيد" : "SADEED conversations"}
-          title={ar ? "محادثات سَدِيد" : "SADEED conversations"}
-          className={`${ICON_BTN} hidden sm:grid`}
-        >
-          <MessageCircleMore aria-hidden className="size-5" />
-        </Link>
-        <AppsMenu ar={ar} />
-        {showTheme && <HeaderThemeSwitch ar={ar} />}
-        <Link
-          to="/guide"
-          aria-label={ar ? "دليل النظام" : "System guide"}
-          title={ar ? "دليل النظام" : "System guide"}
-          className={`${ICON_BTN} hidden sm:grid`}
-        >
-          <MessageCircleQuestionMark aria-hidden className="size-5" />
-        </Link>
-        <UserChip ar={ar} />
-      </div>
-    </header>
+        <div className="nx-hdr-tools ms-auto flex shrink-0 items-center">
+          {!onHome && <QuickReport ar={ar} />}
+          <UrgentBell ar={ar} />
+          <Link
+            to="/assistant"
+            aria-label={ar ? "محادثات سَدِيد" : "SADEED conversations"}
+            title={ar ? "محادثات سَدِيد" : "SADEED conversations"}
+            className={`${ICON_BTN} hidden sm:grid`}
+          >
+            <MessageCircleMore aria-hidden className="size-5" />
+          </Link>
+          <AppsMenu ar={ar} />
+          {showTheme && <HeaderThemeSwitch ar={ar} />}
+          <Link
+            to="/guide"
+            aria-label={ar ? "دليل النظام" : "System guide"}
+            title={ar ? "دليل النظام" : "System guide"}
+            className={`${ICON_BTN} hidden sm:grid`}
+          >
+            <MessageCircleQuestionMark aria-hidden className="size-5" />
+          </Link>
+          {/* بطاقة المستخدم زرّ قائمة الحساب: اللغة · المنطقة · المؤسسة ·
+            الإعدادات — ما كان في شريط القشرة القديمة لم يسقط. */}
+          <AccountMenu ar={ar} />
+        </div>
+      </header>
+    </>
   );
 }

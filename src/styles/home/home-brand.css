@@ -1,36 +1,82 @@
 /* ============================================================================
-   home-brand.css — صفّ هوية سَدِيد على الرئيسية (أمر المالك ٢٠٢٦/١٠/١٧)
+   home-brand.css — صفّ هوية سَدِيد على الرئيسية (أمرا المالك ٢٠٢٦/١٠/١٧ و١٠/١٨)
    ----------------------------------------------------------------------------
-   يستورده `HomeBrandRow.tsx` وحده (حزمة الرئيسية المقتطَعة). البانر في وسط
-   الصفّ ولوحة الشعار في زاويته اليمنى — فيزيائيًّا، تحت `dir="ltr"` (D5).
+   يستورده `HomeBrandRow.tsx` وحده (حزمة الرئيسية المقتطَعة). الصفّ عمودٌ واحد:
+   شريط «مزايا سَدِيد» (home-ticker.css) ثم اللوحة **بعرض العمود كاملًا** — ابنٌ في
+   شبكة `.nx-home-arrange` فحافّتاه حافّتا صفّ المؤشرات والبطاقات بلا رقمٍ يُزامَن
+   (R3: «على امتداد الصفحة متناسقاً مع العناصر»).
 
-   ① الصورة هي اللوحة: `<img>` تملك الحجم (نسبة 3:1 مكتوبة فلا قفزة تخطيط)،
-     والفيلم يملؤها فوقها، والبريق طبقةٌ ثالثة لا تستقبل المؤشّر.
-   ② لا لون إلا من طبقة الرموز (المادة ٣٣): الظلّ من `--ink` ممزوجًا، والبريق
-     من `--glass-rim`، والحدّ من `--hairline`.
-   ③ الحركة الزمنية في home-motion.css (الدخول) وهنا الاستجابة وحدها (بريق
-     وارتفاع عند التمرير، بخصائص مستقلّة — المادة ٣٢).
+   ① الصورة هي اللوحة: `<img>` تملك الحجم (نسبة 3:1 مكتوبة فلا قفزة تخطيط)، والفيلم
+     يملؤها فوقها، والبريق طبقةٌ ثالثة لا تستقبل المؤشّر. لا قصّ ولا تمطيط ولا كتابة.
+   ② الإطار حول اللوحة لا عليها — موجّه المرحلة ٢٠٢٦/١٠/١٨ (مهمّة المالك كما نقلها
+     منسّق البناء بصياغته، لا بنصّ المالك): إطارٌ مستقبليّ بتدرّج أزرق كهربائي وسماوي،
+     وإضاءة زجاجٍ محسوبة وعمق، وزجاجٌ باعتدال. فهو حلقةٌ زجاجية رقيقة بحدٍّ متدرّج وضوءٍ
+     علويّ وظلٍّ مُزرقّ. **بلا `backdrop-filter`**: تمويهٌ فوق فيلم الخلفية المتحرّك
+     يُعاد كل إطار؛ والزجاج هنا تدرّجاتٌ رخيصة على المُركِّب. ونصف القطر يجمع الصفّ:
+     الحلقة الخارجية ≈ ألواح الصفحة (17–19px) واللوحة داخلها 12px كبطاقات المؤشرات.
+   ③ التوهّج المحيط خلف الإطار ينجرف ببطء — من الموجّه نفسه — طبقةٌ واحدة بـ`translate`
+     و`opacity` (المُركِّب). ظلٌّ ملوّن يذوب حول الإطار بلا حافّة، يقصر عموديًّا فلا يبلغ
+     المؤشرات ولا الشريط إلا أثرًا (ومرسومان فوقه). يجري بعد قراءة التفضيل (`[data-run]`)،
+     ويقف بزرّ «إيقاف الحركة» وخارج الإطار، ولا يتحرّك أصلًا لمن طلب السكون أو أطفأ
+     الحركة أو في الوضع الآمن.
+   ④ لا لون إلا من طبقة الرموز (المادة ٣٣)، والحركة الزمنية للدخول في home-motion.css.
    ============================================================================ */
 
 .nx-home-brand {
-  --brand-mark-w: 180px;
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
+/* المسرح: سياق تكديسٍ معزول يحمل التوهّج خلف الإطار. والمتغيّران هنا ليرثهما الإطار
+   والتوهّج معًا. */
+.nx-brand-stage {
+  --brand-ring: 4px;
+  --brand-art-radius: 12px;
+  position: relative;
+  isolation: isolate;
+}
+
+@media (min-width: 768px) {
+  .nx-brand-stage {
+    --brand-ring: 6px;
+  }
+}
+
+/* ② الإطار: حدٌّ متدرّج (أزرق ملكي ← سماوي ← لازوردي) على صندوق الحدّ، وحلقةٌ
+   زجاجية بحشوة الزجاج وبريقه على صندوق الحشوة، وضوءٌ تحت الحافّة العليا، وظلٌّ مزرقّ
+   يعطي العمق. */
 .nx-brand {
   position: relative;
   margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--hairline);
-  border-radius: 16px;
-  background: var(--surface);
+  padding: var(--brand-ring);
+  border: 1px solid transparent;
+  border-radius: calc(var(--brand-art-radius) + var(--brand-ring) + 1px);
+  background:
+    var(--glass-sheen) padding-box,
+    linear-gradient(var(--glass-fill), var(--glass-fill)) padding-box,
+    linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--sd-royal) 72%, transparent),
+        color-mix(in srgb, var(--tone-cyan) 58%, transparent) 48%,
+        color-mix(in srgb, var(--sd-azure) 72%, transparent)
+      )
+      border-box;
   box-shadow:
+    inset 0 1px 0 var(--glass-rim),
     0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
-    0 16px 36px -18px color-mix(in srgb, var(--ink) 30%, transparent);
+    0 18px 40px -22px color-mix(in srgb, var(--sd-azure) 48%, transparent);
+}
+
+/* اللوحة داخل الإطار: تقصّ الصورة والفيلم والبريق على استدارتها، وخيطٌ رفيع حيث تلتقي
+   بالحلقة يفصل الفنّ عن الزجاج. */
+.nx-brand-art {
+  position: relative;
   isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--brand-art-radius);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent);
 }
 
 .nx-brand-poster {
@@ -68,71 +114,53 @@
   );
 }
 
-/* لوحة الشعار رابط: بلا زخرفة، وحلقة تركيز على زوايا اللوحة. */
-.nx-brand-link {
-  display: block;
-  inline-size: var(--brand-mark-w);
-  border-radius: 18px;
-  text-decoration: none;
-  /* ضيّقًا: فوق البانر وإلى يمينه (الترتيب البصري وحده — عنصرٌ واحد يُركَّز). */
-  order: -1;
-  align-self: flex-end;
-}
-
-.nx-brand-link:focus-visible {
-  outline: 2px solid var(--tone-cyan);
-  outline-offset: 3px;
-}
-
-/* إيقاف حركة الماء (WCAG 2.2.2): قرصٌ 44px في الحاشية المقابلة للشعار —
-   ضيّقًا على سطر الشعار نفسه، وعريضًا في منتصف الحاشية اليسرى. */
-.nx-brand-toggle {
+/* ③ التوهّج المحيط: طبقةٌ بحجم الإطار خلفه لا خلفية لها، ضوؤها ظلالٌ ملوّنة تذوب
+   حوله — ملكيّ يسارًا، وسماويّ يمينًا، ولازورديّ خفيف حوله كلّه. **ظلٌّ لا تدرّجٌ
+   داخل صندوق:** التدرّج القطري يُقصّ عند حدّ صندوقه فرُسم على 390px «إطارًا ثانيًا»
+   بحافّةٍ ظاهرة (قِيس ٢٠٢٦/١٠/١٨)؛ والظلّ يتلاشى وحده بلا حافّة، ويُرسم مرّةً في طبقته
+   ثم يحرّكها المُركِّب. والسالب في الامتداد يُقصر ضوءه عموديًّا: نحو 3% من شدّته عند
+   الشريط فوقه (12px) وصفّ المؤشرات تحته (16px)، والمؤشرات بعده في DOM مرسومةٌ فوقه. */
+.nx-brand-halo {
   position: absolute;
-  inset-inline-start: 0;
-  inset-block-start: calc(var(--brand-mark-w) / 6 - 22px);
-  display: grid;
-  place-items: center;
-  inline-size: 44px;
-  block-size: 44px;
-  min-inline-size: 44px;
-  min-block-size: 44px;
-  padding: 0;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--ink-2);
+  inset: 0;
+  z-index: -1;
+  border-radius: calc(var(--brand-art-radius) + var(--brand-ring) + 1px);
+  box-shadow:
+    -14px 0 30px -10px color-mix(in srgb, var(--sd-royal) 55%, transparent),
+    14px 0 30px -10px color-mix(in srgb, var(--tone-cyan) 50%, transparent),
+    0 0 26px -8px color-mix(in srgb, var(--sd-azure) 40%, transparent);
+  opacity: 0.85;
+  pointer-events: none;
 }
 
-.nx-brand-toggle svg {
-  inline-size: 18px;
-  block-size: 18px;
+/* الانجراف: إزاحةٌ أفقية صغيرة وتنفّسٌ في الشدّة، ذهابًا وإيابًا — لا يبدأ من العدم
+   (أدنى شفافية 0.7) ولا يعبر اللوحة. */
+@keyframes nxBrandDrift {
+  from {
+    translate: -6px 0;
+    opacity: 0.7;
+  }
+  to {
+    translate: 6px 0;
+    opacity: 1;
+  }
 }
 
-/* عريضًا: البانر في الوسط بين حاشيتين متساويتين، والشعار في الزاوية اليمنى
-   متوسّطًا عموديًّا بحسابٍ من عرضه (ارتفاعه ثلثه) — لا `translate`، فتبقى
-   خاصيّة الدخول له وحدها. */
-@media (min-width: 900px) {
-  .nx-home-brand {
-    --brand-mark-w: clamp(200px, 17vw, 260px);
-    display: block;
-    min-block-size: calc(var(--brand-mark-w) / 3);
-    padding-inline: calc(var(--brand-mark-w) + 16px);
+/* خصائص مفصّلة لا الاختصار: `animation` المختصرة تعيد `animation-play-state` إلى
+   `running` بنوعيّة محدِّدها فتغلب قاعدة الإيقاف أدناه (قِيس على الشريط ٢٠٢٦/١٠/١٨). */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-nx-motion="off"]):not(.safe-mode) .nx-home-brand[data-run] .nx-brand-halo {
+    animation-name: nxBrandDrift;
+    animation-duration: 9s;
+    animation-timing-function: var(--nx-ease-inout);
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
   }
+}
 
-  .nx-brand[data-kind="banner"] {
-    inline-size: min(100%, 800px);
-    margin-inline: auto;
-  }
-
-  .nx-brand-link {
-    position: absolute;
-    inset-inline-end: 0;
-    inset-block-start: calc(50% - var(--brand-mark-w) / 6);
-  }
-
-  .nx-brand-toggle {
-    inset-block-start: calc(50% - 22px);
-  }
+/* زرّ «إيقاف الحركة» وخروج الصفّ من الإطار يجمّدانه في مكانه. */
+.nx-home-brand:is([data-paused], [data-offscreen]) .nx-brand-halo {
+  animation-play-state: paused;
 }
 
 /* البريق والارتفاع استجابةٌ لفأرةٍ دقيقة لمن لم يطلب السكون وتحت مفتاح النظام
@@ -152,26 +180,26 @@
       box-shadow 0.28s var(--nx-ease-out);
   }
 
-  html:not([data-nx-motion="off"]) .nx-brand[data-kind="banner"]:hover,
-  html:not([data-nx-motion="off"]) .nx-brand-link:hover .nx-brand {
+  html:not([data-nx-motion="off"]) .nx-brand[data-kind="banner"]:hover {
     translate: 0 -2px;
     box-shadow:
+      inset 0 1px 0 var(--glass-rim),
       0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
-      0 22px 44px -18px color-mix(in srgb, var(--ink) 38%, transparent);
+      0 24px 48px -22px color-mix(in srgb, var(--sd-azure) 58%, transparent);
   }
 }
 
 @media (forced-colors: active) {
   .nx-brand {
     border-color: CanvasText;
+    background: Canvas;
   }
 
   .nx-brand-glare {
     display: none;
   }
 
-  .nx-brand-toggle {
-    border-color: ButtonText;
-    color: ButtonText;
+  .nx-brand-halo {
+    display: none;
   }
 }

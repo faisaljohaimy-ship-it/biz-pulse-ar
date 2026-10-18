@@ -8,6 +8,7 @@ import * as React from "react";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SadeedWordmark } from "@/components/brand/SadeedWordmark";
+import { SadeedEmblem } from "@/components/brand/SadeedPlateLockup";
 import { NxStatusIndicator } from "@/components/nx";
 import type { ArchitectureLayerInfo, HealthState } from "./repository";
 import { useCockpit } from "./use-cockpit";
@@ -44,19 +45,12 @@ const HEALTH_DOT: Record<HealthState, string> = {
 };
 
 /**
- * أيقونة العلامة الرسمية — نفس أصل `/sadeed-icon.png` المستخدم في app-shell.
- * (كان هنا سداسي SVG مرسوم يدويًّا مخالفًا للهوية — أُزيل بتوحيد العلامة.)
- * `alt=""` + aria-hidden لأن اسم العلامة الحيّ يُقرأ من SadeedWordmark بجوارها.
+ * العلامة الرسمية — الرمز السداسي «S» من لوحة المالك (أمر ٢٠٢٦/١٠/١٨ R5)،
+ * المصدر نفسه لأيقونة التبويب والتطبيق. زخرفيّ لأن اسم العلامة الحيّ يُقرأ من
+ * SadeedWordmark بجوارها.
  */
 function BrandMark() {
-  return (
-    <img
-      src="/sadeed-icon.png"
-      alt=""
-      aria-hidden
-      className="rounded-nx-12 size-9 shrink-0 object-cover"
-    />
-  );
+  return <SadeedEmblem decorative className="size-9 shrink-0" />;
 }
 
 /** Live Riyadh clock: Arabic time + Gregorian date. Ticks once a minute. */

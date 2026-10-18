@@ -1,7 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useI18n } from "@/lib/i18n";
-import { DOMAIN_URL } from "@/lib/domain";
+import { DOMAIN_URL, SITE_OG_IMAGE } from "@/lib/domain";
 import { ArrowLeft, Play, Clock, X, Maximize2 } from "lucide-react";
 // ملصقات الأفلام. كانت ثلاثة ملفات تحت `@/assets/` وهي **نُسخ** من لوحات
 // `public/`: `cinematic-city.jpg` = `smart-city-bg.jpeg` بايتًا ببايت،
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/films")({
       },
       { property: "og:title", content: "Film Center — SADEED" },
       { property: "og:url", content: `${DOMAIN_URL}/films` },
-      { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
+      { property: "og:image", content: `${DOMAIN_URL}${SITE_OG_IMAGE}` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/films` }],
   }),

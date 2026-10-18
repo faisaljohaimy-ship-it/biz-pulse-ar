@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
-import { DOMAIN_URL } from "@/lib/domain";
+import { DOMAIN_URL, SITE_OG_IMAGE } from "@/lib/domain";
 import { Check, Sparkles, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/pricing")({
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/pricing")({
         content: "Enterprise pricing for the executive AI operating system.",
       },
       { property: "og:url", content: `${DOMAIN_URL}/pricing` },
-      { property: "og:image", content: `${DOMAIN_URL}/og-image.jpg` },
+      { property: "og:image", content: `${DOMAIN_URL}${SITE_OG_IMAGE}` },
     ],
     links: [{ rel: "canonical", href: `${DOMAIN_URL}/pricing` }],
   }),
