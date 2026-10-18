@@ -233,6 +233,26 @@ const collect = ({ minFont, minTarget }) => {
       el.matches("button, a[href], input, select, textarea, [role='button'], [role='tab']");
     if (!carriesMeaning) continue;
 
+    // **المخفيّ بصريًّا عمدًا ليس مقصوصًا.** حاوية القارئات (`sr-only`:
+    // ‏`clip-path: inset(50%)`، أو `clip: rect(0 0 0 0)` في صيغتها القديمة) لا
+    // يُرى منها شيءٌ بتصميمها، فما في داخلها ليس «نصًّا مرئيًّا» يُفقد. كانت
+    // تُقاس أبناؤها على صندوقها ذي البكسل الواحد فأسقطت العنوان المخفيّ في
+    // الرئيسية على المقاسات الثمانية (`SPAN.nx-bp-title` ‏101px، ٢٠٢٦/١٠/١٧)
+    // وهو سليم. والاستثناء بتوقيع الإخفاء نفسه لا بصِغَر القاصّ: صندوقٌ انهار
+    // إلى 1px بخطأٍ يبقى يُقاس — جُرّب الاتجاهان على صفحاتٍ مزروعة.
+    let hiddenByDesign = false;
+    for (let p = el; p && p !== de; p = p.parentElement) {
+      const ps = getComputedStyle(p);
+      if (
+        ps.clipPath === "inset(50%)" ||
+        /^rect\(0(px)?,? ?0(px)?,? ?0(px)?,? ?0(px)?\)$/.test(ps.clip)
+      ) {
+        hiddenByDesign = true;
+        break;
+      }
+    }
+    if (hiddenByDesign) continue;
+
     // **المتحرّك لا يُحاكَم بلقطة.** شريط القرارات اللافّ يضع عناصره خارج
     // قاصّها في كل لحظة، والحركة هي ما يُدخلها — فقياسها في إطار واحد يعطي
     // آلاف البكسلات «مقصوصة» وهي سليمة. كُشفت هذه بالتشغيل: الحارس أسقط ٧ من

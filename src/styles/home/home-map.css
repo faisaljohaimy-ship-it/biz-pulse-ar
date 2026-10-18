@@ -718,7 +718,9 @@
   align-items: center;
   justify-content: center;
   gap: 1px;
-  min-inline-size: 0;
+  /* العرض كالارتفاع من رمز الهدف: الكلمة القصيرة («المواقع» · «المرافق») كانت
+     تعطي رابطًا بعرضها 40px، تحت أرضية اللمس 44 (قاسه ui-audit ٢٠٢٦/١٠/١٧). */
+  min-inline-size: var(--arabia-hit);
   min-block-size: var(--arabia-hit);
   padding: 3px 2px;
   border-radius: 9px;

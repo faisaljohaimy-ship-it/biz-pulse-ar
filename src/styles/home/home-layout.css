@@ -86,3 +86,69 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* ── الخاتمة: شريطٌ هادئ بفعلين (أمر المالك ٢٠٢٦/١٠/١٧) ──────────────────
+   بلغة البطاقات نفسها: سطحٌ معتم وحدٌّ شعري وغسلةٌ سماوية خفيفة من ركن
+   البداية. والفعلان ≥ 44px، والأساسي بلون سَدِيد ونصّه من زوجه المقيس في
+   بطاقته (`--sd-azure` / `--primary-foreground`). والحركة في home-motion.css. */
+.nx-home-close {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding: 20px 24px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      120% 160% at 100% 0%,
+      color-mix(in srgb, var(--sd-azure) 10%, transparent),
+      transparent 60%
+    ),
+    var(--surface);
+  color: var(--ink);
+}
+
+.nx-home-close-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.nx-home-close-text {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.nx-home-close-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nx-home-cta {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.nx-home-cta[data-variant="primary"] {
+  border-color: transparent;
+  background: var(--sd-azure);
+  color: var(--primary-foreground);
+}
+
+@media (forced-colors: active) {
+  .nx-home-cta {
+    border-color: ButtonText;
+  }
+}

@@ -26,15 +26,15 @@ section.
 
 ## 2. Owner decisions (2026-10-13, AskUserQuestion — binding; D1–D4 superseded by §2.1 on 2026-10-14)
 
-| # | Question | Owner's answer (verbatim) | Consequence |
-|---|---|---|---|
-| D1 | Default theme for the whole system | «الداكن افتراضيًّا كما هو» | `DEFAULT_THEME` stays `"dark"`. The page is built for **both** modes; **light mode must match the mockup**, dark mode is its faithful counterpart (Articles 32–34). |
-| D2 | Mockup metrics with no source | «أقرب مقياس حقيقي + «لم يُقَس» (موصى به)» | Each card keeps its mockup slot and anatomy, shows the **nearest real measure under its honest name**, and writes «لم يُقَس» where nothing is measured — including every change-%/sparkline slot. |
-| D3 | Live cameras & incident photos | «بطاقات حالة بلا صور (موصى به)» | Camera tiles become **status cards** (code, site, state, last alert) styled as the mockup's tiles; incident/risk thumbnails become **category icon tiles**. No `<img>`, no `<video>`, no stock photos. «لا بثّ مرتبط» stays visible. |
-| D4 | Sidebar footer card brand | «شعار المنتج كما هو (موصى به)» | The card keeps «معًا نحو بيئة آمنة» + the SADEED product brand. No third-party name, emblem or logo. |
-| D5 | Page orientation | «كما في الصورة حرفيًّا» | On the home page the **arrangement is left-to-right as in the mockup**: sidebar on the **left**, map centre-left, SADEED AI card on the **right**, KPI row starting at the left with the security-status card. **Text inside every card stays Arabic `rtl`.** Other pages keep their current right-hand sidebar. |
-| D6 | Background film | «يبقى الفيلم خلف التصميم» | `<HoloVideoEngine />` stays mounted with its current rules (0.5×, muted, no toggle, off under reduced motion, opacity/scrim as guarded). Cards sit on it with their glass/surface tokens. |
-| D7 | Delivery (recorded in CLAUDE.md) | «الكود مباشر والقاعدة بإذن» | Code goes straight to `main` → Lovable Publish → production check. **No production DB change** without explicit approval — this work needs none. |
+| #   | Question                           | Owner's answer (verbatim)                 | Consequence                                                                                                                                                                                                                                                                                                      |
+| --- | ---------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Default theme for the whole system | «الداكن افتراضيًّا كما هو»                | `DEFAULT_THEME` stays `"dark"`. The page is built for **both** modes; **light mode must match the mockup**, dark mode is its faithful counterpart (Articles 32–34).                                                                                                                                              |
+| D2  | Mockup metrics with no source      | «أقرب مقياس حقيقي + «لم يُقَس» (موصى به)» | Each card keeps its mockup slot and anatomy, shows the **nearest real measure under its honest name**, and writes «لم يُقَس» where nothing is measured — including every change-%/sparkline slot.                                                                                                                |
+| D3  | Live cameras & incident photos     | «بطاقات حالة بلا صور (موصى به)»           | Camera tiles become **status cards** (code, site, state, last alert) styled as the mockup's tiles; incident/risk thumbnails become **category icon tiles**. No `<img>`, no `<video>`, no stock photos. «لا بثّ مرتبط» stays visible.                                                                             |
+| D4  | Sidebar footer card brand          | «شعار المنتج كما هو (موصى به)»            | The card keeps «معًا نحو بيئة آمنة» + the SADEED product brand. No third-party name, emblem or logo.                                                                                                                                                                                                             |
+| D5  | Page orientation                   | «كما في الصورة حرفيًّا»                   | On the home page the **arrangement is left-to-right as in the mockup**: sidebar on the **left**, map centre-left, SADEED AI card on the **right**, KPI row starting at the left with the security-status card. **Text inside every card stays Arabic `rtl`.** Other pages keep their current right-hand sidebar. |
+| D6  | Background film                    | «يبقى الفيلم خلف التصميم»                 | `<HoloVideoEngine />` stays mounted with its current rules (0.5×, muted, no toggle, off under reduced motion, opacity/scrim as guarded). Cards sit on it with their glass/surface tokens.                                                                                                                        |
+| D7  | Delivery (recorded in CLAUDE.md)   | «الكود مباشر والقاعدة بإذن»               | Code goes straight to `main` → Lovable Publish → production check. **No production DB change** without explicit approval — this work needs none.                                                                                                                                                                 |
 
 **Supersessions.** The owner's instruction «طبق هذا الشكل بالتمام والكمال» is the latest
 explicit owner text for the home page (Article 35: the owner's explicit text prevails). It
@@ -57,12 +57,12 @@ The owner re-sent the mockup with «طبق الصورة بحذافيرها بك�
 AskUserQuestion items (verbatim choices below). These **supersede D1, D2, D3 and D4** above.
 D5, D6 and D7 stand.
 
-| # | Question (short) | Owner's answer (verbatim) | Consequence |
-|---|---|---|---|
-| N1 | Default theme (was D1) | «الفاتح كما في الصورة (موصى به)» | The whole system opens **light** on first visit. Dark stays one tap away (the single sun toggle) and is still a full health surface: every check and screenshot runs in both modes (Articles 32–34). A saved choice is honoured. |
-| N2 | Unmeasured numbers, change arrows and mini charts (was D2) | «محاكاة موسومة مطابقة (موصى به)» | Every number, change arrow/% and mini chart drawn in the mockup is shown **as drawn**, from a **reference simulation** whose values equal the mockup's, under a visible «محاكاة» badge (`is_simulation`). **Live data wins automatically** whenever a read returns live rows; a live value is never decorated with a simulated change line (its change slot then reads «لم يُقَس»). Never `?? 0`; never present simulated figures as measured. |
-| N3 | Photos: camera frames, risk/incident thumbnails, patrol map (was D3) | «صور توضيحية موسومة (موصى به)» | Illustrative images in the mockup's style, each labelled «صورة توضيحية — لا بثّ مرتبط» (camera tiles keep the label visible; thumbnails carry it as `alt`/`title` plus one caption per card). Compressed WebP served from `public/home/`; lazy-loaded below the fold; explicit width/height (no layout shift); the JS/CSS budget is unaffected but total image weight on `/` must stay ≤ 400 KB. The patrol map is drawn as SVG (theme-aware), not a photo. |
-| N4 | Header logo and assistant persona (was D4) | «طبّق شعار الصورة وشخصيتها (موصى به)» | Header: the mockup's wing emblem (inline SVG, `currentColor`) + «SADEED» wordmark + «Industrial Security AI OS». SADEED AI card: the mockup's persona (ghutra + headset). **Voice unchanged** — SADEED's server male voice only. Guests see «زائر» where the mockup shows a person's name; signed-in users see their own first name and role, never another person's. |
+| #   | Question (short)                                                     | Owner's answer (verbatim)             | Consequence                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| --- | -------------------------------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| N1  | Default theme (was D1)                                               | «الفاتح كما في الصورة (موصى به)»      | The whole system opens **light** on first visit. Dark stays one tap away (the single sun toggle) and is still a full health surface: every check and screenshot runs in both modes (Articles 32–34). A saved choice is honoured.                                                                                                                                                                                                                            |
+| N2  | Unmeasured numbers, change arrows and mini charts (was D2)           | «محاكاة موسومة مطابقة (موصى به)»      | Every number, change arrow/% and mini chart drawn in the mockup is shown **as drawn**, from a **reference simulation** whose values equal the mockup's, under a visible «محاكاة» badge (`is_simulation`). **Live data wins automatically** whenever a read returns live rows; a live value is never decorated with a simulated change line (its change slot then reads «لم يُقَس»). Never `?? 0`; never present simulated figures as measured.              |
+| N3  | Photos: camera frames, risk/incident thumbnails, patrol map (was D3) | «صور توضيحية موسومة (موصى به)»        | Illustrative images in the mockup's style, each labelled «صورة توضيحية — لا بثّ مرتبط» (camera tiles keep the label visible; thumbnails carry it as `alt`/`title` plus one caption per card). Compressed WebP served from `public/home/`; lazy-loaded below the fold; explicit width/height (no layout shift); the JS/CSS budget is unaffected but total image weight on `/` must stay ≤ 400 KB. The patrol map is drawn as SVG (theme-aware), not a photo. |
+| N4  | Header logo and assistant persona (was D4)                           | «طبّق شعار الصورة وشخصيتها (موصى به)» | Header: the mockup's wing emblem (inline SVG, `currentColor`) + «SADEED» wordmark + «Industrial Security AI OS». SADEED AI card: the mockup's persona (ghutra + headset). **Voice unchanged** — SADEED's server male voice only. Guests see «زائر» where the mockup shows a person's name; signed-in users see their own first name and role, never another person's.                                                                                       |
 
 **Interim images.** The generated 2K images cannot be downloaded yet (the environment's network
 policy blocks the image CDN; the owner was told on 2026-10-14). Until it is opened, each image
@@ -73,9 +73,51 @@ pixel-identical at the mockup's 1536×1024 size; the 2K versions replace them fi
 «السعودية للطاقة» with the green dot — over a dusk skyline image (N3 rules).
 
 **Deliberate deviations from «كل شيء»** (reported to the owner):
+
 - the sidebar card's palm-and-crossed-swords national emblem is not reproduced (the Saudi
   national emblem's use is legally restricted); a palm silhouette stands in;
 - a person's name in the header («فيصل الغامدي») is never hard-coded (N4).
+
+### 2.2 Owner decision 2026-10-17 — motion and the closing section (supersedes «static cards» for the entrance)
+
+The owner's message «SADEED AI OS — ULTRA-PREMIUM CINEMATIC HOMEPAGE, MOTION ENGINEERING &
+VERIFIED PRODUCTION DEPLOYMENT» asks for a staged hero entrance, staggered reveals of key
+interface elements, scroll-triggered section reveals, product-preview micro-animations, polished
+hover/focus/press, and «a restrained closing section with a clear conversion action» — while
+respecting `prefers-reduced-motion`, with no scroll hijacking, no flashing and no decorative
+overload. It is the latest explicit owner text on the home page (Article 35), so:
+
+| #   | Subject         | Consequence                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M1  | Entrance        | **Supersedes** «Motion: static cards (owner 2026-08-09)» for the entrance only: KPI cards rise in a 40 ms stagger, their mini charts draw in, the map settles, the SADEED card rises — once per load, ≤ 520 ms each, no element waiting > 360 ms. Perpetual float and perpetual shimmer stay forbidden.                                                                                                                                                                 |
+| M2  | Below the fold  | Operations, analytics and the closing section lift 18 px as they enter the viewport, driven by the scroll position itself (`animation-timeline: view()` behind `@supports`) — no scroll capture, no smooth-scroll library; browsers without support show them still. Translate only: no opacity, so no half-faded text and no frozen half-drawn chart when the page opens mid-scroll.                                                                                   |
+| M3  | Access          | Every animation is opt-in: inside `@media (prefers-reduced-motion: no-preference)` and under `html:not([data-nx-motion="off"])`; safe mode drops all motion. First frame readable (entrance starts at `opacity: 0.6`, never 0). Press feedback (`scale: 0.98`) stays as an instant user response.                                                                                                                                                                       |
+| M4  | Tooling         | CSS only, in the lazy home chunk (`src/styles/home/home-motion.css`, ≈ 2.2 KB minified — 2,181 B measured with lightningcss). Motion for React stays for the route transition it already drives; GSAP, Lenis and Three.js are not added (budget: JS 9.94/10 MiB measured 2026-10-18; Lenis would take over scrolling; 3D adds weight with no product meaning). The fixed background film gets no parallax: its layers recomposite under the iOS P0 lesson (2026-10-14). |
+| M5  | Closing section | «جاهز لاتخاذ القرار؟» + one true sentence + two actions: «اسأل سَدِيد» (opens the one SADEED panel, composer focused) and the Industrial Security screen by its canonical name (`screenName("/sec")` = «الأمن الصناعي»). No numbers, customers, certifications or integrations are claimed. Placed after the analytics row, before the disclosure line.                                                                                                                 |
+
+Guard: `src/components/home/home-motion.contract.test.ts` (planted-red cases for every rule).
+
+### 2.3 Owner decision 2026-10-17 — the two brand plates («ضع هذه الصور المرفقة كعلامة كما هي»)
+
+The owner attached two artworks (PNG 2172×724 each): the **banner** «سديد | SADEED — مساعد
+ذكاء اصطناعي يعطي رؤية تنفيذية على الأمن الصناعي في جميع المناطق السعودية» and the **mark
+plate** «SADEED — منظومة القرار والإنجاز الذكي» (hexagonal S emblem), and ordered: show them
+as they are, one in the top-right corner of the home page and the other in the middle, moving
+with a modern cinematic water-like motion, using every available tool including Remotion, then
+publish and push. AskUserQuestion answers (verbatim choices): «الشعار يمينًا والبانر وسطًا
+(موصى به)» and «وسط أعلى الصفحة (موصى به)».
+
+| #   | Subject         | Consequence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| --- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B1  | Placement       | A new **brand row** directly under the header and above the KPI row: the banner centred (≤ 800 px wide, 3:1), the mark plate in the row's physical top-right corner (200–260 px). Below 900 px the mark sits above the banner, right-aligned, and the banner spans the width. The row is `dir="ltr"` for ordering like every home row (D5).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| B2  | «As is»         | The artworks are served untouched as WebP posters (`public/home/brand/`, three widths each, `srcset`) with the plate text as `alt`. No crop, recolour, overlay text, numbers or claims are added.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| B3  | Water motion    | A 6 s seamless loop per plate, **pre-rendered once with Remotion** (`remotion/brand/`, WebGL shader: refraction ≤ ≈4.5 px on the glass and a quarter of that on the dark ink, caustics, travelling specular glints, no light sweep (removed 2026-10-18 — the owner removed highlight animations system-wide on 2026-08-20), screen-blended so highlights do not clip) into `public/media/brand/*.mp4` (H.264, no audio track) with a VP9 `.webm` twin. The page plays it as a muted inline `<video>` over the poster — decode cost only, no runtime shader. Strength 1.4: round-1 judges (fidelity, cinematic) found ink veiling, highlight clipping and text swim; the second shader fixed them (measured in `remotion/brand/RENDER.md`).                                                                                                                                 |
+| B4  | Access and cost | Video mounts only after first paint and only when: no `prefers-reduced-motion`, not `html[data-nx-motion="off"]` (honoured, though no UI writes it today), not safe mode, no `Save-Data` — **and not paused by the viewer**: a visible 44 px «إيقاف حركة الماء» toggle (`aria-pressed`, remembered per browser) sits in the margin opposite the mark, outside both plates (WCAG 2.2.2 — the loops are endless and sit over text). It pauses off-screen and under the SADEED panel on touch (same rule as the background film). No `poster` attribute: the image beneath is the poster (a poster made the late-mounted film the mobile LCP candidate and fetched the 1600 w file); the film stays transparent until its first frame plays (`data-ready`). On error or a blocked autoplay it unmounts and the image remains. The narrow loop (804×268) is used below 900 px. |
+| B5  | Response        | Pointer-following glass glare (`--gx/--gy` variables → CSS, mouse pointers only) and a 2 px lift on hover — fine pointers, no-preference and `html:not([data-nx-motion="off"])` only, transitions included; the mark is the home link, named explicitly (`aria-label` with the plate text — a `<figure>` inside the link blanks its computed name). Entrance joins §2.2's choreography (banner settles, mark rises, then the KPIs).                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+
+Guard: `src/components/home/home-brand.contract.test.ts` (planted-red cases). Image weight on `/`
+stays under N3's 400 KB ceiling (posters ≈ 250 KB); the loops are media, counted against the
+release media ceilings, not the image ceiling.
 
 ## 3. Non-negotiables (load-bearing walls)
 
@@ -100,7 +142,7 @@ pixel-identical at the mockup's 1536×1024 size; the 2K versions replace them fi
    Colour is never the only carrier (WCAG 1.4.1). Counts and categories are not verdicts:
    KPI icons and category slices use only `--tone-blue`, `--tone-cyan`, `--tone-violet`.
    (The mockup's red/amber/green KPI icons and donut slices are therefore drawn in the
-   identity tones; the mockup's red *triangles* become octagons.)
+   identity tones; the mockup's red _triangles_ become octagons.)
 6. **Geography.** `src/lib/regions.ts` is the only source of region names, order and
    accents. No quoted region name in TSX. Region colour reaches CSS only as `--region-tint`.
 7. **Accessibility floors.** Text ≥ 12 px **as rendered** (SVG text measured after viewBox
@@ -135,6 +177,11 @@ pixel-identical at the mockup's 1536×1024 size; the 2K versions replace them fi
 Reference: `reference/home-command-center-mockup-2026-10-13.jpg` (1536×1024, light mode).
 Coordinates below are physical (left → right), per D5.
 
+> **Next stage — not this document.** The owner's second mockup (2026-10-17, «طبق هذه الصورة
+> كصفحة رئيسية للنظام») is kept as received at `reference/home-v3-mockup-2026-10-17.jpg`. It is
+> the input of the next home stage and is **not** implemented by this specification; that
+> stage lists its own open owner decisions before any code.
+
 ### 4.0 Frame
 
 - `<main class="nx-bp-surface">` keeps `<SystemSidebar />`, `<CommandPalette />`,
@@ -155,15 +202,15 @@ Coordinates below are physical (left → right), per D5.
 
 ### 4.1 Header row (top)
 
-| Mockup element | Implementation | Destination / action |
-|---|---|---|
-| Search «ابحث في النظام…» | existing search button → `nx:open-command-palette` | Command palette |
-| Bell with badge | existing `UrgentBell` (badge only when count > 0) | `/urgent-ops` |
-| Messages | existing | `/assistant` |
-| Apps grid | existing `AppsMenu` | module list |
-| Sun / theme | **the single theme toggle**, rendered here on `/` and `/blueprint` (TopBar hides its own on those routes) | toggles theme |
-| Help | existing | `/guide` |
-| Avatar + name + role | `UserChip`: real `full_name` / `name` / e-mail, else «زائر»; role line only from a real source (org membership role for signed-in members), else omitted | `/settings` |
+| Mockup element           | Implementation                                                                                                                                           | Destination / action |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| Search «ابحث في النظام…» | existing search button → `nx:open-command-palette`                                                                                                       | Command palette      |
+| Bell with badge          | existing `UrgentBell` (badge only when count > 0)                                                                                                        | `/urgent-ops`        |
+| Messages                 | existing                                                                                                                                                 | `/assistant`         |
+| Apps grid                | existing `AppsMenu`                                                                                                                                      | module list          |
+| Sun / theme              | **the single theme toggle**, rendered here on `/` and `/blueprint` (TopBar hides its own on those routes)                                                | toggles theme        |
+| Help                     | existing                                                                                                                                                 | `/guide`             |
+| Avatar + name + role     | `UserChip`: real `full_name` / `name` / e-mail, else «زائر»; role line only from a real source (org membership role for signed-in members), else omitted | `/settings`          |
 
 The header is laid out left→right as drawn: search at the left, icons, user at the right.
 
@@ -179,15 +226,15 @@ Card anatomy (all 7): icon tile (identity tone) · label · value (+unit) · a c
 slot where the mockup draws "↑ x%" and a sparkline, reading «التغيّر: لم يُقَس» (D2). Every
 card is a link. Exactly 7 entries in the `kpis` registry, each with `status: statusOf(...)`.
 
-| # | Mockup label | Shown label (honest, D2) | Source | Link |
-|---|---|---|---|---|
-| 1 | الحالة الأمنية العامة | «الامتثال العام» — mean of **measured** regions' `compliance_pct` (subtitle «متوسط المناطق المقيسة»); none measured ⇒ «لم يُقَس» | `getCommandCenterState().regions[].compliance_pct` (`!== null`) | `/sec/governance` |
-| 2 | الحوادث النشطة | «البلاغات المفتوحة» | `getSecOverview().counts.incidents_open` | `/sec/incidents` |
-| 3 | المخاطر الحرجة | «مخاطر عالية» (critical is folded into high by the source) | `getRiskBoard().rows` severity `high` | `/sec/risks` |
-| 4 | إجمالي الأفراد | «حرّاس المواقع» | sum of `sites[].guards_count` | `/sec/shifts` |
-| 5 | الدوريات النشطة | «الدوريات النشطة» | `counts.patrols_active` | `/sec/patrols` |
-| 6 | الكاميرات العاملة | «الكاميرات المتصلة» — value «N من M» | `getExecKpis().cameras_online / cameras_total` | `/sec/cctv` |
-| 7 | الأصول الحرجة | «أصول خارج الخدمة» (keep the guarded description «أصول حالتها غير متصلة أو متدهورة») | `counts.assets_offline` | `/sec/maintenance` |
+| #   | Mockup label          | Shown label (honest, D2)                                                                                                         | Source                                                          | Link               |
+| --- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------ |
+| 1   | الحالة الأمنية العامة | «الامتثال العام» — mean of **measured** regions' `compliance_pct` (subtitle «متوسط المناطق المقيسة»); none measured ⇒ «لم يُقَس» | `getCommandCenterState().regions[].compliance_pct` (`!== null`) | `/sec/governance`  |
+| 2   | الحوادث النشطة        | «البلاغات المفتوحة»                                                                                                              | `getSecOverview().counts.incidents_open`                        | `/sec/incidents`   |
+| 3   | المخاطر الحرجة        | «مخاطر عالية» (critical is folded into high by the source)                                                                       | `getRiskBoard().rows` severity `high`                           | `/sec/risks`       |
+| 4   | إجمالي الأفراد        | «حرّاس المواقع»                                                                                                                  | sum of `sites[].guards_count`                                   | `/sec/shifts`      |
+| 5   | الدوريات النشطة       | «الدوريات النشطة»                                                                                                                | `counts.patrols_active`                                         | `/sec/patrols`     |
+| 6   | الكاميرات العاملة     | «الكاميرات المتصلة» — value «N من M»                                                                                             | `getExecKpis().cameras_online / cameras_total`                  | `/sec/cctv`        |
+| 7   | الأصول الحرجة         | «أصول خارج الخدمة» (keep the guarded description «أصول حالتها غير متصلة أو متدهورة»)                                             | `counts.assets_offline`                                         | `/sec/maintenance` |
 
 ### 4.4 Hero row — map card (centre-left)
 
@@ -225,21 +272,21 @@ attach ⇒ open the panel where the file picker lives. Keep `SadeedMuteToggle`,
 
 ### 4.6 Operations row (left → right as drawn)
 
-| Card | Content (D2/D3) | Header link |
-|---|---|---|
-| **أبرز المخاطر** | top 4 rows of `getRiskBoard()` by severity: category icon tile, title, region name (from `REGIONS`, else «لم يُقَس»), severity chip with shape + word | `/sec/risks` («عرض الكل») |
-| **الحوادث النشطة** | latest 4 open incidents: category icon tile, title, city/region, Arabic **status** chip, relative time; no names | `/sec/incidents` |
-| **الدوريات الميدانية** | total + status split with honest words (نشطة · مجدولة · مكتملة · فائتة); a compact progress visual from `checkpoints_done/total` instead of a route map (no route geometry exists); button «إدارة الدوريات» | `/sec/patrols` |
-| **كاميرات مباشرة** | 4 dark **status tiles** shaped like video frames: camera icon, `camera_code`, site, alert type, state chip, time; caption «بطاقات حالة — لا بثّ مرتبط» | `/sec/cctv` |
+| Card                   | Content (D2/D3)                                                                                                                                                                                             | Header link               |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| **أبرز المخاطر**       | top 4 rows of `getRiskBoard()` by severity: category icon tile, title, region name (from `REGIONS`, else «لم يُقَس»), severity chip with shape + word                                                       | `/sec/risks` («عرض الكل») |
+| **الحوادث النشطة**     | latest 4 open incidents: category icon tile, title, city/region, Arabic **status** chip, relative time; no names                                                                                            | `/sec/incidents`          |
+| **الدوريات الميدانية** | total + status split with honest words (نشطة · مجدولة · مكتملة · فائتة); a compact progress visual from `checkpoints_done/total` instead of a route map (no route geometry exists); button «إدارة الدوريات» | `/sec/patrols`            |
+| **كاميرات مباشرة**     | 4 dark **status tiles** shaped like video frames: camera icon, `camera_code`, site, alert type, state chip, time; caption «بطاقات حالة — لا بثّ مرتبط»                                                      | `/sec/cctv`               |
 
 ### 4.7 Analytics row (left → right as drawn)
 
-| Card | Content | Header link |
-|---|---|---|
-| **الأداء الأمني للمناطق** | the 4 regions in `REGIONS` order (left→right as drawn): tinted icon tile with dark glyph, name, compliance % (subtitle «نسبة الامتثال»), change «لم يُقَس»; each → `/sec?region=…` + `setRegion` | `/sec/governance` |
-| **إحصائيات …** (mockup: الحوادث والمخاطر) | nearest **real** monthly series: «أوامر الصيانة شهريًّا» — bars = requested, line = completed, from live `maint_analytics.monthly`; pure SVG bar+line; `retry: false`, honest error state (no simulation for maintenance) | `/sec/maintenance` |
-| **توزيع أنواع الحوادث** | existing category donut (top 3 + «أخرى», identity tones), total in the centre, legend with % | `/sec/incidents` |
-| **حالة الأنظمة** | rows with shape+word status: نظام المراقبة (CCTV) — `cctv_health` % · التحكم في الدخول — `access_health` % · الدوريات — «إنجاز نقاط التفتيش» `patrol_completion` % · تكامل SAP — integration health word · منصة IoT — sensors in alarm «N من M» or «لم يُقَس»; each row → its page | `/integrations` |
+| Card                                      | Content                                                                                                                                                                                                                                                                            | Header link        |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| **الأداء الأمني للمناطق**                 | the 4 regions in `REGIONS` order (left→right as drawn): tinted icon tile with dark glyph, name, compliance % (subtitle «نسبة الامتثال»), change «لم يُقَس»; each → `/sec?region=…` + `setRegion`                                                                                   | `/sec/governance`  |
+| **إحصائيات …** (mockup: الحوادث والمخاطر) | nearest **real** monthly series: «أوامر الصيانة شهريًّا» — bars = requested, line = completed, from live `maint_analytics.monthly`; pure SVG bar+line; `retry: false`, honest error state (no simulation for maintenance)                                                          | `/sec/maintenance` |
+| **توزيع أنواع الحوادث**                   | existing category donut (top 3 + «أخرى», identity tones), total in the centre, legend with %                                                                                                                                                                                       | `/sec/incidents`   |
+| **حالة الأنظمة**                          | rows with shape+word status: نظام المراقبة (CCTV) — `cctv_health` % · التحكم في الدخول — `access_health` % · الدوريات — «إنجاز نقاط التفتيش» `patrol_completion` % · تكامل SAP — integration health word · منصة IoT — sensors in alarm «N من M» or «لم يُقَس»; each row → its page | `/integrations`    |
 
 ### 4.8 Disclosure line (bottom)
 
@@ -256,9 +303,10 @@ Keep the guarded disclosure text (sources live where available, «وإلا فم�
   bright glyph (dark).
 - Typography: IBM Plex Sans Arabic (global weight floor 700, headings 800); numerals in the
   value slot use tabular figures.
-- Motion: static cards (owner 2026-08-09); hover/focus feedback only; map glow may pulse
-  slowly with a `prefers-reduced-motion` exit; `translate`/`scale` properties with
-  `--nx-ease-out`, never `transform: scale/translate` in the blueprint layer.
+- Motion: ~~static cards (owner 2026-08-09)~~ — superseded for the entrance by §2.2 (M1–M5,
+  owner 2026-10-17): staged entrance, scroll-linked reveals, hover/focus/press feedback; still no
+  perpetual float; map glow may pulse slowly with a `prefers-reduced-motion` exit;
+  `translate`/`scale` properties with `--nx-ease-out`, never `transform: scale/translate`.
 - `forced-colors` and `prefers-reduced-transparency` fallbacks for every new surface.
 
 ## 6. Engineering plan
@@ -281,24 +329,30 @@ Keep the guarded disclosure text (sources live where available, «وإلا فم�
 
 ## 7. Tool routing (Phase 15)
 
-| Task | Destination | Method | Dependency | Proof |
-|---|---|---|---|---|
-| Implementation, tests, guards | GitHub repo `faisaljohaimy-ship-it/biz-pulse-ar`, `main` | Claude Code (code) | — | gate green + guardian clearance |
-| Parallel build & review | Claude Code workflows (sub-agents) | orchestration | — | structured results, adversarial verification |
-| Visual verification | local preview of the built `.output` + Playwright/Chromium | screenshots, ui-audit, axe | Chromium at `/opt/pw-browsers` | screenshots vs mockup, both themes |
-| Data | existing server functions (Supabase via Lovable) | read-only | none — **no DB change** (D7) | panels render live or labelled simulation |
-| Publish | Lovable project `6f092c67-…` | `deploy_project` | Lovable MCP | `latest_commit_sha` = pushed commit |
-| Production verification | GitHub Actions `production-check.yml` | `workflow_dispatch` | GitHub MCP | run green on the published commit |
-| Design hand-off (optional) | Figma | code → design capture | owner request | not required for delivery |
+| Task                          | Destination                                                | Method                     | Dependency                     | Proof                                        |
+| ----------------------------- | ---------------------------------------------------------- | -------------------------- | ------------------------------ | -------------------------------------------- |
+| Implementation, tests, guards | GitHub repo `faisaljohaimy-ship-it/biz-pulse-ar`, `main`   | Claude Code (code)         | —                              | gate green + guardian clearance              |
+| Parallel build & review       | Claude Code workflows (sub-agents)                         | orchestration              | —                              | structured results, adversarial verification |
+| Visual verification           | local preview of the built `.output` + Playwright/Chromium | screenshots, ui-audit, axe | Chromium at `/opt/pw-browsers` | screenshots vs mockup, both themes           |
+| Data                          | existing server functions (Supabase via Lovable)           | read-only                  | none — **no DB change** (D7)   | panels render live or labelled simulation    |
+| Publish                       | Lovable project `6f092c67-…`                               | `deploy_project`           | Lovable MCP                    | `latest_commit_sha` = pushed commit          |
+| Production verification       | GitHub Actions `production-check.yml`                      | `workflow_dispatch`        | GitHub MCP                     | run green on the published commit            |
+| Design hand-off (optional)    | Figma                                                      | code → design capture      | owner request                  | not required for delivery                    |
 
 ## 8. Guards to amend deliberately (each with a planted-red case)
 
 - `src/components/home/home-dashboard.contract.test.ts` — new KPI registry ids; read all new
-  home files; page order KPI row → hero (map, SADEED AI) → operations → analytics →
-  disclosure; keep: no sparkline/delta/trend words, no `<img>/<video>`, «لا بثّ مرتبط», no
-  hex, variables-only inline styles, ≥ 9 live destinations, `PanelBody` states, donut ≥ 12 px.
-- `src/routes/blueprint.contract.test.ts` — triad/region-card/risk-arrow/visible-h1 assertions
-  replaced by the new anatomy; keep colour, motion, forced-colors and code-split rules.
+  home row files (the brand row included — its single plate image and film carved out by name
+  under §2.3 B2/B3); page order KPI row → hero (map, SADEED AI) → operations → analytics →
+  closing band → disclosure; keep: «لا بثّ مرتبط», no hex, variables-only inline styles, ≥ 9
+  live destinations, the simulation badge rendered (not merely imported). **Superseded by §2.1**
+  (N2, N3 — 2026-10-14) and retired in the test with that citation: the sparkline/delta/trend
+  word ban, the blanket `<img>/<video>` ban (now: manifest-only labelled images, no video in
+  the rows), the `PanelBody` states and the old donut (its component and rules deleted).
+- `src/components/blueprint/blueprint.contract.test.ts` — triad/region-card/risk-arrow/visible-h1
+  assertions replaced by the new anatomy (the grid rule now reads the live `.nx-home-hero` /
+  `.nx-home-quad`; the dead triad and region-card rules are deleted and guarded as deleted);
+  keep colour, motion, forced-colors and code-split rules.
 - `src/components/map/arabia-geometry.contract.test.ts` — still no overlay; add zoom/controls
   in normal flow.
 - `src/lib/nav/system-nav.contract.test.ts` — sidebar `side` on home; spacer pairing.
@@ -310,17 +364,21 @@ Keep the guarded disclosure text (sources live where available, «وإلا فم�
 
 ## 9. Mockup elements that cannot be drawn as numbers (and what replaces them)
 
-| Mockup element | Why | Replacement |
-|---|---|---|
-| Change % + sparklines on KPI cards | no KPI history exists | «التغيّر: لم يُقَس» in the same slot |
-| «الحالة الأمنية العامة 96%» | no measured composite (the old composites are banned) | «الامتثال العام» (mean of measured regions) |
-| «إجمالي الأفراد» / «الأصول الحرجة» | no source | «حرّاس المواقع» / «أصول خارج الخدمة» |
-| Per-region incident counts and deltas on the map | incidents carry no region | region chips with sites + compliance |
-| Live camera video and incident photos | no feed, no images (D3) | status tiles and category icons |
-| Patrol route map | no route geometry | status split + checkpoint progress |
-| 6-month incidents & risks chart | no honest series for either | real monthly maintenance series, titled honestly |
-| System uptime % | not measured | the nearest health measure per system, named honestly |
-| Name/role «فيصل الغامدي / مهندس AI أول», «السعودية للطاقة» | invented identity / third-party brand (D4) | real user or «زائر»; product brand |
+> Written 2026-10-13 under D1–D4. **Where a row conflicts with §2.1 (N1–N4, 2026-10-14), §2.1
+> governs** — e.g. N2 shows the mockup's reference numbers under a visible «محاكاة» badge, and
+> the sidebar card draws «السعودية للطاقة» as in the image; the person's name stays out (N4).
+
+| Mockup element                                   | Why                                                   | Replacement                                                                                |
+| ------------------------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Change % + sparklines on KPI cards               | no KPI history exists                                 | «التغيّر: لم يُقَس» in the same slot                                                       |
+| «الحالة الأمنية العامة 96%»                      | no measured composite (the old composites are banned) | «الامتثال العام» (mean of measured regions)                                                |
+| «إجمالي الأفراد» / «الأصول الحرجة»               | no source                                             | «حرّاس المواقع» / «أصول خارج الخدمة»                                                       |
+| Per-region incident counts and deltas on the map | incidents carry no region                             | region chips with sites + compliance                                                       |
+| Live camera video and incident photos            | no feed, no images (D3)                               | status tiles and category icons                                                            |
+| Patrol route map                                 | no route geometry                                     | status split + checkpoint progress                                                         |
+| 6-month incidents & risks chart                  | no honest series for either                           | real monthly maintenance series, titled honestly                                           |
+| System uptime %                                  | not measured                                          | the nearest health measure per system, named honestly                                      |
+| Name/role «فيصل الغامدي / مهندس AI أول»          | invented identity (N4)                                | real user or «زائر» (the sidebar card's «السعودية للطاقة» is drawn as in the image — §2.1) |
 
 ## 10. Acceptance criteria
 

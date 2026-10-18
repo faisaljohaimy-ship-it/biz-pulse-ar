@@ -952,7 +952,10 @@
   stroke: color-mix(in srgb, var(--region-tint) 82%, var(--ink));
 }
 
-.dark .nx-ana-region-bar {
+/* `:not([data-absent])`: «لم يُقَس» شريطٌ شفّاف في الوضعين — هذه القاعدة
+   بنوعيّة القاعدة الشفّافة نفسها وبعدها، فكانت تغلبها في الداكن وتُظهر شريطًا
+   فارغًا يُقرأ صفرًا (المادة ٢٧؛ التقطه حارس الرئيسية ٢٠٢٦/١٠/١٧). */
+.dark .nx-ana-region-bar:not([data-absent]) {
   background: color-mix(in srgb, var(--region-tint) 20%, var(--surface));
 }
 
@@ -1001,7 +1004,7 @@
   .nx-ana-bar-stop-b {
     stop-color: CanvasText;
   }
-  .nx-ana-region-bar {
+  .nx-ana-region-bar:not([data-absent]) {
     border: 1px solid CanvasText;
     background: Canvas;
   }

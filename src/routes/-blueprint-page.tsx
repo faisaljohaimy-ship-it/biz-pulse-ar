@@ -29,7 +29,14 @@
  * ## الصفوف بترتيبها (المواصفة §4.0)
  *
  *   الترويسة ← المؤشرات السبعة ← الصدر (الخريطة ≈ ٥/٧ · سَدِيد ≈ ٢/٧)
- *   ← التشغيل (٤ بطاقات) ← التحليلات (٤ بطاقات) ← سطر الإفصاح.
+ *   ← التشغيل (٤ بطاقات) ← التحليلات (٤ بطاقات) ← الخاتمة ← سطر الإفصاح.
+ *
+ * ## الحركة (أمر المالك ٢٠٢٦/١٠/١٧ — ناسخٌ لـ«بطاقات الرئيسية ساكنة»)
+ *
+ * دخولٌ متدرّج للمؤشرات والصدر، وظهورٌ عند التمرير لما تحت الطيّة، ورفعةٌ
+ * وضغط — CSS وحده في `styles/home/home-motion.css`، اختياريٌّ لمن لم يطلب
+ * السكون، والصفحة مكتملةٌ من أوّل إطار بلا حركة. الطفو الدائم يبقى ممنوعًا.
+ * الحارس: `src/components/home/home-motion.contract.test.ts`.
  *
  * كل صفٍّ مكوّنٌ في `src/components/home/` يُستورد من هنا وحدها، وكلّها تقرأ
  * من `home-reads.ts` (مفاتيح مشتركة: رقمٌ واحد لا طلبان) وتبني على
@@ -48,12 +55,15 @@ import { SystemHeader } from "@/components/nav/SystemHeader";
 import { CommandPalette } from "@/components/executive/CommandPalette";
 import { PRODUCT_BRAND } from "@/lib/domain";
 import { useI18n } from "@/lib/i18n";
+import { HomeBrandRow } from "@/components/home/HomeBrandRow";
 import { HomeKpiRow } from "@/components/home/HomeDashboard";
 import { HomeMapCard } from "@/components/home/HomeMapCard";
 import { HomeSadeedCard } from "@/components/home/HomeSadeedCard";
 import { HomeOpsRow } from "@/components/home/HomeOpsRow";
 import { HomeAnalyticsRow } from "@/components/home/HomeAnalyticsRow";
+import { HomeClosingBand } from "@/components/home/HomeClosingBand";
 import "@/styles/home/home-layout.css";
+import "@/styles/home/home-motion.css";
 
 export function BlueprintPage() {
   const { locale } = useI18n();
@@ -94,6 +104,10 @@ export function BlueprintPage() {
         </h1>
 
         <div dir="ltr" className="nx-home-arrange mx-auto w-full max-w-[1440px] px-4 pb-16 pt-4">
+          {/* ════ الهوية: البانر وسطًا ولوحة الشعار في الزاوية اليمنى، بماءٍ
+              سينمائي مصيَّر (أمر المالك ٢٠٢٦/١٠/١٧ — المواصفة §2.3). */}
+          <HomeBrandRow />
+
           {/* ════ المؤشرات السبعة — يبدأ الصفّ من اليسار (§4.3). */}
           <HomeKpiRow />
 
@@ -110,6 +124,10 @@ export function BlueprintPage() {
           {/* ════ التحليلات: أداء المناطق · الصيانة شهريًّا · أنواع الحوادث ·
               حالة الأنظمة. */}
           <HomeAnalyticsRow />
+
+          {/* ════ الخاتمة: فعلان واضحان — سؤال سَدِيد أو الانتقال إلى الأمن
+              الصناعي (أمر المالك ٢٠٢٦/١٠/١٧). */}
+          <HomeClosingBand />
 
           {/* الفاصل بالحبر الثالث ممزوجًا (خطٌّ هادئ لا نصّ)، والسطر بالحبر
               الثاني: كان بأخفّ الدرجات فهبط تباينه فوق قوس الفيلم إلى ١٫٤٢:١،

@@ -6,7 +6,7 @@
  * لمن ينقر. فالوجهات تُقاس هنا على **شجرة المسارات المولَّدة نفسها**، لا على
  * قائمةٍ تُكتب بجانبها.
  */
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import postcss from "postcss";
 import { describe, expect, it } from "vitest";
 import { isRouteHidden } from "@/lib/nav/hidden-routes";
@@ -121,6 +121,57 @@ describe("السند يتبع الشريط المثبَّت في كل قاعدة
     expect(unmatched(readFileSync("src/styles.css", "utf8")), "قاعدةٌ بلا نظيرٍ للسند").toEqual([]);
   });
 
+  /**
+   * الشريط الأفقي 56px (جوالٌ مُدار) أيقوناتٌ وحدها: كل نصٍّ فيه يُخفى في كتلة
+   * الاستعلام نفسها. وبطاقة الختام في القشرة أُعيد رسمها نصًّا بعرض الشريط
+   * (d947ddd35، ٢٠٢٦/١٠/١٥) بلا قاعدتها هنا، فبقي منها 28px يفيض اسم الجهة منها
+   * 86px (فاتح) و84px (داكن) على ٨٤٤×٣٩٠ في خمس شاشات داخلية (ui-audit
+   * ٢٠٢٦/١٠/١٨)؛ و`main` قبلها نظيف على /sec و/files (قِيس بمنطق الفاحص نفسه).
+   */
+  const RAIL = /orientation:\s*landscape[\s\S]*max-width:\s*1023px[\s\S]*max-height:\s*540px/;
+  /** آخر `display` للبطاقة داخل كتلة الشريط هو الحاكم — قاعدةٌ لاحقة تُظهرها تُبطل ما قبلها. */
+  const railHidesCard = (css: string) => {
+    let last: string | null = null;
+    postcss.parse(css).walkAtRules("media", (at) => {
+      if (!RAIL.test(at.params)) return;
+      at.walkRules((rule) => {
+        if (!rule.selectors.some((s) => s.trim() === ".nexus-sidebar .nx-sysnav-card")) return;
+        rule.walkDecls("display", (d) => {
+          last = d.value.replace(/\s*!important$/, "").trim();
+        });
+      });
+    });
+    return last === "none";
+  };
+
+  it("وفي الشريط الأفقي 56px تُخفى بطاقة الختام كما يُخفى وصف الهوية", () => {
+    const shell = strip(readFileSync("src/components/app-shell.tsx", "utf8"));
+    expect(shell, "البطاقة لم تعد في القشرة — راجع الحارس").toContain("<SystemSidebarCard />");
+    // والصنف المُخفى هو صنف البطاقة المرسومة فعلًا — إعادة تسميته تُفرغ القاعدة بصمت.
+    expect(strip(readFileSync("src/components/nav/SystemSidebar.tsx", "utf8"))).toMatch(
+      /<div dir=\{ar \? "rtl" : "ltr"\} className="nx-sysnav-card">/,
+    );
+    expect(railHidesCard(readFileSync("src/styles.css", "utf8"))).toBe(true);
+  });
+
+  it("والحارس يحمرّ على شريطٍ أفقي بلا قاعدة البطاقة (المادة ٣٠)", () => {
+    const rail = "@media (orientation: landscape) and (max-width: 1023px) and (max-height: 540px)";
+    expect(railHidesCard(`${rail} { .nexus-sidebar .nx-lockup-text { display: none; } }`)).toBe(
+      false,
+    );
+    // وقاعدةٌ لاحقة في الكتلة نفسها تُظهرها تُبطل الإخفاء.
+    expect(
+      railHidesCard(
+        `${rail} { .nexus-sidebar .nx-sysnav-card { display: none; } .nexus-sidebar .nx-sysnav-card { display: block; } }`,
+      ),
+    ).toBe(false);
+    // والقاعدة خارج كتلة الشريط لا تُحسب له — تُخفي البطاقة في كل مقاس.
+    expect(railHidesCard(".nexus-sidebar .nx-sysnav-card { display: none; }")).toBe(false);
+    expect(railHidesCard(`${rail} { .nexus-sidebar .nx-sysnav-card { display: none; } }`)).toBe(
+      true,
+    );
+  });
+
   it("والسند يحمل الصنف في القشرة", () => {
     const shell = strip(readFileSync("src/components/app-shell.tsx", "utf8"));
     expect(shell).toMatch(/<div\s+aria-hidden\s+className="nexus-sidebar-spacer /);
@@ -145,16 +196,110 @@ describe("السند يتبع الشريط المثبَّت في كل قاعدة
     );
     expect(side).toMatch(/<aside\s+data-nx-presentation-hide\s+className="nx-sysnav /);
   });
+
+  /**
+   * وعلى الرئيسية الشريط يسارًا (قرار المالك D5، ٢٠٢٦/١٠/١٣) — بصنفٍ آخر
+   * (`.nx-sysnav`) وسندٍ آخر (`.nx-sysnav-spacer`)، وقواعدِ جهةٍ في أنماط الرئيسية
+   * لا يراها الفحص أعلاه (يقرأ `.nexus-sidebar` في `styles.css` وحده). فالقاعدة
+   * نفسها تُفحص على السطح الثاني (المادة ٣١): كل قاعدة عرضٍ على الشريط الأيسر
+   * تسمّي سنده الأيسر في المحدِّد نفسه، والجهة مكتوبةٌ على الاثنين معًا.
+   */
+  const LEFT = '.nx-sysnav[data-side="left"]';
+  const LEFT_SPACER = '.nx-sysnav-spacer[data-side="left"]';
+  const leftSizing = (css: string) => {
+    const unpaired: string[] = [];
+    let sized = 0;
+    postcss.parse(css).walkRules((rule) => {
+      const own = rule.selectors.filter((s) => s.trim().endsWith(LEFT));
+      if (own.length === 0) return;
+      if (!rule.nodes.some((n) => n.type === "decl" && SIZING.has(n.prop))) return;
+      sized += 1;
+      for (const s of own) {
+        const twin = s.trim().slice(0, -LEFT.length) + LEFT_SPACER;
+        if (!rule.selectors.some((x) => x.trim() === twin)) unpaired.push(s.trim());
+      }
+    });
+    return { sized, unpaired };
+  };
+  /** أدوات العرض في صنفٍ مكتوب — `lg:w-64` · `xl:w-72`. */
+  const widths = (cls: string | undefined) =>
+    (cls?.match(/(?:^|\s)(?:(?:sm|md|lg|xl|2xl):)?w-\S+/g) ?? []).map((s) => s.trim()).sort();
+
+  it("وعلى الرئيسية يسارًا (D5): كل قاعدة عرضٍ على الشريط الأيسر تسمّي سنده الأيسر", () => {
+    const sheets = [
+      "src/styles.css",
+      ...readdirSync("src/styles/home")
+        .filter((f) => f.endsWith(".css"))
+        .map((f) => `src/styles/home/${f}`),
+    ];
+    let sized = 0;
+    for (const file of sheets) {
+      const r = leftSizing(readFileSync(file, "utf8"));
+      expect(r.unpaired, `${file}: قاعدةٌ بلا نظيرٍ للسند الأيسر`).toEqual([]);
+      sized += r.sized;
+    }
+    // لا حلقة فوق فراغ: عرض الشريط الأيسر مكتوبٌ في الأنماط فعلًا.
+    expect(sized, "لا قاعدة عرضٍ للشريط الأيسر — بطل الفحص").toBeGreaterThan(0);
+    // والجهة تُكتب على الشريط وسنده معًا، وعرضاهما في المكوّن واحد.
+    const side = readFileSync("src/components/nav/SystemSidebar.tsx", "utf8");
+    const spacerCls = /className="(nx-sysnav-spacer [^"]*)"\s+data-side=\{side\}/.exec(side)?.[1];
+    const asideCls = /<aside[\s\S]{0,200}?className="(nx-sysnav [^"]*)"\s+data-side=\{side\}/.exec(
+      side,
+    )?.[1];
+    expect(spacerCls, "السند لا يحمل الجهة").toBeDefined();
+    expect(asideCls, "الشريط لا يحمل الجهة").toBeDefined();
+    expect(widths(spacerCls).length, "لا عرض مكتوب للسند").toBeGreaterThan(0);
+    expect(widths(asideCls), "عرض الشريط غير عرض سنده").toEqual(widths(spacerCls));
+
+    // يحمرّ على المزروع (المادة ٣٠): عرضٌ للشريط بلا سنده، وعرضان مختلفان.
+    expect(
+      leftSizing(`@media (min-width: 1536px) { ${LEFT} { inline-size: 16rem; } }`).unpaired,
+    ).toEqual([LEFT]);
+    expect(leftSizing(`${LEFT_SPACER}, ${LEFT} { inline-size: 14rem; }`).unpaired).toEqual([]);
+    // ولا يحمرّ على قواعد الأبناء — تلك لا تغيّر عرض الشريط.
+    expect(leftSizing(`${LEFT} .nx-sysnav-scroll { inline-size: 100%; }`).sized).toBe(0);
+    const drifted = asideCls?.replace("xl:w-72", "xl:w-80");
+    expect(drifted).not.toBe(asideCls);
+    expect(widths(drifted)).not.toEqual(widths(spacerCls));
+  });
 });
 
 describe("نسخةٌ واحدة في السطحين", () => {
+  /** تركيبات الشريط الكامل — `<SystemSidebarNav` (القائمة وحدها) لا يُحسب منها. */
+  const sidebarMounts = (code: string) => code.match(/<SystemSidebar\b[^>]*\/>/g) ?? [];
+  /** قائمة عناصر مكتوبة داخل ملفّ = نسخةٌ ثانية تفترق يومًا بصمت. */
+  const secondList = (code: string) => code.match(/\bto: "\//g) ?? [];
+  /** القائمة تُركَّب بالجهة اليسرى — وهي للرئيسية وحدها (D5). */
+  const leftList = (code: string) => code.match(/<SystemSidebarNav\b[^>]*\bside="left"/g) ?? [];
+
   it("القشرة والرئيسية تركّبان المكوّن نفسه — ولا قائمة ثانية في القشرة", () => {
     const shell = strip(readFileSync("src/components/app-shell.tsx", "utf8"));
     const home = strip(readFileSync("src/routes/-blueprint-page.tsx", "utf8"));
     expect(shell).toContain("<SystemSidebarNav");
-    expect(home).toContain("<SystemSidebar />");
-    // قائمة عناصر مكتوبة داخل القشرة = نسخةٌ ثانية تفترق يومًا بصمت.
-    expect(shell.match(/\bto: "\//g) ?? [], "قائمة تنقّل ثانية في القشرة").toEqual([]);
+    // **الرئيسية تركّب الشريط يسارًا — قرار المالك D5 (٢٠٢٦/١٠/١٣، المواصفة ١٠ §٢
+    // و§4.0): «كما في الصورة حرفيًّا».** المكوّن نفسه بجهةٍ (`side="left"`) لا نسخةٌ
+    // ثانية، ومرّةً واحدة: شريطان على صفحةٍ واحدة قائمتان تفترقان.
+    expect(sidebarMounts(home), "الرئيسية لا تركّب الشريط يسارًا مرّةً واحدة").toEqual([
+      '<SystemSidebar side="left" />',
+    ]);
+    // «وبقية الصفحات على شريطها الأيمن» (D5): القشرة لا تمرّر الجهة اليسرى.
+    expect(leftList(shell), "القشرة نقلت الشريط إلى اليسار").toEqual([]);
+    expect(secondList(shell), "قائمة تنقّل ثانية في القشرة").toEqual([]);
+
+    // يحمرّ على المزروع (المادة ٣٠): شريطٌ بلا جهة، وشريطٌ مكرّر، وقشرةٌ يسرى،
+    // وقائمةٌ في القشرة.
+    const unsided = home.replace('<SystemSidebar side="left" />', "<SystemSidebar />");
+    expect(unsided).not.toBe(home);
+    expect(sidebarMounts(unsided)).toEqual(["<SystemSidebar />"]);
+    expect(sidebarMounts(`${home}\n<SystemSidebar side="left" />`)).toHaveLength(2);
+    const leftShell = shell.replace(
+      "<SystemSidebarNav onNavigate={onNavigate} />",
+      '<SystemSidebarNav side="left" onNavigate={onNavigate} />',
+    );
+    expect(leftShell).not.toBe(shell);
+    expect(leftList(leftShell)).toHaveLength(1);
+    expect(secondList(`${shell}\nconst ITEMS = [{ to: "/sec" }];`)).toHaveLength(1);
+    expect(sidebarMounts('<SystemSidebarNav side="left" />')).toEqual([]);
   });
 
   it("زرّ البحث حيّ على الرئيسية — لوحة الأوامر مركَّبة فيها", () => {

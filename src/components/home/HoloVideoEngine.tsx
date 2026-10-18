@@ -84,7 +84,9 @@ export const FILM_HOLD_QUERY = "(pointer: coarse)";
  * الجهاز. والتشغيل التلقائيّ الذي يصل والإيقاف قائم (اللوحة مفتوحة عند
  * التركيب) يُوقف حين يبدأ ويُستأنف عند الإغلاق: كان سيعمل لولا اللوحة.
  */
-function holdFilmUnderPanel(video: HTMLVideoElement): () => void {
+// مُصدَّرة لأن حلقتَي الهوية على الرئيسية (`HomeBrandRow`) فيلمان صامتان بالقاعدة
+// نفسها — طبقةٌ واحدة لا نسخةٌ ثانية (المادة ٣١).
+export function holdFilmUnderPanel(video: HTMLVideoElement): () => void {
   const root = document.documentElement;
   const touch = typeof window.matchMedia === "function" ? window.matchMedia(FILM_HOLD_QUERY) : null;
   let held = false;
