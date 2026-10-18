@@ -100,10 +100,18 @@ const decidedFloor = Object.fromEntries(
 // ── ما يُشتقّ من المصدر ────────────────────────────────────────────────
 const read = (p) => readFileSync(join(ROOT, p), "utf8");
 const HOME = "src/routes/-blueprint-page.tsx";
+/**
+ * وجه الصفحة فوق الفيلم: الرئيسية **والقشرة التي تحمل سطحها**. كان سطح `nx-bp-surface` بحبره
+ * (`text-[color:var(--ink)]`) في الرئيسية، ونقلته القشرة الواحدة (أمر المالك ٢٠٢٦/١٠/١٨: «اجعل
+ * جميع صفحات النظام بنفس تخطيط وهيئة الصفحة الرئيسية») حرفيًّا إلى `SystemChrome` المركَّبة في
+ * الجذر — فوق الفيلم نفسه. فالحبر يُشتقّ من الملفّين، وإلّا خرج «dark --ink» المُقَرّ من القياس
+ * بصمت (أمسكه هذا الفحص في CI على ee807a9c4).
+ */
+const FACE = [HOME, "src/components/nav/SystemChrome.tsx"];
 const BARE = ["src/routes/-nx-agents-page.tsx", "src/routes/-rag-search-page.tsx"];
 
 const inks = [
-  ...new Set([...read(HOME).matchAll(/var\((--ink[\w-]*)\)/g)].map((m) => m[1])),
+  ...new Set(FACE.flatMap((p) => [...read(p).matchAll(/var\((--ink[\w-]*)\)/g)].map((m) => m[1]))),
 ].sort();
 
 /** أصنافُ النغمة من `STAT_TONES` نفسها — لا تُكتب هنا فتفترق عنها. */
