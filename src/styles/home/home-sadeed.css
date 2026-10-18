@@ -259,7 +259,8 @@
   color: var(--sdc-ok);
 }
 
-.nx-sd-pill[data-state="local"] {
+.nx-sd-pill[data-state="local"],
+.nx-sd-pill[data-state="limited"] {
   border-color: color-mix(in srgb, var(--tone-amber) 30%, transparent);
   background: color-mix(in srgb, var(--tone-amber) 10%, var(--surface));
   color: var(--tone-amber);

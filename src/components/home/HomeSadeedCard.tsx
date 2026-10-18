@@ -42,6 +42,7 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { useSadeed } from "@/lib/sadeed-core/hooks/useSadeed";
 import { SADEED_DISPLAY_NAME_AR_PLAIN, SADEED_DISPLAY_NAME_EN } from "@/lib/sadeed-core/branding";
+import { connectionFromHealth, type ChatConnection } from "@/lib/sadeed/chat-connection";
 import {
   SadeedStagePresence,
   type SadeedConnection,
@@ -173,11 +174,10 @@ const QUICK_ACTIONS: QuickAction[] = [
 const HEALTH_TIMEOUT_MS = 4_000;
 
 /**
- * يعيد `true` حين يبلغ الخادم بمزوّد ذكاءٍ جاهز، و`false` حين يكون حيًّا بلا
- * مزوّد، ويرمي حين يتعذّر الفحص. والجاهزية **OR عبر المفاتيح القادرة** —
- * الخادم يطويها في `key_present` ويسمّي المزوّد في `provider`، فأيّهما يكفي.
+ * حال الاتصال من الخادم (`connectionFromHealth`): متصل، أو البوّابة مغلقة فالردود فورية
+ * وحدها، أو حيٌّ بلا مزوّد — ويرمي حين يتعذّر الفحص. والجاهزية **OR عبر المفاتيح القادرة**.
  */
-async function readChatReady(signal: AbortSignal): Promise<boolean> {
+async function readChatConnection(signal: AbortSignal): Promise<ChatConnection> {
   const ctrl = new AbortController();
   const stop = () => ctrl.abort();
   signal.addEventListener("abort", stop, { once: true });
@@ -190,11 +190,7 @@ async function readChatReady(signal: AbortSignal): Promise<boolean> {
       signal: ctrl.signal,
     });
     if (!res.ok) throw new Error(`chat health ${res.status}`);
-    const body: unknown = await res.json();
-    if (!body || typeof body !== "object") throw new Error("chat health: malformed");
-    const j = body as { ok?: unknown; key_present?: unknown; provider?: unknown };
-    if (j.ok !== true) throw new Error("chat health: not ok");
-    return j.key_present === true || (typeof j.provider === "string" && j.provider.length > 0);
+    return connectionFromHealth(await res.json());
   } finally {
     clearTimeout(timer);
     signal.removeEventListener("abort", stop);
@@ -236,7 +232,7 @@ export function HomeSadeedCard() {
   // الفحص يُقال في الشارة نفسها (المادة ١٤)، والفحص التالي بعد دقيقتين.
   const health = useQuery({
     queryKey: ["home-chat-health"],
-    queryFn: ({ signal }) => readChatReady(signal),
+    queryFn: ({ signal }) => readChatConnection(signal),
     enabled: !authLoading,
     staleTime: 60_000,
     refetchInterval: 120_000,
@@ -247,9 +243,7 @@ export function HomeSadeedCard() {
     ? "unknown"
     : health.isPending
       ? "checking"
-      : health.data
-        ? "ready"
-        : "local";
+      : health.data;
 
   const first = authLoading ? null : firstNameOf(user);
   const hello = ar ? `مرحباً ${first ?? "بك"}` : first ? `Hello ${first}` : "Welcome";

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { resolveGoogleGeminiModel } from "@/lib/ai-gateway.server";
+import { enforceRateLimit, gateDegradedMode } from "@/lib/governance/rate-limit.server";
 import { GEMINI_EMBEDDING_MODEL } from "@/lib/sadeed/gemini-embeddings.server";
 import { isGeminiRagReady } from "@/lib/sadeed/rag.server";
 
@@ -13,12 +14,22 @@ export const Route = createFileRoute("/api/chat/health")({
         const elevenLabsPresent = Boolean(process.env.ELEVENLABS_API_KEY?.trim());
         const provider = geminiPresent ? "google-gemini" : null;
         const model = geminiPresent ? resolveGoogleGeminiModel() : null;
+        // حال البوّابة (DEF-11، ٢٠٢٦/١٠/١٨): المفتاح وحده لا يعني «متصل» — والقاعدة موقوفة
+        // يأخذ كل سؤالٍ يحتاج النموذج السطرَ المغلق. فحصٌ حقيقي للمخزن نفسه الذي تقرؤه
+        // البوّابة، بمهلتها، كفحص `/api/public/health` (والقاطع يجعله فوريًّا على عطلٍ معروف).
+        const probe = await enforceRateLimit("health:chat", 600, 60, { deadlineMs: 1_500 });
+        const gate = !probe.unavailable
+          ? "verified"
+          : gateDegradedMode() === "closed"
+            ? "closed"
+            : "degraded";
         return Response.json(
           {
             ok: true,
             provider,
             model,
             key_present: geminiPresent,
+            gate,
             rag_embedding_model: GEMINI_EMBEDDING_MODEL,
             rag_ready: isGeminiRagReady(),
             voice_configured: elevenLabsPresent,
