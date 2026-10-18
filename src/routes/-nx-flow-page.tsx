@@ -278,8 +278,8 @@ export function NxFlowPage() {
         <footer className="mt-6 flex flex-wrap items-center gap-3">
           <span className="text-[12px] text-[color:var(--ink-3)]">
             {ar
-              ? "الصفوف الحية تحل محل المحاكاة فور وصولها."
-              : "Live rows replace simulation on arrival."}
+              ? "الصفوف الحية تحل محل البيانات المرجعية فور وصولها."
+              : "Live rows replace reference data on arrival."}
           </span>
         </footer>
       </div>

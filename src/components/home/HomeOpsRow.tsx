@@ -256,11 +256,11 @@ function OpsCard({
               className="nx-ops-sim"
               title={
                 ar
-                  ? `محاكاة مرجعية بأرقام التصميم${failed ? " — تعذّر تحميل البيانات الحيّة" : ""}`
-                  : "Reference simulation"
+                  ? `بيانات مرجعية بأرقام التصميم، ليست حيّة${failed ? " — تعذّر تحميل البيانات الحيّة" : ""}`
+                  : "Reference data (not live)"
               }
             >
-              {ar ? SIMULATION_BADGE_AR : "Simulated"}
+              {ar ? SIMULATION_BADGE_AR : "Reference"}
             </span>
           </span>
         )}

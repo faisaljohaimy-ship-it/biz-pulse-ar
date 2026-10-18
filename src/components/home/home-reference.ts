@@ -39,7 +39,7 @@ import type { OmsKpis } from "@/lib/oms.functions.reports";
 /* ── النصوص الثابتة ─────────────────────────────────────────────────────── */
 
 /** شارة كل رقم مرجعي — تُعرض بجواره حيثما عُرض. */
-export const SIMULATION_BADGE_AR = "محاكاة";
+export const SIMULATION_BADGE_AR = "مرجعي";
 /** خانة التغيّر لقيمةٍ حيّة: لا تاريخ مقيس لها، فلا سهم (المادة ٢٧). */
 export const CHANGE_NOT_MEASURED_AR = "لم يُقَس";
 /** وسم الصور التوضيحية (قرار N3). */

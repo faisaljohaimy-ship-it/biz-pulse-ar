@@ -28,7 +28,7 @@ export const Route = createFileRoute("/nx-cockpit")({
       { title: "قمرة القيادة التنفيذية · NX Cockpit — سَدِيد" },
       {
         name: "description",
-        content: "عرض لغة التصميم التنفيذية الموحّدة لنظام سَدِيد — محاكاة مرجعية.",
+        content: "عرض لغة التصميم التنفيذية الموحّدة لنظام سَدِيد — بيانات مرجعية (ليست حيّة).",
       },
       { name: "robots", content: "noindex" },
     ],

@@ -146,7 +146,7 @@ export interface ExecutiveCockpitRepository {
 
 // ── Demo repository (reference simulation, four regions) ─────────────────
 
-const SIM_TIME = "قبل دقيقتين · محاكاة مرجعية";
+const SIM_TIME = "بيانات مرجعية · ليست حيّة";
 
 interface RegionSeed {
   readiness: number;
@@ -656,7 +656,7 @@ export function createDemoCockpitRepository(
       const correlationId = `sim-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4)}`;
       return {
         ok: true,
-        messageAr: "سُجل الإجراء في بيئة المحاكاة المرجعية — لا أثر إنتاجي.",
+        messageAr: "سُجل الإجراء في بيئة البيانات المرجعية — لا أثر إنتاجي.",
         correlationId,
       };
     },

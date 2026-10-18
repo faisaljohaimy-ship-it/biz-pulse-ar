@@ -122,7 +122,7 @@ export function LiveEventStream() {
         <NxEmptyState
           icon={<Radio aria-hidden className="size-8 text-nx-pearl/38" />}
           title="لا أحداث بعد"
-          description="سيظهر هنا كل حدث تشغيلي فور وقوعه — المحاكاة المرجعية تبث دوريًا."
+          description="سيظهر هنا كل حدث تشغيلي فور وقوعه — والأحداث المرجعية (ليست حيّة) تُبثّ دوريًا."
         />
       ) : (
         <ul

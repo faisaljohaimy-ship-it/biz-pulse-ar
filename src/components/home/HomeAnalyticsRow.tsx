@@ -235,10 +235,10 @@ function AnaCard({
               {ar
                 ? sim === "all"
                   ? SIMULATION_BADGE_AR
-                  : `${SIMULATION_BADGE_AR} جزئية`
+                  : `${SIMULATION_BADGE_AR} جزئيًّا`
                 : sim === "all"
-                  ? "Simulated"
-                  : "Partly simulated"}
+                  ? "Reference"
+                  : "Partly reference"}
             </span>
           )}
         </div>
@@ -347,8 +347,8 @@ function RegionsCard({ ar, state }: { ar: boolean; state: HomeReads["state"] }) 
       sim={sim}
       simNote={
         ar
-          ? `محاكاة مرجعية بأرقام التصميم${state.isError ? " — تعذّر تحميل الامتثال الحيّ" : ""}؛ المصدر الحيّ: امتثال كل منطقة في الحوكمة`
-          : "Reference simulation"
+          ? `بيانات مرجعية بأرقام التصميم، ليست حيّة${state.isError ? " — تعذّر تحميل الامتثال الحيّ" : ""}؛ المصدر الحيّ: امتثال كل منطقة في الحوكمة`
+          : "Reference data (not live)"
       }
       control={
         <PeriodPick
@@ -385,7 +385,7 @@ function RegionsCard({ ar, state }: { ar: boolean; state: HomeReads["state"] }) 
               ar ? `افتح ${region.labelAr}` : `Open ${region.labelEn}`,
               `${metric} (${periodLabel}): ${valueText}`,
               `${ar ? "التغيّر" : "Change"}: ${changeWords(change, ar)}`,
-              simulated ? (ar ? "محاكاة مرجعية" : "reference simulation") : null,
+              simulated ? (ar ? "بيانات مرجعية (ليست حيّة)" : "reference data (not live)") : null,
             ]
               .filter(Boolean)
               .join(" — ");
@@ -501,8 +501,8 @@ function IncidentsRisksCard({ ar }: { ar: boolean }) {
       sim="all"
       simNote={
         ar
-          ? "محاكاة مرجعية بأرقام التصميم — لا سلسلة شهرية مقيسة للحوادث والمخاطر بعد"
-          : "Reference simulation — no measured monthly series yet"
+          ? "بيانات مرجعية بأرقام التصميم، ليست حيّة — لا سلسلة شهرية مقيسة للحوادث والمخاطر بعد"
+          : "Reference data (not live) — no measured monthly series yet"
       }
       control={
         <PeriodPick
@@ -537,10 +537,10 @@ function IncidentsRisksCard({ ar }: { ar: boolean }) {
           className="nx-ana-plot nx-focus-ring"
           aria-label={
             ar
-              ? `${title} (${spanLabel}) — محاكاة مرجعية — افتح سجل البلاغات`
-              : `${title} (${spanLabel}) — reference simulation — open incidents`
+              ? `${title} (${spanLabel}) — بيانات مرجعية (ليست حيّة) — افتح سجل البلاغات`
+              : `${title} (${spanLabel}) — reference data (not live) — open incidents`
           }
-          title={ar ? `${title} — محاكاة مرجعية بأرقام التصميم` : title}
+          title={ar ? `${title} — بيانات مرجعية بأرقام التصميم، ليست حيّة` : title}
         >
           <svg
             viewBox={`0 0 ${PLOT_W} ${PLOT_H}`}
@@ -643,8 +643,8 @@ function IncidentsRisksCard({ ar }: { ar: boolean }) {
       <table className="sr-only">
         <caption>
           {ar
-            ? `${title} — ${spanLabel} — محاكاة مرجعية بأرقام التصميم`
-            : `${title} — ${spanLabel} — reference simulation`}
+            ? `${title} — ${spanLabel} — بيانات مرجعية بأرقام التصميم، ليست حيّة`
+            : `${title} — ${spanLabel} — reference data (not live)`}
         </caption>
         <thead>
           <tr>
@@ -764,7 +764,7 @@ function IncidentTypesCard({ ar, sec }: { ar: boolean; sec: HomeReads["sec"] }) 
   const spoken = [
     `${title}: ${caption} ${fmt(total)}`,
     ...slices.map((s) => `${s.label} ${fmt(s.pct)}%`),
-    live ? null : ar ? "محاكاة مرجعية" : "reference simulation",
+    live ? null : ar ? "بيانات مرجعية (ليست حيّة)" : "reference data (not live)",
     ar ? "افتح سجل البلاغات" : "open incidents",
   ]
     .filter(Boolean)
@@ -779,8 +779,8 @@ function IncidentTypesCard({ ar, sec }: { ar: boolean; sec: HomeReads["sec"] }) 
       sim={busy || live ? "none" : "all"}
       simNote={
         ar
-          ? `محاكاة مرجعية بأرقام التصميم${sec.isError ? " — تعذّر تحميل البلاغات" : ""}؛ المصدر الحيّ: فئات أحدث البلاغات`
-          : "Reference simulation"
+          ? `بيانات مرجعية بأرقام التصميم، ليست حيّة${sec.isError ? " — تعذّر تحميل البلاغات" : ""}؛ المصدر الحيّ: فئات أحدث البلاغات`
+          : "Reference data (not live)"
       }
       busy={busy}
       failed={sec.isError}
@@ -964,11 +964,11 @@ function SystemsCard({
       sim={busy ? "none" : simLevel(simCount, rows.length)}
       simNote={
         ar
-          ? `محاكاة مرجعية بأرقام التصميم لما لم يُقَس حيًّا: ${rows
+          ? `بيانات مرجعية بأرقام التصميم (ليست حيّة) لما لم يُقَس حيًّا: ${rows
               .filter((r) => r.simulated)
               .map((r) => r.label)
               .join("، ")}`
-          : "Reference simulation"
+          : "Reference data (not live)"
       }
       control={
         <Link to="/integrations" className="nx-home-more nx-ana-more">
@@ -998,7 +998,7 @@ function SystemsCard({
                 data-sim={r.simulated ? "" : undefined}
                 title={
                   ar
-                    ? `${r.label}: ${r.value ?? notMeasured} — ${r.stateWord}${r.simulated ? " — محاكاة مرجعية" : ""}`
+                    ? `${r.label}: ${r.value ?? notMeasured} — ${r.stateWord}${r.simulated ? " — بيانات مرجعية (ليست حيّة)" : ""}`
                     : r.label
                 }
               >
@@ -1014,7 +1014,9 @@ function SystemsCard({
                   {verdictWord && ar && <span className="sr-only">{`${verdictWord}: `}</span>}
                   {r.stateWord}
                   {r.simulated && (
-                    <span className="sr-only">{ar ? " (محاكاة)" : " (simulated)"}</span>
+                    <span className="sr-only">
+                      {ar ? " (مرجعي، غير حيّ)" : " (reference, not live)"}
+                    </span>
                   )}
                 </span>
                 <VerdictGlyph verdict={r.verdict} />

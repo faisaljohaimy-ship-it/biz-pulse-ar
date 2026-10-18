@@ -518,7 +518,7 @@ export function ArabianPeninsulaMap({
   );
   const zoomWord = zoom.toLocaleString(ar ? "ar-SA" : "en-US");
   const vb = boxVars(target);
-  const simWord = ar ? "محاكاة" : "Simulated";
+  const simWord = ar ? "مرجعي" : "Reference";
 
   /* ── رقاقات المناطق — تبرز منطقةً وتنقل مركز التكبير إليها ───────────── */
   const chips = (
@@ -664,8 +664,8 @@ export function ArabianPeninsulaMap({
                     ? `خريطة شبه الجزيرة العربية — ${pending}`
                     : `Arabian Peninsula map — ${pending}`
                   : ar
-                    ? `خريطة شبه الجزيرة العربية: ${plotted.length} موقعًا على المناطق الأربع${sitesSimulated ? " (محاكاة)" : ""}`
-                    : `Arabian Peninsula map: ${plotted.length} sites across the four regions${sitesSimulated ? " (simulated)" : ""}`
+                    ? `خريطة شبه الجزيرة العربية: ${plotted.length} موقعًا على المناطق الأربع${sitesSimulated ? " (بيانات مرجعية، ليست حيّة)" : ""}`
+                    : `Arabian Peninsula map: ${plotted.length} sites across the four regions${sitesSimulated ? " (reference data, not live)" : ""}`
               }
             >
               {/* تعبئة كل منطقة تدرّجٌ معتم من لونها إلى ليل البحر (لكل منطقةٍ
@@ -877,14 +877,14 @@ export function ArabianPeninsulaMap({
                 data-inline=""
                 title={
                   ar
-                    ? "محاكاة مرجعية بأرقام التصميم — الحيّ يحلّ محلّها متى وصل"
-                    : "Reference simulation — live values replace it on arrival"
+                    ? "بيانات مرجعية بأرقام التصميم، ليست حيّة — الحيّ يحلّ محلّها متى وصل"
+                    : "Reference data (not live) — live values replace it on arrival"
                 }
               >
                 {liveStats.length > 0
                   ? ar
-                    ? `محاكاة عدا ${liveStats.map((s) => s.ar).join(" و")}`
-                    : `Simulated except ${liveStats.map((s) => s.en).join(", ")}`
+                    ? `مرجعي عدا ${liveStats.map((s) => s.ar).join(" و")}`
+                    : `Reference except ${liveStats.map((s) => s.en).join(", ")}`
                   : simWord}
               </span>
             )}
@@ -936,7 +936,9 @@ export function ArabianPeninsulaMap({
                         <span dir="ltr">{valueText}</span>
                       )}
                       {!loading && s.simulated && (
-                        <span className="sr-only">{ar ? " (محاكاة)" : " (simulated)"}</span>
+                        <span className="sr-only">
+                          {ar ? " (مرجعي، غير حيّ)" : " (reference, not live)"}
+                        </span>
                       )}
                     </dd>
                   </>
@@ -1039,7 +1041,7 @@ function RegionBubble({
     `${name}: ${metricText ? `${metricText} ` : ""}${fmt(bubble.value)}`,
     badgesText,
     `${ar ? "التغيّر" : "Change"} ${changeText}`,
-    bubble.simulated ? (ar ? "محاكاة مرجعية" : "reference simulation") : null,
+    bubble.simulated ? (ar ? "بيانات مرجعية (ليست حيّة)" : "reference data (not live)") : null,
     ar
       ? `المواقع ${sitesText} · الامتثال ${complianceText}`
       : `sites ${sitesText} · compliance ${complianceText}`,
@@ -1055,7 +1057,7 @@ function RegionBubble({
       aria-label={spoken}
       title={
         ar
-          ? `${labelAr} — المواقع ${sitesText} · الامتثال ${complianceText}${bubble.simulated ? " — أرقام الفقاعة محاكاة مرجعية" : ""}`
+          ? `${labelAr} — المواقع ${sitesText} · الامتثال ${complianceText}${bubble.simulated ? " — أرقام الفقاعة مرجعية، ليست حيّة" : ""}`
           : `${labelEn} — sites ${sitesText} · compliance ${complianceText}`
       }
       data-dim={dim || undefined}

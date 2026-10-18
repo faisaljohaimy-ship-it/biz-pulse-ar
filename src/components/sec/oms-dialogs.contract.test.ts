@@ -85,9 +85,11 @@ describe("② السقوط عند 401/403 إلى إنشاء محاكاة مرج�
     expect(DIALOGS_CODE).toContain("sim-local-");
   });
 
-  it("toast صدق الكتابة يقول «محاكاة مرجعية» صراحةً (استثناء REQ-021)", () => {
+  it("toast صدق الكتابة يقول «بيانات مرجعية» وإنه لا يُحفَظ — صراحةً (استثناء REQ-021)", () => {
     expect(DIALOGS_CODE).toContain("SIM_WO_CREATED_INFO");
-    expect(DIALOGS_CODE).toMatch(/SIM_WO_CREATED_INFO\s*=\s*\n?\s*"[^"]*محاكاة مرجعية/);
+    expect(DIALOGS_CODE).toMatch(
+      /SIM_WO_CREATED_INFO\s*=\s*\n?\s*"[^"]*بيانات مرجعية[^"]*لا يُحفَظ في قاعدة البيانات"/,
+    );
     expect(WO_DIALOG).toContain("toast.info(SIM_WO_CREATED_INFO)");
   });
 
