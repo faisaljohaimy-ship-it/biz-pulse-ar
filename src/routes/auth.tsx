@@ -29,6 +29,7 @@ import {
 } from "@/lib/access/executive-acceptance";
 import { toast } from "sonner";
 import {
+  signinErrorMessage,
   signupErrorMessage,
   signupMetadata,
   validateSignup,
@@ -39,10 +40,18 @@ import { STAFF_NUMBER_KEY } from "@/lib/access/staff-entry";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>): { redirect?: string; mode?: "signup" } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { redirect?: string; mode?: "signup" | "signin" } => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
-    // «مستخدم جديد» مباشرةً من رابط (نموذج البلاغ للزائر يوجّه إليه).
-    mode: search.mode === "signup" ? ("signup" as const) : undefined,
+    // «مستخدم جديد» مباشرةً من رابط (نموذج البلاغ للزائر يوجّه إليه)، و«دخول الموظفين»
+    // من الترويسة (أمر المالك ٢٠٢٦/١٠/١٨) — كلاهما جاء ليدخل لا ليشاهد العرض التنفيذي.
+    mode:
+      search.mode === "signup"
+        ? ("signup" as const)
+        : search.mode === "signin"
+          ? ("signin" as const)
+          : undefined,
   }),
   component: AuthPage,
 });
@@ -57,10 +66,11 @@ function AuthPage() {
   // `?mode=signup` (من ملاحظة نماذج الإنشاء) يتخطّى بوابة العرض التنفيذي: الزائر
   // جاء ليُنشئ حسابًا ويسجّل بلاغًا، لا ليشاهد عرض التفعيل المؤسسي — قاسه حارس
   // الجودة: كان يهبط على «شاهد النظام أولًا» بلا تبويبٍ ولا نموذج.
+  // و`?mode=signin` (زرّ «دخول الموظفين» في الترويسة) يتخطّاها للسبب نفسه: الموظف جاء ليدخل.
   const [accepted, setAccepted] = useState(() =>
     typeof window === "undefined"
       ? false
-      : initialMode === "signup" || hasExecutiveAcceptance(window.localStorage),
+      : initialMode !== undefined || hasExecutiveAcceptance(window.localStorage),
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -85,14 +95,14 @@ function AuthPage() {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
-        toast.error(result.error.message ?? (isAr ? "تعذّر الدخول" : "Google sign-in failed"));
+        toast.error(signinErrorMessage(result.error.message ?? "", isAr));
         setBusy(false);
         return;
       }
       if (result.redirected) return;
       goNext();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : isAr ? "تعذّر الدخول" : "Sign-in error");
+      toast.error(signinErrorMessage(error instanceof Error ? error.message : String(error), isAr));
       setBusy(false);
     }
   }
@@ -105,9 +115,7 @@ function AuthPage() {
       if (error) throw error;
       goNext();
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : isAr ? "خطأ في المصادقة" : "Authentication error",
-      );
+      toast.error(signinErrorMessage(error instanceof Error ? error.message : String(error), isAr));
     } finally {
       setBusy(false);
     }

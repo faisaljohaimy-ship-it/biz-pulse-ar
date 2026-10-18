@@ -33,12 +33,13 @@
  * **والفروق الباقية فروق خانات لا هيئة** (قرارات المالك): المبدّل على الرئيسية
  * وحدها، و«بلّغ» على غيرها وحدها — يقرّرهما `useChromeSlots()`.
  */
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
   Grid3x3,
+  IdCard,
   Menu,
   MessageCircleMore,
   MessageCircleQuestionMark,
@@ -72,6 +73,47 @@ import "@/styles/home/home-chrome.css";
  * نفسه ٤٤×٤٤ — هدف اللمس أوسع من الرسم كما تسمح المواصفة §3.7.
  */
 const ICON_BTN = "nx-icon-btn nx-hdr-btn relative grid shrink-0 place-items-center";
+
+/**
+ * «دخول الموظفين» — مدخل الدخول للزائر بجوار بطاقته (أمر المالك ٢٠٢٦/١٠/١٨: «Add a
+ * prominent, professional employee-login entry point … reuse the current authentication
+ * infrastructure»). يقود إلى `/auth` القائمة نفسها (Supabase بالبريد وكلمة المرور، أو
+ * Google) بـ`mode=signin` و`redirect` إلى الصفحة الحالية — لا نموذج جديد ولا مسار مخترَع
+ * ولا صلاحية من رقمٍ وظيفي أو دورٍ في العميل؛ والصفحات المحمية تبقى خلف التحقّق نفسه.
+ * ويختفي للمسجَّل (بطاقته تكفي) وأثناء التحقّق من الجلسة (لا وميض ولا ترطيبٌ مختلف).
+ *
+ * **المقاس يقرّر الهيئة لا الوجود** (قِيس الصفّ ٢٠٢٦/١٠/١٨: الحبّة باسمها فاضت 136px على
+ * 390 و48 على 640 و30 على 768): باسمها من 1024، وقرصًا 44px دونها والاسم اسمه المقروء،
+ * ودون 640 لا مكان في الصفّ فتكون أوّل ما في الدرج (`variant="drawer"`) باسمها كاملًا —
+ * مدخلٌ واحد ظاهر في كل مقاس، لا اثنان.
+ */
+function EmployeeLogin({
+  ar,
+  variant = "header",
+  onNavigate,
+}: {
+  ar: boolean;
+  variant?: "header" | "drawer";
+  onNavigate?: () => void;
+}) {
+  const { user, loading } = useAuth();
+  const { pathname, searchStr } = useLocation();
+  if (loading || user) return null;
+  const back = pathname.startsWith("/auth") ? undefined : `${pathname}${searchStr ?? ""}`;
+  const label = ar ? "دخول الموظفين" : "Employee sign-in";
+  return (
+    <Link
+      to="/auth"
+      search={{ mode: "signin", redirect: back }}
+      onClick={onNavigate}
+      className={`nx-focus-ring nx-hdr-login${variant === "drawer" ? " nx-hdr-login--drawer" : ""}`}
+      title={label}
+    >
+      <IdCard aria-hidden className="nx-hdr-login-ico" />
+      <span className="nx-hdr-login-label">{label}</span>
+    </Link>
+  );
+}
 
 /** لوحة الأوامر الواحدة تستمع لهذا الحدث — لا نسخةٌ ثانية منها هنا. */
 function openCommandPalette() {
@@ -255,6 +297,7 @@ function MobileMenu({ ar }: { ar: boolean }) {
         <div className="nx-drawer-brand">
           <SadeedPlateLockup variant="drawer" />
         </div>
+        <EmployeeLogin ar={ar} variant="drawer" onNavigate={() => setOpen(false)} />
         <SystemSidebarNav onNavigate={() => setOpen(false)} />
         <div className="mt-4">
           <SystemSidebarCard />
@@ -346,6 +389,7 @@ export function SystemHeader() {
           >
             <MessageCircleQuestionMark aria-hidden className="size-5" />
           </Link>
+          <EmployeeLogin ar={ar} />
           {/* بطاقة المستخدم زرّ قائمة الحساب: اللغة · المنطقة · المؤسسة ·
             الإعدادات — ما كان في شريط القشرة القديمة لم يسقط. */}
           <AccountMenu ar={ar} />
