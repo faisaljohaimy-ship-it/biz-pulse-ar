@@ -254,10 +254,28 @@ const WO_STATUS_SHOWN: Record<string, string> = {
 };
 const WO_KIND_SHOWN: Record<string, string> = { preventive: "وقائية", corrective: "تصحيحية" };
 const WO_PRIORITY_SHOWN: Record<string, string> = { high: "عالٍ", medium: "متوسط" };
+/** أنواع الأصل في التصدير بعربيّة `WO_ASSET_KIND_AR` نفسها (الحارس يقارنهما) — لا مفتاح خام. */
+const WO_ASSET_KIND_SHOWN: Record<string, string> = {
+  cctv: "كاميرات المراقبة",
+  access_control: "تحكم بالدخول",
+  perimeter: "محيط أمني",
+  control_room: "غرفة التحكم",
+  physical_security: "الأمن المادي",
+  facility: "منشأة",
+};
+
+/**
+ * المصدر على السطر الأوّل لا سطرًا سادسًا: السجلّ «معقّد ← ٥ أسطر» في عقد الاختصار (المادة ٢٢،
+ * نقض الحارس N2). والسجلّ نفسه من المُنسِّق المشترك مع كتلة الاسترجاع، فلا يُمسّ.
+ */
+const withSource = (record: string, source: string) => {
+  const [first, ...rest] = record.split("\n");
+  return [`${first} · ${source}`, ...rest].join("\n");
+};
 
 /**
  * سؤال مرجعٍ حرفيّ: يحمل مرجعًا موجودًا فعلًا في المجموعة، وبقية السؤال
- * استفهام حالة/تفاصيل لا تحليل. الجواب سجلّه الكامل وسطر مصدره (≤٦ أسطر —
+ * استفهام حالة/تفاصيل لا تحليل. الجواب سجلّه الكامل ومصدره على سطره الأوّل (≤٥ أسطر —
  * درجة «معقّد» في عقد الاختصار، والمرجع المسؤول عنها).
  */
 function matchRecordLookup(raw: string, normalized: string): InstantDataAnswer | null {
@@ -272,9 +290,15 @@ function matchRecordLookup(raw: string, normalized: string): InstantDataAnswer |
         priority: order.priority
           ? (WO_PRIORITY_SHOWN[order.priority] ?? order.priority)
           : order.priority,
+        asset_kind: order.asset_kind
+          ? (WO_ASSET_KIND_SHOWN[order.asset_kind] ?? order.asset_kind)
+          : order.asset_kind,
       };
       return {
-        answer: `${formatWorkOrderRecord(shown)}\n  المصدر: تصدير SAP PM المعتمد في ${MAINTENANCE_REPORT_DATE}.`,
+        answer: withSource(
+          formatWorkOrderRecord(shown),
+          `تصدير SAP PM المعتمد في ${MAINTENANCE_REPORT_DATE}`,
+        ),
         source: "record-lookup",
       };
     }
@@ -286,7 +310,10 @@ function matchRecordLookup(raw: string, normalized: string): InstantDataAnswer |
     const project = REAL_SEC_PROJECTS.find((p) => upper.includes(p.ref.toUpperCase()));
     if (project) {
       return {
-        answer: `${formatProjectRecord(project)}\n  المصدر: تصدير المشاريع المعتمد في ${PROJECTS_REPORT_DATE}.`,
+        answer: withSource(
+          formatProjectRecord(project),
+          `تصدير المشاريع المعتمد في ${PROJECTS_REPORT_DATE}`,
+        ),
         source: "record-lookup",
       };
     }

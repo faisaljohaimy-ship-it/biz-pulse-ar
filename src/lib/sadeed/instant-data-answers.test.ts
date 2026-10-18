@@ -7,6 +7,7 @@
  *     طُلب — وهذا أسوأ من البطء.
  * والأرقام تُقاس ضد العدّادات الكنسية نفسها لا ضد أرقام منسوخة تتعفّن.
  */
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   PROJECTS_REPORT_DATE,
@@ -62,12 +63,12 @@ describe("العدّ الصرف يُجاب فورًا من العدّادات ا
 });
 
 describe("سؤال المرجع الحرفيّ يُجاب بسجلّه الكامل فورًا", () => {
-  it("مرجع مشروع يعيد سجلّه (≤6 أسطر — درجة «معقّد» في عقد الاختصار)", () => {
+  it("مرجع مشروع يعيد سجلّه (≤5 أسطر — درجة «معقّد» في عقد الاختصار)", () => {
     const target = REAL_SEC_PROJECTS[42];
     const hit = matchInstantDataAnswer(`ما حالة المشروع ${target.ref}؟`);
     expect(hit?.source).toBe("record-lookup");
     expect(hit!.answer).toContain(target.ref);
-    expect(hit!.answer.split("\n").length).toBeLessThanOrEqual(6);
+    expect(hit!.answer.split("\n").length).toBeLessThanOrEqual(5);
   });
 
   it("ورقم أمر SAP يعيد سجلّ أمر الصيانة", () => {
@@ -119,6 +120,30 @@ describe("لقطةٌ بتاريخها، والملغاة ملغاة (DEF-18، ٢
     expect(hit.answer).toContain(`تصدير SAP PM المعتمد في ${MAINTENANCE_REPORT_DATE}`);
     const project = matchInstantDataAnswer(`ما حالة المشروع ${REAL_SEC_PROJECTS[7].ref}؟`)!;
     expect(project.answer).toContain(`تصدير المشاريع المعتمد في ${PROJECTS_REPORT_DATE}`);
+  });
+
+  it("كل سجلّ ≤٥ أسطر ومصدره على سطره الأوّل — لا سطرٌ سادس (نقض الحارس N2، المادة ٢٢)", () => {
+    for (const w of REAL_SEC_WORK_ORDERS) {
+      const lines = matchInstantDataAnswer(`تفاصيل ${w.ref}`)!.answer.split("\n");
+      expect(lines.length, w.ref).toBeLessThanOrEqual(5);
+      expect(lines[0], w.ref).toContain(`· تصدير SAP PM المعتمد في ${MAINTENANCE_REPORT_DATE}`);
+    }
+    for (const p of REAL_SEC_PROJECTS) {
+      const lines = matchInstantDataAnswer(`ما حالة المشروع ${p.ref}؟`)!.answer.split("\n");
+      expect(lines.length, p.ref).toBeLessThanOrEqual(5);
+      expect(lines[0], p.ref).toContain(`· تصدير المشاريع المعتمد في ${PROJECTS_REPORT_DATE}`);
+    }
+  });
+
+  it("نوع الأصل بالعربية نفسها في خريطة الصفحة — لا مفتاح خام كـ«physical_security»", () => {
+    const dialogs = readFileSync("src/components/sec/oms-dialogs.tsx", "utf8");
+    const pageMap = /export const WO_ASSET_KIND_AR[^;]+;/.exec(dialogs)?.[0] ?? "";
+    for (const w of REAL_SEC_WORK_ORDERS) {
+      const answer = matchInstantDataAnswer(`تفاصيل ${w.ref}`)!.answer;
+      expect(answer, w.ref).not.toMatch(/الأصل: [a-z_]+/);
+      const shown = /الأصل: ([^·\n]+?)(?: ·|\n|$)/.exec(answer)?.[1]?.trim();
+      expect(pageMap, `${w.asset_kind} ⇐ ${shown}`).toContain(`${w.asset_kind}: "${shown}"`);
+    }
   });
 });
 
