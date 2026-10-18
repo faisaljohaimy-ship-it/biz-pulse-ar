@@ -16,6 +16,12 @@
  *   محسوبة، عمق) وتوهّجٌ محيطٌ ينجرف ببطء خلفه، دون أن يغطّي مؤشّرًا أو محتوى تشغيليًّا.
  * • ولوحة الشعار «منظومة القرار والإنجاز الذكي» **خرجت من هذا الصفّ** (R4: إلى رأس
  *   الشريط الجانبي بعبارةٍ جديدة) — ومعها رابطها وصورها وحلقتها وتركيبها في Remotion.
+ * • ثم في اليوم نفسه بنصّه («SADEED AI OS — CINEMATIC MOTION GRAPHICS VIDEO ENGINE»): «Replace
+ *   the static banner artwork in that exact location with the new cinematic experience» و«Prefer
+ *   HTML text overlays for important text». فاللوحة **بلا نصّها المخبوز** (ممسوحٌ بملءٍ توافقيّ
+ *   خارج المستودع، `remotion/brand/RENDER.md`)، والفيلم ستّة مشاهد في حلقة 24 ث تبدأ وتنتهي
+ *   باللوحة نفسها، والاسم والسطر **نصٌّ حقيقيّ** فوقهما (`nx-brand-copy`) — حادٌّ ومقروءٌ على
+ *   الجوال ويُقرأ بقارئ الشاشة، ويخفت مع القصّة ويعود بضوءٍ عابر لحظة يهبط الرمز.
  *
  * ## الصورة أوّلًا، والفيلم فوقها
  *
@@ -47,12 +53,30 @@ import "@/styles/home/home-brand.css";
 /** نسبة اللوحة كما رُسمت (PNG 2172×724 = 3:1). */
 export const BRAND_RATIO = { width: 2172, height: 724 } as const;
 
-/** حلقات الماء المصيَّرة (`remotion/brand/`) — عرض كل حلقة بالبكسل ومصدرها. */
+/**
+ * الفيلم السينمائي المصيَّر (`remotion/brand/SadeedFilm.tsx`) — عرض كل درجةٍ ومصدرها. لا نصّ فيه،
+ * فلا درجة 2172: الحروف HTML حادّةٌ على أي كثافة، والفيلم فوق حاجته على شاشة 2× نعومةٌ سينمائية
+ * لا حروفٌ لينة.
+ */
 export const BRAND_FILMS = [
-  { width: 804, src: "/media/brand/sadeed-banner-800.mp4" },
-  { width: 1608, src: "/media/brand/sadeed-banner-1600.mp4" },
-  { width: 2172, src: "/media/brand/sadeed-banner-2172.mp4" },
+  { width: 804, src: "/media/brand/sadeed-film-804.mp4" },
+  { width: 1608, src: "/media/brand/sadeed-film-1608.mp4" },
 ] as const;
+
+/**
+ * لحظتا النصّ في الفيلم (ث) — من جدول مشاهد `SadeedFilm.tsx` (‏`ACT`): يخفت الاسم مع خفوت
+ * اللوحة إلى الأزرق، ويعود بضوءٍ عابر حين يهبط الرمز في مكانه وتضيء اللوحة. تغييرُ المشاهد هناك
+ * يغيّر هذين الرقمين في الدفعة نفسها.
+ */
+export const FILM_TEXT = { hideAt: 7.4, revealAt: 21.15, seconds: 24 } as const;
+
+export type FilmAct = "hold" | "story" | "reveal";
+
+/** فصل الفيلم عند زمنٍ ما: سكونٌ باللوحة · قصّةٌ بلا نصّ · كشفٌ يعود فيه النصّ. */
+export function filmActAt(seconds: number): FilmAct {
+  if (seconds < FILM_TEXT.hideAt) return "hold";
+  return seconds < FILM_TEXT.revealAt ? "story" : "reveal";
+}
 
 export type BrandFilm = (typeof BRAND_FILMS)[number];
 
@@ -75,28 +99,36 @@ export function pickFilm(cssWidth: number, dpr: number): BrandFilm {
 type Plate = {
   readonly posters: Readonly<Record<number, string>>;
   readonly sizes: string;
-  readonly ar: string;
-  readonly en: string;
+  readonly title: { readonly ar: string; readonly en: string };
+  readonly tagline: { readonly ar: string; readonly en: string };
 };
 
-/** لوحة الهوية: صورٌ من ملفّ المالك (حتى دقّته الأصلية) ونصّها البديل بما كُتب عليها. */
+/**
+ * لوحة الهوية: صورٌ من ملفّ المالك بلا نصّها (حتى دقّته الأصلية)، والاسم والسطر نصٌّ حقيقي.
+ * السطر العربي **بنصّ أمر المالك** («Required brand text»): «… رؤية تنفيذية **عن** الأمن
+ * الصناعي …» — واللوحة الأصلية كانت تقول «على».
+ */
 export const HOME_BRAND: { readonly banner: Plate } = {
   banner: {
     posters: {
-      800: "/home/brand/sadeed-banner-800.webp",
-      1200: "/home/brand/sadeed-banner-1200.webp",
-      1600: "/home/brand/sadeed-banner-1600.webp",
-      2172: "/home/brand/sadeed-banner-2172.webp",
+      800: "/home/brand/sadeed-banner-clean-800.webp",
+      1200: "/home/brand/sadeed-banner-clean-1200.webp",
+      1600: "/home/brand/sadeed-banner-clean-1600.webp",
+      2172: "/home/brand/sadeed-banner-clean-2172.webp",
     },
     // عرض اللوحة المرسوم = عمود المحتوى ناقص الإطار (حلقة 6px من 768 وفوق، و4px دونه،
     // وحدٌّ شعري على كل جانب). والعمود: `max-w-[1440px]` بحاشيتي `px-4` في
     // `-blueprint-page.tsx` (‏1408 من 1664px فوق)، وبعد الشريط الجانبي من 1024 — عرضه
     // الرمز `--nx-sysnav-w: 14rem` في `home-chrome.css` (‏`100vw − 256`) — و`100vw − 32`
     // دونه. تغيّرُ أيٍّ منها يغيّر هذا السطر في الدفعة نفسها.
+    // ودون 600px تصير اللوحة 2:1 بقصّ جانبيها (`home-brand.css`) فتُرسم أعرض من حاويتها 1.5×.
     sizes:
-      "(min-width: 1664px) 1394px, (min-width: 1024px) calc(100vw - 270px), (min-width: 768px) calc(100vw - 46px), calc(100vw - 42px)",
-    ar: "سَدِيد | SADEED — مساعد ذكاء اصطناعي يعطي رؤية تنفيذية على الأمن الصناعي في جميع المناطق السعودية.",
-    en: "SADEED — an AI assistant giving executive visibility over industrial security across all Saudi regions.",
+      "(min-width: 1664px) 1394px, (min-width: 1024px) calc(100vw - 270px), (min-width: 768px) calc(100vw - 46px), (min-width: 600px) calc(100vw - 42px), calc((100vw - 42px) * 1.5)",
+    title: { ar: "سديد", en: "SADEED" },
+    tagline: {
+      ar: "مساعد ذكاء اصطناعي يعطي رؤية تنفيذية عن الأمن الصناعي في جميع المناطق السعودية.",
+      en: "An AI assistant giving executive insight into industrial security across all Saudi regions.",
+    },
   },
 };
 
@@ -250,6 +282,43 @@ function BrandFilm({ artRef, play }: { artRef: RefObject<HTMLDivElement | null>;
     if (!play) setReady(false);
   }, [play]);
 
+  // النصّ يتبع الفيلم: فصلٌ على حاوية اللوحة من زمن الإطار المعروض (لكل إطارٍ حيث يُدعم،
+  // وإلا `timeupdate` بأربع مرّات في الثانية — والانتقال في CSS أطول منها). كتابةٌ في DOM لا
+  // حالةٌ في React: لا إعادة رسمٍ ثلاثين مرّة في الثانية. ويزول الفصل بزوال الفيلم.
+  useEffect(() => {
+    const video = ref.current as
+      | (HTMLVideoElement & {
+          requestVideoFrameCallback?: (cb: () => void) => number;
+          cancelVideoFrameCallback?: (handle: number) => void;
+        })
+      | null;
+    const art = artRef.current;
+    if (!ready || !video || !art) return;
+    const apply = () => {
+      const act = filmActAt(video.currentTime);
+      if (art.dataset.filmAct !== act) art.dataset.filmAct = act;
+    };
+    let handle = 0;
+    let alive = true;
+    if (video.requestVideoFrameCallback) {
+      const tick = () => {
+        if (!alive) return;
+        apply();
+        handle = video.requestVideoFrameCallback!(tick);
+      };
+      handle = video.requestVideoFrameCallback(tick);
+    } else {
+      video.addEventListener("timeupdate", apply);
+    }
+    apply();
+    return () => {
+      alive = false;
+      if (handle) video.cancelVideoFrameCallback?.(handle);
+      video.removeEventListener("timeupdate", apply);
+      delete art.dataset.filmAct;
+    };
+  }, [ready, artRef]);
+
   useEffect(() => {
     const video = ref.current;
     if (!play || !src || !video) return;
@@ -350,13 +419,27 @@ function BrandPlate({ ar, play }: { ar: boolean; play: boolean }) {
             sizes={plate.sizes}
             width={BRAND_RATIO.width}
             height={BRAND_RATIO.height}
-            alt={ar ? plate.ar : plate.en}
+            alt=""
             decoding="async"
             fetchPriority="high"
             className="nx-brand-poster"
           />
           <BrandFilm artRef={artRef} play={play} />
           <span aria-hidden className="nx-brand-glare" />
+          {/* الاسم والسطر نصٌّ حقيقي فوق اللوحة والفيلم — بترتيب اللوحة «SADEED | سديد» في
+              اللغتين، والسطر بلغة الواجهة. */}
+          <div className="nx-brand-copy">
+            <p className="nx-brand-title" dir="ltr">
+              <span lang="en">{plate.title.en}</span>
+              <span aria-hidden className="nx-brand-divider" />
+              <span lang="ar" dir="rtl">
+                {plate.title.ar}
+              </span>
+            </p>
+            <p className="nx-brand-tagline" dir={ar ? "rtl" : "ltr"} lang={ar ? "ar" : "en"}>
+              {ar ? plate.tagline.ar : plate.tagline.en}
+            </p>
+          </div>
         </div>
       </figure>
     </div>
