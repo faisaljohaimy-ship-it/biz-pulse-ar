@@ -170,6 +170,20 @@
    النموذج 45 ث (العميق 75 ث)؛ `finn_interactions.model` يسجّل النموذج الذي أجاب
    فعلًا؛ `X-SADEED-Reply-Source` ∈ `model` | `model-backup` | `model-error` |
    `instant-data` | `zero-cost-router` | `zero-cost` | ….
+6. **كتابات الدردشة بتأكيدٍ من خطوتين** (تطبيقٌ للثابت «أي إجراء كتابة … خلف بوابة
+   تأكيد بشري») على الأدوات الأربع عشرة: `create_task` · `update_task_status` ·
+   `record_executive_decision` · `create_intelligence_alert` ·
+   `sec_create_incident`/`sec_update_incident` ·
+   `sec_create_work_order`/`sec_close_work_order` · `sec_create_permit` ·
+   `sec_decide_permit` · `sec_schedule_patrol` ·
+   `sec_register_visitor`/`sec_checkout_visitor` · `sec_triage_cctv_alert`.
+   الخطوة ١ لا تكتب شيئًا وتحفظ اقتراحًا مختومًا HMAC مشفّرًا AES-GCM في
+   `finn_actions_log`؛ والخطوة ٢ تنفّذ مرّةً واحدة فقط حين تكون رسالة المستخدم التالية
+   تأكيدًا قصيرًا صريحًا؛ والإعادة والتزامن محروسان بصفّ مطالبة (claim). يشترط
+   `SADEED_MESSAGE_APPROVAL_SECRET` (≥32 حرفًا) **وإلا فشلت كل كتابة دردشةٍ مغلقةً**
+   (`confirmation_unavailable`). البريد والرسائل النصية على سجلّهما الخاص. وأداة قراءة
+   جديدة `execution_status` تقرأ `agent_runs`/`tool_executions`
+   (`src/lib/exec/execution-status.server.ts`).
 
 ## تنفيذ الوكلاء وأمن الحصّة (أمر المالك ٢٠٢٦/١٠/١٨)
 

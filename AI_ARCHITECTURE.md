@@ -10,7 +10,7 @@
 2. **Bilingual AR/EN.** Output language matches request locale, with RTL-safe formatting.
 3. **Forensic traceability.** Agent steps write `tool_executions`, `workflow_step_runs`, `enterprise_events`, `audit_logs`, linked by `correlation_id`.
 4. **Schema-aware.** Tool inputs are validated with zod; `sql.read` uses a table allowlist, a per-table column whitelist, and an `org_id` filter.
-5. **Human-in-the-loop for writes.** Agent tools flagged `tool_registry.requires_approval` wait for an admin decision on `/exec`.
+5. **Human-in-the-loop for writes.** Chat write tools write nothing on the first call and execute once only after the user's next message explicitly confirms (server-sealed proposal); agent tools flagged `tool_registry.requires_approval` wait for an admin decision on `/exec`.
 
 ## 1. Zero-cost first (owner order 2026/10/18)
 
@@ -50,6 +50,7 @@ Other AI surfaces (executive briefing, agent runtime, MCP `ask_sadeed`, transcri
 - Engine: `src/lib/exec/agent-runtime.server.ts`: model loop with a step cap and an overall deadline; stops when the run is cancelled.
 - Tools: `src/lib/exec/tool-registry.server.ts` through `tool-orchestrator.server.ts` (timeouts; retries only for idempotent tools; approval gate from `tool_registry.requires_approval`).
 - An approved action runs once, on the same `tool_executions` row; a run with pending approvals leaves its workflow `waiting_approval`.
+- The chat assistant reads this state read-only (`execution_status` tool, `src/lib/exec/execution-status.server.ts`) instead of keeping its own.
 
 ## 4. Memory & RAG
 
@@ -65,4 +66,5 @@ Other AI surfaces (executive briefing, agent runtime, MCP `ask_sadeed`, transcri
 
 - Prompt-only "must use tool X" rules — enforced in code via schemas.
 - Silent provider switching across cost classes.
+- Claiming an action happened without `executed: true` from the backend.
 - `service_role` reads for routine user requests without an explicit `org_id` filter.
