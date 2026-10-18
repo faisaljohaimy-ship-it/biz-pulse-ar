@@ -5,7 +5,14 @@ import { test, expect } from "@playwright/test";
  * marks it seen via sessionStorage; a second visit in the same context
  * must not re-trigger the intro.
  */
-test.describe("Genesis intro — once per session", () => {
+/**
+ * **معطَّل: لا سطح يُختبر.** المقدّمة السينمائية أُزيلت بأمر المالك ٢٠٢٦/٠٨/٢٨ (‏a42c89d02
+ * «revert(intro)»)، فهذا الملف يُسقط كل تشغيلٍ شامل على ميزةٍ غير موجودة (اكتُشف ٢٠٢٦/١٠/١٨ قبل
+ * أول تشغيل لـweekly-regression.yml). لا يُحذف: وثيقتا الحوكمة
+ * `docs/SADEED_INTRO_CONSTITUTION.md` و`docs/SADEED_ENGINEERING_CONSTITUTION.md` تسمّيانه،
+ * وتحديثهما قرار المالك. يعود بإزالة `.skip` إن عادت المقدّمة.
+ */
+test.describe.skip("Genesis intro — once per session", () => {
   test("first visit shows intro, second visit skips it", async ({ page, context }) => {
     await context.clearCookies();
     await page.goto("/", { waitUntil: "domcontentloaded" });

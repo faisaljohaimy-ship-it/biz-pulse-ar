@@ -1,0 +1,185 @@
+name: Weekly regression
+
+# ── المجموعة الشاملة مرّةً في الأسبوع ─────────────────────────────────────
+# أمر المالك ٢٠٢٦/١٠/١٨: «Configure the full, resource-intensive regression suite to run once
+# per week … For ordinary releases, use the smallest appropriate set of fast checks».
+#
+# **لا تحلّ محلّ بوّابة الإصدار.** ‏ci.yml تبقى إلزاميةً على كل SHA قبل main (الأنواع · lint ·
+# الاختبارات · البناء والميزانية والتباين · الأسرار · التدقيق) — ‏CLAUDE.md «البوابة قبل أي دفع».
+# هذه تضيف ما لا يجري في كل إصدار لثقله:
+#   • البوّابة كاملةً طازجةً على main — التبعيات تتغيّر من خارج المستودع (درس ٣٦ تشغيلًا أحمر).
+#   • E2E كلّها على المشروعين: المكتب (Chromium) والجوال (iPhone 13 = WebKit، محرّك سفاري) —
+#     وفي كل إصدارٍ يجري ملفّان على المكتب وحده.
+#   • حدود الواجهة على الإنتاج **بالوضعين** (المواد ٣٢–٣٤) — وفحص الإنتاج الدوري بوضعٍ واحد.
+#   • فحص الدخان الحقيقي لمسار الدردشة (سؤالٌ عربي واحد، بلا اختبار سقف المعدّل المكلف).
+#
+# لا نشر، ولا كتابة في القاعدة، ولا سرّ يُطبع. كل وظيفةٍ مستقلّة فلا يُخفي سقوطُ واحدةٍ
+# نتيجةَ أخرى، والحكم في خلاصة كلٍّ منها.
+
+on:
+  schedule:
+    - cron: "23 2 * * 0" # الأحد 02:23 UTC (05:23 بتوقيت الرياض) — خارج ساعات العمل
+  workflow_dispatch:
+
+concurrency:
+  group: weekly-regression
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: full gate on main (fresh install)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Performance budget
+        run: npm run check:performance
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+      - name: Contrast floor over the background film
+        run: npm run check:contrast
+      - name: Secret scan
+        run: npm run check:secrets
+      - name: Production dependency audit
+        run: npm run check:audit
+
+  e2e:
+    name: E2E — every spec, desktop + mobile (WebKit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # كوظيفة E2E في ci.yml: بيئة production لتُقرأ أسرارها أينما أُضيفت. والمواصفات التي تحتاج
+    # بيانات الدخول تتخطّى نفسها حين تغيب (`test.skip`) — فلا سقوط بسبب إعدادٍ ناقص.
+    environment: production
+    permissions:
+      contents: read
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+      PLAYWRIGHT_BASE_URL: http://localhost:8080
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      # WebKit لمشروع الجوال (playwright.config.ts): بدونه يسقط المشروع كلّه فشلَ تركيبٍ لا منتج.
+      - name: Install Playwright chromium + webkit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Start dev server
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 8080 --strictPort > /tmp/dev.log 2>&1 &
+          echo $! > /tmp/dev.pid
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080 > /dev/null; then
+              echo "dev server up"; exit 0
+            fi
+            sleep 2
+          done
+          echo "dev server failed to start"; tail -n 200 /tmp/dev.log; exit 1
+      - name: Run every E2E spec on both projects
+        run: npx playwright test
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-playwright-report
+          path: playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Stop dev server
+        if: always()
+        run: |
+          if [ -f /tmp/dev.pid ]; then kill "$(cat /tmp/dev.pid)" 2>/dev/null || true; fi
+
+  ui-floors:
+    name: UI floors on production — light and dark
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Resolve production URL
+        id: target
+        env:
+          VAR_URL: ${{ vars.PRODUCTION_URL }}
+          DEFAULT_URL: https://neexios.com
+        run: |
+          URL="${VAR_URL:-$DEFAULT_URL}"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "الهدف: $URL"
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+      # المسارات نفسها التي يقيسها فحص الإنتاج — والوضع الثاني سطح صحّة لا قشرة (المادة ٣٢).
+      - name: Light
+        env:
+          BASE_URL: ${{ steps.target.outputs.url }}
+          ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance,/files
+          THEME: light
+        run: node scripts/ui-audit.mjs
+      - name: Dark
+        if: always()
+        env:
+          BASE_URL: ${{ steps.target.outputs.url }}
+          ROUTES: /,/sec,/sec/governance,/sec/projects,/ptw,/sec/maintenance,/files
+          THEME: dark
+        run: node scripts/ui-audit.mjs
+
+  smoke:
+    name: production smoke — chat path
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Resolve production URL
+        id: target
+        env:
+          VAR_URL: ${{ vars.PRODUCTION_URL }}
+          DEFAULT_URL: https://neexios.com
+        run: |
+          URL="${VAR_URL:-$DEFAULT_URL}"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "الهدف: $URL"
+      # سؤالٌ عربيٌّ واحد عبر /api/chat (production-smoke.yml بلا «exhaustive»): لا اختبار سقف المعدّل.
+      - name: Smoke the live chat path
+        env:
+          PRODUCTION_URL: ${{ steps.target.outputs.url }}
+        run: node scripts/smoke-production.mjs
+      - name: Summary
+        if: always()
+        run: |
+          if [ -f smoke-summary.md ]; then
+            cat smoke-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### ✗ فحص الدخان لم يكتب خلاصة — راجع سجلّ الخطوة" >> "$GITHUB_STEP_SUMMARY"
+          fi
