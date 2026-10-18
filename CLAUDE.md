@@ -440,6 +440,14 @@
    MP4، وسقفا وزن. مسار التصيير والملء التوافقيّ للّوحة في `remotion/brand/RENDER.md` — ومنه
    درس: `remotion/bun.lock` يثبّت مرآة npm خاصة بـLovable تردّ 403 خارجها، فالتثبيت في مجلّد
    عابر من registry.npmjs.org، ولا قفل ثانٍ في المستودع.
+   **وهج الشعار — ينسخ حظر «اللمعة الدائمة» في الشعار وحده** (أمر المالك ٢٠٢٦/١٠/١٨:
+   «continuously luminous … slow continuous illumination cycle, occasional subtle luminous
+   sweep … Preserve the original artwork … reduced-motion alternative»). لوحة الهوية
+   (`SadeedPlateLockup`، كل صفحة) بهالةٍ زرقاء/سماوية تتنفّس (6.5 ث) ومسحةٍ عابرة كل 14 ث داخل
+   زواياها — طبقتان حول الصورة لا عليها (لا فلتر ولا قلب)، ولا يتحرّك إلا `opacity`
+   و`transform`، وكل حركةٍ خلف `prefers-reduced-motion: no-preference` ومفتاح السكون معًا،
+   والبديل هالةٌ ساكنة، وألوان النظام تُخفي الطبقتين. الرئيسية وحركتها باقيتان على M1–M5.
+   الحارس `src/components/brand/logo-glow.contract.test.ts` (بزراعات حمراء).
 3. **خاتمة الصفحة** («closing section with a clear conversion action»): «جاهز
    لاتخاذ القرار؟» وفعلان — «اسأل سَدِيد» (`useSadeed().open`) و«الأمن الصناعي»
    باسمه من `screen-names.ts` — بلا رقم ولا عميل ولا شهادة.
