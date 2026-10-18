@@ -2,7 +2,7 @@
  * `/api/chat/health` يقول حال البوّابة لا المفتاح وحده (DEF-11، ٢٠٢٦/١٠/١٨) — فالشارة لا تقول
  * «متصل الآن» وكل سؤالٍ يحتاج النموذج يأخذ السطر المغلق. محكمٌ بلا خرج شبكي: الفحص وحده مزروع.
  */
-import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 vi.stubEnv("GEMINI_API_KEY", "test-key-not-a-secret");
 vi.stubEnv("SUPABASE_URL", "https://stub.invalid");
@@ -26,13 +26,19 @@ vi.mock("@/lib/governance/rate-limit.server", async (importOriginal) => ({
   },
 }));
 
+// الفحص يُحفظ 15 ث في المعزول؛ كل حالةٍ بعد دقيقةٍ من سابقتها فلا ترث نتيجتها.
+beforeAll(() => vi.useFakeTimers({ toFake: ["Date"] }));
 afterEach(() => {
+  vi.setSystemTime(Date.now() + 60_000);
   probe.result = { allowed: true, unavailable: false };
   probe.options = [];
   vi.unstubAllEnvs();
   vi.stubEnv("GEMINI_API_KEY", "test-key-not-a-secret");
 });
-afterAll(() => vi.unstubAllEnvs());
+afterAll(() => {
+  vi.useRealTimers();
+  vi.unstubAllEnvs();
+});
 
 async function health(): Promise<{ key_present?: boolean; gate?: string }> {
   const mod = (await import("@/routes/api/chat.health")) as unknown as {
@@ -60,6 +66,15 @@ describe("/api/chat/health — حال البوّابة بجانب المفتاح
   it("الحدّ المبلوغ ليس عطلًا: المخزن أجاب ⇐ verified", async () => {
     probe.result = { allowed: false };
     expect(await health()).toMatchObject({ gate: "verified" });
+  });
+
+  it("نتيجة الفحص تُحفظ 15 ث: زياراتٌ متتالية لا تكتب على المخزن كلٌّ بنداء", async () => {
+    await health();
+    await health();
+    expect(probe.options).toHaveLength(1);
+    vi.setSystemTime(Date.now() + 16_000);
+    await health();
+    expect(probe.options).toHaveLength(2);
   });
 
   it("الفحص بمهلة — لا انتظار مفتوح على قاعدةٍ لا تردّ", async () => {
