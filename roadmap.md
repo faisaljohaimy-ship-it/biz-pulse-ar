@@ -2,9 +2,10 @@
 
 ## OpenAI integration
 
-- [ ] Add an opt-in server-side OpenAI path to the existing chat endpoint; preserve Gemini routing, UI, auth and database.
-- [ ] Request OPENAI_API_KEY through the secure secret form.
-- [ ] Run focused tests and verify a real OpenAI response through the existing endpoint before enabling any default change.
+- [x] Add an opt-in server-side OpenAI path to the existing chat endpoint; preserve Gemini routing, UI, auth and database.
+- [x] Request OPENAI_API_KEY through the secure secret form.
+- [x] Run focused local tests for provider opt-in and existing auth/gate behavior.
+- [ ] Verify a real OpenAI response before default changes; blocked by provider 429 insufficient_quota / credit_balance_exhausted on the actual endpoint and direct probe.
 
 ## Current assistant audit
 

@@ -7,3 +7,5 @@
 - Production database changes (migrations, DDL, data writes) require explicit owner approval. Why: owner decision 2026-10-13.
 - New code must not add new runtime dependencies on Lovable services; select providers via environment variables. Why: decoupling plan in progress.
 - The assistant transport forwards Stop into its existing deadline controller and cleans session timers/listeners; explicit provider 400/401/402/403 errors never trigger backup routing. Why: cancellation must be immediate and terminal failures must not create additional spend.
+
+- Keep direct OpenAI as explicit opt-in on the existing chat route until real generation is verified; reuse auth and spend gates, never auto-switch the default on key presence. Why: preserve Gemini and avoid duplicating the assistant.
