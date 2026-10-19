@@ -42,7 +42,8 @@ describe("المجلس خارج المسار الافتراضي", () => {
 
   it("لا يُستدعى إلا بطلبٍ صريح", () => {
     // الشرط الذي كان `if (lastUserText)` وحده.
-    expect(CHAT_CODE).toMatch(/if \(lastUserText && replyMode === "deep"\)/);
+    // OpenAI is explicit opt-in and does not run the Gemini council.
+    expect(CHAT_CODE).toMatch(/if \(lastUserText && replyMode === "deep" && !useOpenAi\)/);
   });
 
   it("والطلب الصريح **ممكن** — وإلّا فهو حذفٌ صامت لا بوّابة", () => {
@@ -134,7 +135,8 @@ describe("الثوابت التي لا يجوز أن يمسّها التسريع
     // والمحروس فعلًا شرطٌ أضيق وأصدق: **فرع غياب المزوّد** يبثّ نصًّا،
     // ولا يردّ رمز خطأ. أمّا 503 عند نقص الإعدادات فحالةٌ أخرى — عطلُ
     // تهيئةٍ لا انقطاعُ ذكاء — ولا يشملها هذا العهد.
-    const at = CHAT_CODE.indexOf("if (!googleKey)");
+    // The local reply is needed only when neither configured provider can answer.
+    const at = CHAT_CODE.indexOf("if (!googleKey && !openAiModel)");
     const end = CHAT_CODE.indexOf("validateChatRequest", at);
     expect(at, "لم يُعثر على فرع غياب المزوّد").toBeGreaterThan(-1);
     expect(end, "لم يُعثر على نهاية الفرع").toBeGreaterThan(at);
