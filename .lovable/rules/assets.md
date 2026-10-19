@@ -26,4 +26,3 @@ The full machine-readable catalog lives in this library's `design-system.json` (
 - `@/design-system/{slug}/assets/nexios-home-toroid.png.asset.json` (png, R2 pointer)
 - `@/design-system/{slug}/assets/sadeed-og.png.asset.json` (png, R2 pointer)
 - `@/design-system/{slug}/assets/sadeed-portrait.png` (png)
-

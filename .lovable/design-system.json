@@ -5113,21 +5113,13 @@
         {
           "name": "size",
           "type": "enum",
-          "values": [
-            "sm",
-            "md",
-            "lg",
-            "xl"
-          ],
+          "values": ["sm", "md", "lg", "xl"],
           "default": "md"
         },
         {
           "name": "icon",
           "type": "enum",
-          "values": [
-            "true",
-            "false"
-          ],
+          "values": ["true", "false"],
           "default": "false"
         },
         {
@@ -5145,11 +5137,7 @@
         {
           "name": "state",
           "type": "enum",
-          "values": [
-            "idle",
-            "listening",
-            "recording"
-          ],
+          "values": ["idle", "listening", "recording"],
           "default": "idle"
         }
       ]
@@ -5167,23 +5155,12 @@
         {
           "name": "layer",
           "type": "enum",
-          "values": [
-            "runtime",
-            "shell",
-            "agent",
-            "knowledge",
-            "twin",
-            "analytics"
-          ]
+          "values": ["runtime", "shell", "agent", "knowledge", "twin", "analytics"]
         },
         {
           "name": "density",
           "type": "enum",
-          "values": [
-            "boardroom",
-            "command",
-            "operations"
-          ],
+          "values": ["boardroom", "command", "operations"],
           "default": "command"
         },
         {
@@ -5276,10 +5253,7 @@
         {
           "name": "goodDirection",
           "type": "enum",
-          "values": [
-            "up",
-            "down"
-          ],
+          "values": ["up", "down"],
           "required": true
         },
         {
@@ -5301,12 +5275,7 @@
         {
           "name": "status",
           "type": "enum",
-          "values": [
-            "success",
-            "warning",
-            "critical",
-            "info"
-          ],
+          "values": ["success", "warning", "critical", "info"],
           "required": true
         },
         {
@@ -5372,11 +5341,7 @@
         {
           "name": "bar",
           "type": "enum",
-          "values": [
-            "text",
-            "title",
-            "number"
-          ],
+          "values": ["text", "title", "number"],
           "default": "text"
         }
       ]
@@ -5421,11 +5386,7 @@
         {
           "name": "kind",
           "type": "enum",
-          "values": [
-            "true-empty",
-            "filtered",
-            "no-results"
-          ],
+          "values": ["true-empty", "filtered", "no-results"],
           "default": "true-empty"
         },
         {
@@ -5465,10 +5426,7 @@
         {
           "name": "severity",
           "type": "enum",
-          "values": [
-            "recoverable",
-            "blocked"
-          ],
+          "values": ["recoverable", "blocked"],
           "default": "recoverable"
         },
         {
@@ -5521,21 +5479,13 @@
         {
           "name": "mode",
           "type": "enum",
-          "values": [
-            "advisory",
-            "supervised",
-            "gated"
-          ],
+          "values": ["advisory", "supervised", "gated"],
           "default": "advisory"
         },
         {
           "name": "size",
           "type": "enum",
-          "values": [
-            "sm",
-            "md",
-            "lg"
-          ],
+          "values": ["sm", "md", "lg"],
           "default": "md"
         },
         {

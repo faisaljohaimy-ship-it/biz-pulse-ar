@@ -29,4 +29,3 @@ The design system's theme is delivered through the following files. The author's
 - `@ws-7sphzeh8xspa9m6mdyig/6f092c67-70c5-400b-9a7e-8c068475864f/styles/report-charts.css` (source — preferred import)
 - `@ws-7sphzeh8xspa9m6mdyig/6f092c67-70c5-400b-9a7e-8c068475864f/styles/report-viewer.css` (source — preferred import)
 - `@ws-7sphzeh8xspa9m6mdyig/6f092c67-70c5-400b-9a7e-8c068475864f/dist/tokens.css` (auto-generated flat list of CSS custom properties — a raw-values fallback only; does NOT carry framework-specific wiring that the source files above provide)
-
