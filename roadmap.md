@@ -3,8 +3,9 @@
 ## Current assistant audit
 
 - [x] Inspect saved history and confirm the three prior assistant fixes exist; GitHub connection and backup warning are not inspectable through project tools.
-- [ ] Verify targeted Stop/session and terminal-error fallback repairs with tests and preview checks.
-- [ ] Complete available project checks and report remaining blockers; no restoration, repository rewrite, database changes, or publication.
+- [x] Verify targeted Stop/session and terminal-error fallback repairs: 480 assistant tests passed; preview chat returned HTTP 200 with safe text protocol in 7.9 seconds. Full visual verification is blocked by the existing employee-number gate overlay.
+- [x] Complete available project checks: 2,579 tests passed, 28 skipped; lint has 0 errors/33 warnings; automatic build OK; secret scan clean; official-registry audit has no high/critical vulnerabilities (9 low/moderate remain). No manual build/typecheck, dependency reinstall, restoration, database changes, or publication.
+- [ ] Confirm connected GitHub repository/branch, synchronization and backup warning; blocked by owner-only Project settings → Git visibility.
 
 - [x] Reuse existing source export and validate its integrity.
 - [x] Measure current relation sizes and inspect active schedules, retention, statuses, and foreign keys.
