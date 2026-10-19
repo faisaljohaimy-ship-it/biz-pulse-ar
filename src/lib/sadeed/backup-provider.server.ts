@@ -20,7 +20,7 @@ export function shouldUseBackup(error: unknown): boolean {
     msg.includes("overloaded") ||
     msg.includes("unavailable") ||
     // A retired/unknown primary model id must not leave the user with no answer.
-    /model[^.]{0,40}not (found|supported)/.test(msg)
+    /model[^\n]{0,60}?not (found|supported)/.test(msg)
   );
 }
 
