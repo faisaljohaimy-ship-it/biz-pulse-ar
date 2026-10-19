@@ -78,15 +78,27 @@ export async function sadeedAuthedFetch(input: RequestInfo | URL, init: RequestI
   // SDK passes its own (Stop) signal — both abort the request.
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
-  const signal =
-    init.signal && typeof AbortSignal.any === "function"
-      ? AbortSignal.any([init.signal, controller.signal])
-      : (init.signal ?? controller.signal);
+  // Forward Stop without relying on AbortSignal.any (older browsers lack it).
+  const stopSignal = init.signal;
+  const forwardStop = () => controller.abort(stopSignal?.reason);
+  if (stopSignal?.aborted) forwardStop();
+  else stopSignal?.addEventListener("abort", forwardStop, { once: true });
+  const signal = controller.signal;
+  let sessionTimer: ReturnType<typeof setTimeout> | undefined;
+  let cancelSession: (() => void) | undefined;
   try {
+    signal.throwIfAborted();
     const session = await Promise.race([
       supabase.auth.getSession(),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 5_000)),
+      new Promise<null>((resolve, reject) => {
+        sessionTimer = setTimeout(() => resolve(null), 5_000);
+        cancelSession = () => reject(signal.reason);
+        signal.addEventListener("abort", cancelSession, { once: true });
+      }),
     ]);
+    clearTimeout(sessionTimer);
+    if (cancelSession) signal.removeEventListener("abort", cancelSession);
+    signal.throwIfAborted();
     const token = session?.data.session?.access_token;
     const headers = new Headers(init.headers);
     if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -114,6 +126,9 @@ export async function sadeedAuthedFetch(input: RequestInfo | URL, init: RequestI
     return res;
   } finally {
     clearTimeout(timer);
+    clearTimeout(sessionTimer);
+    if (cancelSession) signal.removeEventListener("abort", cancelSession);
+    stopSignal?.removeEventListener("abort", forwardStop);
   }
 }
 
