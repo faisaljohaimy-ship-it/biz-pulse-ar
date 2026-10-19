@@ -1,5 +1,11 @@
 # SADEED migration readiness
 
+## OpenAI integration
+
+- [ ] Add an opt-in server-side OpenAI path to the existing chat endpoint; preserve Gemini routing, UI, auth and database.
+- [ ] Request OPENAI_API_KEY through the secure secret form.
+- [ ] Run focused tests and verify a real OpenAI response through the existing endpoint before enabling any default change.
+
 ## Current assistant audit
 
 - [x] Inspect saved history and confirm the three prior assistant fixes exist; GitHub connection and backup warning are not inspectable through project tools.
