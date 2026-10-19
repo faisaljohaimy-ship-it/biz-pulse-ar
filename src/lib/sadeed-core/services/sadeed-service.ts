@@ -124,6 +124,7 @@ export async function pingChat(): Promise<{
   key_present?: boolean;
   voice_configured?: boolean;
   transcription_configured?: boolean;
+  gate?: "verified" | "closed" | "degraded";
 }> {
   try {
     const r = await sadeedAuthedFetch(`/api/chat/health?t=${Date.now()}`, {
@@ -140,6 +141,7 @@ export async function pingChat(): Promise<{
           key_present: j.key_present,
           voice_configured: j.voice_configured,
           transcription_configured: j.transcription_configured,
+          gate: j.gate,
         }
       : { ok: false };
   } catch {
