@@ -29,11 +29,11 @@ the stated GitHub CI run/SHA was supplied by the owner, not independently querie
 
 ## Executed evidence
 
-- `bunx vitest run`: 2,602 passed, 28 skipped, 198 files before sitemap addition.
+- `bunx vitest run`: final run 2,604 passed, 28 skipped, 199 files.
   The 28 skips comprise 27 credential-gated RLS checks and one live retrieval
-  evaluation; these are NOT security coverage. Final count recorded in chat.
+  evaluation; these are NOT security coverage.
 - `npm run lint`: 0 errors, 33 existing warnings.
-- `npm run check:secrets`: 2,620 tracked files clean at that checkpoint.
+- `npm run check:secrets`: 2,622 tracked files clean at the final checkpoint.
 - `npm run check:audit`: unavailable audit endpoint at sandbox registry.
 - `npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org`:
   exit success; 4 low / 5 moderate, no high/critical. No forced dependency upgrade.
