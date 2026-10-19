@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createSadeedOpenAiModel, openAiRequested, safeOpenAiError, SADEED_OPENAI_MODEL, SADEED_OPENAI_MAX_OUTPUT_TOKENS, SADEED_OPENAI_DEADLINE_MS } from "./openai-provider.server";
+import {
+  createSadeedOpenAiModel,
+  openAiRequested,
+  safeOpenAiError,
+  SADEED_OPENAI_MODEL,
+  SADEED_OPENAI_MAX_OUTPUT_TOKENS,
+  SADEED_OPENAI_DEADLINE_MS,
+} from "./openai-provider.server";
 
 afterEach(() => vi.unstubAllEnvs());
 describe("OpenAI opt-in safety", () => {
@@ -18,7 +25,9 @@ describe("OpenAI opt-in safety", () => {
     expect(SADEED_OPENAI_MAX_OUTPUT_TOKENS).toBe(1200);
     expect(SADEED_OPENAI_DEADLINE_MS).toBe(25000);
   });
-  it.each([400,401,402,403,429,500])("logs only status for failure %s", (statusCode) => {
-    expect(safeOpenAiError({ statusCode, responseBody: "private upstream body" })).toBe(`OpenAI request failed (${statusCode})`);
+  it.each([400, 401, 402, 403, 429, 500])("logs only status for failure %s", (statusCode) => {
+    expect(safeOpenAiError({ statusCode, responseBody: "private upstream body" })).toBe(
+      `OpenAI request failed (${statusCode})`,
+    );
   });
 });

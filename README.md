@@ -28,6 +28,21 @@
 - `/api/chat/health` يعيد حالة المخزن في `gate` وحضور المفتاح؛ `ok` يؤكد نجاح الفحص، لا نجاح توليد إجابة فعلية. `pingChat` ينقل هذه الحالة.
 - سجل اللوحة يحتفظ بسياق الجلسة في الذاكرة ويرسل آخر 20 رسالة. كتابة `threads/messages` تتطلب مستخدمًا متحققًا و`threadId`؛ الناقل الحالي يرسل `id` فقط، لذا لا يُدّعى حفظ محادثة اللوحة كاملة بين الزيارات. الكتابات الخلفية قد تفشل وتُسجّل دون تعطيل الرد.
 
+## OpenAI المباشر — إضافي وغير افتراضي
+
+`src/lib/sadeed/openai-provider.server.ts` يستخدم حزمة `@ai-sdk/openai` الرسمية وResponses API
+بالنموذج `gpt-4.1-mini` ومفتاح `OPENAI_API_KEY` من Secrets على الخادم فقط.
+طلب `POST /api/chat` مع `X-SADEED-Provider: openai` يختار هذا المسار؛ اللوحة تبقى على Gemini
+حتى ينجح التحقق الفعلي. لا Edge Function منفصلة ولا مساعد مكرر ولا تغيير قاعدة أو صلاحيات.
+تبقى بوابات المعدّل والحصة اليومية والتزامن الحالية؛ OpenAI محدود بـ1200 رمز خرج لكل خطوة،
+خطوتين كحد أقصى، مهلة توليد 25 ثانية، ودون إعادة محاولة أو تحويل تلقائي لمزوّد آخر.
+`store: false` يمنع حفظ الاستجابة في سجل Responses، ولا يَعِد بسياسة احتفاظ أخرى.
+الترويسة `X-SADEED-Generation` تميّز نجاح التوليد عن رد الخطأ الآمن حتى مع HTTP 200.
+
+تجربة 2026-10-19 عبر `/api/chat`: وصل الطلب إلى OpenAI ورُفض بـ429؛ الفحص المباشر
+أكد `insufficient_quota` / `credit_balance_exhausted`. لم يصل رد مولّد ناجح؛ يلزم معالجة
+رصيد OpenAI ثم إعادة التحقق قبل تفعيل المسار في اللوحة. لم يُنشر هذا التغيير.
+
 ## متطلبات التشغيل
 
 - Node.js 22 أو 24
@@ -38,7 +53,7 @@
 
 - التطبيق React 19 وTanStack Start، وليس تطبيقًا منفصلًا عن الخادم. `src/routes/__root.tsx` يركّب `SadeedProvider` و`SadeedCopilot` مرة واحدة؛ صفحات `/sadeed` و`/assistant/` و`/assistant/$threadId` تستعمل `CanonicalSadeedRoute` لفتح اللوحة نفسها.
 - نقطة الدردشة الفعلية `src/routes/api/chat.ts` (`POST /api/chat`) هي مسار خادم TanStack؛ ليست Supabase Edge Function. `src/server.ts` يغلّف مدخل الخادم، والبناء يستهدف Cloudflare Workers افتراضيًا. لا يثبت ذلك أن النسخة الحالية منشورة.
-- `src/lib/ai-gateway.server.ts` ينشئ Google Gemini مباشرة. `src/lib/sadeed/backup-provider.server.ts` يستعمل محوّل OpenAI-compatible للوصول إلى نموذج Gemini في بوابة Lovable؛ اسم المحوّل لا يعني استخدام نموذج OpenAI. لا توجد دعوة OpenAI مباشرة في مسار الدردشة المفحوص.
+- `src/lib/ai-gateway.server.ts` ينشئ Google Gemini مباشرة. `src/lib/sadeed/backup-provider.server.ts` يستعمل محوّل OpenAI-compatible للوصول إلى نموذج Gemini في بوابة Lovable؛ اسم المحوّل لا يعني استخدام نموذج OpenAI. مسار OpenAI الإضافي أعلاه يستعمل اتصالًا مباشرًا مستقلًا؛ الافتراضي يبقى Gemini.
 - الخادم يتحقق من جلسة المستدعي ثم عضويته في `org_members`. القراءات والكتابات العادية تستعمل عميل المستدعي وسياسات الوصول؛ الضيف لا يحصل على أدوات المؤسسة أو استرجاعها أو حفظ المحادثة. هذا وصف للكود، وليس شهادة جديدة على سياسات قاعدة الإنتاج.
 - `src/start.ts` يضيف حامل الجلسة إلى استدعاءات `createServerFn`. ناقل الدردشة يضيفه بنفسه؛ انتهاء مهلة التحقق لا يمنح صلاحيات مستخدم متحقق.
 - `src/lib/sadeed-core/services/chat-error-text.ts` يحوّل أخطاء العميل إلى رسائل عربية آمنة. خطأ المزوّد يُحوّل في الخادم إلى رد آمن؛ قد يصل HTTP 200 مع سطر خطأ، فلا يكفي نجاح HTTP لإثبات نجاح النموذج.
@@ -56,7 +71,7 @@
 | بوابات التكلفة                   | `SADEED_CHAT_MAX_INFLIGHT`, `SADEED_CHAT_DAILY_PER_IDENTITY`, `SADEED_CHAT_DAILY_GLOBAL`, `SADEED_GATE_DEGRADED_MODE` | سقوف التزامن واليوم؛ الوضع `bounded` قرار فوترة للمالك، لا يُفعّل تلقائيًا |
 | النشر المستقل الاختياري          | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`                                                                       | صلاحيات النشر في حساب المالك، لا إعدادات المتصفح                           |
 
-لا يتطلب مسار الدردشة الحالي `OPENAI_API_KEY`. وجود أسماء في وثيقة أو `.env.example` لا يثبت تفعيل خدمة. المفاتيح الخاصة تُضبط في بيئة الخادم فقط، ولا تُنسخ إلى README أو Git أو أي متغير `VITE_*`. لا يُفترض أن كل اسم في `.env.example` يستعمله المسار الحالي.
+مسار Gemini الافتراضي لا يتطلب `OPENAI_API_KEY`؛ مسار OpenAI الإضافي يتطلبه. وجود أسماء في وثيقة أو `.env.example` لا يثبت تفعيل خدمة. المفاتيح الخاصة تُضبط في بيئة الخادم فقط، ولا تُنسخ إلى README أو Git أو أي متغير `VITE_*`. لا يُفترض أن كل اسم في `.env.example` يستعمله المسار الحالي.
 
 ## التشغيل المحلي
 

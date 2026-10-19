@@ -8,7 +8,14 @@ import {
   type UIMessage,
 } from "ai";
 import { createGoogleGeminiProvider, GOOGLE_MODELS } from "@/lib/ai-gateway.server";
-import { createSadeedOpenAiModel, openAiRequested, safeOpenAiError, SADEED_OPENAI_MODEL, SADEED_OPENAI_MAX_OUTPUT_TOKENS, SADEED_OPENAI_DEADLINE_MS } from "@/lib/sadeed/openai-provider.server";
+import {
+  createSadeedOpenAiModel,
+  openAiRequested,
+  safeOpenAiError,
+  SADEED_OPENAI_MODEL,
+  SADEED_OPENAI_MAX_OUTPUT_TOKENS,
+  SADEED_OPENAI_DEADLINE_MS,
+} from "@/lib/sadeed/openai-provider.server";
 import type { OrgRole } from "@/sadeed/shell";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
@@ -369,7 +376,8 @@ export const Route = createFileRoute("/api/chat")({
         // OpenAI is explicit opt-in; adding its key never replaces Gemini.
         const useOpenAi = openAiRequested(request.headers);
         const openAiModel = useOpenAi ? createSadeedOpenAiModel() : null;
-        if (useOpenAi && !openAiModel) return jsonError("محرّك التحليل المطلوب غير مهيأ الآن.", 503, getChatRequestId(request));
+        if (useOpenAi && !openAiModel)
+          return jsonError("محرّك التحليل المطلوب غير مهيأ الآن.", 503, getChatRequestId(request));
         const googleKey = (
           process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
         )?.trim();
@@ -403,8 +411,11 @@ export const Route = createFileRoute("/api/chat")({
         const intentHeader = request.headers.get("x-aria-intent");
         const routerDecision = resolveModel(parseIntent(intentHeader), { google: true });
         const vendor = useOpenAi ? "openai" : "google";
-        const selectedModelId =
-          useOpenAi ? SADEED_OPENAI_MODEL : modelId && GOOGLE_MODEL_IDS.has(modelId) ? modelId : routerDecision.modelId;
+        const selectedModelId = useOpenAi
+          ? SADEED_OPENAI_MODEL
+          : modelId && GOOGLE_MODEL_IDS.has(modelId)
+            ? modelId
+            : routerDecision.modelId;
 
         const supabaseUrl = process.env.SUPABASE_URL?.trim();
         const supabasePublishable = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
@@ -1076,7 +1087,12 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
         let rawModelText = "";
         let generationErrorText: string | null = null;
         const providerDeadline = new AbortController();
-        const providerTimer = useOpenAi ? setTimeout(() => providerDeadline.abort(new DOMException("Timeout", "TimeoutError")), SADEED_OPENAI_DEADLINE_MS) : undefined;
+        const providerTimer = useOpenAi
+          ? setTimeout(
+              () => providerDeadline.abort(new DOMException("Timeout", "TimeoutError")),
+              SADEED_OPENAI_DEADLINE_MS,
+            )
+          : undefined;
         try {
           const backup = await import("@/lib/sadeed/backup-provider.server");
           const modelMessages = await convertToModelMessages(uiMessages, {
@@ -1092,10 +1108,19 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               toolChoice: "auto",
               stopWhen: stepCountIs(useOpenAi ? 2 : 8),
               maxRetries: retries,
-              abortSignal: useOpenAi ? AbortSignal.any([request.signal, providerDeadline.signal]) : request.signal,
+              abortSignal: useOpenAi
+                ? AbortSignal.any([request.signal, providerDeadline.signal])
+                : request.signal,
               // Gemini 3.6 deprecates temperature/top-p/top-k controls. Keep
               // quality in the prompt, evidence gate and tool policy instead.
-              maxOutputTokens: useOpenAi ? Math.min(SADEED_OPENAI_MAX_OUTPUT_TOKENS, replyMode === "voice" ? 700 : SADEED_OPENAI_MAX_OUTPUT_TOKENS) : replyMode === "voice" ? 700 : 16_000,
+              maxOutputTokens: useOpenAi
+                ? Math.min(
+                    SADEED_OPENAI_MAX_OUTPUT_TOKENS,
+                    replyMode === "voice" ? 700 : SADEED_OPENAI_MAX_OUTPUT_TOKENS,
+                  )
+                : replyMode === "voice"
+                  ? 700
+                  : 16_000,
               ...(useOpenAi ? { providerOptions: { openai: { store: false } } } : {}),
             });
           const backupModel = backup.createSadeedBackupModel();
@@ -1132,7 +1157,11 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             latencyMs: Date.now() - startAt,
           });
         } catch (error) {
-          const errMsg = useOpenAi ? safeOpenAiError(error) : error instanceof Error ? error.message : String(error);
+          const errMsg = useOpenAi
+            ? safeOpenAiError(error)
+            : error instanceof Error
+              ? error.message
+              : String(error);
           generationErrorText = mapProviderError(useOpenAi ? new Error(errMsg) : error);
           console.error("[api/chat] generateText error", { requestId, vendor, error: errMsg });
           if (userId) {
@@ -1308,7 +1337,13 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           headers: {
             ...responseHeaders(requestId),
             "X-SADEED-Reply-Source": "safe-gateway",
-            ...(useOpenAi ? { "X-SADEED-Provider": "openai", "X-SADEED-Model": SADEED_OPENAI_MODEL, "X-SADEED-Generation": generationErrorText ? "error" : "success" } : {}),
+            ...(useOpenAi
+              ? {
+                  "X-SADEED-Provider": "openai",
+                  "X-SADEED-Model": SADEED_OPENAI_MODEL,
+                  "X-SADEED-Generation": generationErrorText ? "error" : "success",
+                }
+              : {}),
             "X-SADEED-Gate": gateMode,
             "X-SADEED-Auth": authState,
           },

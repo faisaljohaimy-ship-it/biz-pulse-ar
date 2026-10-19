@@ -18,8 +18,10 @@ export function createSadeedOpenAiModel() {
 
 /** Strip SDK response bodies/credentials before any server logging. */
 export function safeOpenAiError(error: unknown): string {
-  const status = error && typeof error === "object" && "statusCode" in error
-    ? Number(error.statusCode) : undefined;
+  const status =
+    error && typeof error === "object" && "statusCode" in error
+      ? Number(error.statusCode)
+      : undefined;
   if (status && Number.isFinite(status)) return `OpenAI request failed (${status})`;
   if (error instanceof Error && /abort|timeout/i.test(error.name)) return "OpenAI timeout";
   return "OpenAI request failed";
