@@ -46,15 +46,15 @@
 
 ### أسماء إعدادات البيئة — دون قيم
 
-| النطاق | الأسماء | الاستخدام |
-| --- | --- | --- |
-| البناء/المتصفح، إعدادات عامة فقط | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` | ربط العميل بالخدمات الحالية؛ ليست مفاتيح إدارية |
-| الخادم | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | ربط الخادم ومخزن بوابات المعدّل؛ المفتاح الإداري لا يدخل المتصفح |
-| الذكاء الأساسي | `GEMINI_API_KEY` أو `GOOGLE_GENERATIVE_AI_API_KEY`, `GEMINI_MODEL` | المفتاح الأساسي مطلوب لتجاوز الرد المحلي؛ النموذج محصور بقائمة الخادم |
-| البديل الاختياري | `LOVABLE_API_KEY` | نموذج Gemini عبر البوابة؛ لا يكفي وحده لتجاوز شرط المفتاح الأساسي الحالي |
-| الصوت الاختياري | `ELEVENLABS_API_KEY` | صوت سَدِيد عبر الخادم فقط |
-| بوابات التكلفة | `SADEED_CHAT_MAX_INFLIGHT`, `SADEED_CHAT_DAILY_PER_IDENTITY`, `SADEED_CHAT_DAILY_GLOBAL`, `SADEED_GATE_DEGRADED_MODE` | سقوف التزامن واليوم؛ الوضع `bounded` قرار فوترة للمالك، لا يُفعّل تلقائيًا |
-| النشر المستقل الاختياري | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | صلاحيات النشر في حساب المالك، لا إعدادات المتصفح |
+| النطاق                           | الأسماء                                                                                                               | الاستخدام                                                                  |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| البناء/المتصفح، إعدادات عامة فقط | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`                                      | ربط العميل بالخدمات الحالية؛ ليست مفاتيح إدارية                            |
+| الخادم                           | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`                                               | ربط الخادم ومخزن بوابات المعدّل؛ المفتاح الإداري لا يدخل المتصفح           |
+| الذكاء الأساسي                   | `GEMINI_API_KEY` أو `GOOGLE_GENERATIVE_AI_API_KEY`, `GEMINI_MODEL`                                                    | المفتاح الأساسي مطلوب لتجاوز الرد المحلي؛ النموذج محصور بقائمة الخادم      |
+| البديل الاختياري                 | `LOVABLE_API_KEY`                                                                                                     | نموذج Gemini عبر البوابة؛ لا يكفي وحده لتجاوز شرط المفتاح الأساسي الحالي   |
+| الصوت الاختياري                  | `ELEVENLABS_API_KEY`                                                                                                  | صوت سَدِيد عبر الخادم فقط                                                  |
+| بوابات التكلفة                   | `SADEED_CHAT_MAX_INFLIGHT`, `SADEED_CHAT_DAILY_PER_IDENTITY`, `SADEED_CHAT_DAILY_GLOBAL`, `SADEED_GATE_DEGRADED_MODE` | سقوف التزامن واليوم؛ الوضع `bounded` قرار فوترة للمالك، لا يُفعّل تلقائيًا |
+| النشر المستقل الاختياري          | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`                                                                       | صلاحيات النشر في حساب المالك، لا إعدادات المتصفح                           |
 
 لا يتطلب مسار الدردشة الحالي `OPENAI_API_KEY`. وجود أسماء في وثيقة أو `.env.example` لا يثبت تفعيل خدمة. المفاتيح الخاصة تُضبط في بيئة الخادم فقط، ولا تُنسخ إلى README أو Git أو أي متغير `VITE_*`. لا يُفترض أن كل اسم في `.env.example` يستعمله المسار الحالي.
 
