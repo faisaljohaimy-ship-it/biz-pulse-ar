@@ -6,8 +6,22 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, XCircle, ShieldQuestion } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { readPublicResult } from "@/lib/public-result";
+import { REGIONS } from "@/lib/regions";
 
 export const Route = createFileRoute("/verify/permit/$permitId")({
+  head: () => ({
+    meta: [
+      { title: "تحقّق التصريح — سَدِيد" },
+      { name: "description", content: "التحقق من حالة تصريح العمل في سَدِيد." },
+      { property: "og:title", content: "تحقّق التصريح — سَدِيد" },
+      { property: "og:description", content: "التحقق من حالة تصريح العمل في سَدِيد." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: VerifyPermitPage,
 });
 
@@ -28,12 +42,6 @@ type VerifyResult = {
   };
 };
 
-const REGION_AR: Record<string, string> = {
-  central: "الوسطى",
-  western: "الغربية",
-  eastern: "الشرقية",
-  southern: "الجنوبية",
-};
 const STATUS_AR: Record<string, string> = {
   active: "ساري",
   expired: "منتهٍ",
@@ -45,34 +53,45 @@ const STATUS_AR: Record<string, string> = {
 
 function VerifyPermitPage() {
   const { permitId } = useParams({ from: "/verify/permit/$permitId" });
-  const { data, isLoading } = useQuery<VerifyResult>({
+  const { data, isLoading, isError, refetch } = useQuery<VerifyResult | null>({
     queryKey: ["permit-verify", permitId],
     queryFn: async () => {
       const res = await fetch(`/api/public/permit-verify?id=${encodeURIComponent(permitId)}`, {
         headers: { accept: "application/json" },
+        signal: AbortSignal.timeout(4_000),
       });
-      return res.json();
+      return readPublicResult<VerifyResult>(res);
     },
     retry: false,
   });
 
   const valid = data?.ok && data.valid;
-  const found = data?.ok && data.permit;
+  const permit = data?.ok ? data.permit : undefined;
 
   return (
     <div dir="rtl" className="grid min-h-dvh place-items-center bg-[#04070F] px-4 py-10 text-white">
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#06101f]/80 p-6 backdrop-blur-xl">
         <div className="mb-4 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-200">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" /> منصة إنجاز
-            الأعمال · PTW
+            سَدِيد · تصاريح العمل
           </span>
           <span className="text-xs text-white/40">تحقّق التصريح</span>
         </div>
 
         {isLoading ? (
           <p className="py-16 text-center text-white/50">جارٍ التحقق…</p>
-        ) : !found ? (
+        ) : isError ? (
+          <div className="py-10 text-center" role="alert">
+            <ShieldQuestion className="mx-auto h-16 w-16 text-muted-foreground" />
+            <p className="mt-4 text-lg font-bold">تعذّر التحقق من التصريح الآن</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              لم تُحدَّد صلاحية التصريح. أعد المحاولة.
+            </p>
+            <Button variant="outline" className="mt-4 min-h-11" onClick={() => void refetch()}>
+              إعادة المحاولة
+            </Button>
+          </div>
+        ) : !permit ? (
           <div className="py-10 text-center">
             <ShieldQuestion className="mx-auto h-16 w-16 text-white/40" />
             <p className="mt-4 text-lg font-bold">تصريح غير موجود</p>
@@ -91,22 +110,25 @@ function VerifyPermitPage() {
               <p
                 className={`mt-3 text-2xl font-extrabold ${valid ? "text-emerald-300" : "text-rose-300"}`}
               >
-                {valid ? "تصريح ساري" : (STATUS_AR[data!.permit!.status] ?? "غير ساري")}
+                {valid ? "تصريح ساري" : (STATUS_AR[permit.status] ?? "غير ساري")}
               </p>
-              <p className="mt-1 font-mono text-sm text-white/60">{data!.permit!.ref}</p>
+              <p className="mt-1 font-mono text-sm text-white/60">{permit.ref}</p>
             </div>
             <dl className="mt-5 space-y-2.5 text-sm">
-              <Row k="الموقع" v={data!.permit!.location} />
-              <Row k="المنطقة" v={REGION_AR[data!.permit!.region] ?? data!.permit!.region} />
-              <Row k="الجهة المنفّذة" v={data!.permit!.contractor ?? "—"} />
-              <Row k="عدد العمال" v={String(data!.permit!.worker_count)} />
-              <Row k="حتى" v={new Date(data!.permit!.ends_at).toLocaleString("ar-SA")} />
+              <Row k="الموقع" v={permit.location} />
+              <Row
+                k="المنطقة"
+                v={REGIONS.find((r) => r.id === permit.region)?.shortAr ?? permit.region}
+              />
+              <Row k="الجهة المنفّذة" v={permit.contractor ?? "—"} />
+              <Row k="عدد العمال" v={String(permit.worker_count)} />
+              <Row k="حتى" v={new Date(permit.ends_at).toLocaleString("ar-SA")} />
             </dl>
-            {data!.permit!.precautions.length > 0 && (
+            {permit.precautions.length > 0 && (
               <div className="mt-4">
                 <p className="mb-1.5 text-xs font-semibold text-white/60">الاحتياطات المطلوبة</p>
                 <ul className="space-y-1">
-                  {data!.permit!.precautions.map((p, i) => (
+                  {permit.precautions.map((p, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-white/80">
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> {p}
                     </li>

@@ -33,6 +33,13 @@ const strip = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*
 const CHAT_CODE = strip(CHAT);
 const GUARD_CODE = strip(GUARD);
 
+/** Evaluate the actual boolean guard, not a historical spelling of it. */
+function guardAllows(condition: string, values: Record<string, unknown>) {
+  return Boolean(
+    Function(...Object.keys(values), `return (${condition});`)(...Object.values(values)),
+  );
+}
+
 describe("المجلس خارج المسار الافتراضي", () => {
   it("actually read both files", () => {
     // حارس صامت يمرّ إلى الأبد لو انتقل أيّهما.
@@ -41,8 +48,20 @@ describe("المجلس خارج المسار الافتراضي", () => {
   });
 
   it("لا يُستدعى إلا بطلبٍ صريح", () => {
-    // الشرط الذي كان `if (lastUserText)` وحده.
-    expect(CHAT_CODE).toMatch(/if \(lastUserText && replyMode === "deep"\)/);
+    const condition = CHAT_CODE.match(
+      /if \(([^\n]+)\) \{\s*try \{\s*const \{ runAgentMission \}/,
+    )?.[1];
+    expect(condition, "بوابة المجلس غائبة").toBeTruthy();
+    if (!condition) return;
+    for (const replyMode of ["text", "voice", "deep"]) {
+      for (const useOpenAi of [false, true]) {
+        for (const lastUserText of ["", "سؤال"]) {
+          expect(guardAllows(condition, { lastUserText, replyMode, useOpenAi })).toBe(
+            Boolean(lastUserText) && replyMode === "deep" && !useOpenAi,
+          );
+        }
+      }
+    }
   });
 
   it("والطلب الصريح **ممكن** — وإلّا فهو حذفٌ صامت لا بوّابة", () => {
@@ -134,7 +153,19 @@ describe("الثوابت التي لا يجوز أن يمسّها التسريع
     // والمحروس فعلًا شرطٌ أضيق وأصدق: **فرع غياب المزوّد** يبثّ نصًّا،
     // ولا يردّ رمز خطأ. أمّا 503 عند نقص الإعدادات فحالةٌ أخرى — عطلُ
     // تهيئةٍ لا انقطاعُ ذكاء — ولا يشملها هذا العهد.
-    const at = CHAT_CODE.indexOf("if (!googleKey)");
+    const marker = CHAT_CODE.match(/if \(([^\n]+googleKey[^\n]+)\) \{/);
+    const at = marker?.index ?? -1;
+    const condition = marker?.[1];
+    expect(condition).toBeTruthy();
+    if (condition) {
+      for (const googleKey of [undefined, "configured"]) {
+        for (const openAiModel of [null, {}]) {
+          expect(guardAllows(condition, { googleKey, openAiModel })).toBe(
+            !googleKey && !openAiModel,
+          );
+        }
+      }
+    }
     const end = CHAT_CODE.indexOf("validateChatRequest", at);
     expect(at, "لم يُعثر على فرع غياب المزوّد").toBeGreaterThan(-1);
     expect(end, "لم يُعثر على نهاية الفرع").toBeGreaterThan(at);

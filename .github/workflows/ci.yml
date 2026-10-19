@@ -57,11 +57,13 @@ jobs:
           node-version: 22
           cache: npm
       - name: Install
+        id: install
         run: npm ci --no-audit --no-fund
       - name: Unit tests
         run: npm test
       # الأمر نفسه الذي تشغّله السلسلة المحلّية (`npm run check`) — لا نسخة ثانية.
       - name: Production dependency audit
+        if: always() && steps.install.outcome == 'success'
         run: npm run check:audit
 
   build:
@@ -109,11 +111,10 @@ jobs:
       - name: RAG preflight (isolation + privilege on real Postgres)
         run: npm run check:rag
 
-  # Article 21 — Continuous security gate. The Article 19 E2E spec is a
-  # blocking check on every push/PR. If it fails, the merge is blocked and
-  # an incident is opened against the deployed public sink so ARIA sees the
-  # regression in the operational incident stream — not just in CI logs.
+  # Optional credential-gated E2E: an executed failure fails this job, but
+  # deploy intentionally does not depend on it. Missing coverage is reported.
   security-gap-closure-e2e:
+    if: always()
     runs-on: ubuntu-latest
     needs: [static, test, build]
     # Bind to the production environment so this gate can read secrets whether
@@ -131,6 +132,7 @@ jobs:
       E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
       E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
       PLAYWRIGHT_BASE_URL: http://localhost:8080
+      UPSTREAM_READY: ${{ needs.static.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success' }}
     steps:
       - uses: actions/checkout@v4
       - name: Check E2E credentials
@@ -143,6 +145,10 @@ jobs:
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
             echo "::warning::E2E credentials are not configured — skipping the Article 19 security E2E. This gate is advisory and does NOT block deploy. Set VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, E2E_TEST_EMAIL and E2E_TEST_PASSWORD (Repository secrets) to enable it."
+          fi
+          if [ "$UPSTREAM_READY" != "true" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Security E2E NOT RUN — upstream verification did not succeed."
           fi
       - uses: actions/setup-node@v4
         if: steps.creds.outputs.configured == 'true'
@@ -181,6 +187,25 @@ jobs:
       - name: Stop dev server
         if: always() && steps.creds.outputs.configured == 'true'
         run: if [ -f /tmp/dev.pid ]; then kill "$(cat /tmp/dev.pid)" || true; fi
+      - name: Security coverage summary
+        if: always()
+        env:
+          CREDENTIALS_READY: ${{ steps.creds.outputs.configured }}
+          E2E_OUTCOME: ${{ steps.art19.outcome }}
+        run: |
+          {
+            echo "### Article 19 security E2E coverage"
+            if [ "$UPSTREAM_READY" != "true" ]; then
+              echo "NOT RUN — upstream types/lint, unit tests or build failed/skipped. No security coverage claimed."
+            elif [ "$CREDENTIALS_READY" != "true" ]; then
+              echo "NOT RUN — required E2E credentials absent or credential check failed. No security coverage claimed."
+            elif [ "$E2E_OUTCOME" = "success" ]; then
+              echo "Executed successfully — see Playwright results for test counts and skips."
+            else
+              echo "Not verified — E2E outcome: ${E2E_OUTCOME:-not started}. See failed setup/test step."
+            fi
+            echo "Policy: optional for deployment; an executed test failure fails this job."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
