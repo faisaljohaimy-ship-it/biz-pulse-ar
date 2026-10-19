@@ -36,7 +36,10 @@ export const Route = createFileRoute("/email/unsubscribe")({
           .eq("token", token)
           .maybeSingle();
 
-        if (lookupError || !tokenRecord) {
+        if (lookupError) {
+          return Response.json({ error: "Unable to verify link" }, { status: 500 });
+        }
+        if (!tokenRecord) {
           return Response.json({ error: "Invalid or expired token" }, { status: 404 });
         }
 
@@ -99,7 +102,10 @@ export const Route = createFileRoute("/email/unsubscribe")({
           .eq("token", token)
           .maybeSingle();
 
-        if (lookupError || !tokenRecord) {
+        if (lookupError) {
+          return Response.json({ error: "Unable to verify link" }, { status: 500 });
+        }
+        if (!tokenRecord) {
           return Response.json({ error: "Invalid or expired token" }, { status: 404 });
         }
 

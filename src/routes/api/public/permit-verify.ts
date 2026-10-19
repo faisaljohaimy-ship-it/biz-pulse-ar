@@ -41,7 +41,10 @@ export const Route = createFileRoute("/api/public/permit-verify")({
             )
             .eq("id", id)
             .maybeSingle();
-          if (error || !data) {
+          if (error) {
+            return Response.json({ ok: false, error: "server_error" }, { status: 500 });
+          }
+          if (!data) {
             return Response.json({ ok: false, error: "not_found" }, { status: 404 });
           }
           const now = Date.now();

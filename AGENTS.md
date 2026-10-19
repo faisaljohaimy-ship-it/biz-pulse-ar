@@ -9,3 +9,5 @@
 - The assistant transport forwards Stop into its existing deadline controller and cleans session timers/listeners; explicit provider 400/401/402/403 errors never trigger backup routing. Why: cancellation must be immediate and terminal failures must not create additional spend.
 
 - Keep direct OpenAI as explicit opt-in on the existing chat route until real generation is verified; reuse auth and spend gates, never auto-switch the default on key presence. Why: preserve Gemini and avoid duplicating the assistant.
+- CI dependency audits run despite unit failures after a successful install; optional security E2E always summarizes missing coverage without asserting a pass. Why: independent checks must not silently disappear.
+- Public permit and unsubscribe lookups share HTTP-result classification: only explicit invalid/missing responses are absence; service failures remain retryable errors. Why: outages must not invalidate permits or links.

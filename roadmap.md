@@ -1,5 +1,14 @@
 # SADEED migration readiness
 
+## Owner audit — 2026-10-19
+
+- [x] Repair reproduced chat latency contract failures without weakening provider opt-in or deep-mode guarantees.
+- [x] Ensure dependency audit runs after failed unit tests and security E2E honestly reports missing credentials/upstream failures.
+- [x] Reproduce reduced-motion hydration and mobile LCP: no hydration error in four mobile theme/motion combinations; unthrottled preview LCP 500–612 ms, image not film. Historical production Lighthouse regression remains unverified, not silently fixed.
+- [x] Audit representative routes and read-only live RLS metadata (148 tables, none disabled); fix public lookup outage classification, safe Arabic retry states, and stale sitemap 404 links.
+- [ ] Full release gates: unavailable production bundle for performance/contrast, local PostgreSQL for RAG, two-org/E2E credentials and hosted CI access; independent guardian vetoes release until these pass. No deploy or manual Git mutation.
+- [ ] Exhaustive signed-in route/CRUD verification and missing per-route metadata: blocked by verified account access, employee-number overlay, and owner-confirmed page facts; representative guest browser coverage is not full application coverage.
+
 ## OpenAI integration
 
 - [x] Add an opt-in server-side OpenAI path to the existing chat endpoint; preserve Gemini routing, UI, auth and database.
