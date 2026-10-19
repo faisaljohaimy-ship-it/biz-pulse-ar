@@ -9,7 +9,10 @@ describe("assistant request cancellation", () => {
     vi.useFakeTimers();
     session.getSession.mockReset();
     session.getSession.mockResolvedValue({ data: { session: null } });
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("ok")));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("ok")),
+    );
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -43,9 +46,17 @@ describe("assistant request cancellation", () => {
     vi.spyOn(AbortSignal, "any").mockImplementation(() => {
       throw new Error("must not require AbortSignal.any");
     });
-    vi.stubGlobal("fetch", vi.fn((_input: unknown, init: RequestInit) => new Promise((_resolve, reject) => {
-      init.signal?.addEventListener("abort", () => reject(init.signal?.reason), { once: true });
-    })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        (_input: unknown, init: RequestInit) =>
+          new Promise((_resolve, reject) => {
+            init.signal?.addEventListener("abort", () => reject(init.signal?.reason), {
+              once: true,
+            });
+          }),
+      ),
+    );
     const request = sadeedAuthedFetch("/api/chat", { signal: new AbortController().signal });
     const rejected = expect(request).rejects.toMatchObject({ name: "AbortError" });
     await vi.advanceTimersByTimeAsync(29_999);

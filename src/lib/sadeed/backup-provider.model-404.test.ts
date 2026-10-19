@@ -11,10 +11,15 @@ describe("backup on unavailable primary model", () => {
   it("keeps ordinary request errors terminal", () => {
     expect(shouldUseBackup(new Error("400 invalid argument"))).toBe(false);
   });
-  it.each([400, 401, 402, 403])("keeps structured status %s terminal despite quota/unavailable text", (statusCode) => {
-    expect(shouldUseBackup(Object.assign(new Error("quota unavailable"), { statusCode }))).toBe(false);
-    expect(shouldUseBackup(new Error(`${statusCode} quota unavailable`))).toBe(false);
-  });
+  it.each([400, 401, 402, 403])(
+    "keeps structured status %s terminal despite quota/unavailable text",
+    (statusCode) => {
+      expect(shouldUseBackup(Object.assign(new Error("quota unavailable"), { statusCode }))).toBe(
+        false,
+      );
+      expect(shouldUseBackup(new Error(`${statusCode} quota unavailable`))).toBe(false);
+    },
+  );
   it("preserves transient fallback and the supported-model fallback", () => {
     expect(shouldUseBackup(new Error("429 resource_exhausted"))).toBe(true);
     expect(shouldUseBackup(new Error("503 overloaded"))).toBe(true);
