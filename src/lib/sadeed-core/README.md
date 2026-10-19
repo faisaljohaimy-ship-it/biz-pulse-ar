@@ -1,6 +1,6 @@
 # SADEED Brain Core
 
-SADEED is the single governed intelligence surface in SADEED. Every UI request passes through the shared provider, brain, orchestrator, response validator, and `/api/chat` transport.
+SADEED is the single governed intelligence surface in SADEED. Page commands pass through the brain and orchestrator; the copilot composer currently calls the shared provider's `chat.sendMessage` directly. Both use the same `/api/chat` transport and server output validator.
 
 ## Runtime flow
 
@@ -32,6 +32,7 @@ The intent header changes instructions and permitted tools; it cannot select a d
 ## Model policy
 
 - Intelligence and transcription: `gemini-3.6-flash`.
+- Chat has an existing Gemini gateway backup (`google/gemini-3-flash-preview`) when `LOVABLE_API_KEY` is configured. Temporary primary failures and unsupported primary models can select it; explicit 400/401/402/403 errors cannot. Backup availability is not established by a primary-provider smoke test.
 - Embeddings: `gemini-embedding-2`, normalized to 1536 dimensions for the current index.
 - Speech output: ElevenLabs only; it never performs reasoning or retrieval.
 - No client-controlled model IDs, cross-vendor fallback, or direct provider calls from components.

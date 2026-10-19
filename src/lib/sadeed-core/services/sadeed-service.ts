@@ -74,17 +74,38 @@ export function computeAutoRetryDelayMs(
 // and the user sees no reply. 30s hard timeout guarantees no infinite wait.
 // Exported for the saved-repair-method contract test.
 export async function sadeedAuthedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
-  const headers = new Headers(init.headers);
-  if (token) headers.set("Authorization", `Bearer ${token}`);
+  // The 30 s ceiling covers session lookup too, and still applies when the
+  // SDK passes its own (Stop) signal — both abort the request.
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30_000);
+  // Forward Stop without relying on AbortSignal.any (older browsers lack it).
+  const stopSignal = init.signal;
+  const forwardStop = () => controller.abort(stopSignal?.reason);
+  if (stopSignal?.aborted) forwardStop();
+  else stopSignal?.addEventListener("abort", forwardStop, { once: true });
+  const signal = controller.signal;
+  let sessionTimer: ReturnType<typeof setTimeout> | undefined;
+  let cancelSession: (() => void) | undefined;
   try {
+    signal.throwIfAborted();
+    const session = await Promise.race([
+      supabase.auth.getSession(),
+      new Promise<null>((resolve, reject) => {
+        sessionTimer = setTimeout(() => resolve(null), 5_000);
+        cancelSession = () => reject(signal.reason);
+        signal.addEventListener("abort", cancelSession, { once: true });
+      }),
+    ]);
+    clearTimeout(sessionTimer);
+    if (cancelSession) signal.removeEventListener("abort", cancelSession);
+    signal.throwIfAborted();
+    const token = session?.data.session?.access_token;
+    const headers = new Headers(init.headers);
+    if (token) headers.set("Authorization", `Bearer ${token}`);
     let res = await fetch(input, {
       ...init,
       headers,
-      signal: init.signal ?? controller.signal,
+      signal,
     });
     // Saved repair method (Lovable, f413ffa): authenticated-first, then on
     // 401/403 retry the SAME request anonymously — a stale/expired stored
@@ -97,7 +118,7 @@ export async function sadeedAuthedFetch(input: RequestInfo | URL, init: RequestI
       res = await fetch(input, {
         ...init,
         headers: anonHeaders,
-        signal: init.signal ?? controller.signal,
+        signal,
         cache: "no-store",
       });
     }
@@ -105,6 +126,9 @@ export async function sadeedAuthedFetch(input: RequestInfo | URL, init: RequestI
     return res;
   } finally {
     clearTimeout(timer);
+    clearTimeout(sessionTimer);
+    if (cancelSession) signal.removeEventListener("abort", cancelSession);
+    stopSignal?.removeEventListener("abort", forwardStop);
   }
 }
 
@@ -115,6 +139,7 @@ export async function pingChat(): Promise<{
   key_present?: boolean;
   voice_configured?: boolean;
   transcription_configured?: boolean;
+  gate?: "verified" | "closed" | "degraded";
 }> {
   try {
     const r = await sadeedAuthedFetch(`/api/chat/health?t=${Date.now()}`, {
@@ -131,6 +156,7 @@ export async function pingChat(): Promise<{
           key_present: j.key_present,
           voice_configured: j.voice_configured,
           transcription_configured: j.transcription_configured,
+          gate: j.gate,
         }
       : { ok: false };
   } catch {
