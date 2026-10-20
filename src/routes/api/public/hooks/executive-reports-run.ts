@@ -31,9 +31,10 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
           return new Response(JSON.stringify({ error: error.message }), { status: 500 });
         }
 
-        const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
-        const OUT_GW = "https://connector-gateway.lovable.dev/microsoft_outlook";
-        const lov = process.env.LOVABLE_API_KEY;
+        const base = process.env.MICROSOFT_CONNECTOR_BASE_URL ?? "";
+        const SP_GW = `${base}/microsoft_sharepoint`;
+        const OUT_GW = `${base}/microsoft_outlook`;
+        const lov = process.env.MICROSOFT_CONNECTOR_API_KEY;
         const sp = process.env.MICROSOFT_SHAREPOINT_API_KEY;
         const out = process.env.MICROSOFT_OUTLOOK_API_KEY;
 
