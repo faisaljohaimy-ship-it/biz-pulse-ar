@@ -26,6 +26,7 @@ export {
 
 export { runAgentMission } from "./orchestrator.server";
 export type { RunAgentMissionOptions } from "./orchestrator.server";
+export { FNN_LINKED_SCOPES, getFnnContract } from "./fnn";
 export { planMission } from "./router.server";
 export { registerAgent, getAgent, listAgents, listAgentContracts, hasAgent } from "./registry";
 export { subscribeOrchestration, emitOrchestrationEvent } from "./events";
