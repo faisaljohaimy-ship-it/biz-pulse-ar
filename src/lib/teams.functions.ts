@@ -4,21 +4,21 @@ import { apiError, input, z } from "@/lib/api";
 import { httpJson } from "@/lib/api/http.server";
 import { requirePlatformAdmin } from "@/lib/authz.server";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_teams";
+const GATEWAY_URL = `${process.env.MICROSOFT_CONNECTOR_BASE_URL ?? ""}/microsoft_teams`;
 
 type TeamLite = { id: string; displayName: string };
 type ChannelLite = { id: string; displayName: string; teamId: string };
 
 function gwHeaders(): Record<string, string> {
-  const lovableKey = process.env.LOVABLE_API_KEY;
+  const connectorKey = process.env.MICROSOFT_CONNECTOR_API_KEY;
   const teamsKey = process.env.MICROSOFT_TEAMS_API_KEY;
-  if (!lovableKey || !teamsKey) {
+  if (!connectorKey || !teamsKey || !process.env.MICROSOFT_CONNECTOR_BASE_URL) {
     throw apiError("forbidden", "Teams connector not configured", {
       details: { connector: "microsoft_teams" },
     });
   }
   return {
-    Authorization: `Bearer ${lovableKey}`,
+    Authorization: `Bearer ${connectorKey}`,
     "X-Connection-Api-Key": teamsKey,
     "Content-Type": "application/json",
   };
