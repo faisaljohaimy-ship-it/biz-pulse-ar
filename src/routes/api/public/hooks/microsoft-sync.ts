@@ -65,7 +65,9 @@ export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({
         const outlookKey = process.env.MICROSOFT_OUTLOOK_API_KEY;
         const sharepointKey = process.env.MICROSOFT_SHAREPOINT_API_KEY;
         if (!connectorKey || !GATEWAY_URL) {
-          return new Response(JSON.stringify({ error: "missing_microsoft_connector" }), { status: 500 });
+          return new Response(JSON.stringify({ error: "missing_microsoft_connector" }), {
+            status: 500,
+          });
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

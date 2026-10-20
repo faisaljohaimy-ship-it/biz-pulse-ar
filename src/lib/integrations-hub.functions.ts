@@ -401,7 +401,8 @@ export const testProvider = createServerFn({ method: "POST" })
     };
     const ms = msMap[provider];
     if (ms) {
-      if (!connectorKey || !process.env.MICROSOFT_CONNECTOR_BASE_URL) return { ok: false, status: 0, message: "Microsoft connector is not configured" };
+      if (!connectorKey || !process.env.MICROSOFT_CONNECTOR_BASE_URL)
+        return { ok: false, status: 0, message: "Microsoft connector is not configured" };
       const key = process.env[ms.env];
       if (!key) return { ok: false, status: 0, message: `${provider} connector not linked` };
       const base =

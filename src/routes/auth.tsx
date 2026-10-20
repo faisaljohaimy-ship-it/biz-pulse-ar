@@ -19,7 +19,7 @@ import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ExecutivePresentationPlayer } from "@/components/demo/ExecutivePresentationPlayer";
+import { SadeedIntroFilm } from "@/components/home/SadeedIntroFilm";
 import { SadeedEmblem } from "@/components/brand/SadeedPlateLockup";
 import {
   clearExecutiveAcceptance,
@@ -430,12 +430,12 @@ function ExecutiveAcceptanceStage({ isAr, onAccept }: { isAr: boolean; onAccept:
                 <span className="relative h-2.5 w-2.5 rounded-full bg-emerald-400" />
               </span>
               <span className="text-[12px] font-bold uppercase tracking-[0.22em] text-white/60">
-                {isAr ? "العرض التنفيذي بصوت سَدِيد" : "Executive presentation · SADEED narration"}
+                {isAr ? "تعرّف على سَدِيد في دقيقة" : "Meet SADEED in one minute"}
               </span>
             </div>
-            <span className="nexus-command-chip">SADEED · LIVE EXPERIENCE</span>
+            <span className="nexus-command-chip">SADEED · INTRODUCTION</span>
           </div>
-          <ExecutivePresentationPlayer />
+          <SadeedIntroFilm />
         </section>
 
         <section className="nexus-window relative mx-auto mt-6 max-w-3xl overflow-hidden rounded-[1.75rem] p-5 sm:p-7">

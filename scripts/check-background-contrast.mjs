@@ -46,6 +46,7 @@ const ROOT = process.cwd();
 const OUT = [
   join(ROOT, "dist", "client", "assets"),
   join(ROOT, ".output", "public", "assets"),
+  join(ROOT, ".vercel", "output", "static", "assets"),
 ].find(existsSync);
 if (!OUT) {
   console.error("فحص التباين يحتاج بناءً مكتملًا (dist/client أو .output/public).");

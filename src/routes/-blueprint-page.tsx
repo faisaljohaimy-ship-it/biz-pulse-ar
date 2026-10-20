@@ -69,6 +69,7 @@ import { HomeAnalyticsRow } from "@/components/home/HomeAnalyticsRow";
 import { HomeClosingBand } from "@/components/home/HomeClosingBand";
 import "@/styles/home/home-layout.css";
 import "@/styles/home/home-motion.css";
+import { SadeedIntroFilm } from "@/components/home/SadeedIntroFilm";
 
 export function BlueprintPage() {
   const { locale } = useI18n();
@@ -91,6 +92,7 @@ export function BlueprintPage() {
       </h1>
 
       <div dir="ltr" className="nx-home-arrange mx-auto w-full max-w-[1440px] px-4 pb-16 pt-4">
+        <SadeedIntroFilm />
         {/* ════ الهوية: شريط المزايا ثم لوحة سَدِيد بعرض العمود، وفيلمها السينمائي
               والاسم والسطر نصًّا فوقها (أوامر المالك ٢٠٢٦/١٠/١٧–١٨ — المواصفة §2.3). */}
         <HomeBrandRow />

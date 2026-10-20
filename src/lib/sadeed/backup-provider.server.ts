@@ -33,10 +33,32 @@ export function shouldUseBackup(error: unknown): boolean {
 
 export function createSadeedBackupModel() {
   const key = process.env.OPENAI_API_KEY?.trim();
-  if (!key) return null;
+  const baseURL = process.env.OPENAI_BASE_URL?.trim();
+  if (!key || !baseURL) return null;
+  // This route speaks a Gemini gateway model, not an OpenAI model. A key
+  // alone must never enable provider spend or bypass the chat route's
+  // explicit direct-OpenAI opt-in. Require a separately configured gateway.
+  let endpoint: URL;
+  try {
+    endpoint = new URL(baseURL);
+  } catch {
+    return null;
+  }
+  const host = endpoint.hostname.toLowerCase().replace(/\.$/, "");
+  if (
+    endpoint.protocol !== "https:" ||
+    endpoint.username ||
+    endpoint.password ||
+    endpoint.search ||
+    endpoint.hash ||
+    host === "openai.com" ||
+    host.endsWith(".openai.com")
+  ) {
+    return null;
+  }
   const provider = createOpenAICompatible({
     name: "sadeed-openai-compatible",
-    baseURL: process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1",
+    baseURL,
     headers: { Authorization: `Bearer ${key}` },
   });
   return provider(SADEED_BACKUP_MODEL);

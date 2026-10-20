@@ -184,7 +184,9 @@ const graphGetUser: ToolExecutor = {
 /* ------------------------------- REST/Webhook --------------------------- */
 
 const ALLOWED_HOSTS = new Set<string>([
-  ...(process.env.MICROSOFT_CONNECTOR_BASE_URL ? [new URL(process.env.MICROSOFT_CONNECTOR_BASE_URL).hostname] : []),
+  ...(process.env.MICROSOFT_CONNECTOR_BASE_URL
+    ? [new URL(process.env.MICROSOFT_CONNECTOR_BASE_URL).hostname]
+    : []),
   // extend per deployment via env later
 ]);
 
