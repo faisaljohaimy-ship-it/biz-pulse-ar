@@ -3,8 +3,8 @@
  *
  * `ai-quota.contract.test.ts` يحرس مسارات HTTP تحت `src/routes/api`. لكن ستّة
  * مواضع تصل Gemini من غير مسار HTTP: دوال خادم (TanStack `createServerFn`)
- * يستدعيها الزائر، ومشغّل الوكلاء، وتحليل البلاغ، والمحرّك التنفيذي، وأداة
- * MCP. لم يكن عليها مفتاح إيقاف ولا سقف يومي. المحروس هنا: كل موضعٍ يستدعي
+ * يستدعيها الزائر، ومشغّل الوكلاء، وتحليل البلاغ، والمحرّك التنفيذي. المحروس
+ * هنا: كل موضعٍ يستدعي
  * `generateText(` في `src/lib` يسبقه نداء بوّابة، والقائمة تُشتقّ من الشيفرة.
  *
  * (حُذفت `exec/conversation.functions.ts` في تنظيف ٢٠٢٦/١٠/١٧ فخرجت من القائمتين
@@ -26,7 +26,6 @@ const INTERNAL_SPENDERS: ReadonlyArray<readonly [string, "quota" | "kill-switch"
   ["src/lib/exec/briefing.functions.ts", "quota"],
   ["src/lib/exec/agent-runtime.server.ts", "quota"],
   ["src/lib/oms-sadeed.server.ts", "quota"],
-  ["src/lib/mcp/tools/ask-sadeed.ts", "quota"],
   // خلف مسار HTTP محروس أصلًا: دفاعٌ ثانٍ بمفتاح الإيقاف.
   ["src/lib/sadeed/executive-brain/brain.server.ts", "kill-switch"],
   ["src/lib/sadeed/presence/explanation.server.ts", "kill-switch"],
@@ -84,7 +83,7 @@ describe("① كل وحدة مكتبة تستدعي نموذجًا تمرّ با
       }
     }
     // التضمين وحده دالّتان؛ الرقم يمنع أن يتقادم النمط فلا يُفحص شيء.
-    expect(checked, "لم تُقطَّع أي دالّة — النمط تقادم").toBeGreaterThanOrEqual(9);
+    expect(checked, "لم تُقطَّع أي دالّة — النمط تقادم").toBeGreaterThanOrEqual(8);
   });
 
   it("ولا وحدة تستدعي النموذج خارج هذه القائمة", () => {
