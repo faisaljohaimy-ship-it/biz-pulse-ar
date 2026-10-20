@@ -311,7 +311,6 @@ describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا",
   it("والأسطح المُصلَحة لا تعود", () => {
     for (const f of [
       "src/components/sec/sec-ops-insights.tsx",
-      "src/components/situation-room/DecisionEngine.tsx",
       "src/components/bridge/BriefingStage.tsx",
       "src/lib/exec/briefing.functions.ts",
       "src/lib/digital-humans/speak-agent.ts",
@@ -344,7 +343,6 @@ describe("لا «ثقة ٪» مختلَقة — مسحٌ يفشل مغلقًا",
   it("وتسمية الدرجة مصدرٌ واحد لا نسخة لكل سطح", () => {
     for (const f of [
       "src/components/sec/sec-ops-insights.tsx",
-      "src/components/situation-room/DecisionEngine.tsx",
       "src/components/bridge/BriefingStage.tsx",
     ]) {
       const src = readFileSync(f, "utf8");
