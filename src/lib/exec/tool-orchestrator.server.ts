@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { hasAnyPlatformRole } from "@/lib/authz.server";
-import { getExecutor } from "./tool-registry.server";
+import { getExecutor, isIdempotentCall } from "./tool-registry.server";
 import { audit } from "./audit.server";
 import { publishEvent } from "./event-bus.server";
 
@@ -15,8 +15,19 @@ export type ExecuteToolParams = {
   agentRunId?: string | null;
   correlationId?: string | null;
   preApproved?: boolean;
-  /** Override default retry policy (max=2, baseMs=750). */
+  /** Server-only policy: callers may require approval even if the registry does not. */
+  requireApproval?: boolean;
+  /**
+   * تنفيذ طلبٍ معتمَد **على صفّه نفسه** (queued → running → النتيجة) بدل
+   * إدراج صفٍّ ثانٍ. كان الاعتماد ينقل الصفّ الأصلي إلى `queued` ثم يُدرج
+   * التنفيذُ صفًّا جديدًا، فيبقى الأصلي حتى يُحصد `failed` — زوجٌ مضلِّل
+   * (فاشل + ناجح) لفعلٍ واحد. يشترط `preApproved`.
+   */
+  existingExecutionId?: string | null;
+  /** Override default retry policy (max=2, baseMs=750). Applies to idempotent tools only. */
   retry?: { max: number; baseMs: number };
+  /** Override the per-attempt executor timeout (default 30s). */
+  timeoutMs?: number;
 };
 
 export type ExecuteToolResult = {
@@ -65,13 +76,27 @@ async function auditDenial(
   });
 }
 
+/** انقضاء مهلة المنفّذ — صنفٌ مميَّز ليُعرف الانقضاء دون مطابقة نصّ. */
+class ToolTimeoutError extends Error {
+  constructor(label: string, ms: number) {
+    super(`${label} timed out after ${ms}ms`);
+    this.name = "ToolTimeoutError";
+  }
+}
+
 async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
-  return await Promise.race([
-    p,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms),
-    ),
-  ]);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      p,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new ToolTimeoutError(label, ms)), ms);
+      }),
+    ]);
+  } finally {
+    // المؤقّت لا يبقى معلّقًا بعد أن يحسم المنفّذ النتيجة.
+    if (timer) clearTimeout(timer);
+  }
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -90,6 +115,20 @@ function isTransient(err: unknown): boolean {
     if (code >= 500 && code <= 599) return true;
   }
   return false;
+}
+
+/**
+ * رسالة الإخفاق كما تُكتب في الصفّ. لأداةٍ ذات أثرٍ جانبيّ، انقضاءُ المهلة
+ * أو خطأٌ عابر يعني «النتيجة مجهولة» لا «لم يقع» — فيُقال ذلك صراحةً، ويُقال
+ * إنه لم يُعَد، كي لا يُقرأ الفشل دعوةً لإعادةٍ قد تكرّر الأثر.
+ */
+function failureMessage(err: unknown, idempotent: boolean): string {
+  const base = err instanceof Error ? err.message : String(err);
+  if (idempotent) return base;
+  // «timed out» (مهلة المنسّق) و«Timeout after» (مهلة httpFetch) وكل عابر.
+  const ambiguous =
+    err instanceof ToolTimeoutError || isTransient(err) || /\btimeout\b/i.test(base);
+  return ambiguous ? `${base} — outcome unknown, not retried` : base;
 }
 
 async function hasAnyRole(
@@ -136,8 +175,14 @@ export async function executeTool(
     workflowRunId = null,
     agentRunId = null,
     preApproved = false,
+    existingExecutionId = null,
   } = params;
+  // صفٌّ قائم لا يُنفَّذ إلا خلف اعتماد — وإلا صار بابًا خلفيًّا حول البوابة.
+  if (existingExecutionId && !preApproved) {
+    throw new Error("existingExecutionId requires an approved execution");
+  }
   const retry = params.retry ?? DEFAULT_RETRY;
+  const timeoutMs = params.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const orgId = await resolveToolOrgId(supabase, actorId, params.orgId);
 
   // 1) Load registry row
@@ -204,7 +249,7 @@ export async function executeTool(
   const correlationId = params.correlationId ?? crypto.randomUUID();
 
   // 4) Approval gate
-  if (reg.requires_approval && !preApproved) {
+  if ((reg.requires_approval || params.requireApproval) && !preApproved) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: pending, error: pendErr } = await (supabase as any)
       .from("tool_executions")
@@ -231,27 +276,48 @@ export async function executeTool(
     return { executionId: pending.id, status: "pending_approval" };
   }
 
-  // 5) Insert running row
+  // 5) Execution row — an approved request runs on ITS OWN row; anything
+  // else gets a fresh running row.
   const startedAt = new Date();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: row, error: insErr } = await (supabase as any)
-    .from("tool_executions")
-    .insert({
-      tool_id: toolId,
-      actor_id: actorId,
-      org_id: orgId,
-      workflow_run_id: workflowRunId,
-      agent_run_id: agentRunId,
-      correlation_id: correlationId,
-      status: "running",
-      input_json: parsed.data,
-      started_at: startedAt.toISOString(),
-      attempt: 1,
-    })
-    .select("id")
-    .single();
-  if (insErr) throw new Error(insErr.message);
-  const executionId = row.id as string;
+  let executionId: string;
+  if (existingExecutionId) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: claimed, error: claimErr } = await (supabase as any)
+      .from("tool_executions")
+      .update({ status: "running", started_at: startedAt.toISOString(), attempt: 1 })
+      .eq("id", existingExecutionId)
+      .eq("tool_id", toolId)
+      .eq("org_id", orgId)
+      // الاعتماد نقل الصفّ إلى queued؛ وشرط الحالة عند الكتابة يمنع تنفيذه
+      // مرّتين لو تسابق نداءان على الصفّ نفسه.
+      .eq("status", "queued")
+      .select("id");
+    if (claimErr) throw new Error(claimErr.message);
+    if (!Array.isArray(claimed) || claimed.length === 0) {
+      throw new Error(`Execution ${existingExecutionId} is not queued for execution`);
+    }
+    executionId = existingExecutionId;
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: row, error: insErr } = await (supabase as any)
+      .from("tool_executions")
+      .insert({
+        tool_id: toolId,
+        actor_id: actorId,
+        org_id: orgId,
+        workflow_run_id: workflowRunId,
+        agent_run_id: agentRunId,
+        correlation_id: correlationId,
+        status: "running",
+        input_json: parsed.data,
+        started_at: startedAt.toISOString(),
+        attempt: 1,
+      })
+      .select("id")
+      .single();
+    if (insErr) throw new Error(insErr.message);
+    executionId = row.id as string;
+  }
 
   await audit(supabase, {
     actor_id: actorId,
@@ -262,10 +328,16 @@ export async function executeTool(
     metadata: { toolId, correlationId },
   });
 
-  // 6) Run executor with timeout + transient-error retries
+  // 6) Run executor with timeout; transient-error retries for idempotent
+  // calls ONLY. A side-effecting tool runs exactly once: its timeout means
+  // "outcome unknown", and a retry could send the mail / create the incident
+  // twice. (`Promise.race` cannot cancel the first attempt either — it keeps
+  // running after the timeout fires.)
+  const idempotent = isIdempotentCall(exec, parsed.data);
+  const maxRetries = idempotent ? retry.max : 0;
   let attempt = 0;
   let lastErr: unknown;
-  while (attempt <= retry.max) {
+  while (attempt <= maxRetries) {
     attempt++;
     try {
       const result = await withTimeout(
@@ -276,7 +348,7 @@ export async function executeTool(
           correlationId,
           executionId,
         }),
-        DEFAULT_TIMEOUT_MS,
+        timeoutMs,
         `tool ${toolId}`,
       );
 
@@ -313,7 +385,7 @@ export async function executeTool(
       return { executionId, status: "succeeded", output: result.output, attempts: attempt };
     } catch (err) {
       lastErr = err;
-      if (attempt > retry.max || !isTransient(err)) break;
+      if (attempt > maxRetries || !isTransient(err)) break;
       const backoff = retry.baseMs * Math.pow(2, attempt - 1);
       await audit(supabase, {
         actor_id: actorId,
@@ -332,7 +404,7 @@ export async function executeTool(
     }
   }
 
-  const message = lastErr instanceof Error ? lastErr.message : String(lastErr);
+  const message = failureMessage(lastErr, idempotent);
   const finishedAt = new Date();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase as any)
@@ -351,7 +423,7 @@ export async function executeTool(
     action: "tool.execute.fail",
     resource_type: "tool_execution",
     resource_id: executionId,
-    metadata: { toolId, error: message, attempts: attempt },
+    metadata: { toolId, error: message, attempts: attempt, idempotent },
   });
   await publishEvent(supabase, {
     topic: `tool.failed.${toolId}`,
@@ -385,17 +457,23 @@ export async function decideApproval(
 
   if (decision === "reject") {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: rejectError } = await (supabase as any)
+    const { data: rejectedRows, error: rejectError } = await (supabase as any)
       .from("tool_executions")
       .update({
         status: "rejected",
         approved_by: approverId,
         approved_at: new Date().toISOString(),
       })
-      .eq("id", executionId);
+      .eq("id", executionId)
+      .eq("org_id", orgId)
+      .eq("status", "pending_approval")
+      .select("id");
     if (rejectError) {
       // Never report a rejection that did not persist.
       throw new Error(`Failed to persist rejection: ${rejectError.message}`);
+    }
+    if (!Array.isArray(rejectedRows) || rejectedRows.length === 0) {
+      throw new Error("Failed to persist rejection: execution is no longer pending");
     }
     await audit(supabase, {
       actor_id: approverId,
@@ -404,21 +482,29 @@ export async function decideApproval(
       resource_type: "tool_execution",
       resource_id: executionId,
     });
+    // الرفض يُنهي الانتظار أيضًا — فإن كان آخر المعلَّق فلا يبقى الغلاف معلّقًا.
+    await settleAfterResolution(pending, orgId);
     return { executionId, status: "rejected" };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error: approveError } = await (supabase as any)
+  const { data: approvedRows, error: approveError } = await (supabase as any)
     .from("tool_executions")
     .update({
       status: "queued",
       approved_by: approverId,
       approved_at: new Date().toISOString(),
     })
-    .eq("id", executionId);
+    .eq("id", executionId)
+    // شرط الحالة عند الكتابة: اعتمادان متزامنان لا ينفّذان الفعل مرّتين.
+    .eq("status", "pending_approval")
+    .select("id");
   if (approveError) {
     // Never report an approval that did not persist.
     throw new Error(`Failed to persist approval: ${approveError.message}`);
+  }
+  if (!Array.isArray(approvedRows) || approvedRows.length === 0) {
+    throw new Error("Failed to persist approval: execution is no longer pending");
   }
   await audit(supabase, {
     actor_id: approverId,
@@ -428,16 +514,197 @@ export async function decideApproval(
     resource_id: executionId,
   });
 
-  return executeTool(supabase, {
-    toolId: pending.tool_id,
-    input: pending.input_json,
-    actorId: pending.actor_id ?? approverId,
-    orgId,
-    workflowRunId: pending.workflow_run_id,
-    agentRunId: pending.agent_run_id,
-    correlationId: pending.correlation_id,
-    preApproved: true,
-  });
+  // التنفيذ على **الصفّ نفسه**: لا إدراج ثانٍ، ولا صفٌّ أصليٌّ يُترك في
+  // queued حتى يُحصد فاشلًا بجوار نسخةٍ ناجحة.
+  let result: ExecuteToolResult;
+  try {
+    result = await executeTool(supabase, {
+      toolId: pending.tool_id,
+      input: pending.input_json,
+      actorId: pending.actor_id ?? approverId,
+      orgId,
+      workflowRunId: pending.workflow_run_id,
+      agentRunId: pending.agent_run_id,
+      correlationId: pending.correlation_id,
+      preApproved: true,
+      existingExecutionId: executionId,
+    });
+  } catch (err) {
+    // رمى قبل أن يبدأ (أداةٌ عُطّلت، دورٌ سُحب، مدخلٌ لم يعد صالحًا): الصفّ
+    // المعتمَد يُغلق فاشلًا بسببه بدل أن يبقى queued بلا تفسير.
+    const message = err instanceof Error ? err.message : String(err);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
+      .from("tool_executions")
+      .update({ status: "failed", error: message, finished_at: new Date().toISOString() })
+      .eq("id", executionId)
+      .eq("status", "queued");
+    await settleAfterResolution(pending, orgId);
+    throw err;
+  }
+  await settleAfterResolution(pending, orgId);
+  return result;
+}
+
+/* ------------------- Agent wrapper workflow settlement ------------------ */
+
+/**
+ * `trigger_event` لغلاف تشغيل الوكيل في `workflow_runs`. هو ما يميّز الغلاف
+ * عن سير عمل المحرّك: الأخير يُستأنف بعد الاعتماد عبر `resumeWorkflowRun`،
+ * ونقله إلى `succeeded` من هنا كان سيقطع خطواته الباقية.
+ */
+export const AGENT_RUN_TRIGGER_EVENT = "agent.invoke";
+
+/** حالات تنفيذٍ لم تُحسم بعد — ما دام منها شيء فالغلاف ينتظر. */
+const UNRESOLVED_EXECUTION_STATUSES = new Set(["pending_approval", "queued", "running"]);
+
+/**
+ * حالاتٌ حُسم فيها الطلب **دون أن يقع الفعل**: رفضٌ بشريّ، أو مهلةٌ انقضت
+ * بلا قرار، أو إلغاءٌ/إحلال. تُحصى ليُقال صراحةً إن الفعل لم يُنفَّذ.
+ */
+const NOT_EXECUTED_STATUSES = new Set(["rejected", "expired", "cancelled", "superseded"]);
+
+export type ApprovalTally = {
+  /** تنفيذات الارتباط التي لم تُحسم (بانتظار اعتماد، أو معتمَدة لم تنتهِ). */
+  unresolved: number;
+  /** تنفيذات مرّت ببوابة الاعتماد (`approved_at`) ثم فشلت. */
+  approvedFailed: number;
+  /** طلباتٌ حُسمت بلا تنفيذ (رُفضت، أو انتهت مهلتها، أو أُلغيت). */
+  notExecuted: number;
+};
+
+/**
+ * يقرأ حالة تنفيذات ارتباطٍ واحد داخل مؤسسته. `null` = تعذّرت القراءة —
+ * وليس «لا شيء معلّق» (المادة ٢٧).
+ */
+export async function tallyApprovalState(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+  correlationId: string,
+  orgId: string,
+): Promise<ApprovalTally | null> {
+  const { data, error } = await admin
+    .from("tool_executions")
+    .select("status, approved_at")
+    .eq("correlation_id", correlationId)
+    .eq("org_id", orgId);
+  if (error || !Array.isArray(data)) return null;
+  const rows = data as Array<{ status: string; approved_at: string | null }>;
+  return {
+    unresolved: rows.filter((r) => UNRESOLVED_EXECUTION_STATUSES.has(r.status)).length,
+    approvedFailed: rows.filter((r) => r.approved_at && r.status === "failed").length,
+    notExecuted: rows.filter((r) => NOT_EXECUTED_STATUSES.has(r.status)).length,
+  };
+}
+
+/**
+ * سطر الغلاف عند تسويته: فشلُ فعلٍ معتمَد، وما لم يُنفَّذ أصلًا. `succeeded`
+ * عارية بعد رفضٍ أو انتهاء مهلة تُقرأ «نُفّذ كل شيء» — وهو لم يُنفَّذ.
+ */
+function settlementNote(tally: ApprovalTally): string | null {
+  const parts: string[] = [];
+  if (tally.approvedFailed > 0) parts.push(`${tally.approvedFailed} approved action(s) failed`);
+  if (tally.notExecuted > 0) {
+    parts.push(`${tally.notExecuted} action(s) not executed (rejected or approval expired)`);
+  }
+  return parts.length ? parts.join("; ") : null;
+}
+
+/**
+ * ينقل غلاف تشغيل الوكيل من `waiting_approval` إلى مآله حين لا يبقى في
+ * ارتباطه تنفيذٌ غير محسوم: `failed` إن فشل فعلٌ معتمَد، وإلا `succeeded`.
+ * وما حُسم بلا تنفيذ (رفضٌ أو انتهاء مهلة) يُكتب في `error` سطرًا صريحًا —
+ * التشغيل اكتمل، لكن الفعل لم يقع.
+ *
+ * لا يرمي (تسويةٌ بعد قرارٍ أو تشغيلٍ اكتمل فعلًا)، ولا يلمس إلا صفًّا
+ * هو غلاف وكيل (`trigger_event`) في المؤسسة نفسها وما زال ينتظر — فلا
+ * يدوس إلغاءً ولا سير عمل المحرّك. يعيد المآل، أو `null` إن لم ينقل شيئًا.
+ */
+export async function settleAgentWorkflowRun(params: {
+  workflowRunId: string;
+  correlationId: string;
+  orgId: string;
+}): Promise<"succeeded" | "failed" | null> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // الغلاف يُكتب بمفتاح الخدمة في وقت التشغيل، فيُسوّى بالمفتاح نفسه.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = supabaseAdmin as any;
+    const tally = await tallyApprovalState(admin, params.correlationId, params.orgId);
+    if (!tally || tally.unresolved > 0) return null;
+    const status = tally.approvedFailed > 0 ? "failed" : "succeeded";
+    const { data: moved, error } = await admin
+      .from("workflow_runs")
+      .update({
+        status,
+        finished_at: new Date().toISOString(),
+        current_step: null,
+        error: settlementNote(tally),
+      })
+      .eq("id", params.workflowRunId)
+      .eq("org_id", params.orgId)
+      .eq("trigger_event", AGENT_RUN_TRIGGER_EVENT)
+      .eq("status", "waiting_approval")
+      .select("id");
+    if (error || !Array.isArray(moved) || moved.length === 0) return null;
+    await audit(admin, {
+      actor_id: null,
+      org_id: params.orgId,
+      action: "workflow.run.settled",
+      resource_type: "workflow_run",
+      resource_id: params.workflowRunId,
+      source: "tool-orchestrator",
+      correlation_id: params.correlationId,
+      metadata: { status, approvedFailed: tally.approvedFailed, notExecuted: tally.notExecuted },
+    });
+    return status;
+  } catch (err) {
+    console.error("[tool-orchestrator] agent workflow settlement failed", err);
+    return null;
+  }
+}
+
+/**
+ * تسوية الغلاف بعد حسم طلب: اعتمادٌ أو رفضٌ بشريّ، أو انتهاء مهلةٍ بلا قرار
+ * (`expireStaleApprovals`) — وإلا بقي الغلاف `waiting_approval` أبدًا ولا
+ * شيء ينتظره. لتنفيذات الوكيل وحدها. يعيد مآل الغلاف أو `null`.
+ */
+async function settleAfterResolution(
+  execution: {
+    id: string;
+    workflow_run_id: string | null;
+    agent_run_id: string | null;
+    correlation_id: string | null;
+  },
+  orgId: string,
+): Promise<"succeeded" | "failed" | null> {
+  // تنفيذات المحرّك (بلا agent_run_id) يُكمِلها `resumeWorkflowRun`.
+  if (!execution.agent_run_id || !execution.correlation_id) return null;
+  try {
+    let workflowRunId = execution.workflow_run_id;
+    if (!workflowRunId) {
+      // صفوف ما قبل ربط `workflow_run_id`: الرابط عمود `tool_execution_id`
+      // في خطوة الغلاف.
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: step } = await (supabaseAdmin as any)
+        .from("workflow_step_runs")
+        .select("run_id")
+        .eq("tool_execution_id", execution.id)
+        .limit(1)
+        .maybeSingle();
+      workflowRunId = (step?.run_id as string | undefined) ?? null;
+    }
+    if (!workflowRunId) return null;
+    return await settleAgentWorkflowRun({
+      workflowRunId,
+      correlationId: execution.correlation_id,
+      orgId,
+    });
+  } catch (err) {
+    console.error("[tool-orchestrator] post-decision settlement failed", err);
+    return null;
+  }
 }
 
 /* ------------------------------- Rollback ------------------------------- */
@@ -538,7 +805,7 @@ export const APPROVAL_TTL_MS = 7 * 24 * 60 * 60 * 1000;
  */
 export async function expireStaleApprovals(
   maxAgeMs = APPROVAL_TTL_MS,
-): Promise<{ expired: number; ids: string[] }> {
+): Promise<{ expired: number; ids: string[]; settled: number }> {
   // **بلا معامل عميل.** كان يأخذ `supabase` ولا يستعمله بعد أن صار الأثر
   // يُكتب بمفتاح الخدمة — توقيعٌ يوحي بأن عميل النداء يحكم، وهو لا يحكم.
   // وتوقيعٌ يَعِد بما لا يفي به يُضلّل قارئه قبل أن يُضلّل مستدعيه.
@@ -549,7 +816,7 @@ export async function expireStaleApprovals(
 
   const { data: stale, error: readError } = await admin
     .from("tool_executions")
-    .select("id, tool_id, actor_id, org_id, correlation_id")
+    .select("id, tool_id, actor_id, org_id, correlation_id, workflow_run_id, agent_run_id")
     .eq("status", "pending_approval")
     .lt("created_at", cutoff);
   // **قراءةٌ فاشلة ليست «صفر منتهٍ».** بلا هذا التفكيك يعود
@@ -564,8 +831,10 @@ export async function expireStaleApprovals(
     actor_id: string | null;
     org_id: string | null;
     correlation_id: string | null;
+    workflow_run_id: string | null;
+    agent_run_id: string | null;
   }>;
-  if (!rows.length) return { expired: 0, ids: [] };
+  if (!rows.length) return { expired: 0, ids: [], settled: 0 };
 
   const ids = rows.map((r) => r.id);
   const { error } = await admin
@@ -607,7 +876,22 @@ export async function expireStaleApprovals(
       },
     });
   }
-  return { expired: ids.length, ids };
+
+  // غلاف تشغيل الوكيل ينتظر هذه الطلبات بالذات (`waiting_approval`)، والاعتماد
+  // والرفض وحدهما كانا يسوّيانه — فانتهاءٌ بلا قرار تركه منتظرًا أبدًا ما لا
+  // شيء ينتظره. تسويةٌ واحدة لكل ارتباط، والتسوية نفسها تتحقّق ألّا معلَّق
+  // باقٍ (طلبٌ اعتُمد بين القراءة والكتابة يُبقيه منتظرًا)، وتكتب أن الفعل
+  // لم يُنفَّذ. أفضل جهد: لا ترمي.
+  let settled = 0;
+  const seen = new Set<string>();
+  for (const r of rows) {
+    if (!r.agent_run_id || !r.correlation_id || !r.org_id) continue;
+    const key = `${r.org_id}:${r.correlation_id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (await settleAfterResolution(r, r.org_id)) settled++;
+  }
+  return { expired: ids.length, ids, settled };
 }
 
 export async function reapStaleExecutions(

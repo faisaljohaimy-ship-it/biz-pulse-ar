@@ -13,6 +13,7 @@
 
 import {
   Bot,
+  Network,
   Boxes,
   FileBarChart,
   FileCheck2,
@@ -46,6 +47,7 @@ export const MODULES: readonly ModuleEntry[] = [
   // زرّ الشريط الجانبي ما زال يحمله ويفتح /sec.
   { to: "/executive-map", ar: "الخريطة التنفيذية", en: "Executive Map", icon: MapIcon },
   // G7: the canonical name is «منصة عمليات الوكلاء» in every surface.
+  { to: "/orchestration", ar: "قيادة سَدِيد وFNN", en: "SADEED & FNN Command", icon: Network },
   { to: "/agents", ar: "منصة عمليات الوكلاء", en: "Agent Operations Platform", icon: Bot },
   { to: "/digital-twin", ar: "التوأم الرقمي", en: "Digital Twin", icon: Boxes },
   // تقرير لا رسم بياني: `BarChart3` كانت أيقونة **مؤشرات الأداء** نفسها في
@@ -91,6 +93,10 @@ export const MODULE_PURPOSE: Record<string, { ar: string; en: string }> = {
   "/executive-map": {
     ar: "الخريطة الجغرافية التنفيذية للأصول والمناطق.",
     en: "The executive geographic map of assets and regions.",
+  },
+  "/orchestration": {
+    ar: "قيادة سَدِيد وتنفيذ FNN — تفويض محكوم بالصلاحيات وسجل نتائج حقيقي.",
+    en: "SADEED coordination and FNN execution with permissions and real task history.",
   },
   "/agents": {
     ar: "منصة عمليات الوكلاء — تشغيل ومراقبة تحت قيادة سَدِيد.",

@@ -24,10 +24,10 @@ const FNN_LINKED_AGENTS = ["*"] as const;
 
 const FNN_CONTRACT: AgentContract = {
   id: "fnn",
-  name_en: "FNN Automation Agent",
-  name_ar: "فنن — وكيل الأتمتة",
+  name_en: "FNN Automation & Engineering Agent",
+  name_ar: "فنن — وكيل الأتمتة والهندسة",
   description:
-    "Deterministic, no-model automation coordinator for approved Industrial Security workflows.",
+    "Technical planning under SADEED coordination. Authorized tool execution uses the separate authenticated dual-agent adapter and existing approval controls.",
   capabilities: [
     { key: "classify_workflow", description: "Classify an automation request without a model." },
     {

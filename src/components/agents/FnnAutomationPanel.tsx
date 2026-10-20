@@ -71,6 +71,9 @@ export function FnnAutomationPanel({ agents }: { agents: AgentOpsRecord[] }) {
             : "لم يصل سجل الوكلاء بعد؛ يمكن تجهيز الخطوات محلياً."}{" "}
         لا تُنفّذ الخطة أي تعديل أو مراسلة.
       </p>
+      <Button asChild variant="outline" className="min-h-11">
+        <a href="/orchestration">فتح قيادة سَدِيد ومساحة تنفيذ FNN</a>
+      </Button>
       <form
         className="space-y-3"
         onSubmit={(event) => {

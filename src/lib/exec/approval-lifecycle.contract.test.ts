@@ -132,6 +132,10 @@ describe("④ لا اعتماد غير مراقَب ينفّذ", () => {
   });
 
   it("والتنفيذ خلف الاعتماد لا يقع إلا بـ`preApproved`", () => {
-    expect(ORCH).toMatch(/if \(reg\.requires_approval && !preApproved\)/);
+    // Server policy may strengthen the registry gate; neither source of
+    // approval can be bypassed without the internal preApproved path.
+    expect(ORCH).toMatch(
+      /if \(\(reg\.requires_approval \|\| params\.requireApproval\) && !preApproved\)/,
+    );
   });
 });
