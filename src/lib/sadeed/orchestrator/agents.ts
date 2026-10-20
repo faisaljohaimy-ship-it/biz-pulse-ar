@@ -14,6 +14,7 @@ import type { SadeedIntent } from "../executive-reasoning.server";
 import { runExecutiveBrain } from "../executive-brain/brain.server";
 import { toBrainRequest } from "./context.server";
 import { buildReport, KIND_LABEL_AR_MAP } from "@/lib/reports-agent/engine";
+import { fnnAgent } from "./fnn";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -114,6 +115,15 @@ const executiveBrainAgent: ExecutiveAgent = {
       estimated_latency_ms: 12_000,
       execution_policy: "sequential",
       retry_policy: { max_attempts: 1, backoff_ms: 0 },
+      linked_agent_ids: ["*"],
+      linked_scopes: [
+        "agents:*",
+        "departments:*",
+        "sections:*",
+        "circles:*",
+        "employees:industrial-security",
+        "industrial-security:all-regions",
+      ],
     },
   ),
   async run(ctx: AgentRunContext): Promise<AgentResult> {
@@ -446,3 +456,7 @@ const knowledgeAgent: ExecutiveAgent = {
 };
 
 registerAgent(knowledgeAgent);
+
+// FNN is deliberately registered beside the Council, but its contract is
+// no-model and approval-gated so it cannot add provider spend or bypass RLS.
+registerAgent(fnnAgent);
