@@ -1444,7 +1444,19 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
     const focusables = (code: string) => code.match(/<(?:Link|a|button)\b/g) ?? [];
     const focusStops = (code: string) => code.match(/tabIndex=\{?["']?0\b/g) ?? [];
     expect(focusables(brandRow)).toEqual([]);
-    expect(focusables(ticker)).toEqual(["<button"]);
+    // Operational updates add one retry button only on a failed feed. The
+    // brand plate remains unfocusable; order is region → retry → motion pause.
+    expect(focusables(ticker)).toEqual(["<button", "<button"]);
+    expect(ticker).toMatch(
+      /\{failed && onRetry && \(\s*<button[\s\S]*?className="nx-ticker-retry nx-focus-ring"/,
+    );
+    expect(ticker.indexOf('className="nx-ticker-view"')).toBeLessThan(
+      ticker.indexOf('className="nx-ticker-retry'),
+    );
+    expect(ticker.indexOf('className="nx-ticker-retry')).toBeLessThan(
+      ticker.indexOf('className="nx-ticker-toggle'),
+    );
+    expect(focusables(`${ticker}\n<button>extra</button>`)).toHaveLength(3);
     expect(focusStops(brandRow), "عنصرٌ قابلٌ للتركيز في البانر").toEqual([]);
     expect(focusStops(ticker)).toHaveLength(1);
     expect(ticker).toMatch(/className="nx-ticker-view" role="region"[^>]*tabIndex=\{0\}/);

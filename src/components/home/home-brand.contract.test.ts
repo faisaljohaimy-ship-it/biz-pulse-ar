@@ -344,7 +344,10 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع", () => {
     );
     expect(ignoresPause).not.toBe(CODE);
     expect(gatedBeforeVideo(ignoresPause)).toBe(false);
-    const below = CODE.replace(/<HomeTicker [^>]*\/>/, "").replace(
+    // JSX props can span lines and contain arrow functions (">" is not a tag end).
+    const withoutTicker = CODE.replace(/<HomeTicker\b[\s\S]*?\/>/, "");
+    expect(withoutTicker).not.toContain("<HomeTicker");
+    const below = withoutTicker.replace(
       "<BrandPlate ar={ar} play={play} />",
       "<BrandPlate ar={ar} play={play} />\n<HomeTicker />",
     );

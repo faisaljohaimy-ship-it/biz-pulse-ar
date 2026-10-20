@@ -271,3 +271,52 @@
     display: none;
   }
 }
+
+/* Location and operational status remain separate: the coloured edge identifies the
+   region; text and status badges explain the recorded condition. No added JS loop. */
+.nx-ticker {
+  box-shadow: 0 0 18px -9px color-mix(in srgb, var(--tone-cyan) 35%, transparent);
+}
+.nx-ticker-news {
+  border-inline-start: 3px solid var(--nx-feed-region, var(--tone-cyan));
+  padding-inline-start: 10px;
+  color: var(--ink-2);
+}
+.nx-ticker-item[data-tone="warning"] .nx-ticker-news {
+  color: var(--tone-amber);
+}
+.nx-ticker-item[data-tone="danger"] .nx-ticker-news {
+  color: var(--tone-rose);
+}
+.nx-ticker-item[data-tone="success"] .nx-ticker-news {
+  color: var(--tone-emerald);
+}
+.nx-ticker-progress {
+  display: inline-flex;
+  inline-size: 72px;
+  block-size: 5px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--hairline);
+}
+.nx-ticker-progress > span {
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--nx-feed-region, var(--tone-cyan));
+}
+.nx-ticker-retry {
+  flex: none;
+  min-block-size: 44px;
+  max-inline-size: 180px;
+  padding-inline: 10px;
+  border-inline-start: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .nx-ticker-retry {
+    max-inline-size: 110px;
+  }
+}

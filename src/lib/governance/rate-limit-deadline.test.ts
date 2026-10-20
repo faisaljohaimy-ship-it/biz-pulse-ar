@@ -88,3 +88,13 @@ describe("enforceRateLimit — المهلة", () => {
     });
   });
 });
+
+it("synchronous client initialization errors fail closed instead of crashing health", async () => {
+  rpc.impl = () => {
+    throw new Error("Missing server configuration");
+  };
+  await expect(enforceRateLimit("configuration", 10, 60)).resolves.toEqual({
+    allowed: false,
+    unavailable: true,
+  });
+});

@@ -1,3 +1,4 @@
+import { useHomeOperationalFeed } from "./use-home-operational-feed";
 /**
  * صفّ الهوية — شريط «مزايا سَدِيد» المتحرك، وتحته لوحة المالك بعرض العمود كاملًا، فوقها
  * فيلمٌ سينمائي، والاسم والسطر نصًّا حقيقيًّا فوقهما.
@@ -451,6 +452,7 @@ function BrandPlate({ ar, play }: { ar: boolean; play: boolean }) {
 }
 
 export function HomeBrandRow() {
+  const operational = useHomeOperationalFeed();
   const { locale } = useI18n();
   const ar = locale === "ar";
   const allowed = useFilmAllowed();
@@ -471,7 +473,15 @@ export function HomeBrandRow() {
       data-paused={paused || undefined}
       data-offscreen={offscreen || undefined}
     >
-      <HomeTicker paused={paused} offscreen={offscreen} ready={known} onPausedChange={setPaused} />
+      <HomeTicker
+        paused={paused}
+        offscreen={offscreen}
+        ready={known}
+        onPausedChange={setPaused}
+        lines={operational.lines}
+        failed={operational.isError}
+        onRetry={() => operational.refetch()}
+      />
       <BrandPlate ar={ar} play={play} />
     </section>
   );

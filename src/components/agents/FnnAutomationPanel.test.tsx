@@ -1,3 +1,4 @@
+vi.mock("@/lib/dual-agent/use-fnn-owner", () => ({ useFnnOwner: () => ({ allowed: true }) }));
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { AgentOpsRecord } from "@/lib/exec.functions";

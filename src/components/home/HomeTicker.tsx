@@ -42,6 +42,8 @@ import { Pause, Play } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { TICKER_LINES, TICKER_PX_PER_S } from "@/components/home/home-ticker-content";
 import "@/styles/home/home-ticker.css";
+import type { OperationalTickerLine } from "./operational-feed";
+import { REGION_ACCENT_HEX } from "@/lib/regions";
 
 export type TickerLoop = {
   /** مدّة الدورة بالثواني — عرض نسخةٍ واحدة ÷ السرعة. */
@@ -75,9 +77,15 @@ export function HomeTicker({
   offscreen,
   ready,
   onPausedChange,
+  lines,
+  failed,
+  onRetry,
 }: {
   /** إيقاف المستخدم — التفضيل المحفوظ المشترك مع حلقة الماء. */
   readonly paused: boolean;
+  readonly lines?: readonly OperationalTickerLine[];
+  readonly failed?: boolean;
+  readonly onRetry?: () => void;
   /** الصفّ خارج الإطار. */
   readonly offscreen: boolean;
   /** قُرئ التفضيل المحفوظ — قبله لا حركة. */
@@ -108,15 +116,28 @@ export function HomeTicker({
     observer.observe(copy);
     observer.observe(view);
     return () => observer.disconnect();
-  }, [ar]);
+  }, [ar, lines]);
 
   const label = ar ? "مزايا سَدِيد" : "SADEED highlights";
   const pauseLabel = ar ? "إيقاف الحركة" : "Pause motion";
   const copies = loop?.copies ?? 2;
   const items = () =>
-    TICKER_LINES.map((line) => (
-      <li key={line.id} className="nx-ticker-item">
-        {ar ? line.ar : line.en}
+    (lines ?? TICKER_LINES).map((line) => (
+      <li
+        key={line.id}
+        className="nx-ticker-item"
+        data-tone={"tone" in line ? line.tone : undefined}
+        style={{
+          ["--nx-feed-region" as string]:
+            "regionId" in line && line.regionId ? REGION_ACCENT_HEX[line.regionId] : undefined,
+        }}
+      >
+        <span className="nx-ticker-news">{ar ? line.ar : line.en}</span>
+        {"progress" in line && typeof line.progress === "number" && (
+          <span className="nx-ticker-progress" aria-hidden="true">
+            <span style={{ inlineSize: `${line.progress}%` }} />
+          </span>
+        )}
       </li>
     ));
 
@@ -149,6 +170,11 @@ export function HomeTicker({
           </div>
         </div>
       </div>
+      {failed && onRetry && (
+        <button type="button" className="nx-ticker-retry nx-focus-ring" onClick={onRetry}>
+          {ar ? "تعذرت الأخبار · أعد المحاولة" : "Updates unavailable · Retry"}
+        </button>
+      )}
       {/* إيقاف الحركة (WCAG 2.2.2) — الشريط وحلقة الماء وتوهّج الإطار معًا. في طرف
           الشريط خارج اللوحة، ويُخفيه الـCSS حيث لا حركة أصلًا (لا قفزة تخطيط). */}
       <button

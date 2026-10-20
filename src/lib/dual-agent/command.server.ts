@@ -5,6 +5,8 @@ import { executeTool } from "@/lib/exec/tool-orchestrator.server";
 import { audit } from "@/lib/exec/audit.server";
 import { FNN_TOOL_IDS, type DualAgentOverview, type FnnTaskResult } from "./types";
 
+import { requireFnnOwner } from "./owner.server";
+
 const READ_TIMEOUT_MS = 3_500;
 export const OrgInput = z.object({ orgId: z.string().uuid().optional() }).strict();
 export const FnnTaskInput = OrgInput.extend({
@@ -46,6 +48,7 @@ export async function readCommandOverview(
   context: CommandContext,
   input: z.infer<typeof OrgInput>,
 ): Promise<DualAgentOverview> {
+  await requireFnnOwner(context);
   const orgId = await resolveCommandOrg(context, input.orgId);
   const signal = AbortSignal.timeout(READ_TIMEOUT_MS);
   const [registry, history] = await Promise.all([
@@ -109,6 +112,7 @@ export async function dispatchFnnTask(
   context: CommandContext,
   untrusted: unknown,
 ): Promise<FnnTaskResult> {
+  await requireFnnOwner(context);
   const data = FnnTaskInput.parse(untrusted);
   const orgId = await resolveCommandOrg(context, data.orgId);
   const taskId = crypto.randomUUID();

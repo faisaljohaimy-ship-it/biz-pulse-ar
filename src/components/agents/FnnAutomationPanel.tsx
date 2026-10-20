@@ -1,3 +1,4 @@
+import { useFnnOwner } from "@/lib/dual-agent/use-fnn-owner";
 import { useId, useState } from "react";
 import { Bot, Download, Workflow } from "lucide-react";
 import type { AgentOpsRecord } from "@/lib/exec.functions";
@@ -8,6 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 
 /** Reuses the caller's existing operations read. Never invokes the paid agent runtime. */
 export function FnnAutomationPanel({ agents }: { agents: AgentOpsRecord[] }) {
+  const { allowed } = useFnnOwner();
+  if (!allowed) return null;
+  return <FnnAutomationContent agents={agents} />;
+}
+
+function FnnAutomationContent({ agents }: { agents: AgentOpsRecord[] }) {
   const inputId = useId();
   const [question, setQuestion] = useState("");
   const [plan, setPlan] = useState<FnnPlan | null>(null);
