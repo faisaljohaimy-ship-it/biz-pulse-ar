@@ -2,106 +2,108 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
+import tailwindcss from "@tailwindcss/vite";
+import { nitro } from "nitro/vite";
 
 export default defineConfig({
-  plugins: [tanstackStart(), react(), tsconfigPaths()],
-  // Nitro deploy target. The wrapper defaults to Cloudflare and, inside the
-  // Lovable sandbox, force-pins `cloudflare-module` regardless of what we set
-  // here — so this only takes effect on real (non-sandbox) builds. On Vercel
-  // (VERCEL=1 is injected into the build env) we switch nitro to its `vercel`
-  // preset so it emits Build Output API v3 (`.vercel/output`) and the SSR +
-  // /api routes actually run as serverless functions. Without this the pages
-  // render blank and the chatbot returns "could not complete". The GitHub
-  // Actions → Cloudflare path (no VERCEL env) keeps the Cloudflare default,
-  // so no existing deploy target is disturbed.
-  ...(process.env.VERCEL ? { nitro: { preset: "vercel" } } : {}),
+  plugins: [
+    tailwindcss(),
+    tanstackStart(),
+    nitro({
+      // A real adapter is required: a top-level preset without the plugin
+      // produces no deployment functions. NITRO_PRESET allows local Node preview.
+      preset: process.env.NITRO_PRESET || (process.env.VERCEL ? "vercel" : "cloudflare-module"),
+    }),
+    react(),
+    tsconfigPaths(),
+  ],
 
-    // Publishable (public) Supabase config baked in as a LAST-RESORT fallback.
-    // The published build was shipping without VITE_SUPABASE_* injected, so the
-    // browser client fell back to the "unconfigured" host and every auth/data
-    // call failed. Platform-provided env still wins; these literals only fill
-    // the gap. Both values are public/publishable — no secret is exposed.
-    define: {
-      "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
-        process.env.VITE_SUPABASE_URL ||
-          process.env.SUPABASE_URL ||
-          "https://jhutlofapjfjjeajawie.supabase.co",
-      ),
-      "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(
-        process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-          process.env.SUPABASE_PUBLISHABLE_KEY ||
-          "sb_publishable_8MvukD2H6Xyl76FVdytTTA_0v1UL5Yo",
-      ),
-      "import.meta.env.VITE_SUPABASE_PROJECT_ID": JSON.stringify(
-        process.env.VITE_SUPABASE_PROJECT_ID ||
-          process.env.SUPABASE_PROJECT_ID ||
-          "jhutlofapjfjjeajawie",
-      ),
-    },
+  // Publishable (public) Supabase config baked in as a LAST-RESORT fallback.
+  // The published build was shipping without VITE_SUPABASE_* injected, so the
+  // browser client fell back to the "unconfigured" host and every auth/data
+  // call failed. Platform-provided env still wins; these literals only fill
+  // the gap. Both values are public/publishable — no secret is exposed.
+  define: {
+    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
+      process.env.VITE_SUPABASE_URL ||
+        process.env.SUPABASE_URL ||
+        "https://jhutlofapjfjjeajawie.supabase.co",
+    ),
+    "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+        process.env.SUPABASE_PUBLISHABLE_KEY ||
+        "sb_publishable_8MvukD2H6Xyl76FVdytTTA_0v1UL5Yo",
+    ),
+    "import.meta.env.VITE_SUPABASE_PROJECT_ID": JSON.stringify(
+      process.env.VITE_SUPABASE_PROJECT_ID ||
+        process.env.SUPABASE_PROJECT_ID ||
+        "jhutlofapjfjjeajawie",
+    ),
+  },
 
-    // Keep the heavy CLIENT-ONLY markdown/highlighter stack OUT of the SSR
-    // (serverless) bundle. `MessageResponseImpl` is "use client" + lazy, so the
-    // server never executes shiki/mermaid — but bundling & minifying shiki's
-    // ~7 MB of language grammars (with oniguruma wasm inlined) into the server
-    // was the peak build-memory consumer that OOM-killed the Vercel build.
-    // Externalizing them cuts memory in BOTH the SSR render and the nitro
-    // packaging stages, without bloating the function (loaded from node_modules
-    // at runtime — though the server never actually calls them).
-    ssr: {
-      external: [
-        "shiki",
-        "@shikijs/langs",
-        "@shikijs/themes",
-        "@shikijs/core",
-        "@shikijs/engine-javascript",
-        "@shikijs/engine-oniguruma",
-        "mermaid",
-        "@mermaid-js/parser",
-        "streamdown",
-        "@streamdown/code",
-        "@streamdown/mermaid",
-        "@streamdown/math",
-        "@streamdown/cjk",
-        // Browser-only heavy libraries (WebGL / WebRTC / canvas / DOM-map /
-        // PDF-viewer). They are ONLY reached from click handlers or lazy,
-        // client-rendered scenes — the server never executes them — so keeping
-        // them out of the SSR rollup render + minify (and the nitro packaging)
-        // removes the remaining peak-memory that OOM-killed the Vercel build.
-        // The Three.js chunk is additionally dead-code-eliminated at its lazy
-        // import sites via `import.meta.env.SSR`; listing it here is defensive.
-        "three",
-        "@react-three/fiber",
-        "@react-three/drei",
-        "postprocessing",
-        "pdfjs-dist",
-        "livekit-client",
-        "leaflet",
-        "react-leaflet",
-        "html2canvas",
-        "canvg",
-      ],
-    },
-    build: {
-      // Source maps for 8000+ modules are a major build-memory consumer and
-      // are not needed in production — disabling them is the biggest single
-      // reduction in peak RSS (fixes Vercel Hobby OOM / SIGKILL).
-      sourcemap: false,
-      rollupOptions: {
-        output: {
-          // Only split framer-motion (broadly shared, genuinely eager) into its
-          // own vendor chunk. Do NOT force-group three/charts/markdown: those
-          // are reached ONLY via lazy boundaries (r3f scenes, lazy dashboards,
-          // the lazy MessageResponse), so letting Rollup split them naturally
-          // keeps them in async chunks. Force-grouping them into named vendor
-          // chunks was pulling shared transitive deps (micromark/hast, also used
-          // eagerly by react-markdown) into a 12.8 MB "markdown-vendor" chunk
-          // that the shared/core bundle then imported EAGERLY on every page.
-          manualChunks(id: string) {
-            if (!id.includes("node_modules")) return;
-            if (/[\\/]framer-motion[\\/]/.test(id)) return "motion-vendor";
-            return undefined;
-          },
+  // Keep the heavy CLIENT-ONLY markdown/highlighter stack OUT of the SSR
+  // (serverless) bundle. `MessageResponseImpl` is "use client" + lazy, so the
+  // server never executes shiki/mermaid — but bundling & minifying shiki's
+  // ~7 MB of language grammars (with oniguruma wasm inlined) into the server
+  // was the peak build-memory consumer that OOM-killed the Vercel build.
+  // Externalizing them cuts memory in BOTH the SSR render and the nitro
+  // packaging stages, without bloating the function (loaded from node_modules
+  // at runtime — though the server never actually calls them).
+  ssr: {
+    external: [
+      "shiki",
+      "@shikijs/langs",
+      "@shikijs/themes",
+      "@shikijs/core",
+      "@shikijs/engine-javascript",
+      "@shikijs/engine-oniguruma",
+      "mermaid",
+      "@mermaid-js/parser",
+      "streamdown",
+      "@streamdown/code",
+      "@streamdown/mermaid",
+      "@streamdown/math",
+      "@streamdown/cjk",
+      // Browser-only heavy libraries (WebGL / WebRTC / canvas / DOM-map /
+      // PDF-viewer). They are ONLY reached from click handlers or lazy,
+      // client-rendered scenes — the server never executes them — so keeping
+      // them out of the SSR rollup render + minify (and the nitro packaging)
+      // removes the remaining peak-memory that OOM-killed the Vercel build.
+      // The Three.js chunk is additionally dead-code-eliminated at its lazy
+      // import sites via `import.meta.env.SSR`; listing it here is defensive.
+      "three",
+      "@react-three/fiber",
+      "@react-three/drei",
+      "postprocessing",
+      "pdfjs-dist",
+      "livekit-client",
+      "leaflet",
+      "react-leaflet",
+      "html2canvas",
+      "canvg",
+    ],
+  },
+  build: {
+    // Source maps for 8000+ modules are a major build-memory consumer and
+    // are not needed in production — disabling them is the biggest single
+    // reduction in peak RSS (fixes Vercel Hobby OOM / SIGKILL).
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        // Only split framer-motion (broadly shared, genuinely eager) into its
+        // own vendor chunk. Do NOT force-group three/charts/markdown: those
+        // are reached ONLY via lazy boundaries (r3f scenes, lazy dashboards,
+        // the lazy MessageResponse), so letting Rollup split them naturally
+        // keeps them in async chunks. Force-grouping them into named vendor
+        // chunks was pulling shared transitive deps (micromark/hast, also used
+        // eagerly by react-markdown) into a 12.8 MB "markdown-vendor" chunk
+        // that the shared/core bundle then imported EAGERLY on every page.
+        manualChunks(id: string) {
+          if (!id.includes("node_modules")) return;
+          if (/[\\/]framer-motion[\\/]/.test(id)) return "motion-vendor";
+          return undefined;
         },
       },
     },
+  },
 });

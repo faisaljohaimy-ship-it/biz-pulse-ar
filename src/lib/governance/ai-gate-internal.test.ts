@@ -177,4 +177,3 @@ describe("النسخ الصوتي `transcribeWithGemini` والشرح `explainRe
     expect(model.calls).toBe(0);
   });
 });
-

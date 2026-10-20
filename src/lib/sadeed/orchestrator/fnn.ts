@@ -8,6 +8,8 @@
  */
 import type { AgentRunContext, ExecutiveAgent } from "./agent.interface";
 import type { AgentContract, AgentResult } from "./types";
+import { prepareFnnPlan } from "./fnn-plan";
+import { listAgentContracts } from "./registry";
 
 export const FNN_LINKED_SCOPES = [
   "agents:*",
@@ -55,29 +57,36 @@ const FNN_CONTRACT: AgentContract = {
   linked_agent_ids: FNN_LINKED_AGENTS,
 };
 
-function workflowFor(question: string): string {
-  const q = question.toLowerCase();
-  if (/incident|بلاغ|حادث|طوارئ|emergency/.test(q)) return "incident_triage";
-  if (/maintenance|صيانة|work\s*order|أمر عمل/.test(q)) return "maintenance_follow_up";
-  if (/report|تقرير|ملخص|summary/.test(q)) return "security_report";
-  if (/assign|كلّف|اسند|مهمة|task/.test(q)) return "approved_task_assignment";
-  return "industrial_security_request";
-}
-
 export const fnnAgent: ExecutiveAgent = {
   contract: FNN_CONTRACT,
   async run(ctx: AgentRunContext): Promise<AgentResult> {
     const started = Date.now();
-    const workflow = workflowFor(ctx.request.question);
+    const plan = prepareFnnPlan(
+      ctx.request.question,
+      listAgentContracts().map((agent) => ({ id: agent.id, name: agent.name_ar })),
+      ctx.signal,
+    );
+    const workflow = plan.workflow;
     const finished = new Date().toISOString();
     const linkedScopes = [...FNN_LINKED_SCOPES];
     return {
       agent_id: "fnn",
-      ok: true,
-      status: "completed",
+      ok: plan.status === "prepared",
+      status:
+        plan.status === "cancelled"
+          ? "cancelled"
+          : plan.status === "prepared"
+            ? "completed"
+            : "skipped",
       contribution: {
-        text_ar: `فنن جهّز مسار أتمتة مجانيًا: ${workflow}. التنفيذ الخارجي متوقف حتى اعتماد سَدِيد وصاحب الصلاحية.`,
-        text_en: `FNN prepared the free automation workflow: ${workflow}. External execution remains approval-gated.`,
+        text_ar:
+          plan.status === "prepared"
+            ? `FNN جهّز خطة بلا استدعاء نموذج: ${plan.title}. التنفيذ الخارجي ينتظر اعتماد صاحب الصلاحية.`
+            : plan.title,
+        text_en:
+          plan.status === "prepared"
+            ? `FNN prepared the no-model workflow: ${workflow}. External execution remains approval-gated.`
+            : `FNN: ${plan.status}.`,
         evidence: ["fnn:deterministic-no-model", `fnn:workflow:${workflow}`],
         sources: ["fnn:local-automation-policy"],
         automation: {
@@ -85,6 +94,8 @@ export const fnnAgent: ExecutiveAgent = {
           trigger: "manual",
           side_effects: "approval_required",
           linked_scopes: linkedScopes,
+          steps: plan.steps,
+          linked_agent_ids: plan.peers.map((peer) => peer.id),
         },
       },
       started_at: new Date(started).toISOString(),

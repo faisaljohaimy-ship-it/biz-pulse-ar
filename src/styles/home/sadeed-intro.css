@@ -1,0 +1,40 @@
+.sadeed-intro {
+  margin-block-end: 1.5rem;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  color: var(--ink);
+}
+.sadeed-intro video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1608 / 904;
+  object-fit: contain;
+}
+.sadeed-intro-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+.sadeed-intro-caption {
+  margin: 0;
+  padding: 1rem 1rem 0;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+.sadeed-intro-controls button {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--hairline);
+  border-radius: 0.75rem;
+  background: var(--chip);
+  color: var(--ink);
+}
+.sadeed-intro-controls button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}

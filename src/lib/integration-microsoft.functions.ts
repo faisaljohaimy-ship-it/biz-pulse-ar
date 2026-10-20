@@ -131,15 +131,18 @@ export const testMicrosoftConnection = createServerFn({ method: "POST" })
     let result: ConnectionTestResult;
     try {
       const { httpFetch } = await import("@/lib/api/http.server");
-      const r = await httpFetch(`${process.env.MICROSOFT_CONNECTOR_BASE_URL}/microsoft_outlook/me`, {
-        headers: {
-          Authorization: `Bearer ${connectorKey}`,
-          "X-Connection-Api-Key": outlookKey,
+      const r = await httpFetch(
+        `${process.env.MICROSOFT_CONNECTOR_BASE_URL}/microsoft_outlook/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${connectorKey}`,
+            "X-Connection-Api-Key": outlookKey,
+          },
+          label: "microsoft connection test",
+          retries: 1,
+          timeoutMs: 12_000,
         },
-        label: "microsoft connection test",
-        retries: 1,
-        timeoutMs: 12_000,
-      });
+      );
       const text = await r.text();
       let body: {
         displayName?: string;

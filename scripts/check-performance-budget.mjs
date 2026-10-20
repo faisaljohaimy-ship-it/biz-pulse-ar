@@ -7,6 +7,7 @@ import { extname, join, relative } from "node:path";
 const CANDIDATES = [
   join(process.cwd(), "dist", "client"),
   join(process.cwd(), ".output", "public"),
+  join(process.cwd(), ".vercel", "output", "static"),
 ];
 const ROOT = CANDIDATES.find((candidate) => existsSync(candidate)) ?? CANDIDATES[0];
 const MiB = 1024 * 1024;

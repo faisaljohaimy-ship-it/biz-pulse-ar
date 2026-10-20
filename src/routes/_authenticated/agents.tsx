@@ -66,6 +66,7 @@ import { toast } from "sonner";
 import { speakRuntimeAgent } from "@/lib/digital-humans/speak-agent";
 import { stopActiveSadeedVoice } from "@/lib/digital-humans/sadeed-voice";
 import { userFacingError } from "@/lib/errors/user-facing-error";
+import { FnnAutomationPanel } from "@/components/agents/FnnAutomationPanel";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsOps,
@@ -503,6 +504,8 @@ function AgentsOps() {
           </div>
         }
       />
+
+      <FnnAutomationPanel agents={agents} />
 
       <PageBriefing
         routeKey="agents"

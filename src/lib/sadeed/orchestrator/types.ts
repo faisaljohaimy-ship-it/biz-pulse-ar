@@ -102,6 +102,9 @@ export interface AgentResult {
       trigger: "manual" | "scheduled" | "event";
       side_effects: "none" | "approval_required";
       linked_scopes: string[];
+      /** Planning only; these steps have not been executed. */
+      steps?: string[];
+      linked_agent_ids?: string[];
     };
     /** Optional full brain answer (from the Chief Agent). */
     answer?: ExecutiveBrainAnswer;

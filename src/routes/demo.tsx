@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 
 import { useI18n } from "@/lib/i18n";
-import { ExecutivePresentationPlayer } from "@/components/demo/ExecutivePresentationPlayer";
+import { SadeedIntroFilm } from "@/components/home/SadeedIntroFilm";
 
 import {
   CalendarCheck,
@@ -108,7 +108,7 @@ function DemoCenter() {
 
         {/* Guided executive presentation — SADEED narrates, previews follow. */}
         <div className="mt-10">
-          <ExecutivePresentationPlayer />
+          <SadeedIntroFilm />
         </div>
 
         {/* Mode cards */}
