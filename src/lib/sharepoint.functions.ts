@@ -5,18 +5,18 @@ import { httpFetch, httpJson } from "@/lib/api/http.server";
 import { requirePlatformAdmin } from "@/lib/authz.server";
 import { SHAREPOINT_REPORT_FOLDER_SEGMENT } from "@/lib/sharepoint-report-folder";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
+const GATEWAY_URL = `${process.env.MICROSOFT_CONNECTOR_BASE_URL ?? ""}/microsoft_sharepoint`;
 
 function authHeaders(): Record<string, string> {
-  const lovableKey = process.env.LOVABLE_API_KEY;
+  const connectorKey = process.env.MICROSOFT_CONNECTOR_API_KEY;
   const spKey = process.env.MICROSOFT_SHAREPOINT_API_KEY;
-  if (!lovableKey || !spKey) {
+  if (!connectorKey || !spKey || !process.env.MICROSOFT_CONNECTOR_BASE_URL) {
     throw apiError("forbidden", "SharePoint connector not configured", {
       details: { connector: "microsoft_sharepoint" },
     });
   }
   return {
-    Authorization: `Bearer ${lovableKey}`,
+    Authorization: `Bearer ${connectorKey}`,
     "X-Connection-Api-Key": spKey,
   };
 }
