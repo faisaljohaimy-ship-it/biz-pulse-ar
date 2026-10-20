@@ -22,7 +22,7 @@
 # docs/operations/SADEED_MIGRATION_RUNBOOK.md §1): SUPABASE_URL ·
 # SUPABASE_PUBLISHABLE_KEY · SUPABASE_SERVICE_ROLE_KEY · GEMINI_API_KEY ·
 # ELEVENLABS_API_KEY · CRON_HOOK_SECRET · PUBLIC_SITE_URL · SADEED_* · RESEND_* ·
-# LOVABLE_API_KEY وMICROSOFT_* ما دامت تكاملات Lovable قائمة. لا سرّ في git.
+# OPENAI_API_KEY وMICROSOFT_CONNECTOR_* تُضبط فقط في Vercel/GitHub Secrets. لا سرّ في git.
 #
 # ── ما لا يفعله ──
 # لا يغيّر DNS ولا إعدادات الحماية ولا متغيّرات البيئة؛ لا يمسّ القاعدة؛ غياب
