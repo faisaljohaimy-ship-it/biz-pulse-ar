@@ -9,15 +9,6 @@ export function SadeedIntroFilm() {
   const [playing, setPlaying] = useState(false);
   const [narrated, setNarrated] = useState(false);
   const [audible, setAudible] = useState(false);
-  const [chapter, setChapter] = useState(0);
-  const chapters = [
-    "سديد — منظومة القرار والإنجاز الذكي",
-    "الصورة كاملة: العمليات والبلاغات والصيانة في مساحة واحدة",
-    "كل مهمة لها مسار: التصاريح والمخاطر والتقارير",
-    "اسأل سديد: مساعدك لفهم المعلومات بالعربية",
-    "خطّط مع fnn: الأتمتة تقترح وصاحب الصلاحية يعتمد",
-    "سديد: قرار أدق. إنجاز أسرع.",
-  ];
   const ownsAudio = useRef(false);
 
   function releaseSound() {
@@ -95,9 +86,6 @@ export function SadeedIntroFilm() {
         muted={!audible}
         playsInline
         preload="metadata"
-        onTimeUpdate={(event) =>
-          setChapter(Math.min(5, Math.floor(event.currentTarget.currentTime / 10)))
-        }
         aria-label="فيلم سديد التعريفي — دقيقة واحدة"
         onPlay={() => setPlaying(true)}
         onPause={() => {
@@ -114,7 +102,6 @@ export function SadeedIntroFilm() {
           releaseSound();
         }}
       />
-      <p className="sadeed-intro-caption">{chapters[chapter]}</p>
       <div className="sadeed-intro-controls">
         <span>سديد في دقيقة · 01:00</span>
         {failed ? (

@@ -27,6 +27,7 @@ def run(args):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio", type=Path)
+    parser.add_argument("--with-text", action="store_true", help="Overlay the optional chapter captions")
     args = parser.parse_args()
     if args.audio:
         duration = float(subprocess.check_output([
@@ -65,7 +66,10 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                    str(ROOT / "public/media/brand/sadeed-film-1608.mp4")]
         if args.audio:
             command += ["-i", str(args.audio)]
-        command += ["-vf", f"scale=1608:536,pad=1608:904:0:368:color=0x081420,drawbox=x=0:y=780:w=iw:h=124:color=0x081420@0.85:t=fill,ass={ass}",
+        video_filter = "scale=1608:904:force_original_aspect_ratio=decrease,pad=1608:904:(ow-iw)/2:(oh-ih)/2:color=0x081420,eq=saturation=1.08:contrast=1.03,fade=t=in:st=0:d=1,fade=t=out:st=59:d=1"
+        if args.with_text:
+            video_filter = f"scale=1608:536,pad=1608:904:0:368:color=0x081420,drawbox=x=0:y=780:w=iw:h=124:color=0x081420@0.85:t=fill,ass={ass}"
+        command += ["-vf", video_filter,
                     "-t", "60", "-r", "30", "-c:v", "libx264", "-preset", "fast", "-crf", "24", "-threads", "2", "-pix_fmt", "yuv420p"]
         command += ["-af", "apad", "-c:a", "aac", "-b:a", "128k"] if args.audio else ["-an"]
         command += ["-movflags", "+faststart", str(target)]
@@ -75,6 +79,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         (ROOT / "public/media/sadeed-intro-status.json").write_text(json.dumps({
             "durationSeconds": 60, "hasNarration": bool(args.audio),
             "voice": "canonical-sadeed" if args.audio else None,
+            "visualText": bool(args.with_text),
         }) + "\n")
 
 
