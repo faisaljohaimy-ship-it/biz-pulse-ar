@@ -5,8 +5,9 @@ import { isApiError } from "@/lib/api";
 import { hasPlatformRole } from "@/lib/authz.server";
 import { SHAREPOINT_REPORT_FOLDER_SEGMENT } from "@/lib/sharepoint-report-folder";
 
-const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
-const TEAMS_GW = "https://connector-gateway.lovable.dev/microsoft_teams";
+const CONNECTOR_BASE = process.env.MICROSOFT_CONNECTOR_BASE_URL ?? "";
+const SP_GW = `${CONNECTOR_BASE}/microsoft_sharepoint`;
+const TEAMS_GW = `${CONNECTOR_BASE}/microsoft_teams`;
 
 // ─── Structured error envelope ────────────────────────────────────────────
 // We serialize a JSON envelope into Error.message so the client can parse it
@@ -56,7 +57,7 @@ async function failFromResponse(stage: PublishStage, res: Response): Promise<nev
     /* keep raw as text */
   }
 
-  if (status === 401 || code === "unauthorized" || code === "lovable_api_key_not_registered") {
+  if (status === 401 || code === "unauthorized" || code === "connector_key_not_registered") {
     fail({
       stage,
       status,
@@ -175,7 +176,7 @@ async function failFromResponse(stage: PublishStage, res: Response): Promise<nev
 }
 
 function spHeaders() {
-  const k = process.env.LOVABLE_API_KEY;
+  const k = process.env.MICROSOFT_CONNECTOR_API_KEY;
   const sp = process.env.MICROSOFT_SHAREPOINT_API_KEY;
   if (!k || !sp) {
     fail({
@@ -189,7 +190,7 @@ function spHeaders() {
   return { Authorization: `Bearer ${k}`, "X-Connection-Api-Key": sp };
 }
 function teamsHeaders() {
-  const k = process.env.LOVABLE_API_KEY;
+  const k = process.env.MICROSOFT_CONNECTOR_API_KEY;
   const t = process.env.MICROSOFT_TEAMS_API_KEY;
   if (!k || !t) {
     fail({
