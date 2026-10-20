@@ -7,8 +7,8 @@ describe("SADEED mission router", () => {
     const plan = planMission("mission-1", "حلل وضع السلامة والأمن الصناعي عالميًا");
     const selected = plan.nodes.map((node) => node.agent_id);
 
-    expect(selected).toEqual(["executive_brain", ...SADEED_COUNCIL_OF_TEN]);
-    expect(new Set(selected).size).toBe(11);
+    expect(selected).toEqual(["executive_brain", ...SADEED_COUNCIL_OF_TEN, "fnn"]);
+    expect(new Set(selected).size).toBe(12);
     expect(plan.nodes.filter((node) => node.reason.includes("council=true"))).toHaveLength(10);
   });
 
