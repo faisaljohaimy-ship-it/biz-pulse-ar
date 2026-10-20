@@ -10,6 +10,7 @@ import { SADEED_COUNCIL_OF_TEN, assertCouncilOfTen } from "./council";
 import type { AgentId, MissionPlan, MissionPlanNode } from "./types";
 import type { SadeedIntent } from "../executive-reasoning.server";
 import { classifyIntent } from "../executive-reasoning.server";
+import { getFnnContract } from "./fnn";
 
 const CHIEF: AgentId = "executive_brain";
 
@@ -22,7 +23,10 @@ function selectAgents(intent: SadeedIntent, forced?: AgentId[]): AgentId[] {
   // Council of Ten. Intent matching remains diagnostic metadata only; it must
   // never silently remove a council specialist from the mission.
   assertCouncilOfTen();
-  return [CHIEF, ...SADEED_COUNCIL_OF_TEN];
+  // FNN is a free, deterministic companion to the Council. It prepares
+  // bounded automation hand-offs without invoking a model or external side
+  // effect, so every normal mission receives the same automation coverage.
+  return [CHIEF, ...SADEED_COUNCIL_OF_TEN, getFnnContract().id];
 }
 
 /** Kahn's algorithm — returns topological layers (parallel groups). */
