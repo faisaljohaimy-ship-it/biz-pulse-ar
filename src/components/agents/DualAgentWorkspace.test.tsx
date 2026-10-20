@@ -9,8 +9,12 @@ const mocks = vi.hoisted(() => ({
     user: null as null | { id: string; app_metadata: Record<string, string> },
     loading: false,
   },
+  fnnAllowed: true,
   overview: vi.fn(),
   dispatch: vi.fn(),
+}));
+vi.mock("@/lib/dual-agent/use-fnn-owner", () => ({
+  useFnnOwner: () => ({ allowed: mocks.fnnAllowed, access: {} }),
 }));
 vi.mock("@/lib/auth-context", () => ({ useAuth: () => mocks.auth }));
 vi.mock("@/lib/sadeed-core/hooks/useSadeed", () => ({ useSadeed: () => ({ open: vi.fn() }) }));
@@ -50,6 +54,7 @@ function renderPage() {
 }
 
 beforeEach(() => {
+  mocks.fnnAllowed = true;
   mocks.auth = { user: null, loading: false };
   mocks.overview.mockReset();
   mocks.dispatch.mockReset();
@@ -117,4 +122,12 @@ describe("dual-agent command workspace", () => {
     });
     expect(await screen.findByText("task-123")).toBeInTheDocument();
   });
+});
+
+it("non-owner entry points to the real sign-in page without reading FNN data", () => {
+  mocks.fnnAllowed = false;
+  renderPage();
+  expect(screen.getByRole("link", { name: "تسجيل دخول المالك" })).toHaveAttribute("href", "/auth");
+  expect(mocks.overview).not.toHaveBeenCalled();
+  expect(mocks.dispatch).not.toHaveBeenCalled();
 });

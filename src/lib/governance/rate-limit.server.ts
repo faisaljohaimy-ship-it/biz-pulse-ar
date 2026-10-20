@@ -149,16 +149,19 @@ export async function enforceRateLimit(
     return { allowed: false, unavailable: true };
   }
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const call = Promise.resolve(
-    supabaseAdmin.rpc("check_rate_limit", {
-      _bucket_key: bucketKey,
-      _max_requests: maxRequests,
-      _window_seconds: windowSeconds,
-    }),
-  ).catch((thrown: unknown) => ({
-    data: null,
-    error: { message: thrown instanceof Error ? thrown.message : String(thrown) },
-  }));
+  // Defer property access too: a lazy client can throw before returning a promise.
+  const call = Promise.resolve()
+    .then(() =>
+      supabaseAdmin.rpc("check_rate_limit", {
+        _bucket_key: bucketKey,
+        _max_requests: maxRequests,
+        _window_seconds: windowSeconds,
+      }),
+    )
+    .catch((thrown: unknown) => ({
+      data: null,
+      error: { message: thrown instanceof Error ? thrown.message : String(thrown) },
+    }));
   const outcome = await Promise.race([
     call,
     new Promise<typeof DEADLINE>((resolve) => {

@@ -35,6 +35,10 @@ import { SadeedProvider } from "@/lib/sadeed-core";
 // root widget and nothing above the fold needs it at first input. It
 // lazy-loads after the first idle moment post-hydration, so every route
 // becomes interactive immediately after paint. ONE SADEED law unchanged.
+const FnnOwnerChat = lazy(() =>
+  import("@/components/agents/FnnOwnerChat").then((m) => ({ default: m.FnnOwnerChat })),
+);
+
 const SadeedCopilot = lazy(() =>
   import("@/components/sadeed-core/SadeedCopilot").then((m) => ({ default: m.SadeedCopilot })),
 );
@@ -558,6 +562,7 @@ function RootComponent() {
                   {!isAccessGate && copilotReady && (
                     <Suspense fallback={null}>
                       <SadeedCopilot />
+                      <FnnOwnerChat />
                     </Suspense>
                   )}
                   <InstallAppBar />

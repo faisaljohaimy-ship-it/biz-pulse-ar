@@ -2,9 +2,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CommandContext } from "./command.server";
 
+vi.mock("./owner.server", () => ({ requireFnnOwner: vi.fn(async () => undefined) }));
+
 const execute = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/exec/tool-orchestrator.server", () => ({ executeTool: execute }));
 vi.mock("@/lib/exec/audit.server", () => ({ audit: vi.fn(async () => undefined) }));
+import { requireFnnOwner } from "./owner.server";
 import { dispatchFnnTask, readCommandOverview, resolveCommandOrg } from "./command.server";
 
 const ORG = "11111111-1111-4111-8111-111111111111";
@@ -153,5 +156,22 @@ describe("SADEED → FNN authenticated handoff", () => {
       }),
     ).rejects.toThrow();
     expect(execute).not.toHaveBeenCalled();
+  });
+});
+
+describe("owner gate precedes all FNN data access", () => {
+  it("rejects direct non-owner reads and executions before any DB operation", async () => {
+    const f = fixture();
+    vi.mocked(requireFnnOwner).mockRejectedValue(new Error("مالك النظام فقط"));
+    try {
+      await expect(readCommandOverview(f.context, {})).rejects.toThrow(/مالك النظام/);
+      await expect(
+        dispatchFnnTask(f.context, { toolId: "sql.read", objective: "read", input: {} }),
+      ).rejects.toThrow(/مالك النظام/);
+      expect(f.calls).toHaveLength(0);
+      expect(execute).not.toHaveBeenCalled();
+    } finally {
+      vi.mocked(requireFnnOwner).mockResolvedValue(undefined);
+    }
   });
 });

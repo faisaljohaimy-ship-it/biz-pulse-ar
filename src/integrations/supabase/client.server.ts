@@ -8,7 +8,10 @@ import type { Database } from "./types";
 function createSupabaseAdminClient() {
   const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   // Service-role is a real secret — it has no VITE_/publishable fallback.
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Existing Vercel secret was provisioned with this misspelling and cannot be renamed.
+  // Server-only compatibility; the canonical name always wins. Never use a VITE_ key.
+  const SUPABASE_SERVICE_ROLE_KEY =
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVCE_ROLE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     const missing = [

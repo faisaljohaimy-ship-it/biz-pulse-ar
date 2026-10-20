@@ -1,3 +1,4 @@
+import { useFnnOwner } from "@/lib/dual-agent/use-fnn-owner";
 import { useId, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -69,6 +70,30 @@ async function bounded<T>(work: Promise<T>, timeoutMs = 4000): Promise<T> {
 }
 
 function OrchestrationPage() {
+  const { allowed, access } = useFnnOwner();
+  if (!allowed)
+    return (
+      <Card dir="rtl" className="m-4 space-y-3 p-6">
+        <h1 className="text-lg font-semibold">FNN · مساحة مالك النظام</h1>
+        <p className="text-sm text-muted-foreground">
+          {access.isFetching
+            ? "جارٍ التحقق من صلاحية الدخول…"
+            : "هذه المساحة مخصصة لحساب مالك النظام. سجّل الدخول بحساب المالك للمتابعة."}
+        </p>
+        <Button asChild className="min-h-11">
+          <a href="/auth">تسجيل دخول المالك</a>
+        </Button>
+        {access.isError && (
+          <Button variant="outline" className="min-h-11" onClick={() => void access.refetch()}>
+            إعادة التحقق
+          </Button>
+        )}
+      </Card>
+    );
+  return <OwnerOrchestrationPage />;
+}
+
+function OwnerOrchestrationPage() {
   const { user, loading } = useAuth();
   const { open } = useSadeed();
   const currentOrg =
