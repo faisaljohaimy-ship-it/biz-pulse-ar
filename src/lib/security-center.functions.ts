@@ -228,7 +228,7 @@ export const getSecretInventory = createServerFn({ method: "GET" })
     const known: Array<{ name: string; category: string }> = [
       { name: "GEMINI_API_KEY", category: "Google Gemini" },
       { name: "GOOGLE_GENERATIVE_AI_API_KEY", category: "Google Gemini" },
-      { name: "LOVABLE_API_KEY", category: "Managed Connectors" },
+      { name: "MICROSOFT_CONNECTOR_API_KEY", category: "Managed Connectors" },
       { name: "MICROSOFT_OUTLOOK_API_KEY", category: "Microsoft" },
       { name: "MICROSOFT_ONEDRIVE_API_KEY", category: "Microsoft" },
       { name: "MICROSOFT_SHAREPOINT_API_KEY", category: "Microsoft" },
