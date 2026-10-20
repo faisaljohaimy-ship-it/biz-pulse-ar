@@ -11,8 +11,9 @@ import { isApiError } from "@/lib/api";
 import { hasPlatformRole } from "@/lib/authz.server";
 import type { PublishErrorEnvelope, PublishStage } from "./exec-reports.functions";
 
-const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
-const OUT_GW = "https://connector-gateway.lovable.dev/microsoft_outlook";
+const CONNECTOR_BASE = process.env.MICROSOFT_CONNECTOR_BASE_URL ?? "";
+const SP_GW = `${CONNECTOR_BASE}/microsoft_sharepoint`;
+const OUT_GW = `${CONNECTOR_BASE}/microsoft_outlook`;
 
 function fail(env: Omit<PublishErrorEnvelope, "__publishError" | "requestId">): never {
   const payload: PublishErrorEnvelope = {
@@ -47,7 +48,7 @@ async function failFromResponse(stage: PublishStage, res: Response): Promise<nev
 }
 
 function spHeaders() {
-  const k = process.env.LOVABLE_API_KEY,
+  const k = process.env.MICROSOFT_CONNECTOR_API_KEY,
     sp = process.env.MICROSOFT_SHAREPOINT_API_KEY;
   if (!k || !sp)
     fail({
@@ -61,7 +62,7 @@ function spHeaders() {
 }
 
 function outlookHeaders() {
-  const k = process.env.LOVABLE_API_KEY,
+  const k = process.env.MICROSOFT_CONNECTOR_API_KEY,
     o = process.env.MICROSOFT_OUTLOOK_API_KEY;
   if (!k || !o)
     fail({
