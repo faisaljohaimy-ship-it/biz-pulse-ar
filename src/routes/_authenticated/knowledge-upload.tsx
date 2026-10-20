@@ -27,11 +27,9 @@ import { listSadeedDocuments, deleteSadeedDocument } from "@/lib/sadeed/document
 import {
   INGEST_EXPIRED_MESSAGE,
   INGEST_MISSING_MESSAGE,
-  KNOWLEDGE_MAX_TEXT_CHARS,
   ingestPollVerdict,
   knowledgeErrorForDisplay,
   knowledgeLimitHint,
-  knowledgeTooLargeMessage,
 } from "@/lib/sadeed/knowledge-ingest-core";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -53,46 +51,12 @@ export const Route = createFileRoute("/_authenticated/knowledge-upload")({
   }),
 });
 
+import { previewImport, IMPORT_ACCEPT, type ImportPreview } from "@/lib/ingestion/preview";
+
 const BUCKET = "aria-documents";
 
-type Phase = "idle" | "extracting" | "uploading" | "enqueuing" | "ingesting" | "done" | "error";
-
-async function extractText(file: File): Promise<{ text: string; pages: number }> {
-  const name = file.name.toLowerCase();
-  if (file.type.startsWith("text/") || /\.(txt|md|csv|json|log|xml|html)$/.test(name)) {
-    return { text: await file.text(), pages: 0 };
-  }
-  if (file.type === "application/pdf" || name.endsWith(".pdf")) {
-    const pdfjs = await import("pdfjs-dist");
-    const workerMod = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
-    pdfjs.GlobalWorkerOptions.workerSrc = (workerMod as { default: string }).default;
-    const buf = await file.arrayBuffer();
-    const doc = await pdfjs.getDocument({ data: buf }).promise;
-    let out = "";
-    for (let p = 1; p <= doc.numPages; p++) {
-      const page = await doc.getPage(p);
-      const content = await page.getTextContent();
-      out +=
-        content.items
-          .map((i: unknown) => {
-            const it = i as { str?: string };
-            return typeof it.str === "string" ? it.str : "";
-          })
-          .join(" ") + "\n\n";
-    }
-    return { text: out, pages: doc.numPages };
-  }
-  if (
-    name.endsWith(".docx") ||
-    file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-  ) {
-    const mammoth = await import("mammoth");
-    const buf = await file.arrayBuffer();
-    const res = await mammoth.extractRawText({ arrayBuffer: buf });
-    return { text: res.value, pages: 0 };
-  }
-  throw new Error("Unsupported file type. Upload PDF, DOCX, or plain text. / نوع غير مدعوم.");
-}
+type Phase =
+  "idle" | "preview" | "extracting" | "uploading" | "enqueuing" | "ingesting" | "done" | "error";
 
 type ActiveJob = {
   fileName: string;
@@ -108,6 +72,9 @@ type ActiveJob = {
 function KnowledgeUploadCenter() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
+  const pendingRef = useRef<{ file: File; preview: ImportPreview } | null>(null);
+  const [preview, setPreview] = useState<ImportPreview | null>(null);
+  const busyRef = useRef(false);
   const [dragOver, setDragOver] = useState(false);
   const [job, setJob] = useState<ActiveJob | null>(null);
   // Bumped by a timer so the ingesting-phase ceiling is re-checked even when
@@ -143,20 +110,34 @@ function KnowledgeUploadCenter() {
   });
 
   const handleFile = async (file: File) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    pendingRef.current = null;
+    setPreview(null);
     setJob({ fileName: file.name, phase: "extracting" });
     try {
-      const { text, pages } = await extractText(file);
-      if (!text.trim()) throw new Error("No extractable text. / لا يمكن استخراج النص.");
-      // Same limit the server enforces — say so before uploading anything.
-      if (text.length > KNOWLEDGE_MAX_TEXT_CHARS) {
-        setJob({
-          fileName: file.name,
-          phase: "error",
-          error: knowledgeTooLargeMessage(text.length),
-        });
-        return;
-      }
+      const result = await previewImport(file);
+      pendingRef.current = { file, preview: result };
+      setPreview(result);
+      setJob({ fileName: file.name, phase: "preview" });
+    } catch (error) {
+      setJob({ fileName: file.name, phase: "error", error: userFacingError(error) });
+    } finally {
+      busyRef.current = false;
+    }
+  };
 
+  const confirmImport = async () => {
+    const pending = pendingRef.current;
+    if (!pending || busyRef.current) return;
+    busyRef.current = true;
+    pendingRef.current = null;
+    setPreview(null);
+    const {
+      file,
+      preview: { text, pages },
+    } = pending;
+    try {
       let storagePath: string | undefined;
       const { data: u } = await supabase.auth.getUser();
       if (u.user) {
@@ -210,6 +191,8 @@ function KnowledgeUploadCenter() {
     } catch (e) {
       const msg = userFacingError(e);
       setJob({ fileName: file.name, phase: "error", error: msg });
+    } finally {
+      busyRef.current = false;
     }
   };
 
@@ -254,19 +237,15 @@ function KnowledgeUploadCenter() {
   };
 
   return (
-    <div className="min-h-screen p-6 max-w-7xl mx-auto space-y-6">
+    <div dir="rtl" className="min-h-screen p-6 max-w-7xl mx-auto space-y-6">
       <header className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
           <BookOpenCheck className="h-8 w-8 text-primary" />
           Knowledge Upload Center · مركز رفع المعرفة
         </h1>
         <p className="text-muted-foreground text-sm">
-          Upload SOPs, policies, and operations manuals (PDF / DOCX / TXT). Each file is chunked
-          bilingually (AR / EN), embedded, and made citation-ready for SADEED via{" "}
-          <code className="text-xs bg-muted/50 px-1.5 py-0.5 rounded">
-            /api/public/hooks/sadeed-docs-ingest
-          </code>
-          .
+          افحص المستند محليًا، ثم راجع النص قبل اعتماده للرفع إلى مكتبة المعرفة. المعالجة والفهرسة
+          تخضعان لصلاحياتك وحصة النموذج المهيأة؛ جاهزية الاستشهاد تُقاس بعد المعالجة.
         </p>
       </header>
 
@@ -289,14 +268,16 @@ function KnowledgeUploadCenter() {
         )}
       >
         <UploadCloud className="h-10 w-10 mx-auto text-primary mb-3" />
-        <p className="font-semibold">Drop a file here, or click to choose</p>
-        <p className="text-xs text-muted-foreground mt-1">PDF · DOCX · TXT · MD (up to 50MB)</p>
+        <p className="font-semibold">اسحب ملفًا هنا أو اختر ملفًا للمعاينة</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          PDF · DOCX · XLSX · CSV · JSON · TXT · MD — حتى ١٠ ميجابايت
+        </p>
         <p className="text-xs text-muted-foreground mt-1">{knowledgeLimitHint()}</p>
         <input
           ref={fileRef}
           type="file"
           className="hidden"
-          accept=".pdf,.docx,.txt,.md"
+          accept={IMPORT_ACCEPT}
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) handleFile(f);
@@ -318,12 +299,65 @@ function KnowledgeUploadCenter() {
           ) : (
             <UploadCloud className="h-4 w-4 mr-2" />
           )}
-          Choose file
+          اختيار ملف
         </Button>
       </section>
 
+      {preview && job?.phase === "preview" && (
+        <section
+          aria-label="معاينة الاستيراد"
+          className="rounded-xl border border-border bg-card p-5 space-y-4"
+        >
+          <h2 className="text-lg font-semibold">FNN · تقرير التحقق قبل الرفع</h2>
+          <p className="text-sm">
+            المصدر: {job.fileName} · {preview.text.length.toLocaleString("ar-SA")} حرف
+            {preview.rows !== null ? ` · ${preview.rows.toLocaleString("ar-SA")} صف` : ""}
+            {preview.pages ? ` · ${preview.pages} صفحة` : ""}
+          </p>
+          {preview.columns.length > 0 && (
+            <p className="text-sm break-words">
+              الحقول المستخرجة: {preview.columns.join(" · ")}. الوجهة: نص معرفي؛ لا تُكتب جداول
+              تشغيلية.
+            </p>
+          )}
+          <p className="text-sm">
+            الصفوف المتطابقة المستبعدة داخل الجدول: {preview.duplicateRows}. يفحص الخادم تكرار
+            المستند ضمن المؤسسة عند الاعتماد.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            فحص البرمجيات الخبيثة غير متاح. المعاينة ليست شهادة سلامة؛ اعتمد الملفات من مصدر موثوق
+            فقط. النص بيانات مرجعية وليس تعليمات تنفيذ للوكلاء.
+          </p>
+          <pre
+            className="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-sm"
+            dir="auto"
+          >
+            {preview.text.slice(0, 6000)}
+          </pre>
+          <p className="text-xs break-all text-muted-foreground" dir="ltr">
+            SHA-256: {preview.revisionHash}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button className="min-h-11" onClick={confirmImport}>
+              اعتماد رفع الملف ومعالجته
+            </Button>
+            <Button
+              className="min-h-11"
+              variant="outline"
+              onClick={() => {
+                pendingRef.current = null;
+                setPreview(null);
+                setJob(null);
+              }}
+            >
+              إلغاء
+            </Button>
+          </div>
+        </section>
+      )}
+
       {/* Progress card */}
-      {job && job.phase !== "idle" && (
+      {job && job.phase !== "idle" && job.phase !== "preview" && (
         <section className="rounded-xl border border-border/60 bg-card/40 backdrop-blur p-6 space-y-4">
           <div className="flex items-center gap-3">
             <FileText className="h-5 w-5 text-primary" />
@@ -531,6 +565,7 @@ function PhaseStepper({ phase }: { phase: Phase }) {
 
 function PhaseBadge({ phase }: { phase: Phase }) {
   const map: Record<Phase, { cls: string; label: string }> = {
+    preview: { cls: "bg-muted text-muted-foreground border-border", label: "بانتظار الاعتماد" },
     idle: { cls: "bg-muted text-muted-foreground border-border", label: "Idle" },
     extracting: { cls: "bg-primary/15 text-primary border-primary/30", label: "Extracting" },
     uploading: { cls: "bg-primary/15 text-primary border-primary/30", label: "Uploading" },

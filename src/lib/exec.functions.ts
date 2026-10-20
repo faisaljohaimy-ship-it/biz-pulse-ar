@@ -7,6 +7,7 @@ import {
   decideApproval,
   rollbackExecution,
   reapStaleExecutions,
+  expireStaleApprovals,
 } from "./exec/tool-orchestrator.server";
 import {
   triggerWorkflow,
@@ -14,7 +15,7 @@ import {
   cancelWorkflowRun,
   WorkflowDefinitionSchema,
 } from "./exec/workflow-engine.server";
-import { runAgent } from "./exec/agent-runtime.server";
+import { cancelLiveAgentRun, runAgent } from "./exec/agent-runtime.server";
 import { getCurrentOrgIdForUser, requirePlatformAdmin } from "@/lib/authz.server";
 
 async function requireAdmin(supabase: unknown, userId: string): Promise<void> {
@@ -88,7 +89,19 @@ export const reapStaleToolExecutions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requireAdmin(context.supabase, context.userId);
-    return reapStaleExecutions(context.supabase);
+    const reaped = await reapStaleExecutions(context.supabase);
+    // صيانةٌ واحدة للحالتين: المعلَّق للاعتماد بعد مهلته يُنهى انتظارُه
+    // (`expired` — لا يُنفَّذ). وكانت الدالّة بلا مستدعٍ إطلاقًا. أفضل جهد:
+    // تعذُّرها لا يُسقط الحصاد، و`null` تقول «لم يُقَس» لا «صفر» (المادة ٢٧).
+    // و`settled` = أغلفة تشغيل وكيلٍ خرجت من `waiting_approval` بانتهاء ما تنتظره.
+    let expired: number | null = null;
+    let settled: number | null = null;
+    try {
+      ({ expired, settled } = await expireStaleApprovals());
+    } catch (err) {
+      console.error("[exec] expireStaleApprovals failed", err);
+    }
+    return { ...reaped, expired, settled };
   });
 
 export const listToolRegistry = createServerFn({ method: "GET" })
@@ -711,16 +724,12 @@ export const cancelAgentRun = createServerFn({ method: "POST" })
     if (row.status !== "running" && row.status !== "queued") {
       throw new Error(`Cannot cancel run in state: ${row.status}`);
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (context.supabase as any)
-      .from("agent_runs")
-      .update({
-        status: "cancelled",
-        error: "Cancelled by operator",
-        finished_at: new Date().toISOString(),
-      })
-      .eq("id", data.runId);
-    if (error) throw new Error(error.message);
+    // شرط الحالة عند الكتابة: تشغيلٌ انتهى بين القراءة والكتابة لا يُكتب
+    // فوق نتيجته `cancelled`.
+    const cancelled = await cancelLiveAgentRun(context.supabase, data.runId);
+    if (!cancelled) {
+      throw new Error("Cannot cancel run: it finished before the cancellation was recorded");
+    }
     return { ok: true };
   });
 
@@ -739,6 +748,8 @@ export const retryAgentRun = createServerFn({ method: "POST" })
     const res = await runAgent(context.supabase, {
       agentId: row.agent_id as string,
       actorId: context.userId,
+      // نفس نطاق `runAgentFn`: إعادة التشغيل لا تتجاوز المؤسسة النشطة.
+      requiredOrgId: activeOrgFromClaims(context.claims),
       goalOverride: (row.goal_override as string | null) ?? null,
       context: (row.context_json as Record<string, unknown> | null) ?? null,
     });
