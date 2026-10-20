@@ -4,7 +4,7 @@
  * can be told apart when investigating a stuck loader.
  *
  * Logs are mirrored to:
- *  - console (visible to Lovable's console reader)
+ *  - console (visible to the deployment log)
  *  - window.__nxAuthLog (ring buffer, last 100 entries)
  *  - localStorage "nx_auth_diag" (last 50, survives reloads)
  */
