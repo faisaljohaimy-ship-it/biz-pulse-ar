@@ -13,7 +13,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth-context";
 import { brandFor, brandName } from "@/lib/domain";
 import { useI18n } from "@/lib/i18n";
@@ -91,15 +90,19 @@ function AuthPage() {
   async function handleGoogle() {
     setBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+      const result = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin },
       });
       if (result.error) {
         toast.error(signinErrorMessage(result.error.message ?? "", isAr));
         setBusy(false);
         return;
       }
-      if (result.redirected) return;
+      if (result.data.url) {
+        window.location.assign(result.data.url);
+        return;
+      }
       goNext();
     } catch (error) {
       toast.error(signinErrorMessage(error instanceof Error ? error.message : String(error), isAr));
