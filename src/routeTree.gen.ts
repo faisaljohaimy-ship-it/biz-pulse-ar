@@ -32,7 +32,6 @@ import { Route as ExecutiveShowcaseRouteImport } from './routes/executive-showca
 import { Route as FilmsRouteImport } from './routes/films'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as NxAgentsRouteImport } from './routes/nx-agents'
 import { Route as NxAtlasRouteImport } from './routes/nx-atlas'
 import { Route as NxCockpitRouteImport } from './routes/nx-cockpit'
@@ -55,8 +54,6 @@ import { Route as SubprocessorsRouteImport } from './routes/subprocessors'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 import { Route as AuthenticatedAiOpsRouteImport } from './routes/_authenticated/ai-ops'
@@ -133,8 +130,6 @@ import { Route as ApiVoiceDiagnosticsRouteImport } from './routes/api/voice-diag
 import { Route as ApiVoiceSttRouteImport } from './routes/api/voice-stt'
 import { Route as ApiVoiceTokenRouteImport } from './routes/api/voice-token'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
-import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedAssistantIndexRouteImport } from './routes/_authenticated/assistant.index'
 import { Route as AuthenticatedAssistantThreadIdRouteImport } from './routes/_authenticated/assistant.$threadId'
 import { Route as AuthenticatedLearnIndexRouteImport } from './routes/_authenticated/learn.index'
@@ -194,7 +189,6 @@ import { Route as ApiSadeedTranscribeRouteImport } from './routes/api/sadeed/tra
 import { Route as ApiSadeedTtsRouteImport } from './routes/api/sadeed/tts'
 import { Route as ApiWebhooksResendRouteImport } from './routes/api/webhooks/resend'
 import { Route as ApiWebhooksTwilioRouteImport } from './routes/api/webhooks/twilio'
-import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as VerifyPermitPermitIdRouteImport } from './routes/verify.permit.$permitId'
 import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/api/public/hooks/executive-reports-run'
 import { Route as ApiPublicHooksMicrosoftSyncRouteImport } from './routes/api/public/hooks/microsoft-sync'
@@ -207,11 +201,6 @@ import { Route as ApiPublicHooksSadeedPatternMinerRouteImport } from './routes/a
 import { Route as ApiPublicHooksSelfEvolutionTickRouteImport } from './routes/api/public/hooks/self-evolution-tick'
 import { Route as ApiPublicHooksTwilioMessageStatusRouteImport } from './routes/api/public/hooks/twilio-message-status'
 import { Route as ApiSadeedProvidersStatusRouteImport } from './routes/api/sadeed/providers/status'
-import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
-import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
-import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -327,11 +316,6 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const NxAgentsRoute = NxAgentsRouteImport.update({
   id: '/nx-agents',
   path: '/nx-agents',
@@ -442,18 +426,6 @@ const UnsubscribeRoute = UnsubscribeRouteImport.update({
   path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -855,17 +827,6 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedAssistantIndexRoute =
   AuthenticatedAssistantIndexRouteImport.update({
     id: '/assistant/',
@@ -1180,11 +1141,6 @@ const ApiWebhooksTwilioRoute = ApiWebhooksTwilioRouteImport.update({
   path: '/api/webhooks/twilio',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
-  id: '/lovable/email/suppression',
-  path: '/lovable/email/suppression',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const VerifyPermitPermitIdRoute = VerifyPermitPermitIdRouteImport.update({
   id: '/verify/permit/$permitId',
   path: '/verify/permit/$permitId',
@@ -1255,34 +1211,6 @@ const ApiSadeedProvidersStatusRoute =
     path: '/api/sadeed/providers/status',
     getParentRoute: () => rootRouteImport,
   } as any)
-const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
-  id: '/lovable/email/auth/preview',
-  path: '/lovable/email/auth/preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
-  id: '/lovable/email/auth/webhook',
-  path: '/lovable/email/auth/webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailTransactionalPreviewRoute =
-  LovableEmailTransactionalPreviewRouteImport.update({
-    id: '/lovable/email/transactional/preview',
-    path: '/lovable/email/transactional/preview',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailTransactionalSendRoute =
-  LovableEmailTransactionalSendRouteImport.update({
-    id: '/lovable/email/transactional/send',
-    path: '/lovable/email/transactional/send',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -1307,7 +1235,6 @@ export interface FileRoutesByFullPath {
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/nx-agents': typeof NxAgentsRoute
   '/nx-atlas': typeof NxAtlasRoute
   '/nx-cockpit': typeof NxCockpitRoute
@@ -1330,8 +1257,6 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/ai-ops': typeof AuthenticatedAiOpsRoute
@@ -1408,8 +1333,6 @@ export interface FileRoutesByFullPath {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sadeed/demo': typeof AuthenticatedSadeedDemoRoute
@@ -1466,7 +1389,6 @@ export interface FileRoutesByFullPath {
   '/api/sadeed/tts': typeof ApiSadeedTtsRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/api/webhooks/twilio': typeof ApiWebhooksTwilioRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/verify/permit/$permitId': typeof VerifyPermitPermitIdRoute
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
@@ -1482,11 +1404,6 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/self-evolution-tick': typeof ApiPublicHooksSelfEvolutionTickRoute
   '/api/public/hooks/twilio-message-status': typeof ApiPublicHooksTwilioMessageStatusRoute
   '/api/sadeed/providers/status': typeof ApiSadeedProvidersStatusRoute
-  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
-  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
-  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1511,7 +1428,6 @@ export interface FileRoutesByTo {
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/nx-agents': typeof NxAgentsRoute
   '/nx-atlas': typeof NxAtlasRoute
   '/nx-cockpit': typeof NxCockpitRoute
@@ -1534,8 +1450,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/ai-ops': typeof AuthenticatedAiOpsRoute
@@ -1610,8 +1524,6 @@ export interface FileRoutesByTo {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/sadeed/demo': typeof AuthenticatedSadeedDemoRoute
@@ -1668,7 +1580,6 @@ export interface FileRoutesByTo {
   '/api/sadeed/tts': typeof ApiSadeedTtsRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/api/webhooks/twilio': typeof ApiWebhooksTwilioRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/verify/permit/$permitId': typeof VerifyPermitPermitIdRoute
   '/assistant': typeof AuthenticatedAssistantIndexRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
@@ -1684,11 +1595,6 @@ export interface FileRoutesByTo {
   '/api/public/hooks/self-evolution-tick': typeof ApiPublicHooksSelfEvolutionTickRoute
   '/api/public/hooks/twilio-message-status': typeof ApiPublicHooksTwilioMessageStatusRoute
   '/api/sadeed/providers/status': typeof ApiSadeedProvidersStatusRoute
-  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
-  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
-  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1715,7 +1621,6 @@ export interface FileRoutesById {
   '/films': typeof FilmsRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/nx-agents': typeof NxAgentsRoute
   '/nx-atlas': typeof NxAtlasRoute
   '/nx-cockpit': typeof NxCockpitRoute
@@ -1738,8 +1643,6 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/trust': typeof TrustRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/ai-ops': typeof AuthenticatedAiOpsRoute
@@ -1816,8 +1719,6 @@ export interface FileRoutesById {
   '/api/voice-stt': typeof ApiVoiceSttRoute
   '/api/voice-token': typeof ApiVoiceTokenRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/assistant/$threadId': typeof AuthenticatedAssistantThreadIdRoute
   '/_authenticated/learn/$slug': typeof AuthenticatedLearnSlugRoute
   '/_authenticated/sadeed/demo': typeof AuthenticatedSadeedDemoRoute
@@ -1874,7 +1775,6 @@ export interface FileRoutesById {
   '/api/sadeed/tts': typeof ApiSadeedTtsRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/api/webhooks/twilio': typeof ApiWebhooksTwilioRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/verify/permit/$permitId': typeof VerifyPermitPermitIdRoute
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
@@ -1890,11 +1790,6 @@ export interface FileRoutesById {
   '/api/public/hooks/self-evolution-tick': typeof ApiPublicHooksSelfEvolutionTickRoute
   '/api/public/hooks/twilio-message-status': typeof ApiPublicHooksTwilioMessageStatusRoute
   '/api/sadeed/providers/status': typeof ApiSadeedProvidersStatusRoute
-  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
-  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
-  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1921,7 +1816,6 @@ export interface FileRouteTypes {
     | '/films'
     | '/government-brief'
     | '/login'
-    | '/mcp'
     | '/nx-agents'
     | '/nx-atlas'
     | '/nx-cockpit'
@@ -1944,8 +1838,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/trust'
     | '/unsubscribe'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/agents'
     | '/ai-ops'
@@ -2022,8 +1914,6 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sadeed/demo'
@@ -2080,7 +1970,6 @@ export interface FileRouteTypes {
     | '/api/sadeed/tts'
     | '/api/webhooks/resend'
     | '/api/webhooks/twilio'
-    | '/lovable/email/suppression'
     | '/verify/permit/$permitId'
     | '/assistant/'
     | '/learn/'
@@ -2096,11 +1985,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/self-evolution-tick'
     | '/api/public/hooks/twilio-message-status'
     | '/api/sadeed/providers/status'
-    | '/lovable/email/auth/preview'
-    | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
-    | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -2125,7 +2009,6 @@ export interface FileRouteTypes {
     | '/films'
     | '/government-brief'
     | '/login'
-    | '/mcp'
     | '/nx-agents'
     | '/nx-atlas'
     | '/nx-cockpit'
@@ -2148,8 +2031,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/trust'
     | '/unsubscribe'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/agents'
     | '/ai-ops'
@@ -2224,8 +2105,6 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/assistant/$threadId'
     | '/learn/$slug'
     | '/sadeed/demo'
@@ -2282,7 +2161,6 @@ export interface FileRouteTypes {
     | '/api/sadeed/tts'
     | '/api/webhooks/resend'
     | '/api/webhooks/twilio'
-    | '/lovable/email/suppression'
     | '/verify/permit/$permitId'
     | '/assistant'
     | '/learn'
@@ -2298,11 +2176,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/self-evolution-tick'
     | '/api/public/hooks/twilio-message-status'
     | '/api/sadeed/providers/status'
-    | '/lovable/email/auth/preview'
-    | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
-    | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
   id:
     | '__root__'
     | '/'
@@ -2328,7 +2201,6 @@ export interface FileRouteTypes {
     | '/films'
     | '/government-brief'
     | '/login'
-    | '/mcp'
     | '/nx-agents'
     | '/nx-atlas'
     | '/nx-cockpit'
@@ -2351,8 +2223,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/trust'
     | '/unsubscribe'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
     | '/_authenticated/agents'
     | '/_authenticated/ai-ops'
@@ -2429,8 +2299,6 @@ export interface FileRouteTypes {
     | '/api/voice-stt'
     | '/api/voice-token'
     | '/email/unsubscribe'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/assistant/$threadId'
     | '/_authenticated/learn/$slug'
     | '/_authenticated/sadeed/demo'
@@ -2487,7 +2355,6 @@ export interface FileRouteTypes {
     | '/api/sadeed/tts'
     | '/api/webhooks/resend'
     | '/api/webhooks/twilio'
-    | '/lovable/email/suppression'
     | '/verify/permit/$permitId'
     | '/_authenticated/assistant/'
     | '/_authenticated/learn/'
@@ -2503,11 +2370,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/self-evolution-tick'
     | '/api/public/hooks/twilio-message-status'
     | '/api/sadeed/providers/status'
-    | '/lovable/email/auth/preview'
-    | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
-    | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -2534,7 +2396,6 @@ export interface RootRouteChildren {
   FilmsRoute: typeof FilmsRoute
   GovernmentBriefRoute: typeof GovernmentBriefRoute
   LoginRoute: typeof LoginRoute
-  McpRoute: typeof McpRoute
   NxAgentsRoute: typeof NxAgentsRoute
   NxAtlasRoute: typeof NxAtlasRoute
   NxCockpitRoute: typeof NxCockpitRoute
@@ -2557,8 +2418,6 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TrustRoute: typeof TrustRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
-  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRouteWithChildren
   ApiTtsRoute: typeof ApiTtsRoute
   ApiUrgentSummaryRoute: typeof ApiUrgentSummaryRoute
@@ -2566,8 +2425,6 @@ export interface RootRouteChildren {
   ApiVoiceSttRoute: typeof ApiVoiceSttRoute
   ApiVoiceTokenRoute: typeof ApiVoiceTokenRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
-  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiAgentsFleetRoute: typeof ApiAgentsFleetRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
@@ -2590,7 +2447,6 @@ export interface RootRouteChildren {
   ApiSadeedTtsRoute: typeof ApiSadeedTtsRoute
   ApiWebhooksResendRoute: typeof ApiWebhooksResendRoute
   ApiWebhooksTwilioRoute: typeof ApiWebhooksTwilioRoute
-  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   VerifyPermitPermitIdRoute: typeof VerifyPermitPermitIdRoute
   ApiPublicHooksExecutiveReportsRunRoute: typeof ApiPublicHooksExecutiveReportsRunRoute
   ApiPublicHooksMicrosoftSyncRoute: typeof ApiPublicHooksMicrosoftSyncRoute
@@ -2603,11 +2459,6 @@ export interface RootRouteChildren {
   ApiPublicHooksSelfEvolutionTickRoute: typeof ApiPublicHooksSelfEvolutionTickRoute
   ApiPublicHooksTwilioMessageStatusRoute: typeof ApiPublicHooksTwilioMessageStatusRoute
   ApiSadeedProvidersStatusRoute: typeof ApiSadeedProvidersStatusRoute
-  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
-  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
-  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
-  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
-  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2773,13 +2624,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/nx-agents': {
       id: '/nx-agents'
       path: '/nx-agents'
@@ -2932,20 +2776,6 @@ declare module '@tanstack/react-router' {
       path: '/unsubscribe'
       fullPath: '/unsubscribe'
       preLoaderRoute: typeof UnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -3480,20 +3310,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.lovable/oauth/consent': {
-      id: '/.lovable/oauth/consent'
-      path: '/.lovable/oauth/consent'
-      fullPath: '/.lovable/oauth/consent'
-      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/assistant/': {
       id: '/_authenticated/assistant/'
       path: '/assistant'
@@ -3907,13 +3723,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksTwilioRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/suppression': {
-      id: '/lovable/email/suppression'
-      path: '/lovable/email/suppression'
-      fullPath: '/lovable/email/suppression'
-      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/verify/permit/$permitId': {
       id: '/verify/permit/$permitId'
       path: '/verify/permit/$permitId'
@@ -3996,41 +3805,6 @@ declare module '@tanstack/react-router' {
       path: '/api/sadeed/providers/status'
       fullPath: '/api/sadeed/providers/status'
       preLoaderRoute: typeof ApiSadeedProvidersStatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/auth/preview': {
-      id: '/lovable/email/auth/preview'
-      path: '/lovable/email/auth/preview'
-      fullPath: '/lovable/email/auth/preview'
-      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/auth/webhook': {
-      id: '/lovable/email/auth/webhook'
-      path: '/lovable/email/auth/webhook'
-      fullPath: '/lovable/email/auth/webhook'
-      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/transactional/preview': {
-      id: '/lovable/email/transactional/preview'
-      path: '/lovable/email/transactional/preview'
-      fullPath: '/lovable/email/transactional/preview'
-      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/transactional/send': {
-      id: '/lovable/email/transactional/send'
-      path: '/lovable/email/transactional/send'
-      fullPath: '/lovable/email/transactional/send'
-      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -4329,7 +4103,6 @@ const rootRouteChildren: RootRouteChildren = {
   FilmsRoute: FilmsRoute,
   GovernmentBriefRoute: GovernmentBriefRoute,
   LoginRoute: LoginRoute,
-  McpRoute: McpRoute,
   NxAgentsRoute: NxAgentsRoute,
   NxAtlasRoute: NxAtlasRoute,
   NxCockpitRoute: NxCockpitRoute,
@@ -4352,9 +4125,6 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TrustRoute: TrustRoute,
   UnsubscribeRoute: UnsubscribeRoute,
-  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiChatRoute: ApiChatRouteWithChildren,
   ApiTtsRoute: ApiTtsRoute,
   ApiUrgentSummaryRoute: ApiUrgentSummaryRoute,
@@ -4362,8 +4132,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiVoiceSttRoute: ApiVoiceSttRoute,
   ApiVoiceTokenRoute: ApiVoiceTokenRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
-  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
-  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiAgentsFleetRoute: ApiAgentsFleetRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
@@ -4386,7 +4154,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSadeedTtsRoute: ApiSadeedTtsRoute,
   ApiWebhooksResendRoute: ApiWebhooksResendRoute,
   ApiWebhooksTwilioRoute: ApiWebhooksTwilioRoute,
-  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   VerifyPermitPermitIdRoute: VerifyPermitPermitIdRoute,
   ApiPublicHooksExecutiveReportsRunRoute:
     ApiPublicHooksExecutiveReportsRunRoute,
@@ -4402,11 +4169,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksTwilioMessageStatusRoute:
     ApiPublicHooksTwilioMessageStatusRoute,
   ApiSadeedProvidersStatusRoute: ApiSadeedProvidersStatusRoute,
-  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
-  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
-  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
-  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
-  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
