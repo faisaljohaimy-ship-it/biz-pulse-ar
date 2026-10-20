@@ -21,7 +21,7 @@
 #
 # ── RUNTIME secrets (set as Cloudflare Worker variables, NOT here) ──
 # Server env like SUPABASE_SERVICE_ROLE_KEY, ELEVENLABS_API_KEY, DATABASE_URL,
-# STRIPE_SECRET_KEY, OPENROUTER_API_KEY, LOVABLE_API_KEY, HEYGEN_*, MICROSOFT_*,
+# STRIPE_SECRET_KEY, OPENROUTER_API_KEY, OPENAI_API_KEY, HEYGEN_*, MICROSOFT_*,
 # POWERBI_* … are configured on the Cloudflare Worker (dashboard → Settings →
 # Variables, or `wrangler secret put`). They are never committed to the repo.
 # Public build-time vars (VITE_SUPABASE_*) come from GitHub Actions secrets.
@@ -109,4 +109,3 @@ jobs:
           # The build emits the Worker + its wrangler.json here.
           workingDirectory: .output/server
           command: deploy
-
