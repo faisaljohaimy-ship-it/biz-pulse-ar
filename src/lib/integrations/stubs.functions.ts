@@ -34,7 +34,7 @@ const PROVIDERS: IntegrationStatus[] = [
     category: "productivity",
     status: "not_configured",
     scopes: ["Mail.Send", "Sites.ReadWrite.All", "ChannelMessage.Send"],
-    doc: "Microsoft Graph عبر موصّل Lovable",
+    doc: "Microsoft Graph عبر موصّل مؤسسي مستقل",
     note: "متصل عبر Outlook/SharePoint/Teams — يُستخدم في التقارير التنفيذية.",
   },
   {
@@ -75,7 +75,7 @@ const PROVIDERS: IntegrationStatus[] = [
   },
   {
     id: "supabase",
-    label: "Supabase (Lovable Cloud)",
+    label: "Supabase (production)",
     category: "data",
     status: "not_configured",
     scopes: ["postgrest", "auth", "storage", "realtime"],
