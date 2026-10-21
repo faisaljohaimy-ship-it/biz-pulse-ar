@@ -1,3 +1,4 @@
+import "@/styles/home/home-owner-agents.css";
 /**
  * /guide — the SADEED system map (constitution art. 21): every module
  * classified by role with a one-line purpose and a relationship diagram of
@@ -19,6 +20,9 @@ import { MODULES, MODULE_PURPOSE, moduleExternalUrl, type ModuleEntry } from "@/
 import { PageHeader, Section } from "@/components/page-header";
 import { PageBriefing } from "@/components/clarity/PageBriefing";
 import { Map as MapIcon } from "lucide-react";
+import { useFnnOwner } from "@/lib/dual-agent/use-fnn-owner";
+import { useFnnChatStore } from "@/lib/dual-agent/fnn-chat-store";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/guide")({
   component: GuidePage,
@@ -82,19 +86,105 @@ const RESOLVED_GROUPS = GROUPS.map((g) => ({
 function GuidePage() {
   const { locale } = useI18n();
   const ar = locale === "ar";
+  const { allowed, userId } = useFnnOwner();
+  const openFnn = useFnnChatStore((state) => state.openFor);
 
   return (
     <Section>
       <PageHeader
         icon={MapIcon}
-        title={ar ? "خريطة النظام" : "System Map"}
+        title={ar ? "دليل الاستخدام وخريطة النظام" : "User guide & system map"}
         subtitle={
           ar
-            ? "سَدِيد — سَدِيد التنفيذية: الوكلاء يقترحون ويجهّزون، والإنسان يعتمد."
-            : "SADEED — the executive execution platform: agents propose & prepare, humans approve."
+            ? "من متابعة العمليات إلى فهم البيانات واتخاذ قرار واضح."
+            : "From monitoring operations to understanding data and making informed decisions."
         }
         badge={ar ? "دليل" : "Guide"}
       />
+
+      <section
+        aria-labelledby="guide-start"
+        className="space-y-4 rounded-2xl border border-border bg-card p-4 text-card-foreground sm:p-6"
+      >
+        <h2 id="guide-start" className="text-xl font-bold">
+          {ar ? "ابدأ من هنا" : "Start here"}
+        </h2>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {ar
+            ? "سَدِيد يجمع متابعة البلاغات والصيانة والمؤشرات في مساحة واحدة، ويساعدك على تحليل المعلومات المتاحة. راجع مصدر كل رقم وتاريخ تحديثه قبل اتخاذ القرار؛ بعض الشاشات تعرض بيانات مرجعية موسومة عند تعذّر المصدر الحي."
+            : "SADEED brings incidents, maintenance and indicators together and helps analyze available information. Check each figure’s source and update date before acting; some screens show labelled reference data when live data is unavailable."}
+        </p>
+        <ol className="grid gap-4 md:grid-cols-3">
+          <li className="space-y-2 rounded-xl border border-border p-4">
+            <h3 className="font-semibold">
+              {ar ? "١ · ادخل وحدد نطاقك" : "1 · Sign in and choose your scope"}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {ar
+                ? "من قائمة الحساب اختر اللغة والمنطقة والمؤسسة المتاحة لك. الزائر يطّلع على العرض العام؛ بيانات المؤسسة وإجراءاتها تخضع لعضويتك وصلاحياتك."
+                : "Use the account menu to choose language, region and an available organization. Guests see the public view; organization data and actions depend on membership and permissions."}
+            </p>
+            <Button asChild variant="outline" className="nx-owner-control min-h-11">
+              <Link to="/auth" search={{ mode: "signin" }}>
+                {ar ? "تسجيل الدخول" : "Sign in"}
+              </Link>
+            </Button>
+          </li>
+          <li className="space-y-2 rounded-xl border border-border p-4">
+            <h3 className="font-semibold">
+              {ar ? "٢ · اسأل سَدِيد بوضوح" : "2 · Ask SADEED a focused question"}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {ar
+                ? "حدّد المنطقة والفترة ونوع البيانات: «لخّص الصيانة المتأخرة في المنطقة الغربية مع المصدر». اطلب تفسير المؤشر وخطوات المعالجة، وتحقق من المعلومات غير المتاحة بدل افتراضها."
+                : "Specify region, period and data: “Summarize overdue maintenance in the western region with sources.” Ask for explanations and next steps; verify missing information instead of assuming it."}
+            </p>
+            <Button asChild variant="outline" className="nx-owner-control min-h-11">
+              <Link to="/sadeed">{ar ? "فتح سَدِيد" : "Open SADEED"}</Link>
+            </Button>
+          </li>
+          <li className="space-y-2 rounded-xl border border-border p-4">
+            <h3 className="font-semibold">
+              {ar ? "٣ · تابع العمل ونتيجته" : "3 · Follow work through to its result"}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {ar
+                ? "افتح الصيانة، صفِّ الأوامر بالمنطقة والحالة، ثم افتح الأمر. الإنشاء والإسناد وتغيير المراحل للمصرّح لهم فقط. افحص نتيجة الحفظ والسجل؛ فتح الشاشة أو المحادثة لا يعني تنفيذ مهمة."
+                : "Open maintenance, filter orders by region and status, then open an order. Creation, assignment and stage changes require permission. Check the saved result and history; opening a screen or chat does not execute a task."}
+            </p>
+            <Button asChild variant="outline" className="nx-owner-control min-h-11">
+              <Link to="/sec/maintenance">{ar ? "أوامر الصيانة" : "Maintenance orders"}</Link>
+            </Button>
+          </li>
+        </ol>
+        {allowed && userId && (
+          <div className="space-y-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+            <h3 className="font-semibold">
+              {ar ? "FNN · مساحة الهندسة للمالك" : "FNN · Owner engineering workspace"}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {ar
+                ? "محادثة مستقلة لتجهيز خطة أتمتة أو استيراد بيانات أو مراجعة برمجية. اطلب: «جهّز خطة استيراد مع التحقق والتراجع دون تنفيذ». البرمجة والنشر خطط للمراجعة؛ التنفيذ يحتاج أداة مفعّلة وتصريحًا ونتيجة مسجّلة. الأدوات المعطلة لا تنفّذ الطلبات، ولا يُشغّل فتح المحادثة أي أتمتة."
+                : "An independent chat for automation, data import and engineering plans. Try: “Prepare an import plan with validation and rollback, without execution.” Coding and deployment remain reviewable plans; execution requires an enabled tool, authorization and a recorded result. Disabled tools cannot execute requests, and opening chat never starts automation."}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button className="nx-owner-control min-h-11" onClick={() => openFnn(userId)}>
+                {ar ? "فتح FNN" : "Open FNN"}
+              </Button>
+              <Button asChild variant="outline" className="nx-owner-control min-h-11">
+                <Link to="/orchestration">
+                  {ar ? "الأدوات وسجل النتائج" : "Tools & task history"}
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
+        <p className="text-sm text-muted-foreground">
+          {ar
+            ? "عند تعذّر القراءة، استخدم إعادة المحاولة وراجع حالة المصدر. إذا ظهرت بيانات تصدير، انتبه إلى تاريخها. لا تشارك كلمات المرور أو مفاتيح الخدمات داخل المحادثات."
+            : "If a read fails, retry and check source status. When export data is shown, check its date. Never share passwords or service keys in conversations."}
+        </p>
+      </section>
 
       <PageBriefing
         routeKey="guide"

@@ -1,3 +1,4 @@
+import "@/styles/home/home-owner-agents.css";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import {
@@ -9,6 +10,7 @@ import {
   KeyRound,
   Loader2,
   LockKeyhole,
+  Mail,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
@@ -74,6 +76,9 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [linkRequested, setLinkRequested] = useState(false);
+  const [linkEmailInvalid, setLinkEmailInvalid] = useState(false);
+  const googleEnabled = import.meta.env.VITE_GOOGLE_AUTH_ENABLED !== "false";
 
   const goNext = () => {
     // بعد الدخول: الرئيسية. كانت الوجهة /nx-cockpit حتى حُجبت القمرة بأمر
@@ -88,6 +93,7 @@ function AuthPage() {
   }, [user, authLoading]);
 
   async function handleGoogle() {
+    if (!googleEnabled) return;
     setBusy(true);
     try {
       const result = await supabase.auth.signInWithOAuth({
@@ -106,6 +112,28 @@ function AuthPage() {
       goNext();
     } catch (error) {
       toast.error(signinErrorMessage(error instanceof Error ? error.message : String(error), isAr));
+      setBusy(false);
+    }
+  }
+
+  async function handleSignInLink() {
+    const address = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) {
+      setLinkEmailInvalid(true);
+      return;
+    }
+    setLinkEmailInvalid(false);
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: address,
+        options: { shouldCreateUser: false, emailRedirectTo: window.location.origin },
+      });
+      if (error) throw error;
+      setLinkRequested(true);
+    } catch (error) {
+      toast.error(signinErrorMessage(error instanceof Error ? error.message : String(error), isAr));
+    } finally {
       setBusy(false);
     }
   }
@@ -226,12 +254,19 @@ function AuthPage() {
           <Button
             type="button"
             onClick={() => void handleGoogle()}
-            disabled={busy}
+            disabled={busy || !googleEnabled}
             className="h-12 w-full bg-white text-slate-900 hover:bg-slate-100"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
             {isAr ? "المتابعة عبر Google" : "Continue with Google"}
           </Button>
+          {!googleEnabled && (
+            <p className="mt-2 text-sm text-white/70">
+              {isAr
+                ? "الدخول عبر Google غير متاح حاليًا. استخدم البريد وكلمة المرور، أو اطلب رابط دخول لحسابك."
+                : "Google sign-in is currently unavailable. Use email and password, or request a sign-in link for your account."}
+            </p>
+          )}
 
           <div className="my-5 flex items-center gap-3 text-[12px] uppercase tracking-[0.22em] text-white/35">
             <span className="h-px flex-1 bg-white/10" />
@@ -283,11 +318,26 @@ function AuthPage() {
                   type="email"
                   required
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setLinkRequested(false);
+                    setLinkEmailInvalid(false);
+                  }}
                   className="mt-1.5 h-12"
                   autoComplete="email"
                   inputMode="email"
+                  aria-invalid={linkEmailInvalid || undefined}
+                  aria-describedby={linkEmailInvalid ? "sign-in-link-email-error" : undefined}
                 />
+                {linkEmailInvalid && (
+                  <p
+                    id="sign-in-link-email-error"
+                    role="alert"
+                    className="mt-2 text-sm text-destructive"
+                  >
+                    {isAr ? "اكتب بريد حسابك أولًا." : "Enter your account email first."}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="password" className="text-xs text-white/60">
@@ -312,6 +362,23 @@ function AuthPage() {
                 )}
                 {isAr ? "دخول مساحة القيادة" : "Enter command workspace"}
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy || linkRequested}
+                className="nx-owner-control min-h-12 w-full"
+                onClick={() => void handleSignInLink()}
+              >
+                <Mail className="h-4 w-4" aria-hidden />
+                {isAr ? "أرسل لي رابط دخول بالبريد" : "Email me a sign-in link"}
+              </Button>
+              {linkRequested && (
+                <p role="status" className="text-sm leading-relaxed text-white/75">
+                  {isAr
+                    ? "إذا كان البريد مرتبطًا بحساب، ستصلك رسالة الدخول. افتحها في المتصفح نفسه، وتحقق من البريد غير المرغوب فيه. لا تشارك الرابط مع أحد."
+                    : "If this email belongs to an account, a sign-in message will arrive. Open it in the same browser and check spam. Do not share the link."}
+                </p>
+              )}
             </form>
           )}
 
