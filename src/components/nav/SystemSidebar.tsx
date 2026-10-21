@@ -34,8 +34,14 @@ import { useI18n } from "@/lib/i18n";
 import { REGIONS, REGION_ACCENT_HEX } from "@/lib/regions";
 import { useRegion } from "@/lib/region-context";
 import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
-import { SYSTEM_NAV, type SystemNavItem, type SystemNavLeaf } from "@/lib/nav/system-nav";
+import {
+  SYSTEM_NAV,
+  systemNavForOwner,
+  type SystemNavItem,
+  type SystemNavLeaf,
+} from "@/lib/nav/system-nav";
 import { useSadeedStore } from "@/lib/sadeed-core/state/sadeed-store";
+import { useFnnOwner } from "@/lib/dual-agent/use-fnn-owner";
 import { SadeedPlateLockup } from "@/components/brand/SadeedPlateLockup";
 import { PalmSilhouette, SkylineSilhouette } from "@/components/brand/SkylineSilhouette";
 import "@/styles/home/home-chrome.css";
@@ -94,7 +100,8 @@ export function SystemSidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { pathname } = useLocation();
   const { setRegion, region } = useRegion();
   const enqueue = useSadeedStore((s) => s.enqueue);
-  const [primary, rest] = splitPrimary(SYSTEM_NAV);
+  const { allowed: fnnOwner } = useFnnOwner();
+  const [primary, rest] = splitPrimary(systemNavForOwner(fnnOwner));
 
   // المجموعة مفتوحةٌ ابتداءً إن كان أحد أبنائها هو الصفحة الحالية.
   const [open, setOpen] = useState<Record<string, boolean>>(() => {

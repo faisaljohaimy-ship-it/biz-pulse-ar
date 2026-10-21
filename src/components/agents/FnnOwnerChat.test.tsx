@@ -5,8 +5,10 @@ vi.mock("@/lib/dual-agent/use-fnn-owner", () => ({ useFnnOwner: () => mocks }));
 vi.mock("@/lib/dual-agent/owner.functions", () => ({ askFnn: mocks.ask }));
 vi.mock("@tanstack/react-start", () => ({ useServerFn: (fn: unknown) => fn }));
 import { FnnOwnerChat } from "./FnnOwnerChat";
+import { useFnnChatStore } from "@/lib/dual-agent/fnn-chat-store";
 afterEach(cleanup);
 beforeEach(() => {
+  useFnnChatStore.getState().close();
   mocks.allowed = true;
   mocks.userId = "owner";
   mocks.ask.mockReset();

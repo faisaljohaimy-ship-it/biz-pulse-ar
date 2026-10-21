@@ -1,5 +1,5 @@
 /**
- * سجلّ الشريط الجانبي للنظام — **المصدر الواحد لعناصره العشرين.**
+ * سجلّ الشريط الجانبي للنظام — المصدر الواحد لعناصره العامة ومساحة المالك.
  *
  * أمر المالك ٢٠٢٦/٠٩/٢٩: تطبيق تصميم لوحة القيادة على الصفحة الرئيسية
  * «مع تفعيل جميع الأيقونات»، واختار أن يظهر الشريط **في النظام كلّه**.
@@ -19,6 +19,7 @@
 import {
   Boxes,
   BookOpen,
+  Bot,
   Building2,
   Car,
   Cctv,
@@ -43,6 +44,7 @@ import type { RegionId } from "@/lib/regions";
 
 export type SystemNavLeaf = {
   readonly id: string;
+  readonly ownerOnly?: boolean;
   /** الوجهة الحيّة. */
   readonly to: string;
   /** صاحب الاسم إن اختلف عن الوجهة — يُقرأ اسمه من `screen-names`. */
@@ -93,6 +95,15 @@ export const SYSTEM_NAV: readonly SystemNavItem[] = [
     en: "Regions",
     icon: MapIcon,
     children: "regions",
+  },
+  {
+    kind: "link",
+    id: "fnn-owner",
+    to: "/orchestration",
+    ar: "قيادة سَدِيد وFNN",
+    en: "SADEED & FNN Command",
+    icon: Bot,
+    ownerOnly: true,
   },
   {
     kind: "group",
@@ -224,6 +235,10 @@ export const SYSTEM_NAV: readonly SystemNavItem[] = [
     icon: Settings,
   },
 ];
+
+export function systemNavForOwner(allowed: boolean): readonly SystemNavItem[] {
+  return SYSTEM_NAV.filter((item) => !("ownerOnly" in item && item.ownerOnly) || allowed);
+}
 
 /** كلُّ وجهةٍ في السجل — للحارس ولأيّ سطحٍ يعدّها. */
 export function systemNavDestinations(): string[] {

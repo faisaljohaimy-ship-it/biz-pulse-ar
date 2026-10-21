@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Bot, Send, ShieldCheck, Trash2 } from "lucide-react";
 import { useFnnOwner } from "@/lib/dual-agent/use-fnn-owner";
+import { useFnnChatStore } from "@/lib/dual-agent/fnn-chat-store";
 import { askFnn } from "@/lib/dual-agent/owner.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,17 +15,22 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { FnnPlan } from "@/lib/sadeed/orchestrator/fnn-plan";
+import "@/styles/home/home-owner-agents.css";
 
 type Turn = { id: number; question: string; plan: FnnPlan };
 
 /** Its own dialog, transport and memory. No SADEED context, messages or guest fallback. */
 export function FnnOwnerChat() {
   const { allowed, userId } = useFnnOwner();
-  if (!allowed) return null;
-  return <OwnerConversation key={userId} />;
+  if (!allowed || !userId) return null;
+  return <OwnerConversation key={userId} userId={userId} />;
 }
 
-function OwnerConversation() {
+function OwnerConversation({ userId }: { userId: string }) {
+  const isOpen = useFnnChatStore((state) => state.ownerId === userId);
+  const openFor = useFnnChatStore((state) => state.openFor);
+  const close = useFnnChatStore((state) => state.close);
+  useEffect(() => close, [close]);
   const ask = useServerFn(askFnn);
   const [question, setQuestion] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -59,10 +65,10 @@ function OwnerConversation() {
   }
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={(open) => (open ? openFor(userId) : close())}>
       <SheetTrigger asChild>
         <Button
-          className="fixed bottom-24 start-4 z-40 min-h-11 gap-2 rounded-2xl border border-primary/30 px-4 shadow-lg"
+          className="nx-owner-control fixed bottom-24 start-4 z-40 min-h-11 gap-2 rounded-2xl border border-primary/30 px-4 shadow-lg"
           aria-label="فتح شات FNN الخاص بمالك النظام"
         >
           <Bot className="h-5 w-5" aria-hidden />
@@ -93,10 +99,10 @@ function OwnerConversation() {
             مساحة التنفيذ، والكتابات تتطلب اعتمادًا. البرمجة والنشر هنا خطط للمراجعة.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button asChild variant="outline" className="min-h-11">
+            <Button asChild variant="outline" className="nx-owner-control min-h-11">
               <a href="/orchestration">فتح أدوات FNN وسجل التنفيذ</a>
             </Button>
-            <Button asChild variant="outline" className="min-h-11">
+            <Button asChild variant="outline" className="nx-owner-control min-h-11">
               <a href="/knowledge-upload">فحص واستيراد البيانات</a>
             </Button>
           </div>
@@ -151,7 +157,11 @@ function OwnerConversation() {
             placeholder="جهّز خطة مراجعة الكود والتكاملات…"
           />
           <div className="flex gap-2">
-            <Button type="submit" disabled={busy || !question.trim()} className="min-h-11 gap-2">
+            <Button
+              type="submit"
+              disabled={busy || !question.trim()}
+              className="nx-owner-control min-h-11 gap-2"
+            >
               <Send className="h-4 w-4" aria-hidden />
               {busy ? "جارٍ التجهيز…" : "إرسال إلى FNN"}
             </Button>
@@ -159,7 +169,7 @@ function OwnerConversation() {
               type="button"
               variant="ghost"
               disabled={busy}
-              className="min-h-11 gap-2"
+              className="nx-owner-control min-h-11 gap-2"
               onClick={() => setTurns([])}
             >
               <Trash2 className="h-4 w-4" aria-hidden />
