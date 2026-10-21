@@ -2,7 +2,7 @@
  * Backup reasoning path for SADEED ("سَدِيد لا يتعطل", layer 2).
  *
  * When the direct Gemini key is exhausted (free-tier quota 429) or the vendor
- * fails transiently, the same turn is answered through the Lovable AI Gateway
+ * fails transiently, the same turn is answered through the configured OpenAI-compatible provider
  * with a Gemini model — the user never sees a quota error or an endless spinner.
  */
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
@@ -32,12 +32,12 @@ export function shouldUseBackup(error: unknown): boolean {
 }
 
 export function createSadeedBackupModel() {
-  const key = process.env.LOVABLE_API_KEY?.trim();
+  const key = process.env.OPENAI_API_KEY?.trim();
   if (!key) return null;
   const provider = createOpenAICompatible({
-    name: "lovable",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    headers: { "Lovable-API-Key": key, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+    name: "sadeed-openai-compatible",
+    baseURL: process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1",
+    headers: { Authorization: `Bearer ${key}` },
   });
   return provider(SADEED_BACKUP_MODEL);
 }

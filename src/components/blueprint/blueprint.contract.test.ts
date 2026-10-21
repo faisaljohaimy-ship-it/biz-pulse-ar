@@ -14,7 +14,7 @@ import { HOME_REFERENCE } from "@/components/home/home-reference";
 
 const read = (p: string) => readFileSync(p, "utf8");
 
-const PANELS = read("src/components/blueprint/InstrumentPanels.tsx");
+const AGENT_PULSE = read("src/components/digital-humans/AgentPulseIcon.tsx");
 const PAGE = read("src/routes/-blueprint-page.tsx");
 const CHROME = read("src/components/nav/SystemChrome.tsx");
 const ROOT = read("src/routes/__root.tsx");
@@ -569,7 +569,7 @@ describe("المُخطَّط — المادة ٣٣: لا لون نهائي خا�
   it("لا لون سداسي مكتوب في أي مكوّن", () => {
     // الاستثناء الوحيد المسموح: مثال في تعليق يشرح محوّل الثلاثي.
     for (const [name, src] of [
-      ["InstrumentPanels", PANELS],
+      ["AgentPulseIcon", AGENT_PULSE],
       ["blueprint-page", PAGE],
     ] as const) {
       const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
@@ -627,7 +627,7 @@ describe("المُخطَّط — المادة ٣٣: لا لون نهائي خا�
 
   it("الأسلوب المضمّن يمرّر متغيّرات لا قيمًا نهائية", () => {
     // `style={{ background: "#22D3EE" }}` يعفي حامله من كل قاعدة عامة بصمت.
-    for (const src of [PANELS, PAGE]) {
+    for (const src of [AGENT_PULSE, PAGE]) {
       for (const inline of src.match(/style=\{\{[^}]*\}\}/g) ?? []) {
         expect(inline, "أسلوب مضمّن يحمل قيمة نهائية").toMatch(/--[a-z-]+/);
       }
@@ -636,7 +636,7 @@ describe("المُخطَّط — المادة ٣٣: لا لون نهائي خا�
 
   it("لا تعبئة بيضاء نهائية (white / #fff / #ffffff) — الرسم يتبع الحبر", () => {
     // النمط الحرفي `fill="white"` وحده كان يترك الصيغ السداسية تفلت.
-    for (const src of [PANELS, PAGE]) {
+    for (const src of [AGENT_PULSE, PAGE]) {
       expect(src).not.toMatch(/fill=["'](?:white|#f{3}|#f{6})["']/i);
     }
   });
@@ -805,7 +805,7 @@ describe("المُخطَّط — المادة ٢٧: الصدق العددي", ()
 
   it("الغياب يُقرأ نصًّا ولا يُستبدل بصفر", () => {
     expect(PAGE).toContain("لم يُقَس");
-    expect(PANELS).toContain("notMeasured");
+    expect(PULSE).toContain("ratio !== null");
     // لا `?? 0` على أي عدّاد معروض: الصفر قياسٌ، والغياب ليس صفرًا.
     expect(PAGE).not.toMatch(/counters\?\.\w+\s*\?\?\s*0/);
   });
@@ -904,15 +904,12 @@ describe("المُخطَّط — المادة ٢٧: الصدق العددي", ()
 
 describe("المُخطَّط — الوصول", () => {
   it("الرسوم مخفاة عن القارئات لأن أرقامها مكتوبة إلى جوارها", () => {
-    expect(PANELS).toContain("aria-hidden");
     // دائرة النبض تُخفي نفسها ما لم تُعطَ وصفًا، ولا موضع على الرئيسية
     // يعطيها وصفًا — لأن الرقم والاسم إلى جوارها يقولان ما تقوله. العدّ
     // السابق لعلامات aria-hidden كان يقيس كم رسمًا في الملف لا أن كلًّا
     // منها مخفيّ، فسقط بحذف الرسوم الهندسية وهي لم تكن الضمانة.
     expect(PULSE).toMatch(/"aria-hidden": true/);
-    for (const src of [PANELS, PAGE]) {
-      expect(src).not.toMatch(/<PulseGlyph[^>]*\slabel=/);
-    }
+    expect(PAGE).not.toMatch(/<PulseGlyph[^>]*\slabel=/);
   });
 
   it("مداخل المناطق روابط لمعلومات كل منطقة وتبلغ أرضية اللمس", () => {
@@ -1212,7 +1209,6 @@ describe("المُخطَّط — أيقونات الرئيسية دوائر نب
   it("كل أيقونة تأتي من مصدر الرسم الواحد", () => {
     // مصدر واحد لسطحين: الرئيسية ومركز القيادة. نسختان من نفس الشكل تعني
     // أن أول تعديل على إحداهما يفتح فجوة لا يراها أحد.
-    expect(PANELS).toContain("PulseGlyph");
     // **ولم تعد الرئيسية مستهلكًا**: حُذفت دوائر بطاقات الوكلاء ٢٠٢٦/٠٨/٠٩
     // ودوائر المناطق ٢٠٢٦/٠٨/١١، كلاهما بأمر المالك. فالقاعدة تُفحص على
     // المستهلكين الباقين — والمقصود بها ألّا تُنسَخ الدائرة يدويًّا في سطحٍ
@@ -1730,7 +1726,6 @@ describe("المُخطَّط — أرضيّتا القراءة واللمس", ()
     expect(PAGE).not.toContain("nx-bp-counters");
     expect(PAGE).not.toContain("nx-bp-counter");
     expect(PAGE).not.toContain("MeasureRail");
-    expect(PANELS).not.toMatch(/export\s+function\s+MeasureRail/);
     for (const sel of [".nx-bp-counters", ".nx-bp-counter", ".nx-bp-rail"]) {
       expect(CSS.indexOf(`${sel} {`), `${sel} بقي في الأنماط بلا حامل`).toBe(-1);
     }

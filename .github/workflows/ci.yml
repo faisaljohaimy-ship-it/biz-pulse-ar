@@ -9,6 +9,13 @@ on:
   # «CI أخضر على الـSHA المدفوع» شرطٌ يُقاس لا يُفترض.
   workflow_dispatch:
 
+# Keep only the newest validation run for a branch/PR. This prevents stale
+# commits from consuming the Actions allowance after a newer push supersedes
+# them; the newest SHA still runs the complete gate below.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 # ── لماذا وظائف متوازية لا وظيفة واحدة ────────────────────────────────────
 # كانت `verify` وظيفةً واحدة تجمع التثبيت والفحص والبناء وفحوص Postgres،
 # فتتجاوز خمس عشرة دقيقة على مُشغّل بنواتين. وهذا الحساب يقطع أي وظيفة عند
@@ -186,8 +193,10 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     # Constitution Article X: the OPTIONAL backup Cloudflare deploy. It gates on
     # الفحوص الأربعة (E2E استشاري). deploy.yml skips quietly and stays GREEN
-    # when its secrets are absent — primary deployment is Lovable's pipeline, so
+    # when its secrets are absent — primary deployment is Vercel's GitHub
+    # integration, so
     # a missing deploy secret never blocks CI or reds the run.
     needs: [static, test, build, rag-preflight]
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
+

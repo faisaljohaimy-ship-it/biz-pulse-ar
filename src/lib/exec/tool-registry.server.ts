@@ -37,10 +37,10 @@ export type ToolExecutor = {
 
 /* ----------------------------- M365 / Graph ----------------------------- */
 
-async function lovableConnector(connectorKeyEnv: string, gateway: string) {
-  const lovableKey = process.env.LOVABLE_API_KEY;
+async function microsoftConnector(connectorKeyEnv: string, gateway: string) {
+  const connectorKey = process.env.MICROSOFT_CONNECTOR_API_KEY;
   const connKey = process.env[connectorKeyEnv];
-  if (!lovableKey || !connKey) {
+  if (!connectorKey || !connKey || !process.env.MICROSOFT_CONNECTOR_BASE_URL) {
     throw apiError(
       "forbidden",
       `Connector ${connectorKeyEnv} not configured. Link the connector in Settings.`,
@@ -51,7 +51,7 @@ async function lovableConnector(connectorKeyEnv: string, gateway: string) {
   }
   return {
     headers: {
-      Authorization: `Bearer ${lovableKey}`,
+      Authorization: `Bearer ${connectorKey}`,
       "X-Connection-Api-Key": connKey,
       "Content-Type": "application/json",
     } as Record<string, string>,
@@ -69,9 +69,9 @@ const outlookSendMail: ToolExecutor = {
   }),
   async execute(input) {
     const data = input as z.infer<typeof outlookSendMail.input>;
-    const c = await lovableConnector(
+    const c = await microsoftConnector(
       "MICROSOFT_OUTLOOK_API_KEY",
-      "https://connector-gateway.lovable.dev/microsoft_outlook",
+      `${process.env.MICROSOFT_CONNECTOR_BASE_URL}/microsoft_outlook`,
     );
     const message: Record<string, unknown> = {
       subject: data.subject,
@@ -102,9 +102,9 @@ const teamsPost: ToolExecutor = {
   }),
   async execute(input) {
     const data = input as z.infer<typeof teamsPost.input>;
-    const c = await lovableConnector(
+    const c = await microsoftConnector(
       "MICROSOFT_TEAMS_API_KEY",
-      "https://connector-gateway.lovable.dev/microsoft_teams",
+      `${process.env.MICROSOFT_CONNECTOR_BASE_URL}/microsoft_teams`,
     );
     const json = await httpJson<{ id?: string }>(
       `${c.gateway}/teams/${encodeURIComponent(data.teamId)}/channels/${encodeURIComponent(data.channelId)}/messages`,
@@ -128,9 +128,9 @@ const sharepointUpload: ToolExecutor = {
   }),
   async execute(input) {
     const data = input as z.infer<typeof sharepointUpload.input>;
-    const c = await lovableConnector(
+    const c = await microsoftConnector(
       "MICROSOFT_SHAREPOINT_API_KEY",
-      "https://connector-gateway.lovable.dev/microsoft_sharepoint",
+      `${process.env.MICROSOFT_CONNECTOR_BASE_URL}/microsoft_sharepoint`,
     );
     // decode base64
     const bin = Uint8Array.from(atob(data.contentBase64), (ch) => ch.charCodeAt(0));
@@ -169,9 +169,9 @@ const graphGetUser: ToolExecutor = {
   input: z.object({ userId: z.string().min(1) }),
   async execute(input) {
     const data = input as z.infer<typeof graphGetUser.input>;
-    const c = await lovableConnector(
+    const c = await microsoftConnector(
       "MICROSOFT_OUTLOOK_API_KEY",
-      "https://connector-gateway.lovable.dev/microsoft_outlook",
+      `${process.env.MICROSOFT_CONNECTOR_BASE_URL}/microsoft_outlook`,
     );
     const json = await httpJson(`${c.gateway}/users/${encodeURIComponent(data.userId)}`, {
       headers: c.headers,
@@ -184,8 +184,7 @@ const graphGetUser: ToolExecutor = {
 /* ------------------------------- REST/Webhook --------------------------- */
 
 const ALLOWED_HOSTS = new Set<string>([
-  "ai.gateway.lovable.dev",
-  "connector-gateway.lovable.dev",
+  ...(process.env.MICROSOFT_CONNECTOR_BASE_URL ? [new URL(process.env.MICROSOFT_CONNECTOR_BASE_URL).hostname] : []),
   // extend per deployment via env later
 ]);
 

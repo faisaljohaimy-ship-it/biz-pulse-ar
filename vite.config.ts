@@ -1,18 +1,10 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - tanstackStart, viteReact, tailwindcss, tsConfigPaths, nitro (build-only using cloudflare as a default target),
-//     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
-//     error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
-  },
+  plugins: [tanstackStart(), react(), tsconfigPaths()],
   // Nitro deploy target. The wrapper defaults to Cloudflare and, inside the
   // Lovable sandbox, force-pins `cloudflare-module` regardless of what we set
   // here — so this only takes effect on real (non-sandbox) builds. On Vercel
@@ -23,8 +15,7 @@ export default defineConfig({
   // Actions → Cloudflare path (no VERCEL env) keeps the Cloudflare default,
   // so no existing deploy target is disturbed.
   ...(process.env.VERCEL ? { nitro: { preset: "vercel" } } : {}),
-  vite: {
-    plugins: [mcpPlugin()],
+
     // Publishable (public) Supabase config baked in as a LAST-RESORT fallback.
     // The published build was shipping without VITE_SUPABASE_* injected, so the
     // browser client fell back to the "unconfigured" host and every auth/data
@@ -113,5 +104,4 @@ export default defineConfig({
         },
       },
     },
-  },
 });

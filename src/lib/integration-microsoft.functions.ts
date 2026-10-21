@@ -109,9 +109,9 @@ export const testMicrosoftConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<ConnectionTestResult> => {
     await assertAdmin(context);
-    const lovableKey = process.env.LOVABLE_API_KEY;
+    const connectorKey = process.env.MICROSOFT_CONNECTOR_API_KEY;
     const outlookKey = process.env.MICROSOFT_OUTLOOK_API_KEY;
-    if (!lovableKey || !outlookKey) {
+    if (!connectorKey || !outlookKey || !process.env.MICROSOFT_CONNECTOR_BASE_URL) {
       const result: ConnectionTestResult = {
         ok: false,
         status: 0,
@@ -131,9 +131,9 @@ export const testMicrosoftConnection = createServerFn({ method: "POST" })
     let result: ConnectionTestResult;
     try {
       const { httpFetch } = await import("@/lib/api/http.server");
-      const r = await httpFetch("https://connector-gateway.lovable.dev/microsoft_outlook/me", {
+      const r = await httpFetch(`${process.env.MICROSOFT_CONNECTOR_BASE_URL}/microsoft_outlook/me`, {
         headers: {
-          Authorization: `Bearer ${lovableKey}`,
+          Authorization: `Bearer ${connectorKey}`,
           "X-Connection-Api-Key": outlookKey,
         },
         label: "microsoft connection test",

@@ -11,7 +11,7 @@
  */
 
 const PROVIDER_NAMES =
-  /\b(openai|open ai|anthropic|claude(?:[- ]sonnet(?:[- ][\d.]+)?)?|gpt[- ]?[\d.]*(?:-mini|-nano|-turbo)?|gemini(?:[- ][\d.]+)?|openrouter|lovable ai gateway|lovable gateway)\b/gi;
+  /\b(openai|open ai|anthropic|claude(?:[- ]sonnet(?:[- ][\d.]+)?)?|gpt[- ]?[\d.]*(?:-mini|-nano|-turbo)?|gemini(?:[- ][\d.]+)?|openrouter)\b/gi;
 
 const DEVELOPER_PHRASES: RegExp[] = [
   /as an ai(?: language)? model[^.]*\.?/gi,

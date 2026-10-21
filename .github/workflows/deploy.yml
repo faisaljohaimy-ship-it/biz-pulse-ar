@@ -1,4 +1,4 @@
-# Deploy pipeline — OPTIONAL backup path (primary deploy is Lovable's pipeline).
+# Deploy pipeline — OPTIONAL Cloudflare backup path.
 #
 #   Claude Code → git push → GitHub → GitHub Actions (this file)
 #                → build (Vite/nitro, Cloudflare Workers target)
@@ -9,8 +9,8 @@
 # it and deploys the generated Worker.
 #
 # ── Deployment model (Constitution Article X) ──
-# Primary deployment runs through Lovable's own pipeline. This GitHub Actions
-# deploy is a SECONDARY, independent backup that activates only when its secrets
+# Primary deployment runs through Vercel's GitHub integration. This GitHub
+# Actions deploy is a SECONDARY, independent Cloudflare backup that activates only when its secrets
 # are present; when they are absent it SKIPS quietly and the job stays GREEN
 # (non-blocking) — CI never goes red over deploy secrets.
 #
@@ -21,7 +21,7 @@
 #
 # ── RUNTIME secrets (set as Cloudflare Worker variables, NOT here) ──
 # Server env like SUPABASE_SERVICE_ROLE_KEY, ELEVENLABS_API_KEY, DATABASE_URL,
-# STRIPE_SECRET_KEY, OPENROUTER_API_KEY, LOVABLE_API_KEY, HEYGEN_*, MICROSOFT_*,
+# STRIPE_SECRET_KEY, OPENROUTER_API_KEY, OPENAI_API_KEY, HEYGEN_*, MICROSOFT_*,
 # POWERBI_* … are configured on the Cloudflare Worker (dashboard → Settings →
 # Variables, or `wrangler secret put`). They are never committed to the repo.
 # Public build-time vars (VITE_SUPABASE_*) come from GitHub Actions secrets.
@@ -62,7 +62,7 @@ jobs:
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # Non-blocking guard (Constitution Article X). Primary deployment runs
-          # through Lovable's own pipeline, so this GitHub Actions deploy is an
+          # through Vercel's GitHub integration, so this GitHub Actions deploy is an
           # OPTIONAL secondary path. When its secrets are absent it SKIPS quietly
           # (job stays green) instead of failing red. Add the four secrets as
           # Repository secrets to activate this independent backup deploy.
@@ -75,7 +75,7 @@ jobs:
           check VITE_SUPABASE_PUBLISHABLE_KEY "$VITE_SUPABASE_PUBLISHABLE_KEY"
           if [ "$missing" = "1" ]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::GitHub Actions deploy secrets are absent — skipping the backup Cloudflare deploy (non-blocking). Deployment is handled by Lovable's pipeline. To enable this independent backup path, add CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY as Repository secrets."
+            echo "::warning::GitHub Actions deploy secrets are absent — skipping the backup Cloudflare deploy (non-blocking). Deployment is handled by Vercel's GitHub integration. To enable this independent backup path, add CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY as Repository secrets."
           else
             echo "configured=true" >> "$GITHUB_OUTPUT"
             echo "All deploy secrets present — proceeding with the backup Cloudflare deploy."

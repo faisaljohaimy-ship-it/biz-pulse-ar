@@ -182,7 +182,7 @@ export const getSystemPulse = createServerFn({ method: "GET" })
     // Voice / Avatar readiness: verify configured secrets exist server-side.
     const voiceReady = Boolean(process.env.ELEVENLABS_API_KEY);
     const avatarReady = Boolean(process.env.HEYGEN_API_KEY || process.env.LIVEAVATAR_API_KEY);
-    const aiKeyReady = Boolean(process.env.LOVABLE_API_KEY);
+    const aiKeyReady = Boolean(process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY);
 
     const chips: PulseChip[] = [
       {

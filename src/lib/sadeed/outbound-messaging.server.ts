@@ -18,7 +18,7 @@ import {
 import { normalizeE164 } from "@/lib/sadeed/phone-number";
 
 const APPROVAL_TTL_MS = 10 * 60_000;
-const OUTLOOK_GATEWAY = "https://connector-gateway.lovable.dev";
+const OUTLOOK_GATEWAY = process.env.MICROSOFT_CONNECTOR_BASE_URL ?? "";
 
 const EmailPayloadSchema = z.object({
   channel: z.literal("email"),
@@ -371,11 +371,11 @@ function managedEmailQueueEnabled(): boolean {
 }
 
 function outlookHeaders(): Record<string, string> | null {
-  const lovableKey = process.env.LOVABLE_API_KEY?.trim();
+  const connectorKey = process.env.MICROSOFT_CONNECTOR_API_KEY?.trim();
   const connectionKey = process.env.MICROSOFT_OUTLOOK_API_KEY?.trim();
-  if (!lovableKey || !connectionKey) return null;
+  if (!connectorKey || !connectionKey || !OUTLOOK_GATEWAY) return null;
   return {
-    Authorization: `Bearer ${lovableKey}`,
+    Authorization: `Bearer ${connectorKey}`,
     "X-Connection-Api-Key": connectionKey,
     "Content-Type": "application/json",
   };

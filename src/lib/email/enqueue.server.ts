@@ -1,7 +1,7 @@
 /**
  * Server-only helper to enqueue a registered React Email template via the
- * Lovable Email queue, without requiring a user JWT. Mirrors the logic of
- * /lovable/email/transactional/send so anonymous server flows (e.g. public
+ * the production email queue, without requiring a user JWT. Mirrors the
+ * transactional send contract so anonymous server flows (e.g. public
  * demo form) can deliver branded transactional email reliably.
  *
  * - Uses supabaseAdmin (service role) — server-only.

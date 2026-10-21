@@ -3,7 +3,7 @@ import { httpFetch } from "@/lib/api/http.server";
 import { isApiError } from "@/lib/api";
 import { timingSafeStringEqual } from "@/lib/hook-auth.server";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev";
+const GATEWAY_URL = process.env.MICROSOFT_CONNECTOR_BASE_URL ?? "";
 
 type IntegrationRow = {
   id: string;
@@ -18,14 +18,14 @@ type IntegrationRow = {
 async function callGraph(
   connector: string,
   path: string,
-  lovableKey: string,
   connectorKey: string,
+  connectionKey: string,
 ) {
   try {
     const r = await httpFetch(`${GATEWAY_URL}/${connector}${path}`, {
       headers: {
-        Authorization: `Bearer ${lovableKey}`,
-        "X-Connection-Api-Key": connectorKey,
+        Authorization: `Bearer ${connectorKey}`,
+        "X-Connection-Api-Key": connectionKey,
       },
       label: `graph/${connector}`,
       timeoutMs: 20_000,
@@ -61,11 +61,11 @@ export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({
           });
         }
 
-        const lovableKey = process.env.LOVABLE_API_KEY;
+        const connectorKey = process.env.MICROSOFT_CONNECTOR_API_KEY;
         const outlookKey = process.env.MICROSOFT_OUTLOOK_API_KEY;
         const sharepointKey = process.env.MICROSOFT_SHAREPOINT_API_KEY;
-        if (!lovableKey) {
-          return new Response(JSON.stringify({ error: "missing_lovable_key" }), { status: 500 });
+        if (!connectorKey || !GATEWAY_URL) {
+          return new Response(JSON.stringify({ error: "missing_microsoft_connector" }), { status: 500 });
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -102,7 +102,7 @@ export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({
             const r = await callGraph(
               "microsoft_outlook",
               "/me/messages?$top=25&$select=id,subject,from,receivedDateTime,isRead&$orderby=receivedDateTime desc",
-              lovableKey,
+              connectorKey,
               outlookKey,
             );
             const count = (r.body as { value?: unknown[] } | null)?.value?.length ?? 0;
@@ -127,7 +127,7 @@ export const Route = createFileRoute("/api/public/hooks/microsoft-sync")({
             const path = row.default_site_id
               ? `/sites/${row.default_site_id}/drive/root/children?$top=25&$select=id,name,lastModifiedDateTime,size,webUrl&$orderby=lastModifiedDateTime desc`
               : `/sites/root/drives`;
-            const r = await callGraph("microsoft_sharepoint", path, lovableKey, sharepointKey);
+            const r = await callGraph("microsoft_sharepoint", path, connectorKey, sharepointKey);
             const count = (r.body as { value?: unknown[] } | null)?.value?.length ?? 0;
             await supabaseAdmin.from("integration_microsoft_sync_log").insert({
               org_id: row.org_id,

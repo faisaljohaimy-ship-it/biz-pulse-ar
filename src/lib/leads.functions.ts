@@ -68,7 +68,7 @@ async function sendNotificationEmails(args: {
   ]);
 
   return {
-    provider: "lovable-email" as const,
+    provider: "production-email" as const,
     internal_skipped: !internalRecipient,
     internal_ok: internalRes.status === "fulfilled" && !!internalRes.value.ok,
     confirm_ok: confirmRes.status === "fulfilled" && !!confirmRes.value.ok,
@@ -140,13 +140,13 @@ export const submitLead = createServerFn({ method: "POST" })
     if (error || !inserted) throw new Error(error?.message || "Failed to save request");
     const requestId = inserted.request_id ?? inserted.id;
 
-    // Enqueue both confirmation + internal notification via Lovable Email
-    // queue. The queue dispatcher handles provider sending + retry/backoff on
+    // Enqueue both confirmation + internal notification via the production
+    // email queue. The queue dispatcher handles provider sending + retry/backoff on
     // 429/5xx (5 attempts, then DLQ). We additionally retry the *enqueue*
     // call up to 3 times in case of transient DB errors so a submission is
     // never lost.
     let emailStatus: Awaited<ReturnType<typeof sendNotificationEmails>> & { error?: string } = {
-      provider: "lovable-email",
+      provider: "production-email",
       internal_skipped: !process.env.LEADS_NOTIFY_EMAIL?.trim(),
       internal_ok: false,
       confirm_ok: false,

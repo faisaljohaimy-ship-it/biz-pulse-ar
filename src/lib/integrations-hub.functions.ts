@@ -388,7 +388,7 @@ export const testProvider = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => testSchema.parse(d))
   .handler(async ({ data, context }): Promise<ProviderTestResult> => {
     const provider = data.provider;
-    const lovableKey = process.env.LOVABLE_API_KEY;
+    const connectorKey = process.env.MICROSOFT_CONNECTOR_API_KEY;
 
     const { httpFetch } = await import("@/lib/api/http.server");
 
@@ -401,16 +401,16 @@ export const testProvider = createServerFn({ method: "POST" })
     };
     const ms = msMap[provider];
     if (ms) {
-      if (!lovableKey) return { ok: false, status: 0, message: "Lovable API key missing" };
+      if (!connectorKey || !process.env.MICROSOFT_CONNECTOR_BASE_URL) return { ok: false, status: 0, message: "Microsoft connector is not configured" };
       const key = process.env[ms.env];
       if (!key) return { ok: false, status: 0, message: `${provider} connector not linked` };
       const base =
         provider === "microsoft_outlook"
-          ? "https://connector-gateway.lovable.dev/microsoft_outlook"
-          : `https://connector-gateway.lovable.dev/${provider.replace("microsoft_", "microsoft_")}`;
+          ? `${process.env.MICROSOFT_CONNECTOR_BASE_URL}/microsoft_outlook`
+          : `${process.env.MICROSOFT_CONNECTOR_BASE_URL}/${provider.replace("microsoft_", "microsoft_")}`;
       try {
         const r = await httpFetch(`${base}${ms.path}`, {
-          headers: { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": key },
+          headers: { Authorization: `Bearer ${connectorKey}`, "X-Connection-Api-Key": key },
           label: `${provider} test`,
           timeoutMs: 12_000,
           retries: 1,

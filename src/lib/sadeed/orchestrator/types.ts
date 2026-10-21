@@ -70,6 +70,12 @@ export interface AgentContract {
   supports_cancellation: boolean;
   supports_confidence: boolean;
   supports_evidence: boolean;
+  /** Billing classification. `free` agents must never invoke a model or paid provider. */
+  billing?: "free" | "metered";
+  /** Explicit linkage boundary for routing and audit displays. */
+  linked_scopes?: readonly string[];
+  /** Declares which registered agents may receive this agent's automation plan. */
+  linked_agent_ids?: readonly string[];
 }
 
 /** Result contract every specialist returns. Merge-friendly. */
@@ -90,6 +96,13 @@ export interface AgentResult {
     decision?: DecisionProposal | null;
     confidence?: ConfidenceBreakdown;
     sources?: string[];
+    /** Structured output from a deterministic, no-model automation agent. */
+    automation?: {
+      workflow: string;
+      trigger: "manual" | "scheduled" | "event";
+      side_effects: "none" | "approval_required";
+      linked_scopes: string[];
+    };
     /** Optional full brain answer (from the Chief Agent). */
     answer?: ExecutiveBrainAnswer;
   };

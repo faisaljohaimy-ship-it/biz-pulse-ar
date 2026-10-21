@@ -1,6 +1,6 @@
 // HCIS Compliance + Digital PTW — server functions (seed, page data, emergency).
 // New tables aren't in the generated Database type yet, so the RLS client is
-// cast loosely per query (same idiom as sim.functions.ts / alerts.functions.ts).
+// cast loosely per query (same idiom as sim.functions.ts).
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";

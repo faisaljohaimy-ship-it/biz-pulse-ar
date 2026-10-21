@@ -9,8 +9,6 @@ const SECURITY_HEADERS: Record<string, string> = {
   // إطار، ولا حتى من أصلها. و`frame-ancestors 'none'` أدناه هو الضابط
   // الفعليّ في المتصفّحات الحديثة؛ هذا الرأس للقديمة التي لا تقرأ CSP.
   //
-  // **مُشغّل التراجع معروف:** إن توقّفت معاينة Lovable داخل المحرّر عن
-  // العرض فهذا سببها — تُعاد القيمتان إلى `SAMEORIGIN` و`'self'` بسطرين.
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -53,11 +51,7 @@ function withSecurityHeaders(response: Response): Response {
   });
 }
 
-const errorMiddleware = createMiddleware().server(async ({ request, next }) => {
-  const url = new URL(request.url);
-  if (url.pathname.startsWith("/lovable/")) {
-    return next();
-  }
+const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
     const res = await next();
     // TanStack request middleware returns `{ response, request, pathname, context }`.
