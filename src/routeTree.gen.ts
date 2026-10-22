@@ -17,6 +17,7 @@ import { Route as AupRouteImport } from './routes/aup'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BlueprintRouteImport } from './routes/blueprint'
 import { Route as BookRouteImport } from './routes/book'
+import { Route as CinematicRouteImport } from './routes/cinematic'
 import { Route as CinematicDemoRouteImport } from './routes/cinematic-demo'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -252,8 +253,15 @@ const BookRoute = BookRouteImport.update({
   path: '/book',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CinematicRoute = CinematicRouteImport.update({
+  id: '/cinematic',
+  path: '/cinematic',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CinematicDemoRoute = CinematicDemoRouteImport.update({
+  id: '/cinematic',
   id: '/cinematic-demo',
+  path: '/cinematic',
   path: '/cinematic-demo',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -1292,6 +1300,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/blueprint': typeof BlueprintRoute
   '/book': typeof BookRoute
+  '/cinematic': typeof CinematicRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/connect': typeof ConnectRoute
   '/contact': typeof ContactRoute
@@ -1496,6 +1505,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/blueprint': typeof BlueprintRoute
   '/book': typeof BookRoute
+  '/cinematic': typeof CinematicRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/connect': typeof ConnectRoute
   '/contact': typeof ContactRoute
@@ -1700,6 +1710,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/blueprint': typeof BlueprintRoute
   '/book': typeof BookRoute
+  '/cinematic': typeof CinematicRoute
   '/cinematic-demo': typeof CinematicDemoRoute
   '/connect': typeof ConnectRoute
   '/contact': typeof ContactRoute
@@ -1906,6 +1917,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blueprint'
     | '/book'
+    | '/cinematic'
     | '/cinematic-demo'
     | '/connect'
     | '/contact'
@@ -2110,6 +2122,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blueprint'
     | '/book'
+    | '/cinematic'
     | '/cinematic-demo'
     | '/connect'
     | '/contact'
@@ -2313,6 +2326,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blueprint'
     | '/book'
+    | '/cinematic'
     | '/cinematic-demo'
     | '/connect'
     | '/contact'
@@ -2519,6 +2533,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BlueprintRoute: typeof BlueprintRoute
   BookRoute: typeof BookRoute
+  CinematicRoute: typeof CinematicRoute
   CinematicDemoRoute: typeof CinematicDemoRoute
   ConnectRoute: typeof ConnectRoute
   ContactRoute: typeof ContactRoute
@@ -2668,10 +2683,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cinematic': {
     '/cinematic-demo': {
+      id: '/cinematic'
       id: '/cinematic-demo'
+      path: '/cinematic'
       path: '/cinematic-demo'
+      fullPath: '/cinematic'
       fullPath: '/cinematic-demo'
+      preLoaderRoute: typeof CinematicRouteImport
       preLoaderRoute: typeof CinematicDemoRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -4314,6 +4334,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BlueprintRoute: BlueprintRoute,
   BookRoute: BookRoute,
+  CinematicRoute: CinematicRoute,
   CinematicDemoRoute: CinematicDemoRoute,
   ConnectRoute: ConnectRoute,
   ContactRoute: ContactRoute,
