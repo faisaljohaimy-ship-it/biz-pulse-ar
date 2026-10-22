@@ -1,14 +1,14 @@
 /**
- * سجلّ الشريط الجانبي للنظام — **المصدر الواحد لعناصره العشرين.**
+ * سجلّ الشريط الجانبي للنظام — المصدر الواحد لعناصره العامة ومساحة المالك.
  *
  * أمر المالك ٢٠٢٦/٠٩/٢٩: تطبيق تصميم لوحة القيادة على الصفحة الرئيسية
  * «مع تفعيل جميع الأيقونات»، واختار أن يظهر الشريط **في النظام كلّه**.
  * وهذا ناسخٌ صريح لأمر ٢٠٢٦/٠٨/٢٠ («حذف جميع الأزرار في الشريط الجانبي
  * باستثناء خمسة»).
  *
- * **ولا رابط ميّت.** ستّة عناصر في التصميم لا تصل بأسمائها مباشرة:
+ * **ولا رابط ميّت.** خمسة عناصر في التصميم لا تصل بأسمائها مباشرة:
  * أربعة مساراتها محجوبة بأوامر سابقة (مركز القيادة · الأصول · المخاطر ·
- * التكاملات)، واثنان بلا صفحة أصلًا (الأفراد · التحقيقات). واختار المالك
+ * التكاملات)، وواحد بلا صفحة أصلًا (التحقيقات). واختار المالك
  * «أقرب بديلٍ حيّ» **بلا فكّ أيّ حجب** — فكلُّ وجهةٍ هنا حيّةٌ غير محجوبة،
  * ويحرس ذلك `system-nav.contract.test.ts` على شجرة المسارات نفسها.
  *
@@ -19,6 +19,7 @@
 import {
   Boxes,
   BookOpen,
+  Bot,
   Building2,
   Car,
   Cctv,
@@ -36,13 +37,13 @@ import {
   ShieldCheck,
   Siren,
   Sparkles,
-  Users,
   type LucideIcon,
 } from "lucide-react";
 import type { RegionId } from "@/lib/regions";
 
 export type SystemNavLeaf = {
   readonly id: string;
+  readonly ownerOnly?: boolean;
   /** الوجهة الحيّة. */
   readonly to: string;
   /** صاحب الاسم إن اختلف عن الوجهة — يُقرأ اسمه من `screen-names`. */
@@ -95,6 +96,15 @@ export const SYSTEM_NAV: readonly SystemNavItem[] = [
     children: "regions",
   },
   {
+    kind: "link",
+    id: "fnn-owner",
+    to: "/orchestration",
+    ar: "قيادة سَدِيد وFNN",
+    en: "SADEED & FNN Command",
+    icon: Bot,
+    ownerOnly: true,
+  },
+  {
     kind: "group",
     id: "facilities",
     ar: "المرافق",
@@ -135,9 +145,6 @@ export const SYSTEM_NAV: readonly SystemNavItem[] = [
     icon: DoorOpen,
   },
   { kind: "link", id: "patrols", to: "/sec/patrols", ar: "الدوريات", en: "Patrols", icon: Car },
-  // «الأفراد» بلا صفحة: أقرب بديلٍ حيّ **إدارة الورديات** (أعداد الحرّاس).
-  // كان `/team` فقِيس صفحة «قريباً» موضوعها دعوات مساحة العمل لا أفراد الأمن.
-  { kind: "link", id: "people", to: "/sec/shifts", ar: "الأفراد", en: "People", icon: Users },
   {
     kind: "link",
     id: "contractors",
@@ -224,6 +231,10 @@ export const SYSTEM_NAV: readonly SystemNavItem[] = [
     icon: Settings,
   },
 ];
+
+export function systemNavForOwner(allowed: boolean): readonly SystemNavItem[] {
+  return SYSTEM_NAV.filter((item) => !("ownerOnly" in item && item.ownerOnly) || allowed);
+}
 
 /** كلُّ وجهةٍ في السجل — للحارس ولأيّ سطحٍ يعدّها. */
 export function systemNavDestinations(): string[] {

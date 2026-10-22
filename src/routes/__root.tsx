@@ -560,10 +560,14 @@ function RootComponent() {
                     </SystemChrome>
                   </div>
                   {!isAccessGate && copilotReady && (
-                    <Suspense fallback={null}>
-                      <SadeedCopilot />
-                      <FnnOwnerChat />
-                    </Suspense>
+                    <>
+                      <Suspense fallback={null}>
+                        <SadeedCopilot />
+                      </Suspense>
+                      <Suspense fallback={null}>
+                        <FnnOwnerChat />
+                      </Suspense>
+                    </>
                   )}
                   <InstallAppBar />
                   {/* SADEED speaks ONLY inside Conversation Mode («مخاطبة») in the

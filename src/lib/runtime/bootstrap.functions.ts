@@ -140,7 +140,7 @@ export const bootstrapEnterprise = createServerFn({ method: "GET" })
       health: {
         realtime: "ready",
         ai_gateway: "ready",
-        scheduler: "ready",
+        scheduler: "degraded", // Unverified here; owner runtime status reads the durable heartbeat.
       },
       generated_at: new Date().toISOString(),
     };

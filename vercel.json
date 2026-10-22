@@ -10,7 +10,8 @@
   },
   "git": {
     "deploymentEnabled": {
-      "main": false
+      "main": false,
+      "code": false
     }
   },
   "headers": [

@@ -22,6 +22,17 @@ vi.mock("@/lib/dual-agent/command.functions", () => ({
   getDualAgentOverview: mocks.overview,
   executeFnnTask: mocks.dispatch,
 }));
+vi.mock("@/lib/runtime/status.functions", () => ({
+  getRuntimeStatus: vi.fn(async () => ({
+    enabled: false,
+    schedule: null,
+    last_attempt_at: null,
+    last_completed_at: null,
+    last_success_at: null,
+    last_status: "not_run",
+    last_error: null,
+  })),
+}));
 vi.mock("@tanstack/react-start", () => ({ useServerFn: (fn: unknown) => fn }));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (options: unknown) => ({ options }),

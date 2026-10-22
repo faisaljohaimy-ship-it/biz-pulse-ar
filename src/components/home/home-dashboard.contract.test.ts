@@ -60,6 +60,7 @@ const ROW_FILES = [
   "HomeDashboard.tsx", // المؤشرات السبعة
   "HomeMapCard.tsx", // الصدر يسارًا
   "HomeSadeedCard.tsx", // الصدر يمينًا
+  "HomeOwnerAgents.tsx", // مدخلا سديد وFNN للمالك، ضمن قواعد الصفوف نفسها
   "HomeOpsRow.tsx", // التشغيل
   "PatrolRouteMap.tsx", // رسم الدوريات داخل التشغيل
   "HomeAnalyticsRow.tsx", // التحليلات

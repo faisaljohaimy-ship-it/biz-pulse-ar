@@ -24,7 +24,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Settings, UserRound } from "lucide-react";
+import { BookOpen, Check, Settings, UserRound } from "lucide-react";
 import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
@@ -219,6 +219,12 @@ export function AccountMenu({ ar }: { ar: boolean }) {
         )}
 
         <div className="nx-acct-section">
+          <Link to="/guide" onClick={() => setOpen(false)} className={ROW}>
+            <BookOpen aria-hidden className="nx-acct-ico" />
+            <span className="min-w-0 flex-1 truncate">
+              {ar ? "كيف أستخدم سَدِيد؟" : "How to use SADEED"}
+            </span>
+          </Link>
           <Link to="/settings" onClick={() => setOpen(false)} className={ROW}>
             <Settings aria-hidden className="nx-acct-ico" />
             <span className="min-w-0 flex-1 truncate">{ar ? "الإعدادات" : "Settings"}</span>

@@ -1,5 +1,6 @@
+import "@/styles/home/home-owner-agents.css";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -9,6 +10,7 @@ import {
   KeyRound,
   Loader2,
   LockKeyhole,
+  Mail,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
@@ -73,7 +75,29 @@ function AuthPage() {
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"google" | "password" | "link" | null>(null);
+  const [activeAction, setActiveAction] = useState<typeof pendingAction>(null);
+  const [expiredAction, setExpiredAction] = useState<typeof pendingAction>(null);
+  const busy = pendingAction !== null;
+  const live = useRef(true);
+  const attempt = useRef<{
+    valid: boolean;
+    pending: boolean;
+    timer?: ReturnType<typeof setTimeout>;
+  } | null>(null);
+  useEffect(() => {
+    live.current = true;
+    return () => {
+      live.current = false;
+      if (attempt.current) {
+        attempt.current.valid = false;
+        clearTimeout(attempt.current.timer);
+      }
+    };
+  }, []);
+  const [linkRequested, setLinkRequested] = useState(false);
+  const [linkEmailInvalid, setLinkEmailInvalid] = useState(false);
+  const googleEnabled = import.meta.env.VITE_GOOGLE_AUTH_ENABLED !== "false";
 
   const goNext = () => {
     // بعد الدخول: الرئيسية. كانت الوجهة /nx-cockpit حتى حُجبت القمرة بأمر
@@ -87,41 +111,99 @@ function AuthPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading]);
 
-  async function handleGoogle() {
-    setBusy(true);
+  /** A UI deadline does not cancel an SDK request or make a second credential send safe. */
+  async function runSignIn<T>(
+    action: NonNullable<typeof pendingAction>,
+    request: () => Promise<T>,
+    onSuccess: (result: T) => void,
+  ) {
+    if (attempt.current?.pending) return;
+    const current = {
+      valid: true,
+      pending: true,
+      timer: undefined as ReturnType<typeof setTimeout> | undefined,
+    };
+    attempt.current = current;
+    setPendingAction(action);
+    setActiveAction(action);
+    setExpiredAction(null);
+    current.timer = setTimeout(() => {
+      if (!live.current || attempt.current !== current) return;
+      current.valid = false;
+      setActiveAction(null);
+      setExpiredAction(action);
+    }, 12_000);
     try {
-      const result = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: window.location.origin },
-      });
-      if (result.error) {
-        toast.error(signinErrorMessage(result.error.message ?? "", isAr));
-        setBusy(false);
-        return;
-      }
-      if (result.data.url) {
-        window.location.assign(result.data.url);
-        return;
-      }
-      goNext();
+      const result = await request();
+      if (live.current && attempt.current === current && current.valid) onSuccess(result);
     } catch (error) {
-      toast.error(signinErrorMessage(error instanceof Error ? error.message : String(error), isAr));
-      setBusy(false);
+      if (live.current && attempt.current === current && current.valid)
+        toast.error(
+          signinErrorMessage(error instanceof Error ? error.message : String(error), isAr),
+        );
+    } finally {
+      clearTimeout(current.timer);
+      current.pending = false;
+      if (live.current && attempt.current === current) {
+        setPendingAction(null);
+        setActiveAction(null);
+      }
     }
+  }
+
+  async function handleGoogle() {
+    if (!googleEnabled) return;
+    await runSignIn(
+      "google",
+      () =>
+        supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: window.location.origin, skipBrowserRedirect: true },
+        }),
+      (result) => {
+        if (result.error) {
+          toast.error(signinErrorMessage(result.error.message ?? "", isAr));
+          return;
+        }
+        if (result.data?.url) window.location.assign(result.data.url);
+        else throw new Error("missing_oauth_url");
+      },
+    );
+  }
+
+  async function handleSignInLink() {
+    if (attempt.current?.pending) return;
+    const address = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) {
+      setLinkEmailInvalid(true);
+      return;
+    }
+    setLinkEmailInvalid(false);
+    await runSignIn(
+      "link",
+      () =>
+        supabase.auth.signInWithOtp({
+          email: address,
+          options: { shouldCreateUser: false, emailRedirectTo: window.location.origin },
+        }),
+      (result) => {
+        if (result.error) throw result.error;
+        setLinkRequested(true);
+      },
+    );
   }
 
   async function handleEmail(event: FormEvent) {
     event.preventDefault();
-    setBusy(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      goNext();
-    } catch (error) {
-      toast.error(signinErrorMessage(error instanceof Error ? error.message : String(error), isAr));
-    } finally {
-      setBusy(false);
-    }
+    await runSignIn(
+      "password",
+      () => supabase.auth.signInWithPassword({ email, password }),
+      (result) => {
+        if (result.error) throw result.error;
+        if (result.data?.user && result.data?.session) goNext();
+        else throw new Error("missing_signin_confirmation");
+      },
+    );
   }
 
   if (!accepted) {
@@ -226,12 +308,23 @@ function AuthPage() {
           <Button
             type="button"
             onClick={() => void handleGoogle()}
-            disabled={busy}
+            disabled={busy || !googleEnabled}
             className="h-12 w-full bg-white text-slate-900 hover:bg-slate-100"
           >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+            {activeAction === "google" ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <GoogleIcon />
+            )}
             {isAr ? "المتابعة عبر Google" : "Continue with Google"}
           </Button>
+          {!googleEnabled && (
+            <p className="mt-2 text-sm text-white/70">
+              {isAr
+                ? "الدخول عبر Google غير متاح حاليًا. استخدم البريد وكلمة المرور، أو اطلب رابط دخول لحسابك."
+                : "Google sign-in is currently unavailable. Use email and password, or request a sign-in link for your account."}
+            </p>
+          )}
 
           <div className="my-5 flex items-center gap-3 text-[12px] uppercase tracking-[0.22em] text-white/35">
             <span className="h-px flex-1 bg-white/10" />
@@ -256,7 +349,10 @@ function AuthPage() {
                 type="button"
                 role="tab"
                 aria-selected={mode === key}
-                onClick={() => setMode(key)}
+                disabled={busy}
+                onClick={() => {
+                  if (!busy) setMode(key);
+                }}
                 className={`nx-focus-ring min-h-11 rounded-lg text-sm font-black transition-colors ${
                   // الرمزان لا `bg-primary`: كان التبويب المحدَّد 3.68:1 في الفاتح
                   // (قاسه حارس الجودة) — `--tone-blue` تحت `--surface` ≥ 4.5 في الوضعين.
@@ -270,8 +366,52 @@ function AuthPage() {
             ))}
           </div>
 
+          {expiredAction && (
+            <div
+              role="status"
+              className="mb-4 space-y-3 rounded-xl border border-primary/30 p-3 text-sm leading-relaxed"
+            >
+              <p>
+                {isAr
+                  ? "انتهت مهلة الانتظار دون تأكيد النتيجة. قد يكون طلب الدخول ما زال قيد المعالجة؛ لم نُعد إرساله."
+                  : "The wait ended without a confirmed result. The sign-in request may still be processing; it has not been sent again."}
+              </p>
+              {expiredAction === "link" && (
+                <p>
+                  {isAr
+                    ? "تحقق من بريدك قبل طلب رابط آخر."
+                    : "Check your email before requesting another link."}
+                </p>
+              )}
+              {busy && (
+                <p>
+                  {isAr
+                    ? "أزرار الدخول متوقفة حتى ينتهي الطلب الحالي."
+                    : "Sign-in controls remain disabled until the current request finishes."}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="nx-owner-control min-h-11"
+                  onClick={() => window.location.reload()}
+                >
+                  {isAr ? "إعادة تحميل الصفحة" : "Reload page"}
+                </Button>
+                <Link
+                  to="/"
+                  className="nx-owner-control inline-flex items-center rounded-lg border border-input px-3"
+                >
+                  {isAr ? "العودة للرئيسية" : "Return home"}
+                </Link>
+              </div>
+            </div>
+          )}
           {mode === "signup" ? (
-            <SignupForm isAr={isAr} onSignedIn={goNext} />
+            <fieldset disabled={busy}>
+              <SignupForm isAr={isAr} onSignedIn={goNext} />
+            </fieldset>
           ) : (
             <form onSubmit={handleEmail} className="space-y-4">
               <div>
@@ -280,14 +420,30 @@ function AuthPage() {
                 </Label>
                 <Input
                   id="email"
+                  disabled={busy}
                   type="email"
                   required
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setLinkRequested(false);
+                    setLinkEmailInvalid(false);
+                  }}
                   className="mt-1.5 h-12"
                   autoComplete="email"
                   inputMode="email"
+                  aria-invalid={linkEmailInvalid || undefined}
+                  aria-describedby={linkEmailInvalid ? "sign-in-link-email-error" : undefined}
                 />
+                {linkEmailInvalid && (
+                  <p
+                    id="sign-in-link-email-error"
+                    role="alert"
+                    className="mt-2 text-sm text-destructive"
+                  >
+                    {isAr ? "اكتب بريد حسابك أولًا." : "Enter your account email first."}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="password" className="text-xs text-white/60">
@@ -295,6 +451,7 @@ function AuthPage() {
                 </Label>
                 <Input
                   id="password"
+                  disabled={busy}
                   type="password"
                   required
                   minLength={8}
@@ -305,13 +462,34 @@ function AuthPage() {
                 />
               </div>
               <Button type="submit" disabled={busy} className="h-12 w-full text-sm font-black">
-                {busy ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                {activeAction === "password" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
                 ) : (
                   <KeyRound className="h-4 w-4" />
                 )}
                 {isAr ? "دخول مساحة القيادة" : "Enter command workspace"}
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy || linkRequested}
+                className="nx-owner-control min-h-12 w-full"
+                onClick={() => void handleSignInLink()}
+              >
+                {activeAction === "link" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Mail className="h-4 w-4" aria-hidden />
+                )}
+                {isAr ? "أرسل لي رابط دخول بالبريد" : "Email me a sign-in link"}
+              </Button>
+              {linkRequested && (
+                <p role="status" className="text-sm leading-relaxed text-white/75">
+                  {isAr
+                    ? "إذا كان البريد مرتبطًا بحساب، ستصلك رسالة الدخول. افتحها في المتصفح نفسه، وتحقق من البريد غير المرغوب فيه. لا تشارك الرابط مع أحد."
+                    : "If this email belongs to an account, a sign-in message will arrive. Open it in the same browser and check spam. Do not share the link."}
+                </p>
+              )}
             </form>
           )}
 
@@ -320,7 +498,10 @@ function AuthPage() {
                 صار التسجيل ذاتيًّا فوريًّا، فالرابط القديم يناقض النموذج فوقه. */}
             <button
               type="button"
-              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+              disabled={busy}
+              onClick={() => {
+                if (!busy) setMode(mode === "signup" ? "signin" : "signup");
+              }}
               className="nx-focus-ring min-h-11 text-xs font-semibold text-primary hover:text-[#3AE8FF]"
             >
               {mode === "signup"
@@ -333,7 +514,9 @@ function AuthPage() {
             </button>
             <button
               type="button"
+              disabled={busy}
               onClick={() => {
+                if (busy) return;
                 clearExecutiveAcceptance(window.localStorage);
                 setAccepted(false);
               }}

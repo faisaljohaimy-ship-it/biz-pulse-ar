@@ -10,7 +10,7 @@ import { existsSync, globSync, readFileSync, readdirSync } from "node:fs";
 import postcss from "postcss";
 import { describe, expect, it } from "vitest";
 import { isRouteHidden } from "@/lib/nav/hidden-routes";
-import { SYSTEM_NAV, systemNavDestinations } from "@/lib/nav/system-nav";
+import { SYSTEM_NAV, systemNavDestinations, systemNavForOwner } from "@/lib/nav/system-nav";
 import { SCREEN_NAMES } from "@/lib/nav/screen-names";
 
 const TREE = readFileSync("src/routeTree.gen.ts", "utf8");
@@ -65,9 +65,15 @@ describe("كلُّ وجهةٍ حيّة — لا رابط ميّت", () => {
   });
 });
 
-describe("عناصر التصميم العشرون، وبدائلُها معلنة", () => {
-  it("عشرون عنصرًا في المستوى الأعلى كما في التصميم", () => {
-    expect(SYSTEM_NAV.length).toBe(20);
+describe("عناصر التنقل العملية، وبدائلُها معلنة", () => {
+  it("إزالة مدخل الأفراد المضلل مع بقاء مساحة المالك مستقلة", () => {
+    expect(systemNavForOwner(false)).toHaveLength(19);
+    expect(SYSTEM_NAV.some((item) => item.id === "people")).toBe(false);
+    expect(systemNavForOwner(false).some((item) => item.id === "fnn-owner")).toBe(false);
+    expect(systemNavForOwner(true).find((item) => item.id === "fnn-owner")).toMatchObject({
+      to: "/orchestration",
+      ownerOnly: true,
+    });
   });
 
   it("«مركز القيادة» يقرأ اسمه الكانوني والوجهةُ بديله الحيّ", () => {

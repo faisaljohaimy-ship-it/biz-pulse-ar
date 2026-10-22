@@ -64,6 +64,7 @@ import { HomeBrandRow } from "@/components/home/HomeBrandRow";
 import { HomeKpiRow } from "@/components/home/HomeDashboard";
 import { HomeMapCard } from "@/components/home/HomeMapCard";
 import { HomeSadeedCard } from "@/components/home/HomeSadeedCard";
+import { HomeOwnerAgents } from "@/components/home/HomeOwnerAgents";
 import { HomeOpsRow } from "@/components/home/HomeOpsRow";
 import { HomeAnalyticsRow } from "@/components/home/HomeAnalyticsRow";
 import { HomeClosingBand } from "@/components/home/HomeClosingBand";
@@ -106,6 +107,8 @@ export function BlueprintPage() {
           <HomeMapCard />
           <HomeSadeedCard />
         </div>
+
+        <HomeOwnerAgents />
 
         {/* ════ التشغيل: أبرز المخاطر · الحوادث النشطة · الدوريات · الكاميرات. */}
         <HomeOpsRow />

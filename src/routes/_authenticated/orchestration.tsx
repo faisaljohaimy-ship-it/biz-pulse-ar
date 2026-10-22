@@ -1,3 +1,4 @@
+import { RuntimeOperationsStatus } from "@/components/agents/RuntimeOperationsStatus";
 import { useFnnOwner } from "@/lib/dual-agent/use-fnn-owner";
 import { useId, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -226,6 +227,7 @@ function CommandWorkspace({
           </>
         }
       >
+        <RuntimeOperationsStatus />
         <div className="grid gap-4 md:grid-cols-2">
           <Card className="space-y-2 border-primary/25 p-5">
             <Network className="h-6 w-6 text-primary" aria-hidden="true" />

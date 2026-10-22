@@ -34,7 +34,6 @@ import {
   MapPin,
   Move,
   OctagonAlert,
-  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -94,7 +93,6 @@ const LAYERS: readonly MapLayer[] = [
     icon: LockKeyhole,
     tone: "blue",
   },
-  { key: "people", ar: "الأفراد", en: "People", to: "/sec/shifts", icon: UserRound, tone: "blue" },
   {
     key: "assets",
     ar: "الأصول",
