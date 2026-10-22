@@ -259,9 +259,7 @@ const CinematicRoute = CinematicRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CinematicDemoRoute = CinematicDemoRouteImport.update({
-  id: '/cinematic',
   id: '/cinematic-demo',
-  path: '/cinematic',
   path: '/cinematic-demo',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -2684,14 +2682,16 @@ declare module '@tanstack/react-router' {
       parentRoute: typeof rootRouteImport
     }
     '/cinematic': {
-    '/cinematic-demo': {
       id: '/cinematic'
-      id: '/cinematic-demo'
       path: '/cinematic'
-      path: '/cinematic-demo'
       fullPath: '/cinematic'
-      fullPath: '/cinematic-demo'
       preLoaderRoute: typeof CinematicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cinematic-demo': {
+      id: '/cinematic-demo'
+      path: '/cinematic-demo'
+      fullPath: '/cinematic-demo'
       preLoaderRoute: typeof CinematicDemoRouteImport
       parentRoute: typeof rootRouteImport
     }
