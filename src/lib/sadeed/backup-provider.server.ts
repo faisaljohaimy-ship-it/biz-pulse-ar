@@ -25,6 +25,7 @@ export function shouldUseBackup(error: unknown): boolean {
     msg.includes("rate limit") ||
     msg.includes("resource_exhausted") ||
     msg.includes("overloaded") ||
+    /high demand|experiencing (?:high )?demand|temporarily busy|try again later/i.test(msg) ||
     msg.includes("unavailable") ||
     // A retired/unknown primary model id must not leave the user with no answer.
     /model[^\n]{0,60}?not (found|supported)/.test(msg)
