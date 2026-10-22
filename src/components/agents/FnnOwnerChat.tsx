@@ -17,7 +17,12 @@ import {
 import type { FnnPlan } from "@/lib/sadeed/orchestrator/fnn-plan";
 import "@/styles/home/home-owner-agents.css";
 
-type Turn = { id: number; question: string; plan: FnnPlan };
+type Turn = {
+  id: number;
+  question: string;
+  plan: FnnPlan;
+  source?: "deterministic" | "scheduled_report";
+};
 
 /** Its own dialog, transport and memory. No SADEED context, messages or guest fallback. */
 export function FnnOwnerChat() {
@@ -53,7 +58,7 @@ function OwnerConversation({ userId }: { userId: string }) {
       ]);
       setTurns((previous) => [
         ...previous.slice(-19),
-        { id: Date.now(), question: message, plan: reply.plan },
+        { id: Date.now(), question: message, plan: reply.plan, source: reply.source },
       ]);
       setQuestion("");
     } catch {
@@ -116,7 +121,8 @@ function OwnerConversation({ userId }: { userId: string }) {
         >
           {!turns.length && (
             <p className="text-sm text-muted-foreground">
-              مرحبًا بك. اكتب مهمة صيانة، بلاغ، استيراد ملف أو مراجعة كود، وسأجهّز خطواتها.
+              اكتب «حالة أتمتة FNN» لقراءة التقرير الدوري، أو مهمة صيانة أو مراجعة كود لتجهيز
+              خطواتها.
             </p>
           )}
           {turns.map((turn) => (
@@ -133,7 +139,9 @@ function OwnerConversation({ userId }: { userId: string }) {
                   ))}
                 </ol>
                 <p className="mt-3 text-xs text-muted-foreground">
-                  خطة مقترحة · لم يُنفّذ أي إجراء.
+                  {turn.source === "scheduled_report"
+                    ? "تقرير محفوظ من المجدول · هذه الرسالة لا تبدأ دورة جديدة."
+                    : "خطة مقترحة · لم يُنفّذ أي إجراء."}
                 </p>
               </div>
             </article>

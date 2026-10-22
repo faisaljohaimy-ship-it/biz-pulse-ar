@@ -34,4 +34,18 @@ describe("independent owner FNN chat", () => {
     view.rerender(<FnnOwnerChat />);
     expect(screen.queryByText("FNN: مراجعة البرمجة")).toBeNull();
   });
+  it("labels a saved scheduler report separately from a proposed plan", async () => {
+    mocks.ask.mockResolvedValue({
+      plan: { title: "أتمتة FNN: تعمل", steps: ["وقت الرصد محفوظ"], status: "prepared" },
+      source: "scheduled_report",
+    });
+    render(<FnnOwnerChat />);
+    fireEvent.click(screen.getByRole("button", { name: /فتح شات FNN/ }));
+    fireEvent.change(screen.getByLabelText("رسالتك إلى FNN"), {
+      target: { value: "حالة أتمتة FNN" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "إرسال إلى FNN" }));
+    await waitFor(() => expect(screen.getByText(/تقرير محفوظ من المجدول/)).toBeInTheDocument());
+    expect(screen.queryByText(/خطة مقترحة/)).toBeNull();
+  });
 });
