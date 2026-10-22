@@ -3,3 +3,8 @@
   min-block-size: 44px;
   min-inline-size: 44px;
 }
+
+/* The global logical input minimum overrides Tailwind's physical min-height. */
+.nx-owner-code-editor {
+  min-block-size: 13rem;
+}

@@ -53,8 +53,8 @@ export function HomeOwnerAgents() {
           </h3>
           <p className="text-sm text-muted-foreground">
             {ar
-              ? "محادثة مستقلة لتجهيز الأتمتة وحقن البيانات ومراجعة البرمجة. التنفيذ للأدوات المصرّح بها فقط؛ البرمجة والنشر خطط للمراجعة."
-              : "Independent automation, data ingestion and engineering planning. Execution uses authorized tools only; coding and deployment remain reviewable plans."}
+              ? "محادثة مستقلة للأتمتة، ومساحة code لتحرير الملفات وحفظ حزم خاصة. الحفظ لا يشغّل الكود أو ينشر الموقع؛ التنفيذ للأدوات المصرّح بها فقط."
+              : "Independent automation chat and a code workspace for editing files and saving private bundles. Saving does not run code or deploy the site; execution uses authorized tools only."}
           </p>
           <div className="flex flex-wrap gap-2">
             <Button className="nx-owner-control min-h-11" onClick={() => openFnn(userId)}>

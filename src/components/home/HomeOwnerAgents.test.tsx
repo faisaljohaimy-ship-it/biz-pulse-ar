@@ -13,6 +13,11 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("@/lib/dual-agent/use-fnn-owner", () => ({ useFnnOwner: () => mocks }));
 vi.mock("@/lib/dual-agent/owner.functions", () => ({ askFnn: mocks.ask }));
+vi.mock("@/lib/dual-agent/code-workspace.functions", () => ({
+  listFnnCodeBundles: vi.fn(),
+  readFnnCodeBundle: vi.fn(),
+  saveFnnCodeBundle: vi.fn(),
+}));
 vi.mock("@/lib/sadeed-core/hooks/useSadeed", () => ({
   useSadeed: () => ({ open: mocks.openSadeed }),
 }));

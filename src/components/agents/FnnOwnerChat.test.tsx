@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 const mocks = vi.hoisted(() => ({ allowed: true, userId: "owner", ask: vi.fn() }));
 vi.mock("@/lib/dual-agent/use-fnn-owner", () => ({ useFnnOwner: () => mocks }));
 vi.mock("@/lib/dual-agent/owner.functions", () => ({ askFnn: mocks.ask }));
+vi.mock("./FnnCodeWorkspace", () => ({ FnnCodeWorkspace: () => <div>code workspace</div> }));
 vi.mock("@tanstack/react-start", () => ({ useServerFn: (fn: unknown) => fn }));
 import { FnnOwnerChat } from "./FnnOwnerChat";
 import { useFnnChatStore } from "@/lib/dual-agent/fnn-chat-store";
@@ -33,6 +34,24 @@ describe("independent owner FNN chat", () => {
     mocks.userId = "new-owner";
     view.rerender(<FnnOwnerChat />);
     expect(screen.queryByText("FNN: مراجعة البرمجة")).toBeNull();
+  });
+  it("offers a lowercase code tab and preserves chat while switching tabs", async () => {
+    mocks.ask.mockResolvedValue({
+      plan: { title: "خطة محفوظة في الجلسة", steps: [], status: "prepared" },
+    });
+    render(<FnnOwnerChat />);
+    fireEvent.click(screen.getByRole("button", { name: /فتح شات FNN/ }));
+    fireEvent.change(screen.getByLabelText("رسالتك إلى FNN"), { target: { value: "راجع الملف" } });
+    fireEvent.click(screen.getByRole("button", { name: "إرسال إلى FNN" }));
+    await waitFor(() => expect(screen.getByText("FNN: خطة محفوظة في الجلسة")).toBeVisible());
+    fireEvent.mouseDown(screen.getByRole("tab", { name: /code/ }), { button: 0, ctrlKey: false });
+    expect(screen.getByText("code workspace")).toBeVisible();
+    expect(screen.getByText("FNN: خطة محفوظة في الجلسة")).not.toBeVisible();
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "المحادثة" }), {
+      button: 0,
+      ctrlKey: false,
+    });
+    expect(screen.getByText("FNN: خطة محفوظة في الجلسة")).toBeVisible();
   });
   it("labels a saved scheduler report separately from a proposed plan", async () => {
     mocks.ask.mockResolvedValue({

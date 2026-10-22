@@ -6,6 +6,8 @@ import { useFnnChatStore } from "@/lib/dual-agent/fnn-chat-store";
 import { askFnn } from "@/lib/dual-agent/owner.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FnnCodeWorkspace } from "./FnnCodeWorkspace";
 import {
   Sheet,
   SheetContent,
@@ -37,6 +39,7 @@ function OwnerConversation({ userId }: { userId: string }) {
   const close = useFnnChatStore((state) => state.close);
   useEffect(() => close, [close]);
   const ask = useServerFn(askFnn);
+  const [tab, setTab] = useState("chat");
   const [question, setQuestion] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
@@ -44,7 +47,10 @@ function OwnerConversation({ userId }: { userId: string }) {
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    const message = question.trim();
+    await sendMessage(question.trim());
+  }
+
+  async function sendMessage(message: string) {
     if (!message || busy) return;
     setBusy(true);
     setError(false);
@@ -95,96 +101,131 @@ function OwnerConversation({ userId }: { userId: string }) {
             محادثة مستقلة للأتمتة والبرمجة واستيراد البيانات. الوصول خاص بحساب مالك النظام.
           </SheetDescription>
         </SheetHeader>
-        <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 text-sm">
-          <p className="flex items-center gap-2 font-semibold">
-            <ShieldCheck className="h-4 w-4" aria-hidden /> صلاحية المالك موثّقة على الخادم
-          </p>
-          <p className="mt-2 text-muted-foreground">
-            يجهّز FNN الخطوات محليًا دون استدعاء نموذج مدفوع. التنفيذ متاح للأدوات المصرّح بها في
-            مساحة التنفيذ، والكتابات تتطلب اعتمادًا. البرمجة والنشر هنا خطط للمراجعة.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button asChild variant="outline" className="nx-owner-control min-h-11">
-              <a href="/orchestration">فتح أدوات FNN وسجل التنفيذ</a>
-            </Button>
-            <Button asChild variant="outline" className="nx-owner-control min-h-11">
-              <a href="/knowledge-upload">فحص واستيراد البيانات</a>
-            </Button>
-          </div>
-        </div>
-        <div
-          role="log"
-          aria-label="محادثة FNN المستقلة"
-          aria-live="polite"
-          aria-busy={busy}
-          className="min-h-24 flex-1 space-y-4 overflow-y-auto"
-        >
-          {!turns.length && (
-            <p className="text-sm text-muted-foreground">
-              اكتب «حالة أتمتة FNN» لقراءة التقرير الدوري، أو مهمة صيانة أو مراجعة كود لتجهيز
-              خطواتها.
-            </p>
-          )}
-          {turns.map((turn) => (
-            <article
-              key={turn.id}
-              className="space-y-3 rounded-xl border border-border p-4 text-sm"
-            >
-              <p className="whitespace-pre-wrap break-words font-semibold">أنت: {turn.question}</p>
-              <div className="rounded-lg bg-muted/50 p-3">
-                <p className="font-semibold">FNN: {turn.plan.title}</p>
-                <ol className="mt-2 list-inside list-decimal space-y-2">
-                  {turn.plan.steps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  {turn.source === "scheduled_report"
-                    ? "نتيجة محفوظة من المجدول · هذه الرسالة لا تبدأ دورة جديدة."
-                    : "خطة مقترحة · لم يُنفّذ أي إجراء."}
-                </p>
+        <Tabs value={tab} onValueChange={setTab} dir="rtl" className="flex min-h-0 flex-1 flex-col">
+          <TabsList className="grid shrink-0 grid-cols-2" aria-label="أقسام FNN">
+            <TabsTrigger value="chat" className="nx-owner-control min-h-11">
+              المحادثة
+            </TabsTrigger>
+            <TabsTrigger value="code" className="nx-owner-control min-h-11">
+              <bdi>code</bdi>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent
+            forceMount
+            value="chat"
+            hidden={tab !== "chat"}
+            className={
+              tab === "chat" ? "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto" : "hidden"
+            }
+          >
+            <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 text-sm">
+              <p className="flex items-center gap-2 font-semibold">
+                <ShieldCheck className="h-4 w-4" aria-hidden /> صلاحية المالك موثّقة على الخادم
+              </p>
+              <p className="mt-2 text-muted-foreground">
+                يجهّز FNN الخطوات محليًا دون استدعاء نموذج مدفوع. التنفيذ متاح للأدوات المصرّح بها
+                في مساحة التنفيذ، والكتابات تتطلب اعتمادًا. افتح code لتحرير الملفات وحفظ حزم خاصة.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button asChild variant="outline" className="nx-owner-control min-h-11">
+                  <a href="/orchestration">فتح أدوات FNN وسجل التنفيذ</a>
+                </Button>
+                <Button asChild variant="outline" className="nx-owner-control min-h-11">
+                  <a href="/knowledge-upload">فحص واستيراد البيانات</a>
+                </Button>
               </div>
-            </article>
-          ))}
-        </div>
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            تعذّر الوصول إلى مساحة المالك. أعد المحاولة أو سجّل الدخول مجددًا.
-          </p>
-        )}
-        <form onSubmit={submit} className="space-y-2">
-          <label htmlFor="fnn-owner-message" className="text-sm font-semibold">
-            رسالتك إلى FNN
-          </label>
-          <Textarea
-            id="fnn-owner-message"
-            value={question}
-            onChange={(event) => setQuestion(event.target.value)}
-            maxLength={2000}
-            required
-            placeholder="جهّز خطة مراجعة الكود والتكاملات…"
-          />
-          <div className="flex gap-2">
-            <Button
-              type="submit"
-              disabled={busy || !question.trim()}
-              className="nx-owner-control min-h-11 gap-2"
+            </div>
+            <div
+              role="log"
+              aria-label="محادثة FNN المستقلة"
+              aria-live="polite"
+              aria-busy={busy}
+              className="min-h-24 flex-1 space-y-4 overflow-y-auto"
             >
-              <Send className="h-4 w-4" aria-hidden />
-              {busy ? "جارٍ التجهيز…" : "إرسال إلى FNN"}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={busy}
-              className="nx-owner-control min-h-11 gap-2"
-              onClick={() => setTurns([])}
-            >
-              <Trash2 className="h-4 w-4" aria-hidden />
-              مسح المحادثة
-            </Button>
-          </div>
-        </form>
+              {!turns.length && (
+                <p className="text-sm text-muted-foreground">
+                  اكتب «حالة أتمتة FNN» لقراءة التقرير الدوري، أو «مهام أتمتة FNN» لقراءة المتابعات،
+                  أو مهمة مراجعة كود لتجهيز خطواتها.
+                </p>
+              )}
+              {turns.map((turn) => (
+                <article
+                  key={turn.id}
+                  className="space-y-3 rounded-xl border border-border p-4 text-sm"
+                >
+                  <p className="whitespace-pre-wrap break-words font-semibold">
+                    أنت: {turn.question}
+                  </p>
+                  <div className="rounded-lg bg-muted/50 p-3">
+                    <p className="font-semibold">FNN: {turn.plan.title}</p>
+                    <ol className="mt-2 list-inside list-decimal space-y-2">
+                      {turn.plan.steps.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ol>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      {turn.source === "scheduled_report"
+                        ? "نتيجة محفوظة من المجدول · هذه الرسالة لا تبدأ دورة جديدة."
+                        : "خطة مقترحة · لم يُنفّذ أي إجراء."}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+            {error && (
+              <p role="alert" className="text-sm text-destructive">
+                تعذّر الوصول إلى مساحة المالك. أعد المحاولة أو سجّل الدخول مجددًا.
+              </p>
+            )}
+            <form onSubmit={submit} className="space-y-2">
+              <label htmlFor="fnn-owner-message" className="text-sm font-semibold">
+                رسالتك إلى FNN
+              </label>
+              <Textarea
+                id="fnn-owner-message"
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                maxLength={2000}
+                required
+                placeholder="جهّز خطة مراجعة الكود والتكاملات…"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  disabled={busy || !question.trim()}
+                  className="nx-owner-control min-h-11 gap-2"
+                >
+                  <Send className="h-4 w-4" aria-hidden />
+                  {busy ? "جارٍ التجهيز…" : "إرسال إلى FNN"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={busy}
+                  className="nx-owner-control min-h-11 gap-2"
+                  onClick={() => setTurns([])}
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden />
+                  مسح المحادثة
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+          <TabsContent
+            forceMount
+            value="code"
+            hidden={tab !== "code"}
+            className={tab === "code" ? "min-h-0 flex-1 overflow-y-auto" : "hidden"}
+          >
+            <FnnCodeWorkspace
+              automationBusy={busy}
+              onReadAutomation={() => {
+                setTab("chat");
+                void sendMessage("حالة أتمتة FNN");
+              }}
+            />
+          </TabsContent>
+        </Tabs>
       </SheetContent>
     </Sheet>
   );
