@@ -9,7 +9,10 @@ export const Route = createFileRoute("/cinematic")({
   head: () => ({
     meta: [
       { title: "SADEED | التجربة السينمائية" },
-      { name: "description", content: "عرض موشن جرافيك سينمائي تفاعلي للتوأم الرقمي والأمن الصناعي" },
+      {
+        name: "description",
+        content: "عرض موشن جرافيك سينمائي تفاعلي للتوأم الرقمي والأمن الصناعي",
+      },
     ],
   }),
   component: SadeedCinematicExperience,
@@ -25,19 +28,37 @@ function SadeedCinematicExperience() {
   return (
     <main className="sd-cinema" dir="rtl">
       <div className="sd-cinema-toolbar">
-        <Link to="/" className="sd-cinema-back">العودة إلى سديد</Link>
+        <Link to="/" className="sd-cinema-back">
+          العودة إلى سديد
+        </Link>
         <span className="sd-cinema-label">SADEED · CINEMATIC DIGITAL TWIN</span>
         <div className="sd-cinema-actions">
-          <button type="button" className="sd-cinema-control" onClick={() => setPlaying(v => !v)} aria-pressed={playing}>
+          <button
+            type="button"
+            className="sd-cinema-control"
+            onClick={() => setPlaying((v) => !v)}
+            aria-pressed={playing}
+          >
             {playing ? "⏸ إيقاف الحركة" : "▶ تشغيل العرض"}
           </button>
-          <button type="button" className="sd-cinema-control" onClick={() => stage.current?.requestFullscreen?.()} aria-label="عرض بملء الشاشة">
+          <button
+            type="button"
+            className="sd-cinema-control"
+            onClick={() => stage.current?.requestFullscreen?.()}
+            aria-label="عرض بملء الشاشة"
+          >
             ⛶ ملء الشاشة
           </button>
         </div>
       </div>
-      <section ref={stage} className={`sd-cinema-stage ${playing ? "is-playing" : ""}`} aria-label="موشن جرافيك سينمائي تفاعلي لمنشآت الطاقة">
-        <div className="sd-cinema-picture"><img src={HERO_IMAGE} alt="منشآت كهرباء السعودية والتوأم الرقمي" loading="eager" /></div>
+      <section
+        ref={stage}
+        className={`sd-cinema-stage ${playing ? "is-playing" : ""}`}
+        aria-label="موشن جرافيك سينمائي تفاعلي لمنشآت الطاقة"
+      >
+        <div className="sd-cinema-picture">
+          <img src={HERO_IMAGE} alt="منشآت كهرباء السعودية والتوأم الرقمي" loading="eager" />
+        </div>
         <div className="sd-cinema-particles" aria-hidden="true" />
         <div className="sd-cinema-scan" aria-hidden="true" />
         <div className="sd-cinema-orbit orbit-a" aria-hidden="true" />
@@ -49,9 +70,17 @@ function SadeedCinematicExperience() {
           <h1>التوأم الرقمي للأمن الصناعي</h1>
           <p>طاقة متصلة · استجابة ذكية · رؤية وطنية</p>
         </div>
-        <div className="sd-cinema-bottom"><span className="sd-cinema-live"><i /> DIGITAL TWIN</span><span>SADEED · INDUSTRIAL SECURITY</span></div>
+        <div className="sd-cinema-bottom">
+          <span className="sd-cinema-live">
+            <i /> DIGITAL TWIN
+          </span>
+          <span>SADEED · INDUSTRIAL SECURITY</span>
+        </div>
       </section>
-      <p className="sd-cinema-disclosure">مشهد موشن جرافيك سينمائي يعمل داخل المتصفح، وليس ملف فيديو MP4 أو بثًا حيًا. أي أرقام ظاهرة داخل الرسم توضيحية وليست بيانات تشغيلية مباشرة.</p>
+      <p className="sd-cinema-disclosure">
+        مشهد موشن جرافيك سينمائي يعمل داخل المتصفح، وليس ملف فيديو MP4 أو بثًا حيًا. أي أرقام ظاهرة
+        داخل الرسم توضيحية وليست بيانات تشغيلية مباشرة.
+      </p>
     </main>
   );
 }
