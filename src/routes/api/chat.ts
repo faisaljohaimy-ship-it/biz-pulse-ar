@@ -8,6 +8,7 @@ import {
   type UIMessage,
 } from "ai";
 import { createGoogleGeminiProvider, GOOGLE_MODELS } from "@/lib/ai-gateway.server";
+import { providerErrorMessage } from "@/lib/sadeed/provider-error";
 import {
   createSadeedOpenAiModel,
   openAiRequested,
@@ -1045,28 +1046,6 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
         // Buffer the FULL model turn on the server (tools still run), finalize
         // it through the output gateway, and emit ONLY the safe display text.
         // No raw model token is ever piped to the browser (Option A).
-        const mapProviderError = (error: unknown): string => {
-          const msg = error instanceof Error ? error.message : String(error);
-          const status = (msg.match(/\b(4\d\d|5\d\d)\b/) ?? [])[1];
-          const lower = msg.toLowerCase();
-          // المخاطَب مديرٌ تنفيذي لا مشغّل نظام: الرسالة تقول ما جرى وما
-          // يفعله هو الآن — لا اسم مورّد، ولا متغيّر بيئة، ولا تعليمةَ نشر.
-          // التفصيل التقني يبقى في سجل الخادم أعلاه، والمعرّف وحده يُعرض
-          // ليربط الشكوى بالسجل. وكل نصّ هنا يعبر قناع المزوّدين سليمًا —
-          // يحرسه `vendor-mask.contract.test.ts`.
-          if (status === "401" || status === "403" || lower.includes("authenticat"))
-            return "محرّك التحليل غير متاح لهذه الجلسة. يمكنني فتح الشاشات وشرح مؤشّراتها ريثما يعود.";
-          if (status === "402" || lower.includes("credit") || lower.includes("quota"))
-            return "بلغت الجلسة حدّ التحليل المتاح الآن — أعد المحاولة بعد قليل.";
-          if (status === "429") return "الطلبات كثيرة الآن — أعد المحاولة بعد لحظات.";
-          if (status === "404" || lower.includes("not found") || lower.includes("no such model"))
-            return "محرّك التحليل غير متاح لهذه الجلسة — أعد المحاولة بعد قليل.";
-          if (status === "400")
-            return "تعذّر تنفيذ الطلب بصيغته الحالية — اختصر السؤال أو أعد المحاولة.";
-          if (lower.includes("aborterror") || lower.includes("timeout"))
-            return "استغرق سَدِيد وقتًا طويلًا — أعد المحاولة، وسيُعيد الاتصال تلقائيًا.";
-          return `تعذّر إكمال الرد${status ? ` (رمز ${status})` : ""} — أعد المحاولة. المعرّف: ${requestId}`;
-        };
 
         // ── خانة نداء النموذج (سقف التزامن لكل معزول) — عند النموذج مباشرةً ──
         releaseSlot = acquireModelSlot();
@@ -1086,6 +1065,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
 
         let rawModelText = "";
         let generationErrorText: string | null = null;
+        let toolExecutionStarted = false;
         const providerDeadline = new AbortController();
         const providerTimer = useOpenAi
           ? setTimeout(
@@ -1105,6 +1085,9 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               system: systemPrompt,
               messages: modelMessages,
               tools,
+              experimental_onToolCallStart: () => {
+                toolExecutionStarted = true;
+              },
               toolChoice: "auto",
               stopWhen: stepCountIs(useOpenAi ? 2 : 8),
               maxRetries: retries,
@@ -1135,7 +1118,13 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               // multi-hour Retry-After that left the chat "thinking" forever.
               gen = await run(model, 0);
             } catch (primaryError) {
-              if (!backupModel || !backup.shouldUseBackup(primaryError)) throw primaryError;
+              if (
+                toolExecutionStarted ||
+                request.signal.aborted ||
+                !backupModel ||
+                !backup.shouldUseBackup(primaryError)
+              )
+                throw primaryError;
               const msg = String(
                 primaryError instanceof Error ? primaryError.message : primaryError,
               );
@@ -1162,7 +1151,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             : error instanceof Error
               ? error.message
               : String(error);
-          generationErrorText = mapProviderError(useOpenAi ? new Error(errMsg) : error);
+          generationErrorText = providerErrorMessage(error, requestId, { toolExecutionStarted });
           console.error("[api/chat] generateText error", { requestId, vendor, error: errMsg });
           if (userId) {
             void supabase
