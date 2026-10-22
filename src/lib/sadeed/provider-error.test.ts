@@ -29,6 +29,39 @@ describe("provider failure classification", () => {
       expect(shouldUseBackup(error)).toBe(true);
     },
   );
+  it.each([
+    "You exceeded your current quota, please check your plan and billing details.",
+    "Quota exceeded for the configured allowance.",
+    "The quota is exhausted.",
+    "403 mentioned in diagnostics; quota has been exceeded.",
+  ])("distinguishes explicit quota exhaustion in a structured SDK429: %s", (message) => {
+    const error = apiError(429, message);
+    expect(classifyProviderFailure(error)).toEqual({
+      status: 429,
+      kind: "credit",
+      backupEligible: true,
+    });
+    expect(providerErrorMessage(error, "quota-test")).toContain("بلغت الجلسة حدّ التحليل المتاح");
+    expect(shouldUseBackup(error)).toBe(true);
+  });
+  it.each([
+    "Too many requests; rate limit reached.",
+    "RESOURCE_EXHAUSTED",
+    "Quota is not exceeded; request rate limited.",
+  ])("keeps ambiguous/rate SDK429 throttling separate: %s", (message) => {
+    const error = apiError(429, message);
+    expect(classifyProviderFailure(error).kind).toBe("rate_limit");
+    expect(providerErrorMessage(error, "rate-test")).toContain("الطلبات كثيرة");
+    expect(shouldUseBackup(error)).toBe(true);
+  });
+  it("never sends a structured402 quota denial to the backup", () => {
+    const error = apiError(402, "quota exceeded; 429 rate limit");
+    expect(classifyProviderFailure(error)).toEqual({
+      status: 402,
+      kind: "credit",
+      backupEligible: false,
+    });
+  });
   it("recognizes the exact high-demand message, plain status and wrapped SDK lastError", () => {
     expect(classifyProviderFailure(new Error(highDemand)).kind).toBe("transient");
     expect(shouldUseBackup({ status: 503, message: highDemand })).toBe(true);

@@ -80,7 +80,15 @@ export function classifyProviderFailure(error: unknown): ProviderFailure {
   if (status === 400) return result("invalid_request");
   if (status === 401 || status === 403) return result("denied");
   if (status === 402) return result("credit");
-  if (status === 429) return result("rate_limit", true);
+  if (status === 429) {
+    // Both request throttling and an exhausted allowance can be 429. The
+    // generic RESOURCE_EXHAUSTED code alone does not distinguish them.
+    const exhaustedQuota =
+      /\bquota(?:\s+(?:has\s+been|is|was|limit(?:\s+has\s+been)?))?\s+(?:exceeded|exhausted)\b|\b(?:exceeded|exhausted)\s+(?:(?:your|the|current|daily|monthly|available)\s+){0,4}quota\b/.test(
+        text,
+      );
+    return result(exhaustedQuota ? "credit" : "rate_limit", true);
+  }
   if (status !== null && transientStatuses.has(status)) return result("transient", true);
   const missingModel = /model[^\n]{0,60}?not (found|supported)/.test(text);
   if (status === 404) return result("model_unavailable", missingModel);

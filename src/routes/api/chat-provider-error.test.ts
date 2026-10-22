@@ -131,6 +131,20 @@ describe("actual chat route provider errors", () => {
     expect(text).toContain(response.headers.get("X-SADEED-Request-ID"));
     expect(text).not.toContain(highDemand);
   });
+  it("distinguishes exhausted quota from request pressure in the actual structured429 response", async () => {
+    state.error = new APICallError({
+      message: "You exceeded your current quota, please check your plan and billing details.",
+      statusCode: 429,
+      url: "https://provider.invalid",
+      requestBodyValues: {},
+    });
+    const response = await post();
+    const text = await shownText(response);
+    expect(state.calls).toBe(1);
+    expect(text).toContain("بلغت الجلسة حدّ التحليل المتاح الآن");
+    expect(text).not.toContain("الطلبات كثيرة");
+    expect(text).not.toContain("billing");
+  });
   it("routes a structured503 to the existing configured backup once", async () => {
     state.backup = true;
     const response = await post();
