@@ -65,9 +65,10 @@ describe("كلُّ وجهةٍ حيّة — لا رابط ميّت", () => {
   });
 });
 
-describe("عناصر التصميم العشرون، وبدائلُها معلنة", () => {
-  it("عشرون عنصرًا في المستوى الأعلى كما في التصميم", () => {
-    expect(systemNavForOwner(false)).toHaveLength(20);
+describe("عناصر التنقل العملية، وبدائلُها معلنة", () => {
+  it("إزالة مدخل الأفراد المضلل مع بقاء مساحة المالك مستقلة", () => {
+    expect(systemNavForOwner(false)).toHaveLength(19);
+    expect(SYSTEM_NAV.some((item) => item.id === "people")).toBe(false);
     expect(systemNavForOwner(false).some((item) => item.id === "fnn-owner")).toBe(false);
     expect(systemNavForOwner(true).find((item) => item.id === "fnn-owner")).toMatchObject({
       to: "/orchestration",

@@ -5,7 +5,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { bootstrapEnterprise, type RuntimeBootstrap } from "./bootstrap.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { InitializingShell } from "./InitializingShell";
-import { useRuntimeScheduler } from "./useRuntimeScheduler";
 import { useAuth } from "@/lib/auth-context";
 
 type RuntimeContextValue = RuntimeBootstrap & {
@@ -77,8 +76,7 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
     };
   }, [hasData, qc]);
 
-  // Autonomous runtime scheduler — enabled once bootstrap data is hydrated.
-  useRuntimeScheduler(!!data);
+  // Browsers observe runtime state. Database cron owns maintenance, even with all tabs closed.
 
   if (authLoading) {
     return <InitializingShell error={null} />;
@@ -102,7 +100,7 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
         workflows_enabled: 0,
       },
       integrations: { microsoft_connected: false },
-      health: { realtime: "ready", ai_gateway: "ready", scheduler: "ready" },
+      health: { realtime: "ready", ai_gateway: "ready", scheduler: "degraded" },
       generated_at: new Date().toISOString(),
     };
     const value: RuntimeContextValue = { ...stub, refresh: async () => undefined };
