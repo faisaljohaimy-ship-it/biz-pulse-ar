@@ -17,7 +17,7 @@ import { Route as AupRouteImport } from './routes/aup'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BlueprintRouteImport } from './routes/blueprint'
 import { Route as BookRouteImport } from './routes/book'
-import { Route as CinematicDemoRouteImport } from './routes/cinematic-demo'
+import { Route as CinematicRouteImport } from './routes/cinematic'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
@@ -252,9 +252,9 @@ const BookRoute = BookRouteImport.update({
   path: '/book',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CinematicDemoRoute = CinematicDemoRouteImport.update({
-  id: '/cinematic-demo',
-  path: '/cinematic-demo',
+const CinematicRoute = CinematicRouteImport.update({
+  id: '/cinematic',
+  path: '/cinematic',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConnectRoute = ConnectRouteImport.update({
@@ -1292,7 +1292,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/blueprint': typeof BlueprintRoute
   '/book': typeof BookRoute
-  '/cinematic-demo': typeof CinematicDemoRoute
+  '/cinematic': typeof CinematicRoute
   '/connect': typeof ConnectRoute
   '/contact': typeof ContactRoute
   '/cookie-policy': typeof CookiePolicyRoute
@@ -1496,7 +1496,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/blueprint': typeof BlueprintRoute
   '/book': typeof BookRoute
-  '/cinematic-demo': typeof CinematicDemoRoute
+  '/cinematic': typeof CinematicRoute
   '/connect': typeof ConnectRoute
   '/contact': typeof ContactRoute
   '/cookie-policy': typeof CookiePolicyRoute
@@ -1700,7 +1700,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/blueprint': typeof BlueprintRoute
   '/book': typeof BookRoute
-  '/cinematic-demo': typeof CinematicDemoRoute
+  '/cinematic': typeof CinematicRoute
   '/connect': typeof ConnectRoute
   '/contact': typeof ContactRoute
   '/cookie-policy': typeof CookiePolicyRoute
@@ -1906,7 +1906,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blueprint'
     | '/book'
-    | '/cinematic-demo'
+    | '/cinematic'
     | '/connect'
     | '/contact'
     | '/cookie-policy'
@@ -2110,7 +2110,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blueprint'
     | '/book'
-    | '/cinematic-demo'
+    | '/cinematic'
     | '/connect'
     | '/contact'
     | '/cookie-policy'
@@ -2313,7 +2313,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/blueprint'
     | '/book'
-    | '/cinematic-demo'
+    | '/cinematic'
     | '/connect'
     | '/contact'
     | '/cookie-policy'
@@ -2519,7 +2519,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BlueprintRoute: typeof BlueprintRoute
   BookRoute: typeof BookRoute
-  CinematicDemoRoute: typeof CinematicDemoRoute
+  CinematicRoute: typeof CinematicRoute
   ConnectRoute: typeof ConnectRoute
   ContactRoute: typeof ContactRoute
   CookiePolicyRoute: typeof CookiePolicyRoute
@@ -2668,11 +2668,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cinematic-demo': {
-      id: '/cinematic-demo'
-      path: '/cinematic-demo'
-      fullPath: '/cinematic-demo'
-      preLoaderRoute: typeof CinematicDemoRouteImport
+    '/cinematic': {
+      id: '/cinematic'
+      path: '/cinematic'
+      fullPath: '/cinematic'
+      preLoaderRoute: typeof CinematicRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/connect': {
@@ -4314,7 +4314,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BlueprintRoute: BlueprintRoute,
   BookRoute: BookRoute,
-  CinematicDemoRoute: CinematicDemoRoute,
+  CinematicRoute: CinematicRoute,
   ConnectRoute: ConnectRoute,
   ContactRoute: ContactRoute,
   CookiePolicyRoute: CookiePolicyRoute,
