@@ -4,6 +4,17 @@ import { n } from "./page-narrations.base";
 
 export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   [
+    "/cinematic",
+    n(
+      "التجربة السينمائية للتوأم الرقمي",
+      "Cinematic Digital Twin Experience",
+      "عرض تفاعلي بصري لمنشآت الطاقة وشبكات الكهرباء والأمن الصناعي",
+      "an interactive visual experience of energy facilities, electricity networks, and industrial security",
+      "استكشاف المشهد السينمائي والتحكم بالحركة والعرض بملء الشاشة",
+      "explore the cinematic scene and control motion and fullscreen presentation",
+    ),
+  ],
+  [
     "/settings",
     n(
       "الإعدادات",
