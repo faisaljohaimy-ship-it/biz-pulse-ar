@@ -132,26 +132,53 @@ function TwinPage() {
         <RegionTwinScene regionId={regionId} assets={assets} />
       </section>
 
-      <section className="rounded-2xl border border-cyan-300/40 bg-card p-4 shadow-sm" aria-label="تجربة سديد السينمائية">
+      <section
+        className="rounded-2xl border border-cyan-300/40 bg-card p-4 shadow-sm"
+        aria-label="تجربة سديد السينمائية"
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-bold">التوأم الرقمي السينمائي</h2>
-            <p className="text-sm text-muted-foreground">عرض بصري تفاعلي لشبكات الطاقة والمنشآت، مستقل عن بيانات المراقبة الحقيقية.</p>
+            <p className="text-sm text-muted-foreground">
+              عرض بصري تفاعلي لشبكات الطاقة والمنشآت، مستقل عن بيانات المراقبة الحقيقية.
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className="rounded-full bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" onClick={() => setCinemaOpen(v => !v)} aria-expanded={cinemaOpen}>
+            <button
+              type="button"
+              className="rounded-full bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              onClick={() => setCinemaOpen((v) => !v)}
+              aria-expanded={cinemaOpen}
+            >
               {cinemaOpen ? "إغلاق العرض" : "▶ تشغيل العرض السينمائي"}
             </button>
-            <a href="/cinematic" className="rounded-full border border-cyan-400 px-4 py-2 text-sm font-semibold">ملء الشاشة ↗</a>
+            <a
+              href="/cinematic"
+              className="rounded-full border border-cyan-400 px-4 py-2 text-sm font-semibold"
+            >
+              ملء الشاشة ↗
+            </a>
           </div>
         </div>
         {cinemaOpen && (
-          <iframe title="مشهد سديد السينمائي التفاعلي" src="/cinematic" loading="lazy" allowFullScreen className="mt-4 h-[65vh] min-h-[420px] w-full rounded-xl border border-cyan-400/20 bg-slate-950" />
+          <iframe
+            title="مشهد سديد السينمائي التفاعلي"
+            src="/cinematic"
+            loading="lazy"
+            allowFullScreen
+            className="mt-4 h-[65vh] min-h-[420px] w-full rounded-xl border border-cyan-400/20 bg-slate-950"
+          />
         )}
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className="rounded-full border px-3 py-1">المشهد السينمائي: عرض توضيحي — ليس بثًا مباشرًا</span>
-          <span className="rounded-full border px-3 py-1">بيانات الأصول: تحديث دوري كل 60 ثانية عند توفر الاتصال</span>
-          <span className="rounded-full border px-3 py-1">البث الحقيقي يتطلب مصدرًا معتمدًا وصلاحية وصول</span>
+          <span className="rounded-full border px-3 py-1">
+            المشهد السينمائي: عرض توضيحي — ليس بثًا مباشرًا
+          </span>
+          <span className="rounded-full border px-3 py-1">
+            بيانات الأصول: تحديث دوري كل 60 ثانية عند توفر الاتصال
+          </span>
+          <span className="rounded-full border px-3 py-1">
+            البث الحقيقي يتطلب مصدرًا معتمدًا وصلاحية وصول
+          </span>
         </div>
       </section>
 
