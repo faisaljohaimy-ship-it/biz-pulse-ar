@@ -627,11 +627,15 @@ describe("② الاعتماد يُنفَّذ مرّة واحدة على الص�
 /* ----------------------- ③ idempotency & retry policy ---------------------- */
 
 function runnerDb(toolId: string, extra: Responder = () => undefined) {
+  const execution: Record<string, unknown> = { id: "exec-new", org_id: ORG, status: "running" };
   return fakeDb((q) => {
     if (q.table === "org_members") return { data: [{ org_id: ORG }] };
     if (q.table === "tool_registry") return { data: regRow(toolId, false) };
     if (q.table === "tool_executions" && q.op === "insert") return { data: { id: "exec-new" } };
-    return extra(q);
+    const overridden = extra(q);
+    if (overridden !== undefined) return overridden;
+    if (q.table === "tool_executions" && q.op === "update") return applyUpdate(q, execution);
+    return undefined;
   });
 }
 
@@ -674,6 +678,7 @@ describe("③ ما له أثرٌ جانبيّ لا يُعاد — والقراء
     expect(db.rpcLog).toHaveLength(1);
     expect(res.status).toBe("failed");
     expect(res.attempts).toBe(1);
+    expect(res.outcomeUnknown).toBe(true);
     expect(res.error).toMatch(/timed out after 20ms — outcome unknown, not retried/);
     const final = db.log.filter((q) => q.table === "tool_executions" && q.op === "update").at(-1)!;
     expect(final.payload).toMatchObject({ status: "failed", attempt: 1, error: res.error });
@@ -1123,4 +1128,142 @@ describe("⑥ انتهاء مهلة الاعتماد يُخرج الغلاف م�
     expect(f.admin.log.some((q) => q.op === "insert" && q.table === "tool_executions")).toBe(false);
     expect(f.rows[0].status).not.toBe("queued");
   });
+});
+
+/* ---------- Completion persistence is not permission to repeat a tool ------ */
+describe("tool completion requires a durable compare-and-set acknowledgement", () => {
+  const run = (db: ReturnType<typeof runnerDb>) =>
+    executeTool(db.client, {
+      toolId: "sql.read",
+      input: { table: "sec_incidents" },
+      actorId: USER,
+      orgId: ORG,
+      retry: { max: 2, baseMs: 0 },
+    });
+  it.each(["error", "no_rows", "throw"] as const)(
+    "does not retry an idempotent executor after completion persistence %s",
+    async (failure) => {
+      let reads = 0;
+      const db = runnerDb("sql.read", (q) => {
+        if (q.table === "sec_incidents") {
+          reads++;
+          return { data: [{ id: "inc-1" }] };
+        }
+        if (q.table === "tool_executions" && q.op === "update") {
+          if (failure === "throw") throw new Error("fetch failed after executor returned");
+          return failure === "error" ? { error: { message: "fetch failed" } } : { data: [] };
+        }
+        return undefined;
+      });
+      const result = await run(db);
+      expect(result).toMatchObject({ status: "failed", attempts: 1, outcomeUnknown: true });
+      expect(result.error).toMatch(/outcome unknown, not retried/);
+      expect(reads).toBe(1);
+      const updates = db.log.filter((q) => q.table === "tool_executions" && q.op === "update");
+      expect(updates).toHaveLength(1);
+      expect(has(updates[0], "eq", "id", "exec-new")).toBe(true);
+      expect(has(updates[0], "eq", "org_id", ORG)).toBe(true);
+      expect(has(updates[0], "eq", "status", "running")).toBe(true);
+      expect(updates[0].returning).toBe(true);
+      expect(auditActions(db.log)).toContain("tool.execute.outcome_unknown");
+      expect(auditActions(db.log)).not.toContain("tool.execute.success");
+      expect(auditActions(db.log)).not.toContain("tool.execute.retry");
+      expect(auditActions(db.log)).not.toContain("tool.execute.fail");
+      expect(
+        db.log.some(
+          (q) =>
+            q.table === "enterprise_events" &&
+            String(q.payload?.topic).startsWith("tool.succeeded."),
+        ),
+      ).toBe(false);
+    },
+  );
+  it("does not overwrite a success committed before its acknowledgement was lost", async () => {
+    let committedStatus = "running";
+    let reads = 0;
+    const db = runnerDb("sql.read", (q) => {
+      if (q.table === "sec_incidents") {
+        reads++;
+        return { data: [] };
+      }
+      if (q.table === "tool_executions" && q.op === "update") {
+        committedStatus = q.payload?.status as string;
+        return { error: { message: "connection reset after commit" } };
+      }
+      return undefined;
+    });
+    expect(await run(db)).toMatchObject({ status: "failed", attempts: 1, outcomeUnknown: true });
+    expect(committedStatus).toBe("succeeded");
+    expect(reads).toBe(1);
+    expect(db.log.filter((q) => q.table === "tool_executions" && q.op === "update")).toHaveLength(
+      1,
+    );
+  });
+  it.each(["returned", "failed"] as const)(
+    "preserves concurrent cancellation when the executor %s",
+    async (executorOutcome) => {
+      const cancelled: Record<string, unknown> = {
+        id: "exec-new",
+        org_id: ORG,
+        status: "cancelled",
+      };
+      const db = runnerDb("sql.read", (q) => {
+        if (q.table === "sec_incidents")
+          return executorOutcome === "returned"
+            ? { data: [] }
+            : { error: { message: "permission denied" } };
+        if (q.table === "tool_executions" && q.op === "update") return applyUpdate(q, cancelled);
+        return undefined;
+      });
+      const result = await run(db);
+      expect(result).toMatchObject({ status: "failed", attempts: 1, outcomeUnknown: true });
+      expect(cancelled.status).toBe("cancelled");
+      const updates = db.log.filter((q) => q.table === "tool_executions" && q.op === "update");
+      expect(updates).toHaveLength(1);
+      expect(has(updates[0], "eq", "org_id", ORG)).toBe(true);
+      expect(has(updates[0], "eq", "status", "running")).toBe(true);
+      expect(auditActions(db.log)).not.toContain("tool.execute.success");
+      expect(auditActions(db.log)).not.toContain("tool.execute.fail");
+    },
+  );
+  it("publishes success only after the exact running execution was acknowledged", async () => {
+    const db = runnerDb("sql.read", (q) =>
+      q.table === "sec_incidents" ? { data: [] } : undefined,
+    );
+    expect(await run(db)).toMatchObject({ status: "succeeded", attempts: 1 });
+    const updateAt = db.log.findIndex((q) => q.table === "tool_executions" && q.op === "update");
+    const auditAt = db.log.findIndex(
+      (q) => q.table === "audit_logs" && q.payload?.action === "tool.execute.success",
+    );
+    expect(updateAt).toBeLessThan(auditAt);
+    expect(
+      db.log.some(
+        (q) => q.table === "enterprise_events" && q.payload?.topic === "tool.succeeded.sql.read",
+      ),
+    ).toBe(true);
+  });
+  it.each(["error", "throw"] as const)(
+    "reports unknown final state when failure persistence returns %s",
+    async (failure) => {
+      const db = runnerDb("sql.read", (q) => {
+        if (q.table === "sec_incidents") return { error: { message: "permission denied" } };
+        if (q.table === "tool_executions" && q.op === "update") {
+          if (failure === "throw") throw new Error("connection reset");
+          return { error: { message: "failure write rejected" } };
+        }
+        return undefined;
+      });
+      const result = await run(db);
+      expect(result).toMatchObject({ status: "failed", attempts: 1, outcomeUnknown: true });
+      expect(result.error).toMatch(/final execution state could not be confirmed/);
+      expect(auditActions(db.log)).toContain("tool.execute.outcome_unknown");
+      expect(auditActions(db.log)).not.toContain("tool.execute.fail");
+      expect(
+        db.log.some(
+          (q) =>
+            q.table === "enterprise_events" && String(q.payload?.topic).startsWith("tool.failed."),
+        ),
+      ).toBe(false);
+    },
+  );
 });

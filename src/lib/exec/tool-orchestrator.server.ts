@@ -36,6 +36,8 @@ export type ExecuteToolResult = {
   output?: unknown;
   error?: string;
   attempts?: number;
+  /** The tool may have acted; upstream workflow retries/onError must stop. */
+  outcomeUnknown?: boolean;
 };
 
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -337,8 +339,29 @@ export async function executeTool(
   const maxRetries = idempotent ? retry.max : 0;
   let attempt = 0;
   let lastErr: unknown;
+  const unknownOutcome = async (message: string): Promise<ExecuteToolResult> => {
+    // The write may have committed before a connection failed, or a concurrent
+    // cancellation may have won. Never overwrite that state or rerun the tool.
+    await audit(supabase, {
+      actor_id: actorId,
+      org_id: orgId,
+      action: "tool.execute.outcome_unknown",
+      resource_type: "tool_execution",
+      resource_id: executionId,
+      status: "error",
+      metadata: { toolId, attempts: attempt, error: message },
+    });
+    return {
+      executionId,
+      status: "failed",
+      error: message,
+      attempts: attempt,
+      outcomeUnknown: true,
+    };
+  };
   while (attempt <= maxRetries) {
     attempt++;
+    let executorReturned = false;
     try {
       const result = await withTimeout(
         exec.execute(parsed.data, {
@@ -351,10 +374,11 @@ export async function executeTool(
         timeoutMs,
         `tool ${toolId}`,
       );
+      executorReturned = true;
 
       const finishedAt = new Date();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
+      const { data: completed, error: completionError } = await (supabase as any)
         .from("tool_executions")
         .update({
           status: "succeeded",
@@ -366,7 +390,20 @@ export async function executeTool(
           duration_ms: finishedAt.getTime() - startedAt.getTime(),
           attempt,
         })
-        .eq("id", executionId);
+        .eq("id", executionId)
+        .eq("org_id", orgId)
+        .eq("status", "running")
+        .select("id");
+      if (
+        completionError ||
+        !Array.isArray(completed) ||
+        completed.length !== 1 ||
+        completed[0]?.id !== executionId
+      ) {
+        return unknownOutcome(
+          "Tool executor returned, but completion could not be confirmed — outcome unknown, not retried",
+        );
+      }
       await audit(supabase, {
         actor_id: actorId,
         org_id: orgId,
@@ -384,6 +421,13 @@ export async function executeTool(
       });
       return { executionId, status: "succeeded", output: result.output, attempts: attempt };
     } catch (err) {
+      // Executor success followed by a thrown persistence error is not an
+      // executor retry, even for a normally idempotent read.
+      if (executorReturned) {
+        return unknownOutcome(
+          "Tool executor returned, but completion could not be confirmed — outcome unknown, not retried",
+        );
+      }
       lastErr = err;
       if (attempt > maxRetries || !isTransient(err)) break;
       const backoff = retry.baseMs * Math.pow(2, attempt - 1);
@@ -405,25 +449,47 @@ export async function executeTool(
   }
 
   const message = failureMessage(lastErr, idempotent);
+  const outcomeUnknown =
+    !idempotent &&
+    (lastErr instanceof ToolTimeoutError || isTransient(lastErr) || /\btimeout\b/i.test(message));
   const finishedAt = new Date();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
-    .from("tool_executions")
-    .update({
-      status: "failed",
-      error: message,
-      finished_at: finishedAt.toISOString(),
-      duration_ms: finishedAt.getTime() - startedAt.getTime(),
-      attempt,
-    })
-    .eq("id", executionId);
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: failed, error: failureError } = await (supabase as any)
+      .from("tool_executions")
+      .update({
+        status: "failed",
+        error: message,
+        finished_at: finishedAt.toISOString(),
+        duration_ms: finishedAt.getTime() - startedAt.getTime(),
+        attempt,
+      })
+      .eq("id", executionId)
+      .eq("org_id", orgId)
+      .eq("status", "running")
+      .select("id");
+    if (
+      failureError ||
+      !Array.isArray(failed) ||
+      failed.length !== 1 ||
+      failed[0]?.id !== executionId
+    ) {
+      return unknownOutcome(
+        `${message} — final execution state could not be confirmed; outcome unknown, not retried`,
+      );
+    }
+  } catch {
+    return unknownOutcome(
+      `${message} — final execution state could not be confirmed; outcome unknown, not retried`,
+    );
+  }
   await audit(supabase, {
     actor_id: actorId,
     org_id: orgId,
     action: "tool.execute.fail",
     resource_type: "tool_execution",
     resource_id: executionId,
-    metadata: { toolId, error: message, attempts: attempt, idempotent },
+    metadata: { toolId, error: message, attempts: attempt, idempotent, outcomeUnknown },
   });
   await publishEvent(supabase, {
     topic: `tool.failed.${toolId}`,
@@ -432,7 +498,13 @@ export async function executeTool(
     org_id: orgId,
     correlation_id: correlationId,
   });
-  return { executionId, status: "failed", error: message, attempts: attempt };
+  return {
+    executionId,
+    status: "failed",
+    error: message,
+    attempts: attempt,
+    ...(outcomeUnknown ? { outcomeUnknown: true } : {}),
+  };
 }
 
 export async function decideApproval(

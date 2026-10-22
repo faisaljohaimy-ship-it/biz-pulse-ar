@@ -1,7 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { z } from "zod";
+import { requirePlatformAdmin } from "@/lib/authz.server";
 import { executeTool } from "./tool-orchestrator.server";
+import { getExecutor, isIdempotentCall } from "./tool-registry.server";
 import { audit } from "./audit.server";
 import { publishEvent } from "./event-bus.server";
 
@@ -77,7 +79,17 @@ export type TriggerWorkflowParams = {
 
 export type WorkflowRunResult = {
   runId: string;
-  status: "succeeded" | "failed" | "waiting_approval" | "cancelled" | "running";
+  status:
+    | "succeeded"
+    | "failed"
+    | "waiting_approval"
+    | "cancelled"
+    | "running"
+    | "queued"
+    | "rolled_back";
+  /** Admission, not completion: false means an existing durable run was reused. */
+  created?: boolean;
+  outcomeUnknown?: boolean;
   context: Record<string, unknown>;
   error?: string;
 };
@@ -113,23 +125,127 @@ type EngineState = {
   def: WorkflowDefinition;
   stepIndex: Map<string, WorkflowStep>;
   triggeredBy: string;
-  orgId: string | null;
+  orgId: string;
   context: Record<string, unknown>;
 };
 
 async function loadDef(
   supabase: SupabaseClient<Database>,
   workflowId: string,
-): Promise<WorkflowDefinition> {
+): Promise<{ definition: WorkflowDefinition; orgId: string }> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: wf, error } = await (supabase as any)
     .from("workflows")
-    .select("id, definition_json, enabled")
+    .select("id, definition_json, enabled, org_id")
     .eq("id", workflowId)
     .maybeSingle();
   if (error || !wf) throw new Error("Workflow not found");
   if (!wf.enabled) throw new Error("Workflow disabled");
-  return WorkflowDefinitionSchema.parse(wf.definition_json);
+  if (!wf.org_id) throw new Error("Workflow organization required");
+  return { definition: WorkflowDefinitionSchema.parse(wf.definition_json), orgId: wf.org_id };
+}
+
+async function requireWorkflowMembership(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  orgId: string,
+  approve = false,
+): Promise<void> {
+  const { data, error } = await supabase
+    .from("org_members")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  if (error || !data || (approve && !["owner", "admin", "manager"].includes(data.role))) {
+    throw new Error("تعذّر التحقق من صلاحية المهمة في هذه المؤسسة.");
+  }
+}
+
+/** A deterministic UUIDv8 uses the existing primary key as the admission lock. */
+async function workflowAdmissionId(parts: string[]): Promise<string> {
+  const digest = new Uint8Array(
+    await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(JSON.stringify(["sadeed-workflow-v1", ...parts])),
+    ),
+  );
+  const bytes = digest.slice(0, 16);
+  bytes[6] = (bytes[6] & 15) | 128;
+  bytes[8] = (bytes[8] & 63) | 128;
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+async function readRunResult(
+  supabase: SupabaseClient<Database>,
+  runId: string,
+  orgId: string,
+): Promise<WorkflowRunResult> {
+  const { data, error } = await supabase
+    .from("workflow_runs")
+    .select("id,status,context_json,error")
+    .eq("id", runId)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  if (error || !data) throw new Error("تعذّرت قراءة حالة المهمة.");
+  const status = z
+    .enum([
+      "succeeded",
+      "failed",
+      "waiting_approval",
+      "cancelled",
+      "running",
+      "queued",
+      "rolled_back",
+    ])
+    .parse(data.status);
+  return {
+    runId: data.id,
+    status,
+    context: (data.context_json as Record<string, unknown>) ?? {},
+    error: data.error ?? undefined,
+  };
+}
+
+async function finishRun(
+  supabase: SupabaseClient<Database>,
+  state: EngineState,
+  status: "succeeded" | "failed",
+  error?: string,
+): Promise<WorkflowRunResult> {
+  // Status predicate protects cancellation and newer terminal results.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error: writeError } = await (supabase as any)
+    .from("workflow_runs")
+    .update({
+      status,
+      error: error ?? null,
+      finished_at: new Date().toISOString(),
+      context_json: state.context,
+    })
+    .eq("id", state.runId)
+    .eq("org_id", state.orgId)
+    .eq("status", "running")
+    .select("id")
+    .maybeSingle();
+  if (writeError) throw new Error("تعذّر حفظ نتيجة المهمة.");
+  if (!data) return readRunResult(supabase, state.runId, state.orgId);
+  await audit(supabase, {
+    actor_id: state.triggeredBy,
+    org_id: state.orgId,
+    action: status === "succeeded" ? "workflow.run.success" : "workflow.run.fail",
+    resource_type: "workflow_run",
+    resource_id: state.runId,
+    metadata: error ? { error } : {},
+  });
+  await publishEvent(supabase, {
+    topic: status === "succeeded" ? "workflow.succeeded" : "workflow.failed",
+    org_id: state.orgId,
+    actor_id: state.triggeredBy,
+    payload: { runId: state.runId, ...(error ? { error } : {}) },
+  });
+  return { runId: state.runId, status, context: state.context, ...(error ? { error } : {}) };
 }
 
 async function execToolStep(
@@ -140,7 +256,7 @@ async function execToolStep(
 ): Promise<
   | { kind: "ok"; output: unknown; executionId: string }
   | { kind: "waiting"; executionId: string }
-  | { kind: "error"; error: string; executionId?: string }
+  | { kind: "error"; error: string; executionId?: string; outcomeUnknown?: boolean }
 > {
   const policy = step.retry ?? { max: 0, backoffMs: 1000, factor: 2 };
   let attempt = 0;
@@ -158,6 +274,13 @@ async function execToolStep(
       workflowRunId: state.runId,
     });
     lastExecId = res.executionId;
+    if (res.outcomeUnknown)
+      return {
+        kind: "error",
+        error: res.error ?? "نتيجة الأداة غير مؤكدة؛ راجع السجل قبل إعادة التنفيذ.",
+        executionId: res.executionId,
+        outcomeUnknown: true,
+      };
 
     if (res.status === "pending_approval") {
       return { kind: "waiting", executionId: res.executionId };
@@ -165,16 +288,26 @@ async function execToolStep(
     if (res.status === "succeeded") {
       if (stepRunId) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any).from("workflow_step_runs").update({ attempt }).eq("id", stepRunId);
+        const { data: saved, error: saveError } = await (supabase as any)
+          .from("workflow_step_runs")
+          .update({ attempt })
+          .eq("id", stepRunId)
+          .eq("org_id", state.orgId)
+          .eq("status", "running")
+          .select("id")
+          .maybeSingle();
+        if (saveError || !saved) throw new Error("تعذّر حفظ محاولة تنفيذ الخطوة.");
       }
       return { kind: "ok", output: res.output, executionId: res.executionId };
     }
     // failed or rejected → maybe retry
     lastErr = res.error ?? `tool ${res.status}`;
-    if (attempt > policy.max) break;
+    const executor = getExecutor(step.toolId);
+    if (attempt > policy.max || !executor || !isIdempotentCall(executor, input)) break;
     const backoff = Math.min(policy.backoffMs * Math.pow(policy.factor, attempt - 1), 60_000);
     await audit(supabase, {
       actor_id: state.triggeredBy,
+      org_id: state.orgId,
       action: "workflow.step.retry",
       resource_type: "workflow_step_run",
       resource_id: stepRunId ?? null,
@@ -184,6 +317,8 @@ async function execToolStep(
   }
   return { kind: "error", error: lastErr ?? "tool failed", executionId: lastExecId };
 }
+
+class UnknownWorkflowOutcome extends Error {}
 
 async function runEngine(
   supabase: SupabaseClient<Database>,
@@ -198,26 +333,27 @@ async function runEngine(
     while (cursor && stepCount < MAX_STEPS) {
       stepCount++;
 
-      // Check for external cancel
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: alive } = await (supabase as any)
-        .from("workflow_runs")
-        .select("status")
-        .eq("id", state.runId)
-        .maybeSingle();
-      if (alive?.status === "cancelled") {
-        return { runId: state.runId, status: "cancelled", context: state.context };
-      }
-
       const step = state.stepIndex.get(cursor);
       if (!step) throw new Error(`Step not found: ${cursor}`);
+      // Persist the actual cursor before executing any side effect, only while running.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: checkpoint, error: checkpointError } = await (supabase as any)
+        .from("workflow_runs")
+        .update({ current_step: cursor, context_json: state.context })
+        .eq("id", state.runId)
+        .eq("org_id", state.orgId)
+        .eq("status", "running")
+        .select("id")
+        .maybeSingle();
+      if (checkpointError) throw new Error("تعذّر حفظ موضع المهمة.");
+      if (!checkpoint) return readRunResult(supabase, state.runId, state.orgId);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: stepRow } = await (supabase as any)
+      const { data: stepRow, error: stepError } = await (supabase as any)
         .from("workflow_step_runs")
         .insert({
           run_id: state.runId,
-          org_id: state.orgId ?? undefined,
+          org_id: state.orgId,
           step_id: step.id,
           kind: step.kind,
           status: "running",
@@ -226,7 +362,8 @@ async function runEngine(
         })
         .select("id")
         .single();
-      const stepRunId = stepRow?.id as string | undefined;
+      if (stepError || !stepRow?.id) throw new Error("تعذّر إنشاء سجل خطوة المهمة.");
+      const stepRunId = stepRow.id as string;
 
       const finishStep = async (
         status: "succeeded" | "failed" | "skipped" | "waiting",
@@ -234,9 +371,8 @@ async function runEngine(
         err?: string,
         toolExecutionId?: string,
       ) => {
-        if (!stepRunId) return;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
+        const { data: saved, error: saveError } = await (supabase as any)
           .from("workflow_step_runs")
           .update({
             status,
@@ -245,23 +381,34 @@ async function runEngine(
             finished_at: new Date().toISOString(),
             tool_execution_id: toolExecutionId ?? null,
           })
-          .eq("id", stepRunId);
+          .eq("id", stepRunId)
+          .eq("org_id", state.orgId)
+          .eq("status", "running")
+          .select("id")
+          .maybeSingle();
+        if (saveError || !saved) throw new Error("تعذّر حفظ نتيجة خطوة المهمة.");
       };
 
       switch (step.kind) {
         case "tool": {
           const r = await execToolStep(supabase, state, step, stepRunId);
           if (r.kind === "waiting") {
-            await finishStep("waiting", { executionId: r.executionId });
+            await finishStep("waiting", { executionId: r.executionId }, undefined, r.executionId);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await (supabase as any)
+            const { data: waiting, error: waitingError } = await (supabase as any)
               .from("workflow_runs")
               .update({
                 status: "waiting_approval",
                 current_step: step.id,
                 context_json: state.context,
               })
-              .eq("id", state.runId);
+              .eq("id", state.runId)
+              .eq("org_id", state.orgId)
+              .eq("status", "running")
+              .select("id")
+              .maybeSingle();
+            if (waitingError) throw new Error("تعذّر حفظ حالة الاعتماد.");
+            if (!waiting) return readRunResult(supabase, state.runId, state.orgId);
             return {
               runId: state.runId,
               status: "waiting_approval",
@@ -269,6 +416,7 @@ async function runEngine(
             };
           }
           if (r.kind === "error") {
+            if (r.outcomeUnknown) throw new UnknownWorkflowOutcome(r.error);
             await finishStep("failed", null, r.error, r.executionId);
             if (step.onError) {
               cursor = step.onError;
@@ -307,6 +455,7 @@ async function runEngine(
               throw new Error(`parallel branch ${branchId} must be a tool`);
             }
             const r = await execToolStep(supabase, state, sub, undefined);
+            if (r.kind === "error" && r.outcomeUnknown) throw new UnknownWorkflowOutcome(r.error);
             if (r.kind !== "ok") {
               throw new Error(r.kind === "error" ? r.error : "branch requires approval");
             }
@@ -314,6 +463,13 @@ async function runEngine(
           });
           const results = await Promise.allSettled(branchPromises);
           const failed = results.filter((r) => r.status === "rejected");
+          if (
+            failed.some(
+              (entry) =>
+                entry.status === "rejected" && entry.reason instanceof UnknownWorkflowOutcome,
+            )
+          )
+            throw new UnknownWorkflowOutcome("نتيجة أحد الفروع غير مؤكدة؛ يلزم مراجعة السجل.");
           if (failed.length) {
             const errs = failed
               .map((f) => (f as PromiseRejectedResult).reason?.message ?? "branch failed")
@@ -335,16 +491,23 @@ async function runEngine(
         case "approval": {
           await finishStep("waiting", { message: step.message ?? null });
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase as any)
+          const { data: waiting, error: waitingError } = await (supabase as any)
             .from("workflow_runs")
             .update({
               status: "waiting_approval",
               current_step: step.id,
               context_json: state.context,
             })
-            .eq("id", state.runId);
+            .eq("id", state.runId)
+            .eq("org_id", state.orgId)
+            .eq("status", "running")
+            .select("id")
+            .maybeSingle();
+          if (waitingError) throw new Error("تعذّر حفظ حالة الاعتماد.");
+          if (!waiting) return readRunResult(supabase, state.runId, state.orgId);
           await publishEvent(supabase, {
             topic: "workflow.approval_needed",
+            org_id: state.orgId,
             payload: { runId: state.runId, stepId: step.id, message: step.message },
             actor_id: state.triggeredBy,
           });
@@ -362,57 +525,17 @@ async function runEngine(
         }
       }
     }
+    if (cursor) throw new Error(`Workflow step limit exceeded (${MAX_STEPS})`);
+    return await finishRun(supabase, state, "succeeded");
   } catch (err) {
-    const lastError = err instanceof Error ? err.message : String(err);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
-      .from("workflow_runs")
-      .update({
-        status: "failed",
-        error: lastError,
-        finished_at: new Date().toISOString(),
-        context_json: state.context,
-      })
-      .eq("id", state.runId);
-    await audit(supabase, {
-      actor_id: state.triggeredBy,
-      action: "workflow.run.fail",
-      resource_type: "workflow_run",
-      resource_id: state.runId,
-      metadata: { error: lastError },
-    });
-    await publishEvent(supabase, {
-      topic: "workflow.failed",
-      payload: { runId: state.runId, error: lastError },
-    });
-    return {
-      runId: state.runId,
-      status: "failed",
-      context: state.context,
-      error: lastError,
-    };
+    const result = await finishRun(
+      supabase,
+      state,
+      "failed",
+      err instanceof Error ? err.message : String(err),
+    );
+    return err instanceof UnknownWorkflowOutcome ? { ...result, outcomeUnknown: true } : result;
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
-    .from("workflow_runs")
-    .update({
-      status: "succeeded",
-      finished_at: new Date().toISOString(),
-      context_json: state.context,
-    })
-    .eq("id", state.runId);
-  await audit(supabase, {
-    actor_id: state.triggeredBy,
-    action: "workflow.run.success",
-    resource_type: "workflow_run",
-    resource_id: state.runId,
-  });
-  await publishEvent(supabase, {
-    topic: "workflow.succeeded",
-    payload: { runId: state.runId },
-  });
-  return { runId: state.runId, status: "succeeded", context: state.context };
 }
 
 /* ------------------------------ Public API ------------------------------ */
@@ -421,21 +544,26 @@ export async function triggerWorkflow(
   supabase: SupabaseClient<Database>,
   params: TriggerWorkflowParams,
 ): Promise<WorkflowRunResult> {
-  // Idempotency: if a run with same workflow+key+actor exists in last 24h, return it
+  const { definition: def, orgId } = await loadDef(supabase, params.workflowId);
+  await requireWorkflowMembership(supabase, params.triggeredBy, orgId);
+  // Reuse legacy keys; new admissions also use the primary key atomically.
   if (params.idempotencyKey) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existing } = await (supabase as any)
+    const { data: existing, error: existingError } = await (supabase as any)
       .from("workflow_runs")
       .select("id, status, context_json, error")
       .eq("workflow_id", params.workflowId)
+      .eq("org_id", orgId)
       .eq("triggered_by", params.triggeredBy)
       .contains("trigger_payload", { __idempotency_key: params.idempotencyKey })
       .order("started_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+    if (existingError) throw new Error("تعذّر التحقق من سجل المهمة السابقة.");
     if (existing) {
       return {
         runId: existing.id,
+        created: false,
         status: existing.status,
         context: (existing.context_json as Record<string, unknown>) ?? {},
         error: existing.error ?? undefined,
@@ -443,26 +571,27 @@ export async function triggerWorkflow(
     }
   }
 
-  const def = await loadDef(supabase, params.workflowId);
   const triggerPayload: Record<string, unknown> = { ...(params.payload ?? {}) };
   if (params.idempotencyKey) {
     triggerPayload.__idempotency_key = params.idempotencyKey;
   }
 
-  const { data: member } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", params.triggeredBy)
-    .limit(1)
-    .maybeSingle();
-  const orgId = (member?.org_id as string | undefined) ?? null;
+  const admissionId = params.idempotencyKey
+    ? await workflowAdmissionId([
+        orgId,
+        params.workflowId,
+        params.triggeredBy,
+        params.idempotencyKey,
+      ])
+    : undefined;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: run, error: rErr } = await (supabase as any)
     .from("workflow_runs")
     .insert({
+      ...(admissionId ? { id: admissionId } : {}),
       workflow_id: params.workflowId,
-      org_id: orgId ?? undefined,
+      org_id: orgId,
       status: "running",
       triggered_by: params.triggeredBy,
       trigger_event: params.triggerEvent ?? "manual",
@@ -472,11 +601,15 @@ export async function triggerWorkflow(
     })
     .select("id")
     .single();
-  if (rErr) throw new Error(rErr.message);
+  if (rErr?.code === "23505" && admissionId) {
+    return { ...(await readRunResult(supabase, admissionId, orgId)), created: false };
+  }
+  if (rErr || !run?.id) throw new Error("تعذّر إنشاء المهمة.");
   const runId = run.id as string;
 
   await audit(supabase, {
     actor_id: params.triggeredBy,
+    org_id: orgId,
     action: "workflow.run.start",
     resource_type: "workflow_run",
     resource_id: runId,
@@ -484,6 +617,7 @@ export async function triggerWorkflow(
   });
   await publishEvent(supabase, {
     topic: "workflow.started",
+    org_id: orgId,
     source: "exec.workflow",
     severity: "info",
     subject_type: "workflow_run",
@@ -503,7 +637,7 @@ export async function triggerWorkflow(
     orgId,
     context: { trigger: params.payload ?? {}, steps: {} },
   };
-  return runEngine(supabase, state, def.start);
+  return { ...(await runEngine(supabase, state, def.start)), created: true };
 }
 
 export async function resumeWorkflowRun(
@@ -511,57 +645,111 @@ export async function resumeWorkflowRun(
   runId: string,
   resumedBy: string,
 ): Promise<WorkflowRunResult> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: run, error } = await (supabase as any)
+  await requirePlatformAdmin(resumedBy);
+  const { data: run, error } = await supabase
     .from("workflow_runs")
-    .select("id, workflow_id, status, current_step, context_json, triggered_by, org_id")
+    .select("id,workflow_id,status,current_step,context_json,triggered_by,org_id")
     .eq("id", runId)
     .maybeSingle();
-  if (error || !run) throw new Error("Run not found");
-  if (run.status !== "waiting_approval") {
-    throw new Error(`Cannot resume run in status: ${run.status}`);
+  if (error || !run || !run.org_id) throw new Error("تعذّرت قراءة المهمة.");
+  await requireWorkflowMembership(supabase, resumedBy, run.org_id, true);
+  if (run.status !== "waiting_approval") throw new Error("المهمة ليست بانتظار الاعتماد.");
+  const { definition: def, orgId } = await loadDef(supabase, run.workflow_id);
+  if (orgId !== run.org_id) throw new Error("لا تتطابق مؤسسة المهمة.");
+  const current = def.steps.find((step) => step.id === run.current_step);
+  if (!current || (current.kind !== "approval" && current.kind !== "tool")) {
+    throw new Error("خطوة الاعتماد غير صالحة للاستئناف.");
   }
-  const def = await loadDef(supabase, run.workflow_id);
-  const current = def.steps.find((s) => s.id === run.current_step);
-  if (!current) throw new Error("Current step missing in definition");
-
-  // After approval, advance past the approval/tool step to next
-  const next =
-    current.kind === "approval" ? current.next : current.kind === "tool" ? current.next : undefined;
-  if (!next) {
-    // No next → mark succeeded
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
-      .from("workflow_runs")
-      .update({ status: "succeeded", finished_at: new Date().toISOString() })
-      .eq("id", runId);
-    return {
-      runId,
-      status: "succeeded",
-      context: (run.context_json as Record<string, unknown>) ?? {},
-    };
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
-    .from("workflow_runs")
-    .update({ status: "running", current_step: next })
-    .eq("id", runId);
-  await audit(supabase, {
-    actor_id: resumedBy,
-    action: "workflow.run.resume",
-    resource_type: "workflow_run",
-    resource_id: runId,
-    metadata: { from: current.id, to: next },
-  });
-  const state: EngineState = {
-    runId,
-    def,
-    stepIndex: new Map(def.steps.map((s) => [s.id, s])),
-    triggeredBy: run.triggered_by ?? resumedBy,
-    orgId: (run.org_id as string | undefined) ?? null,
-    context: (run.context_json as Record<string, unknown>) ?? { steps: {} },
+  const { data: waiting, error: waitingError } = await supabase
+    .from("workflow_step_runs")
+    .select("id,tool_execution_id")
+    .eq("run_id", run.id)
+    .eq("org_id", orgId)
+    .eq("step_id", current.id)
+    .eq("status", "waiting")
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (waitingError || !waiting) throw new Error("لم يصل سجل اعتماد صالح لهذه الخطوة.");
+  let context = (run.context_json as Record<string, unknown>) ?? { steps: {} };
+  let stepOutput: Record<string, unknown> = {
+    approved_by: resumedBy,
+    approved_at: new Date().toISOString(),
   };
-  return runEngine(supabase, state, next);
+  if (current.kind === "tool") {
+    if (!waiting.tool_execution_id) throw new Error("لم تُربط الخطوة بسجل تنفيذ معتمد.");
+    const { data: execution, error: executionError } = await supabase
+      .from("tool_executions")
+      .select("id,status,approved_by,approved_at,output_json")
+      .eq("id", waiting.tool_execution_id)
+      .eq("workflow_run_id", run.id)
+      .eq("org_id", orgId)
+      .eq("tool_id", current.toolId)
+      .maybeSingle();
+    if (
+      executionError ||
+      !execution ||
+      execution.status !== "succeeded" ||
+      !execution.approved_by ||
+      !execution.approved_at
+    ) {
+      throw new Error("لا يمكن الاستئناف قبل نجاح تنفيذ الأداة المعتمدة.");
+    }
+    const output = execution.output_json as Record<string, unknown> | null;
+    context = {
+      ...context,
+      steps: { ...(context.steps as object), [current.id]: output?.output ?? null },
+    };
+    stepOutput = { ...stepOutput, executionId: execution.id, output: output?.output ?? null };
+  }
+  const state: EngineState = {
+    runId: run.id,
+    def,
+    stepIndex: new Map(def.steps.map((step) => [step.id, step])),
+    triggeredBy: run.triggered_by ?? resumedBy,
+    orgId,
+    context,
+  };
+  // Compare-and-set: exactly one resumer owns this waiting transition.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: claimed, error: claimError } = await (supabase as any)
+    .from("workflow_runs")
+    .update({ status: "running", context_json: context })
+    .eq("id", run.id)
+    .eq("org_id", orgId)
+    .eq("status", "waiting_approval")
+    .eq("current_step", current.id)
+    .select("id")
+    .maybeSingle();
+  if (claimError || !claimed) throw new Error("تغيّرت حالة المهمة أو سبق استئنافها؛ حدّث السجل.");
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: completed, error: completeError } = await (supabase as any)
+      .from("workflow_step_runs")
+      .update({
+        status: "succeeded",
+        finished_at: new Date().toISOString(),
+        output_json: stepOutput,
+      })
+      .eq("id", waiting.id)
+      .eq("org_id", orgId)
+      .eq("status", "waiting")
+      .select("id")
+      .maybeSingle();
+    if (completeError || !completed) throw new Error("تعذّر حفظ اعتماد الخطوة.");
+    await audit(supabase, {
+      actor_id: resumedBy,
+      org_id: orgId,
+      action: "workflow.run.resume",
+      resource_type: "workflow_run",
+      resource_id: run.id,
+      metadata: { from: current.id, to: current.next ?? null },
+    });
+    if (!current.next) return await finishRun(supabase, state, "succeeded");
+    return await runEngine(supabase, state, current.next);
+  } catch (err) {
+    return finishRun(supabase, state, "failed", err instanceof Error ? err.message : String(err));
+  }
 }
 
 export async function cancelWorkflowRun(
@@ -569,33 +757,45 @@ export async function cancelWorkflowRun(
   runId: string,
   cancelledBy: string,
 ): Promise<{ ok: true }> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: run } = await (supabase as any)
+  const { data: run, error: readError } = await supabase
     .from("workflow_runs")
-    .select("status")
+    .select("id,status,org_id,triggered_by")
     .eq("id", runId)
     .maybeSingle();
-  if (!run) throw new Error("Run not found");
-  if (["succeeded", "failed", "cancelled"].includes(run.status)) {
-    throw new Error(`Run is terminal: ${run.status}`);
+  if (readError || !run || !run.org_id) throw new Error("تعذّرت قراءة المهمة.");
+  await requireWorkflowMembership(
+    supabase,
+    cancelledBy,
+    run.org_id,
+    run.triggered_by !== cancelledBy,
+  );
+  if (["succeeded", "failed", "cancelled", "rolled_back"].includes(run.status)) {
+    throw new Error("انتهت المهمة ولا يمكن إلغاؤها.");
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
+  const { data: changed, error: writeError } = await supabase
     .from("workflow_runs")
     .update({
       status: "cancelled",
       error: "Cancelled by user",
       finished_at: new Date().toISOString(),
     })
-    .eq("id", runId);
+    .eq("id", runId)
+    .eq("org_id", run.org_id)
+    .eq("status", run.status)
+    .select("id")
+    .maybeSingle();
+  if (writeError || !changed)
+    throw new Error("تغيّرت حالة المهمة أو تعذّر حفظ الإلغاء؛ حدّث السجل.");
   await audit(supabase, {
     actor_id: cancelledBy,
+    org_id: run.org_id,
     action: "workflow.run.cancel",
     resource_type: "workflow_run",
     resource_id: runId,
   });
   await publishEvent(supabase, {
     topic: "workflow.cancelled",
+    org_id: run.org_id,
     payload: { runId },
     actor_id: cancelledBy,
   });

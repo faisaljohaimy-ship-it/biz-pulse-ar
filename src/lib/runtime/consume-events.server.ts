@@ -1,16 +1,11 @@
-// Enterprise Event Consumer — Wave 1.
-//
-// Reads pending events from `enterprise_events` and dispatches matching
-// `workflows` (by `trigger_topic`) via the real workflow engine. Each event
-// is marked processed/dead after dispatch. This is the bridge between DB
-// triggers (producers) and the workflow engine (consumer).
-//
-// Called from the runtime pulse once per cycle.
-
+// Enterprise event admission — explicitly gated by a server activation watermark.
+// Scheduling/activation is separate. Importing this module starts no worker.
+// An event is acknowledged only after all matching workflow admissions resolve.
+// A durable existing run may still be in flight; acknowledgement is NOT a claim
+// of workflow completion or exactly-once external side effects.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { triggerWorkflow } from "@/lib/exec/workflow-engine.server";
-import { markEvent } from "@/lib/exec/event-bus.server";
 
 const MAX_EVENTS_PER_TICK = 10;
 
@@ -24,66 +19,104 @@ export async function consumePendingEvents(
   adminClient: SupabaseClient<Database>,
   actorId: string,
   orgId: string,
+  serverActivationWatermark: string | undefined,
 ): Promise<ConsumeResult> {
-  let processed = 0;
-  let started = 0;
-  let errors = 0;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: pending } = await (adminClient as any)
-    .from("enterprise_events")
-    .select("id, topic, payload_json, correlation_id, org_id")
-    .eq("org_id", orgId)
-    .eq("status", "pending")
-    .order("occurred_at", { ascending: true })
-    .limit(MAX_EVENTS_PER_TICK);
-
-  if (!pending?.length) {
-    return { events_processed: 0, workflows_started: 0, errors: 0 };
+  const result: ConsumeResult = { events_processed: 0, workflows_started: 0, errors: 0 };
+  // Never infer activation from "now" and accidentally replay imported history.
+  // Require an explicit timestamp with timezone from trusted server configuration.
+  const watermark =
+    typeof serverActivationWatermark === "string" &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      serverActivationWatermark,
+    )
+      ? Date.parse(serverActivationWatermark)
+      : NaN;
+  if (!Number.isFinite(watermark) || watermark > Date.now()) {
+    return { ...result, errors: 1 };
   }
+  const activationAt = new Date(watermark).toISOString();
 
-  for (const ev of pending) {
-    processed++;
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: workflows } = await (adminClient as any)
-        .from("workflows")
-        .select("id")
-        .eq("org_id", ev.org_id)
-        .eq("enabled", true)
-        .eq("trigger_topic", ev.topic);
+  try {
+    const { data: pending, error: pendingError } = await adminClient
+      .from("enterprise_events")
+      .select("id, topic, payload_json, org_id, occurred_at")
+      .eq("org_id", orgId)
+      .eq("status", "pending")
+      .gte("occurred_at", activationAt)
+      .order("occurred_at", { ascending: true })
+      .limit(MAX_EVENTS_PER_TICK);
+    if (pendingError) return { ...result, errors: 1 };
 
-      if (!workflows?.length) {
-        await markEvent(adminClient, ev.id, "processed");
-        continue;
-      }
-
-      for (const wf of workflows) {
-        try {
-          // Fire-and-forget: don't block the pulse on long-running workflows.
-          // The engine writes its own status to workflow_runs; UI subscribes via realtime.
-          void triggerWorkflow(adminClient, {
-            workflowId: wf.id,
-            triggeredBy: actorId,
-            triggerEvent: ev.topic,
-            payload: (ev.payload_json as Record<string, unknown>) ?? {},
-            idempotencyKey: `event:${ev.id}:${wf.id}`,
-          }).catch((err) => {
-            console.error("[consume-events] workflow trigger failed", err);
-          });
-          started++;
-        } catch (err) {
-          errors++;
-          console.error("[consume-events] dispatch error", err);
+    for (const ev of pending ?? []) {
+      try {
+        if (ev.org_id !== orgId || !(Date.parse(ev.occurred_at) >= watermark)) {
+          result.errors++;
+          continue;
         }
-      }
-      await markEvent(adminClient, ev.id, "processed");
-    } catch (err) {
-      errors++;
-      const msg = err instanceof Error ? err.message : String(err);
-      await markEvent(adminClient, ev.id, "dead", msg);
-    }
-  }
+        const { data: workflows, error: workflowError } = await adminClient
+          .from("workflows")
+          .select("id")
+          .eq("org_id", orgId)
+          .eq("enabled", true)
+          .eq("trigger_topic", ev.topic);
+        if (workflowError) {
+          result.errors++;
+          continue;
+        }
+        // Standby is not consumption. A later enabled matching workflow may act.
+        if (!workflows?.length) continue;
 
-  return { events_processed: processed, workflows_started: started, errors };
+        let admitted = true;
+        for (const wf of workflows) {
+          try {
+            const admission = await triggerWorkflow(adminClient, {
+              workflowId: wf.id,
+              triggeredBy: actorId,
+              triggerEvent: ev.topic,
+              payload:
+                ev.payload_json &&
+                typeof ev.payload_json === "object" &&
+                !Array.isArray(ev.payload_json)
+                  ? ev.payload_json
+                  : {},
+              idempotencyKey: `event:${ev.id}:${wf.id}`,
+            });
+            if (admission.created === true) result.workflows_started++;
+            if (
+              !admission.runId ||
+              !["queued", "running", "waiting_approval", "succeeded"].includes(admission.status)
+            ) {
+              admitted = false;
+              result.errors++;
+              continue;
+            }
+          } catch {
+            admitted = false;
+            result.errors++;
+          }
+        }
+        if (!admitted) continue;
+
+        // Compare-and-set acknowledgement: count only the worker which actually
+        // changed the pending row. Never use markEvent's error-swallowing helper.
+        const { data: marked, error: markError } = await adminClient
+          .from("enterprise_events")
+          .update({ status: "processed", processed_at: new Date().toISOString(), error: null })
+          .eq("org_id", orgId)
+          .eq("id", ev.id)
+          .eq("status", "pending")
+          .gte("occurred_at", activationAt)
+          .select("id")
+          .maybeSingle();
+        if (markError) result.errors++;
+        else if (marked?.id === ev.id) result.events_processed++;
+      } catch {
+        // Query exceptions and failed acknowledgements retain the pending row.
+        result.errors++;
+      }
+    }
+    return result;
+  } catch {
+    return { ...result, errors: result.errors + 1 };
+  }
 }
