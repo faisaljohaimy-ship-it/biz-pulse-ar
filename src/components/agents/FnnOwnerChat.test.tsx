@@ -45,7 +45,7 @@ describe("independent owner FNN chat", () => {
       target: { value: "حالة أتمتة FNN" },
     });
     fireEvent.click(screen.getByRole("button", { name: "إرسال إلى FNN" }));
-    await waitFor(() => expect(screen.getByText(/تقرير محفوظ من المجدول/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/نتيجة محفوظة من المجدول/)).toBeInTheDocument());
     expect(screen.queryByText(/خطة مقترحة/)).toBeNull();
   });
 });

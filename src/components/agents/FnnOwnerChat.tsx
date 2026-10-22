@@ -140,7 +140,7 @@ function OwnerConversation({ userId }: { userId: string }) {
                 </ol>
                 <p className="mt-3 text-xs text-muted-foreground">
                   {turn.source === "scheduled_report"
-                    ? "تقرير محفوظ من المجدول · هذه الرسالة لا تبدأ دورة جديدة."
+                    ? "نتيجة محفوظة من المجدول · هذه الرسالة لا تبدأ دورة جديدة."
                     : "خطة مقترحة · لم يُنفّذ أي إجراء."}
                 </p>
               </div>
