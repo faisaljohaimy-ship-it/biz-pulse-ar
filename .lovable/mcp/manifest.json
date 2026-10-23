@@ -39,7 +39,6 @@
           "openWorldHint": false
         },
         "inputSchema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "question": {
@@ -49,12 +48,14 @@
               "description": "Executive question in Arabic or English (max 2000 chars)."
             },
             "language": {
-              "description": "Preferred reply language.",
               "type": "string",
-              "enum": ["ar", "en"]
+              "enum": ["ar", "en"],
+              "description": "Preferred reply language."
             }
           },
-          "required": ["question"]
+          "required": ["question"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
       },
@@ -67,19 +68,20 @@
           "openWorldHint": false
         },
         "inputSchema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "region": {
-              "description": "Optional region filter.",
               "type": "string",
-              "enum": ["central", "western", "eastern", "southern"]
+              "enum": ["central", "western", "eastern", "southern"],
+              "description": "Optional region filter."
             },
             "include_findings": {
-              "description": "Include the open critical/overdue findings list (default true).",
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Include the open critical/overdue findings list (default true)."
             }
-          }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
       },
@@ -92,26 +94,27 @@
           "openWorldHint": false
         },
         "inputSchema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "region": {
-              "description": "Optional region filter.",
               "type": "string",
-              "enum": ["central", "western", "eastern", "southern"]
+              "enum": ["central", "western", "eastern", "southern"],
+              "description": "Optional region filter."
             },
             "type_key": {
-              "description": "Optional permit type key, e.g. hot_work or confined_space.",
               "type": "string",
-              "maxLength": 40
+              "maxLength": 40,
+              "description": "Optional permit type key, e.g. hot_work or confined_space."
             },
             "limit": {
-              "description": "Max permits to return (default 20).",
               "type": "integer",
               "minimum": 1,
-              "maximum": 50
+              "maximum": 50,
+              "description": "Max permits to return (default 20)."
             }
-          }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
       }
