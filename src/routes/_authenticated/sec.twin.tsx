@@ -2,7 +2,7 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { getTwinTree, type TwinTree } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
 import { RegionTwinScene, type TwinAsset } from "@/components/sec/RegionTwinScene";
@@ -28,6 +28,13 @@ import {
   Footprints,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Shared content, not an iframe: keep CSP frame-ancestors and X-Frame-Options intact.
+const SadeedCinematicExperience = lazy(() =>
+  import("@/components/cinematic/SadeedCinematicExperience").then((module) => ({
+    default: module.SadeedCinematicExperience,
+  })),
+);
 
 export const Route = createFileRoute("/_authenticated/sec/twin")({
   errorComponent: RouteError,
@@ -191,13 +198,17 @@ function TwinPage() {
           </div>
         </div>
         {cinemaOpen && (
-          <iframe
-            title="مشهد سديد السينمائي التفاعلي"
-            src="/cinematic"
-            loading="lazy"
-            allowFullScreen
-            className="mt-4 h-[65vh] min-h-[420px] w-full rounded-xl border border-cyan-400/20 bg-slate-950"
-          />
+          <div className="mt-4 overflow-hidden rounded-xl border border-cyan-400/20">
+            <Suspense
+              fallback={
+                <p role="status" className="p-4">
+                  جارٍ تحميل العرض السينمائي…
+                </p>
+              }
+            >
+              <SadeedCinematicExperience embedded />
+            </Suspense>
+          </div>
         )}
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <span className="rounded-full border px-3 py-1">
