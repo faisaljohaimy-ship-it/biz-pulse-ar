@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { requestCinematicFullscreen } from "@/lib/cinematic/fullscreen";
 import { LocalFilmPreview } from "./LocalFilmPreview";
+import { RecordedFilmPlayer } from "./RecordedFilmPlayer";
 import "@/styles/sadeed-cinematic.css";
 import "@/styles/sadeed-cinematic-playback.css";
 
@@ -163,6 +164,7 @@ export function SadeedCinematicExperience({ embedded = false }: { embedded?: boo
         مشهد موشن جرافيك سينمائي يعمل داخل المتصفح، وليس ملف فيديو MP4 أو بثًا حيًا. أي أرقام ظاهرة
         داخل الرسم توضيحية وليست بيانات تشغيلية مباشرة.
       </p>
+      <RecordedFilmPlayer onPlaybackStart={() => setPlaying(false)} />
       {!embedded && <LocalFilmPreview onPlaybackStart={() => setPlaying(false)} />}
     </Container>
   );

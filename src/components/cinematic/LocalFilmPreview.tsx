@@ -1,6 +1,10 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { hasDecodedVideoFrame, hasMp4FileType, localMp4Problem } from "@/lib/cinematic/mp4-validation";
+import {
+  hasDecodedVideoFrame,
+  hasMp4FileType,
+  localMp4Problem,
+} from "@/lib/cinematic/mp4-validation";
 import "@/styles/sadeed-film-preview.css";
 
 type Phase = "idle" | "checking" | "selected" | "decoded" | "error";
@@ -142,7 +146,8 @@ export function LocalFilmPreview({ onPlaybackStart }: { onPlaybackStart?: () => 
         />
       )}
       <p className="sd-cinema-disclosure">
-        ملف مسجل مستقل عن موشن الصفحة وبيانات التوأم الرقمي. لا يثبت اتصال كاميرا، ولا يُنشر تلقائيًا.
+        ملف مسجل مستقل عن موشن الصفحة وبيانات التوأم الرقمي. لا يثبت اتصال كاميرا، ولا يُنشر
+        تلقائيًا.
       </p>
     </section>
   );
