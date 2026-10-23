@@ -33,7 +33,10 @@
 
 **الأسماء المتقاعدة** — لا يعود أيٌّ منها إلى أي سطح: NEXIOS · NEEXIOS ·
 Nexus AI OS · نكسيوس · نيكسيوس · مِرْقَب · MIRQAB · «منصة إنجاز الأعمال» ·
-ARIA/آريا · FINN/فِن (اسم المساعد صار «سَدِيد» بقرار المالك ٢٠٢٦/٠٨/٠٩).
+ARIA/آريا · FINN/فِن (اسم المساعد صار «سَدِيد» بقرار المالك ٢٠٢٦/٠٨/٠٩؛
+**واستثناءٌ وحيد بقرار المالك ٢٠٢٦/١٠/٢٣:** يُعاد «فِن/FINN» اسمَ عرضٍ لـ«وكيل
+البرمجة والأتمتة» المنفصل عن سَدِيد **وحده** — لا للمساعد ولا للمنتج ولا لأي
+سطح آخر).
 ما يبقى منها فهو **معرّفات تقنية** لا
 تُقرأ للمستخدم: نطاق، مفتاح تخزين، اسم مكوّن، مسار أصل على شبكة التوزيع —
 وكلٌّ منها مُستثنى صراحةً ومُوثَّق في حارس العلامة.
@@ -46,7 +49,9 @@ in word and deed — what the platform promises: a correct decision, not merely
 a dashboard. Naming scope: SADEED is the PRODUCT name; `NEXIOS Technologies`
 remains the legal entity and is untouched. Single source: `PRODUCT_BRAND` in
 `src/lib/domain.ts`, enforced by the brand contract test. Retired names never
-return to any surface; what survives are technical identifiers only (domain,
+return to any surface — sole exception, by product-owner decision of 2026-10-23:
+FINN is re-instated as the display name of the separate programming-and-automation
+agent only (not the assistant, not the product); what survives are technical identifiers only (domain,
 storage key, component name, CDN asset path), each explicitly exempted and
 documented in the guard.
 
@@ -697,3 +702,4 @@ is an operational decision the implementer does not own.
 | 2026-08-02   | ٣٥             | **الفرع ذو الكاتبين**: نصّ المالك الصريح يسود على أي التزام آلي، ويُدمج غير المتعارض، ويُبلَّغ المالك بالتعارض · Article 35: the owner's explicit instruction outranks automated commits; conflicts are reported                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | مالك المنتج Product Owner |
 | 2026-08-09   | ١·١٠·١٢·٢٢·٢٦  | **اسم المساعد: FINN ← سَدِيد** — بقرار صريح من مالك المنتج يشمل وثائق الحوكمة والدستور نفسه، استثناءً واعيًا من قاعدة «لا تُمسّ وثائق الحوكمة». المساعد **مذكّر** نحويًّا. والمعرّفات التقنية `finn-*` (المسارات · الوحدات · المكوّنات · `FINN_*` · الترويسات · الجداول) تبقى كما هي في الوثائق لأنها عقود حيّة، وتغييرها نصًّا يجعل الوثيقة تكذب على الكود · **Assistant name: FINN → SADEED**, by explicit product-owner decision extending to governance docs and this constitution; the assistant is grammatically masculine; `finn-*` technical identifiers remain verbatim as live contracts                                                                                                                                                                                                                                                                                                                                               | مالك المنتج Product Owner |
 | 2026-08-09   | ١٠·٢٢          | **كسرٌ نظيف للمعرّفات: `finn-*` ← `sadeed-*`** — ناسخٌ للسطر السابق بقرار المالك في اليوم نفسه («اكسر نظيف بلا جسور»). أُعيدت تسمية المجلدات والملفات والمكوّنات والدوال وأصناف CSS والأصول والمسارات (`/finn` ← `/sadeed` · `/api/finn/*` ← `/api/sadeed/*` · `/api/public/finn-*` ← `/api/public/sadeed-*`) ومتغيّرات البيئة `FINN_*` ← `SADEED_*`، **بلا موجِّه ولا مسار قديم**. الباقي `finn` عمدًا وحصرًا: أسماء جداول القاعدة `finn_*` وسياساتها، وملفات الترحيل المطبَّقة، ومفاتيح استدعاء `.claude/`، وواصفات أصول Lovable البعيدة (`*.asset.json`) · **Clean break: `finn-*` → `sadeed-*`** — supersedes the row above by the owner's same-day decision. Folders, files, components, functions, CSS classes, assets, routes and `FINN_*` env vars renamed with no compatibility shim. Only Supabase `finn_*` table/policy names, applied migrations, `.claude/` invocation keys and remote Lovable asset descriptors keep the old token | مالك المنتج Product Owner |
+| 2026-10-23   | ١              | **استثناءٌ وحيد: «فِن/FINN» اسمًا لوكيل البرمجة والأتمتة المنفصل** — بقرار صريح من مالك المنتج (أمرٌ مكتوب ثم تأكيدٌ جوابًا على سؤال المادة ١٩). الوكيل شاتٌ منفصل عن سَدِيد (لا لوحته ولا صوته ولا سجلّه)، للمالك وحده خادميًّا (`FINN_OWNER_USER_IDS`)، يقترح ولا ينفّذ. اسم **المساعد** باقٍ «سَدِيد» ولا يعود FINN لأي سطح آخر · **Sole exception: «فِن/FINN» as the display name of the separate programming-and-automation agent**, by explicit product-owner decision (written order, then confirmed in answer to the Article 19 question). The agent is a chat separate from SADEED (not its panel, voice or log), owner-only server-side, propose-only. The **assistant** stays «سَدِيد»; FINN returns to no other surface                                                                                                                                                                                                              | مالك المنتج Product Owner |
