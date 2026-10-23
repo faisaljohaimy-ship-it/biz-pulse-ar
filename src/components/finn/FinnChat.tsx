@@ -57,7 +57,21 @@ function ReadinessChip({ engine }: { engine: FinnEngineStatus }) {
   );
 }
 
-export default function FinnChat({ engine }: { engine: FinnEngineStatus }) {
+export interface FinnChatProps {
+  readonly engine: FinnEngineStatus;
+  /**
+   * `page` (الافتراضي): صفحة `/finn` كاملة بعنوانها `h1` والشريط التحذيري.
+   * `inline`: داخل بطاقة الرئيسية — البطاقة تحمل الاسم والصورة والشريط التحذيري، فلا
+   * عنوان `h1` ولا شريطٌ ثانٍ هنا (شريطان بالنصّ نفسه ضجيجٌ لا أمان)، وارتفاعٌ ثابت لا
+   * يعتمد على الشاشة كلّها.
+   */
+  readonly variant?: "page" | "inline";
+}
+
+export default function FinnChat({ engine, variant = "page" }: FinnChatProps) {
+  const inline = variant === "inline";
+  // المضمَّنة داخل منطقةٍ مسمّاة أصلًا (بطاقة الرئيسية): `section` ثانية بالاسم نفسه معلَمان لقارئ الشاشة.
+  const Root = inline ? "div" : "section";
   const { messages, status, error, send, retry, stop, reset } = useFinnChat();
   const [draft, setDraft] = useState("");
   const [focusSignal, setFocusSignal] = useState(0);
@@ -88,29 +102,47 @@ export default function FinnChat({ engine }: { engine: FinnEngineStatus }) {
   const lastIndex = messages.length - 1;
 
   return (
-    <section
+    <Root
       dir="rtl"
-      aria-label={FINN_COPY.title}
-      className="mx-auto w-full max-w-4xl px-3 py-3 md:px-6 md:py-5"
+      aria-label={inline ? undefined : FINN_COPY.title}
+      data-finn-chat={variant}
+      className={inline ? "w-full" : "mx-auto w-full max-w-4xl px-3 py-3 md:px-6 md:py-5"}
     >
       <div
-        // ارتفاعٌ محسوب من رموز القشرة (الشريط العلوي + صفّ الترويسة) مع أرضيةٍ تُبقي
+        // الصفحة: ارتفاعٌ محسوب من رموز القشرة (الشريط العلوي + صفّ الترويسة) مع أرضيةٍ تُبقي
         // الحقل مستعملًا على الشاشات القصيرة (تسكرول الصفحة عندها عموديًّا فقط).
-        className="flex h-[calc(100dvh-var(--nx-topbar-total,2.5rem)-var(--nx-hdr-h,64px)-2.5rem)] min-h-[30rem] flex-col overflow-hidden rounded-2xl border border-[color:var(--hairline)] bg-[color:var(--surface)] shadow-[var(--nx-card-shadow)]"
+        // المضمَّنة: ارتفاعٌ ثابت داخل البطاقة، لا يتجاوز الشاشة على الجوال.
+        className={
+          inline
+            ? "flex h-[30rem] max-h-[85dvh] flex-col overflow-hidden rounded-xl border border-[color:var(--hairline)] bg-[color:var(--surface)]"
+            : "flex h-[calc(100dvh-var(--nx-topbar-total,2.5rem)-var(--nx-hdr-h,64px)-2.5rem)] min-h-[30rem] flex-col overflow-hidden rounded-2xl border border-[color:var(--hairline)] bg-[color:var(--surface)] shadow-[var(--nx-card-shadow)]"
+        }
       >
         <header className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
-          <span className="grid size-11 shrink-0 place-items-center rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip)]">
-            <SquareTerminal aria-hidden className="size-5 text-[color:var(--tone-blue)]" />
-          </span>
-          {/* العنوان لا يُقصّ على الجوال: الإجراءات تنزل إلى صفٍّ ثانٍ (`basis-full`) بدل أن
-              تعصر الوصف إلى «مسا…» (قِيس على 390). فوق sm تعود إلى جانب العنوان. */}
-          <div className="min-w-[9rem] flex-1">
-            <h1 className="text-lg font-bold leading-tight text-[color:var(--ink)]">
-              {FINN_COPY.title}
-            </h1>
-            <p className="text-[13px] leading-5 text-[color:var(--ink-2)]">{FINN_COPY.subtitle}</p>
-          </div>
-          <div className="flex basis-full flex-wrap items-center gap-2 sm:basis-auto">
+          {inline ? null : (
+            <>
+              <span className="grid size-11 shrink-0 place-items-center rounded-full border border-[color:var(--hairline)] bg-[color:var(--chip)]">
+                <SquareTerminal aria-hidden className="size-5 text-[color:var(--tone-blue)]" />
+              </span>
+              {/* العنوان لا يُقصّ على الجوال: الإجراءات تنزل إلى صفٍّ ثانٍ (`basis-full`) بدل أن
+                  تعصر الوصف إلى «مسا…» (قِيس على 390). فوق sm تعود إلى جانب العنوان. */}
+              <div className="min-w-[9rem] flex-1">
+                <h1 className="text-lg font-bold leading-tight text-[color:var(--ink)]">
+                  {FINN_COPY.title}
+                </h1>
+                <p className="text-[13px] leading-5 text-[color:var(--ink-2)]">
+                  {FINN_COPY.subtitle}
+                </p>
+              </div>
+            </>
+          )}
+          <div
+            className={
+              inline
+                ? "flex flex-1 flex-wrap items-center justify-between gap-2"
+                : "flex basis-full flex-wrap items-center gap-2 sm:basis-auto"
+            }
+          >
             <ReadinessChip engine={engine} />
             <button
               type="button"
@@ -128,8 +160,9 @@ export default function FinnChat({ engine }: { engine: FinnEngineStatus }) {
           </div>
         </header>
 
-        {/* الشريط الثابت: خارج منطقة التمرير فلا يغيب. */}
-        <FinnBanner />
+        {/* الشريط الثابت: خارج منطقة التمرير فلا يغيب. وفي البطاقة المضمَّنة يحمله رأس البطاقة
+            نفسه فوق المحادثة مباشرةً. */}
+        {inline ? null : <FinnBanner />}
 
         <div
           ref={scroller}
@@ -140,8 +173,14 @@ export default function FinnChat({ engine }: { engine: FinnEngineStatus }) {
           className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-4"
         >
           {messages.length === 0 ? (
-            <div className="mx-auto flex max-w-xl flex-col items-center gap-3 py-6 text-center">
-              <h2 className="text-xl font-bold text-[color:var(--ink)]">{FINN_COPY.emptyTitle}</h2>
+            <div
+              className={`mx-auto flex max-w-xl flex-col items-center gap-3 text-center ${inline ? "py-2" : "py-6"}`}
+            >
+              <h2
+                className={`${inline ? "text-base" : "text-xl"} font-bold text-[color:var(--ink)]`}
+              >
+                {FINN_COPY.emptyTitle}
+              </h2>
               <p className="text-[14px] leading-7 text-[color:var(--ink-2)]">
                 {FINN_COPY.emptyHint}
               </p>
@@ -209,6 +248,6 @@ export default function FinnChat({ engine }: { engine: FinnEngineStatus }) {
           focusSignal={focusSignal}
         />
       </div>
-    </section>
+    </Root>
   );
 }

@@ -283,7 +283,9 @@ describe("④ الواجهة: الشريط التحذيري والمحظورات
   });
 
   it("الاتجاه RTL على جذر الصفحة، والكود ltr", () => {
-    expect(CODE["src/components/finn/FinnChat.tsx"]).toMatch(/<section\s+dir="rtl"/);
+    // الجذر `section` في الصفحة و`div` في البطاقة المضمَّنة (`Root`) — والاتجاه على الجذر في الحالين.
+    expect(CODE["src/components/finn/FinnChat.tsx"]).toMatch(/<Root\s+dir="rtl"/);
+    expect(CODE["src/components/finn/FinnChat.tsx"]).toMatch(/inline \? "div" : "section"/);
     expect(CODE["src/components/finn/FinnCodeBlock.tsx"]).toMatch(/<pre\s+dir="ltr"/);
   });
 

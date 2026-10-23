@@ -7,7 +7,7 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -116,6 +116,75 @@ describe("HomeFinnCard — قرار العرض", () => {
     renderCard();
     await screen.findByRole("heading", { name: "فِن" });
     expect(sim.access).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("المحادثة المضمَّنة في الرئيسية (أمر المالك ٢٠٢٦/١٠/٢٣)", () => {
+  beforeEach(() => {
+    sim.user = { id: "owner" };
+    sim.locale = "ar";
+    sim.access.mockReset();
+  });
+
+  it("المالك: المحادثة نفسها داخل البطاقة (هيئة inline) بحقل كتابة وبدايات سريعة", async () => {
+    sim.access.mockResolvedValue(OWNER);
+    const { container } = renderCard();
+    const chat = await waitFor(() => {
+      const el = container.querySelector('[data-finn-chat="inline"]');
+      expect(el).not.toBeNull();
+      return el as HTMLElement;
+    });
+    expect(chat.closest("[data-finn-home-card]")).not.toBeNull();
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+    // الرابط إلى الصفحة الكاملة باقٍ بجانبها.
+    expect(screen.getByRole("link", { name: /افتح محادثة فِن/ })).toHaveAttribute("href", "/finn");
+  });
+
+  it("لا شريط تحذيري ثانٍ ولا h1 ولا منطقة (section) ثانية بالاسم نفسه", async () => {
+    sim.access.mockResolvedValue(OWNER);
+    const { container } = renderCard();
+    await waitFor(() =>
+      expect(container.querySelector('[data-finn-chat="inline"]')).not.toBeNull(),
+    );
+    expect(screen.getAllByText(FINN_BANNER_AR)).toHaveLength(1);
+    expect(container.querySelector("h1")).toBeNull();
+    expect(container.querySelector('[data-finn-chat="inline"]')?.tagName).toBe("DIV");
+  });
+
+  it("الطيّ يُخفي المحادثة بـhidden لا بفكّها — فلا تضيع المسوّدة", async () => {
+    sim.access.mockResolvedValue(OWNER);
+    const { container } = renderCard();
+    const box = await screen.findByRole("textbox");
+    fireEvent.change(box, { target: { value: "اكتب سكربت أتمتة" } });
+
+    const fold = screen.getByRole("button", { name: /إخفاء المحادثة/ });
+    expect(fold).toHaveAttribute("aria-expanded", "true");
+    fireEvent.click(fold);
+
+    const toggled = screen.getByRole("button", { name: /إظهار المحادثة/ });
+    expect(toggled).toHaveAttribute("aria-expanded", "false");
+    const panel = document.getElementById(toggled.getAttribute("aria-controls") ?? "");
+    expect(panel).toHaveAttribute("hidden");
+    // ما زالت في الشجرة بمسوّدتها.
+    expect(container.querySelector('[data-finn-chat="inline"]')).not.toBeNull();
+    fireEvent.click(toggled);
+    expect(screen.getByRole("textbox")).toHaveValue("اكتب سكربت أتمتة");
+  });
+
+  it("غير المالك: لا محادثة ولا أثر لها في الشجرة", async () => {
+    sim.access.mockResolvedValue({ allowed: false });
+    const { container } = renderCard();
+    await waitFor(() => expect(sim.access).toHaveBeenCalledTimes(1));
+    expect(container.querySelector("[data-finn-chat]")).toBeNull();
+    expect(screen.queryByRole("textbox")).toBeNull();
+  });
+
+  it("واجهة المحادثة لا تدخل حزمة الرئيسية: استيرادٌ كسول بعد الحكم، لا ساكن", () => {
+    const src = readFileSync("src/components/finn/HomeFinnCard.tsx", "utf8");
+    expect(src).toMatch(/lazy\(\(\) => import\("@\/components\/finn\/FinnChat"\)\)/);
+    expect(src).not.toMatch(/^import[^;]*FinnChat[^;]*from/m);
+    // المحادثة لا تُركَّب إلا بعد `data.allowed` (الحكم يسبق الاستيراد).
+    expect(src.indexOf("if (!data?.allowed) return null")).toBeLessThan(src.indexOf("<InlineChat"));
   });
 });
 

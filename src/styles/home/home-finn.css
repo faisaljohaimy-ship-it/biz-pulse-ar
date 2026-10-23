@@ -132,3 +132,57 @@
     color: CanvasText;
   }
 }
+
+/* المحادثة المضمَّنة (InlineChat): زرّ الطيّ ثم لوحة المحادثة. المحادثة نفسها بأصنافها
+   (رموز `--surface` · `--hairline` · `--ink`)، فهنا ما يخصّ الطيّ والتحميل وحده. */
+.nx-fn-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-inline-size: 0;
+}
+
+.nx-fn-fold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-block-size: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--chip);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nx-fn-fold:hover,
+.nx-fn-fold:focus-visible {
+  background: color-mix(in srgb, var(--fn-accent) 14%, var(--surface));
+}
+
+.nx-fn-fold:focus-visible {
+  outline: 2px solid var(--fn-accent);
+  outline-offset: 2px;
+}
+
+.nx-fn-fold-ico {
+  inline-size: 18px;
+  block-size: 18px;
+  flex: 0 0 auto;
+  transform: rotate(-90deg);
+}
+
+.nx-fn-fold-ico[data-open] {
+  transform: none;
+}
+
+.nx-fn-chat-loading {
+  margin: 0;
+  padding: 24px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-2);
+}

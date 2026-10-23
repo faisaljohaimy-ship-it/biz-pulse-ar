@@ -15,11 +15,15 @@
  *
  * ## ما تفعله
  *
- * بطاقةٌ تعرّف بالوكيل وتفتح صفحته `/finn` — لا محادثةً ثانية داخل الرئيسية: واجهة
- * المحادثة (Markdown وكتل الكود) تُحمَّل كسولًا بعد حارس الصفحة، ولا يصحّ أن تدخل
- * حزمة الرئيسية. والشريط «يقترح ولا ينفّذ — راجع قبل أي تنفيذ» ظاهرٌ في البطاقة كما هو
- * في الصفحة (`FINN_BANNER_AR` — مصدره الوحيد). ولا صوت لفِن؛ فصوت سَدِيد الذكوري
- * حصريٌّ له.
+ * بطاقةٌ تعرّف بالوكيل **وتحمل محادثته نفسها داخل الرئيسية** (أمر المالك ٢٠٢٦/١٠/٢٣
+ * «اجعل الشات يظهر داخل الرئيسية»، ناسخًا قرار «زرّ يفتح /finn فقط»). المحادثة هي
+ * `FinnChat` نفسه بهيئة `inline` — لا نسخة ثانية — و**تُحمَّل كسولًا بعد الحكم وحده**
+ * (Markdown وكتل الكود)، فلا تدخل حزمة الرئيسية ولا يُنزَّل منها بايتٌ لغير المالك:
+ * الحكم يسبق الاستيراد. وذاكرة المحادثة في الصفحة وحدها (كصفحة `/finn`)، وزرّ الطيّ
+ * يُخفيها بـ`hidden` لا بالفكّ فلا تضيع الرسائل. ويبقى الرابط إلى `/finn` للشاشة الكاملة.
+ * والشريط «يقترح ولا ينفّذ — راجع قبل أي تنفيذ» ظاهرٌ في البطاقة فوق المحادثة
+ * (`FINN_BANNER_AR` — مصدره الوحيد)؛ ولا يتكرّر داخل المحادثة المضمَّنة. ولا صوت لفِن؛
+ * فصوت سَدِيد الذكوري حصريٌّ له.
  *
  * ## الصورة
  *
@@ -29,17 +33,58 @@
  */
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, TriangleAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, TriangleAlert } from "lucide-react";
+import { lazy, Suspense, useId, useState } from "react";
 import { HOME_IMAGES } from "@/components/home/home-images";
 import { useAuth } from "@/lib/auth-context";
 import { getFinnAccess } from "@/lib/finn-agent/access.functions";
 import { FINN_BANNER_AR, FINN_COPY } from "@/lib/finn-agent/copy";
+import type { FinnEngineStatus } from "@/lib/finn-agent/status";
 import { useI18n } from "@/lib/i18n";
 import "@/styles/home/home-finn.css";
+
+// واجهة المحادثة (Markdown وكتل الكود): حزمةٌ منفصلة لا تُستورد إلا بعد أن يحكم الخادم بالمالك.
+const FinnChat = lazy(() => import("@/components/finn/FinnChat"));
 
 const OPEN_AR = "افتح محادثة فِن";
 const OPEN_EN = "Open the Finn chat";
 const SUBTITLE_EN = "Owner's coding and automation assistant";
+const HIDE_AR = "إخفاء المحادثة";
+const SHOW_AR = "إظهار المحادثة";
+const HIDE_EN = "Hide the chat";
+const SHOW_EN = "Show the chat";
+
+/** المحادثة المضمَّنة + زرّ الطيّ. تُركَّب بعد حكم المالك فقط (انظر `FinnCard`). */
+function InlineChat({ engine, ar }: { engine: FinnEngineStatus; ar: boolean }) {
+  const [open, setOpen] = useState(true);
+  const panelId = useId();
+  return (
+    <div className="nx-fn-chat">
+      <button
+        type="button"
+        className="nx-fn-fold min-h-11!"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span>{open ? (ar ? HIDE_AR : HIDE_EN) : ar ? SHOW_AR : SHOW_EN}</span>
+        <ChevronDown aria-hidden className="nx-fn-fold-ico" data-open={open || undefined} />
+      </button>
+      {/* `hidden` لا فكّ التركيب: المحادثة في ذاكرة المكوّن، والطيّ لا يمحوها. */}
+      <div id={panelId} hidden={!open}>
+        <Suspense
+          fallback={
+            <p dir="rtl" role="status" className="nx-fn-chat-loading">
+              {FINN_COPY.loadingPage}
+            </p>
+          }
+        >
+          <FinnChat engine={engine} variant="inline" />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
 
 function FinnCard({ userId }: { userId: string }) {
   const { locale } = useI18n();
@@ -86,6 +131,8 @@ function FinnCard({ userId }: { userId: string }) {
         {/* الشريط عربيٌّ دائمًا (كصفحة /finn): فاتجاهه rtl ولو كانت الواجهة إنجليزية. */}
         <span dir="rtl">{FINN_BANNER_AR}</span>
       </p>
+
+      <InlineChat engine={data.engine} ar={ar} />
 
       <Link to="/finn" className="nx-fn-open min-h-11!">
         <span>{ar ? OPEN_AR : OPEN_EN}</span>
