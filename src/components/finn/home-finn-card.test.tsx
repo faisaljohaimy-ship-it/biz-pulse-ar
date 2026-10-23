@@ -198,10 +198,7 @@ describe("بيان الصورة — فِن رجل أمن مختلف عن سَد�
 
   it("عنوان الصورة يحمل بصمة محتواها لمنع استرجاع نسخة مخزنة قديمة", () => {
     const bytes = readFileSync(`public${HOME_IMAGES.finn.src}`);
-    const hash = createHash("sha1")
-      .update(`blob ${bytes.length}\0`)
-      .update(bytes)
-      .digest("hex");
+    const hash = createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
     expect(HOME_IMAGES.finn.src).toBe(`/home/finn-portrait-${hash.slice(0, 8)}.webp`);
   });
 });
