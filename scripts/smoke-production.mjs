@@ -305,11 +305,7 @@ if (!c1.ok) {
   if (problems.length) {
     note("C1 chat", "fail", problems.join(" · "));
   } else if (c1.source !== "model") {
-    note(
-      "C1 chat",
-      "warn",
-      `ردّ بديل (source=${c1.source}) — لا يثبت نجاح استجابة النموذج`,
-    );
+    note("C1 chat", "warn", `ردّ بديل (source=${c1.source}) — لا يثبت نجاح استجابة النموذج`);
   } else {
     note(
       "C1 chat",
