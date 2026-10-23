@@ -1,0 +1,87 @@
+name: SADEED isolated Zod repair
+on:
+  push:
+    branches: [repair/sadeed-zod-security-20261024]
+    paths: [.github/workflows/sadeed-zod-repair.yml]
+permissions:
+  contents: write
+concurrency:
+  group: sadeed-isolated-zod-repair
+  cancel-in-progress: false
+jobs:
+  repair:
+    if: github.repository == 'faisaljohaimy-ship-it/biz-pulse-ar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Prepare security candidate without executing package lifecycle scripts
+        run: |
+          set -euo pipefail
+          test "$(git branch --show-current)" = 'repair/sadeed-zod-security-20261024'
+          npm install --package-lock-only --ignore-scripts --save-exact --no-audit --no-fund zod@4.6.7
+          npm ci --ignore-scripts --no-audit --no-fund
+          node --input-type=module <<'NODE'
+          import ts from 'typescript';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const visitDir = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? visitDir(path.join(dir,e.name)) : [path.join(dir,e.name)]);
+          for (const file of visitDir('src').filter(f => /\.(ts|tsx)$/.test(f))) {
+            let code = fs.readFileSync(file,'utf8');
+            if (!/from ["']zod["']/.test(code)) continue;
+            const ast = ts.createSourceFile(file, code, ts.ScriptTarget.Latest, true);
+            const inserts = [];
+            function walk(n) {
+              if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && n.expression.expression.getText(ast) === 'z' && n.expression.name.text === 'record' && n.arguments.length === 1) inserts.push(n.arguments[0].getStart(ast));
+              ts.forEachChild(n,walk);
+            }
+            walk(ast);
+            for (const pos of inserts.sort((a,b)=>b-a)) code = code.slice(0,pos) + 'z.string(), ' + code.slice(pos);
+            if (inserts.length) { fs.writeFileSync(file,code); console.log('RECORD_KEY_MIGRATION',file,inserts.length); }
+          }
+          const lock = JSON.parse(fs.readFileSync('package-lock.json','utf8'));
+          for (const [p,v] of Object.entries(lock.packages)) if (p.endsWith('/zod')) console.log('ZOD_LOCK',p,v.version);
+          NODE
+          git diff --name-only -z | xargs -0 -r ./node_modules/.bin/prettier --write
+          node --input-type=module <<'NODE'
+          import { z } from 'zod';
+          import assert from 'node:assert/strict';
+          let parsed = 0;
+          const item = z.string().superRefine(() => { parsed++; });
+          assert.equal(z.array(item).max(2).safeParse(['a','b','c']).success,false);
+          assert.equal(parsed,0,'Oversized constrained arrays must reject before element validation');
+          console.log('BOUNDED_COLLECTION_EARLY_REJECTION_PASS');
+          NODE
+          git diff --stat
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json package-lock.json src
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix(deps): patch Zod and migrate single-argument record schemas'
+            git push origin HEAD:refs/heads/repair/sadeed-zod-security-20261024
+          fi
+          echo "CANDIDATE_SHA=$(git rev-parse HEAD)"
+      - name: Verify candidate; retain all failures rather than hide them
+        run: |
+          set +e
+          failures=0
+          for check in typecheck lint check:secrets test check:audit build check:performance; do
+            file="/tmp/sadeed-${check//:/-}.log"
+            npm run "$check" >"$file" 2>&1
+            status=$?
+            echo "VERIFY_RESULT $check exit=$status SHA=$(git rev-parse HEAD)"
+            if [ "$status" -ne 0 ]; then
+              failures=$((failures+1))
+              tail -n 120 "$file"
+            else
+              tail -n 6 "$file"
+            fi
+          done
+          echo "TOTAL_FAILED_CHECKS=$failures"
+          test "$failures" -eq 0
