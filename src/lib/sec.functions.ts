@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { assertTwinReadsSucceeded } from "./sec/twin-read-integrity";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 
@@ -431,6 +432,18 @@ async function fetchTwinTree(supabase: { from: (t: string) => any }): Promise<Tw
       supabase.from("sec_control_rooms").select("*").order("code"),
       supabase.from("sec_patrol_teams").select("*").order("code"),
     ]);
+
+  assertTwinReadsSucceeded({
+    sections,
+    circles,
+    sites,
+    buildings,
+    cameras,
+    gates,
+    sensors,
+    controlRooms,
+    patrolTeams,
+  });
 
   const camerasByBuilding = new Map<string, SecCamera[]>();
   for (const c of (cameras.data ?? []) as SecCamera[]) {
