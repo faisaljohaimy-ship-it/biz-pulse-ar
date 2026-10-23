@@ -1,31 +1,34 @@
 /**
- * اشتعال اللوحة ثم المونتاج السريع (0–16.5 ث) — القسم الأوّل من فيلم البانر (R4).
+ * اشتعال اللوحة ثم المونتاج السريع (0–16.5 ث) — القسم الأوّل من فيلم البانر (R4، لقطاته من صور المالك في R6).
  *
  * أمر المالك ٢٠٢٦/١٠/١٨ بنصّه: «اجعل فديو الموشن جرافتي يبدأ اولاً بصور وذكاء مبهر لمدة ٢٤ ثانيه
- * بسرعة في اجزاء من الثانية وبمجرد فتح الموقع والدخول عليه». فهذا القسم:
+ * بسرعة في اجزاء من الثانية وبمجرد فتح الموقع والدخول عليه». وأمره ٢٠٢٦/١٠/٢٤ (R6): «استخدم هذه الصور
+ * لتوليد الفيلمين» — فلقطات المونتاج صارت من **عشرين صورةً فوتوغرافية مولَّدة بالذكاء الاصطناعي** قدّمها المالك
+ * (`remotion/photos/`، 1672×941، دخل منها 18): محطّات وأبراج وبوّابات ورجال أمنٍ صناعيّ وغرف تحكّم وتوأمٌ رقميّ. فهذا القسم:
  *
  *   • 0–0.5 ث «اشتعال»: الإطار 0 هو اللوحة نفسها بلا مرشّح (هي ملصق الفيديو في الصفحة)، ثم تنفجر خلف
- *     الرمز هالةٌ وأشعّة ووهجٌ أنامورفيّ، وتندفع اللوحة نحوه (≤ 1.12) وتغتسل بالضوء — وقطعٌ حادّ عند 0.5.
- *   • 0.5–16.5 ث ثلاث وعشرون لقطة على `CUTS` (شبكة الموسيقى 120 ن/د): ثماني عشرة لقطةً واقعية من الصور
- *     الأربع (منشآتٌ متخيَّلة عامّة) بتأطيراتٍ مختلفة لا تتجاور صورتها، بكاميرا نشطة (لكمة · سوطٌ بضبابية
- *     حركة · تراجع · إمالة) ودرجةٍ باردة وضبابٍ عميق، وفوقها طبقات «ذكاء» تُرسم إجرائيًّا: نبضات طاقةٍ
- *     تجري على الموصِّلات، وشبكةٌ تصل المنشآت، وأرضيةٌ رقمية تمسحها موجة، وشعاعٌ يوقظ العوازل، وتيّارات
- *     ضوءٍ تصعد من الأسفل إلى الأعلى (تمهيدًا للمعان الجوهرة الصاعد) — وبينها خمس لقطات ذكاءٍ خالص:
- *     شبكةٌ عصبية ثلاثية الأبعاد تسري فيها الإشارة، وطيرانٌ فوق تضاريس بيانات، وتيّاراتٌ صاعدة من أرضيةٍ
- *     مضيئة، ونفقُ ضوء، وأخيرًا دوّامةٌ تتقارب خيوطها إلى نقطةٍ واحدة في مركز الإطار (1086، 362) يفجّرها
- *     قسم الصياغة (`Forge.tsx`) عند 16.5.
+ *     الرمز هالةٌ وأشعّةٌ ووهجٌ أنامورفيّ، وتندفع اللوحة نحوه (≤ 1.12) وتغتسل بالضوء — وقطعٌ حادّ عند 0.5.
+ *   • 0.5–16.5 ث ثلاث وعشرون لقطة على `CUTS` (شبكة الموسيقى 120 ن/د): ثماني عشرة لقطةً من الصور — كلٌّ منها
+ *     نافذة 3:1 مقصوصة من صورةٍ 16:9 بتأطيرٍ مختلف — بكاميرا نشطة (لكمة · سوطٌ بضبابية حركة · تراجع · إمالة)
+ *     ودرجةٍ باردة وضبابٍ عميق، وفوقها طبقات «ذكاء» تُرسم إجرائيًّا على إحداثيات الصورة نفسها: نبضات طاقةٍ
+ *     تجري على الموصِّلات ومسار التوجيه، وشبكةٌ تصل الأبراج والمداخن، وشعاعٌ يوقظ المعدّات، ووهجٌ على الأضواء،
+ *     وتيّاراتُ ضوءٍ تصعد من الأسفل إلى الأعلى (تمهيدًا للمعان الجوهرة الصاعد) — وبينها خمس لقطات ذكاءٍ
+ *     خالص: شبكةٌ عصبية ثلاثية الأبعاد تسري فيها الإشارة، وطيرانٌ فوق تضاريس بيانات، وتيّاراتٌ صاعدة من
+ *     أرضيةٍ مضيئة، ونفقُ ضوء، وأخيرًا دوّامةٌ تتقارب خيوطها إلى نقطةٍ واحدة في مركز الإطار (1086، 362)
+ *     يفجّرها قسم الصياغة (`Forge.tsx`) عند 16.5.
  *
- * قصاصات اللوحة جُرّبت ولم تُعتمد: أيّ قصّ 3:1 بتكبيرٍ مقبول يملؤه ضبابها الأبيض (متوسّط إضاءة 0.44
- * مقابل 0.15–0.3 للّقطات) — فالدرجة الليلية تجعله رماديًّا موحلًا، والقلب السالب يشبه الأشعّة.
+ * ما لا يُرى (المادة ٢٧ + أمر المالك): لا نصّ ولا رقم ولا شعار ولا اسم جهة ولا لوحة مركبة ولا شعارٌ وطنيّ في أيّ
+ * إطار. ورجال الأمن والمشغّلون الذين في صور المالك يظهرون **بأمره** ولا يُضاف شخصٌ جديد. وما في الصور من
+ * شارات أكمامٍ ونصٍّ مشوَّه على السترات يُمحى قبل التصيير (`tools/prepare_photos.py`)، وما لا يجوز ظهوره
+ * (نصّ مؤخّرة المركبة في 02 · خريطة الشاشة الجانبية في 10 · شعار المسدّس السداسيّ في 05 — وهذه لم تدخل الفيلم) تحرسه
+ * `Source.avoid`: يرمي التصيير خطأً لو دخل أيٌّ منها نافذةَ أيّ إطار (`PhotoView` ← `assertClear`).
+ * والوميض (WCAG 2.3.1): ومضاتٌ ليّنة ≤ 35% أبيض لثلاثة إطارات على `FLASHES` وحدها، والقطعات ≤ 2/ث،
+ * وإضاءة اللقطات في نطاقٍ متقارب. وكل حركةٍ دالّةٌ في `t` وحده، والجسيمات من مولّدٍ ثابت البذرة.
  *
- * المحظورات (المادة ٢٧): لا نصّ ولا رقم ولا شعار (سوى الرمز في الاشتعال) ولا أشخاص — **عدا رجلَي الأمن الصناعيّ عند بوّابة `GATE`** بأمر المالك ٢٠٢٦/١٠/٢٣ — ولا HUD ولا بيانات
- * مختلَقة — العُقد والخطوط رمزيّةٌ على منشآتٍ متخيَّلة. والوميض (WCAG 2.3.1): ومضاتٌ ليّنة ≤ 35% أبيض
- * لثلاثة إطارات على `FLASHES` وحدها، والقطعات ≤ 2/ث، وإضاءة اللقطات في نطاقٍ متقارب. وكل حركةٍ دالّةٌ في
- * `t` وحده، والجسيمات من مولّدٍ ثابت البذرة.
- *
- * الإحداثيات بكسلات اللوحة الأمّ 2172×724، ومواضع الطبقات فوق الصور بكسلات المصدر (1280×543، مقيسةً
- * بشبكة 10px على المعاينات) تمرّ بالكاميرا نفسها (`toArt`) فتلتصق بمنشآتها. والكاميرا محصورةٌ رياضيًّا
- * (`viewOf`) فلا تنكشف حافّة صورةٍ في أيّ إطار، وتكبيرها ≤ 1.45 فوق الملء (المعاينات ليّنة).
+ * الإحداثيات بكسلات اللوحة الأمّ 2172×724، ومواضع الطبقات فوق الصور بكسلات المصدر (1672×941، مقيسةً
+ * بشبكة PIL فوق كل صورة) تمرّ بالكاميرا نفسها (`toArt`) فتلتصق بمعالمها. والكاميرا محصورةٌ رياضيًّا
+ * (`viewOf`) فلا تنكشف حافّة صورةٍ في أيّ إطار، وتكبيرها ≤ 1.45 فوق الملء — أي أنّ بكسل المصدر يُرسم في
+ * درجة 1608 بين 0.96× و1.39×، وفي درجة 804 بين 0.48× و0.70× (حادّ).
  */
 import type { CSSProperties, FC, ReactNode } from "react";
 import { Easing, Img, staticFile } from "remotion";
@@ -43,6 +46,7 @@ import {
   quad,
   ramp,
   seeded,
+  spline,
   TAU,
   trace,
   type Trace,
@@ -83,24 +87,49 @@ const energyAt = (t: number) => ramp(t, 8.5, 15.5, (x) => x);
 
 /* ─────────────────────────────── المصادر ─────────────────────────────── */
 
-/** `rows` أدنى صفٍّ يجوز أن يظهر (بكسلات المصدر) — ما تحته لا يدخل الإطار مهما تحرّكت الكاميرا. */
-type Source = { file: string; w: number; h: number; rows?: number };
+type Rect = readonly [x0: number, y0: number, x1: number, y1: number];
 
 /**
- * في صورة المجمّع عاملٌ صغير بزيٍّ فاتح وخوذة عند (668–682، 468–505) — والأشخاص محظورون في الفيلم،
- * فالصفوف دون 466 خارج الإطار في كل تأطيرٍ وكل سوط (`viewOf`)، لا بحسن اختيار اللقطات وحده.
+ * `rows` أدنى صفٍّ يجوز أن يظهر · `avoid` مستطيلاتٌ (بكسلات المصدر) لا يجوز أن تدخل نافذة أيّ إطار — يحرسها
+ * `assertClear` عند التصيير.
  */
-const COMPLEX: Source = { file: "industrial/1-industrial.jpg", w: 1280, h: 543, rows: 466 };
-const LINES: Source = { file: "industrial/2-transmission.jpg", w: 1280, h: 543 };
-const SUBSTATION: Source = { file: "industrial/3-substation.jpg", w: 1280, h: 543 };
-const POWER: Source = { file: "industrial/4-power.jpg", w: 1280, h: 543 };
+type Source = { file: string; w: number; h: number; rows?: number; avoid?: readonly Rect[] };
+
 /**
- * بوابة محطّة التوليد عند الغسق، وعند حاجزها **رجلا أمنٍ صناعيّ** (أمر المالك ٢٠٢٦/١٠/٢٣: «ان تكون
- * صور المحطات تشمل رجال امن صناعي عند البوابات»). معاينةٌ مولَّدة بالذكاء الاصطناعي لمنشأةٍ متخيَّلة
- * عامّة (لا موقعَ حقيقيّ)، بلا نصٍّ ولا شعارٍ ولا لوحة مركبة — الاستثناء الوحيد من «لا أشخاص» أدناه،
- * وبأمر المالك. وصفوفها كلّها في الإطار (لا شخصَ صغيرٌ مخفيّ: الحارسان هما المقصود).
+ * صور المالك (أمر ٢٠٢٦/١٠/٢٤): 1672×941، مولَّدةٌ بالذكاء الاصطناعي، **ليست تصويرًا لمنشأةٍ حقيقيّة**. تُقرأ هنا من
+ * `photos/` في مجلّد التصيير بعد `tools/prepare_photos.py` (نسخٌ بلا شارات أكمام ولا نصٍّ مشوَّه على السترات).
  */
-const GATE: Source = { file: "industrial/5-gate.jpg", w: 1280, h: 543 };
+const photo = (name: string, avoid?: readonly Rect[]): Source => ({
+  file: `photos/${name}.jpg`,
+  w: 1672,
+  h: 941,
+  avoid,
+});
+const SUNSET_GUARD = photo("01-sunset-guard-overlook");
+/** مؤخّرة المركبة (شعارٌ ونصّ حرفيّ على الصندوق والمصدّ ومكان اللوحة) ← نافذةٌ لا تتجاوز يمينًا x = 1330. */
+const GATE_RAIN = photo("02-gate-night-rain-suv", [[1330, 380, 1672, 720]]);
+const DUSK_LINES = photo("03-aerial-dusk-glow-lines");
+/** الخريطةُ على الجدار (900–1210 × 30–335) خارج كل نافذة — اللقطة على الصفّ السفليّ من الشاشات والمشغّلين. */
+const CONTROL_WALL = photo("04-control-room-wall", [[890, 30, 1215, 338]]);
+const GANTRY = photo("06-gantry-guard-tablet-drone");
+/** الكمّ الأيسر كان عليه شعارٌ وطنيّ (نخلةٌ وسيفان) — يُمحى في التحضير، وتبقى النافذة بعيدةً عنه أيضًا. */
+const GUARD_TWIN = photo("07-guard-twin-overlay", [[300, 540, 450, 690]]);
+const ISO_TWIN = photo("08-twin-isometric-wireframe");
+const TWIN_SUBSTATION = photo("11-substation-wireframe-b");
+const PATH_PINS = photo("12-twin-guidance-path-pins");
+const PATROL_TORCH = photo("13-patrol-two-guards-torches");
+const PATROL_FENCE = photo("14-patrol-guard-fence-cameras");
+const GATE_TABLET = photo("15-gate-guard-tablet-suv");
+const CRESCENT = photo("16-transmission-glow-crescent");
+const CITY = photo("17-substation-city-skyline");
+const DUSK_FENCE = photo("18-dusk-guard-walks-fence-substation");
+const SUNSET_TOWERS = photo("19-sunset-towers-wind-turbines");
+/** غرفة التحكّم: خريطةٌ وطنيّةٌ على الشاشة اليسرى، وعنوانٌ مشوَّه على الشاشة تحت الجدار — خارج كل نافذة. */
+const CONTROL_TWIN = photo("10-control-room-twin-screens", [
+  [70, 20, 410, 340],
+  [500, 488, 640, 522],
+]);
+const GATE_CLOSE = photo("20-gate-guard-tablet-closeup-rain");
 const PLATE_FILE = "sadeed-banner-clean.webp";
 const EMBLEM_FILE = "sadeed-emblem.webp";
 
@@ -216,23 +245,6 @@ function sample(tr: Trace, a: number, b: number, n: number): Pt[] {
 
 const pts = (list: Pt[]) => list.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
 const P = (x: number, y: number): Pt => ({ x, y });
-const line = (a: Pt, b: Pt, n = 12): Trace =>
-  trace(Array.from({ length: n + 1 }, (_, j) => P(lerp(a.x, b.x, j / n), lerp(a.y, b.y, j / n))));
-
-/** مسارٌ مقوَّس بين نقاط التعليق (ترهّلُ سلكٍ بين برجين: `sag` كسرٌ من طول البحر). */
-function sagged(points: readonly Pt[], sag: number, per = 14): Trace {
-  const out: Pt[] = [];
-  for (let s = 0; s < points.length - 1; s++) {
-    const a = points[s];
-    const b = points[s + 1];
-    const len = Math.hypot(b.x - a.x, b.y - a.y);
-    const c = P((a.x + b.x) / 2, (a.y + b.y) / 2 + 2 * sag * len);
-    for (let j = 0; j < per; j++) out.push(quad(a, c, b, j / per));
-  }
-  out.push(points[points.length - 1]);
-  return trace(out);
-}
-
 /** قوسٌ يعلو بين نقطتين (`lift` كسرٌ من المسافة). */
 function arcTrace(a: Pt, b: Pt, lift: number): Trace {
   const len = Math.hypot(b.x - a.x, b.y - a.y);
@@ -435,66 +447,60 @@ type Ctx = {
   energy: number;
 };
 
-/* —— ① المجمّع الصناعيّ: شبكةٌ تصل المنشآت (قممُ الأبراج وعناقيد الأضواء) —— */
+/* ─────────────── طبقات الذكاء العامّة فوق الصور (إحداثيات المصدر 1672×941) ─────────────── */
 
-const COMPLEX_NODES: readonly Pt[] = [
-  P(177, 272),
-  P(272, 235),
-  P(325, 183),
-  P(430, 300),
-  P(492, 172),
-  P(540, 336),
-  P(598, 182),
-  P(657, 172),
-  P(700, 408),
-  P(786, 216),
-  P(903, 219),
-  P(995, 242),
-  P(965, 338),
-  P(1110, 265),
-  P(1207, 247),
-  P(118, 330),
-  P(957, 217),
-  P(861, 216),
-];
+type Lamp = Pt & { len?: number };
+const L = (x: number, y: number, len?: number): Lamp => ({ x, y, len });
 
-const COMPLEX_LINKS = (
-  [
-    [15, 0],
-    [0, 1],
-    [1, 2],
-    [2, 4],
-    [4, 6],
-    [6, 7],
-    [7, 9],
-    [9, 17],
-    [17, 10],
-    [10, 16],
-    [16, 11],
-    [11, 13],
-    [13, 14],
-    [2, 3],
-    [3, 5],
-    [5, 6],
-    [5, 8],
-    [8, 12],
-    [12, 11],
-    [12, 13],
-    [6, 9],
-    [3, 0],
-  ] as const
-).map(([a, b], j) => ({
-  a,
-  b,
-  tr: arcTrace(COMPLEX_NODES[a], COMPLEX_NODES[b], 0.15 + 0.06 * (j % 3)),
-}));
+/** وهجٌ أفقيّ (عدسةٌ أنامورفية) على المصابيح الحقيقية في الصورة — يتنفّس على الإيقاع. */
+function lamps(c: Ctx, list: readonly Lamp[], len = 260, base = 0.55): ReactNode {
+  return list.map((p, j) => (
+    <Flare
+      key={j}
+      p={c.map(p)}
+      i={c.i}
+      a={base + 0.3 * pulse(c.t + j * 0.09, 4)}
+      len={p.len ?? len}
+    />
+  ));
+}
+
+/** نقاطُ رصدٍ تنبض على معالم الصورة (قممُ أبراجٍ ومداخن ومعدّات). */
+function spots(c: Ctx, list: readonly Pt[], r = 0.85): ReactNode {
+  return list.map((p, j) => (
+    <Spot key={j} p={c.map(p)} on={1} t={c.t} i={c.i} r={r} tone={j % 4 === 1 ? C.green : C.cyan} />
+  ));
+}
+
+/* —— شبكةٌ تصل معالم الصورة: كلّ نقطةٍ بأقرب نقطتين إليها (حتميّ، لا روابط مكتوبة يدويًّا) —— */
+
+type Net = { nodes: readonly Pt[]; links: readonly { a: number; b: number; tr: Trace }[] };
+
+function autoNet(nodes: readonly Pt[], k = 2): Net {
+  const seen = new Set<number>();
+  const links: { a: number; b: number; tr: Trace }[] = [];
+  nodes.forEach((p, a) => {
+    nodes
+      .map((q, b) => ({ b, d: Math.hypot(p.x - q.x, p.y - q.y) }))
+      .filter((o) => o.b !== a)
+      .sort((m, n) => m.d - n.d)
+      .slice(0, k)
+      .forEach(({ b }) => {
+        const key = Math.min(a, b) * 1000 + Math.max(a, b);
+        if (seen.has(key)) return;
+        seen.add(key);
+        links.push({ a, b, tr: arcTrace(nodes[a], nodes[b], 0.12 + 0.06 * (links.length % 3)) });
+      });
+  });
+  return { nodes, links };
+}
 
 /** `from` لحظة بدء الرسم (ث من أوّل اللقطة)، و`lit` 1 = الشبكة مكتملةٌ من أوّل إطار. */
-function complexNet(c: Ctx, from: number, lit: number): ReactNode {
+function drawNet(net: Net, c: Ctx, from: number, lit: number): ReactNode {
   const { local, t, i, map, energy } = c;
   const lines: ReactNode[] = [];
-  const reached = new Array<number>(COMPLEX_NODES.length).fill(0);
-  COMPLEX_LINKS.forEach((l, j) => {
+  const reached = new Array<number>(net.nodes.length).fill(0);
+  net.links.forEach((l, j) => {
     const start = from + j * 0.025;
     const p = Math.max(lit, clamp01((local - start) / 0.3));
     if (p <= 0) return;
@@ -519,7 +525,7 @@ function complexNet(c: Ctx, from: number, lit: number): ReactNode {
   return (
     <>
       <Glowing id={`mtg-g${i}`}>{lines}</Glowing>
-      {COMPLEX_NODES.map((n, j) => (
+      {net.nodes.map((n, j) => (
         <Spot
           key={`n${j}`}
           p={map(n)}
@@ -534,63 +540,16 @@ function complexNet(c: Ctx, from: number, lit: number): ReactNode {
   );
 }
 
-/** حوامل الأنابيب في المجمّع — نبضاتٌ تجري عليها كبياناتٍ في عروق المنشأة. */
-const RACKS: readonly Trace[] = [
-  line(P(1290, 350), P(700, 526)),
-  line(P(-10, 414), P(440, 340)),
-  line(P(1290, 300), P(905, 318)),
-  line(P(905, 318), P(612, 356)),
-];
+/* —— نبضاتٌ على الموصِّلات المتوهّجة في الصور (من البعيد إلى الكاميرا) —— */
 
-function rackPulses(c: Ctx, count: number): ReactNode {
-  const out: ReactNode[] = [];
-  RACKS.forEach((tr, r) => {
-    out.push(
-      <polyline
-        key={`b${r}`}
-        points={pts(sample(tr, 0, 1, 2).map(c.map))}
-        fill="none"
-        stroke={C.cyan}
-        strokeWidth={2}
-        opacity={0.28 + 0.3 * pulse(c.t, 4)}
-      />,
-    );
-    for (let j = 0; j < count; j++) {
-      const head = frac(c.local * (0.9 + 0.25 * r) + j / count + r * 0.31) * 1.25;
-      out.push(<Comet key={`${r}-${j}`} tr={tr} head={head} len={0.3} map={c.map} w={4.2} />);
-    }
-  });
-  return <Glowing id={`mtg-g${c.i}`}>{out}</Glowing>;
-}
+/** مسارٌ من نقاطٍ مقيسةٍ فوق الصورة (بكسلات المصدر)، منعَّمٌ بمنحنى كاتمول-روم. */
+const wireOf = (points: readonly Pt[]): Trace => trace(spline(points, 8));
 
-/* —— ② خطوط النقل: نبضات طاقةٍ تجري على الموصِّلات من الأفق نحو الكاميرا —— */
-
-type Tower = { lu: Pt; ru: Pt; ll: Pt; rl: Pt };
-const tower = (lu: Pt, ru: Pt, ll: Pt, rl: Pt): Tower => ({ lu, ru, ll, rl });
-
-/** نقاط تعليق الموصِّلات على الأبراج (بكسلات المصدر). */
-const TOWERS: readonly Tower[] = [
-  tower(P(346, 183), P(440, 182), P(337, 257), P(462, 257)),
-  tower(P(633, 287), P(697, 285), P(632, 323), P(703, 320)),
-  tower(P(765, 316), P(802, 316), P(764, 339), P(806, 339)),
-  tower(P(845, 335), P(872, 335), P(844, 352), P(874, 352)),
-  tower(P(899, 351), P(922, 351), P(898, 366), P(924, 366)),
-  tower(P(938, 360), P(958, 360), P(937, 373), P(960, 373)),
-  tower(P(967, 366), P(983, 366), P(966, 376), P(985, 376)),
-  tower(P(992, 370), P(1007, 370), P(991, 379), P(1008, 379)),
-];
-const VANISH = P(1086, 389);
-const EXITS = { lu: P(-40, 146), ru: P(-40, 176), ll: P(-40, 218), rl: P(-40, 292) };
-
-/** الموصِّلات الأربعة من الأفق إلى البرج القريب ثم خارج الإطار يسارًا. */
-const WIRES: readonly Trace[] = (["lu", "ru", "ll", "rl"] as const).map((key) =>
-  sagged([VANISH, ...[...TOWERS].reverse().map((tw) => tw[key]), EXITS[key]], 0.035),
-);
-
-function linePulses(c: Ctx, count: number, speed: number): ReactNode {
+/** ‏`pulses` تتسارع نحو الكاميرا (رأسها يسرع على المسار) — أضواءٌ تجري في موصِّلاتٍ حقيقية. */
+function wirePulses(c: Ctx, wires: readonly Trace[], count: number, speed: number): ReactNode {
   const { local, map, i, energy } = c;
   const comets: ReactNode[] = [];
-  WIRES.forEach((tr, w) => {
+  wires.forEach((tr, w) => {
     for (let j = 0; j < count; j++) {
       const p = frac(local * speed + j / count + w * 0.21);
       const head = accel(p) * 1.15;
@@ -599,9 +558,9 @@ function linePulses(c: Ctx, count: number, speed: number): ReactNode {
           key={`${w}-${j}`}
           tr={tr}
           head={head}
-          len={0.04 + 0.1 * head}
+          len={0.05 + 0.12 * head}
           map={map}
-          w={1.6 + 2.8 * head}
+          w={2 + 2.4 * head}
           tone={w % 2 ? C.cyan : C.sky}
           a={0.75 + 0.25 * energy}
         />,
@@ -611,65 +570,17 @@ function linePulses(c: Ctx, count: number, speed: number): ReactNode {
   return <Glowing id={`mtg-g${i}`}>{comets}</Glowing>;
 }
 
-/** منارات قمم الأبراج: حمراءُ دافئة تومض على الإيقاع — اللون الدافئ الوحيد في الدرجة الباردة. */
-const BEACONS: readonly Pt[] = [
-  P(344, 133),
-  P(443, 131),
-  P(635, 258),
-  P(695, 256),
-  P(762, 297),
-  P(803, 297),
-  P(842, 322),
-  P(874, 322),
-];
-
-function beacons(c: Ctx): ReactNode {
-  const glow = 0.45 + 0.55 * pulse(c.t, 4);
-  return BEACONS.map((b, j) => {
-    const p = c.map(b);
-    return (
-      <g key={j} opacity={glow}>
-        <circle
-          cx={p.x}
-          cy={p.y}
-          r={14}
-          fill="#ff4b42"
-          opacity={0.4}
-          filter={`url(#mtg-g${c.i})`}
-        />
-        <circle cx={p.x} cy={p.y} r={3} fill="#ffe2df" />
-      </g>
-    );
+/** نبضاتٌ بسرعةٍ ثابتة على مسارٍ حقيقيّ في الصورة (مسار التوجيه) — لا تسارع. */
+function pathPulses(c: Ctx, paths: readonly Trace[], count: number, speed: number): ReactNode {
+  const out: ReactNode[] = [];
+  paths.forEach((tr, r) => {
+    for (let j = 0; j < count; j++) {
+      const head = frac(c.local * speed + j / count + r * 0.31) * 1.25;
+      out.push(<Comet key={`${r}-${j}`} tr={tr} head={head} len={0.22} map={c.map} w={4.4} />);
+    }
   });
+  return <Glowing id={`mtg-g${c.i}`}>{out}</Glowing>;
 }
-
-/* —— ③ محطّة التحويل: شعاعُ مسحٍ يمرّ فيوقظ العوازل والمعدّات —— */
-
-const SUB_NODES: readonly Pt[] = [
-  P(858, 176),
-  P(892, 186),
-  P(920, 192),
-  P(895, 125),
-  P(928, 137),
-  P(1017, 172),
-  P(1040, 181),
-  P(1095, 207),
-  P(1060, 242),
-  P(1087, 246),
-  P(290, 240),
-  P(420, 236),
-  P(130, 272),
-  P(560, 300),
-  P(700, 292),
-];
-const SUB_LAMPS: readonly Pt[] = [P(72, 36), P(515, 210), P(980, 243), P(1248, 190)];
-/** الأسلاك العلوية خلف الجسر — تجري عليها النبضات في التأطير الأيمن. */
-const SUB_WIRES: readonly Trace[] = [
-  sagged([P(1290, 68), P(760, 172)], 0.02),
-  sagged([P(1290, 100), P(1100, 128)], 0.01),
-  sagged([P(1290, 203), P(1105, 222)], 0.01),
-  sagged([P(1290, 40), P(905, 98)], 0.015),
-];
 
 function scanBeam(c: Ctx, nodes: readonly Pt[], from: number, to: number): ReactNode {
   const { u, map, t, i } = c;
@@ -699,189 +610,6 @@ function scanBeam(c: Ctx, nodes: readonly Pt[], from: number, to: number): React
       })}
     </>
   );
-}
-
-function subWirePulses(c: Ctx): ReactNode {
-  const out: ReactNode[] = [];
-  SUB_WIRES.forEach((tr, w) => {
-    for (let j = 0; j < 3; j++) {
-      const head = frac(c.local * 1.6 + j / 3 + w * 0.27) * 1.2;
-      out.push(<Comet key={`${w}-${j}`} tr={tr} head={head} len={0.25} map={c.map} w={2.4} />);
-    }
-  });
-  return <Glowing id={`mtg-g${c.i}`}>{out}</Glowing>;
-}
-
-/* —— ④ محطّة التوليد: أرضيةٌ رقمية منظوريّة تمسحها موجةٌ من المحطّة نحو الكاميرا —— */
-
-const PWR = { horizon: 292, vx: 640, f: 950 } as const;
-/** الماء في القناة (يُستثنى من الأرضية): الضفّة البعيدة يمينًا ثم القريبة يسارًا. */
-const CANAL: readonly Pt[] = [
-  P(-20, 450),
-  P(300, 440),
-  P(600, 422),
-  P(800, 402),
-  P(950, 385),
-  P(1100, 370),
-  P(1300, 353),
-  P(1300, 386),
-  P(1100, 402),
-  P(1000, 425),
-  P(900, 440),
-  P(700, 465),
-  P(600, 490),
-  P(450, 505),
-  P(0, 532),
-  P(-20, 534),
-];
-
-/** الموجة تبدأ عند `y0` (قاعدة المحطّة، بكسلات المصدر) وتبلغ أدنى صفٍّ ظاهر من الأرض مع آخر اللقطة. */
-function groundGrid(c: Ctx, y0: number): ReactNode {
-  const { map, i, u, energy, view } = c;
-  const yAt = (z: number) => PWR.horizon + PWR.f / z;
-  const zNear = 3.5;
-  const zFar = 70;
-  const y1 = Math.min(560, (H - view.y) / view.k + 10);
-  const waveY = lerp(y0, y1, glide(u));
-  const lines: ReactNode[] = [];
-  for (let j = 0; j < 34; j++) {
-    const z = zNear * Math.pow(zFar / zNear, j / 33);
-    const y = yAt(z);
-    const near = Math.exp(-Math.abs(y - waveY) / 7);
-    const a = map(P(-20, y));
-    const b = map(P(1300, y));
-    lines.push(
-      <line
-        key={`h${j}`}
-        x1={a.x}
-        y1={a.y}
-        x2={b.x}
-        y2={b.y}
-        stroke={near > 0.3 ? C.ice : C.cyan}
-        strokeWidth={0.8 + 1.8 * near}
-        opacity={(0.2 + 0.12 * energy) * (1 - j / 40) + 0.75 * near}
-      />,
-    );
-  }
-  for (let j = -36; j <= 36; j++) {
-    const X = j * 0.42;
-    const a = map(P(PWR.vx + (PWR.f * X) / zNear, yAt(zNear)));
-    const b = map(P(PWR.vx + (PWR.f * X) / zFar, yAt(zFar)));
-    lines.push(
-      <line
-        key={`v${j}`}
-        x1={a.x}
-        y1={a.y}
-        x2={b.x}
-        y2={b.y}
-        stroke={C.cyan}
-        strokeWidth={1}
-        opacity={0.24 + 0.1 * energy}
-      />,
-    );
-  }
-  // جبهة الموجة: خطٌّ ساطع وتوهّجٌ عريض.
-  const wa = map(P(-20, waveY));
-  const wb = map(P(1300, waveY));
-  const top = map(P(0, yAt(zFar))).y;
-  const bottom = map(P(0, yAt(zNear))).y;
-  return (
-    <>
-      <defs>
-        <linearGradient
-          id={`mtg-floor${i}`}
-          gradientUnits="userSpaceOnUse"
-          x1="0"
-          y1={top}
-          x2="0"
-          y2={bottom}
-        >
-          <stop offset="0%" stopColor="#000" stopOpacity="1" />
-          <stop offset="16%" stopColor="#fff" stopOpacity="1" />
-          <stop offset="100%" stopColor="#fff" stopOpacity="1" />
-        </linearGradient>
-        <mask id={`mtg-floorMask${i}`} maskUnits="userSpaceOnUse" x="0" y="0" width={W} height={H}>
-          <rect x={0} y={top} width={W} height={H - top} fill={`url(#mtg-floor${i})`} />
-          <polygon points={pts(CANAL.map(map))} fill="#000" />
-        </mask>
-      </defs>
-      <g mask={`url(#mtg-floorMask${i})`}>
-        <Glowing id={`mtg-g${i}`} k={0.9}>
-          {lines}
-        </Glowing>
-        <line
-          x1={wa.x}
-          y1={wa.y}
-          x2={wb.x}
-          y2={wb.y}
-          stroke={C.cyan}
-          strokeWidth={34}
-          opacity={0.45}
-          filter={`url(#mtg-G${i})`}
-        />
-        <line
-          x1={wa.x}
-          y1={wa.y}
-          x2={wb.x}
-          y2={wb.y}
-          stroke={C.ice}
-          strokeWidth={2.2}
-          opacity={0.9}
-        />
-      </g>
-    </>
-  );
-}
-
-/** أعمدة انعكاس الأضواء في القناة (أعلى العمود وطوله، بكسلات المصدر). */
-const REFLECTIONS: readonly (Pt & { h: number })[] = [
-  { x: 447, y: 440, h: 56 },
-  { x: 486, y: 438, h: 56 },
-  { x: 505, y: 437, h: 60 },
-  { x: 530, y: 436, h: 58 },
-  { x: 554, y: 434, h: 58 },
-  { x: 582, y: 432, h: 54 },
-  { x: 658, y: 420, h: 40 },
-  { x: 700, y: 417, h: 40 },
-  { x: 742, y: 412, h: 38 },
-  { x: 800, y: 405, h: 34 },
-  { x: 880, y: 395, h: 34 },
-  { x: 948, y: 387, h: 30 },
-  { x: 1035, y: 378, h: 28 },
-  { x: 1110, y: 372, h: 24 },
-];
-const GLINTS = (() => {
-  const rnd = seeded(808);
-  return Array.from({ length: 9 }, () => ({
-    y: rnd(),
-    w: rnd(),
-    ph: rnd() * TAU,
-    f: 8 + 10 * rnd(),
-  }));
-})();
-
-/** بريق الماء: ومضاتٌ صغيرة تتلألأ داخل كل عمود انعكاس — يتحرّك الماء ولا تتحرّك الأضواء. */
-function ripples(c: Ctx): ReactNode {
-  const out: ReactNode[] = [];
-  REFLECTIONS.forEach((r, j) => {
-    GLINTS.forEach((g, k) => {
-      const a = Math.max(0, Math.sin(c.local * g.f + g.ph + j * 1.3));
-      if (a < 0.2) return;
-      const p = c.map(P(r.x + 3 * Math.sin(c.local * 3 + k), r.y + g.y * r.h));
-      out.push(
-        <ellipse
-          key={`${j}-${k}`}
-          cx={p.x}
-          cy={p.y}
-          rx={4 + 9 * g.w}
-          ry={1.2}
-          fill={j % 4 === 1 ? "#ffe2b8" : C.ice}
-          opacity={a}
-        />,
-      );
-    });
-  });
-  return <Glowing id={`mtg-g${c.i}`}>{out}</Glowing>;
 }
 
 /* —— تيّارات الضوء الصاعدة (من الأسفل إلى الأعلى — تمهيدٌ للمعان الجوهرة) —— */
@@ -988,11 +716,39 @@ type IntelProps = { t: number; local: number; dur: number; u: number; i: number 
 type IntelShot = { kind: "intel"; draw: FC<IntelProps> };
 type Shot = PhotoShot | IntelShot;
 
+/**
+ * حارس التأطير: النافذة المرئيّة من المصدر (مع هامشٍ يغطّي ضبابية السوط) لا تقطع أيّ `avoid` — وإلا رمى التصيير
+ * خطأً بدل أن يُرسَم نصٌّ حرفيّ أو خريطةٌ أو شعارٌ في إطار (المادة ٢٧).
+ */
+const AVOID_MARGIN = 26;
+export function windowOf(view: View): Rect {
+  return [-view.x / view.k, -view.y / view.k, (W - view.x) / view.k, (H - view.y) / view.k];
+}
+export function violates(src: Source, view: View): Rect | null {
+  const [x0, y0, x1, y1] = windowOf(view);
+  for (const r of src.avoid ?? []) {
+    if (
+      x0 < r[2] + AVOID_MARGIN &&
+      x1 > r[0] - AVOID_MARGIN &&
+      y0 < r[3] + AVOID_MARGIN &&
+      y1 > r[1] - AVOID_MARGIN
+    )
+      return r;
+  }
+  return null;
+}
+
 const PhotoView: FC<{ shot: PhotoShot; t: number; i: number }> = ({ shot, t, i }) => {
   const t0 = CUTS[i];
   const dur = CUTS[i + 1] - t0;
   const local = t - t0;
   const view = viewOf(shot.src, camAt(shot.move, local, dur));
+  const bad = violates(shot.src, view);
+  if (bad) {
+    throw new Error(
+      `لقطة ${i + 1} (${shot.src.file}) تُظهر منطقةً محجوبة [${bad.join(", ")}] عند ${local.toFixed(2)} ث`,
+    );
+  }
   const first = viewOf(shot.src, camAt(shot.move, 0, dur));
   const blur = whipBlur(shot.src, shot.move, local, dur);
   const map = (p: Pt) => toArt(view, p);
@@ -1691,308 +1447,568 @@ const Converge: FC<IntelProps> = ({ t, local, u, i }) => {
   );
 };
 
+/* مسارات الموصِّلات المتوهّجة (من الأبعد إلى الأقرب) والمسار المرسوم على الأرض، مقيسةً فوق الصور وتُتحقَّق بطبقةٍ حمراء. */
+const DUSK_WIRES: readonly Trace[] = [
+  wireOf([
+    P(589, 407),
+    P(519, 439),
+    P(465, 449),
+    P(411, 449),
+    P(346, 451),
+    P(292, 442),
+    P(216, 412),
+    P(162, 388),
+    P(76, 336),
+    P(32, 304),
+    P(0, 282),
+  ]),
+  wireOf([
+    P(589, 477),
+    P(541, 499),
+    P(486, 509),
+    P(432, 520),
+    P(346, 527),
+    P(270, 523),
+    P(195, 504),
+    P(108, 477),
+    P(54, 455),
+    P(0, 426),
+  ]),
+  wireOf([
+    P(589, 439),
+    P(541, 466),
+    P(486, 488),
+    P(411, 504),
+    P(341, 505),
+    P(314, 504),
+    P(243, 488),
+    P(168, 464),
+  ]),
+  wireOf([
+    P(865, 635),
+    P(795, 639),
+    P(676, 648),
+    P(568, 653),
+    P(486, 656),
+    P(411, 658),
+    P(346, 653),
+    P(281, 645),
+    P(216, 628),
+    P(151, 612),
+    P(65, 596),
+    P(0, 577),
+  ]),
+];
+const CRESCENT_WIRES: readonly Trace[] = [
+  wireOf([
+    P(898, 320),
+    P(935, 336),
+    P(982, 338),
+    P(1029, 327),
+    P(1076, 309),
+    P(1123, 284),
+    P(1170, 254),
+    P(1203, 228),
+    P(1237, 197),
+  ]),
+  wireOf([
+    P(895, 345),
+    P(935, 358),
+    P(982, 370),
+    P(1022, 375),
+    P(1069, 374),
+    P(1123, 363),
+    P(1170, 347),
+    P(1203, 331),
+    P(1233, 315),
+  ]),
+  wireOf([
+    P(895, 442),
+    P(948, 452),
+    P(995, 459),
+    P(1036, 464),
+    P(1076, 466),
+    P(1123, 461),
+    P(1170, 447),
+    P(1203, 429),
+    P(1233, 403),
+  ]),
+  wireOf([P(1672, 150), P(1605, 172), P(1538, 186), P(1458, 200)]),
+  wireOf([P(1672, 298), P(1538, 311), P(1458, 317)]),
+  wireOf([P(1672, 393), P(1464, 405)]),
+];
+const GUIDE_PATH: Trace = wireOf([
+  P(1131, 931),
+  P(1050, 891),
+  P(988, 856),
+  P(925, 828),
+  P(862, 797),
+  P(800, 766),
+  P(738, 734),
+  P(694, 716),
+  P(650, 697),
+  P(594, 666),
+  P(550, 647),
+  P(488, 619),
+  P(425, 591),
+  P(369, 569),
+  P(338, 556),
+]);
+
+/* ───────────────────── معالم الصور (بكسلات المصدر 1672×941، مقيسةً بشبكة 100px) ───────────────────── */
+
+/** قمم أبراج الضغط ومداخن المحطّة في 01 — تصل بينها الشبكة. */
+const SUNSET_NET = autoNet([
+  P(745, 265),
+  P(905, 325),
+  P(992, 308),
+  P(1100, 388),
+  P(1260, 330),
+  P(1312, 322),
+  P(1410, 264),
+  P(1478, 314),
+  P(1526, 350),
+  P(1637, 272),
+]);
+/** قواعد المداخن في 01 — تصعد منها تيّارات الضوء. */
+const SUNSET_STACKS: readonly Pt[] = [P(1412, 440), P(1478, 420), P(1526, 430), P(1637, 420)];
+const SUNSET_LAMPS: readonly Lamp[] = [L(1245, 462), L(1380, 540), L(1535, 545), L(1640, 690)];
+
+/** أذرع البرج القريب في 16 — عقدٌ تنبض على أطراف العوازل. */
+const CRESCENT_ARMS: readonly Pt[] = [
+  P(1243, 100),
+  P(1450, 117),
+  P(1232, 300),
+  P(1455, 318),
+  P(1240, 395),
+  P(1460, 405),
+];
+
+const GATE_CLOSE_LAMPS: readonly Lamp[] = [
+  L(262, 88),
+  L(1272, 184),
+  L(272, 514, 160),
+  L(1625, 655, 200),
+  L(310, 312, 160),
+];
+const GATE_CLOSE_STACKS: readonly Pt[] = [P(1000, 290), P(1128, 290), P(1312, 260)];
+
+const WALL_NODES: readonly Pt[] = [
+  P(720, 250),
+  P(1085, 150),
+  P(1240, 150),
+  P(1085, 270),
+  P(1240, 270),
+  P(1085, 380),
+  P(1240, 380),
+  P(1440, 200),
+  P(1420, 370),
+  P(1590, 170),
+  P(900, 230),
+];
+const WALL_LIGHTS: readonly Lamp[] = [L(1300, 18, 340), L(1490, 78, 340), L(200, 22, 300)];
+
+const ISO_STACKS: readonly Pt[] = [
+  P(805, 235),
+  P(1000, 300),
+  P(1250, 430),
+  P(460, 470),
+  P(570, 490),
+];
+
+const TORCH_LAMPS: readonly Lamp[] = [
+  L(255, 285),
+  L(570, 360, 200),
+  L(1150, 80),
+  L(1430, 215),
+  L(920, 415, 200),
+  L(1480, 45, 200),
+  L(425, 630, 120),
+  L(740, 635, 120),
+];
+const TORCH_TOWERS: readonly Pt[] = [P(110, 420), P(365, 380), P(655, 330)];
+
+const DUSK_SPOTS: readonly Pt[] = [
+  P(78, 170),
+  P(635, 358),
+  P(765, 428),
+  P(1000, 415),
+  P(1297, 285),
+  P(1548, 235),
+];
+
+const CITY_LAMPS: readonly Lamp[] = [
+  L(68, 322),
+  L(133, 328),
+  L(460, 345),
+  L(545, 352),
+  L(1180, 325),
+  L(1550, 462),
+  L(870, 298),
+];
+const CITY_NODES: readonly Pt[] = [
+  P(265, 62),
+  P(495, 135),
+  P(670, 105),
+  P(915, 160),
+  P(1140, 110),
+  P(1305, 120),
+  P(1450, 115),
+  P(445, 440),
+  P(670, 430),
+  P(1050, 480),
+  P(1155, 470),
+];
+
+const FENCE_LAMPS: readonly Lamp[] = [
+  L(390, 62),
+  L(130, 222),
+  L(420, 290),
+  L(1445, 290),
+  L(665, 410, 200),
+  L(960, 470),
+  L(1620, 275),
+];
+
+const TOWERS_NET = autoNet([
+  P(330, 15),
+  P(445, 100),
+  P(470, 235),
+  P(826, 368),
+  P(1047, 488),
+  P(1187, 560),
+  P(1595, 560),
+]);
+const TOWERS_LAMPS: readonly Lamp[] = [L(1100, 700, 160), L(1610, 680, 160), L(1270, 768, 120)];
+const TOWERS_GLOW: readonly Pt[] = [P(1100, 772), P(1270, 772), P(1440, 772), P(1530, 772)];
+
+const GATE_TABLET_LAMPS: readonly Lamp[] = [
+  L(380, 143),
+  L(492, 86),
+  L(1240, 196),
+  L(1410, 603, 200),
+  L(312, 462, 160),
+  L(698, 165, 200),
+  L(905, 180, 200),
+];
+
+const PATH_LEDS: readonly Lamp[] = [
+  L(95, 512, 110),
+  L(240, 570, 110),
+  L(390, 660, 110),
+  L(580, 765, 110),
+  L(810, 915, 110),
+];
+const PATH_PINS_AT: readonly Pt[] = [P(407, 522), P(862, 587), P(642, 461)];
+
+const GANTRY_LAMPS: readonly Lamp[] = [
+  L(1160, 175, 160),
+  L(1085, 410),
+  L(945, 275),
+  L(650, 280),
+  L(1370, 410),
+  L(1495, 310),
+  L(1590, 130),
+];
+
+const WALL_SCREENS: readonly Pt[] = [
+  P(780, 140),
+  P(780, 260),
+  P(1050, 180),
+  P(1450, 160),
+  P(990, 420),
+  P(1120, 420),
+  P(1440, 430),
+  P(600, 430),
+  P(740, 440),
+];
+
+const RAIN_LAMPS: readonly Lamp[] = [
+  L(778, 255),
+  L(1157, 262),
+  L(375, 402, 160),
+  L(615, 402, 160),
+  L(130, 262),
+  L(545, 470, 110),
+];
+
+const DUSK_FENCE_LAMPS: readonly Lamp[] = [
+  L(1268, 108),
+  L(1515, 118),
+  L(1055, 295),
+  L(1140, 288),
+  L(468, 625, 140),
+  L(90, 625, 140),
+  L(820, 495),
+  L(1010, 490),
+];
+const DUSK_FENCE_BUSHINGS: readonly Pt[] = [P(1585, 340), P(1480, 320), P(1380, 310)];
+
+const GUARD_TWIN_NET = autoNet([
+  P(1350, 118),
+  P(1540, 148),
+  P(775, 148),
+  P(835, 142),
+  P(1105, 262),
+  P(1485, 410),
+]);
+const GUARD_TWIN_STACKS: readonly Pt[] = [P(775, 260), P(835, 255)];
+
+const TWIN_B_LAMPS: readonly Lamp[] = [
+  L(85, 250),
+  L(185, 240),
+  L(275, 180),
+  L(990, 175),
+  L(1275, 200),
+  L(1520, 245),
+  L(1640, 260),
+  L(115, 430),
+];
+const TWIN_B_NODES: readonly Pt[] = [
+  P(860, 70),
+  P(1112, 45),
+  P(1420, 50),
+  P(985, 330),
+  P(1050, 320),
+  P(1170, 360),
+  P(640, 430),
+  P(700, 440),
+  P(230, 430),
+];
+
 /* ───────────────────────────── قائمة اللقطات ───────────────────────────── */
 
-const POWER_STACKS: readonly Pt[] = [P(566, 84), P(730, 116), P(459, 190), P(627, 204)];
-const POWER_LAMPS: readonly Pt[] = [P(258, 282), P(708, 268), P(1035, 276)];
-
-/** أضواء البوّابة (بكسلات 1280×543، مقيسةً بشبكة 100px): ثلاثة أعمدة إنارة ونافذة الكشك. */
-const GATE_LAMPS: readonly Pt[] = [P(246, 60), P(733, 165), P(1150, 45), P(680, 270)];
-/** قمم مداخن المحطّة خلف البوّابة — تصعد منها تيّارات الضوء. */
-const GATE_STACKS: readonly Pt[] = [P(852, 44), P(879, 66), P(918, 98), P(951, 126)];
-const COMPLEX_TOPS: readonly Pt[] = [
-  P(325, 186),
-  P(492, 175),
-  P(598, 186),
-  P(657, 175),
-  P(517, 207),
-];
-const COMPLEX_FAR: readonly Pt[] = [
-  P(786, 220),
-  P(861, 220),
-  P(903, 222),
-  P(957, 221),
-  P(995, 246),
-];
-
 const SHOTS: readonly Shot[] = [
-  // ١ (0.5) المجمّع الصناعيّ عند الغسق — اندفاعٌ نحو قلبه، والشبكة تُرسم بين منشآته.
+  // ١ (0.5) غروبٌ فوق المحطّة وحارسٌ يطلّ عليها (01) — اندفاعٌ نحو المداخن، والشبكة تُرسم بين الأبراج والمداخن.
   {
     kind: "photo",
-    src: COMPLEX,
-    horizon: 180,
+    src: SUNSET_GUARD,
+    horizon: 340,
     move: {
-      a: { s: 1.08, u: 0.47, v: 0.49 },
-      b: { s: 1.26, u: 0.53, v: 0.52 },
+      a: { s: 1.1, u: 0.72, v: 0.62 },
+      b: { s: 1.3, u: 0.86, v: 0.5 },
       ease: punch,
       whipOut: 0.09,
     },
-    fx: (c) => complexNet(c, 0.1, 0),
-  },
-  // ٢ (1.5) خطوط النقل عبر الكثبان — يدخل بسوطٍ ثم انسيابٌ، والطاقة تجري على الموصِّلات.
-  {
-    kind: "photo",
-    src: LINES,
-    horizon: 400,
-    move: { a: { s: 1.22, u: 0.5, v: 0.5 }, b: { s: 1.28, u: 0.56, v: 0.5 }, whipIn: -0.07 },
     fx: (c) => (
       <>
-        {linePulses(c, 3, 0.55)}
-        {beacons(c)}
+        {drawNet(SUNSET_NET, c, 0.1, 0)}
+        {streams(c, SUNSET_STACKS, 3, 16, 320)}
+        {lamps(c, SUNSET_LAMPS, 220, 0.5)}
+      </>
+    ),
+  },
+  // ٢ (1.5) أبراج الضغط المضيئة تحت الهلال (16) — يدخل بسوطٍ ثم انسيابٌ، والطاقة تجري على الموصِّلات.
+  {
+    kind: "photo",
+    src: CRESCENT,
+    horizon: 560,
+    move: { a: { s: 1.22, u: 0.6, v: 0.38 }, b: { s: 1.3, u: 0.66, v: 0.36 }, whipIn: -0.07 },
+    fx: (c) => (
+      <>
+        {wirePulses(c, CRESCENT_WIRES, 3, 0.55)}
+        {spots(c, CRESCENT_ARMS, 0.9)}
       </>
     ),
   },
   // ٣ (2.5) شبكةٌ عصبية تدور والإشارة تسري فيها.
   { kind: "intel", draw: Lattice },
-  // ٤ (3.5) بوّابة محطّة التوليد — دفعٌ نحو رجلَي الأمن عند الحاجز، والأضواء تتنفّس على الإيقاع.
+  // ٤ (3.5) البوّابة من قريب: رجل الأمن يفحص مركبةً بجهازٍ لوحيّ (20) — دفعٌ ناعم، والأضواء تتنفّس على الإيقاع.
   {
     kind: "photo",
-    src: GATE,
+    src: GATE_CLOSE,
     horizon: 330,
-    move: { a: { s: 1.04, u: 0.5, v: 0.56 }, b: { s: 1.3, u: 0.54, v: 0.6 }, ease: cine },
+    move: { a: { s: 1.02, u: 0.5, v: 0.52 }, b: { s: 1.22, u: 0.52, v: 0.53 }, ease: cine },
     fx: (c) => (
       <>
-        {GATE_LAMPS.map((p, j) => (
-          <Flare
-            key={j}
-            p={c.map(p)}
-            i={c.i}
-            a={0.55 + 0.3 * pulse(c.t + j * 0.09, 4)}
-            len={j === 3 ? 120 : 260}
-          />
-        ))}
+        {lamps(c, GATE_CLOSE_LAMPS)}
+        {streams(c, GATE_CLOSE_STACKS, 3, 14, 300)}
       </>
     ),
   },
-  // ٥ (4.5) محطّة التحويل — تراجعٌ والشعاع يمسح ويوقظ العوازل.
+  // ٥ (4.5) جدار غرفة التحكّم (10) — تراجعٌ والشعاع يمسح الشاشات ويوقظها.
   {
     kind: "photo",
-    src: SUBSTATION,
-    horizon: 330,
-    move: { a: { s: 1.42, u: 0.62, v: 0.42 }, b: { s: 1.1, u: 0.55, v: 0.47 }, ease: punch },
+    src: CONTROL_TWIN,
+    horizon: 450,
+    move: { a: { s: 1.45, u: 0.72, v: 0.24 }, b: { s: 1.36, u: 0.74, v: 0.27 }, ease: punch },
     fx: (c) => (
       <>
-        {SUB_LAMPS.map((p, j) => (
-          <Flare key={j} p={c.map(p)} i={c.i} a={0.7} len={320} />
-        ))}
-        {scanBeam(c, SUB_NODES, -200, W + 200)}
+        {lamps(c, WALL_LIGHTS, 320, 0.7)}
+        {scanBeam(c, WALL_NODES, -200, W + 200)}
       </>
     ),
   },
-  // ٦ (5.5) أبراج التقطير من قريب — إمالةٌ صاعدة والضوء يصعد منها.
+  // ٦ (5.5) التوأم الرقميّ بمنظورٍ علويّ (08) — إمالةٌ صاعدة والضوء يصعد من المنشآت.
   {
     kind: "photo",
-    src: COMPLEX,
-    horizon: 180,
+    src: ISO_TWIN,
+    horizon: 450,
     move: {
-      a: { s: 1.36, u: 0.47, v: 0.56 },
-      b: { s: 1.42, u: 0.5, v: 0.42 },
+      a: { s: 1.3, u: 0.5, v: 0.62 },
+      b: { s: 1.45, u: 0.52, v: 0.4 },
       ease: cine,
       whipOut: 0.08,
     },
-    fx: (c) => (
-      <>
-        {streams(c, COMPLEX_TOPS, 4, 20, 340)}
-        {complexNet(c, 0, 1)}
-      </>
-    ),
+    fx: (c) => streams(c, ISO_STACKS, 4, 18, 340),
   },
-  // ٧ (6.5) الحارسان من قريب — يدخل بسوطٍ ثم دفعٌ ناعم، والتيّارات تصعد من مداخن المحطّة خلفهما.
+  // ٧ (6.5) دوريّةٌ لرجلَي أمنٍ بالمصابيح اليدوية قرب السياج (13) — يدخل بسوطٍ ثم دفعٌ ناعم.
   {
     kind: "photo",
-    src: GATE,
-    horizon: 330,
+    src: PATROL_TORCH,
+    horizon: 600,
     move: { a: { s: 1.22, u: 0.64, v: 0.62 }, b: { s: 1.4, u: 0.56, v: 0.56 }, whipIn: 0.07 },
     fx: (c) => (
       <>
-        {GATE_LAMPS.map((p, j) => (
-          <Flare
-            key={j}
-            p={c.map(p)}
-            i={c.i}
-            a={0.55 + 0.3 * pulse(c.t + j * 0.09, 4)}
-            len={j === 3 ? 120 : 260}
-          />
-        ))}
-        {streams(c, GATE_STACKS, 3, 16, 300)}
+        {lamps(c, TORCH_LAMPS)}
+        {streams(c, TORCH_TOWERS, 3, 14, 300)}
       </>
     ),
   },
   // ٨ (7.5) طيرانٌ فوق تضاريس البيانات.
   { kind: "intel", draw: Terrain },
-  // ٩ (8.5) مداخن المحطّة — إمالةٌ صاعدة والضوء يصعد منها.
+  // ٩ (8.5) الغسق وخطوط الطاقة المتوهّجة (03) — إمالةٌ صاعدة والنبضات تجري على الموصِّلات.
   {
     kind: "photo",
-    src: POWER,
-    horizon: 292,
-    move: { a: { s: 1.38, u: 0.5, v: 0.54 }, b: { s: 1.45, u: 0.5, v: 0.38 }, ease: punch },
-    fx: (c) => streams(c, POWER_STACKS, 4, 16, 380),
+    src: DUSK_LINES,
+    horizon: 450,
+    move: { a: { s: 1.36, u: 0.25, v: 0.62 }, b: { s: 1.45, u: 0.3, v: 0.5 }, ease: punch },
+    fx: (c) => (
+      <>
+        {wirePulses(c, DUSK_WIRES, 3, 0.9)}
+        {spots(c, DUSK_SPOTS)}
+      </>
+    ),
   },
-  // ١٠ (9.0) عوازل محطّة التحويل — لكمةٌ والعُقد تنبض.
+  // ١٠ (9.0) محطّة التحويل وأفق المدينة (17) — لكمةٌ والشعاع يوقظ الأبراج والمحوّلات.
   {
     kind: "photo",
-    src: SUBSTATION,
+    src: CITY,
+    horizon: 270,
+    move: { a: { s: 1.3, u: 0.55, v: 0.4 }, b: { s: 1.44, u: 0.6, v: 0.38 }, ease: punch },
+    fx: (c) => (
+      <>
+        {lamps(c, CITY_LAMPS, 320, 0.7)}
+        {scanBeam(c, CITY_NODES, W + 200, -200)}
+      </>
+    ),
+  },
+  // ١١ (9.5) رجل أمنٍ يسير بمحاذاة السياج والكاميرات (14) — انسيابٌ والأضواء تتنفّس.
+  {
+    kind: "photo",
+    src: PATROL_FENCE,
     horizon: 330,
-    move: { a: { s: 1.3, u: 0.6, v: 0.36 }, b: { s: 1.44, u: 0.645, v: 0.36 }, ease: punch },
-    fx: (c) => (
-      <>
-        {SUB_LAMPS.map((p, j) => (
-          <Flare key={j} p={c.map(p)} i={c.i} a={0.75} len={360} />
-        ))}
-        {scanBeam(c, SUB_NODES, W + 200, -200)}
-      </>
-    ),
-  },
-  // ١١ (9.5) أضواء المجمّع البعيدة والجبال — انسيابٌ والشبكة تصلها.
-  {
-    kind: "photo",
-    src: COMPLEX,
-    horizon: 180,
-    move: { a: { s: 1.42, u: 0.6, v: 0.4 }, b: { s: 1.45, u: 0.65, v: 0.41 }, ease: glide },
-    fx: (c) => (
-      <>
-        {complexNet(c, 0, 1)}
-        {streams(c, COMPLEX_FAR, 3, 14, 260)}
-      </>
-    ),
+    move: { a: { s: 1.1, u: 0.42, v: 0.55 }, b: { s: 1.22, u: 0.5, v: 0.55 }, ease: glide },
+    fx: (c) => lamps(c, FENCE_LAMPS),
   },
   // ١٢ (10.0) تيّاراتٌ صاعدة من أرضيةٍ مضيئة.
   { kind: "intel", draw: Rise },
-  // ١٣ (10.5) لكمةٌ على الحاجز ورجلَي الأمن — النبضات أسرع.
+  // ١٣ (10.5) أبراجٌ وتوربينات رياحٍ عند الغروب (19) — لكمةٌ والضوء يصعد من محطّة الأفق.
   {
     kind: "photo",
-    src: GATE,
-    horizon: 330,
-    move: { a: { s: 1.36, u: 0.52, v: 0.6 }, b: { s: 1.44, u: 0.53, v: 0.6 }, ease: punch },
+    src: SUNSET_TOWERS,
+    horizon: 640,
+    move: { a: { s: 1.3, u: 0.45, v: 0.66 }, b: { s: 1.42, u: 0.33, v: 0.46 }, ease: punch },
     fx: (c) => (
       <>
-        {GATE_LAMPS.map((p, j) => (
-          <Flare
-            key={j}
-            p={c.map(p)}
-            i={c.i}
-            a={0.55 + 0.3 * pulse(c.t + j * 0.09, 4)}
-            len={j === 3 ? 120 : 260}
-          />
-        ))}
+        {drawNet(TOWERS_NET, c, 0, 1)}
+        {streams(c, TOWERS_GLOW, 3, 18, 300)}
+        {lamps(c, TOWERS_LAMPS, 200, 0.6)}
       </>
     ),
   },
-  // ١٤ (11.0) انعكاسات القناة — إمالةٌ نازلة والأرضية والماء يتلألآن.
+  // ١٤ (11.0) بوّابةٌ وحاجزٌ وسيّارة (15) — لكمةٌ نحو رجل الأمن والأضواء تتسابق.
   {
     kind: "photo",
-    src: POWER,
-    horizon: 292,
-    move: { a: { s: 1.36, u: 0.46, v: 0.6 }, b: { s: 1.42, u: 0.5, v: 0.72 }, ease: cine },
+    src: GATE_TABLET,
+    horizon: 380,
+    move: { a: { s: 1.3, u: 0.42, v: 0.5 }, b: { s: 1.4, u: 0.46, v: 0.52 }, ease: punch },
+    fx: (c) => lamps(c, GATE_TABLET_LAMPS),
+  },
+  // ١٥ (11.5) مسار التوجيه الرقميّ على الأرض (12) — إمالةٌ نازلة والنبضات تجري على المسار.
+  {
+    kind: "photo",
+    src: PATH_PINS,
+    horizon: 160,
+    move: { a: { s: 1.3, u: 0.46, v: 0.6 }, b: { s: 1.36, u: 0.5, v: 0.68 }, ease: cine },
     fx: (c) => (
       <>
-        {groundGrid(c, 300)}
-        {ripples(c)}
+        {pathPulses(c, [GUIDE_PATH], 4, 0.8)}
+        {spots(c, PATH_PINS_AT, 0.9)}
+        {lamps(c, PATH_LEDS, 110, 0.6)}
       </>
     ),
   },
-  // ١٥ (11.5) المصباح والأسلاك العلوية في محطّة التحويل — والنبضات تجري عليها.
+  // ١٦ (12.0) المنصّة العلوية والطائرة المسيّرة (06) — انسيابٌ والمصابيح تنبض.
   {
     kind: "photo",
-    src: SUBSTATION,
-    horizon: 330,
+    src: GANTRY,
+    horizon: 220,
     move: {
-      a: { s: 1.4, u: 0.6, v: 0.3 },
-      b: { s: 1.45, u: 0.645, v: 0.3 },
+      a: { s: 1.35, u: 0.62, v: 0.3 },
+      b: { s: 1.45, u: 0.66, v: 0.3 },
       ease: punch,
       whipIn: -0.05,
     },
+    fx: (c) => lamps(c, GANTRY_LAMPS, 220, 0.6),
+  },
+  // ١٧ (12.5) جدار الشاشات والمشغّلون (04) — انسيابٌ والعُقد على الشاشات تنبض.
+  {
+    kind: "photo",
+    src: CONTROL_WALL,
+    horizon: 540,
+    move: { a: { s: 1.45, u: 0.6, v: 0.62 }, b: { s: 1.45, u: 0.66, v: 0.6 }, ease: glide },
     fx: (c) => (
       <>
-        {subWirePulses(c)}
-        {SUB_LAMPS.map((p, j) => (
-          <Flare key={j} p={c.map(p)} i={c.i} a={0.8} len={420} />
-        ))}
+        {spots(c, WALL_SCREENS, 0.8)}
+        {scanBeam(c, WALL_SCREENS, W + 200, -200)}
       </>
     ),
   },
-  // ١٦ (12.0) حوامل الأنابيب وأبراج التبريد يمين المجمّع — انسيابٌ والنبضات تجري فيها.
+  // ١٨ (13.0) بوّابة الليل الماطر (02) — سوطٌ على امتداد الحاجز والإنارة تتسابق (النافذة بعيدةٌ عن مؤخّرة المركبة).
   {
     kind: "photo",
-    src: COMPLEX,
-    horizon: 180,
-    move: { a: { s: 1.38, u: 0.6, v: 0.55 }, b: { s: 1.44, u: 0.65, v: 0.55 }, ease: glide },
-    fx: (c) => rackPulses(c, 3),
+    src: GATE_RAIN,
+    horizon: 300,
+    move: { a: { s: 1.32, u: 0.3, v: 0.56 }, b: { s: 1.42, u: 0.27, v: 0.56 }, whipIn: 0.05 },
+    fx: (c) => lamps(c, RAIN_LAMPS),
   },
-  // ١٧ (12.5) ساحة المحوّلات في محطّة التوليد — والأرضية تشتعل بالموجة.
+  // ١٩ (13.5) رجل أمنٍ يسير عند الغسق بمحاذاة سياج محطّة التحويل (18) — انسيابٌ والتيّارات تصعد من العوازل.
   {
     kind: "photo",
-    src: POWER,
-    horizon: 292,
-    move: { a: { s: 1.34, u: 0.6, v: 0.52 }, b: { s: 1.42, u: 0.645, v: 0.49 }, ease: punch },
+    src: DUSK_FENCE,
+    horizon: 440,
+    move: { a: { s: 1.2, u: 0.42, v: 0.62 }, b: { s: 1.3, u: 0.5, v: 0.58 }, ease: glide },
     fx: (c) => (
       <>
-        {groundGrid(c, 302)}
-        {POWER_LAMPS.map((p, j) => (
-          <Flare key={j} p={c.map(p)} i={c.i} a={0.7} len={200} />
-        ))}
+        {lamps(c, DUSK_FENCE_LAMPS, 220, 0.6)}
+        {streams(c, DUSK_FENCE_BUSHINGS, 3, 14, 260)}
       </>
     ),
   },
-  // ١٨ (13.0) سوطٌ على امتداد الحاجز نحو السياج — الإنارة تتسابق.
+  // ٢٠ (14.0) محطّة التوأم الرقميّ (07: نصفها الأيمن فقط) — لكمةٌ والشبكة تصل الأبراج والمداخن.
   {
     kind: "photo",
-    src: GATE,
-    horizon: 330,
-    move: { a: { s: 1.26, u: 0.4, v: 0.56 }, b: { s: 1.26, u: 0.64, v: 0.56 }, whipOut: 0.09 },
+    src: GUARD_TWIN,
+    horizon: 170,
+    move: { a: { s: 1.4, u: 0.86, v: 0.42 }, b: { s: 1.45, u: 0.9, v: 0.5 }, ease: punch },
     fx: (c) => (
       <>
-        {GATE_LAMPS.map((p, j) => (
-          <Flare
-            key={j}
-            p={c.map(p)}
-            i={c.i}
-            a={0.55 + 0.3 * pulse(c.t + j * 0.09, 4)}
-            len={j === 3 ? 120 : 260}
-          />
-        ))}
-        {streams(c, GATE_STACKS, 3, 16, 300)}
+        {drawNet(GUARD_TWIN_NET, c, 0, 1)}
+        {streams(c, GUARD_TWIN_STACKS, 4, 14, 260)}
       </>
     ),
   },
-  // ١٩ (13.5) محوّلات محطّة التحويل — لكمةٌ والشعاع.
+  // ٢١ (14.5) تراجعٌ حادّ من المحوّلات يكشف المحطّة كلّها متّقدة (11).
   {
     kind: "photo",
-    src: SUBSTATION,
-    horizon: 330,
-    move: { a: { s: 1.34, u: 0.38, v: 0.56 }, b: { s: 1.45, u: 0.35, v: 0.57 }, ease: punch },
+    src: TWIN_SUBSTATION,
+    horizon: 140,
+    move: { a: { s: 1.45, u: 0.62, v: 0.5 }, b: { s: 1.1, u: 0.5, v: 0.5 }, ease: punch },
     fx: (c) => (
       <>
-        {SUB_LAMPS.map((p, j) => (
-          <Flare key={j} p={c.map(p)} i={c.i} a={0.8} len={420} />
-        ))}
-        {scanBeam(c, SUB_NODES, -200, W + 200)}
-      </>
-    ),
-  },
-  // ٢٠ (14.0) يسار المجمّع — الشبكة مكتملةٌ والنبضات أسرع.
-  {
-    kind: "photo",
-    src: COMPLEX,
-    horizon: 180,
-    move: { a: { s: 1.3, u: 0.39, v: 0.54 }, b: { s: 1.42, u: 0.355, v: 0.54 }, ease: punch },
-    fx: (c) => (
-      <>
-        {complexNet(c, 0, 1)}
-        {streams(c, COMPLEX_TOPS, 4, 20, 320)}
-      </>
-    ),
-  },
-  // ٢١ (14.5) تراجعٌ حادّ من ذراع البرج القريب يكشف الموصِّلات كلّها متّقدة.
-  {
-    kind: "photo",
-    src: LINES,
-    horizon: 400,
-    move: { a: { s: 1.45, u: 0.35, v: 0.36 }, b: { s: 1.1, u: 0.5, v: 0.5 }, ease: punch },
-    fx: (c) => (
-      <>
-        {linePulses(c, 8, 1.6)}
-        {beacons(c)}
+        {lamps(c, TWIN_B_LAMPS, 320, 0.75)}
+        {scanBeam(c, TWIN_B_NODES, -200, W + 200)}
       </>
     ),
   },
@@ -2001,6 +2017,35 @@ const SHOTS: readonly Shot[] = [
   // ٢٣ (15.5) التقارب إلى نقطةٍ واحدة.
   { kind: "intel", draw: Converge },
 ];
+
+/**
+ * تدقيق التأطير بلا تصيير: كل إطارٍ من كل لقطة صورة، فيُعاد خطأٌ لكل نافذةٍ تقطع `avoid`، ونافذة أوّل اللقطة وآخرها
+ * (بكسلات المصدر) لجدول `RENDER.md`. يُستدعى من `brand/tools/audit-framing.mjs` بعد تجميعٍ بـesbuild.
+ */
+export function auditFraming(): {
+  violations: string[];
+  windows: { shot: number; file: string; first: Rect; last: Rect }[];
+} {
+  const violations: string[] = [];
+  const windows: { shot: number; file: string; first: Rect; last: Rect }[] = [];
+  SHOTS.forEach((shot, i) => {
+    if (shot.kind !== "photo") return;
+    const dur = CUTS[i + 1] - CUTS[i];
+    const n = Math.round(dur * FILM_FPS);
+    let first: Rect = [0, 0, 0, 0];
+    let last: Rect = first;
+    for (let f = 0; f <= n; f++) {
+      const v = viewOf(shot.src, camAt(shot.move, f / FILM_FPS, dur));
+      const w = windowOf(v);
+      if (f === 0) first = w;
+      last = w;
+      const bad = violates(shot.src, v);
+      if (bad) violations.push(`لقطة ${i + 1} ${shot.src.file} الإطار ${f}: [${bad.join(", ")}]`);
+    }
+    windows.push({ shot: i + 1, file: shot.src.file, first, last });
+  });
+  return { violations, windows };
+}
 
 /* ─────────────────────────────── الاشتعال ─────────────────────────────── */
 
