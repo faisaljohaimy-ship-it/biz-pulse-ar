@@ -1460,12 +1460,28 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
 
     // يحمرّ على المزروع (المادة ٣٠): الصدر مقلوبًا، وأداة `order-*`، وقاعدة
     // ترتيبٍ على بطاقة الصدر، و`dense` على الشبكة.
+    // بين البطاقتين حاويةُ عمود الصدر الأيمن (`nx-home-side-col`) — سَدِيد ثم فِن أسفله.
     const swapped = page.replace(
-      /<HomeMapCard \/>(\s*)<HomeSadeedCard \/>/,
+      /<HomeMapCard \/>([\s\S]*?)<HomeSadeedCard \/>/,
       "<HomeSadeedCard />$1<HomeMapCard />",
     );
     expect(swapped).not.toBe(page);
     expect(rowOrderBreaks(swapped)).toEqual(["<HomeSadeedCard /> قبل <HomeMapCard />"]);
+    // بطاقة فِن **أسفل** سَدِيد في العمود نفسه (أمر المالك ٢٠٢٦/١٠/٢٣)، داخل الصدر لا بعده.
+    const sadeedAt = page.indexOf("<HomeSadeedCard />");
+    const finnAt = page.indexOf("<HomeFinnCard />");
+    expect(finnAt, "بطاقة فِن غائبة").toBeGreaterThan(-1);
+    expect(sadeedAt).toBeGreaterThan(-1);
+    expect(finnAt, "فِن قبل سَدِيد").toBeGreaterThan(sadeedAt);
+    expect(finnAt, "فِن خارج الصدر").toBeLessThan(page.indexOf("<HomeOpsRow />"));
+    const finnAbove = page.replace(
+      /<HomeSadeedCard \/>(\s*)<HomeFinnCard \/>/,
+      "<HomeFinnCard />$1<HomeSadeedCard />",
+    );
+    expect(finnAbove).not.toBe(page);
+    expect(finnAbove.indexOf("<HomeFinnCard />")).toBeLessThan(
+      finnAbove.indexOf("<HomeSadeedCard />"),
+    );
     expect(orderUtilities('<div className="grid lg:order-2">')).toHaveLength(1);
     const layout = HOME_CSS.get("src/styles/home/home-layout.css") ?? "";
     expect(
