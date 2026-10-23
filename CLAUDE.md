@@ -184,7 +184,7 @@
    فعلًا؛ `X-SADEED-Reply-Source` ∈ `model` | `model-backup` | `model-error` |
    `instant-data` | `zero-cost-router` | `zero-cost` | ….
 6. **كتابات الدردشة بتأكيدٍ من خطوتين** (تطبيقٌ للثابت «أي إجراء كتابة … خلف بوابة
-   تأكيد بشري») على الأدوات الأربع عشرة: `create_task` · `update_task_status` ·
+   تأكيد بشري») على الأدوات الخمس عشرة: `dispatch_agent` (٢٠٢٦/١٠/٢٣، أدناه) · `create_task` · `update_task_status` ·
    `record_executive_decision` · `create_intelligence_alert` ·
    `sec_create_incident`/`sec_update_incident` ·
    `sec_create_work_order`/`sec_close_work_order` · `sec_create_permit` ·
@@ -215,6 +215,52 @@
    يلتقط الآن `sk-proj-`/`sk-svcacct-`/`sk-admin-` و`sk-ant-` و`sb_secret_` و`re_`
    ومفاتيح ElevenLabs؛ و`executive-reports-run` يطالب بكل جدولٍ بتحديثٍ شرطيّ متفائل
    (قائمة المستلمين البيضاء ما زالت قرارًا للمالك).
+3. **الجاهزية الإنتاجية المُثبَتة لمحرّك الوكلاء (٢٠٢٦/١٠/٢٣، أمر المالك «Agent
+   Production Readiness & Evidence-Based Repair»)** — المقيس أوّلًا على الإنتاج قراءةً فقط:
+   `authenticated` بلا INSERT/UPDATE على `tool_executions`/`agent_runs`/`workflow_runs`،
+   و`tool_registry` لا يقرؤه إلا مسؤول المنصّة، و`sql.read` صلاحيته `['admin']`،
+   و`rag.record_gap` معطّل وهو في قائمة `operations` البيضاء. فكان مسار الواجهة
+   (`runAgentFn`/`approveToolExecution` بعميل RLS) يموت عند أوّل كتابة ويُسجَّل التشغيل
+   «نجح» بلا أداة. الإصلاح **بلا توسيع أي صلاحية في القاعدة** (لا GRANT ولا سياسة ولا ترحيل):
+   - كتابات التنسيق كلّها (`tool_registry` · `tool_executions` · التدقيق · الأحداث ·
+     `org_members`) بعميل الخدمة داخل `tool-orchestrator.server.ts`، وعميل المستدعي
+     **لعميل الأدوات وحده** (`ToolContext.supabase`) — والفحوص الصريحة باقية
+     (`hasAnyPlatformRole`، عضوية `.eq('user_id', actorId)`، `ctx.orgId`).
+   - **أثرٌ يلزم ذكره صراحةً:** `runTool` كان يسقط لغير المسؤول بسبب RLS على `tool_registry`؛
+     وبنقل قراءة السجلّ إلى مفتاح الخدمة صار سطحه الفعلي يتبع `permissions` في صفّ السجلّ (مدير
+     المنصّة يصل إلى ما يمنحه صفّه، وأدوات `sec.*` تبقى خلف اعتماد يقرّره مسؤول المنصّة وحده).
+     إن لم يكن هذا مقصودًا فبوّابة `admin` على `runTool` سطرٌ واحد — قرارٌ للمالك.
+   - الأدوات المعروضة على النموذج = القائمة البيضاء ∩ المنفّذات ∩ صفوف السجلّ المفعّلة التي
+     يحمل الفاعل صلاحيتها؛ والمستبعَد مع سببه في `audit_json.excludedTools`؛ ونداء أداةٍ غير
+     معروضة يُسجَّل مرفوضًا. تشغيلٌ فشلت كل نداءات أدواته ⇐ `failed` بخطأ
+     `all_tool_calls_failed` لا «نجح». **والحدّ بالضبط:** نُفِّذت نداءات وفشلت كلّها (`failed>0`، ولا ناجح، ولا معلَّق)؛
+     أمّا نداءٌ رُفض قبل التنفيذ (أداة لم تُعرض) فيُسجَّل ويُصرَّح به في الملخّص ويبقى التشغيل «نجح»
+     إن أجاب النموذج من معرفة المؤسسة (يثبته `agent-runtime.integration.test.ts`)، وقراءةٌ فشلت مع
+     طلبٍ معلَّق للاعتماد تُبقي الغلاف `waiting_approval` لا `failed`.
+   - تعذّر الحصّة أو مفتاح Gemini قبل الحلقة ⇐ الغلاف `workflow_runs` يفشل معه (كان يعلق
+     `running`)؛ وفشل الكتابة الختامية يُعاد مرّةً ثم `finalize_failed` لا نجاحٌ مزعوم.
+   - بعد قرار الاعتماد: صفّ الخطوة يُحسم، وملخّص التشغيل يُستبدل بسطر الحسم («لا يستأنف
+     الوكيل تلقائيًّا»)، و`finn_reports` يُحدَّث؛ والرفض مشروط بـ`pending_approval` (سباق
+     الاعتماد/الرفض محسوم)، والكتابات الختامية مشروطة بـ`running`.
+   - الخطّاف: الافتراض `briefing` (مفعّل؛ `executive_briefer` معطّل)، وفاعل cron يحمل دورًا
+     منصّيًّا، و`status: failed` ⇐ 502 لا 200.
+   - **إسناد من سَدِيد — الأداة الخامسة عشرة `dispatch_agent`:** مسجَّلة للمسجَّل حين
+     `agentsAvailable` (= `plan.selected === 'gemini'` من `/api/chat`)، تفحص قبل الاقتراح
+     وجود الوكيل وتفعيله ودور الفاعل والمؤسسة (تفشل مغلقة)، وتُنفَّذ بالتأكيد من خطوتين عبر
+     `runAgent(supabase, …)` — **بعميل المستخدم (RLS) للمنفّذات، والتنسيق داخله بمفتاح الخدمة**
+     (يحرسه `expect(client).toBe(rls.client)`) — بميزانية 30 ث وإشارة إلغاء (`signal` جديدة في `runAgent`
+     تُلغي التشغيل لا تتركه «تجاوز 180 ث»)؛ وتُنفق وحدة حصّة دردشة. المتابعة بـ`execution_status`.
+   - **طبقة اختبار تكامل حقيقية** (`tests/integration/`، `npm run integration:up` →
+     `test:integration` → `integration:down`؛ وظيفة CI `integration` في التشغيل الكامل): Postgres
+     16 بسلسلة الترحيلات كاملةً (181/194، و13 فشلًا معروفًا في قائمةٍ مثبّتة يُحمَرّ ما خرج عنها)
+     - PostgREST 12.2.3 بتجزئة مثبّتة + بوّابة HS256 + `@supabase/supabase-js` الحقيقي؛ النموذج
+       وحده مزروع. **الصنف الوهمي والحقيقي مفصولان:** `*.integration.test.ts` مستثناة من `npm test`.
+       درسان: ملفات `*_rollback.sql` داخل `migrations/` تُفسد أي تطبيقٍ آليّ للسلسلة، و`pg_trgm`
+       يسقط في `public` فتفشل ترحيلات RAG من الصفر — فجوتا استنساخٍ للمالك.
+   - الواجهة: صفوف `is_simulation` موسومة «بيانات مرجعية — ليست حيّة» بلا إلغاء/إعادة؛ «نجح» مع
+     اعتماداتٍ معلّقة يُعرض «بانتظار الاعتماد (N)» كهرمانيًّا بمثلث؛ خريطة تسميات عربية واحدة
+     (`src/lib/exec/run-status-labels.ts`)؛ `useLiveRows` يُعيد الخطأ لا فراغًا كاذبًا؛ واعتماد/رفض
+     مخفيّان لغير مسؤول المنصّة.
 
 ## الصيانة — أول بيانات تشغيلية حقيقية (٢٠٢٦/١٠/٠٦–٠٧)
 

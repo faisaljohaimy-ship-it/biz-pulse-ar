@@ -145,7 +145,8 @@ type GatedWriteTool =
   | "sec_schedule_patrol"
   | "sec_register_visitor"
   | "sec_checkout_visitor"
-  | "sec_triage_cctv_alert";
+  | "sec_triage_cctv_alert"
+  | "dispatch_agent";
 
 type ConfirmationRefusal = {
   ok: false;
@@ -444,7 +445,27 @@ export type SadeedToolRuntimeContext = {
   lastUserText?: string;
   /** Verified active tenant; RAG is unavailable when this is absent. */
   orgId?: string | null;
+  /**
+   * هل مشغّل الوكلاء متاح لهذا الدور؟ المسار يمرّر `plan.selected === "gemini"`
+   * (الوكلاء على Gemini وحده، كما مجلس الوضع العميق): بدونه لا تُسجَّل أداة
+   * `dispatch_agent` أصلًا — لا تبديل مورّدٍ صامت ولا وعدٌ بتشغيلٍ لن يقع.
+   * الافتراض `false` (فشلٌ مغلق).
+   */
+  agentsAvailable?: boolean;
 };
+
+/**
+ * ميزانية دور الدردشة لتشغيل الوكيل من `dispatch_agent`: تحت سقف الدور
+ * (45 ث) بهامش، لأن AI SDK لا يسابق الأداة ضدّ `abortSignal` بنفسه — الأداة
+ * هي من تقرأ الإشارة وتُلغي التشغيل عندها.
+ */
+export const DISPATCH_AGENT_BUDGET_MS = 30_000;
+/**
+ * مهلة سماحٍ بعد انقضاء الميزانية: التشغيل يُلغى بالإشارة ويكتب `cancelled`
+ * بنفسه — فتُنتظر نتيجته الحقيقية (معرّف التشغيل وحالته) ثوانيَ قبل الاكتفاء
+ * بسطر «جارٍ؛ تابع بـexecution_status».
+ */
+export const DISPATCH_AGENT_GRACE_MS = 3_000;
 
 /**
  * Build the SADEED executive toolbelt. All tools are RLS-scoped via the
@@ -1933,6 +1954,148 @@ export function buildSadeedTools(
         );
       },
     }),
+
+    // ─── FINN → agent dispatch (RT-10/FINN-1) ────────────────────────────
+    // الحلقة المفقودة: الدردشة كانت تقرأ حالة الوكلاء ولا تملك أن تشغّل واحدًا.
+    // الأداة الخامسة عشرة خلف بوابة التأكيد البشري؛ تُسجَّل للمسجَّل وحده وحين
+    // يقول سياق الدور إن الوكلاء متاحون (Gemini). الفحوص قبل الاقتراح تطابق
+    // ما يفحصه `runAgent` (وجود الوكيل وتفعيله ودور الفاعل ومؤسسته) كي لا يُعرض
+    // ملخّصٌ لتشغيلٍ سيُرفض. التشغيل بعميل المستخدم (RLS) كما `runAgentFn`:
+    // التنسيق داخله بمفتاح الخدمة، والمنفّذون يقرؤون بيانات المستأجر تحت RLS
+    // المستخدم مقيَّدين بـ`ctx.orgId`، و`actorId` المستخدم و`requiredOrgId` المتحقَّق.
+    ...(runtime.agentsAvailable
+      ? {
+          dispatch_agent: tool({
+            description:
+              "Start one SADEED autonomous agent run (agent_runs) for the verified organization with a goal, on the user's own identity. Use when the user explicitly asks to run / dispatch / launch an agent (e.g. «شغّل وكيل الإحاطات», «أطلق وكيل المخاطر على …»). The run spends one chat AI-quota unit of the user in addition to this turn, and is bounded to about 30 seconds inside this turn: when the budget ends the run is cancelled and its real outcome (run.id, status cancelled) is returned; only if that outcome has not arrived within a few more seconds does the result carry run.status running with a note — then follow up with execution_status. Report run.status verbatim (succeeded / failed / cancelled / running) and the summary; never claim a result the run did not return. Agents and their IDs are listed on the /agents page (e.g. briefing, risk, incidents)." +
+              CONFIRMATION_PROTOCOL,
+            inputSchema: z.object({
+              agentId: z
+                .string()
+                .trim()
+                .min(1)
+                .max(80)
+                .regex(/^[A-Za-z0-9_-]+$/)
+                .describe("agent_definitions.id"),
+              goal: z
+                .string()
+                .trim()
+                .min(4)
+                // سقفٌ يُعرض كاملًا في ملخّص التأكيد: ما يُؤكَّد هو ما يُنفَّذ حرفًا.
+                .max(500)
+                .describe("Mission for this run, in the user's language (max 500 chars)"),
+            }),
+            execute: async ({ agentId, goal }, options) => {
+              // فشلٌ مغلق بلا مؤسسةٍ متحقَّقة — كما `execution_status`.
+              if (!runtime.orgId) {
+                return {
+                  ok: false,
+                  error: "missing_org_context",
+                  message: "لا تتوفّر مؤسسة متحقَّقة لهذه الجلسة، فلا يُشغَّل وكيل.",
+                };
+              }
+              const orgId = runtime.orgId;
+              const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+              const { data: agents, error: agentError } = await supabaseAdmin
+                .from("agent_definitions")
+                .select("id, name, enabled, permissions, org_id")
+                .eq("id", agentId)
+                .eq("org_id", orgId)
+                .limit(1);
+              if (agentError)
+                return { ok: false, error: `agent_definitions: ${agentError.message}` };
+              const agent = (agents ?? [])[0] as
+                | { id: string; name: string; enabled: boolean; permissions: string[] | null }
+                | undefined;
+              if (!agent) return { ok: false, error: "agent_not_found", agentId };
+              if (!agent.enabled) return { ok: false, error: "agent_disabled", agentId };
+              // قاعدة `runAgent` نفسها: الأدوار المسمّاة في `permissions`، وإلا admin/manager.
+              const namedPlatformRoles = (agent.permissions ?? []).filter(
+                (p) => p === "admin" || p === "manager" || p === "member",
+              );
+              const requiredRoles = namedPlatformRoles.length
+                ? namedPlatformRoles
+                : ["admin", "manager"];
+              const { hasAnyPlatformRole } = await import("@/lib/authz.server");
+              if (!(await hasAnyPlatformRole(userId, requiredRoles))) {
+                return {
+                  ok: false,
+                  error: `Forbidden: missing role for agent ${agentId}`,
+                  required_roles: requiredRoles,
+                };
+              }
+              return confirmedWrite(
+                "dispatch_agent",
+                { agentId, goal },
+                {
+                  orgId,
+                  ledger: false,
+                  // الهدف كاملًا لا مقصوصًا: المستخدم يؤكّد ما سيُنفَّذ حرفًا.
+                  summary: `تشغيل الوكيل «${clip(agent.name, 80)}» على: «${goal}»`,
+                },
+                async () => {
+                  const { runAgent } = await import("@/lib/exec/agent-runtime.server");
+                  const budget = AbortSignal.timeout(DISPATCH_AGENT_BUDGET_MS);
+                  const turnSignal = (options as { abortSignal?: AbortSignal } | undefined)
+                    ?.abortSignal;
+                  const signal = turnSignal ? AbortSignal.any([turnSignal, budget]) : budget;
+                  const budgetNote = "انتهت مهلة الدور؛ تابع بـexecution_status";
+                  const aborted = new Promise<null>((resolve) =>
+                    signal.addEventListener("abort", () => resolve(null), { once: true }),
+                  );
+                  // عميل المستخدم (RLS) للمنفّذين — كما `runAgentFn`؛ التنسيق بمفتاح الخدمة داخلًا.
+                  const runPromise = runAgent(supabase, {
+                    agentId,
+                    actorId: userId,
+                    requiredOrgId: orgId,
+                    goalOverride: goal,
+                    context: { source: "chat.dispatch_agent" },
+                    signal,
+                  });
+                  // إن تركناه في مسار الميزانية فرفضُه اللاحق لا يبقى بلا معالِج.
+                  runPromise.catch(() => undefined);
+                  let run = await Promise.race([runPromise, aborted]);
+                  if (!run) {
+                    // انقضت الميزانية: الإشارة تُلغي التشغيل ويكتب `cancelled` بنفسه —
+                    // تُنتظر نتيجته الحقيقية مهلة سماحٍ قصيرة قبل الاكتفاء بـ«جارٍ».
+                    let grace: ReturnType<typeof setTimeout> | undefined;
+                    try {
+                      run = await Promise.race([
+                        runPromise,
+                        new Promise<null>((resolve) => {
+                          grace = setTimeout(() => resolve(null), DISPATCH_AGENT_GRACE_MS);
+                        }),
+                      ]);
+                    } finally {
+                      clearTimeout(grace);
+                    }
+                  }
+                  if (!run) {
+                    // لم يعد حتى بعد السماح (عملٌ قبل الحلقة لم ينتهِ): الحالة الصادقة
+                    // «جارٍ» حتى تُقرأ من `execution_status`.
+                    return {
+                      ok: true,
+                      run: { id: null, status: "running", note: budgetNote },
+                    };
+                  }
+                  return {
+                    ok: true,
+                    run: {
+                      id: run.runId,
+                      status: run.status,
+                      summary: run.summary,
+                      steps: run.steps,
+                      ...(run.error ? { error: run.error } : {}),
+                      ...(run.pendingApprovals ? { pendingApprovals: run.pendingApprovals } : {}),
+                      ...(signal.aborted ? { note: budgetNote } : {}),
+                    },
+                  };
+                },
+              );
+            },
+          }),
+        }
+      : {}),
 
     execution_status: tool({
       description:

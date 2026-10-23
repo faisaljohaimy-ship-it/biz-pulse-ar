@@ -27,10 +27,14 @@ const state = vi.hoisted(() => ({
   writerRole: true,
   adminRole: true,
   /** جداول عميل الخدمة — تبقى عبر إعادة تحميل الوحدة (معزولٌ جديد، قاعدةٌ نفسها). */
-  tables: { finn_actions_log: [] as Row[], sec_activity_events: [] as Row[] } as Record<
-    string,
-    Row[]
-  >,
+  tables: {
+    finn_actions_log: [] as Row[],
+    sec_activity_events: [] as Row[],
+    agent_definitions: [] as Row[],
+  } as Record<string, Row[]>,
+  /** تشغيلات الوكلاء التي طلبتها أداة `dispatch_agent` (RT-10). */
+  agentRuns: [] as Array<{ client: unknown; params: Record<string, unknown> }>,
+  runAgentBehaviour: "resolve" as "resolve" | "cancel-on-abort" | "never",
   seq: 0,
   /** عطلٌ مزروع: جدول + عملية (+ فعل السجلّ اختياريًّا). */
   fail: null as null | { table: string; op: "select" | "insert"; action?: string },
@@ -142,6 +146,26 @@ vi.mock("@/lib/governance/rate-limit.server", () => ({
   enforceRateLimit: async () => ({ allowed: true }),
 }));
 
+// مشغّل الوكلاء: يُسجَّل النداء ويعود بنتيجةٍ مبرمَجة — لا نموذج ولا قاعدة.
+vi.mock("@/lib/exec/agent-runtime.server", () => ({
+  runAgent: async (client: unknown, params: Record<string, unknown>) => {
+    state.agentRuns.push({ client, params });
+    if (state.runAgentBehaviour === "never") return new Promise(() => undefined);
+    if (state.runAgentBehaviour === "cancel-on-abort") {
+      await new Promise<void>((resolve) =>
+        (params.signal as AbortSignal).addEventListener("abort", () => resolve(), { once: true }),
+      );
+      return { runId: "run-0002", status: "cancelled", summary: "Cancelled by operator", steps: 1 };
+    }
+    return {
+      runId: "run-0001",
+      status: "succeeded",
+      summary: "أُعدّت الإحاطة.",
+      steps: 2,
+    };
+  },
+}));
+
 type Write = { table: string; op: "insert" | "update"; values: Record<string, unknown> };
 
 /** عميل RLS وهمي: يسجّل كل كتابة ويعيد صفًّا بمعرّف حقيقيّ الشكل. */
@@ -203,10 +227,20 @@ async function request(
   lastUserText: string,
   userId = "user-1",
   orgId: string | null = "org-1",
+  agentsAvailable = true,
 ) {
   const { buildSadeedTools } = await loadTools();
-  return buildSadeedTools(rls.client, userId, { lastUserText, orgId });
+  return buildSadeedTools(rls.client, userId, { lastUserText, orgId, agentsAvailable });
 }
+
+const BRIEFING_AGENT: Row = {
+  id: "briefing",
+  name: "وكيل الإحاطات",
+  enabled: true,
+  permissions: ["admin", "manager", "member"],
+  org_id: "org-1",
+};
+const DISPATCH = { agentId: "briefing", goal: "أعدّ إحاطة الصباح عن بلاغات البوابة الشمالية" };
 
 const ledger = (action?: string) =>
   state.tables.finn_actions_log!.filter((row) => !action || row.action === action);
@@ -231,6 +265,9 @@ beforeEach(() => {
   state.adminRole = true;
   state.tables.finn_actions_log = [];
   state.tables.sec_activity_events = [];
+  state.tables.agent_definitions = [BRIEFING_AGENT];
+  state.agentRuns = [];
+  state.runAgentBehaviour = "resolve";
   state.seq = 0;
   state.fail = null;
   state.beforeInsert = null;
@@ -620,7 +657,9 @@ describe("chat write tools — human confirmation gate", () => {
 
   it("every write tool is gated; outbound messaging and read tools are unchanged", async () => {
     const { buildSadeedTools } = await loadTools();
-    const tools = buildSadeedTools(fakeRls().client, "user-1", {}) as unknown as Record<
+    const tools = buildSadeedTools(fakeRls().client, "user-1", {
+      agentsAvailable: true,
+    }) as unknown as Record<
       string,
       { description?: string; inputSchema: Parameters<typeof asSchema>[0] }
     >;
@@ -639,6 +678,7 @@ describe("chat write tools — human confirmation gate", () => {
       "sec_register_visitor",
       "sec_checkout_visitor",
       "sec_triage_cctv_alert",
+      "dispatch_agent",
     ];
     const properties = async (name: string) =>
       Object.keys(
@@ -864,6 +904,187 @@ describe("execution_status chat tool", () => {
   });
 });
 
+// ── FINN → الوكلاء (RT-10): الأداة الخامسة عشرة خلف البوابة نفسها ──────────────
+describe("dispatch_agent — the chat can start an agent run, behind the same gate", () => {
+  it("step 1 proposes with a readable summary and starts no run", async () => {
+    const rls = fakeRls();
+    const result = await call(
+      await request(rls, "شغّل وكيل الإحاطات على بلاغات البوابة الشمالية"),
+      "dispatch_agent",
+      DISPATCH,
+    );
+    expect(result).toMatchObject({ ok: false, executed: false, status: "requires_confirmation" });
+    expect(String(result.action_summary)).toBe(
+      "تشغيل الوكيل «وكيل الإحاطات» على: «أعدّ إحاطة الصباح عن بلاغات البوابة الشمالية»",
+    );
+    expect(state.agentRuns).toHaveLength(0);
+    expect(rls.writes).toHaveLength(0);
+    expect(ledger("chat.write.confirmation_requested")).toHaveLength(1);
+  });
+
+  it("step 2 (explicit confirmation) starts exactly one run on the user's identity and verified org", async () => {
+    const rls = fakeRls();
+    await call(await request(rls, "شغّل وكيل الإحاطات"), "dispatch_agent", DISPATCH);
+    const done = await call(await request(rls, "نعم"), "dispatch_agent", DISPATCH);
+    expect(done).toMatchObject({
+      ok: true,
+      executed: true,
+      run: { id: "run-0001", status: "succeeded", summary: "أُعدّت الإحاطة.", steps: 2 },
+    });
+    expect(state.agentRuns).toHaveLength(1);
+    const { client, params } = state.agentRuns[0]!;
+    // عميل المستخدم (RLS) للمنفّذين — كما `runAgentFn`، لا مفتاح الخدمة.
+    expect(client).toBe(rls.client);
+    expect(params).toMatchObject({
+      agentId: "briefing",
+      actorId: "user-1",
+      requiredOrgId: "org-1",
+      goalOverride: DISPATCH.goal,
+    });
+    expect(params.signal).toBeInstanceOf(AbortSignal);
+    // الأثر يسمّي التشغيل الذي بدأ.
+    expect(ledger("chat.write.executed")[0]!.output).toMatchObject({
+      executed: true,
+      entity: { kind: "run", id: "run-0001" },
+    });
+    // وإعادة «نعم» لا تشغّل ثانيةً.
+    const replay = await call(await request(rls, "نعم"), "dispatch_agent", DISPATCH);
+    expect(replay).toMatchObject({ executed: false, status: "already_executed" });
+    expect(state.agentRuns).toHaveLength(1);
+  });
+
+  it("no proposal for a missing org, a disabled or unknown agent, or an actor without the agent's role", async () => {
+    const rls = fakeRls();
+    const noOrg = await call(
+      await request(rls, "شغّل وكيل الإحاطات", "user-1", null),
+      "dispatch_agent",
+      DISPATCH,
+    );
+    expect(noOrg).toMatchObject({ ok: false, error: "missing_org_context" });
+
+    state.tables.agent_definitions = [{ ...BRIEFING_AGENT, enabled: false }];
+    const disabled = await call(await request(rls, "شغّل"), "dispatch_agent", DISPATCH);
+    expect(disabled).toMatchObject({ ok: false, error: "agent_disabled" });
+
+    state.tables.agent_definitions = [{ ...BRIEFING_AGENT, org_id: "org-2" }];
+    const otherOrg = await call(await request(rls, "شغّل"), "dispatch_agent", DISPATCH);
+    expect(otherOrg).toMatchObject({ ok: false, error: "agent_not_found" });
+
+    state.tables.agent_definitions = [BRIEFING_AGENT];
+    state.writerRole = false;
+    const noRole = await call(await request(rls, "شغّل"), "dispatch_agent", DISPATCH);
+    expect(String(noRole.error)).toMatch(/Forbidden: missing role for agent briefing/);
+
+    expect(state.agentRuns).toHaveLength(0);
+    expect(ledger()).toHaveLength(0);
+    expect(rls.writes).toHaveLength(0);
+  });
+
+  it("the summary shows the goal in full (no clipping) and the schema caps it at 500 chars", async () => {
+    const goal = `أعدّ إحاطة مفصّلة عن ${"بلاغات البوابة الشمالية و".repeat(17)}الحراسة الليلية`;
+    expect(goal.length).toBeGreaterThan(400);
+    expect(goal.length).toBeLessThanOrEqual(500);
+    const rls = fakeRls();
+    const tools = await request(rls, "شغّل وكيل الإحاطات");
+    const result = await call(tools, "dispatch_agent", { agentId: "briefing", goal });
+    expect(result).toMatchObject({ status: "requires_confirmation" });
+    expect(String(result.action_summary)).toBe(`تشغيل الوكيل «وكيل الإحاطات» على: «${goal}»`);
+    const schema = (
+      tools as unknown as Record<
+        string,
+        { inputSchema: { safeParse: (v: unknown) => { success: boolean } } }
+      >
+    ).dispatch_agent!.inputSchema;
+    expect(schema.safeParse({ agentId: "briefing", goal: "x".repeat(501) }).success).toBe(false);
+    expect(schema.safeParse({ agentId: "briefing", goal: "x".repeat(500) }).success).toBe(true);
+  });
+
+  it("when the turn budget aborts, the run's real cancelled outcome is returned (grace), with the follow-up note", async () => {
+    state.runAgentBehaviour = "cancel-on-abort";
+    const rls = fakeRls();
+    await call(await request(rls, "شغّل وكيل الإحاطات"), "dispatch_agent", DISPATCH);
+    const turn = new AbortController();
+    const tools = await request(rls, "نعم");
+    const t = tools.dispatch_agent as unknown as {
+      execute: (a: unknown, o: unknown) => Promise<unknown>;
+    };
+    const pending = t.execute(DISPATCH, {
+      toolCallId: "call-dispatch",
+      messages: [],
+      abortSignal: turn.signal,
+    });
+    await new Promise((r) => setTimeout(r, 20));
+    turn.abort();
+    const done = (await pending) as ToolResult;
+    expect(done).toMatchObject({
+      ok: true,
+      executed: true,
+      run: {
+        id: "run-0002",
+        status: "cancelled",
+        note: "انتهت مهلة الدور؛ تابع بـexecution_status",
+      },
+    });
+    expect(state.agentRuns).toHaveLength(1);
+    expect((state.agentRuns[0]!.params.signal as AbortSignal).aborted).toBe(true);
+  });
+
+  it("and only if the run never answers within the grace does it report running + the note", async () => {
+    state.runAgentBehaviour = "never";
+    const rls = fakeRls();
+    await call(await request(rls, "شغّل وكيل الإحاطات"), "dispatch_agent", DISPATCH);
+    const turn = new AbortController();
+    const t = (await request(rls, "نعم")).dispatch_agent as unknown as {
+      execute: (a: unknown, o: unknown) => Promise<unknown>;
+    };
+    const pending = t.execute(DISPATCH, {
+      toolCallId: "call-dispatch",
+      messages: [],
+      abortSignal: turn.signal,
+    });
+    await new Promise((r) => setTimeout(r, 20));
+    const started = Date.now();
+    turn.abort();
+    const done = (await pending) as ToolResult;
+    expect(Date.now() - started).toBeGreaterThanOrEqual(2_900);
+    expect(done).toMatchObject({
+      ok: true,
+      run: { id: null, status: "running", note: "انتهت مهلة الدور؛ تابع بـexecution_status" },
+    });
+  }, 15_000);
+
+  it("the tool is absent when agents are unavailable (non-Gemini plan) — and by default", async () => {
+    const { buildSadeedTools } = await loadTools();
+    const off = buildSadeedTools(fakeRls().client, "user-1", {
+      orgId: "org-1",
+      agentsAvailable: false,
+    }) as Record<string, unknown>;
+    expect(off.dispatch_agent).toBeUndefined();
+    const dflt = buildSadeedTools(fakeRls().client, "user-1", { orgId: "org-1" }) as Record<
+      string,
+      unknown
+    >;
+    expect(dflt.dispatch_agent).toBeUndefined();
+    const on = buildSadeedTools(fakeRls().client, "user-1", {
+      orgId: "org-1",
+      agentsAvailable: true,
+    }) as Record<string, unknown>;
+    expect(on.dispatch_agent).toBeDefined();
+    expect(on.execution_status).toBeDefined();
+  });
+
+  it("the description says the run spends a chat quota unit and how to follow up", async () => {
+    const tools = (await request(fakeRls(), "x")) as unknown as Record<
+      string,
+      { description?: string }
+    >;
+    expect(tools.dispatch_agent!.description).toMatch(/one chat AI-quota unit/);
+    expect(tools.dispatch_agent!.description).toMatch(/execution_status/);
+    expect(tools.dispatch_agent!.description).toMatch(/status cancelled\) is returned/);
+    expect(tools.dispatch_agent!.description).toMatch(/run\.status running with a note/);
+  });
+});
+
 // ── الملخّص يُعرض ويُنطق (المادة ٢٢ §٥): لا معرّف، ولا ISO، ولا تعدادٌ إنجليزي ──
 describe("action summaries — readable on screen and in the SADEED voice", () => {
   const EXISTING = {
@@ -874,7 +1095,7 @@ describe("action summaries — readable on screen and in the SADEED voice", () =
     visitor: "9f8e7d6c-5b4a-4392-8a1b-0c9d8e7f6a5b",
     cctv: "1b2c3d4e-5f60-4718-8293-a4b5c6d7e8f9",
   };
-  /** الأدوات الأربع عشرة بوسائط واقعية: معرّفات UUID، ومواعيد ISO بتوقيت UTC، وتعدادات إنجليزية. */
+  /** الأدوات الخمس عشرة بوسائط واقعية: معرّفات UUID، ومواعيد ISO بتوقيت UTC، وتعدادات إنجليزية. */
   const CASES: Array<{ tool: string; args: Row }> = [
     {
       tool: "create_task",
@@ -944,6 +1165,7 @@ describe("action summaries — readable on screen and in the SADEED voice", () =
       tool: "sec_triage_cctv_alert",
       args: { id: EXISTING.cctv, status: "dispatched", notes: "أُرسل فريق الاستجابة" },
     },
+    { tool: "dispatch_agent", args: DISPATCH },
   ];
   /** وصف السجلات القائمة كما يعيده عميل الطلب (تحت RLS). */
   const LABEL_ROWS: Record<string, { data: unknown; error: unknown }> = {
@@ -995,8 +1217,8 @@ describe("action summaries — readable on screen and in the SADEED voice", () =
     }
   }
 
-  it("all fourteen first-call summaries carry no raw id, no ISO time and no English enum — shown or spoken", async () => {
-    expect(new Set(CASES.map((c) => c.tool)).size).toBe(14);
+  it("all fifteen first-call summaries carry no raw id, no ISO time and no English enum — shown or spoken", async () => {
+    expect(new Set(CASES.map((c) => c.tool)).size).toBe(15);
     const summaries = await firstSummaries(LABEL_ROWS);
     for (const [tool, summary] of Object.entries(summaries)) expectSpeakable(tool, summary);
 

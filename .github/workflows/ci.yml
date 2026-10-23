@@ -130,6 +130,43 @@ jobs:
       - name: RAG preflight (isolation + privilege on real Postgres)
         run: npm run check:rag
 
+  # طبقة التكامل الحقيقية (tests/integration): Postgres 16 بسلسلة الترحيلات
+  # كاملةً (الرولباك مستثنى، و13 فشلًا معلومًا تُطابَق بقائمةٍ مُلزِمة)، PostgREST
+  # 12.2.3 بثنائي مثبَّت بـsha256، بوّابة HS256، وsupabase-js الحقيقية — والنموذج
+  # وحده مُبرمَج. في التشغيل الكامل وحده كـrag-preflight. غياب ثنائيات Postgres
+  # على المشغّل **فشلٌ لا تخطٍّ** (stack.sh يفرضه حين CI=true).
+  integration:
+    name: integration (real Postgres + PostgREST)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    permissions:
+      contents: read
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Cache PostgREST binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/sadeed-integration
+          key: postgrest-v12.2.3-linux-static-x64
+      - name: Bring up the stack (initdb → shim → migrations → fixtures → PostgREST → gateway)
+        run: npm run integration:up
+      - name: Typecheck the integration tier
+        run: npm run typecheck:integration
+      - name: Integration tests
+        run: npm run test:integration
+      - name: Tear down the stack
+        if: always()
+        run: npm run integration:down
+
   # Article 21 — security gate. The Article 19 E2E spec. Since the owner order
   # of 2026/10/18 it runs on the FULL suite only (weekly schedule +
   # workflow_dispatch), not on every push/PR — it never gated deploy anyway

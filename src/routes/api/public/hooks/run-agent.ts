@@ -39,7 +39,10 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
         } catch {
           body = {};
         }
-        const agentId = body.agentId ?? "executive_briefer";
+        // الافتراض «briefing»: وكيلٌ كنسيّ مفعَّل على الإنتاج (قِيس ٢٠٢٦/١٠/٢٣:
+        // enabled=true). كان «executive_briefer» وهو معطَّل منذ ترحيل المجلس
+        // (20260801100000)، فنداءُ cron بلا agentId كان يفشل «Agent disabled».
+        const agentId = body.agentId ?? "briefing";
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { runAgent } = await import("@/lib/exec/agent-runtime.server");
@@ -66,18 +69,25 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
           }
           requiredOrgId = membership.org_id as string;
         } else {
-          // Cron/hook-secret path: still needs a real actor row.
-          const { data: member } = await supabaseAdmin
+          // Cron/hook-secret path: still needs a real actor row — **and** a
+          // platform role: `runAgent` gates on `user_roles` (admin/manager), so
+          // an org admin/owner without one would start and fail every run.
+          // Deterministic: the longest-standing admin/owner who also holds a
+          // platform role; no role is granted here, only selected.
+          const { hasAnyPlatformRole } = await import("@/lib/authz.server");
+          const { data: candidates } = await supabaseAdmin
             .from("org_members")
             .select("user_id, org_id")
             .in("role", ["admin", "owner"])
-            // Deterministic actor: the longest-standing admin/owner, not
-            // whichever row the planner happens to return first.
             .order("joined_at", { ascending: true })
-            .limit(1)
-            .maybeSingle();
-          actorId = member?.user_id ?? null;
-          requiredOrgId = (member?.org_id as string | undefined) ?? null;
+            .limit(10);
+          for (const member of candidates ?? []) {
+            if (await hasAnyPlatformRole(member.user_id as string, ["admin", "manager"])) {
+              actorId = member.user_id as string;
+              requiredOrgId = (member.org_id as string | undefined) ?? null;
+              break;
+            }
+          }
         }
         if (!actorId) {
           return new Response(JSON.stringify({ error: "no_admin_org_member" }), {
@@ -95,10 +105,20 @@ export const Route = createFileRoute("/api/public/hooks/run-agent")({
             context: { source: "public.hook.run-agent" },
             requiredOrgId,
           });
-          return new Response(JSON.stringify({ ok: true, result: res }, null, 2), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
+          // تشغيلٌ فشل ليس 200 `ok:true` (RT-10): المجدوِل والواجهة يقرآن
+          // الحالة من الرمز، لا من حقلٍ داخل جسمٍ «ناجح».
+          const failed = res.status === "failed";
+          return new Response(
+            JSON.stringify(
+              { ok: !failed, result: res, ...(failed ? { error: res.error ?? res.status } : {}) },
+              null,
+              2,
+            ),
+            {
+              status: failed ? 502 : 200,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
         } catch (e) {
           return new Response(
             JSON.stringify({

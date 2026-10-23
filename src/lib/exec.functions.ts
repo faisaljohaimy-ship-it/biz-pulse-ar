@@ -725,8 +725,11 @@ export const cancelAgentRun = createServerFn({ method: "POST" })
       throw new Error(`Cannot cancel run in state: ${row.status}`);
     }
     // شرط الحالة عند الكتابة: تشغيلٌ انتهى بين القراءة والكتابة لا يُكتب
-    // فوق نتيجته `cancelled`.
-    const cancelled = await cancelLiveAgentRun(context.supabase, data.runId);
+    // فوق نتيجته `cancelled`. والكتابة بمفتاح الخدمة (RT-1): `authenticated`
+    // يملك SELECT وحده على `agent_runs` (مقيس ٢٠٢٦/١٠/٢٣) — القراءة أعلاه
+    // تحت RLS هي ما يثبت أن المدير يرى التشغيل، والمنح لا يُوسَّع.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const cancelled = await cancelLiveAgentRun(supabaseAdmin, data.runId);
     if (!cancelled) {
       throw new Error("Cannot cancel run: it finished before the cancellation was recorded");
     }

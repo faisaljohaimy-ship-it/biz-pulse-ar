@@ -1,0 +1,33 @@
+# Forward migrations that are KNOWN to fail on a fresh cluster built from
+# supabase/migrations/* (rollbacks excluded) on top of sql/00-platform-shim.sql.
+#
+# apply-migrations.sh asserts that the set of failing files equals this list
+# exactly: a new failure is an error (the chain broke), and a listed file that
+# now applies is also an error (the allowlist is stale — remove the line).
+#
+# Why each one fails (measured 2026-10-18, re-measured by every stack bring-up):
+#   20260630214802  calls public.email_queue_dispatch(), which exists only outside the repo.
+#   20260708211635  references public.client_incidents; client_* tables have no CREATE TABLE in any migration.
+#   20260720230000, 20260721010000, 20260721120000
+#                   seed rows relying on the column default current_org_id(), which is NULL without JWT claims.
+#   20260728093300  pg_trgm landed in `public` (20260727212435 created it without a schema), so
+#                   `extensions.gin_trgm_ops` does not exist; the rest of the RAG family cascades from it:
+#   20260728110000, 20260728140000, 20260728150000, 20260728170000, 20260801100000, 20260805120000
+#   20260809120000  updates public.aria_knowledge, renamed to finn_knowledge by 20260730205748.
+#
+# None of these builds an agent-path table (agent_definitions, agent_runs, workflows,
+# workflow_runs, workflow_step_runs, tool_registry, tool_executions, audit_logs,
+# enterprise_events, organizations, org_members, user_roles, sec_incidents, sec_work_orders).
+20260630214802_44649ed2-2510-488e-8247-f85967444d79.sql
+20260708211635_db9c072c-b2ca-44ac-a668-ba2f088bce69.sql
+20260720230000_showcase_expansion_seed.sql
+20260721010000_command_center_seed.sql
+20260721120000_clarity_session_seed.sql
+20260728093300_rag_chunks.sql
+20260728110000_rag_hybrid_search.sql
+20260728140000_rag_learning_loop.sql
+20260728150000_rag_learning_hardening.sql
+20260728170000_rag_operations.sql
+20260801100000_finn_gemini36_council10_rag_tools.sql
+20260805120000_rag_corpus_growth.sql
+20260809120000_sadeed_visible_text_rename.sql

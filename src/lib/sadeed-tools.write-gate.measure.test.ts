@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * قياس بوابة التأكيد البشري: كم أداةً من أدوات الكتابة الأربع عشرة في دردشة
+ * قياس بوابة التأكيد البشري: كم أداةً من أدوات الكتابة الخمس عشرة في دردشة
  * سَدِيد تكتب كتابةً تشغيلية في **نداءها الأول** (بلا أي تأكيد سابق)؟
  *
  * الملف نفسه يُشغَّل على الشجرة الحالية وعلى ما قبل البوابة (3bec5e5) ليعطي
@@ -222,8 +222,13 @@ const EXISTING = {
   cctv: "1b2c3d4e-5f60-4718-8293-a4b5c6d7e8f9",
 };
 
-/** الأدوات الأربع عشرة، بطلبٍ عاديّ ووسائط واقعية لكلٍّ منها. */
-const CASES: Array<{ tool: string; request: string; args: Row }> = [
+/** الأدوات الخمس عشرة، بطلبٍ عاديّ ووسائط واقعية لكلٍّ منها. */
+const CASES: Array<{
+  tool: string;
+  request: string;
+  args: Row;
+  adminRows?: Record<string, Row[]>;
+}> = [
   {
     tool: "create_task",
     request: "أضف مهمة لمراجعة خطة الإخلاء قبل نهاية الأسبوع",
@@ -329,6 +334,23 @@ const CASES: Array<{ tool: string; request: string; args: Row }> = [
     request: "أرسل فريق استجابة لإنذار كاميرا البوابة الشمالية",
     args: { id: EXISTING.cctv, status: "dispatched", notes: "أُرسل فريق الاستجابة" },
   },
+  {
+    tool: "dispatch_agent",
+    request: "شغّل وكيل الإحاطات على بلاغات البوابة الشمالية",
+    args: { agentId: "briefing", goal: "أعدّ إحاطة الصباح عن بلاغات البوابة الشمالية" },
+    // الوكيل يُقرأ من `agent_definitions` بمفتاح الخدمة قبل الاقتراح.
+    adminRows: {
+      agent_definitions: [
+        {
+          id: "briefing",
+          name: "وكيل الإحاطات",
+          enabled: true,
+          permissions: ["admin", "manager", "member"],
+          org_id: ORG_ID,
+        },
+      ],
+    },
+  },
 ];
 
 type ToolLike = {
@@ -365,7 +387,7 @@ describe("chat write tools — business writes on the FIRST call (before/after m
 
     for (const c of CASES) {
       state.orgId = ORG_ID;
-      state.tables = {};
+      state.tables = { ...(c.adminRows ?? {}) };
       state.adminWrites = [];
       state.seq = 0;
       const rls = requestClient();
@@ -373,6 +395,7 @@ describe("chat write tools — business writes on the FIRST call (before/after m
       const tools = buildSadeedTools(rls.client, USER_ID, {
         lastUserText: c.request,
         orgId: ORG_ID,
+        agentsAvailable: true,
       }) as unknown as Record<string, ToolLike>;
       const t = tools[c.tool];
       expect(t, `${c.tool} exists`).toBeDefined();
@@ -426,7 +449,7 @@ describe("chat write tools — business writes on the FIRST call (before/after m
     console.log(`\n[write-gate measure]\n${lines.join("\n")}\n`);
 
     expect(measured.map((m) => m.tool)).toEqual(CASES.map((c) => c.tool));
-    expect(measured).toHaveLength(14);
+    expect(measured).toHaveLength(15);
     expect(measured.filter((m) => !m.reachedWritePoint).map((m) => m.tool)).toEqual([]);
     expect({ toolsThatWrote, totalBusinessWrites, totalAudit }).toEqual({
       toolsThatWrote: [],

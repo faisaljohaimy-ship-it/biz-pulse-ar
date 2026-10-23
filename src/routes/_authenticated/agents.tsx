@@ -23,6 +23,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { LiveStatus } from "@/components/state/LiveStatus";
+import { AgentRunsList, SimulationBadge, type AgentRunRow } from "@/components/exec/AgentRunsList";
+import { RunStatusBadge } from "@/components/exec/RunStatusBadge";
+import { runStepsLabel } from "@/lib/exec/run-status-labels";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -73,18 +76,11 @@ export const Route = createFileRoute("/_authenticated/agents")({
   notFoundComponent: RouteNotFound,
 });
 
-type RunRow = {
-  id: string;
-  agent_id: string;
-  status: string;
-  summary: string | null;
-  steps: number;
-  error: string | null;
-  started_at: string;
-  finished_at: string | null;
-  triggered_by: string | null;
-  goal_override: string | null;
-};
+/**
+ * صفّ `listAgentRuns` — يحمل `audit_json` (منه يُشتقّ «بانتظار الاعتماد (N)»)
+ * و`is_simulation` (يسمه `resilient()` على مسار البديل وحده).
+ */
+type RunRow = AgentRunRow;
 
 const CATEGORY_ICON: Record<string, typeof Bot> = {
   executive: Sparkles,
@@ -153,41 +149,6 @@ function StateBadge({ state, locale }: { state: AgentOpsRecord["state"]; locale:
     <Badge variant="outline" className={`gap-1.5 ${s.cls}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
       {locale === "ar" ? s.labelAr : s.label}
-    </Badge>
-  );
-}
-
-function RunStatusBadge({ status }: { status: string }) {
-  const map: Record<string, { cls: string; Icon: typeof CheckCircle2 }> = {
-    succeeded: {
-      cls: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-      Icon: CheckCircle2,
-    },
-    running: {
-      cls: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30 animate-pulse",
-      Icon: Loader2,
-    },
-    queued: {
-      cls: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-      Icon: Clock,
-    },
-    failed: {
-      cls: "bg-red-500/20 text-red-300 border-red-500/30",
-      Icon: XCircle,
-    },
-    cancelled: {
-      cls: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
-      Icon: Ban,
-    },
-  };
-  const cfg = map[status] ?? {
-    cls: "bg-slate-500/20 border-slate-500/30",
-    Icon: Clock,
-  };
-  const Icon = cfg.Icon;
-  return (
-    <Badge variant="outline" className={`gap-1 ${cfg.cls}`}>
-      <Icon className="h-3 w-3" /> {status}
     </Badge>
   );
 }
@@ -775,91 +736,26 @@ function AgentsOps() {
                     {locale === "ar" ? "لا توجد تشغيلات بعد." : "No agent runs yet."}
                   </div>
                 ) : (
-                  runs.map((r) => {
-                    const agent = agentById[r.agent_id];
-                    const meta = (agent?.metadata ?? {}) as {
-                      category?: string;
-                    };
-                    const Icon = iconFor(meta.category);
-                    const isLive = r.status === "running" || r.status === "queued";
-                    return (
-                      <div
-                        key={r.id}
-                        className="flex items-start gap-3 p-3 transition hover:bg-primary/5"
-                      >
-                        <div className="rounded-lg border border-primary/20 bg-primary/5 p-2">
-                          <Icon className="h-4 w-4 text-primary" />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setRunDetail(r)}
-                          className="min-w-0 flex-1 text-start"
-                        >
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-sm font-semibold">
-                              {agent
-                                ? industrialSecurityAgentDisplay(agent, locale === "ar").name
-                                : r.agent_id}
-                            </span>
-                            <RunStatusBadge status={r.status} />
-                            <span className="text-[12px] text-muted-foreground">
-                              {new Date(r.started_at).toLocaleString()}
-                            </span>
-                            <span className="text-[12px] text-muted-foreground">
-                              · {formatDuration(r.started_at, r.finished_at)}
-                            </span>
-                            <span className="text-[12px] text-muted-foreground">
-                              · {r.steps} steps
-                            </span>
-                          </div>
-                          <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                            {r.error ? (
-                              <span className="text-red-300">{r.error}</span>
-                            ) : (
-                              (r.summary ?? "—")
-                            )}
-                          </div>
-                          <div className="mt-1 text-[12px] text-muted-foreground/70">
-                            id: <code>{r.id.slice(0, 8)}</code>
-                          </div>
-                        </button>
-                        <div className="flex flex-col gap-1">
-                          {isLive ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-[12px]"
-                              disabled={cancelM.isPending}
-                              onClick={() => cancelM.mutate(r.id)}
-                            >
-                              <Ban className="me-1 h-3 w-3" />
-                              {locale === "ar" ? "إلغاء" : "Cancel"}
-                            </Button>
-                          ) : r.status === "failed" ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-[12px]"
-                              disabled={retryM.isPending}
-                              onClick={() => retryM.mutate(r.id)}
-                            >
-                              <RotateCw className="me-1 h-3 w-3" />
-                              {locale === "ar" ? "إعادة" : "Retry"}
-                            </Button>
-                          ) : null}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 text-[12px]"
-                            onClick={() => setRunDetail(r)}
-                          >
-                            <Eye className="me-1 h-3 w-3" />
-                            {locale === "ar" ? "تفاصيل" : "Logs"}
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })
+                  /* UI-1: صفوف المحاكاة موسومة وبلا إلغاء/إعادة (لا `sim-run-N` إلى الخادم)؛
+                     UI-2: «نجح» مع اعتماداتٍ معلّقة يظهر كهرمانيًّا «بانتظار الاعتماد (N)». */
+                  <AgentRunsList
+                    runs={runs}
+                    locale={locale === "ar" ? "ar" : "en"}
+                    agentName={(id) => {
+                      const agent = agentById[id];
+                      return agent
+                        ? industrialSecurityAgentDisplay(agent, locale === "ar").name
+                        : undefined;
+                    }}
+                    agentIcon={(id) => {
+                      const meta = (agentById[id]?.metadata ?? {}) as { category?: string };
+                      return iconFor(meta.category);
+                    }}
+                    onCancel={(r) => cancelM.mutate(r.id)}
+                    onRetry={(r) => retryM.mutate(r.id)}
+                    onDetails={(r) => setRunDetail(r)}
+                    busy={{ cancel: cancelM.isPending, retry: retryM.isPending }}
+                  />
                 )}
               </div>
             </ScrollArea>
@@ -947,7 +843,14 @@ function AgentsOps() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {runDetail && <RunStatusBadge status={runDetail.status} />}
+              {runDetail && (
+                <RunStatusBadge
+                  status={runDetail.status}
+                  auditJson={runDetail.audit_json}
+                  locale={locale === "ar" ? "ar" : "en"}
+                />
+              )}
+              {runDetail?.is_simulation && <SimulationBadge />}
               <span>
                 {runDetail ? (agentById[runDetail.agent_id]?.name ?? runDetail.agent_id) : ""}
               </span>
@@ -969,9 +872,12 @@ function AgentsOps() {
                 />
                 <Meta
                   label={locale === "ar" ? "المدة" : "Duration"}
-                  value={formatDuration(runDetail.started_at, runDetail.finished_at)}
+                  value={formatDuration(runDetail.started_at, runDetail.finished_at ?? null)}
                 />
-                <Meta label={locale === "ar" ? "خطوات" : "Steps"} value={String(runDetail.steps)} />
+                <Meta
+                  label={locale === "ar" ? "خطوات" : "Steps"}
+                  value={runStepsLabel(runDetail.steps)}
+                />
               </div>
               {runDetail.goal_override && (
                 <div>
@@ -997,19 +903,21 @@ function AgentsOps() {
                   <div className="rounded bg-red-500/10 p-2 text-red-300">{runDetail.error}</div>
                 </div>
               )}
+              {/* صفّ المحاكاة لا يُلغى ولا يُعاد — معرّفه `sim-run-N` ليس uuid ولا وجود له في القاعدة. */}
               <div className="flex justify-end gap-2 pt-2">
-                {(runDetail.status === "running" || runDetail.status === "queued") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={cancelM.isPending}
-                    onClick={() => cancelM.mutate(runDetail.id)}
-                  >
-                    <Ban className="me-1 h-3 w-3" />
-                    {locale === "ar" ? "إلغاء التشغيل" : "Cancel run"}
-                  </Button>
-                )}
-                {runDetail.status === "failed" && (
+                {!runDetail.is_simulation &&
+                  (runDetail.status === "running" || runDetail.status === "queued") && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={cancelM.isPending}
+                      onClick={() => cancelM.mutate(runDetail.id)}
+                    >
+                      <Ban className="me-1 h-3 w-3" />
+                      {locale === "ar" ? "إلغاء التشغيل" : "Cancel run"}
+                    </Button>
+                  )}
+                {!runDetail.is_simulation && runDetail.status === "failed" && (
                   <Button
                     size="sm"
                     disabled={retryM.isPending}

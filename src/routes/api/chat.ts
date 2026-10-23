@@ -1049,6 +1049,9 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           ? (await import("@/lib/sadeed-tools.server")).buildSadeedTools(supabase, userId, {
               lastUserText,
               orgId,
+              // إسناد مهمّة لوكيل (`dispatch_agent`) خلف Gemini وحده — محرّك الوكلاء على Gemini
+              // مباشرةً، فلا يُفتح من دورٍ محرّكُه المختار غيره (لا استبدال صامت لمورّد).
+              agentsAvailable: plan.selected === "gemini",
             })
           : undefined;
 

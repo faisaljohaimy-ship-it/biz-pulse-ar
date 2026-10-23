@@ -14,13 +14,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { RunStatusBadge } from "@/components/exec/RunStatusBadge";
 import { CheckCircle2, XCircle, Clock, Play, Pause, Ban } from "lucide-react";
 import { toast } from "sonner";
+import { userFacingError } from "@/lib/errors/user-facing-error";
 
-type StepRow = {
+export type WorkflowStepRow = {
   id: string;
   step_id: string;
   kind: string;
@@ -33,20 +34,22 @@ type StepRow = {
   output_json: unknown;
 };
 
+export type WorkflowRunRow = {
+  id: string;
+  workflow_id: string;
+  status: string;
+  current_step: string | null;
+  started_at: string;
+  finished_at: string | null;
+  error: string | null;
+  triggered_by: string | null;
+  trigger_event: string | null;
+  context_json: unknown;
+};
+
 type RunDetail = {
-  run: {
-    id: string;
-    workflow_id: string;
-    status: string;
-    current_step: string | null;
-    started_at: string;
-    finished_at: string | null;
-    error: string | null;
-    triggered_by: string | null;
-    trigger_event: string | null;
-    context_json: unknown;
-  };
-  steps: StepRow[];
+  run: WorkflowRunRow;
+  steps: WorkflowStepRow[];
 };
 
 function statusIcon(status: string) {
@@ -59,18 +62,9 @@ function statusIcon(status: string) {
   return <Clock className="size-4 text-slate-400" />;
 }
 
+/** التسمية العربية والنغمة والشكل من الخريطة الواحدة (UI-5). */
 function statusBadge(status: string) {
-  const map: Record<string, string> = {
-    succeeded: "bg-emerald-500/20 text-emerald-300",
-    failed: "bg-red-500/20 text-red-300",
-    running: "bg-cyan-500/20 text-cyan-300 animate-pulse",
-    queued: "bg-slate-500/20 text-slate-300",
-    cancelled: "bg-zinc-500/20 text-zinc-300",
-    paused: "bg-amber-500/20 text-amber-300",
-    waiting_approval: "bg-amber-500/20 text-amber-300",
-    rolled_back: "bg-orange-500/20 text-orange-300",
-  };
-  return <Badge className={map[status] ?? "bg-slate-500/20"}>{status}</Badge>;
+  return <RunStatusBadge status={status} />;
 }
 
 function fmtDuration(start: string | null, end: string | null) {
@@ -81,6 +75,147 @@ function fmtDuration(start: string | null, end: string | null) {
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`;
   return `${(ms / 60_000).toFixed(1)}m`;
+}
+
+/**
+ * جسم الدرج — عرضٌ محض بخصائص صريحة كي يُختبر بلا خادم ولا react-query
+ * (`workflow-run-detail.test.tsx`). الحاوية `WorkflowRunDetail` أدناه تملك
+ * الاستعلام والطفرات والبثّ الحيّ.
+ */
+export function WorkflowRunDetailBody({
+  run,
+  steps,
+  onCancel,
+  onResume,
+  onRefresh,
+  cancelPending = false,
+  resumePending = false,
+  refreshing = false,
+}: {
+  run: WorkflowRunRow;
+  steps: WorkflowStepRow[];
+  onCancel?: () => void;
+  onResume?: () => void;
+  onRefresh?: () => void;
+  cancelPending?: boolean;
+  resumePending?: boolean;
+  refreshing?: boolean;
+}) {
+  const canCancel = ["running", "queued", "paused"].includes(run.status);
+  const canResume = ["failed", "paused", "cancelled"].includes(run.status);
+  return (
+    <div className="space-y-4" data-run-status={run.status}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+        <div>
+          <div className="text-muted-foreground">Started</div>
+          <div className="font-mono">{new Date(run.started_at).toLocaleString()}</div>
+        </div>
+        <div>
+          <div className="text-muted-foreground">Duration</div>
+          <div className="font-mono">{fmtDuration(run.started_at, run.finished_at)}</div>
+        </div>
+        <div>
+          <div className="text-muted-foreground">Trigger</div>
+          <div className="font-mono">{run.trigger_event ?? "—"}</div>
+        </div>
+        <div>
+          <div className="text-muted-foreground">Current step</div>
+          <div className="font-mono">{run.current_step ?? "—"}</div>
+        </div>
+      </div>
+
+      {run.error && (
+        <div className="p-3 rounded-md border border-red-500/30 bg-red-500/10 text-xs text-red-300 whitespace-pre-wrap">
+          {run.error}
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="destructive"
+          disabled={!canCancel || cancelPending}
+          onClick={onCancel}
+          className="gap-1"
+        >
+          <Ban className="size-3" />
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!canResume || resumePending}
+          onClick={onResume}
+          className="gap-1"
+        >
+          {/* `RotateCcw` تراجعٌ/استرجاع، والاستئناف نظيرُ `Pause`. */}
+          <Play className="size-3" />
+          Resume
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onRefresh} disabled={refreshing}>
+          Refresh
+        </Button>
+      </div>
+
+      <div>
+        <h4 className="font-semibold text-sm mb-2">Steps ({steps.length})</h4>
+        <ScrollArea className="h-[40vh]">
+          <ol className="relative border-s border-border ms-3 space-y-3">
+            {steps.map((s) => (
+              <li key={s.id} className="ms-4">
+                <span className="absolute -start-2 flex size-4 items-center justify-center rounded-full bg-background ring-2 ring-border">
+                  {statusIcon(s.status)}
+                </span>
+                <div className="p-3 rounded-md border bg-card/50">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-sm font-medium font-mono">
+                      {s.step_id}
+                      <span className="ms-2 text-[12px] text-muted-foreground uppercase">
+                        {s.kind}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {s.attempt > 1 && (
+                        <span className="text-[12px] text-amber-300">attempt {s.attempt}</span>
+                      )}
+                      {statusBadge(s.status)}
+                    </div>
+                  </div>
+                  <div className="mt-1 text-[12px] text-muted-foreground font-mono">
+                    {fmtDuration(s.started_at, s.finished_at)}
+                    {s.tool_execution_id && (
+                      <>
+                        {" · exec "}
+                        {s.tool_execution_id.slice(0, 8)}…
+                      </>
+                    )}
+                  </div>
+                  {s.error && (
+                    <div className="mt-1 text-xs text-red-300 whitespace-pre-wrap">{s.error}</div>
+                  )}
+                  {s.status === "succeeded" && s.output_json != null && (
+                    <details className="mt-1">
+                      <summary className="text-[12px] text-muted-foreground cursor-pointer">
+                        output
+                      </summary>
+                      <pre className="mt-1 text-[12px] bg-muted/30 p-2 rounded overflow-x-auto max-h-40">
+                        {JSON.stringify(s.output_json, null, 2)}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              </li>
+            ))}
+            {steps.length === 0 && (
+              <li className="text-sm text-muted-foreground text-center p-4">
+                No steps recorded yet.
+              </li>
+            )}
+          </ol>
+        </ScrollArea>
+      </div>
+    </div>
+  );
 }
 
 export function WorkflowRunDetail({
@@ -147,7 +282,7 @@ export function WorkflowRunDetail({
       void qc.invalidateQueries({ queryKey: ["exec", "run-detail", runId] });
       void qc.invalidateQueries({ queryKey: ["exec", "runs"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const resumeMut = useMutation({
@@ -157,13 +292,11 @@ export function WorkflowRunDetail({
       void qc.invalidateQueries({ queryKey: ["exec", "run-detail", runId] });
       void qc.invalidateQueries({ queryKey: ["exec", "runs"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(userFacingError(e)),
   });
 
   const run = detail.data?.run;
   const steps = detail.data?.steps ?? [];
-  const canCancel = run && ["running", "queued", "paused"].includes(run.status);
-  const canResume = run && ["failed", "paused", "cancelled"].includes(run.status);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -181,132 +314,29 @@ export function WorkflowRunDetail({
         )}
 
         {detail.error && (
-          <div className="p-4 rounded-md border border-red-500/30 bg-red-500/10 text-sm text-red-300">
-            {(detail.error as Error).message}
+          <div
+            dir="rtl"
+            className="flex flex-col items-start gap-2 p-4 rounded-md border border-red-500/30 bg-red-500/10 text-sm text-red-300"
+          >
+            {/* الرسالة الخام («Run not found») كانت تُطبع كما هي وتكشف سبب الحجب — تمرّ الآن بالمرشِّح. */}
+            <span>{userFacingError(detail.error)}</span>
+            <Button size="sm" variant="outline" onClick={() => void detail.refetch()}>
+              إعادة المحاولة
+            </Button>
           </div>
         )}
 
         {run && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-              <div>
-                <div className="text-muted-foreground">Started</div>
-                <div className="font-mono">{new Date(run.started_at).toLocaleString()}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Duration</div>
-                <div className="font-mono">{fmtDuration(run.started_at, run.finished_at)}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Trigger</div>
-                <div className="font-mono">{run.trigger_event ?? "—"}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Current step</div>
-                <div className="font-mono">{run.current_step ?? "—"}</div>
-              </div>
-            </div>
-
-            {run.error && (
-              <div className="p-3 rounded-md border border-red-500/30 bg-red-500/10 text-xs text-red-300 whitespace-pre-wrap">
-                {run.error}
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="destructive"
-                disabled={!canCancel || cancelMut.isPending}
-                onClick={() => cancelMut.mutate()}
-                className="gap-1"
-              >
-                <Ban className="size-3" />
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!canResume || resumeMut.isPending}
-                onClick={() => resumeMut.mutate()}
-                className="gap-1"
-              >
-                {/* `RotateCcw` تراجعٌ/استرجاع، والاستئناف نظيرُ `Pause`. */}
-                <Play className="size-3" />
-                Resume
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => detail.refetch()}
-                disabled={detail.isFetching}
-              >
-                Refresh
-              </Button>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-sm mb-2">Steps ({steps.length})</h4>
-              <ScrollArea className="h-[40vh]">
-                <ol className="relative border-s border-border ms-3 space-y-3">
-                  {steps.map((s) => (
-                    <li key={s.id} className="ms-4">
-                      <span className="absolute -start-2 flex size-4 items-center justify-center rounded-full bg-background ring-2 ring-border">
-                        {statusIcon(s.status)}
-                      </span>
-                      <div className="p-3 rounded-md border bg-card/50">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="text-sm font-medium font-mono">
-                            {s.step_id}
-                            <span className="ms-2 text-[12px] text-muted-foreground uppercase">
-                              {s.kind}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {s.attempt > 1 && (
-                              <span className="text-[12px] text-amber-300">
-                                attempt {s.attempt}
-                              </span>
-                            )}
-                            {statusBadge(s.status)}
-                          </div>
-                        </div>
-                        <div className="mt-1 text-[12px] text-muted-foreground font-mono">
-                          {fmtDuration(s.started_at, s.finished_at)}
-                          {s.tool_execution_id && (
-                            <>
-                              {" · exec "}
-                              {s.tool_execution_id.slice(0, 8)}…
-                            </>
-                          )}
-                        </div>
-                        {s.error && (
-                          <div className="mt-1 text-xs text-red-300 whitespace-pre-wrap">
-                            {s.error}
-                          </div>
-                        )}
-                        {s.status === "succeeded" && s.output_json != null && (
-                          <details className="mt-1">
-                            <summary className="text-[12px] text-muted-foreground cursor-pointer">
-                              output
-                            </summary>
-                            <pre className="mt-1 text-[12px] bg-muted/30 p-2 rounded overflow-x-auto max-h-40">
-                              {JSON.stringify(s.output_json, null, 2)}
-                            </pre>
-                          </details>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                  {steps.length === 0 && (
-                    <li className="text-sm text-muted-foreground text-center p-4">
-                      No steps recorded yet.
-                    </li>
-                  )}
-                </ol>
-              </ScrollArea>
-            </div>
-          </div>
+          <WorkflowRunDetailBody
+            run={run}
+            steps={steps}
+            onCancel={() => cancelMut.mutate()}
+            onResume={() => resumeMut.mutate()}
+            onRefresh={() => void detail.refetch()}
+            cancelPending={cancelMut.isPending}
+            resumePending={resumeMut.isPending}
+            refreshing={detail.isFetching}
+          />
         )}
       </DialogContent>
     </Dialog>

@@ -172,29 +172,26 @@ export function resolveProviderPlan(options: ProviderPlanOptions = {}): Provider
 }
 
 function openAiPlan(key: string, modelId: SadeedOpenAiModel): ProviderPlan {
-  {
-    const selected = "openai" as const;
-    return {
-      mode: "llm",
-      selected,
-      reason: null,
-      primary: {
-        vendor: "openai",
-        modelId,
-        // واجهة المحادثات (`.chat`) لا الافتراضية (Responses)، لسببين لا يُختبران إلا
-        // حيًّا فيُتّقيان بالبناء: ① أدوات المسجَّل فيها حقولٌ اختيارية، والحزمة لا
-        // ترسل `strict` ما لم تضبطه الأداة — وافتراض Responses الصارم يرفض مخطّطًا
-        // كهذا، وافتراض المحادثات غير صارم؛ ② Responses تحفظ المخرَجات لدى المورّد
-        // افتراضًا (`store`)، والمحادثات لا تحفظها. وأسئلة المستخدمين لا تُحفظ خارجنا.
-        create: async () => {
-          const { createOpenAI } = await import("@ai-sdk/openai");
-          return createOpenAI({ apiKey: key }).chat(modelId);
-        },
+  return {
+    mode: "llm",
+    selected: "openai",
+    reason: null,
+    primary: {
+      vendor: "openai",
+      modelId,
+      // واجهة المحادثات (`.chat`) لا الافتراضية (Responses)، لسببين لا يُختبران إلا
+      // حيًّا فيُتّقيان بالبناء: ① أدوات المسجَّل فيها حقولٌ اختيارية، والحزمة لا
+      // ترسل `strict` ما لم تضبطه الأداة — وافتراض Responses الصارم يرفض مخطّطًا
+      // كهذا، وافتراض المحادثات غير صارم؛ ② Responses تحفظ المخرَجات لدى المورّد
+      // افتراضًا (`store`)، والمحادثات لا تحفظها. وأسئلة المستخدمين لا تُحفظ خارجنا.
+      create: async () => {
+        const { createOpenAI } = await import("@ai-sdk/openai");
+        return createOpenAI({ apiKey: key }).chat(modelId);
       },
-      // الاحتياطي خلف Gemini وحده — لا سلسلة مورّدين بعدّاد خلف محوّلٍ اختياري.
-      backup: null,
-    };
-  }
+    },
+    // الاحتياطي خلف Gemini وحده — لا سلسلة مورّدين بعدّاد خلف محوّلٍ اختياري.
+    backup: null,
+  };
 }
 
 /** وصف الخطة للصحّة والجاهزية — وسومٌ وقيمٌ منطقية فقط، لا مفتاح ولا قيمة سرّية. */
