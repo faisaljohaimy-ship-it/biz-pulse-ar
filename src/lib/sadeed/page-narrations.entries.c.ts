@@ -282,6 +282,19 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
   ],
   // حُذف «/executive-showcase»: ضمن عائلة العروض السينمائية المخفية بأمر
   // المالك (hidden-routes.ts) مع /cinematic-demo و/films و/theater.
+  // «/cinematic» شاشة حيّة لا مخفية (يربط بها /sec/twin) — فلها صفّ، ونصّه من نصّ الصفحة:
+  // مشهدٌ داخل المتصفح لا فيديو ولا بثّ، وأرقامه توضيحية (المادة ٢٧).
+  [
+    "/cinematic",
+    n(
+      "التجربة السينمائية",
+      "the Cinematic Experience",
+      "مشهد موشن جرافيك تفاعلي للتوأم الرقمي والأمن الصناعي مع إيقاف الحركة وملء الشاشة",
+      "an interactive motion-graphics scene of the digital twin and industrial security, with pause and full-screen",
+      "مشهدٌ يعمل داخل المتصفح لا ملف فيديو ولا بثًّا حيًّا، وأرقامه توضيحية لا بيانات تشغيلية",
+      "an in-browser scene, not a video file or a live feed, and its figures are illustrative, not operational data",
+    ),
+  ],
   // حُذف صفّ «/executive» العام: لا توجد صفحة تنفيذية عامة بهذا المسار — المسار
   // الوحيد هو _authenticated/executive («المساحة التنفيذية»)، وصفّه في
   // page-narrations.entries.b.ts. كان الصفّان يتنازعان مسارًا واحدًا.
