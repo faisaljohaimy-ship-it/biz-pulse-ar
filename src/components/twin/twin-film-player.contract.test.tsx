@@ -917,6 +917,10 @@ describe("اللغتان والإفصاح وإمكانية الوصول", () => 
     expect(button.textContent).toBe("Pause film");
     expect(view.getByRole("figure", { name: "Digital twin film" })).toBeInTheDocument();
     expect(view.container.querySelector("figcaption")!.textContent).toMatch(/pre-rendered/);
+    // الإفصاح الإنجليزي صادقٌ كالعربي: صورٌ مولَّدة بالذكاء الاصطناعي لا لقطات منشأة حقيقية ولا «مرسومة».
+    const caption = view.container.querySelector("figcaption")!.textContent!;
+    expect(caption).toMatch(/AI-generated images, not footage of a real facility/);
+    expect(caption).not.toMatch(/drawn/);
     fireEvent.click(button);
     view.getByRole("button", { name: "Resume film" });
     view.unmount();
@@ -933,7 +937,7 @@ describe("اللغتان والإفصاح وإمكانية الوصول", () => 
     expect(described).toMatch(/مُصيَّر مسبقًا/);
     expect(described).toMatch(/بموسيقى ومؤثرات صوتية مولَّدة/);
     expect(described).toMatch(/56 ثانية/);
-    expect(described).toMatch(/مرسومة وليست تصويرًا لمنشأة حقيقية/);
+    expect(described).toMatch(/مولَّدة بالذكاء الاصطناعي وليست تصويرًا لمنشأة حقيقية/);
     expect(described).toMatch(/ليس بثًّا حيًّا ولا بيانات تشغيلية/);
     // الإفصاح مرئيٌّ (وليس لقارئ الشاشة وحده).
     expect(view.container.querySelector("figcaption")!.textContent).toMatch(/ليس بثًّا حيًّا/);

@@ -167,12 +167,12 @@ export type FilmAction = "play" | "pause" | "resume" | "replay" | "retry";
 /** نصوص المشغّل بلسانيها — والمدّة فيها من `TWIN_FILM_SECONDS` لا رقمٌ مكتوب ثانيةً. */
 export const TWIN_FILM_TEXT = {
   ar: {
-    kind: "فيلم موشن جرافيك توضيحي",
+    kind: "فيلم سينمائي توضيحي (صور مولَّدة بالذكاء الاصطناعي)",
     title: "فيلم التوأم الرقمي",
     meta: `${TWIN_FILM_SECONDS} ثانية · ${TWIN_FILM_HAS_AUDIO ? "بصوت" : "بلا صوت"}`,
     disclosure:
-      "فيلم مُصيَّر مسبقًا (ملف فيديو توضيحي)، وليس بثًّا حيًّا ولا بيانات تشغيلية؛ والمشاهد مرسومة وليست تصويرًا لمنشأة حقيقية، وما يظهر فيه من أشكال أو قيم توضيحي لا يمثّل حالة تشغيل فعلية.",
-    description: `فيلم موشن جرافيك توضيحي مُصيَّر مسبقًا، مدّته ${TWIN_FILM_SECONDS} ثانية ${TWIN_FILM_HAS_AUDIO ? "بموسيقى ومؤثرات صوتية مولَّدة (ولا صوت بشري)" : "وبلا صوت"}. يمشي رجل أمن عند سياج محطة كهرباء عند الشروق، ثم يُرى توليد الكهرباء ونقلها عبر الأبراج وخفض الجهد في المحطة وبلوغها المدن، ثم نقاط الدخول حيث يفحص الحرّاس مركبة، ثم غرفة المراقبة والتحكم، فتتحوّل المحطة إلى توأمٍ رقمي يرصد وينذر ويوجّه رجال الأمن، وينتهي الفيلم بشعار سَدِيد ويثبت على إطاره الأخير.`,
+      "فيلم مُصيَّر مسبقًا (ملف فيديو توضيحي)، وليس بثًّا حيًّا ولا بيانات تشغيلية؛ والمشاهد واقعية مولَّدة بالذكاء الاصطناعي وليست تصويرًا لمنشأة حقيقية، وما يظهر فيه من أشكال أو قيم توضيحي لا يمثّل حالة تشغيل فعلية.",
+    description: `فيلم سينمائي توضيحي مُصيَّر مسبقًا من صور واقعية مولَّدة بالذكاء الاصطناعي مع رسوم مراقبة فوقها، مدّته ${TWIN_FILM_SECONDS} ثانية ${TWIN_FILM_HAS_AUDIO ? "بموسيقى ومؤثرات صوتية مولَّدة (ولا صوت بشري)" : "وبلا صوت"}. يمشي رجل أمن عند سياج محطة كهرباء عند الغروب، ثم يُرى توليد الكهرباء ونقلها عبر الأبراج وخفض الجهد في المحطة وبلوغها المدن، ثم نقاط الدخول حيث يفحص الحرّاس مركبة، ثم غرفة المراقبة والتحكم، فتتحوّل المحطة إلى توأمٍ رقمي يرصد وينذر ويوجّه رجال الأمن، وينتهي الفيلم بشعار سَدِيد ويثبت على إطاره الأخير.`,
     actions: {
       play: "تشغيل الفيلم",
       pause: "إيقاف الفيلم مؤقتًا",
@@ -197,12 +197,12 @@ export const TWIN_FILM_TEXT = {
     },
   },
   en: {
-    kind: "Illustrative motion-graphics film",
+    kind: "Illustrative cinematic film (AI-generated imagery)",
     title: "Digital twin film",
     meta: `${TWIN_FILM_SECONDS} seconds · ${TWIN_FILM_HAS_AUDIO ? "with sound" : "no sound"}`,
     disclosure:
-      "A pre-rendered illustrative video file, not a live feed and not operational data; the scenes are drawn, not footage of a real facility, and the shapes and values in it are illustrative and do not represent actual operating conditions.",
-    description: `A pre-rendered illustrative motion-graphics film, ${TWIN_FILM_SECONDS} seconds long ${TWIN_FILM_HAS_AUDIO ? "with generated music and sound effects (no human voice)" : "and silent"}. A security officer walks along the fence of a power station at sunrise; electricity is generated, carried over pylons, stepped down at the station and delivered to the city; guards inspect a vehicle at an entry point; then a control room, and the station becomes a digital twin that watches, alerts and guides the guards, before the film ends on the SADEED mark and holds on its last frame.`,
+      "A pre-rendered illustrative video file, not a live feed and not operational data; the scenes are photorealistic AI-generated images, not footage of a real facility, and the shapes and values in it are illustrative and do not represent actual operating conditions.",
+    description: `A pre-rendered illustrative cinematic film built from photorealistic AI-generated images with monitoring graphics drawn over them, ${TWIN_FILM_SECONDS} seconds long ${TWIN_FILM_HAS_AUDIO ? "with generated music and sound effects (no human voice)" : "and silent"}. A security officer walks along the fence of a power station at sunset; electricity is generated, carried over pylons, stepped down at the station and delivered to the city; guards inspect a vehicle at an entry point; then a control room, and the station becomes a digital twin that watches, alerts and guides the guards, before the film ends on the SADEED mark and holds on its last frame.`,
     actions: {
       play: "Play film",
       pause: "Pause film",
