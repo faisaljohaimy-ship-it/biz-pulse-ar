@@ -208,6 +208,15 @@ function saveMusicWanted(on: boolean): void {
 export const SCORE_DRIFT = 0.25;
 
 /**
+ * سقف ما يُعوَّض من كمون القفز (ث). **قِيس على تسجيل المالك ٢٠٢٦/١٠/٢٣ (iPhone):** الصوت ينقطع كل
+ * 0.766 ث بصمتٍ 0.39 ث، دورةً بلا نهاية — القفز في ملفّ m4a على iOS يستغرق ≈0.39 ث، وهو فوق
+ * `SCORE_DRIFT`: فتهبط الموسيقى عند زمنٍ صار قديمًا حين تكتمل القفزة، فتُقاس منحرفةً فتقفز ثانيةً،
+ * وهكذا. العلاج: تُقاس مدّة القفزة الفعلية (من `currentTime=` إلى `seeked`) وتُضاف إلى الهدف التالي،
+ * فتهبط الموسيقى على الزمن الحاضر لا الماضي — قفزةٌ ثانية واحدة ثم تستقرّ.
+ */
+export const MAX_SEEK_LEAD = 0.8;
+
+/**
  * ما يُسكت الموسيقى من خارج الفيلم: لوحة سَدِيد مفتوحة، و«إيقاف الحركة»، وتبويبٌ مخفيّ، وسَدِيد
  * ينطق أو يُصغي — ناقل الصوت الواحد (`SadeedAudioBus`: كل صوتٍ لسَدِيد يمرّ به) وحالة حضوره.
  */
@@ -290,11 +299,23 @@ export function bindFilmScore(
     // نهاية الملف نفسها تُطلق `pause` قبل `ended` — ليست قرارًا من أحد.
     if (!audio.ended) outsidePause = true;
   };
+  // كمون القفز المقيس (ث): يُضاف إلى زمن الإطار عند القفز التالي ليهبط الصوت على الحاضر.
+  let seekLead = 0;
+  let seekStartedAt = -1;
+  const onSeeked = () => {
+    if (seekStartedAt < 0) return;
+    seekLead = Math.min(MAX_SEEK_LEAD, Math.max(0, (performance.now() - seekStartedAt) / 1000));
+    seekStartedAt = -1;
+  };
   const resync = () => {
+    // قفزةٌ جارية لا تُقاس: زمنها بين بدايتها ونهايتها لا يمثّل الانحراف (يُعاد عند `seeked`).
+    if (audio.seeking) return;
     if (Math.abs(audio.currentTime - video.currentTime) <= SCORE_DRIFT) return;
     try {
-      audio.currentTime = video.currentTime;
+      seekStartedAt = performance.now();
+      audio.currentTime = video.currentTime + seekLead;
     } catch {
+      seekStartedAt = -1;
       /* محرّكٌ لا ينتقل قبل البيانات الوصفية — يُعاد عند `playing` */
     }
   };
@@ -365,6 +386,7 @@ export function bindFilmScore(
   for (const type of follow) video.addEventListener(type, sync);
   audio.addEventListener("playing", sync);
   audio.addEventListener("pause", onAudioPause);
+  audio.addEventListener("seeked", onSeeked);
   document.addEventListener("visibilitychange", sync);
   const stopBus = SadeedAudioBus.subscribe(sync);
   const stopPresence = sadeedState.subscribe(sync);
@@ -383,6 +405,7 @@ export function bindFilmScore(
       for (const type of follow) video.removeEventListener(type, sync);
       audio.removeEventListener("playing", sync);
       audio.removeEventListener("pause", onAudioPause);
+      audio.removeEventListener("seeked", onSeeked);
       document.removeEventListener("visibilitychange", sync);
       stopBus();
       stopPresence();

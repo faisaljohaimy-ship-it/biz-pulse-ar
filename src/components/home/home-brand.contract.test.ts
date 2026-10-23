@@ -1328,6 +1328,33 @@ describe("المصيَّر — الموسيقى تتبع الفيلم وتفضي
     expect(score.play).toHaveBeenCalledTimes(1);
   });
 
+  it("كمون القفز المقيس يُضاف إلى الهدف التالي — فلا تدور الموسيقى في قفزاتٍ بلا نهاية (تسجيل المالك: انقطاعٌ كل 0.77 ث بطول 0.39 ث)", async () => {
+    const now = vi.spyOn(performance, "now");
+    now.mockReturnValue(1000);
+    const { audio, score, seek } = await mountFilm(3);
+    // أوّل قفزة بلا قياسٍ سابق: إلى زمن الإطار نفسه.
+    expect(score.state.time).toBe(3);
+    // اكتملت بعد 0.39 ث (كمون القفز في m4a على iOS) — والفيلم مضى 0.4 ث فصارت منحرفةً فوق ربع ثانية.
+    now.mockReturnValue(1390);
+    fireEvent(audio, new Event("seeked"));
+    seek(3.4);
+    // القفزة الثانية تهبط على الحاضر لا الماضي: زمن الإطار + الكمون المقيس.
+    expect(score.state.time).toBeCloseTo(3.4 + 0.39, 5);
+    // ومنحرفةً دون ربع ثانية بعد استقرارها: لا قفزة ثالثة.
+    now.mockReturnValue(1790);
+    fireEvent(audio, new Event("seeked"));
+    seek(3.6);
+    expect(score.state.time).toBeCloseTo(3.4 + 0.39, 5);
+  });
+
+  it("قفزةٌ جارية (`seeking`) لا تُقاس منحرفةً ولا تُعاد — الحلقة التي سمعها المالك", async () => {
+    const { audio, score, seek } = await mountFilm(3);
+    expect(score.state.time).toBe(3);
+    Object.defineProperty(audio, "seeking", { configurable: true, get: () => true });
+    seek(4);
+    expect(score.state.time, "قفزةٌ فوق قفزة").toBe(3);
+  });
+
   it("لا موسيقى قبل أوّل إطار، وإيقافها من خارج الصفّ قرارٌ لا يُنقض إلا بزرّها", async () => {
     const { view, film, score, seek } = await mountFilm(2);
     expect(score.play).toHaveBeenCalledTimes(1);

@@ -33,7 +33,7 @@
  *
  * ## والسرعة
  *
- * `PLAYBACK_RATE` دون الواحد — حركةٌ هادئة لا تسحب البصر عن البلاغات.
+ * `PLAYBACK_RATE` = 1 (الطبيعية) بأمر المالك ٢٠٢٦/١٠/٢٣، ناسخًا تخفيضها إلى 0.5 (٢٠٢٦/٠٩/٢٨).
  *
  * ## وأوّلُ رسمةٍ محميّة
  *
@@ -72,8 +72,12 @@ import { isSafeMode } from "@/lib/sadeed/self-healing/crash-loop";
 const NOISE_URI =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E";
 
-/** سرعةُ العرض — دون الواحد بأمر المالك: «تخفيض سرعة الفيديو». */
-const PLAYBACK_RATE = 0.5;
+/**
+ * سرعةُ العرض — **الطبيعية (1)** بأمر المالك ٢٠٢٦/١٠/٢٣: «اضبط سرعة الفيديو بأن تكون السرعة
+ * طبيعية». نسخ قرارَ ٢٠٢٦/٠٩/٢٨ («تخفيض سرعة الفيديو») الذي جعلها 0.5. والثابت باقٍ مضبوطًا على
+ * العنصر صراحةً لا محذوفًا: `defaultPlaybackRate` يحمي من تعطيل مستعرضٍ أو إضافةٍ للسرعة بين تحميلين.
+ */
+const PLAYBACK_RATE = 1;
 
 /** مصدرُ الفيلم — أصلٌ ساكن في `public/`، لا واصفَ شبكةٍ بعيدًا. */
 const FILM_SRC = "/sadeed-home-bg.mp4";
@@ -244,8 +248,7 @@ export const HoloVideoEngine = memo(function HoloVideoEngine({
           onLoadedMetadata={(e) => {
             // السرعة تُضبط على العنصر: لا سمة HTML لها. و`defaultPlaybackRate`
             // معها تُغلق نافذة الإطار الواحد: `load()` يُعيد `playbackRate`
-            // إلى الافتراضيّ، فلو أُعيد تحميل المورد عاد بالسرعة المخفَّضة
-            // لا بالأصليّة.
+            // إلى الافتراضيّ، فلو أُعيد تحميل المورد عاد بغير السرعة المقرَّرة.
             e.currentTarget.defaultPlaybackRate = PLAYBACK_RATE;
             e.currentTarget.playbackRate = PLAYBACK_RATE;
           }}

@@ -2,10 +2,9 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { getTwinTree, type TwinTree } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
-import { RegionTwinScene, type TwinAsset } from "@/components/sec/RegionTwinScene";
 import { TwinFilmPlayer } from "@/components/twin/TwinFilmPlayer";
 import { useRegion } from "@/lib/region-context";
 import type { Region } from "@/lib/regions";
@@ -48,56 +47,9 @@ type SelectedKind =
   | "patrol_team";
 type Selected = { kind: SelectedKind; id: string } | null;
 
-/**
- * أصول المشهد من الشجرة المحمّلة: كاميرات وبوابات وحسّاسات المقدّمة.
- *
- * العدد محدود بـ١٤ لا لتقليل الرسم بل لأن ما فوقه يتراكم على المشهد
- * فيحجب البنى التي يُفترض أن يشير إليها. سطر الإعلان الذي كان أسفل
- * المشهد («هضبة نجد … أبرز ١٤ أصلًا من …») حُذف بأمر المالك ٢٠٢٦/٠٨/٢٠
- * («حذف هذا التعليق من التوأم الرقمي») — الحدّ باقٍ، والإعلان لا.
- */
-const SCENE_ASSET_CAP = 14;
-
-function sceneAssets(tree: TwinTree | undefined): { shown: TwinAsset[]; total: number } {
-  if (!tree) return { shown: [], total: 0 };
-  const out: TwinAsset[] = [];
-  for (const circle of tree.circles) {
-    for (const site of circle.sites) {
-      for (const building of site.buildings) {
-        for (const cam of building.cameras) {
-          out.push({
-            id: `cam-${cam.id}`,
-            labelAr: `كاميرا ${cam.code}`,
-            tone: cam.status === "online" ? "ok" : cam.status === "degraded" ? "warn" : "danger",
-          });
-        }
-        for (const gate of building.gates) {
-          out.push({
-            id: `gate-${gate.id}`,
-            labelAr: `بوابة ${gate.code}`,
-            tone: gate.status === "online" ? "ok" : "warn",
-          });
-        }
-        for (const sensor of building.sensors) {
-          out.push({
-            id: `sensor-${sensor.id}`,
-            labelAr: `حسّاس ${sensor.code}`,
-            tone: sensor.status === "online" ? "ok" : sensor.status === "alarm" ? "danger" : "warn",
-          });
-        }
-      }
-    }
-  }
-  // ما ليس سليمًا يُعرض أوّلًا: المشهد لوحة إنذار، وإخفاء إنذارٍ خلف حدٍّ
-  // عدديّ لأن ترتيب القاعدة صادف أن يضعه أخيرًا عطلٌ لا اختصار.
-  const rank = { danger: 0, warn: 1, ok: 2 } as const;
-  out.sort((a, b) => rank[a.tone] - rank[b.tone]);
-  return { shown: out.slice(0, SCENE_ASSET_CAP), total: out.length };
-}
-
 function TwinPage() {
   const fetchTree = useServerFn(getTwinTree);
-  const { data, isLoading, isFetching, isError, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["sec-twin"],
     queryFn: () => fetchTree(),
     refetchInterval: 60_000,
@@ -107,8 +59,7 @@ function TwinPage() {
   // بأمر المالك ٢٠٢٦/٠٨/٢٠ («حذف الفلاتر ووضع الفلتر على الوسطى لأننا في
   // أيقونة الوسطى»): لا فلتر مناطق محليًّا — المشهد يتبع سياق المنطقة
   // العام (مبدّل الشريط الجانبي) فلا يعرض منطقةً غير التي يقف عليها النظام.
-  const { region, regionId } = useRegion();
-  const { shown: assets } = useMemo(() => sceneAssets(data), [data]);
+  const { region } = useRegion();
 
   const toggle = (key: string) => {
     setExpanded((prev) => {
@@ -125,42 +76,6 @@ function TwinPage() {
         title="التوأم الرقمي للمناطق"
         subtitle="مشهد مرسوم لكل منطقة، ونموذج هرمي تفاعلي لجميع الأصول الأمنية"
       />
-
-      <section
-        aria-live="polite"
-        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3"
-      >
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span
-            className={`inline-flex items-center rounded-full border px-3 py-1 font-semibold ${isError ? "border-rose-300 text-rose-700" : data?.dataSource === "live" ? "border-emerald-300 text-emerald-700" : "border-amber-300 text-amber-700"}`}
-          >
-            {isError
-              ? "تعذر تحديث بيانات التوأم الرقمي"
-              : !data
-                ? "جاري الاتصال بمصدر البيانات"
-                : data.dataSource === "live"
-                  ? "بيانات أصول مرتبطة بالنظام"
-                  : "بيانات عرض توضيحية — ليست تشغيلية"}
-          </span>
-          <span className="text-muted-foreground">
-            {isFetching ? "جارٍ التحديث…" : "تحديث تلقائي كل 60 ثانية عند توفر الاتصال"}
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => void refetch()}
-          disabled={isFetching}
-          className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50"
-        >
-          تحديث البيانات
-        </button>
-      </section>
-
-      {/* المشهد المرسوم — لا `transform` ولا `filter` على هذه الغلافات:
-          أيٌّ منها يُسقط كل `position: fixed` في الصفحة إلى نفسه. */}
-      <section className="rounded-xl border border-border bg-card p-3">
-        <RegionTwinScene regionId={regionId} assets={assets} />
-      </section>
 
       {/* فيلم التوأم الرقمي: مشغّلٌ مضمَّن في الصفحة لا إطارٌ يضمّ /cinematic (كان الإطار يحمل قشرة
           التطبيق مرّتين). الفيلم **مُصيَّر مسبقًا** — ملف فيديو توضيحي لا بثّ ولا بيانات تشغيلية،
@@ -191,6 +106,13 @@ function TwinPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[420px_1fr]">
         <div className="rounded-xl border border-border bg-card p-3 max-h-[78vh] overflow-y-auto">
+          {/* حُذف صندوقا الشارة والمشهد بأمر المالك ٢٠٢٦/١٠/٢٣؛ ويبقى وسمُ المحاكاة سطرًا واحدًا هنا لأن
+              الدستور (المادة ٢٧) يمنع أرقامًا تُقرأ حيّةً وهي عرضٌ توضيحي. */}
+          {data && data.dataSource !== "live" && (
+            <p className="mb-2 text-xs font-semibold text-amber-700">
+              بيانات عرض توضيحية — ليست تشغيلية
+            </p>
+          )}
           {isError && !data ? (
             <div
               role="alert"
