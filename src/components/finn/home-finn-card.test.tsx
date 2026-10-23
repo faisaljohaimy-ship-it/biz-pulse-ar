@@ -5,6 +5,7 @@
  * `allowed:false` ⇒ لا بطاقة ولا أثر في الشجرة (فلا يُكشف وجود الوكيل)، فشل الخادم ⇒ تختفي
  * بصمت، `allowed:true` ⇒ بطاقة بصورتها ورابط `/finn` والشريط التحذيري الحرفيّ.
  */
+import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -190,9 +191,18 @@ describe("المحادثة المضمَّنة في الرئيسية (أمر ال
 
 describe("بيان الصورة — فِن رجل أمن مختلف عن سَدِيد", () => {
   it("ملف مستقلّ تحت public/home لا ملف شخصية سَدِيد", () => {
-    expect(HOME_IMAGES.finn.src).toMatch(/^\/home\/finn-portrait\.webp$/);
+    expect(HOME_IMAGES.finn.src).toMatch(/^\/home\/finn-portrait-[a-f0-9]{8}\.webp$/);
     expect(HOME_IMAGES.finn.src).not.toBe(HOME_IMAGES.persona.src);
     expect(HOME_IMAGES.finn.alt).toContain("صورة توضيحية");
+  });
+
+  it("عنوان الصورة يحمل بصمة محتواها لمنع استرجاع نسخة مخزنة قديمة", () => {
+    const bytes = readFileSync(`public${HOME_IMAGES.finn.src}`);
+    const hash = createHash("sha1")
+      .update(`blob ${bytes.length}\0`)
+      .update(bytes)
+      .digest("hex");
+    expect(HOME_IMAGES.finn.src).toBe(`/home/finn-portrait-${hash.slice(0, 8)}.webp`);
   });
 });
 
