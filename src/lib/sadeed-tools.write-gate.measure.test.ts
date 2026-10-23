@@ -38,6 +38,8 @@ const state = vi.hoisted(() => ({
   /** كل كتابة عبر عميل الخدمة، بجدولها وعمليتها. */
   adminWrites: [] as Array<{ table: string; op: string }>,
   seq: 0,
+  /** دلاء `check_rate_limit` الذرّية (انتخاب مطالبة التأكيد). */
+  buckets: new Map<string, number>(),
 }));
 
 vi.mock("@/lib/authz.server", () => ({
@@ -50,6 +52,13 @@ vi.mock("@/lib/authz.server", () => ({
 vi.mock("@/integrations/supabase/client.server", () => {
   type AdminRow = Record<string, unknown>;
   const admin = {
+    async rpc(fn: string, args: Record<string, unknown>) {
+      if (fn !== "check_rate_limit") throw new Error(`unexpected rpc ${fn}`);
+      const key = String(args._bucket_key);
+      const count = (state.buckets.get(key) ?? 0) + 1;
+      state.buckets.set(key, count);
+      return { data: count <= Number(args._max_requests), error: null };
+    },
     from(table: string) {
       const rows = (state.tables[table] ??= []);
       const filters: Array<(row: AdminRow) => boolean> = [];
@@ -390,6 +399,7 @@ describe("chat write tools — business writes on the FIRST call (before/after m
       state.tables = { ...(c.adminRows ?? {}) };
       state.adminWrites = [];
       state.seq = 0;
+      state.buckets = new Map();
       const rls = requestClient();
       // طلبٌ جديد لكل أداة، كما يبني `/api/chat` الأدوات لكل رسالة.
       const tools = buildSadeedTools(rls.client, USER_ID, {

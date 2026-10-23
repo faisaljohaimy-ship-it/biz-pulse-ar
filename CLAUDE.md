@@ -194,7 +194,14 @@
    `finn_actions_log`؛ والخطوة ٢ تنفّذ مرّةً واحدة فقط حين تكون رسالة المستخدم التالية
    تأكيدًا قصيرًا صريحًا؛ والإعادة والتزامن محروسان بصفّ مطالبة (claim). يشترط
    `SADEED_MESSAGE_APPROVAL_SECRET` (≥32 حرفًا) **وإلا فشلت كل كتابة دردشةٍ مغلقةً**
-   (`confirmation_unavailable`). البريد والرسائل النصية على سجلّهما الخاص. وأداة قراءة
+   (`confirmation_unavailable`).
+   **والمطالبة بالرقم العابر انتخابٌ ذرّي لا استنتاج ترتيب (٢٠٢٦/١٠/٢٣):** `first` تقرّره
+   `check_rate_limit('wc-claim:<user>:<nonce>', 1, 3600)` وحدها بعد إدراج صفّ التدقيق. كان القرار
+   «هل صفّي أقدم صفٍّ بترتيب `created_at`؟» — و`created_at` بداية المعاملة لا إتمامها، فقِيس على
+   Postgres حقيقي (`tests/integration/write-confirmation.integration.test.ts`) أن مطالِبَين يحصلان
+   على `first:true` مع تأخّر الإتمام فيُنفَّذ الفعل مرّتين. **تبعيةٌ صريحة:** تعطّل مخزن الحدّ ⇒ لا
+   كتابة دردشة مؤكَّدة (`confirmation_unavailable`) — حتى لو مرّرت الدردشة في الوضع `bounded`.
+   ودلاء `wc-claim:*` (صفٌّ لكل تأكيد) لا يُنظَّفها شيء ولا تنظيف مجدول — قرارٌ للمالك كبقية `rate_limit_buckets`. البريد والرسائل النصية على سجلّهما الخاص. وأداة قراءة
    جديدة `execution_status` تقرأ `agent_runs`/`tool_executions`
    (`src/lib/exec/execution-status.server.ts`).
 

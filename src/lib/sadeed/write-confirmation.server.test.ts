@@ -7,6 +7,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  CLAIM_ELECTION_WINDOW_SECONDS,
   WRITE_CONFIRMATION_TTL_MS,
   claimConfirmation,
   isExplicitConfirmation,
@@ -27,10 +28,38 @@ const ledgerState = vi.hoisted(() => ({
   rows: [] as Row[],
   seq: 0,
   selectError: null as { message: string } | null,
+  /** فشل إدراج صفّ المطالبة (سجلّ التدقيق معطّل). */
+  claimInsertError: null as { message: string } | null,
+  /** دلاء `check_rate_limit` الذرّية: المفتاح ⇐ عدد النداءات. */
+  buckets: new Map<string, number>(),
+  /** كل نداء RPC بترتيبه، وعدد صفوف المطالبة التي كانت مدرجة عند النداء. */
+  rpcCalls: [] as Array<{ fn: string; args: Record<string, unknown>; claimRowsAtCall: number }>,
+  /** جوابٌ مبرمَج يتجاوز الدلو: خطأ، أو قيمة غير منطقية، أو رمي. */
+  rpcOverride: null as null | {
+    kind: "error" | "value" | "throw";
+    error?: { message: string };
+    data?: unknown;
+  },
 }));
 
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
+    async rpc(fn: string, args: Record<string, unknown>) {
+      ledgerState.rpcCalls.push({
+        fn,
+        args,
+        claimRowsAtCall: ledgerState.rows.filter((r) => r.action === "chat.write.confirmed").length,
+      });
+      const o = ledgerState.rpcOverride;
+      if (o?.kind === "throw") throw new Error("network down");
+      if (o?.kind === "error") return { data: null, error: o.error };
+      if (o?.kind === "value") return { data: o.data, error: null };
+      // كما `check_rate_limit`: نداءٌ واحد فقط ضمن الحدّ لكل مفتاح.
+      const key = String(args._bucket_key);
+      const count = (ledgerState.buckets.get(key) ?? 0) + 1;
+      ledgerState.buckets.set(key, count);
+      return { data: count <= Number(args._max_requests), error: null };
+    },
     from(table: string) {
       if (table !== "finn_actions_log") throw new Error(`unexpected table ${table}`);
       const filters: Array<(row: Row) => boolean> = [];
@@ -55,6 +84,14 @@ vi.mock("@/integrations/supabase/client.server", () => ({
       };
       const query = {
         insert(row: Row) {
+          if (ledgerState.claimInsertError && row.action === "chat.write.confirmed") {
+            return {
+              ...query,
+              select: () => ({
+                single: async () => ({ data: null, error: ledgerState.claimInsertError }),
+              }),
+            };
+          }
           ledgerState.seq += 1;
           inserted = {
             id: `row-${String(ledgerState.seq).padStart(4, "0")}`,
@@ -115,6 +152,10 @@ beforeEach(() => {
   ledgerState.rows = [];
   ledgerState.seq = 0;
   ledgerState.selectError = null;
+  ledgerState.claimInsertError = null;
+  ledgerState.buckets = new Map();
+  ledgerState.rpcCalls = [];
+  ledgerState.rpcOverride = null;
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -396,6 +437,109 @@ describe("pending-confirmation ledger", () => {
     });
     // رقمٌ عابر آخر لا يتأثّر.
     expect(await claimConfirmation({ ...claim, nonce: "n-2" })).toEqual({ ok: true, first: true });
+  });
+
+  describe("claimConfirmation — atomic election through check_rate_limit", () => {
+    const claim = { ...scope, turn: "turn-b", nonce: "n-1", argsHash: "hash-n-1" };
+    const claimRows = () => ledgerState.rows.filter((r) => r.action === "chat.write.confirmed");
+
+    it("asks check_rate_limit('wc-claim:<user>:<nonce>', 1, window) AFTER the audit row is written, once", async () => {
+      expect(await claimConfirmation(claim)).toEqual({ ok: true, first: true });
+      expect(ledgerState.rpcCalls).toEqual([
+        {
+          fn: "check_rate_limit",
+          args: {
+            _bucket_key: "wc-claim:user-1:n-1",
+            _max_requests: 1,
+            _window_seconds: CLAIM_ELECTION_WINDOW_SECONDS,
+          },
+          claimRowsAtCall: 1,
+        },
+      ]);
+      expect(claimRows()).toHaveLength(1);
+      // نافذة الانتخاب: ≥ ضعف مدّة الاقتراح و≤ يوم.
+      expect(CLAIM_ELECTION_WINDOW_SECONDS * 1000).toBeGreaterThanOrEqual(
+        2 * WRITE_CONFIRMATION_TTL_MS,
+      );
+      expect(CLAIM_ELECTION_WINDOW_SECONDS).toBeLessThanOrEqual(86_400);
+    });
+
+    it("exactly one of N claims for the same nonce is first, and the election count equals N", async () => {
+      // التزامن الحقيقي يُقاس في اختبار التكامل (Postgres حقيقي)؛ هنا لا يصحّ تشغيل نداءاتٍ
+      // متوازية لأن الاستيراد الديناميكي المتزامن في vitest 4 يعيد الوحدة الأصلية لا الوهمية.
+      const results: Array<Awaited<ReturnType<typeof claimConfirmation>>> = [];
+      for (let i = 0; i < 12; i++)
+        results.push(await claimConfirmation({ ...claim, turn: `t${i}` }));
+      expect(results.every((r) => r.ok)).toBe(true);
+      expect(results.map((r) => r.ok && r.first)).toEqual([true, ...Array(11).fill(false)]);
+      expect(claimRows()).toHaveLength(12);
+      expect(ledgerState.buckets.get("wc-claim:user-1:n-1")).toBe(12);
+    });
+
+    it("rows that sort EARLIER do not matter: a pre-existing earlier audit row cannot make the elected claimant lose", async () => {
+      ledgerState.rows.push({
+        id: "row-0000-early",
+        created_at: new Date(Date.now() - 60_000).toISOString(),
+        user_id: "user-1",
+        action: "chat.write.confirmed",
+        input: { tool: scope.tool, nonce: "n-1" },
+      });
+      expect(await claimConfirmation(claim)).toEqual({ ok: true, first: true });
+    });
+
+    it("the bucket is per user and per nonce", async () => {
+      expect(await claimConfirmation(claim)).toEqual({ ok: true, first: true });
+      expect(await claimConfirmation({ ...claim, userId: "user-2" })).toEqual({
+        ok: true,
+        first: true,
+      });
+      expect(await claimConfirmation({ ...claim, nonce: "n-9" })).toEqual({
+        ok: true,
+        first: true,
+      });
+      expect(await claimConfirmation(claim)).toEqual({ ok: true, first: false });
+    });
+
+    it("audit insert fails ⇒ fail closed, the election is NOT consulted and the nonce is not burned", async () => {
+      ledgerState.claimInsertError = { message: "ledger down" };
+      expect(await claimConfirmation(claim)).toEqual({ ok: false, error: "ledger down" });
+      expect(ledgerState.rpcCalls).toEqual([]);
+      ledgerState.claimInsertError = null;
+      expect(await claimConfirmation(claim)).toEqual({ ok: true, first: true });
+    });
+
+    it.each([
+      ["an RPC error", { kind: "error", error: { message: "rpc down" } } as const, "rpc down"],
+      ["a thrown RPC", { kind: "throw" } as const, "network down"],
+      [
+        "a non-boolean verdict",
+        { kind: "value", data: null } as const,
+        "claim election returned no verdict",
+      ],
+      [
+        "a truthy non-boolean verdict",
+        { kind: "value", data: "true" } as const,
+        "claim election returned no verdict",
+      ],
+    ])(
+      "%s ⇒ fail closed ({ok:false}), never first:true, and the row is marked failed",
+      async (_n, override, message) => {
+        ledgerState.rpcOverride = override;
+        const result = await claimConfirmation(claim);
+        expect(result).toEqual({ ok: false, error: message });
+        // الصفّ المدرَج يُتبَع بأثر «فشل» كي لا يُقرأ الرقم منفَّذًا.
+        expect(ledgerState.rows.at(-1)).toMatchObject({
+          action: "chat.write.failed",
+          status: "error",
+          output: { executed: false, error: `claim election unavailable: ${message}` },
+        });
+        expect(await readConfirmationUsage("user-1", "n-1")).toEqual({
+          ok: true,
+          claimed: true,
+          failed: true,
+        });
+      },
+    );
   });
 });
 

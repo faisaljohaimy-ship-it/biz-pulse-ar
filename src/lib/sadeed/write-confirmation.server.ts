@@ -509,8 +509,34 @@ export async function readConfirmationUsage(
 }
 
 /**
- * يكتب المطالبة ثم يتحقّق أنها أقدم مطالبةٍ للرقم العابر — بلا قيدٍ فريد في
- * الجدول، هذا ما يمنع نداءين متزامنين من التنفيذ معًا. `first: false` ⇐ لا كتابة.
+ * نافذة انتخاب المطالبة بالثواني: ستّة أضعاف مدّة صلاحية الاقتراح (10 د) وأقلّ من
+ * يوم. الرقم العابر لا يُقبل أصلًا بعد انتهاء ختمه (`verifyWriteConfirmation`)،
+ * فالدلو يكفي أن يعيش أطول من ذلك بهامش.
+ */
+export const CLAIM_ELECTION_WINDOW_SECONDS = 60 * 60;
+
+/**
+ * يطالب بالرقم العابر — **انتخابٌ ذرّي لا استنتاج ترتيب**.
+ *
+ * ١) يُدرج صفّ `chat.write.confirmed` أثرًا (سجلّ التدقيق)، ثم
+ * ٢) يُسأل `public.check_rate_limit('wc-claim:<user>:<nonce>', 1, نافذة)` — دالةٌ
+ *    ذرّية (INSERT … ON CONFLICT DO UPDATE تقفل الصفّ) تعيد `true` لنداءٍ واحد
+ *    بالضبط مهما تزامن المتنافسون. `first` يُقرَّر بها **وحدها**.
+ *
+ * كان القرار «هل صفّي أقدم صفٍّ مرئي بترتيب (created_at, id)؟» بلا قيدٍ فريد في
+ * الجدول. و`created_at` = بداية المعاملة لا إتمامها، فمعاملةٌ بدأت أبكر وتُتمّ أبطأ
+ * تُقرأ أقدمَ بعد أن قرّر منافسُها أنه الأول — فيُنفَّذ الفعل مرّتين (قِيس في
+ * `tests/integration/write-confirmation.integration.test.ts`).
+ *
+ * لماذا الإدراج قبل الانتخاب: لو فشل الإدراج (سجلّ التدقيق معطّل) لا يُستهلك
+ * الدلو، فيبقى الاقتراح صالحًا ويُنفَّذ مرّةً واحدة عند إعادة «نعم» — فشلٌ مغلق لا
+ * يحرق الاقتراح. ولو عُكس الترتيب لاستُهلك الرقم بلا أثرٍ ولا كتابة.
+ *
+ * وتبعيةٌ صريحة: الانتخاب يتطلّب أن تكون `check_rate_limit` متاحة (هي نفسها
+ * بوّابة حصّة الذكاء). **أي خطأ فيها أو جوابٌ غير منطقي ⇒ `{ ok:false }` ⇒ المستدعي
+ * `confirmation_unavailable` ولا كتابة.** والصفّ المدرَج يُتبَع حينها بأثر
+ * `chat.write.failed` (أفضل جهد) كي لا يُقرأ الرقم «منفَّذًا»: إعادة «نعم» تعرض
+ * اقتراحًا جديدًا. `first: false` ⇐ لا كتابة.
  */
 export async function claimConfirmation(
   entry: LedgerScope & { turn: string; nonce: string; argsHash: string },
@@ -530,17 +556,31 @@ export async function claimConfirmation(
       .select("id")
       .single();
     if (error || !mine) return ledgerError(error ?? "claim was not recorded");
-    const { data: earliest, error: earliestError } = await admin
-      .from(CONFIRMATION_LEDGER_TABLE)
-      .select("id")
-      .eq("user_id", entry.userId)
-      .eq("action", ACTION_CONFIRMED)
-      .contains("input", { nonce: entry.nonce })
-      .order("created_at", { ascending: true })
-      .order("id", { ascending: true })
-      .limit(1);
-    if (earliestError) return ledgerError(earliestError);
-    return { ok: true, first: earliest?.[0]?.id === mine.id };
+    const unavailable = async (reason: unknown): Promise<LedgerFailure> => {
+      const failure = ledgerError(reason);
+      await recordConfirmationOutcome({
+        userId: entry.userId,
+        orgId: entry.orgId,
+        tool: entry.tool,
+        nonce: entry.nonce,
+        executed: false,
+        error: `claim election unavailable: ${failure.error}`,
+      });
+      return failure;
+    };
+    let verdict: { data: unknown; error: unknown };
+    try {
+      verdict = await admin.rpc("check_rate_limit", {
+        _bucket_key: `wc-claim:${entry.userId}:${entry.nonce}`,
+        _max_requests: 1,
+        _window_seconds: CLAIM_ELECTION_WINDOW_SECONDS,
+      });
+    } catch (thrown) {
+      return unavailable(thrown);
+    }
+    if (verdict.error) return unavailable(verdict.error);
+    if (typeof verdict.data !== "boolean") return unavailable("claim election returned no verdict");
+    return { ok: true, first: verdict.data };
   } catch (error) {
     return ledgerError(error);
   }

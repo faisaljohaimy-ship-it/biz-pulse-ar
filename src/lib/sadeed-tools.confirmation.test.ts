@@ -40,6 +40,10 @@ const state = vi.hoisted(() => ({
   fail: null as null | { table: string; op: "select" | "insert"; action?: string },
   /** يُستدعى قبل كل إدراج — لزرع طلبٍ منافس يسبقنا بين الفحص والمطالبة. */
   beforeInsert: null as null | ((table: string, row: Row) => void),
+  /** دلاء `check_rate_limit` الذرّية (انتخاب المطالبة): المفتاح ⇐ عدد النداءات. */
+  buckets: new Map<string, number>(),
+  /** عطل الانتخاب: يُرجع RPC خطأً. */
+  rpcFail: false,
 }));
 
 vi.mock("@/lib/authz.server", () => ({
@@ -51,6 +55,15 @@ vi.mock("@/lib/authz.server", () => ({
 /** عميل خدمة وهمي فوق مصفوفات: insert/select/eq/gte/contains/order/limit/single. */
 vi.mock("@/integrations/supabase/client.server", () => {
   const admin = {
+    /** `check_rate_limit` كما في القاعدة: نداءٌ واحد ضمن الحدّ لكل مفتاح. */
+    async rpc(fn: string, args: Record<string, unknown>) {
+      if (fn !== "check_rate_limit") throw new Error(`unexpected rpc ${fn}`);
+      if (state.rpcFail) return { data: null, error: { message: "rpc down" } };
+      const key = String(args._bucket_key);
+      const count = (state.buckets.get(key) ?? 0) + 1;
+      state.buckets.set(key, count);
+      return { data: count <= Number(args._max_requests), error: null };
+    },
     from(table: string) {
       const rows = state.tables[table];
       if (!rows) throw new Error(`unexpected admin table ${table}`);
@@ -271,6 +284,8 @@ beforeEach(() => {
   state.seq = 0;
   state.fail = null;
   state.beforeInsert = null;
+  state.buckets = new Map();
+  state.rpcFail = false;
 });
 afterEach(() => {
   vi.useRealTimers();
@@ -382,7 +397,7 @@ describe("chat write tools — human confirmation gate", () => {
     expect(businessWrites(rls, "sec_patrols")).toHaveLength(1);
   });
 
-  it("a competing claim that lands between the replay check and ours wins; we do not write", async () => {
+  it("a competing claim that wins the election between the replay check and ours wins; we do not write", async () => {
     // سباق طلبين متزامنين على الاقتراح نفسه، مزروعٌ حتميًّا: يمرّ فحص المطالبة
     // السابقة، ثم يسبقنا منافسٌ بمطالبته قبل أن تُكتب مطالبتنا. (نداءان متوازيان
     // حقًّا في vitest 4 يعيدان الوحدة الأصلية بدل الوهمية في الاستيراد الديناميكي
@@ -392,11 +407,13 @@ describe("chat write tools — human confirmation gate", () => {
     state.beforeInsert = (table, row) => {
       if (table !== "finn_actions_log" || row.action !== "chat.write.confirmed") return;
       state.beforeInsert = null;
+      // المنافس كتب أثره وفاز بالانتخاب الذرّي قبلنا (الدلو استُهلك).
       state.tables.finn_actions_log!.push({
         ...row,
         id: "row-0000-competitor",
         created_at: new Date(Date.now() - 1).toISOString(),
       });
+      state.buckets.set(`wc-claim:${String(row.user_id)}:${String((row.input as Row).nonce)}`, 1);
     };
     const lost = await call(await request(rls, "نعم"), "sec_create_incident", INCIDENT);
     expect(lost).toMatchObject({ executed: false, status: "already_executed" });
@@ -548,6 +565,26 @@ describe("chat write tools — human confirmation gate", () => {
     state.fail = { table: "sec_activity_events", op: "select" };
     const noAudit = await call(await request(rls, "نعم"), "sec_create_incident", INCIDENT);
     expect(noAudit).toMatchObject({ executed: false, status: "confirmation_unavailable" });
+    expect(rls.writes).toHaveLength(0);
+  });
+
+  it("fails closed when the claim election (check_rate_limit) is unavailable; the next «نعم» re-proposes", async () => {
+    const rls = fakeRls();
+    await call(await request(rls, "سجّل بلاغ"), "sec_create_incident", INCIDENT);
+
+    state.rpcFail = true;
+    const result = await call(await request(rls, "نعم"), "sec_create_incident", INCIDENT);
+    expect(result).toMatchObject({ executed: false, status: "confirmation_unavailable" });
+    expect(rls.writes).toHaveLength(0);
+    expect(ledger("chat.write.failed")).toHaveLength(1);
+
+    state.rpcFail = false;
+    const again = await call(await request(rls, "نعم"), "sec_create_incident", INCIDENT);
+    expect(again).toMatchObject({
+      executed: false,
+      status: "requires_confirmation",
+      reason: "previous_attempt_failed",
+    });
     expect(rls.writes).toHaveLength(0);
   });
 
