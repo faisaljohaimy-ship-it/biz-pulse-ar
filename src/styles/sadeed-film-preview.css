@@ -1,0 +1,93 @@
+.sd-film-preview {
+  margin-block-start: 1.25rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--hairline, #64748b);
+  border-radius: 1rem;
+  color: var(--ink, #0f172a);
+  background: var(--surface, #ffffff);
+}
+.sd-film-preview-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+.sd-film-preview-heading > div {
+  flex: 1 1 18rem;
+}
+.sd-film-preview h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.sd-film-preview p {
+  margin-block-start: 0.5rem;
+  line-height: 1.8;
+  font-size: 0.875rem;
+}
+.sd-film-picker {
+  position: relative;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0.65rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.sd-film-picker input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+.sd-film-picker:focus-within {
+  outline: 2px solid var(--tone-blue, #2563eb);
+  outline-offset: 3px;
+}
+.sd-film-video {
+  width: 100%;
+  max-height: 70vh;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  margin-block-start: 1rem;
+  border-radius: 0.75rem;
+  background: #000000;
+}
+.sd-film-preview[data-film-phase="error"] {
+  border-color: #b91c1c;
+}
+.sd-film-preview .sd-cinema-control {
+  color: inherit;
+  background: transparent;
+  border-color: currentColor;
+}
+.sd-cinema-chapters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.75rem;
+}
+.sd-cinema-chapters button {
+  min-height: 44px;
+  padding: 0.55rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+.sd-cinema-chapters button[aria-pressed="true"] {
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+.sd-cinema-chapters button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sd-film-preview *,
+  .sd-cinema-chapters * {
+    scroll-behavior: auto;
+  }
+}
