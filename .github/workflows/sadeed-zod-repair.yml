@@ -12,11 +12,11 @@ jobs:
   verify:
     if: github.repository == 'faisaljohaimy-ship-it/biz-pulse-ar'
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: f189e4caa09b622c373bca76b546947b409f373d
+          ref: 55ccbd320f35f6af3ccc091eaaf3afde6c3d1dd1
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -24,6 +24,66 @@ jobs:
       - name: Offline model-error and backend health regression tests
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = f189e4caa09b622c373bca76b546947b409f373d
+          test "$(git rev-parse HEAD)" = 55ccbd320f35f6af3ccc091eaaf3afde6c3d1dd1
           node --test scripts/smoke-production.regression.test.mjs
-          echo "OFFLINE_REGRESSION_SHA=$(git rev-parse HEAD)"
+      - name: Verify public release without authentication bypass or model invocation
+        run: |
+          python3 -u <<'PY'
+          import hashlib, json, time, urllib.error, urllib.request
+          expected = '55ccbd320f35f6af3ccc091eaaf3afde6c3d1dd1'
+          hosts = ['neexios.com', 'www.neexios.com']
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+          client = urllib.request.build_opener(NoRedirect())
+          def get(host, path):
+              req = urllib.request.Request('https://' + host + path, headers={'User-Agent': 'SADEED-Authorized-ReadOnly-Release-Check/1.0', 'Cache-Control': 'no-cache'})
+              try:
+                  with client.open(req, timeout=15) as response:
+                      return response.status, dict(response.headers), response.read(2_000_000)
+              except urllib.error.HTTPError as e:
+                  return e.code, dict(e.headers), b''
+          matched = False
+          for attempt in range(15):
+              matched = True
+              for host in hosts:
+                  status, headers, body = get(host, '/build-info.json?release=' + expected)
+                  if status in (301,302,303,307,308,401,403):
+                      raise SystemExit('PUBLIC_ACCESS_BLOCKED ' + host + ' status=' + str(status) + '; no bypass attempted')
+                  try:
+                      sha = json.loads(body).get('sha') if status == 200 else None
+                  except (ValueError, AttributeError):
+                      sha = None
+                  print(json.dumps({'check':'build-id','host':host,'status':status,'sha':sha,'expected':expected}))
+                  matched = matched and sha == expected
+              if matched:
+                  break
+              if attempt < 14:
+                  time.sleep(20)
+          if not matched:
+              raise SystemExit('RELEASE_NOT_SERVED_ON_BOTH_DOMAINS')
+          failures = []
+          for host in hosts:
+              for path in ['/', '/cinematic', '/sec/twin', '/home/finn-portrait-f70ca416.webp', '/api/chat/health']:
+                  status, headers, body = get(host, path)
+                  lower = {k.lower():v for k,v in headers.items()}
+                  result = {'check':'public-get','host':host,'path':path,'status':status,'content_type':lower.get('content-type'), 'bytes':len(body)}
+                  if path == '/api/chat/health' and status == 200:
+                      health = json.loads(body)
+                      result['health'] = {key:health.get(key) for key in ['ok','gate','provider','rag_ready','voice_configured','transcription_configured']}
+                      if health.get('ok') is not True:
+                          failures.append(host + path + ':unhealthy')
+                  if path.endswith('.webp') and status == 200:
+                      digest = hashlib.sha1(('blob ' + str(len(body)) + '\0').encode() + body).hexdigest()
+                      result['git_blob_sha'] = digest
+                      if digest != 'f70ca4165302b155a40d9a0b704d6b6fe9c65504':
+                          failures.append(host + path + ':image-mismatch')
+                  if path in ['/', '/cinematic', '/sec/twin']:
+                      result['x_frame_options'] = lower.get('x-frame-options')
+                      result['frame_ancestors_none'] = "frame-ancestors 'none'" in lower.get('content-security-policy', '')
+                  if status != 200:
+                      failures.append(host + path + ':HTTP' + str(status))
+                  print(json.dumps(result, ensure_ascii=False))
+          print(json.dumps({'source_sha': expected, 'failures': failures, 'authenticated_ui':'NOT_RUN', 'live_ai_and_fnn':'NOT_RUN'}))
+          raise SystemExit(1 if failures else 0)
+          PY
