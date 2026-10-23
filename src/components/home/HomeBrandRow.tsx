@@ -1,6 +1,6 @@
 /**
  * صفّ الهوية — شريط «مزايا سَدِيد» المتحرك، وتحته لوحة المالك بعرض العمود كاملًا، فوقها
- * فيلمٌ سينمائي يُعرض مرّةً بموسيقاه، والاسم والسطر نصًّا حقيقيًّا فوقهما، ثم «الجوهرة».
+ * فيلمٌ سينمائي يُعرض مرّةً بموسيقاه في حاويته نفسها، والاسم والسطر نصًّا حقيقيًّا فوقهما، ثم «الجوهرة».
  *
  * ## الأوامر
  *
@@ -29,13 +29,17 @@
  *   موسيقا احترافية عصرية تزيد من جمالية وضع النظام واجعل علامة سديد في النهاية تكون كالجوهرة المشعة
  *   باستمرار وذات توهج لولبي مشع وبلمعان مستمر من الاسفل الى الاعلى». فنسخ حلقةَ الأمر السابق: الفيلم
  *   (زمنه الواحد `remotion/brand/film/timeline.ts`) يبدأ حين تُرسم اللوحة، ويُعرض **مرّةً** ثم يقف
- *   عليها، وبعده «الجوهرة» في CSS (`home-brand.css` ⑦)، وموسيقاه ملفٌّ منفصل يتبع زمن إطاره.
+ *   عليها، وبعده «الجوهرة» في CSS (`home-brand.css` ⑦)، وموسيقاه مسارُ صوتٍ في حاويته نفسها.
+ * • ثم ٢٠٢٦/١٠/٢٣ بنصّه: «أن يكون الصوت مفعّلًا تلقائيًا مع بداية الفيديو، وأن يكون الصوت متصلًا مع
+ *   الفيديو بشكلٍ منسّق وجميل احترافي». فالموسيقى **دُمجت في الفيلم** بعد أن كانت ملفًّا منفصلًا
+ *   يُزامَن بالقفز (قِيس على تسجيل المالك: انقطاعٌ كل 0.77 ث على iPhone)، والصوت يُطلب مع أوّل
+ *   تشغيل (`bindFilmSound`).
  *
  * ## الصورة أوّلًا، والفيلم فوقها
  *
  * اللوحة `<img>` من ملفّ المالك نفسه بلا نصّه (WebP على أربع درجات حتى دقّته الأصلية 2172،
  * `srcset`) — هي ما يُرسم من أوّل إطار وما يبقى لمن لا فيلم له، وزخرفةٌ لقارئ الشاشة
- * (`alt=""`): الاسم والسطر نصٌّ حقيقيّ فوقها. وفوقها `<video>` صامتٌ يُركَّب **حين تكتمل الصورة**
+ * (`alt=""`): الاسم والسطر نصٌّ حقيقيّ فوقها. وفوقها `<video>` بصوته يُركَّب **حين تكتمل الصورة**
  * («وبمجرد فتح الموقع والدخول عليه»: لا بعد `load` الصفحة كلّها وخمولها) ولمن:
  *   • لم يطلب تقليل الحركة (`prefers-reduced-motion`)، ولم يُطفئ الحركة بمفتاح النظام
  *     (`html[data-nx-motion="off"]`)، وليس في الوضع الآمن؛
@@ -52,12 +56,20 @@
  * والعائد بعد «إيقاف الحركة» يُركَّب بلا تشغيلٍ ولا تحميل. والإعادة بيد الزائر وحده. وإن تعذّر الفيلم
  * بعد أن سُمح به فالجوهرة كذلك — CSS بلا بيانات.
  *
- * ## الموسيقى — ملفٌّ منفصل، وزرٌّ للزائر (WCAG 1.4.2)
+ * ## الموسيقى — مسارٌ في حاوية الفيلم، وزرٌّ للزائر (WCAG 1.4.2)
  *
- * الفيلم صامتٌ في حاويته (عقده باقٍ)، والموسيقى `<audio>` يُركَّب معه وحده ويتبع زمن إطاره
- * (`bindFilmScore`). والمتصفّحات تمنع الصوت قبل لمسة: نحاول، فإن رُفض انتظرنا أوّل نقرةٍ أو مفتاحٍ في
- * الصفحة — لا تمريرًا. وتفضيل الزائر يُحفظ (`nx-brand-music`) ويُسأل قبل كل تشغيل. وتسكت تحت لوحة
- * سَدِيد، ومع «إيقاف الحركة»، وخارج الإطار، وفي تبويبٍ مخفيّ، وحين ينطق سَدِيد أو يُصغي.
+ * الصوت والصورة مساران في ملفٍّ واحد (MP4: H.264 + AAC · WebM: VP9 + Opus) يفكّهما المتصفّح معًا،
+ * فلا شيء يُزامَن بالقفز. **ومدّة الحاوية 26 ث = 24 ث فيلمٌ + ثانيتان** (`FILM_TAIL`) يثبت فيهما الإطار
+ * الأخير بينما يذوب ذيل الصدى — والجوهرة تبدأ عند 24 ث لا عند النهاية.
+ *
+ * **يبدأ بصوت** (`bindFilmSound.begin`): يُرفع الكتم ثم يُشغَّل الفيلم؛ فإن رفض المتصفّح (سياسة
+ * التشغيل التلقائي، `NotAllowedError`) بدأ مكتومًا من الإطار نفسه، وأوّل لمسةٍ صالحة في الصفحة —
+ * نقرةٌ لا تمريرٌ ولا مفتاح، وليست على أزرار الصفّ، وبعد مهلتها — تفتح الصوت **دون أن يتوقف الفيلم**.
+ * وتفضيل الزائر يُحفظ (`nx-brand-music`) ويُسأل قبل كل رفعٍ للكتم.
+ *
+ * **والإسكات كتمٌ لا إيقاف:** لوحة سَدِيد، و«إيقاف الحركة»، وتبويبٌ مخفيّ، وسَدِيد ينطق أو يُصغي،
+ * وخروج الصفّ من الإطار (ويقف الفيلم فيه لسببٍ آخر: فكّ الترميز)، وكتم الزائر — كلّها
+ * `video.muted = true` بلا `pause()` لأجل الصوت، ويعود الصوت بزوال السبب. ولا يُفكّ كتمُ فيلمٍ جارٍ قبل أن يُؤذَن له (Chromium يوقف الفيلم نفسه حينئذٍ).
  *
  * ## لا ادّعاء، والنصّ نصّ المالك
  *
@@ -71,14 +83,8 @@ import { useEffect, useRef, useState, type PointerEvent, type RefObject } from "
 import { RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { isSafeMode } from "@/lib/sadeed/self-healing/crash-loop";
-import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
-import { sadeedState } from "@/lib/sadeed/sadeed-state";
-import { filmAudioHeld } from "@/lib/sadeed/film-audio-hold";
-import {
-  MOTION_PAUSED_ATTR,
-  SADEED_PANEL_ATTR,
-  holdFilmUnderPanel,
-} from "@/components/home/HoloVideoEngine";
+import { filmAudioHeld, watchFilmAudioHold } from "@/lib/sadeed/film-audio-hold";
+import { holdFilmUnderPanel } from "@/components/home/HoloVideoEngine";
 import { HomeTicker } from "@/components/home/HomeTicker";
 import "@/styles/home/home-brand.css";
 
@@ -88,20 +94,11 @@ export const BRAND_RATIO = { width: 2172, height: 724 } as const;
 /**
  * الفيلم السينمائي المصيَّر (`remotion/brand/SadeedFilm.tsx`) — عرض كل درجةٍ ومصدرها. لا نصّ فيه،
  * فلا درجة 2172: الحروف HTML حادّةٌ على أي كثافة، والفيلم فوق حاجته على شاشة 2× نعومةٌ سينمائية
- * لا حروفٌ لينة.
+ * لا حروفٌ لينة. وفي كل ملفٍّ مسارُ الموسيقى مع الصورة (AAC في MP4 · Opus في WebM).
  */
 export const BRAND_FILMS = [
   { width: 804, src: "/media/brand/sadeed-film-804.mp4" },
   { width: 1608, src: "/media/brand/sadeed-film-1608.mp4" },
-] as const;
-
-/**
- * موسيقى الفيلم — ملفٌّ منفصل لا مسارٌ فيه (الفيلم صامتٌ في حاويته): AAC أوّلًا ثم Opus، وطولها
- * زمن الفيلم وذيلٌ يذوب بعده.
- */
-export const BRAND_SCORE = [
-  { src: "/media/brand/sadeed-film-score.m4a", type: "audio/mp4" },
-  { src: "/media/brand/sadeed-film-score.webm", type: "audio/webm" },
 ] as const;
 
 /**
@@ -111,15 +108,23 @@ export const BRAND_SCORE = [
  */
 export const FILM_TEXT = { hideAt: 0.15, revealAt: 21.6, seconds: 24 } as const;
 
+/**
+ * ثبات الإطار الأخير بعد زمن الفيلم (ث): الحاوية `FILM_TEXT.seconds + FILM_TAIL` = 26 ث، يقف فيها
+ * الإطار واللوحة مكتملة بينما يذوب ذيل صدى الموسيقى. تغيُّره يغيّر مدّة الملفّات في الدفعة نفسها.
+ */
+export const FILM_TAIL = 2;
+
 export type FilmAct = "hold" | "story" | "reveal" | "jewel";
 
 /**
- * فصل الفيلم عند زمنٍ ما: سكونٌ باللوحة · قصّةٌ بلا نصّ · كشفٌ يعود فيه النصّ. والرابع «الجوهرة»
- * لا زمن له: يُكتب حين ينتهي الفيلم (`ended`) لا من عدّاده.
+ * فصل الفيلم عند زمنٍ ما: سكونٌ باللوحة · قصّةٌ بلا نصّ · كشفٌ يعود فيه النصّ · جوهرةٌ من
+ * `FILM_TEXT.seconds` (فيجري ثباتُ الذيل وهي ظاهرة). وتُكتب `jewel` أيضًا حين ينتهي الفيلم (`ended`)
+ * احتياطًا: مصدرٌ ثانٍ لا يتأخّر عن الأوّل.
  */
-export function filmActAt(seconds: number): Exclude<FilmAct, "jewel"> {
+export function filmActAt(seconds: number): FilmAct {
   if (seconds < FILM_TEXT.hideAt) return "hold";
-  return seconds < FILM_TEXT.revealAt ? "story" : "reveal";
+  if (seconds < FILM_TEXT.revealAt) return "story";
+  return seconds < FILM_TEXT.seconds ? "reveal" : "jewel";
 }
 
 export type BrandFilm = (typeof BRAND_FILMS)[number];
@@ -205,21 +210,6 @@ function saveMusicWanted(on: boolean): void {
   }
 }
 
-/** أقصى انحرافٍ بين الموسيقى والإطار المعروض (ث) — فوقه تعود الموسيقى إلى زمن الفيلم. */
-export const SCORE_DRIFT = 0.25;
-
-/**
- * سقف ما يُعوَّض من كمون القفز (ث). **قِيس على تسجيل المالك ٢٠٢٦/١٠/٢٣ (iPhone):** الصوت ينقطع كل
- * 0.766 ث بصمتٍ 0.39 ث، دورةً بلا نهاية — القفز في ملفّ m4a على iOS يستغرق ≈0.39 ث، وهو فوق
- * `SCORE_DRIFT`: فتهبط الموسيقى عند زمنٍ صار قديمًا حين تكتمل القفزة، فتُقاس منحرفةً فتقفز ثانيةً،
- * وهكذا. العلاج: تُقاس مدّة القفزة الفعلية (من `currentTime=` إلى `seeked`) وتُضاف إلى الهدف التالي،
- * فتهبط الموسيقى على الزمن الحاضر لا الماضي — قفزةٌ ثانية واحدة ثم تستقرّ.
- */
-export const MAX_SEEK_LEAD = 0.8;
-
-/** ما يُسكت الموسيقى من خارج الفيلم: مصدره المشترك مع فيلم التوأم (`film-audio-hold`). */
-const scoreHeld = filmAudioHeld;
-
 /**
  * لمسات الإذن: ضغطة الفأرة والقلم، والنقر (اللمس ينقر ولا يمرّر) — لا التمرير ولا المفاتيح. ضغطة
  * Tab أو سهمٍ ليست قبولًا بالصوت (أمسكته المراجعة)؛ وEnter وSpace على زرٍّ أو رابط تُطلق `click`
@@ -227,117 +217,69 @@ const scoreHeld = filmAudioHeld;
  */
 const GESTURES = ["pointerdown", "click"] as const;
 
-/** `HTMLMediaElement.HAVE_FUTURE_DATA`: إطارٌ قائم وما بعده — قبله لا موسيقى ولا زرّ. */
-const FRAME_READY = 3;
-
 /**
  * مهلة لمسة الإذن (مللي ثانية): نقرةٌ تفتح لوحة سَدِيد أو تنقل إلى صفحةٍ أخرى كانت تُسمِع دفقةً ثم
- * تسكت (أمسكته المراجعة) — فيُمهَل التشغيل حتى يستقرّ أثر النقرة. والإذن باقٍ بعدها: Chromium يحفظ
+ * تسكت (أمسكته المراجعة) — فيُمهَل رفع الكتم حتى يستقرّ أثر النقرة. والإذن باقٍ بعدها: Chromium يحفظ
  * التفعيل العابر 5 ث، وWebKit يمرّر لمسة المستخدم إلى المؤقّتات حتى ثانية.
  */
 export const GESTURE_GRACE_MS = 250;
 
-export type FilmScore = {
-  /** يعيد حساب الحال بعد تبدّل التفضيل. */
+export type FilmSound = {
+  /** يبدأ الفيلم بصوت إن أمكن، وإلا مكتومًا بانتظار لمسة الإذن. مرّةً عند التركيب. */
+  readonly begin: () => void;
+  /** يعيد حساب الكتم بعد تبدّل التفضيل أو أحد أسباب الإسكات. */
   readonly sync: () => void;
-  /** تشغيلٌ الآن من داخل لمسة الزائر (زرّ الصوت أو الإعادة). */
+  /** رفعُ الكتم الآن من داخل لمسة الزائر (زرّ الصوت أو الإعادة). */
   readonly kick: () => void;
   readonly release: () => void;
 };
 
+const isBlocked = (err: unknown) => err instanceof DOMException && err.name === "NotAllowedError";
+
+/** هل الصوت مسموعٌ فعلًا؟ — مرفوع الكتم والفيلم يجري. تُحدَّث به حالة الزرّ من أحداث الفيلم نفسه. */
+const isSounding = (video: HTMLVideoElement) => !video.muted && !video.paused && !video.ended;
+
 /**
- * الموسيقى تتبع الفيلم: تبدأ من زمن إطاره حين يجري، وتعود إليه إن انحرفت فوق `SCORE_DRIFT`، وتقف
- * وتُستأنف معه؛ وبعد آخر إطار يكمل ذيلها وحده ولا يُستأنف إن أُسكت. **ولا تشغيل إلا بعد سؤال تفضيل
- * الزائر** (`start`). وإن منع المتصفّح الصوت انتظرت أوّل لمسة إذنٍ في الصفحة — ما لم تكن على أزرار
- * الصفّ نفسه، فلها قرارها.
+ * صوت الفيلم من مسارٍ في حاويته نفسها: لا ملفٌّ يُزامَن، فلا قفزٌ ولا انقطاع — والتحكّم كلّه في
+ * `video.muted`. **يُسمع الصوت ⇔** تفضيل الزائر `wanted()` **و** الصفّ في الإطار **و**
+ * لا ما يُسكت من خارج الفيلم (`filmAudioHeld`: لوحة سَدِيد، «إيقاف الحركة»، تبويبٌ مخفيّ، سَدِيد
+ * ينطق أو يُصغي) **و** أُذن للصفحة (`unlocked`)؛ وإلا مكتوم. **والإسكات كتمٌ لا إيقاف**: لا `pause()`
+ * لأجل الصوت أبدًا، فالفيلم يمضي بصورته ويعود صوته بزوال السبب.
+ *
+ * **البدء** (`begin`): بعد سؤال التفضيل يُرفع الكتم ويُشغَّل الفيلم؛ نجح ⇒ أُذن للصفحة. رُفض
+ * (`NotAllowedError` — سياسة التشغيل التلقائي) ⇒ يبدأ مكتومًا ويُسلَّح مستمع لمسة الإذن: أوّل نقرةٍ في
+ * الصفحة — لا التمرير ولا المفاتيح، وليست على أزرار الصفّ نفسه فلها قرارها — تفتح الصوت بعد
+ * `GESTURE_GRACE_MS` دون أن يتوقف الفيلم. فإن رُفض التشغيل المكتوم أيضًا استُدعي `onBlocked`.
+ *
+ * **ولا يُفكّ كتمُ فيلمٍ جارٍ قبل الإذن**: Chromium يوقف الفيلم الذي رُفع كتمه بلا تفعيل — فالقاعدة
+ * مكتوبة في الشرط نفسه (`unlocked`) لا في ترتيب الاستدعاء.
  */
-export function bindFilmScore(
+export function bindFilmSound(
   video: HTMLVideoElement,
-  audio: HTMLAudioElement,
-  opts: { readonly wanted: () => boolean; readonly offscreen: () => boolean },
-): FilmScore {
-  let blocked = false;
+  opts: {
+    readonly wanted: () => boolean;
+    readonly offscreen: () => boolean;
+    readonly onBlocked?: () => void;
+  },
+): FilmSound {
+  let unlocked = false;
   let armed = false;
+  // محاولة الصوت الأولى جارية: ما يصل في أثنائها من أحداث لا يكتم الفيلم قبل أن يُعرف الجواب.
+  let probing = false;
   // رفضٌ يصل بعد الفكّ لا يعلّق مستمعين على صفحةٍ بلا فيلم.
   let released = false;
-  // إيقافٌ من خارج الصفّ (مفاتيح الوسائط، أدوات التحكّم في النظام، فصل السمّاعة) قرارٌ يُحترم: لا تعود
-  // الموسيقى حتى يطلبها الزائر بزرّها. ويُميَّز عن إيقافنا نحن بعلامةٍ تُستهلك عند حدث `pause`.
-  let ownPause = false;
-  let outsidePause = false;
-  const held = () => opts.offscreen() || scoreHeld();
-  // الموسيقى تنتظر إطارًا قائمًا: حدث `play` يسبق أوّل إطار، فلو بدأت عنده سُمعت قبل زرّها ثم ارتدّت.
-  const running = () =>
-    opts.wanted() &&
-    !outsidePause &&
-    !held() &&
-    !video.paused &&
-    !video.ended &&
-    video.readyState >= FRAME_READY;
-  const quiet = () => {
-    if (audio.paused) return;
-    ownPause = true;
-    audio.pause();
-  };
-  const onAudioPause = () => {
-    if (ownPause) {
-      ownPause = false;
-      return;
-    }
-    // نهاية الملف نفسها تُطلق `pause` قبل `ended` — ليست قرارًا من أحد.
-    if (!audio.ended) outsidePause = true;
-  };
-  // كمون القفز المقيس (ث): يُضاف إلى زمن الإطار عند القفز التالي ليهبط الصوت على الحاضر.
-  let seekLead = 0;
-  let seekStartedAt = -1;
-  const onSeeked = () => {
-    if (seekStartedAt < 0) return;
-    seekLead = Math.min(MAX_SEEK_LEAD, Math.max(0, (performance.now() - seekStartedAt) / 1000));
-    seekStartedAt = -1;
-  };
-  const resync = () => {
-    // قفزةٌ جارية لا تُقاس: زمنها بين بدايتها ونهايتها لا يمثّل الانحراف (يُعاد عند `seeked`).
-    if (audio.seeking) return;
-    if (Math.abs(audio.currentTime - video.currentTime) <= SCORE_DRIFT) return;
-    try {
-      seekStartedAt = performance.now();
-      audio.currentTime = video.currentTime + seekLead;
-    } catch {
-      seekStartedAt = -1;
-      /* محرّكٌ لا ينتقل قبل البيانات الوصفية — يُعاد عند `playing` */
-    }
-  };
-  const start = () => {
-    if (!opts.wanted()) return;
-    resync();
-    const played = audio.play() as Promise<void> | undefined;
-    played?.then(
-      () => {
-        blocked = false;
-        disarm();
-      },
-      (err: unknown) => {
-        if (err instanceof DOMException && err.name === "NotAllowedError") {
-          blocked = true;
-          arm();
-        }
-      },
-    );
-  };
-  const sync = () => {
-    if (video.ended) {
-      disarm();
-      if (!opts.wanted() || held()) quiet();
-      return;
-    }
-    if (!running()) {
-      quiet();
-      if (!opts.wanted()) disarm();
-      return;
-    }
-    if (!audio.paused) resync();
-    else if (!blocked) start();
-  };
   let grace = 0;
+  const audible = () => unlocked && opts.wanted() && !opts.offscreen() && !filmAudioHeld();
+  const sync = () => {
+    if (released || probing) return;
+    const mute = !audible();
+    if (video.muted !== mute) video.muted = mute;
+  };
+  const unlock = () => {
+    unlocked = true;
+    disarm();
+    sync();
+  };
   const onGesture = (e: Event) => {
     if (e.target instanceof Element && e.target.closest(".nx-home-brand button")) return;
     // اللمس يبدأ تمريرًا أو نقرة: يُنتظر نقره (`click`) — و`click` نفسه يحمل `pointerType` في
@@ -345,16 +287,15 @@ export function bindFilmScore(
     if (e.type === "pointerdown" && (e as Event & { pointerType?: string }).pointerType === "touch")
       return;
     if (grace) return;
-    // تُمهَل اللمسة حتى يستقرّ أثرها: لوحة سَدِيد فُتحت (`held`) أو انتقلت الصفحة (`released`) ⇐ لا دفقة.
+    // تُمهَل اللمسة حتى يستقرّ أثرها: لوحة سَدِيد فُتحت (`filmAudioHeld`) أو انتقلت الصفحة (`released`)
+    // ⇒ لا دفقة.
     grace = window.setTimeout(() => {
       grace = 0;
-      if (released) return;
-      blocked = false;
-      if (running() && audio.paused) start();
+      if (!released) unlock();
     }, GESTURE_GRACE_MS);
   };
   function arm() {
-    if (armed || released) return;
+    if (armed || released || unlocked) return;
     armed = true;
     for (const type of GESTURES) document.addEventListener(type, onGesture, true);
   }
@@ -363,42 +304,79 @@ export function bindFilmScore(
     armed = false;
     for (const type of GESTURES) document.removeEventListener(type, onGesture, true);
   }
-  const observer = new MutationObserver(sync);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: [SADEED_PANEL_ATTR, MOTION_PAUSED_ATTR],
-  });
-  // `waiting`: توقّفٌ لنقص البيانات في منتصف الفيلم يُسكت الموسيقى حتى يعود الإطار.
-  const follow = ["play", "playing", "pause", "waiting", "seeked", "timeupdate", "ended"] as const;
+  const startMuted = () => {
+    probing = false;
+    video.muted = true;
+    arm();
+    const played = video.play() as Promise<void> | undefined;
+    played?.catch((err: unknown) => {
+      if (!released && isBlocked(err)) opts.onBlocked?.();
+    });
+  };
+  const begin = () => {
+    if (released) return;
+    // سؤال التفضيل قبل كل رفعٍ للكتم؛ وما يُسكت الآن (لوحة، تبويب مخفيّ، سَدِيد ينطق، خارج الإطار)
+    // لا يُجرَّب فيه صوتٌ — يبدأ مكتومًا ويفتحه الإذن حين يزول.
+    if (!opts.wanted() || opts.offscreen() || filmAudioHeld()) {
+      startMuted();
+      return;
+    }
+    probing = true;
+    video.muted = false;
+    const played = video.play() as Promise<void> | undefined;
+    if (!played) {
+      probing = false;
+      sync();
+      return;
+    }
+    played.then(
+      () => {
+        probing = false;
+        if (released) return;
+        unlocked = true;
+        sync();
+      },
+      (err: unknown) => {
+        if (released) return;
+        // لمسةٌ سبقت الجواب (زرّ الصوت) أذنت للصفحة: لا كتم.
+        if (unlocked) {
+          probing = false;
+          sync();
+          return;
+        }
+        if (isBlocked(err)) {
+          startMuted();
+          return;
+        }
+        // مقاطعةٌ (إيقافٌ تحت لوحة سَدِيد مثلًا) ليست رفضًا: يبقى مكتومًا بانتظار الإذن.
+        probing = false;
+        arm();
+        sync();
+      },
+    );
+  };
+  const follow = ["play", "playing", "pause", "seeked", "ended"] as const;
   for (const type of follow) video.addEventListener(type, sync);
-  audio.addEventListener("playing", sync);
-  audio.addEventListener("pause", onAudioPause);
-  audio.addEventListener("seeked", onSeeked);
-  document.addEventListener("visibilitychange", sync);
-  const stopBus = SadeedAudioBus.subscribe(sync);
-  const stopPresence = sadeedState.subscribe(sync);
-  sync();
+  const stopHold = watchFilmAudioHold(sync);
   return {
+    begin,
     sync,
     kick: () => {
-      blocked = false;
-      outsidePause = false;
-      if (running() && audio.paused) start();
-      else sync();
+      if (released) return;
+      if (grace) {
+        window.clearTimeout(grace);
+        grace = 0;
+      }
+      probing = false;
+      unlock();
     },
     release: () => {
       released = true;
-      observer.disconnect();
       for (const type of follow) video.removeEventListener(type, sync);
-      audio.removeEventListener("playing", sync);
-      audio.removeEventListener("pause", onAudioPause);
-      audio.removeEventListener("seeked", onSeeked);
-      document.removeEventListener("visibilitychange", sync);
-      stopBus();
-      stopPresence();
+      stopHold();
       disarm();
       if (grace) window.clearTimeout(grace);
-      quiet();
+      video.muted = true;
     },
   };
 }
@@ -542,13 +520,12 @@ function BrandFilm({
   const [ended, setEnded] = useState(false);
   const [ready, setReady] = useState(false);
   const [src, setSrc] = useState<string | null>(null);
+  // الصوت مسموعٌ الآن: يُشتقّ من الفيلم نفسه لا من حالٍ موازية.
   const [audible, setAudible] = useState(false);
-  const [scoreFailed, setScoreFailed] = useState(false);
   // طلب الزائر الإعادة: زرّها يبقى هو نفسه حتى أوّل إطار، فلا يسقط التركيز إلى `body`.
   const [replayed, setReplayed] = useState(false);
   const ref = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const score = useRef<FilmScore | null>(null);
+  const sound = useRef<FilmSound | null>(null);
   const wanted = useRef(true);
   const offscreen = useRef(false);
   // الجوهرة: انتهى الفيلم، أو تعذّر بعد أن سُمح به. وتبقى بعد زواله بالإيقاف — فلا يُعاد وحده.
@@ -639,7 +616,7 @@ function BrandFilm({
         ([entry]) => {
           if (!entry) return;
           offscreen.current = !entry.isIntersecting;
-          score.current?.sync();
+          sound.current?.sync();
           if (!entry.isIntersecting) {
             video.pause();
             return;
@@ -663,19 +640,22 @@ function BrandFilm({
     };
   }, [live]);
 
-  // الموسيقى مربوطةٌ بالفيلم ما دام مركَّبًا، وتسكت بزواله.
+  // الصوت مربوطٌ بالفيلم ما دام مركَّبًا، ويُكتم بزواله. والبدء كلّه من هنا (لا `autoPlay`): بصوتٍ إن
+  // أذن المتصفّح، وإلا مكتومًا بانتظار لمسة. والعائد بعد النهاية لا يبدأ وحده — الإعادة بيد الزائر.
   useEffect(() => {
     const video = ref.current;
-    const audio = audioRef.current;
-    if (!live || !video || !audio) return;
-    const bound = bindFilmScore(video, audio, {
+    if (!live || !video) return;
+    const bound = bindFilmSound(video, {
       wanted: () => wanted.current,
       offscreen: () => offscreen.current,
+      // منعُ التشغيل حتى مكتومًا (توفير الطاقة في iOS): الجوهرة فوق الصورة لا إطارٌ متجمّد.
+      onBlocked: () => setFailed(true),
     });
-    score.current = bound;
+    sound.current = bound;
+    if (!jewelRef.current) bound.begin();
     return () => {
       bound.release();
-      score.current = null;
+      sound.current = null;
       setAudible(false);
     };
   }, [live]);
@@ -684,16 +664,16 @@ function BrandFilm({
 
   const labels = ar ? SOUND_LABELS.ar : SOUND_LABELS.en;
 
-  // التبديل يقرّر بما يراه الزائر: صامتةٌ الآن (كتمها أو منعها المتصفّح) ⇐ تشغيلٌ من داخل نقرته.
+  // التبديل يقرّر بما يراه الزائر: صامتٌ الآن (كتمه أو منعه المتصفّح) ⇐ رفعُ الكتم من داخل نقرته.
   const toggle = () => {
     const on = !audible;
     wanted.current = on;
     saveMusicWanted(on);
-    if (on) score.current?.kick();
-    else score.current?.sync();
+    if (on) sound.current?.kick();
+    else sound.current?.sync();
   };
 
-  // الإعادة بيد الزائر: الفيلم من أوّله مع الموسيقى، من داخل نقرته (فيأذن المتصفّح بالصوت).
+  // الإعادة بيد الزائر: الفيلم من أوّله بصوته، من داخل نقرته (فيأذن المتصفّح بالصوت).
   const replay = () => {
     const video = ref.current;
     if (!video) return;
@@ -706,7 +686,7 @@ function BrandFilm({
     replayed?.catch((err: unknown) => {
       if (err instanceof DOMException && err.name === "NotAllowedError") setFailed(true);
     });
-    score.current?.kick();
+    sound.current?.kick();
   };
 
   // مصدران للحلقة نفسها: H.264 أوّلًا (فكّ عتادي في كل متصفّح تجاري)، ثم
@@ -719,21 +699,29 @@ function BrandFilm({
   // الفيلم عنصر LCP في جولتين من ثلاث (٢٠٢٦/١٠/١٨ — مسجَّلٌ لا مُعالَج). والفيلم
   // قبل إطاره الأوّل شفّاف فلا وميض (قِيس في Chromium). **وبلا `loop`:** مرّةً ثم الجوهرة،
   // والعائد بعد النهاية بلا تشغيلٍ ولا تحميل حتى يطلب الزائر الإعادة.
+  // **وبلا `autoPlay` ولا `muted` كسمتين:** البدء كلّه من `bindFilmSound.begin` بعد سؤال التفضيل —
+  // يحاول بصوت، ويعود مكتومًا إن رفض المتصفّح (السمة `muted` كانت تجعل البدء صامتًا دائمًا).
   return (
     <>
       <video
         ref={ref}
         className="nx-brand-film"
-        autoPlay={!jewel}
-        muted
         playsInline
         preload={jewel ? "none" : "auto"}
         aria-hidden
         tabIndex={-1}
         disablePictureInPicture
         data-ready={ready || undefined}
-        onPlaying={() => setReady(true)}
-        onEnded={() => setEnded(true)}
+        onPlaying={(e) => {
+          setReady(true);
+          setAudible(isSounding(e.currentTarget));
+        }}
+        onPause={(e) => setAudible(isSounding(e.currentTarget))}
+        onVolumeChange={(e) => setAudible(isSounding(e.currentTarget))}
+        onEnded={(e) => {
+          setEnded(true);
+          setAudible(isSounding(e.currentTarget));
+        }}
         onError={(e) => {
           const video = e.currentTarget;
           if (e.target === video || video.networkState === video.NETWORK_NO_SOURCE) setFailed(true);
@@ -742,29 +730,11 @@ function BrandFilm({
         <source src={src} type="video/mp4" />
         <source src={src.replace(/\.mp4$/, ".webm")} type="video/webm" />
       </video>
-      {/* الموسيقى: بلا `autoPlay` — التشغيل كلّه من `bindFilmScore` بعد سؤال التفضيل. */}
-      <audio
-        ref={audioRef}
-        preload={jewel ? "none" : "auto"}
-        onPlaying={() => setAudible(true)}
-        onPause={() => setAudible(false)}
-        onEnded={() => setAudible(false)}
-        onError={(e) => {
-          const audio = e.currentTarget;
-          if (e.target === audio || audio.networkState === audio.NETWORK_NO_SOURCE) {
-            setScoreFailed(true);
-          }
-        }}
-      >
-        {BRAND_SCORE.map((track) => (
-          <source key={track.type} src={track.src} type={track.type} />
-        ))}
-      </audio>
       {/* زرّ الصوت في زاوية اللوحة السفلى اليمنى — بعيدًا عن الاسم والسطر والرمز على كل عرض
-          (`home-brand.css` ⑥). يظهر مع أوّل إطار، ويغيب إن تعذّرت الموسيقى. **والإعادة تُبقيه
+          (`home-brand.css` ⑥). يظهر مع أوّل إطار. **والإعادة تُبقيه
           نفسه:** العائد بعد إيقاف الحركة بلا إطارٍ (`preload="none"`)، فكان زرّ الإعادة المركَّز
           يزول بالنقر ويسقط التركيز إلى `body` حتى يُجلب الفيلم (WCAG 2.4.3، أمسكته المراجعة). */}
-      {(ready || jewel || replayed) && !scoreFailed && (
+      {(ready || jewel || replayed) && (
         <button
           type="button"
           className="nx-brand-sound nx-focus-ring"

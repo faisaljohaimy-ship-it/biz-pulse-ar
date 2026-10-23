@@ -1,8 +1,10 @@
 /**
  * عقد صفّ الهوية على الرئيسية: شريط «مزايا سَدِيد» ثم لوحة سَدِيد بعرض العمود، وفوقها فيلمها
- * السينمائي بموسيقاه، والاسم والسطر **نصًّا حقيقيًّا**، ثم «الجوهرة» (أوامر المالك ٢٠٢٦/١٠/١٧ و١٠/١٨
- * — المواصفة ١٠ §٢.٣ — وR4: «… يبدأ اولاً … وبمجرد فتح الموقع والدخول عليه …» و«واظف الى فديو الموشن
- * قرافيتي افضل واجمل واحدث موسيقا … واجعل علامة سديد في النهاية تكون كالجوهرة المشعة باستمرار …»).
+ * السينمائي بموسيقاه **في حاويته نفسها**، والاسم والسطر **نصًّا حقيقيًّا**، ثم «الجوهرة» (أوامر
+ * المالك ٢٠٢٦/١٠/١٧ و١٠/١٨ — المواصفة ١٠ §٢.٣ — وR4: «… يبدأ اولاً … وبمجرد فتح الموقع والدخول عليه …»
+ * و«واظف الى فديو الموشن قرافيتي افضل واجمل واحدث موسيقا … واجعل علامة سديد في النهاية تكون كالجوهرة
+ * المشعة باستمرار …» — و٢٠٢٦/١٠/٢٣: «أن يكون الصوت مفعّلًا تلقائيًا مع بداية الفيديو، وأن يكون الصوت
+ * متصلًا مع الفيديو بشكلٍ منسّق وجميل احترافي»).
  *
  * ما يكسر الأمر لا يراه tsc ولا البناء:
  *   • الاسم أو السطر بغير نصّ المالك الحرفيّ («… رؤية تنفيذية **على** الأمن الصناعي …»)، أو
@@ -10,20 +12,22 @@
  *   • نصٌّ يبقى خافتًا بعد زوال الفيلم — واللوحة بلا نصّها، فيغيب الاسم كلّه — أو يخفت خارج
  *     قصّة الفيلم، أو خارج بوابة الحركة؛
  *   • لحظتا النصّ وقد تبدّل زمن الفيلم دونهما (`remotion/brand/film/timeline.ts`)؛
- *   • فيلمٌ يحمل مسار صوت (Remotion يضيف مسارًا صامتًا افتراضًا) — صامتٌ في **حاويته** لا بسمة
- *     `muted` وحدها؛ أو يُركَّب لمن طلب السكون أو توفير البيانات، أو في HTML الخادم، أو قبل
- *     رسم الملصق؛
+ *   • فيلمٌ بلا مسار صوتٍ في حاويته أو بمسارين (الموسيقى **داخل** الملفّ: مساران في ملفٍّ واحد لا
+ *     يتزامنان بالقفز — قِيس على تسجيل المالك ٢٠٢٦/١٠/٢٣: انقطاعٌ كل 0.77 ث على iPhone)، أو بمدّةٍ غير
+ *     24 ث + ثباتِ الذيل؛ أو ملفُّ موسيقى منفصلٌ ما زال يُشحن، أو `<audio>` في المصدر؛ أو يُركَّب لمن
+ *     طلب السكون أو توفير البيانات، أو في HTML الخادم، أو قبل رسم الملصق؛
  *   • فيلمٌ يُعاد وحده: `loop`، أو تشغيلٌ بالعودة إلى الإطار أو بإغلاق اللوحة بعد نهايته؛
- *   • موسيقى تبدأ دون سؤال تفضيل الزائر، أو بلا زرٍّ يوقفها (WCAG 1.4.2)، أو ملفّها بمسار فيديو
- *     أو فوق سقفه؛
+ *   • صوتٌ يُرفع كتمه دون سؤال تفضيل الزائر، أو بلا زرٍّ يكتمه (WCAG 1.4.2)، أو إسكاتٌ يوقف الفيلم
+ *     بدل أن يكتمه، أو كتمٌ يُرفع عن فيلمٍ جارٍ قبل الإذن (Chromium يوقفه)، أو `autoPlay`/`muted`
+ *     سمةً على `<video>` (البدء كلّه من `bindFilmSound`)؛
  *   • «جوهرةٌ» تتحرّك خارج بوابة الحركة أو فصلها، أو لا تقف بزرّ الإيقاف وخارج الإطار؛
  *   • وزنُ صورٍ يتجاوز سقف N3 (400 KB على `/`)، أو فيلمٌ يتضخّم بلا سقف؛
  *   • لوحةٌ تضيق عن العمود، أو صفٌّ في غير موضعه، أو لونٌ نهائي في CSS.
  *
  * وكل كاشفٍ يُجرَّب أولًا على انتهاكٍ مزروع (المادة ٣٠).
  *
- * **بنودٌ تنتظر ملفّات مساراتٍ أخرى:** ملفّا الموسيقى (`public/media/brand/sadeed-film-score.*`)
- * يحمرّ بندهما الحيّ حتى يصلا؛ والفيلم وقناع الرمز يُقرآن كما هما على القرص.
+ * **بنودٌ تقرأ بايتات الملفّات:** الفيلم (مساره الصوتي ومدّته) وقناع الرمز يُقرآن كما هما على القرص —
+ * فيحمرّ بندهما حتى تصل ملفّات الفيلم بصوتها.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -36,7 +40,7 @@ import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { sadeedState } from "@/lib/sadeed/sadeed-state";
 import {
   BRAND_FILMS,
-  BRAND_SCORE,
+  FILM_TAIL,
   FILM_TEXT,
   GESTURE_GRACE_MS,
   HOME_BRAND,
@@ -69,12 +73,14 @@ const OWNER = {
 /** سقف صور الرئيسية (N3) — بايتات. */
 const IMAGE_CEILING = 400 * 1024;
 /**
- * سقوف الفيلم — بايتات. 24 ث بدرجتين (حلقات الماء قبله 3 MB لكلٍّ)، والزائر يُنزّل ملفًّا واحدًا
- * بعد رسم الملصق؛ والجوال الصغرى وحدها (`pickFilm`) فسقفها أضيق.
+ * سقوف الفيلم — بايتات. 26 ث بصوتها بدرجتين (حلقات الماء قبله 3 MB لكلٍّ)، والزائر يُنزّل ملفًّا واحدًا
+ * بعد رسم الملصق؛ والجوال الصغرى وحدها (`pickFilm`) فسقفها أضيق. الموسيقى داخل هذه الملفّات فلا سقف
+ * منفصل لها، والمجموع هو مجموع ملفّات الفيلم وحدها.
  */
-const FILM_CEILING = { each: 4_000_000, phone: 1_500_000, total: 8_000_000 };
-/** سقف كل ملفٍّ من ملفّي الموسيقى (26 ث) — بايتات. */
-const SCORE_CEILING = 600_000;
+const FILM_CEILING = { each: 4_500_000, phone: 2_000_000, total: 10_000_000 };
+/** مدّة الحاوية (ث): الفيلم وثباتُ إطاره الأخير — تقرؤها الصفحة من `FILM_TEXT` و`FILM_TAIL`. */
+const CONTAINER_SECONDS = 26;
+const DURATION_TOLERANCE = 0.1;
 
 const GATE = "prefers-reduced-motion: no-preference";
 /** بوّابة الحركة الدائمة: مفتاح النظام والوضع الآمن معًا. */
@@ -102,10 +108,6 @@ function walkBytes(dir: string): number {
   return total;
 }
 
-/** صناديق MP4 التي لا تُكتب إلا مع مسارٍ سمعيّ. */
-const AUDIO_BOXES = ["mp4a", "esds", "soun", "smhd"];
-const audioBoxes = (bytes: Buffer) => AUDIO_BOXES.filter((b) => bytes.includes(b));
-
 /** أنواع المسارات في MP4 من صناديق `hdlr` (النوع بعد الإصدار و`pre_defined`). */
 function mp4Handlers(bytes: Buffer): string[] {
   const out: string[] = [];
@@ -113,6 +115,16 @@ function mp4Handlers(bytes: Buffer): string[] {
     if (i + 16 <= bytes.length) out.push(bytes.toString("latin1", i + 12, i + 16));
   }
   return out;
+}
+
+/** مدّة MP4 بالثواني من `mvhd` (الإصدار 0 أو 1) — `NaN` إن غاب. */
+function mp4Seconds(bytes: Buffer): number {
+  const at = bytes.indexOf("mvhd");
+  if (at === -1) return Number.NaN;
+  const v1 = bytes[at + 4] === 1;
+  const scale = bytes.readUInt32BE(at + (v1 ? 24 : 16));
+  const duration = v1 ? Number(bytes.readBigUInt64BE(at + 28)) : bytes.readUInt32BE(at + 20);
+  return duration / scale;
 }
 
 /** عرض WebP وارتفاعه من ترويسته (VP8 / VP8L / VP8X). */
@@ -151,28 +163,43 @@ function matroskaCodecs(bytes: Buffer): string[] {
 }
 
 /**
- * ملفّا الموسيقى: AAC في MP4 بمسار صوتٍ وبلا مسار فيديو، وOpus وحده في WebM، وكلٌّ تحت سقفه.
- * `null` غيابُ الملفّ.
+ * الفيلم بصوته في حاويته: MP4 بمسار فيديو واحد (H.264) ومسار صوتٍ واحد بالضبط (AAC)، وWebM بفيديو VP9
+ * وصوتِ Opus واحد، ومدّةُ MP4 هي مدّة الحاوية (24 ث + ثباتُ الذيل). `null` غيابُ الملفّ.
  */
-function scoreGaps(m4a: Buffer | null, webm: Buffer | null): string[] {
+function filmTrackGaps(mp4: Buffer | null, webm: Buffer | null): string[] {
   const out: string[] = [];
-  if (!m4a) out.push("m4a غائب");
+  if (!mp4) out.push("mp4 غائب");
   else {
-    const handlers = mp4Handlers(m4a);
-    if (!m4a.includes("ftyp")) out.push("m4a: ليس MP4");
-    if (!m4a.includes("mp4a")) out.push("m4a: بلا AAC");
-    if (!handlers.includes("soun")) out.push("m4a: بلا مسار صوت");
-    if (handlers.includes("vide")) out.push("m4a: مسار فيديو");
-    if (m4a.length > SCORE_CEILING) out.push(`m4a: ${m4a.length} فوق السقف`);
+    const handlers = mp4Handlers(mp4);
+    const video = handlers.filter((h) => h === "vide").length;
+    const sound = handlers.filter((h) => h === "soun").length;
+    if (!mp4.includes("ftyp")) out.push("mp4: ليس MP4");
+    if (!mp4.includes("avc1") || video !== 1) out.push(`mp4: مسارات فيديو ${video}`);
+    if (sound === 0) out.push("mp4: فيلم بلا مسار صوت");
+    else if (sound > 1) out.push("mp4: مساران صوتيان");
+    else if (!mp4.includes("mp4a")) out.push("mp4: الصوت ليس AAC");
+    const seconds = mp4Seconds(mp4);
+    if (!(Math.abs(seconds - CONTAINER_SECONDS) <= DURATION_TOLERANCE)) {
+      out.push(`mp4: المدّة ${seconds} ≠ ${CONTAINER_SECONDS}`);
+    }
   }
   if (!webm) out.push("webm غائب");
   else {
     const codecs = matroskaCodecs(webm);
-    if (codecs.join() !== "A_OPUS") out.push(`webm: [${codecs.join("، ")}]`);
-    if (webm.length > SCORE_CEILING) out.push(`webm: ${webm.length} فوق السقف`);
+    const sound = codecs.filter((c) => c.startsWith("A_"));
+    if (codecs.filter((c) => c === "V_VP9").length !== 1) out.push(`webm: [${codecs.join("، ")}]`);
+    if (sound.length === 0) out.push("webm: فيلم بلا مسار صوت");
+    else if (sound.length > 1) out.push("webm: مساران صوتيان");
+    else if (sound[0] !== "A_OPUS") out.push("webm: الصوت ليس Opus");
   }
   return out;
 }
+
+/** ملفّات الموسيقى المنفصلة القديمة التي ما زالت في مجلّد الفيلم — لا يبقى منها شيء. */
+const strayScores = (names: string[]) => names.filter((n) => /^sadeed-film-score\./.test(n));
+
+/** `<audio>` في مصدر المكوّن — الموسيقى لم تعد عنصرًا منفصلًا. */
+const hasAudioElement = (code: string) => /<audio\b/.test(code);
 
 /** ألوانٌ نهائية في CSS: سداسية أو rgb/hsl حرفية — ما عدا ألوان النظام. */
 function literalColors(css: string): string[] {
@@ -247,8 +274,9 @@ function restartGaps(code: string): string[] {
   const out: string[] = [];
   const video = filmAttrs(code);
   if (/\bloop\b/.test(video)) out.push("loop");
-  if (!video.includes("onEnded={() => setEnded(true)}")) out.push("ended");
-  if (!video.includes("autoPlay={!jewel}")) out.push("autoPlay بعد النهاية");
+  if (!/onEnded=\{[^}]*setEnded\(true\)/.test(video)) out.push("ended");
+  // البدء كلّه من `bindFilmSound.begin` — والعائد بعد النهاية لا يبدأ وحده.
+  if (!code.includes("if (!jewelRef.current) bound.begin();")) out.push("بدء بعد النهاية");
   if (!code.includes("const jewel = ended || failed;")) out.push("الجوهرة");
   const resume = code.indexOf("const resumed = video.play()");
   const watcher = code.lastIndexOf("new IntersectionObserver(", resume);
@@ -258,24 +286,25 @@ function restartGaps(code: string): string[] {
 }
 
 /**
- * لا موسيقى بلا سؤال التفضيل: `<audio>` بلا `autoPlay`، وتشغيلٌ واحد في `start` أوّل سطرٍ فيها
- * سؤال التفضيل، والتفضيل من مفتاحه.
+ * لا صوت بلا سؤال التفضيل: لا `<audio>` ولا `autoPlay` ولا `muted` سمةً على الفيلم، وكتمٌ واحد يُرفع
+ * صراحةً (في `begin`، بعد سؤال `wanted()`) وغيره يمرّ بـ`audible()` — الذي يشترط التفضيل والإذن
+ * (`unlocked`) وما يُسكت. ولا `pause()` لأجل الصوت: الإسكات كتمٌ.
  */
-function musicAutoplayGaps(code: string): string[] {
+function soundStartGaps(code: string): string[] {
   const out: string[] = [];
-  const at = code.indexOf("<audio");
-  const audio = at === -1 ? "" : code.slice(at, code.indexOf("</audio>", at));
-  if (!audio) out.push("لا موسيقى");
-  if (/\bautoPlay\b/.test(audio)) out.push("autoPlay");
-  if (!audio.includes("preload=")) out.push("preload");
-  const plays = code.match(/\baudio\.play\(/g) ?? [];
-  if (plays.length !== 1) out.push(`audio.play × ${plays.length}`);
-  const start = code.indexOf("const start = () => {");
-  const body = start === -1 ? "" : code.slice(start, code.indexOf("\n  };", start));
-  if (!/^const start = \(\) => \{\s*if \(!opts\.wanted\(\)\) return;/.test(body)) {
-    out.push("سؤال التفضيل");
-  }
-  if (!body.includes("audio.play(")) out.push("التشغيل خارج start");
+  if (hasAudioElement(code)) out.push("<audio>");
+  const video = filmAttrs(code);
+  if (/\bautoPlay\b/.test(video)) out.push("autoPlay");
+  if (/\bmuted\b/.test(video)) out.push("muted سمةً");
+  const body = fnBody(code, "bindFilmSound");
+  if (!body) return [...out, "bindFilmSound غائب"];
+  if (/\.pause\(/.test(body)) out.push("pause لأجل الصوت");
+  const unmutes = body.match(/\.muted = false/g) ?? [];
+  if (unmutes.length !== 1) out.push(`رفع كتمٍ صريح × ${unmutes.length}`);
+  const begin = body.slice(body.indexOf("const begin = () => {"), body.indexOf("const follow"));
+  const asks = begin.indexOf("opts.wanted()");
+  if (asks === -1 || asks > begin.indexOf(".muted = false")) out.push("سؤال التفضيل");
+  if (!body.includes("const audible = () => unlocked && opts.wanted() &&")) out.push("شروط الصوت");
   if (!code.includes('localStorage.getItem(MUSIC_KEY) !== "off"')) out.push("قراءة التفضيل");
   return out;
 }
@@ -510,10 +539,52 @@ function keyframeProps(css: string, name: string): string[] {
 /* ── التجارب على المزروع (المادة ٣٠) ─────────────────────────────────── */
 
 describe("الكواشف تحمرّ على انتهاكٍ مزروع", () => {
-  it("مسار صوتٍ مزروع في بايتات الفيلم يُلتقط", () => {
-    const clean = Buffer.from("....ftypisom....moov....avc1....");
-    expect(audioBoxes(clean)).toEqual([]);
-    expect(audioBoxes(Buffer.concat([clean, Buffer.from("mp4a")]))).toEqual(["mp4a"]);
+  it("فيلمٌ بلا مسار صوت، أو بمسارين، أو بمدّةٍ خاطئة، أو موسيقى منفصلة، أو `<audio>` — يُلتقط", () => {
+    const hdlr = (type: string) =>
+      Buffer.concat([Buffer.from("hdlr"), Buffer.alloc(8), Buffer.from(type)]);
+    const mvhd = (seconds: number) => {
+      const box = Buffer.alloc(24);
+      box.write("mvhd", 0, "latin1");
+      box.writeUInt32BE(1000, 16);
+      box.writeUInt32BE(seconds * 1000, 20);
+      return box;
+    };
+    const mp4 = (seconds: number, ...tracks: string[]) =>
+      Buffer.concat([
+        Buffer.from("....ftyp....avc1....mp4a"),
+        mvhd(seconds),
+        ...tracks.map((t) => hdlr(t)),
+      ]);
+    const element = (id: string) =>
+      Buffer.concat([Buffer.from([0x86, 0x80 | id.length]), Buffer.from(id)]);
+    const webm = Buffer.concat([element("V_VP9"), element("A_OPUS")]);
+    expect(mp4Seconds(mp4(26, "vide", "soun"))).toBe(26);
+    expect(filmTrackGaps(mp4(26, "vide", "soun"), webm)).toEqual([]);
+    // الحاوية الصامتة القديمة (أو مسارٌ صامتٌ نُزع): يحمرّ.
+    expect(filmTrackGaps(mp4(26, "vide"), webm)).toEqual(["mp4: فيلم بلا مسار صوت"]);
+    expect(filmTrackGaps(mp4(26, "vide", "soun", "soun"), webm)).toEqual(["mp4: مساران صوتيان"]);
+    expect(filmTrackGaps(mp4(24, "vide", "soun"), webm)).toEqual([
+      `mp4: المدّة 24 ≠ ${CONTAINER_SECONDS}`,
+    ]);
+    expect(filmTrackGaps(mp4(26, "vide", "soun"), element("V_VP9"))).toEqual([
+      "webm: فيلم بلا مسار صوت",
+    ]);
+    expect(
+      filmTrackGaps(mp4(26, "vide", "soun"), Buffer.concat([webm, element("A_OPUS")])),
+    ).toEqual(["webm: مساران صوتيان"]);
+    expect(
+      filmTrackGaps(
+        mp4(26, "vide", "soun"),
+        Buffer.concat([element("V_VP9"), element("A_VORBIS")]),
+      ),
+    ).toEqual(["webm: الصوت ليس Opus"]);
+    expect(filmTrackGaps(null, null)).toEqual(["mp4 غائب", "webm غائب"]);
+    // ملفّ الموسيقى المنفصل القديم لا يبقى في المجلّد، و`<audio>` لا يبقى في المصدر.
+    expect(strayScores(["sadeed-film-804.mp4", "sadeed-film-score.m4a"])).toEqual([
+      "sadeed-film-score.m4a",
+    ]);
+    expect(hasAudioElement(`${CODE}\n<audio preload="auto" />`)).toBe(true);
+    expect(hasAudioElement(CODE)).toBe(false);
   });
 
   it("لونٌ نهائي و`transform` في CSS يُلتقطان", () => {
@@ -599,29 +670,48 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع", () => {
   });
 
   it("فيلمٌ يُعاد وحده — `loop`، أو تشغيلٌ تلقائيّ بعد النهاية، أو مراقبٌ يشغّل المنتهي — يُلتقط", () => {
-    const looped = CODE.replace("        muted\n", "        muted\n        loop\n");
+    const looped = CODE.replace("        playsInline\n", "        playsInline\n        loop\n");
     expect(looped).not.toBe(CODE);
     expect(restartGaps(looped)).toEqual(["loop"]);
-    const always = CODE.replace("autoPlay={!jewel}", "autoPlay");
+    const always = CODE.replace("if (!jewelRef.current) bound.begin();", "bound.begin();");
     expect(always).not.toBe(CODE);
-    expect(restartGaps(always)).toEqual(["autoPlay بعد النهاية"]);
+    expect(restartGaps(always)).toEqual(["بدء بعد النهاية"]);
     const watcher = CODE.replace("if (jewelRef.current || video.ended) return;", "");
     expect(watcher).not.toBe(CODE);
     expect(restartGaps(watcher)).toEqual(["المراقب"]);
-    const noEnd = CODE.replace("onEnded={() => setEnded(true)}", "");
+    const noEnd = CODE.replace("setEnded(true);", "");
     expect(restartGaps(noEnd)).toEqual(["ended"]);
   });
 
-  it("موسيقى بلا سؤال التفضيل، أو `autoPlay` عليها، أو تشغيلٌ ثانٍ خارج `start` — يُلتقط", () => {
-    const unasked = CODE.replace("if (!opts.wanted()) return;\n    resync();", "resync();");
+  it("كتمٌ يُرفع بلا سؤال التفضيل أو قبل الإذن، أو إسكاتٌ يوقف الفيلم، أو سمتا `autoPlay`/`muted` — يُلتقط", () => {
+    expect(soundStartGaps(CODE)).toEqual([]);
+    const unasked = CODE.replace(
+      "if (!opts.wanted() || opts.offscreen() || filmAudioHeld()) {",
+      "if (opts.offscreen() || filmAudioHeld()) {",
+    );
     expect(unasked).not.toBe(CODE);
-    expect(musicAutoplayGaps(unasked)).toEqual(["سؤال التفضيل"]);
-    const auto = CODE.replace("<audio\n", "<audio\n        autoPlay\n");
-    expect(auto).not.toBe(CODE);
-    expect(musicAutoplayGaps(auto)).toEqual(["autoPlay"]);
-    const second = CODE.replace("const replay = () => {", "const replay = () => {\n audio.play();");
+    expect(soundStartGaps(unasked)).toEqual(["سؤال التفضيل"]);
+    // رفعٌ ثانٍ للكتم خارج `audible()` — يتجاوز التفضيل والإذن معًا.
+    const second = CODE.replace(
+      "    kick: () => {",
+      "    kick: () => {\n      video.muted = false;",
+    );
     expect(second).not.toBe(CODE);
-    expect(musicAutoplayGaps(second)).toEqual(["audio.play × 2"]);
+    expect(soundStartGaps(second)).toEqual(["رفع كتمٍ صريح × 2"]);
+    // يُرفع الكتم قبل الإذن (قاعدة Chromium): الشرط الأوّل في `audible()`.
+    const early = CODE.replace("unlocked && opts.wanted() &&", "opts.wanted() &&");
+    expect(early).not.toBe(CODE);
+    expect(soundStartGaps(early)).toEqual(["شروط الصوت"]);
+    const pausing = CODE.replace("video.muted = true;\n    },", "video.pause();\n    },");
+    expect(pausing).not.toBe(CODE);
+    expect(soundStartGaps(pausing)).toEqual(["pause لأجل الصوت"]);
+    const auto = CODE.replace("        playsInline\n", "        playsInline\n        autoPlay\n");
+    expect(auto).not.toBe(CODE);
+    expect(soundStartGaps(auto)).toEqual(["autoPlay"]);
+    const muted = CODE.replace("        playsInline\n", "        playsInline\n        muted\n");
+    expect(muted).not.toBe(CODE);
+    expect(soundStartGaps(muted)).toEqual(["muted سمةً"]);
+    expect(soundStartGaps(`${CODE}\n<audio />`)).toEqual(["<audio>"]);
   });
 
   it("زرّ صوتٍ بلا حاله أو نوعه أو رموزه، وهدفٌ دون 44px — يُلتقط", () => {
@@ -659,25 +749,6 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع", () => {
     const forced = CSS.replace("display: none !important;", "display: none;");
     expect(forced).not.toBe(CSS);
     expect(jewelGaps(forced)).toEqual(["الألوان القسرية"]);
-  });
-
-  it("ملفّا موسيقى بمسار فيديو أو بغير Opus أو فوق السقف أو غائبين — يُلتقطان", () => {
-    const hdlr = (type: string) =>
-      Buffer.concat([Buffer.from("hdlr"), Buffer.alloc(8), Buffer.from(type)]);
-    const m4a = Buffer.concat([Buffer.from("....ftypM4A "), hdlr("soun"), Buffer.from("mp4a")]);
-    const element = (id: string) =>
-      Buffer.concat([Buffer.from([0x86, 0x80 | id.length]), Buffer.from(id)]);
-    const opus = element("A_OPUS");
-    expect(mp4Handlers(m4a)).toEqual(["soun"]);
-    expect(scoreGaps(m4a, opus)).toEqual([]);
-    expect(scoreGaps(Buffer.concat([m4a, hdlr("vide")]), opus)).toEqual(["m4a: مسار فيديو"]);
-    expect(scoreGaps(m4a, Buffer.concat([element("V_VP9"), opus]))).toEqual([
-      "webm: [V_VP9، A_OPUS]",
-    ]);
-    expect(scoreGaps(m4a, element("A_VORBIS"))).toHaveLength(1);
-    const heavy = Buffer.concat([m4a, Buffer.alloc(SCORE_CEILING)]);
-    expect(scoreGaps(heavy, opus)).toEqual([`m4a: ${heavy.length} فوق السقف`]);
-    expect(scoreGaps(null, null)).toEqual(["m4a غائب", "webm غائب"]);
   });
 
   it("قارئ عرض WebP يقرأ عرضًا حقيقيًّا، وصورةٌ مقصوصة الارتفاع تخرج عن 3:1", () => {
@@ -768,10 +839,10 @@ describe("الاسم والسطر — نصّ المالك الحرفيّ، نص�
   });
 });
 
-/* ── الفيلم: صامتٌ في الحاوية، بسقف، وبلحظتي نصٍّ من زمنه ─────────────── */
+/* ── الفيلم: بصوته في حاويته، بسقف، وبلحظتي نصٍّ من زمنه ──────────────── */
 
-describe("الفيلم — بلا مسار صوت، بسقف وزن، ولحظتا النصّ من زمنه", () => {
-  it("درجتان مذكورتان، لكلٍّ MP4 (H.264) وWebM (VP9) موجودان، وبلا أيّ مسار صوت", () => {
+describe("الفيلم — بمسار صوتٍ واحد مدمج في حاويته، بسقف وزن، ولحظتا النصّ من زمنه", () => {
+  it("درجتان مذكورتان، لكلٍّ MP4 (H.264 + AAC) وWebM (VP9 + Opus) موجودان بمسار صوتٍ واحد ومدّة 26 ث", () => {
     expect(FILMS).toHaveLength(2);
     expect(FILMS).toEqual(BRAND_FILMS.map((f) => f.src));
     let total = 0;
@@ -780,33 +851,30 @@ describe("الفيلم — بلا مسار صوت، بسقف وزن، ولحظت
       const ceiling = phone ? FILM_CEILING.phone : FILM_CEILING.each;
       expect(existsSync(`public${f}`), `${f} غائب`).toBe(true);
       const bytes = readFileSync(`public${f}`);
-      expect(bytes.includes("ftyp"), `${f}: ليس MP4`).toBe(true);
-      expect(bytes.includes("avc1"), `${f}: لا مسار فيديو`).toBe(true);
-      expect(audioBoxes(bytes), `${f}: عاد مسار الصوت`).toEqual([]);
-      expect(bytes.length, `${f}: فوق السقف`).toBeLessThanOrEqual(ceiling);
-      total += bytes.length;
-
-      // التوأم WebM: حاوية Matroska بمسار VP9 وبلا عنصر صوت (`A_` هو بادئة
-      // معرّفات ترميزات الصوت في Matroska، و`V_VP9` معرّف الفيديو).
       const webm = f.replace(/\.mp4$/, ".webm");
       expect(existsSync(`public${webm}`), `${webm} غائب`).toBe(true);
       const wb = readFileSync(`public${webm}`);
-      expect(matroskaCodecs(wb), `${webm}: مسارات الحاوية`).toEqual(["V_VP9"]);
+      // مسارا الفيديو والصوت في الحاوية نفسها: الصوت لا يتزامن بالقفز مع ملفٍّ آخر.
+      expect(filmTrackGaps(bytes, wb), `${f}: مسارات الحاوية`).toEqual([]);
+      expect(bytes.length, `${f}: فوق السقف`).toBeLessThanOrEqual(ceiling);
       expect(wb.length, `${webm}: فوق السقف`).toBeLessThanOrEqual(ceiling);
-      total += wb.length;
+      total += bytes.length + wb.length;
     }
     expect(total).toBeLessThanOrEqual(FILM_CEILING.total);
   });
 
-  it("الفيلم صامتٌ ومضمَّنٌ ويبدأ تلقائيًّا ويُعرض مرّةً، بمصدرين، بلا أزرار ولا صورة داخل صورة", () => {
+  it("لا ملفّ موسيقى منفصل يُشحن، ولا `<audio>` في المصدر", () => {
+    expect(strayScores(readdirSync("public/media/brand"))).toEqual([]);
+    expect(hasAudioElement(CODE)).toBe(false);
+  });
+
+  it("الفيلم مضمَّنٌ ويُعرض مرّةً، بمصدرين، بلا سمتَي `autoPlay`/`muted` وبلا أزرار ولا صورة داخل صورة", () => {
     const video = filmAttrs(CODE);
     // بلا `poster`: الصورة تحت الفيلم هي الملصق — والسمة جعلت الفيلم المركَّب بعد
     // الترطيب مرشّحَ LCP ونزّلت نسخة 1600 على الجوال (Lighthouse ٢٠٢٦/١٠/١٨).
     expect(video, "<video> بسمة poster").not.toContain("poster=");
     for (const attr of [
-      "muted",
       "playsInline",
-      "autoPlay",
       "aria-hidden",
       "disablePictureInPicture",
       "onError=",
@@ -816,6 +884,9 @@ describe("الفيلم — بلا مسار صوت، بسقف وزن، ولحظت
     ]) {
       expect(video, `<video> بلا ${attr}`).toContain(attr);
     }
+    // البدء كلّه من `bindFilmSound.begin` بعد سؤال التفضيل: السمتان تفرضان بدءًا صامتًا أو بلا سؤال.
+    expect(video, "<video> بسمة autoPlay").not.toMatch(/\bautoPlay\b/);
+    expect(video, "<video> بسمة muted").not.toMatch(/\bmuted\b/);
     // مرّةً لا حلقة (R4): بلا `loop`، والنهاية «جوهرة» لا إعادة.
     expect(video, "<video> بحلقة").not.toMatch(/\bloop\b/);
     // MP4 أوّلًا: المتصفّح يأخذ أوّل مصدرٍ يقدر عليه.
@@ -825,19 +896,21 @@ describe("الفيلم — بلا مسار صوت، بسقف وزن، ولحظت
     expect(video).toContain("video.networkState === video.NETWORK_NO_SOURCE");
     expect(video).toContain("e.target === video");
     expect(video).not.toContain("controls");
-    expect(CODE).not.toMatch(/muted\s*=\s*(false|\{false\})/);
   });
 
-  it("لحظتا النصّ من زمن الفيلم الواحد، والفصول بحدودها، والجوهرة لا زمن لها", () => {
+  it("لحظتا النصّ من زمن الفيلم الواحد، والفصول بحدودها، والجوهرة من 24 ث والحاوية 24 + FILM_TAIL", () => {
     expect(syncGaps(FILM_TEXT, TIMELINE)).toEqual([]);
     expect(filmActAt(0)).toBe("hold");
     expect(filmActAt(FILM_TEXT.hideAt - 0.01)).toBe("hold");
     expect(filmActAt(FILM_TEXT.hideAt)).toBe("story");
     expect(filmActAt(FILM_TEXT.revealAt - 0.01)).toBe("story");
     expect(filmActAt(FILM_TEXT.revealAt)).toBe("reveal");
-    // آخر الإطارات كشفٌ — والجوهرة من حدث النهاية وحده، لا من عدّادٍ يسبقها أو يتأخّر عنها.
+    // آخر إطارات الفيلم كشفٌ — ومن 24 ث جوهرة، والإطار الثابت (الذيل) تحتها لا تحت اللوحة بلا جوهرة.
     expect(filmActAt(FILM_TEXT.seconds - 1 / 30)).toBe("reveal");
-    expect(filmActAt(FILM_TEXT.seconds + 5)).toBe("reveal");
+    expect(filmActAt(FILM_TEXT.seconds)).toBe("jewel");
+    expect(filmActAt(FILM_TEXT.seconds + FILM_TAIL)).toBe("jewel");
+    expect(FILM_TAIL).toBe(2);
+    expect(FILM_TEXT.seconds + FILM_TAIL).toBe(CONTAINER_SECONDS);
   });
 
   it("مرّةً لا حلقة: النهاية تكتب الجوهرة، ولا يُعاد الفيلم وحده", () => {
@@ -845,27 +918,17 @@ describe("الفيلم — بلا مسار صوت، بسقف وزن، ولحظت
   });
 });
 
-/* ── الموسيقى: ملفٌّ منفصل، لا تبدأ بلا تفضيل، وزرٌّ يوقفها ─────────────── */
+/* ── الصوت: مسار الفيلم نفسه، لا يُرفع كتمه بلا تفضيل، وزرٌّ يكتمه ─────── */
 
-describe("الموسيقى — ملفٌّ منفصل يتبع الفيلم، وتفضيل الزائر قبل كل تشغيل (WCAG 1.4.2)", () => {
-  it("ملفّا الموسيقى: AAC بلا مسار فيديو وOpus وحده، كلٌّ ≤ 600 KB — **ينتظر مسار الموسيقى**", () => {
-    expect(BRAND_SCORE.map((s) => s.type)).toEqual(["audio/mp4", "audio/webm"]);
-    const [m4a, webm] = BRAND_SCORE.map((s) =>
-      existsSync(`public${s.src}`) ? readFileSync(`public${s.src}`) : null,
-    );
-    expect(BRAND_SCORE[0].src).toMatch(/\.m4a$/);
-    expect(BRAND_SCORE[1].src).toMatch(/\.webm$/);
-    expect(scoreGaps(m4a, webm)).toEqual([]);
-  });
-
-  it("لا تشغيل بلا سؤال التفضيل، ولا `autoPlay` على الموسيقى، والمفتاح `nx-brand-music`", () => {
-    expect(musicAutoplayGaps(CODE)).toEqual([]);
+describe("الصوت — مسارٌ في الفيلم، وتفضيل الزائر قبل كل رفعٍ للكتم (WCAG 1.4.2)", () => {
+  it("لا رفع كتمٍ بلا سؤال التفضيل ولا قبل الإذن، ولا `autoPlay`/`muted` سمةً، والمفتاح `nx-brand-music`", () => {
+    expect(soundStartGaps(CODE)).toEqual([]);
     expect(MUSIC_KEY).toBe("nx-brand-music");
     // كل وصولٍ إلى التخزين في `try` (المحجوب لا يكسر شيئًا).
-    expect((CODE.match(/\} catch \{/g) ?? []).length).toBeGreaterThanOrEqual(5);
+    expect((CODE.match(/\} catch \{/g) ?? []).length).toBeGreaterThanOrEqual(4);
   });
 
-  it("زرّ الموسيقى: زرٌّ حقيقيّ بحاله ورموزه، بأسمائه في اللغتين، وهدفٌ ≥ 44px", () => {
+  it("زرّ الصوت: زرٌّ حقيقيّ بحاله ورموزه، بأسمائه في اللغتين، وهدفٌ ≥ 44px", () => {
     expect(soundButtonGaps(CODE)).toEqual([]);
     expect(SOUND_LABELS).toEqual(SOUND);
     expect(soundTargetGaps(CSS)).toEqual([]);
@@ -894,7 +957,7 @@ describe("البوابات — الفيلم اختيارٌ لا افتراض", (
     expect(CODE).toMatch(/localStorage\.getItem\(PAUSE_KEY\) === "paused"/);
     // لا يُعوَّل على شفافية ما قبل الإطار الأوّل في كل محرّك.
     expect(filmAttrs(CODE)).toContain("data-ready={ready || undefined}");
-    expect(filmAttrs(CODE)).toContain("onPlaying={() => setReady(true)}");
+    expect(filmAttrs(CODE)).toMatch(/onPlaying=\{\(e\) => \{\s*setReady\(true\);/);
     expect(CSS).toMatch(/\.nx-brand-film:not\(\[data-ready\]\) \{\s*opacity: 0;/);
   });
 
@@ -910,42 +973,164 @@ describe("البوابات — الفيلم اختيارٌ لا افتراض", (
   });
 });
 
-/* ── المصيَّر: الملصق ثم الفيلم، والنصّ يتبعه، ومرّةً ثم الجوهرة، والموسيقى ───── */
+/* ── المصيَّر: الملصق ثم الفيلم، والنصّ يتبعه، ومرّةً ثم الجوهرة، والصوت ───── */
 
-/** وسائط مزيّفة: jsdom لا يشغّل شيئًا، فالحال على العنصر نفسه والأحداث بيد الاختبار. */
-function fakeMedia(el: HTMLMediaElement, refuse?: string, lazy = false) {
-  // `ready`: ‏`HAVE_NOTHING` (0) حتى أوّل إطار، ثم `HAVE_ENOUGH_DATA` (4) — كالمحرّك: `play` يسبق الإطار.
-  // و`lazy`: عنصرٌ بـ`preload="none"` — إطاره بعد جلبٍ من الشبكة لا داخل `play`، فالاختبار يرسله.
-  const state = { paused: true, ended: false, time: 0, ready: 0 };
-  Object.defineProperty(el, "paused", { configurable: true, get: () => state.paused });
-  Object.defineProperty(el, "ended", { configurable: true, get: () => state.ended });
-  Object.defineProperty(el, "readyState", { configurable: true, get: () => state.ready });
-  Object.defineProperty(el, "currentTime", {
-    configurable: true,
-    get: () => state.time,
-    set: (v: number) => {
-      state.time = v;
-      state.ended = false;
+/**
+ * وسائط مزيّفة على نموذج `HTMLMediaElement` نفسه: jsdom لا يشغّل شيئًا، فالحال في جدولٍ والأحداث بيد
+ * الاختبار — **وتُركَّب قبل التركيب** لأن البدء (`begin`) يجري في تأثير التركيب لا بعده.
+ * وفيها سياسة المتصفّح كما هي: التشغيل بصوتٍ يُرفض (`NotAllowedError`) ما لم يُؤذَن (`activated`)، ورفعُ
+ * كتم فيلمٍ جارٍ بلا إذن **يوقفه** (قاعدة Chromium) — فيحمرّ الاختبار إن رُفع الكتم قبل الإذن.
+ */
+type MediaState = {
+  paused: boolean;
+  ended: boolean;
+  time: number;
+  ready: number;
+  muted: boolean;
+  /** حال الكتم عند كل استدعاء `play()`. */
+  plays: boolean[];
+  /** إيقافاتٌ فعلية (لا المتكرّرة على موقوف). */
+  pauses: number;
+  /** مرّات رفع الكتم. */
+  unmutes: number;
+};
+const MEDIA = new WeakMap<HTMLMediaElement, MediaState>();
+const mediaOf = (el: HTMLMediaElement): MediaState => {
+  let m = MEDIA.get(el);
+  if (!m) {
+    m = {
+      paused: true,
+      ended: false,
+      time: 0,
+      ready: 0,
+      muted: false,
+      plays: [],
+      pauses: 0,
+      unmutes: 0,
+    };
+    MEDIA.set(el, m);
+  }
+  return m;
+};
+const policy = {
+  autoplay: "allowed" as "allowed" | "blocked",
+  /** هل لمس الزائر الصفحة؟ (التفعيل) — يفتح التشغيل بصوت. */
+  activated: false,
+  /** المتصفّح يمنع حتى التشغيل المكتوم (توفير الطاقة في iOS). */
+  refuseMuted: false,
+  /** عنصرٌ بـ`preload="none"`: إطاره بعد جلبٍ من الشبكة لا داخل `play`. */
+  lazy: false,
+  last: null as HTMLMediaElement | null,
+};
+const MEDIA_KEYS = [
+  "paused",
+  "ended",
+  "readyState",
+  "currentTime",
+  "muted",
+  "play",
+  "pause",
+] as const;
+const savedMedia = new Map<string, PropertyDescriptor | undefined>();
+
+function installMedia(): void {
+  const proto = HTMLMediaElement.prototype;
+  policy.autoplay = "allowed";
+  policy.activated = false;
+  policy.refuseMuted = false;
+  policy.lazy = false;
+  policy.last = null;
+  for (const key of MEDIA_KEYS) savedMedia.set(key, Object.getOwnPropertyDescriptor(proto, key));
+  const def = (key: (typeof MEDIA_KEYS)[number], desc: PropertyDescriptor) =>
+    Object.defineProperty(proto, key, { configurable: true, ...desc });
+  def("paused", {
+    get(this: HTMLMediaElement) {
+      return mediaOf(this).paused;
     },
   });
-  const play = vi.fn(() => {
-    if (refuse) return Promise.reject(new DOMException("blocked", refuse));
-    state.paused = false;
-    state.ended = false;
-    el.dispatchEvent(new Event("play"));
-    if (lazy) return Promise.resolve();
-    state.ready = 4;
-    el.dispatchEvent(new Event("playing"));
-    return Promise.resolve();
+  def("ended", {
+    get(this: HTMLMediaElement) {
+      return mediaOf(this).ended;
+    },
   });
-  const pause = vi.fn(() => {
-    if (state.paused) return;
-    state.paused = true;
-    el.dispatchEvent(new Event("pause"));
+  def("readyState", {
+    get(this: HTMLMediaElement) {
+      return mediaOf(this).ready;
+    },
   });
-  Object.defineProperty(el, "play", { configurable: true, value: play });
-  Object.defineProperty(el, "pause", { configurable: true, value: pause });
-  return { state, play, pause };
+  def("currentTime", {
+    get(this: HTMLMediaElement) {
+      return mediaOf(this).time;
+    },
+    set(this: HTMLMediaElement, v: number) {
+      const m = mediaOf(this);
+      m.time = v;
+      m.ended = false;
+    },
+  });
+  def("muted", {
+    get(this: HTMLMediaElement) {
+      return mediaOf(this).muted;
+    },
+    set(this: HTMLMediaElement, v: boolean) {
+      const m = mediaOf(this);
+      if (m.muted === v) return;
+      m.muted = v;
+      // قاعدة Chromium: رفعُ كتم فيلمٍ جارٍ بلا إذنٍ يوقفه.
+      if (!v && !m.paused && policy.autoplay === "blocked" && !policy.activated) {
+        m.paused = true;
+        this.dispatchEvent(new Event("pause"));
+      }
+      if (!v) m.unmutes += 1;
+      this.dispatchEvent(new Event("volumechange"));
+    },
+  });
+  def("play", {
+    writable: true,
+    value: function (this: HTMLMediaElement) {
+      const m = mediaOf(this);
+      policy.last = this;
+      m.plays.push(m.muted);
+      const refused = m.muted
+        ? policy.refuseMuted
+        : policy.autoplay === "blocked" && !policy.activated;
+      if (refused) return Promise.reject(new DOMException("blocked", "NotAllowedError"));
+      m.paused = false;
+      m.ended = false;
+      this.dispatchEvent(new Event("play"));
+      if (!policy.lazy) {
+        m.ready = 4;
+        this.dispatchEvent(new Event("playing"));
+      }
+      return Promise.resolve();
+    },
+  });
+  def("pause", {
+    writable: true,
+    value: function (this: HTMLMediaElement) {
+      const m = mediaOf(this);
+      if (m.paused) return;
+      m.pauses += 1;
+      m.paused = true;
+      this.dispatchEvent(new Event("pause"));
+    },
+  });
+}
+
+function uninstallMedia(): void {
+  const proto = HTMLMediaElement.prototype;
+  for (const key of MEDIA_KEYS) {
+    const original = savedMedia.get(key);
+    if (original) Object.defineProperty(proto, key, original);
+    else delete (proto as unknown as Record<string, unknown>)[key];
+  }
+  savedMedia.clear();
+}
+
+/** يسجّل الوسائط المزيّفة لكل اختبارٍ في المجموعة الحاوية. */
+function useMediaFakes(): void {
+  beforeEach(installMedia);
+  afterEach(uninstallMedia);
 }
 
 /** مراقب إطارٍ مزيّف — jsdom بلا `IntersectionObserver`، والاختبار يقرّر الظهور. */
@@ -970,8 +1155,18 @@ class FakeObserver {
   }
 }
 
-/** يركّب الصفّ، ويرسم الملصق، ويشغّل الفيلم عند `at` ثانية — والموسيقى بإذن `refuse`. */
-async function mountFilm(at: number, opts: { refuse?: string } = {}) {
+const wait = (ms: number) =>
+  act(async () => {
+    await new Promise((r) => setTimeout(r, ms));
+  });
+
+/**
+ * يركّب الصفّ، ويرسم الملصق، فيبدأ الفيلم من تأثير التركيب (`begin`) — ثم يضع زمنه عند `at` ثانية.
+ * `refuse`: المتصفّح يمنع التشغيل بصوتٍ؛ `refuseMuted`: ويمنع المكتوم أيضًا.
+ */
+async function mountFilm(at: number, opts: { refuse?: boolean; refuseMuted?: boolean } = {}) {
+  policy.autoplay = opts.refuse ? "blocked" : "allowed";
+  policy.refuseMuted = opts.refuseMuted ?? false;
   const view = render(createElement(I18nProvider, null, createElement(HomeBrandRow)));
   await act(async () => {});
   expect(view.container.querySelector("video"), "فيلمٌ قبل الملصق").toBeNull();
@@ -979,37 +1174,48 @@ async function mountFilm(at: number, opts: { refuse?: string } = {}) {
   await act(async () => {
     fireEvent.load(poster);
   });
-  const video = view.container.querySelector<HTMLVideoElement>("video.nx-brand-film");
+  // ما بعد وعد التشغيل (إذنٌ أو رفضٌ ثم بدءٌ مكتوم).
+  await act(async () => {});
+  const video = opts.refuseMuted
+    ? policy.last!
+    : view.container.querySelector<HTMLVideoElement>("video.nx-brand-film");
   expect(video, "الفيلم لم يُركَّب بعد الملصق").not.toBeNull();
-  const audio = view.container.querySelector<HTMLAudioElement>("audio")!;
-  expect(audio, "الموسيقى لم تُركَّب مع الفيلم").not.toBeNull();
-  const film = fakeMedia(video!);
-  const score = fakeMedia(audio, opts.refuse);
+  expect(view.container.querySelector("audio"), "عنصر صوتٍ منفصل").toBeNull();
+  const el = video as HTMLVideoElement;
+  const m = mediaOf(el);
+  const film = {
+    state: m,
+    get plays() {
+      return m.plays;
+    },
+    get pauses() {
+      return m.pauses;
+    },
+    clear() {
+      m.plays = [];
+      m.pauses = 0;
+    },
+  };
   const art = view.container.querySelector<HTMLElement>(".nx-brand-art")!;
   const seek = (seconds: number) => {
-    film.state.time = seconds;
-    fireEvent(video!, new Event("timeupdate"));
+    m.time = seconds;
+    fireEvent(el, new Event("timeupdate"));
   };
-  film.state.time = at;
-  film.state.paused = false;
-  // `playing` يصل والإطار قائم — كالمحرّك.
-  film.state.ready = 4;
-  await act(async () => {
-    fireEvent(video!, new Event("playing"));
-  });
+  seek(at);
   const end = async () => {
-    film.state.time = FILM_TEXT.seconds;
-    film.state.paused = true;
-    film.state.ended = true;
+    m.time = FILM_TEXT.seconds + FILM_TAIL;
+    m.paused = true;
+    m.ended = true;
     await act(async () => {
-      fireEvent(video!, new Event("pause"));
-      fireEvent(video!, new Event("ended"));
+      fireEvent(el, new Event("pause"));
+      fireEvent(el, new Event("ended"));
     });
   };
-  return { view, video: video!, audio, art, film, score, seek, end };
+  return { view, video: el, art, film, seek, end };
 }
 
 describe("المصيَّر — الملصق ثم الفيلم، والنصّ يتبعه ولا يبقى خافتًا بعده", () => {
+  useMediaFakes();
   afterEach(() => {
     localStorage.removeItem("nx-brand-motion");
     localStorage.removeItem(MUSIC_KEY);
@@ -1028,19 +1234,22 @@ describe("المصيَّر — الملصق ثم الفيلم، والنصّ ي�
     cached.unmount();
   });
 
-  it("الفصل من زمن الإطار المعروض، ويزول بزرّ الإيقاف فيعود النصّ", async () => {
+  it("الفصل من زمن الإطار المعروض (والجوهرة من 24 ث)، ويزول بزرّ الإيقاف فيعود النصّ", async () => {
     const { view, art, seek } = await mountFilm(10);
     expect(art.dataset.filmAct).toBe("story");
     seek(FILM_TEXT.revealAt + 0.5);
     expect(art.dataset.filmAct).toBe("reveal");
     seek(0);
     expect(art.dataset.filmAct).toBe("hold");
+    // الإطار الثابت بعد 24 ث: الجوهرة ظاهرةٌ والفيلم لم ينتهِ بعد (الذيل يذوب تحتها).
+    seek(FILM_TEXT.seconds);
+    expect(art.dataset.filmAct).toBe("jewel");
     seek(10);
     expect(art.dataset.filmAct).toBe("story");
     fireEvent.click(view.getByRole("button", { name: "إيقاف الحركة" }));
     await act(async () => {});
     expect(view.container.querySelector("video")).toBeNull();
-    expect(view.container.querySelector("audio"), "الموسيقى بقيت بعد الإيقاف").toBeNull();
+    expect(view.container.querySelector("audio")).toBeNull();
     expect(art.dataset.filmAct, "النصّ بقي خافتًا بعد الإيقاف").toBeUndefined();
     view.unmount();
   });
@@ -1056,9 +1265,17 @@ describe("المصيَّر — الملصق ثم الفيلم، والنصّ ي�
     expect(art.dataset.filmAct, "النصّ بقي خافتًا بعد تعذّر الفيلم").toBe("jewel");
     view.unmount();
   });
+
+  it("ومنعُ المتصفّح التشغيلَ حتى مكتومًا (توفير الطاقة) يُسقط الفيلم إلى الجوهرة — لا إطارًا متجمّدًا", async () => {
+    const { view, art } = await mountFilm(2, { refuse: true, refuseMuted: true });
+    expect(view.container.querySelector("video")).toBeNull();
+    expect(art.dataset.filmAct).toBe("jewel");
+    view.unmount();
+  });
 });
 
 describe("المصيَّر — مرّةً ثم الجوهرة، ولا يُعاد وحده", () => {
+  useMediaFakes();
   beforeEach(() => {
     FakeObserver.all = [];
     vi.stubGlobal("IntersectionObserver", FakeObserver);
@@ -1090,23 +1307,24 @@ describe("المصيَّر — مرّةً ثم الجوهرة، ولا يُعا�
     const { view, art, film, end } = await mountFilm(20);
     // والإيقاف تحت اللوحة يعمل على الفيلم الجاري: يقف ويُستأنف — فالفحص بعده ليس على مسارٍ ميت.
     const root = document.documentElement;
+    const started = film.plays.length;
     await act(async () => {
       root.setAttribute("data-sadeed-panel", "open");
     });
-    expect(film.pause, "اللوحة لم توقف الفيلم على اللمس").toHaveBeenCalled();
+    expect(film.pauses, "اللوحة لم توقف الفيلم على اللمس").toBeGreaterThan(0);
     await act(async () => {
       root.removeAttribute("data-sadeed-panel");
     });
-    expect(film.play, "إغلاق اللوحة لم يستأنف الفيلم الجاري").toHaveBeenCalled();
+    expect(film.plays.length, "إغلاق اللوحة لم يستأنف الفيلم الجاري").toBeGreaterThan(started);
     await end();
     expect(art.dataset.filmAct).toBe("jewel");
-    film.play.mockClear();
+    film.clear();
     // يخرج الصفّ من الإطار ويعود — والمنتهي لا يُشغَّل.
     await act(async () => {
       FakeObserver.show(false);
       FakeObserver.show(true);
     });
-    expect(film.play, "المراقب أعاد الفيلم").not.toHaveBeenCalled();
+    expect(film.plays, "المراقب أعاد الفيلم").toEqual([]);
     // اللوحة تُفتح وتُغلق — والمنتهي موقوفٌ فلا يُستأنف.
     await act(async () => {
       root.setAttribute("data-sadeed-panel", "open");
@@ -1114,7 +1332,7 @@ describe("المصيَّر — مرّةً ثم الجوهرة، ولا يُعا�
     await act(async () => {
       root.removeAttribute("data-sadeed-panel");
     });
-    expect(film.play, "إغلاق اللوحة أعاد الفيلم").not.toHaveBeenCalled();
+    expect(film.plays, "إغلاق اللوحة أعاد الفيلم").toEqual([]);
     // «إيقاف الحركة» ثم استئنافها: الجوهرة باقية، والعائد بلا تشغيلٍ ولا تحميل.
     const proto = vi.spyOn(HTMLMediaElement.prototype, "play");
     const pause = view.getByRole("button", { name: "إيقاف الحركة" });
@@ -1135,19 +1353,21 @@ describe("المصيَّر — مرّةً ثم الجوهرة، ولا يُعا�
     view.unmount();
   });
 
-  it("زرّ «إعادة العرض مع الموسيقى» بعد النهاية: من أوّله بالموسيقى، ويُسقط الجوهرة", async () => {
+  it("زرّ «إعادة العرض مع الموسيقى» بعد النهاية: من أوّله بصوته، ويُسقط الجوهرة", async () => {
     localStorage.setItem(MUSIC_KEY, "off");
-    const { view, art, film, score, end } = await mountFilm(20);
-    expect(score.play, "موسيقى رغم الكتم المحفوظ").not.toHaveBeenCalled();
+    const { view, video, art, film, end } = await mountFilm(20);
+    // الكتم المحفوظ يُسأل قبل كل رفع: بدأ مكتومًا بلا محاولة صوت.
+    expect(film.plays, "محاولة صوت رغم الكتم المحفوظ").toEqual([true]);
+    expect(video.muted).toBe(true);
     await end();
     const replay = view.getByRole("button", { name: SOUND.ar.replay });
     expect(replay.hasAttribute("aria-pressed"), "الإعادة ليست تبديلًا").toBe(false);
     await act(async () => {
       fireEvent.click(replay);
     });
-    expect(film.play).toHaveBeenCalled();
+    expect(film.plays, "الإعادة لم تشغّل الفيلم").toHaveLength(2);
     expect(film.state.time).toBe(0);
-    expect(score.play, "الإعادة بلا موسيقى").toHaveBeenCalled();
+    expect(video.muted, "الإعادة بلا صوت").toBe(false);
     expect(localStorage.getItem(MUSIC_KEY), "«مع الموسيقى» لم يُحفظ").toBeNull();
     expect(art.dataset.filmAct).not.toBe("jewel");
     view.unmount();
@@ -1164,31 +1384,31 @@ describe("المصيَّر — مرّةً ثم الجوهرة، ولا يُعا�
       FakeObserver.show(true);
     });
     // العائد بعد النهاية عنصرٌ جديد بـ`preload="none"`: لا إطار حتى يُجلب.
+    policy.lazy = true;
     const video = view.container.querySelector<HTMLVideoElement>("video.nx-brand-film")!;
-    const film = fakeMedia(video, undefined, true);
-    const score = fakeMedia(view.container.querySelector<HTMLAudioElement>("audio")!);
+    const film = mediaOf(video);
     const replay = view.getByRole("button", { name: SOUND.ar.replay });
     replay.focus();
     expect(document.activeElement).toBe(replay);
     await act(async () => {
       fireEvent.click(replay);
     });
-    expect(film.play, "الإعادة لم تشغّل الفيلم").toHaveBeenCalled();
+    expect(film.plays, "الإعادة لم تشغّل الفيلم").toHaveLength(1);
     expect(replay.isConnected, "زرّ الإعادة زال بالنقر").toBe(true);
     expect(document.activeElement, "سقط التركيز بالإعادة").toBe(replay);
-    expect(score.play, "موسيقى قبل أوّل إطار").not.toHaveBeenCalled();
-    film.state.ready = 4;
+    film.ready = 4;
     await act(async () => {
       fireEvent(video, new Event("playing"));
     });
     expect(view.container.querySelector(".nx-brand-sound"), "زرٌّ آخر بعد أوّل إطار").toBe(replay);
     expect(document.activeElement, "سقط التركيز مع أوّل إطار").toBe(replay);
-    expect(score.play, "الإعادة بلا موسيقى").toHaveBeenCalled();
+    expect(video.muted, "الإعادة بلا صوت").toBe(false);
     view.unmount();
   });
 });
 
-describe("المصيَّر — الموسيقى تتبع الفيلم وتفضيل الزائر وأسباب السكوت", () => {
+describe("المصيَّر — الصوت من الفيلم نفسه: بدءٌ بمحاولة صوت، وإسكاتٌ لا يوقف، وإذنٌ بنقرة", () => {
+  useMediaFakes();
   afterEach(() => {
     vi.restoreAllMocks();
     localStorage.removeItem(MUSIC_KEY);
@@ -1198,195 +1418,270 @@ describe("المصيَّر — الموسيقى تتبع الفيلم وتفضي
     document.documentElement.removeAttribute("data-sadeed-panel");
     sadeedState.set("idle");
     SadeedAudioBus.release("chat-tts");
+    // يُمحى ما فرضه الاختبار على الوثيقة نفسها (يعود إلى المصدر في النموذج).
+    delete (document as unknown as Record<string, unknown>).visibilityState;
   });
 
-  it("تبدأ من زمن الإطار، وتعود إليه إن انحرفت، وتسكت باللوحة وبنطق سَدِيد ثم تعود", async () => {
-    const { view, film, score, seek } = await mountFilm(3);
-    expect(score.play).toHaveBeenCalledTimes(1);
-    expect(score.state.time).toBe(3);
+  it("يبدأ بمحاولة صوت: مرفوع الكتم من أوّل تشغيل، بلا `<audio>` ولا سمتَي autoplay/muted، والزرّ يعكس `muted`", async () => {
+    const { view, video, film } = await mountFilm(3);
+    expect(film.plays, "التشغيل الأوّل مكتوم").toEqual([false]);
+    expect(video.muted).toBe(false);
+    expect(film.state.paused).toBe(false);
+    expect(view.container.querySelector("audio")).toBeNull();
+    expect(video.hasAttribute("autoplay")).toBe(false);
+    expect(video.hasAttribute("muted")).toBe(false);
     const button = view.getByRole("button", { name: SOUND.ar.play });
     expect(button.getAttribute("aria-pressed")).toBe("true");
     // التلميح يطابق الاسم: «كتم» تلميحًا و«تشغيل» اسمًا كانا يتناقضان (أمسكته المراجعة).
     expect(button.getAttribute("title")).toBe(SOUND.ar.play);
-    // انحرافٌ فوق ربع ثانية يُعاد إلى زمن الإطار؛ ودونه يُترك.
-    score.state.time = 3.1;
-    seek(3.2);
-    expect(score.state.time).toBe(3.1);
-    seek(4);
-    expect(score.state.time).toBe(4);
-    // لوحة سَدِيد تُفتح: تسكت، وتُغلق: تعود من زمن الإطار.
+    // الزرّ يتبع الفيلم نفسه لا حالًا موازية: كتمٌ من خارج الصفّ ينعكس عليه.
+    await act(async () => {
+      video.muted = true;
+    });
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+    view.unmount();
+  });
+
+  it("الإسكات كتمٌ لا إيقاف: لوحة سَدِيد، ونطق سَدِيد، وإصغاؤه، وتبويبٌ مخفيّ — ويعود الصوت بزوال السبب", async () => {
+    const { view, video, film } = await mountFilm(3);
     const root = document.documentElement;
+    const muted = (why: string) => {
+      expect(video.muted, `${why}: لم يُكتم`).toBe(true);
+      expect(film.state.paused, `${why}: أُوقف الفيلم`).toBe(false);
+    };
+    const sound = (why: string) => {
+      expect(video.muted, `${why}: لم يعد الصوت`).toBe(false);
+      expect(film.state.paused, `${why}: أُوقف الفيلم`).toBe(false);
+    };
+    // لوحة سَدِيد تُفتح: يُكتم، وتُغلق: يعود الصوت.
     await act(async () => {
       root.setAttribute("data-sadeed-panel", "open");
     });
-    expect(score.pause).toHaveBeenCalledTimes(1);
-    film.state.time = 6;
+    muted("لوحة سَدِيد");
     await act(async () => {
       root.removeAttribute("data-sadeed-panel");
     });
-    expect(score.play).toHaveBeenCalledTimes(2);
-    expect(score.state.time).toBe(6);
-    // سَدِيد ينطق (ناقل الصوت) أو يُصغي (حالة الحضور): تسكت.
+    sound("إغلاق اللوحة");
+    // سَدِيد ينطق (ناقل الصوت) أو يُصغي (حالة الحضور).
     SadeedAudioBus.unlock();
     await act(async () => {
       SadeedAudioBus.acquire("chat-tts", () => {});
     });
-    expect(score.pause).toHaveBeenCalledTimes(2);
+    muted("سَدِيد ينطق");
     await act(async () => {
       SadeedAudioBus.release("chat-tts");
     });
-    expect(score.play).toHaveBeenCalledTimes(3);
+    sound("انتهى النطق");
     await act(async () => {
       sadeedState.set("listening");
     });
-    expect(score.pause).toHaveBeenCalledTimes(3);
+    muted("سَدِيد يُصغي");
     await act(async () => {
       sadeedState.set("idle");
     });
-    expect(score.play).toHaveBeenCalledTimes(4);
-    // الفيلم يقف (خارج الإطار أو تحت اللوحة): تقف معه.
-    film.state.paused = true;
+    sound("انتهى الإصغاء");
+    // تبويبٌ مخفيّ.
+    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "hidden" });
     await act(async () => {
-      fireEvent(view.container.querySelector("video")!, new Event("pause"));
+      document.dispatchEvent(new Event("visibilitychange"));
     });
-    expect(score.pause).toHaveBeenCalledTimes(4);
+    muted("تبويبٌ مخفيّ");
+    delete (document as unknown as Record<string, unknown>).visibilityState;
+    await act(async () => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    sound("عاد التبويب");
+    // ولا إيقاف واحدًا لأجل الصوت في كل ما سبق.
+    expect(film.pauses, "إيقافٌ لأجل الصوت").toBe(0);
     view.unmount();
   });
 
-  it("الكتم يُحفظ ويسكتها، والتشغيل من النقرة يمحوه — والزرّ بلغة الواجهة", async () => {
+  it("«إيقاف الحركة» يكتم ويعود الصوت باستئنافها", async () => {
+    const { view, video } = await mountFilm(3);
+    expect(video.muted).toBe(false);
+    await act(async () => {
+      document.documentElement.dataset.nxMotionPaused = "1";
+    });
+    expect(video.muted).toBe(true);
+    await act(async () => {
+      delete document.documentElement.dataset.nxMotionPaused;
+    });
+    expect(video.muted).toBe(false);
+    view.unmount();
+  });
+
+  describe("وخروج الصفّ من الإطار", () => {
+    beforeEach(() => {
+      FakeObserver.all = [];
+      vi.stubGlobal("IntersectionObserver", FakeObserver);
+    });
+    afterEach(() => vi.unstubAllGlobals());
+
+    it("يكتم الصوت، ويعود بعودته (والفيلم يقف ويُستأنف لفكّ الترميز لا للصوت)", async () => {
+      const { view, video, film } = await mountFilm(3);
+      expect(video.muted).toBe(false);
+      await act(async () => {
+        FakeObserver.show(false);
+      });
+      expect(video.muted).toBe(true);
+      await act(async () => {
+        FakeObserver.show(true);
+      });
+      expect(video.muted).toBe(false);
+      expect(film.state.paused).toBe(false);
+      view.unmount();
+    });
+  });
+
+  it("كتم الزائر يُحفظ ويسكت الفيلم دون إيقافه، والتشغيل من النقرة يمحوه — والزرّ بلغة الواجهة", async () => {
     localStorage.setItem("locale", "en");
-    const { view, score } = await mountFilm(2);
+    const { view, video, film } = await mountFilm(2);
     const button = view.getByRole("button", { name: SOUND.en.play });
     expect(button.getAttribute("aria-pressed")).toBe("true");
     await act(async () => {
       fireEvent.click(button);
     });
     expect(localStorage.getItem(MUSIC_KEY)).toBe("off");
-    expect(score.pause).toHaveBeenCalled();
+    expect(video.muted).toBe(true);
+    expect(film.state.paused).toBe(false);
+    expect(film.pauses).toBe(0);
     expect(button.getAttribute("aria-pressed")).toBe("false");
     expect(button.getAttribute("title")).toBe(SOUND.en.play);
     await act(async () => {
       fireEvent.click(button);
     });
     expect(localStorage.getItem(MUSIC_KEY)).toBeNull();
-    expect(score.play).toHaveBeenCalledTimes(2);
+    expect(video.muted).toBe(false);
     expect(button.getAttribute("aria-pressed")).toBe("true");
     view.unmount();
   });
 
-  it("منعُ المتصفّح: محاولةٌ واحدة، ثم تنتظر أوّل نقرةٍ في الصفحة — لا التمرير ولا أزرار الصفّ", async () => {
-    const { view, score, seek } = await mountFilm(2, { refuse: "NotAllowedError" });
-    expect(score.play).toHaveBeenCalledTimes(1);
-    await act(async () => {});
-    // لا إعادة محاولةٍ مع كل إطار.
-    seek(2.5);
-    seek(3);
-    expect(score.play).toHaveBeenCalledTimes(1);
+  it("التفضيل المحفوظ «مكتوم» يُسأل قبل رفع الكتم: يبدأ مكتومًا بلا محاولة صوت، ونقرةٌ في الصفحة لا ترفعه", async () => {
+    localStorage.setItem(MUSIC_KEY, "off");
+    const { view, video, film } = await mountFilm(2);
+    expect(film.plays, "محاولة صوت رغم الكتم المحفوظ").toEqual([true]);
+    expect(video.muted).toBe(true);
+    policy.activated = true;
+    fireEvent.click(document.body);
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(video.muted, "نقرةٌ رفعت كتمًا اختاره الزائر").toBe(true);
+    // وزرّه وحده يعيده.
+    await act(async () => {
+      fireEvent.click(view.getByRole("button", { name: SOUND.ar.play }));
+    });
+    expect(video.muted).toBe(false);
+    expect(localStorage.getItem(MUSIC_KEY)).toBeNull();
+    view.unmount();
+  });
+
+  it("رفض المتصفّح: يحاول بصوت ثم يبدأ مكتومًا من الإطار نفسه، ولا يفتح إلا نقرةٌ صالحة — لا التمرير ولا أزرار الصفّ", async () => {
+    const { view, video, film } = await mountFilm(2, { refuse: true });
+    expect(film.plays, "محاولة صوتٍ ثم بدءٌ مكتوم").toEqual([false, true]);
+    expect(video.muted).toBe(true);
+    expect(film.state.paused, "الفيلم لم يبدأ").toBe(false);
+    const button = view.getByRole("button", { name: SOUND.ar.play });
+    expect(button.getAttribute("aria-pressed")).toBe("false");
     // التمرير ليس إذنًا.
     fireEvent.scroll(window);
     fireEvent.wheel(document.body);
     fireEvent.pointerDown(document.body, { pointerType: "touch" });
-    expect(score.play).toHaveBeenCalledTimes(1);
-    // زرّ «إيقاف الحركة» يقرّر بنفسه — لا يبدأ الموسيقى.
+    // زرّ «إيقاف الحركة» يقرّر بنفسه — لا يفتح الصوت.
     fireEvent.pointerDown(view.getByRole("button", { name: "إيقاف الحركة" }), {
       pointerType: "mouse",
     });
-    expect(score.play).toHaveBeenCalledTimes(1);
     // ولا المفاتيح: Tab وسهمٌ تنقّلٌ لا قبولٌ بالصوت (أمسكته المراجعة).
     fireEvent.keyDown(document.body, { key: "Tab" });
     fireEvent.keyDown(document.body, { key: "ArrowDown" });
-    expect(score.play).toHaveBeenCalledTimes(1);
-    // نقرةٌ في الصفحة: تبدأ من زمن الإطار — بعد مهلة اللمسة لا قبلها.
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(video.muted, "ما ليس إذنًا فتح الصوت").toBe(true);
+    // نقرةٌ في الصفحة: تفتح بعد مهلة اللمسة لا قبلها — والفيلم يمضي.
+    policy.activated = true;
     fireEvent.click(document.body);
-    expect(score.play).toHaveBeenCalledTimes(1);
+    expect(video.muted).toBe(true);
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(video.muted).toBe(false);
+    expect(film.pauses, "الفتح أوقف الفيلم").toBe(0);
+    expect(film.plays, "الفتح أعاد تشغيل الفيلم").toEqual([false, true]);
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+    view.unmount();
+  });
+
+  it("لا يُفكّ كتمٌ قبل الإذن ولو زال سبب الإسكات — وقاعدة المتصفّح المحاكاة حقيقية", async () => {
+    const { view, video, film } = await mountFilm(2, { refuse: true });
+    const root = document.documentElement;
     await act(async () => {
-      await new Promise((r) => setTimeout(r, GESTURE_GRACE_MS + 30));
+      root.setAttribute("data-sadeed-panel", "open");
     });
-    expect(score.play).toHaveBeenCalledTimes(2);
-    expect(score.state.time).toBe(3);
+    await act(async () => {
+      root.removeAttribute("data-sadeed-panel");
+    });
+    // لم يُؤذَن بعد: يبقى مكتومًا، والفيلم جارٍ (لا يوقفه المتصفّح).
+    expect(video.muted, "رُفع الكتم قبل الإذن").toBe(true);
+    expect(film.state.paused).toBe(false);
+    expect(film.pauses).toBe(0);
+    // الشاهد: لو رُفع الكتم بلا إذن لأوقف المتصفّح الفيلم — فالفحص أعلاه ليس على مسارٍ ميت.
+    video.muted = false;
+    expect(film.state.paused, "المتصفّح المحاكى لم يوقف الفيلم").toBe(true);
     view.unmount();
   });
 
   it("نقرةٌ أولى تفتح لوحة سَدِيد أو تنقل الصفحة لا تُسمِع دفقة (أمسكته المراجعة)", async () => {
-    const { view, score } = await mountFilm(2, { refuse: "NotAllowedError" });
-    await act(async () => {});
-    expect(score.play).toHaveBeenCalledTimes(1);
-    // النقرة تفتح اللوحة: تمرّ المهلة واللوحة مفتوحة ⇐ لا موسيقى.
+    const { view, video, film } = await mountFilm(2, { refuse: true });
+    // النقرة تفتح اللوحة: تمرّ المهلة واللوحة مفتوحة ⇒ يبقى مكتومًا.
+    policy.activated = true;
     fireEvent.click(document.body);
     document.documentElement.setAttribute("data-sadeed-panel", "open");
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(video.muted).toBe(true);
+    expect(film.state.unmutes).toBe(0);
+    // وأذنت النقرة للصفحة: تُغلق اللوحة فيعود الصوت دون نقرةٍ أخرى.
     await act(async () => {
-      await new Promise((r) => setTimeout(r, GESTURE_GRACE_MS + 30));
+      document.documentElement.removeAttribute("data-sadeed-panel");
     });
-    expect(score.play).toHaveBeenCalledTimes(1);
-    document.documentElement.removeAttribute("data-sadeed-panel");
-    // النقرة تنقل الصفحة: يُفكّ الصفّ في المهلة ⇐ لا موسيقى بعد الفكّ.
+    expect(video.muted).toBe(false);
+    expect(film.pauses).toBe(0);
+    view.unmount();
+  });
+
+  it("نقرةٌ تنقل الصفحة (يُفكّ الصفّ في المهلة) لا ترفع الكتم بعد الفكّ", async () => {
+    const { view, film } = await mountFilm(2, { refuse: true });
+    policy.activated = true;
     fireEvent.click(document.body);
     view.unmount();
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, GESTURE_GRACE_MS + 30));
-    });
-    expect(score.play).toHaveBeenCalledTimes(1);
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(film.state.unmutes, "رُفع الكتم بعد الفكّ").toBe(0);
   });
 
-  it("كمون القفز المقيس يُضاف إلى الهدف التالي — فلا تدور الموسيقى في قفزاتٍ بلا نهاية (تسجيل المالك: انقطاعٌ كل 0.77 ث بطول 0.39 ث)", async () => {
-    const now = vi.spyOn(performance, "now");
-    now.mockReturnValue(1000);
-    const { audio, score, seek } = await mountFilm(3);
-    // أوّل قفزة بلا قياسٍ سابق: إلى زمن الإطار نفسه.
-    expect(score.state.time).toBe(3);
-    // اكتملت بعد 0.39 ث (كمون القفز في m4a على iOS) — والفيلم مضى 0.4 ث فصارت منحرفةً فوق ربع ثانية.
-    now.mockReturnValue(1390);
-    fireEvent(audio, new Event("seeked"));
-    seek(3.4);
-    // القفزة الثانية تهبط على الحاضر لا الماضي: زمن الإطار + الكمون المقيس.
-    expect(score.state.time).toBeCloseTo(3.4 + 0.39, 5);
-    // ومنحرفةً دون ربع ثانية بعد استقرارها: لا قفزة ثالثة.
-    now.mockReturnValue(1790);
-    fireEvent(audio, new Event("seeked"));
-    seek(3.6);
-    expect(score.state.time).toBeCloseTo(3.4 + 0.39, 5);
+  it("لوحة سَدِيد مفتوحة عند التركيب: يبدأ مكتومًا بلا محاولة صوت، ولا يفتح بإغلاقها قبل الإذن", async () => {
+    document.documentElement.setAttribute("data-sadeed-panel", "open");
+    const { view, video, film } = await mountFilm(2);
+    expect(film.plays).toEqual([true]);
+    expect(video.muted).toBe(true);
+    await act(async () => {
+      document.documentElement.removeAttribute("data-sadeed-panel");
+    });
+    expect(video.muted, "رُفع الكتم قبل الإذن").toBe(true);
+    policy.activated = true;
+    fireEvent.click(document.body);
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(video.muted).toBe(false);
+    expect(film.pauses).toBe(0);
+    view.unmount();
   });
 
-  it("قفزةٌ جارية (`seeking`) لا تُقاس منحرفةً ولا تُعاد — الحلقة التي سمعها المالك", async () => {
-    const { audio, score, seek } = await mountFilm(3);
-    expect(score.state.time).toBe(3);
-    Object.defineProperty(audio, "seeking", { configurable: true, get: () => true });
-    seek(4);
-    expect(score.state.time, "قفزةٌ فوق قفزة").toBe(3);
-  });
-
-  it("لا موسيقى قبل أوّل إطار، وإيقافها من خارج الصفّ قرارٌ لا يُنقض إلا بزرّها", async () => {
-    const { view, film, score, seek } = await mountFilm(2);
-    expect(score.play).toHaveBeenCalledTimes(1);
-    const video = view.container.querySelector("video")!;
-    // توقّفٌ لنقص البيانات: لا إطار قائم ⇐ تسكت حتى يعود.
-    film.state.ready = 1;
-    await act(async () => {
-      fireEvent(video, new Event("waiting"));
-    });
-    expect(score.pause).toHaveBeenCalledTimes(1);
-    seek(2.5);
-    expect(score.play).toHaveBeenCalledTimes(1);
-    film.state.ready = 4;
-    await act(async () => {
-      fireEvent(video, new Event("playing"));
-    });
-    expect(score.play).toHaveBeenCalledTimes(2);
-    // مفاتيح الوسائط أو أداة النظام تُسكتها (إيقافٌ ليس منّا): لا تعود مع الإطار التالي.
-    score.state.paused = true;
-    await act(async () => {
-      fireEvent(view.container.querySelector("audio")!, new Event("pause"));
-    });
-    seek(3);
-    seek(3.5);
-    expect(score.play).toHaveBeenCalledTimes(2);
-    // ويعيدها زرّها وحده (من داخل نقرة الزائر).
+  it("زرّ الصوت من داخل نقرة الزائر يفتح الصوت بعد رفض المتصفّح دون أن يتوقف الفيلم", async () => {
+    const { view, video, film } = await mountFilm(2, { refuse: true });
+    expect(video.muted).toBe(true);
+    policy.activated = true;
     const button = view.getByRole("button", { name: SOUND.ar.play });
-    expect(button.getAttribute("aria-pressed")).toBe("false");
     await act(async () => {
       fireEvent.click(button);
     });
-    expect(score.play).toHaveBeenCalledTimes(3);
+    expect(video.muted).toBe(false);
+    expect(film.pauses).toBe(0);
+    expect(film.plays).toEqual([false, true]);
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+    expect(localStorage.getItem(MUSIC_KEY)).toBeNull();
     view.unmount();
   });
 });

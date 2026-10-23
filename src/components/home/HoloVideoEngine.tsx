@@ -114,8 +114,8 @@ export const MOTION_PAUSE_EVENT = "nx:motion-pause";
  * والأسباب **سببٌ واحد مجمَّع لا متحكّمان**: لو أوقف كلٌّ منها الفيلم بمعزل لاستأنفه
  * إغلاقُ اللوحة والحركة ما زالت موقوفة.
  */
-// مُصدَّرة لأن حلقتَي الهوية على الرئيسية (`HomeBrandRow`) فيلمان صامتان بالقاعدة
-// نفسها — طبقةٌ واحدة لا نسخةٌ ثانية (المادة ٣١).
+// مُصدَّرة لأن فيلم الهوية على الرئيسية (`HomeBrandRow`) يقف بالقاعدة نفسها خارج الإطار
+// وتحت لوحة سَدِيد — طبقةٌ واحدة لا نسخةٌ ثانية (المادة ٣١).
 export function holdFilmUnderPanel(video: HTMLVideoElement): () => void {
   const root = document.documentElement;
   const touch = typeof window.matchMedia === "function" ? window.matchMedia(FILM_HOLD_QUERY) : null;
