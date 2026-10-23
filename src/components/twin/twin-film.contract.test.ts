@@ -643,7 +643,7 @@ function launcherClearanceGaps(css: string, needPx: number): string[] {
   return out;
 }
 
-/** حاجة الزرّ العائم بالبكسل من مصدره: `bottom-[calc(Rrem+env(...))]` + `h-N` (N×4px). */
+/** حاجة الزرّ العائم بالبكسل من مصدره: `bottom` بقيمة calc(R rem + env) + `h-N` (N×4px). */
 function launcherFootprintPx(src: string): number | null {
   const bottom = /fixed bottom-\[calc\(([\d.]+)rem\+env\(safe-area-inset-bottom\)\)\]/.exec(src);
   const height = /\bh-(\d+)\b/.exec(src.slice(bottom?.index ?? 0, (bottom?.index ?? 0) + 160));
