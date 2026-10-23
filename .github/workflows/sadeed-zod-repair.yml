@@ -1,113 +1,29 @@
-name: SADEED isolated Zod repair
+name: SADEED isolated release verification
 on:
   push:
     branches: [repair/sadeed-zod-security-20261024]
     paths: [.github/workflows/sadeed-zod-repair.yml]
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: sadeed-isolated-zod-repair
   cancel-in-progress: false
 jobs:
-  repair:
+  verify:
     if: github.repository == 'faisaljohaimy-ship-it/biz-pulse-ar'
     runs-on: ubuntu-latest
-    timeout-minutes: 13
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
-          fetch-depth: 0
+          ref: f189e4caa09b622c373bca76b546947b409f373d
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Preserve current main and exact schema behavior
+      - name: Offline model-error and backend health regression tests
         run: |
           set -euo pipefail
-          test "$(git branch --show-current)" = 'repair/sadeed-zod-security-20261024'
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git fetch origin main
-          git merge --no-edit origin/main
-          npm ci --ignore-scripts --no-audit --no-fund
-          node --input-type=module <<'NODE'
-          import ts from 'typescript';
-          import fs from 'node:fs';
-          import assert from 'node:assert/strict';
-          const file = 'src/lib/exec/tool-registry.server.ts';
-          let code = fs.readFileSync(file, 'utf8');
-          const ast = ts.createSourceFile(file, code, ts.ScriptTarget.Latest, true);
-          const edits = [];
-          const names = [];
-          for (const stmt of ast.statements) {
-            if (!ts.isVariableStatement(stmt) || stmt.declarationList.declarations.length !== 1) continue;
-            const decl = stmt.declarationList.declarations[0];
-            if (!ts.isIdentifier(decl.name) || decl.type?.getText(ast) !== 'ToolExecutor' || !decl.initializer || !ts.isObjectLiteralExpression(decl.initializer)) continue;
-            const name = decl.name.text;
-            if (!code.includes('typeof ' + name + '.input')) continue;
-            const input = decl.initializer.properties.find(p => ts.isPropertyAssignment(p) && p.name.getText(ast) === 'input');
-            assert(input, 'Missing schema for ' + name);
-            const schema = name + 'InputSchema';
-            assert(!code.includes('const ' + schema), 'Duplicate schema ' + schema);
-            edits.push({ start: stmt.getStart(ast), end: stmt.getStart(ast), text: 'const ' + schema + ' = ' + input.initializer.getText(ast) + ';\n\n' });
-            edits.push({ start: input.initializer.getStart(ast), end: input.initializer.getEnd(), text: schema });
-            names.push([name, schema]);
-          }
-          assert(names.length > 0, 'Expected erased executor schemas to preserve');
-          for (const edit of edits.sort((a,b) => b.start-a.start)) code = code.slice(0,edit.start) + edit.text + code.slice(edit.end);
-          for (const [name,schema] of names) code = code.replaceAll('typeof ' + name + '.input', 'typeof ' + schema);
-          fs.writeFileSync(file, code);
-          console.log('PRESERVED_EXECUTOR_SCHEMAS', names.map(n => n[0]).join(','));
-          const engine = 'src/lib/exec/workflow-engine.server.ts';
-          let workflow = fs.readFileSync(engine, 'utf8');
-          const original = 'retry: RetryPolicy.optional(),';
-          assert.equal(workflow.split(original).length, 2, 'Retry slot must be unique');
-          workflow = workflow.replace(original, '// Preserve omitted retry policies; the executor supplies its safe fallback.\n    retry: RetryPolicy.removeDefault().optional(),');
-          fs.writeFileSync(engine, workflow);
-          NODE
-          git show origin/fix/sadeed-zod-audit-20261024:src/lib/zod-security.test.ts > src/lib/zod-security.test.ts
-          cat > src/lib/exec/workflow-retry.compat.test.ts <<'TEST'
-          import { describe, expect, it } from "vitest";
-          import { StepSchema } from "./workflow-engine.server";
-
-          const step = { id: "s1", kind: "tool", toolId: "sql.read", input: {} };
-
-          describe("workflow retry compatibility", () => {
-            it("does not inject a retry policy when it is omitted", () => {
-              expect(StepSchema.parse(step)).toEqual(step);
-              expect(StepSchema.parse({ ...step, retry: undefined }).retry).toBeUndefined();
-            });
-
-            it("retains field defaults when a policy is explicitly supplied", () => {
-              expect(StepSchema.parse({ ...step, retry: {} })).toMatchObject({
-                retry: { max: 0, backoffMs: 1000, factor: 2 },
-              });
-            });
-
-            it("preserves retry limits and rejects invalid explicit policies", () => {
-              for (const retry of [null, { max: 6 }, { max: -1 }, { backoffMs: 0 }, { factor: 0 }]) {
-                expect(StepSchema.safeParse({ ...step, retry }).success).toBe(false);
-              }
-            });
-          });
-          TEST
-          ./node_modules/.bin/prettier --write src/lib/exec/tool-registry.server.ts src/lib/exec/workflow-engine.server.ts src/lib/exec/workflow-retry.compat.test.ts src/lib/zod-security.test.ts
-          git add src/lib/exec/tool-registry.server.ts src/lib/exec/workflow-engine.server.ts src/lib/exec/workflow-retry.compat.test.ts src/lib/zod-security.test.ts
-          git commit -m 'fix(exec): preserve concrete schema types and absent retry policies on Zod4'
-          git push origin HEAD:refs/heads/repair/sadeed-zod-security-20261024
-          echo "CANDIDATE_SHA=$(git rev-parse HEAD)"
-      - name: Verify schema compatibility without production calls
-        run: |
-          set +e
-          failures=0
-          npm run typecheck > /tmp/types.log 2>&1
-          status=$?; echo "VERIFY_TYPES=$status"; tail -n 140 /tmp/types.log
-          [ "$status" -eq 0 ] || failures=$((failures+1))
-          ./node_modules/.bin/vitest run src/lib/exec.test.ts src/lib/exec/tool-registry.server.test.ts src/lib/exec/workflow-retry.compat.test.ts src/lib/zod-security.test.ts > /tmp/tests.log 2>&1
-          status=$?; echo "VERIFY_COMPAT_TESTS=$status"; tail -n 100 /tmp/tests.log
-          [ "$status" -eq 0 ] || failures=$((failures+1))
-          npm run check:audit > /tmp/audit.log 2>&1
-          status=$?; echo "VERIFY_AUDIT=$status"; tail -n 60 /tmp/audit.log
-          [ "$status" -eq 0 ] || failures=$((failures+1))
-          echo "VERIFIED_SOURCE_SHA=$(git rev-parse HEAD) TOTAL_FAILED_CHECKS=$failures"
-          test "$failures" -eq 0
+          test "$(git rev-parse HEAD)" = f189e4caa09b622c373bca76b546947b409f373d
+          node --test scripts/smoke-production.regression.test.mjs
+          echo "OFFLINE_REGRESSION_SHA=$(git rev-parse HEAD)"
