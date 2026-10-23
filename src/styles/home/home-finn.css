@@ -1,0 +1,134 @@
+/* بطاقة «فِن» في الرئيسية — أسفل بطاقة سَدِيد، للمالك وحده (HomeFinnCard).
+   كل لونٍ رمز (`--ink` · `--surface` · `--hairline` · `--tone-*`) فتعمل في الوضعين،
+   والأسلوب لا يحمل قيمًا نهائية. كل هدفٍ ≥ 44px. */
+
+/* عمود الصدر الأيمن: سَدِيد ثم فِن. سَدِيد يملأ المتبقّي، فحيث لا تظهر بطاقة فِن
+   (لغير المالك) يبقى سَدِيد ممتدًّا كما كان تمامًا. */
+.nx-home-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-inline-size: 0;
+}
+
+.nx-home-side-col > .nx-home-sadeed {
+  flex: 1 1 auto;
+}
+
+.nx-home-panel.nx-home-finn {
+  --fn-accent: var(--tone-blue);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: color-mix(in srgb, var(--fn-accent) 7%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--fn-accent) 35%, var(--hairline));
+  color: var(--ink);
+}
+
+.nx-fn-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-inline-size: 0;
+}
+
+/* الصورة نافذةٌ بنسبة 3:4 تقصّ ما حولها وتُبقي الوجه والخوذة والكتفين. */
+.nx-fn-portrait {
+  flex: 0 0 auto;
+  inline-size: 72px;
+  block-size: 96px;
+  object-fit: cover;
+  object-position: 50% 12%;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--fn-accent) 45%, var(--hairline));
+  background: var(--surface);
+}
+
+.nx-fn-id {
+  min-inline-size: 0;
+}
+
+.nx-fn-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.nx-fn-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+/* الشريط التحذيري: الدلالة بالشكل (مثلّث) والنصّ لا باللون وحده (WCAG 1.4.1). */
+.nx-fn-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--tone-amber);
+  background: color-mix(in srgb, var(--tone-amber) 12%, transparent);
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.nx-fn-banner-ico {
+  flex: 0 0 auto;
+  inline-size: 16px;
+  block-size: 16px;
+  margin-block-start: 3px;
+  color: var(--tone-amber);
+}
+
+.nx-fn-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-block-size: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--fn-accent) 55%, var(--hairline));
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nx-fn-open:hover,
+.nx-fn-open:focus-visible {
+  background: color-mix(in srgb, var(--fn-accent) 14%, var(--surface));
+}
+
+.nx-fn-open:focus-visible {
+  outline: 2px solid var(--fn-accent);
+  outline-offset: 2px;
+}
+
+.nx-fn-open-ico {
+  inline-size: 18px;
+  block-size: 18px;
+  flex: 0 0 auto;
+  color: var(--fn-accent);
+}
+
+/* ألوان النظام القسرية: الحدود ظاهرةٌ بلا اعتماد على تدرّج الخلفية. */
+@media (forced-colors: active) {
+  .nx-home-panel.nx-home-finn,
+  .nx-fn-portrait,
+  .nx-fn-banner,
+  .nx-fn-open {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+}
