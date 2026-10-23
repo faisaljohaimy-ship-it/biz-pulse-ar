@@ -18,7 +18,12 @@ describe("bounded collection validation", () => {
     const item = z.string().superRefine(() => {
       calls++;
     });
-    expect(z.set(item).max(2).safeParse(new Set(["a", "b", "c"])).success).toBe(false);
+    expect(
+      z
+        .set(item)
+        .max(2)
+        .safeParse(new Set(["a", "b", "c"])).success,
+    ).toBe(false);
     expect(calls).toBe(0);
   });
 
