@@ -23,6 +23,8 @@
    ⑤ الاسم والسطر **نصٌّ حقيقي** فوق اللوحة والفيلم (أمر المالك ٢٠٢٦/١٠/١٨: «Prefer HTML text
      overlays for important text») — يخفت مع قصّة الفيلم ويعود بضوءٍ عابر (`data-film-act` يكتبه
      `HomeBrandRow` من زمن الإطار). التفصيل فوق قواعده أدناه.
+   ⑥ زرّ الموسيقى (WCAG 1.4.2) في زاوية اللوحة السفلى اليمنى.
+   ⑦ «الجوهرة» على الرمز بعد الفيلم (R4) — الفصل الرابع `jewel`، حين ينتهي الفيلم.
    ============================================================================ */
 
 .nx-home-brand {
@@ -206,6 +208,15 @@
   .nx-brand-halo {
     display: none;
   }
+
+  /* يغلب قاعدة الظهور في فصلها (نوعيّتها أعلى) — الألوان القسرية بلا زخرفة. */
+  .nx-brand-jewel {
+    display: none !important;
+  }
+
+  .nx-brand-sound {
+    border: 1px solid ButtonText;
+  }
 }
 
 /* ⑤ نصّ اللوحة فوق الفيلم.
@@ -300,6 +311,156 @@
   }
 }
 
+/* ⑥ زرّ الموسيقى (WCAG 1.4.2 «Audio Control») — موسيقى الفيلم بأمر المالك (R4): «واظف الى فديو
+   الموشن قرافيتي افضل واجمل واحدث موسيقا احترافية عصرية». تشغيلٌ وكتمٌ أثناء الفيلم (`aria-pressed`)،
+   وإعادةٌ مع الموسيقى بعده. الهدف 44×44 والزجاج المرئيّ 36 في وسطه (`content-box`).
+   **الزاوية السفلى اليمنى لا العليا اليسرى:** في قصّ الجوال (2:1) يبدأ الاسم تحت الحافّة العليا بنحو
+   26–46px على 320–390px (بحسب التفاف السطر)، فزرٌّ أعلى اليسار يلامسه؛ والنصّ لا يبلغ اليمين أبدًا
+   (ينتهي عند 70.5% و67%)، والزرّ تحت ضلع الرمز السداسيّ المائل في القصّ (نحو 4px على 390) وخارج
+   صندوقه في 3:1 (الرمز حتى 92.2% عرضًا و83.4% ارتفاعًا). والإزاحة 4px تُبقي حلقة التركيز (2+2px)
+   داخل قصّ اللوحة. */
+.nx-brand-sound {
+  position: absolute;
+  z-index: 3;
+  right: 4px;
+  bottom: 4px;
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 4px;
+  border-radius: 50%;
+  background:
+    var(--glass-sheen) content-box,
+    linear-gradient(var(--glass-fill), var(--glass-fill)) content-box;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* الحال بالرمز (صوتٌ ⇄ كتم) وبـ`aria-pressed` — واللون تأكيدٌ لا حاملٌ وحيد. */
+.nx-brand-sound[aria-pressed="true"] {
+  color: var(--sd-azure);
+}
+
+/* حلقة التركيز ثنائية اللون ثابتة: كحليّةٌ وتحتها حلقةٌ بيضاء تملأ إزاحتها (2px). الزرّ فوق لوحةٍ فاتحة
+   في الوضعين وفوق فيلمٍ كحليّ معظم القصّة — الكحليّ وحده يختفي على الفيلم، والأبيض وحده على اللوحة،
+   وسماويّ الداكن (`--tone-cyan`) دون 3:1 على الفاتح (WCAG 1.4.11 · 2.4.7؛ أمسكته المراجعة). العرض
+   والإزاحة من `.nx-focus-ring` نفسها. */
+.nx-brand-sound.nx-focus-ring:focus-visible {
+  outline-color: var(--nx-navy);
+  box-shadow: 0 0 0 2px var(--nx-white);
+}
+
+/* ⑦ الجوهرة — أمر المالك ٢٠٢٦/١٠/١٨ (R4) بنصّه: «واجعل علامة سديد في النهاية تكون كالجوهرة المشعة
+   باستمرار وذات توهج لولبي مشع وبلمعان مستمر من الاسفل الى الاعلى». ينسخ «لا لمعة دائمة» (M1) **على
+   رمز البانر وحده وبعد الفيلم وحده**.
+   • طبقةٌ فوق صندوق الرمز في اللوحة (1519،121 مقاسه 483 من 2172×724) لا على الصورة: هالةٌ تتنفّس،
+     وذراعا توهّجٍ مخروطيّان يدوران متعاكسين في حلقةٍ حوله (لولبٌ يدور، دورةٌ في 9 و14 ث)، ولمعانٌ يصعد
+     من الأسفل إلى الأعلى كل 3 ث مقصوصًا على شكل الرمز (`sadeed-emblem-mask.webp`)، وثلاث نجماتٍ
+     رباعية تومض تباعًا.
+   • خفيّةٌ إلا في فصلها (`data-film-act="jewel"` حين ينتهي الفيلم)، وحركتها كلّها `rotate` و`translate`
+     و`scale` و`opacity` (المُركِّب) خلف بوابة الحركة والمفتاح والوضع الآمن، وتقف بزرّ «إيقاف الحركة»
+     وخارج الإطار؛ ولمن طلب السكون لا فيلم فلا جوهرة — اللوحة كما هي.
+   • الألوان من رموز `--nx-*` الثابتة لا رموز الثيم: الرمز على لوحة المالك الفاتحة في الوضعين (كالاسم).
+   • لا مزج ألوان (`mix-blend-mode`): ضوءٌ شفّاف فوق الأزرق يكفي، والدخول بالشفافية يبقى صادقًا.
+   • والحركة متغيّراتٌ في الطبقات (`--jw-k` الاسم، `--jw-d` المدّة، `--jw-l` التأخير، `--jw-e` المنحنى)
+     تقرؤها قاعدةٌ واحدة خلف البوابات أدناه — فلا تُكتب البوابة لكل طبقة. */
+.nx-brand-jewel {
+  position: absolute;
+  left: 69.93%;
+  top: 16.71%;
+  inline-size: 22.24%;
+  block-size: 66.71%;
+  display: none;
+}
+
+.nx-brand-jewel > *,
+.nx-jewel-shine > * {
+  position: absolute;
+  inset: 0;
+}
+
+.nx-jewel-halo {
+  inset: -12%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--nx-cyan), transparent);
+  opacity: 0.42;
+  --jw-k: nxJewelBreathe;
+  --jw-d: 5s;
+  --jw-e: var(--nx-ease-inout);
+}
+
+.nx-jewel-spiral {
+  inset: -20%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    at 46% 54%,
+    transparent 0deg,
+    color-mix(in srgb, var(--nx-cyan) 78%, transparent) 20deg,
+    color-mix(in srgb, var(--nx-white) 88%, transparent) 30deg,
+    color-mix(in srgb, var(--nx-cyan) 46%, transparent) 40deg,
+    transparent 62deg 120deg
+  );
+  mask: radial-gradient(closest-side, transparent 44%, var(--nx-white) 62%, transparent 94%);
+  opacity: 0.95;
+  --jw-k: nxJewelSpin;
+  --jw-d: 9s;
+}
+
+.nx-jewel-spiral[data-rev] {
+  inset: -6%;
+  opacity: 0.72;
+  --jw-k: nxJewelSpinBack;
+  --jw-d: 14s;
+}
+
+.nx-jewel-shine {
+  mask: url("/home/brand/sadeed-emblem-mask.webp") 0 0 / 100% 100%;
+}
+
+/* شريط الضوء: يبدأ تحت الرمز ويخرج من أعلاه، ثم يسكن خارجه حتى الدورة التالية. */
+.nx-jewel-shine > * {
+  background: linear-gradient(
+    transparent 30%,
+    color-mix(in srgb, var(--nx-white) 80%, transparent) 50%,
+    transparent 70%
+  );
+  translate: 0 100%;
+  --jw-k: nxJewelRise;
+  --jw-d: 3s;
+  --jw-e: var(--nx-ease-inout);
+}
+
+.nx-jewel-glint {
+  inset: auto;
+  inline-size: 16%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  scale: 0;
+  background: radial-gradient(var(--nx-white) 12%, var(--nx-cyan-2) 26%, transparent 62%);
+  clip-path: polygon(50% 0, 57% 43%, 100% 50%, 57% 57%, 50% 100%, 43% 57%, 0 50%, 43% 43%);
+  --jw-k: nxJewelGlint;
+  --jw-d: 3.6s;
+}
+
+/* على رؤوس السداسيّ: الأعلى، والأيمن العلويّ، والأيسر السفليّ — تباعًا كل 1.2 ث. */
+.nx-jewel-glint[data-g="1"] {
+  left: 50%;
+  top: 5%;
+}
+
+.nx-jewel-glint[data-g="2"] {
+  left: 92%;
+  top: 28%;
+  --jw-l: -2.4s;
+}
+
+.nx-jewel-glint[data-g="3"] {
+  left: 9%;
+  top: 71%;
+  --jw-l: -1.2s;
+}
+
 @container (max-width: 559px) {
   .nx-brand-poster {
     aspect-ratio: 2 / 1;
@@ -308,6 +469,12 @@
 
   .nx-brand-film {
     object-position: 80% 50%;
+  }
+
+  /* الرمز في القصّ 2:1: الصورة بعرض 1.5× الحاوية مزاحةً −0.4× (`object-position: 80%`). */
+  .nx-brand-jewel {
+    left: 64.9%;
+    inline-size: 33.36%;
   }
 
   .nx-brand-copy {
@@ -327,8 +494,8 @@
   }
 }
 
-/* القصّة: يخفت النصّ مع خفوت اللوحة إلى الأزرق، ويعود حين يهبط الرمز — وعودته ضوءٌ يعبر
-   الاسم مرّة ثم يعلو السطر. خلف بوابة الحركة كلّها؛ والفيلم نفسه لا يُركَّب لمن طلب السكون. */
+/* القصّة: يخفت النصّ مع اشتعال الرمز في أوّل الفيلم، ويعود حين تتكوّن اللوحة حوله — وعودته ضوءٌ
+   يعبر الاسم مرّة ثم يعلو السطر. خلف بوابة الحركة كلّها؛ والفيلم نفسه لا يُركَّب لمن طلب السكون. */
 @keyframes nxBrandLightPass {
   from {
     background-position:
@@ -386,6 +553,76 @@
     animation-delay: 0.4s;
     animation-timing-function: var(--nx-ease-out);
     animation-fill-mode: backwards;
+  }
+}
+
+/* ⑦ الجوهرة: حركاتها — `rotate` و`translate` و`scale` و`opacity` وحدها. */
+@keyframes nxJewelIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes nxJewelBreathe {
+  50% {
+    opacity: 0.36;
+    scale: 1.06;
+  }
+}
+
+@keyframes nxJewelSpin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+@keyframes nxJewelSpinBack {
+  to {
+    rotate: -1turn;
+  }
+}
+
+@keyframes nxJewelRise {
+  70%,
+  to {
+    translate: 0 -100%;
+  }
+}
+
+@keyframes nxJewelGlint {
+  15% {
+    scale: 1;
+    rotate: 45deg;
+  }
+  30% {
+    scale: 0;
+    rotate: 90deg;
+  }
+}
+
+/* تظهر في فصلها وحده وتدخل بالشفافية؛ والدوران والتنفّس واللمعان والوميض دائمةٌ ما دام الصفّ في
+   الإطار والحركة جارية — وبزرّ «إيقاف الحركة» أو خارج الإطار تسقط الحركة فتسكن الجوهرة توهّجًا ثابتًا
+   (الطبقات بقيمها الساكنة: الشريط تحت الرمز والنجمات بلا مقاس). */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-home-brand[data-run]
+    .nx-brand-art[data-film-act="jewel"]
+    .nx-brand-jewel {
+    display: block;
+    animation-name: nxJewelIn;
+    animation-duration: 1.4s;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-home-brand[data-run]:not([data-paused]):not([data-offscreen])
+    .nx-brand-art[data-film-act="jewel"]
+    .nx-brand-jewel
+    * {
+    animation-name: var(--jw-k, none);
+    animation-duration: var(--jw-d, 3s);
+    animation-delay: var(--jw-l, 0s);
+    animation-timing-function: var(--jw-e, linear);
+    animation-iteration-count: infinite;
   }
 }
 
