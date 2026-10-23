@@ -77,17 +77,19 @@ async function lovableConnector(connectorKeyEnv: string, gateway: string) {
   };
 }
 
+const outlookSendMailInputSchema = z.object({
+  to: z.array(z.string().email()).min(1),
+  subject: z.string().min(1).max(300),
+  body: z.string().min(1).max(200_000),
+  cc: z.array(z.string().email()).optional(),
+});
+
 const outlookSendMail: ToolExecutor = {
   id: "m365.outlook.send_mail",
   idempotent: false,
-  input: z.object({
-    to: z.array(z.string().email()).min(1),
-    subject: z.string().min(1).max(300),
-    body: z.string().min(1).max(200_000),
-    cc: z.array(z.string().email()).optional(),
-  }),
+  input: outlookSendMailInputSchema,
   async execute(input) {
-    const data = input as z.infer<typeof outlookSendMail.input>;
+    const data = input as z.infer<typeof outlookSendMailInputSchema>;
     const c = await lovableConnector(
       "MICROSOFT_OUTLOOK_API_KEY",
       "https://connector-gateway.lovable.dev/microsoft_outlook",
@@ -114,16 +116,18 @@ const outlookSendMail: ToolExecutor = {
   },
 };
 
+const teamsPostInputSchema = z.object({
+  teamId: z.string().min(1),
+  channelId: z.string().min(1),
+  content: z.string().min(1).max(28000),
+});
+
 const teamsPost: ToolExecutor = {
   id: "m365.teams.post_message",
   idempotent: false,
-  input: z.object({
-    teamId: z.string().min(1),
-    channelId: z.string().min(1),
-    content: z.string().min(1).max(28000),
-  }),
+  input: teamsPostInputSchema,
   async execute(input) {
-    const data = input as z.infer<typeof teamsPost.input>;
+    const data = input as z.infer<typeof teamsPostInputSchema>;
     const c = await lovableConnector(
       "MICROSOFT_TEAMS_API_KEY",
       "https://connector-gateway.lovable.dev/microsoft_teams",
@@ -142,16 +146,18 @@ const teamsPost: ToolExecutor = {
   },
 };
 
+const sharepointUploadInputSchema = z.object({
+  siteId: z.string().min(1),
+  filename: z.string().min(1).max(255),
+  contentBase64: z.string().min(1),
+});
+
 const sharepointUpload: ToolExecutor = {
   id: "m365.sharepoint.upload_file",
   idempotent: false,
-  input: z.object({
-    siteId: z.string().min(1),
-    filename: z.string().min(1).max(255),
-    contentBase64: z.string().min(1),
-  }),
+  input: sharepointUploadInputSchema,
   async execute(input) {
-    const data = input as z.infer<typeof sharepointUpload.input>;
+    const data = input as z.infer<typeof sharepointUploadInputSchema>;
     const c = await lovableConnector(
       "MICROSOFT_SHAREPOINT_API_KEY",
       "https://connector-gateway.lovable.dev/microsoft_sharepoint",
@@ -189,12 +195,14 @@ const sharepointUpload: ToolExecutor = {
   },
 };
 
+const graphGetUserInputSchema = z.object({ userId: z.string().min(1) });
+
 const graphGetUser: ToolExecutor = {
   id: "m365.graph.get_user",
   idempotent: true,
-  input: z.object({ userId: z.string().min(1) }),
+  input: graphGetUserInputSchema,
   async execute(input) {
-    const data = input as z.infer<typeof graphGetUser.input>;
+    const data = input as z.infer<typeof graphGetUserInputSchema>;
     const c = await lovableConnector(
       "MICROSOFT_OUTLOOK_API_KEY",
       "https://connector-gateway.lovable.dev/microsoft_outlook",
@@ -220,18 +228,20 @@ async function resolveActorOrgId(ctx: ToolContext): Promise<string> {
   return ctx.orgId;
 }
 
+const restHttpInputSchema = z.object({
+  method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+  url: z.string().url(),
+  headers: z.record(z.string(), z.string()).optional(),
+  body: z.unknown().optional(),
+});
+
 const restHttp: ToolExecutor = {
   id: "rest.http",
   // GET is a read; every other verb may change upstream state.
   idempotent: (input) => (input as { method?: unknown } | null)?.method === "GET",
-  input: z.object({
-    method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-    url: z.string().url(),
-    headers: z.record(z.string(), z.string()).optional(),
-    body: z.unknown().optional(),
-  }),
+  input: restHttpInputSchema,
   async execute(input) {
-    const data = input as z.infer<typeof restHttp.input>;
+    const data = input as z.infer<typeof restHttpInputSchema>;
     const url = new URL(data.url);
     if (!ALLOWED_HOSTS.has(url.hostname)) {
       throw apiError(
@@ -267,15 +277,17 @@ const restHttp: ToolExecutor = {
   },
 };
 
+const webhookDispatchInputSchema = z.object({
+  url: z.string().url(),
+  payload: z.record(z.string(), z.unknown()),
+});
+
 const webhookDispatch: ToolExecutor = {
   id: "webhook.dispatch",
   idempotent: false,
-  input: z.object({
-    url: z.string().url(),
-    payload: z.record(z.string(), z.unknown()),
-  }),
+  input: webhookDispatchInputSchema,
   async execute(input) {
-    const data = input as z.infer<typeof webhookDispatch.input>;
+    const data = input as z.infer<typeof webhookDispatchInputSchema>;
     const url = new URL(data.url);
     if (!ALLOWED_HOSTS.has(url.hostname)) {
       throw apiError("forbidden", `Webhook host ${url.hostname} not in allowlist.`, {
@@ -679,29 +691,31 @@ const filterOp = z.object({
   value: z.union([filterValue, z.array(filterValue)]),
 });
 
+const sqlReadInputSchema = z.object({
+  table: z.enum(ALLOWED_TABLE_NAMES),
+  // "*" selects every column. Otherwise must be valid identifier tokens.
+  columns: z
+    .array(z.string().regex(/^(\*|[a-zA-Z_][a-zA-Z0-9_]*)$/))
+    .min(1)
+    .default(["*"]),
+  // Plain value => eq. Object { op, value } => any supported operator.
+  filters: z.record(z.string(), z.union([filterValue, filterOp])).optional(),
+  order_by: z
+    .object({
+      column: z.string().regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/),
+      ascending: z.boolean().default(false),
+    })
+    .optional(),
+  limit: z.number().int().positive().max(500).default(50),
+  count_only: z.boolean().default(false),
+});
+
 const sqlRead: ToolExecutor = {
   id: "sql.read",
   idempotent: true,
-  input: z.object({
-    table: z.enum(ALLOWED_TABLE_NAMES),
-    // "*" selects every column. Otherwise must be valid identifier tokens.
-    columns: z
-      .array(z.string().regex(/^(\*|[a-zA-Z_][a-zA-Z0-9_]*)$/))
-      .min(1)
-      .default(["*"]),
-    // Plain value => eq. Object { op, value } => any supported operator.
-    filters: z.record(z.string(), z.union([filterValue, filterOp])).optional(),
-    order_by: z
-      .object({
-        column: z.string().regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/),
-        ascending: z.boolean().default(false),
-      })
-      .optional(),
-    limit: z.number().int().positive().max(500).default(50),
-    count_only: z.boolean().default(false),
-  }),
+  input: sqlReadInputSchema,
   async execute(input, ctx) {
-    const data = input as z.infer<typeof sqlRead.input>;
+    const data = input as z.infer<typeof sqlReadInputSchema>;
     // Tenant scope is mandatory and comes from the verified context, never
     // from the model's filters. The cron/hook path hands this tool the
     // service-role client (RLS bypassed), so without this filter one org's
@@ -812,19 +826,21 @@ const sqlRead: ToolExecutor = {
 
 /* ----------------------------- Edge Function ---------------------------- */
 
+const edgeInvokeInputSchema = z.object({
+  name: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9-_]+$/),
+  payload: z.unknown().optional(),
+});
+
 const edgeInvoke: ToolExecutor = {
   id: "supabase.invoke_edge_function",
   // An edge function may write anything; never assume a retry is safe.
   idempotent: false,
-  input: z.object({
-    name: z
-      .string()
-      .min(1)
-      .regex(/^[a-z0-9-_]+$/),
-    payload: z.unknown().optional(),
-  }),
+  input: edgeInvokeInputSchema,
   async execute(input, ctx) {
-    const data = input as z.infer<typeof edgeInvoke.input>;
+    const data = input as z.infer<typeof edgeInvokeInputSchema>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: res, error } = await (ctx.supabase as any).functions.invoke(data.name, {
       body: data.payload ?? {},
@@ -836,35 +852,39 @@ const edgeInvoke: ToolExecutor = {
 
 /* -------------------------- Internal SEC tools -------------------------- */
 
+const secCreateIncidentInputSchema = z.object({
+  category: z.string().min(2).max(80).default("other"),
+  title_ar: z.string().min(3).max(200),
+  title_en: z.string().max(200).optional(),
+  severity: z.enum(["low", "medium", "high", "critical"]),
+  priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
+  owner: z.string().max(120).optional(),
+  assigned_to: z.string().max(120).optional(),
+  notes: z.string().max(5000).optional(),
+  site_id: z.string().uuid().optional(),
+});
+
 const secCreateIncident: ToolExecutor = {
   id: "sec.create_incident",
   idempotent: false,
-  input: z.object({
-    category: z.string().min(2).max(80).default("other"),
-    title_ar: z.string().min(3).max(200),
-    title_en: z.string().max(200).optional(),
-    severity: z.enum(["low", "medium", "high", "critical"]),
-    priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
-    owner: z.string().max(120).optional(),
-    assigned_to: z.string().max(120).optional(),
-    notes: z.string().max(5000).optional(),
-    site_id: z.string().uuid().optional(),
-  }),
+  input: secCreateIncidentInputSchema,
   async execute(input, ctx) {
-    const data = input as z.infer<typeof secCreateIncident.input>;
+    const data = input as z.infer<typeof secCreateIncidentInputSchema>;
     const orgId = await resolveActorOrgId(ctx);
-    const severityScore: Record<z.infer<typeof secCreateIncident.input>["severity"], number> = {
-      low: 20,
-      medium: 45,
-      high: 70,
-      critical: 90,
-    };
-    const priorityBoost: Record<z.infer<typeof secCreateIncident.input>["priority"], number> = {
-      low: 0,
-      medium: 5,
-      high: 10,
-      critical: 15,
-    };
+    const severityScore: Record<z.infer<typeof secCreateIncidentInputSchema>["severity"], number> =
+      {
+        low: 20,
+        medium: 45,
+        high: 70,
+        critical: 90,
+      };
+    const priorityBoost: Record<z.infer<typeof secCreateIncidentInputSchema>["priority"], number> =
+      {
+        low: 0,
+        medium: 5,
+        high: 10,
+        critical: 15,
+      };
     const riskScore = Math.min(100, severityScore[data.severity] + priorityBoost[data.priority]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: row, error } = await (ctx.supabase as any)
@@ -1039,18 +1059,20 @@ const kbSearch: ToolExecutor = {
 
 /* -------------------------- Governed SADEED RAG ------------------------- */
 
+const ragSearchVerifiedInputSchema = z.object({
+  query: z.string().trim().min(3).max(2000),
+  category_code: z.string().trim().max(80).optional(),
+  limit: z.number().int().min(2).max(12).default(8),
+});
+
 const ragSearchVerified: ToolExecutor = {
   id: "rag.search_verified",
   idempotent: true,
   description:
     "Search only the current tenant's verified industrial-security corpus through hybrid retrieval and the SADEED evidence gate. A passed result always has at least two citations.",
-  input: z.object({
-    query: z.string().trim().min(3).max(2000),
-    category_code: z.string().trim().max(80).optional(),
-    limit: z.number().int().min(2).max(12).default(8),
-  }),
+  input: ragSearchVerifiedInputSchema,
   async execute(input, ctx) {
-    const data = input as z.infer<typeof ragSearchVerified.input>;
+    const data = input as z.infer<typeof ragSearchVerifiedInputSchema>;
     const [{ retrieveWithEvidenceGate }, { safeExcerpt }] = await Promise.all([
       import("@/lib/sadeed/rag/retrieve.server"),
       import("@/lib/sadeed/rag/sanitize.server"),
@@ -1085,14 +1107,16 @@ const ragSearchVerified: ToolExecutor = {
   },
 };
 
+const ragRecordGapInputSchema = z.object({ query: z.string().trim().min(3).max(2000) });
+
 const ragRecordGap: ToolExecutor = {
   id: "rag.record_gap",
   idempotent: false,
   description:
     "Record an unanswered industrial-security question in the current tenant's knowledge backlog. This never creates retrievable knowledge.",
-  input: z.object({ query: z.string().trim().min(3).max(2000) }),
+  input: ragRecordGapInputSchema,
   async execute(input, ctx) {
-    const data = input as z.infer<typeof ragRecordGap.input>;
+    const data = input as z.infer<typeof ragRecordGapInputSchema>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: gapId, error } = await (ctx.supabase as any).rpc("rag_record_gap_for_org", {
       _org_id: ctx.orgId,
@@ -1108,17 +1132,19 @@ async function sha256(value: string): Promise<string> {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+const ragProposeCandidateInputSchema = z.object({
+  question: z.string().trim().min(3).max(2000),
+  answer: z.string().trim().min(3).max(12000),
+});
+
 const ragProposeCandidate: ToolExecutor = {
   id: "rag.propose_candidate",
   idempotent: false,
   description:
     "Save a proposed Q&A for administrator review. It is always stored unverified and is never returned by retrieval until separately approved or ingested from an authoritative source.",
-  input: z.object({
-    question: z.string().trim().min(3).max(2000),
-    answer: z.string().trim().min(3).max(12000),
-  }),
+  input: ragProposeCandidateInputSchema,
   async execute(input, ctx) {
-    const data = input as z.infer<typeof ragProposeCandidate.input>;
+    const data = input as z.infer<typeof ragProposeCandidateInputSchema>;
     const contentHash = await sha256(`${ctx.orgId}\n${data.question}\n${data.answer}`);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: row, error } = await (ctx.supabase as any)
@@ -1150,16 +1176,18 @@ const ragProposeCandidate: ToolExecutor = {
   },
 };
 
+const secUpdateWorkOrderInputSchema = z.object({
+  id: z.string().uuid(),
+  status: z.string().optional(),
+  assigned_to: z.string().uuid().nullable().optional(),
+});
+
 const secUpdateWorkOrder: ToolExecutor = {
   id: "sec.update_work_order",
   idempotent: false,
-  input: z.object({
-    id: z.string().uuid(),
-    status: z.string().optional(),
-    assigned_to: z.string().uuid().nullable().optional(),
-  }),
+  input: secUpdateWorkOrderInputSchema,
   async execute(input, ctx) {
-    const data = input as z.infer<typeof secUpdateWorkOrder.input>;
+    const data = input as z.infer<typeof secUpdateWorkOrderInputSchema>;
     const patch: Record<string, unknown> = {};
     if (data.status !== undefined) patch.status = data.status;
     if (data.assigned_to !== undefined) patch.assigned_to = data.assigned_to;

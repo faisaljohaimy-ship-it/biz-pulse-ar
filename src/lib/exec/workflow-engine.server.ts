@@ -27,7 +27,8 @@ export const StepSchema = z.discriminatedUnion("kind", [
     input: z.record(z.string(), z.unknown()).default({}),
     next: z.string().optional(),
     onError: z.string().optional(),
-    retry: RetryPolicy.optional(),
+    // Preserve omitted retry policies; the executor supplies its safe fallback.
+    retry: RetryPolicy.removeDefault().optional(),
   }),
   StepBase.extend({
     kind: z.literal("condition"),
