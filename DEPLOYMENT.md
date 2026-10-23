@@ -3,8 +3,9 @@
 ## Canonical target
 
 Cloudflare Workers is the primary production target. The production build emits
-`.output/server/wrangler.json`; `.github/workflows/deploy.yml` is a reusable
-workflow invoked only after every CI gate succeeds. `vercel.json` remains an optional manual target,
+`.output/server/wrangler.json`; `.github/workflows/deploy.yml` is a manually
+dispatched (or explicitly called) workflow — CI no longer invokes it (owner order
+2026-10-23: CI is verification only and is decoupled from merge, deploy and production). `vercel.json` remains an optional manual target,
 but automatic deployment of the same production branch to two providers is not
 recommended.
 

@@ -10,8 +10,14 @@ name: CI Verification
 #   · test   — اختبارات الوحدة وتدقيق تبعيات الإنتاج؛
 #   · build  — البناء وميزانية الأداء (أرضية التباين بمتصفّح Playwright في الكامل
 #     وحده).
-# و`rag-preflight` و`security-gap-closure-e2e` في التشغيل الكامل وحده. و`deploy`
-# يبقى على الدفع إلى main وحده ويحتاج البوّابة الخفيفة لا غير.
+# و`rag-preflight` و`security-gap-closure-e2e` في التشغيل الكامل وحده.
+#
+# **CI فحصٌ فقط — لا نشر منه ولا يُشترط للنشر** (أمر المالك ٢٠٢٦/١٠/٢٣ «افصل الـCI عن
+# الإنتاج والدمج والنشر»): كانت وظيفة `deploy` هنا تستدعي `deploy.yml` (نشر Cloudflare
+# الاحتياطي) على كل دفعة إلى main بعد البوّابة الخفيفة. أُزيلت. النشر خطواتٌ صريحة
+# بطلب: `deploy-vercel.yml` أو نشر Lovable، و`deploy.yml` يدويّ، وفحص الإنتاج
+# (`production-check.yml`) مستقلّ بجدوله وتشغيله اليدويّ. والدمج لا يتوقّف على CI تقنيًّا
+# (لا حماية فرع على خطة المستودع)؛ والبوّابة إجرائية تُقرَّر بقراءة نتيجته.
 # شرط «الكامل» واحدٌ مكرّر حرفيًّا في كل موضع:
 #   github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 on:
@@ -240,16 +246,3 @@ jobs:
       - name: Stop dev server
         if: always() && steps.creds.outputs.configured == 'true'
         run: if [ -f /tmp/dev.pid ]; then kill "$(cat /tmp/dev.pid)" || true; fi
-
-  deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    # Constitution Article X: the OPTIONAL backup Cloudflare deploy. It gates on
-    # البوّابة الخفيفة (E2E استشاري). deploy.yml skips quietly and stays GREEN
-    # when its secrets are absent — primary deployment is Lovable's pipeline, so
-    # a missing deploy secret never blocks CI or reds the run.
-    # أُزيل `rag-preflight` من `needs` (٢٠٢٦/١٠/١٨): صار يجري في التشغيل الكامل
-    # وحده فيُتخطّى على الدفع، ووظيفةٌ تحتاج وظيفةً متخطّاة تُتخطّى معها — فكان
-    # بقاؤه سيُسقط النشر الاحتياطي في كل دفعة.
-    needs: [static, test, build]
-    uses: ./.github/workflows/deploy.yml
-    secrets: inherit

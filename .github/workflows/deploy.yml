@@ -28,7 +28,10 @@
 
 name: Deploy to Cloudflare
 
+# مستقلّ عن CI (أمر المالك ٢٠٢٦/١٠/٢٣): لا يستدعيه `ci.yml` ولا يعمل عند الدفع —
+# يُشغَّل يدويًّا وحده، أو يُستدعى من workflow آخر صراحةً.
 on:
+  workflow_dispatch:
   workflow_call:
 
 # Only one deploy at a time; newer pushes cancel superseded runs.
