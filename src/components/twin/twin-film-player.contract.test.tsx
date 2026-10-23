@@ -42,13 +42,20 @@ const st = (el: HTMLMediaElement): MediaState => {
 /** نهاية المدى القابل للقفز (ث)؛ 0 ⇒ لا مدى بعد. */
 let seekableEnd = 30;
 
-/** اسم الاستثناء الذي يرفض به `play()` القادم مرّةً واحدة، أو `null`. */
+/**
+ * اسم الاستثناء الذي يرفض به `play()` القادم، أو `null`. مرّةً واحدة ما لم يُرفع `refuseCount`:
+ * فيلمٌ بصوته يُحاوَل بصوتٍ ثم صامتًا، فالمنع الكامل (توفير الطاقة) يرفض المحاولتين.
+ */
 let refuse: string | null = null;
+let refuseCount = 1;
 
 const play = vi.fn(function (this: HTMLMediaElement) {
   if (refuse) {
     const name = refuse;
-    refuse = null;
+    if (--refuseCount <= 0) {
+      refuse = null;
+      refuseCount = 1;
+    }
     return Promise.reject(new DOMException("blocked", name));
   }
   const s = st(this);
@@ -293,6 +300,8 @@ async function mountVisible(ui?: ReactNode) {
 }
 
 const videoOf = (c: HTMLElement) => c.querySelector<HTMLVideoElement>("video");
+/** زرّ التشغيل الواحد — ليس زرّ الصوت (الراية `TWIN_FILM_HAS_AUDIO` تضيف ثانيًا بجواره). */
+const toggleOf = (c: HTMLElement) => c.querySelector<HTMLButtonElement>(".twin-film-toggle")!;
 
 /* ════════════════════════════════════════════════════════════════════════ */
 
@@ -319,12 +328,13 @@ describe("المشغّل — الملصق أوّلًا، والفيلم بعد �
     view.unmount();
   });
 
-  it("ظهور الإطار يركّب الفيلم ويشغّله: صامتٌ مضمَّنٌ بلا loop ولا controls ولا autoplay، بمصدرين", async () => {
+  it("ظهور الإطار يركّب الفيلم ويشغّله: مضمَّنٌ بلا loop ولا controls ولا autoplay، بمصدرين", async () => {
     const view = await mountVisible();
     const video = videoOf(view.container)!;
     expect(video, "الفيلم لم يُركَّب بعد الظهور").not.toBeNull();
     expect(play).toHaveBeenCalledTimes(1);
-    expect(video.muted).toBe(true);
+    // الفيلم بصوته: يُحاوَل التشغيل بصوتٍ أوّلًا (سلوك الصوت في `twin-film-sound.contract.test.tsx`).
+    expect(video.muted).toBe(false);
     expect(video.loop).toBe(false);
     for (const attr of ["controls", "autoplay", "loop", "poster"]) {
       expect(video.hasAttribute(attr), `سمة ${attr}`).toBe(false);
@@ -437,9 +447,9 @@ describe("المشغّل — مرّةً ثم يثبت، والإعادة بيد 
   it("الإعادة: من الصفر، والزرّ عنصرٌ واحدٌ يحتفظ بالتركيز (WCAG 2.4.3)", async () => {
     const view = await mountVisible();
     const video = videoOf(view.container)!;
-    const button = view.getByRole("button");
+    const button = toggleOf(view.container);
     await finish(video);
-    expect(view.getByRole("button")).toBe(button);
+    expect(toggleOf(view.container)).toBe(button);
     button.focus();
     play.mockClear();
     fireEvent.click(button);
@@ -625,7 +635,7 @@ describe("البوابات — الفيلم اختيارٌ لا افتراض", (
     });
     expect(videoOf(view.container), "الفيلم بقي بعد إيقاف الحركة").toBeNull();
     expect(load, "لم يُحرَّر المفكّك عند الفكّ").toHaveBeenCalled();
-    expect(view.getByRole("button").getAttribute("aria-disabled")).toBe("true");
+    expect(toggleOf(view.container).getAttribute("aria-disabled")).toBe("true");
     play.mockClear();
     await act(async () => {
       root.removeAttribute("data-nx-motion-paused");
@@ -886,12 +896,13 @@ describe("السقوط إلى الملصق — تعذّر الفيلم أو من
 
   it("منعُ المتصفّح للتشغيل (توفير الطاقة): يبقى الملصق، والزرّ يشغّله من داخل النقرة", async () => {
     refuse = "NotAllowedError";
+    refuseCount = 2; // بصوتٍ ثم صامتًا — المنع كاملٌ في الحالتين.
     const view = await mountVisible();
     const video = videoOf(view.container)!;
     expect(video.hasAttribute("data-ready"), "الفيلم ظهر وهو ممنوع").toBe(false);
     view.getByRole("button", { name: "متابعة الفيلم" });
     fireEvent.click(view.getByRole("button", { name: "متابعة الفيلم" }));
-    expect(play).toHaveBeenCalledTimes(2);
+    expect(play).toHaveBeenCalledTimes(3);
     expect(video.hasAttribute("data-ready")).toBe(true);
     view.getByRole("button", { name: "إيقاف الفيلم مؤقتًا" });
     view.unmount();
@@ -920,8 +931,9 @@ describe("اللغتان والإفصاح وإمكانية الوصول", () => 
       .map((id) => document.getElementById(id)!.textContent)
       .join(" ");
     expect(described).toMatch(/مُصيَّر مسبقًا/);
-    expect(described).toMatch(/بلا صوت/);
-    expect(described).toMatch(/30 ثانية/);
+    expect(described).toMatch(/بموسيقى ومؤثرات صوتية مولَّدة/);
+    expect(described).toMatch(/56 ثانية/);
+    expect(described).toMatch(/مرسومة وليست تصويرًا لمنشأة حقيقية/);
     expect(described).toMatch(/ليس بثًّا حيًّا ولا بيانات تشغيلية/);
     // الإفصاح مرئيٌّ (وليس لقارئ الشاشة وحده).
     expect(view.container.querySelector("figcaption")!.textContent).toMatch(/ليس بثًّا حيًّا/);
@@ -1033,7 +1045,7 @@ describe("/cinematic — العنوان خارج الفيديو، والمسرح
     // لا شارة بثّ ولا عاجل ولا أرقام في الصفحة كلّها ما عدا مدّة الفيلم المعلنة في المشغّل.
     const text = view.container.textContent ?? "";
     expect(text).not.toMatch(/البث المباشر|عاجل|\bLIVE\b/);
-    expect(text.replace(/30 ثانية/g, "")).not.toMatch(/[0-9٠-٩]/);
+    expect(text.replace(/56 ثانية/g, "")).not.toMatch(/[0-9٠-٩]/);
     view.unmount();
   });
 

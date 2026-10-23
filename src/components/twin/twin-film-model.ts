@@ -8,30 +8,30 @@
  *
  * ## ما هو الفيلم، وما ليس
  *
- * ملف فيديو موشن جرافيك **مُصيَّر مسبقًا** (30 ث) يشرح فكرة التوأم
+ * ملف فيديو موشن جرافيك **مُصيَّر مسبقًا** (56 ث، بموسيقى ومؤثرات مولَّدة) يشرح فكرة التوأم
  * الرقمي — لا بثّ حيّ ولا بيانات تشغيلية (المادة ٢٧). هذا الإفصاح يسكن هنا
  * مرّةً واحدة ويظهر مع المشغّل في كل صفحة تضمّه، فلا تنحرف صفحتان عن بعضهما.
  *
  * ## عقد الأصول (يصيّرها مسارٌ آخر — لا تُكتب بدائلها في المستودع)
  *
- *   public/media/twin/sadeed-twin-1280.{mp4,webm}   H.264 / VP9، بلا مسار صوت
+ *   public/media/twin/sadeed-twin-1280.{mp4,webm}   H.264+AAC / VP9+Opus (الصوت يطابق `TWIN_FILM_HAS_AUDIO`)
  *   public/media/twin/sadeed-twin-640.{mp4,webm}
  *   public/media/twin/sadeed-twin-poster.webp       1280×720
  */
 
 /**
- * مدّة الفيلم بالثواني — **مكرَّرة عمدًا** من `remotion/twin/timeline.ts`
- * (`TWIN_FILM_SECONDS`): `remotion/` أداة بناء خارج حزمة التطبيق فلا تُستورد منها.
+ * مدّة الفيلم بالثواني — **مكرَّرة عمدًا** من `remotion/twin2/timeline.ts`
+ * (`SECONDS`): `remotion/` أداة بناء خارج حزمة التطبيق فلا تُستورد منها.
  * والعقد يقرأ الملفّين ويقارنهما، فتبدّل أحدهما دون الآخر يحمرّ هناك لا هنا.
  */
-export const TWIN_FILM_SECONDS = 30;
+export const TWIN_FILM_SECONDS = 56;
 
 /**
- * هل في ملفّات الفيلم مسار صوت؟ — **راية تُقلَب مع الأصول لا قبلها**: تبقى `false` ما دامت الملفّات
+ * هل في ملفّات الفيلم مسار صوت؟ — **راية تُقلَب مع الأصول لا قبلها**: تبقى `false` لو عادت الملفّات
  * بلا صوت، فلا يعرض المشغّل زرَّ صوتٍ لا يسمع الزائر منه شيئًا ولا يدّعي نصُّه صوتًا غير موجود.
  * والعقد (`twin-film.contract.test.ts`) يقرأ بايتات الملفّات ويقارن وجود مسار الصوت بها.
  */
-export const TWIN_FILM_HAS_AUDIO = false;
+export const TWIN_FILM_HAS_AUDIO = true;
 
 /** حال الصوت للمشغّل: يُسمع · أُسكت بطلب الزائر · ينتظر أوّل لمسة (منع التشغيل التلقائي) · يُسكته سَدِيد. */
 export type SoundState = "on" | "off" | "blocked" | "held";
@@ -106,7 +106,7 @@ export function webmOf(mp4: string): string {
  */
 export type FilmGate = "open" | "reduced" | "saver" | "off";
 
-/** أنواع الاتصال التي نعدّها بطيئةً على ملفٍّ مدّته 30 ث (تصنيف المتصفّح `effectiveType`). */
+/** أنواع الاتصال التي نعدّها بطيئةً على ملفٍّ مدّته 56 ث (تصنيف المتصفّح `effectiveType`). */
 export const SLOW_CONNECTIONS: readonly string[] = ["slow-2g", "2g", "3g"];
 
 export type GateSignals = {
@@ -171,8 +171,8 @@ export const TWIN_FILM_TEXT = {
     title: "فيلم التوأم الرقمي",
     meta: `${TWIN_FILM_SECONDS} ثانية · ${TWIN_FILM_HAS_AUDIO ? "بصوت" : "بلا صوت"}`,
     disclosure:
-      "فيلم مُصيَّر مسبقًا (ملف فيديو توضيحي)، وليس بثًّا حيًّا ولا بيانات تشغيلية؛ وما يظهر فيه من أشكال أو قيم توضيحي لا يمثّل حالة تشغيل فعلية.",
-    description: `فيلم موشن جرافيك توضيحي مُصيَّر مسبقًا، مدّته ${TWIN_FILM_SECONDS} ثانية ${TWIN_FILM_HAS_AUDIO ? "وبصوت" : "وبلا صوت"}. تشتعل شبكةٌ ثم تظهر خريطة المملكة بمناطقها الأربع ومنصّةٌ لكل منطقة تتصل بغيرها بخيوط بيانات، ثم تهبط الكاميرا إلى منشأةٍ فيُمسح هيكلها بشعاعٍ ليزري وتضيء أنابيبها ويسري التوجيه ذهابًا والإفادة إيابًا، ثم ترتدّ الكاميرا ويثبت الفيلم على إطاره الأخير.`,
+      "فيلم مُصيَّر مسبقًا (ملف فيديو توضيحي)، وليس بثًّا حيًّا ولا بيانات تشغيلية؛ والمشاهد مرسومة وليست تصويرًا لمنشأة حقيقية، وما يظهر فيه من أشكال أو قيم توضيحي لا يمثّل حالة تشغيل فعلية.",
+    description: `فيلم موشن جرافيك توضيحي مُصيَّر مسبقًا، مدّته ${TWIN_FILM_SECONDS} ثانية ${TWIN_FILM_HAS_AUDIO ? "بموسيقى ومؤثرات صوتية مولَّدة (ولا صوت بشري)" : "وبلا صوت"}. يمشي رجل أمن عند سياج محطة كهرباء عند الشروق، ثم يُرى توليد الكهرباء ونقلها عبر الأبراج وخفض الجهد في المحطة وبلوغها المدن، ثم نقاط الدخول حيث يفحص الحرّاس مركبة، ثم غرفة المراقبة والتحكم، فتتحوّل المحطة إلى توأمٍ رقمي يرصد وينذر ويوجّه رجال الأمن، وينتهي الفيلم بشعار سَدِيد ويثبت على إطاره الأخير.`,
     actions: {
       play: "تشغيل الفيلم",
       pause: "إيقاف الفيلم مؤقتًا",
@@ -201,8 +201,8 @@ export const TWIN_FILM_TEXT = {
     title: "Digital twin film",
     meta: `${TWIN_FILM_SECONDS} seconds · ${TWIN_FILM_HAS_AUDIO ? "with sound" : "no sound"}`,
     disclosure:
-      "A pre-rendered illustrative video file, not a live feed and not operational data; the shapes and values in it are illustrative and do not represent actual operating conditions.",
-    description: `A pre-rendered illustrative motion-graphics film, ${TWIN_FILM_SECONDS} seconds long ${TWIN_FILM_HAS_AUDIO ? "with sound" : "and silent"}. A grid ignites, then a map of the Kingdom appears with its four regions and a platform in each, linked by data arcs. The camera then dives into a facility whose structure is laser-scanned and whose pipes light up as guidance flows out and feedback flows back, before the camera pulls back and the film holds on its last frame.`,
+      "A pre-rendered illustrative video file, not a live feed and not operational data; the scenes are drawn, not footage of a real facility, and the shapes and values in it are illustrative and do not represent actual operating conditions.",
+    description: `A pre-rendered illustrative motion-graphics film, ${TWIN_FILM_SECONDS} seconds long ${TWIN_FILM_HAS_AUDIO ? "with generated music and sound effects (no human voice)" : "and silent"}. A security officer walks along the fence of a power station at sunrise; electricity is generated, carried over pylons, stepped down at the station and delivered to the city; guards inspect a vehicle at an entry point; then a control room, and the station becomes a digital twin that watches, alerts and guides the guards, before the film ends on the SADEED mark and holds on its last frame.`,
     actions: {
       play: "Play film",
       pause: "Pause film",

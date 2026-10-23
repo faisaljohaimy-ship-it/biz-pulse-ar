@@ -15,7 +15,7 @@
  *     مأذونة: اختيار «إيقاف الحركة» المحفوظ يُحترم عند التحميل المباشر)؛
  *   • لونٌ نهائي في CSS، وزجاجٌ بالتمرير وحده، وحركةٌ خارج `prefers-reduced-motion: no-preference`،
  *     وهدفُ لمسٍ دون 44px، وإطارٌ بلا 16:9؛
- *   • أصولُ الفيلم: ناقصةٌ، أو بمسار صوت، أو بغير مدّة 30 ث، أو فوق سقف الوزن، أو ملصقٌ بغير 1280×720.
+ *   • أصولُ الفيلم: ناقصةٌ، أو بصوتٍ لا يطابق الراية، أو بغير مدّة 56 ث، أو فوق سقف الوزن، أو ملصقٌ بغير 1280×720.
  *
  * وكل كاشفٍ يُجرَّب أولًا على انتهاكٍ مزروع (المادة ٣٠). **وبنود الأصول تنتظر مسار التصيير**: لا
  * مجلّد `public/media/twin` ⇒ تتخطّى برسالةٍ صريحة؛ ووجوده بلا الأصول الخمسة ينهار.
@@ -31,6 +31,7 @@ import {
   MOTION_PREF_PAUSED,
   SLOW_CONNECTIONS,
   TWIN_FILMS,
+  TWIN_FILM_HAS_AUDIO,
   TWIN_FILM_POSTER,
   TWIN_FILM_SECONDS,
   TWIN_FILM_TEXT,
@@ -344,10 +345,10 @@ function webpSize(bytes: Buffer): { width: number; height: number } {
 }
 
 /**
- * سقوف الوزن (بايت). **أرقامٌ مقترحة للمالك لا مقيسة**: 30 ث بدرجتين على الجوال والمكتب، والمنشور
+ * سقوف الوزن (بايت). **أرقامٌ مقترحة للمالك لا مقيسة**: 56 ث بصوتها بدرجتين على الجوال والمكتب، والمنشور
  * يُنزَّل ملفًّا واحدًا بعد أوّل ظهور. وسقف الوسائط الكلّي في الميزانية (`largestMedia`) 14 MiB أعلاها.
  */
-const CEILING = { 1280: 8_000_000, 640: 3_000_000, poster: 200_000 } as const;
+const CEILING = { 1280: 9_000_000, 640: 4_000_000, poster: 250_000 } as const;
 
 const ASSET_DIR = "public/media/twin";
 const ASSETS = [
@@ -358,12 +359,24 @@ const ASSETS = [
   `${ASSET_DIR}/sadeed-twin-poster.webp`,
 ] as const;
 
-/** فجوات ملفّات الفيديو: صوت، مدّة، وزن. */
-function filmGaps(name: string, mp4: Buffer, webm: Buffer, ceiling: number): string[] {
+/**
+ * فجوات ملفّات الفيديو: الصوت (يجب أن يطابق الراية `TWIN_FILM_HAS_AUDIO` بايتًا: راية «بصوت» على ملفٍّ
+ * صامت تعرض زرًّا بلا صوت، وملفٌّ بصوتٍ تحت راية «بلا» يُسمَع دون أن يُتحكَّم به)، المدّة، الوزن.
+ */
+function filmGaps(
+  name: string,
+  mp4: Buffer,
+  webm: Buffer,
+  ceiling: number,
+  hasAudio: boolean,
+): string[] {
   const out: string[] = [];
   const handlers = mp4Handlers(mp4);
-  if (audioBoxes(mp4).length > 0 || handlers.includes("soun")) {
-    out.push(`${name}.mp4: مسار صوت [${audioBoxes(mp4).join("،")}]`);
+  const mp4Audio = audioBoxes(mp4).length > 0 || handlers.includes("soun");
+  if (mp4Audio !== hasAudio) {
+    out.push(
+      `${name}.mp4: ${hasAudio ? "بلا مسار صوت والراية «بصوت»" : "فيه مسار صوت والراية «بلا»"}`,
+    );
   }
   if (!mp4.includes("ftyp") || !mp4.includes("avc1")) out.push(`${name}.mp4: ليس H.264/MP4`);
   const mp4s = mp4Seconds(mp4);
@@ -372,8 +385,9 @@ function filmGaps(name: string, mp4: Buffer, webm: Buffer, ceiling: number): str
   }
   if (mp4.length > ceiling) out.push(`${name}.mp4: ${mp4.length} فوق السقف ${ceiling}`);
   const codecs = matroskaCodecs(webm);
-  if (codecs.some((c) => c.startsWith("A_")))
-    out.push(`${name}.webm: مسار صوت [${codecs.join("،")}]`);
+  if (codecs.some((c) => c.startsWith("A_")) !== hasAudio) {
+    out.push(`${name}.webm: الصوت لا يطابق الراية (${hasAudio}) [${codecs.join("،")}]`);
+  }
   if (!codecs.includes("V_VP9")) out.push(`${name}.webm: ليس VP9 [${codecs.join("،")}]`);
   const ws = webmSeconds(webm);
   if (ws === null || Math.abs(ws - TWIN_FILM_SECONDS) > 0.5) {
@@ -386,9 +400,9 @@ function filmGaps(name: string, mp4: Buffer, webm: Buffer, ceiling: number): str
 /** مقارنة ثابت المدّة بثابت `remotion/twin/timeline.ts` نصًّا (الأداة خارج حزمة التطبيق فلا تُستورد). */
 function secondsGap(timelineSrc: string, ours: number): string | null {
   const m = timelineSrc.match(
-    /export const TWIN_FILM_SECONDS\s*(?::\s*number\s*)?=\s*(\d+(?:\.\d+)?)/,
+    /export const (?:TWIN_FILM_)?SECONDS\s*(?::\s*number\s*)?=\s*(\d+(?:\.\d+)?)/,
   );
-  if (!m) return "TWIN_FILM_SECONDS غير مُصدَّر في timeline.ts";
+  if (!m) return "SECONDS غير مُصدَّر في timeline.ts";
   return Number(m[1]) === ours ? null : `timeline.ts=${m[1]} والتطبيق=${ours}`;
 }
 
@@ -522,8 +536,14 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع", () => {
     expect(webmSeconds(Buffer.alloc(64))).toBeNull();
     expect(matroskaCodecs(Buffer.from([0x86, 0x86, ...Buffer.from("A_OPUS")]))).toEqual(["A_OPUS"]);
     // الفجوات المجمَّعة.
-    const gaps = filmGaps("x", Buffer.from("ftypavc1 mp4a"), Buffer.alloc(8), 10);
-    expect(gaps.join("\n")).toMatch(/مسار صوت/);
+    const gaps = filmGaps("x", Buffer.from("ftypavc1 mp4a"), Buffer.alloc(8), 10, false);
+    expect(gaps.join("\n")).toMatch(/فيه مسار صوت/);
+    // والعكس: راية «بصوت» على ملفٍّ صامت تُلتقط، وملفٌّ بصوتٍ تحت راية «بصوت» يمرّ من هذا البند.
+    const silent = filmGaps("x", Buffer.from("ftypavc1"), Buffer.alloc(8), 10, true).join("\n");
+    expect(silent).toMatch(/بلا مسار صوت/);
+    expect(
+      filmGaps("x", Buffer.from("ftypavc1 mp4a"), Buffer.alloc(8), 10, true).join("\n"),
+    ).not.toMatch(/مسار صوت/);
     expect(gaps.join("\n")).toMatch(/المدّة/);
     expect(gaps.join("\n")).toMatch(/فوق السقف/);
     // ملصق WebP مزروع بأبعاد VP8X: 640×360.
@@ -1008,15 +1028,15 @@ describe("الزرّ الواحد — فعلٌ لكل حال، وسببٌ للت
    ════════════════════════════════════════════════════════════════════════ */
 
 describe("ثابت المدّة — يطابق timeline.ts في أداة التصيير", () => {
-  it("TWIN_FILM_SECONDS في التطبيق = TWIN_FILM_SECONDS في remotion/twin/timeline.ts", (ctx) => {
-    if (!existsSync("remotion/twin/timeline.ts")) {
-      ctx.skip("remotion/twin/timeline.ts لم يصل بعد (مسار W5-A) — المقارنة تنتظره");
+  it("TWIN_FILM_SECONDS في التطبيق = SECONDS في remotion/twin2/timeline.ts (الفيلم المنشور)", (ctx) => {
+    if (!existsSync("remotion/twin2/timeline.ts")) {
+      ctx.skip("remotion/twin2/timeline.ts غير موجود — المقارنة تنتظره");
     }
-    expect(secondsGap(read("remotion/twin/timeline.ts"), TWIN_FILM_SECONDS)).toBeNull();
+    expect(secondsGap(read("remotion/twin2/timeline.ts"), TWIN_FILM_SECONDS)).toBeNull();
   });
 });
 
-describe("أصول الفيلم — الخمسة، بلا صوت، 30 ث، تحت السقف", () => {
+describe("أصول الفيلم — الخمسة، صوتها يطابق الراية، 56 ث، تحت السقف", () => {
   const folder = existsSync(ASSET_DIR);
 
   it("ينهار فقط إن وُجد المجلّد بلا الأصول الخمسة", () => {
@@ -1025,7 +1045,7 @@ describe("أصول الفيلم — الخمسة، بلا صوت، 30 ث، تح�
     expect(missing, "public/media/twin موجود بلا هذه الأصول").toEqual([]);
   });
 
-  it("الأصول الخمسة: MP4/H.264 وWebM/VP9 بلا مسار صوت وبمدّة 30 ث وتحت السقف، وملصق 1280×720", (ctx) => {
+  it("الأصول الخمسة: MP4/H.264 وWebM/VP9 بصوتٍ يطابق الراية وبمدّة 56 ث وتحت السقف، وملصق 1280×720", (ctx) => {
     if (!folder) {
       ctx.skip("public/media/twin غير موجود بعد (مسار W5-A لم يسلّم) — فحص الأصول معلَّق بها");
     }
@@ -1036,12 +1056,14 @@ describe("أصول الفيلم — الخمسة، بلا صوت، 30 ث، تح�
         readFileSync(ASSETS[0]),
         readFileSync(ASSETS[1]),
         CEILING[1280],
+        TWIN_FILM_HAS_AUDIO,
       ),
       ...filmGaps(
         "sadeed-twin-640",
         readFileSync(ASSETS[2]),
         readFileSync(ASSETS[3]),
         CEILING[640],
+        TWIN_FILM_HAS_AUDIO,
       ),
     ];
     const poster = readFileSync(ASSETS[4]);
