@@ -1,13 +1,31 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { requestCinematicFullscreen } from "@/lib/cinematic/fullscreen";
+import { LocalFilmPreview } from "./LocalFilmPreview";
 import "@/styles/sadeed-cinematic.css";
 import "@/styles/sadeed-cinematic-playback.css";
 
 const HERO_IMAGE =
   "https://d2ol7oe51mr4n9.cloudfront.net/user_3KxKtVFWvluaVdLG50fo5o0e6hi/a7564544-d20b-4d75-8af2-7a2fede4cd55.png";
 
+const CHAPTERS = [
+  {
+    label: "المشهد",
+    title: "التوأم الرقمي للأمن الصناعي",
+    subtitle: "طاقة متصلة · استجابة ذكية · رؤية وطنية",
+  },
+  { label: "الأصول", title: "من الأصل إلى المعلومة", subtitle: "موقع · مبنى · كاميرا · حساس" },
+  {
+    label: "القرار",
+    title: "من المعلومة إلى القرار",
+    subtitle: "مصدر واضح · سياق تشغيلي · مراجعة بشرية",
+  },
+  { label: "التنفيذ", title: "من القرار إلى التنفيذ", subtitle: "مقترح · اعتماد · تنفيذ موثّق" },
+] as const;
+
 export function SadeedCinematicExperience({ embedded = false }: { embedded?: boolean }) {
+  const [chapterIndex, setChapterIndex] = useState(0);
+  const chapter = CHAPTERS[chapterIndex] ?? CHAPTERS[0];
   const [playing, setPlaying] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
@@ -79,6 +97,19 @@ export function SadeedCinematicExperience({ embedded = false }: { embedded?: boo
       <p className="sd-cinema-disclosure" role="status" aria-live="polite">
         {notice || (reducedMotion ? "الحركة متوقفة احترامًا لإعداد تقليل الحركة على جهازك." : "")}
       </p>
+      <div className="sd-cinema-chapters" role="group" aria-label="فصول العرض التوضيحي">
+        {CHAPTERS.map((item, index) => (
+          <button
+            key={item.label}
+            type="button"
+            className="sd-cinema-control"
+            aria-pressed={index === chapterIndex}
+            onClick={() => setChapterIndex(index)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
       <section
         ref={stage}
         data-cinema-player="true"
@@ -103,8 +134,8 @@ export function SadeedCinematicExperience({ embedded = false }: { embedded?: boo
         <div className="sd-cinema-vignette" aria-hidden="true" />
         <div className="sd-cinema-headline">
           <span>SADEED AI OS / DIGITAL COMMAND</span>
-          <Heading>التوأم الرقمي للأمن الصناعي</Heading>
-          <p>طاقة متصلة · استجابة ذكية · رؤية وطنية</p>
+          <Heading>{chapter.title}</Heading>
+          <p>{chapter.subtitle}</p>
         </div>
         {imageFailed && (
           <div className="sd-cinema-media-error" role="alert">
@@ -132,6 +163,7 @@ export function SadeedCinematicExperience({ embedded = false }: { embedded?: boo
         مشهد موشن جرافيك سينمائي يعمل داخل المتصفح، وليس ملف فيديو MP4 أو بثًا حيًا. أي أرقام ظاهرة
         داخل الرسم توضيحية وليست بيانات تشغيلية مباشرة.
       </p>
+      {!embedded && <LocalFilmPreview onPlaybackStart={() => setPlaying(false)} />}
     </Container>
   );
 }

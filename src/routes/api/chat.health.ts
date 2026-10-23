@@ -3,6 +3,7 @@ import { resolveGoogleGeminiModel } from "@/lib/ai-gateway.server";
 import { enforceRateLimit, gateDegradedMode } from "@/lib/governance/rate-limit.server";
 import { GEMINI_EMBEDDING_MODEL } from "@/lib/sadeed/gemini-embeddings.server";
 import { isGeminiRagReady } from "@/lib/sadeed/rag.server";
+import { describeReadiness } from "@/lib/sadeed/production/readiness-evidence";
 
 /**
  * نتيجة فحص المخزن تُحفظ 15 ث في المعزول: الشارة تُسأل مع كل زيارةٍ للرئيسية، والفحص
@@ -37,6 +38,7 @@ export const Route = createFileRoute("/api/chat/health")({
           : gateDegradedMode() === "closed"
             ? "closed"
             : "degraded";
+        const ragReindexConfirmed = isGeminiRagReady();
         return Response.json(
           {
             ok: true,
@@ -45,9 +47,15 @@ export const Route = createFileRoute("/api/chat/health")({
             key_present: geminiPresent,
             gate,
             rag_embedding_model: GEMINI_EMBEDDING_MODEL,
-            rag_ready: isGeminiRagReady(),
+            rag_ready: ragReindexConfirmed,
             voice_configured: elevenLabsPresent,
             transcription_configured: geminiPresent,
+            readiness: describeReadiness({
+              geminiPresent,
+              elevenLabsPresent,
+              ragReindexConfirmed,
+              gate,
+            }),
           },
           {
             headers: {
