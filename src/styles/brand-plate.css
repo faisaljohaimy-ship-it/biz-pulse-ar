@@ -12,7 +12,11 @@
      (`:where`) فتغلبها، أمّا أدوات Tailwind فداخل طبقة وهذا الملف خارجها.
    ③ النسبة مكتوبة (2086 / 593) فلا قفزة تخطيط قبل وصول الصورة.
    ④ لا لون إلا ألوان النظام في `forced-colors` — حدٌّ يُبقي الهدف ظاهرًا.
-   ⑤ الوهج (أمر المالك ٢٠٢٦/١٠/١٨) حول الصورة لا عليها — آخر الملف.
+   ⑤ الوهج حول الصورة لا عليها — آخر الملف: هالةٌ تتنفّس (أمر الوهج ٢٠٢٦/١٠/١٨)، ولمعةٌ
+     دائمة بأمر المالك ٢٠٢٦/١٠/١٨ بنصّه: «اجعل علامة سديد المشار اليها فالمرفق والموجودة في
+     زاوية النظام العلوية تلمع باستمرار ذهاباً واياباً». وهو ينسخ في اللمعة وحدها «مسحة ضوءٍ
+     عابرة نادرة» من أمر الوهج («occasional subtle luminous sweep»): عبورًا كل 14 ث و86٪ من
+     دورته سكون. والهالة باقية كما هي.
    ============================================================================ */
 
 .nx-plate-link {
@@ -56,11 +60,14 @@
   object-fit: contain;
 }
 
-/* ══ ⑤ الوهج — «continuously luminous … electric-blue outer glow, secondary cyan
-   highlights, slow continuous illumination cycle, occasional subtle luminous sweep»
-   (أمر المالك ٢٠٢٦/١٠/١٨). الصورة لا تُمسّ: الهالة طبقةٌ تحتها (`::before`)، والمسحة شريطٌ
-   ضيّق داخل غلافٍ يقصّه على زوايا اللوحة (`.nx-plate-sheen`). ولا يتحرّك إلا `opacity`
-   و`transform` (يركّبهما المتصفّح بلا إعادة رسم)، على لوحةٍ عرضها 176–256px. ══════════ */
+/* ══ ⑤ الوهج — طبقتان حول الصورة لا عليها، والصورة لا تُمسّ ══════════════════════════
+   • الهالة (`::before` تحتها) من أمر الوهج: «continuously luminous … electric-blue outer
+     glow, secondary cyan highlights, slow continuous illumination cycle» — تتنفّس ببطء.
+   • اللمعة شريط ضوءٍ داخل غلافٍ يقصّه على زوايا اللوحة (`.nx-plate-sheen`)، وأمرها في ⑤
+     أعلاه («تلمع باستمرار ذهاباً واياباً»): حاضرةٌ طوال الوقت، تبلغ حافّة اللوحة وتعود منها
+     بلا انقطاع — لا عبورًا نادرًا بين سكونين.
+   ولا يتحرّك إلا `opacity` و`transform` (يركّبهما المتصفّح بلا إعادة رسم)، على لوحةٍ عرضها
+   176–256px. ═══════════════════════════════════════════════════════════════════════════ */
 .nx-plate-link::before {
   content: "";
   position: absolute;
@@ -82,20 +89,30 @@
   pointer-events: none;
 }
 
+/* الضوء على الصورة، والصورة واحدة في الوضعين — فلونه رموزٌ ثابتة (`--nx-white` و`--nx-cyan-2`)
+   لا `--tone-*`: ‏`--tone-cyan` في الفاتح حبرٌ داكن يُقرأ على الأبيض، فيمرّ على الزجاج الفاتح
+   لطخةً داكنة لا لمعة. أمّا الهالة فعلى الصفحة حول اللوحة، فتتبع الوضع.
+   نواةٌ بيضاء أعرض وأسطع من المسحة السابقة (70٪ لا 42٪) بحافّتين سماويّتين، ويتبعها خطٌّ خافت
+   كانعكاس وجه الزجاج الخلفيّ. والغلاف بقدّ اللوحة (`inset: 0`) ونواته في منتصفه — وعلى ذلك تُحسب
+   إزاحة `nx-plate-sweep`. وساكنًا لا يُرى (`opacity: 0`): حين تقف الحركة لوحةٌ بلا شريط. */
 .nx-plate-sheen::after {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
     105deg,
-    transparent 38%,
-    color-mix(in oklab, var(--tone-cyan) 22%, transparent) 46%,
-    color-mix(in oklab, var(--nx-white) 42%, transparent) 50%,
-    color-mix(in oklab, var(--tone-cyan) 22%, transparent) 54%,
-    transparent 62%
+    transparent 31%,
+    color-mix(in oklab, var(--nx-cyan-2) 20%, transparent) 40%,
+    color-mix(in oklab, var(--nx-white) 55%, transparent) 46.5%,
+    color-mix(in oklab, var(--nx-white) 70%, transparent) 50%,
+    color-mix(in oklab, var(--nx-white) 55%, transparent) 53.5%,
+    color-mix(in oklab, var(--nx-cyan-2) 20%, transparent) 60%,
+    transparent 66%,
+    transparent 69%,
+    color-mix(in oklab, var(--nx-white) 28%, transparent) 71%,
+    transparent 73%
   );
   opacity: 0;
-  transform: translateX(-130%);
 }
 
 /* التحويم والتركيز يرفعان الهالة رفعًا هادئًا — طبقةٌ ثابتة على الرابط لا على المتحرّكة. */
@@ -108,13 +125,23 @@
   box-shadow: 0 0 22px 2px color-mix(in oklab, var(--tone-blue) 38%, transparent);
 }
 
+/* كل حركةٍ خلف ثلاثة مفاتيح معًا: تفضيل النظام، ومفتاح السكون `data-nx-motion`، وزرّ «إيقاف
+   الحركة» على الرئيسية — يكتب `data-nx-motion-paused="1"` على الجذر (`HomeBrandRow`،
+   WCAG 2.2.2) فتقف اللمعة والتنفّس معه ما دامت السمة قائمة. وفي الصفحات الأخرى (حيث لا
+   يُركَّب كاتب السمة) تحمل اللوحة اختيار الزائر المحفوظ بنفسها (`data-motion-paused`)، ولا حركة قبل
+   قراءته (`data-motion-known`) — فمن أوقفها لا يرى منها إطارًا قبل الترطيب. والوضع
+   الآمن يُسقطهما من `styles.css` (‏`animation: none !important`)، فيبقى البديل نفسه: هالةٌ ساكنة
+   بلا شريط. */
 @media (prefers-reduced-motion: no-preference) {
-  html:not([data-nx-motion="off"]) .nx-plate-link::before {
+  html:not([data-nx-motion="off"]):not([data-nx-motion-paused="1"])
+    .nx-plate-link[data-motion-known]:not([data-motion-paused])::before {
     animation: nx-plate-breathe 6.5s ease-in-out infinite;
   }
 
-  html:not([data-nx-motion="off"]) .nx-plate-sheen::after {
-    animation: nx-plate-sweep 14s linear 3s infinite;
+  html:not([data-nx-motion="off"]):not([data-nx-motion-paused="1"])
+    .nx-plate-link[data-motion-known]:not([data-motion-paused])
+    .nx-plate-sheen::after {
+    animation: nx-plate-sweep 3.4s ease-in-out infinite alternate;
   }
 }
 
@@ -130,27 +157,21 @@
   }
 }
 
-/* مسحةٌ واحدة كل 14 ث تعبر في نحو 1.4 ث، وسائر الدورة سكون. */
+/* ذهابٌ وإيابٌ بلا سكون: محطّتان فقط، و`alternate` يعكس الاتجاه عند كل حافّة، و`ease-in-out`
+   يُبطئ الشريط عندها كضوءٍ ينزلق على زجاجٍ يميل ثم يعود — عبورٌ في 3.4 ث ودورةٌ كاملة في 6.8.
+   والشفافية واحدة في المحطّتين: حاضرةٌ طوال الدورة. و±50٪ من عرض الغلاف (= عرض اللوحة) تبلغ
+   بمنتصف النواة حافّتي اللوحة ولا تتجاوزهما، فلا يغادر الشريط اللوحة كلّه قطّ. **حُسب هندسيًّا
+   لهذا الشريط:** ‏±125٪ مع `ease-in-out` تُخرجه كلّه عن اللوحة 61٪ من كل عبور — سكونٌ مقنّع
+   ~2 ث عند كل منعطف. ولا وميض: يمرّ بكل نقطة مرّتين في 6.8 ث بتدرّجٍ لا قفزة (WCAG 2.3.1). */
 @keyframes nx-plate-sweep {
-  0%,
-  86% {
-    opacity: 0;
-    transform: translateX(-130%);
+  from {
+    opacity: 0.95;
+    transform: translateX(-50%);
   }
 
-  88% {
-    opacity: 1;
-  }
-
-  96% {
-    opacity: 0.9;
-    transform: translateX(130%);
-  }
-
-  97%,
-  100% {
-    opacity: 0;
-    transform: translateX(130%);
+  to {
+    opacity: 0.95;
+    transform: translateX(50%);
   }
 }
 

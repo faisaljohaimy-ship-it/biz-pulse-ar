@@ -17,17 +17,26 @@
  * (WCAG 2.4.4 · 4.1.2). والاسم يحوي نصّ اللوحة المرئي (2.5.3)، ومصدره
  * `PRODUCT_BRAND` و`PLATE_TAGLINE` — لا نصّ يُعاد كتابته.
  *
- * ## وهجٌ حول اللوحة لا على صورتها (أمر المالك ٢٠٢٦/١٠/١٨)
+ * ## وهجٌ حول اللوحة لا على صورتها (أمرا المالك ٢٠٢٦/١٠/١٨)
  *
  * «Implement a refined, continuously luminous treatment for the official SADEED logo …
  * Preserve the original artwork». فالصورة كما هي بلا فلتر ولا قلب في الداكن، والوهج
- * طبقتان حولها في `brand-plate.css`: هالةٌ زرقاء/سماوية تتنفّس ببطء، ومسحة ضوءٍ عابرة
- * نادرة داخل زوايا اللوحة (`.nx-plate-sheen`). تتحرّك الشفافية والإزاحة وحدهما (تركيبٌ لا
- * رسم)، وخلف تقليل الحركة ومفتاح السكون معًا — والبديل هالةٌ ساكنة. وهذا الأمر ينسخ في الشعار
- * وحده حظر «اللمعة الدائمة» (M1–M5)؛ والرئيسية باقية عليه. لا `<video>`: فيلم الماء السابق
- * مصيَّرٌ فوق اللوحة القديمة بعبارتها الممحوّة. النصّ المخبوز في الصورة شعارٌ مستثنى من
- * أرضية 12px (WCAG 1.4.5)، وكلماته في اسم الرابط.
+ * طبقتان حولها في `brand-plate.css`: هالةٌ زرقاء/سماوية تتنفّس ببطء، ولمعةٌ داخل زوايا
+ * اللوحة (`.nx-plate-sheen`). وكانت اللمعة «مسحة ضوءٍ عابرة نادرة» (عبورًا كل 14 ث)، فنسخها
+ * فيها وحدها أمر المالك بنصّه: «اجعل علامة سديد المشار اليها فالمرفق والموجودة في زاوية
+ * النظام العلوية تلمع باستمرار ذهاباً واياباً» — فهي اليوم شريط ضوءٍ حاضرٌ طوال الوقت، يذهب
+ * إلى حافّة اللوحة ويعود بلا سكون. تتحرّك الشفافية والإزاحة وحدهما (تركيبٌ لا رسم)، وخلف تقليل
+ * الحركة ومفتاح السكون وزرّ «إيقاف الحركة» على الرئيسية (`data-nx-motion-paused`، WCAG 2.2.2)
+ * معًا — والبديل هالةٌ ساكنة بلا شريط. **واختيار الإيقاف يُحترم في كل صفحة** لا على الرئيسية
+ * وحدها: السمة على الجذر لا يكتبها إلا `HomeBrandRow` حين يُركَّب، واللوحة في كل صفحة؛ فتقرأ
+ * اللوحة نفسها الاختيار المحفوظ عند تركيبها وتتبع حدث الزرّ (`useSavedMotionPause`) — بلا كاتبٍ
+ * ثانٍ للجذر ولا سكربت قبل الرسم (عقد `holo-background` يمنع حال الحركة هناك، درس المفتاح
+ * اليتيم). والأمران ينسخان حظر «اللمعة الدائمة» (M1–M5) في هذه
+ * اللوحة وحدها — استثناءٌ لا يمتدّ منها إلى غيرها. لا `<video>`: فيلم الماء السابق مصيَّرٌ فوق
+ * اللوحة القديمة بعبارتها الممحوّة. النصّ المخبوز في الصورة شعارٌ مستثنى من أرضية 12px
+ * (WCAG 1.4.5)، وكلماته في اسم الرابط.
  */
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { PRODUCT_BRAND, brandName } from "@/lib/domain";
 import { useI18n } from "@/lib/i18n";
@@ -85,6 +94,37 @@ export function plateLinkLabel(ar: boolean): string {
     : `${PRODUCT_BRAND.en.name} — ${PLATE_TAGLINE} — Home`;
 }
 
+/**
+ * اختيار «إيقاف الحركة» المحفوظ — مرآة واجهة `HomeBrandRow` المجمَّدة: مفتاح التخزين نفسه
+ * (`PAUSE_KEY`) وحدثه نفسه (`MOTION_PAUSE_EVENT`)، ويحرس العقد تطابقهما. لا يُستورد الثابتان من
+ * هناك: ذلك يجرّ وحدة البانر وأنماطها إلى كل صفحة تحمل اللوحة.
+ */
+export const SAVED_PAUSE_KEY = "nx-brand-motion";
+export const PAUSE_EVENT = "nx:motion-pause";
+
+/**
+ * هل أوقف الزائر الحركة؟ — يُقرأ بعد التركيب (فلا يختلف HTML الخادم)، ويتبع الزرّ إن ضُغط في
+ * الجلسة. والتخزين المحجوب يعني «لا اختيار محفوظ» لا عطلًا. و`known` يقول متى قُرئ: قبله لا حركة
+ * تبدأ، فمن أوقفها لا يرى منها إطارًا قبل الترطيب (أمسكته المراجعة) — كـ`usePausedPreference`.
+ */
+function useSavedMotionPause(): { paused: boolean; known: boolean } {
+  const [paused, setPaused] = useState(false);
+  const [known, setKnown] = useState(false);
+  useEffect(() => {
+    try {
+      setPaused(localStorage.getItem(SAVED_PAUSE_KEY) === "paused");
+    } catch {
+      /* التخزين محجوب — لا اختيار محفوظ */
+    }
+    setKnown(true);
+    const follow = (e: Event) =>
+      setPaused(Boolean((e as CustomEvent<{ paused?: boolean }>).detail?.paused));
+    window.addEventListener(PAUSE_EVENT, follow);
+    return () => window.removeEventListener(PAUSE_EVENT, follow);
+  }, []);
+  return { paused, known };
+}
+
 export function SadeedPlateLockup({
   variant = "sidebar",
   className,
@@ -93,6 +133,7 @@ export function SadeedPlateLockup({
   className?: string;
 }) {
   const { locale } = useI18n();
+  const { paused: motionPaused, known: motionKnown } = useSavedMotionPause();
   return (
     <Link
       to="/"
@@ -100,6 +141,8 @@ export function SadeedPlateLockup({
       // معًا فلا اختلاف ترطيب، ولا يتبدّل بمعاملات البحث.
       activeOptions={{ exact: true, includeSearch: false }}
       data-variant={variant}
+      data-motion-known={motionKnown || undefined}
+      data-motion-paused={motionPaused || undefined}
       aria-label={plateLinkLabel(locale === "ar")}
       className={cn("nx-plate-link nx-focus-ring", className)}
     >
