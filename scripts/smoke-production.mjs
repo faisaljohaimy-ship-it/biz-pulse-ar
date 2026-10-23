@@ -9,6 +9,8 @@
  *   A1 مصادقة لا تُتجاوز     — Bearer تالف ⇐ 401 قبل أيّ نموذج.
  *   C1 سؤال عربي (زائر)      — 200، نصّ عربي، لا رمز خام، لا اسم مورّد، ترويستا
  *                              X-SADEED-Gate / X-SADEED-Reply-Source، وزمن أوّل بايت.
+ *                              model-error أو خطأ داخل البثّ = fail ولو كان HTTP 200.
+ *                              الردّ المحلي = warn، لا إثبات إجابة من نموذج.
  *   C2 التكرار الجاري        — طلبان متطابقان معًا ⇐ أحدهما 429 `duplicate_request`
  *                              مع Retry-After (غير حاسم إن أُنهي الأوّل قبل وصول الثاني).
  *   C3 (EXHAUSTIVE=1)        — سبعة طلبات متتابعة من المصدر نفسه: مع مخزنٍ معطّل
@@ -97,6 +99,7 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
         raw += dec.decode(value, { stream: true });
       }
     }
+    raw += dec.decode();
     let shown = "";
     let code = null;
     let errorText = null;
@@ -119,6 +122,11 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
         try {
           const ev = JSON.parse(line.slice(6));
           if (ev.type === "text-delta" && typeof ev.delta === "string") shown += ev.delta;
+          // A partial Arabic answer followed by a stream failure is not a successful reply.
+          if (ev.type === "error" || ev.type === "abort" || ev.finishReason === "error") {
+            code = "stream_error";
+            errorText = "فشل البثّ أو أُوقف قبل اكتمال الردّ";
+          }
         } catch {
           /* سطر غير JSON ([DONE]) */
         }
@@ -173,9 +181,10 @@ if (!h1.ok) {
       `لا حقل rate_limit_storage — البناء المنشور أقدم من VIBE 5.1 (http ${h1.status}, ${h1.ms} مللي ثانية)`,
     );
   } else {
+    const healthy = h1.status === 200 && dbStatus === "ok" && storageStatus === "ok";
     note(
       "H1 public/health",
-      "pass",
+      healthy ? "pass" : STRICT ? "fail" : "warn",
       `http ${h1.status} في ${h1.ms} مللي ثانية — db=${dbStatus}${s.db?.detail ? ` (${s.db.detail})` : ""} · rate_limit_storage=${storageStatus} (${s.rate_limit_storage.detail ?? ""}) · gemini=${s.gemini?.status}`,
     );
   }
@@ -227,14 +236,14 @@ if (!h1.ok) {
 
 // ── H2 ─────────────────────────────────────────────────────────────────────────
 const h2 = await getJson("/api/chat/health");
-if (h2.ok && h2.json?.ok === true && h2.json.key_present === true) {
+if (h2.ok && h2.status === 200 && h2.json?.ok === true && h2.json.key_present === true) {
   // `gate` منذ R3 (DEF-11): حال البوّابة كما تراها شارة سَدِيد — وغيابه بناءٌ منشور أقدم.
   note(
     "H2 chat/health",
     "pass",
     `المزوّد مهيّأ (${h2.json.provider}) · gate=${h2.json.gate ?? "— (بناءٌ أقدم من R3)"} في ${h2.ms} مللي ثانية`,
   );
-} else if (h2.ok && h2.json?.ok === true && h2.json.mode === "zero_cost") {
+} else if (h2.ok && h2.status === 200 && h2.json?.ok === true && h2.json.mode === "zero_cost") {
   // الوضع الحتمي بلا تكلفة (٢٠٢٦/١٠/١٨) حالةٌ مقصودة لا عطل: العدّ والمرجع والمساعدة
   // والتنقّل تعمل بلا مفتاح، وما يحتاج التحليل اللغوي يُجاب بردٍّ صادق. تحذيرٌ لا سقوط.
   note(
@@ -288,11 +297,19 @@ if (!c1.ok) {
   if (c1.status !== 200) problems.push(`http ${c1.status} (${c1.code ?? c1.rawHead})`);
   if (!c1.gate) problems.push("لا ترويسة X-SADEED-Gate (بناءٌ أقدم من VIBE 5.1؟)");
   if (!c1.source) problems.push("لا ترويسة X-SADEED-Reply-Source");
+  if (c1.source === "model-error") problems.push("فشل النموذج (model-error)، لا إجابة ناجحة");
+  if (c1.code || c1.errorText) problems.push("الاستجابة تحتوي خطأً أو بثًّا غير مكتمل");
   if (!HAS_ARABIC.test(c1.shown)) problems.push("النصّ المعروض ليس عربيًّا");
   if (/rate_limit_unavailable|quota_unavailable/.test(c1.shown)) problems.push("رمزٌ خام في النصّ");
   if (VENDOR.test(c1.shown)) problems.push("اسم مورّد في النصّ المعروض");
   if (problems.length) {
     note("C1 chat", "fail", problems.join(" · "));
+  } else if (c1.source !== "model") {
+    note(
+      "C1 chat",
+      "warn",
+      `ردّ بديل (source=${c1.source}) — لا يثبت نجاح استجابة النموذج`,
+    );
   } else {
     note(
       "C1 chat",
@@ -364,10 +381,16 @@ if (EXHAUSTIVE) {
 }
 
 // ── القاعدة: الخلاصة ──────────────────────────────────────────────────────────
-if (dbStatus === "ok" && gateMode === "verified") {
+if (
+  h1.ok &&
+  h1.status === 200 &&
+  dbStatus === "ok" &&
+  storageStatus === "ok" &&
+  gateMode === "verified"
+) {
   note("DB", "pass", "القاعدة تجيب ومخزن الحدّ متحقَّق (gate=verified)");
 } else {
-  const detail = `db=${dbStatus} · rate_limit_storage=${storageStatus} · gate=${gateMode ?? "—"} — الدردشة تعمل بحدود الذاكرة؛ إعادة القاعدة من Lovable Cloud`;
+  const detail = `db=${dbStatus} · rate_limit_storage=${storageStatus} · gate=${gateMode ?? "—"} — لم تثبت سلامة جميع مكونات الخلفية في هذا الفحص`;
   note("DB", STRICT ? "fail" : "warn", `degraded (infra): ${detail}`);
 }
 
@@ -382,7 +405,7 @@ const lines = [
   "",
   failed.length
     ? `**✗ ${failed.length} فحص ساقط.**`
-    : "**✓ لا عيب شيفرة؛ راجع صفّ DB للحالة التشغيلية.**",
+    : "**✓ لم يرصد هذا الفحص فشلًا؛ راجع التحذيرات والمتخطّى — ليس اعتمادًا شاملًا.**",
 ];
 writeFileSync("smoke-summary.md", lines.join("\n") + "\n");
 writeFileSync(
