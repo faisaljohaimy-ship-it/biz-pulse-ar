@@ -41,6 +41,32 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
           [];
 
         for (const s of due ?? []) {
+          // Claim before doing anything: an optimistic conditional update moves
+          // next_run_at forward only if it still holds the value we just read.
+          // Two overlapping cron invocations read the same due row, but only
+          // one UPDATE matches — the other gets zero rows back and leaves the
+          // schedule alone, so a report is never generated or emailed twice.
+          const nextRunAt = advance(s.frequency, s.hour_utc, s.weekday);
+          const { data: claimed, error: claimError } = await supabaseAdmin
+            .from("report_schedules")
+            .update({ next_run_at: nextRunAt })
+            .eq("id", s.id)
+            .eq("next_run_at", s.next_run_at as string)
+            .select("id");
+          if (claimError) {
+            // Ownership unknown — do not send and do not touch the row.
+            results.push({
+              id: s.id,
+              status: "failed",
+              detail: `claim_failed: ${claimError.message.slice(0, 180)}`,
+            });
+            continue;
+          }
+          if (!claimed || claimed.length === 0) {
+            results.push({ id: s.id, status: "skipped", detail: "claimed_by_another_run" });
+            continue;
+          }
+
           if (!lov || !sp || !out) {
             results.push({ id: s.id, status: "skipped", detail: "connector_not_configured" });
             await supabaseAdmin
@@ -49,7 +75,7 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
                 last_run_at: nowIso,
                 last_status: "skipped",
                 last_error: "connector_not_configured",
-                next_run_at: advance(s.frequency, s.hour_utc, s.weekday),
+                next_run_at: nextRunAt,
               })
               .eq("id", s.id);
             continue;
@@ -102,6 +128,10 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
               htmlSummaryFromSnapshot(snap, { title }) +
               `<p style="font:12px/1.6 system-ui;color:#334155;text-align:center"><a href="${pdfShare ?? pdfItem.webUrl}">Open PDF</a> · <a href="${xlsxShare ?? xlsxItem.webUrl}">Open Excel</a></p>`;
 
+            // Recipients come from the schedule row as stored. Whether scheduled
+            // reports need a recipient allowlist is an owner policy decision
+            // (see the direct-send owner policy in
+            // src/lib/sadeed/outbound-recipient-policy.server.ts) — not added here.
             const mailRes = await httpFetch(`${OUT_GW}/me/sendMail`, {
               method: "POST",
               headers: {
@@ -148,7 +178,7 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
                 last_status: "ok",
                 last_error: null,
                 last_share_url: pdfShare ?? pdfItem.webUrl,
-                next_run_at: advance(s.frequency, s.hour_utc, s.weekday),
+                next_run_at: nextRunAt,
               })
               .eq("id", s.id);
 
@@ -175,7 +205,7 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
                 last_run_at: nowIso,
                 last_status: "failed",
                 last_error: msg.slice(0, 500),
-                next_run_at: advance(s.frequency, s.hour_utc, s.weekday),
+                next_run_at: nextRunAt,
               })
               .eq("id", s.id);
             results.push({ id: s.id, status: "failed", detail: msg.slice(0, 200) });

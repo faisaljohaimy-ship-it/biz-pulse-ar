@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { requirePlatformAdmin } from "@/lib/authz.server";
+import type { AiGateCode } from "@/lib/governance/ai-quota.server";
 
 /* --------------------------------- Types --------------------------------- */
 
@@ -304,12 +305,14 @@ export const kbSemanticSearch = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => SemanticInput.parse(data))
   .handler(async ({ data, context }) => {
     const { buildKbSimulation, resilient } = await import("@/lib/exec/showcase-simulation.server");
+    const identity = semanticQuotaIdentity(context.userId, await requestHeaders());
     return resilient(
       "kb-semantic",
       () =>
         performSemanticSearch(
           context.supabase as { from: (t: string) => any; rpc: (fn: string, args: unknown) => any },
           data,
+          identity,
         ),
       () => false,
       () => simKeywordSearch(buildKbSimulation(Date.now()), data.query, data.limit),
@@ -317,49 +320,126 @@ export const kbSemanticSearch = createServerFn({ method: "POST" })
     );
   });
 
+/* ------------------- Spend gate before the paid embedding ------------------ */
+
+/** Current request headers, or undefined outside a request (tests, internal calls). */
+async function requestHeaders(): Promise<Headers | undefined> {
+  try {
+    const { getRequest } = await import("@tanstack/react-start/server");
+    return getRequest()?.headers;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Guest address. Client-IP headers are trusted only behind
+ * `TRUST_PROXY_HEADERS=true` (the proxy writes them); otherwise every guest
+ * shares one bucket. Same order as `clientIp` in `src/routes/api/chat.ts`:
+ * `cf-connecting-ip` first (the client cannot forge it), then the first
+ * `x-forwarded-for` element (which the client controls).
+ */
+function guestAddress(headers: Headers | undefined): string {
+  if (process.env.TRUST_PROXY_HEADERS?.trim().toLowerCase() !== "true") return "shared";
+  const candidate =
+    headers?.get("cf-connecting-ip")?.trim() ||
+    headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headers?.get("x-real-ip")?.trim() ||
+    "shared";
+  return /^[0-9a-f:.]{3,64}$/i.test(candidate) ? candidate : "shared";
+}
+
+/** Rate-limit/quota identity: the user id, else the guest address or shared bucket. */
+function semanticQuotaIdentity(userId: string | null, headers: Headers | undefined): string {
+  return userId ?? `guest:kb:${guestAddress(headers)}`;
+}
+
+type SemanticGateBlock = AiGateCode | "rate_limited" | "rate_limit_unavailable";
+
+/**
+ * Spend gate before the paid embedding. Guests call this server function
+ * without an account, and every search used to reach the provider with no
+ * rate limit or quota. Order: kill switch (sync, no network) → per-minute
+ * rate limit → the two daily caps of the dedicated "kb" surface. Not "chat":
+ * the knowledge page searches on every keystroke, and sharing chat's buckets
+ * let one user's typing spend their own SADEED chat allowance (same per-user
+ * key as /api/chat) and a few users' typing close chat's global cap for
+ * everyone. Any block or unavailable store returns a code and the caller
+ * falls back to the non-paid keyword search — nothing is spent on a search
+ * whose quota was not verified.
+ */
+async function semanticSpendGate(identity: string): Promise<SemanticGateBlock | null> {
+  const { AiGateError, aiKillSwitchOn, assertAiQuota } =
+    await import("@/lib/governance/ai-quota.server");
+  if (aiKillSwitchOn()) return "ai_disabled";
+  const { enforceRateLimit } = await import("@/lib/governance/rate-limit.server");
+  const rate = await enforceRateLimit(`kb-semantic:${identity}`, 20, 60, { deadlineMs: 2_000 });
+  if (rate.unavailable) return "rate_limit_unavailable";
+  if (!rate.allowed) return "rate_limited";
+  try {
+    await assertAiQuota({ surface: "kb", identity, deadlineMs: 2_000 });
+  } catch (e) {
+    return e instanceof AiGateError ? e.code : "quota_unavailable";
+  }
+  return null;
+}
+
+/** Non-paid keyword search over published articles — the embedding fallback. */
+async function keywordSearch(
+  supabase: Pick<Parameters<typeof performSemanticSearch>[0], "from">,
+  data: { query: string; limit: number },
+  reason: string,
+) {
+  const s = data.query.replace(/[,()]/g, " ");
+  const { data: rows, error } = await supabase
+    .from("sec_knowledge_articles")
+    .select(
+      "id, doc_code, title_ar, title_en, summary_ar, summary_en, risk_level, priority, sec_knowledge_categories(code)",
+    )
+    .eq("status", "published")
+    .or(
+      [
+        `title_ar.ilike.%${s}%`,
+        `title_en.ilike.%${s}%`,
+        `summary_ar.ilike.%${s}%`,
+        `summary_en.ilike.%${s}%`,
+      ].join(","),
+    )
+    .limit(data.limit);
+  if (error) throw new Error(error.message);
+  return {
+    mode: "keyword" as const,
+    reason,
+    hits: ((rows ?? []) as any[]).map((r) => ({
+      id: r.id,
+      doc_code: r.doc_code,
+      title_ar: r.title_ar,
+      title_en: r.title_en,
+      summary_ar: r.summary_ar,
+      summary_en: r.summary_en,
+      category_code: r.sec_knowledge_categories?.code ?? null,
+      risk_level: r.risk_level,
+      priority: r.priority,
+      similarity: null,
+    })),
+  };
+}
+
 async function performSemanticSearch(
   supabase: { from: (t: string) => any; rpc: (fn: string, args: unknown) => any },
   data: { query: string; category_code?: string; limit: number },
+  identity: string,
 ) {
+  const blocked = await semanticSpendGate(identity);
+  if (blocked) return keywordSearch(supabase, data, blocked);
+
   const { embedText } = await import("@/lib/kb-embed.server");
   let vec: number[];
   try {
     vec = await embedText(data.query, "retrieval-query");
   } catch (e) {
     // graceful fallback to keyword search if embedding gateway is down
-    const s = data.query.replace(/[,()]/g, " ");
-    const { data: rows, error } = await supabase
-      .from("sec_knowledge_articles")
-      .select(
-        "id, doc_code, title_ar, title_en, summary_ar, summary_en, risk_level, priority, sec_knowledge_categories(code)",
-      )
-      .eq("status", "published")
-      .or(
-        [
-          `title_ar.ilike.%${s}%`,
-          `title_en.ilike.%${s}%`,
-          `summary_ar.ilike.%${s}%`,
-          `summary_en.ilike.%${s}%`,
-        ].join(","),
-      )
-      .limit(data.limit);
-    if (error) throw new Error(error.message);
-    return {
-      mode: "keyword" as const,
-      reason: (e as Error).message,
-      hits: ((rows ?? []) as any[]).map((r) => ({
-        id: r.id,
-        doc_code: r.doc_code,
-        title_ar: r.title_ar,
-        title_en: r.title_en,
-        summary_ar: r.summary_ar,
-        summary_en: r.summary_en,
-        category_code: r.sec_knowledge_categories?.code ?? null,
-        risk_level: r.risk_level,
-        priority: r.priority,
-        similarity: null,
-      })),
-    };
+    return keywordSearch(supabase, data, (e as Error).message);
   }
 
   const { data: rows, error } = await supabase.rpc("sec_kb_search", {

@@ -79,3 +79,8 @@ __pycache__/
 # معرّف البناء — يكتبه `prebuild` (scripts/write-build-info.mjs) عند كل بناء،
 # ويُقدَّم على /build-info.json ويُدمج في /api/public/health. يتغيّر مع كل commit.
 public/build-info.json
+
+# طبقة اختبارات التكامل الحقيقية (tests/integration): ملف البيئة المولَّد لكل
+# تشغيل (رموز JWT تجريبية بسرٍّ عشوائي) وثنائي PostgREST المحمَّل — لا يُدفعان.
+tests/integration/.env.integration
+tests/integration/bin/

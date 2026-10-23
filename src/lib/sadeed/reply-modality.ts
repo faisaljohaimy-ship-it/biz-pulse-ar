@@ -36,6 +36,8 @@ export function toSadeedSpeechText(value: string): string {
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[([^\]]+)\]\((?:https?:\/\/|mailto:|tel:)[^)]*\)/gi, "$1")
+    // الروابط النسبية (روابط الشاشات من الموجّه بلا تكلفة): يُنطق اسمها لا مسارها.
+    .replace(/\[([^\]]+)\]\(\/[^)]*\)/g, "$1")
     .replace(/https?:\/\/\S+/gi, " ")
     .replace(/\[(?:DOC|KB):[^\]]+\]/gi, " ")
     .replace(/\[(?:\d+(?:\s*[-,]\s*\d+)*)\]/g, " ")

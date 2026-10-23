@@ -1,8 +1,10 @@
-import { createOpenAI } from "@ai-sdk/openai";
-
-// Fixed, server-owned configuration: clients cannot select arbitrary models,
-// destinations, output budgets or retries.
-export const SADEED_OPENAI_MODEL = "gpt-4.1-mini";
+/**
+ * طلب OpenAI بالترويسة — نصف «الاثنان معًا» (قرار المالك ٢٠٢٦/١٠/٢٣): العميل **يطلب**
+ * بـ`X-SADEED-Provider: openai`، وخطّة المحرّك (`llm/provider-plan.server`) وحدها **تأذن**
+ * بالبوّابتين `OPENAI_API_KEY` + `SADEED_OPENAI_ENABLED=true` والنموذج من قائمتها البيضاء.
+ * طلبٌ بلا إذن ⇐ ردٌّ صادق «غير مهيّأ» بلا نداء أيّ مورّد — لا سقوط إلى Gemini بصمت.
+ * سقوف الخرج والمهلة ثابتة من الخادم: لا يختار العميل نموذجًا ولا ميزانية.
+ */
 export const SADEED_OPENAI_MAX_OUTPUT_TOKENS = 1200;
 export const SADEED_OPENAI_DEADLINE_MS = 25_000;
 
@@ -10,13 +12,7 @@ export function openAiRequested(headers: Headers): boolean {
   return headers.get("X-SADEED-Provider") === "openai";
 }
 
-export function createSadeedOpenAiModel() {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) return null;
-  return createOpenAI({ apiKey }).responses(SADEED_OPENAI_MODEL);
-}
-
-/** Strip SDK response bodies/credentials before any server logging. */
+/** يُسقط أجسام ردود المورّد والمفاتيح قبل أي تسجيل في الخادم. */
 export function safeOpenAiError(error: unknown): string {
   const status =
     error && typeof error === "object" && "statusCode" in error

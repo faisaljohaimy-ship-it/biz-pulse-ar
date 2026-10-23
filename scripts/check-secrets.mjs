@@ -33,6 +33,18 @@ const SQL_DUMP_SIGNATURE = /-- PostgreSQL database dump|^COPY [^\n]+ FROM stdin;
 export const SECRET_CONTENT = [
   { re: /-----BEGIN (?:RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----/, label: "private key block" },
   { re: /\bsk-[A-Za-z0-9]{32,}\b/, label: "OpenAI-style secret key (sk-…)" },
+  // Modern OpenAI keys carry a scope prefix plus `-`/`_` in the body, so the
+  // legacy pattern above never matched them.
+  {
+    re: /\bsk-(?:proj|svcacct|admin)-[A-Za-z0-9_-]{20,}/,
+    label: "OpenAI project/service/admin key (sk-proj-/sk-svcacct-/sk-admin-…)",
+  },
+  { re: /\bsk-ant-[A-Za-z0-9_-]{20,}/, label: "Anthropic API key (sk-ant-…)" },
+  // Only the server-side secret key; `sb_publishable_…` is public by design.
+  { re: /\bsb_secret_[A-Za-z0-9_-]{20,}/, label: "Supabase secret key (sb_secret_…)" },
+  // Resend: `re_` + 8 + `_` + 24 base58 chars (alphanumeric superset here).
+  { re: /\bre_[A-Za-z0-9]{8}_[A-Za-z0-9]{24}\b/, label: "Resend API key (re_…)" },
+  { re: /\bsk_[a-f0-9]{48}\b/, label: "ElevenLabs API key (sk_…)" },
   { re: /\b(?:sk|rk)_live_[0-9A-Za-z]{20,}\b/, label: "Stripe live secret key" },
   { re: /\bghp_[A-Za-z0-9]{36}\b/, label: "GitHub personal access token (ghp_…)" },
   { re: /\bgithub_pat_[A-Za-z0-9_]{60,}\b/, label: "GitHub fine-grained PAT" },

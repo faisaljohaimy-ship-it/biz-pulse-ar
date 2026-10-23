@@ -112,7 +112,13 @@ function toCategory(value: string | null | undefined): AgentCategory {
 }
 
 /** Map admin-visible live rows into the fleet shape. Read-only projection —
- *  never a write. Falls to simulation upstream when there are no rows. */
+ *  never a write. Falls to simulation upstream when there are no rows.
+ *
+ *  A definition row proves only that an agent exists (and whether it is
+ *  enabled) — not that it is running right now. So every live agent rests in
+ *  the neutral "idle" phase (rendered «بانتظار مهمة») and the flow band rests
+ *  on its first stage; marking enabled rows "analyzing" under
+ *  `is_simulation: false` presented invented runtime state as live. */
 export function buildFleetFromLiveRows(rows: readonly LiveAgentRow[]): AgentFleetState {
   const agents: FleetAgent[] = rows.map((r) => ({
     id: r.id,
@@ -120,7 +126,7 @@ export function buildFleetFromLiveRows(rows: readonly LiveAgentRow[]): AgentFlee
     nameEn: r.name ?? r.id,
     category: toCategory(r.category),
     specialtyAr: r.goal ?? "—",
-    phase: r.enabled ? "analyzing" : "idle",
+    phase: "idle",
     taskAr: r.goal ?? "—",
     cycles: 0,
   }));
@@ -129,7 +135,7 @@ export function buildFleetFromLiveRows(rows: readonly LiveAgentRow[]): AgentFlee
     is_simulation: false,
     agentCount: agents.length,
     activeCount: agents.filter((a) => a.phase !== "idle").length,
-    flowStage: "analysis",
+    flowStage: "request",
     agents,
     events: [],
     seed: FLEET_SEED,

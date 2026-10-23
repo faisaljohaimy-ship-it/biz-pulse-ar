@@ -13,7 +13,7 @@
  * محكم البيئة على طريقة `chat-council-gate.test.ts`: لا خرج شبكي؛ `enforceRateLimit`
  * وحدها مزروعة، والحصّة المحدودة والحرّاس حقيقيّون ويُصفَّرون لكل حالة.
  */
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.stubEnv("GEMINI_API_KEY", "test-key-not-a-secret");
 vi.stubEnv("SUPABASE_URL", "https://stub.invalid");
@@ -85,6 +85,19 @@ vi.mock("ai", async (importOriginal) => ({
 
 afterAll(() => vi.unstubAllEnvs());
 
+/**
+ * الطبقات الحتمية تسبق الحصّة الآن (٢٠٢٦/١٠/١٨)، فأوّل طلبٍ يحمّل وحدات المجموعات
+ * والموجّه وسجلّ الشاشات — ثانيتان إلى أربع تحت الحمل. لو دُفع ذلك في أوّل حالةٍ
+ * لتجاوز سقف الخمس ثوانٍ وبقي طلبه جاريًا يستنزف الحدّ المحدود في الذاكرة فتسقط
+ * الحالتان بعده. فيُدفع مرّةً هنا، والسقف أوسع كأخواته.
+ */
+vi.setConfig({ testTimeout: 20_000, hookTimeout: 30_000 });
+beforeAll(async () => {
+  await import("@/routes/api/chat");
+  await import("@/lib/sadeed/instant-data-answers.server");
+  await import("@/lib/sadeed/llm/zero-cost-router.server");
+});
+
 type Handler = (args: { request: Request }) => Promise<Response>;
 
 async function post(
@@ -151,7 +164,8 @@ describe("المخزن معطّل — السياسة المحدودة (SADEED_GA
     const res = await post();
     expect(res.status).toBe(200);
     expect(res.headers.get("X-SADEED-Gate")).toBe("degraded");
-    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("safe-gateway");
+    // المصدر يسمّي من أجاب فعلًا (٢٠٢٦/١٠/١٨) — كان «safe-gateway» لكل ردّ نموذج.
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model");
     const body = await res.text();
     expect(body).not.toContain("rate_limit_unavailable");
     expect(HAS_ARABIC.test(body)).toBe(true);
@@ -256,7 +270,10 @@ describe("المسارات الصفرية الكلفة لا تنتظر المخ�
     gates.quota = new Response(JSON.stringify({ error: "quota_unavailable" }), { status: 503 });
     const res = await post("كم عدد البلاغات المفتوحة؟");
     expect(res.headers.get("X-SADEED-Reply-Source")).toBe("instant-data");
-    expect(res.headers.get("X-SADEED-Gate")).toBe("closed");
+    // الحتميّ يسبق الحصّة اليومية (لا يُنفق منها شيئًا): لا يسألها أصلًا، فالوسم
+    // وسمُ بوّابة المعدّل التي فُحصت فعلًا — لا «مغلقة» لحصّةٍ لم تُسأل.
+    expect(gates.quotaOptions).toHaveLength(0);
+    expect(res.headers.get("X-SADEED-Gate")).toBe("verified");
     expect(gates.modelCalls).toBe(0);
   });
 
