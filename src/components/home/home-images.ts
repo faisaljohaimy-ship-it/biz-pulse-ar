@@ -67,7 +67,8 @@ export const HOME_IMAGES = {
   // نسخة WebP بقياس 192×240 من الصورة المرفقة دون توليد أو تبديل الشخصية.
   // العرض 96×120 (2×)، وصورته مستقلة عن سديد. لا تُنزَّل للزائر: البطاقة للمالك فقط.
   finn: {
-    src: "/home/finn-portrait.webp",
+    // Content-addressed URL prevents an installed PWA from retaining the old portrait.
+    src: "/home/finn-portrait-f70ca416.webp",
     width: 96,
     height: 120,
     alt: "صورة توضيحية لشخصية فِن، رجل أمن بزيٍّ أسود وأصفر وخوذة بيضاء",
