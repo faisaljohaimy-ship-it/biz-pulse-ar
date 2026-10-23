@@ -37,6 +37,10 @@ const SPENDERS: ReadonlyArray<readonly [string, string]> = [
   ["src/routes/api/sadeed/transcribe.ts", "stt"],
   ["src/routes/api/voice-stt.ts", "stt"],
   ["src/routes/api/learn/sadeed-teach.ts", "chat"],
+  // وكيل المالك «فِن» (٢٠٢٦/١٠/٢٣): للمالك وحده — بوّابة المالك (404 لغيره) تسبق مفتاح
+  // الإيقاف عمدًا كي لا يكشف 503 وجود المسار؛ والبقيّة كغيره: إيقاف ← حدّ ← حصّة ← نموذج.
+  // حارسه الخاص: src/lib/finn-agent/finn-governance.contract.test.ts.
+  ["src/routes/api/finn/chat.ts", "finn"],
 ];
 
 describe("① كل نقطة تُنفق مالًا محروسة بالحصّة اليومية", () => {
@@ -87,7 +91,7 @@ describe("① كل نقطة تُنفق مالًا محروسة بالحصّة ا
     // التي تغلّفه (`resolveSadeedGeminiRuntime`، `transcribeWithGemini(`).
     // النمط الأوّل وحده ترك أربع نقاط خارج الحارس حتى ٢٠٢٦/١٠/١٧.
     const found = execSync(
-      "grep -rlE 'api\\.elevenlabs\\.io|generativelanguage\\.googleapis\\.com|api\\.anthropic\\.com|generateText\\(|resolveSadeedGeminiRuntime|transcribeWithGemini\\(' src/routes/api --include=*.ts || true",
+      "grep -rlE 'api\\.elevenlabs\\.io|generativelanguage\\.googleapis\\.com|api\\.anthropic\\.com|generateText\\(|streamText\\(|resolveSadeedGeminiRuntime|transcribeWithGemini\\(|openFinnChatStream' src/routes/api --include=*.ts || true",
       { encoding: "utf8" },
     )
       .split("\n")
@@ -161,6 +165,9 @@ describe("④ مفتاح الإيقاف الفوري — بلا نشر", () => {
       "SADEED_TTS_DAILY_GLOBAL",
       "SADEED_CHAT_DAILY_GLOBAL",
       "SADEED_STT_DAILY_GLOBAL",
+      // سطح فِن المستقلّ (W5 #2).
+      "FINN_DAILY_GLOBAL",
+      "FINN_DAILY_PER_IDENTITY",
     ]) {
       expect(QUOTA, `السقف ${v} غير قابل للضبط`).toContain(v);
     }

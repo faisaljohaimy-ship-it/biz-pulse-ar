@@ -10,7 +10,17 @@ import { ENTRIES_B } from "./page-narrations.entries.b";
 import { ENTRIES_C } from "./page-narrations.entries.c";
 
 // Prefixes where SADEED MUST stay silent (intros, cinematic promos, sinks).
-const SILENT_PREFIXES = ["/promo", "/lovable", "/.well-known", "/.mcp", "/mcp", "/api"] as const;
+// «/finn» (٢٠٢٦/١٠/٢٣): وكيل المالك للبرمجة والأتمتة — **مساعدٌ منفصل عن سَدِيد**
+// بلا صوت ولا اشتراك معه؛ سَدِيد لا يرويه ولا يصف شاشته (وهي لا تُعرض لغير المالك).
+const SILENT_PREFIXES = [
+  "/promo",
+  "/lovable",
+  "/.well-known",
+  "/.mcp",
+  "/mcp",
+  "/api",
+  "/finn",
+] as const;
 
 export function isSilentRoute(pathname: string): boolean {
   return SILENT_PREFIXES.some((p) => pathname.startsWith(p));

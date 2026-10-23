@@ -240,15 +240,29 @@ export type FastRecallHit = { answer: string; source: string };
 
 /** The whole message is an identity question — anchored at both ends. */
 const RE_IDENTITY_QUESTION =
-  /^(?:(?:من|ما|مين|وش)\s+(?:هو\s+|هي\s+)?(?:انت|انتي|انتم|سديد|sadeed|finn|فين)(?:\s+يا\s+(?:سديد|sadeed))?|عر\u0651?ف(?:ني)?\s+(?:ب)?نفسك|who\s+are\s+you|what\s+are\s+you)\s*[؟?!.]*$/;
+  /^(?:(?:من|ما|مين|وش)\s+(?:هو\s+|هي\s+)?(?:انت|انتي|انتم|سديد|sadeed)(?:\s+يا\s+(?:سديد|sadeed))?|عر\u0651?ف(?:ني)?\s+(?:ب)?نفسك|who\s+are\s+you|what\s+are\s+you)\s*[؟?!.]*$/;
+
+/**
+ * سؤال عن «فِن/FINN» — وكيل البرمجة والأتمتة المنفصل عن سَدِيد (المادة ١ بتعديل المالك
+ * ٢٠٢٦/١٠/٢٣). كان الاسم هنا **اسمًا مستعارًا لسَدِيد** (يُجاب «أنا سَدِيد») لمّا كان
+ * «FINN» اسم المساعد السابق؛ وبعد التعديل صار اسمًا لكيانٍ آخر، فالإجابة بالهوية تقول
+ * للمالك إن فِن هو سَدِيد (W5 #19). الصيغة الإنجليزية والكتابة العربية «فين» و«فِن/فِنّ»
+ * (بالكسرة — «فن» العارية كلمة «art» العربية العادية فلا تُطابَق). النمط مرسًى
+ * من الطرفين كأسئلة الهوية: الجملة كلها سؤال عن فِن لا جزءٌ منها.
+ */
+const RE_FINN_QUESTION =
+  /^(?:(?:من|ما|مين|وش)\s+(?:هو\s+|هي\s+)?(?:finn|فين|فِنّ?)|(?:who|what)\s+(?:is|was)\s+finn)\s*[؟?!.]*$/;
+
+/** Disclosure for the question above: short, true, one line (Article 22). */
+export const FINN_DISCLOSURE_REPLY = "فِن وكيل برمجة وأتمتة منفصل عن سَدِيد، ومخصّص للمالك وحده.";
 
 /** Recurring identity FAQ answered instantly with no model call. Regulatory
  *  facts never bypass retrieval: they require current, citable evidence. */
 const FAST_RECALL: Array<{ test: (t: string) => boolean; answer: string; source: string }> = [
   {
     // Who is SADEED
-    // `finn`/«فين» يبقيان طرفًا أيسر: المستخدم الذي تعوّد الاسم السابق ما زال
-    // يسأل به، والمُطبِّع يخفض الحالة فلا حاجة للراية i.
+    // `finn`/«فين» **لم يعودا** من أسمائه (W5 #19): صارا اسم الوكيل المنفصل — مدخلته
+    // التالية. والمُطبِّع يخفض الحالة فلا حاجة للراية i.
     //
     // الجملة كلّها سؤال هويةٍ لا جزءٌ منها (DEF-01، ٢٠٢٦/١٠/١٨): النمط القديم غير المرسى
     // `(من|ما).*(انت|…)` طابق «انت» داخل «كانت/انتهت/الإنترنت» و«فين» داخل «الموظفين»،
@@ -256,6 +270,12 @@ const FAST_RECALL: Array<{ test: (t: string) => boolean; answer: string; source:
     test: (t) => RE_IDENTITY_QUESTION.test(t),
     answer: "أنا سَدِيد — مساعد الأمن الصناعي التنفيذي.",
     source: "sadeed-identity",
+  },
+  {
+    // Who is FINN — a different agent, never SADEED's alias.
+    test: (t) => RE_FINN_QUESTION.test(t),
+    answer: FINN_DISCLOSURE_REPLY,
+    source: "finn-disclosure",
   },
 ];
 

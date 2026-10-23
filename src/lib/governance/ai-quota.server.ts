@@ -35,8 +35,16 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const DAY_SECONDS = 86_400;
 
-/** الأسطح الثلاثة التي تُنفق مالًا، وتكلفتها تختلف فتختلف سقوفها. */
-export type AiSurface = "tts" | "stt" | "chat";
+/**
+ * الأسطح التي تُنفق مالًا، وتكلفتها تختلف فتختلف سقوفها.
+ *
+ * `finn` (W5 #2، ٢٠٢٦/١٠/٢٣): وكيل المالك للبرمجة والأتمتة **سطحٌ مستقلّ** بدلوَيه
+ * (`ai-daily-global:finn:*` · `ai-daily-id:finn:*`) وسقفَيه (`FINN_DAILY_GLOBAL` ·
+ * `FINN_DAILY_PER_IDENTITY`). كان يشارك سطح `chat` العامّ مع زوّار سَدِيد، فاستنفادُ
+ * زوّار المنتج الدلوَ العام (5,000) يحجب المالك بـ429 والجلسة والمحرّكان سليمة،
+ * وسقفُ هويته (120) لا يُضبط بلا رفعه على كل زائر.
+ */
+export type AiSurface = "tts" | "stt" | "chat" | "finn";
 
 /**
  * مفتاح الإيقاف الفوري — متغيّر بيئة لا نشر.
@@ -49,6 +57,7 @@ const SURFACE_AR: Record<AiSurface, string> = {
   tts: "الصوت",
   stt: "النسخ الصوتي",
   chat: "المساعد",
+  finn: "فِن",
 };
 
 function arabicResponse(status: number, code: string, message: string, retryAfter: number) {
@@ -114,6 +123,24 @@ const LIMITS: Record<AiSurface, { perIdentity: number; global: number }> = {
     perIdentity: cap("SADEED_CHAT_DAILY_PER_IDENTITY", 120),
     global: cap("SADEED_CHAT_DAILY_GLOBAL", 5_000),
   },
+  // وكيل المالك: مستخدمٌ واحد (أو قلّة) وجلسة برمجة طويلة ⇒ سقف هويةٍ أوسع من زائر
+  // المنتج، وسقفٌ عامّ أضيق (سطحٌ لا يصله غير المالك). يُضبطان من البيئة بلا نشر.
+  finn: {
+    perIdentity: cap("FINN_DAILY_PER_IDENTITY", 500),
+    global: cap("FINN_DAILY_GLOBAL", 2_000),
+  },
+};
+
+/**
+ * سطح سجلّ الاستهلاك: قيد `ai_usage_log.surface` في القاعدة المطبَّقة يقبل
+ * `tts|stt|chat` وحدها (ترحيل 20260918100000)، وتغييره تغيير قاعدة إنتاج. فسطح `finn`
+ * يُسجَّل `chat` بهويته (`finn-chat:<معرّف>`) — وإلا ردّ القيدُ كل صفّ فابتُلع صامتًا.
+ */
+const USAGE_LOG_SURFACE: Record<AiSurface, "tts" | "stt" | "chat"> = {
+  tts: "tts",
+  stt: "stt",
+  chat: "chat",
+  finn: "chat",
 };
 
 /** ثوانٍ حتى منتصف الليل — رقمٌ صادق في `Retry-After` بدل ٦٠ ثابتة. */
@@ -145,9 +172,12 @@ function dayKey(): string {
  */
 async function recordUsage(surface: AiSurface, identity: string, units: number): Promise<void> {
   try {
-    await supabaseAdmin
-      .from("ai_usage_log" as never)
-      .insert({ surface, identity, units, occurred_at: new Date().toISOString() } as never);
+    await supabaseAdmin.from("ai_usage_log" as never).insert({
+      surface: USAGE_LOG_SURFACE[surface],
+      identity,
+      units,
+      occurred_at: new Date().toISOString(),
+    } as never);
   } catch {
     /* المحاسبة ليست بوابة. */
   }

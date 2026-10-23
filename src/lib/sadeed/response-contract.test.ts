@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   SADEED_RESPONSE_CONTRACT,
   SADEED_LIVE_INTELLIGENCE_DOCTRINE,
+  FINN_DISCLOSURE_REPLY,
   FORBIDDEN_FILLER,
   hasForbiddenFiller,
   isInScope,
@@ -101,14 +102,50 @@ describe("Article 22 — fast recall (recurring FAQs answer with no model)", () 
    * both sides of three matchers at once and every test stayed green; this lock
    * exists so the same sweep cannot silently empty this one (ROLLBACK.md).
    */
-  it("still answers a user who asks by either retired name", () => {
-    for (const q of ["من أنت؟", "من هو SADEED؟", "من هو finn؟", "من هو فين؟", "who are you"]) {
+  it("answers SADEED identity questions — and ONLY those, not FINN's", () => {
+    for (const q of ["من أنت؟", "من هو SADEED؟", "من هو سديد؟", "who are you"]) {
       expect(matchFastRecall(q)?.source).toBe("sadeed-identity");
     }
-    // ...and the answer never repeats the retired name back at the user.
-    expect(matchFastRecall("من هو finn؟")!.answer).toBe(
-      "أنا سَدِيد — مساعد الأمن الصناعي التنفيذي.",
-    );
+    expect(matchFastRecall("من أنت؟")!.answer).toBe("أنا سَدِيد — مساعد الأمن الصناعي التنفيذي.");
+  });
+
+  // W5 #19: «FINN/فِن» صار (٢٠٢٦/١٠/٢٣) اسم وكيل البرمجة والأتمتة المنفصل. كان هنا اسمًا مستعارًا
+  // لسَدِيد فيُجاب «أنا سَدِيد» — والمالك الذي يسأل سَدِيد عن فِن يسمع أنهما كيان واحد.
+  it("W5 #19: asking about FINN is never answered as SADEED — a short honest disclosure", () => {
+    for (const q of [
+      "من هو finn؟",
+      "من هو فين؟",
+      "من هو فِن؟",
+      "ما هو FINN",
+      "who is finn?",
+      "مين فِنّ",
+    ]) {
+      const hit = matchFastRecall(q);
+      expect(hit?.source, q).toBe("finn-disclosure");
+      expect(hit?.answer, q).toBe(FINN_DISCLOSURE_REPLY);
+      expect(hit?.answer, q).not.toBe("أنا سَدِيد — مساعد الأمن الصناعي التنفيذي.");
+    }
+    // الإفصاح: منفصل عن سَدِيد + برمجة وأتمتة + للمالك وحده.
+    expect(FINN_DISCLOSURE_REPLY).toMatch(/برمجة/);
+    expect(FINN_DISCLOSURE_REPLY).toMatch(/أتمتة/);
+    expect(FINN_DISCLOSURE_REPLY).toMatch(/منفصل عن سَدِيد/);
+    expect(FINN_DISCLOSURE_REPLY).toMatch(/للمالك وحده/);
+    // المادة ٢٢: سطر واحد، ≤ 25 كلمة، بلا حشو.
+    expect(FINN_DISCLOSURE_REPLY.split("\n")).toHaveLength(1);
+    expect(FINN_DISCLOSURE_REPLY.trim().split(/\s+/).length).toBeLessThanOrEqual(25);
+    expect(hasForbiddenFiller(FINN_DISCLOSURE_REPLY)).toBe(false);
+  });
+
+  it("W5 #19: the FINN matcher is whole-sentence — «فن» العارية وأسئلة أخرى لا تُلتقط", () => {
+    for (const q of [
+      "ما هو فن؟",
+      "ما الفرق بين finn وسديد في الصيانة؟",
+      "من هو فين المسؤول عن الوردية؟",
+      "من هو finn؟\n\nنص مرفق: تقرير",
+      "ما عدد الموظفين",
+    ]) {
+      expect(matchFastRecall(q)?.source, q).not.toBe("finn-disclosure");
+    }
   });
 
   it("DEF-01: only a whole identity question is answered locally — not «انتهت/كانت/الموظفين»", () => {

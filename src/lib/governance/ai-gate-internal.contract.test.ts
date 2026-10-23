@@ -34,9 +34,18 @@ const INTERNAL_SPENDERS: ReadonlyArray<readonly [string, "quota" | "kill-switch"
   ["src/lib/sadeed/gemini-transcription.server.ts", "kill-switch"],
   // التضمين نداءٌ مدفوع أيضًا (RAG/المعرفة): مفتاح الإيقاف قبل كل دفعة.
   ["src/lib/sadeed/gemini-embeddings.server.ts", "kill-switch"],
+  // محرّك وكيل المالك «فِن» (٢٠٢٦/١٠/٢٣): خلف مسار HTTP محروس (بوّابة المالك + إيقاف +
+  // حدّ + حصّة)، وهذا دفاعٌ ثانٍ عند نقطة الإنفاق نفسها — قبل `streamText(`.
+  ["src/lib/finn-agent/engine.server.ts", "kill-switch"],
 ];
 
 const GATE_CALL = /assertAiQuota\(|assertAiEnabled\(|aiDisabledResponse\(/;
+
+// الفحص لكل دالّة (W5 #20): `streamText(` و`async function*` — محرّك فِن مولِّد
+// (`async function* run`) ينادي `streamText(`، وكان النمطان القديمان لا يريانه فيُتخطّى
+// بصمت وتبقى الأرضية مستوفاة بغيره. تُستعمل الثوابت في الفحص وفي إثبات الأداة معًا.
+const PROVIDER_CALL = /generateText\(|streamText\(|await fetch\(|await httpJson/;
+const FUNCTION_START = /^(?:export )?(?:async )?function\*? \w+\(/gm;
 
 describe("① كل وحدة مكتبة تستدعي نموذجًا تمرّ بالبوّابة قبل النداء", () => {
   it.each(INTERNAL_SPENDERS)("%s — بوّابة %s", (path, kind) => {
@@ -50,7 +59,12 @@ describe("① كل وحدة مكتبة تستدعي نموذجًا تمرّ با
     }
     // البوّابة تسبق أوّل نداء مزوّد في الملفّ.
     const callAt = Math.min(
-      ...[src.indexOf("generateText("), src.indexOf("await fetch("), src.indexOf("await httpJson")]
+      ...[
+        src.indexOf("generateText("),
+        src.indexOf("streamText("),
+        src.indexOf("await fetch("),
+        src.indexOf("await httpJson"),
+      ]
         .filter((i) => i > -1)
         .concat([Number.MAX_SAFE_INTEGER]),
     );
@@ -62,13 +76,10 @@ describe("① كل وحدة مكتبة تستدعي نموذجًا تمرّ با
     // الفحص السابق قارن أوّل بوّابة بأوّل نداء في الملفّ كلّه، فحذفُ البوّابة من
     // الدالّة الثانية في `gemini-embeddings.server.ts` بقي أخضر. هنا تُقطَّع كل وحدة
     // إلى دوالّها المسمّاة، وكل دالّةٍ تحمل نداء مزوّد يجب أن تحمل بوّابةً قبله.
-    const PROVIDER_CALL = /generateText\(|await fetch\(|await httpJson/;
     let checked = 0;
     for (const [path] of INTERNAL_SPENDERS) {
       const src = strip(read(path));
-      const starts = [...src.matchAll(/^(?:export )?(?:async )?function \w+\(/gm)].map(
-        (m) => m.index ?? 0,
-      );
+      const starts = [...src.matchAll(FUNCTION_START)].map((m) => m.index ?? 0);
       for (const [i, start] of starts.entries()) {
         const end = starts[i + 1] ?? src.length;
         const body = src.slice(start, end);
@@ -76,20 +87,39 @@ describe("① كل وحدة مكتبة تستدعي نموذجًا تمرّ با
         if (callAt < 0) continue;
         checked += 1;
         const gateAt = body.search(GATE_CALL);
-        const name = /function (\w+)\(/.exec(body)?.[1] ?? "?";
+        const name = /function\*? (\w+)\(/.exec(body)?.[1] ?? "?";
         expect(gateAt, `${path}: الدالّة ${name} تستدعي المزوّد بلا بوّابة`).toBeGreaterThan(-1);
         expect(gateAt, `${path}: الدالّة ${name} تفحص البوّابة بعد نداء المزوّد`).toBeLessThan(
           callAt,
         );
       }
     }
-    // التضمين وحده دالّتان؛ الرقم يمنع أن يتقادم النمط فلا يُفحص شيء.
-    expect(checked, "لم تُقطَّع أي دالّة — النمط تقادم").toBeGreaterThanOrEqual(9);
+    // التضمين وحده دالّتان، ومولِّد `run` في محرّك فِن (W5 #20) هو الحادية عشرة؛ الرقم يمنع
+    // أن يتقادم النمط فلا يُفحص شيء — وإن نقص عن 11 فقد خرج مولِّدٌ من الفحص.
+    expect(checked, "لم تُقطَّع أي دالّة — النمط تقادم").toBeGreaterThanOrEqual(11);
+  });
+
+  it("إثبات الأداة (المادة ٣٠): كاشف الدوالّ يلتقط مولِّدًا يستدعي streamText بلا بوّابة", () => {
+    const planted = [
+      "export async function ok() { assertAiEnabled('x'); return generateText({}); }",
+      "async function* run() { assertAiEnabled('x'); yield* streamText({}); }",
+      "async function* second() { yield* streamText({}); }",
+    ].join("\n");
+    const starts = [...planted.matchAll(FUNCTION_START)].map((m) => m.index ?? 0);
+    expect(starts).toHaveLength(3);
+    const verdicts = starts.map((start, i) => {
+      const body = planted.slice(start, starts[i + 1] ?? planted.length);
+      const callAt = body.search(PROVIDER_CALL);
+      const gateAt = body.search(GATE_CALL);
+      return callAt >= 0 && (gateAt < 0 || gateAt > callAt);
+    });
+    // الأولى والثانية محروستان، الثالثة (المزروعة) تُدان.
+    expect(verdicts).toEqual([false, false, true]);
   });
 
   it("ولا وحدة تستدعي النموذج خارج هذه القائمة", () => {
     const found = execSync(
-      "grep -rlE 'generateText\\(|generativelanguage\\.googleapis\\.com' src/lib --include=*.ts || true",
+      "grep -rlE 'generateText\\(|streamText\\(|generativelanguage\\.googleapis\\.com' src/lib --include=*.ts || true",
       { encoding: "utf8" },
     )
       .split("\n")
