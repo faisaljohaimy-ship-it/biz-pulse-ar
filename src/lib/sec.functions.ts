@@ -404,7 +404,7 @@ export const getTwinTree = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<TwinTree> => {
     const { buildTwinTreeSimulation, resilient } =
       await import("@/lib/exec/showcase-simulation.server");
-    return resilient(
+    return resilient<TwinTree>(
       "twin-tree",
       async () => ({
         ...(await fetchTwinTree(context.supabase as { from: (t: string) => any })),
