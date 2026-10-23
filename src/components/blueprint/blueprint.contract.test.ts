@@ -6,8 +6,11 @@
  * صفر يحلّ محلّ غياب. الفحص يقرأ المصدر لأن أثر هذه الأخطاء لا يظهر إلا
  * بعد رسم في متصفح أو بعد قلب الثيم.
  */
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import postcss, { type AtRule, type ChildNode, type Node as CssNode } from "postcss";
 import { describe, expect, it } from "vitest";
+import { REGIONS, REGION_ACCENT_HEX } from "@/lib/regions";
+import { HOME_REFERENCE } from "@/components/home/home-reference";
 
 const read = (p: string) => readFileSync(p, "utf8");
 
@@ -24,6 +27,498 @@ const LAYER_START = CSS.indexOf("المُخطَّط التنفيذي — الس�
 const LAYER_END = CSS.indexOf("اتجاه أ — «مركز المهام»", LAYER_START);
 const LAYER = CSS.slice(LAYER_START, LAYER_END === -1 ? undefined : LAYER_END);
 
+/* ══ سطح الرئيسية — «مركز القيادة» (أمر المالك ٢٠٢٦/١٠/١٣، المواصفة ١٠) ═══════
+ *
+ * الصفحة صارت غلافًا يركّب صفوفًا، لكلٍّ ملفّه: المؤشرات · الصدر (الخريطة ·
+ * سَدِيد) · التشغيل · التحليلات. فما كان بندٌ يقرؤه في `PAGE` انتقل إلى حامله،
+ * وبندٌ يقرأ الصفحة وحدها صار يمرّ أخضر على غلافٍ فارغ (المادة ٣٠). والسطح
+ * يُجمع **بالتتبّع من الصفحة** لا بقائمةٍ تُكتب باليد: كل وحدةٍ من
+ * `components/{home,map,sadeed}` تستوردها الصفحة أو ما تستورده — فصفٌّ جديد
+ * يُركَّب فيها يدخل الفحص بنفسه، ولا سطحٌ ثانٍ ينجو (المادة ٣١).
+ */
+
+/** الكود بلا تعليقاته — الفحص على ما يُنفَّذ لا على شرحه (المادة ٣٠، النمط الثالث). */
+const stripComments = (s: string) =>
+  s
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+
+const HOME_SURFACE: ReadonlyMap<string, string> = (() => {
+  const out = new Map<string, string>();
+  const queue = ["src/routes/-blueprint-page.tsx"];
+  while (queue.length > 0) {
+    const file = queue.shift() as string;
+    if (out.has(file)) continue;
+    const src = read(file);
+    out.set(file, src);
+    for (const m of src.matchAll(/from "@\/components\/((?:home|map|sadeed)\/[\w.-]+)"/g)) {
+      const hit = [".tsx", ".ts"]
+        .map((ext) => `src/components/${m[1]}${ext}`)
+        .find((f) => existsSync(f));
+      if (hit) queue.push(hit);
+    }
+  }
+  return out;
+})();
+
+/** أنماط الرئيسية — كل ملفٍّ في `styles/home/`، وما يُضاف إليها لاحقًا يدخل بنفسه. */
+const HOME_CSS: ReadonlyMap<string, string> = new Map(
+  readdirSync("src/styles/home")
+    .filter((f) => f.endsWith(".css"))
+    .map((f) => [`src/styles/home/${f}`, read(`src/styles/home/${f}`)] as const),
+);
+
+/** ملفّ من السطح باسمه — ويُسقط البند إن خرج من السطح، فلا يقرأ فراغًا. */
+function surfaceFile(name: string): string {
+  const hit = [...HOME_SURFACE.keys()].find((f) => f.endsWith(`/${name}`));
+  expect(hit, `${name} خارج سطح الرئيسية — لم تعد الصفحة تركّبه`).toBeDefined();
+  return HOME_SURFACE.get(hit as string) as string;
+}
+
+/** متن دالّةٍ مسمّاة حتى قوسها الختامي في أوّل السطر — `""` إن غابت. */
+function fnBody(src: string, name: string): string {
+  const at = src.search(new RegExp(`\\bfunction ${name}\\b`));
+  if (at === -1) return "";
+  const end = src.indexOf("\n}\n", at);
+  return src.slice(at, end === -1 ? undefined : end + 2);
+}
+
+/** جسم كائنٍ ثابت مسمّى حتى `};` في أوّل السطر — `""` إن غاب. */
+function objBody(src: string, name: string): string {
+  const at = src.search(new RegExp(`\\bconst ${name}\\b`));
+  if (at === -1) return "";
+  const end = src.indexOf("\n};", at);
+  return src.slice(at, end === -1 ? undefined : end + 3);
+}
+
+/**
+ * وسوم JSX بخصائصها. نهاية الوسم أوّل `>` خارج الأقواس والنصوص — فلا يقطعه
+ * سهمُ دالّةٍ داخل خاصية (`onClick={() => a > b}`) ولا مقارنةٌ في تعبير.
+ * **والمسح يدخل الخصائص نفسها ولا يقفز فوقها:** عنصرٌ يُمرَّر خاصيةً
+ * (`control={<Link …>}` في بطاقات التحليلات) وسمٌ كغيره — وقفزُه كان يُعمي الفحص
+ * عن رابطٍ حيّ، وكشفه عدُّ الروابط بالمسح مقابل عدّها بالنصّ (بند المداخل أدناه).
+ */
+interface JsxTag {
+  readonly name: string;
+  readonly close: boolean;
+  readonly self: boolean;
+  readonly attrs: string;
+  readonly at: number;
+}
+function jsxTags(code: string): JsxTag[] {
+  const out: JsxTag[] = [];
+  const re = /<(\/?)([A-Za-z][\w.]*)/g;
+  for (let m = re.exec(code); m; m = re.exec(code)) {
+    let i = re.lastIndex;
+    let depth = 0;
+    let quote: string | null = null;
+    for (; i < code.length; i++) {
+      const c = code[i];
+      if (quote) {
+        if (c === quote) quote = null;
+      } else if (c === '"' || c === "'" || (c === "`" && depth > 0)) {
+        quote = c;
+      } else if (c === "{") {
+        depth++;
+      } else if (c === "}") {
+        depth--;
+      } else if (c === ">" && depth === 0) {
+        break;
+      }
+    }
+    const attrs = code.slice(re.lastIndex, i);
+    out.push({
+      name: m[2],
+      close: m[1] === "/",
+      self: attrs.trimEnd().endsWith("/"),
+      attrs,
+      at: m.index,
+    });
+  }
+  return out;
+}
+
+/** أعمق تعشيشٍ للروابط في ملفّ ورصيدها في آخره — `<a>` داخل `<a>` يفكّكه المتصفح بصمت. */
+function anchorNesting(code: string): { depth: number; balance: number } {
+  let depth = 0;
+  let balance = 0;
+  for (const t of jsxTags(code)) {
+    if (t.name !== "Link" && t.name !== "a") continue;
+    if (t.close) balance--;
+    else if (!t.self) depth = Math.max(depth, ++balance);
+  }
+  return { depth, balance };
+}
+
+/** عناصر تفاعلية بطبعها — ما سواها بـ`onClick` سطحٌ صامت لا يبلغه التبويب ولا القارئ. */
+const INTERACTIVE = new Set(["a", "button", "input", "select", "textarea", "summary", "option"]);
+const silentClicks = (code: string) =>
+  jsxTags(code)
+    .filter(
+      (t) =>
+        !t.close &&
+        /^[a-z]/.test(t.name) &&
+        !INTERACTIVE.has(t.name) &&
+        /(?:^|\s)onClick=/.test(t.attrs),
+    )
+    .map((t) => `<${t.name}>`);
+
+/** جذر ما تعيده الدالّة — `null` إن تعدّدت الإعادات (فرعٌ قد يعيد غير الجذر). */
+function rootOf(body: string): string | null {
+  if ((body.match(/\breturn\b/g) ?? []).length !== 1) return null;
+  return /\breturn\s*\(\s*<([A-Za-z][\w.]*)/.exec(body)?.[1] ?? null;
+}
+
+/** داخل `@media (forced-colors: active)`؟ */
+function inForcedColors(node: ChildNode): boolean {
+  for (let p: CssNode | undefined = node.parent; p && p.type !== "root"; p = p.parent) {
+    if (p.type === "atrule" && /forced-colors/.test((p as AtRule).params)) return true;
+  }
+  return false;
+}
+
+/** آخر مركّبٍ في المحدِّد — العنصر الذي تقع عليه القاعدة فعلًا. */
+const lastCompound = (selector: string) =>
+  selector
+    .trim()
+    .split(/\s*[\s>+~]\s*/)
+    .pop() ?? "";
+
+/** تصريحات كل قاعدةٍ تسمّي المحدِّد بعينه — خارج الوضع القسري، أو داخله. */
+function declsOf(css: string, selector: string, forced = false): Array<[string, string]> {
+  const out: Array<[string, string]> = [];
+  postcss.parse(css).walkRules((rule) => {
+    if (inForcedColors(rule) !== forced) return;
+    if (!rule.selectors.some((s) => s.trim() === selector)) return;
+    for (const n of rule.nodes) if (n.type === "decl") out.push([n.prop, n.value]);
+  });
+  return out;
+}
+
+/** تصريحات الصنف في حال السكون: كل قاعدةٍ يقع آخر مركّبها عليه بلا شبه صنف. */
+function restDecls(css: string, cls: string): Array<[string, string]> {
+  const tail = new RegExp(`^\\.${cls}(?:\\[[^\\]]*\\])*$`);
+  const out: Array<[string, string]> = [];
+  postcss.parse(css).walkRules((rule) => {
+    if (inForcedColors(rule)) return;
+    if (!rule.selectors.some((s) => tail.test(lastCompound(s)))) return;
+    for (const n of rule.nodes) if (n.type === "decl") out.push([n.prop, n.value]);
+  });
+  return out;
+}
+
+/** بالبكسل: `44px` · `2.75rem` — `null` لغير ذلك. */
+const px = (value: string): number | null => {
+  const m = /^([\d.]+)(px|rem)$/.exec(value.trim());
+  return m ? Number(m[1]) * (m[2] === "rem" ? 16 : 1) : null;
+};
+
+/** أرضية اللمس (المواصفة §3.7) — أرضية `a[href]` العامّة على المؤشّر الخشن. */
+const TOUCH_FLOOR_PX = 44;
+
+/** قاعدةٌ تُنزل الهدف تحت أرضية اللمس: سقفُ ارتفاعٍ أو أرضيةٌ أدنى منها. */
+const floorBreaches = (css: string, cls: string) =>
+  restDecls(css, cls)
+    .filter(([prop]) => /^(?:min-|max-)?(?:block-size|height)$/.test(prop))
+    .filter(([, value]) => {
+      const v = px(value);
+      return v !== null && v < TOUCH_FLOOR_PX;
+    })
+    .map(([prop, value]) => `${prop}: ${value}`);
+
+/** مخفيٌّ في السكون فلا يظهر إلا بالتمرير — وما يظهر بالتمرير وحده لا وجود له على اللمس. */
+const hiddenAtRest = (css: string, cls: string) =>
+  restDecls(css, cls)
+    .filter(
+      ([p, v]) =>
+        (p === "opacity" && parseFloat(v) < 0.6) ||
+        (p === "visibility" && v.trim() === "hidden") ||
+        (p === "display" && v.trim() === "none"),
+    )
+    .map(([p, v]) => `${p}: ${v}`);
+
+/** فواصل القيمة في مستواها الأعلى — فاصلة `color-mix(…, …)` الداخلية ليست فاصلة ظلّ. */
+function topLevelSplit(value: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let from = 0;
+  for (let i = 0; i < value.length; i++) {
+    if (value[i] === "(") depth++;
+    else if (value[i] === ")") depth--;
+    else if (value[i] === "," && depth === 0) {
+      out.push(value.slice(from, i));
+      from = i + 1;
+    }
+  }
+  out.push(value.slice(from));
+  return out.map((s) => s.trim());
+}
+
+/** علامات الحال التي لا يحملها اللون: حلقةٌ خارجية · إطار · خطّ · وزن · عرضُ حدّ. */
+function nonColourCues(decls: Array<[string, string]>): string[] {
+  const cues: string[] = [];
+  for (const [prop, value] of decls) {
+    if (
+      prop === "box-shadow" &&
+      topLevelSplit(value).some((s) => /^0\s+0\s+0\s+[\d.]*[1-9]/.test(s))
+    )
+      cues.push("حلقة خارجية");
+    if (/^outline(?:-width)?$/.test(prop) && !/^(?:none|0)\b/.test(value.trim())) cues.push("إطار");
+    if (/^text-decoration(?:-line)?$/.test(prop) && /underline|overline/.test(value))
+      cues.push("خطّ");
+    if (prop === "font-weight") cues.push("وزن");
+    if (/^border(?:-[a-z]+)*-width$/.test(prop)) cues.push("عرض حدّ");
+  }
+  return cues;
+}
+
+/** المحدِّدات التي يرسمها الوضع القسري بـ`Highlight` — الحال الباقية حين تسقط ألوان المؤلّف. */
+function forcedHighlights(css: string): string[] {
+  const out: string[] = [];
+  postcss.parse(css).walkRules((rule) => {
+    if (!inForcedColors(rule)) return;
+    const marked = rule.nodes.some(
+      (n) =>
+        n.type === "decl" &&
+        /^background(?:-color)?$/.test(n.prop) &&
+        /\bHighlight\b/.test(n.value),
+    );
+    if (marked) out.push(...rule.selectors.map((s) => s.trim()));
+  });
+  return out;
+}
+
+/* ── فحوص اللكنة والاسم والامتثال والترتيب — دوالّ تُجرَّب على المزروع ─────── */
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** أسماء المناطق من المصدر الواحد نفسه — باللسانين، مختصرةً وكاملة. */
+const REGION_WORDS = REGIONS.flatMap((r) => [r.shortAr, r.shortEn, r.labelAr, r.labelEn]);
+
+/** اسم منطقةٍ مكتوبٌ نصًّا: بين علامتي تنصيص، أو نصًّا في JSX. */
+function writtenRegionNames(code: string): string[] {
+  const alt = REGION_WORDS.map(escapeRe).join("|");
+  return code.match(new RegExp(`(["'\`])(?:${alt})\\1|>\\s*(?:${alt})\\s*<`, "g")) ?? [];
+}
+
+/** كل إسنادٍ لـ`--region-tint` في الترميز — قيمتُه كما كُتبت. */
+const regionTints = (code: string) =>
+  [...code.matchAll(/["']--region-tint["'](?:\s+as\s+string)?\]?\s*[:,]\s*([^,}\n)]+)/g)].map((m) =>
+    m[1].trim(),
+  );
+/** لكنةٌ لا تأتي من `REGION_ACCENT_HEX`. */
+const foreignTints = (code: string) =>
+  regionTints(code).filter((v) => !v.startsWith("REGION_ACCENT_HEX["));
+/** لكنة منطقةٍ منسوخةٌ سداسيًّا خارج `regions.ts`. */
+const ACCENT_HEXES = Object.values(REGION_ACCENT_HEX).map((h) => h.toLowerCase());
+const copiedAccents = (text: string) => ACCENT_HEXES.filter((h) => text.toLowerCase().includes(h));
+
+/** مقارنةٌ بعتبةٍ عددية على قيمة امتثالٍ أو نسبة — بأيّ اسمٍ حملها. */
+const complianceThresholds = (code: string) =>
+  code.match(
+    /\b\w*(?:compliance|[pP]ct)\w*(?:\[[^\]\n]*\]|\.(?!length\b)\w+)*\s*[<>]=?\s*-?\d|\d\s*[<>]=?\s*\w*(?:compliance|[pP]ct)\w*/g,
+  ) ?? [];
+/** غياب الامتثال صفرًا: `?? 0`، أو اختبار حضوره بـ`> 0` (والصفر قياس). */
+const complianceZeroes = (code: string) =>
+  code.match(/\w*compliance\w*(?:\[[^\]\n]*\]|\.\w+)*\s*(?:\?\?\s*0\b|>\s*0\b)/g) ?? [];
+/** أيّ مقارنةٍ بعددٍ حرفيّ — في متنٍ قيمتُه نفسُها نسبةُ الامتثال. */
+const numericComparisons = (body: string) =>
+  body.match(/(?<![=<>!-])[<>]=?\s*-?\d+(?:\.\d+)?\b/g) ?? [];
+/** علامة حكمٍ في متنٍ لا يقرأ `severity` الخادم — حكمٌ بلا مصدر. */
+const unsourcedVerdicts = (body: string) =>
+  /\.severity\b/.test(body)
+    ? []
+    : (body.match(/STAT_TONES|data-verdict=|data-status=|<VerdictGlyph|<StatusChip/g) ?? []);
+/** رموز الحكم: لا يلبسها لونُ هويّة. */
+const VERDICT_TONE =
+  /--(?:tone|stage|sd)-(?:emerald|amber|rose|ruby|green|red)\b|success|warning|danger/;
+
+/** خرائط الشدّة ⇄ الحكم في ملفّ، ومدخل `unmeasured` في كلٍّ منها. */
+function severityMaps(code: string): Array<{ name: string; unmeasured: string | null }> {
+  const out: Array<{ name: string; unmeasured: string | null }> = [];
+  for (const m of code.matchAll(/const (\w+)\s*:\s*Record<RiskSeverity,[^=]*=\s*\{/g)) {
+    const start = (m.index ?? 0) + m[0].length;
+    const end = code.indexOf("\n};", start);
+    const body = code.slice(start, end === -1 ? undefined : end);
+    out.push({
+      name: m[1],
+      unmeasured: /\bunmeasured:\s*(\{[^}]*\}|[^,\n]+)/.exec(body)?.[1] ?? null,
+    });
+  }
+  return out;
+}
+/** معاملات كل نداءٍ لدالّةٍ مسمّاة (`.filter(…)`) بأقواسها المتوازنة — لا حتى أوّل `)`. */
+function callArgs(code: string, method: string): string[] {
+  const out: string[] = [];
+  const re = new RegExp(`\\.${method}\\(`, "g");
+  for (let m = re.exec(code); m; m = re.exec(code)) {
+    let depth = 1;
+    let i = re.lastIndex;
+    for (; i < code.length && depth > 0; i++) {
+      if (code[i] === "(") depth++;
+      else if (code[i] === ")") depth--;
+    }
+    out.push(code.slice(re.lastIndex, i - 1));
+  }
+  return out;
+}
+/** مرشّحٌ يُسقط غير المقيس من القائمة — يطويه بدل أن يعرضه. */
+const foldsUnmeasured = (code: string) =>
+  callArgs(code, "filter").filter((a) => a.includes("unmeasured"));
+
+/** الغياب يُصدر حكمًا: براءةً أو تحذيرًا أو خطرًا — أو لا يُقال أصلًا. */
+const absenceVerdict = (entry: string | null) =>
+  entry === null ||
+  !/"(?:neutral|default)"/.test(entry) ||
+  /"(?:healthy|success|ok|warning|danger)"/.test(entry);
+
+/** رقاقةٌ محايدة تستعير لون حكم. */
+function neutralToneLeaks(css: string): string[] {
+  const out: string[] = [];
+  postcss.parse(css).walkRules((rule) => {
+    if (!rule.selectors.some((s) => s.includes('[data-status="neutral"]'))) return;
+    rule.walkDecls((d) => {
+      if (VERDICT_TONE.test(d.value)) out.push(`${rule.selector} { ${d.prop}: ${d.value} }`);
+    });
+  });
+  return out;
+}
+
+/** رابط مدخل المنطقة في متن حامله: الرابط إلى `/sec`. */
+const regionLink = (body: string) =>
+  jsxTags(body).find((t) => !t.close && t.name === "Link" && /\bto="\/sec"/.test(t.attrs));
+/** نواقص رابط المنطقة: الوجهة ومنطقتها والاختيار العام والاسم المقروء. */
+function regionLinkGaps(attrs: string, id: string): string[] {
+  const need: Array<[string, RegExp]> = [
+    ["الوجهة /sec", /\bto="\/sec"/],
+    ["منطقة المدخل في البحث", new RegExp(`search=\\{\\{ region: ${escapeRe(id)} \\}\\}`)],
+    ["الاختيار العام قبل الانتقال", /\bonClick=\{/],
+    ["الاسم المقروء", /\baria-label=\{/],
+  ];
+  return need.filter(([, re]) => !re.test(attrs)).map(([what]) => what);
+}
+
+/** نواقص رابط السجل في رأس البطاقة المشتركة: حلقة التركيز · الظهور · السهم · التعشيش. */
+function riskEntryGaps(card: string): string[] {
+  const tags = jsxTags(card);
+  const first = tags.findIndex((t) => !t.close && t.name === "Link" && /\bto=\{to\}/.test(t.attrs));
+  if (first === -1) return ["لا رابط في رأس البطاقة"];
+  const open = tags[first];
+  // الإغلاق المطابق لا أوّل `</Link>`: رابطٌ معشَّش يُغلق قبله فيقصّ ما بعده.
+  let depth = 0;
+  let end = card.length;
+  for (const t of tags.slice(first)) {
+    if (t.name !== "Link") continue;
+    if (!t.close) {
+      if (!t.self) depth++;
+    } else if (--depth === 0) {
+      end = t.at;
+      break;
+    }
+  }
+  const inner = card.slice(open.at + 1, end);
+  const gaps: string[] = [];
+  if (!/className="[^"]*\bnx-home-more\b/.test(open.attrs)) gaps.push("حلقة التركيز المشتركة");
+  if (/\b(?:opacity-0|invisible|hidden|sr-only)\b/.test(open.attrs)) gaps.push("مخفيّ حتى التمرير");
+  if (!/<ChevronLeft\b/.test(inner)) gaps.push("السهم");
+  if (/<(?:Link|a)\b/.test(inner)) gaps.push("رابطٌ داخل رابط");
+  return gaps;
+}
+
+/** ما بقي من سجلّ المخاطر المحذوف وبطاقاته المجمّعة (V4 · V5). */
+const RISK_RESIDUE: ReadonlyArray<readonly [string, RegExp]> = [
+  ["زرّ السجل الكامل", /افتح سجل المخاطر الكامل|Open the full risk register/],
+  ["رابط /risk", /\bto(?:=|:\s*)["']\/risk["']/],
+  ["جدول السجل أو بطاقاته", /nx-risk-(?:table|scroll|ref|title|card|region)\b/],
+  ["الفرز الكامل للسجل", /\bsortedRiskRows\b/],
+  ["ملاحظة بلا إسناد", /بلا إسناد لمنطقة في المصدر/],
+  ["عدّادات التجميع", /\bcountBy(?:Severity|Region)\b/],
+  ["بطاقات «حسب الشدّة»", /حسب الشدّ?ة/],
+  ["تجميع المخاطر", /(?:ال)?مخاطر حسب/],
+];
+const riskResidue = (code: string) =>
+  RISK_RESIDUE.filter(([, re]) => re.test(code)).map(([what]) => what);
+/** سقف قائمة «أبرز المخاطر» الحيّة — `null` إن لم يُسقَف (فهو السجلّ كلّه). */
+const riskListCap = (body: string): number | null => {
+  const m = /\.slice\(0,\s*(\d+)\)/.exec(body);
+  return m ? Number(m[1]) : null;
+};
+
+/** صفوف الرئيسية بترتيبها (المواصفة §4.0): المؤشرات ← الصدر ← التشغيل ← التحليلات ← الإفصاح. */
+const ROW_SEQUENCE = [
+  "<HomeKpiRow />",
+  'className="nx-home-hero"',
+  "<HomeMapCard />",
+  "<HomeSadeedCard />",
+  "<HomeOpsRow />",
+  "<HomeAnalyticsRow />",
+  "<footer",
+] as const;
+/** مواضع تنكسر فيها السلسلة: غائبٌ، أو مكرّر، أو سابقٌ لما قبله. */
+function orderBreaks(code: string, sequence: readonly string[]): string[] {
+  const out: string[] = [];
+  const at = sequence.map((n) => code.indexOf(n));
+  sequence.forEach((n, i) => {
+    if (at[i] === -1) out.push(`${n} غائب`);
+    else if (code.indexOf(n, at[i] + 1) !== -1) out.push(`${n} مكرّر`);
+    else if (i > 0 && at[i - 1] !== -1 && at[i] < at[i - 1])
+      out.push(`${n} قبل ${sequence[i - 1]}`);
+  });
+  return out;
+}
+/** ترتيب الصفحة، والخريطة وسَدِيد **داخل** الصدر: يُغلق بعدهما وقبل صفّ التشغيل. */
+function rowOrderBreaks(page: string): string[] {
+  const out = orderBreaks(page, ROW_SEQUENCE);
+  const sadeed = page.indexOf("<HomeSadeedCard />");
+  const close = page.indexOf("</div>", sadeed);
+  if (sadeed > -1 && !(close > sadeed && close < page.indexOf("<HomeOpsRow />"))) {
+    out.push("سَدِيد خارج الصدر");
+  }
+  return out;
+}
+/** أداة `order-*` تفصل ترتيب العرض عن ترتيب DOM. */
+const orderUtilities = (code: string) =>
+  code.match(/(?:^|[\s"'`])(?:(?:sm|md|lg|xl|2xl):)?order-(?:\d+|first|last|none)\b/gm) ?? [];
+/** حاويات الترتيب وأبناؤها المباشرون — الصفوف والبطاقات بعينها. */
+const ARRANGEMENT = [
+  "nx-home-arrange",
+  "nx-home-hero",
+  "nx-home-quad",
+  "nx-home-kpis",
+  "nx-home-kpi-cell",
+  "nx-home-map",
+  "nx-home-sadeed",
+  "nx-ops-card",
+  "nx-ana-card",
+  "nx-home-close",
+];
+/** قاعدةٌ تُعيد ترتيب الصفوف أو البطاقات بصريًّا: `order` · عكسٌ · `dense` · تموضعٌ في الشبكة. */
+function arrangementReorders(css: string): string[] {
+  const out: string[] = [];
+  postcss.parse(css).walkRules((rule) => {
+    const hits = rule.selectors.filter((s) => {
+      const last = lastCompound(s);
+      return (
+        !last.includes("::") && ARRANGEMENT.some((c) => new RegExp(`\\.${c}(?![\\w-])`).test(last))
+      );
+    });
+    if (hits.length === 0) return;
+    for (const n of rule.nodes) {
+      if (n.type !== "decl") continue;
+      if (
+        n.prop === "order" ||
+        (n.prop === "flex-direction" && /reverse/.test(n.value)) ||
+        (n.prop === "grid-auto-flow" && /dense/.test(n.value)) ||
+        /^grid-(?:area|row|column)(?:-start|-end)?$/.test(n.prop)
+      ) {
+        out.push(`${hits.join(", ")} { ${n.prop}: ${n.value} }`);
+      }
+    }
+  });
+  return out;
+}
+
 describe("المُخطَّط — المادة ٣٣: لا لون نهائي خارج طبقة الرموز", () => {
   it("لا لون سداسي مكتوب في أي مكوّن", () => {
     // الاستثناء الوحيد المسموح: مثال في تعليق يشرح محوّل الثلاثي.
@@ -37,12 +532,51 @@ describe("المُخطَّط — المادة ٣٣: لا لون نهائي خا�
   });
 
   it("لهجات المناطق تأتي من regions.ts وحده", () => {
-    // كان الشطر الأول على `RegionRosette` — حُذفت ٢٠٢٦/٠٨/٠٩ بأمر المالك،
-    // والقاعدة انتقلت إلى حاملها الجديد: بطاقات المناطق في الصفحة نفسها.
-    expect(PAGE).toContain('from "@/lib/regions"');
-    expect(PAGE).toContain("REGION_ACCENT_HEX");
-    // لا اسم منطقة مكتوب نصًّا في الصفحة — الأسماء من المصدر الوحيد.
-    expect(PAGE).not.toMatch(/"(الوسطى|الغربية|الشرقية|الجنوبية)"/);
+    // كان الشطر الأول على `RegionRosette` — حُذفت ٢٠٢٦/٠٨/٠٩ بأمر المالك —
+    // ثم على بطاقات المناطق في الصفحة نفسها، وقد نسخها مع الصدر الثلاثي قرار
+    // المالك ٢٠٢٦/١٠/١٣ (المواصفة ١٠ §٢). والقاعدة باقية بنصّها (المواصفة §3.6):
+    // الأسماء والترتيب واللكنات من `regions.ts` وحده، ولون المنطقة يبلغ CSS
+    // متغيّرًا `--region-tint` لا قيمة. فتُفحص حيث صارت: سطح الرئيسية كلّه
+    // وأنماطه — لا الصفحة وحدها، وهي اليوم غلافٌ بلا منطقة (المادة ٣١).
+    const carriers = [...HOME_SURFACE].filter(
+      ([, src]) => regionTints(stripComments(src)).length > 0,
+    );
+    // حاملا اللكنة اليوم: أعمدة «الأداء الأمني للمناطق» والخريطة — ولا حلقة فوق فراغ.
+    expect(carriers.map(([file]) => file)).toEqual(
+      expect.arrayContaining([
+        "src/components/home/HomeAnalyticsRow.tsx",
+        "src/components/map/ArabianPeninsulaMap.tsx",
+      ]),
+    );
+    for (const [file, src] of carriers) {
+      const code = stripComments(src);
+      expect(code, `${file} لا يستورد اللكنات من المصدر الواحد`).toMatch(
+        /import \{[^}]*\bREGION_ACCENT_HEX\b[^}]*\} from "@\/lib\/regions"/,
+      );
+      expect(code, `${file} لا يرتّب المناطق بـREGIONS`).toContain("REGIONS.map");
+      expect(foreignTints(code), `${file} يمرّر لكنةً من غير المصدر`).toEqual([]);
+    }
+    // لا اسم منطقة مكتوب نصًّا، ولا لكنةٌ منسوخة — في أي ملفّ من السطح أو أنماطه.
+    expect(HOME_SURFACE.size, "سطح الرئيسية لم يُقرأ").toBeGreaterThan(5);
+    expect(HOME_CSS.size, "أنماط الرئيسية لم تُقرأ").toBeGreaterThan(3);
+    for (const [file, src] of HOME_SURFACE) {
+      const code = stripComments(src);
+      expect(writtenRegionNames(code), `${file} يكتب اسم منطقة نصًّا`).toEqual([]);
+      expect(copiedAccents(code), `${file} ينسخ لكنة منطقة`).toEqual([]);
+    }
+    for (const [file, css] of HOME_CSS) {
+      expect(copiedAccents(stripComments(css)), `${file} ينسخ لكنة منطقة`).toEqual([]);
+    }
+
+    // والفحوص تحمرّ على المزروع (المادة ٣٠): لكنةٌ مكتوبة بدل المصدر، واسمٌ نصًّا.
+    const ana = surfaceFile("HomeAnalyticsRow.tsx");
+    const planted = ana.replace("REGION_ACCENT_HEX[region.id]", '"#22D3EE"');
+    expect(planted).not.toBe(ana);
+    expect(foreignTints(stripComments(planted))).toEqual(['"#22D3EE"']);
+    expect(copiedAccents(stripComments(planted))).toEqual(["#22d3ee"]);
+    expect(writtenRegionNames('<Chip label="الوسطى" />')).toHaveLength(1);
+    expect(writtenRegionNames("<span>الشرقية</span>")).toHaveLength(1);
+    expect(writtenRegionNames("{ar ? region.shortAr : region.shortEn}")).toEqual([]);
   });
 
   it("الأسلوب المضمّن يمرّر متغيّرات لا قيمًا نهائية", () => {
@@ -105,7 +639,17 @@ describe("المُخطَّط — المادة ٣٢: الحركة بخصائص م
     expect(block).not.toContain("stroke-dashoffset");
   });
 
-  it("بطاقات الرئيسية ساكنة: لا دخول متدرّج ولا طفو دائم (قرار المالك ٢٠٢٦/٠٨/٠٩)", () => {
+  it("بطاقات الرئيسية لا تطفو دائمًا ولا تلمع دائمًا — والدخول المتدرّج يحكمه عقد حركة الرئيسية (قرار المالك ٢٠٢٦/١٠/١٧)", () => {
+    // **كان اسمه «بطاقات الرئيسية ساكنة: لا دخول متدرّج ولا طفو دائم» (قرار
+    // المالك ٢٠٢٦/٠٨/٠٩)، ونُسخ شطر الدخول وحده** بأمر المالك ٢٠٢٦/١٠/١٧
+    // («ULTRA-PREMIUM CINEMATIC HOMEPAGE, MOTION ENGINEERING…» — المواصفة ١٠ §2.2،
+    // البند M1): دخولٌ متدرّج وظهورٌ متتابع على الرئيسية، و«Perpetual float and
+    // perpetual shimmer stay forbidden». فلم يعد «لا دخول متدرّج» قاعدة، والحارس الحاكم
+    // للحركة الجديدة هو `src/components/home/home-motion.contract.test.ts` على
+    // `src/styles/home/home-motion.css` (بأسماء `nxHome*`، خلف بوابة التفضيل).
+    // وما بقي هنا صحيحٌ كما كان ولم يُنسخ: الطفو الدائم واللمعة الدائمة ممنوعان،
+    // وطبقة المُخطَّط لا تعيد `nxBpRise` ولا `nxBpFloat` — والدخول الجديد ليس منهما.
+    //
     // الحارس على الإسناد لا على الاسم: ذكر `nxBpRise` في تعليق يشرح الإزالة
     // مسموح، وإعادته إلى `animation` هي العودة الممنوعة.
     expect(LAYER).not.toMatch(/animation:\s*nxBp(Rise|Float)\b/);
@@ -162,11 +706,54 @@ describe("المُخطَّط — المادة ٢٧: الصدق العددي", ()
     expect(code, "الغياب لا يُعاد حالةً صريحة").toMatch(/return "unmeasured"/);
 
     // والنغمة محايدة لا خضراء ولا كهرمانية — وإلّا عاد الحكم من باب آخر.
-    const tone = PAGE.match(/SEVERITY_TONE[^=]*=\s*\{([\s\S]*?)\}/)?.[1] ?? "";
-    expect(tone, "لم تُقرأ خريطة النغمات — تغيّر شكلها فبطل الحارس").toContain("unmeasured");
-    expect(tone).toMatch(/unmeasured:\s*"default"/);
-    // ومعروضةٌ لا مطويّة: عددها خبرٌ عن جودة البيانات.
-    expect(PAGE).toMatch(/SEVERITY_ORDER[^=]*=\s*\[[^\]]*"unmeasured"/);
+    // **انتقلت الخريطة من الصفحة إلى حاملها الجديد** (أمر المالك ٢٠٢٦/١٠/١٣،
+    // المواصفة ١٠ §4.6): رقاقة الشدّة في قائمة «أبرز المخاطر» بصفّ التشغيل.
+    // ويُمسح السطح كلّه لا ملفٌّ واحد (المادة ٣١): كل خريطة `Record<RiskSeverity,…>`
+    // فيه تُبقي `unmeasured` محايدًا — فلا تُولد خريطةٌ ثانية تحكم من الغياب.
+    const maps = [...HOME_SURFACE].flatMap(([file, src]) =>
+      severityMaps(stripComments(src)).map((m) => ({ file, ...m })),
+    );
+    expect(maps.length, "لم تُقرأ خريطة الشدّة — تغيّر شكلها فبطل الحارس").toBeGreaterThan(0);
+    for (const m of maps) {
+      expect(absenceVerdict(m.unmeasured), `${m.file} · ${m.name}: ${m.unmeasured}`).toBe(false);
+    }
+    const OPS = stripComments(surfaceFile("HomeOpsRow.tsx"));
+    // وكلمتها «لم يُقَس» من المرجع الواحد، ولا كلمة حكمٍ تُقرأ لها على القارئ.
+    expect(OPS).toMatch(
+      /unmeasured:\s*\{\s*status:\s*"neutral",\s*ar:\s*CHANGE_NOT_MEASURED_AR\s*\}/,
+    );
+    expect(objBody(OPS, "VERDICT_AR")).toMatch(/\bneutral:\s*null/);
+    // ومعروضةٌ لا مطويّة: عددها خبرٌ عن جودة البيانات — لها رتبةٌ في الفرز، ولا
+    // مرشّحٌ يُسقطها من القائمة.
+    expect(OPS).toMatch(/SEVERITY_ORDER[^=]*=\s*\[[^\]]*"unmeasured"/);
+    expect(callArgs(OPS, "filter").length, "لم يُقرأ مرشّحٌ واحد — بطل الفحص").toBeGreaterThan(0);
+    expect(foldsUnmeasured(OPS), "مرشّحٌ يطوي غير المقيس").toEqual([]);
+    // ورقاقتها المحايدة (حدٌّ متقطّع) لا تستعير لون حكم في أي ملفّ أنماط.
+    expect([...HOME_CSS.values()].some((css) => css.includes('[data-status="neutral"]'))).toBe(
+      true,
+    );
+    for (const [file, css] of HOME_CSS) expect(neutralToneLeaks(css), file).toEqual([]);
+
+    // يحمرّ على المزروع (المادة ٣٠): براءةٌ أو تحذيرٌ للغياب، ولونُ حكمٍ على المحايد.
+    for (const verdict of ["healthy", "warning"]) {
+      const planted = OPS.replace(
+        'unmeasured: { status: "neutral"',
+        `unmeasured: { status: "${verdict}"`,
+      );
+      expect(planted).not.toBe(OPS);
+      expect(severityMaps(planted).some((m) => absenceVerdict(m.unmeasured))).toBe(true);
+    }
+    const folded = OPS.replace(
+      "[...(risk.data?.rows ?? [])]",
+      '[...(risk.data?.rows ?? [])].filter((r) => r.severity !== "unmeasured")',
+    );
+    expect(folded).not.toBe(OPS);
+    expect(foldsUnmeasured(folded)).toEqual(['(r) => r.severity !== "unmeasured"']);
+    expect(
+      neutralToneLeaks(
+        '.nx-ops-chip[data-status="neutral"] { --ops-chip-bg: var(--stage-emerald); }',
+      ),
+    ).toHaveLength(1);
   });
 
   it("الغياب يُقرأ نصًّا ولا يُستبدل بصفر", () => {
@@ -185,9 +772,66 @@ describe("المُخطَّط — المادة ٢٧: الصدق العددي", ()
     // والخطر الجديد أن تُشتقّ الحالة من `compliance_pct` بعتبات مؤلَّفة
     // («فوق ٩٠ سليم») فتُعرض حكمًا كأنه قياس. المصدر الوحيد المسموح هو
     // `severity` القادم من الخادم، وغيابُ الصفّ يُقرأ «لم يُقَس» لا «سليم».
-    expect(PAGE).toContain("REGION_SEVERITY_TONE");
-    expect(PAGE).toMatch(/if \(!row\) return \{ tone: STAT_TONES\.default, label: notMeasured \}/);
-    expect(PAGE).not.toMatch(/compliance_pct\s*[><]=?\s*\d+\s*\?\s*"/);
+    //
+    // **نُسخ الشطر الإيجابي بقرار المالك ٢٠٢٦/١٠/١٣ (المواصفة ١٠ §٢):** شارة
+    // الحالة (`REGION_SEVERITY_TONE` و«لا صفّ ⇐ لم يُقَس») كانت على بطاقات المناطق
+    // في الصدر الثلاثي، وذهب الصدر ببطاقاته. ولا تعرض الرئيسية اليوم حالةً لمنطقة:
+    // يحمل المنطقةَ عمودُ «الأداء الأمني للمناطق» وفقاعةُ الخريطة، وكلاهما رقمٌ
+    // بلون هويّة المنطقة لا حكم. فيُحرس الباقي حيث صار: لا حكم من عتبةٍ على
+    // الامتثال، ولا صفر مكان غيابه — في السطح كلّه (المادة ٣١).
+    for (const [file, src] of HOME_SURFACE) {
+      const code = stripComments(src);
+      expect(complianceThresholds(code), `${file} يشتقّ حكمًا من عتبة امتثال`).toEqual([]);
+      expect(complianceZeroes(code), `${file} يقرأ غياب الامتثال صفرًا`).toEqual([]);
+    }
+    // وفي حاملَي الامتثال لكل منطقة بعينهما — هناك `value` نفسه هو النسبة، فلا
+    // مقارنةَ بعددٍ أصلًا، ولا علامة حكمٍ إلا من `severity` الخادم.
+    const regions = fnBody(stripComments(surfaceFile("HomeAnalyticsRow.tsx")), "RegionsCard");
+    const bubble = fnBody(stripComments(surfaceFile("ArabianPeninsulaMap.tsx")), "RegionBubble");
+    for (const [name, body] of [
+      ["RegionsCard", regions],
+      ["RegionBubble", bubble],
+    ] as const) {
+      expect(body, `${name} غير موجود — تغيّر حامل الامتثال فبطل الحارس`).not.toBe("");
+      expect(numericComparisons(body), `${name} يقارن الامتثال بعتبة`).toEqual([]);
+    }
+    expect(unsourcedVerdicts(regions), "عمود المنطقة يحمل حكمًا بلا severity").toEqual([]);
+    // والغياب «لم يُقَس» نصًّا — لا صفرٌ ولا شريطٌ فارغ يوهم بصفر.
+    expect(regions).toMatch(/value === null \? notMeasured/);
+    expect(regions).toMatch(
+      /value !== null \? \(\s*<span aria-hidden className="nx-ana-region-bar">/,
+    );
+    expect(bubble).toMatch(/compliance === undefined \? notMeasured/);
+    expect(stripComments(surfaceFile("HomeMapCard.tsx"))).toMatch(/row\.compliance_pct !== null/);
+    // ولون الشريط هويّة المنطقة لا حكمٌ بعتبة («لونٌ يتبدّل عند عتبةٍ حكمٌ مؤلَّف»).
+    const fill = declsOf(
+      HOME_CSS.get("src/styles/home/home-analytics.css") ?? "",
+      ".nx-ana-region-fill",
+    );
+    expect(fill.some(([p, v]) => /^background/.test(p) && v.includes("var(--region-tint)"))).toBe(
+      true,
+    );
+    expect(fill.filter(([, v]) => VERDICT_TONE.test(v))).toEqual([]);
+
+    // يحمرّ على المزروع (المادة ٣٠): عتبةٌ على الامتثال، وصفرٌ مكان غيابه، وحكمٌ
+    // مشتقّ داخل حامله حيث النسبة اسمها `value`.
+    expect(
+      complianceThresholds('const tone = row.compliance_pct >= 90 ? "success" : "warning";'),
+    ).toHaveLength(1);
+    expect(complianceZeroes("pct: row.compliance_pct ?? 0")).toHaveLength(1);
+    const planted = regions.replace(
+      "const value = inPeriod ? chosen.value : null;",
+      'const value = inPeriod ? chosen.value : null;\nconst verdict = value !== null && value >= 90 ? "healthy" : "warning";',
+    );
+    expect(planted).not.toBe(regions);
+    expect(numericComparisons(planted)).toEqual([">= 90"]);
+    expect(unsourcedVerdicts(`${regions}<StatusChip status="healthy" />`)).toEqual(["<StatusChip"]);
+    expect(
+      declsOf(
+        ".nx-ana-region-fill { background: var(--tone-emerald); }",
+        ".nx-ana-region-fill",
+      ).filter(([, v]) => VERDICT_TONE.test(v)),
+    ).toHaveLength(1);
   });
 
   it("«منجز اليوم» لا يُختلق له صفر في المسار الحيّ", () => {
@@ -224,82 +868,258 @@ describe("المُخطَّط — الوصول", () => {
     }
   });
 
-  it("بطاقات المناطق روابط لمعلومات كل منطقة وتبلغ أرضية اللمس", () => {
-    // كانت الوجهة القمرة الموحّدة (قرار ٢٠٢٦/٠٨/٠٤) حتى حُجبت /nx-cockpit
-    // بأمر المالك ٢٠٢٦/٠٨/١٢ — فصارت مظلّة الأمن الصناعي، والاختيار العام
-    // (`setRegion`) قبل الانتقال هو ما يفتح الشاشة على منطقة البطاقة.
-    expect(PAGE).toContain('to="/sec"');
-    expect(PAGE).toContain("search={{ region: region.id }}");
-    expect(PAGE).toContain("onClick={() => setRegion(region.id)}");
-    expect(PAGE).toMatch(/aria-label=\{ar \? `افتح معلومات /);
-    // الصنف صار `.nx-home-region` والأرضية ٨٠px: البطاقة مستطيلة تحمل سطرين
-    // وشارة حالة (أمر المالك ٢٠٢٦/٠٨/٠٩)، لا شريطًا بسطر واحد.
-    expect(PAGE).toMatch(/nx-home-region[^"]*min-h-20/);
+  it("مداخل المناطق روابط لمعلومات كل منطقة وتبلغ أرضية اللمس", () => {
+    // **كان اسمه «بطاقات المناطق روابط…» وحامله بطاقات الصدر الثلاثي في الصفحة**،
+    // ونسخها قرار المالك ٢٠٢٦/١٠/١٣ (المواصفة ١٠ §٢). والقاعدة باقية في حاملَيها
+    // الجديدين (المواصفة §4.4 و§4.7): أعمدة «الأداء الأمني للمناطق» وفقاعات
+    // المناطق على الخريطة — كلٌّ رابطٌ إلى `/sec` بمنطقته. وكانت الوجهة القمرة
+    // الموحّدة (قرار ٢٠٢٦/٠٨/٠٤) حتى حُجبت /nx-cockpit بأمر المالك ٢٠٢٦/٠٨/١٢ —
+    // فصارت مظلّة الأمن الصناعي، والاختيار العام (`setRegion`) قبل الانتقال هو ما
+    // يفتح الشاشة على منطقة المدخل.
+    //
+    // **وسقطت أرضية ٨٠px (`min-h-20`)** مع البطاقة المستطيلة التي وُضعت لها (أمر
+    // المالك ٢٠٢٦/٠٨/٠٩ — منسوخٌ بالقرار نفسه). والباقي أرضية اللمس ذاتها (§3.7):
+    // المدخل مرساةٌ فتبلغه أرضية `a[href]` العامّة (44px لمسًا · 40px فأرة — يحرسها
+    // «كل رابط على الصفحة…» أدناه)، ولا قاعدةٌ في أنماط الرئيسية تُنزله دونها.
+    const ana = stripComments(surfaceFile("HomeAnalyticsRow.tsx"));
+    const map = stripComments(surfaceFile("ArabianPeninsulaMap.tsx"));
+    const carriers = [
+      {
+        name: "أعمدة الأداء",
+        body: fnBody(ana, "RegionsCard"),
+        id: "region.id",
+        label: "region.labelAr",
+        cls: "nx-ana-region",
+      },
+      {
+        name: "فقاعات الخريطة",
+        body: fnBody(map, "RegionBubble"),
+        id: "id",
+        label: "labelAr",
+        cls: "nx-arabia-bubble",
+      },
+    ];
+    for (const c of carriers) {
+      expect(c.body, `${c.name}: الحامل غير موجود`).not.toBe("");
+      const link = regionLink(c.body);
+      expect(link, `${c.name}: لا رابط إلى /sec`).toBeDefined();
+      expect(regionLinkGaps(link?.attrs ?? "", c.id), c.name).toEqual([]);
+      expect(c.body, `${c.name}: الاسم المقروء لا يقول «افتح {المنطقة}»`).toContain(
+        `ar ? \`افتح \${${c.label}}`,
+      );
+      expect(link?.attrs, `${c.name}: الصنف المقيس غير موجود`).toMatch(
+        new RegExp(`className="[^"]*\\b${c.cls}\\b`),
+      );
+      for (const [file, css] of HOME_CSS) {
+        expect(floorBreaches(css, c.cls), `${c.name} · ${file}`).toEqual([]);
+      }
+    }
+    // والاختيار العام: العمود يكتبه بنفسه، والفقاعة تتلقّاه من حلقة REGIONS.
+    expect(regionLink(carriers[0].body)?.attrs).toContain("onClick={() => setRegion(region.id)}");
+    expect(ana).toMatch(/const cols = REGIONS\.map\(\(region\) =>/);
+    expect(regionLink(carriers[1].body)?.attrs).toContain("onClick={onGo}");
+    expect(map).toMatch(
+      /\{REGIONS\.map\(\(r\) => \{[\s\S]*?<RegionBubble\b[\s\S]*?onGo=\{\(\) => setRegion\(r\.id\)\}/,
+    );
+
+    // يحمرّ على المزروع (المادة ٣٠): رابطٌ بلا اختيارٍ عام، وقاعدةٌ تقصّ الهدف.
+    const attrs = regionLink(carriers[0].body)?.attrs ?? "";
+    const planted = attrs.replace("onClick={() => setRegion(region.id)}", "");
+    expect(planted).not.toBe(attrs);
+    expect(regionLinkGaps(planted, "region.id")).toEqual(["الاختيار العام قبل الانتقال"]);
+    expect(
+      floorBreaches(
+        ".nx-ana-regions > li .nx-ana-region { max-block-size: 2rem; }",
+        "nx-ana-region",
+      ),
+    ).toEqual(["max-block-size: 2rem"]);
   });
 
-  it("بطاقة المنطقة تحمل مدخلًا دائم الظهور إلى سجل المخاطر الأمنية (REQ-022)", () => {
+  it("مدخلٌ دائم الظهور بسهم إلى سجل المخاطر الأمنية — في رأس «أبرز المخاطر» (REQ-022)", () => {
     // أمر المالك الحرفي (فقرة 846): «حذف سجل المخاطر ووضع سهم في الكاردز
-    // يوديه لسجل المخاطر الأمنية». الشقّ الثاني يُحرَس هنا بثلاثة قيود يسهل
-    // خرقها بتعديل بريء لا يلتقطه tsc:
-    // ① الرابط داخل حلقة بطاقات المناطق لا في موضع آخر من الصفحة.
-    // ② لا <a> داخل <a>: البطاقة كلها رابط، فرابط السجل أخٌ له يُفتح بعد
-    //    إغلاقه — تعشيشه يُخرج HTML غير صالح يفكّكه المتصفح بصمت.
-    // ③ ظاهر دائمًا (قاعدة الجوال): أساسه شفافية 60٪ تشتد، لا إخفاء كامل
-    //    يكشفه التمرير — ما يظهر بالتمرير وحده لا وجود له على اللمس.
-    const at = PAGE.indexOf('to="/sec/risks"');
-    expect(at, "لا رابط إلى سجل المخاطر الأمنية في بطاقات المناطق").toBeGreaterThan(-1);
-    expect(at, "الرابط خارج حلقة بطاقات المناطق").toBeGreaterThan(PAGE.indexOf("REGIONS.map"));
+    // يوديه لسجل المخاطر الأمنية».
+    //
+    // **كان اسمه «بطاقة المنطقة تحمل مدخلًا…» وحامله بطاقات المناطق في الصدر
+    // الثلاثي**، ونسخها قرار المالك ٢٠٢٦/١٠/١٣ (المواصفة ١٠ §٢) — ونُسخ معها قيدان
+    // كانا لها وحدها: «الرابط داخل حلقة بطاقات المناطق» والاسم المقروء لكل منطقة.
+    // وحلّت محلّها قائمة «أبرز المخاطر» برأسٍ يحمل «عرض الكل» وسهمه إلى `/sec/risks`
+    // (المواصفة §4.6) — فالسهم إلى السجل في البطاقة التي تعرض المخاطر نفسها.
+    // والقيود الباقية تُحرس عليه، ويسهل خرقها بتعديل بريء لا يلتقطه tsc:
+    // ① الرابط في رأس بطاقة المخاطر، ووجهتها السجل.
+    // ② لا <a> داخل <a> — رأس البطاقة أخٌ لصفوفها لا أبٌ لها، وفي السطح كلّه
+    //    لا في البطاقة وحدها (المادة ٣١): تعشيشه HTML غير صالح يفكّكه المتصفح بصمت.
+    // ③ ظاهر دائمًا (قاعدة الجوال): لا إخفاء كاملًا يكشفه التمرير، وهدفه ≥ 44px.
+    // ④ حلقة تركيزٍ ظاهرة من القاعدة المشتركة خارج الطبقات (`.nx-home-more`) —
+    //    لا أدوات `focus-visible:outline-*` تخسر أمام `:where(…):focus-visible`.
+    const OPS = stripComments(surfaceFile("HomeOpsRow.tsx"));
+    const risks = fnBody(OPS, "TopRisksCard");
+    const card = fnBody(OPS, "OpsCard");
+    expect(risks, "بطاقة «أبرز المخاطر» غير موجودة").not.toBe("");
+    expect(card, "البطاقة المشتركة غير موجودة").not.toBe("");
+    // ①
+    expect(risks).toContain('"أبرز المخاطر"');
+    expect(risks).toMatch(/<OpsCard\b[\s\S]*?\bto="\/sec\/risks"/);
+    expect(riskEntryGaps(card)).toEqual([]);
+    // والبطاقة معنونة، فغرض «عرض الكل» مقروءٌ من سياقه (WCAG 2.4.4).
+    expect(card).toMatch(/<section\s+aria-labelledby=\{id\}/);
+    // ②
+    for (const [file, src] of HOME_SURFACE) {
+      if (!file.endsWith(".tsx")) continue;
+      const { depth, balance } = anchorNesting(stripComments(src));
+      expect(balance, `${file}: قراءة الروابط غير متوازنة — بطل الفحص`).toBe(0);
+      expect(depth, `${file}: رابطٌ داخل رابط`).toBeLessThanOrEqual(1);
+    }
+    // ③
+    const opsCss = HOME_CSS.get("src/styles/home/home-ops.css") ?? "";
+    const floors = restDecls(opsCss, "nx-ops-more")
+      .filter(([p]) => p === "min-block-size" || p === "min-height")
+      .map(([, v]) => px(v) ?? 0);
+    expect(Math.max(0, ...floors), "هدف رابط السجل دون أرضية اللمس").toBeGreaterThanOrEqual(
+      TOUCH_FLOOR_PX,
+    );
+    for (const [file, css] of HOME_CSS) {
+      for (const cls of ["nx-home-more", "nx-ops-more", "nx-ops-more-face"]) {
+        expect(hiddenAtRest(css, cls), `${file} · .${cls} مخفيّ حتى التمرير`).toEqual([]);
+      }
+    }
+    // ④
+    expect(CSS).toMatch(/\.nx-home-more:focus-visible[^{]*\{[^}]*outline:\s*2px solid/);
+    const ringKilled = (css: string) =>
+      declsOf(css, ".nx-ops-more:focus-visible").filter(
+        ([p, v]) => p.startsWith("outline") && /^(?:none|0)\b/.test(v.trim()),
+      );
+    for (const [file, css] of HOME_CSS) {
+      expect(ringKilled(css), `${file} يمحو حلقة التركيز`).toEqual([]);
+    }
 
-    const block = PAGE.slice(at, at + 900);
-    expect(block).toMatch(/aria-label=\{\s*ar\s*\?\s*`سجل المخاطر الأمنية — /);
-    expect(block).toContain("ChevronLeft");
-    expect(block).toContain("سجل المخاطر");
-    expect(block, "أرضية اللمس مفقودة").toContain("min-h-11");
-    expect(block, "لا حلقة تركيز ظاهرة").toContain("focus-visible:outline");
-    expect(block, "السهم فقد ظهوره الدائم").toContain("opacity-60");
-    expect(block, "السهم مخفيّ حتى التمرير — يغيب على اللمس").not.toContain("opacity-0");
-
-    // رابط البطاقة (`to="/sec"`) يُغلق قبل أن يُفتح رابط السجل.
-    const cardLink = PAGE.indexOf('to="/sec"');
-    expect(cardLink, "رابط البطاقة نفسه غير موجود").toBeGreaterThan(-1);
-    const cardLinkClose = PAGE.indexOf("</Link>", cardLink);
-    expect(cardLinkClose, "رابط السجل معشَّش داخل رابط البطاقة").toBeLessThan(at);
+    // يحمرّ على المزروع (المادة ٣٠): رابطٌ مخفيّ حتى التمرير، وسهمٌ منزوع،
+    // وتعشيشٌ، وقاعدةُ إخفاء.
+    const hidden = card.replace(
+      'className="nx-home-more nx-ops-more"',
+      'className="nx-home-more nx-ops-more opacity-0"',
+    );
+    expect(hidden).not.toBe(card);
+    expect(riskEntryGaps(hidden)).toEqual(["مخفيّ حتى التمرير"]);
+    const arrowless = card.replace(/<ChevronLeft\b[^>]*\/>/, "");
+    expect(arrowless).not.toBe(card);
+    expect(riskEntryGaps(arrowless)).toEqual(["السهم"]);
+    const nested = card.replace(/<ChevronLeft\b/, '<Link to="/sec/risks">x</Link><ChevronLeft');
+    expect(nested).not.toBe(card);
+    expect(riskEntryGaps(nested)).toEqual(["رابطٌ داخل رابط"]);
+    expect(ringKilled(".nx-ops-more:focus-visible { outline: none; }")).toHaveLength(1);
+    expect(anchorNesting('<Link to="/a"><Link to="/b">x</Link></Link>').depth).toBe(2);
+    expect(hiddenAtRest(".nx-ops-card .nx-ops-more { opacity: 0; }", "nx-ops-more")).toEqual([
+      "opacity: 0",
+    ]);
   });
 
   it("الحالة النشطة لا تُقال باللون وحده", () => {
-    // شارة نصّية تصحب التمييز اللوني — عمى الألوان لا يلغي القراءة.
-    expect(PAGE).toMatch(/active && \(/);
-    expect(PAGE).toContain('ar ? "الحالية" : "current"');
+    // شارة نصّية كانت تصحب التمييز اللوني — «الحالية» على بطاقة المنطقة الفاعلة
+    // في الصدر الثلاثي (`active && (`)، ونسخها مع بطاقاتها قرار المالك ٢٠٢٦/١٠/١٣
+    // (المواصفة ١٠ §٢). والمنطقة الفاعلة اليوم رقاقةٌ مضغوطة في شريط الخريطة
+    // (§4.4: «focus/highlight, aria-pressed»)، افتراضها منطقة النظام الفاعلة
+    // (`useRegion`). والقاعدة نفسها باقية (WCAG 1.4.1 · المواصفة §3.5) — عمى الألوان
+    // لا يلغي القراءة: الحال تُعلَن للقارئ (`aria-pressed`)، وتُرى بعلامةٍ غير اللون
+    // (حلقةٌ خارجية حول القرص)، وتبقى في الوضع القسري حين تسقط ألوان المؤلّف.
+    const PRESSED = '.nx-arabia .nx-arabia-tab[aria-pressed="true"]';
+    const map = stripComments(surfaceFile("ArabianPeninsulaMap.tsx"));
+    expect(map).toContain('const focus: RegionId | "all" = picked ?? regionId;');
+    expect(map).toContain('["all", ...REGIONS.map((r) => r.id)]');
+    const chip = jsxTags(map).find(
+      (t) => !t.close && t.name === "button" && /className="nx-arabia-tab"/.test(t.attrs),
+    );
+    expect(chip, "رقاقة المنطقة غير موجودة").toBeDefined();
+    expect(chip?.attrs).toContain("aria-pressed={focus === id}");
+    const mapCss = HOME_CSS.get("src/styles/home/home-map.css") ?? "";
+    const pressed = declsOf(mapCss, PRESSED);
+    expect(pressed.length, "قاعدة الرقاقة المضغوطة غير موجودة").toBeGreaterThan(0);
+    expect(nonColourCues(pressed), "المضغوطة تُقال باللون وحده").not.toEqual([]);
+    // وكل حالٍ نشطة على الخريطة تبقى في الوضع القسري: الرقاقة والتبويب الحاليّ.
+    expect(forcedHighlights(mapCss)).toEqual(
+      expect.arrayContaining([PRESSED, '.nx-home-map-view[aria-current="true"]']),
+    );
+
+    // يحمرّ على المزروع (المادة ٣٠): حلقةٌ تُنزع فيبقى اللون وحده، ووضعٌ قسريٌّ
+    // يُسقط الرقاقة من تمييزه.
+    const ringless = postcss.parse(mapCss);
+    ringless.walkRules((rule) => {
+      if (rule.selector !== PRESSED || inForcedColors(rule)) return;
+      rule.walkDecls("box-shadow", (d) => {
+        d.value = "inset 0 0 0 1px currentColor";
+      });
+    });
+    expect(ringless.toString()).not.toBe(mapCss);
+    expect(nonColourCues(declsOf(ringless.toString(), PRESSED))).toEqual([]);
+    const unforced = postcss.parse(mapCss);
+    unforced.walkRules((rule) => {
+      if (!inForcedColors(rule) || !rule.selectors.some((s) => s.trim() === PRESSED)) return;
+      rule.selectors = rule.selectors.filter((s) => s.trim() !== PRESSED);
+    });
+    expect(unforced.toString()).not.toBe(mapCss);
+    expect(forcedHighlights(unforced.toString())).not.toContain(PRESSED);
   });
 
   /**
    * المداخل — WCAG 2.2 §2.4.5، وهو البند الذي سقط فعلًا.
    *
-   * الرئيسية خارج القشرة: لا شريط جانبي لها، وشريطها العلوي محذوف بأمر
-   * المالك. وقشرة الأعلى المثبَّتة تحمل مبدّل الوضع وحده هنا (٢٠٢٦/٠٩/١١)
-   * — تفضيلٌ لا مدخلَ تنقّل. فلا يبقى مدخلًا إلا ما تكتبه الصفحة نفسها. والعطل الذي
-   * يحرسه هذا البند ليس «صفر روابط» — كانت اثني عشر — بل أن **كلّها**
-   * كانت إمّا إلى أسطح خارج القشرة (`/nx-*`) أو مشروطةً ببيانات (بطاقات
-   * الشذوذ تنطوي حين لا انحراف). فالحارس على الطبقة **غير المشروطة**.
+   * العطل الذي يحرسه هذا البند ليس «صفر روابط» — كانت اثني عشر — بل أن
+   * **كلّها** كانت إمّا إلى أسطح خارج القشرة (`/nx-*`) أو مشروطةً ببيانات
+   * (بطاقات الشذوذ تنطوي حين لا انحراف). فالحارس على الطبقة **غير المشروطة**.
+   *
+   * **وتغيّرت الأرض تحته.** كُتب والرئيسية خارج القشرة بلا شريطٍ جانبي، فلم
+   * يبقَ مدخلًا إلا ما تكتبه الصفحة. ثم رُكّب الشريط فيها (أمر المالك
+   * ٢٠٢٦/٠٩/٢٩)، وصار يسارًا في «مركز القيادة» (٢٠٢٦/١٠/١٣، القرار D5) ومعه
+   * لوحة الأوامر والترويسة — فعاد «تعدّد الطرق»: الشريط من `SYSTEM_NAV`
+   * (يحرسه `system-nav.contract`)، ثم المؤشرات السبعة وروابط رؤوس البطاقات
+   * وطبقات الخريطة في الصفحة نفسها.
    */
-  it("مدخل الرئيسية الباقي مرساةٌ فعليّة لا سطحٌ صامت", () => {
-    // **لم تبقَ للرئيسية إلا طبقة مداخل واحدة.** سقطت الطبقتان الأخريان
-    // بأمرَي المالك في يومين: «لوحة المؤشرات التنفيذية» (٢٠٢٦/٠٨/١٠) ثم
-    // «مداخل النظام» في التذييل (٢٠٢٦/٠٨/١١) — وهذه كانت الوحيدة التي **لا
-    // تسقط ببيانات**. فالبند لم يعد يفحص «تعدّد الطرق» من هذه الصفحة، إذ لا
-    // تعدّد فيها؛ ويُسجَّل ذلك ولا يُداوى بإضافةٍ لم تُطلَب.
+  it("مداخل الرئيسية غير المشروطة مراسٍ فعليّة لا سطوحٌ صامتة", () => {
+    // **كان اسمه «مدخل الرئيسية الباقي مرساةٌ فعليّة…» وحامله بطاقة المنطقة** —
+    // آخر طبقة مداخل لا تسقط ببيانات بعد حذف «لوحة المؤشرات التنفيذية»
+    // (٢٠٢٦/٠٨/١٠) و«مداخل النظام» في التذييل (٢٠٢٦/٠٨/١١). ونسخ بطاقاتِ المناطق
+    // قرارُ المالك ٢٠٢٦/١٠/١٣ (المواصفة ١٠ §٢)، والطبقة غير المشروطة اليوم صفّ
+    // المؤشرات السبعة: سجلٌّ ثابت يُرسم في كل حال — تحميلًا وخطأً وحياةً.
     //
-    // وما بقي يُحرَس: الطريق الوحيد **مرساةٌ** (`<Link>`) لا `<div onClick>`.
-    // والفرق ليس تجميليًّا: غير المرساة لا يبلغها التبويب ولا قارئ الشاشة،
-    // فيصير الطريق الوحيد بلا وجود لمن لا يستعمل فأرة.
-    const regionAt = PAGE.indexOf("nx-home-region flex");
-    expect(regionAt, "بطاقة المنطقة غير موجودة — لم يبقَ مدخل").toBeGreaterThan(-1);
+    // وما يُحرَس هو هو: الطريق **مرساةٌ** (`<Link>`) لا `<div onClick>`. والفرق
+    // ليس تجميليًّا: غير المرساة لا يبلغها التبويب ولا قارئ الشاشة.
+    const kpi = stripComments(surfaceFile("HomeDashboard.tsx"));
+    const row = fnBody(kpi, "HomeKpiRow");
+    const card = fnBody(kpi, "KpiCard");
+    expect(row, "صفّ المؤشرات غير موجود").not.toBe("");
+    expect(row).toMatch(/kpis\.map\(\(k(?:,\s*\w+)?\) =>\s*\(\s*<li\b[^>]*>\s*<KpiCard\b/);
+    expect(rootOf(card), "بطاقة المؤشر لم تعد رابطًا في كل حال — سقطت الطبقة الثابتة").toBe("Link");
+    // والمداخل المركَّبة في الصفحة نفسها: الشريط ولوحة الأوامر (زرّ البحث).
+    const page = stripComments(PAGE);
+    expect(page).toContain('<SystemSidebar side="left" />');
+    expect(page).toContain("<CommandPalette />");
+    // ولا مدخل مبنيّ على عنصرٍ غير تفاعلي — في السطح كلّه لا الصفحة وحدها
+    // (المادة ٣١). والقارئ رأى كل وسم: عدد الروابط بالمسح يساوي عددها بالنصّ.
+    const files = [...HOME_SURFACE.keys()].filter((f) => f.endsWith(".tsx"));
+    expect(files.length, "سطح الرئيسية لم يُقرأ").toBeGreaterThan(5);
+    for (const file of files) {
+      const code = stripComments(HOME_SURFACE.get(file) as string);
+      expect(silentClicks(code), `${file}: مدخلٌ على عنصرٍ صامت`).toEqual([]);
+      const scanned = jsxTags(code).filter((t) => !t.close && t.name === "Link").length;
+      expect(scanned, `${file}: لم يقرأ المسح كل الروابط`).toBe(
+        (code.match(/<Link\b/g) ?? []).length,
+      );
+    }
+
+    // يحمرّ على المزروع (المادة ٣٠): بطاقةٌ صارت عنصرًا صامتًا، ونقرٌ على غير المرساة.
+    const planted = card.replace(/return \(\s*<Link\b/, "return (\n    <div");
+    expect(planted).not.toBe(card);
+    expect(rootOf(planted)).toBe("div");
+    expect(silentClicks('<div className="x" onClick={() => a > b && go()}>')).toEqual(["<div>"]);
+    expect(silentClicks("<li onClick={go}>")).toEqual(["<li>"]);
+    expect(silentClicks('<button type="button" onClick={go}>')).toEqual([]);
+    // والمسح يرى ما يُمرَّر خاصيةً: نقرٌ صامت ورابطٌ داخل `control={…}`.
+    expect(silentClicks("<AnaCard control={<span onClick={go}>x</span>} />")).toEqual(["<span>"]);
+    expect(anchorNesting('<Link to="/a"><AnaCard control={<Link to="/b" />} /></Link>').depth).toBe(
+      1,
+    );
     expect(
-      PAGE.slice(Math.max(0, regionAt - 700), regionAt),
-      "بطاقة المنطقة لم تعد رابطًا — سقط آخر مدخل",
-    ).toContain("<Link");
-    // ولا مدخل مبنيّ على عنصر غير تفاعلي في الصفحة كلّها.
-    expect(PAGE).not.toMatch(/<div[^>]*onClick=/);
+      anchorNesting('<Link to="/a"><AnaCard control={<Link to="/b">x</Link>} /></Link>').depth,
+    ).toBe(2);
   });
 
   it("كل رابط على الصفحة يبلغ أرضية اللمس وله حلقة تركيز ظاهرة", () => {
@@ -315,7 +1135,9 @@ describe("المُخطَّط — الوصول", () => {
     // لوحة «سجل المخاطر» بأمر المالك V4 — فقرة 846 — ٢٠٢٦/٠٨/٢٤، فلم تبقَ
     // على الصفحة رقاقة. شرطُ العدد أُسقط لزوال موضوعه لا تخفيفًا: الحلقة
     // باقية تُلزم أول رقاقة تعود، والأرضية غير المشروطة تحرسها قاعدتا
-    // المؤشّر أعلاه وأرضية سهم REQ-022 (`min-h-11`) في بنده.
+    // المؤشّر أعلاه وأرضية رابط السجل في بند REQ-022 (كانت `min-h-11` على سهم
+    // بطاقة المنطقة، وصارت `.nx-ops-more` ≥ 44px في رأس «أبرز المخاطر» —
+    // المواصفة ١٠ §٢).
     const chips = [...PAGE.matchAll(/className="nx-bp-card inline-flex ([^"]*)"/g)].map(
       (m) => m[1],
     );
@@ -506,38 +1328,66 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
     expect(grid).toMatch(/minmax\(0,/);
   });
 
-  it("ترتيب DOM هو ترتيب العرض: المناطق ← سَدِيد ← توصياته", () => {
-    // العمود واحد دون `lg`، فالتكديس هو ترتيب DOM نفسه. لو رُتّبت الأعمدة
-    // بـ`order` لانقلب الترتيب على الجوال بلا أن يسقط شيء.
+  it("ترتيب DOM هو ترتيب العرض: المؤشرات ← الصدر (الخريطة ← سَدِيد) ← التشغيل ← التحليلات", () => {
+    // **كان اسمه «… المناطق ← سَدِيد ← توصياته»** وموضوعه الصدر الثلاثي: «سَدِيد
+    // في المنتصف، وتوصياته على يسار بطاقته» (المالك ٢٠٢٦/٠٨/١٠). ونسخ الصدرَ وعقدَ
+    // ترتيبه نصًّا قرارُ المالك ٢٠٢٦/١٠/١٣ (المواصفة ١٠ §٢: «the triad … and its
+    // order contract»)، فسقطت شروطه الثلاثة: المناطق قبل المساعد، والمساعد قبل
+    // التوصيات، والتوصيات داخل الصدر — لا تخفيفًا بل لزوال موضوعها.
     //
-    // **والترتيب نفسه هو موضع الأمر:** «سَدِيد في المنتصف، وتوصياته على
-    // يسار بطاقته» (المالك ٢٠٢٦/٠٨/١٠). وفي `rtl` الأسبق في DOM يُرسم
-    // أيمن — فوقوع التوصيات **بعد** المساعد هو معنى «يساره»، لا تفصيلًا
-    // تقنيًّا. ولو انعكس السطران لانقلب الجانبان بلا أن يسقط tsc ولا
-    // eslint ولا أيّ فحصٍ آخر.
-    //
-    // وخرج من السلسلة حاملان: «كشف الشذوذ» بتعديل المالك عبر Lovable،
-    // و«تحليلات الاستخدام» بأمره — وغيابهما يحرسه البند التالي صراحةً.
-    const regions = PAGE.indexOf("nx-home-region");
-    const stage = PAGE.indexOf("<SadeedStagePresence");
-    const advisories = PAGE.indexOf('id="nx-rec-heading"');
-    for (const [name, at] of [
-      ["بطاقات المناطق", regions],
-      ["SadeedStagePresence", stage],
-      ["توصيات سَدِيد", advisories],
+    // والقاعدة التي خدمها باقية بنصّها (المواصفة §3.7: «Keyboard reachable in
+    // visual order»): التكديس على الجوال هو ترتيب DOM نفسه، فلو رُتّبت الصفوف أو
+    // البطاقات بـ`order` لانفصل التبويب عن الرسم بلا أن يسقط tsc ولا eslint ولا
+    // أيّ فحصٍ آخر. وبقرار D5 صار الترتيب **يسارًا ← يمينًا كما في الصورة** تحت
+    // `dir="ltr"` — فالأسبق في DOM يُرسم أيسر، ووقوع سَدِيد **بعد** الخريطة هو
+    // معنى «يمينها»، لا تفصيلًا تقنيًّا. ولو انعكس السطران لانقلب الجانبان بصمت.
+    const page = stripComments(PAGE);
+    expect(rowOrderBreaks(page)).toEqual([]);
+    // الحاويات ترتيبٌ `ltr` (D5)، والبطاقات تعلن لغتها في ملفّاتها.
+    expect(page).toMatch(/<div dir="ltr" className="nx-home-arrange\b/);
+    expect(stripComments(surfaceFile("HomeDashboard.tsx"))).toMatch(
+      /<ul dir="ltr" className="nx-home-kpis"/,
+    );
+    // وداخل الصفّين: البطاقات بترتيب الصورة يسارًا ← يمينًا (§4.6 · §4.7).
+    for (const [file, fn, cards] of [
+      [
+        "HomeOpsRow.tsx",
+        "HomeOpsRow",
+        ["<TopRisksCard", "<ActiveIncidentsCard", "<FieldPatrolsCard", "<CameraTilesCard"],
+      ],
+      [
+        "HomeAnalyticsRow.tsx",
+        "HomeAnalyticsRow",
+        ["<RegionsCard", "<IncidentsRisksCard", "<IncidentTypesCard", "<SystemsCard"],
+      ],
     ] as const) {
-      expect(at, `${name} غير مركَّب على الرئيسية`).toBeGreaterThan(-1);
+      const body = fnBody(stripComments(surfaceFile(file)), fn);
+      expect(body, `${fn} غير موجود`).toMatch(/<div dir="ltr" className="nx-home-quad\b/);
+      expect(orderBreaks(body, cards), file).toEqual([]);
     }
-    expect(regions, "المناطق ليست أيمن الثلاثة").toBeLessThan(stage);
-    expect(stage, "التوصيات يمين المساعد لا يساره").toBeLessThan(advisories);
-    // والتوصيات **داخل** الصدر الثلاثي لا قسمًا مستقلًّا تحته: خروجها منه
-    // يُعيدها شريطًا عرضيًّا ويترك العمود الأيسر فارغًا بلا أن يسقط شيء.
-    const triad = PAGE.indexOf('className="nx-home-triad');
-    const triadEnd = PAGE.indexOf("\n        </section>", triad);
-    expect(triad, "الصدر الثلاثي غير موجود").toBeGreaterThan(-1);
-    expect(advisories, "التوصيات خارج الصدر الثلاثي").toBeLessThan(triadEnd);
-    expect(PAGE, "أداة `order-*` تفصل ترتيب العرض عن ترتيب DOM").not.toMatch(
-      /(?:^|[\s"'`])(?:sm:|md:|lg:)?order-\d/m,
+    // ولا أداةٌ ولا قاعدة تفصل العرض عن DOM — في السطح كلّه وأنماطه (المادة ٣١).
+    for (const [file, src] of HOME_SURFACE) {
+      expect(orderUtilities(stripComments(src)), `${file}: أداة order-*`).toEqual([]);
+    }
+    for (const [file, css] of HOME_CSS) {
+      expect(arrangementReorders(css), `${file}: ترتيبٌ بصريّ على الصفوف`).toEqual([]);
+    }
+
+    // يحمرّ على المزروع (المادة ٣٠): الصدر مقلوبًا، وأداة `order-*`، وقاعدة
+    // ترتيبٍ على بطاقة الصدر، و`dense` على الشبكة.
+    const swapped = page.replace(
+      /<HomeMapCard \/>(\s*)<HomeSadeedCard \/>/,
+      "<HomeSadeedCard />$1<HomeMapCard />",
+    );
+    expect(swapped).not.toBe(page);
+    expect(rowOrderBreaks(swapped)).toEqual(["<HomeSadeedCard /> قبل <HomeMapCard />"]);
+    expect(orderUtilities('<div className="grid lg:order-2">')).toHaveLength(1);
+    const layout = HOME_CSS.get("src/styles/home/home-layout.css") ?? "";
+    expect(
+      arrangementReorders(`${layout}\n.nx-home-hero > .nx-home-sadeed { order: -1; }`),
+    ).toEqual([".nx-home-hero > .nx-home-sadeed { order: -1 }"]);
+    expect(arrangementReorders(`${layout}\n.nx-home-quad { grid-auto-flow: dense; }`)).toHaveLength(
+      1,
     );
   });
 
@@ -563,33 +1413,61 @@ describe("الرئيسية — التخطيط الثلاثي", () => {
     expect(read("src/routes/_authenticated/sadeed-analytics.tsx")).toContain("<SadeedAnomalyStrip");
   });
 
-  it("المخاطر على الرئيسية بطاقةٌ واحدة بسهم — لا لوحة ولا بطاقات مجمّعة (V5)", () => {
+  it("المخاطر على الرئيسية قائمة «أبرز المخاطر» — لا سجلّ كامل ولا بطاقات مجمّعة (V4 · V5)", () => {
     // الشقّ الأول (أمر المالك V4 · فقرة 846): الجدول التفصيلي وترويسته وزرّ
     // «افتح سجل المخاطر الكامل» وسطر المخاطر بلا إسناد — محذوفة بلا تركة.
     // الشقّ الثاني (**جولة V5** · مراجعة العميل): حُذفت معها البطاقات الأربع
-    // «حسب الشدّة» وشبكة «حسب المنطقة»، وحلّ محلّها مدخلٌ واحد إلى
-    // `/sec/risks`. القياس على الكود منزوعَ التعليقات: توثيق الحذف يذكر
+    // «حسب الشدّة» وشبكة «حسب المنطقة». وكلا الحذفين باقٍ.
+    //
+    // **كان اسمه «… بطاقةٌ واحدة بسهم» (V5)، ونُسخ ذلك البديل** بقرار المالك
+    // ٢٠٢٦/١٠/١٣ (المواصفة ١٠ §٢: «the single risk card (V5) → replaced by the
+    // mockup's «أبرز المخاطر» list») — فسقط شرط `riskRows.length` (إجمالي البطاقة
+    // الواحدة)، وسقط معه شرط `recommendations`: توصيات سَدِيد كانت في الصدر
+    // الثلاثي المنسوخ بالقرار نفسه. والحارس على البديل المعتمد: قائمةٌ قصيرة بسقف
+    // الصورة (أربعة صفوف)، كي لا يعود السجلّ إلى الرئيسية في ثوبٍ آخر.
+    //
+    // والمحذوف يُمسح في السطح كلّه (المادة ٣١)، منزوعَ التعليقات: توثيق الحذف يذكر
     // الأسماء، فمطابقة النصّ الخام تُسقط الحارس على شرحٍ لا على سطح.
-    const code = PAGE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
-    expect(code, "عاد زرّ السجل الكامل").not.toContain("افتح سجل المخاطر الكامل");
-    expect(code).not.toContain("Open the full risk register");
-    expect(code, "عاد رابط /risk من الرئيسية").not.toContain('to="/risk"');
-    expect(code, "عاد جدول السجل أو حاويته").not.toMatch(/nx-risk-(table|scroll|ref|title)/);
-    expect(code).not.toContain("sortedRiskRows");
-    expect(code, "عادت ملاحظة المخاطر بلا إسناد").not.toContain("بلا إسناد لمنطقة في المصدر");
-    // البطاقات المجمّعة المحذوفة بلا تركة: لا شبكة ولا العدّادات التي كانت
-    // تغذّيها — دالّةٌ باقية بلا مستهلك تُعاد إلى الشاشة لأنها «موجودة».
-    expect(code, "عادت بطاقات «حسب الشدّة»").not.toContain("حسب الشدّة");
-    expect(code, "عادت شبكة «حسب المنطقة»").not.toContain("حسب المنطقة");
-    expect(code).not.toMatch(/nx-risk-(card|region)/);
-    expect(code).not.toContain("countBySeverity");
-    expect(code).not.toContain("countByRegion");
-    // والبديل المعتمد حاضر: بطاقةٌ واحدة تحمل الإجمالي وسهمًا إلى السجل.
-    expect(code, "سقط مدخل سجل المخاطر").toContain('to="/sec/risks"');
-    expect(code).toContain("riskRows.length");
-    // والحذف حذفُ عرضٍ لا إلغاءُ مصدر: التوصيات تقرأ `getRiskBoard` نفسه.
-    expect(code).toContain("getRiskBoard");
-    expect(code).toContain("recommendations");
+    for (const [file, src] of HOME_SURFACE) {
+      expect(riskResidue(stripComments(src)), `${file}: تركة سجلّ المخاطر`).toEqual([]);
+    }
+    for (const [file, css] of HOME_CSS) {
+      expect(riskResidue(stripComments(css)), `${file}: أنماط السجل المحذوف`).toEqual([]);
+    }
+    const OPS = stripComments(surfaceFile("HomeOpsRow.tsx"));
+    const risks = fnBody(OPS, "TopRisksCard");
+    expect(risks, "بطاقة «أبرز المخاطر» غير موجودة").not.toBe("");
+    // و«حسب المنطقة» داخل حامل المخاطر: «الامتثال حسب المنطقة» في صفّ التحليلات
+    // اسمُ مقياس امتثالٍ صادق (المواصفة §4.7)، لا شبكةُ مخاطر.
+    const regionGrid = (body: string) => body.includes("حسب المنطقة");
+    expect(regionGrid(risks), "عادت شبكة «حسب المنطقة»").toBe(false);
+    // البديل المعتمد حاضر: قائمةٌ بسقف الصورة، ورأسُها وكلُّ صفٍّ فيها إلى السجل.
+    expect(riskListCap(risks), "قائمة المخاطر بلا سقف — عاد السجل كاملًا").toBe(4);
+    expect(HOME_REFERENCE.risks.rows).toHaveLength(4);
+    expect((risks.match(/\bto="\/sec\/risks"/g) ?? []).length).toBeGreaterThanOrEqual(3);
+    expect(OPS).toMatch(/const \{[^}]*\brisk\b[^}]*\} = useHomeReads\(\);/);
+    expect(OPS).toContain("<TopRisksCard ar={ar} risk={risk} />");
+    expect(stripComments(PAGE)).toContain("<HomeOpsRow />");
+    // والحذف حذفُ عرضٍ لا إلغاءُ مصدر: `getRiskBoard` نفسه بالمفتاح نفسه يغذّي
+    // القائمة ومؤشر «المخاطر الحرجة» معًا (رقمٌ واحد، طلبٌ واحد).
+    const reads = stripComments(surfaceFile("home-reads.ts"));
+    expect(reads).toContain("getRiskBoard");
+    expect(reads).toMatch(/queryKey: \["blueprint-risk-board"\]/);
+
+    // يحمرّ على المزروع (المادة ٣٠): قائمةٌ بلا سقف، وتركةٌ تعود.
+    const uncapped = risks.replace(/\.slice\(0, 4\)/, "");
+    expect(uncapped).not.toBe(risks);
+    expect(riskListCap(uncapped)).toBeNull();
+    expect(riskResidue('const by = countBySeverity(rows); <Link to="/risk" />')).toEqual([
+      "رابط /risk",
+      "عدّادات التجميع",
+    ]);
+    expect(riskResidue("<h3>حسب الشدّة</h3> <h3>المخاطر حسب المنطقة</h3>")).toEqual([
+      "بطاقات «حسب الشدّة»",
+      "تجميع المخاطر",
+    ]);
+    expect(riskResidue(".nx-risk-table { display: grid; }")).toEqual(["جدول السجل أو بطاقاته"]);
+    expect(regionGrid(`${risks}<h3>حسب المنطقة</h3>`)).toBe(true);
   });
 
   it("الوردة وأثر الفرجار محذوفان بلا تركة", () => {
@@ -692,6 +1570,17 @@ describe("المُخطَّط — أرضيّتا القراءة واللمس", ()
     const audit = read("scripts/ui-audit.mjs");
     expect(audit).toContain("getScreenCTM");
     expect(audit).toMatch(/parseFloat\(cs\.fontSize\) \* scale/);
+  });
+
+  it("الفحص الميداني يستثني المخفيّ بصريًّا بتوقيع إخفائه لا بصِغَر قاصّه", () => {
+    // العنوان المخفيّ في الرئيسية (`sr-only` وفيه span الاسمين) كان يُقاس على
+    // صندوقه ذي البكسل الواحد فيسقط ‏101px في المقاسات الثمانية (٢٠٢٦/١٠/١٧).
+    // والاستثناء بالتوقيع وحده: استثناءٌ بالحجم يُعمي الفحص عن بطاقةٍ انهارت
+    // إلى 1px بخطأ — جُرّب الاتجاهان على صفحاتٍ مزروعة في متصفّح حقيقي.
+    const audit = read("scripts/ui-audit.mjs");
+    expect(audit).toContain('ps.clipPath === "inset(50%)"');
+    expect(audit).toMatch(/rect\\\(0\(px\)\?/);
+    expect(audit).not.toMatch(/\.(?:width|height)\s*<=?\s*1\b/);
   });
 
   it("شريط العدّادات ومسطرة الوحدة محذوفان بلا تركة (قرار المالك ٢٠٢٦/٠٨/٠٩)", () => {

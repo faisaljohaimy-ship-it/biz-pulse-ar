@@ -1,0 +1,135 @@
+/* ============================================================================
+   home-brand.css — صفّ هوية سَدِيد على الرئيسية (أمر المالك ٢٠٢٦/١٠/١٧)
+   ----------------------------------------------------------------------------
+   يستورده `HomeBrandRow.tsx` وحده (حزمة الرئيسية المقتطَعة). البانر في وسط
+   الصفّ ولوحة الشعار في زاويته اليمنى — فيزيائيًّا، تحت `dir="ltr"` (D5).
+
+   ① الصورة هي اللوحة: `<img>` تملك الحجم (نسبة 3:1 مكتوبة فلا قفزة تخطيط)،
+     والفيلم يملؤها فوقها، والبريق طبقةٌ ثالثة لا تستقبل المؤشّر.
+   ② لا لون إلا من طبقة الرموز (المادة ٣٣): الظلّ من `--ink` ممزوجًا، والبريق
+     من `--glass-rim`، والحدّ من `--hairline`.
+   ③ الحركة الزمنية في home-motion.css (الدخول) وهنا الاستجابة وحدها (بريق
+     وارتفاع عند التمرير، بخصائص مستقلّة — المادة ٣٢).
+   ============================================================================ */
+
+.nx-home-brand {
+  --brand-mark-w: 180px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nx-brand {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
+    0 16px 36px -18px color-mix(in srgb, var(--ink) 30%, transparent);
+  isolation: isolate;
+}
+
+.nx-brand-poster {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: 2172 / 724;
+  object-fit: cover;
+}
+
+.nx-brand-film {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* البريق: زجاجٌ يلمع حيث يقف المؤشّر — `--gx`/`--gy` يمرّرهما المكوّن. */
+.nx-brand-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    42% 60% at var(--gx, 50%) var(--gy, 50%),
+    var(--glass-rim),
+    transparent 70%
+  );
+  transition: opacity 0.35s var(--nx-ease-out);
+}
+
+/* لوحة الشعار رابط: بلا زخرفة، وحلقة تركيز على زوايا اللوحة. */
+.nx-brand-link {
+  display: block;
+  inline-size: var(--brand-mark-w);
+  border-radius: 18px;
+  text-decoration: none;
+  /* ضيّقًا: فوق البانر وإلى يمينه (الترتيب البصري وحده — عنصرٌ واحد يُركَّز). */
+  order: -1;
+  align-self: flex-end;
+}
+
+.nx-brand-link:focus-visible {
+  outline: 2px solid var(--tone-cyan);
+  outline-offset: 3px;
+}
+
+/* عريضًا: البانر في الوسط بين حاشيتين متساويتين، والشعار في الزاوية اليمنى
+   متوسّطًا عموديًّا بحسابٍ من عرضه (ارتفاعه ثلثه) — لا `translate`، فتبقى
+   خاصيّة الدخول له وحدها. */
+@media (min-width: 900px) {
+  .nx-home-brand {
+    --brand-mark-w: clamp(200px, 17vw, 260px);
+    display: block;
+    min-block-size: calc(var(--brand-mark-w) / 3);
+    padding-inline: calc(var(--brand-mark-w) + 16px);
+  }
+
+  .nx-brand[data-kind="banner"] {
+    inline-size: min(100%, 800px);
+    margin-inline: auto;
+  }
+
+  .nx-brand-link {
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: calc(50% - var(--brand-mark-w) / 6);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nx-brand:hover .nx-brand-glare {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .nx-brand {
+    transition:
+      translate 0.28s var(--nx-ease-out),
+      box-shadow 0.28s var(--nx-ease-out);
+  }
+
+  .nx-brand[data-kind="banner"]:hover,
+  .nx-brand-link:hover .nx-brand {
+    translate: 0 -2px;
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
+      0 22px 44px -18px color-mix(in srgb, var(--ink) 38%, transparent);
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-brand {
+    border-color: CanvasText;
+  }
+
+  .nx-brand-glare {
+    display: none;
+  }
+}

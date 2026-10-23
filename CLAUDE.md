@@ -390,6 +390,37 @@
 
 الحارس: `src/components/nav/top-bar.contract.test.ts`.
 
+## الرئيسية — الحركة والهوية (أمرا المالك ٢٠٢٦/١٠/١٧)
+
+المرجع الكامل: `docs/design/10-home-command-center-prompt.md` §2.2 (M1–M5) و§2.3
+(B1–B5). الخلاصة الملزِمة:
+
+1. **الدخول المتدرّج عاد** («ULTRA-PREMIUM CINEMATIC HOMEPAGE») ناسخًا قرار
+   ٢٠٢٦/٠٨/٠٩ «بطاقات الرئيسية ساكنة» **في الدخول وحده**؛ الطفو واللمعة
+   الدائمان باقيان ممنوعين. CSS وحده في `src/styles/home/home-motion.css`:
+   كل حركة داخل `prefers-reduced-motion: no-preference` وتحت
+   `html:not([data-nx-motion="off"])`، تبدأ من `opacity: 0.6` لا من العدم (LCP)،
+   و`backwards` لا `both` (وإلا احتجزت `translate` وماتت رفعة التمرير)، والظهور
+   تحت الطيّة بـ`animation-timeline: view()` خلف `@supports` بلا شفافية. لا
+   GSAP ولا Lenis ولا Three. الحارس `home-motion.contract.test.ts`.
+2. **لوحتا الهوية** («ضع هذه الصور كعلامة كما هي»): صفٌّ تحت الترويسة — البانر
+   وسطًا والشعار في الزاوية اليمنى فيزيائيًّا. الصورة `<img>` كما هي، وفوقها حلقة
+   ماءٍ **مصيَّرة مرّةً بـRemotion** (`remotion/brand/`، مظلِّل WebGL) تُعرض
+   `<video>` صامتًا خلف أربع بوابات (تقليل الحركة · `data-nx-motion` · الوضع
+   الآمن · `Save-Data`) ويقف خارج الإطار وتحت لوحة سَدِيد على اللمس
+   (`holdFilmUnderPanel` المصدَّرة من `HoloVideoEngine`). الحارس
+   `home-brand.contract.test.ts` يقرأ **بايتات** الملفّات: لا صندوق صوت
+   (‏Remotion يضيف AAC صامتًا افتراضًا — يُنزع بـ`-c copy -an`)، وتوأم VP9/WebM
+   لكل MP4. مسار التصيير العامل في `remotion/brand/RENDER.md` — ومنه درس:
+   `remotion/bun.lock` يثبّت مرآة npm خاصة بـLovable تردّ 403 خارجها، فالتثبيت
+   في مجلّد عابر من registry.npmjs.org، ولا قفل ثانٍ في المستودع.
+3. **خاتمة الصفحة** («closing section with a clear conversion action»): «جاهز
+   لاتخاذ القرار؟» وفعلان — «اسأل سَدِيد» (`useSadeed().open`) و«الأمن الصناعي»
+   باسمه من `screen-names.ts` — بلا رقم ولا عميل ولا شهادة.
+4. **عطلٌ قائم قبل هذا العمل** (قِيس على بناء ما قبله): تحت
+   `prefers-reduced-motion: reduce` يرمي React خطأ ترطيب #418 على `/` (HTML
+   الخادم يخالف العميل) ويُعاد بناء الشجرة. لم يُعالَج في هذه الجلسة.
+
 ## الفرع ذو الكاتبين — المادة ٣٥
 
 على `main` كاتب آلي نشط. قبل كل دفع: `git fetch` ثم قراءة الجديد فعليًّا.

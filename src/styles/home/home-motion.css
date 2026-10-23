@@ -1,0 +1,148 @@
+/* ============================================================================
+   home-motion.css — حركة «مركز القيادة» (أمر المالك ٢٠٢٦/١٠/١٧)
+   ----------------------------------------------------------------------------
+   «Ultra-premium cinematic homepage, motion engineering»: دخولٌ متدرّج
+   للمؤشرات والصدر، ورسمٌ لمنحنياتها، وظهورٌ عند التمرير لما تحت الطيّة،
+   ورفعةٌ وضغطٌ يستجيبان للمستخدم. CSS وحده في حزمة الرئيسية المقتطَعة: لا
+   مكتبة جديدة، و`motion/react` في الحزمة الجذرية يبقى لانتقال المسار وحده.
+   وهذا الأمر ناسخٌ لقرار ٢٠٢٦/٠٨/٠٩ «بطاقات الرئيسية ساكنة» **في الدخول
+   وحده**: الطفو الدائم واللمعة الدائمة ممنوعان كما كانا.
+
+   ① **الحركة اختيارٌ لا افتراض.** كل `animation` هنا داخل
+     `@media (prefers-reduced-motion: no-preference)` ومقيّدةٌ بـ
+     `html:not([data-nx-motion="off"])` — من طلب السكون لا تبلغه قاعدةٌ
+     أصلًا، فيرى الحالة النهائية من أوّل رسمة، ولا كتلة إلغاءٍ تُنسى.
+     والوضع الآمن يُسقطها كلّها (styles.css، `html.safe-mode *`).
+   ② **الإطار الأوّل مقروء.** الدخول يبدأ من `opacity: 0.6` لا من العدم،
+     فأكبر عنصرٍ مرسومٌ من أوّل إطار (LCP) ولا يُخفى رقمٌ ولا نصّ. والظهور
+     عند التمرير إزاحةٌ بلا شفافية: لا يقيس فاحص التباين نصًّا باهتًا تحت
+     الطيّة، ولا يتجمّد رسمٌ نصف مكتمل حين تُفتح الصفحة على منتصفها.
+   ③ **خصائص مستقلّة** (`translate` · `scale`) لا `transform` (المادة ٣٢)،
+     ومنحنى النظام `--nx-ease-out`، ولا عنصر ينتظر أكثر من 360ms.
+   ④ **مرّةً واحدة، و`backwards` لا `both`.** لا `infinite` هنا: الدخول يقع
+     ويسكن، وبعده لا يبقى للحركة أثر — فرفعةُ التمرير (`translate`) تعمل على
+     البطاقة نفسها التي دخلت.
+   ⑤ لا خاصية تخطيطٍ تتحرّك (لا CLS)، ولا لون إلا من طبقة الرموز (المادة ٣٣).
+   الحارس: `src/components/home/home-motion.contract.test.ts`.
+   ============================================================================ */
+
+@keyframes nxHomeRise {
+  from {
+    opacity: 0.6;
+    translate: 0 10px;
+  }
+}
+
+@keyframes nxHomeSettle {
+  from {
+    opacity: 0.6;
+    scale: 0.985;
+  }
+}
+
+@keyframes nxHomeLift {
+  from {
+    translate: 0 18px;
+  }
+}
+
+/* المنحنى يُكشف من بدايته إلى نهايته — `clip-path` لا يُستكمل نحو `none`،
+   فالنهاية مكتوبةٌ صراحةً. */
+@keyframes nxHomeWipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes nxHomeGrow {
+  from {
+    scale: 1 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* ── الدخول: لوحتا الهوية أوّلًا (البانر يستقرّ والشعار يرتفع)، ثم المؤشرات
+     بتتابع 40ms (‏`--nx-i` من ترتيبها)، ثم الخريطة، ثم سَدِيد. التتابع على
+     الخليّة لا على البطاقة: رفعة التمرير ملك البطاقة. */
+  html:not([data-nx-motion="off"]) .nx-brand[data-kind="banner"] {
+    animation: nxHomeSettle 0.52s var(--nx-ease-out) backwards;
+  }
+
+  html:not([data-nx-motion="off"]) .nx-brand-link {
+    animation: nxHomeRise 0.48s var(--nx-ease-out) 0.08s backwards;
+  }
+
+  html:not([data-nx-motion="off"]) .nx-home-kpi-cell {
+    animation: nxHomeRise 0.42s var(--nx-ease-out) calc(var(--nx-i, 0) * 40ms) backwards;
+  }
+
+  /* منحنيات المؤشرات تُرسم بعد بطاقتها بقليل: الخطّ يُكشف، والأعمدة تنمو من
+     قاعدتها. (العنصر `svg` نفسه تُسكّنه طبقة الرموز الحادّة في home-kpi.css؛
+     الحركة على أبنائه.) */
+  html:not([data-nx-motion="off"]) .nx-home-kpi-chart path {
+    animation: nxHomeWipe 0.7s var(--nx-ease-out) calc(var(--nx-i, 0) * 40ms + 120ms) backwards;
+  }
+
+  html:not([data-nx-motion="off"]) .nx-home-kpi-bar {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: nxHomeGrow 0.5s var(--nx-ease-out) calc(var(--nx-i, 0) * 40ms + 120ms) backwards;
+  }
+
+  html:not([data-nx-motion="off"]) .nx-home-map {
+    animation: nxHomeSettle 0.52s var(--nx-ease-out) 0.12s backwards;
+  }
+
+  html:not([data-nx-motion="off"]) .nx-home-sadeed {
+    animation: nxHomeRise 0.48s var(--nx-ease-out) 0.18s backwards;
+  }
+}
+
+/* ── الظهور عند التمرير: بطاقات التشغيل والتحليلات والخاتمة ترتفع 18px وهي
+   تدخل الإطار — مربوطةً بالتمرير نفسه لا بزمن، فلا تُحتجز الصفحة ولا يُسرق
+   التمرير. ومن لا يدعم المخطّط الزمني للعرض يرى البطاقات ساكنةً كما هي. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-nx-motion="off"]) :is(.nx-ops-card, .nx-ana-card, .nx-home-close) {
+      animation: nxHomeLift linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% cover 28%;
+    }
+  }
+}
+
+/* ── الاستجابة: رفعةٌ عند التمرير وضغطٌ عند النقر ───────────────────────── */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  html:not([data-nx-motion="off"]) :is(.nx-ops-card, .nx-ana-card, .nx-home-cta) {
+    transition:
+      translate 0.24s var(--nx-ease-out),
+      scale 0.16s var(--nx-ease-out),
+      border-color 0.24s var(--nx-ease-out),
+      background-color 0.24s var(--nx-ease-out);
+  }
+
+  html:not([data-nx-motion="off"]) :is(.nx-ops-card, .nx-ana-card):hover {
+    translate: 0 -2px;
+    border-color: var(--hairline-hover);
+  }
+
+  html:not([data-nx-motion="off"]) .nx-home-cta:hover {
+    translate: 0 -1px;
+    border-color: var(--hairline-hover);
+  }
+}
+
+@media (hover: hover) {
+  .nx-home-cta[data-variant="primary"]:hover {
+    background: color-mix(in srgb, var(--sd-azure) 86%, var(--ink));
+  }
+}
+
+/* الضغط استجابةٌ للمستخدم لا زينة: يبقى تحت تقليل الحركة تغيّرًا فوريًّا بلا
+   انتقال، لأن حذفه ضررٌ وصولي لا تحسين. */
+:is(.nx-home-kpi, .nx-home-more, .nx-home-retry, .nx-home-cta):active {
+  scale: 0.98;
+}
