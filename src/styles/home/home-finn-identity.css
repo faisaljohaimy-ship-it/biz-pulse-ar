@@ -1,0 +1,48 @@
+/* FNN identity only. Existing card layout, SADEED and access policy stay intact. */
+.nx-home-panel.nx-home-finn[data-agent="fnn"] {
+  --fn-accent: var(--tone-amber);
+}
+
+.nx-home-finn[data-agent="fnn"] .nx-fn-portrait {
+  inline-size: 96px;
+  block-size: 120px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.nx-fn-agent-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-block-end: 6px;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--fn-accent) 55%, var(--hairline));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--fn-accent) 12%, var(--surface));
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.nx-fn-separation {
+  margin: 6px 0 0;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 360px) {
+  .nx-home-finn[data-agent="fnn"] .nx-fn-portrait {
+    inline-size: 72px;
+    block-size: 90px;
+  }
+}
+
+@media (forced-colors: active) {
+  .nx-fn-agent-badge {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+}
