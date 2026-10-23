@@ -11,14 +11,14 @@ describe("cinematic fullscreen", () => {
   });
 
   it("preserves the element receiver on a successful request", async () => {
-    let receiver: unknown;
     const target = {
+      calls: 0,
       async requestFullscreen() {
-        receiver = this;
+        this.calls += 1;
       },
     };
     expect(await requestCinematicFullscreen(target)).toBe("entered");
-    expect(receiver).toBe(target);
+    expect(target.calls).toBe(1);
   });
 
   it("contains a rejected browser permission promise", async () => {
