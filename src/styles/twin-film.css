@@ -188,3 +188,17 @@
     background: Highlight;
   }
 }
+
+/* زرّ الصوت: على الشاشة الضيّقة أيقونةٌ وحدها (الاسم باقٍ للقارئ الآلي) فلا يضيق خطّ التقدّم. */
+@media (max-width: 479px) {
+  .twin-film-sound .twin-film-btn-text {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .twin-film-sound {
+    padding-inline: 0;
+  }
+}

@@ -73,6 +73,7 @@ import { useI18n } from "@/lib/i18n";
 import { isSafeMode } from "@/lib/sadeed/self-healing/crash-loop";
 import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { sadeedState } from "@/lib/sadeed/sadeed-state";
+import { filmAudioHeld } from "@/lib/sadeed/film-audio-hold";
 import {
   MOTION_PAUSED_ATTR,
   SADEED_PANEL_ATTR,
@@ -216,22 +217,8 @@ export const SCORE_DRIFT = 0.25;
  */
 export const MAX_SEEK_LEAD = 0.8;
 
-/**
- * ما يُسكت الموسيقى من خارج الفيلم: لوحة سَدِيد مفتوحة، و«إيقاف الحركة»، وتبويبٌ مخفيّ، وسَدِيد
- * ينطق أو يُصغي — ناقل الصوت الواحد (`SadeedAudioBus`: كل صوتٍ لسَدِيد يمرّ به) وحالة حضوره.
- */
-function scoreHeld(): boolean {
-  const root = document.documentElement;
-  const presence = sadeedState.get();
-  return (
-    root.getAttribute(SADEED_PANEL_ATTR) === "open" ||
-    root.getAttribute(MOTION_PAUSED_ATTR) === "1" ||
-    document.visibilityState === "hidden" ||
-    SadeedAudioBus.currentSource() !== null ||
-    presence === "speaking" ||
-    presence === "listening"
-  );
-}
+/** ما يُسكت الموسيقى من خارج الفيلم: مصدره المشترك مع فيلم التوأم (`film-audio-hold`). */
+const scoreHeld = filmAudioHeld;
 
 /**
  * لمسات الإذن: ضغطة الفأرة والقلم، والنقر (اللمس ينقر ولا يمرّر) — لا التمرير ولا المفاتيح. ضغطة

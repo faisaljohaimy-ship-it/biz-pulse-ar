@@ -8,7 +8,7 @@
  *
  * ## ما هو الفيلم، وما ليس
  *
- * ملف فيديو موشن جرافيك **مُصيَّر مسبقًا** (30 ث، بلا صوت) يشرح فكرة التوأم
+ * ملف فيديو موشن جرافيك **مُصيَّر مسبقًا** (30 ث) يشرح فكرة التوأم
  * الرقمي — لا بثّ حيّ ولا بيانات تشغيلية (المادة ٢٧). هذا الإفصاح يسكن هنا
  * مرّةً واحدة ويظهر مع المشغّل في كل صفحة تضمّه، فلا تنحرف صفحتان عن بعضهما.
  *
@@ -25,6 +25,27 @@
  * والعقد يقرأ الملفّين ويقارنهما، فتبدّل أحدهما دون الآخر يحمرّ هناك لا هنا.
  */
 export const TWIN_FILM_SECONDS = 30;
+
+/**
+ * هل في ملفّات الفيلم مسار صوت؟ — **راية تُقلَب مع الأصول لا قبلها**: تبقى `false` ما دامت الملفّات
+ * بلا صوت، فلا يعرض المشغّل زرَّ صوتٍ لا يسمع الزائر منه شيئًا ولا يدّعي نصُّه صوتًا غير موجود.
+ * والعقد (`twin-film.contract.test.ts`) يقرأ بايتات الملفّات ويقارن وجود مسار الصوت بها.
+ */
+export const TWIN_FILM_HAS_AUDIO = false;
+
+/** حال الصوت للمشغّل: يُسمع · أُسكت بطلب الزائر · ينتظر أوّل لمسة (منع التشغيل التلقائي) · يُسكته سَدِيد. */
+export type SoundState = "on" | "off" | "blocked" | "held";
+
+/** أيعمل الصوت الآن؟ — **وحده** يقرّر `muted` على العنصر؛ والمكوّن يحرسه بالراية قبل أن يستدعيه. */
+export function soundAudible(wanted: boolean, held: boolean, unlocked: boolean): boolean {
+  return wanted && !held && unlocked;
+}
+
+export function soundStateOf(wanted: boolean, held: boolean, unlocked: boolean): SoundState {
+  if (!wanted) return "off";
+  if (held) return "held";
+  return unlocked ? "on" : "blocked";
+}
 
 /** الملصق: أوّل ما يُرسم، وما يبقى لمن لا فيلم له. */
 export const TWIN_FILM_POSTER = {
@@ -148,16 +169,21 @@ export const TWIN_FILM_TEXT = {
   ar: {
     kind: "فيلم موشن جرافيك توضيحي",
     title: "فيلم التوأم الرقمي",
-    meta: `${TWIN_FILM_SECONDS} ثانية · بلا صوت`,
+    meta: `${TWIN_FILM_SECONDS} ثانية · ${TWIN_FILM_HAS_AUDIO ? "بصوت" : "بلا صوت"}`,
     disclosure:
       "فيلم مُصيَّر مسبقًا (ملف فيديو توضيحي)، وليس بثًّا حيًّا ولا بيانات تشغيلية؛ وما يظهر فيه من أشكال أو قيم توضيحي لا يمثّل حالة تشغيل فعلية.",
-    description: `فيلم موشن جرافيك توضيحي مُصيَّر مسبقًا، مدّته ${TWIN_FILM_SECONDS} ثانية وبلا صوت. تشتعل شبكةٌ ثم تظهر خريطة المملكة بمناطقها الأربع ومنصّةٌ لكل منطقة تتصل بغيرها بخيوط بيانات، ثم تهبط الكاميرا إلى منشأةٍ فيُمسح هيكلها بشعاعٍ ليزري وتضيء أنابيبها ويسري التوجيه ذهابًا والإفادة إيابًا، ثم ترتدّ الكاميرا ويثبت الفيلم على إطاره الأخير.`,
+    description: `فيلم موشن جرافيك توضيحي مُصيَّر مسبقًا، مدّته ${TWIN_FILM_SECONDS} ثانية ${TWIN_FILM_HAS_AUDIO ? "وبصوت" : "وبلا صوت"}. تشتعل شبكةٌ ثم تظهر خريطة المملكة بمناطقها الأربع ومنصّةٌ لكل منطقة تتصل بغيرها بخيوط بيانات، ثم تهبط الكاميرا إلى منشأةٍ فيُمسح هيكلها بشعاعٍ ليزري وتضيء أنابيبها ويسري التوجيه ذهابًا والإفادة إيابًا، ثم ترتدّ الكاميرا ويثبت الفيلم على إطاره الأخير.`,
     actions: {
       play: "تشغيل الفيلم",
       pause: "إيقاف الفيلم مؤقتًا",
       resume: "متابعة الفيلم",
       replay: "إعادة عرض الفيلم",
       retry: "إعادة محاولة تحميل الفيلم",
+    },
+    sound: {
+      name: "الصوت",
+      held: "الصوت موقوف مؤقتًا بينما يتحدّث سَدِيد أو تُفتح لوحته.",
+      blocked: "منع المتصفّح الصوت التلقائي. المس أيّ مكان في الصفحة أو اضغط «الصوت».",
     },
     hints: {
       off: "الحركة موقوفة في النظام، فيُعرض الفيلم صورةً ثابتة.",
@@ -173,16 +199,21 @@ export const TWIN_FILM_TEXT = {
   en: {
     kind: "Illustrative motion-graphics film",
     title: "Digital twin film",
-    meta: `${TWIN_FILM_SECONDS} seconds · no sound`,
+    meta: `${TWIN_FILM_SECONDS} seconds · ${TWIN_FILM_HAS_AUDIO ? "with sound" : "no sound"}`,
     disclosure:
       "A pre-rendered illustrative video file, not a live feed and not operational data; the shapes and values in it are illustrative and do not represent actual operating conditions.",
-    description: `A pre-rendered illustrative motion-graphics film, ${TWIN_FILM_SECONDS} seconds long and silent. A grid ignites, then a map of the Kingdom appears with its four regions and a platform in each, linked by data arcs. The camera then dives into a facility whose structure is laser-scanned and whose pipes light up as guidance flows out and feedback flows back, before the camera pulls back and the film holds on its last frame.`,
+    description: `A pre-rendered illustrative motion-graphics film, ${TWIN_FILM_SECONDS} seconds long ${TWIN_FILM_HAS_AUDIO ? "with sound" : "and silent"}. A grid ignites, then a map of the Kingdom appears with its four regions and a platform in each, linked by data arcs. The camera then dives into a facility whose structure is laser-scanned and whose pipes light up as guidance flows out and feedback flows back, before the camera pulls back and the film holds on its last frame.`,
     actions: {
       play: "Play film",
       pause: "Pause film",
       resume: "Resume film",
       replay: "Replay film",
       retry: "Retry loading the film",
+    },
+    sound: {
+      name: "Sound",
+      held: "Sound is paused while Sadeed is speaking or its panel is open.",
+      blocked: "Your browser blocked autoplay sound. Touch anywhere on the page or press “Sound”.",
     },
     hints: {
       off: "Motion is turned off, so the film is shown as a still image.",

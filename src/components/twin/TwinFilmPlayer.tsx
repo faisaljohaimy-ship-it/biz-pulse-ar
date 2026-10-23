@@ -22,8 +22,13 @@
  *   الرئيسية، WCAG 2.4.3). وهدفه ≥ 44px.
  * • **يسقط إلى الملصق** إن تعذّر الفيلم (404 أو ترميز)، وإن منع المتصفّح التشغيل (وضع توفير الطاقة
  *   على iOS) بقي الملصق والزرّ يشغّله من داخل النقرة.
- * • الفيديو `muted playsInline` وبلا مسار صوت أصلًا، و`aria-hidden`؛ والمنطقة (`<figure>`) تحمل
- *   وصفًا نصّيًّا صادقًا وإفصاحًا مرئيًّا بأنه فيلمٌ مُصيَّر مسبقًا لا بثّ ولا بيانات تشغيلية.
+ * • الفيديو `muted playsInline` و`aria-hidden`؛ والمنطقة (`<figure>`) تحمل وصفًا نصّيًّا صادقًا
+ *   وإفصاحًا مرئيًّا بأنه فيلمٌ مُصيَّر مسبقًا لا بثّ ولا بيانات تشغيلية.
+ * • **الصوت** (أمر المالك ٢٠٢٦/١٠/٢٣ «تعمل تلقائيًا مع عمل الفيديوهات»): متى كان في الملفّ مسار
+ *   صوت (`TWIN_FILM_HAS_AUDIO`) يُحاوَل التشغيل **بصوته** أوّلًا؛ فإن منعه المتصفّح عاد صامتًا وانتظر
+ *   أوّل لمسة (لا يُفرَض صوتٌ على متصفّحٍ يمنعه — سياسة التشغيل التلقائي)، وزرّ الصوت ظاهرٌ دائمًا.
+ *   ويُسكته سَدِيد (ينطق أو لوحته مفتوحة) بالمصدر المشترك `film-audio-hold` نفسه الذي يتبعه فيلم
+ *   الرئيسية — لا فيلمٌ يتكلّم فوق سَدِيد. تفضيل الزائر في `twin-film-sound-pref.ts` وحده.
  *
  * ## ما لا يفعله
  *
@@ -48,10 +53,11 @@ import {
   useState,
 } from "react";
 import type { Ref } from "react";
-import { Pause, Play, RefreshCw, RotateCcw } from "lucide-react";
+import { Pause, Play, RefreshCw, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { requestCinematicFullscreen } from "@/lib/cinematic/fullscreen";
 import { isSafeMode } from "@/lib/sadeed/self-healing/crash-loop";
+import { filmAudioHeld, watchFilmAudioHold } from "@/lib/sadeed/film-audio-hold";
 import {
   MOTION_PAUSED_ATTR,
   MOTION_PAUSE_EVENT,
@@ -60,6 +66,7 @@ import {
 import {
   MOTION_PREF_KEY,
   MOTION_PREF_PAUSED,
+  TWIN_FILM_HAS_AUDIO,
   TWIN_FILM_POSTER,
   TWIN_FILM_SECONDS,
   TWIN_FILM_TEXT,
@@ -67,6 +74,8 @@ import {
   controlFor,
   filmGate,
   offCause,
+  soundAudible,
+  soundStateOf,
   upgradeTwinFilm,
   webmOf,
   type FilmAction,
@@ -75,8 +84,10 @@ import {
   type FilmStatus,
   type GateSignals,
   type OffCause,
+  type SoundState,
   type TwinFilmLocale,
 } from "@/components/twin/twin-film-model";
+import { readSoundWanted, writeSoundWanted } from "@/components/twin/twin-film-sound-pref";
 import "@/styles/twin-film.css";
 
 type ConnectionInfo = {
@@ -236,6 +247,14 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
   /** تعذّر الملصق نفسه (404): يزول فيبقى سطح الإطار الهادئ لا أيقونة صورةٍ مكسورة فوقه. */
   const [posterFailed, setPosterFailed] = useState(false);
 
+  /**
+   * الصوت (ما دام في الملفّ مسار صوت): المرغوب (تفضيل الزائر) · الموقوف (سَدِيد ينطق أو لوحته مفتوحة) ·
+   * المفتوح (سُمح للمتصفّح: نجح تشغيلٌ بصوت، أو لمسة). في مرجعٍ لا في حالة: يقرؤه `run` داخل نقرةٍ
+   * ولا ينتظر إعادة رسم، و`soundState` مرآته للرسم.
+   */
+  const sound = useRef({ wanted: true, held: false, unlocked: false });
+  const [soundState, setSoundState] = useState<SoundState>("blocked");
+
   const visible = useRef(false);
   const startedRef = useRef(false);
   const finishedRef = useRef(false);
@@ -330,18 +349,96 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
     barRef.current?.style.setProperty("--twin-progress", String(ratio));
   }, []);
 
-  const run = useCallback((video: HTMLVideoElement) => {
-    userPaused.current = false;
-    autoPaused.current = false;
-    setPlayState("playing");
-    const played = video.play() as Promise<void> | undefined;
-    // منعُ التشغيل (توفير الطاقة على iOS) أو رفضه يُبقي الملصق والزرّ يشغّله من داخل النقرة.
-    // والمقاطعة بالإيقاف (`AbortError`) ليست رفضًا — حدث `pause` يحمل الحال.
-    played?.catch((err: unknown) => {
-      if (err instanceof DOMException && err.name === "AbortError") return;
-      setPlayState("paused");
-    });
+  /** يطبّق حال الصوت على العنصر ويعكسها للرسم. القرار كلّه في `soundAudible` — هنا تنفيذٌ فقط. */
+  const applySound = useCallback(() => {
+    const { wanted, held, unlocked } = sound.current;
+    const video = videoRef.current;
+    if (video && TWIN_FILM_HAS_AUDIO) video.muted = !soundAudible(wanted, held, unlocked);
+    setSoundState(soundStateOf(wanted, held, unlocked));
   }, []);
+
+  const run = useCallback(
+    (video: HTMLVideoElement) => {
+      userPaused.current = false;
+      autoPaused.current = false;
+      setPlayState("playing");
+      // يبدأ بصوته إن أُذن له: يُحاوَل بصوتٍ أوّلًا، فإن منعه المتصفّح (`NotAllowedError`) عاد صامتًا
+      // وانتظر أوّل لمسة. لا يُحاوَل تحت سَدِيد ولا بعد أن أسكته الزائر.
+      const s = sound.current;
+      s.held = TWIN_FILM_HAS_AUDIO ? filmAudioHeld() : false;
+      const audible = TWIN_FILM_HAS_AUDIO && s.wanted && !s.held;
+      if (TWIN_FILM_HAS_AUDIO) video.muted = !audible;
+      // «يعمل» تفاؤلًا ما دام المحاولة بصوت جارية (فلا يومض تلميح «المنع»)، ويصحَّح برفضها.
+      if (TWIN_FILM_HAS_AUDIO)
+        setSoundState(audible ? "on" : soundStateOf(s.wanted, s.held, s.unlocked));
+      const played = video.play() as Promise<void> | undefined;
+      // منعُ التشغيل (توفير الطاقة على iOS) أو رفضه يُبقي الملصق والزرّ يشغّله من داخل النقرة.
+      // والمقاطعة بالإيقاف (`AbortError`) ليست رفضًا — حدث `pause` يحمل الحال.
+      played
+        ?.then(() => {
+          if (audible && !video.muted) {
+            s.unlocked = true;
+            applySound();
+          }
+        })
+        .catch((err: unknown) => {
+          if (err instanceof DOMException && err.name === "AbortError") return;
+          if (audible && err instanceof DOMException && err.name === "NotAllowedError") {
+            s.unlocked = false;
+            video.muted = true;
+            applySound();
+            (video.play() as Promise<void> | undefined)?.catch(() => setPlayState("paused"));
+            return;
+          }
+          setPlayState("paused");
+        });
+    },
+    [applySound],
+  );
+
+  // التفضيل المحفوظ يُقرأ بعد الترطيب (لا في الرسم الأوّل فلا اختلاف بين HTML الخادم والعميل).
+  useEffect(() => {
+    if (!TWIN_FILM_HAS_AUDIO) return;
+    sound.current.wanted = readSoundWanted();
+    applySound();
+  }, [applySound]);
+
+  // سَدِيد ينطق أو لوحته مفتوحة: يُسكت الفيلم (لا يوقف)، ويعود صوته بزوال السبب.
+  useEffect(() => {
+    if (!TWIN_FILM_HAS_AUDIO) return;
+    return watchFilmAudioHold(() => {
+      sound.current.held = filmAudioHeld();
+      applySound();
+    });
+  }, [applySound]);
+
+  // أوّل لمسة تفتح الصوت إن منعه المتصفّح — وحدها تكفي (إيماءة المستخدم تسمح بفكّ الكتم).
+  // لمسة زرّ الصوت نفسه يعالجها الزرّ.
+  useEffect(() => {
+    if (!TWIN_FILM_HAS_AUDIO || !mounted) return;
+    const gestures = ["pointerdown", "click", "keydown"] as const;
+    const unlock = (event: Event) => {
+      if (event instanceof PointerEvent && event.pointerType === "touch") return;
+      if (event.target instanceof Element && event.target.closest(".twin-film-sound")) return;
+      if (sound.current.unlocked) return;
+      sound.current.unlocked = true;
+      applySound();
+    };
+    gestures.forEach((type) => document.addEventListener(type, unlock, true));
+    return () => gestures.forEach((type) => document.removeEventListener(type, unlock, true));
+  }, [mounted, applySound]);
+
+  const onSound = () => {
+    const s = sound.current;
+    if (soundStateOf(s.wanted, s.held, s.unlocked) === "off" || !s.unlocked) {
+      s.wanted = true;
+      s.unlocked = true;
+    } else {
+      s.wanted = false;
+    }
+    writeSoundWanted(s.wanted);
+    applySound();
+  };
 
   // الظهور: أوّل ظهورٍ يفتح التركيب، والخروج يوقف الفيلم، والعودة تستأنف ما أوقفه الخروج وحده —
   // لا ما أوقفه الزائر ولا ما انتهى.
@@ -538,6 +635,26 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
           <Icon aria-hidden size={20} />
           <span className="twin-film-btn-text">{control.label}</span>
         </button>
+        {TWIN_FILM_HAS_AUDIO && mounted && (
+          // زرّ الصوت: اسمٌ ثابت وحالةٌ في `aria-pressed` (لا اسمٌ يتبدّل مع الحال). يظهر مع عنصر الفيديو
+          // وحده — لا صوت يُتحكَّم به قبله.
+          <button
+            type="button"
+            className="twin-film-btn twin-film-sound nx-focus-ring"
+            aria-pressed={soundState === "on" || soundState === "held"}
+            aria-describedby={
+              soundState === "held" || soundState === "blocked" ? `${uid}-sound-hint` : undefined
+            }
+            onClick={onSound}
+          >
+            {soundState === "on" || soundState === "held" ? (
+              <Volume2 aria-hidden size={20} />
+            ) : (
+              <VolumeX aria-hidden size={20} />
+            )}
+            <span className="twin-film-btn-text">{text.sound.name}</span>
+          </button>
+        )}
         <span aria-hidden className="twin-film-progress">
           <i />
         </span>
@@ -545,6 +662,11 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
       {control.hint && (
         <p id={`${uid}-hint`} className="twin-film-hint" role="status">
           {control.hint}
+        </p>
+      )}
+      {TWIN_FILM_HAS_AUDIO && mounted && (soundState === "held" || soundState === "blocked") && (
+        <p id={`${uid}-sound-hint`} className="twin-film-hint" role="status">
+          {soundState === "held" ? text.sound.held : text.sound.blocked}
         </p>
       )}
       <p id={`${uid}-desc`} className="twin-film-sr">
