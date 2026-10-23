@@ -1,4 +1,8 @@
-/** SADEED server-side model policy: native Google Gemini only. */
+/**
+ * SADEED server-side Gemini model policy: which Gemini model a turn uses.
+ * Which ENGINE answers (Gemini, the opt-in adapter, or deterministic zero-cost)
+ * is decided once in `src/lib/sadeed/llm/provider-plan.server.ts`.
+ */
 import { resolveGoogleGeminiModel } from "@/lib/ai-gateway.server";
 
 export type SadeedIntent =

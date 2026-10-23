@@ -4,6 +4,8 @@ import {
   PRIMARY_COOLDOWN_MAX_MS,
   PRIMARY_COOLDOWN_MIN_MS,
   coolPrimary,
+  createSadeedBackupModel,
+  isSadeedBackupEnabled,
   primaryCoolingDown,
   primaryCooldownFor,
   retryAfterMs,
@@ -52,5 +54,26 @@ describe("مدّة تبريد المفتاح المباشر", () => {
     coolPrimary(primaryCooldownFor({ responseHeaders: { "retry-after": "120" } }, NOW), NOW);
     expect(primaryCoolingDown(NOW + 119_000)).toBe(true);
     expect(primaryCoolingDown(NOW + 120_000)).toBe(false);
+  });
+});
+
+describe("البوّابة الاحتياطية اختياريّة صريحة (أمر المالك ٢٠٢٦/١٠/١٨)", () => {
+  const KEY = "lovable-key-not-a-secret-000";
+
+  it("وجود المفتاح وحده لا يبنيها — لا سقوط صامت إلى مزوّد بعدّاد", () => {
+    expect(isSadeedBackupEnabled({ LOVABLE_API_KEY: KEY })).toBe(false);
+    expect(createSadeedBackupModel({ LOVABLE_API_KEY: KEY })).toBeNull();
+  });
+
+  it("الطلب الصريح بلا مفتاح لا يبنيها كذلك", () => {
+    expect(isSadeedBackupEnabled({ SADEED_BACKUP_PROVIDER: "lovable" })).toBe(false);
+    expect(createSadeedBackupModel({ SADEED_BACKUP_PROVIDER: "lovable" })).toBeNull();
+  });
+
+  it("الطلب الصريح بالاسم مع المفتاح ⇐ تُبنى (بلا شبكة)", () => {
+    const env = { SADEED_BACKUP_PROVIDER: "lovable", LOVABLE_API_KEY: KEY };
+    expect(isSadeedBackupEnabled(env)).toBe(true);
+    expect(createSadeedBackupModel(env)).not.toBeNull();
+    expect(isSadeedBackupEnabled({ ...env, SADEED_BACKUP_PROVIDER: "openai" })).toBe(false);
   });
 });

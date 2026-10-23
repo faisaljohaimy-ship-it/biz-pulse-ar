@@ -25,10 +25,12 @@
  * فحص الافتراضي لسببٍ خاطئ (لأن الطلب لم يبلغ البوّابة) بينما يسقط فحص
  * `deep`. حارسٌ يمرّ لأن الكود لم يُنفَّذ أسوأ من غياب الحارس.
  */
-import { describe, expect, it, vi, beforeEach, afterAll } from "vitest";
+import { describe, expect, it, vi, beforeAll, beforeEach, afterAll } from "vitest";
 
 /** كل استدعاء للمجلس يُسجَّل هنا — وهو موضع الحكم في هذا الملف. */
 const councilCalls: unknown[] = [];
+/** النموذج الذي بلغه كل دور — يفرّق «أجاب المختار» عن «أجاب غيره». */
+const modelsUsed: unknown[] = [];
 
 vi.stubEnv("GEMINI_API_KEY", "test-key-not-a-secret");
 vi.stubEnv("SUPABASE_URL", "https://stub.invalid");
@@ -88,8 +90,30 @@ vi.mock("@/lib/sadeed/orchestrator", () => ({
 /** لا استدعاء نموذجٍ حقيقي — الزمن هنا زمن المنطق لا زمن المزوّد. */
 vi.mock("ai", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  generateText: async () => ({ text: "ردّ صوري." }),
+  generateText: async (opts: { model?: unknown }) => {
+    modelsUsed.push(opts.model);
+    return { text: "ردّ صوري." };
+  },
 }));
+
+/** المحوّل الاختياري مزروعٌ بوسم — لا حزمة مزوّدٍ حقيقية ولا شبكة. */
+vi.mock("@ai-sdk/openai", () => ({
+  createOpenAI: () =>
+    Object.assign((modelId: string) => ({ marker: "openai-responses", modelId }), {
+      chat: (modelId: string) => ({ marker: "openai", modelId }),
+    }),
+}));
+
+/**
+ * أوّل استيرادٍ للمسار يحمّل وحدات المجموعات الحتمية — ثانيتان أو أكثر تحت الحمل.
+ * يُدفع مرّةً هنا لا في أوّل حالة، والسقف أوسع من الافتراضي (٥ ث) كأخواته.
+ */
+vi.setConfig({ testTimeout: 20_000, hookTimeout: 30_000 });
+beforeAll(async () => {
+  await import("@/routes/api/chat");
+  await import("@/lib/sadeed/instant-data-answers.server");
+  await import("@/lib/sadeed/llm/zero-cost-router.server");
+});
 
 afterAll(() => vi.unstubAllEnvs());
 
@@ -114,6 +138,7 @@ async function post(extra: Record<string, unknown>) {
 
 beforeEach(() => {
   councilCalls.length = 0;
+  modelsUsed.length = 0;
 });
 
 describe("المجلس اختياريّ لا افتراضيّ — سلوكيًّا", () => {
@@ -141,5 +166,32 @@ describe("المجلس اختياريّ لا افتراضيّ — سلوكيًّ
     const res = await post({ replyMode: "voice" });
     expect(res.status).toBe(200);
     expect(councilCalls).toHaveLength(0);
+  });
+
+  it("المحوّل الاختياري مختار ومفتاح Gemini حاضر ⇐ `deep` لا يستدعي المجلس ولا شبكة", async () => {
+    // المجلس يبني نموذجه من مفتاح Gemini لا من خطة المحرّك: لو استُدعي هنا لأُنفق
+    // على مورّدٍ لم يختره المالك قبل نداء المختار — استبدالٌ صامت في مشورةٍ داخلية.
+    vi.stubEnv("SADEED_LLM_PROVIDER", "openai");
+    vi.stubEnv("SADEED_OPENAI_ENABLED", "true");
+    vi.stubEnv("OPENAI_API_KEY", "openai-key-not-a-secret-0000");
+    const realFetch = globalThis.fetch;
+    let fetchCalls = 0;
+    globalThis.fetch = (() => {
+      fetchCalls++;
+      throw new Error("network is forbidden in this case");
+    }) as typeof fetch;
+    try {
+      const res = await post({ replyMode: "deep" });
+      expect(res.status).toBe(200);
+      expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model");
+      expect(councilCalls, "المجلس أنفق على Gemini والمختار غيره").toHaveLength(0);
+      expect(modelsUsed).toEqual([{ marker: "openai", modelId: "gpt-5-mini" }]);
+      expect(fetchCalls).toBe(0);
+    } finally {
+      globalThis.fetch = realFetch;
+      vi.stubEnv("SADEED_LLM_PROVIDER", "");
+      vi.stubEnv("SADEED_OPENAI_ENABLED", "");
+      vi.stubEnv("OPENAI_API_KEY", "");
+    }
   });
 });

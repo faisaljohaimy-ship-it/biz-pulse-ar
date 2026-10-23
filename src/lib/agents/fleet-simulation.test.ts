@@ -40,10 +40,22 @@ describe("fleet-simulation — live-row projection (read-only)", () => {
     expect(state.source).toBe("live");
     expect(state.is_simulation).toBe(false);
     expect(state.agentCount).toBe(2);
-    // enabled → active phase; disabled → idle.
-    expect(state.agents[0].phase).toBe("analyzing");
-    expect(state.agents[1].phase).toBe("idle");
-    expect(state.activeCount).toBe(1);
+  });
+
+  it("reports only what the rows prove — no invented runtime phase or stage", () => {
+    // A definition row proves existence (and enabled), not that the agent is
+    // running: enabled and disabled rows both rest in the neutral phase.
+    const rows: LiveAgentRow[] = [
+      { id: "a", name: "مفعّل", goal: "مهمة", enabled: true },
+      { id: "b", name: "معطّل", goal: "مهمة", enabled: false },
+      { id: "c", name: null, goal: null, enabled: null },
+    ];
+    const state = buildFleetFromLiveRows(rows);
+    expect(state.agents.map((a) => a.phase)).toEqual(["idle", "idle", "idle"]);
+    expect(state.agents.every((a) => a.cycles === 0)).toBe(true);
+    expect(state.activeCount).toBe(0);
+    expect(state.flowStage).toBe("request");
+    expect(state.events).toEqual([]);
   });
 
   it("falls to an unknown category safely and never throws on nulls", () => {

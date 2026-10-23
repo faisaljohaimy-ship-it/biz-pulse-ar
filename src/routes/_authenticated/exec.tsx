@@ -19,6 +19,10 @@ import {
 } from "@/lib/exec.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkflowRunDetail } from "@/components/exec/workflow-run-detail";
+import { AgentRunsList } from "@/components/exec/AgentRunsList";
+import { RunStatusBadge } from "@/components/exec/RunStatusBadge";
+import { getCurrentUserIsAdmin } from "@/lib/authz.functions";
+import { useAuth } from "@/lib/auth-context";
 import { EventTimeline } from "@/components/events/EventTimeline";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { Card } from "@/components/ui/card";
@@ -32,9 +36,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Play,
   ShieldAlert,
-  CheckCircle2,
   XCircle,
-  Clock,
   Workflow,
   Bot,
   Sparkles,
@@ -73,26 +75,33 @@ type ExecRow = {
   created_at: string;
 };
 
+/** التسمية العربية والنغمة والشكل من الخريطة الواحدة `run-status-labels.ts` (UI-5). */
 function statusBadge(status: string) {
-  const map: Record<string, { label: string; cls: string }> = {
-    succeeded: { label: status, cls: "bg-emerald-500/20 text-emerald-300" },
-    failed: { label: status, cls: "bg-red-500/20 text-red-300" },
-    running: { label: status, cls: "bg-cyan-500/20 text-cyan-300 animate-pulse" },
-    queued: { label: status, cls: "bg-slate-500/20 text-slate-300" },
-    pending_approval: { label: status, cls: "bg-amber-500/20 text-amber-300" },
-    rejected: { label: status, cls: "bg-zinc-500/20 text-zinc-300" },
-    rolled_back: { label: status, cls: "bg-orange-500/20 text-orange-300" },
-    waiting_approval: { label: status, cls: "bg-amber-500/20 text-amber-300" },
-  };
-  const cfg = map[status] ?? { label: status, cls: "bg-slate-500/20" };
-  return <Badge className={cfg.cls}>{cfg.label}</Badge>;
+  return <RunStatusBadge status={status} />;
 }
+
+type ExecTab = "tools" | "executions" | "workflows" | "agents" | "events";
 
 function ExecConsole() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<ToolRow | null>(null);
 
   const [openRunId, setOpenRunId] = useState<string | null>(null);
+  // التبويب مضبوطٌ من الخارج كي يقود «عرض طلبات الاعتماد» في سجلّ الوكلاء إلى تبويب التنفيذات.
+  const [tab, setTab] = useState<ExecTab>("tools");
+
+  // UI-7: أزرار الاعتماد/الرفض لمسؤول المنصّة وحده — مخفيّةٌ لا معطَّلة
+  // (عقيدة `approval-decision.test.tsx`). البوابة الفعلية تبقى في الخادم
+  // (`requireAdmin` في `approveToolExecution`)؛ هذا السؤال قراءةٌ تحت
+  // `optionalSupabaseAuth` تعيد `false` للزائر، فلا `enabled: !!user`.
+  const { loading: authLoading } = useAuth();
+  const getIsAdmin = useServerFn(getCurrentUserIsAdmin);
+  const adminQ = useQuery({
+    queryKey: ["authz", "isAdmin"],
+    enabled: !authLoading,
+    queryFn: async () => !!(await getIsAdmin()).isAdmin,
+  });
+  const isAdmin = adminQ.data === true;
 
   // Realtime: invalidate queries on workflow_runs / tool_executions changes.
   // Unique channel topic + try/catch so the page never crashes if realtime
@@ -260,7 +269,7 @@ function ExecConsole() {
         </Badge>
       </header>
 
-      <Tabs defaultValue="tools" className="w-full">
+      <Tabs value={tab} onValueChange={(v) => setTab(v as ExecTab)} className="w-full">
         <TabsList>
           <TabsTrigger value="tools">Tools</TabsTrigger>
           <TabsTrigger value="executions">Executions</TabsTrigger>
@@ -373,15 +382,7 @@ function ExecConsole() {
                   <li key={e.id} className="p-3 rounded-md border border-border space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        {e.status === "succeeded" && (
-                          <CheckCircle2 className="size-4 text-emerald-400" />
-                        )}
-                        {e.status === "failed" && <XCircle className="size-4 text-red-400" />}
-                        {(e.status === "running" ||
-                          e.status === "queued" ||
-                          e.status === "pending_approval") && (
-                          <Clock className="size-4 text-cyan-400" />
-                        )}
+                        {/* الأيقونة داخل الشارة نفسها (مثمّن/مثلث/دائرة) — لا ساعة سماوية فوق «بانتظار الاعتماد». */}
                         <span className="font-mono text-xs">{e.tool_id}</span>
                         {statusBadge(e.status)}
                       </div>
@@ -390,20 +391,24 @@ function ExecConsole() {
                       </span>
                     </div>
                     {e.error && <p className="text-xs text-red-300">{e.error}</p>}
-                    {e.status === "pending_approval" && (
+                    {e.status === "pending_approval" && isAdmin && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
+                          className="min-h-[44px]"
+                          disabled={approveMut.isPending}
                           onClick={() => approveMut.mutate({ id: e.id, decision: "approve" })}
                         >
-                          Approve
+                          اعتماد
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
+                          className="min-h-[44px]"
+                          disabled={approveMut.isPending}
                           onClick={() => approveMut.mutate({ id: e.id, decision: "reject" })}
                         >
-                          Reject
+                          رفض
                         </Button>
                       </div>
                     )}
@@ -681,50 +686,31 @@ function ExecConsole() {
             <Card className="lg:col-span-3 p-3">
               <h3 className="font-semibold text-sm mb-2">Recent agent runs</h3>
               <ScrollArea className="h-[40vh]">
-                <ul className="space-y-2">
-                  {(agentRuns.data ?? []).map(
-                    (r: {
-                      id: string;
-                      agent_id: string;
-                      status: string;
-                      summary: string | null;
-                      steps: number | null;
-                      error: string | null;
-                      started_at: string;
-                      goal_override: string | null;
-                    }) => (
-                      <li key={r.id} className="p-3 rounded-md border space-y-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <Bot className="size-3 text-cyan-300" />
-                            <span className="text-xs font-medium">{r.agent_id}</span>
-                            <span className="text-[12px] text-muted-foreground">
-                              {new Date(r.started_at).toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-[12px]">
-                              {r.steps ?? 0} steps
-                            </Badge>
-                            {statusBadge(r.status)}
-                          </div>
-                        </div>
-                        {r.goal_override && (
-                          <div className="text-[12px] text-muted-foreground italic">
-                            goal: {r.goal_override}
-                          </div>
-                        )}
-                        {r.summary && <p className="text-xs whitespace-pre-wrap">{r.summary}</p>}
-                        {r.error && <div className="text-xs text-red-300">{r.error}</div>}
-                      </li>
-                    ),
-                  )}
-                  {!agentRuns.data?.length && (
-                    <li className="text-sm text-muted-foreground text-center p-4">
-                      No agent runs yet.
-                    </li>
-                  )}
-                </ul>
+                {/* UI-1/UI-2: صفوف المحاكاة موسومة، و«نجح» مع اعتماداتٍ معلّقة تظهر
+                    كهرمانيةً ويقود رابطها إلى تبويب التنفيذات حيث صفوف الاعتماد. */}
+                {agentRuns.isLoading && !(agentRuns.data ?? []).length ? (
+                  <div className="text-center p-4">
+                    <LiveStatus variant="initializing" hint="Agent runs loading" size="sm" />
+                  </div>
+                ) : agentRuns.isError && !(agentRuns.data ?? []).length ? (
+                  <div className="flex flex-col items-center gap-2 p-8 text-center" dir="rtl">
+                    <XCircle className="size-8 text-muted-foreground/60" />
+                    <p className="text-sm font-medium">تعذّر تحميل سجل تشغيل الوكلاء</p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="min-h-[44px]"
+                      onClick={() => void agentRuns.refetch()}
+                    >
+                      إعادة المحاولة
+                    </Button>
+                  </div>
+                ) : (
+                  <AgentRunsList
+                    runs={agentRuns.data ?? []}
+                    onOpenApprovals={() => setTab("executions")}
+                  />
+                )}
               </ScrollArea>
             </Card>
           </div>

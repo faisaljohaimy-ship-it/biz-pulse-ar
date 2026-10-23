@@ -23,4 +23,10 @@ describe("SADEED reply modality", () => {
       "تم التنفيذ. بنجاح.",
     );
   });
+
+  it("روابط الشاشات النسبية يُنطق اسمها لا مسارها (نقض الحارس، المادة ٢٢ النطق)", () => {
+    const spoken = toSadeedSpeechText("رابط شاشة «الصيانة»: [الصيانة](/sec/maintenance)");
+    expect(spoken).toContain("الصيانة");
+    expect(spoken).not.toMatch(/\/sec|maintenance|\]\(|سِك/);
+  });
 });

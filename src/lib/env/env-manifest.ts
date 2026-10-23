@@ -70,11 +70,27 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
   },
   {
     key: "aria-brain",
-    labelAr: "عقل سَدِيد ومجلس الوكلاء (Google Gemini فقط)",
+    labelAr: "عقل سَدِيد ومجلس الوكلاء (Google Gemini — المحرّك الافتراضي)",
     requirement: "one-of",
     vars: [
       S("GEMINI_API_KEY", "Google Gemini native API"),
       S("GOOGLE_GENERATIVE_AI_API_KEY", "Google Generative AI key"),
+    ],
+  },
+  {
+    // شقّ محرّك الدردشة (أمر المالك ٢٠٢٦/١٠/١٨): كلّه اختياريّ — غيابه يعني Gemini
+    // إن وُجد مفتاحه، وإلا الوضع الحتمي بلا تكلفة. القرار في
+    // `src/lib/sadeed/llm/provider-plan.server.ts`.
+    key: "sadeed-llm-provider",
+    labelAr: "محرّك الدردشة: الاختيار والمحوّل الاختياري والاحتياطي (اختياري)",
+    requirement: "optional",
+    vars: [
+      S("SADEED_LLM_PROVIDER", "Chat engine: gemini (default) | openai | none (zero-cost)", false),
+      S("OPENAI_API_KEY", "Optional OpenAI adapter key — used only with the two switches"),
+      S("SADEED_OPENAI_ENABLED", "Must be exactly true to allow the OpenAI adapter", false),
+      S("SADEED_OPENAI_MODEL", "Allowlisted: gpt-5-mini (default) | gpt-5 | gpt-5-nano", false),
+      S("SADEED_BACKUP_PROVIDER", "Set to lovable to opt in to the metered backup gateway", false),
+      S("LOVABLE_API_KEY", "Backup gateway key (inference only with the backup opt-in)"),
     ],
   },
   {

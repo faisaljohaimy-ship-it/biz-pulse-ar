@@ -191,20 +191,49 @@ function isPureCountQuestion(tokens: string[], entity: readonly string[]): boole
   return tokens.every((t) => known.has(t));
 }
 
-/** «حسب التصدير المعتمد في <التاريخ>» على سطر الجواب نفسه — اللقطة تُقرأ بتاريخها لا حالًا. */
-const asOf = (line: string, date: string) => `${line} — حسب التصدير المعتمد في ${date}.`;
+/** الكيانات التي يُجاب عدُّها فورًا — مشتركة بين المطابق العربي والموجّه الحتمي الإنجليزي. */
+export type InstantCountEntity = "project" | "maintenance" | "incident";
 
-function projectsAnswer(tokens: string[]): string {
-  const c = REAL_PROJECT_COUNTS;
-  const line = contains(tokens, ["جاري", "جاريه", "الجاريه"])
-    ? `المشاريع الجارية ${c.in_progress}`
-    : contains(tokens, ["مكتمل", "مكتمله", "المكتمله"])
-      ? `المشاريع المكتملة ${c.completed}`
-      : contains(tokens, ["ملغي", "ملغيه", "الملغاه", "ملغاه"])
-        ? `المشاريع الملغاة ${c.cancelled}`
-        : `المشاريع ${c.total}: جارية ${c.in_progress} · مكتملة ${c.completed} · ملغاة ${c.cancelled}`;
-  return asOf(line, PROJECTS_REPORT_DATE);
+/** الحالات المسمّاة؛ ما لا يخصّ الكيان منها يسقط إلى الإجمالي بتوزيعه. */
+export type InstantCountStatus =
+  "in_progress" | "completed" | "cancelled" | "open" | "closed" | "preventive" | "corrective";
+
+/**
+ * الحالة التي يسمّيها السؤال العربي لكيانٍ بعينه — أوّل حالةٍ تطابق تفوز، بترتيب الفحص
+ * المعتمد لكل كيان، و`null` يعني الإجمالي.
+ */
+function arabicStatus(entity: InstantCountEntity, tokens: string[]): InstantCountStatus | null {
+  const checks: ReadonlyArray<readonly [InstantCountStatus, readonly string[]]> =
+    entity === "project"
+      ? [
+          ["in_progress", ["جاري", "جاريه", "الجاريه"]],
+          ["completed", ["مكتمل", "مكتمله", "المكتمله"]],
+          ["cancelled", ["ملغي", "ملغيه", "الملغاه", "ملغاه"]],
+        ]
+      : entity === "maintenance"
+        ? [
+            ["preventive", ["وقائي", "وقائيه", "الوقائيه"]],
+            ["corrective", ["تصحيحي", "تصحيحيه", "التصحيحيه"]],
+            ["cancelled", ["ملغي", "ملغيه", "الملغاه", "ملغاه"]],
+            ["closed", ["مغلق", "مغلقه", "المغلقه"]],
+            ["completed", ["مكتمل", "مكتمله", "المكتمله"]],
+            ["open", ["مفتوح", "مفتوحه", "المفتوحه", "جاري", "جاريه", "الجاريه"]],
+          ]
+        : [
+            ["open", ["مفتوح", "مفتوحه", "المفتوحه"]],
+            ["closed", ["مغلق", "مغلقه", "المغلقه"]],
+          ];
+  return checks.find(([, words]) => contains(tokens, words))?.[0] ?? null;
 }
+
+/**
+ * «حسب التصدير المعتمد في <التاريخ>» على سطر الجواب نفسه — اللقطة تُقرأ بتاريخها لا حالًا
+ * (DEF-18)؛ وبالإنجليزية العبارة نفسها.
+ */
+const asOf = (line: string, date: string, en: boolean) =>
+  en
+    ? `${line} — per the approved export of ${date}.`
+    : `${line} — حسب التصدير المعتمد في ${date}.`;
 
 /** PLAN في الملف المضمَّن (`status: "open"`) ملغاة — رأس الوحدة؛ فالمفتوح فعلًا قيد التنفيذ وحده. */
 const WO_CANCELLED = REAL_WORK_ORDER_COUNTS.open;
@@ -212,32 +241,84 @@ const WO_CANCELLED_PREVENTIVE = REAL_SEC_WORK_ORDERS.filter(
   (w) => w.status === "open" && w.kind === "preventive",
 ).length;
 
-function maintenanceAnswer(tokens: string[]): string {
-  const c = REAL_WORK_ORDER_COUNTS;
-  const line = contains(tokens, ["وقائي", "وقائيه", "الوقائيه"])
-    ? `أوامر الصيانة الوقائية ${c.preventive}، منها ${WO_CANCELLED_PREVENTIVE} ملغاة`
-    : contains(tokens, ["تصحيحي", "تصحيحيه", "التصحيحيه"])
-      ? `أوامر الصيانة التصحيحية ${c.corrective}`
-      : contains(tokens, ["ملغي", "ملغيه", "الملغاه", "ملغاه"])
-        ? `أوامر الصيانة الملغاة ${WO_CANCELLED}`
-        : contains(tokens, ["مغلق", "مغلقه", "المغلقه"])
-          ? `أوامر الصيانة المغلقة ${c.closed + WO_CANCELLED}: مكتملة ${c.closed} · ملغاة ${WO_CANCELLED}`
-          : contains(tokens, ["مكتمل", "مكتمله", "المكتمله"])
-            ? `أوامر الصيانة المكتملة ${c.closed}`
-            : contains(tokens, ["مفتوح", "مفتوحه", "المفتوحه", "جاري", "جاريه", "الجاريه"])
-              ? `أوامر الصيانة المفتوحة ${c.in_progress}، كلّها قيد التنفيذ`
-              : `أوامر الصيانة ${c.total}: مكتملة ${c.closed} · قيد التنفيذ ${c.in_progress} · ملغاة ${WO_CANCELLED}`;
-  return asOf(line, MAINTENANCE_REPORT_DATE);
-}
-
-function incidentsAnswer(tokens: string[]): string {
+/**
+ * جواب العدّ من العدّادات الكنسية — **المصدر الوحيد للأرقام في اللغتين**:
+ * المطابق العربي هنا والموجّه الحتمي الإنجليزي (`llm/zero-cost-router.server`)
+ * يقرآن الدالة نفسها، فلا رقم منسوخ يتعفّن في موضعٍ ثانٍ. حالةٌ لا تخصّ
+ * الكيان تعيد الإجمالي بتوزيعه.
+ */
+export function renderInstantCount(
+  entity: InstantCountEntity,
+  status: InstantCountStatus | null,
+  locale: "ar" | "en",
+): string {
+  const en = locale === "en";
+  if (entity === "project") {
+    const c = REAL_PROJECT_COUNTS;
+    const line =
+      status === "in_progress"
+        ? en
+          ? `Projects in progress: ${c.in_progress}`
+          : `المشاريع الجارية ${c.in_progress}`
+        : status === "completed"
+          ? en
+            ? `Completed projects: ${c.completed}`
+            : `المشاريع المكتملة ${c.completed}`
+          : status === "cancelled"
+            ? en
+              ? `Cancelled projects: ${c.cancelled}`
+              : `المشاريع الملغاة ${c.cancelled}`
+            : en
+              ? `Projects: ${c.total} — in progress ${c.in_progress} · completed ${c.completed} · cancelled ${c.cancelled}`
+              : `المشاريع ${c.total}: جارية ${c.in_progress} · مكتملة ${c.completed} · ملغاة ${c.cancelled}`;
+    return asOf(line, PROJECTS_REPORT_DATE, en);
+  }
+  if (entity === "maintenance") {
+    const c = REAL_WORK_ORDER_COUNTS;
+    const line =
+      status === "preventive"
+        ? en
+          ? `Preventive maintenance orders: ${c.preventive}, of which ${WO_CANCELLED_PREVENTIVE} cancelled`
+          : `أوامر الصيانة الوقائية ${c.preventive}، منها ${WO_CANCELLED_PREVENTIVE} ملغاة`
+        : status === "corrective"
+          ? en
+            ? `Corrective maintenance orders: ${c.corrective}`
+            : `أوامر الصيانة التصحيحية ${c.corrective}`
+          : status === "cancelled"
+            ? en
+              ? `Cancelled maintenance orders: ${WO_CANCELLED}`
+              : `أوامر الصيانة الملغاة ${WO_CANCELLED}`
+            : status === "closed"
+              ? en
+                ? `Closed maintenance orders: ${c.closed + WO_CANCELLED} — completed ${c.closed} · cancelled ${WO_CANCELLED}`
+                : `أوامر الصيانة المغلقة ${c.closed + WO_CANCELLED}: مكتملة ${c.closed} · ملغاة ${WO_CANCELLED}`
+              : status === "completed"
+                ? en
+                  ? `Completed maintenance orders: ${c.closed}`
+                  : `أوامر الصيانة المكتملة ${c.closed}`
+                : status === "open" || status === "in_progress"
+                  ? en
+                    ? `Open maintenance orders: ${c.in_progress}, all in progress`
+                    : `أوامر الصيانة المفتوحة ${c.in_progress}، كلّها قيد التنفيذ`
+                  : en
+                    ? `Maintenance work orders: ${c.total} — completed ${c.closed} · in progress ${c.in_progress} · cancelled ${WO_CANCELLED}`
+                    : `أوامر الصيانة ${c.total}: مكتملة ${c.closed} · قيد التنفيذ ${c.in_progress} · ملغاة ${WO_CANCELLED}`;
+    return asOf(line, MAINTENANCE_REPORT_DATE, en);
+  }
   const c = REAL_INCIDENT_COUNTS;
-  const line = contains(tokens, ["مفتوح", "مفتوحه", "المفتوحه"])
-    ? `البلاغات المفتوحة ${c.open}`
-    : contains(tokens, ["مغلق", "مغلقه", "المغلقه"])
-      ? `البلاغات المغلقة ${c.closed}`
-      : `البلاغات ${c.total}: مفتوحة ${c.open} · مغلقة ${c.closed}`;
-  return asOf(line, EVENT_REPORT_DATE);
+  const line =
+    status === "open"
+      ? en
+        ? `Open incidents: ${c.open}`
+        : `البلاغات المفتوحة ${c.open}`
+      : status === "closed"
+        ? en
+          ? `Closed incidents: ${c.closed}`
+          : `البلاغات المغلقة ${c.closed}`
+        : en
+          ? `Incidents: ${c.total} — open ${c.open} · closed ${c.closed}`
+          : `البلاغات ${c.total}: مفتوحة ${c.open} · مغلقة ${c.closed}`;
+  return asOf(line, EVENT_REPORT_DATE, en);
 }
 
 /** مرجع SAP لأمر صيانة — النسق الحرفي للمجموعة المستوردة. */
@@ -337,13 +418,16 @@ export function matchInstantDataAnswer(question: string): InstantDataAnswer | nu
 
   if (!COUNT_INTENT.test(` ${normalized} `)) return null;
   if (contains(tokens, VOCAB.project) && isPureCountQuestion(tokens, VOCAB.project)) {
-    return { answer: projectsAnswer(tokens), source: "projects-count" };
+    const answer = renderInstantCount("project", arabicStatus("project", tokens), "ar");
+    return { answer, source: "projects-count" };
   }
   if (contains(tokens, VOCAB.incident) && isPureCountQuestion(tokens, VOCAB.incident)) {
-    return { answer: incidentsAnswer(tokens), source: "incidents-count" };
+    const answer = renderInstantCount("incident", arabicStatus("incident", tokens), "ar");
+    return { answer, source: "incidents-count" };
   }
   if (contains(tokens, VOCAB.maintenance) && isPureCountQuestion(tokens, VOCAB.maintenance)) {
-    return { answer: maintenanceAnswer(tokens), source: "maintenance-count" };
+    const answer = renderInstantCount("maintenance", arabicStatus("maintenance", tokens), "ar");
+    return { answer, source: "maintenance-count" };
   }
   return null;
 }

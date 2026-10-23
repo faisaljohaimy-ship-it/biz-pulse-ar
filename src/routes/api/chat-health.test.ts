@@ -1,6 +1,9 @@
+// @vitest-environment node
 /**
- * `/api/chat/health` يقول حال البوّابة لا المفتاح وحده (DEF-11، ٢٠٢٦/١٠/١٨) — فالشارة لا تقول
- * «متصل الآن» وكل سؤالٍ يحتاج النموذج يأخذ السطر المغلق. محكمٌ بلا خرج شبكي: الفحص وحده مزروع.
+ * `/api/chat/health` — جاهزية المحرّك **المختار** (القاعدة ٤)، وحال البوّابة بجانبه
+ * (DEF-11، ٢٠٢٦/١٠/١٨) فالشارة لا تقول «متصل الآن» وكل سؤالٍ يحتاج النموذج يأخذ السطر المغلق.
+ * والحقول القديمة باقية بأسمائها لفحص الإنتاج (`scripts/smoke-production.mjs`: `ok` و`key_present`
+ * و`provider`). لا قيمة مفتاحٍ في الجسم أبدًا. محكمٌ بلا خرج شبكي: الفحص وحده مزروع.
  */
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -40,32 +43,107 @@ afterAll(() => {
   vi.unstubAllEnvs();
 });
 
-async function health(): Promise<{ key_present?: boolean; gate?: string }> {
+const PLAN_ENV = [
+  "GEMINI_API_KEY",
+  "GOOGLE_GENERATIVE_AI_API_KEY",
+  "OPENAI_API_KEY",
+  "LOVABLE_API_KEY",
+  "SADEED_LLM_PROVIDER",
+  "SADEED_OPENAI_ENABLED",
+  "SADEED_OPENAI_MODEL",
+  "SADEED_BACKUP_PROVIDER",
+];
+
+/** بلا `env` ⇐ البيئة كما هي (مفتاح Gemini تجريبي)؛ ومعه ⇐ مفاتيح الخطة كلها من `env` وحده. */
+async function health(env?: Record<string, string>) {
+  if (env) for (const k of PLAN_ENV) vi.stubEnv(k, env[k] ?? "");
   const mod = (await import("@/routes/api/chat.health")) as unknown as {
     Route: { options: { server: { handlers: { GET: () => Promise<Response> } } } };
   };
-  return (await mod.Route.options.server.handlers.GET()).json();
+  const res = await mod.Route.options.server.handlers.GET();
+  return { res, body: (await res.json()) as Record<string, unknown> };
 }
+
+describe("/api/chat/health — خطة المحرّك", () => {
+  it("Gemini مهيّأ ⇐ الحقول القديمة كما كانت، ومعها الوضع والاحتياطي", async () => {
+    const key = "gemini-key-not-a-secret-000";
+    const { res, body } = await health({ GEMINI_API_KEY: key });
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+    expect(body).toMatchObject({
+      ok: true,
+      provider: "google-gemini",
+      model: "gemini-3.6-flash",
+      key_present: true,
+      mode: "llm",
+      selected: "gemini",
+      backup_enabled: false,
+      zero_cost_ready: true,
+      transcription_configured: true,
+    });
+    expect(JSON.stringify(body)).not.toContain(key);
+  });
+
+  it("بلا مفتاح ⇐ الوضع الحتمي، والجاهزية الحتمية صادقة", async () => {
+    const { body } = await health({});
+    expect(body).toMatchObject({
+      ok: true,
+      provider: null,
+      key_present: false,
+      mode: "zero_cost",
+      zero_cost_ready: true,
+    });
+  });
+
+  it("مفتاح المحوّل وحده لا يجعل الذكاء جاهزًا؛ والإذنان معًا يجعلانه", async () => {
+    const key = "openai-key-not-a-secret-0000";
+    expect((await health({ OPENAI_API_KEY: key })).body).toMatchObject({
+      key_present: false,
+      mode: "zero_cost",
+    });
+    const { body } = await health({
+      OPENAI_API_KEY: key,
+      SADEED_LLM_PROVIDER: "openai",
+      SADEED_OPENAI_ENABLED: "true",
+    });
+    expect(body).toMatchObject({
+      key_present: true,
+      provider: "openai",
+      model: "gpt-5-mini",
+      mode: "llm",
+      // النسخ الصوتي على Gemini وحده — لا يتبع محرّك الدردشة.
+      transcription_configured: false,
+    });
+    expect(JSON.stringify(body)).not.toContain(key);
+  });
+
+  it("الاحتياطي يُبلَّغ حين يطلبه المالك بالاسم فقط", async () => {
+    const base = { GEMINI_API_KEY: "gemini-key-not-a-secret-000", LOVABLE_API_KEY: "lovable-k" };
+    expect((await health(base)).body.backup_enabled).toBe(false);
+    expect((await health({ ...base, SADEED_BACKUP_PROVIDER: "lovable" })).body.backup_enabled).toBe(
+      true,
+    );
+  });
+});
 
 describe("/api/chat/health — حال البوّابة بجانب المفتاح", () => {
   it("المخزن يجيب ⇐ verified", async () => {
-    expect(await health()).toMatchObject({ key_present: true, gate: "verified" });
+    expect((await health()).body).toMatchObject({ key_present: true, gate: "verified" });
   });
 
   it("المخزن لا يجيب والسياسة الافتراضية ⇐ closed، والمفتاح حاضر رغم ذلك", async () => {
     probe.result = { allowed: false, unavailable: true };
-    expect(await health()).toMatchObject({ key_present: true, gate: "closed" });
+    expect((await health()).body).toMatchObject({ key_present: true, gate: "closed" });
   });
 
   it("المخزن لا يجيب وحدود الذاكرة بإقرار المالك ⇐ degraded (النموذج يُستدعى فعلًا)", async () => {
     vi.stubEnv("SADEED_GATE_DEGRADED_MODE", "bounded");
     probe.result = { allowed: false, unavailable: true };
-    expect(await health()).toMatchObject({ gate: "degraded" });
+    expect((await health()).body).toMatchObject({ gate: "degraded" });
   });
 
   it("الحدّ المبلوغ ليس عطلًا: المخزن أجاب ⇐ verified", async () => {
     probe.result = { allowed: false };
-    expect(await health()).toMatchObject({ gate: "verified" });
+    expect((await health()).body).toMatchObject({ gate: "verified" });
   });
 
   it("نتيجة الفحص تُحفظ 15 ث: زياراتٌ متتالية لا تكتب على المخزن كلٌّ بنداء", async () => {
