@@ -5,11 +5,11 @@ import { describe, expect, it } from "vitest";
 
 type LockedPackage = { version?: string };
 const root = resolve(import.meta.dirname, "../..");
-const lock = JSON.parse(
-  readFileSync(resolve(root, "package-lock.json"), "utf8"),
-) as { packages: Record<string, LockedPackage> };
-const parsers = Object.entries(lock.packages).filter(([path]) =>
-  path.endsWith("/node_modules/body-parser") || path === "node_modules/body-parser",
+const lock = JSON.parse(readFileSync(resolve(root, "package-lock.json"), "utf8")) as {
+  packages: Record<string, LockedPackage>;
+};
+const parsers = Object.entries(lock.packages).filter(
+  ([path]) => path.endsWith("/node_modules/body-parser") || path === "node_modules/body-parser",
 );
 
 describe("GHSA-27r3-jxmh-p828 dependency regression", () => {
