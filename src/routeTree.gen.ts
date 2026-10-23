@@ -83,6 +83,7 @@ import { Route as AuthenticatedExecutiveMapRouteImport } from './routes/_authent
 import { Route as AuthenticatedExecutiveReportsRouteImport } from './routes/_authenticated/executive-reports'
 import { Route as AuthenticatedFabricRouteImport } from './routes/_authenticated/fabric'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
+import { Route as AuthenticatedFinnRouteImport } from './routes/_authenticated/finn'
 import { Route as AuthenticatedForgottenRouteImport } from './routes/_authenticated/forgotten'
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedGuideRouteImport } from './routes/_authenticated/guide'
@@ -174,6 +175,7 @@ import { Route as AuthenticatedSettingsAccessLogRouteImport } from './routes/_au
 import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_authenticated/settings.microsoft'
 import { Route as ApiAgentsFleetRouteImport } from './routes/api/agents/fleet'
 import { Route as ApiChatHealthRouteImport } from './routes/api/chat.health'
+import { Route as ApiFinnChatRouteImport } from './routes/api/finn/chat'
 import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
 import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
 import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
@@ -590,6 +592,11 @@ const AuthenticatedFabricRoute = AuthenticatedFabricRouteImport.update({
 const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
   id: '/files',
   path: '/files',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedFinnRoute = AuthenticatedFinnRouteImport.update({
+  id: '/finn',
+  path: '/finn',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedForgottenRoute = AuthenticatedForgottenRouteImport.update({
@@ -1080,6 +1087,11 @@ const ApiChatHealthRoute = ApiChatHealthRouteImport.update({
   path: '/health',
   getParentRoute: () => ApiChatRoute,
 } as any)
+const ApiFinnChatRoute = ApiFinnChatRouteImport.update({
+  id: '/api/finn/chat',
+  path: '/api/finn/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHeygenStatusRoute = ApiHeygenStatusRouteImport.update({
   id: '/api/heygen/status',
   path: '/api/heygen/status',
@@ -1364,6 +1376,7 @@ export interface FileRoutesByFullPath {
   '/executive-reports': typeof AuthenticatedExecutiveReportsRoute
   '/fabric': typeof AuthenticatedFabricRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/finn': typeof AuthenticatedFinnRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/guide': typeof AuthenticatedGuideRoute
@@ -1452,6 +1465,7 @@ export interface FileRoutesByFullPath {
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
+  '/api/finn/chat': typeof ApiFinnChatRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
@@ -1569,6 +1583,7 @@ export interface FileRoutesByTo {
   '/executive-reports': typeof AuthenticatedExecutiveReportsRoute
   '/fabric': typeof AuthenticatedFabricRoute
   '/files': typeof AuthenticatedFilesRoute
+  '/finn': typeof AuthenticatedFinnRoute
   '/forgotten': typeof AuthenticatedForgottenRoute
   '/governance': typeof AuthenticatedGovernanceRoute
   '/guide': typeof AuthenticatedGuideRoute
@@ -1655,6 +1670,7 @@ export interface FileRoutesByTo {
   '/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
+  '/api/finn/chat': typeof ApiFinnChatRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
@@ -1774,6 +1790,7 @@ export interface FileRoutesById {
   '/_authenticated/executive-reports': typeof AuthenticatedExecutiveReportsRoute
   '/_authenticated/fabric': typeof AuthenticatedFabricRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
+  '/_authenticated/finn': typeof AuthenticatedFinnRoute
   '/_authenticated/forgotten': typeof AuthenticatedForgottenRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
   '/_authenticated/guide': typeof AuthenticatedGuideRoute
@@ -1862,6 +1879,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/microsoft': typeof AuthenticatedSettingsMicrosoftRoute
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
+  '/api/finn/chat': typeof ApiFinnChatRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
@@ -1981,6 +1999,7 @@ export interface FileRouteTypes {
     | '/executive-reports'
     | '/fabric'
     | '/files'
+    | '/finn'
     | '/forgotten'
     | '/governance'
     | '/guide'
@@ -2069,6 +2088,7 @@ export interface FileRouteTypes {
     | '/settings/microsoft'
     | '/api/agents/fleet'
     | '/api/chat/health'
+    | '/api/finn/chat'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
@@ -2186,6 +2206,7 @@ export interface FileRouteTypes {
     | '/executive-reports'
     | '/fabric'
     | '/files'
+    | '/finn'
     | '/forgotten'
     | '/governance'
     | '/guide'
@@ -2272,6 +2293,7 @@ export interface FileRouteTypes {
     | '/settings/microsoft'
     | '/api/agents/fleet'
     | '/api/chat/health'
+    | '/api/finn/chat'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
@@ -2390,6 +2412,7 @@ export interface FileRouteTypes {
     | '/_authenticated/executive-reports'
     | '/_authenticated/fabric'
     | '/_authenticated/files'
+    | '/_authenticated/finn'
     | '/_authenticated/forgotten'
     | '/_authenticated/governance'
     | '/_authenticated/guide'
@@ -2478,6 +2501,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/microsoft'
     | '/api/agents/fleet'
     | '/api/chat/health'
+    | '/api/finn/chat'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
@@ -2582,6 +2606,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiAgentsFleetRoute: typeof ApiAgentsFleetRoute
+  ApiFinnChatRoute: typeof ApiFinnChatRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
@@ -3141,6 +3166,13 @@ declare module '@tanstack/react-router' {
       path: '/files'
       fullPath: '/files'
       preLoaderRoute: typeof AuthenticatedFilesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/finn': {
+      id: '/_authenticated/finn'
+      path: '/finn'
+      fullPath: '/finn'
+      preLoaderRoute: typeof AuthenticatedFinnRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/forgotten': {
@@ -3780,6 +3812,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatHealthRouteImport
       parentRoute: typeof ApiChatRoute
     }
+    '/api/finn/chat': {
+      id: '/api/finn/chat'
+      path: '/api/finn/chat'
+      fullPath: '/api/finn/chat'
+      preLoaderRoute: typeof ApiFinnChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/heygen/status': {
       id: '/api/heygen/status'
       path: '/api/heygen/status'
@@ -4188,6 +4227,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedExecutiveReportsRoute: typeof AuthenticatedExecutiveReportsRoute
   AuthenticatedFabricRoute: typeof AuthenticatedFabricRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
+  AuthenticatedFinnRoute: typeof AuthenticatedFinnRoute
   AuthenticatedForgottenRoute: typeof AuthenticatedForgottenRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
   AuthenticatedGuideRoute: typeof AuthenticatedGuideRoute
@@ -4262,6 +4302,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedExecutiveReportsRoute: AuthenticatedExecutiveReportsRoute,
   AuthenticatedFabricRoute: AuthenticatedFabricRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
+  AuthenticatedFinnRoute: AuthenticatedFinnRoute,
   AuthenticatedForgottenRoute: AuthenticatedForgottenRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
   AuthenticatedGuideRoute: AuthenticatedGuideRoute,
@@ -4386,6 +4427,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiAgentsFleetRoute: ApiAgentsFleetRoute,
+  ApiFinnChatRoute: ApiFinnChatRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,

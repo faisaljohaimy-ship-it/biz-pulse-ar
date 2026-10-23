@@ -40,12 +40,19 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 const DAY_SECONDS = 86_400;
 
 /**
- * الأسطح التي تُنفق مالًا، وتكلفتها تختلف فتختلف سقوفها. و`kb` (تضمين سؤال
- * البحث الدلالي في المعرفة) سطحٌ مستقلّ لا يُحسب على `chat`: صفحة المعرفة
- * تستدعيه مع كل حرف، فلو شارك المساعدَ دلوَيه لاستنفد بحثُ مستخدمٍ حصّتَه من
- * المساعد، ولأغلق بحثُ قلّةٍ السقفَ العام على الجميع (مراجعة ٢٠٢٦/١٠/١٨).
+ * الأسطح التي تُنفق مالًا، وتكلفتها تختلف فتختلف سقوفها.
+ *
+ * `kb` (تضمين سؤال البحث الدلالي في المعرفة) سطحٌ مستقلّ لا يُحسب على `chat`:
+ * صفحة المعرفة تستدعيه مع كل حرف، فلو شارك المساعدَ دلوَيه لاستنفد بحثُ مستخدمٍ
+ * حصّتَه من المساعد، ولأغلق بحثُ قلّةٍ السقفَ العام على الجميع (مراجعة ٢٠٢٦/١٠/١٨).
+ *
+ * `finn` (W5 #2، ٢٠٢٦/١٠/٢٣): وكيل المالك للبرمجة والأتمتة **سطحٌ مستقلّ** بدلوَيه
+ * (`ai-daily-global:finn:*` · `ai-daily-id:finn:*`) وسقفَيه (`FINN_DAILY_GLOBAL` ·
+ * `FINN_DAILY_PER_IDENTITY`). كان يشارك سطح `chat` العامّ مع زوّار سَدِيد، فاستنفادُ
+ * زوّار المنتج الدلوَ العام (5,000) يحجب المالك بـ429 والجلسة والمحرّكان سليمة،
+ * وسقفُ هويته (120) لا يُضبط بلا رفعه على كل زائر.
  */
-export type AiSurface = "tts" | "stt" | "chat" | "kb";
+export type AiSurface = "tts" | "stt" | "chat" | "kb" | "finn";
 
 /**
  * مفتاح الإيقاف الفوري — متغيّر بيئة لا نشر.
@@ -59,6 +66,7 @@ const SURFACE_AR: Record<AiSurface, string> = {
   stt: "النسخ الصوتي",
   chat: "المساعد",
   kb: "البحث الدلالي",
+  finn: "فِن",
 };
 
 function arabicResponse(status: number, code: string, message: string, retryAfter: number) {
@@ -130,6 +138,27 @@ const LIMITS: Record<AiSurface, { perIdentity: number; global: number }> = {
     perIdentity: cap("SADEED_KB_DAILY_PER_IDENTITY", 400),
     global: cap("SADEED_KB_DAILY_GLOBAL", 10_000),
   },
+  // وكيل المالك: مستخدمٌ واحد (أو قلّة) وجلسة برمجة طويلة ⇒ سقف هويةٍ أوسع من زائر
+  // المنتج، وسقفٌ عامّ أضيق (سطحٌ لا يصله غير المالك). يُضبطان من البيئة بلا نشر.
+  finn: {
+    perIdentity: cap("FINN_DAILY_PER_IDENTITY", 500),
+    global: cap("FINN_DAILY_GLOBAL", 2_000),
+  },
+};
+
+/**
+ * سطح سجلّ الاستهلاك: قيد `ai_usage_log.surface` في القاعدة المطبَّقة يقبل
+ * `tts|stt|chat` وحدها (ترحيل 20260918100000)، وتغييره تغيير قاعدة إنتاج. فسطح `finn`
+ * يُسجَّل `chat` بهويته (`finn-chat:<معرّف>`) — وإلا ردّ القيدُ كل صفّ فابتُلع صامتًا.
+ * وسطح `kb` يُرسَل باسمه كما كان: يُرفض بصمت حتى يُوسَّع القيد بإذن المالك، ولا نُحمّله
+ * على `chat` فيلوّث عدّاد المساعد (الحجب نفسه على `check_rate_limit` لا على هذا الجدول).
+ */
+const USAGE_LOG_SURFACE: Record<AiSurface, "tts" | "stt" | "chat" | "kb"> = {
+  tts: "tts",
+  stt: "stt",
+  chat: "chat",
+  kb: "kb",
+  finn: "chat",
 };
 
 /** ثوانٍ حتى منتصف الليل — رقمٌ صادق في `Retry-After` بدل ٦٠ ثابتة. */
@@ -163,9 +192,12 @@ function dayKey(): string {
  */
 async function recordUsage(surface: AiSurface, identity: string, units: number): Promise<void> {
   try {
-    await supabaseAdmin
-      .from("ai_usage_log" as never)
-      .insert({ surface, identity, units, occurred_at: new Date().toISOString() } as never);
+    await supabaseAdmin.from("ai_usage_log" as never).insert({
+      surface: USAGE_LOG_SURFACE[surface],
+      identity,
+      units,
+      occurred_at: new Date().toISOString(),
+    } as never);
   } catch {
     /* المحاسبة ليست بوابة. */
   }

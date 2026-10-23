@@ -101,6 +101,50 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
   },
 
   {
+    key: "finn-owner-gate",
+    labelAr: "بوّابة مالك فِن (قائمة UUID بفواصل — تفشل مغلقة، خادمية فقط)",
+    requirement: "all",
+    vars: [
+      S(
+        "FINN_OWNER_USER_IDS",
+        "FINN owner user ids (UUIDs, comma-separated); unset/empty/invalid ⇒ nobody enters; server only, never sent to the client",
+      ),
+    ],
+  },
+  {
+    key: "finn-engine",
+    labelAr: "محرّك فِن (GPT أساسًا، والاحتياطي Gemini معلَنٌ عند العطل)",
+    requirement: "optional",
+    vars: [
+      S(
+        "OPENAI_API_KEY",
+        "OpenAI — FINN's primary engine; absent ⇒ declared fallback to the backup engine",
+      ),
+      S(
+        "FINN_OPENAI_MODEL",
+        "Optional OpenAI model id for FINN (default gpt-4.1); server-owned, the client cannot choose",
+        false,
+      ),
+    ],
+  },
+  {
+    key: "finn-quota",
+    labelAr: "حصّة فِن اليومية (سطح مستقلّ عن سَدِيد — اختياري، له افتراضات)",
+    requirement: "optional",
+    vars: [
+      S(
+        "FINN_DAILY_GLOBAL",
+        "Optional daily cap for the whole FINN surface (default 2000); separate bucket from SADEED chat",
+        false,
+      ),
+      S(
+        "FINN_DAILY_PER_IDENTITY",
+        "Optional daily cap per FINN user identity (default 500); separate bucket from SADEED chat",
+        false,
+      ),
+    ],
+  },
+  {
     key: "outbound-email",
     labelAr: "البريد الصادر (Resend)",
     requirement: "all",

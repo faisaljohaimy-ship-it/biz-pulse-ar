@@ -1,11 +1,12 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { lazy, Suspense, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { getTwinTree, type TwinTree } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
 import { RegionTwinScene, type TwinAsset } from "@/components/sec/RegionTwinScene";
+import { TwinFilmPlayer } from "@/components/twin/TwinFilmPlayer";
 import { useRegion } from "@/lib/region-context";
 import type { Region } from "@/lib/regions";
 // تدقيق تعبيرية الأيقونات ٢٠٢٦/٠٨/٢٧ — القاعدة الموثقة في sec-shell نفسها:
@@ -28,13 +29,6 @@ import {
   Footprints,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// Shared content, not an iframe: keep CSP frame-ancestors and X-Frame-Options intact.
-const SadeedCinematicExperience = lazy(() =>
-  import("@/components/cinematic/SadeedCinematicExperience").then((module) => ({
-    default: module.SadeedCinematicExperience,
-  })),
-);
 
 export const Route = createFileRoute("/_authenticated/sec/twin")({
   errorComponent: RouteError,
@@ -109,7 +103,6 @@ function TwinPage() {
     refetchInterval: 60_000,
   });
   const [selected, setSelected] = useState<Selected>(null);
-  const [cinemaOpen, setCinemaOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set(["region"]));
   // بأمر المالك ٢٠٢٦/٠٨/٢٠ («حذف الفلاتر ووضع الفلتر على الوسطى لأننا في
   // أيقونة الوسطى»): لا فلتر مناطق محليًّا — المشهد يتبع سياق المنطقة
@@ -169,6 +162,11 @@ function TwinPage() {
         <RegionTwinScene regionId={regionId} assets={assets} />
       </section>
 
+      {/* فيلم التوأم الرقمي: مشغّلٌ مضمَّن في الصفحة لا إطارٌ يضمّ /cinematic (كان الإطار يحمل قشرة
+          التطبيق مرّتين). الفيلم **مُصيَّر مسبقًا** — ملف فيديو توضيحي لا بثّ ولا بيانات تشغيلية،
+          وإفصاحه ووصفه النصّي في المشغّل نفسه فلا ينحرف عن /cinematic. وبياناتُ الأصول وشارة مصدرها
+          في القسم أعلاه؛ وشرائح الإعلان القديمة تحت الفيلم حُذفت: كانت تصف «العرض» لا الفيلم وتكرّر
+          ما في الشارة. */}
       <section
         className="rounded-2xl border border-cyan-300/40 bg-card p-4 shadow-sm"
         aria-label="تجربة سديد السينمائية"
@@ -177,49 +175,17 @@ function TwinPage() {
           <div>
             <h2 className="text-lg font-bold">التوأم الرقمي السينمائي</h2>
             <p className="text-sm text-muted-foreground">
-              عرض بصري تفاعلي لشبكات الطاقة والمنشآت، مستقل عن بيانات المراقبة الحقيقية.
+              فيلم موشن جرافيك توضيحي يشرح فكرة التوأم الرقمي للأمن الصناعي، مستقلّ عن بيانات
+              المراقبة الحقيقية.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className="rounded-full bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              onClick={() => setCinemaOpen((v) => !v)}
-              aria-expanded={cinemaOpen}
-            >
-              {cinemaOpen ? "إغلاق العرض" : "▶ تشغيل العرض السينمائي"}
-            </button>
-            <a
-              href="/cinematic"
-              className="rounded-full border border-cyan-400 px-4 py-2 text-sm font-semibold"
-            >
-              ملء الشاشة ↗
-            </a>
-          </div>
+          {/* ينتقل إلى صفحة التجربة (لا شاشة كاملة في هذه الصفحة): يُسمّى بما يفعله — #18. */}
+          <Link to="/cinematic" className="twin-film-btn nx-focus-ring">
+            فتح التجربة السينمائية
+          </Link>
         </div>
-        {cinemaOpen && (
-          <div className="mt-4 overflow-hidden rounded-xl border border-cyan-400/20">
-            <Suspense
-              fallback={
-                <p role="status" className="p-4">
-                  جارٍ تحميل العرض السينمائي…
-                </p>
-              }
-            >
-              <SadeedCinematicExperience embedded />
-            </Suspense>
-          </div>
-        )}
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className="rounded-full border px-3 py-1">
-            المشهد السينمائي: عرض توضيحي — ليس بثًا مباشرًا
-          </span>
-          <span className="rounded-full border px-3 py-1">
-            بيانات الأصول: تحديث دوري كل 60 ثانية عند توفر الاتصال
-          </span>
-          <span className="rounded-full border px-3 py-1">
-            البث الحقيقي يتطلب مصدرًا معتمدًا وصلاحية وصول
-          </span>
+        <div className="mx-auto mt-4 w-full max-w-4xl">
+          <TwinFilmPlayer />
         </div>
       </section>
 

@@ -38,6 +38,7 @@ import { SYSTEM_NAV, type SystemNavItem, type SystemNavLeaf } from "@/lib/nav/sy
 import { useSadeedStore } from "@/lib/sadeed-core/state/sadeed-store";
 import { SadeedPlateLockup } from "@/components/brand/SadeedPlateLockup";
 import { PalmSilhouette, SkylineSilhouette } from "@/components/brand/SkylineSilhouette";
+import { FinnNavEntry } from "@/components/finn/FinnNavEntry";
 import "@/styles/home/home-chrome.css";
 
 /** الاسم: من السجل الكانوني إن كان محروسًا، وإلا من العنصر نفسه. */
@@ -244,7 +245,16 @@ export function SystemSidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     >
       <div className="nx-sysnav-list">{primary.map(renderItem)}</div>
       {/* اللوح المجمَّع: بقية الأقسام على سطحٍ فاتح واحد كما في الصورة. */}
-      <div className="nx-sysnav-list nx-sysnav-box">{rest.map(renderItem)}</div>
+      <div className="nx-sysnav-list nx-sysnav-box">
+        {rest.map(renderItem)}
+        {/* «فِن» — للمالك وحده، والحكم من الخادم (يعيد null لغيره). خارج SYSTEM_NAV
+            عمدًا: سجلّه عشرون عنصرًا يقرؤها كل مستخدم (انظر `owner-nav.ts`). */}
+        <FinnNavEntry
+          classes={{ row: ROW, idle: ROW_IDLE, active: ROW_ACTIVE }}
+          textDir={textDir}
+          onNavigate={onNavigate}
+        />
+      </div>
     </nav>
   );
 }

@@ -1,0 +1,190 @@
+/* ═══ فيلم التوأم الرقمي — المشغّل المضمَّن (`TwinFilmPlayer`) ═══════════════════════════════
+   • كلّ لونٍ من طبقة الرموز (`--ink` · `--surface` · `--hairline` · `--glass-*` · `--tone-*`) فيتبدّل
+     مع الوضعين بلا قاعدةٍ ثانية — ولا لونٌ نهائي هنا (المادتان ٣٢–٣٤؛ يحرسه العقد).
+   • الزجاج حالةٌ ساكنة لا `:hover` (المادة ٣٤): الحشوة والبريق والحافّة في القاعدة، والتمرير يغيّر لون
+     الحدّ وحده، ومن لا يملك تمريرًا (الجوال) يرى الزرّ كاملًا.
+   • الحركة (ظهور الفيلم وسريان الشريط) داخل `prefers-reduced-motion: no-preference` وحده.
+   • الإطار 16:9 ثابتٌ بـ`aspect-ratio` وأبعاد الملصق على الوسم — لا قفزة في التخطيط قبل أوّل بايت.
+   • الأزرار ≥ 44px في البعدين (WCAG 2.5.8 وأرضية اللمس في الدستور). */
+
+/* ── الزرّ: واحدٌ للمشغّل وشريط /cinematic ورابط /sec/twin ─────────────────────────────── */
+.twin-film-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  padding-inline: 16px;
+  border: 1px solid var(--glass-edge);
+  border-radius: 999px;
+  background: var(--glass-sheen), linear-gradient(var(--glass-fill), var(--glass-fill));
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    var(--glass-lift);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* مُعلَّق: يبقى مرئيًّا ومقروءًا (سببه في سطرٍ تحته) ولا يُخفى. */
+.twin-film-btn[aria-disabled="true"] {
+  border-style: dashed;
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .twin-film-btn:not([aria-disabled="true"]):hover {
+    border-color: var(--hairline-hover);
+  }
+}
+
+/* ── المشغّل ──────────────────────────────────────────────────────────────────────────── */
+.twin-film {
+  display: grid;
+  gap: 10px;
+  inline-size: 100%;
+  margin: 0;
+}
+
+.twin-film-frame {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  inline-size: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--hairline);
+  border-radius: var(--nx-radius-16, 16px);
+  /* قبل الملصق (أو إن غاب) سطحٌ هادئ من الرموز لا فراغٌ أبيض في الداكن ولا أسود في الفاتح. */
+  background: color-mix(in srgb, var(--ink) 10%, var(--surface));
+  box-shadow: var(--glass-lift);
+}
+
+.twin-film-poster,
+.twin-film-video {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* الفيديو يظهر حين يُعرض إطاره فعلًا (`data-ready` من حدث `playing`) — لا يُعوَّل على شفافية ما
+   قبل الإطار الأوّل في كل محرّك. */
+.twin-film-video {
+  opacity: 0;
+}
+
+.twin-film-video[data-ready] {
+  opacity: 1;
+}
+
+.twin-film-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* خطّ التقدّم زخرفة (`aria-hidden`): الحال في الزرّ، لا في هذا الخطّ. */
+.twin-film-progress {
+  flex: 1 1 auto;
+  min-inline-size: 48px;
+  block-size: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
+}
+
+.twin-film-progress > i {
+  display: block;
+  inline-size: calc(var(--twin-progress, 0) * 100%);
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--tone-cyan);
+}
+
+.twin-film-hint,
+.twin-film-caption {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--ink-2);
+}
+
+.twin-film-caption strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* الوصف النصّي للمنطقة (`<p>` بلا حشوة ولا حدٍّ أصلًا): لقارئ الشاشة وحده. */
+.twin-film-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ملء الشاشة: المشغّل كلّه (الفيلم وزرّه ووصفه) في عمودٍ واحد بنسبة 16:9 لا يتجاوز الشاشة. */
+.twin-film:fullscreen {
+  box-sizing: border-box;
+  block-size: 100%;
+  grid-template-columns: min(100%, calc((100dvh - 10rem) * 16 / 9));
+  justify-content: center;
+  align-content: center;
+  padding: 16px;
+  background: var(--surface);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .twin-film-video {
+    transition: opacity 240ms ease;
+  }
+
+  .twin-film-progress > i {
+    transition: inline-size 260ms linear;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .twin-film-btn {
+    background: var(--surface);
+  }
+}
+
+/* الألوان القسرية: حدٌّ ولون نظام، بلا بريقٍ ولا ظلّ. */
+@media (forced-colors: active) {
+  .twin-film-btn {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    box-shadow: none;
+  }
+
+  .twin-film-btn[aria-disabled="true"] {
+    color: GrayText;
+    border-color: GrayText;
+  }
+
+  .twin-film-frame {
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+
+  .twin-film-progress {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+
+  .twin-film-progress > i {
+    background: Highlight;
+  }
+}

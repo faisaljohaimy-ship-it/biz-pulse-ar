@@ -54,6 +54,11 @@ const EXTRA_SCREEN_NAMES: Readonly<Record<string, ScreenName>> = {
   "/exec": { ar: "محرك التنفيذ", en: "Execution Engine" },
   "/operations": { ar: "سجل التشغيل", en: "Operations Log" },
   "/sadeed": { ar: "سَدِيد", en: "SADEED" },
+  // «فِن» — وكيل المالك للبرمجة والأتمتة (أمر المالك ٢٠٢٦/١٠/٢٣). **منفصلٌ عن
+  // سَدِيد** ولا ينقض قرار ٢٠٢٦/٠٨/٠٩ على مساعد المنتج: انظر
+  // `src/lib/finn-agent/identity.ts`. خارج MODULES عمدًا — يظهر للمالك وحده
+  // (`src/lib/nav/owner-nav.ts`)، فالاسم محجوزٌ هنا ليقرأه سطح تنقّل المالك.
+  "/finn": { ar: "فِن", en: "FINN" },
   // «مركز القيادة» حُجب من MODULES بأمر المالك ٢٠٢٦/٠٨/١٢، والاسم يبقى
   // محجوزًا هنا: حارس التفرّد في screen-names.test يضمن ألّا تدّعيه شاشة
   // أخرى ما دام ملفّ الشاشة محفوظًا بسياسة الإخفاء.
