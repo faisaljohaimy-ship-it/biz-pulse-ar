@@ -86,6 +86,7 @@ import { isSafeMode } from "@/lib/sadeed/self-healing/crash-loop";
 import { filmAudioHeld, watchFilmAudioHold } from "@/lib/sadeed/film-audio-hold";
 import { holdFilmUnderPanel } from "@/components/home/HoloVideoEngine";
 import { HomeTicker } from "@/components/home/HomeTicker";
+import { brandFilmSource } from "@/components/home/brand-film-assets";
 import "@/styles/home/home-brand.css";
 
 /** نسبة اللوحة كما رُسمت (PNG 2172×724 = 3:1). */
@@ -271,7 +272,12 @@ export function bindFilmSound(
   let grace = 0;
   const audible = () => unlocked && opts.wanted() && !opts.offscreen() && !filmAudioHeld();
   const sync = () => {
-    if (released || probing) return;
+    if (released) return;
+    if (probing) {
+      // A pending play promise must never defer a new mute or external hold.
+      if (!opts.wanted() || opts.offscreen() || filmAudioHeld()) video.muted = true;
+      return;
+    }
     const mute = !audible();
     if (video.muted !== mute) video.muted = mute;
   };
@@ -333,7 +339,9 @@ export function bindFilmSound(
       () => {
         probing = false;
         if (released) return;
-        unlocked = true;
+        // A probe muted while pending does not prove permission for audible playback.
+        unlocked = unlocked || !video.muted;
+        if (!unlocked) arm();
         sync();
       },
       (err: unknown) => {
@@ -727,8 +735,8 @@ function BrandFilm({
           if (e.target === video || video.networkState === video.NETWORK_NO_SOURCE) setFailed(true);
         }}
       >
-        <source src={src} type="video/mp4" />
-        <source src={src.replace(/\.mp4$/, ".webm")} type="video/webm" />
+        <source src={brandFilmSource(src)} type="video/mp4" />
+        <source src={brandFilmSource(src.replace(/\.mp4$/, ".webm"))} type="video/webm" />
       </video>
       {/* زرّ الصوت في زاوية اللوحة السفلى اليمنى — بعيدًا عن الاسم والسطر والرمز على كل عرض
           (`home-brand.css` ⑥). يظهر مع أوّل إطار. **والإعادة تُبقيه
