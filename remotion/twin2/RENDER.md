@@ -121,3 +121,31 @@ ffmpeg -i poster.png -c:v libwebp -quality 90 -compression_level 6 twin2-poster.
   «ستيشن» قديمة الطراز؛ ولا تفاصيل داخلية (السائق ظلٌّ بسيط). (٥) حبيبات الفيلم ترفع الحجم وتخفض SSIM. (٦) الإطار 30.0 و34.0 يقعان
   عمدًا في منتصف سحبٍ أفقيّ (تمويه حركة) لأن القطع مثبّت على الشبكة الموسيقية.
 - المتصفّح ينهار في تشغيلٍ واحد طويل ← التصيير على دفعات (انظر أعلاه). القرص محدود (≈3 GB) فالـPNG لا يُحتفظ به؛ يُحتفظ بالـFFV1.
+
+## التسليم النهائي: الصوت والنسخ الأربع (الأوامر الحرفية)
+
+الصوت من `score/compose.py` (`twin2-score.m4a` AAC-LC 128k · `twin2-score.opus.webm` Opus 112k — انظر `score/README.md`).
+الدمج بلا إعادة ترميز؛ والفيلم المنشور **بصوت** (الراية `TWIN_FILM_HAS_AUDIO` في التطبيق يحرسها العقد بالبايتات):
+
+```bash
+CT="-colorspace bt709 -color_primaries bt709 -color_trc bt709 -color_range tv"
+V1280="scale=out_color_matrix=bt709:out_range=tv:flags=accurate_rnd+full_chroma_int,format=yuv420p"
+V640="scale=640:360:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=bt709:out_range=tv,format=yuv420p"
+P="aq-mode=3:aq-strength=1.0:psy-rd=0.6,0:deblock=-1,-1:ref=6:bframes=6:b-adapt=2:subme=9:me=umh:trellis=2:keyint=150:min-keyint=15"
+# MP4 1280 — الفيديو الصامت (crf 29.6 أعلاه) + الصوت:
+ffmpeg -i twin2-silent-1280.mp4 -i twin2-score.m4a -map 0:v -map 1:a -c copy -movflags +faststart -shortest sadeed-twin-1280.mp4
+# MP4 640:
+ffmpeg -i twin2-lossless.mkv -vf "$V640" -c:v libx264 -preset slow -profile:v high -level 3.1 -pix_fmt yuv420p $CT -an -crf 29 -x264-params "$P" v640.mp4
+ffmpeg -i v640.mp4 -i twin2-score.m4a -map 0:v -map 1:a -c copy -movflags +faststart -shortest sadeed-twin-640.mp4
+# WebM (VP9 + Opus) — crf 47 (1280) و46 (640): الحبيبات تضخّم VP9 (crf 38 أعطى 10.6 MB لـ1280):
+ffmpeg -i twin2-lossless.mkv -vf "$V1280" -c:v libvpx-vp9 -crf 47 -b:v 0 -row-mt 1 -deadline good -cpu-used 2 -pix_fmt yuv420p $CT -an w1280.webm
+ffmpeg -i twin2-lossless.mkv -vf "$V640"  -c:v libvpx-vp9 -crf 46 -b:v 0 -row-mt 1 -deadline good -cpu-used 2 -pix_fmt yuv420p $CT -an w640.webm
+for r in 1280 640; do
+  ffmpeg -i w$r.webm -i twin2-score.opus.webm -map 0:v -map 1:a -c copy -shortest m$r.webm
+  ffmpeg -i m$r.webm -c copy -t 56 sadeed-twin-$r.webm   # إعادة لفٍّ تكتب مدّة الحاوية (يقرؤها العقد)
+done
+```
+
+الأحجام المنشورة: MP4 1280 = 6,670,618 · MP4 640 = 2,630,468 · WebM 1280 = 4,755,719 · WebM 640 = 2,315,913 · الملصق 210,284
+(المجموع مع الفيلم يترك هامشًا ≈ 1.4 MiB تحت سقف الميزانية 52 MiB — أيّ أصل وسائط إضافي يكسرها). جهارة الصوت المدمج
+المقيسة: −15.1 LUFS، قمة −1.0 dBFS. **لم يُسمَع بأذن بشرية.**

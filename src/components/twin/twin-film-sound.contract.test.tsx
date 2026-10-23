@@ -237,4 +237,82 @@ describe("صوت فيلم التوأم", () => {
     expect(video.muted, "عاد صوته بزوال السبب (كان مفتوحًا قبله)").toBe(false);
     view.unmount();
   });
+
+  it("لمسة الإصبع (`click` بنوع «touch») تفتح الصوت، و`pointerdown` اللمسيّ وTab لا يفتحانه", async () => {
+    blockAudible = true;
+    const view = await mountVisible();
+    const video = videoOf(view.container);
+    expect(video.muted).toBe(true);
+    // Tab ليس قبولًا بالصوت.
+    await act(async () => {
+      fireEvent.keyDown(document.body, { key: "Tab" });
+    });
+    expect(video.muted, "ضغطة مفتاحٍ فتحت الصوت").toBe(true);
+    // `pointerdown` لمسيٌّ ليس إيماءة تنشيط.
+    await act(async () => {
+      const down = new Event("pointerdown", { bubbles: true });
+      Object.defineProperty(down, "pointerType", { value: "touch" });
+      document.body.dispatchEvent(down);
+    });
+    expect(video.muted, "pointerdown لمسيّ فتح الصوت").toBe(true);
+    // أمّا `click` الناتج عن الإصبع فيحمل `pointerType` «touch» وهو الإيماءة الحقيقية.
+    await act(async () => {
+      const click = new Event("click", { bubbles: true });
+      Object.defineProperty(click, "pointerType", { value: "touch" });
+      document.body.dispatchEvent(click);
+    });
+    expect(video.muted, "نقرة الإصبع لم تفتح الصوت").toBe(false);
+    view.unmount();
+  });
+
+  it("خارج الشاشة لا يُسمَع الفيلم أبدًا، ويعود صوته بعودته", async () => {
+    const view = await mountVisible();
+    const video = videoOf(view.container);
+    expect(video.muted).toBe(false);
+    await act(async () => {
+      FakeObserver.show(false);
+    });
+    expect(st(video).paused, "خرج من الشاشة فوقف").toBe(true);
+    expect(video.muted, "فيلمٌ يتكلّم وهو خارج الشاشة").toBe(true);
+    await act(async () => {
+      FakeObserver.show(true);
+    });
+    expect(st(video).paused).toBe(false);
+    expect(video.muted).toBe(false);
+    view.unmount();
+  });
+
+  it("استئنافٌ لا يمرّ بفحص الظهور (لوحة سَدِيد) لا يُسمِع فيلمًا خارج الشاشة", async () => {
+    const view = await mountVisible();
+    const video = videoOf(view.container);
+    document.documentElement.setAttribute("data-sadeed-panel", "open");
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => {
+      FakeObserver.show(false);
+    });
+    await act(async () => {
+      document.documentElement.removeAttribute("data-sadeed-panel");
+      await Promise.resolve();
+    });
+    expect(video.muted, "عاد الصوت والإطار خارج الشاشة").toBe(true);
+    view.unmount();
+  });
+
+  it("رُفض الصوت مرّةً ثم جاءت لمسة: المحاولة التالية (إعادة عرض) بصوتٍ من جديد", async () => {
+    blockAudible = true;
+    const view = await mountVisible();
+    expect(mutedAtPlay).toEqual([false, true]);
+    blockAudible = false;
+    await act(async () => {
+      fireEvent.click(document.body);
+    });
+    mutedAtPlay.length = 0;
+    await act(async () => {
+      fireEvent.click(view.container.querySelector(".twin-film-toggle")!);
+    });
+    expect(videoOf(view.container).muted).toBe(false);
+    view.unmount();
+  });
 });

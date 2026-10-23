@@ -252,7 +252,7 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
    * المفتوح (سُمح للمتصفّح: نجح تشغيلٌ بصوت، أو لمسة). في مرجعٍ لا في حالة: يقرؤه `run` داخل نقرةٍ
    * ولا ينتظر إعادة رسم، و`soundState` مرآته للرسم.
    */
-  const sound = useRef({ wanted: true, held: false, unlocked: false });
+  const sound = useRef({ wanted: true, held: false, unlocked: false, denied: false });
   const [soundState, setSoundState] = useState<SoundState>("blocked");
 
   const visible = useRef(false);
@@ -353,7 +353,9 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
   const applySound = useCallback(() => {
     const { wanted, held, unlocked } = sound.current;
     const video = videoRef.current;
-    if (video && TWIN_FILM_HAS_AUDIO) video.muted = !soundAudible(wanted, held, unlocked);
+    // خارج الشاشة لا يُسمَع الفيلم أبدًا: استئناف لوحة سَدِيد (`holdFilmUnderPanel`) لا يمرّ بفحص الظهور.
+    if (video && TWIN_FILM_HAS_AUDIO)
+      video.muted = !(soundAudible(wanted, held, unlocked) && visible.current);
     setSoundState(soundStateOf(wanted, held, unlocked));
   }, []);
 
@@ -366,32 +368,32 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
       // وانتظر أوّل لمسة. لا يُحاوَل تحت سَدِيد ولا بعد أن أسكته الزائر.
       const s = sound.current;
       s.held = TWIN_FILM_HAS_AUDIO ? filmAudioHeld() : false;
-      const audible = TWIN_FILM_HAS_AUDIO && s.wanted && !s.held;
-      if (TWIN_FILM_HAS_AUDIO) video.muted = !audible;
-      // «يعمل» تفاؤلًا ما دام المحاولة بصوت جارية (فلا يومض تلميح «المنع»)، ويصحَّح برفضها.
-      if (TWIN_FILM_HAS_AUDIO)
-        setSoundState(audible ? "on" : soundStateOf(s.wanted, s.held, s.unlocked));
+      // لا يُحاوَل بصوتٍ بعد رفضٍ سابق إلى أن تأتي لمسة (`denied`)، ولا خارج الشاشة.
+      const audible = TWIN_FILM_HAS_AUDIO && s.wanted && !s.held && !s.denied && visible.current;
+      if (TWIN_FILM_HAS_AUDIO) {
+        video.muted = !audible;
+        // «مفتوح» تفاؤلًا طوال المحاولة (فلا تُسكته إشعارٌ يصل قبل ردّ المتصفّح ولا يومض تلميح المنع)،
+        // ويُصحَّح برفضها.
+        if (audible) s.unlocked = true;
+        setSoundState(soundStateOf(s.wanted, s.held, s.unlocked));
+      }
       const played = video.play() as Promise<void> | undefined;
       // منعُ التشغيل (توفير الطاقة على iOS) أو رفضه يُبقي الملصق والزرّ يشغّله من داخل النقرة.
       // والمقاطعة بالإيقاف (`AbortError`) ليست رفضًا — حدث `pause` يحمل الحال.
-      played
-        ?.then(() => {
-          if (audible && !video.muted) {
-            s.unlocked = true;
-            applySound();
-          }
-        })
-        .catch((err: unknown) => {
-          if (err instanceof DOMException && err.name === "AbortError") return;
-          if (audible && err instanceof DOMException && err.name === "NotAllowedError") {
-            s.unlocked = false;
-            video.muted = true;
-            applySound();
-            (video.play() as Promise<void> | undefined)?.catch(() => setPlayState("paused"));
-            return;
-          }
-          setPlayState("paused");
-        });
+      played?.catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        if (audible && err instanceof DOMException && err.name === "NotAllowedError") {
+          s.unlocked = false;
+          s.denied = true;
+          video.muted = true;
+          applySound();
+          (video.play() as Promise<void> | undefined)?.catch((e: unknown) => {
+            if (!(e instanceof DOMException && e.name === "AbortError")) setPlayState("paused");
+          });
+          return;
+        }
+        setPlayState("paused");
+      });
     },
     [applySound],
   );
@@ -412,16 +414,20 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
     });
   }, [applySound]);
 
-  // أوّل لمسة تفتح الصوت إن منعه المتصفّح — وحدها تكفي (إيماءة المستخدم تسمح بفكّ الكتم).
-  // لمسة زرّ الصوت نفسه يعالجها الزرّ.
+  // أوّل لمسة تفتح الصوت إن منعه المتصفّح — وحدها تكفي (إيماءة المستخدم تسمح بفكّ الكتم). `pointerdown`
+  // اللمسيّ ليس إيماءةً (لا تنشيط) فيُتجاهَل، أمّا `click` فيُقبَل من الإصبع أيضًا (يحمل `pointerType`
+  // «touch» ولا يُفلتَر). ومفتاحٌ كـTab ليس قبولًا بالصوت — فلا `keydown` (Enter/Space على زرٍّ يُطلقان
+  // `click`). لمسة زرّ الصوت نفسه يعالجها الزرّ.
   useEffect(() => {
     if (!TWIN_FILM_HAS_AUDIO || !mounted) return;
-    const gestures = ["pointerdown", "click", "keydown"] as const;
+    const gestures = ["pointerdown", "click"] as const;
     const unlock = (event: Event) => {
-      if (event instanceof PointerEvent && event.pointerType === "touch") return;
+      if (event.type === "pointerdown" && (event as PointerEvent).pointerType === "touch") return;
       if (event.target instanceof Element && event.target.closest(".twin-film-sound")) return;
-      if (sound.current.unlocked) return;
-      sound.current.unlocked = true;
+      const s = sound.current;
+      s.denied = false; // لمسةٌ جديدة: يُحاوَل بصوتٍ ثانيةً (استئناف/إعادة عرض داخل النقرة).
+      if (s.unlocked) return;
+      s.unlocked = true;
       applySound();
     };
     gestures.forEach((type) => document.addEventListener(type, unlock, true));
@@ -430,6 +436,7 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
 
   const onSound = () => {
     const s = sound.current;
+    s.denied = false;
     if (soundStateOf(s.wanted, s.held, s.unlocked) === "off" || !s.unlocked) {
       s.wanted = true;
       s.unlocked = true;
@@ -460,6 +467,7 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
         if (seen) setArmed(true);
         const video = videoRef.current;
         if (!video) return;
+        if (TWIN_FILM_HAS_AUDIO) applySound(); // يُسكَت بخروجه من الشاشة ويعود صوته بعودته.
         if (!seen) {
           if (!video.paused) {
             autoPaused.current = true;
@@ -475,7 +483,7 @@ export function TwinFilmPlayer({ priority = false, onControlChange, ref }: TwinF
     );
     watcher.observe(frame);
     return () => watcher.disconnect();
-  }, [run]);
+  }, [run, applySound]);
 
   // عنصر الفيديو مركَّبًا: تحت لوحة سَدِيد يقف (الطبقة المشتركة)، ويبدأ إن كان إطاره ظاهرًا أو طلبه
   // الزائر — ولا يبدأ فيلمٌ انتهى (عاد بعد زوال بوابة).
