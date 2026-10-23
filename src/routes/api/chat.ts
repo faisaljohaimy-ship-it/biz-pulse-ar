@@ -37,6 +37,12 @@ import {
 import { evaluateRagCoverage } from "@/lib/sadeed/rag.server";
 import { parseIntent, resolveModel } from "@/lib/sadeed-core/server/ai-router.server";
 import { resolveProviderPlan, type PlannedModel } from "@/lib/sadeed/llm/provider-plan.server";
+import {
+  openAiRequested,
+  safeOpenAiError,
+  SADEED_OPENAI_DEADLINE_MS,
+  SADEED_OPENAI_MAX_OUTPUT_TOKENS,
+} from "@/lib/sadeed/openai-provider.server";
 import { SADEED_IDENTITY_PREAMBLE } from "@/lib/sadeed/identity";
 import { buildSadeedRuntimeBlock, MAKKAH_TIME_DIRECTIVE } from "@/lib/sadeed/makkah-clock";
 import {
@@ -398,7 +404,17 @@ export const Route = createFileRoute("/api/chat")({
         // `llm` بمحرّكٍ مهيّأ (Gemini افتراضًا، أو المحوّل الاختياري بإذنين صريحين)،
         // أو `zero_cost` — فتجيب الطبقات الحتمية أدناه، وما لا يُجاب حتميًّا يُبثّ
         // له ردٌّ صادق بلا أيّ نداء مزوّد. ولا استبدال صامت لمورّدٍ بآخر.
-        const plan = resolveProviderPlan({ geminiModelId: selectedModelId });
+        //
+        // **والاثنان معًا (قرار المالك ٢٠٢٦/١٠/٢٣):** ترويسة `X-SADEED-Provider: openai`
+        // **تطلب** المحوّل الاختياري، وخطّة البيئة وحدها **تأذن** (البوّابتان معًا). طلبٌ بلا
+        // إذن ⇐ `zero_cost` بسببه الخاص: الطبقات الحتمية تجيب، وما عداها ردٌّ صادق «غير
+        // مهيّأ» — ولا يُجاب من Gemini بدلًا عنه ولو كان مفتاحه حاضرًا.
+        const openAiHeader = openAiRequested(request.headers);
+        const plan = resolveProviderPlan({
+          geminiModelId: selectedModelId,
+          requestedVendor: openAiHeader ? "openai" : null,
+        });
+        const useOpenAi = plan.mode === "llm" && plan.primary.vendor === "openai";
 
         const supabaseUrl = process.env.SUPABASE_URL?.trim();
         const supabasePublishable = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
@@ -676,7 +692,11 @@ export const Route = createFileRoute("/api/chat")({
             requestId,
             zeroCostUnsupportedReply(
               lastUserText ? detectLocale(lastUserText) : "ar",
-              plan.reason === "provider_disabled" ? "provider_disabled" : "no_provider",
+              plan.reason === "provider_disabled"
+                ? "provider_disabled"
+                : plan.reason === "requested_provider_not_configured"
+                  ? "requested_not_configured"
+                  : "no_provider",
             ),
             "zero-cost",
             { "X-SADEED-Gate": gateMode, "X-SADEED-Auth": authState },
@@ -1162,8 +1182,11 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
         let attempted: PlannedModel = primary;
         let answeredBy: PlannedModel | null = null;
         // سقف الدور: إلغاء الطلب أو تجاوز المهلة — أيّهما أسبق.
-        const turnDeadlineMs =
-          replyMode === "deep" ? MODEL_TURN_DEADLINE_DEEP_MS : MODEL_TURN_DEADLINE_MS;
+        // والمحوّل الاختياري بسقفه الأقصر من الخادم (25 ث) — لا يختاره العميل.
+        const turnDeadlineMs = Math.min(
+          replyMode === "deep" ? MODEL_TURN_DEADLINE_DEEP_MS : MODEL_TURN_DEADLINE_MS,
+          useOpenAi ? SADEED_OPENAI_DEADLINE_MS : Number.POSITIVE_INFINITY,
+        );
         const turnSignal = AbortSignal.any([request.signal, AbortSignal.timeout(turnDeadlineMs)]);
         try {
           const backup = await import("@/lib/sadeed/backup-provider.server");
@@ -1178,12 +1201,20 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               messages: modelMessages,
               tools,
               toolChoice: "auto",
-              stopWhen: stepCountIs(8),
+              stopWhen: stepCountIs(useOpenAi ? 2 : 8),
               maxRetries: retries,
               abortSignal: turnSignal,
               // Gemini 3.6 deprecates temperature/top-p/top-k controls. Keep
               // quality in the prompt, evidence gate and tool policy instead.
-              maxOutputTokens: replyMode === "voice" ? 700 : 16_000,
+              maxOutputTokens: useOpenAi
+                ? Math.min(
+                    SADEED_OPENAI_MAX_OUTPUT_TOKENS,
+                    replyMode === "voice" ? 700 : SADEED_OPENAI_MAX_OUTPUT_TOKENS,
+                  )
+                : replyMode === "voice"
+                  ? 700
+                  : 16_000,
+              ...(useOpenAi ? { providerOptions: { openai: { store: false } } } : {}),
             });
           // الاحتياطي لا يُبنى إلا إن وُجد في الخطة (طلبٌ صريح من المالك) ولزم فعلًا.
           let gen: Awaited<ReturnType<typeof run>>;
@@ -1222,8 +1253,16 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             latencyMs: Date.now() - startAt,
           });
         } catch (error) {
-          const errMsg = error instanceof Error ? error.message : String(error);
-          generationErrorText = mapProviderError(error);
+          // ردود OpenAI لا تُسجَّل بأجسامها: الحالة وحدها (قد تحمل الأجسام نصّ المستخدم).
+          const errMsg =
+            attempted.vendor === "openai"
+              ? safeOpenAiError(error)
+              : error instanceof Error
+                ? error.message
+                : String(error);
+          generationErrorText = mapProviderError(
+            attempted.vendor === "openai" ? new Error(errMsg) : error,
+          );
           console.error("[api/chat] generateText error", {
             requestId,
             vendor: attempted.vendor,
@@ -1410,6 +1449,14 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             "X-SADEED-Reply-Source": replySource,
             "X-SADEED-Gate": gateMode,
             "X-SADEED-Auth": authState,
+            // طُلب المحوّل بالترويسة وأُذن له: يُشهَد للعميل بالمورّد الذي أجاب فعلًا.
+            ...(useOpenAi
+              ? {
+                  "X-SADEED-Provider": "openai",
+                  "X-SADEED-Model": (answeredBy ?? attempted).modelId,
+                  "X-SADEED-Generation": generationErrorText ? "error" : "success",
+                }
+              : {}),
           },
         });
       },

@@ -42,7 +42,8 @@ export type ZeroCostAnswer = {
   source: "help" | "count-en" | "navigation";
 };
 
-export type ZeroCostUnsupportedReason = "no_provider" | "provider_disabled" | "gate_closed";
+export type ZeroCostUnsupportedReason =
+  "no_provider" | "provider_disabled" | "gate_closed" | "requested_not_configured";
 
 /** أطول سؤالٍ يُطابَق حتميًّا — ما فوقه (ومنه نصوص المرفقات) ليس أمرًا قصيرًا. */
 const MAX_DETERMINISTIC_CHARS = 220;
@@ -411,7 +412,9 @@ export function zeroCostUnsupportedReply(
         ? "The service cannot be verified at this moment, so the language analysis engine is unavailable for this request."
         : reason === "provider_disabled"
           ? "This request needs the language analysis engine, which is switched off right now (zero-cost mode)."
-          : "This request needs the language analysis engine, which is not enabled right now (zero-cost mode).";
+          : reason === "requested_not_configured"
+            ? "The requested analysis engine is not configured right now; no other engine was used in its place."
+            : "This request needs the language analysis engine, which is not enabled right now (zero-cost mode).";
     const examples = ZERO_COST_EXAMPLES.en.map((q) => `"${q}"`).join(" · ");
     return `${lead} I will not present unverified conclusions. Try: ${examples}`;
   }
@@ -420,7 +423,9 @@ export function zeroCostUnsupportedReply(
       ? "تعذّر التحقّق من الخدمة لحظيًّا، فمحرّك التحليل اللغوي غير متاح لهذا الطلب."
       : reason === "provider_disabled"
         ? "هذا الطلب يحتاج محرّك التحليل اللغوي، وهو موقوفٌ الآن بقرار التشغيل (الوضع الحتمي بلا تكلفة)."
-        : "هذا الطلب يحتاج محرّك التحليل اللغوي، وهو غير مفعّل الآن (الوضع الحتمي بلا تكلفة).";
+        : reason === "requested_not_configured"
+          ? "محرّك التحليل المطلوب غير مهيّأ الآن، ولم يُستبدل به محرّكٌ آخر."
+          : "هذا الطلب يحتاج محرّك التحليل اللغوي، وهو غير مفعّل الآن (الوضع الحتمي بلا تكلفة).";
   const examples = ZERO_COST_EXAMPLES.ar.map((q) => `«${q}»`).join(" · ");
   return `${lead} ولن أعرض استنتاجًا غير متحقّق. جرّب: ${examples}`;
 }

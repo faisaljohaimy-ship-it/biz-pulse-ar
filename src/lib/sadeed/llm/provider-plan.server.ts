@@ -44,7 +44,11 @@ export type SadeedLlmSelection = "gemini" | "openai" | "none" | "invalid";
 
 /** لماذا الوضع الحتمي — للسجلّ والصحّة ونصّ الردّ، لا يحمل قيمةً سرّية. */
 export type ZeroCostReason =
-  "provider_disabled" | "provider_not_configured" | "invalid_provider_setting";
+  | "provider_disabled"
+  | "provider_not_configured"
+  | "invalid_provider_setting"
+  /** طُلب المحوّل الاختياري بالترويسة ولم تأذن البوّابتان — لا سقوط إلى مورّدٍ آخر. */
+  | "requested_provider_not_configured";
 
 /** وسم فئة المورّد للسجلّ والقياس — لا يظهر للمستخدم. */
 export type SadeedLlmVendor = "google-gemini" | "openai" | "lovable-gateway";
@@ -79,6 +83,12 @@ export type ProviderPlanOptions = {
    * النيّة). يُتحقَّق منه هنا ثانيةً، وما ليس في القائمة يعود لنموذج الخادم.
    */
   geminiModelId?: string | null;
+  /**
+   * ما طلبه العميل بالترويسة (`X-SADEED-Provider: openai`) — نصف «الاثنان معًا»
+   * (قرار المالك ٢٠٢٦/١٠/٢٣): الطلب لا يُلبّى إلا حين تأذن بوّابتا البيئة، وإلا
+   * `zero_cost` بسببٍ خاص فيُجاب صادقًا بلا نداء أيّ مورّد — لا Gemini بديلًا صامتًا.
+   */
+  requestedVendor?: "openai" | null;
 };
 
 /** يقرأ اختيار المحرّك: الغياب/الفراغ ⇐ `gemini`، والمجهول ⇐ `invalid`. */
@@ -120,30 +130,16 @@ export function resolveProviderPlan(options: ProviderPlanOptions = {}): Provider
   if (selected === "invalid") return zeroCost(selected, "invalid_provider_setting");
   if (selected === "none") return zeroCost(selected, "provider_disabled");
 
+  if (options.requestedVendor === "openai") {
+    const key = openAiKey(env);
+    if (!key || !openAiEnabled(env)) return zeroCost("openai", "requested_provider_not_configured");
+    return openAiPlan(key, resolveOpenAiModel(env));
+  }
+
   if (selected === "openai") {
     const key = openAiKey(env);
     if (!key || !openAiEnabled(env)) return zeroCost(selected, "provider_not_configured");
-    const modelId = resolveOpenAiModel(env);
-    return {
-      mode: "llm",
-      selected,
-      reason: null,
-      primary: {
-        vendor: "openai",
-        modelId,
-        // واجهة المحادثات (`.chat`) لا الافتراضية (Responses)، لسببين لا يُختبران إلا
-        // حيًّا فيُتّقيان بالبناء: ① أدوات المسجَّل فيها حقولٌ اختيارية، والحزمة لا
-        // ترسل `strict` ما لم تضبطه الأداة — وافتراض Responses الصارم يرفض مخطّطًا
-        // كهذا، وافتراض المحادثات غير صارم؛ ② Responses تحفظ المخرَجات لدى المورّد
-        // افتراضًا (`store`)، والمحادثات لا تحفظها. وأسئلة المستخدمين لا تُحفظ خارجنا.
-        create: async () => {
-          const { createOpenAI } = await import("@ai-sdk/openai");
-          return createOpenAI({ apiKey: key }).chat(modelId);
-        },
-      },
-      // الاحتياطي خلف Gemini وحده — لا سلسلة مورّدين بعدّاد خلف محوّلٍ اختياري.
-      backup: null,
-    };
+    return openAiPlan(key, resolveOpenAiModel(env));
   }
 
   const key = geminiKey(env);
@@ -173,6 +169,32 @@ export function resolveProviderPlan(options: ProviderPlanOptions = {}): Provider
         }
       : null,
   };
+}
+
+function openAiPlan(key: string, modelId: SadeedOpenAiModel): ProviderPlan {
+  {
+    const selected = "openai" as const;
+    return {
+      mode: "llm",
+      selected,
+      reason: null,
+      primary: {
+        vendor: "openai",
+        modelId,
+        // واجهة المحادثات (`.chat`) لا الافتراضية (Responses)، لسببين لا يُختبران إلا
+        // حيًّا فيُتّقيان بالبناء: ① أدوات المسجَّل فيها حقولٌ اختيارية، والحزمة لا
+        // ترسل `strict` ما لم تضبطه الأداة — وافتراض Responses الصارم يرفض مخطّطًا
+        // كهذا، وافتراض المحادثات غير صارم؛ ② Responses تحفظ المخرَجات لدى المورّد
+        // افتراضًا (`store`)، والمحادثات لا تحفظها. وأسئلة المستخدمين لا تُحفظ خارجنا.
+        create: async () => {
+          const { createOpenAI } = await import("@ai-sdk/openai");
+          return createOpenAI({ apiKey: key }).chat(modelId);
+        },
+      },
+      // الاحتياطي خلف Gemini وحده — لا سلسلة مورّدين بعدّاد خلف محوّلٍ اختياري.
+      backup: null,
+    };
+  }
 }
 
 /** وصف الخطة للصحّة والجاهزية — وسومٌ وقيمٌ منطقية فقط، لا مفتاح ولا قيمة سرّية. */

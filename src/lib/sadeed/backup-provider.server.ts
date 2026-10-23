@@ -19,13 +19,23 @@ export const SADEED_BACKUP_MODEL = "google/gemini-3-flash-preview";
 /** Only quota, rate-limit and transient upstream failures move to the backup. */
 export function shouldUseBackup(error: unknown): boolean {
   const msg = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  const status =
+    error && typeof error === "object" && "statusCode" in error
+      ? Number(error.statusCode)
+      : Number(msg.match(/\b(4\d\d|5\d\d)\b/)?.[1]);
+  // A denial or invalid request stays terminal, even when its text contains
+  // "quota" or "unavailable". Never spend on a second provider for it.
+  if ([400, 401, 402, 403].includes(status)) return false;
   return (
     /\b(429|500|502|503|504)\b/.test(msg) ||
     msg.includes("quota") ||
     msg.includes("rate limit") ||
     msg.includes("resource_exhausted") ||
     msg.includes("overloaded") ||
-    msg.includes("unavailable")
+    /high demand|experiencing (?:high )?demand|temporarily busy|try again later/i.test(msg) ||
+    msg.includes("unavailable") ||
+    // A retired/unknown primary model id must not leave the user with no answer.
+    /model[^\n]{0,60}?not (found|supported)/.test(msg)
   );
 }
 

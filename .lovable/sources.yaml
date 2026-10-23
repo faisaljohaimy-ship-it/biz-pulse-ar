@@ -1,0 +1,44 @@
+tokens:
+  - file: .claude/skills/remotion-best-practices/remotion-maps/techniques/maptiler/assets/tokens.ts
+    operation: js-object-path
+  - file: .claude/skills/remotion-best-practices/remotion-markup/remotion-maps/techniques/maptiler/assets/tokens.ts
+    operation: js-object-path
+  - file: .claude/skills/remotion-maps/techniques/maptiler/assets/tokens.ts
+    operation: js-object-path
+  - file: .claude/skills/remotion-markup/remotion-maps/techniques/maptiler/assets/tokens.ts
+    operation: js-object-path
+  - file: src/styles.css
+    operation: css-variables
+  - file: src/styles/brand-plate.css
+    operation: css-variables
+  - file: src/styles/home/home-analytics.css
+    operation: css-variables
+  - file: src/styles/home/home-brand.css
+    operation: css-variables
+  - file: src/styles/home/home-chrome.css
+    operation: css-variables
+  - file: src/styles/home/home-kpi.css
+    operation: css-variables
+  - file: src/styles/home/home-layout.css
+    operation: css-variables
+  - file: src/styles/home/home-map.css
+    operation: css-variables
+  - file: src/styles/home/home-motion.css
+    operation: css-variables
+  - file: src/styles/home/home-ops.css
+    operation: css-variables
+  - file: src/styles/home/home-sadeed.css
+    operation: css-variables
+  - file: src/styles/home/home-ticker.css
+    operation: css-variables
+  - file: src/styles/icon-motion.css
+    operation: css-variables
+  - file: src/styles/nx-tokens.css
+    operation: css-variables
+  - file: src/styles/report-charts.css
+    operation: css-variables
+  - file: src/styles/report-viewer.css
+    operation: css-variables
+components:
+  - file: src/components/nx/index.ts
+    operation: ts-named-exports

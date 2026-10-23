@@ -380,6 +380,8 @@ async function fetchSecOverview(
 
 // ============= TWIN TREE =============
 export type TwinTree = {
+  /** Explicit provenance: never present sample data as live telemetry. */
+  dataSource?: "live" | "simulation";
   region: { name_ar: string; name_en: string };
   sections: SecSection[];
   circles: (SecCircle & {
@@ -402,11 +404,17 @@ export const getTwinTree = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<TwinTree> => {
     const { buildTwinTreeSimulation, resilient } =
       await import("@/lib/exec/showcase-simulation.server");
-    return resilient(
+    return resilient<TwinTree>(
       "twin-tree",
-      () => fetchTwinTree(context.supabase as { from: (t: string) => any }),
+      async () => ({
+        ...(await fetchTwinTree(context.supabase as { from: (t: string) => any })),
+        dataSource: "live" as const,
+      }),
       (t) => t.circles.length === 0 && t.sections.length === 0,
-      () => buildTwinTreeSimulation(Date.now()) as unknown as TwinTree,
+      () => ({
+        ...(buildTwinTreeSimulation(Date.now()) as unknown as TwinTree),
+        dataSource: "simulation" as const,
+      }),
     );
   });
 

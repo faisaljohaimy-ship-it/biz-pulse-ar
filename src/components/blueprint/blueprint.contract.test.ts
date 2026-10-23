@@ -1437,7 +1437,9 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
       expect(reorders, `${file}: ترتيبٌ بصريّ على الصفوف`).toEqual([]);
     }
     // وصفّ الهوية بلا ترتيبٍ بصريّ، وما يُركَّز فيه بترتيب DOM: منطقة الشريط (تمرير بالأسهم في
-    // السكون، وإيقافٌ بالتركيز) ثم زرّ إيقاف الحركة — والبانر نفسه بلا عنصرٍ يُركَّز.
+    // السكون، وإيقافٌ بالتركيز) ثم زرّ إيقاف الحركة، ثم في البانر **زرٌّ واحد** — زرّ الموسيقى
+    // وإعادة العرض (أمر المالك ٢٠٢٦/١٠/١٨ R4 «واظف الى فديو الموشن قرافيتي … موسيقا»، وWCAG 1.4.2
+    // يوجب للصوت الذي يبدأ وحده مخرجًا). لا رابطٌ ولا موقف تبويبٍ آخر في البانر.
     const brandCss = HOME_CSS.get("src/styles/home/home-brand.css") ?? "";
     expect(arrangementReorders(brandCss)).toEqual([]);
     expect(arrangementReorders(`${brandCss}\n.nx-ticker { order: 1 }`)).toEqual([
@@ -1447,13 +1449,14 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
     const ticker = stripComments(surfaceFile("HomeTicker.tsx"));
     const focusables = (code: string) => code.match(/<(?:Link|a|button)\b/g) ?? [];
     const focusStops = (code: string) => code.match(/tabIndex=\{?["']?0\b/g) ?? [];
-    expect(focusables(brandRow)).toEqual([]);
+    expect(focusables(brandRow)).toEqual(["<button"]);
+    expect(brandRow).toMatch(/<button\s+type="button"\s+className="nx-brand-sound nx-focus-ring"/);
     expect(focusables(ticker)).toEqual(["<button"]);
     expect(focusStops(brandRow), "عنصرٌ قابلٌ للتركيز في البانر").toEqual([]);
     expect(focusStops(ticker)).toHaveLength(1);
     expect(ticker).toMatch(/className="nx-ticker-view" role="region"[^>]*tabIndex=\{0\}/);
     expect(focusStops(`${ticker}\n<span tabIndex={0} />`)).toHaveLength(2);
-    expect(focusables(`${brandRow}\n<a href="/x">x</a>`)).not.toEqual([]);
+    expect(focusables(`${brandRow}\n<a href="/x">x</a>`)).toEqual(["<button", "<a"]);
 
     // يحمرّ على المزروع (المادة ٣٠): الصدر مقلوبًا، وأداة `order-*`، وقاعدة
     // ترتيبٍ على بطاقة الصدر، و`dense` على الشبكة.

@@ -74,11 +74,25 @@ vi.mock("@/lib/governance/ai-quota.server", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   enforceAiQuota: async () => null,
 }));
-const model = vi.hoisted(() => ({ calls: 0, tools: [] as boolean[] }));
+const model = vi.hoisted(() => ({
+  calls: 0,
+  tools: [] as boolean[],
+  modelId: "",
+  maxOutputTokens: 0,
+  maxRetries: -1,
+}));
 vi.mock("ai", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  generateText: async (opts: { tools?: unknown }) => {
+  generateText: async (opts: {
+    tools?: unknown;
+    model: { modelId: string };
+    maxOutputTokens: number;
+    maxRetries: number;
+  }) => {
     model.calls++;
+    model.modelId = opts.model.modelId;
+    model.maxOutputTokens = opts.maxOutputTokens;
+    model.maxRetries = opts.maxRetries;
     model.tools.push(Boolean(opts.tools));
     return { text: "ردّ صوري." };
   },
@@ -105,7 +119,7 @@ afterAll(() => vi.unstubAllEnvs());
 vi.setConfig({ testTimeout: 20_000 });
 
 type Handler = (args: { request: Request }) => Promise<Response>;
-async function post(bearer?: string) {
+async function post(bearer?: string, provider?: string) {
   const mod = (await import("@/routes/api/chat")) as unknown as {
     Route: { options: { server: { handlers: { POST: Handler } } } };
   };
@@ -115,6 +129,7 @@ async function post(bearer?: string) {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        ...(provider ? { "X-SADEED-Provider": provider } : {}),
         ...(bearer ? { authorization: `Bearer ${bearer}` } : {}),
       },
       body: JSON.stringify({
@@ -147,6 +162,37 @@ beforeEach(async () => {
 afterEach(() => vi.restoreAllMocks());
 
 describe("التحقّق من الجلسة بمهلة", () => {
+  // «الاثنان معًا» (قرار المالك ٢٠٢٦/١٠/٢٣): الترويسة تطلب، وخطّة البيئة تأذن بالبوّابتين.
+  it("طلب OpenAI بالترويسة مع الإذنَين ⇐ يُجاب منه بسقوفٍ من الخادم، وبصلاحيات الزائر", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-only-not-a-secret-00");
+    vi.stubEnv("SADEED_OPENAI_ENABLED", "true");
+    const { res } = await post(undefined, "openai");
+    expect(res.headers.get("X-SADEED-Provider")).toBe("openai");
+    expect(res.headers.get("X-SADEED-Model")).toBe("gpt-5-mini");
+    expect(res.headers.get("X-SADEED-Generation")).toBe("success");
+    expect(model.modelId).toBe("gpt-5-mini");
+    expect(model.maxOutputTokens).toBe(1200);
+    expect(model.maxRetries).toBe(0);
+    expect(model.tools[0]).toBe(false);
+    expect(model.calls).toBe(1);
+  });
+  it("مفتاح OpenAI وحده لا يُبدّل Gemini الافتراضي", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-only-not-a-secret-00");
+    vi.stubEnv("SADEED_OPENAI_ENABLED", "true");
+    const { res } = await post();
+    expect(model.modelId).toBe("gemini-3.6-flash");
+    expect(res.headers.get("X-SADEED-Provider")).toBeNull();
+  });
+  it("طلبٌ بالترويسة بلا إذن البيئة ⇐ لا نداء لأيّ مورّد، ولا سقوط إلى Gemini، وردٌّ صادق لا 503", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-only-not-a-secret-00");
+    vi.stubEnv("SADEED_OPENAI_ENABLED", "");
+    const { res } = await post(undefined, "openai");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("zero-cost");
+    expect(res.headers.get("X-SADEED-Provider")).toBeNull();
+    expect(model.calls).toBe(0);
+    expect(await res.text()).toContain("المطلوب غير مهيّأ");
+  });
   it("خدمة مصادقةٍ معلّقة ⇐ يُخدَم زائرًا خلال المهلة، بلا أدوات، موسومًا unverified", async () => {
     const { res, elapsed } = await post("stale.jwt.token.that.is.long.enough.for.the.guard");
     expect(res.status).toBe(200);

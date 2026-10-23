@@ -53,9 +53,9 @@ export function evaluateRagCoverage(answer: string, citations: RagCitation[]): R
   const uncitedTags: string[] = [];
   for (const c of citations) {
     if (c.kind === "memory") continue;
-    const prefix = c.kind === "document" ? "[doc:" : "[kb:";
-    const titleFrag = c.title.toLowerCase().slice(0, 24);
-    const hit = text.includes(prefix) && text.includes(titleFrag);
+    // A title mentioned in prose (or shared by two long titles) is not a
+    // citation. Credit only the complete tag issued for this source.
+    const hit = c.tag.length > 0 && text.includes(c.tag.toLowerCase());
     if (hit) citedTags.push(c.tag);
     else uncitedTags.push(c.tag);
   }
