@@ -228,7 +228,12 @@ if (!h1.ok) {
 // ── H2 ─────────────────────────────────────────────────────────────────────────
 const h2 = await getJson("/api/chat/health");
 if (h2.ok && h2.json?.ok === true && h2.json.key_present === true) {
-  note("H2 chat/health", "pass", `المزوّد مهيّأ (${h2.json.provider}) في ${h2.ms} مللي ثانية`);
+  // `gate` منذ R3 (DEF-11): حال البوّابة كما تراها شارة سَدِيد — وغيابه بناءٌ منشور أقدم.
+  note(
+    "H2 chat/health",
+    "pass",
+    `المزوّد مهيّأ (${h2.json.provider}) · gate=${h2.json.gate ?? "— (بناءٌ أقدم من R3)"} في ${h2.ms} مللي ثانية`,
+  );
 } else {
   note("H2 chat/health", "fail", h2.ok ? `http ${h2.status}: ${h2.text.slice(0, 120)}` : h2.error);
 }

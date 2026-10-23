@@ -19,7 +19,12 @@
  *   RECORD=1 (اختياري — تسجيلٌ للرئيسية دورةً كاملة من فيلم البانر)
  *
  * **وفيلم البانر يُقاس حيث وُجد** (٢٠٢٦/١٠/١٨): المصدر المختار، وتقدّم الزمن، وفصل النصّ
- * (`data-film-act`)، والتفاف الحلقة بعد نهايتها — ولقطةٌ للبانر عند كل مشهد بالقفز إليه.
+ * (`data-film-act`)، وما يحدث بعد نهايته — ولقطةٌ للبانر عند كل مشهد بالقفز إليه. ومنذ R4 يُعرض
+ * الفيلم مرّةً ثم يقف على اللوحة في فصل «الجوهرة»، فالنهاية تُقرأ `ended` و`act` لا التفافًا.
+ *
+ * **وعلامات الإصدار** (`markers`): بناء Lovable بلا معرّف (`build=unknown`)، فلا يقول الفحص أيّ
+ * إصدارٍ يُخدَم إلا بما يُرى منه — رابط «دخول الموظفين» (R3)، واتّجاه لمعة اللوحة ودورتها، و`loop`
+ * الفيلم، ومصادر موسيقاه وزرّها، وطبقة الجوهرة (R4). شواهد تُطبع كما قِيست، لا أحكام.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -44,8 +49,15 @@ const VIEWPORTS = [
 ];
 const THEMES = ["light", "dark"];
 const SHARE_URL = process.env.SHARE_URL || "";
-/** مشاهد فيلم البانر (ث) — من جدول `SadeedFilm.tsx`: سكون · انبثاق · أفق · خريطة · رمز · كشف. */
-const FILM_SCENES = [2, 9.6, 12.6, 16, 18.6, 21.6];
+/**
+ * مشاهد فيلم البانر (ث) — من `remotion/brand/film/timeline.ts`: اشتعال · مونتاج (أربع لقطات) ·
+ * تقارب · ليزر · مسحٌ يبني الرمز · إشعاع · تثبيت اللوحة · لمعانٌ ختاميّ. **وآخرها قبل 23.2:** بين
+ * قفزةٍ والتي تليها 0.8 ث انتظارًا ثم قراءةٌ ثم لقطة (واللقطة قد تتجاوز نصف ثانية على CI)، والفيلم
+ * منذ R4 يُعرض مرّةً — فقد يبلغ نهايته قبل فحصها. لذا لا يُقفز بفيلمٍ انتهى، ويُقرأ `end` من حدث
+ * `ended` لا من نومٍ ثابت: قفزٌ إلى 23.4 بعد النهاية يترك فيلمًا متوقّفًا لا ينتهي فيكذب `end`
+ * (أمسكته المراجعة مرّتين).
+ */
+const FILM_SCENES = [0.3, 2, 6, 10, 14, 16.2, 17.6, 19, 19.8, 21.8, 22.8];
 
 /** يفتح رابط المشاركة مرّةً في السياق فيحمل كل طلبٍ بعده ملفّ الدخول — لا شيء بدونه. */
 async function admit(ctx) {
@@ -94,11 +106,20 @@ async function probeFilm(page, tag) {
     await stage.screenshot({ path: join(OUT, `${tag}-film-${String(at).replace(".", "_")}s.png`) });
     scenes.push({ at, ...st });
   }
-  await page.evaluate(() => {
-    const v = document.querySelector(".nx-brand-film");
-    if (v) v.currentTime = 23.4;
-  });
-  await page.waitForTimeout(1_600);
+  // بعد النهاية: الفيلم يقف (`ended`) والفصل «الجوهرة» — أو يلتفّ إن كان الإصدار المخدوم أقدم
+  // (فلا `ended` له، ويُقرأ بعد 1.6 ث من القفز كما كان).
+  const end = await page.evaluate(
+    () =>
+      new Promise((done) => {
+        const v = document.querySelector(".nx-brand-film");
+        if (!v) return done(null);
+        const report = () => done({ ended: v.ended, loop: v.loop });
+        if (v.ended) return report();
+        v.addEventListener("ended", report, { once: true });
+        v.currentTime = 23.4;
+        setTimeout(report, v.loop ? 1_600 : 3_000);
+      }),
+  );
   const wrap = await read();
   return {
     ready,
@@ -107,6 +128,7 @@ async function probeFilm(page, tag) {
     scenes,
     looped: wrap ? wrap.t < 3 && !wrap.paused : null,
     wrap,
+    end,
   };
 }
 
@@ -138,7 +160,42 @@ function collect() {
   const icons = [
     ...document.querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"]'),
   ].map((l) => l.getAttribute("href"));
+  // علامات الإصدار — ما يميّز R3 وR4 مرئيًّا (انظر رأس الملف).
+  const login = q('a[href^="/auth"]');
+  const sheen = q(".nx-plate-sheen");
+  const sheenStyle = sheen ? getComputedStyle(sheen, "::after") : null;
+  const film = q(".nx-brand-film");
+  const audio = q(".nx-brand audio");
+  const sound = [...document.querySelectorAll(".nx-brand button")].find((b) =>
+    /الموسيقى|music/i.test(b.getAttribute("aria-label") ?? b.textContent ?? ""),
+  );
+  const jewel = q('.nx-brand-art [class*="jewel"]');
+  const markers = {
+    login: login ? { text: login.textContent.trim(), href: login.getAttribute("href") } : null,
+    plateSheen: sheenStyle
+      ? {
+          name: sheenStyle.animationName,
+          duration: sheenStyle.animationDuration,
+          direction: sheenStyle.animationDirection,
+          iterations: sheenStyle.animationIterationCount,
+        }
+      : null,
+    filmLoop: film ? film.loop : null,
+    audio: audio
+      ? {
+          sources: [...audio.querySelectorAll("source")].map((s) =>
+            (s.getAttribute("src") ?? "").split("/").pop(),
+          ),
+          paused: audio.paused,
+        }
+      : null,
+    sound: sound
+      ? { label: sound.getAttribute("aria-label"), pressed: sound.getAttribute("aria-pressed") }
+      : null,
+    jewel: jewel ? { className: jewel.className, rect: rect(jewel) } : null,
+  };
   return {
+    markers,
     title: document.title,
     dir: document.documentElement.getAttribute("dir"),
     theme: document.documentElement.className,
