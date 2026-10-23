@@ -150,10 +150,12 @@ describe("③ حدّ الحزمة: لا يصل العميل ملفُّ خادم 
     }
   });
 
-  it("الصفحة والمدخل يستوردان `access.functions` وحده من الخادم (دالة الخادم)", () => {
+  it("الصفحة والمدخل وبطاقة الرئيسية يستوردون `access.functions` وحده من الخادم (دالة الخادم)", () => {
+    // بطاقة الرئيسية (أمر المالك ٢٠٢٦/١٠/٢٣) حكمُها حكم المدخل نفسه: المالك وحده، من الخادم.
     const allowed = new Set([
       "src/routes/_authenticated/finn.tsx",
       "src/components/finn/FinnNavEntry.tsx",
+      "src/components/finn/HomeFinnCard.tsx",
     ]);
     for (const f of CLIENT_FILES) {
       const uses = /finn-agent\/access\.functions/.test(strip(read(f)));

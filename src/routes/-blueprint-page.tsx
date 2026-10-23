@@ -64,6 +64,7 @@ import { HomeBrandRow } from "@/components/home/HomeBrandRow";
 import { HomeKpiRow } from "@/components/home/HomeDashboard";
 import { HomeMapCard } from "@/components/home/HomeMapCard";
 import { HomeSadeedCard } from "@/components/home/HomeSadeedCard";
+import { HomeFinnCard } from "@/components/finn/HomeFinnCard";
 import { HomeOpsRow } from "@/components/home/HomeOpsRow";
 import { HomeAnalyticsRow } from "@/components/home/HomeAnalyticsRow";
 import { HomeClosingBand } from "@/components/home/HomeClosingBand";
@@ -102,7 +103,11 @@ export function BlueprintPage() {
               يتراصّان دون 1280 بالترتيب نفسه: الخريطة ثم سَدِيد. */}
         <div className="nx-home-hero">
           <HomeMapCard />
-          <HomeSadeedCard />
+          {/* سَدِيد ثم، **أسفله**، بطاقة فِن — للمالك وحده (تعود null لغيره). */}
+          <div className="nx-home-side-col">
+            <HomeSadeedCard />
+            <HomeFinnCard />
+          </div>
         </div>
 
         {/* ════ التشغيل: أبرز المخاطر · الحوادث النشطة · الدوريات · الكاميرات. */}
