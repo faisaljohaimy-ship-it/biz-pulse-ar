@@ -712,7 +712,11 @@ function BrandFilm({
   useEffect(() => {
     const video = ref.current;
     if (!live || !video) return;
-    // Owner-approved 50% presentation speed. Audio stays on the same media timeline.\n    // This doubles playback duration without replacing the original MP4/WebM assets.\n    video.defaultPlaybackRate = 0.5;\n    video.playbackRate = 0.5;\n    const bound = bindFilmSound(video, {
+    // Owner-approved 50% presentation speed. Audio stays on the same media timeline.
+    // This doubles playback duration without replacing the original MP4/WebM assets.
+    video.defaultPlaybackRate = 0.5;
+    video.playbackRate = 0.5;
+    const bound = bindFilmSound(video, {
       wanted: () => wanted.current,
       offscreen: () => offscreen.current,
       // منعُ التشغيل حتى مكتومًا (توفير الطاقة في iOS): الجوهرة فوق الصورة لا إطارٌ متجمّد.
