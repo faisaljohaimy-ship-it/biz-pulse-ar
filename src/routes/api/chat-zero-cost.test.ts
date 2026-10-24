@@ -79,6 +79,12 @@ vi.mock("ai", async (importOriginal) => ({
     return sim.generate ? sim.generate(opts) : { text: "ردّ صوري." };
   },
 }));
+// التراجع الحقيقي (1.5 ث) يُصفَّر هنا فقط: الاختبار يقيس القرار (أُعيد أم لا) لا الانتظار، وبرهانُ الانتظار
+// نفسه في `transient-retry.server.test.ts`.
+vi.mock("@/lib/sadeed/llm/transient-retry.server", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  transientBackoffMs: () => 0,
+}));
 vi.mock("@ai-sdk/openai", () => ({
   // الافتراضي (Responses) بوسمٍ مختلف: يُثبت أن الخطة تبني واجهة المحادثات `.chat`.
   createOpenAI: () => {
@@ -398,7 +404,8 @@ describe("(e) البوّابة الاحتياطية — بطلبٍ صريح وح
     expect(res.status).toBe(200);
     expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model-error");
     expect(sim.backupBuilds, "بُني مزوّدٌ بعدّاد بلا طلبٍ صريح").toBe(0);
-    expect(sim.modelCalls).toBe(1);
+    // «503 upstream unavailable» ازدحامٌ عابر: يُعاد الأساسيّ نفسه مرّةً (لا الاحتياطي) ثم يفشل — نداءان.
+    expect(sim.modelCalls).toBe(2);
   });
 
   it("بالطلب الصريح ⇐ يُبنى عند الفشل ويُجيب، ويُحفظ النموذج الذي أجاب فعلًا", async () => {
@@ -428,6 +435,143 @@ describe("(e) البوّابة الاحتياطية — بطلبٍ صريح وح
     await shown(res);
     const interaction = sim.inserts.find((i) => i.table === "finn_interactions");
     expect(interaction?.row.model).toBe("gemini-3.6-flash");
+  });
+});
+
+describe("(f) ازدحام المزوّد العابر — إعادةٌ واحدة محدودة، لا للحصّة ولا للرفض", () => {
+  const HIGH_DEMAND =
+    "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.";
+  const OVERLOAD_LINE_AR = "محرّك التحليل مزدحم الآن";
+  const ASK = "حلل أسباب تكرار البلاغات";
+
+  it("الازدحام ثم النجاح ⇐ يُعاد النداء مرّةً فيُجيب النموذج، ولا يُبنى احتياطي", async () => {
+    stubEnv({ GEMINI_API_KEY: "test-key-not-a-secret" });
+    let call = 0;
+    sim.generate = async () => {
+      call += 1;
+      if (call === 1) throw new Error(HIGH_DEMAND);
+      return { text: "ردّ بعد الإعادة." };
+    };
+    const { res } = await post(ASK);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model");
+    expect(sim.modelCalls, "نداءان: الفاشل ثم المُعاد").toBe(2);
+    expect(sim.backupBuilds).toBe(0);
+    expect(await shown(res)).toContain("ردّ بعد الإعادة.");
+  });
+
+  it("فشلٌ ثانٍ ⇐ يتوقّف عند نداءين (لا حلقة)، وسطرٌ عربيّ واضح للازدحام لا العامّ", async () => {
+    stubEnv({ GEMINI_API_KEY: "test-key-not-a-secret" });
+    sim.generate = async () => {
+      throw new Error(HIGH_DEMAND);
+    };
+    const { res } = await post(ASK);
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model-error");
+    expect(sim.modelCalls, "أكثر من إعادةٍ واحدة").toBe(2);
+    const text = await shown(res);
+    expect(text).toContain(OVERLOAD_LINE_AR);
+    expect(text, "السطر العامّ بدل سطر الازدحام").not.toContain("تعذّر إكمال الرد");
+  });
+
+  it("503 بالحالة في الرسالة يُعاد كذلك", async () => {
+    stubEnv({ GEMINI_API_KEY: "test-key-not-a-secret" });
+    let call = 0;
+    sim.generate = async () => {
+      call += 1;
+      if (call === 1) throw new Error("503 Service Unavailable");
+      return { text: "ردّ." };
+    };
+    const { res } = await post(ASK);
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model");
+    expect(sim.modelCalls).toBe(2);
+  });
+
+  it("الحصّة لا تُعاد: نداءٌ واحد، وسطر الحدّ لا سطر الازدحام", async () => {
+    stubEnv({ GEMINI_API_KEY: "test-key-not-a-secret" });
+    sim.generate = async () => {
+      throw new Error(
+        "429 Quota exceeded for metric generate_content_free_tier_requests, limit: 20, retry in 7h",
+      );
+    };
+    const { res } = await post(ASK);
+    expect(sim.modelCalls, "أُعيد نداءٌ على حصّةٍ مستنفَدة").toBe(1);
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model-error");
+    const text = await shown(res);
+    expect(text).toContain("بلغت الجلسة حدّ التحليل");
+    expect(text).not.toContain(OVERLOAD_LINE_AR);
+  });
+
+  it("الرفض (403) والطلب المعيب (400) لا يُعادان", async () => {
+    stubEnv({ GEMINI_API_KEY: "test-key-not-a-secret" });
+    for (const message of ["403 API key not valid", "400 Invalid argument"]) {
+      sim.modelCalls = 0;
+      sim.generate = async () => {
+        throw new Error(message);
+      };
+      const { res } = await post(ASK);
+      await res.text();
+      expect(sim.modelCalls, message).toBe(1);
+    }
+  });
+
+  it("لا إعادة بعد أن أنهى النموذج خطوةً (أدواتٌ قد نُفِّذت): فشلٌ بعد خطوة ⇐ نداءٌ واحد", async () => {
+    stubEnv({ GEMINI_API_KEY: "test-key-not-a-secret" });
+    sim.generate = async (opts) => {
+      (opts.onStepFinish as undefined | (() => void))?.();
+      throw new Error(HIGH_DEMAND);
+    };
+    const { res } = await post(ASK);
+    await res.text();
+    expect(sim.modelCalls, "أُعيد دورٌ نُفِّذت فيه خطوة").toBe(1);
+  });
+
+  it("مسار OpenAI المأذون: يُعاد كذلك، وسجلّ الإعادة بحالته لا بنصّ الخطأ (قد يحمل نصّ المستخدم)", async () => {
+    stubEnv({
+      SADEED_LLM_PROVIDER: "openai",
+      OPENAI_API_KEY: "openai-key-not-a-secret-0000",
+      SADEED_OPENAI_ENABLED: "true",
+    });
+    const CANARY = "USER-TEXT-CANARY-7f3a";
+    let call = 0;
+    sim.generate = async () => {
+      call += 1;
+      if (call === 1) throw new Error(`503 overloaded — echoed prompt: ${CANARY}`);
+      return { text: "ردّ بعد الإعادة." };
+    };
+    const { res } = await post(ASK);
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model");
+    expect(sim.modelCalls).toBe(2);
+    // الوسيطات كائناتٌ (`{ requestId, error }`): تُسلسَل لا تُحوَّل نصًّا — وإلا ظهرت «[object Object]» وأخفت النصّ.
+    const logged = JSON.stringify([
+      ...vi.mocked(console.warn).mock.calls,
+      ...vi.mocked(console.error).mock.calls,
+    ]);
+    expect(logged, "نصّ خطأ المزوّد خرج إلى السجلّ").not.toContain(CANARY);
+    expect(logged).toContain("transient provider overload");
+  });
+
+  it("إلغاء الزائر أثناء الانتظار ⇐ لا نداء ثانٍ", async () => {
+    stubEnv({ GEMINI_API_KEY: "test-key-not-a-secret" });
+    const gate = new AbortController();
+    sim.generate = async () => {
+      gate.abort(new DOMException("client left", "AbortError"));
+      throw new Error(HIGH_DEMAND);
+    };
+    const mod = (await import("@/routes/api/chat")) as unknown as {
+      Route: { options: { server: { handlers: { POST: Handler } } } };
+    };
+    const request = new Request("http://local/api/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      signal: gate.signal,
+      body: JSON.stringify({
+        messages: [{ id: "m-abort", role: "user", parts: [{ type: "text", text: ASK }] }],
+        threadId: "00000000-0000-4000-8000-0000000000aa",
+      }),
+    });
+    const res = await mod.Route.options.server.handlers.POST({ request });
+    await res.text();
+    expect(sim.modelCalls).toBe(1);
   });
 });
 
